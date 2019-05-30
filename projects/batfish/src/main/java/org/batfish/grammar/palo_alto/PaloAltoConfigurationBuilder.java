@@ -12,6 +12,7 @@ import static org.batfish.representation.palo_alto.PaloAltoStructureType.ADDRESS
 import static org.batfish.representation.palo_alto.PaloAltoStructureType.ADDRESS_GROUP_OR_ADDRESS_OBJECT;
 import static org.batfish.representation.palo_alto.PaloAltoStructureType.ADDRESS_GROUP_OR_ADDRESS_OBJECT_OR_NONE;
 import static org.batfish.representation.palo_alto.PaloAltoStructureType.ADDRESS_OBJECT;
+import static org.batfish.representation.palo_alto.PaloAltoStructureType.APPLICATION;
 import static org.batfish.representation.palo_alto.PaloAltoStructureType.APPLICATION_GROUP_OR_APPLICATION;
 import static org.batfish.representation.palo_alto.PaloAltoStructureType.INTERFACE;
 import static org.batfish.representation.palo_alto.PaloAltoStructureType.RULE;
@@ -66,6 +67,7 @@ import org.batfish.grammar.palo_alto.PaloAltoParser.Palo_alto_configurationConte
 import org.batfish.grammar.palo_alto.PaloAltoParser.Port_or_rangeContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.S_addressContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.S_address_groupContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.S_applicationContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.S_policy_panoramaContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.S_serviceContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.S_service_groupContext;
@@ -79,6 +81,7 @@ import org.batfish.grammar.palo_alto.PaloAltoParser.Sa_ip_rangeContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sag_descriptionContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sag_dynamicContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sag_staticContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Sapp_descriptionContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sds_default_gatewayContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sds_hostnameContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sds_ip_addressContext;
@@ -136,6 +139,7 @@ import org.batfish.grammar.palo_alto.PaloAltoParser.VariableContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Variable_list_itemContext;
 import org.batfish.representation.palo_alto.AddressGroup;
 import org.batfish.representation.palo_alto.AddressObject;
+import org.batfish.representation.palo_alto.Application;
 import org.batfish.representation.palo_alto.CryptoProfile;
 import org.batfish.representation.palo_alto.CryptoProfile.Type;
 import org.batfish.representation.palo_alto.Interface;
@@ -161,6 +165,8 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
   private AddressGroup _currentAddressGroup;
 
   private AddressObject _currentAddressObject;
+
+  private Application _currentApplication;
 
   private CryptoProfile _currentCrytoProfile;
 
@@ -509,6 +515,25 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
   @Override
   public void exitS_address_group(S_address_groupContext ctx) {
     _currentAddressGroup = null;
+  }
+
+  @Override
+  public void enterS_application(S_applicationContext ctx) {
+    String name = ctx.name.getText();
+    _currentApplication = _currentVsys.getApplications().computeIfAbsent(name, Application::new);
+    // Use constructed name so same-named defs across vsys are unique
+    String uniqueName = computeObjectName(_currentVsys.getName(), name);
+    defineStructure(APPLICATION, uniqueName, ctx);
+  }
+
+  @Override
+  public void exitS_application(S_applicationContext ctx) {
+    _currentApplication = null;
+  }
+
+  @Override
+  public void exitSapp_description(Sapp_descriptionContext ctx) {
+    _currentApplication.setDescription(getText(ctx.description));
   }
 
   @Override
@@ -919,9 +944,11 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
   public void exitSrs_application(Srs_applicationContext ctx) {
     for (Variable_list_itemContext var : ctx.variable_list().variable_list_item()) {
       String name = getText(var);
+      // Use constructed object name so same-named refs across vsys are unique
+      String uniqueName = computeObjectName(_currentVsys.getName(), name);
       if (!name.equals(CATCHALL_APPLICATION_NAME)) {
         _configuration.referenceStructure(
-            APPLICATION_GROUP_OR_APPLICATION, name, RULE_APPLICATION, getLine(var.start));
+            APPLICATION_GROUP_OR_APPLICATION, uniqueName, RULE_APPLICATION, getLine(var.start));
       }
       _currentRule.getApplications().add(name);
     }

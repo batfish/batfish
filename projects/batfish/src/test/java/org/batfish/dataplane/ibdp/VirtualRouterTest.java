@@ -272,12 +272,14 @@ public class VirtualRouterTest {
                 new EvpnAddressFamily(
                     ImmutableSet.of(),
                     ImmutableSet.of(
-                        new Layer3VniConfig(
-                            1,
-                            DEFAULT_VRF_NAME,
-                            RouteDistinguisher.from(routerId, 2),
-                            ExtendedCommunity.target(65500, 10001),
-                            false))))
+                        Layer3VniConfig.builder()
+                            .setVni(1)
+                            .setVrf(DEFAULT_VRF_NAME)
+                            .setRouteDistinguisher(RouteDistinguisher.from(routerId, 2))
+                            .setRouteTarget(ExtendedCommunity.target(65500, 10001))
+                            .setImportRouteTarget(Layer3VniConfig.importRtPatternForAnyAs(1))
+                            .setAdvertiseV4Unicast(false)
+                            .build())))
             .build();
     BgpProcess bgpProcess =
         nf.bgpProcessBuilder()

@@ -6,6 +6,7 @@ import static java.util.Objects.requireNonNull;
 import static org.batfish.common.util.CollectionUtil.toImmutableSortedMap;
 import static org.batfish.common.util.CollectionUtil.toOrderedHashCode;
 import static org.batfish.datamodel.routing_policy.Environment.Direction.IN;
+import static org.batfish.dataplane.protocols.BgpProtocolHelper.transformBgpRouteOnImport;
 import static org.batfish.dataplane.protocols.IsisProtocolHelper.convertRouteLevel1ToLevel2;
 import static org.batfish.dataplane.protocols.IsisProtocolHelper.setOverloadOnAllRoutes;
 import static org.batfish.dataplane.protocols.StaticRouteHelper.isInterfaceRoute;
@@ -1087,13 +1088,13 @@ public class VirtualRouter implements Serializable {
         Bgpv4Route remoteRoute = remoteRouteAdvert.getRoute();
 
         Bgpv4Route.Builder transformedIncomingRouteBuilder =
-            BgpProtocolHelper.transformBgpRouteOnImport(
-                ourConfigId,
-                ourBgpConfig,
-                sessionProperties,
+            transformBgpRouteOnImport(
                 remoteRoute,
-                _c.getConfigurationFormat(),
-                Bgpv4Route.builder());
+                ourBgpConfig.getLocalAs(),
+                ourBgpConfig.getAllowLocalAsIn(),
+                sessionProperties.isEbgp(),
+                _bgpRoutingProcess._process,
+                ourConfigId.getPeerInterface());
         if (transformedIncomingRouteBuilder == null) {
           // Route could not be imported for core protocol reasons
           continue;
@@ -1460,8 +1461,7 @@ public class VirtualRouter implements Serializable {
                               ourConfig,
                               remoteConfig,
                               allNodes,
-                              session,
-                              Bgpv4Route.builder());
+                              session);
                       return transformedRoute == null
                           ? null
                           // REPLACE does not make sense across routers, update with WITHDRAW
@@ -1752,8 +1752,7 @@ public class VirtualRouter implements Serializable {
                       localConfig,
                       remoteConfig,
                       allNodes,
-                      sessionProperties,
-                      Bgpv4Route.builder());
+                      sessionProperties);
                 })
             .filter(Objects::nonNull)
             .map(RouteAdvertisement::new)
@@ -1945,7 +1944,6 @@ public class VirtualRouter implements Serializable {
    * @param allNodes all nodes in the network
    * @param sessionProperties {@link BgpSessionProperties} representing the <em>incoming</em> edge:
    *     i.e. the edge from {@code remoteConfig} to {@code ourConfig}
-   * @param builder a builder for the output route, of the desired route type
    * @return The transformed route as a {@link BgpRoute}, or {@code null} if the route should not be
    *     exported.
    */
@@ -1957,8 +1955,7 @@ public class VirtualRouter implements Serializable {
       @Nonnull BgpPeerConfig ourConfig,
       @Nonnull BgpPeerConfig remoteConfig,
       @Nonnull Map<String, Node> allNodes,
-      @Nonnull BgpSessionProperties sessionProperties,
-      @Nonnull B builder) {
+      @Nonnull BgpSessionProperties sessionProperties) {
 
     RoutingPolicy exportPolicy = _c.getRoutingPolicies().get(ourConfig.getExportPolicy());
     B transformedOutgoingRouteBuilder =
@@ -1968,8 +1965,7 @@ public class VirtualRouter implements Serializable {
             sessionProperties,
             _vrf.getBgpProcess(),
             requireNonNull(getRemoteBgpNeighborVR(remoteConfigId, allNodes))._vrf.getBgpProcess(),
-            exportCandidate.getRoute(),
-            builder);
+            exportCandidate.getRoute());
     if (transformedOutgoingRouteBuilder == null) {
       // This route could not be exported for core bgp protocol reasons
       return null;

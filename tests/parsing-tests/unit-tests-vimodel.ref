@@ -14525,7 +14525,8 @@
                   "evpnAddressFamily" : {
                     "l3Vnis" : [
                       {
-                        "advertiseV4UnicastRoutes" : true,
+                        "advertiseV4Unicast" : true,
+                        "importRouteTarget" : "^\\d+:10001$",
                         "routeDistinguisher" : "192.0.2.3:0",
                         "routeTarget" : "2:65500:10001",
                         "vni" : 10001,
@@ -14557,7 +14558,8 @@
                   "evpnAddressFamily" : {
                     "l3Vnis" : [
                       {
-                        "advertiseV4UnicastRoutes" : true,
+                        "advertiseV4Unicast" : true,
+                        "importRouteTarget" : "^\\d+:10001$",
                         "routeDistinguisher" : "192.0.2.3:0",
                         "routeTarget" : "2:65500:10001",
                         "vni" : 10001,
@@ -14589,7 +14591,8 @@
                   "evpnAddressFamily" : {
                     "l3Vnis" : [
                       {
-                        "advertiseV4UnicastRoutes" : true,
+                        "advertiseV4Unicast" : true,
+                        "importRouteTarget" : "^\\d+:10001$",
                         "routeDistinguisher" : "192.0.2.3:0",
                         "routeTarget" : "2:65500:10001",
                         "vni" : 10001,
