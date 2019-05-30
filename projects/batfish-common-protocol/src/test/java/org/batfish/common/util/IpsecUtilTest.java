@@ -1,12 +1,16 @@
 package org.batfish.common.util;
 
 import static org.batfish.common.util.IpsecUtil.getIpsecSession;
+import static org.batfish.common.util.IpsecUtil.negotiateIkePhase1Key;
 import static org.batfish.common.util.IpsecUtil.retainCompatibleTunnelEdges;
 import static org.batfish.common.util.IpsecUtil.toEdgeSet;
 import static org.batfish.datamodel.ConfigurationFormat.AWS;
 import static org.batfish.datamodel.ConfigurationFormat.CISCO_IOS;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.notNullValue;
+import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
@@ -19,6 +23,8 @@ import java.util.Set;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.Edge;
+import org.batfish.datamodel.IkeKeyType;
+import org.batfish.datamodel.IkePhase1Key;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.IpsecPeerConfigId;
 import org.batfish.datamodel.IpsecPhase2Proposal;
@@ -208,5 +214,56 @@ public class IpsecUtilTest {
                 ipsecPeerConfigBuilder.build(),
                 ipsecPeerConfigBuilder.build())
             .isCloud());
+  }
+
+  @Test
+  public void testNegotiateIkePhase1KeyRsa() {
+    IpsecSession.Builder ipsecSessionBuilder = IpsecSession.builder();
+    IkePhase1Key initiatorKey = new IkePhase1Key();
+    initiatorKey.setKeyType(IkeKeyType.RSA_PUB_KEY);
+    initiatorKey.setKeyHash("key1");
+    IkePhase1Key responderKey = new IkePhase1Key();
+    responderKey.setKeyType(IkeKeyType.RSA_PUB_KEY);
+    responderKey.setKeyHash("key2");
+
+    negotiateIkePhase1Key(initiatorKey, responderKey, ipsecSessionBuilder);
+
+    assertThat(ipsecSessionBuilder.getNegotiatedIkeP1Key(), notNullValue());
+    assertThat(
+        ipsecSessionBuilder.getNegotiatedIkeP1Key().getKeyType(), equalTo(IkeKeyType.RSA_PUB_KEY));
+  }
+
+  @Test
+  public void testNegotiateIkePhase1KeyPsk() {
+    IpsecSession.Builder ipsecSessionBuilder = IpsecSession.builder();
+    IkePhase1Key initiatorKey = new IkePhase1Key();
+    initiatorKey.setKeyType(IkeKeyType.PRE_SHARED_KEY);
+    initiatorKey.setKeyHash("key1");
+    IkePhase1Key responderKey = new IkePhase1Key();
+    responderKey.setKeyType(IkeKeyType.PRE_SHARED_KEY);
+    responderKey.setKeyHash("key1");
+
+    negotiateIkePhase1Key(initiatorKey, responderKey, ipsecSessionBuilder);
+
+    assertThat(ipsecSessionBuilder.getNegotiatedIkeP1Key(), notNullValue());
+    assertThat(
+        ipsecSessionBuilder.getNegotiatedIkeP1Key().getKeyType(),
+        equalTo(IkeKeyType.PRE_SHARED_KEY));
+    assertThat(ipsecSessionBuilder.getNegotiatedIkeP1Key().getKeyHash(), equalTo("key1"));
+  }
+
+  @Test
+  public void testNegotiateIkePhase1KeyPskFail() {
+    IpsecSession.Builder ipsecSessionBuilder = IpsecSession.builder();
+    IkePhase1Key initiatorKey = new IkePhase1Key();
+    initiatorKey.setKeyType(IkeKeyType.PRE_SHARED_KEY);
+    initiatorKey.setKeyHash("key1");
+    IkePhase1Key responderKey = new IkePhase1Key();
+    responderKey.setKeyType(IkeKeyType.PRE_SHARED_KEY);
+    responderKey.setKeyHash("key2");
+
+    negotiateIkePhase1Key(initiatorKey, responderKey, ipsecSessionBuilder);
+
+    assertThat(ipsecSessionBuilder.getNegotiatedIkeP1Key(), nullValue());
   }
 }
