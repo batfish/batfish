@@ -1,5 +1,7 @@
 package org.batfish.question.bgpproperties;
 
+import static com.google.common.base.MoreObjects.firstNonNull;
+
 import com.google.common.collect.HashMultiset;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Multiset;
@@ -57,7 +59,9 @@ public class BgpProcessConfigurationAnswerer extends Answerer {
                         new ColumnMetadata(
                             getColumnName(prop),
                             BgpProcessPropertySpecifier.JAVA_MAP.get(prop).getSchema(),
-                            "Property " + prop,
+                            firstNonNull(
+                                BgpProcessPropertySpecifier.JAVA_MAP.get(prop).getDescription(),
+                                "Property " + prop),
                             false,
                             true))
                 .collect(Collectors.toList()))

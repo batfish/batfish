@@ -8,6 +8,7 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Iterables;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -17,6 +18,8 @@ import javax.annotation.Nullable;
 import org.batfish.datamodel.BgpActivePeerConfig;
 import org.batfish.datamodel.BgpPassivePeerConfig;
 import org.batfish.datamodel.BgpProcess;
+import org.batfish.datamodel.BgpTieBreaker;
+import org.batfish.datamodel.MultipathEquivalentAsPathMatchMode;
 import org.batfish.datamodel.answers.Schema;
 
 /**
@@ -43,17 +46,31 @@ public class BgpProcessPropertySpecifier extends PropertySpecifier {
           .put(
               ROUTE_REFLECTOR,
               new PropertyDescriptor<>(
-                  BgpProcessPropertySpecifier::isRouteReflector, Schema.BOOLEAN))
+                  BgpProcessPropertySpecifier::isRouteReflector,
+                  Schema.BOOLEAN,
+                  "Whether any BGP peer in this process is configured as a route reflector client"))
           .put(
               MULTIPATH_EQUIVALENT_AS_PATH_MATCH_MODE,
               new PropertyDescriptor<>(
-                  BgpProcess::getMultipathEquivalentAsPathMatchMode, Schema.STRING))
+                  BgpProcess::getMultipathEquivalentAsPathMatchMode,
+                  Schema.STRING,
+                  "Which AS paths are considered equivalent ("
+                      + Arrays.stream(MultipathEquivalentAsPathMatchMode.values())
+                          .map(Object::toString)
+                          .collect(Collectors.joining(", "))
+                      + ") when multipath BGP is enabled"))
           .put(
               MULTIPATH_EBGP,
-              new PropertyDescriptor<>(BgpProcess::getMultipathEbgp, Schema.BOOLEAN))
+              new PropertyDescriptor<>(
+                  BgpProcess::getMultipathEbgp,
+                  Schema.BOOLEAN,
+                  "Whether multipath routing is enabled for EBGP"))
           .put(
               MULTIPATH_IBGP,
-              new PropertyDescriptor<>(BgpProcess::getMultipathIbgp, Schema.BOOLEAN))
+              new PropertyDescriptor<>(
+                  BgpProcess::getMultipathIbgp,
+                  Schema.BOOLEAN,
+                  "Whether multipath routing is enabled for IBGP"))
           .put(
               NEIGHBORS,
               new PropertyDescriptor<>(
@@ -62,9 +79,19 @@ public class BgpProcessPropertySpecifier extends PropertySpecifier {
                           process.getActiveNeighbors().keySet(),
                           process.getPassiveNeighbors().keySet(),
                           process.getInterfaceNeighbors().keySet()),
-                  Schema.set(Schema.STRING)))
+                  Schema.set(Schema.STRING),
+                  "All peers configured on this process, identified by peer address (for active and dynamic peers) or peer interface (for BGP unnumbered peers)"))
           // skip router-id; included as part of process identity
-          .put(TIE_BREAKER, new PropertyDescriptor<>(BgpProcess::getTieBreaker, Schema.STRING))
+          .put(
+              TIE_BREAKER,
+              new PropertyDescriptor<>(
+                  BgpProcess::getTieBreaker,
+                  Schema.STRING,
+                  "Tie breaking mode ("
+                      + Arrays.stream(BgpTieBreaker.values())
+                          .map(Object::toString)
+                          .collect(Collectors.joining(", "))
+                      + ")"))
           .build();
 
   /** A {@link BgpProcessPropertySpecifier} that matches all BGP properties. */
