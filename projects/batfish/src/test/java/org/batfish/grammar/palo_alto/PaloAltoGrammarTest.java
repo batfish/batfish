@@ -40,7 +40,9 @@ import static org.batfish.representation.palo_alto.PaloAltoStructureType.INTERFA
 import static org.batfish.representation.palo_alto.PaloAltoStructureType.SERVICE;
 import static org.batfish.representation.palo_alto.PaloAltoStructureType.SERVICE_GROUP;
 import static org.batfish.representation.palo_alto.PaloAltoStructureType.SERVICE_OR_SERVICE_GROUP;
+import static org.batfish.representation.palo_alto.PaloAltoStructureType.SHARED_GATEWAY;
 import static org.batfish.representation.palo_alto.PaloAltoStructureType.ZONE;
+import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.IMPORT_INTERFACE;
 import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.RULE_APPLICATION;
 import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.STATIC_ROUTE_INTERFACE;
 import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.VIRTUAL_ROUTER_INTERFACE;
@@ -52,6 +54,7 @@ import static org.hamcrest.Matchers.emptyIterable;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.hasItems;
+import static org.hamcrest.Matchers.hasKey;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.nullValue;
@@ -1133,6 +1136,45 @@ public class PaloAltoGrammarTest {
     assertThat(ccae, hasNumReferrers(filename, SERVICE, serviceHttpName, 2));
     assertThat(ccae, hasNumReferrers(filename, SERVICE, serviceHttpsName, 2));
     assertThat(ccae, hasNumReferrers(filename, SERVICE, serviceAnyName, 1));
+  }
+
+  @Test
+  public void testSharedGateway() {
+    PaloAltoConfiguration c = parsePaloAltoConfig("shared-gateway");
+
+    // Confirm shared-gateways show up in the vendor model
+    Map<String, Vsys> vsyses = c.getVirtualSystems();
+    assertThat(vsyses, hasKey("sg1"));
+    assertThat(vsyses, hasKey("sg2"));
+    assertThat(vsyses, hasKey("sg3"));
+
+    // Confirm display names show up as well
+    assertThat(c.getVirtualSystems().get("sg1").getDisplayName(), equalTo("shared-gateway1"));
+    assertThat(c.getVirtualSystems().get("sg2").getDisplayName(), equalTo("shared gateway2"));
+    assertThat(
+        c.getVirtualSystems().get("sg3").getDisplayName(), equalTo("invalid shared gateway"));
+  }
+
+  @Test
+  public void testSharedGatewayReference() throws IOException {
+    String hostname = "shared-gateway";
+    String filename = "configs/" + hostname;
+
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    ConvertConfigurationAnswerElement ccae =
+        batfish.loadConvertConfigurationAnswerElementOrReparse();
+
+    // Confirm structure definitions are recorded correctly, even for badly named shared-gateway
+    assertThat(ccae, hasDefinedStructure(filename, SHARED_GATEWAY, "sg1"));
+    assertThat(ccae, hasDefinedStructure(filename, SHARED_GATEWAY, "sg2"));
+    assertThat(ccae, hasDefinedStructure(filename, SHARED_GATEWAY, "sg3"));
+
+    // Confirm structure references are counted correctly
+    assertThat(ccae, hasNumReferrers(filename, INTERFACE, "ethernet1/1", 2));
+    assertThat(ccae, hasNumReferrers(filename, INTERFACE, "ethernet1/2", 1));
+
+    // Confirm the undefined interface is properly detected as an undefined reference
+    assertThat(ccae, hasUndefinedReference(filename, INTERFACE, "ethernet1/3", IMPORT_INTERFACE));
   }
 
   @Test
