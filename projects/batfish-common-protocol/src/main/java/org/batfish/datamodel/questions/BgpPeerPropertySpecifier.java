@@ -46,26 +46,59 @@ public class BgpPeerPropertySpecifier extends PropertySpecifier {
 
   public static final Map<String, PropertyDescriptor<BgpPeerConfig>> JAVA_MAP =
       new ImmutableMap.Builder<String, PropertyDescriptor<BgpPeerConfig>>()
-          .put(LOCAL_AS, new PropertyDescriptor<>(BgpPeerConfig::getLocalAs, Schema.LONG))
-          .put(LOCAL_IP, new PropertyDescriptor<>(BgpPeerPropertySpecifier::getLocalIp, Schema.IP))
-          .put(IS_PASSIVE, new PropertyDescriptor<>((peer) -> getIsPassive(peer), Schema.BOOLEAN))
-          .put(REMOTE_AS, new PropertyDescriptor<>(BgpPeerConfig::getRemoteAsns, Schema.STRING))
+          .put(
+              LOCAL_AS,
+              new PropertyDescriptor<>(BgpPeerConfig::getLocalAs, Schema.LONG, "Local AS number"))
+          .put(
+              LOCAL_IP,
+              new PropertyDescriptor<>(
+                  BgpPeerPropertySpecifier::getLocalIp,
+                  Schema.IP,
+                  "Local IPv4 address (null for BGP unnumbered peerings)"))
+          .put(
+              IS_PASSIVE,
+              new PropertyDescriptor<>(
+                  (peer) -> getIsPassive(peer), Schema.BOOLEAN, "Whether the peering is passive"))
+          .put(
+              REMOTE_AS,
+              new PropertyDescriptor<>(
+                  BgpPeerConfig::getRemoteAsns,
+                  Schema.STRING,
+                  "Valid remote AS numbers for session establishment"))
           .put(
               ROUTE_REFLECTOR_CLIENT,
-              new PropertyDescriptor<>(BgpPeerConfig::getRouteReflectorClient, Schema.BOOLEAN))
-          .put(CLUSTER_ID, new PropertyDescriptor<>((peer) -> getClusterId(peer), Schema.IP))
-          .put(PEER_GROUP, new PropertyDescriptor<>(BgpPeerConfig::getGroup, Schema.STRING))
+              new PropertyDescriptor<>(
+                  BgpPeerConfig::getRouteReflectorClient,
+                  Schema.BOOLEAN,
+                  "Whether the peering points to a route reflector client"))
+          .put(
+              CLUSTER_ID,
+              new PropertyDescriptor<>(
+                  (peer) -> getClusterId(peer), Schema.IP, "TODO: description"))
+          .put(
+              PEER_GROUP,
+              new PropertyDescriptor<>(
+                  BgpPeerConfig::getGroup,
+                  Schema.STRING,
+                  "Name of the group to which this peering belongs"))
           .put(
               IMPORT_POLICY,
               new PropertyDescriptor<>(
-                  BgpPeerConfig::getImportPolicySources, Schema.set(Schema.STRING)))
+                  BgpPeerConfig::getImportPolicySources,
+                  Schema.set(Schema.STRING),
+                  "Names of import policies to be applied"))
           .put(
               EXPORT_POLICY,
               new PropertyDescriptor<>(
-                  BgpPeerConfig::getExportPolicySources, Schema.set(Schema.STRING)))
+                  BgpPeerConfig::getExportPolicySources,
+                  Schema.set(Schema.STRING),
+                  "Names of export policies to be applied"))
           .put(
               SEND_COMMUNITY,
-              new PropertyDescriptor<>(BgpPeerConfig::getSendCommunity, Schema.BOOLEAN))
+              new PropertyDescriptor<>(
+                  BgpPeerConfig::getSendCommunity,
+                  Schema.BOOLEAN,
+                  "Whether to propagate communities along this peering"))
           .build();
 
   /** A {@link BgpPeerPropertySpecifier} that matches all BGP properties. */
