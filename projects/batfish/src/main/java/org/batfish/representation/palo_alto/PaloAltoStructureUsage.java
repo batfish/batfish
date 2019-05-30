@@ -4,6 +4,7 @@ import org.batfish.vendor.StructureUsage;
 
 public enum PaloAltoStructureUsage implements StructureUsage {
   ADDRESS_GROUP_STATIC("address-group static"),
+  IMPORT_INTERFACE("import network interface"),
   RULE_APPLICATION("rulebase security rules application"),
   RULE_DESTINATION("rulebase security rules destination"),
   RULE_FROM_ZONE("rulebase security rules from"),

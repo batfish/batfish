@@ -19,8 +19,10 @@ import static org.batfish.representation.palo_alto.PaloAltoStructureType.RULE;
 import static org.batfish.representation.palo_alto.PaloAltoStructureType.SERVICE_GROUP;
 import static org.batfish.representation.palo_alto.PaloAltoStructureType.SERVICE_OR_SERVICE_GROUP;
 import static org.batfish.representation.palo_alto.PaloAltoStructureType.SERVICE_OR_SERVICE_GROUP_OR_NONE;
+import static org.batfish.representation.palo_alto.PaloAltoStructureType.SHARED_GATEWAY;
 import static org.batfish.representation.palo_alto.PaloAltoStructureType.ZONE;
 import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.ADDRESS_GROUP_STATIC;
+import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.IMPORT_INTERFACE;
 import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.RULEBASE_SERVICE;
 import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.RULE_APPLICATION;
 import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.RULE_DESTINATION;
@@ -34,6 +36,7 @@ import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.VIRTUA
 import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.ZONE_INTERFACE;
 
 import java.util.List;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.RuleContext;
@@ -90,6 +93,7 @@ import org.batfish.grammar.palo_alto.PaloAltoParser.Sds_ntp_serversContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sdsd_serversContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sdsn_ntp_server_addressContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Set_line_config_devicesContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Sn_shared_gatewayContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sn_virtual_routerContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sni_ethernetContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sni_loopbackContext;
@@ -106,6 +110,10 @@ import org.batfish.grammar.palo_alto.PaloAltoParser.Sniel3u_tagContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Snil_unitContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Snit_unitContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sniv_unitContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Snsg_display_nameContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Snsg_zoneContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Snsgi_interfaceContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Snsgzn_layer3Context;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Snvr_interfaceContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Snvr_routing_tableContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Snvrrt_admin_distContext;
@@ -160,6 +168,9 @@ import org.batfish.representation.palo_alto.Zone;
 import org.batfish.vendor.StructureType;
 
 public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
+
+  private static final Pattern SHARED_GATEWAY_NAME_PATTERN = Pattern.compile("sg\\d+");
+
   private PaloAltoConfiguration _configuration;
 
   private AddressGroup _currentAddressGroup;
@@ -663,6 +674,67 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
       _configuration.setDnsServerPrimary(getText(ctx.primary_name));
     } else if (ctx.secondary_name != null) {
       _configuration.setDnsServerSecondary(getText(ctx.secondary_name));
+    }
+  }
+
+  @Override
+  public void enterSn_shared_gateway(Sn_shared_gatewayContext ctx) {
+    String name = getText(ctx.name);
+    if (SHARED_GATEWAY_NAME_PATTERN.matcher(name).matches()) {
+      _currentVsys = _configuration.getVirtualSystems().computeIfAbsent(name, Vsys::new);
+    } else {
+      _currentVsys = new Vsys(name);
+      _w.redFlag(String.format("%s is invalid as a shared-gateway name", name));
+    }
+    defineStructure(SHARED_GATEWAY, name, ctx);
+  }
+
+  @Override
+  public void exitSn_shared_gateway(Sn_shared_gatewayContext ctx) {
+    _currentVsys = null;
+  }
+
+  @Override
+  public void exitSnsg_display_name(Snsg_display_nameContext ctx) {
+    _currentVsys.setDisplayName(getText(ctx.name));
+  }
+
+  @Override
+  public void exitSnsgi_interface(Snsgi_interfaceContext ctx) {
+    for (Variable_list_itemContext var : ctx.variable_list().variable_list_item()) {
+      String name = getText(var);
+      _currentVsys.getImportedInterfaces().add(name);
+      _configuration.referenceStructure(INTERFACE, name, IMPORT_INTERFACE, getLine(var.start));
+    }
+  }
+
+  @Override
+  public void enterSnsg_zone(Snsg_zoneContext ctx) {
+    String name = getText(ctx.name);
+    _currentZone = _currentVsys.getZones().computeIfAbsent(name, n -> new Zone(n, _currentVsys));
+
+    // Use constructed zone name so same-named zone defs across vsys are unique
+    String uniqueName = computeObjectName(_currentVsys.getName(), name);
+    defineStructure(ZONE, uniqueName, ctx);
+  }
+
+  @Override
+  public void exitSnsg_zone(Snsg_zoneContext ctx) {
+    _currentZone = null;
+  }
+
+  @Override
+  public void exitSnsgzn_layer3(Snsgzn_layer3Context ctx) {
+    for (Variable_list_itemContext var : ctx.variable_list().variable_list_item()) {
+      String name = getText(var);
+      if (_currentVsys.getImportedInterfaces().contains(name)) {
+        _currentZone.getInterfaceNames().add(name);
+      } else {
+        _w.redFlag(
+            String.format(
+                "Cannot add interface %s to a shared-gateway zone before it is imported.", name));
+      }
+      _configuration.referenceStructure(INTERFACE, name, ZONE_INTERFACE, getLine(var.start));
     }
   }
 

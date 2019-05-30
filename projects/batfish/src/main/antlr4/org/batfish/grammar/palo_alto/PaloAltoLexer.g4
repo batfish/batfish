@@ -176,6 +176,11 @@ DISABLED
     'disabled'
 ;
 
+DISPLAY_NAME
+:
+    'display-name'
+;
+
 DNS
 :
     'dns'
@@ -304,6 +309,11 @@ IKE
 IKE_CRYPTO_PROFILES
 :
     'ike-crypto-profiles'
+;
+
+IMPORT
+:
+    'import'
 ;
 
 INTERFACE
@@ -614,6 +624,11 @@ SHA512
 SHARED
 :
     'shared'
+;
+
+SHARED_GATEWAY
+:
+    'shared-gateway'
 ;
 
 SOURCE
