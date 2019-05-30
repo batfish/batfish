@@ -194,6 +194,7 @@ import static org.batfish.representation.cisco.CiscoStructureType.IPV6_ACCESS_LI
 import static org.batfish.representation.cisco.CiscoStructureType.IP_ACCESS_LIST;
 import static org.batfish.representation.cisco.CiscoStructureType.KEYRING;
 import static org.batfish.representation.cisco.CiscoStructureType.MAC_ACCESS_LIST;
+import static org.batfish.representation.cisco.CiscoStructureType.NAMED_RSA_PUB_KEY;
 import static org.batfish.representation.cisco.CiscoStructureType.NETWORK_OBJECT;
 import static org.batfish.representation.cisco.CiscoStructureType.NETWORK_OBJECT_GROUP;
 import static org.batfish.representation.cisco.CiscoStructureType.PREFIX6_LIST;
@@ -3893,6 +3894,18 @@ public class CiscoGrammarTest {
                 hasRemoteIdentity(containsIp(Ip.parse("1.2.3.4"))),
                 hasLocalInterface(equalTo(Interface.UNSET_LOCAL_INTERFACE)),
                 hasIkePhase1Proposals(equalTo(ImmutableList.of("10"))))));
+  }
+
+  @Test
+  public void testCiscoCryptoRsaReferrers() throws IOException {
+    String hostname = "ios-crypto-rsa";
+    String filename = "configs/" + hostname;
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    ConvertConfigurationAnswerElement ccae =
+        batfish.loadConvertConfigurationAnswerElementOrReparse();
+
+    /* Confirm prefix-list is referenced */
+    assertThat(ccae, hasNumReferrers(filename, NAMED_RSA_PUB_KEY, "testrsa", 1));
   }
 
   private static CommunitySetExpr communityListToMatchCondition(

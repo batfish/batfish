@@ -3861,6 +3861,8 @@ public final class CiscoConfiguration extends VendorConfiguration {
         CiscoStructureUsage.CRYPTO_MAP_IPSEC_ISAKMP_TRANSFORM_SET,
         CiscoStructureUsage.IPSEC_PROFILE_TRANSFORM_SET);
     markConcreteStructure(CiscoStructureType.KEYRING, CiscoStructureUsage.ISAKMP_PROFILE_KEYRING);
+    markConcreteStructure(
+        CiscoStructureType.NAMED_RSA_PUB_KEY, CiscoStructureUsage.NAMED_RSA_PUB_KEY_SELF_REF);
 
     // class-map
     markConcreteStructure(
