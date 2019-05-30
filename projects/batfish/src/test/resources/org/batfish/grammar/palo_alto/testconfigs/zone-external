@@ -2,7 +2,5 @@ set deviceconfig system hostname zone-external
 
 set network shared-gateway sg1 display-name shared-gateway1
 
-# set vsys vsys1
-# set vsys vsys2
-set vsys vsys3 zone SIBLING_VSYS_ZONE network external [ vsys1 vsys2 ]
-set vsys vsys3 zone SHARED_GATEWAY_ZONE network external sg1
+set vsys vsys3 zone ZONE1 network external [ vsys1 sg1 ]
+set vsys vsys3 zone ZONE2 network external vsys2

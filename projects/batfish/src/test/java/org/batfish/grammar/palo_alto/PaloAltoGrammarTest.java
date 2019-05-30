@@ -1321,11 +1321,11 @@ public class PaloAltoGrammarTest {
     // Make sure the vsys and zones we're going to check exist
     assertThat(c.getVirtualSystems(), hasKey("vsys3"));
     SortedMap<String, Zone> zones = c.getVirtualSystems().get("vsys3").getZones();
-    assertThat(zones.keySet(), containsInAnyOrder("SIBLING_VSYS_ZONE", "SHARED_GATEWAY_ZONE"));
+    assertThat(zones.keySet(), containsInAnyOrder("ZONE1", "ZONE2"));
 
     // Make sure the external zones are correctly populated with the specified external names
-    assertThat(zones.get("SIBLING_VSYS_ZONE").getExternalNames(), contains("vsys1", "vsys2"));
-    assertThat(zones.get("SHARED_GATEWAY_ZONE").getExternalNames(), contains("sg1"));
+    assertThat(zones.get("ZONE1").getExternalNames(), containsInAnyOrder("vsys1", "sg1"));
+    assertThat(zones.get("ZONE2").getExternalNames(), contains("vsys2"));
   }
 
   @Test
