@@ -276,7 +276,7 @@ public class OspfRoutingProcessTest {
 
   @Test
   public void testDirtyPostInitialization() {
-    _routingProcess.initialize();
+    _routingProcess.initialize(new Node(_c));
     assertTrue(_routingProcess.isDirty());
   }
 
@@ -286,7 +286,7 @@ public class OspfRoutingProcessTest {
    */
   @Test
   public void testNotDirtyAfterOneIteration() {
-    _routingProcess.initialize();
+    _routingProcess.initialize(new Node(_c));
     // Empty map in this particular case just means no valid neighbors.
     _routingProcess.executeIteration(ImmutableMap.of());
     assertTrue("Still have updates to main RIB", _routingProcess.isDirty());

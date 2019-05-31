@@ -19,7 +19,7 @@ public interface RoutingProcess<T, R extends AbstractRouteDecorator> {
   /**
    * Initialization of the routing process. Called exactly once per computation of the dataplane.
    */
-  void initialize();
+  void initialize(Node n);
 
   /**
    * Topology update. Called every time the dataplane engine determines that a change to the

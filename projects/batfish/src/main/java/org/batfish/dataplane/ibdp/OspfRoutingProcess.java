@@ -167,7 +167,7 @@ final class OspfRoutingProcess implements RoutingProcess<OspfTopology, OspfRoute
   }
 
   @Override
-  public void initialize() {
+  public void initialize(Node n) {
     initializeIntraAreaRoutes();
   }
 

@@ -284,7 +284,7 @@ public class VirtualRouter implements Serializable {
                     e ->
                         new OspfRoutingProcess(
                             e.getValue(), _name, _c, topologyContext.getOspfTopology())));
-    _ospfProcesses.values().forEach(OspfRoutingProcess::initialize);
+    _ospfProcesses.values().forEach(p -> p.initialize(_node));
 
     initEigrp();
     initBaseRipRoutes();
