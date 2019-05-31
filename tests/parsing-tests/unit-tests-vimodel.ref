@@ -29713,7 +29713,6 @@
             "ospfHelloMultiplier" : 0,
             "ospfPassive" : false,
             "ospfPointToPoint" : false,
-            "outgoingFilter" : "~ethernet1/1~OUTGOING_FILTER~",
             "proxyArp" : false,
             "ripEnabled" : false,
             "ripPassive" : false,
@@ -29739,7 +29738,6 @@
             "ospfHelloMultiplier" : 0,
             "ospfPassive" : false,
             "ospfPointToPoint" : false,
-            "outgoingFilter" : "~ethernet1/1.5~OUTGOING_FILTER~",
             "proxyArp" : false,
             "ripEnabled" : false,
             "ripPassive" : false,
@@ -29765,7 +29763,6 @@
             "ospfHelloMultiplier" : 0,
             "ospfPassive" : false,
             "ospfPointToPoint" : false,
-            "outgoingFilter" : "~loopback~OUTGOING_FILTER~",
             "proxyArp" : false,
             "ripEnabled" : false,
             "ripPassive" : false,
@@ -29790,7 +29787,6 @@
             "ospfHelloMultiplier" : 0,
             "ospfPassive" : false,
             "ospfPointToPoint" : false,
-            "outgoingFilter" : "~tunnel~OUTGOING_FILTER~",
             "proxyArp" : false,
             "ripEnabled" : false,
             "ripPassive" : false,
@@ -29816,7 +29812,6 @@
             "ospfHelloMultiplier" : 0,
             "ospfPassive" : false,
             "ospfPointToPoint" : false,
-            "outgoingFilter" : "~tunnel.3~OUTGOING_FILTER~",
             "proxyArp" : false,
             "ripEnabled" : false,
             "ripPassive" : false,
@@ -29842,7 +29837,6 @@
             "ospfHelloMultiplier" : 0,
             "ospfPassive" : false,
             "ospfPointToPoint" : false,
-            "outgoingFilter" : "~vlan~OUTGOING_FILTER~",
             "proxyArp" : false,
             "ripEnabled" : false,
             "ripPassive" : false,
@@ -29852,74 +29846,6 @@
             "switchportTrunkEncapsulation" : "DOT1Q",
             "type" : "PHYSICAL",
             "vrf" : "~NULL_VRF~"
-          }
-        },
-        "ipAccessLists" : {
-          "~ethernet1/1.5~OUTGOING_FILTER~" : {
-            "name" : "~ethernet1/1.5~OUTGOING_FILTER~",
-            "lines" : [
-              {
-                "action" : "DENY",
-                "matchCondition" : {
-                  "class" : "org.batfish.datamodel.acl.TrueExpr"
-                }
-              }
-            ]
-          },
-          "~ethernet1/1~OUTGOING_FILTER~" : {
-            "name" : "~ethernet1/1~OUTGOING_FILTER~",
-            "lines" : [
-              {
-                "action" : "DENY",
-                "matchCondition" : {
-                  "class" : "org.batfish.datamodel.acl.TrueExpr"
-                }
-              }
-            ]
-          },
-          "~loopback~OUTGOING_FILTER~" : {
-            "name" : "~loopback~OUTGOING_FILTER~",
-            "lines" : [
-              {
-                "action" : "DENY",
-                "matchCondition" : {
-                  "class" : "org.batfish.datamodel.acl.TrueExpr"
-                }
-              }
-            ]
-          },
-          "~tunnel.3~OUTGOING_FILTER~" : {
-            "name" : "~tunnel.3~OUTGOING_FILTER~",
-            "lines" : [
-              {
-                "action" : "DENY",
-                "matchCondition" : {
-                  "class" : "org.batfish.datamodel.acl.TrueExpr"
-                }
-              }
-            ]
-          },
-          "~tunnel~OUTGOING_FILTER~" : {
-            "name" : "~tunnel~OUTGOING_FILTER~",
-            "lines" : [
-              {
-                "action" : "DENY",
-                "matchCondition" : {
-                  "class" : "org.batfish.datamodel.acl.TrueExpr"
-                }
-              }
-            ]
-          },
-          "~vlan~OUTGOING_FILTER~" : {
-            "name" : "~vlan~OUTGOING_FILTER~",
-            "lines" : [
-              {
-                "action" : "DENY",
-                "matchCondition" : {
-                  "class" : "org.batfish.datamodel.acl.TrueExpr"
-                }
-              }
-            ]
           }
         },
         "vendorFamily" : { },
