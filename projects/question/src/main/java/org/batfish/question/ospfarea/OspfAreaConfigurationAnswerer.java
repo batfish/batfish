@@ -61,14 +61,22 @@ public class OspfAreaConfigurationAnswerer extends Answerer {
     columnBuilder.add(new ColumnMetadata(COL_NODE, Schema.NODE, "Node", true, false));
     columnBuilder.add(new ColumnMetadata(COL_VRF, Schema.STRING, "VRF", true, false));
     columnBuilder.add(new ColumnMetadata(COL_PROCESS_ID, Schema.STRING, "Process ID", true, false));
-    columnBuilder.add(new ColumnMetadata(COL_AREA, Schema.STRING, "Area Number", true, false));
-    columnBuilder.add(new ColumnMetadata(COL_AREA_TYPE, Schema.STRING, "Area Type", false, true));
+    columnBuilder.add(new ColumnMetadata(COL_AREA, Schema.STRING, "Area number", true, false));
+    columnBuilder.add(new ColumnMetadata(COL_AREA_TYPE, Schema.STRING, "Area type", false, true));
     columnBuilder.add(
         new ColumnMetadata(
-            COL_ACTIVE_INTERFACES, Schema.set(Schema.STRING), "Active Interfaces", false, true));
+            COL_ACTIVE_INTERFACES,
+            Schema.set(Schema.STRING),
+            "Names of active interfaces",
+            false,
+            true));
     columnBuilder.add(
         new ColumnMetadata(
-            COL_PASSIVE_INTERFACES, Schema.set(Schema.STRING), "Passive Interfaces", false, true));
+            COL_PASSIVE_INTERFACES,
+            Schema.set(Schema.STRING),
+            "Names of passive interfaces",
+            false,
+            true));
 
     return new TableMetadata(columnBuilder.build(), "Display OSPF information areas");
   }
