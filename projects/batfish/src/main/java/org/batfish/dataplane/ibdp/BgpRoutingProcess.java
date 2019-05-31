@@ -127,7 +127,7 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
   }
 
   @Override
-  public void initialize() {}
+  public void initialize(Node n) {}
 
   /**
    * Initialize incoming BGP message queues.
