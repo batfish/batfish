@@ -1323,10 +1323,12 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
   @Override
   public void exitSzn_external(Szn_externalContext ctx) {
     _currentZone.setType(EXTERNAL);
-    for (Variable_list_itemContext var : ctx.variable_list().variable_list_item()) {
-      String name = getText(var);
-      _currentZone.getExternalNames().add(name);
-      _configuration.referenceStructure(INTERFACE, name, ZONE_INTERFACE, getLine(var.start));
+    if (ctx.variable_list() != null) {
+      for (Variable_list_itemContext var : ctx.variable_list().variable_list_item()) {
+        String name = getText(var);
+        _currentZone.getExternalNames().add(name);
+        _configuration.referenceStructure(INTERFACE, name, ZONE_INTERFACE, getLine(var.start));
+      }
     }
   }
 
