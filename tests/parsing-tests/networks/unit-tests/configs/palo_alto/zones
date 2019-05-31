@@ -28,7 +28,9 @@ config {
       vsys {
         vsys10 {
           import {
-            interface [ ethernet1/1 ethernet1/2 ethernet1/3 ethernet1/4];
+            network {
+              interface [ ethernet1/1 ethernet1/2 ethernet1/3 ethernet1/4];
+            }
           }
           zone {
             zl2 {

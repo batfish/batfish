@@ -21,17 +21,25 @@ sv_import
 :
     IMPORT
     (
-        svi_interface
+        svi_network
         | svi_visible_vsys
     )?
 ;
 
-svi_interface
+svi_network
 :
-    INTERFACE variable_list
+    NETWORK
+    (
+        svin_interface
+    )?
 ;
 
 svi_visible_vsys
 :
-    VISIBLE_VSYS variable_list
+    VISIBLE_VSYS variable_list?
+;
+
+svin_interface
+:
+    INTERFACE variable_list?
 ;

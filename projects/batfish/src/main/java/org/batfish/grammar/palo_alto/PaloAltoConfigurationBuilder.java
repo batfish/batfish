@@ -151,8 +151,8 @@ import org.batfish.grammar.palo_alto.PaloAltoParser.Sservgrp_membersContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Ssl_syslogContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Ssls_serverContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sslss_serverContext;
-import org.batfish.grammar.palo_alto.PaloAltoParser.Svi_interfaceContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Svi_visible_vsysContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Svin_interfaceContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Szn_externalContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Szn_layer2Context;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Szn_layer3Context;
@@ -1304,19 +1304,19 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
   }
 
   @Override
-  public void exitSvi_interface(Svi_interfaceContext ctx) {
-    for (Variable_list_itemContext var : ctx.variable_list().variable_list_item()) {
-      String name = getText(var);
-      _currentVsys.getImportedInterfaces().add(name);
-      _configuration.referenceStructure(INTERFACE, name, VSYS_IMPORT_INTERFACE, getLine(var.start));
-    }
-  }
-
-  @Override
   public void exitSvi_visible_vsys(Svi_visible_vsysContext ctx) {
     for (Variable_list_itemContext var : ctx.variable_list().variable_list_item()) {
       String name = getText(var);
       _currentVsys.getImportedVsyses().add(name);
+    }
+  }
+
+  @Override
+  public void exitSvin_interface(Svin_interfaceContext ctx) {
+    for (Variable_list_itemContext var : ctx.variable_list().variable_list_item()) {
+      String name = getText(var);
+      _currentVsys.getImportedInterfaces().add(name);
+      _configuration.referenceStructure(INTERFACE, name, VSYS_IMPORT_INTERFACE, getLine(var.start));
     }
   }
 
