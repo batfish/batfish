@@ -740,10 +740,12 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
 
   @Override
   public void exitSnsgi_interface(Snsgi_interfaceContext ctx) {
-    for (Variable_list_itemContext var : ctx.variable_list().variable_list_item()) {
-      String name = getText(var);
-      _currentVsys.getImportedInterfaces().add(name);
-      _configuration.referenceStructure(INTERFACE, name, IMPORT_INTERFACE, getLine(var.start));
+    if (ctx.variable_list() != null) {
+      for (Variable_list_itemContext var : ctx.variable_list().variable_list_item()) {
+        String name = getText(var);
+        _currentVsys.getImportedInterfaces().add(name);
+        _configuration.referenceStructure(INTERFACE, name, IMPORT_INTERFACE, getLine(var.start));
+      }
     }
   }
 
@@ -764,14 +766,16 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
 
   @Override
   public void exitSnsgzn_layer3(Snsgzn_layer3Context ctx) {
-    for (Variable_list_itemContext var : ctx.variable_list().variable_list_item()) {
-      String name = getText(var);
-      if (_currentVsys.getImportedInterfaces().contains(name)) {
-        _currentZone.getInterfaceNames().add(name);
-      } else {
-        _w.redFlag("Cannot add an interface to a shared-gateway zone before it is imported");
+    if (ctx.variable_list() != null) {
+      for (Variable_list_itemContext var : ctx.variable_list().variable_list_item()) {
+        String name = getText(var);
+        if (_currentVsys.getImportedInterfaces().contains(name)) {
+          _currentZone.getInterfaceNames().add(name);
+        } else {
+          _w.redFlag("Cannot add an interface to a shared-gateway zone before it is imported");
+        }
+        _configuration.referenceStructure(INTERFACE, name, ZONE_INTERFACE, getLine(var.start));
       }
-      _configuration.referenceStructure(INTERFACE, name, ZONE_INTERFACE, getLine(var.start));
     }
   }
 
@@ -983,11 +987,13 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
 
   @Override
   public void exitSnvr_interface(Snvr_interfaceContext ctx) {
-    for (Variable_list_itemContext var : ctx.variable_list().variable_list_item()) {
-      String name = getText(var);
-      _currentVirtualRouter.getInterfaceNames().add(name);
-      _configuration.referenceStructure(
-          INTERFACE, name, VIRTUAL_ROUTER_INTERFACE, getLine(var.start));
+    if (ctx.variable_list() != null) {
+      for (Variable_list_itemContext var : ctx.variable_list().variable_list_item()) {
+        String name = getText(var);
+        _currentVirtualRouter.getInterfaceNames().add(name);
+        _configuration.referenceStructure(
+            INTERFACE, name, VIRTUAL_ROUTER_INTERFACE, getLine(var.start));
+      }
     }
   }
 
@@ -1305,18 +1311,23 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
 
   @Override
   public void exitSvi_visible_vsys(Svi_visible_vsysContext ctx) {
-    for (Variable_list_itemContext var : ctx.variable_list().variable_list_item()) {
-      String name = getText(var);
-      _currentVsys.getImportedVsyses().add(name);
+    if (ctx.variable_list() != null) {
+      for (Variable_list_itemContext var : ctx.variable_list().variable_list_item()) {
+        String name = getText(var);
+        _currentVsys.getImportedVsyses().add(name);
+      }
     }
   }
 
   @Override
   public void exitSvin_interface(Svin_interfaceContext ctx) {
-    for (Variable_list_itemContext var : ctx.variable_list().variable_list_item()) {
-      String name = getText(var);
-      _currentVsys.getImportedInterfaces().add(name);
-      _configuration.referenceStructure(INTERFACE, name, VSYS_IMPORT_INTERFACE, getLine(var.start));
+    if (ctx.variable_list() != null) {
+      for (Variable_list_itemContext var : ctx.variable_list().variable_list_item()) {
+        String name = getText(var);
+        _currentVsys.getImportedInterfaces().add(name);
+        _configuration.referenceStructure(
+            INTERFACE, name, VSYS_IMPORT_INTERFACE, getLine(var.start));
+      }
     }
   }
 
