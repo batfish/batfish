@@ -17,7 +17,7 @@ import org.batfish.datamodel.answers.Schema;
 import org.batfish.datamodel.answers.Schema.Type;
 import org.batfish.datamodel.table.Row.RowBuilder;
 
-/** An abstract that contains properties of various entities in the network */
+/** An abstract class that contains properties of various entities in the network */
 public abstract class PropertySpecifier {
 
   /** A class that describes an individual property and how to get it */

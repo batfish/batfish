@@ -48,7 +48,7 @@ public class NamedStructureSpecifier extends PropertySpecifier {
           .put(
               COMMUNITY_LIST,
               new PropertyDescriptor<>(
-                  Configuration::getCommunityLists, Schema.OBJECT, "Community list"))
+                  Configuration::getCommunityLists, Schema.OBJECT, "BGP community list"))
           .put(
               IKE_PHASE1_KEYS,
               new PropertyDescriptor<>(
@@ -96,13 +96,13 @@ public class NamedStructureSpecifier extends PropertySpecifier {
               new PropertyDescriptor<>(
                   Configuration::getRouteFilterLists,
                   Schema.OBJECT,
-                  "IPv4 route filter list (prefix list, ACLs etc. used to filter routes)"))
+                  "IPv4 route filter list (prefix list, ACL etc. used to filter routes)"))
           .put(
               ROUTE_6_FILTER_LIST,
               new PropertyDescriptor<>(
                   Configuration::getRoute6FilterLists,
                   Schema.OBJECT,
-                  "IPv6 route filter list (prefix list, ACLs etc. used to filter routes)"))
+                  "IPv6 route filter list (prefix list, ACL etc. used to filter routes)"))
           .put(
               ROUTING_POLICY,
               new PropertyDescriptor<>(
@@ -110,7 +110,10 @@ public class NamedStructureSpecifier extends PropertySpecifier {
                   Schema.OBJECT,
                   "Policy for route manipulation (e.g., route maps)"))
           .put(VRF, new PropertyDescriptor<>(Configuration::getVrfs, Schema.OBJECT, "VRF"))
-          .put(ZONE, new PropertyDescriptor<>(Configuration::getZones, Schema.OBJECT, "Zone"))
+          .put(
+              ZONE,
+              new PropertyDescriptor<>(
+                  Configuration::getZones, Schema.OBJECT, "Firewall security zone"))
           .build();
 
   public static final NamedStructureSpecifier ALL = new NamedStructureSpecifier(".*");

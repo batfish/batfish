@@ -236,7 +236,6 @@ public class InterfacePropertySpecifier extends PropertySpecifier {
                   Interface::getRipPassive,
                   Schema.BOOLEAN,
                   "Whether interface is in RIP passive mode"))
-          // skip routing policy
           .put(
               PBR_POLICY_NAME,
               new PropertyDescriptor<>(
