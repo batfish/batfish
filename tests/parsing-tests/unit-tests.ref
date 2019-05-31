@@ -70460,11 +70460,13 @@
             "              VARIABLE:'vsys10')",
             "            (sv_import",
             "              IMPORT:'import'",
-            "              (svi_interface",
-            "                INTERFACE:'interface'",
-            "                (variable_list",
-            "                  (variable_list_item",
-            "                    VARIABLE:'ethernet1/1'))))))))",
+            "              (svi_network",
+            "                NETWORK:'network'",
+            "                (svin_interface",
+            "                  INTERFACE:'interface'",
+            "                  (variable_list",
+            "                    (variable_list_item",
+            "                      VARIABLE:'ethernet1/1')))))))))",
             "    NEWLINE:'\\n')",
             "  (set_line",
             "    SET:'set'",
@@ -70481,11 +70483,13 @@
             "              VARIABLE:'vsys10')",
             "            (sv_import",
             "              IMPORT:'import'",
-            "              (svi_interface",
-            "                INTERFACE:'interface'",
-            "                (variable_list",
-            "                  (variable_list_item",
-            "                    VARIABLE:'ethernet1/2'))))))))",
+            "              (svi_network",
+            "                NETWORK:'network'",
+            "                (svin_interface",
+            "                  INTERFACE:'interface'",
+            "                  (variable_list",
+            "                    (variable_list_item",
+            "                      VARIABLE:'ethernet1/2')))))))))",
             "    NEWLINE:'\\n')",
             "  (set_line",
             "    SET:'set'",
@@ -70502,11 +70506,13 @@
             "              VARIABLE:'vsys10')",
             "            (sv_import",
             "              IMPORT:'import'",
-            "              (svi_interface",
-            "                INTERFACE:'interface'",
-            "                (variable_list",
-            "                  (variable_list_item",
-            "                    VARIABLE:'ethernet1/3'))))))))",
+            "              (svi_network",
+            "                NETWORK:'network'",
+            "                (svin_interface",
+            "                  INTERFACE:'interface'",
+            "                  (variable_list",
+            "                    (variable_list_item",
+            "                      VARIABLE:'ethernet1/3')))))))))",
             "    NEWLINE:'\\n')",
             "  (set_line",
             "    SET:'set'",
@@ -70523,11 +70529,13 @@
             "              VARIABLE:'vsys10')",
             "            (sv_import",
             "              IMPORT:'import'",
-            "              (svi_interface",
-            "                INTERFACE:'interface'",
-            "                (variable_list",
-            "                  (variable_list_item",
-            "                    VARIABLE:'ethernet1/4'))))))))",
+            "              (svi_network",
+            "                NETWORK:'network'",
+            "                (svin_interface",
+            "                  INTERFACE:'interface'",
+            "                  (variable_list",
+            "                    (variable_list_item",
+            "                      VARIABLE:'ethernet1/4')))))))))",
             "    NEWLINE:'\\n')",
             "  (set_line",
             "    SET:'set'",
@@ -82019,37 +82027,37 @@
           "zone" : {
             "zl2~vsys10" : {
               "definitionLines" : [
-                33,
-                34,
                 35,
-                36
+                36,
+                37,
+                38
               ],
               "numReferrers" : 0
             },
             "zl3~vsys10" : {
               "definitionLines" : [
-                33,
-                39,
-                40,
-                41
+                35,
+                41,
+                42,
+                43
               ],
               "numReferrers" : 0
             },
             "ztap~vsys10" : {
               "definitionLines" : [
-                33,
-                44,
-                45,
-                46
+                35,
+                46,
+                47,
+                48
               ],
               "numReferrers" : 0
             },
             "zvirtual-wire~vsys10" : {
               "definitionLines" : [
-                33,
-                49,
-                50,
-                51
+                35,
+                51,
+                52,
+                53
               ],
               "numReferrers" : 0
             }
@@ -87482,34 +87490,34 @@
           "interface" : {
             "ethernet1/1" : {
               "vsys import interface" : [
-                31
+                32
               ],
               "zone network layer3" : [
-                36
+                38
               ]
             },
             "ethernet1/2" : {
               "vsys import interface" : [
-                31
+                32
               ],
               "zone network layer3" : [
-                41
+                43
               ]
             },
             "ethernet1/3" : {
               "vsys import interface" : [
-                31
+                32
               ],
               "zone network layer3" : [
-                46
+                48
               ]
             },
             "ethernet1/4" : {
               "vsys import interface" : [
-                31
+                32
               ],
               "zone network layer3" : [
-                51
+                53
               ]
             }
           }

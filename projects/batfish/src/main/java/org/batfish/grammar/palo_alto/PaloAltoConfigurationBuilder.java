@@ -1338,7 +1338,6 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
       for (Variable_list_itemContext var : ctx.variable_list().variable_list_item()) {
         String name = getText(var);
         _currentZone.getExternalNames().add(name);
-        _configuration.referenceStructure(INTERFACE, name, ZONE_INTERFACE, getLine(var.start));
       }
     }
   }
