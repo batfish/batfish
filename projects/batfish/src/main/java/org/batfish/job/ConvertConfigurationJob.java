@@ -104,27 +104,30 @@ public class ConvertConfigurationJob extends BatfishJob<ConvertConfigurationResu
     for (Interface iface : c.getAllInterfaces().values()) {
       String ifaceName = iface.getName();
       String outName = iface.getOutgoingFilterName();
-      String inName = iface.getIncomingFilterName();
-      String postTransformName = iface.getPostTransformationIncomingFilterName();
-      String preTransformName = iface.getPreTransformationOutgoingFilterName();
       if (outName != null && !c.getIpAccessLists().containsKey(outName)) {
         throw new BatfishException(
             String.format(
                 "IpAccessList map is missing filter %s: outgoing filter for interface %s",
                 outName, ifaceName));
       }
+
+      String inName = iface.getIncomingFilterName();
       if (inName != null && !c.getIpAccessLists().containsKey(inName)) {
         throw new BatfishException(
             String.format(
                 "IpAccessList map is missing filter %s: incoming filter for interface %s",
                 inName, ifaceName));
       }
+
+      String postTransformName = iface.getPostTransformationIncomingFilterName();
       if (postTransformName != null && !c.getIpAccessLists().containsKey(postTransformName)) {
         throw new BatfishException(
             String.format(
                 "IpAccessList map is missing filter %s: post transformation incoming filter for interface %s",
                 postTransformName, ifaceName));
       }
+
+      String preTransformName = iface.getPreTransformationOutgoingFilterName();
       if (preTransformName != null && !c.getIpAccessLists().containsKey(preTransformName)) {
         throw new BatfishException(
             String.format(
