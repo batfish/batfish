@@ -18,6 +18,7 @@ import java.io.IOException;
 import java.util.Map;
 import java.util.SortedMap;
 import net.sf.javabdd.BDD;
+import org.batfish.bddreachability.transition.Transition;
 import org.batfish.common.bdd.BDDPacket;
 import org.batfish.common.bdd.BDDSourceManager;
 import org.batfish.datamodel.Configuration;
@@ -57,7 +58,7 @@ public class BDDReachabilityAnalysisFactorySourcesTest {
   @ClassRule public static TemporaryFolder temp = new TemporaryFolder();
 
   private static final BDDPacket pkt = new BDDPacket();
-  private static Map<StateExpr, Map<StateExpr, Edge>> edges;
+  private static Map<StateExpr, Map<StateExpr, Transition>> edges;
   private static BDDReachabilityAnalysisFactory factory;
   private static BDD ingressIfaceSrcIpBdd;
   private static BDD matchSrcInterfaceBdd;

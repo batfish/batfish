@@ -1,8 +1,8 @@
 package org.batfish.bddreachability;
 
-import static org.batfish.bddreachability.BDDReachabilityAnalysis.fixpoint;
-import static org.batfish.bddreachability.BDDReachabilityAnalysis.toIngressLocation;
 import static org.batfish.bddreachability.BDDReachabilityUtils.computeForwardEdgeTable;
+import static org.batfish.bddreachability.BDDReachabilityUtils.fixpoint;
+import static org.batfish.bddreachability.BDDReachabilityUtils.toIngressLocation;
 import static org.batfish.bddreachability.TestNetwork.DST_PREFIX_1;
 import static org.batfish.bddreachability.TestNetwork.DST_PREFIX_2;
 import static org.batfish.bddreachability.TestNetwork.LINK_1_NETWORK;
