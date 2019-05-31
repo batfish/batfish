@@ -43,7 +43,7 @@ public final class Application implements Serializable {
 
   @Nonnull private final String _name;
 
-  public Application(String name) {
+  private Application(String name) {
     _name = name;
   }
 
