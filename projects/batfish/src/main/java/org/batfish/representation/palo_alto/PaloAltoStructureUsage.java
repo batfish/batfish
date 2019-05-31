@@ -15,6 +15,7 @@ public enum PaloAltoStructureUsage implements StructureUsage {
   SERVICE_GROUP_MEMBER("service-group members"),
   STATIC_ROUTE_INTERFACE("static-route interface"),
   VIRTUAL_ROUTER_INTERFACE("virtual-router interface"),
+  VSYS_IMPORT_INTERFACE("vsys import interface"),
   ZONE_INTERFACE("zone network layer3");
 
   private final String _description;

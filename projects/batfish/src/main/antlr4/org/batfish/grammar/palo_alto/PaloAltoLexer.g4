@@ -356,6 +356,11 @@ IPV6
     'ipv6'
 ;
 
+LAYER2
+:
+    'layer2'
+;
+
 LAYER3
 :
     'layer3'
@@ -686,6 +691,11 @@ TAG
     'tag'
 ;
 
+TAP
+:
+    'tap'
+;
+
 TCP
 :
     'tcp'
@@ -744,6 +754,11 @@ UPDATE_SERVER
 VIRTUAL_ROUTER
 :
     'virtual-router'
+;
+
+VIRTUAL_WIRE
+:
+    'virtual-wire'
 ;
 
 VISIBLE_VSYS
