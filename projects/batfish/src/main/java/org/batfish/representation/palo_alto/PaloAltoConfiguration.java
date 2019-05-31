@@ -686,6 +686,14 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
         PaloAltoStructureUsage.RULE_TO_ZONE);
 
     // Handle marking for structures that may exist in one of a couple namespaces
+    // Handle application objects/groups that may overlap with built-in names
+    markAbstractStructureFromUnknownNamespace(
+        PaloAltoStructureType.APPLICATION_GROUP_OR_APPLICATION_OR_NONE,
+        ImmutableList.of(
+            PaloAltoStructureType.APPLICATION, PaloAltoStructureType.APPLICATION_GROUP),
+        true,
+        PaloAltoStructureUsage.RULE_APPLICATION);
+
     // Handle service objects/groups that may overlap with built-in names
     markAbstractStructureFromUnknownNamespace(
         PaloAltoStructureType.SERVICE_OR_SERVICE_GROUP_OR_NONE,

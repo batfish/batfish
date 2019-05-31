@@ -421,6 +421,27 @@ public class PaloAltoGrammarTest {
   }
 
   @Test
+  public void testApplicationsBuiltinReference() throws IOException {
+    String hostname = "applications-builtin";
+    String filename = "configs/" + hostname;
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    ConvertConfigurationAnswerElement ccae =
+        batfish.loadConvertConfigurationAnswerElementOrReparse();
+
+    String app1Name = computeObjectName(DEFAULT_VSYS_NAME, "ssh");
+
+    // Confirm reference count is correct for defined structure that overwrites builtin
+    assertThat(ccae, hasNumReferrers(filename, PaloAltoStructureType.APPLICATION, app1Name, 1));
+
+    // Confirm using builtin does not produce undefined reference
+    assertThat(
+        ccae,
+        not(
+            hasUndefinedReference(
+                filename, APPLICATION_GROUP_OR_APPLICATION, "ssl", RULE_APPLICATION)));
+  }
+
+  @Test
   public void testDnsServerInvalid() throws IOException {
     _thrown.expect(BatfishException.class);
     // This should throw a BatfishException due to a malformed IP address
