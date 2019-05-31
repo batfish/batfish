@@ -103,19 +103,34 @@ public class ConvertConfigurationJob extends BatfishJob<ConvertConfigurationResu
   private static void validateAssignedAcls(Configuration c) {
     for (Interface iface : c.getAllInterfaces().values()) {
       String ifaceName = iface.getName();
-      assertAssignedAclInMap(c, iface.getOutgoingFilterName(), ifaceName);
-      assertAssignedAclInMap(c, iface.getIncomingFilterName(), ifaceName);
-      assertAssignedAclInMap(c, iface.getPostTransformationIncomingFilterName(), ifaceName);
-      assertAssignedAclInMap(c, iface.getPreTransformationOutgoingFilterName(), ifaceName);
-    }
-  }
-
-  private static void assertAssignedAclInMap(Configuration c, String name, String interfaceName) {
-    if (!c.getIpAccessLists().containsKey(name)) {
-      throw new BatfishException(
-          String.format(
-              "IpAccessList map is missing filter %s, which is assigned to interface %s",
-              name, interfaceName));
+      String outName = iface.getOutgoingFilterName();
+      String inName = iface.getIncomingFilterName();
+      String postTransformName = iface.getPostTransformationIncomingFilterName();
+      String preTransformName = iface.getPreTransformationOutgoingFilterName();
+      if (outName != null && !c.getIpAccessLists().containsKey(outName)) {
+        throw new BatfishException(
+            String.format(
+                "IpAccessList map is missing filter %s: outgoing filter for interface %s",
+                outName, ifaceName));
+      }
+      if (inName != null && !c.getIpAccessLists().containsKey(inName)) {
+        throw new BatfishException(
+            String.format(
+                "IpAccessList map is missing filter %s: incoming filter for interface %s",
+                inName, ifaceName));
+      }
+      if (postTransformName != null && !c.getIpAccessLists().containsKey(postTransformName)) {
+        throw new BatfishException(
+            String.format(
+                "IpAccessList map is missing filter %s: post transformation incoming filter for interface %s",
+                postTransformName, ifaceName));
+      }
+      if (preTransformName != null && !c.getIpAccessLists().containsKey(preTransformName)) {
+        throw new BatfishException(
+            String.format(
+                "IpAccessList map is missing filter %s: pre transformation outgoing filter for interface %s",
+                preTransformName, ifaceName));
+      }
     }
   }
 
