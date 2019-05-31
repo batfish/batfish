@@ -21,6 +21,7 @@ ss_common
     s_address
     | s_address_group
     | s_application
+    | s_application_group
     | s_service
     | s_service_group
     | ss_log_settings

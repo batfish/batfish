@@ -756,6 +756,7 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
         ImmutableList.of(
             PaloAltoStructureType.APPLICATION, PaloAltoStructureType.APPLICATION_GROUP),
         true,
+        PaloAltoStructureUsage.APPLICATION_GROUP_MEMBERS,
         PaloAltoStructureUsage.RULE_APPLICATION);
 
     // Handle service objects/groups that may overlap with built-in names
@@ -793,6 +794,7 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
         PaloAltoStructureType.APPLICATION_GROUP_OR_APPLICATION,
         ImmutableList.of(
             PaloAltoStructureType.APPLICATION_GROUP, PaloAltoStructureType.APPLICATION),
+        PaloAltoStructureUsage.APPLICATION_GROUP_MEMBERS,
         PaloAltoStructureUsage.RULE_APPLICATION);
 
     return ImmutableList.of(_c);

@@ -29692,6 +29692,14 @@
           }
         }
       },
+      "paloalto_applications" : {
+        "configurationFormat" : "PALO_ALTO_NESTED",
+        "name" : "paloalto_applications",
+        "defaultCrossZoneAction" : "DENY",
+        "defaultInboundAction" : "PERMIT",
+        "deviceType" : "SWITCH",
+        "vendorFamily" : { }
+      },
       "paloalto_interfaces" : {
         "configurationFormat" : "PALO_ALTO_NESTED",
         "name" : "paloalto_interfaces",

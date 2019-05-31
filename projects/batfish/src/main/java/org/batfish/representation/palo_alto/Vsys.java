@@ -23,6 +23,8 @@ public final class Vsys implements Serializable {
 
   private final SortedMap<String, Application> _applications;
 
+  private final SortedMap<String, ApplicationGroup> _applicationGroups;
+
   private String _displayName;
 
   private final Set<String> _importedInterfaces;
@@ -51,6 +53,7 @@ public final class Vsys implements Serializable {
     _addressGroups = new TreeMap<>();
     _addressObjects = new TreeMap<>();
     _applications = new TreeMap<>();
+    _applicationGroups = new TreeMap<>();
     _importedInterfaces = new HashSet<>();
     _importedVsyses = new HashSet<>();
     _rules = new LinkedHashMap<>();
@@ -75,6 +78,11 @@ public final class Vsys implements Serializable {
   /** Returns a map of application name to {@link Application} object */
   public SortedMap<String, Application> getApplications() {
     return _applications;
+  }
+
+  /** Returns a map of application group name to {@link ApplicationGroup}. */
+  public SortedMap<String, ApplicationGroup> getApplicationGroups() {
+    return _applicationGroups;
   }
 
   /** Returns the display name for this vsys. */

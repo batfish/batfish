@@ -1,0 +1,24 @@
+!RANCID-CONTENT-TYPE: paloalto
+config {
+  devices {
+    localhost.localdomain {
+      deviceconfig {
+        system {
+          hostname "paloalto_applications";
+        }
+      }
+    }
+  }
+}
+policy {
+  panorama {
+    application-group {
+      SSH_OR_SSL {
+        members [ ssh ssl];
+      }
+      EMPTY {
+        members;
+      }
+    }
+  }
+}
