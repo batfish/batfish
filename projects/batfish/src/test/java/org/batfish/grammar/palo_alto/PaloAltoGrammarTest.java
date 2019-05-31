@@ -1333,11 +1333,12 @@ public class PaloAltoGrammarTest {
 
     // Make sure the external zones are correctly populated with the specified external names
     Zone z1 = zones.get("ZONE1");
-    Zone z2 = zones.get("ZONE2");
     assertThat(z1.getType(), equalTo(EXTERNAL));
+    assertThat(z1.getExternalNames(), containsInAnyOrder("vsys1", "sg1"));
+
+    Zone z2 = zones.get("ZONE2");
     assertThat(z2.getType(), equalTo(EXTERNAL));
-    assertThat(zones.get("ZONE1").getExternalNames(), containsInAnyOrder("vsys1", "sg1"));
-    assertThat(zones.get("ZONE2").getExternalNames(), contains("vsys2"));
+    assertThat(z2.getExternalNames(), contains("vsys2"));
   }
 
   @Test

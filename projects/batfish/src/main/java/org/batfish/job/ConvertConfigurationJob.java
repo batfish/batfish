@@ -14,6 +14,7 @@ import org.batfish.config.Settings;
 import org.batfish.datamodel.AsPathAccessList;
 import org.batfish.datamodel.CommunityList;
 import org.batfish.datamodel.Configuration;
+import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Ip6AccessList;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.Route6FilterList;
@@ -95,6 +96,49 @@ public class ConvertConfigurationJob extends BatfishJob<ConvertConfigurationResu
         verifyAndToImmutableMap(c.getRouteFilterLists(), RouteFilterList::getName, w));
     c.setRoute6FilterLists(
         verifyAndToImmutableMap(c.getRoute6FilterLists(), Route6FilterList::getName, w));
+    removeInvalidAcls(c, w);
+  }
+
+  /** Confirm assigned ACLs (e.g. interface's outgoing ACL) exist in config's IpAccessList map */
+  private static void removeInvalidAcls(Configuration c, Warnings w) {
+    for (Interface iface : c.getAllInterfaces().values()) {
+      String ifaceName = iface.getName();
+      String outName = iface.getOutgoingFilterName();
+      if (outName != null && !c.getIpAccessLists().containsKey(outName)) {
+        w.redFlag(
+            String.format(
+                "IpAccessList map is missing filter %s: outgoing filter for interface %s",
+                outName, ifaceName));
+        iface.setOutgoingFilter((IpAccessList) null);
+      }
+
+      String inName = iface.getIncomingFilterName();
+      if (inName != null && !c.getIpAccessLists().containsKey(inName)) {
+        w.redFlag(
+            String.format(
+                "IpAccessList map is missing filter %s: incoming filter for interface %s",
+                inName, ifaceName));
+        iface.setIncomingFilter(null);
+      }
+
+      String postTransformName = iface.getPostTransformationIncomingFilterName();
+      if (postTransformName != null && !c.getIpAccessLists().containsKey(postTransformName)) {
+        w.redFlag(
+            String.format(
+                "IpAccessList map is missing filter %s: post transformation incoming filter for interface %s",
+                postTransformName, ifaceName));
+        iface.setPostTransformationIncomingFilter((IpAccessList) null);
+      }
+
+      String preTransformName = iface.getPreTransformationOutgoingFilterName();
+      if (preTransformName != null && !c.getIpAccessLists().containsKey(preTransformName)) {
+        w.redFlag(
+            String.format(
+                "IpAccessList map is missing filter %s: pre transformation outgoing filter for interface %s",
+                preTransformName, ifaceName));
+        iface.setPreTransformationOutgoingFilter((IpAccessList) null);
+      }
+    }
   }
 
   @Override
