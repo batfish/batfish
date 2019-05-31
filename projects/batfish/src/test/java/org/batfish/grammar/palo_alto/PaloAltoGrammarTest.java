@@ -851,6 +851,18 @@ public class PaloAltoGrammarTest {
             PaloAltoStructureType.ZONE,
             zoneUndefName,
             PaloAltoStructureUsage.RULE_FROM_ZONE));
+
+    // Confirm builtins do not show up as undefined references
+    assertThat(
+        ccae,
+        not(
+            hasUndefinedReference(
+                filename, SERVICE_OR_SERVICE_GROUP, ServiceBuiltIn.ANY.getName())));
+    assertThat(
+        ccae,
+        not(
+            hasUndefinedReference(
+                filename, SERVICE_OR_SERVICE_GROUP, ServiceBuiltIn.APPLICATION_DEFAULT.getName())));
   }
 
   @Test
