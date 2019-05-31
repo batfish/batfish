@@ -1074,7 +1074,8 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
       String uniqueName = computeObjectName(_currentVsys.getName(), name);
       if (name.equals(CATCHALL_APPLICATION_NAME)
           || ApplicationBuiltIn.FOR_NAME_MAP.containsKey(name)) {
-        // App could be builtin or user defined (overwritten builtin)
+        // App could be builtin (should not generate undef refs)
+        // or user defined which should generate references (overwritten builtin)
         _configuration.referenceStructure(
             APPLICATION_GROUP_OR_APPLICATION_OR_NONE,
             uniqueName,
