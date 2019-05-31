@@ -1,0 +1,6 @@
+set deviceconfig system hostname applications-builtin
+
+set vsys vsys1 application ssh description "overwrite builtin app"
+
+set vsys vsys1 rulebase security rules rule1 application ssl
+set vsys vsys1 rulebase security rules rule2 application ssh
