@@ -33,8 +33,11 @@ sni_ethernet
     ETHERNET name = variable
     (
         if_common
+        | snie_layer2
         | snie_layer3
         | snie_link_state
+        | snie_tap
+        | snie_virtual_wire
     )
 ;
 
@@ -64,13 +67,18 @@ sni_vlan
     )?
 ;
 
+snie_layer2
+:
+    LAYER2
+;
+
 snie_layer3
 :
     LAYER3
     (
         sniel3_common
         | sniel3_units
-    )
+    )?
 ;
 
 snie_link_state
@@ -81,6 +89,16 @@ snie_link_state
         | DOWN
         | UP
     )
+;
+
+snie_tap
+:
+    TAP
+;
+
+snie_virtual_wire
+:
+    VIRTUAL_WIRE
 ;
 
 // Common syntax between layer3 interfaces and subinterfaces (units)

@@ -21,8 +21,14 @@ sv_import
 :
     IMPORT
     (
-        svi_visible_vsys
+        svi_interface
+        | svi_visible_vsys
     )?
+;
+
+svi_interface
+:
+    INTERFACE variable_list
 ;
 
 svi_visible_vsys
