@@ -14,6 +14,7 @@ import org.batfish.config.Settings;
 import org.batfish.datamodel.AsPathAccessList;
 import org.batfish.datamodel.CommunityList;
 import org.batfish.datamodel.Configuration;
+import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Ip6AccessList;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.Route6FilterList;
@@ -95,6 +96,27 @@ public class ConvertConfigurationJob extends BatfishJob<ConvertConfigurationResu
         verifyAndToImmutableMap(c.getRouteFilterLists(), RouteFilterList::getName, w));
     c.setRoute6FilterLists(
         verifyAndToImmutableMap(c.getRoute6FilterLists(), Route6FilterList::getName, w));
+    validateAssignedAcls(c);
+  }
+
+  /** Confirm assigned ACLs (e.g. interface's outgoing ACL) exist in config's IpAccessList map */
+  private static void validateAssignedAcls(Configuration c) {
+    for (Interface iface : c.getAllInterfaces().values()) {
+      String ifaceName = iface.getName();
+      assertAssignedAclInMap(c, iface.getOutgoingFilterName(), ifaceName);
+      assertAssignedAclInMap(c, iface.getIncomingFilterName(), ifaceName);
+      assertAssignedAclInMap(c, iface.getPostTransformationIncomingFilterName(), ifaceName);
+      assertAssignedAclInMap(c, iface.getPreTransformationOutgoingFilterName(), ifaceName);
+    }
+  }
+
+  private static void assertAssignedAclInMap(Configuration c, String name, String interfaceName) {
+    if (!c.getIpAccessLists().containsKey(name)) {
+      throw new BatfishException(
+          String.format(
+              "IpAccessList map is missing filter %s, which is assigned to interface %s",
+              name, interfaceName));
+    }
   }
 
   @Override
