@@ -55,12 +55,12 @@ public class InterfacePropertySpecifier extends PropertySpecifier {
   public static final String OSPF_PASSIVE = "OSPF_Passive";
   public static final String OSPF_POINT_TO_POINT = "OSPF_Point_To_Point";
   public static final String OUTGOING_FILTER_NAME = "Outgoing_Filter_Name";
+  public static final String PBR_POLICY_NAME = "PBR_Policy_Name";
   public static final String PRIMARY_ADDRESS = "Primary_Address";
   public static final String PRIMARY_NETWORK = "Primary_Network";
   public static final String PROXY_ARP = "Proxy_ARP";
   public static final String RIP_ENABLED = "Rip_Enabled";
   public static final String RIP_PASSIVE = "Rip_Passive";
-  public static final String ROUTING_POLICY_NAME = "PBR_Policy_Name";
   public static final String SPANNING_TREE_PORTFAST = "Spanning_Tree_Portfast";
   public static final String SPEED = "Speed";
   public static final String SWITCHPORT = "Switchport";
@@ -238,7 +238,7 @@ public class InterfacePropertySpecifier extends PropertySpecifier {
                   "Whether interface is in RIP passive mode"))
           // skip routing policy
           .put(
-              ROUTING_POLICY_NAME,
+              PBR_POLICY_NAME,
               new PropertyDescriptor<>(
                   Interface::getRoutingPolicyName,
                   Schema.STRING,

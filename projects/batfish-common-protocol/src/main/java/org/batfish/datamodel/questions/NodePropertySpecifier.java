@@ -57,7 +57,7 @@ public class NodePropertySpecifier extends PropertySpecifier {
   public static final String LOGGING_SOURCE_INTERFACE = "Logging_Source_Interface";
   public static final String NTP_SERVERS = "NTP_Servers";
   public static final String NTP_SOURCE_INTERFACE = "NTP_Source_Interface";
-  public static final String PACKET_POLICIES = "PBR_Policies";
+  public static final String PBR_POLICIES = "PBR_Policies";
   public static final String ROUTE_FILTER_LISTS = "Route_Filter_Lists";
   public static final String ROUTE_6_FILTER_LISTS = "Route6_Filter_Lists";
   public static final String ROUTING_POLICIES = "Routing_Policies";
@@ -224,7 +224,7 @@ public class NodePropertySpecifier extends PropertySpecifier {
                   Schema.STRING,
                   "Source interface for communicating with NTP servers"))
           .put(
-              PACKET_POLICIES,
+              PBR_POLICIES,
               new PropertyDescriptor<>(
                   Configuration::getPacketPolicies,
                   Schema.set(Schema.STRING),
