@@ -12,6 +12,7 @@ import static org.batfish.representation.palo_alto.PaloAltoStructureType.ADDRESS
 import static org.batfish.representation.palo_alto.PaloAltoStructureType.ADDRESS_GROUP_OR_ADDRESS_OBJECT_OR_NONE;
 import static org.batfish.representation.palo_alto.PaloAltoStructureType.ADDRESS_OBJECT;
 import static org.batfish.representation.palo_alto.PaloAltoStructureType.APPLICATION;
+import static org.batfish.representation.palo_alto.PaloAltoStructureType.APPLICATION_GROUP;
 import static org.batfish.representation.palo_alto.PaloAltoStructureType.APPLICATION_GROUP_OR_APPLICATION;
 import static org.batfish.representation.palo_alto.PaloAltoStructureType.APPLICATION_GROUP_OR_APPLICATION_OR_NONE;
 import static org.batfish.representation.palo_alto.PaloAltoStructureType.INTERFACE;
@@ -22,6 +23,7 @@ import static org.batfish.representation.palo_alto.PaloAltoStructureType.SERVICE
 import static org.batfish.representation.palo_alto.PaloAltoStructureType.SHARED_GATEWAY;
 import static org.batfish.representation.palo_alto.PaloAltoStructureType.ZONE;
 import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.ADDRESS_GROUP_STATIC;
+import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.APPLICATION_GROUP_MEMBERS;
 import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.IMPORT_INTERFACE;
 import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.RULEBASE_SERVICE;
 import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.RULE_APPLICATION;
@@ -95,6 +97,8 @@ import org.batfish.grammar.palo_alto.PaloAltoParser.Sag_descriptionContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sag_dynamicContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sag_staticContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sapp_descriptionContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Sappg_definitionContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Sappg_membersContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sds_default_gatewayContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sds_hostnameContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sds_ip_addressContext;
@@ -165,6 +169,7 @@ import org.batfish.representation.palo_alto.AddressGroup;
 import org.batfish.representation.palo_alto.AddressObject;
 import org.batfish.representation.palo_alto.Application;
 import org.batfish.representation.palo_alto.ApplicationBuiltIn;
+import org.batfish.representation.palo_alto.ApplicationGroup;
 import org.batfish.representation.palo_alto.CryptoProfile;
 import org.batfish.representation.palo_alto.CryptoProfile.Type;
 import org.batfish.representation.palo_alto.Interface;
@@ -193,6 +198,8 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
   private AddressObject _currentAddressObject;
 
   private Application _currentApplication;
+
+  private ApplicationGroup _currentApplicationGroup;
 
   private CryptoProfile _currentCrytoProfile;
 
@@ -587,6 +594,33 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
   @Override
   public void exitS_application(S_applicationContext ctx) {
     _currentApplication = null;
+  }
+
+  @Override
+  public void enterSappg_definition(Sappg_definitionContext ctx) {
+    String name = ctx.name.getText();
+    _currentApplicationGroup =
+        _currentVsys.getApplicationGroups().computeIfAbsent(name, ApplicationGroup::new);
+    // Use constructed name so same-named defs across vsys are unique
+    String uniqueName = computeObjectName(_currentVsys.getName(), name);
+    defineStructure(APPLICATION_GROUP, uniqueName, ctx);
+  }
+
+  @Override
+  public void exitSappg_definition(Sappg_definitionContext ctx) {
+    _currentApplicationGroup = null;
+  }
+
+  @Override
+  public void exitSappg_members(Sappg_membersContext ctx) {
+    if (ctx.variable_list() != null) {
+      for (Variable_list_itemContext var : ctx.variable_list().variable_list_item()) {
+        String name = getText(var);
+        _currentApplicationGroup.getMembers().add(name);
+        String uniqueName = computeObjectName(_currentVsys.getName(), name);
+        referenceApplicationLike(name, uniqueName, APPLICATION_GROUP_MEMBERS, var);
+      }
+    }
   }
 
   @Override
@@ -1067,26 +1101,28 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
     }
   }
 
+  private void referenceApplicationLike(
+      String name, String uniqueName, PaloAltoStructureUsage usage, ParserRuleContext var) {
+    PaloAltoStructureType type =
+        name.equals(CATCHALL_APPLICATION_NAME) || ApplicationBuiltIn.FOR_NAME_MAP.containsKey(name)
+            /*
+             * Since the name matches a builtin, we'll add a reference if the user defined
+             * over the builtin, but it's okay if they did not.
+             */
+            ? APPLICATION_GROUP_OR_APPLICATION_OR_NONE
+            /* This is not a pre-defined name, the application must be defined in config. */
+            : APPLICATION_GROUP_OR_APPLICATION;
+    _configuration.referenceStructure(type, uniqueName, usage, getLine(var.start));
+  }
+
   @Override
   public void exitSrs_application(Srs_applicationContext ctx) {
     for (Variable_list_itemContext var : ctx.variable_list().variable_list_item()) {
       String name = getText(var);
+      _currentRule.getApplications().add(name);
       // Use constructed object name so same-named refs across vsys are unique
       String uniqueName = computeObjectName(_currentVsys.getName(), name);
-      if (name.equals(CATCHALL_APPLICATION_NAME)
-          || ApplicationBuiltIn.FOR_NAME_MAP.containsKey(name)) {
-        // App could be builtin (should not generate undef refs)
-        // or user defined which should generate references (overwritten builtin)
-        _configuration.referenceStructure(
-            APPLICATION_GROUP_OR_APPLICATION_OR_NONE,
-            uniqueName,
-            RULE_APPLICATION,
-            getLine(var.start));
-      } else {
-        _configuration.referenceStructure(
-            APPLICATION_GROUP_OR_APPLICATION, uniqueName, RULE_APPLICATION, getLine(var.start));
-      }
-      _currentRule.getApplications().add(name);
+      referenceApplicationLike(name, uniqueName, RULE_APPLICATION, var);
     }
   }
 

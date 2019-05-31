@@ -71,6 +71,11 @@ APPLICATION
     'application'
 ;
 
+APPLICATION_GROUP
+:
+    'application-group'
+;
+
 AUTHENTICATION
 :
     'authentication'

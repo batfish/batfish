@@ -808,6 +808,9 @@
         "ospf-disable" : [
           "configs/juniper_ospf_disable"
         ],
+        "paloalto_applications" : [
+          "configs/palo_alto/applications"
+        ],
         "paloalto_interfaces" : [
           "configs/palo_alto/interfaces"
         ],
@@ -1166,6 +1169,7 @@
         "configs/nxos_route_map_continue" : "PASSED",
         "configs/nxos_system" : "PASSED",
         "configs/openflow" : "PASSED",
+        "configs/palo_alto/applications" : "PASSED",
         "configs/palo_alto/interfaces" : "PASSED",
         "configs/palo_alto/policy" : "PASSED",
         "configs/palo_alto/zones" : "PASSED",
@@ -70127,6 +70131,84 @@
             "  EOF:<EOF>)"
           ]
         },
+        "configs/palo_alto/applications" : {
+          "sentences" : [
+            "(palo_alto_configuration",
+            "  (set_line",
+            "    SET:'set'",
+            "    (set_line_tail",
+            "      (set_line_config_devices",
+            "        CONFIG:'config'",
+            "        DEVICES:'devices'",
+            "        name = (variable",
+            "          VARIABLE:'localhost.localdomain')",
+            "        (statement_config_devices",
+            "          (s_deviceconfig",
+            "            DEVICECONFIG:'deviceconfig'",
+            "            (sd_system",
+            "              SYSTEM:'system'",
+            "              (sds_hostname",
+            "                HOSTNAME:'hostname'",
+            "                name = (variable",
+            "                  DOUBLE_QUOTED_STRING:'\"paloalto_applications\"')))))))",
+            "    NEWLINE:'\\n')",
+            "  (set_line",
+            "    SET:'set'",
+            "    (set_line_tail",
+            "      (s_policy",
+            "        POLICY:'policy'",
+            "        (s_policy_panorama",
+            "          PANORAMA:'panorama'",
+            "          (ss_common",
+            "            (s_application_group",
+            "              APPLICATION_GROUP:'application-group'",
+            "              (sappg_definition",
+            "                name = (variable",
+            "                  VARIABLE:'SSH_OR_SSL')",
+            "                (sappg_members",
+            "                  MEMBERS:'members'",
+            "                  (variable_list",
+            "                    (variable_list_item",
+            "                      VARIABLE:'ssh')))))))))",
+            "    NEWLINE:'\\n')",
+            "  (set_line",
+            "    SET:'set'",
+            "    (set_line_tail",
+            "      (s_policy",
+            "        POLICY:'policy'",
+            "        (s_policy_panorama",
+            "          PANORAMA:'panorama'",
+            "          (ss_common",
+            "            (s_application_group",
+            "              APPLICATION_GROUP:'application-group'",
+            "              (sappg_definition",
+            "                name = (variable",
+            "                  VARIABLE:'SSH_OR_SSL')",
+            "                (sappg_members",
+            "                  MEMBERS:'members'",
+            "                  (variable_list",
+            "                    (variable_list_item",
+            "                      VARIABLE:'ssl')))))))))",
+            "    NEWLINE:'\\n')",
+            "  (set_line",
+            "    SET:'set'",
+            "    (set_line_tail",
+            "      (s_policy",
+            "        POLICY:'policy'",
+            "        (s_policy_panorama",
+            "          PANORAMA:'panorama'",
+            "          (ss_common",
+            "            (s_application_group",
+            "              APPLICATION_GROUP:'application-group'",
+            "              (sappg_definition",
+            "                name = (variable",
+            "                  VARIABLE:'EMPTY')",
+            "                (sappg_members",
+            "                  MEMBERS:'members')))))))",
+            "    NEWLINE:'\\n')",
+            "  EOF:<EOF>)"
+          ]
+        },
         "configs/palo_alto/interfaces" : {
           "sentences" : [
             "(palo_alto_configuration",
@@ -75822,6 +75904,7 @@
         "nxos_system" : "PASSED",
         "openflow" : "PASSED",
         "ospf-disable" : "PASSED",
+        "paloalto_applications" : "PASSED",
         "paloalto_interfaces" : "WARNINGS",
         "paloalto_policy" : "PASSED",
         "paloalto_zones" : "WARNINGS",
@@ -81922,6 +82005,24 @@
         },
         "configs/nxos_system" : { },
         "configs/openflow" : { },
+        "configs/palo_alto/applications" : {
+          "application-group" : {
+            "EMPTY~panorama" : {
+              "definitionLines" : [
+                19,
+                20
+              ],
+              "numReferrers" : 0
+            },
+            "SSH_OR_SSL~panorama" : {
+              "definitionLines" : [
+                16,
+                17
+              ],
+              "numReferrers" : 0
+            }
+          }
+        },
         "configs/palo_alto/interfaces" : {
           "interface" : {
             "ethernet1/1" : {
@@ -83218,6 +83319,9 @@
         ],
         "configs/openflow" : [
           "openflow"
+        ],
+        "configs/palo_alto/applications" : [
+          "paloalto_applications"
         ],
         "configs/palo_alto/interfaces" : [
           "paloalto_interfaces"
@@ -87486,6 +87590,20 @@
             }
           }
         },
+        "configs/palo_alto/applications" : {
+          "application-group or application or none" : {
+            "ssh~panorama" : {
+              "application-group members" : [
+                17
+              ]
+            },
+            "ssl~panorama" : {
+              "application-group members" : [
+                17
+              ]
+            }
+          }
+        },
         "configs/palo_alto/zones" : {
           "interface" : {
             "ethernet1/1" : {
@@ -90734,6 +90852,7 @@
         "configs/nxos_route_map_continue" : "PASSED",
         "configs/nxos_system" : "PASSED",
         "configs/openflow" : "PASSED",
+        "configs/palo_alto/applications" : "PASSED",
         "configs/palo_alto/interfaces" : "PASSED",
         "configs/palo_alto/policy" : "PASSED",
         "configs/palo_alto/zones" : "PASSED",
