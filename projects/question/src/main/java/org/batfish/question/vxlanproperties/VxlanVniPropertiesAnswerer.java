@@ -53,7 +53,7 @@ public final class VxlanVniPropertiesAnswerer extends Answerer {
                         new ColumnMetadata(
                             prop,
                             VxlanVniPropertySpecifier.JAVA_MAP.get(prop).getSchema(),
-                            "Property " + prop,
+                            VxlanVniPropertySpecifier.JAVA_MAP.get(prop).getDescription(),
                             false,
                             true))
                 .collect(Collectors.toList()))

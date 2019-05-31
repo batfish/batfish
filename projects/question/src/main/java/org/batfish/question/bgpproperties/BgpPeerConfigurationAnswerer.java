@@ -1,6 +1,5 @@
 package org.batfish.question.bgpproperties;
 
-import static com.google.common.base.MoreObjects.firstNonNull;
 import static org.batfish.datamodel.questions.BgpPeerPropertySpecifier.CLUSTER_ID;
 import static org.batfish.datamodel.questions.BgpPeerPropertySpecifier.EXPORT_POLICY;
 import static org.batfish.datamodel.questions.BgpPeerPropertySpecifier.IMPORT_POLICY;
@@ -93,9 +92,7 @@ public class BgpPeerConfigurationAnswerer extends Answerer {
                         new ColumnMetadata(
                             getColumnName(prop),
                             BgpPeerPropertySpecifier.JAVA_MAP.get(prop).getSchema(),
-                            firstNonNull(
-                                BgpPeerPropertySpecifier.JAVA_MAP.get(prop).getDescription(),
-                                "Property " + prop),
+                            BgpPeerPropertySpecifier.JAVA_MAP.get(prop).getDescription(),
                             false,
                             true)));
     columnMetadatas.put(COL_NODE, new ColumnMetadata(COL_NODE, Schema.NODE, "Node", true, false));

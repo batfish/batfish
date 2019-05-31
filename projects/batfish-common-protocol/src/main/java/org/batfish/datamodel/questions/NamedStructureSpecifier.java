@@ -26,6 +26,7 @@ public class NamedStructureSpecifier extends PropertySpecifier {
   public static final String IPSEC_PEER_CONFIGS = "IPsec_Peer_Configs";
   public static final String IPSEC_PHASE2_POLICIES = "IPsec_Phase2_Policies";
   public static final String IPSEC_PHASE2_PROPOSALS = "IPsec_Phase2_Proposals";
+  public static final String PBR_POLICY = "PBR_Policy";
   public static final String ROUTE_FILTER_LIST = "Route_Filter_List";
   public static final String ROUTE_6_FILTER_LIST = "Route6_Filter_List";
   public static final String ROUTING_POLICY = "Routing_Policy";
@@ -36,48 +37,83 @@ public class NamedStructureSpecifier extends PropertySpecifier {
       new ImmutableMap.Builder<String, PropertyDescriptor<Configuration>>()
           .put(
               AS_PATH_ACCESS_LIST,
-              new PropertyDescriptor<>(Configuration::getAsPathAccessLists, Schema.OBJECT))
+              new PropertyDescriptor<>(
+                  Configuration::getAsPathAccessLists, Schema.OBJECT, "AS path access list"))
           .put(
               AUTHENTICATION_KEY_CHAIN,
-              new PropertyDescriptor<>(Configuration::getAuthenticationKeyChains, Schema.OBJECT))
+              new PropertyDescriptor<>(
+                  Configuration::getAuthenticationKeyChains,
+                  Schema.OBJECT,
+                  "Authentication keychain"))
           .put(
               COMMUNITY_LIST,
-              new PropertyDescriptor<>(Configuration::getCommunityLists, Schema.OBJECT))
+              new PropertyDescriptor<>(
+                  Configuration::getCommunityLists, Schema.OBJECT, "BGP community list"))
           .put(
               IKE_PHASE1_KEYS,
-              new PropertyDescriptor<>(Configuration::getIkePhase1Keys, Schema.OBJECT))
+              new PropertyDescriptor<>(
+                  Configuration::getIkePhase1Keys, Schema.OBJECT, "IKE Phase 1 keys"))
           .put(
               IKE_PHASE1_POLICIES,
-              new PropertyDescriptor<>(Configuration::getIkePhase1Policies, Schema.OBJECT))
+              new PropertyDescriptor<>(
+                  Configuration::getIkePhase1Policies, Schema.OBJECT, "IKE Phase 1 policies"))
           .put(
               IKE_PHASE1_PROPOSALS,
-              new PropertyDescriptor<>(Configuration::getIkePhase1Proposals, Schema.OBJECT))
+              new PropertyDescriptor<>(
+                  Configuration::getIkePhase1Proposals, Schema.OBJECT, "IKE Phase 1 proposals"))
           .put(
               IP_ACCESS_LIST,
-              new PropertyDescriptor<>(Configuration::getIpAccessLists, Schema.OBJECT))
+              new PropertyDescriptor<>(
+                  Configuration::getIpAccessLists,
+                  Schema.OBJECT,
+                  "IPv4 filter (ACL, firewall ruleset)"))
           .put(
               IP_6_ACCESS_LIST,
-              new PropertyDescriptor<>(Configuration::getIp6AccessLists, Schema.OBJECT))
+              new PropertyDescriptor<>(
+                  Configuration::getIp6AccessLists,
+                  Schema.OBJECT,
+                  "IPv6 filter (ACL, firewall ruleset)"))
           .put(
               IPSEC_PEER_CONFIGS,
-              new PropertyDescriptor<>(Configuration::getIpsecPeerConfigs, Schema.OBJECT))
+              new PropertyDescriptor<>(
+                  Configuration::getIpsecPeerConfigs, Schema.OBJECT, "IPSec peer configs"))
           .put(
               IPSEC_PHASE2_POLICIES,
-              new PropertyDescriptor<>(Configuration::getIpsecPhase2Policies, Schema.OBJECT))
+              new PropertyDescriptor<>(
+                  Configuration::getIpsecPhase2Policies, Schema.OBJECT, "IPSec Phase 2 policies"))
           .put(
               IPSEC_PHASE2_PROPOSALS,
-              new PropertyDescriptor<>(Configuration::getIpsecPhase2Proposals, Schema.OBJECT))
+              new PropertyDescriptor<>(
+                  Configuration::getIpsecPhase2Proposals, Schema.OBJECT, "IPSec Phase 2 proposals"))
+          .put(
+              PBR_POLICY,
+              new PropertyDescriptor<>(
+                  Configuration::getPacketPolicies,
+                  Schema.OBJECT,
+                  "Policy-based routing (PBR) policy"))
           .put(
               ROUTE_FILTER_LIST,
-              new PropertyDescriptor<>(Configuration::getRouteFilterLists, Schema.OBJECT))
+              new PropertyDescriptor<>(
+                  Configuration::getRouteFilterLists,
+                  Schema.OBJECT,
+                  "IPv4 route filter list (prefix list, ACL etc. used to filter routes)"))
           .put(
               ROUTE_6_FILTER_LIST,
-              new PropertyDescriptor<>(Configuration::getRoute6FilterLists, Schema.OBJECT))
+              new PropertyDescriptor<>(
+                  Configuration::getRoute6FilterLists,
+                  Schema.OBJECT,
+                  "IPv6 route filter list (prefix list, ACL etc. used to filter routes)"))
           .put(
               ROUTING_POLICY,
-              new PropertyDescriptor<>(Configuration::getRoutingPolicies, Schema.OBJECT))
-          .put(VRF, new PropertyDescriptor<>(Configuration::getVrfs, Schema.OBJECT))
-          .put(ZONE, new PropertyDescriptor<>(Configuration::getZones, Schema.OBJECT))
+              new PropertyDescriptor<>(
+                  Configuration::getRoutingPolicies,
+                  Schema.OBJECT,
+                  "Policy for route manipulation (e.g., route maps)"))
+          .put(VRF, new PropertyDescriptor<>(Configuration::getVrfs, Schema.OBJECT, "VRF"))
+          .put(
+              ZONE,
+              new PropertyDescriptor<>(
+                  Configuration::getZones, Schema.OBJECT, "Firewall security zone"))
           .build();
 
   public static final NamedStructureSpecifier ALL = new NamedStructureSpecifier(".*");
