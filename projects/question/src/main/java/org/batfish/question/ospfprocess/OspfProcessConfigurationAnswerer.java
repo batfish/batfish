@@ -1,6 +1,5 @@
 package org.batfish.question.ospfprocess;
 
-import static com.google.common.base.MoreObjects.firstNonNull;
 import static org.batfish.datamodel.questions.OspfPropertySpecifier.AREAS;
 import static org.batfish.datamodel.questions.OspfPropertySpecifier.AREA_BORDER_ROUTER;
 import static org.batfish.datamodel.questions.OspfPropertySpecifier.EXPORT_POLICY_SOURCES;
@@ -91,9 +90,7 @@ public final class OspfProcessConfigurationAnswerer extends Answerer {
           new ColumnMetadata(
               property,
               OspfPropertySpecifier.JAVA_MAP.get(property).getSchema(),
-              firstNonNull(
-                  OspfPropertySpecifier.JAVA_MAP.get(property).getDescription(),
-                  "Property " + property),
+              OspfPropertySpecifier.JAVA_MAP.get(property).getDescription(),
               false,
               true));
     }

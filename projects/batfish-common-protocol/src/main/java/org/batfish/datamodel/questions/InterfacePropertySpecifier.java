@@ -60,7 +60,7 @@ public class InterfacePropertySpecifier extends PropertySpecifier {
   public static final String PROXY_ARP = "Proxy_ARP";
   public static final String RIP_ENABLED = "Rip_Enabled";
   public static final String RIP_PASSIVE = "Rip_Passive";
-  public static final String ROUTING_POLICY_NAME = "Routing_Policy_Name";
+  public static final String ROUTING_POLICY_NAME = "PBR_Policy_Name";
   public static final String SPANNING_TREE_PORTFAST = "Spanning_Tree_Portfast";
   public static final String SPEED = "Speed";
   public static final String SWITCHPORT = "Switchport";
@@ -242,7 +242,7 @@ public class InterfacePropertySpecifier extends PropertySpecifier {
               new PropertyDescriptor<>(
                   Interface::getRoutingPolicyName,
                   Schema.STRING,
-                  "Name of the policy used for policy routing (PBR or FBF)"))
+                  "Name of policy-based routing (PBR) policy"))
           .put(
               SPANNING_TREE_PORTFAST,
               new PropertyDescriptor<>(
