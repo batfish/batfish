@@ -677,6 +677,7 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
         PaloAltoStructureUsage.IMPORT_INTERFACE,
         PaloAltoStructureUsage.STATIC_ROUTE_INTERFACE,
         PaloAltoStructureUsage.VIRTUAL_ROUTER_INTERFACE,
+        PaloAltoStructureUsage.VSYS_IMPORT_INTERFACE,
         PaloAltoStructureUsage.ZONE_INTERFACE);
     markConcreteStructure(PaloAltoStructureType.RULE, PaloAltoStructureUsage.RULE_SELF_REF);
     markConcreteStructure(
