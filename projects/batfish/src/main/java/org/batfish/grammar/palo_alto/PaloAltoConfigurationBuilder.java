@@ -13,6 +13,7 @@ import static org.batfish.representation.palo_alto.PaloAltoStructureType.ADDRESS
 import static org.batfish.representation.palo_alto.PaloAltoStructureType.ADDRESS_OBJECT;
 import static org.batfish.representation.palo_alto.PaloAltoStructureType.APPLICATION;
 import static org.batfish.representation.palo_alto.PaloAltoStructureType.APPLICATION_GROUP_OR_APPLICATION;
+import static org.batfish.representation.palo_alto.PaloAltoStructureType.APPLICATION_GROUP_OR_APPLICATION_OR_NONE;
 import static org.batfish.representation.palo_alto.PaloAltoStructureType.INTERFACE;
 import static org.batfish.representation.palo_alto.PaloAltoStructureType.RULE;
 import static org.batfish.representation.palo_alto.PaloAltoStructureType.SERVICE_GROUP;
@@ -163,6 +164,7 @@ import org.batfish.grammar.palo_alto.PaloAltoParser.Variable_list_itemContext;
 import org.batfish.representation.palo_alto.AddressGroup;
 import org.batfish.representation.palo_alto.AddressObject;
 import org.batfish.representation.palo_alto.Application;
+import org.batfish.representation.palo_alto.ApplicationBuiltIn;
 import org.batfish.representation.palo_alto.CryptoProfile;
 import org.batfish.representation.palo_alto.CryptoProfile.Type;
 import org.batfish.representation.palo_alto.Interface;
@@ -573,7 +575,10 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
   @Override
   public void enterS_application(S_applicationContext ctx) {
     String name = ctx.name.getText();
-    _currentApplication = _currentVsys.getApplications().computeIfAbsent(name, Application::new);
+    _currentApplication =
+        _currentVsys
+            .getApplications()
+            .computeIfAbsent(name, n -> Application.builder().setName(n).build());
     // Use constructed name so same-named defs across vsys are unique
     String uniqueName = computeObjectName(_currentVsys.getName(), name);
     defineStructure(APPLICATION, uniqueName, ctx);
@@ -1068,7 +1073,16 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
       String name = getText(var);
       // Use constructed object name so same-named refs across vsys are unique
       String uniqueName = computeObjectName(_currentVsys.getName(), name);
-      if (!name.equals(CATCHALL_APPLICATION_NAME)) {
+      if (name.equals(CATCHALL_APPLICATION_NAME)
+          || ApplicationBuiltIn.FOR_NAME_MAP.containsKey(name)) {
+        // App could be builtin (should not generate undef refs)
+        // or user defined which should generate references (overwritten builtin)
+        _configuration.referenceStructure(
+            APPLICATION_GROUP_OR_APPLICATION_OR_NONE,
+            uniqueName,
+            RULE_APPLICATION,
+            getLine(var.start));
+      } else {
         _configuration.referenceStructure(
             APPLICATION_GROUP_OR_APPLICATION, uniqueName, RULE_APPLICATION, getLine(var.start));
       }
