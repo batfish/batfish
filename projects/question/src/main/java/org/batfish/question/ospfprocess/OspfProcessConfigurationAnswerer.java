@@ -1,5 +1,6 @@
 package org.batfish.question.ospfprocess;
 
+import static com.google.common.base.MoreObjects.firstNonNull;
 import static org.batfish.datamodel.questions.OspfPropertySpecifier.AREAS;
 import static org.batfish.datamodel.questions.OspfPropertySpecifier.AREA_BORDER_ROUTER;
 import static org.batfish.datamodel.questions.OspfPropertySpecifier.EXPORT_POLICY_SOURCES;
@@ -82,7 +83,7 @@ public final class OspfProcessConfigurationAnswerer extends Answerer {
   static List<ColumnMetadata> createColumnMetadata(List<String> properties) {
     List<ColumnMetadata> columnMetadatas = new ArrayList<>();
     columnMetadatas.add(new ColumnMetadata(COL_NODE, Schema.NODE, "Node", true, false));
-    columnMetadatas.add(new ColumnMetadata(COL_VRF, Schema.STRING, "VRF", true, false));
+    columnMetadatas.add(new ColumnMetadata(COL_VRF, Schema.STRING, "VRF name", true, false));
     columnMetadatas.add(
         new ColumnMetadata(COL_PROCESS_ID, Schema.STRING, "Process ID", true, false));
     for (String property : properties) {
@@ -90,7 +91,9 @@ public final class OspfProcessConfigurationAnswerer extends Answerer {
           new ColumnMetadata(
               property,
               OspfPropertySpecifier.JAVA_MAP.get(property).getSchema(),
-              "Property " + property,
+              firstNonNull(
+                  OspfPropertySpecifier.JAVA_MAP.get(property).getDescription(),
+                  "Property " + property),
               false,
               true));
     }
