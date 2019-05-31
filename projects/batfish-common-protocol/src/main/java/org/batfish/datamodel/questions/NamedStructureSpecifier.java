@@ -26,6 +26,7 @@ public class NamedStructureSpecifier extends PropertySpecifier {
   public static final String IPSEC_PEER_CONFIGS = "IPsec_Peer_Configs";
   public static final String IPSEC_PHASE2_POLICIES = "IPsec_Phase2_Policies";
   public static final String IPSEC_PHASE2_PROPOSALS = "IPsec_Phase2_Proposals";
+  public static final String PBR_POLICY = "PBR_Policy";
   public static final String ROUTE_FILTER_LIST = "Route_Filter_List";
   public static final String ROUTE_6_FILTER_LIST = "Route6_Filter_List";
   public static final String ROUTING_POLICY = "Routing_Policy";
@@ -84,6 +85,12 @@ public class NamedStructureSpecifier extends PropertySpecifier {
               IPSEC_PHASE2_PROPOSALS,
               new PropertyDescriptor<>(
                   Configuration::getIpsecPhase2Proposals, Schema.OBJECT, "IPSec Phase 2 proposals"))
+          .put(
+              PBR_POLICY,
+              new PropertyDescriptor<>(
+                  Configuration::getPacketPolicies,
+                  Schema.OBJECT,
+                  "Policy-based routing (PBR) policy"))
           .put(
               ROUTE_FILTER_LIST,
               new PropertyDescriptor<>(
