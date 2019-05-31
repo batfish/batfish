@@ -55,7 +55,7 @@ public final class ReachabilityParametersResolver {
   }
 
   public static ResolvedReachabilityParameters resolveReachabilityParameters(
-      Batfish batfish, ReachabilityParameters params, NetworkSnapshot snapshot)
+      IBatfish batfish, ReachabilityParameters params, NetworkSnapshot snapshot)
       throws InvalidReachabilityParametersException {
 
     ReachabilityParametersResolver resolver =
