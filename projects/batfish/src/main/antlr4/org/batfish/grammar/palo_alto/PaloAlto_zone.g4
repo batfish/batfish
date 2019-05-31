@@ -16,7 +16,16 @@ s_zone
 
 sz_network
 :
-    NETWORK szn_layer3
+    NETWORK
+    (
+        szn_external
+        | szn_layer3
+    )?
+;
+
+szn_external
+:
+    EXTERNAL variable_list
 ;
 
 szn_layer3
