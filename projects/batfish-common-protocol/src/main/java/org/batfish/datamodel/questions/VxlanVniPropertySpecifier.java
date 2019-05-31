@@ -50,7 +50,10 @@ public class VxlanVniPropertySpecifier extends PropertySpecifier {
                   VxlanVniPropertiesRow::getMulticastGroup,
                   Schema.IP,
                   "IPv4 address of the multicast group"))
-          .put(VLAN, new PropertyDescriptor<>(VxlanVniPropertiesRow::getVlan, Schema.INTEGER))
+          .put(
+              VLAN,
+              new PropertyDescriptor<>(
+                  VxlanVniPropertiesRow::getVlan, Schema.INTEGER, "VLAN number for the VNI"))
           .put(
               VTEP_FLOOD_LIST,
               new PropertyDescriptor<>(
@@ -62,7 +65,7 @@ public class VxlanVniPropertySpecifier extends PropertySpecifier {
               new PropertyDescriptor<>(
                   VxlanVniPropertiesRow::getVxlanPort,
                   Schema.INTEGER,
-                  "Port number for VXLAN tunnels"))
+                  "Destination port number for the VXLAN tunnel"))
           .build();
 
   public static final VxlanVniPropertySpecifier ALL = new VxlanVniPropertySpecifier(".*");
