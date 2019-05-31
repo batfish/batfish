@@ -9,6 +9,8 @@ import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.SubRange;
 
 public enum ServiceBuiltIn {
+  ANY,
+  APPLICATION_DEFAULT,
   SERVICE_HTTP,
   SERVICE_HTTPS;
 
@@ -30,6 +32,9 @@ public enum ServiceBuiltIn {
             .setIpProtocols(ImmutableList.of(IpProtocol.TCP))
             .setDstPorts(ImmutableSortedSet.of(new SubRange(443, 443)))
             .build();
+        // any and application-default don't match a specific port
+      case ANY:
+      case APPLICATION_DEFAULT:
       default:
         return null;
     }
@@ -41,6 +46,10 @@ public enum ServiceBuiltIn {
 
   public String getName() {
     switch (this) {
+      case ANY:
+        return "any";
+      case APPLICATION_DEFAULT:
+        return "application-default";
       case SERVICE_HTTP:
         return "service-http";
       case SERVICE_HTTPS:

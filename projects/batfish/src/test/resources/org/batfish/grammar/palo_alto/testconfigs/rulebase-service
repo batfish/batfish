@@ -16,5 +16,5 @@ set rulebase security rules RULE1 action allow
 # Override built-in service
 set service service-http protocol tcp port 1
 
-# Reference another built-in service
-set service-group SG-BUILT-IN members [ service-https ]
+# Reference more built-in services
+set service-group SG-BUILT-IN members [ application-default service-https ]
