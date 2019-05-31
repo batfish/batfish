@@ -70635,6 +70635,28 @@
             "            (s_zone",
             "              ZONE:'zone'",
             "              name = (variable",
+            "                VARIABLE:'zext')",
+            "              (sz_network",
+            "                NETWORK:'network'",
+            "                (szn_external",
+            "                  EXTERNAL:'external')))))))",
+            "    NEWLINE:'\\n')",
+            "  (set_line",
+            "    SET:'set'",
+            "    (set_line_tail",
+            "      (set_line_config_devices",
+            "        CONFIG:'config'",
+            "        DEVICES:'devices'",
+            "        name = (variable",
+            "          VARIABLE:'localhost.localdomain')",
+            "        (statement_config_devices",
+            "          (s_vsys",
+            "            VSYS:'vsys'",
+            "            name = (variable",
+            "              VARIABLE:'vsys10')",
+            "            (s_zone",
+            "              ZONE:'zone'",
+            "              name = (variable",
             "                VARIABLE:'zl2')",
             "              (sz_network",
             "                NETWORK:'network'",
@@ -82126,7 +82148,7 @@
             }
           },
           "zone" : {
-            "zl2~vsys10" : {
+            "zext~vsys10" : {
               "definitionLines" : [
                 35,
                 36,
@@ -82135,7 +82157,7 @@
               ],
               "numReferrers" : 0
             },
-            "zl3~vsys10" : {
+            "zl2~vsys10" : {
               "definitionLines" : [
                 35,
                 41,
@@ -82144,7 +82166,7 @@
               ],
               "numReferrers" : 0
             },
-            "ztap~vsys10" : {
+            "zl3~vsys10" : {
               "definitionLines" : [
                 35,
                 46,
@@ -82153,12 +82175,21 @@
               ],
               "numReferrers" : 0
             },
-            "zvirtual-wire~vsys10" : {
+            "ztap~vsys10" : {
               "definitionLines" : [
                 35,
                 51,
                 52,
                 53
+              ],
+              "numReferrers" : 0
+            },
+            "zvirtual-wire~vsys10" : {
+              "definitionLines" : [
+                35,
+                56,
+                57,
+                58
               ],
               "numReferrers" : 0
             }
@@ -87611,7 +87642,7 @@
                 32
               ],
               "zone network layer3" : [
-                38
+                43
               ]
             },
             "ethernet1/2" : {
@@ -87619,7 +87650,7 @@
                 32
               ],
               "zone network layer3" : [
-                43
+                48
               ]
             },
             "ethernet1/3" : {
@@ -87627,7 +87658,7 @@
                 32
               ],
               "zone network layer3" : [
-                48
+                53
               ]
             },
             "ethernet1/4" : {
@@ -87635,7 +87666,7 @@
                 32
               ],
               "zone network layer3" : [
-                53
+                58
               ]
             }
           }

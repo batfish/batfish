@@ -30000,6 +30000,21 @@
           }
         },
         "ipAccessLists" : {
+          "zone~zext~vsys10~to~zone~zl2~vsys10" : {
+            "name" : "zone~zext~vsys10~to~zone~zl2~vsys10"
+          },
+          "zone~zext~vsys10~to~zone~zl3~vsys10" : {
+            "name" : "zone~zext~vsys10~to~zone~zl3~vsys10"
+          },
+          "zone~zext~vsys10~to~zone~ztap~vsys10" : {
+            "name" : "zone~zext~vsys10~to~zone~ztap~vsys10"
+          },
+          "zone~zext~vsys10~to~zone~zvirtual-wire~vsys10" : {
+            "name" : "zone~zext~vsys10~to~zone~zvirtual-wire~vsys10"
+          },
+          "zone~zl2~vsys10~to~zone~zext~vsys10" : {
+            "name" : "zone~zl2~vsys10~to~zone~zext~vsys10"
+          },
           "zone~zl2~vsys10~to~zone~zl2~vsys10" : {
             "name" : "zone~zl2~vsys10~to~zone~zl2~vsys10",
             "lines" : [
@@ -30011,6 +30026,9 @@
                 "name" : "Accept intrazone by default"
               }
             ]
+          },
+          "zone~zl3~vsys10~to~zone~zext~vsys10" : {
+            "name" : "zone~zl3~vsys10~to~zone~zext~vsys10"
           },
           "zone~zl3~vsys10~to~zone~zl3~vsys10" : {
             "name" : "zone~zl3~vsys10~to~zone~zl3~vsys10",
@@ -30024,6 +30042,9 @@
               }
             ]
           },
+          "zone~ztap~vsys10~to~zone~zext~vsys10" : {
+            "name" : "zone~ztap~vsys10~to~zone~zext~vsys10"
+          },
           "zone~ztap~vsys10~to~zone~ztap~vsys10" : {
             "name" : "zone~ztap~vsys10~to~zone~ztap~vsys10",
             "lines" : [
@@ -30036,6 +30057,9 @@
               }
             ]
           },
+          "zone~zvirtual-wire~vsys10~to~zone~zext~vsys10" : {
+            "name" : "zone~zvirtual-wire~vsys10~to~zone~zext~vsys10"
+          },
           "zone~zvirtual-wire~vsys10~to~zone~zvirtual-wire~vsys10" : {
             "name" : "zone~zvirtual-wire~vsys10~to~zone~zvirtual-wire~vsys10",
             "lines" : [
@@ -30047,6 +30071,9 @@
                 "name" : "Accept intrazone by default"
               }
             ]
+          },
+          "~zext~vsys10~OUTGOING_FILTER~" : {
+            "name" : "~zext~vsys10~OUTGOING_FILTER~"
           },
           "~zl2~vsys10~OUTGOING_FILTER~" : {
             "name" : "~zl2~vsys10~OUTGOING_FILTER~"
@@ -30074,6 +30101,9 @@
           }
         },
         "zones" : {
+          "zext~vsys10" : {
+            "name" : "zext~vsys10"
+          },
           "zl2~vsys10" : {
             "name" : "zl2~vsys10",
             "interfaces" : [
