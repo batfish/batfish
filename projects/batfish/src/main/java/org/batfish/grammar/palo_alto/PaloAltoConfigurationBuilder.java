@@ -2,7 +2,6 @@ package org.batfish.grammar.palo_alto;
 
 import static org.apache.commons.lang3.ObjectUtils.firstNonNull;
 import static org.batfish.representation.palo_alto.PaloAltoConfiguration.CATCHALL_APPLICATION_NAME;
-import static org.batfish.representation.palo_alto.PaloAltoConfiguration.CATCHALL_SERVICE_NAME;
 import static org.batfish.representation.palo_alto.PaloAltoConfiguration.CATCHALL_ZONE_NAME;
 import static org.batfish.representation.palo_alto.PaloAltoConfiguration.DEFAULT_VSYS_NAME;
 import static org.batfish.representation.palo_alto.PaloAltoConfiguration.PANORAMA_VSYS_NAME;
@@ -41,6 +40,7 @@ import static org.batfish.representation.palo_alto.Zone.Type.LAYER3;
 import static org.batfish.representation.palo_alto.Zone.Type.TAP;
 import static org.batfish.representation.palo_alto.Zone.Type.VIRTUAL_WIRE;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -314,9 +314,7 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
     // Use constructed object name so same-named refs across vsys are unique
     String uniqueName = computeObjectName(_currentVsys.getName(), serviceName);
 
-    if (serviceName.equals(ServiceBuiltIn.SERVICE_HTTP.getName())
-        || serviceName.equals(ServiceBuiltIn.SERVICE_HTTPS.getName())
-        || serviceName.equals(CATCHALL_SERVICE_NAME)) {
+    if (Arrays.stream(ServiceBuiltIn.values()).anyMatch(n -> serviceName.equals(n.getName()))) {
       // Built-in services can be overridden, so add optional object reference
       _configuration.referenceStructure(
           SERVICE_OR_SERVICE_GROUP_OR_NONE, uniqueName, usage, getLine(var.start));

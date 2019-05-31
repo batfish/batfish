@@ -70,9 +70,6 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
   /** This is the name of an endpoint that matches all traffic */
   public static final String CATCHALL_ENDPOINT_NAME = "any";
 
-  /** This is the name of a service that matches all traffic */
-  public static final String CATCHALL_SERVICE_NAME = "any";
-
   /** This is the name of the zone that matches traffic in all zones (but not unzoned traffic) */
   public static final String CATCHALL_ZONE_NAME = "any";
 
@@ -447,7 +444,7 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
         if (vsysName != null) {
           serviceDisjuncts.add(
               new PermittedByAcl(computeServiceGroupMemberAclName(vsysName, serviceName)));
-        } else if (serviceName.equals(CATCHALL_SERVICE_NAME)) {
+        } else if (serviceName.equals(ServiceBuiltIn.ANY.getName())) {
           serviceDisjuncts.clear();
           serviceDisjuncts.add(TrueExpr.INSTANCE);
           break;

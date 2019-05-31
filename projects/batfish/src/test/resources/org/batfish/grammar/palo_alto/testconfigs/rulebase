@@ -14,7 +14,7 @@ set rulebase security rules "disabled rule" from [ any ZONE_UNDEF ]
 set rulebase security rules "disabled rule" to any
 set rulebase security rules "disabled rule" source any
 set rulebase security rules "disabled rule" destination any
-set rulebase security rules "disabled rule" service [ any SERVICE_UNDEF ]
+set rulebase security rules "disabled rule" service [ any application-default SERVICE_UNDEF ]
 set rulebase security rules "disabled rule" application any
 set rulebase security rules "disabled rule" action drop
 
