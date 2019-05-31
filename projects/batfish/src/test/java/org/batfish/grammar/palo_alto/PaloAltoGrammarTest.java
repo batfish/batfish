@@ -29,7 +29,6 @@ import static org.batfish.datamodel.matchers.IpAccessListMatchers.rejects;
 import static org.batfish.datamodel.matchers.VrfMatchers.hasInterfaces;
 import static org.batfish.datamodel.matchers.VrfMatchers.hasName;
 import static org.batfish.datamodel.matchers.VrfMatchers.hasStaticRoutes;
-import static org.batfish.representation.palo_alto.PaloAltoConfiguration.CATCHALL_SERVICE_NAME;
 import static org.batfish.representation.palo_alto.PaloAltoConfiguration.DEFAULT_VSYS_NAME;
 import static org.batfish.representation.palo_alto.PaloAltoConfiguration.NULL_VRF_NAME;
 import static org.batfish.representation.palo_alto.PaloAltoConfiguration.SHARED_VSYS_NAME;
@@ -852,6 +851,18 @@ public class PaloAltoGrammarTest {
             PaloAltoStructureType.ZONE,
             zoneUndefName,
             PaloAltoStructureUsage.RULE_FROM_ZONE));
+
+    // Confirm builtins do not show up as undefined references
+    assertThat(
+        ccae,
+        not(
+            hasUndefinedReference(
+                filename, SERVICE_OR_SERVICE_GROUP, ServiceBuiltIn.ANY.getName())));
+    assertThat(
+        ccae,
+        not(
+            hasUndefinedReference(
+                filename, SERVICE_OR_SERVICE_GROUP, ServiceBuiltIn.APPLICATION_DEFAULT.getName())));
   }
 
   @Test
@@ -1045,7 +1056,7 @@ public class PaloAltoGrammarTest {
         computeObjectName(DEFAULT_VSYS_NAME, ServiceBuiltIn.SERVICE_HTTP.getName());
     String serviceHttps =
         computeObjectName(DEFAULT_VSYS_NAME, ServiceBuiltIn.SERVICE_HTTPS.getName());
-    String serviceAny = computeObjectName(DEFAULT_VSYS_NAME, CATCHALL_SERVICE_NAME);
+    String serviceAny = computeObjectName(DEFAULT_VSYS_NAME, ServiceBuiltIn.ANY.getName());
 
     String serviceGroupHttpName = computeObjectName(DEFAULT_VSYS_NAME, "SG-HTTP");
     String serviceGroupHttpsName = computeObjectName(DEFAULT_VSYS_NAME, "SG-HTTPS");
@@ -1064,7 +1075,9 @@ public class PaloAltoGrammarTest {
     // Confirm there are no undefined references for the built-ins
     assertThat(
         ccae,
-        not(hasUndefinedReference(filename, SERVICE_OR_SERVICE_GROUP, CATCHALL_SERVICE_NAME)));
+        not(
+            hasUndefinedReference(
+                filename, SERVICE_OR_SERVICE_GROUP, ServiceBuiltIn.ANY.getName())));
     assertThat(
         ccae,
         not(
@@ -1124,7 +1137,7 @@ public class PaloAltoGrammarTest {
     ConvertConfigurationAnswerElement ccae =
         batfish.loadConvertConfigurationAnswerElementOrReparse();
 
-    String serviceAnyName = computeObjectName(DEFAULT_VSYS_NAME, CATCHALL_SERVICE_NAME);
+    String serviceAnyName = computeObjectName(DEFAULT_VSYS_NAME, ServiceBuiltIn.ANY.getName());
     String serviceHttpName =
         computeObjectName(DEFAULT_VSYS_NAME, ServiceBuiltIn.SERVICE_HTTP.getName());
     String serviceHttpsName =

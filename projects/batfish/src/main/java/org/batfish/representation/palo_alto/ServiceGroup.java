@@ -1,6 +1,5 @@
 package org.batfish.representation.palo_alto;
 
-import static org.batfish.representation.palo_alto.PaloAltoConfiguration.CATCHALL_SERVICE_NAME;
 import static org.batfish.representation.palo_alto.PaloAltoConfiguration.computeServiceGroupMemberAclName;
 
 import java.util.List;
@@ -52,7 +51,7 @@ public final class ServiceGroup implements ServiceGroupMember {
                 new PermittedByAcl(
                     computeServiceGroupMemberAclName(vsysName, memberReference.getName())),
                 memberReference.getName()));
-      } else if (serviceName.equals(CATCHALL_SERVICE_NAME)) {
+      } else if (serviceName.equals(ServiceBuiltIn.ANY.getName())) {
         lines.clear();
         lines.add(new IpAccessListLine(action, TrueExpr.INSTANCE, _name));
         break;
