@@ -82,7 +82,7 @@ public final class OspfInterfaceConfigurationAnswerer extends Answerer {
     ImmutableList.Builder<ColumnMetadata> columnMetadatas = ImmutableList.builder();
     columnMetadatas.add(
         new ColumnMetadata(COL_INTERFACE, Schema.INTERFACE, "Interface", true, false));
-    columnMetadatas.add(new ColumnMetadata(COL_VRF, Schema.STRING, "VRF", true, false));
+    columnMetadatas.add(new ColumnMetadata(COL_VRF, Schema.STRING, "VRF name", true, false));
     columnMetadatas.add(
         new ColumnMetadata(COL_PROCESS_ID, Schema.STRING, "Process ID", true, false));
     for (String property : properties) {
@@ -90,7 +90,9 @@ public final class OspfInterfaceConfigurationAnswerer extends Answerer {
           new ColumnMetadata(
               property,
               InterfacePropertySpecifier.JAVA_MAP.get(property).getSchema(),
-              "Property " + property,
+              firstNonNull(
+                  InterfacePropertySpecifier.JAVA_MAP.get(property).getDescription(),
+                  "Property " + property),
               false,
               true));
     }
