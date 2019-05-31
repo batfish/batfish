@@ -33,6 +33,11 @@ config {
             }
           }
           zone {
+            zext {
+              network {
+                external;
+              }
+            }
             zl2 {
               network {
                 layer2 [ ethernet1/1];

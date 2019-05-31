@@ -362,7 +362,9 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
             computeObjectName(fromZone.getVsys().getName(), fromZone.getName()),
             computeObjectName(toZone.getVsys().getName(), toZone.getName()));
 
-    if (fromZone.getInterfaceNames().isEmpty() || toZone.getInterfaceNames().isEmpty()) {
+    if (fromZone.getType() != Type.EXTERNAL && fromZone.getInterfaceNames().isEmpty()
+        || toZone.getType() != Type.EXTERNAL && toZone.getInterfaceNames().isEmpty()) {
+      // Non-external zones must have interfaces.
       return IpAccessList.builder()
           .setName(crossZoneFilterName)
           .setLines(
