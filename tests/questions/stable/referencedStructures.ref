@@ -28,10 +28,10 @@
         "value" : "n1"
       },
       "types" : {
-        "description" : "Include structures whose vendor-specific type matches this specifier",
+        "description" : "Include structures whose vendor-specific type matches this string or regex",
         "displayName" : "Types",
         "optional" : true,
-        "type" : "namedStructureSpec",
+        "type" : "javaRegex",
         "value" : "t1"
       }
     }

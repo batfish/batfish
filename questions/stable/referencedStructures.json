@@ -24,8 +24,8 @@
                 "displayName": "Nodes"
             },
             "types": {
-                "description": "Include structures whose vendor-specific type matches this specifier",
-                "type": "namedStructureSpec",
+                "description": "Include structures whose vendor-specific type matches this string or regex",
+                "type": "javaRegex",
                 "value": ".*",
                 "optional": true,
                 "displayName": "Types"
