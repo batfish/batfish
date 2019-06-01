@@ -32,13 +32,16 @@ import org.batfish.datamodel.ospf.OspfProcess;
 import org.batfish.datamodel.pojo.Node;
 import org.batfish.datamodel.table.ColumnMetadata;
 import org.batfish.datamodel.table.Row;
+import org.batfish.specifier.MockSpecifierContext;
+import org.batfish.specifier.NameNodeSpecifier;
+import org.batfish.specifier.NodeSpecifier;
 import org.junit.Test;
 
 /** Test for {@link OspfProcessConfigurationAnswerer} */
 public class OspfProcessConfigAnswererTest {
 
   @Test
-  public void testGetRows() {
+  public void testGetProperties() {
     NetworkFactory nf = new NetworkFactory();
     Configuration configuration =
         nf.configurationBuilder()
@@ -59,11 +62,17 @@ public class OspfProcessConfigAnswererTest {
         .setVrf(vrf)
         .build();
 
+    NodeSpecifier nodeSpecifier = new NameNodeSpecifier(configuration.getHostname());
+    MockSpecifierContext ctxt =
+        MockSpecifierContext.builder()
+            .setConfigs(ImmutableMap.of(configuration.getHostname(), configuration))
+            .build();
+
     Multiset<Row> rows =
-        OspfProcessConfigurationAnswerer.getRows(
+        OspfProcessConfigurationAnswerer.getProperties(
             COLUMNS_FROM_PROP_SPEC,
-            ImmutableMap.of(configuration.getHostname(), configuration),
-            ImmutableSet.of(configuration.getHostname()),
+            ctxt,
+            nodeSpecifier,
             OspfProcessConfigurationAnswerer.createTableMetadata(null, COLUMNS_FROM_PROP_SPEC)
                 .toColumnMap());
     assertThat(
