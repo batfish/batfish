@@ -82,8 +82,8 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
   /** Helper RIB containing all paths obtained with external BGP, for IPv4 unicast */
   @Nonnull Bgpv4Rib _ebgpv4Rib;
   /**
-   * Helper RIB containing paths obtained with external eBGP during current iteration. An Adj-RIB-in
-   * of sorts for IPv4 unicast
+   * Helper RIB containing paths obtained with eBGP during current iteration. An Adj-RIB-in of sorts
+   * for IPv4 unicast
    */
   @Nonnull Bgpv4Rib _ebgpv4StagingRib;
   /** RIB containing paths obtained with iBGP, for IPv4 unicast */
@@ -272,10 +272,12 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
                       _process.getRouterId());
 
               if (vniVrf.getName().equals(_vrfName)) {
+                // Merge into our own RIBs
                 RibDelta<EvpnType3Route> d = _evpnType3Rib.mergeRouteGetDelta(route);
                 _evpnDeltaBuilder.from(d);
                 initializationBuilder.from(d);
               } else {
+                // Merge into our sibling VRF corresponding to the VNI
                 initializationBuilder.from(
                     n.getVirtualRouters()
                         .get(vniVrf.getName())
@@ -381,7 +383,7 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
     return _process.getRouterId();
   }
 
-  /** Return a BGP routing process for a sibling VRF on the our node */
+  /** Return a BGP routing process for a sibling VRF on our node */
   @Nonnull
   private BgpRoutingProcess getVrfProcess(String vrf, Map<String, Node> allNodes) {
     BgpRoutingProcess proc =
