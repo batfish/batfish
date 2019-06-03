@@ -10,6 +10,8 @@ public interface DataPlane extends Serializable {
 
   Table<String, String, Set<Bgpv4Route>> getBgpRoutes(boolean multipath);
 
+  Table<String, String, Set<EvpnRoute<?, ?>>> getEvpnRoutes();
+
   Map<String, Configuration> getConfigurations();
 
   Map<String, Map<String, Fib>> getFibs();

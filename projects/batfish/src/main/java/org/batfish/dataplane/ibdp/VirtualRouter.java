@@ -56,6 +56,7 @@ import org.batfish.datamodel.Bgpv4Route;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConnectedRoute;
 import org.batfish.datamodel.Edge;
+import org.batfish.datamodel.EvpnRoute;
 import org.batfish.datamodel.Fib;
 import org.batfish.datamodel.FibImpl;
 import org.batfish.datamodel.GeneratedRoute;
@@ -2102,5 +2103,12 @@ public class VirtualRouter implements Serializable {
   private void enqueueBgpMessages(
       @Nonnull EdgeId edgeId, @Nonnull Stream<RouteAdvertisement<Bgpv4Route>> routes) {
     _bgpRoutingProcess.enqueueBgpMessages(edgeId, routes);
+  }
+
+  public Set<EvpnRoute<?, ?>> getEvpnRoutes() {
+    if (_bgpRoutingProcess == null) {
+      return ImmutableSet.of();
+    }
+    return _bgpRoutingProcess._evpnRib.getTypedRoutes();
   }
 }
