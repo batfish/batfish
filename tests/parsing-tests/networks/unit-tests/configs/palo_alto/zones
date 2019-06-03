@@ -1,0 +1,66 @@
+!RANCID-CONTENT-TYPE: paloalto
+config {
+  devices {
+    localhost.localdomain {
+      deviceconfig {
+        system {
+          hostname "paloalto_zones";
+        }
+      }
+      network {
+        interface {
+          ethernet {
+            ethernet1/1 {
+              layer2;
+            }
+            ethernet1/2 {
+              layer3;
+            }
+            ethernet1/3 {
+              tap;
+            }
+            ethernet1/4 {
+              virtual-wire;
+            }
+          }
+        }
+      }
+      vsys {
+        vsys10 {
+          import {
+            network {
+              interface [ ethernet1/1 ethernet1/2 ethernet1/3 ethernet1/4];
+            }
+          }
+          zone {
+            zext {
+              network {
+                external;
+              }
+            }
+            zl2 {
+              network {
+                layer2 [ ethernet1/1];
+              }
+            }
+            zl3 {
+              network {
+                layer3 [ ethernet1/2];
+              }
+            }
+            ztap {
+              network {
+                tap [ ethernet1/3];
+              }
+            }
+            zvirtual-wire {
+              network {
+                virtual-wire [ ethernet1/4];
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

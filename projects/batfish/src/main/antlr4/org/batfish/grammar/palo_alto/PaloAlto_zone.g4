@@ -16,10 +16,37 @@ s_zone
 
 sz_network
 :
-    NETWORK szn_layer3
+    NETWORK
+    (
+        szn_external
+        | szn_layer2
+        | szn_layer3
+        | szn_tap
+        | szn_virtual_wire
+    )?
+;
+
+szn_external
+:
+    EXTERNAL variable_list?
+;
+
+szn_layer2
+:
+    LAYER2 variable_list?
 ;
 
 szn_layer3
 :
     LAYER3 variable_list?
+;
+
+szn_tap
+:
+    TAP variable_list?
+;
+
+szn_virtual_wire
+:
+    VIRTUAL_WIRE variable_list?
 ;

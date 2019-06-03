@@ -3,7 +3,6 @@ package org.batfish.question.ospfinterface;
 import static com.google.common.base.MoreObjects.firstNonNull;
 import static org.batfish.datamodel.questions.InterfacePropertySpecifier.OSPF_AREA_NAME;
 import static org.batfish.datamodel.questions.InterfacePropertySpecifier.OSPF_COST;
-import static org.batfish.datamodel.questions.InterfacePropertySpecifier.OSPF_HELLO_MULTIPLIER;
 import static org.batfish.datamodel.questions.InterfacePropertySpecifier.OSPF_PASSIVE;
 import static org.batfish.datamodel.questions.InterfacePropertySpecifier.OSPF_POINT_TO_POINT;
 
@@ -46,8 +45,7 @@ public final class OspfInterfaceConfigurationAnswerer extends Answerer {
 
   // this list also ensures order of columns excluding keys
   static final List<String> COLUMNS_FROM_PROP_SPEC =
-      ImmutableList.of(
-          OSPF_AREA_NAME, OSPF_PASSIVE, OSPF_COST, OSPF_POINT_TO_POINT, OSPF_HELLO_MULTIPLIER);
+      ImmutableList.of(OSPF_AREA_NAME, OSPF_PASSIVE, OSPF_COST, OSPF_POINT_TO_POINT);
 
   public OspfInterfaceConfigurationAnswerer(Question question, IBatfish batfish) {
     super(question, batfish);
@@ -84,7 +82,7 @@ public final class OspfInterfaceConfigurationAnswerer extends Answerer {
     ImmutableList.Builder<ColumnMetadata> columnMetadatas = ImmutableList.builder();
     columnMetadatas.add(
         new ColumnMetadata(COL_INTERFACE, Schema.INTERFACE, "Interface", true, false));
-    columnMetadatas.add(new ColumnMetadata(COL_VRF, Schema.STRING, "VRF", true, false));
+    columnMetadatas.add(new ColumnMetadata(COL_VRF, Schema.STRING, "VRF name", true, false));
     columnMetadatas.add(
         new ColumnMetadata(COL_PROCESS_ID, Schema.STRING, "Process ID", true, false));
     for (String property : properties) {
@@ -92,7 +90,9 @@ public final class OspfInterfaceConfigurationAnswerer extends Answerer {
           new ColumnMetadata(
               property,
               InterfacePropertySpecifier.JAVA_MAP.get(property).getSchema(),
-              "Property " + property,
+              firstNonNull(
+                  InterfacePropertySpecifier.JAVA_MAP.get(property).getDescription(),
+                  "Property " + property),
               false,
               true));
     }

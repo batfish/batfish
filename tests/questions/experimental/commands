@@ -66,9 +66,6 @@ test -raw tests/questions/experimental/ospfAreaConfiguration.ref validate-templa
 # validate ospfProcessConfiguration
 test -raw tests/questions/experimental/ospfProcessConfiguration.ref validate-template ospfProcessConfiguration nodes=".*", properties="props-.*"
 
-# validate ospfProperties
-test -raw tests/questions/experimental/ospfProperties.ref validate-template ospfProperties nodes=".*", properties="maximum-.*"
-
 # validate ospfSessionCompatibility
 test -raw tests/questions/experimental/ospfSessionCompatibility.ref validate-template ospfSessionCompatibility nodes=".*", remoteNodes=".*"
 

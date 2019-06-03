@@ -92,7 +92,7 @@ public class BgpPeerConfigurationAnswerer extends Answerer {
                         new ColumnMetadata(
                             getColumnName(prop),
                             BgpPeerPropertySpecifier.JAVA_MAP.get(prop).getSchema(),
-                            "Property " + prop,
+                            BgpPeerPropertySpecifier.JAVA_MAP.get(prop).getDescription(),
                             false,
                             true)));
     columnMetadatas.put(COL_NODE, new ColumnMetadata(COL_NODE, Schema.NODE, "Node", true, false));

@@ -57,7 +57,7 @@ public class BgpProcessConfigurationAnswerer extends Answerer {
                         new ColumnMetadata(
                             getColumnName(prop),
                             BgpProcessPropertySpecifier.JAVA_MAP.get(prop).getSchema(),
-                            "Property " + prop,
+                            BgpProcessPropertySpecifier.JAVA_MAP.get(prop).getDescription(),
                             false,
                             true))
                 .collect(Collectors.toList()))

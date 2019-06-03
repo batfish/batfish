@@ -55,7 +55,7 @@ public class InterfacePropertiesAnswerer extends Answerer {
                         new ColumnMetadata(
                             getColumnName(prop),
                             InterfacePropertySpecifier.JAVA_MAP.get(prop).getSchema(),
-                            "Property " + prop,
+                            InterfacePropertySpecifier.JAVA_MAP.get(prop).getDescription(),
                             false,
                             true))
                 .collect(Collectors.toList()))

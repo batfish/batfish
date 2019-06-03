@@ -11,6 +11,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.SortedSet;
 import org.batfish.common.NetworkSnapshot;
+import org.batfish.common.plugin.IBatfish;
 import org.batfish.datamodel.AclIpSpace;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.DataPlane;
@@ -46,7 +47,7 @@ public final class ReachabilityParametersResolver {
 
   @VisibleForTesting
   ReachabilityParametersResolver(
-      Batfish batfish, ReachabilityParameters params, NetworkSnapshot snapshot) {
+      IBatfish batfish, ReachabilityParameters params, NetworkSnapshot snapshot) {
     _dataPlane = batfish.loadDataPlane();
     _params = params;
     _context = new SpecifierContextImpl(batfish, snapshot);
@@ -54,7 +55,7 @@ public final class ReachabilityParametersResolver {
   }
 
   public static ResolvedReachabilityParameters resolveReachabilityParameters(
-      Batfish batfish, ReachabilityParameters params, NetworkSnapshot snapshot)
+      IBatfish batfish, ReachabilityParameters params, NetworkSnapshot snapshot)
       throws InvalidReachabilityParametersException {
 
     ReachabilityParametersResolver resolver =

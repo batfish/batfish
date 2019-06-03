@@ -71,6 +71,11 @@ APPLICATION
     'application'
 ;
 
+APPLICATION_GROUP
+:
+    'application-group'
+;
+
 AUTHENTICATION
 :
     'authentication'
@@ -176,6 +181,11 @@ DISABLED
     'disabled'
 ;
 
+DISPLAY_NAME
+:
+    'display-name'
+;
+
 DNS
 :
     'dns'
@@ -214,6 +224,11 @@ ENCRYPTION
 ESP
 :
     'esp'
+;
+
+EXTERNAL
+:
+    'external'
 ;
 
 ETHERNET
@@ -306,6 +321,11 @@ IKE_CRYPTO_PROFILES
     'ike-crypto-profiles'
 ;
 
+IMPORT
+:
+    'import'
+;
+
 INTERFACE
 :
     'interface'
@@ -339,6 +359,11 @@ IPSEC_CRYPTO_PROFILES
 IPV6
 :
     'ipv6'
+;
+
+LAYER2
+:
+    'layer2'
 ;
 
 LAYER3
@@ -481,6 +506,16 @@ PORT
     'port'
 ;
 
+POST_RULEBASE
+:
+    'post-rulebase'
+;
+
+PRE_RULEBASE
+:
+    'pre-rulebase'
+;
+
 PRIMARY
 :
     'primary'
@@ -616,6 +651,11 @@ SHARED
     'shared'
 ;
 
+SHARED_GATEWAY
+:
+    'shared-gateway'
+;
+
 SOURCE
 :
     'source'
@@ -654,6 +694,11 @@ SYSTEM
 TAG
 :
     'tag'
+;
+
+TAP
+:
+    'tap'
 ;
 
 TCP
@@ -714,6 +759,16 @@ UPDATE_SERVER
 VIRTUAL_ROUTER
 :
     'virtual-router'
+;
+
+VIRTUAL_WIRE
+:
+    'virtual-wire'
+;
+
+VISIBLE_VSYS
+:
+    'visible-vsys'
 ;
 
 VLAN

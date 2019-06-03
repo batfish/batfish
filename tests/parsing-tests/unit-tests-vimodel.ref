@@ -29692,6 +29692,14 @@
           }
         }
       },
+      "paloalto_applications" : {
+        "configurationFormat" : "PALO_ALTO_NESTED",
+        "name" : "paloalto_applications",
+        "defaultCrossZoneAction" : "DENY",
+        "defaultInboundAction" : "PERMIT",
+        "deviceType" : "SWITCH",
+        "vendorFamily" : { }
+      },
       "paloalto_interfaces" : {
         "configurationFormat" : "PALO_ALTO_NESTED",
         "name" : "paloalto_interfaces",
@@ -29713,7 +29721,6 @@
             "ospfHelloMultiplier" : 0,
             "ospfPassive" : false,
             "ospfPointToPoint" : false,
-            "outgoingFilter" : "~ethernet1/1~OUTGOING_FILTER~",
             "proxyArp" : false,
             "ripEnabled" : false,
             "ripPassive" : false,
@@ -29739,7 +29746,6 @@
             "ospfHelloMultiplier" : 0,
             "ospfPassive" : false,
             "ospfPointToPoint" : false,
-            "outgoingFilter" : "~ethernet1/1.5~OUTGOING_FILTER~",
             "proxyArp" : false,
             "ripEnabled" : false,
             "ripPassive" : false,
@@ -29765,7 +29771,6 @@
             "ospfHelloMultiplier" : 0,
             "ospfPassive" : false,
             "ospfPointToPoint" : false,
-            "outgoingFilter" : "~loopback~OUTGOING_FILTER~",
             "proxyArp" : false,
             "ripEnabled" : false,
             "ripPassive" : false,
@@ -29790,7 +29795,6 @@
             "ospfHelloMultiplier" : 0,
             "ospfPassive" : false,
             "ospfPointToPoint" : false,
-            "outgoingFilter" : "~tunnel~OUTGOING_FILTER~",
             "proxyArp" : false,
             "ripEnabled" : false,
             "ripPassive" : false,
@@ -29816,7 +29820,6 @@
             "ospfHelloMultiplier" : 0,
             "ospfPassive" : false,
             "ospfPointToPoint" : false,
-            "outgoingFilter" : "~tunnel.3~OUTGOING_FILTER~",
             "proxyArp" : false,
             "ripEnabled" : false,
             "ripPassive" : false,
@@ -29842,7 +29845,6 @@
             "ospfHelloMultiplier" : 0,
             "ospfPassive" : false,
             "ospfPointToPoint" : false,
-            "outgoingFilter" : "~vlan~OUTGOING_FILTER~",
             "proxyArp" : false,
             "ripEnabled" : false,
             "ripPassive" : false,
@@ -29852,74 +29854,6 @@
             "switchportTrunkEncapsulation" : "DOT1Q",
             "type" : "PHYSICAL",
             "vrf" : "~NULL_VRF~"
-          }
-        },
-        "ipAccessLists" : {
-          "~ethernet1/1.5~OUTGOING_FILTER~" : {
-            "name" : "~ethernet1/1.5~OUTGOING_FILTER~",
-            "lines" : [
-              {
-                "action" : "DENY",
-                "matchCondition" : {
-                  "class" : "org.batfish.datamodel.acl.TrueExpr"
-                }
-              }
-            ]
-          },
-          "~ethernet1/1~OUTGOING_FILTER~" : {
-            "name" : "~ethernet1/1~OUTGOING_FILTER~",
-            "lines" : [
-              {
-                "action" : "DENY",
-                "matchCondition" : {
-                  "class" : "org.batfish.datamodel.acl.TrueExpr"
-                }
-              }
-            ]
-          },
-          "~loopback~OUTGOING_FILTER~" : {
-            "name" : "~loopback~OUTGOING_FILTER~",
-            "lines" : [
-              {
-                "action" : "DENY",
-                "matchCondition" : {
-                  "class" : "org.batfish.datamodel.acl.TrueExpr"
-                }
-              }
-            ]
-          },
-          "~tunnel.3~OUTGOING_FILTER~" : {
-            "name" : "~tunnel.3~OUTGOING_FILTER~",
-            "lines" : [
-              {
-                "action" : "DENY",
-                "matchCondition" : {
-                  "class" : "org.batfish.datamodel.acl.TrueExpr"
-                }
-              }
-            ]
-          },
-          "~tunnel~OUTGOING_FILTER~" : {
-            "name" : "~tunnel~OUTGOING_FILTER~",
-            "lines" : [
-              {
-                "action" : "DENY",
-                "matchCondition" : {
-                  "class" : "org.batfish.datamodel.acl.TrueExpr"
-                }
-              }
-            ]
-          },
-          "~vlan~OUTGOING_FILTER~" : {
-            "name" : "~vlan~OUTGOING_FILTER~",
-            "lines" : [
-              {
-                "action" : "DENY",
-                "matchCondition" : {
-                  "class" : "org.batfish.datamodel.acl.TrueExpr"
-                }
-              }
-            ]
           }
         },
         "vendorFamily" : { },
@@ -29956,6 +29890,245 @@
           }
         },
         "vendorFamily" : { }
+      },
+      "paloalto_zones" : {
+        "configurationFormat" : "PALO_ALTO_NESTED",
+        "name" : "paloalto_zones",
+        "defaultCrossZoneAction" : "DENY",
+        "defaultInboundAction" : "PERMIT",
+        "deviceType" : "SWITCH",
+        "interfaces" : {
+          "ethernet1/1" : {
+            "name" : "ethernet1/1",
+            "active" : false,
+            "additionalArpIps" : {
+              "class" : "org.batfish.datamodel.EmptyIpSpace"
+            },
+            "allowedVlans" : "",
+            "autostate" : true,
+            "mtu" : 1500,
+            "ospfDeadInterval" : 0,
+            "ospfEnabled" : false,
+            "ospfHelloMultiplier" : 0,
+            "ospfPassive" : false,
+            "ospfPointToPoint" : false,
+            "proxyArp" : false,
+            "ripEnabled" : false,
+            "ripPassive" : false,
+            "spanningTreePortfast" : false,
+            "switchport" : false,
+            "switchportMode" : "NONE",
+            "switchportTrunkEncapsulation" : "DOT1Q",
+            "type" : "PHYSICAL",
+            "vrf" : "~NULL_VRF~",
+            "zone" : "zl2"
+          },
+          "ethernet1/2" : {
+            "name" : "ethernet1/2",
+            "active" : false,
+            "additionalArpIps" : {
+              "class" : "org.batfish.datamodel.EmptyIpSpace"
+            },
+            "allowedVlans" : "",
+            "autostate" : true,
+            "mtu" : 1500,
+            "ospfDeadInterval" : 0,
+            "ospfEnabled" : false,
+            "ospfHelloMultiplier" : 0,
+            "ospfPassive" : false,
+            "ospfPointToPoint" : false,
+            "proxyArp" : false,
+            "ripEnabled" : false,
+            "ripPassive" : false,
+            "spanningTreePortfast" : false,
+            "switchport" : false,
+            "switchportMode" : "NONE",
+            "switchportTrunkEncapsulation" : "DOT1Q",
+            "type" : "PHYSICAL",
+            "vrf" : "~NULL_VRF~",
+            "zone" : "zl3"
+          },
+          "ethernet1/3" : {
+            "name" : "ethernet1/3",
+            "active" : false,
+            "additionalArpIps" : {
+              "class" : "org.batfish.datamodel.EmptyIpSpace"
+            },
+            "allowedVlans" : "",
+            "autostate" : true,
+            "mtu" : 1500,
+            "ospfDeadInterval" : 0,
+            "ospfEnabled" : false,
+            "ospfHelloMultiplier" : 0,
+            "ospfPassive" : false,
+            "ospfPointToPoint" : false,
+            "proxyArp" : false,
+            "ripEnabled" : false,
+            "ripPassive" : false,
+            "spanningTreePortfast" : false,
+            "switchport" : false,
+            "switchportMode" : "NONE",
+            "switchportTrunkEncapsulation" : "DOT1Q",
+            "type" : "PHYSICAL",
+            "vrf" : "~NULL_VRF~",
+            "zone" : "ztap"
+          },
+          "ethernet1/4" : {
+            "name" : "ethernet1/4",
+            "active" : false,
+            "additionalArpIps" : {
+              "class" : "org.batfish.datamodel.EmptyIpSpace"
+            },
+            "allowedVlans" : "",
+            "autostate" : true,
+            "mtu" : 1500,
+            "ospfDeadInterval" : 0,
+            "ospfEnabled" : false,
+            "ospfHelloMultiplier" : 0,
+            "ospfPassive" : false,
+            "ospfPointToPoint" : false,
+            "proxyArp" : false,
+            "ripEnabled" : false,
+            "ripPassive" : false,
+            "spanningTreePortfast" : false,
+            "switchport" : false,
+            "switchportMode" : "NONE",
+            "switchportTrunkEncapsulation" : "DOT1Q",
+            "type" : "PHYSICAL",
+            "vrf" : "~NULL_VRF~",
+            "zone" : "zvirtual-wire"
+          }
+        },
+        "ipAccessLists" : {
+          "zone~zext~vsys10~to~zone~zl2~vsys10" : {
+            "name" : "zone~zext~vsys10~to~zone~zl2~vsys10"
+          },
+          "zone~zext~vsys10~to~zone~zl3~vsys10" : {
+            "name" : "zone~zext~vsys10~to~zone~zl3~vsys10"
+          },
+          "zone~zext~vsys10~to~zone~ztap~vsys10" : {
+            "name" : "zone~zext~vsys10~to~zone~ztap~vsys10"
+          },
+          "zone~zext~vsys10~to~zone~zvirtual-wire~vsys10" : {
+            "name" : "zone~zext~vsys10~to~zone~zvirtual-wire~vsys10"
+          },
+          "zone~zl2~vsys10~to~zone~zext~vsys10" : {
+            "name" : "zone~zl2~vsys10~to~zone~zext~vsys10"
+          },
+          "zone~zl2~vsys10~to~zone~zl2~vsys10" : {
+            "name" : "zone~zl2~vsys10~to~zone~zl2~vsys10",
+            "lines" : [
+              {
+                "action" : "PERMIT",
+                "matchCondition" : {
+                  "class" : "org.batfish.datamodel.acl.TrueExpr"
+                },
+                "name" : "Accept intrazone by default"
+              }
+            ]
+          },
+          "zone~zl3~vsys10~to~zone~zext~vsys10" : {
+            "name" : "zone~zl3~vsys10~to~zone~zext~vsys10"
+          },
+          "zone~zl3~vsys10~to~zone~zl3~vsys10" : {
+            "name" : "zone~zl3~vsys10~to~zone~zl3~vsys10",
+            "lines" : [
+              {
+                "action" : "PERMIT",
+                "matchCondition" : {
+                  "class" : "org.batfish.datamodel.acl.TrueExpr"
+                },
+                "name" : "Accept intrazone by default"
+              }
+            ]
+          },
+          "zone~ztap~vsys10~to~zone~zext~vsys10" : {
+            "name" : "zone~ztap~vsys10~to~zone~zext~vsys10"
+          },
+          "zone~ztap~vsys10~to~zone~ztap~vsys10" : {
+            "name" : "zone~ztap~vsys10~to~zone~ztap~vsys10",
+            "lines" : [
+              {
+                "action" : "PERMIT",
+                "matchCondition" : {
+                  "class" : "org.batfish.datamodel.acl.TrueExpr"
+                },
+                "name" : "Accept intrazone by default"
+              }
+            ]
+          },
+          "zone~zvirtual-wire~vsys10~to~zone~zext~vsys10" : {
+            "name" : "zone~zvirtual-wire~vsys10~to~zone~zext~vsys10"
+          },
+          "zone~zvirtual-wire~vsys10~to~zone~zvirtual-wire~vsys10" : {
+            "name" : "zone~zvirtual-wire~vsys10~to~zone~zvirtual-wire~vsys10",
+            "lines" : [
+              {
+                "action" : "PERMIT",
+                "matchCondition" : {
+                  "class" : "org.batfish.datamodel.acl.TrueExpr"
+                },
+                "name" : "Accept intrazone by default"
+              }
+            ]
+          },
+          "~zext~vsys10~OUTGOING_FILTER~" : {
+            "name" : "~zext~vsys10~OUTGOING_FILTER~"
+          },
+          "~zl2~vsys10~OUTGOING_FILTER~" : {
+            "name" : "~zl2~vsys10~OUTGOING_FILTER~"
+          },
+          "~zl3~vsys10~OUTGOING_FILTER~" : {
+            "name" : "~zl3~vsys10~OUTGOING_FILTER~"
+          },
+          "~ztap~vsys10~OUTGOING_FILTER~" : {
+            "name" : "~ztap~vsys10~OUTGOING_FILTER~"
+          },
+          "~zvirtual-wire~vsys10~OUTGOING_FILTER~" : {
+            "name" : "~zvirtual-wire~vsys10~OUTGOING_FILTER~"
+          }
+        },
+        "vendorFamily" : { },
+        "vrfs" : {
+          "~NULL_VRF~" : {
+            "name" : "~NULL_VRF~",
+            "interfaces" : [
+              "ethernet1/1",
+              "ethernet1/2",
+              "ethernet1/3",
+              "ethernet1/4"
+            ]
+          }
+        },
+        "zones" : {
+          "zext~vsys10" : {
+            "name" : "zext~vsys10"
+          },
+          "zl2~vsys10" : {
+            "name" : "zl2~vsys10",
+            "interfaces" : [
+              "ethernet1/1"
+            ]
+          },
+          "zl3~vsys10" : {
+            "name" : "zl3~vsys10",
+            "interfaces" : [
+              "ethernet1/2"
+            ]
+          },
+          "ztap~vsys10" : {
+            "name" : "ztap~vsys10",
+            "interfaces" : [
+              "ethernet1/3"
+            ]
+          },
+          "zvirtual-wire~vsys10" : {
+            "name" : "zvirtual-wire~vsys10",
+            "interfaces" : [
+              "ethernet1/4"
+            ]
+          }
+        }
       },
       "peer_template" : {
         "configurationFormat" : "CISCO_NX",

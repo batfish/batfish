@@ -70,7 +70,7 @@ public class PropertySpecifierTest {
   @Test
   public void fillPropertyFail() {
     PropertyDescriptor<Configuration> propDescriptor =
-        new PropertyDescriptor<>(null, Schema.list(Schema.STRING));
+        new PropertyDescriptor<>(null, Schema.list(Schema.STRING), "dummy");
 
     _thrown.expect(ClassCastException.class);
     _thrown.expectMessage("Cannot recover object");

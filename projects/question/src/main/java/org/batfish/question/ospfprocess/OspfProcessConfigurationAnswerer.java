@@ -20,7 +20,6 @@ import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.common.Answerer;
 import org.batfish.common.BatfishException;
 import org.batfish.common.plugin.IBatfish;
-import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.datamodel.answers.Schema;
 import org.batfish.datamodel.ospf.OspfProcess;
@@ -34,14 +33,16 @@ import org.batfish.datamodel.table.Row;
 import org.batfish.datamodel.table.Row.RowBuilder;
 import org.batfish.datamodel.table.TableAnswerElement;
 import org.batfish.datamodel.table.TableMetadata;
+import org.batfish.specifier.NodeSpecifier;
+import org.batfish.specifier.SpecifierContext;
 
 /** Implements {@link OspfProcessConfigurationQuestion}. */
 @ParametersAreNonnullByDefault
 public final class OspfProcessConfigurationAnswerer extends Answerer {
 
-  static final String COL_NODE = "Node";
-  static final String COL_VRF = "VRF";
-  static final String COL_PROCESS_ID = "Process_ID";
+  public static final String COL_NODE = "Node";
+  public static final String COL_VRF = "VRF";
+  public static final String COL_PROCESS_ID = "Process_ID";
 
   // this list also ensures order of columns excluding keys
   static final List<String> COLUMNS_FROM_PROP_SPEC =
@@ -55,8 +56,6 @@ public final class OspfProcessConfigurationAnswerer extends Answerer {
   @Override
   public AnswerElement answer() {
     OspfProcessConfigurationQuestion question = (OspfProcessConfigurationQuestion) _question;
-    Map<String, Configuration> configurations = _batfish.loadConfigurations();
-    Set<String> nodes = question.getNodesSpecifier().resolve(_batfish.specifierContext());
 
     Set<String> matchingProperties =
         ImmutableSet.copyOf(question.getProperties().getMatchingProperties());
@@ -72,25 +71,28 @@ public final class OspfProcessConfigurationAnswerer extends Answerer {
     TableAnswerElement answer = new TableAnswerElement(tableMetadata);
 
     Multiset<Row> propertyRows =
-        getRows(orderedProperties, configurations, nodes, tableMetadata.toColumnMap());
+        getProperties(
+            orderedProperties,
+            _batfish.specifierContext(),
+            question.getNodesSpecifier(),
+            tableMetadata.toColumnMap());
 
     answer.postProcessAnswer(question, propertyRows);
     return answer;
   }
 
-  @VisibleForTesting
-  static List<ColumnMetadata> createColumnMetadata(List<String> properties) {
+  public static List<ColumnMetadata> createColumnMetadata(List<String> properties) {
     List<ColumnMetadata> columnMetadatas = new ArrayList<>();
     columnMetadatas.add(new ColumnMetadata(COL_NODE, Schema.NODE, "Node", true, false));
-    columnMetadatas.add(new ColumnMetadata(COL_VRF, Schema.STRING, "VRF", true, false));
+    columnMetadatas.add(new ColumnMetadata(COL_VRF, Schema.STRING, "VRF name", true, false));
     columnMetadatas.add(
         new ColumnMetadata(COL_PROCESS_ID, Schema.STRING, "Process ID", true, false));
     for (String property : properties) {
       columnMetadatas.add(
           new ColumnMetadata(
-              property,
+              getColumnName(property),
               OspfPropertySpecifier.JAVA_MAP.get(property).getSchema(),
-              "Property " + property,
+              OspfPropertySpecifier.JAVA_MAP.get(property).getDescription(),
               false,
               true));
     }
@@ -110,28 +112,34 @@ public final class OspfProcessConfigurationAnswerer extends Answerer {
             : textDescription);
   }
 
-  @VisibleForTesting
-  static Multiset<Row> getRows(
+  public static Multiset<Row> getProperties(
       List<String> properties,
-      Map<String, Configuration> configurations,
-      Set<String> nodes,
+      SpecifierContext ctxt,
+      NodeSpecifier nodeSpecifier,
       Map<String, ColumnMetadata> columnMetadata) {
 
     Multiset<Row> rows = HashMultiset.create();
-    nodes.forEach(
-        nodeName -> {
-          configurations
-              .get(nodeName)
-              .getVrfs()
-              .values()
-              .forEach(
-                  vrf -> {
-                    for (OspfProcess ospfProcess : vrf.getOspfProcesses().values()) {
-                      rows.add(
-                          getRow(nodeName, vrf.getName(), ospfProcess, properties, columnMetadata));
-                    }
-                  });
-        });
+    nodeSpecifier
+        .resolve(ctxt)
+        .forEach(
+            nodeName -> {
+              ctxt.getConfigs()
+                  .get(nodeName)
+                  .getVrfs()
+                  .values()
+                  .forEach(
+                      vrf -> {
+                        for (OspfProcess ospfProcess : vrf.getOspfProcesses().values()) {
+                          rows.add(
+                              getRow(
+                                  nodeName,
+                                  vrf.getName(),
+                                  ospfProcess,
+                                  properties,
+                                  columnMetadata));
+                        }
+                      });
+            });
     return rows;
   }
 
@@ -168,5 +176,10 @@ public final class OspfProcessConfigurationAnswerer extends Answerer {
       }
     }
     return rowBuilder.build();
+  }
+
+  /** Returns the name of the column that contains the value of property {@code property} */
+  public static String getColumnName(String property) {
+    return property;
   }
 }

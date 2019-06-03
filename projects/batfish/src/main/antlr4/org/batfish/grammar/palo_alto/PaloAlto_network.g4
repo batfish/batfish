@@ -86,6 +86,7 @@ s_network
         | sn_interface
         | sn_profiles
         | sn_qos
+        | sn_shared_gateway
         | sn_virtual_router
     )
 ;
@@ -122,6 +123,55 @@ sn_profiles
 sn_qos
 :
     QOS null_rest_of_line
+;
+
+sn_shared_gateway
+:
+    SHARED_GATEWAY name = variable
+    (
+        snsg_display_name
+        | snsg_import
+        | snsg_zone
+    )?
+;
+
+snsg_display_name
+:
+    DISPLAY_NAME name = variable
+;
+
+snsg_import
+:
+    IMPORT
+    (
+        snsgi_interface
+    )?
+;
+
+snsgi_interface
+:
+    NETWORK INTERFACE variable_list
+;
+
+snsg_zone
+:
+    ZONE name = variable
+    (
+        snsgz_network
+    )?
+;
+
+snsgz_network
+:
+    NETWORK
+    (
+        snsgzn_layer3
+    )?
+;
+
+snsgzn_layer3
+:
+    LAYER3 variable_list
 ;
 
 sn_virtual_router

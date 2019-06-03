@@ -808,11 +808,17 @@
         "ospf-disable" : [
           "configs/juniper_ospf_disable"
         ],
+        "paloalto_applications" : [
+          "configs/palo_alto/applications"
+        ],
         "paloalto_interfaces" : [
           "configs/palo_alto/interfaces"
         ],
         "paloalto_policy" : [
           "configs/palo_alto/policy"
+        ],
+        "paloalto_zones" : [
+          "configs/palo_alto/zones"
         ],
         "peer_template" : [
           "configs/peer_template"
@@ -1163,8 +1169,10 @@
         "configs/nxos_route_map_continue" : "PASSED",
         "configs/nxos_system" : "PASSED",
         "configs/openflow" : "PASSED",
+        "configs/palo_alto/applications" : "PASSED",
         "configs/palo_alto/interfaces" : "PASSED",
         "configs/palo_alto/policy" : "PASSED",
+        "configs/palo_alto/zones" : "PASSED",
         "configs/peer_template" : "PASSED",
         "configs/pim" : "PASSED",
         "configs/pim_snooping" : "PASSED",
@@ -70123,6 +70131,84 @@
             "  EOF:<EOF>)"
           ]
         },
+        "configs/palo_alto/applications" : {
+          "sentences" : [
+            "(palo_alto_configuration",
+            "  (set_line",
+            "    SET:'set'",
+            "    (set_line_tail",
+            "      (set_line_config_devices",
+            "        CONFIG:'config'",
+            "        DEVICES:'devices'",
+            "        name = (variable",
+            "          VARIABLE:'localhost.localdomain')",
+            "        (statement_config_devices",
+            "          (s_deviceconfig",
+            "            DEVICECONFIG:'deviceconfig'",
+            "            (sd_system",
+            "              SYSTEM:'system'",
+            "              (sds_hostname",
+            "                HOSTNAME:'hostname'",
+            "                name = (variable",
+            "                  DOUBLE_QUOTED_STRING:'\"paloalto_applications\"')))))))",
+            "    NEWLINE:'\\n')",
+            "  (set_line",
+            "    SET:'set'",
+            "    (set_line_tail",
+            "      (s_policy",
+            "        POLICY:'policy'",
+            "        (s_policy_panorama",
+            "          PANORAMA:'panorama'",
+            "          (ss_common",
+            "            (s_application_group",
+            "              APPLICATION_GROUP:'application-group'",
+            "              (sappg_definition",
+            "                name = (variable",
+            "                  VARIABLE:'SSH_OR_SSL')",
+            "                (sappg_members",
+            "                  MEMBERS:'members'",
+            "                  (variable_list",
+            "                    (variable_list_item",
+            "                      VARIABLE:'ssh')))))))))",
+            "    NEWLINE:'\\n')",
+            "  (set_line",
+            "    SET:'set'",
+            "    (set_line_tail",
+            "      (s_policy",
+            "        POLICY:'policy'",
+            "        (s_policy_panorama",
+            "          PANORAMA:'panorama'",
+            "          (ss_common",
+            "            (s_application_group",
+            "              APPLICATION_GROUP:'application-group'",
+            "              (sappg_definition",
+            "                name = (variable",
+            "                  VARIABLE:'SSH_OR_SSL')",
+            "                (sappg_members",
+            "                  MEMBERS:'members'",
+            "                  (variable_list",
+            "                    (variable_list_item",
+            "                      VARIABLE:'ssl')))))))))",
+            "    NEWLINE:'\\n')",
+            "  (set_line",
+            "    SET:'set'",
+            "    (set_line_tail",
+            "      (s_policy",
+            "        POLICY:'policy'",
+            "        (s_policy_panorama",
+            "          PANORAMA:'panorama'",
+            "          (ss_common",
+            "            (s_application_group",
+            "              APPLICATION_GROUP:'application-group'",
+            "              (sappg_definition",
+            "                name = (variable",
+            "                  VARIABLE:'EMPTY')",
+            "                (sappg_members",
+            "                  MEMBERS:'members')))))))",
+            "    NEWLINE:'\\n')",
+            "  EOF:<EOF>)"
+          ]
+        },
         "configs/palo_alto/interfaces" : {
           "sentences" : [
             "(palo_alto_configuration",
@@ -70336,6 +70422,324 @@
             "              (sa_ip_netmask",
             "                IP_NETMASK:'ip-netmask'",
             "                IP_PREFIX:'10.0.0.0/8'))))))",
+            "    NEWLINE:'\\n')",
+            "  EOF:<EOF>)"
+          ]
+        },
+        "configs/palo_alto/zones" : {
+          "sentences" : [
+            "(palo_alto_configuration",
+            "  (set_line",
+            "    SET:'set'",
+            "    (set_line_tail",
+            "      (set_line_config_devices",
+            "        CONFIG:'config'",
+            "        DEVICES:'devices'",
+            "        name = (variable",
+            "          VARIABLE:'localhost.localdomain')",
+            "        (statement_config_devices",
+            "          (s_deviceconfig",
+            "            DEVICECONFIG:'deviceconfig'",
+            "            (sd_system",
+            "              SYSTEM:'system'",
+            "              (sds_hostname",
+            "                HOSTNAME:'hostname'",
+            "                name = (variable",
+            "                  DOUBLE_QUOTED_STRING:'\"paloalto_zones\"')))))))",
+            "    NEWLINE:'\\n')",
+            "  (set_line",
+            "    SET:'set'",
+            "    (set_line_tail",
+            "      (set_line_config_devices",
+            "        CONFIG:'config'",
+            "        DEVICES:'devices'",
+            "        name = (variable",
+            "          VARIABLE:'localhost.localdomain')",
+            "        (statement_config_devices",
+            "          (s_network",
+            "            NETWORK:'network'",
+            "            (sn_interface",
+            "              INTERFACE:'interface'",
+            "              (sni_ethernet",
+            "                ETHERNET:'ethernet'",
+            "                name = (variable",
+            "                  VARIABLE:'ethernet1/1')",
+            "                (snie_layer2",
+            "                  LAYER2:'layer2')))))))",
+            "    NEWLINE:'\\n')",
+            "  (set_line",
+            "    SET:'set'",
+            "    (set_line_tail",
+            "      (set_line_config_devices",
+            "        CONFIG:'config'",
+            "        DEVICES:'devices'",
+            "        name = (variable",
+            "          VARIABLE:'localhost.localdomain')",
+            "        (statement_config_devices",
+            "          (s_network",
+            "            NETWORK:'network'",
+            "            (sn_interface",
+            "              INTERFACE:'interface'",
+            "              (sni_ethernet",
+            "                ETHERNET:'ethernet'",
+            "                name = (variable",
+            "                  VARIABLE:'ethernet1/2')",
+            "                (snie_layer3",
+            "                  LAYER3:'layer3')))))))",
+            "    NEWLINE:'\\n')",
+            "  (set_line",
+            "    SET:'set'",
+            "    (set_line_tail",
+            "      (set_line_config_devices",
+            "        CONFIG:'config'",
+            "        DEVICES:'devices'",
+            "        name = (variable",
+            "          VARIABLE:'localhost.localdomain')",
+            "        (statement_config_devices",
+            "          (s_network",
+            "            NETWORK:'network'",
+            "            (sn_interface",
+            "              INTERFACE:'interface'",
+            "              (sni_ethernet",
+            "                ETHERNET:'ethernet'",
+            "                name = (variable",
+            "                  VARIABLE:'ethernet1/3')",
+            "                (snie_tap",
+            "                  TAP:'tap')))))))",
+            "    NEWLINE:'\\n')",
+            "  (set_line",
+            "    SET:'set'",
+            "    (set_line_tail",
+            "      (set_line_config_devices",
+            "        CONFIG:'config'",
+            "        DEVICES:'devices'",
+            "        name = (variable",
+            "          VARIABLE:'localhost.localdomain')",
+            "        (statement_config_devices",
+            "          (s_network",
+            "            NETWORK:'network'",
+            "            (sn_interface",
+            "              INTERFACE:'interface'",
+            "              (sni_ethernet",
+            "                ETHERNET:'ethernet'",
+            "                name = (variable",
+            "                  VARIABLE:'ethernet1/4')",
+            "                (snie_virtual_wire",
+            "                  VIRTUAL_WIRE:'virtual-wire')))))))",
+            "    NEWLINE:'\\n')",
+            "  (set_line",
+            "    SET:'set'",
+            "    (set_line_tail",
+            "      (set_line_config_devices",
+            "        CONFIG:'config'",
+            "        DEVICES:'devices'",
+            "        name = (variable",
+            "          VARIABLE:'localhost.localdomain')",
+            "        (statement_config_devices",
+            "          (s_vsys",
+            "            VSYS:'vsys'",
+            "            name = (variable",
+            "              VARIABLE:'vsys10')",
+            "            (sv_import",
+            "              IMPORT:'import'",
+            "              (svi_network",
+            "                NETWORK:'network'",
+            "                (svin_interface",
+            "                  INTERFACE:'interface'",
+            "                  (variable_list",
+            "                    (variable_list_item",
+            "                      VARIABLE:'ethernet1/1')))))))))",
+            "    NEWLINE:'\\n')",
+            "  (set_line",
+            "    SET:'set'",
+            "    (set_line_tail",
+            "      (set_line_config_devices",
+            "        CONFIG:'config'",
+            "        DEVICES:'devices'",
+            "        name = (variable",
+            "          VARIABLE:'localhost.localdomain')",
+            "        (statement_config_devices",
+            "          (s_vsys",
+            "            VSYS:'vsys'",
+            "            name = (variable",
+            "              VARIABLE:'vsys10')",
+            "            (sv_import",
+            "              IMPORT:'import'",
+            "              (svi_network",
+            "                NETWORK:'network'",
+            "                (svin_interface",
+            "                  INTERFACE:'interface'",
+            "                  (variable_list",
+            "                    (variable_list_item",
+            "                      VARIABLE:'ethernet1/2')))))))))",
+            "    NEWLINE:'\\n')",
+            "  (set_line",
+            "    SET:'set'",
+            "    (set_line_tail",
+            "      (set_line_config_devices",
+            "        CONFIG:'config'",
+            "        DEVICES:'devices'",
+            "        name = (variable",
+            "          VARIABLE:'localhost.localdomain')",
+            "        (statement_config_devices",
+            "          (s_vsys",
+            "            VSYS:'vsys'",
+            "            name = (variable",
+            "              VARIABLE:'vsys10')",
+            "            (sv_import",
+            "              IMPORT:'import'",
+            "              (svi_network",
+            "                NETWORK:'network'",
+            "                (svin_interface",
+            "                  INTERFACE:'interface'",
+            "                  (variable_list",
+            "                    (variable_list_item",
+            "                      VARIABLE:'ethernet1/3')))))))))",
+            "    NEWLINE:'\\n')",
+            "  (set_line",
+            "    SET:'set'",
+            "    (set_line_tail",
+            "      (set_line_config_devices",
+            "        CONFIG:'config'",
+            "        DEVICES:'devices'",
+            "        name = (variable",
+            "          VARIABLE:'localhost.localdomain')",
+            "        (statement_config_devices",
+            "          (s_vsys",
+            "            VSYS:'vsys'",
+            "            name = (variable",
+            "              VARIABLE:'vsys10')",
+            "            (sv_import",
+            "              IMPORT:'import'",
+            "              (svi_network",
+            "                NETWORK:'network'",
+            "                (svin_interface",
+            "                  INTERFACE:'interface'",
+            "                  (variable_list",
+            "                    (variable_list_item",
+            "                      VARIABLE:'ethernet1/4')))))))))",
+            "    NEWLINE:'\\n')",
+            "  (set_line",
+            "    SET:'set'",
+            "    (set_line_tail",
+            "      (set_line_config_devices",
+            "        CONFIG:'config'",
+            "        DEVICES:'devices'",
+            "        name = (variable",
+            "          VARIABLE:'localhost.localdomain')",
+            "        (statement_config_devices",
+            "          (s_vsys",
+            "            VSYS:'vsys'",
+            "            name = (variable",
+            "              VARIABLE:'vsys10')",
+            "            (s_zone",
+            "              ZONE:'zone'",
+            "              name = (variable",
+            "                VARIABLE:'zext')",
+            "              (sz_network",
+            "                NETWORK:'network'",
+            "                (szn_external",
+            "                  EXTERNAL:'external')))))))",
+            "    NEWLINE:'\\n')",
+            "  (set_line",
+            "    SET:'set'",
+            "    (set_line_tail",
+            "      (set_line_config_devices",
+            "        CONFIG:'config'",
+            "        DEVICES:'devices'",
+            "        name = (variable",
+            "          VARIABLE:'localhost.localdomain')",
+            "        (statement_config_devices",
+            "          (s_vsys",
+            "            VSYS:'vsys'",
+            "            name = (variable",
+            "              VARIABLE:'vsys10')",
+            "            (s_zone",
+            "              ZONE:'zone'",
+            "              name = (variable",
+            "                VARIABLE:'zl2')",
+            "              (sz_network",
+            "                NETWORK:'network'",
+            "                (szn_layer2",
+            "                  LAYER2:'layer2'",
+            "                  (variable_list",
+            "                    (variable_list_item",
+            "                      VARIABLE:'ethernet1/1')))))))))",
+            "    NEWLINE:'\\n')",
+            "  (set_line",
+            "    SET:'set'",
+            "    (set_line_tail",
+            "      (set_line_config_devices",
+            "        CONFIG:'config'",
+            "        DEVICES:'devices'",
+            "        name = (variable",
+            "          VARIABLE:'localhost.localdomain')",
+            "        (statement_config_devices",
+            "          (s_vsys",
+            "            VSYS:'vsys'",
+            "            name = (variable",
+            "              VARIABLE:'vsys10')",
+            "            (s_zone",
+            "              ZONE:'zone'",
+            "              name = (variable",
+            "                VARIABLE:'zl3')",
+            "              (sz_network",
+            "                NETWORK:'network'",
+            "                (szn_layer3",
+            "                  LAYER3:'layer3'",
+            "                  (variable_list",
+            "                    (variable_list_item",
+            "                      VARIABLE:'ethernet1/2')))))))))",
+            "    NEWLINE:'\\n')",
+            "  (set_line",
+            "    SET:'set'",
+            "    (set_line_tail",
+            "      (set_line_config_devices",
+            "        CONFIG:'config'",
+            "        DEVICES:'devices'",
+            "        name = (variable",
+            "          VARIABLE:'localhost.localdomain')",
+            "        (statement_config_devices",
+            "          (s_vsys",
+            "            VSYS:'vsys'",
+            "            name = (variable",
+            "              VARIABLE:'vsys10')",
+            "            (s_zone",
+            "              ZONE:'zone'",
+            "              name = (variable",
+            "                VARIABLE:'ztap')",
+            "              (sz_network",
+            "                NETWORK:'network'",
+            "                (szn_tap",
+            "                  TAP:'tap'",
+            "                  (variable_list",
+            "                    (variable_list_item",
+            "                      VARIABLE:'ethernet1/3')))))))))",
+            "    NEWLINE:'\\n')",
+            "  (set_line",
+            "    SET:'set'",
+            "    (set_line_tail",
+            "      (set_line_config_devices",
+            "        CONFIG:'config'",
+            "        DEVICES:'devices'",
+            "        name = (variable",
+            "          VARIABLE:'localhost.localdomain')",
+            "        (statement_config_devices",
+            "          (s_vsys",
+            "            VSYS:'vsys'",
+            "            name = (variable",
+            "              VARIABLE:'vsys10')",
+            "            (s_zone",
+            "              ZONE:'zone'",
+            "              name = (variable",
+            "                VARIABLE:'zvirtual-wire')",
+            "              (sz_network",
+            "                NETWORK:'network'",
+            "                (szn_virtual_wire",
+            "                  VIRTUAL_WIRE:'virtual-wire'",
+            "                  (variable_list",
+            "                    (variable_list_item",
+            "                      VARIABLE:'ethernet1/4')))))))))",
             "    NEWLINE:'\\n')",
             "  EOF:<EOF>)"
           ]
@@ -75522,8 +75926,10 @@
         "nxos_system" : "PASSED",
         "openflow" : "PASSED",
         "ospf-disable" : "PASSED",
+        "paloalto_applications" : "PASSED",
         "paloalto_interfaces" : "WARNINGS",
         "paloalto_policy" : "PASSED",
+        "paloalto_zones" : "WARNINGS",
         "peer_template" : "WARNINGS",
         "pim" : "PASSED",
         "pim_snooping" : "PASSED",
@@ -81621,6 +82027,24 @@
         },
         "configs/nxos_system" : { },
         "configs/openflow" : { },
+        "configs/palo_alto/applications" : {
+          "application-group" : {
+            "EMPTY~panorama" : {
+              "definitionLines" : [
+                19,
+                20
+              ],
+              "numReferrers" : 0
+            },
+            "SSH_OR_SSL~panorama" : {
+              "definitionLines" : [
+                16,
+                17
+              ],
+              "numReferrers" : 0
+            }
+          }
+        },
         "configs/palo_alto/interfaces" : {
           "interface" : {
             "ethernet1/1" : {
@@ -81683,6 +82107,89 @@
                 16,
                 17,
                 18
+              ],
+              "numReferrers" : 0
+            }
+          }
+        },
+        "configs/palo_alto/zones" : {
+          "interface" : {
+            "ethernet1/1" : {
+              "definitionLines" : [
+                12,
+                13,
+                14
+              ],
+              "numReferrers" : 2
+            },
+            "ethernet1/2" : {
+              "definitionLines" : [
+                12,
+                16,
+                17
+              ],
+              "numReferrers" : 2
+            },
+            "ethernet1/3" : {
+              "definitionLines" : [
+                12,
+                19,
+                20
+              ],
+              "numReferrers" : 2
+            },
+            "ethernet1/4" : {
+              "definitionLines" : [
+                12,
+                22,
+                23
+              ],
+              "numReferrers" : 2
+            }
+          },
+          "zone" : {
+            "zext~vsys10" : {
+              "definitionLines" : [
+                35,
+                36,
+                37,
+                38
+              ],
+              "numReferrers" : 0
+            },
+            "zl2~vsys10" : {
+              "definitionLines" : [
+                35,
+                41,
+                42,
+                43
+              ],
+              "numReferrers" : 0
+            },
+            "zl3~vsys10" : {
+              "definitionLines" : [
+                35,
+                46,
+                47,
+                48
+              ],
+              "numReferrers" : 0
+            },
+            "ztap~vsys10" : {
+              "definitionLines" : [
+                35,
+                51,
+                52,
+                53
+              ],
+              "numReferrers" : 0
+            },
+            "zvirtual-wire~vsys10" : {
+              "definitionLines" : [
+                35,
+                56,
+                57,
+                58
               ],
               "numReferrers" : 0
             }
@@ -82844,11 +83351,17 @@
         "configs/openflow" : [
           "openflow"
         ],
+        "configs/palo_alto/applications" : [
+          "paloalto_applications"
+        ],
         "configs/palo_alto/interfaces" : [
           "paloalto_interfaces"
         ],
         "configs/palo_alto/policy" : [
           "paloalto_policy"
+        ],
+        "configs/palo_alto/zones" : [
+          "paloalto_zones"
         ],
         "configs/peer_template" : [
           "peer_template"
@@ -87108,6 +87621,56 @@
             }
           }
         },
+        "configs/palo_alto/applications" : {
+          "application-group or application or none" : {
+            "ssh~panorama" : {
+              "application-group members" : [
+                17
+              ]
+            },
+            "ssl~panorama" : {
+              "application-group members" : [
+                17
+              ]
+            }
+          }
+        },
+        "configs/palo_alto/zones" : {
+          "interface" : {
+            "ethernet1/1" : {
+              "vsys import interface" : [
+                32
+              ],
+              "zone network layer3" : [
+                43
+              ]
+            },
+            "ethernet1/2" : {
+              "vsys import interface" : [
+                32
+              ],
+              "zone network layer3" : [
+                48
+              ]
+            },
+            "ethernet1/3" : {
+              "vsys import interface" : [
+                32
+              ],
+              "zone network layer3" : [
+                53
+              ]
+            },
+            "ethernet1/4" : {
+              "vsys import interface" : [
+                32
+              ],
+              "zone network layer3" : [
+                58
+              ]
+            }
+          }
+        },
         "configs/peer_template" : {
           "bgp template peer" : {
             "RAAS" : {
@@ -89990,6 +90553,26 @@
             }
           ]
         },
+        "paloalto_zones" : {
+          "Red flags" : [
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "Interface ethernet1/1 is not in a virtual-router, placing in ~NULL_VRF~ and shutting it down."
+            },
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "Interface ethernet1/2 is not in a virtual-router, placing in ~NULL_VRF~ and shutting it down."
+            },
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "Interface ethernet1/3 is not in a virtual-router, placing in ~NULL_VRF~ and shutting it down."
+            },
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "Interface ethernet1/4 is not in a virtual-router, placing in ~NULL_VRF~ and shutting it down."
+            }
+          ]
+        },
         "peer_template" : {
           "Red flags" : [
             {
@@ -90300,8 +90883,10 @@
         "configs/nxos_route_map_continue" : "PASSED",
         "configs/nxos_system" : "PASSED",
         "configs/openflow" : "PASSED",
+        "configs/palo_alto/applications" : "PASSED",
         "configs/palo_alto/interfaces" : "PASSED",
         "configs/palo_alto/policy" : "PASSED",
+        "configs/palo_alto/zones" : "PASSED",
         "configs/peer_template" : "PASSED",
         "configs/pim" : "PASSED",
         "configs/pim_snooping" : "PASSED",

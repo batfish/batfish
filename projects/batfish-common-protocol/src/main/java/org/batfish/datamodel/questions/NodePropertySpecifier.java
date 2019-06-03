@@ -57,6 +57,7 @@ public class NodePropertySpecifier extends PropertySpecifier {
   public static final String LOGGING_SOURCE_INTERFACE = "Logging_Source_Interface";
   public static final String NTP_SERVERS = "NTP_Servers";
   public static final String NTP_SOURCE_INTERFACE = "NTP_Source_Interface";
+  public static final String PBR_POLICIES = "PBR_Policies";
   public static final String ROUTE_FILTER_LISTS = "Route_Filter_Lists";
   public static final String ROUTE_6_FILTER_LISTS = "Route6_Filter_Lists";
   public static final String ROUTING_POLICIES = "Routing_Policies";
@@ -81,7 +82,7 @@ public class NodePropertySpecifier extends PropertySpecifier {
               new PropertyDescriptor<>(
                   Configuration::getAuthenticationKeyChains,
                   Schema.set(Schema.STRING),
-                  "Names of authentication key chains"))
+                  "Names of authentication keychains"))
           .put(
               COMMUNITY_LISTS,
               new PropertyDescriptor<>(
@@ -135,7 +136,7 @@ public class NodePropertySpecifier extends PropertySpecifier {
               new PropertyDescriptor<>(
                   Configuration::getDnsSourceInterface,
                   Schema.STRING,
-                  "Source interface to use for communicating with the DNS servers"))
+                  "Source interface to use for communicating with DNS servers"))
           .put(
               DOMAIN_NAME,
               new PropertyDescriptor<>(
@@ -191,7 +192,7 @@ public class NodePropertySpecifier extends PropertySpecifier {
               new PropertyDescriptor<>(
                   Configuration::getIpsecPhase2Policies,
                   Schema.set(Schema.STRING),
-                  "Names of IKE Phase 2 policies"))
+                  "Names of IPSec Phase 2 policies"))
           .put(
               IPSEC_PHASE2_PROPOSALS,
               new PropertyDescriptor<>(
@@ -209,7 +210,7 @@ public class NodePropertySpecifier extends PropertySpecifier {
               new PropertyDescriptor<>(
                   Configuration::getLoggingSourceInterface,
                   Schema.STRING,
-                  "Source interface for communicating with the logging servers"))
+                  "Source interface for communicating with logging servers"))
           .put(
               NTP_SERVERS,
               new PropertyDescriptor<>(
@@ -221,31 +222,37 @@ public class NodePropertySpecifier extends PropertySpecifier {
               new PropertyDescriptor<>(
                   Configuration::getNtpSourceInterface,
                   Schema.STRING,
-                  "Source interface for communication with the NTP servers"))
+                  "Source interface for communicating with NTP servers"))
+          .put(
+              PBR_POLICIES,
+              new PropertyDescriptor<>(
+                  Configuration::getPacketPolicies,
+                  Schema.set(Schema.STRING),
+                  "Names of policy-based routing (PBR) policies"))
           .put(
               ROUTE_FILTER_LISTS,
               new PropertyDescriptor<>(
                   Configuration::getRouteFilterLists,
                   Schema.set(Schema.STRING),
-                  "Names of IPv4 route filter lists"))
+                  "Names of structures that filter IPv4 routes (e.g., prefix lists)"))
           .put(
               ROUTE_6_FILTER_LISTS,
               new PropertyDescriptor<>(
                   Configuration::getRoute6FilterLists,
                   Schema.set(Schema.STRING),
-                  "Names of IPv6 route filter lists"))
+                  "Names of structures that filter IPv6 routes (e.g., prefix lists)"))
           .put(
               ROUTING_POLICIES,
               new PropertyDescriptor<>(
                   Configuration::getRoutingPolicies,
                   Schema.set(Schema.STRING),
-                  "Names of routing policies"))
+                  "Names of policies that manipulate routes (e.g., route maps)"))
           .put(
               SNMP_SOURCE_INTERFACE,
               new PropertyDescriptor<>(
                   Configuration::getSnmpSourceInterface,
                   Schema.STRING,
-                  "Source interface to use for communicating with the SNMP servers"))
+                  "Source interface to use for communicating with SNMP servers"))
           .put(
               SNMP_TRAP_SERVERS,
               new PropertyDescriptor<>(

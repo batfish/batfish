@@ -11,33 +11,29 @@ import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Stream;
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.common.util.ComparableStructure;
 import org.batfish.datamodel.answers.Schema;
 import org.batfish.datamodel.answers.Schema.Type;
 import org.batfish.datamodel.table.Row.RowBuilder;
 
+/** An abstract class that contains properties of various entities in the network */
 public abstract class PropertySpecifier {
 
+  /** A class that describes an individual property and how to get it */
   @ParametersAreNonnullByDefault
   public static class PropertyDescriptor<T> {
     @Nonnull Function<T, Object> _getter;
     @Nonnull Schema _schema;
-    @Nullable String _description;
+    @Nonnull String _description;
 
-    public PropertyDescriptor(Function<T, Object> getter, Schema schema) {
-      this(getter, schema, null);
-    }
-
-    public PropertyDescriptor(
-        Function<T, Object> getter, Schema schema, @Nullable String description) {
+    public PropertyDescriptor(Function<T, Object> getter, Schema schema, String description) {
       _getter = getter;
       _schema = schema;
       _description = description;
     }
 
-    @Nullable
+    @Nonnull
     public String getDescription() {
       return _description;
     }

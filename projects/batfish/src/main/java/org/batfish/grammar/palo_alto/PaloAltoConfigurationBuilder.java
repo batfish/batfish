@@ -2,7 +2,6 @@ package org.batfish.grammar.palo_alto;
 
 import static org.apache.commons.lang3.ObjectUtils.firstNonNull;
 import static org.batfish.representation.palo_alto.PaloAltoConfiguration.CATCHALL_APPLICATION_NAME;
-import static org.batfish.representation.palo_alto.PaloAltoConfiguration.CATCHALL_SERVICE_NAME;
 import static org.batfish.representation.palo_alto.PaloAltoConfiguration.CATCHALL_ZONE_NAME;
 import static org.batfish.representation.palo_alto.PaloAltoConfiguration.DEFAULT_VSYS_NAME;
 import static org.batfish.representation.palo_alto.PaloAltoConfiguration.PANORAMA_VSYS_NAME;
@@ -13,14 +12,19 @@ import static org.batfish.representation.palo_alto.PaloAltoStructureType.ADDRESS
 import static org.batfish.representation.palo_alto.PaloAltoStructureType.ADDRESS_GROUP_OR_ADDRESS_OBJECT_OR_NONE;
 import static org.batfish.representation.palo_alto.PaloAltoStructureType.ADDRESS_OBJECT;
 import static org.batfish.representation.palo_alto.PaloAltoStructureType.APPLICATION;
+import static org.batfish.representation.palo_alto.PaloAltoStructureType.APPLICATION_GROUP;
 import static org.batfish.representation.palo_alto.PaloAltoStructureType.APPLICATION_GROUP_OR_APPLICATION;
+import static org.batfish.representation.palo_alto.PaloAltoStructureType.APPLICATION_GROUP_OR_APPLICATION_OR_NONE;
 import static org.batfish.representation.palo_alto.PaloAltoStructureType.INTERFACE;
 import static org.batfish.representation.palo_alto.PaloAltoStructureType.RULE;
 import static org.batfish.representation.palo_alto.PaloAltoStructureType.SERVICE_GROUP;
 import static org.batfish.representation.palo_alto.PaloAltoStructureType.SERVICE_OR_SERVICE_GROUP;
 import static org.batfish.representation.palo_alto.PaloAltoStructureType.SERVICE_OR_SERVICE_GROUP_OR_NONE;
+import static org.batfish.representation.palo_alto.PaloAltoStructureType.SHARED_GATEWAY;
 import static org.batfish.representation.palo_alto.PaloAltoStructureType.ZONE;
 import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.ADDRESS_GROUP_STATIC;
+import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.APPLICATION_GROUP_MEMBERS;
+import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.IMPORT_INTERFACE;
 import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.RULEBASE_SERVICE;
 import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.RULE_APPLICATION;
 import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.RULE_DESTINATION;
@@ -31,9 +35,17 @@ import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.RULE_T
 import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.SERVICE_GROUP_MEMBER;
 import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.STATIC_ROUTE_INTERFACE;
 import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.VIRTUAL_ROUTER_INTERFACE;
+import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.VSYS_IMPORT_INTERFACE;
 import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.ZONE_INTERFACE;
+import static org.batfish.representation.palo_alto.Zone.Type.EXTERNAL;
+import static org.batfish.representation.palo_alto.Zone.Type.LAYER2;
+import static org.batfish.representation.palo_alto.Zone.Type.LAYER3;
+import static org.batfish.representation.palo_alto.Zone.Type.TAP;
+import static org.batfish.representation.palo_alto.Zone.Type.VIRTUAL_WIRE;
 
+import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.RuleContext;
@@ -64,11 +76,14 @@ import org.batfish.grammar.palo_alto.PaloAltoParser.Cp_hashContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Cp_lifetimeContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.If_commentContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Palo_alto_configurationContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Panorama_post_rulebaseContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Panorama_pre_rulebaseContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Port_or_rangeContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.S_addressContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.S_address_groupContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.S_applicationContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.S_policy_panoramaContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.S_rulebaseContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.S_serviceContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.S_service_groupContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.S_sharedContext;
@@ -82,6 +97,8 @@ import org.batfish.grammar.palo_alto.PaloAltoParser.Sag_descriptionContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sag_dynamicContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sag_staticContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sapp_descriptionContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Sappg_definitionContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Sappg_membersContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sds_default_gatewayContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sds_hostnameContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sds_ip_addressContext;
@@ -90,6 +107,7 @@ import org.batfish.grammar.palo_alto.PaloAltoParser.Sds_ntp_serversContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sdsd_serversContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sdsn_ntp_server_addressContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Set_line_config_devicesContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Sn_shared_gatewayContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sn_virtual_routerContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sni_ethernetContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sni_loopbackContext;
@@ -106,6 +124,10 @@ import org.batfish.grammar.palo_alto.PaloAltoParser.Sniel3u_tagContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Snil_unitContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Snit_unitContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sniv_unitContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Snsg_display_nameContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Snsg_zoneContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Snsgi_interfaceContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Snsgzn_layer3Context;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Snvr_interfaceContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Snvr_routing_tableContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Snvrrt_admin_distContext;
@@ -134,12 +156,20 @@ import org.batfish.grammar.palo_alto.PaloAltoParser.Sservgrp_membersContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Ssl_syslogContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Ssls_serverContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sslss_serverContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Svi_visible_vsysContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Svin_interfaceContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Szn_externalContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Szn_layer2Context;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Szn_layer3Context;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Szn_tapContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Szn_virtual_wireContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.VariableContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Variable_list_itemContext;
 import org.batfish.representation.palo_alto.AddressGroup;
 import org.batfish.representation.palo_alto.AddressObject;
 import org.batfish.representation.palo_alto.Application;
+import org.batfish.representation.palo_alto.ApplicationBuiltIn;
+import org.batfish.representation.palo_alto.ApplicationGroup;
 import org.batfish.representation.palo_alto.CryptoProfile;
 import org.batfish.representation.palo_alto.CryptoProfile.Type;
 import org.batfish.representation.palo_alto.Interface;
@@ -160,6 +190,7 @@ import org.batfish.representation.palo_alto.Zone;
 import org.batfish.vendor.StructureType;
 
 public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
+
   private PaloAltoConfiguration _configuration;
 
   private AddressGroup _currentAddressGroup;
@@ -167,6 +198,8 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
   private AddressObject _currentAddressObject;
 
   private Application _currentApplication;
+
+  private ApplicationGroup _currentApplicationGroup;
 
   private CryptoProfile _currentCrytoProfile;
 
@@ -178,6 +211,17 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
 
   private Interface _currentParentInterface;
 
+  /** Indicates which rulebase that new rules go into. */
+  private enum RulebaseId {
+    /** Vsys.getRules(). */
+    DEFAULT,
+    /** Vsys.getPreRules(). */
+    PRE,
+    /** Vsys.getPostRules(). */
+    POST
+  }
+
+  private RulebaseId _currentRuleScope;
   private Rule _currentRule;
 
   private Service _currentService;
@@ -279,9 +323,7 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
     // Use constructed object name so same-named refs across vsys are unique
     String uniqueName = computeObjectName(_currentVsys.getName(), serviceName);
 
-    if (serviceName.equals(ServiceBuiltIn.SERVICE_HTTP.getName())
-        || serviceName.equals(ServiceBuiltIn.SERVICE_HTTPS.getName())
-        || serviceName.equals(CATCHALL_SERVICE_NAME)) {
+    if (Arrays.stream(ServiceBuiltIn.values()).anyMatch(n -> serviceName.equals(n.getName()))) {
       // Built-in services can be overridden, so add optional object reference
       _configuration.referenceStructure(
           SERVICE_OR_SERVICE_GROUP_OR_NONE, uniqueName, usage, getLine(var.start));
@@ -472,6 +514,26 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
   }
 
   @Override
+  public void enterPanorama_pre_rulebase(Panorama_pre_rulebaseContext ctx) {
+    _currentRuleScope = RulebaseId.PRE;
+  }
+
+  @Override
+  public void exitPanorama_pre_rulebase(Panorama_pre_rulebaseContext ctx) {
+    _currentRuleScope = null;
+  }
+
+  @Override
+  public void enterPanorama_post_rulebase(Panorama_post_rulebaseContext ctx) {
+    _currentRuleScope = RulebaseId.POST;
+  }
+
+  @Override
+  public void exitPanorama_post_rulebase(Panorama_post_rulebaseContext ctx) {
+    _currentRuleScope = null;
+  }
+
+  @Override
   public void enterS_address(S_addressContext ctx) {
     String name = getText(ctx.name);
     if (_currentVsys.getAddressGroups().get(name) != null) {
@@ -520,7 +582,10 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
   @Override
   public void enterS_application(S_applicationContext ctx) {
     String name = ctx.name.getText();
-    _currentApplication = _currentVsys.getApplications().computeIfAbsent(name, Application::new);
+    _currentApplication =
+        _currentVsys
+            .getApplications()
+            .computeIfAbsent(name, n -> Application.builder().setName(n).build());
     // Use constructed name so same-named defs across vsys are unique
     String uniqueName = computeObjectName(_currentVsys.getName(), name);
     defineStructure(APPLICATION, uniqueName, ctx);
@@ -529,6 +594,33 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
   @Override
   public void exitS_application(S_applicationContext ctx) {
     _currentApplication = null;
+  }
+
+  @Override
+  public void enterSappg_definition(Sappg_definitionContext ctx) {
+    String name = ctx.name.getText();
+    _currentApplicationGroup =
+        _currentVsys.getApplicationGroups().computeIfAbsent(name, ApplicationGroup::new);
+    // Use constructed name so same-named defs across vsys are unique
+    String uniqueName = computeObjectName(_currentVsys.getName(), name);
+    defineStructure(APPLICATION_GROUP, uniqueName, ctx);
+  }
+
+  @Override
+  public void exitSappg_definition(Sappg_definitionContext ctx) {
+    _currentApplicationGroup = null;
+  }
+
+  @Override
+  public void exitSappg_members(Sappg_membersContext ctx) {
+    if (ctx.variable_list() != null) {
+      for (Variable_list_itemContext var : ctx.variable_list().variable_list_item()) {
+        String name = getText(var);
+        _currentApplicationGroup.getMembers().add(name);
+        String uniqueName = computeObjectName(_currentVsys.getName(), name);
+        referenceApplicationLike(name, uniqueName, APPLICATION_GROUP_MEMBERS, var);
+      }
+    }
   }
 
   @Override
@@ -663,6 +755,64 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
       _configuration.setDnsServerPrimary(getText(ctx.primary_name));
     } else if (ctx.secondary_name != null) {
       _configuration.setDnsServerSecondary(getText(ctx.secondary_name));
+    }
+  }
+
+  @Override
+  public void enterSn_shared_gateway(Sn_shared_gatewayContext ctx) {
+    String name = getText(ctx.name);
+    _currentVsys = _configuration.getVirtualSystems().computeIfAbsent(name, Vsys::new);
+    defineStructure(SHARED_GATEWAY, name, ctx);
+  }
+
+  @Override
+  public void exitSn_shared_gateway(Sn_shared_gatewayContext ctx) {
+    _currentVsys = null;
+  }
+
+  @Override
+  public void exitSnsg_display_name(Snsg_display_nameContext ctx) {
+    _currentVsys.setDisplayName(getText(ctx.name));
+  }
+
+  @Override
+  public void exitSnsgi_interface(Snsgi_interfaceContext ctx) {
+    if (ctx.variable_list() != null) {
+      for (Variable_list_itemContext var : ctx.variable_list().variable_list_item()) {
+        String name = getText(var);
+        _currentVsys.getImportedInterfaces().add(name);
+        _configuration.referenceStructure(INTERFACE, name, IMPORT_INTERFACE, getLine(var.start));
+      }
+    }
+  }
+
+  @Override
+  public void enterSnsg_zone(Snsg_zoneContext ctx) {
+    String name = getText(ctx.name);
+    _currentZone = _currentVsys.getZones().computeIfAbsent(name, n -> new Zone(n, _currentVsys));
+
+    // Use constructed zone name so same-named zone defs across vsys are unique
+    String uniqueName = computeObjectName(_currentVsys.getName(), name);
+    defineStructure(ZONE, uniqueName, ctx);
+  }
+
+  @Override
+  public void exitSnsg_zone(Snsg_zoneContext ctx) {
+    _currentZone = null;
+  }
+
+  @Override
+  public void exitSnsgzn_layer3(Snsgzn_layer3Context ctx) {
+    if (ctx.variable_list() != null) {
+      for (Variable_list_itemContext var : ctx.variable_list().variable_list_item()) {
+        String name = getText(var);
+        if (_currentVsys.getImportedInterfaces().contains(name)) {
+          _currentZone.getInterfaceNames().add(name);
+        } else {
+          _w.redFlag("Cannot add an interface to a shared-gateway zone before it is imported");
+        }
+        _configuration.referenceStructure(INTERFACE, name, ZONE_INTERFACE, getLine(var.start));
+      }
     }
   }
 
@@ -874,11 +1024,13 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
 
   @Override
   public void exitSnvr_interface(Snvr_interfaceContext ctx) {
-    for (Variable_list_itemContext var : ctx.variable_list().variable_list_item()) {
-      String name = getText(var);
-      _currentVirtualRouter.getInterfaceNames().add(name);
-      _configuration.referenceStructure(
-          INTERFACE, name, VIRTUAL_ROUTER_INTERFACE, getLine(var.start));
+    if (ctx.variable_list() != null) {
+      for (Variable_list_itemContext var : ctx.variable_list().variable_list_item()) {
+        String name = getText(var);
+        _currentVirtualRouter.getInterfaceNames().add(name);
+        _configuration.referenceStructure(
+            INTERFACE, name, VIRTUAL_ROUTER_INTERFACE, getLine(var.start));
+      }
     }
   }
 
@@ -918,7 +1070,16 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
   @Override
   public void enterSr_security(Sr_securityContext ctx) {
     String name = getText(ctx.name);
-    _currentRule = _currentVsys.getRules().computeIfAbsent(name, n -> new Rule(n, _currentVsys));
+    Map<String, Rule> rulebase;
+    if (_currentRuleScope == RulebaseId.DEFAULT) {
+      rulebase = _currentVsys.getRules();
+    } else if (_currentRuleScope == RulebaseId.PRE) {
+      rulebase = _currentVsys.getPreRules();
+    } else {
+      assert _currentRuleScope == RulebaseId.POST;
+      rulebase = _currentVsys.getPostRules();
+    }
+    _currentRule = rulebase.computeIfAbsent(name, n -> new Rule(n, _currentVsys));
 
     // Use constructed name so same-named defs across vsys are unique
     String uniqueName = computeObjectName(_currentVsys.getName(), name);
@@ -940,17 +1101,28 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
     }
   }
 
+  private void referenceApplicationLike(
+      String name, String uniqueName, PaloAltoStructureUsage usage, ParserRuleContext var) {
+    PaloAltoStructureType type =
+        name.equals(CATCHALL_APPLICATION_NAME) || ApplicationBuiltIn.FOR_NAME_MAP.containsKey(name)
+            /*
+             * Since the name matches a builtin, we'll add a reference if the user defined
+             * over the builtin, but it's okay if they did not.
+             */
+            ? APPLICATION_GROUP_OR_APPLICATION_OR_NONE
+            /* This is not a pre-defined name, the application must be defined in config. */
+            : APPLICATION_GROUP_OR_APPLICATION;
+    _configuration.referenceStructure(type, uniqueName, usage, getLine(var.start));
+  }
+
   @Override
   public void exitSrs_application(Srs_applicationContext ctx) {
     for (Variable_list_itemContext var : ctx.variable_list().variable_list_item()) {
       String name = getText(var);
+      _currentRule.getApplications().add(name);
       // Use constructed object name so same-named refs across vsys are unique
       String uniqueName = computeObjectName(_currentVsys.getName(), name);
-      if (!name.equals(CATCHALL_APPLICATION_NAME)) {
-        _configuration.referenceStructure(
-            APPLICATION_GROUP_OR_APPLICATION, uniqueName, RULE_APPLICATION, getLine(var.start));
-      }
-      _currentRule.getApplications().add(name);
+      referenceApplicationLike(name, uniqueName, RULE_APPLICATION, var);
     }
   }
 
@@ -1048,6 +1220,16 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
         _configuration.referenceStructure(ZONE, uniqueName, RULE_TO_ZONE, getLine(var.start));
       }
     }
+  }
+
+  @Override
+  public void enterS_rulebase(S_rulebaseContext ctx) {
+    _currentRuleScope = RulebaseId.DEFAULT;
+  }
+
+  @Override
+  public void exitS_rulebase(S_rulebaseContext ctx) {
+    _currentRuleScope = null;
   }
 
   @Override
@@ -1176,7 +1358,77 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
   }
 
   @Override
+  public void exitSvi_visible_vsys(Svi_visible_vsysContext ctx) {
+    if (ctx.variable_list() != null) {
+      for (Variable_list_itemContext var : ctx.variable_list().variable_list_item()) {
+        String name = getText(var);
+        _currentVsys.getImportedVsyses().add(name);
+      }
+    }
+  }
+
+  @Override
+  public void exitSvin_interface(Svin_interfaceContext ctx) {
+    if (ctx.variable_list() != null) {
+      for (Variable_list_itemContext var : ctx.variable_list().variable_list_item()) {
+        String name = getText(var);
+        _currentVsys.getImportedInterfaces().add(name);
+        _configuration.referenceStructure(
+            INTERFACE, name, VSYS_IMPORT_INTERFACE, getLine(var.start));
+      }
+    }
+  }
+
+  @Override
+  public void exitSzn_external(Szn_externalContext ctx) {
+    _currentZone.setType(EXTERNAL);
+    if (ctx.variable_list() != null) {
+      for (Variable_list_itemContext var : ctx.variable_list().variable_list_item()) {
+        String name = getText(var);
+        _currentZone.getExternalNames().add(name);
+      }
+    }
+  }
+
+  @Override
+  public void exitSzn_layer2(Szn_layer2Context ctx) {
+    _currentZone.setType(LAYER2);
+    if (ctx.variable_list() != null) {
+      for (Variable_list_itemContext var : ctx.variable_list().variable_list_item()) {
+        String name = getText(var);
+        _currentZone.getInterfaceNames().add(name);
+        _configuration.referenceStructure(INTERFACE, name, ZONE_INTERFACE, getLine(var.start));
+      }
+    }
+  }
+
+  @Override
   public void exitSzn_layer3(Szn_layer3Context ctx) {
+    _currentZone.setType(LAYER3);
+    if (ctx.variable_list() != null) {
+      for (Variable_list_itemContext var : ctx.variable_list().variable_list_item()) {
+        String name = getText(var);
+        _currentZone.getInterfaceNames().add(name);
+        _configuration.referenceStructure(INTERFACE, name, ZONE_INTERFACE, getLine(var.start));
+      }
+    }
+  }
+
+  @Override
+  public void exitSzn_tap(Szn_tapContext ctx) {
+    _currentZone.setType(TAP);
+    if (ctx.variable_list() != null) {
+      for (Variable_list_itemContext var : ctx.variable_list().variable_list_item()) {
+        String name = getText(var);
+        _currentZone.getInterfaceNames().add(name);
+        _configuration.referenceStructure(INTERFACE, name, ZONE_INTERFACE, getLine(var.start));
+      }
+    }
+  }
+
+  @Override
+  public void exitSzn_virtual_wire(Szn_virtual_wireContext ctx) {
+    _currentZone.setType(VIRTUAL_WIRE);
     if (ctx.variable_list() != null) {
       for (Variable_list_itemContext var : ctx.variable_list().variable_list_item()) {
         String name = getText(var);

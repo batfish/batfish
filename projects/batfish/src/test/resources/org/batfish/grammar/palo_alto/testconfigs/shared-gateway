@@ -1,0 +1,17 @@
+set deviceconfig system hostname shared-gateway
+set network interface ethernet ethernet1/1 layer3 ip 1.1.1.1/24
+set network interface ethernet ethernet1/2 layer3 ip 1.1.2.1/24
+
+# Correct use of interface in shared-gateway
+set network shared-gateway sg1 import network interface ethernet1/1
+set network shared-gateway sg1 display-name shared-gateway1
+set network shared-gateway sg1 zone sg1_ZONE network layer3 ethernet1/1
+
+# Incorrect use of interface in shared-gateway (not imported)
+set network shared-gateway sg2 display-name "shared gateway2"
+set network shared-gateway sg2 zone sg2_ZONE network layer3 ethernet1/2
+
+# Use of undefined interface in shared-gateway
+set network shared-gateway sg3 import network interface ethernet1/3
+set network shared-gateway sg3 display-name "invalid shared gateway"
+set network shared-gateway sg3 zone sg3_ZONE network layer3 ethernet1/3
