@@ -114,7 +114,7 @@ public class BDDReachabilityAnalysisFactorySourcesTest {
    */
   @Test
   public void preOutVrf_NodeInterfaceNeighborUnreachable_OriginatingFromDevice() {
-    Edge edge =
+    Transition transition =
         edges
             .get(
                 new PreOutInterfaceNeighborUnreachable(
@@ -122,7 +122,7 @@ public class BDDReachabilityAnalysisFactorySourcesTest {
             .get(
                 new NodeInterfaceNeighborUnreachable(
                     CONFIG_NAME, ORIGINATING_FROM_DEVICE_ACL_IFACE_NAME));
-    assertEquals(edge.getTransition(), constraint(originatingFromDeviceBdd));
+    assertEquals(transition, constraint(originatingFromDeviceBdd));
   }
 
   /**
@@ -131,7 +131,7 @@ public class BDDReachabilityAnalysisFactorySourcesTest {
    */
   @Test
   public void preOutInterfaceDelivered_NodeInterfaceDelivered_OriginatingFromDevice() {
-    Edge edge =
+    Transition transition =
         edges
             .get(
                 new PreOutInterfaceDeliveredToSubnet(
@@ -140,7 +140,7 @@ public class BDDReachabilityAnalysisFactorySourcesTest {
                 new NodeInterfaceDeliveredToSubnet(
                     CONFIG_NAME, ORIGINATING_FROM_DEVICE_ACL_IFACE_NAME));
 
-    assertEquals(edge.getTransition(), constraint(originatingFromDeviceBdd));
+    assertEquals(transition, constraint(originatingFromDeviceBdd));
   }
 
   /*
@@ -149,14 +149,14 @@ public class BDDReachabilityAnalysisFactorySourcesTest {
    */
   @Test
   public void preOutInterfaceExitsNetwork_NodeInterfaceExitsNetwork_OriginatingFromDevice() {
-    Edge edge =
+    Transition transition =
         edges
             .get(
                 new PreOutInterfaceExitsNetwork(
                     CONFIG_NAME, ORIGINATING_FROM_DEVICE_ACL_IFACE_NAME))
             .get(
                 new NodeInterfaceExitsNetwork(CONFIG_NAME, ORIGINATING_FROM_DEVICE_ACL_IFACE_NAME));
-    assertEquals(edge.getTransition(), constraint(originatingFromDeviceBdd));
+    assertEquals(transition, constraint(originatingFromDeviceBdd));
   }
 
   /*
@@ -165,7 +165,7 @@ public class BDDReachabilityAnalysisFactorySourcesTest {
    */
   @Test
   public void preOutInterfaceDelivered_NodeInterfaceDelivered_MatchSrcInterface() {
-    Edge edge =
+    Transition transition =
         edges
             .get(
                 new PreOutInterfaceDeliveredToSubnet(
@@ -173,7 +173,7 @@ public class BDDReachabilityAnalysisFactorySourcesTest {
             .get(
                 new NodeInterfaceDeliveredToSubnet(
                     CONFIG_NAME, MATCH_SRC_INTERFACE_ACL_IFACE_NAME));
-    assertEquals(edge.getTransition(), constraint(matchSrcInterfaceBdd));
+    assertEquals(transition, constraint(matchSrcInterfaceBdd));
   }
 
   /**
@@ -182,11 +182,11 @@ public class BDDReachabilityAnalysisFactorySourcesTest {
    */
   @Test
   public void preOutInterfaceExitsNetwork_NodeInterfaceExitsNetwork_MatchSrcInterface() {
-    Edge edge =
+    Transition transition =
         edges
             .get(new PreOutInterfaceExitsNetwork(CONFIG_NAME, MATCH_SRC_INTERFACE_ACL_IFACE_NAME))
             .get(new NodeInterfaceExitsNetwork(CONFIG_NAME, MATCH_SRC_INTERFACE_ACL_IFACE_NAME));
-    assertEquals(edge.getTransition(), constraint(matchSrcInterfaceBdd));
+    assertEquals(transition, constraint(matchSrcInterfaceBdd));
   }
 
   /**
@@ -195,14 +195,14 @@ public class BDDReachabilityAnalysisFactorySourcesTest {
    */
   @Test
   public void preOutVrf_NodeInterfaceInsufficientInfo_MatchSrcInterface() {
-    Edge edge =
+    Transition transition =
         edges
             .get(
                 new PreOutInterfaceInsufficientInfo(
                     CONFIG_NAME, MATCH_SRC_INTERFACE_ACL_IFACE_NAME))
             .get(
                 new NodeInterfaceInsufficientInfo(CONFIG_NAME, MATCH_SRC_INTERFACE_ACL_IFACE_NAME));
-    assertEquals(edge.getTransition(), constraint(matchSrcInterfaceBdd));
+    assertEquals(transition, constraint(matchSrcInterfaceBdd));
   }
 
   /*
@@ -212,48 +212,49 @@ public class BDDReachabilityAnalysisFactorySourcesTest {
   @Test
   public void postInVrf_NodeAccept() {
     // PostInVrf -> NodeAccept edge.
-    Edge edge = edges.get(new PostInVrf(CONFIG_NAME, VRF_NAME)).get(new NodeAccept(CONFIG_NAME));
+    Transition transition =
+        edges.get(new PostInVrf(CONFIG_NAME, VRF_NAME)).get(new NodeAccept(CONFIG_NAME));
     BDD headerSpaceBdd = factory.getVrfAcceptBDDs().get(CONFIG_NAME).get(VRF_NAME);
-    assertEquals(
-        edge.getTransition(), compose(constraint(headerSpaceBdd), removeSourceConstraint(srcMgr)));
+    assertEquals(transition, compose(constraint(headerSpaceBdd), removeSourceConstraint(srcMgr)));
   }
 
   @Test
   public void originateInterfaceLink_PreInInterface() {
-    Edge edge =
+    Transition transition =
         edges
             .get(new OriginateInterfaceLink(CONFIG_NAME, INGRESS_IFACE_NAME))
             .get(new PreInInterface(CONFIG_NAME, INGRESS_IFACE_NAME));
-    assertThat(edge.traverseForward(one), equalTo(ingressIfaceSrcIpBdd.and(matchSrcInterfaceBdd)));
-    assertThat(edge.traverseBackward(srcMgr.isValidValue()), equalTo(ingressIfaceSrcIpBdd));
-    assertThat(edge.traverseBackward(originatingFromDeviceBdd), equalTo(zero));
-    assertThat(edge.traverseBackward(matchSrcInterfaceBdd), equalTo(ingressIfaceSrcIpBdd));
+    assertThat(
+        transition.transitForward(one), equalTo(ingressIfaceSrcIpBdd.and(matchSrcInterfaceBdd)));
+    assertThat(transition.transitBackward(srcMgr.isValidValue()), equalTo(ingressIfaceSrcIpBdd));
+    assertThat(transition.transitBackward(originatingFromDeviceBdd), equalTo(zero));
+    assertThat(transition.transitBackward(matchSrcInterfaceBdd), equalTo(ingressIfaceSrcIpBdd));
   }
 
   @Test
   public void originateVrf_PostInVrf() {
-    Edge edge =
+    Transition transition =
         edges
             .get(new OriginateVrf(CONFIG_NAME, VRF_NAME))
             .get(new PostInVrf(CONFIG_NAME, VRF_NAME));
     assertThat(
-        edge.traverseForward(one),
+        transition.transitForward(one),
         equalTo(originatingFromDeviceSrcIpBdd.and(originatingFromDeviceBdd)));
     assertThat(
-        edge.traverseBackward(srcMgr.isValidValue()), equalTo(originatingFromDeviceSrcIpBdd));
+        transition.transitBackward(srcMgr.isValidValue()), equalTo(originatingFromDeviceSrcIpBdd));
     assertThat(
-        edge.traverseBackward(originatingFromDeviceBdd), equalTo(originatingFromDeviceSrcIpBdd));
-    assertThat(edge.traverseBackward(matchSrcInterfaceBdd), equalTo(zero));
+        transition.transitBackward(originatingFromDeviceBdd), equalTo(originatingFromDeviceSrcIpBdd));
+    assertThat(transition.transitBackward(matchSrcInterfaceBdd), equalTo(zero));
   }
 
   @Test
   public void preOutEdgePostNat_PreInInterface() {
-    Edge edge =
+    Transition transition =
         edges
             .get(new PreOutEdgePostNat(PEER_NAME, PEER_IFACE_NAME, CONFIG_NAME, INGRESS_IFACE_NAME))
             .get(new PreInInterface(CONFIG_NAME, INGRESS_IFACE_NAME));
-    assertThat(edge.traverseForward(peerSrcMgr.isValidValue()), equalTo(matchSrcInterfaceBdd));
-    assertThat(edge.traverseBackward(matchSrcInterfaceBdd), equalTo(peerSrcMgr.isValidValue()));
-    assertThat(edge.traverseBackward(originatingFromDeviceBdd), equalTo(zero));
+    assertThat(transition.transitForward(peerSrcMgr.isValidValue()), equalTo(matchSrcInterfaceBdd));
+    assertThat(transition.transitBackward(matchSrcInterfaceBdd), equalTo(peerSrcMgr.isValidValue()));
+    assertThat(transition.transitBackward(originatingFromDeviceBdd), equalTo(zero));
   }
 }

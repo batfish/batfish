@@ -79,6 +79,7 @@ import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
 import org.apache.commons.configuration2.ImmutableConfiguration;
 import org.apache.commons.lang3.SerializationUtils;
+import org.batfish.bddreachability.BDDLoopDetectionAnalysis;
 import org.batfish.bddreachability.BDDReachabilityAnalysis;
 import org.batfish.bddreachability.BDDReachabilityAnalysisFactory;
 import org.batfish.bddreachability.BidirectionalReachabilityAnalysis;
@@ -3012,8 +3013,8 @@ public class Batfish extends PluginConsumer implements IBatfish {
       boolean ignoreFilters = false;
       BDDReachabilityAnalysisFactory bddReachabilityAnalysisFactory =
           getBddReachabilityAnalysisFactory(pkt, ignoreFilters);
-      BDDReachabilityAnalysis analysis =
-          bddReachabilityAnalysisFactory.bddReachabilityAnalysis(
+      BDDLoopDetectionAnalysis analysis =
+          bddReachabilityAnalysisFactory.bddLoopDetectionAnalysis(
               getAllSourcesInferFromLocationIpSpaceAssignment());
       Map<IngressLocation, BDD> loopBDDs = analysis.detectLoops();
 

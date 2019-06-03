@@ -29,7 +29,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import net.sf.javabdd.BDD;
+import org.batfish.bddreachability.transition.Transition;
 import org.batfish.common.bdd.BDDInteger;
 import org.batfish.common.bdd.BDDOps;
 import org.batfish.common.bdd.BDDPacket;
@@ -197,11 +199,11 @@ public final class BDDReachabilityAnalysisTest {
         .getForwardEdgeMap()
         .get(preState)
         .get(postState)
-        .traverseForward(PKT.getFactory().one());
+        .transitForward(PKT.getFactory().one());
   }
 
   private Edge edge(StateExpr preState, StateExpr postState) {
-    return _graph.getForwardEdgeMap().get(preState).get(postState);
+    return new Edge(preState, postState, _graph.getForwardEdgeMap().get(preState).get(postState));
   }
 
   private static BDD dstIpBDD(Ip ip) {
@@ -454,7 +456,7 @@ public final class BDDReachabilityAnalysisTest {
         new BDDReachabilityAnalysis(
             pkt,
             ImmutableSet.of(originateVrf),
-            ImmutableList.of(new Edge(originateVrf, DropNoRoute.INSTANCE, one)),
+            Stream.of(new Edge(originateVrf, DropNoRoute.INSTANCE, one)),
             one);
     assertThat(
         graph.getIngressLocationReachableBDDs(),
@@ -474,15 +476,15 @@ public final class BDDReachabilityAnalysisTest {
     Edge edgeAB = new Edge(a, b, bddAB);
     Edge edgeBC = new Edge(b, c, bddBC);
 
-    Table<StateExpr, StateExpr, Edge> forwardEdges =
+    Table<StateExpr, StateExpr, Transition> forwardEdges =
         computeForwardEdgeTable(ImmutableList.of(edgeAB, edgeBC));
-    Table<StateExpr, StateExpr, Edge> reverseEdges = Tables.transpose(forwardEdges);
+    Table<StateExpr, StateExpr, Transition> reverseEdges = Tables.transpose(forwardEdges);
 
     // forward from a
     {
       Map<StateExpr, BDD> forwardReachability = new HashMap<>();
       forwardReachability.put(a, start);
-      fixpoint(forwardReachability, forwardEdges, Edge::traverseForward);
+      fixpoint(forwardReachability, forwardEdges, Transition::transitForward);
       assertThat(
           forwardReachability,
           equalTo(
@@ -496,7 +498,7 @@ public final class BDDReachabilityAnalysisTest {
     {
       Map<StateExpr, BDD> forwardReachability = new HashMap<>();
       forwardReachability.put(c, start);
-      fixpoint(forwardReachability, forwardEdges, Edge::traverseForward);
+      fixpoint(forwardReachability, forwardEdges, Transition::transitForward);
       assertThat(forwardReachability, equalTo(ImmutableMap.of(c, start)));
     }
 
@@ -504,7 +506,7 @@ public final class BDDReachabilityAnalysisTest {
     {
       Map<StateExpr, BDD> reverseReachability = new HashMap<>();
       reverseReachability.put(a, start);
-      fixpoint(reverseReachability, reverseEdges, Edge::traverseBackward);
+      fixpoint(reverseReachability, reverseEdges, Transition::transitBackward);
       assertThat(reverseReachability, equalTo(ImmutableMap.of(a, start)));
     }
 
@@ -512,7 +514,7 @@ public final class BDDReachabilityAnalysisTest {
     {
       Map<StateExpr, BDD> reverseReachability = new HashMap<>();
       reverseReachability.put(c, start);
-      fixpoint(reverseReachability, reverseEdges, Edge::traverseBackward);
+      fixpoint(reverseReachability, reverseEdges, Transition::transitBackward);
       assertThat(
           reverseReachability,
           equalTo(

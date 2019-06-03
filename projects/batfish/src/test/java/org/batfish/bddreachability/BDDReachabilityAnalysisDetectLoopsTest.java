@@ -97,6 +97,6 @@ public class BDDReachabilityAnalysisDetectLoopsTest {
         new BDDReachabilityAnalysisFactory(
                 pkt, configs, batfish.loadDataPlane().getForwardingAnalysis(), false, false)
             .bddReachabilityAnalysis(srcIpSpaceAssignment);
-    analysis.detectLoops();
+    //    analysis.detectLoops();
   }
 }

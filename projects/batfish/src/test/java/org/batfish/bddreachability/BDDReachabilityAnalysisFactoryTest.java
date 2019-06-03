@@ -46,7 +46,9 @@ import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
 import java.util.stream.Collectors;
+import javax.annotation.Nonnull;
 import net.sf.javabdd.BDD;
+import org.batfish.bddreachability.transition.Transition;
 import org.batfish.common.bdd.BDDPacket;
 import org.batfish.common.bdd.HeaderSpaceToBDD;
 import org.batfish.common.bdd.IpSpaceToBDD;
@@ -174,7 +176,7 @@ public final class BDDReachabilityAnalysisFactoryTest {
     assertThat(configs.size(), equalTo(2));
     for (String node : configs.keySet()) {
       String otherNode = configs.keySet().stream().filter(n -> !n.equals(node)).findFirst().get();
-      Map<StateExpr, Map<StateExpr, Edge>> edges =
+      Map<StateExpr, Map<StateExpr, Transition>> edges =
           new BDDReachabilityAnalysisFactory(
                   PKT, configs, dataPlane.getForwardingAnalysis(), false, false)
               .bddReachabilityAnalysis(
@@ -223,7 +225,7 @@ public final class BDDReachabilityAnalysisFactoryTest {
       BDDReachabilityAnalysisFactory bddReachabilityAnalysisFactory =
           new BDDReachabilityAnalysisFactory(
               PKT, configs, dataPlane.getForwardingAnalysis(), false, false);
-      Map<StateExpr, Map<StateExpr, Edge>> edgeMap =
+      Map<StateExpr, Map<StateExpr, Transition>> edgeMap =
           bddReachabilityAnalysisFactory
               .bddReachabilityAnalysis(
                   ipSpaceAssignment(batfish),
@@ -233,9 +235,7 @@ public final class BDDReachabilityAnalysisFactoryTest {
                   ImmutableSet.of(),
                   ALL_DISPOSITIONS)
               .getForwardEdgeMap();
-
-      Set<Edge> edges =
-          edgeMap.values().stream().flatMap(m -> m.values().stream()).collect(Collectors.toSet());
+      Set<Edge> edges = getEdges(edgeMap);
 
       assertTrue(
           "Edges at which a forbiddenTransitNode would become transited should be removed.",
@@ -258,6 +258,18 @@ public final class BDDReachabilityAnalysisFactoryTest {
     }
   }
 
+  @Nonnull
+  private Set<Edge> getEdges(Map<StateExpr, Map<StateExpr, Transition>> edgeMap) {
+    return edgeMap.entrySet().stream()
+        .flatMap(
+            srcEntry ->
+                srcEntry.getValue().entrySet().stream()
+                    .map(
+                        tgtEntry ->
+                            new Edge(srcEntry.getKey(), tgtEntry.getKey(), tgtEntry.getValue())))
+        .collect(Collectors.toSet());
+  }
+
   @Test
   public void testRequiredTransitNodes() throws IOException {
     SortedMap<String, Configuration> configs = TestNetworkSources.twoNodeNetwork();
@@ -273,7 +285,7 @@ public final class BDDReachabilityAnalysisFactoryTest {
       BDD requiredTransitNodesBDD = bddReachabilityAnalysisFactory.getRequiredTransitNodeBDD();
       BDD transited = requiredTransitNodesBDD;
       BDD notTransited = requiredTransitNodesBDD.not();
-      Map<StateExpr, Map<StateExpr, Edge>> edgeMap =
+      Map<StateExpr, Map<StateExpr, Transition>> edgeMap =
           bddReachabilityAnalysisFactory
               .bddReachabilityAnalysis(
                   ipSpaceAssignment(batfish),
@@ -283,8 +295,7 @@ public final class BDDReachabilityAnalysisFactoryTest {
                   ImmutableSet.of(),
                   ALL_DISPOSITIONS)
               .getForwardEdgeMap();
-      Set<Edge> edges =
-          edgeMap.values().stream().flatMap(m -> m.values().stream()).collect(Collectors.toSet());
+      Set<Edge> edges = getEdges(edgeMap);
 
       // all edges into the query state require transit nodes transited bit to be set.
       edges.stream()
@@ -576,7 +587,7 @@ public final class BDDReachabilityAnalysisFactoryTest {
                     new InterfaceLinkLocation(config.getHostname(), iface.getName()),
                     UniverseIpSpace.INSTANCE)
                 .build());
-    Edge edge =
+    Transition transition =
         analysis
             .getForwardEdgeMap()
             .get(new PreInInterface(config.getHostname(), iface.getName()))
@@ -589,7 +600,7 @@ public final class BDDReachabilityAnalysisFactoryTest {
     BDD poolIpBdd = toBDD.getDstIpSpaceToBdd().toBDD(poolIp);
 
     assertThat(
-        edge.traverseForward(origDstIpBdd),
+        transition.transitForward(origDstIpBdd),
         equalTo(ingressAclBdd.and(natMatchBdd.ite(poolIpBdd, origDstIpBdd))));
   }
 
@@ -647,7 +658,7 @@ public final class BDDReachabilityAnalysisFactoryTest {
                     new InterfaceLinkLocation(config.getHostname(), iface.getName()),
                     UniverseIpSpace.INSTANCE)
                 .build());
-    Edge edge =
+    Transition transition =
         analysis
             .getForwardEdgeMap()
             .get(new PreInInterface(config.getHostname(), iface.getName()))
@@ -661,7 +672,7 @@ public final class BDDReachabilityAnalysisFactoryTest {
     BDD poolIpBdd = toBDD.getDstIpSpaceToBdd().toBDD(poolIp);
 
     assertThat(
-        edge.traverseForward(origDstIpBdd),
+        transition.transitForward(origDstIpBdd),
         equalTo(
             ingressAclBdd.and(nat1MatchBdd.not().and(nat2MatchBdd).ite(poolIpBdd, origDstIpBdd))));
   }
@@ -717,7 +728,7 @@ public final class BDDReachabilityAnalysisFactoryTest {
                     new InterfaceLinkLocation(config.getHostname(), ifaceName),
                     UniverseIpSpace.INSTANCE)
                 .build());
-    Edge edge =
+    Transition transition =
         analysis
             .getForwardEdgeMap()
             .get(new PreOutInterfaceDeliveredToSubnet(config.getHostname(), ifaceName))
@@ -731,7 +742,7 @@ public final class BDDReachabilityAnalysisFactoryTest {
     BDD poolIpBdd = toBDD.getSrcIpSpaceToBdd().toBDD(poolIp);
 
     assertThat(
-        edge.traverseForward(origSrcIpBdd),
+        transition.transitForward(origSrcIpBdd),
         equalTo(
             preNatAclBdd.and(nat1MatchBdd.not().and(nat2MatchBdd).ite(poolIpBdd, origSrcIpBdd))));
   }
@@ -816,63 +827,63 @@ public final class BDDReachabilityAnalysisFactoryTest {
     BDD dispositionBdd =
         preNatOutAclBdd.and(natMatchBdd.ite(poolIpBdd, origSrcIpBdd).and(postNatOutAclBdd));
 
-    Map<StateExpr, Map<StateExpr, Edge>> forwardEdges = analysis.getForwardEdgeMap();
+    Map<StateExpr, Map<StateExpr, Transition>> forwardEdges = analysis.getForwardEdgeMap();
 
     // DeliveredToSubnet
-    Edge edge =
+    Transition transition =
         forwardEdges
             .get(new PreOutInterfaceDeliveredToSubnet(hostname, ifaceName))
             .get(new NodeInterfaceDeliveredToSubnet(hostname, ifaceName));
-    assertThat(edge.traverseForward(origSrcIpBdd), equalTo(dispositionBdd));
+    assertThat(transition.transitForward(origSrcIpBdd), equalTo(dispositionBdd));
 
     // ExitsNetwork
-    edge =
+    transition =
         forwardEdges
             .get(new PreOutInterfaceExitsNetwork(hostname, ifaceName))
             .get(new NodeInterfaceExitsNetwork(hostname, ifaceName));
-    assertThat(edge.traverseForward(origSrcIpBdd), equalTo(dispositionBdd));
+    assertThat(transition.transitForward(origSrcIpBdd), equalTo(dispositionBdd));
 
     // InsufficientInfo
-    edge =
+    transition =
         forwardEdges
             .get(new PreOutInterfaceInsufficientInfo(hostname, ifaceName))
             .get(new NodeInterfaceInsufficientInfo(hostname, ifaceName));
-    assertThat(edge.traverseForward(origSrcIpBdd), equalTo(dispositionBdd));
+    assertThat(transition.transitForward(origSrcIpBdd), equalTo(dispositionBdd));
 
     // NeighborUnreachable
-    edge =
+    transition =
         forwardEdges
             .get(new PreOutInterfaceNeighborUnreachable(hostname, ifaceName))
             .get(new NodeInterfaceNeighborUnreachable(hostname, ifaceName));
-    assertThat(edge.traverseForward(origSrcIpBdd), equalTo(dispositionBdd));
+    assertThat(transition.transitForward(origSrcIpBdd), equalTo(dispositionBdd));
 
     // DropAclOut via DeliveredToSubnet
-    edge =
+    transition =
         forwardEdges
             .get(new PreOutInterfaceDeliveredToSubnet(hostname, ifaceName))
             .get(new NodeDropAclOut(hostname));
-    assertEquals(edge.traverseForward(origSrcIpBdd), dropAclOut);
+    assertEquals(transition.transitForward(origSrcIpBdd), dropAclOut);
 
     // DropAclOut via ExitsNetwork
-    edge =
+    transition =
         forwardEdges
             .get(new PreOutInterfaceExitsNetwork(hostname, ifaceName))
             .get(new NodeDropAclOut(hostname));
-    assertEquals(edge.traverseForward(origSrcIpBdd), dropAclOut);
+    assertEquals(transition.transitForward(origSrcIpBdd), dropAclOut);
 
     // DropAclOut via InsufficientInfo
-    edge =
+    transition =
         forwardEdges
             .get(new PreOutInterfaceInsufficientInfo(hostname, ifaceName))
             .get(new NodeDropAclOut(hostname));
-    assertEquals(edge.traverseForward(origSrcIpBdd), dropAclOut);
+    assertEquals(transition.transitForward(origSrcIpBdd), dropAclOut);
 
     // DropAclOut via NeighborUnreachable
-    edge =
+    transition =
         forwardEdges
             .get(new PreOutInterfaceNeighborUnreachable(hostname, ifaceName))
             .get(new NodeDropAclOut(hostname));
-    assertEquals(edge.traverseForward(origSrcIpBdd), dropAclOut);
+    assertEquals(transition.transitForward(origSrcIpBdd), dropAclOut);
   }
 
   @Test
@@ -959,19 +970,19 @@ public final class BDDReachabilityAnalysisFactoryTest {
     BDD poolIpBdd = srcToBdd.toBDD(poolIp);
     BDD origSrcIpBdd = srcToBdd.toBDD(Ip.parse("6.6.6.6"));
 
-    Map<StateExpr, Edge> preOutEdgeOutEdges =
+    Map<StateExpr, Transition> preOutEdgeOutEdges =
         analysis
             .getForwardEdgeMap()
             .get(new PreOutEdge(hostname, ifaceName, peername, peerIfaceName));
 
-    Edge edge =
+    Transition transition =
         preOutEdgeOutEdges.get(new PreOutEdgePostNat(hostname, ifaceName, peername, peerIfaceName));
     assertThat(
-        edge.traverseForward(origSrcIpBdd),
+        transition.transitForward(origSrcIpBdd),
         equalTo(preNatOutAclBdd.and(natMatchBdd.ite(poolIpBdd, origSrcIpBdd))));
 
-    edge = preOutEdgeOutEdges.get(new NodeDropAclOut(hostname));
-    assertThat(edge.traverseForward(ONE), equalTo(preNatOutAclBdd.not()));
+    transition = preOutEdgeOutEdges.get(new NodeDropAclOut(hostname));
+    assertThat(transition.transitForward(ONE), equalTo(preNatOutAclBdd.not()));
   }
 
   /*
@@ -1022,7 +1033,7 @@ public final class BDDReachabilityAnalysisFactoryTest {
                     new InterfaceLocation(c1.getHostname(), i1.getName()), UniverseIpSpace.INSTANCE)
                 .build());
 
-    Edge edge =
+    Transition transition =
         analysis
             .getForwardEdgeMap()
             .get(new PreOutVrf(c1.getHostname(), v1.getName()))
@@ -1033,15 +1044,15 @@ public final class BDDReachabilityAnalysisFactoryTest {
 
     BDD resultBDD = dstToBdd.toBDD(Prefix.parse("8.8.8.0/24"));
 
-    assertThat(edge.traverseForward(resultBDD), equalTo(resultBDD));
+    assertThat(transition.transitForward(resultBDD), equalTo(resultBDD));
 
-    Edge edgeII =
+    Transition transitionII =
         analysis
             .getForwardEdgeMap()
             .get(new PreOutVrf(c1.getHostname(), v1.getName()))
             .get(new PreOutInterfaceInsufficientInfo(c1.getHostname(), i1.getName()));
 
-    assertThat(edgeII, nullValue());
+    assertThat(transitionII, nullValue());
   }
 
   /*
@@ -1105,7 +1116,7 @@ public final class BDDReachabilityAnalysisFactoryTest {
                     new InterfaceLocation(c1.getHostname(), i1.getName()), UniverseIpSpace.INSTANCE)
                 .build());
 
-    Edge edge =
+    Transition transition =
         analysis
             .getForwardEdgeMap()
             .get(new PreOutVrf(c1.getHostname(), v1.getName()))
@@ -1116,15 +1127,15 @@ public final class BDDReachabilityAnalysisFactoryTest {
 
     BDD resultBDD = dstToBdd.toBDD(Prefix.parse("8.8.8.0/24"));
 
-    assertThat(edge.traverseForward(resultBDD), equalTo(resultBDD));
+    assertThat(transition.transitForward(resultBDD), equalTo(resultBDD));
 
-    Edge edgeEN =
+    Transition transitionEN =
         analysis
             .getForwardEdgeMap()
             .get(new PreOutVrf(c1.getHostname(), v1.getName()))
             .get(new PreOutInterfaceExitsNetwork(c1.getHostname(), i1.getName()));
 
-    assertThat(edgeEN.traverseForward(resultBDD), equalTo(PKT.getFactory().zero()));
+    assertThat(transitionEN.transitForward(resultBDD), equalTo(PKT.getFactory().zero()));
   }
 
   @Test

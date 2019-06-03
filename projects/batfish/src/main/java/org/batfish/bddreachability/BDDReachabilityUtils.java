@@ -18,6 +18,7 @@ import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Set;
 import java.util.function.BiFunction;
+import java.util.stream.Stream;
 import net.sf.javabdd.BDD;
 import org.batfish.bddreachability.transition.Transition;
 import org.batfish.bddreachability.transition.Transitions;
@@ -31,8 +32,11 @@ import org.batfish.symbolic.state.StateExpr;
  */
 final class BDDReachabilityUtils {
   static Table<StateExpr, StateExpr, Transition> computeForwardEdgeTable(Iterable<Edge> edges) {
-    return Streams.stream(edges)
-        .collect(
+    return computeForwardEdgeTable(Streams.stream(edges));
+  }
+
+  static Table<StateExpr, StateExpr, Transition> computeForwardEdgeTable(Stream<Edge> edges) {
+    return edges.collect(
             toImmutableTable(
                 Edge::getPreState,
                 Edge::getPostState,

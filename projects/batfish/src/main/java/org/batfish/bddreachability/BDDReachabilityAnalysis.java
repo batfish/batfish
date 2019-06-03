@@ -11,9 +11,9 @@ import io.opentracing.ActiveSpan;
 import io.opentracing.util.GlobalTracer;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Stream;
 import net.sf.javabdd.BDD;
 import org.batfish.bddreachability.transition.Transition;
 import org.batfish.common.bdd.BDDPacket;
@@ -57,7 +57,7 @@ public class BDDReachabilityAnalysis {
   BDDReachabilityAnalysis(
       BDDPacket packet,
       Set<StateExpr> ingressLocationStates,
-      List<Edge> edges,
+      Stream<Edge> edges,
       BDD queryHeaderSpaceBdd) {
     try (ActiveSpan span =
         GlobalTracer.get().buildSpan("constructs BDDReachabilityAnalysis").startActive()) {

@@ -1,5 +1,6 @@
 package org.batfish.bddreachability;
 
+import static com.google.common.base.Preconditions.checkNotNull;
 import static org.batfish.bddreachability.BDDReachabilityAnalysisSessionFactory.computeInitializedSesssions;
 import static org.batfish.bddreachability.OriginationStateToTerminationState.originationStateToTerminationState;
 import static org.batfish.bddreachability.ReversePassOriginationState.reverseTraceOriginationState;

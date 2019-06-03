@@ -15,6 +15,7 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import net.sf.javabdd.BDD;
 import org.batfish.bddreachability.transition.Transition;
 import org.batfish.common.bdd.BDDPacket;
@@ -34,6 +35,13 @@ public class BDDLoopDetectionAnalysis {
     _bddPacket = bddPacket;
     _forwardEdgeTable = forwardEdgeTable;
     _ingressLocationStates = ingressLocationStates;
+  }
+
+  public BDDLoopDetectionAnalysis(
+      BDDPacket bddPacket,
+      Stream<Edge> edges,
+      Set<StateExpr> ingressLocationStates) {
+    this(bddPacket, BDDReachabilityUtils.computeForwardEdgeTable(edges), ingressLocationStates);
   }
 
   /*
