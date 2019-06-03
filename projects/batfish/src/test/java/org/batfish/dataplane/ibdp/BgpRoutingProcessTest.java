@@ -220,7 +220,7 @@ public class BgpRoutingProcessTest {
     Builder vniConfigBuilder =
         Layer3VniConfig.builder()
             .setVni(vni)
-            .setVrf(DEFAULT_VRF_NAME)
+            .setVrf(_vrf.getName())
             .setRouteDistinguisher(RouteDistinguisher.from(_bgpProcess.getRouterId(), 2))
             .setRouteTarget(ExtendedCommunity.target(65500, vni))
             .setAdvertiseV4Unicast(false);
@@ -231,9 +231,10 @@ public class BgpRoutingProcessTest {
             .setVrf(_vrf2.getName())
             .setRouteTarget(ExtendedCommunity.target(65500, vni2))
             .build();
+    Ip peerAddress = Ip.parse("1.1.1.1");
     BgpActivePeerConfig evpnPeer =
         BgpActivePeerConfig.builder()
-            .setPeerAddress(Ip.parse("1.1.1.1"))
+            .setPeerAddress(peerAddress)
             .setRemoteAs(1L)
             .setLocalIp(localIp)
             .setLocalAs(2L)
@@ -242,7 +243,7 @@ public class BgpRoutingProcessTest {
             .build();
     _bgpProcess
         .getActiveNeighbors()
-        .put(Prefix.create(localIp, Prefix.MAX_PREFIX_LENGTH), evpnPeer);
+        .put(Prefix.create(peerAddress, Prefix.MAX_PREFIX_LENGTH), evpnPeer);
 
     Map<String, String> actual = BgpRoutingProcess.computeRouteTargetToVrfMap(Stream.of(evpnPeer));
     assertThat(
@@ -250,7 +251,7 @@ public class BgpRoutingProcessTest {
         equalTo(
             ImmutableMap.of(
                 Layer3VniConfig.importRtPatternForAnyAs(vni),
-                DEFAULT_VRF_NAME,
+                _vrf.getName(),
                 Layer3VniConfig.importRtPatternForAnyAs(vni2),
                 _vrf2.getName())));
   }
