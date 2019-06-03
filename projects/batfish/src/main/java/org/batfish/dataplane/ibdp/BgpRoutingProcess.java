@@ -229,7 +229,7 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
   }
 
   /**
-   * Initialize incoming BGP message queues, for all address families.
+   * Initialize incoming BGP message queues for all address families.
    *
    * @param bgpTopology source of truth for which sessions get established.
    */
@@ -335,6 +335,8 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
     // Merge EVPN routes into EVPN RIB and prepare for merging into main RIB
     _changeSet.from(importRibDelta(_evpnRib, type3Delta._toMerge._ebgpDelta));
     _changeSet.from(importRibDelta(_evpnRib, type3Delta._toMerge._ibgpDelta));
+
+    // TODO: migrate v4 route propagation here
   }
 
   /** Initialize the EVPN RIBs based on EVPN address family config */
@@ -517,12 +519,12 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
             edge -> {
               BgpPeerConfigId remoteConfigId = edge.tail();
               BgpPeerConfigId ourConfigId = edge.head();
-              BgpPeerConfig ourConfig = nc.getBgpPeerConfig(edge.head());
-              BgpPeerConfig remoteConfig = nc.getBgpPeerConfig(edge.tail());
+              BgpPeerConfig ourConfig = nc.getBgpPeerConfig(ourConfigId);
+              BgpPeerConfig remoteConfig = nc.getBgpPeerConfig(remoteConfigId);
               assert ourConfig != null; // Invariant of the edge existing
               assert remoteConfig != null; // Invariant of the edge existing
               BgpSessionProperties session = getSessionProperties(_topology, edge);
-              getNeighborBgpProcess(edge.tail(), allNodes)
+              getNeighborBgpProcess(remoteConfigId, allNodes)
                   // TODO: take into account address-family session settings, such as add-path or
                   //   advertise-inactive
                   .enqueueEvpnRoutes(
