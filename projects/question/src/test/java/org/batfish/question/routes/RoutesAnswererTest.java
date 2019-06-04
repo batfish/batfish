@@ -16,6 +16,7 @@ import static org.batfish.question.routes.RoutesAnswerer.COL_NEXT_HOP_IP;
 import static org.batfish.question.routes.RoutesAnswerer.COL_NODE;
 import static org.batfish.question.routes.RoutesAnswerer.COL_ORIGIN_PROTOCOL;
 import static org.batfish.question.routes.RoutesAnswerer.COL_PROTOCOL;
+import static org.batfish.question.routes.RoutesAnswerer.COL_ROUTE_DISTINGUISHER;
 import static org.batfish.question.routes.RoutesAnswerer.COL_ROUTE_ENTRY_PRESENCE;
 import static org.batfish.question.routes.RoutesAnswerer.COL_TAG;
 import static org.batfish.question.routes.RoutesAnswerer.COL_VRF_NAME;
@@ -266,6 +267,33 @@ public class RoutesAnswererTest {
             COL_TAG);
 
     List<ColumnMetadata> columnMetadata = getTableMetadata(RibProtocol.BGP).getColumnMetadata();
+    assertThat(
+        columnMetadata.stream()
+            .map(ColumnMetadata::getName)
+            .collect(ImmutableList.toImmutableList()),
+        equalTo(expected));
+  }
+
+  @Test
+  public void testGetTableMetadataEvpn() {
+    List<String> expected =
+        ImmutableList.of(
+            COL_NODE,
+            COL_VRF_NAME,
+            COL_NETWORK,
+            COL_ROUTE_DISTINGUISHER,
+            COL_NEXT_HOP_IP,
+            COL_NEXT_HOP_INTERFACE,
+            COL_PROTOCOL,
+            // BGP attributes
+            COL_AS_PATH,
+            COL_METRIC,
+            COL_LOCAL_PREF,
+            COL_COMMUNITIES,
+            COL_ORIGIN_PROTOCOL,
+            COL_TAG);
+
+    List<ColumnMetadata> columnMetadata = getTableMetadata(RibProtocol.EVPN).getColumnMetadata();
     assertThat(
         columnMetadata.stream()
             .map(ColumnMetadata::getName)

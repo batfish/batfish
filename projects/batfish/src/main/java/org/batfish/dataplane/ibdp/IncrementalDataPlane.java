@@ -19,6 +19,7 @@ import org.batfish.datamodel.AnnotatedRoute;
 import org.batfish.datamodel.Bgpv4Route;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.DataPlane;
+import org.batfish.datamodel.EvpnRoute;
 import org.batfish.datamodel.Fib;
 import org.batfish.datamodel.ForwardingAnalysis;
 import org.batfish.datamodel.ForwardingAnalysisImpl;
@@ -113,12 +114,14 @@ public final class IncrementalDataPlane implements Serializable, DataPlane {
       _ribs;
 
   @Nonnull private final Table<String, String, Set<Bgpv4Route>> _bgpRoutes;
+  @Nonnull private final Table<String, String, Set<EvpnRoute<?, ?>>> _evpnRoutes;
 
   private IncrementalDataPlane(Builder builder) {
     _ipVrfOwners = builder._ipVrfOwners;
     _nodes = builder._nodes;
     _layer3Topology = builder._layer3Topology;
     _bgpRoutes = computeBgpRoutes();
+    _evpnRoutes = computeEvpnRoutes();
   }
 
   private Map<String, Configuration> computeConfigurations() {
@@ -159,6 +162,12 @@ public final class IncrementalDataPlane implements Serializable, DataPlane {
     return _bgpRoutes;
   }
 
+  @Override
+  @Nonnull
+  public Table<String, String, Set<EvpnRoute<?, ?>>> getEvpnRoutes() {
+    return _evpnRoutes;
+  }
+
   @Nonnull
   private Table<String, String, Set<Bgpv4Route>> computeBgpRoutes() {
     Table<String, String, Set<Bgpv4Route>> table = HashBasedTable.create();
@@ -169,6 +178,19 @@ public final class IncrementalDataPlane implements Serializable, DataPlane {
                 .forEach(
                     (vrfName, vr) -> {
                       table.put(hostname, vrfName, vr.getBgpRoutes());
+                    }));
+    return table;
+  }
+
+  @Nonnull
+  private Table<String, String, Set<EvpnRoute<?, ?>>> computeEvpnRoutes() {
+    Table<String, String, Set<EvpnRoute<?, ?>>> table = HashBasedTable.create();
+    _nodes.forEach(
+        (hostname, node) ->
+            node.getVirtualRouters()
+                .forEach(
+                    (vrfName, vr) -> {
+                      table.put(hostname, vrfName, vr.getEvpnRoutes());
                     }));
     return table;
   }

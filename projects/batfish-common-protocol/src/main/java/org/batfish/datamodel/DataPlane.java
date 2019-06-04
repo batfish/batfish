@@ -11,6 +11,9 @@ public interface DataPlane extends Serializable {
   /** Return routes in the BGP rib for each node/VRF */
   Table<String, String, Set<Bgpv4Route>> getBgpRoutes();
 
+  /** Return routes in the EVPN RIB on each node/VRF */
+  Table<String, String, Set<EvpnRoute<?, ?>>> getEvpnRoutes();
+
   Map<String, Configuration> getConfigurations();
 
   Map<String, Map<String, Fib>> getFibs();

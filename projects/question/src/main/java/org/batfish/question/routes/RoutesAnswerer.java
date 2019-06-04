@@ -6,6 +6,7 @@ import static org.batfish.datamodel.table.TableDiff.COL_DELTA_PREFIX;
 import static org.batfish.question.routes.RoutesAnswererUtil.getAbstractRouteRowsDiff;
 import static org.batfish.question.routes.RoutesAnswererUtil.getBgpRibRoutes;
 import static org.batfish.question.routes.RoutesAnswererUtil.getBgpRouteRowsDiff;
+import static org.batfish.question.routes.RoutesAnswererUtil.getEvpnRoutes;
 import static org.batfish.question.routes.RoutesAnswererUtil.getMainRibRoutes;
 import static org.batfish.question.routes.RoutesAnswererUtil.getRoutesDiff;
 import static org.batfish.question.routes.RoutesAnswererUtil.groupBgpRoutes;
@@ -59,6 +60,9 @@ public class RoutesAnswerer extends Answerer {
   static final String COL_COMMUNITIES = "Communities";
   static final String COL_ORIGIN_PROTOCOL = "Origin_Protocol";
 
+  // EVPN BGP only
+  static final String COL_ROUTE_DISTINGUISHER = "Route_Distinguisher";
+
   // Diff Only
   static final String COL_ROUTE_ENTRY_PRESENCE = "Entry_Presence";
 
@@ -86,7 +90,16 @@ public class RoutesAnswerer extends Answerer {
             getBgpRibRoutes(
                 dp.getBgpRoutes(), RibProtocol.BGP, matchingNodes, network, protocolSpec, vrfRegex);
         break;
-
+      case EVPN:
+        rows =
+            getEvpnRoutes(
+                dp.getEvpnRoutes(),
+                RibProtocol.EVPN,
+                matchingNodes,
+                network,
+                protocolSpec,
+                vrfRegex);
+        break;
       case MAIN:
       default:
         rows =
@@ -165,6 +178,56 @@ public class RoutesAnswerer extends Answerer {
     ImmutableList.Builder<ColumnMetadata> columnBuilder = ImmutableList.builder();
     addCommonTableColumnsAtStart(columnBuilder);
     switch (rib) {
+      case EVPN:
+        columnBuilder
+            .add(
+                new ColumnMetadata(
+                    COL_ROUTE_DISTINGUISHER,
+                    Schema.STRING,
+                    "Route distinguisher",
+                    Boolean.FALSE,
+                    Boolean.TRUE))
+            .add(
+                new ColumnMetadata(
+                    COL_NEXT_HOP_IP, Schema.IP, "Route's Next Hop IP", Boolean.FALSE, Boolean.TRUE))
+            .add(
+                new ColumnMetadata(
+                    COL_NEXT_HOP_INTERFACE,
+                    Schema.STRING,
+                    "Route's Next Hop Interface",
+                    Boolean.FALSE,
+                    Boolean.TRUE))
+            .add(
+                new ColumnMetadata(
+                    COL_PROTOCOL, Schema.STRING, "Route's Protocol", Boolean.FALSE, Boolean.TRUE))
+            .add(
+                new ColumnMetadata(
+                    COL_AS_PATH, Schema.STRING, "Route's AS path", Boolean.FALSE, Boolean.TRUE))
+            .add(
+                new ColumnMetadata(
+                    COL_METRIC, Schema.INTEGER, "Route's Metric", Boolean.FALSE, Boolean.TRUE))
+            .add(
+                new ColumnMetadata(
+                    COL_LOCAL_PREF,
+                    Schema.LONG,
+                    "Route's Local Preference",
+                    Boolean.FALSE,
+                    Boolean.TRUE))
+            .add(
+                new ColumnMetadata(
+                    COL_COMMUNITIES,
+                    Schema.list(Schema.STRING),
+                    "Route's List of communities",
+                    Boolean.FALSE,
+                    Boolean.TRUE))
+            .add(
+                new ColumnMetadata(
+                    COL_ORIGIN_PROTOCOL,
+                    Schema.STRING,
+                    "Route's Origin protocol",
+                    Boolean.FALSE,
+                    Boolean.TRUE));
+        break;
       case BGP:
         columnBuilder
             .add(
