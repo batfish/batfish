@@ -8,12 +8,14 @@ import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.BgpRoute;
 import org.batfish.datamodel.Bgpv4Route;
+import org.batfish.datamodel.EvpnType3Route;
 import org.batfish.datamodel.OriginType;
 import org.batfish.datamodel.bgp.community.Community;
 import org.batfish.datamodel.matchers.BgpRouteMatchersImpl.HasCommunities;
 import org.batfish.datamodel.matchers.BgpRouteMatchersImpl.HasOriginType;
 import org.batfish.datamodel.matchers.BgpRouteMatchersImpl.HasWeight;
 import org.batfish.datamodel.matchers.BgpRouteMatchersImpl.IsBgpv4RouteThat;
+import org.batfish.datamodel.matchers.BgpRouteMatchersImpl.IsEvpnType3RouteThat;
 import org.hamcrest.Matcher;
 
 @ParametersAreNonnullByDefault
@@ -51,6 +53,15 @@ public final class BgpRouteMatchers {
   public static @Nonnull Matcher<AbstractRoute> isBgpv4RouteThat(
       Matcher<? super Bgpv4Route> subMatcher) {
     return new IsBgpv4RouteThat(subMatcher);
+  }
+
+  /**
+   * Provides a matcher that matches when the {@link AbstractRoute} is a {@link Bgpv4Route} matched
+   * by the provided {@code subMatcher}.
+   */
+  public static @Nonnull Matcher<AbstractRoute> isEvpnType3RouteThat(
+      Matcher<? super EvpnType3Route> subMatcher) {
+    return new IsEvpnType3RouteThat(subMatcher);
   }
 
   private BgpRouteMatchers() {}
