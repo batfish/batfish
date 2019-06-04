@@ -4,10 +4,9 @@ import static com.google.common.base.MoreObjects.firstNonNull;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import java.util.Comparator;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
-import java.util.TreeSet;
 import javax.annotation.Nonnull;
 import org.batfish.common.BatfishException;
 import org.batfish.datamodel.Configuration;
@@ -128,10 +127,10 @@ public class Topology extends BfObject {
       @JsonProperty(PROP_TESTRIG_NAME) String testrigName) {
     super(firstNonNull(topologyId, getId(testrigName)));
     _testrigName = testrigName;
-    _aggregates = new TreeSet<>(Comparator.comparing(BfObject::getId));
-    _interfaces = new TreeSet<>(Comparator.comparing(BfObject::getId));
-    _links = new TreeSet<>(Comparator.comparing(BfObject::getId));
-    _nodes = new TreeSet<>(Comparator.comparing(BfObject::getId));
+    _aggregates = new HashSet<>();
+    _interfaces = new HashSet<>();
+    _links = new HashSet<>();
+    _nodes = new HashSet<>();
     if (testrigName == null) {
       throw new IllegalArgumentException("Cannot build Topology: testrigName is null");
     }
