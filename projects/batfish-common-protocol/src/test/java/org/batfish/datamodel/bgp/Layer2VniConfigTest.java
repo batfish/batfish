@@ -15,43 +15,43 @@ public class Layer2VniConfigTest {
   @Test
   public void testEquals() {
 
-    Layer2VniConfig vni =
-        new Layer2VniConfig(
-            1, "v", RouteDistinguisher.from(65555L, 1), ExtendedCommunity.of(0, 1, 1));
+    Layer2VniConfig.Builder builder =
+        Layer2VniConfig.builder()
+            .setVni(1)
+            .setVrf("v")
+            .setRouteDistinguisher(RouteDistinguisher.from(65555L, 1))
+            .setRouteTarget(ExtendedCommunity.of(0, 1, 1));
+    Layer2VniConfig vni = builder.build();
     new EqualsTester()
-        .addEqualityGroup(
-            vni,
-            vni,
-            new Layer2VniConfig(
-                1, "v", RouteDistinguisher.from(65555L, 1), ExtendedCommunity.of(0, 1, 1)))
-        .addEqualityGroup(
-            new Layer2VniConfig(
-                1, "v2", RouteDistinguisher.from(65555L, 2), ExtendedCommunity.of(0, 1, 1)))
-        .addEqualityGroup(
-            new Layer2VniConfig(
-                1, "v", RouteDistinguisher.from(65555L, 2), ExtendedCommunity.of(0, 2, 1)))
-        .addEqualityGroup(
-            new Layer2VniConfig(
-                1, "v", RouteDistinguisher.from(65555L, 0), ExtendedCommunity.of(0, 1, 1)))
-        .addEqualityGroup(
-            new Layer2VniConfig(
-                1, "v", RouteDistinguisher.from(65555L, 0), ExtendedCommunity.of(0, 1, 2)))
+        .addEqualityGroup(vni, vni, builder.build())
+        .addEqualityGroup(builder.setVrf("v2").build())
+        .addEqualityGroup(builder.setRouteDistinguisher(RouteDistinguisher.from(65555L, 2)).build())
+        .addEqualityGroup(builder.setRouteTarget(ExtendedCommunity.of(0, 2, 2)).build())
+        .addEqualityGroup(builder.setImportRouteTarget("^1:1$").build())
         .testEquals();
   }
 
   @Test
   public void testJavaSerialization() {
     Layer2VniConfig vni =
-        new Layer2VniConfig(
-            1, "v", RouteDistinguisher.from(65555L, 1), ExtendedCommunity.of(0, 1, 1));
+        Layer2VniConfig.builder()
+            .setVni(1)
+            .setVrf("v")
+            .setRouteDistinguisher(RouteDistinguisher.from(65555L, 1))
+            .setRouteTarget(ExtendedCommunity.of(0, 1, 1))
+            .build();
     assertThat(SerializationUtils.clone(vni), equalTo(vni));
   }
 
   @Test
   public void testJsonSerialization() throws IOException {
     Layer2VniConfig vni =
-        new Layer2VniConfig(
-            1, "v", RouteDistinguisher.from(65555L, 1), ExtendedCommunity.of(0, 1, 1));
+        Layer2VniConfig.builder()
+            .setVni(1)
+            .setVrf("v")
+            .setRouteDistinguisher(RouteDistinguisher.from(65555L, 1))
+            .setRouteTarget(ExtendedCommunity.of(0, 1, 1))
+            .build();
     assertThat(BatfishObjectMapper.clone(vni, Layer2VniConfig.class), equalTo(vni));
   }
 }

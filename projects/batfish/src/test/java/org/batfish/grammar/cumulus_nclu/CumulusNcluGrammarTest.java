@@ -102,6 +102,7 @@ import org.batfish.datamodel.bgp.Ipv4UnicastAddressFamily;
 import org.batfish.datamodel.bgp.Layer2VniConfig;
 import org.batfish.datamodel.bgp.Layer3VniConfig;
 import org.batfish.datamodel.bgp.RouteDistinguisher;
+import org.batfish.datamodel.bgp.VniConfig;
 import org.batfish.datamodel.bgp.community.ExtendedCommunity;
 import org.batfish.datamodel.matchers.VniSettingsMatchers;
 import org.batfish.datamodel.routing_policy.Environment;
@@ -1429,16 +1430,18 @@ public final class CumulusNcluGrammarTest {
     // All defined VXLAN Vnis
     ImmutableSortedSet<Layer2VniConfig> expectedL2Vnis =
         ImmutableSortedSet.of(
-            new Layer2VniConfig(
-                10001,
-                DEFAULT_VRF_NAME,
-                RouteDistinguisher.from(routerId, 0),
-                ExtendedCommunity.target(65500, 10001)),
-            new Layer2VniConfig(
-                10002,
-                DEFAULT_VRF_NAME,
-                RouteDistinguisher.from(routerId, 1),
-                ExtendedCommunity.target(65500, 10002)));
+            Layer2VniConfig.builder()
+                .setVni(10001)
+                .setVrf(DEFAULT_VRF_NAME)
+                .setRouteDistinguisher(RouteDistinguisher.from(routerId, 0))
+                .setRouteTarget(ExtendedCommunity.target(65500, 10001))
+                .build(),
+            Layer2VniConfig.builder()
+                .setVni(10002)
+                .setVrf(DEFAULT_VRF_NAME)
+                .setRouteDistinguisher(RouteDistinguisher.from(routerId, 1))
+                .setRouteTarget(ExtendedCommunity.target(65500, 10002))
+                .build());
 
     ImmutableSortedSet<Layer3VniConfig> expectedL3Vnis =
         ImmutableSortedSet.of(
@@ -1448,7 +1451,7 @@ public final class CumulusNcluGrammarTest {
                 .setVrf(DEFAULT_VRF_NAME)
                 .setRouteDistinguisher(RouteDistinguisher.from(routerId, 0))
                 .setRouteTarget(ExtendedCommunity.target(65500, 10001))
-                .setImportRouteTarget(Layer3VniConfig.importRtPatternForAnyAs(10001))
+                .setImportRouteTarget(VniConfig.importRtPatternForAnyAs(10001))
                 .setAdvertiseV4Unicast(false)
                 .build(),
             Layer3VniConfig.builder()
@@ -1456,7 +1459,7 @@ public final class CumulusNcluGrammarTest {
                 .setVrf(DEFAULT_VRF_NAME)
                 .setRouteDistinguisher(RouteDistinguisher.from(routerId, 1))
                 .setRouteTarget(ExtendedCommunity.target(65500, 10002))
-                .setImportRouteTarget(Layer3VniConfig.importRtPatternForAnyAs(10002))
+                .setImportRouteTarget(VniConfig.importRtPatternForAnyAs(10002))
                 .setAdvertiseV4Unicast(false)
                 .build(),
             // VRF1's explicitly defined l3-VNI with advertise-ipv4-unicast
@@ -1465,7 +1468,7 @@ public final class CumulusNcluGrammarTest {
                 .setVrf("vrf1")
                 .setRouteDistinguisher(RouteDistinguisher.from(Ip.parse("192.0.1.1"), 2))
                 .setRouteTarget(ExtendedCommunity.target(65500, 10004))
-                .setImportRouteTarget(Layer3VniConfig.importRtPatternForAnyAs(10004))
+                .setImportRouteTarget(VniConfig.importRtPatternForAnyAs(10004))
                 .setAdvertiseV4Unicast(true)
                 .build());
 

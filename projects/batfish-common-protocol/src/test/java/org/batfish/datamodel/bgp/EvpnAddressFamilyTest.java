@@ -21,8 +21,12 @@ public class EvpnAddressFamilyTest {
         .addEqualityGroup(
             new EvpnAddressFamily(
                 ImmutableSet.of(
-                    new Layer2VniConfig(
-                        1, "v", RouteDistinguisher.from(1L, 1), ExtendedCommunity.of(0, 1, 1))),
+                    Layer2VniConfig.builder()
+                        .setVni(1)
+                        .setVrf("v")
+                        .setRouteDistinguisher(RouteDistinguisher.from(1L, 1))
+                        .setRouteTarget(ExtendedCommunity.of(0, 1, 1))
+                        .build()),
                 ImmutableSet.of()))
         .addEqualityGroup(
             new EvpnAddressFamily(
@@ -33,7 +37,7 @@ public class EvpnAddressFamilyTest {
                         .setVrf("v")
                         .setRouteDistinguisher(RouteDistinguisher.from(1L, 1))
                         .setRouteTarget(ExtendedCommunity.of(0, 1, 1))
-                        .setImportRouteTarget(Layer3VniConfig.importRtPatternForAnyAs(1))
+                        .setImportRouteTarget(VniConfig.importRtPatternForAnyAs(1))
                         .setAdvertiseV4Unicast(false)
                         .build())))
         .addEqualityGroup(new Object())
