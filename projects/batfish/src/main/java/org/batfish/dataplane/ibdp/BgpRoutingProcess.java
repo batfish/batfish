@@ -212,8 +212,8 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
     peerConfigs
         .map(BgpPeerConfig::getEvpnAddressFamily)
         .filter(Objects::nonNull)
-        .flatMap(af -> af.getL3VNIs().stream())
-        .forEach(l3vni -> rtVrfMappingBuilder.put(l3vni.getImportRouteTarget(), l3vni.getVrf()));
+        .flatMap(af -> Stream.concat(af.getL3VNIs().stream(), af.getL2VNIs().stream()))
+        .forEach(vni -> rtVrfMappingBuilder.put(vni.getImportRouteTarget(), vni.getVrf()));
     return ImmutableMap.copyOf(rtVrfMappingBuilder);
   }
 
@@ -319,7 +319,9 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
         || !_evpnType3IncomingRoutes.values().stream().allMatch(Queue::isEmpty)
         // Delta builders
         || !_bgpv4DeltaBuilder.build().isEmpty()
-        || !_evpnDeltaBuilder.build().isEmpty();
+        || !_evpnDeltaBuilder.build().isEmpty()
+        // Initialization state
+        || !_evpnInitializationDelta.isEmpty();
   }
 
   /**
@@ -349,19 +351,19 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
     getAllPeerConfigs(_process)
         .map(BgpPeerConfig::getEvpnAddressFamily)
         .filter(Objects::nonNull)
-        .flatMap(af -> af.getL3VNIs().stream())
+        .flatMap(af -> Stream.concat(af.getL3VNIs().stream(), af.getL2VNIs().stream()))
         .forEach(
-            layer3VniConfig -> {
-              Vrf vniVrf = _c.getVrfs().get(layer3VniConfig.getVrf());
+            vniConfig -> {
+              Vrf vniVrf = _c.getVrfs().get(vniConfig.getVrf());
               assert vniVrf != null; // Invariant guaranteed by proper conversion
-              VniSettings vniSettings = vniVrf.getVniSettings().get(layer3VniConfig.getVni());
+              VniSettings vniSettings = vniVrf.getVniSettings().get(vniConfig.getVni());
               assert vniSettings != null; // Invariant guaranteed by proper conversion
               EvpnType3Route route =
                   initEvpnType3Route(
                       ebgpAdmin,
                       vniSettings,
-                      layer3VniConfig.getRouteTarget(),
-                      layer3VniConfig.getRouteDistinguisher(),
+                      vniConfig.getRouteTarget(),
+                      vniConfig.getRouteDistinguisher(),
                       _process.getRouterId());
 
               if (vniVrf.getName().equals(_vrfName)) {

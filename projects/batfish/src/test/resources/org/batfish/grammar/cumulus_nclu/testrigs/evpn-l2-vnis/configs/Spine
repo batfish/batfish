@@ -1,0 +1,13 @@
+net del all
+net add bgp autonomous-system 65000
+net add bgp neighbor swp2 interface remote-as 65001
+net add bgp neighbor swp3 interface remote-as 65002
+net add bgp ipv4 unicast network 2.2.2.2/32
+net add bgp l2vpn evpn  neighbor swp2 activate
+net add bgp l2vpn evpn  neighbor swp3 activate
+net add interface swp1,4-15
+net add interface swp2 ip address 12.12.12.2/24
+net add interface swp3 ip address 23.23.23.2/24
+net add loopback lo ip address 2.2.2.2/32
+net add hostname Spine
+net commit

@@ -1,0 +1,19 @@
+net del all
+net add bgp autonomous-system 65001
+net add bgp neighbor swp2 interface remote-as 65000
+net add bgp ipv4 unicast network 1.1.1.1/32
+net add bgp l2vpn evpn  neighbor swp2 activate
+net add bgp l2vpn evpn  advertise-all-vni
+net add vxlan vni10 vxlan id 10010
+net add bridge bridge ports swp1,vni10
+net add bridge bridge vids 10
+net add bridge bridge vlan-aware
+net add interface swp1 bridge access 10
+net add interface swp2 ip address 12.12.12.1/24
+net add interface swp3-15
+net add loopback lo ip address 1.1.1.1/32
+net add vlan 10 vlan-id 10
+net add vxlan vni10 bridge access 10
+net add vxlan vni10 vxlan local-tunnelip 1.1.1.1
+net add hostname Leaf1
+net commit
