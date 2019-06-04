@@ -614,7 +614,7 @@ public final class Interface extends ComparableStructure<String> {
   }
 
   private static InterfaceType computeAwsInterfaceType(String name) {
-    if (name.startsWith("v")) {
+    if (name.startsWith("vpn")) {
       return InterfaceType.VPN;
     } else {
       return InterfaceType.PHYSICAL;
