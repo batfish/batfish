@@ -243,7 +243,8 @@ public class BDDReachabilityAnalysisFactorySourcesTest {
     assertThat(
         transition.transitBackward(srcMgr.isValidValue()), equalTo(originatingFromDeviceSrcIpBdd));
     assertThat(
-        transition.transitBackward(originatingFromDeviceBdd), equalTo(originatingFromDeviceSrcIpBdd));
+        transition.transitBackward(originatingFromDeviceBdd),
+        equalTo(originatingFromDeviceSrcIpBdd));
     assertThat(transition.transitBackward(matchSrcInterfaceBdd), equalTo(zero));
   }
 
@@ -254,7 +255,8 @@ public class BDDReachabilityAnalysisFactorySourcesTest {
             .get(new PreOutEdgePostNat(PEER_NAME, PEER_IFACE_NAME, CONFIG_NAME, INGRESS_IFACE_NAME))
             .get(new PreInInterface(CONFIG_NAME, INGRESS_IFACE_NAME));
     assertThat(transition.transitForward(peerSrcMgr.isValidValue()), equalTo(matchSrcInterfaceBdd));
-    assertThat(transition.transitBackward(matchSrcInterfaceBdd), equalTo(peerSrcMgr.isValidValue()));
+    assertThat(
+        transition.transitBackward(matchSrcInterfaceBdd), equalTo(peerSrcMgr.isValidValue()));
     assertThat(transition.transitBackward(originatingFromDeviceBdd), equalTo(zero));
   }
 }
