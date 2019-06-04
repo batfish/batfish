@@ -16,6 +16,7 @@ import org.batfish.datamodel.BgpProcess;
 import org.batfish.datamodel.BgpRoute;
 import org.batfish.datamodel.BgpSessionProperties;
 import org.batfish.datamodel.Bgpv4Route;
+import org.batfish.datamodel.EvpnType3Route;
 import org.batfish.datamodel.GeneratedRoute;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.OriginType;
@@ -60,6 +61,13 @@ public class BgpProtocolHelper {
     builder.setProtocol(sessionProperties.isEbgp() ? RoutingProtocol.BGP : RoutingProtocol.IBGP);
     builder.setSrcProtocol(route.getProtocol());
     builder.setOriginType(route.getOriginType());
+
+    // Hacky way of taking care of type3 routes until above todo is addressed
+    if (route instanceof EvpnType3Route) {
+      ((EvpnType3Route.Builder) builder)
+          .setRouteDistinguisher(((EvpnType3Route) route).getRouteDistinguisher())
+          .setVniIp(((EvpnType3Route) route).getVniIp());
+    }
 
     // Set originatorIP
     if (!sessionProperties.isEbgp() && routeProtocol.equals(RoutingProtocol.IBGP)) {
@@ -164,6 +172,7 @@ public class BgpProtocolHelper {
               ? fromNeighborIp
               : route.getNextHopIp());
     }
+
     return builder;
   }
 
