@@ -38,9 +38,7 @@ public class BDDLoopDetectionAnalysis {
   }
 
   public BDDLoopDetectionAnalysis(
-      BDDPacket bddPacket,
-      Stream<Edge> edges,
-      Set<StateExpr> ingressLocationStates) {
+      BDDPacket bddPacket, Stream<Edge> edges, Set<StateExpr> ingressLocationStates) {
     this(bddPacket, BDDReachabilityUtils.computeForwardEdgeTable(edges), ingressLocationStates);
   }
 
@@ -80,7 +78,8 @@ public class BDDLoopDetectionAnalysis {
       /*
        * Extract the ingress location BDDs.
        */
-      return getIngressLocationBdds(loopBDDs, _ingressLocationStates);
+      return getIngressLocationBdds(
+          loopBDDs, _ingressLocationStates, _bddPacket.getFactory().zero());
     }
   }
 

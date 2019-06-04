@@ -203,7 +203,8 @@ public final class BDDReachabilityAnalysisTest {
   }
 
   private Edge edge(StateExpr preState, StateExpr postState) {
-    return new Edge(preState, postState, _graph.getForwardEdgeMap().get(preState).get(postState));
+    Transition transition = _graph.getForwardEdgeMap().get(preState).get(postState);
+    return transition == null ? null : new Edge(preState, postState, transition);
   }
 
   private static BDD dstIpBDD(Ip ip) {

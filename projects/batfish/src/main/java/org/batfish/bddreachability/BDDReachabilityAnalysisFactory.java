@@ -1454,7 +1454,7 @@ public final class BDDReachabilityAnalysisFactory {
                       _bddSourceManagers,
                       _lastHopMgr,
                       _aclPermitBDDs,
-                      generateEdges(),
+                      Stream.concat(generateEdges(), generateDispositionEdges(_configs.keySet())),
                       initializedSessions)),
               generateRootEdges(returnPassOrigBdds),
               generateQueryEdges(dispositions));

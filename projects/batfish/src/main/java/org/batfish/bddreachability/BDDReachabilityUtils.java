@@ -2,11 +2,10 @@ package org.batfish.bddreachability;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.collect.ImmutableTable.toImmutableTable;
+import static org.batfish.common.util.CollectionUtil.toImmutableMap;
 
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Maps;
 import com.google.common.collect.Streams;
 import com.google.common.collect.Table;
 import com.google.common.collect.Tables;
@@ -14,8 +13,6 @@ import io.opentracing.ActiveSpan;
 import io.opentracing.util.GlobalTracer;
 import java.util.HashSet;
 import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Objects;
 import java.util.Set;
 import java.util.function.BiFunction;
 import java.util.stream.Stream;
@@ -37,11 +34,11 @@ final class BDDReachabilityUtils {
 
   static Table<StateExpr, StateExpr, Transition> computeForwardEdgeTable(Stream<Edge> edges) {
     return edges.collect(
-            toImmutableTable(
-                Edge::getPreState,
-                Edge::getPostState,
-                Edge::getTransition,
-                (t1, t2) -> Transitions.or(t1, t2)));
+        toImmutableTable(
+            Edge::getPreState,
+            Edge::getPostState,
+            Edge::getTransition,
+            (t1, t2) -> Transitions.or(t1, t2)));
   }
 
   /** Apply edges to the reachableSets until a fixed point is reached. */
@@ -115,14 +112,10 @@ final class BDDReachabilityUtils {
   }
 
   static Map<IngressLocation, BDD> getIngressLocationBdds(
-      Map<StateExpr, BDD> stateReachableBdds, Set<StateExpr> ingressLocationStates) {
-    return ingressLocationStates.stream()
-        .map(
-            state -> {
-              BDD bdd = stateReachableBdds.get(state);
-              return bdd == null ? null : Maps.immutableEntry(toIngressLocation(state), bdd);
-            })
-        .filter(Objects::nonNull)
-        .collect(ImmutableMap.toImmutableMap(Entry::getKey, Entry::getValue));
+      Map<StateExpr, BDD> stateReachableBdds, Set<StateExpr> ingressLocationStates, BDD zero) {
+    return toImmutableMap(
+        ingressLocationStates,
+        BDDReachabilityUtils::toIngressLocation,
+        stateExpr -> stateReachableBdds.getOrDefault(stateExpr, zero));
   }
 }

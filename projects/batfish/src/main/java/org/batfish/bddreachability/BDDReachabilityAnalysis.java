@@ -139,7 +139,8 @@ public class BDDReachabilityAnalysis {
 
   private Map<IngressLocation, BDD> getIngressLocationBDDs(
       Map<StateExpr, BDD> reverseReachableStates) {
-    return getIngressLocationBdds(reverseReachableStates, _ingressLocationStates);
+    return getIngressLocationBdds(
+        reverseReachableStates, _ingressLocationStates, _bddPacket.getFactory().zero());
   }
 
   @VisibleForTesting
