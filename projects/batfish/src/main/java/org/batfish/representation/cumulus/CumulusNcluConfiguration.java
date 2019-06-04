@@ -3,7 +3,7 @@ package org.batfish.representation.cumulus;
 import static com.google.common.base.MoreObjects.firstNonNull;
 import static java.util.Comparator.naturalOrder;
 import static org.batfish.datamodel.MultipathEquivalentAsPathMatchMode.EXACT_PATH;
-import static org.batfish.datamodel.bgp.Layer3VniConfig.importRtPatternForAnyAs;
+import static org.batfish.datamodel.bgp.VniConfig.importRtPatternForAnyAs;
 import static org.batfish.representation.cumulus.CumulusRoutingProtocol.VI_PROTOCOLS_MAP;
 
 import com.google.common.annotations.VisibleForTesting;
@@ -212,7 +212,13 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
               RouteDistinguisher.from(newProc.getRouterId(), vniToIndex.get(vxlan.getVni()));
           ExtendedCommunity rt = ExtendedCommunity.target(localAs, vxlan.getVni());
           // Advertise L2 VNIs
-          l2Vnis.add(new Layer2VniConfig(vxlan.getVni(), bgpVrf.getVrfName(), rd, rt));
+          l2Vnis.add(
+              Layer2VniConfig.builder()
+                  .setVni(vxlan.getVni())
+                  .setVrf(bgpVrf.getVrfName())
+                  .setRouteDistinguisher(rd)
+                  .setRouteTarget(rt)
+                  .build());
         }
       }
       // Advertise the L3 VNI per vrf if one is configured

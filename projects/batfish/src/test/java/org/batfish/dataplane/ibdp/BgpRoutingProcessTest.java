@@ -31,6 +31,7 @@ import org.batfish.datamodel.bgp.EvpnAddressFamily;
 import org.batfish.datamodel.bgp.Layer3VniConfig;
 import org.batfish.datamodel.bgp.Layer3VniConfig.Builder;
 import org.batfish.datamodel.bgp.RouteDistinguisher;
+import org.batfish.datamodel.bgp.VniConfig;
 import org.batfish.datamodel.bgp.community.ExtendedCommunity;
 import org.batfish.dataplane.rib.Rib;
 import org.junit.Before;
@@ -129,7 +130,7 @@ public class BgpRoutingProcessTest {
             .setVrf(DEFAULT_VRF_NAME)
             .setRouteDistinguisher(RouteDistinguisher.from(_bgpProcess.getRouterId(), 2))
             .setRouteTarget(ExtendedCommunity.target(65500, vni))
-            .setImportRouteTarget(Layer3VniConfig.importRtPatternForAnyAs(vni))
+            .setImportRouteTarget(VniConfig.importRtPatternForAnyAs(vni))
             .setAdvertiseV4Unicast(false);
     Layer3VniConfig vniConfig1 = vniConfigBuilder.build();
     Layer3VniConfig vniConfig2 =
@@ -250,9 +251,9 @@ public class BgpRoutingProcessTest {
         actual,
         equalTo(
             ImmutableMap.of(
-                Layer3VniConfig.importRtPatternForAnyAs(vni),
+                VniConfig.importRtPatternForAnyAs(vni),
                 _vrf.getName(),
-                Layer3VniConfig.importRtPatternForAnyAs(vni2),
+                VniConfig.importRtPatternForAnyAs(vni2),
                 _vrf2.getName())));
   }
 }

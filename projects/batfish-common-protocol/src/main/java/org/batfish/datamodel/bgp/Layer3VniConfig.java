@@ -11,30 +11,18 @@ import java.util.Comparator;
 import java.util.Objects;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
-import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.bgp.community.ExtendedCommunity;
 
-/**
- * Configuration for how to advertise a specific VNI (i.e., which route distinguisher and route
- * targets to use).
- */
+/** A Layer 3 {@link VniConfig}. */
 @ParametersAreNonnullByDefault
-public final class Layer3VniConfig implements Serializable, Comparable<Layer3VniConfig> {
+public final class Layer3VniConfig extends VniConfig
+    implements Serializable, Comparable<Layer3VniConfig> {
   private static final long serialVersionUID = 1L;
-  private static final String PROP_VNI = "vni";
-  private static final String PROP_VRF = "vrf";
-  private static final String PROP_ROUTE_DISTINGUISHER = "routeDistinguisher";
-  private static final String PROP_ROUTE_TARGET = "routeTarget";
-  private static final String PROP_IMPORT_ROUTE_TARGET = "importRouteTarget";
+
   private static final String PROP_ADVERTISE_V4_UNICAST = "advertiseV4Unicast";
 
-  private final int _vni;
-  @Nonnull private final String _vrf;
-  @Nonnull private final RouteDistinguisher _rd;
-  @Nonnull private final ExtendedCommunity _routeTarget;
-  @Nonnull private final String _importRouteTarget;
   private final boolean _advertiseV4Unicast;
 
   private Layer3VniConfig(
@@ -44,11 +32,7 @@ public final class Layer3VniConfig implements Serializable, Comparable<Layer3Vni
       ExtendedCommunity routeTarget,
       String importRouteTarget,
       boolean advertiseV4Unicast) {
-    _vni = vni;
-    _vrf = vrf;
-    _rd = rd;
-    _routeTarget = routeTarget;
-    _importRouteTarget = importRouteTarget;
+    super(vni, vrf, rd, routeTarget, importRouteTarget);
     _advertiseV4Unicast = advertiseV4Unicast;
   }
 
@@ -73,38 +57,6 @@ public final class Layer3VniConfig implements Serializable, Comparable<Layer3Vni
         .setImportRouteTarget(importRouteTarget)
         .setAdvertiseV4Unicast(firstNonNull(advertiseV4Unicast, Boolean.FALSE))
         .build();
-  }
-
-  @JsonProperty(PROP_VNI)
-  public int getVni() {
-    return _vni;
-  }
-
-  /** The VRF to which this VNI belongs */
-  @Nonnull
-  @JsonProperty(PROP_VRF)
-  public String getVrf() {
-    return _vrf;
-  }
-
-  /** {@link RouteDistinguisher} to use when advertising this VNI */
-  @Nonnull
-  @JsonProperty(PROP_ROUTE_DISTINGUISHER)
-  public RouteDistinguisher getRouteDistinguisher() {
-    return _rd;
-  }
-
-  /** Route target to use when advertising this VNI (i.e., the export route target) */
-  @Nonnull
-  @JsonProperty(PROP_ROUTE_TARGET)
-  public ExtendedCommunity getRouteTarget() {
-    return _routeTarget;
-  }
-
-  /** The import route target pattern. Can be compiled into a {@link Pattern} */
-  @Nonnull
-  public String getImportRouteTarget() {
-    return _importRouteTarget;
   }
 
   /**
@@ -156,13 +108,6 @@ public final class Layer3VniConfig implements Serializable, Comparable<Layer3Vni
         .add(PROP_ROUTE_TARGET, _routeTarget)
         .add(PROP_ADVERTISE_V4_UNICAST, _advertiseV4Unicast)
         .toString();
-  }
-
-  /** Return an import route target pattern equivalent to "*:VNI" */
-  @Nonnull
-  public static String importRtPatternForAnyAs(int vni) {
-    checkArgument(vni > 0 && vni < 1 << 24, "VNI value %d is not in the valid range 1-16777215");
-    return String.format("^\\d+:%d$", vni);
   }
 
   public static Builder builder() {

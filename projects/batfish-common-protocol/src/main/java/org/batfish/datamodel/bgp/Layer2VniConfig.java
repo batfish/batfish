@@ -1,5 +1,6 @@
 package org.batfish.datamodel.bgp;
 
+import static com.google.common.base.MoreObjects.firstNonNull;
 import static com.google.common.base.Preconditions.checkArgument;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -8,34 +9,23 @@ import com.google.common.base.MoreObjects;
 import java.io.Serializable;
 import java.util.Comparator;
 import java.util.Objects;
-import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.bgp.community.ExtendedCommunity;
 
-/**
- * Configuration for how to advertise a specific VNI (i.e., which route distinguisher and route
- * targets to use).
- */
+/** A Layer 2 {@link VniConfig} */
 @ParametersAreNonnullByDefault
-public class Layer2VniConfig implements Serializable, Comparable<Layer2VniConfig> {
+public class Layer2VniConfig extends VniConfig
+    implements Serializable, Comparable<Layer2VniConfig> {
   private static final long serialVersionUID = 1L;
-  private static final String PROP_VNI = "vni";
-  private static final String PROP_VRF = "vrf";
-  private static final String PROP_ROUTE_DISTINGUISHER = "routeDistinguisher";
-  private static final String PROP_ROUTE_TARGET = "routeTarget";
 
-  private final int _vni;
-  @Nonnull private final String _vrf;
-  @Nonnull private final RouteDistinguisher _rd;
-  @Nonnull private final ExtendedCommunity _routeTarget;
-
-  public Layer2VniConfig(
-      int vni, String vrf, RouteDistinguisher rd, ExtendedCommunity routeTarget) {
-    _vni = vni;
-    _vrf = vrf;
-    _rd = rd;
-    _routeTarget = routeTarget;
+  private Layer2VniConfig(
+      int vni,
+      String vrf,
+      RouteDistinguisher rd,
+      ExtendedCommunity routeTarget,
+      String importRouteTarget) {
+    super(vni, vrf, rd, routeTarget, importRouteTarget);
   }
 
   @JsonCreator
@@ -43,39 +33,14 @@ public class Layer2VniConfig implements Serializable, Comparable<Layer2VniConfig
       @Nullable @JsonProperty(PROP_VNI) Integer vni,
       @Nullable @JsonProperty(PROP_VRF) String vrf,
       @Nullable @JsonProperty(PROP_ROUTE_DISTINGUISHER) RouteDistinguisher rd,
-      @Nullable @JsonProperty(PROP_ROUTE_TARGET) ExtendedCommunity routeTarget) {
+      @Nullable @JsonProperty(PROP_ROUTE_TARGET) ExtendedCommunity routeTarget,
+      @Nullable @JsonProperty(PROP_IMPORT_ROUTE_TARGET) String importRouteTarget) {
     checkArgument(vni != null, "Missing %s", PROP_VNI);
     checkArgument(vrf != null, "Missing %s", PROP_VRF);
     checkArgument(rd != null, "Missing %s", PROP_ROUTE_DISTINGUISHER);
     checkArgument(routeTarget != null, "Missing %s", PROP_ROUTE_TARGET);
-    return new Layer2VniConfig(vni, vrf, rd, routeTarget);
-  }
-
-  /** The layer 2 VNI number */
-  @JsonProperty(PROP_VNI)
-  public int getVni() {
-    return _vni;
-  }
-
-  /** The VRF to which this VNI belongs */
-  @Nonnull
-  @JsonProperty(PROP_VRF)
-  public String getVrf() {
-    return _vrf;
-  }
-
-  /** {@link RouteDistinguisher} to use when advertising this VNI */
-  @Nonnull
-  @JsonProperty(PROP_ROUTE_DISTINGUISHER)
-  public RouteDistinguisher getRouteDistinguisher() {
-    return _rd;
-  }
-
-  /** Route target to use when advertising this VNI */
-  @Nonnull
-  @JsonProperty(PROP_ROUTE_TARGET)
-  public ExtendedCommunity getRouteTarget() {
-    return _routeTarget;
+    checkArgument(importRouteTarget != null, "Missing %s", PROP_IMPORT_ROUTE_TARGET);
+    return new Layer2VniConfig(vni, vrf, rd, routeTarget, importRouteTarget);
   }
 
   @Override
@@ -88,21 +53,24 @@ public class Layer2VniConfig implements Serializable, Comparable<Layer2VniConfig
     }
     Layer2VniConfig vniConfig = (Layer2VniConfig) o;
     return _vni == vniConfig._vni
-        && Objects.equals(_vrf, vniConfig._vrf)
-        && Objects.equals(_rd, vniConfig._rd)
-        && Objects.equals(_routeTarget, vniConfig._routeTarget);
+        && _vrf.equals(vniConfig._vrf)
+        && _rd.equals(vniConfig._rd)
+        && _routeTarget.equals(vniConfig._routeTarget)
+        && _importRouteTarget.equals(vniConfig._importRouteTarget);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(_vni, _rd, _routeTarget);
+    return Objects.hash(_vni, _vrf, _rd, _routeTarget, _importRouteTarget);
   }
 
   @Override
   public int compareTo(Layer2VniConfig o) {
     return Comparator.comparing(Layer2VniConfig::getVni)
+        .thenComparing(Layer2VniConfig::getVrf)
         .thenComparing(Layer2VniConfig::getRouteDistinguisher)
         .thenComparing(Layer2VniConfig::getRouteTarget)
+        .thenComparing(Layer2VniConfig::getImportRouteTarget)
         .compare(this, o);
   }
 
@@ -113,6 +81,59 @@ public class Layer2VniConfig implements Serializable, Comparable<Layer2VniConfig
         .add(PROP_VRF, _vrf)
         .add(PROP_ROUTE_DISTINGUISHER, _rd)
         .add(PROP_ROUTE_TARGET, _routeTarget)
+        .add(PROP_IMPORT_ROUTE_TARGET, _importRouteTarget)
         .toString();
+  }
+
+  public static Builder builder() {
+    return new Builder();
+  }
+
+  public static final class Builder {
+    @Nullable protected Integer _vni;
+    @Nullable protected String _vrf;
+    @Nullable protected RouteDistinguisher _rd;
+    @Nullable protected ExtendedCommunity _routeTarget;
+    @Nullable protected String _importRouteTarget;
+
+    private Builder() {}
+
+    public Builder setVni(int vni) {
+      _vni = vni;
+      return this;
+    }
+
+    public Builder setVrf(String vrf) {
+      _vrf = vrf;
+      return this;
+    }
+
+    public Builder setRouteDistinguisher(RouteDistinguisher rd) {
+      _rd = rd;
+      return this;
+    }
+
+    public Builder setRouteTarget(ExtendedCommunity routeTarget) {
+      _routeTarget = routeTarget;
+      return this;
+    }
+
+    public Builder setImportRouteTarget(String importRouteTarget) {
+      _importRouteTarget = importRouteTarget;
+      return this;
+    }
+
+    public Layer2VniConfig build() {
+      checkArgument(_vni != null, "Missing %s", PROP_VNI);
+      checkArgument(_vrf != null, "Missing %s", PROP_VRF);
+      checkArgument(_rd != null, "Missing %s", PROP_ROUTE_DISTINGUISHER);
+      checkArgument(_routeTarget != null, "Missing %s", PROP_ROUTE_TARGET);
+      return new Layer2VniConfig(
+          _vni,
+          _vrf,
+          _rd,
+          _routeTarget,
+          firstNonNull(_importRouteTarget, importRtPatternForAnyAs(_vni)));
+    }
   }
 }
