@@ -1442,23 +1442,6 @@ public final class CumulusNcluGrammarTest {
 
     ImmutableSortedSet<Layer3VniConfig> expectedL3Vnis =
         ImmutableSortedSet.of(
-            // All defined VXLAN VNIs as l3 because of advertise-default-gw
-            Layer3VniConfig.builder()
-                .setVni(10001)
-                .setVrf(DEFAULT_VRF_NAME)
-                .setRouteDistinguisher(RouteDistinguisher.from(routerId, 0))
-                .setRouteTarget(ExtendedCommunity.target(65500, 10001))
-                .setImportRouteTarget(Layer3VniConfig.importRtPatternForAnyAs(10001))
-                .setAdvertiseV4Unicast(false)
-                .build(),
-            Layer3VniConfig.builder()
-                .setVni(10002)
-                .setVrf(DEFAULT_VRF_NAME)
-                .setRouteDistinguisher(RouteDistinguisher.from(routerId, 1))
-                .setRouteTarget(ExtendedCommunity.target(65500, 10002))
-                .setImportRouteTarget(Layer3VniConfig.importRtPatternForAnyAs(10002))
-                .setAdvertiseV4Unicast(false)
-                .build(),
             // VRF1's explicitly defined l3-VNI with advertise-ipv4-unicast
             Layer3VniConfig.builder()
                 .setVni(10004)
