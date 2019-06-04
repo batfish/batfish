@@ -1,6 +1,6 @@
 package org.batfish.datamodel.bgp;
 
-import static org.batfish.datamodel.bgp.Layer3VniConfig.importRtPatternForAnyAs;
+import static org.batfish.datamodel.bgp.VniConfig.importRtPatternForAnyAs;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 
