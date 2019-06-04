@@ -39,20 +39,6 @@ public class Aggregate extends BfObject {
     _contents = new HashSet<>();
   }
 
-  @Override
-  public boolean equals(@Nullable Object o) {
-    if (this == o) {
-      return true;
-    } else if (!(o instanceof Aggregate)) {
-      return false;
-    }
-    Aggregate a = (Aggregate) o;
-    return _type == a._type
-        && _name.equals(a._name)
-        && _contents.equals(a._contents)
-        && Objects.equals(getId(), a.getId());
-  }
-
   @JsonCreator
   private static Aggregate jsonCreator(
       @Nullable @JsonProperty(PROP_ID) String id,
@@ -94,5 +80,23 @@ public class Aggregate extends BfObject {
   @Nonnull
   static String makeId(@Nonnull String name) {
     return "aggregate-" + name;
+  }
+
+  @Override
+  public boolean equals(@Nullable Object o) {
+    if (this == o) {
+      return true;
+    } else if (!(o instanceof Aggregate)) {
+      return false;
+    }
+    Aggregate a = (Aggregate) o;
+    return _type == a._type
+        && _name.equals(a._name)
+        && _contents.equals(a._contents)
+        && Objects.equals(getId(), a.getId());
+  }
+
+  @Override public int hashCode() {
+    return Objects.hash(_type, _name, _contents, getId());
   }
 }
