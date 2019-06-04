@@ -27,7 +27,8 @@ public class RoutesQuestion extends Question {
   /** RIBs of these protocols are available for examining routes using {@link RoutesQuestion}. */
   public enum RibProtocol {
     MAIN("main"),
-    BGP("bgp");
+    BGP("bgp"),
+    EVPN("evpn");
 
     private final String _protocolName;
 
