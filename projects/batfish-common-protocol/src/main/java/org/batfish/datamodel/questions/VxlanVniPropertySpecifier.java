@@ -23,6 +23,7 @@ import org.batfish.datamodel.answers.Schema;
  *
  * <ul>
  *   <li>vlan gets the VLAN ID property
+ *   <li>.*vtep.* gets all properties that include 'VTEP'
  * </ul>
  */
 @ParametersAreNonnullByDefault
