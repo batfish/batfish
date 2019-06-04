@@ -184,14 +184,14 @@ public class RoutesAnswerer extends Answerer {
     addCommonTableColumnsAtStart(columnBuilder);
     switch (rib) {
       case EVPN:
-        columnBuilder.add(
-            new ColumnMetadata(
-                COL_ROUTE_DISTINGUISHER,
-                Schema.STRING,
-                "Route distinguisher",
-                Boolean.FALSE,
-                Boolean.TRUE));
         columnBuilder
+            .add(
+                new ColumnMetadata(
+                    COL_ROUTE_DISTINGUISHER,
+                    Schema.STRING,
+                    "Route distinguisher",
+                    Boolean.FALSE,
+                    Boolean.TRUE))
             .add(
                 new ColumnMetadata(
                     COL_NEXT_HOP_IP, Schema.IP, "Route's Next Hop IP", Boolean.FALSE, Boolean.TRUE))

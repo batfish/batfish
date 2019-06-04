@@ -14,6 +14,7 @@ import static org.batfish.question.routes.RoutesAnswerer.COL_NEXT_HOP_IP;
 import static org.batfish.question.routes.RoutesAnswerer.COL_NODE;
 import static org.batfish.question.routes.RoutesAnswerer.COL_ORIGIN_PROTOCOL;
 import static org.batfish.question.routes.RoutesAnswerer.COL_PROTOCOL;
+import static org.batfish.question.routes.RoutesAnswerer.COL_ROUTE_DISTINGUISHER;
 import static org.batfish.question.routes.RoutesAnswerer.COL_ROUTE_ENTRY_PRESENCE;
 import static org.batfish.question.routes.RoutesAnswerer.COL_TAG;
 import static org.batfish.question.routes.RoutesAnswerer.COL_VRF_NAME;
@@ -22,6 +23,7 @@ import static org.batfish.question.routes.RoutesAnswererUtil.computeNextHopNode;
 import static org.batfish.question.routes.RoutesAnswererUtil.getAbstractRouteRowsDiff;
 import static org.batfish.question.routes.RoutesAnswererUtil.getBgpRibRoutes;
 import static org.batfish.question.routes.RoutesAnswererUtil.getBgpRouteRowsDiff;
+import static org.batfish.question.routes.RoutesAnswererUtil.getEvpnRoutes;
 import static org.batfish.question.routes.RoutesAnswererUtil.getMainRibRoutes;
 import static org.batfish.question.routes.RoutesAnswererUtil.getRoutesDiff;
 import static org.batfish.question.routes.RoutesAnswererUtil.groupBgpRoutes;
@@ -55,6 +57,8 @@ import org.batfish.datamodel.AsPath;
 import org.batfish.datamodel.Bgpv4Route;
 import org.batfish.datamodel.Bgpv4Route.Builder;
 import org.batfish.datamodel.Configuration;
+import org.batfish.datamodel.EvpnRoute;
+import org.batfish.datamodel.EvpnType3Route;
 import org.batfish.datamodel.GenericRib;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.OriginType;
@@ -62,6 +66,7 @@ import org.batfish.datamodel.OspfExternalType2Route;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.answers.Schema;
+import org.batfish.datamodel.bgp.RouteDistinguisher;
 import org.batfish.datamodel.bgp.community.StandardCommunity;
 import org.batfish.datamodel.ospf.OspfMetricType;
 import org.batfish.datamodel.pojo.Node;
@@ -288,6 +293,55 @@ public class RoutesAnswererUtilTest {
     assertThat(
         rows.iterator().next().get(COL_COMMUNITIES, Schema.list(Schema.STRING)),
         equalTo(ImmutableList.of("1:1")));
+  }
+
+  @Test
+  public void testEvpnRibRouteColumns() {
+    // Create two BGP routes: one standard route and one from a BGP unnumbered session
+    Ip ip = Ip.parse("1.1.1.1");
+    Prefix prefix = Prefix.create(ip, MAX_PREFIX_LENGTH);
+    EvpnType3Route.Builder rb =
+        EvpnType3Route.builder()
+            .setVniIp(ip)
+            .setRouteDistinguisher(RouteDistinguisher.from(ip, 1))
+            .setOriginType(OriginType.IGP)
+            .setCommunities(ImmutableSortedSet.of(StandardCommunity.of(65537L)))
+            .setProtocol(RoutingProtocol.BGP)
+            .setOriginatorIp(Ip.parse("1.1.1.2"))
+            .setAsPath(AsPath.ofSingletonAsSets(ImmutableList.of(1L, 2L)));
+    EvpnType3Route standardRoute = rb.setNextHopIp(ip).build();
+
+    Table<String, String, Set<EvpnRoute<?, ?>>> evpnRouteTable = HashBasedTable.create();
+    evpnRouteTable.put("node", "vrf", ImmutableSet.of(standardRoute));
+    Multiset<Row> rows =
+        getEvpnRoutes(
+            evpnRouteTable,
+            RibProtocol.EVPN,
+            ImmutableSet.of("node"),
+            null,
+            RoutingProtocolSpecifier.ALL_PROTOCOLS_SPECIFIER,
+            ".*");
+
+    assertThat(
+        rows,
+        contains(
+            allOf(
+                hasColumn(COL_NODE, new Node("node"), Schema.NODE),
+                hasColumn(COL_VRF_NAME, "vrf", Schema.STRING),
+                hasColumn(COL_NETWORK, prefix, Schema.PREFIX),
+                hasColumn(
+                    COL_ROUTE_DISTINGUISHER,
+                    RouteDistinguisher.from(ip, 1).toString(),
+                    Schema.STRING),
+                hasColumn(COL_PROTOCOL, "bgp", Schema.STRING),
+                hasColumn(COL_AS_PATH, "1 2", Schema.STRING),
+                hasColumn(COL_METRIC, 0, Schema.INTEGER),
+                hasColumn(COL_LOCAL_PREF, 0L, Schema.LONG),
+                hasColumn(COL_COMMUNITIES, ImmutableList.of("1:1"), Schema.list(Schema.STRING)),
+                hasColumn(COL_ORIGIN_PROTOCOL, nullValue(), Schema.STRING),
+                hasColumn(COL_TAG, nullValue(), Schema.INTEGER),
+                hasColumn(COL_NEXT_HOP_IP, ip, Schema.IP),
+                hasColumn(COL_NEXT_HOP_INTERFACE, "dynamic", Schema.STRING))));
   }
 
   @Test
