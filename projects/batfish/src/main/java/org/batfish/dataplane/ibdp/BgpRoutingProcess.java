@@ -213,7 +213,7 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
         .map(BgpPeerConfig::getEvpnAddressFamily)
         .filter(Objects::nonNull)
         .flatMap(af -> Stream.concat(af.getL3VNIs().stream(), af.getL2VNIs().stream()))
-        .forEach(l3vni -> rtVrfMappingBuilder.put(l3vni.getImportRouteTarget(), l3vni.getVrf()));
+        .forEach(vni -> rtVrfMappingBuilder.put(vni.getImportRouteTarget(), vni.getVrf()));
     return ImmutableMap.copyOf(rtVrfMappingBuilder);
   }
 
