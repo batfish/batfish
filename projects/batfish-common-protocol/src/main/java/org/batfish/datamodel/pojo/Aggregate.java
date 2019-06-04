@@ -98,6 +98,6 @@ public class Aggregate extends BfObject {
 
   @Override
   public int hashCode() {
-    return Objects.hash(_type, _name, _contents, getId());
+    return Objects.hash(_type.ordinal(), _name, _contents, getId());
   }
 }
