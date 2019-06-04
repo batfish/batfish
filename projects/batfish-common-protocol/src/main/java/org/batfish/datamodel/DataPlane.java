@@ -8,7 +8,8 @@ import java.util.SortedMap;
 
 public interface DataPlane extends Serializable {
 
-  Table<String, String, Set<Bgpv4Route>> getBgpRoutes(boolean multipath);
+  /** Return routes in the BGP rib for each node/VRF */
+  Table<String, String, Set<Bgpv4Route>> getBgpRoutes();
 
   Map<String, Configuration> getConfigurations();
 

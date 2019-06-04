@@ -91,7 +91,7 @@ public class MockDataPlane implements DataPlane {
   }
 
   @Override
-  public Table<String, String, Set<Bgpv4Route>> getBgpRoutes(boolean multipath) {
+  public Table<String, String, Set<Bgpv4Route>> getBgpRoutes() {
     return _bgpRoutes;
   }
 

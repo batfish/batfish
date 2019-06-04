@@ -84,12 +84,7 @@ public class RoutesAnswerer extends Answerer {
       case BGP:
         rows =
             getBgpRibRoutes(
-                dp.getBgpRoutes(false),
-                RibProtocol.BGP,
-                matchingNodes,
-                network,
-                protocolSpec,
-                vrfRegex);
+                dp.getBgpRoutes(), RibProtocol.BGP, matchingNodes, network, protocolSpec, vrfRegex);
         break;
 
       case MAIN:
@@ -128,13 +123,13 @@ public class RoutesAnswerer extends Answerer {
         _batfish.pushBaseSnapshot();
         dp = _batfish.loadDataPlane();
         routesGroupedByKeyInBase =
-            groupBgpRoutes(dp.getBgpRoutes(false), matchingNodes, vrfRegex, network, vrfRegex);
+            groupBgpRoutes(dp.getBgpRoutes(), matchingNodes, vrfRegex, network, vrfRegex);
         _batfish.popSnapshot();
 
         _batfish.pushDeltaSnapshot();
         dp = _batfish.loadDataPlane();
         routesGroupedByKeyInDelta =
-            groupBgpRoutes(dp.getBgpRoutes(false), matchingNodes, vrfRegex, network, vrfRegex);
+            groupBgpRoutes(dp.getBgpRoutes(), matchingNodes, vrfRegex, network, vrfRegex);
         _batfish.popSnapshot();
         routesDiffRaw = getRoutesDiff(routesGroupedByKeyInBase, routesGroupedByKeyInDelta);
         rows = getBgpRouteRowsDiff(routesDiffRaw, RibProtocol.BGP);

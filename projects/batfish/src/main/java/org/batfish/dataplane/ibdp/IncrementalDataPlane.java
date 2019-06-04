@@ -5,9 +5,9 @@ import static org.batfish.common.util.CollectionUtil.toImmutableSortedMap;
 
 import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
+import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Table;
-import com.google.common.collect.TreeBasedTable;
 import java.io.Serializable;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -155,13 +155,13 @@ public final class IncrementalDataPlane implements Serializable, DataPlane {
 
   @Nonnull
   @Override
-  public Table<String, String, Set<Bgpv4Route>> getBgpRoutes(boolean multipath) {
+  public Table<String, String, Set<Bgpv4Route>> getBgpRoutes() {
     return _bgpRoutes;
   }
 
   @Nonnull
   private Table<String, String, Set<Bgpv4Route>> computeBgpRoutes() {
-    Table<String, String, Set<Bgpv4Route>> table = TreeBasedTable.create();
+    Table<String, String, Set<Bgpv4Route>> table = HashBasedTable.create();
 
     _nodes.forEach(
         (hostname, node) ->
