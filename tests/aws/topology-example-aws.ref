@@ -3,7 +3,6 @@
   "testrigName" : "basic-example-aws",
   "aggregates" : [
     {
-      "name" : "vpc-f8fad69d",
       "contents" : [
         "node-vpc-f8fad69d",
         "aggregate-subnet-d9cafabc",
@@ -11,34 +10,34 @@
         "aggregate-subnet-1f315846"
       ],
       "id" : "aggregate-vpc-f8fad69d",
+      "name" : "vpc-f8fad69d",
       "type" : "VNET"
     },
     {
-      "name" : "subnet-f73a8191",
       "contents" : [
         "node-subnet-f73a8191"
       ],
       "id" : "aggregate-subnet-f73a8191",
+      "name" : "subnet-f73a8191",
       "type" : "SUBNET"
     },
     {
-      "name" : "subnet-1641fa70",
       "contents" : [
         "node-subnet-1641fa70"
       ],
       "id" : "aggregate-subnet-1641fa70",
+      "name" : "subnet-1641fa70",
       "type" : "SUBNET"
     },
     {
-      "name" : "subnet-30398256",
       "contents" : [
         "node-subnet-30398256"
       ],
       "id" : "aggregate-subnet-30398256",
+      "name" : "subnet-30398256",
       "type" : "SUBNET"
     },
     {
-      "name" : "us-west-2",
       "contents" : [
         "node-igw-9b93ddfc",
         "aggregate-vpc-f8fad69d",
@@ -50,84 +49,84 @@
         "node-vgw-81fd279f"
       ],
       "id" : "aggregate-us-west-2",
+      "name" : "us-west-2",
       "type" : "REGION"
     },
     {
-      "name" : "subnet-073b8061",
       "contents" : [
         "node-subnet-073b8061"
       ],
       "id" : "aggregate-subnet-073b8061",
+      "name" : "subnet-073b8061",
       "type" : "SUBNET"
     },
     {
-      "name" : "subnet-d9cafabc",
       "contents" : [
         "node-subnet-d9cafabc"
       ],
       "id" : "aggregate-subnet-d9cafabc",
+      "name" : "subnet-d9cafabc",
       "type" : "SUBNET"
     },
     {
-      "name" : "vpc-815775e7",
       "contents" : [
         "node-vpc-815775e7"
       ],
       "id" : "aggregate-vpc-815775e7",
+      "name" : "vpc-815775e7",
       "type" : "VNET"
     },
     {
-      "name" : "aws",
       "contents" : [
         "aggregate-us-west-2"
       ],
       "id" : "aggregate-aws",
+      "name" : "aws",
       "type" : "CLOUD"
     },
     {
-      "name" : "subnet-1f315846",
       "contents" : [
         "node-subnet-1f315846"
       ],
       "id" : "aggregate-subnet-1f315846",
+      "name" : "subnet-1f315846",
       "type" : "SUBNET"
     },
     {
-      "name" : "subnet-62f14104",
       "contents" : [
         "node-subnet-62f14104"
       ],
       "id" : "aggregate-subnet-62f14104",
+      "name" : "subnet-62f14104",
       "type" : "SUBNET"
     },
     {
-      "name" : "subnet-8d0cbdeb",
       "contents" : [
         "node-subnet-8d0cbdeb"
       ],
       "id" : "aggregate-subnet-8d0cbdeb",
+      "name" : "subnet-8d0cbdeb",
       "type" : "SUBNET"
     },
     {
-      "name" : "vpc-925131f4",
       "contents" : [
         "aggregate-subnet-62f14104",
         "aggregate-subnet-8d0cbdeb",
         "node-vpc-925131f4"
       ],
       "id" : "aggregate-vpc-925131f4",
+      "name" : "vpc-925131f4",
       "type" : "VNET"
     },
     {
-      "name" : "subnet-9c8adceb",
       "contents" : [
         "node-subnet-9c8adceb"
       ],
       "id" : "aggregate-subnet-9c8adceb",
+      "name" : "subnet-9c8adceb",
       "type" : "SUBNET"
     },
     {
-      "name" : "vpc-b390fad5",
       "contents" : [
         "aggregate-subnet-7044ff16",
         "aggregate-subnet-f73a8191",
@@ -139,14 +138,15 @@
         "node-test-rds"
       ],
       "id" : "aggregate-vpc-b390fad5",
+      "name" : "vpc-b390fad5",
       "type" : "VNET"
     },
     {
-      "name" : "subnet-7044ff16",
       "contents" : [
         "node-subnet-7044ff16"
       ],
       "id" : "aggregate-subnet-7044ff16",
+      "name" : "subnet-7044ff16",
       "type" : "SUBNET"
     }
   ],
