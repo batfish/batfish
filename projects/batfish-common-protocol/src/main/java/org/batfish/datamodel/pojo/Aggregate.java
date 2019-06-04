@@ -96,7 +96,8 @@ public class Aggregate extends BfObject {
         && Objects.equals(getId(), a.getId());
   }
 
-  @Override public int hashCode() {
+  @Override
+  public int hashCode() {
     return Objects.hash(_type, _name, _contents, getId());
   }
 }
