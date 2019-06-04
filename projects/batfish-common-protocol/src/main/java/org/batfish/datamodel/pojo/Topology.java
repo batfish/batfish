@@ -157,7 +157,7 @@ public class Topology extends BfObject {
   }
 
   public Aggregate getOrCreateAggregate(String name, AggregateType aggType) {
-    String aggId = Aggregate.getId(name);
+    String aggId = Aggregate.makeId(name);
     for (Aggregate aggregate : _aggregates) {
       if (aggregate.getId().equals(aggId)) {
         return aggregate;

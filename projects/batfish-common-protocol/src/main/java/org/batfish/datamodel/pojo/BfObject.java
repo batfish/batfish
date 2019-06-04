@@ -13,7 +13,7 @@ public abstract class BfObject {
 
   private Map<String, String> _properties;
 
-  public BfObject(String id) {
+  public BfObject(@Nullable String id) {
     _id = id;
   }
 
@@ -25,6 +25,7 @@ public abstract class BfObject {
   }
 
   @JsonProperty(PROP_ID)
+  @Nullable
   public String getId() {
     return _id;
   }
