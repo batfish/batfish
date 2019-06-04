@@ -29731,6 +29731,32 @@
             "type" : "PHYSICAL",
             "vrf" : "~NULL_VRF~"
           },
+          "ethernet1/1.4" : {
+            "name" : "ethernet1/1.4",
+            "active" : false,
+            "additionalArpIps" : {
+              "class" : "org.batfish.datamodel.EmptyIpSpace"
+            },
+            "allowedVlans" : "",
+            "autostate" : true,
+            "description" : "layer2 subif comment",
+            "mtu" : 1500,
+            "ospfDeadInterval" : 0,
+            "ospfEnabled" : false,
+            "ospfHelloMultiplier" : 0,
+            "ospfPassive" : false,
+            "ospfPointToPoint" : false,
+            "proxyArp" : false,
+            "ripEnabled" : false,
+            "ripPassive" : false,
+            "spanningTreePortfast" : false,
+            "switchport" : false,
+            "switchportMode" : "NONE",
+            "switchportTrunkEncapsulation" : "DOT1Q",
+            "type" : "PHYSICAL",
+            "vlan" : 4,
+            "vrf" : "~NULL_VRF~"
+          },
           "ethernet1/1.5" : {
             "name" : "ethernet1/1.5",
             "active" : false,
@@ -29754,6 +29780,7 @@
             "switchportMode" : "NONE",
             "switchportTrunkEncapsulation" : "DOT1Q",
             "type" : "PHYSICAL",
+            "vlan" : 5,
             "vrf" : "~NULL_VRF~"
           },
           "loopback" : {
@@ -29862,6 +29889,7 @@
             "name" : "~NULL_VRF~",
             "interfaces" : [
               "ethernet1/1",
+              "ethernet1/1.4",
               "ethernet1/1.5",
               "loopback",
               "tunnel",

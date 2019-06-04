@@ -3281,13 +3281,19 @@
             15,
             16,
             17,
-            18
+            18,
+            22,
+            23,
+            24,
+            25,
+            26,
+            27
           ]
         }
       },
       {
         "Structure_Type" : "interface",
-        "Structure_Name" : "ethernet1/1.5",
+        "Structure_Name" : "ethernet1/1.4",
         "Source_Lines" : {
           "filename" : "configs/palo_alto/interfaces",
           "lines" : [
@@ -3299,13 +3305,26 @@
       },
       {
         "Structure_Type" : "interface",
-        "Structure_Name" : "loopback",
+        "Structure_Name" : "ethernet1/1.5",
         "Source_Lines" : {
           "filename" : "configs/palo_alto/interfaces",
           "lines" : [
             24,
             25,
-            26
+            26,
+            27
+          ]
+        }
+      },
+      {
+        "Structure_Type" : "interface",
+        "Structure_Name" : "loopback",
+        "Source_Lines" : {
+          "filename" : "configs/palo_alto/interfaces",
+          "lines" : [
+            33,
+            34,
+            35
           ]
         }
       },
@@ -3315,10 +3334,10 @@
         "Source_Lines" : {
           "filename" : "configs/palo_alto/interfaces",
           "lines" : [
-            28,
-            29,
-            30,
-            31
+            37,
+            38,
+            39,
+            40
           ]
         }
       },
@@ -3328,8 +3347,8 @@
         "Source_Lines" : {
           "filename" : "configs/palo_alto/interfaces",
           "lines" : [
-            30,
-            31
+            39,
+            40
           ]
         }
       },
@@ -3339,8 +3358,8 @@
         "Source_Lines" : {
           "filename" : "configs/palo_alto/interfaces",
           "lines" : [
-            35,
-            36
+            44,
+            45
           ]
         }
       },
@@ -3651,10 +3670,10 @@
       }
     ],
     "summary" : {
-      "notes" : "Found 246 results",
+      "notes" : "Found 247 results",
       "numFailed" : 0,
       "numPassed" : 0,
-      "numResults" : 246
+      "numResults" : 247
     }
   }
 ]

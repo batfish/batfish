@@ -11,11 +11,20 @@ config {
         interface {
           ethernet {
             ethernet1/1 {
+              layer2 {
+                units {
+                  ethernet1/1.4 {
+                    comment "layer2 subif comment";
+                    tag 4;
+                  }
+                }
+              }
               layer3 {
                 units {
                   ethernet1/1.5 {
                     comment "subif comment";
                     mtu 1500;
+                    tag 5;
                   }
                 }
               }
