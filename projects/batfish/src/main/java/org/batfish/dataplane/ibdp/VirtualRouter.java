@@ -147,7 +147,7 @@ public class VirtualRouter implements Serializable {
   transient KernelRib _kernelRib;
   transient LocalRib _localRib;
 
-  /** The finalized RIB, a combination different protocol RIBs */
+  /** The main RIB, a combination different protocol RIBs */
   final Rib _mainRib;
 
   private final Map<String, Rib> _mainRibs;
@@ -2092,10 +2092,18 @@ public class VirtualRouter implements Serializable {
                     importRibDelta(_mainRib, p.getUpdatesForMainRib(), _name)));
   }
 
-  /** Temporary wrapper for {@link BgpRoutingProcess#enqueueBgpMessages(EdgeId, Collection)} */
+  void mergeBgpRoutes() {
+    if (_bgpRoutingProcess == null) {
+      return;
+    }
+    _mainRibRouteDeltaBuilder.from(
+        importRibDelta(_mainRib, _bgpRoutingProcess.getUpdatesForMainRib(), _name));
+  }
+
+  /** Temporary wrapper for {@link BgpRoutingProcess#enqueueBgpv4Routes(EdgeId, Collection)} */
   private void enqueueBgpMessages(
       @Nonnull EdgeId edgeId, @Nonnull Collection<RouteAdvertisement<Bgpv4Route>> routes) {
-    _bgpRoutingProcess.enqueueBgpMessages(edgeId, routes);
+    _bgpRoutingProcess.enqueueBgpv4Routes(edgeId, routes);
   }
 
   /** Temporary wrapper for {@link BgpRoutingProcess#enqueueBgpMessages(EdgeId, Stream)} */
