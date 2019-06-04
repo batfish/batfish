@@ -22,13 +22,13 @@ import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.answers.Schema;
 
 /**
- * Enables specification a set of BGP peer properties.
+ * Enables specification of a set of BGP peer properties.
  *
  * <p>Example specifiers:
  *
  * <ul>
- *   <li>multipath-ebgp —&gt; gets the process's corresponding value
- *   <li>max-metric-.* -&gt; gets all properties that start with 'max-metric-'
+ *   <li>local_as —&gt; gets the peer's local AS
+ *   <li>.*policy -&gt; gets all properties that end with 'policy'
  * </ul>
  */
 public class BgpPeerPropertySpecifier extends PropertySpecifier {
