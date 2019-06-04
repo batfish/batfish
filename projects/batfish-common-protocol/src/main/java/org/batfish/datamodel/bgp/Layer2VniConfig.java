@@ -39,7 +39,7 @@ public class Layer2VniConfig extends VniConfig
     checkArgument(vrf != null, "Missing %s", PROP_VRF);
     checkArgument(rd != null, "Missing %s", PROP_ROUTE_DISTINGUISHER);
     checkArgument(routeTarget != null, "Missing %s", PROP_ROUTE_TARGET);
-    checkArgument(importRouteTarget != null, "Missing %s", PROP_ROUTE_TARGET);
+    checkArgument(importRouteTarget != null, "Missing %s", PROP_IMPORT_ROUTE_TARGET);
     return new Layer2VniConfig(vni, vrf, rd, routeTarget, importRouteTarget);
   }
 
@@ -56,7 +56,7 @@ public class Layer2VniConfig extends VniConfig
         && _vrf.equals(vniConfig._vrf)
         && _rd.equals(vniConfig._rd)
         && _routeTarget.equals(vniConfig._routeTarget)
-        && Objects.equals(_importRouteTarget, vniConfig._importRouteTarget);
+        && _importRouteTarget.equals(vniConfig._importRouteTarget);
   }
 
   @Override
@@ -67,8 +67,10 @@ public class Layer2VniConfig extends VniConfig
   @Override
   public int compareTo(Layer2VniConfig o) {
     return Comparator.comparing(Layer2VniConfig::getVni)
+        .thenComparing(Layer2VniConfig::getVrf)
         .thenComparing(Layer2VniConfig::getRouteDistinguisher)
         .thenComparing(Layer2VniConfig::getRouteTarget)
+        .thenComparing(Layer2VniConfig::getImportRouteTarget)
         .compare(this, o);
   }
 

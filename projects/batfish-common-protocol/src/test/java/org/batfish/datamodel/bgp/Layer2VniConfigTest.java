@@ -28,6 +28,7 @@ public class Layer2VniConfigTest {
         .addEqualityGroup(builder.setRouteDistinguisher(RouteDistinguisher.from(65555L, 2)).build())
         .addEqualityGroup(builder.setRouteTarget(ExtendedCommunity.of(0, 2, 2)).build())
         .addEqualityGroup(builder.setImportRouteTarget("^1:1$").build())
+        .addEqualityGroup(new Object())
         .testEquals();
   }
 
