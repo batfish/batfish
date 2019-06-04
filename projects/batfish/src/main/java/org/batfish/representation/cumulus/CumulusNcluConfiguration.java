@@ -219,18 +219,6 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
                   .setRouteDistinguisher(rd)
                   .setRouteTarget(rt)
                   .build());
-          if (evpnConfig.getAdvertiseDefaultGw()) {
-            // Advertise VTEP gateway IP address for the L2 VNI as type 3 route
-            l3Vnis.add(
-                Layer3VniConfig.builder()
-                    .setVni(vxlan.getVni())
-                    .setVrf(bgpVrf.getVrfName())
-                    .setRouteDistinguisher(rd)
-                    .setRouteTarget(rt)
-                    .setImportRouteTarget(importRtPatternForAnyAs(vxlan.getVni()))
-                    .setAdvertiseV4Unicast(false)
-                    .build());
-          }
         }
       }
       // Advertise the L3 VNI per vrf if one is configured

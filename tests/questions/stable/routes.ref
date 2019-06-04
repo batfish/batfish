@@ -40,6 +40,7 @@
       "rib" : {
         "allowedValues" : [
           "bgp",
+          "evpn",
           "main"
         ],
         "description" : "Only return routes from a given protocol RIB",
@@ -53,6 +54,9 @@
           },
           {
             "name" : "bgp"
+          },
+          {
+            "name" : "evpn"
           }
         ]
       },

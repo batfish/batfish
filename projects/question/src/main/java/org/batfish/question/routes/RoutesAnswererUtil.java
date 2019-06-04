@@ -15,6 +15,7 @@ import static org.batfish.question.routes.RoutesAnswerer.COL_NEXT_HOP_IP;
 import static org.batfish.question.routes.RoutesAnswerer.COL_NODE;
 import static org.batfish.question.routes.RoutesAnswerer.COL_ORIGIN_PROTOCOL;
 import static org.batfish.question.routes.RoutesAnswerer.COL_PROTOCOL;
+import static org.batfish.question.routes.RoutesAnswerer.COL_ROUTE_DISTINGUISHER;
 import static org.batfish.question.routes.RoutesAnswerer.COL_ROUTE_ENTRY_PRESENCE;
 import static org.batfish.question.routes.RoutesAnswerer.COL_TAG;
 import static org.batfish.question.routes.RoutesAnswerer.COL_VRF_NAME;
@@ -48,6 +49,7 @@ import org.batfish.common.BatfishException;
 import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.AbstractRouteDecorator;
 import org.batfish.datamodel.Bgpv4Route;
+import org.batfish.datamodel.EvpnRoute;
 import org.batfish.datamodel.GenericRib;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Prefix;
@@ -171,8 +173,7 @@ public class RoutesAnswererUtil {
    * Filters a {@link Table} of {@link Bgpv4Route}s to produce a {@link Multiset} of rows
    *
    * @param bgpRoutes {@link Table} of all {@link Bgpv4Route}s
-   * @param ribProtocol {@link RibProtocol}, either {@link RibProtocol#BGP} or {@link
-   *     RibProtocol#BGPMP}
+   * @param ribProtocol {@link RibProtocol}, either {@link RibProtocol#BGP}
    * @param matchingNodes {@link Set} of nodes from which {@link Bgpv4Route}s are to be selected
    * @param network {@link Prefix} of the network used to filter the routes
    * @param protocolSpec {@link RoutingProtocolSpecifier} used to filter the {@link Bgpv4Route}s
@@ -207,6 +208,40 @@ public class RoutesAnswererUtil {
                                 route ->
                                     rows.add(
                                         bgpRouteToRow(
+                                            hostname, vrfName, route, columnMetadataMap)));
+                      }
+                    }));
+    return rows;
+  }
+
+  static Multiset<Row> getEvpnRoutes(
+      Table<String, String, Set<EvpnRoute<?, ?>>> evpnRoutes,
+      RibProtocol ribProtocol,
+      Set<String> matchingNodes,
+      @Nullable Prefix network,
+      RoutingProtocolSpecifier protocolSpec,
+      String vrfRegex) {
+    Multiset<Row> rows = HashMultiset.create();
+    Map<String, ColumnMetadata> columnMetadataMap = getTableMetadata(ribProtocol).toColumnMap();
+    Pattern compiledVrfRegex = Pattern.compile(vrfRegex);
+    matchingNodes.forEach(
+        hostname ->
+            evpnRoutes
+                .row(hostname)
+                .forEach(
+                    (vrfName, routes) -> {
+                      if (compiledVrfRegex.matcher(vrfName).matches()) {
+                        routes.stream()
+                            .filter(
+                                route ->
+                                    (network == null || network.equals(route.getNetwork()))
+                                        && protocolSpec
+                                            .getProtocols()
+                                            .contains(route.getProtocol()))
+                            .forEach(
+                                route ->
+                                    rows.add(
+                                        evpnRouteToRow(
                                             hostname, vrfName, route, columnMetadataMap)));
                       }
                     }));
@@ -282,6 +317,33 @@ public class RoutesAnswererUtil {
                 .collect(toImmutableList()))
         .put(COL_ORIGIN_PROTOCOL, bgpv4Route.getSrcProtocol())
         .put(COL_TAG, bgpv4Route.getTag() == Route.UNSET_ROUTE_TAG ? null : bgpv4Route.getTag())
+        .build();
+  }
+
+  static Row evpnRouteToRow(
+      String hostName,
+      String vrfName,
+      EvpnRoute<?, ?> evpnRoute,
+      Map<String, ColumnMetadata> columnMetadataMap) {
+    // If the route's next hop IP is for internal use, do not show it in the row
+    Ip nextHopIp =
+        INTERNAL_USE_IPS.contains(evpnRoute.getNextHopIp()) ? null : evpnRoute.getNextHopIp();
+    return Row.builder(columnMetadataMap)
+        .put(COL_NODE, new Node(hostName))
+        .put(COL_VRF_NAME, vrfName)
+        .put(COL_NETWORK, evpnRoute.getNetwork())
+        .put(COL_NEXT_HOP_IP, nextHopIp)
+        .put(COL_NEXT_HOP_INTERFACE, evpnRoute.getNextHopInterface())
+        .put(COL_PROTOCOL, evpnRoute.getProtocol())
+        .put(COL_AS_PATH, evpnRoute.getAsPath().getAsPathString())
+        .put(COL_METRIC, evpnRoute.getMetric())
+        .put(COL_LOCAL_PREF, evpnRoute.getLocalPreference())
+        .put(
+            COL_COMMUNITIES,
+            evpnRoute.getCommunities().stream().map(Community::toString).collect(toImmutableList()))
+        .put(COL_ORIGIN_PROTOCOL, evpnRoute.getSrcProtocol())
+        .put(COL_TAG, evpnRoute.getTag() == Route.UNSET_ROUTE_TAG ? null : evpnRoute.getTag())
+        .put(COL_ROUTE_DISTINGUISHER, evpnRoute.getRouteDistinguisher())
         .build();
   }
 

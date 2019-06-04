@@ -1,5 +1,6 @@
 package org.batfish.datamodel;
 
+import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.Table;
@@ -91,8 +92,13 @@ public class MockDataPlane implements DataPlane {
   }
 
   @Override
-  public Table<String, String, Set<Bgpv4Route>> getBgpRoutes(boolean multipath) {
+  public Table<String, String, Set<Bgpv4Route>> getBgpRoutes() {
     return _bgpRoutes;
+  }
+
+  @Override
+  public Table<String, String, Set<EvpnRoute<?, ?>>> getEvpnRoutes() {
+    return HashBasedTable.create();
   }
 
   @Override
