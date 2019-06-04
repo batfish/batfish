@@ -1272,7 +1272,7 @@ public final class BDDReachabilityAnalysisFactory {
     }
   }
 
-  BDDReachabilityAndLoopDetectionAnalysis bddReachabilityAndLoopDetectionAnalysis(
+  private BDDReachabilityAndLoopDetectionAnalysis bddReachabilityAndLoopDetectionAnalysis(
       IpSpaceAssignment srcIpSpaceAssignment,
       AclLineMatchExpr initialHeaderSpace,
       Set<String> forbiddenTransitNodes,
