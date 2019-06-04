@@ -22,7 +22,7 @@ import org.batfish.datamodel.vendor_family.VendorFamily;
  * <p>Currently supported example specifier:
  *
  * <ul>
- *   <li>ntp-servers -&gt; gets NTP servers using a configured Java function
+ *   <li>ntp_servers -&gt; gets NTP servers using a configured Java function
  *   <li>ntp.* gets all properties that start with 'ntp'
  * </ul>
  *
