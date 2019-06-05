@@ -527,6 +527,9 @@ public class CiscoGrammarTest {
     assertThat(
         c.getAllInterfaces().get("Port-Channel5").getAllowedVlans(),
         equalTo(IntegerSpace.of(Range.closed(1, 4094))));
+    assertThat(
+        c.getAllInterfaces().get("Port-Channel6").getAllowedVlans(),
+        equalTo(IntegerSpace.of(Range.closed(1, 4))));
   }
 
   @Test

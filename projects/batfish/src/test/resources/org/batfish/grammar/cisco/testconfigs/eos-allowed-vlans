@@ -21,3 +21,8 @@ interface Port-Channel4
 interface Port-Channel5
    switchport mode trunk
 !
+interface Port-Channel6
+   switchport trunk allowed vlan 1,2
+   switchport trunk allowed vlan add 3,4
+   switchport mode trunk
+!
