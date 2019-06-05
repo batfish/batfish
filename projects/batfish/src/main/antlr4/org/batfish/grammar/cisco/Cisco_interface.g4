@@ -1387,8 +1387,14 @@ if_switchport_trunk_allowed
 :
    SWITCHPORT TRUNK ALLOWED VLAN
    (
-      ADD? r = range
-      | NONE
+      NONE
+      |
+      (
+         ADD?
+         (
+            r = range
+         )
+      )
    ) NEWLINE
 ;
 
