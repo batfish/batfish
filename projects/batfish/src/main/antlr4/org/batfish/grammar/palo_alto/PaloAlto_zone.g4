@@ -8,10 +8,15 @@ options {
 
 s_zone
 :
-    ZONE name = variable
+    ZONE s_zone_definition?
+;
+
+s_zone_definition
+:
+    name = variable
     (
         sz_network
-    )
+    )?
 ;
 
 sz_network

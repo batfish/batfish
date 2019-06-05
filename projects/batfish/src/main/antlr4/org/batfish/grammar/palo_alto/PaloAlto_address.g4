@@ -8,14 +8,19 @@ options {
 
 s_address
 :
-    ADDRESS name = variable
+    ADDRESS s_address_definition?
+;
+
+s_address_definition
+:
+    name = variable
     (
         sa_description
         | sa_fqdn
         | sa_ip_netmask
         | sa_ip_range
         | sa_null
-    )? // a line without the tail, which just defined the address object, is legal
+    )?
 ;
 
 sa_description

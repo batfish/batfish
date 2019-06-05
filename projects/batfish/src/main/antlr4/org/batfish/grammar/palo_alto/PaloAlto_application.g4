@@ -8,10 +8,15 @@ options {
 
 s_application
 :
-    APPLICATION name = variable
+    APPLICATION s_application_definition?
+;
+
+s_application_definition
+:
+    name = variable
     (
         sapp_description
-    )? // a line without the tail, which just defined the application object, is legal
+    )?
 ;
 
 sapp_description
