@@ -723,11 +723,11 @@ public class PaloAltoGrammarTest {
     assertThat(
         ccae,
         hasDefinedStructureWithDefinitionLines(
-            filename, INTERFACE, "ethernet1/1", contains(8, 9, 10, 11, 12)));
+            filename, INTERFACE, "ethernet1/1", contains(9, 10, 11, 12)));
     assertThat(
         ccae,
         hasDefinedStructureWithDefinitionLines(
-            filename, INTERFACE, "ethernet1/2", contains(8, 16, 17, 18, 19)));
+            filename, INTERFACE, "ethernet1/2", contains(16, 17, 18, 19)));
   }
 
   @Test

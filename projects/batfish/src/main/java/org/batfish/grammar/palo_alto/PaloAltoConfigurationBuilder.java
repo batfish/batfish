@@ -110,7 +110,7 @@ import org.batfish.grammar.palo_alto.PaloAltoParser.Sdsn_ntp_server_addressConte
 import org.batfish.grammar.palo_alto.PaloAltoParser.Set_line_config_devicesContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sn_shared_gateway_definitionContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sn_virtual_router_definitionContext;
-import org.batfish.grammar.palo_alto.PaloAltoParser.Sni_ethernetContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Sni_ethernet_definitionContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sni_loopbackContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sni_tunnelContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sni_vlanContext;
@@ -858,7 +858,7 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
   }
 
   @Override
-  public void enterSni_ethernet(Sni_ethernetContext ctx) {
+  public void enterSni_ethernet_definition(Sni_ethernet_definitionContext ctx) {
     String name = getText(ctx.name);
     _currentParentInterface = _configuration.getInterfaces().computeIfAbsent(name, Interface::new);
     _currentInterface = _currentParentInterface;
@@ -866,7 +866,7 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
   }
 
   @Override
-  public void exitSni_ethernet(Sni_ethernetContext ctx) {
+  public void exitSni_ethernet_definition(Sni_ethernet_definitionContext ctx) {
     _currentParentInterface = null;
     _currentInterface = null;
   }
