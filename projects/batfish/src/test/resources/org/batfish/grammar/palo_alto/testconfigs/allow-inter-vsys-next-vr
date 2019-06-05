@@ -5,6 +5,8 @@ set network virtual-router vr1 interface ethernet1/1
 set network virtual-router vr1 routing-table ip static-route sr1 destination 0.0.0.0/0
 set network virtual-router vr1 routing-table ip static-route sr1 nexthop next-vr vr2
 set network virtual-router vr2 interface ethernet1/2
+set network virtual-router vr2 routing-table ip static-route sr2 destination 0.0.0.0/0
+set network virtual-router vr2 routing-table ip static-route sr2 nexthop next-vr vr1
 set vsys vsys1 import network interface ethernet1/1
 set vsys vsys1 zone zin network layer3 ethernet1/1
 set vsys vsys1 zone vsys1-vsys2 network external vsys2
