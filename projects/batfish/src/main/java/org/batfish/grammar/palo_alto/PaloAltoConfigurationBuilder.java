@@ -82,14 +82,14 @@ import org.batfish.grammar.palo_alto.PaloAltoParser.Panorama_pre_rulebaseContext
 import org.batfish.grammar.palo_alto.PaloAltoParser.Port_or_rangeContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.S_address_definitionContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.S_address_group_definitionContext;
-import org.batfish.grammar.palo_alto.PaloAltoParser.S_applicationContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.S_application_definitionContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.S_policy_panoramaContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.S_rulebaseContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.S_service_definitionContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.S_service_group_definitionContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.S_sharedContext;
-import org.batfish.grammar.palo_alto.PaloAltoParser.S_vsysContext;
-import org.batfish.grammar.palo_alto.PaloAltoParser.S_zoneContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.S_vsys_definitionContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.S_zone_definitionContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sa_descriptionContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sa_fqdnContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sa_ip_netmaskContext;
@@ -586,7 +586,7 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
   }
 
   @Override
-  public void enterS_application(S_applicationContext ctx) {
+  public void enterS_application_definition(S_application_definitionContext ctx) {
     String name = ctx.name.getText();
     _currentApplication =
         _currentVsys
@@ -598,7 +598,7 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
   }
 
   @Override
-  public void exitS_application(S_applicationContext ctx) {
+  public void exitS_application_definition(S_application_definitionContext ctx) {
     _currentApplication = null;
   }
 
@@ -635,7 +635,7 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
   }
 
   @Override
-  public void enterS_zone(S_zoneContext ctx) {
+  public void enterS_zone_definition(S_zone_definitionContext ctx) {
     String name = getText(ctx.name);
     _currentZone = _currentVsys.getZones().computeIfAbsent(name, n -> new Zone(n, _currentVsys));
 
@@ -645,7 +645,7 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
   }
 
   @Override
-  public void exitS_zone(S_zoneContext ctx) {
+  public void exitS_zone_definition(S_zone_definitionContext ctx) {
     _currentZone = null;
   }
 
@@ -1362,12 +1362,12 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
   }
 
   @Override
-  public void enterS_vsys(S_vsysContext ctx) {
+  public void enterS_vsys_definition(S_vsys_definitionContext ctx) {
     _currentVsys = _configuration.getVirtualSystems().computeIfAbsent(getText(ctx.name), Vsys::new);
   }
 
   @Override
-  public void exitS_vsys(S_vsysContext ctx) {
+  public void exitS_vsys_definition(S_vsys_definitionContext ctx) {
     _currentVsys = _defaultVsys;
   }
 

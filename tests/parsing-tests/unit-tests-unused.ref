@@ -3379,7 +3379,6 @@
         "Source_Lines" : {
           "filename" : "configs/palo_alto/zones",
           "lines" : [
-            35,
             36,
             37,
             38
@@ -3392,7 +3391,6 @@
         "Source_Lines" : {
           "filename" : "configs/palo_alto/zones",
           "lines" : [
-            35,
             41,
             42,
             43
@@ -3405,7 +3403,6 @@
         "Source_Lines" : {
           "filename" : "configs/palo_alto/zones",
           "lines" : [
-            35,
             46,
             47,
             48
@@ -3418,7 +3415,6 @@
         "Source_Lines" : {
           "filename" : "configs/palo_alto/zones",
           "lines" : [
-            35,
             51,
             52,
             53
@@ -3431,7 +3427,6 @@
         "Source_Lines" : {
           "filename" : "configs/palo_alto/zones",
           "lines" : [
-            35,
             56,
             57,
             58
