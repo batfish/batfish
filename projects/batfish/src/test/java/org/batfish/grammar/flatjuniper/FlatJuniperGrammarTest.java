@@ -240,7 +240,6 @@ import org.batfish.datamodel.acl.OrMatchExpr;
 import org.batfish.datamodel.acl.PermittedByAcl;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
 import org.batfish.datamodel.answers.InitInfoAnswerElement;
-import org.batfish.datamodel.answers.ParseVendorConfigurationAnswerElement;
 import org.batfish.datamodel.bgp.community.StandardCommunity;
 import org.batfish.datamodel.isis.IsisHelloAuthenticationType;
 import org.batfish.datamodel.isis.IsisInterfaceMode;
@@ -555,22 +554,6 @@ public final class FlatJuniperGrammarTest {
                                 .setIpProtocols(ImmutableList.of(IpProtocol.UDP))
                                 .setSrcPorts(ImmutableList.of(new SubRange(4, 4)))
                                 .build()))))));
-  }
-
-  @Test
-  public void testApplyPathWarning() throws IOException {
-    String hostname = "apply-path-warning";
-    Batfish batfish = getBatfishForConfigurationNames(hostname);
-
-    ParseVendorConfigurationAnswerElement pvcae =
-        batfish.loadParseVendorConfigurationAnswerElement();
-
-    Warnings warnings = pvcae.getWarnings().values().iterator().next();
-
-    assertThat(warnings.getParseWarnings().get(0).getText(), equalTo("1::/64"));
-    assertThat(warnings.getParseWarnings().get(0).getLine(), equalTo(6));
-    assertThat(warnings.getParseWarnings().get(1).getText(), equalTo("2::1/128"));
-    assertThat(warnings.getParseWarnings().get(1).getLine(), equalTo(6));
   }
 
   @Test

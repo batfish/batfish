@@ -4634,7 +4634,6 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
   @Override
   public void exitPoplt_ip6(Poplt_ip6Context ctx) {
     _currentPrefixList.setIpv6(true);
-    todo(ctx);
   }
 
   @Override
@@ -4646,7 +4645,6 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
   @Override
   public void exitPoplt_network6(Poplt_network6Context ctx) {
     _currentPrefixList.setIpv6(true);
-    todo(ctx);
   }
 
   @Override
