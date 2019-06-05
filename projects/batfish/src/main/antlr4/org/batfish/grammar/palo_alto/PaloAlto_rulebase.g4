@@ -18,7 +18,17 @@ rulebase_inner
 
 sr_security
 :
-    SECURITY RULES name = variable
+    SECURITY sr_security_rules?
+;
+
+sr_security_rules
+:
+    RULES srs_definition?
+;
+
+srs_definition
+:
+    name = variable
     (
         srs_action
         | srs_application
@@ -34,7 +44,7 @@ sr_security
         | srs_source
         | srs_source_user
         | srs_to
-    )
+    )?
 ;
 
 srs_action

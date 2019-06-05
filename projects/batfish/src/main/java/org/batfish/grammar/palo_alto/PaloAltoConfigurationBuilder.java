@@ -136,10 +136,10 @@ import org.batfish.grammar.palo_alto.PaloAltoParser.Snvrrt_destinationContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Snvrrt_interfaceContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Snvrrt_metricContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Snvrrt_nexthopContext;
-import org.batfish.grammar.palo_alto.PaloAltoParser.Sr_securityContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Src_or_dst_list_itemContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Srs_actionContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Srs_applicationContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Srs_definitionContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Srs_descriptionContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Srs_destinationContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Srs_disabledContext;
@@ -1082,7 +1082,7 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
   }
 
   @Override
-  public void enterSr_security(Sr_securityContext ctx) {
+  public void enterSrs_definition(Srs_definitionContext ctx) {
     String name = getText(ctx.name);
     Map<String, Rule> rulebase;
     if (_currentRuleScope == RulebaseId.DEFAULT) {
@@ -1102,7 +1102,7 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
   }
 
   @Override
-  public void exitSr_security(Sr_securityContext ctx) {
+  public void exitSrs_definition(Srs_definitionContext ctx) {
     _currentRule = null;
   }
 
