@@ -70503,11 +70503,12 @@
             "          (ss_common",
             "            (s_address",
             "              ADDRESS:'address'",
-            "              name = (variable",
-            "                VARIABLE:'rfc1918_10')",
-            "              (sa_ip_netmask",
-            "                IP_NETMASK:'ip-netmask'",
-            "                IP_PREFIX:'10.0.0.0/8'))))))",
+            "              (s_address_definition",
+            "                name = (variable",
+            "                  VARIABLE:'rfc1918_10')",
+            "                (sa_ip_netmask",
+            "                  IP_NETMASK:'ip-netmask'",
+            "                  IP_PREFIX:'10.0.0.0/8')))))))",
             "    NEWLINE:'\\n')",
             "  EOF:<EOF>)"
           ]
@@ -82205,7 +82206,6 @@
           "address object" : {
             "rfc1918_10~panorama" : {
               "definitionLines" : [
-                16,
                 17,
                 18
               ],

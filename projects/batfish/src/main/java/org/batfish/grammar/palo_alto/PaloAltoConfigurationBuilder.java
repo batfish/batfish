@@ -80,7 +80,7 @@ import org.batfish.grammar.palo_alto.PaloAltoParser.Palo_alto_configurationConte
 import org.batfish.grammar.palo_alto.PaloAltoParser.Panorama_post_rulebaseContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Panorama_pre_rulebaseContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Port_or_rangeContext;
-import org.batfish.grammar.palo_alto.PaloAltoParser.S_addressContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.S_address_definitionContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.S_address_groupContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.S_applicationContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.S_policy_panoramaContext;
@@ -540,7 +540,7 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
   }
 
   @Override
-  public void enterS_address(S_addressContext ctx) {
+  public void enterS_address_definition(S_address_definitionContext ctx) {
     String name = getText(ctx.name);
     if (_currentVsys.getAddressGroups().get(name) != null) {
       _w.redFlag(
@@ -558,7 +558,7 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
   }
 
   @Override
-  public void exitS_address(S_addressContext ctx) {
+  public void exitS_address_definition(S_address_definitionContext ctx) {
     _currentAddressObject = null;
   }
 

@@ -3369,7 +3369,6 @@
         "Source_Lines" : {
           "filename" : "configs/palo_alto/policy",
           "lines" : [
-            16,
             17,
             18
           ]
