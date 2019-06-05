@@ -56,6 +56,8 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.hasItems;
 import static org.hamcrest.Matchers.hasKey;
+import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.in;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.nullValue;
@@ -65,21 +67,25 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 import java.util.SortedMap;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.batfish.common.BatfishException;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.Warnings;
+import org.batfish.common.plugin.TracerouteEngine;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.config.Settings;
 import org.batfish.datamodel.AclIpSpace;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
+import org.batfish.datamodel.DataPlane;
 import org.batfish.datamodel.DiffieHellmanGroup;
 import org.batfish.datamodel.EmptyIpSpace;
 import org.batfish.datamodel.EncryptionAlgorithm;
 import org.batfish.datamodel.Flow;
+import org.batfish.datamodel.FlowDisposition;
 import org.batfish.datamodel.IkeHashingAlgorithm;
 import org.batfish.datamodel.Interface.Dependency;
 import org.batfish.datamodel.InterfaceAddress;
@@ -89,9 +95,12 @@ import org.batfish.datamodel.IpAccessListLine;
 import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.IpRange;
 import org.batfish.datamodel.IpsecAuthenticationAlgorithm;
+import org.batfish.datamodel.NamedPort;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
+import org.batfish.datamodel.flow.TraceAndReverseFlow;
 import org.batfish.datamodel.matchers.InterfaceMatchers;
+import org.batfish.dataplane.TracerouteEngineImpl;
 import org.batfish.grammar.VendorConfigurationFormatDetector;
 import org.batfish.grammar.flattener.Flattener;
 import org.batfish.grammar.flattener.FlattenerLineMap;
@@ -1411,5 +1420,128 @@ public class PaloAltoGrammarTest {
     assertThat(c, hasInterface("ethernet1/1", hasZoneName(equalTo("zone 1"))));
     assertThat(c, hasInterface("ethernet1/2", hasZoneName(equalTo("zone 1"))));
     assertThat(c, hasInterface("ethernet1/3", hasZoneName(is(nullValue()))));
+  }
+
+  private void bidirTest(String hostname, boolean expectDrop) throws IOException {
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    batfish.computeDataPlane();
+    DataPlane dp = batfish.loadDataPlane();
+    TracerouteEngine tracerouteEngine =
+        new TracerouteEngineImpl(
+            dp, batfish.getTopologyProvider().getLayer3Topology(batfish.getNetworkSnapshot()));
+
+    Flow forwardFlow =
+        Flow.builder()
+            .setIpProtocol(IpProtocol.TCP)
+            .setTcpFlagsSyn(1)
+            .setTag("ignored")
+            .setIngressNode(hostname)
+            .setIngressVrf("vr1")
+            .setSrcIp(Ip.parse("10.0.1.2"))
+            .setDstIp(Ip.parse("10.0.2.2"))
+            .setSrcPort(NamedPort.EPHEMERAL_LOWEST.number())
+            .setDstPort(NamedPort.SSH.number())
+            .build();
+    List<TraceAndReverseFlow> forwardTracesAndReverseFlows =
+        tracerouteEngine
+            .computeTracesAndReverseFlows(ImmutableSet.of(forwardFlow), false)
+            .get(forwardFlow);
+
+    assertThat(forwardTracesAndReverseFlows, hasSize(1));
+    if (expectDrop) {
+      assertThat(
+          forwardTracesAndReverseFlows.iterator().next().getTrace().getDisposition(),
+          in(FlowDisposition.FAILURE_DISPOSITIONS));
+    } else {
+      assertThat(
+          forwardTracesAndReverseFlows.iterator().next().getTrace().getDisposition(),
+          equalTo(FlowDisposition.DELIVERED_TO_SUBNET));
+    }
+  }
+
+  @Ignore
+  @Test
+  public void testDropMissingVsys() throws IOException {
+    bidirTest("drop-missing-vsys", true);
+  }
+
+  @Test
+  public void testAllowSameZone() throws IOException {
+    bidirTest("allow-same-zone", false);
+  }
+
+  @Ignore
+  @Test
+  public void testDropDefaultCrossZone() throws IOException {
+    bidirTest("drop-default-cross-zone", true);
+  }
+
+  @Test
+  public void testAllowExplicitCrossZone() throws IOException {
+    bidirTest("allow-explicit-cross-zone", false);
+  }
+
+  @Ignore
+  @Test
+  public void testDropInterVsysImplicit() throws IOException {
+    bidirTest("drop-inter-vsys-implicit", true);
+  }
+
+  @Ignore
+  @Test
+  public void testDropInterVsysMissingExternalEgress() throws IOException {
+    bidirTest("drop-inter-vsys-missing-external-egress", true);
+  }
+
+  @Ignore
+  @Test
+  public void testDropInterVsysMissingExternalIngress() throws IOException {
+    bidirTest("drop-inter-vsys-missing-external-ingress", true);
+  }
+
+  @Ignore
+  @Test
+  public void testDropInterVsysMisconfiguredExternalEgress() throws IOException {
+    bidirTest("drop-inter-vsys-misconfigured-external-egress", true);
+  }
+
+  @Ignore
+  @Test
+  public void testDropInterVsysMisconfiguredExternalIngress() throws IOException {
+    bidirTest("drop-inter-vsys-misconfigured-external-ingress", true);
+  }
+
+  @Test
+  public void testAllowInterVsys() throws IOException {
+    bidirTest("allow-inter-vsys", false);
+  }
+
+  @Ignore
+  @Test
+  public void testDropVsysToSgMissingExternal() throws IOException {
+    bidirTest("drop-vsys-to-sg-missing-external", true);
+  }
+
+  @Ignore
+  @Test
+  public void testDropVsysToSgMisconfiguredExternal() throws IOException {
+    bidirTest("drop-vsys-to-sg-misconfigured-external", true);
+  }
+
+  @Test
+  public void testAllowVsysToSg() throws IOException {
+    bidirTest("allow-vsys-to-sg", false);
+  }
+
+  @Ignore
+  @Test
+  public void testAllowVsysToSgNextVr() throws IOException {
+    bidirTest("allow-vsys-to-sg-next-vr", false);
+  }
+
+  @Ignore
+  @Test
+  public void testAllowInterVsysNextVr() throws IOException {
+    bidirTest("allow-inter-vsys-next-vr", false);
   }
 }
