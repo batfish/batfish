@@ -1390,10 +1390,7 @@ if_switchport_trunk_allowed
       NONE
       |
       (
-         ADD?
-         (
-            r = range
-         )
+         ADD? r = range
       )
    ) NEWLINE
 ;
