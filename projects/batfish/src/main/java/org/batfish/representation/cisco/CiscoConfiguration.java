@@ -2206,16 +2206,17 @@ public final class CiscoConfiguration extends VendorConfiguration {
        *
        * https://www.arista.com/en/um-eos/eos-section-19-3-vlan-configuration-procedures#ww1152330
        */
-      if (!Interface.ALL_VLANS.equals(iface.getAllowedVlans())
-          || iface.getVlanTrunkGroups().isEmpty()) {
+      if (iface.getAllowedVlans() != null) {
         newIface.setAllowedVlans(iface.getAllowedVlans());
-      } else {
+      } else if (!iface.getVlanTrunkGroups().isEmpty()) {
         newIface.setAllowedVlans(
             iface.getVlanTrunkGroups().stream()
                 .map(_eosVlanTrunkGroups::get)
                 .map(VlanTrunkGroup::getVlans)
                 .reduce(IntegerSpace::union)
                 .get());
+      } else {
+        newIface.setAllowedVlans(Interface.ALL_VLANS);
       }
     }
 

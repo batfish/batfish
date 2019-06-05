@@ -1385,7 +1385,14 @@ if_switchport_private_vlan_mapping
 
 if_switchport_trunk_allowed
 :
-   SWITCHPORT TRUNK ALLOWED VLAN ADD? r = range NEWLINE
+   SWITCHPORT TRUNK ALLOWED VLAN
+   (
+      NONE
+      |
+      (
+         ADD? r = range
+      )
+   ) NEWLINE
 ;
 
 if_switchport_trunk_encapsulation
