@@ -2,12 +2,14 @@ package org.batfish.grammar.cumulus_nclu;
 
 import static org.batfish.datamodel.BgpPeerConfig.ALL_AS_NUMBERS;
 import static org.batfish.datamodel.Configuration.DEFAULT_VRF_NAME;
+import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasPrefix;
 import static org.batfish.datamodel.matchers.BgpNeighborMatchers.hasExportPolicy;
 import static org.batfish.datamodel.matchers.BgpNeighborMatchers.hasLocalAs;
 import static org.batfish.datamodel.matchers.BgpNeighborMatchers.hasRemoteAs;
 import static org.batfish.datamodel.matchers.BgpNeighborMatchers.hasSendCommunity;
 import static org.batfish.datamodel.matchers.BgpProcessMatchers.hasInterfaceNeighbors;
 import static org.batfish.datamodel.matchers.BgpProcessMatchers.hasRouterId;
+import static org.batfish.datamodel.matchers.BgpRouteMatchers.isBgpv4RouteThat;
 import static org.batfish.datamodel.matchers.BgpUnnumberedPeerConfigMatchers.hasPeerInterface;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasDefaultVrf;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasHostname;
@@ -16,7 +18,6 @@ import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasVrf;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasBandwidth;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasNumReferrers;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasAccessVlan;
-import static org.batfish.datamodel.matchers.InterfaceMatchers.hasAdditionalArpIps;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasAddress;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasAllAddresses;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasAllowedVlans;
@@ -29,7 +30,6 @@ import static org.batfish.datamodel.matchers.InterfaceMatchers.hasVlan;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasVrfName;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.isActive;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.isSwitchport;
-import static org.batfish.datamodel.matchers.IpSpaceMatchers.containsIp;
 import static org.batfish.datamodel.matchers.VniSettingsMatchers.hasBumTransportMethod;
 import static org.batfish.datamodel.matchers.VniSettingsMatchers.hasSourceAddress;
 import static org.batfish.datamodel.matchers.VniSettingsMatchers.hasUdpPort;
@@ -37,7 +37,6 @@ import static org.batfish.datamodel.matchers.VniSettingsMatchers.hasVni;
 import static org.batfish.datamodel.matchers.VrfMatchers.hasBgpProcess;
 import static org.batfish.datamodel.matchers.VrfMatchers.hasInterfaces;
 import static org.batfish.datamodel.matchers.VrfMatchers.hasStaticRoutes;
-import static org.batfish.representation.cumulus.BgpProcess.BGP_UNNUMBERED_IP;
 import static org.batfish.representation.cumulus.CumulusNcluConfiguration.CUMULUS_CLAG_DOMAIN_ID;
 import static org.batfish.representation.cumulus.CumulusNcluConfiguration.computeBgpPeerExportPolicyName;
 import static org.hamcrest.Matchers.allOf;
@@ -74,7 +73,6 @@ import org.batfish.common.Warnings;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.config.Settings;
 import org.batfish.datamodel.AbstractRoute;
-import org.batfish.datamodel.AsPath;
 import org.batfish.datamodel.BgpPeerConfig;
 import org.batfish.datamodel.BgpUnnumberedPeerConfig;
 import org.batfish.datamodel.Bgpv4Route;
@@ -98,7 +96,6 @@ import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.SwitchportMode;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
-import org.batfish.datamodel.bgp.Ipv4UnicastAddressFamily;
 import org.batfish.datamodel.bgp.Layer2VniConfig;
 import org.batfish.datamodel.bgp.Layer3VniConfig;
 import org.batfish.datamodel.bgp.RouteDistinguisher;
@@ -238,33 +235,41 @@ public final class CumulusNcluGrammarTest {
 
     // Sanity check configured peers
     Map<String, Configuration> configs = batfish.loadConfigurations();
-    BgpUnnumberedPeerConfig.Builder peerBuilder =
-        BgpUnnumberedPeerConfig.builder()
-            .setLocalIp(BGP_UNNUMBERED_IP)
-            .setPeerInterface("swp1")
-            .setSendCommunity(true)
-            .setIpv4UnicastAddressFamily(Ipv4UnicastAddressFamily.instance())
-            .setExportPolicy(computeBgpPeerExportPolicyName(DEFAULT_VRF_NAME, "swp1"));
-    Map<String, BgpUnnumberedPeerConfig> expectedPeers1 =
-        ImmutableMap.of(
-            "swp1",
-            peerBuilder
-                .setLocalAs(65100L)
-                .setRemoteAsns(BgpPeerConfig.ALL_AS_NUMBERS.difference(LongSpace.of(65100L)))
-                .build());
-    Map<String, BgpUnnumberedPeerConfig> expectedPeers2 =
-        ImmutableMap.of(
-            "swp1",
-            peerBuilder
-                .setLocalAs(65101L)
-                .setRemoteAsns(BgpPeerConfig.ALL_AS_NUMBERS.difference(LongSpace.of(65101L)))
-                .build());
+    String iface = "swp1";
     assertThat(
         configs.get(node1),
-        hasVrf(DEFAULT_VRF_NAME, hasBgpProcess(hasInterfaceNeighbors(equalTo(expectedPeers1)))));
+        hasVrf(
+            DEFAULT_VRF_NAME,
+            hasBgpProcess(
+                hasInterfaceNeighbors(
+                    hasEntry(
+                        equalTo(iface),
+                        allOf(
+                            ImmutableSet.of(
+                                hasPeerInterface(iface),
+                                hasLocalAs(65100L),
+                                hasRemoteAs(
+                                    BgpPeerConfig.ALL_AS_NUMBERS.difference(LongSpace.of(65100L))),
+                                hasSendCommunity(true),
+                                hasExportPolicy(
+                                    computeBgpPeerExportPolicyName(DEFAULT_VRF_NAME, iface)))))))));
     assertThat(
         configs.get(node2),
-        hasVrf(DEFAULT_VRF_NAME, hasBgpProcess(hasInterfaceNeighbors(equalTo(expectedPeers2)))));
+        hasVrf(
+            DEFAULT_VRF_NAME,
+            hasBgpProcess(
+                hasInterfaceNeighbors(
+                    hasEntry(
+                        equalTo(iface),
+                        allOf(
+                            ImmutableSet.of(
+                                hasPeerInterface(iface),
+                                hasLocalAs(65101L),
+                                hasRemoteAs(
+                                    BgpPeerConfig.ALL_AS_NUMBERS.difference(LongSpace.of(65101L))),
+                                hasSendCommunity(true),
+                                hasExportPolicy(
+                                    computeBgpPeerExportPolicyName(DEFAULT_VRF_NAME, iface)))))))));
 
     // Ensure reachability between nodes
     batfish.computeDataPlane();
@@ -272,31 +277,8 @@ public final class CumulusNcluGrammarTest {
     Set<AbstractRoute> n1Routes = dp.getRibs().get(node1).get(DEFAULT_VRF_NAME).getRoutes();
     Set<AbstractRoute> n2Routes = dp.getRibs().get(node2).get(DEFAULT_VRF_NAME).getRoutes();
 
-    Bgpv4Route.Builder routeBuilder =
-        Bgpv4Route.builder()
-            .setNextHopIp(BGP_UNNUMBERED_IP)
-            .setNextHopInterface("swp1") // both peers are configured on interfaces called swp1
-            .setReceivedFromIp(BGP_UNNUMBERED_IP)
-            .setOriginType(OriginType.INCOMPLETE)
-            .setProtocol(RoutingProtocol.BGP)
-            .setSrcProtocol(RoutingProtocol.BGP)
-            .setLocalPreference(100)
-            .setAdmin(20);
-    Bgpv4Route expectedRoute1 =
-        routeBuilder
-            .setNetwork(Prefix.parse("6.6.6.6/32"))
-            .setAsPath(AsPath.ofSingletonAsSets(65101L))
-            .setOriginatorIp(Ip.parse("192.0.2.2"))
-            .build();
-    Bgpv4Route expectedRoute2 =
-        routeBuilder
-            .setNetwork(Prefix.parse("5.5.5.5/32"))
-            .setAsPath(AsPath.ofSingletonAsSets(65100L))
-            .setOriginatorIp(Ip.parse("192.0.2.1"))
-            .build();
-
-    assertThat(n1Routes, hasItem(equalTo(expectedRoute1)));
-    assertThat(n2Routes, hasItem(equalTo(expectedRoute2)));
+    assertThat(n1Routes, hasItem(isBgpv4RouteThat(hasPrefix(Prefix.parse("6.6.6.6/32")))));
+    assertThat(n2Routes, hasItem(isBgpv4RouteThat(hasPrefix(Prefix.parse("5.5.5.5/32")))));
   }
 
   @Test
@@ -326,9 +308,6 @@ public final class CumulusNcluGrammarTest {
     BgpUnnumberedPeerConfig pc3 =
         c.getDefaultVrf().getBgpProcess().getInterfaceNeighbors().get("swp3");
     assertThat(pc3, hasRemoteAs(equalTo(LongSpace.of(65000L))));
-
-    // ARP response for link-local address for BGP unnumbered interface
-    assertThat(c, hasInterface(peerInterface, hasAdditionalArpIps(containsIp(BGP_UNNUMBERED_IP))));
 
     //// generated routing policies
 
