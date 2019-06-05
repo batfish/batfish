@@ -1422,7 +1422,7 @@ public class PaloAltoGrammarTest {
     assertThat(c, hasInterface("ethernet1/3", hasZoneName(is(nullValue()))));
   }
 
-  private void bidirTest(String hostname, boolean expectDrop) throws IOException {
+  private void bidirTest(String hostname, boolean expectDrop, Ip dstIp) throws IOException {
     Batfish batfish = getBatfishForConfigurationNames(hostname);
     batfish.computeDataPlane();
     DataPlane dp = batfish.loadDataPlane();
@@ -1457,6 +1457,10 @@ public class PaloAltoGrammarTest {
           forwardTracesAndReverseFlows.iterator().next().getTrace().getDisposition(),
           equalTo(FlowDisposition.DELIVERED_TO_SUBNET));
     }
+  }
+
+  private void bidirTest(String hostname, boolean expectDrop) throws IOException {
+    bidirTest(hostname, expectDrop, Ip.parse("10.0.2.2"));
   }
 
   @Ignore
@@ -1543,5 +1547,26 @@ public class PaloAltoGrammarTest {
   @Test
   public void testAllowInterVsysNextVr() throws IOException {
     bidirTest("allow-inter-vsys-next-vr", false);
+  }
+
+  @Ignore
+  @Test
+  public void testMatchSharedAddress() throws IOException {
+    bidirTest("match-shared-address", false, Ip.parse("10.0.2.2"));
+    bidirTest("match-shared-address", true, Ip.parse("10.0.2.3"));
+  }
+
+  @Ignore
+  @Test
+  public void testMatchVsysAddress() throws IOException {
+    bidirTest("match-vsys-address", false, Ip.parse("10.0.2.2"));
+    bidirTest("match-vsys-address", true, Ip.parse("10.0.2.3"));
+  }
+
+  @Ignore
+  @Test
+  public void testMatchVsysAddressOverShared() throws IOException {
+    bidirTest("match-vsys-address-over-shared", false, Ip.parse("10.0.2.2"));
+    bidirTest("match-vsys-address-over-shared", true, Ip.parse("10.0.2.3"));
   }
 }
