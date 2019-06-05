@@ -13860,9 +13860,11 @@
             "name" : "swp1",
             "active" : true,
             "additionalArpIps" : {
-              "class" : "org.batfish.datamodel.IpIpSpace",
-              "ip" : "169.254.0.1"
+              "class" : "org.batfish.datamodel.EmptyIpSpace"
             },
+            "allPrefixes" : [
+              "169.254.0.3/16"
+            ],
             "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E10,
@@ -13873,6 +13875,7 @@
             "ospfHelloMultiplier" : 0,
             "ospfPassive" : false,
             "ospfPointToPoint" : false,
+            "prefix" : "169.254.0.3/16",
             "proxyArp" : false,
             "ripEnabled" : false,
             "ripPassive" : false,
@@ -13887,9 +13890,11 @@
             "name" : "swp2",
             "active" : true,
             "additionalArpIps" : {
-              "class" : "org.batfish.datamodel.IpIpSpace",
-              "ip" : "169.254.0.1"
+              "class" : "org.batfish.datamodel.EmptyIpSpace"
             },
+            "allPrefixes" : [
+              "169.254.0.1/16"
+            ],
             "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E10,
@@ -13900,6 +13905,7 @@
             "ospfHelloMultiplier" : 0,
             "ospfPassive" : false,
             "ospfPointToPoint" : false,
+            "prefix" : "169.254.0.1/16",
             "proxyArp" : false,
             "ripEnabled" : false,
             "ripPassive" : false,
@@ -13914,9 +13920,11 @@
             "name" : "swp3",
             "active" : true,
             "additionalArpIps" : {
-              "class" : "org.batfish.datamodel.IpIpSpace",
-              "ip" : "169.254.0.1"
+              "class" : "org.batfish.datamodel.EmptyIpSpace"
             },
+            "allPrefixes" : [
+              "169.254.0.2/16"
+            ],
             "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E10,
@@ -13927,6 +13935,7 @@
             "ospfHelloMultiplier" : 0,
             "ospfPassive" : false,
             "ospfPointToPoint" : false,
+            "prefix" : "169.254.0.2/16",
             "proxyArp" : false,
             "ripEnabled" : false,
             "ripPassive" : false,
@@ -14537,7 +14546,7 @@
                   "exportPolicy" : "~BGP_PEER_EXPORT_POLICY:default:swp1~",
                   "ipv4UnicastAddressFamily" : { },
                   "localAs" : 65500,
-                  "localIp" : "169.254.0.1",
+                  "localIp" : "169.254.0.3",
                   "peerInterface" : "swp1",
                   "remoteAsns" : "1-65499,65501-4294967295",
                   "routeReflectorClient" : false,
@@ -14603,7 +14612,7 @@
                   "exportPolicy" : "~BGP_PEER_EXPORT_POLICY:default:swp3~",
                   "ipv4UnicastAddressFamily" : { },
                   "localAs" : 65500,
-                  "localIp" : "169.254.0.1",
+                  "localIp" : "169.254.0.2",
                   "peerInterface" : "swp3",
                   "remoteAsns" : "65000",
                   "routeReflectorClient" : false,
