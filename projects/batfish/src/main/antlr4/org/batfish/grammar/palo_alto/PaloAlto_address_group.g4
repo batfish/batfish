@@ -8,13 +8,18 @@ options {
 
 s_address_group
 :
-    ADDRESS_GROUP name = variable
+    ADDRESS_GROUP s_address_group_definition?
+;
+
+s_address_group_definition
+:
+    name = variable
     (
         sag_description
         | sag_dynamic
         | sag_null
         | sag_static
-    )? // a line without the tail (which just defines the group) is legal
+    )?
 ;
 
 sag_description

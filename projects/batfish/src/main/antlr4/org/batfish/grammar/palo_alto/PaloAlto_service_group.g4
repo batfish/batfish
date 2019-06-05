@@ -8,10 +8,15 @@ options {
 
 s_service_group
 :
-    SERVICE_GROUP name = variable
+    SERVICE_GROUP s_service_group_definition?
+;
+
+s_service_group_definition
+:
+    name = variable
     (
         sservgrp_members
-    )
+    )?
 ;
 
 sservgrp_members

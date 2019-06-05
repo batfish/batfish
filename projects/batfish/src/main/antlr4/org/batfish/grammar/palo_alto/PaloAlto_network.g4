@@ -127,7 +127,12 @@ sn_qos
 
 sn_shared_gateway
 :
-    SHARED_GATEWAY name = variable
+    SHARED_GATEWAY sn_shared_gateway_definition?
+;
+
+sn_shared_gateway_definition
+:
+    name = variable
     (
         snsg_display_name
         | snsg_import
@@ -155,7 +160,12 @@ snsgi_interface
 
 snsg_zone
 :
-    ZONE name = variable
+    ZONE snsg_zone_definition
+;
+
+snsg_zone_definition
+:
+    name = variable
     (
         snsgz_network
     )?
@@ -176,12 +186,17 @@ snsgzn_layer3
 
 sn_virtual_router
 :
-    VIRTUAL_ROUTER name = variable
+    VIRTUAL_ROUTER sn_virtual_router_definition?
+;
+
+sn_virtual_router_definition
+:
+    name = variable
     (
         snvr_interface
         | snvr_protocol
         | snvr_routing_table
-    )
+    )?
 ;
 
 snicp_global_protect
