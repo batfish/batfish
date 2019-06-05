@@ -75,6 +75,7 @@ import org.batfish.grammar.palo_alto.PaloAltoParser.Cp_encryption_algoContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Cp_hashContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Cp_lifetimeContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.If_commentContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.If_tagContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Palo_alto_configurationContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Panorama_post_rulebaseContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Panorama_pre_rulebaseContext;
@@ -117,10 +118,10 @@ import org.batfish.grammar.palo_alto.PaloAltoParser.Snicp_global_protectContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Snicp_ike_crypto_profilesContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Snicp_ipsec_crypto_profilesContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Snie_link_stateContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Sniel2_unitContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sniel3_ipContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sniel3_mtuContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sniel3_unitContext;
-import org.batfish.grammar.palo_alto.PaloAltoParser.Sniel3u_tagContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Snil_unitContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Snit_unitContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sniv_unitContext;
@@ -503,6 +504,11 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
   @Override
   public void exitIf_comment(If_commentContext ctx) {
     _currentInterface.setComment(getText(ctx.text));
+  }
+
+  @Override
+  public void exitIf_tag(If_tagContext ctx) {
+    _currentInterface.setTag(toInteger(ctx.tag));
   }
 
   @Override
@@ -946,6 +952,19 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
   }
 
   @Override
+  public void enterSniel2_unit(Sniel2_unitContext ctx) {
+    String name = getText(ctx.name);
+    _currentInterface = _currentParentInterface.getUnits().computeIfAbsent(name, Interface::new);
+    _currentInterface.setParent(_currentParentInterface);
+    defineStructure(INTERFACE, name, ctx);
+  }
+
+  @Override
+  public void exitSniel2_unit(Sniel2_unitContext ctx) {
+    _currentInterface = _currentParentInterface;
+  }
+
+  @Override
   public void exitSniel3_ip(Sniel3_ipContext ctx) {
     InterfaceAddress address = new InterfaceAddress(getText(ctx.address));
     _currentInterface.setAddress(address);
@@ -968,11 +987,6 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
   @Override
   public void exitSniel3_unit(Sniel3_unitContext ctx) {
     _currentInterface = _currentParentInterface;
-  }
-
-  @Override
-  public void exitSniel3u_tag(Sniel3u_tagContext ctx) {
-    _currentInterface.setTag(toInteger(ctx.tag));
   }
 
   @Override

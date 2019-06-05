@@ -70247,6 +70247,64 @@
             "                ETHERNET:'ethernet'",
             "                name = (variable",
             "                  VARIABLE:'ethernet1/1')",
+            "                (snie_layer2",
+            "                  LAYER2:'layer2'",
+            "                  (sniel2_units",
+            "                    UNITS:'units'",
+            "                    (sniel2_unit",
+            "                      name = (variable",
+            "                        VARIABLE:'ethernet1/1.4')",
+            "                      (if_common",
+            "                        (if_comment",
+            "                          COMMENT:'comment'",
+            "                          text = (variable",
+            "                            DOUBLE_QUOTED_STRING:'\"layer2 subif comment\"'))))))))))))",
+            "    NEWLINE:'\\n')",
+            "  (set_line",
+            "    SET:'set'",
+            "    (set_line_tail",
+            "      (set_line_config_devices",
+            "        CONFIG:'config'",
+            "        DEVICES:'devices'",
+            "        name = (variable",
+            "          VARIABLE:'localhost.localdomain')",
+            "        (statement_config_devices",
+            "          (s_network",
+            "            NETWORK:'network'",
+            "            (sn_interface",
+            "              INTERFACE:'interface'",
+            "              (sni_ethernet",
+            "                ETHERNET:'ethernet'",
+            "                name = (variable",
+            "                  VARIABLE:'ethernet1/1')",
+            "                (snie_layer2",
+            "                  LAYER2:'layer2'",
+            "                  (sniel2_units",
+            "                    UNITS:'units'",
+            "                    (sniel2_unit",
+            "                      name = (variable",
+            "                        VARIABLE:'ethernet1/1.4')",
+            "                      (if_tag",
+            "                        TAG:'tag'",
+            "                        tag = DEC:'4'))))))))))",
+            "    NEWLINE:'\\n')",
+            "  (set_line",
+            "    SET:'set'",
+            "    (set_line_tail",
+            "      (set_line_config_devices",
+            "        CONFIG:'config'",
+            "        DEVICES:'devices'",
+            "        name = (variable",
+            "          VARIABLE:'localhost.localdomain')",
+            "        (statement_config_devices",
+            "          (s_network",
+            "            NETWORK:'network'",
+            "            (sn_interface",
+            "              INTERFACE:'interface'",
+            "              (sni_ethernet",
+            "                ETHERNET:'ethernet'",
+            "                name = (variable",
+            "                  VARIABLE:'ethernet1/1')",
             "                (snie_layer3",
             "                  LAYER3:'layer3'",
             "                  (sniel3_units",
@@ -70288,6 +70346,34 @@
             "                        (sniel3_mtu",
             "                          MTU:'mtu'",
             "                          mtu = DEC:'1500')))))))))))",
+            "    NEWLINE:'\\n')",
+            "  (set_line",
+            "    SET:'set'",
+            "    (set_line_tail",
+            "      (set_line_config_devices",
+            "        CONFIG:'config'",
+            "        DEVICES:'devices'",
+            "        name = (variable",
+            "          VARIABLE:'localhost.localdomain')",
+            "        (statement_config_devices",
+            "          (s_network",
+            "            NETWORK:'network'",
+            "            (sn_interface",
+            "              INTERFACE:'interface'",
+            "              (sni_ethernet",
+            "                ETHERNET:'ethernet'",
+            "                name = (variable",
+            "                  VARIABLE:'ethernet1/1')",
+            "                (snie_layer3",
+            "                  LAYER3:'layer3'",
+            "                  (sniel3_units",
+            "                    UNITS:'units'",
+            "                    (sniel3_unit",
+            "                      name = (variable",
+            "                        VARIABLE:'ethernet1/1.5')",
+            "                      (if_tag",
+            "                        TAG:'tag'",
+            "                        tag = DEC:'5'))))))))))",
             "    NEWLINE:'\\n')",
             "  (set_line",
             "    SET:'set'",
@@ -82055,11 +82141,17 @@
                 15,
                 16,
                 17,
-                18
+                18,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27
               ],
               "numReferrers" : 0
             },
-            "ethernet1/1.5" : {
+            "ethernet1/1.4" : {
               "definitionLines" : [
                 16,
                 17,
@@ -82067,34 +82159,43 @@
               ],
               "numReferrers" : 0
             },
-            "loopback" : {
+            "ethernet1/1.5" : {
               "definitionLines" : [
                 24,
                 25,
-                26
+                26,
+                27
+              ],
+              "numReferrers" : 0
+            },
+            "loopback" : {
+              "definitionLines" : [
+                33,
+                34,
+                35
               ],
               "numReferrers" : 0
             },
             "tunnel" : {
               "definitionLines" : [
-                28,
-                29,
-                30,
-                31
+                37,
+                38,
+                39,
+                40
               ],
               "numReferrers" : 0
             },
             "tunnel.3" : {
               "definitionLines" : [
-                30,
-                31
+                39,
+                40
               ],
               "numReferrers" : 0
             },
             "vlan" : {
               "definitionLines" : [
-                35,
-                36
+                44,
+                45
               ],
               "numReferrers" : 0
             }
@@ -90530,6 +90631,10 @@
             {
               "tag" : "MISCELLANEOUS",
               "text" : "Interface ethernet1/1 is not in a virtual-router, placing in ~NULL_VRF~ and shutting it down."
+            },
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "Interface ethernet1/1.4 is not in a virtual-router, placing in ~NULL_VRF~ and shutting it down."
             },
             {
               "tag" : "MISCELLANEOUS",

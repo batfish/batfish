@@ -583,6 +583,7 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
     newIface.setAllAddresses(iface.getAllAddresses());
     newIface.setActive(iface.getActive());
     newIface.setDescription(iface.getComment());
+    newIface.setVlan(iface.getTag());
 
     Zone zone = iface.getZone();
     List<IpAccessListLine> lines;
