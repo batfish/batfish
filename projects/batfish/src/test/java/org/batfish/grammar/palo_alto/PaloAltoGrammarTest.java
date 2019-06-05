@@ -1470,8 +1470,19 @@ public class PaloAltoGrammarTest {
   }
 
   @Test
-  public void testAllowSameZone() throws IOException {
-    bidirTest("allow-same-zone", false);
+  public void testAllowSameZoneNoRules() throws IOException {
+    bidirTest("allow-same-zone-no-rules", false);
+  }
+
+  @Test
+  public void testAllowSameZoneNoMatchingRules() throws IOException {
+    bidirTest("allow-same-zone-no-matching-rules", false);
+  }
+
+  @Ignore
+  @Test
+  public void testDropSameZoneExplicit() throws IOException {
+    bidirTest("drop-same-zone-explicit", true);
   }
 
   @Ignore

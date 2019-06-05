@@ -1,0 +1,17 @@
+set deviceconfig system hostname drop-same-zone-explicit
+set network interface ethernet ethernet1/1 layer3 ip 10.0.1.1/24
+set network interface ethernet ethernet1/2 layer3 ip 10.0.2.1/24
+set network virtual-router vr1 interface ethernet1/1
+set network virtual-router vr1 interface ethernet1/2
+set shared address a1 ip-netmask 192.0.2.1/32
+set vsys vsys1 import network interface ethernet1/1
+set vsys vsys1 import network interface ethernet1/2
+set vsys vsys1 zone z network layer3 ethernet1/1
+set vsys vsys1 zone z network layer3 ethernet1/2
+set vsys vsys1 rulebase security rules rule1 from z
+set vsys vsys1 rulebase security rules rule1 to z
+set vsys vsys1 rulebase security rules rule1 action deny
+set vsys vsys1 rulebase security rules rule1 source any
+set vsys vsys1 rulebase security rules rule1 destination any
+set vsys vsys1 rulebase security rules rule1 application any
+set vsys vsys1 rulebase security rules rule1 service any
