@@ -8,13 +8,18 @@ options {
 
 s_service
 :
-    SERVICE name = variable
+    SERVICE s_service_definition?
+;
+
+s_service_definition
+:
+    name = variable
     (
         sserv_description
         | sserv_port
         | sserv_protocol
         | sserv_source_port
-    )+
+    )*
 ;
 
 sserv_description

@@ -36,7 +36,12 @@ if_tag
 
 sni_ethernet
 :
-    ETHERNET name = variable
+    ETHERNET sni_ethernet_definition?
+;
+
+sni_ethernet_definition
+:
+    name = variable
     (
         if_common
         | snie_layer2
@@ -44,7 +49,7 @@ sni_ethernet
         | snie_link_state
         | snie_tap
         | snie_virtual_wire
-    )
+    )?
 ;
 
 sni_loopback
