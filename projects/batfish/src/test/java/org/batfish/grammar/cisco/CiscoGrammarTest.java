@@ -511,6 +511,25 @@ public class CiscoGrammarTest {
   }
 
   @Test
+  public void testAllowedVlans() throws IOException {
+    Configuration c = parseConfig("eos-allowed-vlans");
+
+    assertThat(
+        c.getAllInterfaces().get("Port-Channel1").getAllowedVlans(),
+        equalTo(IntegerSpace.of(Range.closed(1, 2))));
+    assertThat(
+        c.getAllInterfaces().get("Port-Channel2").getAllowedVlans(),
+        equalTo(IntegerSpace.of(Range.closed(2, 3))));
+    assertThat(
+        c.getAllInterfaces().get("Port-Channel3").getAllowedVlans(), equalTo(IntegerSpace.EMPTY));
+    assertThat(
+        c.getAllInterfaces().get("Port-Channel4").getAllowedVlans(), equalTo(IntegerSpace.EMPTY));
+    assertThat(
+        c.getAllInterfaces().get("Port-Channel5").getAllowedVlans(),
+        equalTo(IntegerSpace.of(Range.closed(1, 4094))));
+  }
+
+  @Test
   public void testAaaAuthenticationLogin() throws IOException {
     // test ASA config
     Configuration aaaAuthAsaConfiguration = parseConfig("aaaAuthenticationAsa");
