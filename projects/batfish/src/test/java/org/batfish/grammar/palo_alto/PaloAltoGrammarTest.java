@@ -22,6 +22,7 @@ import static org.batfish.datamodel.matchers.InterfaceMatchers.hasAllAddresses;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasDependencies;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasDescription;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasMtu;
+import static org.batfish.datamodel.matchers.InterfaceMatchers.hasVlan;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasZoneName;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.isActive;
 import static org.batfish.datamodel.matchers.IpAccessListMatchers.accepts;
@@ -555,6 +556,7 @@ public class PaloAltoGrammarTest {
     String interfaceName1 = "ethernet1/1";
     String interfaceName2 = "ethernet1/2";
     String interfaceName3 = "ethernet1/3";
+    String interfaceName311 = "ethernet1/3.11";
     Configuration c = parseConfig(hostname);
 
     // Confirm interface MTU is extracted
@@ -570,11 +572,16 @@ public class PaloAltoGrammarTest {
     assertThat(c, hasInterface(interfaceName1, hasDescription("description")));
     assertThat(c, hasInterface(interfaceName2, hasDescription("interface's long description")));
     assertThat(c, hasInterface(interfaceName3, hasDescription("single quoted description")));
+    assertThat(c, hasInterface(interfaceName311, hasDescription("unit description")));
 
     // Confirm link status is extracted
     assertThat(c, hasInterface(interfaceName1, isActive()));
     assertThat(c, hasInterface(interfaceName2, not(isActive())));
     assertThat(c, hasInterface(interfaceName3, isActive()));
+    assertThat(c, hasInterface(interfaceName311, not(isActive())));
+
+    // Confirm tag extraction for units
+    assertThat(c, hasInterface(interfaceName311, hasVlan(11)));
   }
 
   @Test

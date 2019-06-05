@@ -28,6 +28,12 @@ if_comment
     COMMENT text = variable
 ;
 
+/* tag command can be run on almost any unit's l2 or l3 config. */
+if_tag
+:
+    TAG tag = DEC
+;
+
 sni_ethernet
 :
     ETHERNET name = variable
@@ -70,6 +76,9 @@ sni_vlan
 snie_layer2
 :
     LAYER2
+    (
+        sniel2_units
+    )?
 ;
 
 snie_layer3
@@ -99,6 +108,20 @@ snie_tap
 snie_virtual_wire
 :
     VIRTUAL_WIRE
+;
+
+sniel2_unit
+:
+    name = variable
+    (
+        if_common
+        | if_tag
+    )
+;
+
+sniel2_units
+:
+    UNITS sniel2_unit?
 ;
 
 // Common syntax between layer3 interfaces and subinterfaces (units)
@@ -141,18 +164,13 @@ sniel3_unit
     (
         if_common
         | sniel3_common
-        | sniel3u_tag
+        | if_tag
     )
 ;
 
 sniel3_units
 :
     UNITS sniel3_unit?
-;
-
-sniel3u_tag
-:
-    TAG tag = DEC
 ;
 
 snil_unit
