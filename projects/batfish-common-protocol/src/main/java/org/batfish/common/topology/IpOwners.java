@@ -110,7 +110,7 @@ public final class IpOwners {
                   ifaceEntry ->
                       firstNonNull(
                           AclIpSpace.union(
-                              ifaceEntry.getValue().getAllAddresses().stream()
+                              ifaceEntry.getValue().getAllConcreteAddresses().stream()
                                   .map(ConcreteInterfaceAddress::getPrefix)
                                   .map(Prefix::toHostIpSpace)
                                   .collect(ImmutableList.toImmutableList())),

@@ -892,7 +892,7 @@ class CiscoConversions {
 
     for (org.batfish.datamodel.Interface iface : referencingInterfaces) {
       // skipping interfaces with no ip-address
-      if (iface.getAddress() == null) {
+      if (iface.getConcreteAddress() == null) {
         w.redFlag(
             String.format(
                 "Interface %s with declared crypto-map %s has no ip-address",
@@ -944,7 +944,7 @@ class CiscoConversions {
     newIpsecPeerConfigBuilder
         .setSourceInterface(iface.getName())
         .setIpsecPolicy(ipsecPhase2Policy)
-        .setLocalAddress(iface.getAddress().getIp());
+        .setLocalAddress(iface.getConcreteAddress().getIp());
 
     setIpsecPeerConfigPolicyAccessList(c, cryptoMapEntry, newIpsecPeerConfigBuilder, w);
 

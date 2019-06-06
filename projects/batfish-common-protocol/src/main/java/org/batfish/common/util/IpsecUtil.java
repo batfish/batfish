@@ -495,7 +495,7 @@ public class IpsecUtil {
       Set<ConcreteInterfaceAddress> nonNattedInterfaceAddresses =
           interfaces.stream()
               .filter(i -> !hasSourceNat(i.getOutgoingTransformation()))
-              .flatMap(i -> i.getAllAddresses().stream())
+              .flatMap(i -> i.getAllConcreteAddresses().stream())
               .collect(ImmutableSet.toImmutableSet());
       Set<IpWildcard> blacklist =
           nonNattedInterfaceAddresses.stream()

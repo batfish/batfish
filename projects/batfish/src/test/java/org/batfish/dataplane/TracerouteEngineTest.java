@@ -51,11 +51,11 @@ public class TracerouteEngineTest {
   private static boolean interfaceRepliesToArpRequestForIp(
       Interface iface, Fib ifaceFib, Ip arpIp) {
     // interfaces without addresses never reply
-    if (iface.getAllAddresses().isEmpty()) {
+    if (iface.getAllConcreteAddresses().isEmpty()) {
       return false;
     }
     // the interface that owns the arpIp always replies
-    if (iface.getAllAddresses().stream().anyMatch(addr -> addr.getIp().equals(arpIp))) {
+    if (iface.getAllConcreteAddresses().stream().anyMatch(addr -> addr.getIp().equals(arpIp))) {
       return true;
     }
 

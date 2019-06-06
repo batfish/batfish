@@ -592,7 +592,7 @@ public final class TopologyUtil {
                             candidates.add(i);
                           });
                   // collect prefixes
-                  i.getAllAddresses().stream()
+                  i.getAllConcreteAddresses().stream()
                       .map(ConcreteInterfaceAddress::getIp)
                       .forEach(
                           ip ->
@@ -619,7 +619,7 @@ public final class TopologyUtil {
                       candidates,
                       Comparator.comparingInt(
                               (Interface o) -> o.getVrrpGroups().get(groupNum).getPriority())
-                          .thenComparing(o -> o.getAddress().getIp()));
+                          .thenComparing(o -> o.getConcreteAddress().getIp()));
               ipOwners
                   .computeIfAbsent(address.getIp(), k -> new HashMap<>())
                   .computeIfAbsent(vrrpMaster.getOwner().getHostname(), k -> new HashSet<>())
@@ -741,8 +741,8 @@ public final class TopologyUtil {
 
   /** Returns {@code true} if any {@link Ip IP address} is owned by both devices. */
   private static boolean haveIpInCommon(Interface i1, Interface i2) {
-    for (ConcreteInterfaceAddress ia : i1.getAllAddresses()) {
-      for (ConcreteInterfaceAddress ia2 : i2.getAllAddresses()) {
+    for (ConcreteInterfaceAddress ia : i1.getAllConcreteAddresses()) {
+      for (ConcreteInterfaceAddress ia2 : i2.getAllConcreteAddresses()) {
         if (ia.getIp().equals(ia2.getIp())) {
           return true;
         }
@@ -764,7 +764,7 @@ public final class TopologyUtil {
             if (iface.isLoopback(node.getConfigurationFormat()) || !iface.getActive()) {
               continue;
             }
-            for (ConcreteInterfaceAddress address : iface.getAllAddresses()) {
+            for (ConcreteInterfaceAddress address : iface.getAllConcreteAddresses()) {
               if (address.getNetworkBits() < Prefix.MAX_PREFIX_LENGTH) {
                 Prefix prefix = address.getPrefix();
                 List<Interface> interfaceBucket =
@@ -789,7 +789,8 @@ public final class TopologyUtil {
                       Prefix.create(p.getStartIp(), i), ImmutableList.of()))
           .flatMap(Collection::stream)
           .filter(
-              iface -> iface.getAllAddresses().stream().anyMatch(ia -> p.containsIp(ia.getIp())))
+              iface ->
+                  iface.getAllConcreteAddresses().stream().anyMatch(ia -> p.containsIp(ia.getIp())))
           .forEach(candidateInterfaces::add);
 
       for (Interface iface1 : bucketEntry.getValue()) {

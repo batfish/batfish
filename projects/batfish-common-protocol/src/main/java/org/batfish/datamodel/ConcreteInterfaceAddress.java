@@ -4,19 +4,21 @@ import static com.google.common.base.Preconditions.checkArgument;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
-import java.io.Serializable;
-import java.util.Objects;
+import java.util.Comparator;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 
-public final class ConcreteInterfaceAddress
-    implements Comparable<ConcreteInterfaceAddress>, Serializable, InterfaceAddress {
+/** A concrete IPv4 address assigned to an interface */
+@ParametersAreNonnullByDefault
+public final class ConcreteInterfaceAddress extends InterfaceAddress {
 
   private static final long serialVersionUID = 1L;
+  private static final Comparator<ConcreteInterfaceAddress> COMPARATOR =
+      Comparator.comparing(ConcreteInterfaceAddress::getIp)
+          .thenComparing(ConcreteInterfaceAddress::getNetworkBits);
 
-  private Ip _ip;
-
+  @Nonnull private Ip _ip;
   private int _networkBits;
 
   private ConcreteInterfaceAddress(Ip ip, int networkBits) {
@@ -45,27 +47,26 @@ public final class ConcreteInterfaceAddress
 
   public static ConcreteInterfaceAddress parse(String text) {
     String[] parts = text.split("/");
-    if (parts.length != 2) {
-      throw new IllegalArgumentException(
-          String.format(
-              "Invalid %s string: \"%s\"", ConcreteInterfaceAddress.class.getSimpleName(), text));
-    }
+    checkArgument(
+        parts.length == 2,
+        "Invalid %s string: \"%s\"",
+        ConcreteInterfaceAddress.class.getSimpleName(),
+        text);
     Ip ip = Ip.parse(parts[0]);
     int networkBits = Integer.parseUnsignedInt(parts[1]);
     return create(ip, networkBits);
   }
 
   @Override
-  public int compareTo(ConcreteInterfaceAddress rhs) {
-    int ret = _ip.compareTo(rhs._ip);
-    if (ret != 0) {
-      return ret;
+  public int compareTo(InterfaceAddress rhs) {
+    if (rhs instanceof ConcreteInterfaceAddress) {
+      return COMPARATOR.compare(this, (ConcreteInterfaceAddress) rhs);
     }
-    return Integer.compare(_networkBits, rhs._networkBits);
+    return 0;
   }
 
   @Override
-  public boolean equals(Object o) {
+  public boolean equals(@Nullable Object o) {
     if (o == this) {
       return true;
     } else if (!(o instanceof ConcreteInterfaceAddress)) {
@@ -75,6 +76,7 @@ public final class ConcreteInterfaceAddress
     return _ip.equals(rhs._ip) && _networkBits == rhs._networkBits;
   }
 
+  @Nonnull
   public Ip getIp() {
     return _ip;
   }
@@ -91,7 +93,8 @@ public final class ConcreteInterfaceAddress
 
   @Override
   public int hashCode() {
-    return Objects.hash(_ip, _networkBits);
+    // We want a custom quick implementation, so don't call Objects.hash()
+    return 31 + 31 * Long.hashCode(_ip.asLong()) + _networkBits;
   }
 
   @Override

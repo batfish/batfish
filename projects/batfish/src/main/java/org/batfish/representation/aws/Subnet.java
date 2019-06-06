@@ -170,14 +170,18 @@ public class Subnet implements AwsVpcEntity, Serializable {
     // add one interface that faces the instances
     String instancesIfaceName = _subnetId;
     Ip instancesIfaceIp = computeInstancesIfaceIp();
-    ConcreteInterfaceAddress instancesIfaceAddress = ConcreteInterfaceAddress.create(instancesIfaceIp, _cidrBlock.getPrefixLength());
+    ConcreteInterfaceAddress instancesIfaceAddress =
+        ConcreteInterfaceAddress.create(instancesIfaceIp, _cidrBlock.getPrefixLength());
     Utils.newInterface(instancesIfaceName, cfgNode, instancesIfaceAddress);
 
     // generate a prefix for the link between the VPC router and the subnet
     Prefix vpcSubnetLinkPrefix = awsConfiguration.getNextGeneratedLinkSubnet();
-    ConcreteInterfaceAddress subnetIfaceAddress = ConcreteInterfaceAddress.create(
-        vpcSubnetLinkPrefix.getStartIp(), vpcSubnetLinkPrefix.getPrefixLength());
-    ConcreteInterfaceAddress vpcIfaceAddress = ConcreteInterfaceAddress.create(vpcSubnetLinkPrefix.getEndIp(), vpcSubnetLinkPrefix.getPrefixLength());
+    ConcreteInterfaceAddress subnetIfaceAddress =
+        ConcreteInterfaceAddress.create(
+            vpcSubnetLinkPrefix.getStartIp(), vpcSubnetLinkPrefix.getPrefixLength());
+    ConcreteInterfaceAddress vpcIfaceAddress =
+        ConcreteInterfaceAddress.create(
+            vpcSubnetLinkPrefix.getEndIp(), vpcSubnetLinkPrefix.getPrefixLength());
 
     // add an interface that faces the VPC router
     String subnetIfaceName = _vpcId;

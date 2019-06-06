@@ -4545,9 +4545,9 @@ public class CiscoGrammarTest {
     assertThat("Loopback3", in(iosRecoveryInterfaceNames));
 
     Set<ConcreteInterfaceAddress> l3Prefixes =
-        iosRecoveryInterfaces.get("Loopback3").getAllAddresses();
+        iosRecoveryInterfaces.get("Loopback3").getAllConcreteAddresses();
     Set<ConcreteInterfaceAddress> l4Prefixes =
-        iosRecoveryInterfaces.get("Loopback4").getAllAddresses();
+        iosRecoveryInterfaces.get("Loopback4").getAllConcreteAddresses();
 
     assertThat(ConcreteInterfaceAddress.parse("10.0.0.1/32"), not(in(l3Prefixes)));
     assertThat(ConcreteInterfaceAddress.parse("10.0.0.2/32"), in(l3Prefixes));

@@ -91,9 +91,11 @@ public class SpecifiersAnswererTest {
             .setInterfaceOwnedIps(
                 ImmutableMap.of(
                     _c1.getHostname(),
-                    ImmutableMap.of(_iface1.getName(), _iface1.getAddress().getIp().toIpSpace()),
+                    ImmutableMap.of(
+                        _iface1.getName(), _iface1.getConcreteAddress().getIp().toIpSpace()),
                     _c2.getHostname(),
-                    ImmutableMap.of(_iface2.getName(), _iface2.getAddress().getIp().toIpSpace())))
+                    ImmutableMap.of(
+                        _iface2.getName(), _iface2.getConcreteAddress().getIp().toIpSpace())))
             .build();
   }
 
@@ -173,7 +175,7 @@ public class SpecifiersAnswererTest {
                     ImmutableSet.of(new InterfaceLocation(_c1.getHostname(), _iface1.getName()))
                         .toString(),
                     COL_IP_SPACE,
-                    _iface1.getAddress().getIp().toIpSpace().toString()))));
+                    _iface1.getConcreteAddress().getIp().toIpSpace().toString()))));
   }
 
   @Test
@@ -189,13 +191,13 @@ public class SpecifiersAnswererTest {
                     ImmutableSet.of(new InterfaceLocation(_c1.getHostname(), _iface1.getName()))
                         .toString(),
                     COL_IP_SPACE,
-                    _iface1.getAddress().getIp().toIpSpace().toString()),
+                    _iface1.getConcreteAddress().getIp().toIpSpace().toString()),
                 Row.of(
                     COL_LOCATIONS,
                     ImmutableSet.of(new InterfaceLocation(_c2.getHostname(), _iface2.getName()))
                         .toString(),
                     COL_IP_SPACE,
-                    _iface2.getAddress().getIp().toIpSpace().toString()))));
+                    _iface2.getConcreteAddress().getIp().toIpSpace().toString()))));
   }
 
   @Test

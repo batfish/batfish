@@ -301,7 +301,7 @@ public final class IspModelingUtils {
                   return iface;
                 })
             .filter(Objects::nonNull)
-            .flatMap(iface -> iface.getAllAddresses().stream())
+            .flatMap(iface -> iface.getAllConcreteAddresses().stream())
             .collect(
                 ImmutableMap.toImmutableMap(ConcreteInterfaceAddress::getIp, Function.identity()));
 

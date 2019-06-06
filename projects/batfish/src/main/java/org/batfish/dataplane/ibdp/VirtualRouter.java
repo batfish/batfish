@@ -715,7 +715,7 @@ public class VirtualRouter implements Serializable {
       Interface iface = _vrf.getInterfaces().get(ifaceName);
       if (iface.getActive()) {
         Set<Prefix> allNetworkPrefixes =
-            iface.getAllAddresses().stream()
+            iface.getAllConcreteAddresses().stream()
                 .map(ConcreteInterfaceAddress::getPrefix)
                 .collect(Collectors.toSet());
         long cost = RipProcess.DEFAULT_RIP_COST;
@@ -776,7 +776,7 @@ public class VirtualRouter implements Serializable {
     for (Interface i : _vrf.getInterfaces().values()) {
       if (i.getActive()) { // Make sure the interface is active
         // Create a route for each interface prefix
-        for (ConcreteInterfaceAddress ifaceAddress : i.getAllAddresses()) {
+        for (ConcreteInterfaceAddress ifaceAddress : i.getAllConcreteAddresses()) {
           Prefix prefix = ifaceAddress.getPrefix();
           _connectedRib.mergeRoute(annotateRoute(new ConnectedRoute(prefix, i.getName())));
         }
@@ -803,7 +803,7 @@ public class VirtualRouter implements Serializable {
     for (Interface i : _vrf.getInterfaces().values()) {
       if (i.getActive()) { // Make sure the interface is active
         // Create a route for each interface prefix
-        for (ConcreteInterfaceAddress ifaceAddress : i.getAllAddresses()) {
+        for (ConcreteInterfaceAddress ifaceAddress : i.getAllConcreteAddresses()) {
           if (ifaceAddress.getNetworkBits() < Prefix.MAX_PREFIX_LENGTH) {
             _localRib.mergeRoute(annotateRoute(new LocalRoute(ifaceAddress, i.getName())));
           }
@@ -910,7 +910,7 @@ public class VirtualRouter implements Serializable {
             ? 0L
             : firstNonNull(ifaceLevelSettings.getCost(), IsisRoute.DEFAULT_METRIC);
     routeBuilder.setAdmin(adminCost).setLevel(level).setMetric(metric).setProtocol(isisProtocol);
-    return iface.getAllAddresses().stream()
+    return iface.getAllConcreteAddresses().stream()
         .map(
             address ->
                 routeBuilder.setNetwork(address.getPrefix()).setNextHopIp(address.getIp()).build())
@@ -1126,7 +1126,7 @@ public class VirtualRouter implements Serializable {
     int l2Admin = RoutingProtocol.ISIS_L2.getDefaultAdministrativeCost(_c.getConfigurationFormat());
     _isisIncomingRoutes.forEach(
         (edge, queue) -> {
-          Ip nextHopIp = edge.getNode1().getInterface(nc).getAddress().getIp();
+          Ip nextHopIp = edge.getNode1().getInterface(nc).getConcreteAddress().getIp();
           Interface iface = edge.getNode2().getInterface(nc);
           while (queue.peek() != null) {
             RouteAdvertisement<IsisRoute> routeAdvert = queue.remove();
@@ -1265,7 +1265,7 @@ public class VirtualRouter implements Serializable {
         for (RipInternalRoute neighborRoute :
             neighborVirtualRouter._ripInternalRib.getTypedRoutes()) {
           long newCost = neighborRoute.getMetric() + RipProcess.DEFAULT_RIP_COST;
-          Ip nextHopIp = neighborInterface.getAddress().getIp();
+          Ip nextHopIp = neighborInterface.getConcreteAddress().getIp();
           RipInternalRoute newRoute =
               new RipInternalRoute(neighborRoute.getNetwork(), nextHopIp, admin, newCost);
           if (!_ripInternalStagingRib.mergeRouteGetDelta(newRoute).isEmpty()) {

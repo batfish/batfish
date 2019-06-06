@@ -383,7 +383,7 @@ public class TracerouteEngineImplTest {
         Flow.builder()
             .setIngressNode(c.getHostname())
             .setTag("denied")
-            .setDstIp(ifaceDenyIn.getAddress().getIp());
+            .setDstIp(ifaceDenyIn.getConcreteAddress().getIp());
 
     Flow flowDenied = fb.setIngressInterface(ifaceDenyIn.getName()).build();
     Flow flowAllowed = fb.setIngressInterface(ifaceAllowIn.getName()).build();

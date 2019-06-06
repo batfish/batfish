@@ -322,13 +322,16 @@ public class VpnConnection implements AwsVpcEntity, Serializable {
       }
       // create representation structures and add to configuration node
       String externalInterfaceName = "external" + idNum;
-      ConcreteInterfaceAddress externalInterfaceAddress = ConcreteInterfaceAddress.create(ipsecTunnel.getVgwOutsideAddress(), Prefix.MAX_PREFIX_LENGTH);
+      ConcreteInterfaceAddress externalInterfaceAddress =
+          ConcreteInterfaceAddress.create(
+              ipsecTunnel.getVgwOutsideAddress(), Prefix.MAX_PREFIX_LENGTH);
 
       Utils.newInterface(externalInterfaceName, vpnGatewayCfgNode, externalInterfaceAddress);
 
       String vpnInterfaceName = "vpn" + idNum;
-      ConcreteInterfaceAddress vpnInterfaceAddress = ConcreteInterfaceAddress.create(
-          ipsecTunnel.getVgwInsideAddress(), ipsecTunnel.getVgwInsidePrefixLength());
+      ConcreteInterfaceAddress vpnInterfaceAddress =
+          ConcreteInterfaceAddress.create(
+              ipsecTunnel.getVgwInsideAddress(), ipsecTunnel.getVgwInsidePrefixLength());
       Utils.newInterface(vpnInterfaceName, vpnGatewayCfgNode, vpnInterfaceAddress);
 
       // IPsec data-model
@@ -392,9 +395,10 @@ public class VpnConnection implements AwsVpcEntity, Serializable {
 
         // iBGP connection to VPC
         Configuration vpcNode = awsConfiguration.getConfigurationNodes().get(vpcId);
-        Ip vpcIfaceAddress = vpcNode.getAllInterfaces().get(_vpnGatewayId).getAddress().getIp();
+        Ip vpcIfaceAddress =
+            vpcNode.getAllInterfaces().get(_vpnGatewayId).getConcreteAddress().getIp();
         Ip vgwToVpcIfaceAddress =
-            vpnGatewayCfgNode.getAllInterfaces().get(vpcId).getAddress().getIp();
+            vpnGatewayCfgNode.getAllInterfaces().get(vpcId).getConcreteAddress().getIp();
         BgpActivePeerConfig.Builder vgwToVpcBuilder = BgpActivePeerConfig.builder();
         vgwToVpcBuilder
             .setPeerAddress(vpcIfaceAddress)

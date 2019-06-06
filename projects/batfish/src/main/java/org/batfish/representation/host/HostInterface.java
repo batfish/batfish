@@ -15,6 +15,7 @@ import org.batfish.common.Warnings;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Interface;
+import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Vrf;
 
@@ -38,7 +39,7 @@ public class HostInterface implements Serializable {
 
   private String _name;
 
-  private Set<ConcreteInterfaceAddress> _otherAddresses;
+  private Set<InterfaceAddress> _otherAddresses;
 
   private ConcreteInterfaceAddress _address;
 
@@ -55,7 +56,7 @@ public class HostInterface implements Serializable {
   }
 
   @JsonProperty(PROP_PREFIX)
-  public ConcreteInterfaceAddress getAddress() {
+  public InterfaceAddress getAddress() {
     return _address;
   }
 
@@ -85,7 +86,7 @@ public class HostInterface implements Serializable {
   }
 
   @JsonProperty(PROP_OTHER_PREFIXES)
-  public Set<ConcreteInterfaceAddress> getOtherAddresses() {
+  public Set<InterfaceAddress> getOtherAddresses() {
     return _otherAddresses;
   }
 
@@ -120,7 +121,7 @@ public class HostInterface implements Serializable {
   }
 
   @JsonProperty(PROP_OTHER_PREFIXES)
-  public void setOtherAddresses(Set<ConcreteInterfaceAddress> otherAddresses) {
+  public void setOtherAddresses(Set<InterfaceAddress> otherAddresses) {
     _otherAddresses = otherAddresses;
   }
 

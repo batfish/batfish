@@ -80,7 +80,7 @@ final class CiscoNxConversions {
     // NX-OS does use shutdown interfaces to configure router-id.
     Map<String, Interface> interfaceMap =
         vrf.getInterfaces().entrySet().stream()
-            .filter(e -> e.getValue().getAddress() != null)
+            .filter(e -> e.getValue().getConcreteAddress() != null)
             .collect(Collectors.toMap(Entry::getKey, Entry::getValue));
     if (interfaceMap.isEmpty()) {
       w.redFlag(
@@ -96,7 +96,7 @@ final class CiscoNxConversions {
     Interface loopback0 = interfaceMap.get("Loopback0");
     if (loopback0 != null) {
       w.redFlag(String.format("%s. Using the IP address of Loopback0", messageBase));
-      return loopback0.getAddress().getIp();
+      return loopback0.getConcreteAddress().getIp();
     }
 
     // Next, NX-OS prefers "first" loopback interface. NX-OS is non-deterministic, but we will
@@ -105,7 +105,7 @@ final class CiscoNxConversions {
     Optional<Ip> lowestLoopback =
         interfaces.stream()
             .filter(i -> i.getName().startsWith("Loopback"))
-            .map(Interface::getAddress)
+            .map(Interface::getConcreteAddress)
             .map(ConcreteInterfaceAddress::getIp)
             .min(Comparator.naturalOrder());
     if (lowestLoopback.isPresent()) {
@@ -120,7 +120,7 @@ final class CiscoNxConversions {
     // enforce determinism by always choosing the smallest interface IP.
     Optional<Ip> lowestIp =
         interfaces.stream()
-            .map(Interface::getAddress)
+            .map(Interface::getConcreteAddress)
             .map(ConcreteInterfaceAddress::getIp)
             .min(Comparator.naturalOrder());
     w.redFlag(
@@ -226,7 +226,7 @@ final class CiscoNxConversions {
                 dynamic ? prefix : prefix.getStartIp(), vrf.getName(), updateSourceInterface));
         return null;
       }
-      ConcreteInterfaceAddress address = iface.getAddress();
+      ConcreteInterfaceAddress address = iface.getConcreteAddress();
       if (address == null) {
         warnings.redFlag(
             String.format(
@@ -240,7 +240,7 @@ final class CiscoNxConversions {
     }
     Optional<Ip> firstMatchingInterfaceAddress =
         vrf.getInterfaces().values().stream()
-            .flatMap(i -> i.getAllAddresses().stream())
+            .flatMap(i -> i.getAllConcreteAddresses().stream())
             .filter(ia -> ia != null && ia.getPrefix().containsIp(prefix.getStartIp()))
             .map(ConcreteInterfaceAddress::getIp)
             .findFirst();

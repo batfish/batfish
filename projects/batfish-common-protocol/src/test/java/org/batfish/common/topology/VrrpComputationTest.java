@@ -114,12 +114,12 @@ public class VrrpComputationTest {
     assertThat(
         interfaceOwners,
         hasEntry(
-            equalTo(_i1.getAddress().getIp()),
+            equalTo(_i1.getConcreteAddress().getIp()),
             hasEntry(equalTo(_i1.getOwner().getHostname()), contains(_i1.getName()))));
     assertThat(
         interfaceOwners,
         hasEntry(
-            equalTo(_i2.getAddress().getIp()),
+            equalTo(_i2.getConcreteAddress().getIp()),
             hasEntry(equalTo(_i2.getOwner().getHostname()), contains(_i2.getName()))));
     assertThat(
         interfaceOwners,

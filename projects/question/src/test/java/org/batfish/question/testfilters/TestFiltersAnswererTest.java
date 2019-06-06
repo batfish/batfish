@@ -228,9 +228,9 @@ public class TestFiltersAnswererTest {
                         "c1",
                         ImmutableMap.of(
                             "iface1",
-                            iface1.getAddress().getIp().toIpSpace(),
+                            iface1.getConcreteAddress().getIp().toIpSpace(),
                             "iface2",
-                            iface2.getAddress().getIp().toIpSpace())))
+                            iface2.getConcreteAddress().getIp().toIpSpace())))
                 .build());
 
     TestFiltersQuestion question = new TestFiltersQuestion(null, null, null, null);

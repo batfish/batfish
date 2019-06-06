@@ -90,7 +90,9 @@ public class ElasticsearchDomain implements AwsVpcEntity, Serializable {
       }
       String instancesIfaceName = String.format("%s-%s", _domainName, subnetId);
       Ip instancesIfaceIp = subnet.getNextIp();
-      ConcreteInterfaceAddress instancesIfaceAddress = ConcreteInterfaceAddress.create(instancesIfaceIp, subnet.getCidrBlock().getPrefixLength());
+      ConcreteInterfaceAddress instancesIfaceAddress =
+          ConcreteInterfaceAddress.create(
+              instancesIfaceIp, subnet.getCidrBlock().getPrefixLength());
       Utils.newInterface(instancesIfaceName, cfgNode, instancesIfaceAddress);
 
       Ip defaultGatewayAddress = subnet.computeInstancesIfaceIp();

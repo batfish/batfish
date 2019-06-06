@@ -44,6 +44,7 @@ import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.DeviceType;
+import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.OriginType;
@@ -161,7 +162,8 @@ public class IspModelingUtilsTest {
 
   @Test
   public void testGetIspConfigurationNode() {
-    ConcreteInterfaceAddress interfaceAddress = ConcreteInterfaceAddress.create(Ip.parse("2.2.2.2"), 30);
+    ConcreteInterfaceAddress interfaceAddress =
+        ConcreteInterfaceAddress.create(Ip.parse("2.2.2.2"), 30);
     BgpActivePeerConfig peer =
         BgpActivePeerConfig.builder()
             .setPeerAddress(Ip.parse("1.1.1.1"))
@@ -208,8 +210,10 @@ public class IspModelingUtilsTest {
 
   @Test
   public void testGetIspConfigurationNodeInvalid() {
-    ConcreteInterfaceAddress interfaceAddress = ConcreteInterfaceAddress.create(Ip.parse("2.2.2.2"), 30);
-    ConcreteInterfaceAddress interfaceAddress2 = ConcreteInterfaceAddress.create(Ip.parse("3.3.3.3"), 30);
+    ConcreteInterfaceAddress interfaceAddress =
+        ConcreteInterfaceAddress.create(Ip.parse("2.2.2.2"), 30);
+    ConcreteInterfaceAddress interfaceAddress2 =
+        ConcreteInterfaceAddress.create(Ip.parse("3.3.3.3"), 30);
     BgpActivePeerConfig peer =
         BgpActivePeerConfig.builder()
             .setPeerAddress(Ip.parse("1.1.1.1"))
@@ -310,8 +314,9 @@ public class IspModelingUtilsTest {
   @Test
   public void testCreateInternetNode() {
     Configuration internet = IspModelingUtils.createInternetNode(new NetworkFactory());
-    ConcreteInterfaceAddress interfaceAddress = ConcreteInterfaceAddress.create(
-        IspModelingUtils.INTERNET_OUT_ADDRESS, IspModelingUtils.INTERNET_OUT_SUBNET);
+    InterfaceAddress interfaceAddress =
+        ConcreteInterfaceAddress.create(
+            IspModelingUtils.INTERNET_OUT_ADDRESS, IspModelingUtils.INTERNET_OUT_SUBNET);
     assertThat(
         internet,
         allOf(
@@ -422,7 +427,9 @@ public class IspModelingUtilsTest {
             hasInterface(
                 "~Interface_1~",
                 hasAllAddresses(
-                    equalTo(ImmutableSet.of(ConcreteInterfaceAddress.create(Ip.parse("240.1.1.2"), 31))))),
+                    equalTo(
+                        ImmutableSet.of(
+                            ConcreteInterfaceAddress.create(Ip.parse("240.1.1.2"), 31))))),
             hasVrf(
                 DEFAULT_VRF_NAME,
                 hasBgpProcess(
@@ -443,9 +450,9 @@ public class IspModelingUtilsTest {
     assertThat(internetAndIsps, hasKey("isp_1"));
     Configuration ispNode = internetAndIsps.get("isp_1");
 
-    ImmutableSet<ConcreteInterfaceAddress> interfaceAddresses =
+    ImmutableSet<InterfaceAddress> interfaceAddresses =
         ispNode.getAllInterfaces().values().stream()
-            .flatMap(iface -> iface.getAllAddresses().stream())
+            .flatMap(iface -> iface.getAllConcreteAddresses().stream())
             .collect(ImmutableSet.toImmutableSet());
     assertThat(
         interfaceAddresses,

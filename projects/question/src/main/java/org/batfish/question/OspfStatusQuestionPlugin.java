@@ -163,7 +163,7 @@ public class OspfStatusQuestionPlugin extends QuestionPlugin {
                   if (exportPolicyName != null) {
                     RoutingPolicy exportPolicy = c.getRoutingPolicies().get(exportPolicyName);
                     if (exportPolicy != null) {
-                      for (ConcreteInterfaceAddress address : iface.getAllAddresses()) {
+                      for (ConcreteInterfaceAddress address : iface.getAllConcreteAddresses()) {
                         ConnectedRoute route =
                             new ConnectedRoute(
                                 Prefix.create(address.getIp(), address.getNetworkBits()),

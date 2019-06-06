@@ -485,12 +485,12 @@ public class EdgesAnswerer extends Answerer {
     Interface interface2 =
         configurations.get(edge.getNode2()).getAllInterfaces().get(edge.getInt2());
     Set<Ip> ips1 =
-        interface1.getAllAddresses().stream()
+        interface1.getAllConcreteAddresses().stream()
             .filter(Objects::nonNull)
             .map(ConcreteInterfaceAddress::getIp)
             .collect(Collectors.toSet());
     Set<Ip> ips2 =
-        interface2.getAllAddresses().stream()
+        interface2.getAllConcreteAddresses().stream()
             .filter(Objects::nonNull)
             .map(ConcreteInterfaceAddress::getIp)
             .collect(Collectors.toSet());

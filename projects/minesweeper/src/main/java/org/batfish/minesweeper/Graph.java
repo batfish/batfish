@@ -284,7 +284,7 @@ public class Graph {
         for (String ifaceName : area.getInterfaces()) {
           Interface iface = conf.getAllInterfaces().get(ifaceName);
           if (iface.getActive() && iface.getOspfEnabled()) {
-            acc.add(iface.getAddress().getPrefix());
+            acc.add(iface.getConcreteAddress().getPrefix());
           }
         }
       }
@@ -331,7 +331,7 @@ public class Graph {
 
     if (proto.isConnected()) {
       for (Interface iface : conf.getAllInterfaces().values()) {
-        ConcreteInterfaceAddress address = iface.getAddress();
+        ConcreteInterfaceAddress address = iface.getConcreteAddress();
         if (address != null) {
           acc.add(address.getPrefix());
         }
@@ -395,7 +395,7 @@ public class Graph {
       for (NodeInterfacePair nip : nips) {
         SortedSet<NodeInterfacePair> neighborIfaces = topology.getNeighbors(nip);
         Interface i1 = ifaceMap.get(nip);
-        boolean hasNoOtherEnd = (neighborIfaces.isEmpty() && i1.getAddress() != null);
+        boolean hasNoOtherEnd = (neighborIfaces.isEmpty() && i1.getConcreteAddress() != null);
         if (hasNoOtherEnd) {
           GraphEdge ge = new GraphEdge(i1, null, router, null, false, false);
           graphEdges.add(ge);
@@ -466,8 +466,8 @@ public class Graph {
 
           boolean isNextHop =
               there != null
-                  && there.getAddress() != null
-                  && there.getAddress().getIp().equals(nhIp);
+                  && there.getConcreteAddress() != null
+                  && there.getConcreteAddress().getIp().equals(nhIp);
 
           if (isNextHop) {
             someIface = true;
@@ -502,7 +502,9 @@ public class Graph {
         // Create null route interface
         Interface iface = new Interface(name);
         iface.setActive(true);
-        iface.setAddress(ConcreteInterfaceAddress.create(sr.getNetwork().getStartIp(), sr.getNextHopIp().numSubnetBits()));
+        iface.setAddress(
+            ConcreteInterfaceAddress.create(
+                sr.getNetwork().getStartIp(), sr.getNextHopIp().numSubnetBits()));
         iface.setBandwidth(0.);
         // Add static route to all static routes list
         Map<String, List<StaticRoute>> map = _staticRoutes.get(router);
@@ -554,7 +556,7 @@ public class Graph {
             Ip ip = ipList.get(i);
             BgpActivePeerConfig n = ns.get(i);
             Interface iface = ge.getStart();
-            if (ip != null && iface.getAddress().getPrefix().containsIp(ip)) {
+            if (ip != null && iface.getConcreteAddress().getPrefix().containsIp(ip)) {
               _ebgpNeighbors.put(ge, n);
             }
           }
@@ -1197,7 +1199,7 @@ public class Graph {
                       .append(",")
                       .append(edge.getEnd().getName());
                 }
-                sb.append(edge.getStart().getAddress());
+                sb.append(edge.getStart().getConcreteAddress());
                 sb.append("\n");
               });
         });

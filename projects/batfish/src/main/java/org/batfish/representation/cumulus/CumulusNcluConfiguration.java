@@ -42,6 +42,7 @@ import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.IntegerSpace;
 import org.batfish.datamodel.Interface.Dependency;
 import org.batfish.datamodel.Interface.DependencyType;
+import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.InterfaceType;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Ip6;
@@ -188,7 +189,7 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
             .setBgpProcess(newProc)
             .setExportPolicy(peerExportPolicy.build().getName())
             .setLocalAs(localAs)
-            .setLocalIp(_c.getAllInterfaces().get(peerInterface).getAddress().getIp())
+            .setLocalIp(_c.getAllInterfaces().get(peerInterface).getConcreteAddress().getIp())
             .setPeerInterface(peerInterface)
             .setRemoteAsns(computeRemoteAsns(neighbor, localAs))
             .setSendCommunity(true);
@@ -294,8 +295,9 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
     }
     newIface.setAllAddresses(iface.getIpAddresses());
     if (iface.getIpAddresses().isEmpty() && isUsedForBgpUnnumbered(iface.getName())) {
-      ConcreteInterfaceAddress addr = ConcreteInterfaceAddress.create(
-          Ip.create(_linkLocalAddress.getAndIncrement()), LINK_LOCAL_NETWORK_BITS);
+      ConcreteInterfaceAddress addr =
+          ConcreteInterfaceAddress.create(
+              Ip.create(_linkLocalAddress.getAndIncrement()), LINK_LOCAL_NETWORK_BITS);
 
       newIface.setAddress(addr);
       newIface.setAllAddresses(ImmutableSet.of(addr));
@@ -915,7 +917,7 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
     if (!vlan.getAddresses().isEmpty()) {
       newIface.setAddress(vlan.getAddresses().get(0));
     }
-    ImmutableSet.Builder<ConcreteInterfaceAddress> allAddresses = ImmutableSet.builder();
+    ImmutableSet.Builder<InterfaceAddress> allAddresses = ImmutableSet.builder();
     allAddresses.addAll(vlan.getAddresses());
     vlan.getAddressVirtuals().values().forEach(allAddresses::addAll);
     newIface.setAllAddresses(allAddresses.build());

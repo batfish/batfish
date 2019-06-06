@@ -29,6 +29,7 @@ import org.batfish.datamodel.IkePhase1Key;
 import org.batfish.datamodel.IkePhase1Policy;
 import org.batfish.datamodel.IkePhase1Proposal;
 import org.batfish.datamodel.Interface;
+import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip6AccessList;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpsecPhase2Policy;
@@ -104,9 +105,9 @@ public final class CompletionMetadataUtilsTest {
     String address2 = ip2 + "/24";
     String address3 = ip3 + "/20";
 
-    ConcreteInterfaceAddress interfaceAddress1 = ConcreteInterfaceAddress.parse(address1);
-    ConcreteInterfaceAddress interfaceAddress2 = ConcreteInterfaceAddress.parse(address2);
-    ConcreteInterfaceAddress interfaceAddress3 = ConcreteInterfaceAddress.parse(address3);
+    InterfaceAddress interfaceAddress1 = ConcreteInterfaceAddress.parse(address1);
+    InterfaceAddress interfaceAddress2 = ConcreteInterfaceAddress.parse(address2);
+    InterfaceAddress interfaceAddress3 = ConcreteInterfaceAddress.parse(address3);
 
     Map<String, Configuration> configs = new HashMap<>();
     Configuration config = createTestConfiguration(nodeName, ConfigurationFormat.HOST, int1, int2);

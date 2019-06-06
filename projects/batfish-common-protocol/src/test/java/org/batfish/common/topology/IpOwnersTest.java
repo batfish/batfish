@@ -11,10 +11,10 @@ import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableMap;
 import java.util.Map;
+import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.Interface;
-import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.NetworkFactory;
@@ -102,7 +102,8 @@ public class IpOwnersTest {
     Interface i1 =
         _ib.setOwner(c1)
             .setVrf(vrf1)
-            .setAddress(ConcreteInterfaceAddress.create(prefix.getStartIp(), prefix.getPrefixLength()))
+            .setAddress(
+                ConcreteInterfaceAddress.create(prefix.getStartIp(), prefix.getPrefixLength()))
             .build();
     Map<String, Map<String, IpSpace>> interfaceHostSubnetIps =
         computeInterfaceHostSubnetIps(configs, false);

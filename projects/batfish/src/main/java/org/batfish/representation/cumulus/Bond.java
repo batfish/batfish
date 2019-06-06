@@ -7,7 +7,7 @@ import java.util.List;
 import java.util.Set;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import org.batfish.datamodel.ConcreteInterfaceAddress;
+import org.batfish.datamodel.InterfaceAddress;
 
 /** A logical layer-1 bond interface */
 public class Bond implements Serializable {
@@ -16,7 +16,7 @@ public class Bond implements Serializable {
 
   private final @Nonnull InterfaceBridgeSettings _bridge;
   private @Nullable Integer _clagId;
-  private final @Nonnull List<ConcreteInterfaceAddress> _ipAddresses;
+  private final @Nonnull List<InterfaceAddress> _ipAddresses;
   private final @Nonnull String _name;
   private @Nonnull Set<String> _slaves;
   private @Nullable String _vrf;
@@ -36,7 +36,7 @@ public class Bond implements Serializable {
     return _clagId;
   }
 
-  public @Nonnull List<ConcreteInterfaceAddress> getIpAddresses() {
+  public @Nonnull List<InterfaceAddress> getIpAddresses() {
     return _ipAddresses;
   }
 

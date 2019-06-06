@@ -307,9 +307,11 @@ public final class BDDReachabilityAnalysisTest {
 
     assertThat(
         bddIps(preOutEdge1),
-        containsInAnyOrder(_dstIface1Ip, _dstIface2Ip, _net._link1Dst.getAddress().getIp()));
+        containsInAnyOrder(
+            _dstIface1Ip, _dstIface2Ip, _net._link1Dst.getConcreteAddress().getIp()));
     assertThat(
-        bddIps(preOutEdge2), containsInAnyOrder(_dstIface2Ip, _net._link2Dst.getAddress().getIp()));
+        bddIps(preOutEdge2),
+        containsInAnyOrder(_dstIface2Ip, _net._link2Dst.getConcreteAddress().getIp()));
 
     // ECMP: _dstIface1Ip is routed out both edges
     assertThat(preOutEdge1.and(preOutEdge2), equalTo(dstIpBDD(_dstIface2Ip)));

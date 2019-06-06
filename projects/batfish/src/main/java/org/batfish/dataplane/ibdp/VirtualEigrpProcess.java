@@ -20,12 +20,12 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.AnnotatedRoute;
+import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.EigrpExternalRoute;
 import org.batfish.datamodel.EigrpInternalRoute;
 import org.batfish.datamodel.EigrpRoute;
 import org.batfish.datamodel.Interface;
-import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.NetworkConfigurations;
 import org.batfish.datamodel.Prefix;
@@ -107,7 +107,7 @@ class VirtualEigrpProcess {
         _interfaces.add(new EigrpInterface(c.getHostname(), iface));
         requireNonNull(iface.getEigrp());
         Set<Prefix> allNetworkPrefixes =
-            iface.getAllAddresses().stream()
+            iface.getAllConcreteAddresses().stream()
                 .map(ConcreteInterfaceAddress::getPrefix)
                 .collect(Collectors.toSet());
         for (Prefix prefix : allNetworkPrefixes) {
@@ -256,7 +256,7 @@ class VirtualEigrpProcess {
           EigrpMetric nextHopIntfMetric = nextHopIntf.getEigrp().getMetric();
           EigrpMetric connectingIntfMetric = connectingIntf.getEigrp().getMetric();
 
-          routeBuilder.setNextHopIp(nextHopIntf.getAddress().getIp());
+          routeBuilder.setNextHopIp(nextHopIntf.getConcreteAddress().getIp());
           while (queue.peek() != null) {
             RouteAdvertisement<EigrpExternalRoute> routeAdvert = queue.remove();
             EigrpExternalRoute neighborRoute = routeAdvert.getRoute();
@@ -327,7 +327,7 @@ class VirtualEigrpProcess {
     String neighborVrfName = neighborInterface.getVrfName();
     VirtualRouter neighborVirtualRouter = neighbor.getVirtualRouters().get(neighborVrfName);
     long asn = neighborInterface.getEigrp().getAsn();
-    Ip nextHopIp = neighborInterface.getAddress().getIp();
+    Ip nextHopIp = neighborInterface.getConcreteAddress().getIp();
     boolean changed = false;
     Set<EigrpInternalRoute> neighborRoutes =
         requireNonNull(neighborVirtualRouter.getEigrpProcess(asn))._internalRib.getTypedRoutes();

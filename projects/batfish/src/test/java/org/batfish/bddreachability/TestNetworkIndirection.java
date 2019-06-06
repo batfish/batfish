@@ -65,7 +65,9 @@ public final class TestNetworkIndirection {
                         .build()))
             .build();
 
-    ib.setAddress(ConcreteInterfaceAddress.create(LINK_NETWORK.getEndIp(), LINK_NETWORK.getPrefixLength()))
+    ib.setAddress(
+            ConcreteInterfaceAddress.create(
+                LINK_NETWORK.getEndIp(), LINK_NETWORK.getPrefixLength()))
         .setIncomingFilter(link1DstIngressAcl)
         .setOwner(_node)
         .setVrf(dstVrf)
@@ -78,7 +80,9 @@ public final class TestNetworkIndirection {
     _iface =
         ib.setOwner(_node)
             .setVrf(dstVrf)
-            .setAddress(ConcreteInterfaceAddress.create(IFACE_PREFIX.getStartIp(), IFACE_PREFIX.getPrefixLength()))
+            .setAddress(
+                ConcreteInterfaceAddress.create(
+                    IFACE_PREFIX.getStartIp(), IFACE_PREFIX.getPrefixLength()))
             .build();
 
     _configs = ImmutableSortedMap.of(_node.getHostname(), _node);

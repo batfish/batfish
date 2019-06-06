@@ -22,6 +22,7 @@ import org.batfish.datamodel.IkeKeyType;
 import org.batfish.datamodel.IkePhase1Key;
 import org.batfish.datamodel.IkePhase1Policy;
 import org.batfish.datamodel.IkePhase1Proposal;
+import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpsecPeerConfig;
 import org.batfish.datamodel.IpsecPhase2Policy;
@@ -300,12 +301,12 @@ public class VyosConfiguration extends VendorConfiguration {
     newIface.setActive(true); // TODO: may have to change
     newIface.setBandwidth(iface.getBandwidth());
     newIface.setDescription(iface.getDescription());
-    ConcreteInterfaceAddress address = iface.getAddress();
+    InterfaceAddress address = iface.getAddress();
     if (address != null) {
       newIface.setAddress(iface.getAddress());
     }
-    newIface.getAllAddresses().addAll(iface.getAllAddresses());
-    for (ConcreteInterfaceAddress p : newIface.getAllAddresses()) {
+    newIface.getAllConcreteAddresses().addAll(iface.getAllAddresses());
+    for (ConcreteInterfaceAddress p : newIface.getAllConcreteAddresses()) {
       _ipToInterfaceMap.put(p.getIp(), newIface);
     }
     return newIface;

@@ -75,14 +75,15 @@ public class IpSpaceSpecifierTest {
                     _c1.getHostname(),
                     ImmutableMap.of(
                         _i1.getName(),
-                        _i1.getAddress().getIp().toIpSpace(),
+                        _i1.getConcreteAddress().getIp().toIpSpace(),
                         _i2.getName(),
-                        _i2.getAddress().getIp().toIpSpace(),
+                        _i2.getConcreteAddress().getIp().toIpSpace(),
                         _i3.getName(),
                         EmptyIpSpace.INSTANCE)))
             .setSnapshotOwnedIps(
                 AclIpSpace.union(
-                    _i1.getAddress().getIp().toIpSpace(), _i2.getAddress().getIp().toIpSpace()))
+                    _i1.getConcreteAddress().getIp().toIpSpace(),
+                    _i2.getConcreteAddress().getIp().toIpSpace()))
             .build();
 
     _allLocations =

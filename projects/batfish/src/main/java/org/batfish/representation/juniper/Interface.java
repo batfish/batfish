@@ -12,6 +12,7 @@ import java.util.TreeMap;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
+import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IsoAddress;
 import org.batfish.datamodel.SubRange;
@@ -80,7 +81,7 @@ public class Interface implements Serializable {
   private OspfInterfaceType _ospfInterfaceType;
   private String _outgoingFilter;
   private Interface _parent;
-  private ConcreteInterfaceAddress _preferredAddress;
+  private InterfaceAddress _preferredAddress;
   private ConcreteInterfaceAddress _primaryAddress;
   @Nullable private String _redundantParentInterface;
   private String _routingInstance;
@@ -216,7 +217,7 @@ public class Interface implements Serializable {
     return _parent;
   }
 
-  public ConcreteInterfaceAddress getPreferredAddress() {
+  public InterfaceAddress getPreferredAddress() {
     return _preferredAddress;
   }
 
@@ -370,7 +371,7 @@ public class Interface implements Serializable {
     _parent = parent;
   }
 
-  public void setPreferredAddress(ConcreteInterfaceAddress address) {
+  public void setPreferredAddress(InterfaceAddress address) {
     _preferredAddress = address;
   }
 

@@ -103,7 +103,7 @@ public final class Interface extends ComparableStructure<String> {
 
     private IpAccessList _preTransformationOutgoingFilter;
 
-    private Set<ConcreteInterfaceAddress> _secondaryAddresses;
+    private Set<InterfaceAddress> _secondaryAddresses;
 
     private @Nullable Boolean _switchport;
 
@@ -134,7 +134,7 @@ public final class Interface extends ComparableStructure<String> {
       String name = _name != null ? _name : generateName();
       Interface iface =
           _type == null ? new Interface(name, _owner) : new Interface(name, _owner, _type);
-      ImmutableSet.Builder<ConcreteInterfaceAddress> allAddresses = ImmutableSet.builder();
+      ImmutableSet.Builder<InterfaceAddress> allAddresses = ImmutableSet.builder();
       if (_accessVlan != null) {
         iface.setAccessVlan(_accessVlan);
       }
@@ -217,8 +217,8 @@ public final class Interface extends ComparableStructure<String> {
 
     /**
      * Set the primary address of the interface. <br>
-     * The {@link Interface#getAllAddresses()} method of the built {@link Interface} will return a
-     * set containing the primary address and secondary addresses. <br>
+     * The {@link Interface#getAllConcreteAddresses()} method of the built {@link Interface} will
+     * return a set containing the primary address and secondary addresses. <br>
      * The node will accept traffic whose destination IP belongs is among any of the addresses of
      * any of the interfaces. The primary address is the one used by default as the source IP for
      * traffic sent out the interface. A secondary address is another address potentially associated
@@ -232,8 +232,8 @@ public final class Interface extends ComparableStructure<String> {
 
     /**
      * Set the primary address and secondary addresses of the interface. <br>
-     * The {@link Interface#getAllAddresses()} method of the built {@link Interface} will return a
-     * set containing the primary address and secondary addresses.<br>
+     * The {@link Interface#getAllConcreteAddresses()} method of the built {@link Interface} will
+     * return a set containing the primary address and secondary addresses.<br>
      * The node will accept traffic whose destination IP is among any of the addresses of any of the
      * interfaces. The primary address is the one used by default as the source IP for traffic sent
      * out the interface. A secondary address is another address potentially associated with a
@@ -241,14 +241,14 @@ public final class Interface extends ComparableStructure<String> {
      * any secondary IP.
      */
     public Builder setAddresses(
-        ConcreteInterfaceAddress primaryAddress, ConcreteInterfaceAddress... secondaryAddresses) {
+        ConcreteInterfaceAddress primaryAddress, InterfaceAddress... secondaryAddresses) {
       return setAddresses(primaryAddress, Arrays.asList(secondaryAddresses));
     }
 
     /**
      * Set the primary address and secondary addresses of the interface. <br>
-     * The {@link Interface#getAllAddresses()} method of the built {@link Interface} will return a
-     * set containing the primary address and secondary addresses.<br>
+     * The {@link Interface#getAllConcreteAddresses()} method of the built {@link Interface} will
+     * return a set containing the primary address and secondary addresses.<br>
      * The node will accept traffic whose destination IP belongs is among any of the addresses of
      * any of the interfaces. The primary address is the one used by default as the source IP for
      * traffic sent out the interface. A secondary address is another address potentially associated
@@ -256,7 +256,7 @@ public final class Interface extends ComparableStructure<String> {
      * primary or any secondary IP.
      */
     public Builder setAddresses(
-        ConcreteInterfaceAddress primaryAddress, Iterable<ConcreteInterfaceAddress> secondaryAddresses) {
+        ConcreteInterfaceAddress primaryAddress, Iterable<InterfaceAddress> secondaryAddresses) {
       _address = primaryAddress;
       _secondaryAddresses = ImmutableSet.copyOf(secondaryAddresses);
       return this;
@@ -422,15 +422,15 @@ public final class Interface extends ComparableStructure<String> {
 
     /**
      * Set the secondary addresses of the interface. <br>
-     * The {@link Interface#getAllAddresses()} method of the built {@link Interface} will return a
-     * set containing the primary address and secondary addresses.<br>
+     * The {@link Interface#getAllConcreteAddresses()} method of the built {@link Interface} will
+     * return a set containing the primary address and secondary addresses.<br>
      * The node will accept traffic whose destination IP belongs is among any of the addresses of
      * any of the interfaces. The primary address is the one used by default as the source IP for
      * traffic sent out the interface. A secondary address is another address potentially associated
      * with a different subnet living on the interface. The interface will reply to ARP for the
      * primary or any secondary IP.
      */
-    public Builder setSecondaryAddresses(Iterable<ConcreteInterfaceAddress> secondaryAddresses) {
+    public Builder setSecondaryAddresses(Iterable<InterfaceAddress> secondaryAddresses) {
       _secondaryAddresses = ImmutableSet.copyOf(secondaryAddresses);
       return this;
     }
@@ -798,7 +798,7 @@ public final class Interface extends ComparableStructure<String> {
 
   private IntegerSpace _allowedVlans;
 
-  private SortedSet<ConcreteInterfaceAddress> _allAddresses;
+  private SortedSet<InterfaceAddress> _allAddresses;
 
   private boolean _autoState;
 
@@ -875,7 +875,7 @@ public final class Interface extends ComparableStructure<String> {
 
   private Configuration _owner;
 
-  private ConcreteInterfaceAddress _address;
+  private InterfaceAddress _address;
 
   private IpAccessList _postTransformationIncomingFilter;
 
@@ -1078,9 +1078,20 @@ public final class Interface extends ComparableStructure<String> {
     return _allowedVlans;
   }
 
-  /** All IPV4 address/network assignments on this interface. */
+  /**
+   * All IPV4 address/network assignments on this interface.
+   *
+   * @return
+   */
   @JsonProperty(PROP_ALL_PREFIXES)
-  public Set<ConcreteInterfaceAddress> getAllAddresses() {
+  public Set<ConcreteInterfaceAddress> getAllConcreteAddresses() {
+    return _allAddresses.stream()
+        .filter(a -> a instanceof ConcreteInterfaceAddress)
+        .map(a -> (ConcreteInterfaceAddress) a)
+        .collect(ImmutableSet.toImmutableSet());
+  }
+
+  public Set<InterfaceAddress> getAllAddresses() {
     return _allAddresses;
   }
 
@@ -1361,8 +1372,17 @@ public final class Interface extends ComparableStructure<String> {
 
   /** The primary IPV4 address/network of this interface. */
   @JsonProperty(PROP_PREFIX)
-  public ConcreteInterfaceAddress getAddress() {
+  @Nullable
+  public InterfaceAddress getAddress() {
     return _address;
+  }
+
+  @JsonIgnore
+  @Nullable
+  public ConcreteInterfaceAddress getConcreteAddress() {
+    return _address instanceof ConcreteInterfaceAddress
+        ? (ConcreteInterfaceAddress) _address
+        : null;
   }
 
   @JsonIgnore
@@ -1397,7 +1417,10 @@ public final class Interface extends ComparableStructure<String> {
 
   @JsonIgnore
   public @Nullable Prefix getPrimaryNetwork() {
-    return _address != null ? _address.getPrefix() : null;
+    if (_address instanceof ConcreteInterfaceAddress) {
+      return ((ConcreteInterfaceAddress) _address).getPrefix();
+    }
+    return null;
   }
 
   /** Whether or not proxy-ARP is enabled on this interface. */
@@ -1521,7 +1544,7 @@ public final class Interface extends ComparableStructure<String> {
   }
 
   @JsonProperty(PROP_ALL_PREFIXES)
-  public void setAllAddresses(Iterable<ConcreteInterfaceAddress> allAddresses) {
+  public void setAllAddresses(Iterable<? extends InterfaceAddress> allAddresses) {
     _allAddresses = ImmutableSortedSet.copyOf(allAddresses);
   }
 
@@ -1750,7 +1773,7 @@ public final class Interface extends ComparableStructure<String> {
   }
 
   @JsonProperty(PROP_PREFIX)
-  public void setAddress(ConcreteInterfaceAddress address) {
+  public void setAddress(InterfaceAddress address) {
     _address = address;
   }
 

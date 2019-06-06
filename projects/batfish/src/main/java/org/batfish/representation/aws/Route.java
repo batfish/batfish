@@ -147,7 +147,9 @@ public class Route implements Serializable {
             // and instance containing network interface
             String subnetIfaceName = _target;
             Prefix instanceLink = awsConfiguration.getNextGeneratedLinkSubnet();
-            ConcreteInterfaceAddress subnetIfaceAddress = ConcreteInterfaceAddress.create(instanceLink.getStartIp(), instanceLink.getPrefixLength());
+            ConcreteInterfaceAddress subnetIfaceAddress =
+                ConcreteInterfaceAddress.create(
+                    instanceLink.getStartIp(), instanceLink.getPrefixLength());
             Utils.newInterface(subnetIfaceName, subnetCfgNode, subnetIfaceAddress);
 
             // set up instance interface
@@ -155,7 +157,9 @@ public class Route implements Serializable {
             String instanceIfaceName = subnet.getId();
             Configuration instanceCfgNode =
                 awsConfiguration.getConfigurationNodes().get(instanceId);
-            ConcreteInterfaceAddress instanceIfaceAddress = ConcreteInterfaceAddress.create(instanceLink.getEndIp(), instanceLink.getPrefixLength());
+            ConcreteInterfaceAddress instanceIfaceAddress =
+                ConcreteInterfaceAddress.create(
+                    instanceLink.getEndIp(), instanceLink.getPrefixLength());
             Interface instanceIface =
                 Utils.newInterface(instanceIfaceName, instanceCfgNode, instanceIfaceAddress);
             instanceIface.setIncomingFilter(
@@ -210,11 +214,15 @@ public class Route implements Serializable {
             // create prefix on which subnet and remote vpc router will
             // connect
             Prefix peeringLink = awsConfiguration.getNextGeneratedLinkSubnet();
-            ConcreteInterfaceAddress subnetIfaceAddress = ConcreteInterfaceAddress.create(peeringLink.getStartIp(), peeringLink.getPrefixLength());
+            ConcreteInterfaceAddress subnetIfaceAddress =
+                ConcreteInterfaceAddress.create(
+                    peeringLink.getStartIp(), peeringLink.getPrefixLength());
             Utils.newInterface(subnetIfaceName, subnetCfgNode, subnetIfaceAddress);
 
             // set up remote vpc router interface
-            ConcreteInterfaceAddress remoteVpcIfaceAddress = ConcreteInterfaceAddress.create(peeringLink.getEndIp(), peeringLink.getPrefixLength());
+            ConcreteInterfaceAddress remoteVpcIfaceAddress =
+                ConcreteInterfaceAddress.create(
+                    peeringLink.getEndIp(), peeringLink.getPrefixLength());
             Interface remoteVpcIface = new Interface(remoteVpcIfaceName, remoteVpcCfgNode);
             remoteVpcCfgNode.getAllInterfaces().put(remoteVpcIfaceName, remoteVpcIface);
             remoteVpcCfgNode
@@ -222,7 +230,7 @@ public class Route implements Serializable {
                 .getInterfaces()
                 .put(remoteVpcIfaceName, remoteVpcIface);
             remoteVpcIface.setAddress(remoteVpcIfaceAddress);
-            remoteVpcIface.getAllAddresses().add(remoteVpcIfaceAddress);
+            remoteVpcIface.getAllConcreteAddresses().add(remoteVpcIfaceAddress);
           }
           // interface pair exists now, so just retrieve existing information
           remoteVpcIfaceIp =
@@ -230,7 +238,7 @@ public class Route implements Serializable {
                   .getDefaultVrf()
                   .getInterfaces()
                   .get(remoteVpcIfaceName)
-                  .getAddress()
+                  .getConcreteAddress()
                   .getIp();
 
           // initialize static route on new link

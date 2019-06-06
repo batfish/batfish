@@ -42,13 +42,16 @@ public class InternetGateway implements AwsVpcEntity, Serializable {
 
       String igwIfaceName = vpcId;
       Prefix igwAddresses = awsConfiguration.getNextGeneratedLinkSubnet();
-      ConcreteInterfaceAddress igwIfaceAddress = ConcreteInterfaceAddress.create(igwAddresses.getStartIp(), igwAddresses.getPrefixLength());
+      ConcreteInterfaceAddress igwIfaceAddress =
+          ConcreteInterfaceAddress.create(
+              igwAddresses.getStartIp(), igwAddresses.getPrefixLength());
       Utils.newInterface(igwIfaceName, cfgNode, igwIfaceAddress);
 
       // add the interface to the vpc router
       Configuration vpcConfigNode = awsConfiguration.getConfigurationNodes().get(vpcId);
       String vpcIfaceName = _internetGatewayId;
-      ConcreteInterfaceAddress vpcIfaceAddress = ConcreteInterfaceAddress.create(igwAddresses.getEndIp(), igwAddresses.getPrefixLength());
+      ConcreteInterfaceAddress vpcIfaceAddress =
+          ConcreteInterfaceAddress.create(igwAddresses.getEndIp(), igwAddresses.getPrefixLength());
       Utils.newInterface(vpcIfaceName, vpcConfigNode, vpcIfaceAddress);
 
       // associate this gateway with the vpc

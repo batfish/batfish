@@ -676,7 +676,7 @@ class EncoderSlice {
                       .contains(e);
 
               Interface i = e.getStart();
-              Prefix p = i.getAddress().getPrefix();
+              Prefix p = i.getConcreteAddress().getPrefix();
 
               boolean doModel = !(proto.isConnected() && !relevantPrefix(p));
               // PolicyQuotient: Don't model the connected interfaces that aren't relevant
@@ -1587,11 +1587,11 @@ class EncoderSlice {
           GraphEdge other = getGraph().getOtherEnd().get(ge);
           BoolExpr connectedWillSend;
           if (other == null || getGraph().isHost(ge.getPeer())) {
-            Ip ip = ge.getStart().getAddress().getIp();
+            Ip ip = ge.getStart().getConcreteAddress().getIp();
             BitVecExpr val = getCtx().mkBV(ip.asLong(), 32);
             connectedWillSend = mkNot(mkEq(_symbolicPacket.getDstIp(), val));
           } else {
-            Ip ip = other.getStart().getAddress().getIp();
+            Ip ip = other.getStart().getConcreteAddress().getIp();
             BitVecExpr val = getCtx().mkBV(ip.asLong(), 32);
             connectedWillSend = mkEq(_symbolicPacket.getDstIp(), val);
           }
@@ -1775,7 +1775,7 @@ class EncoderSlice {
     if (vars.getIsUsed()) {
 
       if (proto.isConnected()) {
-        Prefix p = iface.getAddress().getPrefix();
+        Prefix p = iface.getConcreteAddress().getPrefix();
         BoolExpr relevant =
             mkAnd(
                 interfaceActive(iface, proto),

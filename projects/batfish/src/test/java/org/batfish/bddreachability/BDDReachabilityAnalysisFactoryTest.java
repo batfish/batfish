@@ -1275,7 +1275,7 @@ public final class BDDReachabilityAnalysisFactoryTest {
         new BDDReachabilityAnalysisFactory(
             PKT, configurations, batfish.loadDataPlane().getForwardingAnalysis(), false, false);
 
-    Ip dstIp = iface.getAddress().getPrefix().getLastHostIp();
+    Ip dstIp = iface.getConcreteAddress().getPrefix().getLastHostIp();
     BDDReachabilityAnalysis analysis =
         factory.bddReachabilityAnalysis(
             IpSpaceAssignment.builder()

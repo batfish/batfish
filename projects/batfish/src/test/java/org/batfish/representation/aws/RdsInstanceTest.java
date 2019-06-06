@@ -119,7 +119,7 @@ public class RdsInstanceTest {
             .map(Configuration::getAllInterfaces)
             .map(Map::values)
             .flatMap(Collection::stream)
-            .map(Interface::getAllAddresses)
+            .map(Interface::getAllConcreteAddresses)
             .flatMap(Collection::stream)
             .map(ConcreteInterfaceAddress::getIp)
             .collect(ImmutableList.toImmutableList());

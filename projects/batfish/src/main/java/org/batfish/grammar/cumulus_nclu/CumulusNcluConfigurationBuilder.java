@@ -26,6 +26,7 @@ import org.batfish.common.Warnings.ParseWarning;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.IntegerSpace;
+import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Ip6;
 import org.batfish.datamodel.LineAction;
@@ -1063,14 +1064,14 @@ public class CumulusNcluConfigurationBuilder extends CumulusNcluParserBaseListen
 
   @Override
   public void exitV_ip_address(V_ip_addressContext ctx) {
-    ConcreteInterfaceAddress address = toInterfaceAddress(ctx.address);
+    InterfaceAddress address = toInterfaceAddress(ctx.address);
     _currentVlans.forEach(vlan -> vlan.getAddresses().add(address));
   }
 
   @Override
   public void exitV_ip_address_virtual(V_ip_address_virtualContext ctx) {
     MacAddress macAddress = toMacAddress(ctx.mac);
-    ConcreteInterfaceAddress address = toInterfaceAddress(ctx.address);
+    InterfaceAddress address = toInterfaceAddress(ctx.address);
     _currentVlans.forEach(
         vlan ->
             vlan.getAddressVirtuals()

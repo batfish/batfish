@@ -481,9 +481,9 @@ class AbstractionBuilder {
       if (leavesNetwork
           || (abstractRouters.contains(ge.getRouter()) && abstractRouters.contains(ge.getPeer()))) {
         toRetain.add(ge.getStart());
-        Ip start = ge.getStart().getAddress().getIp();
+        Ip start = ge.getStart().getConcreteAddress().getIp();
         if (!leavesNetwork) {
-          Ip end = ge.getEnd().getAddress().getIp();
+          Ip end = ge.getEnd().getConcreteAddress().getIp();
           ipNeighbors.add(new IpLink(start, end));
         }
         BgpActivePeerConfig n = _graph.getEbgpNeighbors().get(ge);

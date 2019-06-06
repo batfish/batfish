@@ -8,7 +8,7 @@ import java.util.Map;
 import java.util.Set;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import org.batfish.datamodel.ConcreteInterfaceAddress;
+import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.MacAddress;
 
 /** Layer-3 integrated routing and bridging VLAN interface */
@@ -16,8 +16,8 @@ public class Vlan implements Serializable {
 
   private static final long serialVersionUID = 1L;
 
-  private final @Nonnull List<ConcreteInterfaceAddress> _addresses;
-  private final @Nonnull Map<MacAddress, Set<ConcreteInterfaceAddress>> _addressVirtuals;
+  private final @Nonnull List<InterfaceAddress> _addresses;
+  private final @Nonnull Map<MacAddress, Set<InterfaceAddress>> _addressVirtuals;
   private final @Nonnull String _name;
   private @Nullable Integer _vlanId;
   private @Nullable String _vrf;
@@ -28,11 +28,11 @@ public class Vlan implements Serializable {
     _addressVirtuals = new HashMap<>();
   }
 
-  public @Nonnull List<ConcreteInterfaceAddress> getAddresses() {
+  public @Nonnull List<InterfaceAddress> getAddresses() {
     return _addresses;
   }
 
-  public @Nonnull Map<MacAddress, Set<ConcreteInterfaceAddress>> getAddressVirtuals() {
+  public @Nonnull Map<MacAddress, Set<InterfaceAddress>> getAddressVirtuals() {
     return _addressVirtuals;
   }
 

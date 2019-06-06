@@ -48,7 +48,7 @@ public final class PsFromInterface extends PsFrom {
                 DestinationNetwork.instance(),
                 new ExplicitPrefixSet(
                     new PrefixSpace(
-                        c.getAllInterfaces().get(_name).getAllAddresses().stream()
+                        c.getAllInterfaces().get(_name).getAllConcreteAddresses().stream()
                             .map(ConcreteInterfaceAddress::getPrefix)
                             .map(PrefixRange::fromPrefix)
                             .collect(ImmutableSet.toImmutableSet()))))));

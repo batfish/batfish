@@ -544,7 +544,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
         // peer
         outerloop:
         for (org.batfish.datamodel.Interface iface : vrf.getInterfaces().values()) {
-          for (ConcreteInterfaceAddress address : iface.getAllAddresses()) {
+          for (ConcreteInterfaceAddress address : iface.getAllConcreteAddresses()) {
             if (address.getPrefix().containsPrefix(prefix)) {
               localIp = address.getIp();
               break outerloop;
@@ -1049,7 +1049,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
     if (ospfArea == null) {
       return;
     }
-    if (newIface.getAddress() == null) {
+    if (newIface.getConcreteAddress() == null) {
       _w.redFlag(
           String.format(
               "Cannot assign interface %s to area %s because it has no IP address.",

@@ -440,7 +440,7 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
   @VisibleForTesting
   static IpSpace computeIpsAssignedToThisInterface(
       Interface iface, Map<String, Map<String, Set<Ip>>> interfaceOwnedIps) {
-    if (iface.getAllAddresses().isEmpty()) {
+    if (iface.getAllConcreteAddresses().isEmpty()) {
       return EmptyIpSpace.INSTANCE;
     }
 
