@@ -21,6 +21,7 @@ import static org.batfish.representation.palo_alto.PaloAltoStructureType.SERVICE
 import static org.batfish.representation.palo_alto.PaloAltoStructureType.SERVICE_OR_SERVICE_GROUP;
 import static org.batfish.representation.palo_alto.PaloAltoStructureType.SERVICE_OR_SERVICE_GROUP_OR_NONE;
 import static org.batfish.representation.palo_alto.PaloAltoStructureType.SHARED_GATEWAY;
+import static org.batfish.representation.palo_alto.PaloAltoStructureType.VIRTUAL_ROUTER;
 import static org.batfish.representation.palo_alto.PaloAltoStructureType.ZONE;
 import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.ADDRESS_GROUP_STATIC;
 import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.APPLICATION_GROUP_MEMBERS;
@@ -34,6 +35,7 @@ import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.RULE_S
 import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.RULE_TO_ZONE;
 import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.SERVICE_GROUP_MEMBER;
 import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.STATIC_ROUTE_INTERFACE;
+import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.STATIC_ROUTE_NEXT_VR;
 import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.VIRTUAL_ROUTER_INTERFACE;
 import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.VSYS_IMPORT_INTERFACE;
 import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.ZONE_INTERFACE;
@@ -135,7 +137,8 @@ import org.batfish.grammar.palo_alto.PaloAltoParser.Snvrrt_admin_distContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Snvrrt_destinationContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Snvrrt_interfaceContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Snvrrt_metricContext;
-import org.batfish.grammar.palo_alto.PaloAltoParser.Snvrrt_nexthopContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Snvrrtn_ipContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Snvrrtn_next_vrContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Src_or_dst_list_itemContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Srs_actionContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Srs_applicationContext;
@@ -1077,8 +1080,16 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
   }
 
   @Override
-  public void exitSnvrrt_nexthop(Snvrrt_nexthopContext ctx) {
+  public void exitSnvrrtn_ip(Snvrrtn_ipContext ctx) {
     _currentStaticRoute.setNextHopIp(Ip.parse(getText(ctx.address)));
+  }
+
+  @Override
+  public void exitSnvrrtn_next_vr(Snvrrtn_next_vrContext ctx) {
+    String name = getText(ctx.name);
+    _currentStaticRoute.setNextVr(name);
+    _configuration.referenceStructure(
+        VIRTUAL_ROUTER, name, STATIC_ROUTE_NEXT_VR, getLine(ctx.name.start));
   }
 
   @Override

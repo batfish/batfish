@@ -301,5 +301,19 @@ snvrrt_metric
 
 snvrrt_nexthop
 :
-    NEXTHOP IP_ADDRESS_LITERAL address = IP_ADDRESS
+  NEXTHOP
+  (
+    snvrrtn_ip
+    | snvrrtn_next_vr
+  )
+;
+
+snvrrtn_ip
+:
+  IP_ADDRESS_LITERAL address = IP_ADDRESS
+;
+
+snvrrtn_next_vr
+:
+  NEXT_VR name = variable
 ;

@@ -59,6 +59,7 @@ import static org.hamcrest.Matchers.hasKey;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.nullValue;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableList;
@@ -107,6 +108,7 @@ import org.batfish.representation.palo_alto.PaloAltoConfiguration;
 import org.batfish.representation.palo_alto.PaloAltoStructureType;
 import org.batfish.representation.palo_alto.PaloAltoStructureUsage;
 import org.batfish.representation.palo_alto.ServiceBuiltIn;
+import org.batfish.representation.palo_alto.StaticRoute;
 import org.batfish.representation.palo_alto.Vsys;
 import org.batfish.representation.palo_alto.Zone;
 import org.junit.Ignore;
@@ -936,6 +938,24 @@ public class PaloAltoGrammarTest {
     String filename = "configs/" + hostname;
     assertThat(
         ccae, hasUndefinedReference(filename, INTERFACE, "ethernet1/1", STATIC_ROUTE_INTERFACE));
+    assertThat(
+        ccae, hasUndefinedReference(filename, PaloAltoStructureType.VIRTUAL_ROUTER, "fakevr"));
+  }
+
+  @Test
+  public void testStaticRouteExtraction() throws IOException {
+    String hostname = "static-route";
+    PaloAltoConfiguration vc = parsePaloAltoConfig(hostname);
+    String vrName = "vr2";
+
+    assertThat(vc.getVirtualRouters(), hasKey(vrName));
+
+    assertThat(vc.getVirtualRouters().get(vrName).getStaticRoutes(), hasKey("ROUTE2"));
+
+    StaticRoute sr = vc.getVirtualRouters().get(vrName).getStaticRoutes().get("ROUTE2");
+
+    assertEquals(sr.getDestination(), Prefix.ZERO);
+    assertEquals(sr.getNextVr(), "fakevr");
   }
 
   @Test

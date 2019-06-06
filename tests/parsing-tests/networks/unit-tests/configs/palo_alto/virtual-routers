@@ -1,0 +1,4 @@
+!RANCID-CONTENT-TYPE: paloalto
+set deviceconfig system hostname palo_alto_virtual_routers
+set network virtual-router vr1 routing-table ip static-route sr1 destination 0.0.0.0/0
+set network virtual-router vr1 routing-table ip static-route sr1 nexthop next-vr vr2

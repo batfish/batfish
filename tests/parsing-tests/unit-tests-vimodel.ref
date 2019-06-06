@@ -29701,6 +29701,30 @@
           }
         }
       },
+      "palo_alto_virtual_routers" : {
+        "configurationFormat" : "PALO_ALTO",
+        "name" : "palo_alto_virtual_routers",
+        "defaultCrossZoneAction" : "DENY",
+        "defaultInboundAction" : "PERMIT",
+        "deviceType" : "SWITCH",
+        "vendorFamily" : { },
+        "vrfs" : {
+          "vr1" : {
+            "name" : "vr1",
+            "staticRoutes" : [
+              {
+                "class" : "org.batfish.datamodel.StaticRoute",
+                "administrativeCost" : 10,
+                "metric" : 10,
+                "network" : "0.0.0.0/0",
+                "nextHopInterface" : "dynamic",
+                "nextHopIp" : "AUTO/NONE(-1l)",
+                "tag" : -1
+              }
+            ]
+          }
+        }
+      },
       "paloalto_applications" : {
         "configurationFormat" : "PALO_ALTO_NESTED",
         "name" : "paloalto_applications",

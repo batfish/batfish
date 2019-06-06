@@ -451,6 +451,11 @@ NETWORK
     'network'
 ;
 
+NEXT_VR
+:
+  'next-vr'
+;
+
 NEXTHOP
 :
     'nexthop'
