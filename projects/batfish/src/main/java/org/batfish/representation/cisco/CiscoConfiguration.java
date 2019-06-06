@@ -2187,17 +2187,22 @@ public final class CiscoConfiguration extends VendorConfiguration {
     // switch settings
     newIface.setAccessVlan(iface.getAccessVlan());
 
-    if (iface.getSwitchportMode() == SwitchportMode.TRUNK) {
-      newIface.setNativeVlan(firstNonNull(iface.getNativeVlan(), 1));
-    }
-
     newIface.setSwitchportMode(iface.getSwitchportMode());
     SwitchportEncapsulationType encapsulation = iface.getSwitchportTrunkEncapsulation();
     if (encapsulation == null) { // no encapsulation set, so use default..
       // TODO: check if this is OK
       encapsulation = SwitchportEncapsulationType.DOT1Q;
+    } else if (newIface.getSwitchportMode() != SwitchportMode.TRUNK
+        && ImmutableSet.of(SwitchportEncapsulationType.DOT1Q, SwitchportEncapsulationType.ISL)
+            .contains(encapsulation)) { // if newIface is not already in TRUNK mode but has a trunk
+      // encapsulation type, set to trunk
+      newIface.setSwitchportMode(SwitchportMode.TRUNK);
     }
     newIface.setSwitchportTrunkEncapsulation(encapsulation);
+
+    if (newIface.getSwitchportMode() == SwitchportMode.TRUNK) {
+      newIface.setNativeVlan(firstNonNull(iface.getNativeVlan(), 1));
+    }
     if (iface.getSwitchportMode() == SwitchportMode.TRUNK) {
       /*
        * Compute allowed VLANs:
