@@ -34,7 +34,7 @@ public final class Interface implements Serializable {
   @Nonnull private final String _name;
   @Nullable private Interface _parent;
   @Nullable private Integer _tag;
-  @Nonnull private Type _type;
+  @Nonnull private final Type _type;
   @Nonnull private final SortedMap<String, Interface> _units;
   @Nullable private Zone _zone;
 
@@ -123,10 +123,6 @@ public final class Interface implements Serializable {
 
   public void setTag(@Nullable Integer tag) {
     _tag = tag;
-  }
-
-  public void setType(Type type) {
-    _type = type;
   }
 
   public void setZone(@Nullable Zone zone) {
