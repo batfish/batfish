@@ -570,11 +570,30 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
     }
   }
 
+  private static InterfaceType batfishInterfaceType(@Nonnull Interface.Type panType, Warnings w) {
+    switch (panType) {
+      case PHYSICAL:
+        return InterfaceType.PHYSICAL;
+      case LAYER2:
+      case LAYER3:
+        return InterfaceType.LOGICAL;
+      case LOOPBACK:
+        return InterfaceType.LOOPBACK;
+      case TUNNEL:
+        return InterfaceType.TUNNEL;
+      case VLAN:
+        return InterfaceType.VLAN;
+      default:
+        w.unimplemented("Unknown Palo Alto interface type " + panType);
+        return InterfaceType.UNKNOWN;
+    }
+  }
+
   /** Convert Palo Alto specific interface into vendor independent model interface */
   private org.batfish.datamodel.Interface toInterface(Interface iface) {
     String name = iface.getName();
     org.batfish.datamodel.Interface newIface =
-        new org.batfish.datamodel.Interface(name, _c, InterfaceType.PHYSICAL);
+        new org.batfish.datamodel.Interface(name, _c, batfishInterfaceType(iface.getType(), _w));
     Integer mtu = iface.getMtu();
     if (mtu != null) {
       newIface.setMtu(mtu);

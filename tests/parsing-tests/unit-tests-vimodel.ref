@@ -29786,7 +29786,7 @@
             "switchport" : false,
             "switchportMode" : "NONE",
             "switchportTrunkEncapsulation" : "DOT1Q",
-            "type" : "PHYSICAL",
+            "type" : "LOGICAL",
             "vlan" : 4,
             "vrf" : "~NULL_VRF~"
           },
@@ -29812,7 +29812,7 @@
             "switchport" : false,
             "switchportMode" : "NONE",
             "switchportTrunkEncapsulation" : "DOT1Q",
-            "type" : "PHYSICAL",
+            "type" : "LOGICAL",
             "vlan" : 5,
             "vrf" : "~NULL_VRF~"
           },
@@ -29838,7 +29838,31 @@
             "switchport" : false,
             "switchportMode" : "NONE",
             "switchportTrunkEncapsulation" : "DOT1Q",
-            "type" : "PHYSICAL",
+            "type" : "LOOPBACK",
+            "vrf" : "~NULL_VRF~"
+          },
+          "loopback.1" : {
+            "name" : "loopback.1",
+            "active" : false,
+            "additionalArpIps" : {
+              "class" : "org.batfish.datamodel.EmptyIpSpace"
+            },
+            "allowedVlans" : "",
+            "autostate" : true,
+            "mtu" : 1500,
+            "ospfDeadInterval" : 0,
+            "ospfEnabled" : false,
+            "ospfHelloMultiplier" : 0,
+            "ospfPassive" : false,
+            "ospfPointToPoint" : false,
+            "proxyArp" : false,
+            "ripEnabled" : false,
+            "ripPassive" : false,
+            "spanningTreePortfast" : false,
+            "switchport" : false,
+            "switchportMode" : "NONE",
+            "switchportTrunkEncapsulation" : "DOT1Q",
+            "type" : "LOOPBACK",
             "vrf" : "~NULL_VRF~"
           },
           "tunnel" : {
@@ -29862,7 +29886,7 @@
             "switchport" : false,
             "switchportMode" : "NONE",
             "switchportTrunkEncapsulation" : "DOT1Q",
-            "type" : "PHYSICAL",
+            "type" : "TUNNEL",
             "vrf" : "~NULL_VRF~"
           },
           "tunnel.3" : {
@@ -29887,7 +29911,7 @@
             "switchport" : false,
             "switchportMode" : "NONE",
             "switchportTrunkEncapsulation" : "DOT1Q",
-            "type" : "PHYSICAL",
+            "type" : "TUNNEL",
             "vrf" : "~NULL_VRF~"
           },
           "vlan" : {
@@ -29912,7 +29936,31 @@
             "switchport" : false,
             "switchportMode" : "NONE",
             "switchportTrunkEncapsulation" : "DOT1Q",
-            "type" : "PHYSICAL",
+            "type" : "VLAN",
+            "vrf" : "~NULL_VRF~"
+          },
+          "vlan.1" : {
+            "name" : "vlan.1",
+            "active" : false,
+            "additionalArpIps" : {
+              "class" : "org.batfish.datamodel.EmptyIpSpace"
+            },
+            "allowedVlans" : "",
+            "autostate" : true,
+            "mtu" : 1500,
+            "ospfDeadInterval" : 0,
+            "ospfEnabled" : false,
+            "ospfHelloMultiplier" : 0,
+            "ospfPassive" : false,
+            "ospfPointToPoint" : false,
+            "proxyArp" : false,
+            "ripEnabled" : false,
+            "ripPassive" : false,
+            "spanningTreePortfast" : false,
+            "switchport" : false,
+            "switchportMode" : "NONE",
+            "switchportTrunkEncapsulation" : "DOT1Q",
+            "type" : "VLAN",
             "vrf" : "~NULL_VRF~"
           }
         },
@@ -29925,9 +29973,11 @@
               "ethernet1/1.4",
               "ethernet1/1.5",
               "loopback",
+              "loopback.1",
               "tunnel",
               "tunnel.3",
-              "vlan"
+              "vlan",
+              "vlan.1"
             ]
           }
         }
