@@ -6,6 +6,7 @@ set network virtual-router vr1 interface ethernet1/2
 set vsys vsys1 import network interface ethernet1/1
 set vsys vsys1 import visible-vsys vsys2
 set vsys vsys1 zone zin network layer3 ethernet1/1
+! external zone is misconfigured because it is missing 'vsys2' at end
 set vsys vsys1 zone vsys1-vsys2 network external
 set vsys vsys2 import network interface ethernet1/2
 set vsys vsys2 import visible-vsys vsys1

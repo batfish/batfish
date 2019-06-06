@@ -56,8 +56,6 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.hasItems;
 import static org.hamcrest.Matchers.hasKey;
-import static org.hamcrest.Matchers.hasSize;
-import static org.hamcrest.Matchers.in;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.nullValue;
@@ -67,26 +65,21 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import java.io.IOException;
 import java.util.Arrays;
-import java.util.List;
 import java.util.Map;
 import java.util.SortedMap;
-import javax.annotation.Nonnull;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.batfish.common.BatfishException;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.Warnings;
-import org.batfish.common.plugin.TracerouteEngine;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.config.Settings;
 import org.batfish.datamodel.AclIpSpace;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
-import org.batfish.datamodel.DataPlane;
 import org.batfish.datamodel.DiffieHellmanGroup;
 import org.batfish.datamodel.EmptyIpSpace;
 import org.batfish.datamodel.EncryptionAlgorithm;
 import org.batfish.datamodel.Flow;
-import org.batfish.datamodel.FlowDisposition;
 import org.batfish.datamodel.IkeHashingAlgorithm;
 import org.batfish.datamodel.Interface.Dependency;
 import org.batfish.datamodel.InterfaceAddress;
@@ -96,12 +89,9 @@ import org.batfish.datamodel.IpAccessListLine;
 import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.IpRange;
 import org.batfish.datamodel.IpsecAuthenticationAlgorithm;
-import org.batfish.datamodel.NamedPort;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
-import org.batfish.datamodel.flow.TraceAndReverseFlow;
 import org.batfish.datamodel.matchers.InterfaceMatchers;
-import org.batfish.dataplane.TracerouteEngineImpl;
 import org.batfish.grammar.VendorConfigurationFormatDetector;
 import org.batfish.grammar.flattener.Flattener;
 import org.batfish.grammar.flattener.FlattenerLineMap;
@@ -126,7 +116,6 @@ import org.junit.rules.ExpectedException;
 import org.junit.rules.TemporaryFolder;
 
 public class PaloAltoGrammarTest {
-  private static final Ip BIDIR_DEFAULT_DST_IP = Ip.parse("10.0.2.2");
   private static final String TESTCONFIGS_PREFIX = "org/batfish/grammar/palo_alto/testconfigs/";
 
   @Rule public TemporaryFolder _folder = new TemporaryFolder();
@@ -1424,289 +1413,4 @@ public class PaloAltoGrammarTest {
     assertThat(c, hasInterface("ethernet1/3", hasZoneName(is(nullValue()))));
   }
 
-  private @Nonnull Flow bidirForwardFlow(String hostname, Ip dstIp) {
-    return Flow.builder()
-        .setIpProtocol(IpProtocol.TCP)
-        .setTcpFlagsSyn(1)
-        .setTag("ignored")
-        .setIngressNode(hostname)
-        .setIngressVrf("vr1")
-        .setSrcIp(Ip.parse("10.0.1.2"))
-        .setDstIp(dstIp)
-        .setSrcPort(NamedPort.EPHEMERAL_LOWEST.number())
-        .setDstPort(NamedPort.SSH.number())
-        .build();
-  }
-
-  private @Nonnull TracerouteEngine bidirTracerouteEngine(String hostname) throws IOException {
-    Batfish batfish = getBatfishForConfigurationNames(hostname);
-    batfish.computeDataPlane();
-    DataPlane dp = batfish.loadDataPlane();
-    return new TracerouteEngineImpl(
-        dp, batfish.getTopologyProvider().getLayer3Topology(batfish.getNetworkSnapshot()));
-  }
-
-  private void assertForwardDropped(String hostname) throws IOException {
-    assertForwardDropped(hostname, BIDIR_DEFAULT_DST_IP);
-  }
-
-  private void assertForwardDropped(String hostname, Ip dstIp) throws IOException {
-    assertForwardDropped(bidirTracerouteEngine(hostname), bidirForwardFlow(hostname, dstIp));
-  }
-
-  private void assertForwardDropped(TracerouteEngine tracerouteEngine, Flow forwardFlow) {
-    List<TraceAndReverseFlow> forwardTracesAndReverseFlows =
-        tracerouteEngine
-            .computeTracesAndReverseFlows(ImmutableSet.of(forwardFlow), false)
-            .get(forwardFlow);
-
-    assertThat(forwardTracesAndReverseFlows, hasSize(1));
-    assertThat(
-        forwardTracesAndReverseFlows.iterator().next().getTrace().getDisposition(),
-        in(FlowDisposition.FAILURE_DISPOSITIONS));
-  }
-
-  private void assertBidirAccepted(String hostname) throws IOException {
-    assertBidirAccepted(hostname, BIDIR_DEFAULT_DST_IP);
-  }
-
-  private void assertBidirAccepted(String hostname, Ip dstIp) throws IOException {
-    assertBidirAccepted(bidirTracerouteEngine(hostname), bidirForwardFlow(hostname, dstIp));
-  }
-
-  private void assertBidirAccepted(TracerouteEngine tracerouteEngine, Flow forwardFlow) {
-    List<TraceAndReverseFlow> forwardTraces =
-        tracerouteEngine
-            .computeTracesAndReverseFlows(ImmutableSet.of(forwardFlow), false)
-            .get(forwardFlow);
-
-    assertThat(forwardTraces, hasSize(1));
-
-    TraceAndReverseFlow forwardTrace = forwardTraces.iterator().next();
-
-    assertThat(
-        forwardTrace.getTrace().getDisposition(), equalTo(FlowDisposition.DELIVERED_TO_SUBNET));
-
-    Flow reverseFlow = forwardTrace.getReverseFlow();
-
-    List<TraceAndReverseFlow> reverseTraces =
-        tracerouteEngine
-            .computeTracesAndReverseFlows(ImmutableSet.of(reverseFlow), false)
-            .get(reverseFlow);
-
-    assertThat(reverseTraces, hasSize(1));
-    assertThat(
-        reverseTraces.iterator().next().getTrace().getDisposition(),
-        equalTo(FlowDisposition.DELIVERED_TO_SUBNET));
-  }
-
-  @Ignore
-  @Test
-  public void testDropMissingVsys() throws IOException {
-    String hostname = "drop-missing-vsys";
-
-    assertForwardDropped(hostname);
-  }
-
-  @Test
-  public void testAllowSameZoneNoRules() throws IOException {
-    String hostname = "allow-same-zone-no-rules";
-
-    assertBidirAccepted(hostname);
-  }
-
-  @Test
-  public void testAllowSameZoneNoMatchingRules() throws IOException {
-    String hostname = "allow-same-zone-no-matching-rules";
-
-    assertBidirAccepted(hostname);
-  }
-
-  @Ignore
-  @Test
-  public void testDropSameZoneExplicit() throws IOException {
-    String hostname = "drop-same-zone-explicit";
-
-    assertForwardDropped(hostname);
-  }
-
-  @Ignore
-  @Test
-  public void testDropDefaultCrossZone() throws IOException {
-    String hostname = "drop-default-cross-zone";
-
-    assertForwardDropped(hostname);
-  }
-
-  @Test
-  public void testAllowExplicitCrossZone() throws IOException {
-    String hostname = "allow-explicit-cross-zone";
-
-    assertBidirAccepted(hostname);
-  }
-
-  @Ignore
-  @Test
-  public void testDropInterVsysImplicit() throws IOException {
-    String hostname = "drop-inter-vsys-implicit";
-
-    assertForwardDropped(hostname);
-  }
-
-  @Ignore
-  @Test
-  public void testDropInterVsysMissingExternalEgress() throws IOException {
-    String hostname = "drop-inter-vsys-missing-external-egress";
-
-    assertForwardDropped(hostname);
-  }
-
-  @Ignore
-  @Test
-  public void testDropInterVsysMissingExternalIngress() throws IOException {
-    String hostname = "drop-inter-vsys-missing-external-ingress";
-
-    assertForwardDropped(hostname);
-  }
-
-  @Ignore
-  @Test
-  public void testDropInterVsysMisconfiguredExternalEgress() throws IOException {
-    String hostname = "drop-inter-vsys-misconfigured-external-egress";
-
-    assertForwardDropped(hostname);
-  }
-
-  @Ignore
-  @Test
-  public void testDropInterVsysMisconfiguredExternalIngress() throws IOException {
-    String hostname = "drop-inter-vsys-misconfigured-external-ingress";
-
-    assertForwardDropped(hostname);
-  }
-
-  @Test
-  public void testAllowInterVsys() throws IOException {
-    String hostname = "allow-inter-vsys";
-
-    assertBidirAccepted(hostname);
-  }
-
-  @Ignore
-  @Test
-  public void testDropVsysToSgMissingExternal() throws IOException {
-    String hostname = "drop-vsys-to-sg-missing-external";
-
-    assertForwardDropped(hostname);
-  }
-
-  @Ignore
-  @Test
-  public void testDropVsysToSgMisconfiguredExternal() throws IOException {
-    String hostname = "drop-vsys-to-sg-misconfigured-external";
-
-    assertForwardDropped(hostname);
-  }
-
-  @Test
-  public void testAllowVsysToSg() throws IOException {
-    String hostname = "allow-vsys-to-sg";
-
-    assertBidirAccepted(hostname);
-  }
-
-  @Ignore
-  @Test
-  public void testDropIntraVsysNextVrMissingEgress() throws IOException {
-    String hostname = "drop-intra-vsys-next-vr-missing-egress";
-    TracerouteEngine tracerouteEngine = bidirTracerouteEngine(hostname);
-    Flow forwardFlow = bidirForwardFlow(hostname, BIDIR_DEFAULT_DST_IP);
-    List<TraceAndReverseFlow> forwardTraces =
-        tracerouteEngine
-            .computeTracesAndReverseFlows(ImmutableSet.of(forwardFlow), false)
-            .get(forwardFlow);
-
-    assertThat(forwardTraces, hasSize(1));
-
-    TraceAndReverseFlow forwardTrace = forwardTraces.iterator().next();
-
-    // forward flow should be delivered due to static route with next-vr in forward direction
-    assertThat(
-        forwardTrace.getTrace().getDisposition(), equalTo(FlowDisposition.DELIVERED_TO_SUBNET));
-
-    Flow reverseFlow = forwardTrace.getReverseFlow();
-
-    List<TraceAndReverseFlow> reverseTraces =
-        tracerouteEngine
-            .computeTracesAndReverseFlows(ImmutableSet.of(reverseFlow), false)
-            .get(reverseFlow);
-
-    assertThat(reverseTraces, hasSize(1));
-    // reverse flow should be dropped due to missing reverse route
-    assertThat(
-        reverseTraces.iterator().next().getTrace().getDisposition(),
-        equalTo(FlowDisposition.NO_ROUTE));
-  }
-
-  @Ignore
-  @Test
-  public void testDropIntraVsysNextVrMissingIngress() throws IOException {
-    String hostname = "drop-intra-vsys-next-vr-missing-ingress";
-
-    assertForwardDropped(hostname);
-  }
-
-  @Ignore
-  @Test
-  public void testAllowIntraVsysNextVr() throws IOException {
-    String hostname = "allow-intra-vsys-next-vr";
-
-    assertBidirAccepted(hostname);
-  }
-
-  @Ignore
-  @Test
-  public void testAllowVsysToSgNextVr() throws IOException {
-    String hostname = "allow-vsys-to-sg-next-vr";
-
-    assertBidirAccepted(hostname);
-  }
-
-  @Ignore
-  @Test
-  public void testAllowInterVsysNextVr() throws IOException {
-    String hostname = "allow-inter-vsys-next-vr";
-
-    assertBidirAccepted(hostname);
-  }
-
-  @Ignore
-  @Test
-  public void testMatchSharedAddress() throws IOException {
-    String hostname = "match-shared-address";
-    TracerouteEngine tracerouteEngine = bidirTracerouteEngine(hostname);
-
-    assertBidirAccepted(tracerouteEngine, bidirForwardFlow(hostname, BIDIR_DEFAULT_DST_IP));
-    assertForwardDropped(tracerouteEngine, bidirForwardFlow(hostname, Ip.parse("10.0.2.3")));
-  }
-
-  @Ignore
-  @Test
-  public void testMatchVsysAddress() throws IOException {
-    String hostname = "match-vsys-address";
-    TracerouteEngine tracerouteEngine = bidirTracerouteEngine(hostname);
-
-    assertBidirAccepted(tracerouteEngine, bidirForwardFlow(hostname, BIDIR_DEFAULT_DST_IP));
-    assertForwardDropped(tracerouteEngine, bidirForwardFlow(hostname, Ip.parse("10.0.2.3")));
-  }
-
-  @Ignore
-  @Test
-  public void testMatchVsysAddressOverShared() throws IOException {
-    String hostname = "match-vsys-address-over-shared";
-    TracerouteEngine tracerouteEngine = bidirTracerouteEngine(hostname);
-
-    assertBidirAccepted(tracerouteEngine, bidirForwardFlow(hostname, BIDIR_DEFAULT_DST_IP));
-    assertForwardDropped(tracerouteEngine, bidirForwardFlow(hostname, Ip.parse("10.0.2.3")));
-  }
 }
