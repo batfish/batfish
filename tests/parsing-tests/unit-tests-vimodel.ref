@@ -29762,7 +29762,7 @@
             "switchportMode" : "NONE",
             "switchportTrunkEncapsulation" : "DOT1Q",
             "type" : "PHYSICAL",
-            "vrf" : "~NULL_VRF~"
+            "vrf" : "~NON_ROUTING~"
           },
           "ethernet1/1.4" : {
             "name" : "ethernet1/1.4",
@@ -29788,7 +29788,7 @@
             "switchportTrunkEncapsulation" : "DOT1Q",
             "type" : "LOGICAL",
             "vlan" : 4,
-            "vrf" : "~NULL_VRF~"
+            "vrf" : "~NON_ROUTING~"
           },
           "ethernet1/1.5" : {
             "name" : "ethernet1/1.5",
@@ -29814,7 +29814,7 @@
             "switchportTrunkEncapsulation" : "DOT1Q",
             "type" : "LOGICAL",
             "vlan" : 5,
-            "vrf" : "~NULL_VRF~"
+            "vrf" : "~NON_ROUTING~"
           },
           "loopback" : {
             "name" : "loopback",
@@ -29839,7 +29839,7 @@
             "switchportMode" : "NONE",
             "switchportTrunkEncapsulation" : "DOT1Q",
             "type" : "LOOPBACK",
-            "vrf" : "~NULL_VRF~"
+            "vrf" : "~NON_ROUTING~"
           },
           "loopback.1" : {
             "name" : "loopback.1",
@@ -29863,7 +29863,7 @@
             "switchportMode" : "NONE",
             "switchportTrunkEncapsulation" : "DOT1Q",
             "type" : "LOOPBACK",
-            "vrf" : "~NULL_VRF~"
+            "vrf" : "~NON_ROUTING~"
           },
           "tunnel" : {
             "name" : "tunnel",
@@ -29887,7 +29887,7 @@
             "switchportMode" : "NONE",
             "switchportTrunkEncapsulation" : "DOT1Q",
             "type" : "TUNNEL",
-            "vrf" : "~NULL_VRF~"
+            "vrf" : "~NON_ROUTING~"
           },
           "tunnel.3" : {
             "name" : "tunnel.3",
@@ -29912,7 +29912,7 @@
             "switchportMode" : "NONE",
             "switchportTrunkEncapsulation" : "DOT1Q",
             "type" : "TUNNEL",
-            "vrf" : "~NULL_VRF~"
+            "vrf" : "~NON_ROUTING~"
           },
           "vlan" : {
             "name" : "vlan",
@@ -29937,7 +29937,7 @@
             "switchportMode" : "NONE",
             "switchportTrunkEncapsulation" : "DOT1Q",
             "type" : "VLAN",
-            "vrf" : "~NULL_VRF~"
+            "vrf" : "~NON_ROUTING~"
           },
           "vlan.1" : {
             "name" : "vlan.1",
@@ -29961,13 +29961,13 @@
             "switchportMode" : "NONE",
             "switchportTrunkEncapsulation" : "DOT1Q",
             "type" : "VLAN",
-            "vrf" : "~NULL_VRF~"
+            "vrf" : "~NON_ROUTING~"
           }
         },
         "vendorFamily" : { },
         "vrfs" : {
-          "~NULL_VRF~" : {
-            "name" : "~NULL_VRF~",
+          "~NON_ROUTING~" : {
+            "name" : "~NON_ROUTING~",
             "interfaces" : [
               "ethernet1/1",
               "ethernet1/1.4",
@@ -30011,7 +30011,7 @@
         "interfaces" : {
           "ethernet1/1" : {
             "name" : "ethernet1/1",
-            "active" : false,
+            "active" : true,
             "additionalArpIps" : {
               "class" : "org.batfish.datamodel.EmptyIpSpace"
             },
@@ -30031,12 +30031,12 @@
             "switchportMode" : "NONE",
             "switchportTrunkEncapsulation" : "DOT1Q",
             "type" : "PHYSICAL",
-            "vrf" : "~NULL_VRF~",
+            "vrf" : "~NON_ROUTING~",
             "zone" : "zl2"
           },
           "ethernet1/2" : {
             "name" : "ethernet1/2",
-            "active" : false,
+            "active" : true,
             "additionalArpIps" : {
               "class" : "org.batfish.datamodel.EmptyIpSpace"
             },
@@ -30056,12 +30056,12 @@
             "switchportMode" : "NONE",
             "switchportTrunkEncapsulation" : "DOT1Q",
             "type" : "PHYSICAL",
-            "vrf" : "~NULL_VRF~",
+            "vrf" : "~NON_ROUTING~",
             "zone" : "zl3"
           },
           "ethernet1/3" : {
             "name" : "ethernet1/3",
-            "active" : false,
+            "active" : true,
             "additionalArpIps" : {
               "class" : "org.batfish.datamodel.EmptyIpSpace"
             },
@@ -30081,12 +30081,12 @@
             "switchportMode" : "NONE",
             "switchportTrunkEncapsulation" : "DOT1Q",
             "type" : "PHYSICAL",
-            "vrf" : "~NULL_VRF~",
+            "vrf" : "~NON_ROUTING~",
             "zone" : "ztap"
           },
           "ethernet1/4" : {
             "name" : "ethernet1/4",
-            "active" : false,
+            "active" : true,
             "additionalArpIps" : {
               "class" : "org.batfish.datamodel.EmptyIpSpace"
             },
@@ -30106,7 +30106,7 @@
             "switchportMode" : "NONE",
             "switchportTrunkEncapsulation" : "DOT1Q",
             "type" : "PHYSICAL",
-            "vrf" : "~NULL_VRF~",
+            "vrf" : "~NON_ROUTING~",
             "zone" : "zvirtual-wire"
           }
         },
@@ -30201,8 +30201,8 @@
         },
         "vendorFamily" : { },
         "vrfs" : {
-          "~NULL_VRF~" : {
-            "name" : "~NULL_VRF~",
+          "~NON_ROUTING~" : {
+            "name" : "~NON_ROUTING~",
             "interfaces" : [
               "ethernet1/1",
               "ethernet1/2",

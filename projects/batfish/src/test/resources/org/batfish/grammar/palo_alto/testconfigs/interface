@@ -9,5 +9,10 @@ set network interface ethernet ethernet1/3 link-state up
 set network interface ethernet ethernet1/3 comment 'single quoted description'
 set network interface ethernet ethernet1/3 layer3 units ethernet1/3.11 comment 'unit description'
 set network interface ethernet ethernet1/3 layer3 units ethernet1/3.11 tag 11
-# Interfaces are not functionally active unless they are in a virtual-router
+
+# Interfaces have to be in a zone to be active.
+set vsys vsys1 import network interface ethernet1/1
+set vsys vsys1 zone zone1 network layer3 [ ethernet1/1 ethernet1/3.11]
+
+# Layer3 interfaces are not functionally active unless they are in a virtual-router
 set network virtual-router default interface [ ethernet1/1 ethernet1/2 ethernet1/3 ]

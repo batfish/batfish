@@ -81,7 +81,7 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
 
   public static final String DEFAULT_VSYS_NAME = "vsys1";
 
-  public static final String NULL_VRF_NAME = "~NULL_VRF~";
+  public static final String NON_ROUTING_VRF_NAME = "~NON_ROUTING~";
 
   public static final String PANORAMA_VSYS_NAME = "panorama";
 
@@ -589,6 +589,28 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
     }
   }
 
+  /** Compute the outgoing ACL for the given interface. */
+  private IpAccessList computeOutgoingAcl(Interface iface) {
+    Zone zone = iface.getZone();
+    List<IpAccessListLine> lines;
+    if (zone != null) {
+      lines =
+          ImmutableList.of(
+              IpAccessListLine.accepting(
+                  new PermittedByAcl(
+                      computeOutgoingFilterName(
+                          computeObjectName(zone.getVsys().getName(), zone.getName())))));
+    } else {
+      // Do not allow any traffic exiting an unzoned interface
+      lines = ImmutableList.of(IpAccessListLine.rejecting("Not in a zone", TrueExpr.INSTANCE));
+    }
+    return IpAccessList.builder()
+        // .setOwner(_c)  TODO: fix and uncomment.
+        .setName(computeOutgoingFilterName(iface.getName()))
+        .setLines(lines)
+        .build();
+  }
+
   /** Convert Palo Alto specific interface into vendor independent model interface */
   private org.batfish.datamodel.Interface toInterface(Interface iface) {
     String name = iface.getName();
@@ -605,28 +627,18 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
     newIface.setVlan(iface.getTag());
 
     Zone zone = iface.getZone();
-    List<IpAccessListLine> lines;
     if (zone != null) {
       newIface.setZoneName(zone.getName());
-      lines =
-          ImmutableList.of(
-              IpAccessListLine.accepting(
-                  new PermittedByAcl(
-                      computeOutgoingFilterName(
-                          computeObjectName(zone.getVsys().getName(), zone.getName())))));
     } else {
-      // Do not allow any traffic exiting an unzoned interface
-      lines = ImmutableList.of(IpAccessListLine.rejecting("Not in a zone", TrueExpr.INSTANCE));
+      _w.redFlag(
+          String.format(
+              "Interface %s is not in a zone and will be treated as inactive", newIface.getName()));
+      newIface.setActive(false);
     }
-    /* TODO: correct and uncomment.
-    IpAccessList outgoing =
-        IpAccessList.builder()
-            .setOwner(_c)
-            .setName(computeOutgoingFilterName(iface.getName()))
-            .setLines(lines)
-            .build();
-     */
-    assert lines != null; // suppress unused warning
+
+    IpAccessList outgoing = computeOutgoingAcl(iface);
+    assert outgoing != null; // suppress unused warning
+
     return newIface;
   }
 
@@ -733,25 +745,31 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
       _c.getVrfs().put(vr.getKey(), toVrf(vr.getValue()));
     }
 
-    // Batfish cannot handle interfaces without a Vrf
-    // So put orphaned interfaces in a constructed Vrf and shut them down
-    Vrf nullVrf = new Vrf(NULL_VRF_NAME);
-    NavigableMap<String, org.batfish.datamodel.Interface> orphanedInterfaces = new TreeMap<>();
-    for (Entry<String, org.batfish.datamodel.Interface> i : _c.getAllInterfaces().entrySet()) {
-      org.batfish.datamodel.Interface iface = i.getValue();
-      if (iface.getVrf() == null) {
-        orphanedInterfaces.put(iface.getName(), iface);
-        iface.setVrf(nullVrf);
-        iface.setActive(false);
-        _w.redFlag(
-            String.format(
-                "Interface %s is not in a virtual-router, placing in %s and shutting it down.",
-                iface.getName(), nullVrf.getName()));
+    // In Palo Alto, interfaces without L3 configuration do not need to be put in a virtual router,
+    // and there is no "default" virtual router they would be in otherwise.
+    // (In fact, there is often one named "default" that not all interfaces are in.)
+    //
+    // So track non-routed interfaces and put them in a constructed VRF.
+    // Additionally, deactivate L3 interfaces in the non-routed VRF.
+    Vrf nonRouting = new Vrf(NON_ROUTING_VRF_NAME);
+    List<org.batfish.datamodel.Interface> nonRoutedInterfaces =
+        _c.getAllInterfaces().values().stream()
+            .filter(i -> i.getVrf() == null)
+            .collect(Collectors.toList());
+    if (nonRoutedInterfaces.size() > 0) {
+      _c.getVrfs().put(nonRouting.getName(), nonRouting);
+      for (org.batfish.datamodel.Interface i : nonRoutedInterfaces) {
+        i.setVrf(nonRouting);
+        nonRouting.getInterfaces().put(i.getName(), i);
+
+        // If the interface has L3 config, shut it down.
+        if (i.getActive() && !i.getAllAddresses().isEmpty()) {
+          _w.redFlag(
+              String.format(
+                  "Layer 3 interface %s is not in a virtual-router. Placing in %s and shutting it down.",
+                  i.getName(), nonRouting.getName()));
+        }
       }
-    }
-    if (orphanedInterfaces.size() > 0) {
-      nullVrf.setInterfaces(orphanedInterfaces);
-      _c.getVrfs().put(nullVrf.getName(), nullVrf);
     }
 
     // Count and mark simple structure usages and identify undefined references

@@ -32,7 +32,7 @@ import static org.batfish.datamodel.matchers.VrfMatchers.hasInterfaces;
 import static org.batfish.datamodel.matchers.VrfMatchers.hasName;
 import static org.batfish.datamodel.matchers.VrfMatchers.hasStaticRoutes;
 import static org.batfish.representation.palo_alto.PaloAltoConfiguration.DEFAULT_VSYS_NAME;
-import static org.batfish.representation.palo_alto.PaloAltoConfiguration.NULL_VRF_NAME;
+import static org.batfish.representation.palo_alto.PaloAltoConfiguration.NON_ROUTING_VRF_NAME;
 import static org.batfish.representation.palo_alto.PaloAltoConfiguration.SHARED_VSYS_NAME;
 import static org.batfish.representation.palo_alto.PaloAltoConfiguration.computeObjectName;
 import static org.batfish.representation.palo_alto.PaloAltoConfiguration.computeServiceGroupMemberAclName;
@@ -581,7 +581,7 @@ public class PaloAltoGrammarTest {
     // Confirm link status is extracted
     assertThat(c, hasInterface(interfaceName1, isActive()));
     assertThat(c, hasInterface(interfaceName2, not(isActive())));
-    assertThat(c, hasInterface(interfaceName3, isActive()));
+    assertThat(c, hasInterface(interfaceName3, not(isActive())));
     assertThat(c, hasInterface(interfaceName311, not(isActive())));
 
     // Confirm tag extraction for units
@@ -659,7 +659,9 @@ public class PaloAltoGrammarTest {
 
     // Make sure the orphaned vrf is associated with the "null", constructed vrf
     assertThat(
-        c, hasInterface("ethernet1/4", InterfaceMatchers.hasVrf(hasName(equalTo(NULL_VRF_NAME)))));
+        c,
+        hasInterface(
+            "ethernet1/4", InterfaceMatchers.hasVrf(hasName(equalTo(NON_ROUTING_VRF_NAME)))));
   }
 
   @Test
