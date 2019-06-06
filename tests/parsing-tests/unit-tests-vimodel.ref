@@ -29786,7 +29786,7 @@
             "switchport" : false,
             "switchportMode" : "NONE",
             "switchportTrunkEncapsulation" : "DOT1Q",
-            "type" : "PHYSICAL",
+            "type" : "LOGICAL",
             "vlan" : 4,
             "vrf" : "~NULL_VRF~"
           },
@@ -29812,7 +29812,7 @@
             "switchport" : false,
             "switchportMode" : "NONE",
             "switchportTrunkEncapsulation" : "DOT1Q",
-            "type" : "PHYSICAL",
+            "type" : "LOGICAL",
             "vlan" : 5,
             "vrf" : "~NULL_VRF~"
           },
@@ -29838,7 +29838,7 @@
             "switchport" : false,
             "switchportMode" : "NONE",
             "switchportTrunkEncapsulation" : "DOT1Q",
-            "type" : "PHYSICAL",
+            "type" : "LOOPBACK",
             "vrf" : "~NULL_VRF~"
           },
           "tunnel" : {
@@ -29862,7 +29862,7 @@
             "switchport" : false,
             "switchportMode" : "NONE",
             "switchportTrunkEncapsulation" : "DOT1Q",
-            "type" : "PHYSICAL",
+            "type" : "TUNNEL",
             "vrf" : "~NULL_VRF~"
           },
           "tunnel.3" : {
@@ -29887,7 +29887,7 @@
             "switchport" : false,
             "switchportMode" : "NONE",
             "switchportTrunkEncapsulation" : "DOT1Q",
-            "type" : "PHYSICAL",
+            "type" : "TUNNEL",
             "vrf" : "~NULL_VRF~"
           },
           "vlan" : {
@@ -29912,7 +29912,7 @@
             "switchport" : false,
             "switchportMode" : "NONE",
             "switchportTrunkEncapsulation" : "DOT1Q",
-            "type" : "PHYSICAL",
+            "type" : "VLAN",
             "vrf" : "~NULL_VRF~"
           }
         },

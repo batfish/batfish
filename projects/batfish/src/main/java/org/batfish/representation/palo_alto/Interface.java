@@ -7,10 +7,21 @@ import java.util.SortedMap;
 import java.util.TreeMap;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.InterfaceAddress;
 
 /** PAN datamodel component containing interface configuration */
+@ParametersAreNonnullByDefault
 public final class Interface implements Serializable {
+  public enum Type {
+    LAYER2,
+    LAYER3,
+    LOOPBACK,
+    PHYSICAL,
+    TUNNEL,
+    VLAN,
+  }
+
   public static final int DEFAULT_INTERFACE_MTU = 1500;
 
   private static final long serialVersionUID = 1L;
@@ -23,14 +34,16 @@ public final class Interface implements Serializable {
   @Nonnull private final String _name;
   @Nullable private Interface _parent;
   @Nullable private Integer _tag;
+  @Nonnull private Type _type;
   @Nonnull private final SortedMap<String, Interface> _units;
   @Nullable private Zone _zone;
 
-  public Interface(@Nonnull String name) {
+  public Interface(String name, Type type) {
     _active = true;
     _allAddresses = new LinkedHashSet<>();
     _mtu = DEFAULT_INTERFACE_MTU;
     _name = name;
+    _type = type;
     _units = new TreeMap<>();
   }
 
@@ -74,6 +87,11 @@ public final class Interface implements Serializable {
   }
 
   @Nonnull
+  public Type getType() {
+    return _type;
+  }
+
+  @Nonnull
   public SortedMap<String, Interface> getUnits() {
     return _units;
   }
@@ -105,6 +123,10 @@ public final class Interface implements Serializable {
 
   public void setTag(@Nullable Integer tag) {
     _tag = tag;
+  }
+
+  public void setType(Type type) {
+    _type = type;
   }
 
   public void setZone(@Nullable Zone zone) {
