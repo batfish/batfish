@@ -28,10 +28,10 @@ import org.batfish.datamodel.BgpActivePeerConfig;
 import org.batfish.datamodel.BgpPassivePeerConfig;
 import org.batfish.datamodel.BgpPeerConfig;
 import org.batfish.datamodel.BgpProcess;
+import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.GeneratedRoute;
 import org.batfish.datamodel.Interface;
-import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.LongSpace;
 import org.batfish.datamodel.OriginType;
@@ -106,7 +106,7 @@ final class CiscoNxConversions {
         interfaces.stream()
             .filter(i -> i.getName().startsWith("Loopback"))
             .map(Interface::getAddress)
-            .map(InterfaceAddress::getIp)
+            .map(ConcreteInterfaceAddress::getIp)
             .min(Comparator.naturalOrder());
     if (lowestLoopback.isPresent()) {
       w.redFlag(
@@ -121,7 +121,7 @@ final class CiscoNxConversions {
     Optional<Ip> lowestIp =
         interfaces.stream()
             .map(Interface::getAddress)
-            .map(InterfaceAddress::getIp)
+            .map(ConcreteInterfaceAddress::getIp)
             .min(Comparator.naturalOrder());
     w.redFlag(
         String.format(
@@ -226,7 +226,7 @@ final class CiscoNxConversions {
                 dynamic ? prefix : prefix.getStartIp(), vrf.getName(), updateSourceInterface));
         return null;
       }
-      InterfaceAddress address = iface.getAddress();
+      ConcreteInterfaceAddress address = iface.getAddress();
       if (address == null) {
         warnings.redFlag(
             String.format(
@@ -242,7 +242,7 @@ final class CiscoNxConversions {
         vrf.getInterfaces().values().stream()
             .flatMap(i -> i.getAllAddresses().stream())
             .filter(ia -> ia != null && ia.getPrefix().containsIp(prefix.getStartIp()))
-            .map(InterfaceAddress::getIp)
+            .map(ConcreteInterfaceAddress::getIp)
             .findFirst();
     if (firstMatchingInterfaceAddress.isPresent()) {
       /* TODO: Warn here? Seems like this may be standard practice, e.g., for a /31. */

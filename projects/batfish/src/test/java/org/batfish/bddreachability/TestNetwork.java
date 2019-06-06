@@ -9,12 +9,12 @@ import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.ImmutableSortedSet;
 import java.io.IOException;
 import java.util.SortedMap;
+import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Configuration.Builder;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.Interface;
-import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpAccessListLine;
@@ -60,8 +60,7 @@ public final class TestNetwork {
     _link1Src =
         ib.setOwner(_srcNode)
             .setVrf(srcVrf)
-            .setAddress(
-                new InterfaceAddress(LINK_1_NETWORK.getStartIp(), LINK_1_NETWORK.getPrefixLength()))
+            .setAddress(ConcreteInterfaceAddress.create(LINK_1_NETWORK.getStartIp(), LINK_1_NETWORK.getPrefixLength()))
             .build();
 
     IpAccessList link1DstIngressAcl =
@@ -74,8 +73,7 @@ public final class TestNetwork {
                     IpAccessListLine.ACCEPT_ALL))
             .build();
     _link1Dst =
-        ib.setAddress(
-                new InterfaceAddress(LINK_1_NETWORK.getEndIp(), LINK_1_NETWORK.getPrefixLength()))
+        ib.setAddress(ConcreteInterfaceAddress.create(LINK_1_NETWORK.getEndIp(), LINK_1_NETWORK.getPrefixLength()))
             .setIncomingFilter(link1DstIngressAcl)
             .setOwner(_dstNode)
             .setVrf(dstVrf)
@@ -105,8 +103,7 @@ public final class TestNetwork {
                             .build())))
             .build();
     _link2Src =
-        ib.setAddress(
-                new InterfaceAddress(LINK_2_NETWORK.getStartIp(), LINK_2_NETWORK.getPrefixLength()))
+        ib.setAddress(ConcreteInterfaceAddress.create(LINK_2_NETWORK.getStartIp(), LINK_2_NETWORK.getPrefixLength()))
             .setOutgoingTransformation(
                 when(permittedByAcl(_link2SrcSourceNatAcl.getName()))
                     .apply(assignSourceIp(SOURCE_NAT_POOL_IP, SOURCE_NAT_POOL_IP))
@@ -120,8 +117,7 @@ public final class TestNetwork {
     ib.setOutgoingFilter(null);
 
     _link2Dst =
-        ib.setAddress(
-                new InterfaceAddress(LINK_2_NETWORK.getEndIp(), LINK_2_NETWORK.getPrefixLength()))
+        ib.setAddress(ConcreteInterfaceAddress.create(LINK_2_NETWORK.getEndIp(), LINK_2_NETWORK.getPrefixLength()))
             .setOwner(_dstNode)
             .setVrf(dstVrf)
             .build();
@@ -130,16 +126,14 @@ public final class TestNetwork {
     _dstIface1 =
         ib.setOwner(_dstNode)
             .setVrf(dstVrf)
-            .setAddress(
-                new InterfaceAddress(DST_PREFIX_1.getStartIp(), DST_PREFIX_1.getPrefixLength()))
+            .setAddress(ConcreteInterfaceAddress.create(DST_PREFIX_1.getStartIp(), DST_PREFIX_1.getPrefixLength()))
             .build();
 
     // destination for the second link
     _dstIface2 =
         ib.setOwner(_dstNode)
             .setVrf(dstVrf)
-            .setAddress(
-                new InterfaceAddress(DST_PREFIX_2.getStartIp(), DST_PREFIX_2.getPrefixLength()))
+            .setAddress(ConcreteInterfaceAddress.create(DST_PREFIX_2.getStartIp(), DST_PREFIX_2.getPrefixLength()))
             .build();
 
     StaticRoute.Builder bld = StaticRoute.builder().setAdministrativeCost(1);

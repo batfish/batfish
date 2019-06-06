@@ -16,10 +16,10 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import org.batfish.common.util.CollectionUtil;
 import org.batfish.datamodel.AclIpSpace;
+import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.EmptyIpSpace;
 import org.batfish.datamodel.Interface;
-import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.Prefix;
@@ -111,7 +111,7 @@ public final class IpOwners {
                       firstNonNull(
                           AclIpSpace.union(
                               ifaceEntry.getValue().getAllAddresses().stream()
-                                  .map(InterfaceAddress::getPrefix)
+                                  .map(ConcreteInterfaceAddress::getPrefix)
                                   .map(Prefix::toHostIpSpace)
                                   .collect(ImmutableList.toImmutableList())),
                           EmptyIpSpace.INSTANCE)));

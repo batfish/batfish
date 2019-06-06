@@ -39,11 +39,11 @@ import java.util.Set;
 import java.util.SortedMap;
 import java.util.stream.Stream;
 import org.batfish.common.util.TracePruner;
+import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.FlowDisposition;
 import org.batfish.datamodel.HeaderSpace;
-import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpAccessListLine;
@@ -71,9 +71,11 @@ public class BatfishBDDDifferentialReachabilityTest {
   private static final String NODE1 = "node1";
   private static final String NODE2 = "node2";
   private static final String PHYSICAL = "FastEthernet0/0";
-  private static final InterfaceAddress NODE1_PHYSICAL_NETWORK = new InterfaceAddress("2.0.0.1/8");
+  private static final ConcreteInterfaceAddress NODE1_PHYSICAL_NETWORK =
+      ConcreteInterfaceAddress.parse("2.0.0.1/8");
   private static final Ip NODE1_PHYSICAL_IP = NODE1_PHYSICAL_NETWORK.getIp();
-  private static final InterfaceAddress NODE2_PHYSICAL_NETWORK = new InterfaceAddress("2.0.0.2/8");
+  private static final ConcreteInterfaceAddress NODE2_PHYSICAL_NETWORK =
+      ConcreteInterfaceAddress.parse("2.0.0.2/8");
 
   // the lowest IP addr of the network other than NODE1_PHYSICAL_IP and NODE2_PHYSICAL_IP.
   private static final Ip PHYSICAL_LINK_IP = Ip.parse("2.0.0.3");
@@ -280,7 +282,7 @@ public class BatfishBDDDifferentialReachabilityTest {
       Vrf v2 = _vb.setOwner(node2).build();
       _ib.setOwner(node2).setVrf(v2);
       _ib.setName(PHYSICAL)
-          .setAddresses(NODE2_PHYSICAL_NETWORK, new InterfaceAddress(DST_IP, 32))
+          .setAddresses(NODE2_PHYSICAL_NETWORK, ConcreteInterfaceAddress.create(DST_IP, 32))
           .build();
 
       return ImmutableSortedMap.of(NODE1, node1, NODE2, node2);
@@ -336,7 +338,7 @@ public class BatfishBDDDifferentialReachabilityTest {
         _ib.setIncomingFilter(acl);
       }
       _ib.setName(PHYSICAL)
-          .setAddresses(NODE2_PHYSICAL_NETWORK, new InterfaceAddress(DST_IP, 32))
+          .setAddresses(NODE2_PHYSICAL_NETWORK, ConcreteInterfaceAddress.create(DST_IP, 32))
           .build();
       _ib.setIncomingFilter(null);
 
@@ -472,7 +474,7 @@ public class BatfishBDDDifferentialReachabilityTest {
       Vrf v2 = _vb.setOwner(node2).build();
       _ib.setOwner(node2).setVrf(v2);
       _ib.setName(PHYSICAL)
-          .setAddresses(NODE2_PHYSICAL_NETWORK, new InterfaceAddress(DST_IP, 32))
+          .setAddresses(NODE2_PHYSICAL_NETWORK, ConcreteInterfaceAddress.create(DST_IP, 32))
           .build();
 
       return ImmutableSortedMap.of(NODE1, node1, NODE2, node2);
@@ -527,7 +529,7 @@ public class BatfishBDDDifferentialReachabilityTest {
       Vrf v2 = _vb.setOwner(node2).build();
       _ib.setOwner(node2).setVrf(v2);
       _ib.setName(PHYSICAL)
-          .setAddresses(NODE2_PHYSICAL_NETWORK, new InterfaceAddress(DST_IP, 32))
+          .setAddresses(NODE2_PHYSICAL_NETWORK, ConcreteInterfaceAddress.create(DST_IP, 32))
           .build();
 
       return ImmutableSortedMap.of(NODE1, node1, NODE2, node2);
@@ -582,7 +584,7 @@ public class BatfishBDDDifferentialReachabilityTest {
       Vrf v2 = _vb.setOwner(node2).build();
       _ib.setOwner(node2).setVrf(v2);
       _ib.setName(PHYSICAL)
-          .setAddresses(NODE2_PHYSICAL_NETWORK, new InterfaceAddress(DST_IP, 32))
+          .setAddresses(NODE2_PHYSICAL_NETWORK, ConcreteInterfaceAddress.create(DST_IP, 32))
           .build();
 
       return ImmutableSortedMap.of(NODE1, node1, NODE2, node2);
@@ -635,7 +637,7 @@ public class BatfishBDDDifferentialReachabilityTest {
       Vrf v2 = _vb.setOwner(node2).build();
       _ib.setOwner(node2).setVrf(v2);
       _ib.setName(PHYSICAL)
-          .setAddresses(NODE2_PHYSICAL_NETWORK, new InterfaceAddress(DST_IP, 32))
+          .setAddresses(NODE2_PHYSICAL_NETWORK, ConcreteInterfaceAddress.create(DST_IP, 32))
           .build();
 
       return ImmutableSortedMap.of(NODE1, node1, NODE2, node2);

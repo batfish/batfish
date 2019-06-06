@@ -29,7 +29,7 @@ import org.batfish.datamodel.AnnotatedRoute;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.GeneratedRoute;
 import org.batfish.datamodel.Interface;
-import org.batfish.datamodel.InterfaceAddress;
+import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.OspfExternalRoute;
 import org.batfish.datamodel.OspfExternalType1Route;
@@ -360,12 +360,12 @@ final class OspfRoutingProcess implements RoutingProcess<OspfTopology, OspfRoute
    *
    * @param areaNum the OSPF area the interface (and thus the route) belongs to
    * @param iface the {@link Interface} from which the route will be constructed
-   * @param ifaceAddress the {@link InterfaceAddress} for which the route is being constructed. Will
+   * @param ifaceAddress the {@link ConcreteInterfaceAddress} for which the route is being constructed. Will
    *     inform the route's network and next hop IP.
    */
   @Nonnull
   private OspfIntraAreaRoute computeIntraAreaRouteFromInterface(
-      Long areaNum, Interface iface, InterfaceAddress ifaceAddress) {
+      Long areaNum, Interface iface, ConcreteInterfaceAddress ifaceAddress) {
 
     return OspfIntraAreaRoute.builder()
         .setNetwork(ifaceAddress.getPrefix())

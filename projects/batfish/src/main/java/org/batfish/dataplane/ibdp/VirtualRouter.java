@@ -53,6 +53,7 @@ import org.batfish.datamodel.BgpPeerConfigId;
 import org.batfish.datamodel.BgpRoute;
 import org.batfish.datamodel.BgpSessionProperties;
 import org.batfish.datamodel.Bgpv4Route;
+import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConnectedRoute;
 import org.batfish.datamodel.Edge;
@@ -61,7 +62,6 @@ import org.batfish.datamodel.Fib;
 import org.batfish.datamodel.FibImpl;
 import org.batfish.datamodel.GeneratedRoute;
 import org.batfish.datamodel.Interface;
-import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IsisRoute;
 import org.batfish.datamodel.LocalRoute;
@@ -716,7 +716,7 @@ public class VirtualRouter implements Serializable {
       if (iface.getActive()) {
         Set<Prefix> allNetworkPrefixes =
             iface.getAllAddresses().stream()
-                .map(InterfaceAddress::getPrefix)
+                .map(ConcreteInterfaceAddress::getPrefix)
                 .collect(Collectors.toSet());
         long cost = RipProcess.DEFAULT_RIP_COST;
         for (Prefix prefix : allNetworkPrefixes) {
@@ -776,7 +776,7 @@ public class VirtualRouter implements Serializable {
     for (Interface i : _vrf.getInterfaces().values()) {
       if (i.getActive()) { // Make sure the interface is active
         // Create a route for each interface prefix
-        for (InterfaceAddress ifaceAddress : i.getAllAddresses()) {
+        for (ConcreteInterfaceAddress ifaceAddress : i.getAllAddresses()) {
           Prefix prefix = ifaceAddress.getPrefix();
           _connectedRib.mergeRoute(annotateRoute(new ConnectedRoute(prefix, i.getName())));
         }
@@ -803,7 +803,7 @@ public class VirtualRouter implements Serializable {
     for (Interface i : _vrf.getInterfaces().values()) {
       if (i.getActive()) { // Make sure the interface is active
         // Create a route for each interface prefix
-        for (InterfaceAddress ifaceAddress : i.getAllAddresses()) {
+        for (ConcreteInterfaceAddress ifaceAddress : i.getAllAddresses()) {
           if (ifaceAddress.getNetworkBits() < Prefix.MAX_PREFIX_LENGTH) {
             _localRib.mergeRoute(annotateRoute(new LocalRoute(ifaceAddress, i.getName())));
           }

@@ -13,7 +13,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.common.BatfishException;
 import org.batfish.datamodel.ConfigurationFormat;
-import org.batfish.datamodel.InterfaceAddress;
+import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.RoutingProtocol;
@@ -169,7 +169,7 @@ public class OspfProcess implements Serializable {
 
   public void computeNetworks(Collection<Interface> interfaces) {
     for (Interface i : interfaces) {
-      InterfaceAddress address = i.getAddress();
+      ConcreteInterfaceAddress address = i.getAddress();
       if (address == null) {
         continue;
       }

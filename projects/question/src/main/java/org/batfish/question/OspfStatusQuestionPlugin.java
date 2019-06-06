@@ -19,10 +19,10 @@ import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.common.Answerer;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.common.plugin.Plugin;
+import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConnectedRoute;
 import org.batfish.datamodel.Interface;
-import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.OspfExternalRoute;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.Vrf;
@@ -163,7 +163,7 @@ public class OspfStatusQuestionPlugin extends QuestionPlugin {
                   if (exportPolicyName != null) {
                     RoutingPolicy exportPolicy = c.getRoutingPolicies().get(exportPolicyName);
                     if (exportPolicy != null) {
-                      for (InterfaceAddress address : iface.getAllAddresses()) {
+                      for (ConcreteInterfaceAddress address : iface.getAllAddresses()) {
                         ConnectedRoute route =
                             new ConnectedRoute(
                                 Prefix.create(address.getIp(), address.getNetworkBits()),

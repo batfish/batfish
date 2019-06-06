@@ -5,7 +5,7 @@ import java.util.Set;
 import javax.annotation.Nonnull;
 import org.batfish.common.Warnings;
 import org.batfish.datamodel.Configuration;
-import org.batfish.datamodel.InterfaceAddress;
+import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.PrefixRange;
 import org.batfish.datamodel.PrefixSpace;
 import org.batfish.datamodel.routing_policy.expr.BooleanExpr;
@@ -56,7 +56,7 @@ public class RouteMapMatchInterface implements RouteMapMatch {
                 _interfaces.stream()
                     .flatMap(
                         ifaceName -> c.getAllInterfaces().get(ifaceName).getAllAddresses().stream())
-                    .map(InterfaceAddress::getPrefix)
+                    .map(ConcreteInterfaceAddress::getPrefix)
                     .map(PrefixRange::fromPrefix)
                     .collect(ImmutableSet.toImmutableSet()))));
   }

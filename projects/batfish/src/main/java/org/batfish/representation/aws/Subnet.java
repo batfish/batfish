@@ -8,9 +8,9 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import org.batfish.common.BatfishException;
 import org.batfish.common.Warnings;
+import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Interface;
-import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.Prefix;
@@ -170,17 +170,14 @@ public class Subnet implements AwsVpcEntity, Serializable {
     // add one interface that faces the instances
     String instancesIfaceName = _subnetId;
     Ip instancesIfaceIp = computeInstancesIfaceIp();
-    InterfaceAddress instancesIfaceAddress =
-        new InterfaceAddress(instancesIfaceIp, _cidrBlock.getPrefixLength());
+    ConcreteInterfaceAddress instancesIfaceAddress = ConcreteInterfaceAddress.create(instancesIfaceIp, _cidrBlock.getPrefixLength());
     Utils.newInterface(instancesIfaceName, cfgNode, instancesIfaceAddress);
 
     // generate a prefix for the link between the VPC router and the subnet
     Prefix vpcSubnetLinkPrefix = awsConfiguration.getNextGeneratedLinkSubnet();
-    InterfaceAddress subnetIfaceAddress =
-        new InterfaceAddress(
-            vpcSubnetLinkPrefix.getStartIp(), vpcSubnetLinkPrefix.getPrefixLength());
-    InterfaceAddress vpcIfaceAddress =
-        new InterfaceAddress(vpcSubnetLinkPrefix.getEndIp(), vpcSubnetLinkPrefix.getPrefixLength());
+    ConcreteInterfaceAddress subnetIfaceAddress = ConcreteInterfaceAddress.create(
+        vpcSubnetLinkPrefix.getStartIp(), vpcSubnetLinkPrefix.getPrefixLength());
+    ConcreteInterfaceAddress vpcIfaceAddress = ConcreteInterfaceAddress.create(vpcSubnetLinkPrefix.getEndIp(), vpcSubnetLinkPrefix.getPrefixLength());
 
     // add an interface that faces the VPC router
     String subnetIfaceName = _vpcId;

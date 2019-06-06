@@ -43,7 +43,7 @@ public final class Interface extends ComparableStructure<String> {
 
     private boolean _active;
 
-    private InterfaceAddress _address;
+    private ConcreteInterfaceAddress _address;
 
     private @Nullable IntegerSpace _allowedVlans;
 
@@ -103,7 +103,7 @@ public final class Interface extends ComparableStructure<String> {
 
     private IpAccessList _preTransformationOutgoingFilter;
 
-    private Set<InterfaceAddress> _secondaryAddresses;
+    private Set<ConcreteInterfaceAddress> _secondaryAddresses;
 
     private @Nullable Boolean _switchport;
 
@@ -134,7 +134,7 @@ public final class Interface extends ComparableStructure<String> {
       String name = _name != null ? _name : generateName();
       Interface iface =
           _type == null ? new Interface(name, _owner) : new Interface(name, _owner, _type);
-      ImmutableSet.Builder<InterfaceAddress> allAddresses = ImmutableSet.builder();
+      ImmutableSet.Builder<ConcreteInterfaceAddress> allAddresses = ImmutableSet.builder();
       if (_accessVlan != null) {
         iface.setAccessVlan(_accessVlan);
       }
@@ -225,7 +225,7 @@ public final class Interface extends ComparableStructure<String> {
      * with a different subnet living on the interface. The interface will reply to ARP for the
      * primary or any secondary IP.
      */
-    public Builder setAddress(InterfaceAddress address) {
+    public Builder setAddress(ConcreteInterfaceAddress address) {
       _address = address;
       return this;
     }
@@ -241,7 +241,7 @@ public final class Interface extends ComparableStructure<String> {
      * any secondary IP.
      */
     public Builder setAddresses(
-        InterfaceAddress primaryAddress, InterfaceAddress... secondaryAddresses) {
+        ConcreteInterfaceAddress primaryAddress, ConcreteInterfaceAddress... secondaryAddresses) {
       return setAddresses(primaryAddress, Arrays.asList(secondaryAddresses));
     }
 
@@ -256,7 +256,7 @@ public final class Interface extends ComparableStructure<String> {
      * primary or any secondary IP.
      */
     public Builder setAddresses(
-        InterfaceAddress primaryAddress, Iterable<InterfaceAddress> secondaryAddresses) {
+        ConcreteInterfaceAddress primaryAddress, Iterable<ConcreteInterfaceAddress> secondaryAddresses) {
       _address = primaryAddress;
       _secondaryAddresses = ImmutableSet.copyOf(secondaryAddresses);
       return this;
@@ -430,7 +430,7 @@ public final class Interface extends ComparableStructure<String> {
      * with a different subnet living on the interface. The interface will reply to ARP for the
      * primary or any secondary IP.
      */
-    public Builder setSecondaryAddresses(Iterable<InterfaceAddress> secondaryAddresses) {
+    public Builder setSecondaryAddresses(Iterable<ConcreteInterfaceAddress> secondaryAddresses) {
       _secondaryAddresses = ImmutableSet.copyOf(secondaryAddresses);
       return this;
     }
@@ -798,7 +798,7 @@ public final class Interface extends ComparableStructure<String> {
 
   private IntegerSpace _allowedVlans;
 
-  private SortedSet<InterfaceAddress> _allAddresses;
+  private SortedSet<ConcreteInterfaceAddress> _allAddresses;
 
   private boolean _autoState;
 
@@ -875,7 +875,7 @@ public final class Interface extends ComparableStructure<String> {
 
   private Configuration _owner;
 
-  private InterfaceAddress _address;
+  private ConcreteInterfaceAddress _address;
 
   private IpAccessList _postTransformationIncomingFilter;
 
@@ -1080,7 +1080,7 @@ public final class Interface extends ComparableStructure<String> {
 
   /** All IPV4 address/network assignments on this interface. */
   @JsonProperty(PROP_ALL_PREFIXES)
-  public Set<InterfaceAddress> getAllAddresses() {
+  public Set<ConcreteInterfaceAddress> getAllAddresses() {
     return _allAddresses;
   }
 
@@ -1361,7 +1361,7 @@ public final class Interface extends ComparableStructure<String> {
 
   /** The primary IPV4 address/network of this interface. */
   @JsonProperty(PROP_PREFIX)
-  public InterfaceAddress getAddress() {
+  public ConcreteInterfaceAddress getAddress() {
     return _address;
   }
 
@@ -1521,7 +1521,7 @@ public final class Interface extends ComparableStructure<String> {
   }
 
   @JsonProperty(PROP_ALL_PREFIXES)
-  public void setAllAddresses(Iterable<InterfaceAddress> allAddresses) {
+  public void setAllAddresses(Iterable<ConcreteInterfaceAddress> allAddresses) {
     _allAddresses = ImmutableSortedSet.copyOf(allAddresses);
   }
 
@@ -1750,7 +1750,7 @@ public final class Interface extends ComparableStructure<String> {
   }
 
   @JsonProperty(PROP_PREFIX)
-  public void setAddress(InterfaceAddress address) {
+  public void setAddress(ConcreteInterfaceAddress address) {
     _address = address;
   }
 

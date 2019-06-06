@@ -7,9 +7,9 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
+import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.HeaderSpace;
-import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.IpAccessListLine;
 import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.TcpFlagsMatchConditions;
@@ -156,7 +156,7 @@ public class SecurityGroup implements AwsVpcEntity, Serializable {
   public void updateConfigIps(Configuration configuration) {
     configuration.getAllInterfaces().values().stream()
         .flatMap(iface -> iface.getAllAddresses().stream())
-        .map(InterfaceAddress::getIp)
+        .map(ConcreteInterfaceAddress::getIp)
         .map(IpWildcard::create)
         .forEach(ipWildcard -> getUsersIpSpace().add(ipWildcard));
   }

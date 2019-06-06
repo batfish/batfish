@@ -16,12 +16,12 @@ import com.google.common.collect.Sets;
 import java.util.Map;
 import java.util.Set;
 import org.batfish.datamodel.AclIpSpace;
+import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Configuration.Builder;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.EmptyIpSpace;
 import org.batfish.datamodel.Interface;
-import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.UniverseIpSpace;
@@ -55,11 +55,13 @@ public class IpSpaceSpecifierTest {
      * NodeNameRegexConnectedHostsIpSpaceSpecifier.HOST_SUBNET_MAX_PREFIX_LENGTH).
      */
     _i1 =
-        ib.setAddresses(new InterfaceAddress("1.0.0.1/24"), new InterfaceAddress("2.0.0.0/30"))
+        ib.setAddresses(
+                ConcreteInterfaceAddress.parse("1.0.0.1/24"),
+                ConcreteInterfaceAddress.parse("2.0.0.0/30"))
             .build();
 
     // another interface on _i1's subnet
-    _i2 = ib.setAddresses(new InterfaceAddress("1.0.0.2/24")).build();
+    _i2 = ib.setAddresses(ConcreteInterfaceAddress.parse("1.0.0.2/24")).build();
 
     // another interface with no addresses
     _i3 = nf.interfaceBuilder().setOwner(_c1).build();

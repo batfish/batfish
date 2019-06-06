@@ -12,9 +12,9 @@ import java.util.Set;
 import java.util.TreeSet;
 import javax.annotation.Nullable;
 import org.batfish.common.Warnings;
+import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Interface;
-import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Vrf;
 
@@ -38,9 +38,9 @@ public class HostInterface implements Serializable {
 
   private String _name;
 
-  private Set<InterfaceAddress> _otherAddresses;
+  private Set<ConcreteInterfaceAddress> _otherAddresses;
 
-  private InterfaceAddress _address;
+  private ConcreteInterfaceAddress _address;
 
   private @Nullable Integer _encapsulationVlan;
 
@@ -55,7 +55,7 @@ public class HostInterface implements Serializable {
   }
 
   @JsonProperty(PROP_PREFIX)
-  public InterfaceAddress getAddress() {
+  public ConcreteInterfaceAddress getAddress() {
     return _address;
   }
 
@@ -85,7 +85,7 @@ public class HostInterface implements Serializable {
   }
 
   @JsonProperty(PROP_OTHER_PREFIXES)
-  public Set<InterfaceAddress> getOtherAddresses() {
+  public Set<ConcreteInterfaceAddress> getOtherAddresses() {
     return _otherAddresses;
   }
 
@@ -120,12 +120,12 @@ public class HostInterface implements Serializable {
   }
 
   @JsonProperty(PROP_OTHER_PREFIXES)
-  public void setOtherAddresses(Set<InterfaceAddress> otherAddresses) {
+  public void setOtherAddresses(Set<ConcreteInterfaceAddress> otherAddresses) {
     _otherAddresses = otherAddresses;
   }
 
   @JsonProperty(PROP_PREFIX)
-  public void setAddress(InterfaceAddress address) {
+  public void setAddress(ConcreteInterfaceAddress address) {
     _address = address;
   }
 

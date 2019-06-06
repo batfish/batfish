@@ -14,7 +14,7 @@ import java.util.Map;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.Interface;
-import org.batfish.datamodel.InterfaceAddress;
+import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.NetworkFactory;
@@ -47,12 +47,12 @@ public class IpOwnersTest {
     Interface i1 =
         _ib.setOwner(c1)
             .setVrf(vrf1)
-            .setAddress(new InterfaceAddress(P1.getStartIp(), P1.getPrefixLength()))
+            .setAddress(ConcreteInterfaceAddress.create(P1.getStartIp(), P1.getPrefixLength()))
             .build();
     Interface i2 =
         _ib.setOwner(c1)
             .setVrf(vrf1)
-            .setAddress(new InterfaceAddress(P2.getStartIp(), P2.getPrefixLength()))
+            .setAddress(ConcreteInterfaceAddress.create(P2.getStartIp(), P2.getPrefixLength()))
             .setActive(false)
             .build();
 
@@ -102,7 +102,7 @@ public class IpOwnersTest {
     Interface i1 =
         _ib.setOwner(c1)
             .setVrf(vrf1)
-            .setAddress(new InterfaceAddress(prefix.getStartIp(), prefix.getPrefixLength()))
+            .setAddress(ConcreteInterfaceAddress.create(prefix.getStartIp(), prefix.getPrefixLength()))
             .build();
     Map<String, Map<String, IpSpace>> interfaceHostSubnetIps =
         computeInterfaceHostSubnetIps(configs, false);

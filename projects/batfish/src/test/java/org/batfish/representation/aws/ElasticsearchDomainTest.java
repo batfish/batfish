@@ -25,11 +25,11 @@ import java.util.Map;
 import java.util.Set;
 import org.batfish.common.topology.TopologyUtil;
 import org.batfish.common.util.CommonUtil;
+import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Edge;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.Interface;
-import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpAccessListLine;
 import org.batfish.datamodel.IpProtocol;
@@ -116,7 +116,7 @@ public class ElasticsearchDomainTest {
             .flatMap(Collection::stream)
             .map(Interface::getAllAddresses)
             .flatMap(Collection::stream)
-            .map(InterfaceAddress::getIp)
+            .map(ConcreteInterfaceAddress::getIp)
             .collect(ImmutableList.toImmutableList());
     Set<Ip> ipsAsSet = ImmutableSet.copyOf(ipsAsList);
     assertThat(ipsAsList, hasSize(ipsAsSet.size()));

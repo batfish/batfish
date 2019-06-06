@@ -18,9 +18,9 @@ import com.google.common.collect.ImmutableSortedSet;
 import java.io.IOException;
 import java.util.SortedMap;
 import org.batfish.common.util.TracePruner;
+import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.FlowDisposition;
-import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.PacketHeaderConstraints;
@@ -72,8 +72,8 @@ public class DifferentialReachabilityTest {
     Configuration node1 = _cb.setHostname(NODE1).build();
     Vrf v1 = _vb.setOwner(node1).build();
     _ib.setOwner(node1).setVrf(v1);
-    _ib.setName(LOOPBACK).setAddresses(new InterfaceAddress("1.1.1.1/32")).build();
-    _ib.setName(PHYSICAL).setAddresses(new InterfaceAddress("1.1.1.2/31")).build();
+    _ib.setName(LOOPBACK).setAddresses(ConcreteInterfaceAddress.parse("1.1.1.1/32")).build();
+    _ib.setName(PHYSICAL).setAddresses(ConcreteInterfaceAddress.parse("1.1.1.2/31")).build();
     if (!delta) {
       v1.setStaticRoutes(
           ImmutableSortedSet.of(
@@ -88,7 +88,9 @@ public class DifferentialReachabilityTest {
     Vrf v2 = _vb.setOwner(node2).build();
     _ib.setOwner(node2).setVrf(v2);
     _ib.setName(PHYSICAL)
-        .setAddresses(new InterfaceAddress("1.1.1.3/31"), new InterfaceAddress("2.2.2.2/32"))
+        .setAddresses(
+            ConcreteInterfaceAddress.parse("1.1.1.3/31"),
+            ConcreteInterfaceAddress.parse("2.2.2.2/32"))
         .build();
     v2.setStaticRoutes(
         ImmutableSortedSet.of(

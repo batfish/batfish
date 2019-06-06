@@ -27,10 +27,10 @@ import org.batfish.datamodel.BgpActivePeerConfig;
 import org.batfish.datamodel.BgpPeerConfig;
 import org.batfish.datamodel.BgpProcess;
 import org.batfish.datamodel.CommunityList;
+import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.Interface;
-import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.LongSpace;
 import org.batfish.datamodel.Prefix;
@@ -331,7 +331,7 @@ public class Graph {
 
     if (proto.isConnected()) {
       for (Interface iface : conf.getAllInterfaces().values()) {
-        InterfaceAddress address = iface.getAddress();
+        ConcreteInterfaceAddress address = iface.getAddress();
         if (address != null) {
           acc.add(address.getPrefix());
         }
@@ -502,8 +502,7 @@ public class Graph {
         // Create null route interface
         Interface iface = new Interface(name);
         iface.setActive(true);
-        iface.setAddress(
-            new InterfaceAddress(sr.getNetwork().getStartIp(), sr.getNextHopIp().numSubnetBits()));
+        iface.setAddress(ConcreteInterfaceAddress.create(sr.getNetwork().getStartIp(), sr.getNextHopIp().numSubnetBits()));
         iface.setBandwidth(0.);
         // Add static route to all static routes list
         Map<String, List<StaticRoute>> map = _staticRoutes.get(router);
@@ -572,7 +571,7 @@ public class Graph {
     Interface iface = new Interface("iBGP-" + peer);
     iface.setActive(true);
     // TODO is this valid.
-    iface.setAddress(new InterfaceAddress(n.getPeerAddress(), Prefix.MAX_PREFIX_LENGTH));
+    iface.setAddress(ConcreteInterfaceAddress.create(n.getPeerAddress(), Prefix.MAX_PREFIX_LENGTH));
     iface.setBandwidth(0.);
     return iface;
   }

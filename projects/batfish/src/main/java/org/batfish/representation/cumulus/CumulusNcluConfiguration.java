@@ -36,12 +36,12 @@ import org.batfish.common.util.CommonUtil;
 import org.batfish.datamodel.BgpPeerConfig;
 import org.batfish.datamodel.BgpUnnumberedPeerConfig;
 import org.batfish.datamodel.BumTransportMethod;
+import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.IntegerSpace;
 import org.batfish.datamodel.Interface.Dependency;
 import org.batfish.datamodel.Interface.DependencyType;
-import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.InterfaceType;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Ip6;
@@ -294,9 +294,8 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
     }
     newIface.setAllAddresses(iface.getIpAddresses());
     if (iface.getIpAddresses().isEmpty() && isUsedForBgpUnnumbered(iface.getName())) {
-      InterfaceAddress addr =
-          new InterfaceAddress(
-              Ip.create(_linkLocalAddress.getAndIncrement()), LINK_LOCAL_NETWORK_BITS);
+      ConcreteInterfaceAddress addr = ConcreteInterfaceAddress.create(
+          Ip.create(_linkLocalAddress.getAndIncrement()), LINK_LOCAL_NETWORK_BITS);
 
       newIface.setAddress(addr);
       newIface.setAllAddresses(ImmutableSet.of(addr));
@@ -916,7 +915,7 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
     if (!vlan.getAddresses().isEmpty()) {
       newIface.setAddress(vlan.getAddresses().get(0));
     }
-    ImmutableSet.Builder<InterfaceAddress> allAddresses = ImmutableSet.builder();
+    ImmutableSet.Builder<ConcreteInterfaceAddress> allAddresses = ImmutableSet.builder();
     allAddresses.addAll(vlan.getAddresses());
     vlan.getAddressVirtuals().values().forEach(allAddresses::addAll);
     newIface.setAllAddresses(allAddresses.build());

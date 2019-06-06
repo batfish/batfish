@@ -11,7 +11,7 @@ public class VrrpGroup extends ComparableStructure<Integer> {
 
     private int _priority;
 
-    private InterfaceAddress _virtualAddress;
+    private ConcreteInterfaceAddress _virtualAddress;
 
     public VrrpGroup build() {
       return new VrrpGroup(this);
@@ -27,7 +27,7 @@ public class VrrpGroup extends ComparableStructure<Integer> {
       return this;
     }
 
-    public Builder setVirtualAddress(InterfaceAddress virtualAddress) {
+    public Builder setVirtualAddress(ConcreteInterfaceAddress virtualAddress) {
       _virtualAddress = virtualAddress;
       return this;
     }
@@ -44,7 +44,7 @@ public class VrrpGroup extends ComparableStructure<Integer> {
 
   private int _priority;
 
-  private InterfaceAddress _virtualAddress;
+  private ConcreteInterfaceAddress _virtualAddress;
 
   public static Builder builder() {
     return new Builder();
@@ -72,7 +72,7 @@ public class VrrpGroup extends ComparableStructure<Integer> {
   }
 
   @JsonProperty(PROP_VIRTUAL_ADDRESS)
-  public InterfaceAddress getVirtualAddress() {
+  public ConcreteInterfaceAddress getVirtualAddress() {
     return _virtualAddress;
   }
 
@@ -87,7 +87,7 @@ public class VrrpGroup extends ComparableStructure<Integer> {
   }
 
   @JsonProperty(PROP_VIRTUAL_ADDRESS)
-  public void setVirtualAddress(InterfaceAddress virtualAddress) {
+  public void setVirtualAddress(ConcreteInterfaceAddress virtualAddress) {
     _virtualAddress = virtualAddress;
   }
 }

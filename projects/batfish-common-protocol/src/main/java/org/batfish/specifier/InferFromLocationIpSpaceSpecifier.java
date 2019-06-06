@@ -5,7 +5,7 @@ import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 import org.batfish.datamodel.AclIpSpace;
 import org.batfish.datamodel.EmptyIpSpace;
-import org.batfish.datamodel.InterfaceAddress;
+import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.IpSpace;
 
 /**
@@ -35,7 +35,7 @@ public final class InferFromLocationIpSpaceSpecifier implements IpSpaceSpecifier
       _specifierContext = specifierContext;
     }
 
-    private Set<InterfaceAddress> interfaceAddresses(String node, String iface) {
+    private Set<ConcreteInterfaceAddress> interfaceAddresses(String node, String iface) {
       return _specifierContext
           .getConfigs()
           .get(node)

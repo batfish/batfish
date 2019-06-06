@@ -25,7 +25,7 @@ import org.batfish.datamodel.EigrpExternalRoute;
 import org.batfish.datamodel.EigrpInternalRoute;
 import org.batfish.datamodel.EigrpRoute;
 import org.batfish.datamodel.Interface;
-import org.batfish.datamodel.InterfaceAddress;
+import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.NetworkConfigurations;
 import org.batfish.datamodel.Prefix;
@@ -108,7 +108,7 @@ class VirtualEigrpProcess {
         requireNonNull(iface.getEigrp());
         Set<Prefix> allNetworkPrefixes =
             iface.getAllAddresses().stream()
-                .map(InterfaceAddress::getPrefix)
+                .map(ConcreteInterfaceAddress::getPrefix)
                 .collect(Collectors.toSet());
         for (Prefix prefix : allNetworkPrefixes) {
           EigrpInternalRoute route =

@@ -13,8 +13,8 @@ import net.sf.javabdd.BDDFactory;
 import org.batfish.common.bdd.BDDInteger;
 import org.batfish.common.bdd.BDDUtils;
 import org.batfish.common.bdd.IpSpaceToBDD;
+import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Interface;
-import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.Prefix;
@@ -55,7 +55,7 @@ public final class InterfaceWithConnectedIpsSpecifier implements InterfaceSpecif
     return Objects.hash(InterfaceWithConnectedIpsSpecifier.class, _ipSpace);
   }
 
-  private boolean interfaceAddressMatchesIpSpace(InterfaceAddress i) {
+  private boolean interfaceAddressMatchesIpSpace(ConcreteInterfaceAddress i) {
     return !_ipSpaceBdd.and(_ipSpaceToBdd.toBDD(i.getPrefix())).isZero();
   }
 

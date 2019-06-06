@@ -28,6 +28,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.common.plugin.TracerouteEngine;
+import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Edge;
 import org.batfish.datamodel.Flow;
@@ -37,7 +38,6 @@ import org.batfish.datamodel.IkePhase1Key;
 import org.batfish.datamodel.IkePhase1Policy;
 import org.batfish.datamodel.IkePhase1Proposal;
 import org.batfish.datamodel.Interface;
-import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.IpWildcard;
@@ -492,7 +492,7 @@ public class IpsecUtil {
     ImmutableSetMultimap.Builder<Ip, IpWildcardSetIpSpace> builder = ImmutableSetMultimap.builder();
     for (Configuration c : configurations.values()) {
       Collection<Interface> interfaces = c.getAllInterfaces().values();
-      Set<InterfaceAddress> nonNattedInterfaceAddresses =
+      Set<ConcreteInterfaceAddress> nonNattedInterfaceAddresses =
           interfaces.stream()
               .filter(i -> !hasSourceNat(i.getOutgoingTransformation()))
               .flatMap(i -> i.getAllAddresses().stream())

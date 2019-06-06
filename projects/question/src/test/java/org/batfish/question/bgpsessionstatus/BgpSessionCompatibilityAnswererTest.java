@@ -53,7 +53,7 @@ import org.batfish.datamodel.BgpSessionProperties.SessionType;
 import org.batfish.datamodel.BgpUnnumberedPeerConfig;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
-import org.batfish.datamodel.InterfaceAddress;
+import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.LongSpace;
 import org.batfish.datamodel.NetworkConfigurations;
@@ -522,7 +522,7 @@ public class BgpSessionCompatibilityAnswererTest {
         nf.interfaceBuilder()
             .setOwner(c)
             .setVrf(vrf)
-            .setAddress(new InterfaceAddress(peer.getLocalIp(), 30))
+            .setAddress(ConcreteInterfaceAddress.create(peer.getLocalIp(), 30))
             .build();
       }
 

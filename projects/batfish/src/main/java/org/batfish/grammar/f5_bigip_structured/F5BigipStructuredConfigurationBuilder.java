@@ -85,7 +85,7 @@ import org.antlr.v4.runtime.tree.ParseTree;
 import org.antlr.v4.runtime.tree.TerminalNode;
 import org.batfish.common.Warnings;
 import org.batfish.common.Warnings.ParseWarning;
-import org.batfish.datamodel.InterfaceAddress;
+import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Ip6;
 import org.batfish.datamodel.IpProtocol;
@@ -307,8 +307,8 @@ public class F5BigipStructuredConfigurationBuilder extends F5BigipStructuredPars
     return Integer.parseInt(text.substring(text.lastIndexOf(":") + 1));
   }
 
-  private static @Nonnull InterfaceAddress toInterfaceAddress(Ip_prefixContext ctx) {
-    return new InterfaceAddress(ctx.getText());
+  private static @Nonnull ConcreteInterfaceAddress toInterfaceAddress(Ip_prefixContext ctx) {
+    return ConcreteInterfaceAddress.parse(ctx.getText());
   }
 
   private static @Nonnull Ip toIp(Ip_address_portContext ctx) {
@@ -1372,7 +1372,7 @@ public class F5BigipStructuredConfigurationBuilder extends F5BigipStructuredPars
     if (_c.getSelves().values().stream()
         .map(Self::getAddress)
         .filter(Objects::nonNull)
-        .map(InterfaceAddress::getPrefix)
+        .map(ConcreteInterfaceAddress::getPrefix)
         .anyMatch(directlyConnectedNetwork -> directlyConnectedNetwork.containsIp(ip))) {
       _w.redFlag(
           String.format(

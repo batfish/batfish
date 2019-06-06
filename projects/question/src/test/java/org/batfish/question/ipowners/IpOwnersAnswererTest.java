@@ -23,9 +23,9 @@ import com.google.common.collect.Multiset;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
+import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Interface;
-import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.answers.Schema;
@@ -49,10 +49,9 @@ public class IpOwnersAnswererTest {
   public void setup() {
     Vrf vrf = new Vrf(Configuration.DEFAULT_VRF_NAME);
     Interface.Builder ib = Interface.builder().setVrf(vrf);
-    InterfaceAddress uniqueAddr = new InterfaceAddress(_uniqueIp, MAX_PREFIX_LENGTH - 1);
-    InterfaceAddress secondaryUniqueAddr =
-        new InterfaceAddress(_secondaryUniqueIp, MAX_PREFIX_LENGTH - 1);
-    InterfaceAddress duplicateAddr = new InterfaceAddress(_duplicateIp, MAX_PREFIX_LENGTH);
+    ConcreteInterfaceAddress uniqueAddr = ConcreteInterfaceAddress.create(_uniqueIp, MAX_PREFIX_LENGTH - 1);
+    ConcreteInterfaceAddress secondaryUniqueAddr = ConcreteInterfaceAddress.create(_secondaryUniqueIp, MAX_PREFIX_LENGTH - 1);
+    ConcreteInterfaceAddress duplicateAddr = ConcreteInterfaceAddress.create(_duplicateIp, MAX_PREFIX_LENGTH);
     _ownersMap =
         ImmutableMap.of(
             _uniqueIp,

@@ -40,10 +40,10 @@ import org.batfish.common.Warnings;
 import org.batfish.common.util.IspModelingUtils.IspInfo;
 import org.batfish.datamodel.BgpActivePeerConfig;
 import org.batfish.datamodel.BgpProcess;
+import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.DeviceType;
-import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.OriginType;
@@ -161,7 +161,7 @@ public class IspModelingUtilsTest {
 
   @Test
   public void testGetIspConfigurationNode() {
-    InterfaceAddress interfaceAddress = new InterfaceAddress(Ip.parse("2.2.2.2"), 30);
+    ConcreteInterfaceAddress interfaceAddress = ConcreteInterfaceAddress.create(Ip.parse("2.2.2.2"), 30);
     BgpActivePeerConfig peer =
         BgpActivePeerConfig.builder()
             .setPeerAddress(Ip.parse("1.1.1.1"))
@@ -208,8 +208,8 @@ public class IspModelingUtilsTest {
 
   @Test
   public void testGetIspConfigurationNodeInvalid() {
-    InterfaceAddress interfaceAddress = new InterfaceAddress(Ip.parse("2.2.2.2"), 30);
-    InterfaceAddress interfaceAddress2 = new InterfaceAddress(Ip.parse("3.3.3.3"), 30);
+    ConcreteInterfaceAddress interfaceAddress = ConcreteInterfaceAddress.create(Ip.parse("2.2.2.2"), 30);
+    ConcreteInterfaceAddress interfaceAddress2 = ConcreteInterfaceAddress.create(Ip.parse("3.3.3.3"), 30);
     BgpActivePeerConfig peer =
         BgpActivePeerConfig.builder()
             .setPeerAddress(Ip.parse("1.1.1.1"))
@@ -241,7 +241,7 @@ public class IspModelingUtilsTest {
     nf.interfaceBuilder()
         .setName("interface")
         .setOwner(configuration)
-        .setAddress(new InterfaceAddress(Ip.parse("2.2.2.2"), 24))
+        .setAddress(ConcreteInterfaceAddress.create(Ip.parse("2.2.2.2"), 24))
         .build();
     BgpActivePeerConfig peer =
         BgpActivePeerConfig.builder()
@@ -278,7 +278,7 @@ public class IspModelingUtilsTest {
     assertThat(ispInfo.getBgpActivePeerConfigs(), equalTo(ImmutableList.of(reversedPeer)));
     assertThat(
         ispInfo.getInterfaceAddresses(),
-        equalTo(ImmutableList.of(new InterfaceAddress(Ip.parse("1.1.1.1"), 24))));
+        equalTo(ImmutableList.of(ConcreteInterfaceAddress.create(Ip.parse("1.1.1.1"), 24))));
   }
 
   @Test
@@ -291,7 +291,7 @@ public class IspModelingUtilsTest {
     nf.interfaceBuilder()
         .setName("interface")
         .setOwner(ispConfiguration)
-        .setAddress(new InterfaceAddress(Ip.parse("2.2.2.2"), 24))
+        .setAddress(ConcreteInterfaceAddress.create(Ip.parse("2.2.2.2"), 24))
         .build();
     BgpActivePeerConfig peer =
         BgpActivePeerConfig.builder()
@@ -310,9 +310,8 @@ public class IspModelingUtilsTest {
   @Test
   public void testCreateInternetNode() {
     Configuration internet = IspModelingUtils.createInternetNode(new NetworkFactory());
-    InterfaceAddress interfaceAddress =
-        new InterfaceAddress(
-            IspModelingUtils.INTERNET_OUT_ADDRESS, IspModelingUtils.INTERNET_OUT_SUBNET);
+    ConcreteInterfaceAddress interfaceAddress = ConcreteInterfaceAddress.create(
+        IspModelingUtils.INTERNET_OUT_ADDRESS, IspModelingUtils.INTERNET_OUT_SUBNET);
     assertThat(
         internet,
         allOf(
@@ -351,7 +350,7 @@ public class IspModelingUtilsTest {
     nf.interfaceBuilder()
         .setName("Interface")
         .setOwner(configuration)
-        .setAddress(new InterfaceAddress(Ip.parse("2.2.2.2"), 24))
+        .setAddress(ConcreteInterfaceAddress.create(Ip.parse("2.2.2.2"), 24))
         .build();
     BgpActivePeerConfig peer =
         BgpActivePeerConfig.builder()
@@ -390,7 +389,7 @@ public class IspModelingUtilsTest {
     nf.interfaceBuilder()
         .setName("interface")
         .setOwner(configuration)
-        .setAddress(new InterfaceAddress(Ip.parse("2.2.2.2"), 24))
+        .setAddress(ConcreteInterfaceAddress.create(Ip.parse("2.2.2.2"), 24))
         .build();
     BgpActivePeerConfig peer =
         BgpActivePeerConfig.builder()
@@ -423,7 +422,7 @@ public class IspModelingUtilsTest {
             hasInterface(
                 "~Interface_1~",
                 hasAllAddresses(
-                    equalTo(ImmutableSet.of(new InterfaceAddress(Ip.parse("240.1.1.2"), 31))))),
+                    equalTo(ImmutableSet.of(ConcreteInterfaceAddress.create(Ip.parse("240.1.1.2"), 31))))),
             hasVrf(
                 DEFAULT_VRF_NAME,
                 hasBgpProcess(
@@ -444,7 +443,7 @@ public class IspModelingUtilsTest {
     assertThat(internetAndIsps, hasKey("isp_1"));
     Configuration ispNode = internetAndIsps.get("isp_1");
 
-    ImmutableSet<InterfaceAddress> interfaceAddresses =
+    ImmutableSet<ConcreteInterfaceAddress> interfaceAddresses =
         ispNode.getAllInterfaces().values().stream()
             .flatMap(iface -> iface.getAllAddresses().stream())
             .collect(ImmutableSet.toImmutableSet());
@@ -452,8 +451,8 @@ public class IspModelingUtilsTest {
         interfaceAddresses,
         equalTo(
             ImmutableSet.of(
-                new InterfaceAddress(Ip.parse("240.1.1.3"), 31),
-                new InterfaceAddress(Ip.parse("1.1.1.1"), 24))));
+                ConcreteInterfaceAddress.create(Ip.parse("240.1.1.3"), 31),
+                ConcreteInterfaceAddress.create(Ip.parse("1.1.1.1"), 24))));
 
     assertThat(
         ispNode,
@@ -552,7 +551,7 @@ public class IspModelingUtilsTest {
     nf.interfaceBuilder()
         .setName("interface1")
         .setOwner(configuration1)
-        .setAddress(new InterfaceAddress(Ip.parse("1.1.1.1"), 24))
+        .setAddress(ConcreteInterfaceAddress.create(Ip.parse("1.1.1.1"), 24))
         .build();
     Vrf vrfConf1 = nf.vrfBuilder().setName(DEFAULT_VRF_NAME).setOwner(configuration1).build();
     BgpProcess bgpProcess1 = pb.setRouterId(Ip.parse("1.1.1.1")).setVrf(vrfConf1).build();
@@ -570,7 +569,7 @@ public class IspModelingUtilsTest {
     nf.interfaceBuilder()
         .setName("interface2")
         .setOwner(configuration2)
-        .setAddress(new InterfaceAddress(Ip.parse("2.2.2.2"), 24))
+        .setAddress(ConcreteInterfaceAddress.create(Ip.parse("2.2.2.2"), 24))
         .build();
     Vrf vrfConf2 = nf.vrfBuilder().setName(DEFAULT_VRF_NAME).setOwner(configuration2).build();
     BgpProcess bgpProcess2 = pb.setVrf(vrfConf2).setRouterId(Ip.parse("2.2.2.2")).build();
@@ -619,7 +618,7 @@ public class IspModelingUtilsTest {
     nf.interfaceBuilder()
         .setName("interface1")
         .setOwner(configuration1)
-        .setAddress(new InterfaceAddress(Ip.parse("1.1.1.1"), 24))
+        .setAddress(ConcreteInterfaceAddress.create(Ip.parse("1.1.1.1"), 24))
         .build();
     Vrf vrfConf1 = nf.vrfBuilder().setName(DEFAULT_VRF_NAME).setOwner(configuration1).build();
     BgpProcess bgpProcess1 =

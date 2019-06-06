@@ -7,10 +7,10 @@ import com.google.common.collect.ImmutableSet;
 import java.util.Set;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.IntegerSpace;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Interface.Dependency;
-import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.InterfaceType;
 import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.SwitchportMode;
@@ -73,11 +73,12 @@ public final class InterfaceMatchers {
 
   /** Provides a matcher that matches if the interface's address is {@code expectedAddress}. */
   public static @Nonnull Matcher<Interface> hasAddress(@Nonnull String expectedAddress) {
-    return new HasAddress(equalTo(new InterfaceAddress(expectedAddress)));
+    return new HasAddress(equalTo(ConcreteInterfaceAddress.parse(expectedAddress)));
   }
 
   /** Provides a matcher that matches if the interface's address is {@code expectedAddress}. */
-  public static @Nonnull Matcher<Interface> hasAddress(@Nonnull InterfaceAddress expectedAddress) {
+  public static @Nonnull Matcher<Interface> hasAddress(
+      @Nonnull ConcreteInterfaceAddress expectedAddress) {
     return new HasAddress(equalTo(expectedAddress));
   }
 
@@ -86,7 +87,7 @@ public final class InterfaceMatchers {
    * address.
    */
   public static @Nonnull Matcher<Interface> hasAddress(
-      @Nonnull Matcher<? super InterfaceAddress> subMatcher) {
+      @Nonnull Matcher<? super ConcreteInterfaceAddress> subMatcher) {
     return new HasAddress(subMatcher);
   }
 
@@ -95,7 +96,7 @@ public final class InterfaceMatchers {
    * allAddresses.
    */
   public static Matcher<Interface> hasAllAddresses(
-      Matcher<? super Set<InterfaceAddress>> subMatcher) {
+      Matcher<? super Set<ConcreteInterfaceAddress>> subMatcher) {
     return new HasAllAddresses(subMatcher);
   }
 

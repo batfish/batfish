@@ -22,13 +22,13 @@ import java.util.Map;
 import org.batfish.datamodel.AsPathAccessList;
 import org.batfish.datamodel.AuthenticationKeyChain;
 import org.batfish.datamodel.CommunityList;
+import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.IkePhase1Key;
 import org.batfish.datamodel.IkePhase1Policy;
 import org.batfish.datamodel.IkePhase1Proposal;
 import org.batfish.datamodel.Interface;
-import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip6AccessList;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpsecPhase2Policy;
@@ -104,9 +104,9 @@ public final class CompletionMetadataUtilsTest {
     String address2 = ip2 + "/24";
     String address3 = ip3 + "/20";
 
-    InterfaceAddress interfaceAddress1 = new InterfaceAddress(address1);
-    InterfaceAddress interfaceAddress2 = new InterfaceAddress(address2);
-    InterfaceAddress interfaceAddress3 = new InterfaceAddress(address3);
+    ConcreteInterfaceAddress interfaceAddress1 = ConcreteInterfaceAddress.parse(address1);
+    ConcreteInterfaceAddress interfaceAddress2 = ConcreteInterfaceAddress.parse(address2);
+    ConcreteInterfaceAddress interfaceAddress3 = ConcreteInterfaceAddress.parse(address3);
 
     Map<String, Configuration> configs = new HashMap<>();
     Configuration config = createTestConfiguration(nodeName, ConfigurationFormat.HOST, int1, int2);
@@ -179,9 +179,9 @@ public final class CompletionMetadataUtilsTest {
     String address2 = "128.212.155.30/24";
     String address3 = "124.51.32.2/20";
 
-    InterfaceAddress interfaceAddress1 = new InterfaceAddress(address1);
-    InterfaceAddress interfaceAddress2 = new InterfaceAddress(address2);
-    InterfaceAddress interfaceAddress3 = new InterfaceAddress(address3);
+    ConcreteInterfaceAddress interfaceAddress1 = ConcreteInterfaceAddress.parse(address1);
+    ConcreteInterfaceAddress interfaceAddress2 = ConcreteInterfaceAddress.parse(address2);
+    ConcreteInterfaceAddress interfaceAddress3 = ConcreteInterfaceAddress.parse(address3);
 
     Map<String, Configuration> configs = new HashMap<>();
     Configuration config = createTestConfiguration(nodeName, ConfigurationFormat.HOST, int1, int2);

@@ -41,7 +41,7 @@ import org.batfish.datamodel.IcmpType;
 import org.batfish.datamodel.IntegerSpace;
 import org.batfish.datamodel.Interface.Dependency;
 import org.batfish.datamodel.Interface.DependencyType;
-import org.batfish.datamodel.InterfaceAddress;
+import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.InterfaceType;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpAccessList;
@@ -714,7 +714,7 @@ public class F5BigipConfiguration extends VendorConfiguration {
         : _c.getAllInterfaces().values().stream()
             .map(org.batfish.datamodel.Interface::getAllAddresses)
             .flatMap(Collection::stream)
-            .map(InterfaceAddress::getIp)
+            .map(ConcreteInterfaceAddress::getIp)
             .max(Ip::compareTo)
             .orElse(Ip.ZERO);
   }
@@ -785,7 +785,7 @@ public class F5BigipConfiguration extends VendorConfiguration {
       org.batfish.datamodel.Interface sourceInterface =
           _c.getDefaultVrf().getInterfaces().get(updateSourceInterface);
       if (sourceInterface != null) {
-        InterfaceAddress address = sourceInterface.getAddress();
+        ConcreteInterfaceAddress address = sourceInterface.getAddress();
         if (address != null) {
           return address.getIp();
         } else {
@@ -800,7 +800,7 @@ public class F5BigipConfiguration extends VendorConfiguration {
     // get IP from update-source.
     // So try to get IP of an interface in same network as neighbor address.
     for (org.batfish.datamodel.Interface iface : _c.getDefaultVrf().getInterfaces().values()) {
-      for (InterfaceAddress interfaceAddress : iface.getAllAddresses()) {
+      for (ConcreteInterfaceAddress interfaceAddress : iface.getAllAddresses()) {
         if (interfaceAddress.getPrefix().containsIp(neighborAddress)) {
           return interfaceAddress.getIp();
         }
@@ -1048,7 +1048,7 @@ public class F5BigipConfiguration extends VendorConfiguration {
     if (vlanIface == null) {
       return;
     }
-    InterfaceAddress address = self.getAddress();
+    ConcreteInterfaceAddress address = self.getAddress();
     if (address == null) {
       // IPv6
       return;

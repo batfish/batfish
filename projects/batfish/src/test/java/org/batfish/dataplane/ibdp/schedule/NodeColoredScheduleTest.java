@@ -19,10 +19,10 @@ import java.util.Map.Entry;
 import org.batfish.common.topology.TopologyUtil;
 import org.batfish.datamodel.BgpActivePeerConfig;
 import org.batfish.datamodel.BgpProcess;
+import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.Interface;
-import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.NetworkConfigurations;
 import org.batfish.datamodel.NetworkFactory;
@@ -78,7 +78,7 @@ public class NodeColoredScheduleTest {
     final Ip R2_IP = Ip.parse("1.1.1.2");
     // Interface
     Interface i1 =
-        ib.setOwner(r1).setVrf(vrf1).setAddress(new InterfaceAddress(R1_IP, networkBits)).build();
+        ib.setOwner(r1).setVrf(vrf1).setAddress(ConcreteInterfaceAddress.create(R1_IP, networkBits)).build();
     // Make OSPF process and areas
     OspfArea r1ospfArea = ospfArea.setInterfaces(ImmutableSet.of(i1.getName())).build();
     ob.setVrf(vrf1).setAreas(ImmutableSortedMap.of(0L, r1ospfArea)).build();
@@ -96,7 +96,7 @@ public class NodeColoredScheduleTest {
     Vrf vrf2 = vb.setOwner(r2).build();
     // Interface
     Interface i2 =
-        ib.setOwner(r2).setVrf(vrf2).setAddress(new InterfaceAddress(R2_IP, networkBits)).build();
+        ib.setOwner(r2).setVrf(vrf2).setAddress(ConcreteInterfaceAddress.create(R2_IP, networkBits)).build();
     // Make OSPF process and areas
     OspfArea r2ospfArea = ospfArea.setInterfaces(ImmutableSet.of(i2.getName())).build();
     ob.setVrf(vrf2).setAreas(ImmutableSortedMap.of(0L, r2ospfArea)).build();

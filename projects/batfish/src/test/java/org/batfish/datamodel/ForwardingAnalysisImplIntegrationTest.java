@@ -72,7 +72,7 @@ public class ForwardingAnalysisImplIntegrationTest {
             .setOwner(c)
             .setVrf(vrf)
             .setActive(true)
-            .setAddress(new InterfaceAddress("1.1.1.1/31"))
+            .setAddress(ConcreteInterfaceAddress.parse("1.1.1.1/31"))
             .build();
 
     String hostname = c.getHostname();
@@ -129,7 +129,7 @@ public class ForwardingAnalysisImplIntegrationTest {
         nf.interfaceBuilder()
             .setOwner(c1)
             .setVrf(vrf1)
-            .setAddress(new InterfaceAddress("1.0.0.1/24"))
+            .setAddress(ConcreteInterfaceAddress.parse("1.0.0.1/24"))
             .build();
 
     Prefix prefix = Prefix.parse("10.0.0.0/16");
@@ -148,7 +148,7 @@ public class ForwardingAnalysisImplIntegrationTest {
         nf.interfaceBuilder()
             .setOwner(c2)
             .setVrf(vrf2)
-            .setAddress(new InterfaceAddress("1.0.0.2/24"))
+            .setAddress(ConcreteInterfaceAddress.parse("1.0.0.2/24"))
             .setProxyArp(true)
             .build();
 

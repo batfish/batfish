@@ -14,7 +14,7 @@ import java.util.SortedSet;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
-import org.batfish.datamodel.InterfaceAddress;
+import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 
 /** Edge representing Layer 3 neighbors */
@@ -29,15 +29,15 @@ public class Layer3Edge implements Comparable<Layer3Edge> {
 
   @Nonnull private final NodeInterfacePair _nodeInterface2;
 
-  @Nonnull private final SortedSet<InterfaceAddress> _interfaceAddresses1;
+  @Nonnull private final SortedSet<ConcreteInterfaceAddress> _interfaceAddresses1;
 
-  @Nonnull private final SortedSet<InterfaceAddress> _interfaceAddresses2;
+  @Nonnull private final SortedSet<ConcreteInterfaceAddress> _interfaceAddresses2;
 
   public Layer3Edge(
       NodeInterfacePair nodeInterface1,
       NodeInterfacePair nodeInterface2,
-      SortedSet<InterfaceAddress> interfaceAddresses1,
-      SortedSet<InterfaceAddress> interfaceAddresses2) {
+      SortedSet<ConcreteInterfaceAddress> interfaceAddresses1,
+      SortedSet<ConcreteInterfaceAddress> interfaceAddresses2) {
     _nodeInterface1 = nodeInterface1;
     _nodeInterface2 = nodeInterface2;
     _interfaceAddresses1 = interfaceAddresses1;
@@ -49,9 +49,9 @@ public class Layer3Edge implements Comparable<Layer3Edge> {
       @JsonProperty(PROP_NODE_INTERFACE1) @Nullable NodeInterfacePair nodeInterface1,
       @JsonProperty(PROP_NODE_INTERFACE2) @Nullable NodeInterfacePair nodeInterface2,
       @JsonProperty(PROP_INTERFACE_ADDRESSES1) @Nullable
-          SortedSet<InterfaceAddress> interfaceAddresses1,
+          SortedSet<ConcreteInterfaceAddress> interfaceAddresses1,
       @JsonProperty(PROP_INTERFACE_ADDRESSES2) @Nullable
-          SortedSet<InterfaceAddress> interfaceAddresses2) {
+          SortedSet<ConcreteInterfaceAddress> interfaceAddresses2) {
     checkArgument(nodeInterface1 != null, "Missing %s", PROP_NODE_INTERFACE1);
     checkArgument(nodeInterface2 != null, "Missing %s", PROP_NODE_INTERFACE2);
     return new Layer3Edge(
@@ -96,13 +96,13 @@ public class Layer3Edge implements Comparable<Layer3Edge> {
 
   @JsonProperty(PROP_INTERFACE_ADDRESSES1)
   @Nonnull
-  public SortedSet<InterfaceAddress> getInterfaceAddresses1() {
+  public SortedSet<ConcreteInterfaceAddress> getInterfaceAddresses1() {
     return _interfaceAddresses1;
   }
 
   @JsonProperty(PROP_INTERFACE_ADDRESSES2)
   @Nonnull
-  public SortedSet<InterfaceAddress> getInterfaceAddresses2() {
+  public SortedSet<ConcreteInterfaceAddress> getInterfaceAddresses2() {
     return _interfaceAddresses2;
   }
 

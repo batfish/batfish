@@ -3,10 +3,10 @@ package org.batfish.datamodel.matchers;
 import java.util.Set;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.IntegerSpace;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Interface.Dependency;
-import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.InterfaceType;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpSpace;
@@ -44,24 +44,24 @@ final class InterfaceMatchersImpl {
     }
   }
 
-  static final class HasAddress extends FeatureMatcher<Interface, InterfaceAddress> {
-    HasAddress(@Nonnull Matcher<? super InterfaceAddress> subMatcher) {
+  static final class HasAddress extends FeatureMatcher<Interface, ConcreteInterfaceAddress> {
+    HasAddress(@Nonnull Matcher<? super ConcreteInterfaceAddress> subMatcher) {
       super(subMatcher, "An Interface with address:", "address");
     }
 
     @Override
-    protected InterfaceAddress featureValueOf(Interface actual) {
+    protected ConcreteInterfaceAddress featureValueOf(Interface actual) {
       return actual.getAddress();
     }
   }
 
-  static final class HasAllAddresses extends FeatureMatcher<Interface, Set<InterfaceAddress>> {
-    HasAllAddresses(@Nonnull Matcher<? super Set<InterfaceAddress>> subMatcher) {
+  static final class HasAllAddresses extends FeatureMatcher<Interface, Set<ConcreteInterfaceAddress>> {
+    HasAllAddresses(@Nonnull Matcher<? super Set<ConcreteInterfaceAddress>> subMatcher) {
       super(subMatcher, "An Interface with allAddresses:", "allAddresses");
     }
 
     @Override
-    protected Set<InterfaceAddress> featureValueOf(Interface actual) {
+    protected Set<ConcreteInterfaceAddress> featureValueOf(Interface actual) {
       return actual.getAllAddresses();
     }
   }

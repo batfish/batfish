@@ -19,6 +19,7 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Set;
 import java.util.SortedMap;
+import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.ConnectedRoute;
@@ -28,7 +29,6 @@ import org.batfish.datamodel.FibEntry;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.FlowDisposition;
 import org.batfish.datamodel.Interface;
-import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.MockFib;
@@ -90,9 +90,9 @@ public class TracerouteEngineTest {
     Vrf vrf1 = vb.build();
     Vrf vrf2 = vb.build();
 
-    Interface i1 = ib.setVrf(vrf1).setAddress(new InterfaceAddress("1.1.1.1/24")).build();
-    Interface i2 = ib.setVrf(vrf2).setAddress(new InterfaceAddress("2.2.2.2/24")).build();
-    ib.setVrf(vrf2).setAddress(new InterfaceAddress("3.3.3.3/24")).build();
+    Interface i1 = ib.setVrf(vrf1).setAddress(ConcreteInterfaceAddress.parse("1.1.1.1/24")).build();
+    Interface i2 = ib.setVrf(vrf2).setAddress(ConcreteInterfaceAddress.parse("2.2.2.2/24")).build();
+    ib.setVrf(vrf2).setAddress(ConcreteInterfaceAddress.parse("3.3.3.3/24")).build();
 
     // Compute data plane
     SortedMap<String, Configuration> configs = ImmutableSortedMap.of(config.getHostname(), config);
@@ -130,15 +130,21 @@ public class TracerouteEngineTest {
 
     Configuration source = cb.build();
     Vrf vSource = vb.setOwner(source).build();
-    ib.setOwner(source).setVrf(vSource).setAddress(new InterfaceAddress("10.0.0.1/24")).build();
+    ib.setOwner(source)
+        .setVrf(vSource)
+        .setAddress(ConcreteInterfaceAddress.parse("10.0.0.1/24"))
+        .build();
 
     Configuration dst = cb.build();
     Vrf vDst = vb.setOwner(dst).build();
-    ib.setOwner(dst).setVrf(vDst).setAddress(new InterfaceAddress("10.0.0.2/24")).build();
+    ib.setOwner(dst).setVrf(vDst).setAddress(ConcreteInterfaceAddress.parse("10.0.0.2/24")).build();
 
     Configuration other = cb.build();
     Vrf vOther = vb.setOwner(other).build();
-    ib.setOwner(other).setVrf(vOther).setAddress(new InterfaceAddress("10.0.0.3/24")).build();
+    ib.setOwner(other)
+        .setVrf(vOther)
+        .setAddress(ConcreteInterfaceAddress.parse("10.0.0.3/24"))
+        .build();
 
     SortedMap<String, Configuration> configurations =
         ImmutableSortedMap.<String, Configuration>naturalOrder()
@@ -181,10 +187,14 @@ public class TracerouteEngineTest {
     NetworkFactory nf = new NetworkFactory();
     Interface.Builder ib = nf.interfaceBuilder();
 
-    Interface i1 = ib.setAddress(new InterfaceAddress("1.1.1.0/24")).setProxyArp(true).build();
-    Interface i2 = ib.setAddress(new InterfaceAddress("2.2.2.0/24")).setProxyArp(true).build();
-    Interface i3 = ib.setAddress(new InterfaceAddress("3.3.3.0/24")).setProxyArp(false).build();
-    Interface i4 = ib.setAddress(new InterfaceAddress("4.4.4.4/24")).setProxyArp(false).build();
+    Interface i1 =
+        ib.setAddress(ConcreteInterfaceAddress.parse("1.1.1.0/24")).setProxyArp(true).build();
+    Interface i2 =
+        ib.setAddress(ConcreteInterfaceAddress.parse("2.2.2.0/24")).setProxyArp(true).build();
+    Interface i3 =
+        ib.setAddress(ConcreteInterfaceAddress.parse("3.3.3.0/24")).setProxyArp(false).build();
+    Interface i4 =
+        ib.setAddress(ConcreteInterfaceAddress.parse("4.4.4.4/24")).setProxyArp(false).build();
     Interface i5 = ib.setAddress(null).setProxyArp(true).build();
 
     Ip arpIp = Ip.parse("4.4.4.4");
@@ -269,7 +279,7 @@ public class TracerouteEngineTest {
     nf.interfaceBuilder()
         .setOwner(c)
         .setVrf(v)
-        .setAddress(new InterfaceAddress("1.0.0.0/24"))
+        .setAddress(ConcreteInterfaceAddress.parse("1.0.0.0/24"))
         .setOutgoingFilter(outgoingFilter)
         .build();
     SortedMap<String, Configuration> configurations = ImmutableSortedMap.of(c.getHostname(), c);
@@ -304,7 +314,7 @@ public class TracerouteEngineTest {
     ib.setOwner(c1)
         .setVrf(v1)
         .setOutgoingFilter(outgoingFilter)
-        .setAddress(new InterfaceAddress("1.0.0.0/24"))
+        .setAddress(ConcreteInterfaceAddress.parse("1.0.0.0/24"))
         .build();
 
     // c2
@@ -313,7 +323,7 @@ public class TracerouteEngineTest {
     ib.setOwner(c2)
         .setVrf(v2)
         .setOutgoingFilter(null)
-        .setAddress(new InterfaceAddress("1.0.0.3/24"))
+        .setAddress(ConcreteInterfaceAddress.parse("1.0.0.3/24"))
         .build();
 
     SortedMap<String, Configuration> configurations =

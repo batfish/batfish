@@ -11,10 +11,10 @@ import static org.junit.Assert.assertThat;
 import com.google.common.collect.ImmutableSortedMap;
 import java.util.Map;
 import java.util.Set;
+import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.Interface;
-import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.Prefix;
@@ -28,8 +28,8 @@ public class VrrpComputationTest {
   private NetworkFactory _nf;
   private Interface _i1;
   private Interface _i2;
-  private InterfaceAddress _virtInterfaceAddr =
-      new InterfaceAddress(Ip.parse("1.1.1.1"), Prefix.MAX_PREFIX_LENGTH);
+  private ConcreteInterfaceAddress _virtInterfaceAddr =
+      ConcreteInterfaceAddress.create(Ip.parse("1.1.1.1"), Prefix.MAX_PREFIX_LENGTH);
 
   @Before
   public void setup() {
@@ -67,13 +67,13 @@ public class VrrpComputationTest {
 
     _i1 =
         ib.setOwner(c1)
-            .setAddress(new InterfaceAddress("1.1.1.22/32"))
+            .setAddress(ConcreteInterfaceAddress.parse("1.1.1.22/32"))
             .setVrrpGroups(ImmutableSortedMap.of(vrrpGroupId, vg1))
             .build();
 
     _i2 =
         ib.setOwner(c2)
-            .setAddress(new InterfaceAddress("1.1.1.33/32"))
+            .setAddress(ConcreteInterfaceAddress.parse("1.1.1.33/32"))
             .setVrrpGroups(ImmutableSortedMap.of(vrrpGroupId, vg2))
             .build();
 

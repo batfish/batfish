@@ -15,13 +15,13 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 import org.batfish.common.BatfishException;
 import org.batfish.common.VendorConversionException;
+import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.IkeKeyType;
 import org.batfish.datamodel.IkePhase1Key;
 import org.batfish.datamodel.IkePhase1Policy;
 import org.batfish.datamodel.IkePhase1Proposal;
-import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpsecPeerConfig;
 import org.batfish.datamodel.IpsecPhase2Policy;
@@ -300,12 +300,12 @@ public class VyosConfiguration extends VendorConfiguration {
     newIface.setActive(true); // TODO: may have to change
     newIface.setBandwidth(iface.getBandwidth());
     newIface.setDescription(iface.getDescription());
-    InterfaceAddress address = iface.getAddress();
+    ConcreteInterfaceAddress address = iface.getAddress();
     if (address != null) {
       newIface.setAddress(iface.getAddress());
     }
     newIface.getAllAddresses().addAll(iface.getAllAddresses());
-    for (InterfaceAddress p : newIface.getAllAddresses()) {
+    for (ConcreteInterfaceAddress p : newIface.getAllAddresses()) {
       _ipToInterfaceMap.put(p.getIp(), newIface);
     }
     return newIface;
