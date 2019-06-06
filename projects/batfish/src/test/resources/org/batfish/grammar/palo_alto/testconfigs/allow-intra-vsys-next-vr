@@ -1,0 +1,13 @@
+set deviceconfig system hostname allow-intra-vsys-next-vr
+set network interface ethernet ethernet1/1 layer3 ip 10.0.1.1/24
+set network interface ethernet ethernet1/2 layer3 ip 10.0.2.1/24
+set network virtual-router vr1 interface ethernet1/1
+set network virtual-router vr1 routing-table ip static-route sr1 destination 0.0.0.0/0
+set network virtual-router vr1 routing-table ip static-route sr1 nexthop next-vr vr2
+set network virtual-router vr2 interface ethernet1/2
+set network virtual-router vr2 routing-table ip static-route sr2 destination 0.0.0.0/0
+set network virtual-router vr2 routing-table ip static-route sr2 nexthop next-vr vr1
+set vsys vsys1 import network interface ethernet1/1
+set vsys vsys1 import network interface ethernet1/2
+set vsys vsys1 zone z network layer3 ethernet1/1
+set vsys vsys1 zone z network layer3 ethernet1/2
