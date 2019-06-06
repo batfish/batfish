@@ -629,11 +629,6 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
     Zone zone = iface.getZone();
     if (zone != null) {
       newIface.setZoneName(zone.getName());
-    } else {
-      _w.redFlag(
-          String.format(
-              "Interface %s is not in a zone and will be treated as inactive", newIface.getName()));
-      newIface.setActive(false);
     }
 
     IpAccessList outgoing = computeOutgoingAcl(iface);

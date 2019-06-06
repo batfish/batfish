@@ -76145,7 +76145,7 @@
         "ospf-disable" : "PASSED",
         "palo_alto_virtual_routers" : "PASSED",
         "paloalto_applications" : "PASSED",
-        "paloalto_interfaces" : "WARNINGS",
+        "paloalto_interfaces" : "PASSED",
         "paloalto_policy" : "PASSED",
         "paloalto_zones" : "PASSED",
         "peer_template" : "WARNINGS",
@@ -90802,46 +90802,6 @@
             {
               "tag" : "MISCELLANEOUS",
               "text" : "Router-id is not manually configured for BGP process in VRF default. Unable to infer default router-id as no interfaces have IP addresses"
-            }
-          ]
-        },
-        "paloalto_interfaces" : {
-          "Red flags" : [
-            {
-              "tag" : "MISCELLANEOUS",
-              "text" : "Interface ethernet1/1 is not in a zone and will be treated as inactive"
-            },
-            {
-              "tag" : "MISCELLANEOUS",
-              "text" : "Interface ethernet1/1.4 is not in a zone and will be treated as inactive"
-            },
-            {
-              "tag" : "MISCELLANEOUS",
-              "text" : "Interface ethernet1/1.5 is not in a zone and will be treated as inactive"
-            },
-            {
-              "tag" : "MISCELLANEOUS",
-              "text" : "Interface loopback is not in a zone and will be treated as inactive"
-            },
-            {
-              "tag" : "MISCELLANEOUS",
-              "text" : "Interface loopback.1 is not in a zone and will be treated as inactive"
-            },
-            {
-              "tag" : "MISCELLANEOUS",
-              "text" : "Interface tunnel is not in a zone and will be treated as inactive"
-            },
-            {
-              "tag" : "MISCELLANEOUS",
-              "text" : "Interface tunnel.3 is not in a zone and will be treated as inactive"
-            },
-            {
-              "tag" : "MISCELLANEOUS",
-              "text" : "Interface vlan is not in a zone and will be treated as inactive"
-            },
-            {
-              "tag" : "MISCELLANEOUS",
-              "text" : "Interface vlan.1 is not in a zone and will be treated as inactive"
             }
           ]
         },

@@ -29742,7 +29742,7 @@
         "interfaces" : {
           "ethernet1/1" : {
             "name" : "ethernet1/1",
-            "active" : false,
+            "active" : true,
             "additionalArpIps" : {
               "class" : "org.batfish.datamodel.EmptyIpSpace"
             },
@@ -29766,7 +29766,7 @@
           },
           "ethernet1/1.4" : {
             "name" : "ethernet1/1.4",
-            "active" : false,
+            "active" : true,
             "additionalArpIps" : {
               "class" : "org.batfish.datamodel.EmptyIpSpace"
             },
@@ -29792,7 +29792,7 @@
           },
           "ethernet1/1.5" : {
             "name" : "ethernet1/1.5",
-            "active" : false,
+            "active" : true,
             "additionalArpIps" : {
               "class" : "org.batfish.datamodel.EmptyIpSpace"
             },
@@ -29818,7 +29818,7 @@
           },
           "loopback" : {
             "name" : "loopback",
-            "active" : false,
+            "active" : true,
             "additionalArpIps" : {
               "class" : "org.batfish.datamodel.EmptyIpSpace"
             },
@@ -29843,7 +29843,7 @@
           },
           "loopback.1" : {
             "name" : "loopback.1",
-            "active" : false,
+            "active" : true,
             "additionalArpIps" : {
               "class" : "org.batfish.datamodel.EmptyIpSpace"
             },
@@ -29867,7 +29867,7 @@
           },
           "tunnel" : {
             "name" : "tunnel",
-            "active" : false,
+            "active" : true,
             "additionalArpIps" : {
               "class" : "org.batfish.datamodel.EmptyIpSpace"
             },
@@ -29891,7 +29891,7 @@
           },
           "tunnel.3" : {
             "name" : "tunnel.3",
-            "active" : false,
+            "active" : true,
             "additionalArpIps" : {
               "class" : "org.batfish.datamodel.EmptyIpSpace"
             },
@@ -29916,7 +29916,7 @@
           },
           "vlan" : {
             "name" : "vlan",
-            "active" : false,
+            "active" : true,
             "additionalArpIps" : {
               "class" : "org.batfish.datamodel.EmptyIpSpace"
             },

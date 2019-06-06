@@ -581,8 +581,8 @@ public class PaloAltoGrammarTest {
     // Confirm link status is extracted
     assertThat(c, hasInterface(interfaceName1, isActive()));
     assertThat(c, hasInterface(interfaceName2, not(isActive())));
-    assertThat(c, hasInterface(interfaceName3, not(isActive())));
-    assertThat(c, hasInterface(interfaceName311, not(isActive())));
+    assertThat(c, hasInterface(interfaceName3, isActive()));
+    assertThat(c, hasInterface(interfaceName311, isActive()));
 
     // Confirm tag extraction for units
     assertThat(c, hasInterface(interfaceName311, hasVlan(11)));
