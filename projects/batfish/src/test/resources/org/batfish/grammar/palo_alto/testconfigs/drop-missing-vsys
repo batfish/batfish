@@ -1,0 +1,6 @@
+set deviceconfig system hostname drop-missing-vsys
+set network interface ethernet ethernet1/1 layer3 ip 10.0.1.1/24
+set network interface ethernet ethernet1/2 layer3 ip 10.0.2.1/24
+set network virtual-router vr1 interface ethernet1/1
+set network virtual-router vr1 interface ethernet1/2
+! missing vsys configuration
