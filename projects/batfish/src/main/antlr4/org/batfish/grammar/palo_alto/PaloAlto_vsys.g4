@@ -8,13 +8,18 @@ options {
 
 s_vsys
 :
-    VSYS name = variable
+    VSYS s_vsys_definition?
+;
+
+s_vsys_definition
+:
+    name = variable
     (
         s_rulebase
         | s_zone
         | ss_common
         | sv_import
-    )
+    )?
 ;
 
 sv_import

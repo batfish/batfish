@@ -300,7 +300,6 @@ import static org.batfish.representation.cisco.CiscoStructureUsage.WCCP_SERVICE_
 import static org.batfish.representation.cisco.CiscoStructureUsage.ZONE_PAIR_DESTINATION_ZONE;
 import static org.batfish.representation.cisco.CiscoStructureUsage.ZONE_PAIR_INSPECT_SERVICE_POLICY;
 import static org.batfish.representation.cisco.CiscoStructureUsage.ZONE_PAIR_SOURCE_ZONE;
-import static org.batfish.representation.cisco.Interface.ALL_VLANS;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
@@ -6583,25 +6582,23 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     } else {
       throw new BatfishException("Unhandled switchport mode");
     }
-    for (Interface currentInterface : _currentInterfaces) {
-      currentInterface.setSwitchportMode(mode);
-      if (mode == SwitchportMode.TRUNK) {
-        currentInterface.setAllowedVlans(ALL_VLANS);
-      } else {
-        currentInterface.setAllowedVlans(null);
-      }
-    }
+    _currentInterfaces.forEach(iface -> iface.setSwitchportMode(mode));
   }
 
   @Override
   public void exitIf_switchport_trunk_allowed(If_switchport_trunk_allowedContext ctx) {
-    List<SubRange> ranges = toRange(ctx.r);
-    IntegerSpace allowed = IntegerSpace.builder().includingAllSubRanges(ranges).build();
+    if (ctx.NONE() != null) {
+      _currentInterfaces.forEach(iface -> iface.setAllowedVlans(IntegerSpace.EMPTY));
+      return;
+    }
+    IntegerSpace allowed = IntegerSpace.builder().includingAllSubRanges(toRange(ctx.r)).build();
     for (Interface currentInterface : _currentInterfaces) {
       if (ctx.ADD() != null) {
-        IntegerSpace current = firstNonNull(currentInterface.getAllowedVlans(), IntegerSpace.EMPTY);
-        IntegerSpace space = IntegerSpace.builder().including(allowed).including(current).build();
-        currentInterface.setAllowedVlans(space);
+        currentInterface.setAllowedVlans(
+            IntegerSpace.builder()
+                .including(allowed)
+                .including(firstNonNull(currentInterface.getAllowedVlans(), IntegerSpace.EMPTY))
+                .build());
       } else {
         currentInterface.setAllowedVlans(allowed);
       }
