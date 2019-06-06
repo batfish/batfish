@@ -1412,5 +1412,4 @@ public class PaloAltoGrammarTest {
     assertThat(c, hasInterface("ethernet1/2", hasZoneName(equalTo("zone 1"))));
     assertThat(c, hasInterface("ethernet1/3", hasZoneName(is(nullValue()))));
   }
-
 }
