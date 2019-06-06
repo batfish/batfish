@@ -3323,7 +3323,18 @@
           "lines" : [
             33,
             34,
-            35
+            35,
+            36
+          ]
+        }
+      },
+      {
+        "Structure_Type" : "interface",
+        "Structure_Name" : "loopback.1",
+        "Source_Lines" : {
+          "filename" : "configs/palo_alto/interfaces",
+          "lines" : [
+            36
           ]
         }
       },
@@ -3333,10 +3344,10 @@
         "Source_Lines" : {
           "filename" : "configs/palo_alto/interfaces",
           "lines" : [
-            37,
-            38,
             39,
-            40
+            40,
+            41,
+            42
           ]
         }
       },
@@ -3346,8 +3357,8 @@
         "Source_Lines" : {
           "filename" : "configs/palo_alto/interfaces",
           "lines" : [
-            39,
-            40
+            41,
+            42
           ]
         }
       },
@@ -3357,8 +3368,20 @@
         "Source_Lines" : {
           "filename" : "configs/palo_alto/interfaces",
           "lines" : [
-            44,
-            45
+            46,
+            47,
+            48,
+            49
+          ]
+        }
+      },
+      {
+        "Structure_Type" : "interface",
+        "Structure_Name" : "vlan.1",
+        "Source_Lines" : {
+          "filename" : "configs/palo_alto/interfaces",
+          "lines" : [
+            49
           ]
         }
       },
@@ -3663,10 +3686,10 @@
       }
     ],
     "summary" : {
-      "notes" : "Found 247 results",
+      "notes" : "Found 249 results",
       "numFailed" : 0,
       "numPassed" : 0,
-      "numResults" : 247
+      "numResults" : 249
     }
   }
 ]

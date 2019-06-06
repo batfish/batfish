@@ -32,7 +32,9 @@ config {
           }
           loopback {
             comment "loopback comment";
-            units;
+            units {
+              loopback.1;
+            }
           }
           tunnel {
             units {
@@ -43,6 +45,9 @@ config {
           }
           vlan {
             comment "vlan comment";
+            units {
+              vlan.1;
+            }
           }
         }
       }

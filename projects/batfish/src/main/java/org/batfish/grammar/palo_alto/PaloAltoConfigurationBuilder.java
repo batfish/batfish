@@ -868,7 +868,10 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
   @Override
   public void enterSni_ethernet_definition(Sni_ethernet_definitionContext ctx) {
     String name = getText(ctx.name);
-    _currentParentInterface = _configuration.getInterfaces().computeIfAbsent(name, Interface::new);
+    _currentParentInterface =
+        _configuration
+            .getInterfaces()
+            .computeIfAbsent(name, n -> new Interface(n, Interface.Type.PHYSICAL));
     _currentInterface = _currentParentInterface;
     defineStructure(INTERFACE, name, ctx);
   }
@@ -882,7 +885,10 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
   @Override
   public void enterSni_loopback(Sni_loopbackContext ctx) {
     String name = getText(ctx.LOOPBACK());
-    _currentParentInterface = _configuration.getInterfaces().computeIfAbsent(name, Interface::new);
+    _currentParentInterface =
+        _configuration
+            .getInterfaces()
+            .computeIfAbsent(name, n -> new Interface(n, Interface.Type.LOOPBACK));
     _currentInterface = _currentParentInterface;
     defineStructure(INTERFACE, name, ctx);
   }
@@ -896,7 +902,10 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
   @Override
   public void enterSni_tunnel(Sni_tunnelContext ctx) {
     String name = getText(ctx.TUNNEL());
-    _currentParentInterface = _configuration.getInterfaces().computeIfAbsent(name, Interface::new);
+    _currentParentInterface =
+        _configuration
+            .getInterfaces()
+            .computeIfAbsent(name, n -> new Interface(n, Interface.Type.TUNNEL));
     _currentInterface = _currentParentInterface;
     defineStructure(INTERFACE, name, ctx);
   }
@@ -910,7 +919,10 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
   @Override
   public void enterSni_vlan(Sni_vlanContext ctx) {
     String name = getText(ctx.VLAN());
-    _currentParentInterface = _configuration.getInterfaces().computeIfAbsent(name, Interface::new);
+    _currentParentInterface =
+        _configuration
+            .getInterfaces()
+            .computeIfAbsent(name, n -> new Interface(n, Interface.Type.VLAN));
     _currentInterface = _currentParentInterface;
     defineStructure(INTERFACE, name, ctx);
   }
@@ -962,7 +974,10 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
   @Override
   public void enterSniel2_unit(Sniel2_unitContext ctx) {
     String name = getText(ctx.name);
-    _currentInterface = _currentParentInterface.getUnits().computeIfAbsent(name, Interface::new);
+    _currentInterface =
+        _currentParentInterface
+            .getUnits()
+            .computeIfAbsent(name, n -> new Interface(n, Interface.Type.LAYER2));
     _currentInterface.setParent(_currentParentInterface);
     defineStructure(INTERFACE, name, ctx);
   }
@@ -987,7 +1002,10 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
   @Override
   public void enterSniel3_unit(Sniel3_unitContext ctx) {
     String name = getText(ctx.name);
-    _currentInterface = _currentParentInterface.getUnits().computeIfAbsent(name, Interface::new);
+    _currentInterface =
+        _currentParentInterface
+            .getUnits()
+            .computeIfAbsent(name, n -> new Interface(n, Interface.Type.LAYER3));
     _currentInterface.setParent(_currentParentInterface);
     defineStructure(INTERFACE, name, ctx);
   }
@@ -1000,7 +1018,10 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
   @Override
   public void enterSnil_unit(Snil_unitContext ctx) {
     String name = getText(ctx.name);
-    _currentInterface = _currentParentInterface.getUnits().computeIfAbsent(name, Interface::new);
+    _currentInterface =
+        _currentParentInterface
+            .getUnits()
+            .computeIfAbsent(name, n -> new Interface(n, Interface.Type.LOOPBACK));
     _currentInterface.setParent(_currentParentInterface);
     defineStructure(INTERFACE, name, ctx);
   }
@@ -1013,7 +1034,10 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
   @Override
   public void enterSnit_unit(Snit_unitContext ctx) {
     String name = getText(ctx.name);
-    _currentInterface = _currentParentInterface.getUnits().computeIfAbsent(name, Interface::new);
+    _currentInterface =
+        _currentParentInterface
+            .getUnits()
+            .computeIfAbsent(name, n -> new Interface(n, Interface.Type.TUNNEL));
     _currentInterface.setParent(_currentParentInterface);
     defineStructure(INTERFACE, name, ctx);
   }
@@ -1026,7 +1050,10 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
   @Override
   public void enterSniv_unit(Sniv_unitContext ctx) {
     String name = getText(ctx.name);
-    _currentInterface = _currentParentInterface.getUnits().computeIfAbsent(name, Interface::new);
+    _currentInterface =
+        _currentParentInterface
+            .getUnits()
+            .computeIfAbsent(name, n -> new Interface(n, Interface.Type.VLAN));
     _currentInterface.setParent(_currentParentInterface);
     defineStructure(INTERFACE, name, ctx);
   }
