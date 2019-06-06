@@ -20,7 +20,6 @@ import static org.batfish.datamodel.transformation.TransformationUtil.visitTrans
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Suppliers;
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
@@ -39,6 +38,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.function.BiFunction;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -572,11 +572,8 @@ public final class BDDReachabilityAnalysisFactory {
             });
   }
 
-  /*
-   * These edges do not depend on the query. Compute them separately so that we can later cache them
-   * across queries if we want to.
-   */
-  private Stream<Edge> generateEdges(Set<String> finalNodes) {
+  /** Generate edges to each disposition. Depends on final nodes. */
+  private Stream<Edge> generateDispositionEdges(Set<String> finalNodes) {
     return Streams.concat(
         generateRules_NodeAccept_Accept(finalNodes),
         generateRules_NodeDropAclIn_DropAclIn(finalNodes),
@@ -586,7 +583,15 @@ public final class BDDReachabilityAnalysisFactory {
         generateRules_NodeInterfaceDeliveredToSubnet_DeliveredToSubnet(finalNodes),
         generateRules_NodeInterfaceExitsNetwork_ExitsNetwork(finalNodes),
         generateRules_NodeInterfaceInsufficientInfo_InsufficientInfo(finalNodes),
-        generateRules_NodeInterfaceNeighborUnreachable_NeighborUnreachable(finalNodes),
+        generateRules_NodeInterfaceNeighborUnreachable_NeighborUnreachable(finalNodes));
+  }
+
+  /*
+   * These edges do not depend on the query. Compute them separately so that we can later cache them
+   * across queries if we want to.
+   */
+  private Stream<Edge> generateEdges() {
+    return Streams.concat(
         generateRules_PreInInterface_NodeDropAclIn(),
         generateRules_PreInInterface_NodeDropAclIn_PBR(),
         generateRules_PreInInterface_PostInInterface(),
@@ -1208,6 +1213,12 @@ public final class BDDReachabilityAnalysisFactory {
         ImmutableSet.of(FlowDisposition.ACCEPTED));
   }
 
+  public BDDLoopDetectionAnalysis bddLoopDetectionAnalysis(IpSpaceAssignment srcIpSpaceAssignment) {
+    Map<StateExpr, BDD> ingressLocationStates = rootConstraints(srcIpSpaceAssignment, _one);
+    Stream<Edge> edges = Stream.concat(generateEdges(), generateRootEdges(ingressLocationStates));
+    return new BDDLoopDetectionAnalysis(_bddPacket, edges, ingressLocationStates.keySet());
+  }
+
   /**
    * Given a set of parameters finds a {@link Map} of {@link IngressLocation}s to {@link BDD}s while
    * including the results for {@link FlowDisposition#LOOP} if required
@@ -1228,6 +1239,8 @@ public final class BDDReachabilityAnalysisFactory {
       Set<String> requiredTransitNodes,
       Set<String> finalNodes,
       Set<FlowDisposition> actions) {
+    checkArgument(!actions.isEmpty(), "No actions");
+
     try (ActiveSpan span =
         GlobalTracer.get().buildSpan("BDDReachabilityAnalysisFactory.getAllBDDs").startActive()) {
       assert span != null; // avoid unused warning
@@ -1235,31 +1248,62 @@ public final class BDDReachabilityAnalysisFactory {
       Set<FlowDisposition> nonLoopActions = new HashSet<>(actions);
       boolean loopIncluded = nonLoopActions.remove(LOOP);
 
-      BDDReachabilityAnalysis analysis =
-          bddReachabilityAnalysis(
-              srcIpSpaceAssignment,
-              initialHeaderSpace,
-              forbiddenTransitNodes,
-              requiredTransitNodes,
-              finalNodes,
-              nonLoopActions);
-
-      // If we're not querying any actions, don't bother computing the reachable BDDs.
-      Map<IngressLocation, BDD> bddsNoLoop =
-          nonLoopActions.isEmpty() ? Maps.newHashMap() : analysis.getIngressLocationReachableBDDs();
-
-      if (!loopIncluded) {
-        return bddsNoLoop;
+      if (nonLoopActions.isEmpty()) {
+        // since actions is not empty, loopIncluded must be true. Thus just detect loops
+        return bddLoopDetectionAnalysis(srcIpSpaceAssignment).detectLoops();
+      } else if (!loopIncluded) {
+        // only reachability, no loop detection
+        return bddReachabilityAnalysis(
+                srcIpSpaceAssignment,
+                initialHeaderSpace,
+                forbiddenTransitNodes,
+                requiredTransitNodes,
+                finalNodes,
+                nonLoopActions)
+            .getIngressLocationReachableBDDs();
       } else {
-        Map<IngressLocation, BDD> bddsLoop = analysis.detectLoops();
-
-        // merging the two BDDs
-        Map<IngressLocation, BDD> mergedBDDs = new HashMap<>(bddsNoLoop);
-        bddsLoop.forEach(
-            ((ingressLocation, bdd) -> mergedBDDs.merge(ingressLocation, bdd, BDD::or)));
-        return mergedBDDs;
+        // both reachability and loop detection
+        return bddReachabilityAndLoopDetectionAnalysis(
+                srcIpSpaceAssignment,
+                initialHeaderSpace,
+                forbiddenTransitNodes,
+                requiredTransitNodes,
+                finalNodes,
+                nonLoopActions)
+            .getIngressLocationBdds();
       }
     }
+  }
+
+  private BDDReachabilityAndLoopDetectionAnalysis bddReachabilityAndLoopDetectionAnalysis(
+      IpSpaceAssignment srcIpSpaceAssignment,
+      AclLineMatchExpr initialHeaderSpace,
+      Set<String> forbiddenTransitNodes,
+      Set<String> requiredTransitNodes,
+      Set<String> finalNodes,
+      Set<FlowDisposition> actions) {
+    BDD initialHeaderSpaceBdd = computeInitialHeaderSpaceBdd(initialHeaderSpace);
+    BDD finalHeaderSpaceBdd = computeFinalHeaderSpaceBdd(initialHeaderSpaceBdd);
+    Map<StateExpr, BDD> roots = rootConstraints(srcIpSpaceAssignment, initialHeaderSpaceBdd);
+
+    List<Edge> sharedEdges =
+        Stream.concat(generateEdges(), generateRootEdges(roots)).collect(Collectors.toList());
+
+    Stream<Edge> reachabilityEdges =
+        Streams.concat(
+            sharedEdges.stream(),
+            generateDispositionEdges(finalNodes),
+            generateQueryEdges(actions));
+    reachabilityEdges = instrumentForbiddenTransitNodes(forbiddenTransitNodes, reachabilityEdges);
+    reachabilityEdges = instrumentRequiredTransitNodes(requiredTransitNodes, reachabilityEdges);
+
+    BDDLoopDetectionAnalysis loopDetectionAnalysis =
+        new BDDLoopDetectionAnalysis(_bddPacket, sharedEdges.stream(), roots.keySet());
+    BDDReachabilityAnalysis reachabilityAnalysis =
+        new BDDReachabilityAnalysis(
+            _bddPacket, roots.keySet(), reachabilityEdges, finalHeaderSpaceBdd);
+
+    return new BDDReachabilityAndLoopDetectionAnalysis(reachabilityAnalysis, loopDetectionAnalysis);
   }
 
   /**
@@ -1286,25 +1330,30 @@ public final class BDDReachabilityAnalysisFactory {
             .buildSpan("BDDReachabilityAnalysisFactory.bddReachabilityAnalysis")
             .startActive()) {
       assert span != null; // avoid unused warning
-      IpAccessListToBdd ipAccessListToBdd =
-          new MemoizedIpAccessListToBdd(
-              _bddPacket, BDDSourceManager.empty(_bddPacket), ImmutableMap.of(), ImmutableMap.of());
-      BDD initialHeaderSpaceBdd = ipAccessListToBdd.toBdd(initialHeaderSpace);
+      BDD initialHeaderSpaceBdd = computeInitialHeaderSpaceBdd(initialHeaderSpace);
       BDD finalHeaderSpaceBdd = computeFinalHeaderSpaceBdd(initialHeaderSpaceBdd);
 
       Map<StateExpr, BDD> roots = rootConstraints(srcIpSpaceAssignment, initialHeaderSpaceBdd);
 
       Stream<Edge> edgeStream =
           Streams.concat(
-              generateEdges(finalNodes), generateRootEdges(roots), generateQueryEdges(actions));
-
+              generateEdges(),
+              generateRootEdges(roots),
+              generateDispositionEdges(finalNodes),
+              generateQueryEdges(actions));
       edgeStream = instrumentForbiddenTransitNodes(forbiddenTransitNodes, edgeStream);
       edgeStream = instrumentRequiredTransitNodes(requiredTransitNodes, edgeStream);
 
-      List<Edge> edges = edgeStream.collect(ImmutableList.toImmutableList());
-
-      return new BDDReachabilityAnalysis(_bddPacket, roots.keySet(), edges, finalHeaderSpaceBdd);
+      return new BDDReachabilityAnalysis(
+          _bddPacket, roots.keySet(), edgeStream, finalHeaderSpaceBdd);
     }
+  }
+
+  private BDD computeInitialHeaderSpaceBdd(AclLineMatchExpr initialHeaderSpace) {
+    IpAccessListToBdd ipAccessListToBdd =
+        new MemoizedIpAccessListToBdd(
+            _bddPacket, BDDSourceManager.empty(_bddPacket), ImmutableMap.of(), ImmutableMap.of());
+    return ipAccessListToBdd.toBdd(initialHeaderSpace);
   }
 
   /**
@@ -1408,17 +1457,15 @@ public final class BDDReachabilityAnalysisFactory {
                       _bddSourceManagers,
                       _lastHopMgr,
                       _aclPermitBDDs,
-                      generateEdges(_configs.keySet()),
+                      Stream.concat(generateEdges(), generateDispositionEdges(_configs.keySet())),
                       initializedSessions)),
               generateRootEdges(returnPassOrigBdds),
               generateQueryEdges(dispositions));
-
       returnPassEdges = instrumentForbiddenTransitNodes(forbiddenTransitNodes, returnPassEdges);
       returnPassEdges = instrumentRequiredTransitNodes(requiredTransitNodes, returnPassEdges);
 
-      List<Edge> edges = returnPassEdges.collect(ImmutableList.toImmutableList());
-
-      return new BDDReachabilityAnalysis(_bddPacket, returnPassOrigBdds.keySet(), edges, _one);
+      return new BDDReachabilityAnalysis(
+          _bddPacket, returnPassOrigBdds.keySet(), returnPassEdges, _one);
     }
   }
 
