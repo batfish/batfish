@@ -29702,7 +29702,7 @@
         }
       },
       "palo_alto_virtual_routers" : {
-        "configurationFormat" : "PALO_ALTO",
+        "configurationFormat" : "PALO_ALTO_NESTED",
         "name" : "palo_alto_virtual_routers",
         "defaultCrossZoneAction" : "DENY",
         "defaultInboundAction" : "PERMIT",

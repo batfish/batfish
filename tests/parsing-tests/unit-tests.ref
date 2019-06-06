@@ -70529,6 +70529,10 @@
             "    SET:'set'",
             "    (set_line_tail",
             "      (set_line_config_devices",
+            "        CONFIG:'config'",
+            "        DEVICES:'devices'",
+            "        name = (variable",
+            "          VARIABLE:'localhost.localdomain')",
             "        (statement_config_devices",
             "          (s_deviceconfig",
             "            DEVICECONFIG:'deviceconfig'",
@@ -70537,53 +70541,63 @@
             "              (sds_hostname",
             "                HOSTNAME:'hostname'",
             "                name = (variable",
-            "                  VARIABLE:'palo_alto_virtual_routers')))))))",
+            "                  DOUBLE_QUOTED_STRING:'\"palo_alto_virtual_routers\"')))))))",
             "    NEWLINE:'\\n')",
             "  (set_line",
             "    SET:'set'",
             "    (set_line_tail",
             "      (set_line_config_devices",
+            "        CONFIG:'config'",
+            "        DEVICES:'devices'",
+            "        name = (variable",
+            "          VARIABLE:'localhost.localdomain')",
             "        (statement_config_devices",
             "          (s_network",
             "            NETWORK:'network'",
             "            (sn_virtual_router",
             "              VIRTUAL_ROUTER:'virtual-router'",
-            "              name = (variable",
-            "                VARIABLE:'vr1')",
-            "              (snvr_routing_table",
-            "                ROUTING_TABLE:'routing-table'",
-            "                IP:'ip'",
-            "                STATIC_ROUTE:'static-route'",
+            "              (sn_virtual_router_definition",
             "                name = (variable",
-            "                  VARIABLE:'sr1')",
-            "                (snvrrt_destination",
-            "                  DESTINATION:'destination'",
-            "                  destination = IP_PREFIX:'0.0.0.0/0')))))))",
+            "                  VARIABLE:'vr1')",
+            "                (snvr_routing_table",
+            "                  ROUTING_TABLE:'routing-table'",
+            "                  IP:'ip'",
+            "                  STATIC_ROUTE:'static-route'",
+            "                  name = (variable",
+            "                    VARIABLE:'sr1')",
+            "                  (snvrrt_destination",
+            "                    DESTINATION:'destination'",
+            "                    destination = IP_PREFIX:'0.0.0.0/0'))))))))",
             "    NEWLINE:'\\n')",
             "  (set_line",
             "    SET:'set'",
             "    (set_line_tail",
             "      (set_line_config_devices",
+            "        CONFIG:'config'",
+            "        DEVICES:'devices'",
+            "        name = (variable",
+            "          VARIABLE:'localhost.localdomain')",
             "        (statement_config_devices",
             "          (s_network",
             "            NETWORK:'network'",
             "            (sn_virtual_router",
             "              VIRTUAL_ROUTER:'virtual-router'",
-            "              name = (variable",
-            "                VARIABLE:'vr1')",
-            "              (snvr_routing_table",
-            "                ROUTING_TABLE:'routing-table'",
-            "                IP:'ip'",
-            "                STATIC_ROUTE:'static-route'",
+            "              (sn_virtual_router_definition",
             "                name = (variable",
-            "                  VARIABLE:'sr1')",
-            "                (snvrrt_nexthop",
-            "                  NEXTHOP:'nexthop'",
-            "                  (snvrrtn_next_vr",
-            "                    NEXT_VR:'next-vr'",
-            "                    name = (variable",
-            "                      VARIABLE:'vr2')))))))))",
-            "    NEWLINE:'\\n\\n')",
+            "                  VARIABLE:'vr1')",
+            "                (snvr_routing_table",
+            "                  ROUTING_TABLE:'routing-table'",
+            "                  IP:'ip'",
+            "                  STATIC_ROUTE:'static-route'",
+            "                  name = (variable",
+            "                    VARIABLE:'sr1')",
+            "                  (snvrrt_nexthop",
+            "                    NEXTHOP:'nexthop'",
+            "                    (snvrrtn_next_vr",
+            "                      NEXT_VR:'next-vr'",
+            "                      name = (variable",
+            "                        VARIABLE:'vr2'))))))))))",
+            "    NEWLINE:'\\n')",
             "  EOF:<EOF>)"
           ]
         },
@@ -82305,7 +82319,23 @@
             }
           }
         },
-        "configs/palo_alto/virtual-routers" : { },
+        "configs/palo_alto/virtual-routers" : {
+          "virtual-router" : {
+            "vr1" : {
+              "definitionLines" : [
+                12,
+                13,
+                14,
+                15,
+                16,
+                17,
+                18,
+                19
+              ],
+              "numReferrers" : 2
+            }
+          }
+        },
         "configs/palo_alto/zones" : {
           "interface" : {
             "ethernet1/1" : {
@@ -87825,9 +87855,14 @@
         },
         "configs/palo_alto/virtual-routers" : {
           "virtual-router" : {
+            "vr1" : {
+              "virtual-router self-reference" : [
+                12
+              ]
+            },
             "vr2" : {
               "static-route nexthop next-vr" : [
-                4
+                19
               ]
             }
           }
@@ -90131,7 +90166,7 @@
           "virtual-router" : {
             "vr2" : {
               "static-route nexthop next-vr" : [
-                4
+                19
               ]
             }
           }

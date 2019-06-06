@@ -37,6 +37,7 @@ import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.SERVIC
 import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.STATIC_ROUTE_INTERFACE;
 import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.STATIC_ROUTE_NEXT_VR;
 import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.VIRTUAL_ROUTER_INTERFACE;
+import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.VIRTUAL_ROUTER_SELF_REFERENCE;
 import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.VSYS_IMPORT_INTERFACE;
 import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.ZONE_INTERFACE;
 import static org.batfish.representation.palo_alto.Zone.Type.EXTERNAL;
@@ -851,8 +852,12 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
 
   @Override
   public void enterSn_virtual_router_definition(Sn_virtual_router_definitionContext ctx) {
+    String name = getText(ctx.name);
     _currentVirtualRouter =
-        _configuration.getVirtualRouters().computeIfAbsent(getText(ctx.name), VirtualRouter::new);
+        _configuration.getVirtualRouters().computeIfAbsent(name, VirtualRouter::new);
+    defineStructure(VIRTUAL_ROUTER, name, ctx);
+    _configuration.referenceStructure(
+        VIRTUAL_ROUTER, name, VIRTUAL_ROUTER_SELF_REFERENCE, getLine(ctx.name.getStart()));
   }
 
   @Override

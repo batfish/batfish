@@ -752,7 +752,9 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
         PaloAltoStructureUsage.RULE_FROM_ZONE,
         PaloAltoStructureUsage.RULE_TO_ZONE);
     markConcreteStructure(
-        PaloAltoStructureType.VIRTUAL_ROUTER, PaloAltoStructureUsage.STATIC_ROUTE_NEXT_VR);
+        PaloAltoStructureType.VIRTUAL_ROUTER,
+        PaloAltoStructureUsage.STATIC_ROUTE_NEXT_VR,
+        PaloAltoStructureUsage.VIRTUAL_ROUTER_SELF_REFERENCE);
 
     // Handle marking for structures that may exist in one of a couple namespaces
     // Handle application objects/groups that may overlap with built-in names
