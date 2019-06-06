@@ -1248,9 +1248,11 @@ public final class BDDReachabilityAnalysisFactory {
       Set<FlowDisposition> nonLoopActions = new HashSet<>(actions);
       boolean loopIncluded = nonLoopActions.remove(LOOP);
 
-      if (nonLoopActions.isEmpty() && loopIncluded) {
+      if (nonLoopActions.isEmpty()) {
+        // since actions is not empty, loopIncluded must be true. Thus just detect loops
         return bddLoopDetectionAnalysis(srcIpSpaceAssignment).detectLoops();
-      } else if (!nonLoopActions.isEmpty() && !loopIncluded) {
+      } else if (!loopIncluded) {
+        // only reachability, no loop detection
         return bddReachabilityAnalysis(
                 srcIpSpaceAssignment,
                 initialHeaderSpace,
@@ -1260,6 +1262,7 @@ public final class BDDReachabilityAnalysisFactory {
                 nonLoopActions)
             .getIngressLocationReachableBDDs();
       } else {
+        // both reachability and loop detection
         return bddReachabilityAndLoopDetectionAnalysis(
                 srcIpSpaceAssignment,
                 initialHeaderSpace,

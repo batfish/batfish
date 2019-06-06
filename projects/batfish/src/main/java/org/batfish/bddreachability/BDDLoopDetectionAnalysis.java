@@ -47,7 +47,7 @@ public class BDDLoopDetectionAnalysis {
    */
   public Map<IngressLocation, BDD> detectLoops() {
     try (ActiveSpan span =
-        GlobalTracer.get().buildSpan("BDDReachabilityAnalysis.detectLoops").startActive()) {
+        GlobalTracer.get().buildSpan("BDDLoopDetectionAnalysis.detectLoops").startActive()) {
       assert span != null; // avoid unused warning
       /*
        * Run enough rounds to exceed the max TTL (255). It takes at most 6 iterations to go between
@@ -85,7 +85,7 @@ public class BDDLoopDetectionAnalysis {
 
   private Map<StateExpr, BDD> propagate(Map<StateExpr, BDD> bdds) {
     try (ActiveSpan span =
-        GlobalTracer.get().buildSpan("BDDReachabilityAnalysis.propagate").startActive()) {
+        GlobalTracer.get().buildSpan("BDDLoopDetectionAnalysis.propagate").startActive()) {
       assert span != null; // avoid unused warning
       BDD zero = _bddPacket.getFactory().zero();
       Map<StateExpr, BDD> newReachableInNRounds = new HashMap<>();
@@ -111,7 +111,7 @@ public class BDDLoopDetectionAnalysis {
    */
   private boolean confirmLoop(StateExpr stateExpr, BDD bdd) {
     try (ActiveSpan span =
-        GlobalTracer.get().buildSpan("BDDReachabilityAnalysis.confirmLoop").startActive()) {
+        GlobalTracer.get().buildSpan("BDDLoopDetectionAnalysis.confirmLoop").startActive()) {
       assert span != null; // avoid unused warning
       Map<StateExpr, BDD> reachable = propagate(ImmutableMap.of(stateExpr, bdd));
       Set<StateExpr> dirty = new HashSet<>(reachable.keySet());
@@ -159,7 +159,7 @@ public class BDDLoopDetectionAnalysis {
 
   private Map<StateExpr, BDD> reachableInNRounds(int numRounds) {
     try (ActiveSpan span =
-        GlobalTracer.get().buildSpan("BDDReachabilityAnalysis.reachableInNRounds").startActive()) {
+        GlobalTracer.get().buildSpan("BDDLoopDetectionAnalysis.reachableInNRounds").startActive()) {
       assert span != null; // avoid unused warning
       BDD one = _bddPacket.getFactory().one();
 

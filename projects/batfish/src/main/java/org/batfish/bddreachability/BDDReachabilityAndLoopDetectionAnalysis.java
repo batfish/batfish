@@ -8,7 +8,7 @@ import net.sf.javabdd.BDD;
 import org.batfish.symbolic.IngressLocation;
 
 /**
- * An analysis that does both reeachability and loop detection. Simply wraps a {@link
+ * An analysis that does both reachability and loop detection. Simply wraps a {@link
  * BDDReachabilityAnalysis} and a {@link BDDLoopDetectionAnalysis}. The point of this class is to
  * reduce repeated work in constructing the analyses.
  */
