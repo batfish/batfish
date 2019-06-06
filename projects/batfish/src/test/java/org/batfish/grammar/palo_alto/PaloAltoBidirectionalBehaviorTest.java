@@ -31,8 +31,13 @@ import org.junit.rules.TemporaryFolder;
 public final class PaloAltoBidirectionalBehaviorTest {
 
   private static final Ip BIDIR_DEFAULT_DST_IP = Ip.parse("10.0.2.2");
+  private static final Ip BIDIR_DEFAULT_SRC_IP = Ip.parse("10.0.1.2");
   private static final Ip BIDIR_OTHER_DST_IP = Ip.parse("10.0.2.3");
+  private static final String INTERFACE1 = "ethernet1/1";
+  private static final String INTERFACE2 = "ethernet1/2";
   private static final String TESTCONFIGS_PREFIX = "org/batfish/grammar/palo_alto/testconfigs/";
+  private static final String VIRTUAL_ROUTER1 = "vr1";
+  private static final String VIRTUAL_ROUTER2 = "vr2";
 
   @Rule public TemporaryFolder _folder = new TemporaryFolder();
 
@@ -49,10 +54,26 @@ public final class PaloAltoBidirectionalBehaviorTest {
         .setIpProtocol(IpProtocol.TCP)
         .setTcpFlagsSyn(1)
         .setTag("ignored")
+        .setIngressInterface(INTERFACE1)
         .setIngressNode(hostname)
-        .setIngressVrf("vr1")
-        .setSrcIp(Ip.parse("10.0.1.2"))
+        .setIngressVrf(VIRTUAL_ROUTER1)
+        .setSrcIp(BIDIR_DEFAULT_SRC_IP)
         .setDstIp(dstIp)
+        .setSrcPort(NamedPort.EPHEMERAL_LOWEST.number())
+        .setDstPort(NamedPort.SSH.number()) // arbitrary port
+        .build();
+  }
+
+  private @Nonnull Flow bidirForwardSgFlow(String hostname, String virtualRouter) {
+    return Flow.builder()
+        .setIpProtocol(IpProtocol.TCP)
+        .setTcpFlagsSyn(1)
+        .setTag("ignored")
+        .setIngressInterface(INTERFACE2)
+        .setIngressNode(hostname)
+        .setIngressVrf(virtualRouter)
+        .setSrcIp(BIDIR_DEFAULT_DST_IP)
+        .setDstIp(BIDIR_DEFAULT_SRC_IP)
         .setSrcPort(NamedPort.EPHEMERAL_LOWEST.number())
         .setDstPort(NamedPort.SSH.number()) // arbitrary port
         .build();
@@ -240,31 +261,64 @@ public final class PaloAltoBidirectionalBehaviorTest {
   @Test
   public void testDropVsysToSgMissingExternal() throws IOException {
     String hostname = "drop-vsys-to-sg-missing-external";
+    TracerouteEngine tracerouteEngine = bidirTracerouteEngine(hostname);
 
     // Traffic from interface in vsys to interface in shared-gateway is denied when external zone is
     // missing from vsys
-    assertForwardDropped(hostname);
+    assertForwardDropped(tracerouteEngine, bidirForwardFlow(hostname, BIDIR_DEFAULT_DST_IP));
+
+    // Traffic from interface in shared-gateway to interface in vsys is denied when external zone is
+    // missing from vsys
+    assertForwardDropped(tracerouteEngine, bidirForwardSgFlow(hostname, VIRTUAL_ROUTER1));
   }
 
   @Ignore
   @Test
   public void testDropVsysToSgMisconfiguredExternal() throws IOException {
     String hostname = "drop-vsys-to-sg-misconfigured-external";
+    TracerouteEngine tracerouteEngine = bidirTracerouteEngine(hostname);
 
     // Traffic from interface in vsys to interface in shared-gateway is denied when external zone is
     // on vsys is misconfigured
-    assertForwardDropped(hostname);
+    assertForwardDropped(tracerouteEngine, bidirForwardFlow(hostname, BIDIR_DEFAULT_DST_IP));
+
+    // Traffic from interface in shared-gateway to interface in vsys is denied when external zone is
+    // on vsys is misconfigured
+    assertForwardDropped(tracerouteEngine, bidirForwardSgFlow(hostname, VIRTUAL_ROUTER1));
   }
 
+  @Ignore
   @Test
   public void testAllowVsysToSg() throws IOException {
     String hostname = "allow-vsys-to-sg";
+    TracerouteEngine tracerouteEngine = bidirTracerouteEngine(hostname);
 
     // Bidirectional traffic from interface in vsys to interface in shared-gateway is allowed when
     // all are true:
     // - external zones is defined on vsys and refers to shared-gateway
-    // - policy allows cross-zone traffic from ingress zone to shared-gateway zone
-    assertBidirAccepted(hostname);
+    // - policy allows cross-zone traffic from vsys interface zone to shared-gateway zone
+    assertBidirAccepted(tracerouteEngine, bidirForwardFlow(hostname, BIDIR_DEFAULT_DST_IP));
+
+    // Bidirectional traffic from interface in shared-gateway to interface in vsys is denied when
+    // policy does not allow cross-zone traffic from shared-gateway zone to vsys interface zone
+    assertForwardDropped(tracerouteEngine, bidirForwardSgFlow(hostname, VIRTUAL_ROUTER1));
+  }
+
+  @Ignore
+  @Test
+  public void testAllowSgToVsys() throws IOException {
+    String hostname = "allow-sg-to-vsys";
+    TracerouteEngine tracerouteEngine = bidirTracerouteEngine(hostname);
+
+    // Bidirectional traffic from interface in shared-gateway to interface in vsys is allowed when
+    // all are true:
+    // - external zones is defined on vsys and refers to shared-gateway
+    // - policy allows cross-zone traffic from shared-gateway zone to vsys interface zone
+    assertBidirAccepted(tracerouteEngine, bidirForwardSgFlow(hostname, VIRTUAL_ROUTER1));
+
+    // Bidirectional traffic from interface in vsys to interface in shared-gateway is denied when
+    // policy does not allow cross-zone traffic from vsys interface zone to shared-gateway zone
+    assertForwardDropped(tracerouteEngine, bidirForwardFlow(hostname, BIDIR_DEFAULT_DST_IP));
   }
 
   @Ignore
@@ -326,9 +380,12 @@ public final class PaloAltoBidirectionalBehaviorTest {
   @Test
   public void testAllowVsysToSgNextVr() throws IOException {
     String hostname = "allow-vsys-to-sg-next-vr";
+    TracerouteEngine tracerouteEngine = bidirTracerouteEngine(hostname);
 
     // next-vr should work for properly configured vsys-to-shared-gateway traffic
-    assertBidirAccepted(hostname);
+    assertBidirAccepted(tracerouteEngine, bidirForwardFlow(hostname, BIDIR_DEFAULT_DST_IP));
+    // next-vr should work for properly configured shared-gateway-to-vsys traffic
+    assertBidirAccepted(tracerouteEngine, bidirForwardSgFlow(hostname, VIRTUAL_ROUTER2));
   }
 
   @Ignore
