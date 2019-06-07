@@ -2203,7 +2203,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
     if (newIface.getSwitchportMode() == SwitchportMode.TRUNK) {
       newIface.setNativeVlan(firstNonNull(iface.getNativeVlan(), 1));
     }
-    if (iface.getSwitchportMode() == SwitchportMode.TRUNK) {
+    if (newIface.getSwitchportMode() == SwitchportMode.TRUNK) {
       /*
        * Compute allowed VLANs:
        * - If allowed VLANs are set, honor them;
