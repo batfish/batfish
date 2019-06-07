@@ -4942,6 +4942,8 @@ public class CiscoGrammarTest {
     Interface e1 = c.getAllInterfaces().get("Ethernet0/1");
     Interface e2 = c.getAllInterfaces().get("Ethernet0/2");
     Interface e3 = c.getAllInterfaces().get("Ethernet0/3");
+    Interface e4 = c.getAllInterfaces().get("Ethernet0/4");
+    Interface e5 = c.getAllInterfaces().get("Ethernet0/5");
 
     assertThat(e0, isSwitchport(false));
     assertThat(e0, hasSwitchPortMode(SwitchportMode.NONE));
@@ -4951,6 +4953,12 @@ public class CiscoGrammarTest {
     assertThat(e2, hasSwitchPortMode(SwitchportMode.ACCESS));
     assertThat(e3, isSwitchport(true));
     assertThat(e3, hasSwitchPortMode(SwitchportMode.TRUNK));
+    assertThat(e4, isSwitchport(true));
+    assertThat(e4, hasSwitchPortMode(SwitchportMode.TRUNK));
+    assertThat(e4.getAllowedVlans(), equalTo(IntegerSpace.of(Range.closed(1, 2))));
+    assertThat(e5, isSwitchport(true));
+    assertThat(e5, hasSwitchPortMode(SwitchportMode.TRUNK));
+    assertThat(e5.getAllowedVlans(), equalTo(IntegerSpace.of(Range.closed(3, 4))));
   }
 
   @Test

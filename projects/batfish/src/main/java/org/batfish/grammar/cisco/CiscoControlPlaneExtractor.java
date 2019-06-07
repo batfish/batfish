@@ -6609,6 +6609,11 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   public void exitIf_switchport_trunk_encapsulation(If_switchport_trunk_encapsulationContext ctx) {
     SwitchportEncapsulationType type = toEncapsulation(ctx.e);
     for (Interface currentInterface : _currentInterfaces) {
+      if (ImmutableSet.of(SwitchportEncapsulationType.DOT1Q, SwitchportEncapsulationType.ISL)
+              .contains(type)
+          && currentInterface.getSwitchportMode() != SwitchportMode.TRUNK) {
+        currentInterface.setSwitchportMode(SwitchportMode.TRUNK);
+      }
       currentInterface.setSwitchportTrunkEncapsulation(type);
     }
   }
