@@ -181,19 +181,6 @@ public class TracerouteEngineImplContext {
         .containsIp(arpIp, ImmutableMap.of());
   }
 
-  /**
-   * @return true if the an ARP request for {@param arpIp} sent out {@param outIface} will not
-   *     receive a reply.
-   */
-  boolean willNotReceiveArpReply(String node, String vrf, String outIface, Ip arpIp) {
-    return _forwardingAnalysis
-        .getNeighborUnreachableOrExitsNetwork()
-        .get(node)
-        .get(vrf)
-        .get(outIface)
-        .containsIp(arpIp, ImmutableMap.of());
-  }
-
   @Nonnull
   SortedSet<NodeInterfacePair> getInterfaceNeighbors(
       String currentNodeName, String outgoingIfaceName) {
