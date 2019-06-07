@@ -149,7 +149,7 @@ public class FilterLineReachabilityRows {
 
     String textDesc =
         String.format(
-            "Filters {%s} contain an unreachable line: ${%s}", COL_SOURCES, COL_UNREACHABLE_LINE);
+            "Filters ${%s} contain an unreachable line: ${%s}", COL_SOURCES, COL_UNREACHABLE_LINE);
     DisplayHints dhints = question.getDisplayHints();
     if (dhints != null && dhints.getTextDesc() != null) {
       textDesc = dhints.getTextDesc();
