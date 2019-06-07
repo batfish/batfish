@@ -13,9 +13,6 @@ public interface ForwardingAnalysis {
    */
   Map<String, Map<String, Map<Edge, IpSpace>>> getArpTrueEdge();
 
-  /** Mapping: hostname -&gt; vrfName -&gt; outInterface -&gt; dstIpsForWhichNoArpResponse */
-  Map<String, Map<String, Map<String, IpSpace>>> getNeighborUnreachableOrExitsNetwork();
-
   /** Mapping: hostname -&gt; vrfName -&gt; outInterface -&gt; dstIPsWhichDeliveredToSubnet */
   Map<String, Map<String, Map<String, IpSpace>>> getDeliveredToSubnet();
 

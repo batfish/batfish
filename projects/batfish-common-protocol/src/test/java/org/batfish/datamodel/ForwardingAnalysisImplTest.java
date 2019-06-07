@@ -42,7 +42,6 @@ import com.google.common.collect.ImmutableSortedSet;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
-import java.util.SortedMap;
 import org.batfish.common.topology.TopologyUtil;
 import org.batfish.datamodel.visitors.GenericIpSpaceVisitor;
 import org.junit.Before;
@@ -782,50 +781,6 @@ public class ForwardingAnalysisImplTest {
         result, hasEntry(equalTo(c1), hasEntry(equalTo(v1), not(containsIp(P2.getStartIp())))));
     assertThat(
         result, hasEntry(equalTo(c1), hasEntry(equalTo(v1), not(containsIp(P2.getEndIp())))));
-  }
-
-  /**
-   * The neighbor unreachable or exits network predicate map should not include an entry for null
-   * interface.
-   */
-  @Test
-  public void testComputeNeighborUnreachbleOrExitsNetwork_nullInterface() {
-    NetworkFactory nf = new NetworkFactory();
-    Configuration c =
-        nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS).build();
-    Vrf v = nf.vrfBuilder().setOwner(c).build();
-    StaticRoute nullRoute =
-        StaticRoute.builder()
-            .setNetwork(Prefix.parse("1.0.0.0/8"))
-            .setNextHopInterface(Interface.NULL_INTERFACE_NAME)
-            .setAdministrativeCost(1)
-            .build();
-    v.setStaticRoutes(ImmutableSortedSet.of(nullRoute));
-    SortedMap<String, Configuration> configs = ImmutableSortedMap.of(c.getHostname(), c);
-    MockFib mockFib =
-        MockFib.builder()
-            .setNextHopInterfaces(
-                ImmutableMap.of(
-                    nullRoute,
-                    ImmutableMap.of(
-                        Interface.NULL_INTERFACE_NAME,
-                        ImmutableMap.of(Ip.AUTO, ImmutableSet.of(nullRoute)))))
-            .build();
-
-    Map<String, Map<String, Fib>> fibs =
-        ImmutableMap.of(c.getHostname(), ImmutableMap.of(v.getName(), mockFib));
-
-    ForwardingAnalysisImpl forwardingAnalysisImpl =
-        new ForwardingAnalysisImpl(configs, fibs, new Topology(ImmutableSortedSet.of()));
-
-    Map<String, Map<String, Map<String, IpSpace>>> neighborUnreachableOrExitsNetwork =
-        forwardingAnalysisImpl.getNeighborUnreachableOrExitsNetwork();
-
-    assertThat(
-        neighborUnreachableOrExitsNetwork,
-        hasEntry(
-            equalTo(c.getHostname()),
-            hasEntry(equalTo(v.getName()), not(hasKey(Interface.NULL_INTERFACE_NAME)))));
   }
 
   @Test
