@@ -2141,12 +2141,6 @@ public final class CiscoConfiguration extends VendorConfiguration {
         _w.redFlag("Interface: '" + iface.getName() + "' failed to set EIGRP settings");
       }
     }
-    if (eigrpProcess == null && iface.getDelay() != null) {
-      _w.redFlag(
-          "Interface: '"
-              + iface.getName()
-              + "' contains EIGRP settings but is not part of an EIGRP process");
-    }
 
     boolean level1 = false;
     boolean level2 = false;

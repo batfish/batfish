@@ -90441,10 +90441,6 @@
             },
             {
               "tag" : "MISCELLANEOUS",
-              "text" : "Interface: 'Ethernet0' contains EIGRP settings but is not part of an EIGRP process"
-            },
-            {
-              "tag" : "MISCELLANEOUS",
               "text" : "Interface: 'inside' contains OSPF settings, but there is no OSPF process"
             }
           ]
