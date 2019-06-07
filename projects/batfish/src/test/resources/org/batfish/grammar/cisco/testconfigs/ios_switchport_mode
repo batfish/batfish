@@ -18,14 +18,4 @@ interface Ethernet0/3
  switchport mode trunk
  no shutdown
 !
-interface Ethernet0/4
- switchport
- switchport trunk encapsulation dot1q
- no shutdown
 !
-interface Ethernet0/5
- switchport
- switchport trunk encapsulation isl
- no shutdown
-!
-
