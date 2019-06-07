@@ -257,7 +257,7 @@ public final class ExtendedCommunity extends Community {
 
   @Nonnull
   @Override
-  public BigInteger asBigInt() {
+  protected BigInteger asBigIntImpl() {
     int gaOffset = _type == 0x00 || _type == 0x40 ? 32 : 16;
     return BigInteger.valueOf(_type)
         .shiftLeft(56)

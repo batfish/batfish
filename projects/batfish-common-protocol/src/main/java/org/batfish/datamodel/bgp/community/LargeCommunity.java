@@ -107,7 +107,7 @@ public final class LargeCommunity extends Community {
 
   @Nonnull
   @Override
-  public BigInteger asBigInt() {
+  protected BigInteger asBigIntImpl() {
     return BigInteger.valueOf(_globalAdministrator)
         .shiftLeft(64)
         .or(BigInteger.valueOf(_localData1).shiftLeft(32))
