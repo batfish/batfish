@@ -974,14 +974,6 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
   }
 
   @Override
-  public Map<String, Map<String, Map<String, IpSpace>>> getNeighborUnreachableOrExitsNetwork() {
-    /* The old NEIGHBOR_UNREACHABLE_OR_EXITS_NETWORK disposition is all dst IPs for which ARP
-     * fails.
-     */
-    return _arpFalse;
-  }
-
-  @Override
   public Map<String, Map<String, IpSpace>> getNullRoutedIps() {
     return _nullRoutedIps;
   }
@@ -1423,8 +1415,7 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
     assertAllInterfacesActiveNodeVrfInterface(getExitsNetwork(), configurations);
     assertAllInterfacesActiveNodeVrfInterface(getInsufficientInfo(), configurations);
     assertAllInterfacesActiveNodeVrfInterface(getNeighborUnreachable(), configurations);
-    assertAllInterfacesActiveNodeVrfInterface(
-        getNeighborUnreachableOrExitsNetwork(), configurations);
+    assertAllInterfacesActiveNodeVrfInterface(_arpFalse, configurations);
 
     // Sanity check traceroute-reachability different variables.
     Map<String, Map<String, Map<String, IpSpace>>> unionOthers =
@@ -1441,7 +1432,7 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
     Map<String, Map<String, Map<String, IpSpace>>> union2 = union(union1, getDeliveredToSubnet());
     Map<String, Map<String, Map<String, IpSpace>>> union3 = union(union2, getExitsNetwork());
     assertDeepIpSpaceEquality(unionOthers, union3, ipSpaceToBDD);
-    assertDeepIpSpaceEquality(getNeighborUnreachableOrExitsNetwork(), unionOthers, ipSpaceToBDD);
+    assertDeepIpSpaceEquality(_arpFalse, unionOthers, ipSpaceToBDD);
 
     return true;
   }

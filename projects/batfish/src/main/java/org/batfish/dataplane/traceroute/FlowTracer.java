@@ -22,6 +22,8 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSortedMap;
+import com.google.common.collect.ImmutableSortedSet;
+import com.google.common.collect.Ordering;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
@@ -238,7 +240,16 @@ class FlowTracer {
     Ip arpIp =
         Route.UNSET_ROUTE_NEXT_HOP_IP.equals(nextHopIp) ? _currentFlow.getDstIp() : nextHopIp;
 
-    if (!processArpFailure(outgoingInterface, arpIp)) {
+    SortedSet<NodeInterfacePair> interfacesThatReplyToArp =
+        neighborIfaces.stream()
+            .filter(
+                iface ->
+                    _tracerouteContext.repliesToArp(
+                        iface.getHostname(), iface.getInterface(), arpIp))
+            .collect(ImmutableSortedSet.toImmutableSortedSet(Ordering.natural()));
+
+    if (interfacesThatReplyToArp.isEmpty()) {
+      buildArpFailureTrace(outgoingInterface);
       return;
     }
 
@@ -247,13 +258,7 @@ class FlowTracer {
     _hops.add(hop);
 
     NodeInterfacePair exitIface = new NodeInterfacePair(_currentNode.getName(), outgoingInterface);
-    for (NodeInterfacePair enterIface : neighborIfaces) {
-      String toNode = enterIface.getHostname();
-      String toIface = enterIface.getInterface();
-      if (_tracerouteContext.repliesToArp(toNode, toIface, arpIp)) {
-        followEdge(exitIface, enterIface).processHop();
-      }
-    }
+    interfacesThatReplyToArp.forEach(enterIface -> followEdge(exitIface, enterIface).processHop());
   }
 
   @Nonnull
@@ -266,24 +271,6 @@ class FlowTracer {
                 .build())
         .setAction(action)
         .build();
-  }
-
-  /**
-   * Checks ARP reply for {@param arpIp}. Returns whether someone replies. If not, also constructs
-   * the trace.
-   */
-  private boolean processArpFailure(String outgoingInterfaceName, Ip arpIp) {
-    String currentNodeName = _currentNode.getName();
-    // halt processing and add neighbor-unreachable trace if no one would respond
-    if (_tracerouteContext.willNotReceiveArpReply(
-        currentNodeName, _vrfName, outgoingInterfaceName, arpIp)) {
-      FlowDisposition disposition =
-          _tracerouteContext.computeDisposition(
-              currentNodeName, outgoingInterfaceName, _currentFlow.getDstIp());
-      buildArpFailureTrace(outgoingInterfaceName, disposition);
-      return false;
-    }
-    return true;
   }
 
   void processHop() {
@@ -715,6 +702,18 @@ class FlowTracer {
     _hops.add(new Hop(_currentNode, _steps));
     Trace trace = new Trace(disposition, _hops);
     _flowTraces.accept(new TraceAndReverseFlow(trace, null, _newSessions));
+  }
+
+  /**
+   * Build ARP failure trace for the current flow, for when its forwarded out the input
+   * outgoingInterface.
+   */
+  private void buildArpFailureTrace(String outgoingInterfaceName) {
+    String currentNodeName = _currentNode.getName();
+    FlowDisposition disposition =
+        _tracerouteContext.computeDisposition(
+            currentNodeName, outgoingInterfaceName, _currentFlow.getDstIp());
+    buildArpFailureTrace(outgoingInterfaceName, disposition);
   }
 
   private void buildArpFailureTrace(String outInterface, FlowDisposition disposition) {
