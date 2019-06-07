@@ -126,7 +126,7 @@ public final class StandardCommunity extends Community {
 
   @Nonnull
   @Override
-  public BigInteger asBigInt() {
+  protected BigInteger asBigIntImpl() {
     return BigInteger.valueOf(_value);
   }
 }
