@@ -18,6 +18,8 @@ For many parameters types, there is a "resolver" question that may be used to le
 
 * [`locationSpec`](#location-specifier)
 
+* [`namedStructureSpec`](#named-structure-spec)
+
 * [`nodeSpec`](#node-specifier)
 
 * [`routingPolicySpec`](#routing-policy-specifier)
@@ -268,6 +270,16 @@ locationInterface :=
 
 * `resolveLocationSpecifier` shows the set of locations represented by the given input.
 * `resolveIpsOfLocationSpecifier` shows the mapping from locations to IPs that will be used in `traceroute` and   `reachability` questions when IPs are not explicitly specified. 
+
+
+## Named Structure Specifier
+
+A specification for a set of structure types in Batfish's vendor independent model. This specifier accepts a regex over the structure types listed below. The regex should not be surrounded by `/`s.
+
+
+#### Named Structure Types 
+
+Batfish has the following structure types: AS_PATH_ACCESS_LIST, AUTHENTICATION_KEY_CHAIN, COMMUNITY_LIST, IKE_PHASE1_KEYS, IKE_PHASE1_POLICIES, IKE_PHASE1_PROPOSALS, IP_ACCESS_LIST, IP_6_ACCESS_LIST, IPSEC_PEER_CONFIGS, IPSEC_PHASE2_POLICIES, IPSEC_PHASE2_PROPOSALS, PBR_POLICY, ROUTE_FILTER_LIST, ROUTE_6_FILTER_LIST, ROUTING_POLICY, ZONE.
 
 
 ## Node Specifier
