@@ -194,25 +194,26 @@ public final class Bgpv4Route extends BgpRoute<Bgpv4Route.Builder, Bgpv4Route> {
       return false;
     }
     Bgpv4Route other = (Bgpv4Route) o;
-    return Objects.equals(_network, other._network)
+    return _network.equals(other._network)
+        && _nextHopInterface.equals(other._nextHopInterface)
+        && _nextHopIp.equals(other._nextHopIp)
+        && _originatorIp.equals(other._originatorIp)
+        && Objects.equals(_receivedFromIp, other._receivedFromIp)
+        // Things above this line are more likely to cause false earlier.
         && _admin == other._admin
-        && getNonRouting() == other.getNonRouting()
-        && getNonForwarding() == other.getNonForwarding()
         && _discard == other._discard
         && _localPreference == other._localPreference
         && _med == other._med
-        && _receivedFromRouteReflectorClient == other._receivedFromRouteReflectorClient
-        && _weight == other._weight
-        && Objects.equals(_asPath, other._asPath)
-        && Objects.equals(_clusterList, other._clusterList)
-        && Objects.equals(_communities, other._communities)
-        && _nextHopInterface.equals(other._nextHopInterface)
-        && Objects.equals(_nextHopIp, other._nextHopIp)
-        && Objects.equals(_originatorIp, other._originatorIp)
         && _originType == other._originType
         && _protocol == other._protocol
-        && Objects.equals(_receivedFromIp, other._receivedFromIp)
-        && _srcProtocol == other._srcProtocol;
+        && _receivedFromRouteReflectorClient == other._receivedFromRouteReflectorClient
+        && _srcProtocol == other._srcProtocol
+        && _weight == other._weight
+        && getNonRouting() == other.getNonRouting()
+        && getNonForwarding() == other.getNonForwarding()
+        && _asPath.equals(other._asPath)
+        && _clusterList.equals(other._clusterList)
+        && _communities.equals(other._communities);
   }
 
   @Override
