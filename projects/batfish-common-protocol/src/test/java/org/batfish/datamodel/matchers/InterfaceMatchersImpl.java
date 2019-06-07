@@ -10,6 +10,7 @@ import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.InterfaceType;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpSpace;
+import org.batfish.datamodel.SwitchportEncapsulationType;
 import org.batfish.datamodel.SwitchportMode;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.eigrp.EigrpInterfaceSettings;
@@ -367,6 +368,18 @@ final class InterfaceMatchersImpl {
     @Override
     protected Double featureValueOf(Interface actual) {
       return actual.getSpeed();
+    }
+  }
+
+  static final class HasSwitchPortEncapsulation
+      extends FeatureMatcher<Interface, SwitchportEncapsulationType> {
+    HasSwitchPortEncapsulation(@Nonnull Matcher<? super SwitchportEncapsulationType> subMatcher) {
+      super(subMatcher, "an Interface with switchPortEncapsulation:", "switchPortEncapsulation");
+    }
+
+    @Override
+    protected SwitchportEncapsulationType featureValueOf(Interface actual) {
+      return actual.getSwitchportTrunkEncapsulation();
     }
   }
 

@@ -6528,11 +6528,14 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     } else {
       for (Interface iface : _currentInterfaces) {
         iface.setSwitchport(true);
-        SwitchportMode defaultSwitchportMode = _configuration.getCf().getDefaultSwitchportMode();
-        iface.setSwitchportMode(
-            (defaultSwitchportMode == SwitchportMode.NONE || defaultSwitchportMode == null)
-                ? Interface.getUndeclaredDefaultSwitchportMode(_configuration.getVendor())
-                : defaultSwitchportMode);
+        // setting the switch port mode only if it is not already set
+        if (iface.getSwitchportMode() == null || iface.getSwitchportMode() == SwitchportMode.NONE) {
+          SwitchportMode defaultSwitchportMode = _configuration.getCf().getDefaultSwitchportMode();
+          iface.setSwitchportMode(
+              (defaultSwitchportMode == SwitchportMode.NONE || defaultSwitchportMode == null)
+                  ? Interface.getUndeclaredDefaultSwitchportMode(_configuration.getVendor())
+                  : defaultSwitchportMode);
+        }
       }
     }
   }
@@ -6609,11 +6612,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   public void exitIf_switchport_trunk_encapsulation(If_switchport_trunk_encapsulationContext ctx) {
     SwitchportEncapsulationType type = toEncapsulation(ctx.e);
     for (Interface currentInterface : _currentInterfaces) {
-      if (ImmutableSet.of(SwitchportEncapsulationType.DOT1Q, SwitchportEncapsulationType.ISL)
-              .contains(type)
-          && currentInterface.getSwitchportMode() != SwitchportMode.TRUNK) {
-        currentInterface.setSwitchportMode(SwitchportMode.TRUNK);
-      }
+      currentInterface.setSwitchportMode(SwitchportMode.TRUNK);
       currentInterface.setSwitchportTrunkEncapsulation(type);
     }
   }

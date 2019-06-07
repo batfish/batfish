@@ -13,6 +13,7 @@ import org.batfish.datamodel.Interface.Dependency;
 import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.InterfaceType;
 import org.batfish.datamodel.IpSpace;
+import org.batfish.datamodel.SwitchportEncapsulationType;
 import org.batfish.datamodel.SwitchportMode;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.eigrp.EigrpInterfaceSettings;
@@ -43,6 +44,7 @@ import org.batfish.datamodel.matchers.InterfaceMatchersImpl.HasOspfCost;
 import org.batfish.datamodel.matchers.InterfaceMatchersImpl.HasOspfEnabled;
 import org.batfish.datamodel.matchers.InterfaceMatchersImpl.HasOspfPointToPoint;
 import org.batfish.datamodel.matchers.InterfaceMatchersImpl.HasSpeed;
+import org.batfish.datamodel.matchers.InterfaceMatchersImpl.HasSwitchPortEncapsulation;
 import org.batfish.datamodel.matchers.InterfaceMatchersImpl.HasSwitchPortMode;
 import org.batfish.datamodel.matchers.InterfaceMatchersImpl.HasVlan;
 import org.batfish.datamodel.matchers.InterfaceMatchersImpl.HasVrf;
@@ -336,6 +338,24 @@ public final class InterfaceMatchers {
    */
   public static @Nonnull HasSpeed hasSpeed(@Nonnull Matcher<? super Double> subMatcher) {
     return new HasSpeed(subMatcher);
+  }
+
+  /**
+   * Provides a matcher that matches if the provided value matches the interface's Switch Port
+   * encapsulation type
+   */
+  public static HasSwitchPortEncapsulation hasSwitchPortEncapsulation(
+      SwitchportEncapsulationType switchportEncapsulationType) {
+    return hasSwitchPortEncapsulation(equalTo(switchportEncapsulationType));
+  }
+
+  /**
+   * Provides a matcher that matches if the provided {@code subMatcher} matches the interface's
+   * Switch Port encapsulation type
+   */
+  public static HasSwitchPortEncapsulation hasSwitchPortEncapsulation(
+      Matcher<? super SwitchportEncapsulationType> subMatcher) {
+    return new HasSwitchPortEncapsulation(subMatcher);
   }
 
   /**
