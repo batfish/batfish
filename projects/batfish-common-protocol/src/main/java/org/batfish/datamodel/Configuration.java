@@ -145,11 +145,11 @@ public final class Configuration implements Serializable {
 
   private static final int VLAN_NORMAL_MIN_DEFAULT = 1;
 
-  private NavigableMap<String, AsPathAccessList> _asPathAccessLists;
+  private Map<String, AsPathAccessList> _asPathAccessLists;
 
   private NavigableMap<String, AuthenticationKeyChain> _authenticationKeyChains;
 
-  private NavigableMap<String, CommunityList> _communityLists;
+  private Map<String, CommunityList> _communityLists;
 
   private final ConfigurationFormat _configurationFormat;
 
@@ -173,11 +173,11 @@ public final class Configuration implements Serializable {
 
   private NavigableMap<String, IkePhase1Policy> _ikePhase1Policies;
 
-  private NavigableMap<String, Interface> _interfaces;
+  private Map<String, Interface> _interfaces;
 
-  private NavigableMap<String, Ip6AccessList> _ip6AccessLists;
+  private Map<String, Ip6AccessList> _ip6AccessLists;
 
-  private NavigableMap<String, IpAccessList> _ipAccessLists;
+  private Map<String, IpAccessList> _ipAccessLists;
 
   private NavigableMap<String, IpSpace> _ipSpaces;
 
@@ -206,11 +206,11 @@ public final class Configuration implements Serializable {
 
   private NavigableMap<String, PacketPolicy> _packetPolicies;
 
-  private NavigableMap<String, Route6FilterList> _route6FilterLists;
+  private Map<String, Route6FilterList> _route6FilterLists;
 
-  private NavigableMap<String, RouteFilterList> _routeFilterLists;
+  private Map<String, RouteFilterList> _routeFilterLists;
 
-  private NavigableMap<String, RoutingPolicy> _routingPolicies;
+  private Map<String, RoutingPolicy> _routingPolicies;
 
   private String _snmpSourceInterface;
 
@@ -312,7 +312,7 @@ public final class Configuration implements Serializable {
 
   /** Dictionary of all AS-path access-lists for this node. */
   @JsonProperty(PROP_AS_PATH_ACCESS_LISTS)
-  public NavigableMap<String, AsPathAccessList> getAsPathAccessLists() {
+  public Map<String, AsPathAccessList> getAsPathAccessLists() {
     return _asPathAccessLists;
   }
 
@@ -331,7 +331,7 @@ public final class Configuration implements Serializable {
 
   /** Dictionary of all community-lists for this node. */
   @JsonProperty(PROP_COMMUNITY_LISTS)
-  public NavigableMap<String, CommunityList> getCommunityLists() {
+  public Map<String, CommunityList> getCommunityLists() {
     return _communityLists;
   }
 
@@ -413,7 +413,7 @@ public final class Configuration implements Serializable {
 
   /** Dictionary of all interfaces across all VRFs for this node. */
   @JsonProperty(PROP_INTERFACES)
-  public NavigableMap<String, Interface> getAllInterfaces() {
+  public Map<String, Interface> getAllInterfaces() {
     return _interfaces;
   }
 
@@ -424,21 +424,15 @@ public final class Configuration implements Serializable {
         .collect(ImmutableMap.toImmutableMap(Entry::getKey, Entry::getValue));
   }
 
-  @JsonIgnore
-  @Deprecated // to enable users to migrate to new API.
-  public NavigableMap<String, Interface> getInterfaces() {
-    return getAllInterfaces();
-  }
-
   /** Dictionary of all IPV6 access-lists for this node. */
   @JsonProperty(PROP_IP6_ACCESS_LISTS)
-  public NavigableMap<String, Ip6AccessList> getIp6AccessLists() {
+  public Map<String, Ip6AccessList> getIp6AccessLists() {
     return _ip6AccessLists;
   }
 
   /** Dictionary of all IPV4 access-lists for this node. */
   @JsonProperty(PROP_IP_ACCESS_LISTS)
-  public NavigableMap<String, IpAccessList> getIpAccessLists() {
+  public Map<String, IpAccessList> getIpAccessLists() {
     return _ipAccessLists;
   }
 
@@ -509,19 +503,19 @@ public final class Configuration implements Serializable {
 
   /** Dictionary of all IPV6 route filter lists for this node. */
   @JsonProperty(PROP_ROUTE6_FILTER_LISTS)
-  public NavigableMap<String, Route6FilterList> getRoute6FilterLists() {
+  public Map<String, Route6FilterList> getRoute6FilterLists() {
     return _route6FilterLists;
   }
 
   /** Dictionary of all IPV4 route filter lists for this node. */
   @JsonProperty(PROP_ROUTE_FILTER_LISTS)
-  public NavigableMap<String, RouteFilterList> getRouteFilterLists() {
+  public Map<String, RouteFilterList> getRouteFilterLists() {
     return _routeFilterLists;
   }
 
   /** Dictionary of all routing policies for this node. */
   @JsonProperty(PROP_ROUTING_POLICIES)
-  public NavigableMap<String, RoutingPolicy> getRoutingPolicies() {
+  public Map<String, RoutingPolicy> getRoutingPolicies() {
     return _routingPolicies;
   }
 
@@ -583,7 +577,7 @@ public final class Configuration implements Serializable {
   }
 
   @JsonProperty(PROP_AS_PATH_ACCESS_LISTS)
-  public void setAsPathAccessLists(NavigableMap<String, AsPathAccessList> asPathAccessLists) {
+  public void setAsPathAccessLists(Map<String, AsPathAccessList> asPathAccessLists) {
     _asPathAccessLists = asPathAccessLists;
   }
 
@@ -594,7 +588,7 @@ public final class Configuration implements Serializable {
   }
 
   @JsonProperty(PROP_COMMUNITY_LISTS)
-  public void setCommunityLists(NavigableMap<String, CommunityList> communityLists) {
+  public void setCommunityLists(Map<String, CommunityList> communityLists) {
     _communityLists = communityLists;
   }
 
@@ -642,17 +636,17 @@ public final class Configuration implements Serializable {
   }
 
   @JsonProperty(PROP_INTERFACES)
-  public void setInterfaces(NavigableMap<String, Interface> interfaces) {
+  public void setInterfaces(Map<String, Interface> interfaces) {
     _interfaces = interfaces;
   }
 
   @JsonProperty(PROP_IP6_ACCESS_LISTS)
-  public void setIp6AccessLists(NavigableMap<String, Ip6AccessList> ip6AccessLists) {
+  public void setIp6AccessLists(Map<String, Ip6AccessList> ip6AccessLists) {
     _ip6AccessLists = ip6AccessLists;
   }
 
   @JsonProperty(PROP_IP_ACCESS_LISTS)
-  public void setIpAccessLists(NavigableMap<String, IpAccessList> ipAccessLists) {
+  public void setIpAccessLists(Map<String, IpAccessList> ipAccessLists) {
     _ipAccessLists = ipAccessLists;
   }
 
@@ -719,17 +713,17 @@ public final class Configuration implements Serializable {
   }
 
   @JsonProperty(PROP_ROUTE6_FILTER_LISTS)
-  public void setRoute6FilterLists(NavigableMap<String, Route6FilterList> route6FilterLists) {
+  public void setRoute6FilterLists(Map<String, Route6FilterList> route6FilterLists) {
     _route6FilterLists = route6FilterLists;
   }
 
   @JsonProperty(PROP_ROUTE_FILTER_LISTS)
-  public void setRouteFilterLists(NavigableMap<String, RouteFilterList> routeFilterLists) {
+  public void setRouteFilterLists(Map<String, RouteFilterList> routeFilterLists) {
     _routeFilterLists = routeFilterLists;
   }
 
   @JsonProperty(PROP_ROUTING_POLICIES)
-  public void setRoutingPolicies(NavigableMap<String, RoutingPolicy> routingPolicies) {
+  public void setRoutingPolicies(Map<String, RoutingPolicy> routingPolicies) {
     _routingPolicies = routingPolicies;
   }
 

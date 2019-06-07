@@ -4,7 +4,6 @@ import static org.hamcrest.Matchers.equalTo;
 
 import java.util.List;
 import java.util.Map;
-import java.util.NavigableMap;
 import java.util.Set;
 import java.util.SortedSet;
 import javax.annotation.Nonnull;
@@ -168,7 +167,7 @@ public final class DataModelMatchers {
    * routeFilterLists.
    */
   public static Matcher<Configuration> hasRouteFilterLists(
-      @Nonnull Matcher<? super NavigableMap<String, RouteFilterList>> subMatcher) {
+      @Nonnull Matcher<? super Map<String, RouteFilterList>> subMatcher) {
     return new HasRouteFilterLists(subMatcher);
   }
 
@@ -203,7 +202,7 @@ public final class DataModelMatchers {
    * route6FilterLists.
    */
   public static Matcher<Configuration> hasRoute6FilterLists(
-      @Nonnull Matcher<? super NavigableMap<String, Route6FilterList>> subMatcher) {
+      @Nonnull Matcher<? super Map<String, Route6FilterList>> subMatcher) {
     return new HasRoute6FilterLists(subMatcher);
   }
 
