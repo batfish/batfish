@@ -19,8 +19,8 @@ public final class BgpPeerConfigId implements Comparable<BgpPeerConfigId> {
   private static final String PROP_TYPE = "type";
   private static final String PROP_DYNAMIC = "dynamic";
 
-  private final String _hostname;
-  private final String _vrfName;
+  @Nonnull private final String _hostname;
+  @Nonnull private final String _vrfName;
   @Nullable private final String _peerInterface;
   @Nullable private final Prefix _remotePeerPrefix;
   @Nonnull private final BgpPeerConfigType _type;
@@ -136,16 +136,21 @@ public final class BgpPeerConfigId implements Comparable<BgpPeerConfigId> {
       return false;
     }
     BgpPeerConfigId other = (BgpPeerConfigId) o;
-    return Objects.equals(_hostname, other._hostname)
-        && Objects.equals(_vrfName, other._vrfName)
+    return _type == other._type
+        && _hostname.equals(other._hostname)
+        && _vrfName.equals(other._vrfName)
         && Objects.equals(_peerInterface, other._peerInterface)
-        && Objects.equals(_remotePeerPrefix, other._remotePeerPrefix)
-        && _type == other._type;
+        && Objects.equals(_remotePeerPrefix, other._remotePeerPrefix);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(_hostname, _vrfName, _peerInterface, _remotePeerPrefix, _type.ordinal());
+    int hashCode = _hostname.hashCode();
+    hashCode = 31 * hashCode + _vrfName.hashCode();
+    hashCode = 31 * hashCode + Objects.hashCode(_peerInterface);
+    hashCode = 31 * hashCode + Objects.hashCode(_remotePeerPrefix);
+    hashCode = 31 * hashCode + _type.ordinal();
+    return hashCode;
   }
 
   /** Types of BGP peers */
