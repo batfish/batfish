@@ -18,7 +18,7 @@ For many parameters types, there is a "resolver" question that may be used to le
 
 * [`locationSpec`](#location-specifier)
 
-* [`namedStructureSpec`](#named-structure-spec)
+* [`namedStructureSpec`](#named-structure-specifier)
 
 * [`nodeSpec`](#node-specifier)
 
