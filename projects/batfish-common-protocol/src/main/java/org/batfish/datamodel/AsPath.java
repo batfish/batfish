@@ -96,7 +96,12 @@ public final class AsPath implements Serializable, Comparable<AsPath> {
   }
 
   public boolean containsAs(Long as) {
-    return _asSets.stream().anyMatch(a -> a.containsAs(as));
+    for (AsSet a : _asSets) {
+      if (a.containsAs(as)) {
+        return true;
+      }
+    }
+    return false;
   }
 
   @Override
