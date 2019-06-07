@@ -50,8 +50,12 @@ public abstract class CommunitySetExpr implements Serializable {
    * CommunitySetExpr} under the provided {@code environment}.
    */
   public boolean matchAnyCommunity(Environment environment, Set<Community> communityCandidates) {
-    return communityCandidates.stream()
-        .anyMatch(communityCandidate -> matchCommunity(environment, communityCandidate));
+    for (Community communityCandidate : communityCandidates) {
+      if (matchCommunity(environment, communityCandidate)) {
+        return true;
+      }
+    }
+    return false;
   }
 
   /**
