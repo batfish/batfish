@@ -138,8 +138,7 @@ public abstract class BgpRoute<B extends Builder<B, R>, R extends BgpRoute<B, R>
 
     /** Overwrite communities */
     public B setCommunities(Set<Community> communities) {
-      _communities = new TreeSet<Community>();
-      _communities.addAll(communities);
+      _communities = new TreeSet<>(communities);
       return getThis();
     }
 
