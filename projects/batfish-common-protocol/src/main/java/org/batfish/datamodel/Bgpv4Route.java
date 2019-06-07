@@ -195,9 +195,9 @@ public final class Bgpv4Route extends BgpRoute<Bgpv4Route.Builder, Bgpv4Route> {
     }
     Bgpv4Route other = (Bgpv4Route) o;
     return _network.equals(other._network)
-        && _nextHopInterface.equals(other._nextHopInterface)
         && _nextHopIp.equals(other._nextHopIp)
         && _originatorIp.equals(other._originatorIp)
+        && _nextHopInterface.equals(other._nextHopInterface)
         && Objects.equals(_receivedFromIp, other._receivedFromIp)
         // Things above this line are more likely to cause false earlier.
         && _admin == other._admin
