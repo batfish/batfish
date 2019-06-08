@@ -11,6 +11,7 @@ import static org.junit.Assert.assertTrue;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedSet;
+import com.google.common.collect.Iterables;
 import java.util.Arrays;
 import java.util.Map;
 import java.util.Set;
@@ -87,7 +88,10 @@ public final class LastHopOutgoingInterfaceManagerTest {
     assertThat(mgr.getFiniteDomains().values(), empty());
     assertThat(
         mgr.getLastHopOutgoingInterfaceBdd(
-            NODE1, IFACE1, c.getHostname(), c.getAllInterfaces().firstKey()),
+            NODE1,
+            IFACE1,
+            c.getHostname(),
+            Iterables.getFirst(c.getAllInterfaces().keySet(), null)),
         equalTo(_trueBdd));
   }
 
@@ -95,7 +99,7 @@ public final class LastHopOutgoingInterfaceManagerTest {
   public void testOneEdge() {
     Configuration c = configurationWithSession();
     String node = c.getHostname();
-    String iface = c.getAllInterfaces().firstKey();
+    String iface = Iterables.getFirst(c.getAllInterfaces().keySet(), null);
     Set<Edge> edges = ImmutableSortedSet.of(Edge.of(NODE1, IFACE1, node, iface));
     LastHopOutgoingInterfaceManager mgr =
         new LastHopOutgoingInterfaceManager(_pkt, configs(c), edges);
@@ -115,7 +119,7 @@ public final class LastHopOutgoingInterfaceManagerTest {
   public void testTwoEdges() {
     Configuration c = configurationWithSession();
     String node = c.getHostname();
-    String iface = c.getAllInterfaces().firstKey();
+    String iface = Iterables.getFirst(c.getAllInterfaces().keySet(), null);
     Set<Edge> edges =
         ImmutableSet.of(Edge.of(NODE1, IFACE1, node, iface), Edge.of(NODE2, IFACE2, node, iface));
     LastHopOutgoingInterfaceManager mgr =

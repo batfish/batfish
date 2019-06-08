@@ -60,7 +60,6 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.NavigableMap;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
@@ -1910,7 +1909,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
         .values()
         .forEach(
             config -> {
-              NavigableMap<String, Interface> allInterfaces = config.getAllInterfaces();
+              Map<String, Interface> allInterfaces = config.getAllInterfaces();
               Graph<String, Dependency> graph = new SimpleDirectedGraph<>(Dependency.class);
               allInterfaces.keySet().forEach(graph::addVertex);
               allInterfaces
