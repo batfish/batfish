@@ -6,7 +6,7 @@ For many parameters types, there is a "resolver" question that may be used to le
 
 * [`applicationSpec`](#application-specifier)
 
-* [`flowDispositionSpec`](#flow-disposition-specifier)
+* [`dispositionSpec`](#disposition-specifier)
 
 * [`filterSpec`](#filter-specifier)
 
@@ -60,7 +60,7 @@ applicationTerm :=
 
 Batfish understands the following applications names, with the corresponding IP protocol and destination port in parenthesis: DNS(UDP, 53), HTTP(TCP, 80), HTTPS(TCP, 443), SNMP(UDP, 161), SSH(TCP, 22), TELNET(TCP, 23).
 
-## Flow Disposition Specifier
+## Disposition Specifier
 
 Flow dispositions are used in questions like [reachability](https://pybatfish.readthedocs.io/en/latest/questions.html#pybatfish.question.bfq.reachability) to identify flow outcomes. The disposition specifier takes as input a comma-separated list of disposition values, which are interpreted using logical OR.
 
