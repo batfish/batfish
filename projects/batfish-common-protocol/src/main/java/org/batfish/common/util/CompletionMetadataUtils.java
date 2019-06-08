@@ -9,7 +9,7 @@ import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.collections.NodeInterfacePair;
-import org.batfish.datamodel.questions.NamedStructureSpecifier;
+import org.batfish.datamodel.questions.NamedStructurePropertySpecifier;
 
 /** Various functions useful for fetching data used in the creation of CompletionMetadata */
 public final class CompletionMetadataUtils {
@@ -130,7 +130,7 @@ public final class CompletionMetadataUtils {
         .values()
         .forEach(
             configuration ->
-                NamedStructureSpecifier.JAVA_MAP
+                NamedStructurePropertySpecifier.JAVA_MAP
                     .values()
                     .forEach(
                         type -> {
