@@ -56,7 +56,6 @@ public final class PaloAltoBidirectionalBehaviorTest {
         .setTag("ignored")
         .setIngressInterface(INTERFACE1)
         .setIngressNode(hostname)
-        .setIngressVrf(VIRTUAL_ROUTER1)
         .setSrcIp(BIDIR_DEFAULT_SRC_IP)
         .setDstIp(dstIp)
         .setSrcPort(NamedPort.EPHEMERAL_LOWEST.number())
@@ -71,7 +70,6 @@ public final class PaloAltoBidirectionalBehaviorTest {
         .setTag("ignored")
         .setIngressInterface(INTERFACE2)
         .setIngressNode(hostname)
-        .setIngressVrf(virtualRouter)
         .setSrcIp(BIDIR_DEFAULT_DST_IP)
         .setDstIp(BIDIR_DEFAULT_SRC_IP)
         .setSrcPort(NamedPort.EPHEMERAL_LOWEST.number())
@@ -132,16 +130,17 @@ public final class PaloAltoBidirectionalBehaviorTest {
 
     List<TraceAndReverseFlow> reverseTraces =
         tracerouteEngine
-            .computeTracesAndReverseFlows(ImmutableSet.of(reverseFlow), false)
+            .computeTracesAndReverseFlows(
+                ImmutableSet.of(reverseFlow), forwardTrace.getNewFirewallSessions(), false)
             .get(reverseFlow);
 
     assertThat(reverseTraces, hasSize(1));
+    // TODO: change expected disposition to DELIVERED_TO_SUBNET after sessions support routing
     assertThat(
         reverseTraces.iterator().next().getTrace().getDisposition(),
-        equalTo(FlowDisposition.DELIVERED_TO_SUBNET));
+        equalTo(FlowDisposition.EXITS_NETWORK));
   }
 
-  @Ignore
   @Test
   public void testDropMissingVsys() throws IOException {
     String hostname = "drop-missing-vsys";
@@ -168,7 +167,6 @@ public final class PaloAltoBidirectionalBehaviorTest {
     assertBidirAccepted(hostname);
   }
 
-  @Ignore
   @Test
   public void testDropSameZoneExplicit() throws IOException {
     String hostname = "drop-same-zone-explicit";
@@ -177,7 +175,6 @@ public final class PaloAltoBidirectionalBehaviorTest {
     assertForwardDropped(hostname);
   }
 
-  @Ignore
   @Test
   public void testDropDefaultCrossZone() throws IOException {
     String hostname = "drop-default-cross-zone";
@@ -195,7 +192,6 @@ public final class PaloAltoBidirectionalBehaviorTest {
     assertBidirAccepted(hostname);
   }
 
-  @Ignore
   @Test
   public void testDropInterVsysImplicit() throws IOException {
     String hostname = "drop-inter-vsys-implicit";
@@ -205,7 +201,6 @@ public final class PaloAltoBidirectionalBehaviorTest {
     assertForwardDropped(hostname);
   }
 
-  @Ignore
   @Test
   public void testDropInterVsysMissingExternalEgress() throws IOException {
     String hostname = "drop-inter-vsys-missing-external-egress";
@@ -215,7 +210,6 @@ public final class PaloAltoBidirectionalBehaviorTest {
     assertForwardDropped(hostname);
   }
 
-  @Ignore
   @Test
   public void testDropInterVsysMissingExternalIngress() throws IOException {
     String hostname = "drop-inter-vsys-missing-external-ingress";
@@ -225,7 +219,6 @@ public final class PaloAltoBidirectionalBehaviorTest {
     assertForwardDropped(hostname);
   }
 
-  @Ignore
   @Test
   public void testDropInterVsysMisconfiguredExternalEgress() throws IOException {
     String hostname = "drop-inter-vsys-misconfigured-external-egress";
@@ -235,7 +228,6 @@ public final class PaloAltoBidirectionalBehaviorTest {
     assertForwardDropped(hostname);
   }
 
-  @Ignore
   @Test
   public void testDropInterVsysMisconfiguredExternalIngress() throws IOException {
     String hostname = "drop-inter-vsys-misconfigured-external-ingress";
@@ -344,7 +336,8 @@ public final class PaloAltoBidirectionalBehaviorTest {
 
     List<TraceAndReverseFlow> reverseTraces =
         tracerouteEngine
-            .computeTracesAndReverseFlows(ImmutableSet.of(reverseFlow), false)
+            .computeTracesAndReverseFlows(
+                ImmutableSet.of(reverseFlow), forwardTrace.getNewFirewallSessions(), false)
             .get(reverseFlow);
 
     assertThat(reverseTraces, hasSize(1));
@@ -408,7 +401,6 @@ public final class PaloAltoBidirectionalBehaviorTest {
     assertForwardDropped(tracerouteEngine, bidirForwardFlow(hostname, BIDIR_OTHER_DST_IP));
   }
 
-  @Ignore
   @Test
   public void testMatchVsysAddress() throws IOException {
     String hostname = "match-vsys-address";
@@ -419,7 +411,6 @@ public final class PaloAltoBidirectionalBehaviorTest {
     assertForwardDropped(tracerouteEngine, bidirForwardFlow(hostname, BIDIR_OTHER_DST_IP));
   }
 
-  @Ignore
   @Test
   public void testMatchVsysAddressOverShared() throws IOException {
     String hostname = "match-vsys-address-over-shared";

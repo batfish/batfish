@@ -29754,6 +29754,7 @@
             "ospfHelloMultiplier" : 0,
             "ospfPassive" : false,
             "ospfPointToPoint" : false,
+            "outgoingFilter" : "~ethernet1/1~OUTGOING_FILTER~",
             "proxyArp" : false,
             "ripEnabled" : false,
             "ripPassive" : false,
@@ -29779,6 +29780,7 @@
             "ospfHelloMultiplier" : 0,
             "ospfPassive" : false,
             "ospfPointToPoint" : false,
+            "outgoingFilter" : "~ethernet1/1.4~OUTGOING_FILTER~",
             "proxyArp" : false,
             "ripEnabled" : false,
             "ripPassive" : false,
@@ -29805,6 +29807,7 @@
             "ospfHelloMultiplier" : 0,
             "ospfPassive" : false,
             "ospfPointToPoint" : false,
+            "outgoingFilter" : "~ethernet1/1.5~OUTGOING_FILTER~",
             "proxyArp" : false,
             "ripEnabled" : false,
             "ripPassive" : false,
@@ -29831,6 +29834,7 @@
             "ospfHelloMultiplier" : 0,
             "ospfPassive" : false,
             "ospfPointToPoint" : false,
+            "outgoingFilter" : "~loopback~OUTGOING_FILTER~",
             "proxyArp" : false,
             "ripEnabled" : false,
             "ripPassive" : false,
@@ -29855,6 +29859,7 @@
             "ospfHelloMultiplier" : 0,
             "ospfPassive" : false,
             "ospfPointToPoint" : false,
+            "outgoingFilter" : "~loopback.1~OUTGOING_FILTER~",
             "proxyArp" : false,
             "ripEnabled" : false,
             "ripPassive" : false,
@@ -29879,6 +29884,7 @@
             "ospfHelloMultiplier" : 0,
             "ospfPassive" : false,
             "ospfPointToPoint" : false,
+            "outgoingFilter" : "~tunnel~OUTGOING_FILTER~",
             "proxyArp" : false,
             "ripEnabled" : false,
             "ripPassive" : false,
@@ -29904,6 +29910,7 @@
             "ospfHelloMultiplier" : 0,
             "ospfPassive" : false,
             "ospfPointToPoint" : false,
+            "outgoingFilter" : "~tunnel.3~OUTGOING_FILTER~",
             "proxyArp" : false,
             "ripEnabled" : false,
             "ripPassive" : false,
@@ -29929,6 +29936,7 @@
             "ospfHelloMultiplier" : 0,
             "ospfPassive" : false,
             "ospfPointToPoint" : false,
+            "outgoingFilter" : "~vlan~OUTGOING_FILTER~",
             "proxyArp" : false,
             "ripEnabled" : false,
             "ripPassive" : false,
@@ -29953,6 +29961,7 @@
             "ospfHelloMultiplier" : 0,
             "ospfPassive" : false,
             "ospfPointToPoint" : false,
+            "outgoingFilter" : "~vlan.1~OUTGOING_FILTER~",
             "proxyArp" : false,
             "ripEnabled" : false,
             "ripPassive" : false,
@@ -29962,6 +29971,116 @@
             "switchportTrunkEncapsulation" : "DOT1Q",
             "type" : "VLAN",
             "vrf" : "~NULL_VRF~"
+          }
+        },
+        "ipAccessLists" : {
+          "~ethernet1/1.4~OUTGOING_FILTER~" : {
+            "name" : "~ethernet1/1.4~OUTGOING_FILTER~",
+            "lines" : [
+              {
+                "action" : "DENY",
+                "matchCondition" : {
+                  "class" : "org.batfish.datamodel.acl.TrueExpr"
+                },
+                "name" : "Not in a zone"
+              }
+            ]
+          },
+          "~ethernet1/1.5~OUTGOING_FILTER~" : {
+            "name" : "~ethernet1/1.5~OUTGOING_FILTER~",
+            "lines" : [
+              {
+                "action" : "DENY",
+                "matchCondition" : {
+                  "class" : "org.batfish.datamodel.acl.TrueExpr"
+                },
+                "name" : "Not in a zone"
+              }
+            ]
+          },
+          "~ethernet1/1~OUTGOING_FILTER~" : {
+            "name" : "~ethernet1/1~OUTGOING_FILTER~",
+            "lines" : [
+              {
+                "action" : "DENY",
+                "matchCondition" : {
+                  "class" : "org.batfish.datamodel.acl.TrueExpr"
+                },
+                "name" : "Not in a zone"
+              }
+            ]
+          },
+          "~loopback.1~OUTGOING_FILTER~" : {
+            "name" : "~loopback.1~OUTGOING_FILTER~",
+            "lines" : [
+              {
+                "action" : "DENY",
+                "matchCondition" : {
+                  "class" : "org.batfish.datamodel.acl.TrueExpr"
+                },
+                "name" : "Not in a zone"
+              }
+            ]
+          },
+          "~loopback~OUTGOING_FILTER~" : {
+            "name" : "~loopback~OUTGOING_FILTER~",
+            "lines" : [
+              {
+                "action" : "DENY",
+                "matchCondition" : {
+                  "class" : "org.batfish.datamodel.acl.TrueExpr"
+                },
+                "name" : "Not in a zone"
+              }
+            ]
+          },
+          "~tunnel.3~OUTGOING_FILTER~" : {
+            "name" : "~tunnel.3~OUTGOING_FILTER~",
+            "lines" : [
+              {
+                "action" : "DENY",
+                "matchCondition" : {
+                  "class" : "org.batfish.datamodel.acl.TrueExpr"
+                },
+                "name" : "Not in a zone"
+              }
+            ]
+          },
+          "~tunnel~OUTGOING_FILTER~" : {
+            "name" : "~tunnel~OUTGOING_FILTER~",
+            "lines" : [
+              {
+                "action" : "DENY",
+                "matchCondition" : {
+                  "class" : "org.batfish.datamodel.acl.TrueExpr"
+                },
+                "name" : "Not in a zone"
+              }
+            ]
+          },
+          "~vlan.1~OUTGOING_FILTER~" : {
+            "name" : "~vlan.1~OUTGOING_FILTER~",
+            "lines" : [
+              {
+                "action" : "DENY",
+                "matchCondition" : {
+                  "class" : "org.batfish.datamodel.acl.TrueExpr"
+                },
+                "name" : "Not in a zone"
+              }
+            ]
+          },
+          "~vlan~OUTGOING_FILTER~" : {
+            "name" : "~vlan~OUTGOING_FILTER~",
+            "lines" : [
+              {
+                "action" : "DENY",
+                "matchCondition" : {
+                  "class" : "org.batfish.datamodel.acl.TrueExpr"
+                },
+                "name" : "Not in a zone"
+              }
+            ]
           }
         },
         "vendorFamily" : { },
@@ -30017,12 +30136,18 @@
             },
             "allowedVlans" : "",
             "autostate" : true,
+            "firewallSessionInterfaceInfo" : {
+              "sessionInterfaces" : [
+                "ethernet1/1"
+              ]
+            },
             "mtu" : 1500,
             "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
             "ospfPassive" : false,
             "ospfPointToPoint" : false,
+            "outgoingFilter" : "~ethernet1/1~OUTGOING_FILTER~",
             "proxyArp" : false,
             "ripEnabled" : false,
             "ripPassive" : false,
@@ -30042,12 +30167,18 @@
             },
             "allowedVlans" : "",
             "autostate" : true,
+            "firewallSessionInterfaceInfo" : {
+              "sessionInterfaces" : [
+                "ethernet1/2"
+              ]
+            },
             "mtu" : 1500,
             "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
             "ospfPassive" : false,
             "ospfPointToPoint" : false,
+            "outgoingFilter" : "~ethernet1/2~OUTGOING_FILTER~",
             "proxyArp" : false,
             "ripEnabled" : false,
             "ripPassive" : false,
@@ -30067,12 +30198,18 @@
             },
             "allowedVlans" : "",
             "autostate" : true,
+            "firewallSessionInterfaceInfo" : {
+              "sessionInterfaces" : [
+                "ethernet1/3"
+              ]
+            },
             "mtu" : 1500,
             "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
             "ospfPassive" : false,
             "ospfPointToPoint" : false,
+            "outgoingFilter" : "~ethernet1/3~OUTGOING_FILTER~",
             "proxyArp" : false,
             "ripEnabled" : false,
             "ripPassive" : false,
@@ -30092,12 +30229,18 @@
             },
             "allowedVlans" : "",
             "autostate" : true,
+            "firewallSessionInterfaceInfo" : {
+              "sessionInterfaces" : [
+                "ethernet1/4"
+              ]
+            },
             "mtu" : 1500,
             "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
             "ospfPassive" : false,
             "ospfPointToPoint" : false,
+            "outgoingFilter" : "~ethernet1/4~OUTGOING_FILTER~",
             "proxyArp" : false,
             "ripEnabled" : false,
             "ripPassive" : false,
@@ -30183,20 +30326,90 @@
               }
             ]
           },
-          "~zext~vsys10~OUTGOING_FILTER~" : {
-            "name" : "~zext~vsys10~OUTGOING_FILTER~"
+          "~ethernet1/1~OUTGOING_FILTER~" : {
+            "name" : "~ethernet1/1~OUTGOING_FILTER~",
+            "lines" : [
+              {
+                "action" : "PERMIT",
+                "matchCondition" : {
+                  "class" : "org.batfish.datamodel.acl.PermittedByAcl",
+                  "aclName" : "~zl2~vsys10~OUTGOING_FILTER~",
+                  "defaultAccept" : false
+                }
+              }
+            ]
           },
-          "~zl2~vsys10~OUTGOING_FILTER~" : {
-            "name" : "~zl2~vsys10~OUTGOING_FILTER~"
+          "~ethernet1/2~OUTGOING_FILTER~" : {
+            "name" : "~ethernet1/2~OUTGOING_FILTER~",
+            "lines" : [
+              {
+                "action" : "PERMIT",
+                "matchCondition" : {
+                  "class" : "org.batfish.datamodel.acl.PermittedByAcl",
+                  "aclName" : "~zl3~vsys10~OUTGOING_FILTER~",
+                  "defaultAccept" : false
+                }
+              }
+            ]
+          },
+          "~ethernet1/3~OUTGOING_FILTER~" : {
+            "name" : "~ethernet1/3~OUTGOING_FILTER~",
+            "lines" : [
+              {
+                "action" : "PERMIT",
+                "matchCondition" : {
+                  "class" : "org.batfish.datamodel.acl.PermittedByAcl",
+                  "aclName" : "~ztap~vsys10~OUTGOING_FILTER~",
+                  "defaultAccept" : false
+                }
+              }
+            ]
+          },
+          "~ethernet1/4~OUTGOING_FILTER~" : {
+            "name" : "~ethernet1/4~OUTGOING_FILTER~",
+            "lines" : [
+              {
+                "action" : "PERMIT",
+                "matchCondition" : {
+                  "class" : "org.batfish.datamodel.acl.PermittedByAcl",
+                  "aclName" : "~zvirtual-wire~vsys10~OUTGOING_FILTER~",
+                  "defaultAccept" : false
+                }
+              }
+            ]
           },
           "~zl3~vsys10~OUTGOING_FILTER~" : {
-            "name" : "~zl3~vsys10~OUTGOING_FILTER~"
-          },
-          "~ztap~vsys10~OUTGOING_FILTER~" : {
-            "name" : "~ztap~vsys10~OUTGOING_FILTER~"
-          },
-          "~zvirtual-wire~vsys10~OUTGOING_FILTER~" : {
-            "name" : "~zvirtual-wire~vsys10~OUTGOING_FILTER~"
+            "name" : "~zl3~vsys10~OUTGOING_FILTER~",
+            "lines" : [
+              {
+                "action" : "PERMIT",
+                "matchCondition" : {
+                  "class" : "org.batfish.datamodel.acl.AndMatchExpr",
+                  "conjuncts" : [
+                    {
+                      "class" : "org.batfish.datamodel.acl.MatchSrcInterface",
+                      "srcInterfaces" : [
+                        "ethernet1/2"
+                      ]
+                    },
+                    {
+                      "class" : "org.batfish.datamodel.acl.PermittedByAcl",
+                      "aclName" : "zone~zl3~vsys10~to~zone~zl3~vsys10",
+                      "defaultAccept" : false
+                    }
+                  ]
+                }
+              },
+              {
+                "action" : "DENY",
+                "matchCondition" : {
+                  "class" : "org.batfish.datamodel.acl.MatchSrcInterface",
+                  "srcInterfaces" : [
+                    "ethernet1/2"
+                  ]
+                }
+              }
+            ]
           }
         },
         "vendorFamily" : { },

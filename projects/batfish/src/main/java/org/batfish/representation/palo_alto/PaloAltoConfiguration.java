@@ -2,12 +2,18 @@ package org.batfish.representation.palo_alto;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 import static org.apache.commons.lang3.ObjectUtils.firstNonNull;
+import static org.batfish.datamodel.IpAccessListLine.accepting;
+import static org.batfish.datamodel.IpAccessListLine.rejecting;
 import static org.batfish.datamodel.Names.zoneToZoneFilter;
+import static org.batfish.datamodel.acl.AclLineMatchExprs.and;
+import static org.batfish.datamodel.acl.AclLineMatchExprs.permittedByAcl;
 import static org.batfish.representation.palo_alto.PaloAltoStructureType.ADDRESS_GROUP;
 import static org.batfish.representation.palo_alto.PaloAltoStructureType.ADDRESS_OBJECT;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.Predicates;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableList.Builder;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Multiset;
@@ -41,6 +47,7 @@ import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.DefinedStructureInfo;
 import org.batfish.datamodel.EmptyIpSpace;
+import org.batfish.datamodel.FirewallSessionInterfaceInfo;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.Interface.Dependency;
 import org.batfish.datamodel.Interface.DependencyType;
@@ -58,6 +65,7 @@ import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.acl.AndMatchExpr;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
+import org.batfish.datamodel.acl.MatchSrcInterface;
 import org.batfish.datamodel.acl.NotMatchExpr;
 import org.batfish.datamodel.acl.OrMatchExpr;
 import org.batfish.datamodel.acl.PermittedByAcl;
@@ -310,12 +318,16 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
       }
 
       // Create zone-specific outgoing ACLs.
-      for (Zone zone : vsys.getZones().values()) {
+      for (Zone toZone : vsys.getZones().values()) {
+        if (toZone.getType() != Type.LAYER3) {
+          continue;
+        }
         IpAccessList acl =
             generateOutgoingFilter(
-                computeOutgoingFilterName(computeObjectName(vsysName, zone.getName())),
-                zone,
-                rules);
+                vsys,
+                computeOutgoingFilterName(computeObjectName(vsysName, toZone.getName())),
+                toZone,
+                vsys.getZones().values());
         _c.getIpAccessLists().put(acl.getName(), acl);
       }
 
@@ -426,20 +438,85 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
 
   /** Generate outgoing IpAccessList for the specified zone */
   private IpAccessList generateOutgoingFilter(
-      String name, Zone toZone, List<Map.Entry<Rule, Vsys>> rules) {
-    List<IpAccessListLine> lines =
-        rules.stream()
-            .filter(
-                entry -> {
-                  Rule rule = entry.getKey();
-                  return (!rule.getDisabled()
-                      && (rule.getTo().contains(toZone.getName())
-                          || rule.getTo().contains(CATCHALL_ZONE_NAME)));
-                })
-            .map(entry -> toIpAccessListLine(entry.getKey(), entry.getValue()))
-            .collect(ImmutableList.toImmutableList());
+      Vsys vsys, String name, Zone toZone, Collection<Zone> fromZones) {
+    ImmutableList.Builder<IpAccessListLine> linesBuilder = ImmutableList.builder();
+    for (Zone fromZone : fromZones) {
+      addCrossZoneCalls(vsys, linesBuilder, fromZone, toZone);
+    }
+    return IpAccessList.builder().setName(name).setLines(linesBuilder.build()).build();
+  }
 
-    return IpAccessList.builder().setName(name).setLines(lines).build();
+  private void addCrossZoneCalls(
+      Vsys vsys, Builder<IpAccessListLine> linesBuilder, Zone fromZone, Zone toZone) {
+    String vsysName = vsys.getName();
+    String fromZoneName = fromZone.getName();
+    String toZoneName = toZone.getName();
+    switch (fromZone.getType()) {
+      case EXTERNAL:
+        {
+          _virtualSystems.values().stream()
+              .filter(Predicates.not(Predicates.equalTo(vsys)))
+              .filter(srcVsys -> fromZone.getExternalNames().contains(srcVsys.getName()))
+              .forEach(
+                  srcVsys -> {
+                    String srcVsysName = srcVsys.getName();
+                    srcVsys.getZones().values().stream()
+                        .filter(
+                            srcVsysZone ->
+                                srcVsysZone.getType() == Type.EXTERNAL
+                                    && srcVsysZone.getExternalNames().contains(vsys.getName()))
+                        .forEach(
+                            srcVsysExternalZone ->
+                                srcVsys.getZones().values().stream()
+                                    .filter(srcVsysZone -> srcVsysZone.getType() == Type.LAYER3)
+                                    .forEach(
+                                        srcVsysLayer3Zone -> {
+                                          AclLineMatchExpr matchSrcVsysZoneInterface =
+                                              new MatchSrcInterface(
+                                                  srcVsysLayer3Zone.getInterfaceNames());
+                                          String srcVsysCrossZoneFilterName =
+                                              zoneToZoneFilter(
+                                                  computeObjectName(
+                                                      srcVsysName, srcVsysLayer3Zone.getName()),
+                                                  computeObjectName(
+                                                      srcVsysName, srcVsysExternalZone.getName()));
+                                          String dstVsysCrossZoneFilterName =
+                                              zoneToZoneFilter(
+                                                  computeObjectName(vsysName, fromZoneName),
+                                                  computeObjectName(vsysName, toZoneName));
+                                          // if src interface in other vsys and both filters permit,
+                                          // then permit
+                                          linesBuilder.add(
+                                              accepting(
+                                                  and(
+                                                      matchSrcVsysZoneInterface,
+                                                      permittedByAcl(srcVsysCrossZoneFilterName),
+                                                      permittedByAcl(dstVsysCrossZoneFilterName))));
+                                          // else if src interface in other vsys, one must have
+                                          // denied
+                                          linesBuilder.add(rejecting(matchSrcVsysZoneInterface));
+                                        }));
+                  });
+          break;
+        }
+      case LAYER3:
+        {
+          AclLineMatchExpr matchSrcZoneInterface =
+              new MatchSrcInterface(fromZone.getInterfaceNames());
+          String crossZoneFilterName =
+              zoneToZoneFilter(
+                  computeObjectName(vsysName, fromZoneName),
+                  computeObjectName(vsysName, toZoneName));
+          // if src interface in zone and filters permits, then permit
+          linesBuilder.add(
+              accepting(and(matchSrcZoneInterface, permittedByAcl(crossZoneFilterName))));
+          // else if src interface in zone, filter must have denied
+          linesBuilder.add(rejecting(matchSrcZoneInterface));
+          break;
+        }
+      default:
+        break;
+    }
   }
 
   @Nullable
@@ -614,19 +691,20 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
                   new PermittedByAcl(
                       computeOutgoingFilterName(
                           computeObjectName(zone.getVsys().getName(), zone.getName())))));
+      newIface.setFirewallSessionInterfaceInfo(
+          new FirewallSessionInterfaceInfo(zone.getInterfaceNames(), null, null));
     } else {
       // Do not allow any traffic exiting an unzoned interface
       lines = ImmutableList.of(IpAccessListLine.rejecting("Not in a zone", TrueExpr.INSTANCE));
     }
-    /* TODO: correct and uncomment.
     IpAccessList outgoing =
         IpAccessList.builder()
             .setOwner(_c)
             .setName(computeOutgoingFilterName(iface.getName()))
             .setLines(lines)
             .build();
-     */
-    assert lines != null; // suppress unused warning
+    _c.getIpAccessLists().put(outgoing.getName(), outgoing);
+    newIface.setOutgoingFilter(outgoing);
     return newIface;
   }
 
