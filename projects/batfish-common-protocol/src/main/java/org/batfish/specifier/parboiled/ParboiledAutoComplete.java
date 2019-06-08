@@ -8,6 +8,7 @@ import static org.batfish.specifier.parboiled.Anchor.Type.FILTER_NAME_REGEX;
 import static org.batfish.specifier.parboiled.Anchor.Type.INTERFACE_NAME_REGEX;
 import static org.batfish.specifier.parboiled.Anchor.Type.NODE_AND_INTERFACE;
 import static org.batfish.specifier.parboiled.Anchor.Type.NODE_NAME_REGEX;
+import static org.batfish.specifier.parboiled.Anchor.Type.NODE_ROLE_AND_DIMENSION;
 import static org.batfish.specifier.parboiled.Anchor.Type.REFERENCE_BOOK_AND_ADDRESS_GROUP;
 import static org.batfish.specifier.parboiled.Anchor.Type.REFERENCE_BOOK_AND_INTERFACE_GROUP;
 import static org.batfish.specifier.parboiled.Anchor.Type.ROUTING_POLICY_NAME_REGEX;
@@ -38,6 +39,8 @@ import org.batfish.referencelibrary.AddressGroup;
 import org.batfish.referencelibrary.InterfaceGroup;
 import org.batfish.referencelibrary.ReferenceBook;
 import org.batfish.referencelibrary.ReferenceLibrary;
+import org.batfish.role.NodeRole;
+import org.batfish.role.NodeRoleDimension;
 import org.batfish.role.NodeRolesData;
 import org.parboiled.errors.InvalidInputError;
 import org.parboiled.parserunners.ReportingParseRunner;
@@ -214,7 +217,7 @@ public final class ParboiledAutoComplete {
       case NODE_ROLE_DIMENSION_NAME:
         return autoCompleteGeneric(pm);
       case NODE_ROLE_NAME:
-        return autoCompleteGeneric(pm);
+        return autoCompleteNodeRoleName(pm);
       case NODE_TYPE:
         // Relies on STRING_LITERAL completion as it appears later in the path
         throw new IllegalStateException(String.format("Unexpected auto completion for %s", pm));
@@ -403,6 +406,51 @@ public final class ParboiledAutoComplete {
     } else {
       throw new IllegalArgumentException("Can only match node names or regexes");
     }
+  }
+
+  /**
+   * Auto completes node role names in a context sensitive manner if an ancestor {@link PathElement}
+   * indicates that dimension name appeared earlier in the path. Otherwise, context-independent
+   * completion is used
+   */
+  @VisibleForTesting
+  Set<ParboiledAutoCompleteSuggestion> autoCompleteNodeRoleName(PotentialMatch pm) {
+    int anchorIndex = pm.getPath().indexOf(pm.getAnchor());
+    checkArgument(anchorIndex != -1, "Anchor is not present in the path.");
+
+    // have we descended from a dimension name based rule
+    boolean dimNameAncestor =
+        IntStream.range(0, anchorIndex)
+            .mapToObj(i -> pm.getPath().get(anchorIndex - i - 1))
+            .anyMatch(a -> a.getAnchorType() == NODE_ROLE_AND_DIMENSION);
+    if (!dimNameAncestor) {
+      return autoCompleteGeneric(pm);
+    }
+
+    // dimension name is at the head if nothing about the role name was entered;
+    // otherwise, it is second from top
+    String dimName =
+        ((StringAstNode)
+                _parser
+                    .getShadowStack()
+                    .getValueStack()
+                    .peek(pm.getMatchPrefix().isEmpty() ? 0 : 1))
+            .getStr();
+    NodeRoleDimension nodeRoleDimension =
+        _nodeRolesData
+            .getNodeRoleDimension(dimName)
+            .orElse(NodeRoleDimension.builder("dummy").build());
+
+    String matchPrefix = unescapeIfNeeded(pm.getMatchPrefix(), pm.getAnchorType());
+    return updateSuggestions(
+        AutoCompleteUtils.stringAutoComplete(
+            matchPrefix,
+            nodeRoleDimension.getRoles().stream()
+                .map(NodeRole::getName)
+                .collect(ImmutableSet.toImmutableSet())),
+        !matchPrefix.equals(pm.getMatchPrefix()),
+        pm.getAnchorType(),
+        pm.getMatchStartIndex());
   }
 
   /**
