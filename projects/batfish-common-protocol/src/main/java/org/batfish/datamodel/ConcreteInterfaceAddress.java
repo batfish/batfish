@@ -18,8 +18,8 @@ public final class ConcreteInterfaceAddress extends InterfaceAddress {
       Comparator.comparing(ConcreteInterfaceAddress::getIp)
           .thenComparing(ConcreteInterfaceAddress::getNetworkBits);
 
-  @Nonnull private Ip _ip;
-  private int _networkBits;
+  @Nonnull private final Ip _ip;
+  private final int _networkBits;
 
   private ConcreteInterfaceAddress(Ip ip, int networkBits) {
     _ip = ip;
