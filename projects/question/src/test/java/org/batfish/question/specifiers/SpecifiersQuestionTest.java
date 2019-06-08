@@ -12,6 +12,7 @@ import org.batfish.specifier.AllNodesNodeSpecifier;
 import org.batfish.specifier.InferFromLocationIpSpaceSpecifier;
 import org.batfish.specifier.SpecifierFactories;
 import org.batfish.specifier.SpecifierFactories.Version;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -61,7 +62,12 @@ public final class SpecifiersQuestionTest {
         instanceOf(SpecifierFactories.getNodeSpecifierOrDefault("input", null).getClass()));
   }
 
-  /** Test that when we use a different version from the active one, we get the right specifiers */
+  /**
+   * Test that when we use a different version from the active one, we get the right specifiers.
+   * Ignore this test because we have only one valid version (V2) at the moment. V1 throws
+   * exceptions.
+   */
+  @Ignore
   @Test
   public void testGetSpecifierVersionOverride() {
     Version otherVersion =
