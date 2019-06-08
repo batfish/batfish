@@ -79,32 +79,26 @@ public final class SpecifiersQuestionTest {
     assertThat(
         question.getFilterSpecifier(),
         instanceOf(
-            SpecifierFactories.getFilterSpecifierOrDefault(
-                    "input", null, SpecifierFactories.getFilterFactory(otherVersion))
+            SpecifierFactories.getFilterSpecifierOrDefault("input", null, otherVersion)
                 .getClass()));
     assertThat(
         question.getInterfaceSpecifier(),
         instanceOf(
-            SpecifierFactories.getInterfaceSpecifierOrDefault(
-                    "input", null, SpecifierFactories.getInterfaceFactory(otherVersion))
+            SpecifierFactories.getInterfaceSpecifierOrDefault("input", null, otherVersion)
                 .getClass()));
     assertThat(
         question.getIpSpaceSpecifier(),
         instanceOf(
-            SpecifierFactories.getIpSpaceSpecifierOrDefault(
-                    "1.1.1.1", null, SpecifierFactories.getIpSpaceFactory(otherVersion))
+            SpecifierFactories.getIpSpaceSpecifierOrDefault("1.1.1.1", null, otherVersion)
                 .getClass()));
     assertThat(
         question.getLocationSpecifier(),
         instanceOf(
-            SpecifierFactories.getLocationSpecifierOrDefault(
-                    "input", null, SpecifierFactories.getLocationFactory(otherVersion))
+            SpecifierFactories.getLocationSpecifierOrDefault("input", null, otherVersion)
                 .getClass()));
     assertThat(
         question.getNodeSpecifier(),
         instanceOf(
-            SpecifierFactories.getNodeSpecifierOrDefault(
-                    "input", null, SpecifierFactories.getNodeFactory(otherVersion))
-                .getClass()));
+            SpecifierFactories.getNodeSpecifierOrDefault("input", null, otherVersion).getClass()));
   }
 }
