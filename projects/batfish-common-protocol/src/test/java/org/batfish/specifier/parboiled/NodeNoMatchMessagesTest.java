@@ -70,15 +70,15 @@ public class NodeNoMatchMessagesTest {
                         .build()))
             .build();
     assertThat(
-        getMessages(new NodeNoMatchMessages(new RoleNodeAstNode("r1", "nodim")), nodeRolesData),
+        getMessages(new NodeNoMatchMessages(new RoleNodeAstNode("nodim", "r1")), nodeRolesData),
         equalTo(ImmutableList.of((getErrorMessageMissingBook("nodim", "Node role dimension")))));
     assertThat(
-        getMessages(new NodeNoMatchMessages(new RoleNodeAstNode("norole", "dim1")), nodeRolesData),
+        getMessages(new NodeNoMatchMessages(new RoleNodeAstNode("dim1", "norole")), nodeRolesData),
         equalTo(
             ImmutableList.of(
                 (getErrorMessageMissingGroup("norole", "Node role", "dim1", "dimension")))));
     assertThat(
-        getMessages(new NodeNoMatchMessages(new RoleNodeAstNode("r1", "dim1")), nodeRolesData),
+        getMessages(new NodeNoMatchMessages(new RoleNodeAstNode("dim1", "r1")), nodeRolesData),
         equalTo(ImmutableList.of()));
   }
 
