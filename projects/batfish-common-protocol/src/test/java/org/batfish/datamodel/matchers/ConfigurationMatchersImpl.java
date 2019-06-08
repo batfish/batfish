@@ -269,14 +269,13 @@ final class ConfigurationMatchersImpl {
   }
 
   static final class HasRoute6FilterLists
-      extends FeatureMatcher<Configuration, NavigableMap<String, Route6FilterList>> {
-    HasRoute6FilterLists(
-        @Nonnull Matcher<? super NavigableMap<String, Route6FilterList>> subMatcher) {
+      extends FeatureMatcher<Configuration, Map<String, Route6FilterList>> {
+    HasRoute6FilterLists(@Nonnull Matcher<? super Map<String, Route6FilterList>> subMatcher) {
       super(subMatcher, "A Configuration with route6FilterLists:", "route6FilterLists");
     }
 
     @Override
-    protected NavigableMap<String, Route6FilterList> featureValueOf(Configuration actual) {
+    protected Map<String, Route6FilterList> featureValueOf(Configuration actual) {
       return actual.getRoute6FilterLists();
     }
   }
@@ -299,14 +298,13 @@ final class ConfigurationMatchersImpl {
   }
 
   static final class HasRouteFilterLists
-      extends FeatureMatcher<Configuration, NavigableMap<String, RouteFilterList>> {
-    HasRouteFilterLists(
-        @Nonnull Matcher<? super NavigableMap<String, RouteFilterList>> subMatcher) {
+      extends FeatureMatcher<Configuration, Map<String, RouteFilterList>> {
+    HasRouteFilterLists(@Nonnull Matcher<? super Map<String, RouteFilterList>> subMatcher) {
       super(subMatcher, "A Configuration with routeFilterLists:", "routeFilterLists");
     }
 
     @Override
-    protected NavigableMap<String, RouteFilterList> featureValueOf(Configuration actual) {
+    protected Map<String, RouteFilterList> featureValueOf(Configuration actual) {
       return actual.getRouteFilterLists();
     }
   }

@@ -164,7 +164,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.NavigableMap;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.SortedSet;
@@ -3491,7 +3490,7 @@ public final class FlatJuniperGrammarTest {
   public void testNatDest() throws IOException {
     Configuration config = parseConfig("nat-dest");
 
-    NavigableMap<String, Interface> interfaces = config.getAllInterfaces();
+    Map<String, Interface> interfaces = config.getAllInterfaces();
     assertThat(interfaces.keySet(), containsInAnyOrder("ge-0/0/0", "ge-0/0/0.0"));
 
     assertThat(interfaces.get("ge-0/0/0").getIncomingTransformation(), nullValue());
