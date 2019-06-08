@@ -43,7 +43,7 @@ public final class Interface extends ComparableStructure<String> {
 
     private boolean _active;
 
-    private ConcreteInterfaceAddress _address;
+    private InterfaceAddress _address;
 
     private @Nullable IntegerSpace _allowedVlans;
 
@@ -217,23 +217,23 @@ public final class Interface extends ComparableStructure<String> {
 
     /**
      * Set the primary address of the interface. <br>
-     * The {@link Interface#getAllConcreteAddresses()} method of the built {@link Interface} will
-     * return a set containing the primary address and secondary addresses. <br>
+     * The {@link Interface#getAllAddresses()} method of the built {@link Interface} will return a
+     * set containing the primary address and secondary addresses. <br>
      * The node will accept traffic whose destination IP belongs is among any of the addresses of
      * any of the interfaces. The primary address is the one used by default as the source IP for
      * traffic sent out the interface. A secondary address is another address potentially associated
      * with a different subnet living on the interface. The interface will reply to ARP for the
      * primary or any secondary IP.
      */
-    public Builder setAddress(ConcreteInterfaceAddress address) {
+    public Builder setAddress(InterfaceAddress address) {
       _address = address;
       return this;
     }
 
     /**
      * Set the primary address and secondary addresses of the interface. <br>
-     * The {@link Interface#getAllConcreteAddresses()} method of the built {@link Interface} will
-     * return a set containing the primary address and secondary addresses.<br>
+     * The {@link Interface#getAllAddresses()} method of the built {@link Interface} will return a
+     * set containing the primary address and secondary addresses.<br>
      * The node will accept traffic whose destination IP is among any of the addresses of any of the
      * interfaces. The primary address is the one used by default as the source IP for traffic sent
      * out the interface. A secondary address is another address potentially associated with a
@@ -241,14 +241,14 @@ public final class Interface extends ComparableStructure<String> {
      * any secondary IP.
      */
     public Builder setAddresses(
-        ConcreteInterfaceAddress primaryAddress, InterfaceAddress... secondaryAddresses) {
+        InterfaceAddress primaryAddress, InterfaceAddress... secondaryAddresses) {
       return setAddresses(primaryAddress, Arrays.asList(secondaryAddresses));
     }
 
     /**
      * Set the primary address and secondary addresses of the interface. <br>
-     * The {@link Interface#getAllConcreteAddresses()} method of the built {@link Interface} will
-     * return a set containing the primary address and secondary addresses.<br>
+     * The {@link Interface#getAllAddresses()} method of the built {@link Interface} will return a
+     * set containing the primary address and secondary addresses.<br>
      * The node will accept traffic whose destination IP belongs is among any of the addresses of
      * any of the interfaces. The primary address is the one used by default as the source IP for
      * traffic sent out the interface. A secondary address is another address potentially associated
@@ -256,7 +256,7 @@ public final class Interface extends ComparableStructure<String> {
      * primary or any secondary IP.
      */
     public Builder setAddresses(
-        ConcreteInterfaceAddress primaryAddress, Iterable<InterfaceAddress> secondaryAddresses) {
+        InterfaceAddress primaryAddress, Iterable<InterfaceAddress> secondaryAddresses) {
       _address = primaryAddress;
       _secondaryAddresses = ImmutableSet.copyOf(secondaryAddresses);
       return this;

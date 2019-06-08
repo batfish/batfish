@@ -479,7 +479,7 @@ public class ForwardingAnalysisImplTest {
     _ib.setOwner(config);
     ConcreteInterfaceAddress primary =
         ConcreteInterfaceAddress.create(P1.getStartIp(), P1.getPrefixLength());
-    InterfaceAddress secondary =
+    ConcreteInterfaceAddress secondary =
         ConcreteInterfaceAddress.create(P2.getStartIp(), P2.getPrefixLength());
     Interface iNoProxyArp = _ib.setAddresses(primary, secondary).build();
     Interface iProxyArp = _ib.setProxyArp(true).build();

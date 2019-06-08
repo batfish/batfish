@@ -62,7 +62,7 @@ public final class ConcreteInterfaceAddress extends InterfaceAddress {
     if (rhs instanceof ConcreteInterfaceAddress) {
       return COMPARATOR.compare(this, (ConcreteInterfaceAddress) rhs);
     }
-    return 0;
+    return 1;
   }
 
   @Override
@@ -94,7 +94,7 @@ public final class ConcreteInterfaceAddress extends InterfaceAddress {
   @Override
   public int hashCode() {
     // We want a custom quick implementation, so don't call Objects.hash()
-    return 31 + 31 * Long.hashCode(_ip.asLong()) + _networkBits;
+    return 31 * Long.hashCode(_ip.asLong()) + _networkBits;
   }
 
   @Override

@@ -88,6 +88,6 @@ public final class LinkLocalAddress extends InterfaceAddress {
     if (o instanceof LinkLocalAddress) {
       return _ip.compareTo(((LinkLocalAddress) o).getIp());
     }
-    return 0;
+    return -1;
   }
 }
