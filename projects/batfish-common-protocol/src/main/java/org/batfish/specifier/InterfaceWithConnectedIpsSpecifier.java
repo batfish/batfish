@@ -2,7 +2,6 @@ package org.batfish.specifier;
 
 import static com.google.common.base.Preconditions.checkArgument;
 
-import com.google.auto.service.AutoService;
 import com.google.common.collect.ImmutableSet;
 import java.util.Objects;
 import java.util.Set;
@@ -70,15 +69,12 @@ public final class InterfaceWithConnectedIpsSpecifier implements InterfaceSpecif
   }
 
   /** Factory for {@link InterfaceWithConnectedIpsSpecifier}. */
-  @AutoService(InterfaceSpecifierFactory.class)
-  public static class Factory implements InterfaceSpecifierFactory {
+  public static class Factory {
 
-    @Override
     public String getName() {
       return NAME;
     }
 
-    @Override
     public InterfaceSpecifier buildInterfaceSpecifier(Object input) {
       checkArgument(
           input instanceof String,

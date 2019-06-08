@@ -109,9 +109,7 @@ public final class SpecifiersQuestion extends Question {
   @JsonIgnore
   NodeSpecifier getNodeSpecifier() {
     return SpecifierFactories.getNodeSpecifierOrDefault(
-        _nodeSpecifierInput,
-        AllNodesNodeSpecifier.INSTANCE,
-        SpecifierFactories.getNodeFactory(_specifierFactoryVersion));
+        _nodeSpecifierInput, AllNodesNodeSpecifier.INSTANCE, _specifierFactoryVersion);
   }
 
   @Override

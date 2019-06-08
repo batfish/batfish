@@ -10,7 +10,9 @@ import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.specifier.MockSpecifierContext;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 
 public class ParboiledRoutingPolicySpecifierTest {
 
@@ -101,5 +103,21 @@ public class ParboiledRoutingPolicySpecifierTest {
                     new NameRoutingPolicyAstNode("routingPolicy2")))
             .resolve(_nodeName, _ctxt),
         equalTo(ImmutableSet.of(_routingPolicy1, _routingPolicy2)));
+  }
+
+  @Rule public ExpectedException _thrown = ExpectedException.none();
+
+  @Test
+  public void testBuildRoutingPolicySpecifierBadInput() {
+    _thrown.expect(IllegalArgumentException.class);
+    _thrown.expectMessage("Error parsing");
+    new ParboiledRoutingPolicySpecifier("@connected");
+  }
+
+  @Test
+  public void testBuildRoutingPolicySpecifierGoodInput() {
+    assertThat(
+        new ParboiledRoutingPolicySpecifier("router0"),
+        equalTo(new ParboiledRoutingPolicySpecifier(new NameRoutingPolicyAstNode("router0"))));
   }
 }

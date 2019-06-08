@@ -5,9 +5,27 @@ import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableSet;
 import org.batfish.datamodel.Protocol;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 
 public class ParboiledApplicationSpecifierTest {
+
+  @Rule public ExpectedException _thrown = ExpectedException.none();
+
+  @Test
+  public void testBuildApplicationSpecifierBadInput() {
+    _thrown.expect(IllegalArgumentException.class);
+    _thrown.expectMessage("Error parsing");
+    new ParboiledApplicationSpecifier("@..");
+  }
+
+  @Test
+  public void testBuildApplicationSpecifierGoodInput() {
+    assertThat(
+        new ParboiledApplicationSpecifier("ssh"),
+        equalTo(new ParboiledApplicationSpecifier(new NameApplicationAstNode("ssh"))));
+  }
 
   @Test
   public void testResolveName() {

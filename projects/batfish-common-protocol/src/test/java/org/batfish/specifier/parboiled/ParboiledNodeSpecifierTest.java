@@ -13,7 +13,9 @@ import org.batfish.role.NodeRole;
 import org.batfish.role.NodeRoleDimension;
 import org.batfish.specifier.MockSpecifierContext;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 
 public class ParboiledNodeSpecifierTest {
 
@@ -99,5 +101,21 @@ public class ParboiledNodeSpecifierTest {
                 new UnionNodeAstNode(new NameNodeAstNode("node1"), new NameNodeAstNode("node2")))
             .resolve(_ctxt),
         equalTo(ImmutableSet.of("node1", "node2")));
+  }
+
+  @Rule public ExpectedException _thrown = ExpectedException.none();
+
+  @Test
+  public void testBuildNodeSpecifierBadInput() {
+    _thrown.expect(IllegalArgumentException.class);
+    _thrown.expectMessage("Error parsing");
+    new ParboiledNodeSpecifier("@connected");
+  }
+
+  @Test
+  public void testBuildNodeSpecifierGoodInput() {
+    assertThat(
+        new ParboiledNodeSpecifier("node0"),
+        equalTo(new ParboiledNodeSpecifier(new NameNodeAstNode("node0"))));
   }
 }
