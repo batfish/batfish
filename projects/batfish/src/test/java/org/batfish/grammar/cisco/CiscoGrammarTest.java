@@ -99,6 +99,7 @@ import static org.batfish.datamodel.matchers.InterfaceMatchers.hasMtu;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasNativeVlan;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasOspfArea;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasSpeed;
+import static org.batfish.datamodel.matchers.InterfaceMatchers.hasSwitchPortEncapsulation;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasSwitchPortMode;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasVrf;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.isActive;
@@ -331,6 +332,7 @@ import org.batfish.datamodel.RipInternalRoute;
 import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.SubRange;
+import org.batfish.datamodel.SwitchportEncapsulationType;
 import org.batfish.datamodel.SwitchportMode;
 import org.batfish.datamodel.VniSettings;
 import org.batfish.datamodel.Vrf;
@@ -4942,15 +4944,37 @@ public class CiscoGrammarTest {
     Interface e1 = c.getAllInterfaces().get("Ethernet0/1");
     Interface e2 = c.getAllInterfaces().get("Ethernet0/2");
     Interface e3 = c.getAllInterfaces().get("Ethernet0/3");
+    Interface e4 = c.getAllInterfaces().get("Ethernet0/4");
+    Interface e5 = c.getAllInterfaces().get("Ethernet0/5");
+    Interface e6 = c.getAllInterfaces().get("Ethernet0/6");
 
     assertThat(e0, isSwitchport(false));
     assertThat(e0, hasSwitchPortMode(SwitchportMode.NONE));
+
     assertThat(e1, isSwitchport(true));
     assertThat(e1, hasSwitchPortMode(SwitchportMode.DYNAMIC_AUTO));
+
     assertThat(e2, isSwitchport(true));
     assertThat(e2, hasSwitchPortMode(SwitchportMode.ACCESS));
+
     assertThat(e3, isSwitchport(true));
     assertThat(e3, hasSwitchPortMode(SwitchportMode.TRUNK));
+    assertThat(e3, hasSwitchPortEncapsulation(SwitchportEncapsulationType.DOT1Q));
+
+    assertThat(e4, isSwitchport(true));
+    assertThat(e4, hasSwitchPortMode(SwitchportMode.TRUNK));
+    assertThat(e4, hasSwitchPortEncapsulation(SwitchportEncapsulationType.DOT1Q));
+    assertThat(e4.getAllowedVlans(), equalTo(IntegerSpace.of(Range.closed(1, 2))));
+
+    assertThat(e5, isSwitchport(true));
+    assertThat(e5, hasSwitchPortMode(SwitchportMode.TRUNK));
+    assertThat(e5, hasSwitchPortEncapsulation(SwitchportEncapsulationType.ISL));
+    assertThat(e5.getAllowedVlans(), equalTo(IntegerSpace.of(Range.closed(3, 4))));
+
+    assertThat(e6, isSwitchport(true));
+    assertThat(e6, hasSwitchPortMode(SwitchportMode.TRUNK));
+    assertThat(e6, hasSwitchPortEncapsulation(SwitchportEncapsulationType.NEGOTIATE));
+    assertThat(e6.getAllowedVlans(), equalTo(IntegerSpace.of(Range.closed(5, 6))));
   }
 
   @Test
