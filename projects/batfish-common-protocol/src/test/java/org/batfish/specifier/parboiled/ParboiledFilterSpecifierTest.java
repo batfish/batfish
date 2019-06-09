@@ -17,7 +17,7 @@ import org.junit.Test;
 /** Tests for {@link ParboiledFilterSpecifier} */
 public class ParboiledFilterSpecifierTest {
 
-  private static final String _nodeName = "node0";
+  private static final String _node0Name = "node0";
   private static final String _node1Name = "node1";
   private static final MockSpecifierContext _ctxt;
 
@@ -32,7 +32,6 @@ public class ParboiledFilterSpecifierTest {
           .setName("filter2")
           .setLines(ImmutableList.of(IpAccessListLine.REJECT_ALL))
           .build();
-  // sits on node1
   private static final IpAccessList _filter1_1 =
       IpAccessList.builder()
           .setName("filter1")
@@ -42,7 +41,7 @@ public class ParboiledFilterSpecifierTest {
   static {
     NetworkFactory nf = new NetworkFactory();
 
-    Configuration.Builder cb = nf.configurationBuilder().setHostname(_nodeName);
+    Configuration.Builder cb = nf.configurationBuilder().setHostname(_node0Name);
     cb.setConfigurationFormat(ConfigurationFormat.CISCO_IOS);
     Configuration n0 = cb.build();
 
@@ -78,13 +77,13 @@ public class ParboiledFilterSpecifierTest {
         new ParboiledFilterSpecifier(
                 new DifferenceFilterAstNode(
                     new NameRegexFilterAstNode("filter.*"), new NameFilterAstNode("filter1")))
-            .resolve(_nodeName, _ctxt),
+            .resolve(_node0Name, _ctxt),
         equalTo(ImmutableSet.of(_filter2_0)));
     assertThat(
         new ParboiledFilterSpecifier(
                 new DifferenceFilterAstNode(
                     new NameFilterAstNode("filter1"), new NameRegexFilterAstNode("filter2.*")))
-            .resolve(_nodeName, _ctxt),
+            .resolve(_node0Name, _ctxt),
         equalTo(ImmutableSet.of(_filter1_0)));
   }
 
@@ -94,20 +93,20 @@ public class ParboiledFilterSpecifierTest {
         new ParboiledFilterSpecifier(
                 new IntersectionFilterAstNode(
                     new NameRegexFilterAstNode("filter.*"), new NameFilterAstNode("filter1")))
-            .resolve(_nodeName, _ctxt),
+            .resolve(_node0Name, _ctxt),
         equalTo(ImmutableSet.of(_filter1_0)));
     assertThat(
         new ParboiledFilterSpecifier(
                 new IntersectionFilterAstNode(
                     new NameFilterAstNode("filter1"), new NameRegexFilterAstNode("filter2")))
-            .resolve(_nodeName, _ctxt),
+            .resolve(_node0Name, _ctxt),
         equalTo(ImmutableSet.of()));
   }
 
   @Test
   public void testResolveName() {
     assertThat(
-        new ParboiledFilterSpecifier(new NameFilterAstNode("filter1")).resolve(_nodeName, _ctxt),
+        new ParboiledFilterSpecifier(new NameFilterAstNode("filter1")).resolve(_node0Name, _ctxt),
         equalTo(ImmutableSet.of(_filter1_0)));
   }
 
@@ -115,7 +114,7 @@ public class ParboiledFilterSpecifierTest {
   public void testResolveNameRegex() {
     assertThat(
         new ParboiledFilterSpecifier(new NameRegexFilterAstNode("filter.*1"))
-            .resolve(_nodeName, _ctxt),
+            .resolve(_node0Name, _ctxt),
         equalTo(ImmutableSet.of(_filter1_0)));
   }
 
@@ -124,8 +123,8 @@ public class ParboiledFilterSpecifierTest {
     assertThat(
         new ParboiledFilterSpecifier(
                 new FilterWithNodeFilterAstNode(
-                    new NameNodeAstNode(_nodeName), new NameRegexFilterAstNode(".*1")))
-            .resolve(_nodeName, _ctxt),
+                    new NameNodeAstNode(_node0Name), new NameRegexFilterAstNode(".*1")))
+            .resolve(_node0Name, _ctxt),
         equalTo(ImmutableSet.of(_filter1_0)));
 
     // node1 has no matching filter
@@ -143,7 +142,7 @@ public class ParboiledFilterSpecifierTest {
         new ParboiledFilterSpecifier(
                 new UnionFilterAstNode(
                     new NameFilterAstNode("filter1"), new NameFilterAstNode("filter2")))
-            .resolve(_nodeName, _ctxt),
+            .resolve(_node0Name, _ctxt),
         equalTo(ImmutableSet.of(_filter1_0, _filter2_0)));
   }
 }
