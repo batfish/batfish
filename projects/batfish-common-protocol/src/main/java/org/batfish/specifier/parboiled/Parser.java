@@ -166,11 +166,19 @@ public class Parser extends CommonParser {
    * <pre>
    *   filterSpec := filterTerm [{@literal &} | , | \ filterTerm]*
    *
-   *   filterTerm := @in(interfaceSpec)  // inFilterOf is also supported for back compat
+   *   filterTerm := filterWithNode
+   *                    | filterWithoutNode
+   *                    | ( filterTerm )
+   *
+   *   filterWithNode := nodeTerm [filterWithoutNode]
+   *
+   *   filterWithoutNode := filterWithoutNodeTerm [{@literal &} | , | \ filterWithoutNodeTerm]*
+   *
+   *   filterWithoutNodeTerm := @in(interfaceSpec)  // inFilterOf is also supported for back compat
    *               | @out(interfaceSpec) // outFilterOf is also supported
    *               | filterName
    *               | filterNameRegex
-   *               | ( filterSpec )
+   *               | ( filterWithoutNodeTerm )
    * </pre>
    */
 
@@ -247,7 +255,8 @@ public class Parser extends CommonParser {
         FilterDirectionDeprecated(),
         FilterNameRegexDeprecated(),
         FilterNameRegex(),
-        FilterName());
+        FilterName(),
+        FilterWithoutNodeParens());
   }
 
   @Anchor(FILTER_INTERFACE_IN)
@@ -307,6 +316,13 @@ public class Parser extends CommonParser {
   public Rule FilterParens() {
     // Leave the stack as is -- no need to remember that this was a parenthetical term
     return Sequence("( ", FilterSpec(), WhiteSpace(), CloseParens());
+  }
+
+  // The anchor here is an approximation to simplify user messages
+  @Anchor(FILTER_PARENS)
+  public Rule FilterWithoutNodeParens() {
+    // Leave the stack as is -- no need to remember that this was a parenthetical term
+    return Sequence("( ", FilterWithoutNode(), WhiteSpace(), CloseParens());
   }
 
   /**

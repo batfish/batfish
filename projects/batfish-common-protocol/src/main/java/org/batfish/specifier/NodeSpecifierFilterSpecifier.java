@@ -1,7 +1,6 @@
 package org.batfish.specifier;
 
 import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Sets;
 import java.util.Objects;
 import java.util.Set;
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -33,8 +32,9 @@ public class NodeSpecifierFilterSpecifier implements FilterSpecifier {
   }
 
   @Override
-  public Set<IpAccessList> resolve(Set<String> nodes, SpecifierContext ctxt) {
-    return Sets.intersection(_nodeSpecifier.resolve(ctxt), nodes).stream()
+  public Set<IpAccessList> resolve(String node, SpecifierContext ctxt) {
+    return _nodeSpecifier.resolve(ctxt).stream()
+        .filter(n -> n.equalsIgnoreCase(node))
         .flatMap(n -> ctxt.getConfigs().get(n).getIpAccessLists().values().stream())
         .collect(ImmutableSet.toImmutableSet());
   }

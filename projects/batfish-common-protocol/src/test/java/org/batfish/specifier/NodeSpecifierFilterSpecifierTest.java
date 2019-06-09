@@ -5,7 +5,6 @@ import static org.hamcrest.Matchers.empty;
 import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
@@ -37,14 +36,12 @@ public class NodeSpecifierFilterSpecifierTest {
 
     // common node
     assertThat(
-        new NodeSpecifierFilterSpecifier(new NameNodeSpecifier("node1"))
-            .resolve(ImmutableSet.of("node1", "node2"), ctxt),
+        new NodeSpecifierFilterSpecifier(new NameNodeSpecifier("node1")).resolve("node1", ctxt),
         containsInAnyOrder(filter1node1, filter2node1));
 
     // no common nodes
     assertThat(
-        new NodeSpecifierFilterSpecifier(new NameNodeSpecifier("node1"))
-            .resolve(ImmutableSet.of("node2"), ctxt),
+        new NodeSpecifierFilterSpecifier(new NameNodeSpecifier("node1")).resolve("node2", ctxt),
         empty());
   }
 }

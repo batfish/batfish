@@ -68,14 +68,14 @@ public class FilterNoMatchMessagesTest {
         getMessages(
             new FilterNoMatchMessages(
                 new FilterWithNodeFilterAstNode(
-                    new NameNodeAstNode("h1"), new NameFilterAstNode("i2"))),
+                    new NameNodeAstNode("h1"), new NameFilterAstNode("f2"))),
             completionMetadata),
         equalTo(ImmutableList.of()));
     assertThat(
         getMessages(
             new FilterNoMatchMessages(
                 new FilterWithNodeFilterAstNode(
-                    new NameNodeAstNode("h1"), new NameFilterAstNode("i1"))),
+                    new NameNodeAstNode("h1"), new NameFilterAstNode("f1"))),
             completionMetadata),
         equalTo(ImmutableList.of()));
   }
