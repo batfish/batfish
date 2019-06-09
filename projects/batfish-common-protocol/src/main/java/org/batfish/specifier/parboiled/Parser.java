@@ -33,6 +33,8 @@ import static org.batfish.specifier.parboiled.Anchor.Type.IP_WILDCARD;
 import static org.batfish.specifier.parboiled.Anchor.Type.LOCATION_ENTER;
 import static org.batfish.specifier.parboiled.Anchor.Type.LOCATION_PARENS;
 import static org.batfish.specifier.parboiled.Anchor.Type.LOCATION_SET_OP;
+import static org.batfish.specifier.parboiled.Anchor.Type.NODE_AND_FILTER;
+import static org.batfish.specifier.parboiled.Anchor.Type.NODE_AND_FILTER_TAIL;
 import static org.batfish.specifier.parboiled.Anchor.Type.NODE_AND_INTERFACE;
 import static org.batfish.specifier.parboiled.Anchor.Type.NODE_AND_INTERFACE_TAIL;
 import static org.batfish.specifier.parboiled.Anchor.Type.NODE_NAME;
@@ -196,14 +198,56 @@ public class Parser extends CommonParser {
   }
 
   public Rule FilterTerm() {
+    return FirstOf(FilterWithNode(), FilterWithoutNode(), FilterParens());
+  }
+
+  @Anchor(NODE_AND_FILTER)
+  public Rule FilterWithNode() {
+    return Sequence(
+        NodeTerm(),
+        WhiteSpace(),
+        FilterWithNodeTail(),
+        push(new FilterWithNodeFilterAstNode(pop(1), pop())));
+  }
+
+  @Anchor(NODE_AND_FILTER_TAIL)
+  public Rule FilterWithNodeTail() {
+    return Sequence("[ ", FilterWithoutNode(), WhiteSpace(), CloseBrackets());
+  }
+
+  @Anchor(FILTER_SET_OP)
+  public Rule FilterWithoutNode() {
+    Var<Character> op = new Var<>();
+    return Sequence(
+        FilterWithoutNodeIntersection(),
+        WhiteSpace(),
+        ZeroOrMore(
+            FirstOf(", ", "\\ "),
+            op.set(matchedChar()),
+            FilterWithoutNodeIntersection(),
+            push(SetOpFilterAstNode.create(op.get(), pop(1), pop())),
+            WhiteSpace()));
+  }
+
+  public Rule FilterWithoutNodeIntersection() {
+    return Sequence(
+        FilterWithoutNodeTerm(),
+        WhiteSpace(),
+        ZeroOrMore(
+            "& ",
+            FilterWithoutNodeTerm(),
+            push(new IntersectionFilterAstNode(pop(1), pop())),
+            WhiteSpace()));
+  }
+
+  public Rule FilterWithoutNodeTerm() {
     return FirstOf(
         FilterInterfaceIn(),
         FilterInterfaceOut(),
         FilterDirectionDeprecated(),
         FilterNameRegexDeprecated(),
         FilterNameRegex(),
-        FilterName(),
-        FilterParens());
+        FilterName());
   }
 
   @Anchor(FILTER_INTERFACE_IN)

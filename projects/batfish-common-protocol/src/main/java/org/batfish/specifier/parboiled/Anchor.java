@@ -141,6 +141,17 @@ import org.batfish.datamodel.answers.AutocompleteSuggestion.SuggestionType;
     LOCATION_SET_OP(
         "INTERFACE_SET_OP", " of locations", "locationSpec", SuggestionType.SET_OPERATOR),
     /**
+     * Rule for node[filter] style filterSpec. This anchor shouldn't be suggested as the rule has no
+     * literal, and things will get delegated to sub rules.
+     */
+    NODE_AND_FILTER("NODE_AND_FILTER", "Node and filter pair", null, SuggestionType.UNKNOWN),
+    /** Part of node[filter] after node */
+    NODE_AND_FILTER_TAIL(
+        "NODE_AND_FILTER_TAIL",
+        "Filters of specified node(s)",
+        "filterSpec]",
+        SuggestionType.OPERATOR_NON_END),
+    /**
      * Rule for node[interface] style interfaceSpec. This anchor shouldn't be suggested as the rule
      * has no literal, and things will get delegated to sub rules.
      */
