@@ -41,7 +41,7 @@ final class ParboiledFilterSpecifier implements FilterSpecifier {
         FilterWithNodeFilterAstNode filterWithNodeFilterAstNode) {
       return new ParboiledNodeSpecifier(filterWithNodeFilterAstNode.getNodeAstNode())
           .resolve(_ctxt).stream()
-              .filter(n -> n.equalsIgnoreCase(_node))
+              .filter(n -> n.equals(_node))
               .flatMap(
                   n ->
                       (new ParboiledFilterSpecifier(filterWithNodeFilterAstNode.getFilterAstNode())
