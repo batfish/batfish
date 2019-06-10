@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Map;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import org.batfish.datamodel.FilterResult;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpAccessListLine;
@@ -110,6 +111,54 @@ final class IpAccessListMatchersImpl {
       if (item.filter(_flow, _srcInterface, _availableAcls, _namedIpSpaces).getAction()
           != LineAction.DENY) {
         mismatchDescription.appendText(String.format("does not reject flow '%s'", _flow));
+        if (_srcInterface != null) {
+          mismatchDescription.appendText(String.format("at source interface: %s", _srcInterface));
+        }
+        return false;
+      }
+      return true;
+    }
+  }
+
+  static class RejectsByDefault extends TypeSafeDiagnosingMatcher<IpAccessList> {
+
+    private final Map<String, IpAccessList> _availableAcls;
+    private final Flow _flow;
+    private final String _srcInterface;
+    private final Map<String, IpSpace> _namedIpSpaces;
+
+    RejectsByDefault(
+        @Nonnull Flow flow,
+        @Nullable String srcInterface,
+        @Nonnull Map<String, IpAccessList> availableAcls,
+        @Nonnull Map<String, IpSpace> namedIpSpaces) {
+      _flow = flow;
+      _srcInterface = srcInterface;
+      _availableAcls = availableAcls;
+      _namedIpSpaces = namedIpSpaces;
+    }
+
+    @Override
+    public void describeTo(Description description) {
+      description.appendText(
+          String.format("An IpAccessList that rejects by default flow: '%s'", _flow));
+      if (_srcInterface != null) {
+        description.appendText(String.format("at srcInterface: %s", _srcInterface));
+      }
+    }
+
+    @Override
+    protected boolean matchesSafely(IpAccessList item, Description mismatchDescription) {
+      FilterResult result = item.filter(_flow, _srcInterface, _availableAcls, _namedIpSpaces);
+      if (result.getAction() != LineAction.DENY) {
+        mismatchDescription.appendText(String.format("does not reject flow '%s'", _flow));
+        if (_srcInterface != null) {
+          mismatchDescription.appendText(String.format("at source interface: %s", _srcInterface));
+        }
+        return false;
+      } else if (result.getMatchLine() != null) {
+        mismatchDescription.appendText(
+            String.format("does not reject by default flow '%s'", _flow));
         if (_srcInterface != null) {
           mismatchDescription.appendText(String.format("at source interface: %s", _srcInterface));
         }

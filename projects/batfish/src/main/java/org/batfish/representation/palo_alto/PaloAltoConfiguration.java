@@ -321,7 +321,7 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
         if (toZone.getType() != Type.LAYER3) {
           continue;
         }
-        IpAccessList acl = generateOutgoingFilter(vsys, toZone);
+        IpAccessList acl = generateOutgoingFilter(vsys, toZone.getName(), _virtualSystems.values());
         _c.getIpAccessLists().put(acl.getName(), acl);
       }
 
@@ -432,34 +432,35 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
 
   /**
    * Generate {@link IpAccessList} to be used as outgoing filter by interfaces in layer-3 zone
-   * {@code toZone} of specified {@code vsys}.
+   * {@code toZone} of specified {@code vsys}, given supplied definitions for all {@code
+   * virtualSystems}.
    */
-  private @Nonnull IpAccessList generateOutgoingFilter(Vsys vsys, Zone toZone) {
+  @VisibleForTesting
+  static @Nonnull IpAccessList generateOutgoingFilter(
+      Vsys vsys, String toZone, Collection<Vsys> virtualSystems) {
     List<IpAccessListLine> lines =
         vsys.getZones().values().stream()
-            .filter(
-                fromZone ->
-                    fromZone.getType() == Type.EXTERNAL || fromZone.getType() == Type.LAYER3)
-            .flatMap(fromZone -> generateCrossZoneCalls(vsys, fromZone, toZone))
+            .flatMap(fromZone -> generateCrossZoneCalls(vsys, fromZone, toZone, virtualSystems))
             .collect(ImmutableList.toImmutableList());
     return IpAccessList.builder()
-        .setName(computeOutgoingFilterName(computeObjectName(vsys.getName(), toZone.getName())))
+        .setName(computeOutgoingFilterName(computeObjectName(vsys.getName(), toZone)))
         .setLines(lines)
         .build();
   }
 
   /**
    * Generate outgoing filter lines to be applied to traffic entering {@code fromZone} and leaving
-   * layer-3 zone {@code toZone} of {@code vsys}.
+   * layer-3 zone {@code toZone} of {@code vsys}, given supplied definitions for all {@code
+   * virtualSystems}.
    */
-  private @Nonnull Stream<IpAccessListLine> generateCrossZoneCalls(
-      Vsys vsys, Zone fromZone, Zone toZone) {
-    String toZoneName = toZone.getName();
+  @VisibleForTesting
+  static @Nonnull Stream<IpAccessListLine> generateCrossZoneCalls(
+      Vsys vsys, Zone fromZone, String toZone, Collection<Vsys> virtualSystems) {
     switch (fromZone.getType()) {
       case EXTERNAL:
-        return generateCrossZoneCallsFromExternal(vsys, fromZone, toZoneName);
+        return generateCrossZoneCallsFromExternal(vsys, fromZone, toZone, virtualSystems);
       case LAYER3:
-        return generateCrossZoneCallsFromLayer3(vsys, fromZone, toZoneName);
+        return generateCrossZoneCallsFromLayer3(vsys, fromZone, toZone);
       default:
         return Stream.of();
     }
@@ -470,7 +471,8 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
    * and leaving layer-3 zone {@code toZone} of {@code vsys}. The generated lines apply the
    * appropriate cross-zone filter to traffic entering an interface of {@code fromZone}.
    */
-  private @Nonnull Stream<IpAccessListLine> generateCrossZoneCallsFromLayer3(
+  @VisibleForTesting
+  static @Nonnull Stream<IpAccessListLine> generateCrossZoneCallsFromLayer3(
       Vsys vsys, Zone fromZone, String toZone) {
     String vsysName = vsys.getName();
     String fromZoneName = fromZone.getName();
@@ -490,13 +492,14 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
    * fromZone} and leaving layer-3 zone {@code toZone} of {@code vsys}. The generated lines apply
    * the appropriate cross-zone filter for ({@code fromZone}, {@code toZone}), as well as relevant
    * cross-zone filters from the source vsys ingress zone to the source vsys external zone for each
-   * external vsys visible via {@code fromZone}.
+   * distinct external vsys of {@code virtualSystems} visible via {@code fromZone}.
    */
-  private @Nonnull Stream<IpAccessListLine> generateCrossZoneCallsFromExternal(
-      Vsys vsys, Zone fromZone, String toZone) {
+  @VisibleForTesting
+  static @Nonnull Stream<IpAccessListLine> generateCrossZoneCallsFromExternal(
+      Vsys vsys, Zone fromZone, String toZone, Collection<Vsys> virtualSystems) {
     String vsysName = vsys.getName();
     String fromZoneName = fromZone.getName();
-    return _virtualSystems.values().stream()
+    return virtualSystems.stream()
         .filter(Predicates.not(Predicates.equalTo(vsys)))
         .filter(srcVsys -> fromZone.getExternalNames().contains(srcVsys.getName()))
         .flatMap(
@@ -507,7 +510,8 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
    * Generate outgoing filter lines to be applied to traffic entering {@code srcVsys} and leaving
    * layer-3 zone {@code dstVsysLayer3Zone} of {@code dstVsys}.
    */
-  private @Nonnull Stream<IpAccessListLine> generateInterVsysCrossZoneCalls(
+  @VisibleForTesting
+  static @Nonnull Stream<IpAccessListLine> generateInterVsysCrossZoneCalls(
       String dstVsysLayer3Zone, String dstVsys, String dstVsysExternalZone, Vsys srcVsys) {
     String srcVsysName = srcVsys.getName();
     return srcVsys.getZones().values().stream()
@@ -526,7 +530,7 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
                                 dstVsys,
                                 dstVsysExternalZone,
                                 srcVsysName,
-                                srcVsysExternalZone,
+                                srcVsysExternalZone.getName(),
                                 srcVsysLayer3Zone)));
   }
 
@@ -536,19 +540,20 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
    * apply the cross-zone filters for the two zone-pairs ({@code srcVsysLayer3Zone}, {@code
    * srcVsysExternalZone}), and ({@code dstVsysExternalZone}, {@code dstVsysLayer3Zone}).
    */
-  private @Nonnull Stream<IpAccessListLine> generateDoubleCrossZoneCalls(
+  @VisibleForTesting
+  static @Nonnull Stream<IpAccessListLine> generateDoubleCrossZoneCalls(
       String dstVsysLayer3Zone,
       String dstVsys,
       String dstVsysExternalZone,
       String srcVsys,
-      Zone srcVsysExternalZone,
+      String srcVsysExternalZone,
       Zone srcVsysLayer3Zone) {
     AclLineMatchExpr matchSrcVsysZoneInterface =
         new MatchSrcInterface(srcVsysLayer3Zone.getInterfaceNames());
     String srcVsysCrossZoneFilterName =
         zoneToZoneFilter(
             computeObjectName(srcVsys, srcVsysLayer3Zone.getName()),
-            computeObjectName(srcVsys, srcVsysExternalZone.getName()));
+            computeObjectName(srcVsys, srcVsysExternalZone));
     String dstVsysCrossZoneFilterName =
         zoneToZoneFilter(
             computeObjectName(dstVsys, dstVsysExternalZone),

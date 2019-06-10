@@ -15,6 +15,7 @@ import org.batfish.datamodel.matchers.IpAccessListMatchersImpl.Accepts;
 import org.batfish.datamodel.matchers.IpAccessListMatchersImpl.HasLines;
 import org.batfish.datamodel.matchers.IpAccessListMatchersImpl.HasName;
 import org.batfish.datamodel.matchers.IpAccessListMatchersImpl.Rejects;
+import org.batfish.datamodel.matchers.IpAccessListMatchersImpl.RejectsByDefault;
 import org.hamcrest.Matcher;
 
 public final class IpAccessListMatchers {
@@ -77,6 +78,19 @@ public final class IpAccessListMatchers {
       @Nonnull Map<String, IpAccessList> availableAcls,
       @Nonnull Map<String, IpSpace> namedIpSpaces) {
     return new Rejects(flow, srcInterface, availableAcls, namedIpSpaces);
+  }
+
+  /**
+   * Provides a matcher that matches if the {@link IpAccessList} rejects {code flow} by default at
+   * the provided source interface given the provided acl definitions, i.e. the flow is rejected
+   * because no line of the {@link IpAccessList} matches the {@link Flow}.
+   */
+  public static @Nonnull Matcher<IpAccessList> rejectsByDefault(
+      @Nonnull Flow flow,
+      @Nullable String srcInterface,
+      @Nonnull Map<String, IpAccessList> availableAcls,
+      @Nonnull Map<String, IpSpace> namedIpSpaces) {
+    return new RejectsByDefault(flow, srcInterface, availableAcls, namedIpSpaces);
   }
 
   private IpAccessListMatchers() {}
