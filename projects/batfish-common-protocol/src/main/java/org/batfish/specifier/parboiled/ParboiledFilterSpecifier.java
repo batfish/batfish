@@ -1,5 +1,6 @@
 package org.batfish.specifier.parboiled;
 
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
 import java.util.Objects;
 import java.util.Set;
@@ -18,7 +19,11 @@ final class ParboiledFilterSpecifier implements FilterSpecifier {
 
   @ParametersAreNonnullByDefault
   private final class FilterAstNodeToFilters implements FilterAstNodeVisitor<Set<IpAccessList>> {
+
+    /** The context with which {@link #resolve} is called */
     private final SpecifierContext _ctxt;
+
+    /** The node (name) for which {@link #resolve} is called */
     private final String _node;
 
     FilterAstNodeToFilters(String node, SpecifierContext ctxt) {
@@ -33,6 +38,25 @@ final class ParboiledFilterSpecifier implements FilterSpecifier {
       return Sets.difference(
           differenceFilterAstNode.getLeft().accept(this),
           differenceFilterAstNode.getRight().accept(this));
+    }
+
+    @Override
+    public Set<IpAccessList> visitFilterWithNodeFilterAstNode(
+        FilterWithNodeFilterAstNode filterWithNodeFilterAstNode) {
+      return new ParboiledNodeSpecifier(filterWithNodeFilterAstNode.getNodeAstNode())
+          .resolve(_ctxt).stream()
+              /**
+               * A straight equals() works here. _node is the input to {@link #resolve(String,
+               * SpecifierContext)}, which is a key for the config map (canonical node name), and
+               * {@link NodeSpecifier#resolve(SpecifierContext)} outputs such keys.
+               */
+              .filter(n -> n.equals(_node))
+              .flatMap(
+                  n ->
+                      (new ParboiledFilterSpecifier(filterWithNodeFilterAstNode.getFilterAstNode())
+                              .resolve(n, _ctxt))
+                          .stream())
+              .collect(ImmutableSet.toImmutableSet());
     }
 
     @Nonnull
