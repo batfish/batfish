@@ -767,8 +767,8 @@ public final class TopologyUtil {
               continue;
             }
             for (InterfaceAddress address : iface.getAllAddresses()) {
-              if (address.getPrefix().getPrefixLength() < Prefix.MAX_PREFIX_LENGTH) {
-                Prefix prefix = address.getPrefix();
+              Prefix prefix = address.getPrefix();
+              if (prefix.getPrefixLength() < Prefix.MAX_PREFIX_LENGTH) {
                 List<Interface> interfaceBucket =
                     prefixInterfaces.computeIfAbsent(prefix, k -> new LinkedList<>());
                 interfaceBucket.add(iface);
