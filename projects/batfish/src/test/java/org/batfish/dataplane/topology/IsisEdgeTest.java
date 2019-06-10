@@ -15,10 +15,10 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import javax.annotation.Nonnull;
+import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.Interface;
-import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.IsoAddress;
 import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.Topology;
@@ -75,14 +75,14 @@ public final class IsisEdgeTest {
     Configuration c1 = cb.build();
     Vrf v1 = vb.setOwner(c1).build();
     isb.setVrf(v1).setNetAddress(generateAddress(AREA1, SYSTEM1)).build();
-    ib.setOwner(c1).setVrf(v1).setAddress(new InterfaceAddress("10.0.0.0/31")).build();
+    ib.setOwner(c1).setVrf(v1).setAddress(ConcreteInterfaceAddress.parse("10.0.0.0/31")).build();
 
     Configuration c2 = cb.build();
     Vrf v2 = vb.setOwner(c2).build();
     isb.setVrf(v2)
         .setNetAddress(generateAddress(sameArea ? AREA1 : AREA2, sameSystem ? SYSTEM1 : SYSTEM2))
         .build();
-    ib.setOwner(c2).setVrf(v2).setAddress(new InterfaceAddress("10.0.0.1/31")).build();
+    ib.setOwner(c2).setVrf(v2).setAddress(ConcreteInterfaceAddress.parse("10.0.0.1/31")).build();
     return ImmutableMap.of(c1.getHostname(), c1, c2.getHostname(), c2);
   }
 

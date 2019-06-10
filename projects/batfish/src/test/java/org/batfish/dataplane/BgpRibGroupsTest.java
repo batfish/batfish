@@ -16,11 +16,11 @@ import org.batfish.datamodel.AnnotatedRoute;
 import org.batfish.datamodel.AsPath;
 import org.batfish.datamodel.BgpProcess;
 import org.batfish.datamodel.Bgpv4Route;
+import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.DataPlane;
 import org.batfish.datamodel.Interface;
-import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.OriginType;
@@ -133,12 +133,12 @@ public class BgpRibGroupsTest {
     nf.vrfBuilder().setOwner(c1).setName(VRF_2).build();
 
     nf.interfaceBuilder()
-        .setAddress(new InterfaceAddress("1.1.1.2/31"))
+        .setAddress(ConcreteInterfaceAddress.parse("1.1.1.2/31"))
         .setOwner(c1)
         .setVrf(c1v1)
         .build();
     nf.interfaceBuilder()
-        .setAddress(new InterfaceAddress("1.1.1.4/31"))
+        .setAddress(ConcreteInterfaceAddress.parse("1.1.1.4/31"))
         .setOwner(c1)
         .setVrf(c1v1)
         .build();
@@ -184,7 +184,7 @@ public class BgpRibGroupsTest {
                 .build()));
 
     nf.interfaceBuilder()
-        .setAddress(new InterfaceAddress("1.1.1.3/31"))
+        .setAddress(ConcreteInterfaceAddress.parse("1.1.1.3/31"))
         .setOwner(c2)
         .setVrf(v2)
         .build();
@@ -215,7 +215,7 @@ public class BgpRibGroupsTest {
                 .build()));
 
     nf.interfaceBuilder()
-        .setAddress(new InterfaceAddress("1.1.1.5/31"))
+        .setAddress(ConcreteInterfaceAddress.parse("1.1.1.5/31"))
         .setOwner(c3)
         .setVrf(v3)
         .build();

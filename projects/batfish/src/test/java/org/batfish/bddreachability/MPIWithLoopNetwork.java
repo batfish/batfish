@@ -3,11 +3,11 @@ package org.batfish.bddreachability;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.ImmutableSortedSet;
 import java.util.SortedMap;
+import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Configuration.Builder;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.Interface;
-import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.StaticRoute;
@@ -22,26 +22,26 @@ public class MPIWithLoopNetwork {
     // first node
     Configuration c1 = cb.setHostname("configuration1").build();
     Vrf v1 = nf.vrfBuilder().setOwner(c1).build();
-    InterfaceAddress c1Addr1 = new InterfaceAddress("1.0.0.0/31");
+    ConcreteInterfaceAddress c1Addr1 = ConcreteInterfaceAddress.parse("1.0.0.0/31");
     Interface i11 =
         nf.interfaceBuilder().setActive(true).setOwner(c1).setVrf(v1).setAddress(c1Addr1).build();
-    InterfaceAddress c1Addr2 = new InterfaceAddress("1.0.0.2/31");
+    ConcreteInterfaceAddress c1Addr2 = ConcreteInterfaceAddress.parse("1.0.0.2/31");
     Interface i12 =
         nf.interfaceBuilder().setActive(true).setOwner(c1).setVrf(v1).setAddress(c1Addr2).build();
 
     // second node
     Configuration c2 = cb.setHostname("configuration2").build();
     Vrf v2 = nf.vrfBuilder().setOwner(c2).build();
-    InterfaceAddress c2Addr = new InterfaceAddress("1.0.0.1/31");
+    ConcreteInterfaceAddress c2Addr = ConcreteInterfaceAddress.parse("1.0.0.1/31");
     Interface i2 =
         nf.interfaceBuilder().setActive(true).setOwner(c2).setVrf(v2).setAddress(c2Addr).build();
 
     // third node
     Configuration c3 = cb.setHostname("configuration3").build();
     Vrf v3 = nf.vrfBuilder().setOwner(c3).build();
-    InterfaceAddress c3Addr1 = new InterfaceAddress("1.0.0.3/31");
+    ConcreteInterfaceAddress c3Addr1 = ConcreteInterfaceAddress.parse("1.0.0.3/31");
     nf.interfaceBuilder().setActive(true).setOwner(c3).setVrf(v3).setAddress(c3Addr1).build();
-    InterfaceAddress c3Addr2 = new InterfaceAddress("2.2.2.2/32");
+    ConcreteInterfaceAddress c3Addr2 = ConcreteInterfaceAddress.parse("2.2.2.2/32");
     nf.interfaceBuilder().setActive(true).setOwner(c3).setVrf(v3).setAddress(c3Addr2).build();
 
     // we want to get to c3

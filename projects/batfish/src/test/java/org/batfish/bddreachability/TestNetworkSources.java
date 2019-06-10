@@ -3,10 +3,10 @@ package org.batfish.bddreachability;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSortedMap;
 import java.util.SortedMap;
+import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.Interface;
-import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpAccessListLine;
@@ -24,7 +24,8 @@ public class TestNetworkSources {
   /* Properties of the primary config, which has the ACLs that use MatchSrcInterface and
    * OriginatingFromDevice.
    */
-  private static final InterfaceAddress CONFIG_ADDR = new InterfaceAddress("0.0.0.1/24");
+  private static final ConcreteInterfaceAddress CONFIG_ADDR =
+      ConcreteInterfaceAddress.parse("0.0.0.1/24");
   static final String CONFIG_NAME = "config";
   static final String INGRESS_IFACE_NAME = "ingress interface";
   static final String MATCH_SRC_INTERFACE_ACL_IFACE_NAME = "interface with match src interface ACL";
@@ -36,7 +37,7 @@ public class TestNetworkSources {
    */
   static final String PEER_IFACE_NAME = "peer interface";
   static final String PEER_NAME = "peer";
-  static final InterfaceAddress PEER_ADDR = new InterfaceAddress("0.0.0.2/24");
+  static final ConcreteInterfaceAddress PEER_ADDR = ConcreteInterfaceAddress.parse("0.0.0.2/24");
 
   /*
    * Properties shared by both nodes
@@ -66,7 +67,7 @@ public class TestNetworkSources {
             .build();
     ib.setName(ORIGINATING_FROM_DEVICE_ACL_IFACE_NAME)
         .setOutgoingFilter(acl1)
-        .setAddress(new InterfaceAddress(Ip.parse("1.0.0.1"), 24))
+        .setAddress(ConcreteInterfaceAddress.create(Ip.parse("1.0.0.1"), 24))
         .build();
 
     // only traffic from inInterface from device can go out this interface
@@ -80,7 +81,7 @@ public class TestNetworkSources {
             .build();
     ib.setName(MATCH_SRC_INTERFACE_ACL_IFACE_NAME)
         .setOutgoingFilter(acl2)
-        .setAddress(new InterfaceAddress(Ip.parse("2.0.0.1"), 24))
+        .setAddress(ConcreteInterfaceAddress.create(Ip.parse("2.0.0.1"), 24))
         .build();
 
     return config;

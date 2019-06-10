@@ -24,6 +24,7 @@ import org.batfish.common.BatfishException;
 import org.batfish.common.Warnings;
 import org.batfish.common.Warnings.ParseWarning;
 import org.batfish.common.util.BatfishObjectMapper;
+import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.IntegerSpace;
 import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
@@ -173,8 +174,9 @@ public class CumulusNcluConfigurationBuilder extends CumulusNcluParserBaseListen
     return Integer.parseInt(ctx.getText(), 10);
   }
 
-  private static @Nonnull InterfaceAddress toInterfaceAddress(Interface_addressContext ctx) {
-    return new InterfaceAddress(ctx.getText());
+  private static @Nonnull ConcreteInterfaceAddress toInterfaceAddress(
+      Interface_addressContext ctx) {
+    return ConcreteInterfaceAddress.parse(ctx.getText());
   }
 
   private static @Nonnull Ip toIp(Ip_addressContext ctx) {
@@ -925,7 +927,7 @@ public class CumulusNcluConfigurationBuilder extends CumulusNcluParserBaseListen
 
   @Override
   public void exitI_ip_address(I_ip_addressContext ctx) {
-    InterfaceAddress address = toInterfaceAddress(ctx.address);
+    ConcreteInterfaceAddress address = toInterfaceAddress(ctx.address);
     _currentInterfaces.forEach(iface -> iface.getIpAddresses().add(address));
   }
 
@@ -1099,7 +1101,7 @@ public class CumulusNcluConfigurationBuilder extends CumulusNcluParserBaseListen
 
   @Override
   public void exitVrf_ip_address(Vrf_ip_addressContext ctx) {
-    InterfaceAddress address = toInterfaceAddress(ctx.address);
+    ConcreteInterfaceAddress address = toInterfaceAddress(ctx.address);
     _currentVrfs.forEach(vrf -> vrf.getAddresses().add(address));
   }
 

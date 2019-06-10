@@ -23,11 +23,11 @@ import java.util.stream.Stream;
 import net.sf.javabdd.BDD;
 import org.batfish.common.bdd.BDDPacket;
 import org.batfish.common.bdd.IpSpaceToBDD;
+import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.FlowDisposition;
 import org.batfish.datamodel.Interface;
-import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.Prefix;
@@ -58,12 +58,12 @@ public class BDDReachabilityAnalysisArpFailureDispositionsTest {
   private static final String NODE2 = "node2";
   private static final String NEXT_HOP_INTERFACE = "iface1";
   private static final String LOOPBACK_INTERFACE = "iface2";
-  private static final InterfaceAddress NEXT_HOP_INTERFACE_NOT_FULL_ADDR =
-      new InterfaceAddress("2.0.0.1/30");
-  private static final InterfaceAddress NEXT_HOP_INTERFACE_FULL_ADDR =
-      new InterfaceAddress("2.0.0.1/32");
-  private static final InterfaceAddress NEXT_HOP_INTERFACE_NEIGHBOR_ADDR =
-      new InterfaceAddress("2.0.0.2/32");
+  private static final ConcreteInterfaceAddress NEXT_HOP_INTERFACE_NOT_FULL_ADDR =
+      ConcreteInterfaceAddress.parse("2.0.0.1/30");
+  private static final ConcreteInterfaceAddress NEXT_HOP_INTERFACE_FULL_ADDR =
+      ConcreteInterfaceAddress.parse("2.0.0.1/32");
+  private static final ConcreteInterfaceAddress NEXT_HOP_INTERFACE_NEIGHBOR_ADDR =
+      ConcreteInterfaceAddress.parse("2.0.0.2/32");
 
   private static final Ip NEXT_HOP_IP = Ip.parse("7.7.7.7");
 
@@ -215,7 +215,7 @@ public class BDDReachabilityAnalysisArpFailureDispositionsTest {
     _ib.setOwner(node2)
         .setVrf(vrf2)
         .setName(LOOPBACK_INTERFACE)
-        .setAddress(new InterfaceAddress(DST_IP, 32))
+        .setAddress(ConcreteInterfaceAddress.create(DST_IP, 32))
         .build();
 
     vrf.setStaticRoutes(
@@ -273,7 +273,7 @@ public class BDDReachabilityAnalysisArpFailureDispositionsTest {
     _ib.setOwner(node2)
         .setVrf(vrf2)
         .setName(LOOPBACK_INTERFACE)
-        .setAddress(new InterfaceAddress(DST_IP, 32))
+        .setAddress(ConcreteInterfaceAddress.create(DST_IP, 32))
         .build();
 
     vrf.setStaticRoutes(
@@ -338,7 +338,7 @@ public class BDDReachabilityAnalysisArpFailureDispositionsTest {
     _ib.setOwner(node2)
         .setVrf(vrf2)
         .setName(LOOPBACK_INTERFACE)
-        .setAddress(new InterfaceAddress(DST_IP, 32))
+        .setAddress(ConcreteInterfaceAddress.create(DST_IP, 32))
         .build();
 
     vrf.setStaticRoutes(
@@ -403,7 +403,7 @@ public class BDDReachabilityAnalysisArpFailureDispositionsTest {
     _ib.setOwner(node2)
         .setVrf(vrf2)
         .setName(LOOPBACK_INTERFACE)
-        .setAddress(new InterfaceAddress(DST_IP, 32))
+        .setAddress(ConcreteInterfaceAddress.create(DST_IP, 32))
         .build();
 
     vrf1.setStaticRoutes(
@@ -471,7 +471,9 @@ public class BDDReachabilityAnalysisArpFailureDispositionsTest {
     _ib.setOwner(node2)
         .setVrf(vrf2)
         .setName(LOOPBACK_INTERFACE)
-        .setAddresses(new InterfaceAddress(DST_IP, 32), new InterfaceAddress(NEXT_HOP_IP, 32))
+        .setAddresses(
+            ConcreteInterfaceAddress.create(DST_IP, 32),
+            ConcreteInterfaceAddress.create(NEXT_HOP_IP, 32))
         .build();
 
     vrf.setStaticRoutes(
@@ -506,7 +508,7 @@ public class BDDReachabilityAnalysisArpFailureDispositionsTest {
     _ib.setOwner(node2)
         .setVrf(vrf2)
         .setName(LOOPBACK_INTERFACE)
-        .setAddresses(new InterfaceAddress(NEXT_HOP_IP, 32))
+        .setAddresses(ConcreteInterfaceAddress.create(NEXT_HOP_IP, 32))
         .build();
 
     vrf.setStaticRoutes(
@@ -541,7 +543,9 @@ public class BDDReachabilityAnalysisArpFailureDispositionsTest {
     _ib.setOwner(node2)
         .setVrf(vrf2)
         .setName(LOOPBACK_INTERFACE)
-        .setAddresses(new InterfaceAddress(DST_IP, 32), new InterfaceAddress(NEXT_HOP_IP, 32))
+        .setAddresses(
+            ConcreteInterfaceAddress.create(DST_IP, 32),
+            ConcreteInterfaceAddress.create(NEXT_HOP_IP, 32))
         .build();
 
     vrf.setStaticRoutes(
@@ -585,7 +589,7 @@ public class BDDReachabilityAnalysisArpFailureDispositionsTest {
     _ib.setOwner(node2)
         .setVrf(vrf2)
         .setName(LOOPBACK_INTERFACE)
-        .setAddresses(new InterfaceAddress(NEXT_HOP_IP, 32))
+        .setAddresses(ConcreteInterfaceAddress.create(NEXT_HOP_IP, 32))
         .build();
 
     _configs = ImmutableSortedMap.of(NODE1, node1, NODE2, node2);

@@ -18,10 +18,10 @@ import java.util.SortedMap;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.topology.TopologyUtil;
 import org.batfish.datamodel.AbstractRoute;
+import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.Interface;
-import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.NetworkConfigurations;
 import org.batfish.datamodel.NetworkFactory;
@@ -60,26 +60,40 @@ import org.junit.rules.TemporaryFolder;
 
 public class OspfTest {
 
-  private static final InterfaceAddress C1_E1_2_ADDRESS = new InterfaceAddress("10.12.0.1/24");
-  private static final InterfaceAddress C1_L0_ADDRESS = new InterfaceAddress("1.1.1.1/32");
-  private static final InterfaceAddress C1_L1_ADDRESS = new InterfaceAddress("1.1.1.11/32");
+  private static final ConcreteInterfaceAddress C1_E1_2_ADDRESS =
+      ConcreteInterfaceAddress.parse("10.12.0.1/24");
+  private static final ConcreteInterfaceAddress C1_L0_ADDRESS =
+      ConcreteInterfaceAddress.parse("1.1.1.1/32");
+  private static final ConcreteInterfaceAddress C1_L1_ADDRESS =
+      ConcreteInterfaceAddress.parse("1.1.1.11/32");
   private static final String C1_NAME = "R1";
 
-  private static final InterfaceAddress C2_E2_1_ADDRESS = new InterfaceAddress("10.12.0.2/24");
-  private static final InterfaceAddress C2_E2_3_ADDRESS = new InterfaceAddress("10.23.0.2/24");
-  private static final InterfaceAddress C2_L0_ADDRESS = new InterfaceAddress("2.2.2.2/32");
-  private static final InterfaceAddress C2_L1_ADDRESS = new InterfaceAddress("2.2.2.22/32");
+  private static final ConcreteInterfaceAddress C2_E2_1_ADDRESS =
+      ConcreteInterfaceAddress.parse("10.12.0.2/24");
+  private static final ConcreteInterfaceAddress C2_E2_3_ADDRESS =
+      ConcreteInterfaceAddress.parse("10.23.0.2/24");
+  private static final ConcreteInterfaceAddress C2_L0_ADDRESS =
+      ConcreteInterfaceAddress.parse("2.2.2.2/32");
+  private static final ConcreteInterfaceAddress C2_L1_ADDRESS =
+      ConcreteInterfaceAddress.parse("2.2.2.22/32");
   private static final String C2_NAME = "R2";
 
-  private static final InterfaceAddress C3_E3_2_ADDRESS = new InterfaceAddress("10.23.0.3/24");
-  private static final InterfaceAddress C3_E3_4_ADDRESS = new InterfaceAddress("10.34.0.3/24");
-  private static final InterfaceAddress C3_L0_ADDRESS = new InterfaceAddress("3.3.3.3/32");
-  private static final InterfaceAddress C3_L1_ADDRESS = new InterfaceAddress("3.3.3.33/32");
+  private static final ConcreteInterfaceAddress C3_E3_2_ADDRESS =
+      ConcreteInterfaceAddress.parse("10.23.0.3/24");
+  private static final ConcreteInterfaceAddress C3_E3_4_ADDRESS =
+      ConcreteInterfaceAddress.parse("10.34.0.3/24");
+  private static final ConcreteInterfaceAddress C3_L0_ADDRESS =
+      ConcreteInterfaceAddress.parse("3.3.3.3/32");
+  private static final ConcreteInterfaceAddress C3_L1_ADDRESS =
+      ConcreteInterfaceAddress.parse("3.3.3.33/32");
   private static final String C3_NAME = "R3";
 
-  private static final InterfaceAddress C4_E4_3_ADDRESS = new InterfaceAddress("10.34.0.4/24");
-  private static final InterfaceAddress C4_L0_ADDRESS = new InterfaceAddress("4.4.4.4/32");
-  private static final InterfaceAddress C4_L1_ADDRESS = new InterfaceAddress("4.4.4.44/32");
+  private static final ConcreteInterfaceAddress C4_E4_3_ADDRESS =
+      ConcreteInterfaceAddress.parse("10.34.0.4/24");
+  private static final ConcreteInterfaceAddress C4_L0_ADDRESS =
+      ConcreteInterfaceAddress.parse("4.4.4.4/32");
+  private static final ConcreteInterfaceAddress C4_L1_ADDRESS =
+      ConcreteInterfaceAddress.parse("4.4.4.44/32");
   private static final String C4_NAME = "R4";
 
   private static final long MAX_METRIC_EXTERNAL_NETWORKS = 16711680L;
@@ -87,7 +101,7 @@ public class OspfTest {
   private static final long MAX_METRIC_SUMMARY_NETWORKS = 16711680L;
   private static final long MAX_METRIC_TRANSIT_LINKS = 65535L;
 
-  private static List<Statement> getExportPolicyStatements(InterfaceAddress address) {
+  private static List<Statement> getExportPolicyStatements(ConcreteInterfaceAddress address) {
     long externalOspfMetric = 20L;
     If exportIfMatchL2Prefix = new If();
     exportIfMatchL2Prefix.setGuard(
@@ -347,13 +361,25 @@ public class OspfTest {
     OspfArea oaR0A3 = oab.setNumber(3L).setNonStub().build();
     ib.setOwner(r0).setVrf(v0);
     // i01
-    ib.setName(i01Name).setOspfArea(oaR0A0).setAddress(new InterfaceAddress("10.0.1.0/24")).build();
+    ib.setName(i01Name)
+        .setOspfArea(oaR0A0)
+        .setAddress(ConcreteInterfaceAddress.parse("10.0.1.0/24"))
+        .build();
     // i02
-    ib.setName(i02Name).setOspfArea(oaR0A1).setAddress(new InterfaceAddress("10.0.2.0/24")).build();
+    ib.setName(i02Name)
+        .setOspfArea(oaR0A1)
+        .setAddress(ConcreteInterfaceAddress.parse("10.0.2.0/24"))
+        .build();
     // i04
-    ib.setName(i04Name).setOspfArea(oaR0A2).setAddress(new InterfaceAddress("10.0.4.0/24")).build();
+    ib.setName(i04Name)
+        .setOspfArea(oaR0A2)
+        .setAddress(ConcreteInterfaceAddress.parse("10.0.4.0/24"))
+        .build();
     // i06
-    ib.setName(i06Name).setOspfArea(oaR0A3).setAddress(new InterfaceAddress("10.0.6.0/24")).build();
+    ib.setName(i06Name)
+        .setOspfArea(oaR0A3)
+        .setAddress(ConcreteInterfaceAddress.parse("10.0.6.0/24"))
+        .build();
 
     // R1
     Configuration r1 = cb.setHostname(r1Name).build();
@@ -363,7 +389,10 @@ public class OspfTest {
     OspfArea oaR1A0 = oab.setNumber(0L).setNonStub().build();
     ib.setOwner(r1).setVrf(v1);
     // i10
-    ib.setName(i10Name).setOspfArea(oaR1A0).setAddress(new InterfaceAddress("10.0.1.1/24")).build();
+    ib.setName(i10Name)
+        .setOspfArea(oaR1A0)
+        .setAddress(ConcreteInterfaceAddress.parse("10.0.1.1/24"))
+        .build();
 
     // R2
     Configuration r2 = cb.setHostname(r2Name).build();
@@ -373,9 +402,15 @@ public class OspfTest {
     OspfArea oaR2A1 = oab.setNumber(1L).setStub(StubSettings.builder().build()).build();
     ib.setOwner(r2).setVrf(v2);
     // i20
-    ib.setName(i20Name).setOspfArea(oaR2A1).setAddress(new InterfaceAddress("10.0.2.2/24")).build();
+    ib.setName(i20Name)
+        .setOspfArea(oaR2A1)
+        .setAddress(ConcreteInterfaceAddress.parse("10.0.2.2/24"))
+        .build();
     // i23
-    ib.setName(i23Name).setOspfArea(oaR2A1).setAddress(new InterfaceAddress("10.2.3.2/24")).build();
+    ib.setName(i23Name)
+        .setOspfArea(oaR2A1)
+        .setAddress(ConcreteInterfaceAddress.parse("10.2.3.2/24"))
+        .build();
 
     // R3
     Configuration r3 = cb.setHostname(r3Name).build();
@@ -385,7 +420,10 @@ public class OspfTest {
     OspfArea oaR3A1 = oab.setNumber(1L).setStub(StubSettings.builder().build()).build();
     ib.setOwner(r3).setVrf(v3);
     // i32
-    ib.setName(i32Name).setOspfArea(oaR3A1).setAddress(new InterfaceAddress("10.2.3.3/24")).build();
+    ib.setName(i32Name)
+        .setOspfArea(oaR3A1)
+        .setAddress(ConcreteInterfaceAddress.parse("10.2.3.3/24"))
+        .build();
 
     // R4
     Configuration r4 = cb.setHostname(r4Name).build();
@@ -395,9 +433,15 @@ public class OspfTest {
     OspfArea oaR4A2 = oab.setNumber(2L).setNssa(NssaSettings.builder().build()).build();
     ib.setOwner(r4).setVrf(v4);
     // i40
-    ib.setName(i40Name).setOspfArea(oaR4A2).setAddress(new InterfaceAddress("10.0.4.4/24")).build();
+    ib.setName(i40Name)
+        .setOspfArea(oaR4A2)
+        .setAddress(ConcreteInterfaceAddress.parse("10.0.4.4/24"))
+        .build();
     // i45
-    ib.setName(i45Name).setOspfArea(oaR4A2).setAddress(new InterfaceAddress("10.4.5.4/24")).build();
+    ib.setName(i45Name)
+        .setOspfArea(oaR4A2)
+        .setAddress(ConcreteInterfaceAddress.parse("10.4.5.4/24"))
+        .build();
 
     // R5
     Configuration r5 = cb.setHostname(r5Name).build();
@@ -407,7 +451,10 @@ public class OspfTest {
     OspfArea oaR5A2 = oab.setNumber(2L).setNssa(NssaSettings.builder().build()).build();
     ib.setOwner(r5).setVrf(v5);
     // i54
-    ib.setName(i54Name).setOspfArea(oaR5A2).setAddress(new InterfaceAddress("10.4.5.5/24")).build();
+    ib.setName(i54Name)
+        .setOspfArea(oaR5A2)
+        .setAddress(ConcreteInterfaceAddress.parse("10.4.5.5/24"))
+        .build();
 
     // R6
     Configuration r6 = cb.setHostname(r6Name).build();
@@ -442,7 +489,7 @@ public class OspfTest {
     // i60
     ib.setName(i60Name)
         .setOspfArea(oaR6A03)
-        .setAddress(new InterfaceAddress("10.0.6.6/24"))
+        .setAddress(ConcreteInterfaceAddress.parse("10.0.6.6/24"))
         .build();
 
     SortedMap<String, Configuration> configurations =

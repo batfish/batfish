@@ -7,6 +7,7 @@ import com.google.common.collect.ImmutableSet;
 import java.util.Set;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.IntegerSpace;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Interface.Dependency;
@@ -75,7 +76,7 @@ public final class InterfaceMatchers {
 
   /** Provides a matcher that matches if the interface's address is {@code expectedAddress}. */
   public static @Nonnull Matcher<Interface> hasAddress(@Nonnull String expectedAddress) {
-    return new HasAddress(equalTo(new InterfaceAddress(expectedAddress)));
+    return new HasAddress(equalTo(ConcreteInterfaceAddress.parse(expectedAddress)));
   }
 
   /** Provides a matcher that matches if the interface's address is {@code expectedAddress}. */

@@ -52,6 +52,7 @@ import org.batfish.datamodel.BgpAuthenticationSettings;
 import org.batfish.datamodel.BgpPassivePeerConfig;
 import org.batfish.datamodel.BgpPeerConfig.Builder;
 import org.batfish.datamodel.BgpProcess;
+import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.FirewallSessionInterfaceInfo;
@@ -64,7 +65,6 @@ import org.batfish.datamodel.IkePhase1Proposal;
 import org.batfish.datamodel.IntegerSpace;
 import org.batfish.datamodel.Interface.Dependency;
 import org.batfish.datamodel.Interface.DependencyType;
-import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpAccessListLine;
@@ -544,7 +544,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
         // peer
         outerloop:
         for (org.batfish.datamodel.Interface iface : vrf.getInterfaces().values()) {
-          for (InterfaceAddress address : iface.getAllAddresses()) {
+          for (ConcreteInterfaceAddress address : iface.getAllConcreteAddresses()) {
             if (address.getPrefix().containsPrefix(prefix)) {
               localIp = address.getIp();
               break outerloop;
@@ -555,7 +555,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
       if (localIp == null && _masterLogicalSystem.getDefaultAddressSelection()) {
         initFirstLoopbackInterface();
         if (_lo0 != null) {
-          InterfaceAddress lo0Unit0Address = _lo0.getPrimaryAddress();
+          ConcreteInterfaceAddress lo0Unit0Address = _lo0.getPrimaryAddress();
           if (lo0Unit0Address != null) {
             localIp = lo0Unit0Address.getIp();
           }
@@ -1049,7 +1049,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
     if (ospfArea == null) {
       return;
     }
-    if (newIface.getAddress() == null) {
+    if (newIface.getConcreteAddress() == null) {
       _w.redFlag(
           String.format(
               "Cannot assign interface %s to area %s because it has no IP address.",
@@ -2604,7 +2604,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
       if (loopback0 != null) {
         Interface loopback0unit0 = loopback0.getUnits().get(FIRST_LOOPBACK_INTERFACE_NAME + ".0");
         if (loopback0unit0 != null) {
-          InterfaceAddress address = loopback0unit0.getPrimaryAddress();
+          ConcreteInterfaceAddress address = loopback0unit0.getPrimaryAddress();
           if (address != null) {
             // now we should set router-id
             Ip routerId = address.getIp();
@@ -3215,7 +3215,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
         if (!iface.getActive()) {
           continue;
         }
-        for (InterfaceAddress address : iface.getAllAddresses()) {
+        for (ConcreteInterfaceAddress address : iface.getAllAddresses()) {
           Ip ip = address.getIp();
           if (lowesetIp.asLong() > ip.asLong()) {
             lowesetIp = ip;

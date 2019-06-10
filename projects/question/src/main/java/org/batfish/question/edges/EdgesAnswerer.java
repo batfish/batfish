@@ -25,10 +25,10 @@ import org.batfish.datamodel.BgpPeerConfig;
 import org.batfish.datamodel.BgpPeerConfigId;
 import org.batfish.datamodel.BgpPeerConfigId.BgpPeerConfigType;
 import org.batfish.datamodel.BgpSessionProperties;
+import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Edge;
 import org.batfish.datamodel.Interface;
-import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpsecPeerConfig;
 import org.batfish.datamodel.IpsecPeerConfigId;
@@ -485,14 +485,14 @@ public class EdgesAnswerer extends Answerer {
     Interface interface2 =
         configurations.get(edge.getNode2()).getAllInterfaces().get(edge.getInt2());
     Set<Ip> ips1 =
-        interface1.getAllAddresses().stream()
+        interface1.getAllConcreteAddresses().stream()
             .filter(Objects::nonNull)
-            .map(InterfaceAddress::getIp)
+            .map(ConcreteInterfaceAddress::getIp)
             .collect(Collectors.toSet());
     Set<Ip> ips2 =
-        interface2.getAllAddresses().stream()
+        interface2.getAllConcreteAddresses().stream()
             .filter(Objects::nonNull)
-            .map(InterfaceAddress::getIp)
+            .map(ConcreteInterfaceAddress::getIp)
             .collect(Collectors.toSet());
 
     RowBuilder row = Row.builder();

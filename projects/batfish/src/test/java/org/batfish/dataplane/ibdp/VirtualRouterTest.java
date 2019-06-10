@@ -33,6 +33,7 @@ import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.AnnotatedRoute;
 import org.batfish.datamodel.BgpProcess;
 import org.batfish.datamodel.Bgpv4Route;
+import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.ConnectedRoute;
@@ -40,7 +41,6 @@ import org.batfish.datamodel.EigrpExternalRoute;
 import org.batfish.datamodel.EigrpInternalRoute;
 import org.batfish.datamodel.GeneratedRoute;
 import org.batfish.datamodel.Interface;
-import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IsisRoute;
 import org.batfish.datamodel.IsoAddress;
@@ -86,15 +86,15 @@ import org.junit.Test;
 /** Tests of {@link VirtualRouter} */
 public class VirtualRouterTest {
   /** Make a CISCO IOS router with 3 interfaces named Eth1-Eth3, /16 prefixes on each interface */
-  private static final Map<String, InterfaceAddress> exampleInterfaceAddresses =
-      ImmutableMap.<String, InterfaceAddress>builder()
-          .put("Ethernet1", new InterfaceAddress("10.1.0.0/16"))
-          .put("Ethernet2", new InterfaceAddress("10.2.0.0/16"))
-          .put("Ethernet3", new InterfaceAddress("10.3.0.0/16"))
+  private static final Map<String, ConcreteInterfaceAddress> exampleInterfaceAddresses =
+      ImmutableMap.<String, ConcreteInterfaceAddress>builder()
+          .put("Ethernet1", ConcreteInterfaceAddress.parse("10.1.0.0/16"))
+          .put("Ethernet2", ConcreteInterfaceAddress.parse("10.2.0.0/16"))
+          .put("Ethernet3", ConcreteInterfaceAddress.parse("10.3.0.0/16"))
           .build();
 
   private static void addInterfaces(
-      Configuration c, Map<String, InterfaceAddress> interfaceAddresses) {
+      Configuration c, Map<String, ConcreteInterfaceAddress> interfaceAddresses) {
     NetworkFactory nf = new NetworkFactory();
     Interface.Builder ib = nf.interfaceBuilder().setOwner(c).setVrf(c.getDefaultVrf());
     interfaceAddresses.forEach(
@@ -554,8 +554,8 @@ public class VirtualRouterTest {
         .build();
 
     Interface.Builder ib = nf.interfaceBuilder().setActive(false);
-    ib.setAddress(new InterfaceAddress("1.1.1.1/30")).setOwner(c1).build();
-    ib.setAddress(new InterfaceAddress("1.1.1.2/30")).setOwner(c2).build();
+    ib.setAddress(ConcreteInterfaceAddress.parse("1.1.1.1/30")).setOwner(c1).build();
+    ib.setAddress(ConcreteInterfaceAddress.parse("1.1.1.2/30")).setOwner(c2).build();
 
     Topology topology = synthesizeL3Topology(ImmutableMap.of("r1", c1, "r2", c2));
 
@@ -643,14 +643,20 @@ public class VirtualRouterTest {
     // Area: 0001, SystemID: 0100.0000.0000
     isb.setVrf(v1).setNetAddress(new IsoAddress("49.0001.0100.0000.0000.00")).build();
     Interface i1 =
-        ib.setOwner(c1).setVrf(v1).setAddress(new InterfaceAddress("10.0.0.0/31")).build();
+        ib.setOwner(c1)
+            .setVrf(v1)
+            .setAddress(ConcreteInterfaceAddress.parse("10.0.0.0/31"))
+            .build();
 
     Configuration c2 = cb.build();
     Vrf v2 = vb.setOwner(c2).build();
     // Area: 0001, SystemID: 0100.0000.0001
     isb.setVrf(v2).setNetAddress(new IsoAddress("49.0001.0100.0000.0001.00")).build();
     Interface i2 =
-        ib.setOwner(c2).setVrf(v2).setAddress(new InterfaceAddress("10.0.0.1/31")).build();
+        ib.setOwner(c2)
+            .setVrf(v2)
+            .setAddress(ConcreteInterfaceAddress.parse("10.0.0.1/31"))
+            .build();
 
     Map<String, Configuration> configs =
         ImmutableMap.of(c1.getHostname(), c1, c2.getHostname(), c2);

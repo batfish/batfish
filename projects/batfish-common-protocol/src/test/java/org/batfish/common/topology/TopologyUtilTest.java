@@ -37,6 +37,7 @@ import org.batfish.common.Warnings;
 import org.batfish.common.util.IspModelingUtils;
 import org.batfish.datamodel.BgpProcess;
 import org.batfish.datamodel.BumTransportMethod;
+import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Configuration.Builder;
 import org.batfish.datamodel.ConfigurationFormat;
@@ -45,7 +46,6 @@ import org.batfish.datamodel.IntegerSpace;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Interface.Dependency;
 import org.batfish.datamodel.Interface.DependencyType;
-import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.InterfaceType;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.NetworkFactory;
@@ -84,7 +84,7 @@ public final class TopologyUtilTest {
     return _nf.interfaceBuilder()
         .setName(interfaceName)
         .setActive(active)
-        .setAddress(new InterfaceAddress(ip))
+        .setAddress(ConcreteInterfaceAddress.parse(ip))
         .setBlacklisted(blacklisted)
         .build();
   }
@@ -850,9 +850,9 @@ public final class TopologyUtilTest {
     Vrf v2 = _vb.setOwner(c2).build();
     _ib.setOwner(c2).setVrf(v2);
 
-    InterfaceAddress p1Addr1 = new InterfaceAddress("1.0.0.1/24");
-    InterfaceAddress p1Addr2 = new InterfaceAddress("1.0.0.2/24");
-    InterfaceAddress p2Addr1 = new InterfaceAddress("2.0.0.1/24");
+    ConcreteInterfaceAddress p1Addr1 = ConcreteInterfaceAddress.parse("1.0.0.1/24");
+    ConcreteInterfaceAddress p1Addr2 = ConcreteInterfaceAddress.parse("1.0.0.2/24");
+    ConcreteInterfaceAddress p2Addr1 = ConcreteInterfaceAddress.parse("2.0.0.1/24");
 
     Layer1Topology rawL1AllPresent =
         new Layer1Topology(
@@ -941,9 +941,9 @@ public final class TopologyUtilTest {
     Layer1Node l1H1 = new Layer1Node(h1Name, i1Name);
     Layer1Node l1H2 = new Layer1Node(h2Name, i1Name);
 
-    InterfaceAddress b1i2Address = new InterfaceAddress("10.0.0.0/31");
+    ConcreteInterfaceAddress b1i2Address = ConcreteInterfaceAddress.parse("10.0.0.0/31");
     Ip internetToB1Address = Ip.parse("10.0.0.1");
-    InterfaceAddress b2i2Address = new InterfaceAddress("10.0.0.2/31");
+    ConcreteInterfaceAddress b2i2Address = ConcreteInterfaceAddress.parse("10.0.0.2/31");
     Ip internetToB2Address = Ip.parse("10.0.0.3");
 
     long asB1 = 1;
@@ -1129,10 +1129,10 @@ public final class TopologyUtilTest {
 
     _ib.setActive(true);
 
-    InterfaceAddress n2n3Address = new InterfaceAddress("10.0.0.0/31");
-    InterfaceAddress n3n2Address = new InterfaceAddress("10.0.0.1/31");
-    InterfaceAddress n3n4Address = new InterfaceAddress("10.0.0.2/31");
-    InterfaceAddress n4n3Address = new InterfaceAddress("10.0.0.3/31");
+    ConcreteInterfaceAddress n2n3Address = ConcreteInterfaceAddress.parse("10.0.0.0/31");
+    ConcreteInterfaceAddress n3n2Address = ConcreteInterfaceAddress.parse("10.0.0.1/31");
+    ConcreteInterfaceAddress n3n4Address = ConcreteInterfaceAddress.parse("10.0.0.2/31");
+    ConcreteInterfaceAddress n4n3Address = ConcreteInterfaceAddress.parse("10.0.0.3/31");
 
     Configuration c1 = _cb.setHostname(n1Name).build();
     Vrf v1 = _vb.setOwner(c1).build();
@@ -1262,9 +1262,15 @@ public final class TopologyUtilTest {
     Configuration c1 = cb.build();
     Configuration c2 = cb.build();
     Interface i1 =
-        nf.interfaceBuilder().setOwner(c1).setAddresses(new InterfaceAddress("1.2.3.4/24")).build();
+        nf.interfaceBuilder()
+            .setOwner(c1)
+            .setAddresses(ConcreteInterfaceAddress.parse("1.2.3.4/24"))
+            .build();
     Interface i2 =
-        nf.interfaceBuilder().setOwner(c2).setAddresses(new InterfaceAddress("1.2.3.5/28")).build();
+        nf.interfaceBuilder()
+            .setOwner(c2)
+            .setAddresses(ConcreteInterfaceAddress.parse("1.2.3.5/28"))
+            .build();
     Topology t =
         TopologyUtil.synthesizeL3Topology(
             ImmutableMap.of(c1.getHostname(), c1, c2.getHostname(), c2));
@@ -1279,9 +1285,12 @@ public final class TopologyUtilTest {
     Vrf v1 = nf.vrfBuilder().setOwner(c).setName("v1").build();
     Vrf v2 = nf.vrfBuilder().setOwner(c).setName("v2").build();
     Interface.Builder builder = nf.interfaceBuilder().setOwner(c);
-    Interface i1 = builder.setAddresses(new InterfaceAddress("1.2.3.4/24")).setVrf(v1).build();
-    Interface i2 = builder.setAddresses(new InterfaceAddress("1.2.3.5/24")).setVrf(v1).build();
-    Interface i3 = builder.setAddresses(new InterfaceAddress("1.2.3.6/24")).setVrf(v2).build();
+    Interface i1 =
+        builder.setAddresses(ConcreteInterfaceAddress.parse("1.2.3.4/24")).setVrf(v1).build();
+    Interface i2 =
+        builder.setAddresses(ConcreteInterfaceAddress.parse("1.2.3.5/24")).setVrf(v1).build();
+    Interface i3 =
+        builder.setAddresses(ConcreteInterfaceAddress.parse("1.2.3.6/24")).setVrf(v2).build();
     Topology t = TopologyUtil.synthesizeL3Topology(ImmutableMap.of(c.getHostname(), c));
     assertThat(
         t.getEdges(),
@@ -1297,8 +1306,14 @@ public final class TopologyUtilTest {
         nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS);
     Configuration c1 = cb.build();
     Configuration c2 = cb.build();
-    nf.interfaceBuilder().setOwner(c1).setAddresses(new InterfaceAddress("1.2.3.4/24")).build();
-    nf.interfaceBuilder().setOwner(c2).setAddresses(new InterfaceAddress("1.2.3.17/28")).build();
+    nf.interfaceBuilder()
+        .setOwner(c1)
+        .setAddresses(ConcreteInterfaceAddress.parse("1.2.3.4/24"))
+        .build();
+    nf.interfaceBuilder()
+        .setOwner(c2)
+        .setAddresses(ConcreteInterfaceAddress.parse("1.2.3.17/28"))
+        .build();
     Topology t =
         TopologyUtil.synthesizeL3Topology(
             ImmutableMap.of(c1.getHostname(), c1, c2.getHostname(), c2));
@@ -1312,8 +1327,14 @@ public final class TopologyUtilTest {
         nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS);
     Configuration c1 = cb.build();
     Configuration c2 = cb.build();
-    nf.interfaceBuilder().setOwner(c1).setAddresses(new InterfaceAddress("1.2.3.4/24")).build();
-    nf.interfaceBuilder().setOwner(c2).setAddresses(new InterfaceAddress("1.2.3.4/28")).build();
+    nf.interfaceBuilder()
+        .setOwner(c1)
+        .setAddresses(ConcreteInterfaceAddress.parse("1.2.3.4/24"))
+        .build();
+    nf.interfaceBuilder()
+        .setOwner(c2)
+        .setAddresses(ConcreteInterfaceAddress.parse("1.2.3.4/28"))
+        .build();
     Topology t =
         TopologyUtil.synthesizeL3Topology(
             ImmutableMap.of(c1.getHostname(), c1, c2.getHostname(), c2));

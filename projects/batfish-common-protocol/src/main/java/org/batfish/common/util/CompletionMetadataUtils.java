@@ -50,7 +50,7 @@ public final class CompletionMetadataUtils {
                   .values()
                   .forEach(
                       iface ->
-                          iface.getAllAddresses().stream()
+                          iface.getAllConcreteAddresses().stream()
                               .map(interfaceAddress -> interfaceAddress.getIp().toString())
                               .forEach(ips::add));
 
@@ -89,7 +89,7 @@ public final class CompletionMetadataUtils {
                   .values()
                   .forEach(
                       iface ->
-                          iface.getAllAddresses().stream()
+                          iface.getAllConcreteAddresses().stream()
                               .map(interfaceAddress -> interfaceAddress.getPrefix().toString())
                               .forEach(prefixes::add));
 

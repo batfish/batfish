@@ -11,11 +11,11 @@ import com.google.common.collect.ImmutableMap;
 import java.util.Map;
 import org.batfish.datamodel.BgpActivePeerConfig;
 import org.batfish.datamodel.BgpProcess;
+import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Configuration.Builder;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.Interface;
-import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.Vrf;
@@ -58,8 +58,8 @@ public class GraphTest {
     Configuration c1 = cb.setHostname("r1").build();
 
     Vrf v1 = vb.setOwner(c1).build();
-    ib.setOwner(c1).setVrf(v1).setAddress(new InterfaceAddress("1.1.2.1/30"));
-    ib.setOwner(c1).setVrf(v1).setAddress(new InterfaceAddress("1.1.3.1/30"));
+    ib.setOwner(c1).setVrf(v1).setAddress(ConcreteInterfaceAddress.parse("1.1.2.1/30"));
+    ib.setOwner(c1).setVrf(v1).setAddress(ConcreteInterfaceAddress.parse("1.1.3.1/30"));
     BgpProcess bp1 = bpb.setVrf(v1).setRouterId(Ip.parse("1.1.1.1")).build();
     bnb.setLocalIp(Ip.parse("1.1.2.1"))
         .setPeerAddress(Ip.parse("1.1.2.2"))
@@ -72,7 +72,7 @@ public class GraphTest {
 
     Configuration c2 = cb.setHostname("r2").build();
     Vrf v2 = vb.setOwner(c2).build();
-    ib.setOwner(c2).setVrf(v2).setAddress(new InterfaceAddress("1.1.2.2/30"));
+    ib.setOwner(c2).setVrf(v2).setAddress(ConcreteInterfaceAddress.parse("1.1.2.2/30"));
     BgpProcess bp2 = bpb.setVrf(v2).setRouterId(Ip.parse("2.2.2.2")).build();
     bnb.setLocalIp(Ip.parse("1.1.2.2"))
         .setPeerAddress(Ip.parse("1.1.2.1"))
@@ -81,7 +81,7 @@ public class GraphTest {
 
     Configuration c3 = cb.setHostname("r3").build();
     Vrf v3 = vb.setOwner(c3).build();
-    ib.setOwner(c3).setVrf(v3).setAddress(new InterfaceAddress("1.1.3.3/30"));
+    ib.setOwner(c3).setVrf(v3).setAddress(ConcreteInterfaceAddress.parse("1.1.3.3/30"));
     BgpProcess bp3 = bpb.setVrf(v3).setRouterId(Ip.parse("3.3.3.3")).build();
     bnb.setLocalIp(Ip.parse("1.1.3.3"))
         .setPeerAddress(Ip.parse("1.1.3.1"))

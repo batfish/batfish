@@ -143,7 +143,7 @@ class PropertyAdder {
           // Also reachable if connected route and we use it despite not forwarding
           if (r != null) {
             BitVecExpr dstIp = _encoderSlice.getSymbolicPacket().getDstIp();
-            BitVecExpr ip = ctx.mkBV(ge.getStart().getAddress().getIp().asLong(), 32);
+            BitVecExpr ip = ctx.mkBV(ge.getStart().getConcreteAddress().getIp().asLong(), 32);
             BoolExpr reach = ctx.mkAnd(r.getPermitted(), ctx.mkEq(dstIp, ip));
             isAbsorbed = ctx.mkOr(isAbsorbed, reach);
           }
@@ -355,7 +355,7 @@ class PropertyAdder {
           // Also reachable if connected route and we use it despite not forwarding
           if (r != null) {
             BitVecExpr dstIp = _encoderSlice.getSymbolicPacket().getDstIp();
-            BitVecExpr ip = ctx.mkBV(ge.getStart().getAddress().getIp().asLong(), 32);
+            BitVecExpr ip = ctx.mkBV(ge.getStart().getConcreteAddress().getIp().asLong(), 32);
             BoolExpr reach = ctx.mkAnd(r.getPermitted(), ctx.mkEq(dstIp, ip));
             isAbsorbed = ctx.mkOr(isAbsorbed, reach);
           }
@@ -429,7 +429,7 @@ class PropertyAdder {
           // if connected route and we use it despite not forwarding
           if (r != null) {
             BitVecExpr dstIp = _encoderSlice.getSymbolicPacket().getDstIp();
-            BitVecExpr ip = ctx.mkBV(ge.getStart().getAddress().getIp().asLong(), 32);
+            BitVecExpr ip = ctx.mkBV(ge.getStart().getConcreteAddress().getIp().asLong(), 32);
             BoolExpr reach = ctx.mkAnd(r.getPermitted(), ctx.mkEq(dstIp, ip));
             isAbsorbed = ctx.mkOr(isAbsorbed, reach);
           }

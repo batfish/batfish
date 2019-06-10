@@ -7,7 +7,7 @@ import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.testing.EqualsTester;
 import java.io.IOException;
 import org.batfish.common.util.BatfishObjectMapper;
-import org.batfish.datamodel.InterfaceAddress;
+import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.junit.Test;
@@ -21,19 +21,19 @@ public class Layer3EdgeTest {
             new Layer3Edge(
                 new NodeInterfacePair("node1", "interface1"),
                 new NodeInterfacePair("node2", "interface2"),
-                ImmutableSortedSet.of(new InterfaceAddress(Ip.parse("1.1.1.1"), 32)),
-                ImmutableSortedSet.of(new InterfaceAddress(Ip.parse("2.2.2.2"), 32))),
+                ImmutableSortedSet.of(ConcreteInterfaceAddress.create(Ip.parse("1.1.1.1"), 32)),
+                ImmutableSortedSet.of(ConcreteInterfaceAddress.create(Ip.parse("2.2.2.2"), 32))),
             new Layer3Edge(
                 new NodeInterfacePair("node1", "interface1"),
                 new NodeInterfacePair("node2", "interface2"),
-                ImmutableSortedSet.of(new InterfaceAddress(Ip.parse("1.1.1.1"), 32)),
-                ImmutableSortedSet.of(new InterfaceAddress(Ip.parse("2.2.2.2"), 32))))
+                ImmutableSortedSet.of(ConcreteInterfaceAddress.create(Ip.parse("1.1.1.1"), 32)),
+                ImmutableSortedSet.of(ConcreteInterfaceAddress.create(Ip.parse("2.2.2.2"), 32))))
         .addEqualityGroup(
             new Layer3Edge(
                 new NodeInterfacePair("diffnode1", "diffinterface1"),
                 new NodeInterfacePair("diffnode2", "diffinterface2"),
-                ImmutableSortedSet.of(new InterfaceAddress(Ip.parse("3.3.3.3"), 32)),
-                ImmutableSortedSet.of(new InterfaceAddress(Ip.parse("4.4.4.4"), 32))))
+                ImmutableSortedSet.of(ConcreteInterfaceAddress.create(Ip.parse("3.3.3.3"), 32)),
+                ImmutableSortedSet.of(ConcreteInterfaceAddress.create(Ip.parse("4.4.4.4"), 32))))
         .testEquals();
   }
 
@@ -43,8 +43,8 @@ public class Layer3EdgeTest {
         new Layer3Edge(
             new NodeInterfacePair("node1", "interface1"),
             new NodeInterfacePair("node2", "interface2"),
-            ImmutableSortedSet.of(new InterfaceAddress(Ip.parse("1.1.1.1"), 32)),
-            ImmutableSortedSet.of(new InterfaceAddress(Ip.parse("2.2.2.2"), 32)));
+            ImmutableSortedSet.of(ConcreteInterfaceAddress.create(Ip.parse("1.1.1.1"), 32)),
+            ImmutableSortedSet.of(ConcreteInterfaceAddress.create(Ip.parse("2.2.2.2"), 32)));
 
     assertThat(BatfishObjectMapper.clone(layer3Edge, Layer3Edge.class), equalTo(layer3Edge));
   }

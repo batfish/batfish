@@ -3,9 +3,9 @@ package org.batfish.representation.juniper;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import org.batfish.common.Warnings;
+import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Interface;
-import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.PrefixRange;
 import org.batfish.datamodel.PrefixSpace;
 import org.batfish.datamodel.RoutingProtocol;
@@ -48,8 +48,8 @@ public final class PsFromInterface extends PsFrom {
                 DestinationNetwork.instance(),
                 new ExplicitPrefixSet(
                     new PrefixSpace(
-                        c.getAllInterfaces().get(_name).getAllAddresses().stream()
-                            .map(InterfaceAddress::getPrefix)
+                        c.getAllInterfaces().get(_name).getAllConcreteAddresses().stream()
+                            .map(ConcreteInterfaceAddress::getPrefix)
                             .map(PrefixRange::fromPrefix)
                             .collect(ImmutableSet.toImmutableSet()))))));
   }
