@@ -84,9 +84,9 @@ public final class EigrpEdge implements Serializable, Comparable<EigrpEdge> {
   public IpEdge toIpEdge(NetworkConfigurations nc) {
     return new IpEdge(
         _node1.getHostname(),
-        _node1.getInterface(nc).getAddress().getIp(),
+        _node1.getInterface(nc).getConcreteAddress().getIp(),
         _node2.getHostname(),
-        _node2.getInterface(nc).getAddress().getIp());
+        _node2.getInterface(nc).getConcreteAddress().getIp());
   }
 
   @Nonnull

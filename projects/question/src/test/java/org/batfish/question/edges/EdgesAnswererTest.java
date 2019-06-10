@@ -68,11 +68,11 @@ import org.batfish.datamodel.BgpProcess;
 import org.batfish.datamodel.BgpSessionProperties;
 import org.batfish.datamodel.BgpUnnumberedPeerConfig;
 import org.batfish.datamodel.BumTransportMethod;
+import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.Edge;
 import org.batfish.datamodel.Interface;
-import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpsecPeerConfigId;
 import org.batfish.datamodel.IpsecPhase2Proposal;
@@ -164,7 +164,7 @@ public class EdgesAnswererTest {
             "int1",
             Interface.builder()
                 .setName("int1")
-                .setAddress(new InterfaceAddress(Ip.parse("1.1.1.1"), 24))
+                .setAddress(ConcreteInterfaceAddress.create(Ip.parse("1.1.1.1"), 24))
                 .build()));
 
     _host2 = cb.setHostname("host2").build();
@@ -173,7 +173,7 @@ public class EdgesAnswererTest {
             "int2",
             Interface.builder()
                 .setName("int2")
-                .setAddress(new InterfaceAddress(Ip.parse("2.2.2.2"), 24))
+                .setAddress(ConcreteInterfaceAddress.create(Ip.parse("2.2.2.2"), 24))
                 .build()));
 
     _configurations = ImmutableSortedMap.of("host1", _host1, "host2", _host2);

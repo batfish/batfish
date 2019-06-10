@@ -4,11 +4,11 @@ import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.ImmutableSortedSet;
 import java.io.IOException;
 import java.util.SortedMap;
+import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Configuration.Builder;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.Interface;
-import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.StaticRoute;
@@ -44,36 +44,44 @@ public class TwoNodeNetworkWithTwoLinks {
     ib.setOwner(srcNode)
         .setVrf(srcVrf)
         .setAddress(
-            new InterfaceAddress(LINK_1_NETWORK.getStartIp(), LINK_1_NETWORK.getPrefixLength()))
+            ConcreteInterfaceAddress.create(
+                LINK_1_NETWORK.getStartIp(), LINK_1_NETWORK.getPrefixLength()))
         .build();
     ib.setOwner(dstNode)
         .setVrf(dstVrf)
         .setAddress(
-            new InterfaceAddress(LINK_1_NETWORK.getEndIp(), LINK_1_NETWORK.getPrefixLength()))
+            ConcreteInterfaceAddress.create(
+                LINK_1_NETWORK.getEndIp(), LINK_1_NETWORK.getPrefixLength()))
         .build();
 
     // second link
     ib.setOwner(srcNode)
         .setVrf(srcVrf)
         .setAddress(
-            new InterfaceAddress(LINK_2_NETWORK.getStartIp(), LINK_2_NETWORK.getPrefixLength()))
+            ConcreteInterfaceAddress.create(
+                LINK_2_NETWORK.getStartIp(), LINK_2_NETWORK.getPrefixLength()))
         .build();
     ib.setOwner(dstNode)
         .setVrf(dstVrf)
         .setAddress(
-            new InterfaceAddress(LINK_2_NETWORK.getEndIp(), LINK_2_NETWORK.getPrefixLength()))
+            ConcreteInterfaceAddress.create(
+                LINK_2_NETWORK.getEndIp(), LINK_2_NETWORK.getPrefixLength()))
         .build();
 
     // destination for the first link
     ib.setOwner(dstNode)
         .setVrf(dstVrf)
-        .setAddress(new InterfaceAddress(DST_PREFIX_1.getStartIp(), DST_PREFIX_1.getPrefixLength()))
+        .setAddress(
+            ConcreteInterfaceAddress.create(
+                DST_PREFIX_1.getStartIp(), DST_PREFIX_1.getPrefixLength()))
         .build();
 
     // destination for the second link
     ib.setOwner(dstNode)
         .setVrf(dstVrf)
-        .setAddress(new InterfaceAddress(DST_PREFIX_2.getStartIp(), DST_PREFIX_2.getPrefixLength()))
+        .setAddress(
+            ConcreteInterfaceAddress.create(
+                DST_PREFIX_2.getStartIp(), DST_PREFIX_2.getPrefixLength()))
         .build();
 
     StaticRoute.Builder bld = StaticRoute.builder().setAdministrativeCost(1);

@@ -6,10 +6,10 @@ import org.antlr.v4.runtime.tree.ParseTreeWalker;
 import org.batfish.common.BatfishException;
 import org.batfish.common.Warnings;
 import org.batfish.common.util.CommonUtil;
+import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.DiffieHellmanGroup;
 import org.batfish.datamodel.EncryptionAlgorithm;
 import org.batfish.datamodel.IkeAuthenticationMethod;
-import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.Prefix;
@@ -473,7 +473,7 @@ public class FlatVyosControlPlaneExtractor extends FlatVyosParserBaseListener
     if (ctx.DHCP() != null) {
       todo(ctx);
     } else if (ctx.IP_PREFIX() != null) {
-      InterfaceAddress address = new InterfaceAddress(ctx.IP_PREFIX().getText());
+      ConcreteInterfaceAddress address = ConcreteInterfaceAddress.parse(ctx.IP_PREFIX().getText());
       if (_currentInterface.getAddress() == null) {
         _currentInterface.setAddress(address);
       }

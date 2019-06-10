@@ -40,6 +40,7 @@ import org.batfish.datamodel.BgpActivePeerConfig;
 import org.batfish.datamodel.BgpPeerConfigId;
 import org.batfish.datamodel.BgpProcess;
 import org.batfish.datamodel.BgpSessionProperties;
+import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.DataPlane;
@@ -48,7 +49,6 @@ import org.batfish.datamodel.GeneratedRoute.Builder;
 import org.batfish.datamodel.GenericRib;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.Interface;
-import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.InterfaceType;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpAccessListLine;
@@ -145,7 +145,7 @@ public class IncrementalDataPlanePluginTest {
 
     Vrf corevrf = _vb.setOwner(core).build();
     _ib.setOwner(core).setVrf(corevrf);
-    _ib.setAddress(new InterfaceAddress(coreId, interfcePrefixBits)).build();
+    _ib.setAddress(ConcreteInterfaceAddress.create(coreId, interfcePrefixBits)).build();
     BgpProcess coreProc =
         _pb.setRouterId(coreId)
             .setVrf(corevrf)
@@ -163,7 +163,7 @@ public class IncrementalDataPlanePluginTest {
     Configuration n1 = _cb.setHostname("n1").build();
     Vrf n1Vrf = _vb.setOwner(n1).build();
     _ib.setOwner(n1).setVrf(n1Vrf);
-    _ib.setAddress(new InterfaceAddress(neighborId1, interfcePrefixBits)).build();
+    _ib.setAddress(ConcreteInterfaceAddress.create(neighborId1, interfcePrefixBits)).build();
     BgpProcess n1Proc =
         _pb.setRouterId(neighborId1)
             .setVrf(n1Vrf)
@@ -180,7 +180,7 @@ public class IncrementalDataPlanePluginTest {
     Configuration n2 = _cb.setHostname("n2").build();
     Vrf n2Vrf = _vb.setOwner(n2).build();
     _ib.setOwner(n2).setVrf(n2Vrf);
-    _ib.setAddress(new InterfaceAddress(neighborId2, interfcePrefixBits)).build();
+    _ib.setAddress(ConcreteInterfaceAddress.create(neighborId2, interfcePrefixBits)).build();
     BgpProcess n2Proc =
         _pb.setRouterId(neighborId2)
             .setVrf(n2Vrf)
@@ -365,7 +365,7 @@ public class IncrementalDataPlanePluginTest {
         nf.interfaceBuilder()
             .setOwner(c)
             .setVrf(vrf)
-            .setAddress(new InterfaceAddress("10.0.0.0/24"))
+            .setAddress(ConcreteInterfaceAddress.parse("10.0.0.0/24"))
             .build();
     StaticRoute srBoth =
         StaticRoute.builder()
@@ -665,21 +665,21 @@ public class IncrementalDataPlanePluginTest {
     // first node
     Configuration c1 = cb.setHostname("node1").build();
     Vrf v1 = nf.vrfBuilder().setOwner(c1).build();
-    InterfaceAddress c1Addr1 = new InterfaceAddress("1.0.0.0/31");
+    ConcreteInterfaceAddress c1Addr1 = ConcreteInterfaceAddress.parse("1.0.0.0/31");
     Interface i11 = nf.interfaceBuilder().setOwner(c1).setVrf(v1).setAddress(c1Addr1).build();
 
     // second node
     Configuration c2 = cb.setHostname("node2").build();
     Vrf v2 = nf.vrfBuilder().setOwner(c2).build();
-    InterfaceAddress c2Addr1 = new InterfaceAddress("1.0.0.1/31");
+    ConcreteInterfaceAddress c2Addr1 = ConcreteInterfaceAddress.parse("1.0.0.1/31");
     nf.interfaceBuilder().setOwner(c2).setVrf(v2).setAddress(c2Addr1).build();
-    InterfaceAddress c2Addr2 = new InterfaceAddress("1.0.0.2/31");
+    ConcreteInterfaceAddress c2Addr2 = ConcreteInterfaceAddress.parse("1.0.0.2/31");
     nf.interfaceBuilder().setOwner(c2).setVrf(v2).setAddress(c2Addr2).build();
 
     // third node
     Configuration c3 = cb.setHostname("node3").build();
     Vrf v3 = nf.vrfBuilder().setOwner(c3).build();
-    InterfaceAddress c3Addr1 = new InterfaceAddress("1.0.0.3/31");
+    ConcreteInterfaceAddress c3Addr1 = ConcreteInterfaceAddress.parse("1.0.0.3/31");
     Interface i31 = nf.interfaceBuilder().setOwner(c3).setVrf(v3).setAddress(c3Addr1).build();
 
     // static routes on node1
@@ -775,7 +775,7 @@ public class IncrementalDataPlanePluginTest {
         .setVrf(vrf1)
         .setName("Loopback0")
         .setType(InterfaceType.LOOPBACK)
-        .setAddress(new InterfaceAddress(lo1Ip, Prefix.MAX_PREFIX_LENGTH))
+        .setAddress(ConcreteInterfaceAddress.create(lo1Ip, Prefix.MAX_PREFIX_LENGTH))
         .setIsis(isisInterfaceSettings)
         .build();
 
@@ -783,7 +783,7 @@ public class IncrementalDataPlanePluginTest {
         .setName("Ethernet0")
         .setType(InterfaceType.PHYSICAL)
         .setVrf(vrf1)
-        .setAddress(new InterfaceAddress("1.1.1.2/31"))
+        .setAddress(ConcreteInterfaceAddress.parse("1.1.1.2/31"))
         .setIsis(isisInterfaceSettings)
         .build();
     // ISIS process
@@ -816,14 +816,14 @@ public class IncrementalDataPlanePluginTest {
         .setVrf(vrf2)
         .setName("Loopback0")
         .setType(InterfaceType.LOOPBACK)
-        .setAddress(new InterfaceAddress(lo2Ip, Prefix.MAX_PREFIX_LENGTH))
+        .setAddress(ConcreteInterfaceAddress.create(lo2Ip, Prefix.MAX_PREFIX_LENGTH))
         .setIsis(isisInterfaceSettings)
         .build();
     _ib.setOwner(c2)
         .setName("Ethernet0")
         .setType(InterfaceType.PHYSICAL)
         .setVrf(vrf2)
-        .setAddress(new InterfaceAddress("1.1.1.3/31"))
+        .setAddress(ConcreteInterfaceAddress.parse("1.1.1.3/31"))
         .setIsis(isisInterfaceSettings)
         .build();
     // ISIS process

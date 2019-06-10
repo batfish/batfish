@@ -36,11 +36,11 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.AnnotatedRoute;
+import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.GeneratedRoute;
 import org.batfish.datamodel.Interface;
-import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.InterfaceType;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpLink;
@@ -89,11 +89,16 @@ import org.junit.Test;
 
 /** Tests of {@link OspfRoutingProcess} */
 public class OspfRoutingProcessTest {
-  private static final InterfaceAddress INACTIVE_ADDR = new InterfaceAddress("1.1.1.1/24");
-  private static final InterfaceAddress ACTIVE_ADDR_1 = new InterfaceAddress("2.2.2.2/24");
-  private static final InterfaceAddress ACTIVE_ADDR_2 = new InterfaceAddress("3.3.3.3/24");
-  private static final InterfaceAddress PASSIVE_ADDR = new InterfaceAddress("4.4.4.4/24");
-  private static final InterfaceAddress OSPF_DISABLED_ADDR = new InterfaceAddress("5.5.5.5/24");
+  private static final ConcreteInterfaceAddress INACTIVE_ADDR =
+      ConcreteInterfaceAddress.parse("1.1.1.1/24");
+  private static final ConcreteInterfaceAddress ACTIVE_ADDR_1 =
+      ConcreteInterfaceAddress.parse("2.2.2.2/24");
+  private static final ConcreteInterfaceAddress ACTIVE_ADDR_2 =
+      ConcreteInterfaceAddress.parse("3.3.3.3/24");
+  private static final ConcreteInterfaceAddress PASSIVE_ADDR =
+      ConcreteInterfaceAddress.parse("4.4.4.4/24");
+  private static final ConcreteInterfaceAddress OSPF_DISABLED_ADDR =
+      ConcreteInterfaceAddress.parse("5.5.5.5/24");
   private static final String HOSTNAME = "r1";
   private static final String VRF_NAME = "vrf";
   private static OspfArea AREA0_CONFIG;
@@ -227,7 +232,7 @@ public class OspfRoutingProcessTest {
         nf.interfaceBuilder()
             .setOwner(c)
             .setVrf(vrf)
-            .setAddress(new InterfaceAddress(Ip.parse("1.1.1.1"), 24))
+            .setAddress(ConcreteInterfaceAddress.create(Ip.parse("1.1.1.1"), 24))
             .build();
     i1.setOspfInboundDistributeListPolicy("policy");
 

@@ -28,12 +28,12 @@ import java.io.IOException;
 import java.util.Comparator;
 import java.util.List;
 import java.util.SortedMap;
+import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.FlowDisposition;
 import org.batfish.datamodel.Interface;
-import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpAccessListLine;
 import org.batfish.datamodel.IpProtocol;
@@ -105,7 +105,7 @@ public class TracerouteTest {
 
     // destination interface
     nf.interfaceBuilder()
-        .setAddress(new InterfaceAddress("1.1.1.0/31"))
+        .setAddress(ConcreteInterfaceAddress.parse("1.1.1.0/31"))
         .setOwner(c1)
         .setOutgoingFilter(
             nf.aclBuilder()
@@ -182,7 +182,7 @@ public class TracerouteTest {
     // set up interface
     Interface i1 =
         nf.interfaceBuilder()
-            .setAddress(new InterfaceAddress("1.0.0.1/24"))
+            .setAddress(ConcreteInterfaceAddress.parse("1.0.0.1/24"))
             .setOwner(c1)
             .setVrf(v1)
             .build();
@@ -203,7 +203,7 @@ public class TracerouteTest {
 
     // set up interface on N2
     nf.interfaceBuilder()
-        .setAddress(new InterfaceAddress("1.0.0.2/24"))
+        .setAddress(ConcreteInterfaceAddress.parse("1.0.0.2/24"))
         .setOwner(c2)
         .setVrf(v2)
         .setProxyArp(true)
@@ -267,7 +267,7 @@ public class TracerouteTest {
     // set up interface
     Interface i1 =
         nf.interfaceBuilder()
-            .setAddress(new InterfaceAddress("1.0.0.1/24"))
+            .setAddress(ConcreteInterfaceAddress.parse("1.0.0.1/24"))
             .setOwner(c1)
             .setVrf(v1)
             .build();
@@ -289,7 +289,7 @@ public class TracerouteTest {
 
     // set up interface on N2
     nf.interfaceBuilder()
-        .setAddress(new InterfaceAddress("1.0.0.2/24"))
+        .setAddress(ConcreteInterfaceAddress.parse("1.0.0.2/24"))
         .setOwner(c2)
         .setVrf(v2)
         .setProxyArp(true)
@@ -355,7 +355,7 @@ public class TracerouteTest {
     // destination interface
     Interface n1i1 =
         nf.interfaceBuilder()
-            .setAddress(new InterfaceAddress("1.0.0.1/24"))
+            .setAddress(ConcreteInterfaceAddress.parse("1.0.0.1/24"))
             .setOwner(c1)
             .setVrf(v1)
             .setProxyArp(true)
@@ -375,7 +375,7 @@ public class TracerouteTest {
     Vrf v2 = nf.vrfBuilder().setOwner(c2).build();
 
     nf.interfaceBuilder()
-        .setAddress(new InterfaceAddress("1.0.0.2/24"))
+        .setAddress(ConcreteInterfaceAddress.parse("1.0.0.2/24"))
         .setOwner(c2)
         .setVrf(v2)
         .setProxyArp(true)
@@ -383,7 +383,7 @@ public class TracerouteTest {
 
     Interface n2i2 =
         nf.interfaceBuilder()
-            .setAddress(new InterfaceAddress("1.0.0.129/" + mask))
+            .setAddress(ConcreteInterfaceAddress.parse("1.0.0.129/" + mask))
             .setOwner(c2)
             .setVrf(v2)
             .setProxyArp(true)
@@ -484,7 +484,7 @@ public class TracerouteTest {
     Vrf v1 = nf.vrfBuilder().setOwner(c1).build();
 
     nf.interfaceBuilder()
-        .setAddress(new InterfaceAddress("1.0.0.130/" + mask))
+        .setAddress(ConcreteInterfaceAddress.parse("1.0.0.130/" + mask))
         .setOwner(c1)
         .setVrf(v1)
         .setProxyArp(true)
@@ -492,7 +492,7 @@ public class TracerouteTest {
 
     Interface n1i1 =
         nf.interfaceBuilder()
-            .setAddress(new InterfaceAddress("2.0.0.1/24"))
+            .setAddress(ConcreteInterfaceAddress.parse("2.0.0.1/24"))
             .setOwner(c1)
             .setVrf(v1)
             .setProxyArp(true)
@@ -512,7 +512,7 @@ public class TracerouteTest {
     Vrf v2 = nf.vrfBuilder().setOwner(c2).build();
 
     nf.interfaceBuilder()
-        .setAddress(new InterfaceAddress("2.0.0.2/24"))
+        .setAddress(ConcreteInterfaceAddress.parse("2.0.0.2/24"))
         .setOwner(c2)
         .setVrf(v2)
         .setProxyArp(true)
@@ -520,7 +520,7 @@ public class TracerouteTest {
 
     Interface n2i1 =
         nf.interfaceBuilder()
-            .setAddress(new InterfaceAddress("1.0.0.129/24"))
+            .setAddress(ConcreteInterfaceAddress.parse("1.0.0.129/24"))
             .setOwner(c2)
             .setVrf(v2)
             .setProxyArp(true)
@@ -609,7 +609,7 @@ public class TracerouteTest {
 
     Interface n1i0 =
         nf.interfaceBuilder()
-            .setAddress(new InterfaceAddress("1.0.0.1/" + mask))
+            .setAddress(ConcreteInterfaceAddress.parse("1.0.0.1/" + mask))
             .setOwner(c1)
             .setVrf(v1)
             .setProxyArp(true)
@@ -629,7 +629,7 @@ public class TracerouteTest {
     Vrf v2 = nf.vrfBuilder().setOwner(c2).build();
 
     nf.interfaceBuilder()
-        .setAddress(new InterfaceAddress("1.0.0.2/" + mask))
+        .setAddress(ConcreteInterfaceAddress.parse("1.0.0.2/" + mask))
         .setOwner(c2)
         .setVrf(v2)
         .setProxyArp(true)
@@ -637,7 +637,7 @@ public class TracerouteTest {
 
     Interface n2i1 =
         nf.interfaceBuilder()
-            .setAddress(new InterfaceAddress("2.0.0.1/24"))
+            .setAddress(ConcreteInterfaceAddress.parse("2.0.0.1/24"))
             .setOwner(c2)
             .setVrf(v2)
             .setProxyArp(true)
@@ -657,7 +657,7 @@ public class TracerouteTest {
     Vrf v3 = nf.vrfBuilder().setOwner(c3).build();
 
     nf.interfaceBuilder()
-        .setAddress(new InterfaceAddress("2.0.0.2/24"))
+        .setAddress(ConcreteInterfaceAddress.parse("2.0.0.2/24"))
         .setOwner(c3)
         .setVrf(v3)
         .setProxyArp(true)
@@ -665,7 +665,7 @@ public class TracerouteTest {
 
     Interface n3i1 =
         nf.interfaceBuilder()
-            .setAddress(new InterfaceAddress("1.0.0.3/24"))
+            .setAddress(ConcreteInterfaceAddress.parse("1.0.0.3/24"))
             .setOwner(c3)
             .setVrf(v3)
             .setProxyArp(true)
@@ -752,8 +752,8 @@ public class TracerouteTest {
     Vrf vrf = nf.vrfBuilder().setOwner(config).build();
     Interface.Builder ifaceBuilder =
         nf.interfaceBuilder().setActive(true).setOwner(config).setVrf(vrf);
-    Interface lo0 = ifaceBuilder.setAddress(new InterfaceAddress("5.5.5.5/32")).build();
-    Interface lo1 = ifaceBuilder.setAddress(new InterfaceAddress("6.6.6.6/32")).build();
+    Interface lo0 = ifaceBuilder.setAddress(ConcreteInterfaceAddress.parse("5.5.5.5/32")).build();
+    Interface lo1 = ifaceBuilder.setAddress(ConcreteInterfaceAddress.parse("6.6.6.6/32")).build();
     Builder routeBuilder = StaticRoute.builder().setNetwork(dst).setAdministrativeCost(1);
     vrf.setStaticRoutes(
         ImmutableSortedSet.of(
@@ -829,7 +829,7 @@ public class TracerouteTest {
 
     // set up interface
     nf.interfaceBuilder()
-        .setAddress(new InterfaceAddress("1.0.0.1/30"))
+        .setAddress(ConcreteInterfaceAddress.parse("1.0.0.1/30"))
         .setOwner(c1)
         .setVrf(v1)
         .build();
@@ -891,7 +891,7 @@ public class TracerouteTest {
     // set up interface
     Interface i1 =
         nf.interfaceBuilder()
-            .setAddress(new InterfaceAddress("1.0.0.1/30"))
+            .setAddress(ConcreteInterfaceAddress.parse("1.0.0.1/30"))
             .setOwner(c1)
             .setVrf(v1)
             .build();
@@ -902,7 +902,7 @@ public class TracerouteTest {
 
     Vrf v2 = nf.vrfBuilder().setOwner(c2).build();
     nf.interfaceBuilder()
-        .setAddresses(new InterfaceAddress("2.0.0.2/31"))
+        .setAddresses(ConcreteInterfaceAddress.parse("2.0.0.2/31"))
         .setOwner(c2)
         .setVrf(v2)
         .build();

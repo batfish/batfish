@@ -19,11 +19,11 @@ import java.util.stream.Stream;
 import net.sf.javabdd.BDD;
 import org.batfish.common.bdd.BDDPacket;
 import org.batfish.common.bdd.IpSpaceToBDD;
+import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Configuration.Builder;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.Interface;
-import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.StaticRoute;
@@ -72,13 +72,15 @@ public final class BDDLoopDetectionAnalysisTest {
         ib.setOwner(srcNode)
             .setVrf(srcVrf)
             .setAddress(
-                new InterfaceAddress(LINK_1_NETWORK.getStartIp(), LINK_1_NETWORK.getPrefixLength()))
+                ConcreteInterfaceAddress.create(
+                    LINK_1_NETWORK.getStartIp(), LINK_1_NETWORK.getPrefixLength()))
             .build();
     Interface dstNodeIface1 =
         ib.setOwner(dstNode)
             .setVrf(dstVrf)
             .setAddress(
-                new InterfaceAddress(LINK_1_NETWORK.getEndIp(), LINK_1_NETWORK.getPrefixLength()))
+                ConcreteInterfaceAddress.create(
+                    LINK_1_NETWORK.getEndIp(), LINK_1_NETWORK.getPrefixLength()))
             .build();
 
     // second link
@@ -86,13 +88,15 @@ public final class BDDLoopDetectionAnalysisTest {
         ib.setOwner(srcNode)
             .setVrf(srcVrf)
             .setAddress(
-                new InterfaceAddress(LINK_2_NETWORK.getStartIp(), LINK_2_NETWORK.getPrefixLength()))
+                ConcreteInterfaceAddress.create(
+                    LINK_2_NETWORK.getStartIp(), LINK_2_NETWORK.getPrefixLength()))
             .build();
     Interface dstNodeIface2 =
         ib.setOwner(dstNode)
             .setVrf(dstVrf)
             .setAddress(
-                new InterfaceAddress(LINK_2_NETWORK.getEndIp(), LINK_2_NETWORK.getPrefixLength()))
+                ConcreteInterfaceAddress.create(
+                    LINK_2_NETWORK.getEndIp(), LINK_2_NETWORK.getPrefixLength()))
             .build();
 
     StaticRoute.Builder bld = StaticRoute.builder().setAdministrativeCost(1);

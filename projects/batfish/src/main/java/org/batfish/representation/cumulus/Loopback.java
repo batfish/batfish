@@ -5,7 +5,7 @@ import java.util.LinkedList;
 import java.util.List;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import org.batfish.datamodel.InterfaceAddress;
+import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Ip;
 
 /** Loopback adapter */
@@ -13,7 +13,7 @@ public class Loopback implements Serializable {
 
   private static final long serialVersionUID = 1L;
 
-  private final @Nonnull List<InterfaceAddress> _addresses;
+  private final @Nonnull List<ConcreteInterfaceAddress> _addresses;
   private @Nullable Ip _clagVxlanAnycastIp;
   private boolean _configured;
 
@@ -21,7 +21,7 @@ public class Loopback implements Serializable {
     _addresses = new LinkedList<>();
   }
 
-  public @Nonnull List<InterfaceAddress> getAddresses() {
+  public @Nonnull List<ConcreteInterfaceAddress> getAddresses() {
     return _addresses;
   }
 

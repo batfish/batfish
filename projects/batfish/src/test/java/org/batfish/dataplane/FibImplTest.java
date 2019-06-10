@@ -17,13 +17,13 @@ import com.google.common.collect.ImmutableSortedSet;
 import java.io.IOException;
 import java.util.Set;
 import org.batfish.datamodel.AbstractRoute;
+import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.Fib;
 import org.batfish.datamodel.FibEntry;
 import org.batfish.datamodel.FibImpl;
 import org.batfish.datamodel.Interface;
-import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.Prefix;
@@ -47,7 +47,8 @@ public class FibImplTest {
   private static final Ip DST_IP = Ip.parse("3.3.3.3");
   private static final String NODE1 = "node1";
   private static final String FAST_ETHERNET_0 = "FastEthernet0/0";
-  private static final InterfaceAddress NODE1_PHYSICAL_NETWORK = new InterfaceAddress("2.0.0.1/8");
+  private static final ConcreteInterfaceAddress NODE1_PHYSICAL_NETWORK =
+      ConcreteInterfaceAddress.parse("2.0.0.1/8");
   private static final Ip EXTERNAL_IP = Ip.parse("7.7.7.7");
 
   private Interface.Builder _ib;
@@ -79,9 +80,9 @@ public class FibImplTest {
     String iface3 = "iface3";
     Ip ip1 = Ip.parse("1.1.1.0");
     Ip ip2 = Ip.parse("2.2.2.0");
-    _ib.setName(iface1).setAddress(new InterfaceAddress(ip1, 24)).build();
-    _ib.setName(iface2).setAddress(new InterfaceAddress(ip2, 24)).build();
-    _ib.setName(iface3).setAddress(new InterfaceAddress(ip2, 24)).build();
+    _ib.setName(iface1).setAddress(ConcreteInterfaceAddress.create(ip1, 24)).build();
+    _ib.setName(iface2).setAddress(ConcreteInterfaceAddress.create(ip2, 24)).build();
+    _ib.setName(iface3).setAddress(ConcreteInterfaceAddress.create(ip2, 24)).build();
 
     Batfish batfish =
         BatfishTestUtils.getBatfish(ImmutableSortedMap.of(_config.getHostname(), _config), folder);

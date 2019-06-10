@@ -46,6 +46,7 @@ import org.batfish.datamodel.AsPathAccessList;
 import org.batfish.datamodel.AsPathAccessListLine;
 import org.batfish.datamodel.CommunityList;
 import org.batfish.datamodel.CommunityListLine;
+import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.EmptyIpSpace;
@@ -56,7 +57,6 @@ import org.batfish.datamodel.IkeKeyType;
 import org.batfish.datamodel.IkePhase1Key;
 import org.batfish.datamodel.IkePhase1Policy;
 import org.batfish.datamodel.IkePhase1Proposal;
-import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Ip6;
 import org.batfish.datamodel.Ip6AccessList;
@@ -146,7 +146,7 @@ class CiscoConversions {
       if (!iface.getActive()) {
         continue;
       }
-      for (InterfaceAddress address : iface.getAllAddresses()) {
+      for (ConcreteInterfaceAddress address : iface.getAllAddresses()) {
         Ip ip = address.getIp();
         if (highestIp.asLong() < ip.asLong()) {
           highestIp = ip;
@@ -487,7 +487,7 @@ class CiscoConversions {
 
   /**
    * Computes a mapping of primary {@link Ip}s to the names of interfaces owning them. Filters out
-   * the interfaces having no primary {@link InterfaceAddress}
+   * the interfaces having no primary {@link ConcreteInterfaceAddress}
    */
   private static Map<Ip, String> computeIpToIfaceNameMap(Map<String, Interface> interfaces) {
     Map<Ip, String> ipToIfaceNameMap = new HashMap<>();
@@ -892,7 +892,7 @@ class CiscoConversions {
 
     for (org.batfish.datamodel.Interface iface : referencingInterfaces) {
       // skipping interfaces with no ip-address
-      if (iface.getAddress() == null) {
+      if (iface.getConcreteAddress() == null) {
         w.redFlag(
             String.format(
                 "Interface %s with declared crypto-map %s has no ip-address",
@@ -944,7 +944,7 @@ class CiscoConversions {
     newIpsecPeerConfigBuilder
         .setSourceInterface(iface.getName())
         .setIpsecPolicy(ipsecPhase2Policy)
-        .setLocalAddress(iface.getAddress().getIp());
+        .setLocalAddress(iface.getConcreteAddress().getIp());
 
     setIpsecPeerConfigPolicyAccessList(c, cryptoMapEntry, newIpsecPeerConfigBuilder, w);
 

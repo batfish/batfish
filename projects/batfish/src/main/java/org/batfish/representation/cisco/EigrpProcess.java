@@ -9,7 +9,7 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import org.batfish.datamodel.InterfaceAddress;
+import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.Prefix;
@@ -48,7 +48,7 @@ public class EigrpProcess implements Serializable {
 
   public void computeNetworks(Collection<Interface> interfaces) {
     for (Interface i : interfaces) {
-      InterfaceAddress address = i.getAddress();
+      ConcreteInterfaceAddress address = i.getAddress();
       if (address == null) {
         continue;
       }

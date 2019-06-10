@@ -18,6 +18,8 @@ For many parameters types, there is a "resolver" question that may be used to le
 
 * [`locationSpec`](#location-specifier)
 
+* [`namedStructureSpec`](#named-structure-specifier)
+
 * [`nodeSpec`](#node-specifier)
 
 * [`routingPolicySpec`](#routing-policy-specifier)
@@ -270,6 +272,16 @@ locationInterface :=
 * `resolveIpsOfLocationSpecifier` shows the mapping from locations to IPs that will be used in `traceroute` and   `reachability` questions when IPs are not explicitly specified. 
 
 
+## Named Structure Specifier
+
+A specification for a set of structure types in Batfish's vendor independent model. This specifier accepts a regex over the structure types listed below. The regex should not be surrounded by `/`s.
+
+
+#### Named Structure Types 
+
+Batfish has the following structure types: AS_PATH_ACCESS_LIST, AUTHENTICATION_KEY_CHAIN, COMMUNITY_LIST, IKE_PHASE1_KEYS, IKE_PHASE1_POLICIES, IKE_PHASE1_PROPOSALS, IP_ACCESS_LIST, IP_6_ACCESS_LIST, IPSEC_PEER_CONFIGS, IPSEC_PHASE2_POLICIES, IPSEC_PHASE2_PROPOSALS, PBR_POLICY, ROUTE_FILTER_LIST, ROUTE_6_FILTER_LIST, ROUTING_POLICY, VRF, ZONE.
+
+
 ## Node Specifier
 
 A specification for nodes in the network.
@@ -278,7 +290,7 @@ A specification for nodes in the network.
 
 * `@deviceType(type1)` indicates all nodes of the type 'type1'. The types of devices are listed [here](#device-types).
 
-* `@role(role, dim)` indicates all nodes with role name 'role' in dimension name 'dim'.
+* `@role(dim, role)` indicates all nodes with role name 'role' in dimension name 'dim'.
 
 #### Node Specifier Grammar
 
@@ -294,7 +306,7 @@ nodeTerm :=
 
 nodeFunc :=
     <b>@deviceType(</b><i>device-type</i><b>)</b>
-    | <b>@role(</b>&lt;<i>role-name</i>&gt;<b>,</b> &lt;<i>dimension-name</i>&gt;<b>)</b>
+    | <b>@role(</b>&lt;<i>dimension-name</i>&gt;<b>,</b> &lt;<i>role-name</i>&gt;<b>)</b>
 </pre>
 
 #### Node Specifier Resolver

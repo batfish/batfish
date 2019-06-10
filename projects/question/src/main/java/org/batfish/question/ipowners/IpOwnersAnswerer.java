@@ -61,7 +61,7 @@ class IpOwnersAnswerer extends Answerer {
             interfaceSet.forEach(
                 iface -> {
                   iface
-                      .getAllAddresses()
+                      .getAllConcreteAddresses()
                       .forEach(
                           address -> {
                             if (ipNodeOwners.getOrDefault(address.getIp(), ImmutableSet.of()).size()

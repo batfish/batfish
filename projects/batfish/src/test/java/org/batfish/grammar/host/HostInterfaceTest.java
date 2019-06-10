@@ -13,6 +13,7 @@ import static org.junit.Assert.assertThat;
 import java.io.IOException;
 import org.batfish.common.Warnings;
 import org.batfish.common.util.BatfishObjectMapper;
+import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.Interface;
@@ -75,7 +76,7 @@ public class HostInterfaceTest {
   @Test
   public void testShared() throws IOException {
     Ip sharedIp = Ip.parse("1.0.0.1");
-    InterfaceAddress sharedAddress = new InterfaceAddress(sharedIp, 24);
+    InterfaceAddress sharedAddress = ConcreteInterfaceAddress.create(sharedIp, 24);
     Prefix nonShared1Prefix = Prefix.parse("2.0.0.2/24");
     Prefix nonShared2Prefix = Prefix.parse("3.0.0.2/24");
     String ifaceSharedText =

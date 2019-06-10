@@ -91,7 +91,7 @@ public class InterfacePropertySpecifier extends PropertySpecifier {
           .put(
               ALL_PREFIXES,
               new PropertyDescriptor<>(
-                  Interface::getAllAddresses,
+                  Interface::getAllConcreteAddresses,
                   Schema.list(Schema.STRING),
                   "All IPv4 addresses assigned to the interface"))
           .put(
