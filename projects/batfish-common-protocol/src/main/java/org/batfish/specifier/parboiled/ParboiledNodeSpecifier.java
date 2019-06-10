@@ -2,6 +2,7 @@ package org.batfish.specifier.parboiled;
 
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
+import java.util.NoSuchElementException;
 import java.util.Objects;
 import java.util.Set;
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -51,9 +52,20 @@ final class ParboiledNodeSpecifier implements NodeSpecifier {
 
     @Override
     public Set<String> visitRoleNodeAstNode(RoleNodeAstNode roleNodeAstNode) {
-      return new RoleNameNodeSpecifier(
-              roleNodeAstNode.getRoleName(), roleNodeAstNode.getDimensionName())
-          .resolve(_ctxt);
+      // Because we changed the input on June 8 2019 from (role, dim) to (dim, role), we
+      // first interpret the user input as (dim, role) if the dim exists. Otherwise, we interpret
+      // it is as (role, dim)
+      if (_ctxt.getNodeRoleDimension(roleNodeAstNode.getDimensionName()).isPresent()) {
+        return new RoleNameNodeSpecifier(
+                roleNodeAstNode.getRoleName(), roleNodeAstNode.getDimensionName())
+            .resolve(_ctxt);
+      } else if (_ctxt.getNodeRoleDimension(roleNodeAstNode.getRoleName()).isPresent()) {
+        return new RoleNameNodeSpecifier(
+                roleNodeAstNode.getDimensionName(), roleNodeAstNode.getRoleName())
+            .resolve(_ctxt);
+      }
+      throw new NoSuchElementException(
+          "Node role dimension " + roleNodeAstNode.getDimensionName() + " does not exist.");
     }
 
     @Override

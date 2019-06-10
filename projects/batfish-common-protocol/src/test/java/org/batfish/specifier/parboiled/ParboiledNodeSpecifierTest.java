@@ -43,8 +43,25 @@ public class ParboiledNodeSpecifierTest {
 
   @Test
   public void testResolveRole() {
-    String roleName = "role";
     String dimensionName = "dim";
+    String roleName = "role";
+    _ctxtB.setNodeRoleDimensions(
+        ImmutableSortedSet.of(
+            NodeRoleDimension.builder()
+                .setName(dimensionName)
+                .setRoles(ImmutableSet.of(new NodeRole(roleName, "node1.*")))
+                .build()));
+    assertThat(
+        new ParboiledNodeSpecifier(new RoleNodeAstNode(dimensionName, roleName))
+            .resolve(_ctxtB.build()),
+        equalTo(ImmutableSet.of("node1")));
+  }
+
+  /** Tests for the old order @role(role, dimension) */
+  @Test
+  public void testResolveRoleDeprecated() {
+    String dimensionName = "dim";
+    String roleName = "role";
     _ctxtB.setNodeRoleDimensions(
         ImmutableSortedSet.of(
             NodeRoleDimension.builder()

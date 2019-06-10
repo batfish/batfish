@@ -45,7 +45,7 @@ public final class NodeRoleDimension implements Comparable<NodeRoleDimension> {
     }
 
     public @Nonnull NodeRoleDimension build() {
-      checkArgument(_name != null, "Name of node role cannot be null");
+      checkArgument(_name != null, "Name of node role dimension cannot be null");
       checkArgument(
           _type != NodeRoleDimension.Type.AUTO || _name.startsWith(AUTO_DIMENSION_PREFIX),
           "Name for a AUTO role dimension must begin with: %s",
@@ -78,6 +78,11 @@ public final class NodeRoleDimension implements Comparable<NodeRoleDimension> {
 
   public static @Nonnull Builder builder() {
     return new Builder();
+  }
+
+  @Nonnull
+  public static Builder builder(String name) {
+    return new Builder().setName(name);
   }
 
   public enum Type {
