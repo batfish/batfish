@@ -539,7 +539,7 @@ public class IspModelingUtilsTest {
             .setStatements(
                 Collections.singletonList(
                     new If(
-                        new Conjunction(ImmutableList.of(new MatchProtocol(RoutingProtocol.BGP))),
+                        new MatchProtocol(RoutingProtocol.BGP),
                         ImmutableList.of(Statements.ReturnTrue.toStaticStatement()))))
             .build();
     assertThat(ispRoutingPolicy, equalTo(expectedRoutingPolicy));
