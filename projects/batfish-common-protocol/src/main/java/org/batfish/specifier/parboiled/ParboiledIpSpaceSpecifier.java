@@ -134,7 +134,13 @@ public final class ParboiledIpSpaceSpecifier implements IpSpaceSpecifier {
     _ast = ast;
   }
 
-  public ParboiledIpSpaceSpecifier(String input) {
+  /**
+   * Returns an {@link IpSpaceSpecifier} based on {@code input} which is parsed as {@link
+   * Grammar#IP_SPACE_SPECIFIER}.
+   *
+   * @throws IllegalArgumentException if the parsing fails or does not produce the expected AST
+   */
+  public static ParboiledIpSpaceSpecifier parse(String input) {
     ParsingResult<AstNode> result =
         new ReportingParseRunner<AstNode>(
                 Parser.instance().getInputRule(Grammar.IP_SPACE_SPECIFIER))
@@ -153,7 +159,7 @@ public final class ParboiledIpSpaceSpecifier implements IpSpaceSpecifier {
     checkArgument(
         ast instanceof IpSpaceAstNode, "ParboiledIpSpaceSpecifier requires an IpSpace input");
 
-    _ast = (IpSpaceAstNode) ast;
+    return new ParboiledIpSpaceSpecifier((IpSpaceAstNode) ast);
   }
 
   @Override

@@ -160,7 +160,13 @@ public final class ParboiledInterfaceSpecifier implements InterfaceSpecifier {
     _ast = ast;
   }
 
-  public ParboiledInterfaceSpecifier(String input) {
+  /**
+   * Returns an {@link InterfaceSpecifier} based on {@code input} which is parsed as {@link
+   * Grammar#INTERFACE_SPECIFIER}.
+   *
+   * @throws IllegalArgumentException if the parsing fails or does not produce the expected AST
+   */
+  public static ParboiledInterfaceSpecifier parse(String input) {
     ParsingResult<AstNode> result =
         new ReportingParseRunner<AstNode>(
                 Parser.instance().getInputRule(Grammar.INTERFACE_SPECIFIER))
@@ -180,7 +186,7 @@ public final class ParboiledInterfaceSpecifier implements InterfaceSpecifier {
         ast instanceof InterfaceAstNode,
         "ParboiledInterfaceSpecifier requires an InterfaceSpecifier input");
 
-    _ast = (InterfaceAstNode) ast;
+    return new ParboiledInterfaceSpecifier((InterfaceAstNode) ast);
   }
 
   @Override

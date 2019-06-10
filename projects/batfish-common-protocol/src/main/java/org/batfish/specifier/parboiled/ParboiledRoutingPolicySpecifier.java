@@ -81,7 +81,13 @@ public final class ParboiledRoutingPolicySpecifier implements RoutingPolicySpeci
     _ast = ast;
   }
 
-  public ParboiledRoutingPolicySpecifier(String input) {
+  /**
+   * Returns an {@link RoutingPolicySpecifier} based on {@code input} which is parsed as {@link
+   * Grammar#ROUTING_POLICY_SPECIFIER}.
+   *
+   * @throws IllegalArgumentException if the parsing fails or does not produce the expected AST
+   */
+  public static ParboiledRoutingPolicySpecifier parse(String input) {
     ParsingResult<AstNode> result =
         new ReportingParseRunner<AstNode>(
                 Parser.instance().getInputRule(Grammar.ROUTING_POLICY_SPECIFIER))
@@ -102,7 +108,7 @@ public final class ParboiledRoutingPolicySpecifier implements RoutingPolicySpeci
         ast instanceof RoutingPolicyAstNode,
         "ParboiledRoutingPolicySpecifier requires an RoutingPolicySpecifier input");
 
-    _ast = (RoutingPolicyAstNode) ast;
+    return new ParboiledRoutingPolicySpecifier((RoutingPolicyAstNode) ast);
   }
 
   @Override

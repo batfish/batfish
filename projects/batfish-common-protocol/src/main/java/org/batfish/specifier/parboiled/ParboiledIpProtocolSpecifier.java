@@ -94,7 +94,13 @@ public final class ParboiledIpProtocolSpecifier implements IpProtocolSpecifier {
     _ast = ast;
   }
 
-  public ParboiledIpProtocolSpecifier(String input) {
+  /**
+   * Returns an {@link IpProtocolSpecifier} based on {@code input} which is parsed as {@link
+   * Grammar#IP_PROTOCOL_SPECIFIER}.
+   *
+   * @throws IllegalArgumentException if the parsing fails or does not produce the expected AST
+   */
+  public static ParboiledIpProtocolSpecifier parse(String input) {
     ParsingResult<AstNode> result =
         new ReportingParseRunner<AstNode>(
                 Parser.instance().getInputRule(Grammar.IP_PROTOCOL_SPECIFIER))
@@ -114,7 +120,7 @@ public final class ParboiledIpProtocolSpecifier implements IpProtocolSpecifier {
         ast instanceof IpProtocolAstNode,
         "ParboiledIpProtocolSpecifier requires an IP protocol specifier input");
 
-    _ast = (IpProtocolAstNode) ast;
+    return new ParboiledIpProtocolSpecifier((IpProtocolAstNode) ast);
   }
 
   @Override

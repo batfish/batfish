@@ -93,7 +93,13 @@ public final class ParboiledLocationSpecifier implements LocationSpecifier {
     _ast = ast;
   }
 
-  public ParboiledLocationSpecifier(String input) {
+  /**
+   * Returns an {@link LocationSpecifier} based on {@code input} which is parsed as {@link
+   * Grammar#LOCATION_SPECIFIER}.
+   *
+   * @throws IllegalArgumentException if the parsing fails or does not produce the expected AST
+   */
+  public static ParboiledLocationSpecifier parse(String input) {
 
     ParsingResult<AstNode> result =
         new ReportingParseRunner<AstNode>(
@@ -114,7 +120,7 @@ public final class ParboiledLocationSpecifier implements LocationSpecifier {
         ast instanceof LocationAstNode,
         "ParboiledLocationSpecifier requires a LocationSpecifier input");
 
-    _ast = (LocationAstNode) ast;
+    return new ParboiledLocationSpecifier((LocationAstNode) ast);
   }
 
   @Override

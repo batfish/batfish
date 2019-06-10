@@ -47,7 +47,13 @@ public final class ParboiledApplicationSpecifier implements ApplicationSpecifier
     _ast = ast;
   }
 
-  public ParboiledApplicationSpecifier(String input) {
+  /**
+   * Returns an {@link ApplicationSpecifier} based on {@code input} which is parsed as {@link
+   * Grammar#APPLICATION_SPECIFIER}.
+   *
+   * @throws IllegalArgumentException if the parsing fails or does not produce the expected AST
+   */
+  public static ParboiledApplicationSpecifier parse(String input) {
     ParsingResult<AstNode> result =
         new ReportingParseRunner<AstNode>(
                 Parser.instance().getInputRule(Grammar.APPLICATION_SPECIFIER))
@@ -67,7 +73,7 @@ public final class ParboiledApplicationSpecifier implements ApplicationSpecifier
         ast instanceof ApplicationAstNode,
         "ParboiledApplicationSpecifier requires an ApplicationSpecifier input");
 
-    _ast = (ApplicationAstNode) ast;
+    return new ParboiledApplicationSpecifier((ApplicationAstNode) ast);
   }
 
   @Override

@@ -58,7 +58,13 @@ public final class ParboiledNamedStructureSpecifier implements NamedStructureSpe
     _ast = ast;
   }
 
-  public ParboiledNamedStructureSpecifier(String input) {
+  /**
+   * Returns an {@link NamedStructureSpecifier} based on {@code input} which is parsed as {@link
+   * Grammar#NAMED_STRUCTURE_SPECIFIER}.
+   *
+   * @throws IllegalArgumentException if the parsing fails or does not produce the expected AST
+   */
+  public static ParboiledNamedStructureSpecifier parse(String input) {
     ParsingResult<AstNode> result =
         new ReportingParseRunner<AstNode>(
                 Parser.instance().getInputRule(Grammar.NAMED_STRUCTURE_SPECIFIER))
@@ -78,7 +84,7 @@ public final class ParboiledNamedStructureSpecifier implements NamedStructureSpe
         ast instanceof NamedStructureAstNode,
         "ParboiledNamedStructureSpecifierFactory requires an NamedStructureSpecifier input");
 
-    _ast = (NamedStructureAstNode) ast;
+    return new ParboiledNamedStructureSpecifier((NamedStructureAstNode) ast);
   }
 
   @Override

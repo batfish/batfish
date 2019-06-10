@@ -92,7 +92,13 @@ public final class ParboiledNodeSpecifier implements NodeSpecifier {
     _ast = ast;
   }
 
-  public ParboiledNodeSpecifier(String input) {
+  /**
+   * Returns an {@link NodeSpecifier} based on {@code input} which is parsed as {@link
+   * Grammar#NODE_SPECIFIER}.
+   *
+   * @throws IllegalArgumentException if the parsing fails or does not produce the expected AST
+   */
+  public static ParboiledNodeSpecifier parse(String input) {
     ParsingResult<AstNode> result =
         new ReportingParseRunner<AstNode>(Parser.instance().getInputRule(Grammar.NODE_SPECIFIER))
             .run(input);
@@ -111,7 +117,7 @@ public final class ParboiledNodeSpecifier implements NodeSpecifier {
     checkArgument(
         ast instanceof NodeAstNode, "ParboiledNodeSpecifier requires a NodeSpecifier input");
 
-    _ast = (NodeAstNode) ast;
+    return new ParboiledNodeSpecifier((NodeAstNode) ast);
   }
 
   @Override

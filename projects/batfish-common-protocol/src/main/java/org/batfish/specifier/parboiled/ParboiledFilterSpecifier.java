@@ -119,7 +119,13 @@ public final class ParboiledFilterSpecifier implements FilterSpecifier {
     _ast = ast;
   }
 
-  public ParboiledFilterSpecifier(String input) {
+  /**
+   * Returns an {@link FilterSpecifier} based on {@code input} which is parsed as {@link
+   * Grammar#FILTER_SPECIFIER}.
+   *
+   * @throws IllegalArgumentException if the parsing fails or does not produce the expected AST
+   */
+  public static ParboiledFilterSpecifier parse(String input) {
     ParsingResult<AstNode> result =
         new ReportingParseRunner<AstNode>(Parser.instance().getInputRule(Grammar.FILTER_SPECIFIER))
             .run(input);
@@ -137,7 +143,7 @@ public final class ParboiledFilterSpecifier implements FilterSpecifier {
     checkArgument(
         ast instanceof FilterAstNode, "ParboiledFilterSpecifier requires an FilterSpecifier input");
 
-    _ast = (FilterAstNode) ast;
+    return new ParboiledFilterSpecifier((FilterAstNode) ast);
   }
 
   @Override

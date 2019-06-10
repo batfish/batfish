@@ -34,7 +34,7 @@ public final class SpecifierFactories {
     switch (version) {
       case V1:
       case V2:
-        return new ParboiledApplicationSpecifier(input);
+        return ParboiledApplicationSpecifier.parse(input);
       default:
         throw new IllegalStateException("Unhandled grammar version " + version);
     }
@@ -45,7 +45,7 @@ public final class SpecifierFactories {
       case V1:
         throw new IllegalArgumentException("V1 filter grammar has been nixed");
       case V2:
-        return new ParboiledFilterSpecifier(input);
+        return ParboiledFilterSpecifier.parse(input);
       default:
         throw new IllegalStateException("Unhandled grammar version " + version);
     }
@@ -56,7 +56,7 @@ public final class SpecifierFactories {
       case V1:
         throw new IllegalArgumentException("V1 interface grammar has been nixed");
       case V2:
-        return new ParboiledInterfaceSpecifier(input);
+        return ParboiledInterfaceSpecifier.parse(input);
       default:
         throw new IllegalStateException("Unhandled grammar version " + version);
     }
@@ -66,7 +66,7 @@ public final class SpecifierFactories {
     switch (version) {
       case V1:
       case V2:
-        return new ParboiledIpProtocolSpecifier(input);
+        return ParboiledIpProtocolSpecifier.parse(input);
       default:
         throw new IllegalStateException("Unhandled grammar version " + version);
     }
@@ -77,7 +77,7 @@ public final class SpecifierFactories {
       case V1:
         throw new IllegalArgumentException("V1 IpSpace grammar has been nixed");
       case V2:
-        return new ParboiledIpSpaceSpecifier(input);
+        return ParboiledIpSpaceSpecifier.parse(input);
       default:
         throw new IllegalStateException("Unhandled grammar version " + version);
     }
@@ -88,7 +88,7 @@ public final class SpecifierFactories {
       case V1:
         throw new IllegalArgumentException("V1 location grammar has been nixed");
       case V2:
-        return new ParboiledLocationSpecifier(input);
+        return ParboiledLocationSpecifier.parse(input);
       default:
         throw new IllegalStateException("Unhandled grammar version " + version);
     }
@@ -98,7 +98,7 @@ public final class SpecifierFactories {
     switch (version) {
       case V1:
       case V2:
-        return new ParboiledNamedStructureSpecifier(input);
+        return ParboiledNamedStructureSpecifier.parse(input);
       default:
         throw new IllegalStateException("Unhandled grammar version " + version);
     }
@@ -109,7 +109,7 @@ public final class SpecifierFactories {
       case V1:
         throw new IllegalArgumentException("V1 grammar has been completely removed");
       case V2:
-        return new ParboiledNodeSpecifier(input);
+        return ParboiledNodeSpecifier.parse(input);
       default:
         throw new IllegalStateException("Unhandled grammar version " + version);
     }
@@ -119,7 +119,7 @@ public final class SpecifierFactories {
     switch (version) {
       case V1:
       case V2:
-        return new ParboiledRoutingPolicySpecifier(input);
+        return ParboiledRoutingPolicySpecifier.parse(input);
       default:
         throw new IllegalStateException("Unhandled grammar version " + version);
     }
