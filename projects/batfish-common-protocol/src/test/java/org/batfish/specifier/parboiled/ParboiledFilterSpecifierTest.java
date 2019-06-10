@@ -12,7 +12,9 @@ import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpAccessListLine;
 import org.batfish.datamodel.NetworkFactory;
 import org.batfish.specifier.MockSpecifierContext;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 
 /** Tests for {@link ParboiledFilterSpecifier} */
 public class ParboiledFilterSpecifierTest {
@@ -152,5 +154,21 @@ public class ParboiledFilterSpecifierTest {
                     new NameFilterAstNode("filter1"), new NameFilterAstNode("filter2")))
             .resolve(_node0Name, _ctxt),
         equalTo(ImmutableSet.of(_filter0_1, _filter0_2)));
+  }
+
+  @Rule public ExpectedException _thrown = ExpectedException.none();
+
+  @Test
+  public void testParseBadInput() {
+    _thrown.expect(IllegalArgumentException.class);
+    _thrown.expectMessage("Error parsing");
+    ParboiledFilterSpecifier.parse("@connected");
+  }
+
+  @Test
+  public void testParseGoodInput() {
+    assertThat(
+        ParboiledFilterSpecifier.parse("filter0"),
+        equalTo(new ParboiledFilterSpecifier(new NameFilterAstNode("filter0"))));
   }
 }

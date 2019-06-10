@@ -7,7 +7,9 @@ import static org.junit.Assert.assertThat;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
 import org.batfish.datamodel.IpProtocol;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 
 /** Tests for {@link ParboiledIpProtocolSpecifier} */
 public class ParboiledIpProtocolSpecifierTest {
@@ -55,5 +57,21 @@ public class ParboiledIpProtocolSpecifierTest {
                     new IpProtocolIpProtocolAstNode("tcp"), new NotIpProtocolAstNode("udp")))
             .resolve(),
         equalTo(ImmutableSet.of(IpProtocol.TCP)));
+  }
+
+  @Rule public ExpectedException _thrown = ExpectedException.none();
+
+  @Test
+  public void testParseBadInput() {
+    _thrown.expect(IllegalArgumentException.class);
+    _thrown.expectMessage("Error parsing");
+    ParboiledIpProtocolSpecifier.parse("@..");
+  }
+
+  @Test
+  public void testParseGoodInput() {
+    assertThat(
+        ParboiledIpProtocolSpecifier.parse("tcp"),
+        equalTo(new ParboiledIpProtocolSpecifier(new IpProtocolIpProtocolAstNode("tcp"))));
   }
 }

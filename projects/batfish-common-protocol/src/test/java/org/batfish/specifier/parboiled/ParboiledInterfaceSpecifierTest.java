@@ -22,7 +22,9 @@ import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.referencelibrary.InterfaceGroup;
 import org.batfish.referencelibrary.ReferenceBook;
 import org.batfish.specifier.MockSpecifierContext;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 
 public class ParboiledInterfaceSpecifierTest {
 
@@ -191,5 +193,21 @@ public class ParboiledInterfaceSpecifierTest {
     assertThat(
         new ParboiledInterfaceSpecifier(new ZoneInterfaceAstNode("zone1")).resolve(_nodes, _ctxt),
         containsInAnyOrder(new NodeInterfacePair(_iface11), new NodeInterfacePair(_iface2)));
+  }
+
+  @Rule public ExpectedException _thrown = ExpectedException.none();
+
+  @Test
+  public void testParseBadInput() {
+    _thrown.expect(IllegalArgumentException.class);
+    _thrown.expectMessage("Error parsing");
+    ParboiledInterfaceSpecifier.parse("@connected");
+  }
+
+  @Test
+  public void testParseGoodInput() {
+    assertThat(
+        ParboiledInterfaceSpecifier.parse("eth0"),
+        equalTo(new ParboiledInterfaceSpecifier(new NameInterfaceAstNode("eth0"))));
   }
 }
