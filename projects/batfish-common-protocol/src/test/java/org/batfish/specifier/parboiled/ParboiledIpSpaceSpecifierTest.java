@@ -148,16 +148,16 @@ public class ParboiledIpSpaceSpecifierTest {
   @Rule public ExpectedException _thrown = ExpectedException.none();
 
   @Test
-  public void testBuildIpSpaceSpecifierBadInput() {
+  public void testParseBadInput() {
     _thrown.expect(IllegalArgumentException.class);
     _thrown.expectMessage("Error parsing");
-    new ParboiledIpSpaceSpecifier("@..");
+    ParboiledIpSpaceSpecifier.parse("@..");
   }
 
   @Test
-  public void testBuildIpSpaceSpecifierGoodInput() {
+  public void testParseGoodInput() {
     assertThat(
-        new ParboiledIpSpaceSpecifier("1.1.1.1"),
+        ParboiledIpSpaceSpecifier.parse("1.1.1.1"),
         equalTo(new ParboiledIpSpaceSpecifier(new IpAstNode("1.1.1.1"))));
   }
 }

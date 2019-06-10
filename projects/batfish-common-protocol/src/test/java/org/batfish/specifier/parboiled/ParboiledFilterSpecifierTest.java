@@ -159,16 +159,16 @@ public class ParboiledFilterSpecifierTest {
   @Rule public ExpectedException _thrown = ExpectedException.none();
 
   @Test
-  public void testBuildFilterSpecifierBadInput() {
+  public void testParseBadInput() {
     _thrown.expect(IllegalArgumentException.class);
     _thrown.expectMessage("Error parsing");
-    new ParboiledFilterSpecifier("@connected");
+    ParboiledFilterSpecifier.parse("@connected");
   }
 
   @Test
-  public void testBuildFilterSpecifierGoodInput() {
+  public void testParseGoodInput() {
     assertThat(
-        new ParboiledFilterSpecifier("filter0"),
+        ParboiledFilterSpecifier.parse("filter0"),
         equalTo(new ParboiledFilterSpecifier(new NameFilterAstNode("filter0"))));
   }
 }

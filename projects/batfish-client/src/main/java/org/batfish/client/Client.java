@@ -516,7 +516,7 @@ public class Client extends AbstractClient implements IClient {
                   "A Batfish %s must be a JSON string with IpSpaceSpec grammar",
                   expectedType.getName()));
         }
-        new ParboiledIpSpaceSpecifier(value.asText());
+        ParboiledIpSpaceSpecifier.parse(value.asText());
         break;
       case IP_WILDCARD:
         if (!value.isTextual()) {

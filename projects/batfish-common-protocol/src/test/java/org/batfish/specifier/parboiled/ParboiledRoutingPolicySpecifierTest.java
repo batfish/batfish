@@ -108,16 +108,16 @@ public class ParboiledRoutingPolicySpecifierTest {
   @Rule public ExpectedException _thrown = ExpectedException.none();
 
   @Test
-  public void testBuildRoutingPolicySpecifierBadInput() {
+  public void testParseBadInput() {
     _thrown.expect(IllegalArgumentException.class);
     _thrown.expectMessage("Error parsing");
-    new ParboiledRoutingPolicySpecifier("@connected");
+    ParboiledRoutingPolicySpecifier.parse("@connected");
   }
 
   @Test
-  public void testBuildRoutingPolicySpecifierGoodInput() {
+  public void testParseGoodInput() {
     assertThat(
-        new ParboiledRoutingPolicySpecifier("router0"),
+        ParboiledRoutingPolicySpecifier.parse("router0"),
         equalTo(new ParboiledRoutingPolicySpecifier(new NameRoutingPolicyAstNode("router0"))));
   }
 }

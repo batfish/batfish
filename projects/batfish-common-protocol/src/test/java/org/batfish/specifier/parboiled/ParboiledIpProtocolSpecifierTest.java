@@ -62,16 +62,16 @@ public class ParboiledIpProtocolSpecifierTest {
   @Rule public ExpectedException _thrown = ExpectedException.none();
 
   @Test
-  public void testBuildIpProtocolSpecifierBadInput() {
+  public void testParseBadInput() {
     _thrown.expect(IllegalArgumentException.class);
     _thrown.expectMessage("Error parsing");
-    new ParboiledIpProtocolSpecifier("@..");
+    ParboiledIpProtocolSpecifier.parse("@..");
   }
 
   @Test
-  public void testBuildIpProtocolSpecifierGoodInput() {
+  public void testParseGoodInput() {
     assertThat(
-        new ParboiledIpProtocolSpecifier("tcp"),
+        ParboiledIpProtocolSpecifier.parse("tcp"),
         equalTo(new ParboiledIpProtocolSpecifier(new IpProtocolIpProtocolAstNode("tcp"))));
   }
 }

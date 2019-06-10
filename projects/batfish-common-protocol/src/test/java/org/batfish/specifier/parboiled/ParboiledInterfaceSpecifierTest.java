@@ -198,16 +198,16 @@ public class ParboiledInterfaceSpecifierTest {
   @Rule public ExpectedException _thrown = ExpectedException.none();
 
   @Test
-  public void testBuildInterfaceSpecifierBadInput() {
+  public void testParseBadInput() {
     _thrown.expect(IllegalArgumentException.class);
     _thrown.expectMessage("Error parsing");
-    new ParboiledInterfaceSpecifier("@connected");
+    ParboiledInterfaceSpecifier.parse("@connected");
   }
 
   @Test
-  public void testBuildInterfaceSpecifierGoodInput() {
+  public void testParseGoodInput() {
     assertThat(
-        new ParboiledInterfaceSpecifier("eth0"),
+        ParboiledInterfaceSpecifier.parse("eth0"),
         equalTo(new ParboiledInterfaceSpecifier(new NameInterfaceAstNode("eth0"))));
   }
 }

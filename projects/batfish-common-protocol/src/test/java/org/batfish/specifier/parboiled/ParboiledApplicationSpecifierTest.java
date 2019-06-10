@@ -14,16 +14,16 @@ public class ParboiledApplicationSpecifierTest {
   @Rule public ExpectedException _thrown = ExpectedException.none();
 
   @Test
-  public void testBuildApplicationSpecifierBadInput() {
+  public void testParseBadInput() {
     _thrown.expect(IllegalArgumentException.class);
     _thrown.expectMessage("Error parsing");
-    new ParboiledApplicationSpecifier("@..");
+    ParboiledApplicationSpecifier.parse("@..");
   }
 
   @Test
-  public void testBuildApplicationSpecifierGoodInput() {
+  public void testParseGoodInput() {
     assertThat(
-        new ParboiledApplicationSpecifier("ssh"),
+        ParboiledApplicationSpecifier.parse("ssh"),
         equalTo(new ParboiledApplicationSpecifier(new NameApplicationAstNode("ssh"))));
   }
 

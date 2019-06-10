@@ -123,16 +123,16 @@ public class ParboiledNodeSpecifierTest {
   @Rule public ExpectedException _thrown = ExpectedException.none();
 
   @Test
-  public void testBuildNodeSpecifierBadInput() {
+  public void testParseBadInput() {
     _thrown.expect(IllegalArgumentException.class);
     _thrown.expectMessage("Error parsing");
-    new ParboiledNodeSpecifier("@connected");
+    ParboiledNodeSpecifier.parse("@connected");
   }
 
   @Test
-  public void testBuildNodeSpecifierGoodInput() {
+  public void testParseGoodInput() {
     assertThat(
-        new ParboiledNodeSpecifier("node0"),
+        ParboiledNodeSpecifier.parse("node0"),
         equalTo(new ParboiledNodeSpecifier(new NameNodeAstNode("node0"))));
   }
 }

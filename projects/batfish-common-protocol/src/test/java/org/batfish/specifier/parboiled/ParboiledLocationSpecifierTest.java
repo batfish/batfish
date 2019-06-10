@@ -118,16 +118,16 @@ public class ParboiledLocationSpecifierTest {
   @Rule public ExpectedException _thrown = ExpectedException.none();
 
   @Test
-  public void testBuildLocationSpecifierBadInput() {
+  public void testParseBadInput() {
     _thrown.expect(IllegalArgumentException.class);
     _thrown.expectMessage("Error parsing");
-    new ParboiledLocationSpecifier("@connected");
+    ParboiledLocationSpecifier.parse("@connected");
   }
 
   @Test
-  public void testBuildLocationSpecifierGoodInput() {
+  public void testParseGoodInput() {
     assertThat(
-        new ParboiledLocationSpecifier("node0"),
+        ParboiledLocationSpecifier.parse("node0"),
         equalTo(new ParboiledLocationSpecifier(InterfaceLocationAstNode.createFromNode("node0"))));
   }
 }
