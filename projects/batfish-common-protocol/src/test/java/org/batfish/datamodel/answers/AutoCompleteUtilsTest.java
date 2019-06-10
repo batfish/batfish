@@ -29,9 +29,9 @@ import static org.batfish.datamodel.questions.InterfacePropertySpecifier.NATIVE_
 import static org.batfish.datamodel.questions.IpsecSessionStatus.IKE_PHASE1_FAILED;
 import static org.batfish.datamodel.questions.IpsecSessionStatus.IKE_PHASE1_KEY_MISMATCH;
 import static org.batfish.datamodel.questions.IpsecSessionStatus.IPSEC_PHASE2_FAILED;
-import static org.batfish.datamodel.questions.NamedStructureSpecifier.AS_PATH_ACCESS_LIST;
-import static org.batfish.datamodel.questions.NamedStructureSpecifier.IP_6_ACCESS_LIST;
-import static org.batfish.datamodel.questions.NamedStructureSpecifier.IP_ACCESS_LIST;
+import static org.batfish.datamodel.questions.NamedStructurePropertySpecifier.IKE_PHASE1_KEYS;
+import static org.batfish.datamodel.questions.NamedStructurePropertySpecifier.IKE_PHASE1_POLICIES;
+import static org.batfish.datamodel.questions.NamedStructurePropertySpecifier.IKE_PHASE1_PROPOSALS;
 import static org.batfish.datamodel.questions.NodePropertySpecifier.DNS_SERVERS;
 import static org.batfish.datamodel.questions.NodePropertySpecifier.DNS_SOURCE_INTERFACE;
 import static org.batfish.datamodel.questions.OspfPropertySpecifier.AREAS;
@@ -372,12 +372,12 @@ public class AutoCompleteUtilsTest {
   }
 
   @Test
-  public void testNamedStructureSpecAutocomplete() throws IOException {
+  public void testNamedStructureSpecAutocomplete() {
     assertThat(
-        AutoCompleteUtils.autoComplete(Type.NAMED_STRUCTURE_SPEC, "access", 5).stream()
+        AutoCompleteUtils.autoComplete(Type.NAMED_STRUCTURE_SPEC, "ike", 5).stream()
             .map(AutocompleteSuggestion::getText)
             .collect(Collectors.toSet()),
-        equalTo(ImmutableSet.of(AS_PATH_ACCESS_LIST, IP_ACCESS_LIST, IP_6_ACCESS_LIST)));
+        equalTo(ImmutableSet.of(IKE_PHASE1_KEYS, IKE_PHASE1_POLICIES, IKE_PHASE1_PROPOSALS)));
   }
 
   @Test

@@ -15,7 +15,7 @@ import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.pojo.Node;
-import org.batfish.datamodel.questions.NamedStructureSpecifier;
+import org.batfish.datamodel.questions.NamedStructurePropertySpecifier;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.table.Row;
 import org.junit.Test;
@@ -44,7 +44,9 @@ public class NamedStructuresAnswererTest {
     // both policies should be returned
     assertThat(
         getAllStructureNamesOfType(
-            NamedStructureSpecifier.ROUTING_POLICY, configurations.keySet(), configurations),
+            NamedStructurePropertySpecifier.ROUTING_POLICY,
+            configurations.keySet(),
+            configurations),
         equalTo(ImmutableSet.of("rp1", "rp2")));
   }
 
@@ -63,11 +65,7 @@ public class NamedStructuresAnswererTest {
     // only get routing policies
     NamedStructuresQuestion question =
         new NamedStructuresQuestion(
-            ALL_NODES,
-            new NamedStructureSpecifier(NamedStructureSpecifier.ROUTING_POLICY),
-            null,
-            null,
-            false);
+            ALL_NODES, NamedStructurePropertySpecifier.ROUTING_POLICY, null, null, false);
 
     Multiset<Row> rows =
         NamedStructuresAnswerer.rawAnswer(
@@ -83,21 +81,21 @@ public class NamedStructuresAnswererTest {
                     .put(NamedStructuresAnswerer.COL_NODE, new Node("node1"))
                     .put(
                         NamedStructuresAnswerer.COL_STRUCTURE_TYPE,
-                        NamedStructureSpecifier.ROUTING_POLICY)
+                        NamedStructurePropertySpecifier.ROUTING_POLICY)
                     .put(NamedStructuresAnswerer.COL_STRUCTURE_NAME, "rp1")
                     .put(
                         NamedStructuresAnswerer.COL_STRUCTURE_DEFINITION,
-                        insertedObject(rp1, NamedStructureSpecifier.ROUTING_POLICY))
+                        insertedObject(rp1, NamedStructurePropertySpecifier.ROUTING_POLICY))
                     .build(),
                 Row.builder()
                     .put(NamedStructuresAnswerer.COL_NODE, new Node("node1"))
                     .put(
                         NamedStructuresAnswerer.COL_STRUCTURE_TYPE,
-                        NamedStructureSpecifier.ROUTING_POLICY)
+                        NamedStructurePropertySpecifier.ROUTING_POLICY)
                     .put(NamedStructuresAnswerer.COL_STRUCTURE_NAME, "rp2")
                     .put(
                         NamedStructuresAnswerer.COL_STRUCTURE_DEFINITION,
-                        insertedObject(rp2, NamedStructureSpecifier.ROUTING_POLICY))
+                        insertedObject(rp2, NamedStructurePropertySpecifier.ROUTING_POLICY))
                     .build()));
 
     assertThat(rows, equalTo(expected));
@@ -115,7 +113,7 @@ public class NamedStructuresAnswererTest {
     Map<String, Configuration> configurations = ImmutableMap.of("node1", c);
 
     NamedStructuresQuestion question =
-        new NamedStructuresQuestion(ALL_NODES, NamedStructureSpecifier.ALL, null, true, null);
+        new NamedStructuresQuestion(ALL_NODES, "/.*/", null, true, null);
 
     Multiset<Row> rows =
         NamedStructuresAnswerer.rawAnswer(
@@ -131,11 +129,11 @@ public class NamedStructuresAnswererTest {
                     .put(NamedStructuresAnswerer.COL_NODE, new Node("node1"))
                     .put(
                         NamedStructuresAnswerer.COL_STRUCTURE_TYPE,
-                        NamedStructureSpecifier.ROUTING_POLICY)
+                        NamedStructurePropertySpecifier.ROUTING_POLICY)
                     .put(NamedStructuresAnswerer.COL_STRUCTURE_NAME, "rp1")
                     .put(
                         NamedStructuresAnswerer.COL_STRUCTURE_DEFINITION,
-                        insertedObject(rp1, NamedStructureSpecifier.ROUTING_POLICY))
+                        insertedObject(rp1, NamedStructurePropertySpecifier.ROUTING_POLICY))
                     .build()));
 
     assertThat(rows, equalTo(expected));
@@ -155,7 +153,7 @@ public class NamedStructuresAnswererTest {
     Map<String, Configuration> configurations = ImmutableMap.of("node1", c1, "node2", c2);
 
     NamedStructuresQuestion question =
-        new NamedStructuresQuestion(ALL_NODES, NamedStructureSpecifier.ALL, null, null, true);
+        new NamedStructuresQuestion(ALL_NODES, "/.*/", null, null, true);
 
     Multiset<Row> rows =
         NamedStructuresAnswerer.rawAnswer(
@@ -171,7 +169,7 @@ public class NamedStructuresAnswererTest {
                     .put(NamedStructuresAnswerer.COL_NODE, new Node("node1"))
                     .put(
                         NamedStructuresAnswerer.COL_STRUCTURE_TYPE,
-                        NamedStructureSpecifier.ROUTING_POLICY)
+                        NamedStructurePropertySpecifier.ROUTING_POLICY)
                     .put(NamedStructuresAnswerer.COL_STRUCTURE_NAME, "rp1")
                     .put(NamedStructuresAnswerer.COL_PRESENT_ON_NODE, true)
                     .build(),
@@ -179,7 +177,7 @@ public class NamedStructuresAnswererTest {
                     .put(NamedStructuresAnswerer.COL_NODE, new Node("node2"))
                     .put(
                         NamedStructuresAnswerer.COL_STRUCTURE_TYPE,
-                        NamedStructureSpecifier.ROUTING_POLICY)
+                        NamedStructurePropertySpecifier.ROUTING_POLICY)
                     .put(NamedStructuresAnswerer.COL_STRUCTURE_NAME, "rp1")
                     .put(NamedStructuresAnswerer.COL_PRESENT_ON_NODE, false)
                     .build()));
@@ -199,8 +197,7 @@ public class NamedStructuresAnswererTest {
     Map<String, Configuration> configurations = ImmutableMap.of("node1", c);
 
     NamedStructuresQuestion question =
-        new NamedStructuresQuestion(
-            ALL_NODES, NamedStructureSpecifier.ALL, "selected.*", false, null);
+        new NamedStructuresQuestion(ALL_NODES, "/.*/", "selected.*", false, null);
 
     Multiset<Row> rows =
         NamedStructuresAnswerer.rawAnswer(
@@ -216,11 +213,11 @@ public class NamedStructuresAnswererTest {
                     .put(NamedStructuresAnswerer.COL_NODE, new Node("node1"))
                     .put(
                         NamedStructuresAnswerer.COL_STRUCTURE_TYPE,
-                        NamedStructureSpecifier.ROUTING_POLICY)
+                        NamedStructurePropertySpecifier.ROUTING_POLICY)
                     .put(NamedStructuresAnswerer.COL_STRUCTURE_NAME, "selected-rp1")
                     .put(
                         NamedStructuresAnswerer.COL_STRUCTURE_DEFINITION,
-                        insertedObject(rp1, NamedStructureSpecifier.ROUTING_POLICY))
+                        insertedObject(rp1, NamedStructurePropertySpecifier.ROUTING_POLICY))
                     .build()));
 
     assertThat(rows, equalTo(expected));

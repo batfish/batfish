@@ -33,6 +33,9 @@ import static org.batfish.specifier.parboiled.Anchor.Type.IP_WILDCARD;
 import static org.batfish.specifier.parboiled.Anchor.Type.LOCATION_ENTER;
 import static org.batfish.specifier.parboiled.Anchor.Type.LOCATION_PARENS;
 import static org.batfish.specifier.parboiled.Anchor.Type.LOCATION_SET_OP;
+import static org.batfish.specifier.parboiled.Anchor.Type.NAMED_STRUCTURE_SET_OP;
+import static org.batfish.specifier.parboiled.Anchor.Type.NAMED_STRUCTURE_TYPE;
+import static org.batfish.specifier.parboiled.Anchor.Type.NAMED_STRUCTURE_TYPE_REGEX;
 import static org.batfish.specifier.parboiled.Anchor.Type.NODE_AND_INTERFACE;
 import static org.batfish.specifier.parboiled.Anchor.Type.NODE_AND_INTERFACE_TAIL;
 import static org.batfish.specifier.parboiled.Anchor.Type.NODE_NAME;
@@ -59,6 +62,7 @@ import java.util.Map;
 import org.batfish.datamodel.DeviceType;
 import org.batfish.datamodel.InterfaceType;
 import org.batfish.datamodel.Protocol;
+import org.batfish.datamodel.questions.NamedStructurePropertySpecifier;
 import org.parboiled.Parboiled;
 import org.parboiled.Rule;
 import org.parboiled.support.Var;
@@ -88,11 +92,14 @@ public class Parser extends CommonParser {
    */
   final Rule[] _applicationNameRules = initEnumRules(Protocol.values());
 
+  final Rule[] _deviceTypeRules = initEnumRules(DeviceType.values());
+
   final Rule[] _interfaceTypeRules = initEnumRules(InterfaceType.values());
 
   final Rule[] _ipProtocolNameRules = initIpProtocolNameRules();
 
-  final Rule[] _deviceTypeRules = initEnumRules(DeviceType.values());
+  final Rule[] _namedStructureTypeRules =
+      initValuesRules(NamedStructurePropertySpecifier.JAVA_MAP.keySet());
 
   static Parser instance() {
     return Parboiled.createParser(Parser.class);
@@ -113,6 +120,8 @@ public class Parser extends CommonParser {
         return input(IpSpaceSpec());
       case LOCATION_SPECIFIER:
         return input(LocationSpec());
+      case NAMED_STRUCTURE_SPECIFIER:
+        return input(NamedStructureSpec());
       case NODE_SPECIFIER:
         return input(NodeSpec());
       case ROUTING_POLICY_SPECIFIER:
@@ -869,6 +878,52 @@ public class Parser extends CommonParser {
   public Rule LocationParens() {
     // Leave the stack as is -- no need to remember that this was a parenthetical term
     return Sequence("( ", LocationSpec(), WhiteSpace(), CloseParens());
+  }
+
+  /**
+   * Named structure type grammar
+   *
+   * <pre>
+   *   namedStructureSpec := namedStructureTerm [, namedStructureTerm]*
+   *
+   *   namedStructureTerm := NAME  // a key in {@link NamedStructurePropertySpecifier#JAVA_MAP}
+   *                         | regex over names
+   * </pre>
+   */
+
+  /** A namedStructureSpec is one or more intersection terms separated by , */
+  @Anchor(NAMED_STRUCTURE_SET_OP)
+  public Rule NamedStructureSpec() {
+    return Sequence(
+        NamedStructureTerm(),
+        WhiteSpace(),
+        ZeroOrMore(
+            ", ",
+            NamedStructureTerm(),
+            push(new UnionNamedStructureAstNode(pop(1), pop())),
+            WhiteSpace()));
+  }
+
+  public Rule NamedStructureTerm() {
+    return FirstOf(
+        NamedStructureTypeRegexDeprecated(), NamedStructureTypeRegex(), NamedStructureType());
+  }
+
+  @Anchor(NAMED_STRUCTURE_TYPE)
+  public Rule NamedStructureType() {
+    return Sequence(
+        FirstOf(_namedStructureTypeRules), push(new TypeNamedStructureAstNode(match())));
+  }
+
+  @Anchor(NAMED_STRUCTURE_TYPE_REGEX)
+  public Rule NamedStructureTypeRegex() {
+    return Sequence(Regex(), push(new TypeRegexNamedStructureAstNode(pop())));
+  }
+
+  @Anchor(DEPRECATED)
+  public Rule NamedStructureTypeRegexDeprecated() {
+    return Sequence(
+        RegexDeprecated(), push(new TypeRegexNamedStructureAstNode(pop())), WhiteSpace());
   }
 
   /**

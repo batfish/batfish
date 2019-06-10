@@ -16,7 +16,7 @@ import org.batfish.datamodel.answers.Schema;
 import org.batfish.datamodel.answers.SelfDescribingObject;
 import org.batfish.datamodel.pojo.Node;
 import org.batfish.datamodel.questions.DisplayHints;
-import org.batfish.datamodel.questions.NamedStructureSpecifier;
+import org.batfish.datamodel.questions.NamedStructurePropertySpecifier;
 import org.batfish.datamodel.questions.PropertySpecifier;
 import org.batfish.datamodel.questions.Question;
 import org.batfish.datamodel.table.ColumnMetadata;
@@ -41,7 +41,7 @@ public class NamedStructuresAnswerer extends Answerer {
    * Creates {@link ColumnMetadata}s that the answer should have based on the {@code
    * namedStructureSpecifier}.
    *
-   * <p>The {@link NamedStructureSpecifier} that describes the set of named structures
+   * <p>The {@link NamedStructurePropertySpecifier} that describes the set of named structures
    *
    * @return The {@link List} of {@link ColumnMetadata}s
    */
@@ -82,11 +82,11 @@ public class NamedStructuresAnswerer extends Answerer {
 
     Multiset<Row> rows = HashMultiset.create();
 
-    for (String structureType : question.getStructureTypes().getMatchingProperties()) {
+    for (String structureType : question.getStructureTypeSpecifier().resolve()) {
       RowBuilder row = Row.builder(columns).put(COL_STRUCTURE_TYPE, structureType);
 
       Function<Configuration, Object> structTypeMapGetter =
-          NamedStructureSpecifier.JAVA_MAP.get(structureType).getGetter();
+          NamedStructurePropertySpecifier.JAVA_MAP.get(structureType).getGetter();
 
       Set<String> structNames = getAllStructureNamesOfType(structureType, nodes, configurations);
 
@@ -149,7 +149,7 @@ public class NamedStructuresAnswerer extends Answerer {
     Set<String> structNames = new HashSet<>();
 
     Function<Configuration, Object> structMapGetter =
-        NamedStructureSpecifier.JAVA_MAP.get(structureType).getGetter();
+        NamedStructurePropertySpecifier.JAVA_MAP.get(structureType).getGetter();
 
     for (String node : nodes) {
       Object namedStructuresMap = structMapGetter.apply(configurations.get(node));
@@ -170,7 +170,7 @@ public class NamedStructuresAnswerer extends Answerer {
 
   /** Returns what is actually inserted into the answer */
   static SelfDescribingObject insertedObject(Object obj, String structType) {
-    Schema targetSchema = NamedStructureSpecifier.JAVA_MAP.get(structType).getSchema();
+    Schema targetSchema = NamedStructurePropertySpecifier.JAVA_MAP.get(structType).getSchema();
     return new SelfDescribingObject(
         targetSchema, PropertySpecifier.convertTypeIfNeeded(obj, targetSchema));
   }
