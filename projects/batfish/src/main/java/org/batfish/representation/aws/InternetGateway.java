@@ -3,8 +3,8 @@ package org.batfish.representation.aws;
 import java.io.Serializable;
 import java.util.LinkedList;
 import java.util.List;
+import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
-import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.StaticRoute;
 import org.codehaus.jettison.json.JSONArray;
@@ -42,15 +42,16 @@ public class InternetGateway implements AwsVpcEntity, Serializable {
 
       String igwIfaceName = vpcId;
       Prefix igwAddresses = awsConfiguration.getNextGeneratedLinkSubnet();
-      InterfaceAddress igwIfaceAddress =
-          new InterfaceAddress(igwAddresses.getStartIp(), igwAddresses.getPrefixLength());
+      ConcreteInterfaceAddress igwIfaceAddress =
+          ConcreteInterfaceAddress.create(
+              igwAddresses.getStartIp(), igwAddresses.getPrefixLength());
       Utils.newInterface(igwIfaceName, cfgNode, igwIfaceAddress);
 
       // add the interface to the vpc router
       Configuration vpcConfigNode = awsConfiguration.getConfigurationNodes().get(vpcId);
       String vpcIfaceName = _internetGatewayId;
-      InterfaceAddress vpcIfaceAddress =
-          new InterfaceAddress(igwAddresses.getEndIp(), igwAddresses.getPrefixLength());
+      ConcreteInterfaceAddress vpcIfaceAddress =
+          ConcreteInterfaceAddress.create(igwAddresses.getEndIp(), igwAddresses.getPrefixLength());
       Utils.newInterface(vpcIfaceName, vpcConfigNode, vpcIfaceAddress);
 
       // associate this gateway with the vpc

@@ -93,13 +93,13 @@ public class ForwardingAnalysisImplTest {
     Interface i1 =
         _ib.setOwner(c1)
             .setVrf(vrf1)
-            .setAddress(new InterfaceAddress(P1.getStartIp(), P1.getPrefixLength()))
+            .setAddress(ConcreteInterfaceAddress.create(P1.getStartIp(), P1.getPrefixLength()))
             .setProxyArp(true)
             .build();
     Interface i2 =
         _ib.setOwner(c2)
             .setVrf(vrf2)
-            .setAddress(new InterfaceAddress(P2.getStartIp(), P2.getPrefixLength()))
+            .setAddress(ConcreteInterfaceAddress.create(P2.getStartIp(), P2.getPrefixLength()))
             .setProxyArp(false)
             .build();
     Ip additionalIp = Ip.parse("10.10.10.1");
@@ -191,12 +191,12 @@ public class ForwardingAnalysisImplTest {
     Vrf vrf2 = _vb.build();
     Interface i1 =
         _ib.setVrf(vrf1)
-            .setAddress(new InterfaceAddress(P1.getStartIp(), P1.getPrefixLength()))
+            .setAddress(ConcreteInterfaceAddress.create(P1.getStartIp(), P1.getPrefixLength()))
             .setProxyArp(true)
             .build();
     Interface i2 =
         _ib.setVrf(vrf2)
-            .setAddress(new InterfaceAddress(P2.getStartIp(), P2.getPrefixLength()))
+            .setAddress(ConcreteInterfaceAddress.create(P2.getStartIp(), P2.getPrefixLength()))
             .setProxyArp(false)
             .build();
     Interface i3 = _ib.setAddress(null).setProxyArp(true).build();
@@ -255,27 +255,27 @@ public class ForwardingAnalysisImplTest {
     Vrf vrf2 = _vb.build();
     Interface i1 =
         _ib.setVrf(vrf1)
-            .setAddress(new InterfaceAddress(P1.getStartIp(), P1.getPrefixLength()))
+            .setAddress(ConcreteInterfaceAddress.create(P1.getStartIp(), P1.getPrefixLength()))
             .setVrrpGroups(
                 ImmutableSortedMap.of(
                     1,
                     VrrpGroup.builder()
                         .setName(1)
                         .setPriority(100)
-                        .setVirtualAddress(new InterfaceAddress("1.1.1.1/32"))
+                        .setVirtualAddress(ConcreteInterfaceAddress.parse("1.1.1.1/32"))
                         .build()))
             .build();
 
     Interface i2 =
         _ib.setVrf(vrf2)
-            .setAddress(new InterfaceAddress(P1.getEndIp(), P1.getPrefixLength()))
+            .setAddress(ConcreteInterfaceAddress.create(P1.getEndIp(), P1.getPrefixLength()))
             .setVrrpGroups(
                 ImmutableSortedMap.of(
                     1,
                     VrrpGroup.builder()
                         .setName(1)
                         .setPriority(110)
-                        .setVirtualAddress(new InterfaceAddress("1.1.1.1/32"))
+                        .setVirtualAddress(ConcreteInterfaceAddress.parse("1.1.1.1/32"))
                         .build()))
             .build();
 
@@ -393,13 +393,13 @@ public class ForwardingAnalysisImplTest {
     Interface i1 =
         _ib.setOwner(c1)
             .setVrf(vrf1)
-            .setAddress(new InterfaceAddress(P1.getStartIp(), P1.getPrefixLength()))
+            .setAddress(ConcreteInterfaceAddress.create(P1.getStartIp(), P1.getPrefixLength()))
             .build();
     Ip i2Ip = Ip.create(P1.getStartIp().asLong() + 1);
     Interface i2 =
         _ib.setOwner(c2)
             .setVrf(vrf2)
-            .setAddress(new InterfaceAddress(i2Ip, P1.getPrefixLength()))
+            .setAddress(ConcreteInterfaceAddress.create(i2Ip, P1.getPrefixLength()))
             .build();
     Edge edge = Edge.of(c1.getHostname(), i1.getName(), c2.getHostname(), i2.getName());
     Map<String, Map<String, Fib>> fibs =
@@ -477,8 +477,10 @@ public class ForwardingAnalysisImplTest {
   public void testComputeInterfaceArpReplies() {
     Configuration config = _cb.build();
     _ib.setOwner(config);
-    InterfaceAddress primary = new InterfaceAddress(P1.getStartIp(), P1.getPrefixLength());
-    InterfaceAddress secondary = new InterfaceAddress(P2.getStartIp(), P2.getPrefixLength());
+    ConcreteInterfaceAddress primary =
+        ConcreteInterfaceAddress.create(P1.getStartIp(), P1.getPrefixLength());
+    ConcreteInterfaceAddress secondary =
+        ConcreteInterfaceAddress.create(P2.getStartIp(), P2.getPrefixLength());
     Interface iNoProxyArp = _ib.setAddresses(primary, secondary).build();
     Interface iProxyArp = _ib.setProxyArp(true).build();
     IpSpace routableIpsForThisVrf = UniverseIpSpace.INSTANCE;
@@ -520,8 +522,10 @@ public class ForwardingAnalysisImplTest {
     Configuration config = _cb.build();
     Map<String, Configuration> configs = ImmutableMap.of(config.getHostname(), config);
     _ib.setOwner(config);
-    InterfaceAddress primary = new InterfaceAddress(P1.getStartIp(), P1.getPrefixLength());
-    InterfaceAddress secondary = new InterfaceAddress(P2.getStartIp(), P2.getPrefixLength());
+    ConcreteInterfaceAddress primary =
+        ConcreteInterfaceAddress.create(P1.getStartIp(), P1.getPrefixLength());
+    InterfaceAddress secondary =
+        ConcreteInterfaceAddress.create(P2.getStartIp(), P2.getPrefixLength());
     Interface i = _ib.setAddresses(primary, secondary).build();
     Map<String, Map<String, Set<Ip>>> interfaceOwnedIps =
         TopologyUtil.computeInterfaceOwnedIps(configs, false);
@@ -1451,13 +1455,13 @@ public class ForwardingAnalysisImplTest {
     Vrf v2 = _vb.setName("v2").setOwner(c2).build();
     _ib.setActive(true);
     Interface i1 =
-        _ib.setAddresses(new InterfaceAddress("1.0.0.1/24"))
+        _ib.setAddresses(ConcreteInterfaceAddress.parse("1.0.0.1/24"))
             .setName("i1")
             .setOwner(c1)
             .setVrf(v1)
             .build();
     Interface i2 =
-        _ib.setAddresses(new InterfaceAddress("1.0.0.2/24"))
+        _ib.setAddresses(ConcreteInterfaceAddress.parse("1.0.0.2/24"))
             .setName("i2")
             .setOwner(c2)
             .setVrf(v2)

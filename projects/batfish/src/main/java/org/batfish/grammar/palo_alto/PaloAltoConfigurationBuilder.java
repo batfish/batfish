@@ -59,10 +59,10 @@ import org.antlr.v4.runtime.tree.TerminalNode;
 import org.batfish.common.BatfishException;
 import org.batfish.common.Warnings;
 import org.batfish.common.Warnings.ParseWarning;
+import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.DiffieHellmanGroup;
 import org.batfish.datamodel.EncryptionAlgorithm;
 import org.batfish.datamodel.IkeHashingAlgorithm;
-import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.IpRange;
@@ -989,7 +989,7 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
 
   @Override
   public void exitSniel3_ip(Sniel3_ipContext ctx) {
-    InterfaceAddress address = new InterfaceAddress(getText(ctx.address));
+    ConcreteInterfaceAddress address = ConcreteInterfaceAddress.parse(getText(ctx.address));
     _currentInterface.setAddress(address);
     _currentInterface.getAllAddresses().add(address);
   }

@@ -22,10 +22,10 @@ import javax.annotation.Nullable;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.topology.TopologyUtil;
 import org.batfish.datamodel.AbstractRoute;
+import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.Interface;
-import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.NetworkConfigurations;
 import org.batfish.datamodel.NetworkFactory;
@@ -59,24 +59,36 @@ import org.junit.Test;
 
 public class EigrpTest {
 
-  private static final InterfaceAddress R1_E1_2_ADDR = new InterfaceAddress("10.12.0.1/24");
-  private static final InterfaceAddress R1_L0_ADDR = new InterfaceAddress("1.1.1.1/32");
-  private static final InterfaceAddress R1_E1_4_ADDR = new InterfaceAddress("10.14.0.1/24");
+  private static final ConcreteInterfaceAddress R1_E1_2_ADDR =
+      ConcreteInterfaceAddress.parse("10.12.0.1/24");
+  private static final ConcreteInterfaceAddress R1_L0_ADDR =
+      ConcreteInterfaceAddress.parse("1.1.1.1/32");
+  private static final ConcreteInterfaceAddress R1_E1_4_ADDR =
+      ConcreteInterfaceAddress.parse("10.14.0.1/24");
   private static final String R1 = "R1";
 
-  private static final InterfaceAddress R2_E2_1_ADDR = new InterfaceAddress("10.12.0.2/24");
-  private static final InterfaceAddress R2_E2_3_ADDR = new InterfaceAddress("10.23.0.2/24");
-  private static final InterfaceAddress R2_L0_ADDR = new InterfaceAddress("2.2.2.2/32");
+  private static final ConcreteInterfaceAddress R2_E2_1_ADDR =
+      ConcreteInterfaceAddress.parse("10.12.0.2/24");
+  private static final ConcreteInterfaceAddress R2_E2_3_ADDR =
+      ConcreteInterfaceAddress.parse("10.23.0.2/24");
+  private static final ConcreteInterfaceAddress R2_L0_ADDR =
+      ConcreteInterfaceAddress.parse("2.2.2.2/32");
   private static final String R2 = "R2";
 
-  private static final InterfaceAddress R3_E3_2_ADDR = new InterfaceAddress("10.23.0.3/24");
-  private static final InterfaceAddress R3_E3_4_ADDR = new InterfaceAddress("10.34.0.3/24");
-  private static final InterfaceAddress R3_L0_ADDR = new InterfaceAddress("3.3.3.3/32");
+  private static final ConcreteInterfaceAddress R3_E3_2_ADDR =
+      ConcreteInterfaceAddress.parse("10.23.0.3/24");
+  private static final ConcreteInterfaceAddress R3_E3_4_ADDR =
+      ConcreteInterfaceAddress.parse("10.34.0.3/24");
+  private static final ConcreteInterfaceAddress R3_L0_ADDR =
+      ConcreteInterfaceAddress.parse("3.3.3.3/32");
   private static final String R3 = "R3";
 
-  private static final InterfaceAddress R4_E4_1_ADDR = new InterfaceAddress("10.14.0.4/24");
-  private static final InterfaceAddress R4_E4_3_ADDR = new InterfaceAddress("10.34.0.4/24");
-  private static final InterfaceAddress R4_L0_ADDR = new InterfaceAddress("4.4.4.4/32");
+  private static final ConcreteInterfaceAddress R4_E4_1_ADDR =
+      ConcreteInterfaceAddress.parse("10.14.0.4/24");
+  private static final ConcreteInterfaceAddress R4_E4_3_ADDR =
+      ConcreteInterfaceAddress.parse("10.34.0.4/24");
+  private static final ConcreteInterfaceAddress R4_L0_ADDR =
+      ConcreteInterfaceAddress.parse("4.4.4.4/32");
   private static final String R4 = "R4";
 
   private static final double externalBandwidth = 1E8;
@@ -429,7 +441,7 @@ public class EigrpTest {
       Interface.Builder eib,
       long asn,
       EigrpProcessMode mode,
-      InterfaceAddress addr,
+      ConcreteInterfaceAddress addr,
       String name,
       double delayMult) {
     ConfigurationFormat format = ConfigurationFormat.CISCO_IOS;
@@ -455,7 +467,7 @@ public class EigrpTest {
    * @param addr Address of the {@link Interface}
    */
   private static void buildEigrpLoopbackInterface(
-      Interface.Builder eib, long asn, EigrpProcessMode mode, InterfaceAddress addr) {
+      Interface.Builder eib, long asn, EigrpProcessMode mode, ConcreteInterfaceAddress addr) {
     ConfigurationFormat format = ConfigurationFormat.CISCO_IOS;
     EigrpInterfaceSettings.Builder esb =
         EigrpInterfaceSettings.builder().setAsn(asn).setEnabled(true);
@@ -476,7 +488,7 @@ public class EigrpTest {
    * @param nib Partially pre-configured {@link Interface.Builder}
    * @param addr Address of the {@link Interface}
    */
-  private static void buildNoneInterface(Interface.Builder nib, InterfaceAddress addr) {
+  private static void buildNoneInterface(Interface.Builder nib, ConcreteInterfaceAddress addr) {
     nib.setName("Loopback0").setAddress(addr).build();
   }
 
@@ -489,7 +501,7 @@ public class EigrpTest {
    * @param addr Address of the {@link Interface}
    */
   private static void buildOspfExternalInterface(
-      Interface.Builder oib, String name, InterfaceAddress addr) {
+      Interface.Builder oib, String name, ConcreteInterfaceAddress addr) {
     oib.setAddress(addr).setName(name).setOspfPassive(false).build();
   }
 
@@ -500,7 +512,8 @@ public class EigrpTest {
    * @param oib Partially pre-configured {@link Interface.Builder}
    * @param addr Address of the {@link Interface}
    */
-  private static void buildOspfLoopbackInterface(Interface.Builder oib, InterfaceAddress addr) {
+  private static void buildOspfLoopbackInterface(
+      Interface.Builder oib, ConcreteInterfaceAddress addr) {
     String name = "Loopback0";
     oib.setAddress(addr).setName(name).setOspfPassive(true).build();
   }

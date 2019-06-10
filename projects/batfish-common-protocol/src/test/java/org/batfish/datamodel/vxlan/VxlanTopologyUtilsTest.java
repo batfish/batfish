@@ -35,12 +35,12 @@ import java.util.function.Function;
 import java.util.stream.Stream;
 import org.batfish.common.plugin.TracerouteEngine;
 import org.batfish.datamodel.BumTransportMethod;
+import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.FlowDisposition;
 import org.batfish.datamodel.Interface;
-import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.InterfaceType;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.NetworkConfigurations;
@@ -130,8 +130,8 @@ public final class VxlanTopologyUtilsTest {
   private Map<String, Configuration> compatibleVxlanConfigs() {
     Interface.Builder ib =
         Interface.builder().setType(InterfaceType.PHYSICAL).setName(IFACE_NAME).setActive(true);
-    ib.setAddresses(new InterfaceAddress(SRC_IP1, 31)).setOwner(_c1).setVrf(_v1).build();
-    ib.setAddresses(new InterfaceAddress(SRC_IP2, 31)).setOwner(_c2).setVrf(_v2).build();
+    ib.setAddresses(ConcreteInterfaceAddress.create(SRC_IP1, 31)).setOwner(_c1).setVrf(_v1).build();
+    ib.setAddresses(ConcreteInterfaceAddress.create(SRC_IP2, 31)).setOwner(_c2).setVrf(_v2).build();
     VniSettings.Builder vsb =
         VniSettings.builder()
             .setBumTransportMethod(BumTransportMethod.UNICAST_FLOOD_GROUP)

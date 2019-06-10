@@ -33,6 +33,7 @@ import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.common.VendorConversionException;
 import org.batfish.datamodel.AclIpSpace;
 import org.batfish.datamodel.BgpActivePeerConfig;
+import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.FirewallSessionInterfaceInfo;
@@ -41,7 +42,6 @@ import org.batfish.datamodel.IcmpType;
 import org.batfish.datamodel.IntegerSpace;
 import org.batfish.datamodel.Interface.Dependency;
 import org.batfish.datamodel.Interface.DependencyType;
-import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.InterfaceType;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpAccessList;
@@ -712,9 +712,9 @@ public class F5BigipConfiguration extends VendorConfiguration {
     return processRouterId != null
         ? processRouterId
         : _c.getAllInterfaces().values().stream()
-            .map(org.batfish.datamodel.Interface::getAllAddresses)
+            .map(org.batfish.datamodel.Interface::getAllConcreteAddresses)
             .flatMap(Collection::stream)
-            .map(InterfaceAddress::getIp)
+            .map(ConcreteInterfaceAddress::getIp)
             .max(Ip::compareTo)
             .orElse(Ip.ZERO);
   }
@@ -785,7 +785,7 @@ public class F5BigipConfiguration extends VendorConfiguration {
       org.batfish.datamodel.Interface sourceInterface =
           _c.getDefaultVrf().getInterfaces().get(updateSourceInterface);
       if (sourceInterface != null) {
-        InterfaceAddress address = sourceInterface.getAddress();
+        ConcreteInterfaceAddress address = sourceInterface.getConcreteAddress();
         if (address != null) {
           return address.getIp();
         } else {
@@ -800,7 +800,7 @@ public class F5BigipConfiguration extends VendorConfiguration {
     // get IP from update-source.
     // So try to get IP of an interface in same network as neighbor address.
     for (org.batfish.datamodel.Interface iface : _c.getDefaultVrf().getInterfaces().values()) {
-      for (InterfaceAddress interfaceAddress : iface.getAllAddresses()) {
+      for (ConcreteInterfaceAddress interfaceAddress : iface.getAllConcreteAddresses()) {
         if (interfaceAddress.getPrefix().containsIp(neighborAddress)) {
           return interfaceAddress.getIp();
         }
@@ -1048,7 +1048,7 @@ public class F5BigipConfiguration extends VendorConfiguration {
     if (vlanIface == null) {
       return;
     }
-    InterfaceAddress address = self.getAddress();
+    ConcreteInterfaceAddress address = self.getAddress();
     if (address == null) {
       // IPv6
       return;

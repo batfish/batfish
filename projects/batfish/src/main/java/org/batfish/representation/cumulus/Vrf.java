@@ -7,14 +7,14 @@ import java.util.List;
 import java.util.Set;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import org.batfish.datamodel.InterfaceAddress;
+import org.batfish.datamodel.ConcreteInterfaceAddress;
 
 /** A virtual routing and forwarding instance */
 public class Vrf implements Serializable {
 
   private static final long serialVersionUID = 1L;
 
-  private final @Nonnull List<InterfaceAddress> _addresses;
+  private final @Nonnull List<ConcreteInterfaceAddress> _addresses;
   private final @Nonnull String _name;
   private final @Nonnull Set<StaticRoute> _staticRoutes;
   private @Nullable Integer _vni;
@@ -25,7 +25,7 @@ public class Vrf implements Serializable {
     _staticRoutes = new HashSet<>();
   }
 
-  public @Nonnull List<InterfaceAddress> getAddresses() {
+  public @Nonnull List<ConcreteInterfaceAddress> getAddresses() {
     return _addresses;
   }
 
