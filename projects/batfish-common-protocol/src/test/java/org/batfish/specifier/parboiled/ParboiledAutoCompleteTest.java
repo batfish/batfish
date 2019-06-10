@@ -10,6 +10,7 @@ import static org.batfish.specifier.parboiled.Anchor.Type.IP_RANGE;
 import static org.batfish.specifier.parboiled.Anchor.Type.NODE_NAME;
 import static org.batfish.specifier.parboiled.Anchor.Type.NODE_NAME_REGEX;
 import static org.batfish.specifier.parboiled.Anchor.Type.NODE_PARENS;
+import static org.batfish.specifier.parboiled.Anchor.Type.NODE_ROLE_NAME;
 import static org.batfish.specifier.parboiled.Anchor.Type.NODE_SET_OP;
 import static org.batfish.specifier.parboiled.Anchor.Type.OPERATOR_END;
 import static org.batfish.specifier.parboiled.Anchor.Type.REFERENCE_BOOK_AND_ADDRESS_GROUP;
@@ -29,6 +30,8 @@ import org.batfish.referencelibrary.AddressGroup;
 import org.batfish.referencelibrary.InterfaceGroup;
 import org.batfish.referencelibrary.ReferenceBook;
 import org.batfish.referencelibrary.ReferenceLibrary;
+import org.batfish.role.NodeRole;
+import org.batfish.role.NodeRoleDimension;
 import org.batfish.role.NodeRolesData;
 import org.batfish.specifier.parboiled.Anchor.Type;
 import org.batfish.specifier.parboiled.CommonParser.ShadowStack;
@@ -97,6 +100,21 @@ public class ParboiledAutoCompleteTest {
         referenceLibrary);
   }
 
+  private static ParboiledAutoComplete getTestPAC(
+      Parser parser, String query, NodeRolesData nodeRolesData) {
+    return new ParboiledAutoComplete(
+        parser,
+        Grammar.NODE_SPECIFIER,
+        Parser.ANCHORS,
+        "network",
+        "snapshot",
+        query,
+        Integer.MAX_VALUE,
+        CompletionMetadata.builder().build(),
+        nodeRolesData,
+        new ReferenceLibrary(null));
+  }
+
   private static CompletionMetadata testCompletionMetadata =
       CompletionMetadata.builder()
           .setInterfaces(
@@ -123,6 +141,18 @@ public class ParboiledAutoCompleteTest {
                   .setInterfaceGroups(
                       ImmutableList.of(new InterfaceGroup(ImmutableSortedSet.of(), "i21")))
                   .build()));
+
+  private static NodeRolesData testNodeRolesData =
+      NodeRolesData.builder()
+          .setRoleDimensions(
+              ImmutableSortedSet.of(
+                  NodeRoleDimension.builder("dim1")
+                      .setRoles(ImmutableSet.of(new NodeRole("r11", ""), new NodeRole("r12", "")))
+                      .build(),
+                  NodeRoleDimension.builder("dim2")
+                      .setRoles(ImmutableSet.of(new NodeRole("r21", "")))
+                      .build()))
+          .build();
 
   @Test
   public void testCompletionEmpty() {
@@ -529,6 +559,108 @@ public class ParboiledAutoCompleteTest {
         pac.autoCompleteInterfaceName(
             new PotentialMatch(anchor, "\"eth12", ImmutableList.of(parent, anchor))),
         containsInAnyOrder(new ParboiledAutoCompleteSuggestion("\"eth12\"", 42, INTERFACE_NAME)));
+  }
+
+  /** Throw an exception if anchor is not present in the path */
+  @Test
+  public void testAutoCompleteNodeRoleNameMissingAnchor() {
+    PotentialMatch pm =
+        new PotentialMatch(
+            new PathElement(Type.NODE_ROLE_NAME, null, 0, 0), "", ImmutableList.of());
+
+    _thrown.expect(IllegalArgumentException.class);
+    getTestPAC("@specifier(g1,", testCompletionMetadata).autoCompleteNodeRoleName(pm);
+  }
+
+  /** Context-sensitive completion of node role name after dimension name */
+  @Test
+  public void testAutoCompleteNodeRoleName() {
+    String dimName = "dim1";
+
+    // the expected stack for the query
+    DefaultValueStack<AstNode> vs = new DefaultValueStack<>();
+    vs.push(new StringAstNode(dimName));
+    ShadowStack ss = new ShadowStack(vs);
+
+    Parser parser = Parser.instance();
+    parser.setShadowStack(ss);
+
+    ParboiledAutoComplete pac = getTestPAC(parser, "dummy", testNodeRolesData);
+
+    PathElement anchor = new PathElement(Type.NODE_ROLE_NAME, null, 1, 42);
+    PathElement parent = new PathElement(Type.NODE_ROLE_AND_DIMENSION, null, 0, 0);
+    PotentialMatch pm = new PotentialMatch(anchor, "", ImmutableList.of(parent, anchor));
+
+    assertThat(
+        pac.autoCompleteNodeRoleName(pm),
+        containsInAnyOrder(
+            new ParboiledAutoCompleteSuggestion("r11", 42, NODE_ROLE_NAME),
+            new ParboiledAutoCompleteSuggestion("r12", 42, NODE_ROLE_NAME)));
+  }
+
+  /** Context-sensitive completion of node role name after dimension name */
+  @Test
+  public void testAutoCompleteNodeRoleNameBadDimension() {
+    String dimName = "nodim";
+
+    // the expected stack for the query
+    DefaultValueStack<AstNode> vs = new DefaultValueStack<>();
+    vs.push(new StringAstNode(dimName));
+    ShadowStack ss = new ShadowStack(vs);
+
+    Parser parser = Parser.instance();
+    parser.setShadowStack(ss);
+
+    ParboiledAutoComplete pac = getTestPAC(parser, "dummy", testNodeRolesData);
+
+    PathElement anchor = new PathElement(Type.NODE_ROLE_NAME, null, 1, 42);
+    PathElement parent = new PathElement(Type.NODE_ROLE_AND_DIMENSION, null, 0, 0);
+    PotentialMatch pm = new PotentialMatch(anchor, "", ImmutableList.of(parent, anchor));
+
+    assertThat(pac.autoCompleteNodeRoleName(pm), equalTo(ImmutableSet.of()));
+  }
+
+  /**
+   * Context-sensitive completion of node role name after dimension name when role name prefix is
+   * present
+   */
+  @Test
+  public void testAutoCompleteNodeRoleNamePrefix() {
+    String dimName = "dim1";
+
+    // the expected stack for the query
+    DefaultValueStack<AstNode> vs = new DefaultValueStack<>();
+    vs.push(new StringAstNode(dimName));
+    // value on stack doesn't matter; presence means something about the role name was entered.
+    // actual value is taken from the matchPrefix; we try three values below
+    vs.push(new StringAstNode("dummy"));
+
+    ShadowStack ss = new ShadowStack(vs);
+    Parser parser = Parser.instance();
+    parser.setShadowStack(ss);
+
+    ParboiledAutoComplete pac = getTestPAC(parser, "dummy", testNodeRolesData);
+
+    PathElement anchor = new PathElement(Type.NODE_ROLE_NAME, null, 1, 42);
+    PathElement parent = new PathElement(Type.NODE_ROLE_AND_DIMENSION, null, 0, 0);
+
+    // should match only r11
+    assertThat(
+        pac.autoCompleteNodeRoleName(
+            new PotentialMatch(anchor, "r11", ImmutableList.of(parent, anchor))),
+        containsInAnyOrder(new ParboiledAutoCompleteSuggestion("r11", 42, NODE_ROLE_NAME)));
+
+    // should not match anything
+    assertThat(
+        pac.autoCompleteNodeRoleName(
+            new PotentialMatch(anchor, "r2", ImmutableList.of(parent, anchor))),
+        equalTo(ImmutableSet.of()));
+
+    // should match only r11 but preserve quotes
+    assertThat(
+        pac.autoCompleteNodeRoleName(
+            new PotentialMatch(anchor, "\"r11", ImmutableList.of(parent, anchor))),
+        containsInAnyOrder(new ParboiledAutoCompleteSuggestion("\"r11\"", 42, NODE_ROLE_NAME)));
   }
 
   /** Throw an exception if anchor is not present in the path */

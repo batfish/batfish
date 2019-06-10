@@ -21,11 +21,11 @@ import java.util.Map;
 import java.util.regex.Pattern;
 import net.sf.javabdd.BDD;
 import org.batfish.common.bdd.BDDPacket;
+import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.FlowDisposition;
 import org.batfish.datamodel.Interface;
-import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpAccessListLine;
@@ -50,8 +50,10 @@ import org.junit.rules.TemporaryFolder;
 public class BDDReachabilityAnalysisIgnoreFiltersTest {
   private static final BDDPacket PKT = new BDDPacket();
   private static final String NODE1 = "node1";
-  private static final InterfaceAddress NODE1_ADDR = new InterfaceAddress("1.2.3.1/24");
-  private static final InterfaceAddress NODE2_ADDR = new InterfaceAddress("1.2.3.2/24");
+  private static final ConcreteInterfaceAddress NODE1_ADDR =
+      ConcreteInterfaceAddress.parse("1.2.3.1/24");
+  private static final ConcreteInterfaceAddress NODE2_ADDR =
+      ConcreteInterfaceAddress.parse("1.2.3.2/24");
   private static final String NODE2 = "node2";
   private static final Ip DENIED_IN_SRC_IP = Ip.parse("1.1.1.1");
   private static final Ip DENIED_OUT_SRC_IP = Ip.parse("1.1.1.2");

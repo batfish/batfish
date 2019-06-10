@@ -5,9 +5,9 @@ import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
-import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.NetworkFactory;
 import org.batfish.specifier.InterfaceLocation;
 import org.batfish.specifier.MockSpecifierContext;
@@ -37,7 +37,7 @@ public class ParboiledLocationSpecifierTest {
     nf.interfaceBuilder()
         .setOwner(n2)
         .setName(_iface1)
-        .setAddress(new InterfaceAddress("3.3.3.3/30"))
+        .setAddress(ConcreteInterfaceAddress.parse("3.3.3.3/30"))
         .build();
 
     _ctxt =

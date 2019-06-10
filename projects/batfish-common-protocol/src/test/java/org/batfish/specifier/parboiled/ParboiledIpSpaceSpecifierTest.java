@@ -8,9 +8,9 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSortedSet;
 import org.batfish.datamodel.AclIpSpace;
+import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
-import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpRange;
 import org.batfish.datamodel.IpWildcard;
@@ -88,7 +88,7 @@ public class ParboiledIpSpaceSpecifierTest {
         .setOwner(n1)
         .setName(iface1)
         .setActive(true)
-        .setAddress(new InterfaceAddress("3.3.3.0/24"))
+        .setAddress(ConcreteInterfaceAddress.parse("3.3.3.0/24"))
         .build();
 
     SpecifierContext ctxt =

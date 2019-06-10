@@ -141,6 +141,34 @@ import org.batfish.datamodel.answers.AutocompleteSuggestion.SuggestionType;
     LOCATION_SET_OP(
         "INTERFACE_SET_OP", " of locations", "locationSpec", SuggestionType.SET_OPERATOR),
     /**
+     * Denotes a set operation for namedStructureSpec. The full description is filled in {@link
+     * ParboiledAutoCompleteSuggestion#completeDescriptionIfNeeded}.
+     */
+    NAMED_STRUCTURE_SET_OP(
+        "NAMED_STRUCTURE_SET_OP",
+        " of named structure types",
+        "namedStructureSpec",
+        SuggestionType.SET_OPERATOR),
+    /** Named structure type, e.g., ROUTE_FILTER_LIST */
+    NAMED_STRUCTURE_TYPE("NAMED_STRUCTURE_TYPE", null, null, SuggestionType.CONSTANT),
+    /** Regex for named structure types */
+    NAMED_STRUCTURE_TYPE_REGEX(
+        "NAMED_STRUCTURE_TYPE_REGEX",
+        "Named structure type regex",
+        "namedStructureTypeRegex/",
+        SuggestionType.REGEX),
+    /**
+     * Rule for node[filter] style filterSpec. This anchor shouldn't be suggested as the rule has no
+     * literal, and things will get delegated to sub rules.
+     */
+    NODE_AND_FILTER("NODE_AND_FILTER", "Node and filter pair", null, SuggestionType.UNKNOWN),
+    /** Part of node[filter] after node */
+    NODE_AND_FILTER_TAIL(
+        "NODE_AND_FILTER_TAIL",
+        "Filters of specified node(s)",
+        "filterSpec]",
+        SuggestionType.OPERATOR_NON_END),
+    /**
      * Rule for node[interface] style interfaceSpec. This anchor shouldn't be suggested as the rule
      * has no literal, and things will get delegated to sub rules.
      */

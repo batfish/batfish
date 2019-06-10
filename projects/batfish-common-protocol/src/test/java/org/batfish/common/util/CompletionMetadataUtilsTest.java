@@ -22,6 +22,7 @@ import java.util.Map;
 import org.batfish.datamodel.AsPathAccessList;
 import org.batfish.datamodel.AuthenticationKeyChain;
 import org.batfish.datamodel.CommunityList;
+import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.IkePhase1Key;
@@ -104,9 +105,9 @@ public final class CompletionMetadataUtilsTest {
     String address2 = ip2 + "/24";
     String address3 = ip3 + "/20";
 
-    InterfaceAddress interfaceAddress1 = new InterfaceAddress(address1);
-    InterfaceAddress interfaceAddress2 = new InterfaceAddress(address2);
-    InterfaceAddress interfaceAddress3 = new InterfaceAddress(address3);
+    InterfaceAddress interfaceAddress1 = ConcreteInterfaceAddress.parse(address1);
+    InterfaceAddress interfaceAddress2 = ConcreteInterfaceAddress.parse(address2);
+    InterfaceAddress interfaceAddress3 = ConcreteInterfaceAddress.parse(address3);
 
     Map<String, Configuration> configs = new HashMap<>();
     Configuration config = createTestConfiguration(nodeName, ConfigurationFormat.HOST, int1, int2);
@@ -179,9 +180,9 @@ public final class CompletionMetadataUtilsTest {
     String address2 = "128.212.155.30/24";
     String address3 = "124.51.32.2/20";
 
-    InterfaceAddress interfaceAddress1 = new InterfaceAddress(address1);
-    InterfaceAddress interfaceAddress2 = new InterfaceAddress(address2);
-    InterfaceAddress interfaceAddress3 = new InterfaceAddress(address3);
+    ConcreteInterfaceAddress interfaceAddress1 = ConcreteInterfaceAddress.parse(address1);
+    ConcreteInterfaceAddress interfaceAddress2 = ConcreteInterfaceAddress.parse(address2);
+    ConcreteInterfaceAddress interfaceAddress3 = ConcreteInterfaceAddress.parse(address3);
 
     Map<String, Configuration> configs = new HashMap<>();
     Configuration config = createTestConfiguration(nodeName, ConfigurationFormat.HOST, int1, int2);

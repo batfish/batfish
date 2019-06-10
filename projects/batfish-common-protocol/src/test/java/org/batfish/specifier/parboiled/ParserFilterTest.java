@@ -6,6 +6,12 @@ import static org.batfish.specifier.parboiled.Anchor.Type.FILTER_NAME;
 import static org.batfish.specifier.parboiled.Anchor.Type.FILTER_NAME_REGEX;
 import static org.batfish.specifier.parboiled.Anchor.Type.FILTER_PARENS;
 import static org.batfish.specifier.parboiled.Anchor.Type.FILTER_SET_OP;
+import static org.batfish.specifier.parboiled.Anchor.Type.NODE_AND_FILTER_TAIL;
+import static org.batfish.specifier.parboiled.Anchor.Type.NODE_NAME;
+import static org.batfish.specifier.parboiled.Anchor.Type.NODE_NAME_REGEX;
+import static org.batfish.specifier.parboiled.Anchor.Type.NODE_PARENS;
+import static org.batfish.specifier.parboiled.Anchor.Type.NODE_ROLE_AND_DIMENSION;
+import static org.batfish.specifier.parboiled.Anchor.Type.NODE_TYPE;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
@@ -45,7 +51,10 @@ public class ParserFilterTest {
     String query = "";
 
     CompletionMetadata completionMetadata =
-        CompletionMetadata.builder().setFilterNames(ImmutableSet.of("filter1")).build();
+        CompletionMetadata.builder()
+            .setNodes(ImmutableSet.of("node1"))
+            .setFilterNames(ImmutableSet.of("filter1"))
+            .build();
 
     Set<ParboiledAutoCompleteSuggestion> suggestions =
         new ParboiledAutoComplete(
@@ -68,7 +77,14 @@ public class ParserFilterTest {
             new ParboiledAutoCompleteSuggestion("(", query.length(), FILTER_PARENS),
             new ParboiledAutoCompleteSuggestion("/", query.length(), FILTER_NAME_REGEX),
             new ParboiledAutoCompleteSuggestion("@in(", query.length(), FILTER_INTERFACE_IN),
-            new ParboiledAutoCompleteSuggestion("@out(", query.length(), FILTER_INTERFACE_OUT)));
+            new ParboiledAutoCompleteSuggestion("@out(", query.length(), FILTER_INTERFACE_OUT),
+
+            // node based completions
+            new ParboiledAutoCompleteSuggestion("(", query.length(), NODE_PARENS),
+            new ParboiledAutoCompleteSuggestion("/", query.length(), NODE_NAME_REGEX),
+            new ParboiledAutoCompleteSuggestion("node1", query.length(), NODE_NAME),
+            new ParboiledAutoCompleteSuggestion("@role(", query.length(), NODE_ROLE_AND_DIMENSION),
+            new ParboiledAutoCompleteSuggestion("@deviceType(", query.length(), NODE_TYPE)));
   }
 
   @Test
@@ -76,7 +92,10 @@ public class ParserFilterTest {
     String query = "filter1"; // this could be a complete term or a partial name
 
     CompletionMetadata completionMetadata =
-        CompletionMetadata.builder().setFilterNames(ImmutableSet.of("filter1", "filter11")).build();
+        CompletionMetadata.builder()
+            .setNodes(ImmutableSet.of("node1"))
+            .setFilterNames(ImmutableSet.of("filter1", "filter11"))
+            .build();
 
     Set<ParboiledAutoCompleteSuggestion> suggestions =
         new ParboiledAutoComplete(
@@ -99,7 +118,8 @@ public class ParserFilterTest {
             new ParboiledAutoCompleteSuggestion("filter11", 0, FILTER_NAME),
             new ParboiledAutoCompleteSuggestion("\\", query.length(), FILTER_SET_OP),
             new ParboiledAutoCompleteSuggestion(",", query.length(), FILTER_SET_OP),
-            new ParboiledAutoCompleteSuggestion("&", query.length(), FILTER_SET_OP)));
+            new ParboiledAutoCompleteSuggestion("&", query.length(), FILTER_SET_OP),
+            new ParboiledAutoCompleteSuggestion("[", query.length(), NODE_AND_FILTER_TAIL)));
   }
 
   @Test
@@ -189,6 +209,27 @@ public class ParserFilterTest {
 
     assertThat(ParserUtils.getAst(getRunner().run("filter1&filter2")), equalTo(expectedNode));
     assertThat(ParserUtils.getAst(getRunner().run(" filter1 & filter2 ")), equalTo(expectedNode));
+  }
+
+  @Test
+  public void testParseFilterWithNodeSimple() {
+    FilterAstNode expectedAst =
+        new FilterWithNodeFilterAstNode(new NameNodeAstNode("n"), new NameFilterAstNode("e"));
+
+    assertThat(ParserUtils.getAst(getRunner().run("n[e]")), equalTo(expectedAst));
+    assertThat(ParserUtils.getAst(getRunner().run(" n [ e ] ")), equalTo(expectedAst));
+  }
+
+  @Test
+  public void testParseFilterWithNodeComplexNodeTerm() {
+    FilterAstNode expectedAst =
+        new FilterWithNodeFilterAstNode(
+            new UnionNodeAstNode(new NameNodeAstNode("n1"), new NameNodeAstNode("n2")),
+            new UnionFilterAstNode(new NameFilterAstNode("e1"), new NameFilterAstNode("e2")));
+
+    assertThat(ParserUtils.getAst(getRunner().run("(n1, n2)[e1, e2]")), equalTo(expectedAst));
+    assertThat(ParserUtils.getAst(getRunner().run("(n1, n2)[(e1, e2)]")), equalTo(expectedAst));
+    assertThat(ParserUtils.getAst(getRunner().run("(n1, (n2))[e1, (e2)]")), equalTo(expectedAst));
   }
 
   @Test

@@ -8,6 +8,7 @@ public enum Grammar {
   IP_PROTOCOL_SPECIFIER("ipProtocolSpecifier", "ip-protocol-specifier"),
   IP_SPACE_SPECIFIER("ipSpecifier", "ip-specifier"),
   LOCATION_SPECIFIER("locationSpecifier", "location-specifier"),
+  NAMED_STRUCTURE_SPECIFIER("namedStructureSpecifier", "named-structure-specifier"),
   NODE_SPECIFIER("nodeSpecifier", "node-specifier"),
   ROUTING_POLICY_SPECIFIER("routingPolicySpecifier", "routing-policy-specifier");
 

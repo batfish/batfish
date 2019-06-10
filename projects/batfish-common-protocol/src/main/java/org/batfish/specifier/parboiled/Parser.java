@@ -33,6 +33,11 @@ import static org.batfish.specifier.parboiled.Anchor.Type.IP_WILDCARD;
 import static org.batfish.specifier.parboiled.Anchor.Type.LOCATION_ENTER;
 import static org.batfish.specifier.parboiled.Anchor.Type.LOCATION_PARENS;
 import static org.batfish.specifier.parboiled.Anchor.Type.LOCATION_SET_OP;
+import static org.batfish.specifier.parboiled.Anchor.Type.NAMED_STRUCTURE_SET_OP;
+import static org.batfish.specifier.parboiled.Anchor.Type.NAMED_STRUCTURE_TYPE;
+import static org.batfish.specifier.parboiled.Anchor.Type.NAMED_STRUCTURE_TYPE_REGEX;
+import static org.batfish.specifier.parboiled.Anchor.Type.NODE_AND_FILTER;
+import static org.batfish.specifier.parboiled.Anchor.Type.NODE_AND_FILTER_TAIL;
 import static org.batfish.specifier.parboiled.Anchor.Type.NODE_AND_INTERFACE;
 import static org.batfish.specifier.parboiled.Anchor.Type.NODE_AND_INTERFACE_TAIL;
 import static org.batfish.specifier.parboiled.Anchor.Type.NODE_NAME;
@@ -59,6 +64,7 @@ import java.util.Map;
 import org.batfish.datamodel.DeviceType;
 import org.batfish.datamodel.InterfaceType;
 import org.batfish.datamodel.Protocol;
+import org.batfish.datamodel.questions.NamedStructurePropertySpecifier;
 import org.parboiled.Parboiled;
 import org.parboiled.Rule;
 import org.parboiled.support.Var;
@@ -88,11 +94,14 @@ public class Parser extends CommonParser {
    */
   final Rule[] _applicationNameRules = initEnumRules(Protocol.values());
 
+  final Rule[] _deviceTypeRules = initEnumRules(DeviceType.values());
+
   final Rule[] _interfaceTypeRules = initEnumRules(InterfaceType.values());
 
   final Rule[] _ipProtocolNameRules = initIpProtocolNameRules();
 
-  final Rule[] _deviceTypeRules = initEnumRules(DeviceType.values());
+  final Rule[] _namedStructureTypeRules =
+      initValuesRules(NamedStructurePropertySpecifier.JAVA_MAP.keySet());
 
   static Parser instance() {
     return Parboiled.createParser(Parser.class);
@@ -113,6 +122,8 @@ public class Parser extends CommonParser {
         return input(IpSpaceSpec());
       case LOCATION_SPECIFIER:
         return input(LocationSpec());
+      case NAMED_STRUCTURE_SPECIFIER:
+        return input(NamedStructureSpec());
       case NODE_SPECIFIER:
         return input(NodeSpec());
       case ROUTING_POLICY_SPECIFIER:
@@ -164,11 +175,19 @@ public class Parser extends CommonParser {
    * <pre>
    *   filterSpec := filterTerm [{@literal &} | , | \ filterTerm]*
    *
-   *   filterTerm := @in(interfaceSpec)  // inFilterOf is also supported for back compat
+   *   filterTerm := filterWithNode
+   *                    | filterWithoutNode
+   *                    | ( filterSpec )
+   *
+   *   filterWithNode := nodeTerm [filterWithoutNode]
+   *
+   *   filterWithoutNode := filterWithoutNodeTerm [{@literal &} | , | \ filterWithoutNodeTerm]*
+   *
+   *   filterWithoutNodeTerm := @in(interfaceSpec)  // inFilterOf is also supported for back compat
    *               | @out(interfaceSpec) // outFilterOf is also supported
    *               | filterName
    *               | filterNameRegex
-   *               | ( filterSpec )
+   *               | ( filterWithoutNode )
    * </pre>
    */
 
@@ -196,6 +215,49 @@ public class Parser extends CommonParser {
   }
 
   public Rule FilterTerm() {
+    return FirstOf(FilterWithNode(), FilterWithoutNode(), FilterParens());
+  }
+
+  @Anchor(NODE_AND_FILTER)
+  public Rule FilterWithNode() {
+    return Sequence(
+        NodeTerm(),
+        WhiteSpace(),
+        FilterWithNodeTail(),
+        push(new FilterWithNodeFilterAstNode(pop(1), pop())));
+  }
+
+  @Anchor(NODE_AND_FILTER_TAIL)
+  public Rule FilterWithNodeTail() {
+    return Sequence("[ ", FilterWithoutNode(), WhiteSpace(), CloseBrackets());
+  }
+
+  @Anchor(FILTER_SET_OP)
+  public Rule FilterWithoutNode() {
+    Var<Character> op = new Var<>();
+    return Sequence(
+        FilterWithoutNodeIntersection(),
+        WhiteSpace(),
+        ZeroOrMore(
+            FirstOf(", ", "\\ "),
+            op.set(matchedChar()),
+            FilterWithoutNodeIntersection(),
+            push(SetOpFilterAstNode.create(op.get(), pop(1), pop())),
+            WhiteSpace()));
+  }
+
+  public Rule FilterWithoutNodeIntersection() {
+    return Sequence(
+        FilterWithoutNodeTerm(),
+        WhiteSpace(),
+        ZeroOrMore(
+            "& ",
+            FilterWithoutNodeTerm(),
+            push(new IntersectionFilterAstNode(pop(1), pop())),
+            WhiteSpace()));
+  }
+
+  public Rule FilterWithoutNodeTerm() {
     return FirstOf(
         FilterInterfaceIn(),
         FilterInterfaceOut(),
@@ -203,7 +265,7 @@ public class Parser extends CommonParser {
         FilterNameRegexDeprecated(),
         FilterNameRegex(),
         FilterName(),
-        FilterParens());
+        FilterWithoutNodeParens());
   }
 
   @Anchor(FILTER_INTERFACE_IN)
@@ -265,6 +327,13 @@ public class Parser extends CommonParser {
     return Sequence("( ", FilterSpec(), WhiteSpace(), CloseParens());
   }
 
+  // The anchor here is an approximation to simplify user messages
+  @Anchor(FILTER_PARENS)
+  public Rule FilterWithoutNodeParens() {
+    // Leave the stack as is -- no need to remember that this was a parenthetical term
+    return Sequence("( ", FilterWithoutNode(), WhiteSpace(), CloseParens());
+  }
+
   /**
    * Interface grammar
    *
@@ -273,7 +342,7 @@ public class Parser extends CommonParser {
    *
    *   interfaceTerm := interfaceWithNode
    *                    | interfaceWithoutNode
-   *                    | ( interfaceTerm )
+   *                    | ( interfaceSpec )
    *
    *   interfaceWithNode := nodeTerm [interfaceWithoutNode]
    *
@@ -287,7 +356,7 @@ public class Parser extends CommonParser {
    *                        | @zone(zoneName)
    *                        | interfaceName
    *                        | interfaceNameRegex
-   *                        | ( interfaceTerm )
+   *                        | ( interfaceWithoutNode )
    * </pre>
    */
 
@@ -618,6 +687,7 @@ public class Parser extends CommonParser {
    *               | ipWildcard (e.g., 1.1.1.1:255.255.255.0)
    *               | ipRange (e.g., 1.1.1.1-1.1.1.2)
    *               | ipAddress (e.g., 1.1.1.1)
+   *               | ( ipSpaceSpec )
    * </pre>
    */
 
@@ -770,7 +840,7 @@ public class Parser extends CommonParser {
    *   locationTerm := locationInterface
    *               | @enter(locationInterface)   // non-@ versions also supported
    *               | @exit(locationInterface)
-   *               | ( locationTerm )
+   *               | ( locationSpec )
    *
    *   locationInterface := nodeTerm[interfaceTerm]
    *                        | nodeTerm
@@ -872,6 +942,52 @@ public class Parser extends CommonParser {
   }
 
   /**
+   * Named structure type grammar
+   *
+   * <pre>
+   *   namedStructureSpec := namedStructureTerm [, namedStructureTerm]*
+   *
+   *   namedStructureTerm := NAME  // a key in {@link NamedStructurePropertySpecifier#JAVA_MAP}
+   *                         | regex over names
+   * </pre>
+   */
+
+  /** A namedStructureSpec is one or more intersection terms separated by , */
+  @Anchor(NAMED_STRUCTURE_SET_OP)
+  public Rule NamedStructureSpec() {
+    return Sequence(
+        NamedStructureTerm(),
+        WhiteSpace(),
+        ZeroOrMore(
+            ", ",
+            NamedStructureTerm(),
+            push(new UnionNamedStructureAstNode(pop(1), pop())),
+            WhiteSpace()));
+  }
+
+  public Rule NamedStructureTerm() {
+    return FirstOf(
+        NamedStructureTypeRegexDeprecated(), NamedStructureTypeRegex(), NamedStructureType());
+  }
+
+  @Anchor(NAMED_STRUCTURE_TYPE)
+  public Rule NamedStructureType() {
+    return Sequence(
+        FirstOf(_namedStructureTypeRules), push(new TypeNamedStructureAstNode(match())));
+  }
+
+  @Anchor(NAMED_STRUCTURE_TYPE_REGEX)
+  public Rule NamedStructureTypeRegex() {
+    return Sequence(Regex(), push(new TypeRegexNamedStructureAstNode(pop())));
+  }
+
+  @Anchor(DEPRECATED)
+  public Rule NamedStructureTypeRegexDeprecated() {
+    return Sequence(
+        RegexDeprecated(), push(new TypeRegexNamedStructureAstNode(pop())), WhiteSpace());
+  }
+
+  /**
    * Node grammar
    *
    * <pre>
@@ -881,7 +997,7 @@ public class Parser extends CommonParser {
    *               | @deviceType(a)
    *               | nodeName
    *               | nodeNameRegex
-   *               | ( nodeTerm )
+   *               | ( nodeSpec )
    * </pre>
    */
 
@@ -932,9 +1048,9 @@ public class Parser extends CommonParser {
   public Rule NodeRoleAndDimension() {
     return Sequence(
         "( ",
-        NodeRoleName(),
-        ", ",
         NodeRoleDimensionName(),
+        ", ",
+        NodeRoleName(),
         CloseParens(),
         push(new RoleNodeAstNode(pop(1), pop())));
   }

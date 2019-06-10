@@ -35,12 +35,12 @@ import org.batfish.common.topology.Layer2Topology;
 import org.batfish.common.topology.TopologyContainer;
 import org.batfish.common.topology.TopologyUtil;
 import org.batfish.datamodel.BumTransportMethod;
+import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.Edge;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.Interface;
-import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.InterfaceType;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpAccessListLine;
@@ -75,13 +75,17 @@ public final class FixedPointTopologyTest {
   private static final String E12_NAME = "E12";
   private static final String E2_NAME = "E2";
   private static final String E21_NAME = "E21";
-  private static final InterfaceAddress H1_ADDRESS = new InterfaceAddress("172.16.0.1/24");
+  private static final ConcreteInterfaceAddress H1_ADDRESS =
+      ConcreteInterfaceAddress.parse("172.16.0.1/24");
   private static final String H1_NAME = "H1";
-  private static final InterfaceAddress H2_ADDRESS = new InterfaceAddress("172.16.0.2/24");
+  private static final ConcreteInterfaceAddress H2_ADDRESS =
+      ConcreteInterfaceAddress.parse("172.16.0.2/24");
   private static final String H2_NAME = "H2";
-  private static final InterfaceAddress S1_ADDRESS = new InterfaceAddress("10.0.0.0/31");
+  private static final ConcreteInterfaceAddress S1_ADDRESS =
+      ConcreteInterfaceAddress.parse("10.0.0.0/31");
   private static final String S1_NAME = "S1";
-  private static final InterfaceAddress S2_ADDRESS = new InterfaceAddress("10.0.0.1/31");
+  private static final ConcreteInterfaceAddress S2_ADDRESS =
+      ConcreteInterfaceAddress.parse("10.0.0.1/31");
   private static final String S2_NAME = "S2";
   private static final String SWP1_NAME = "SWP1";
   private static final String SWP2_NAME = "SWP2";
@@ -89,7 +93,7 @@ public final class FixedPointTopologyTest {
   private static final int VLAN = 2;
   private static final int VNI = 10002;
 
-  private static final @Nonnull Layer1Topology generateVxlanLayer1Topology() {
+  private static @Nonnull Layer1Topology generateVxlanLayer1Topology() {
     return new Layer1Topology(
         ImmutableList.of(
             new Layer1Edge(H1_NAME, E1_NAME, S1_NAME, SWP1_NAME),
@@ -261,14 +265,14 @@ public final class FixedPointTopologyTest {
         .setName("Interface1")
         .setOwner(host1)
         .setVrf(vrf1)
-        .setAddress(new InterfaceAddress(Ip.parse("1.1.1.1"), 24))
+        .setAddress(ConcreteInterfaceAddress.create(Ip.parse("1.1.1.1"), 24))
         .build();
     Interface tunnel1 =
         nf.interfaceBuilder()
             .setName("Tunnel1")
             .setOwner(host1)
             .setVrf(vrf1)
-            .setAddress(new InterfaceAddress(Ip.parse("11.12.13.1"), 24))
+            .setAddress(ConcreteInterfaceAddress.create(Ip.parse("11.12.13.1"), 24))
             .build();
     tunnel1.setInterfaceType(InterfaceType.TUNNEL);
     Interface iface2 =
@@ -276,14 +280,14 @@ public final class FixedPointTopologyTest {
             .setName("Interface2")
             .setOwner(host2)
             .setVrf(vrf2)
-            .setAddress(new InterfaceAddress(Ip.parse("1.1.1.2"), 24))
+            .setAddress(ConcreteInterfaceAddress.create(Ip.parse("1.1.1.2"), 24))
             .build();
     Interface tunnel2 =
         nf.interfaceBuilder()
             .setName("Tunnel2")
             .setOwner(host2)
             .setVrf(vrf2)
-            .setAddress(new InterfaceAddress(Ip.parse("11.12.13.2"), 24))
+            .setAddress(ConcreteInterfaceAddress.create(Ip.parse("11.12.13.2"), 24))
             .build();
     tunnel2.setInterfaceType(InterfaceType.TUNNEL);
 

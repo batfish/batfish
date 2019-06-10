@@ -8,10 +8,10 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.testing.EqualsTester;
+import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.Interface;
-import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.collections.NodeInterfacePair;
@@ -59,7 +59,7 @@ public class InterfaceWithConnectedIpsSpecifierTest {
         Interface.builder()
             .setName("iface11")
             .setOwner(node1)
-            .setAddress(new InterfaceAddress("1.2.3.4/24"))
+            .setAddress(ConcreteInterfaceAddress.parse("1.2.3.4/24"))
             .setActive(true)
             .build();
     Interface iface12 =
@@ -67,7 +67,7 @@ public class InterfaceWithConnectedIpsSpecifierTest {
             .setName("iface12")
             .setActive(true)
             .setOwner(node1)
-            .setAddress(new InterfaceAddress("2.3.4.5/24"))
+            .setAddress(ConcreteInterfaceAddress.parse("2.3.4.5/24"))
             .build();
     node1.setInterfaces(ImmutableSortedMap.of("iface11", iface11, "iface12", iface12));
 
@@ -77,7 +77,7 @@ public class InterfaceWithConnectedIpsSpecifierTest {
             .setName("iface2")
             .setActive(true)
             .setOwner(node2)
-            .setAddress(new InterfaceAddress("1.2.3.5/30"))
+            .setAddress(ConcreteInterfaceAddress.parse("1.2.3.5/30"))
             .build();
     node2.setInterfaces(ImmutableSortedMap.of("iface2", iface2));
 

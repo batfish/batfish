@@ -12,6 +12,7 @@ import java.util.Set;
 import java.util.TreeSet;
 import javax.annotation.Nullable;
 import org.batfish.common.Warnings;
+import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.InterfaceAddress;
@@ -40,7 +41,7 @@ public class HostInterface implements Serializable {
 
   private Set<InterfaceAddress> _otherAddresses;
 
-  private InterfaceAddress _address;
+  private ConcreteInterfaceAddress _address;
 
   private @Nullable Integer _encapsulationVlan;
 
@@ -125,7 +126,7 @@ public class HostInterface implements Serializable {
   }
 
   @JsonProperty(PROP_PREFIX)
-  public void setAddress(InterfaceAddress address) {
+  public void setAddress(ConcreteInterfaceAddress address) {
     _address = address;
   }
 

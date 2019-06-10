@@ -8,7 +8,7 @@ import java.util.TreeMap;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
-import org.batfish.datamodel.InterfaceAddress;
+import org.batfish.datamodel.ConcreteInterfaceAddress;
 
 /** PAN datamodel component containing interface configuration */
 @ParametersAreNonnullByDefault
@@ -27,8 +27,8 @@ public final class Interface implements Serializable {
   private static final long serialVersionUID = 1L;
 
   private boolean _active;
-  @Nullable private InterfaceAddress _address;
-  @Nonnull private final Set<InterfaceAddress> _allAddresses;
+  @Nullable private ConcreteInterfaceAddress _address;
+  @Nonnull private final Set<ConcreteInterfaceAddress> _allAddresses;
   @Nullable private String _comment;
   @Nullable private Integer _mtu;
   @Nonnull private final String _name;
@@ -52,12 +52,12 @@ public final class Interface implements Serializable {
   }
 
   @Nullable
-  public InterfaceAddress getAddress() {
+  public ConcreteInterfaceAddress getAddress() {
     return _address;
   }
 
   @Nonnull
-  public Set<InterfaceAddress> getAllAddresses() {
+  public Set<ConcreteInterfaceAddress> getAllAddresses() {
     return _allAddresses;
   }
 
@@ -105,7 +105,7 @@ public final class Interface implements Serializable {
     _active = active;
   }
 
-  public void setAddress(@Nullable InterfaceAddress address) {
+  public void setAddress(ConcreteInterfaceAddress address) {
     _address = address;
   }
 

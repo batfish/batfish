@@ -27,10 +27,10 @@ import java.util.SortedMap;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.topology.TopologyUtil;
 import org.batfish.datamodel.AbstractRoute;
+import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.Interface;
-import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IsisRoute;
 import org.batfish.datamodel.IsoAddress;
@@ -112,11 +112,11 @@ public class IsisTest {
         .setLevel2(levelSettings)
         .build();
     // r1 loopback
-    ib.setAddress(new InterfaceAddress(R1_LOOPBACK_IP, Prefix.MAX_PREFIX_LENGTH))
+    ib.setAddress(ConcreteInterfaceAddress.create(R1_LOOPBACK_IP, Prefix.MAX_PREFIX_LENGTH))
         .setIsis(iib.setLevel1(passiveIls).setLevel2(passiveIls).build())
         .build();
     // r1 interface to r2
-    ib.setAddress(new InterfaceAddress(R1_INTERFACE_IP, INTERFACE_PREFIX_LENGTH))
+    ib.setAddress(ConcreteInterfaceAddress.create(R1_INTERFACE_IP, INTERFACE_PREFIX_LENGTH))
         .setIsis(
             iib.setLevel1(r1Level1Passive ? passiveIls : activeIls)
                 .setLevel2(r1Level2Passive ? passiveIls : activeIls)
@@ -129,11 +129,11 @@ public class IsisTest {
     ib.setOwner(r2).setVrf(v2);
     ipb.setVrf(v2).setNetAddress(new IsoAddress("49.0001.0100.0200.2002.00")).build();
     // r2 loopback
-    ib.setAddress(new InterfaceAddress(R2_LOOPBACK_IP, Prefix.MAX_PREFIX_LENGTH))
+    ib.setAddress(ConcreteInterfaceAddress.create(R2_LOOPBACK_IP, Prefix.MAX_PREFIX_LENGTH))
         .setIsis(iib.setLevel1(passiveIls).setLevel2(passiveIls).build())
         .build();
     // r2 interface to r1
-    ib.setAddress(new InterfaceAddress(R2_INTERFACE_IP, INTERFACE_PREFIX_LENGTH))
+    ib.setAddress(ConcreteInterfaceAddress.create(R2_INTERFACE_IP, INTERFACE_PREFIX_LENGTH))
         .setIsis(iib.setLevel1(activeIls).setLevel2(activeIls).build())
         .build();
 
@@ -294,15 +294,15 @@ public class IsisTest {
         .setLevel2(levelSettings)
         .build();
     // r1l
-    ib.setAddress(new InterfaceAddress("10.1.1.1/32"))
+    ib.setAddress(ConcreteInterfaceAddress.parse("10.1.1.1/32"))
         .setIsis(iib.setLevel2(passiveIls).build())
         .build();
     // r1r2
-    ib.setAddress(new InterfaceAddress("10.1.2.1/24"))
+    ib.setAddress(ConcreteInterfaceAddress.parse("10.1.2.1/24"))
         .setIsis(iib.setLevel2(activeIls).build())
         .build();
     // r1r3
-    ib.setAddress(new InterfaceAddress("10.1.3.1/24"))
+    ib.setAddress(ConcreteInterfaceAddress.parse("10.1.3.1/24"))
         .setIsis(iib.setLevel2(activeIls).build())
         .build();
 
@@ -317,15 +317,15 @@ public class IsisTest {
         .setLevel2(levelSettings)
         .build();
     // r2l
-    ib.setAddress(new InterfaceAddress("10.2.2.2/32"))
+    ib.setAddress(ConcreteInterfaceAddress.parse("10.2.2.2/32"))
         .setIsis(iib.setLevel2(passiveIls).build())
         .build();
     // r2r1
-    ib.setAddress(new InterfaceAddress("10.1.2.2/24"))
+    ib.setAddress(ConcreteInterfaceAddress.parse("10.1.2.2/24"))
         .setIsis(iib.setLevel2(activeIls).build())
         .build();
     // r2r3
-    ib.setAddress(new InterfaceAddress("10.2.3.2/24"))
+    ib.setAddress(ConcreteInterfaceAddress.parse("10.2.3.2/24"))
         .setIsis(iib.setLevel2(activeIls).build())
         .build();
 
@@ -339,23 +339,23 @@ public class IsisTest {
         .setLevel2(levelSettings)
         .build();
     // r3l
-    ib.setAddress(new InterfaceAddress("10.3.3.3/32"))
+    ib.setAddress(ConcreteInterfaceAddress.parse("10.3.3.3/32"))
         .setIsis(iib.setLevel1(passiveIls).setLevel2(passiveIls).build())
         .build();
     // r3r1
-    ib.setAddress(new InterfaceAddress("10.1.3.3/24"))
+    ib.setAddress(ConcreteInterfaceAddress.parse("10.1.3.3/24"))
         .setIsis(iib.setLevel1(null).setLevel2(activeIls).build())
         .build();
     // r3r2
-    ib.setAddress(new InterfaceAddress("10.2.3.3/24"))
+    ib.setAddress(ConcreteInterfaceAddress.parse("10.2.3.3/24"))
         .setIsis(iib.setLevel1(null).setLevel2(activeIls).build())
         .build();
     // r3r4
-    ib.setAddress(new InterfaceAddress("10.3.4.3/24"))
+    ib.setAddress(ConcreteInterfaceAddress.parse("10.3.4.3/24"))
         .setIsis(iib.setLevel1(activeIls).setLevel2(null).build())
         .build();
     // r3r5
-    ib.setAddress(new InterfaceAddress("10.3.5.3/24"))
+    ib.setAddress(ConcreteInterfaceAddress.parse("10.3.5.3/24"))
         .setIsis(iib.setLevel1(activeIls).setLevel2(null).build())
         .build();
 
@@ -370,15 +370,15 @@ public class IsisTest {
         .setLevel2(null)
         .build();
     // r4l
-    ib.setAddress(new InterfaceAddress("10.4.4.4/32"))
+    ib.setAddress(ConcreteInterfaceAddress.parse("10.4.4.4/32"))
         .setIsis(iib.setLevel1(passiveIls).build())
         .build();
     // r4r3
-    ib.setAddress(new InterfaceAddress("10.3.4.4/24"))
+    ib.setAddress(ConcreteInterfaceAddress.parse("10.3.4.4/24"))
         .setIsis(iib.setLevel1(activeIls).build())
         .build();
     // r4r5
-    ib.setAddress(new InterfaceAddress("10.4.5.4/24"))
+    ib.setAddress(ConcreteInterfaceAddress.parse("10.4.5.4/24"))
         .setIsis(iib.setLevel1(activeIls).build())
         .build();
 
@@ -393,15 +393,15 @@ public class IsisTest {
         .setLevel2(null)
         .build();
     // r5l
-    ib.setAddress(new InterfaceAddress("10.5.5.5/32"))
+    ib.setAddress(ConcreteInterfaceAddress.parse("10.5.5.5/32"))
         .setIsis(iib.setLevel1(passiveIls).build())
         .build();
     // r5r3
-    ib.setAddress(new InterfaceAddress("10.3.5.5/24"))
+    ib.setAddress(ConcreteInterfaceAddress.parse("10.3.5.5/24"))
         .setIsis(iib.setLevel1(activeIls).build())
         .build();
     // r5r4
-    ib.setAddress(new InterfaceAddress("10.4.5.5/24"))
+    ib.setAddress(ConcreteInterfaceAddress.parse("10.4.5.5/24"))
         .setIsis(iib.setLevel1(activeIls).build())
         .build();
 
@@ -527,11 +527,17 @@ public class IsisTest {
     ib.setOwner(r1).setVrf(v1);
     ipb.setVrf(v1).setNetAddress(new IsoAddress("49.0001.0100.0100.1001.00")).build();
     // r1l
-    ib.setAddress(new InterfaceAddress("10.1.1.1/32")).setIsis(loopbackIfaceSettings).build();
+    ib.setAddress(ConcreteInterfaceAddress.parse("10.1.1.1/32"))
+        .setIsis(loopbackIfaceSettings)
+        .build();
     // r1r2
-    ib.setAddress(new InterfaceAddress("10.1.2.1/24")).setIsis(nonLoopbackIfaceSettings).build();
+    ib.setAddress(ConcreteInterfaceAddress.parse("10.1.2.1/24"))
+        .setIsis(nonLoopbackIfaceSettings)
+        .build();
     // r1r3
-    ib.setAddress(new InterfaceAddress("10.1.3.1/24")).setIsis(nonLoopbackIfaceSettings).build();
+    ib.setAddress(ConcreteInterfaceAddress.parse("10.1.3.1/24"))
+        .setIsis(nonLoopbackIfaceSettings)
+        .build();
 
     // r2 with overload set
     Configuration r2 = cb.setHostname(R2).build();
@@ -545,11 +551,17 @@ public class IsisTest {
         .setOverload(true)
         .build();
     // r2l
-    ib.setAddress(new InterfaceAddress("10.2.2.2/32")).setIsis(loopbackIfaceSettings).build();
+    ib.setAddress(ConcreteInterfaceAddress.parse("10.2.2.2/32"))
+        .setIsis(loopbackIfaceSettings)
+        .build();
     // r2r1
-    ib.setAddress(new InterfaceAddress("10.1.2.2/24")).setIsis(nonLoopbackIfaceSettings).build();
+    ib.setAddress(ConcreteInterfaceAddress.parse("10.1.2.2/24"))
+        .setIsis(nonLoopbackIfaceSettings)
+        .build();
     // r2r4
-    ib.setAddress(new InterfaceAddress("10.1.4.2/24")).setIsis(nonLoopbackIfaceSettings).build();
+    ib.setAddress(ConcreteInterfaceAddress.parse("10.1.4.2/24"))
+        .setIsis(nonLoopbackIfaceSettings)
+        .build();
 
     // r3
     Configuration r3 = cb.setHostname(R3).build();
@@ -564,11 +576,17 @@ public class IsisTest {
             .setLevel1(cost20LevelSettings)
             .build();
     // r3l
-    ib.setAddress(new InterfaceAddress("10.3.3.3/32")).setIsis(loopbackIfaceSettings).build();
+    ib.setAddress(ConcreteInterfaceAddress.parse("10.3.3.3/32"))
+        .setIsis(loopbackIfaceSettings)
+        .build();
     // r3r1
-    ib.setAddress(new InterfaceAddress("10.1.3.3/24")).setIsis(cost20InterfaceSettings).build();
+    ib.setAddress(ConcreteInterfaceAddress.parse("10.1.3.3/24"))
+        .setIsis(cost20InterfaceSettings)
+        .build();
     // r3r4
-    ib.setAddress(new InterfaceAddress("10.1.5.3/24")).setIsis(cost20InterfaceSettings).build();
+    ib.setAddress(ConcreteInterfaceAddress.parse("10.1.5.3/24"))
+        .setIsis(cost20InterfaceSettings)
+        .build();
 
     // r4
     Configuration r4 = cb.setHostname(R4).build();
@@ -576,11 +594,17 @@ public class IsisTest {
     ib.setOwner(r4).setVrf(v4);
     ipb.setVrf(v4).setNetAddress(new IsoAddress("49.0001.0100.0400.4004.00")).build();
     // r4l
-    ib.setAddress(new InterfaceAddress("10.4.4.4/32")).setIsis(loopbackIfaceSettings).build();
+    ib.setAddress(ConcreteInterfaceAddress.parse("10.4.4.4/32"))
+        .setIsis(loopbackIfaceSettings)
+        .build();
     // r4r2
-    ib.setAddress(new InterfaceAddress("10.1.4.4/24")).setIsis(nonLoopbackIfaceSettings).build();
+    ib.setAddress(ConcreteInterfaceAddress.parse("10.1.4.4/24"))
+        .setIsis(nonLoopbackIfaceSettings)
+        .build();
     // r4r3
-    ib.setAddress(new InterfaceAddress("10.1.5.4/24")).setIsis(nonLoopbackIfaceSettings).build();
+    ib.setAddress(ConcreteInterfaceAddress.parse("10.1.5.4/24"))
+        .setIsis(nonLoopbackIfaceSettings)
+        .build();
 
     SortedMap<String, Configuration> configurations =
         ImmutableSortedMap.of(

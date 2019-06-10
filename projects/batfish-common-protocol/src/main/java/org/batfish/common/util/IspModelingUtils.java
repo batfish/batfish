@@ -27,11 +27,11 @@ import org.batfish.common.BatfishLogger;
 import org.batfish.common.Warnings;
 import org.batfish.datamodel.BgpActivePeerConfig;
 import org.batfish.datamodel.BgpProcess;
+import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.DeviceType;
 import org.batfish.datamodel.Interface;
-import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.LongSpace;
 import org.batfish.datamodel.NetworkFactory;
@@ -75,7 +75,7 @@ public final class IspModelingUtils {
   /** Contains the information required to create one ISP node */
   @ParametersAreNonnullByDefault
   static final class IspInfo {
-    private @Nonnull List<InterfaceAddress> _interfaceAddresses;
+    private @Nonnull List<ConcreteInterfaceAddress> _interfaceAddresses;
     private @Nonnull List<BgpActivePeerConfig> _bgpActivePeerConfigs;
 
     IspInfo() {
@@ -84,12 +84,13 @@ public final class IspModelingUtils {
     }
 
     IspInfo(
-        List<InterfaceAddress> interfaceAddresses, List<BgpActivePeerConfig> bgpActivePeerConfigs) {
+        List<ConcreteInterfaceAddress> interfaceAddresses,
+        List<BgpActivePeerConfig> bgpActivePeerConfigs) {
       _interfaceAddresses = interfaceAddresses;
       _bgpActivePeerConfigs = bgpActivePeerConfigs;
     }
 
-    void addInterfaceAddress(InterfaceAddress interfaceAddress) {
+    void addInterfaceAddress(ConcreteInterfaceAddress interfaceAddress) {
       _interfaceAddresses.add(interfaceAddress);
     }
 
@@ -98,7 +99,7 @@ public final class IspModelingUtils {
     }
 
     @Nonnull
-    List<InterfaceAddress> getInterfaceAddresses() {
+    List<ConcreteInterfaceAddress> getInterfaceAddresses() {
       return _interfaceAddresses;
     }
 
@@ -188,7 +189,7 @@ public final class IspModelingUtils {
         .setName(INTERNET_OUT_INTERFACE)
         .setOwner(internetConfiguration)
         .setVrf(defaultVrf)
-        .setAddress(new InterfaceAddress(INTERNET_OUT_ADDRESS, INTERNET_OUT_SUBNET))
+        .setAddress(ConcreteInterfaceAddress.create(INTERNET_OUT_ADDRESS, INTERNET_OUT_SUBNET))
         .build();
 
     internetConfiguration
@@ -229,12 +230,12 @@ public final class IspModelingUtils {
       nf.interfaceBuilder()
           .setOwner(internet)
           .setVrf(internet.getDefaultVrf())
-          .setAddress(new InterfaceAddress(internetInterfaceIp, ISP_INTERNET_SUBNET))
+          .setAddress(ConcreteInterfaceAddress.create(internetInterfaceIp, ISP_INTERNET_SUBNET))
           .build();
       nf.interfaceBuilder()
           .setOwner(ispConfiguration)
           .setVrf(ispConfiguration.getDefaultVrf())
-          .setAddress(new InterfaceAddress(ispInterfaceIp, ISP_INTERNET_SUBNET))
+          .setAddress(ConcreteInterfaceAddress.create(ispInterfaceIp, ISP_INTERNET_SUBNET))
           .build();
 
       BgpActivePeerConfig.builder()
@@ -286,7 +287,7 @@ public final class IspModelingUtils {
     Map<String, Interface> lowerCasedInterfaces =
         configuration.getAllInterfaces().entrySet().stream()
             .collect(Collectors.toMap(entry -> entry.getKey().toLowerCase(), Entry::getValue));
-    Map<Ip, InterfaceAddress> ipToInterfaceAddresses =
+    Map<Ip, ConcreteInterfaceAddress> ipToInterfaceAddresses =
         interfaces.stream()
             .map(
                 ifaceName -> {
@@ -300,8 +301,9 @@ public final class IspModelingUtils {
                   return iface;
                 })
             .filter(Objects::nonNull)
-            .flatMap(iface -> iface.getAllAddresses().stream())
-            .collect(ImmutableMap.toImmutableMap(InterfaceAddress::getIp, Function.identity()));
+            .flatMap(iface -> iface.getAllConcreteAddresses().stream())
+            .collect(
+                ImmutableMap.toImmutableMap(ConcreteInterfaceAddress::getIp, Function.identity()));
 
     Set<Ip> remoteIpsSet = ImmutableSet.copyOf(remoteIps);
     LongSpace remoteAsns =
@@ -335,7 +337,7 @@ public final class IspModelingUtils {
               bgpActivePeerConfig.getRemoteAsns().least(), k -> new IspInfo());
       // merging ISP's interface addresses and eBGP confs from the current configuration
       ispInfo.addInterfaceAddress(
-          new InterfaceAddress(
+          ConcreteInterfaceAddress.create(
               bgpActivePeerConfig.getPeerAddress(),
               ipToInterfaceAddresses.get(bgpActivePeerConfig.getLocalIp()).getNetworkBits()));
       ispInfo.addBgpActivePeerConfig(getBgpPeerOnIsp(bgpActivePeerConfig));
@@ -381,7 +383,7 @@ public final class IspModelingUtils {
         nf.bgpProcessBuilder()
             .setRouterId(
                 ispInfo.getInterfaceAddresses().stream()
-                    .map(InterfaceAddress::getIp)
+                    .map(ConcreteInterfaceAddress::getIp)
                     .min(Ip::compareTo)
                     .orElse(null))
             .setVrf(ispConfiguration.getDefaultVrf())

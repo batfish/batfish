@@ -102,7 +102,7 @@ import org.batfish.datamodel.questions.BgpPeerPropertySpecifier;
 import org.batfish.datamodel.questions.BgpProcessPropertySpecifier;
 import org.batfish.datamodel.questions.InstanceData;
 import org.batfish.datamodel.questions.InterfacePropertySpecifier;
-import org.batfish.datamodel.questions.NamedStructureSpecifier;
+import org.batfish.datamodel.questions.NamedStructurePropertySpecifier;
 import org.batfish.datamodel.questions.NodePropertySpecifier;
 import org.batfish.datamodel.questions.OspfPropertySpecifier;
 import org.batfish.datamodel.questions.Question;
@@ -566,7 +566,7 @@ public class Client extends AbstractClient implements IClient {
           throw new BatfishException(
               String.format("A Batfish %s must be a JSON string", expectedType.getName()));
         }
-        new NamedStructureSpecifier(value.textValue());
+        new NamedStructurePropertySpecifier(value.textValue());
         break;
       case NODE_PROPERTY_SPEC:
         if (!(value.isTextual())) {

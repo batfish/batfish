@@ -8,6 +8,7 @@ import org.batfish.specifier.parboiled.ParboiledInterfaceSpecifier;
 import org.batfish.specifier.parboiled.ParboiledIpProtocolSpecifier;
 import org.batfish.specifier.parboiled.ParboiledIpSpaceSpecifier;
 import org.batfish.specifier.parboiled.ParboiledLocationSpecifier;
+import org.batfish.specifier.parboiled.ParboiledNamedStructureSpecifier;
 import org.batfish.specifier.parboiled.ParboiledNodeSpecifier;
 import org.batfish.specifier.parboiled.ParboiledRoutingPolicySpecifier;
 
@@ -93,6 +94,16 @@ public final class SpecifierFactories {
     }
   }
 
+  public static NamedStructureSpecifier getNamedStructureSpecifier(String input, Version version) {
+    switch (version) {
+      case V1:
+      case V2:
+        return new ParboiledNamedStructureSpecifier(input);
+      default:
+        throw new IllegalStateException("Unhandled grammar version " + version);
+    }
+  }
+
   public static NodeSpecifier getNodeSpecifier(String input, Version version) {
     switch (version) {
       case V1:
@@ -144,6 +155,11 @@ public final class SpecifierFactories {
     return getLocationSpecifierOrDefault(input, defaultSpecifier, ACTIVE_VERSION);
   }
 
+  public static NamedStructureSpecifier getNamedStructureSpecifierOrDefault(
+      @Nullable String input, NamedStructureSpecifier defaultSpecifier) {
+    return getNamedStructureSpecifierOrDefault(input, defaultSpecifier, ACTIVE_VERSION);
+  }
+
   public static NodeSpecifier getNodeSpecifierOrDefault(
       @Nullable String input, NodeSpecifier defaultSpecifier) {
     return getNodeSpecifierOrDefault(input, defaultSpecifier, ACTIVE_VERSION);
@@ -182,6 +198,13 @@ public final class SpecifierFactories {
   public static LocationSpecifier getLocationSpecifierOrDefault(
       @Nullable String input, LocationSpecifier defaultSpecifier, Version v) {
     return input == null || input.isEmpty() ? defaultSpecifier : getLocationSpecifier(input, v);
+  }
+
+  public static NamedStructureSpecifier getNamedStructureSpecifierOrDefault(
+      @Nullable String input, NamedStructureSpecifier defaultSpecifier, Version v) {
+    return input == null || input.isEmpty()
+        ? defaultSpecifier
+        : getNamedStructureSpecifier(input, v);
   }
 
   public static NodeSpecifier getNodeSpecifierOrDefault(

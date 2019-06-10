@@ -25,11 +25,11 @@ import java.util.SortedMap;
 import org.batfish.common.BatfishException;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.common.plugin.IBatfishTestAdapter;
+import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.Interface;
-import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpAccessListLine;
 import org.batfish.datamodel.NetworkFactory;
@@ -204,14 +204,14 @@ public class TestFiltersAnswererTest {
         Interface.builder()
             .setName("iface1")
             .setOwner(c1)
-            .setAddress(new InterfaceAddress("1.1.1.1/24"))
+            .setAddress(ConcreteInterfaceAddress.parse("1.1.1.1/24"))
             .setVrf(new Vrf("default"))
             .build();
     Interface iface2 =
         Interface.builder()
             .setName("iface2")
             .setOwner(c1)
-            .setAddress(new InterfaceAddress("2.2.2.2/24"))
+            .setAddress(ConcreteInterfaceAddress.parse("2.2.2.2/24"))
             .setVrf(new Vrf("default"))
             .build();
 
@@ -228,9 +228,9 @@ public class TestFiltersAnswererTest {
                         "c1",
                         ImmutableMap.of(
                             "iface1",
-                            iface1.getAddress().getIp().toIpSpace(),
+                            iface1.getConcreteAddress().getIp().toIpSpace(),
                             "iface2",
-                            iface2.getAddress().getIp().toIpSpace())))
+                            iface2.getConcreteAddress().getIp().toIpSpace())))
                 .build());
 
     TestFiltersQuestion question = new TestFiltersQuestion(null, null, null, null);

@@ -4,7 +4,7 @@ import java.io.Serializable;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
-import org.batfish.datamodel.InterfaceAddress;
+import org.batfish.datamodel.ConcreteInterfaceAddress;
 
 /**
  * Configuration for a layer-3 endpoint on the device itself. Typically manifests as an IRB
@@ -19,7 +19,7 @@ public final class Self implements Serializable {
 
   private static final long serialVersionUID = 1L;
 
-  private @Nullable InterfaceAddress _address;
+  private @Nullable ConcreteInterfaceAddress _address;
 
   private final @Nonnull String _name;
 
@@ -29,7 +29,7 @@ public final class Self implements Serializable {
     _name = name;
   }
 
-  public @Nullable InterfaceAddress getAddress() {
+  public @Nullable ConcreteInterfaceAddress getAddress() {
     return _address;
   }
 
@@ -41,7 +41,7 @@ public final class Self implements Serializable {
     return _vlan;
   }
 
-  public void setAddress(@Nullable InterfaceAddress address) {
+  public void setAddress(@Nullable ConcreteInterfaceAddress address) {
     _address = address;
   }
 

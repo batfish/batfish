@@ -15,11 +15,11 @@ import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.AnnotatedRoute;
 import org.batfish.datamodel.BgpProcess;
 import org.batfish.datamodel.BumTransportMethod;
+import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.DataPlane;
 import org.batfish.datamodel.GenericRib;
-import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.Prefix;
@@ -84,12 +84,12 @@ public class EvpnTest {
     nf.interfaceBuilder()
         .setOwner(c1)
         .setVrf(vrf1)
-        .setAddress(new InterfaceAddress(ipNode1, SUBNET_LEN))
+        .setAddress(ConcreteInterfaceAddress.create(ipNode1, SUBNET_LEN))
         .build();
     nf.interfaceBuilder()
         .setOwner(c2)
         .setVrf(vrf2)
-        .setAddress(new InterfaceAddress(ipNode2, SUBNET_LEN))
+        .setAddress(ConcreteInterfaceAddress.create(ipNode2, SUBNET_LEN))
         .build();
 
     int vni = 10001;

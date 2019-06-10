@@ -22,10 +22,10 @@ import org.batfish.datamodel.BgpActivePeerConfig;
 import org.batfish.datamodel.BgpAdvertisement;
 import org.batfish.datamodel.BgpAdvertisement.BgpAdvertisementType;
 import org.batfish.datamodel.BgpProcess;
+import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.Interface;
-import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.OriginType;
@@ -119,9 +119,10 @@ public class RouteReflectionTest {
     Configuration edge1 = _cb.setHostname(EDGE1_NAME).build();
     Vrf vEdge1 = _vb.setOwner(edge1).build();
     _ib.setOwner(edge1).setVrf(vEdge1);
-    _ib.setAddress(new InterfaceAddress(edge1EbgpIfaceIp, EDGE_PREFIX_LENGTH)).build();
-    _ib.setAddress(new InterfaceAddress(edge1LoopbackIp, Prefix.MAX_PREFIX_LENGTH)).build();
-    _ib.setAddress(new InterfaceAddress(edge1IbgpIfaceIp, EDGE_PREFIX_LENGTH)).build();
+    _ib.setAddress(ConcreteInterfaceAddress.create(edge1EbgpIfaceIp, EDGE_PREFIX_LENGTH)).build();
+    _ib.setAddress(ConcreteInterfaceAddress.create(edge1LoopbackIp, Prefix.MAX_PREFIX_LENGTH))
+        .build();
+    _ib.setAddress(ConcreteInterfaceAddress.create(edge1IbgpIfaceIp, EDGE_PREFIX_LENGTH)).build();
     StaticRoute.Builder sb = StaticRoute.builder().setAdministrativeCost(1);
     vEdge1.setStaticRoutes(
         ImmutableSortedSet.of(
@@ -147,9 +148,9 @@ public class RouteReflectionTest {
     Configuration rr = _cb.setHostname(RR_NAME).build();
     Vrf vRr = _vb.setOwner(rr).build();
     _ib.setOwner(rr).setVrf(vRr);
-    _ib.setAddress(new InterfaceAddress(rrEdge1IfaceIp, EDGE_PREFIX_LENGTH)).build();
-    _ib.setAddress(new InterfaceAddress(rrLoopbackIp, Prefix.MAX_PREFIX_LENGTH)).build();
-    _ib.setAddress(new InterfaceAddress(rrEdge2IfaceIp, EDGE_PREFIX_LENGTH)).build();
+    _ib.setAddress(ConcreteInterfaceAddress.create(rrEdge1IfaceIp, EDGE_PREFIX_LENGTH)).build();
+    _ib.setAddress(ConcreteInterfaceAddress.create(rrLoopbackIp, Prefix.MAX_PREFIX_LENGTH)).build();
+    _ib.setAddress(ConcreteInterfaceAddress.create(rrEdge2IfaceIp, EDGE_PREFIX_LENGTH)).build();
     vRr.setStaticRoutes(
         ImmutableSortedSet.of(
             sb.setNextHopIp(edge1IbgpIfaceIp)
@@ -179,9 +180,10 @@ public class RouteReflectionTest {
     Configuration edge2 = _cb.setHostname(EDGE2_NAME).build();
     Vrf vEdge2 = _vb.setOwner(edge2).build();
     _ib.setOwner(edge2).setVrf(vEdge2);
-    _ib.setAddress(new InterfaceAddress(edge2EbgpIfaceIp, EDGE_PREFIX_LENGTH)).build();
-    _ib.setAddress(new InterfaceAddress(edge2LoopbackIp, Prefix.MAX_PREFIX_LENGTH)).build();
-    _ib.setAddress(new InterfaceAddress(edge2IbgpIfaceIp, EDGE_PREFIX_LENGTH)).build();
+    _ib.setAddress(ConcreteInterfaceAddress.create(edge2EbgpIfaceIp, EDGE_PREFIX_LENGTH)).build();
+    _ib.setAddress(ConcreteInterfaceAddress.create(edge2LoopbackIp, Prefix.MAX_PREFIX_LENGTH))
+        .build();
+    _ib.setAddress(ConcreteInterfaceAddress.create(edge2IbgpIfaceIp, EDGE_PREFIX_LENGTH)).build();
     vEdge2.setStaticRoutes(
         ImmutableSortedSet.of(
             sb.setNextHopIp(rrEdge2IfaceIp)
@@ -256,9 +258,10 @@ public class RouteReflectionTest {
     Configuration edge1 = _cb.setHostname(EDGE1_NAME).build();
     Vrf vEdge1 = _vb.setOwner(edge1).build();
     _ib.setOwner(edge1).setVrf(vEdge1);
-    _ib.setAddress(new InterfaceAddress(edge1EbgpIfaceIp, EDGE_PREFIX_LENGTH)).build();
-    _ib.setAddress(new InterfaceAddress(edge1LoopbackIp, Prefix.MAX_PREFIX_LENGTH)).build();
-    _ib.setAddress(new InterfaceAddress(edge1IbgpIfaceIp, EDGE_PREFIX_LENGTH)).build();
+    _ib.setAddress(ConcreteInterfaceAddress.create(edge1EbgpIfaceIp, EDGE_PREFIX_LENGTH)).build();
+    _ib.setAddress(ConcreteInterfaceAddress.create(edge1LoopbackIp, Prefix.MAX_PREFIX_LENGTH))
+        .build();
+    _ib.setAddress(ConcreteInterfaceAddress.create(edge1IbgpIfaceIp, EDGE_PREFIX_LENGTH)).build();
     vEdge1.setStaticRoutes(
         ImmutableSortedSet.of(
             sb.setNextHopIp(rr1Edge1IfaceIp)
@@ -283,9 +286,10 @@ public class RouteReflectionTest {
     Configuration rr1 = _cb.setHostname(RR1_NAME).build();
     Vrf vRr1 = _vb.setOwner(rr1).build();
     _ib.setOwner(rr1).setVrf(vRr1);
-    _ib.setAddress(new InterfaceAddress(rr1Edge1IfaceIp, EDGE_PREFIX_LENGTH)).build();
-    _ib.setAddress(new InterfaceAddress(rr1LoopbackIp, Prefix.MAX_PREFIX_LENGTH)).build();
-    _ib.setAddress(new InterfaceAddress(rr1Rr2IfaceIp, EDGE_PREFIX_LENGTH)).build();
+    _ib.setAddress(ConcreteInterfaceAddress.create(rr1Edge1IfaceIp, EDGE_PREFIX_LENGTH)).build();
+    _ib.setAddress(ConcreteInterfaceAddress.create(rr1LoopbackIp, Prefix.MAX_PREFIX_LENGTH))
+        .build();
+    _ib.setAddress(ConcreteInterfaceAddress.create(rr1Rr2IfaceIp, EDGE_PREFIX_LENGTH)).build();
     vRr1.setStaticRoutes(
         ImmutableSortedSet.of(
             sb.setNextHopIp(edge1IbgpIfaceIp)
@@ -309,8 +313,9 @@ public class RouteReflectionTest {
     Configuration rr2 = _cb.setHostname(RR2_NAME).build();
     Vrf vRr2 = _vb.setOwner(rr2).build();
     _ib.setOwner(rr2).setVrf(vRr2);
-    _ib.setAddress(new InterfaceAddress(rr2LoopbackIp, Prefix.MAX_PREFIX_LENGTH)).build();
-    _ib.setAddress(new InterfaceAddress(rr2IbgpIfaceIp, EDGE_PREFIX_LENGTH)).build();
+    _ib.setAddress(ConcreteInterfaceAddress.create(rr2LoopbackIp, Prefix.MAX_PREFIX_LENGTH))
+        .build();
+    _ib.setAddress(ConcreteInterfaceAddress.create(rr2IbgpIfaceIp, EDGE_PREFIX_LENGTH)).build();
     vRr2.setStaticRoutes(
         ImmutableSortedSet.of(
             sb.setNextHopIp(rr1Rr2IfaceIp)

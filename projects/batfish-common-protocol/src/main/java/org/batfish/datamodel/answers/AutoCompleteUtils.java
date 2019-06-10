@@ -35,7 +35,6 @@ import org.batfish.datamodel.questions.BgpProcessPropertySpecifier;
 import org.batfish.datamodel.questions.ConfiguredSessionStatus;
 import org.batfish.datamodel.questions.InterfacePropertySpecifier;
 import org.batfish.datamodel.questions.IpsecSessionStatus;
-import org.batfish.datamodel.questions.NamedStructureSpecifier;
 import org.batfish.datamodel.questions.NodePropertySpecifier;
 import org.batfish.datamodel.questions.OspfPropertySpecifier;
 import org.batfish.datamodel.questions.Variable;
@@ -460,7 +459,16 @@ public final class AutoCompleteUtils {
           }
         case NAMED_STRUCTURE_SPEC:
           {
-            suggestions = baseAutoComplete(query, NamedStructureSpecifier.JAVA_MAP.keySet());
+            suggestions =
+                ParboiledAutoComplete.autoComplete(
+                    Grammar.NAMED_STRUCTURE_SPECIFIER,
+                    network,
+                    snapshot,
+                    query,
+                    maxSuggestions,
+                    completionMetadata,
+                    nodeRolesData,
+                    referenceLibrary);
             break;
           }
         case NODE_NAME:

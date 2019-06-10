@@ -287,8 +287,8 @@ public class VIModelQuestionPlugin extends QuestionPlugin {
             new Layer3Edge(
                 new NodeInterfacePair(edge.getNode1(), edge.getInt1()),
                 new NodeInterfacePair(edge.getNode2(), edge.getInt2()),
-                ImmutableSortedSet.copyOf(i1.getAllAddresses()),
-                ImmutableSortedSet.copyOf(i2.getAllAddresses())));
+                ImmutableSortedSet.copyOf(i1.getAllConcreteAddresses()),
+                ImmutableSortedSet.copyOf(i2.getAllConcreteAddresses())));
       }
       return layer3Edges;
     }

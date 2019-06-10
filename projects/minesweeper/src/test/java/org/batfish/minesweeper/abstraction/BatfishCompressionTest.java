@@ -27,6 +27,7 @@ import org.batfish.common.bdd.BDDPacket;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.AnnotatedRoute;
+import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.DataPlane;
@@ -34,7 +35,6 @@ import org.batfish.datamodel.Fib;
 import org.batfish.datamodel.GenericRib;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.Interface;
-import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.Prefix;
@@ -84,12 +84,12 @@ public class BatfishCompressionTest {
     Interface.Builder ib = nf.interfaceBuilder();
     ib.setOwner(_compressedNode1)
         .setVrf(v1)
-        .setAddress(new InterfaceAddress(p.getStartIp(), p.getPrefixLength()))
+        .setAddress(ConcreteInterfaceAddress.create(p.getStartIp(), p.getPrefixLength()))
         .build();
 
     ib.setOwner(_compressedNode3)
         .setVrf(v3)
-        .setAddress(new InterfaceAddress(p.getStartIp(), p.getPrefixLength()))
+        .setAddress(ConcreteInterfaceAddress.create(p.getStartIp(), p.getPrefixLength()))
         .build();
 
     StaticRoute staticRoute =
@@ -149,42 +149,42 @@ public class BatfishCompressionTest {
     // Add a route from A --> B
     ib.setOwner(cA)
         .setVrf(vA)
-        .setAddress(new InterfaceAddress(pAB.getStartIp(), pAB.getPrefixLength()))
+        .setAddress(ConcreteInterfaceAddress.create(pAB.getStartIp(), pAB.getPrefixLength()))
         .build();
     // Interface iBA
     ib.setOwner(cB)
         .setVrf(vB)
-        .setAddress(new InterfaceAddress(pAB.getEndIp(), pAB.getPrefixLength()))
+        .setAddress(ConcreteInterfaceAddress.create(pAB.getEndIp(), pAB.getPrefixLength()))
         .build();
     // Interface iAC
     ib.setOwner(cA)
         .setVrf(vA)
-        .setAddress(new InterfaceAddress(pAC.getStartIp(), pAC.getPrefixLength()))
+        .setAddress(ConcreteInterfaceAddress.create(pAC.getStartIp(), pAC.getPrefixLength()))
         .build();
     // Interface iCA
     ib.setOwner(cC)
         .setVrf(vC)
-        .setAddress(new InterfaceAddress(pAC.getEndIp(), pAC.getPrefixLength()))
+        .setAddress(ConcreteInterfaceAddress.create(pAC.getEndIp(), pAC.getPrefixLength()))
         .build();
     // Interface iBD
     ib.setOwner(cB)
         .setVrf(vB)
-        .setAddress(new InterfaceAddress(pBD.getStartIp(), pBD.getPrefixLength()))
+        .setAddress(ConcreteInterfaceAddress.create(pBD.getStartIp(), pBD.getPrefixLength()))
         .build();
     // Interface iDB
     ib.setOwner(cD)
         .setVrf(vD)
-        .setAddress(new InterfaceAddress(pBD.getEndIp(), pBD.getPrefixLength()))
+        .setAddress(ConcreteInterfaceAddress.create(pBD.getEndIp(), pBD.getPrefixLength()))
         .build();
     // Interface iCD
     ib.setOwner(cC)
         .setVrf(vC)
-        .setAddress(new InterfaceAddress(pCD.getStartIp(), pCD.getPrefixLength()))
+        .setAddress(ConcreteInterfaceAddress.create(pCD.getStartIp(), pCD.getPrefixLength()))
         .build();
     // Interface iDC
     ib.setOwner(cD)
         .setVrf(vD)
-        .setAddress(new InterfaceAddress(pCD.getEndIp(), pCD.getPrefixLength()))
+        .setAddress(ConcreteInterfaceAddress.create(pCD.getEndIp(), pCD.getPrefixLength()))
         .build();
 
     // For the destination
@@ -192,7 +192,7 @@ public class BatfishCompressionTest {
     // Interface iD
     ib.setOwner(cD)
         .setVrf(vD)
-        .setAddress(new InterfaceAddress(pD.getEndIp(), pD.getPrefixLength()))
+        .setAddress(ConcreteInterfaceAddress.create(pD.getEndIp(), pD.getPrefixLength()))
         .build();
 
     StaticRoute.Builder bld = StaticRoute.builder().setNetwork(pD).setAdministrativeCost(1);
@@ -239,16 +239,16 @@ public class BatfishCompressionTest {
     Interface.Builder ib = nf.interfaceBuilder();
     ib.setOwner(c1)
         .setVrf(v1)
-        .setAddress(new InterfaceAddress(p12.getStartIp(), p12.getPrefixLength()))
+        .setAddress(ConcreteInterfaceAddress.create(p12.getStartIp(), p12.getPrefixLength()))
         .build();
     ib.setOwner(c2)
         .setVrf(v2)
-        .setAddress(new InterfaceAddress(p12.getEndIp(), p12.getPrefixLength()))
+        .setAddress(ConcreteInterfaceAddress.create(p12.getEndIp(), p12.getPrefixLength()))
         .build();
-    ib.setAddress(new InterfaceAddress(p23.getStartIp(), p23.getPrefixLength())).build();
+    ib.setAddress(ConcreteInterfaceAddress.create(p23.getStartIp(), p23.getPrefixLength())).build();
     ib.setOwner(c3)
         .setVrf(v3)
-        .setAddress(new InterfaceAddress(p23.getEndIp(), p23.getPrefixLength()))
+        .setAddress(ConcreteInterfaceAddress.create(p23.getEndIp(), p23.getPrefixLength()))
         .build();
     StaticRoute s13 =
         StaticRoute.builder()

@@ -90,6 +90,8 @@ A specification for filters (ACLs or firewall rules) in the network.
 
 * Filter name or a regex over the names indicate filters on all nodes in the network with that name or matching regex. For example, `filter1` includes all filters with that name and `/acl/` includes all filters whose names contain 'acl'.
 
+* `nodeTerm[filterWithoutNode]` indicates filters that match the `filterWithoutNode` specification on nodes that match the `nodeTerm` specification. A simple example is `as1border1[filter1]` which refers to the filter `filter1` on `as1border1`.
+
 * `@in(interfaceSpec)` refers to filters that get applied when packets enter the specified interfaces. For example, `@in(Ethernet0/0)` includes filters for incoming packets on interfaces named `Ethernet0/0` on all nodes.
 
 * `@out(interfaceSpec)` is similar except that it indicates filters that get applied when packets exit the specified interfaces. 
@@ -101,11 +103,24 @@ filterSpec :=
     filterTerm [(<b>&</b>|<b>,</b>|<b>\</b>) filterTerm]
 
 filterTerm :=
+    filterWithNode
+    | filterWithoutNode 
+    | <b>(</b>filterSpec<b>)</b>
+
+filterWithNode := 
+    nodeTerm<b>[</b>filterWithoutNode<b>]</b>
+
+filterWithoutNode :=
+    filterWithoutNodeTerm [(<b>&</b>|<b>,</b>|<b>\</b>) filterWithoutNodeTerm]
+
+filterWithoutNodeTerm :=
     &lt;<i>filter-name</i>&gt;
     | <b>/</b>&lt;<i>filter-name-regex</i>&gt;<b>/</b>
     | <b>@in(</b>interfaceSpec<b>)</b>
     | <b>@out(</b>interfaceSpec<b>)</b>
-    | <b>(</b>filterSpec<b>)</b>
+    | <b>(</b>filterWithoutNode<b>)</b>
+
+
 </pre>
 
 #### Filter Specifier Resolver
@@ -290,7 +305,7 @@ A specification for nodes in the network.
 
 * `@deviceType(type1)` indicates all nodes of the type 'type1'. The types of devices are listed [here](#device-types).
 
-* `@role(role, dim)` indicates all nodes with role name 'role' in dimension name 'dim'.
+* `@role(dim, role)` indicates all nodes with role name 'role' in dimension name 'dim'.
 
 #### Node Specifier Grammar
 
@@ -306,7 +321,7 @@ nodeTerm :=
 
 nodeFunc :=
     <b>@deviceType(</b><i>device-type</i><b>)</b>
-    | <b>@role(</b>&lt;<i>role-name</i>&gt;<b>,</b> &lt;<i>dimension-name</i>&gt;<b>)</b>
+    | <b>@role(</b>&lt;<i>dimension-name</i>&gt;<b>,</b> &lt;<i>role-name</i>&gt;<b>)</b>
 </pre>
 
 #### Node Specifier Resolver

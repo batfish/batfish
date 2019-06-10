@@ -184,6 +184,7 @@ import org.batfish.datamodel.AnnotatedRoute;
 import org.batfish.datamodel.BgpPeerConfig;
 import org.batfish.datamodel.BgpProcess;
 import org.batfish.datamodel.Bgpv4Route;
+import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.ConnectedRoute;
@@ -202,7 +203,6 @@ import org.batfish.datamodel.IkeHashingAlgorithm;
 import org.batfish.datamodel.IntegerSpace;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Interface.DependencyType;
-import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.InterfaceType;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpAccessList;
@@ -2719,9 +2719,13 @@ public final class FlatJuniperGrammarTest {
     assertThat(c, hasHostname(filename));
     /* other lines from node0 and node1 groups should be applied */
     assertThat(
-        c, hasInterface("lo0.1", hasAllAddresses(contains(new InterfaceAddress("1.1.1.1/32")))));
+        c,
+        hasInterface(
+            "lo0.1", hasAllAddresses(contains(ConcreteInterfaceAddress.parse("1.1.1.1/32")))));
     assertThat(
-        c, hasInterface("lo0.2", hasAllAddresses(contains(new InterfaceAddress("2.2.2.2/32")))));
+        c,
+        hasInterface(
+            "lo0.2", hasAllAddresses(contains(ConcreteInterfaceAddress.parse("2.2.2.2/32")))));
   }
 
   @Test
@@ -2736,9 +2740,13 @@ public final class FlatJuniperGrammarTest {
     assertThat(c, hasHostname(not(equalTo("juniper-apply-groups-node1"))));
     /* other lines from node0 and node1 groups should be applied */
     assertThat(
-        c, hasInterface("lo0.1", hasAllAddresses(contains(new InterfaceAddress("1.1.1.1/32")))));
+        c,
+        hasInterface(
+            "lo0.1", hasAllAddresses(contains(ConcreteInterfaceAddress.parse("1.1.1.1/32")))));
     assertThat(
-        c, hasInterface("lo0.2", hasAllAddresses(contains(new InterfaceAddress("2.2.2.2/32")))));
+        c,
+        hasInterface(
+            "lo0.2", hasAllAddresses(contains(ConcreteInterfaceAddress.parse("2.2.2.2/32")))));
   }
 
   @Test
@@ -2809,7 +2817,7 @@ public final class FlatJuniperGrammarTest {
         c,
         hasInterface(
             "ge-1/0/0.0",
-            hasAllAddresses(contains(new InterfaceAddress(Ip.parse("10.1.1.1"), 24)))));
+            hasAllAddresses(contains(ConcreteInterfaceAddress.create(Ip.parse("10.1.1.1"), 24)))));
   }
 
   @Test
@@ -3091,7 +3099,9 @@ public final class FlatJuniperGrammarTest {
     result =
         protocolPolicy.call(
             envWithRoute(
-                c, new LocalRoute(new InterfaceAddress(Ip.parse("1.1.1.1"), 28), "nextHop")));
+                c,
+                new LocalRoute(
+                    ConcreteInterfaceAddress.create(Ip.parse("1.1.1.1"), 28), "nextHop")));
     assertThat(result.getBooleanValue(), equalTo(false));
 
     /*
@@ -3132,7 +3142,9 @@ public final class FlatJuniperGrammarTest {
     Configuration c = parseConfig(hostname);
 
     /* apply-groups using group containing interface wildcard should function as expected. */
-    assertThat(c, hasInterface(loopback, hasAllAddresses(contains(new InterfaceAddress(prefix1)))));
+    assertThat(
+        c,
+        hasInterface(loopback, hasAllAddresses(contains(ConcreteInterfaceAddress.parse(prefix1)))));
 
     /* The wildcard copied out of groups should disappear and not be treated as an actual interface */
     assertThat(c, hasInterfaces(not(hasKey("*.*"))));
@@ -3329,8 +3341,10 @@ public final class FlatJuniperGrammarTest {
     RoutingPolicy peer4AllowAllLocal =
         c.getRoutingPolicies().get(computePeerExportPolicyName(Prefix.parse("4.0.0.1/32")));
 
-    LocalRoute localRoutePtp = new LocalRoute(new InterfaceAddress("10.0.0.0/31"), "ge-0/0/0.0");
-    LocalRoute localRouteLan = new LocalRoute(new InterfaceAddress("10.0.1.0/30"), "ge-0/0/1.0");
+    LocalRoute localRoutePtp =
+        new LocalRoute(ConcreteInterfaceAddress.parse("10.0.0.0/31"), "ge-0/0/0.0");
+    LocalRoute localRouteLan =
+        new LocalRoute(ConcreteInterfaceAddress.parse("10.0.1.0/30"), "ge-0/0/1.0");
 
     // Peer policies should reject local routes not exported by their VRFs
     Environment.Builder eb = Environment.builder(c, peer1Vrf).setDirection(Direction.OUT);
@@ -3409,8 +3423,10 @@ public final class FlatJuniperGrammarTest {
     String vrf4 = "vrf4";
     RoutingPolicy vrf4AllowAllLocal = c.getRoutingPolicies().get(computeOspfExportPolicyName(vrf4));
 
-    LocalRoute localRoutePtp = new LocalRoute(new InterfaceAddress("10.0.0.0/31"), "ge-0/0/0.0");
-    LocalRoute localRouteLan = new LocalRoute(new InterfaceAddress("10.0.1.0/30"), "ge-0/0/1.0");
+    LocalRoute localRoutePtp =
+        new LocalRoute(ConcreteInterfaceAddress.parse("10.0.0.0/31"), "ge-0/0/0.0");
+    LocalRoute localRouteLan =
+        new LocalRoute(ConcreteInterfaceAddress.parse("10.0.1.0/30"), "ge-0/0/1.0");
 
     // Peer policies should reject local routes not exported by their VRFs
     Environment.Builder eb = Environment.builder(c, vrf1).setDirection(Direction.OUT);
@@ -4519,7 +4535,7 @@ public final class FlatJuniperGrammarTest {
             new AnnotatedRoute<>(
                 new ConnectedRoute(Prefix.parse("2.2.2.2/31"), "ge-0/0/0.0"), DEFAULT_VRF_NAME),
             new AnnotatedRoute<>(
-                new LocalRoute(new InterfaceAddress("2.2.2.2/31"), "ge-0/0/0.0"),
+                new LocalRoute(ConcreteInterfaceAddress.parse("2.2.2.2/31"), "ge-0/0/0.0"),
                 DEFAULT_VRF_NAME));
     Set<AnnotatedRoute<AbstractRoute>> vrf2ExpectedRoutes =
         ImmutableSet.of(
@@ -4529,12 +4545,14 @@ public final class FlatJuniperGrammarTest {
             new AnnotatedRoute<>(
                 new ConnectedRoute(Prefix.parse("2.2.2.2/31"), "ge-0/0/0.0"), DEFAULT_VRF_NAME),
             new AnnotatedRoute<>(
-                new LocalRoute(new InterfaceAddress("2.2.2.2/31"), "ge-0/0/0.0"), DEFAULT_VRF_NAME),
+                new LocalRoute(ConcreteInterfaceAddress.parse("2.2.2.2/31"), "ge-0/0/0.0"),
+                DEFAULT_VRF_NAME),
             // Present normally
             new AnnotatedRoute<>(
                 new ConnectedRoute(Prefix.parse("2.2.2.8/31"), "ge-0/0/3.0"), vrf2Name),
             new AnnotatedRoute<>(
-                new LocalRoute(new InterfaceAddress("2.2.2.8/31"), "ge-0/0/3.0"), vrf2Name));
+                new LocalRoute(ConcreteInterfaceAddress.parse("2.2.2.8/31"), "ge-0/0/3.0"),
+                vrf2Name));
     assertThat(routes.get(DEFAULT_VRF_NAME), equalTo(defaultExpectedRoutes));
     assertThat(routes.get(vrf2Name), equalTo(vrf2ExpectedRoutes));
   }
@@ -4559,11 +4577,14 @@ public final class FlatJuniperGrammarTest {
             new AnnotatedRoute<>(
                 new ConnectedRoute(Prefix.parse("1.1.1.1/32"), "lo0.0"), DEFAULT_VRF_NAME),
             new AnnotatedRoute<>(
-                new LocalRoute(new InterfaceAddress("2.2.2.2/31"), "ge-0/0/0.0"), DEFAULT_VRF_NAME),
+                new LocalRoute(ConcreteInterfaceAddress.parse("2.2.2.2/31"), "ge-0/0/0.0"),
+                DEFAULT_VRF_NAME),
             new AnnotatedRoute<>(
-                new LocalRoute(new InterfaceAddress("2.2.2.4/31"), "ge-0/0/1.0"), DEFAULT_VRF_NAME),
+                new LocalRoute(ConcreteInterfaceAddress.parse("2.2.2.4/31"), "ge-0/0/1.0"),
+                DEFAULT_VRF_NAME),
             new AnnotatedRoute<>(
-                new LocalRoute(new InterfaceAddress("2.2.2.6/31"), "ge-0/0/2.0"), DEFAULT_VRF_NAME),
+                new LocalRoute(ConcreteInterfaceAddress.parse("2.2.2.6/31"), "ge-0/0/2.0"),
+                DEFAULT_VRF_NAME),
             // allowed by RIB_IN
             new AnnotatedRoute<>(
                 new ConnectedRoute(Prefix.parse("2.2.2.2/31"), "ge-0/0/0.0"), DEFAULT_VRF_NAME),
@@ -4573,7 +4594,8 @@ public final class FlatJuniperGrammarTest {
             new AnnotatedRoute<>(
                 new ConnectedRoute(Prefix.parse("2.2.2.8/31"), "ge-0/0/3.0"), vrf2Name),
             new AnnotatedRoute<>(
-                new LocalRoute(new InterfaceAddress("2.2.2.8/31"), "ge-0/0/3.0"), vrf2Name));
+                new LocalRoute(ConcreteInterfaceAddress.parse("2.2.2.8/31"), "ge-0/0/3.0"),
+                vrf2Name));
     Set<AnnotatedRoute<AbstractRoute>> defaultExpectedRoutes =
         ImmutableSet.of(
             new AnnotatedRoute<>(
@@ -4581,15 +4603,17 @@ public final class FlatJuniperGrammarTest {
             new AnnotatedRoute<>(
                 new ConnectedRoute(Prefix.parse("2.2.2.2/31"), "ge-0/0/0.0"), DEFAULT_VRF_NAME),
             new AnnotatedRoute<>(
-                new LocalRoute(new InterfaceAddress("2.2.2.2/31"), "ge-0/0/0.0"), DEFAULT_VRF_NAME),
+                new LocalRoute(ConcreteInterfaceAddress.parse("2.2.2.2/31"), "ge-0/0/0.0"),
+                DEFAULT_VRF_NAME),
             new AnnotatedRoute<>(
                 new ConnectedRoute(Prefix.parse("2.2.2.4/31"), "ge-0/0/1.0"), DEFAULT_VRF_NAME),
             new AnnotatedRoute<>(
-                new LocalRoute(new InterfaceAddress("2.2.2.4/31"), "ge-0/0/1.0"), DEFAULT_VRF_NAME),
+                new LocalRoute(ConcreteInterfaceAddress.parse("2.2.2.4/31"), "ge-0/0/1.0"),
+                DEFAULT_VRF_NAME),
             new AnnotatedRoute<>(
                 new ConnectedRoute(Prefix.parse("2.2.2.6/31"), "ge-0/0/2.0"), DEFAULT_VRF_NAME),
             new AnnotatedRoute<>(
-                new LocalRoute(new InterfaceAddress("2.2.2.6/31"), "ge-0/0/2.0"),
+                new LocalRoute(ConcreteInterfaceAddress.parse("2.2.2.6/31"), "ge-0/0/2.0"),
                 DEFAULT_VRF_NAME));
     assertThat(routes.get(DEFAULT_VRF_NAME), equalTo(defaultExpectedRoutes));
     assertThat(routes.get(vrf2Name), equalTo(vrf2ExpectedRoutes));
@@ -4616,14 +4640,15 @@ public final class FlatJuniperGrammarTest {
             new AnnotatedRoute<>(
                 new ConnectedRoute(Prefix.parse("2.2.2.2/31"), "ge-0/0/0.0", 0), DEFAULT_VRF_NAME),
             new AnnotatedRoute<>(
-                new LocalRoute(new InterfaceAddress("2.2.2.2/31"), "ge-0/0/0.0"),
+                new LocalRoute(ConcreteInterfaceAddress.parse("2.2.2.2/31"), "ge-0/0/0.0"),
                 DEFAULT_VRF_NAME));
     Set<AnnotatedRoute<AbstractRoute>> vrf2ExpectedRoutes =
         ImmutableSet.of(
             new AnnotatedRoute<>(
                 new ConnectedRoute(Prefix.parse("1.1.1.1/32"), "lo0.0"), DEFAULT_VRF_NAME),
             new AnnotatedRoute<>(
-                new LocalRoute(new InterfaceAddress("2.2.2.2/31"), "ge-0/0/0.0"), DEFAULT_VRF_NAME),
+                new LocalRoute(ConcreteInterfaceAddress.parse("2.2.2.2/31"), "ge-0/0/0.0"),
+                DEFAULT_VRF_NAME),
             new AnnotatedRoute<>(
                 new ConnectedRoute(Prefix.parse("2.2.2.2/31"), "ge-0/0/0.0", 123),
                 DEFAULT_VRF_NAME));
