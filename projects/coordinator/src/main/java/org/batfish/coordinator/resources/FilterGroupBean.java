@@ -13,7 +13,7 @@ public class FilterGroupBean {
 
   /**
    * The set of filters in this filter group. Each filter must be a valid input to currently active
-   * {@link org.batfish.specifier.FilterSpecifierFactory}.
+   * {@link org.batfish.specifier.FilterSpecifier}.
    */
   public List<String> filters;
 

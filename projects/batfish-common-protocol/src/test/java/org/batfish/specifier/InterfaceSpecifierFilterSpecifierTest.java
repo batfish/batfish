@@ -50,9 +50,7 @@ public class InterfaceSpecifierFilterSpecifierTest {
   @Test
   public void resolveInFilter() {
     assertThat(
-        new InterfaceSpecifierFilterSpecifier(
-                Type.IN_FILTER,
-                new FlexibleInterfaceSpecifierFactory().buildInterfaceSpecifier("eth0"))
+        new InterfaceSpecifierFilterSpecifier(Type.IN_FILTER, new NameInterfaceSpecifier("eth0"))
             .resolve(_nodeName, _ctxt),
         equalTo(ImmutableSet.of(_filter1)));
   }
@@ -60,9 +58,7 @@ public class InterfaceSpecifierFilterSpecifierTest {
   @Test
   public void resolveOutFilter() {
     assertThat(
-        new InterfaceSpecifierFilterSpecifier(
-                Type.OUT_FILTER,
-                new FlexibleInterfaceSpecifierFactory().buildInterfaceSpecifier("eth0"))
+        new InterfaceSpecifierFilterSpecifier(Type.OUT_FILTER, new NameInterfaceSpecifier("eth0"))
             .resolve(_nodeName, _ctxt),
         equalTo(ImmutableSet.of(_filter2)));
   }
@@ -70,9 +66,7 @@ public class InterfaceSpecifierFilterSpecifierTest {
   @Test
   public void resolveMissingFilter() {
     assertThat(
-        new InterfaceSpecifierFilterSpecifier(
-                Type.OUT_FILTER,
-                new FlexibleInterfaceSpecifierFactory().buildInterfaceSpecifier("eth1"))
+        new InterfaceSpecifierFilterSpecifier(Type.OUT_FILTER, new NameInterfaceSpecifier("eth1"))
             .resolve(_nodeName, _ctxt),
         equalTo(ImmutableSet.of()));
   }

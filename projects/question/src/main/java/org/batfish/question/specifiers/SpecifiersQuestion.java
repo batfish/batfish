@@ -77,9 +77,7 @@ public final class SpecifiersQuestion extends Question {
   @JsonIgnore
   FilterSpecifier getFilterSpecifier() {
     return SpecifierFactories.getFilterSpecifierOrDefault(
-        _filterSpecifierInput,
-        AllFiltersFilterSpecifier.INSTANCE,
-        SpecifierFactories.getFilterFactory(_specifierFactoryVersion));
+        _filterSpecifierInput, AllFiltersFilterSpecifier.INSTANCE, _specifierFactoryVersion);
   }
 
   @JsonIgnore
@@ -87,7 +85,7 @@ public final class SpecifiersQuestion extends Question {
     return SpecifierFactories.getInterfaceSpecifierOrDefault(
         _interfaceSpecifierInput,
         AllInterfacesInterfaceSpecifier.INSTANCE,
-        SpecifierFactories.getInterfaceFactory(_specifierFactoryVersion));
+        _specifierFactoryVersion);
   }
 
   @JsonIgnore
@@ -95,23 +93,19 @@ public final class SpecifiersQuestion extends Question {
     return SpecifierFactories.getIpSpaceSpecifierOrDefault(
         _ipSpaceSpecifierInput,
         InferFromLocationIpSpaceSpecifier.INSTANCE,
-        SpecifierFactories.getIpSpaceFactory(_specifierFactoryVersion));
+        _specifierFactoryVersion);
   }
 
   @JsonIgnore
   LocationSpecifier getLocationSpecifier() {
     return SpecifierFactories.getLocationSpecifierOrDefault(
-        _locationSpecifierInput,
-        AllInterfacesLocationSpecifier.INSTANCE,
-        SpecifierFactories.getLocationFactory(_specifierFactoryVersion));
+        _locationSpecifierInput, AllInterfacesLocationSpecifier.INSTANCE, _specifierFactoryVersion);
   }
 
   @JsonIgnore
   NodeSpecifier getNodeSpecifier() {
     return SpecifierFactories.getNodeSpecifierOrDefault(
-        _nodeSpecifierInput,
-        AllNodesNodeSpecifier.INSTANCE,
-        SpecifierFactories.getNodeFactory(_specifierFactoryVersion));
+        _nodeSpecifierInput, AllNodesNodeSpecifier.INSTANCE, _specifierFactoryVersion);
   }
 
   @Override

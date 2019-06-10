@@ -20,7 +20,9 @@ import org.batfish.referencelibrary.AddressGroup;
 import org.batfish.referencelibrary.ReferenceBook;
 import org.batfish.specifier.MockSpecifierContext;
 import org.batfish.specifier.SpecifierContext;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 
 public class ParboiledIpSpaceSpecifierTest {
 
@@ -141,5 +143,21 @@ public class ParboiledIpSpaceSpecifierTest {
     assertThat(
         computeIpSpace(new UnionIpSpaceAstNode(new IpAstNode(ip1), new IpAstNode(ip2)), _emptyCtxt),
         equalTo(AclIpSpace.union(ip1.toIpSpace(), ip2.toIpSpace())));
+  }
+
+  @Rule public ExpectedException _thrown = ExpectedException.none();
+
+  @Test
+  public void testParseBadInput() {
+    _thrown.expect(IllegalArgumentException.class);
+    _thrown.expectMessage("Error parsing");
+    ParboiledIpSpaceSpecifier.parse("@..");
+  }
+
+  @Test
+  public void testParseGoodInput() {
+    assertThat(
+        ParboiledIpSpaceSpecifier.parse("1.1.1.1"),
+        equalTo(new ParboiledIpSpaceSpecifier(new IpAstNode("1.1.1.1"))));
   }
 }
