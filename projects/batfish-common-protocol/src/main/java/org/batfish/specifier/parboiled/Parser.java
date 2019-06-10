@@ -36,6 +36,8 @@ import static org.batfish.specifier.parboiled.Anchor.Type.LOCATION_SET_OP;
 import static org.batfish.specifier.parboiled.Anchor.Type.NAMED_STRUCTURE_SET_OP;
 import static org.batfish.specifier.parboiled.Anchor.Type.NAMED_STRUCTURE_TYPE;
 import static org.batfish.specifier.parboiled.Anchor.Type.NAMED_STRUCTURE_TYPE_REGEX;
+import static org.batfish.specifier.parboiled.Anchor.Type.NODE_AND_FILTER;
+import static org.batfish.specifier.parboiled.Anchor.Type.NODE_AND_FILTER_TAIL;
 import static org.batfish.specifier.parboiled.Anchor.Type.NODE_AND_INTERFACE;
 import static org.batfish.specifier.parboiled.Anchor.Type.NODE_AND_INTERFACE_TAIL;
 import static org.batfish.specifier.parboiled.Anchor.Type.NODE_NAME;
@@ -173,11 +175,19 @@ public class Parser extends CommonParser {
    * <pre>
    *   filterSpec := filterTerm [{@literal &} | , | \ filterTerm]*
    *
-   *   filterTerm := @in(interfaceSpec)  // inFilterOf is also supported for back compat
+   *   filterTerm := filterWithNode
+   *                    | filterWithoutNode
+   *                    | ( filterSpec )
+   *
+   *   filterWithNode := nodeTerm [filterWithoutNode]
+   *
+   *   filterWithoutNode := filterWithoutNodeTerm [{@literal &} | , | \ filterWithoutNodeTerm]*
+   *
+   *   filterWithoutNodeTerm := @in(interfaceSpec)  // inFilterOf is also supported for back compat
    *               | @out(interfaceSpec) // outFilterOf is also supported
    *               | filterName
    *               | filterNameRegex
-   *               | ( filterSpec )
+   *               | ( filterWithoutNode )
    * </pre>
    */
 
@@ -205,6 +215,49 @@ public class Parser extends CommonParser {
   }
 
   public Rule FilterTerm() {
+    return FirstOf(FilterWithNode(), FilterWithoutNode(), FilterParens());
+  }
+
+  @Anchor(NODE_AND_FILTER)
+  public Rule FilterWithNode() {
+    return Sequence(
+        NodeTerm(),
+        WhiteSpace(),
+        FilterWithNodeTail(),
+        push(new FilterWithNodeFilterAstNode(pop(1), pop())));
+  }
+
+  @Anchor(NODE_AND_FILTER_TAIL)
+  public Rule FilterWithNodeTail() {
+    return Sequence("[ ", FilterWithoutNode(), WhiteSpace(), CloseBrackets());
+  }
+
+  @Anchor(FILTER_SET_OP)
+  public Rule FilterWithoutNode() {
+    Var<Character> op = new Var<>();
+    return Sequence(
+        FilterWithoutNodeIntersection(),
+        WhiteSpace(),
+        ZeroOrMore(
+            FirstOf(", ", "\\ "),
+            op.set(matchedChar()),
+            FilterWithoutNodeIntersection(),
+            push(SetOpFilterAstNode.create(op.get(), pop(1), pop())),
+            WhiteSpace()));
+  }
+
+  public Rule FilterWithoutNodeIntersection() {
+    return Sequence(
+        FilterWithoutNodeTerm(),
+        WhiteSpace(),
+        ZeroOrMore(
+            "& ",
+            FilterWithoutNodeTerm(),
+            push(new IntersectionFilterAstNode(pop(1), pop())),
+            WhiteSpace()));
+  }
+
+  public Rule FilterWithoutNodeTerm() {
     return FirstOf(
         FilterInterfaceIn(),
         FilterInterfaceOut(),
@@ -212,7 +265,7 @@ public class Parser extends CommonParser {
         FilterNameRegexDeprecated(),
         FilterNameRegex(),
         FilterName(),
-        FilterParens());
+        FilterWithoutNodeParens());
   }
 
   @Anchor(FILTER_INTERFACE_IN)
@@ -274,6 +327,13 @@ public class Parser extends CommonParser {
     return Sequence("( ", FilterSpec(), WhiteSpace(), CloseParens());
   }
 
+  // The anchor here is an approximation to simplify user messages
+  @Anchor(FILTER_PARENS)
+  public Rule FilterWithoutNodeParens() {
+    // Leave the stack as is -- no need to remember that this was a parenthetical term
+    return Sequence("( ", FilterWithoutNode(), WhiteSpace(), CloseParens());
+  }
+
   /**
    * Interface grammar
    *
@@ -282,7 +342,7 @@ public class Parser extends CommonParser {
    *
    *   interfaceTerm := interfaceWithNode
    *                    | interfaceWithoutNode
-   *                    | ( interfaceTerm )
+   *                    | ( interfaceSpec )
    *
    *   interfaceWithNode := nodeTerm [interfaceWithoutNode]
    *
@@ -296,7 +356,7 @@ public class Parser extends CommonParser {
    *                        | @zone(zoneName)
    *                        | interfaceName
    *                        | interfaceNameRegex
-   *                        | ( interfaceTerm )
+   *                        | ( interfaceWithoutNode )
    * </pre>
    */
 
@@ -627,6 +687,7 @@ public class Parser extends CommonParser {
    *               | ipWildcard (e.g., 1.1.1.1:255.255.255.0)
    *               | ipRange (e.g., 1.1.1.1-1.1.1.2)
    *               | ipAddress (e.g., 1.1.1.1)
+   *               | ( ipSpaceSpec )
    * </pre>
    */
 
@@ -779,7 +840,7 @@ public class Parser extends CommonParser {
    *   locationTerm := locationInterface
    *               | @enter(locationInterface)   // non-@ versions also supported
    *               | @exit(locationInterface)
-   *               | ( locationTerm )
+   *               | ( locationSpec )
    *
    *   locationInterface := nodeTerm[interfaceTerm]
    *                        | nodeTerm
@@ -936,7 +997,7 @@ public class Parser extends CommonParser {
    *               | @deviceType(a)
    *               | nodeName
    *               | nodeNameRegex
-   *               | ( nodeTerm )
+   *               | ( nodeSpec )
    * </pre>
    */
 
