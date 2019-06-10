@@ -932,9 +932,9 @@ public class Parser extends CommonParser {
   public Rule NodeRoleAndDimension() {
     return Sequence(
         "( ",
-        NodeRoleName(),
-        ", ",
         NodeRoleDimensionName(),
+        ", ",
+        NodeRoleName(),
         CloseParens(),
         push(new RoleNodeAstNode(pop(1), pop())));
   }
