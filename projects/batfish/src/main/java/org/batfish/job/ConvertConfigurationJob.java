@@ -1,8 +1,8 @@
 package org.batfish.job;
 
-import com.google.common.collect.ImmutableSortedMap;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Multimap;
-import com.google.common.collect.Ordering;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -20,6 +20,7 @@ import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.Route6FilterList;
 import org.batfish.datamodel.RouteFilterList;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
+import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.main.Batfish;
 import org.batfish.representation.aws.AwsConfiguration;
 import org.batfish.representation.host.HostConfiguration;
@@ -42,13 +43,15 @@ public class ConvertConfigurationJob extends BatfishJob<ConvertConfigurationResu
    * Sanity checks the given map from name-of-thing to thing-with-name for name consistency. If the
    * names are not consistent, warns and does not convert them.
    *
+   * <p>The created maps are sorted by key in ascending order.
+   *
    * <p>Hopefully this will only happen during new parser development, and will help authors of
    * those new parsers get it right.
    */
-  private static <T> ImmutableSortedMap<String, T> verifyAndToImmutableMap(
+  private static <T> ImmutableMap<String, T> verifyAndToImmutableMap(
       @Nullable Map<String, T> map, Function<T, String> keyFn, Warnings w) {
     if (map == null || map.isEmpty()) {
-      return ImmutableSortedMap.of();
+      return ImmutableMap.of();
     }
     return map.entrySet().stream()
         .filter(
@@ -63,9 +66,8 @@ public class ConvertConfigurationJob extends BatfishJob<ConvertConfigurationResu
                       e.getKey(), e.getValue(), key));
               return false;
             })
-        .collect(
-            ImmutableSortedMap.toImmutableSortedMap(
-                Ordering.natural(), Entry::getKey, Entry::getValue));
+        .sorted(Comparator.comparing(Entry::getKey)) /* ImmutableMap is insert ordered. */
+        .collect(ImmutableMap.toImmutableMap(Entry::getKey, Entry::getValue));
   }
 
   /**
@@ -90,12 +92,15 @@ public class ConvertConfigurationJob extends BatfishJob<ConvertConfigurationResu
     c.setAsPathAccessLists(
         verifyAndToImmutableMap(c.getAsPathAccessLists(), AsPathAccessList::getName, w));
     c.setCommunityLists(verifyAndToImmutableMap(c.getCommunityLists(), CommunityList::getName, w));
+    c.setInterfaces(verifyAndToImmutableMap(c.getAllInterfaces(), Interface::getName, w));
     c.setIpAccessLists(verifyAndToImmutableMap(c.getIpAccessLists(), IpAccessList::getName, w));
     c.setIp6AccessLists(verifyAndToImmutableMap(c.getIp6AccessLists(), Ip6AccessList::getName, w));
     c.setRouteFilterLists(
         verifyAndToImmutableMap(c.getRouteFilterLists(), RouteFilterList::getName, w));
     c.setRoute6FilterLists(
         verifyAndToImmutableMap(c.getRoute6FilterLists(), Route6FilterList::getName, w));
+    c.setRoutingPolicies(
+        verifyAndToImmutableMap(c.getRoutingPolicies(), RoutingPolicy::getName, w));
     removeInvalidAcls(c, w);
   }
 

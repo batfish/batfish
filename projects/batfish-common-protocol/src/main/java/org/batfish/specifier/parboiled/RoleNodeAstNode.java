@@ -8,16 +8,16 @@ final class RoleNodeAstNode implements NodeAstNode {
   private final String _roleName;
   private final String _dimensionName;
 
-  RoleNodeAstNode(AstNode roleName, AstNode dimensionName) {
+  RoleNodeAstNode(AstNode dimensionName, AstNode roleName) {
     checkArgument(roleName instanceof StringAstNode, "role name must be a string");
     checkArgument(dimensionName instanceof StringAstNode, "dimension name must be a string");
-    _roleName = ((StringAstNode) roleName).getStr();
     _dimensionName = ((StringAstNode) dimensionName).getStr();
+    _roleName = ((StringAstNode) roleName).getStr();
   }
 
-  RoleNodeAstNode(String roleName, String dimensionName) {
-    _roleName = roleName;
+  RoleNodeAstNode(String dimensionName, String roleName) {
     _dimensionName = dimensionName;
+    _roleName = roleName;
   }
 
   @Override
@@ -39,20 +39,20 @@ final class RoleNodeAstNode implements NodeAstNode {
       return false;
     }
     RoleNodeAstNode that = (RoleNodeAstNode) o;
-    return Objects.equals(_roleName, that._roleName)
-        && Objects.equals(_dimensionName, that._dimensionName);
-  }
-
-  String getRoleName() {
-    return _roleName;
+    return Objects.equals(_dimensionName, that._dimensionName)
+        && Objects.equals(_roleName, that._roleName);
   }
 
   String getDimensionName() {
     return _dimensionName;
   }
 
+  String getRoleName() {
+    return _roleName;
+  }
+
   @Override
   public int hashCode() {
-    return Objects.hash(_roleName, _dimensionName);
+    return Objects.hash(_dimensionName, _roleName);
   }
 }

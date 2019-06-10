@@ -12,10 +12,10 @@ import java.util.Collections;
 import java.util.SortedMap;
 import org.batfish.common.topology.TopologyProvider;
 import org.batfish.common.util.BatfishObjectMapper;
+import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.Interface;
-import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpLink;
 import org.batfish.datamodel.NetworkConfigurations;
@@ -77,7 +77,7 @@ public class OspfTopologyTest {
     Vrf vrf1 = vb.setOwner(c1).build();
     OspfProcess proc1 = opb.setVrf(vrf1).build();
     Interface i12 =
-        ib.setAddress(new InterfaceAddress("1.1.1.0/31"))
+        ib.setAddress(ConcreteInterfaceAddress.parse("1.1.1.0/31"))
             .setVrf(vrf1)
             .setOwner(c1)
             .setOspfEnabled(true)
@@ -87,7 +87,7 @@ public class OspfTopologyTest {
             .build();
 
     Interface i13 =
-        ib.setAddress(new InterfaceAddress("1.1.1.2/31"))
+        ib.setAddress(ConcreteInterfaceAddress.parse("1.1.1.2/31"))
             .setVrf(vrf1)
             .setOwner(c1)
             .setOspfEnabled(true)
@@ -97,7 +97,7 @@ public class OspfTopologyTest {
             .build();
 
     Interface i14 =
-        ib.setAddress(new InterfaceAddress("1.1.1.4/31"))
+        ib.setAddress(ConcreteInterfaceAddress.parse("1.1.1.4/31"))
             .setVrf(vrf1)
             .setOwner(c1)
             .setOspfEnabled(true)
@@ -117,7 +117,7 @@ public class OspfTopologyTest {
     Vrf vrf2 = vb.setOwner(c2).build();
     OspfProcess proc2 = opb.setVrf(vrf2).build();
     Interface i21 =
-        ib.setAddress(new InterfaceAddress("1.1.1.1/31"))
+        ib.setAddress(ConcreteInterfaceAddress.parse("1.1.1.1/31"))
             .setVrf(vrf2)
             .setOwner(c2)
             .setOspfEnabled(true)
@@ -132,7 +132,7 @@ public class OspfTopologyTest {
     Vrf vrf3 = vb.setOwner(c3).build();
     OspfProcess proc3 = opb.setVrf(vrf3).build();
     Interface i31 =
-        ib.setAddress(new InterfaceAddress("1.1.1.3/31"))
+        ib.setAddress(ConcreteInterfaceAddress.parse("1.1.1.3/31"))
             .setVrf(vrf3)
             .setOwner(c3)
             .setOspfEnabled(true)
@@ -147,7 +147,7 @@ public class OspfTopologyTest {
     Vrf vrf4 = vb.setOwner(c4).build();
     OspfProcess proc4 = opb.setVrf(vrf4).build();
     Interface i41 =
-        ib.setAddress(new InterfaceAddress("1.1.1.4/31"))
+        ib.setAddress(ConcreteInterfaceAddress.parse("1.1.1.4/31"))
             .setVrf(vrf4)
             .setOwner(c4)
             .setOspfEnabled(true)

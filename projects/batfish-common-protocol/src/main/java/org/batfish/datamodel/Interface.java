@@ -422,8 +422,8 @@ public final class Interface extends ComparableStructure<String> {
 
     /**
      * Set the secondary addresses of the interface. <br>
-     * The {@link Interface#getAllAddresses()} method of the built {@link Interface} will return a
-     * set containing the primary address and secondary addresses.<br>
+     * The {@link Interface#getAllConcreteAddresses()} method of the built {@link Interface} will
+     * return a set containing the primary address and secondary addresses.<br>
      * The node will accept traffic whose destination IP belongs is among any of the addresses of
      * any of the interfaces. The primary address is the one used by default as the source IP for
      * traffic sent out the interface. A secondary address is another address potentially associated
@@ -1078,8 +1078,19 @@ public final class Interface extends ComparableStructure<String> {
     return _allowedVlans;
   }
 
-  /** All IPV4 address/network assignments on this interface. */
+  /**
+   * All IPV4 address/network assignments on this interface.
+   *
+   * @return
+   */
   @JsonProperty(PROP_ALL_PREFIXES)
+  public Set<ConcreteInterfaceAddress> getAllConcreteAddresses() {
+    return _allAddresses.stream()
+        .filter(a -> a instanceof ConcreteInterfaceAddress)
+        .map(a -> (ConcreteInterfaceAddress) a)
+        .collect(ImmutableSet.toImmutableSet());
+  }
+
   public Set<InterfaceAddress> getAllAddresses() {
     return _allAddresses;
   }
@@ -1361,8 +1372,17 @@ public final class Interface extends ComparableStructure<String> {
 
   /** The primary IPV4 address/network of this interface. */
   @JsonProperty(PROP_PREFIX)
+  @Nullable
   public InterfaceAddress getAddress() {
     return _address;
+  }
+
+  @JsonIgnore
+  @Nullable
+  public ConcreteInterfaceAddress getConcreteAddress() {
+    return _address instanceof ConcreteInterfaceAddress
+        ? (ConcreteInterfaceAddress) _address
+        : null;
   }
 
   @JsonIgnore
@@ -1397,7 +1417,10 @@ public final class Interface extends ComparableStructure<String> {
 
   @JsonIgnore
   public @Nullable Prefix getPrimaryNetwork() {
-    return _address != null ? _address.getPrefix() : null;
+    if (_address instanceof ConcreteInterfaceAddress) {
+      return ((ConcreteInterfaceAddress) _address).getPrefix();
+    }
+    return null;
   }
 
   /** Whether or not proxy-ARP is enabled on this interface. */
@@ -1521,7 +1544,7 @@ public final class Interface extends ComparableStructure<String> {
   }
 
   @JsonProperty(PROP_ALL_PREFIXES)
-  public void setAllAddresses(Iterable<InterfaceAddress> allAddresses) {
+  public void setAllAddresses(Iterable<? extends InterfaceAddress> allAddresses) {
     _allAddresses = ImmutableSortedSet.copyOf(allAddresses);
   }
 

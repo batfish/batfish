@@ -77,12 +77,12 @@ import org.batfish.datamodel.BgpPeerConfig;
 import org.batfish.datamodel.BgpUnnumberedPeerConfig;
 import org.batfish.datamodel.Bgpv4Route;
 import org.batfish.datamodel.BumTransportMethod;
+import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConnectedRoute;
 import org.batfish.datamodel.IntegerSpace;
 import org.batfish.datamodel.Interface.Dependency;
 import org.batfish.datamodel.Interface.DependencyType;
-import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Ip6;
 import org.batfish.datamodel.LineAction;
@@ -519,7 +519,8 @@ public final class CumulusNcluGrammarTest {
     // bond3
     assertThat(c, hasInterface("bond3", isSwitchport(false)));
     assertThat(c, hasInterface("bond3", isActive(false)));
-    assertThat(c, hasInterface("bond3", hasAddress(new InterfaceAddress("192.0.2.1/24"))));
+    assertThat(
+        c, hasInterface("bond3", hasAddress(ConcreteInterfaceAddress.parse("192.0.2.1/24"))));
     assertThat(c, hasInterface("bond3", hasVrfName("vrf1")));
   }
 
@@ -557,7 +558,7 @@ public final class CumulusNcluGrammarTest {
     assertThat(
         "Ensure IP address was extracted",
         bond3.getIpAddresses(),
-        contains(new InterfaceAddress("192.0.2.1/24")));
+        contains(ConcreteInterfaceAddress.parse("192.0.2.1/24")));
     assertThat("Ensure VRF was extracted", bond3.getVrf(), equalTo("vrf1"));
   }
 
@@ -791,21 +792,21 @@ public final class CumulusNcluGrammarTest {
             "bond2.4094",
             both(hasAllAddresses(
                     containsInAnyOrder(
-                        new InterfaceAddress("10.0.1.1/24"),
-                        new InterfaceAddress("172.16.0.1/24"))))
-                .and(hasAddress(new InterfaceAddress("10.0.1.1/24")))));
+                        ConcreteInterfaceAddress.parse("10.0.1.1/24"),
+                        ConcreteInterfaceAddress.parse("172.16.0.1/24"))))
+                .and(hasAddress(ConcreteInterfaceAddress.parse("10.0.1.1/24")))));
     assertThat(
         c,
         hasInterface(
             "eth0",
-            both(hasAllAddresses(containsInAnyOrder(new InterfaceAddress("10.0.2.1/24"))))
-                .and(hasAddress(new InterfaceAddress("10.0.2.1/24")))));
+            both(hasAllAddresses(containsInAnyOrder(ConcreteInterfaceAddress.parse("10.0.2.1/24"))))
+                .and(hasAddress(ConcreteInterfaceAddress.parse("10.0.2.1/24")))));
     assertThat(
         c,
         hasInterface(
             "swp4",
-            both(hasAllAddresses(containsInAnyOrder(new InterfaceAddress("10.0.3.1/24"))))
-                .and(hasAddress(new InterfaceAddress("10.0.3.1/24")))));
+            both(hasAllAddresses(containsInAnyOrder(ConcreteInterfaceAddress.parse("10.0.3.1/24"))))
+                .and(hasAddress(ConcreteInterfaceAddress.parse("10.0.3.1/24")))));
 
     // bandwidth
     assertThat(c, hasInterface("bond1", hasBandwidth(10E9D)));
@@ -857,7 +858,9 @@ public final class CumulusNcluGrammarTest {
     assertThat(
         "Ensure ip addresses are extracted",
         vc.getInterfaces().get("bond2.4094").getIpAddresses(),
-        contains(new InterfaceAddress("10.0.1.1/24"), new InterfaceAddress("172.16.0.1/24")));
+        contains(
+            ConcreteInterfaceAddress.parse("10.0.1.1/24"),
+            ConcreteInterfaceAddress.parse("172.16.0.1/24")));
 
     // clag backup-ip
     assertThat(
@@ -952,14 +955,15 @@ public final class CumulusNcluGrammarTest {
   public void testLoopbackConversion() throws IOException {
     Configuration c = parseConfig("cumulus_nclu_loopback");
 
-    assertThat(c, hasInterface("lo", hasAddress(new InterfaceAddress("10.0.0.1/32"))));
+    assertThat(c, hasInterface("lo", hasAddress(ConcreteInterfaceAddress.parse("10.0.0.1/32"))));
     assertThat(
         c,
         hasInterface(
             "lo",
             hasAllAddresses(
                 containsInAnyOrder(
-                    new InterfaceAddress("10.0.0.1/32"), new InterfaceAddress("10.0.1.1/24")))));
+                    ConcreteInterfaceAddress.parse("10.0.0.1/32"),
+                    ConcreteInterfaceAddress.parse("10.0.1.1/24")))));
     assertThat(c, hasInterface("lo", hasVrfName(DEFAULT_VRF_NAME)));
     assertThat(c, hasDefaultVrf(hasInterfaces(contains("lo"))));
   }
@@ -976,7 +980,9 @@ public final class CumulusNcluGrammarTest {
     assertThat(
         "Ensure ip addresses are extracted",
         vc.getLoopback().getAddresses(),
-        contains(new InterfaceAddress("10.0.0.1/32"), new InterfaceAddress("10.0.1.1/24")));
+        contains(
+            ConcreteInterfaceAddress.parse("10.0.0.1/32"),
+            ConcreteInterfaceAddress.parse("10.0.1.1/24")));
   }
 
   @Test
@@ -1189,18 +1195,18 @@ public final class CumulusNcluGrammarTest {
     assertThat(c, hasInterface("vlan5", hasVlan(6)));
 
     // ip address
-    assertThat(c, hasInterface("vlan2", hasAddress(new InterfaceAddress("10.0.0.1/24"))));
+    assertThat(c, hasInterface("vlan2", hasAddress(ConcreteInterfaceAddress.parse("10.0.0.1/24"))));
     assertThat(
         c,
         hasInterface(
             "vlan2",
             hasAllAddresses(
                 containsInAnyOrder(
-                    new InterfaceAddress("10.0.0.1/24"),
-                    new InterfaceAddress("10.0.1.1/24"),
-                    new InterfaceAddress("10.0.2.1/24"),
-                    new InterfaceAddress("10.0.3.1/24"),
-                    new InterfaceAddress("10.0.4.1/24")))));
+                    ConcreteInterfaceAddress.parse("10.0.0.1/24"),
+                    ConcreteInterfaceAddress.parse("10.0.1.1/24"),
+                    ConcreteInterfaceAddress.parse("10.0.2.1/24"),
+                    ConcreteInterfaceAddress.parse("10.0.3.1/24"),
+                    ConcreteInterfaceAddress.parse("10.0.4.1/24")))));
   }
 
   @Test
@@ -1225,7 +1231,9 @@ public final class CumulusNcluGrammarTest {
     // ip address
     assertThat(
         vc.getVlans().get("vlan2").getAddresses(),
-        contains(new InterfaceAddress("10.0.0.1/24"), new InterfaceAddress("10.0.1.1/24")));
+        contains(
+            ConcreteInterfaceAddress.parse("10.0.0.1/24"),
+            ConcreteInterfaceAddress.parse("10.0.1.1/24")));
     assertThat(vc.getVlans().get("vlan3").getAddresses(), empty());
     assertThat(vc.getVlans().get("vlan4").getAddresses(), empty());
     assertThat(vc.getVlans().get("vlan5").getAddresses(), empty());
@@ -1237,9 +1245,10 @@ public final class CumulusNcluGrammarTest {
             ImmutableMap.of(
                 MacAddress.parse("00:00:00:00:00:01"),
                 ImmutableSet.of(
-                    new InterfaceAddress("10.0.2.1/24"), new InterfaceAddress("10.0.3.1/24")),
+                    ConcreteInterfaceAddress.parse("10.0.2.1/24"),
+                    ConcreteInterfaceAddress.parse("10.0.3.1/24")),
                 MacAddress.parse("00:00:00:00:00:02"),
-                ImmutableSet.of(new InterfaceAddress("10.0.4.1/24")))));
+                ImmutableSet.of(ConcreteInterfaceAddress.parse("10.0.4.1/24")))));
     assertThat(vc.getVlans().get("vlan3").getAddressVirtuals(), anEmptyMap());
     assertThat(vc.getVlans().get("vlan4").getAddressVirtuals(), anEmptyMap());
     assertThat(vc.getVlans().get("vlan5").getAddressVirtuals(), anEmptyMap());
@@ -1260,14 +1269,15 @@ public final class CumulusNcluGrammarTest {
     assertThat(c, hasVrf("vrf2", hasInterfaces(contains("vrf2"))));
 
     // ip address
-    assertThat(c, hasInterface("vrf1", hasAddress(new InterfaceAddress("10.0.0.1/24"))));
+    assertThat(c, hasInterface("vrf1", hasAddress(ConcreteInterfaceAddress.parse("10.0.0.1/24"))));
     assertThat(
         c,
         hasInterface(
             "vrf1",
             hasAllAddresses(
                 containsInAnyOrder(
-                    new InterfaceAddress("10.0.0.1/24"), new InterfaceAddress("10.0.1.1/24")))));
+                    ConcreteInterfaceAddress.parse("10.0.0.1/24"),
+                    ConcreteInterfaceAddress.parse("10.0.1.1/24")))));
   }
 
   @Test
@@ -1286,7 +1296,9 @@ public final class CumulusNcluGrammarTest {
     assertThat(
         "Ensure ip addresses are extracted",
         vc.getVrfs().get("vrf1").getAddresses(),
-        contains(new InterfaceAddress("10.0.0.1/24"), new InterfaceAddress("10.0.1.1/24")));
+        contains(
+            ConcreteInterfaceAddress.parse("10.0.0.1/24"),
+            ConcreteInterfaceAddress.parse("10.0.1.1/24")));
     assertThat(
         "Ensure ip addresses are extracted", vc.getVrfs().get("vrf2").getAddresses(), empty());
 

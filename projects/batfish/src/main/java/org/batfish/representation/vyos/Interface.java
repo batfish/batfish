@@ -4,7 +4,7 @@ import java.io.Serializable;
 import java.util.Set;
 import java.util.TreeSet;
 import org.batfish.common.BatfishException;
-import org.batfish.datamodel.InterfaceAddress;
+import org.batfish.datamodel.ConcreteInterfaceAddress;
 
 public class Interface implements Serializable {
 
@@ -34,9 +34,9 @@ public class Interface implements Serializable {
     }
   }
 
-  private InterfaceAddress _address;
+  private ConcreteInterfaceAddress _address;
 
-  private final Set<InterfaceAddress> _allAddresses;
+  private final Set<ConcreteInterfaceAddress> _allAddresses;
 
   private double _bandwidth;
 
@@ -51,11 +51,11 @@ public class Interface implements Serializable {
     _name = name;
   }
 
-  public Set<InterfaceAddress> getAllAddresses() {
+  public Set<ConcreteInterfaceAddress> getAllAddresses() {
     return _allAddresses;
   }
 
-  public InterfaceAddress getAddress() {
+  public ConcreteInterfaceAddress getAddress() {
     return _address;
   }
 
@@ -83,7 +83,7 @@ public class Interface implements Serializable {
     _description = description;
   }
 
-  public void setAddress(InterfaceAddress address) {
+  public void setAddress(ConcreteInterfaceAddress address) {
     _address = address;
   }
 

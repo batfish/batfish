@@ -76,6 +76,7 @@ import org.batfish.common.Warnings;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.config.Settings;
 import org.batfish.datamodel.AclIpSpace;
+import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.DiffieHellmanGroup;
@@ -84,7 +85,6 @@ import org.batfish.datamodel.EncryptionAlgorithm;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.IkeHashingAlgorithm;
 import org.batfish.datamodel.Interface.Dependency;
-import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.InterfaceType;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpAccessList;
@@ -570,7 +570,8 @@ public class PaloAltoGrammarTest {
     assertThat(
         c,
         hasInterface(
-            interfaceName1, hasAllAddresses(contains(new InterfaceAddress("1.1.1.1/24")))));
+            interfaceName1,
+            hasAllAddresses(contains(ConcreteInterfaceAddress.parse("1.1.1.1/24")))));
 
     // Confirm comments are extracted
     assertThat(c, hasInterface(interfaceName1, hasDescription("description")));
@@ -611,14 +612,14 @@ public class PaloAltoGrammarTest {
         hasInterface(
             interfaceNameUnit1,
             allOf(
-                hasAllAddresses(contains(new InterfaceAddress("1.1.1.1/24"))),
+                hasAllAddresses(contains(ConcreteInterfaceAddress.parse("1.1.1.1/24"))),
                 hasDependencies(contains(new Dependency("ethernet1/1", BIND))))));
     assertThat(
         c,
         hasInterface(
             interfaceNameUnit2,
             allOf(
-                hasAllAddresses(contains(new InterfaceAddress("1.1.2.1/24"))),
+                hasAllAddresses(contains(ConcreteInterfaceAddress.parse("1.1.2.1/24"))),
                 hasDependencies(contains(new Dependency("ethernet1/1", BIND))))));
 
     // Confirm comment is extracted

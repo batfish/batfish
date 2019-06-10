@@ -10,9 +10,9 @@ import com.google.common.graph.MutableValueGraph;
 import com.google.common.graph.ValueGraphBuilder;
 import java.util.Map.Entry;
 import java.util.Optional;
+import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Interface;
-import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpLink;
 import org.batfish.datamodel.NetworkConfigurations;
@@ -178,14 +178,14 @@ public final class OspfTopologyUtils {
     Ip localIp =
         configurations
             .getInterface(localConfig.getHostname(), localConfig.getInterfaceName())
-            .map(Interface::getAddress)
-            .map(InterfaceAddress::getIp)
+            .map(Interface::getConcreteAddress)
+            .map(ConcreteInterfaceAddress::getIp)
             .orElse(null);
     Ip remoteIp =
         configurations
             .getInterface(remoteConfig.getHostname(), remoteConfig.getInterfaceName())
-            .map(Interface::getAddress)
-            .map(InterfaceAddress::getIp)
+            .map(Interface::getConcreteAddress)
+            .map(ConcreteInterfaceAddress::getIp)
             .orElse(null);
     if (localIp == null || remoteIp == null) {
       return Optional.empty();

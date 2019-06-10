@@ -16,9 +16,9 @@ import org.antlr.v4.runtime.ParserRuleContext;
 import org.batfish.common.Warnings;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.config.Settings;
+import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
-import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.Prefix;
@@ -50,7 +50,9 @@ public final class EosRoutingTableExtractorTest {
         .setOwner(c1)
         .setVrf(v1)
         .setActive(true)
-        .setAddresses(new InterfaceAddress("1.2.3.5/32"), new InterfaceAddress("1.2.3.6/32"))
+        .setAddresses(
+            ConcreteInterfaceAddress.parse("1.2.3.5/32"),
+            ConcreteInterfaceAddress.parse("1.2.3.6/32"))
         .build();
 
     Configuration c2 = cb.setHostname(NODE2).build();
@@ -59,7 +61,7 @@ public final class EosRoutingTableExtractorTest {
         .setOwner(c2)
         .setVrf(v2)
         .setActive(true)
-        .setAddress(new InterfaceAddress("1.2.3.6/32"))
+        .setAddress(ConcreteInterfaceAddress.parse("1.2.3.6/32"))
         .build();
 
     Batfish batfish =

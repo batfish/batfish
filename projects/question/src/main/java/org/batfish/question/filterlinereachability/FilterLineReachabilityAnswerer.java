@@ -212,7 +212,7 @@ public class FilterLineReachabilityAnswerer extends Answerer {
   private static void createAclNode(
       IpAccessList acl,
       Map<String, AclNode> aclNodeMap,
-      SortedMap<String, IpAccessList> acls,
+      Map<String, IpAccessList> acls,
       HeaderSpaceSanitizer headerSpaceSanitizer,
       Set<String> nodeInterfaces) {
 

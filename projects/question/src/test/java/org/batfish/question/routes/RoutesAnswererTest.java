@@ -44,11 +44,11 @@ import org.batfish.common.plugin.IBatfishTestAdapter;
 import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.AbstractRouteDecorator;
 import org.batfish.datamodel.AnnotatedRoute;
+import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.DataPlane;
 import org.batfish.datamodel.GenericRib;
-import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.LocalRoute;
 import org.batfish.datamodel.MockDataPlane;
@@ -163,7 +163,7 @@ public class RoutesAnswererTest {
                             .setNextHopInterface("Null")
                             .setAdministrativeCost(1)
                             .build(),
-                        new LocalRoute(new InterfaceAddress("2.2.2.0/24"), "Null")))));
+                        new LocalRoute(ConcreteInterfaceAddress.parse("2.2.2.0/24"), "Null")))));
 
     Multiset<Row> actual =
         getMainRibRoutes(

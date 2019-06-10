@@ -8,6 +8,7 @@ import org.batfish.specifier.parboiled.ParboiledInterfaceSpecifierFactory;
 import org.batfish.specifier.parboiled.ParboiledIpProtocolSpecifierFactory;
 import org.batfish.specifier.parboiled.ParboiledIpSpaceSpecifierFactory;
 import org.batfish.specifier.parboiled.ParboiledLocationSpecifierFactory;
+import org.batfish.specifier.parboiled.ParboiledNamedStructureSpecifierFactory;
 import org.batfish.specifier.parboiled.ParboiledNodeSpecifierFactory;
 import org.batfish.specifier.parboiled.ParboiledRoutingPolicySpecifierFactory;
 
@@ -93,6 +94,16 @@ public final class SpecifierFactories {
     }
   }
 
+  public static NamedStructureSpecifierFactory getNamedStructureTypeFactory(Version version) {
+    switch (version) {
+      case V1:
+      case V2:
+        return new ParboiledNamedStructureSpecifierFactory();
+      default:
+        throw new IllegalStateException("Unhandled grammar version " + version);
+    }
+  }
+
   public static NodeSpecifierFactory getNodeFactory(Version version) {
     switch (version) {
       case V1:
@@ -133,6 +144,9 @@ public final class SpecifierFactories {
   private static final LocationSpecifierFactory ActiveLocationFactory =
       getLocationFactory(ACTIVE_VERSION);
 
+  private static final NamedStructureSpecifierFactory ActiveNamedStructureTypeFactory =
+      getNamedStructureTypeFactory(ACTIVE_VERSION);
+
   private static final NodeSpecifierFactory ActiveNodeFactory = getNodeFactory(ACTIVE_VERSION);
 
   private static final RoutingPolicySpecifierFactory ActiveRoutingPolicySpecifier =
@@ -166,6 +180,12 @@ public final class SpecifierFactories {
   public static LocationSpecifier getLocationSpecifierOrDefault(
       @Nullable String input, LocationSpecifier defaultSpecifier) {
     return getLocationSpecifierOrDefault(input, defaultSpecifier, ActiveLocationFactory);
+  }
+
+  public static NamedStructureSpecifier getNamedStructureSpecifierOrDefault(
+      @Nullable String input, NamedStructureSpecifier defaultSpecifier) {
+    return getNamedStructureSpecifierOrDefault(
+        input, defaultSpecifier, ActiveNamedStructureTypeFactory);
   }
 
   public static NodeSpecifier getNodeSpecifierOrDefault(
@@ -221,6 +241,15 @@ public final class SpecifierFactories {
     return input == null || input.isEmpty()
         ? defaultSpecifier
         : factory.buildLocationSpecifier(input);
+  }
+
+  public static NamedStructureSpecifier getNamedStructureSpecifierOrDefault(
+      @Nullable String input,
+      NamedStructureSpecifier defaultSpecifier,
+      NamedStructureSpecifierFactory factory) {
+    return input == null || input.isEmpty()
+        ? defaultSpecifier
+        : factory.buildNamedStructureSpecifier(input);
   }
 
   public static NodeSpecifier getNodeSpecifierOrDefault(

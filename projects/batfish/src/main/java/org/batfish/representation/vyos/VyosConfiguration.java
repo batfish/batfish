@@ -15,6 +15,7 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 import org.batfish.common.BatfishException;
 import org.batfish.common.VendorConversionException;
+import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.IkeKeyType;
@@ -304,8 +305,8 @@ public class VyosConfiguration extends VendorConfiguration {
     if (address != null) {
       newIface.setAddress(iface.getAddress());
     }
-    newIface.getAllAddresses().addAll(iface.getAllAddresses());
-    for (InterfaceAddress p : newIface.getAllAddresses()) {
+    newIface.getAllConcreteAddresses().addAll(iface.getAllAddresses());
+    for (ConcreteInterfaceAddress p : newIface.getAllConcreteAddresses()) {
       _ipToInterfaceMap.put(p.getIp(), newIface);
     }
     return newIface;

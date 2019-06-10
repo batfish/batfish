@@ -4,8 +4,8 @@ import java.io.Serializable;
 import java.util.LinkedList;
 import java.util.List;
 import org.batfish.common.Warnings;
+import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
-import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.StaticRoute;
@@ -90,8 +90,9 @@ public class ElasticsearchDomain implements AwsVpcEntity, Serializable {
       }
       String instancesIfaceName = String.format("%s-%s", _domainName, subnetId);
       Ip instancesIfaceIp = subnet.getNextIp();
-      InterfaceAddress instancesIfaceAddress =
-          new InterfaceAddress(instancesIfaceIp, subnet.getCidrBlock().getPrefixLength());
+      ConcreteInterfaceAddress instancesIfaceAddress =
+          ConcreteInterfaceAddress.create(
+              instancesIfaceIp, subnet.getCidrBlock().getPrefixLength());
       Utils.newInterface(instancesIfaceName, cfgNode, instancesIfaceAddress);
 
       Ip defaultGatewayAddress = subnet.computeInstancesIfaceIp();

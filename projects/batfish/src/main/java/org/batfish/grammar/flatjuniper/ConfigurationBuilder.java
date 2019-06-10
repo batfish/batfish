@@ -116,6 +116,7 @@ import org.batfish.datamodel.AsPath;
 import org.batfish.datamodel.AsSet;
 import org.batfish.datamodel.AuthenticationMethod;
 import org.batfish.datamodel.BgpAuthenticationAlgorithm;
+import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.DiffieHellmanGroup;
 import org.batfish.datamodel.EncryptionAlgorithm;
 import org.batfish.datamodel.HeaderSpace;
@@ -123,7 +124,6 @@ import org.batfish.datamodel.IcmpCode;
 import org.batfish.datamodel.IcmpType;
 import org.batfish.datamodel.IkeAuthenticationMethod;
 import org.batfish.datamodel.IkeHashingAlgorithm;
-import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Ip6;
 import org.batfish.datamodel.IpProtocol;
@@ -1929,7 +1929,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
 
   private Interface _currentInterfaceOrRange;
 
-  private InterfaceAddress _currentInterfaceAddress;
+  private ConcreteInterfaceAddress _currentInterfaceAddress;
 
   private IpsecPolicy _currentIpsecPolicy;
 
@@ -2286,13 +2286,13 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
 
   @Override
   public void enterIfi_address(Ifi_addressContext ctx) {
-    Set<InterfaceAddress> allAddresses = _currentInterfaceOrRange.getAllAddresses();
-    InterfaceAddress address;
+    Set<ConcreteInterfaceAddress> allAddresses = _currentInterfaceOrRange.getAllAddresses();
+    ConcreteInterfaceAddress address;
     if (ctx.IP_PREFIX() != null) {
-      address = new InterfaceAddress(ctx.IP_PREFIX().getText());
+      address = ConcreteInterfaceAddress.parse(ctx.IP_PREFIX().getText());
     } else if (ctx.IP_ADDRESS() != null) {
       Ip ip = Ip.parse(ctx.IP_ADDRESS().getText());
-      address = new InterfaceAddress(ip, Prefix.MAX_PREFIX_LENGTH);
+      address = ConcreteInterfaceAddress.create(ip, Prefix.MAX_PREFIX_LENGTH);
     } else {
       throw new BatfishException("Invalid or missing address");
     }
@@ -4233,7 +4233,8 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
   public void exitIfiav_virtual_address(Ifiav_virtual_addressContext ctx) {
     Ip virtualAddress = Ip.parse(ctx.IP_ADDRESS().getText());
     int prefixLength = _currentInterfaceAddress.getNetworkBits();
-    _currentVrrpGroup.setVirtualAddress(new InterfaceAddress(virtualAddress, prefixLength));
+    _currentVrrpGroup.setVirtualAddress(
+        ConcreteInterfaceAddress.create(virtualAddress, prefixLength));
   }
 
   @Override
@@ -4440,8 +4441,8 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
       if (ctx.IP_ADDRESS().isEmpty()) {
         // from IP_PREFIX to IP_PREFIX
         // Juniper will treat IP_PREFIX as IP ADDRESS
-        _currentNatPool.setFromAddress(new InterfaceAddress(ctx.from.getText()).getIp());
-        _currentNatPool.setToAddress(new InterfaceAddress(ctx.to.getText()).getIp());
+        _currentNatPool.setFromAddress(ConcreteInterfaceAddress.parse(ctx.from.getText()).getIp());
+        _currentNatPool.setToAddress(ConcreteInterfaceAddress.parse(ctx.to.getText()).getIp());
       } else {
         // from IP_ADDRESS to IP_ADDRESS
         _currentNatPool.setFromAddress(Ip.parse(ctx.from.getText()));

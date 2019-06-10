@@ -11,6 +11,7 @@ import java.util.SortedMap;
 import java.util.TreeMap;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IsoAddress;
@@ -56,7 +57,7 @@ public class Interface implements Serializable {
   private String _accessVlan;
   private boolean _active;
   private Set<Ip> _additionalArpIps;
-  private final Set<InterfaceAddress> _allAddresses;
+  private final Set<ConcreteInterfaceAddress> _allAddresses;
   // Dumb name to appease checkstyle
   private String _agg8023adInterface;
   private final Set<Ip> _allAddressIps;
@@ -81,7 +82,7 @@ public class Interface implements Serializable {
   private String _outgoingFilter;
   private Interface _parent;
   private InterfaceAddress _preferredAddress;
-  private InterfaceAddress _primaryAddress;
+  private ConcreteInterfaceAddress _primaryAddress;
   @Nullable private String _redundantParentInterface;
   private String _routingInstance;
   private SwitchportMode _switchportMode;
@@ -128,7 +129,7 @@ public class Interface implements Serializable {
     return _additionalArpIps;
   }
 
-  public Set<InterfaceAddress> getAllAddresses() {
+  public Set<ConcreteInterfaceAddress> getAllAddresses() {
     return _allAddresses;
   }
 
@@ -220,7 +221,7 @@ public class Interface implements Serializable {
     return _preferredAddress;
   }
 
-  public InterfaceAddress getPrimaryAddress() {
+  public ConcreteInterfaceAddress getPrimaryAddress() {
     return _primaryAddress;
   }
 
@@ -374,7 +375,7 @@ public class Interface implements Serializable {
     _preferredAddress = address;
   }
 
-  public void setPrimaryAddress(InterfaceAddress address) {
+  public void setPrimaryAddress(ConcreteInterfaceAddress address) {
     _primaryAddress = address;
   }
 

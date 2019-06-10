@@ -282,6 +282,7 @@ import org.batfish.datamodel.BgpSessionProperties;
 import org.batfish.datamodel.Bgpv4Route;
 import org.batfish.datamodel.BumTransportMethod;
 import org.batfish.datamodel.CommunityList;
+import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.ConnectedRoute;
@@ -303,7 +304,6 @@ import org.batfish.datamodel.IntegerSpace;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Interface.Dependency;
 import org.batfish.datamodel.Interface.DependencyType;
-import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.InterfaceType;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpAccessList;
@@ -3575,14 +3575,13 @@ public class CiscoGrammarTest {
     Map<String, Configuration> configurations = batfish.loadConfigurations();
 
     Configuration iosCommunityListConfig = configurations.get(iosName);
-    SortedMap<String, CommunityList> iosCommunityLists = iosCommunityListConfig.getCommunityLists();
+    Map<String, CommunityList> iosCommunityLists = iosCommunityListConfig.getCommunityLists();
 
     Configuration eosCommunityListConfig = configurations.get(eosName);
-    SortedMap<String, CommunityList> eosCommunityLists = eosCommunityListConfig.getCommunityLists();
+    Map<String, CommunityList> eosCommunityLists = eosCommunityListConfig.getCommunityLists();
 
     Configuration nxosCommunityListConfig = configurations.get(nxosName);
-    SortedMap<String, CommunityList> nxosCommunityLists =
-        nxosCommunityListConfig.getCommunityLists();
+    Map<String, CommunityList> nxosCommunityLists = nxosCommunityListConfig.getCommunityLists();
 
     Community iosImpliedStd = communityListToCommunity(iosCommunityLists, "40");
     String iosRegexImpliedExp = communityListToRegex(iosCommunityLists, "400");
@@ -3932,12 +3931,12 @@ public class CiscoGrammarTest {
   }
 
   private static CommunitySetExpr communityListToMatchCondition(
-      SortedMap<String, CommunityList> communityLists, String communityName) {
+      Map<String, CommunityList> communityLists, String communityName) {
     return communityLists.get(communityName).getLines().get(0).getMatchCondition();
   }
 
   private static Community communityListToCommunity(
-      SortedMap<String, CommunityList> communityLists, String communityName) {
+      Map<String, CommunityList> communityLists, String communityName) {
     return communityLists
         .get(communityName)
         .getLines()
@@ -3948,7 +3947,7 @@ public class CiscoGrammarTest {
   }
 
   private static @Nonnull String communityListToRegex(
-      SortedMap<String, CommunityList> communityLists, String communityName) {
+      Map<String, CommunityList> communityLists, String communityName) {
     return ((RegexCommunitySet)
             communityLists.get(communityName).getLines().get(0).getMatchCondition())
         .getRegex();
@@ -4546,14 +4545,16 @@ public class CiscoGrammarTest {
     assertThat("Loopback2", not(in(iosRecoveryInterfaceNames)));
     assertThat("Loopback3", in(iosRecoveryInterfaceNames));
 
-    Set<InterfaceAddress> l3Prefixes = iosRecoveryInterfaces.get("Loopback3").getAllAddresses();
-    Set<InterfaceAddress> l4Prefixes = iosRecoveryInterfaces.get("Loopback4").getAllAddresses();
+    Set<ConcreteInterfaceAddress> l3Prefixes =
+        iosRecoveryInterfaces.get("Loopback3").getAllConcreteAddresses();
+    Set<ConcreteInterfaceAddress> l4Prefixes =
+        iosRecoveryInterfaces.get("Loopback4").getAllConcreteAddresses();
 
-    assertThat(new InterfaceAddress("10.0.0.1/32"), not(in(l3Prefixes)));
-    assertThat(new InterfaceAddress("10.0.0.2/32"), in(l3Prefixes));
+    assertThat(ConcreteInterfaceAddress.parse("10.0.0.1/32"), not(in(l3Prefixes)));
+    assertThat(ConcreteInterfaceAddress.parse("10.0.0.2/32"), in(l3Prefixes));
     assertThat("Loopback4", in(iosRecoveryInterfaceNames));
-    assertThat(new InterfaceAddress("10.0.0.3/32"), not(in(l4Prefixes)));
-    assertThat(new InterfaceAddress("10.0.0.4/32"), in(l4Prefixes));
+    assertThat(ConcreteInterfaceAddress.parse("10.0.0.3/32"), not(in(l4Prefixes)));
+    assertThat(ConcreteInterfaceAddress.parse("10.0.0.4/32"), in(l4Prefixes));
   }
 
   @Test
@@ -5023,7 +5024,7 @@ public class CiscoGrammarTest {
         c,
         hasInterface(
             "Ethernet1/1",
-            hasAllAddresses(containsInAnyOrder(new InterfaceAddress("10.20.0.3/31")))));
+            hasAllAddresses(containsInAnyOrder(ConcreteInterfaceAddress.parse("10.20.0.3/31")))));
   }
 
   @Test
@@ -5039,7 +5040,8 @@ public class CiscoGrammarTest {
     assertThat(
         c,
         hasInterface(
-            "ifname", hasAllAddresses(containsInAnyOrder(new InterfaceAddress("3.0.0.2/24")))));
+            "ifname",
+            hasAllAddresses(containsInAnyOrder(ConcreteInterfaceAddress.parse("3.0.0.2/24")))));
 
     // Confirm that interface MTU is set correctly
     assertThat(c, hasInterface("ifname", hasMtu(1400)));
@@ -5059,7 +5061,8 @@ public class CiscoGrammarTest {
         c,
         hasInterface(
             "ifname",
-            both(hasEncapsulationVlan(100)).and(hasAddress(new InterfaceAddress("192.0.2.1/24")))));
+            both(hasEncapsulationVlan(100))
+                .and(hasAddress(ConcreteInterfaceAddress.parse("192.0.2.1/24")))));
   }
 
   @Test

@@ -25,9 +25,9 @@ import com.google.common.graph.MutableValueGraph;
 import com.google.common.graph.ValueGraphBuilder;
 import java.util.List;
 import java.util.Map;
+import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
-import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpLink;
 import org.batfish.datamodel.NetworkFactory;
@@ -68,7 +68,7 @@ public class OspfSessionCompatibilityAnswererTest {
     Vrf vrfV = nf.vrfBuilder().setName("vrf_v").setOwner(configurationV).build();
 
     nf.interfaceBuilder()
-        .setAddress(new InterfaceAddress(Ip.parse("1.1.1.2"), 31))
+        .setAddress(ConcreteInterfaceAddress.create(Ip.parse("1.1.1.2"), 31))
         .setName("int_u")
         .setVrf(vrfU)
         .setOwner(configurationU)
@@ -76,7 +76,7 @@ public class OspfSessionCompatibilityAnswererTest {
         .build();
 
     nf.interfaceBuilder()
-        .setAddress(new InterfaceAddress(Ip.parse("1.1.1.3"), 31))
+        .setAddress(ConcreteInterfaceAddress.create(Ip.parse("1.1.1.3"), 31))
         .setName("int_v")
         .setVrf(vrfV)
         .setOwner(configurationV)

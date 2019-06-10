@@ -15,11 +15,11 @@ import com.google.common.collect.ImmutableSortedSet;
 import java.io.IOException;
 import java.util.Comparator;
 import java.util.SortedMap;
+import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.Interface;
-import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.PacketHeaderConstraints;
@@ -67,7 +67,7 @@ public class TraceroutePolicyBasedRoutingTest {
 
     Interface ingressIface =
         nf.interfaceBuilder()
-            .setAddress(new InterfaceAddress("1.1.1.1/31"))
+            .setAddress(ConcreteInterfaceAddress.parse("1.1.1.1/31"))
             .setOwner(c1)
             .setVrf(v1)
             .setName("ingressInterface")
@@ -96,14 +96,14 @@ public class TraceroutePolicyBasedRoutingTest {
 
     Interface i1 =
         nf.interfaceBuilder()
-            .setAddress(new InterfaceAddress("2.2.2.1/24"))
+            .setAddress(ConcreteInterfaceAddress.parse("2.2.2.1/24"))
             .setOwner(c1)
             .setVrf(v1)
             .setName("i1")
             .build();
     Interface i2 =
         nf.interfaceBuilder()
-            .setAddress(new InterfaceAddress("3.3.3.1/24"))
+            .setAddress(ConcreteInterfaceAddress.parse("3.3.3.1/24"))
             .setOwner(c1)
             .setVrf(v2)
             .setName("i2")

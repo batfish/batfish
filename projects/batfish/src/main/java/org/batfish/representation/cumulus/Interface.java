@@ -5,7 +5,7 @@ import java.util.LinkedList;
 import java.util.List;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import org.batfish.datamodel.InterfaceAddress;
+import org.batfish.datamodel.ConcreteInterfaceAddress;
 
 /** A physical or logical interface */
 public class Interface implements Serializable {
@@ -15,7 +15,7 @@ public class Interface implements Serializable {
   private final @Nonnull InterfaceBridgeSettings _bridge;
   private @Nullable InterfaceClagSettings _clag;
   private final @Nullable Integer _encapsulationVlan;
-  private final @Nonnull List<InterfaceAddress> _ipAddresses;
+  private final @Nonnull List<ConcreteInterfaceAddress> _ipAddresses;
   private final @Nonnull String _name;
   private final @Nullable String _superInterfaceName;
   private final @Nonnull CumulusInterfaceType _type;
@@ -56,7 +56,7 @@ public class Interface implements Serializable {
     return _encapsulationVlan;
   }
 
-  public @Nonnull List<InterfaceAddress> getIpAddresses() {
+  public @Nonnull List<ConcreteInterfaceAddress> getIpAddresses() {
     return _ipAddresses;
   }
 
