@@ -85,7 +85,7 @@ public final class ConcreteInterfaceAddress extends InterfaceAddress {
     return _networkBits;
   }
 
-  /** Return the canonical {@link Prefix} for this interface address */
+  @Override
   @Nonnull
   public Prefix getPrefix() {
     return Prefix.create(_ip, _networkBits);

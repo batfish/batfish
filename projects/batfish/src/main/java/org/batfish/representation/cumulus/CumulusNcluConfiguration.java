@@ -4,6 +4,7 @@ import static com.google.common.base.MoreObjects.firstNonNull;
 import static java.util.Comparator.naturalOrder;
 import static org.batfish.datamodel.MultipathEquivalentAsPathMatchMode.EXACT_PATH;
 import static org.batfish.datamodel.bgp.VniConfig.importRtPatternForAnyAs;
+import static org.batfish.representation.cumulus.BgpProcess.BGP_UNNUMBERED_IP;
 import static org.batfish.representation.cumulus.CumulusRoutingProtocol.VI_PROTOCOLS_MAP;
 
 import com.google.common.annotations.VisibleForTesting;
@@ -25,7 +26,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Set;
-import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
@@ -33,10 +33,10 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.common.VendorConversionException;
 import org.batfish.common.util.CommonUtil;
+import org.batfish.datamodel.AclIpSpace;
 import org.batfish.datamodel.BgpPeerConfig;
 import org.batfish.datamodel.BgpUnnumberedPeerConfig;
 import org.batfish.datamodel.BumTransportMethod;
-import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.IntegerSpace;
@@ -47,6 +47,7 @@ import org.batfish.datamodel.InterfaceType;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Ip6;
 import org.batfish.datamodel.LineAction;
+import org.batfish.datamodel.LinkLocalAddress;
 import org.batfish.datamodel.LongSpace;
 import org.batfish.datamodel.Mlag;
 import org.batfish.datamodel.NamedPort;
@@ -97,7 +98,6 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
   public static final int DEFAULT_STATIC_ROUTE_METRIC = 0;
   public static final String LOOPBACK_INTERFACE_NAME = "lo";
   private static final long serialVersionUID = 1L;
-  private static final int LINK_LOCAL_NETWORK_BITS = 16;
 
   private static WithEnvironmentExpr bgpRedistributeWithEnvironmentExpr(
       BooleanExpr expr, OriginType originType) {
@@ -140,8 +140,7 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
   private final @Nonnull Map<String, Vxlan> _vxlans;
 
   @Nonnull
-  private static final AtomicLong _linkLocalAddress =
-      new AtomicLong(Ip.parse("169.254.0.1").asLong());
+  private static final LinkLocalAddress LINK_LOCAL_ADDRESS = LinkLocalAddress.of(BGP_UNNUMBERED_IP);
 
   public CumulusNcluConfiguration() {
     _bonds = new HashMap<>();
@@ -189,7 +188,7 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
             .setBgpProcess(newProc)
             .setExportPolicy(peerExportPolicy.build().getName())
             .setLocalAs(localAs)
-            .setLocalIp(_c.getAllInterfaces().get(peerInterface).getConcreteAddress().getIp())
+            .setLocalIp(BGP_UNNUMBERED_IP)
             .setPeerInterface(peerInterface)
             .setRemoteAsns(computeRemoteAsns(neighbor, localAs))
             .setSendCommunity(true);
@@ -295,12 +294,13 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
     }
     newIface.setAllAddresses(iface.getIpAddresses());
     if (iface.getIpAddresses().isEmpty() && isUsedForBgpUnnumbered(iface.getName())) {
-      ConcreteInterfaceAddress addr =
-          ConcreteInterfaceAddress.create(
-              Ip.create(_linkLocalAddress.getAndIncrement()), LINK_LOCAL_NETWORK_BITS);
+      newIface.setAddress(LINK_LOCAL_ADDRESS);
+      newIface.setAllAddresses(ImmutableSet.of(LINK_LOCAL_ADDRESS));
 
-      newIface.setAddress(addr);
-      newIface.setAllAddresses(ImmutableSet.of(addr));
+      // All interfaces involved in BGP unnumbered should reply to ARP for BGP_UNNUMBERED_IP
+      newIface.setAdditionalArpIps(
+          AclIpSpace.union(
+              newIface.getAdditionalArpIps(), BgpProcess.BGP_UNNUMBERED_IP.toIpSpace()));
     }
   }
 

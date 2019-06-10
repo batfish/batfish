@@ -416,8 +416,9 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
       @Nonnull Map<String, Map<String, Set<Ip>>> interfaceOwnedIps) {
     IpSpace ipsAssignedToThisInterface =
         computeIpsAssignedToThisInterface(iface, interfaceOwnedIps);
-    if (ipsAssignedToThisInterface == EmptyIpSpace.INSTANCE) {
-      // if no IPs are assigned to this interface, it replies to no ARP requests.
+    if (ipsAssignedToThisInterface == EmptyIpSpace.INSTANCE && iface.getAllAddresses().isEmpty()) {
+      // if no IPs are assigned to this interface at all (not even link-local), it replies to no ARP
+      // requests.
       return EmptyIpSpace.INSTANCE;
     }
     /* Accept IPs assigned to this interface */

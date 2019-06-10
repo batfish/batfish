@@ -200,6 +200,8 @@ public class ForwardingAnalysisImplTest {
             .setProxyArp(false)
             .build();
     Interface i3 = _ib.setAddress(null).setProxyArp(true).build();
+    Interface i4 =
+        _ib.setAddress(LinkLocalAddress.of(Ip.parse("169.254.0.1"))).setProxyArp(false).build();
     IpSpace ipsRoutedOutI1 =
         IpWildcardSetIpSpace.builder()
             .including(IpWildcard.create(P1), IpWildcard.create(P3))
@@ -208,7 +210,7 @@ public class ForwardingAnalysisImplTest {
         IpWildcardSetIpSpace.builder().including(IpWildcard.create(P2)).build();
     IpSpace ipsRoutedOutI3 = EmptyIpSpace.INSTANCE;
     Map<String, Interface> interfaces =
-        ImmutableMap.of(i1.getName(), i1, i2.getName(), i2, i3.getName(), i3);
+        ImmutableMap.of(i1.getName(), i1, i2.getName(), i2, i3.getName(), i3, i4.getName(), i4);
     Map<String, IpSpace> routableIpsByVrf =
         ImmutableMap.of(
             vrf1.getName(), UniverseIpSpace.INSTANCE, vrf2.getName(), UniverseIpSpace.INSTANCE);
@@ -222,6 +224,7 @@ public class ForwardingAnalysisImplTest {
     i1.setAdditionalArpIps(new IpIpSpace(Ip.parse("10.10.10.1")));
     i2.setAdditionalArpIps(new IpIpSpace(Ip.parse("10.10.10.2")));
     i3.setAdditionalArpIps(new IpIpSpace(Ip.parse("10.10.10.3")));
+    i4.setAdditionalArpIps(new IpIpSpace(Ip.parse("10.10.10.4")));
 
     Map<String, Configuration> configs = ImmutableMap.of(config.getHostname(), config);
     Map<String, Map<String, Set<Ip>>> interfaceOwnedIps =
@@ -244,6 +247,8 @@ public class ForwardingAnalysisImplTest {
     assertThat(result, hasEntry(equalTo(i2.getName()), containsIp(Ip.parse("10.10.10.2"))));
     /* No interface IPs: reject everything */
     assertThat(result, hasEntry(equalTo(i3.getName()), equalTo(EmptyIpSpace.INSTANCE)));
+    /* Link-local address is present, honor additional ARP IPs  */
+    assertThat(result, hasEntry(equalTo(i4.getName()), containsIp(Ip.parse("10.10.10.4"))));
   }
 
   @Test

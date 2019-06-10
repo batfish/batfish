@@ -9,6 +9,9 @@ import javax.annotation.Nullable;
 public abstract class InterfaceAddress implements Serializable, Comparable<InterfaceAddress> {
   private static final long serialVersionUID = 1L;
 
+  /** Return the canonical {@link Prefix} for this interface address */
+  public abstract Prefix getPrefix();
+
   @JsonCreator
   private static InterfaceAddress jsonCreator(@Nullable String text) {
     checkArgument(text != null);

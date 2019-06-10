@@ -44,10 +44,12 @@ import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Edge;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Interface.DependencyType;
+import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.InterfaceType;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.IpsecSession;
+import org.batfish.datamodel.LinkLocalAddress;
 import org.batfish.datamodel.NetworkConfigurations;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.SwitchportMode;
@@ -764,8 +766,8 @@ public final class TopologyUtil {
             if (iface.isLoopback(node.getConfigurationFormat()) || !iface.getActive()) {
               continue;
             }
-            for (ConcreteInterfaceAddress address : iface.getAllConcreteAddresses()) {
-              if (address.getNetworkBits() < Prefix.MAX_PREFIX_LENGTH) {
+            for (InterfaceAddress address : iface.getAllAddresses()) {
+              if (address.getPrefix().getPrefixLength() < Prefix.MAX_PREFIX_LENGTH) {
                 Prefix prefix = address.getPrefix();
                 List<Interface> interfaceBucket =
                     prefixInterfaces.computeIfAbsent(prefix, k -> new LinkedList<>());
@@ -790,7 +792,8 @@ public final class TopologyUtil {
           .flatMap(Collection::stream)
           .filter(
               iface ->
-                  iface.getAllConcreteAddresses().stream().anyMatch(ia -> p.containsIp(ia.getIp())))
+                  iface.getAllConcreteAddresses().stream().anyMatch(ia -> p.containsIp(ia.getIp()))
+                      || iface.getAddress() instanceof LinkLocalAddress)
           .forEach(candidateInterfaces::add);
 
       for (Interface iface1 : bucketEntry.getValue()) {
@@ -801,7 +804,10 @@ public final class TopologyUtil {
             continue;
           }
           // don't connect interfaces that have any IP address in common
-          if (haveIpInCommon(iface1, iface2)) {
+          // Exception to this are edges that use link-local addresses
+          if (!(iface1.getAddress() instanceof LinkLocalAddress)
+              && !(iface2.getAddress() instanceof LinkLocalAddress)
+              && haveIpInCommon(iface1, iface2)) {
             continue;
           }
           // don't connect if any of the two endpoint interfaces have Tunnel or VPN interfaceTypes
