@@ -12,6 +12,9 @@ public interface FilterSpecifier {
   /**
    * Returns the filters on {@code node} that match this specifier.
    *
+   * <p>The 'node' string should be the canonical name that is in the configs map (and not, e.g., an
+   * uppercase version that user entered)
+   *
    * @param ctxt Information about the network that may be used to determine match.
    */
   Set<IpAccessList> resolve(String node, SpecifierContext ctxt);

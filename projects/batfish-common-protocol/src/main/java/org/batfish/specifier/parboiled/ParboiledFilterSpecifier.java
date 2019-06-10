@@ -41,6 +41,11 @@ final class ParboiledFilterSpecifier implements FilterSpecifier {
         FilterWithNodeFilterAstNode filterWithNodeFilterAstNode) {
       return new ParboiledNodeSpecifier(filterWithNodeFilterAstNode.getNodeAstNode())
           .resolve(_ctxt).stream()
+              /**
+               * A straight equals() works here. The input to {@link #resolve(String,
+               * SpecifierContext)} is a key for the config map (canonical node name), and {@link
+               * org.batfish.specifier.NodeSpecifier#resolve(SpecifierContext)} outputs such keys.
+               */
               .filter(n -> n.equals(_node))
               .flatMap(
                   n ->

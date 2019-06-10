@@ -168,7 +168,7 @@ public class Parser extends CommonParser {
    *
    *   filterTerm := filterWithNode
    *                    | filterWithoutNode
-   *                    | ( filterTerm )
+   *                    | ( filterSpec )
    *
    *   filterWithNode := nodeTerm [filterWithoutNode]
    *
@@ -178,7 +178,7 @@ public class Parser extends CommonParser {
    *               | @out(interfaceSpec) // outFilterOf is also supported
    *               | filterName
    *               | filterNameRegex
-   *               | ( filterWithoutNodeTerm )
+   *               | ( filterWithoutNode )
    * </pre>
    */
 
@@ -333,7 +333,7 @@ public class Parser extends CommonParser {
    *
    *   interfaceTerm := interfaceWithNode
    *                    | interfaceWithoutNode
-   *                    | ( interfaceTerm )
+   *                    | ( interfaceSpec )
    *
    *   interfaceWithNode := nodeTerm [interfaceWithoutNode]
    *
@@ -347,7 +347,7 @@ public class Parser extends CommonParser {
    *                        | @zone(zoneName)
    *                        | interfaceName
    *                        | interfaceNameRegex
-   *                        | ( interfaceTerm )
+   *                        | ( interfaceWithoutNode )
    * </pre>
    */
 
@@ -678,6 +678,7 @@ public class Parser extends CommonParser {
    *               | ipWildcard (e.g., 1.1.1.1:255.255.255.0)
    *               | ipRange (e.g., 1.1.1.1-1.1.1.2)
    *               | ipAddress (e.g., 1.1.1.1)
+   *               | ( ipSpaceSpec )
    * </pre>
    */
 
@@ -830,7 +831,7 @@ public class Parser extends CommonParser {
    *   locationTerm := locationInterface
    *               | @enter(locationInterface)   // non-@ versions also supported
    *               | @exit(locationInterface)
-   *               | ( locationTerm )
+   *               | ( locationSpec )
    *
    *   locationInterface := nodeTerm[interfaceTerm]
    *                        | nodeTerm
@@ -941,7 +942,7 @@ public class Parser extends CommonParser {
    *               | @deviceType(a)
    *               | nodeName
    *               | nodeNameRegex
-   *               | ( nodeTerm )
+   *               | ( nodeSpec )
    * </pre>
    */
 
