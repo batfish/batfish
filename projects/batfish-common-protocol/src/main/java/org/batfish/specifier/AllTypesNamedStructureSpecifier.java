@@ -21,7 +21,7 @@ public final class AllTypesNamedStructureSpecifier implements NamedStructureSpec
 
   @Override
   public int hashCode() {
-    return 0;
+    return AllTypesNamedStructureSpecifier.class.hashCode();
   }
 
   @Override
