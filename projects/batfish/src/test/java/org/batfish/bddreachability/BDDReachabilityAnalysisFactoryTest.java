@@ -52,6 +52,7 @@ import org.batfish.bddreachability.transition.Transition;
 import org.batfish.common.bdd.BDDPacket;
 import org.batfish.common.bdd.HeaderSpaceToBDD;
 import org.batfish.common.bdd.IpSpaceToBDD;
+import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.DataPlane;
@@ -59,7 +60,6 @@ import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.FlowDisposition;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.Interface;
-import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpAccessListLine;
 import org.batfish.datamodel.IpSpaceReference;
@@ -442,7 +442,7 @@ public final class BDDReachabilityAnalysisFactoryTest {
             .build();
     Vrf vrf = nf.vrfBuilder().setOwner(loopbackConfig).build();
 
-    InterfaceAddress loopbackAddress = new InterfaceAddress("1.2.3.4/32");
+    ConcreteInterfaceAddress loopbackAddress = ConcreteInterfaceAddress.parse("1.2.3.4/32");
     nf.interfaceBuilder()
         .setActive(true)
         .setOwner(loopbackConfig)
@@ -499,7 +499,7 @@ public final class BDDReachabilityAnalysisFactoryTest {
         nf.interfaceBuilder()
             .setOwner(config)
             .setVrf(vrf)
-            .setAddress(new InterfaceAddress(ip, 32))
+            .setAddress(ConcreteInterfaceAddress.create(ip, 32))
             .setActive(true)
             .build();
 
@@ -559,7 +559,7 @@ public final class BDDReachabilityAnalysisFactoryTest {
             .setOwner(config)
             .setVrf(vrf)
             .setActive(true)
-            .setAddress(new InterfaceAddress("1.0.0.0/8"))
+            .setAddress(ConcreteInterfaceAddress.parse("1.0.0.0/8"))
             .setIncomingFilter(
                 nf.aclBuilder()
                     .setOwner(config)
@@ -626,7 +626,7 @@ public final class BDDReachabilityAnalysisFactoryTest {
             .setOwner(config)
             .setVrf(vrf)
             .setActive(true)
-            .setAddress(new InterfaceAddress("1.0.0.0/8"))
+            .setAddress(ConcreteInterfaceAddress.parse("1.0.0.0/8"))
             .setIncomingFilter(
                 nf.aclBuilder()
                     .setOwner(config)
@@ -695,7 +695,7 @@ public final class BDDReachabilityAnalysisFactoryTest {
             .setOwner(config)
             .setVrf(vrf)
             .setActive(true)
-            .setAddress(new InterfaceAddress("1.0.0.1/24"))
+            .setAddress(ConcreteInterfaceAddress.parse("1.0.0.1/24"))
             .setPreTransformationOutgoingFilter(
                 nf.aclBuilder()
                     .setOwner(config)
@@ -770,7 +770,7 @@ public final class BDDReachabilityAnalysisFactoryTest {
             .setOwner(config)
             .setVrf(vrf)
             .setActive(true)
-            .setAddress(new InterfaceAddress("1.0.0.0/31"))
+            .setAddress(ConcreteInterfaceAddress.parse("1.0.0.0/31"))
             .setPreTransformationOutgoingFilter(
                 nf.aclBuilder()
                     .setOwner(config)
@@ -910,7 +910,7 @@ public final class BDDReachabilityAnalysisFactoryTest {
             .setOwner(config)
             .setVrf(vrf)
             .setActive(true)
-            .setAddress(new InterfaceAddress("1.0.0.0/31"))
+            .setAddress(ConcreteInterfaceAddress.parse("1.0.0.0/31"))
             .setPreTransformationOutgoingFilter(
                 nf.aclBuilder()
                     .setOwner(config)
@@ -940,7 +940,7 @@ public final class BDDReachabilityAnalysisFactoryTest {
         nf.interfaceBuilder()
             .setOwner(peer)
             .setVrf(vrf2)
-            .setAddress(new InterfaceAddress("1.0.0.1/31"))
+            .setAddress(ConcreteInterfaceAddress.parse("1.0.0.1/31"))
             .build();
 
     String hostname = config.getHostname();
@@ -1003,7 +1003,7 @@ public final class BDDReachabilityAnalysisFactoryTest {
     // set up interface
     Interface i1 =
         nf.interfaceBuilder()
-            .setAddress(new InterfaceAddress("1.0.0.1/30"))
+            .setAddress(ConcreteInterfaceAddress.parse("1.0.0.1/30"))
             .setOwner(c1)
             .setVrf(v1)
             .build();
@@ -1073,7 +1073,7 @@ public final class BDDReachabilityAnalysisFactoryTest {
     // set up interface
     Interface i1 =
         nf.interfaceBuilder()
-            .setAddress(new InterfaceAddress("1.0.0.1/30"))
+            .setAddress(ConcreteInterfaceAddress.parse("1.0.0.1/30"))
             .setOwner(c1)
             .setVrf(v1)
             .build();
@@ -1093,7 +1093,7 @@ public final class BDDReachabilityAnalysisFactoryTest {
 
     Vrf v2 = nf.vrfBuilder().setOwner(c2).build();
     nf.interfaceBuilder()
-        .setAddresses(new InterfaceAddress("2.0.0.2/31"))
+        .setAddresses(ConcreteInterfaceAddress.parse("2.0.0.2/31"))
         .setOwner(c2)
         .setVrf(v2)
         .build();
@@ -1151,7 +1151,7 @@ public final class BDDReachabilityAnalysisFactoryTest {
         .setOwner(config)
         .setVrf(vrf)
         .setActive(true)
-        .setAddress(new InterfaceAddress("1.0.0.0/31"))
+        .setAddress(ConcreteInterfaceAddress.parse("1.0.0.0/31"))
         .setOutgoingTransformation(
             always().apply(assignSourceIp(srcNatPoolIp, srcNatPoolIp)).build())
         .setIncomingTransformation(
@@ -1197,7 +1197,7 @@ public final class BDDReachabilityAnalysisFactoryTest {
         .setOwner(config)
         .setVrf(vrf)
         .setActive(true)
-        .setAddress(new InterfaceAddress("1.0.0.0/31"))
+        .setAddress(ConcreteInterfaceAddress.parse("1.0.0.0/31"))
         .setOutgoingTransformation(always().apply(assignSourcePort(10000, 10000)).build())
         .setIncomingTransformation(always().apply(assignDestinationPort(30000, 30000)).build())
         .build();
@@ -1248,7 +1248,7 @@ public final class BDDReachabilityAnalysisFactoryTest {
             .setOwner(config)
             .setVrf(vrf)
             .setActive(true)
-            .setAddress(new InterfaceAddress("1.0.0.0/31"))
+            .setAddress(ConcreteInterfaceAddress.parse("1.0.0.0/31"))
             .setOutgoingTransformation(
                 when(matchDst(new IpSpaceReference(ipSpaceName)))
                     .apply(assignSourceIp(srcNatPoolIp, srcNatPoolIp))
@@ -1275,7 +1275,7 @@ public final class BDDReachabilityAnalysisFactoryTest {
         new BDDReachabilityAnalysisFactory(
             PKT, configurations, batfish.loadDataPlane().getForwardingAnalysis(), false, false);
 
-    Ip dstIp = iface.getAddress().getPrefix().getLastHostIp();
+    Ip dstIp = iface.getConcreteAddress().getPrefix().getLastHostIp();
     BDDReachabilityAnalysis analysis =
         factory.bddReachabilityAnalysis(
             IpSpaceAssignment.builder()
@@ -1322,9 +1322,10 @@ public final class BDDReachabilityAnalysisFactoryTest {
 
     Interface.Builder ib = nf.interfaceBuilder().setOwner(config).setVrf(vrf).setActive(true);
     Interface ingressIface =
-        ib.setName("ingressIface").setAddress(new InterfaceAddress("1.1.1.0/24")).build();
+        ib.setName("ingressIface").setAddress(ConcreteInterfaceAddress.parse("1.1.1.0/24")).build();
     ingressIface.setRoutingPolicy(packetPolicyName);
-    Interface i1 = ib.setName("i1").setAddress(new InterfaceAddress("2.2.2.0/24")).build();
+    Interface i1 =
+        ib.setName("i1").setAddress(ConcreteInterfaceAddress.parse("2.2.2.0/24")).build();
 
     StaticRoute sb =
         StaticRoute.builder()
@@ -1345,9 +1346,9 @@ public final class BDDReachabilityAnalysisFactoryTest {
     ib.setOwner(c2)
         .setVrf(c2vrf)
         .setName("i1")
-        .setAddress(new InterfaceAddress("2.2.2.2/24"))
+        .setAddress(ConcreteInterfaceAddress.parse("2.2.2.2/24"))
         .build();
-    ib.setName("loopback").setAddress(new InterfaceAddress("8.8.8.8/32")).build();
+    ib.setName("loopback").setAddress(ConcreteInterfaceAddress.parse("8.8.8.8/32")).build();
 
     return ImmutableSortedMap.of(config.getHostname(), config, c2.getHostname(), c2);
   }

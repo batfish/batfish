@@ -4,16 +4,14 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.answers.Schema;
 
 /** Enables specification a set of named structures. */
-public class NamedStructureSpecifier extends PropertySpecifier {
+public class NamedStructurePropertySpecifier extends PropertySpecifier {
 
   public static final String AS_PATH_ACCESS_LIST = "AS_Path_Access_List";
   public static final String AUTHENTICATION_KEY_CHAIN = "Authentication_Key_Chain";
@@ -116,26 +114,17 @@ public class NamedStructureSpecifier extends PropertySpecifier {
                   Configuration::getZones, Schema.OBJECT, "Firewall security zone"))
           .build();
 
-  public static final NamedStructureSpecifier ALL = new NamedStructureSpecifier(".*");
+  public static final NamedStructurePropertySpecifier ALL =
+      new NamedStructurePropertySpecifier(".*");
 
   private final String _expression;
 
   private final Pattern _pattern;
 
   @JsonCreator
-  public NamedStructureSpecifier(String expression) {
+  public NamedStructurePropertySpecifier(String expression) {
     _expression = expression;
     _pattern = Pattern.compile(_expression.trim(), Pattern.CASE_INSENSITIVE); // canonicalize
-  }
-
-  public NamedStructureSpecifier(Collection<String> structureTypes) {
-    // quote and join
-    _expression =
-        structureTypes.stream()
-            .map(String::trim)
-            .map(Pattern::quote)
-            .collect(Collectors.joining("|"));
-    _pattern = Pattern.compile(_expression, Pattern.CASE_INSENSITIVE);
   }
 
   @Override

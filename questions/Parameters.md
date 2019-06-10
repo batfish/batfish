@@ -305,7 +305,7 @@ A specification for nodes in the network.
 
 * `@deviceType(type1)` indicates all nodes of the type 'type1'. The types of devices are listed [here](#device-types).
 
-* `@role(role, dim)` indicates all nodes with role name 'role' in dimension name 'dim'.
+* `@role(dim, role)` indicates all nodes with role name 'role' in dimension name 'dim'.
 
 #### Node Specifier Grammar
 
@@ -321,7 +321,7 @@ nodeTerm :=
 
 nodeFunc :=
     <b>@deviceType(</b><i>device-type</i><b>)</b>
-    | <b>@role(</b>&lt;<i>role-name</i>&gt;<b>,</b> &lt;<i>dimension-name</i>&gt;<b>)</b>
+    | <b>@role(</b>&lt;<i>dimension-name</i>&gt;<b>,</b> &lt;<i>role-name</i>&gt;<b>)</b>
 </pre>
 
 #### Node Specifier Resolver

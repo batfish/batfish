@@ -13,19 +13,19 @@ import org.junit.Test;
 public class LocalRouteTest {
   @Test
   public void testJavaSerialization() {
-    LocalRoute lr = new LocalRoute(new InterfaceAddress("1.1.1.1/24"), "Ethernet0");
+    LocalRoute lr = new LocalRoute(ConcreteInterfaceAddress.parse("1.1.1.1/24"), "Ethernet0");
     assertThat(SerializationUtils.clone(lr), equalTo(lr));
   }
 
   @Test
   public void testJsonSerialization() throws IOException {
-    LocalRoute lr = new LocalRoute(new InterfaceAddress("1.1.1.1/24"), "Ethernet0");
+    LocalRoute lr = new LocalRoute(ConcreteInterfaceAddress.parse("1.1.1.1/24"), "Ethernet0");
     assertThat(BatfishObjectMapper.clone(lr, LocalRoute.class), equalTo(lr));
   }
 
   @Test
   public void testToBuilder() {
-    LocalRoute lr = new LocalRoute(new InterfaceAddress("1.1.1.1/24"), "Ethernet0");
+    LocalRoute lr = new LocalRoute(ConcreteInterfaceAddress.parse("1.1.1.1/24"), "Ethernet0");
     assertThat(lr, equalTo(lr.toBuilder().build()));
   }
 
@@ -42,13 +42,13 @@ public class LocalRouteTest {
          * builder has no effect
          */
         .addEqualityGroup(
-            new LocalRoute(new InterfaceAddress("1.1.1.1/24"), "Ethernet0"),
+            new LocalRoute(ConcreteInterfaceAddress.parse("1.1.1.1/24"), "Ethernet0"),
             lr.build(),
             lr.setNonRouting(true).build(),
             lr.setNonForwarding(false).build())
-        .addEqualityGroup(new LocalRoute(new InterfaceAddress("1.1.2.1/24"), "Ethernet0"))
+        .addEqualityGroup(new LocalRoute(ConcreteInterfaceAddress.parse("1.1.2.1/24"), "Ethernet0"))
         .addEqualityGroup(
-            new LocalRoute(new InterfaceAddress("1.1.2.1/24"), "Ethernet1"),
+            new LocalRoute(ConcreteInterfaceAddress.parse("1.1.2.1/24"), "Ethernet1"),
             new LocalRoute(Prefix.parse("1.1.2.1/32"), "Ethernet1", 24, 0))
         .addEqualityGroup(new LocalRoute(Prefix.parse("1.1.2.1/32"), "Ethernet1", 24, 123))
         .addEqualityGroup(new LocalRoute(Prefix.parse("1.1.2.1/32"), "Ethernet1", 25, 123))

@@ -19,9 +19,9 @@ import javax.annotation.Nullable;
 import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.AbstractRouteDecorator;
 import org.batfish.datamodel.AnnotatedRoute;
+import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
-import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.Prefix;
@@ -33,7 +33,7 @@ public class TestUtils {
   public static <T extends AbstractRouteDecorator> void assertNoRoute(
       SortedMap<String, SortedMap<String, Set<T>>> routesByNode,
       String hostname,
-      InterfaceAddress address) {
+      ConcreteInterfaceAddress address) {
     assertNoRoute(routesByNode, hostname, address.getPrefix());
   }
 
@@ -50,7 +50,7 @@ public class TestUtils {
       SortedMap<String, SortedMap<String, Set<AbstractRoute>>> routesByNode,
       RoutingProtocol protocol,
       String hostname,
-      InterfaceAddress address,
+      ConcreteInterfaceAddress address,
       long expectedCost) {
     assertRoute(routesByNode, protocol, hostname, address.getPrefix(), expectedCost);
   }

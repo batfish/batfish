@@ -75,6 +75,7 @@ import org.batfish.datamodel.BgpPeerConfig;
 import org.batfish.datamodel.BgpTieBreaker;
 import org.batfish.datamodel.BumTransportMethod;
 import org.batfish.datamodel.CommunityList;
+import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.FlowState;
@@ -343,7 +344,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
 
   /**
    * Computes a mapping of interface names to the primary {@link Ip} owned by each of the interface.
-   * Filters out the interfaces having no primary {@link InterfaceAddress}
+   * Filters out the interfaces having no primary {@link ConcreteInterfaceAddress}
    */
   private static Map<String, Ip> computeInterfaceOwnedPrimaryIp(Map<String, Interface> interfaces) {
     return interfaces.entrySet().stream()
@@ -447,11 +448,11 @@ public final class CiscoConfiguration extends VendorConfiguration {
 
   private final Map<String, String> _failoverInterfaces;
 
-  private final Map<String, InterfaceAddress> _failoverPrimaryAddresses;
+  private final Map<String, ConcreteInterfaceAddress> _failoverPrimaryAddresses;
 
   private boolean _failoverSecondary;
 
-  private final Map<String, InterfaceAddress> _failoverStandbyAddresses;
+  private final Map<String, ConcreteInterfaceAddress> _failoverStandbyAddresses;
 
   private String _failoverStatefulSignalingInterface;
 
@@ -630,13 +631,13 @@ public final class CiscoConfiguration extends VendorConfiguration {
                           new org.batfish.datamodel.VrrpGroup(groupNum);
                       newGroup.setPreempt(vrrpGroup.getPreempt());
                       newGroup.setPriority(vrrpGroup.getPriority());
-                      InterfaceAddress ifaceAddress = iface.getAddress();
+                      ConcreteInterfaceAddress ifaceAddress = iface.getConcreteAddress();
                       if (ifaceAddress != null) {
                         int prefixLength = ifaceAddress.getNetworkBits();
                         Ip address = vrrpGroup.getVirtualAddress();
                         if (address != null) {
-                          InterfaceAddress virtualAddress =
-                              new InterfaceAddress(address, prefixLength);
+                          ConcreteInterfaceAddress virtualAddress =
+                              ConcreteInterfaceAddress.create(address, prefixLength);
                           newGroup.setVirtualAddress(virtualAddress);
                         } else {
                           _w.redFlag(
@@ -720,7 +721,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
         String iname = e.getKey();
         org.batfish.datamodel.Interface iface = e.getValue();
         if (iname.startsWith("Loopback")) {
-          InterfaceAddress address = iface.getAddress();
+          ConcreteInterfaceAddress address = iface.getConcreteAddress();
           if (address != null) {
             Ip currentIp = address.getIp();
             if (currentIp.asLong() > processRouterId.asLong()) {
@@ -731,7 +732,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
       }
       if (processRouterId.equals(Ip.ZERO)) {
         for (org.batfish.datamodel.Interface currentInterface : vrf.getInterfaces().values()) {
-          InterfaceAddress address = currentInterface.getAddress();
+          ConcreteInterfaceAddress address = currentInterface.getConcreteAddress();
           if (address != null) {
             Ip currentIp = address.getIp();
             if (currentIp.asLong() > processRouterId.asLong()) {
@@ -814,7 +815,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
     return _failoverInterfaces;
   }
 
-  public Map<String, InterfaceAddress> getFailoverPrimaryAddresses() {
+  public Map<String, ConcreteInterfaceAddress> getFailoverPrimaryAddresses() {
     return _failoverPrimaryAddresses;
   }
 
@@ -822,7 +823,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
     return _failoverSecondary;
   }
 
-  public Map<String, InterfaceAddress> getFailoverStandbyAddresses() {
+  public Map<String, ConcreteInterfaceAddress> getFailoverStandbyAddresses() {
     return _failoverStandbyAddresses;
   }
 
@@ -1079,7 +1080,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
         org.batfish.datamodel.Interface sourceInterface =
             vrf.getInterfaces().get(updateSourceInterface);
         if (sourceInterface != null) {
-          InterfaceAddress address = sourceInterface.getAddress();
+          ConcreteInterfaceAddress address = sourceInterface.getConcreteAddress();
           if (address != null) {
             Ip sourceIp = address.getIp();
             updateSource = sourceIp;
@@ -1096,7 +1097,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
         } else {
           Ip neighborAddress = lpg.getNeighborPrefix().getStartIp();
           for (org.batfish.datamodel.Interface iface : vrf.getInterfaces().values()) {
-            for (InterfaceAddress interfaceAddress : iface.getAllAddresses()) {
+            for (ConcreteInterfaceAddress interfaceAddress : iface.getAllConcreteAddresses()) {
               if (interfaceAddress.getPrefix().containsIp(neighborAddress)) {
                 Ip ifaceAddress = interfaceAddress.getIp();
                 updateSource = ifaceAddress;
@@ -1176,9 +1177,9 @@ public final class CiscoConfiguration extends VendorConfiguration {
   private void processFailoverSettings() {
     if (_failover) {
       Interface commIface;
-      InterfaceAddress commAddress;
+      ConcreteInterfaceAddress commAddress;
       Interface sigIface;
-      InterfaceAddress sigAddress;
+      ConcreteInterfaceAddress sigAddress;
       if (_failoverSecondary) {
         commIface = _interfaces.get(_failoverCommunicationInterface);
         commAddress = _failoverStandbyAddresses.get(_failoverCommunicationInterfaceAlias);
@@ -2268,7 +2269,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
   private void generateAristaDynamicSourceNats(
       org.batfish.datamodel.Interface newIface,
       List<AristaDynamicSourceNat> aristaDynamicSourceNats) {
-    Ip interfaceIp = newIface.getAddress().getIp();
+    Ip interfaceIp = newIface.getConcreteAddress().getIp();
     Transformation next = null;
     for (AristaDynamicSourceNat nat : Lists.reverse(aristaDynamicSourceNats)) {
       next = nat.toTransformation(interfaceIp, _natPools, next).orElse(next);
@@ -2559,7 +2560,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
       if (vsIface.getOspfProcess() != null && !vsIface.getOspfProcess().equals(proc.getName())) {
         continue;
       }
-      InterfaceAddress interfaceAddress = iface.getAddress();
+      ConcreteInterfaceAddress interfaceAddress = iface.getConcreteAddress();
       Long areaNum = iface.getOspfAreaName();
       // OSPF area number was not configured on the interface itself, so infer from IP address.
       if (areaNum == null) {
@@ -2782,7 +2783,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
     for (Entry<String, org.batfish.datamodel.Interface> e : vrf.getInterfaces().entrySet()) {
       String ifaceName = e.getKey();
       org.batfish.datamodel.Interface i = e.getValue();
-      InterfaceAddress interfaceAddress = i.getAddress();
+      ConcreteInterfaceAddress interfaceAddress = i.getConcreteAddress();
       if (interfaceAddress == null) {
         continue;
       }

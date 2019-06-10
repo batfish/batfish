@@ -19,10 +19,10 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableMultiset;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
+import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.Interface;
-import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.IpWildcardSetIpSpace;
@@ -64,7 +64,7 @@ public class SpecifiersAnswererTest {
         nf.interfaceBuilder()
             .setOwner(_c1)
             .setName("iface1")
-            .setAddress(new InterfaceAddress("1.1.1.1/24"))
+            .setAddress(ConcreteInterfaceAddress.parse("1.1.1.1/24"))
             .build();
     _c1.setInterfaces(ImmutableSortedMap.of(_iface1.getName(), _iface1));
     _filter1 = IpAccessList.builder().setName("filter1").setOwner(_c1).build();
@@ -79,7 +79,7 @@ public class SpecifiersAnswererTest {
         nf.interfaceBuilder()
             .setOwner(_c2)
             .setName("iface2")
-            .setAddress(new InterfaceAddress("2.2.2.2/24"))
+            .setAddress(ConcreteInterfaceAddress.parse("2.2.2.2/24"))
             .build();
     _c2.setInterfaces(ImmutableSortedMap.of(_iface2.getName(), _iface2));
     _filter2 = IpAccessList.builder().setName("filter2").setOwner(_c2).build();
@@ -91,9 +91,11 @@ public class SpecifiersAnswererTest {
             .setInterfaceOwnedIps(
                 ImmutableMap.of(
                     _c1.getHostname(),
-                    ImmutableMap.of(_iface1.getName(), _iface1.getAddress().getIp().toIpSpace()),
+                    ImmutableMap.of(
+                        _iface1.getName(), _iface1.getConcreteAddress().getIp().toIpSpace()),
                     _c2.getHostname(),
-                    ImmutableMap.of(_iface2.getName(), _iface2.getAddress().getIp().toIpSpace())))
+                    ImmutableMap.of(
+                        _iface2.getName(), _iface2.getConcreteAddress().getIp().toIpSpace())))
             .build();
   }
 
@@ -173,7 +175,7 @@ public class SpecifiersAnswererTest {
                     ImmutableSet.of(new InterfaceLocation(_c1.getHostname(), _iface1.getName()))
                         .toString(),
                     COL_IP_SPACE,
-                    _iface1.getAddress().getIp().toIpSpace().toString()))));
+                    _iface1.getConcreteAddress().getIp().toIpSpace().toString()))));
   }
 
   @Test
@@ -189,13 +191,13 @@ public class SpecifiersAnswererTest {
                     ImmutableSet.of(new InterfaceLocation(_c1.getHostname(), _iface1.getName()))
                         .toString(),
                     COL_IP_SPACE,
-                    _iface1.getAddress().getIp().toIpSpace().toString()),
+                    _iface1.getConcreteAddress().getIp().toIpSpace().toString()),
                 Row.of(
                     COL_LOCATIONS,
                     ImmutableSet.of(new InterfaceLocation(_c2.getHostname(), _iface2.getName()))
                         .toString(),
                     COL_IP_SPACE,
-                    _iface2.getAddress().getIp().toIpSpace().toString()))));
+                    _iface2.getConcreteAddress().getIp().toIpSpace().toString()))));
   }
 
   @Test

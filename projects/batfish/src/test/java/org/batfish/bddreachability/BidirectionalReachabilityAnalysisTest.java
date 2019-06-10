@@ -52,13 +52,13 @@ import org.batfish.bddreachability.transition.Transition;
 import org.batfish.common.bdd.BDDPacket;
 import org.batfish.common.bdd.HeaderSpaceToBDD;
 import org.batfish.common.bdd.IpSpaceToBDD;
+import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.FirewallSessionInterfaceInfo;
 import org.batfish.datamodel.FlowDisposition;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.Interface;
-import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpAccessListLine;
@@ -146,7 +146,7 @@ public final class BidirectionalReachabilityAnalysisTest {
     Configuration source1 = cb.build();
     Vrf vrf = nf.vrfBuilder().setOwner(source1).build();
     ib.setOwner(source1).setVrf(vrf);
-    Interface source1Iface = ib.setAddress(new InterfaceAddress("1.0.0.1/29")).build();
+    Interface source1Iface = ib.setAddress(ConcreteInterfaceAddress.parse("1.0.0.1/29")).build();
     vrf.setStaticRoutes(
         ImmutableSortedSet.of(
             StaticRoute.builder()
@@ -159,7 +159,7 @@ public final class BidirectionalReachabilityAnalysisTest {
     Configuration source2 = cb.build();
     vrf = nf.vrfBuilder().setOwner(source2).build();
     ib.setOwner(source2).setVrf(vrf);
-    Interface source2Iface = ib.setAddress(new InterfaceAddress("1.0.0.2/29")).build();
+    Interface source2Iface = ib.setAddress(ConcreteInterfaceAddress.parse("1.0.0.2/29")).build();
     vrf.setStaticRoutes(
         ImmutableSortedSet.of(
             StaticRoute.builder()
@@ -171,8 +171,8 @@ public final class BidirectionalReachabilityAnalysisTest {
 
     Configuration fw = cb.build();
     ib.setOwner(fw).setVrf(nf.vrfBuilder().setOwner(fw).build());
-    Interface fwI1 = ib.setAddress(new InterfaceAddress("1.0.0.3/29")).build();
-    Interface fwI2 = ib.setAddress(new InterfaceAddress("255.255.255.0/24")).build();
+    Interface fwI1 = ib.setAddress(ConcreteInterfaceAddress.parse("1.0.0.3/29")).build();
+    Interface fwI2 = ib.setAddress(ConcreteInterfaceAddress.parse("255.255.255.0/24")).build();
 
     fwI2.setFirewallSessionInterfaceInfo(
         new FirewallSessionInterfaceInfo(ImmutableList.of(fwI2.getName()), null, null));
@@ -393,7 +393,7 @@ public final class BidirectionalReachabilityAnalysisTest {
     Configuration source1 = cb.build();
     Vrf vrf = nf.vrfBuilder().setOwner(source1).build();
     ib.setOwner(source1).setVrf(vrf);
-    Interface source1Iface = ib.setAddress(new InterfaceAddress("2.0.0.1/29")).build();
+    Interface source1Iface = ib.setAddress(ConcreteInterfaceAddress.parse("2.0.0.1/29")).build();
     vrf.setStaticRoutes(
         ImmutableSortedSet.of(
             StaticRoute.builder()
@@ -406,8 +406,8 @@ public final class BidirectionalReachabilityAnalysisTest {
     Configuration source2 = cb.build();
     vrf = nf.vrfBuilder().setOwner(source2).build();
     ib.setOwner(source2).setVrf(vrf);
-    Interface source2Iface1 = ib.setAddress(new InterfaceAddress("1.0.0.0/31")).build();
-    Interface source2Iface2 = ib.setAddress(new InterfaceAddress("2.0.0.2/29")).build();
+    Interface source2Iface1 = ib.setAddress(ConcreteInterfaceAddress.parse("1.0.0.0/31")).build();
+    Interface source2Iface2 = ib.setAddress(ConcreteInterfaceAddress.parse("2.0.0.2/29")).build();
     vrf.setStaticRoutes(
         ImmutableSortedSet.of(
             StaticRoute.builder()
@@ -419,8 +419,8 @@ public final class BidirectionalReachabilityAnalysisTest {
 
     Configuration fw = cb.build();
     ib.setOwner(fw).setVrf(nf.vrfBuilder().setOwner(fw).build());
-    Interface fwI1 = ib.setAddress(new InterfaceAddress("2.0.0.3/29")).build();
-    Interface fwI2 = ib.setAddress(new InterfaceAddress("255.255.255.0/24")).build();
+    Interface fwI1 = ib.setAddress(ConcreteInterfaceAddress.parse("2.0.0.3/29")).build();
+    Interface fwI2 = ib.setAddress(ConcreteInterfaceAddress.parse("255.255.255.0/24")).build();
     // transform source IP before setting up session on fwI2
     Ip poolIp = Ip.parse("5.5.5.5");
     fwI2.setOutgoingTransformation(always().apply(assignSourceIp(poolIp, poolIp)).build());
@@ -564,7 +564,7 @@ public final class BidirectionalReachabilityAnalysisTest {
     Configuration source1 = cb.build();
     Vrf vrf = nf.vrfBuilder().setOwner(source1).build();
     ib.setOwner(source1).setVrf(vrf);
-    Interface source1Iface = ib.setAddress(new InterfaceAddress("2.0.0.1/29")).build();
+    Interface source1Iface = ib.setAddress(ConcreteInterfaceAddress.parse("2.0.0.1/29")).build();
     source1Iface.setIncomingFilter(
         nf.aclBuilder().setOwner(source1).setLines(ImmutableList.of(permitTcpLine)).build());
     vrf.setStaticRoutes(
@@ -579,8 +579,8 @@ public final class BidirectionalReachabilityAnalysisTest {
     Configuration source2 = cb.build();
     vrf = nf.vrfBuilder().setOwner(source2).build();
     ib.setOwner(source2).setVrf(vrf);
-    Interface source2Iface1 = ib.setAddress(new InterfaceAddress("1.0.0.0/31")).build();
-    Interface source2Iface2 = ib.setAddress(new InterfaceAddress("2.0.0.2/29")).build();
+    Interface source2Iface1 = ib.setAddress(ConcreteInterfaceAddress.parse("1.0.0.0/31")).build();
+    Interface source2Iface2 = ib.setAddress(ConcreteInterfaceAddress.parse("2.0.0.2/29")).build();
     Prefix source2Iface1RoutePrefix = Prefix.parse("9.9.9.9/32");
     vrf.setStaticRoutes(
         ImmutableSortedSet.of(
@@ -598,9 +598,9 @@ public final class BidirectionalReachabilityAnalysisTest {
 
     Configuration fw = cb.build();
     ib.setOwner(fw).setVrf(nf.vrfBuilder().setOwner(fw).build());
-    ib.setAddress(new InterfaceAddress("2.0.0.3/29")).build();
-    Interface fwI2 = ib.setAddress(new InterfaceAddress("3.0.0.1/29")).build();
-    Interface fwI3 = ib.setAddress(new InterfaceAddress("255.255.255.0/24")).build();
+    ib.setAddress(ConcreteInterfaceAddress.parse("2.0.0.3/29")).build();
+    Interface fwI2 = ib.setAddress(ConcreteInterfaceAddress.parse("3.0.0.1/29")).build();
+    Interface fwI3 = ib.setAddress(ConcreteInterfaceAddress.parse("255.255.255.0/24")).build();
 
     IpAccessList permitUdpAcl =
         nf.aclBuilder().setOwner(fw).setLines(ImmutableList.of(permitUdpLine)).build();

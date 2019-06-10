@@ -110,4 +110,11 @@ interface AstNodeVisitor<T> {
   T visitOperatorAstNode(OperatorAstNode operatorAstNode);
 
   T visitFilterWithNodeFilterAstNode(FilterWithNodeFilterAstNode filterWithNodeFilterAstNode);
+
+  T visitUnionNamedStructureAstNode(UnionNamedStructureAstNode unionNamedStructureAstNode);
+
+  T visitTypeNamedStructureAstNode(TypeNamedStructureAstNode typeNamedStructureAstNode);
+
+  T visitTypeRegexNamedStructureAstNode(
+      TypeRegexNamedStructureAstNode typeRegexNamedStructureAstNode);
 }

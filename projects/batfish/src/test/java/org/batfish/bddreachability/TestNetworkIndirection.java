@@ -4,12 +4,12 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSortedMap;
 import java.io.IOException;
 import java.util.SortedMap;
+import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Configuration.Builder;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.Interface;
-import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpAccessListLine;
@@ -65,7 +65,9 @@ public final class TestNetworkIndirection {
                         .build()))
             .build();
 
-    ib.setAddress(new InterfaceAddress(LINK_NETWORK.getEndIp(), LINK_NETWORK.getPrefixLength()))
+    ib.setAddress(
+            ConcreteInterfaceAddress.create(
+                LINK_NETWORK.getEndIp(), LINK_NETWORK.getPrefixLength()))
         .setIncomingFilter(link1DstIngressAcl)
         .setOwner(_node)
         .setVrf(dstVrf)
@@ -79,7 +81,8 @@ public final class TestNetworkIndirection {
         ib.setOwner(_node)
             .setVrf(dstVrf)
             .setAddress(
-                new InterfaceAddress(IFACE_PREFIX.getStartIp(), IFACE_PREFIX.getPrefixLength()))
+                ConcreteInterfaceAddress.create(
+                    IFACE_PREFIX.getStartIp(), IFACE_PREFIX.getPrefixLength()))
             .build();
 
     _configs = ImmutableSortedMap.of(_node.getHostname(), _node);

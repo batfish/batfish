@@ -101,7 +101,7 @@ public class UniqueIpAssignmentsQuestionPlugin extends QuestionPlugin {
           // convert to stream of Entry<Ip, NodeInterfacePair>
           .flatMap(
               iface ->
-                  iface.getAllAddresses().stream()
+                  iface.getAllConcreteAddresses().stream()
                       .map(
                           ifaceAdrr ->
                               Maps.immutableEntry(ifaceAdrr.getIp(), new NodeInterfacePair(iface))))

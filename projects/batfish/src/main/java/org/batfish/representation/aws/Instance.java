@@ -13,9 +13,9 @@ import java.util.Map;
 import java.util.SortedSet;
 import org.batfish.common.BatfishException;
 import org.batfish.common.Warnings;
+import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Interface;
-import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.StaticRoute;
@@ -171,7 +171,7 @@ public class Instance implements AwsVpcEntity, Serializable {
         continue;
       }
 
-      ImmutableSortedSet.Builder<InterfaceAddress> ifaceAddressesBuilder =
+      ImmutableSortedSet.Builder<ConcreteInterfaceAddress> ifaceAddressesBuilder =
           new ImmutableSortedSet.Builder<>(Comparator.naturalOrder());
 
       Subnet subnet = region.getSubnets().get(netInterface.getSubnetId());
@@ -200,10 +200,11 @@ public class Instance implements AwsVpcEntity, Serializable {
           continue;
         }
 
-        InterfaceAddress address = new InterfaceAddress(ip, ifaceSubnet.getPrefixLength());
+        ConcreteInterfaceAddress address =
+            ConcreteInterfaceAddress.create(ip, ifaceSubnet.getPrefixLength());
         ifaceAddressesBuilder.add(address);
       }
-      SortedSet<InterfaceAddress> ifaceAddresses = ifaceAddressesBuilder.build();
+      SortedSet<ConcreteInterfaceAddress> ifaceAddresses = ifaceAddressesBuilder.build();
       Interface iface = Utils.newInterface(interfaceId, cfgNode, ifaceAddresses.first());
       iface.setAllAddresses(ifaceAddresses);
 

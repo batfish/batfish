@@ -253,7 +253,7 @@ class CounterExample {
       nextHopInt = graphEdge.getStart().getName();
     } else {
       type = StringUtils.capitalize(proto.name().toLowerCase()) + "Route";
-      nextHopIP = graphEdge.getStart().getAddress().getIp().toString();
+      nextHopIP = graphEdge.getStart().getConcreteAddress().getIp().toString();
       nextHopInt = "dynamic";
     }
     return String.format("%s<%s,nhip:%s,nhint:%s>", type, pfx, nextHopIP, nextHopInt);
@@ -399,7 +399,7 @@ class CounterExample {
           // Check if there is an accepting interface
           for (GraphEdge graphEdge : slice.getGraph().getEdgeMap().get(currentRouterName)) {
             Interface interf = graphEdge.getStart();
-            Ip ip = interf.getAddress().getIp();
+            Ip ip = interf.getConcreteAddress().getIp();
             if (ip.equals(flow.getDstIp())) {
               FlowTrace ft = new FlowTrace(FlowDisposition.ACCEPTED, hops, "ACCEPTED");
               return new Tuple<>(flow, ft);

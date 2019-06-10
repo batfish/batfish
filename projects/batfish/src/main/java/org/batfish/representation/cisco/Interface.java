@@ -13,9 +13,9 @@ import java.util.TreeSet;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.common.BatfishException;
+import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.IntegerSpace;
-import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.SwitchportEncapsulationType;
@@ -212,17 +212,17 @@ public class Interface implements Serializable {
 
   private String _outgoingFilter;
 
-  private InterfaceAddress _address;
+  private ConcreteInterfaceAddress _address;
 
   private boolean _proxyArp;
 
   private String _routingPolicy;
 
-  private Set<InterfaceAddress> _secondaryAddresses;
+  private Set<ConcreteInterfaceAddress> _secondaryAddresses;
 
   private boolean _spanningTreePortfast;
 
-  private InterfaceAddress _standbyAddress;
+  private ConcreteInterfaceAddress _standbyAddress;
 
   private boolean _switchport;
 
@@ -372,8 +372,8 @@ public class Interface implements Serializable {
     return _allowedVlans;
   }
 
-  public Set<InterfaceAddress> getAllAddresses() {
-    Set<InterfaceAddress> allAddresses = new TreeSet<>();
+  public Set<ConcreteInterfaceAddress> getAllAddresses() {
+    Set<ConcreteInterfaceAddress> allAddresses = new TreeSet<>();
     if (_address != null) {
       allAddresses.add(_address);
     }
@@ -492,7 +492,7 @@ public class Interface implements Serializable {
     return _outgoingFilter;
   }
 
-  public InterfaceAddress getAddress() {
+  public ConcreteInterfaceAddress getAddress() {
     return _address;
   }
 
@@ -509,7 +509,7 @@ public class Interface implements Serializable {
     return _routingPolicy;
   }
 
-  public Set<InterfaceAddress> getSecondaryAddresses() {
+  public Set<ConcreteInterfaceAddress> getSecondaryAddresses() {
     return _secondaryAddresses;
   }
 
@@ -521,7 +521,7 @@ public class Interface implements Serializable {
     return _speed;
   }
 
-  public InterfaceAddress getStandbyAddress() {
+  public ConcreteInterfaceAddress getStandbyAddress() {
     return _standbyAddress;
   }
 
@@ -678,7 +678,7 @@ public class Interface implements Serializable {
     _outgoingFilter = accessListName;
   }
 
-  public void setAddress(InterfaceAddress address) {
+  public void setAddress(ConcreteInterfaceAddress address) {
     _address = address;
   }
 
@@ -702,7 +702,7 @@ public class Interface implements Serializable {
     _speed = speed;
   }
 
-  public void setStandbyAddress(InterfaceAddress standbyAddress) {
+  public void setStandbyAddress(ConcreteInterfaceAddress standbyAddress) {
     _standbyAddress = standbyAddress;
   }
 

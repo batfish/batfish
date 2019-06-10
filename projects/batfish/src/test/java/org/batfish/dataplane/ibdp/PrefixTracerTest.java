@@ -26,11 +26,11 @@ import java.util.Map;
 import java.util.Set;
 import java.util.SortedMap;
 import org.batfish.datamodel.BgpProcess;
+import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Configuration.Builder;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.Interface;
-import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.OriginType;
@@ -95,7 +95,7 @@ public class PrefixTracerTest {
     Vrf vrf1 = nf.vrfBuilder().setOwner(c1).setName(Configuration.DEFAULT_VRF_NAME).build();
     Interface i1 =
         nf.interfaceBuilder()
-            .setAddress(new InterfaceAddress(neighbor1Ip, MAX_PREFIX_LENGTH - 1))
+            .setAddress(ConcreteInterfaceAddress.create(neighbor1Ip, MAX_PREFIX_LENGTH - 1))
             .setOwner(c1)
             .setVrf(vrf1)
             .build();
@@ -125,7 +125,7 @@ public class PrefixTracerTest {
     Vrf vrf2 = nf.vrfBuilder().setOwner(c2).setName(Configuration.DEFAULT_VRF_NAME).build();
     policy = pb.setOwner(c2).build();
     nf.interfaceBuilder()
-        .setAddress(new InterfaceAddress(neighbor2Ip, MAX_PREFIX_LENGTH - 1))
+        .setAddress(ConcreteInterfaceAddress.create(neighbor2Ip, MAX_PREFIX_LENGTH - 1))
         .setOwner(c2)
         .setVrf(vrf2)
         .build();
