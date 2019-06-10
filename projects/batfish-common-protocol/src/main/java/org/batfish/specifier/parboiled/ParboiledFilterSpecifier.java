@@ -20,10 +20,10 @@ final class ParboiledFilterSpecifier implements FilterSpecifier {
   @ParametersAreNonnullByDefault
   private final class FilterAstNodeToFilters implements FilterAstNodeVisitor<Set<IpAccessList>> {
 
-    /** The context with which {@link #resolve) is called */
+    /** The context with which {@link #resolve} is called */
     private final SpecifierContext _ctxt;
 
-    /** The node (name) for which {@link #resolve) is called */
+    /** The node (name) for which {@link #resolve} is called */
     private final String _node;
 
     FilterAstNodeToFilters(String node, SpecifierContext ctxt) {
