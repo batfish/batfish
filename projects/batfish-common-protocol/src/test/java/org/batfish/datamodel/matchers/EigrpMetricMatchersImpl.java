@@ -7,15 +7,15 @@ import org.hamcrest.Matcher;
 
 class EigrpMetricMatchersImpl {
 
-  static final class HasBandwidth extends FeatureMatcher<EigrpMetric, Double> {
-    HasBandwidth(@Nonnull Matcher<? super Double> subMatcher) {
+  static final class HasBandwidth extends FeatureMatcher<EigrpMetric, Long> {
+    HasBandwidth(@Nonnull Matcher<? super Long> subMatcher) {
       super(subMatcher, "An EigrpMetric with bandwidth:", "bandwidth");
     }
 
     @Override
     @Nonnull
-    protected Double featureValueOf(EigrpMetric actual) {
-      return actual.getBandwidth();
+    protected Long featureValueOf(EigrpMetric actual) {
+      return actual.getClassicBandwidth();
     }
   }
 
@@ -31,15 +31,15 @@ class EigrpMetricMatchersImpl {
     }
   }
 
-  static final class HasDelay extends FeatureMatcher<EigrpMetric, Double> {
-    HasDelay(@Nonnull Matcher<? super Double> subMatcher) {
+  static final class HasDelay extends FeatureMatcher<EigrpMetric, Long> {
+    HasDelay(@Nonnull Matcher<? super Long> subMatcher) {
       super(subMatcher, "An EigrpMetric with delay:", "delay");
     }
 
     @Override
     @Nonnull
-    protected Double featureValueOf(EigrpMetric actual) {
-      return actual.getDelay();
+    protected Long featureValueOf(EigrpMetric actual) {
+      return actual.getClassicDelay();
     }
   }
 }

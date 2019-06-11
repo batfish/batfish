@@ -1,11 +1,11 @@
 package org.batfish.datamodel.eigrp;
 
 import static org.batfish.datamodel.eigrp.EigrpProcessMode.CLASSIC;
+import static org.batfish.datamodel.eigrp.EigrpProcessMode.NAMED;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.google.common.annotations.VisibleForTesting;
 import java.io.Serializable;
 import java.util.Objects;
 import java.util.stream.LongStream;
@@ -21,8 +21,8 @@ public class EigrpMetric implements Serializable {
   private static final String PROP_NAMED_DELAY = "named-delay";
   private static final String PROP_MODE = "mode";
   private static final long serialVersionUID = 1L;
-  private static final long EIGRP_BANDWIDTH = 10000000L;
-  private static final long EIGRP_DELAY_PICO = 1000000L;
+  public static final long EIGRP_BANDWIDTH = 10_000_000L;
+  public static final long EIGRP_DELAY_PICO = 1_000_000L;
   private static final long EIGRP_CLASSIC_SCALE = 256L;
   private static final long EIGRP_WIDE_SCALE = 65536L;
   private static final long K1_DEFAULT = 1L;
@@ -34,32 +34,31 @@ public class EigrpMetric implements Serializable {
   private final EigrpProcessMode _mode;
   private final long _namedBandwidth; // Kbps
   private final long _namedDelay; // Picoseconds
-  private transient Long _cost;
+  private transient @Nullable Long _cost;
 
   /** Called by Builder and used to create interface metrics */
   private EigrpMetric(double bandwidth, double delay, EigrpProcessMode mode) {
-    long namedBandwidth = (long) (bandwidth / 1000.0);
-    long namedDelay = (long) delay;
+    long eigrpBandwidth = (long) (bandwidth / 1000.0);
+    long eigrpDelay = (long) delay;
 
-    /*
-     * In CLASSIC mode, EIGRP scales the metrics before sending over
-     * the network. In NAMED mode, EIGRP sends unscaled metrics. All arithmetic operations truncate, so
-     * scaling and unscaling results in precision loss. In this class, both "classic" and "named"
-     * versions of the metrics are kept, but one is (un)scaled from the other depending on the mode.
-     */
-
-    _classicBandwidth = namedToClassicBandwidth(namedBandwidth);
-    long classicDelay = namedToClassicDelay(namedDelay);
-    _classicDelay = classicDelay == 0 ? 1 : classicDelay;
+    if (mode == NAMED) {
+      _namedBandwidth = eigrpBandwidth;
+      _namedDelay = eigrpDelay;
+      _classicBandwidth = 0L;
+      _classicDelay = 0L;
+    } else {
+      assert mode == CLASSIC;
+      _classicBandwidth = EIGRP_BANDWIDTH / eigrpBandwidth;
+      _classicDelay = eigrpDelay / EIGRP_DELAY_PICO / 10L;
+      _namedBandwidth = 0L;
+      _namedDelay = 0L;
+    }
 
     // TODO set from arguments (from config)
     // https://github.com/batfish/batfish/issues/1946
     _k1 = K1_DEFAULT;
     _k3 = K3_DEFAULT;
-
     _mode = mode;
-    _namedBandwidth = namedBandwidth;
-    _namedDelay = namedDelay;
   }
 
   /** Called internally with pre-scaled values */
@@ -83,30 +82,12 @@ public class EigrpMetric implements Serializable {
     return new Builder();
   }
 
-  private static Long classicToNamedDelay(long classicDelay) {
-    return classicDelay * EIGRP_DELAY_PICO * 10L;
-  }
-
-  private static Long classicToNamedBandwidth(long classicBandwidth) {
-    return EIGRP_BANDWIDTH / classicBandwidth;
-  }
-
-  @VisibleForTesting
-  public static Long namedToClassicBandwidth(long namedBandwidth) {
-    return EIGRP_BANDWIDTH / namedBandwidth;
-  }
-
-  @VisibleForTesting
-  public static Long namedToClassicDelay(long namedDelay) {
-    return namedDelay / EIGRP_DELAY_PICO / 10L;
-  }
-
   @Nonnull
   public EigrpMetric accumulate(EigrpMetric neighborInterfaceMetric, EigrpMetric routeMetric) {
-    long classicBandwidth;
-    long classicDelay;
-    long namedBandwidth;
-    long namedDelay;
+    long classicBandwidth = 0L;
+    long classicDelay = 0L;
+    long namedBandwidth = 0L;
+    long namedDelay = 0L;
 
     if (_mode == CLASSIC) {
       classicBandwidth =
@@ -116,9 +97,7 @@ public class EigrpMetric implements Serializable {
                   routeMetric._classicBandwidth)
               .max()
               .getAsLong();
-      namedBandwidth = classicToNamedBandwidth(classicBandwidth);
       classicDelay = _classicDelay + routeMetric._classicDelay;
-      namedDelay = classicToNamedDelay(classicDelay);
     } else {
       namedBandwidth =
           LongStream.of(
@@ -127,16 +106,14 @@ public class EigrpMetric implements Serializable {
                   routeMetric._namedBandwidth)
               .min()
               .getAsLong();
-      classicBandwidth = namedToClassicBandwidth(namedBandwidth);
       namedDelay = _namedDelay + routeMetric._namedDelay;
-      classicDelay = namedToClassicDelay(namedDelay);
     }
 
     // Mode is set by this metric
     return new EigrpMetric(classicBandwidth, namedBandwidth, classicDelay, namedDelay, _mode);
   }
 
-  private Long computeCost() {
+  private long computeCost() {
     if (_mode == CLASSIC) {
       return (_k1 * _classicBandwidth + _k3 * _classicDelay) * EIGRP_CLASSIC_SCALE;
     } else {
@@ -167,20 +144,15 @@ public class EigrpMetric implements Serializable {
         _classicBandwidth, _classicDelay, _mode.ordinal(), _namedBandwidth, _namedDelay);
   }
 
-  @JsonIgnore
-  public double getBandwidth() {
-    return _namedBandwidth * 1000L;
-  }
-
   /** The classic bandwidth metric */
   @JsonProperty(PROP_CLASSIC_BANDWIDTH)
-  private long getClassicBandwidth() {
+  public long getClassicBandwidth() {
     return _classicBandwidth;
   }
 
   /** The classic delay metric */
   @JsonProperty(PROP_CLASSIC_DELAY)
-  private long getClassicDelay() {
+  public long getClassicDelay() {
     return _classicDelay;
   }
 
@@ -191,12 +163,6 @@ public class EigrpMetric implements Serializable {
       _cost = computeCost();
     }
     return _cost;
-  }
-
-  /** Returns the configured or default delay */
-  @JsonIgnore
-  public double getDelay() {
-    return _namedDelay;
   }
 
   /** The named bandwidth metric */
@@ -213,7 +179,7 @@ public class EigrpMetric implements Serializable {
 
   /** EIGRP process mode of this metric */
   @JsonProperty(PROP_MODE)
-  private EigrpProcessMode getMode() {
+  public EigrpProcessMode getMode() {
     return _mode;
   }
 
