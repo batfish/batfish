@@ -763,7 +763,6 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
             .setName(computeOutgoingFilterName(iface.getName()))
             .setLines(lines)
             .build();
-    _c.getIpAccessLists().put(outgoing.getName(), outgoing);
     newIface.setOutgoingFilter(outgoing);
     return newIface;
   }
