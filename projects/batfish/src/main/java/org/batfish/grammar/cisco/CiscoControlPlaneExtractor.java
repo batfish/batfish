@@ -311,6 +311,7 @@ import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -1255,6 +1256,7 @@ import org.batfish.representation.cisco.RouteMapMatchIpAccessListLine;
 import org.batfish.representation.cisco.RouteMapMatchIpPrefixListLine;
 import org.batfish.representation.cisco.RouteMapMatchIpv6AccessListLine;
 import org.batfish.representation.cisco.RouteMapMatchIpv6PrefixListLine;
+import org.batfish.representation.cisco.RouteMapMatchSourceProtocolLine;
 import org.batfish.representation.cisco.RouteMapMatchTagLine;
 import org.batfish.representation.cisco.RouteMapSetAdditiveCommunityLine;
 import org.batfish.representation.cisco.RouteMapSetAdditiveCommunityListLine;
@@ -7524,7 +7526,34 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   @Override
   public void exitMatch_source_protocol_rm_stanza(Match_source_protocol_rm_stanzaContext ctx) {
-    todo(ctx);
+    List<RoutingProtocol> rps = new LinkedList<>();
+    boolean todo = false;
+    if (!ctx.BGP().isEmpty()) {
+      todo = true;
+    }
+    if (!ctx.CONNECTED().isEmpty()) {
+      rps.add(RoutingProtocol.CONNECTED);
+    }
+    if (!ctx.ISIS().isEmpty()) {
+      todo = true;
+    }
+    if (!ctx.OSPF().isEmpty()) {
+      todo = true;
+    }
+    if (!ctx.STATIC().isEmpty()) {
+      rps.add(RoutingProtocol.STATIC);
+    }
+    if (todo) {
+      todo(ctx);
+      // Do nothing, since we have some unsupported protocols.
+      return;
+    }
+    if (rps.isEmpty()) {
+      // This should not be possible.
+      _w.redFlag("Unexpected: empty routing protocol list to match against " + getFullText(ctx));
+      return;
+    }
+    _currentRouteMapClause.addMatchLine(new RouteMapMatchSourceProtocolLine(rps));
   }
 
   @Override
