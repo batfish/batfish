@@ -415,8 +415,8 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
       @Nonnull IpSpace ipsRoutedThroughInterface,
       @Nonnull Map<String, Map<String, Set<Ip>>> interfaceOwnedIps) {
     IpSpace ipsAssignedToThisInterface =
-        computeIpsAssignedToThisInterface(iface, interfaceOwnedIps);
-    if (ipsAssignedToThisInterface == EmptyIpSpace.INSTANCE && iface.getAllAddresses().isEmpty()) {
+        computeIpsAssignedToThisInterfaceForArpReplies(iface, interfaceOwnedIps);
+    if (ipsAssignedToThisInterface == EmptyIpSpace.INSTANCE) {
       // if no IPs are assigned to this interface at all (not even link-local), it replies to no ARP
       // requests.
       return EmptyIpSpace.INSTANCE;
@@ -438,19 +438,30 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
     return interfaceArpReplies.build();
   }
 
+  /**
+   * Compute IP addresses "assigned" to this interface for the purposes for ARP replies. This is a
+   * space of IPs that an interface will send an ARP reply for. Includes IPs that an interface owns
+   * (explicitly assigned or virtual) as well as any defined link-local addresses.
+   */
   @VisibleForTesting
-  static IpSpace computeIpsAssignedToThisInterface(
+  static IpSpace computeIpsAssignedToThisInterfaceForArpReplies(
       Interface iface, Map<String, Map<String, Set<Ip>>> interfaceOwnedIps) {
-    if (iface.getAllConcreteAddresses().isEmpty()) {
-      return EmptyIpSpace.INSTANCE;
-    }
-
-    Set<Ip> ips = interfaceOwnedIps.get(iface.getOwner().getHostname()).get(iface.getName());
-    if (ips == null || ips.isEmpty()) {
+    /*
+     * If a device has no interfaces with concrete IPs, it will not appear in interfaceOwnedIps.
+     * When we get the owned IP space for such interfaces, there could be an NPE, work around that
+     */
+    Set<Ip> concreteIps =
+        interfaceOwnedIps
+            .getOrDefault(iface.getOwner().getHostname(), ImmutableMap.of())
+            .getOrDefault(iface.getName(), ImmutableSet.of());
+    Set<LinkLocalAddress> linkLocalIps = iface.getAllLinkLocalAddresses();
+    if (concreteIps.isEmpty() && linkLocalIps.isEmpty()) {
       return EmptyIpSpace.INSTANCE;
     }
     IpWildcardSetIpSpace.Builder ipsAssignedToThisInterfaceBuilder = IpWildcardSetIpSpace.builder();
-    ips.forEach(ip -> ipsAssignedToThisInterfaceBuilder.including(IpWildcard.create(ip)));
+    concreteIps.forEach(ip -> ipsAssignedToThisInterfaceBuilder.including(IpWildcard.create(ip)));
+    linkLocalIps.forEach(
+        addr -> ipsAssignedToThisInterfaceBuilder.including(IpWildcard.create(addr.getIp())));
     return ipsAssignedToThisInterfaceBuilder.build();
   }
 

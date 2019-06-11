@@ -33,7 +33,6 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.common.VendorConversionException;
 import org.batfish.common.util.CommonUtil;
-import org.batfish.datamodel.AclIpSpace;
 import org.batfish.datamodel.BgpPeerConfig;
 import org.batfish.datamodel.BgpUnnumberedPeerConfig;
 import org.batfish.datamodel.BumTransportMethod;
@@ -298,9 +297,9 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
       newIface.setAllAddresses(ImmutableSet.of(LINK_LOCAL_ADDRESS));
 
       // All interfaces involved in BGP unnumbered should reply to ARP for BGP_UNNUMBERED_IP
-      newIface.setAdditionalArpIps(
-          AclIpSpace.union(
-              newIface.getAdditionalArpIps(), BgpProcess.BGP_UNNUMBERED_IP.toIpSpace()));
+      //      newIface.setAdditionalArpIps(
+      //          AclIpSpace.union(
+      //              newIface.getAdditionalArpIps(), BgpProcess.BGP_UNNUMBERED_IP.toIpSpace()));
     }
   }
 

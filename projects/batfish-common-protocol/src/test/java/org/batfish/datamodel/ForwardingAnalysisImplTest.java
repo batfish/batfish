@@ -10,7 +10,7 @@ import static org.batfish.datamodel.ForwardingAnalysisImpl.computeDeliveredToSub
 import static org.batfish.datamodel.ForwardingAnalysisImpl.computeExitsNetwork;
 import static org.batfish.datamodel.ForwardingAnalysisImpl.computeInsufficientInfo;
 import static org.batfish.datamodel.ForwardingAnalysisImpl.computeInterfaceArpReplies;
-import static org.batfish.datamodel.ForwardingAnalysisImpl.computeIpsAssignedToThisInterface;
+import static org.batfish.datamodel.ForwardingAnalysisImpl.computeIpsAssignedToThisInterfaceForArpReplies;
 import static org.batfish.datamodel.ForwardingAnalysisImpl.computeIpsRoutedOutInterfaces;
 import static org.batfish.datamodel.ForwardingAnalysisImpl.computeMatchingIps;
 import static org.batfish.datamodel.ForwardingAnalysisImpl.computeNeighborUnreachable;
@@ -523,7 +523,7 @@ public class ForwardingAnalysisImplTest {
   }
 
   @Test
-  public void testComputeIpsAssignedToThisInterface() {
+  public void testComputeIpsAssignedToThisInterfaceForArpReplies() {
     Configuration config = _cb.build();
     Map<String, Configuration> configs = ImmutableMap.of(config.getHostname(), config);
     _ib.setOwner(config);
@@ -534,11 +534,16 @@ public class ForwardingAnalysisImplTest {
     Interface i = _ib.setAddresses(primary, secondary).build();
     Map<String, Map<String, Set<Ip>>> interfaceOwnedIps =
         TopologyUtil.computeInterfaceOwnedIps(configs, false);
-    IpSpace result = computeIpsAssignedToThisInterface(i, interfaceOwnedIps);
+    IpSpace result = computeIpsAssignedToThisInterfaceForArpReplies(i, interfaceOwnedIps);
 
     assertThat(result, containsIp(P1.getStartIp()));
     assertThat(result, containsIp(P2.getStartIp()));
     assertThat(result, not(containsIp(P2.getEndIp())));
+
+    Ip linkLocalIp = Ip.parse("169.254.0.1");
+    Interface i2 = _ib.setAddresses(LinkLocalAddress.of(linkLocalIp)).build();
+    IpSpace result2 = computeIpsAssignedToThisInterfaceForArpReplies(i2, interfaceOwnedIps);
+    assertThat(result2, containsIp(linkLocalIp));
   }
 
   @Test
