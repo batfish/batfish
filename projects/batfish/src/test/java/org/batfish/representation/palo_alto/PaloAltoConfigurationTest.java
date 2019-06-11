@@ -14,6 +14,7 @@ import static org.batfish.representation.palo_alto.PaloAltoConfiguration.generat
 import static org.batfish.representation.palo_alto.PaloAltoConfiguration.generateDoubleCrossZoneCalls;
 import static org.batfish.representation.palo_alto.PaloAltoConfiguration.generateInterVsysCrossZoneCalls;
 import static org.batfish.representation.palo_alto.PaloAltoConfiguration.generateOutgoingFilter;
+import static org.batfish.representation.palo_alto.PaloAltoConfiguration.generateSgSgLines;
 import static org.batfish.representation.palo_alto.PaloAltoConfiguration.generateSharedGatewayOutgoingFilter;
 import static org.batfish.representation.palo_alto.PaloAltoConfiguration.generateVsysSharedGatewayCalls;
 import static org.junit.Assert.assertEquals;
@@ -145,118 +146,6 @@ public final class PaloAltoConfigurationTest {
             SRC_INTERFACE_NAME,
             createInterVsysCrossZoneFilters(),
             ImmutableMap.of()));
-  }
-
-  @Test
-  public void testGenerateVsysSharedGatewayCalls() {
-    Vsys sharedGateway = new Vsys(VSYS_NAME);
-    Zone toZone = new Zone(TO_ZONE_NAME, sharedGateway);
-    sharedGateway.getZones().put(TO_ZONE_NAME, toZone);
-
-    Vsys vsys = new Vsys(EXTERNAL_VSYS_NAME);
-    Zone externalFromZone = new Zone(EXTERNAL_FROM_ZONE_NAME, vsys);
-    externalFromZone.setType(Type.LAYER3);
-    externalFromZone.getInterfaceNames().add(SRC_INTERFACE_NAME);
-    vsys.getZones().put(EXTERNAL_FROM_ZONE_NAME, externalFromZone);
-    Zone externalToZone = new Zone(EXTERNAL_TO_ZONE_NAME, vsys);
-    externalToZone.setType(Type.EXTERNAL);
-    externalToZone.getExternalNames().add(VSYS_NAME);
-    vsys.getZones().put(EXTERNAL_TO_ZONE_NAME, externalToZone);
-
-    IpAccessList generatedFilter =
-        _nf.aclBuilder()
-            .setLines(
-                generateVsysSharedGatewayCalls(toZone, vsys)
-                    .collect(ImmutableList.toImmutableList()))
-            .build();
-
-    // Valid, so should accept vsys->shared gateway flow
-    assertThat(
-        generatedFilter,
-        accepts(
-            createFlow(SRC_IP, DST_IP, SRC_INTERFACE_NAME),
-            SRC_INTERFACE_NAME,
-            createInterVsysCrossZoneFilters(),
-            ImmutableMap.of()));
-  }
-
-  @Test
-  public void testGenerateSharedGatewayOutgoingFilter() {
-    Vsys sharedGateway = new Vsys(VSYS_NAME);
-    Zone toZone = new Zone(TO_ZONE_NAME, sharedGateway);
-    sharedGateway.getZones().put(TO_ZONE_NAME, toZone);
-
-    Vsys vsys = new Vsys(EXTERNAL_VSYS_NAME);
-    Zone externalFromZone = new Zone(EXTERNAL_FROM_ZONE_NAME, vsys);
-    externalFromZone.setType(Type.LAYER3);
-    externalFromZone.getInterfaceNames().add(SRC_INTERFACE_NAME);
-    vsys.getZones().put(EXTERNAL_FROM_ZONE_NAME, externalFromZone);
-    Zone externalToZone = new Zone(EXTERNAL_TO_ZONE_NAME, vsys);
-    externalToZone.setType(Type.EXTERNAL);
-    externalToZone.getExternalNames().add(VSYS_NAME);
-    vsys.getZones().put(EXTERNAL_TO_ZONE_NAME, externalToZone);
-
-    // Valid, so should accept vsys->shared gateway flow
-    assertThat(
-        generateSharedGatewayOutgoingFilter(toZone, ImmutableList.of(vsys)),
-        accepts(
-            createFlow(SRC_IP, DST_IP, SRC_INTERFACE_NAME),
-            SRC_INTERFACE_NAME,
-            createInterVsysCrossZoneFilters(),
-            ImmutableMap.of()));
-  }
-
-  @Test
-  public void testGenerateVsysSharedGatewayCallsMissingLayer3() {
-    Vsys sharedGateway = new Vsys(VSYS_NAME);
-    Zone toZone = new Zone(TO_ZONE_NAME, sharedGateway);
-    sharedGateway.getZones().put(TO_ZONE_NAME, toZone);
-
-    Vsys vsys = new Vsys(EXTERNAL_VSYS_NAME);
-    Zone externalToZone = new Zone(EXTERNAL_TO_ZONE_NAME, vsys);
-    externalToZone.setType(Type.EXTERNAL);
-    externalToZone.getExternalNames().add(VSYS_NAME);
-    vsys.getZones().put(EXTERNAL_TO_ZONE_NAME, externalToZone);
-
-    // no lines should be returned since externalToZone has no layer-3 zone
-    assertEquals(generateVsysSharedGatewayCalls(toZone, vsys).count(), 0L);
-  }
-
-  @Test
-  public void testGenerateVsysSharedGatewayCallsMisconfiguredExternal() {
-    Vsys sharedGateway = new Vsys(VSYS_NAME);
-    Zone toZone = new Zone(TO_ZONE_NAME, sharedGateway);
-    sharedGateway.getZones().put(TO_ZONE_NAME, toZone);
-
-    Vsys vsys = new Vsys(EXTERNAL_VSYS_NAME);
-    Zone externalFromZone = new Zone(EXTERNAL_FROM_ZONE_NAME, vsys);
-    externalFromZone.setType(Type.LAYER3);
-    externalFromZone.getInterfaceNames().add(SRC_INTERFACE_NAME);
-    vsys.getZones().put(EXTERNAL_FROM_ZONE_NAME, externalFromZone);
-    Zone externalToZone = new Zone(EXTERNAL_TO_ZONE_NAME, vsys);
-    externalToZone.setType(Type.EXTERNAL);
-    // missing external pointer to sharedGateway
-    vsys.getZones().put(EXTERNAL_TO_ZONE_NAME, externalToZone);
-
-    // no lines should be returned since externalToZone does not point to sharedGateway
-    assertEquals(generateVsysSharedGatewayCalls(toZone, vsys).count(), 0L);
-  }
-
-  @Test
-  public void testGenerateVsysSharedGatewayCallsMissingExternal() {
-    Vsys sharedGateway = new Vsys(VSYS_NAME);
-    Zone toZone = new Zone(TO_ZONE_NAME, sharedGateway);
-    sharedGateway.getZones().put(TO_ZONE_NAME, toZone);
-
-    Vsys vsys = new Vsys(EXTERNAL_VSYS_NAME);
-    Zone externalFromZone = new Zone(EXTERNAL_FROM_ZONE_NAME, vsys);
-    externalFromZone.setType(Type.LAYER3);
-    externalFromZone.getInterfaceNames().add(SRC_INTERFACE_NAME);
-    vsys.getZones().put(EXTERNAL_FROM_ZONE_NAME, externalFromZone);
-    // missing external zone on vsys
-
-    // no lines should be returned since vsys has no external zone
-    assertEquals(generateVsysSharedGatewayCalls(toZone, vsys).count(), 0L);
   }
 
   @Test
@@ -551,5 +440,175 @@ public final class PaloAltoConfigurationTest {
             SRC_INTERFACE_NAME,
             createIntraVsysCrossZoneFilters(),
             ImmutableMap.of()));
+  }
+
+  @Test
+  public void testGenerateSgSglines() {
+    Vsys sharedGateway = new Vsys(VSYS_NAME);
+    Vsys ingressSharedGateway = new Vsys(EXTERNAL_VSYS_NAME);
+    ingressSharedGateway.getImportedInterfaces().add(SRC_INTERFACE_NAME);
+
+    IpAccessList generatedFilter =
+        _nf.aclBuilder()
+            .setLines(
+                generateSgSgLines(sharedGateway, ingressSharedGateway)
+                    .collect(ImmutableList.toImmutableList()))
+            .build();
+
+    // Valid, so should accept inter-sg flow
+    assertThat(
+        generatedFilter,
+        accepts(
+            createFlow(SRC_IP, DST_IP, SRC_INTERFACE_NAME),
+            SRC_INTERFACE_NAME,
+            ImmutableMap.of(),
+            ImmutableMap.of()));
+  }
+
+  @Test
+  public void testGenerateSgSglinesEmptyIngress() {
+    Vsys sharedGateway = new Vsys(VSYS_NAME);
+    Vsys ingressSharedGateway = new Vsys(EXTERNAL_VSYS_NAME);
+
+    // no lines should be returned since there are no interfaces in ingressSharedGateway
+    assertEquals(generateSgSgLines(sharedGateway, ingressSharedGateway).count(), 0L);
+  }
+
+  @Test
+  public void testGenerateSharedGatewayOutgoingFilterInterSg() {
+    Vsys sharedGateway = new Vsys(VSYS_NAME);
+    Vsys ingressSharedGateway = new Vsys(EXTERNAL_VSYS_NAME);
+    ingressSharedGateway.getImportedInterfaces().add(SRC_INTERFACE_NAME);
+
+    // Valid, so should accept inter-sg flow
+    assertThat(
+        generateSharedGatewayOutgoingFilter(
+            sharedGateway,
+            ImmutableList.of(sharedGateway, ingressSharedGateway),
+            ImmutableList.of()),
+        accepts(
+            createFlow(SRC_IP, DST_IP, SRC_INTERFACE_NAME),
+            SRC_INTERFACE_NAME,
+            createInterVsysCrossZoneFilters(),
+            ImmutableMap.of()));
+  }
+
+  @Test
+  public void testGenerateSharedGatewayOutgoingFilterIntraSg() {
+    Vsys sharedGateway = new Vsys(VSYS_NAME);
+    sharedGateway.getImportedInterfaces().add(SRC_INTERFACE_NAME);
+
+    // Valid, so should accept intra-sg flow
+    assertThat(
+        generateSharedGatewayOutgoingFilter(
+            sharedGateway, ImmutableList.of(sharedGateway), ImmutableList.of()),
+        accepts(
+            createFlow(SRC_IP, DST_IP, SRC_INTERFACE_NAME),
+            SRC_INTERFACE_NAME,
+            createInterVsysCrossZoneFilters(),
+            ImmutableMap.of()));
+  }
+
+  @Test
+  public void testGenerateSharedGatewayOutgoingFilterVsys() {
+    Vsys sharedGateway = new Vsys(VSYS_NAME);
+
+    Vsys vsys = new Vsys(EXTERNAL_VSYS_NAME);
+    Zone externalFromZone = new Zone(EXTERNAL_FROM_ZONE_NAME, vsys);
+    externalFromZone.setType(Type.LAYER3);
+    externalFromZone.getInterfaceNames().add(SRC_INTERFACE_NAME);
+    vsys.getZones().put(EXTERNAL_FROM_ZONE_NAME, externalFromZone);
+    Zone externalToZone = new Zone(EXTERNAL_TO_ZONE_NAME, vsys);
+    externalToZone.setType(Type.EXTERNAL);
+    externalToZone.getExternalNames().add(VSYS_NAME);
+    vsys.getZones().put(EXTERNAL_TO_ZONE_NAME, externalToZone);
+
+    // Valid, so should accept vsys->shared gateway flow
+    assertThat(
+        generateSharedGatewayOutgoingFilter(
+            sharedGateway, ImmutableList.of(sharedGateway), ImmutableList.of(vsys)),
+        accepts(
+            createFlow(SRC_IP, DST_IP, SRC_INTERFACE_NAME),
+            SRC_INTERFACE_NAME,
+            createInterVsysCrossZoneFilters(),
+            ImmutableMap.of()));
+  }
+
+  @Test
+  public void testGenerateVsysSharedGatewayCalls() {
+    Vsys sharedGateway = new Vsys(VSYS_NAME);
+
+    Vsys vsys = new Vsys(EXTERNAL_VSYS_NAME);
+    Zone externalFromZone = new Zone(EXTERNAL_FROM_ZONE_NAME, vsys);
+    externalFromZone.setType(Type.LAYER3);
+    externalFromZone.getInterfaceNames().add(SRC_INTERFACE_NAME);
+    vsys.getZones().put(EXTERNAL_FROM_ZONE_NAME, externalFromZone);
+    Zone externalToZone = new Zone(EXTERNAL_TO_ZONE_NAME, vsys);
+    externalToZone.setType(Type.EXTERNAL);
+    externalToZone.getExternalNames().add(VSYS_NAME);
+    vsys.getZones().put(EXTERNAL_TO_ZONE_NAME, externalToZone);
+
+    IpAccessList generatedFilter =
+        _nf.aclBuilder()
+            .setLines(
+                generateVsysSharedGatewayCalls(sharedGateway, vsys)
+                    .collect(ImmutableList.toImmutableList()))
+            .build();
+
+    // Valid, so should accept vsys->shared gateway flow
+    assertThat(
+        generatedFilter,
+        accepts(
+            createFlow(SRC_IP, DST_IP, SRC_INTERFACE_NAME),
+            SRC_INTERFACE_NAME,
+            createInterVsysCrossZoneFilters(),
+            ImmutableMap.of()));
+  }
+
+  @Test
+  public void testGenerateVsysSharedGatewayCallsMisconfiguredExternal() {
+    Vsys sharedGateway = new Vsys(VSYS_NAME);
+
+    Vsys vsys = new Vsys(EXTERNAL_VSYS_NAME);
+    Zone externalFromZone = new Zone(EXTERNAL_FROM_ZONE_NAME, vsys);
+    externalFromZone.setType(Type.LAYER3);
+    externalFromZone.getInterfaceNames().add(SRC_INTERFACE_NAME);
+    vsys.getZones().put(EXTERNAL_FROM_ZONE_NAME, externalFromZone);
+    Zone externalToZone = new Zone(EXTERNAL_TO_ZONE_NAME, vsys);
+    externalToZone.setType(Type.EXTERNAL);
+    // missing external pointer to sharedGateway
+    vsys.getZones().put(EXTERNAL_TO_ZONE_NAME, externalToZone);
+
+    // no lines should be returned since externalToZone does not point to sharedGateway
+    assertEquals(generateVsysSharedGatewayCalls(sharedGateway, vsys).count(), 0L);
+  }
+
+  @Test
+  public void testGenerateVsysSharedGatewayCallsMissingExternal() {
+    Vsys sharedGateway = new Vsys(VSYS_NAME);
+
+    Vsys vsys = new Vsys(EXTERNAL_VSYS_NAME);
+    Zone externalFromZone = new Zone(EXTERNAL_FROM_ZONE_NAME, vsys);
+    externalFromZone.setType(Type.LAYER3);
+    externalFromZone.getInterfaceNames().add(SRC_INTERFACE_NAME);
+    vsys.getZones().put(EXTERNAL_FROM_ZONE_NAME, externalFromZone);
+    // missing external zone on vsys
+
+    // no lines should be returned since vsys has no external zone
+    assertEquals(generateVsysSharedGatewayCalls(sharedGateway, vsys).count(), 0L);
+  }
+
+  @Test
+  public void testGenerateVsysSharedGatewayCallsMissingLayer3() {
+    Vsys sharedGateway = new Vsys(VSYS_NAME);
+
+    Vsys vsys = new Vsys(EXTERNAL_VSYS_NAME);
+    Zone externalToZone = new Zone(EXTERNAL_TO_ZONE_NAME, vsys);
+    externalToZone.setType(Type.EXTERNAL);
+    externalToZone.getExternalNames().add(VSYS_NAME);
+    vsys.getZones().put(EXTERNAL_TO_ZONE_NAME, externalToZone);
+
+    // no lines should be returned since externalToZone has no layer-3 zone
+    assertEquals(generateVsysSharedGatewayCalls(sharedGateway, vsys).count(), 0L);
   }
 }
