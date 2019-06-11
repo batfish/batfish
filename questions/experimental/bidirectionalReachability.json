@@ -49,19 +49,22 @@
                 }
             },
             "returnFlowType": {
-                "description": "Specifies whether to search for return flows that are successful (SUCCESS), that fail (FAILURE), or that succeed or fail depending on the path (MULTIPATH_INCONSISTENT).",
+                "description": "Specifies the type of return flows to search.",
                 "optional": true,
                 "value": "SUCCESS",
                 "type": "string",
                 "values": [
                     {
-                        "name": "SUCCESS"
+                        "name": "SUCCESS",
+                        "description": "Flows that are successful" 
                     },
                     {
-                        "name": "FAILURE"
+                        "name": "FAILURE",
+                        "description": "Flows that fail"
                     },
                     {
-                        "name": "MULTIPATH_INCONSISTENT"
+                        "name": "MULTIPATH_INCONSISTENT",
+                        "description": "Flows that succeed or fail depending on the path"
                     }
                 ],
                 "displayName": "Return Flow Type"
