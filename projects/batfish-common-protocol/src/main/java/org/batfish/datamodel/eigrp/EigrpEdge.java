@@ -52,7 +52,8 @@ public final class EigrpEdge implements Serializable, Comparable<EigrpEdge> {
         || !eigrp2.getEnabled()
         || eigrp1.getAsn() != eigrp2.getAsn()
         || eigrp1.getPassive()
-        || eigrp2.getPassive()) {
+        || eigrp2.getPassive()
+        || eigrp1.getMetric().getMode() != eigrp2.getMetric().getMode()) {
       return empty();
     }
     return Optional.of(

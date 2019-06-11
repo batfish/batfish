@@ -7848,8 +7848,8 @@
                         "classic-bandwidth" : 10000000,
                         "classic-delay" : 2,
                         "mode" : "CLASSIC",
-                        "named-bandwidth" : 1,
-                        "named-delay" : 20000000
+                        "named-bandwidth" : 0,
+                        "named-delay" : 0
                       }
                     }
                   },
@@ -7877,8 +7877,8 @@
                         "classic-bandwidth" : 10000000,
                         "classic-delay" : 2,
                         "mode" : "CLASSIC",
-                        "named-bandwidth" : 1,
-                        "named-delay" : 20000000
+                        "named-bandwidth" : 0,
+                        "named-delay" : 0
                       }
                     }
                   },
@@ -7915,8 +7915,8 @@
                         "classic-bandwidth" : 10000000,
                         "classic-delay" : 2,
                         "mode" : "CLASSIC",
-                        "named-bandwidth" : 1,
-                        "named-delay" : 20000000
+                        "named-bandwidth" : 0,
+                        "named-delay" : 0
                       }
                     }
                   },
@@ -7944,8 +7944,8 @@
                         "classic-bandwidth" : 10000000,
                         "classic-delay" : 2,
                         "mode" : "CLASSIC",
-                        "named-bandwidth" : 1,
-                        "named-delay" : 20000000
+                        "named-bandwidth" : 0,
+                        "named-delay" : 0
                       }
                     }
                   },
@@ -7973,8 +7973,8 @@
                         "classic-bandwidth" : 10000000,
                         "classic-delay" : 2,
                         "mode" : "CLASSIC",
-                        "named-bandwidth" : 1,
-                        "named-delay" : 20000000
+                        "named-bandwidth" : 0,
+                        "named-delay" : 0
                       }
                     }
                   },
@@ -8002,8 +8002,8 @@
                         "classic-bandwidth" : 1000,
                         "classic-delay" : 10,
                         "mode" : "CLASSIC",
-                        "named-bandwidth" : 10000,
-                        "named-delay" : 100000000
+                        "named-bandwidth" : 0,
+                        "named-delay" : 0
                       }
                     }
                   },
