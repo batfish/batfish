@@ -1151,8 +1151,7 @@ public class F5BigipConfiguration extends VendorConfiguration {
     }
 
     // Export BGP and IBGP routes.
-    exportConditions.add(new MatchProtocol(RoutingProtocol.BGP));
-    exportConditions.add(new MatchProtocol(RoutingProtocol.IBGP));
+    exportConditions.add(new MatchProtocol(RoutingProtocol.BGP, RoutingProtocol.IBGP));
 
     proc.getNeighbors().values().stream()
         .filter(neighbor -> neighbor.getAddress() != null) // must be IPv4 peer

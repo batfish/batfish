@@ -784,8 +784,7 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
     List<BooleanExpr> exportConditions = new ArrayList<>();
 
     // Always export BGP and iBGP routes
-    exportConditions.add(new MatchProtocol(RoutingProtocol.BGP));
-    exportConditions.add(new MatchProtocol(RoutingProtocol.IBGP));
+    exportConditions.add(new MatchProtocol(RoutingProtocol.BGP, RoutingProtocol.IBGP));
 
     // If no IPv4 address family is not defined, there is no capability to explicitly advertise v4
     // networks or redistribute protocols, so no non-BGP routes can be exported.
@@ -799,11 +798,7 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
 
       // Get a match expression for the protocol to be redistributed
       CumulusRoutingProtocol protocol = redistributeProtocolPolicy.getProtocol();
-      Disjunction matchProtocol =
-          new Disjunction(
-              VI_PROTOCOLS_MAP.get(protocol).stream()
-                  .map(MatchProtocol::new)
-                  .collect(ImmutableList.toImmutableList()));
+      MatchProtocol matchProtocol = new MatchProtocol(VI_PROTOCOLS_MAP.get(protocol));
 
       // Create a WithEnvironmentExpr with the redistribution route-map, if one is defined
       BooleanExpr weInterior = BooleanExprs.TRUE;
