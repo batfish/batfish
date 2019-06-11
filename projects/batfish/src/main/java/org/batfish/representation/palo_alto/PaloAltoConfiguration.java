@@ -833,6 +833,7 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
 
   /** Converts {@link RuleEndpoint} to {@code IpSpace} */
   @Nonnull
+  @SuppressWarnings("fallthrough")
   private IpSpace ruleEndpointToIpSpace(RuleEndpoint endpoint, Vsys vsys, Warnings w) {
     String endpointValue = endpoint.getValue();
     // Palo Alto allows object references that look like IP addresses, ranges, etc.
@@ -851,12 +852,12 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
         if (_shared != null) {
           return ruleEndpointToIpSpace(endpoint, _shared, w);
         }
-        // $FALL-THROUGH$
+        // fall-through
       case SHARED:
         if (_panorama != null) {
           return ruleEndpointToIpSpace(endpoint, _panorama, w);
         }
-        // $FALL-THROUGH$
+        // fall-through
       default:
         // No named object found matching this endpoint, so parse the endpoint value as is
         switch (endpoint.getType()) {
