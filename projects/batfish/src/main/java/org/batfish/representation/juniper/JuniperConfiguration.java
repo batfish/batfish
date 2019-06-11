@@ -322,10 +322,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
      */
     If setOriginForNonBgp =
         new If(
-            new Disjunction(
-                ImmutableList.of(
-                    new MatchProtocol(RoutingProtocol.BGP),
-                    new MatchProtocol(RoutingProtocol.IBGP))),
+            new MatchProtocol(RoutingProtocol.BGP, RoutingProtocol.IBGP),
             ImmutableList.of(),
             ImmutableList.of(new SetOrigin(new LiteralOrigin(OriginType.IGP, null))));
 
@@ -935,11 +932,11 @@ public final class JuniperConfiguration extends VendorConfiguration {
         .setStatements(
             ImmutableList.of(
                 new If(
-                    new Disjunction(
-                        new MatchProtocol(RoutingProtocol.CONNECTED),
-                        new MatchProtocol(RoutingProtocol.LOCAL),
-                        new MatchProtocol(RoutingProtocol.STATIC),
-                        new MatchProtocol(RoutingProtocol.AGGREGATE)),
+                    new MatchProtocol(
+                        RoutingProtocol.CONNECTED,
+                        RoutingProtocol.LOCAL,
+                        RoutingProtocol.STATIC,
+                        RoutingProtocol.AGGREGATE),
                     ImmutableList.of(Statements.ReturnTrue.toStaticStatement()),
                     ImmutableList.of(Statements.ReturnFalse.toStaticStatement()))))
         .build();
@@ -961,9 +958,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
     defaultBgpExportPolicy.getStatements().add(defaultBgpExportPolicyConditional);
 
     // guard
-    Disjunction isBgp = new Disjunction();
-    isBgp.getDisjuncts().add(new MatchProtocol(RoutingProtocol.BGP));
-    isBgp.getDisjuncts().add(new MatchProtocol(RoutingProtocol.IBGP));
+    MatchProtocol isBgp = new MatchProtocol(RoutingProtocol.BGP, RoutingProtocol.IBGP);
     defaultBgpExportPolicyConditional.setGuard(isBgp);
 
     PsThenAccept.INSTANCE.applyTo(

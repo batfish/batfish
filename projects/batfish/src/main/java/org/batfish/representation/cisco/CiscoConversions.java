@@ -99,7 +99,6 @@ import org.batfish.datamodel.routing_policy.expr.CallExpr;
 import org.batfish.datamodel.routing_policy.expr.CommunitySetExpr;
 import org.batfish.datamodel.routing_policy.expr.Conjunction;
 import org.batfish.datamodel.routing_policy.expr.DestinationNetwork;
-import org.batfish.datamodel.routing_policy.expr.Disjunction;
 import org.batfish.datamodel.routing_policy.expr.ExplicitPrefixSet;
 import org.batfish.datamodel.routing_policy.expr.LiteralCommunity;
 import org.batfish.datamodel.routing_policy.expr.LiteralCommunityConjunction;
@@ -1139,11 +1138,7 @@ class CiscoConversions {
     Conjunction eigrpExportConditions = new Conjunction();
     BooleanExpr matchExpr;
     if (protocol == RoutingProtocol.EIGRP) {
-      matchExpr =
-          new Disjunction(
-              ImmutableList.of(
-                  new MatchProtocol(RoutingProtocol.EIGRP),
-                  new MatchProtocol(RoutingProtocol.EIGRP_EX)));
+      matchExpr = new MatchProtocol(RoutingProtocol.EIGRP, RoutingProtocol.EIGRP_EX);
 
       Long otherAsn =
           (Long) policy.getSpecialAttributes().get(EigrpRedistributionPolicy.EIGRP_AS_NUMBER);
@@ -1152,6 +1147,13 @@ class CiscoConversions {
         return null;
       }
       eigrpExportConditions.getConjuncts().add(new MatchProcessAsn(otherAsn));
+    } else if (protocol == RoutingProtocol.ISIS_ANY) {
+      matchExpr =
+          new MatchProtocol(
+              RoutingProtocol.ISIS_EL1,
+              RoutingProtocol.ISIS_EL2,
+              RoutingProtocol.ISIS_L1,
+              RoutingProtocol.ISIS_L2);
     } else {
       matchExpr = new MatchProtocol(protocol);
     }

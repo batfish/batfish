@@ -1489,9 +1489,11 @@ public final class CiscoConfiguration extends VendorConfiguration {
                     ImmutableList.of(
                         new MatchPrefixSet(
                             DestinationNetwork.instance(), new ExplicitPrefixSet(exportSpace)),
-                        new Not(new MatchProtocol(RoutingProtocol.BGP)),
-                        new Not(new MatchProtocol(RoutingProtocol.IBGP)),
-                        new Not(new MatchProtocol(RoutingProtocol.AGGREGATE)),
+                        new Not(
+                            new MatchProtocol(
+                                RoutingProtocol.BGP,
+                                RoutingProtocol.IBGP,
+                                RoutingProtocol.AGGREGATE)),
                         bgpRedistributeWithEnvironmentExpr(
                             _routeMaps.containsKey(routeMapOrEmpty)
                                 ? new CallExpr(routeMapOrEmpty)
@@ -1514,9 +1516,11 @@ public final class CiscoConfiguration extends VendorConfiguration {
                             new DestinationNetwork6(),
                             new ExplicitPrefix6Set(
                                 new Prefix6Space(Prefix6Range.fromPrefix6(prefix6)))),
-                        new Not(new MatchProtocol(RoutingProtocol.BGP)),
-                        new Not(new MatchProtocol(RoutingProtocol.IBGP)),
-                        new Not(new MatchProtocol(RoutingProtocol.AGGREGATE)),
+                        new Not(
+                            new MatchProtocol(
+                                RoutingProtocol.BGP,
+                                RoutingProtocol.IBGP,
+                                RoutingProtocol.AGGREGATE)),
                         bgpRedistributeWithEnvironmentExpr(
                             _routeMaps.containsKey(routeMapOrEmpty)
                                 ? new CallExpr(routeMapOrEmpty)
@@ -1527,8 +1531,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
     }
 
     // Always export BGP or IBGP routes.
-    exportConditions.add(new MatchProtocol(RoutingProtocol.BGP));
-    exportConditions.add(new MatchProtocol(RoutingProtocol.IBGP));
+    exportConditions.add(new MatchProtocol(RoutingProtocol.BGP, RoutingProtocol.IBGP));
 
     // Finally, the export policy ends with returning false: do not export unmatched routes.
     bgpCommonExportPolicy.getStatements().add(Statements.ReturnFalse.toStaticStatement());
@@ -1819,13 +1822,12 @@ public final class CiscoConfiguration extends VendorConfiguration {
                           DestinationNetwork.instance(), new ExplicitPrefixSet(space)));
               exportNetworkConditions
                   .getConjuncts()
-                  .add(new Not(new MatchProtocol(RoutingProtocol.BGP)));
-              exportNetworkConditions
-                  .getConjuncts()
-                  .add(new Not(new MatchProtocol(RoutingProtocol.IBGP)));
-              exportNetworkConditions
-                  .getConjuncts()
-                  .add(new Not(new MatchProtocol(RoutingProtocol.AGGREGATE)));
+                  .add(
+                      new Not(
+                          new MatchProtocol(
+                              RoutingProtocol.BGP,
+                              RoutingProtocol.IBGP,
+                              RoutingProtocol.AGGREGATE)));
               exportNetworkConditions.getConjuncts().add(we);
               exportConditions.add(exportNetworkConditions);
             });
@@ -1856,13 +1858,12 @@ public final class CiscoConfiguration extends VendorConfiguration {
                                 new DestinationNetwork6(), new ExplicitPrefix6Set(space6)));
                     exportNetwork6Conditions
                         .getConjuncts()
-                        .add(new Not(new MatchProtocol(RoutingProtocol.BGP)));
-                    exportNetwork6Conditions
-                        .getConjuncts()
-                        .add(new Not(new MatchProtocol(RoutingProtocol.IBGP)));
-                    exportNetwork6Conditions
-                        .getConjuncts()
-                        .add(new Not(new MatchProtocol(RoutingProtocol.AGGREGATE)));
+                        .add(
+                            new Not(
+                                new MatchProtocol(
+                                    RoutingProtocol.BGP,
+                                    RoutingProtocol.IBGP,
+                                    RoutingProtocol.AGGREGATE)));
                     exportNetwork6Conditions.getConjuncts().add(we);
                     exportConditions.add(exportNetwork6Conditions);
                   }
@@ -1872,8 +1873,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
     }
 
     // Export BGP and IBGP routes.
-    exportConditions.add(new MatchProtocol(RoutingProtocol.BGP));
-    exportConditions.add(new MatchProtocol(RoutingProtocol.IBGP));
+    exportConditions.add(new MatchProtocol(RoutingProtocol.BGP, RoutingProtocol.IBGP));
 
     for (LeafBgpPeerGroup lpg : leafGroups) {
       if (!lpg.getActive() || lpg.getShutdown()) {
@@ -2448,11 +2448,16 @@ public final class CiscoConfiguration extends VendorConfiguration {
     if (protocol == RoutingProtocol.EIGRP) {
       ospfExportConditions
           .getConjuncts()
+          .add(new MatchProtocol(RoutingProtocol.EIGRP, RoutingProtocol.EIGRP_EX));
+    } else if (protocol == RoutingProtocol.ISIS_ANY) {
+      ospfExportConditions
+          .getConjuncts()
           .add(
-              new Disjunction(
-                  ImmutableList.of(
-                      new MatchProtocol(RoutingProtocol.EIGRP),
-                      new MatchProtocol(RoutingProtocol.EIGRP_EX))));
+              new MatchProtocol(
+                  RoutingProtocol.ISIS_EL1,
+                  RoutingProtocol.ISIS_EL2,
+                  RoutingProtocol.ISIS_L1,
+                  RoutingProtocol.ISIS_L2));
     } else {
       ospfExportConditions.getConjuncts().add(new MatchProtocol(protocol));
     }
