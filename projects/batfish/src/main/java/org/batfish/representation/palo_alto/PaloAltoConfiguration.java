@@ -24,6 +24,7 @@ import com.google.common.collect.TreeMultiset;
 import java.util.AbstractMap.SimpleImmutableEntry;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -31,6 +32,7 @@ import java.util.Map.Entry;
 import java.util.NavigableMap;
 import java.util.NavigableSet;
 import java.util.Optional;
+import java.util.Set;
 import java.util.SortedMap;
 import java.util.SortedSet;
 import java.util.TreeMap;
@@ -117,6 +119,8 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
 
   private String _ntpServerSecondary;
 
+  private final Map<String, Vsys> _sharedGateways;
+
   private ConfigurationFormat _vendor;
 
   private final SortedMap<String, VirtualRouter> _virtualRouters;
@@ -126,6 +130,7 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
   public PaloAltoConfiguration() {
     _cryptoProfiles = new LinkedList<>();
     _interfaces = new TreeMap<>();
+    _sharedGateways = new HashMap<>();
     _virtualRouters = new TreeMap<>();
     _virtualSystems = new TreeMap<>();
   }
@@ -191,6 +196,10 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
       servers.add(_ntpServerSecondary);
     }
     return servers;
+  }
+
+  public @Nonnull Map<String, Vsys> getSharedGateways() {
+    return _sharedGateways;
   }
 
   public SortedMap<String, VirtualRouter> getVirtualRouters() {
@@ -286,47 +295,19 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
 
     for (Vsys vsys : _virtualSystems.values()) {
       loggingServers.addAll(vsys.getSyslogServerAddresses());
-      String vsysName = vsys.getName();
-
-      // convert address objects and groups to ip spaces
-      vsys.getAddressObjects()
-          .forEach(
-              (name, addressObject) -> {
-                _c.getIpSpaces().put(name, addressObject.getIpSpace());
-                _c.getIpSpaceMetadata()
-                    .put(name, new IpSpaceMetadata(name, ADDRESS_OBJECT.getDescription()));
-              });
-
-      vsys.getAddressGroups()
-          .forEach(
-              (name, addressGroup) -> {
-                _c.getIpSpaces()
-                    .put(
-                        name,
-                        addressGroup.getIpSpace(vsys.getAddressObjects(), vsys.getAddressGroups()));
-                _c.getIpSpaceMetadata()
-                    .put(name, new IpSpaceMetadata(name, ADDRESS_GROUP.getDescription()));
-              });
-
-      List<Map.Entry<Rule, Vsys>> rules = getAllRules(vsys);
-      // Convert PAN zones
-      for (Entry<String, Zone> zoneEntry : vsys.getZones().entrySet()) {
-        Zone zone = zoneEntry.getValue();
-        org.batfish.datamodel.Zone newZone =
-            toZone(computeObjectName(vsysName, zone.getName()), zone);
-        _c.getZones().put(newZone.getName(), newZone);
-      }
 
       // Create zone-specific outgoing ACLs.
       for (Zone toZone : vsys.getZones().values()) {
         if (toZone.getType() != Type.LAYER3) {
           continue;
         }
-        IpAccessList acl = generateOutgoingFilter(toZone, _virtualSystems.values());
+        IpAccessList acl =
+            generateOutgoingFilter(toZone, _sharedGateways.values(), _virtualSystems.values());
         _c.getIpAccessLists().put(acl.getName(), acl);
       }
 
       // Create cross-zone ACLs for each pair of zones, including self-zone.
+      List<Map.Entry<Rule, Vsys>> rules = getAllRules(vsys);
       for (Zone fromZone : vsys.getZones().values()) {
         Type fromType = fromZone.getType();
         for (Zone toZone : vsys.getZones().values()) {
@@ -346,20 +327,73 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
           }
         }
       }
+    }
+    _c.setLoggingServers(loggingServers);
+  }
 
-      // Services
-      for (Service service : vsys.getServices().values()) {
-        IpAccessList acl = service.toIpAccessList(LineAction.PERMIT, this, vsys, _w);
-        _c.getIpAccessLists().put(acl.getName(), acl);
-      }
-
-      // Service groups
-      for (ServiceGroup serviceGroup : vsys.getServiceGroups().values()) {
-        IpAccessList acl = serviceGroup.toIpAccessList(LineAction.PERMIT, this, vsys, _w);
+  /** Convert unique aspects of shared-gateways. */
+  private void convertSharedGateways() {
+    for (Vsys sharedGateway : _sharedGateways.values()) {
+      // Create zone-specific outgoing ACLs.
+      for (Zone toZone : sharedGateway.getZones().values()) {
+        if (toZone.getType() != Type.LAYER3) {
+          continue;
+        }
+        IpAccessList acl = generateSharedGatewayOutgoingFilter(toZone, _virtualSystems.values());
         _c.getIpAccessLists().put(acl.getName(), acl);
       }
     }
-    _c.setLoggingServers(loggingServers);
+  }
+
+  /** Convert structures common to all vsys-like namespaces */
+  private void convertNamespaces() {
+    Stream.concat(_sharedGateways.values().stream(), _virtualSystems.values().stream())
+        .forEach(
+            namespace -> {
+              // convert address objects and groups to ip spaces
+              namespace
+                  .getAddressObjects()
+                  .forEach(
+                      (name, addressObject) -> {
+                        _c.getIpSpaces().put(name, addressObject.getIpSpace());
+                        _c.getIpSpaceMetadata()
+                            .put(name, new IpSpaceMetadata(name, ADDRESS_OBJECT.getDescription()));
+                      });
+
+              namespace
+                  .getAddressGroups()
+                  .forEach(
+                      (name, addressGroup) -> {
+                        _c.getIpSpaces()
+                            .put(
+                                name,
+                                addressGroup.getIpSpace(
+                                    namespace.getAddressObjects(), namespace.getAddressGroups()));
+                        _c.getIpSpaceMetadata()
+                            .put(name, new IpSpaceMetadata(name, ADDRESS_GROUP.getDescription()));
+                      });
+
+              // Convert PAN zones
+              for (Entry<String, Zone> zoneEntry : namespace.getZones().entrySet()) {
+                Zone zone = zoneEntry.getValue();
+                org.batfish.datamodel.Zone newZone =
+                    toZone(computeObjectName(namespace.getName(), zone.getName()), zone);
+                _c.getZones().put(newZone.getName(), newZone);
+              }
+
+              // Services
+              for (Service service : namespace.getServices().values()) {
+                IpAccessList acl = service.toIpAccessList(LineAction.PERMIT, this, namespace, _w);
+                _c.getIpAccessLists().put(acl.getName(), acl);
+              }
+
+              // Service groups
+              for (ServiceGroup serviceGroup : namespace.getServiceGroups().values()) {
+                IpAccessList acl =
+                    serviceGroup.toIpAccessList(LineAction.PERMIT, this, namespace, _w);
+                _c.getIpAccessLists().put(acl.getName(), acl);
+              }
+            });
   }
 
   /** Generates a cross-zone ACL from the two given zones in the same Vsys using the given rules. */
@@ -436,15 +470,18 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
 
   /**
    * Generate {@link IpAccessList} to be used as outgoing filter by interfaces in layer-3 zone
-   * {@code toZone}, given supplied definitions for all {@code virtualSystems}.
+   * {@code toZone}, given supplied definitions for all {@code sharedGateways} and {@code
+   * virtualSystems}.
    */
   @VisibleForTesting
   static @Nonnull IpAccessList generateOutgoingFilter(
-      Zone toZone, Collection<Vsys> virtualSystems) {
+      Zone toZone, Collection<Vsys> sharedGateways, Collection<Vsys> virtualSystems) {
     Vsys vsys = toZone.getVsys();
     List<IpAccessListLine> lines =
         vsys.getZones().values().stream()
-            .flatMap(fromZone -> generateCrossZoneCalls(fromZone, toZone, virtualSystems))
+            .flatMap(
+                fromZone ->
+                    generateCrossZoneCalls(fromZone, toZone, sharedGateways, virtualSystems))
             .collect(ImmutableList.toImmutableList());
     return IpAccessList.builder()
         .setName(computeOutgoingFilterName(computeObjectName(vsys.getName(), toZone.getName())))
@@ -453,18 +490,64 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
   }
 
   /**
+   * Generate outgoing filter lines for traffic exiting a shared-gateway zone and entering some
+   * vsys, given supplied definitions for all {@code virtualSystems}.
+   */
+  @VisibleForTesting
+  static @Nonnull IpAccessList generateSharedGatewayOutgoingFilter(
+      Zone toZone, Collection<Vsys> virtualSystems) {
+    Vsys sharedGateway = toZone.getVsys();
+    List<IpAccessListLine> lines =
+        virtualSystems.stream()
+            .flatMap(vsys -> generateVsysSharedGatewayCalls(toZone, vsys))
+            .collect(ImmutableList.toImmutableList());
+    return IpAccessList.builder()
+        .setName(
+            computeOutgoingFilterName(computeObjectName(sharedGateway.getName(), toZone.getName())))
+        .setLines(lines)
+        .build();
+  }
+
+  /**
+   * Generate outgoing filter lines for traffic exiting a shared-gateway zone and entering at some
+   * zone of {@code vsys}. No lines are generated if there are no external zones in {@code vsys}
+   * that see the shared-gateway containing {@code toZone}.
+   */
+  @VisibleForTesting
+  static @Nonnull Stream<IpAccessListLine> generateVsysSharedGatewayCalls(Zone toZone, Vsys vsys) {
+    String sharedGatewayName = toZone.getVsys().getName();
+    return vsys.getZones().values().stream()
+        .filter(
+            externalToZone ->
+                externalToZone.getType() == Type.EXTERNAL
+                    && externalToZone.getExternalNames().contains(sharedGatewayName))
+        .flatMap(
+            externalToZone ->
+                vsys.getZones().values().stream()
+                    .filter(externalFromZone -> externalFromZone.getType() == Type.LAYER3)
+                    .flatMap(
+                        externalFromZone ->
+                            generateCrossZoneCallsFromLayer3(externalFromZone, externalToZone)));
+  }
+
+  /**
    * Generate outgoing filter lines to be applied to traffic entering {@code fromZone} (either
    * directly or via an external zone) and exiting layer-3 zone {@code toZone} in the same vsys,
    * given supplied definitions for all {@code virtualSystems}.
+   *
+   * @param sharedGateways TODO
    */
   @VisibleForTesting
   static @Nonnull Stream<IpAccessListLine> generateCrossZoneCalls(
-      Zone fromZone, Zone toZone, Collection<Vsys> virtualSystems) {
+      Zone fromZone,
+      Zone toZone,
+      Collection<Vsys> sharedGateways,
+      Collection<Vsys> virtualSystems) {
     Vsys vsys = fromZone.getVsys();
     assert vsys == toZone.getVsys(); // sanity check
     switch (fromZone.getType()) {
       case EXTERNAL:
-        return generateCrossZoneCallsFromExternal(fromZone, toZone, virtualSystems);
+        return generateCrossZoneCallsFromExternal(fromZone, toZone, sharedGateways, virtualSystems);
       case LAYER3:
         return generateCrossZoneCallsFromLayer3(fromZone, toZone);
       default:
@@ -509,16 +592,59 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
    *   <li>{@code externalFromZone} is a layer-3 zone on the external vsys containing the ingress
    *       interface of the traffic.
    * </ul>
+   *
+   * @param sharedGateways TODO
    */
   @VisibleForTesting
   static @Nonnull Stream<IpAccessListLine> generateCrossZoneCallsFromExternal(
-      Zone fromZone, Zone toZone, Collection<Vsys> virtualSystems) {
+      Zone fromZone,
+      Zone toZone,
+      Collection<Vsys> sharedGateways,
+      Collection<Vsys> virtualSystems) {
     Vsys vsys = fromZone.getVsys();
     assert fromZone.getVsys() == toZone.getVsys(); // sanity check
-    return virtualSystems.stream()
-        .filter(not(equalTo(vsys)))
-        .filter(externalVsys -> fromZone.getExternalNames().contains(externalVsys.getName()))
-        .flatMap(externalVsys -> generateInterVsysCrossZoneCalls(fromZone, toZone, externalVsys));
+    Stream<IpAccessListLine> vsysLines =
+        virtualSystems.stream()
+            .filter(not(equalTo(vsys)))
+            .filter(externalVsys -> fromZone.getExternalNames().contains(externalVsys.getName()))
+            .flatMap(
+                externalVsys -> generateInterVsysCrossZoneCalls(fromZone, toZone, externalVsys));
+    Stream<IpAccessListLine> sgLines =
+        sharedGateways.stream()
+            .filter(sharedGateway -> fromZone.getExternalNames().contains(sharedGateway.getName()))
+            .flatMap(
+                sharedGateway ->
+                    generatedSharedGatewayVsysCrossZoneCalls(fromZone, toZone, sharedGateway));
+    return Stream.concat(vsysLines, sgLines);
+  }
+
+  /**
+   * Generate outgoing filter lines to be applied to traffic entering some interface of {@code
+   * sharedGateway} and exiting layer-3 zone {@code toZone} via external zone {@code fromZone} of
+   * the latter's vsys.
+   */
+  @VisibleForTesting
+  static @Nonnull Stream<IpAccessListLine> generatedSharedGatewayVsysCrossZoneCalls(
+      Zone fromZone, Zone toZone, Vsys sharedGateway) {
+    Vsys vsys = fromZone.getVsys();
+    // sanity check
+    assert vsys == toZone.getVsys();
+    String vsysName = vsys.getName();
+    Set<String> sharedGatewayInterfaces =
+        sharedGateway.getZones().values().stream()
+            .filter(zone -> zone.getType() == Type.LAYER3)
+            .flatMap(zone -> zone.getInterfaceNames().stream())
+            .collect(ImmutableSet.toImmutableSet());
+    AclLineMatchExpr matchFromZoneInterface = new MatchSrcInterface(sharedGatewayInterfaces);
+    String crossZoneFilterName =
+        zoneToZoneFilter(
+            computeObjectName(vsysName, fromZone.getName()),
+            computeObjectName(vsysName, toZone.getName()));
+    // If src interface in shared-gateway and filters permits, then permit.
+    // Else if src interface in shared-gateway, filter must have denied.
+    return Stream.of(
+        accepting(and(matchFromZoneInterface, permittedByAcl(crossZoneFilterName))),
+        rejecting(matchFromZoneInterface));
   }
 
   /**
@@ -835,19 +961,21 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
                 getInterfaces().values().stream().flatMap(i -> i.getUnits().entrySet().stream()))
             .collect(ImmutableMap.toImmutableMap(Entry::getKey, Entry::getValue));
     // Assign the appropriate zone to each interface
-    for (Vsys vsys : getVirtualSystems().values()) {
-      for (Zone zone : vsys.getZones().values()) {
-        for (String ifname : zone.getInterfaceNames()) {
-          Interface iface = allInterfaces.get(ifname);
-          if (iface != null) {
-            iface.setZone(zone);
-          } else {
-            // do nothing. Assume that an undefined reference was logged elsewhere.
-            assert true;
-          }
-        }
-      }
-    }
+    Stream.concat(_virtualSystems.values().stream(), _sharedGateways.values().stream())
+        .forEach(
+            zoneContainer -> {
+              for (Zone zone : zoneContainer.getZones().values()) {
+                for (String ifname : zone.getInterfaceNames()) {
+                  Interface iface = allInterfaces.get(ifname);
+                  if (iface != null) {
+                    iface.setZone(zone);
+                  } else {
+                    // do nothing. Assume that an undefined reference was logged elsewhere.
+                    assert true;
+                  }
+                }
+              }
+            });
   }
 
   @Override
@@ -862,8 +990,12 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
     // Before processing any Vsys, ensure that interfaces are attached to zones.
     attachInterfacesToZones();
 
+    convertNamespaces();
+
     // Handle converting items within virtual systems
     convertVirtualSystems();
+
+    convertSharedGateways();
 
     for (Entry<String, Interface> i : _interfaces.entrySet()) {
       org.batfish.datamodel.Interface viIface = toInterface(i.getValue());
