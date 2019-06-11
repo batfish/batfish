@@ -28,13 +28,10 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedSet;
 import java.util.Optional;
 import org.batfish.common.CompletionMetadata;
-import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.referencelibrary.AddressGroup;
 import org.batfish.referencelibrary.InterfaceGroup;
 import org.batfish.referencelibrary.ReferenceBook;
 import org.batfish.referencelibrary.ReferenceLibrary;
-import org.batfish.role.NodeRole;
-import org.batfish.role.NodeRoleDimension;
 import org.batfish.role.NodeRolesData;
 import org.batfish.specifier.parboiled.Anchor.Type;
 import org.batfish.specifier.parboiled.CommonParser.ShadowStack;
@@ -50,21 +47,6 @@ import org.parboiled.support.ParsingResult;
 public class ParboiledAutoCompleteTest {
 
   @Rule public ExpectedException _thrown = ExpectedException.none();
-
-  private static ParboiledAutoComplete getPAC(
-      Grammar grammar, String query, CompletionMetadata completionMetadata) {
-    return new ParboiledAutoComplete(
-        Parser.instance(),
-        grammar,
-        Parser.ANCHORS,
-        "network",
-        "snapshot",
-        query,
-        Integer.MAX_VALUE,
-        completionMetadata,
-        NodeRolesData.builder().build(),
-        new ReferenceLibrary(null));
-  }
 
   private static ParboiledAutoComplete getTestPAC(String query) {
     return new ParboiledAutoComplete(
@@ -119,30 +101,6 @@ public class ParboiledAutoCompleteTest {
         referenceLibrary);
   }
 
-  private static ParboiledAutoComplete getTestPAC(
-      Parser parser, String query, NodeRolesData nodeRolesData) {
-    return new ParboiledAutoComplete(
-        parser,
-        Grammar.NODE_SPECIFIER,
-        Parser.ANCHORS,
-        "network",
-        "snapshot",
-        query,
-        Integer.MAX_VALUE,
-        CompletionMetadata.builder().build(),
-        nodeRolesData,
-        new ReferenceLibrary(null));
-  }
-
-  private static CompletionMetadata testCompletionMetadata =
-      CompletionMetadata.builder()
-          .setInterfaces(
-              ImmutableSet.of(
-                  new NodeInterfacePair("n1a", "eth11"),
-                  new NodeInterfacePair("n1a", "eth12"),
-                  new NodeInterfacePair("n2a", "eth21")))
-          .build();
-
   private static ReferenceLibrary testLibrary =
       new ReferenceLibrary(
           ImmutableList.of(
@@ -160,18 +118,6 @@ public class ParboiledAutoCompleteTest {
                   .setInterfaceGroups(
                       ImmutableList.of(new InterfaceGroup(ImmutableSortedSet.of(), "i21")))
                   .build()));
-
-  private static NodeRolesData testNodeRolesData =
-      NodeRolesData.builder()
-          .setRoleDimensions(
-              ImmutableSortedSet.of(
-                  NodeRoleDimension.builder("dim1")
-                      .setRoles(ImmutableSet.of(new NodeRole("r11", ""), new NodeRole("r12", "")))
-                      .build(),
-                  NodeRoleDimension.builder("dim2")
-                      .setRoles(ImmutableSet.of(new NodeRole("r21", "")))
-                      .build()))
-          .build();
 
   @Test
   public void testCompletionEmpty() {
