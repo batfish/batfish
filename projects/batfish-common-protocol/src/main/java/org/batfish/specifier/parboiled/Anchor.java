@@ -190,8 +190,13 @@ import org.batfish.datamodel.answers.AutocompleteSuggestion.SuggestionType;
     NODE_ROLE_AND_DIMENSION(
         "NODE_ROLE_AND_DIMENSION",
         "Nodes in the role",
-        "roleName, dimensionName)",
+        "dimensionName, roleName)",
         SuggestionType.FUNCTION),
+    NODE_ROLE_AND_DIMENSION_TAIL(
+        "NODE_ROLE_AND_DIMENSION_TAIL",
+        "Role name in the dimension",
+        "roleName)",
+        SuggestionType.OPERATOR_NON_END),
     /** Rule for node role dimension name */
     NODE_ROLE_DIMENSION_NAME(
         "NODE_ROLE_DIMENSION_NAME", "Node role dimension name", null, SuggestionType.NAME_LITERAL),

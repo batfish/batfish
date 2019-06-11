@@ -14,12 +14,10 @@ import static org.batfish.specifier.parboiled.Anchor.Type.OPERATOR_END;
 import static org.batfish.specifier.parboiled.Anchor.Type.REFERENCE_BOOK_AND_INTERFACE_GROUP;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.equalTo;
-import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
-import java.util.Optional;
 import java.util.Set;
 import org.batfish.common.CompletionMetadata;
 import org.batfish.datamodel.collections.NodeInterfacePair;
@@ -35,11 +33,12 @@ import org.junit.rules.ExpectedException;
  * is in three parts:
  *
  * <ol>
- *   <li>testFind* functions test that we are correctly extracting the node component (by explicitly
- *       setting up PotentialMatch object based on what we expect Parboiled to do on our grammars);
- *   <li>testAutoCompleteInterfaceName* functions test that we do the right thing when nodeInput is
- *       given
- *   <li>testE2e* functions tests that the machinery works end-to-end on different grammars and
+ *   <li>testFindPreceding* tests in {@link ParboiledAutoCompleteTest} check that we are correctly
+ *       extracting the preceding component (by explicitly setting up PotentialMatch object based on
+ *       what we expect Parboiled to do on our grammars);
+ *   <li>testAutoCompleteInterfaceName* tests below check that we do the right thing when nodeInput
+ *       is given
+ *   <li>testE2e* tests below check that the machinery works end-to-end on different grammars and
  *       potential partial things (thus helping validate the assumptions made in testFind*)
  * </ol>
  */
@@ -77,49 +76,6 @@ public class ParboiledAutoCompleteInterfaceNameTest {
         completionMetadata,
         NodeRolesData.builder().build(),
         new ReferenceLibrary(null));
-  }
-
-  /** Throw an exception if anchor is not present in the path */
-  @Test
-  public void testFindNodeInputOfInterfaceMissingAnchor() {
-    _thrown.expect(IllegalArgumentException.class);
-    ParboiledAutoComplete.findNodeInputOfInterface(
-        new PotentialMatch(
-            new PathElement(Type.INTERFACE_NAME, null, 0, 0), "", ImmutableList.of()),
-        "@specifier(g1,");
-  }
-
-  /** Return empty optional if node_interface is not present */
-  @Test
-  public void testFindNodeInputOfInterfaceMissingNodeAndInterface() {
-    PathElement anchor = new PathElement(Type.INTERFACE_NAME, null, 1, 42);
-    PotentialMatch pm = new PotentialMatch(anchor, "", ImmutableList.of(anchor));
-    assertFalse(ParboiledAutoComplete.findNodeInputOfInterface(pm, "dummy").isPresent());
-  }
-
-  /** Throw an exception if tail is missing */
-  @Test
-  public void testFindNodeInputOfInterfaceMissingTail() {
-    PathElement anchor = new PathElement(Type.INTERFACE_NAME, null, 1, 42);
-    PathElement nodeStart = new PathElement(Type.NODE_AND_INTERFACE, null, 0, 0);
-    PotentialMatch pm = new PotentialMatch(anchor, "", ImmutableList.of(nodeStart, anchor));
-
-    _thrown.expect(IllegalArgumentException.class);
-    ParboiledAutoComplete.findNodeInputOfInterface(pm, "dummy");
-  }
-
-  /** Get the proper input if both head and tail are present */
-  @Test
-  public void testFindNodeInputOfInterface() {
-    String query = "n1a[";
-    PathElement anchor = new PathElement(Type.INTERFACE_NAME, null, 1, query.length());
-    PathElement tailStart = new PathElement(Type.NODE_AND_INTERFACE_TAIL, null, 0, 3);
-    PathElement nodeStart = new PathElement(Type.NODE_AND_INTERFACE, null, 0, 0);
-    PotentialMatch pm =
-        new PotentialMatch(anchor, "", ImmutableList.of(nodeStart, tailStart, anchor));
-
-    assertThat(
-        ParboiledAutoComplete.findNodeInputOfInterface(pm, query), equalTo(Optional.of("n1a")));
   }
 
   /** Context-sensitive completion of interface name after node name or regex */
@@ -182,7 +138,7 @@ public class ParboiledAutoCompleteInterfaceNameTest {
    */
   @Test
   public void testE2eNoTailNoMatchingInterface() {
-    String query = "n1a"; // no matching interface
+    String query = "noeth";
     assertThat(
         getPAC(query, Grammar.INTERFACE_SPECIFIER).run(),
         containsInAnyOrder(
@@ -270,6 +226,27 @@ public class ParboiledAutoCompleteInterfaceNameTest {
     assertThat(getPAC(query, Grammar.LOCATION_SPECIFIER).run(), equalTo(expected));
   }
 
+  /** Test that we do generic stuff when node expression is complex */
+  @Test
+  public void testE2eComplexNode() {
+    String query = "@role(a, b)[eth";
+
+    Set<ParboiledAutoCompleteSuggestion> expected =
+        ImmutableSet.of(
+            new ParboiledAutoCompleteSuggestion("eth11", 12, INTERFACE_NAME),
+            new ParboiledAutoCompleteSuggestion("eth12", 12, INTERFACE_NAME),
+            new ParboiledAutoCompleteSuggestion("eth21", 12, INTERFACE_NAME),
+            new ParboiledAutoCompleteSuggestion("]", query.length(), OPERATOR_END),
+            new ParboiledAutoCompleteSuggestion("&", query.length(), INTERFACE_SET_OP),
+            new ParboiledAutoCompleteSuggestion(",", query.length(), INTERFACE_SET_OP),
+            new ParboiledAutoCompleteSuggestion("\\", query.length(), INTERFACE_SET_OP));
+
+    assertThat(getPAC(query, Grammar.INTERFACE_SPECIFIER).run(), equalTo(expected));
+
+    // location specifier yields identical results
+    assertThat(getPAC(query, Grammar.LOCATION_SPECIFIER).run(), equalTo(expected));
+  }
+
   /** The interface portion has started but no prefix yet */
   @Test
   public void testE2eLocationNoPrefix() {
@@ -305,6 +282,47 @@ public class ParboiledAutoCompleteInterfaceNameTest {
             new ParboiledAutoCompleteSuggestion("&", query.length(), INTERFACE_SET_OP),
             new ParboiledAutoCompleteSuggestion(",", query.length(), INTERFACE_SET_OP),
             new ParboiledAutoCompleteSuggestion("\\", query.length(), INTERFACE_SET_OP));
+
+    // location specifier yields identical results
+    assertThat(getPAC(query, Grammar.LOCATION_SPECIFIER).run(), equalTo(expected));
+  }
+
+  /** The interface portion has started but no prefix yet */
+  @Test
+  public void testE2eSpacesNoInterfacePrefix() {
+    String query = " n1a [ ";
+
+    assertThat(
+        getPAC(query, Grammar.INTERFACE_SPECIFIER).run(),
+        containsInAnyOrder(
+            new ParboiledAutoCompleteSuggestion("eth11", query.length(), INTERFACE_NAME),
+            new ParboiledAutoCompleteSuggestion("eth12", query.length(), INTERFACE_NAME),
+            new ParboiledAutoCompleteSuggestion("(", query.length(), INTERFACE_PARENS),
+            new ParboiledAutoCompleteSuggestion("/", query.length(), INTERFACE_NAME_REGEX),
+            new ParboiledAutoCompleteSuggestion(
+                "@connectedTo(", query.length(), INTERFACE_CONNECTED_TO),
+            new ParboiledAutoCompleteSuggestion(
+                "@interfaceGroup(", query.length(), REFERENCE_BOOK_AND_INTERFACE_GROUP),
+            new ParboiledAutoCompleteSuggestion("@interfaceType(", query.length(), INTERFACE_TYPE),
+            new ParboiledAutoCompleteSuggestion("@vrf(", query.length(), INTERFACE_VRF),
+            new ParboiledAutoCompleteSuggestion("@zone(", query.length(), INTERFACE_ZONE)));
+  }
+
+  /** The spaces in the query shouldn't matter */
+  @Test
+  public void testE2eSpacesInterfacePrefix() {
+    String query = " n1a [ eth1";
+
+    Set<ParboiledAutoCompleteSuggestion> expected =
+        ImmutableSet.of(
+            new ParboiledAutoCompleteSuggestion("eth11", 7, INTERFACE_NAME),
+            new ParboiledAutoCompleteSuggestion("eth12", 7, INTERFACE_NAME),
+            new ParboiledAutoCompleteSuggestion("]", query.length(), OPERATOR_END),
+            new ParboiledAutoCompleteSuggestion("&", query.length(), INTERFACE_SET_OP),
+            new ParboiledAutoCompleteSuggestion(",", query.length(), INTERFACE_SET_OP),
+            new ParboiledAutoCompleteSuggestion("\\", query.length(), INTERFACE_SET_OP));
+
+    assertThat(getPAC(query, Grammar.INTERFACE_SPECIFIER).run(), equalTo(expected));
 
     // location specifier yields identical results
     assertThat(getPAC(query, Grammar.LOCATION_SPECIFIER).run(), equalTo(expected));
