@@ -44,6 +44,7 @@ import static org.batfish.specifier.parboiled.Anchor.Type.NODE_NAME;
 import static org.batfish.specifier.parboiled.Anchor.Type.NODE_NAME_REGEX;
 import static org.batfish.specifier.parboiled.Anchor.Type.NODE_PARENS;
 import static org.batfish.specifier.parboiled.Anchor.Type.NODE_ROLE_AND_DIMENSION;
+import static org.batfish.specifier.parboiled.Anchor.Type.NODE_ROLE_AND_DIMENSION_TAIL;
 import static org.batfish.specifier.parboiled.Anchor.Type.NODE_ROLE_DIMENSION_NAME;
 import static org.batfish.specifier.parboiled.Anchor.Type.NODE_ROLE_NAME;
 import static org.batfish.specifier.parboiled.Anchor.Type.NODE_SET_OP;
@@ -1036,23 +1037,30 @@ public class Parser extends CommonParser {
   }
 
   public Rule NodeRole() {
-    return Sequence(IgnoreCase("@role"), WhiteSpace(), NodeRoleAndDimension());
+    return Sequence(
+        IgnoreCase("@role"),
+        WhiteSpace(),
+        NodeRoleAndDimension(),
+        push(new RoleNodeAstNode(pop(1), pop())));
   }
 
   @Anchor(DEPRECATED)
   public Rule NodeRoleDeprecated() {
-    return Sequence(IgnoreCase("ref.noderole"), WhiteSpace(), NodeRoleAndDimension());
+    return Sequence(
+        IgnoreCase("ref.noderole"),
+        WhiteSpace(),
+        NodeRoleAndDimension(),
+        push(new RoleNodeAstNode(pop(1), pop())));
   }
 
   @Anchor(NODE_ROLE_AND_DIMENSION)
   public Rule NodeRoleAndDimension() {
-    return Sequence(
-        "( ",
-        NodeRoleDimensionName(),
-        ", ",
-        NodeRoleName(),
-        CloseParens(),
-        push(new RoleNodeAstNode(pop(1), pop())));
+    return Sequence("( ", NodeRoleDimensionName(), NodeRoleAndDimensionTail());
+  }
+
+  @Anchor(NODE_ROLE_AND_DIMENSION_TAIL)
+  public Rule NodeRoleAndDimensionTail() {
+    return Sequence(", ", NodeRoleName(), CloseParens());
   }
 
   /** Matches Node Role Dimension name */

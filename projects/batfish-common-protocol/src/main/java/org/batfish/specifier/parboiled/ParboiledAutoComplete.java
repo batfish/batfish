@@ -10,6 +10,7 @@ import static org.batfish.specifier.parboiled.Anchor.Type.NODE_AND_INTERFACE;
 import static org.batfish.specifier.parboiled.Anchor.Type.NODE_AND_INTERFACE_TAIL;
 import static org.batfish.specifier.parboiled.Anchor.Type.NODE_NAME_REGEX;
 import static org.batfish.specifier.parboiled.Anchor.Type.NODE_ROLE_AND_DIMENSION;
+import static org.batfish.specifier.parboiled.Anchor.Type.NODE_ROLE_AND_DIMENSION_TAIL;
 import static org.batfish.specifier.parboiled.Anchor.Type.REFERENCE_BOOK_AND_ADDRESS_GROUP;
 import static org.batfish.specifier.parboiled.Anchor.Type.REFERENCE_BOOK_AND_INTERFACE_GROUP;
 import static org.batfish.specifier.parboiled.Anchor.Type.ROUTING_POLICY_NAME_REGEX;
@@ -361,41 +362,12 @@ public final class ParboiledAutoComplete {
   @VisibleForTesting
   Set<ParboiledAutoCompleteSuggestion> autoCompleteInterfaceName(PotentialMatch pm) {
 
-    Optional<String> nodeInput = findNodeInputOfInterface(pm, _query);
+    Optional<String> nodeInput =
+        findPrecedingInput(pm, _query, NODE_AND_INTERFACE, NODE_AND_INTERFACE_TAIL);
 
     return nodeInput.isPresent()
         ? autoCompleteInterfaceName(pm, nodeInput.get())
         : autoCompleteGeneric(pm);
-  }
-
-  /**
-   * A helper function for {@link #autoCompleteInterfaceName(PotentialMatch)} that finds the node
-   * component for context-sensitive interface completion. The optional is empty if the path does
-   * not contain the anchor {@link Anchor.Type#NODE_AND_INTERFACE}.
-   *
-   * @throws IllegalArgumentException if anchor is not found on the path, or if {@link
-   *     Anchor.Type#NODE_AND_INTERFACE} is present but {@link Anchor.Type#NODE_AND_INTERFACE_TAIL}
-   *     is absent
-   */
-  @VisibleForTesting
-  static Optional<String> findNodeInputOfInterface(PotentialMatch pm, String query) {
-    int anchorIndex = pm.getPath().indexOf(pm.getAnchor());
-    checkArgument(anchorIndex != -1, "Anchor is not present in the path.");
-
-    Optional<PathElement> nodeStartElement =
-        findFirstMatchingPathElement(pm, anchorIndex, NODE_AND_INTERFACE);
-
-    if (!nodeStartElement.isPresent()) {
-      return Optional.empty();
-    }
-
-    Optional<PathElement> nodeEndElement =
-        findFirstMatchingPathElement(pm, anchorIndex, NODE_AND_INTERFACE_TAIL);
-    checkArgument(nodeEndElement.isPresent(), "NODE_AND_INTERFACE has no tail");
-
-    return Optional.of(
-        query.substring(
-            nodeStartElement.get().getStartIndex(), nodeEndElement.get().getStartIndex()));
   }
 
   @VisibleForTesting
@@ -439,6 +411,49 @@ public final class ParboiledAutoComplete {
    */
   @VisibleForTesting
   Set<ParboiledAutoCompleteSuggestion> autoCompleteNodeRoleName(PotentialMatch pm) {
+    Optional<String> roleDimensionInput =
+        findPrecedingInput(pm, _query, NODE_ROLE_AND_DIMENSION, NODE_ROLE_AND_DIMENSION_TAIL);
+
+    return roleDimensionInput
+        .map(s -> autoCompleteNodeRoleName(pm, s))
+        .orElseGet(() -> autoCompleteGeneric(pm));
+  }
+
+  @VisibleForTesting
+  Set<ParboiledAutoCompleteSuggestion> autoCompleteNodeRoleName(
+      PotentialMatch pm, String roleDimensionInput) {
+    NodeRoleDimension nodeRoleDimension =
+        _nodeRolesData
+            .getNodeRoleDimension(extractDimensionName(roleDimensionInput))
+            .orElse(NodeRoleDimension.builder("dummy").build());
+
+    String matchPrefix = unescapeIfNeeded(pm.getMatchPrefix(), pm.getAnchorType());
+    return updateSuggestions(
+        AutoCompleteUtils.stringAutoComplete(
+            matchPrefix,
+            nodeRoleDimension.getRoles().stream()
+                .map(NodeRole::getName)
+                .collect(ImmutableSet.toImmutableSet())),
+        !matchPrefix.equals(pm.getMatchPrefix()),
+        pm.getAnchorType(),
+        pm.getMatchStartIndex());
+  }
+
+  /**
+   * Extracts the dimension name from input that matches between NODE_ROLE_AND_DIMENSION and
+   * NODE_ROLE_AND_DIMENSION_TAIL. Remove leading '(' and then trim whitepsace.
+   */
+  @VisibleForTesting
+  private static String extractDimensionName(String roleDimensionInput) {
+    checkArgument(
+        roleDimensionInput.startsWith("("),
+        "Leading parens not found in role dimension input '%s'",
+        roleDimensionInput);
+    return roleDimensionInput.substring(1).trim();
+  }
+
+  @VisibleForTesting
+  Set<ParboiledAutoCompleteSuggestion> autoCompleteNodeRoleName2(PotentialMatch pm) {
     int anchorIndex = pm.getPath().indexOf(pm.getAnchor());
     checkArgument(anchorIndex != -1, "Anchor is not present in the path.");
 
@@ -542,6 +557,39 @@ public final class ParboiledAutoComplete {
         !matchPrefix.equals(pm.getMatchPrefix()),
         pm.getAnchorType(),
         pm.getMatchStartIndex());
+  }
+
+  /**
+   * Finds the input between head and tail anchor types, walking walks backwards from the anchor.
+   * The returned Optional is empty if the path does not contain the head anchor type.
+   *
+   * @throws IllegalArgumentException if anchor is not found on the path, or if headAnchorType is
+   *     present but tailAnchorType is absent
+   */
+  @VisibleForTesting
+  static Optional<String> findPrecedingInput(
+      PotentialMatch pm, String query, Anchor.Type headAnchorType, Anchor.Type tailAnchorType) {
+    int anchorIndex = pm.getPath().indexOf(pm.getAnchor());
+    checkArgument(anchorIndex != -1, "Anchor is not present in the path.");
+
+    Optional<PathElement> nodeStartElement =
+        findFirstMatchingPathElement(pm, anchorIndex, headAnchorType);
+
+    if (!nodeStartElement.isPresent()) {
+      return Optional.empty();
+    }
+
+    Optional<PathElement> nodeEndElement =
+        findFirstMatchingPathElement(pm, anchorIndex, tailAnchorType);
+    checkArgument(
+        nodeEndElement.isPresent(),
+        "Tail anchor type '%s' not found for input '%s'",
+        tailAnchorType,
+        query);
+
+    return Optional.of(
+        query.substring(
+            nodeStartElement.get().getStartIndex(), nodeEndElement.get().getStartIndex()));
   }
 
   /**
