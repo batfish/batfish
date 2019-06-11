@@ -191,6 +191,7 @@ import org.batfish.representation.palo_alto.StaticRoute;
 import org.batfish.representation.palo_alto.SyslogServer;
 import org.batfish.representation.palo_alto.VirtualRouter;
 import org.batfish.representation.palo_alto.Vsys;
+import org.batfish.representation.palo_alto.Vsys.NamespaceType;
 import org.batfish.representation.palo_alto.Zone;
 import org.batfish.vendor.StructureType;
 
@@ -841,8 +842,11 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
 
   @Override
   public void enterS_policy_panorama(S_policy_panoramaContext ctx) {
-    _currentVsys =
-        _configuration.getVirtualSystems().computeIfAbsent(PANORAMA_VSYS_NAME, Vsys::new);
+    _currentVsys = _configuration.getPanorama();
+    if (_currentVsys == null) {
+      _currentVsys = new Vsys(PANORAMA_VSYS_NAME, NamespaceType.PANORAMA);
+      _configuration.setPanorama(_currentVsys);
+    }
   }
 
   @Override
@@ -1370,7 +1374,11 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
 
   @Override
   public void enterS_shared(S_sharedContext ctx) {
-    _currentVsys = _configuration.getVirtualSystems().computeIfAbsent(SHARED_VSYS_NAME, Vsys::new);
+    _currentVsys = _configuration.getShared();
+    if (_currentVsys == null) {
+      _currentVsys = new Vsys(SHARED_VSYS_NAME, NamespaceType.SHARED);
+      _configuration.setShared(_currentVsys);
+    }
   }
 
   @Override

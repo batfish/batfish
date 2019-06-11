@@ -403,7 +403,6 @@ public final class PaloAltoBidirectionalBehaviorTest {
     assertBidirAccepted(hostname);
   }
 
-  @Ignore
   @Test
   public void testMatchSharedAddress() throws IOException {
     String hostname = "match-shared-address";

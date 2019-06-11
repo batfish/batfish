@@ -10,11 +10,20 @@ import java.util.SortedMap;
 import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 
 @ParametersAreNonnullByDefault
 public final class Vsys implements Serializable {
+
+  public enum NamespaceType {
+    /** vsys or shared-gateway */
+    LEAF,
+    PANORAMA,
+    SHARED
+  }
+
   private static final long serialVersionUID = 1L;
 
   private final SortedMap<String, AddressGroup> _addressGroups;
@@ -48,8 +57,20 @@ public final class Vsys implements Serializable {
 
   private final SortedMap<String, Zone> _zones;
 
+  private final @Nonnull NamespaceType _namespaceType;
+
+  /**
+   * Construct a {@link Vsys} with provided {@code name} and namespace type {@link
+   * NamespaceType#LEAF}.
+   */
   public Vsys(String name) {
+    this(name, NamespaceType.LEAF);
+  }
+
+  /** Construct a {@link Vsys} with provided {@code name} and {@code namespaceType}. */
+  public Vsys(String name, NamespaceType namespaceType) {
     _name = name;
+    _namespaceType = namespaceType;
     _addressGroups = new TreeMap<>();
     _addressObjects = new TreeMap<>();
     _applications = new TreeMap<>();
@@ -64,7 +85,6 @@ public final class Vsys implements Serializable {
     _syslogServerGroups = new TreeMap<>();
     _zones = new TreeMap<>();
   }
-
   /** Returns a map of address group name to {@link AddressGroup} object */
   public SortedMap<String, AddressGroup> getAddressGroups() {
     return _addressGroups;
@@ -168,5 +188,9 @@ public final class Vsys implements Serializable {
   @Override
   public String toString() {
     return MoreObjects.toStringHelper(Vsys.class).add("name", _name).toString();
+  }
+
+  public @Nonnull NamespaceType getNamespaceType() {
+    return _namespaceType;
   }
 }
