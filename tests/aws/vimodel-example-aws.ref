@@ -2260,21 +2260,11 @@
                           "class" : "org.batfish.datamodel.routing_policy.expr.Not",
                           "expr" : {
                             "class" : "org.batfish.datamodel.routing_policy.expr.MatchProtocol",
-                            "protocol" : "bgp"
-                          }
-                        },
-                        {
-                          "class" : "org.batfish.datamodel.routing_policy.expr.Not",
-                          "expr" : {
-                            "class" : "org.batfish.datamodel.routing_policy.expr.MatchProtocol",
-                            "protocol" : "ibgp"
-                          }
-                        },
-                        {
-                          "class" : "org.batfish.datamodel.routing_policy.expr.Not",
-                          "expr" : {
-                            "class" : "org.batfish.datamodel.routing_policy.expr.MatchProtocol",
-                            "protocol" : "aggregate"
+                            "protocols" : [
+                              "aggregate",
+                              "bgp",
+                              "ibgp"
+                            ]
                           }
                         },
                         {
@@ -2313,11 +2303,10 @@
                     },
                     {
                       "class" : "org.batfish.datamodel.routing_policy.expr.MatchProtocol",
-                      "protocol" : "bgp"
-                    },
-                    {
-                      "class" : "org.batfish.datamodel.routing_policy.expr.MatchProtocol",
-                      "protocol" : "ibgp"
+                      "protocols" : [
+                        "bgp",
+                        "ibgp"
+                      ]
                     }
                   ]
                 },
@@ -2357,7 +2346,9 @@
                     },
                     {
                       "class" : "org.batfish.datamodel.routing_policy.expr.MatchProtocol",
-                      "protocol" : "aggregate"
+                      "protocols" : [
+                        "aggregate"
+                      ]
                     }
                   ]
                 },
@@ -2404,7 +2395,9 @@
                     },
                     {
                       "class" : "org.batfish.datamodel.routing_policy.expr.MatchProtocol",
-                      "protocol" : "aggregate"
+                      "protocols" : [
+                        "aggregate"
+                      ]
                     }
                   ]
                 },
@@ -5143,7 +5136,9 @@
                   "conjuncts" : [
                     {
                       "class" : "org.batfish.datamodel.routing_policy.expr.MatchProtocol",
-                      "protocol" : "static"
+                      "protocols" : [
+                        "static"
+                      ]
                     },
                     {
                       "class" : "org.batfish.datamodel.routing_policy.expr.MatchPrefixSet",
@@ -5187,7 +5182,9 @@
                   "conjuncts" : [
                     {
                       "class" : "org.batfish.datamodel.routing_policy.expr.MatchProtocol",
-                      "protocol" : "static"
+                      "protocols" : [
+                        "static"
+                      ]
                     },
                     {
                       "class" : "org.batfish.datamodel.routing_policy.expr.MatchPrefixSet",
@@ -5241,7 +5238,9 @@
                 ],
                 "guard" : {
                   "class" : "org.batfish.datamodel.routing_policy.expr.MatchProtocol",
-                  "protocol" : "bgp"
+                  "protocols" : [
+                    "bgp"
+                  ]
                 },
                 "trueStatements" : [
                   {

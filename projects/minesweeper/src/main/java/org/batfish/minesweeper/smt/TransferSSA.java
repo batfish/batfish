@@ -3,6 +3,7 @@ package org.batfish.minesweeper.smt;
 import static org.batfish.minesweeper.CommunityVarCollector.collectCommunityVars;
 import static org.batfish.minesweeper.bdd.CommunityVarConverter.toCommunityVar;
 
+import com.google.common.collect.Iterables;
 import com.microsoft.z3.ArithExpr;
 import com.microsoft.z3.BitVecExpr;
 import com.microsoft.z3.BoolExpr;
@@ -14,6 +15,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 import org.batfish.common.BatfishException;
 import org.batfish.datamodel.BgpPeerConfig;
 import org.batfish.datamodel.CommunityList;
@@ -26,6 +28,7 @@ import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.PrefixRange;
 import org.batfish.datamodel.RouteFilterLine;
 import org.batfish.datamodel.RouteFilterList;
+import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.ospf.OspfMetricType;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
@@ -469,18 +472,25 @@ class TransferSSA {
 
     if (expr instanceof MatchProtocol) {
       MatchProtocol mp = (MatchProtocol) expr;
-      Protocol proto = Protocol.fromRoutingProtocol(mp.getProtocol());
+      Set<RoutingProtocol> rps = mp.getProtocols();
+      if (rps.size() > 1) {
+        // Hack: Minesweeper doesn't support MatchProtocol with multiple arguments.
+        List<BooleanExpr> mps = rps.stream().map(MatchProtocol::new).collect(Collectors.toList());
+        return compute(new Disjunction(mps), p);
+      }
+      RoutingProtocol rp = Iterables.getOnlyElement(mp.getProtocols());
+      Protocol proto = Protocol.fromRoutingProtocol(rp);
       if (proto == null) {
-        pCur.debug("MatchProtocol(" + mp.getProtocol().protocolName() + "): false");
+        pCur.debug("MatchProtocol(" + rp.protocolName() + "): false");
         return fromExpr(_enc.mkFalse());
       }
       if (_other.getProtocolHistory() == null) {
         BoolExpr protoMatch = _enc.mkBool(proto.equals(_proto));
-        pCur.debug("MatchProtocol(" + mp.getProtocol().protocolName() + "): " + protoMatch);
+        pCur.debug("MatchProtocol(" + rp.protocolName() + "): " + protoMatch);
         return fromExpr(protoMatch);
       }
       BoolExpr protoMatch = _other.getProtocolHistory().checkIfValue(proto);
-      pCur.debug("MatchProtocol(" + mp.getProtocol().protocolName() + "): " + protoMatch);
+      pCur.debug("MatchProtocol(" + rp.protocolName() + "): " + protoMatch);
       return fromExpr(protoMatch);
     }
 
