@@ -128,7 +128,6 @@ public final class PaloAltoConfigurationTest {
         _nf.aclBuilder()
             .setLines(
                 generateCrossZoneCalls(
-                        vsys,
                         fromZone,
                         new Zone(TO_ZONE_NAME, vsys),
                         ImmutableList.of(externalVsys, vsys))
@@ -167,7 +166,6 @@ public final class PaloAltoConfigurationTest {
         _nf.aclBuilder()
             .setLines(
                 generateCrossZoneCallsFromExternal(
-                        vsys,
                         fromZone,
                         new Zone(TO_ZONE_NAME, vsys),
                         ImmutableList.of(externalVsys, vsys))
@@ -205,7 +203,7 @@ public final class PaloAltoConfigurationTest {
     // no lines should be returned since fromZone does not point to externalVsys
     assertEquals(
         generateCrossZoneCallsFromExternal(
-                vsys, fromZone, new Zone(TO_ZONE_NAME, vsys), ImmutableList.of(externalVsys, vsys))
+                fromZone, new Zone(TO_ZONE_NAME, vsys), ImmutableList.of(externalVsys, vsys))
             .count(),
         0L);
   }
@@ -221,7 +219,7 @@ public final class PaloAltoConfigurationTest {
     IpAccessList generatedFilter =
         _nf.aclBuilder()
             .setLines(
-                generateCrossZoneCallsFromLayer3(vsys, fromZone, new Zone(TO_ZONE_NAME, vsys))
+                generateCrossZoneCallsFromLayer3(fromZone, new Zone(TO_ZONE_NAME, vsys))
                     .collect(ImmutableList.toImmutableList()))
             .build();
 
@@ -260,7 +258,7 @@ public final class PaloAltoConfigurationTest {
 
     // no lines should be returned since fromZone is a layer-2 zone
     assertEquals(
-        generateCrossZoneCalls(vsys, fromZone, new Zone(TO_ZONE_NAME, vsys), ImmutableList.of(vsys))
+        generateCrossZoneCalls(fromZone, new Zone(TO_ZONE_NAME, vsys), ImmutableList.of(vsys))
             .count(),
         0L);
   }
@@ -277,7 +275,7 @@ public final class PaloAltoConfigurationTest {
         _nf.aclBuilder()
             .setLines(
                 generateCrossZoneCalls(
-                        vsys, fromZone, new Zone(TO_ZONE_NAME, vsys), ImmutableList.of(vsys))
+                        fromZone, new Zone(TO_ZONE_NAME, vsys), ImmutableList.of(vsys))
                     .collect(ImmutableList.toImmutableList()))
             .build();
 
@@ -305,10 +303,8 @@ public final class PaloAltoConfigurationTest {
         _nf.aclBuilder()
             .setLines(
                 generateDoubleCrossZoneCalls(
-                        vsys,
                         new Zone(FROM_ZONE_NAME, vsys),
                         new Zone(TO_ZONE_NAME, vsys),
-                        externalVsys,
                         externalFromZone,
                         new Zone(EXTERNAL_TO_ZONE_NAME, externalVsys))
                     .collect(ImmutableList.toImmutableList()))
@@ -360,10 +356,7 @@ public final class PaloAltoConfigurationTest {
         _nf.aclBuilder()
             .setLines(
                 generateInterVsysCrossZoneCalls(
-                        vsys,
-                        new Zone(FROM_ZONE_NAME, vsys),
-                        new Zone(TO_ZONE_NAME, vsys),
-                        externalVsys)
+                        new Zone(FROM_ZONE_NAME, vsys), new Zone(TO_ZONE_NAME, vsys), externalVsys)
                     .collect(ImmutableList.toImmutableList()))
             .build();
 
@@ -389,7 +382,7 @@ public final class PaloAltoConfigurationTest {
     // no lines should be returned since srcVsys has no external zones
     assertEquals(
         generateInterVsysCrossZoneCalls(
-                vsys, new Zone(FROM_ZONE_NAME, vsys), new Zone(TO_ZONE_NAME, vsys), externalVsys)
+                new Zone(FROM_ZONE_NAME, vsys), new Zone(TO_ZONE_NAME, vsys), externalVsys)
             .count(),
         0L);
   }
@@ -410,7 +403,7 @@ public final class PaloAltoConfigurationTest {
     // no lines should be returned since srcVsys has no external zone pointing to dstVsys
     assertEquals(
         generateInterVsysCrossZoneCalls(
-                vsys, new Zone(FROM_ZONE_NAME, vsys), new Zone(TO_ZONE_NAME, vsys), externalVsys)
+                new Zone(FROM_ZONE_NAME, vsys), new Zone(TO_ZONE_NAME, vsys), externalVsys)
             .count(),
         0L);
   }
@@ -424,7 +417,7 @@ public final class PaloAltoConfigurationTest {
     vsys.getZones().put(FROM_ZONE_NAME, fromZone);
 
     IpAccessList generatedFilter =
-        generateOutgoingFilter(vsys, new Zone(TO_ZONE_NAME, vsys), ImmutableList.of(vsys));
+        generateOutgoingFilter(new Zone(TO_ZONE_NAME, vsys), ImmutableList.of(vsys));
 
     // Valid, so should accept intra-vsys flow
     assertThat(

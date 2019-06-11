@@ -322,7 +322,7 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
         if (toZone.getType() != Type.LAYER3) {
           continue;
         }
-        IpAccessList acl = generateOutgoingFilter(vsys, toZone, _virtualSystems.values());
+        IpAccessList acl = generateOutgoingFilter(toZone, _virtualSystems.values());
         _c.getIpAccessLists().put(acl.getName(), acl);
       }
 
@@ -433,15 +433,15 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
 
   /**
    * Generate {@link IpAccessList} to be used as outgoing filter by interfaces in layer-3 zone
-   * {@code toZone} of specified {@code vsys}, given supplied definitions for all {@code
-   * virtualSystems}.
+   * {@code toZone}, given supplied definitions for all {@code virtualSystems}.
    */
   @VisibleForTesting
   static @Nonnull IpAccessList generateOutgoingFilter(
-      Vsys vsys, Zone toZone, Collection<Vsys> virtualSystems) {
+      Zone toZone, Collection<Vsys> virtualSystems) {
+    Vsys vsys = toZone.getVsys();
     List<IpAccessListLine> lines =
         vsys.getZones().values().stream()
-            .flatMap(fromZone -> generateCrossZoneCalls(vsys, fromZone, toZone, virtualSystems))
+            .flatMap(fromZone -> generateCrossZoneCalls(fromZone, toZone, virtualSystems))
             .collect(ImmutableList.toImmutableList());
     return IpAccessList.builder()
         .setName(computeOutgoingFilterName(computeObjectName(vsys.getName(), toZone.getName())))
@@ -451,17 +451,19 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
 
   /**
    * Generate outgoing filter lines to be applied to traffic entering {@code fromZone} (either
-   * directly or via an external zone) and exiting layer-3 zone {@code toZone} of {@code vsys},
+   * directly or via an external zone) and exiting layer-3 zone {@code toZone} in the same vsys,
    * given supplied definitions for all {@code virtualSystems}.
    */
   @VisibleForTesting
   static @Nonnull Stream<IpAccessListLine> generateCrossZoneCalls(
-      Vsys vsys, Zone fromZone, Zone toZone, Collection<Vsys> virtualSystems) {
+      Zone fromZone, Zone toZone, Collection<Vsys> virtualSystems) {
+    Vsys vsys = fromZone.getVsys();
+    assert vsys == toZone.getVsys(); // sanity check
     switch (fromZone.getType()) {
       case EXTERNAL:
-        return generateCrossZoneCallsFromExternal(vsys, fromZone, toZone, virtualSystems);
+        return generateCrossZoneCallsFromExternal(fromZone, toZone, virtualSystems);
       case LAYER3:
-        return generateCrossZoneCallsFromLayer3(vsys, fromZone, toZone);
+        return generateCrossZoneCallsFromLayer3(fromZone, toZone);
       default:
         return Stream.of();
     }
@@ -469,13 +471,15 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
 
   /**
    * Generate outgoing filter lines to be applied to traffic entering layer-3 zone {@code fromZone}
-   * and exiting layer-3 zone {@code toZone} of {@code vsys}. The generated lines apply the
+   * and exiting layer-3 zone {@code toZone} of the same vsys. The generated lines apply the
    * appropriate cross-zone filter to traffic entering an interface of {@code fromZone}.
    */
   @VisibleForTesting
   static @Nonnull Stream<IpAccessListLine> generateCrossZoneCallsFromLayer3(
-      Vsys vsys, Zone fromZone, Zone toZone) {
+      Zone fromZone, Zone toZone) {
     AclLineMatchExpr matchFromZoneInterface = new MatchSrcInterface(fromZone.getInterfaceNames());
+    Vsys vsys = fromZone.getVsys();
+    assert vsys == toZone.getVsys(); // sanity check
     String vsysName = vsys.getName();
     String crossZoneFilterName =
         zoneToZoneFilter(
@@ -489,94 +493,95 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
   }
 
   /**
-   * Generate outgoing filter lines implementing the policy for all inter-vsys traffic entering the
-   * device at a layer-3 zone on another vsys and exiting the device through {@code toZone}. Any
-   * such traffic must pass each of a pair of cross-zone policies: ({@code fromZone}, {@code
-   * toZone}) and some ({@code externalFromZone}, {@code externalToZone}) in an external vsys such
-   * that:
+   * Generate outgoing filter lines implementing the policy for all inter-vsys traffic exiting the
+   * device through {@code toZone} on some vsys after entering the device at a layer-3 zone on
+   * another external vsys. Any such traffic must pass each of a pair of cross-zone policies:
+   * ({@code fromZone}, {@code toZone}) and some ({@code externalFromZone}, {@code externalToZone})
+   * in an external vsys such that:
    *
    * <ul>
    *   <li>{@code fromZone} sees the external vsys.
-   *   <li>{@code externalToZone} is an external zone on the external vsys that sees {@code vsys}.
+   *   <li>{@code externalToZone} is an external zone on the external vsys that sees the egress
+   *       vsys.
    *   <li>{@code externalFromZone} is a layer-3 zone on the external vsys containing the ingress
    *       interface of the traffic.
    * </ul>
    */
   @VisibleForTesting
   static @Nonnull Stream<IpAccessListLine> generateCrossZoneCallsFromExternal(
-      Vsys vsys, Zone fromZone, Zone toZone, Collection<Vsys> virtualSystems) {
+      Zone fromZone, Zone toZone, Collection<Vsys> virtualSystems) {
+    Vsys vsys = fromZone.getVsys();
+    assert fromZone.getVsys() == toZone.getVsys(); // sanity check
     return virtualSystems.stream()
         .filter(not(equalTo(vsys)))
         .filter(externalVsys -> fromZone.getExternalNames().contains(externalVsys.getName()))
-        .flatMap(
-            externalVsys -> generateInterVsysCrossZoneCalls(vsys, fromZone, toZone, externalVsys));
+        .flatMap(externalVsys -> generateInterVsysCrossZoneCalls(fromZone, toZone, externalVsys));
   }
 
   /**
    * Generate outgoing filter lines to be applied to traffic entering some interface of {@code
-   * externalVsys} and exiting layer-3 zone {@code toZone} of {@code vsys} via external zone {@code
-   * fromZone} of {@code vsys}.
+   * externalVsys} and exiting layer-3 zone {@code toZone} via external zone {@code fromZone} of the
+   * latter's vsys.
    */
   @VisibleForTesting
   static @Nonnull Stream<IpAccessListLine> generateInterVsysCrossZoneCalls(
-      Vsys vsys, Zone fromZone, Zone toZone, Vsys externalVsys) {
+      Zone fromZone, Zone toZone, Vsys externalVsys) {
+    Vsys vsys = fromZone.getVsys();
+    assert vsys == toZone.getVsys() && vsys != externalVsys; // sanity check
     String vsysName = vsys.getName();
     return externalVsys.getZones().values().stream()
         .filter(
-            srcVsysZone ->
-                srcVsysZone.getType() == Type.EXTERNAL
-                    && srcVsysZone.getExternalNames().contains(vsysName))
+            externalVsysToZone ->
+                externalVsysToZone.getType() == Type.EXTERNAL
+                    && externalVsysToZone.getExternalNames().contains(vsysName))
         .flatMap(
-            srcVsysExternalZone ->
+            externalVsysToZone ->
                 externalVsys.getZones().values().stream()
-                    .filter(srcVsysZone -> srcVsysZone.getType() == Type.LAYER3)
+                    .filter(externalVsysFromZone -> externalVsysFromZone.getType() == Type.LAYER3)
                     .flatMap(
-                        srcVsysLayer3Zone ->
+                        externalVsysFromZone ->
                             generateDoubleCrossZoneCalls(
-                                vsys,
-                                fromZone,
-                                toZone,
-                                externalVsys,
-                                srcVsysLayer3Zone,
-                                srcVsysExternalZone)));
+                                fromZone, toZone, externalVsysFromZone, externalVsysToZone)));
   }
 
   /**
-   * Generate outgoing filter lines to be applied to traffic entering {@code externalFromZone} of
-   * {@code externalVsys} and leaving {@code toZone} of {@code vsys}. The generated lines apply the
-   * cross-zone filters for the two zone-pairs ({@code externalFromZone}, {@code externalToZone}),
-   * and ({@code fromZone}, {@code toZone}).
+   * Generate outgoing filter lines to be applied to traffic exiting {@code toZone} of some vsys
+   * after entering {@code externalFromZone} of some other external vsys. The generated lines apply
+   * the cross-zone filters for the two zone-pairs ({@code externalFromZone}, {@code
+   * externalToZone}), and ({@code fromZone}, {@code toZone}), where {@code externalToZone} and
+   * {@code fromZone} are external zones pointing at each other's vsys.
    */
   @VisibleForTesting
   static @Nonnull Stream<IpAccessListLine> generateDoubleCrossZoneCalls(
-      Vsys vsys,
-      Zone fromZone,
-      Zone toZone,
-      Vsys externalVsys,
-      Zone externalFromZone,
-      Zone externalToZone) {
-    AclLineMatchExpr matchSrcVsysZoneInterface =
+      Zone fromZone, Zone toZone, Zone externalFromZone, Zone externalToZone) {
+    Vsys vsys = fromZone.getVsys();
+    Vsys externalVsys = externalFromZone.getVsys();
+    // sanity check
+    assert vsys == toZone.getVsys()
+        && externalVsys == externalToZone.getVsys()
+        && vsys != externalVsys;
+    AclLineMatchExpr matchExternalFromZoneInterface =
         new MatchSrcInterface(externalFromZone.getInterfaceNames());
     String externalVsysName = externalVsys.getName();
-    String srcVsysCrossZoneFilterName =
+    String externalCrossZoneFilterName =
         zoneToZoneFilter(
             computeObjectName(externalVsysName, externalFromZone.getName()),
             computeObjectName(externalVsysName, externalToZone.getName()));
     String vsysName = vsys.getName();
-    String dstVsysCrossZoneFilterName =
+    String crossZoneFilterName =
         zoneToZoneFilter(
             computeObjectName(vsysName, fromZone.getName()),
             computeObjectName(vsysName, toZone.getName()));
-    // If the source interface is in the other srcVysLayer3Zone
-    // and both vsys<=>external filters permit, then permit.
-    // Else if the source interface is in srcVysLayer3Zone, one of the filters must have denied.
+    // If the source interface is in externalFromZone and both vsys<=>external filters permit, then
+    // permit.
+    // Else if the source interface is in externalFromZone, one of the filters must have denied.
     return Stream.of(
         accepting(
             and(
-                matchSrcVsysZoneInterface,
-                permittedByAcl(srcVsysCrossZoneFilterName),
-                permittedByAcl(dstVsysCrossZoneFilterName))),
-        rejecting(matchSrcVsysZoneInterface));
+                matchExternalFromZoneInterface,
+                permittedByAcl(externalCrossZoneFilterName),
+                permittedByAcl(crossZoneFilterName))),
+        rejecting(matchExternalFromZoneInterface));
   }
 
   @Nullable
