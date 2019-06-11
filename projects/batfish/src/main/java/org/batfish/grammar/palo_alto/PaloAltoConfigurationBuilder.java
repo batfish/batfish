@@ -771,7 +771,7 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
   @Override
   public void enterSn_shared_gateway_definition(Sn_shared_gateway_definitionContext ctx) {
     String name = getText(ctx.name);
-    _currentVsys = _configuration.getVirtualSystems().computeIfAbsent(name, Vsys::new);
+    _currentVsys = _configuration.getSharedGateways().computeIfAbsent(name, Vsys::new);
     defineStructure(SHARED_GATEWAY, name, ctx);
   }
 

@@ -113,7 +113,6 @@ import org.batfish.representation.palo_alto.ServiceBuiltIn;
 import org.batfish.representation.palo_alto.StaticRoute;
 import org.batfish.representation.palo_alto.Vsys;
 import org.batfish.representation.palo_alto.Zone;
-import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -265,7 +264,6 @@ public class PaloAltoGrammarTest {
   }
 
   @Test
-  @Ignore
   public void testAddressObjectGroupInheritance() throws IOException {
     String hostname = "address-object-group-inheritance";
     Configuration c = parseConfig(hostname);
@@ -750,7 +748,6 @@ public class PaloAltoGrammarTest {
   }
 
   @Test
-  @Ignore
   public void testRulebase() throws IOException {
     String hostname = "rulebase";
     Configuration c = parseConfig(hostname);
@@ -789,7 +786,6 @@ public class PaloAltoGrammarTest {
   }
 
   @Test
-  @Ignore
   public void testRulebaseService() throws IOException {
     String hostname = "rulebase-service";
     Configuration c = parseConfig(hostname);
@@ -812,7 +808,6 @@ public class PaloAltoGrammarTest {
   }
 
   @Test
-  @Ignore
   public void testRulebaseDefault() throws IOException {
     String hostname = "rulebase-default";
     Configuration c = parseConfig(hostname);
@@ -840,7 +835,6 @@ public class PaloAltoGrammarTest {
   }
 
   @Test
-  @Ignore
   public void testRulebaseIprange() throws IOException {
     String hostname = "rulebase-iprange";
     Configuration c = parseConfig(hostname);
@@ -905,7 +899,6 @@ public class PaloAltoGrammarTest {
   }
 
   @Test
-  @Ignore
   public void testVsysRulebase() throws IOException {
     String hostname = "vsys-rulebase";
     Configuration c = parseConfig(hostname);
@@ -1223,16 +1216,15 @@ public class PaloAltoGrammarTest {
     PaloAltoConfiguration c = parsePaloAltoConfig("shared-gateway");
 
     // Confirm shared-gateways show up in the vendor model
-    Map<String, Vsys> vsyses = c.getVirtualSystems();
-    assertThat(vsyses, hasKey("sg1"));
-    assertThat(vsyses, hasKey("sg2"));
-    assertThat(vsyses, hasKey("sg3"));
+    Map<String, Vsys> sharedGateways = c.getSharedGateways();
+    assertThat(sharedGateways, hasKey("sg1"));
+    assertThat(sharedGateways, hasKey("sg2"));
+    assertThat(sharedGateways, hasKey("sg3"));
 
     // Confirm display names show up as well
-    assertThat(c.getVirtualSystems().get("sg1").getDisplayName(), equalTo("shared-gateway1"));
-    assertThat(c.getVirtualSystems().get("sg2").getDisplayName(), equalTo("shared gateway2"));
-    assertThat(
-        c.getVirtualSystems().get("sg3").getDisplayName(), equalTo("invalid shared gateway"));
+    assertThat(sharedGateways.get("sg1").getDisplayName(), equalTo("shared-gateway1"));
+    assertThat(sharedGateways.get("sg2").getDisplayName(), equalTo("shared gateway2"));
+    assertThat(sharedGateways.get("sg3").getDisplayName(), equalTo("invalid shared gateway"));
   }
 
   @Test

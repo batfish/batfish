@@ -247,7 +247,6 @@ public final class PaloAltoBidirectionalBehaviorTest {
     assertBidirAccepted(hostname);
   }
 
-  @Ignore
   @Test
   public void testDropVsysToSgMissingExternal() throws IOException {
     String hostname = "drop-vsys-to-sg-missing-external";
@@ -262,7 +261,6 @@ public final class PaloAltoBidirectionalBehaviorTest {
     assertForwardDropped(tracerouteEngine, bidirForwardOutsideFlow(hostname));
   }
 
-  @Ignore
   @Test
   public void testDropVsysToSgMisconfiguredExternal() throws IOException {
     String hostname = "drop-vsys-to-sg-misconfigured-external";
@@ -277,7 +275,6 @@ public final class PaloAltoBidirectionalBehaviorTest {
     assertForwardDropped(tracerouteEngine, bidirForwardOutsideFlow(hostname));
   }
 
-  @Ignore
   @Test
   public void testAllowVsysToSg() throws IOException {
     String hostname = "allow-vsys-to-sg";
@@ -294,7 +291,6 @@ public final class PaloAltoBidirectionalBehaviorTest {
     assertForwardDropped(tracerouteEngine, bidirForwardOutsideFlow(hostname));
   }
 
-  @Ignore
   @Test
   public void testAllowSgToVsys() throws IOException {
     String hostname = "allow-sg-to-vsys";
@@ -345,7 +341,6 @@ public final class PaloAltoBidirectionalBehaviorTest {
         equalTo(FlowDisposition.NO_ROUTE));
   }
 
-  @Ignore
   @Test
   public void testDropIntraVsysNextVrMissingIngress() throws IOException {
     String hostname = "drop-intra-vsys-next-vr-missing-ingress";
