@@ -379,7 +379,7 @@ public final class PaloAltoConfigurationTest {
     externalFromZone.setType(Type.LAYER3);
     externalFromZone.getInterfaceNames().add(SRC_INTERFACE_NAME);
     externalVsys.getZones().put(EXTERNAL_FROM_ZONE_NAME, externalFromZone);
-    // no lines should be returned since srcVsys has no external zones
+    // no lines should be returned since externalVsys has no external zones
     assertEquals(
         generateInterVsysCrossZoneCalls(
                 new Zone(FROM_ZONE_NAME, vsys), new Zone(TO_ZONE_NAME, vsys), externalVsys)
@@ -400,7 +400,7 @@ public final class PaloAltoConfigurationTest {
     externalToZone.setType(Type.EXTERNAL);
     externalVsys.getZones().put(EXTERNAL_TO_ZONE_NAME, externalToZone);
 
-    // no lines should be returned since srcVsys has no external zone pointing to dstVsys
+    // no lines should be returned since externalVsys has no external zone pointing to vsys
     assertEquals(
         generateInterVsysCrossZoneCalls(
                 new Zone(FROM_ZONE_NAME, vsys), new Zone(TO_ZONE_NAME, vsys), externalVsys)
