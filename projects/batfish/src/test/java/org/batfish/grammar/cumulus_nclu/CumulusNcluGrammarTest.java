@@ -309,10 +309,6 @@ public final class CumulusNcluGrammarTest {
         c.getDefaultVrf().getBgpProcess().getInterfaceNeighbors().get("swp3");
     assertThat(pc3, hasRemoteAs(equalTo(LongSpace.of(65000L))));
 
-    // ARP response for link-local address for BGP unnumbered interface
-    //    assertThat(c, hasInterface(peerInterface,
-    // hasAdditionalArpIps(containsIp(BGP_UNNUMBERED_IP))));
-
     //// generated routing policies
 
     // common export policy

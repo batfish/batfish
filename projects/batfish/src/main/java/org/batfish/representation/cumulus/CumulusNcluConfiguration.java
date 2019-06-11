@@ -295,11 +295,6 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
     if (iface.getIpAddresses().isEmpty() && isUsedForBgpUnnumbered(iface.getName())) {
       newIface.setAddress(LINK_LOCAL_ADDRESS);
       newIface.setAllAddresses(ImmutableSet.of(LINK_LOCAL_ADDRESS));
-
-      // All interfaces involved in BGP unnumbered should reply to ARP for BGP_UNNUMBERED_IP
-      //      newIface.setAdditionalArpIps(
-      //          AclIpSpace.union(
-      //              newIface.getAdditionalArpIps(), BgpProcess.BGP_UNNUMBERED_IP.toIpSpace()));
     }
   }
 
