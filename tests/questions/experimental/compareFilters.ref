@@ -35,7 +35,7 @@
         "value" : false
       },
       "nodes" : {
-        "description" : "Only evaluate filters present on nodes matching this ndoe specifier",
+        "description" : "Only evaluate filters present on nodes matching this node specifier",
         "displayName" : "Nodes",
         "optional" : true,
         "type" : "nodeSpec",
