@@ -341,7 +341,6 @@ public final class PaloAltoBidirectionalBehaviorTest {
         equalTo(FlowDisposition.NO_ROUTE));
   }
 
-  @Ignore
   @Test
   public void testDropIntraVsysNextVrMissingIngress() throws IOException {
     String hostname = "drop-intra-vsys-next-vr-missing-ingress";
