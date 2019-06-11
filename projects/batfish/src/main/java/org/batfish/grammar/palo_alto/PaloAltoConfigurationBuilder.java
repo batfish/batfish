@@ -46,10 +46,12 @@ import static org.batfish.representation.palo_alto.Zone.Type.LAYER3;
 import static org.batfish.representation.palo_alto.Zone.Type.TAP;
 import static org.batfish.representation.palo_alto.Zone.Type.VIRTUAL_WIRE;
 
+import com.google.common.collect.ImmutableList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+import javax.annotation.Nullable;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.RuleContext;
 import org.antlr.v4.runtime.Token;
@@ -169,6 +171,7 @@ import org.batfish.grammar.palo_alto.PaloAltoParser.Szn_layer3Context;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Szn_tapContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Szn_virtual_wireContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.VariableContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Variable_listContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Variable_list_itemContext;
 import org.batfish.representation.palo_alto.AddressGroup;
 import org.batfish.representation.palo_alto.AddressObject;
@@ -445,6 +448,14 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
     return text;
   }
 
+  /** A helper function to extract all variables from an optional list. */
+  private static List<Variable_list_itemContext> variables(@Nullable Variable_listContext ctx) {
+    if (ctx == null || ctx.variable_list_item() == null) {
+      return ImmutableList.of();
+    }
+    return ctx.variable_list_item();
+  }
+
   @Override
   public void exitCp_authentication(Cp_authenticationContext ctx) {
     if (_currentCrytoProfile.getType() == Type.IKE) {
@@ -623,13 +634,11 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
 
   @Override
   public void exitSappg_members(Sappg_membersContext ctx) {
-    if (ctx.variable_list() != null) {
-      for (Variable_list_itemContext var : ctx.variable_list().variable_list_item()) {
-        String name = getText(var);
-        _currentApplicationGroup.getMembers().add(name);
-        String uniqueName = computeObjectName(_currentVsys.getName(), name);
-        referenceApplicationLike(name, uniqueName, APPLICATION_GROUP_MEMBERS, var);
-      }
+    for (Variable_list_itemContext var : variables(ctx.variable_list())) {
+      String name = getText(var);
+      _currentApplicationGroup.getMembers().add(name);
+      String uniqueName = computeObjectName(_currentVsys.getName(), name);
+      referenceApplicationLike(name, uniqueName, APPLICATION_GROUP_MEMBERS, var);
     }
   }
 
@@ -787,12 +796,10 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
 
   @Override
   public void exitSnsgi_interface(Snsgi_interfaceContext ctx) {
-    if (ctx.variable_list() != null) {
-      for (Variable_list_itemContext var : ctx.variable_list().variable_list_item()) {
-        String name = getText(var);
-        _currentVsys.getImportedInterfaces().add(name);
-        _configuration.referenceStructure(INTERFACE, name, IMPORT_INTERFACE, getLine(var.start));
-      }
+    for (Variable_list_itemContext var : variables(ctx.variable_list())) {
+      String name = getText(var);
+      _currentVsys.getImportedInterfaces().add(name);
+      _configuration.referenceStructure(INTERFACE, name, IMPORT_INTERFACE, getLine(var.start));
     }
   }
 
@@ -813,16 +820,14 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
 
   @Override
   public void exitSnsgzn_layer3(Snsgzn_layer3Context ctx) {
-    if (ctx.variable_list() != null) {
-      for (Variable_list_itemContext var : ctx.variable_list().variable_list_item()) {
-        String name = getText(var);
-        if (_currentVsys.getImportedInterfaces().contains(name)) {
-          _currentZone.getInterfaceNames().add(name);
-        } else {
-          _w.redFlag("Cannot add an interface to a shared-gateway zone before it is imported");
-        }
-        _configuration.referenceStructure(INTERFACE, name, ZONE_INTERFACE, getLine(var.start));
+    for (Variable_list_itemContext var : variables(ctx.variable_list())) {
+      String name = getText(var);
+      if (_currentVsys.getImportedInterfaces().contains(name)) {
+        _currentZone.getInterfaceNames().add(name);
+      } else {
+        _w.redFlag("Cannot add an interface to a shared-gateway zone before it is imported");
       }
+      _configuration.referenceStructure(INTERFACE, name, ZONE_INTERFACE, getLine(var.start));
     }
   }
 
@@ -1073,13 +1078,11 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
 
   @Override
   public void exitSnvr_interface(Snvr_interfaceContext ctx) {
-    if (ctx.variable_list() != null) {
-      for (Variable_list_itemContext var : ctx.variable_list().variable_list_item()) {
-        String name = getText(var);
-        _currentVirtualRouter.getInterfaceNames().add(name);
-        _configuration.referenceStructure(
-            INTERFACE, name, VIRTUAL_ROUTER_INTERFACE, getLine(var.start));
-      }
+    for (Variable_list_itemContext var : variables(ctx.variable_list())) {
+      String name = getText(var);
+      _currentVirtualRouter.getInterfaceNames().add(name);
+      _configuration.referenceStructure(
+          INTERFACE, name, VIRTUAL_ROUTER_INTERFACE, getLine(var.start));
     }
   }
 
@@ -1174,7 +1177,7 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
 
   @Override
   public void exitSrs_application(Srs_applicationContext ctx) {
-    for (Variable_list_itemContext var : ctx.variable_list().variable_list_item()) {
+    for (Variable_list_itemContext var : variables(ctx.variable_list())) {
       String name = getText(var);
       _currentRule.getApplications().add(name);
       // Use constructed object name so same-named refs across vsys are unique
@@ -1216,7 +1219,7 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
 
   @Override
   public void exitSrs_from(Srs_fromContext ctx) {
-    for (Variable_list_itemContext var : ctx.variable_list().variable_list_item()) {
+    for (Variable_list_itemContext var : variables(ctx.variable_list())) {
       String zoneName = getText(var);
       _currentRule.getFrom().add(zoneName);
 
@@ -1240,7 +1243,7 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
 
   @Override
   public void exitSrs_service(Srs_serviceContext ctx) {
-    for (Variable_list_itemContext var : ctx.variable_list().variable_list_item()) {
+    for (Variable_list_itemContext var : variables(ctx.variable_list())) {
       String serviceName = getText(var);
       _currentRule.getService().add(new ServiceOrServiceGroupReference(serviceName));
       referenceService(var, RULEBASE_SERVICE);
@@ -1267,7 +1270,7 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
 
   @Override
   public void exitSrs_to(Srs_toContext ctx) {
-    for (Variable_list_itemContext var : ctx.variable_list().variable_list_item()) {
+    for (Variable_list_itemContext var : variables(ctx.variable_list())) {
       String zoneName = getText(var);
       _currentRule.getTo().add(zoneName);
 
@@ -1361,7 +1364,7 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
 
   @Override
   public void exitSservgrp_members(Sservgrp_membersContext ctx) {
-    for (Variable_list_itemContext var : ctx.variable_list().variable_list_item()) {
+    for (Variable_list_itemContext var : variables(ctx.variable_list())) {
       String name = getText(var);
       _currentServiceGroup.getReferences().add(new ServiceOrServiceGroupReference(name));
       referenceService(var, SERVICE_GROUP_MEMBER);
@@ -1416,82 +1419,67 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
 
   @Override
   public void exitSvi_visible_vsys(Svi_visible_vsysContext ctx) {
-    if (ctx.variable_list() != null) {
-      for (Variable_list_itemContext var : ctx.variable_list().variable_list_item()) {
-        String name = getText(var);
-        _currentVsys.getImportedVsyses().add(name);
-      }
+    for (Variable_list_itemContext var : variables(ctx.variable_list())) {
+      String name = getText(var);
+      _currentVsys.getImportedVsyses().add(name);
     }
   }
 
   @Override
   public void exitSvin_interface(Svin_interfaceContext ctx) {
-    if (ctx.variable_list() != null) {
-      for (Variable_list_itemContext var : ctx.variable_list().variable_list_item()) {
-        String name = getText(var);
-        _currentVsys.getImportedInterfaces().add(name);
-        _configuration.referenceStructure(
-            INTERFACE, name, VSYS_IMPORT_INTERFACE, getLine(var.start));
-      }
+    for (Variable_list_itemContext var : variables(ctx.variable_list())) {
+      String name = getText(var);
+      _currentVsys.getImportedInterfaces().add(name);
+      _configuration.referenceStructure(INTERFACE, name, VSYS_IMPORT_INTERFACE, getLine(var.start));
     }
   }
 
   @Override
   public void exitSzn_external(Szn_externalContext ctx) {
     _currentZone.setType(EXTERNAL);
-    if (ctx.variable_list() != null) {
-      for (Variable_list_itemContext var : ctx.variable_list().variable_list_item()) {
-        String name = getText(var);
-        _currentZone.getExternalNames().add(name);
-      }
+    for (Variable_list_itemContext var : variables(ctx.variable_list())) {
+      String name = getText(var);
+      _currentZone.getExternalNames().add(name);
     }
   }
 
   @Override
   public void exitSzn_layer2(Szn_layer2Context ctx) {
     _currentZone.setType(LAYER2);
-    if (ctx.variable_list() != null) {
-      for (Variable_list_itemContext var : ctx.variable_list().variable_list_item()) {
-        String name = getText(var);
-        _currentZone.getInterfaceNames().add(name);
-        _configuration.referenceStructure(INTERFACE, name, ZONE_INTERFACE, getLine(var.start));
-      }
+    for (Variable_list_itemContext var : variables(ctx.variable_list())) {
+      String name = getText(var);
+      _currentZone.getInterfaceNames().add(name);
+      _configuration.referenceStructure(INTERFACE, name, ZONE_INTERFACE, getLine(var.start));
     }
   }
 
   @Override
   public void exitSzn_layer3(Szn_layer3Context ctx) {
     _currentZone.setType(LAYER3);
-    if (ctx.variable_list() != null) {
-      for (Variable_list_itemContext var : ctx.variable_list().variable_list_item()) {
-        String name = getText(var);
-        _currentZone.getInterfaceNames().add(name);
-        _configuration.referenceStructure(INTERFACE, name, ZONE_INTERFACE, getLine(var.start));
-      }
+    for (Variable_list_itemContext var : variables(ctx.variable_list())) {
+      String name = getText(var);
+      _currentZone.getInterfaceNames().add(name);
+      _configuration.referenceStructure(INTERFACE, name, ZONE_INTERFACE, getLine(var.start));
     }
   }
 
   @Override
   public void exitSzn_tap(Szn_tapContext ctx) {
     _currentZone.setType(TAP);
-    if (ctx.variable_list() != null) {
-      for (Variable_list_itemContext var : ctx.variable_list().variable_list_item()) {
-        String name = getText(var);
-        _currentZone.getInterfaceNames().add(name);
-        _configuration.referenceStructure(INTERFACE, name, ZONE_INTERFACE, getLine(var.start));
-      }
+    for (Variable_list_itemContext var : variables(ctx.variable_list())) {
+      String name = getText(var);
+      _currentZone.getInterfaceNames().add(name);
+      _configuration.referenceStructure(INTERFACE, name, ZONE_INTERFACE, getLine(var.start));
     }
   }
 
   @Override
   public void exitSzn_virtual_wire(Szn_virtual_wireContext ctx) {
     _currentZone.setType(VIRTUAL_WIRE);
-    if (ctx.variable_list() != null) {
-      for (Variable_list_itemContext var : ctx.variable_list().variable_list_item()) {
-        String name = getText(var);
-        _currentZone.getInterfaceNames().add(name);
-        _configuration.referenceStructure(INTERFACE, name, ZONE_INTERFACE, getLine(var.start));
-      }
+    for (Variable_list_itemContext var : variables(ctx.variable_list())) {
+      String name = getText(var);
+      _currentZone.getInterfaceNames().add(name);
+      _configuration.referenceStructure(INTERFACE, name, ZONE_INTERFACE, getLine(var.start));
     }
   }
 
