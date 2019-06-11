@@ -24,7 +24,6 @@ import com.google.common.collect.TreeMultiset;
 import java.util.AbstractMap.SimpleImmutableEntry;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -119,7 +118,7 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
 
   private String _ntpServerSecondary;
 
-  private final Map<String, Vsys> _sharedGateways;
+  private final SortedMap<String, Vsys> _sharedGateways;
 
   private ConfigurationFormat _vendor;
 
@@ -130,7 +129,7 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
   public PaloAltoConfiguration() {
     _cryptoProfiles = new LinkedList<>();
     _interfaces = new TreeMap<>();
-    _sharedGateways = new HashMap<>();
+    _sharedGateways = new TreeMap<>();
     _virtualRouters = new TreeMap<>();
     _virtualSystems = new TreeMap<>();
   }
@@ -198,7 +197,7 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
     return servers;
   }
 
-  public @Nonnull Map<String, Vsys> getSharedGateways() {
+  public @Nonnull SortedMap<String, Vsys> getSharedGateways() {
     return _sharedGateways;
   }
 
@@ -534,8 +533,6 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
    * Generate outgoing filter lines to be applied to traffic entering {@code fromZone} (either
    * directly or via an external zone) and exiting layer-3 zone {@code toZone} in the same vsys,
    * given supplied definitions for all {@code virtualSystems}.
-   *
-   * @param sharedGateways TODO
    */
   @VisibleForTesting
   static @Nonnull Stream<IpAccessListLine> generateCrossZoneCalls(
@@ -592,8 +589,6 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
    *   <li>{@code externalFromZone} is a layer-3 zone on the external vsys containing the ingress
    *       interface of the traffic.
    * </ul>
-   *
-   * @param sharedGateways TODO
    */
   @VisibleForTesting
   static @Nonnull Stream<IpAccessListLine> generateCrossZoneCallsFromExternal(
