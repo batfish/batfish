@@ -1215,7 +1215,7 @@
             ],
             "allowedVlans" : "",
             "autostate" : true,
-            "bandwidth" : 1.0E12,
+            "bandwidth" : 1.0E9,
             "declaredNames" : [
               "Vlan1"
             ],
@@ -8555,7 +8555,7 @@
             },
             "allowedVlans" : "",
             "autostate" : true,
-            "bandwidth" : 1.0E12,
+            "bandwidth" : 1.0E9,
             "declaredNames" : [
               "vlan1"
             ],
@@ -8584,7 +8584,7 @@
             },
             "allowedVlans" : "",
             "autostate" : true,
-            "bandwidth" : 1.0E12,
+            "bandwidth" : 1.0E9,
             "declaredNames" : [
               "vlan1005"
             ],
@@ -8613,7 +8613,7 @@
             },
             "allowedVlans" : "",
             "autostate" : true,
-            "bandwidth" : 1.0E12,
+            "bandwidth" : 1.0E9,
             "declaredNames" : [
               "vlan1006"
             ],
@@ -8642,7 +8642,7 @@
             },
             "allowedVlans" : "",
             "autostate" : true,
-            "bandwidth" : 1.0E12,
+            "bandwidth" : 1.0E9,
             "declaredNames" : [
               "Vlan111"
             ],
@@ -8671,7 +8671,7 @@
             },
             "allowedVlans" : "",
             "autostate" : true,
-            "bandwidth" : 1.0E12,
+            "bandwidth" : 1.0E9,
             "declaredNames" : [
               "vlan1234"
             ],
@@ -8700,7 +8700,7 @@
             },
             "allowedVlans" : "",
             "autostate" : true,
-            "bandwidth" : 1.0E12,
+            "bandwidth" : 1.0E9,
             "declaredNames" : [
               "vlan2"
             ],
@@ -8729,7 +8729,7 @@
             },
             "allowedVlans" : "",
             "autostate" : true,
-            "bandwidth" : 1.0E12,
+            "bandwidth" : 1.0E9,
             "declaredNames" : [
               "vlan3"
             ],
@@ -8758,7 +8758,7 @@
             },
             "allowedVlans" : "",
             "autostate" : true,
-            "bandwidth" : 1.0E12,
+            "bandwidth" : 1.0E9,
             "declaredNames" : [
               "vlan4094"
             ],
@@ -17938,7 +17938,7 @@
             ],
             "allowedVlans" : "",
             "autostate" : false,
-            "bandwidth" : 1.0E12,
+            "bandwidth" : 1.0E9,
             "declaredNames" : [
               "Vlan303"
             ],
@@ -17971,7 +17971,7 @@
             ],
             "allowedVlans" : "",
             "autostate" : false,
-            "bandwidth" : 1.0E12,
+            "bandwidth" : 1.0E9,
             "declaredNames" : [
               "Vlan803"
             ],
@@ -18116,7 +18116,7 @@
             },
             "allowedVlans" : "",
             "autostate" : true,
-            "bandwidth" : 1.0E12,
+            "bandwidth" : 1.0E9,
             "declaredNames" : [
               "Vlan100"
             ],
@@ -18579,7 +18579,7 @@
             },
             "allowedVlans" : "",
             "autostate" : true,
-            "bandwidth" : 1.0E12,
+            "bandwidth" : 1.0E9,
             "declaredNames" : [
               "Vlan1000"
             ],
