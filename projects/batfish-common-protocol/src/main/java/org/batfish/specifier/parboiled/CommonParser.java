@@ -4,6 +4,7 @@ import static org.batfish.datamodel.Names.SPECIAL_CHARS;
 import static org.batfish.specifier.parboiled.Anchor.Type.OPERATOR_END;
 import static org.batfish.specifier.parboiled.Anchor.Type.STRING_LITERAL;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import java.lang.reflect.Method;
 import java.util.Arrays;
@@ -147,16 +148,17 @@ public abstract class CommonParser extends BaseParser<AstNode> {
    * those belonging to an Enum).
    */
   Rule[] initEnumRules(Object[] values) {
-    return Arrays.stream(values).map(Object::toString).map(this::IgnoreCase).toArray(Rule[]::new);
+    return initValuesRules(
+        Arrays.stream(values).map(Object::toString).collect(ImmutableList.toImmutableList()));
   }
 
   /** Initialize an array of rules that match known IpProtocol names */
   Rule[] initIpProtocolNameRules() {
-    return Arrays.stream(IpProtocol.values())
-        .map(Object::toString)
-        .filter(p -> !p.startsWith("UNNAMED"))
-        .map(this::IgnoreCase)
-        .toArray(Rule[]::new);
+    return initValuesRules(
+        Arrays.stream(IpProtocol.values())
+            .map(Object::toString)
+            .filter(p -> !p.startsWith("UNNAMED"))
+            .collect(ImmutableList.toImmutableList()));
   }
 
   /** Initialize an array of case-insenstive rules that match values in a collection. */
