@@ -29897,18 +29897,12 @@
             },
             "allowedVlans" : "",
             "autostate" : true,
-            "firewallSessionInterfaceInfo" : {
-              "sessionInterfaces" : [
-                "ethernet1/1"
-              ]
-            },
             "mtu" : 1500,
             "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
             "ospfPassive" : false,
             "ospfPointToPoint" : false,
-            "outgoingFilter" : "~ethernet1/1~OUTGOING_FILTER~",
             "proxyArp" : false,
             "ripEnabled" : false,
             "ripPassive" : false,
@@ -29959,18 +29953,12 @@
             },
             "allowedVlans" : "",
             "autostate" : true,
-            "firewallSessionInterfaceInfo" : {
-              "sessionInterfaces" : [
-                "ethernet1/3"
-              ]
-            },
             "mtu" : 1500,
             "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
             "ospfPassive" : false,
             "ospfPointToPoint" : false,
-            "outgoingFilter" : "~ethernet1/3~OUTGOING_FILTER~",
             "proxyArp" : false,
             "ripEnabled" : false,
             "ripPassive" : false,
@@ -29990,18 +29978,12 @@
             },
             "allowedVlans" : "",
             "autostate" : true,
-            "firewallSessionInterfaceInfo" : {
-              "sessionInterfaces" : [
-                "ethernet1/4"
-              ]
-            },
             "mtu" : 1500,
             "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
             "ospfPassive" : false,
             "ospfPointToPoint" : false,
-            "outgoingFilter" : "~ethernet1/4~OUTGOING_FILTER~",
             "proxyArp" : false,
             "ripEnabled" : false,
             "ripPassive" : false,
@@ -30015,32 +29997,8 @@
           }
         },
         "ipAccessLists" : {
-          "zone~zext~vsys10~to~zone~zl2~vsys10" : {
-            "name" : "zone~zext~vsys10~to~zone~zl2~vsys10"
-          },
           "zone~zext~vsys10~to~zone~zl3~vsys10" : {
             "name" : "zone~zext~vsys10~to~zone~zl3~vsys10"
-          },
-          "zone~zext~vsys10~to~zone~ztap~vsys10" : {
-            "name" : "zone~zext~vsys10~to~zone~ztap~vsys10"
-          },
-          "zone~zext~vsys10~to~zone~zvirtual-wire~vsys10" : {
-            "name" : "zone~zext~vsys10~to~zone~zvirtual-wire~vsys10"
-          },
-          "zone~zl2~vsys10~to~zone~zext~vsys10" : {
-            "name" : "zone~zl2~vsys10~to~zone~zext~vsys10"
-          },
-          "zone~zl2~vsys10~to~zone~zl2~vsys10" : {
-            "name" : "zone~zl2~vsys10~to~zone~zl2~vsys10",
-            "lines" : [
-              {
-                "action" : "PERMIT",
-                "matchCondition" : {
-                  "class" : "org.batfish.datamodel.acl.TrueExpr"
-                },
-                "name" : "Accept intrazone by default"
-              }
-            ]
           },
           "zone~zl3~vsys10~to~zone~zext~vsys10" : {
             "name" : "zone~zl3~vsys10~to~zone~zext~vsys10"
@@ -30057,49 +30015,6 @@
               }
             ]
           },
-          "zone~ztap~vsys10~to~zone~zext~vsys10" : {
-            "name" : "zone~ztap~vsys10~to~zone~zext~vsys10"
-          },
-          "zone~ztap~vsys10~to~zone~ztap~vsys10" : {
-            "name" : "zone~ztap~vsys10~to~zone~ztap~vsys10",
-            "lines" : [
-              {
-                "action" : "PERMIT",
-                "matchCondition" : {
-                  "class" : "org.batfish.datamodel.acl.TrueExpr"
-                },
-                "name" : "Accept intrazone by default"
-              }
-            ]
-          },
-          "zone~zvirtual-wire~vsys10~to~zone~zext~vsys10" : {
-            "name" : "zone~zvirtual-wire~vsys10~to~zone~zext~vsys10"
-          },
-          "zone~zvirtual-wire~vsys10~to~zone~zvirtual-wire~vsys10" : {
-            "name" : "zone~zvirtual-wire~vsys10~to~zone~zvirtual-wire~vsys10",
-            "lines" : [
-              {
-                "action" : "PERMIT",
-                "matchCondition" : {
-                  "class" : "org.batfish.datamodel.acl.TrueExpr"
-                },
-                "name" : "Accept intrazone by default"
-              }
-            ]
-          },
-          "~ethernet1/1~OUTGOING_FILTER~" : {
-            "name" : "~ethernet1/1~OUTGOING_FILTER~",
-            "lines" : [
-              {
-                "action" : "PERMIT",
-                "matchCondition" : {
-                  "class" : "org.batfish.datamodel.acl.PermittedByAcl",
-                  "aclName" : "~zl2~vsys10~OUTGOING_FILTER~",
-                  "defaultAccept" : false
-                }
-              }
-            ]
-          },
           "~ethernet1/2~OUTGOING_FILTER~" : {
             "name" : "~ethernet1/2~OUTGOING_FILTER~",
             "lines" : [
@@ -30108,32 +30023,6 @@
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.PermittedByAcl",
                   "aclName" : "~zl3~vsys10~OUTGOING_FILTER~",
-                  "defaultAccept" : false
-                }
-              }
-            ]
-          },
-          "~ethernet1/3~OUTGOING_FILTER~" : {
-            "name" : "~ethernet1/3~OUTGOING_FILTER~",
-            "lines" : [
-              {
-                "action" : "PERMIT",
-                "matchCondition" : {
-                  "class" : "org.batfish.datamodel.acl.PermittedByAcl",
-                  "aclName" : "~ztap~vsys10~OUTGOING_FILTER~",
-                  "defaultAccept" : false
-                }
-              }
-            ]
-          },
-          "~ethernet1/4~OUTGOING_FILTER~" : {
-            "name" : "~ethernet1/4~OUTGOING_FILTER~",
-            "lines" : [
-              {
-                "action" : "PERMIT",
-                "matchCondition" : {
-                  "class" : "org.batfish.datamodel.acl.PermittedByAcl",
-                  "aclName" : "~zvirtual-wire~vsys10~OUTGOING_FILTER~",
                   "defaultAccept" : false
                 }
               }

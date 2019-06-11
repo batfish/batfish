@@ -328,19 +328,22 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
 
       // Create cross-zone ACLs for each pair of zones, including self-zone.
       for (Zone fromZone : vsys.getZones().values()) {
+        Type fromType = fromZone.getType();
         for (Zone toZone : vsys.getZones().values()) {
-          if (fromZone.getType() == Type.EXTERNAL && toZone.getType() == Type.EXTERNAL) {
+          Type toType = toZone.getType();
+          if (fromType == Type.EXTERNAL && toType == Type.EXTERNAL) {
             // Don't add ACLs for zones when both are external.
             continue;
           }
-          if (fromZone.getType() != Type.EXTERNAL
-              && toZone.getType() != Type.EXTERNAL
-              && fromZone.getType() != toZone.getType()) {
+          if (fromType != Type.EXTERNAL && toType != Type.EXTERNAL && fromType != toType) {
             // If one zone is not external, they have to match.
             continue;
           }
-          IpAccessList acl = generateCrossZoneFilter(fromZone, toZone, rules);
-          _c.getIpAccessLists().put(acl.getName(), acl);
+          if (fromType == Type.LAYER3 || toType == Type.LAYER3) {
+            // only generate IP ACL when at least one zone is layer-3
+            IpAccessList acl = generateCrossZoneFilter(fromZone, toZone, rules);
+            _c.getIpAccessLists().put(acl.getName(), acl);
+          }
         }
       }
 
@@ -747,28 +750,31 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
     newIface.setVlan(iface.getTag());
 
     Zone zone = iface.getZone();
-    List<IpAccessListLine> lines;
+    IpAccessList.Builder aclBuilder =
+        IpAccessList.builder().setOwner(_c).setName(computeOutgoingFilterName(iface.getName()));
     if (zone != null) {
       newIface.setZoneName(zone.getName());
-      lines =
-          ImmutableList.of(
-              IpAccessListLine.accepting(
-                  new PermittedByAcl(
-                      computeOutgoingFilterName(
-                          computeObjectName(zone.getVsys().getName(), zone.getName())))));
-      newIface.setFirewallSessionInterfaceInfo(
-          new FirewallSessionInterfaceInfo(zone.getInterfaceNames(), null, null));
+      if (zone.getType() == Type.LAYER3) {
+        newIface.setOutgoingFilter(
+            aclBuilder
+                .setLines(
+                    ImmutableList.of(
+                        IpAccessListLine.accepting(
+                            new PermittedByAcl(
+                                computeOutgoingFilterName(
+                                    computeObjectName(zone.getVsys().getName(), zone.getName()))))))
+                .build());
+        newIface.setFirewallSessionInterfaceInfo(
+            new FirewallSessionInterfaceInfo(zone.getInterfaceNames(), null, null));
+      }
     } else {
-      // Do not allow any traffic exiting an unzoned interface
-      lines = ImmutableList.of(IpAccessListLine.rejecting("Not in a zone", TrueExpr.INSTANCE));
+      // Do not allow any traffic to exit an unzoned interface
+      newIface.setOutgoingFilter(
+          aclBuilder
+              .setLines(
+                  ImmutableList.of(IpAccessListLine.rejecting("Not in a zone", TrueExpr.INSTANCE)))
+              .build());
     }
-    IpAccessList outgoing =
-        IpAccessList.builder()
-            .setOwner(_c)
-            .setName(computeOutgoingFilterName(iface.getName()))
-            .setLines(lines)
-            .build();
-    newIface.setOutgoingFilter(outgoing);
     return newIface;
   }
 
