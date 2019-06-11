@@ -38,7 +38,7 @@ route-map beeble permit 5
  set community no-export additive
 !
 route-map beeble permit 10
- match source-protocol static
+ match source-protocol static connected
  set metric 0
  set local-preference 100
  set ip default next-hop 10.0.0.1

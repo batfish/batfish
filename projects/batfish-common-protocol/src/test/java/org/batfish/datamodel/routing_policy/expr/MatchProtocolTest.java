@@ -3,7 +3,6 @@ package org.batfish.datamodel.routing_policy.expr;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.not;
 import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
 
 import com.google.common.testing.EqualsTester;
 import java.io.IOException;
@@ -11,9 +10,9 @@ import org.apache.commons.lang3.SerializationUtils;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
+import org.batfish.datamodel.ConnectedRoute;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IsisRoute;
-import org.batfish.datamodel.IsisRoute.Builder;
 import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.RoutingProtocol;
@@ -43,11 +42,11 @@ public class MatchProtocolTest {
   @Test
   public void testJsonSerialization() throws IOException {
     MatchProtocol mp = new MatchProtocol(RoutingProtocol.STATIC);
-    assertThat(BatfishObjectMapper.clone(mp, MatchProtocol.class), equalTo(mp));
+    assertThat(BatfishObjectMapper.clone(mp, BooleanExpr.class), equalTo(mp));
   }
 
   @Test
-  public void testMatchesIsisAny() {
+  public void testMatches() {
     // Setup
     NetworkFactory nf = new NetworkFactory();
     Configuration c =
@@ -56,68 +55,42 @@ public class MatchProtocolTest {
             .setConfigurationFormat(ConfigurationFormat.CISCO_IOS)
             .build();
     nf.vrfBuilder().setName(Configuration.DEFAULT_VRF_NAME).setOwner(c).build();
-    Builder rb =
+
+    MatchProtocol mp = new MatchProtocol(RoutingProtocol.CONNECTED, RoutingProtocol.ISIS_L1);
+    Environment.Builder eb = Environment.builder(c, Configuration.DEFAULT_VRF_NAME);
+
+    StaticRoute staticR =
+        StaticRoute.builder()
+            .setNetwork(Prefix.parse("1.1.1.0/24"))
+            .setAdmin(1)
+            .setNextHopIp(Ip.parse("2.2.2.2"))
+            .build();
+    ConnectedRoute connected =
+        ConnectedRoute.builder()
+            .setNetwork(Prefix.parse("1.1.1.0/24"))
+            .setAdmin(1)
+            .setNextHopIp(Ip.parse("2.2.2.2"))
+            .setNextHopInterface("null0")
+            .build();
+    IsisRoute.Builder ib =
         IsisRoute.builder()
             .setNetwork(Prefix.parse("1.1.1.0/24"))
             .setArea("fakeArea")
             .setSystemId("invalidSystemId");
+    IsisRoute isisL1 = ib.setLevel(IsisLevel.LEVEL_1).setProtocol(RoutingProtocol.ISIS_L1).build();
+    IsisRoute isisL2 = ib.setLevel(IsisLevel.LEVEL_2).setProtocol(RoutingProtocol.ISIS_L2).build();
 
-    MatchProtocol mp = new MatchProtocol(RoutingProtocol.ISIS_ANY);
-    Environment.Builder eb = Environment.builder(c, Configuration.DEFAULT_VRF_NAME);
-
-    assertTrue(
-        "Matches ISIS_L1",
-        mp.evaluate(
-                eb.setOriginalRoute(
-                        rb.setProtocol(RoutingProtocol.ISIS_L1).setLevel(IsisLevel.LEVEL_1).build())
-                    .build())
-            .getBooleanValue());
-    assertTrue(
-        "Matches ISIS_L2",
-        mp.evaluate(
-                eb.setOriginalRoute(
-                        rb.setProtocol(RoutingProtocol.ISIS_L2).setLevel(IsisLevel.LEVEL_2).build())
-                    .build())
-            .getBooleanValue());
-    assertTrue(
-        "Matches ISIS_EL1",
-        mp.evaluate(
-                eb.setOriginalRoute(
-                        rb.setProtocol(RoutingProtocol.ISIS_EL1)
-                            .setLevel(IsisLevel.LEVEL_1)
-                            .build())
-                    .build())
-            .getBooleanValue());
-    assertTrue(
-        "Matches ISIS_EL2",
-        mp.evaluate(
-                eb.setOriginalRoute(
-                        rb.setProtocol(RoutingProtocol.ISIS_EL2)
-                            .setLevel(IsisLevel.LEVEL_2)
-                            .build())
-                    .build())
-            .getBooleanValue());
     assertThat(
-        "Does not match ISIS_ANY",
-        not(
-            mp.evaluate(
-                    eb.setOriginalRoute(
-                            rb.setProtocol(RoutingProtocol.ISIS_ANY)
-                                .setLevel(IsisLevel.LEVEL_1)
-                                .build())
-                        .build())
-                .getBooleanValue()));
+        "Matches CONNECTED",
+        not(mp.evaluate(eb.setOriginalRoute(connected).build()).getBooleanValue()));
+    assertThat(
+        "Matches ISIS_L1", not(mp.evaluate(eb.setOriginalRoute(isisL1).build()).getBooleanValue()));
+
     assertThat(
         "Does not match STATIC",
-        not(
-            mp.evaluate(
-                    eb.setOriginalRoute(
-                            StaticRoute.builder()
-                                .setNetwork(Prefix.parse("1.1.1.0/24"))
-                                .setAdmin(1)
-                                .setNextHopIp(Ip.parse("2.2.2.2"))
-                                .build())
-                        .build())
-                .getBooleanValue()));
+        not(mp.evaluate(eb.setOriginalRoute(staticR).build()).getBooleanValue()));
+    assertThat(
+        "Does not match ISIS_L2",
+        not(mp.evaluate(eb.setOriginalRoute(isisL2).build()).getBooleanValue()));
   }
 }
