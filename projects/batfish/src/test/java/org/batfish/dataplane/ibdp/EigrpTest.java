@@ -518,6 +518,14 @@ public class EigrpTest {
     oib.setAddress(addr).setName(name).setOspfPassive(true).build();
   }
 
+  private static Long namedToClassicBandwidth(long namedBandwidth) {
+    return EigrpMetric.EIGRP_BANDWIDTH / namedBandwidth;
+  }
+
+  private static Long namedToClassicDelay(long namedDelay) {
+    return namedDelay / EigrpMetric.EIGRP_DELAY_PICO / 10L;
+  }
+
   /** Test route computation and propagation for EIGRP in classic mode */
   @Test
   public void testEigrpClassicLinearRoutes() {
@@ -593,8 +601,8 @@ public class EigrpTest {
     // Loopback values
     long lDelay = 500L;
     long exMetric =
-        EigrpMetric.namedToClassicBandwidth((long) (externalBandwidth / 1000.0))
-            + EigrpMetric.namedToClassicDelay((long) externalDelay);
+        namedToClassicBandwidth((long) (externalBandwidth / 1000.0))
+            + namedToClassicDelay((long) externalDelay);
 
     bandwidth *= scale;
     lDelay *= scale;
@@ -652,8 +660,8 @@ public class EigrpTest {
     // Loopback values
     long lDelay = 500L;
     long exMetric =
-        EigrpMetric.namedToClassicBandwidth((long) (externalBandwidth / 1000.0))
-            + EigrpMetric.namedToClassicDelay((long) externalDelay);
+        namedToClassicBandwidth((long) (externalBandwidth / 1000.0))
+            + namedToClassicDelay((long) externalDelay);
 
     bandwidth *= scale;
     lDelay *= scale;
