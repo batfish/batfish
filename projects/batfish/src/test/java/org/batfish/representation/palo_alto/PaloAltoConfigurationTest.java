@@ -21,6 +21,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import java.util.Map;
 import javax.annotation.Nonnull;
+import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpAccessList;
@@ -32,17 +33,18 @@ import org.junit.Before;
 import org.junit.Test;
 
 /** Test of {@link PaloAltoConfiguration}. */
+@ParametersAreNonnullByDefault
 public final class PaloAltoConfigurationTest {
 
-  private static final String DST_EXTERNAL_ZONE_NAME = "dstExternalZone";
   private static final Ip DST_IP = Ip.parse("10.0.2.2");
-  private static final String DST_LAYER3_ZONE_NAME = "dstLayer3Zone";
-  private static final String DST_VSYS_NAME = "dstVsys";
-  private static final String SRC_EXTERNAL_ZONE_NAME = "srcExternalZone";
+  private static final String EXTERNAL_FROM_ZONE_NAME = "externalFromZone";
+  private static final String EXTERNAL_TO_ZONE_NAME = "externalToZone";
+  private static final String EXTERNAL_VSYS_NAME = "externalVsys";
+  private static final String FROM_ZONE_NAME = "fromZone";
   private static final String SRC_INTERFACE_NAME = "srcInterface";
   private static final Ip SRC_IP = Ip.parse("10.0.1.2");
-  private static final String SRC_LAYER3_ZONE_NAME = "srcLayer3Zone";
-  private static final String SRC_VSYS_NAME = "srcVsys";
+  private static final String TO_ZONE_NAME = "toZone";
+  private static final String VSYS_NAME = "vsys";
   private NetworkFactory _nf;
 
   private @Nonnull Flow createFlow(Ip srcIp, Ip dstIp, String ingressInterface) {
@@ -59,44 +61,44 @@ public final class PaloAltoConfigurationTest {
   }
 
   private @Nonnull Map<String, IpAccessList> createInterVsysCrossZoneFilters() {
-    String srcLayer3ToSrcExternalName =
+    String externalVsysCrossZoneFilterName =
         zoneToZoneFilter(
-            computeObjectName(SRC_VSYS_NAME, SRC_LAYER3_ZONE_NAME),
-            computeObjectName(SRC_VSYS_NAME, SRC_EXTERNAL_ZONE_NAME));
-    String dstExternalToDstLayer3Name =
+            computeObjectName(EXTERNAL_VSYS_NAME, EXTERNAL_FROM_ZONE_NAME),
+            computeObjectName(EXTERNAL_VSYS_NAME, EXTERNAL_TO_ZONE_NAME));
+    String crossZoneFilterName =
         zoneToZoneFilter(
-            computeObjectName(DST_VSYS_NAME, DST_EXTERNAL_ZONE_NAME),
-            computeObjectName(DST_VSYS_NAME, DST_LAYER3_ZONE_NAME));
+            computeObjectName(VSYS_NAME, FROM_ZONE_NAME),
+            computeObjectName(VSYS_NAME, TO_ZONE_NAME));
 
-    IpAccessList srcLayer3ToSrcExternal =
+    IpAccessList externalVsysCrossZoneFilter =
         IpAccessList.builder()
             .setLines(ImmutableList.of(accepting(matchSrc(SRC_IP))))
-            .setName(srcLayer3ToSrcExternalName)
+            .setName(externalVsysCrossZoneFilterName)
             .build();
-    IpAccessList dstExternalToDstLayer3 =
+    IpAccessList crossZoneFilter =
         IpAccessList.builder()
             .setLines(ImmutableList.of(accepting(matchDst(DST_IP))))
-            .setName(srcLayer3ToSrcExternalName)
+            .setName(externalVsysCrossZoneFilterName)
             .build();
     return ImmutableMap.of(
-        srcLayer3ToSrcExternalName,
-        srcLayer3ToSrcExternal,
-        dstExternalToDstLayer3Name,
-        dstExternalToDstLayer3);
+        externalVsysCrossZoneFilterName,
+        externalVsysCrossZoneFilter,
+        crossZoneFilterName,
+        crossZoneFilter);
   }
 
   private @Nonnull Map<String, IpAccessList> createIntraVsysCrossZoneFilters() {
-    String srcLayer3ToDstLayer3Name =
+    String crossZoneFilterName =
         zoneToZoneFilter(
-            computeObjectName(DST_VSYS_NAME, SRC_LAYER3_ZONE_NAME),
-            computeObjectName(DST_VSYS_NAME, DST_LAYER3_ZONE_NAME));
+            computeObjectName(VSYS_NAME, FROM_ZONE_NAME),
+            computeObjectName(VSYS_NAME, TO_ZONE_NAME));
 
-    IpAccessList srcLayer3ToDstLayer3 =
+    IpAccessList crossZoneFilter =
         IpAccessList.builder()
             .setLines(ImmutableList.of(accepting(matchDst(DST_IP))))
-            .setName(srcLayer3ToDstLayer3Name)
+            .setName(crossZoneFilterName)
             .build();
-    return ImmutableMap.of(srcLayer3ToDstLayer3Name, srcLayer3ToDstLayer3);
+    return ImmutableMap.of(crossZoneFilterName, crossZoneFilter);
   }
 
   @Before
@@ -106,30 +108,30 @@ public final class PaloAltoConfigurationTest {
 
   @Test
   public void testGenerateCrossZoneCallsExternal() {
-    Vsys dstVsys = new Vsys(DST_VSYS_NAME);
-    Zone dstVsysExternalZone = new Zone(DST_EXTERNAL_ZONE_NAME, dstVsys);
-    dstVsysExternalZone.setType(Type.EXTERNAL);
-    dstVsysExternalZone.getExternalNames().add(SRC_VSYS_NAME);
-    dstVsys.getZones().put(DST_EXTERNAL_ZONE_NAME, dstVsysExternalZone);
+    Vsys vsys = new Vsys(VSYS_NAME);
+    Zone fromZone = new Zone(FROM_ZONE_NAME, vsys);
+    fromZone.setType(Type.EXTERNAL);
+    fromZone.getExternalNames().add(EXTERNAL_VSYS_NAME);
+    vsys.getZones().put(FROM_ZONE_NAME, fromZone);
 
-    Vsys srcVsys = new Vsys(SRC_VSYS_NAME);
-    Zone srcExternalZone = new Zone(SRC_EXTERNAL_ZONE_NAME, srcVsys);
-    srcExternalZone.setType(Type.EXTERNAL);
-    srcExternalZone.getExternalNames().add(DST_VSYS_NAME);
-    srcVsys.getZones().put(SRC_EXTERNAL_ZONE_NAME, srcExternalZone);
-    Zone srcLayer3Zone = new Zone(SRC_LAYER3_ZONE_NAME, srcVsys);
-    srcLayer3Zone.setType(Type.LAYER3);
-    srcLayer3Zone.getInterfaceNames().add(SRC_INTERFACE_NAME);
-    srcVsys.getZones().put(SRC_LAYER3_ZONE_NAME, srcLayer3Zone);
+    Vsys externalVsys = new Vsys(EXTERNAL_VSYS_NAME);
+    Zone externalFromZone = new Zone(EXTERNAL_FROM_ZONE_NAME, externalVsys);
+    externalFromZone.setType(Type.LAYER3);
+    externalFromZone.getInterfaceNames().add(SRC_INTERFACE_NAME);
+    externalVsys.getZones().put(EXTERNAL_FROM_ZONE_NAME, externalFromZone);
+    Zone externalToZone = new Zone(EXTERNAL_TO_ZONE_NAME, externalVsys);
+    externalToZone.setType(Type.EXTERNAL);
+    externalToZone.getExternalNames().add(VSYS_NAME);
+    externalVsys.getZones().put(EXTERNAL_TO_ZONE_NAME, externalToZone);
 
     IpAccessList generatedFilter =
         _nf.aclBuilder()
             .setLines(
                 generateCrossZoneCalls(
-                        dstVsys,
-                        dstVsysExternalZone,
-                        DST_LAYER3_ZONE_NAME,
-                        ImmutableList.of(srcVsys, dstVsys))
+                        vsys,
+                        fromZone,
+                        new Zone(TO_ZONE_NAME, vsys),
+                        ImmutableList.of(externalVsys, vsys))
                     .collect(ImmutableList.toImmutableList()))
             .build();
 
@@ -145,30 +147,30 @@ public final class PaloAltoConfigurationTest {
 
   @Test
   public void testGenerateCrossZoneCallsFromExternal() {
-    Vsys dstVsys = new Vsys(DST_VSYS_NAME);
-    Zone dstVsysExternalZone = new Zone(DST_EXTERNAL_ZONE_NAME, dstVsys);
-    dstVsysExternalZone.setType(Type.EXTERNAL);
-    dstVsysExternalZone.getExternalNames().add(SRC_VSYS_NAME);
-    dstVsys.getZones().put(DST_EXTERNAL_ZONE_NAME, dstVsysExternalZone);
+    Vsys vsys = new Vsys(VSYS_NAME);
+    Zone fromZone = new Zone(FROM_ZONE_NAME, vsys);
+    fromZone.setType(Type.EXTERNAL);
+    fromZone.getExternalNames().add(EXTERNAL_VSYS_NAME);
+    vsys.getZones().put(FROM_ZONE_NAME, fromZone);
 
-    Vsys srcVsys = new Vsys(SRC_VSYS_NAME);
-    Zone srcExternalZone = new Zone(SRC_EXTERNAL_ZONE_NAME, srcVsys);
-    srcExternalZone.setType(Type.EXTERNAL);
-    srcExternalZone.getExternalNames().add(DST_VSYS_NAME);
-    srcVsys.getZones().put(SRC_EXTERNAL_ZONE_NAME, srcExternalZone);
-    Zone srcLayer3Zone = new Zone(SRC_LAYER3_ZONE_NAME, srcVsys);
-    srcLayer3Zone.setType(Type.LAYER3);
-    srcLayer3Zone.getInterfaceNames().add(SRC_INTERFACE_NAME);
-    srcVsys.getZones().put(SRC_LAYER3_ZONE_NAME, srcLayer3Zone);
+    Vsys externalVsys = new Vsys(EXTERNAL_VSYS_NAME);
+    Zone externalFromZone = new Zone(EXTERNAL_FROM_ZONE_NAME, externalVsys);
+    externalFromZone.setType(Type.LAYER3);
+    externalFromZone.getInterfaceNames().add(SRC_INTERFACE_NAME);
+    externalVsys.getZones().put(EXTERNAL_FROM_ZONE_NAME, externalFromZone);
+    Zone externalToZone = new Zone(EXTERNAL_TO_ZONE_NAME, externalVsys);
+    externalToZone.setType(Type.EXTERNAL);
+    externalToZone.getExternalNames().add(VSYS_NAME);
+    externalVsys.getZones().put(EXTERNAL_TO_ZONE_NAME, externalToZone);
 
     IpAccessList generatedFilter =
         _nf.aclBuilder()
             .setLines(
                 generateCrossZoneCallsFromExternal(
-                        dstVsys,
-                        dstVsysExternalZone,
-                        DST_LAYER3_ZONE_NAME,
-                        ImmutableList.of(srcVsys, dstVsys))
+                        vsys,
+                        fromZone,
+                        new Zone(TO_ZONE_NAME, vsys),
+                        ImmutableList.of(externalVsys, vsys))
                     .collect(ImmutableList.toImmutableList()))
             .build();
 
@@ -184,45 +186,42 @@ public final class PaloAltoConfigurationTest {
 
   @Test
   public void testGenerateCrossZoneCallsFromExternalMisconfiguredExternal() {
-    Vsys dstVsys = new Vsys(DST_VSYS_NAME);
-    Zone dstVsysExternalZone = new Zone(DST_EXTERNAL_ZONE_NAME, dstVsys);
-    dstVsysExternalZone.setType(Type.EXTERNAL);
-    // missing external reference to srcVsys
-    dstVsys.getZones().put(DST_EXTERNAL_ZONE_NAME, dstVsysExternalZone);
+    Vsys vsys = new Vsys(VSYS_NAME);
+    Zone fromZone = new Zone(FROM_ZONE_NAME, vsys);
+    fromZone.setType(Type.EXTERNAL);
+    // missing external reference to externalVsys
+    vsys.getZones().put(FROM_ZONE_NAME, fromZone);
 
-    Vsys srcVsys = new Vsys(SRC_VSYS_NAME);
-    Zone srcExternalZone = new Zone(SRC_EXTERNAL_ZONE_NAME, srcVsys);
-    srcExternalZone.setType(Type.EXTERNAL);
-    srcExternalZone.getExternalNames().add(DST_VSYS_NAME);
-    srcVsys.getZones().put(SRC_EXTERNAL_ZONE_NAME, srcExternalZone);
-    Zone srcLayer3Zone = new Zone(SRC_LAYER3_ZONE_NAME, srcVsys);
-    srcLayer3Zone.setType(Type.LAYER3);
-    srcLayer3Zone.getInterfaceNames().add(SRC_INTERFACE_NAME);
-    srcVsys.getZones().put(SRC_LAYER3_ZONE_NAME, srcLayer3Zone);
+    Vsys externalVsys = new Vsys(EXTERNAL_VSYS_NAME);
+    Zone externalFromZone = new Zone(EXTERNAL_FROM_ZONE_NAME, externalVsys);
+    externalFromZone.setType(Type.LAYER3);
+    externalFromZone.getInterfaceNames().add(SRC_INTERFACE_NAME);
+    externalVsys.getZones().put(EXTERNAL_FROM_ZONE_NAME, externalFromZone);
+    Zone externalToZone = new Zone(EXTERNAL_TO_ZONE_NAME, externalVsys);
+    externalToZone.setType(Type.EXTERNAL);
+    externalToZone.getExternalNames().add(VSYS_NAME);
+    externalVsys.getZones().put(EXTERNAL_TO_ZONE_NAME, externalToZone);
 
-    // no lines should be returned since dstVsysExternalZone does not point to srcVsys
+    // no lines should be returned since fromZone does not point to externalVsys
     assertEquals(
         generateCrossZoneCallsFromExternal(
-                dstVsys,
-                dstVsysExternalZone,
-                DST_LAYER3_ZONE_NAME,
-                ImmutableList.of(srcVsys, dstVsys))
+                vsys, fromZone, new Zone(TO_ZONE_NAME, vsys), ImmutableList.of(externalVsys, vsys))
             .count(),
         0L);
   }
 
   @Test
   public void testGenerateCrossZoneCallsFromLayer3() {
-    Vsys dstVsys = new Vsys(DST_VSYS_NAME);
-    Zone srcLayer3Zone = new Zone(SRC_LAYER3_ZONE_NAME, dstVsys);
-    srcLayer3Zone.setType(Type.LAYER3);
-    srcLayer3Zone.getInterfaceNames().add(SRC_INTERFACE_NAME);
-    dstVsys.getZones().put(SRC_LAYER3_ZONE_NAME, srcLayer3Zone);
+    Vsys vsys = new Vsys(VSYS_NAME);
+    Zone fromZone = new Zone(FROM_ZONE_NAME, vsys);
+    fromZone.setType(Type.LAYER3);
+    fromZone.getInterfaceNames().add(SRC_INTERFACE_NAME);
+    vsys.getZones().put(FROM_ZONE_NAME, fromZone);
 
     IpAccessList generatedFilter =
         _nf.aclBuilder()
             .setLines(
-                generateCrossZoneCallsFromLayer3(dstVsys, srcLayer3Zone, DST_LAYER3_ZONE_NAME)
+                generateCrossZoneCallsFromLayer3(vsys, fromZone, new Zone(TO_ZONE_NAME, vsys))
                     .collect(ImmutableList.toImmutableList()))
             .build();
 
@@ -253,32 +252,32 @@ public final class PaloAltoConfigurationTest {
 
   @Test
   public void testGenerateCrossZoneCallsLayer2() {
-    Vsys dstVsys = new Vsys(DST_VSYS_NAME);
-    Zone srcZone = new Zone(SRC_LAYER3_ZONE_NAME, dstVsys);
-    srcZone.setType(Type.LAYER2);
-    srcZone.getInterfaceNames().add(SRC_INTERFACE_NAME);
-    dstVsys.getZones().put(SRC_LAYER3_ZONE_NAME, srcZone);
+    Vsys vsys = new Vsys(VSYS_NAME);
+    Zone fromZone = new Zone(FROM_ZONE_NAME, vsys);
+    fromZone.setType(Type.LAYER2);
+    fromZone.getInterfaceNames().add(SRC_INTERFACE_NAME);
+    vsys.getZones().put(FROM_ZONE_NAME, fromZone);
 
-    // no lines should be returned since srcZone is a layer-2 zone
+    // no lines should be returned since fromZone is a layer-2 zone
     assertEquals(
-        generateCrossZoneCalls(dstVsys, srcZone, DST_LAYER3_ZONE_NAME, ImmutableList.of(dstVsys))
+        generateCrossZoneCalls(vsys, fromZone, new Zone(TO_ZONE_NAME, vsys), ImmutableList.of(vsys))
             .count(),
         0L);
   }
 
   @Test
   public void testGenerateCrossZoneCallsLayer3() {
-    Vsys dstVsys = new Vsys(DST_VSYS_NAME);
-    Zone srcLayer3Zone = new Zone(SRC_LAYER3_ZONE_NAME, dstVsys);
-    srcLayer3Zone.setType(Type.LAYER3);
-    srcLayer3Zone.getInterfaceNames().add(SRC_INTERFACE_NAME);
-    dstVsys.getZones().put(SRC_LAYER3_ZONE_NAME, srcLayer3Zone);
+    Vsys vsys = new Vsys(VSYS_NAME);
+    Zone fromZone = new Zone(FROM_ZONE_NAME, vsys);
+    fromZone.setType(Type.LAYER3);
+    fromZone.getInterfaceNames().add(SRC_INTERFACE_NAME);
+    vsys.getZones().put(FROM_ZONE_NAME, fromZone);
 
     IpAccessList generatedFilter =
         _nf.aclBuilder()
             .setLines(
                 generateCrossZoneCalls(
-                        dstVsys, srcLayer3Zone, DST_LAYER3_ZONE_NAME, ImmutableList.of(dstVsys))
+                        vsys, fromZone, new Zone(TO_ZONE_NAME, vsys), ImmutableList.of(vsys))
                     .collect(ImmutableList.toImmutableList()))
             .build();
 
@@ -295,24 +294,28 @@ public final class PaloAltoConfigurationTest {
   @Test
   public void testGenerateDoubleCrossZoneCalls() {
     Map<String, IpAccessList> crossZoneFilters = createInterVsysCrossZoneFilters();
-    Zone srcVsysLayer3Zone = new Zone(SRC_LAYER3_ZONE_NAME, new Vsys(SRC_VSYS_NAME));
-    srcVsysLayer3Zone.setType(Type.LAYER3);
-    srcVsysLayer3Zone.getInterfaceNames().add(SRC_INTERFACE_NAME);
+    Vsys vsys = new Vsys(VSYS_NAME);
+
+    Vsys externalVsys = new Vsys(EXTERNAL_VSYS_NAME);
+    Zone externalFromZone = new Zone(EXTERNAL_FROM_ZONE_NAME, externalVsys);
+    externalFromZone.setType(Type.LAYER3);
+    externalFromZone.getInterfaceNames().add(SRC_INTERFACE_NAME);
+
     IpAccessList generatedFilter =
         _nf.aclBuilder()
             .setLines(
                 generateDoubleCrossZoneCalls(
-                        DST_LAYER3_ZONE_NAME,
-                        DST_VSYS_NAME,
-                        DST_EXTERNAL_ZONE_NAME,
-                        SRC_VSYS_NAME,
-                        SRC_EXTERNAL_ZONE_NAME,
-                        srcVsysLayer3Zone)
+                        vsys,
+                        new Zone(FROM_ZONE_NAME, vsys),
+                        new Zone(TO_ZONE_NAME, vsys),
+                        externalVsys,
+                        externalFromZone,
+                        new Zone(EXTERNAL_TO_ZONE_NAME, externalVsys))
                     .collect(ImmutableList.toImmutableList()))
             .build();
 
-    Flow matchesSrcVsysCrossZoneFilter = createFlow(SRC_IP, Ip.ZERO, SRC_INTERFACE_NAME);
-    Flow matchesDstVsysCrossZoneFilter = createFlow(Ip.ZERO, DST_IP, SRC_INTERFACE_NAME);
+    Flow matchesExternalVsysCrossZoneFilter = createFlow(SRC_IP, Ip.ZERO, SRC_INTERFACE_NAME);
+    Flow matchesCrossZoneFilter = createFlow(Ip.ZERO, DST_IP, SRC_INTERFACE_NAME);
     Flow matchesBothFilters = createFlow(SRC_IP, DST_IP, SRC_INTERFACE_NAME);
     Flow matchesBothFiltersButNotInterface = createFlow(SRC_IP, DST_IP, "other");
 
@@ -320,18 +323,14 @@ public final class PaloAltoConfigurationTest {
     assertThat(
         generatedFilter,
         rejects(
-            matchesSrcVsysCrossZoneFilter,
+            matchesExternalVsysCrossZoneFilter,
             SRC_INTERFACE_NAME,
             crossZoneFilters,
             ImmutableMap.of()));
     // Reject because srcIp does not match
     assertThat(
         generatedFilter,
-        rejects(
-            matchesDstVsysCrossZoneFilter,
-            SRC_INTERFACE_NAME,
-            crossZoneFilters,
-            ImmutableMap.of()));
+        rejects(matchesCrossZoneFilter, SRC_INTERFACE_NAME, crossZoneFilters, ImmutableMap.of()));
     // Accept because everything matches
     assertThat(
         generatedFilter,
@@ -345,21 +344,26 @@ public final class PaloAltoConfigurationTest {
 
   @Test
   public void testGenerateInterVsysCrossZoneCalls() {
-    Vsys srcVsys = new Vsys(SRC_VSYS_NAME);
-    Zone srcExternalZone = new Zone(SRC_EXTERNAL_ZONE_NAME, srcVsys);
-    srcExternalZone.setType(Type.EXTERNAL);
-    srcExternalZone.getExternalNames().add(DST_VSYS_NAME);
-    srcVsys.getZones().put(SRC_EXTERNAL_ZONE_NAME, srcExternalZone);
-    Zone srcLayer3Zone = new Zone(SRC_LAYER3_ZONE_NAME, srcVsys);
-    srcLayer3Zone.setType(Type.LAYER3);
-    srcLayer3Zone.getInterfaceNames().add(SRC_INTERFACE_NAME);
-    srcVsys.getZones().put(SRC_LAYER3_ZONE_NAME, srcLayer3Zone);
+    Vsys vsys = new Vsys(VSYS_NAME);
+
+    Vsys externalVsys = new Vsys(EXTERNAL_VSYS_NAME);
+    Zone externalFromZone = new Zone(EXTERNAL_FROM_ZONE_NAME, externalVsys);
+    externalFromZone.setType(Type.LAYER3);
+    externalFromZone.getInterfaceNames().add(SRC_INTERFACE_NAME);
+    externalVsys.getZones().put(EXTERNAL_FROM_ZONE_NAME, externalFromZone);
+    Zone externalToZone = new Zone(EXTERNAL_TO_ZONE_NAME, externalVsys);
+    externalToZone.setType(Type.EXTERNAL);
+    externalToZone.getExternalNames().add(VSYS_NAME);
+    externalVsys.getZones().put(EXTERNAL_TO_ZONE_NAME, externalToZone);
 
     IpAccessList generatedFilter =
         _nf.aclBuilder()
             .setLines(
                 generateInterVsysCrossZoneCalls(
-                        DST_LAYER3_ZONE_NAME, DST_VSYS_NAME, DST_EXTERNAL_ZONE_NAME, srcVsys)
+                        vsys,
+                        new Zone(FROM_ZONE_NAME, vsys),
+                        new Zone(TO_ZONE_NAME, vsys),
+                        externalVsys)
                     .collect(ImmutableList.toImmutableList()))
             .build();
 
@@ -375,47 +379,52 @@ public final class PaloAltoConfigurationTest {
 
   @Test
   public void testGenerateInterVsysCrossZoneCallsNoExternal() {
-    Vsys srcVsys = new Vsys(SRC_VSYS_NAME);
-    Zone srcLayer3Zone = new Zone(SRC_LAYER3_ZONE_NAME, srcVsys);
-    srcLayer3Zone.setType(Type.LAYER3);
-    srcLayer3Zone.getInterfaceNames().add(SRC_INTERFACE_NAME);
-    srcVsys.getZones().put(SRC_LAYER3_ZONE_NAME, srcLayer3Zone);
+    Vsys vsys = new Vsys(VSYS_NAME);
+
+    Vsys externalVsys = new Vsys(EXTERNAL_VSYS_NAME);
+    Zone externalFromZone = new Zone(EXTERNAL_FROM_ZONE_NAME, externalVsys);
+    externalFromZone.setType(Type.LAYER3);
+    externalFromZone.getInterfaceNames().add(SRC_INTERFACE_NAME);
+    externalVsys.getZones().put(EXTERNAL_FROM_ZONE_NAME, externalFromZone);
     // no lines should be returned since srcVsys has no external zones
     assertEquals(
         generateInterVsysCrossZoneCalls(
-                DST_LAYER3_ZONE_NAME, DST_VSYS_NAME, DST_EXTERNAL_ZONE_NAME, srcVsys)
+                vsys, new Zone(FROM_ZONE_NAME, vsys), new Zone(TO_ZONE_NAME, vsys), externalVsys)
             .count(),
         0L);
   }
 
   @Test
   public void testGenerateInterVsysCrossZoneCallsNoMatchingExternal() {
-    Vsys srcVsys = new Vsys(SRC_VSYS_NAME);
-    Zone srcExternalZone = new Zone(SRC_EXTERNAL_ZONE_NAME, srcVsys);
-    srcExternalZone.setType(Type.EXTERNAL);
-    srcVsys.getZones().put(SRC_EXTERNAL_ZONE_NAME, srcExternalZone);
-    Zone srcLayer3Zone = new Zone(SRC_LAYER3_ZONE_NAME, srcVsys);
-    srcLayer3Zone.setType(Type.LAYER3);
-    srcLayer3Zone.getInterfaceNames().add(SRC_INTERFACE_NAME);
-    srcVsys.getZones().put(SRC_LAYER3_ZONE_NAME, srcLayer3Zone);
+    Vsys vsys = new Vsys(VSYS_NAME);
+
+    Vsys externalVsys = new Vsys(EXTERNAL_VSYS_NAME);
+    Zone externalFromZone = new Zone(EXTERNAL_FROM_ZONE_NAME, externalVsys);
+    externalFromZone.setType(Type.LAYER3);
+    externalFromZone.getInterfaceNames().add(SRC_INTERFACE_NAME);
+    externalVsys.getZones().put(EXTERNAL_FROM_ZONE_NAME, externalFromZone);
+    Zone externalToZone = new Zone(EXTERNAL_TO_ZONE_NAME, externalVsys);
+    externalToZone.setType(Type.EXTERNAL);
+    externalVsys.getZones().put(EXTERNAL_TO_ZONE_NAME, externalToZone);
+
     // no lines should be returned since srcVsys has no external zone pointing to dstVsys
     assertEquals(
         generateInterVsysCrossZoneCalls(
-                DST_LAYER3_ZONE_NAME, DST_VSYS_NAME, DST_EXTERNAL_ZONE_NAME, srcVsys)
+                vsys, new Zone(FROM_ZONE_NAME, vsys), new Zone(TO_ZONE_NAME, vsys), externalVsys)
             .count(),
         0L);
   }
 
   @Test
   public void testGenerateOutgoingFilter() {
-    Vsys dstVsys = new Vsys(DST_VSYS_NAME);
-    Zone srcLayer3Zone = new Zone(SRC_LAYER3_ZONE_NAME, dstVsys);
-    srcLayer3Zone.setType(Type.LAYER3);
-    srcLayer3Zone.getInterfaceNames().add(SRC_INTERFACE_NAME);
-    dstVsys.getZones().put(SRC_LAYER3_ZONE_NAME, srcLayer3Zone);
+    Vsys vsys = new Vsys(VSYS_NAME);
+    Zone fromZone = new Zone(FROM_ZONE_NAME, vsys);
+    fromZone.setType(Type.LAYER3);
+    fromZone.getInterfaceNames().add(SRC_INTERFACE_NAME);
+    vsys.getZones().put(FROM_ZONE_NAME, fromZone);
 
     IpAccessList generatedFilter =
-        generateOutgoingFilter(dstVsys, DST_LAYER3_ZONE_NAME, ImmutableList.of(dstVsys));
+        generateOutgoingFilter(vsys, new Zone(TO_ZONE_NAME, vsys), ImmutableList.of(vsys));
 
     // Valid, so should accept intra-vsys flow
     assertThat(
