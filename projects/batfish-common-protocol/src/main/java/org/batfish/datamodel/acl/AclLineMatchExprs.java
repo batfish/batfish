@@ -6,6 +6,7 @@ import com.google.common.collect.Ordering;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.Iterator;
+import javax.annotation.Nonnull;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpProtocol;
@@ -105,8 +106,12 @@ public final class AclLineMatchExprs {
         HeaderSpace.builder().setSrcPorts(ImmutableList.of(new SubRange(port, port))).build());
   }
 
-  public static MatchSrcInterface matchSrcInterface(String... iface) {
-    return new MatchSrcInterface(ImmutableList.copyOf(iface));
+  public static @Nonnull MatchSrcInterface matchSrcInterface(Iterable<String> ifaces) {
+    return new MatchSrcInterface(ImmutableList.copyOf(ifaces));
+  }
+
+  public static @Nonnull MatchSrcInterface matchSrcInterface(String... ifaces) {
+    return matchSrcInterface(ImmutableList.copyOf(ifaces));
   }
 
   /**

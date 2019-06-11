@@ -292,6 +292,26 @@ public final class PaloAltoBidirectionalBehaviorTest {
   }
 
   @Test
+  public void testAllowInterSg() throws IOException {
+    String hostname = "allow-inter-sg";
+    TracerouteEngine tracerouteEngine = bidirTracerouteEngine(hostname);
+
+    // Bidirectional traffic from interface in shared-gateway to interface in another shared-gateway
+    // is allowed.
+    assertBidirAccepted(tracerouteEngine, bidirForwardOutsideFlow(hostname));
+  }
+
+  @Test
+  public void testAllowIntraSg() throws IOException {
+    String hostname = "allow-intra-sg";
+    TracerouteEngine tracerouteEngine = bidirTracerouteEngine(hostname);
+
+    // Bidirectional traffic from interface in shared-gateway to interface in same shared-gateway is
+    // allowed.
+    assertBidirAccepted(tracerouteEngine, bidirForwardOutsideFlow(hostname));
+  }
+
+  @Test
   public void testAllowSgToVsys() throws IOException {
     String hostname = "allow-sg-to-vsys";
     TracerouteEngine tracerouteEngine = bidirTracerouteEngine(hostname);
