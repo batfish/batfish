@@ -116,7 +116,7 @@ public class CommunityList extends CommunitySetExpr {
       literal =
           _lines.stream()
               .map(CommunityListLine::getMatchCondition)
-              .map(lineMatchCondition -> lineMatchCondition.asLiteralCommunities(null))
+              .map(lineMatchCondition -> lineMatchCondition.asLiteralCommunities(environment))
               .flatMap(Collection::stream)
               .collect(ImmutableSortedSet.toImmutableSortedSet(Comparator.naturalOrder()));
       _literalCommunities = literal;
