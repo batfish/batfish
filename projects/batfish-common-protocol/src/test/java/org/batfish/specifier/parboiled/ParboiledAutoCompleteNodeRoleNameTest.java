@@ -49,8 +49,8 @@ public class ParboiledAutoCompleteNodeRoleNameTest {
                       .build()))
           .build();
 
-  private static ParboiledAutoComplete getPAC(String query) {
-    return getPAC(query, Grammar.NODE_SPECIFIER);
+  private static ParboiledAutoComplete getPAC() {
+    return getPAC("dummy", Grammar.NODE_SPECIFIER);
   }
 
   private static ParboiledAutoComplete getPAC(String query, Grammar grammar) {
@@ -79,13 +79,13 @@ public class ParboiledAutoCompleteNodeRoleNameTest {
     PotentialMatch pm = new PotentialMatch(anchor, "", ImmutableList.of());
 
     assertThat(
-        getPAC("dummy").autoCompleteNodeRoleName(pm, "(dim1"),
+        getPAC().autoCompleteNodeRoleName(pm, "(dim1"),
         containsInAnyOrder(
             new ParboiledAutoCompleteSuggestion("r11", 42, NODE_ROLE_NAME),
             new ParboiledAutoCompleteSuggestion("r12", 42, NODE_ROLE_NAME)));
 
     // return nothing if the dimension does not exist
-    assertThat(getPAC("dummy").autoCompleteNodeRoleName(pm, "(nono"), equalTo(ImmutableSet.of()));
+    assertThat(getPAC().autoCompleteNodeRoleName(pm, "(nono"), equalTo(ImmutableSet.of()));
   }
 
   /**
@@ -94,7 +94,7 @@ public class ParboiledAutoCompleteNodeRoleNameTest {
    */
   @Test
   public void testAutoCompleteNodeRoleNamePrefix() {
-    ParboiledAutoComplete pac = getPAC("dummy");
+    ParboiledAutoComplete pac = getPAC();
 
     PathElement anchor = new PathElement(Type.NODE_ROLE_NAME, null, 1, 42);
 
