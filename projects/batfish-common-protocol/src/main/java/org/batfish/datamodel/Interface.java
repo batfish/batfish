@@ -40,83 +40,44 @@ public final class Interface extends ComparableStructure<String> {
   public static class Builder extends NetworkFactoryBuilder<Interface> {
 
     private @Nullable Integer _accessVlan;
-
     private boolean _active;
-
     private InterfaceAddress _address;
-
     private @Nullable IntegerSpace _allowedVlans;
-
     @Nullable private Double _bandwidth;
-
     private boolean _blacklisted;
-
     private SortedSet<String> _declaredNames;
-
     @Nonnull private Set<Dependency> _dependencies = ImmutableSet.of();
-
     @Nullable private EigrpInterfaceSettings _eigrp;
-
     @Nullable private Integer _encapsulationVlan;
-
     private Map<Integer, HsrpGroup> _hsrpGroups;
-
     private String _hsrpVersion;
-
     private FirewallSessionInterfaceInfo _firewallSessionInterfaceInfo;
-
     private String _ospfInboundDistributeListPolicy;
-
     private IpAccessList _incomingFilter;
-
     private Transformation _incomingTransformation;
-
     private IsisInterfaceSettings _isis;
-
     private @Nullable Integer _mlagId;
-
     private String _name;
-
     private @Nullable Integer _nativeVlan;
-
     private OspfArea _ospfArea;
-
     private Integer _ospfCost;
-
     private boolean _ospfEnabled;
-
     private boolean _ospfPassive;
-
     private boolean _ospfPointToPoint;
-
     private String _ospfProcess;
-
     private IpAccessList _outgoingFilter;
-
     private Transformation _outgoingTransformation;
-
     private Configuration _owner;
-
     private IpAccessList _postTransformationIncomingFilter;
-
     private boolean _proxyArp;
-
     private IpAccessList _preTransformationOutgoingFilter;
-
     private Set<InterfaceAddress> _secondaryAddresses;
-
     private @Nullable Boolean _switchport;
-
     private @Nullable SwitchportMode _switchportMode;
-
     private @Nonnull IpSpace _additionalArpIps;
-
     private InterfaceType _type;
-
     private @Nullable Integer _vlan;
-
     private Vrf _vrf;
-
     private SortedMap<Integer, VrrpGroup> _vrrpGroups;
 
     Builder(NetworkFactory networkFactory) {
@@ -525,16 +486,11 @@ public final class Interface extends ComparableStructure<String> {
   }
 
   private static final int DEFAULT_MTU = 1500;
-
   public static final String DYNAMIC_INTERFACE_NAME = "dynamic";
-
   public static final String NULL_INTERFACE_NAME = "null_interface";
-
   public static final Set<InterfaceType> TUNNEL_INTERFACE_TYPES =
       ImmutableSet.of(InterfaceType.TUNNEL, InterfaceType.VPN);
-
   public static final String UNSET_LOCAL_INTERFACE = "unset_local_interface";
-
   public static final String INVALID_LOCAL_INTERFACE = "invalid_local_interface";
   private static final String PROP_ACCESS_VLAN = "accessVlan";
   private static final String PROP_ACTIVE = "active";
@@ -788,133 +744,72 @@ public final class Interface extends ComparableStructure<String> {
   }
 
   @Nullable private Integer _accessVlan;
-
   private boolean _active;
-
   private @Nonnull IpSpace _additionalArpIps;
-
   private IntegerSpace _allowedVlans;
-
   private SortedSet<InterfaceAddress> _allAddresses;
-
   /** Cache of all concrete addresses */
   @Nullable private transient Set<ConcreteInterfaceAddress> _allConcreteAddresses;
   /** Cache of all link-local addresses */
   @Nullable private transient Set<LinkLocalAddress> _allLinkLocalAddresses;
-
   private boolean _autoState;
-
   @Nullable private Double _bandwidth;
-
   private transient boolean _blacklisted;
-
   private String _channelGroup;
-
   private SortedSet<String> _channelGroupMembers;
-
   private String _cryptoMap;
-
   private SortedSet<String> _declaredNames;
-
   /** Set of interface dependencies required for this interface to active */
   @Nonnull private Set<Dependency> _dependencies;
 
   private String _description;
-
   private List<Ip> _dhcpRelayAddresses;
-
   @Nullable private EigrpInterfaceSettings _eigrp;
-
   @Nullable private Integer _encapsulationVlan;
-
   @Nullable private FirewallSessionInterfaceInfo _firewallSessionInterfaceInfo;
-
   private Map<Integer, HsrpGroup> _hsrpGroups;
-
   private IpAccessList _inboundFilter;
-
   private transient String _inboundFilterName;
-
   private IpAccessList _incomingFilter;
-
   private transient String _incomingFilterName;
-
   private Transformation _incomingTransformation;
-
   private InterfaceType _interfaceType;
-
   private IsisInterfaceSettings _isis;
-
   @Nullable private Integer _mlagId;
-
   private int _mtu;
-
   @Nullable private Integer _nativeVlan;
-
   @Nullable private Long _ospfAreaName;
-
   private Integer _ospfCost;
-
   private int _ospfDeadInterval;
-
   private boolean _ospfEnabled;
-
   private int _ospfHelloMultiplier;
-
   @Nullable private String _ospfInboundDistributeListPolicy;
-
   private boolean _ospfPassive;
-
   private boolean _ospfPointToPoint;
-
   @Nullable private String _ospfProcess;
-
   private IpAccessList _outgoingFilter;
-
   private transient String _outgoingFilterName;
-
   private Transformation _outgoingTransformation;
-
   private Configuration _owner;
-
   private InterfaceAddress _address;
-
   private IpAccessList _postTransformationIncomingFilter;
-
   private transient String _postTransformationIncomingFilterName;
-
   private boolean _proxyArp;
-
   private IpAccessList _preTransformationOutgoingFilter;
-
   private transient String _preTransformationOutgoingFilterName;
-
   private boolean _ripEnabled;
-
   private boolean _ripPassive;
-
   private String _routingPolicyName;
-
   private boolean _spanningTreePortfast;
-
   private @Nullable Double _speed;
-
   private boolean _switchport;
-
   private SwitchportMode _switchportMode;
-
   private SwitchportEncapsulationType _switchportTrunkEncapsulation;
-
   private Integer _vlan;
-
   private Vrf _vrf;
-
   private transient String _vrfName;
-
   private SortedMap<Integer, VrrpGroup> _vrrpGroups;
-
   private String _zoneName;
-
   private String _hsrpVersion;
 
   @SuppressWarnings("unused")
