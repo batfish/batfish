@@ -1,6 +1,5 @@
 package org.batfish.representation.palo_alto;
 
-
 import java.io.Serializable;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
