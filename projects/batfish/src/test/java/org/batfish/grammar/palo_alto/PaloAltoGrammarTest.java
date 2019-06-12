@@ -748,6 +748,52 @@ public final class PaloAltoGrammarTest {
   }
 
   @Test
+  public void testRulebaseWithPanorama() throws IOException {
+    String hostname = "panorama-rulebase";
+    Configuration c = parseConfig(hostname);
+
+    String if1name = "ethernet1/1";
+    String if2name = "ethernet1/2";
+    Flow.Builder baseBuilder =
+        Flow.builder()
+            .setIngressNode(c.getHostname())
+            .setSrcIp(Ip.ZERO)
+            .setDstIp(Ip.ZERO)
+            .setIpProtocol(IpProtocol.TCP)
+            .setTag("test")
+            .setSrcPort(1);
+    // See comments in the config for how this test works.
+    Flow service1 = baseBuilder.setDstPort(1001).build();
+    Flow service2 = baseBuilder.setDstPort(1002).build();
+    Flow service3 = baseBuilder.setDstPort(1003).build();
+    Flow service4 = baseBuilder.setDstPort(1004).build();
+
+    // Cross-zone flows (starting e2)
+    assertThat(
+        c,
+        hasInterface(
+            if1name,
+            hasOutgoingFilter(
+                allOf(
+                    accepts(service1, if2name, c),
+                    rejects(service2, if2name, c),
+                    accepts(service3, if2name, c),
+                    rejects(service4, if2name, c)))));
+
+    // Intra-zone flows (starting e1)
+    assertThat(
+        c,
+        hasInterface(
+            if1name,
+            hasOutgoingFilter(
+                allOf(
+                    accepts(service1, if1name, c),
+                    rejects(service2, if1name, c),
+                    accepts(service3, if1name, c),
+                    accepts(service4, if1name, c)))));
+  }
+
+  @Test
   public void testRulebase() throws IOException {
     String hostname = "rulebase";
     Configuration c = parseConfig(hostname);
