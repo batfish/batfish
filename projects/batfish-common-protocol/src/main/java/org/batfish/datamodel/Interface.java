@@ -844,12 +844,6 @@ public final class Interface extends ComparableStructure<String> {
     _vrrpGroups = new TreeMap<>();
   }
 
-  public void addAllowedRanges(List<SubRange> ranges) {
-    IntegerSpace.Builder b = IntegerSpace.builder().including(_allowedVlans);
-    ranges.forEach(b::including);
-    _allowedVlans = b.build();
-  }
-
   @Override
   public boolean equals(Object o) {
     if (o == this) {
