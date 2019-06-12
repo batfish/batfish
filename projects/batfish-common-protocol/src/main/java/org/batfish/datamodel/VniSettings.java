@@ -186,6 +186,7 @@ public final class VniSettings implements Serializable {
     return _vni;
   }
 
+  @Nonnull
   public Builder toBuilder() {
     return builder()
         .setBumTransportMethod(_bumTransportMethod)
@@ -197,6 +198,7 @@ public final class VniSettings implements Serializable {
   }
 
   /** Return a new {@link VniSettings} with a flood list that includes a given {@code ip} */
+  @Nonnull
   public VniSettings addToFloodList(Ip ip) {
     checkArgument(
         _bumTransportMethod == BumTransportMethod.UNICAST_FLOOD_GROUP,
