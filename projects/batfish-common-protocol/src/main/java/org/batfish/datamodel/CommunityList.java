@@ -71,17 +71,16 @@ public class CommunityList extends CommunitySetExpr {
 
   private final Supplier<LoadingCache<Community, Boolean>> _communityCache;
 
-  private volatile Boolean _dynamic;
-
   private final boolean _invertMatch;
 
   @Nonnull private final List<CommunityListLine> _lines;
 
-  private volatile SortedSet<Community> _literalCommunities;
-
   @Nonnull private final String _name;
 
-  private volatile Boolean _reducible;
+  // Derived properties, computed lazily at runtime.
+  @Nullable private Boolean _dynamic;
+  @Nullable private SortedSet<Community> _literalCommunities;
+  @Nullable private Boolean _reducible;
 
   /**
    * Constructs a CommunityList with the given name for {@link #_name}, and lines for {@link
@@ -112,16 +111,17 @@ public class CommunityList extends CommunitySetExpr {
   @Nonnull
   public SortedSet<Community> asLiteralCommunities(@Nonnull Environment environment)
       throws UnsupportedOperationException {
-    if (_literalCommunities != null) {
-      return _literalCommunities;
+    SortedSet<Community> literal = _literalCommunities;
+    if (literal == null) {
+      literal =
+          _lines.stream()
+              .map(CommunityListLine::getMatchCondition)
+              .map(lineMatchCondition -> lineMatchCondition.asLiteralCommunities(null))
+              .flatMap(Collection::stream)
+              .collect(ImmutableSortedSet.toImmutableSortedSet(Comparator.naturalOrder()));
+      _literalCommunities = literal;
     }
-    _literalCommunities =
-        _lines.stream()
-            .map(CommunityListLine::getMatchCondition)
-            .map(lineMatchCondition -> lineMatchCondition.asLiteralCommunities(null))
-            .flatMap(Collection::stream)
-            .collect(ImmutableSortedSet.toImmutableSortedSet(Comparator.naturalOrder()));
-    return _literalCommunities;
+    return literal;
   }
 
   /** Check if any line matches given community */
@@ -138,14 +138,15 @@ public class CommunityList extends CommunitySetExpr {
 
   @Override
   public boolean dynamicMatchCommunity() {
-    if (_dynamic != null) {
-      return _dynamic;
+    Boolean b = _dynamic;
+    if (b == null) {
+      b =
+          _lines.stream()
+              .map(CommunityListLine::getMatchCondition)
+              .anyMatch(CommunitySetExpr::dynamicMatchCommunity);
+      _dynamic = b;
     }
-    _dynamic =
-        _lines.stream()
-            .map(CommunityListLine::getMatchCondition)
-            .anyMatch(CommunitySetExpr::dynamicMatchCommunity);
-    return _dynamic;
+    return b;
   }
 
   @Override
@@ -235,14 +236,15 @@ public class CommunityList extends CommunitySetExpr {
 
   @Override
   public boolean reducible() {
-    if (_reducible != null) {
-      return _reducible;
+    Boolean b = _reducible;
+    if (b == null) {
+      b =
+          _lines.stream()
+              .map(CommunityListLine::getMatchCondition)
+              .allMatch(CommunitySetExpr::reducible);
+      _reducible = b;
     }
-    _reducible =
-        _lines.stream()
-            .map(CommunityListLine::getMatchCondition)
-            .allMatch(CommunitySetExpr::reducible);
-    return _reducible;
+    return b;
   }
 
   @Override
