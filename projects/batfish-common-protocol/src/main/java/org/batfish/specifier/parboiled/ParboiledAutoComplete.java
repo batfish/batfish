@@ -12,7 +12,9 @@ import static org.batfish.specifier.parboiled.Anchor.Type.NODE_NAME_REGEX;
 import static org.batfish.specifier.parboiled.Anchor.Type.NODE_ROLE_AND_DIMENSION;
 import static org.batfish.specifier.parboiled.Anchor.Type.NODE_ROLE_AND_DIMENSION_TAIL;
 import static org.batfish.specifier.parboiled.Anchor.Type.REFERENCE_BOOK_AND_ADDRESS_GROUP;
+import static org.batfish.specifier.parboiled.Anchor.Type.REFERENCE_BOOK_AND_ADDRESS_GROUP_TAIL;
 import static org.batfish.specifier.parboiled.Anchor.Type.REFERENCE_BOOK_AND_INTERFACE_GROUP;
+import static org.batfish.specifier.parboiled.Anchor.Type.REFERENCE_BOOK_AND_INTERFACE_GROUP_TAIL;
 import static org.batfish.specifier.parboiled.Anchor.Type.ROUTING_POLICY_NAME_REGEX;
 import static org.batfish.specifier.parboiled.Anchor.Type.STRING_LITERAL;
 import static org.batfish.specifier.parboiled.CommonParser.isEscapableNameAnchor;
@@ -54,7 +56,17 @@ public final class ParboiledAutoComplete {
 
   static final char ILLEGAL_CHAR = (char) 0x26bd;
 
-  public static final int RANK_STRING_LITERAL = 1;
+  static final Function<ReferenceBook, Set<String>> addressGroupGetter =
+      book ->
+          book.getAddressGroups().stream()
+              .map(AddressGroup::getName)
+              .collect(ImmutableSet.toImmutableSet());
+
+  static final Function<ReferenceBook, Set<String>> interfaceGroupGetter =
+      book ->
+          book.getInterfaceGroups().stream()
+              .map(InterfaceGroup::getName)
+              .collect(ImmutableSet.toImmutableSet());
 
   private final CommonParser _parser;
   private final Grammar _grammar;
@@ -424,60 +436,7 @@ public final class ParboiledAutoComplete {
       PotentialMatch pm, String roleDimensionInput) {
     NodeRoleDimension nodeRoleDimension =
         _nodeRolesData
-            .getNodeRoleDimension(extractDimensionName(roleDimensionInput))
-            .orElse(NodeRoleDimension.builder("dummy").build());
-
-    String matchPrefix = unescapeIfNeeded(pm.getMatchPrefix(), pm.getAnchorType());
-    return updateSuggestions(
-        AutoCompleteUtils.stringAutoComplete(
-            matchPrefix,
-            nodeRoleDimension.getRoles().stream()
-                .map(NodeRole::getName)
-                .collect(ImmutableSet.toImmutableSet())),
-        !matchPrefix.equals(pm.getMatchPrefix()),
-        pm.getAnchorType(),
-        pm.getMatchStartIndex());
-  }
-
-  /**
-   * Extracts the dimension name from input that matches between NODE_ROLE_AND_DIMENSION and
-   * NODE_ROLE_AND_DIMENSION_TAIL. Remove leading '(' and then trim whitepsace.
-   */
-  @VisibleForTesting
-  private static String extractDimensionName(String roleDimensionInput) {
-    checkArgument(
-        roleDimensionInput.startsWith("("),
-        "Leading parens not found in role dimension input '%s'",
-        roleDimensionInput);
-    return roleDimensionInput.substring(1).trim();
-  }
-
-  @VisibleForTesting
-  Set<ParboiledAutoCompleteSuggestion> autoCompleteNodeRoleName2(PotentialMatch pm) {
-    int anchorIndex = pm.getPath().indexOf(pm.getAnchor());
-    checkArgument(anchorIndex != -1, "Anchor is not present in the path.");
-
-    // have we descended from a dimension name based rule
-    boolean dimNameAncestor =
-        IntStream.range(0, anchorIndex)
-            .mapToObj(i -> pm.getPath().get(anchorIndex - i - 1))
-            .anyMatch(a -> a.getAnchorType() == NODE_ROLE_AND_DIMENSION);
-    if (!dimNameAncestor) {
-      return autoCompleteGeneric(pm);
-    }
-
-    // dimension name is at the head if nothing about the role name was entered;
-    // otherwise, it is second from top
-    String dimName =
-        ((StringAstNode)
-                _parser
-                    .getShadowStack()
-                    .getValueStack()
-                    .peek(pm.getMatchPrefix().isEmpty() ? 0 : 1))
-            .getStr();
-    NodeRoleDimension nodeRoleDimension =
-        _nodeRolesData
-            .getNodeRoleDimension(dimName)
+            .getNodeRoleDimension(extractGroupingName(pm, roleDimensionInput))
             .orElse(NodeRoleDimension.builder("dummy").build());
 
     String matchPrefix = unescapeIfNeeded(pm.getMatchPrefix(), pm.getAnchorType());
@@ -499,58 +458,51 @@ public final class ParboiledAutoComplete {
    */
   @VisibleForTesting
   Set<ParboiledAutoCompleteSuggestion> autoCompleteReferenceBookEntity(PotentialMatch pm) {
-    int anchorIndex = pm.getPath().indexOf(pm.getAnchor());
-    checkArgument(anchorIndex != -1, "Anchor is not present in the path.");
+    Optional<String> refBookInput = findReferenceBookInput(pm, _query);
 
-    // have we descended from a reference book based rule
-    boolean refBookAncestor =
-        IntStream.range(0, anchorIndex)
-            .mapToObj(i -> pm.getPath().get(anchorIndex - i - 1))
-            .anyMatch(
-                a ->
-                    a.getAnchorType() == REFERENCE_BOOK_AND_ADDRESS_GROUP
-                        || a.getAnchorType() == REFERENCE_BOOK_AND_INTERFACE_GROUP);
+    Function<ReferenceBook, Set<String>> entityNameGetter = getEntityNameGetter(pm.getAnchorType());
 
-    if (!refBookAncestor) {
-      return autoCompleteGeneric(pm);
-    }
+    return refBookInput
+        .map(r -> autoCompleteReferenceBookEntity(pm, r, entityNameGetter))
+        .orElse(autoCompleteGeneric(pm));
+  }
 
+  private static Optional<String> findReferenceBookInput(PotentialMatch pm, String query) {
     switch (pm.getAnchorType()) {
       case ADDRESS_GROUP_NAME:
-        Function<ReferenceBook, Set<String>> addressGroupGetter =
-            book ->
-                book.getAddressGroups().stream()
-                    .map(AddressGroup::getName)
-                    .collect(ImmutableSet.toImmutableSet());
-        return autoCompleteReferenceBookEntity(pm, addressGroupGetter);
+        return findPrecedingInput(
+            pm, query, REFERENCE_BOOK_AND_ADDRESS_GROUP, REFERENCE_BOOK_AND_ADDRESS_GROUP_TAIL);
       case INTERFACE_GROUP_NAME:
-        Function<ReferenceBook, Set<String>> interfaceGroupGetter =
-            book ->
-                book.getInterfaceGroups().stream()
-                    .map(InterfaceGroup::getName)
-                    .collect(ImmutableSet.toImmutableSet());
-        return autoCompleteReferenceBookEntity(pm, interfaceGroupGetter);
+        return findPrecedingInput(
+            pm, query, REFERENCE_BOOK_AND_INTERFACE_GROUP, REFERENCE_BOOK_AND_INTERFACE_GROUP_TAIL);
       default:
         throw new IllegalArgumentException("Unexpected anchor type " + pm.getAnchorType());
     }
   }
 
-  private Set<ParboiledAutoCompleteSuggestion> autoCompleteReferenceBookEntity(
-      PotentialMatch pm, Function<ReferenceBook, Set<String>> entityNameGetter) {
-    // book name is at the head if nothing about the reference book was entered;
-    // otherwise, it is second from top
-    String bookName =
-        ((StringAstNode)
-                _parser
-                    .getShadowStack()
-                    .getValueStack()
-                    .peek(pm.getMatchPrefix().isEmpty() ? 0 : 1))
-            .getStr();
-    Set<String> candidateEntityNames =
-        entityNameGetter.apply(
-            _referenceLibrary
-                .getReferenceBook(bookName)
-                .orElse(ReferenceBook.builder("empty").build()));
+  private static Function<ReferenceBook, Set<String>> getEntityNameGetter(Anchor.Type anchorType) {
+    switch (anchorType) {
+      case ADDRESS_GROUP_NAME:
+        return addressGroupGetter;
+      case INTERFACE_GROUP_NAME:
+        return interfaceGroupGetter;
+      default:
+        throw new IllegalArgumentException("Unexpected anchor type " + anchorType);
+    }
+  }
+
+  @VisibleForTesting
+  Set<ParboiledAutoCompleteSuggestion> autoCompleteReferenceBookEntity(
+      PotentialMatch pm,
+      String refBookInput,
+      Function<ReferenceBook, Set<String>> entityNameGetter) {
+    ReferenceBook refBook =
+        _referenceLibrary
+            .getReferenceBook(extractGroupingName(pm, refBookInput))
+            .orElse(ReferenceBook.builder("empty").build());
+
+    Set<String> candidateEntityNames = entityNameGetter.apply(refBook);
+
     String matchPrefix = unescapeIfNeeded(pm.getMatchPrefix(), pm.getAnchorType());
     return updateSuggestions(
         AutoCompleteUtils.stringAutoComplete(matchPrefix, candidateEntityNames),
@@ -602,6 +554,23 @@ public final class ParboiledAutoComplete {
         .mapToObj(i -> pm.getPath().get(anchorIndex - i - 1))
         .filter(pe -> pe.getAnchorType() == anchorType)
         .findFirst();
+  }
+
+  /**
+   * Extracts the dimension or reference book name from input that matches between their head and
+   * tail anchors. For node dimension, the head and tail are NODE_ROLE_AND_DIMENSION(_TAIL). For
+   * reference book, the head and tail REFERENCE_BOOK_AND_ADDRESS_GROUP(_TAIL), etc.
+   *
+   * <p>Based on our grammar structure, the function removes leading '(' and then trims whitepsace.
+   */
+  @VisibleForTesting
+  private static String extractGroupingName(PotentialMatch pm, String groupInput) {
+    checkArgument(
+        groupInput.startsWith("("),
+        "Open parens not found in input '%s' for '%s'",
+        groupInput,
+        pm.getAnchorType());
+    return groupInput.substring(1).trim();
   }
 
   /**

@@ -2,7 +2,6 @@ package org.batfish.specifier.parboiled;
 
 import static junit.framework.TestCase.assertTrue;
 import static org.batfish.specifier.parboiled.Anchor.Type.ADDRESS_GROUP_NAME;
-import static org.batfish.specifier.parboiled.Anchor.Type.INTERFACE_GROUP_NAME;
 import static org.batfish.specifier.parboiled.Anchor.Type.INTERFACE_NAME;
 import static org.batfish.specifier.parboiled.Anchor.Type.IP_ADDRESS;
 import static org.batfish.specifier.parboiled.Anchor.Type.IP_PROTOCOL_NOT;
@@ -34,13 +33,11 @@ import org.batfish.referencelibrary.ReferenceBook;
 import org.batfish.referencelibrary.ReferenceLibrary;
 import org.batfish.role.NodeRolesData;
 import org.batfish.specifier.parboiled.Anchor.Type;
-import org.batfish.specifier.parboiled.CommonParser.ShadowStack;
 import org.hamcrest.Matchers;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.parboiled.parserunners.ReportingParseRunner;
-import org.parboiled.support.DefaultValueStack;
 import org.parboiled.support.ParsingResult;
 
 /** Tests for {@link ParboiledAutoComplete} */
@@ -430,143 +427,6 @@ public class ParboiledAutoCompleteTest {
     assertThat(
         ParboiledAutoComplete.findFirstMatchingPathElement(pm, 2, INTERFACE_NAME),
         equalTo(Optional.of(iname2)));
-  }
-
-  /** Throw an exception if anchor is not present in the path */
-  @Test
-  public void testAutoCompleteReferenceBookEntityMissingAnchor() {
-    PotentialMatch pm =
-        new PotentialMatch(
-            new PathElement(Type.REFERENCE_BOOK_NAME, null, 0, 0), "", ImmutableList.of());
-
-    _thrown.expect(IllegalArgumentException.class);
-    getTestPAC("@specifier(b1a,", testLibrary).autoCompleteReferenceBookEntity(pm);
-  }
-
-  /** Context-sensitive completion for address groups based on reference book */
-  @Test
-  public void testAutoCompleteReferenceBookEntityAddressGroup() {
-    String query = "@specifier(b1a,";
-
-    // the expected stack for the query
-    DefaultValueStack<AstNode> vs = new DefaultValueStack<>();
-    vs.push(new StringAstNode("b1a"));
-    ShadowStack ss = new ShadowStack(vs);
-
-    TestParser parser = TestParser.instance();
-    parser.setShadowStack(ss);
-
-    ParboiledAutoComplete pac = getTestPAC(parser, query, testLibrary);
-
-    PathElement anchor = new PathElement(Type.ADDRESS_GROUP_NAME, null, 1, query.length());
-    PathElement parent = new PathElement(REFERENCE_BOOK_AND_ADDRESS_GROUP, null, 0, 0);
-    PotentialMatch pm = new PotentialMatch(anchor, "", ImmutableList.of(parent, anchor));
-
-    assertThat(
-        pac.autoCompleteReferenceBookEntity(pm),
-        containsInAnyOrder(
-            new ParboiledAutoCompleteSuggestion("g11", query.length(), ADDRESS_GROUP_NAME),
-            new ParboiledAutoCompleteSuggestion("g12", query.length(), ADDRESS_GROUP_NAME)));
-  }
-
-  /** Revert to non context-sensitive completion when the contextual anchor is absent */
-  @Test
-  public void testAutoCompleteReferenceBookEntityAddressGroupMissingContext() {
-    String query = "@specifier(b1a,";
-    ParboiledAutoComplete pac = getTestPAC(TestParser.instance(), query, testLibrary);
-
-    PathElement anchor = new PathElement(Type.ADDRESS_GROUP_NAME, null, 0, query.length());
-    PotentialMatch pm = new PotentialMatch(anchor, "", ImmutableList.of(anchor));
-
-    assertThat(
-        pac.autoCompleteReferenceBookEntity(pm),
-        containsInAnyOrder(
-            new ParboiledAutoCompleteSuggestion("g11", query.length(), ADDRESS_GROUP_NAME),
-            new ParboiledAutoCompleteSuggestion("g12", query.length(), ADDRESS_GROUP_NAME),
-            new ParboiledAutoCompleteSuggestion("g21", query.length(), ADDRESS_GROUP_NAME)));
-  }
-
-  /** Context-sensitive completion for interface groups based on reference book */
-  @Test
-  public void testAutoCompleteReferenceBookEntityInterfaceGroup() {
-    String query = "@specifier(b1a,";
-
-    // the expected stack for the query
-    DefaultValueStack<AstNode> vs = new DefaultValueStack<>();
-    vs.push(new StringAstNode("b1a"));
-    ShadowStack ss = new ShadowStack(vs);
-
-    TestParser parser = TestParser.instance();
-    parser.setShadowStack(ss);
-
-    ParboiledAutoComplete pac = getTestPAC(parser, query, testLibrary);
-
-    PathElement anchor = new PathElement(Type.INTERFACE_GROUP_NAME, null, 1, query.length());
-    PathElement parent = new PathElement(Type.REFERENCE_BOOK_AND_INTERFACE_GROUP, null, 0, 0);
-    PotentialMatch pm = new PotentialMatch(anchor, "", ImmutableList.of(parent, anchor));
-
-    assertThat(
-        pac.autoCompleteReferenceBookEntity(pm),
-        containsInAnyOrder(
-            new ParboiledAutoCompleteSuggestion("i11", query.length(), INTERFACE_GROUP_NAME),
-            new ParboiledAutoCompleteSuggestion("i12", query.length(), INTERFACE_GROUP_NAME)));
-  }
-
-  /** Revert to non context-sensitive completion when the contextual anchor is absent */
-  @Test
-  public void testAutoCompleteReferenceBookEntityInterfaceGroupMissingContext() {
-    String query = "@specifier(b1a,";
-    ParboiledAutoComplete pac = getTestPAC(TestParser.instance(), query, testLibrary);
-
-    PathElement anchor = new PathElement(Type.INTERFACE_GROUP_NAME, null, 0, query.length());
-    PotentialMatch pm = new PotentialMatch(anchor, "", ImmutableList.of(anchor));
-
-    assertThat(
-        pac.autoCompleteReferenceBookEntity(pm),
-        containsInAnyOrder(
-            new ParboiledAutoCompleteSuggestion("i11", query.length(), INTERFACE_GROUP_NAME),
-            new ParboiledAutoCompleteSuggestion("i12", query.length(), INTERFACE_GROUP_NAME),
-            new ParboiledAutoCompleteSuggestion("i21", query.length(), INTERFACE_GROUP_NAME)));
-  }
-
-  /** Group name's prefix is considered in context-sensitive autocompletion */
-  @Test
-  public void testAutoCompleteReferenceBookEntityPrefix() {
-    ReferenceLibrary testLibrary =
-        new ReferenceLibrary(
-            ImmutableList.of(
-                ReferenceBook.builder("b1a")
-                    .setAddressGroups(
-                        ImmutableList.of(
-                            new AddressGroup(null, "g1a"), new AddressGroup(null, "g2a")))
-                    .build()));
-
-    String bookPart = "b1a";
-
-    DefaultValueStack<AstNode> vs = new DefaultValueStack<>();
-    vs.push(new StringAstNode(bookPart));
-    // value on stack doesn't matter; presence means something about the group was entered.
-    // actual value is taken from the matchPrefix; we try two values below
-    vs.push(new StringAstNode("dummy"));
-
-    ShadowStack ss = new ShadowStack(vs);
-    TestParser parser = TestParser.instance();
-    parser.setShadowStack(ss);
-    ParboiledAutoComplete pac = getTestPAC(parser, "dummy", testLibrary);
-
-    PathElement anchor = new PathElement(Type.ADDRESS_GROUP_NAME, null, 1, 42);
-    PathElement parent = new PathElement(REFERENCE_BOOK_AND_ADDRESS_GROUP, null, 0, 0);
-
-    assertThat(
-        pac.autoCompleteReferenceBookEntity(
-            new PotentialMatch(anchor, "g1", ImmutableList.of(parent, anchor))),
-        containsInAnyOrder(new ParboiledAutoCompleteSuggestion("g1a", 42, ADDRESS_GROUP_NAME)));
-
-    // now with quotes; preserve them in the answer
-    assertThat(
-        pac.autoCompleteReferenceBookEntity(
-            new PotentialMatch(anchor, "\"g1", ImmutableList.of(parent, anchor))),
-        containsInAnyOrder(new ParboiledAutoCompleteSuggestion("\"g1a\"", 42, ADDRESS_GROUP_NAME)));
   }
 
   /** Throw an exception if anchor is not present in the path */
