@@ -33,6 +33,11 @@ public enum FlowDisposition {
           .filter(d -> d != NEIGHBOR_UNREACHABLE_OR_EXITS_NETWORK)
           .collect(ImmutableSet.toImmutableSet());
 
+  public static final Set<FlowDisposition> ALL_NONLOOP_DISPOSITIONS =
+      Arrays.stream(FlowDisposition.values())
+          .filter(d -> d != NEIGHBOR_UNREACHABLE_OR_EXITS_NETWORK && d != LOOP)
+          .collect(ImmutableSet.toImmutableSet());
+
   public static final Set<FlowDisposition> SUCCESS_DISPOSITIONS =
       ImmutableSet.of(ACCEPTED, DELIVERED_TO_SUBNET, EXITS_NETWORK);
   public static final Set<FlowDisposition> FAILURE_DISPOSITIONS =
