@@ -969,8 +969,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
                   "WARNING: Disabling unusable vlan interface because no switch port is assigned "
                       + "to it: \"%s:%d\"\n",
                   hostname, vlanNumber);
-              iface.setActive(false);
-              iface.setBlacklisted(true);
+              iface.blacklist();
             }
           }
         }
@@ -2052,8 +2051,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
               for (Interface iface : configuration.getAllInterfaces().values()) {
                 if (MANAGEMENT_INTERFACES.matcher(iface.getName()).find()
                     || MANAGEMENT_VRFS.matcher(iface.getVrfName()).find()) {
-                  iface.setActive(false);
-                  iface.setBlacklisted(true);
+                  iface.blacklist();
                 }
               }
             });

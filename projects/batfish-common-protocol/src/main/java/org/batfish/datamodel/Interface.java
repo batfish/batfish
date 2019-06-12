@@ -1472,8 +1472,12 @@ public final class Interface extends ComparableStructure<String> {
     _bandwidth = bandwidth;
   }
 
+  /**
+   * To be used by the builder only. Use {@link #blacklist()} for public blacklisting, it enforces
+   * that the interface is inactive if blacklisted.
+   */
   @JsonIgnore
-  public void setBlacklisted(boolean blacklisted) {
+  private void setBlacklisted(boolean blacklisted) {
     _blacklisted = blacklisted;
   }
 
@@ -1790,7 +1794,7 @@ public final class Interface extends ComparableStructure<String> {
   /** Blacklist this interface, making it inactive and blacklisted */
   public void blacklist() {
     setActive(false);
-    setBlacklisted(true);
+    _blacklisted = true;
   }
 
   /**
