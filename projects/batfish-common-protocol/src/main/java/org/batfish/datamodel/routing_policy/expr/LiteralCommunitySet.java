@@ -16,7 +16,7 @@ import org.batfish.datamodel.visitors.CommunitySetExprVisitor;
 import org.batfish.datamodel.visitors.VoidCommunitySetExprVisitor;
 
 /**
- * A {@link CommunitySetExpr} matching community-sets containing ANY of the communites returned by
+ * A {@link CommunitySetExpr} matching community-sets containing ANY of the communities returned by
  * {@link #getCommunities()}.
  */
 public class LiteralCommunitySet extends CommunitySetExpr {
