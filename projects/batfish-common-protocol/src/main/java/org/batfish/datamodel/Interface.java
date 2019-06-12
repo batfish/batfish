@@ -30,7 +30,6 @@ import org.batfish.common.util.ComparableStructure;
 import org.batfish.datamodel.NetworkFactory.NetworkFactoryBuilder;
 import org.batfish.datamodel.eigrp.EigrpInterfaceSettings;
 import org.batfish.datamodel.hsrp.HsrpGroup;
-import org.batfish.datamodel.isis.IsisInterfaceMode;
 import org.batfish.datamodel.isis.IsisInterfaceSettings;
 import org.batfish.datamodel.ospf.OspfArea;
 import org.batfish.datamodel.transformation.Transformation;
@@ -515,9 +514,6 @@ public final class Interface extends ComparableStructure<String> {
   private static final String PROP_INCOMING_TRANSFORMATION = "incomingTransformation";
   private static final String PROP_INTERFACE_TYPE = "type";
   private static final String PROP_ISIS = "isis";
-  private static final String PROP_ISIS_COST = "isisCost";
-  private static final String PROP_ISIS_L1_INTERFACE_MODE = "isisL1InterfaceMode";
-  private static final String PROP_ISIS_L2_INTERFACE_MODE = "isisL2InterfaceMode";
   private static final String PROP_MLAG_ID = "mlagId";
   private static final String PROP_MTU = "mtu";
   private static final String PROP_NATIVE_VLAN = "nativeVlan";
@@ -1138,34 +1134,6 @@ public final class Interface extends ComparableStructure<String> {
     return _isis;
   }
 
-  /** The IS-IS cost of this interface. */
-  @JsonProperty(PROP_ISIS_COST)
-  @Deprecated
-  public Integer getIsisCost() {
-    return null;
-  }
-
-  /**
-   * Specifies whether this interface is active, passive, or unconfigured with respect to IS-IS
-   * level 1.
-   */
-  @JsonProperty(PROP_ISIS_L1_INTERFACE_MODE)
-  @Deprecated
-  public IsisInterfaceMode getIsisL1InterfaceMode() {
-    return null;
-  }
-
-  /**
-   * Specifies whether this interface is active, passive, or unconfigured with respect to IS-IS
-   * level 2.
-   */
-  @JsonProperty(PROP_ISIS_L2_INTERFACE_MODE)
-  @Deprecated
-  public IsisInterfaceMode getIsisL2InterfaceMode() {
-    // TODO: deprecate properly
-    return null;
-  }
-
   @JsonProperty(PROP_MLAG_ID)
   @Nullable
   public Integer getMlagId() {
@@ -1582,24 +1550,6 @@ public final class Interface extends ComparableStructure<String> {
   @JsonProperty(PROP_ISIS)
   public void setIsis(@Nullable IsisInterfaceSettings isis) {
     _isis = isis;
-  }
-
-  @JsonProperty(PROP_ISIS_COST)
-  @Deprecated
-  public void setIsisCost(Integer isisCost) {
-    // TODO: deprecate properly
-  }
-
-  @JsonProperty(PROP_ISIS_L1_INTERFACE_MODE)
-  @Deprecated
-  public void setIsisL1InterfaceMode(IsisInterfaceMode mode) {
-    // TODO: deprecate properly
-  }
-
-  @JsonProperty(PROP_ISIS_L2_INTERFACE_MODE)
-  @Deprecated
-  public void setIsisL2InterfaceMode(IsisInterfaceMode mode) {
-    // TODO: deprecate properly
   }
 
   @JsonProperty(PROP_MLAG_ID)
