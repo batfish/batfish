@@ -17,6 +17,7 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Multiset;
 import com.google.common.collect.Sets;
 import com.google.common.collect.SortedMultiset;
@@ -294,10 +295,7 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
 
   /** Convert vsys components to vendor independent model */
   private void convertVirtualSystems() {
-    NavigableSet<String> loggingServers = new TreeSet<>();
-
     for (Vsys vsys : _virtualSystems.values()) {
-      loggingServers.addAll(vsys.getSyslogServerAddresses());
 
       // Create zone-specific outgoing ACLs.
       for (Zone toZone : vsys.getZones().values()) {
@@ -331,7 +329,6 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
         }
       }
     }
-    _c.setLoggingServers(loggingServers);
   }
 
   /** Convert unique aspects of shared-gateways. */
@@ -347,12 +344,14 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
 
   /** Convert structures common to all vsys-like namespaces */
   private void convertNamespaces() {
+    ImmutableSortedSet.Builder<String> loggingServers = ImmutableSortedSet.naturalOrder();
     Streams.concat(
             _sharedGateways.values().stream(),
             _virtualSystems.values().stream(),
             Stream.of(_panorama, _shared).filter(Objects::nonNull))
         .forEach(
             namespace -> {
+              loggingServers.addAll(namespace.getSyslogServerAddresses());
               // convert address objects and groups to ip spaces
               namespace
                   .getAddressObjects()
@@ -397,6 +396,7 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
                 _c.getIpAccessLists().put(acl.getName(), acl);
               }
             });
+    _c.setLoggingServers(loggingServers.build());
   }
 
   /** Generates a cross-zone ACL from the two given zones in the same Vsys using the given rules. */
