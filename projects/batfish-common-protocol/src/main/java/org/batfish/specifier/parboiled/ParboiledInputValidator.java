@@ -5,7 +5,6 @@ import static org.batfish.datamodel.answers.InputValidationUtils.getErrorMessage
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Iterables;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -29,9 +28,8 @@ import org.parboiled.errors.InvalidInputError;
 import org.parboiled.errors.ParserRuntimeException;
 import org.parboiled.parserunners.ReportingParseRunner;
 import org.parboiled.support.ParsingResult;
-import org.parboiled.support.ValueStack;
 
-/** A helper class that provides auto complete suggestions */
+/** A helper class that provides {@link InputValidationNotes} */
 @ParametersAreNonnullByDefault
 public final class ParboiledInputValidator {
 
@@ -131,10 +129,10 @@ public final class ParboiledInputValidator {
         .run();
   }
 
-  /** This is the entry point for all auto completions */
+  /** This is the entry point for all validations */
   InputValidationNotes run() {
 
-    ParsingResult<AstNode> result = null;
+    ParsingResult<AstNode> result;
     try {
       result = new ReportingParseRunner<AstNode>(_parser.getInputRule(_grammar)).run(_query);
     } catch (ParserRuntimeException e) {
@@ -154,13 +152,13 @@ public final class ParboiledInputValidator {
           error.getStartIndex());
     }
 
-    ValueStack<AstNode> stack = _parser.getShadowStack().getValueStack();
-    List<String> noMatchMessages = noMatchMessages(Iterables.getOnlyElement(stack));
+    AstNode resultAst = ParserUtils.getAst(result);
+    List<String> noMatchMessages = noMatchMessages(resultAst);
     if (!noMatchMessages.isEmpty()) {
       return new InputValidationNotes(Validity.NO_MATCH, noMatchMessages.get(0));
     }
 
-    Set<String> expansions = expand(stack.peek());
+    Set<String> expansions = expand(resultAst);
     return new InputValidationNotes(Validity.VALID, ImmutableList.copyOf(expansions));
   }
 
