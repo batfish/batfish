@@ -97,7 +97,7 @@ public final class VxlanVniPropertiesAnswerer extends Answerer {
    * Gets properties of VXLAN VNIs.
    *
    * @param propertySpecifier Specifies which properties to get
-   * @param dp {@link DataPlane} with to use
+   * @param dp {@link DataPlane} to use
    * @param nodes the set of nodes to consider
    * @param columns a map from column name to {@link ColumnMetadata}
    * @return A multiset of {@link Row}s where each row corresponds to a node and columns correspond
@@ -112,8 +112,8 @@ public final class VxlanVniPropertiesAnswerer extends Answerer {
     Table<String, String, Set<VniSettings>> allVniSettings = dp.getVniSettings();
 
     for (String nodeName : nodes) {
-      for (Set<VniSettings> vniPerVrf : allVniSettings.row(nodeName).values()) {
-        for (VniSettings vniSettings : vniPerVrf) {
+      for (Set<VniSettings> vrfVnis : allVniSettings.row(nodeName).values()) {
+        for (VniSettings vniSettings : vrfVnis) {
           int vni = vniSettings.getVni();
           RowBuilder row = Row.builder(columns).put(COL_NODE, nodeName).put(COL_VNI, vni);
           boolean unicast =
