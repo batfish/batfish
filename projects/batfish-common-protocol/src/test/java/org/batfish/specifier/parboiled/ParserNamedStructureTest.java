@@ -138,6 +138,15 @@ public class ParserNamedStructureTest {
   }
 
   @Test
+  public void testParseNamedStructureTypeRegexDeprecated() {
+    String query = "/ip.*/";
+    RegexEnumSetAstNode expectedAst = new RegexEnumSetAstNode("ip.*");
+
+    assertThat(ParserUtils.getAst(getRunner().run(query)), equalTo(expectedAst));
+    assertThat(ParserUtils.getAst(getRunner().run(" " + query + " ")), equalTo(expectedAst));
+  }
+
+  @Test
   public void testParseFilterUnion() {
     String t1 = NamedStructurePropertySpecifier.IP_ACCESS_LIST;
     String t2Regex = "ip";

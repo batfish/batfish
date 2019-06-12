@@ -175,7 +175,7 @@ public class Parser extends CommonParser {
   }
 
   public Rule EnumSetTerm(Grammar grammar) {
-    return FirstOf(EnumSetRegex(), EnumSetValue(grammar));
+    return FirstOf(EnumSetRegexDeprecated(), EnumSetRegex(), EnumSetValue(grammar));
   }
 
   @Anchor(ENUM_SET_VALUE)
@@ -188,6 +188,11 @@ public class Parser extends CommonParser {
   @Anchor(ENUM_SET_REGEX)
   public Rule EnumSetRegex() {
     return Sequence(Regex(), push(new RegexEnumSetAstNode(pop())));
+  }
+
+  @Anchor(DEPRECATED)
+  public Rule EnumSetRegexDeprecated() {
+    return Sequence(RegexDeprecated(), push(new RegexEnumSetAstNode(pop())));
   }
 
   /**
