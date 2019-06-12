@@ -809,7 +809,7 @@ public final class Interface extends ComparableStructure<String> {
   private String _hsrpVersion;
 
   @JsonCreator
-  public Interface(@JsonProperty(PROP_NAME) String name) {
+  private Interface(@Nullable @JsonProperty(PROP_NAME) String name) {
     this(name, null);
   }
 

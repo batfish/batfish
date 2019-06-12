@@ -15,7 +15,7 @@ public class VerboseEdgeTest {
    */
   @Test
   public void testEquals() {
-    Interface i1 = new Interface("eth0");
+    Interface i1 = new Interface("eth0", null);
     VerboseEdge edge1 = new VerboseEdge(i1, i1, Edge.of("node1", "eth0", "node2", "eth0"));
     assertEquals(edge1, edge1);
 
