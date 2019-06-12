@@ -86,4 +86,35 @@ public class VniSettingsTest {
         .addEqualityGroup(builder.setVlan(1000).build())
         .testEquals();
   }
+
+  @Test
+  public void testToBuilder() {
+    SortedSet<Ip> bumTransportIps = ImmutableSortedSet.of(Ip.parse("2.2.2.2"), Ip.parse("2.2.2.3"));
+    VniSettings vs =
+        VniSettings.builder()
+            .setBumTransportIps(bumTransportIps)
+            .setBumTransportMethod(BumTransportMethod.UNICAST_FLOOD_GROUP)
+            .setSourceAddress(Ip.parse("1.2.3.4"))
+            .setUdpPort(2345)
+            .setVlan(7)
+            .setVni(10007)
+            .build();
+    assertThat(vs.toBuilder().build(), equalTo(vs));
+  }
+
+  @Test
+  public void testAddToFloodList() {
+    Ip ip = Ip.parse("2.2.2.2");
+    VniSettings vs =
+        VniSettings.builder()
+            .setBumTransportIps(ImmutableSortedSet.of(ip))
+            .setBumTransportMethod(BumTransportMethod.UNICAST_FLOOD_GROUP)
+            .setSourceAddress(Ip.parse("1.2.3.4"))
+            .setUdpPort(2345)
+            .setVlan(7)
+            .setVni(10007)
+            .build();
+    Ip newIp = Ip.parse("9.9.9.9");
+    assertThat(vs.addToFloodList(newIp).getBumTransportIps(), containsInAnyOrder(ip, newIp));
+  }
 }
