@@ -9,6 +9,8 @@ import java.util.Map;
 import java.util.regex.Pattern;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.answers.Schema;
+import org.batfish.specifier.EnumSetSpecifier;
+import org.batfish.specifier.IdentityEnumSetSpecifier;
 
 /** Enables specification a set of named structures. */
 public class NamedStructurePropertySpecifier extends PropertySpecifier {
@@ -114,8 +116,7 @@ public class NamedStructurePropertySpecifier extends PropertySpecifier {
                   Configuration::getZones, Schema.OBJECT, "Firewall security zone"))
           .build();
 
-  public static final NamedStructurePropertySpecifier ALL =
-      new NamedStructurePropertySpecifier(".*");
+  public static final EnumSetSpecifier ALL = new IdentityEnumSetSpecifier(JAVA_MAP.keySet());
 
   private final String _expression;
 

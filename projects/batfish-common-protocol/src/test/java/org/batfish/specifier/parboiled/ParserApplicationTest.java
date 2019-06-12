@@ -6,7 +6,9 @@ import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableSet;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Set;
+import java.util.stream.Stream;
 import org.batfish.common.CompletionMetadata;
 import org.batfish.datamodel.Protocol;
 import org.batfish.specifier.parboiled.Anchor.Type;
@@ -18,8 +20,11 @@ import org.parboiled.parserunners.AbstractParseRunner;
 import org.parboiled.parserunners.ReportingParseRunner;
 import org.parboiled.support.ParsingResult;
 
-/** Tests of {@link Parser} producing {@link ApplicationAstNode}. */
+/** Tests of {@link Parser} producing application name sets. */
 public class ParserApplicationTest {
+
+  private static final Collection<String> ALL_APPLICATION_NAMES =
+      Parser.getEnumValues(Grammar.APPLICATION_SPECIFIER);
 
   @Rule public ExpectedException _thrown = ExpectedException.none();
 
@@ -62,11 +67,15 @@ public class ParserApplicationTest {
     assertThat(
         suggestions,
         equalTo(
-            Arrays.stream(Protocol.values())
-                .map(
-                    val ->
-                        new ParboiledAutoCompleteSuggestion(
-                            val.toString(), query.length(), Type.APPLICATION_NAME))
+            Stream.concat(
+                    Arrays.stream(Protocol.values())
+                        .map(
+                            val ->
+                                new ParboiledAutoCompleteSuggestion(
+                                    val.toString(), query.length(), Type.ENUM_SET_VALUE)),
+                    ImmutableSet.of(
+                        new ParboiledAutoCompleteSuggestion("/", 0, Type.ENUM_SET_REGEX))
+                        .stream())
                 .collect(ImmutableSet.toImmutableSet())));
   }
 
@@ -90,13 +99,13 @@ public class ParserApplicationTest {
 
     assertThat(
         suggestions,
-        containsInAnyOrder(new ParboiledAutoCompleteSuggestion("SSH", 0, Type.APPLICATION_NAME)));
+        containsInAnyOrder(new ParboiledAutoCompleteSuggestion("SSH", 0, Type.ENUM_SET_VALUE)));
   }
 
   @Test
   public void testParseApplicationName() {
     String query = "ssh";
-    NameApplicationAstNode expectedAst = new NameApplicationAstNode(query);
+    ValueEnumSetAstNode expectedAst = new ValueEnumSetAstNode(query, ALL_APPLICATION_NAMES);
 
     assertThat(ParserUtils.getAst(getRunner().run(query)), equalTo(expectedAst));
     assertThat(ParserUtils.getAst(getRunner().run(" " + query + " ")), equalTo(expectedAst));
@@ -111,9 +120,10 @@ public class ParserApplicationTest {
 
   @Test
   public void testParseFilterUnion() {
-    UnionApplicationAstNode expectedNode =
-        new UnionApplicationAstNode(
-            new NameApplicationAstNode("ssh"), new NameApplicationAstNode("telnet"));
+    UnionEnumSetAstNode expectedNode =
+        new UnionEnumSetAstNode(
+            new ValueEnumSetAstNode("ssh", ALL_APPLICATION_NAMES),
+            new ValueEnumSetAstNode("telnet", ALL_APPLICATION_NAMES));
 
     assertThat(ParserUtils.getAst(getRunner().run("ssh,telnet")), equalTo(expectedNode));
     assertThat(ParserUtils.getAst(getRunner().run(" ssh , telnet ")), equalTo(expectedNode));

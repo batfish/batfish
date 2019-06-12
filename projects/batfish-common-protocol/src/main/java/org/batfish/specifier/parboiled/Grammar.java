@@ -37,4 +37,9 @@ public enum Grammar {
   String getUrlTail() {
     return _urlTail;
   }
+
+  @Override
+  public String toString() {
+    return _friendlyName;
+  }
 }

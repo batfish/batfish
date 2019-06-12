@@ -79,10 +79,6 @@ interface AstNodeVisitor<T> {
   T visitInterfaceWithNodeInterfaceAstNode(
       InterfaceWithNodeInterfaceAstNode interfaceWithNodeInterfaceAstNode);
 
-  T visitUnionApplicationAstNode(UnionApplicationAstNode unionApplicationAstNode);
-
-  T visitNameApplicationAstNode(NameApplicationAstNode nameApplicationAstNode);
-
   T visitIpProtocolIpProtocolAstNode(IpProtocolIpProtocolAstNode ipProtocolIpProtocolAstNode);
 
   T visitUnionIpProtocolAstNode(UnionIpProtocolAstNode unionIpProtocolAstNode);
@@ -111,10 +107,9 @@ interface AstNodeVisitor<T> {
 
   T visitFilterWithNodeFilterAstNode(FilterWithNodeFilterAstNode filterWithNodeFilterAstNode);
 
-  T visitUnionNamedStructureAstNode(UnionNamedStructureAstNode unionNamedStructureAstNode);
+  T visitUnionNamedStructureAstNode(UnionEnumSetAstNode unionNamedStructureAstNode);
 
-  T visitTypeNamedStructureAstNode(TypeNamedStructureAstNode typeNamedStructureAstNode);
+  T visitTypeNamedStructureAstNode(ValueEnumSetAstNode typeNamedStructureAstNode);
 
-  T visitTypeRegexNamedStructureAstNode(
-      TypeRegexNamedStructureAstNode typeRegexNamedStructureAstNode);
+  T visitTypeRegexNamedStructureAstNode(RegexEnumSetAstNode typeRegexNamedStructureAstNode);
 }

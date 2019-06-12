@@ -5,6 +5,7 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableSet;
+import java.util.Collection;
 import java.util.Set;
 import java.util.stream.Stream;
 import org.batfish.datamodel.questions.NamedStructurePropertySpecifier;
@@ -17,8 +18,11 @@ import org.parboiled.parserunners.AbstractParseRunner;
 import org.parboiled.parserunners.ReportingParseRunner;
 import org.parboiled.support.ParsingResult;
 
-/** Tests of {@link Parser} producing {@link NamedStructureAstNode}. */
+/** Tests of {@link Parser} producing {@link EnumSetAstNode}. */
 public class ParserNamedStructureTest {
+
+  private static final Collection<String> ALL_NAMED_STRUCTURE_TYPES =
+      Parser.getEnumValues(Grammar.NAMED_STRUCTURE_SPECIFIER);
 
   @Rule public ExpectedException _thrown = ExpectedException.none();
 
@@ -63,10 +67,9 @@ public class ParserNamedStructureTest {
                         .map(
                             val ->
                                 new ParboiledAutoCompleteSuggestion(
-                                    val, query.length(), Type.NAMED_STRUCTURE_TYPE)),
+                                    val, query.length(), Type.ENUM_SET_VALUE)),
                     ImmutableSet.of(
-                        new ParboiledAutoCompleteSuggestion(
-                            "/", 0, Type.NAMED_STRUCTURE_TYPE_REGEX))
+                        new ParboiledAutoCompleteSuggestion("/", 0, Type.ENUM_SET_REGEX))
                         .stream())
                 .collect(ImmutableSet.toImmutableSet())));
   }
@@ -93,19 +96,17 @@ public class ParserNamedStructureTest {
         suggestions,
         containsInAnyOrder(
             new ParboiledAutoCompleteSuggestion(
-                NamedStructurePropertySpecifier.IKE_PHASE1_KEYS, 0, Type.NAMED_STRUCTURE_TYPE),
+                NamedStructurePropertySpecifier.IKE_PHASE1_KEYS, 0, Type.ENUM_SET_VALUE),
             new ParboiledAutoCompleteSuggestion(
-                NamedStructurePropertySpecifier.IKE_PHASE1_POLICIES, 0, Type.NAMED_STRUCTURE_TYPE),
+                NamedStructurePropertySpecifier.IKE_PHASE1_POLICIES, 0, Type.ENUM_SET_VALUE),
             new ParboiledAutoCompleteSuggestion(
-                NamedStructurePropertySpecifier.IKE_PHASE1_PROPOSALS,
-                0,
-                Type.NAMED_STRUCTURE_TYPE)));
+                NamedStructurePropertySpecifier.IKE_PHASE1_PROPOSALS, 0, Type.ENUM_SET_VALUE)));
   }
 
   @Test
   public void testParseNamedStructureType() {
     String query = NamedStructurePropertySpecifier.IP_ACCESS_LIST;
-    TypeNamedStructureAstNode expectedAst = new TypeNamedStructureAstNode(query);
+    ValueEnumSetAstNode expectedAst = new ValueEnumSetAstNode(query, ALL_NAMED_STRUCTURE_TYPES);
 
     assertThat(ParserUtils.getAst(getRunner().run(query)), equalTo(expectedAst));
     assertThat(ParserUtils.getAst(getRunner().run(" " + query + " ")), equalTo(expectedAst));
@@ -121,7 +122,7 @@ public class ParserNamedStructureTest {
   @Test
   public void testParseNamedStructureTypeCaseInsensitive() {
     String query = NamedStructurePropertySpecifier.IP_ACCESS_LIST.toLowerCase();
-    TypeNamedStructureAstNode expectedAst = new TypeNamedStructureAstNode(query);
+    ValueEnumSetAstNode expectedAst = new ValueEnumSetAstNode(query, ALL_NAMED_STRUCTURE_TYPES);
 
     assertThat(ParserUtils.getAst(getRunner().run(query)), equalTo(expectedAst));
     assertThat(ParserUtils.getAst(getRunner().run(" " + query + " ")), equalTo(expectedAst));
@@ -130,16 +131,7 @@ public class ParserNamedStructureTest {
   @Test
   public void testParseNamedStructureTypeRegex() {
     String query = "/IP/";
-    TypeRegexNamedStructureAstNode expectedAst = new TypeRegexNamedStructureAstNode("IP");
-
-    assertThat(ParserUtils.getAst(getRunner().run(query)), equalTo(expectedAst));
-    assertThat(ParserUtils.getAst(getRunner().run(" " + query + " ")), equalTo(expectedAst));
-  }
-
-  @Test
-  public void testParseNamedStructureTypeRegexDeprecated() {
-    String query = "ip.*";
-    TypeRegexNamedStructureAstNode expectedAst = new TypeRegexNamedStructureAstNode("ip.*");
+    RegexEnumSetAstNode expectedAst = new RegexEnumSetAstNode("IP");
 
     assertThat(ParserUtils.getAst(getRunner().run(query)), equalTo(expectedAst));
     assertThat(ParserUtils.getAst(getRunner().run(" " + query + " ")), equalTo(expectedAst));
@@ -149,9 +141,10 @@ public class ParserNamedStructureTest {
   public void testParseFilterUnion() {
     String t1 = NamedStructurePropertySpecifier.IP_ACCESS_LIST;
     String t2Regex = "ip";
-    UnionNamedStructureAstNode expectedNode =
-        new UnionNamedStructureAstNode(
-            new TypeNamedStructureAstNode(t1), new TypeRegexNamedStructureAstNode(t2Regex));
+    UnionEnumSetAstNode expectedNode =
+        new UnionEnumSetAstNode(
+            new ValueEnumSetAstNode(t1, ALL_NAMED_STRUCTURE_TYPES),
+            new RegexEnumSetAstNode(t2Regex));
 
     assertThat(
         ParserUtils.getAst(getRunner().run(String.format("%s,/%s/", t1, t2Regex))),

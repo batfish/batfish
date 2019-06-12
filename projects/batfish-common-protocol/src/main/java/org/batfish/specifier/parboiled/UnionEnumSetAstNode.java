@@ -3,13 +3,13 @@ package org.batfish.specifier.parboiled;
 import com.google.common.base.MoreObjects;
 import java.util.Objects;
 
-final class UnionNamedStructureAstNode implements NamedStructureAstNode {
-  private final NamedStructureAstNode _left;
-  private final NamedStructureAstNode _right;
+final class UnionEnumSetAstNode implements EnumSetAstNode {
+  private final EnumSetAstNode _left;
+  private final EnumSetAstNode _right;
 
-  UnionNamedStructureAstNode(AstNode left, AstNode right) {
-    _left = (NamedStructureAstNode) left;
-    _right = (NamedStructureAstNode) right;
+  UnionEnumSetAstNode(AstNode left, AstNode right) {
+    _left = (EnumSetAstNode) left;
+    _right = (EnumSetAstNode) right;
   }
 
   @Override
@@ -18,8 +18,8 @@ final class UnionNamedStructureAstNode implements NamedStructureAstNode {
   }
 
   @Override
-  public <T> T accept(NamedStructureAstNodeVisitor<T> visitor) {
-    return visitor.visitUnionNamedStructureAstNode(this);
+  public <T> T accept(EnumSetAstNodeVisitor<T> visitor) {
+    return visitor.visitUnionEnumSetAstNode(this);
   }
 
   @Override
@@ -27,18 +27,18 @@ final class UnionNamedStructureAstNode implements NamedStructureAstNode {
     if (this == o) {
       return true;
     }
-    if (!(o instanceof UnionNamedStructureAstNode)) {
+    if (!(o instanceof UnionEnumSetAstNode)) {
       return false;
     }
-    UnionNamedStructureAstNode that = (UnionNamedStructureAstNode) o;
+    UnionEnumSetAstNode that = (UnionEnumSetAstNode) o;
     return Objects.equals(_left, that._left) && Objects.equals(_right, that._right);
   }
 
-  public NamedStructureAstNode getLeft() {
+  public EnumSetAstNode getLeft() {
     return _left;
   }
 
-  public NamedStructureAstNode getRight() {
+  public EnumSetAstNode getRight() {
     return _right;
   }
 

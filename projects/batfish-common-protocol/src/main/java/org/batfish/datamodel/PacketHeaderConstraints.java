@@ -16,7 +16,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import org.batfish.specifier.NoApplicationsApplicationSpecifier;
+import org.batfish.specifier.IdentityEnumSetSpecifier;
 import org.batfish.specifier.NoIpProtocolsIpProtocolSpecifier;
 import org.batfish.specifier.SpecifierFactories;
 
@@ -186,8 +186,10 @@ public class PacketHeaderConstraints {
     }
 
     return SpecifierFactories.getApplicationSpecifierOrDefault(
-            input, NoApplicationsApplicationSpecifier.INSTANCE)
-        .resolve();
+            input, new IdentityEnumSetSpecifier(ImmutableSet.of()))
+        .resolve().stream()
+        .map(s -> Enum.valueOf(Protocol.class, s))
+        .collect(ImmutableSet.toImmutableSet());
   }
 
   /**
