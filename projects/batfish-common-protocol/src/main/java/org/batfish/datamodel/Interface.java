@@ -812,11 +812,6 @@ public final class Interface extends ComparableStructure<String> {
   private String _zoneName;
   private String _hsrpVersion;
 
-  @SuppressWarnings("unused")
-  private Interface() {
-    this(null, null);
-  }
-
   @JsonCreator
   public Interface(@JsonProperty(PROP_NAME) String name) {
     this(name, null);
