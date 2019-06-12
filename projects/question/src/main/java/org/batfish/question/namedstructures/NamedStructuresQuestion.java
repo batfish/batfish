@@ -12,7 +12,6 @@ import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.questions.NamedStructurePropertySpecifier;
 import org.batfish.datamodel.questions.Question;
 import org.batfish.specifier.AllNodesNodeSpecifier;
-import org.batfish.specifier.EnumSetSpecifier;
 import org.batfish.specifier.NodeSpecifier;
 import org.batfish.specifier.SpecifierFactories;
 
@@ -46,7 +45,7 @@ public class NamedStructuresQuestion extends Question {
 
   @Nullable private final String _structureTypes;
 
-  @Nonnull private final EnumSetSpecifier _structureTypeSpecifier;
+  @Nonnull private final NamedStructurePropertySpecifier _structureTypeSpecifier;
 
   @JsonCreator
   static NamedStructuresQuestion create(
@@ -69,8 +68,7 @@ public class NamedStructuresQuestion extends Question {
         nodes,
         SpecifierFactories.getNodeSpecifierOrDefault(nodes, AllNodesNodeSpecifier.INSTANCE),
         structureTypes,
-        SpecifierFactories.getNamedStructureSpecifierOrDefault(
-            structureTypes, NamedStructurePropertySpecifier.ALL),
+        new NamedStructurePropertySpecifier(structureTypes),
         structureNameRegex,
         ignoreGenerated,
         indicatePresence);
@@ -78,7 +76,7 @@ public class NamedStructuresQuestion extends Question {
 
   public NamedStructuresQuestion(
       @Nonnull NodeSpecifier nodeSpecifier,
-      @Nonnull EnumSetSpecifier structureTypeSpecifier,
+      @Nonnull NamedStructurePropertySpecifier structureTypeSpecifier,
       @Nullable String structureNameRegex,
       @Nullable Boolean ignoreGenerated,
       @Nullable Boolean indicatePresence) {
@@ -96,7 +94,7 @@ public class NamedStructuresQuestion extends Question {
       @Nullable String nodes,
       @Nonnull NodeSpecifier nodeSpecifier,
       @Nullable String structureTypes,
-      @Nonnull EnumSetSpecifier structureTypeSpecifier,
+      @Nonnull NamedStructurePropertySpecifier structureTypeSpecifier,
       @Nullable String structureNameRegex,
       @Nullable Boolean ignoreGenerated,
       @Nullable Boolean indicatePresence) {
@@ -163,7 +161,7 @@ public class NamedStructuresQuestion extends Question {
 
   @Nonnull
   @JsonIgnore
-  public EnumSetSpecifier getStructureTypeSpecifier() {
+  public NamedStructurePropertySpecifier getStructureTypeSpecifier() {
     return _structureTypeSpecifier;
   }
 }

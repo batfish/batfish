@@ -30,16 +30,6 @@ public final class SpecifierFactories {
   /** Which grammar version is currently in use */
   public static final Version ACTIVE_VERSION = Version.V2;
 
-  public static EnumSetSpecifier getApplicationSpecifier(String input, Version version) {
-    switch (version) {
-      case V1:
-      case V2:
-        return ParboiledEnumSetSpecifier.parse(input, Grammar.APPLICATION_SPECIFIER);
-      default:
-        throw new IllegalStateException("Unhandled grammar version " + version);
-    }
-  }
-
   public static FilterSpecifier getFilterSpecifier(String input, Version version) {
     switch (version) {
       case V1:
@@ -94,11 +84,12 @@ public final class SpecifierFactories {
     }
   }
 
-  public static EnumSetSpecifier getNamedStructureSpecifier(String input, Version version) {
+  public static EnumSetSpecifier getEnumSetSpecifier(
+      String input, Grammar grammar, Version version) {
     switch (version) {
       case V1:
       case V2:
-        return ParboiledEnumSetSpecifier.parse(input, Grammar.NAMED_STRUCTURE_SPECIFIER);
+        return ParboiledEnumSetSpecifier.parse(input, grammar);
       default:
         throw new IllegalStateException("Unhandled grammar version " + version);
     }
@@ -123,11 +114,6 @@ public final class SpecifierFactories {
       default:
         throw new IllegalStateException("Unhandled grammar version " + version);
     }
-  }
-
-  public static EnumSetSpecifier getApplicationSpecifierOrDefault(
-      @Nullable String input, EnumSetSpecifier defaultSpecifier) {
-    return getApplicationSpecifierOrDefault(input, defaultSpecifier, ACTIVE_VERSION);
   }
 
   public static FilterSpecifier getFilterSpecifierOrDefault(
@@ -155,9 +141,9 @@ public final class SpecifierFactories {
     return getLocationSpecifierOrDefault(input, defaultSpecifier, ACTIVE_VERSION);
   }
 
-  public static EnumSetSpecifier getNamedStructureSpecifierOrDefault(
-      @Nullable String input, EnumSetSpecifier defaultSpecifier) {
-    return getNamedStructureSpecifierOrDefault(input, defaultSpecifier, ACTIVE_VERSION);
+  public static EnumSetSpecifier getEnumSetSpecifierOrDefault(
+      @Nullable String input, Grammar grammar, EnumSetSpecifier defaultSpecifier) {
+    return getEnumSetSpecifierOrDefault(input, grammar, defaultSpecifier, ACTIVE_VERSION);
   }
 
   public static NodeSpecifier getNodeSpecifierOrDefault(
@@ -168,11 +154,6 @@ public final class SpecifierFactories {
   public static RoutingPolicySpecifier getRoutingPolicySpecifierOrDefault(
       @Nullable String input, RoutingPolicySpecifier defaultSpecifier) {
     return getRoutingPolicySpecifierOrDefault(input, defaultSpecifier, ACTIVE_VERSION);
-  }
-
-  public static EnumSetSpecifier getApplicationSpecifierOrDefault(
-      @Nullable String input, EnumSetSpecifier defaultSpecifier, Version v) {
-    return input == null || input.isEmpty() ? defaultSpecifier : getApplicationSpecifier(input, v);
   }
 
   public static FilterSpecifier getFilterSpecifierOrDefault(
@@ -200,11 +181,11 @@ public final class SpecifierFactories {
     return input == null || input.isEmpty() ? defaultSpecifier : getLocationSpecifier(input, v);
   }
 
-  public static EnumSetSpecifier getNamedStructureSpecifierOrDefault(
-      @Nullable String input, EnumSetSpecifier defaultSpecifier, Version v) {
+  public static EnumSetSpecifier getEnumSetSpecifierOrDefault(
+      @Nullable String input, Grammar grammar, EnumSetSpecifier defaultSpecifier, Version v) {
     return input == null || input.isEmpty()
         ? defaultSpecifier
-        : getNamedStructureSpecifier(input, v);
+        : getEnumSetSpecifier(input, grammar, v);
   }
 
   public static NodeSpecifier getNodeSpecifierOrDefault(
