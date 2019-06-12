@@ -118,7 +118,7 @@ import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.rules.TemporaryFolder;
 
-public class PaloAltoGrammarTest {
+public final class PaloAltoGrammarTest {
   private static final String TESTCONFIGS_PREFIX = "org/batfish/grammar/palo_alto/testconfigs/";
 
   @Rule public TemporaryFolder _folder = new TemporaryFolder();
