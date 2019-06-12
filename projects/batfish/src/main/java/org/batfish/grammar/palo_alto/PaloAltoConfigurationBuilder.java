@@ -530,7 +530,6 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
   @Override
   public void enterPalo_alto_configuration(Palo_alto_configurationContext ctx) {
     _configuration = new PaloAltoConfiguration();
-    _configuration.getVirtualSystems().computeIfAbsent(SHARED_VSYS_NAME, Vsys::new);
     _defaultVsys = _configuration.getVirtualSystems().computeIfAbsent(DEFAULT_VSYS_NAME, Vsys::new);
     _currentVsys = _defaultVsys;
   }
