@@ -454,17 +454,16 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
 
   /** Collects the rules from this Vsys and merges the common pre-/post-rulebases from Panorama. */
   private List<Map.Entry<Rule, Vsys>> getAllRules(Vsys vsys) {
-    @Nullable Vsys panorama = _virtualSystems.get(PANORAMA_VSYS_NAME);
     Stream<Map.Entry<Rule, Vsys>> pre =
-        panorama == null
+        _panorama == null
             ? Stream.of()
-            : panorama.getPreRules().values().stream()
-                .map(r -> new SimpleImmutableEntry<>(r, panorama));
+            : _panorama.getPreRules().values().stream()
+                .map(r -> new SimpleImmutableEntry<>(r, _panorama));
     Stream<Map.Entry<Rule, Vsys>> post =
-        panorama == null
+        _panorama == null
             ? Stream.of()
-            : panorama.getPostRules().values().stream()
-                .map(r -> new SimpleImmutableEntry<>(r, panorama));
+            : _panorama.getPostRules().values().stream()
+                .map(r -> new SimpleImmutableEntry<>(r, _panorama));
     Stream<Map.Entry<Rule, Vsys>> rules =
         vsys.getRules().values().stream().map(r -> new SimpleImmutableEntry<>(r, vsys));
 
