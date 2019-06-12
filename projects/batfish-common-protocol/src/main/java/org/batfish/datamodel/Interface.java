@@ -743,7 +743,7 @@ public final class Interface extends ComparableStructure<String> {
   private boolean _active;
   private @Nonnull IpSpace _additionalArpIps;
   private IntegerSpace _allowedVlans;
-  private SortedSet<InterfaceAddress> _allAddresses;
+  @Nonnull private SortedSet<InterfaceAddress> _allAddresses;
   /** Cache of all concrete addresses */
   @Nullable private transient Set<ConcreteInterfaceAddress> _allConcreteAddresses;
   /** Cache of all link-local addresses */
@@ -992,6 +992,7 @@ public final class Interface extends ComparableStructure<String> {
     return _allLinkLocalAddresses;
   }
 
+  @Nonnull
   public Set<InterfaceAddress> getAllAddresses() {
     return _allAddresses;
   }
