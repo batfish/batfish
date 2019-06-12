@@ -1,0 +1,52 @@
+set deviceconfig system hostname panorama-rulebase
+
+#
+# Two interfaces in different zones, three interesting services
+#
+# pre-rules allow service 1
+# rules deny 1 and 2
+# post-rules allow 2 and 3
+# default cross-zone denies
+# default intra-zone accepts
+#
+# if compiled properly, ACL should allow 1 and 3, not 2. This proves that 1 < 2 and that 2 < 3.
+#
+# We will also test with (not defined) SERVICE4 = port 1004 cross/intra-zone behavior to guarantee
+# rules are reached, not just default behavior.
+
+set network interface ethernet ethernet1/1 layer3 ip 1.1.1.1/24
+set zone z1 network layer3 [ ethernet1/1 ]
+
+set network interface ethernet ethernet1/2 layer3 ip 1.1.2.1/24
+set zone z2 network layer3 [ ethernet1/2 ]
+
+set shared service SERVICE1 protocol tcp port 1001
+set shared service SERVICE2 protocol tcp port 1002
+
+set rulebase security rules DENY-SERVICE12 from any
+set rulebase security rules DENY-SERVICE12 to any
+set rulebase security rules DENY-SERVICE12 source any
+set rulebase security rules DENY-SERVICE12 destination any
+set rulebase security rules DENY-SERVICE12 service [ SERVICE1 SERVICE2]
+set rulebase security rules DENY-SERVICE12 application any
+set rulebase security rules DENY-SERVICE12 action deny
+
+set policy panorama service SERVICE1 protocol tcp port 1001
+set policy panorama service SERVICE2 protocol tcp port 1002
+set policy panorama service SERVICE3 protocol tcp port 1003
+
+set policy panorama pre-rulebase security rules ALLOW-SERVICE1 from any
+set policy panorama pre-rulebase security rules ALLOW-SERVICE1 to any
+set policy panorama pre-rulebase security rules ALLOW-SERVICE1 source any
+set policy panorama pre-rulebase security rules ALLOW-SERVICE1 destination any
+set policy panorama pre-rulebase security rules ALLOW-SERVICE1 service SERVICE1
+set policy panorama pre-rulebase security rules ALLOW-SERVICE1 application any
+set policy panorama pre-rulebase security rules ALLOW-SERVICE1 action allow
+
+set policy panorama post-rulebase security rules ALLOW-SERVICE23 from any
+set policy panorama post-rulebase security rules ALLOW-SERVICE23 to any
+set policy panorama post-rulebase security rules ALLOW-SERVICE23 source any
+set policy panorama post-rulebase security rules ALLOW-SERVICE23 destination any
+set policy panorama post-rulebase security rules ALLOW-SERVICE23 service [ SERVICE2 SERVICE3]
+set policy panorama post-rulebase security rules ALLOW-SERVICE23 application any
+set policy panorama post-rulebase security rules ALLOW-SERVICE23 action allow
