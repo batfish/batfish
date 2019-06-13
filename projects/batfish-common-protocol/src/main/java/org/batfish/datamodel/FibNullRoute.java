@@ -13,4 +13,14 @@ public final class FibNullRoute implements FibAction {
   public FibActionType getType() {
     return FibActionType.NULL_ROUTE;
   }
+
+  @Override
+  public boolean equals(Object obj) {
+    return this == obj || obj instanceof FibNullRoute;
+  }
+
+  @Override
+  public int hashCode() {
+    return 0;
+  }
 }
