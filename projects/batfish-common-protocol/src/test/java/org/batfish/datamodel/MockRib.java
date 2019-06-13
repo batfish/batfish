@@ -6,14 +6,14 @@ import java.util.Comparator;
 import java.util.Map;
 import java.util.Set;
 
-public class MockRib implements GenericRib<AbstractRoute> {
+public class MockRib implements GenericRib<AnnotatedRoute<AbstractRoute>> {
 
   public static class Builder {
 
-    private Map<Ip, Set<AbstractRoute>> _longestPrefixMatchResults;
-    private Set<AbstractRoute> _mergeRouteTrues;
-    private Comparator<AbstractRoute> _routePreferenceComparator;
-    private Set<AbstractRoute> _routes;
+    private Map<Ip, Set<AnnotatedRoute<AbstractRoute>>> _longestPrefixMatchResults;
+    private Set<AnnotatedRoute<AbstractRoute>> _mergeRouteTrues;
+    private Comparator<AnnotatedRoute<AbstractRoute>> _routePreferenceComparator;
+    private Set<AnnotatedRoute<AbstractRoute>> _routes;
 
     private Builder() {
       _longestPrefixMatchResults = ImmutableMap.of();
@@ -27,23 +27,23 @@ public class MockRib implements GenericRib<AbstractRoute> {
     }
 
     public Builder setLongestPrefixMatchResults(
-        Map<Ip, Set<AbstractRoute>> longestPrefixMatchResults) {
+        Map<Ip, Set<AnnotatedRoute<AbstractRoute>>> longestPrefixMatchResults) {
       _longestPrefixMatchResults = longestPrefixMatchResults;
       return this;
     }
 
-    public Builder setMergeRouteTrues(Set<AbstractRoute> mergeRouteTrues) {
+    public Builder setMergeRouteTrues(Set<AnnotatedRoute<AbstractRoute>> mergeRouteTrues) {
       _mergeRouteTrues = mergeRouteTrues;
       return this;
     }
 
     public Builder setRoutePreferenceComparator(
-        Comparator<AbstractRoute> routePreferenceComparator) {
+        Comparator<AnnotatedRoute<AbstractRoute>> routePreferenceComparator) {
       _routePreferenceComparator = routePreferenceComparator;
       return this;
     }
 
-    public Builder setRoutes(Set<AbstractRoute> routes) {
+    public Builder setRoutes(Set<AnnotatedRoute<AbstractRoute>> routes) {
       _routes = routes;
       return this;
     }
@@ -55,10 +55,10 @@ public class MockRib implements GenericRib<AbstractRoute> {
     return new Builder();
   }
 
-  private final Map<Ip, Set<AbstractRoute>> _longestPrefixMatchResults;
-  private final Set<AbstractRoute> _mergeRouteTrues;
-  private final Comparator<AbstractRoute> _routePreferenceComparator;
-  private final Set<AbstractRoute> _routes;
+  private final Map<Ip, Set<AnnotatedRoute<AbstractRoute>>> _longestPrefixMatchResults;
+  private final Set<AnnotatedRoute<AbstractRoute>> _mergeRouteTrues;
+  private final Comparator<AnnotatedRoute<AbstractRoute>> _routePreferenceComparator;
+  private final Set<AnnotatedRoute<AbstractRoute>> _routes;
 
   private MockRib(Builder builder) {
     _longestPrefixMatchResults = builder._longestPrefixMatchResults;
@@ -68,32 +68,35 @@ public class MockRib implements GenericRib<AbstractRoute> {
   }
 
   @Override
-  public int comparePreference(AbstractRoute lhs, AbstractRoute rhs) {
+  public int comparePreference(
+      AnnotatedRoute<AbstractRoute> lhs, AnnotatedRoute<AbstractRoute> rhs) {
     return _routePreferenceComparator.compare(lhs, rhs);
   }
 
   @Override
   public Set<AbstractRoute> getRoutes() {
+    return getTypedRoutes().stream()
+        .map(AbstractRouteDecorator::getAbstractRoute)
+        .collect(ImmutableSet.toImmutableSet());
+  }
+
+  @Override
+  public Set<AnnotatedRoute<AbstractRoute>> getTypedRoutes() {
     return _routes;
   }
 
   @Override
-  public Set<AbstractRoute> getTypedRoutes() {
-    return _routes;
-  }
-
-  @Override
-  public Set<AbstractRoute> longestPrefixMatch(Ip address) {
+  public Set<AnnotatedRoute<AbstractRoute>> longestPrefixMatch(Ip address) {
     return _longestPrefixMatchResults.get(address);
   }
 
   @Override
-  public Set<AbstractRoute> longestPrefixMatch(Ip address, int maxPrefixLength) {
+  public Set<AnnotatedRoute<AbstractRoute>> longestPrefixMatch(Ip address, int maxPrefixLength) {
     throw new UnsupportedOperationException();
   }
 
   @Override
-  public boolean mergeRoute(AbstractRoute route) {
+  public boolean mergeRoute(AnnotatedRoute<AbstractRoute> route) {
     return _mergeRouteTrues.contains(route);
   }
 }

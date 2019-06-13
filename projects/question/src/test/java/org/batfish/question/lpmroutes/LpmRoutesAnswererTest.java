@@ -21,6 +21,7 @@ import com.google.common.collect.ImmutableSortedMap;
 import java.util.List;
 import java.util.function.Function;
 import java.util.regex.Pattern;
+import org.batfish.datamodel.AnnotatedRoute;
 import org.batfish.datamodel.ConnectedRoute;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.MockRib;
@@ -40,8 +41,10 @@ public class LpmRoutesAnswererTest {
             ImmutableMap.of(
                 ip,
                 ImmutableSet.of(
-                    new ConnectedRoute(Prefix.parse("1.1.1.0/24"), "Eth0"),
-                    new ConnectedRoute(Prefix.parse("1.1.1.0/24"), "Eth1"))))
+                    new AnnotatedRoute<>(
+                        new ConnectedRoute(Prefix.parse("1.1.1.0/24"), "Eth0"), "vrf"),
+                    new AnnotatedRoute<>(
+                        new ConnectedRoute(Prefix.parse("1.1.1.0/24"), "Eth1"), "vrf"))))
         .build();
   }
 
