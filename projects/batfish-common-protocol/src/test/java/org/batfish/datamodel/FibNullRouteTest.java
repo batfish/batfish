@@ -13,7 +13,8 @@ public final class FibNullRouteTest {
   public void testEquals() {
     new EqualsTester()
         .addEqualityGroup(FibNullRoute.INSTANCE, FibNullRoute.INSTANCE)
-        .addEqualityGroup(new Object());
+        .addEqualityGroup(new Object())
+        .testEquals();
   }
 
   @Test
