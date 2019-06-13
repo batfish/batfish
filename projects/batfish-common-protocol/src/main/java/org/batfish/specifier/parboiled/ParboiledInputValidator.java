@@ -109,10 +109,16 @@ public final class ParboiledInputValidator {
       CompletionMetadata completionMetadata,
       NodeRolesData nodeRolesData,
       ReferenceLibrary referenceLibrary) {
-    this(parser.getInputRule(grammar), grammar, query, completionMetadata, nodeRolesData, referenceLibrary);
+    this(
+        parser.getInputRule(grammar),
+        grammar,
+        query,
+        completionMetadata,
+        nodeRolesData,
+        referenceLibrary);
   }
 
-  ParboiledInputValidator(
+  private ParboiledInputValidator(
       Rule inputRule,
       Grammar grammar,
       String query,
