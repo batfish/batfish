@@ -1078,11 +1078,7 @@ public final class Interface extends ComparableStructure<String> {
     return _allowedVlans;
   }
 
-  /**
-   * All IPV4 address/network assignments on this interface.
-   *
-   * @return
-   */
+  /** All IPV4 address/network assignments on this interface. */
   @JsonProperty(PROP_ALL_PREFIXES)
   public Set<ConcreteInterfaceAddress> getAllConcreteAddresses() {
     return _allAddresses.stream()
