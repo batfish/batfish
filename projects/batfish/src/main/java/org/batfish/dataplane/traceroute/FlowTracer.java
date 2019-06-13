@@ -101,10 +101,10 @@ import org.batfish.datamodel.transformation.TransformationEvaluator.Transformati
  */
 class FlowTracer {
 
+  /* Comparator used to deterministically order FibAction branches to visit */
   private static final class FibActionComparator implements Comparator<FibAction> {
 
     private static final Comparator<FibAction> INSTANCE = new FibActionComparator();
-
     private static final Comparator<FibForward> FIB_FORWARD_COMPARATOR =
         Comparator.comparing(FibForward::getInterfaceName).thenComparing(FibForward::getArpIp);
 
@@ -442,7 +442,7 @@ class FlowTracer {
 
       // Group traces by outgoing interface (we do not want extra branching if there is branching
       // in FIB resolution)
-      SortedMap<FibAction, Set<FibEntry>> groupedByExitPoint =
+      SortedMap<FibAction, Set<FibEntry>> groupedByFibAction =
           // Sort so that resulting traces will be in sensible deterministic order
           ImmutableSortedMap.copyOf(
               fibEntries.stream()
@@ -450,7 +450,7 @@ class FlowTracer {
               FibActionComparator.INSTANCE);
 
       // For every interface with a route to the dst IP
-      for (FibAction action : groupedByExitPoint.keySet()) {
+      for (FibAction action : groupedByFibAction.keySet()) {
         switch (action.getType()) {
           case FORWARD:
             FibForward fibForward = (FibForward) action;

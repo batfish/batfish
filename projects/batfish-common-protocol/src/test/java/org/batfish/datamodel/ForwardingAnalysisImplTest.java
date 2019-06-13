@@ -1472,13 +1472,6 @@ public class ForwardingAnalysisImplTest {
                     ImmutableSet.of(
                         new FibEntry(
                             new FibForward(Ip.AUTO, i1.getName()), ImmutableList.of(route1)))))
-            //            .setNextHopInterfaces(
-            //                ImmutableMap.of(
-            //                    route1,
-            //                    ImmutableMap.of(
-            //                        i1.getName(),
-            //                        ImmutableMap.of(Route.UNSET_ROUTE_NEXT_HOP_IP,
-            // ImmutableSet.of(route1)))))
             .build();
 
     MockFib fib2 =
@@ -1490,13 +1483,6 @@ public class ForwardingAnalysisImplTest {
                     ImmutableSet.of(
                         new FibEntry(
                             new FibForward(Ip.AUTO, i2.getName()), ImmutableList.of(route2)))))
-            //            .setNextHopInterfaces(
-            //                ImmutableMap.of(
-            //                    route2,
-            //                    ImmutableMap.of(
-            //                        i2.getName(),
-            //                        ImmutableMap.of(Route.UNSET_ROUTE_NEXT_HOP_IP,
-            // ImmutableSet.of(route2)))))
             .build();
 
     Map<String, Map<String, Fib>> fibs =

@@ -10,7 +10,7 @@ import javax.annotation.ParametersAreNonnullByDefault;
  * a packet given a successful reply.
  */
 @ParametersAreNonnullByDefault
-public class FibForward implements FibAction {
+public final class FibForward implements FibAction {
 
   private static final long serialVersionUID = 1L;
 
