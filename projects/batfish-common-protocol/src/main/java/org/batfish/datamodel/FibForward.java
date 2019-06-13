@@ -12,6 +12,8 @@ import javax.annotation.ParametersAreNonnullByDefault;
 @ParametersAreNonnullByDefault
 public class FibForward implements FibAction {
 
+  private static final long serialVersionUID = 1L;
+
   private final @Nonnull Ip _arpIp;
   private final @Nonnull String _interfaceName;
 
