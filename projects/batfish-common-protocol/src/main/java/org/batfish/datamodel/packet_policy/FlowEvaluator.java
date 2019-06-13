@@ -13,8 +13,8 @@ import org.batfish.datamodel.acl.Evaluator;
 /**
  * Evaluates a {@link PacketPolicy} against a given {@link Flow}.
  *
- * <p>To evaluate an entire policy, see {@link #evaluate(Flow, String, PacketPolicy)} which will
- * return a {@link FlowResult}.
+ * <p>To evaluate an entire policy, see {@link #evaluate(Flow, String, PacketPolicy, Map, Map)}
+ * which will return a {@link FlowResult}.
  */
 @ParametersAreNonnullByDefault
 public final class FlowEvaluator {
