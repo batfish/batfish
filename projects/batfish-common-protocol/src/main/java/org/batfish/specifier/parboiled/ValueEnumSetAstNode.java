@@ -4,26 +4,26 @@ import com.google.common.base.MoreObjects;
 import java.util.Collection;
 import java.util.Objects;
 
-final class ValueEnumSetAstNode implements EnumSetAstNode {
-  private final String _value;
+final class ValueEnumSetAstNode<T> implements EnumSetAstNode {
+  private final T _value;
 
-  ValueEnumSetAstNode(String value, Collection<String> allValues) {
-    // canonicalize to the proper case
+  ValueEnumSetAstNode(String stringValue, Collection<T> allValues) {
+    // find the value in the collection and map to that
     _value =
         allValues.stream()
-            .filter(p -> p.equalsIgnoreCase(value))
+            .filter(p -> p.toString().equalsIgnoreCase(stringValue))
             .findAny()
             .orElseThrow(
-                () -> new IllegalArgumentException("Value not found in allValues " + value));
+                () -> new IllegalArgumentException("Value not found in allValues " + stringValue));
   }
 
   @Override
-  public <T> T accept(AstNodeVisitor<T> visitor) {
-    return visitor.visitTypeNamedStructureAstNode(this);
+  public <T1> T1 accept(AstNodeVisitor<T1> visitor) {
+    return visitor.visitValueEnumSetAstNode(this);
   }
 
   @Override
-  public <T> T accept(EnumSetAstNodeVisitor<T> visitor) {
+  public <T1> T1 accept(EnumSetAstNodeVisitor<T1> visitor) {
     return visitor.visitValueEnumSetAstNode(this);
   }
 
@@ -32,14 +32,13 @@ final class ValueEnumSetAstNode implements EnumSetAstNode {
     if (this == o) {
       return true;
     }
-    if (!(o instanceof ValueEnumSetAstNode)) {
+    if (!(o instanceof ValueEnumSetAstNode<?>)) {
       return false;
     }
-    ValueEnumSetAstNode that = (ValueEnumSetAstNode) o;
-    return Objects.equals(_value, that._value);
+    return Objects.equals(_value, ((ValueEnumSetAstNode) o)._value);
   }
 
-  public String getValue() {
+  public T getValue() {
     return _value;
   }
 
@@ -50,6 +49,6 @@ final class ValueEnumSetAstNode implements EnumSetAstNode {
 
   @Override
   public String toString() {
-    return MoreObjects.toStringHelper(getClass()).add("type", _value).toString();
+    return MoreObjects.toStringHelper(getClass()).add("value", _value).toString();
   }
 }

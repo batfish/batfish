@@ -10,16 +10,16 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Range;
 import com.google.common.collect.Sets;
 import com.google.common.collect.Streams;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import org.batfish.specifier.IdentityEnumSetSpecifier;
+import org.batfish.specifier.ConstantEnumSetSpecifier;
 import org.batfish.specifier.NoIpProtocolsIpProtocolSpecifier;
 import org.batfish.specifier.SpecifierFactories;
-import org.batfish.specifier.parboiled.Grammar;
 
 /**
  * A set of constraints on an IPv4 packet header, where each field (i.e., constraint) is a {@link
@@ -187,10 +187,10 @@ public class PacketHeaderConstraints {
     }
 
     return SpecifierFactories.getEnumSetSpecifierOrDefault(
-            input, Grammar.APPLICATION_SPECIFIER, new IdentityEnumSetSpecifier(ImmutableSet.of()))
-        .resolve().stream()
-        .map(s -> Enum.valueOf(Protocol.class, s))
-        .collect(ImmutableSet.toImmutableSet());
+            input,
+            Arrays.asList(Protocol.values()),
+            new ConstantEnumSetSpecifier<>(ImmutableSet.of()))
+        .resolve();
   }
 
   /**

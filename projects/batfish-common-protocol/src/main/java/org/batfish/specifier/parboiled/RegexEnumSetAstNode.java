@@ -20,7 +20,7 @@ final class RegexEnumSetAstNode implements EnumSetAstNode {
 
   @Override
   public <T> T accept(AstNodeVisitor<T> visitor) {
-    return visitor.visitTypeRegexNamedStructureAstNode(this);
+    return visitor.visitRegexEnumSetAstNode(this);
   }
 
   @Override

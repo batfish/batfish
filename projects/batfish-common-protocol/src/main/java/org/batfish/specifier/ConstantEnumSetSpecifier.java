@@ -9,20 +9,20 @@ import javax.annotation.ParametersAreNonnullByDefault;
 
 /** A {@link EnumSetSpecifier} the returns the structure types specified */
 @ParametersAreNonnullByDefault
-public final class IdentityEnumSetSpecifier implements EnumSetSpecifier {
+public final class ConstantEnumSetSpecifier<T> implements EnumSetSpecifier<T> {
 
-  @Nonnull private final Set<String> _structureTypes;
+  @Nonnull private final Set<T> _structureTypes;
 
-  public IdentityEnumSetSpecifier(Set<String> structureTypes) {
+  public ConstantEnumSetSpecifier(Set<T> structureTypes) {
     _structureTypes = ImmutableSet.copyOf(structureTypes);
   }
 
   @Override
   public boolean equals(@Nullable Object obj) {
-    if (!(obj instanceof IdentityEnumSetSpecifier)) {
+    if (!(obj instanceof ConstantEnumSetSpecifier)) {
       return false;
     }
-    return Objects.equals(_structureTypes, ((IdentityEnumSetSpecifier) obj)._structureTypes);
+    return Objects.equals(_structureTypes, ((ConstantEnumSetSpecifier) obj)._structureTypes);
   }
 
   @Override
@@ -31,7 +31,7 @@ public final class IdentityEnumSetSpecifier implements EnumSetSpecifier {
   }
 
   @Override
-  public Set<String> resolve() {
+  public Set<T> resolve() {
     return _structureTypes;
   }
 }

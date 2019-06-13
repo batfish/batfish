@@ -253,8 +253,8 @@ public final class AutoCompleteUtils {
         case APPLICATION_SPEC:
           {
             suggestions =
-                ParboiledAutoComplete.autoComplete(
-                    Grammar.APPLICATION_SPECIFIER,
+                ParboiledAutoComplete.autoCompleteEnumSet(
+                    Arrays.asList(Protocol.values()),
                     network,
                     snapshot,
                     query,
@@ -461,7 +461,7 @@ public final class AutoCompleteUtils {
           {
             suggestions =
                 ParboiledAutoComplete.autoComplete(
-                    Grammar.NAMED_STRUCTURE_SPECIFIER,
+                    Grammar.ENUM_SET_SPECIFIER,
                     network,
                     snapshot,
                     query,

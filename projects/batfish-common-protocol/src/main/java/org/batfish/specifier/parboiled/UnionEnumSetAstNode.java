@@ -14,7 +14,7 @@ final class UnionEnumSetAstNode implements EnumSetAstNode {
 
   @Override
   public <T> T accept(AstNodeVisitor<T> visitor) {
-    return visitor.visitUnionNamedStructureAstNode(this);
+    return visitor.visitUnionEnumSetAstNode(this);
   }
 
   @Override

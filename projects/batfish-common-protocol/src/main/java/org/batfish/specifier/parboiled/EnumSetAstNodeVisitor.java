@@ -1,9 +1,9 @@
 package org.batfish.specifier.parboiled;
 
 interface EnumSetAstNodeVisitor<T> {
-  T visitUnionEnumSetAstNode(UnionEnumSetAstNode unionNamedStructureAstNode);
+  T visitUnionEnumSetAstNode(UnionEnumSetAstNode unionEnumSetAstNode);
 
-  T visitValueEnumSetAstNode(ValueEnumSetAstNode typeNamedStructureAstNode);
+  <T1> T visitValueEnumSetAstNode(ValueEnumSetAstNode<T1> valueEnumSetAstNode);
 
-  T visitRegexEnumSetAstNode(RegexEnumSetAstNode typeRegexNamedStructureAstNode);
+  T visitRegexEnumSetAstNode(RegexEnumSetAstNode regexEnumSetAstNode);
 }

@@ -59,14 +59,11 @@ import static org.batfish.specifier.parboiled.Anchor.Type.ROUTING_POLICY_SET_OP;
 import static org.batfish.specifier.parboiled.Anchor.Type.VRF_NAME;
 import static org.batfish.specifier.parboiled.Anchor.Type.ZONE_NAME;
 
-import com.google.common.collect.ImmutableList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Map;
 import org.batfish.datamodel.DeviceType;
 import org.batfish.datamodel.InterfaceType;
-import org.batfish.datamodel.Protocol;
-import org.batfish.datamodel.questions.NamedStructurePropertySpecifier;
 import org.parboiled.Parboiled;
 import org.parboiled.Rule;
 import org.parboiled.support.Var;
@@ -86,17 +83,15 @@ import org.parboiled.support.Var;
 })
 public class Parser extends CommonParser {
 
-  static final boolean SUPPORT_DEPRECATED_UNENCLOSED_REGEXES = true;
-
   static final Map<String, Anchor.Type> ANCHORS = initAnchors(Parser.class);
 
   /**
    * An array of Rules for matching enum values. They should have been private and static but
    * parboiled does not like those things in this context.
    */
-  final Rule[] _deviceTypeRules = initEnumRules(DeviceType.values());
+  final Rule[] _deviceTypeRules = initValuesRules(Arrays.asList(DeviceType.values()));
 
-  final Rule[] _interfaceTypeRules = initEnumRules(InterfaceType.values());
+  final Rule[] _interfaceTypeRules = initValuesRules(Arrays.asList(InterfaceType.values()));
 
   final Rule[] _ipProtocolNameRules = initIpProtocolNameRules();
 
@@ -107,8 +102,9 @@ public class Parser extends CommonParser {
   @Override
   Rule getInputRule(Grammar grammar) {
     switch (grammar) {
-      case APPLICATION_SPECIFIER:
-        return input(EnumSetSpec(grammar));
+      case ENUM_SET_SPECIFIER:
+        throw new IllegalArgumentException(
+            "Method cannot be called for EnumSet grammars. Call getEnumSetRule instead.");
       case FILTER_SPECIFIER:
         return input(FilterSpec());
       case INTERFACE_SPECIFIER:
@@ -119,8 +115,6 @@ public class Parser extends CommonParser {
         return input(IpSpaceSpec());
       case LOCATION_SPECIFIER:
         return input(LocationSpec());
-      case NAMED_STRUCTURE_SPECIFIER:
-        return input(EnumSetSpec(grammar));
       case NODE_SPECIFIER:
         return input(NodeSpec());
       case ROUTING_POLICY_SPECIFIER:
@@ -131,17 +125,8 @@ public class Parser extends CommonParser {
     }
   }
 
-  static Collection<String> getEnumValues(Grammar grammar) {
-    switch (grammar) {
-      case APPLICATION_SPECIFIER:
-        return Arrays.stream(Protocol.values())
-            .map(Object::toString)
-            .collect(ImmutableList.toImmutableList());
-      case NAMED_STRUCTURE_SPECIFIER:
-        return NamedStructurePropertySpecifier.JAVA_MAP.keySet();
-      default:
-        throw new IllegalArgumentException("Grammar is not of enum set type: " + grammar);
-    }
+  <T> Rule getEnumSetRule(Collection<T> allValues) {
+    return input(EnumSetSpec(allValues));
   }
 
   /** Matches Reference Book name. */
@@ -163,26 +148,22 @@ public class Parser extends CommonParser {
 
   /** An enumSetSpec is one or more terms separated by , */
   @Anchor(ENUM_SET_SET_OP)
-  public Rule EnumSetSpec(Grammar grammar) {
+  public <T> Rule EnumSetSpec(Collection<T> values) {
     return Sequence(
-        EnumSetTerm(grammar),
+        EnumSetTerm(values),
         WhiteSpace(),
         ZeroOrMore(
-            ", ",
-            EnumSetTerm(grammar),
-            push(new UnionEnumSetAstNode(pop(1), pop())),
-            WhiteSpace()));
+            ", ", EnumSetTerm(values), push(new UnionEnumSetAstNode(pop(1), pop())), WhiteSpace()));
   }
 
-  public Rule EnumSetTerm(Grammar grammar) {
-    return FirstOf(EnumSetRegexDeprecated(), EnumSetRegex(), EnumSetValue(grammar));
+  public <T> Rule EnumSetTerm(Collection<T> values) {
+    return FirstOf(EnumSetRegexDeprecated(), EnumSetRegex(), EnumSetValue(values));
   }
 
   @Anchor(ENUM_SET_VALUE)
-  public Rule EnumSetValue(Grammar grammar) {
-    Collection<String> values = getEnumValues(grammar);
+  public <T> Rule EnumSetValue(Collection<T> allValues) {
     return Sequence(
-        FirstOf(initValuesRules(values)), push(new ValueEnumSetAstNode(match(), values)));
+        FirstOf(initValuesRules(allValues)), push(new ValueEnumSetAstNode<>(match(), allValues)));
   }
 
   @Anchor(ENUM_SET_REGEX)

@@ -11,10 +11,9 @@ import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.answers.Schema;
+import org.batfish.specifier.ConstantEnumSetSpecifier;
 import org.batfish.specifier.EnumSetSpecifier;
-import org.batfish.specifier.IdentityEnumSetSpecifier;
 import org.batfish.specifier.SpecifierFactories;
-import org.batfish.specifier.parboiled.Grammar;
 
 /** Enables specification a set of named structures. */
 @ParametersAreNonnullByDefault
@@ -121,12 +120,13 @@ public class NamedStructurePropertySpecifier extends PropertySpecifier {
                   Configuration::getZones, Schema.OBJECT, "Firewall security zone"))
           .build();
 
+  /** A specifier for all properties */
   public static final NamedStructurePropertySpecifier ALL =
       new NamedStructurePropertySpecifier("/.*/");
 
   @Nullable private final String _expression;
 
-  private final EnumSetSpecifier _enumSetSpecifier;
+  private final EnumSetSpecifier<String> _enumSetSpecifier;
 
   @JsonCreator
   private static NamedStructurePropertySpecifier create(String expression) {
@@ -137,17 +137,15 @@ public class NamedStructurePropertySpecifier extends PropertySpecifier {
     this(
         expression,
         SpecifierFactories.getEnumSetSpecifierOrDefault(
-            expression,
-            Grammar.NAMED_STRUCTURE_SPECIFIER,
-            new IdentityEnumSetSpecifier(JAVA_MAP.keySet())));
+            expression, JAVA_MAP.keySet(), new ConstantEnumSetSpecifier<>(JAVA_MAP.keySet())));
   }
 
-  public NamedStructurePropertySpecifier(EnumSetSpecifier enumSetSpecifier) {
+  public NamedStructurePropertySpecifier(EnumSetSpecifier<String> enumSetSpecifier) {
     this(null, enumSetSpecifier);
   }
 
   private NamedStructurePropertySpecifier(
-      @Nullable String expression, EnumSetSpecifier enumSetSpecifier) {
+      @Nullable String expression, EnumSetSpecifier<String> enumSetSpecifier) {
     _expression = expression;
     _enumSetSpecifier = enumSetSpecifier;
   }

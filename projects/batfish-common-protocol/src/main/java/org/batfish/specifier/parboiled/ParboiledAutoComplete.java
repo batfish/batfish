@@ -46,6 +46,7 @@ import org.batfish.referencelibrary.ReferenceLibrary;
 import org.batfish.role.NodeRole;
 import org.batfish.role.NodeRoleDimension;
 import org.batfish.role.NodeRolesData;
+import org.parboiled.Rule;
 import org.parboiled.errors.InvalidInputError;
 import org.parboiled.parserunners.ReportingParseRunner;
 import org.parboiled.support.ParsingResult;
@@ -68,7 +69,7 @@ public final class ParboiledAutoComplete {
               .map(InterfaceGroup::getName)
               .collect(ImmutableSet.toImmutableSet());
 
-  private final CommonParser _parser;
+  private final Rule _inputRule;
   private final Grammar _grammar;
   private final Map<String, Anchor.Type> _completionTypes;
 
@@ -91,7 +92,31 @@ public final class ParboiledAutoComplete {
       CompletionMetadata completionMetadata,
       NodeRolesData nodeRolesData,
       ReferenceLibrary referenceLibrary) {
-    _parser = parser;
+    this(
+        parser.getInputRule(grammar),
+        grammar,
+        completionTypes,
+        network,
+        snapshot,
+        query,
+        maxSuggestions,
+        completionMetadata,
+        nodeRolesData,
+        referenceLibrary);
+  }
+
+  ParboiledAutoComplete(
+      Rule inputRule,
+      Grammar grammar,
+      Map<String, Anchor.Type> completionTypes,
+      String network,
+      String snapshot,
+      String query,
+      int maxSuggestions,
+      CompletionMetadata completionMetadata,
+      NodeRolesData nodeRolesData,
+      ReferenceLibrary referenceLibrary) {
+    _inputRule = inputRule;
     _grammar = grammar;
     _completionTypes = completionTypes;
     _network = network;
@@ -115,8 +140,33 @@ public final class ParboiledAutoComplete {
     Parser parser = Parser.instance();
     return toAutoCompleteSuggestions(
         new ParboiledAutoComplete(
-                parser,
+                parser.getInputRule(grammar),
                 grammar,
+                Parser.ANCHORS,
+                network,
+                snapshot,
+                query,
+                maxSuggestions,
+                completionMetadata,
+                nodeRolesData,
+                referenceLibrary)
+            .run());
+  }
+
+  public static <T> List<AutocompleteSuggestion> autoCompleteEnumSet(
+      Collection<T> allValues,
+      String network,
+      String snapshot,
+      String query,
+      int maxSuggestions,
+      CompletionMetadata completionMetadata,
+      NodeRolesData nodeRolesData,
+      ReferenceLibrary referenceLibrary) {
+    Parser parser = Parser.instance();
+    return toAutoCompleteSuggestions(
+        new ParboiledAutoComplete(
+                parser.getEnumSetRule(allValues),
+                Grammar.ENUM_SET_SPECIFIER,
                 Parser.ANCHORS,
                 network,
                 snapshot,
@@ -145,8 +195,7 @@ public final class ParboiledAutoComplete {
      */
     String testQuery = query + new String(Character.toChars(ILLEGAL_CHAR));
 
-    ParsingResult<AstNode> result =
-        new ReportingParseRunner<AstNode>(_parser.getInputRule(_grammar)).run(testQuery);
+    ParsingResult<AstNode> result = new ReportingParseRunner<AstNode>(_inputRule).run(testQuery);
     if (result.parseErrors.isEmpty()) {
       throw new IllegalStateException("Failed to force erroneous input");
     }

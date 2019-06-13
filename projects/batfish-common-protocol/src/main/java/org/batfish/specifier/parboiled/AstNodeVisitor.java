@@ -107,9 +107,9 @@ interface AstNodeVisitor<T> {
 
   T visitFilterWithNodeFilterAstNode(FilterWithNodeFilterAstNode filterWithNodeFilterAstNode);
 
-  T visitUnionNamedStructureAstNode(UnionEnumSetAstNode unionNamedStructureAstNode);
+  T visitUnionEnumSetAstNode(UnionEnumSetAstNode unionEnumSetAstNode);
 
-  T visitTypeNamedStructureAstNode(ValueEnumSetAstNode typeNamedStructureAstNode);
+  <T1> T visitValueEnumSetAstNode(ValueEnumSetAstNode<T1> valueEnumSetAstNode);
 
-  T visitTypeRegexNamedStructureAstNode(RegexEnumSetAstNode typeRegexNamedStructureAstNode);
+  T visitRegexEnumSetAstNode(RegexEnumSetAstNode regexEnumSetAstNode);
 }

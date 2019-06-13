@@ -1,8 +1,8 @@
 package org.batfish.specifier;
 
+import java.util.Collection;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
-import org.batfish.specifier.parboiled.Grammar;
 import org.batfish.specifier.parboiled.ParboiledEnumSetSpecifier;
 import org.batfish.specifier.parboiled.ParboiledFilterSpecifier;
 import org.batfish.specifier.parboiled.ParboiledInterfaceSpecifier;
@@ -84,12 +84,12 @@ public final class SpecifierFactories {
     }
   }
 
-  public static EnumSetSpecifier getEnumSetSpecifier(
-      String input, Grammar grammar, Version version) {
+  public static <T> EnumSetSpecifier<T> getEnumSetSpecifier(
+      String input, Collection<T> allValues, Version version) {
     switch (version) {
       case V1:
       case V2:
-        return ParboiledEnumSetSpecifier.parse(input, grammar);
+        return ParboiledEnumSetSpecifier.parse(input, allValues);
       default:
         throw new IllegalStateException("Unhandled grammar version " + version);
     }
@@ -141,9 +141,9 @@ public final class SpecifierFactories {
     return getLocationSpecifierOrDefault(input, defaultSpecifier, ACTIVE_VERSION);
   }
 
-  public static EnumSetSpecifier getEnumSetSpecifierOrDefault(
-      @Nullable String input, Grammar grammar, EnumSetSpecifier defaultSpecifier) {
-    return getEnumSetSpecifierOrDefault(input, grammar, defaultSpecifier, ACTIVE_VERSION);
+  public static <T> EnumSetSpecifier<T> getEnumSetSpecifierOrDefault(
+      @Nullable String input, Collection<T> allValues, EnumSetSpecifier<T> defaultSpecifier) {
+    return getEnumSetSpecifierOrDefault(input, allValues, defaultSpecifier, ACTIVE_VERSION);
   }
 
   public static NodeSpecifier getNodeSpecifierOrDefault(
@@ -181,11 +181,14 @@ public final class SpecifierFactories {
     return input == null || input.isEmpty() ? defaultSpecifier : getLocationSpecifier(input, v);
   }
 
-  public static EnumSetSpecifier getEnumSetSpecifierOrDefault(
-      @Nullable String input, Grammar grammar, EnumSetSpecifier defaultSpecifier, Version v) {
+  public static <T> EnumSetSpecifier<T> getEnumSetSpecifierOrDefault(
+      @Nullable String input,
+      Collection<T> allValues,
+      EnumSetSpecifier<T> defaultSpecifier,
+      Version v) {
     return input == null || input.isEmpty()
         ? defaultSpecifier
-        : getEnumSetSpecifier(input, grammar, v);
+        : getEnumSetSpecifier(input, allValues, v);
   }
 
   public static NodeSpecifier getNodeSpecifierOrDefault(

@@ -5,6 +5,7 @@ import static org.batfish.datamodel.answers.InputValidationUtils.getErrorMessage
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -24,6 +25,7 @@ import org.batfish.referencelibrary.ReferenceLibrary;
 import org.batfish.role.NodeRoleDimension;
 import org.batfish.role.NodeRolesData;
 import org.batfish.specifier.SpecifierContext;
+import org.parboiled.Rule;
 import org.parboiled.errors.InvalidInputError;
 import org.parboiled.errors.ParserRuntimeException;
 import org.parboiled.parserunners.ReportingParseRunner;
@@ -33,7 +35,7 @@ import org.parboiled.support.ParsingResult;
 @ParametersAreNonnullByDefault
 public final class ParboiledInputValidator {
 
-  private final CommonParser _parser;
+  private final Rule _inputRule;
   private final Grammar _grammar;
   private final String _query;
   private final CompletionMetadata _completionMetadata;
@@ -107,7 +109,17 @@ public final class ParboiledInputValidator {
       CompletionMetadata completionMetadata,
       NodeRolesData nodeRolesData,
       ReferenceLibrary referenceLibrary) {
-    _parser = parser;
+    this(parser.getInputRule(grammar), grammar, query, completionMetadata, nodeRolesData, referenceLibrary);
+  }
+
+  ParboiledInputValidator(
+      Rule inputRule,
+      Grammar grammar,
+      String query,
+      CompletionMetadata completionMetadata,
+      NodeRolesData nodeRolesData,
+      ReferenceLibrary referenceLibrary) {
+    _inputRule = inputRule;
     _grammar = grammar;
     _query = query;
     _completionMetadata = completionMetadata;
@@ -125,7 +137,29 @@ public final class ParboiledInputValidator {
       ReferenceLibrary referenceLibrary) {
     Parser parser = Parser.instance();
     return new ParboiledInputValidator(
-            parser, grammar, query, completionMetadata, nodeRolesData, referenceLibrary)
+            parser.getInputRule(grammar),
+            grammar,
+            query,
+            completionMetadata,
+            nodeRolesData,
+            referenceLibrary)
+        .run();
+  }
+
+  public static <T> InputValidationNotes validate(
+      Collection<T> allEnumValues,
+      String query,
+      CompletionMetadata completionMetadata,
+      NodeRolesData nodeRolesData,
+      ReferenceLibrary referenceLibrary) {
+    Parser parser = Parser.instance();
+    return new ParboiledInputValidator(
+            parser.getEnumSetRule(allEnumValues),
+            Grammar.ENUM_SET_SPECIFIER,
+            query,
+            completionMetadata,
+            nodeRolesData,
+            referenceLibrary)
         .run();
   }
 
@@ -134,7 +168,7 @@ public final class ParboiledInputValidator {
 
     ParsingResult<AstNode> result;
     try {
-      result = new ReportingParseRunner<AstNode>(_parser.getInputRule(_grammar)).run(_query);
+      result = new ReportingParseRunner<AstNode>(_inputRule).run(_query);
     } catch (ParserRuntimeException e) {
       if (e.getCause() instanceof IllegalArgumentException) {
         return new InputValidationNotes(
