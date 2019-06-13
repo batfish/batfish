@@ -350,7 +350,14 @@ class FlowTracer {
       return false;
     }
 
-    FlowResult result = FlowEvaluator.evaluate(_currentFlow, incomingInterface.getName(), policy);
+    Configuration owner = incomingInterface.getOwner();
+    FlowResult result =
+        FlowEvaluator.evaluate(
+            _currentFlow,
+            incomingInterface.getName(),
+            policy,
+            owner.getIpAccessLists(),
+            owner.getIpSpaces());
     return new ActionVisitor<Boolean>() {
 
       @Override
