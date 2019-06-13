@@ -849,7 +849,7 @@ public class ForwardingAnalysisImplTest {
         ImmutableMap.of(
             c1, ImmutableMap.of(v1, ImmutableMap.of(i1, ImmutableSet.of(r1, ifaceRoute))));
     Map<String, Map<String, Map<AbstractRoute, Map<String, Map<Ip, Set<AbstractRoute>>>>>>
-        nextHopInterfacesByNode =
+        nextHopInterfacesByNodeVrf =
             ImmutableMap.of(
                 c1,
                 ImmutableMap.of(
@@ -864,7 +864,7 @@ public class ForwardingAnalysisImplTest {
                             ImmutableMap.of(
                                 Route.UNSET_ROUTE_NEXT_HOP_IP, ImmutableSet.of(ifaceRoute))))));
     Map<String, Map<String, Map<String, Set<AbstractRoute>>>> result =
-        computeRoutesWhereDstIpCanBeArpIp(nextHopInterfacesByNode, routesWithNextHop);
+        computeRoutesWhereDstIpCanBeArpIp(nextHopInterfacesByNodeVrf, routesWithNextHop);
 
     /* Only the interface route should show up */
     assertThat(
@@ -951,7 +951,7 @@ public class ForwardingAnalysisImplTest {
         ImmutableMap.of(c1, ImmutableMap.of(v1, ImmutableMap.of(i1, ImmutableSet.of(r1))));
     AbstractRoute ifaceRoute = new ConnectedRoute(P2, i1);
     Map<String, Map<String, Map<AbstractRoute, Map<String, Map<Ip, Set<AbstractRoute>>>>>>
-        nextHopInterfacesByNode =
+        nextHopInterfacesByNodeVrf =
             ImmutableMap.of(
                 c1,
                 ImmutableMap.of(
@@ -964,7 +964,7 @@ public class ForwardingAnalysisImplTest {
         ImmutableMap.of(c1, ImmutableMap.of(i1, P2.getEndIp().toIpSpace()));
     Map<String, Map<String, Map<String, Set<AbstractRoute>>>> result =
         computeRoutesWithNextHopIpArpFalse(
-            nextHopInterfacesByNode, routesWithNextHop, someoneReplies);
+            nextHopInterfacesByNodeVrf, routesWithNextHop, someoneReplies);
 
     assertThat(
         result,
@@ -1089,7 +1089,7 @@ public class ForwardingAnalysisImplTest {
         ImmutableMap.of(c1, ImmutableMap.of(v1, ImmutableMap.of(i1, ImmutableSet.of(r1, r2))));
     AbstractRoute ifaceRoute = new ConnectedRoute(P2, i1);
     Map<String, Map<String, Map<AbstractRoute, Map<String, Map<Ip, Set<AbstractRoute>>>>>>
-        nextHopInterfacesByNode =
+        nextHopInterfacesByNodeVrf =
             ImmutableMap.of(
                 c1,
                 ImmutableMap.of(
@@ -1103,7 +1103,7 @@ public class ForwardingAnalysisImplTest {
                             i1, ImmutableMap.of(r2.getNextHopIp(), ImmutableSet.of(ifaceRoute))))));
     Map<String, Map<String, Map<Edge, Set<AbstractRoute>>>> result =
         computeRoutesWithNextHopIpArpTrue(
-            nextHopInterfacesByNode, topology, arpReplies, routesWithNextHop);
+            nextHopInterfacesByNodeVrf, topology, arpReplies, routesWithNextHop);
 
     /* Only the route with the next hop ip that gets a reply should be present. */
     assertThat(

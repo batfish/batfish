@@ -440,7 +440,7 @@ class FlowTracer {
 
       _steps.add(buildRoutingStep(fibEntries));
 
-      // Group traces by outgoing interface (we do not want extra branching if there is branching
+      // Group traces by action (we do not want extra branching if there is branching
       // in FIB resolution)
       SortedMap<FibAction, Set<FibEntry>> groupedByFibAction =
           // Sort so that resulting traces will be in sensible deterministic order
@@ -449,7 +449,7 @@ class FlowTracer {
                   .collect(Collectors.groupingBy(FibEntry::getAction, Collectors.toSet())),
               FibActionComparator.INSTANCE);
 
-      // For every interface with a route to the dst IP
+      // For every action corresponding to ECMP LPM FibEntry
       for (FibAction action : groupedByFibAction.keySet()) {
         switch (action.getType()) {
           case FORWARD:
