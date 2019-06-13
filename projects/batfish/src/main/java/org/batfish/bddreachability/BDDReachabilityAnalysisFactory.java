@@ -818,13 +818,13 @@ public final class BDDReachabilityAnalysisFactory {
             i -> {
               String node = i.getOwner().getHostname();
               String iface = i.getName();
-              BDD denyBDD = _convertedPacketPolicies.get(node).get(iface).getToDrop();
+              Transition denyTransition = _convertedPacketPolicies.get(node).get(iface).getToDrop();
 
               return new Edge(
                   new PreInInterface(node, iface),
                   new NodeDropAclIn(node),
                   compose(
-                      constraint(denyBDD),
+                      denyTransition,
                       removeSourceConstraint(_bddSourceManagers.get(node)),
                       removeLastHopConstraint(_lastHopMgr, node)));
             });
@@ -841,17 +841,18 @@ public final class BDDReachabilityAnalysisFactory {
             iface -> {
               String nodeName = iface.getOwner().getHostname();
               String ifaceName = iface.getName();
-              Map<FibLookup, BDD> constraints =
+              Map<FibLookup, Transition> transitionByFibLookup =
                   _convertedPacketPolicies.get(nodeName).get(ifaceName).getFibLookups();
 
               PreInInterface preState = new PreInInterface(nodeName, ifaceName);
-              return constraints.entrySet().stream()
+              return transitionByFibLookup.entrySet().stream()
                   .map(
-                      e ->
+                      transitionByFibLookupEntry ->
                           new Edge(
                               preState,
-                              new PostInVrf(nodeName, e.getKey().getVrfName()),
-                              constraint(e.getValue())));
+                              new PostInVrf(
+                                  nodeName, transitionByFibLookupEntry.getKey().getVrfName()),
+                              transitionByFibLookupEntry.getValue()));
             });
   }
 

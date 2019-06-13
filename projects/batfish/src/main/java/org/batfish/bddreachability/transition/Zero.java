@@ -9,6 +9,11 @@ public final class Zero implements Transition {
   private Zero() {}
 
   @Override
+  public String toString() {
+    return "ZERO";
+  }
+
+  @Override
   public BDD transitForward(BDD bdd) {
     return bdd.getFactory().zero();
   }

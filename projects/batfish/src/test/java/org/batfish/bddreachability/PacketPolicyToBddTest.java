@@ -1,14 +1,19 @@
 package org.batfish.bddreachability;
 
+import static org.batfish.bddreachability.TransitionMatchers.mapsForward;
+import static org.batfish.bddreachability.transition.Transitions.IDENTITY;
+import static org.batfish.bddreachability.transition.Transitions.ZERO;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.aMapWithSize;
 import static org.hamcrest.Matchers.anEmptyMap;
+import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasEntry;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertEquals;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import net.sf.javabdd.BDD;
+import org.batfish.bddreachability.transition.Transition;
 import org.batfish.common.bdd.BDDPacket;
 import org.batfish.common.bdd.BDDSourceManager;
 import org.batfish.common.bdd.IpAccessListToBdd;
@@ -24,17 +29,26 @@ import org.batfish.datamodel.packet_policy.If;
 import org.batfish.datamodel.packet_policy.PacketMatchExpr;
 import org.batfish.datamodel.packet_policy.PacketPolicy;
 import org.batfish.datamodel.packet_policy.Return;
+import org.hamcrest.Matcher;
 import org.junit.Before;
 import org.junit.Test;
 
-public class PacketPolicyToBddTest {
+public final class PacketPolicyToBddTest {
 
   private BDDPacket _bddPacket;
   private IpAccessListToBdd _ipAccessListToBdd;
+  private BDD _one;
+  private BDD _zero;
+
+  private Matcher<Transition> mapsOne(BDD expected) {
+    return mapsForward(_one, expected);
+  }
 
   @Before
   public void setUp() {
     _bddPacket = new BDDPacket();
+    _one = _bddPacket.getFactory().one();
+    _zero = _bddPacket.getFactory().zero();
     _ipAccessListToBdd =
         new IpAccessListToBddImpl(
             _bddPacket, BDDSourceManager.empty(_bddPacket), ImmutableMap.of(), ImmutableMap.of());
@@ -48,7 +62,7 @@ public class PacketPolicyToBddTest {
             _bddPacket,
             _ipAccessListToBdd);
     // Everything is dropped
-    assertTrue(evaluator.getToDrop().isOne());
+    assertEquals(evaluator.getToDrop(), IDENTITY);
     assertThat(evaluator.getFibLookups(), anEmptyMap());
   }
 
@@ -63,10 +77,9 @@ public class PacketPolicyToBddTest {
             _bddPacket,
             _ipAccessListToBdd);
     // Everything is looked up in "vrf"
-    assertTrue(evaluator.getToDrop().isZero());
+    assertEquals(ZERO, evaluator.getToDrop());
     assertThat(evaluator.getFibLookups(), aMapWithSize(1));
-    assertThat(
-        evaluator.getFibLookups(), hasEntry(new FibLookup("vrf"), _bddPacket.getFactory().one()));
+    assertThat(evaluator.getFibLookups(), hasEntry(new FibLookup("vrf"), IDENTITY));
   }
 
   @Test
@@ -99,14 +112,15 @@ public class PacketPolicyToBddTest {
     BDD dstIpBdd = new IpSpaceToBDD(_bddPacket.getDstIp()).toBDD(dstIps);
 
     // Nothing to Drop
-    assertTrue(evaluator.getToDrop().isZero());
+    assertEquals(ZERO, evaluator.getToDrop());
     assertThat(evaluator.getFibLookups(), aMapWithSize(3));
     // Inner if captures 10.0.0.0/8, vrf 1
-    assertThat(evaluator.getFibLookups(), hasEntry(new FibLookup(vrf1), dstIpBdd));
-    // Outer if captures everything else, vrf 2
-    assertThat(evaluator.getFibLookups(), hasEntry(new FibLookup(vrf2), dstIpBdd.not()));
-    // Last statement captures no packets, but is visited in the evaluation
     assertThat(
-        evaluator.getFibLookups(), hasEntry(new FibLookup(vrf3), _bddPacket.getFactory().zero()));
+        evaluator.getFibLookups(), hasEntry(equalTo(new FibLookup(vrf1)), mapsOne(dstIpBdd)));
+    // Outer if captures everything else, vrf 2
+    assertThat(
+        evaluator.getFibLookups(), hasEntry(equalTo(new FibLookup(vrf2)), mapsOne(dstIpBdd.not())));
+    // Last statement captures no packets, but is visited in the evaluation
+    assertThat(evaluator.getFibLookups(), hasEntry(equalTo(new FibLookup(vrf3)), mapsOne(_zero)));
   }
 }

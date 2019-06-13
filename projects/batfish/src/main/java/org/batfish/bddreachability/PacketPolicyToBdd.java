@@ -1,13 +1,18 @@
 package org.batfish.bddreachability;
 
-import static com.google.common.base.MoreObjects.firstNonNull;
+import static org.batfish.bddreachability.transition.Transitions.IDENTITY;
+import static org.batfish.bddreachability.transition.Transitions.ZERO;
+import static org.batfish.bddreachability.transition.Transitions.compose;
+import static org.batfish.bddreachability.transition.Transitions.constraint;
+import static org.batfish.bddreachability.transition.Transitions.or;
 
 import java.util.HashMap;
 import java.util.Map;
 import javax.annotation.Nonnull;
 import javax.annotation.ParametersAreNonnullByDefault;
 import net.sf.javabdd.BDD;
-import org.batfish.common.bdd.BDDOps;
+import org.batfish.bddreachability.transition.Transition;
+import org.batfish.bddreachability.transition.Zero;
 import org.batfish.common.bdd.BDDPacket;
 import org.batfish.common.bdd.IpAccessListToBdd;
 import org.batfish.datamodel.packet_policy.Action;
@@ -32,8 +37,8 @@ class PacketPolicyToBdd {
   @Nonnull private final BoolExprToBdd _boolExprToBdd;
   @Nonnull private final BDD _zero;
 
-  @Nonnull private BDD _toDrop;
-  @Nonnull private final Map<FibLookup, BDD> _fibLookups;
+  @Nonnull private Transition _toDrop;
+  @Nonnull private final Map<FibLookup, Transition> _fibLookups;
 
   /**
    * Process a given {@link PacketPolicy} and return the {@link PacketPolicyToBdd} that expresses
@@ -51,7 +56,7 @@ class PacketPolicyToBdd {
     _bddPacket = packet;
     _boolExprToBdd = new BoolExprToBdd(ipAccessListToBdd);
     _zero = _bddPacket.getFactory().zero();
-    _toDrop = _zero;
+    _toDrop = Zero.INSTANCE;
     _fibLookups = new HashMap<>(0);
   }
 
@@ -64,22 +69,27 @@ class PacketPolicyToBdd {
      * which can be expressed as the complement of the union of packets we have already accounted
      * for.
      */
-    new Collector(firstNonNull(BDDOps.orNull(_fibLookups.values()), _zero).nor(_toDrop))
-        .visit(p.getDefaultAction().getAction());
+    new Collector(stmtConverter._pathTransition).visit(p.getDefaultAction().getAction());
   }
 
-  /** Return the set of packets that is dropped by a policy */
+  /**
+   * Return the set of packets that is dropped by a policy
+   *
+   * @return
+   */
   @Nonnull
-  public BDD getToDrop() {
+  public Transition getToDrop() {
     return _toDrop;
   }
 
   /**
    * Return the sets of packets that must be processed by destination-based forwarding pipeline
    * (expressed as a {@link FibLookup} action).
+   *
+   * @return
    */
   @Nonnull
-  public Map<FibLookup, BDD> getFibLookups() {
+  public Map<FibLookup, Transition> getFibLookups() {
     return _fibLookups;
   }
 
@@ -90,32 +100,33 @@ class PacketPolicyToBdd {
    */
   private final class StatementToBdd implements StatementVisitor<Void> {
     private final BoolExprToBdd _boolExprToBdd;
-    private final BDD _identity;
-    private BDD _currentConstraint;
+    private Transition _pathTransition;
 
     private StatementToBdd(BoolExprToBdd boolExprToBdd) {
       _boolExprToBdd = boolExprToBdd;
-      _identity = _bddPacket.getFactory().one();
-      _currentConstraint = _identity;
+      _pathTransition = IDENTITY;
     }
 
     @Override
     public Void visitIf(If ifStmt) {
       // Save existing constraint
-      BDD oldConstraint = _currentConstraint;
+      Transition reachIf = _pathTransition;
       // Convert IF guard
       BDD matchConstraint = _boolExprToBdd.visit(ifStmt.getMatchCondition());
-      _currentConstraint = _currentConstraint.and(matchConstraint);
+      _pathTransition = compose(reachIf, constraint(matchConstraint));
       // Process true statements
       ifStmt.getTrueStatements().forEach(this::visit);
+      Transition fallThroughTrueBranch = _pathTransition;
       // If fell through, constrain packets with complement of match condition and move on
-      _currentConstraint = oldConstraint.diff(matchConstraint);
+      _pathTransition =
+          or(fallThroughTrueBranch, compose(reachIf, constraint(matchConstraint.not())));
       return null;
     }
 
     @Override
     public Void visitReturn(Return returnStmt) {
-      new Collector(_currentConstraint).visit(returnStmt.getAction());
+      new Collector(_pathTransition).visit(returnStmt.getAction());
+      _pathTransition = ZERO;
       return null;
     }
   }
@@ -139,15 +150,15 @@ class PacketPolicyToBdd {
    * #_fibLookups})
    */
   private final class Collector implements ActionVisitor<Void> {
-    private final BDD _constraint;
+    private final Transition _transition;
 
-    private Collector(BDD constraint) {
-      _constraint = constraint;
+    private Collector(Transition transition) {
+      _transition = transition;
     }
 
     @Override
     public Void visitDrop(Drop drop) {
-      _toDrop = _toDrop.or(_constraint);
+      _toDrop = or(_toDrop, _transition);
       return null;
     }
 
@@ -155,8 +166,8 @@ class PacketPolicyToBdd {
     public Void visitFibLookup(FibLookup fibLookup) {
       _fibLookups.compute(
           fibLookup,
-          (k, oldConstraint) ->
-              oldConstraint == null ? _constraint : oldConstraint.or(_constraint));
+          (k, oldTransition) ->
+              oldTransition == null ? _transition : or(oldTransition, _transition));
       return null;
     }
   }
