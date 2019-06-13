@@ -462,6 +462,10 @@ class FlowTracer {
           case NULL_ROUTE:
             branch().buildNullRoutedTrace();
             break;
+          default:
+            throw new IllegalArgumentException(
+                String.format(
+                    "Unsupported %s: %s", FibActionType.class.getSimpleName(), action.getType()));
         }
       }
     } finally {
