@@ -96,6 +96,7 @@ Batfish supports configurations for a large and growing set of (physical and vir
 * Aruba
 * AWS (VPCs, Network ACLs, VPN GW, NAT GW, Internet GW, Security Groups, etc…)
 * Cisco (All Cisco NX-OS, IOS, IOS-XE, IOS-XR and ASA devices)
+* Cumulus
 * Dell Force10
 * F5 BIG-IP
 * Foundry
