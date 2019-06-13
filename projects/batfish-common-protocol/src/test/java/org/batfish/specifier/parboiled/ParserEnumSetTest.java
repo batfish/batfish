@@ -9,8 +9,11 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Set;
 import java.util.stream.Stream;
+import org.batfish.common.CompletionMetadata;
 import org.batfish.datamodel.Protocol;
 import org.batfish.datamodel.questions.NamedStructurePropertySpecifier;
+import org.batfish.referencelibrary.ReferenceLibrary;
+import org.batfish.role.NodeRolesData;
 import org.batfish.specifier.parboiled.Anchor.Type;
 import org.junit.Rule;
 import org.junit.Test;
@@ -53,7 +56,6 @@ public class ParserEnumSetTest {
     Set<ParboiledAutoCompleteSuggestion> suggestions =
         new ParboiledAutoComplete(
                 Parser.instance().getEnumSetRule(ALL_NAMED_STRUCTURE_TYPES),
-                Grammar.ENUM_SET_SPECIFIER,
                 Parser.ANCHORS,
                 "network",
                 "snapshot",
@@ -86,7 +88,6 @@ public class ParserEnumSetTest {
     Set<ParboiledAutoCompleteSuggestion> suggestions =
         new ParboiledAutoComplete(
                 Parser.instance().getEnumSetRule(ALL_NAMED_STRUCTURE_TYPES),
-                Grammar.ENUM_SET_SPECIFIER,
                 Parser.ANCHORS,
                 "network",
                 "snapshot",
@@ -178,15 +179,14 @@ public class ParserEnumSetTest {
     Set<ParboiledAutoCompleteSuggestion> suggestions =
         new ParboiledAutoComplete(
                 Parser.instance().getEnumSetRule(Arrays.asList(Protocol.values())),
-                Grammar.ENUM_SET_SPECIFIER,
                 Parser.ANCHORS,
                 "network",
                 "snapshot",
                 query,
                 Integer.MAX_VALUE,
-                null,
-                null,
-                null)
+                CompletionMetadata.EMPTY,
+                NodeRolesData.builder().build(),
+                new ReferenceLibrary(null))
             .run();
 
     assertThat(

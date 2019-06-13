@@ -254,7 +254,7 @@ public final class AutoCompleteUtils {
         case APPLICATION_SPEC:
           {
             suggestions =
-                ParboiledAutoComplete.autoCompleteEnumSet(
+                ParboiledAutoComplete.autoComplete(
                     Arrays.asList(Protocol.values()),
                     network,
                     snapshot,
@@ -461,7 +461,7 @@ public final class AutoCompleteUtils {
         case NAMED_STRUCTURE_SPEC:
           {
             suggestions =
-                ParboiledAutoComplete.autoCompleteEnumSet(
+                ParboiledAutoComplete.autoComplete(
                     NamedStructurePropertySpecifier.JAVA_MAP.keySet(),
                     network,
                     snapshot,

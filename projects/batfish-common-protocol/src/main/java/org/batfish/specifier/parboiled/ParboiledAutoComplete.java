@@ -93,7 +93,6 @@ public final class ParboiledAutoComplete {
       ReferenceLibrary referenceLibrary) {
     this(
         parser.getInputRule(grammar),
-        grammar,
         completionTypes,
         network,
         snapshot,
@@ -106,7 +105,6 @@ public final class ParboiledAutoComplete {
 
   ParboiledAutoComplete(
       Rule inputRule,
-      Grammar grammar,
       Map<String, Anchor.Type> completionTypes,
       String network,
       String snapshot,
@@ -135,14 +133,10 @@ public final class ParboiledAutoComplete {
       CompletionMetadata completionMetadata,
       NodeRolesData nodeRolesData,
       ReferenceLibrary referenceLibrary) {
-    checkArgument(
-        !grammar.equals(Grammar.ENUM_SET_SPECIFIER),
-        "autoCompleteEnumSet() should be used to autoComplete enums");
     Parser parser = Parser.instance();
     return toAutoCompleteSuggestions(
         new ParboiledAutoComplete(
                 parser.getInputRule(grammar),
-                grammar,
                 Parser.ANCHORS,
                 network,
                 snapshot,
@@ -154,7 +148,7 @@ public final class ParboiledAutoComplete {
             .run());
   }
 
-  public static <T> List<AutocompleteSuggestion> autoCompleteEnumSet(
+  public static <T> List<AutocompleteSuggestion> autoComplete(
       Collection<T> allValues,
       String network,
       String snapshot,
@@ -167,7 +161,6 @@ public final class ParboiledAutoComplete {
     return toAutoCompleteSuggestions(
         new ParboiledAutoComplete(
                 parser.getEnumSetRule(allValues),
-                Grammar.ENUM_SET_SPECIFIER,
                 Parser.ANCHORS,
                 network,
                 snapshot,
