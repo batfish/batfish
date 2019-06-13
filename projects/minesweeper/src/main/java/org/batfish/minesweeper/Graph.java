@@ -500,7 +500,7 @@ public class Graph {
       for (StaticRoute sr : srs) {
         String name = sr.getNextHopInterface();
         // Create null route interface
-        Interface iface = new Interface(name, null);
+        Interface iface = Interface.builder().setName(name).setOwner(null).build();
         iface.setActive(true);
         iface.setAddress(
             ConcreteInterfaceAddress.create(
@@ -570,7 +570,7 @@ public class Graph {
    * iBGP control plane edge in the network.
    */
   private Interface createIbgpInterface(BgpActivePeerConfig n, String peer) {
-    Interface iface = new Interface("iBGP-" + peer, null);
+    Interface iface = Interface.builder().setName("iBGP-" + peer).setOwner(null).build();
     iface.setActive(true);
     // TODO is this valid.
     iface.setAddress(ConcreteInterfaceAddress.create(n.getPeerAddress(), Prefix.MAX_PREFIX_LENGTH));

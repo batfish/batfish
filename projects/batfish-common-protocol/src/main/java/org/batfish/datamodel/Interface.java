@@ -94,17 +94,20 @@ public final class Interface extends ComparableStructure<String> {
       String name = _name != null ? _name : generateName();
       Interface iface =
           _type == null ? new Interface(name, _owner) : new Interface(name, _owner, _type);
-      ImmutableSet.Builder<InterfaceAddress> allAddresses = ImmutableSet.builder();
       if (_accessVlan != null) {
         iface.setAccessVlan(_accessVlan);
       }
       iface.setActive(_active);
+
+      // Set addresses. If the primary address is missing from allAddresses, add it.
+      ImmutableSet.Builder<InterfaceAddress> allAddresses = ImmutableSet.builder();
       if (_address != null) {
         iface.setAddress(_address);
         allAddresses.add(_address);
       }
-      iface.setAdditionalArpIps(_additionalArpIps);
       iface.setAllAddresses(allAddresses.addAll(_secondaryAddresses).build());
+
+      iface.setAdditionalArpIps(_additionalArpIps);
       if (_allowedVlans != null) {
         iface.setAllowedVlans(_allowedVlans);
       }
@@ -813,7 +816,7 @@ public final class Interface extends ComparableStructure<String> {
     this(name, null);
   }
 
-  public Interface(String name, Configuration owner) {
+  private Interface(String name, Configuration owner) {
     this(name, owner, InterfaceType.UNKNOWN);
 
     // Determine interface type after setting owner
@@ -823,7 +826,7 @@ public final class Interface extends ComparableStructure<String> {
             : computeInterfaceType(_key, _owner.getConfigurationFormat());
   }
 
-  public Interface(String name, Configuration owner, @Nonnull InterfaceType interfaceType) {
+  private Interface(String name, Configuration owner, @Nonnull InterfaceType interfaceType) {
     super(name);
     _active = true;
     _additionalArpIps = EmptyIpSpace.INSTANCE;

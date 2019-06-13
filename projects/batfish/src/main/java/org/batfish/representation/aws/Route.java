@@ -221,7 +221,8 @@ public class Route implements Serializable {
             ConcreteInterfaceAddress remoteVpcIfaceAddress =
                 ConcreteInterfaceAddress.create(
                     peeringLink.getEndIp(), peeringLink.getPrefixLength());
-            Interface remoteVpcIface = new Interface(remoteVpcIfaceName, remoteVpcCfgNode);
+            Interface remoteVpcIface =
+                Interface.builder().setName(remoteVpcIfaceName).setOwner(remoteVpcCfgNode).build();
             remoteVpcCfgNode.getAllInterfaces().put(remoteVpcIfaceName, remoteVpcIface);
             remoteVpcCfgNode
                 .getDefaultVrf()

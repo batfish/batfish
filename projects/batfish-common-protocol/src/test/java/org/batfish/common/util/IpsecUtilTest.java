@@ -149,20 +149,20 @@ public class IpsecUtilTest {
         ImmutableSortedMap.naturalOrder();
     c1.setInterfaces(
         interfaceBuilder
-            .put("Tunnel1", new Interface("Tunnel1", c1))
-            .put("Tunnel3", new Interface("Tunnel3", c1))
-            .put("interface5", new Interface("interface5", c1))
-            .put("Tunnel9", new Interface("Tunnel9", c1))
-            .put("Tunnel7", new Interface("Tunnel7", c1))
+            .put("Tunnel1", Interface.builder().setName("Tunnel1").setOwner(c1).build())
+            .put("Tunnel3", Interface.builder().setName("Tunnel3").setOwner(c1).build())
+            .put("interface5", Interface.builder().setName("interface5").setOwner(c1).build())
+            .put("Tunnel9", Interface.builder().setName("Tunnel9").setOwner(c1).build())
+            .put("Tunnel7", Interface.builder().setName("Tunnel7").setOwner(c1).build())
             .build());
     interfaceBuilder = ImmutableSortedMap.naturalOrder();
     c2.setInterfaces(
         interfaceBuilder
-            .put("Tunnel2", new Interface("Tunnel2", c2))
-            .put("Tunnel4", new Interface("Tunnel4", c2))
-            .put("interface6", new Interface("interface6", c2))
-            .put("Tunnel8", new Interface("Tunnel8", c2))
-            .put("Tunnel10", new Interface("Tunnel10", c2))
+            .put("Tunnel2", Interface.builder().setName("Tunnel2").setOwner(c2).build())
+            .put("Tunnel4", Interface.builder().setName("Tunnel4").setOwner(c2).build())
+            .put("interface6", Interface.builder().setName("interface6").setOwner(c2).build())
+            .put("Tunnel8", Interface.builder().setName("Tunnel8").setOwner(c2).build())
+            .put("Tunnel10", Interface.builder().setName("Tunnel10").setOwner(c2).build())
             .build());
 
     _configurations.put("host1", c1);

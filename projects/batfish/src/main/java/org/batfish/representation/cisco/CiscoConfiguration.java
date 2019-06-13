@@ -2022,8 +2022,11 @@ public final class CiscoConfiguration extends VendorConfiguration {
   private org.batfish.datamodel.Interface toInterface(
       String ifaceName, Interface iface, Map<String, IpAccessList> ipAccessLists, Configuration c) {
     org.batfish.datamodel.Interface newIface =
-        new org.batfish.datamodel.Interface(
-            ifaceName, c, computeInterfaceType(iface.getName(), c.getConfigurationFormat()));
+        org.batfish.datamodel.Interface.builder()
+            .setName(ifaceName)
+            .setOwner(c)
+            .setType(computeInterfaceType(iface.getName(), c.getConfigurationFormat()))
+            .build();
     if (newIface.getInterfaceType() == InterfaceType.VLAN) {
       newIface.setVlan(CommonUtil.getInterfaceVlanNumber(ifaceName));
     }

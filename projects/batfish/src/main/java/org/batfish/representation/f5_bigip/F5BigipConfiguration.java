@@ -1167,7 +1167,7 @@ public class F5BigipConfiguration extends VendorConfiguration {
 
   private @Nonnull org.batfish.datamodel.Interface toInterface(Interface iface) {
     org.batfish.datamodel.Interface newIface =
-        new org.batfish.datamodel.Interface(iface.getName(), _c);
+        org.batfish.datamodel.Interface.builder().setName(iface.getName()).setOwner(_c).build();
     Double speed = iface.getSpeed();
     newIface.setActive(!Boolean.TRUE.equals(iface.getDisabled()));
     newIface.setSpeed(speed);
@@ -1179,7 +1179,11 @@ public class F5BigipConfiguration extends VendorConfiguration {
 
   private org.batfish.datamodel.Interface toInterface(Trunk trunk) {
     org.batfish.datamodel.Interface newIface =
-        new org.batfish.datamodel.Interface(trunk.getName(), _c, InterfaceType.AGGREGATED);
+        org.batfish.datamodel.Interface.builder()
+            .setName(trunk.getName())
+            .setOwner(_c)
+            .setType(InterfaceType.AGGREGATED)
+            .build();
     newIface.setDependencies(
         trunk.getInterfaces().stream()
             .filter(_interfaces::containsKey)
@@ -1192,7 +1196,11 @@ public class F5BigipConfiguration extends VendorConfiguration {
 
   private @Nonnull org.batfish.datamodel.Interface toInterface(Vlan vlan) {
     org.batfish.datamodel.Interface newIface =
-        new org.batfish.datamodel.Interface(vlan.getName(), _c, InterfaceType.VLAN);
+        org.batfish.datamodel.Interface.builder()
+            .setName(vlan.getName())
+            .setOwner(_c)
+            .setType(InterfaceType.VLAN)
+            .build();
     // TODO: Possibly add dependencies on ports allowing this VLAN
     newIface.setVlan(vlan.getTag());
     newIface.setBandwidth(Interface.DEFAULT_BANDWIDTH);

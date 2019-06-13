@@ -470,7 +470,11 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
 
   private void convertLoopback() {
     org.batfish.datamodel.Interface newIface =
-        new org.batfish.datamodel.Interface(LOOPBACK_INTERFACE_NAME, _c, InterfaceType.LOOPBACK);
+        org.batfish.datamodel.Interface.builder()
+            .setName(LOOPBACK_INTERFACE_NAME)
+            .setOwner(_c)
+            .setType(InterfaceType.LOOPBACK)
+            .build();
     newIface.setActive(true);
     if (!_loopback.getAddresses().isEmpty()) {
       newIface.setAddress(_loopback.getAddresses().get(0));
@@ -523,7 +527,11 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
 
   private org.batfish.datamodel.Interface convertVrfLoopbackInterface(Vrf vrf) {
     org.batfish.datamodel.Interface newIface =
-        new org.batfish.datamodel.Interface(vrf.getName(), _c, InterfaceType.LOOPBACK);
+        org.batfish.datamodel.Interface.builder()
+            .setName(vrf.getName())
+            .setOwner(_c)
+            .setType(InterfaceType.LOOPBACK)
+            .build();
     newIface.setActive(true);
     if (!vrf.getAddresses().isEmpty()) {
       newIface.setAddress(vrf.getAddresses().get(0));
@@ -864,7 +872,11 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
   private @Nonnull org.batfish.datamodel.Interface toInterface(Bond bond) {
     String name = bond.getName();
     org.batfish.datamodel.Interface newIface =
-        new org.batfish.datamodel.Interface(name, _c, InterfaceType.AGGREGATED);
+        org.batfish.datamodel.Interface.builder()
+            .setName(name)
+            .setOwner(_c)
+            .setType(InterfaceType.AGGREGATED)
+            .build();
 
     bond.getSlaves().forEach(slave -> _c.getAllInterfaces().get(slave).setChannelGroup(name));
     newIface.setChannelGroupMembers(bond.getSlaves());
@@ -889,7 +901,11 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
   private @Nonnull org.batfish.datamodel.Interface toInterface(Interface iface) {
     String name = iface.getName();
     org.batfish.datamodel.Interface newIface =
-        new org.batfish.datamodel.Interface(name, _c, InterfaceType.PHYSICAL);
+        org.batfish.datamodel.Interface.builder()
+            .setName(name)
+            .setOwner(_c)
+            .setType(InterfaceType.PHYSICAL)
+            .build();
     applyCommonInterfaceSettings(iface, newIface);
 
     applyBridgeSettings(iface.getBridge(), newIface);
@@ -904,7 +920,11 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
       Interface iface, String superInterfaceName) {
     String name = iface.getName();
     org.batfish.datamodel.Interface newIface =
-        new org.batfish.datamodel.Interface(name, _c, InterfaceType.LOGICAL);
+        org.batfish.datamodel.Interface.builder()
+            .setName(name)
+            .setOwner(_c)
+            .setType(InterfaceType.LOGICAL)
+            .build();
     newIface.setDependencies(
         ImmutableSet.of(new Dependency(superInterfaceName, DependencyType.BIND)));
     newIface.setEncapsulationVlan(iface.getEncapsulationVlan());
@@ -914,7 +934,11 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
 
   private org.batfish.datamodel.Interface toInterface(Vlan vlan) {
     org.batfish.datamodel.Interface newIface =
-        new org.batfish.datamodel.Interface(vlan.getName(), _c, InterfaceType.VLAN);
+        org.batfish.datamodel.Interface.builder()
+            .setName(vlan.getName())
+            .setOwner(_c)
+            .setType(InterfaceType.VLAN)
+            .build();
     newIface.setActive(true);
     newIface.setVlan(vlan.getVlanId());
 

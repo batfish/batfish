@@ -49,11 +49,11 @@ public class InterfacePropertiesAnswererTest {
   public void getProperties() {
     Configuration conf1 = new Configuration("node1", ConfigurationFormat.CISCO_IOS);
 
-    Interface iface1 = new Interface("iface1", conf1);
+    Interface iface1 = Interface.builder().setName("iface1").setOwner(conf1).build();
     iface1.setDescription("desc desc desc");
     iface1.setActive(false);
 
-    Interface iface2 = new Interface("iface2", conf1);
+    Interface iface2 = Interface.builder().setName("iface2").setOwner(conf1).build();
     iface2.setDescription("blah blah blah");
 
     conf1.getAllInterfaces().putAll(ImmutableMap.of("iface1", iface1, "iface2", iface2));
