@@ -1,21 +1,27 @@
 package org.batfish.datamodel.packet_policy;
 
-import com.google.common.collect.ImmutableMap;
+import java.util.Map;
 import java.util.Objects;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.Flow;
+import org.batfish.datamodel.IpAccessList;
+import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.acl.Evaluator;
 
 /**
  * Evaluates a {@link PacketPolicy} against a given {@link Flow}.
  *
- * <p>To evaluate an entire policy, see {@link #evaluate(Flow, String, PacketPolicy)} which will
- * return a {@link FlowResult}.
+ * <p>To evaluate an entire policy, see {@link #evaluate(Flow, String, PacketPolicy, Map, Map)}
+ * which will return a {@link FlowResult}.
  */
 @ParametersAreNonnullByDefault
 public final class FlowEvaluator {
+
+  private final @Nonnull Map<String, IpAccessList> _availableAcls;
+  private final @Nonnull Map<String, IpSpace> _namedIpSpaces;
+
   // Start state
   @Nonnull private final String _srcInterface;
 
@@ -31,11 +37,7 @@ public final class FlowEvaluator {
     @Override
     public Boolean visitPacketMatchExpr(PacketMatchExpr expr) {
       return Evaluator.matches(
-          expr.getExpr(),
-          _currentFlow.build(),
-          _srcInterface,
-          ImmutableMap.of(),
-          ImmutableMap.of());
+          expr.getExpr(), _currentFlow.build(), _srcInterface, _availableAcls, _namedIpSpaces);
     }
   }
 
@@ -65,9 +67,15 @@ public final class FlowEvaluator {
     }
   }
 
-  private FlowEvaluator(Flow originalFlow, String srcInterface) {
+  private FlowEvaluator(
+      Flow originalFlow,
+      String srcInterface,
+      Map<String, IpAccessList> availableAcls,
+      Map<String, IpSpace> namedIpSpaces) {
     _currentFlow = originalFlow.toBuilder();
     _srcInterface = srcInterface;
+    _availableAcls = availableAcls;
+    _namedIpSpaces = namedIpSpaces;
   }
 
   @Nonnull
@@ -85,8 +93,13 @@ public final class FlowEvaluator {
     return new FlowResult(getTransformedFlow(), action);
   }
 
-  public static FlowResult evaluate(Flow f, String srcInterface, PacketPolicy policy) {
-    return new FlowEvaluator(f, srcInterface).evaluate(policy);
+  public static FlowResult evaluate(
+      Flow f,
+      String srcInterface,
+      PacketPolicy policy,
+      Map<String, IpAccessList> availableAcls,
+      Map<String, IpSpace> namedIpSpaces) {
+    return new FlowEvaluator(f, srcInterface, availableAcls, namedIpSpaces).evaluate(policy);
   }
 
   /** Combination of final (possibly transformed) {@link Flow} and the action taken */
