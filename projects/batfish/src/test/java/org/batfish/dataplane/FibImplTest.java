@@ -1,7 +1,9 @@
 package org.batfish.dataplane;
 
 import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasPrefix;
-import static org.batfish.datamodel.matchers.FibEntryMatchers.hasInterface;
+import static org.batfish.datamodel.matchers.FibActionMatchers.hasInterfaceName;
+import static org.batfish.datamodel.matchers.FibActionMatchers.isFibForwardActionThat;
+import static org.batfish.datamodel.matchers.FibEntryMatchers.hasAction;
 import static org.batfish.dataplane.ibdp.TestUtils.annotateRoute;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
@@ -22,6 +24,7 @@ import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.Fib;
 import org.batfish.datamodel.FibEntry;
+import org.batfish.datamodel.FibForward;
 import org.batfish.datamodel.FibImpl;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Ip;
@@ -68,7 +71,7 @@ public class FibImplTest {
 
   private static Set<AbstractRoute> getTopLevelRoutesByInterface(Fib fib, String ifaceName) {
     return fib.allEntries().stream()
-        .filter(e -> e.getInterfaceName().equals(ifaceName))
+        .filter(e -> ((FibForward) e.getAction()).getInterfaceName().equals(ifaceName))
         .map(FibEntry::getTopLevelRoute)
         .collect(ImmutableSet.toImmutableSet());
   }
@@ -97,13 +100,17 @@ public class FibImplTest {
     // Should have one LocalRoute per interface (also one ConnectedRoute, but LocalRoute will have
     // longer prefix match). Should see only iface1 in interfaces to ip1.
     Set<FibEntry> nextHopsToIp1 = fib.get(ip1);
-    assertThat(nextHopsToIp1, contains(hasInterface(iface1)));
+    assertThat(
+        nextHopsToIp1, contains(hasAction(isFibForwardActionThat(hasInterfaceName(iface1)))));
 
     // Should see interfaces iface2 and iface3 in interfaces to ip2.
     Set<FibEntry> nextHopsIp2 = fib.get(ip2);
     assertThat(
         nextHopsIp2,
-        containsInAnyOrder(ImmutableList.of(hasInterface(iface2), hasInterface(iface3))));
+        containsInAnyOrder(
+            ImmutableList.of(
+                hasAction(isFibForwardActionThat(hasInterfaceName(iface2))),
+                hasAction(isFibForwardActionThat(hasInterfaceName(iface3))))));
   }
 
   @Test
@@ -133,7 +140,9 @@ public class FibImplTest {
             .get(_config.getHostname())
             .get(Configuration.DEFAULT_VRF_NAME);
 
-    assertThat(fib.get(DST_IP), contains(hasInterface(FAST_ETHERNET_0)));
+    assertThat(
+        fib.get(DST_IP),
+        contains(hasAction(isFibForwardActionThat(hasInterfaceName(FAST_ETHERNET_0)))));
   }
 
   @Test
@@ -161,7 +170,9 @@ public class FibImplTest {
             .get(_config.getHostname())
             .get(Configuration.DEFAULT_VRF_NAME);
 
-    assertThat(fib.get(DST_IP), contains(hasInterface(FAST_ETHERNET_0)));
+    assertThat(
+        fib.get(DST_IP),
+        contains(hasAction(isFibForwardActionThat(hasInterfaceName(FAST_ETHERNET_0)))));
   }
 
   @Test

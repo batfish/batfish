@@ -1,20 +1,24 @@
 package org.batfish.datamodel.matchers;
 
+import javax.annotation.Nonnull;
+import javax.annotation.ParametersAreNonnullByDefault;
+import org.batfish.datamodel.FibAction;
 import org.batfish.datamodel.FibEntry;
 import org.hamcrest.FeatureMatcher;
 import org.hamcrest.Matcher;
 
+@ParametersAreNonnullByDefault
 final class FibEntryMatchersImpl {
 
-  static final class HasInterface extends FeatureMatcher<FibEntry, String> {
+  static final class HasAction extends FeatureMatcher<FibEntry, FibAction> {
 
-    public HasInterface(Matcher<? super String> subMatcher) {
-      super(subMatcher, "A FibEntry with: nextHopInterface", "nextHopInterface");
+    public HasAction(Matcher<? super FibAction> subMatcher) {
+      super(subMatcher, "A FibEntry with action", "action");
     }
 
     @Override
-    protected String featureValueOf(FibEntry fibEntry) {
-      return fibEntry.getInterfaceName();
+    protected @Nonnull FibAction featureValueOf(FibEntry fibEntry) {
+      return fibEntry.getAction();
     }
   }
 

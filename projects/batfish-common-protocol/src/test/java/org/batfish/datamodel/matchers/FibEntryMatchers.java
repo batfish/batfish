@@ -1,14 +1,17 @@
 package org.batfish.datamodel.matchers;
 
-import static org.hamcrest.Matchers.equalTo;
-
+import javax.annotation.Nonnull;
+import javax.annotation.ParametersAreNonnullByDefault;
+import org.batfish.datamodel.FibAction;
 import org.batfish.datamodel.FibEntry;
-import org.batfish.datamodel.matchers.FibEntryMatchersImpl.HasInterface;
+import org.batfish.datamodel.matchers.FibEntryMatchersImpl.HasAction;
+import org.hamcrest.Matcher;
 
 /** Matchers for {@link FibEntry} */
+@ParametersAreNonnullByDefault
 public final class FibEntryMatchers {
-  public static HasInterface hasInterface(String interfaceName) {
-    return new HasInterface(equalTo(interfaceName));
+  public static @Nonnull Matcher<FibEntry> hasAction(Matcher<? super FibAction> subMatcher) {
+    return new HasAction(subMatcher);
   }
 
   private FibEntryMatchers() {}

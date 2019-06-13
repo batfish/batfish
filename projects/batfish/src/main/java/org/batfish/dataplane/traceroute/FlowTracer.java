@@ -41,7 +41,10 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Fib;
+import org.batfish.datamodel.FibAction;
+import org.batfish.datamodel.FibAction.FibActionType;
 import org.batfish.datamodel.FibEntry;
+import org.batfish.datamodel.FibForward;
 import org.batfish.datamodel.FirewallSessionInterfaceInfo;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.FlowDisposition;
@@ -97,6 +100,45 @@ import org.batfish.datamodel.transformation.TransformationEvaluator.Transformati
  * node it entered (if any), the previously exited node/interface (if any), etc.
  */
 class FlowTracer {
+
+  private static final class FibActionComparator implements Comparator<FibAction> {
+
+    private static final Comparator<FibAction> INSTANCE = new FibActionComparator();
+
+    private static final Comparator<FibForward> FIB_FORWARD_COMPARATOR =
+        Comparator.comparing(FibForward::getInterfaceName).thenComparing(FibForward::getArpIp);
+
+    private static int typePrecedence(FibActionType type) {
+      switch (type) {
+        case FORWARD:
+          return 1;
+        case NULL_ROUTE:
+          return 2;
+        default:
+          throw new IllegalArgumentException(
+              String.format("Unsupported %s: %s", FibActionType.class.getSimpleName(), type));
+      }
+    }
+
+    @Override
+    public int compare(@Nonnull FibAction lhs, @Nonnull FibAction rhs) {
+      FibActionType lhsType = lhs.getType();
+      int ret = Integer.compare(typePrecedence(lhsType), typePrecedence(rhs.getType()));
+      if (ret != 0) {
+        return ret;
+      }
+      switch (lhsType) {
+        case FORWARD:
+          return FIB_FORWARD_COMPARATOR.compare((FibForward) lhs, (FibForward) rhs);
+        case NULL_ROUTE:
+          return 0;
+        default:
+          throw new IllegalArgumentException(
+              String.format("Unsupported %s: %s", FibActionType.class.getSimpleName(), lhsType));
+      }
+    }
+  }
+
   private final TracerouteEngineImplContext _tracerouteContext;
   private final Configuration _currentConfig;
   private final @Nullable String _ingressInterface;
@@ -400,24 +442,27 @@ class FlowTracer {
 
       // Group traces by outgoing interface (we do not want extra branching if there is branching
       // in FIB resolution)
-      SortedMap<ExitPoint, Set<FibEntry>> groupedByExitPoint =
+      SortedMap<FibAction, Set<FibEntry>> groupedByExitPoint =
           // Sort so that resulting traces will be in sensible deterministic order
           ImmutableSortedMap.copyOf(
               fibEntries.stream()
-                  .collect(Collectors.groupingBy(ExitPoint::from, Collectors.toSet())),
-              Comparator.comparing(ExitPoint::getInterfaceName).thenComparing(ExitPoint::getArpIP));
+                  .collect(Collectors.groupingBy(FibEntry::getAction, Collectors.toSet())),
+              FibActionComparator.INSTANCE);
 
       // For every interface with a route to the dst IP
-      for (ExitPoint exitPoint : groupedByExitPoint.keySet()) {
-        if (exitPoint.getInterfaceName().equals(Interface.NULL_INTERFACE_NAME)) {
-          branch().buildNullRoutedTrace();
-          continue;
+      for (FibAction action : groupedByExitPoint.keySet()) {
+        switch (action.getType()) {
+          case FORWARD:
+            FibForward fibForward = (FibForward) action;
+            branch()
+                .forwardOutInterface(
+                    _currentConfig.getAllInterfaces().get(fibForward.getInterfaceName()),
+                    fibForward.getArpIp());
+            break;
+          case NULL_ROUTE:
+            branch().buildNullRoutedTrace();
+            break;
         }
-
-        branch()
-            .forwardOutInterface(
-                _currentConfig.getAllInterfaces().get(exitPoint.getInterfaceName()),
-                exitPoint.getArpIP());
       }
     } finally {
       _breadcrumbs.pop();

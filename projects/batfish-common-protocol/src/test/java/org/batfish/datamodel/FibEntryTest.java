@@ -21,14 +21,15 @@ public class FibEntryTest {
   public void testEquals() {
     new EqualsTester()
         .addEqualityGroup(
-            new FibEntry(Ip.parse("1.1.1.1"), "Eth1", RESOLUTION_STEPS),
-            new FibEntry(Ip.parse("1.1.1.1"), "Eth1", RESOLUTION_STEPS))
-        .addEqualityGroup(new FibEntry(Ip.parse("1.1.1.2"), "Eth1", RESOLUTION_STEPS))
-        .addEqualityGroup(new FibEntry(Ip.parse("1.1.1.1"), "Eth2", RESOLUTION_STEPS))
+            new FibEntry(new FibForward(Ip.parse("1.1.1.1"), "Eth1"), RESOLUTION_STEPS),
+            new FibEntry(new FibForward(Ip.parse("1.1.1.1"), "Eth1"), RESOLUTION_STEPS))
+        .addEqualityGroup(
+            new FibEntry(new FibForward(Ip.parse("1.1.1.2"), "Eth1"), RESOLUTION_STEPS))
+        .addEqualityGroup(
+            new FibEntry(new FibForward(Ip.parse("1.1.1.1"), "Eth2"), RESOLUTION_STEPS))
         .addEqualityGroup(
             new FibEntry(
-                Ip.parse("1.1.1.1"),
-                "Eth1",
+                new FibForward(Ip.parse("1.1.1.1"), "Eth1"),
                 ImmutableList.of(new ConnectedRoute(Prefix.parse("2.2.2.4/31"), "Eth100"))))
         .addEqualityGroup(new Object())
         .testEquals();
@@ -36,13 +37,13 @@ public class FibEntryTest {
 
   @Test
   public void testJavaSerialization() {
-    FibEntry fe = new FibEntry(Ip.parse("1.1.1.1"), "Eth1", RESOLUTION_STEPS);
+    FibEntry fe = new FibEntry(new FibForward(Ip.parse("1.1.1.1"), "Eth1"), RESOLUTION_STEPS);
     assertThat(SerializationUtils.clone(fe), equalTo(fe));
   }
 
   @Test
   public void requiresSteps() {
     thrown.expect(IllegalArgumentException.class);
-    new FibEntry(Ip.parse("1.1.1.1"), "Eth1", ImmutableList.of());
+    new FibEntry(new FibForward(Ip.parse("1.1.1.1"), "Eth1"), ImmutableList.of());
   }
 }
