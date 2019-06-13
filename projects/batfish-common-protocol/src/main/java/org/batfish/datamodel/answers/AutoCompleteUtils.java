@@ -254,15 +254,8 @@ public final class AutoCompleteUtils {
         case APPLICATION_SPEC:
           {
             suggestions =
-                ParboiledAutoComplete.autoComplete(
-                    Arrays.asList(Protocol.values()),
-                    network,
-                    snapshot,
-                    query,
-                    maxSuggestions,
-                    completionMetadata,
-                    nodeRolesData,
-                    referenceLibrary);
+                ParboiledAutoComplete.autoCompleteEnumSet(
+                    Arrays.asList(Protocol.values()), network, snapshot, query, maxSuggestions);
             break;
           }
         case BGP_PEER_PROPERTY_SPEC:
@@ -461,15 +454,12 @@ public final class AutoCompleteUtils {
         case NAMED_STRUCTURE_SPEC:
           {
             suggestions =
-                ParboiledAutoComplete.autoComplete(
+                ParboiledAutoComplete.autoCompleteEnumSet(
                     NamedStructurePropertySpecifier.JAVA_MAP.keySet(),
                     network,
                     snapshot,
                     query,
-                    maxSuggestions,
-                    completionMetadata,
-                    nodeRolesData,
-                    referenceLibrary);
+                    maxSuggestions);
             break;
           }
         case NODE_NAME:

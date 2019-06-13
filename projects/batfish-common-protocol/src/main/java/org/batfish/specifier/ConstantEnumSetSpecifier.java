@@ -1,7 +1,6 @@
 package org.batfish.specifier;
 
 import com.google.common.collect.ImmutableSet;
-import java.util.Objects;
 import java.util.Set;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -22,12 +21,12 @@ public final class ConstantEnumSetSpecifier<T> implements EnumSetSpecifier<T> {
     if (!(obj instanceof ConstantEnumSetSpecifier)) {
       return false;
     }
-    return Objects.equals(_structureTypes, ((ConstantEnumSetSpecifier) obj)._structureTypes);
+    return _structureTypes.equals(((ConstantEnumSetSpecifier) obj)._structureTypes);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(_structureTypes);
+    return _structureTypes.hashCode();
   }
 
   @Override

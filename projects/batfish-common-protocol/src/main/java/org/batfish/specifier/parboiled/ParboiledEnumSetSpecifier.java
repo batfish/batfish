@@ -19,11 +19,6 @@ import org.parboiled.support.ParsingResult;
 public final class ParboiledEnumSetSpecifier<T>
     implements EnumSetSpecifier<T>, EnumSetAstNodeVisitor<Set<T>> {
 
-  //  @ParametersAreNonnullByDefault
-  //  private final class EnumSetAstNodeToValues<T> implements  {
-
-  //    EnumSetAstNodeToValues() {}
-
   @Nonnull
   @Override
   @SuppressWarnings("unchecked")
@@ -46,7 +41,6 @@ public final class ParboiledEnumSetSpecifier<T>
     return Sets.union(
         unionEnumSetAstNode.getLeft().accept(this), unionEnumSetAstNode.getRight().accept(this));
   }
-  // }
 
   private final EnumSetAstNode _ast;
 

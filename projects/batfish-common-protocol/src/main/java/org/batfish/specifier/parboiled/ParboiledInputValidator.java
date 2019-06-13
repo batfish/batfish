@@ -135,6 +135,11 @@ public final class ParboiledInputValidator {
         new ValidatorSpecifierContext(_completionMetadata, _nodeRolesData, _referenceLibrary);
   }
 
+  /**
+   * The entry point for input validation. Given the {@code grammar} and {@code query}, this
+   * function will produce {@link InputValidationNotes} based on other supplied details of the
+   * network
+   */
   public static InputValidationNotes validate(
       Grammar grammar,
       String query,
@@ -152,20 +157,19 @@ public final class ParboiledInputValidator {
         .run();
   }
 
-  public static <T> InputValidationNotes validate(
-      Collection<T> allEnumValues,
-      String query,
-      CompletionMetadata completionMetadata,
-      NodeRolesData nodeRolesData,
-      ReferenceLibrary referenceLibrary) {
+  /**
+   * The entry point for validating enum sets, based on the {@code query} and {@code allEnumValues}
+   */
+  public static <T> InputValidationNotes validateEnumSet(
+      Collection<T> allEnumValues, String query) {
     Parser parser = Parser.instance();
     return new ParboiledInputValidator(
             parser.getEnumSetRule(allEnumValues),
             Grammar.ENUM_SET_SPECIFIER,
             query,
-            completionMetadata,
-            nodeRolesData,
-            referenceLibrary)
+            CompletionMetadata.EMPTY,
+            NodeRolesData.builder().build(),
+            new ReferenceLibrary(null))
         .run();
   }
 

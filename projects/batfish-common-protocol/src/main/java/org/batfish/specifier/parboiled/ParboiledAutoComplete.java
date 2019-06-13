@@ -124,6 +124,11 @@ public final class ParboiledAutoComplete {
     _referenceLibrary = referenceLibrary;
   }
 
+  /**
+   * The entry point for auto completion. Given the {@code grammar} and {@code query}, this function
+   * will produce at most {@code maxSuggestions} suggestions based on other supplied details of the
+   * network
+   */
   public static List<AutocompleteSuggestion> autoComplete(
       Grammar grammar,
       String network,
@@ -148,15 +153,12 @@ public final class ParboiledAutoComplete {
             .run());
   }
 
-  public static <T> List<AutocompleteSuggestion> autoComplete(
-      Collection<T> allValues,
-      String network,
-      String snapshot,
-      String query,
-      int maxSuggestions,
-      CompletionMetadata completionMetadata,
-      NodeRolesData nodeRolesData,
-      ReferenceLibrary referenceLibrary) {
+  /**
+   * The entry point for auto completing enum sets. Given the {@code query} and {@code allValues} in
+   * the set, this function will produce at most {@code maxSuggestions} suggestions
+   */
+  public static <T> List<AutocompleteSuggestion> autoCompleteEnumSet(
+      Collection<T> allValues, String network, String snapshot, String query, int maxSuggestions) {
     Parser parser = Parser.instance();
     return toAutoCompleteSuggestions(
         new ParboiledAutoComplete(
@@ -166,13 +168,12 @@ public final class ParboiledAutoComplete {
                 snapshot,
                 query,
                 maxSuggestions,
-                completionMetadata,
-                nodeRolesData,
-                referenceLibrary)
+                CompletionMetadata.EMPTY,
+                NodeRolesData.builder().build(),
+                new ReferenceLibrary(null))
             .run());
   }
 
-  /** This is the entry point for all auto completions */
   Set<ParboiledAutoCompleteSuggestion> run() {
     Set<PotentialMatch> potentialMatches = getPotentialMatches(_query);
 

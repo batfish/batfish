@@ -36,12 +36,7 @@ public final class InputValidationUtils {
 
     switch (varType) {
       case APPLICATION_SPEC:
-        return ParboiledInputValidator.validate(
-            Arrays.asList(Protocol.values()),
-            query,
-            completionMetadata,
-            nodeRolesData,
-            referenceLibrary);
+        return ParboiledInputValidator.validateEnumSet(Arrays.asList(Protocol.values()), query);
       case FILTER_SPEC:
         return ParboiledInputValidator.validate(
             Grammar.FILTER_SPECIFIER, query, completionMetadata, nodeRolesData, referenceLibrary);
@@ -66,12 +61,8 @@ public final class InputValidationUtils {
         return ParboiledInputValidator.validate(
             Grammar.LOCATION_SPECIFIER, query, completionMetadata, nodeRolesData, referenceLibrary);
       case NAMED_STRUCTURE_SPEC:
-        return ParboiledInputValidator.validate(
-            NamedStructurePropertySpecifier.JAVA_MAP.keySet(),
-            query,
-            completionMetadata,
-            nodeRolesData,
-            referenceLibrary);
+        return ParboiledInputValidator.validateEnumSet(
+            NamedStructurePropertySpecifier.JAVA_MAP.keySet(), query);
       case NODE_SPEC:
         return ParboiledInputValidator.validate(
             Grammar.NODE_SPECIFIER, query, completionMetadata, nodeRolesData, referenceLibrary);
