@@ -1554,6 +1554,7 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
         GlobalTracer.get()
             .buildSpan("ForwardingAnalysisImpl.computeNextHopInterfacesByNode")
             .startActive()) {
+      assert span != null; // avoid unused warning
       return toImmutableMap(
           fibsByNode,
           Entry::getKey,
