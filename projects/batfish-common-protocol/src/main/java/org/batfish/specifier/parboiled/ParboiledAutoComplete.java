@@ -70,7 +70,6 @@ public final class ParboiledAutoComplete {
               .collect(ImmutableSet.toImmutableSet());
 
   private final Rule _inputRule;
-  private final Grammar _grammar;
   private final Map<String, Anchor.Type> _completionTypes;
 
   private final String _network;
@@ -117,7 +116,6 @@ public final class ParboiledAutoComplete {
       NodeRolesData nodeRolesData,
       ReferenceLibrary referenceLibrary) {
     _inputRule = inputRule;
-    _grammar = grammar;
     _completionTypes = completionTypes;
     _network = network;
     _snapshot = snapshot;
@@ -137,6 +135,9 @@ public final class ParboiledAutoComplete {
       CompletionMetadata completionMetadata,
       NodeRolesData nodeRolesData,
       ReferenceLibrary referenceLibrary) {
+    checkArgument(
+        !grammar.equals(Grammar.ENUM_SET_SPECIFIER),
+        "autoCompleteEnumSet() should be used to autoComplete enums");
     Parser parser = Parser.instance();
     return toAutoCompleteSuggestions(
         new ParboiledAutoComplete(

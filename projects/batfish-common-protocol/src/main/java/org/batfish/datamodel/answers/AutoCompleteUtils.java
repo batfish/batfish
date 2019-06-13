@@ -35,6 +35,7 @@ import org.batfish.datamodel.questions.BgpProcessPropertySpecifier;
 import org.batfish.datamodel.questions.ConfiguredSessionStatus;
 import org.batfish.datamodel.questions.InterfacePropertySpecifier;
 import org.batfish.datamodel.questions.IpsecSessionStatus;
+import org.batfish.datamodel.questions.NamedStructurePropertySpecifier;
 import org.batfish.datamodel.questions.NodePropertySpecifier;
 import org.batfish.datamodel.questions.OspfPropertySpecifier;
 import org.batfish.datamodel.questions.Variable;
@@ -460,8 +461,8 @@ public final class AutoCompleteUtils {
         case NAMED_STRUCTURE_SPEC:
           {
             suggestions =
-                ParboiledAutoComplete.autoComplete(
-                    Grammar.ENUM_SET_SPECIFIER,
+                ParboiledAutoComplete.autoCompleteEnumSet(
+                    NamedStructurePropertySpecifier.JAVA_MAP.keySet(),
                     network,
                     snapshot,
                     query,
