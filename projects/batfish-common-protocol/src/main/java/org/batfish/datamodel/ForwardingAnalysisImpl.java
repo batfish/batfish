@@ -28,7 +28,6 @@ import org.batfish.common.bdd.IpSpaceToBDD;
 import org.batfish.common.bdd.MemoizedIpSpaceToBDD;
 import org.batfish.common.topology.IpOwners;
 import org.batfish.common.topology.TopologyUtil;
-import org.batfish.datamodel.FibAction.FibActionType;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 
 /** Implementation of {@link ForwardingAnalysis}. */
@@ -615,8 +614,7 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
                                       fib.allEntries().stream()
                                           .filter(
                                               fibEntry ->
-                                                  fibEntry.getAction().getType()
-                                                      == FibActionType.NULL_ROUTE)
+                                                  fibEntry.getAction() instanceof FibNullRoute)
                                           .map(FibEntry::getTopLevelRoute)
                                           .collect(ImmutableSet.toImmutableSet());
                                   return computeRouteMatchConditions(nullRoutes, vrfMatchingIps);
@@ -782,8 +780,7 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
                   Entry::getKey,
                   vrfEntry ->
                       vrfEntry.getValue().allEntries().stream()
-                          .filter(
-                              fibEntry -> fibEntry.getAction().getType() == FibActionType.FORWARD)
+                          .filter(fibEntry -> fibEntry.getAction() instanceof FibForward)
                           .collect(
                               Collectors.groupingBy(
                                   fibEntry ->
@@ -1571,7 +1568,7 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
   static Map<AbstractRoute, Map<String, Map<Ip, Set<AbstractRoute>>>> computeNextHopInterfaces(
       Fib fib) {
     return fib.allEntries().stream()
-        .filter(fibEntry -> fibEntry.getAction().getType() == FibActionType.FORWARD)
+        .filter(fibEntry -> fibEntry.getAction() instanceof FibForward)
         .collect(
             Collectors.groupingBy(
                 FibEntry::getTopLevelRoute,

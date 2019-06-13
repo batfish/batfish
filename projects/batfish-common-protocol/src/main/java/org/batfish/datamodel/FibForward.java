@@ -4,6 +4,7 @@ import static com.google.common.base.MoreObjects.toStringHelper;
 
 import javax.annotation.Nonnull;
 import javax.annotation.ParametersAreNonnullByDefault;
+import org.batfish.datamodel.visitors.FibActionVisitor;
 
 /**
  * A {@link FibAction} directing the device to ARP for a given IP on a given interface, then forward
@@ -33,11 +34,6 @@ public final class FibForward implements FibAction {
   }
 
   @Override
-  public FibActionType getType() {
-    return FibActionType.FORWARD;
-  }
-
-  @Override
   public boolean equals(Object o) {
     if (this == o) {
       return true;
@@ -60,5 +56,10 @@ public final class FibForward implements FibAction {
         .add("arpIp", _arpIp)
         .add("interfaceName", _interfaceName)
         .toString();
+  }
+
+  @Override
+  public <T> T accept(FibActionVisitor<T> visitor) {
+    return visitor.visitFibForward(this);
   }
 }

@@ -1,5 +1,7 @@
 package org.batfish.datamodel;
 
+import org.batfish.datamodel.visitors.FibActionVisitor;
+
 /** A {@link FibAction} that discards a packet. */
 public final class FibNullRoute implements FibAction {
 
@@ -10,11 +12,6 @@ public final class FibNullRoute implements FibAction {
   private FibNullRoute() {}
 
   @Override
-  public FibActionType getType() {
-    return FibActionType.NULL_ROUTE;
-  }
-
-  @Override
   public boolean equals(Object obj) {
     return this == obj || obj instanceof FibNullRoute;
   }
@@ -22,5 +19,10 @@ public final class FibNullRoute implements FibAction {
   @Override
   public int hashCode() {
     return 0;
+  }
+
+  @Override
+  public <T> T accept(FibActionVisitor<T> visitor) {
+    return visitor.visitFibNullRoute(this);
   }
 }

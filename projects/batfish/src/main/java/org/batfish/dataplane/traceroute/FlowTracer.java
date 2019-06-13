@@ -42,9 +42,9 @@ import javax.annotation.Nullable;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Fib;
 import org.batfish.datamodel.FibAction;
-import org.batfish.datamodel.FibAction.FibActionType;
 import org.batfish.datamodel.FibEntry;
 import org.batfish.datamodel.FibForward;
+import org.batfish.datamodel.FibNullRoute;
 import org.batfish.datamodel.FirewallSessionInterfaceInfo;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.FlowDisposition;
@@ -86,6 +86,7 @@ import org.batfish.datamodel.pojo.Node;
 import org.batfish.datamodel.transformation.Transformation;
 import org.batfish.datamodel.transformation.TransformationEvaluator;
 import org.batfish.datamodel.transformation.TransformationEvaluator.TransformationResult;
+import org.batfish.datamodel.visitors.FibActionVisitor;
 
 /**
  * Generates {@link Trace Traces} for a particular flow. Does depth-first search over all ECMP paths
@@ -108,34 +109,67 @@ class FlowTracer {
     private static final Comparator<FibForward> FIB_FORWARD_COMPARATOR =
         Comparator.comparing(FibForward::getInterfaceName).thenComparing(FibForward::getArpIp);
 
-    private static int typePrecedence(FibActionType type) {
-      switch (type) {
-        case FORWARD:
-          return 1;
-        case NULL_ROUTE:
-          return 2;
-        default:
-          throw new IllegalArgumentException(
-              String.format("Unsupported %s: %s", FibActionType.class.getSimpleName(), type));
+    private static final class FibActionSubtypeComparator implements FibActionVisitor<Integer> {
+
+      private final FibAction _rhs;
+
+      private FibActionSubtypeComparator(FibAction rhs) {
+        _rhs = rhs;
       }
-    }
+
+      @Override
+      public Integer visitFibForward(FibForward fibForward) {
+        return FIB_FORWARD_COMPARATOR.compare(fibForward, (FibForward) _rhs);
+      }
+
+      @Override
+      public Integer visitFibNullRoute(FibNullRoute fibNullRoute) {
+        // guarantee type correctness
+        FibNullRoute.class.cast(_rhs);
+        return 0;
+      }
+    };
+
+    private static final FibActionVisitor<Integer> FIB_ACTION_TYPE_PRECEDENCE =
+        new FibActionVisitor<Integer>() {
+          @Override
+          public Integer visitFibForward(FibForward fibForward) {
+            return 1;
+          }
+
+          @Override
+          public Integer visitFibNullRoute(FibNullRoute fibNullRoute) {
+            return 2;
+          }
+        };
 
     @Override
     public int compare(@Nonnull FibAction lhs, @Nonnull FibAction rhs) {
-      FibActionType lhsType = lhs.getType();
-      int ret = Integer.compare(typePrecedence(lhsType), typePrecedence(rhs.getType()));
+      int ret =
+          Integer.compare(
+              lhs.accept(FIB_ACTION_TYPE_PRECEDENCE), rhs.accept(FIB_ACTION_TYPE_PRECEDENCE));
       if (ret != 0) {
         return ret;
       }
-      switch (lhsType) {
-        case FORWARD:
-          return FIB_FORWARD_COMPARATOR.compare((FibForward) lhs, (FibForward) rhs);
-        case NULL_ROUTE:
-          return 0;
-        default:
-          throw new IllegalArgumentException(
-              String.format("Unsupported %s: %s", FibActionType.class.getSimpleName(), lhsType));
-      }
+      return lhs.accept(new FibActionSubtypeComparator(rhs));
+    }
+  }
+
+  private class ActionEvaluator implements FibActionVisitor<Void> {
+
+    @Override
+    public Void visitFibForward(FibForward fibForward) {
+      branch()
+          .forwardOutInterface(
+              _currentConfig.getAllInterfaces().get(fibForward.getInterfaceName()),
+              fibForward.getArpIp());
+      return null;
+    }
+
+    @Override
+    public Void visitFibNullRoute(FibNullRoute fibNullRoute) {
+      branch().buildNullRoutedTrace();
+      return null;
     }
   }
 
@@ -162,6 +196,8 @@ class FlowTracer {
   // The current flow can change as we process the packet.
   private Flow _currentFlow;
 
+  private final ActionEvaluator _actionEvaluator;
+
   @VisibleForTesting
   FlowTracer(
       TracerouteEngineImplContext tracerouteContext,
@@ -186,6 +222,7 @@ class FlowTracer {
 
     _currentFlow = originalFlow;
     _vrfName = initVrfName();
+    _actionEvaluator = new ActionEvaluator();
   }
 
   @VisibleForTesting
@@ -208,6 +245,7 @@ class FlowTracer {
     _originalFlow = originalFlow;
     _currentFlow = currentFlow;
     _flowTraces = flowTraces;
+    _actionEvaluator = new ActionEvaluator();
 
     Configuration currentConfig = _tracerouteContext.getConfigurations().get(currentNode.getName());
     checkArgument(
@@ -451,22 +489,7 @@ class FlowTracer {
 
       // For every action corresponding to ECMP LPM FibEntry
       for (FibAction action : groupedByFibAction.keySet()) {
-        switch (action.getType()) {
-          case FORWARD:
-            FibForward fibForward = (FibForward) action;
-            branch()
-                .forwardOutInterface(
-                    _currentConfig.getAllInterfaces().get(fibForward.getInterfaceName()),
-                    fibForward.getArpIp());
-            break;
-          case NULL_ROUTE:
-            branch().buildNullRoutedTrace();
-            break;
-          default:
-            throw new IllegalArgumentException(
-                String.format(
-                    "Unsupported %s: %s", FibActionType.class.getSimpleName(), action.getType()));
-        }
+        action.accept(_actionEvaluator);
       }
     } finally {
       _breadcrumbs.pop();
