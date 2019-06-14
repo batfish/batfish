@@ -82,7 +82,7 @@ public class NamedStructuresAnswerer extends Answerer {
 
     Multiset<Row> rows = HashMultiset.create();
 
-    for (String structureType : question.getStructureTypeSpecifier().resolve()) {
+    for (String structureType : question.getStructureTypeSpecifier().getMatchingProperties()) {
       RowBuilder row = Row.builder(columns).put(COL_STRUCTURE_TYPE, structureType);
 
       Function<Configuration, Object> structTypeMapGetter =

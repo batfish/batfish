@@ -1,9 +1,10 @@
 package org.batfish.specifier.parboiled;
 
 import static org.batfish.specifier.parboiled.Anchor.Type.ADDRESS_GROUP_NAME;
-import static org.batfish.specifier.parboiled.Anchor.Type.APPLICATION_NAME;
-import static org.batfish.specifier.parboiled.Anchor.Type.APPLICATION_SET_OP;
 import static org.batfish.specifier.parboiled.Anchor.Type.DEPRECATED;
+import static org.batfish.specifier.parboiled.Anchor.Type.ENUM_SET_REGEX;
+import static org.batfish.specifier.parboiled.Anchor.Type.ENUM_SET_SET_OP;
+import static org.batfish.specifier.parboiled.Anchor.Type.ENUM_SET_VALUE;
 import static org.batfish.specifier.parboiled.Anchor.Type.FILTER_INTERFACE_IN;
 import static org.batfish.specifier.parboiled.Anchor.Type.FILTER_INTERFACE_OUT;
 import static org.batfish.specifier.parboiled.Anchor.Type.FILTER_NAME;
@@ -33,9 +34,6 @@ import static org.batfish.specifier.parboiled.Anchor.Type.IP_WILDCARD;
 import static org.batfish.specifier.parboiled.Anchor.Type.LOCATION_ENTER;
 import static org.batfish.specifier.parboiled.Anchor.Type.LOCATION_PARENS;
 import static org.batfish.specifier.parboiled.Anchor.Type.LOCATION_SET_OP;
-import static org.batfish.specifier.parboiled.Anchor.Type.NAMED_STRUCTURE_SET_OP;
-import static org.batfish.specifier.parboiled.Anchor.Type.NAMED_STRUCTURE_TYPE;
-import static org.batfish.specifier.parboiled.Anchor.Type.NAMED_STRUCTURE_TYPE_REGEX;
 import static org.batfish.specifier.parboiled.Anchor.Type.NODE_AND_FILTER;
 import static org.batfish.specifier.parboiled.Anchor.Type.NODE_AND_FILTER_TAIL;
 import static org.batfish.specifier.parboiled.Anchor.Type.NODE_AND_INTERFACE;
@@ -61,11 +59,11 @@ import static org.batfish.specifier.parboiled.Anchor.Type.ROUTING_POLICY_SET_OP;
 import static org.batfish.specifier.parboiled.Anchor.Type.VRF_NAME;
 import static org.batfish.specifier.parboiled.Anchor.Type.ZONE_NAME;
 
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.Map;
 import org.batfish.datamodel.DeviceType;
 import org.batfish.datamodel.InterfaceType;
-import org.batfish.datamodel.Protocol;
-import org.batfish.datamodel.questions.NamedStructurePropertySpecifier;
 import org.parboiled.Parboiled;
 import org.parboiled.Rule;
 import org.parboiled.support.Var;
@@ -85,24 +83,17 @@ import org.parboiled.support.Var;
 })
 public class Parser extends CommonParser {
 
-  static final boolean SUPPORT_DEPRECATED_UNENCLOSED_REGEXES = true;
-
   static final Map<String, Anchor.Type> ANCHORS = initAnchors(Parser.class);
 
   /**
    * An array of Rules for matching enum values. They should have been private and static but
    * parboiled does not like those things in this context.
    */
-  final Rule[] _applicationNameRules = initEnumRules(Protocol.values());
+  final Rule[] _deviceTypeRules = initValuesRules(Arrays.asList(DeviceType.values()));
 
-  final Rule[] _deviceTypeRules = initEnumRules(DeviceType.values());
-
-  final Rule[] _interfaceTypeRules = initEnumRules(InterfaceType.values());
+  final Rule[] _interfaceTypeRules = initValuesRules(Arrays.asList(InterfaceType.values()));
 
   final Rule[] _ipProtocolNameRules = initIpProtocolNameRules();
-
-  final Rule[] _namedStructureTypeRules =
-      initValuesRules(NamedStructurePropertySpecifier.JAVA_MAP.keySet());
 
   static Parser instance() {
     return Parboiled.createParser(Parser.class);
@@ -111,8 +102,9 @@ public class Parser extends CommonParser {
   @Override
   Rule getInputRule(Grammar grammar) {
     switch (grammar) {
-      case APPLICATION_SPECIFIER:
-        return input(ApplicationSpec());
+      case ENUM_SET_SPECIFIER:
+        throw new IllegalArgumentException(
+            "Method cannot be called for EnumSet grammars. Call getEnumSetRule instead.");
       case FILTER_SPECIFIER:
         return input(FilterSpec());
       case INTERFACE_SPECIFIER:
@@ -123,8 +115,6 @@ public class Parser extends CommonParser {
         return input(IpSpaceSpec());
       case LOCATION_SPECIFIER:
         return input(LocationSpec());
-      case NAMED_STRUCTURE_SPECIFIER:
-        return input(NamedStructureSpec());
       case NODE_SPECIFIER:
         return input(NodeSpec());
       case ROUTING_POLICY_SPECIFIER:
@@ -135,6 +125,10 @@ public class Parser extends CommonParser {
     }
   }
 
+  <T> Rule getEnumSetRule(Collection<T> allValues) {
+    return input(EnumSetSpec(allValues));
+  }
+
   /** Matches Reference Book name. */
   @Anchor(REFERENCE_BOOK_NAME)
   public Rule ReferenceBook() {
@@ -142,32 +136,44 @@ public class Parser extends CommonParser {
   }
 
   /**
-   * Application grammar
+   * Enum set grammar
    *
    * <pre>
-   *   applicationSpec := applicationTerm [, applicationTerm]*
+   *   enumSetSpec := enumSetTerm [(,|&|\) enumSetTerm]*
    *
-   *   applicationTerm := NAME  // one of {@link Protocol} enums values
-   *
+   *   enumSetTerm := enumVal
+   *                 | regex over values
    * </pre>
    */
 
-  /** An applicationSpec is one or more intersection terms separated by , or \ */
-  @Anchor(APPLICATION_SET_OP)
-  public Rule ApplicationSpec() {
+  /** An enumSetSpec is one or more terms separated by , */
+  @Anchor(ENUM_SET_SET_OP)
+  public <T> Rule EnumSetSpec(Collection<T> values) {
     return Sequence(
-        ApplicationTerm(),
+        EnumSetTerm(values),
         WhiteSpace(),
         ZeroOrMore(
-            ", ",
-            ApplicationTerm(),
-            push(new UnionApplicationAstNode(pop(1), pop())),
-            WhiteSpace()));
+            ", ", EnumSetTerm(values), push(new UnionEnumSetAstNode(pop(1), pop())), WhiteSpace()));
   }
 
-  @Anchor(APPLICATION_NAME)
-  public Rule ApplicationTerm() {
-    return Sequence(FirstOf(_applicationNameRules), push(new NameApplicationAstNode(match())));
+  public <T> Rule EnumSetTerm(Collection<T> values) {
+    return FirstOf(EnumSetRegexDeprecated(), EnumSetRegex(), EnumSetValue(values));
+  }
+
+  @Anchor(ENUM_SET_VALUE)
+  public <T> Rule EnumSetValue(Collection<T> allValues) {
+    return Sequence(
+        FirstOf(initValuesRules(allValues)), push(new ValueEnumSetAstNode<>(match(), allValues)));
+  }
+
+  @Anchor(ENUM_SET_REGEX)
+  public Rule EnumSetRegex() {
+    return Sequence(Regex(), push(new RegexEnumSetAstNode(pop())));
+  }
+
+  @Anchor(DEPRECATED)
+  public Rule EnumSetRegexDeprecated() {
+    return Sequence(RegexDeprecated(), push(new RegexEnumSetAstNode(pop())));
   }
 
   /**
@@ -940,52 +946,6 @@ public class Parser extends CommonParser {
   public Rule LocationParens() {
     // Leave the stack as is -- no need to remember that this was a parenthetical term
     return Sequence("( ", LocationSpec(), WhiteSpace(), CloseParens());
-  }
-
-  /**
-   * Named structure type grammar
-   *
-   * <pre>
-   *   namedStructureSpec := namedStructureTerm [, namedStructureTerm]*
-   *
-   *   namedStructureTerm := NAME  // a key in {@link NamedStructurePropertySpecifier#JAVA_MAP}
-   *                         | regex over names
-   * </pre>
-   */
-
-  /** A namedStructureSpec is one or more intersection terms separated by , */
-  @Anchor(NAMED_STRUCTURE_SET_OP)
-  public Rule NamedStructureSpec() {
-    return Sequence(
-        NamedStructureTerm(),
-        WhiteSpace(),
-        ZeroOrMore(
-            ", ",
-            NamedStructureTerm(),
-            push(new UnionNamedStructureAstNode(pop(1), pop())),
-            WhiteSpace()));
-  }
-
-  public Rule NamedStructureTerm() {
-    return FirstOf(
-        NamedStructureTypeRegexDeprecated(), NamedStructureTypeRegex(), NamedStructureType());
-  }
-
-  @Anchor(NAMED_STRUCTURE_TYPE)
-  public Rule NamedStructureType() {
-    return Sequence(
-        FirstOf(_namedStructureTypeRules), push(new TypeNamedStructureAstNode(match())));
-  }
-
-  @Anchor(NAMED_STRUCTURE_TYPE_REGEX)
-  public Rule NamedStructureTypeRegex() {
-    return Sequence(Regex(), push(new TypeRegexNamedStructureAstNode(pop())));
-  }
-
-  @Anchor(DEPRECATED)
-  public Rule NamedStructureTypeRegexDeprecated() {
-    return Sequence(
-        RegexDeprecated(), push(new TypeRegexNamedStructureAstNode(pop())), WhiteSpace());
   }
 
   /**

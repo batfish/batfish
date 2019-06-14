@@ -4,28 +4,28 @@ import com.google.common.base.MoreObjects;
 import java.util.Objects;
 import java.util.regex.Pattern;
 
-final class TypeRegexNamedStructureAstNode implements NamedStructureAstNode {
+final class RegexEnumSetAstNode implements EnumSetAstNode {
   private final String _regex;
   private final Pattern _pattern;
 
-  TypeRegexNamedStructureAstNode(AstNode regexAst) {
+  RegexEnumSetAstNode(AstNode regexAst) {
     _regex = ((RegexAstNode) regexAst).getRegex();
     _pattern = ((RegexAstNode) regexAst).getPattern();
   }
 
-  TypeRegexNamedStructureAstNode(String regex) {
+  RegexEnumSetAstNode(String regex) {
     _regex = regex;
     _pattern = Pattern.compile(regex, Pattern.CASE_INSENSITIVE);
   }
 
   @Override
   public <T> T accept(AstNodeVisitor<T> visitor) {
-    return visitor.visitTypeRegexNamedStructureAstNode(this);
+    return visitor.visitRegexEnumSetAstNode(this);
   }
 
   @Override
-  public <T> T accept(NamedStructureAstNodeVisitor<T> visitor) {
-    return visitor.visitTypeRegexNamedStructureAstNode(this);
+  public <T> T accept(EnumSetAstNodeVisitor<T> visitor) {
+    return visitor.visitRegexEnumSetAstNode(this);
   }
 
   @Override
@@ -33,10 +33,10 @@ final class TypeRegexNamedStructureAstNode implements NamedStructureAstNode {
     if (this == o) {
       return true;
     }
-    if (!(o instanceof TypeRegexNamedStructureAstNode)) {
+    if (!(o instanceof RegexEnumSetAstNode)) {
       return false;
     }
-    TypeRegexNamedStructureAstNode that = (TypeRegexNamedStructureAstNode) o;
+    RegexEnumSetAstNode that = (RegexEnumSetAstNode) o;
     return Objects.equals(_regex, that._regex);
   }
 

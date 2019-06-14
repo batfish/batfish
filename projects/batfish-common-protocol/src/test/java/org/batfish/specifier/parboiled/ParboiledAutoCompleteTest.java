@@ -65,7 +65,7 @@ public class ParboiledAutoCompleteTest {
   }
 
   private static ParboiledAutoComplete getTestPAC(
-      TestParser parser, String query, CompletionMetadata completionMetadata) {
+      CommonParser parser, String query, CompletionMetadata completionMetadata) {
     return new ParboiledAutoComplete(
         parser,
         Grammar.NODE_SPECIFIER,
@@ -84,7 +84,7 @@ public class ParboiledAutoCompleteTest {
   }
 
   private static ParboiledAutoComplete getTestPAC(
-      TestParser parser, String query, ReferenceLibrary referenceLibrary) {
+      CommonParser parser, String query, ReferenceLibrary referenceLibrary) {
     return new ParboiledAutoComplete(
         parser,
         Grammar.NODE_SPECIFIER,

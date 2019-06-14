@@ -46,6 +46,7 @@ import org.batfish.referencelibrary.ReferenceLibrary;
 import org.batfish.role.NodeRole;
 import org.batfish.role.NodeRoleDimension;
 import org.batfish.role.NodeRolesData;
+import org.parboiled.Rule;
 import org.parboiled.errors.InvalidInputError;
 import org.parboiled.parserunners.ReportingParseRunner;
 import org.parboiled.support.ParsingResult;
@@ -68,8 +69,7 @@ public final class ParboiledAutoComplete {
               .map(InterfaceGroup::getName)
               .collect(ImmutableSet.toImmutableSet());
 
-  private final CommonParser _parser;
-  private final Grammar _grammar;
+  private final Rule _inputRule;
   private final Map<String, Anchor.Type> _completionTypes;
 
   private final String _network;
@@ -91,8 +91,29 @@ public final class ParboiledAutoComplete {
       CompletionMetadata completionMetadata,
       NodeRolesData nodeRolesData,
       ReferenceLibrary referenceLibrary) {
-    _parser = parser;
-    _grammar = grammar;
+    this(
+        parser.getInputRule(grammar),
+        completionTypes,
+        network,
+        snapshot,
+        query,
+        maxSuggestions,
+        completionMetadata,
+        nodeRolesData,
+        referenceLibrary);
+  }
+
+  ParboiledAutoComplete(
+      Rule inputRule,
+      Map<String, Anchor.Type> completionTypes,
+      String network,
+      String snapshot,
+      String query,
+      int maxSuggestions,
+      CompletionMetadata completionMetadata,
+      NodeRolesData nodeRolesData,
+      ReferenceLibrary referenceLibrary) {
+    _inputRule = inputRule;
     _completionTypes = completionTypes;
     _network = network;
     _snapshot = snapshot;
@@ -103,6 +124,11 @@ public final class ParboiledAutoComplete {
     _referenceLibrary = referenceLibrary;
   }
 
+  /**
+   * The entry point for auto completion. Given the {@code grammar} and {@code query}, this function
+   * will produce at most {@code maxSuggestions} suggestions based on other supplied details of the
+   * network
+   */
   public static List<AutocompleteSuggestion> autoComplete(
       Grammar grammar,
       String network,
@@ -115,8 +141,7 @@ public final class ParboiledAutoComplete {
     Parser parser = Parser.instance();
     return toAutoCompleteSuggestions(
         new ParboiledAutoComplete(
-                parser,
-                grammar,
+                parser.getInputRule(grammar),
                 Parser.ANCHORS,
                 network,
                 snapshot,
@@ -128,7 +153,27 @@ public final class ParboiledAutoComplete {
             .run());
   }
 
-  /** This is the entry point for all auto completions */
+  /**
+   * The entry point for auto completing enum sets. Given the {@code query} and {@code allValues} in
+   * the set, this function will produce at most {@code maxSuggestions} suggestions
+   */
+  public static <T> List<AutocompleteSuggestion> autoCompleteEnumSet(
+      Collection<T> allValues, String network, String snapshot, String query, int maxSuggestions) {
+    Parser parser = Parser.instance();
+    return toAutoCompleteSuggestions(
+        new ParboiledAutoComplete(
+                parser.getEnumSetRule(allValues),
+                Parser.ANCHORS,
+                network,
+                snapshot,
+                query,
+                maxSuggestions,
+                CompletionMetadata.EMPTY,
+                NodeRolesData.builder().build(),
+                new ReferenceLibrary(null))
+            .run());
+  }
+
   Set<ParboiledAutoCompleteSuggestion> run() {
     Set<PotentialMatch> potentialMatches = getPotentialMatches(_query);
 
@@ -145,8 +190,7 @@ public final class ParboiledAutoComplete {
      */
     String testQuery = query + new String(Character.toChars(ILLEGAL_CHAR));
 
-    ParsingResult<AstNode> result =
-        new ReportingParseRunner<AstNode>(_parser.getInputRule(_grammar)).run(testQuery);
+    ParsingResult<AstNode> result = new ReportingParseRunner<AstNode>(_inputRule).run(testQuery);
     if (result.parseErrors.isEmpty()) {
       throw new IllegalStateException("Failed to force erroneous input");
     }
