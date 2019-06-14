@@ -25,7 +25,6 @@ import org.batfish.common.plugin.IBatfish;
 import org.batfish.datamodel.DataPlane;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Prefix;
-import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.datamodel.answers.Schema;
 import org.batfish.datamodel.questions.Question;
 import org.batfish.datamodel.table.ColumnMetadata;
@@ -39,20 +38,20 @@ import org.batfish.specifier.RoutingProtocolSpecifier;
 @ParametersAreNonnullByDefault
 public class RoutesAnswerer extends Answerer {
   // Global (always present) columns
-  static final String COL_NODE = "Node";
-  static final String COL_VRF_NAME = "VRF";
-  static final String COL_NETWORK = "Network";
-  static final String COL_NEXT_HOP = "Next_Hop";
+  public static final String COL_NODE = "Node";
+  public static final String COL_VRF_NAME = "VRF";
+  public static final String COL_NETWORK = "Network";
+  public static final String COL_NEXT_HOP = "Next_Hop";
   static final String COL_NEXT_HOP_INTERFACE = "Next_Hop_Interface";
-  static final String COL_NEXT_HOP_IP = "Next_Hop_IP";
-  static final String COL_PROTOCOL = "Protocol";
-  static final String COL_TAG = "Tag";
+  public static final String COL_NEXT_HOP_IP = "Next_Hop_IP";
+  public static final String COL_PROTOCOL = "Protocol";
+  public static final String COL_TAG = "Tag";
 
   // Present sometimes
-  static final String COL_METRIC = "Metric";
+  public static final String COL_METRIC = "Metric";
 
   // Main RIB
-  static final String COL_ADMIN_DISTANCE = "Admin_Distance";
+  public static final String COL_ADMIN_DISTANCE = "Admin_Distance";
 
   // BGP only
   static final String COL_AS_PATH = "AS_Path";
@@ -64,14 +63,14 @@ public class RoutesAnswerer extends Answerer {
   static final String COL_ROUTE_DISTINGUISHER = "Route_Distinguisher";
 
   // Diff Only
-  static final String COL_ROUTE_ENTRY_PRESENCE = "Entry_Presence";
+  public static final String COL_ROUTE_ENTRY_PRESENCE = "Entry_Presence";
 
-  RoutesAnswerer(Question question, IBatfish batfish) {
+  public RoutesAnswerer(Question question, IBatfish batfish) {
     super(question, batfish);
   }
 
   @Override
-  public AnswerElement answer() {
+  public TableAnswerElement answer() {
     RoutesQuestion question = (RoutesQuestion) _question;
     TableAnswerElement answer = new TableAnswerElement(getTableMetadata(question.getRib()));
 
@@ -112,7 +111,7 @@ public class RoutesAnswerer extends Answerer {
   }
 
   @Override
-  public AnswerElement answerDiff() {
+  public TableAnswerElement answerDiff() {
     RoutesQuestion question = (RoutesQuestion) _question;
     TableAnswerElement diffAnswer = new TableAnswerElement(getDiffTableMetadata(question.getRib()));
 
@@ -331,7 +330,7 @@ public class RoutesAnswerer extends Answerer {
 
   /** Generate the table metadata based on the {@code rib} we are pulling */
   @VisibleForTesting
-  static TableMetadata getDiffTableMetadata(RibProtocol rib) {
+  public static TableMetadata getDiffTableMetadata(RibProtocol rib) {
     ImmutableList.Builder<ColumnMetadata> columnBuilder = ImmutableList.builder();
     addCommonTableColumnsAtStart(columnBuilder);
     columnBuilder.add(

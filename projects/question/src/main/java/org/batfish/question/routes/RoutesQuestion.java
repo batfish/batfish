@@ -94,6 +94,10 @@ public class RoutesQuestion extends Question {
     this(null, null, null, null, null);
   }
 
+  public RoutesQuestion(@Nullable String nodes, @Nullable String vrfs) {
+    this(null, nodes, firstNonNull(vrfs, ".*"), null, null);
+  }
+
   @Override
   public boolean getDataPlane() {
     return true;
