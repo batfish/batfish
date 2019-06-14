@@ -10,6 +10,7 @@ import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Map;
+import java.util.Objects;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.IpProtocol;
 import org.batfish.specifier.parboiled.Anchor.Type;
@@ -81,27 +82,17 @@ public abstract class CommonParser extends BaseParser<AstNode> {
     }
   }
 
-  /**
-   * Initialize an array of case-insenstive rules that match the array of provided values (e.g.,
-   * those belonging to an Enum).
-   */
-  Rule[] initEnumRules(Object[] values) {
-    return initValuesRules(
-        Arrays.stream(values).map(Object::toString).collect(ImmutableList.toImmutableList()));
-  }
-
   /** Initialize an array of rules that match known IpProtocol names */
   Rule[] initIpProtocolNameRules() {
     return initValuesRules(
         Arrays.stream(IpProtocol.values())
-            .map(Object::toString)
-            .filter(p -> !p.startsWith("UNNAMED"))
+            .filter(p -> !p.toString().startsWith("UNNAMED"))
             .collect(ImmutableList.toImmutableList()));
   }
 
-  /** Initialize an array of case-insenstive rules that match values in a collection. */
-  Rule[] initValuesRules(Collection<String> values) {
-    return values.stream().map(this::IgnoreCase).toArray(Rule[]::new);
+  /** Initialize an array of case-insenstive rules that match stringified values in a collection. */
+  <T> Rule[] initValuesRules(Collection<T> values) {
+    return values.stream().map(Objects::toString).map(this::IgnoreCase).toArray(Rule[]::new);
   }
 
   /**

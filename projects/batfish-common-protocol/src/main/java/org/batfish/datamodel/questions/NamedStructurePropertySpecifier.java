@@ -6,11 +6,17 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import java.util.List;
 import java.util.Map;
-import java.util.regex.Pattern;
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.answers.Schema;
+import org.batfish.specifier.ConstantEnumSetSpecifier;
+import org.batfish.specifier.EnumSetSpecifier;
+import org.batfish.specifier.SpecifierFactories;
 
 /** Enables specification a set of named structures. */
+@ParametersAreNonnullByDefault
 public class NamedStructurePropertySpecifier extends PropertySpecifier {
 
   public static final String AS_PATH_ACCESS_LIST = "AS_Path_Access_List";
@@ -114,27 +120,44 @@ public class NamedStructurePropertySpecifier extends PropertySpecifier {
                   Configuration::getZones, Schema.OBJECT, "Firewall security zone"))
           .build();
 
+  /** A specifier for all properties */
   public static final NamedStructurePropertySpecifier ALL =
-      new NamedStructurePropertySpecifier(".*");
+      new NamedStructurePropertySpecifier("/.*/");
 
-  private final String _expression;
+  @Nullable private final String _expression;
 
-  private final Pattern _pattern;
+  private final EnumSetSpecifier<String> _enumSetSpecifier;
 
   @JsonCreator
-  public NamedStructurePropertySpecifier(String expression) {
+  private static NamedStructurePropertySpecifier create(String expression) {
+    return new NamedStructurePropertySpecifier(expression);
+  }
+
+  public NamedStructurePropertySpecifier(@Nullable String expression) {
+    this(
+        expression,
+        SpecifierFactories.getEnumSetSpecifierOrDefault(
+            expression, JAVA_MAP.keySet(), new ConstantEnumSetSpecifier<>(JAVA_MAP.keySet())));
+  }
+
+  public NamedStructurePropertySpecifier(EnumSetSpecifier<String> enumSetSpecifier) {
+    this(null, enumSetSpecifier);
+  }
+
+  private NamedStructurePropertySpecifier(
+      @Nullable String expression, EnumSetSpecifier<String> enumSetSpecifier) {
     _expression = expression;
-    _pattern = Pattern.compile(_expression.trim(), Pattern.CASE_INSENSITIVE); // canonicalize
+    _enumSetSpecifier = enumSetSpecifier;
   }
 
   @Override
+  @Nonnull
   public List<String> getMatchingProperties() {
-    return JAVA_MAP.keySet().stream()
-        .filter(prop -> _pattern.matcher(prop).matches())
-        .collect(ImmutableList.toImmutableList());
+    return _enumSetSpecifier.resolve().stream().sorted().collect(ImmutableList.toImmutableList());
   }
 
   @Override
+  @Nullable
   @JsonValue
   public String toString() {
     return _expression;
