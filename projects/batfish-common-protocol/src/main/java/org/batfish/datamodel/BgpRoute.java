@@ -342,6 +342,12 @@ public abstract class BgpRoute<B extends Builder<B, R>, R extends BgpRoute<B, R>
     return _nextHopIp;
   }
 
+  @Nullable
+  @Override
+  public String getNextVrf() {
+    return null;
+  }
+
   @Nonnull
   @JsonProperty(PROP_ORIGINATOR_IP)
   public Ip getOriginatorIp() {

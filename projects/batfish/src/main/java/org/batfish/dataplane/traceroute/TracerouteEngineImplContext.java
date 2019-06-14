@@ -1,5 +1,6 @@
 package org.batfish.dataplane.traceroute;
 
+import static org.batfish.dataplane.traceroute.FlowTracer.initialFlowTracer;
 import static org.batfish.dataplane.traceroute.TracerouteUtils.buildSessionsByIngressInterface;
 import static org.batfish.dataplane.traceroute.TracerouteUtils.validateInputs;
 
@@ -84,7 +85,8 @@ public class TracerouteEngineImplContext {
               validateInputs(_configurations, flow);
               String ingressNodeName = flow.getIngressNode();
               String ingressInterfaceName = flow.getIngressInterface();
-              new FlowTracer(this, ingressNodeName, ingressInterfaceName, flow, currentTraces::add)
+              initialFlowTracer(
+                      this, ingressNodeName, ingressInterfaceName, flow, currentTraces::add)
                   .processHop();
             });
     return new TreeMap<>(traces);

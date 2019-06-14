@@ -308,6 +308,12 @@ public final class GeneratedRoute extends AbstractRoute implements Comparable<Ge
     return _nextHopIp;
   }
 
+  @Nullable
+  @Override
+  public String getNextVrf() {
+    return null;
+  }
+
   @Override
   public RoutingProtocol getProtocol() {
     return RoutingProtocol.AGGREGATE;
