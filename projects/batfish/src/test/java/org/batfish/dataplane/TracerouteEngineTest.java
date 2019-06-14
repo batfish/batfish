@@ -26,6 +26,7 @@ import org.batfish.datamodel.ConnectedRoute;
 import org.batfish.datamodel.DataPlane;
 import org.batfish.datamodel.Fib;
 import org.batfish.datamodel.FibEntry;
+import org.batfish.datamodel.FibForward;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.FlowDisposition;
 import org.batfish.datamodel.Interface;
@@ -69,7 +70,9 @@ public class TracerouteEngineTest {
     return iface.getProxyArp()
         && !nextHopInterfaces.isEmpty()
         && nextHopInterfaces.stream()
-            .map(FibEntry::getInterfaceName)
+            .map(FibEntry::getAction)
+            .map(FibForward.class::cast)
+            .map(FibForward::getInterfaceName)
             .noneMatch(iface.getName()::equals);
   }
 
@@ -213,8 +216,7 @@ public class TracerouteEngineTest {
                     arpIp,
                     ImmutableSet.of(
                         new FibEntry(
-                            arpIp,
-                            i4Name,
+                            new FibForward(arpIp, i4Name),
                             ImmutableList.of(new ConnectedRoute(i4.getPrimaryNetwork(), i4Name))))))
             .build();
 
@@ -252,12 +254,10 @@ public class TracerouteEngineTest {
                     arpIp,
                     ImmutableSet.of(
                         new FibEntry(
-                            arpIp,
-                            i1Name,
+                            new FibForward(arpIp, i1Name),
                             ImmutableList.of(new ConnectedRoute(i1.getPrimaryNetwork(), i1Name))),
                         new FibEntry(
-                            arpIp,
-                            i4Name,
+                            new FibForward(arpIp, i4Name),
                             ImmutableList.of(new ConnectedRoute(i4.getPrimaryNetwork(), i4Name))))))
             .build();
     assertFalse(

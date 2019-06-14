@@ -41,7 +41,10 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Fib;
+import org.batfish.datamodel.FibAction;
 import org.batfish.datamodel.FibEntry;
+import org.batfish.datamodel.FibForward;
+import org.batfish.datamodel.FibNullRoute;
 import org.batfish.datamodel.FirewallSessionInterfaceInfo;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.FlowDisposition;
@@ -83,6 +86,7 @@ import org.batfish.datamodel.pojo.Node;
 import org.batfish.datamodel.transformation.Transformation;
 import org.batfish.datamodel.transformation.TransformationEvaluator;
 import org.batfish.datamodel.transformation.TransformationEvaluator.TransformationResult;
+import org.batfish.datamodel.visitors.FibActionVisitor;
 
 /**
  * Generates {@link Trace Traces} for a particular flow. Does depth-first search over all ECMP paths
@@ -97,6 +101,64 @@ import org.batfish.datamodel.transformation.TransformationEvaluator.Transformati
  * node it entered (if any), the previously exited node/interface (if any), etc.
  */
 class FlowTracer {
+
+  /* Comparator used to deterministically order FibAction branches to visit */
+  private static final class FibActionComparator implements Comparator<FibAction> {
+
+    private static final Comparator<FibAction> INSTANCE = new FibActionComparator();
+    private static final Comparator<FibForward> FIB_FORWARD_COMPARATOR =
+        Comparator.comparing(FibForward::getInterfaceName).thenComparing(FibForward::getArpIp);
+
+    /**
+     * new FibActionSameTypeComparator(a).visit(b) compares a and b and requires that a.getClass()
+     * == b.getClass()
+     */
+    private static final class FibActionSameTypeComparator implements FibActionVisitor<Integer> {
+
+      private final FibAction _rhs;
+
+      private FibActionSameTypeComparator(FibAction rhs) {
+        _rhs = rhs;
+      }
+
+      @Override
+      public Integer visitFibForward(FibForward fibForward) {
+        return FIB_FORWARD_COMPARATOR.compare(fibForward, (FibForward) _rhs);
+      }
+
+      @Override
+      public Integer visitFibNullRoute(FibNullRoute fibNullRoute) {
+        // guarantee type correctness
+        FibNullRoute.class.cast(_rhs);
+        return 0;
+      }
+    }
+
+    private static final FibActionVisitor<Integer> FIB_ACTION_TYPE_PRECEDENCE =
+        new FibActionVisitor<Integer>() {
+          @Override
+          public Integer visitFibForward(FibForward fibForward) {
+            return 1;
+          }
+
+          @Override
+          public Integer visitFibNullRoute(FibNullRoute fibNullRoute) {
+            return 2;
+          }
+        };
+
+    @Override
+    public int compare(@Nonnull FibAction lhs, @Nonnull FibAction rhs) {
+      int ret =
+          Integer.compare(
+              lhs.accept(FIB_ACTION_TYPE_PRECEDENCE), rhs.accept(FIB_ACTION_TYPE_PRECEDENCE));
+      if (ret != 0) {
+        return ret;
+      }
+      return lhs.accept(new FibActionSameTypeComparator(rhs));
+    }
+  }
+
   private final TracerouteEngineImplContext _tracerouteContext;
   private final Configuration _currentConfig;
   private final @Nullable String _ingressInterface;
@@ -405,26 +467,34 @@ class FlowTracer {
 
       _steps.add(buildRoutingStep(fibEntries));
 
-      // Group traces by outgoing interface (we do not want extra branching if there is branching
+      // Group traces by action (we do not want extra branching if there is branching
       // in FIB resolution)
-      SortedMap<ExitPoint, Set<FibEntry>> groupedByExitPoint =
+      SortedMap<FibAction, Set<FibEntry>> groupedByFibAction =
           // Sort so that resulting traces will be in sensible deterministic order
           ImmutableSortedMap.copyOf(
               fibEntries.stream()
-                  .collect(Collectors.groupingBy(ExitPoint::from, Collectors.toSet())),
-              Comparator.comparing(ExitPoint::getInterfaceName).thenComparing(ExitPoint::getArpIP));
+                  .collect(Collectors.groupingBy(FibEntry::getAction, Collectors.toSet())),
+              FibActionComparator.INSTANCE);
 
-      // For every interface with a route to the dst IP
-      for (ExitPoint exitPoint : groupedByExitPoint.keySet()) {
-        if (exitPoint.getInterfaceName().equals(Interface.NULL_INTERFACE_NAME)) {
-          branch().buildNullRoutedTrace();
-          continue;
-        }
+      // For every action corresponding to ECMP LPM FibEntry
+      for (FibAction action : groupedByFibAction.keySet()) {
+        action.accept(
+            new FibActionVisitor<Void>() {
+              @Override
+              public Void visitFibForward(FibForward fibForward) {
+                branch()
+                    .forwardOutInterface(
+                        _currentConfig.getAllInterfaces().get(fibForward.getInterfaceName()),
+                        fibForward.getArpIp());
+                return null;
+              }
 
-        branch()
-            .forwardOutInterface(
-                _currentConfig.getAllInterfaces().get(exitPoint.getInterfaceName()),
-                exitPoint.getArpIP());
+              @Override
+              public Void visitFibNullRoute(FibNullRoute fibNullRoute) {
+                branch().buildNullRoutedTrace();
+                return null;
+              }
+            });
       }
     } finally {
       _breadcrumbs.pop();
