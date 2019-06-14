@@ -112,7 +112,7 @@ public class BgpPeerPropertySpecifier extends PropertySpecifier {
   /** A {@link BgpPeerPropertySpecifier} that matches all BGP properties. */
   public static final BgpPeerPropertySpecifier ALL = new BgpPeerPropertySpecifier(".*");
 
-  private final String _expression;
+  @Nullable private final String _expression;
 
   private final EnumSetSpecifier<String> _enumSetSpecifier;
 

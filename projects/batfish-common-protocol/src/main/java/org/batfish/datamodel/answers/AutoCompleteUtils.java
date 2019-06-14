@@ -402,7 +402,6 @@ public final class AutoCompleteUtils {
           }
         case INTERFACE_PROPERTY_SPEC:
           {
-            // suggestions = baseAutoComplete(query, InterfacePropertySpecifier.JAVA_MAP.keySet());
             suggestions =
                 ParboiledAutoComplete.autoCompleteEnumSet(
                     InterfacePropertySpecifier.JAVA_MAP.keySet(),
