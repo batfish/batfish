@@ -40,7 +40,9 @@ For many parameters types, there is a "resolver" question that may be used to le
   * `/abc/`, `/^abc/`, `/abc$/` match strings strings containing, beginning with, and ending with 'abc'
   * `/ab[c-d]/` and `/ab(c|d)/` match strings 'abc' and 'abd'.
 
-* **Sets of enums** Many parameter types such as `applicationSpec` represent a set of enumerated values. Such parameters share a common grammar, though with different base values. The grammar is 
+* **Sets of enums** Many parameter types such as `applicationSpec` represent a set of enumerated values. Such parameters share a common grammar, though with different base values. Example expressions for this grammar are `val1`, `/val.*/` and `val1, val2`, which respectively, refer to a singleton-set with "val1", all values that match "val.*", and a set with two values. 
+
+   The specification of this grammar is:
 
 <pre>
 enumSetSpec :=
