@@ -17,7 +17,6 @@ import java.util.Set;
 import java.util.SortedSet;
 import java.util.Stack;
 import java.util.function.Supplier;
-import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -82,8 +81,6 @@ public final class FibImpl implements Fib {
   @Nonnull private final PrefixTrieMultiMap<FibEntry> _root;
 
   private transient Supplier<Set<FibEntry>> _entries;
-  private transient Supplier<Map<AbstractRoute, Map<String, Map<Ip, Set<AbstractRoute>>>>>
-      _nextHopInterfaces;
 
   public FibImpl(@Nonnull GenericRib<? extends AbstractRouteDecorator> rib) {
     _root = new PrefixTrieMultiMap<>(Prefix.ZERO);
@@ -98,19 +95,6 @@ public final class FibImpl implements Fib {
 
   private void initSuppliers() {
     _entries = Suppliers.memoize(this::computeEntries);
-    _nextHopInterfaces = Suppliers.memoize(this::computeNextHopInterfaces);
-  }
-
-  private Map<AbstractRoute, Map<String, Map<Ip, Set<AbstractRoute>>>> computeNextHopInterfaces() {
-    return _root.getAllElements().stream()
-        .collect(
-            Collectors.groupingBy(
-                FibEntry::getTopLevelRoute,
-                Collectors.groupingBy(
-                    FibEntry::getInterfaceName,
-                    Collectors.groupingBy(
-                        FibEntry::getArpIP,
-                        Collectors.mapping(FibEntry::getResolvedToRoute, Collectors.toSet())))));
   }
 
   private Set<FibEntry> computeEntries() {
@@ -155,10 +139,12 @@ public final class FibImpl implements Fib {
       Stack<AbstractRoute> stack,
       ImmutableCollection.Builder<FibEntry> entriesBuilder) {
     if (node.getChildren().isEmpty() && node.getFinalNextHopIp() != null) {
+      String nextHopInterface = node.getRoute().getNextHopInterface();
       entriesBuilder.add(
           new FibEntry(
-              node.getFinalNextHopIp(),
-              node.getRoute().getNextHopInterface(),
+              nextHopInterface.equals(Interface.NULL_INTERFACE_NAME)
+                  ? FibNullRoute.INSTANCE
+                  : new FibForward(node.getFinalNextHopIp(), nextHopInterface),
               ImmutableList.copyOf(stack)));
       return;
     }
@@ -271,13 +257,6 @@ public final class FibImpl implements Fib {
         }
       }
     }
-  }
-
-  /** Mapping: route -&gt; nextHopInterface -&gt; resolved nextHopIp -&gt; interfaceRoutes */
-  @Override
-  public @Nonnull Map<AbstractRoute, Map<String, Map<Ip, Set<AbstractRoute>>>>
-      getNextHopInterfaces() {
-    return _nextHopInterfaces.get();
   }
 
   @Nonnull

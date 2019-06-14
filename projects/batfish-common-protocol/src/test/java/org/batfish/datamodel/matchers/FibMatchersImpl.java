@@ -1,27 +1,25 @@
 package org.batfish.datamodel.matchers;
 
-import java.util.Map;
 import java.util.Set;
-import org.batfish.datamodel.AbstractRoute;
+import javax.annotation.Nonnull;
+import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.Fib;
-import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.FibEntry;
 import org.hamcrest.FeatureMatcher;
 import org.hamcrest.Matcher;
 
-public class FibMatchersImpl {
+@ParametersAreNonnullByDefault
+final class FibMatchersImpl {
 
-  static class HasNextHopInterfaces
-      extends FeatureMatcher<Fib, Map<AbstractRoute, Map<String, Map<Ip, Set<AbstractRoute>>>>> {
+  static class HasAllEntries extends FeatureMatcher<Fib, Set<FibEntry>> {
 
-    HasNextHopInterfaces(
-        Matcher<? super Map<AbstractRoute, Map<String, Map<Ip, Set<AbstractRoute>>>>> subMatcher) {
-      super(subMatcher, "A FIB with nextHopInterfaces:", "nextHopInterfaces");
+    HasAllEntries(Matcher<? super Set<FibEntry>> subMatcher) {
+      super(subMatcher, "A Fib with allEntries", "allEntries");
     }
 
     @Override
-    protected Map<AbstractRoute, Map<String, Map<Ip, Set<AbstractRoute>>>> featureValueOf(
-        Fib actual) {
-      return actual.getNextHopInterfaces();
+    protected @Nonnull Set<FibEntry> featureValueOf(Fib actual) {
+      return actual.allEntries();
     }
   }
 
