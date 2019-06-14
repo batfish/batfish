@@ -33,9 +33,7 @@ import org.batfish.datamodel.packet_policy.StatementVisitor;
 @ParametersAreNonnullByDefault
 class PacketPolicyToBdd {
 
-  @Nonnull private final BDDPacket _bddPacket;
   @Nonnull private final BoolExprToBdd _boolExprToBdd;
-
   @Nonnull private Transition _toDrop;
   @Nonnull private final Map<FibLookup, Transition> _fibLookups;
 
@@ -52,7 +50,6 @@ class PacketPolicyToBdd {
   }
 
   private PacketPolicyToBdd(BDDPacket packet, IpAccessListToBdd ipAccessListToBdd) {
-    _bddPacket = packet;
     _boolExprToBdd = new BoolExprToBdd(ipAccessListToBdd);
     _toDrop = Zero.INSTANCE;
     _fibLookups = new HashMap<>(0);
