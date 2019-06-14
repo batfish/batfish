@@ -59,7 +59,6 @@ public final class PacketPolicyToBddTest {
     PacketPolicyToBdd evaluator =
         PacketPolicyToBdd.evaluate(
             new PacketPolicy("name", ImmutableList.of(), new Return(Drop.instance())),
-            _bddPacket,
             _ipAccessListToBdd);
     // Everything is dropped
     assertEquals(evaluator.getToDrop(), IDENTITY);
@@ -74,7 +73,6 @@ public final class PacketPolicyToBddTest {
                 "name",
                 ImmutableList.of(new Return(new FibLookup("vrf"))),
                 new Return(Drop.instance())),
-            _bddPacket,
             _ipAccessListToBdd);
     // Everything is looked up in "vrf"
     assertEquals(ZERO, evaluator.getToDrop());
@@ -106,7 +104,6 @@ public final class PacketPolicyToBddTest {
                 "name",
                 ImmutableList.of(outerIf, new Return(new FibLookup(vrf3))),
                 new Return(Drop.instance())),
-            _bddPacket,
             _ipAccessListToBdd);
 
     BDD dstIpBdd = new IpSpaceToBDD(_bddPacket.getDstIp()).toBDD(dstIps);

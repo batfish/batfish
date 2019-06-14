@@ -428,7 +428,6 @@ public final class BDDReachabilityAnalysisFactory {
                                       .getValue()
                                       .getPacketPolicies()
                                       .get(iface.getRoutingPolicyName()),
-                                  _bddPacket,
                                   ipAccessListToBdd(configEntry.getValue())))));
     }
   }

@@ -13,7 +13,6 @@ import javax.annotation.ParametersAreNonnullByDefault;
 import net.sf.javabdd.BDD;
 import org.batfish.bddreachability.transition.Transition;
 import org.batfish.bddreachability.transition.Zero;
-import org.batfish.common.bdd.BDDPacket;
 import org.batfish.common.bdd.IpAccessListToBdd;
 import org.batfish.datamodel.packet_policy.Action;
 import org.batfish.datamodel.packet_policy.ActionVisitor;
@@ -43,13 +42,13 @@ class PacketPolicyToBdd {
    * and {@link #getFibLookups()}
    */
   public static PacketPolicyToBdd evaluate(
-      PacketPolicy policy, BDDPacket packet, IpAccessListToBdd ipAccessListToBdd) {
-    PacketPolicyToBdd evaluator = new PacketPolicyToBdd(packet, ipAccessListToBdd);
+      PacketPolicy policy, IpAccessListToBdd ipAccessListToBdd) {
+    PacketPolicyToBdd evaluator = new PacketPolicyToBdd(ipAccessListToBdd);
     evaluator.process(policy);
     return evaluator;
   }
 
-  private PacketPolicyToBdd(BDDPacket packet, IpAccessListToBdd ipAccessListToBdd) {
+  private PacketPolicyToBdd(IpAccessListToBdd ipAccessListToBdd) {
     _boolExprToBdd = new BoolExprToBdd(ipAccessListToBdd);
     _toDrop = Zero.INSTANCE;
     _fibLookups = new HashMap<>(0);
