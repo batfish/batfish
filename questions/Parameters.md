@@ -2,7 +2,7 @@
 
 Batfish questions support parameters with rich specifications for nodes, interfaces etc. The grammar for parameter types is described below. Before reading those grammars, we recommend reading the general notes. 
 
-For many parameters types, there is a "resolver" question that may be used to learn what a given specification expands to. For instance, the resolver for the node specifier `resolveNodeSpecifier`, and `bfq.resolveNodeSpecifier(nodes=/bor/)` (Pybatfish syntax) will return the set of nodes represented by `/bor/`. 
+For many parameters types, there is a "resolver" question that may be used to learn what a given specification expands to. For instance, `resolveNodeSpecifier` is the resolver for `nodeSpec`, and `bfq.resolveNodeSpecifier(nodes="/bor/")` (Pybatfish syntax) will return the set of nodes that match `/bor/`. 
 
 * [`applicationSpec`](#application-specifier)
 
@@ -40,6 +40,18 @@ For many parameters types, there is a "resolver" question that may be used to le
   * `/abc/`, `/^abc/`, `/abc$/` match strings strings containing, beginning with, and ending with 'abc'
   * `/ab[c-d]/` and `/ab(c|d)/` match strings 'abc' and 'abd'.
 
+* **Sets of enums** Many parameter types such as `applicationSpec` represent a set of enumerated values. Such parameters share a common grammar, though with different base values. The grammar is 
+
+<pre>
+enumSetSpec :=
+    enumSetTerm [<b>,</b> enumSetTerm]
+
+enumSetTerm :=
+    &lt;<i>enum-value</i>&gt;
+    | <b>/</b>&lt;<i>regex-over-enum-values</i>&gt;<b>/</b>
+</pre>
+
+
 * **Case-insensitive names:** All names and regexes use case-insensitive matching. Thus, `AS1BORDER1` is same as `as1border1` and `Ethernet0/0` is same as `ethernet0/0`.
 
 ## Application Specifier
@@ -56,6 +68,8 @@ applicationSpec :=
 
 applicationTerm :=
     &lt;<i>application-name</i>&gt;
+    |&lt;<i>application-name</i>&gt;
+
 </pre>
 
 #### Application Names
