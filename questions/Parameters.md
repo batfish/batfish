@@ -6,9 +6,15 @@ For many parameters types, there is a "resolver" question that may be used to le
 
 * [`applicationSpec`](#application-specifier)
 
+* [`bgpPeerPropertySpec`](#bgp-peer-property-specifier)
+
+* [`bgpProcessPropertySpec`](#bgp-process-property-specifier)
+
 * [`dispositionSpec`](#disposition-specifier)
 
 * [`filterSpec`](#filter-specifier)
+
+* [`interfacePropertySpec`](#interface-property-specifier)
 
 * [`interfaceSpec`](#interface-specifier)
 
@@ -19,6 +25,8 @@ For many parameters types, there is a "resolver" question that may be used to le
 * [`locationSpec`](#location-specifier)
 
 * [`namedStructureSpec`](#named-structure-specifier)
+
+* [`nodePropertySpec`](#node-property-specifier)
 
 * [`nodeSpec`](#node-specifier)
 
@@ -40,18 +48,18 @@ For many parameters types, there is a "resolver" question that may be used to le
   * `/abc/`, `/^abc/`, `/abc$/` match strings strings containing, beginning with, and ending with 'abc'
   * `/ab[c-d]/` and `/ab(c|d)/` match strings 'abc' and 'abd'.
 
-* **Sets of enums** Many parameter types such as `applicationSpec` represent a set of enumerated values. Such parameters share a common grammar, though with different base values. Example expressions for this grammar are `val1`, `/val.*/` and `val1, val2`, which respectively, refer to a singleton-set with "val1", all values that match "val.*", and a set with two values. 
+* **Set of enums** Many parameter types such as `applicationSpec` represent a set of enumerated values. Such parameters share a common grammar, though with different base values. Example expressions for this grammar are `val1`, `/val.*/` and `val1, val2`, which respectively, refer to the value "val1", all values that match "val.*", and a set with two values. 
 
    The specification of this grammar is:
 
-<pre>
-enumSetSpec :=
-    enumSetTerm [<b>,</b> enumSetTerm]
+   <pre>
+   enumSetSpec :=
+       enumSetTerm [<b>,</b> enumSetTerm]
 
-enumSetTerm :=
-    &lt;<i>enum-value</i>&gt;
-    | <b>/</b>&lt;<i>regex-over-enum-values</i>&gt;<b>/</b>
-</pre>
+   enumSetTerm :=
+       &lt;<i>enum-value</i>&gt;
+       | <b>/</b>&lt;<i>regex-over-enum-values</i>&gt;<b>/</b>
+   </pre>
 
 
 * **Case-insensitive names:** All names and regexes use case-insensitive matching. Thus, `AS1BORDER1` is same as `as1border1` and `Ethernet0/0` is same as `ethernet0/0`.
@@ -60,23 +68,20 @@ enumSetTerm :=
 
 A combined specification for an IP protocol (e.g., TCP) and *destination* port to denote packets for common applications.
 
-* Application names from the list below may be used.
+An application specifier is a set of enums (see above) over the following names (with the corresponding IP protocol and destination port in parenthesis): DNS(UDP, 53), HTTP(TCP, 80), HTTPS(TCP, 443), SNMP(UDP, 161), SSH(TCP, 22), TELNET(TCP, 23).
 
-#### Application Specifier Grammar
+## BGP Peer Property Specifier
 
-<pre>
-applicationSpec :=
-    applicationTerm [<b>,</b> applicationTerm]
+A specification for a set of BGP peer properties (e.g., those returned by the `bgpPeerConfiguration` question).
 
-applicationTerm :=
-    &lt;<i>application-name</i>&gt;
-    |&lt;<i>application-name</i>&gt;
+A BGP peer property property specifier is a set of enums (see above) over the following values: Local_AS, Local_IP, Is_Passive, Remote_AS, Route_Reflector_Client, Cluster_ID, Peer_Group, Import_Policy, Export_Policy, Send_Community.
 
-</pre>
 
-#### Application Names
+## BGP Process Property Specifier
 
-Batfish understands the following applications names, with the corresponding IP protocol and destination port in parenthesis: DNS(UDP, 53), HTTP(TCP, 80), HTTPS(TCP, 443), SNMP(UDP, 161), SSH(TCP, 22), TELNET(TCP, 23).
+A specification for a set of BGP process properties (e.g., those returned by the `bgpProcessConfiguration` question).
+
+A BGP process property specifier is a set of enums (see above) over the following values: Multipath_Match_Mode, Multipath_EBGP, Multipath_IBGP, Neighbors, Route_Reflector, Tie_Breaker. 
 
 ## Disposition Specifier
 
@@ -142,6 +147,13 @@ filterWithoutNodeTerm :=
 #### Filter Specifier Resolver
 
 * `resolveFilterSpecifier` shows the set of filters represented by the given input.
+
+## Interface Property Specifier
+
+A specification for a set of interface-level properties (e.g., those returned by the `interfaceProperties` question).
+
+An interface property specifier is a set of enums (see above) over the following values: Access_VLAN, Active, Allowed_VLANs, All_Prefixes, Auto_State_VLAN, Bandwidth, Blacklisted, Channel_Group, Channel_Group_Members, Declared_Names, Description, DHCP_Relay_Addresses, Encapsulation_VLAN, HSRP_Groups, HSRP_Version, Incoming_Filter_Name, Interface_Type, MLAG_ID, MTU, Native_VLAN, OSPF_Area_Name, OSPF_Cost, OSPF_Enabled, OSPF_Passive, OSPF_Point_To_Point, Outgoing_Filter_Name, PBR_Policy_Name, Primary_Address, Primary_Network, Proxy_ARP, Rip_Enabled, Rip_Passive, Spanning_Tree_Portfast, Speed, Switchport, Switchport_Mode, Switchport_Trunk_Encapsulation, VRF, VRRP_Groups, Zone_Name. 
+
 
 ## Interface Specifier
 
@@ -305,12 +317,16 @@ locationInterface :=
 
 ## Named Structure Specifier
 
-A specification for a set of structure types in Batfish's vendor independent model. This specifier accepts a regex over the structure types listed below. The regex should not be surrounded by `/`s.
+A specification for a set of structure types in Batfish's vendor independent model. 
+
+A named structure specifier is a set of enums (see above) over the following values: AS_PATH_ACCESS_LIST, AUTHENTICATION_KEY_CHAIN, COMMUNITY_LIST, IKE_PHASE1_KEYS, IKE_PHASE1_POLICIES, IKE_PHASE1_PROPOSALS, IP_ACCESS_LIST, IP_6_ACCESS_LIST, IPSEC_PEER_CONFIGS, IPSEC_PHASE2_POLICIES, IPSEC_PHASE2_PROPOSALS, PBR_POLICY, ROUTE_FILTER_LIST, ROUTE_6_FILTER_LIST, ROUTING_POLICY, VRF, ZONE.
 
 
-#### Named Structure Types 
+## Node Property Specifier
 
-Batfish has the following structure types: AS_PATH_ACCESS_LIST, AUTHENTICATION_KEY_CHAIN, COMMUNITY_LIST, IKE_PHASE1_KEYS, IKE_PHASE1_POLICIES, IKE_PHASE1_PROPOSALS, IP_ACCESS_LIST, IP_6_ACCESS_LIST, IPSEC_PEER_CONFIGS, IPSEC_PHASE2_POLICIES, IPSEC_PHASE2_PROPOSALS, PBR_POLICY, ROUTE_FILTER_LIST, ROUTE_6_FILTER_LIST, ROUTING_POLICY, VRF, ZONE.
+A specification for a set of node-level properties (e.g., those returned by the `nodeProperties` question).
+
+A node property specifier is a set of enums (see above) over the following values: AS_Path_Access_Lists, Authentication_Key_Chains, Canonical_IP, Community_Lists, Configuration_Format, Default_Cross_Zone_Action, Default_Inbound_Action, Device_Type, DNS_Servers, DNS_Source_Interface, Domain_Name, Hostname, IKE_Phase1_Keys, IKE_Phase1_Policies, IKE_Phase1_Proposals, Interfaces, IP_Access_Lists, IP_Spaces, IP6_Access_Lists, IPsec_Peer_Configs, IPsec_Phase2_Policies, IPsec_Phase2_Proposals, IPSec_Vpns, Logging_Servers, Logging_Source_Interface, NTP_Servers, NTP_Source_Interface, PBR_Policies, Route_Filter_Lists, Route6_Filter_Lists, Routing_Policies, SNMP_Source_Interface, SNMP_Trap_Servers, TACACS_Servers, TACACS_Source_Interface, Vendor_Family, VRFs, Zones. 
 
 
 ## Node Specifier
