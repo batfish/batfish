@@ -15,11 +15,8 @@ public class MockFib implements Fib {
 
     private Map<Prefix, IpSpace> _matchingIps;
 
-    private Map<AbstractRoute, Map<String, Map<Ip, Set<AbstractRoute>>>> _nextHopInterfaces;
-
     private Builder() {
       _matchingIps = ImmutableMap.of();
-      _nextHopInterfaces = ImmutableMap.of();
       _fibEntries = ImmutableMap.of();
     }
 
@@ -29,12 +26,6 @@ public class MockFib implements Fib {
 
     public Builder setMatchingIps(@Nonnull Map<Prefix, IpSpace> matchingIps) {
       _matchingIps = matchingIps;
-      return this;
-    }
-
-    public Builder setNextHopInterfaces(
-        @Nonnull Map<AbstractRoute, Map<String, Map<Ip, Set<AbstractRoute>>>> nextHopInterfaces) {
-      _nextHopInterfaces = nextHopInterfaces;
       return this;
     }
 
@@ -52,13 +43,10 @@ public class MockFib implements Fib {
 
   private final Map<Prefix, IpSpace> _matchingIps;
 
-  private final Map<AbstractRoute, Map<String, Map<Ip, Set<AbstractRoute>>>> _nextHopInterfaces;
-
   private Map<Ip, Set<FibEntry>> _fibEntries;
 
   private MockFib(Builder builder) {
     _matchingIps = ImmutableMap.copyOf(builder._matchingIps);
-    _nextHopInterfaces = ImmutableMap.copyOf(builder._nextHopInterfaces);
     _fibEntries = ImmutableMap.copyOf(builder._fibEntries);
   }
 
@@ -68,12 +56,6 @@ public class MockFib implements Fib {
     return _fibEntries.values().stream()
         .flatMap(Set::stream)
         .collect(ImmutableSet.toImmutableSet());
-  }
-
-  @Override
-  public @Nonnull Map<AbstractRoute, Map<String, Map<Ip, Set<AbstractRoute>>>>
-      getNextHopInterfaces() {
-    return _nextHopInterfaces;
   }
 
   @Nonnull

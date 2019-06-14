@@ -1,16 +1,14 @@
 package org.batfish.minesweeper.abstraction;
 
 import static junit.framework.TestCase.assertNotNull;
-import static org.batfish.datamodel.matchers.FibMatchers.hasNextHopInterfaces;
+import static org.batfish.datamodel.matchers.EdgeMatchers.hasTail;
 import static org.batfish.datamodel.matchers.TopologyMatchers.isNeighborOfNode;
-import static org.batfish.datamodel.matchers.TopologyMatchers.withNode;
 import static org.hamcrest.Matchers.either;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasEntry;
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.hasKey;
 import static org.hamcrest.Matchers.hasSize;
-import static org.hamcrest.Matchers.hasValue;
 import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.not;
 import static org.junit.Assert.assertEquals;
@@ -31,10 +29,11 @@ import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.DataPlane;
-import org.batfish.datamodel.Fib;
+import org.batfish.datamodel.Edge;
 import org.batfish.datamodel.GenericRib;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.Interface;
+import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.Prefix;
@@ -317,7 +316,6 @@ public class BatfishCompressionTest {
     SortedMap<String, Configuration> origConfigs = diamondNetwork();
     Batfish batfish = getBatfish(origConfigs);
     DataPlane origDataPlane = batfish.loadDataPlane();
-    Map<String, Map<String, Fib>> origFibs = origDataPlane.getFibs();
     Topology origTopology =
         new Topology(
             batfish
@@ -326,14 +324,15 @@ public class BatfishCompressionTest {
                 .sortedEdges());
 
     /* Node A should have a route with C as a next hop. */
+    Map<String, Map<String, Map<Edge, IpSpace>>> origArpTrueEdge =
+        origDataPlane.getForwardingAnalysis().getArpTrueEdge();
     assertThat(
-        origFibs,
+        origArpTrueEdge,
         hasEntry(
             equalTo("A"),
             hasEntry(
                 equalTo(Configuration.DEFAULT_VRF_NAME),
-                hasNextHopInterfaces(
-                    hasValue(hasKey(withNode("A", isNeighborOfNode(origTopology, "C"))))))));
+                hasKey(hasTail(isNeighborOfNode(origTopology, "C"))))));
 
     // compress a new copy since it will get mutated.
     SortedMap<String, Configuration> compressedConfigs =
