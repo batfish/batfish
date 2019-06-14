@@ -24,13 +24,13 @@ public class InterfacePropertySpecifierTest {
   @Test
   public void testConstructorBadProperty() {
     _thrown.expect(IllegalArgumentException.class);
-    new NodePropertySpecifier("ntp");
+    new InterfacePropertySpecifier("ntp");
   }
 
   @Test
   public void testConstructorBadPropertyInList() {
     _thrown.expect(IllegalArgumentException.class);
-    new NodePropertySpecifier(ImmutableSet.of(INCOMING_FILTER_NAME, "dumdum"));
+    new InterfacePropertySpecifier(ImmutableSet.of(INCOMING_FILTER_NAME, "dumdum"));
   }
 
   @Test
