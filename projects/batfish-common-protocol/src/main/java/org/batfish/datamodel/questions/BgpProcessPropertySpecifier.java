@@ -1,6 +1,6 @@
 package org.batfish.datamodel.questions;
 
-import static com.google.common.base.MoreObjects.firstNonNull;
+import static com.google.common.base.Preconditions.checkArgument;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
@@ -8,19 +8,24 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Iterables;
+import com.google.common.collect.Sets;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.List;
 import java.util.Map;
-import java.util.regex.Pattern;
+import java.util.Set;
 import java.util.stream.Collectors;
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.BgpActivePeerConfig;
 import org.batfish.datamodel.BgpPassivePeerConfig;
 import org.batfish.datamodel.BgpProcess;
 import org.batfish.datamodel.BgpTieBreaker;
 import org.batfish.datamodel.MultipathEquivalentAsPathMatchMode;
 import org.batfish.datamodel.answers.Schema;
+import org.batfish.specifier.ConstantEnumSetSpecifier;
+import org.batfish.specifier.EnumSetSpecifier;
+import org.batfish.specifier.SpecifierFactories;
 
 /**
  * Enables specification a set of BGP process properties.
@@ -32,6 +37,7 @@ import org.batfish.datamodel.answers.Schema;
  *   <li>multipath.* --&gt; gets all properties that start with 'multipath'
  * </ul>
  */
+@ParametersAreNonnullByDefault
 public class BgpProcessPropertySpecifier extends PropertySpecifier {
 
   public static final String MULTIPATH_EQUIVALENT_AS_PATH_MATCH_MODE = "Multipath_Match_Mode";
@@ -95,31 +101,43 @@ public class BgpProcessPropertySpecifier extends PropertySpecifier {
           .build();
 
   /** A {@link BgpProcessPropertySpecifier} that matches all BGP properties. */
-  public static final BgpProcessPropertySpecifier ALL = new BgpProcessPropertySpecifier(".*");
+  public static final BgpProcessPropertySpecifier ALL =
+      new BgpProcessPropertySpecifier(JAVA_MAP.keySet());
 
-  private final String _expression;
+  @Nullable private final String _expression;
 
-  private final Pattern _pattern;
+  private final EnumSetSpecifier<String> _enumSetSpecifier;
 
   @JsonCreator
+  private static BgpProcessPropertySpecifier create(@Nullable String expression) {
+    return new BgpProcessPropertySpecifier(expression);
+  }
+
   public BgpProcessPropertySpecifier(@Nullable String expression) {
-    _expression = firstNonNull(expression, ".*");
-    _pattern = Pattern.compile(_expression.trim().toLowerCase()); // canonicalize
+    this(
+        expression,
+        SpecifierFactories.getEnumSetSpecifierOrDefault(
+            expression, JAVA_MAP.keySet(), new ConstantEnumSetSpecifier<>(JAVA_MAP.keySet())));
   }
 
   /** Returns a specifier that maps to all properties in {@code properties} */
-  public BgpProcessPropertySpecifier(Collection<String> properties) {
-    // quote and join
-    _expression =
-        properties.stream().map(String::trim).map(Pattern::quote).collect(Collectors.joining("|"));
-    _pattern = Pattern.compile(_expression, Pattern.CASE_INSENSITIVE);
+  public BgpProcessPropertySpecifier(Set<String> properties) {
+    this(null, new ConstantEnumSetSpecifier<>(properties));
+    Set<String> diffSet = Sets.difference(properties, JAVA_MAP.keySet());
+    checkArgument(
+        diffSet.isEmpty(), "Invalid properties supplied to the property specifier: %s", diffSet);
   }
 
+  private BgpProcessPropertySpecifier(
+      @Nullable String expression, EnumSetSpecifier<String> enumSetSpecifier) {
+    _expression = expression;
+    _enumSetSpecifier = enumSetSpecifier;
+  }
+
+  @Nonnull
   @Override
   public List<String> getMatchingProperties() {
-    return JAVA_MAP.keySet().stream()
-        .filter(prop -> _pattern.matcher(prop.toLowerCase()).matches())
-        .collect(ImmutableList.toImmutableList());
+    return _enumSetSpecifier.resolve().stream().sorted().collect(ImmutableList.toImmutableList());
   }
 
   @Override

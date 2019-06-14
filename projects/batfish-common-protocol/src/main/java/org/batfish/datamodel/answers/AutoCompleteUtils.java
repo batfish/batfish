@@ -260,12 +260,24 @@ public final class AutoCompleteUtils {
           }
         case BGP_PEER_PROPERTY_SPEC:
           {
-            suggestions = baseAutoComplete(query, BgpPeerPropertySpecifier.JAVA_MAP.keySet());
+            suggestions =
+                ParboiledAutoComplete.autoCompleteEnumSet(
+                    BgpPeerPropertySpecifier.JAVA_MAP.keySet(),
+                    network,
+                    snapshot,
+                    query,
+                    maxSuggestions);
             break;
           }
         case BGP_PROCESS_PROPERTY_SPEC:
           {
-            suggestions = baseAutoComplete(query, BgpProcessPropertySpecifier.JAVA_MAP.keySet());
+            suggestions =
+                ParboiledAutoComplete.autoCompleteEnumSet(
+                    BgpProcessPropertySpecifier.JAVA_MAP.keySet(),
+                    network,
+                    snapshot,
+                    query,
+                    maxSuggestions);
             break;
           }
         case BGP_SESSION_STATUS:
@@ -390,7 +402,14 @@ public final class AutoCompleteUtils {
           }
         case INTERFACE_PROPERTY_SPEC:
           {
-            suggestions = baseAutoComplete(query, InterfacePropertySpecifier.JAVA_MAP.keySet());
+            // suggestions = baseAutoComplete(query, InterfacePropertySpecifier.JAVA_MAP.keySet());
+            suggestions =
+                ParboiledAutoComplete.autoCompleteEnumSet(
+                    InterfacePropertySpecifier.JAVA_MAP.keySet(),
+                    network,
+                    snapshot,
+                    query,
+                    maxSuggestions);
             break;
           }
         case IP:
@@ -470,7 +489,13 @@ public final class AutoCompleteUtils {
           }
         case NODE_PROPERTY_SPEC:
           {
-            suggestions = baseAutoComplete(query, NodePropertySpecifier.JAVA_MAP.keySet());
+            suggestions =
+                ParboiledAutoComplete.autoCompleteEnumSet(
+                    NodePropertySpecifier.JAVA_MAP.keySet(),
+                    network,
+                    snapshot,
+                    query,
+                    maxSuggestions);
             break;
           }
         case NODE_ROLE_AND_DIMENSION:

@@ -27,6 +27,7 @@ import org.batfish.specifier.MockSpecifierContext;
 import org.batfish.specifier.NameNodeSpecifier;
 import org.junit.Test;
 
+/** Tests for {@link BgpProcessConfigurationAnswerer} */
 public class BgpProcessConfigurationAnswererTest {
 
   @Test
@@ -110,7 +111,7 @@ public class BgpProcessConfigurationAnswererTest {
     BgpProcessConfigurationQuestion question =
         new BgpProcessConfigurationQuestion(
             AllNodesNodeSpecifier.INSTANCE,
-            new BgpProcessPropertySpecifier(property1 + "|" + property2));
+            new BgpProcessPropertySpecifier(ImmutableSet.of(property1, property2)));
 
     TableMetadata metadata = BgpProcessConfigurationAnswerer.createTableMetadata(question);
 

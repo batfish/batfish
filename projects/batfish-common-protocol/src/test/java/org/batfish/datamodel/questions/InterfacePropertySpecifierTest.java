@@ -1,34 +1,52 @@
 package org.batfish.datamodel.questions;
 
 import static org.batfish.datamodel.questions.InterfacePropertySpecifier.INCOMING_FILTER_NAME;
-import static org.hamcrest.Matchers.emptyIterable;
 import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.hasSize;
 import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
 
 import com.google.common.collect.ImmutableList;
-import java.util.Collection;
+import com.google.common.collect.ImmutableSet;
 import java.util.Iterator;
+import java.util.Set;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpAccessListLine;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 
+/** Tests for {@link InterfacePropertySpecifier} */
 public class InterfacePropertySpecifierTest {
+
+  /** */
+  @Rule public ExpectedException _thrown = ExpectedException.none();
+
+  @Test
+  public void testConstructorBadProperty() {
+    _thrown.expect(IllegalArgumentException.class);
+    new NodePropertySpecifier("ntp");
+  }
+
+  @Test
+  public void testConstructorBadPropertyInList() {
+    _thrown.expect(IllegalArgumentException.class);
+    new NodePropertySpecifier(ImmutableSet.of(INCOMING_FILTER_NAME, "dumdum"));
+  }
 
   @Test
   public void getMatchingProperties() {
     // match everything
     assertThat(
-        new InterfacePropertySpecifier(".*").getMatchingProperties().size(),
-        equalTo(InterfacePropertySpecifier.JAVA_MAP.size()));
+        new InterfacePropertySpecifier("/.*/").getMatchingProperties(),
+        equalTo(
+            InterfacePropertySpecifier.JAVA_MAP.keySet().stream()
+                .sorted()
+                .collect(ImmutableList.toImmutableList())));
 
     // match the description
-    assertThat(new InterfacePropertySpecifier("desc.*").getMatchingProperties().size(), equalTo(1));
-
-    // match nothing: ntp
-    assertTrue(new InterfacePropertySpecifier("ntp").getMatchingProperties().isEmpty());
+    assertThat(
+        new InterfacePropertySpecifier("/desc.*/").getMatchingProperties(),
+        equalTo(ImmutableList.of(InterfacePropertySpecifier.DESCRIPTION)));
   }
 
   @Test
@@ -36,21 +54,12 @@ public class InterfacePropertySpecifierTest {
     Iterator<String> i = InterfacePropertySpecifier.JAVA_MAP.keySet().iterator();
     String prop1 = i.next();
     String prop2 = i.next();
-    Collection<String> firstTwoProperties = ImmutableList.of(prop1, prop2);
+    Set<String> firstTwoProperties = ImmutableSet.of(prop1, prop2);
 
     // should match the two properties passed to constructor
     assertThat(
-        new InterfacePropertySpecifier(firstTwoProperties).getMatchingProperties(), hasSize(2));
-
-    Collection<String> longer = ImmutableList.of(prop1 + prop1);
-
-    // should not match longer
-    assertThat(new InterfacePropertySpecifier(longer).getMatchingProperties(), emptyIterable());
-
-    Collection<String> shorter = ImmutableList.of(prop1.substring(0, 1));
-
-    // should not match shorter
-    assertThat(new InterfacePropertySpecifier(shorter).getMatchingProperties(), emptyIterable());
+        new InterfacePropertySpecifier(firstTwoProperties).getMatchingProperties(),
+        equalTo(ImmutableList.of(prop1, prop2)));
   }
 
   @Test

@@ -1,19 +1,26 @@
 package org.batfish.datamodel.questions;
 
+import static com.google.common.base.Preconditions.checkArgument;
+
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Sets;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.List;
 import java.util.Map;
-import java.util.regex.Pattern;
+import java.util.Set;
 import java.util.stream.Collectors;
+import javax.annotation.Nullable;
+import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.SwitchportEncapsulationType;
 import org.batfish.datamodel.SwitchportMode;
 import org.batfish.datamodel.answers.Schema;
+import org.batfish.specifier.ConstantEnumSetSpecifier;
+import org.batfish.specifier.EnumSetSpecifier;
+import org.batfish.specifier.SpecifierFactories;
 
 /**
  * Enables specification a set of interface properties.
@@ -27,6 +34,7 @@ import org.batfish.datamodel.answers.Schema;
  *
  * <p>In the future, we might add other specifier types, e.g., those based on Json Path
  */
+@ParametersAreNonnullByDefault
 public class InterfacePropertySpecifier extends PropertySpecifier {
 
   public static final String ACCESS_VLAN = "Access_VLAN";
@@ -301,32 +309,43 @@ public class InterfacePropertySpecifier extends PropertySpecifier {
 
   public static final InterfacePropertySpecifier ALL = new InterfacePropertySpecifier(".*");
 
-  private final String _expression;
+  @Nullable private final String _expression;
 
-  private final Pattern _pattern;
+  private final EnumSetSpecifier<String> _enumSetSpecifier;
 
   @JsonCreator
-  public InterfacePropertySpecifier(String expression) {
-    _expression = expression;
-    _pattern = Pattern.compile(_expression.trim(), Pattern.CASE_INSENSITIVE);
+  private static InterfacePropertySpecifier create(@Nullable String expression) {
+    return new InterfacePropertySpecifier(expression);
   }
 
-  public InterfacePropertySpecifier(Collection<String> properties) {
-    // quote and join
-    _expression =
-        properties.stream().map(String::trim).map(Pattern::quote).collect(Collectors.joining("|"));
-    _pattern = Pattern.compile(_expression, Pattern.CASE_INSENSITIVE);
+  public InterfacePropertySpecifier(@Nullable String expression) {
+    this(
+        expression,
+        SpecifierFactories.getEnumSetSpecifierOrDefault(
+            expression, JAVA_MAP.keySet(), new ConstantEnumSetSpecifier<>(JAVA_MAP.keySet())));
+  }
+
+  public InterfacePropertySpecifier(Set<String> properties) {
+    this(null, new ConstantEnumSetSpecifier<>(properties));
+    Set<String> diffSet = Sets.difference(properties, JAVA_MAP.keySet());
+    checkArgument(
+        diffSet.isEmpty(), "Invalid properties supplied to the property specifier: %s", diffSet);
+  }
+
+  private InterfacePropertySpecifier(
+      @Nullable String expression, EnumSetSpecifier<String> enumSetSpecifier) {
+    _expression = expression;
+    _enumSetSpecifier = enumSetSpecifier;
   }
 
   @Override
   public List<String> getMatchingProperties() {
-    return JAVA_MAP.keySet().stream()
-        .filter(prop -> _pattern.matcher(prop).matches())
-        .collect(ImmutableList.toImmutableList());
+    return _enumSetSpecifier.resolve().stream().sorted().collect(ImmutableList.toImmutableList());
   }
 
   @Override
   @JsonValue
+  @Nullable
   public String toString() {
     return _expression;
   }

@@ -1,11 +1,15 @@
 package org.batfish.datamodel.questions;
 
+import static com.google.common.base.Preconditions.checkArgument;
+
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Sets;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -140,8 +144,11 @@ public class NamedStructurePropertySpecifier extends PropertySpecifier {
             expression, JAVA_MAP.keySet(), new ConstantEnumSetSpecifier<>(JAVA_MAP.keySet())));
   }
 
-  public NamedStructurePropertySpecifier(EnumSetSpecifier<String> enumSetSpecifier) {
-    this(null, enumSetSpecifier);
+  public NamedStructurePropertySpecifier(Set<String> properties) {
+    this(null, new ConstantEnumSetSpecifier<>(properties));
+    Set<String> diffSet = Sets.difference(properties, JAVA_MAP.keySet());
+    checkArgument(
+        diffSet.isEmpty(), "Invalid properties supplied to the property specifier: %s", diffSet);
   }
 
   private NamedStructurePropertySpecifier(

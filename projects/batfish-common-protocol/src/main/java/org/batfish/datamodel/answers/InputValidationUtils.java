@@ -9,7 +9,11 @@ import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.common.CompletionMetadata;
 import org.batfish.datamodel.Protocol;
 import org.batfish.datamodel.answers.InputValidationNotes.Validity;
+import org.batfish.datamodel.questions.BgpPeerPropertySpecifier;
+import org.batfish.datamodel.questions.BgpProcessPropertySpecifier;
+import org.batfish.datamodel.questions.InterfacePropertySpecifier;
 import org.batfish.datamodel.questions.NamedStructurePropertySpecifier;
+import org.batfish.datamodel.questions.NodePropertySpecifier;
 import org.batfish.datamodel.questions.Variable;
 import org.batfish.referencelibrary.ReferenceLibrary;
 import org.batfish.role.NodeRolesData;
@@ -37,9 +41,18 @@ public final class InputValidationUtils {
     switch (varType) {
       case APPLICATION_SPEC:
         return ParboiledInputValidator.validateEnumSet(Arrays.asList(Protocol.values()), query);
+      case BGP_PEER_PROPERTY_SPEC:
+        return ParboiledInputValidator.validateEnumSet(
+            BgpPeerPropertySpecifier.JAVA_MAP.keySet(), query);
+      case BGP_PROCESS_PROPERTY_SPEC:
+        return ParboiledInputValidator.validateEnumSet(
+            BgpProcessPropertySpecifier.JAVA_MAP.keySet(), query);
       case FILTER_SPEC:
         return ParboiledInputValidator.validate(
             Grammar.FILTER_SPECIFIER, query, completionMetadata, nodeRolesData, referenceLibrary);
+      case INTERFACE_PROPERTY_SPEC:
+        return ParboiledInputValidator.validateEnumSet(
+            InterfacePropertySpecifier.JAVA_MAP.keySet(), query);
       case INTERFACES_SPEC:
         return ParboiledInputValidator.validate(
             Grammar.INTERFACE_SPECIFIER,
@@ -66,6 +79,9 @@ public final class InputValidationUtils {
       case NODE_SPEC:
         return ParboiledInputValidator.validate(
             Grammar.NODE_SPECIFIER, query, completionMetadata, nodeRolesData, referenceLibrary);
+      case NODE_PROPERTY_SPEC:
+        return ParboiledInputValidator.validateEnumSet(
+            NodePropertySpecifier.JAVA_MAP.keySet(), query);
       case ROUTING_POLICY_SPEC:
         return ParboiledInputValidator.validate(
             Grammar.ROUTING_POLICY_SPECIFIER,

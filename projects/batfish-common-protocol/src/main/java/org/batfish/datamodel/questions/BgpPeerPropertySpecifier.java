@@ -1,25 +1,28 @@
 package org.batfish.datamodel.questions;
 
-import static com.google.common.base.MoreObjects.firstNonNull;
+import static com.google.common.base.Preconditions.checkArgument;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-import java.util.Collection;
+import com.google.common.collect.Sets;
 import java.util.List;
 import java.util.Map;
-import java.util.regex.Pattern;
-import java.util.stream.Collectors;
+import java.util.Set;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.BgpActivePeerConfig;
 import org.batfish.datamodel.BgpPassivePeerConfig;
 import org.batfish.datamodel.BgpPeerConfig;
 import org.batfish.datamodel.BgpUnnumberedPeerConfig;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.answers.Schema;
+import org.batfish.specifier.ConstantEnumSetSpecifier;
+import org.batfish.specifier.EnumSetSpecifier;
+import org.batfish.specifier.SpecifierFactories;
 
 /**
  * Enables specification of a set of BGP peer properties.
@@ -31,6 +34,7 @@ import org.batfish.datamodel.answers.Schema;
  *   <li>.*policy -&gt; gets all properties that end with 'policy'
  * </ul>
  */
+@ParametersAreNonnullByDefault
 public class BgpPeerPropertySpecifier extends PropertySpecifier {
 
   public static final String LOCAL_AS = "Local_AS";
@@ -110,20 +114,32 @@ public class BgpPeerPropertySpecifier extends PropertySpecifier {
 
   private final String _expression;
 
-  private final Pattern _pattern;
+  private final EnumSetSpecifier<String> _enumSetSpecifier;
 
   @JsonCreator
+  private static BgpPeerPropertySpecifier create(@Nullable String expression) {
+    return new BgpPeerPropertySpecifier(expression);
+  }
+
   public BgpPeerPropertySpecifier(@Nullable String expression) {
-    _expression = firstNonNull(expression, ".*");
-    _pattern = Pattern.compile(_expression.trim().toLowerCase()); // canonicalize
+    this(
+        expression,
+        SpecifierFactories.getEnumSetSpecifierOrDefault(
+            expression, JAVA_MAP.keySet(), new ConstantEnumSetSpecifier<>(JAVA_MAP.keySet())));
   }
 
   /** Returns a specifier that maps to all properties in {@code properties} */
-  public BgpPeerPropertySpecifier(Collection<String> properties) {
-    // quote and join
-    _expression =
-        properties.stream().map(String::trim).map(Pattern::quote).collect(Collectors.joining("|"));
-    _pattern = Pattern.compile(_expression, Pattern.CASE_INSENSITIVE);
+  public BgpPeerPropertySpecifier(Set<String> properties) {
+    this(null, new ConstantEnumSetSpecifier<>(properties));
+    Set<String> diffSet = Sets.difference(properties, JAVA_MAP.keySet());
+    checkArgument(
+        diffSet.isEmpty(), "Invalid properties supplied to the property specifier: %s", diffSet);
+  }
+
+  private BgpPeerPropertySpecifier(
+      @Nullable String expression, EnumSetSpecifier<String> enumSetSpecifier) {
+    _expression = expression;
+    _enumSetSpecifier = enumSetSpecifier;
   }
 
   /** Returns cluster ID of this peer */
@@ -135,9 +151,7 @@ public class BgpPeerPropertySpecifier extends PropertySpecifier {
 
   @Override
   public List<String> getMatchingProperties() {
-    return JAVA_MAP.keySet().stream()
-        .filter(prop -> _pattern.matcher(prop.toLowerCase()).matches())
-        .collect(ImmutableList.toImmutableList());
+    return _enumSetSpecifier.resolve().stream().sorted().collect(ImmutableList.toImmutableList());
   }
 
   private static Ip getLocalIp(@Nonnull BgpPeerConfig peer) {
@@ -158,6 +172,7 @@ public class BgpPeerPropertySpecifier extends PropertySpecifier {
 
   @Override
   @JsonValue
+  @Nullable
   public String toString() {
     return _expression;
   }

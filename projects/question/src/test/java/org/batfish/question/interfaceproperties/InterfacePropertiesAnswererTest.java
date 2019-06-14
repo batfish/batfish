@@ -29,6 +29,7 @@ import org.batfish.specifier.NameNodeSpecifier;
 import org.junit.Before;
 import org.junit.Test;
 
+/** Tests for {@link InterfacePropertiesAnswerer} */
 public class InterfacePropertiesAnswererTest {
 
   private static final String HOSTNAME = "node1";
@@ -61,7 +62,7 @@ public class InterfacePropertiesAnswererTest {
     String property1 = InterfacePropertySpecifier.DESCRIPTION;
     String property2 = InterfacePropertySpecifier.ACTIVE;
     InterfacePropertySpecifier propertySpecifier =
-        new InterfacePropertySpecifier(property1 + "|" + property2);
+        new InterfacePropertySpecifier(ImmutableSet.of(property1, property2));
 
     MockSpecifierContext ctxt =
         MockSpecifierContext.builder().setConfigs(ImmutableMap.of("node1", conf1)).build();
