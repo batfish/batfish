@@ -1739,6 +1739,14 @@ public final class Interface extends ComparableStructure<String> {
     _zoneName = zoneName;
   }
 
+  public void addVrrpGroup(Integer num, @Nonnull VrrpGroup group) {
+    _vrrpGroups =
+        ImmutableSortedMap.<Integer, VrrpGroup>naturalOrder()
+            .putAll(_vrrpGroups)
+            .put(num, group)
+            .build();
+  }
+
   /** Blacklist this interface, making it inactive and blacklisted */
   public void blacklist() {
     setActive(false);

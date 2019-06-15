@@ -647,7 +647,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
                                 + ifaceName
                                 + "' due to missing prefix");
                       }
-                      iface.getVrrpGroups().put(groupNum, newGroup);
+                      iface.addVrrpGroup(groupNum, newGroup);
                     });
           }
         });
