@@ -132,15 +132,15 @@ class FlowTracer {
       }
 
       @Override
+      public Integer visitFibNextVrf(FibNextVrf fibNextVrf) {
+        return fibNextVrf.getNextVrf().compareTo(((FibNextVrf) _rhs).getNextVrf());
+      }
+
+      @Override
       public Integer visitFibNullRoute(FibNullRoute fibNullRoute) {
         // guarantee type correctness
         FibNullRoute.class.cast(_rhs);
         return 0;
-      }
-
-      @Override
-      public Integer visitFibNextVrf(FibNextVrf fibNextVrf) {
-        return fibNextVrf.getNextVrf().compareTo(((FibNextVrf) _rhs).getNextVrf());
       }
     }
 
