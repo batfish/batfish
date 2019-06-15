@@ -7,7 +7,6 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.Objects;
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import org.batfish.datamodel.isis.IsisLevel;
 
 /** IS-IS route */
@@ -272,12 +271,6 @@ public class IsisRoute extends AbstractRoute {
   @Override
   public @Nonnull Ip getNextHopIp() {
     return _nextHopIp;
-  }
-
-  @Nullable
-  @Override
-  public String getNextVrf() {
-    return null;
   }
 
   /** Overload bit indicates this route came through an overloaded interface level. */

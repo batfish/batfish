@@ -70,12 +70,6 @@ public abstract class EigrpRoute extends AbstractRoute {
     return _nextHopIp;
   }
 
-  @Nullable
-  @Override
-  public String getNextVrf() {
-    return null;
-  }
-
   @JsonProperty(PROP_PROCESS_ASN)
   public long getProcessAsn() {
     return _processAsn;

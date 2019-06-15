@@ -30,7 +30,6 @@ public abstract class AbstractRoute implements AbstractRouteDecorator, Serializa
   static final String PROP_NETWORK = "network";
   static final String PROP_NEXT_HOP_INTERFACE = "nextHopInterface";
   static final String PROP_NEXT_HOP_IP = "nextHopIp";
-  static final String PROP_NEXT_VRF = "nextVrf";
   static final String PROP_NON_ROUTING = "nonRouting";
   static final String PROP_NON_FORWARDING = "nonForwarding";
   static final String PROP_PROTOCOL = "protocol";
@@ -97,10 +96,6 @@ public abstract class AbstractRoute implements AbstractRouteDecorator, Serializa
    */
   @JsonIgnore
   public abstract Ip getNextHopIp();
-
-  /** Name of the next VRF to which routing should be delegated. */
-  @JsonIgnore
-  public abstract @Nullable String getNextVrf();
 
   /**
    * Returns {@code true} if this route is non-forwarding, i.e., it can be installed in the main RIB

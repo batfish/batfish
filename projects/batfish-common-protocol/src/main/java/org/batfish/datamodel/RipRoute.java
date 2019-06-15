@@ -51,10 +51,4 @@ public abstract class RipRoute extends AbstractRoute {
   public final Ip getNextHopIp() {
     return _nextHopIp;
   }
-
-  @Nullable
-  @Override
-  public String getNextVrf() {
-    return null;
-  }
 }

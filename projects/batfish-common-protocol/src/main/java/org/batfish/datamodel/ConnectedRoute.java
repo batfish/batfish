@@ -81,12 +81,6 @@ public final class ConnectedRoute extends AbstractRoute {
     return Route.UNSET_ROUTE_NEXT_HOP_IP;
   }
 
-  @Nullable
-  @Override
-  public String getNextVrf() {
-    return null;
-  }
-
   @Override
   public RoutingProtocol getProtocol() {
     return RoutingProtocol.CONNECTED;

@@ -103,12 +103,6 @@ public final class KernelRoute extends AbstractRoute implements Comparable<Kerne
     return Route.UNSET_ROUTE_NEXT_HOP_IP;
   }
 
-  @Nullable
-  @Override
-  public String getNextVrf() {
-    return null;
-  }
-
   @Override
   public RoutingProtocol getProtocol() {
     return RoutingProtocol.KERNEL;

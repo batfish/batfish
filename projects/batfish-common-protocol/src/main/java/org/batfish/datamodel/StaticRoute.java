@@ -25,6 +25,7 @@ import javax.annotation.ParametersAreNonnullByDefault;
 public class StaticRoute extends AbstractRoute implements Comparable<StaticRoute> {
 
   static final long DEFAULT_STATIC_ROUTE_METRIC = 0L;
+  private static final String PROP_NEXT_VRF = "nextVrf";
   private static final long serialVersionUID = 1L;
 
   private final long _metric;
@@ -148,8 +149,6 @@ public class StaticRoute extends AbstractRoute implements Comparable<StaticRoute
   }
 
   @Nullable
-  @Override
-  @JsonIgnore(false)
   @JsonProperty(PROP_NEXT_VRF)
   public String getNextVrf() {
     return _nextVrf;

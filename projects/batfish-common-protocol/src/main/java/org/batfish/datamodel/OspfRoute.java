@@ -64,12 +64,6 @@ public abstract class OspfRoute extends AbstractRoute {
     return _nextHopIp;
   }
 
-  @Nullable
-  @Override
-  public String getNextVrf() {
-    return null;
-  }
-
   @Override
   @Nonnull
   public abstract RoutingProtocol getProtocol();

@@ -56,6 +56,8 @@ import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.Route;
+import org.batfish.datamodel.RoutingProtocol;
+import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.acl.Evaluator;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.flow.ExitOutputIfaceStep;
@@ -566,9 +568,14 @@ class FlowTracer {
         fibEntries.stream()
             .map(FibEntry::getTopLevelRoute)
             .map(
-                rc ->
+                route ->
                     new RouteInfo(
-                        rc.getProtocol(), rc.getNetwork(), rc.getNextHopIp(), rc.getNextVrf()))
+                        route.getProtocol(),
+                        route.getNetwork(),
+                        route.getNextHopIp(),
+                        route.getProtocol() == RoutingProtocol.STATIC
+                            ? ((StaticRoute) route).getNextVrf()
+                            : null))
             .sorted(
                 comparing(RouteInfo::getNetwork)
                     .thenComparing(RouteInfo::getNextHopIp)
