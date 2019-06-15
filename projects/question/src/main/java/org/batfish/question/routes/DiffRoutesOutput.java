@@ -105,7 +105,7 @@ public class DiffRoutesOutput {
   }
 
   @Nonnull
-  RouteRowSecondaryKey getRouteRowSecondaryKey() {
+  public RouteRowSecondaryKey getRouteRowSecondaryKey() {
     return _routeRowSecondaryKey;
   }
 
