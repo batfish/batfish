@@ -66,11 +66,7 @@ class PacketPolicyToBdd {
     new Collector(stmtConverter._pathTransition).visit(p.getDefaultAction().getAction());
   }
 
-  /**
-   * Return the set of packets that is dropped by a policy
-   *
-   * @return
-   */
+  /** Return the set of packets that is dropped by a policy */
   @Nonnull
   public Transition getToDrop() {
     return _toDrop;
@@ -79,8 +75,6 @@ class PacketPolicyToBdd {
   /**
    * Return the sets of packets that must be processed by destination-based forwarding pipeline
    * (expressed as a {@link FibLookup} action).
-   *
-   * @return
    */
   @Nonnull
   public Map<FibLookup, Transition> getFibLookups() {
@@ -94,6 +88,11 @@ class PacketPolicyToBdd {
    */
   private final class StatementToBdd implements StatementVisitor<Void> {
     private final BoolExprToBdd _boolExprToBdd;
+
+    /**
+     * Transformations and constraints the {@link PacketPolicy} applies to an input BDD along the
+     * path from the root of the {@link PacketPolicy} AST to the current node being visited.
+     */
     private Transition _pathTransition;
 
     private StatementToBdd(BoolExprToBdd boolExprToBdd) {
