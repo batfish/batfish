@@ -534,7 +534,7 @@ class FlowTracer {
               @Override
               public Void visitFibNextVrf(FibNextVrf fibNextVrf) {
                 String nextVrf = fibNextVrf.getNextVrf();
-                branch(fibNextVrf.getNextVrf())
+                branch(nextVrf)
                     .fibLookup(
                         dstIp,
                         currentNodeName,
