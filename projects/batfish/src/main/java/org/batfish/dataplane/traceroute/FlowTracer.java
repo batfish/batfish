@@ -300,6 +300,12 @@ class FlowTracer {
 
   /** Creates a new TransmissionContext for the specified last-hop node and outgoing interface. */
   private FlowTracer followEdge(NodeInterfacePair exitIface, NodeInterfacePair enterIface) {
+    /*
+     * At this point there should be 1 breadcrumb for every lookup in a VRF (at least one per
+     * visited node); and one hop for every node visited beyond the first, plus one for the node we
+     * are about to visit. So we should expect there to be more at least as many breadcrumbs as
+     * hops.
+     */
     checkState(_hops.size() <= _breadcrumbs.size(), "Must not have more hops than breadcrumbs");
     // grab configuration-specific information from the node that owns enterIface
     String newHostname = enterIface.getHostname();
@@ -320,7 +326,12 @@ class FlowTracer {
   }
 
   private @Nonnull FlowTracer branch(String newVrfName) {
-    checkState(_hops.size() <= _breadcrumbs.size() - 1, "Must have fewer hops than breadcrumbs");
+    /*
+     * At this point there should be 1 breadcrumb for every lookup in a VRF (at least one per
+     * visited node), and one hop for every node visited beyond the first. So we should expect there
+     * to be more breadcrumbs than hops.
+     */
+    checkState(_hops.size() < _breadcrumbs.size(), "Must have fewer hops than breadcrumbs");
     return forkTracer(
         _currentConfig, _ingressInterface, _steps, _lastHopNodeAndOutgoingInterface, newVrfName);
   }
