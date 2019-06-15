@@ -197,7 +197,6 @@ class FlowTracer {
   // The current flow can change as we process the packet.
   private Flow _currentFlow;
 
-  @VisibleForTesting
   @Nonnull
   static FlowTracer initialFlowTracer(
       TracerouteEngineImplContext tracerouteContext,
