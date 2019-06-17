@@ -624,7 +624,7 @@ public class TracerouteEngineImplTest {
     assertThat(step1.getDetail().getRoutes(), hasSize(1));
     assertThat(
         step1.getDetail().getRoutes(),
-        contains(new RouteInfo(RoutingProtocol.STATIC, Prefix.parse("0.0.0.0/0"), Ip.AUTO)));
+        contains(new RouteInfo(RoutingProtocol.STATIC, Prefix.parse("0.0.0.0/0"), Ip.AUTO, null)));
 
     FilterStep step2 = (FilterStep) steps.get(2);
     assertThat(step2.getAction(), equalTo(StepAction.PERMITTED));
