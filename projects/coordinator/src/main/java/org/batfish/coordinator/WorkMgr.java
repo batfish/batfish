@@ -241,6 +241,9 @@ public class WorkMgr extends AbstractCoordinator {
 
   private static final int MAX_SHOWN_SNAPSHOT_INFO_SUBDIR_ENTRIES = 10;
 
+  private static final String SNAPSHOT_PACKAGING_INSTRUCTIONS_URL =
+      "https://github.com/batfish/batfish/wiki/Packaging-snapshots-for-analysis";
+
   private final IdManager _idManager;
 
   private final BatfishLogger _logger;
@@ -1729,10 +1732,11 @@ public class WorkMgr extends AbstractCoordinator {
       Path srcDir = subDir.getParent();
       throw new BatfishException(
           String.format(
-              "Unexpected packaging of snapshot. No networks configs dir '%s', AWS configs dir '%s', or hosts dir '%s' found.",
+              "Unexpected packaging of snapshot. No networks configs dir '%s', AWS configs dir '%s', or hosts dir '%s' found. See %s for more details on how to package your snapshot for analysis.",
               srcDir.relativize(networkConfigsPath),
               srcDir.relativize(awsConfigsPath),
-              srcDir.relativize(hostConfigsPath)));
+              srcDir.relativize(hostConfigsPath),
+              SNAPSHOT_PACKAGING_INSTRUCTIONS_URL));
     }
   }
 
@@ -1752,7 +1756,9 @@ public class WorkMgr extends AbstractCoordinator {
      */
     if (srcDirEntries.size() != 1 || !Files.isDirectory(srcDirEntries.iterator().next())) {
       throw new BatfishException(
-          "Unexpected packaging of snapshot. There should be just one top-level folder");
+          String.format(
+              "Unexpected packaging of snapshot. There should be just one top-level folder.  See %s for more details on how to package your snapshot for analysis.",
+              SNAPSHOT_PACKAGING_INSTRUCTIONS_URL));
     }
     return srcDirEntries.iterator().next();
   }
