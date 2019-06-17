@@ -2052,10 +2052,12 @@ public class VirtualRouter implements Serializable {
     return _bgpRoutingProcess;
   }
 
+  /** Return all OSPF processes for this VRF */
   public Map<String, OspfRoutingProcess> getOspfProcesses() {
     return _ospfProcesses;
   }
 
+  /** Return the current set of {@link VniSettings} associated with this VRF */
   public Set<VniSettings> getVniSettings() {
     return _vniSettings;
   }
@@ -2078,6 +2080,7 @@ public class VirtualRouter implements Serializable {
     _ospfProcesses.values().forEach(p -> p.executeIteration(allNodes));
   }
 
+  /** Execute one iteration of BGP route propagation. */
   void bgpIteration(Map<String, Node> allNodes) {
     if (_bgpRoutingProcess != null) {
       _bgpRoutingProcess.executeIteration(allNodes);
@@ -2090,6 +2093,10 @@ public class VirtualRouter implements Serializable {
    * necessary.
    */
   private void updateFloodLists() {
+    if (_bgpRoutingProcess == null) {
+      // an extra safe guard; should only be called from bgpIteration
+      return;
+    }
     for (EvpnType3Route route : _bgpRoutingProcess.getEvpnType3Routes()) {
       _vniSettings =
           _vniSettings.stream()
@@ -2098,8 +2105,13 @@ public class VirtualRouter implements Serializable {
     }
   }
 
-  @VisibleForTesting
-  static VniSettings updateVniFloodList(VniSettings vs, EvpnType3Route route) {
+  /**
+   * Update flood list for the given {@link VniSettings} based on information contained in {@code
+   * route}. Only updates the VNI if the route is <strong>not</strong> for the VNI's source address
+   * and if the {@link VniSettings#getBumTransportMethod()} is unicast flood group (otherwise
+   * returns the original {@code vs}).
+   */
+  private static VniSettings updateVniFloodList(VniSettings vs, EvpnType3Route route) {
     if (vs.getBumTransportMethod() != BumTransportMethod.UNICAST_FLOOD_GROUP
         || route.getVniIp().equals(vs.getSourceAddress())) {
       // Only update settings if transport method is unicast.
@@ -2132,7 +2144,7 @@ public class VirtualRouter implements Serializable {
                     importRibDelta(_mainRib, p.getUpdatesForMainRib(), _name)));
   }
 
-  void mergeBgpRoutes() {
+  void mergeBgpRoutesToMainRib() {
     if (_bgpRoutingProcess == null) {
       return;
     }
@@ -2152,7 +2164,8 @@ public class VirtualRouter implements Serializable {
     _bgpRoutingProcess.enqueueBgpMessages(edgeId, routes);
   }
 
-  public Set<EvpnRoute<?, ?>> getEvpnRoutes() {
+  /** Return all EVPN routes in this VRF */
+  Set<EvpnRoute<?, ?>> getEvpnRoutes() {
     if (_bgpRoutingProcess == null) {
       return ImmutableSet.of();
     }
