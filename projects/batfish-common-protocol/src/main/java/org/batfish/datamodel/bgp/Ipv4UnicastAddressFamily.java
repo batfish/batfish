@@ -1,12 +1,12 @@
 package org.batfish.datamodel.bgp;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
-import java.io.Serializable;
+import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 
 /** Configuration for an IPv4 address family */
 @ParametersAreNonnullByDefault
-public final class Ipv4UnicastAddressFamily implements Serializable {
+public final class Ipv4UnicastAddressFamily extends AddressFamily {
 
   private static final long serialVersionUID = 1L;
   private static final Ipv4UnicastAddressFamily INSTANCE = new Ipv4UnicastAddressFamily();
@@ -19,7 +19,7 @@ public final class Ipv4UnicastAddressFamily implements Serializable {
   }
 
   @Override
-  public boolean equals(Object obj) {
+  public boolean equals(@Nullable Object obj) {
     return obj instanceof Ipv4UnicastAddressFamily;
   }
 
