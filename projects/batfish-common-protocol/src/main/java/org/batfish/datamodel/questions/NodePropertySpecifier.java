@@ -10,12 +10,15 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
+import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.DeviceType;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.answers.Schema;
 import org.batfish.datamodel.vendor_family.VendorFamily;
+import org.batfish.specifier.ConstantEnumSetSpecifier;
+import org.batfish.specifier.SpecifierFactories;
 
 /**
  * Enables specification a set of node properties.
@@ -300,6 +303,19 @@ public class NodePropertySpecifier extends PropertySpecifier {
   public static final NodePropertySpecifier ALL = new NodePropertySpecifier(JAVA_MAP.keySet());
 
   private final List<String> _properties;
+
+  /**
+   * Create a node property specifier from provided expression. If the expression is null or empty,
+   * a specifier with all properties is returned.
+   */
+  public static NodePropertySpecifier create(@Nullable String expression) {
+    return new NodePropertySpecifier(
+        SpecifierFactories.getEnumSetSpecifierOrDefault(
+                expression,
+                NodePropertySpecifier.JAVA_MAP.keySet(),
+                new ConstantEnumSetSpecifier<>(NodePropertySpecifier.JAVA_MAP.keySet()))
+            .resolve());
+  }
 
   public NodePropertySpecifier(Set<String> properties) {
     Set<String> diffSet = Sets.difference(properties, JAVA_MAP.keySet());

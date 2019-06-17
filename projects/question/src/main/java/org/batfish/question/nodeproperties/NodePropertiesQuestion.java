@@ -9,7 +9,6 @@ import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.questions.NodePropertySpecifier;
 import org.batfish.datamodel.questions.Question;
 import org.batfish.specifier.AllNodesNodeSpecifier;
-import org.batfish.specifier.ConstantEnumSetSpecifier;
 import org.batfish.specifier.NodeSpecifier;
 import org.batfish.specifier.SpecifierFactories;
 
@@ -39,12 +38,7 @@ public class NodePropertiesQuestion extends Question {
         nodes,
         SpecifierFactories.getNodeSpecifierOrDefault(nodes, AllNodesNodeSpecifier.INSTANCE),
         properties,
-        new NodePropertySpecifier(
-            SpecifierFactories.getEnumSetSpecifierOrDefault(
-                    properties,
-                    NodePropertySpecifier.JAVA_MAP.keySet(),
-                    new ConstantEnumSetSpecifier<>(NodePropertySpecifier.JAVA_MAP.keySet()))
-                .resolve()));
+        NodePropertySpecifier.create(properties));
   }
 
   public NodePropertiesQuestion(NodeSpecifier nodeSpecifier, NodePropertySpecifier propertySpec) {
