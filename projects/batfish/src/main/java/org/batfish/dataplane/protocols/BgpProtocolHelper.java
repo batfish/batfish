@@ -1,6 +1,7 @@
 package org.batfish.dataplane.protocols;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import java.util.Set;
 import java.util.SortedSet;
 import javax.annotation.Nonnull;
@@ -16,7 +17,6 @@ import org.batfish.datamodel.BgpProcess;
 import org.batfish.datamodel.BgpRoute;
 import org.batfish.datamodel.BgpSessionProperties;
 import org.batfish.datamodel.Bgpv4Route;
-import org.batfish.datamodel.EvpnType3Route;
 import org.batfish.datamodel.GeneratedRoute;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.OriginType;
@@ -48,32 +48,28 @@ public final class BgpProtocolHelper {
           BgpProcess toBgpProcess,
           BgpRoute<B, R> route) {
 
-    // TODO: instead of doing many copies, use `toBuilder()` and clear/overwrite necessary fields
-    // Make a new blank builder
-    B builder = route.toBuilder().newBuilder();
+    // Make a new builder
+    B builder = route.toBuilder();
+
     // sessionProperties represents incoming edge, so fromNeighbor's IP is its headIp
     Ip fromNeighborIp = sessionProperties.getHeadIp();
     RoutingProtocol routeProtocol = route.getProtocol();
 
-    builder.setNetwork(route.getNetwork());
     builder.setReceivedFromIp(fromNeighborIp);
-    builder.setAsPath(route.getAsPath());
     builder.setProtocol(sessionProperties.isEbgp() ? RoutingProtocol.BGP : RoutingProtocol.IBGP);
     builder.setSrcProtocol(route.getProtocol());
-    builder.setOriginType(route.getOriginType());
 
-    // Hacky way of taking care of type3 routes until above todo is addressed
-    if (route instanceof EvpnType3Route) {
-      ((EvpnType3Route.Builder) builder)
-          .setRouteDistinguisher(((EvpnType3Route) route).getRouteDistinguisher())
-          .setVniIp(((EvpnType3Route) route).getVniIp());
-    }
+    // Clear a bunch of non-transitive attributes
+    builder.setWeight(0);
+    builder.setDiscard(false);
+    builder.setNonRouting(false);
+    builder.setNonForwarding(false);
+    builder.setAdmin(toBgpProcess.getAdminCost(builder.getProtocol()));
+    builder.setTag(null);
 
     // Set originatorIP
-    if (!sessionProperties.isEbgp() && routeProtocol.equals(RoutingProtocol.IBGP)) {
-      // iBGP session and iBGP route: preserve the originator
-      builder.setOriginatorIp(route.getOriginatorIp());
-    } else {
+    if (sessionProperties.isEbgp() || !routeProtocol.equals(RoutingProtocol.IBGP)) {
+      // eBGP session and not iBGP route: override the originator
       builder.setOriginatorIp(fromBgpProcess.getRouterId());
     }
 
@@ -90,9 +86,12 @@ public final class BgpProtocolHelper {
             && !fromNeighbor.getAllowRemoteAsOut())) {
       return null;
     }
+
     // Set transformed route's communities
     if (fromNeighbor.getSendCommunity()) {
       builder.addCommunities(communities);
+    } else {
+      builder.setCommunities(ImmutableSet.of());
     }
 
     /*
@@ -102,6 +101,8 @@ public final class BgpProtocolHelper {
     if (!sessionProperties.isEbgp() && toBgpProcess.getRouterId().equals(route.getOriginatorIp())) {
       return null;
     }
+
+    builder.setClusterList(ImmutableSet.of());
     if (routeProtocol.equals(RoutingProtocol.IBGP) && !sessionProperties.isEbgp()) {
       /*
        * The remote route is iBGP. The session is iBGP. We consider whether to reflect, and
@@ -149,9 +150,9 @@ public final class BgpProtocolHelper {
       }
     }
 
-    // Outgoing metric (MED) is preserved only if advertising to IBGP peer.
-    if (!sessionProperties.isEbgp()) {
-      builder.setMetric(route.getMetric());
+    // Outgoing metric (MED) is preserved only if advertising to IBGP peer. For eBGP, clear it.
+    if (sessionProperties.isEbgp()) {
+      builder.setMetric(0);
     }
 
     // Local preference: only transitive for iBGP
