@@ -10,7 +10,7 @@ import static org.batfish.common.util.CollectionUtil.toImmutableSortedMap;
 import static org.batfish.common.util.IpsecUtil.retainReachableIpsecEdges;
 import static org.batfish.common.util.IpsecUtil.toEdgeSet;
 import static org.batfish.datamodel.bgp.BgpTopologyUtils.initBgpTopology;
-import static org.batfish.datamodel.vxlan.VxlanTopologyUtils.initialVxlanTopology;
+import static org.batfish.datamodel.vxlan.VxlanTopologyUtils.computeVxlanTopology;
 import static org.batfish.datamodel.vxlan.VxlanTopologyUtils.prunedVxlanTopology;
 import static org.batfish.dataplane.rib.AbstractRib.importRib;
 
@@ -92,7 +92,7 @@ class IncrementalBdpEngine {
               .setIsisTopology(
                   IsisTopology.initIsisTopology(
                       configurations, callerTopologyContext.getLayer3Topology()))
-              .setVxlanTopology(VxlanTopologyUtils.initialVxlanTopology(configurations))
+              .setVxlanTopology(VxlanTopologyUtils.computeVxlanTopology(configurations))
               .build();
 
       // Generate our nodes, keyed by name, sorted for determinism
@@ -145,7 +145,7 @@ class IncrementalBdpEngine {
           // VXLAN
           VxlanTopology newVxlanTopology =
               prunedVxlanTopology(
-                  initialVxlanTopology(partialDataplane.getVniSettings()),
+                  computeVxlanTopology(partialDataplane.getVniSettings()),
                   configurations,
                   trEngCurrentL3Topogy);
           // Layer-2

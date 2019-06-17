@@ -117,19 +117,19 @@ public final class VxlanTopologyUtils {
    * Compute the VXLAN topology based on the {@link VniSettings} extracted from the given
    * configurations
    */
-  public static @Nonnull VxlanTopology initialVxlanTopology(
+  public static @Nonnull VxlanTopology computeVxlanTopology(
       Map<String, Configuration> configurations) {
-    return computeVxlanTopology(computeVniSettingsTable(configurations));
+    return internalComputeVxlanTopology(computeVniSettingsTable(configurations));
   }
 
   /**
    * Compute the VXLAN topology based on the {@link VniSettings} extracted from the given table.
    *
-   * @param allVniSettings of the VNI settings. Row is hostname, Column is VRF name.
+   * @param allVniSettings table of the VNI settings. Row is hostname, Column is VRF name.
    */
-  public static @Nonnull VxlanTopology initialVxlanTopology(
+  public static @Nonnull VxlanTopology computeVxlanTopology(
       Table<String, String, ? extends Collection<VniSettings>> allVniSettings) {
-    return computeVxlanTopology(computeVniSettingsTable(allVniSettings));
+    return internalComputeVxlanTopology(computeVniSettingsTable(allVniSettings));
   }
 
   /** Convert configurations into a table format that's easier to work with */
@@ -168,7 +168,7 @@ public final class VxlanTopologyUtils {
   }
 
   /** Compute the VXLAN topology. Adds edges per VNI. */
-  private static @Nonnull VxlanTopology computeVxlanTopology(
+  private static @Nonnull VxlanTopology internalComputeVxlanTopology(
       Table<VrfId, Integer, VniSettings> allVniSettings) {
     MutableGraph<VxlanNode> graph = GraphBuilder.undirected().allowsSelfLoops(false).build();
     allVniSettings

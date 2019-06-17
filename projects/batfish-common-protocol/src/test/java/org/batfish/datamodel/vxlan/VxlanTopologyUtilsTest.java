@@ -5,7 +5,7 @@ import static org.batfish.datamodel.vxlan.VxlanTopologyUtils.addVniEdges;
 import static org.batfish.datamodel.vxlan.VxlanTopologyUtils.buildVxlanNode;
 import static org.batfish.datamodel.vxlan.VxlanTopologyUtils.compatibleVniSettings;
 import static org.batfish.datamodel.vxlan.VxlanTopologyUtils.computeVniSettingsTable;
-import static org.batfish.datamodel.vxlan.VxlanTopologyUtils.initialVxlanTopology;
+import static org.batfish.datamodel.vxlan.VxlanTopologyUtils.computeVxlanTopology;
 import static org.batfish.datamodel.vxlan.VxlanTopologyUtils.prunedVxlanTopology;
 import static org.batfish.datamodel.vxlan.VxlanTopologyUtils.vxlanFlowDelivered;
 import static org.hamcrest.Matchers.empty;
@@ -598,7 +598,7 @@ public final class VxlanTopologyUtilsTest {
     VxlanNode nodeHead = VxlanNode.builder().setHostname(NODE2).setVni(VNI).build();
 
     assertThat(
-        initialVxlanTopology(configurations).getGraph().edges(),
+        VxlanTopologyUtils.computeVxlanTopology(configurations).getGraph().edges(),
         equalTo(ImmutableSet.of(EndpointPair.unordered(nodeTail, nodeHead))));
   }
 
@@ -624,7 +624,7 @@ public final class VxlanTopologyUtilsTest {
     VxlanNode nodeHead = VxlanNode.builder().setHostname(NODE2).setVni(VNI).build();
 
     assertThat(
-        initialVxlanTopology(table).getGraph().edges(),
+        computeVxlanTopology(table).getGraph().edges(),
         equalTo(ImmutableSet.of(EndpointPair.unordered(nodeTail, nodeHead))));
   }
 
