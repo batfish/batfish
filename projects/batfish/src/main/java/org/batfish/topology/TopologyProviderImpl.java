@@ -170,7 +170,7 @@ public final class TopologyProviderImpl implements TopologyProvider {
     try (ActiveSpan span =
         GlobalTracer.get().buildSpan("TopologyProviderImpl::computeVxlanTopology").startActive()) {
       assert span != null; // avoid unused warning
-      return VxlanTopologyUtils.initialVxlanTopology(_batfish.loadConfigurations(snapshot));
+      return VxlanTopologyUtils.computeVxlanTopology(_batfish.loadConfigurations(snapshot));
     }
   }
 
