@@ -1,6 +1,7 @@
 package org.batfish.dataplane.traceroute;
 
 import static org.batfish.datamodel.FlowDisposition.DENIED_IN;
+import static org.batfish.datamodel.FlowDisposition.LOOP;
 import static org.batfish.datamodel.FlowDisposition.NULL_ROUTED;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.TRUE;
 import static org.batfish.datamodel.matchers.TraceAndReverseFlowMatchers.hasNewFirewallSessions;
@@ -270,5 +271,81 @@ public final class FlowTracerTest {
         ((RoutingStep) steps.get(1)).getDetail().getRoutes().get(0).getNextHopIp(),
         equalTo(Ip.AUTO));
     assertThat(((ExitOutputIfaceStep) steps.get(2)).getAction(), is(StepAction.NULL_ROUTED));
+  }
+
+  @Test
+  public void testFibLookupNextVrfLoop() {
+    NetworkFactory nf = new NetworkFactory();
+    Configuration c =
+        nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS).build();
+    String hostname = c.getHostname();
+    Vrf.Builder vb = nf.vrfBuilder().setOwner(c);
+    Vrf vrf1 = vb.build();
+    String vrf1Name = vrf1.getName();
+    Vrf vrf2 = vb.build();
+    String vrf2Name = vrf2.getName();
+    Flow flow =
+        Flow.builder()
+            .setDstIp(Ip.parse("1.1.1.1"))
+            .setIngressNode(c.getHostname())
+            .setIngressVrf(vrf1Name)
+            .setTag("tag")
+            .build();
+    Ip dstIp = flow.getDstIp();
+    StaticRoute vrf1NextVrfRoute =
+        StaticRoute.builder().setAdmin(1).setNetwork(Prefix.ZERO).setNextVrf(vrf2Name).build();
+    StaticRoute vrf2NextVrfRoute =
+        StaticRoute.builder().setAdmin(1).setNetwork(Prefix.ZERO).setNextVrf(vrf1Name).build();
+    Fib fib1 =
+        MockFib.builder()
+            .setFibEntries(
+                ImmutableMap.of(
+                    dstIp,
+                    ImmutableSet.of(
+                        new FibEntry(
+                            new FibNextVrf(vrf2Name), ImmutableList.of(vrf1NextVrfRoute)))))
+            .build();
+    Fib fib2 =
+        MockFib.builder()
+            .setFibEntries(
+                ImmutableMap.of(
+                    dstIp,
+                    ImmutableSet.of(
+                        new FibEntry(
+                            new FibNextVrf(vrf1Name), ImmutableList.of(vrf2NextVrfRoute)))))
+            .build();
+    List<TraceAndReverseFlow> traces = new ArrayList<>();
+    TracerouteEngineImplContext ctxt =
+        new TracerouteEngineImplContext(
+            MockDataPlane.builder().setConfigs(ImmutableMap.of(c.getHostname(), c)).build(),
+            Topology.EMPTY,
+            ImmutableSet.of(),
+            ImmutableSet.of(),
+            ImmutableMap.of(hostname, ImmutableMap.of(vrf1Name, fib1, vrf2Name, fib2)),
+            false);
+    FlowTracer flowTracer = initialFlowTracer(ctxt, hostname, null, flow, traces::add);
+    flowTracer.fibLookup(dstIp, hostname, fib1);
+
+    // Should be delegated from fib1 to fib2 and then looped back to fib1
+    assertThat(traces, contains(hasTrace(hasDisposition(LOOP))));
+
+    List<Hop> hops = traces.get(0).getTrace().getHops();
+
+    // There should be a single hop
+    assertThat(hops, hasSize(1));
+
+    List<Step<?>> steps = hops.iterator().next().getSteps();
+
+    // There should be 2 routing steps, with no action due to loop.
+    // - next-vr should occur in the first step
+    // - next-vr should occur in the second step
+
+    assertThat(steps, contains(instanceOf(RoutingStep.class), instanceOf(RoutingStep.class)));
+    assertThat(
+        ((RoutingStep) steps.get(0)).getDetail().getRoutes().get(0).getNextVrf(),
+        equalTo(vrf2Name));
+    assertThat(
+        ((RoutingStep) steps.get(1)).getDetail().getRoutes().get(0).getNextVrf(),
+        equalTo(vrf1Name));
   }
 }

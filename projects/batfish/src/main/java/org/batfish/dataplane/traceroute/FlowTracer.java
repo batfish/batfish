@@ -197,6 +197,7 @@ class FlowTracer {
   // The current flow can change as we process the packet.
   private Flow _currentFlow;
 
+  /** Creates an initial {@link FlowTracer} for a new traceroute. */
   @Nonnull
   static FlowTracer initialFlowTracer(
       TracerouteEngineImplContext tracerouteContext,
@@ -223,6 +224,11 @@ class FlowTracer {
         originalFlow);
   }
 
+  /**
+   * Forks a {@link FlowTracer} that starts at {@code newIngressInterface} of {@code newVrfName} on
+   * {@code newConfig}, optionally having come from {@code lastHopNodeAndOutgoingInterface} after
+   * taking {@code initialSteps} since the beginning of the trace.
+   */
   @VisibleForTesting
   FlowTracer forkTracer(
       Configuration newConfig,
@@ -265,6 +271,7 @@ class FlowTracer {
     return vrfName;
   }
 
+  /** Construct a {@link FlowTracer} with expliclty-provided fields. */
   @VisibleForTesting
   FlowTracer(
       TracerouteEngineImplContext tracerouteContext,
@@ -299,15 +306,14 @@ class FlowTracer {
     _currentFlow = currentFlow;
   }
 
-  /** Creates a new TransmissionContext for the specified last-hop node and outgoing interface. */
-  private FlowTracer followEdge(NodeInterfacePair exitIface, NodeInterfacePair enterIface) {
-    /*
-     * At this point there should be 1 breadcrumb for every lookup in a VRF (at least one per
-     * visited node); and one hop for every node visited beyond the first, plus one for the node we
-     * are about to visit. So we should expect there to be more at least as many breadcrumbs as
-     * hops.
-     */
-    checkState(_hops.size() <= _breadcrumbs.size(), "Must not have more hops than breadcrumbs");
+  /**
+   * Return forked {@link FlowTracer} starting at {@code enterIface} having just come from {@code
+   * exitIface} after a hop has been added.
+   */
+  private FlowTracer forkTracerFollowEdge(
+      NodeInterfacePair exitIface, NodeInterfacePair enterIface) {
+    checkState(
+        _hops.size() == _breadcrumbs.size(), "Must have equal number of hops and breadcrumbs");
     // grab configuration-specific information from the node that owns enterIface
     String newHostname = enterIface.getHostname();
     Configuration newConfig = _tracerouteContext.getConfigurations().get(newHostname);
@@ -322,17 +328,17 @@ class FlowTracer {
         initVrfName(newIngressInterface, newConfig, _currentFlow));
   }
 
-  private @Nonnull FlowTracer branch() {
-    return branch(_vrfName);
+  /** Return forked {@link FlowTracer} on same node and VRF. Used for taking ECMP actions. */
+  private @Nonnull FlowTracer forkTracerSameNode() {
+    return forkTracerSameNode(_vrfName);
   }
 
-  private @Nonnull FlowTracer branch(String newVrfName) {
-    /*
-     * At this point there should be 1 breadcrumb for every lookup in a VRF (at least one per
-     * visited node), and one hop for every node visited beyond the first. So we should expect there
-     * to be more breadcrumbs than hops.
-     */
-    checkState(_hops.size() < _breadcrumbs.size(), "Must have fewer hops than breadcrumbs");
+  /**
+   * Return forked {@link FlowTracer} on same node and VRF identified by {@code newVrfName}. Used
+   * for taking next-vrf action (different VRF) or ECMP action (same VRF).
+   */
+  private @Nonnull FlowTracer forkTracerSameNode(String newVrfName) {
+    checkState(_hops.size() == _breadcrumbs.size() - 1, "Must be just ready to add another hop");
     return forkTracer(
         _currentConfig, _ingressInterface, _steps, _lastHopNodeAndOutgoingInterface, newVrfName);
   }
@@ -361,7 +367,8 @@ class FlowTracer {
     _hops.add(hop);
 
     NodeInterfacePair exitIface = new NodeInterfacePair(_currentNode.getName(), outgoingInterface);
-    interfacesThatReplyToArp.forEach(enterIface -> followEdge(exitIface, enterIface).processHop());
+    interfacesThatReplyToArp.forEach(
+        enterIface -> forkTracerFollowEdge(exitIface, enterIface).processHop());
   }
 
   @Nonnull
@@ -490,15 +497,30 @@ class FlowTracer {
     }.visit(result.getAction());
   }
 
+  /**
+   * Perform a FIB lookup of {@code dstIp} on {@code fib} of {@code currentNodeName} and take
+   * corresponding actions.
+   */
   @VisibleForTesting
   void fibLookup(Ip dstIp, String currentNodeName, Fib fib) {
+    fibLookup(dstIp, currentNodeName, fib, new Stack<>());
+  }
+
+  /**
+   * Perform a FIB lookup of {@code dstIp} on {@code fib} of {@code currentNodeName} and take
+   * corresponding actions given {@code intraHopBreadcrumbs} already produced at this node.
+   */
+  @VisibleForTesting
+  void fibLookup(Ip dstIp, String currentNodeName, Fib fib, Stack<Breadcrumb> intraHopBreadcrumbs) {
     // Loop detection
     Breadcrumb breadcrumb = new Breadcrumb(currentNodeName, _vrfName, _currentFlow);
     if (_breadcrumbs.contains(breadcrumb)) {
       buildLoopTrace();
       return;
     }
-    _breadcrumbs.push(breadcrumb);
+    if (intraHopBreadcrumbs.isEmpty()) {
+      _breadcrumbs.push(breadcrumb);
+    }
     try {
       Set<FibEntry> fibEntries = fib.get(dstIp);
 
@@ -524,7 +546,7 @@ class FlowTracer {
             new FibActionVisitor<Void>() {
               @Override
               public Void visitFibForward(FibForward fibForward) {
-                branch()
+                forkTracerSameNode()
                     .forwardOutInterface(
                         _currentConfig.getAllInterfaces().get(fibForward.getInterfaceName()),
                         fibForward.getArpIp());
@@ -533,24 +555,33 @@ class FlowTracer {
 
               @Override
               public Void visitFibNextVrf(FibNextVrf fibNextVrf) {
+                if (intraHopBreadcrumbs.contains(breadcrumb)) {
+                  buildLoopTrace();
+                  return null;
+                }
+                intraHopBreadcrumbs.push(breadcrumb);
                 String nextVrf = fibNextVrf.getNextVrf();
-                branch(nextVrf)
+                forkTracerSameNode(nextVrf)
                     .fibLookup(
                         dstIp,
                         currentNodeName,
-                        _tracerouteContext.getFib(currentNodeName, nextVrf).get());
+                        _tracerouteContext.getFib(currentNodeName, nextVrf).get(),
+                        intraHopBreadcrumbs);
+                intraHopBreadcrumbs.pop();
                 return null;
               }
 
               @Override
               public Void visitFibNullRoute(FibNullRoute fibNullRoute) {
-                branch().buildNullRoutedTrace();
+                forkTracerSameNode().buildNullRoutedTrace();
                 return null;
               }
             });
       }
     } finally {
-      _breadcrumbs.pop();
+      if (intraHopBreadcrumbs.isEmpty()) {
+        _breadcrumbs.pop();
+      }
     }
   }
 
@@ -692,7 +723,7 @@ class FlowTracer {
       _hops.add(new Hop(new Node(currentNodeName), _steps));
 
       // Forward to neighbor.
-      followEdge(
+      forkTracerFollowEdge(
               new NodeInterfacePair(currentNodeName, session.getOutgoingInterface()),
               session.getNextHop())
           .processHop();
