@@ -20,6 +20,7 @@ public final class RouteInfo {
   private static final String PROP_PROTOCOL = "protocol";
   private static final String PROP_NETWORK = "network";
   private static final String PROP_NEXT_HOP_IP = "nextHopIp";
+  private static final String PROP_NEXT_VRF = "nextVrf";
 
   /** Protocol of the route like bgp, ospf etc. */
   private @Nonnull final RoutingProtocol _protocol;
@@ -30,20 +31,26 @@ public final class RouteInfo {
   /** Next Hop IP for this route */
   private @Nullable final Ip _nextHopIp;
 
-  public RouteInfo(RoutingProtocol protocol, Prefix network, @Nullable Ip nextHopIp) {
+  /** Next VRF for this route */
+  private @Nullable final String _nextVrf;
+
+  public RouteInfo(
+      RoutingProtocol protocol, Prefix network, @Nullable Ip nextHopIp, @Nullable String nextVrf) {
     _protocol = protocol;
     _network = network;
     _nextHopIp = nextHopIp;
+    _nextVrf = nextVrf;
   }
 
   @JsonCreator
   private static RouteInfo jsonCreator(
       @JsonProperty(PROP_PROTOCOL) @Nullable RoutingProtocol protocol,
       @JsonProperty(PROP_NETWORK) @Nullable Prefix network,
-      @JsonProperty(PROP_NEXT_HOP_IP) @Nullable Ip nextHopIp) {
+      @JsonProperty(PROP_NEXT_HOP_IP) @Nullable Ip nextHopIp,
+      @JsonProperty(PROP_NEXT_VRF) @Nullable String nextVrf) {
     checkArgument(protocol != null, "Missing %s", PROP_PROTOCOL);
     checkArgument(network != null, "Missing %s", PROP_NETWORK);
-    return new RouteInfo(protocol, network, nextHopIp);
+    return new RouteInfo(protocol, network, nextHopIp, nextVrf);
   }
 
   @Override
@@ -56,12 +63,13 @@ public final class RouteInfo {
     RouteInfo other = (RouteInfo) o;
     return Objects.equals(_protocol, other._protocol)
         && Objects.equals(_network, other._network)
-        && Objects.equals(_nextHopIp, other._nextHopIp);
+        && Objects.equals(_nextHopIp, other._nextHopIp)
+        && Objects.equals(_nextVrf, other._nextVrf);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(_protocol, _network, _nextHopIp);
+    return Objects.hash(_protocol, _network, _nextHopIp, _nextVrf);
   }
 
   @JsonProperty(PROP_PROTOCOL)
@@ -80,5 +88,11 @@ public final class RouteInfo {
   @Nullable
   public Ip getNextHopIp() {
     return _nextHopIp;
+  }
+
+  @JsonProperty(PROP_NEXT_VRF)
+  @Nullable
+  public String getNextVrf() {
+    return _nextVrf;
   }
 }
