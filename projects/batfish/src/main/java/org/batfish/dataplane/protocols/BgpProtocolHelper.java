@@ -27,7 +27,7 @@ import org.batfish.datamodel.bgp.community.Community;
 import org.batfish.datamodel.bgp.community.StandardCommunity;
 
 @ParametersAreNonnullByDefault
-public class BgpProtocolHelper {
+public final class BgpProtocolHelper {
 
   /**
    * Perform BGP export transformations on a given route when sending an advertisement from {@code
@@ -176,7 +176,11 @@ public class BgpProtocolHelper {
     return builder;
   }
 
-  /** Perform BGP import transformations on a given route after receiving an advertisement */
+  /**
+   * Perform BGP import transformations on a given route after receiving an advertisement.
+   *
+   * <p>Return {@code null} if the route should not be imported.
+   */
   @Nullable
   public static <R extends BgpRoute<B, R>, B extends BgpRoute.Builder<B, R>>
       B transformBgpRouteOnImport(
@@ -211,6 +215,7 @@ public class BgpProtocolHelper {
    * @param routerId Router ID to set as the originatorIp for the resulting BGP route.
    * @param nonRouting Whether to mark the Bgpv4Route as non-routing
    */
+  @Nonnull
   public static Bgpv4Route convertGeneratedRouteToBgp(
       GeneratedRoute generatedRoute, Ip routerId, boolean nonRouting) {
     return Bgpv4Route.builder()
@@ -285,4 +290,6 @@ public class BgpProtocolHelper {
                   .build()));
     }
   }
+
+  private BgpProtocolHelper() {}
 }
