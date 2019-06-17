@@ -441,7 +441,7 @@ class IncrementalBdpEngine {
           .values()
           .parallelStream()
           .flatMap(n -> n.getVirtualRouters().values().stream())
-          .forEach(VirtualRouter::mergeBgpRoutes);
+          .forEach(VirtualRouter::mergeBgpRoutesToMainRib);
       nodes
           .values()
           .parallelStream()
