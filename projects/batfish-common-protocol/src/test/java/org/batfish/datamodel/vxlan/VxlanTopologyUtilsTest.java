@@ -4,12 +4,10 @@ import static org.batfish.datamodel.vxlan.VxlanTopologyUtils.addVniEdge;
 import static org.batfish.datamodel.vxlan.VxlanTopologyUtils.addVniEdges;
 import static org.batfish.datamodel.vxlan.VxlanTopologyUtils.buildVxlanNode;
 import static org.batfish.datamodel.vxlan.VxlanTopologyUtils.compatibleVniSettings;
-import static org.batfish.datamodel.vxlan.VxlanTopologyUtils.initVniVrfAssociations;
-import static org.batfish.datamodel.vxlan.VxlanTopologyUtils.initVrfHostnameMap;
+import static org.batfish.datamodel.vxlan.VxlanTopologyUtils.computeVniSettingsTable;
 import static org.batfish.datamodel.vxlan.VxlanTopologyUtils.initialVxlanTopology;
 import static org.batfish.datamodel.vxlan.VxlanTopologyUtils.prunedVxlanTopology;
 import static org.batfish.datamodel.vxlan.VxlanTopologyUtils.vxlanFlowDelivered;
-import static org.hamcrest.Matchers.aMapWithSize;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertEquals;
@@ -17,11 +15,13 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
+import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.ImmutableSortedSet;
+import com.google.common.collect.Table;
 import com.google.common.graph.EndpointPair;
 import com.google.common.graph.GraphBuilder;
 import com.google.common.graph.MutableGraph;
@@ -52,6 +52,7 @@ import org.batfish.datamodel.flow.Hop;
 import org.batfish.datamodel.flow.Trace;
 import org.batfish.datamodel.flow.TraceAndReverseFlow;
 import org.batfish.datamodel.pojo.Node;
+import org.batfish.datamodel.vxlan.VxlanTopologyUtils.VrfId;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -167,9 +168,7 @@ public final class VxlanTopologyUtilsTest {
 
   @Test
   public void testAddVniEdge() {
-    Map<String, Configuration> configurations = ImmutableMap.of(NODE1, _c1, NODE2, _c2);
     MutableGraph<VxlanNode> graph = GraphBuilder.undirected().allowsSelfLoops(false).build();
-    Map<Vrf, String> vrfHostnames = initVrfHostnameMap(configurations);
     VniSettings.Builder vniSettingsBuilder =
         VniSettings.builder()
             .setBumTransportIps(ImmutableSortedSet.of(MULTICAST_GROUP))
@@ -179,10 +178,15 @@ public final class VxlanTopologyUtilsTest {
     VniSettings vniSettingsTail =
         vniSettingsBuilder.setSourceAddress(SRC_IP1).setVlan(VLAN1).setVni(VNI).build();
     _v1.setVniSettings(ImmutableSortedMap.of(VNI, vniSettingsTail));
-    _v2.setVniSettings(
-        ImmutableSortedMap.of(
-            VNI, vniSettingsBuilder.setSourceAddress(SRC_IP2).setVlan(VLAN2).setVni(VNI).build()));
-    addVniEdge(graph, vrfHostnames, VNI, _v1, vniSettingsTail, _v2);
+    VniSettings vniSettingsHead =
+        vniSettingsBuilder.setSourceAddress(SRC_IP2).setVlan(VLAN2).setVni(VNI).build();
+    _v2.setVniSettings(ImmutableSortedMap.of(VNI, vniSettingsHead));
+    addVniEdge(
+        graph,
+        new VrfId(_c1.getHostname(), _v1.getName()),
+        vniSettingsTail,
+        new VrfId(_c2.getHostname(), _v2.getName()),
+        vniSettingsHead);
     Set<EndpointPair<VxlanNode>> edges = graph.edges();
 
     assertThat(
@@ -196,9 +200,7 @@ public final class VxlanTopologyUtilsTest {
 
   @Test
   public void testAddVniEdgeIncompatible() {
-    Map<String, Configuration> configurations = ImmutableMap.of(NODE1, _c1, NODE2, _c2);
     MutableGraph<VxlanNode> graph = GraphBuilder.undirected().allowsSelfLoops(false).build();
-    Map<Vrf, String> vrfHostnames = initVrfHostnameMap(configurations);
     VniSettings.Builder vniSettingsBuilder =
         VniSettings.builder()
             .setBumTransportIps(ImmutableSortedSet.of(MULTICAST_GROUP))
@@ -208,10 +210,15 @@ public final class VxlanTopologyUtilsTest {
     VniSettings vniSettingsTail =
         vniSettingsBuilder.setSourceAddress(SRC_IP1).setVlan(VLAN1).build();
     _v1.setVniSettings(ImmutableSortedMap.of(VNI, vniSettingsTail));
-    _v2.setVniSettings(
-        ImmutableSortedMap.of(
-            VNI, vniSettingsBuilder.setSourceAddress(SRC_IP1).setVlan(VLAN2).build()));
-    addVniEdge(graph, vrfHostnames, VNI, _v1, vniSettingsTail, _v2);
+    VniSettings vniSettingsHead =
+        vniSettingsBuilder.setSourceAddress(SRC_IP1).setVlan(VLAN2).build();
+    _v2.setVniSettings(ImmutableSortedMap.of(VNI, vniSettingsHead));
+    addVniEdge(
+        graph,
+        new VrfId(_c1.getHostname(), _v1.getName()),
+        vniSettingsTail,
+        new VrfId(_c2.getHostname(), _v2.getName()),
+        vniSettingsHead);
     Set<EndpointPair<VxlanNode>> edges = graph.edges();
 
     assertThat(edges, empty());
@@ -221,7 +228,6 @@ public final class VxlanTopologyUtilsTest {
   public void testAddVniEdges() {
     Map<String, Configuration> configurations = ImmutableMap.of(NODE1, _c1, NODE2, _c2);
     MutableGraph<VxlanNode> graph = GraphBuilder.undirected().allowsSelfLoops(false).build();
-    Map<Vrf, String> vrfHostnames = initVrfHostnameMap(configurations);
     VniSettings.Builder vniSettingsBuilder =
         VniSettings.builder()
             .setBumTransportIps(ImmutableSortedSet.of(MULTICAST_GROUP))
@@ -231,10 +237,16 @@ public final class VxlanTopologyUtilsTest {
     VniSettings vniSettingsTail =
         vniSettingsBuilder.setSourceAddress(SRC_IP1).setVlan(VLAN1).build();
     _v1.setVniSettings(ImmutableSortedMap.of(VNI, vniSettingsTail));
-    _v2.setVniSettings(
-        ImmutableSortedMap.of(
-            VNI, vniSettingsBuilder.setSourceAddress(SRC_IP2).setVlan(VLAN2).build()));
-    addVniEdges(graph, vrfHostnames, VNI, ImmutableList.of(_v1, _v2));
+    VniSettings vniSettingsHead =
+        vniSettingsBuilder.setSourceAddress(SRC_IP2).setVlan(VLAN2).build();
+    _v2.setVniSettings(ImmutableSortedMap.of(VNI, vniSettingsHead));
+    addVniEdges(
+        graph,
+        computeVniSettingsTable(configurations),
+        VNI,
+        ImmutableMap.of(
+            new VrfId(_c1.getHostname(), _v1.getName()), vniSettingsTail,
+            new VrfId(_c2.getHostname(), _v2.getName()), vniSettingsHead));
 
     VxlanNode nodeTail = VxlanNode.builder().setHostname(NODE1).setVni(VNI).build();
     VxlanNode nodeHead = VxlanNode.builder().setHostname(NODE2).setVni(VNI).build();
@@ -244,7 +256,6 @@ public final class VxlanTopologyUtilsTest {
 
   @Test
   public void testBuildVxlanNode() {
-    Map<Vrf, String> vrfHostnames = ImmutableMap.of(_v1, NODE1);
     VniSettings vniSettings =
         VniSettings.builder()
             .setSourceAddress(SRC_IP1)
@@ -253,7 +264,7 @@ public final class VxlanTopologyUtilsTest {
             .setBumTransportMethod(BumTransportMethod.MULTICAST_GROUP)
             .build();
     assertThat(
-        buildVxlanNode(vrfHostnames, _v1, vniSettings),
+        buildVxlanNode(new VrfId(_c1.getHostname(), _v1.getName()), vniSettings),
         equalTo(VxlanNode.builder().setHostname(NODE1).setVni(VNI).build()));
   }
 
@@ -592,27 +603,29 @@ public final class VxlanTopologyUtilsTest {
   }
 
   @Test
-  public void testInitVniVrfAssociations() {
-    Map<String, Configuration> configurations = ImmutableMap.of(NODE1, _c1, NODE2, _c2);
-    VniSettings.Builder b =
-        VniSettings.builder().setBumTransportMethod(BumTransportMethod.MULTICAST_GROUP).setVni(VNI);
-    _v1.setVniSettings(ImmutableSortedMap.of(VNI, b.build()));
-    _v2.setVniSettings(ImmutableSortedMap.of(VNI, b.build()));
+  public void testInitialVxlanTopologyFromTable() {
+    VniSettings.Builder vniSettingsBuilder =
+        VniSettings.builder()
+            .setBumTransportIps(ImmutableSortedSet.of(MULTICAST_GROUP))
+            .setBumTransportMethod(BumTransportMethod.MULTICAST_GROUP)
+            .setUdpPort(UDP_PORT)
+            .setVni(VNI);
+    VniSettings vniSettingsTail =
+        vniSettingsBuilder.setSourceAddress(SRC_IP1).setVlan(VLAN1).build();
+    _v1.setVniSettings(ImmutableSortedMap.of(VNI, vniSettingsTail));
+    VniSettings vniSettingsHead =
+        vniSettingsBuilder.setSourceAddress(SRC_IP2).setVlan(VLAN2).build();
+    _v2.setVniSettings(ImmutableSortedMap.of(VNI, vniSettingsHead));
+    Table<String, String, Set<VniSettings>> table = HashBasedTable.create();
+    table.put(_c1.getHostname(), _v1.getName(), ImmutableSet.of(vniSettingsTail));
+    table.put(_c2.getHostname(), _v2.getName(), ImmutableSet.of(vniSettingsHead));
+
+    VxlanNode nodeTail = VxlanNode.builder().setHostname(NODE1).setVni(VNI).build();
+    VxlanNode nodeHead = VxlanNode.builder().setHostname(NODE2).setVni(VNI).build();
 
     assertThat(
-        initVniVrfAssociations(configurations),
-        equalTo(ImmutableMap.of(VNI, ImmutableList.of(_v1, _v2))));
-  }
-
-  @Test
-  public void testInitVrfHostnameMap() {
-    Map<String, Configuration> configurations = ImmutableMap.of(NODE1, _c1, NODE2, _c2);
-    Map<Vrf, String> vrfHostnameMap = initVrfHostnameMap(configurations);
-
-    // complex assertions because returned map is an IdentityHashMap
-    assertThat(vrfHostnameMap.get(_v1), equalTo(NODE1));
-    assertThat(vrfHostnameMap.get(_v2), equalTo(NODE2));
-    assertThat(vrfHostnameMap, aMapWithSize(2));
+        initialVxlanTopology(table).getGraph().edges(),
+        equalTo(ImmutableSet.of(EndpointPair.unordered(nodeTail, nodeHead))));
   }
 
   @Test
