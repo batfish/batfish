@@ -53,11 +53,13 @@ import org.batfish.datamodel.BgpPeerConfigId;
 import org.batfish.datamodel.BgpRoute;
 import org.batfish.datamodel.BgpSessionProperties;
 import org.batfish.datamodel.Bgpv4Route;
+import org.batfish.datamodel.BumTransportMethod;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConnectedRoute;
 import org.batfish.datamodel.Edge;
 import org.batfish.datamodel.EvpnRoute;
+import org.batfish.datamodel.EvpnType3Route;
 import org.batfish.datamodel.Fib;
 import org.batfish.datamodel.FibImpl;
 import org.batfish.datamodel.GeneratedRoute;
@@ -74,6 +76,7 @@ import org.batfish.datamodel.Route;
 import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.Topology;
+import org.batfish.datamodel.VniSettings;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.bgp.BgpTopology;
 import org.batfish.datamodel.bgp.BgpTopology.EdgeId;
@@ -179,6 +182,12 @@ public class VirtualRouter implements Serializable {
   /** List of all EIGRP processes in this VRF */
   @VisibleForTesting transient ImmutableMap<Long, VirtualEigrpProcess> _virtualEigrpProcesses;
 
+  /**
+   * VNI settings that are updated dynamically as the dataplane is being computed (e.g., based on
+   * EVPN route advertisements).
+   */
+  private Set<VniSettings> _vniSettings;
+
   /** A {@link Vrf} that this virtual router represents */
   final Vrf _vrf;
 
@@ -197,6 +206,7 @@ public class VirtualRouter implements Serializable {
     _prefixTracer = new PrefixTracer();
     _virtualEigrpProcesses = ImmutableMap.of();
     _ospfProcesses = ImmutableMap.of();
+    _vniSettings = ImmutableSet.copyOf(_vrf.getVniSettings().values());
     if (_vrf.getBgpProcess() != null) {
       _bgpRoutingProcess =
           new BgpRoutingProcess(_vrf.getBgpProcess(), _c, _name, _mainRib, BgpTopology.EMPTY);
@@ -2042,8 +2052,14 @@ public class VirtualRouter implements Serializable {
     return _bgpRoutingProcess;
   }
 
+  /** Return all OSPF processes for this VRF */
   public Map<String, OspfRoutingProcess> getOspfProcesses() {
     return _ospfProcesses;
+  }
+
+  /** Return the current set of {@link VniSettings} associated with this VRF */
+  public Set<VniSettings> getVniSettings() {
+    return _vniSettings;
   }
 
   /** Check whether this virtual router has any remaining computation to do */
@@ -2064,10 +2080,45 @@ public class VirtualRouter implements Serializable {
     _ospfProcesses.values().forEach(p -> p.executeIteration(allNodes));
   }
 
+  /** Execute one iteration of BGP route propagation. */
   void bgpIteration(Map<String, Node> allNodes) {
     if (_bgpRoutingProcess != null) {
       _bgpRoutingProcess.executeIteration(allNodes);
+      updateFloodLists();
     }
+  }
+
+  /**
+   * Process EVPN type 3 routes in our RIB and update flood lists for any {@link VniSettings} if
+   * necessary.
+   */
+  private void updateFloodLists() {
+    if (_bgpRoutingProcess == null) {
+      // an extra safe guard; should only be called from bgpIteration
+      return;
+    }
+    for (EvpnType3Route route : _bgpRoutingProcess.getEvpnType3Routes()) {
+      _vniSettings =
+          _vniSettings.stream()
+              .map(vs -> updateVniFloodList(vs, route))
+              .collect(ImmutableSet.toImmutableSet());
+    }
+  }
+
+  /**
+   * Update flood list for the given {@link VniSettings} based on information contained in {@code
+   * route}. Only updates the VNI if the route is <strong>not</strong> for the VNI's source address
+   * and if the {@link VniSettings#getBumTransportMethod()} is unicast flood group (otherwise
+   * returns the original {@code vs}).
+   */
+  private static VniSettings updateVniFloodList(VniSettings vs, EvpnType3Route route) {
+    if (vs.getBumTransportMethod() != BumTransportMethod.UNICAST_FLOOD_GROUP
+        || route.getVniIp().equals(vs.getSourceAddress())) {
+      // Only update settings if transport method is unicast.
+      // Do not add our own source to the flood list.
+      return vs;
+    }
+    return vs.addToFloodList(route.getVniIp());
   }
 
   void redistribute() {
@@ -2093,7 +2144,7 @@ public class VirtualRouter implements Serializable {
                     importRibDelta(_mainRib, p.getUpdatesForMainRib(), _name)));
   }
 
-  void mergeBgpRoutes() {
+  void mergeBgpRoutesToMainRib() {
     if (_bgpRoutingProcess == null) {
       return;
     }
@@ -2113,7 +2164,8 @@ public class VirtualRouter implements Serializable {
     _bgpRoutingProcess.enqueueBgpMessages(edgeId, routes);
   }
 
-  public Set<EvpnRoute<?, ?>> getEvpnRoutes() {
+  /** Return all EVPN routes in this VRF */
+  Set<EvpnRoute<?, ?>> getEvpnRoutes() {
     if (_bgpRoutingProcess == null) {
       return ImmutableSet.of();
     }

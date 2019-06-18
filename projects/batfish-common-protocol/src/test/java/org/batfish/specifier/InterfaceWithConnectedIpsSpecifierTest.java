@@ -2,7 +2,6 @@ package org.batfish.specifier;
 
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.instanceOf;
 import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableMap;
@@ -25,13 +24,6 @@ import org.junit.rules.ExpectedException;
 public class InterfaceWithConnectedIpsSpecifierTest {
 
   @Rule public final ExpectedException _exception = ExpectedException.none();
-
-  @Test
-  public void testLoad() {
-    assertThat(
-        InterfaceSpecifierFactory.load(InterfaceWithConnectedIpsSpecifier.NAME),
-        instanceOf(InterfaceWithConnectedIpsSpecifier.Factory.class));
-  }
 
   @Test
   public void testLoadNull() {

@@ -310,7 +310,7 @@ public class Graph {
                     Not n = (Not) be2;
                     if (n.getExpr() instanceof MatchProtocol) {
                       MatchProtocol mp = (MatchProtocol) n.getExpr();
-                      if (mp.getProtocol() == RoutingProtocol.BGP) {
+                      if (mp.getProtocols().contains(RoutingProtocol.BGP)) {
                         PrefixSetExpr e = mps.getPrefixSet();
                         if (e instanceof ExplicitPrefixSet) {
                           ExplicitPrefixSet eps = (ExplicitPrefixSet) e;
@@ -975,24 +975,25 @@ public class Graph {
         expr -> {
           if (expr instanceof MatchProtocol) {
             MatchProtocol mp = (MatchProtocol) expr;
-            RoutingProtocol other = mp.getProtocol();
-            Protocol otherP = Protocol.fromRoutingProtocol(other);
-            if (otherP != null && otherP != p) {
-              switch (other) {
-                case BGP:
-                  protos.add(otherP);
-                  break;
-                case OSPF:
-                  protos.add(otherP);
-                  break;
-                case STATIC:
-                  protos.add(otherP);
-                  break;
-                case CONNECTED:
-                  protos.add(otherP);
-                  break;
-                default:
-                  throw new BatfishException("Unrecognized protocol: " + other.protocolName());
+            for (RoutingProtocol other : mp.getProtocols()) {
+              Protocol otherP = Protocol.fromRoutingProtocol(other);
+              if (otherP != null && otherP != p) {
+                switch (other) {
+                  case BGP:
+                    protos.add(otherP);
+                    break;
+                  case OSPF:
+                    protos.add(otherP);
+                    break;
+                  case STATIC:
+                    protos.add(otherP);
+                    break;
+                  case CONNECTED:
+                    protos.add(otherP);
+                    break;
+                  default:
+                    throw new BatfishException("Unrecognized protocol: " + other.protocolName());
+                }
               }
             }
           }

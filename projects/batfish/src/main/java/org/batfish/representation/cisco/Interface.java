@@ -32,6 +32,8 @@ public class Interface implements Serializable {
 
   private static final double DEFAULT_INTERFACE_BANDWIDTH = 1E12D;
 
+  private static final double DEFAULT_VLAN_BANDWIDTH = 1E9D;
+
   private static final int DEFAULT_INTERFACE_MTU = 1500;
 
   private static final double DEFAULT_IOS_ETHERNET_SPEED = 1E7D;
@@ -78,6 +80,8 @@ public class Interface implements Serializable {
     } else if (name.startsWith("Port-Channel")) {
       // Derived from member interfaces
       return null;
+    } else if (name.startsWith("Vlan")) {
+      return DEFAULT_VLAN_BANDWIDTH;
     } else if (format == ConfigurationFormat.CISCO_IOS && name.startsWith("Tunnel")) {
       return TUNNEL_IOS_BANDWIDTH;
     } else {

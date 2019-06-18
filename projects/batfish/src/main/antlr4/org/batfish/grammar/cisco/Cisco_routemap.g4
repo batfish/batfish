@@ -230,12 +230,12 @@ isis_level_expr
 
 match_as_number_rm_stanza
 :
-   MATCH AS_NUMBER num = DEC NEWLINE
+   AS_NUMBER num = DEC NEWLINE
 ;
 
 match_as_path_access_list_rm_stanza
 :
-   MATCH AS_PATH
+   AS_PATH
    (
       name_list += variable
    )+ NEWLINE
@@ -248,7 +248,7 @@ match_as_rm_stanza
 
 match_community_list_rm_stanza
 :
-   MATCH COMMUNITY
+   COMMUNITY
    (
       name_list += variable
    )+ NEWLINE
@@ -256,7 +256,7 @@ match_community_list_rm_stanza
 
 match_extcommunity_rm_stanza
 :
-   MATCH EXTCOMMUNITY
+   EXTCOMMUNITY
    (
       name_list += variable
    )+ NEWLINE
@@ -264,12 +264,12 @@ match_extcommunity_rm_stanza
 
 match_interface_rm_stanza
 :
-   MATCH INTERFACE interface_name+ NEWLINE
+   INTERFACE interface_name+ NEWLINE
 ;
 
 match_ip_access_list_rm_stanza
 :
-   MATCH IP ADDRESS
+   IP ADDRESS
    (
       name_list += variable_access_list
    )+ NEWLINE
@@ -277,7 +277,7 @@ match_ip_access_list_rm_stanza
 
 match_ipv6_access_list_rm_stanza
 :
-   MATCH IPV6 ADDRESS
+   IPV6 ADDRESS
    (
       name_list += variable_access_list
    )+ NEWLINE
@@ -285,12 +285,12 @@ match_ipv6_access_list_rm_stanza
 
 match_ip_multicast_rm_stanza
 :
-   MATCH IP MULTICAST null_rest_of_line
+   IP MULTICAST null_rest_of_line
 ;
 
 match_ip_next_hop_rm_stanza_null
 :
-   MATCH IP NEXT_HOP
+   IP NEXT_HOP
    (
       NULL
    ) NEWLINE
@@ -298,7 +298,7 @@ match_ip_next_hop_rm_stanza_null
 
 match_ip_prefix_list_rm_stanza
 :
-   MATCH IP ADDRESS IP? PREFIX_LIST
+   IP ADDRESS IP? PREFIX_LIST
    (
       name_list += variable
    )+ NEWLINE
@@ -306,12 +306,12 @@ match_ip_prefix_list_rm_stanza
 
 match_ip_route_source_rm_stanza
 :
-   MATCH IP ROUTE_SOURCE src = DEC NEWLINE
+   IP ROUTE_SOURCE src = DEC NEWLINE
 ;
 
 match_ipv6_prefix_list_rm_stanza
 :
-   MATCH IPV6 ADDRESS PREFIX_LIST
+   IPV6 ADDRESS PREFIX_LIST
    (
       name_list += variable
    )+ NEWLINE
@@ -319,12 +319,12 @@ match_ipv6_prefix_list_rm_stanza
 
 match_length_rm_stanza
 :
-   MATCH LENGTH null_rest_of_line
+   LENGTH null_rest_of_line
 ;
 
 match_policy_list_rm_stanza
 :
-   MATCH POLICY_LIST
+   POLICY_LIST
    (
       name_list += variable
    )+ NEWLINE
@@ -332,39 +332,50 @@ match_policy_list_rm_stanza
 
 match_route_type_rm_stanza
 :
-   MATCH ROUTE_TYPE variable NEWLINE
+   ROUTE_TYPE variable NEWLINE
 ;
 
 match_source_protocol_rm_stanza
 :
-   MATCH SOURCE_PROTOCOL variable (asn = DEC)? NEWLINE
+   SOURCE_PROTOCOL
+   (
+       BGP (bgpasn = bgp_asn)?
+       | CONNECTED
+       | ISIS
+       | OSPF (area = DEC)?
+       | RIP
+       | STATIC
+   )+ NEWLINE
 ;
 
 match_rm_stanza
 :
-   match_as_number_rm_stanza
-   | match_as_path_access_list_rm_stanza
-   | match_as_rm_stanza
-   | match_community_list_rm_stanza
-   | match_extcommunity_rm_stanza
-   | match_interface_rm_stanza
-   | match_ip_access_list_rm_stanza
-   | match_ip_multicast_rm_stanza
-   | match_ip_next_hop_rm_stanza_null
-   | match_ip_prefix_list_rm_stanza
-   | match_ip_route_source_rm_stanza
-   | match_ipv6_access_list_rm_stanza
-   | match_ipv6_prefix_list_rm_stanza
-   | match_length_rm_stanza
-   | match_policy_list_rm_stanza
-   | match_route_type_rm_stanza
-   | match_source_protocol_rm_stanza
-   | match_tag_rm_stanza
+   MATCH
+   (
+      match_as_number_rm_stanza
+      | match_as_path_access_list_rm_stanza
+      | match_as_rm_stanza
+      | match_community_list_rm_stanza
+      | match_extcommunity_rm_stanza
+      | match_interface_rm_stanza
+      | match_ip_access_list_rm_stanza
+      | match_ip_multicast_rm_stanza
+      | match_ip_next_hop_rm_stanza_null
+      | match_ip_prefix_list_rm_stanza
+      | match_ip_route_source_rm_stanza
+      | match_ipv6_access_list_rm_stanza
+      | match_ipv6_prefix_list_rm_stanza
+      | match_length_rm_stanza
+      | match_policy_list_rm_stanza
+      | match_route_type_rm_stanza
+      | match_source_protocol_rm_stanza
+      | match_tag_rm_stanza
+   )
 ;
 
 match_tag_rm_stanza
 :
-   MATCH TAG
+   TAG
    (
       tag_list += DEC
    )+ NEWLINE

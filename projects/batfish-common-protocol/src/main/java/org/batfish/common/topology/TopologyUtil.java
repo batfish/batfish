@@ -433,7 +433,6 @@ public final class TopologyUtil {
    * @param rawLayer3Topology raw layer 3 {@link Topology}
    * @param overlayEdges overlay edges to be added to the rawLayer3Topology
    * @param configurations configurations for which these edges exist
-   * @return
    */
   public static @Nonnull Topology computeLayer3Topology(
       Topology rawLayer3Topology,

@@ -4035,21 +4035,11 @@
                           "class" : "org.batfish.datamodel.routing_policy.expr.Not",
                           "expr" : {
                             "class" : "org.batfish.datamodel.routing_policy.expr.MatchProtocol",
-                            "protocol" : "bgp"
-                          }
-                        },
-                        {
-                          "class" : "org.batfish.datamodel.routing_policy.expr.Not",
-                          "expr" : {
-                            "class" : "org.batfish.datamodel.routing_policy.expr.MatchProtocol",
-                            "protocol" : "ibgp"
-                          }
-                        },
-                        {
-                          "class" : "org.batfish.datamodel.routing_policy.expr.Not",
-                          "expr" : {
-                            "class" : "org.batfish.datamodel.routing_policy.expr.MatchProtocol",
-                            "protocol" : "aggregate"
+                            "protocols" : [
+                              "aggregate",
+                              "bgp",
+                              "ibgp"
+                            ]
                           }
                         },
                         {
@@ -4105,21 +4095,11 @@
                           "class" : "org.batfish.datamodel.routing_policy.expr.Not",
                           "expr" : {
                             "class" : "org.batfish.datamodel.routing_policy.expr.MatchProtocol",
-                            "protocol" : "bgp"
-                          }
-                        },
-                        {
-                          "class" : "org.batfish.datamodel.routing_policy.expr.Not",
-                          "expr" : {
-                            "class" : "org.batfish.datamodel.routing_policy.expr.MatchProtocol",
-                            "protocol" : "ibgp"
-                          }
-                        },
-                        {
-                          "class" : "org.batfish.datamodel.routing_policy.expr.Not",
-                          "expr" : {
-                            "class" : "org.batfish.datamodel.routing_policy.expr.MatchProtocol",
-                            "protocol" : "aggregate"
+                            "protocols" : [
+                              "aggregate",
+                              "bgp",
+                              "ibgp"
+                            ]
                           }
                         },
                         {
@@ -4158,11 +4138,10 @@
                     },
                     {
                       "class" : "org.batfish.datamodel.routing_policy.expr.MatchProtocol",
-                      "protocol" : "bgp"
-                    },
-                    {
-                      "class" : "org.batfish.datamodel.routing_policy.expr.MatchProtocol",
-                      "protocol" : "ibgp"
+                      "protocols" : [
+                        "bgp",
+                        "ibgp"
+                      ]
                     }
                   ]
                 },
@@ -4299,7 +4278,9 @@
                   "conjuncts" : [
                     {
                       "class" : "org.batfish.datamodel.routing_policy.expr.MatchProtocol",
-                      "protocol" : "connected"
+                      "protocols" : [
+                        "connected"
+                      ]
                     },
                     {
                       "class" : "org.batfish.datamodel.routing_policy.expr.Not",
@@ -5354,21 +5335,11 @@
                           "class" : "org.batfish.datamodel.routing_policy.expr.Not",
                           "expr" : {
                             "class" : "org.batfish.datamodel.routing_policy.expr.MatchProtocol",
-                            "protocol" : "bgp"
-                          }
-                        },
-                        {
-                          "class" : "org.batfish.datamodel.routing_policy.expr.Not",
-                          "expr" : {
-                            "class" : "org.batfish.datamodel.routing_policy.expr.MatchProtocol",
-                            "protocol" : "ibgp"
-                          }
-                        },
-                        {
-                          "class" : "org.batfish.datamodel.routing_policy.expr.Not",
-                          "expr" : {
-                            "class" : "org.batfish.datamodel.routing_policy.expr.MatchProtocol",
-                            "protocol" : "aggregate"
+                            "protocols" : [
+                              "aggregate",
+                              "bgp",
+                              "ibgp"
+                            ]
                           }
                         },
                         {
@@ -5424,21 +5395,11 @@
                           "class" : "org.batfish.datamodel.routing_policy.expr.Not",
                           "expr" : {
                             "class" : "org.batfish.datamodel.routing_policy.expr.MatchProtocol",
-                            "protocol" : "bgp"
-                          }
-                        },
-                        {
-                          "class" : "org.batfish.datamodel.routing_policy.expr.Not",
-                          "expr" : {
-                            "class" : "org.batfish.datamodel.routing_policy.expr.MatchProtocol",
-                            "protocol" : "ibgp"
-                          }
-                        },
-                        {
-                          "class" : "org.batfish.datamodel.routing_policy.expr.Not",
-                          "expr" : {
-                            "class" : "org.batfish.datamodel.routing_policy.expr.MatchProtocol",
-                            "protocol" : "aggregate"
+                            "protocols" : [
+                              "aggregate",
+                              "bgp",
+                              "ibgp"
+                            ]
                           }
                         },
                         {
@@ -5477,11 +5438,10 @@
                     },
                     {
                       "class" : "org.batfish.datamodel.routing_policy.expr.MatchProtocol",
-                      "protocol" : "bgp"
-                    },
-                    {
-                      "class" : "org.batfish.datamodel.routing_policy.expr.MatchProtocol",
-                      "protocol" : "ibgp"
+                      "protocols" : [
+                        "bgp",
+                        "ibgp"
+                      ]
                     }
                   ]
                 },
@@ -5602,7 +5562,9 @@
                   "conjuncts" : [
                     {
                       "class" : "org.batfish.datamodel.routing_policy.expr.MatchProtocol",
-                      "protocol" : "connected"
+                      "protocols" : [
+                        "connected"
+                      ]
                     },
                     {
                       "class" : "org.batfish.datamodel.routing_policy.expr.Not",
@@ -6048,16 +6010,10 @@
               {
                 "class" : "org.batfish.datamodel.routing_policy.statement.If",
                 "guard" : {
-                  "class" : "org.batfish.datamodel.routing_policy.expr.Disjunction",
-                  "disjuncts" : [
-                    {
-                      "class" : "org.batfish.datamodel.routing_policy.expr.MatchProtocol",
-                      "protocol" : "bgp"
-                    },
-                    {
-                      "class" : "org.batfish.datamodel.routing_policy.expr.MatchProtocol",
-                      "protocol" : "ibgp"
-                    }
+                  "class" : "org.batfish.datamodel.routing_policy.expr.MatchProtocol",
+                  "protocols" : [
+                    "bgp",
+                    "ibgp"
                   ]
                 },
                 "trueStatements" : [
@@ -7180,7 +7136,9 @@
                         },
                         {
                           "class" : "org.batfish.datamodel.routing_policy.expr.MatchProtocol",
-                          "protocol" : "aggregate"
+                          "protocols" : [
+                            "aggregate"
+                          ]
                         },
                         {
                           "class" : "org.batfish.datamodel.routing_policy.expr.WithEnvironmentExpr",
@@ -7218,11 +7176,10 @@
                     },
                     {
                       "class" : "org.batfish.datamodel.routing_policy.expr.MatchProtocol",
-                      "protocol" : "bgp"
-                    },
-                    {
-                      "class" : "org.batfish.datamodel.routing_policy.expr.MatchProtocol",
-                      "protocol" : "ibgp"
+                      "protocols" : [
+                        "bgp",
+                        "ibgp"
+                      ]
                     }
                   ]
                 },
@@ -7334,7 +7291,9 @@
                   "conjuncts" : [
                     {
                       "class" : "org.batfish.datamodel.routing_policy.expr.MatchProtocol",
-                      "protocol" : "connected"
+                      "protocols" : [
+                        "connected"
+                      ]
                     },
                     {
                       "class" : "org.batfish.datamodel.routing_policy.expr.Not",
@@ -8489,7 +8448,9 @@
                         },
                         {
                           "class" : "org.batfish.datamodel.routing_policy.expr.MatchProtocol",
-                          "protocol" : "aggregate"
+                          "protocols" : [
+                            "aggregate"
+                          ]
                         },
                         {
                           "class" : "org.batfish.datamodel.routing_policy.expr.WithEnvironmentExpr",
@@ -8527,11 +8488,10 @@
                     },
                     {
                       "class" : "org.batfish.datamodel.routing_policy.expr.MatchProtocol",
-                      "protocol" : "bgp"
-                    },
-                    {
-                      "class" : "org.batfish.datamodel.routing_policy.expr.MatchProtocol",
-                      "protocol" : "ibgp"
+                      "protocols" : [
+                        "bgp",
+                        "ibgp"
+                      ]
                     }
                   ]
                 },
@@ -8643,7 +8603,9 @@
                   "conjuncts" : [
                     {
                       "class" : "org.batfish.datamodel.routing_policy.expr.MatchProtocol",
-                      "protocol" : "connected"
+                      "protocols" : [
+                        "connected"
+                      ]
                     },
                     {
                       "class" : "org.batfish.datamodel.routing_policy.expr.Not",
@@ -9224,16 +9186,10 @@
               {
                 "class" : "org.batfish.datamodel.routing_policy.statement.If",
                 "guard" : {
-                  "class" : "org.batfish.datamodel.routing_policy.expr.Disjunction",
-                  "disjuncts" : [
-                    {
-                      "class" : "org.batfish.datamodel.routing_policy.expr.MatchProtocol",
-                      "protocol" : "bgp"
-                    },
-                    {
-                      "class" : "org.batfish.datamodel.routing_policy.expr.MatchProtocol",
-                      "protocol" : "ibgp"
-                    }
+                  "class" : "org.batfish.datamodel.routing_policy.expr.MatchProtocol",
+                  "protocols" : [
+                    "bgp",
+                    "ibgp"
                   ]
                 },
                 "trueStatements" : [
@@ -9862,16 +9818,10 @@
               {
                 "class" : "org.batfish.datamodel.routing_policy.statement.If",
                 "guard" : {
-                  "class" : "org.batfish.datamodel.routing_policy.expr.Disjunction",
-                  "disjuncts" : [
-                    {
-                      "class" : "org.batfish.datamodel.routing_policy.expr.MatchProtocol",
-                      "protocol" : "bgp"
-                    },
-                    {
-                      "class" : "org.batfish.datamodel.routing_policy.expr.MatchProtocol",
-                      "protocol" : "ibgp"
-                    }
+                  "class" : "org.batfish.datamodel.routing_policy.expr.MatchProtocol",
+                  "protocols" : [
+                    "bgp",
+                    "ibgp"
                   ]
                 },
                 "trueStatements" : [
@@ -10867,21 +10817,11 @@
                           "class" : "org.batfish.datamodel.routing_policy.expr.Not",
                           "expr" : {
                             "class" : "org.batfish.datamodel.routing_policy.expr.MatchProtocol",
-                            "protocol" : "bgp"
-                          }
-                        },
-                        {
-                          "class" : "org.batfish.datamodel.routing_policy.expr.Not",
-                          "expr" : {
-                            "class" : "org.batfish.datamodel.routing_policy.expr.MatchProtocol",
-                            "protocol" : "ibgp"
-                          }
-                        },
-                        {
-                          "class" : "org.batfish.datamodel.routing_policy.expr.Not",
-                          "expr" : {
-                            "class" : "org.batfish.datamodel.routing_policy.expr.MatchProtocol",
-                            "protocol" : "aggregate"
+                            "protocols" : [
+                              "aggregate",
+                              "bgp",
+                              "ibgp"
+                            ]
                           }
                         },
                         {
@@ -10937,21 +10877,11 @@
                           "class" : "org.batfish.datamodel.routing_policy.expr.Not",
                           "expr" : {
                             "class" : "org.batfish.datamodel.routing_policy.expr.MatchProtocol",
-                            "protocol" : "bgp"
-                          }
-                        },
-                        {
-                          "class" : "org.batfish.datamodel.routing_policy.expr.Not",
-                          "expr" : {
-                            "class" : "org.batfish.datamodel.routing_policy.expr.MatchProtocol",
-                            "protocol" : "ibgp"
-                          }
-                        },
-                        {
-                          "class" : "org.batfish.datamodel.routing_policy.expr.Not",
-                          "expr" : {
-                            "class" : "org.batfish.datamodel.routing_policy.expr.MatchProtocol",
-                            "protocol" : "aggregate"
+                            "protocols" : [
+                              "aggregate",
+                              "bgp",
+                              "ibgp"
+                            ]
                           }
                         },
                         {
@@ -10990,11 +10920,10 @@
                     },
                     {
                       "class" : "org.batfish.datamodel.routing_policy.expr.MatchProtocol",
-                      "protocol" : "bgp"
-                    },
-                    {
-                      "class" : "org.batfish.datamodel.routing_policy.expr.MatchProtocol",
-                      "protocol" : "ibgp"
+                      "protocols" : [
+                        "bgp",
+                        "ibgp"
+                      ]
                     }
                   ]
                 },
@@ -11671,16 +11600,10 @@
               {
                 "class" : "org.batfish.datamodel.routing_policy.statement.If",
                 "guard" : {
-                  "class" : "org.batfish.datamodel.routing_policy.expr.Disjunction",
-                  "disjuncts" : [
-                    {
-                      "class" : "org.batfish.datamodel.routing_policy.expr.MatchProtocol",
-                      "protocol" : "bgp"
-                    },
-                    {
-                      "class" : "org.batfish.datamodel.routing_policy.expr.MatchProtocol",
-                      "protocol" : "ibgp"
-                    }
+                  "class" : "org.batfish.datamodel.routing_policy.expr.MatchProtocol",
+                  "protocols" : [
+                    "bgp",
+                    "ibgp"
                   ]
                 },
                 "trueStatements" : [
@@ -11791,7 +11714,9 @@
                   "conjuncts" : [
                     {
                       "class" : "org.batfish.datamodel.routing_policy.expr.MatchProtocol",
-                      "protocol" : "connected"
+                      "protocols" : [
+                        "connected"
+                      ]
                     },
                     {
                       "class" : "org.batfish.datamodel.routing_policy.expr.Not",
@@ -12489,16 +12414,10 @@
               {
                 "class" : "org.batfish.datamodel.routing_policy.statement.If",
                 "guard" : {
-                  "class" : "org.batfish.datamodel.routing_policy.expr.Disjunction",
-                  "disjuncts" : [
-                    {
-                      "class" : "org.batfish.datamodel.routing_policy.expr.MatchProtocol",
-                      "protocol" : "bgp"
-                    },
-                    {
-                      "class" : "org.batfish.datamodel.routing_policy.expr.MatchProtocol",
-                      "protocol" : "ibgp"
-                    }
+                  "class" : "org.batfish.datamodel.routing_policy.expr.MatchProtocol",
+                  "protocols" : [
+                    "bgp",
+                    "ibgp"
                   ]
                 },
                 "trueStatements" : [
@@ -12609,7 +12528,9 @@
                   "conjuncts" : [
                     {
                       "class" : "org.batfish.datamodel.routing_policy.expr.MatchProtocol",
-                      "protocol" : "connected"
+                      "protocols" : [
+                        "connected"
+                      ]
                     },
                     {
                       "class" : "org.batfish.datamodel.routing_policy.expr.Not",
@@ -13590,21 +13511,11 @@
                           "class" : "org.batfish.datamodel.routing_policy.expr.Not",
                           "expr" : {
                             "class" : "org.batfish.datamodel.routing_policy.expr.MatchProtocol",
-                            "protocol" : "bgp"
-                          }
-                        },
-                        {
-                          "class" : "org.batfish.datamodel.routing_policy.expr.Not",
-                          "expr" : {
-                            "class" : "org.batfish.datamodel.routing_policy.expr.MatchProtocol",
-                            "protocol" : "ibgp"
-                          }
-                        },
-                        {
-                          "class" : "org.batfish.datamodel.routing_policy.expr.Not",
-                          "expr" : {
-                            "class" : "org.batfish.datamodel.routing_policy.expr.MatchProtocol",
-                            "protocol" : "aggregate"
+                            "protocols" : [
+                              "aggregate",
+                              "bgp",
+                              "ibgp"
+                            ]
                           }
                         },
                         {
@@ -13660,21 +13571,11 @@
                           "class" : "org.batfish.datamodel.routing_policy.expr.Not",
                           "expr" : {
                             "class" : "org.batfish.datamodel.routing_policy.expr.MatchProtocol",
-                            "protocol" : "bgp"
-                          }
-                        },
-                        {
-                          "class" : "org.batfish.datamodel.routing_policy.expr.Not",
-                          "expr" : {
-                            "class" : "org.batfish.datamodel.routing_policy.expr.MatchProtocol",
-                            "protocol" : "ibgp"
-                          }
-                        },
-                        {
-                          "class" : "org.batfish.datamodel.routing_policy.expr.Not",
-                          "expr" : {
-                            "class" : "org.batfish.datamodel.routing_policy.expr.MatchProtocol",
-                            "protocol" : "aggregate"
+                            "protocols" : [
+                              "aggregate",
+                              "bgp",
+                              "ibgp"
+                            ]
                           }
                         },
                         {
@@ -13713,11 +13614,10 @@
                     },
                     {
                       "class" : "org.batfish.datamodel.routing_policy.expr.MatchProtocol",
-                      "protocol" : "bgp"
-                    },
-                    {
-                      "class" : "org.batfish.datamodel.routing_policy.expr.MatchProtocol",
-                      "protocol" : "ibgp"
+                      "protocols" : [
+                        "bgp",
+                        "ibgp"
+                      ]
                     }
                   ]
                 },
@@ -13804,7 +13704,9 @@
                   "conjuncts" : [
                     {
                       "class" : "org.batfish.datamodel.routing_policy.expr.MatchProtocol",
-                      "protocol" : "connected"
+                      "protocols" : [
+                        "connected"
+                      ]
                     },
                     {
                       "class" : "org.batfish.datamodel.routing_policy.expr.Not",
@@ -14715,21 +14617,11 @@
                           "class" : "org.batfish.datamodel.routing_policy.expr.Not",
                           "expr" : {
                             "class" : "org.batfish.datamodel.routing_policy.expr.MatchProtocol",
-                            "protocol" : "bgp"
-                          }
-                        },
-                        {
-                          "class" : "org.batfish.datamodel.routing_policy.expr.Not",
-                          "expr" : {
-                            "class" : "org.batfish.datamodel.routing_policy.expr.MatchProtocol",
-                            "protocol" : "ibgp"
-                          }
-                        },
-                        {
-                          "class" : "org.batfish.datamodel.routing_policy.expr.Not",
-                          "expr" : {
-                            "class" : "org.batfish.datamodel.routing_policy.expr.MatchProtocol",
-                            "protocol" : "aggregate"
+                            "protocols" : [
+                              "aggregate",
+                              "bgp",
+                              "ibgp"
+                            ]
                           }
                         },
                         {
@@ -14785,21 +14677,11 @@
                           "class" : "org.batfish.datamodel.routing_policy.expr.Not",
                           "expr" : {
                             "class" : "org.batfish.datamodel.routing_policy.expr.MatchProtocol",
-                            "protocol" : "bgp"
-                          }
-                        },
-                        {
-                          "class" : "org.batfish.datamodel.routing_policy.expr.Not",
-                          "expr" : {
-                            "class" : "org.batfish.datamodel.routing_policy.expr.MatchProtocol",
-                            "protocol" : "ibgp"
-                          }
-                        },
-                        {
-                          "class" : "org.batfish.datamodel.routing_policy.expr.Not",
-                          "expr" : {
-                            "class" : "org.batfish.datamodel.routing_policy.expr.MatchProtocol",
-                            "protocol" : "aggregate"
+                            "protocols" : [
+                              "aggregate",
+                              "bgp",
+                              "ibgp"
+                            ]
                           }
                         },
                         {
@@ -14838,11 +14720,10 @@
                     },
                     {
                       "class" : "org.batfish.datamodel.routing_policy.expr.MatchProtocol",
-                      "protocol" : "bgp"
-                    },
-                    {
-                      "class" : "org.batfish.datamodel.routing_policy.expr.MatchProtocol",
-                      "protocol" : "ibgp"
+                      "protocols" : [
+                        "bgp",
+                        "ibgp"
+                      ]
                     }
                   ]
                 },
@@ -14929,7 +14810,9 @@
                   "conjuncts" : [
                     {
                       "class" : "org.batfish.datamodel.routing_policy.expr.MatchProtocol",
-                      "protocol" : "connected"
+                      "protocols" : [
+                        "connected"
+                      ]
                     },
                     {
                       "class" : "org.batfish.datamodel.routing_policy.expr.Not",
@@ -15433,21 +15316,11 @@
                           "class" : "org.batfish.datamodel.routing_policy.expr.Not",
                           "expr" : {
                             "class" : "org.batfish.datamodel.routing_policy.expr.MatchProtocol",
-                            "protocol" : "bgp"
-                          }
-                        },
-                        {
-                          "class" : "org.batfish.datamodel.routing_policy.expr.Not",
-                          "expr" : {
-                            "class" : "org.batfish.datamodel.routing_policy.expr.MatchProtocol",
-                            "protocol" : "ibgp"
-                          }
-                        },
-                        {
-                          "class" : "org.batfish.datamodel.routing_policy.expr.Not",
-                          "expr" : {
-                            "class" : "org.batfish.datamodel.routing_policy.expr.MatchProtocol",
-                            "protocol" : "aggregate"
+                            "protocols" : [
+                              "aggregate",
+                              "bgp",
+                              "ibgp"
+                            ]
                           }
                         },
                         {
@@ -15503,21 +15376,11 @@
                           "class" : "org.batfish.datamodel.routing_policy.expr.Not",
                           "expr" : {
                             "class" : "org.batfish.datamodel.routing_policy.expr.MatchProtocol",
-                            "protocol" : "bgp"
-                          }
-                        },
-                        {
-                          "class" : "org.batfish.datamodel.routing_policy.expr.Not",
-                          "expr" : {
-                            "class" : "org.batfish.datamodel.routing_policy.expr.MatchProtocol",
-                            "protocol" : "ibgp"
-                          }
-                        },
-                        {
-                          "class" : "org.batfish.datamodel.routing_policy.expr.Not",
-                          "expr" : {
-                            "class" : "org.batfish.datamodel.routing_policy.expr.MatchProtocol",
-                            "protocol" : "aggregate"
+                            "protocols" : [
+                              "aggregate",
+                              "bgp",
+                              "ibgp"
+                            ]
                           }
                         },
                         {
@@ -15556,11 +15419,10 @@
                     },
                     {
                       "class" : "org.batfish.datamodel.routing_policy.expr.MatchProtocol",
-                      "protocol" : "bgp"
-                    },
-                    {
-                      "class" : "org.batfish.datamodel.routing_policy.expr.MatchProtocol",
-                      "protocol" : "ibgp"
+                      "protocols" : [
+                        "bgp",
+                        "ibgp"
+                      ]
                     }
                   ]
                 },

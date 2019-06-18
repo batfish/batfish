@@ -1,8 +1,5 @@
 package org.batfish.representation.palo_alto;
 
-import static org.batfish.representation.palo_alto.PaloAltoConfiguration.SHARED_VSYS_NAME;
-
-import com.google.common.collect.ImmutableList;
 import java.io.Serializable;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -31,14 +28,24 @@ public class ServiceOrServiceGroupReference
    * Return the name of the vsys this reference is attached to, or return null if no match is found
    */
   @Nullable
+  @SuppressWarnings("fallthrough")
   String getVsysName(PaloAltoConfiguration pc, Vsys vsys) {
-    // Search for a matching member in the local then shared namespace, in that order
-    for (Vsys currentVsys : ImmutableList.of(vsys, pc.getVirtualSystems().get(SHARED_VSYS_NAME))) {
-      if (currentVsys.getServices().containsKey(_name)
-          || currentVsys.getServiceGroups().containsKey(_name)) {
-        return currentVsys.getName();
-      }
+    if (vsys.getServices().containsKey(_name) || vsys.getServiceGroups().containsKey(_name)) {
+      return vsys.getName();
     }
-    return null;
+    switch (vsys.getNamespaceType()) {
+      case LEAF:
+        if (pc.getShared() != null) {
+          return getVsysName(pc, pc.getShared());
+        }
+        // fall-through
+      case SHARED:
+        if (pc.getPanorama() != null) {
+          return getVsysName(pc, pc.getPanorama());
+        }
+        // fall-through
+      default:
+        return null;
+    }
   }
 }

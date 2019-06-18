@@ -14,4 +14,6 @@ interface FilterAstNodeVisitor<T> {
   T visitInFilterAstNode(InFilterAstNode inFilterAstNode);
 
   T visitOutFilterAstNode(OutFilterAstNode outFilterAstNode);
+
+  T visitFilterWithNodeFilterAstNode(FilterWithNodeFilterAstNode filterWithNodeFilterAstNode);
 }

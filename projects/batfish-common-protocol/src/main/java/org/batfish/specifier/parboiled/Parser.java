@@ -1,9 +1,10 @@
 package org.batfish.specifier.parboiled;
 
 import static org.batfish.specifier.parboiled.Anchor.Type.ADDRESS_GROUP_NAME;
-import static org.batfish.specifier.parboiled.Anchor.Type.APPLICATION_NAME;
-import static org.batfish.specifier.parboiled.Anchor.Type.APPLICATION_SET_OP;
 import static org.batfish.specifier.parboiled.Anchor.Type.DEPRECATED;
+import static org.batfish.specifier.parboiled.Anchor.Type.ENUM_SET_REGEX;
+import static org.batfish.specifier.parboiled.Anchor.Type.ENUM_SET_SET_OP;
+import static org.batfish.specifier.parboiled.Anchor.Type.ENUM_SET_VALUE;
 import static org.batfish.specifier.parboiled.Anchor.Type.FILTER_INTERFACE_IN;
 import static org.batfish.specifier.parboiled.Anchor.Type.FILTER_INTERFACE_OUT;
 import static org.batfish.specifier.parboiled.Anchor.Type.FILTER_NAME;
@@ -33,12 +34,15 @@ import static org.batfish.specifier.parboiled.Anchor.Type.IP_WILDCARD;
 import static org.batfish.specifier.parboiled.Anchor.Type.LOCATION_ENTER;
 import static org.batfish.specifier.parboiled.Anchor.Type.LOCATION_PARENS;
 import static org.batfish.specifier.parboiled.Anchor.Type.LOCATION_SET_OP;
+import static org.batfish.specifier.parboiled.Anchor.Type.NODE_AND_FILTER;
+import static org.batfish.specifier.parboiled.Anchor.Type.NODE_AND_FILTER_TAIL;
 import static org.batfish.specifier.parboiled.Anchor.Type.NODE_AND_INTERFACE;
 import static org.batfish.specifier.parboiled.Anchor.Type.NODE_AND_INTERFACE_TAIL;
 import static org.batfish.specifier.parboiled.Anchor.Type.NODE_NAME;
 import static org.batfish.specifier.parboiled.Anchor.Type.NODE_NAME_REGEX;
 import static org.batfish.specifier.parboiled.Anchor.Type.NODE_PARENS;
 import static org.batfish.specifier.parboiled.Anchor.Type.NODE_ROLE_AND_DIMENSION;
+import static org.batfish.specifier.parboiled.Anchor.Type.NODE_ROLE_AND_DIMENSION_TAIL;
 import static org.batfish.specifier.parboiled.Anchor.Type.NODE_ROLE_DIMENSION_NAME;
 import static org.batfish.specifier.parboiled.Anchor.Type.NODE_ROLE_NAME;
 import static org.batfish.specifier.parboiled.Anchor.Type.NODE_SET_OP;
@@ -55,10 +59,11 @@ import static org.batfish.specifier.parboiled.Anchor.Type.ROUTING_POLICY_SET_OP;
 import static org.batfish.specifier.parboiled.Anchor.Type.VRF_NAME;
 import static org.batfish.specifier.parboiled.Anchor.Type.ZONE_NAME;
 
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.Map;
 import org.batfish.datamodel.DeviceType;
 import org.batfish.datamodel.InterfaceType;
-import org.batfish.datamodel.Protocol;
 import org.parboiled.Parboiled;
 import org.parboiled.Rule;
 import org.parboiled.support.Var;
@@ -78,21 +83,17 @@ import org.parboiled.support.Var;
 })
 public class Parser extends CommonParser {
 
-  static final boolean SUPPORT_DEPRECATED_UNENCLOSED_REGEXES = true;
-
   static final Map<String, Anchor.Type> ANCHORS = initAnchors(Parser.class);
 
   /**
    * An array of Rules for matching enum values. They should have been private and static but
    * parboiled does not like those things in this context.
    */
-  final Rule[] _applicationNameRules = initEnumRules(Protocol.values());
+  final Rule[] _deviceTypeRules = initValuesRules(Arrays.asList(DeviceType.values()));
 
-  final Rule[] _interfaceTypeRules = initEnumRules(InterfaceType.values());
+  final Rule[] _interfaceTypeRules = initValuesRules(Arrays.asList(InterfaceType.values()));
 
   final Rule[] _ipProtocolNameRules = initIpProtocolNameRules();
-
-  final Rule[] _deviceTypeRules = initEnumRules(DeviceType.values());
 
   static Parser instance() {
     return Parboiled.createParser(Parser.class);
@@ -101,8 +102,9 @@ public class Parser extends CommonParser {
   @Override
   Rule getInputRule(Grammar grammar) {
     switch (grammar) {
-      case APPLICATION_SPECIFIER:
-        return input(ApplicationSpec());
+      case ENUM_SET_SPECIFIER:
+        throw new IllegalArgumentException(
+            "Method cannot be called for EnumSet grammars. Call getEnumSetRule instead.");
       case FILTER_SPECIFIER:
         return input(FilterSpec());
       case INTERFACE_SPECIFIER:
@@ -123,6 +125,10 @@ public class Parser extends CommonParser {
     }
   }
 
+  <T> Rule getEnumSetRule(Collection<T> allValues) {
+    return input(EnumSetSpec(allValues));
+  }
+
   /** Matches Reference Book name. */
   @Anchor(REFERENCE_BOOK_NAME)
   public Rule ReferenceBook() {
@@ -130,32 +136,44 @@ public class Parser extends CommonParser {
   }
 
   /**
-   * Application grammar
+   * Enum set grammar
    *
    * <pre>
-   *   applicationSpec := applicationTerm [, applicationTerm]*
+   *   enumSetSpec := enumSetTerm [(,|&|\) enumSetTerm]*
    *
-   *   applicationTerm := NAME  // one of {@link Protocol} enums values
-   *
+   *   enumSetTerm := enumVal
+   *                 | regex over values
    * </pre>
    */
 
-  /** An applicationSpec is one or more intersection terms separated by , or \ */
-  @Anchor(APPLICATION_SET_OP)
-  public Rule ApplicationSpec() {
+  /** An enumSetSpec is one or more terms separated by , */
+  @Anchor(ENUM_SET_SET_OP)
+  public <T> Rule EnumSetSpec(Collection<T> values) {
     return Sequence(
-        ApplicationTerm(),
+        EnumSetTerm(values),
         WhiteSpace(),
         ZeroOrMore(
-            ", ",
-            ApplicationTerm(),
-            push(new UnionApplicationAstNode(pop(1), pop())),
-            WhiteSpace()));
+            ", ", EnumSetTerm(values), push(new UnionEnumSetAstNode(pop(1), pop())), WhiteSpace()));
   }
 
-  @Anchor(APPLICATION_NAME)
-  public Rule ApplicationTerm() {
-    return Sequence(FirstOf(_applicationNameRules), push(new NameApplicationAstNode(match())));
+  public <T> Rule EnumSetTerm(Collection<T> values) {
+    return FirstOf(EnumSetRegexDeprecated(), EnumSetRegex(), EnumSetValue(values));
+  }
+
+  @Anchor(ENUM_SET_VALUE)
+  public <T> Rule EnumSetValue(Collection<T> allValues) {
+    return Sequence(
+        FirstOf(initValuesRules(allValues)), push(new ValueEnumSetAstNode<>(match(), allValues)));
+  }
+
+  @Anchor(ENUM_SET_REGEX)
+  public Rule EnumSetRegex() {
+    return Sequence(Regex(), push(new RegexEnumSetAstNode(pop())));
+  }
+
+  @Anchor(DEPRECATED)
+  public Rule EnumSetRegexDeprecated() {
+    return Sequence(RegexDeprecated(), push(new RegexEnumSetAstNode(pop())));
   }
 
   /**
@@ -164,11 +182,19 @@ public class Parser extends CommonParser {
    * <pre>
    *   filterSpec := filterTerm [{@literal &} | , | \ filterTerm]*
    *
-   *   filterTerm := @in(interfaceSpec)  // inFilterOf is also supported for back compat
+   *   filterTerm := filterWithNode
+   *                    | filterWithoutNode
+   *                    | ( filterSpec )
+   *
+   *   filterWithNode := nodeTerm [filterWithoutNode]
+   *
+   *   filterWithoutNode := filterWithoutNodeTerm [{@literal &} | , | \ filterWithoutNodeTerm]*
+   *
+   *   filterWithoutNodeTerm := @in(interfaceSpec)  // inFilterOf is also supported for back compat
    *               | @out(interfaceSpec) // outFilterOf is also supported
    *               | filterName
    *               | filterNameRegex
-   *               | ( filterSpec )
+   *               | ( filterWithoutNode )
    * </pre>
    */
 
@@ -196,6 +222,49 @@ public class Parser extends CommonParser {
   }
 
   public Rule FilterTerm() {
+    return FirstOf(FilterWithNode(), FilterWithoutNode(), FilterParens());
+  }
+
+  @Anchor(NODE_AND_FILTER)
+  public Rule FilterWithNode() {
+    return Sequence(
+        NodeTerm(),
+        WhiteSpace(),
+        FilterWithNodeTail(),
+        push(new FilterWithNodeFilterAstNode(pop(1), pop())));
+  }
+
+  @Anchor(NODE_AND_FILTER_TAIL)
+  public Rule FilterWithNodeTail() {
+    return Sequence("[ ", FilterWithoutNode(), WhiteSpace(), CloseBrackets());
+  }
+
+  @Anchor(FILTER_SET_OP)
+  public Rule FilterWithoutNode() {
+    Var<Character> op = new Var<>();
+    return Sequence(
+        FilterWithoutNodeIntersection(),
+        WhiteSpace(),
+        ZeroOrMore(
+            FirstOf(", ", "\\ "),
+            op.set(matchedChar()),
+            FilterWithoutNodeIntersection(),
+            push(SetOpFilterAstNode.create(op.get(), pop(1), pop())),
+            WhiteSpace()));
+  }
+
+  public Rule FilterWithoutNodeIntersection() {
+    return Sequence(
+        FilterWithoutNodeTerm(),
+        WhiteSpace(),
+        ZeroOrMore(
+            "& ",
+            FilterWithoutNodeTerm(),
+            push(new IntersectionFilterAstNode(pop(1), pop())),
+            WhiteSpace()));
+  }
+
+  public Rule FilterWithoutNodeTerm() {
     return FirstOf(
         FilterInterfaceIn(),
         FilterInterfaceOut(),
@@ -203,7 +272,7 @@ public class Parser extends CommonParser {
         FilterNameRegexDeprecated(),
         FilterNameRegex(),
         FilterName(),
-        FilterParens());
+        FilterWithoutNodeParens());
   }
 
   @Anchor(FILTER_INTERFACE_IN)
@@ -265,6 +334,13 @@ public class Parser extends CommonParser {
     return Sequence("( ", FilterSpec(), WhiteSpace(), CloseParens());
   }
 
+  // The anchor here is an approximation to simplify user messages
+  @Anchor(FILTER_PARENS)
+  public Rule FilterWithoutNodeParens() {
+    // Leave the stack as is -- no need to remember that this was a parenthetical term
+    return Sequence("( ", FilterWithoutNode(), WhiteSpace(), CloseParens());
+  }
+
   /**
    * Interface grammar
    *
@@ -273,7 +349,7 @@ public class Parser extends CommonParser {
    *
    *   interfaceTerm := interfaceWithNode
    *                    | interfaceWithoutNode
-   *                    | ( interfaceTerm )
+   *                    | ( interfaceSpec )
    *
    *   interfaceWithNode := nodeTerm [interfaceWithoutNode]
    *
@@ -287,7 +363,7 @@ public class Parser extends CommonParser {
    *                        | @zone(zoneName)
    *                        | interfaceName
    *                        | interfaceNameRegex
-   *                        | ( interfaceTerm )
+   *                        | ( interfaceWithoutNode )
    * </pre>
    */
 
@@ -618,6 +694,7 @@ public class Parser extends CommonParser {
    *               | ipWildcard (e.g., 1.1.1.1:255.255.255.0)
    *               | ipRange (e.g., 1.1.1.1-1.1.1.2)
    *               | ipAddress (e.g., 1.1.1.1)
+   *               | ( ipSpaceSpec )
    * </pre>
    */
 
@@ -770,7 +847,7 @@ public class Parser extends CommonParser {
    *   locationTerm := locationInterface
    *               | @enter(locationInterface)   // non-@ versions also supported
    *               | @exit(locationInterface)
-   *               | ( locationTerm )
+   *               | ( locationSpec )
    *
    *   locationInterface := nodeTerm[interfaceTerm]
    *                        | nodeTerm
@@ -881,7 +958,7 @@ public class Parser extends CommonParser {
    *               | @deviceType(a)
    *               | nodeName
    *               | nodeNameRegex
-   *               | ( nodeTerm )
+   *               | ( nodeSpec )
    * </pre>
    */
 
@@ -920,23 +997,30 @@ public class Parser extends CommonParser {
   }
 
   public Rule NodeRole() {
-    return Sequence(IgnoreCase("@role"), WhiteSpace(), NodeRoleAndDimension());
+    return Sequence(
+        IgnoreCase("@role"),
+        WhiteSpace(),
+        NodeRoleAndDimension(),
+        push(new RoleNodeAstNode(pop(1), pop())));
   }
 
   @Anchor(DEPRECATED)
   public Rule NodeRoleDeprecated() {
-    return Sequence(IgnoreCase("ref.noderole"), WhiteSpace(), NodeRoleAndDimension());
+    return Sequence(
+        IgnoreCase("ref.noderole"),
+        WhiteSpace(),
+        NodeRoleAndDimension(),
+        push(new RoleNodeAstNode(pop(1), pop())));
   }
 
   @Anchor(NODE_ROLE_AND_DIMENSION)
   public Rule NodeRoleAndDimension() {
-    return Sequence(
-        "( ",
-        NodeRoleName(),
-        ", ",
-        NodeRoleDimensionName(),
-        CloseParens(),
-        push(new RoleNodeAstNode(pop(1), pop())));
+    return Sequence("( ", NodeRoleDimensionName(), NodeRoleAndDimensionTail());
+  }
+
+  @Anchor(NODE_ROLE_AND_DIMENSION_TAIL)
+  public Rule NodeRoleAndDimensionTail() {
+    return Sequence(", ", NodeRoleName(), CloseParens());
   }
 
   /** Matches Node Role Dimension name */

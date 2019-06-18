@@ -559,7 +559,7 @@ public class RoutesAnswererUtil {
    * @return {@link Map} of {@link RouteRowKey}s to corresponding sub{@link Map}s of {@link
    *     RouteRowSecondaryKey} to {@link SortedSet} of {@link RouteRowAttribute}s
    */
-  static <T extends AbstractRouteDecorator>
+  public static <T extends AbstractRouteDecorator>
       Map<RouteRowKey, Map<RouteRowSecondaryKey, SortedSet<RouteRowAttribute>>> groupRoutes(
           SortedMap<String, SortedMap<String, GenericRib<T>>> ribs,
           Set<String> matchingNodes,
@@ -748,7 +748,7 @@ public class RoutesAnswererUtil {
    *     snapshot
    * @return {@link List} of {@link DiffRoutesOutput}
    */
-  static List<DiffRoutesOutput> getRoutesDiff(
+  public static List<DiffRoutesOutput> getRoutesDiff(
       Map<RouteRowKey, Map<RouteRowSecondaryKey, SortedSet<RouteRowAttribute>>> routesInBase,
       Map<RouteRowKey, Map<RouteRowSecondaryKey, SortedSet<RouteRowAttribute>>> routesInRef) {
     Set<RouteRowKey> allRouteKeys = new HashSet<>(routesInBase.keySet());

@@ -46,6 +46,19 @@ final class FilterNoMatchMessages implements NoMatchMessages {
     }
 
     @Override
+    public List<String> visitFilterWithNodeFilterAstNode(
+        FilterWithNodeFilterAstNode filterWithNodeFilterAstNode) {
+      // this is doing a context insensitive evaluation of existence of nodes and filters
+      // we can do slightly better if the node term is simple enough for us to be able to expand
+      // leaving that as future work for now
+      return concat(
+          new NodeNoMatchMessages(filterWithNodeFilterAstNode.getNodeAstNode())
+              .get(_completionMetadata, _nodeRolesData, _referenceLibrary),
+          new FilterNoMatchMessages(filterWithNodeFilterAstNode.getFilterAstNode())
+              .get(_completionMetadata, _nodeRolesData, _referenceLibrary));
+    }
+
+    @Override
     public List<String> visitIntersectionFilterAstNode(
         IntersectionFilterAstNode intersectionFilterAstNode) {
       return concat(

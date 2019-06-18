@@ -35,7 +35,7 @@ import org.batfish.datamodel.questions.BgpProcessPropertySpecifier;
 import org.batfish.datamodel.questions.ConfiguredSessionStatus;
 import org.batfish.datamodel.questions.InterfacePropertySpecifier;
 import org.batfish.datamodel.questions.IpsecSessionStatus;
-import org.batfish.datamodel.questions.NamedStructureSpecifier;
+import org.batfish.datamodel.questions.NamedStructurePropertySpecifier;
 import org.batfish.datamodel.questions.NodePropertySpecifier;
 import org.batfish.datamodel.questions.OspfPropertySpecifier;
 import org.batfish.datamodel.questions.Variable;
@@ -254,15 +254,8 @@ public final class AutoCompleteUtils {
         case APPLICATION_SPEC:
           {
             suggestions =
-                ParboiledAutoComplete.autoComplete(
-                    Grammar.APPLICATION_SPECIFIER,
-                    network,
-                    snapshot,
-                    query,
-                    maxSuggestions,
-                    completionMetadata,
-                    nodeRolesData,
-                    referenceLibrary);
+                ParboiledAutoComplete.autoCompleteEnumSet(
+                    Arrays.asList(Protocol.values()), network, snapshot, query, maxSuggestions);
             break;
           }
         case BGP_PEER_PROPERTY_SPEC:
@@ -460,7 +453,13 @@ public final class AutoCompleteUtils {
           }
         case NAMED_STRUCTURE_SPEC:
           {
-            suggestions = baseAutoComplete(query, NamedStructureSpecifier.JAVA_MAP.keySet());
+            suggestions =
+                ParboiledAutoComplete.autoCompleteEnumSet(
+                    NamedStructurePropertySpecifier.JAVA_MAP.keySet(),
+                    network,
+                    snapshot,
+                    query,
+                    maxSuggestions);
             break;
           }
         case NODE_NAME:

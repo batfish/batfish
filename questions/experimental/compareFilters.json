@@ -20,9 +20,9 @@
         ],
         "variables": {
             "filters": {
-                "description": "Only evaluate filters that match this regex",
+                "description": "Only evaluate filters that match this filter specifier",
                 "optional": true,
-                "type": "filter",
+                "type": "filterSpec",
                 "displayName": "Filters"
             },
             "ignoreComposites": {
@@ -33,7 +33,7 @@
                 "displayName": "Ignore composite filters"
             },
             "nodes": {
-                "description": "Only evaluate filters present on nodes matching this specifier",
+                "description": "Only evaluate filters present on nodes matching this node specifier",
                 "optional": true,
                 "type": "nodeSpec",
                 "displayName": "Nodes"

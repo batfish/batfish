@@ -113,13 +113,12 @@ import org.batfish.representation.palo_alto.ServiceBuiltIn;
 import org.batfish.representation.palo_alto.StaticRoute;
 import org.batfish.representation.palo_alto.Vsys;
 import org.batfish.representation.palo_alto.Zone;
-import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.rules.TemporaryFolder;
 
-public class PaloAltoGrammarTest {
+public final class PaloAltoGrammarTest {
   private static final String TESTCONFIGS_PREFIX = "org/batfish/grammar/palo_alto/testconfigs/";
 
   @Rule public TemporaryFolder _folder = new TemporaryFolder();
@@ -265,7 +264,6 @@ public class PaloAltoGrammarTest {
   }
 
   @Test
-  @Ignore
   public void testAddressObjectGroupInheritance() throws IOException {
     String hostname = "address-object-group-inheritance";
     Configuration c = parseConfig(hostname);
@@ -750,7 +748,52 @@ public class PaloAltoGrammarTest {
   }
 
   @Test
-  @Ignore
+  public void testRulebaseWithPanorama() throws IOException {
+    String hostname = "panorama-rulebase";
+    Configuration c = parseConfig(hostname);
+
+    String if1name = "ethernet1/1";
+    String if2name = "ethernet1/2";
+    Flow.Builder baseBuilder =
+        Flow.builder()
+            .setIngressNode(c.getHostname())
+            .setSrcIp(Ip.ZERO)
+            .setDstIp(Ip.ZERO)
+            .setIpProtocol(IpProtocol.TCP)
+            .setTag("test")
+            .setSrcPort(1);
+    // See comments in the config for how this test works.
+    Flow service1 = baseBuilder.setDstPort(1001).build();
+    Flow service2 = baseBuilder.setDstPort(1002).build();
+    Flow service3 = baseBuilder.setDstPort(1003).build();
+    Flow service4 = baseBuilder.setDstPort(1004).build();
+
+    // Cross-zone flows (starting e2)
+    assertThat(
+        c,
+        hasInterface(
+            if1name,
+            hasOutgoingFilter(
+                allOf(
+                    accepts(service1, if2name, c),
+                    rejects(service2, if2name, c),
+                    accepts(service3, if2name, c),
+                    rejects(service4, if2name, c)))));
+
+    // Intra-zone flows (starting e1)
+    assertThat(
+        c,
+        hasInterface(
+            if1name,
+            hasOutgoingFilter(
+                allOf(
+                    accepts(service1, if1name, c),
+                    rejects(service2, if1name, c),
+                    accepts(service3, if1name, c),
+                    accepts(service4, if1name, c)))));
+  }
+
+  @Test
   public void testRulebase() throws IOException {
     String hostname = "rulebase";
     Configuration c = parseConfig(hostname);
@@ -789,7 +832,6 @@ public class PaloAltoGrammarTest {
   }
 
   @Test
-  @Ignore
   public void testRulebaseService() throws IOException {
     String hostname = "rulebase-service";
     Configuration c = parseConfig(hostname);
@@ -812,7 +854,6 @@ public class PaloAltoGrammarTest {
   }
 
   @Test
-  @Ignore
   public void testRulebaseDefault() throws IOException {
     String hostname = "rulebase-default";
     Configuration c = parseConfig(hostname);
@@ -840,7 +881,6 @@ public class PaloAltoGrammarTest {
   }
 
   @Test
-  @Ignore
   public void testRulebaseIprange() throws IOException {
     String hostname = "rulebase-iprange";
     Configuration c = parseConfig(hostname);
@@ -905,7 +945,6 @@ public class PaloAltoGrammarTest {
   }
 
   @Test
-  @Ignore
   public void testVsysRulebase() throws IOException {
     String hostname = "vsys-rulebase";
     Configuration c = parseConfig(hostname);
@@ -1223,16 +1262,15 @@ public class PaloAltoGrammarTest {
     PaloAltoConfiguration c = parsePaloAltoConfig("shared-gateway");
 
     // Confirm shared-gateways show up in the vendor model
-    Map<String, Vsys> vsyses = c.getVirtualSystems();
-    assertThat(vsyses, hasKey("sg1"));
-    assertThat(vsyses, hasKey("sg2"));
-    assertThat(vsyses, hasKey("sg3"));
+    Map<String, Vsys> sharedGateways = c.getSharedGateways();
+    assertThat(sharedGateways, hasKey("sg1"));
+    assertThat(sharedGateways, hasKey("sg2"));
+    assertThat(sharedGateways, hasKey("sg3"));
 
     // Confirm display names show up as well
-    assertThat(c.getVirtualSystems().get("sg1").getDisplayName(), equalTo("shared-gateway1"));
-    assertThat(c.getVirtualSystems().get("sg2").getDisplayName(), equalTo("shared gateway2"));
-    assertThat(
-        c.getVirtualSystems().get("sg3").getDisplayName(), equalTo("invalid shared gateway"));
+    assertThat(sharedGateways.get("sg1").getDisplayName(), equalTo("shared-gateway1"));
+    assertThat(sharedGateways.get("sg2").getDisplayName(), equalTo("shared gateway2"));
+    assertThat(sharedGateways.get("sg3").getDisplayName(), equalTo("invalid shared gateway"));
   }
 
   @Test

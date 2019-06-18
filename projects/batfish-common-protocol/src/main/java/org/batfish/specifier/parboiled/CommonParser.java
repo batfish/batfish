@@ -4,20 +4,20 @@ import static org.batfish.datamodel.Names.SPECIAL_CHARS;
 import static org.batfish.specifier.parboiled.Anchor.Type.OPERATOR_END;
 import static org.batfish.specifier.parboiled.Anchor.Type.STRING_LITERAL;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import java.lang.reflect.Method;
 import java.util.Arrays;
+import java.util.Collection;
+import java.util.Comparator;
 import java.util.Map;
-import java.util.stream.IntStream;
+import java.util.Objects;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.IpProtocol;
 import org.batfish.specifier.parboiled.Anchor.Type;
 import org.parboiled.BaseParser;
-import org.parboiled.Context;
 import org.parboiled.Parboiled;
 import org.parboiled.Rule;
-import org.parboiled.support.DefaultValueStack;
-import org.parboiled.support.ValueStack;
 
 /**
  * This class contains common matchers for different types of expressions.
@@ -34,64 +34,6 @@ import org.parboiled.support.ValueStack;
 })
 @ParametersAreNonnullByDefault
 public abstract class CommonParser extends BaseParser<AstNode> {
-
-  /**
-   * Parboiled parser runners reset the value stack for invalid inputs. We save it externally (by
-   * overriding the push function) so we can examine it later, e.g., for context-sensitive auto
-   * completion.
-   */
-  static class ShadowStack {
-    private ValueStack<AstNode> _vs;
-    private int _currentIndex;
-    private boolean _repeatedRun;
-
-    ShadowStack() {
-      this(new DefaultValueStack<>());
-    }
-
-    ShadowStack(ValueStack<AstNode> vs) {
-      _vs = vs;
-      _currentIndex = 0;
-      _repeatedRun = false;
-    }
-
-    public void save(Context<AstNode> context) {
-      if (_repeatedRun) {
-        return;
-      }
-      if (_currentIndex > context.getCurrentIndex()) {
-        _repeatedRun = true;
-        return;
-      }
-      ValueStack<AstNode> contextStack = context.getValueStack();
-      _vs.clear();
-      IntStream.range(0, contextStack.size())
-          .forEach(i -> _vs.push(contextStack.peek(contextStack.size() - i - 1)));
-      _currentIndex = context.getCurrentIndex();
-    }
-
-    public ValueStack<AstNode> getValueStack() {
-      return _vs;
-    }
-  }
-
-  private ShadowStack _shadowStack = new ShadowStack();
-
-  @Override
-  public boolean push(AstNode node) {
-    boolean returnValue = super.push(node);
-    _shadowStack.save(getContext());
-    return returnValue;
-  }
-
-  public ShadowStack getShadowStack() {
-    return _shadowStack;
-  }
-
-  /** Useful for testing */
-  void setShadowStack(ShadowStack shadowStack) {
-    _shadowStack = shadowStack;
-  }
 
   // Characters we use for different set operators
   static final String SET_OP_DIFFERENCE = "\\";
@@ -141,19 +83,21 @@ public abstract class CommonParser extends BaseParser<AstNode> {
     }
   }
 
-  /**
-   * Initialize an array of case-insenstive rules that match the array of provided values (e.g.,
-   * those belonging to an Enum).
-   */
-  Rule[] initEnumRules(Object[] values) {
-    return Arrays.stream(values).map(Object::toString).map(this::IgnoreCase).toArray(Rule[]::new);
-  }
-
   /** Initialize an array of rules that match known IpProtocol names */
   Rule[] initIpProtocolNameRules() {
-    return Arrays.stream(IpProtocol.values())
-        .map(Object::toString)
-        .filter(p -> !p.startsWith("UNNAMED"))
+    return initValuesRules(
+        Arrays.stream(IpProtocol.values())
+            // allow UNNAMED as well since PacketHeaderConstraints is "canonicalizing" the input
+            // .filter(p -> !p.toString().startsWith("UNNAMED"))
+            .collect(ImmutableList.toImmutableList()));
+  }
+
+  /** Initialize an array of case-insenstive rules that match stringified values in a collection. */
+  <T> Rule[] initValuesRules(Collection<T> values) {
+    return values.stream()
+        .map(Objects::toString)
+        // longer strings first so that we can match 'longer' instead of stopping at 'long'
+        .sorted(Comparator.comparing(String::length).reversed())
         .map(this::IgnoreCase)
         .toArray(Rule[]::new);
   }

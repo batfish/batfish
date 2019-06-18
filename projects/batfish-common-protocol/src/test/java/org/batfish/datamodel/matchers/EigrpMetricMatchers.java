@@ -26,7 +26,7 @@ public class EigrpMetricMatchers {
   /**
    * Provides a matcher that matches if the {@link EigrpMetric}'s delay is {@code expectedDelay}.
    */
-  public static @Nonnull Matcher<EigrpMetric> hasDelay(double expectedDelay) {
+  public static @Nonnull Matcher<EigrpMetric> hasDelay(long expectedDelay) {
     return new HasDelay(equalTo(expectedDelay));
   }
 
@@ -34,8 +34,7 @@ public class EigrpMetricMatchers {
    * Provides a matcher that matches if the provided {@code subMatcher} matches the {@link
    * EigrpMetric}'s delay.
    */
-  public static @Nonnull Matcher<EigrpMetric> hasDelay(
-      @Nonnull Matcher<? super Double> subMatcher) {
+  public static @Nonnull Matcher<EigrpMetric> hasDelay(@Nonnull Matcher<? super Long> subMatcher) {
     return new HasDelay(subMatcher);
   }
 
@@ -43,7 +42,7 @@ public class EigrpMetricMatchers {
    * Provides a matcher that matches if the {@link EigrpMetric}'s bandwidth is {@code
    * expectedBandwidth}.
    */
-  public static @Nonnull Matcher<EigrpMetric> hasBandwidth(double expectedBandwidth) {
+  public static @Nonnull Matcher<EigrpMetric> hasBandwidth(long expectedBandwidth) {
     return new HasBandwidth(equalTo(expectedBandwidth));
   }
 
@@ -52,7 +51,7 @@ public class EigrpMetricMatchers {
    * EigrpMetric}'s bandwidth.
    */
   public static @Nonnull Matcher<EigrpMetric> hasBandwidth(
-      @Nonnull Matcher<? super Double> subMatcher) {
+      @Nonnull Matcher<? super Long> subMatcher) {
     return new HasBandwidth(subMatcher);
   }
 }

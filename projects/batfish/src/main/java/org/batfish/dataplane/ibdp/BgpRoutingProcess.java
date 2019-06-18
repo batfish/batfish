@@ -126,14 +126,19 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
   /** Builder for constructing {@link RibDelta} for routes in {@link #_evpnRib} */
   @Nonnull private Builder<EvpnRoute<?, ?>> _evpnDeltaBuilder = RibDelta.builder();
 
-  private RibDelta<EvpnType3Route> _evpnInitializationDelta;
+  /** Keep track of EVPN type 3 routes initialized from our own VNI settings */
+  @Nonnull private RibDelta<EvpnType3Route> _evpnInitializationDelta;
 
   /** Delta builder for routes that must be propagated to the main RIB */
   @Nonnull private RibDelta.Builder<BgpRoute<?, ?>> _changeSet = RibDelta.builder();
 
-  /* Hacky way to non re-init the process across topology computations. Not a permanent solution */
+  /* Hacky way to not re-init the process across topology computations. Not a permanent solution */
   private boolean _initialized = false;
 
+  /**
+   * Mapping from extended community route target patterns to VRF name. Used for determining where
+   * to merge EVPN routes
+   */
   @Nonnull private final Map<String, String> _rtVrfMapping;
 
   /**
@@ -335,8 +340,10 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
     DeltaPair<EvpnType3Route> type3Delta = processEvpnType3Messages(nc, allNodes);
     sendOutEvpnRoutes(type3Delta._toAdvertise, nc, allNodes);
     // Merge EVPN routes into EVPN RIB and prepare for merging into main RIB
-    _changeSet.from(importRibDelta(_evpnRib, type3Delta._toMerge._ebgpDelta));
-    _changeSet.from(importRibDelta(_evpnRib, type3Delta._toMerge._ibgpDelta));
+    _changeSet.from(
+        importRibDelta(_evpnRib, importRibDelta(_evpnType3Rib, type3Delta._toMerge._ebgpDelta)));
+    _changeSet.from(
+        importRibDelta(_evpnRib, importRibDelta(_evpnType3Rib, type3Delta._toMerge._ibgpDelta)));
 
     // TODO: migrate v4 route propagation here
   }
@@ -703,6 +710,11 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
   @Nonnull
   public Ip getRouterId() {
     return _process.getRouterId();
+  }
+
+  /** Return all type 3 EVPN routes */
+  public Set<EvpnType3Route> getEvpnType3Routes() {
+    return _evpnType3Rib.getTypedRoutes();
   }
 
   /**

@@ -20,12 +20,12 @@ public final class VniSettings implements Serializable {
 
   public static final class Builder {
 
-    private SortedSet<Ip> _bumTransportIps;
-    private BumTransportMethod _bumTransportMethod;
-    private Ip _sourceAddress;
-    private Integer _udpPort;
-    private Integer _vlan;
-    private Integer _vni;
+    @Nullable private SortedSet<Ip> _bumTransportIps;
+    @Nullable private BumTransportMethod _bumTransportMethod;
+    @Nullable private Ip _sourceAddress;
+    @Nullable private Integer _udpPort;
+    @Nullable private Integer _vlan;
+    @Nullable private Integer _vni;
 
     private Builder() {}
 
@@ -43,7 +43,7 @@ public final class VniSettings implements Serializable {
       return this;
     }
 
-    public @Nonnull Builder setSourceAddress(Ip sourceAddress) {
+    public @Nonnull Builder setSourceAddress(@Nullable Ip sourceAddress) {
       _sourceAddress = sourceAddress;
       return this;
     }
@@ -53,7 +53,7 @@ public final class VniSettings implements Serializable {
       return this;
     }
 
-    public @Nonnull Builder setVlan(Integer vlan) {
+    public @Nonnull Builder setVlan(@Nullable Integer vlan) {
       _vlan = vlan;
       return this;
     }
@@ -73,11 +73,11 @@ public final class VniSettings implements Serializable {
   private static final String PROP_VNI = "vni";
   private static final long serialVersionUID = 1L;
 
-  private final SortedSet<Ip> _bumTransportIps;
-  private final BumTransportMethod _bumTransportMethod;
-  private final Ip _sourceAddress;
-  private final Integer _udpPort;
-  private final Integer _vlan;
+  @Nonnull private final SortedSet<Ip> _bumTransportIps;
+  @Nonnull private final BumTransportMethod _bumTransportMethod;
+  @Nullable private final Ip _sourceAddress;
+  @Nonnull private final Integer _udpPort;
+  @Nullable private final Integer _vlan;
   private final int _vni;
 
   public static @Nonnull Builder builder() {
@@ -164,6 +164,7 @@ public final class VniSettings implements Serializable {
     return _bumTransportMethod;
   }
 
+  @Nullable
   @JsonProperty(PROP_SOURCE_ADDRESS)
   public Ip getSourceAddress() {
     return _sourceAddress;
@@ -174,6 +175,7 @@ public final class VniSettings implements Serializable {
     return _udpPort;
   }
 
+  @Nullable
   @JsonProperty(PROP_VLAN)
   public Integer getVlan() {
     return _vlan;
@@ -182,5 +184,29 @@ public final class VniSettings implements Serializable {
   @JsonProperty(PROP_VNI)
   public int getVni() {
     return _vni;
+  }
+
+  @Nonnull
+  public Builder toBuilder() {
+    return builder()
+        .setBumTransportMethod(_bumTransportMethod)
+        .setSourceAddress(_sourceAddress)
+        .setVni(_vni)
+        .setVlan(_vlan)
+        .setUdpPort(_udpPort)
+        .setBumTransportIps(_bumTransportIps);
+  }
+
+  /** Return a new {@link VniSettings} with a flood list that includes a given {@code ip} */
+  @Nonnull
+  public VniSettings addToFloodList(Ip ip) {
+    checkArgument(
+        _bumTransportMethod == BumTransportMethod.UNICAST_FLOOD_GROUP,
+        "Cannot add new IPs if the transport method is not %s",
+        BumTransportMethod.UNICAST_FLOOD_GROUP);
+    return toBuilder()
+        .setBumTransportIps(
+            ImmutableSortedSet.<Ip>naturalOrder().addAll(_bumTransportIps).add(ip).build())
+        .build();
   }
 }

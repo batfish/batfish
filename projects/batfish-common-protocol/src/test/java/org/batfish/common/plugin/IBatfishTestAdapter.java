@@ -144,7 +144,7 @@ public class IBatfishTestAdapter implements IBatfish {
 
     @Override
     public VxlanTopology getInitialVxlanTopology(NetworkSnapshot snapshot) {
-      return VxlanTopologyUtils.initialVxlanTopology(_batfish.loadConfigurations(snapshot));
+      return VxlanTopologyUtils.computeVxlanTopology(_batfish.loadConfigurations(snapshot));
     }
   }
 

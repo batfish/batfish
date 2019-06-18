@@ -102,7 +102,7 @@ import org.batfish.datamodel.questions.BgpPeerPropertySpecifier;
 import org.batfish.datamodel.questions.BgpProcessPropertySpecifier;
 import org.batfish.datamodel.questions.InstanceData;
 import org.batfish.datamodel.questions.InterfacePropertySpecifier;
-import org.batfish.datamodel.questions.NamedStructureSpecifier;
+import org.batfish.datamodel.questions.NamedStructurePropertySpecifier;
 import org.batfish.datamodel.questions.NodePropertySpecifier;
 import org.batfish.datamodel.questions.OspfPropertySpecifier;
 import org.batfish.datamodel.questions.Question;
@@ -112,7 +112,7 @@ import org.batfish.specifier.AllInterfacesInterfaceSpecifier;
 import org.batfish.specifier.AllNodesNodeSpecifier;
 import org.batfish.specifier.RoutingProtocolSpecifier;
 import org.batfish.specifier.SpecifierFactories;
-import org.batfish.specifier.parboiled.ParboiledIpSpaceSpecifierFactory;
+import org.batfish.specifier.parboiled.ParboiledIpSpaceSpecifier;
 import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
@@ -516,7 +516,7 @@ public class Client extends AbstractClient implements IClient {
                   "A Batfish %s must be a JSON string with IpSpaceSpec grammar",
                   expectedType.getName()));
         }
-        new ParboiledIpSpaceSpecifierFactory().buildIpSpaceSpecifier(value.asText());
+        ParboiledIpSpaceSpecifier.parse(value.asText());
         break;
       case IP_WILDCARD:
         if (!value.isTextual()) {
@@ -566,7 +566,7 @@ public class Client extends AbstractClient implements IClient {
           throw new BatfishException(
               String.format("A Batfish %s must be a JSON string", expectedType.getName()));
         }
-        new NamedStructureSpecifier(value.textValue());
+        new NamedStructurePropertySpecifier(value.textValue());
         break;
       case NODE_PROPERTY_SPEC:
         if (!(value.isTextual())) {

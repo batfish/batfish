@@ -13,7 +13,9 @@ import org.batfish.role.NodeRole;
 import org.batfish.role.NodeRoleDimension;
 import org.batfish.specifier.MockSpecifierContext;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 
 public class ParboiledNodeSpecifierTest {
 
@@ -43,8 +45,25 @@ public class ParboiledNodeSpecifierTest {
 
   @Test
   public void testResolveRole() {
-    String roleName = "role";
     String dimensionName = "dim";
+    String roleName = "role";
+    _ctxtB.setNodeRoleDimensions(
+        ImmutableSortedSet.of(
+            NodeRoleDimension.builder()
+                .setName(dimensionName)
+                .setRoles(ImmutableSet.of(new NodeRole(roleName, "node1.*")))
+                .build()));
+    assertThat(
+        new ParboiledNodeSpecifier(new RoleNodeAstNode(dimensionName, roleName))
+            .resolve(_ctxtB.build()),
+        equalTo(ImmutableSet.of("node1")));
+  }
+
+  /** Tests for the old order @role(role, dimension) */
+  @Test
+  public void testResolveRoleDeprecated() {
+    String dimensionName = "dim";
+    String roleName = "role";
     _ctxtB.setNodeRoleDimensions(
         ImmutableSortedSet.of(
             NodeRoleDimension.builder()
@@ -99,5 +118,21 @@ public class ParboiledNodeSpecifierTest {
                 new UnionNodeAstNode(new NameNodeAstNode("node1"), new NameNodeAstNode("node2")))
             .resolve(_ctxt),
         equalTo(ImmutableSet.of("node1", "node2")));
+  }
+
+  @Rule public ExpectedException _thrown = ExpectedException.none();
+
+  @Test
+  public void testParseBadInput() {
+    _thrown.expect(IllegalArgumentException.class);
+    _thrown.expectMessage("Error parsing");
+    ParboiledNodeSpecifier.parse("@connected");
+  }
+
+  @Test
+  public void testParseGoodInput() {
+    assertThat(
+        ParboiledNodeSpecifier.parse("node0"),
+        equalTo(new ParboiledNodeSpecifier(new NameNodeAstNode("node0"))));
   }
 }

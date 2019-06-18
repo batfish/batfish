@@ -9,7 +9,7 @@ import java.util.regex.Pattern;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
-import org.batfish.datamodel.questions.NamedStructureSpecifier;
+import org.batfish.datamodel.questions.NamedStructurePropertySpecifier;
 import org.batfish.datamodel.questions.Question;
 import org.batfish.specifier.AllNodesNodeSpecifier;
 import org.batfish.specifier.NodeSpecifier;
@@ -18,7 +18,7 @@ import org.batfish.specifier.SpecifierFactories;
 /**
  * A question that returns named structures of nodes in a tabular format. {@link
  * NamedStructuresQuestion#_nodes} determines which nodes are included, and {@link
- * NamedStructuresQuestion#_structureTypes} determines which named structures are included.
+ * NamedStructuresQuestion#_structureTypeSpecifier} determines which named structures are included.
  */
 @ParametersAreNonnullByDefault
 public class NamedStructuresQuestion extends Question {
@@ -43,12 +43,14 @@ public class NamedStructuresQuestion extends Question {
 
   @Nonnull private final Pattern _structureNamePattern;
 
-  @Nonnull private final NamedStructureSpecifier _structureTypes;
+  @Nullable private final String _structureTypes;
+
+  @Nonnull private final NamedStructurePropertySpecifier _structureTypeSpecifier;
 
   @JsonCreator
   static NamedStructuresQuestion create(
       @JsonProperty(PROP_NODES) @Nullable String nodes,
-      @JsonProperty(PROP_STRUCTURE_TYPES) @Nullable NamedStructureSpecifier structureTypes,
+      @JsonProperty(PROP_STRUCTURE_TYPES) @Nullable String structureTypes,
       @JsonProperty(PROP_STRUCTURE_NAMES) @Nullable String structureNameRegex,
       @JsonProperty(PROP_IGNORE_GENERATED) @Nullable Boolean ignoreGenerated,
       @JsonProperty(PROP_INDICATE_PRESENCE) @Nullable Boolean indicatePresence) {
@@ -58,7 +60,7 @@ public class NamedStructuresQuestion extends Question {
 
   NamedStructuresQuestion(
       @Nullable String nodes,
-      @Nullable NamedStructureSpecifier structureTypes,
+      @Nullable String structureTypes,
       @Nullable String structureNameRegex,
       @Nullable Boolean ignoreGenerated,
       @Nullable Boolean indicatePresence) {
@@ -66,6 +68,7 @@ public class NamedStructuresQuestion extends Question {
         nodes,
         SpecifierFactories.getNodeSpecifierOrDefault(nodes, AllNodesNodeSpecifier.INSTANCE),
         structureTypes,
+        new NamedStructurePropertySpecifier(structureTypes),
         structureNameRegex,
         ignoreGenerated,
         indicatePresence);
@@ -73,24 +76,32 @@ public class NamedStructuresQuestion extends Question {
 
   public NamedStructuresQuestion(
       @Nonnull NodeSpecifier nodeSpecifier,
-      @Nullable NamedStructureSpecifier structureTypes,
+      @Nonnull NamedStructurePropertySpecifier structureTypeSpecifier,
       @Nullable String structureNameRegex,
       @Nullable Boolean ignoreGenerated,
       @Nullable Boolean indicatePresence) {
     this(
-        null, nodeSpecifier, structureTypes, structureNameRegex, ignoreGenerated, indicatePresence);
+        null,
+        nodeSpecifier,
+        null,
+        structureTypeSpecifier,
+        structureNameRegex,
+        ignoreGenerated,
+        indicatePresence);
   }
 
   private NamedStructuresQuestion(
       @Nullable String nodes,
       @Nonnull NodeSpecifier nodeSpecifier,
-      @Nullable NamedStructureSpecifier structureTypes,
+      @Nullable String structureTypes,
+      @Nonnull NamedStructurePropertySpecifier structureTypeSpecifier,
       @Nullable String structureNameRegex,
       @Nullable Boolean ignoreGenerated,
       @Nullable Boolean indicatePresence) {
     _nodes = nodes;
     _nodeSpecifier = nodeSpecifier;
-    _structureTypes = firstNonNull(structureTypes, NamedStructureSpecifier.ALL);
+    _structureTypes = structureTypes;
+    _structureTypeSpecifier = structureTypeSpecifier;
     _structureNameRegex = structureNameRegex;
     _structureNamePattern =
         Pattern.compile(firstNonNull(structureNameRegex, ".*"), Pattern.CASE_INSENSITIVE);
@@ -142,9 +153,15 @@ public class NamedStructuresQuestion extends Question {
     return _structureNamePattern;
   }
 
-  @Nonnull
+  @Nullable
   @JsonProperty(PROP_STRUCTURE_TYPES)
-  public NamedStructureSpecifier getStructureTypes() {
+  public String getStructureTypes() {
     return _structureTypes;
+  }
+
+  @Nonnull
+  @JsonIgnore
+  public NamedStructurePropertySpecifier getStructureTypeSpecifier() {
+    return _structureTypeSpecifier;
   }
 }

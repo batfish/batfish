@@ -47,6 +47,40 @@ public class FilterNoMatchMessagesTest {
   }
 
   @Test
+  public void testWithNode() {
+    CompletionMetadata completionMetadata =
+        CompletionMetadata.builder()
+            .setNodes(ImmutableSet.of("h1", "h2"))
+            .setFilterNames(ImmutableSet.of("f1", "f2"))
+            .build();
+    assertThat(
+        getMessages(
+            new FilterNoMatchMessages(
+                new FilterWithNodeFilterAstNode(
+                    new NameNodeAstNode("no"), new NameFilterAstNode("no"))),
+            completionMetadata),
+        equalTo(
+            ImmutableList.of(
+                getErrorMessageMissingName("no", "device"),
+                getErrorMessageMissingName("no", "filter"))));
+    // no no_match messages since the logic is not context sensitive
+    assertThat(
+        getMessages(
+            new FilterNoMatchMessages(
+                new FilterWithNodeFilterAstNode(
+                    new NameNodeAstNode("h1"), new NameFilterAstNode("f2"))),
+            completionMetadata),
+        equalTo(ImmutableList.of()));
+    assertThat(
+        getMessages(
+            new FilterNoMatchMessages(
+                new FilterWithNodeFilterAstNode(
+                    new NameNodeAstNode("h1"), new NameFilterAstNode("f1"))),
+            completionMetadata),
+        equalTo(ImmutableList.of()));
+  }
+
+  @Test
   public void testSetOp() {
     CompletionMetadata completionMetadata =
         CompletionMetadata.builder().setFilterNames(ImmutableSet.of("b1", "b2")).build();

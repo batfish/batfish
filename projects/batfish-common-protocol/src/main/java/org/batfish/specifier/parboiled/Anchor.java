@@ -23,14 +23,6 @@ import org.batfish.datamodel.answers.AutocompleteSuggestion.SuggestionType;
     /** Names of address groups in a reference book */
     ADDRESS_GROUP_NAME(
         "ADDRESS_GROUP_NAME", "Address group name", null, SuggestionType.NAME_LITERAL),
-    /** Names of applications, e.g., DNS */
-    APPLICATION_NAME("APPLICATION_NAME", null, null, SuggestionType.CONSTANT),
-    /**
-     * Denotes a set operation for applicationSpec. The full description is filled in {@link
-     * ParboiledAutoCompleteSuggestion#completeDescriptionIfNeeded}.
-     */
-    APPLICATION_SET_OP(
-        "APPLICATION_SET_OP", " of applications", "applicationSpec", SuggestionType.SET_OPERATOR),
     /**
      * A character literal, e.g., set operators and parenthesis. It is an implicit anchor assigned
      * based on Parboiled path element labels.
@@ -141,6 +133,27 @@ import org.batfish.datamodel.answers.AutocompleteSuggestion.SuggestionType;
     LOCATION_SET_OP(
         "INTERFACE_SET_OP", " of locations", "locationSpec", SuggestionType.SET_OPERATOR),
     /**
+     * Denotes a set operation for namedStructureSpec. The full description is filled in {@link
+     * ParboiledAutoCompleteSuggestion#completeDescriptionIfNeeded}.
+     */
+    ENUM_SET_SET_OP(
+        "ENUM_SET_SET_OP", " of enumSetSpec", "enumSetSpec", SuggestionType.SET_OPERATOR),
+    /** Named structure type, e.g., ROUTE_FILTER_LIST */
+    ENUM_SET_VALUE("ENUM_SET_VALUE", null, null, SuggestionType.CONSTANT),
+    /** Regex for named structure types */
+    ENUM_SET_REGEX("ENUM_SET_REGEX", "Regex", "regex/", SuggestionType.REGEX),
+    /**
+     * Rule for node[filter] style filterSpec. This anchor shouldn't be suggested as the rule has no
+     * literal, and things will get delegated to sub rules.
+     */
+    NODE_AND_FILTER("NODE_AND_FILTER", "Node and filter pair", null, SuggestionType.UNKNOWN),
+    /** Part of node[filter] after node */
+    NODE_AND_FILTER_TAIL(
+        "NODE_AND_FILTER_TAIL",
+        "Filters of specified node(s)",
+        "filterSpec]",
+        SuggestionType.OPERATOR_NON_END),
+    /**
      * Rule for node[interface] style interfaceSpec. This anchor shouldn't be suggested as the rule
      * has no literal, and things will get delegated to sub rules.
      */
@@ -162,8 +175,13 @@ import org.batfish.datamodel.answers.AutocompleteSuggestion.SuggestionType;
     NODE_ROLE_AND_DIMENSION(
         "NODE_ROLE_AND_DIMENSION",
         "Nodes in the role",
-        "roleName, dimensionName)",
+        "dimensionName, roleName)",
         SuggestionType.FUNCTION),
+    NODE_ROLE_AND_DIMENSION_TAIL(
+        "NODE_ROLE_AND_DIMENSION_TAIL",
+        "Role name in the dimension",
+        "roleName)",
+        SuggestionType.OPERATOR_NON_END),
     /** Rule for node role dimension name */
     NODE_ROLE_DIMENSION_NAME(
         "NODE_ROLE_DIMENSION_NAME", "Node role dimension name", null, SuggestionType.NAME_LITERAL),

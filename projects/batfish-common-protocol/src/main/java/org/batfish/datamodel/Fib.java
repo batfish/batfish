@@ -7,10 +7,6 @@ import javax.annotation.Nonnull;
 
 public interface Fib extends Serializable {
 
-  /** Mapping: route -&gt; nexthopinterface -&gt; resolved nextHopIp -&gt; interfaceRoutes */
-  @Nonnull
-  Map<AbstractRoute, Map<String, Map<Ip, Set<AbstractRoute>>>> getNextHopInterfaces();
-
   /**
    * Return a set of {@link FibEntry fib entries} that match a given IP (using longest prefix match)
    */

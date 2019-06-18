@@ -10,13 +10,14 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Range;
 import com.google.common.collect.Sets;
 import com.google.common.collect.Streams;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import org.batfish.specifier.NoApplicationsApplicationSpecifier;
+import org.batfish.specifier.ConstantEnumSetSpecifier;
 import org.batfish.specifier.NoIpProtocolsIpProtocolSpecifier;
 import org.batfish.specifier.SpecifierFactories;
 
@@ -185,8 +186,10 @@ public class PacketHeaderConstraints {
               applications));
     }
 
-    return SpecifierFactories.getApplicationSpecifierOrDefault(
-            input, NoApplicationsApplicationSpecifier.INSTANCE)
+    return SpecifierFactories.getEnumSetSpecifierOrDefault(
+            input,
+            Arrays.asList(Protocol.values()),
+            new ConstantEnumSetSpecifier<>(ImmutableSet.of()))
         .resolve();
   }
 

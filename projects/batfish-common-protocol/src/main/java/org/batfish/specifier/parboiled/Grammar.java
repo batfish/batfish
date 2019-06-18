@@ -2,7 +2,7 @@ package org.batfish.specifier.parboiled;
 
 /** Contains information on various expressions supported by this package */
 public enum Grammar {
-  APPLICATION_SPECIFIER("applicationSpecifier", "application-specifier"),
+  ENUM_SET_SPECIFIER("enumSetSpecifier", "enum-set-specifier"),
   FILTER_SPECIFIER("filterSpecifier", "filter-specifier"),
   INTERFACE_SPECIFIER("interfaceSpecifier", "interface-specifier"),
   IP_PROTOCOL_SPECIFIER("ipProtocolSpecifier", "ip-protocol-specifier"),
@@ -35,5 +35,10 @@ public enum Grammar {
 
   String getUrlTail() {
     return _urlTail;
+  }
+
+  @Override
+  public String toString() {
+    return _friendlyName;
   }
 }
