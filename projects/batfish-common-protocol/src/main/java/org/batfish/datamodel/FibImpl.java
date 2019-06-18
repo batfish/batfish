@@ -77,7 +77,7 @@ public final class FibImpl implements Fib {
   private static final int MAX_DEPTH = 10;
   private static final long serialVersionUID = 1L;
 
-  private static String getNextVrf(AbstractRoute route) {
+  private static @Nullable String getNextVrf(AbstractRoute route) {
     return route instanceof StaticRoute ? ((StaticRoute) route).getNextVrf() : null;
   }
 

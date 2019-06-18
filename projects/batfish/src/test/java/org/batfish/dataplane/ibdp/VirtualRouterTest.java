@@ -358,7 +358,7 @@ public class VirtualRouterTest {
     vr.initStaticRibs();
 
     assertThat(
-        vr._staticInterfaceRib.getTypedRoutes(),
+        vr._staticUnconditionalRib.getTypedRoutes(),
         containsInAnyOrder(routes.get(0), routes.get(2), routes.get(3)));
     assertThat(vr._staticNextHopRib.getTypedRoutes(), containsInAnyOrder(routes.get(1)));
   }
@@ -373,7 +373,7 @@ public class VirtualRouterTest {
     // Simple RIBs
     assertThat(vr.getConnectedRib().getRoutes(), empty());
     assertThat(vr._staticNextHopRib.getRoutes(), empty());
-    assertThat(vr._staticInterfaceRib.getRoutes(), empty());
+    assertThat(vr._staticUnconditionalRib.getRoutes(), empty());
     assertThat(vr._independentRib.getRoutes(), empty());
 
     // RIP RIBs
