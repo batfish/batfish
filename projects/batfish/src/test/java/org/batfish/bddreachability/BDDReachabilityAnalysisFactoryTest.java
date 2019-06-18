@@ -1,6 +1,5 @@
 package org.batfish.bddreachability;
 
-import static org.batfish.datamodel.AclIpSpace.difference;
 import static org.batfish.datamodel.FlowDisposition.ACCEPTED;
 import static org.batfish.datamodel.FlowDisposition.DELIVERED_TO_SUBNET;
 import static org.batfish.datamodel.FlowDisposition.DENIED_IN;
@@ -1579,7 +1578,7 @@ public final class BDDReachabilityAnalysisFactoryTest {
 
     IpSpace dstIpSpaceOfInterest =
         AclIpSpace.difference(
-            Prefix.strict("10.0.12.0/24").toIpSpace(), Ip.parse("10.0.12.1").toIpSpace());
+            Prefix.strict("10.0.12.0/24").toHostIpSpace(), Ip.parse("10.0.12.1").toIpSpace());
     BDDReachabilityAnalysis analysis =
         factory.bddReachabilityAnalysis(
             IpSpaceAssignment.builder()
@@ -1588,7 +1587,7 @@ public final class BDDReachabilityAnalysisFactoryTest {
             matchDst(dstIpSpaceOfInterest),
             ImmutableSet.of(),
             ImmutableSet.of(),
-            ImmutableSet.of(),
+            configurations.keySet(),
             ImmutableSet.of(DELIVERED_TO_SUBNET));
 
     // Check state edge presence

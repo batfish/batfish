@@ -1354,6 +1354,7 @@ public final class BDDReachabilityAnalysisFactory {
       Set<String> requiredTransitNodes,
       Set<String> finalNodes,
       Set<FlowDisposition> actions) {
+    checkArgument(!finalNodes.isEmpty(), "final nodes cannot be empty");
     try (ActiveSpan span =
         GlobalTracer.get()
             .buildSpan("BDDReachabilityAnalysisFactory.bddReachabilityAnalysis")
