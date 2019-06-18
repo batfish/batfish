@@ -70,7 +70,8 @@ public class BgpRoutingProcessTest {
     _vrf.setBgpProcess(_bgpProcess);
     _vrf2.setBgpProcess(_bgpProcess2);
     _routingProcess =
-        new BgpRoutingProcess(_bgpProcess, _c, DEFAULT_VRF_NAME, new Rib(), BgpTopology.EMPTY);
+        new BgpRoutingProcess(
+            _bgpProcess, _c, DEFAULT_VRF_NAME, new Rib(), BgpTopology.EMPTY, new PrefixTracer());
   }
 
   @Test

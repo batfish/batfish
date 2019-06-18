@@ -82,6 +82,8 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
   @Nonnull private final Rib _mainRib;
   /** Current BGP topology */
   @Nonnull private BgpTopology _topology;
+  /** Metadata about propagated prefixes to/from neighbors */
+  @Nonnull private PrefixTracer _prefixTracer;
 
   /** Route dependency tracker for BGP IPv4 aggregate routes */
   @Nonnull
@@ -164,20 +166,21 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
    * @param configuration the parent {@link Configuration}
    * @param vrfName name of the VRF this process is in
    * @param mainRib take in a reference to MainRib for read-only use (e.g., getting IGP cost to
-   *     next-hop)
    */
   BgpRoutingProcess(
       BgpProcess process,
       Configuration configuration,
       String vrfName,
       Rib mainRib,
-      BgpTopology topology) {
+      BgpTopology topology,
+      PrefixTracer prefixTracer) {
     _process = process;
     _c = configuration;
     _vrfName = vrfName;
     // TODO: really need to have a read-only RIB interface for safety
     _mainRib = mainRib;
     _topology = topology;
+    _prefixTracer = prefixTracer;
 
     // Message queues start out empty
     _bgpv4IncomingRoutes = ImmutableSortedMap.of();

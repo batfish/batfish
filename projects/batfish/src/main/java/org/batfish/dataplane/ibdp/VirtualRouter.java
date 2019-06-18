@@ -177,7 +177,7 @@ public class VirtualRouter implements Serializable {
   private transient Rib _generatedRib;
 
   /** Metadata about propagated prefixes to/from neighbors */
-  private PrefixTracer _prefixTracer;
+  @Nonnull private PrefixTracer _prefixTracer;
 
   /** List of all EIGRP processes in this VRF */
   @VisibleForTesting transient ImmutableMap<Long, VirtualEigrpProcess> _virtualEigrpProcesses;
@@ -209,7 +209,8 @@ public class VirtualRouter implements Serializable {
     _vniSettings = ImmutableSet.copyOf(_vrf.getVniSettings().values());
     if (_vrf.getBgpProcess() != null) {
       _bgpRoutingProcess =
-          new BgpRoutingProcess(_vrf.getBgpProcess(), _c, _name, _mainRib, BgpTopology.EMPTY);
+          new BgpRoutingProcess(
+              _vrf.getBgpProcess(), _c, _name, _mainRib, BgpTopology.EMPTY, _prefixTracer);
     }
   }
 
