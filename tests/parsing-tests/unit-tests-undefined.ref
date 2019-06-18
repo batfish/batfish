@@ -3844,13 +3844,13 @@
       },
       {
         "File_Name" : "configs/palo_alto/virtual-routers",
-        "Struct_Type" : "virtual-router",
-        "Ref_Name" : "vr2",
-        "Context" : "static-route nexthop next-vr",
+        "Struct_Type" : "interface",
+        "Ref_Name" : "dummy",
+        "Context" : "virtual-router interface",
         "Lines" : {
           "filename" : "configs/palo_alto/virtual-routers",
           "lines" : [
-            19
+            27
           ]
         }
       },

@@ -991,6 +991,9 @@ public final class PaloAltoGrammarTest {
                 hasItem(allOf(hasPrefix(Prefix.strict("10.0.0.0/8")), hasNextVrf(vrName))))));
     // static-route with undefined next-vr should not be converted
     assertThat(c, hasVrf(vr2Name, hasStaticRoutes(not(hasItem(hasPrefix(Prefix.ZERO))))));
+    // static-route with next-vr same as its own virtual-router should not be converted
+    assertThat(
+        c, hasVrf(vr2Name, hasStaticRoutes(not(hasItem(hasPrefix(Prefix.strict("1.0.0.0/8")))))));
 
     // assert static interface route reference
     ConvertConfigurationAnswerElement ccae =
