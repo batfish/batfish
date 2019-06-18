@@ -44,10 +44,12 @@ import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Edge;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Interface.DependencyType;
+import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.InterfaceType;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.IpsecSession;
+import org.batfish.datamodel.LinkLocalAddress;
 import org.batfish.datamodel.NetworkConfigurations;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.SwitchportMode;
@@ -750,6 +752,17 @@ public final class TopologyUtil {
     return false;
   }
 
+  @Nonnull
+  private static Prefix getAddressPrefix(InterfaceAddress addr) {
+    if (addr instanceof ConcreteInterfaceAddress) {
+      return ((ConcreteInterfaceAddress) addr).getPrefix();
+    } else if (addr instanceof LinkLocalAddress) {
+      return ((LinkLocalAddress) addr).getPrefix();
+    } else {
+      throw new IllegalArgumentException("Unknown interface address type: " + addr.getClass());
+    }
+  }
+
   /**
    * Returns a {@link Topology} inferred from the L3 configuration of interfaces on the devices.
    *
@@ -763,9 +776,11 @@ public final class TopologyUtil {
             if (iface.isLoopback(node.getConfigurationFormat()) || !iface.getActive()) {
               continue;
             }
-            for (ConcreteInterfaceAddress address : iface.getAllConcreteAddresses()) {
-              if (address.getNetworkBits() < Prefix.MAX_PREFIX_LENGTH) {
-                Prefix prefix = address.getPrefix();
+            // Look at all allocated addresses to determine subnet buckets
+            // L3 edges must exist between interfaces with any IP address.
+            for (InterfaceAddress address : iface.getAllAddresses()) {
+              Prefix prefix = getAddressPrefix(address);
+              if (prefix.getPrefixLength() < Prefix.MAX_PREFIX_LENGTH) {
                 List<Interface> interfaceBucket =
                     prefixInterfaces.computeIfAbsent(prefix, k -> new LinkedList<>());
                 interfaceBucket.add(iface);
@@ -789,7 +804,10 @@ public final class TopologyUtil {
           .flatMap(Collection::stream)
           .filter(
               iface ->
-                  iface.getAllConcreteAddresses().stream().anyMatch(ia -> p.containsIp(ia.getIp())))
+                  iface.getAllConcreteAddresses().stream().anyMatch(ia -> p.containsIp(ia.getIp()))
+                      // Treat all link-local addresses as potential candidates.
+                      // Further trimming based on broadcast domains is done later in the pipeline.
+                      || !iface.getAllLinkLocalAddresses().isEmpty())
           .forEach(candidateInterfaces::add);
 
       for (Interface iface1 : bucketEntry.getValue()) {
@@ -799,7 +817,8 @@ public final class TopologyUtil {
               && iface1.getVrfName().equals(iface2.getVrfName())) {
             continue;
           }
-          // don't connect interfaces that have any IP address in common
+
+          // Don't connect interfaces that have any IP address in common
           if (haveIpInCommon(iface1, iface2)) {
             continue;
           }
