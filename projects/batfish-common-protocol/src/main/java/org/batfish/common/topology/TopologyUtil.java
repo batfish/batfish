@@ -817,19 +817,8 @@ public final class TopologyUtil {
               && iface1.getVrfName().equals(iface2.getVrfName())) {
             continue;
           }
-          /*
-          * Don't connect interfaces that have any IP address in common
 
-          * Exception to this are edges that use link-local addresses (we treat link-local
-            addresses as opaque here).
-
-          * Note that if either interface has link local address as primary address, secondary
-            addresses may not be concrete (and sanity check that here)
-          */
-          assert !(iface1.getAddress() instanceof LinkLocalAddress)
-              || iface1.getAllConcreteAddresses().isEmpty();
-          assert !(iface2.getAddress() instanceof LinkLocalAddress)
-              || iface2.getAllConcreteAddresses().isEmpty();
+          // Don't connect interfaces that have any IP address in common
           if (haveIpInCommon(iface1, iface2)) {
             continue;
           }
