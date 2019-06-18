@@ -333,9 +333,10 @@ public final class PaloAltoGrammarTest {
     assertThat(addressObjects.get("addr0").getIpSpace(), equalTo(EmptyIpSpace.INSTANCE));
 
     // check that we parsed description and prefix right
+    // note that PA allows non-canonical prefixes
     assertThat(
         addressObjects.get("addr1").getIpSpace(),
-        equalTo(Prefix.strict("10.1.1.1/24").toIpSpace()));
+        equalTo(Prefix.strict("10.1.1.0/24").toIpSpace()));
     assertThat(addressObjects.get("addr1").getDescription(), equalTo("addr1-desc"));
 
     // check that we parse the IP address right
