@@ -793,7 +793,7 @@ public final class TopologyUtil {
           .filter(
               iface ->
                   iface.getAllConcreteAddresses().stream().anyMatch(ia -> p.containsIp(ia.getIp()))
-                      || iface.getAddress() instanceof LinkLocalAddress)
+                      || !iface.getAllLinkLocalAddresses().isEmpty())
           .forEach(candidateInterfaces::add);
 
       for (Interface iface1 : bucketEntry.getValue()) {
