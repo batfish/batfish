@@ -3,6 +3,8 @@ package org.batfish.datamodel;
 import static com.google.common.base.MoreObjects.firstNonNull;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.collect.Ordering.natural;
+import static java.util.stream.Collectors.groupingBy;
+import static java.util.stream.Collectors.mapping;
 import static org.batfish.common.util.CollectionUtil.toImmutableMap;
 
 import com.google.common.annotations.VisibleForTesting;
@@ -42,6 +44,9 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
 
   // node -> vrf -> interface -> destination IPs for which arp will fail
   private final Map<String, Map<String, Map<String, IpSpace>>> _arpFalse;
+
+  // node -> vrf -> nextVrf -> IPs that vrf delegates to nextVrf
+  private final Map<String, Map<String, Map<String, IpSpace>>> _nextVrfIpsByNodeVrf;
 
   // node -> vrf -> destination IPs that will be null routes
   private final Map<String, Map<String, IpSpace>> _nullRoutedIps;
@@ -89,6 +94,7 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
       Map<String, Map<String, Map<String, Set<AbstractRoute>>>> routesWithNextHop =
           computeRoutesWithNextHop(fibs);
       _nullRoutedIps = computeNullRoutedIps(matchingIps, fibs);
+      _nextVrfIpsByNodeVrf = computeNextVrfIpsByNodeVrf(matchingIps, fibs);
       _routableIps = computeRoutableIps(fibs);
 
       /* Compute _arpReplies: for each interface, the set of arp IPs for which that interface will
@@ -624,6 +630,53 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
   }
 
   @VisibleForTesting
+  static Map<String, Map<String, Map<String, IpSpace>>> computeNextVrfIpsByNodeVrf(
+      Map<String, Map<String, Map<Prefix, IpSpace>>> matchingIps,
+      Map<String, Map<String, Fib>> fibs) {
+    try (ActiveSpan span =
+        GlobalTracer.get().buildSpan("ForwardingAnalysisImpl.computeNextVrfIps").startActive()) {
+      assert span != null; // avoid unused warning
+      return fibs.entrySet().stream()
+          .collect(
+              ImmutableMap.toImmutableMap(
+                  Entry::getKey /* hostname */,
+                  fibsByHostnameEntry -> {
+                    String hostname = fibsByHostnameEntry.getKey();
+                    return fibsByHostnameEntry.getValue().entrySet().stream()
+                        .collect(
+                            ImmutableMap.toImmutableMap(
+                                Entry::getKey /* vrf */,
+                                fibsByVrfEntry ->
+                                    computeNextVrfIps(
+                                        fibsByVrfEntry.getValue(), /* fib */
+                                        matchingIps
+                                            .get(hostname)
+                                            .get(fibsByVrfEntry.getKey()), /* matchingIps */
+                                        fibs.get(hostname) /* fibsByVrf */)));
+                  }));
+    }
+  }
+
+  @VisibleForTesting
+  static Map<String, IpSpace> computeNextVrfIps(
+      Fib fib, Map<Prefix, IpSpace> matchingIps, Map<String, Fib> fibsByVrf) {
+    return fib.allEntries().stream()
+        .filter(fibEntry -> fibEntry.getAction() instanceof FibNextVrf)
+        .collect(
+            groupingBy(
+                fibEntry -> ((FibNextVrf) fibEntry.getAction()).getNextVrf(),
+                mapping(FibEntry::getTopLevelRoute, ImmutableSet.toImmutableSet())))
+        .entrySet()
+        .stream()
+        .collect(
+            ImmutableMap.toImmutableMap(
+                Entry::getKey /* nextVrf */,
+                routesByNextVrfEntry ->
+                    computeRouteMatchConditions(
+                        routesByNextVrfEntry.getValue() /* routes */, matchingIps)));
+  }
+
+  @VisibleForTesting
   static Map<String, Map<String, IpSpace>> computeRoutableIps(Map<String, Map<String, Fib>> fibs) {
     try (ActiveSpan span =
         GlobalTracer.get().buildSpan("ForwardingAnalysisImpl.computeRoutableIps").startActive()) {
@@ -981,6 +1034,11 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
   @Override
   public Map<String, Map<String, Map<Edge, IpSpace>>> getArpTrueEdge() {
     return _arpTrueEdge;
+  }
+
+  @Override
+  public Map<String, Map<String, Map<String, IpSpace>>> getNextVrfIps() {
+    return _nextVrfIpsByNodeVrf;
   }
 
   @Override

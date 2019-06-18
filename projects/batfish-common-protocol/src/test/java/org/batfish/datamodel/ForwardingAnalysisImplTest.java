@@ -14,6 +14,7 @@ import static org.batfish.datamodel.ForwardingAnalysisImpl.computeIpsAssignedToT
 import static org.batfish.datamodel.ForwardingAnalysisImpl.computeIpsRoutedOutInterfaces;
 import static org.batfish.datamodel.ForwardingAnalysisImpl.computeMatchingIps;
 import static org.batfish.datamodel.ForwardingAnalysisImpl.computeNeighborUnreachable;
+import static org.batfish.datamodel.ForwardingAnalysisImpl.computeNextVrfIpsByNodeVrf;
 import static org.batfish.datamodel.ForwardingAnalysisImpl.computeNullRoutedIps;
 import static org.batfish.datamodel.ForwardingAnalysisImpl.computeRoutesWhereDstIpCanBeArpIp;
 import static org.batfish.datamodel.ForwardingAnalysisImpl.computeRoutesWithDestIpEdge;
@@ -64,8 +65,10 @@ public class ForwardingAnalysisImplTest {
   private static final IpSpace IPSPACE2 = new MockIpSpace(2);
 
   private static final Prefix P1 = Prefix.parse("1.0.0.0/8");
+  private static final Prefix P1_1 = Prefix.parse("1.0.1.0/24");
 
   private static final Prefix P2 = Prefix.parse("2.0.0.0/16");
+  private static final Prefix P2_2 = Prefix.parse("2.0.2.0/24");
 
   private static final Prefix P3 = Prefix.parse("3.0.0.0/24");
 
@@ -736,6 +739,61 @@ public class ForwardingAnalysisImplTest {
         hasEntry(
             equalTo(c1),
             hasEntry(equalTo(v1), hasEntry(equalTo(i1), not(containsIp(P2.getStartIp()))))));
+  }
+
+  @Test
+  public void testComputeNextVrfIpsByNodeVrf() {
+    String c1 = "c1";
+    String v1 = "v1";
+    String v2 = "v2";
+    Map<String, Map<String, Fib>> fibs =
+        ImmutableMap.of(
+            c1,
+            ImmutableMap.of(
+                v1,
+                MockFib.builder()
+                    .setMatchingIps(ImmutableMap.of(P1, P1_1.toIpSpace()))
+                    .setFibEntries(
+                        ImmutableMap.of(
+                            Ip.ZERO,
+                            ImmutableSet.of(
+                                new FibEntry(
+                                    new FibNextVrf(v2),
+                                    ImmutableList.of(
+                                        StaticRoute.builder()
+                                            .setAdmin(1)
+                                            .setNetwork(P1)
+                                            .setNextVrf(v2)
+                                            .build())))))
+                    .build(),
+                v2,
+                MockFib.builder()
+                    .setMatchingIps(ImmutableMap.of(P2, P2_2.toIpSpace()))
+                    .setFibEntries(
+                        ImmutableMap.of(
+                            Ip.ZERO,
+                            ImmutableSet.of(
+                                new FibEntry(
+                                    new FibNextVrf(v1),
+                                    ImmutableList.of(
+                                        StaticRoute.builder()
+                                            .setAdmin(1)
+                                            .setNetwork(P2)
+                                            .setNextVrf(v1)
+                                            .build())))))
+                    .build()));
+
+    // Each VRF should delegate the matching IpSpace for its nextVrf route to the other VRF.
+    assertThat(
+        computeNextVrfIpsByNodeVrf(computeMatchingIps(fibs), fibs),
+        equalTo(
+            ImmutableMap.of(
+                c1,
+                ImmutableMap.of(
+                    v1,
+                    ImmutableMap.of(v2, P1_1.toIpSpace()),
+                    v2,
+                    ImmutableMap.of(v1, P2_2.toIpSpace())))));
   }
 
   @Test
