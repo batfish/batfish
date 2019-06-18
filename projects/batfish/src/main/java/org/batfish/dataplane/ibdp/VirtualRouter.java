@@ -10,6 +10,7 @@ import static org.batfish.dataplane.protocols.BgpProtocolHelper.transformBgpRout
 import static org.batfish.dataplane.protocols.IsisProtocolHelper.convertRouteLevel1ToLevel2;
 import static org.batfish.dataplane.protocols.IsisProtocolHelper.setOverloadOnAllRoutes;
 import static org.batfish.dataplane.protocols.StaticRouteHelper.isInterfaceRoute;
+import static org.batfish.dataplane.protocols.StaticRouteHelper.isNextVrfRoute;
 import static org.batfish.dataplane.protocols.StaticRouteHelper.shouldActivateNextHopIpRoute;
 import static org.batfish.dataplane.rib.AbstractRib.importRib;
 import static org.batfish.dataplane.rib.RibDelta.importDeltaToBuilder;
@@ -97,6 +98,7 @@ import org.batfish.datamodel.routing_policy.Environment.Direction;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.dataplane.protocols.BgpProtocolHelper;
 import org.batfish.dataplane.protocols.GeneratedRouteHelper;
+import org.batfish.dataplane.protocols.StaticRouteHelper;
 import org.batfish.dataplane.rib.AnnotatedRib;
 import org.batfish.dataplane.rib.Bgpv4Rib;
 import org.batfish.dataplane.rib.ConnectedRib;
@@ -169,6 +171,7 @@ public class VirtualRouter implements Serializable {
   transient RipRib _ripRib;
   transient StaticRib _staticInterfaceRib;
   transient StaticRib _staticNextHopRib;
+  transient StaticRib _staticNextVrfRib;
 
   /** FIB (forwarding information base) built from the main RIB */
   private Fib _fib;
@@ -270,6 +273,7 @@ public class VirtualRouter implements Serializable {
     importRib(_independentRib, _kernelRib);
     importRib(_independentRib, _localRib);
     importRib(_independentRib, _staticInterfaceRib, _name);
+    importRib(_independentRib, _staticNextVrfRib, _name);
     importRib(_mainRib, _independentRib);
 
     // Now check whether any rib groups are applied
@@ -957,6 +961,7 @@ public class VirtualRouter implements Serializable {
     // Static
     _staticNextHopRib = new StaticRib();
     _staticInterfaceRib = new StaticRib();
+    _staticNextVrfRib = new StaticRib();
   }
 
   private boolean isL1Only() {
@@ -983,6 +988,8 @@ public class VirtualRouter implements Serializable {
           // Interface is active (or special null interface), install route
           _staticInterfaceRib.mergeRouteGetDelta(sr);
         }
+      } else if (isNextVrfRoute(sr)) {
+        _staticNextVrfRib.mergeRouteGetDelta(sr);
       } else {
         if (Route.UNSET_ROUTE_NEXT_HOP_IP.equals(sr.getNextHopIp())) {
           continue;

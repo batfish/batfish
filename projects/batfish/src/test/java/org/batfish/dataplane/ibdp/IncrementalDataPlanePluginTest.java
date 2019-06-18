@@ -3,6 +3,7 @@ package org.batfish.dataplane.ibdp;
 import static org.batfish.datamodel.Configuration.DEFAULT_VRF_NAME;
 import static org.batfish.datamodel.IpAccessListLine.REJECT_ALL;
 import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasPrefix;
+import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.hasSize;
@@ -396,6 +397,42 @@ public class IncrementalDataPlanePluginTest {
 
     // generating fibs should not crash
     dp._dataPlane.getFibs();
+  }
+
+  @Test
+  public void testStaticNextVrfRoute() throws IOException {
+    String hostname = "n1";
+    String nextVrf = "nextVrf";
+    NetworkFactory nf = new NetworkFactory();
+    Configuration c =
+        nf.configurationBuilder()
+            .setHostname(hostname)
+            .setConfigurationFormat(ConfigurationFormat.CISCO_IOS)
+            .build();
+    Vrf.Builder vb = nf.vrfBuilder().setOwner(c);
+    Vrf vrf = vb.setName(DEFAULT_VRF_NAME).build();
+    vb.setName(nextVrf).build();
+    StaticRoute sr =
+        StaticRoute.builder()
+            .setNetwork(Prefix.ZERO)
+            .setNextVrf(nextVrf)
+            .setAdministrativeCost(1)
+            .build();
+    vrf.getStaticRoutes().add(sr);
+    IncrementalBdpEngine engine =
+        new IncrementalBdpEngine(
+            // TODO: parametrize settings with different schedules
+            new IncrementalDataPlaneSettings(),
+            new BatfishLogger(BatfishLogger.LEVELSTR_DEBUG, false));
+    ComputeDataPlaneResult dp =
+        engine.computeDataPlane(
+            ImmutableMap.of(c.getHostname(), c),
+            TopologyContext.builder().build(),
+            Collections.emptySet());
+
+    // generating fibs should not crash
+    assertThat(
+        dp._dataPlane.getRibs().get(hostname).get(DEFAULT_VRF_NAME).getRoutes(), contains(sr));
   }
 
   @Test
