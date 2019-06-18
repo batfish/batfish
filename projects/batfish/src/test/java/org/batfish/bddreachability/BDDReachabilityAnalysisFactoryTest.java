@@ -1545,6 +1545,16 @@ public final class BDDReachabilityAnalysisFactoryTest {
     assertThat(
         nextVrfDstIpsBDD,
         equalTo(ONE.diff(Prefix.parse("10.0.0.0/24").toIpSpace().accept(ipSpaceToBDD))));
+
+    BDD acceptedEndToEndBDD =
+        analysis
+            .getIngressLocationReachableBDDs()
+            .get(IngressLocation.interfaceLink(hostname, ingressIface));
+
+    // Any packet with destination IP 10.0.12.2 (that of neighbor interface) entering ingressIface
+    // should be delivered and accepted
+    assertThat(
+        acceptedEndToEndBDD, equalTo(Ip.parse("10.0.12.2").toIpSpace().accept(ipSpaceToBDD)));
   }
 
   @Test
@@ -1574,7 +1584,7 @@ public final class BDDReachabilityAnalysisFactoryTest {
             ImmutableSet.of(),
             ImmutableSet.of(),
             ImmutableSet.of(),
-            ImmutableSet.of(ACCEPTED));
+            ImmutableSet.of(FlowDisposition.NEIGHBOR_UNREACHABLE));
 
     // Check state edge presence
     assertThat(
@@ -1596,5 +1606,6 @@ public final class BDDReachabilityAnalysisFactoryTest {
     assertThat(
         nextVrfDstIpsBDD,
         equalTo(ONE.diff(Prefix.parse("10.0.0.0/24").toIpSpace().accept(ipSpaceToBDD))));
+    // TODO: end-to-end test possible without second node?
   }
 }
