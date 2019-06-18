@@ -23,6 +23,9 @@ config {
               }
             }
           }
+          vr2 {
+            interface dummy;
+          }
         }
       }
     }

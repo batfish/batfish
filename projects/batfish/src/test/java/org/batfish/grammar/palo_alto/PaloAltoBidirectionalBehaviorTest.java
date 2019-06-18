@@ -369,7 +369,6 @@ public final class PaloAltoBidirectionalBehaviorTest {
     assertForwardDropped(hostname);
   }
 
-  @Ignore
   @Test
   public void testAllowIntraVsysNextVr() throws IOException {
     String hostname = "allow-intra-vsys-next-vr";
@@ -382,7 +381,6 @@ public final class PaloAltoBidirectionalBehaviorTest {
     assertBidirAccepted(hostname);
   }
 
-  @Ignore
   @Test
   public void testAllowVsysToSgNextVr() throws IOException {
     String hostname = "allow-vsys-to-sg-next-vr";
@@ -394,7 +392,6 @@ public final class PaloAltoBidirectionalBehaviorTest {
     assertBidirAccepted(tracerouteEngine, bidirForwardOutsideFlow(hostname));
   }
 
-  @Ignore
   @Test
   public void testAllowInterVsysNextVr() throws IOException {
     String hostname = "allow-inter-vsys-next-vr";

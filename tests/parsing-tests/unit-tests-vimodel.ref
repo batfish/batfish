@@ -29471,9 +29471,13 @@
                 "network" : "0.0.0.0/0",
                 "nextHopInterface" : "dynamic",
                 "nextHopIp" : "AUTO/NONE(-1l)",
+                "nextVrf" : "vr2",
                 "tag" : -1
               }
             ]
+          },
+          "vr2" : {
+            "name" : "vr2"
           }
         }
       },

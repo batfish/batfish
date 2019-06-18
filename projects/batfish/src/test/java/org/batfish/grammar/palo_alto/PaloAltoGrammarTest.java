@@ -28,6 +28,7 @@ import static org.batfish.datamodel.matchers.InterfaceMatchers.hasZoneName;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.isActive;
 import static org.batfish.datamodel.matchers.IpAccessListMatchers.accepts;
 import static org.batfish.datamodel.matchers.IpAccessListMatchers.rejects;
+import static org.batfish.datamodel.matchers.StaticRouteMatchers.hasNextVrf;
 import static org.batfish.datamodel.matchers.VrfMatchers.hasInterfaces;
 import static org.batfish.datamodel.matchers.VrfMatchers.hasName;
 import static org.batfish.datamodel.matchers.VrfMatchers.hasStaticRoutes;
@@ -332,8 +333,10 @@ public final class PaloAltoGrammarTest {
     assertThat(addressObjects.get("addr0").getIpSpace(), equalTo(EmptyIpSpace.INSTANCE));
 
     // check that we parsed description and prefix right
+    // note that PA allows non-canonical prefixes
     assertThat(
-        addressObjects.get("addr1").getIpSpace(), equalTo(Prefix.parse("10.1.1.1/24").toIpSpace()));
+        addressObjects.get("addr1").getIpSpace(),
+        equalTo(Prefix.strict("10.1.1.0/24").toIpSpace()));
     assertThat(addressObjects.get("addr1").getDescription(), equalTo("addr1-desc"));
 
     // check that we parse the IP address right
@@ -967,6 +970,7 @@ public final class PaloAltoGrammarTest {
   @Test
   public void testStaticRoute() throws IOException {
     String vrName = "somename";
+    String vr2Name = "vr2";
     String hostname = "static-route";
     Batfish batfish = getBatfishForConfigurationNames(hostname);
     Configuration c = batfish.loadConfigurations().get(hostname);
@@ -978,7 +982,18 @@ public final class PaloAltoGrammarTest {
         c, hasVrf(vrName, hasStaticRoutes(hasItem(hasNextHopIp(equalTo(Ip.parse("1.1.1.1")))))));
     assertThat(
         c, hasVrf(vrName, hasStaticRoutes(hasItem(hasNextHopInterface(equalTo("ethernet1/1"))))));
-    assertThat(c, hasVrf(vrName, hasStaticRoutes(hasItem(hasPrefix(Prefix.parse("0.0.0.0/0"))))));
+    assertThat(c, hasVrf(vrName, hasStaticRoutes(hasItem(hasPrefix(Prefix.ZERO)))));
+    assertThat(
+        c,
+        hasVrf(
+            vr2Name,
+            hasStaticRoutes(
+                hasItem(allOf(hasPrefix(Prefix.strict("10.0.0.0/8")), hasNextVrf(vrName))))));
+    // static-route with undefined next-vr should not be converted
+    assertThat(c, hasVrf(vr2Name, hasStaticRoutes(not(hasItem(hasPrefix(Prefix.ZERO))))));
+    // static-route with next-vr same as its own virtual-router should not be converted
+    assertThat(
+        c, hasVrf(vr2Name, hasStaticRoutes(not(hasItem(hasPrefix(Prefix.strict("1.0.0.0/8")))))));
 
     // assert static interface route reference
     ConvertConfigurationAnswerElement ccae =
@@ -1015,7 +1030,7 @@ public final class PaloAltoGrammarTest {
     // Confirm static route shows up with correct defaults
     assertThat(c, hasVrf(vrName, hasStaticRoutes(hasItem(hasAdministrativeCost(equalTo(10))))));
     assertThat(c, hasVrf(vrName, hasStaticRoutes(hasItem(hasMetric(equalTo(10L))))));
-    assertThat(c, hasVrf(vrName, hasStaticRoutes(hasItem(hasPrefix(Prefix.parse("0.0.0.0/0"))))));
+    assertThat(c, hasVrf(vrName, hasStaticRoutes(hasItem(hasPrefix(Prefix.strict("0.0.0.0/0"))))));
   }
 
   @Test

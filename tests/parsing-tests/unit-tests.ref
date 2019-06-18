@@ -70621,6 +70621,28 @@
             "                      name = (variable",
             "                        VARIABLE:'vr2'))))))))))",
             "    NEWLINE:'\\n')",
+            "  (set_line",
+            "    SET:'set'",
+            "    (set_line_tail",
+            "      (set_line_config_devices",
+            "        CONFIG:'config'",
+            "        DEVICES:'devices'",
+            "        name = (variable",
+            "          VARIABLE:'localhost.localdomain')",
+            "        (statement_config_devices",
+            "          (s_network",
+            "            NETWORK:'network'",
+            "            (sn_virtual_router",
+            "              VIRTUAL_ROUTER:'virtual-router'",
+            "              (sn_virtual_router_definition",
+            "                name = (variable",
+            "                  VARIABLE:'vr2')",
+            "                (snvr_interface",
+            "                  INTERFACE:'interface'",
+            "                  (variable_list",
+            "                    (variable_list_item",
+            "                      VARIABLE:'dummy')))))))))",
+            "    NEWLINE:'\\n')",
             "  EOF:<EOF>)"
           ]
         },
@@ -82365,6 +82387,13 @@
                 19
               ],
               "numReferrers" : 2
+            },
+            "vr2" : {
+              "definitionLines" : [
+                26,
+                27
+              ],
+              "numReferrers" : 2
             }
           }
         },
@@ -87886,6 +87915,13 @@
           }
         },
         "configs/palo_alto/virtual-routers" : {
+          "interface" : {
+            "dummy" : {
+              "virtual-router interface" : [
+                27
+              ]
+            }
+          },
           "virtual-router" : {
             "vr1" : {
               "virtual-router self-reference" : [
@@ -87895,6 +87931,9 @@
             "vr2" : {
               "static-route nexthop next-vr" : [
                 19
+              ],
+              "virtual-router self-reference" : [
+                26
               ]
             }
           }
@@ -90195,10 +90234,10 @@
           }
         },
         "configs/palo_alto/virtual-routers" : {
-          "virtual-router" : {
-            "vr2" : {
-              "static-route nexthop next-vr" : [
-                19
+          "interface" : {
+            "dummy" : {
+              "virtual-router interface" : [
+                27
               ]
             }
           }

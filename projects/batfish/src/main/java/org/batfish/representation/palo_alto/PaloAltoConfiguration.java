@@ -962,27 +962,47 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
 
   /** Convert Palo Alto specific virtual router into vendor independent model Vrf */
   private Vrf toVrf(VirtualRouter vr) {
-    Vrf vrf = new Vrf(vr.getName());
+    String vrfName = vr.getName();
+    Vrf vrf = new Vrf(vrfName);
 
     // Static routes
     for (Entry<String, StaticRoute> e : vr.getStaticRoutes().entrySet()) {
       StaticRoute sr = e.getValue();
       // Can only construct a static route if it has a destination
-      if (sr.getDestination() != null) {
-        vrf.getStaticRoutes()
-            .add(
-                org.batfish.datamodel.StaticRoute.builder()
-                    .setNextHopInterface(sr.getNextHopInterface())
-                    .setNextHopIp(sr.getNextHopIp())
-                    .setAdministrativeCost(sr.getAdminDistance())
-                    .setMetric(sr.getMetric())
-                    .setNetwork(sr.getDestination())
-                    .build());
-      } else {
+      Prefix destination = sr.getDestination();
+      if (destination == null) {
         _w.redFlag(
             String.format(
                 "Cannot convert static route %s, as it does not have a destination.", e.getKey()));
+        continue;
       }
+      String nextVrf = sr.getNextVr();
+      if (nextVrf != null) {
+        if (nextVrf.equals(vrfName)) {
+          _w.redFlag(
+              String.format(
+                  "Cannot convert static route %s, as its next-vr '%s' is its own virtual-router.",
+                  e.getKey(), nextVrf));
+          continue;
+        }
+        if (!_virtualRouters.containsKey(nextVrf)) {
+          _w.redFlag(
+              String.format(
+                  "Cannot convert static route %s, as its next-vr '%s' is not a virtual-router.",
+                  e.getKey(), nextVrf));
+          continue;
+        }
+      }
+      vrf.getStaticRoutes()
+          .add(
+              org.batfish.datamodel.StaticRoute.builder()
+                  .setNextHopInterface(sr.getNextHopInterface())
+                  .setNextHopIp(sr.getNextHopIp())
+                  .setAdministrativeCost(sr.getAdminDistance())
+                  .setMetric(sr.getMetric())
+                  .setNetwork(destination)
+                  .setNextVrf(nextVrf)
+                  .build());
     }
 
     // Interfaces
