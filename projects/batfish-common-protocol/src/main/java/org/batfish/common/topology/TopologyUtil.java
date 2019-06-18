@@ -830,9 +830,7 @@ public final class TopologyUtil {
               || iface1.getAllConcreteAddresses().isEmpty();
           assert !(iface2.getAddress() instanceof LinkLocalAddress)
               || iface2.getAllConcreteAddresses().isEmpty();
-          if (!(iface1.getAddress() instanceof LinkLocalAddress)
-              && !(iface2.getAddress() instanceof LinkLocalAddress)
-              && haveIpInCommon(iface1, iface2)) {
+          if (haveIpInCommon(iface1, iface2)) {
             continue;
           }
           // don't connect if any of the two endpoint interfaces have Tunnel or VPN interfaceTypes
