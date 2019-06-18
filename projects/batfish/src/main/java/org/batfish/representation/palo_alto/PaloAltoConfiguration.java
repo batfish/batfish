@@ -968,21 +968,31 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
     for (Entry<String, StaticRoute> e : vr.getStaticRoutes().entrySet()) {
       StaticRoute sr = e.getValue();
       // Can only construct a static route if it has a destination
-      if (sr.getDestination() != null) {
-        vrf.getStaticRoutes()
-            .add(
-                org.batfish.datamodel.StaticRoute.builder()
-                    .setNextHopInterface(sr.getNextHopInterface())
-                    .setNextHopIp(sr.getNextHopIp())
-                    .setAdministrativeCost(sr.getAdminDistance())
-                    .setMetric(sr.getMetric())
-                    .setNetwork(sr.getDestination())
-                    .build());
-      } else {
+      Prefix destination = sr.getDestination();
+      if (destination == null) {
         _w.redFlag(
             String.format(
                 "Cannot convert static route %s, as it does not have a destination.", e.getKey()));
+        continue;
       }
+      String nextVrf = sr.getNextVr();
+      if (nextVrf != null && !_virtualRouters.containsKey(nextVrf)) {
+        _w.redFlag(
+            String.format(
+                "Cannot convert static route %s, as its next-vr '%s' is not a virtual-router.",
+                e.getKey(), nextVrf));
+        continue;
+      }
+      vrf.getStaticRoutes()
+          .add(
+              org.batfish.datamodel.StaticRoute.builder()
+                  .setNextHopInterface(sr.getNextHopInterface())
+                  .setNextHopIp(sr.getNextHopIp())
+                  .setAdministrativeCost(sr.getAdminDistance())
+                  .setMetric(sr.getMetric())
+                  .setNetwork(destination)
+                  .setNextVrf(nextVrf)
+                  .build());
     }
 
     // Interfaces
