@@ -9,6 +9,7 @@ import static org.batfish.common.topology.TopologyUtil.computeLayer2Topology;
 import static org.batfish.common.topology.TopologyUtil.computeRawLayer3Topology;
 import static org.batfish.common.topology.TopologyUtil.computeVniInterNodeEdges;
 import static org.batfish.common.topology.TopologyUtil.computeVniName;
+import static org.batfish.common.topology.TopologyUtil.synthesizeL3Topology;
 import static org.batfish.datamodel.matchers.EdgeMatchers.hasHead;
 import static org.batfish.datamodel.matchers.EdgeMatchers.hasNode1;
 import static org.batfish.datamodel.matchers.EdgeMatchers.hasNode2;
@@ -48,6 +49,7 @@ import org.batfish.datamodel.Interface.Dependency;
 import org.batfish.datamodel.Interface.DependencyType;
 import org.batfish.datamodel.InterfaceType;
 import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.LinkLocalAddress;
 import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.SwitchportMode;
@@ -1339,5 +1341,22 @@ public final class TopologyUtilTest {
         TopologyUtil.synthesizeL3Topology(
             ImmutableMap.of(c1.getHostname(), c1, c2.getHostname(), c2));
     assertThat(t.getEdges(), empty());
+  }
+
+  @Test
+  public void testSynthesizeTopology_linkLocalAddresses() {
+    _cb.setConfigurationFormat(ConfigurationFormat.CISCO_IOS);
+    Configuration c1 = _cb.build();
+    Configuration c2 = _cb.build();
+    Ip ip = Ip.parse("169.254.0.1");
+    Interface i1 = _ib.setOwner(c1).setAddress(LinkLocalAddress.of(ip)).build();
+    Interface i2 = _ib.setOwner(c2).setAddress(LinkLocalAddress.of(ip)).build();
+
+    Topology t = synthesizeL3Topology(ImmutableMap.of(c1.getHostname(), c1, c2.getHostname(), c2));
+    Edge edge =
+        new Edge(
+            new NodeInterfacePair(c1.getHostname(), i1.getName()),
+            new NodeInterfacePair(c2.getHostname(), i2.getName()));
+    assertThat(t.getEdges(), containsInAnyOrder(edge, edge.reverse()));
   }
 }

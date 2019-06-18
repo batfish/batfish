@@ -800,6 +800,11 @@ public final class Interface extends ComparableStructure<String> {
 
   private SortedSet<InterfaceAddress> _allAddresses;
 
+  /** Cache of all concrete addresses */
+  @Nullable private transient Set<ConcreteInterfaceAddress> _allConcreteAddresses;
+  /** Cache of all link-local addresses */
+  @Nullable private transient Set<LinkLocalAddress> _allLinkLocalAddresses;
+
   private boolean _autoState;
 
   @Nullable private Double _bandwidth;
@@ -1078,13 +1083,36 @@ public final class Interface extends ComparableStructure<String> {
     return _allowedVlans;
   }
 
-  /** All IPV4 address/network assignments on this interface. */
+  /**
+   * All IPV4 address/network assignments on this interface. These are addresses that are routable
+   * to/through this interface.
+   */
   @JsonProperty(PROP_ALL_PREFIXES)
   public Set<ConcreteInterfaceAddress> getAllConcreteAddresses() {
-    return _allAddresses.stream()
-        .filter(a -> a instanceof ConcreteInterfaceAddress)
-        .map(a -> (ConcreteInterfaceAddress) a)
-        .collect(ImmutableSet.toImmutableSet());
+    if (_allConcreteAddresses == null) {
+      _allConcreteAddresses =
+          _allAddresses.stream()
+              .filter(a -> a instanceof ConcreteInterfaceAddress)
+              .map(a -> (ConcreteInterfaceAddress) a)
+              .collect(ImmutableSet.toImmutableSet());
+    }
+    return _allConcreteAddresses;
+  }
+
+  /**
+   * Return all link-local addresses of this interface. These addresses are valid only in a given
+   * layer 2 broadcast domain, and cannot be routed to across a broadcast domain
+   */
+  @JsonIgnore
+  public Set<LinkLocalAddress> getAllLinkLocalAddresses() {
+    if (_allLinkLocalAddresses == null) {
+      _allLinkLocalAddresses =
+          _allAddresses.stream()
+              .filter(a -> a instanceof LinkLocalAddress)
+              .map(a -> (LinkLocalAddress) a)
+              .collect(ImmutableSet.toImmutableSet());
+    }
+    return _allLinkLocalAddresses;
   }
 
   public Set<InterfaceAddress> getAllAddresses() {

@@ -10,7 +10,7 @@ import static org.batfish.datamodel.ForwardingAnalysisImpl.computeDeliveredToSub
 import static org.batfish.datamodel.ForwardingAnalysisImpl.computeExitsNetwork;
 import static org.batfish.datamodel.ForwardingAnalysisImpl.computeInsufficientInfo;
 import static org.batfish.datamodel.ForwardingAnalysisImpl.computeInterfaceArpReplies;
-import static org.batfish.datamodel.ForwardingAnalysisImpl.computeIpsAssignedToThisInterface;
+import static org.batfish.datamodel.ForwardingAnalysisImpl.computeIpsAssignedToThisInterfaceForArpReplies;
 import static org.batfish.datamodel.ForwardingAnalysisImpl.computeIpsRoutedOutInterfaces;
 import static org.batfish.datamodel.ForwardingAnalysisImpl.computeMatchingIps;
 import static org.batfish.datamodel.ForwardingAnalysisImpl.computeNeighborUnreachable;
@@ -204,6 +204,8 @@ public class ForwardingAnalysisImplTest {
             .setProxyArp(false)
             .build();
     Interface i3 = _ib.setAddress(null).setProxyArp(true).build();
+    Interface i4 =
+        _ib.setAddress(LinkLocalAddress.of(Ip.parse("169.254.0.1"))).setProxyArp(false).build();
     IpSpace ipsRoutedOutI1 =
         IpWildcardSetIpSpace.builder()
             .including(IpWildcard.create(P1), IpWildcard.create(P3))
@@ -212,7 +214,7 @@ public class ForwardingAnalysisImplTest {
         IpWildcardSetIpSpace.builder().including(IpWildcard.create(P2)).build();
     IpSpace ipsRoutedOutI3 = EmptyIpSpace.INSTANCE;
     Map<String, Interface> interfaces =
-        ImmutableMap.of(i1.getName(), i1, i2.getName(), i2, i3.getName(), i3);
+        ImmutableMap.of(i1.getName(), i1, i2.getName(), i2, i3.getName(), i3, i4.getName(), i4);
     Map<String, IpSpace> routableIpsByVrf =
         ImmutableMap.of(
             vrf1.getName(), UniverseIpSpace.INSTANCE, vrf2.getName(), UniverseIpSpace.INSTANCE);
@@ -226,6 +228,7 @@ public class ForwardingAnalysisImplTest {
     i1.setAdditionalArpIps(new IpIpSpace(Ip.parse("10.10.10.1")));
     i2.setAdditionalArpIps(new IpIpSpace(Ip.parse("10.10.10.2")));
     i3.setAdditionalArpIps(new IpIpSpace(Ip.parse("10.10.10.3")));
+    i4.setAdditionalArpIps(new IpIpSpace(Ip.parse("10.10.10.4")));
 
     Map<String, Configuration> configs = ImmutableMap.of(config.getHostname(), config);
     Map<String, Map<String, Set<Ip>>> interfaceOwnedIps =
@@ -248,6 +251,8 @@ public class ForwardingAnalysisImplTest {
     assertThat(result, hasEntry(equalTo(i2.getName()), containsIp(Ip.parse("10.10.10.2"))));
     /* No interface IPs: reject everything */
     assertThat(result, hasEntry(equalTo(i3.getName()), equalTo(EmptyIpSpace.INSTANCE)));
+    /* Link-local address is present, honor additional ARP IPs  */
+    assertThat(result, hasEntry(equalTo(i4.getName()), containsIp(Ip.parse("10.10.10.4"))));
   }
 
   @Test
@@ -522,7 +527,7 @@ public class ForwardingAnalysisImplTest {
   }
 
   @Test
-  public void testComputeIpsAssignedToThisInterface() {
+  public void testComputeIpsAssignedToThisInterfaceForArpReplies() {
     Configuration config = _cb.build();
     Map<String, Configuration> configs = ImmutableMap.of(config.getHostname(), config);
     _ib.setOwner(config);
@@ -533,11 +538,16 @@ public class ForwardingAnalysisImplTest {
     Interface i = _ib.setAddresses(primary, secondary).build();
     Map<String, Map<String, Set<Ip>>> interfaceOwnedIps =
         TopologyUtil.computeInterfaceOwnedIps(configs, false);
-    IpSpace result = computeIpsAssignedToThisInterface(i, interfaceOwnedIps);
+    IpSpace result = computeIpsAssignedToThisInterfaceForArpReplies(i, interfaceOwnedIps);
 
     assertThat(result, containsIp(P1.getStartIp()));
     assertThat(result, containsIp(P2.getStartIp()));
     assertThat(result, not(containsIp(P2.getEndIp())));
+
+    Ip linkLocalIp = Ip.parse("169.254.0.1");
+    Interface i2 = _ib.setAddresses(LinkLocalAddress.of(linkLocalIp)).build();
+    IpSpace result2 = computeIpsAssignedToThisInterfaceForArpReplies(i2, interfaceOwnedIps);
+    assertThat(result2, containsIp(linkLocalIp));
   }
 
   @Test
