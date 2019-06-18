@@ -234,7 +234,7 @@ public final class BDDReachabilityAnalysisFactoryTest {
                   matchDst(UniverseIpSpace.INSTANCE),
                   ImmutableSet.of(node),
                   ImmutableSet.of(),
-                  ImmutableSet.of(),
+                  configs.keySet(),
                   ALL_DISPOSITIONS)
               .getForwardEdgeMap();
       Set<Edge> edges = getEdges(edgeMap);
@@ -294,7 +294,7 @@ public final class BDDReachabilityAnalysisFactoryTest {
                   matchDst(UniverseIpSpace.INSTANCE),
                   ImmutableSet.of(),
                   ImmutableSet.of(node),
-                  ImmutableSet.of(),
+                  configs.keySet(),
                   ALL_DISPOSITIONS)
               .getForwardEdgeMap();
       Set<Edge> edges = getEdges(edgeMap);
