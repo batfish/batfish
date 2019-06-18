@@ -1083,7 +1083,10 @@ public final class Interface extends ComparableStructure<String> {
     return _allowedVlans;
   }
 
-  /** All IPV4 address/network assignments on this interface. */
+  /**
+   * All IPV4 address/network assignments on this interface. These are addresses that are routable
+   * to/through this interface.
+   */
   @JsonProperty(PROP_ALL_PREFIXES)
   public Set<ConcreteInterfaceAddress> getAllConcreteAddresses() {
     if (_allConcreteAddresses == null) {
@@ -1096,6 +1099,10 @@ public final class Interface extends ComparableStructure<String> {
     return _allConcreteAddresses;
   }
 
+  /**
+   * Return all link-local addresses of this interface. These addresses are valid only in a given
+   * layer 2 broadcast domain, and cannot be routed to across a broadcast domain
+   */
   @JsonIgnore
   public Set<LinkLocalAddress> getAllLinkLocalAddresses() {
     if (_allLinkLocalAddresses == null) {

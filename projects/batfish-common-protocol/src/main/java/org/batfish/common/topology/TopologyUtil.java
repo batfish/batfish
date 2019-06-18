@@ -766,6 +766,8 @@ public final class TopologyUtil {
             if (iface.isLoopback(node.getConfigurationFormat()) || !iface.getActive()) {
               continue;
             }
+            // Look at all allocated addresses to determine subnet buckets
+            // L3 edges must exist between interfaces with any IP address.
             for (InterfaceAddress address : iface.getAllAddresses()) {
               Prefix prefix = address.getPrefix();
               if (prefix.getPrefixLength() < Prefix.MAX_PREFIX_LENGTH) {
@@ -793,6 +795,8 @@ public final class TopologyUtil {
           .filter(
               iface ->
                   iface.getAllConcreteAddresses().stream().anyMatch(ia -> p.containsIp(ia.getIp()))
+                      // Treat all link-local addresses as potential candidates.
+                      // Further trimming based on broadcast domains is done later in the pipeline.
                       || !iface.getAllLinkLocalAddresses().isEmpty())
           .forEach(candidateInterfaces::add);
 
@@ -803,8 +807,19 @@ public final class TopologyUtil {
               && iface1.getVrfName().equals(iface2.getVrfName())) {
             continue;
           }
-          // don't connect interfaces that have any IP address in common
-          // Exception to this are edges that use link-local addresses
+          /*
+          * Don't connect interfaces that have any IP address in common
+
+          * Exception to this are edges that use link-local addresses (we treat link-local
+            addresses as opaque here).
+
+          * Note that if either interface has link local address as primary address, secondary
+            addresses may not be concrete (and sanity check that here)
+          */
+          assert !(iface1.getAddress() instanceof LinkLocalAddress)
+              || iface1.getAllConcreteAddresses().isEmpty();
+          assert !(iface2.getAddress() instanceof LinkLocalAddress)
+              || iface2.getAllConcreteAddresses().isEmpty();
           if (!(iface1.getAddress() instanceof LinkLocalAddress)
               && !(iface2.getAddress() instanceof LinkLocalAddress)
               && haveIpInCommon(iface1, iface2)) {
