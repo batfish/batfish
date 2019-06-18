@@ -1,5 +1,6 @@
 package org.batfish.bddreachability;
 
+import static org.batfish.datamodel.AclIpSpace.difference;
 import static org.batfish.datamodel.FlowDisposition.ACCEPTED;
 import static org.batfish.datamodel.FlowDisposition.DELIVERED_TO_SUBNET;
 import static org.batfish.datamodel.FlowDisposition.DENIED_IN;
@@ -52,6 +53,7 @@ import org.batfish.bddreachability.transition.Transition;
 import org.batfish.common.bdd.BDDPacket;
 import org.batfish.common.bdd.HeaderSpaceToBDD;
 import org.batfish.common.bdd.IpSpaceToBDD;
+import org.batfish.datamodel.AclIpSpace;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
@@ -62,6 +64,7 @@ import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpAccessListLine;
+import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.IpSpaceReference;
 import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.Prefix;
@@ -1574,17 +1577,19 @@ public final class BDDReachabilityAnalysisFactoryTest {
         new BDDReachabilityAnalysisFactory(
             PKT, configurations, batfish.loadDataPlane().getForwardingAnalysis(), false, false);
 
-    Ip dstIp = Ip.parse("10.0.12.2");
+    IpSpace dstIpSpaceOfInterest =
+        AclIpSpace.difference(
+            Prefix.strict("10.0.12.0/24").toIpSpace(), Ip.parse("10.0.12.1").toIpSpace());
     BDDReachabilityAnalysis analysis =
         factory.bddReachabilityAnalysis(
             IpSpaceAssignment.builder()
                 .assign(new InterfaceLinkLocation(hostname, ingressIface), UniverseIpSpace.INSTANCE)
                 .build(),
-            matchDst(dstIp),
+            matchDst(dstIpSpaceOfInterest),
             ImmutableSet.of(),
             ImmutableSet.of(),
             ImmutableSet.of(),
-            ImmutableSet.of(FlowDisposition.NEIGHBOR_UNREACHABLE));
+            ImmutableSet.of(DELIVERED_TO_SUBNET));
 
     // Check state edge presence
     assertThat(
@@ -1606,6 +1611,15 @@ public final class BDDReachabilityAnalysisFactoryTest {
     assertThat(
         nextVrfDstIpsBDD,
         equalTo(ONE.diff(Prefix.parse("10.0.0.0/24").toIpSpace().accept(ipSpaceToBDD))));
-    // TODO: end-to-end test possible without second node?
+
+    BDD exitsNetworkEndToEndBDD =
+        analysis
+            .getIngressLocationReachableBDDs()
+            .get(IngressLocation.interfaceLink(hostname, ingressIface));
+
+    // Any packet with destination IP 10.0.12.0/24 \ 10.0.12.1 (egressInterface network minus its
+    // IP) entering ingressIface should exit network out of egressInterface
+    // TODO: Specify final interface where EXITS_NETWORK occurs when that becomes possible
+    assertThat(exitsNetworkEndToEndBDD, equalTo(dstIpSpaceOfInterest.accept(ipSpaceToBDD)));
   }
 }
