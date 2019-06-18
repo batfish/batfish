@@ -1450,4 +1450,100 @@ public final class BDDReachabilityAnalysisFactoryTest {
             equalTo(new PreOutVrf(hostname, "vrf2")),
             hasKey(equalTo(new PreOutEdge(hostname, "i1", neighborHostname, neighborIface)))));
   }
+
+  private ImmutableSortedMap<String, Configuration> makeNextVrfNetwork(boolean withNeighbor) {
+    NetworkFactory nf = new NetworkFactory();
+    Configuration.Builder cb =
+        nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS);
+    Configuration ingressNode = cb.setHostname("ingressNode").build();
+    String nextVrfName = "nextVrf";
+
+    Vrf ingressVrf = nf.vrfBuilder().setName("ingressVrf").setOwner(ingressNode).build();
+    Vrf nextVrf = nf.vrfBuilder().setName(nextVrfName).setOwner(ingressNode).build();
+    StaticRoute ingressVrfNextVrfRoute =
+        StaticRoute.builder()
+            .setAdministrativeCost(1)
+            .setNetwork(Prefix.ZERO)
+            .setNextVrf(nextVrfName)
+            .build();
+    ingressVrf.setStaticRoutes(ImmutableSortedSet.of(ingressVrfNextVrfRoute));
+
+    Interface.Builder ib = nf.interfaceBuilder().setOwner(ingressNode).setActive(true);
+    ib.setName("ingressIface")
+        .setVrf(ingressVrf)
+        .setAddress(ConcreteInterfaceAddress.parse("10.0.0.1/24"))
+        .build();
+    ib.setName("egressIface")
+        .setVrf(nextVrf)
+        .setAddress(ConcreteInterfaceAddress.parse("10.0.12.1/24"))
+        .build();
+
+    if (!withNeighbor) {
+      return ImmutableSortedMap.of(ingressNode.getHostname(), ingressNode);
+    }
+
+    // Add a second config which 10.0.12.2 and is connected to C1
+    Configuration neighbor = cb.setHostname("neighbor").build();
+    Vrf neighborVrf = nf.vrfBuilder().setName("neighbor").setOwner(neighbor).build();
+    ib.setOwner(neighbor)
+        .setVrf(neighborVrf)
+        .setName("neighborIface")
+        .setAddress(ConcreteInterfaceAddress.parse("10.0.12.2/24"))
+        .build();
+
+    return ImmutableSortedMap.of(
+        ingressNode.getHostname(), ingressNode, neighbor.getHostname(), neighbor);
+  }
+
+  @Test
+  public void testNextVrf() throws IOException {
+    // with neighbor, expect accepted disposition
+    ImmutableSortedMap<String, Configuration> configurations = makeNextVrfNetwork(true);
+
+    String hostname = "ingressNode";
+    String ingressIface = "ingressIface";
+    String ingressVrf = "ingressVrf";
+    String nextVrf = "nextVrf";
+    String neighborHostname = "neighbor";
+
+    Batfish batfish = BatfishTestUtils.getBatfish(configurations, temp);
+    batfish.computeDataPlane();
+
+    BDDReachabilityAnalysisFactory factory =
+        new BDDReachabilityAnalysisFactory(
+            PKT, configurations, batfish.loadDataPlane().getForwardingAnalysis(), false, false);
+
+    Ip dstIp = Ip.parse("10.0.12.2");
+    BDDReachabilityAnalysis analysis =
+        factory.bddReachabilityAnalysis(
+            IpSpaceAssignment.builder()
+                .assign(new InterfaceLinkLocation(hostname, ingressIface), UniverseIpSpace.INSTANCE)
+                .build(),
+            matchDst(dstIp),
+            ImmutableSet.of(),
+            ImmutableSet.of(),
+            ImmutableSet.of(neighborHostname),
+            ImmutableSet.of(ACCEPTED));
+
+    // Check state edge presence
+    assertThat(
+        analysis.getForwardEdgeMap(),
+        hasEntry(
+            equalTo(new PostInVrf(hostname, ingressVrf)),
+            hasKey(new PostInVrf(hostname, nextVrf))));
+
+    BDD nextVrfDstIpsBDD =
+        analysis
+            .getForwardEdgeMap()
+            .get(new PostInVrf(hostname, ingressVrf))
+            .get(new PostInVrf(hostname, nextVrf))
+            .transitForward(ONE);
+    IpSpaceToBDD ipSpaceToBDD = new IpSpaceToBDD(PKT.getDstIp());
+
+    // ingressVrf should delegate space associated with nextVrfRoute 0.0.0.0/0 minus more specific
+    // space associated with connected route 10.0.0.0/24
+    assertThat(
+        nextVrfDstIpsBDD,
+        equalTo(ONE.diff(Prefix.parse("10.0.0.0/24").toIpSpace().accept(ipSpaceToBDD))));
+  }
 }

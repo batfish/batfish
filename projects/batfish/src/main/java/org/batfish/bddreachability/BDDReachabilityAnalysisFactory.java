@@ -212,6 +212,9 @@ public final class BDDReachabilityAnalysisFactory {
   // node --> vrf --> set of packets accepted by the vrf
   private final Map<String, Map<String, BDD>> _vrfAcceptBDDs;
 
+  // node --> vrf --> nextVrf --> set of packets vrf delegates to nextVrf
+  private final Map<String, Map<String, Map<String, BDD>>> _nextVrfBDDs;
+
   private BDD _zero;
 
   public BDDReachabilityAnalysisFactory(
@@ -260,6 +263,7 @@ public final class BDDReachabilityAnalysisFactory {
           computeDispositionBDDs(forwardingAnalysis.getInsufficientInfo(), _dstIpSpaceToBDD);
       _routableBDDs = computeRoutableBDDs(forwardingAnalysis, _dstIpSpaceToBDD);
       _vrfAcceptBDDs = computeVrfAcceptBDDs(configs, _dstIpSpaceToBDD);
+      _nextVrfBDDs = computeNextVrfBDDs(forwardingAnalysis.getNextVrfIps(), _dstIpSpaceToBDD);
 
       _convertedPacketPolicies = convertPacketPolicies(configs);
 
@@ -599,6 +603,7 @@ public final class BDDReachabilityAnalysisFactory {
         generateRules_PostInInterface_PostInVrf(),
         generateRules_PostInVrf_NodeAccept(),
         generateRules_PostInVrf_NodeDropNoRoute(),
+        generateRules_PostInVrf_PostInVrf(),
         generateRules_PostInVrf_PreOutVrf(),
         generateRules_PreOutEdge_NodeDropAclOut(),
         generateRules_PreOutEdge_PreOutEdgePostNat(),
@@ -760,6 +765,30 @@ public final class BDDReachabilityAnalysisFactory {
                                   constraint(acceptBDD.nor(routableBDD)),
                                   removeSourceConstraint(_bddSourceManagers.get(node)),
                                   removeLastHopConstraint(_lastHopMgr, node)));
+                        }));
+  }
+
+  /** Generate edges from vrf to nextVrf */
+  private Stream<Edge> generateRules_PostInVrf_PostInVrf() {
+    return _vrfAcceptBDDs.entrySet().stream()
+        .flatMap(
+            nodeEntry ->
+                nodeEntry.getValue().entrySet().stream()
+                    .flatMap(
+                        vrfEntry -> {
+                          String node = nodeEntry.getKey();
+                          String vrf = vrfEntry.getKey();
+                          BDD acceptBDD = vrfEntry.getValue();
+                          return _nextVrfBDDs.get(node).get(vrf).entrySet().stream()
+                              .map(
+                                  nextVrfEntry -> {
+                                    String nextVrf = nextVrfEntry.getKey();
+                                    BDD nextVrfBDD = nextVrfEntry.getValue();
+                                    return new Edge(
+                                        new PostInVrf(node, vrf),
+                                        new PostInVrf(node, nextVrf),
+                                        nextVrfBDD.diff(acceptBDD));
+                                  });
                         }));
   }
 
@@ -1652,6 +1681,30 @@ public final class BDDReachabilityAnalysisFactory {
                           .getOrDefault(nodeEntry.getKey(), ImmutableMap.of())
                           .getOrDefault(vrfEntry.getKey(), EmptyIpSpace.INSTANCE)
                           .accept(ipSpaceToBDD)));
+    }
+  }
+
+  private Map<String, Map<String, Map<String, BDD>>> computeNextVrfBDDs(
+      Map<String, Map<String, Map<String, IpSpace>>> nextVrfIpsByNodeVrf,
+      IpSpaceToBDD ipSpaceToBDD) {
+    try (ActiveSpan span =
+        GlobalTracer.get()
+            .buildSpan("BDDReachabilityAnalysisFactory.computeNextVrfBDDs")
+            .startActive()) {
+      assert span != null; // avoid unused warning
+      return toImmutableMap(
+          nextVrfIpsByNodeVrf,
+          Entry::getKey /* node */,
+          nextVrfIpsByNodeVrfEntry ->
+              toImmutableMap(
+                  nextVrfIpsByNodeVrfEntry.getValue() /* nextVrfIpsByVrf */,
+                  Entry::getKey /* vrf */,
+                  nextVrfIpsByVrfEntry ->
+                      toImmutableMap(
+                          nextVrfIpsByVrfEntry.getValue() /* nextVrfIpsByNextVrf */,
+                          Entry::getKey,
+                          nextVrfIpsByNextVrfEntry ->
+                              nextVrfIpsByNextVrfEntry.getValue().accept(ipSpaceToBDD))));
     }
   }
 
