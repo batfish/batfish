@@ -800,6 +800,11 @@ public final class Interface extends ComparableStructure<String> {
 
   private SortedSet<InterfaceAddress> _allAddresses;
 
+  /** Cache of all concrete addresses */
+  @Nullable private transient Set<ConcreteInterfaceAddress> _allConcreteAddresses;
+  /** Cache of all link-local addresses */
+  @Nullable private transient Set<LinkLocalAddress> _allLinkLocalAddresses;
+
   private boolean _autoState;
 
   @Nullable private Double _bandwidth;
@@ -1081,18 +1086,26 @@ public final class Interface extends ComparableStructure<String> {
   /** All IPV4 address/network assignments on this interface. */
   @JsonProperty(PROP_ALL_PREFIXES)
   public Set<ConcreteInterfaceAddress> getAllConcreteAddresses() {
-    return _allAddresses.stream()
-        .filter(a -> a instanceof ConcreteInterfaceAddress)
-        .map(a -> (ConcreteInterfaceAddress) a)
-        .collect(ImmutableSet.toImmutableSet());
+    if (_allConcreteAddresses == null) {
+      _allConcreteAddresses =
+          _allAddresses.stream()
+              .filter(a -> a instanceof ConcreteInterfaceAddress)
+              .map(a -> (ConcreteInterfaceAddress) a)
+              .collect(ImmutableSet.toImmutableSet());
+    }
+    return _allConcreteAddresses;
   }
 
   @JsonIgnore
   public Set<LinkLocalAddress> getAllLinkLocalAddresses() {
-    return _allAddresses.stream()
-        .filter(a -> a instanceof LinkLocalAddress)
-        .map(a -> (LinkLocalAddress) a)
-        .collect(ImmutableSet.toImmutableSet());
+    if (_allLinkLocalAddresses == null) {
+      _allLinkLocalAddresses =
+          _allAddresses.stream()
+              .filter(a -> a instanceof LinkLocalAddress)
+              .map(a -> (LinkLocalAddress) a)
+              .collect(ImmutableSet.toImmutableSet());
+    }
+    return _allLinkLocalAddresses;
   }
 
   public Set<InterfaceAddress> getAllAddresses() {
