@@ -1033,9 +1033,15 @@ public final class CumulusNcluGrammarTest {
             hasStaticRoutes(
                 containsInAnyOrder(
                     builder.setNextHopIp(Ip.parse("10.1.0.1")).build(),
-                    builder.setNextHopIp(Ip.parse("10.1.0.2")).build()))));
+                    builder.setNextHopIp(Ip.parse("10.1.0.2")).build(),
+                    builder.setNextHopIp(Ip.parse("10.1.0.3")).setNextHopInterface("swp1").build(),
+                    builder
+                        .setNextHopIp(null)
+                        .setNextHopInterface(org.batfish.datamodel.Interface.NULL_INTERFACE_NAME)
+                        .build()))));
 
     // static routes in vrf1
+    builder = org.batfish.datamodel.StaticRoute.builder().setAdmin(1).setMetric(0);
     builder.setNetwork(Prefix.strict("10.0.2.0/24"));
     assertThat(
         c,
@@ -1091,15 +1097,17 @@ public final class CumulusNcluGrammarTest {
     assertThat(
         vc.getStaticRoutes(),
         containsInAnyOrder(
-            new StaticRoute(Prefix.strict("10.0.1.0/24"), Ip.parse("10.1.0.1")),
-            new StaticRoute(Prefix.strict("10.0.1.0/24"), Ip.parse("10.1.0.2"))));
+            new StaticRoute(Prefix.strict("10.0.1.0/24"), Ip.parse("10.1.0.1"), null),
+            new StaticRoute(Prefix.strict("10.0.1.0/24"), Ip.parse("10.1.0.2"), null),
+            new StaticRoute(Prefix.strict("10.0.1.0/24"), Ip.parse("10.1.0.3"), "swp1"),
+            new StaticRoute(Prefix.strict("10.0.1.0/24"), null, null)));
 
     // static route (alternate vrf)
     assertThat(
         vc.getVrfs().get("vrf1").getStaticRoutes(),
         containsInAnyOrder(
-            new StaticRoute(Prefix.strict("10.0.2.0/24"), Ip.parse("192.0.2.1")),
-            new StaticRoute(Prefix.strict("10.0.2.0/24"), Ip.parse("192.0.2.2"))));
+            new StaticRoute(Prefix.strict("10.0.2.0/24"), Ip.parse("192.0.2.1"), null),
+            new StaticRoute(Prefix.strict("10.0.2.0/24"), Ip.parse("192.0.2.2"), null)));
 
     // route-map keys
     assertThat(vc.getRouteMaps().keySet(), containsInAnyOrder("rm1", "rm2"));

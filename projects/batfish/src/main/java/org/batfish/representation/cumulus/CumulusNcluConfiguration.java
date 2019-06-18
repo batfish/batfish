@@ -432,6 +432,7 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
     defaultVrf.setStaticRoutes(
         _staticRoutes.stream()
             .map(StaticRoute::convert)
+            .filter(Objects::nonNull)
             .collect(ImmutableSortedSet.toImmutableSortedSet(naturalOrder())));
     // Add all unassigned interfaces to default VRF
     _c.getAllInterfaces()
@@ -650,6 +651,7 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
     newVrf.setStaticRoutes(
         vrf.getStaticRoutes().stream()
             .map(StaticRoute::convert)
+            .filter(Objects::nonNull)
             .collect(ImmutableSortedSet.toImmutableSortedSet(naturalOrder())));
     assignInterfacesToVrf(newVrf, name);
     _c.getVrfs().put(name, newVrf);

@@ -646,7 +646,7 @@ public class CumulusNcluConfigurationBuilder extends CumulusNcluParserBaseListen
 
   @Override
   public void enterFrrv_ip_route(Frrv_ip_routeContext ctx) {
-    _currentVrf.getStaticRoutes().add(new StaticRoute(toPrefix(ctx.network), toIp(ctx.nhip)));
+    _currentVrf.getStaticRoutes().add(new StaticRoute(toPrefix(ctx.network), toIp(ctx.nhip), null));
   }
 
   @Override
@@ -1031,7 +1031,12 @@ public class CumulusNcluConfigurationBuilder extends CumulusNcluParserBaseListen
 
   @Override
   public void exitR_route(R_routeContext ctx) {
-    _c.getStaticRoutes().add(new StaticRoute(toPrefix(ctx.prefix), toIp(ctx.nhip)));
+    _c.getStaticRoutes()
+        .add(
+            new StaticRoute(
+                toPrefix(ctx.prefix),
+                ctx.nhip != null ? toIp(ctx.nhip) : null,
+                ctx.iface != null ? ctx.iface.getText() : null));
   }
 
   @Override
