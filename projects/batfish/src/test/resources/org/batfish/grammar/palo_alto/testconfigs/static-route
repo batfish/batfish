@@ -6,4 +6,7 @@ set network virtual-router somename routing-table ip static-route ROUTE1 admin-d
 set network virtual-router somename routing-table ip static-route ROUTE1 metric 12
 set network virtual-router vr2 routing-table ip static-route ROUTE2 destination 0.0.0.0/0
 set network virtual-router vr2 routing-table ip static-route ROUTE2 nexthop next-vr fakevr
-
+set network virtual-router vr2 routing-table ip static-route ROUTE3 destination 10.0.0.0/8
+set network virtual-router vr2 routing-table ip static-route ROUTE3 nexthop next-vr somename
+set network virtual-router vr2 routing-table ip static-route ROUTE4 destination 1.0.0.0/8
+set network virtual-router vr2 routing-table ip static-route ROUTE4 nexthop next-vr vr2

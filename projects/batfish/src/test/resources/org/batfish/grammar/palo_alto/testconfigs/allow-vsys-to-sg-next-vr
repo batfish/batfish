@@ -18,3 +18,10 @@ set vsys vsys1 rulebase security rules rule1 source any
 set vsys vsys1 rulebase security rules rule1 destination any
 set vsys vsys1 rulebase security rules rule1 application any
 set vsys vsys1 rulebase security rules rule1 service any
+set vsys vsys1 rulebase security rules rule2 from vsys1-sg1
+set vsys vsys1 rulebase security rules rule2 to zin
+set vsys vsys1 rulebase security rules rule2 action allow
+set vsys vsys1 rulebase security rules rule2 source any
+set vsys vsys1 rulebase security rules rule2 destination any
+set vsys vsys1 rulebase security rules rule2 application any
+set vsys vsys1 rulebase security rules rule2 service any
