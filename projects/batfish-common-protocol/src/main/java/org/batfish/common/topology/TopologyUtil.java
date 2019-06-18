@@ -752,6 +752,17 @@ public final class TopologyUtil {
     return false;
   }
 
+  @Nonnull
+  private static Prefix getAddressPrefix(InterfaceAddress addr) {
+    if (addr instanceof ConcreteInterfaceAddress) {
+      return ((ConcreteInterfaceAddress) addr).getPrefix();
+    } else if (addr instanceof LinkLocalAddress) {
+      return ((LinkLocalAddress) addr).getPrefix();
+    } else {
+      throw new IllegalArgumentException("Unknown interface address type: " + addr.getClass());
+    }
+  }
+
   /**
    * Returns a {@link Topology} inferred from the L3 configuration of interfaces on the devices.
    *
@@ -768,7 +779,7 @@ public final class TopologyUtil {
             // Look at all allocated addresses to determine subnet buckets
             // L3 edges must exist between interfaces with any IP address.
             for (InterfaceAddress address : iface.getAllAddresses()) {
-              Prefix prefix = address.getPrefix();
+              Prefix prefix = getAddressPrefix(address);
               if (prefix.getPrefixLength() < Prefix.MAX_PREFIX_LENGTH) {
                 List<Interface> interfaceBucket =
                     prefixInterfaces.computeIfAbsent(prefix, k -> new LinkedList<>());
