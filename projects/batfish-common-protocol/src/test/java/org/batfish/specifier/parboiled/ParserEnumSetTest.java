@@ -4,6 +4,7 @@ import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import java.util.Arrays;
 import java.util.Collection;
@@ -36,7 +37,24 @@ public class ParserEnumSetTest {
   @Rule public ExpectedException _thrown = ExpectedException.none();
 
   private static AbstractParseRunner<AstNode> getRunner() {
-    return new ReportingParseRunner<>(Parser.instance().getEnumSetRule(ALL_NAMED_STRUCTURE_TYPES));
+    return getRunner(ALL_NAMED_STRUCTURE_TYPES);
+  }
+
+  private static AbstractParseRunner<AstNode> getRunner(Collection<String> allValues) {
+    return new ReportingParseRunner<>(Parser.instance().getEnumSetRule(allValues));
+  }
+
+  private static ParboiledAutoComplete getPAC(String query, Collection<?> allValues) {
+    return new ParboiledAutoComplete(
+        Parser.instance().getEnumSetRule(allValues),
+        Parser.ANCHORS,
+        "network",
+        "snapshot",
+        query,
+        Integer.MAX_VALUE,
+        CompletionMetadata.EMPTY,
+        NodeRolesData.builder().build(),
+        new ReferenceLibrary(null));
   }
 
   /** This testParses if we have proper completion annotations on the rules */
@@ -155,6 +173,18 @@ public class ParserEnumSetTest {
   }
 
   @Test
+  public void testParseSuperStrings() {
+    Collection<String> allValues = ImmutableList.of("long", "longer");
+
+    assertThat(
+        ParserUtils.getAst(getRunner(allValues).run("longer")),
+        equalTo(new ValueEnumSetAstNode<>("longer", allValues)));
+    assertThat(
+        ParserUtils.getAst(getRunner(allValues).run("long")),
+        equalTo(new ValueEnumSetAstNode<>("long", allValues)));
+  }
+
+  @Test
   public void testParseFilterUnion() {
     String t1 = NamedStructurePropertySpecifier.IP_ACCESS_LIST;
     String t2Regex = "ip";
@@ -175,19 +205,8 @@ public class ParserEnumSetTest {
   @Test
   public void testApplication() {
     String query = "";
-
     Set<ParboiledAutoCompleteSuggestion> suggestions =
-        new ParboiledAutoComplete(
-                Parser.instance().getEnumSetRule(Arrays.asList(Protocol.values())),
-                Parser.ANCHORS,
-                "network",
-                "snapshot",
-                query,
-                Integer.MAX_VALUE,
-                CompletionMetadata.EMPTY,
-                NodeRolesData.builder().build(),
-                new ReferenceLibrary(null))
-            .run();
+        getPAC("", Arrays.asList(Protocol.values())).run();
 
     assertThat(
         suggestions,
@@ -202,5 +221,27 @@ public class ParserEnumSetTest {
                         new ParboiledAutoCompleteSuggestion("/", 0, Type.ENUM_SET_REGEX))
                         .stream())
                 .collect(ImmutableSet.toImmutableSet())));
+  }
+
+  /* Test that application enums (which are not strings) work */
+  @Test
+  public void testAutoCompleteSuperStrings() {
+    Collection<String> allValues = ImmutableList.of("long", "longer");
+
+    assertThat(
+        getPAC("lo", allValues).run(),
+        containsInAnyOrder(
+            new ParboiledAutoCompleteSuggestion("long", 0, Type.ENUM_SET_VALUE),
+            new ParboiledAutoCompleteSuggestion("longer", 0, Type.ENUM_SET_VALUE)));
+
+    assertThat(
+        getPAC("long", allValues).run(),
+        containsInAnyOrder(
+            new ParboiledAutoCompleteSuggestion(",", 4, Type.ENUM_SET_SET_OP),
+            new ParboiledAutoCompleteSuggestion("longer", 0, Type.ENUM_SET_VALUE)));
+
+    assertThat(
+        getPAC("longer", allValues).run(),
+        containsInAnyOrder(new ParboiledAutoCompleteSuggestion(",", 6, Type.ENUM_SET_SET_OP)));
   }
 }
