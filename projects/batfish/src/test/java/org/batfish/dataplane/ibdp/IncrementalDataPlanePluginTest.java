@@ -421,7 +421,6 @@ public class IncrementalDataPlanePluginTest {
     vrf.getStaticRoutes().add(sr);
     IncrementalBdpEngine engine =
         new IncrementalBdpEngine(
-            // TODO: parametrize settings with different schedules
             new IncrementalDataPlaneSettings(),
             new BatfishLogger(BatfishLogger.LEVELSTR_DEBUG, false));
     ComputeDataPlaneResult dp =
