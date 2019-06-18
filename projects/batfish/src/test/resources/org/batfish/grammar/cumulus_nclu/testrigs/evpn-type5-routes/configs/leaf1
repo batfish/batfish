@@ -1,0 +1,57 @@
+net del all
+net add time zone Etc/UTC
+net add time ntp server 0.cumulusnetworks.pool.ntp.org iburst
+net add time ntp server 1.cumulusnetworks.pool.ntp.org iburst
+net add time ntp server 2.cumulusnetworks.pool.ntp.org iburst
+net add time ntp server 3.cumulusnetworks.pool.ntp.org iburst
+net add time ntp source eth0
+net add snmp-server listening-address localhost
+net add bgp autonomous-system 65000
+net add routing defaults datacenter
+net add routing service integrated-vtysh-config
+net add routing log syslog informational
+net add bgp neighbor swp2 interface remote-as 65001
+net add bgp ipv4 unicast redistribute connected
+net add bgp l2vpn evpn  neighbor swp2 activate
+net add bgp l2vpn evpn  advertise-all-vni
+net add dns nameserver ipv4 10.0.2.3
+net add ptp global slave-only no
+net add ptp global priority1 255
+net add ptp global priority2 255
+net add ptp global domain-number 0
+net add ptp global logging-level 5
+net add ptp global path-trace-enabled no
+net add ptp global use-syslog yes
+net add ptp global verbose no
+net add ptp global summary-interval 0
+net add ptp global time-stamping
+net add vxlan vni10 vxlan id 10010
+net add vxlan vni20 vxlan id 10020
+net add bridge bridge ports swp1,swp10,vni10,vni20
+net add bridge bridge vids 10,20
+net add bridge bridge vlan-aware
+net add interface swp1 bridge access 10
+net add interface swp10 bridge access 20
+net add interface swp2 ip address 12.12.12.1/24
+net add interface swp3-9,11-15
+net add loopback lo ip address 1.1.1.1/32
+net add vlan 10 vlan-id 10
+net add vlan 10 vlan-raw-device bridge
+net add vlan 20 vlan-id 20
+net add vlan 20 vlan-raw-device bridge
+net add vxlan vni10 bridge access 10
+net add vxlan vni10,20 bridge arp-nd-suppress on
+net add vxlan vni10,20 bridge learning off
+net add vxlan vni10,20 stp bpduguard
+net add vxlan vni10,20 stp portbpdufilter
+net add vxlan vni10,20 vxlan local-tunnelip 1.1.1.1
+net add vxlan vni20 bridge access 20
+net add vxlan vni30 vxlan id 10030
+net add vxlan vni30 vxlan local-tunnelip 1.1.1.1
+net add vxlan vni30 bridge access 30
+net add hostname leaf1
+net add dot1x radius accounting-port 1813
+net add dot1x radius authentication-port 1812
+net add dot1x mab-activation-delay 30
+net add dot1x eap-reauth-period 0
+net commit

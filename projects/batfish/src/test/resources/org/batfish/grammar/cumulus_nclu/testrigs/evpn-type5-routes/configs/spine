@@ -1,0 +1,41 @@
+net del all
+net add time zone Etc/UTC
+net add time ntp server 0.cumulusnetworks.pool.ntp.org iburst
+net add time ntp server 1.cumulusnetworks.pool.ntp.org iburst
+net add time ntp server 2.cumulusnetworks.pool.ntp.org iburst
+net add time ntp server 3.cumulusnetworks.pool.ntp.org iburst
+net add time ntp source eth0
+net add snmp-server listening-address localhost
+net add bgp autonomous-system 65001
+net add routing defaults datacenter
+net add routing service integrated-vtysh-config
+net add routing log syslog informational
+net add bgp neighbor swp2 interface remote-as 65000
+net add bgp neighbor swp3 interface remote-as 65002
+net add bgp neighbor swp4 interface remote-as 65003
+net add bgp ipv4 unicast redistribute connected
+net add bgp l2vpn evpn  neighbor swp2 activate
+net add bgp l2vpn evpn  neighbor swp3 activate
+net add bgp l2vpn evpn  neighbor swp4 activate
+net add dns nameserver ipv4 10.0.2.3
+net add ptp global slave-only no
+net add ptp global priority1 255
+net add ptp global priority2 255
+net add ptp global domain-number 0
+net add ptp global logging-level 5
+net add ptp global path-trace-enabled no
+net add ptp global use-syslog yes
+net add ptp global verbose no
+net add ptp global summary-interval 0
+net add ptp global time-stamping
+net add interface swp1,5-15
+net add interface swp2 ip address 12.12.12.2/24
+net add interface swp3 ip address 23.23.23.2/24
+net add interface swp4 ip address 33.33.33.2/24
+net add loopback lo ip address 2.2.2.2/32
+net add hostname spine
+net add dot1x radius accounting-port 1813
+net add dot1x radius authentication-port 1812
+net add dot1x mab-activation-delay 30
+net add dot1x eap-reauth-period 0
+net commit

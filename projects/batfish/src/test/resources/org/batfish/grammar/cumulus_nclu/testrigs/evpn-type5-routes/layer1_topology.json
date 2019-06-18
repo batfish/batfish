@@ -1,0 +1,84 @@
+{
+  "edges": [
+    {
+      "node1": {
+        "hostname": "spine",
+        "interfaceName": "swp2"
+      },
+      "node2": {
+        "hostname": "leaf1",
+        "interfaceName": "swp2"
+      }
+    },
+    {
+      "node1": {
+        "hostname": "spine",
+        "interfaceName": "swp3"
+      },
+      "node2": {
+        "hostname": "leaf2",
+        "interfaceName": "swp3"
+      }
+    },
+    {
+      "node1": {
+        "hostname": "spine",
+        "interfaceName": "swp4"
+      },
+      "node2": {
+        "hostname": "exitgw",
+        "interfaceName": "swp4"
+      }
+    },
+    {
+      "node1": {
+        "hostname": "leaf1",
+        "interfaceName": "swp1"
+      },
+      "node2": {
+        "hostname": "host1",
+        "interfaceName": "e0"
+      }
+    },
+    {
+      "node1": {
+        "hostname": "leaf1",
+        "interfaceName": "swp10"
+      },
+      "node2": {
+        "hostname": "host3",
+        "interfaceName": "e0"
+      }
+    },
+    {
+      "node1": {
+        "hostname": "leaf2",
+        "interfaceName": "swp1"
+      },
+      "node2": {
+        "hostname": "host2",
+        "interfaceName": "e0"
+      }
+    },
+    {
+      "node1": {
+        "hostname": "leaf2",
+        "interfaceName": "swp10"
+      },
+      "node2": {
+        "hostname": "host4",
+        "interfaceName": "e0"
+      }
+    },
+    {
+      "node1": {
+        "hostname": "exitgw",
+        "interfaceName": "swp10"
+      },
+      "node2": {
+        "hostname": "internet",
+        "interfaceName": "swp10"
+      }
+    }
+  ]
+}

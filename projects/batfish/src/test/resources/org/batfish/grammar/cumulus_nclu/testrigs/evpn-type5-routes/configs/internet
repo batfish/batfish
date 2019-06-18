@@ -1,0 +1,32 @@
+net del all
+net add time zone Etc/UTC
+net add time ntp server 0.cumulusnetworks.pool.ntp.org iburst
+net add time ntp server 1.cumulusnetworks.pool.ntp.org iburst
+net add time ntp server 2.cumulusnetworks.pool.ntp.org iburst
+net add time ntp server 3.cumulusnetworks.pool.ntp.org iburst
+net add time ntp source eth0
+net add snmp-server listening-address localhost
+net add routing defaults datacenter
+net add routing service integrated-vtysh-config
+net add routing log syslog informational
+net add routing route 10.10.10.0/24 99.99.99.1
+net add routing route 10.10.20.0/24 99.99.99.1
+net add dns nameserver ipv4 10.0.2.3
+net add ptp global slave-only no
+net add ptp global priority1 255
+net add ptp global priority2 255
+net add ptp global domain-number 0
+net add ptp global logging-level 5
+net add ptp global path-trace-enabled no
+net add ptp global use-syslog yes
+net add ptp global verbose no
+net add ptp global summary-interval 0
+net add ptp global time-stamping
+net add interface swp10 ip address 99.99.99.2/24
+net add loopback lo ip address 100.100.100.100/32
+net add hostname internet
+net add dot1x radius accounting-port 1813
+net add dot1x radius authentication-port 1812
+net add dot1x mab-activation-delay 30
+net add dot1x eap-reauth-period 0
+net commit

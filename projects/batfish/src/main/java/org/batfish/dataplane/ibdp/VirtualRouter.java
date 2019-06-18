@@ -1346,7 +1346,7 @@ public class VirtualRouter implements Serializable {
             .map(
                 adv -> {
                   Bgpv4Route bgpRoute =
-                      exportNonBgpRouteToBgp(
+                      _bgpRoutingProcess.exportNonBgpRouteToBgp(
                           adv.getRoute(), ourConfigId, remoteConfigId, ourConfig, session);
                   return bgpRoute == null
                       ? null
@@ -1552,13 +1552,16 @@ public class VirtualRouter implements Serializable {
     _mainRibRouteDeltaBuilder.from(
         RibDelta.importRibDelta(_mainRib, _bgpRoutingProcess._bgpv4DeltaBuilder.build(), _name));
 
+    RibDelta<AnnotatedRoute<AbstractRoute>> mainDelta = _mainRibRouteDeltaBuilder.build();
     queueOutgoingBgpRoutes(
         ebgpDelta,
         _bgpRoutingProcess._bgpv4DeltaBuilder.build(),
-        _mainRibRouteDeltaBuilder.build(),
+        mainDelta,
         allNodes,
         bgpTopology,
         networkConfigurations);
+    // Special handling for EVPN routes here, until all computation is migrated to BgpRoutingProcess
+    _bgpRoutingProcess.redistribute(mainDelta);
   }
 
   /** Merges staged EIGRP internal routes into the "real" EIGRP-internal RIBs */
@@ -1643,6 +1646,8 @@ public class VirtualRouter implements Serializable {
       newBgpSessionEstablishedHook(
           edge, getBgpSessionProperties(bgpTopology, edge), allNodes, nc, bgpTopology);
     }
+    _bgpRoutingProcess.redistribute(
+        RibDelta.<AnnotatedRoute<AbstractRoute>>builder().add(_mainRib.getTypedRoutes()).build());
   }
 
   /** Deal with a newly established BGP session. */
@@ -1809,83 +1814,6 @@ public class VirtualRouter implements Serializable {
 
   PrefixTracer getPrefixTracer() {
     return _prefixTracer;
-  }
-
-  /**
-   * Given an {@link AbstractRoute}, run it through the BGP outbound transformations and export
-   * routing policy.
-   *
-   * @param exportCandidate a route to try and export
-   * @param ourConfig {@link BgpPeerConfig} that sends the route
-   * @param sessionProperties {@link BgpSessionProperties} representing the <em>incoming</em> edge:
-   *     i.e. the edge from {@code remoteConfig} to {@code ourConfig}
-   * @return The transformed route as a {@link Bgpv4Route}, or {@code null} if the route should not
-   *     be exported.
-   */
-  @Nullable
-  private Bgpv4Route exportNonBgpRouteToBgp(
-      @Nonnull AnnotatedRoute<AbstractRoute> exportCandidate,
-      @Nonnull BgpPeerConfigId ourConfigId,
-      @Nonnull BgpPeerConfigId remoteConfigId,
-      @Nonnull BgpPeerConfig ourConfig,
-      @Nonnull BgpSessionProperties sessionProperties) {
-
-    RoutingPolicy exportPolicy = _c.getRoutingPolicies().get(ourConfig.getExportPolicy());
-    RoutingProtocol protocol =
-        sessionProperties.isEbgp() ? RoutingProtocol.BGP : RoutingProtocol.IBGP;
-    Bgpv4Route.Builder transformedOutgoingRouteBuilder =
-        exportCandidate.getRoute() instanceof GeneratedRoute
-            ? BgpProtocolHelper.convertGeneratedRouteToBgp(
-                    (GeneratedRoute) exportCandidate.getRoute(),
-                    _bgpRoutingProcess.getRouterId(),
-                    false)
-                .toBuilder()
-            : BgpProtocolHelper.convertNonBgpRouteToBgpRoute(
-                exportCandidate,
-                _bgpRoutingProcess.getRouterId(),
-                sessionProperties.getHeadIp(),
-                _bgpRoutingProcess._process.getAdminCost(protocol),
-                protocol);
-
-    // sessionProperties represents the incoming edge, so its tailIp is the remote peer's IP
-    Ip remoteIp = sessionProperties.getHeadIp();
-
-    // Process transformed outgoing route by the export policy
-    boolean shouldExport =
-        exportPolicy.process(
-            exportCandidate,
-            transformedOutgoingRouteBuilder,
-            remoteIp,
-            ourConfigId.getRemotePeerPrefix(),
-            ourConfigId.getVrfName(),
-            Direction.OUT);
-
-    if (!shouldExport) {
-      // This route could not be exported due to export policy
-      _prefixTracer.filtered(
-          exportCandidate.getNetwork(),
-          remoteConfigId.getHostname(),
-          remoteIp,
-          remoteConfigId.getVrfName(),
-          ourConfig.getExportPolicy(),
-          Direction.OUT);
-      return null;
-    }
-
-    // Apply final post-policy transformations before sending advertisement to neighbor
-    BgpProtocolHelper.transformBgpRoutePostExport(
-        transformedOutgoingRouteBuilder, ourConfig, sessionProperties);
-
-    // Successfully exported route
-    Bgpv4Route transformedOutgoingRoute = transformedOutgoingRouteBuilder.build();
-    _prefixTracer.sentTo(
-        transformedOutgoingRoute.getNetwork(),
-        remoteConfigId.getHostname(),
-        remoteIp,
-        remoteConfigId.getVrfName(),
-        ourConfig.getExportPolicy());
-
-    return transformedOutgoingRoute;
   }
 
   /**
