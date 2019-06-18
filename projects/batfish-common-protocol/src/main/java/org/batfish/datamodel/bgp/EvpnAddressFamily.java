@@ -5,7 +5,6 @@ import static com.google.common.base.MoreObjects.firstNonNull;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.ImmutableSortedSet;
-import java.io.Serializable;
 import java.util.Objects;
 import java.util.Set;
 import java.util.SortedSet;
@@ -15,7 +14,7 @@ import javax.annotation.ParametersAreNonnullByDefault;
 
 /** Configuration settings for EVPN address family */
 @ParametersAreNonnullByDefault
-public final class EvpnAddressFamily implements Serializable {
+public final class EvpnAddressFamily extends AddressFamily {
   private static final long serialVersionUID = 1L;
   private static final String PROP_L2_VNIS = "l2Vnis";
   private static final String PROP_L3_VNIS = "l3Vnis";
@@ -52,7 +51,7 @@ public final class EvpnAddressFamily implements Serializable {
   }
 
   @Override
-  public boolean equals(Object o) {
+  public boolean equals(@Nullable Object o) {
     if (this == o) {
       return true;
     }

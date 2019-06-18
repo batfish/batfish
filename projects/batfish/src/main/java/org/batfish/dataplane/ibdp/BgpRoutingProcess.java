@@ -126,14 +126,19 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
   /** Builder for constructing {@link RibDelta} for routes in {@link #_evpnRib} */
   @Nonnull private Builder<EvpnRoute<?, ?>> _evpnDeltaBuilder = RibDelta.builder();
 
-  private RibDelta<EvpnType3Route> _evpnInitializationDelta;
+  /** Keep track of EVPN type 3 routes initialized from our own VNI settings */
+  @Nonnull private RibDelta<EvpnType3Route> _evpnInitializationDelta;
 
   /** Delta builder for routes that must be propagated to the main RIB */
   @Nonnull private RibDelta.Builder<BgpRoute<?, ?>> _changeSet = RibDelta.builder();
 
-  /* Hacky way to non re-init the process across topology computations. Not a permanent solution */
+  /* Hacky way to not re-init the process across topology computations. Not a permanent solution */
   private boolean _initialized = false;
 
+  /**
+   * Mapping from extended community route target patterns to VRF name. Used for determining where
+   * to merge EVPN routes
+   */
   @Nonnull private final Map<String, String> _rtVrfMapping;
 
   /**
