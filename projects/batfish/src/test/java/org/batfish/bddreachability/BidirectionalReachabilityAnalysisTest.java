@@ -205,7 +205,7 @@ public final class BidirectionalReachabilityAnalysisTest {
             matchDst(Ip.parse("255.255.255.1")),
             ImmutableSet.of(),
             ImmutableSet.of(),
-            ImmutableSet.of(),
+            configurations.keySet(),
             ImmutableSet.of(DELIVERED_TO_SUBNET));
     Map<StateExpr, BDD> forwardReachableBdds = analysis.computeForwardReachableStates();
 
