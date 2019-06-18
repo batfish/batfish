@@ -1612,14 +1612,14 @@ public final class BDDReachabilityAnalysisFactoryTest {
         nextVrfDstIpsBDD,
         equalTo(ONE.diff(Prefix.parse("10.0.0.0/24").toIpSpace().accept(ipSpaceToBDD))));
 
-    BDD exitsNetworkEndToEndBDD =
+    BDD deliveredToSubnetEndToEndBDD =
         analysis
             .getIngressLocationReachableBDDs()
             .get(IngressLocation.interfaceLink(hostname, ingressIface));
 
     // Any packet with destination IP 10.0.12.0/24 \ 10.0.12.1 (egressInterface network minus its
-    // IP) entering ingressIface should exit network out of egressInterface
-    // TODO: Specify final interface where EXITS_NETWORK occurs when that becomes possible
-    assertThat(exitsNetworkEndToEndBDD, equalTo(dstIpSpaceOfInterest.accept(ipSpaceToBDD)));
+    // IP) entering ingressIface should be delivered to subnet of egressInterface
+    // TODO: Specify final interface where DELIVERED_TO_SUBNET occurs when that becomes possible
+    assertThat(deliveredToSubnetEndToEndBDD, equalTo(dstIpSpaceOfInterest.accept(ipSpaceToBDD)));
   }
 }
