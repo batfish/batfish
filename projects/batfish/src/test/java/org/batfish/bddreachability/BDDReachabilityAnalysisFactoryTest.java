@@ -1496,7 +1496,7 @@ public final class BDDReachabilityAnalysisFactoryTest {
   }
 
   @Test
-  public void testNextVrf() throws IOException {
+  public void testNextVrfWithNeighbor() throws IOException {
     // with neighbor, expect accepted disposition
     ImmutableSortedMap<String, Configuration> configurations = makeNextVrfNetwork(true);
 
@@ -1523,6 +1523,57 @@ public final class BDDReachabilityAnalysisFactoryTest {
             ImmutableSet.of(),
             ImmutableSet.of(),
             ImmutableSet.of(neighborHostname),
+            ImmutableSet.of(ACCEPTED));
+
+    // Check state edge presence
+    assertThat(
+        analysis.getForwardEdgeMap(),
+        hasEntry(
+            equalTo(new PostInVrf(hostname, ingressVrf)),
+            hasKey(new PostInVrf(hostname, nextVrf))));
+
+    BDD nextVrfDstIpsBDD =
+        analysis
+            .getForwardEdgeMap()
+            .get(new PostInVrf(hostname, ingressVrf))
+            .get(new PostInVrf(hostname, nextVrf))
+            .transitForward(ONE);
+    IpSpaceToBDD ipSpaceToBDD = new IpSpaceToBDD(PKT.getDstIp());
+
+    // ingressVrf should delegate space associated with nextVrfRoute 0.0.0.0/0 minus more specific
+    // space associated with connected route 10.0.0.0/24
+    assertThat(
+        nextVrfDstIpsBDD,
+        equalTo(ONE.diff(Prefix.parse("10.0.0.0/24").toIpSpace().accept(ipSpaceToBDD))));
+  }
+
+  @Test
+  public void testNextVrfWithoutNeighbor() throws IOException {
+    // with neighbor, expect accepted disposition
+    ImmutableSortedMap<String, Configuration> configurations = makeNextVrfNetwork(false);
+
+    String hostname = "ingressNode";
+    String ingressIface = "ingressIface";
+    String ingressVrf = "ingressVrf";
+    String nextVrf = "nextVrf";
+
+    Batfish batfish = BatfishTestUtils.getBatfish(configurations, temp);
+    batfish.computeDataPlane();
+
+    BDDReachabilityAnalysisFactory factory =
+        new BDDReachabilityAnalysisFactory(
+            PKT, configurations, batfish.loadDataPlane().getForwardingAnalysis(), false, false);
+
+    Ip dstIp = Ip.parse("10.0.12.2");
+    BDDReachabilityAnalysis analysis =
+        factory.bddReachabilityAnalysis(
+            IpSpaceAssignment.builder()
+                .assign(new InterfaceLinkLocation(hostname, ingressIface), UniverseIpSpace.INSTANCE)
+                .build(),
+            matchDst(dstIp),
+            ImmutableSet.of(),
+            ImmutableSet.of(),
+            ImmutableSet.of(),
             ImmutableSet.of(ACCEPTED));
 
     // Check state edge presence

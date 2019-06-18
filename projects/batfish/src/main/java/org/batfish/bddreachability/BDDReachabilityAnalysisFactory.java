@@ -770,26 +770,26 @@ public final class BDDReachabilityAnalysisFactory {
 
   /** Generate edges from vrf to nextVrf */
   private Stream<Edge> generateRules_PostInVrf_PostInVrf() {
-    return _vrfAcceptBDDs.entrySet().stream()
+    return _nextVrfBDDs.entrySet().stream()
         .flatMap(
-            nodeEntry ->
-                nodeEntry.getValue().entrySet().stream()
-                    .flatMap(
-                        vrfEntry -> {
-                          String node = nodeEntry.getKey();
-                          String vrf = vrfEntry.getKey();
-                          BDD acceptBDD = vrfEntry.getValue();
-                          return _nextVrfBDDs.get(node).get(vrf).entrySet().stream()
-                              .map(
-                                  nextVrfEntry -> {
-                                    String nextVrf = nextVrfEntry.getKey();
-                                    BDD nextVrfBDD = nextVrfEntry.getValue();
-                                    return new Edge(
-                                        new PostInVrf(node, vrf),
-                                        new PostInVrf(node, nextVrf),
-                                        nextVrfBDD.diff(acceptBDD));
-                                  });
-                        }));
+            nodeEntry -> {
+              String node = nodeEntry.getKey();
+              return nodeEntry.getValue().entrySet().stream()
+                  .flatMap(
+                      vrfEntry -> {
+                        String vrf = vrfEntry.getKey();
+                        return vrfEntry.getValue().entrySet().stream()
+                            .map(
+                                nextVrfEntry -> {
+                                  String nextVrf = nextVrfEntry.getKey();
+                                  BDD nextVrfBDD = nextVrfEntry.getValue();
+                                  return new Edge(
+                                      new PostInVrf(node, vrf),
+                                      new PostInVrf(node, nextVrf),
+                                      nextVrfBDD);
+                                });
+                      });
+            });
   }
 
   private Stream<Edge> generateRules_PostInVrf_PreOutVrf() {
