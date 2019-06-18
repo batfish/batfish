@@ -61,7 +61,6 @@ public class ParserIpProtocolTest {
         Stream.concat(
                 Arrays.stream(IpProtocol.values())
                     .map(Object::toString)
-                    .filter(p -> !p.startsWith("UNNAMED"))
                     .map(
                         val ->
                             new ParboiledAutoCompleteSuggestion(
@@ -126,6 +125,15 @@ public class ParserIpProtocolTest {
   @Test
   public void testParseIpProtocol() {
     String query = "tcp";
+    IpProtocolIpProtocolAstNode expectedAst = new IpProtocolIpProtocolAstNode(query);
+
+    assertThat(ParserUtils.getAst(getRunner().run(query)), equalTo(expectedAst));
+    assertThat(ParserUtils.getAst(getRunner().run(" " + query + " ")), equalTo(expectedAst));
+  }
+
+  @Test
+  public void testParseIpProtocolMatchSuperStrings() {
+    String query = IpProtocol.ANY_0_HOP_PROTOCOL.toString();
     IpProtocolIpProtocolAstNode expectedAst = new IpProtocolIpProtocolAstNode(query);
 
     assertThat(ParserUtils.getAst(getRunner().run(query)), equalTo(expectedAst));
