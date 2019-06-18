@@ -77,6 +77,14 @@ public final class FibImpl implements Fib {
   private static final int MAX_DEPTH = 10;
   private static final long serialVersionUID = 1L;
 
+  private static @Nullable String getNextVrf(AbstractRoute route) {
+    return route instanceof StaticRoute ? ((StaticRoute) route).getNextVrf() : null;
+  }
+
+  private static boolean isNextVrfRoute(AbstractRoute route) {
+    return getNextVrf(route) != null;
+  }
+
   /** This trie is the source of truth for all resolved FIB routes */
   @Nonnull private final PrefixTrieMultiMap<FibEntry> _root;
 
@@ -140,12 +148,14 @@ public final class FibImpl implements Fib {
       ImmutableCollection.Builder<FibEntry> entriesBuilder) {
     if (node.getChildren().isEmpty() && node.getFinalNextHopIp() != null) {
       String nextHopInterface = node.getRoute().getNextHopInterface();
-      entriesBuilder.add(
-          new FibEntry(
-              nextHopInterface.equals(Interface.NULL_INTERFACE_NAME)
+      String nextVrf = getNextVrf(node.getRoute());
+      FibAction fibAction =
+          nextVrf != null
+              ? new FibNextVrf(nextVrf)
+              : nextHopInterface.equals(Interface.NULL_INTERFACE_NAME)
                   ? FibNullRoute.INSTANCE
-                  : new FibForward(node.getFinalNextHopIp(), nextHopInterface),
-              ImmutableList.copyOf(stack)));
+                  : new FibForward(node.getFinalNextHopIp(), nextHopInterface);
+      entriesBuilder.add(new FibEntry(fibAction, ImmutableList.copyOf(stack)));
       return;
     }
     stack.push(node.getRoute());
@@ -203,6 +213,11 @@ public final class FibImpl implements Fib {
 
     /* For BGP next-hop-discard routes, ignore next-hop-ip and exit early */
     if (route instanceof BgpRoute && ((BgpRoute) route).getDiscard()) {
+      ResolutionTreeNode.withParent(route, treeNode, Route.UNSET_ROUTE_NEXT_HOP_IP);
+      return;
+    }
+
+    if (isNextVrfRoute(route)) {
       ResolutionTreeNode.withParent(route, treeNode, Route.UNSET_ROUTE_NEXT_HOP_IP);
       return;
     }

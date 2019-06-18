@@ -10,6 +10,7 @@ import static org.batfish.dataplane.protocols.BgpProtocolHelper.transformBgpRout
 import static org.batfish.dataplane.protocols.IsisProtocolHelper.convertRouteLevel1ToLevel2;
 import static org.batfish.dataplane.protocols.IsisProtocolHelper.setOverloadOnAllRoutes;
 import static org.batfish.dataplane.protocols.StaticRouteHelper.isInterfaceRoute;
+import static org.batfish.dataplane.protocols.StaticRouteHelper.isNextVrfRoute;
 import static org.batfish.dataplane.protocols.StaticRouteHelper.shouldActivateNextHopIpRoute;
 import static org.batfish.dataplane.rib.AbstractRib.importRib;
 import static org.batfish.dataplane.rib.RibDelta.importDeltaToBuilder;
@@ -167,7 +168,7 @@ public class VirtualRouter implements Serializable {
   transient RipInternalRib _ripInternalRib;
   transient RipInternalRib _ripInternalStagingRib;
   transient RipRib _ripRib;
-  transient StaticRib _staticInterfaceRib;
+  transient StaticRib _staticUnconditionalRib;
   transient StaticRib _staticNextHopRib;
 
   /** FIB (forwarding information base) built from the main RIB */
@@ -269,7 +270,7 @@ public class VirtualRouter implements Serializable {
     importRib(_independentRib, _connectedRib);
     importRib(_independentRib, _kernelRib);
     importRib(_independentRib, _localRib);
-    importRib(_independentRib, _staticInterfaceRib, _name);
+    importRib(_independentRib, _staticUnconditionalRib, _name);
     importRib(_mainRib, _independentRib);
 
     // Now check whether any rib groups are applied
@@ -956,7 +957,7 @@ public class VirtualRouter implements Serializable {
 
     // Static
     _staticNextHopRib = new StaticRib();
-    _staticInterfaceRib = new StaticRib();
+    _staticUnconditionalRib = new StaticRib();
   }
 
   private boolean isL1Only() {
@@ -968,8 +969,9 @@ public class VirtualRouter implements Serializable {
   }
 
   /**
-   * Initialize the static route RIBs from the VRF config. Interface routes go into {@link
-   * #_staticInterfaceRib}; routes that only have next-hop-ip go into {@link #_staticNextHopRib}
+   * Initialize the static route RIBs from the VRF config. Interface and next-vrf routes go into
+   * {@link #_staticUnconditionalRib}; routes that only have next-hop-ip go into {@link
+   * #_staticNextHopRib}
    */
   @VisibleForTesting
   void initStaticRibs() {
@@ -981,8 +983,10 @@ public class VirtualRouter implements Serializable {
         if (Interface.NULL_INTERFACE_NAME.equals(sr.getNextHopInterface())
             || (nextHopInterface != null && (nextHopInterface.getActive()))) {
           // Interface is active (or special null interface), install route
-          _staticInterfaceRib.mergeRouteGetDelta(sr);
+          _staticUnconditionalRib.mergeRouteGetDelta(sr);
         }
+      } else if (isNextVrfRoute(sr)) {
+        _staticUnconditionalRib.mergeRouteGetDelta(sr);
       } else {
         if (Route.UNSET_ROUTE_NEXT_HOP_IP.equals(sr.getNextHopIp())) {
           continue;

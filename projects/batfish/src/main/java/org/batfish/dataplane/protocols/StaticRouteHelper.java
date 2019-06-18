@@ -15,6 +15,11 @@ public class StaticRouteHelper {
     return !Route.UNSET_NEXT_HOP_INTERFACE.equals(route.getNextHopInterface());
   }
 
+  /** Determine if given static route is a next-vrf route. */
+  public static boolean isNextVrfRoute(StaticRoute route) {
+    return route.getNextVrf() != null;
+  }
+
   /**
    * Check if a static route with next hop IP can be activated. If this method returns True, an
    * attempt should be made to merge it into the RIB. If it returns false, an attempt should be made

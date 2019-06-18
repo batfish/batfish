@@ -26,6 +26,7 @@ import org.batfish.datamodel.Fib;
 import org.batfish.datamodel.FibEntry;
 import org.batfish.datamodel.FibForward;
 import org.batfish.datamodel.FibImpl;
+import org.batfish.datamodel.FibNextVrf;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.NetworkFactory;
@@ -202,6 +203,27 @@ public class FibImplTest {
 
     assertThat(fibRoutes, not(hasItem(hasPrefix(Prefix.parse("1.1.1.0/24")))));
     assertThat(fibRoutes, hasItem(hasPrefix(Prefix.parse("2.2.2.0/24"))));
+  }
+
+  @Test
+  public void testNextVrfRouteInFib() {
+    Rib rib = new Rib();
+    String nextVrf = "nextVrf";
+
+    StaticRoute nextVrfRoute =
+        StaticRoute.builder()
+            .setNetwork(Prefix.ZERO)
+            .setNextVrf("nextVrf")
+            .setAdministrativeCost(1)
+            .build();
+
+    rib.mergeRoute(annotateRoute(nextVrfRoute));
+
+    Fib fib = new FibImpl(rib);
+
+    assertThat(
+        fib.allEntries(),
+        contains(new FibEntry(new FibNextVrf(nextVrf), ImmutableList.of(nextVrfRoute))));
   }
 
   @Test
