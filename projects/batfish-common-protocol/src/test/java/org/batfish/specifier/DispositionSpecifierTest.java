@@ -3,7 +3,6 @@ package org.batfish.specifier;
 import static org.batfish.datamodel.FlowDisposition.DELIVERED_TO_SUBNET;
 import static org.batfish.datamodel.FlowDisposition.EXITS_NETWORK;
 import static org.batfish.datamodel.FlowDisposition.INSUFFICIENT_INFO;
-import static org.batfish.datamodel.FlowDisposition.NEIGHBOR_UNREACHABLE_OR_EXITS_NETWORK;
 import static org.batfish.specifier.DispositionSpecifier.FAILURE;
 import static org.batfish.specifier.DispositionSpecifier.FAILURE_SPECIFIER;
 import static org.batfish.specifier.DispositionSpecifier.SUCCESS;
@@ -89,10 +88,7 @@ public class DispositionSpecifierTest {
   public void testAllDispositionsCovered() {
     assertThat(
         DispositionSpecifier.create("success,failure").getDispositions(),
-        equalTo(
-            Sets.difference(
-                ImmutableSet.copyOf(FlowDisposition.values()),
-                ImmutableSet.of(NEIGHBOR_UNREACHABLE_OR_EXITS_NETWORK))));
+        equalTo(Sets.difference(ImmutableSet.copyOf(FlowDisposition.values()), ImmutableSet.of())));
   }
 
   @Test
@@ -113,7 +109,6 @@ public class DispositionSpecifierTest {
         equalTo(
             ImmutableSet.of(
                 SUCCESS,
-                NEIGHBOR_UNREACHABLE_OR_EXITS_NETWORK.name().toLowerCase(),
                 INSUFFICIENT_INFO.name().toLowerCase(),
                 DELIVERED_TO_SUBNET.name().toLowerCase(),
                 EXITS_NETWORK.name().toLowerCase())));
