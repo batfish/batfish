@@ -76,6 +76,7 @@ public final class FirewallSessionInterfaceInfo implements Serializable {
   public boolean getFibLookup() {
     return _fibLookup;
   }
+
   /** The set of interfaces through which return flows can enter. */
   @JsonProperty(PROP_SESSION_INTERFACES)
   public Set<String> getSessionInterfaces() {
