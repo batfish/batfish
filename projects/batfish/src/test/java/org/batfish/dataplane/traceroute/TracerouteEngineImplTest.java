@@ -92,7 +92,7 @@ import org.batfish.datamodel.acl.AclLineMatchExprs;
 import org.batfish.datamodel.acl.MatchSrcInterface;
 import org.batfish.datamodel.acl.OriginatingFromDevice;
 import org.batfish.datamodel.collections.NodeInterfacePair;
-import org.batfish.datamodel.flow.AcceptVrf;
+import org.batfish.datamodel.flow.Accept;
 import org.batfish.datamodel.flow.EnterInputIfaceStep;
 import org.batfish.datamodel.flow.ExitOutputIfaceStep;
 import org.batfish.datamodel.flow.FilterStep;
@@ -1929,11 +1929,7 @@ public class TracerouteEngineImplTest {
       Flow flow = protoFlow;
       FirewallSessionTraceInfo session =
           new FirewallSessionTraceInfo(
-              c1.getHostname(),
-              new AcceptVrf(vrf1.getName()),
-              ImmutableSet.of(c1i1Name),
-              TRUE,
-              null);
+              c1.getHostname(), Accept.INSTANCE, ImmutableSet.of(c1i1Name), TRUE, null);
       List<TraceAndReverseFlow> results =
           tracerouteEngine
               .computeTracesAndReverseFlows(ImmutableSet.of(flow), ImmutableSet.of(session), false)

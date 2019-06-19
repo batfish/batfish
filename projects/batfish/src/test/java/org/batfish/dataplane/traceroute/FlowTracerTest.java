@@ -40,7 +40,7 @@ import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.Topology;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.collections.NodeInterfacePair;
-import org.batfish.datamodel.flow.AcceptVrf;
+import org.batfish.datamodel.flow.Accept;
 import org.batfish.datamodel.flow.ExitOutputIfaceStep;
 import org.batfish.datamodel.flow.FirewallSessionTraceInfo;
 import org.batfish.datamodel.flow.Hop;
@@ -103,8 +103,7 @@ public final class FlowTracerTest {
     List<TraceAndReverseFlow> traces = new ArrayList<>();
 
     FirewallSessionTraceInfo sessionInfo =
-        new FirewallSessionTraceInfo(
-            "hostname", new AcceptVrf(vrf.getName()), ImmutableSet.of(), TRUE, null);
+        new FirewallSessionTraceInfo("hostname", Accept.INSTANCE, ImmutableSet.of(), TRUE, null);
     TracerouteEngineImplContext ctxt =
         new TracerouteEngineImplContext(
             MockDataPlane.builder().setConfigs(ImmutableMap.of(c.getHostname(), c)).build(),

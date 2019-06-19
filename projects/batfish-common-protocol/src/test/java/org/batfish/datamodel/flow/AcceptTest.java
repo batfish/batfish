@@ -4,17 +4,15 @@ import com.google.common.testing.EqualsTester;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.junit.Test;
 
-/** Test of {@link AcceptVrf}. */
+/** Test of {@link Accept}. */
 @ParametersAreNonnullByDefault
-public final class AcceptVrfTest {
+public final class AcceptTest {
 
   @Test
   public void testEquals() {
-    AcceptVrf f = new AcceptVrf("a");
     new EqualsTester()
         .addEqualityGroup(new Object())
-        .addEqualityGroup(f, f, new AcceptVrf("a"))
-        .addEqualityGroup(new AcceptVrf("b"))
+        .addEqualityGroup(Accept.INSTANCE, Accept.INSTANCE)
         .testEquals();
   }
 }

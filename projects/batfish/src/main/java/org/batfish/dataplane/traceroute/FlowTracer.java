@@ -60,7 +60,7 @@ import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.acl.Evaluator;
 import org.batfish.datamodel.collections.NodeInterfacePair;
-import org.batfish.datamodel.flow.AcceptVrf;
+import org.batfish.datamodel.flow.Accept;
 import org.batfish.datamodel.flow.ExitOutputIfaceStep;
 import org.batfish.datamodel.flow.ExitOutputIfaceStep.ExitOutputIfaceStepDetail;
 import org.batfish.datamodel.flow.FilterStep;
@@ -710,7 +710,7 @@ class FlowTracer {
         .accept(
             new SessionActionVisitor<Void>() {
               @Override
-              public Void visitAcceptVrf(AcceptVrf acceptVrf) {
+              public Void visitAcceptVrf(Accept acceptVrf) {
                 // Accepted by VRF
                 buildAcceptTrace();
                 return null;
@@ -883,7 +883,7 @@ class FlowTracer {
             ? org.batfish.datamodel.flow.FibLookup.INSTANCE
             : _ingressInterface != null
                 ? new ForwardOutInterface(_ingressInterface, _lastHopNodeAndOutgoingInterface)
-                : new AcceptVrf(_vrfName);
+                : Accept.INSTANCE;
 
     return new FirewallSessionTraceInfo(
         _currentNode.getName(),
