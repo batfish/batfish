@@ -3,6 +3,7 @@ package org.batfish.datamodel.bgp;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
 import com.google.common.graph.ImmutableValueGraph;
 import com.google.common.graph.MutableValueGraph;
@@ -136,6 +137,11 @@ public final class BgpTopology {
     @Override
     public int compareTo(EdgeId o) {
       return COMPARATOR.compare(this, o);
+    }
+
+    @Override
+    public String toString() {
+      return MoreObjects.toStringHelper(this).add("tail", _tail).add("head", _head).toString();
     }
   }
 }

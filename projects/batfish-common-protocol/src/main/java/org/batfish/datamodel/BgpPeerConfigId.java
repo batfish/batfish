@@ -4,6 +4,7 @@ import static com.google.common.base.Preconditions.checkArgument;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.base.MoreObjects;
 import java.util.Comparator;
 import java.util.Objects;
 import javax.annotation.Nonnull;
@@ -151,6 +152,15 @@ public final class BgpPeerConfigId implements Comparable<BgpPeerConfigId> {
     hashCode = 31 * hashCode + Objects.hashCode(_remotePeerPrefix);
     hashCode = 31 * hashCode + _type.ordinal();
     return hashCode;
+  }
+
+  @Override
+  public String toString() {
+    return MoreObjects.toStringHelper(this)
+        .add("hostname", _hostname)
+        .add("peerInterface", _peerInterface)
+        .add("remotePeerPrefix", _remotePeerPrefix)
+        .toString();
   }
 
   /** Types of BGP peers */
