@@ -365,9 +365,9 @@ class CounterExample {
               // the peer is not a BGP peer
               FlowTrace flowTrace =
                   new FlowTrace(
-                      FlowDisposition.NEIGHBOR_UNREACHABLE_OR_EXITS_NETWORK,
+                      FlowDisposition.INSUFFICIENT_INFO,
                       hops,
-                      "NEIGHBOR_UNREACHABLE_OR_EXITS_NETWORK");
+                      "NEIGHBOR_UNREACHABLE_OR_EXITS_NETWORK - Minesweeper has insufficient information to decide");
               return new Tuple<>(flow, flowTrace);
             }
           }
@@ -407,9 +407,9 @@ class CounterExample {
           }
           FlowTrace flowTrace =
               new FlowTrace(
-                  FlowDisposition.NEIGHBOR_UNREACHABLE_OR_EXITS_NETWORK,
+                  FlowDisposition.INSUFFICIENT_INFO,
                   hops,
-                  "NEIGHBOR_UNREACHABLE_OR_EXITS_NETWORK");
+                  "NEIGHBOR_UNREACHABLE_OR_EXITS_NETWORK - Minesweeper has insufficient information to decide");
           return new Tuple<>(flow, flowTrace);
         }
         FlowTrace flowTrace = new FlowTrace(FlowDisposition.NO_ROUTE, hops, "NO_ROUTE");
