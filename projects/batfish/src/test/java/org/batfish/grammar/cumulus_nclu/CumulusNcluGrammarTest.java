@@ -1034,9 +1034,8 @@ public final class CumulusNcluGrammarTest {
                 containsInAnyOrder(
                     builder.setNextHopIp(Ip.parse("10.1.0.1")).build(),
                     builder.setNextHopIp(Ip.parse("10.1.0.2")).build(),
-                    builder.setNextHopIp(Ip.parse("10.1.0.3")).setNextHopInterface("swp1").build(),
+                    builder.setNextHopIp(null).setNextHopInterface("swp1").build(),
                     builder
-                        .setNextHopIp(null)
                         .setNextHopInterface(org.batfish.datamodel.Interface.NULL_INTERFACE_NAME)
                         .build()))));
 
@@ -1099,8 +1098,8 @@ public final class CumulusNcluGrammarTest {
         containsInAnyOrder(
             new StaticRoute(Prefix.strict("10.0.1.0/24"), Ip.parse("10.1.0.1"), null),
             new StaticRoute(Prefix.strict("10.0.1.0/24"), Ip.parse("10.1.0.2"), null),
-            new StaticRoute(Prefix.strict("10.0.1.0/24"), Ip.parse("10.1.0.3"), "swp1"),
-            new StaticRoute(Prefix.strict("10.0.1.0/24"), null, null)));
+            new StaticRoute(Prefix.strict("10.0.1.0/24"), null, "swp1"),
+            new StaticRoute(Prefix.strict("10.0.1.0/24"), null, "Null0")));
 
     // static route (alternate vrf)
     assertThat(

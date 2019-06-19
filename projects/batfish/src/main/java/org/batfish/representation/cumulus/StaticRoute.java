@@ -21,6 +21,7 @@ public class StaticRoute implements Serializable {
   private final @Nullable String _nextHopInterface;
 
   public StaticRoute(Prefix network, @Nullable Ip nextHopIp, @Nullable String nextHopInterface) {
+    assert nextHopInterface != null || nextHopIp != null; // grammar invariant
     _network = network;
     _nextHopIp = nextHopIp;
     _nextHopInterface = nextHopInterface;
@@ -48,20 +49,19 @@ public class StaticRoute implements Serializable {
       return false;
     }
     StaticRoute rhs = (StaticRoute) obj;
-    return _network.equals(rhs._network) && Objects.equals(_nextHopIp, rhs._nextHopIp);
+    return _network.equals(rhs._network)
+        && Objects.equals(_nextHopIp, rhs._nextHopIp)
+        && Objects.equals(_nextHopInterface, rhs._nextHopInterface);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(_network, _nextHopIp);
+    return Objects.hash(_network, _nextHopIp, _nextHopInterface);
   }
 
-  /** Convert this static route to a VI static route, if valid */
-  @Nullable
+  /** Convert this static route to a VI static route */
+  @Nonnull
   org.batfish.datamodel.StaticRoute convert() {
-    if (_nextHopIp == null && _nextHopInterface == null) {
-      return null;
-    }
     return org.batfish.datamodel.StaticRoute.builder()
         .setAdmin(DEFAULT_STATIC_ROUTE_ADMINISTRATIVE_DISTANCE)
         .setMetric(DEFAULT_STATIC_ROUTE_METRIC)
