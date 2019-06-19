@@ -1950,7 +1950,7 @@
             "switchport" : false,
             "switchportMode" : "NONE",
             "switchportTrunkEncapsulation" : "DOT1Q",
-            "type" : "TUNNEL",
+            "type" : "IPSEC_TUNNEL",
             "vrf" : "default"
           },
           "Tunnel2" : {
@@ -1983,7 +1983,7 @@
             "switchport" : false,
             "switchportMode" : "NONE",
             "switchportTrunkEncapsulation" : "DOT1Q",
-            "type" : "TUNNEL",
+            "type" : "IPSEC_TUNNEL",
             "vrf" : "default"
           }
         },
@@ -5018,7 +5018,7 @@
             "switchport" : false,
             "switchportMode" : "NONE",
             "switchportTrunkEncapsulation" : "DOT1Q",
-            "type" : "VPN",
+            "type" : "IPSEC_TUNNEL",
             "vrf" : "default"
           },
           "vpn2" : {
@@ -5047,7 +5047,7 @@
             "switchport" : false,
             "switchportMode" : "NONE",
             "switchportTrunkEncapsulation" : "DOT1Q",
-            "type" : "VPN",
+            "type" : "IPSEC_TUNNEL",
             "vrf" : "default"
           }
         },

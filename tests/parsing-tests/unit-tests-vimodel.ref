@@ -8281,7 +8281,7 @@
             "switchport" : false,
             "switchportMode" : "NONE",
             "switchportTrunkEncapsulation" : "DOT1Q",
-            "type" : "VPN",
+            "type" : "IPSEC_TUNNEL",
             "vrf" : "default"
           },
           "Dot11Radio0" : {

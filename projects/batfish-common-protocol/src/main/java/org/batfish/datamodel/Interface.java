@@ -630,6 +630,8 @@ public final class Interface extends ComparableStructure<String> {
       return InterfaceType.AGGREGATED;
     } else if (name.startsWith("cmp-mgmt")) {
       return InterfaceType.PHYSICAL;
+    } else if (name.startsWith("Crypto-Engine")) {
+      return InterfaceType.IPSEC_TUNNEL; // IPSec VPN
     } else if (name.startsWith("Dialer")) {
       return InterfaceType.PHYSICAL;
     } else if (name.startsWith("Dot11Radio")) {
@@ -758,8 +760,6 @@ public final class Interface extends ComparableStructure<String> {
     if (name.startsWith("st")) {
       return InterfaceType.IPSEC_TUNNEL;
     } else if (name.startsWith("gr")) {
-      return InterfaceType.TUNNEL;
-    } else if (name.startsWith("ip")) {
       return InterfaceType.TUNNEL;
     } else if (name.startsWith("reth")) {
       return InterfaceType.REDUNDANT;

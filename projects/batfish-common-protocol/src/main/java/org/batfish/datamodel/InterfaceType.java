@@ -6,7 +6,7 @@ public enum InterfaceType {
   AGGREGATED,
   /** Child of a aggregate interface: logical, sub-interface of an AGGREGATED interface */
   AGGREGATE_CHILD,
-  /** Tunnel configured to use IPsec protocol */
+  /** Tunnel interface configured to use IPsec protocol */
   IPSEC_TUNNEL,
   /** Generic Logical interface, (e.g., units on Juniper devices) */
   LOGICAL,
@@ -24,6 +24,4 @@ public enum InterfaceType {
   UNKNOWN, // for use as sentinel value
   /** Logical VLAN/irb interface */
   VLAN,
-  /** Logical VPN interface, (i.e., IPSec tunnel) */
-  VPN,
 }

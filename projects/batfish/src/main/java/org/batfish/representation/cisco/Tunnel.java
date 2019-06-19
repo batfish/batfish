@@ -68,11 +68,11 @@ public final class Tunnel implements Serializable {
     return _sourceInterfaceName;
   }
 
-  public void setDestination(Ip destination) {
+  public void setDestination(@Nullable Ip destination) {
     _destination = destination;
   }
 
-  public void setIpsecProfileName(String name) {
+  public void setIpsecProfileName(@Nullable String name) {
     _ipsecProfileName = name;
   }
 

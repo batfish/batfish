@@ -15,7 +15,6 @@ import static org.batfish.representation.cisco.CiscoConversions.generateBgpExpor
 import static org.batfish.representation.cisco.CiscoConversions.generateBgpImportPolicy;
 import static org.batfish.representation.cisco.CiscoConversions.generateGenerationPolicy;
 import static org.batfish.representation.cisco.CiscoConversions.getRsaPubKeyGeneratedName;
-import static org.batfish.representation.cisco.CiscoConversions.getTunnelInterfaceType;
 import static org.batfish.representation.cisco.CiscoConversions.resolveIsakmpProfileIfaceNames;
 import static org.batfish.representation.cisco.CiscoConversions.resolveKeyringIfaceNames;
 import static org.batfish.representation.cisco.CiscoConversions.resolveTunnelIfaceNames;
@@ -2026,7 +2025,10 @@ public final class CiscoConfiguration extends VendorConfiguration {
       String ifaceName, Interface iface, Map<String, IpAccessList> ipAccessLists, Configuration c) {
     InterfaceType ifaceType;
     if (iface.getTunnel() != null) {
-      ifaceType = getTunnelInterfaceType(iface.getTunnel().getMode());
+      ifaceType =
+          iface.getTunnel().getMode() == TunnelMode.IPSEC
+              ? InterfaceType.IPSEC_TUNNEL
+              : InterfaceType.TUNNEL;
     } else {
       ifaceType = computeInterfaceType(iface.getName(), c.getConfigurationFormat());
     }

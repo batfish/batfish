@@ -22,6 +22,7 @@ public class TypesInterfaceSpecifierTest {
   @Rule public final ExpectedException thrown = ExpectedException.none();
 
   private static final Interface AGGREGATED;
+  private static final Interface IPSEC_TUNNEL;
   private static final Interface LOOPBACK;
   private static final Interface NULL;
   private static final Interface PHYSICAL;
@@ -45,6 +46,9 @@ public class TypesInterfaceSpecifierTest {
 
     AGGREGATED = ib.build();
     AGGREGATED.setInterfaceType(InterfaceType.AGGREGATED);
+
+    IPSEC_TUNNEL = ib.build();
+    IPSEC_TUNNEL.setInterfaceType(InterfaceType.IPSEC_TUNNEL);
 
     LOOPBACK = ib.build();
     LOOPBACK.setInterfaceType(InterfaceType.LOOPBACK);
@@ -89,6 +93,9 @@ public class TypesInterfaceSpecifierTest {
     assertThat(
         specifiedInterfaces("a.*"), equalTo(ImmutableSet.of(new NodeInterfacePair(AGGREGATED))));
     assertThat(
+        specifiedInterfaces("ipsec.*"),
+        equalTo(ImmutableSet.of(new NodeInterfacePair(IPSEC_TUNNEL))));
+    assertThat(
         specifiedInterfaces("l.*"), equalTo(ImmutableSet.of(new NodeInterfacePair(LOOPBACK))));
     assertThat(specifiedInterfaces("n.*"), equalTo(ImmutableSet.of(new NodeInterfacePair(NULL))));
     assertThat(
@@ -105,6 +112,7 @@ public class TypesInterfaceSpecifierTest {
         equalTo(
             ImmutableSet.of(
                 new NodeInterfacePair(AGGREGATED),
+                new NodeInterfacePair(IPSEC_TUNNEL),
                 new NodeInterfacePair(LOOPBACK),
                 new NodeInterfacePair(NULL),
                 new NodeInterfacePair(PHYSICAL),

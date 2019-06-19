@@ -57,7 +57,6 @@ import org.batfish.datamodel.IkeKeyType;
 import org.batfish.datamodel.IkePhase1Key;
 import org.batfish.datamodel.IkePhase1Policy;
 import org.batfish.datamodel.IkePhase1Proposal;
-import org.batfish.datamodel.InterfaceType;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Ip6;
 import org.batfish.datamodel.Ip6AccessList;
@@ -119,7 +118,6 @@ import org.batfish.datamodel.routing_policy.statement.Statement;
 import org.batfish.datamodel.routing_policy.statement.Statements;
 import org.batfish.datamodel.visitors.HeaderSpaceConverter;
 import org.batfish.representation.cisco.DistributeList.DistributeListFilterType;
-import org.batfish.representation.cisco.Tunnel.TunnelMode;
 
 /** Utilities that convert Cisco-specific representations to vendor-independent model. */
 @ParametersAreNonnullByDefault
@@ -155,15 +153,6 @@ class CiscoConversions {
       }
     }
     return highestIp;
-  }
-
-  /** Gets the interface type for a given tunnel mode */
-  @Nonnull
-  static InterfaceType getTunnelInterfaceType(@Nonnull TunnelMode tunnelMode) {
-    if (tunnelMode == TunnelMode.IPSEC) {
-      return InterfaceType.IPSEC_TUNNEL;
-    }
-    return InterfaceType.TUNNEL;
   }
 
   /**
