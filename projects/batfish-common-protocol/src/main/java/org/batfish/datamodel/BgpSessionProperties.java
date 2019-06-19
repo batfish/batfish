@@ -6,16 +6,39 @@ import static com.google.common.base.Preconditions.checkArgument;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Sets;
+import java.util.Collection;
+import java.util.EnumSet;
 import java.util.Objects;
+import java.util.Set;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
+import org.batfish.datamodel.bgp.AddressFamily;
+import org.batfish.datamodel.bgp.AddressFamily.Type;
+import org.batfish.datamodel.bgp.EvpnAddressFamily;
 
-/** Represents properties of a peering session between two {@link BgpPeerConfig}s. */
+/**
+ * Represents properties of a peering session between two {@link BgpPeerConfig}s (usually associated
+ * with a {@link org.batfish.datamodel.bgp.BgpTopology.EdgeId bgp edge}).
+ *
+ * <p>Intended use:
+ *
+ * <ul>
+ *   <li>For this session to be created, two configurations must be deemed compatible.
+ *   <li>Some properties of the session are directional (such as head/tail IPs) and therefore must
+ *       be reciprocal if the edge is reversed. Others are negotiated by devices and therefore must
+ *       be equal in both directions. See {@link #from(BgpPeerConfig, BgpPeerConfig, boolean)} for
+ *       more details.
+ * </ul>
+ */
 @ParametersAreNonnullByDefault
 public final class BgpSessionProperties {
 
   private static final String PROP_ADDITIONAL_PATHS = "additionalPaths";
+  private static final String PROP_ADDRESS_FAMILIES = "addressFamilies";
   private static final String PROP_ADVERTISE_EXTERNAL = "advertiseExternal";
   private static final String PROP_ADVERTISE_INACTIVE = "advertiseInactive";
   private static final String PROP_HEAD_IP = "headIp";
@@ -25,6 +48,7 @@ public final class BgpSessionProperties {
   @JsonCreator
   private static @Nonnull BgpSessionProperties create(
       @JsonProperty(PROP_ADDITIONAL_PATHS) boolean additionalPaths,
+      @JsonProperty(PROP_ADDRESS_FAMILIES) @Nullable Collection<Type> addressFamilies,
       @JsonProperty(PROP_ADVERTISE_EXTERNAL) boolean advertiseExternal,
       @JsonProperty(PROP_ADVERTISE_INACTIVE) boolean advertiseInactive,
       @JsonProperty(PROP_HEAD_IP) @Nullable Ip headIp,
@@ -34,6 +58,7 @@ public final class BgpSessionProperties {
     checkArgument(tailIp != null, "Missing %s", PROP_TAIL_IP);
     return new BgpSessionProperties(
         additionalPaths,
+        firstNonNull(addressFamilies, ImmutableSet.of()),
         advertiseExternal,
         advertiseInactive,
         tailIp,
@@ -44,6 +69,7 @@ public final class BgpSessionProperties {
   public static final class Builder {
 
     private boolean _additionalPaths;
+    @Nullable private Collection<EvpnAddressFamily.Type> _addressFamilies;
     private boolean _advertiseExternal;
     private boolean _advertiseInactive;
     private @Nullable Ip _tailIp;
@@ -55,14 +81,26 @@ public final class BgpSessionProperties {
     }
 
     public @Nonnull BgpSessionProperties build() {
-      checkArgument(_headIp != null, "Missing headIp");
-      checkArgument(_tailIp != null, "Missing tailIp");
+      checkArgument(_headIp != null, "Missing %s", PROP_HEAD_IP);
+      checkArgument(_tailIp != null, "Missing %s", PROP_TAIL_IP);
       return new BgpSessionProperties(
-          _additionalPaths, _advertiseExternal, _advertiseInactive, _tailIp, _headIp, _sessionType);
+          _additionalPaths,
+          firstNonNull(_addressFamilies, ImmutableSet.of()),
+          _advertiseExternal,
+          _advertiseInactive,
+          _tailIp,
+          _headIp,
+          _sessionType);
     }
 
     public @Nonnull Builder setAdditionalPaths(boolean additionalPaths) {
       _additionalPaths = additionalPaths;
+      return this;
+    }
+
+    @Nonnull
+    public Builder setAddressFamilies(Collection<Type> addressFamilies) {
+      _addressFamilies = addressFamilies;
       return this;
     }
 
@@ -97,6 +135,7 @@ public final class BgpSessionProperties {
   }
 
   private final boolean _additionalPaths;
+  @Nonnull private final Set<EvpnAddressFamily.Type> _addressFamilies;
   private final boolean _advertiseExternal;
   private final boolean _advertiseInactive;
   @Nonnull private final Ip _tailIp;
@@ -105,12 +144,14 @@ public final class BgpSessionProperties {
 
   private BgpSessionProperties(
       boolean additionalPaths,
+      Collection<AddressFamily.Type> addressFamilies,
       boolean advertiseExternal,
       boolean advertiseInactive,
-      @Nonnull Ip tailIp,
-      @Nonnull Ip headIp,
+      Ip tailIp,
+      Ip headIp,
       SessionType sessionType) {
     _additionalPaths = additionalPaths;
+    _addressFamilies = Sets.immutableEnumSet(addressFamilies);
     _advertiseExternal = advertiseExternal;
     _advertiseInactive = advertiseInactive;
     _tailIp = tailIp;
@@ -169,9 +210,25 @@ public final class BgpSessionProperties {
   }
 
   /**
-   * Create a set of new parameters based on session initiator and listener. <b>Note</b> that some
-   * parameters (such as {@link #isEbgp()} will be determined based on the configuration of the
-   * initiator only.
+   * Return the set of address family types for which the NLRIs (i.e., routes) can be exchanged over
+   * this session
+   */
+  @Nonnull
+  @JsonProperty(PROP_ADDRESS_FAMILIES)
+  public Set<Type> getAddressFamilies() {
+    return _addressFamilies;
+  }
+
+  /**
+   * Create a set of new parameters based on session initiator and listener. This assumes that
+   * provided {@link BgpPeerConfig configs} are compatible.
+   *
+   * <p>For session parameters that are directional (e.g., IPs used), the {@code initiator} config
+   * will be used to fill in the {@code tail} values, unless {@code reverseDirection} is specified.
+   * Other parameters are derived from both peer configurations, emulating session negotiation.
+   *
+   * <p><b>Note</b> that some parameters (such as {@link #isEbgp()} will be determined based on the
+   * configuration of the initiator only.
    *
    * @param reverseDirection Whether to create the session properties for reverse direction
    *     (listener to initiator) rather than forwards direction (initiator to listener)
@@ -196,11 +253,27 @@ public final class BgpSessionProperties {
             && listener.getAdditionalPathsReceive()
             && initiator.getAdditionalPathsSend()
             && initiator.getAdditionalPathsSelectAll(),
+        getAddressFamilyIntersection(initiator, listener),
         !SessionType.isEbgp(sessionType) && initiator.getAdvertiseExternal(),
         SessionType.isEbgp(sessionType) && initiator.getAdvertiseInactive(),
         reverseDirection ? listenerIp : initiatorIp,
         reverseDirection ? initiatorIp : listenerIp,
         sessionType);
+  }
+
+  @VisibleForTesting
+  static EnumSet<Type> getAddressFamilyIntersection(BgpPeerConfig a, BgpPeerConfig b) {
+    Set<Type> setA =
+        a.getAllAddressFamilies().stream()
+            .map(AddressFamily::getType)
+            .collect(Sets.toImmutableEnumSet());
+    Set<Type> setB =
+        b.getAllAddressFamilies().stream()
+            .map(AddressFamily::getType)
+            .collect(Sets.toImmutableEnumSet());
+    Collection<Type> intersection = Sets.intersection(setA, setB);
+    // need to special case empty collection, otherwise exception
+    return intersection.isEmpty() ? EnumSet.noneOf(Type.class) : EnumSet.copyOf(intersection);
   }
 
   /**
@@ -232,16 +305,23 @@ public final class BgpSessionProperties {
       return false;
     }
     BgpSessionProperties that = (BgpSessionProperties) o;
-    return _additionalPaths == that._additionalPaths
+    return _headIp.equals(that._headIp)
+        && _tailIp.equals(that._tailIp)
+        && _sessionType == that._sessionType
+        && _additionalPaths == that._additionalPaths
+        && _addressFamilies.equals(that._addressFamilies)
         && _advertiseExternal == that._advertiseExternal
-        && _advertiseInactive == that._advertiseInactive
-        && _sessionType == that._sessionType;
+        && _advertiseInactive == that._advertiseInactive;
   }
 
   @Override
   public int hashCode() {
     return Objects.hash(
-        _additionalPaths, _advertiseExternal, _advertiseInactive, _sessionType.ordinal());
+        _additionalPaths,
+        _addressFamilies,
+        _advertiseExternal,
+        _advertiseInactive,
+        _sessionType.ordinal());
   }
 
   public enum SessionType {
