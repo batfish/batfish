@@ -1889,6 +1889,24 @@ public class CiscoGrammarTest {
   }
 
   @Test
+  public void testIosInterfaceType() throws IOException {
+    Configuration c = parseConfig("ios-interface-type");
+
+    assertThat(c, hasInterface("Tunnel1", hasInterfaceType(InterfaceType.TUNNEL)));
+    assertThat(c, hasInterface("Tunnel2", hasInterfaceType(InterfaceType.TUNNEL)));
+    assertThat(c, hasInterface("Tunnel3", hasInterfaceType(InterfaceType.IPSEC_TUNNEL)));
+    assertThat(c, hasInterface("TenGigabitEthernet0/0", hasInterfaceType(InterfaceType.PHYSICAL)));
+  }
+
+  @Test
+  public void testEosInterfaceType() throws IOException {
+    Configuration c = parseConfig("eos-interface-type");
+
+    assertThat(c, hasInterface("Tunnel2", hasInterfaceType(InterfaceType.TUNNEL)));
+    assertThat(c, hasInterface("Tunnel3", hasInterfaceType(InterfaceType.IPSEC_TUNNEL)));
+  }
+
+  @Test
   public void testIosHttpInspection() throws IOException {
     String hostname = "ios-http-inspection";
     String filename = "configs/" + hostname;

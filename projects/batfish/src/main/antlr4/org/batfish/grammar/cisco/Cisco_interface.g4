@@ -1613,10 +1613,11 @@ iftunnel_mode
      | IPSEC
    )
    (
-     IPV4
+     IP
+     | IPV4
      | IPV6
      | MULTIPOINT
-   )
+   )?
    NEWLINE
 ;
 

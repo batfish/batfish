@@ -6,6 +6,8 @@ public enum InterfaceType {
   AGGREGATED,
   /** Child of a aggregate interface: logical, sub-interface of an AGGREGATED interface */
   AGGREGATE_CHILD,
+  /** Tunnel configured to use IPsec protocol */
+  IPSEC_TUNNEL,
   /** Generic Logical interface, (e.g., units on Juniper devices) */
   LOGICAL,
   /** Logical loopback interface */
@@ -16,9 +18,9 @@ public enum InterfaceType {
   PHYSICAL,
   /** Logical redundant ethernet interface (in Juniper parlance) */
   REDUNDANT,
-  /** A logical tunnel interface (e.g., GRE, IP-in-IP encapsulation) */
+  /** Tunnel interface running anything else than IPsec, for e.g., GRE, IPIP, MPLS, etc. */
   TUNNEL,
-  /** Uknknown interface type */
+  /** Unknown interface type */
   UNKNOWN, // for use as sentinel value
   /** Logical VLAN/irb interface */
   VLAN,

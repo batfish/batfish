@@ -54,6 +54,7 @@ import static org.batfish.datamodel.matchers.InterfaceMatchers.hasAdditionalArpI
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasAllAddresses;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasAllowedVlans;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasDescription;
+import static org.batfish.datamodel.matchers.InterfaceMatchers.hasInterfaceType;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasIsis;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasMtu;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasNativeVlan;
@@ -4654,6 +4655,15 @@ public final class FlatJuniperGrammarTest {
                 DEFAULT_VRF_NAME));
     assertThat(routes.get(DEFAULT_VRF_NAME), equalTo(defaultExpectedRoutes));
     assertThat(routes.get(vrf2Name), equalTo(vrf2ExpectedRoutes));
+  }
+
+  @Test
+  public void testInterfaceType() throws IOException {
+    Configuration c = parseConfig("interface-type");
+
+    assertThat(c, hasInterface("st0.0", hasInterfaceType(InterfaceType.IPSEC_TUNNEL)));
+    assertThat(c, hasInterface("gr-0/0/0.0", hasInterfaceType(InterfaceType.TUNNEL)));
+    assertThat(c, hasInterface("ge-0/0/0.0", hasInterfaceType(InterfaceType.LOGICAL)));
   }
 
   @Test

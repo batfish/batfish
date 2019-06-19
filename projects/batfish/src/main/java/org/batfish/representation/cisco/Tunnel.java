@@ -6,9 +6,11 @@ import static org.batfish.datamodel.Interface.UNSET_LOCAL_INTERFACE;
 import java.io.Serializable;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpProtocol;
 
+@ParametersAreNonnullByDefault
 public final class Tunnel implements Serializable {
 
   public enum TunnelMode {
@@ -18,34 +20,40 @@ public final class Tunnel implements Serializable {
 
   private static final long serialVersionUID = 1L;
 
-  private Ip _destination;
+  @Nullable private Ip _destination;
 
-  private String _ipsecProfileName;
+  @Nullable private String _ipsecProfileName;
 
-  private TunnelMode _mode;
+  @Nonnull private TunnelMode _mode;
 
-  private IpProtocol _protocol;
+  @Nonnull private IpProtocol _protocol;
 
-  private @Nullable Ip _sourceAddress;
+  @Nullable private Ip _sourceAddress;
 
-  private @Nonnull String _sourceInterfaceName;
+  @Nonnull private String _sourceInterfaceName;
 
   public Tunnel() {
     _sourceInterfaceName = UNSET_LOCAL_INTERFACE;
+    _mode = TunnelMode.GRE;
+    _protocol = IpProtocol.IP;
   }
 
+  @Nullable
   public Ip getDestination() {
     return _destination;
   }
 
+  @Nullable
   public String getIpsecProfileName() {
     return _ipsecProfileName;
   }
 
+  @Nonnull
   public TunnelMode getMode() {
     return _mode;
   }
 
+  @Nonnull
   public IpProtocol getProtocol() {
     return _protocol;
   }

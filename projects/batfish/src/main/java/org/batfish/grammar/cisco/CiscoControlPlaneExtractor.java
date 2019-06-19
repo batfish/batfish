@@ -6717,7 +6717,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       } else {
         todo(ctx);
       }
-      if (ctx.IPV4() != null) {
+      if (ctx.IPV4() != null || ctx.IP() != null) {
         tunnel.setProtocol(IpProtocol.IP);
       } else if (ctx.IPV6() != null) {
         tunnel.setProtocol(IpProtocol.IPV6);

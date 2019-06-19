@@ -532,7 +532,7 @@ public final class Interface extends ComparableStructure<String> {
   public static final String NULL_INTERFACE_NAME = "null_interface";
 
   public static final Set<InterfaceType> TUNNEL_INTERFACE_TYPES =
-      ImmutableSet.of(InterfaceType.TUNNEL, InterfaceType.VPN);
+      ImmutableSet.of(InterfaceType.IPSEC_TUNNEL);
 
   public static final String UNSET_LOCAL_INTERFACE = "unset_local_interface";
 
@@ -615,7 +615,7 @@ public final class Interface extends ComparableStructure<String> {
 
   private static InterfaceType computeAwsInterfaceType(String name) {
     if (name.startsWith("vpn")) {
-      return InterfaceType.VPN;
+      return InterfaceType.IPSEC_TUNNEL;
     } else {
       return InterfaceType.PHYSICAL;
     }
@@ -630,8 +630,6 @@ public final class Interface extends ComparableStructure<String> {
       return InterfaceType.AGGREGATED;
     } else if (name.startsWith("cmp-mgmt")) {
       return InterfaceType.PHYSICAL;
-    } else if (name.startsWith("Crypto-Engine")) {
-      return InterfaceType.VPN; // IPSec VPN
     } else if (name.startsWith("Dialer")) {
       return InterfaceType.PHYSICAL;
     } else if (name.startsWith("Dot11Radio")) {
@@ -677,16 +675,12 @@ public final class Interface extends ComparableStructure<String> {
       return InterfaceType.PHYSICAL;
     } else if (name.startsWith("TenGigabitEthernet")) {
       return InterfaceType.PHYSICAL;
-    } else if (name.startsWith("Tunnel")) {
-      return InterfaceType.TUNNEL;
     } else if (name.startsWith("tunnel-ip")) {
       return InterfaceType.TUNNEL;
     } else if (name.startsWith("tunnel-te")) {
       return InterfaceType.TUNNEL;
     } else if (name.startsWith("Vlan")) {
       return InterfaceType.VLAN;
-    } else if (name.startsWith("Vxlan")) {
-      return InterfaceType.TUNNEL;
     } else {
       return InterfaceType.UNKNOWN;
     }
@@ -762,7 +756,11 @@ public final class Interface extends ComparableStructure<String> {
 
   private static InterfaceType computeJuniperInterfaceType(String name) {
     if (name.startsWith("st")) {
-      return InterfaceType.VPN;
+      return InterfaceType.IPSEC_TUNNEL;
+    } else if (name.startsWith("gr")) {
+      return InterfaceType.TUNNEL;
+    } else if (name.startsWith("ip")) {
+      return InterfaceType.TUNNEL;
     } else if (name.startsWith("reth")) {
       return InterfaceType.REDUNDANT;
     } else if (name.startsWith("ae") && name.contains(".")) {
@@ -782,7 +780,7 @@ public final class Interface extends ComparableStructure<String> {
 
   private static InterfaceType computeVyosInterfaceType(String name) {
     if (name.startsWith("vti")) {
-      return InterfaceType.VPN;
+      return InterfaceType.IPSEC_TUNNEL;
     } else if (name.startsWith("lo")) {
       return InterfaceType.LOOPBACK;
     } else {

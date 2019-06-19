@@ -1,0 +1,6 @@
+#
+set system host-name interface-type
+#
+set interfaces st0 unit 0 family inet address 1.2.3.4/30
+set interfaces gr-0/0/0 unit 0 family inet address 1.2.3.5/30
+set interfaces ge-0/0/0 unit 0 family inet address 1.2.3.6/30

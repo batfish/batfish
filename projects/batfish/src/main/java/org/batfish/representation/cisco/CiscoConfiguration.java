@@ -15,6 +15,7 @@ import static org.batfish.representation.cisco.CiscoConversions.generateBgpExpor
 import static org.batfish.representation.cisco.CiscoConversions.generateBgpImportPolicy;
 import static org.batfish.representation.cisco.CiscoConversions.generateGenerationPolicy;
 import static org.batfish.representation.cisco.CiscoConversions.getRsaPubKeyGeneratedName;
+import static org.batfish.representation.cisco.CiscoConversions.getTunnelInterfaceType;
 import static org.batfish.representation.cisco.CiscoConversions.resolveIsakmpProfileIfaceNames;
 import static org.batfish.representation.cisco.CiscoConversions.resolveKeyringIfaceNames;
 import static org.batfish.representation.cisco.CiscoConversions.resolveTunnelIfaceNames;
@@ -2023,9 +2024,14 @@ public final class CiscoConfiguration extends VendorConfiguration {
 
   private org.batfish.datamodel.Interface toInterface(
       String ifaceName, Interface iface, Map<String, IpAccessList> ipAccessLists, Configuration c) {
+    InterfaceType ifaceType;
+    if (iface.getTunnel() != null) {
+      ifaceType = getTunnelInterfaceType(iface.getTunnel().getMode());
+    } else {
+      ifaceType = computeInterfaceType(iface.getName(), c.getConfigurationFormat());
+    }
     org.batfish.datamodel.Interface newIface =
-        new org.batfish.datamodel.Interface(
-            ifaceName, c, computeInterfaceType(iface.getName(), c.getConfigurationFormat()));
+        new org.batfish.datamodel.Interface(ifaceName, c, ifaceType);
     if (newIface.getInterfaceType() == InterfaceType.VLAN) {
       newIface.setVlan(CommonUtil.getInterfaceVlanNumber(ifaceName));
     }

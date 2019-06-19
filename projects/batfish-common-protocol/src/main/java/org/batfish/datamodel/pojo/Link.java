@@ -83,10 +83,10 @@ public class Link extends BfObject {
 
       case AGGREGATED:
       case AGGREGATE_CHILD:
+      case IPSEC_TUNNEL:
       case REDUNDANT:
       case TUNNEL:
       case VLAN:
-      case VPN:
         return LinkType.VIRTUAL;
 
         // loopback and null shouldn't really happen; lets call it unknown
