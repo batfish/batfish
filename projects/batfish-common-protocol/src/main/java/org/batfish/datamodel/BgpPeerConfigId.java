@@ -157,9 +157,9 @@ public final class BgpPeerConfigId implements Comparable<BgpPeerConfigId> {
   @Override
   public String toString() {
     return MoreObjects.toStringHelper(this)
-        .add("hostname", _hostname)
-        .add("peerInterface", _peerInterface)
-        .add("remotePeerPrefix", _remotePeerPrefix)
+        .add(PROP_HOSTNAME, _hostname)
+        .add(PROP_INTERFACE, _peerInterface)
+        .add(PROP_PREFIX, _remotePeerPrefix)
         .toString();
   }
 
