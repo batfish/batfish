@@ -1,0 +1,94 @@
+#TMSH-VERSION: 13.1.1
+
+sys global-settings {
+  hostname f5_bigip_vip_configuration
+}
+ltm node /Common/node1a {
+    address 172.16.0.1
+}
+ltm node /Common/node1b {
+    address 172.16.0.2
+}
+ltm pool /Common/pool1 {
+    description "pool1 is cool"
+    members {
+        /Common/node1a:80 {
+            address 172.16.0.1
+            description "node1a_is_cool"
+        }
+        /Common/node1a:8080 {
+            address 172.16.0.2
+        }
+    }
+}
+ltm virtual /Common/virtual1 {
+    description "virtual1 is cool"
+    destination /Common/10.0.0.1:80
+    ip-protocol tcp
+    mask 255.255.255.255
+    pool /Common/pool1
+    source 0.0.0.0/0
+    translate-address enabled
+    translate-port enabled
+}
+ltm virtual-address /Common/10.0.0.1 {
+    address 10.0.0.1
+    arp enabled
+    mask 255.255.255.255
+    route-advertisement selective
+}
+
+ltm node /Common/node2 {
+    address 10.0.0.2
+}
+ltm pool /Common/pool2 {
+    description "pool2 is lame"
+    members {
+        /Common/node2:80 {
+            address 10.0.0.2
+            description node2_is_lame
+        }
+    }
+}
+ltm virtual /Common/virtual2 {
+    destination /Common/192.0.2.2:80
+    ip-protocol tcp
+    mask 255.255.255.255
+    pool /Common/pool2
+    source 0.0.0.0/0
+    translate-address enabled
+    translate-port enabled
+}
+ltm virtual-address /Common/192.0.2.2 {
+    address 192.0.2.2
+    arp enabled
+    mask 255.255.255.255
+    route-advertisement selective
+}
+
+ltm node /Common/node3 {
+    address 10.0.0.3
+}
+ltm pool /Common/pool3 {
+    members {
+        /Common/node3:80 {
+            address 10.0.0.3
+            description node3_is_ok
+        }
+    }
+}
+ltm virtual /Common/virtual3 {
+    destination /Common/192.0.2.3:80
+    ip-protocol tcp
+    mask 255.255.255.255
+    pool /Common/pool3
+    source 0.0.0.0/0
+    translate-address enabled
+    translate-port enabled
+}
+ltm virtual-address /Common/192.0.2.3 {
+    address 192.0.2.3
+    arp enabled
+    mask 255.255.255.255
+    route-advertisement selective
+}

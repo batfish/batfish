@@ -1,0 +1,58 @@
+!
+hostname cisco_route_map
+!
+ip as-path access-list AS_PATH_ACL1 deny ^65535$
+ip as-path access-list AS_PATH_ACL1 deny _65535_
+ip as-path access-list AS_PATH_ACL2 permit ^65536$
+ip as-path access-list AS_PATH_ACL_UNUSED permit ^4000$
+!
+route-map connected-to-bgp permit 10
+ match ip address prefix-list hpr-connector-subnets
+ set origin igp
+ set metric -1
+ set community  2153:65515 2153:65535
+ set nlri unicast multicast
+ set traffic-index 1
+!
+route-map to_svl-hub-router permit 100
+ set metric +5
+ !
+!
+! terrible names are allowed at least in ios
+route-map ijfw$%^&****(((([]grr permit 10
+!
+route-map MSDP-SA-RP-FILTER deny 10
+ match ip route-source 124
+ match ip address test
+!
+route-map next-hop-null deny 15
+ match ip next-hop null
+!
+route-map mgmt permit 10
+ match route-type internal
+ match source-protocol ospf 1
+!
+route-map beeble permit 5
+ match ip address prefix-list bobble
+ continue
+ set community no-export additive
+!
+route-map beeble permit 10
+ match source-protocol static connected
+ set metric 0
+ set local-preference 100
+ set ip default next-hop 10.0.0.1
+ set weight 20
+!
+route-map multicaststuff permit 10
+ match ip multicast group 239.128.128.0/20
+!
+route-map MAP_NAME1 permit 10
+ match as-path AS_PATH_ACL1
+!
+route-map MAP_NAME2 permit 20
+ match as-path AS_PATH_ACL2
+!
+route-map MAP_NAME2 permit 20
+ match as-path AS_PATH_UNDEF
+!

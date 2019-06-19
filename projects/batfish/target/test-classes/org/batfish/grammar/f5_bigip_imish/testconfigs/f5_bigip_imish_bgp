@@ -1,0 +1,42 @@
+#TMSH-VERSION: 13.1.1
+
+sys global-settings {
+    hostname f5_bigip_imish_bgp
+}
+
+net interface 1.0 {
+    bundle enabled
+    bundle-speed 40G
+}
+
+net vlan /Common/vlan1 {
+    interfaces {
+        1.0 { }
+    }
+    tag 100
+}
+
+net self /Common/self1 {
+    address 192.0.2.2/24
+    allow-service all
+    traffic-group /Common/traffic-group-local-only
+    vlan /Common/vlan1
+}
+
+!
+!!! imish configuration starts here
+!
+access-list ipv4acl permit 10.0.0.0/24
+!
+route-map MY_KERNEL_OUT permit 10
+
+route-map MY_IPV4_OUT permit 10
+ match ip address ipv4acl
+ set community 2:2
+!
+router bgp 123
+ redistribute kernel route-map MY_KERNEL_OUT
+ neighbor 192.0.2.1 remote-as 456
+ neighbor 192.0.2.1 route-map MY_IPV4_OUT out
+ neighbor 192.0.2.1 description Cool IPv4 BGP neighbor description
+!

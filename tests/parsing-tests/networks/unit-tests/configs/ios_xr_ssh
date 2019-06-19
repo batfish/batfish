@@ -1,0 +1,11 @@
+!
+hostname ios_xr_ssh
+!
+ssh key-exchange group dh-group1-sha1
+ssh server logging
+ssh server vrf default ipv4 access-list ACL99 ipv6 access-list ipv6-vty-acl
+ssh server v2
+ssh server session-limit 16
+ssh timeout 120
+ssh version 2
+!

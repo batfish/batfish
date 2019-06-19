@@ -1,0 +1,19 @@
+#TMSH-VERSION: 13.1.1
+
+sys global-settings {
+    hostname f5_bigip_imish_route_map_match_ip_address_prefix_list
+}
+
+!
+!!! imish configuration starts here
+!
+ip prefix-list pl1 seq 10 permit 0.0.0.0/0 le 0
+ip prefix-list pl2 seq 10 permit 0.0.0.0/32 ge 32
+!
+route-map rm1 permit 10
+ match ip address prefix-list pl1
+!
+route-map rm2 permit 10
+ match ip address prefix-list pl2
+!
+end

@@ -1,0 +1,15 @@
+{
+  "hostname": "z2-firewall",
+  "iptablesFile": "iptables/z2-firewall.v4",
+  "overlay": true,
+  "hostInterfaces": {
+    "eth1": {
+      "name": "eth1",
+      "prefix": "10.0.4.1/24"
+    },
+    "eth0": {
+      "name": "eth0",
+      "prefix": "10.0.1.10/24"
+    }
+  }
+}

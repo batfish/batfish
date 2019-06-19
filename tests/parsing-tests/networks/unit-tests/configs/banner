@@ -1,0 +1,56 @@
+!
+hostname banner
+!
+banner login
+THIS IS AN ARISTA STYLE BANNER
+
+NOTICE NOTICE NOTICE NOTICE NOTICE NOTICE NOTICE NOTICE NOTICE
+Unauthorized access and/or use prohibited. All access and/or use subject to monitoring.
+NOTICE NOTICE NOTICE NOTICE NOTICE NOTICE NOTICE NOTICE NOTICE
+
+EOF
+!
+banner motd #
+THIS BANNER IS DELIMITED BY HASHES (nexus)
+
+NOTICE   NOTICE   NOTICE   NOTICE   NOTICE   NOTICE   NOTICE   NOTICE   NOTICE
+
+Unauthorized access and/or use prohibited.
+All access and/or use subject to monitoring.
+
+NOTICE   NOTICE   NOTICE   NOTICE   NOTICE   NOTICE   NOTICE   NOTICE   NOTICE
+#
+!
+banner motd ^C
+THIS BANNER's ESCAPE_C DOES NOT START ON A NEWLINE
+It has a has (#) character in it
+NOTICE NOTICE NOTICE NOTICE NOTICE NOTICE NOTICE NOTICE NOTICE
+Unauthorized a^C
+!
+
+banner motd 
+NOTICE NOTICE NOTICE NOTICE NOTICE NOTICE NOTICE NOTICE NOTICE
+THIS BANNER CONTAINS A UNICODE '0003' character (CTRL-C)
+NOTICE NOTICE NOTICE NOTICE NOTICE NOTICE NOTICE NOTICE NOTICE
+
+!
+
+banner login ^
+***************************************************************************
+*                                                                         *
+*  This banner was seen in IOS XR                                         *
+*  It ends with a caret                                                   *
+*                                                                         *
+***************************************************************************
+^
+
+banner motd ^=================================================================================                                             
+                       BLAH BLAH
+
+                             BOOP
+=================================================================================^
+
+
+
+logging trap informational
+end

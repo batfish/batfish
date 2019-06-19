@@ -1,0 +1,27 @@
+!
+hostname cisco_username
+!
+username admin password 5 SOMEPASSWORD1  role network-admin
+username demo privilege 15 nohangup password 0 demo
+username network password 5 SOMEPASSWORD2  role network-operator
+username network passphrase lifetime 12345 warntime 123 gracetime 12
+username network role network-admin
+username sha privilege 15 secret 5 $1$pdQG$60trnJU5CpHjXSffvKXzd.
+username user1 password blah
+username user2 nopassword
+!
+username asa-user1 password PASSWORD1
+username asa-user2 password PASSWORD2 encrypted
+username asa-user3 password PASSWORD3 mschap
+username asa-user4 password PASSWORD4 nt-encrypted
+username asa-user5 password PASSWORD5 pbkdf2
+username asa-user1 password PASSWORD6 encrypted privilege 0
+!
+username abc
+ group def
+ secret 5 $1$aaaa$bbbbbbbbbbbbbbbbbbbbbb
+username rancid attributes
+ vpn-group-policy GroupPolicy_NOC-VPN
+ group-lock value NOC-VPN
+username bob1 password 1 1234
+username bob2 privilege 1 password 1 1234

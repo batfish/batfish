@@ -1,0 +1,7 @@
+!
+hostname ios-bgp-origination-space
+!
+router bgp 1
+  neighbor 2.2.2.2 remote-as 2
+  network 1.1.1.1/32
+  network 1.1.2.0/24

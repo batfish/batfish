@@ -1,0 +1,40 @@
+{
+  "class" : "org.batfish.question.specifiers.SpecifiersQuestion",
+  "queryType" : "INTERFACE",
+  "specifierFactoryVersion" : "V2",
+  "differential" : false,
+  "includeOneTableKeys" : true,
+  "instance" : {
+    "description" : "Returns the set of interfaces corresponding to an interfaceSpec value.",
+    "instanceName" : "qname",
+    "longDescription" : "Helper question that shows how specified interfaceSpec values resolve to the interfaces in the network.",
+    "tags" : [
+      "specifiers"
+    ],
+    "variables" : {
+      "grammarVersion" : {
+        "description" : "Version of grammar to use for resolution",
+        "displayName" : "Grammar version",
+        "optional" : true,
+        "type" : "string",
+        "value" : "v2"
+      },
+      "interfaces" : {
+        "description" : "Input to the interfaceSpecifier",
+        "displayName" : "Interfaces",
+        "optional" : true,
+        "type" : "interfacesSpec",
+        "value" : "input"
+      },
+      "nodes" : {
+        "description" : "Input to the NodeSpecifier",
+        "displayName" : "Nodes",
+        "optional" : true,
+        "type" : "nodeSpec",
+        "value" : "input"
+      }
+    }
+  },
+  "interfaceSpecifierInput" : "input",
+  "nodeSpecifierInput" : "input"
+}

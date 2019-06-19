@@ -1,0 +1,10 @@
+[
+  {
+    "class" : "org.batfish.minesweeper.answers.SmtManyAnswerElement",
+    "result" : {
+      "r1<-->r2" : {
+        "verified" : true
+      }
+    }
+  }
+]

@@ -1,0 +1,42 @@
+#
+shelfname ""
+hostname "cadant_bgp"
+#
+router bgp 12345
+ address-family ipv6 enable
+ bgp router-id 1.2.3.4
+ no shutdown
+exit
+router bgp
+ neighbor 1.2.3.4 remote-as 12345
+ neighbor 1.2.3.4 update-source loopback 15
+ neighbor 1.2.3.4 password 0123456789abcdef0123456789abcdef hidden
+ neighbor 1.2.3.4 connect-retry 5
+ neighbor 1.2.3.4 timers 5 20
+ neighbor dead:beef::1 remote-as 12345
+ neighbor dead:beef::1 update-source loopback 15
+ neighbor dead:beef::1 password 0123456789abcdef0123456789abcdef hidden
+ neighbor dead:beef::1 connect-retry 5
+ neighbor dead:beef::1 timers 5 20
+exit
+router bgp 12345
+ address-family ipv4
+  redistribute connected
+  redistribute rip
+  neighbor 1.2.3.4 activate
+  neighbor 1.2.3.4 next-hop-self
+  neighbor 1.2.3.4 route-map blarp out
+ exit
+ address-family ipv6
+  redistribute connected
+  redistribute static
+  neighbor dead:beef::1 activate
+  neighbor dead:beef::1 next-hop-self
+  neighbor dead:beef::1 route-map blerp out
+ exit
+exit
+router bgp
+ neighbor 1.2.3.4 no shutdown
+ neighbor dead:beef::1 no shutdown
+exit
+#

@@ -1,0 +1,18 @@
+# RANCID-CONTENT-TYPE: juniper
+set system host-name community
+#
+set policy-options community well-known members no-advertise
+set policy-options community well-known members no-export
+set policy-options community well-known members no-export-subconfed
+set policy-options community mixed members "^0:1$"
+set policy-options community mixed members 0:2
+set policy-options community mixed members "^1:1$"
+set policy-options community mixed members 0:3
+set policy-options community regex members "^0:1$"
+set policy-options policy-statement p1 term t1 then community set well-known
+set policy-options policy-statement p2 term t1 then community set mixed
+set policy-options policy-statement p3 term t1 then community set regex
+set policy-options policy-statement p4 term t1 then community add well-known
+set policy-options policy-statement p5 term t1 then community add mixed
+set policy-options policy-statement p6 term t1 then community add regex
+#

@@ -1,0 +1,36 @@
+!RANCID-CONTENT-TYPE: cisco-nx
+!
+hostname nexus_bgp
+feature bgp
+!
+router bgp 1
+  enforce-first-as
+  event-history periodic
+  event-history events
+  event-history cli
+  fast-external-fallover
+  address-family ipv4 unicast
+    client-to-client reflection
+    dampen-igp-metric 600
+    distance 20 200 220
+    redistribute direct route-map BLOBB
+    maximum-paths 32
+    maximum-paths ibgp 32
+    network 1.2.3.0/24 route-map BLIBB
+    nexthop trigger-delay critical 3000 non-critical 10000
+  address-family ipv6 unicast
+     network ::ffff:1.2.3.0/120 route-map BLIB
+  template peer PEER_BLLF
+    remote-as 12345
+    dynamic-capability
+    timers 4 12
+    address-family ipv4 unicast
+      next-hop-third-party
+      route-map IN_BBB in
+      route-map EG_CCC out
+      send-community both
+      soft-reconfiguration inbound
+
+
+!
+

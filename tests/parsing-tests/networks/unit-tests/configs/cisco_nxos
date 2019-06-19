@@ -1,0 +1,24 @@
+hostname cisco_nxos
+!
+feature bfd
+feature bgp
+!
+ip access-list copp-system-acl-icmp
+  10 permit icmp any any 
+class-map type control-plane match-any copp-icmp
+  match access-group name copp-system-acl-icmp
+!
+interface ethernet2/1
+  bfd authentication keyed-sha1 keyid 1 key cisco123
+  bfd authentication Keyed-SHA1 keyid 1 hex-key 0abcdefg
+  bfd echo
+  bfd echo-rx-interval 40
+  bfd interval 50 min_rx 50 multiplier 3
+  bfd neighbor src-ip 1.2.3.4 dest-ip 2.3.4.5
+  bfd optimize subinterface
+  no bfd authentication
+  no bfd echo
+  no bfd echo-rx-interval
+  no bfd interval
+  no bfd neighbor src-ip 1.2.3.4 dest-ip 2.3.4.5
+  no bfd optimize subinterface

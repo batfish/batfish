@@ -1,0 +1,10 @@
+!
+hostname aaa_accounting
+!
+aaa accounting exec ABC start-stop group tac_plus none
+aaa accounting commands XYZ start-stop group tac_plus none
+aaa default-taskgroup ASDF 
+aaa accounting exec default
+ action-type start-stop
+ group tacacs+
+!

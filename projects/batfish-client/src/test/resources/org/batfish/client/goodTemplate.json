@@ -1,0 +1,25 @@
+{
+  "class": "org.batfish.client.QuestionHelperTestQuestion",
+  "parameterMandatory": "${parameter1}",
+  "parameterOptional": "${parameter2}",
+  "instance": {
+    "description": "List defined structures (e.g., ACL, routemaps).",
+    "instanceName": "questionHelperTestQuestion",
+    "tags": [
+      "default"
+    ],
+    "variables": {
+      "parameter1": {
+        "description": "parameter description",
+        "displayName": "Parameter 1",
+        "type": "integer",
+        "value": 1
+      },
+      "parameter2": {
+        "description": "parameter description",
+        "type": "integer",
+        "optional": true
+      }
+    }
+  }
+}

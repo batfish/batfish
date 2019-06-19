@@ -1,0 +1,3 @@
+set deviceconfig system hostname ntp-server
+set deviceconfig system ntp-servers primary-ntp-server ntp-server-address ntpservername
+set deviceconfig system ntp-servers secondary-ntp-server ntp-server-address 1.1.1.1

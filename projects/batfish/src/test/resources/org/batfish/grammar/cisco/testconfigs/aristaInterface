@@ -1,0 +1,10 @@
+boot system flash this-is-an-arista-device.swi
+!
+hostname aristaInterface
+!
+interface Ethernet3/2/1
+  mtu 9000
+!
+interface Ethernet3/2/1.4
+  ! No MTU setting
+!

@@ -1,0 +1,10 @@
+!
+hostname address_family
+!
+router bgp 1
+ !
+ address-family ipv4
+  neighbor 1.2.3.4 remote-as 1
+ exit-address-family
+!
+end

@@ -1,0 +1,24 @@
+{
+    "edges": [
+        {
+            "node1": {
+                "hostname": "node1",
+                "interfaceName": "swp1"
+            },
+            "node2": {
+                "hostname": "node2",
+                "interfaceName": "swp1"
+            }
+        },
+        {
+            "node1": {
+                "hostname": "node2",
+                "interfaceName": "swp1"
+            },
+            "node2": {
+                "hostname": "node1",
+                "interfaceName": "swp1"
+            }
+        }
+    ]
+}

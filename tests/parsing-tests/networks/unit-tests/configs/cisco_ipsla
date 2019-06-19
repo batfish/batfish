@@ -1,0 +1,196 @@
+!
+hostname cisco_ipsla
+!
+ipsla
+ operation 2
+  type icmp echo
+   timeout 1000
+   source address abcd:abcd::118:9a41:51
+   destination address abcd:abcd::118:9a41:a1
+   frequency 60
+  !
+ !
+ operation 3
+  type icmp echo
+   source address abcd:abcd::118:9a41:51
+   destination address abcd:abcd::118:9a41:80
+   frequency 60
+  !
+ !
+ reaction operation 2
+  react timeout
+   action trigger
+   threshold type consecutive 3
+  !
+ !
+ reaction operation 3
+  react timeout
+   action trigger
+  threshold type consecutive 3
+  !
+ !
+ schedule operation 2
+  start-time now
+  life forever
+ !
+ schedule operation 3
+  start-time now
+  life forever
+ !
+!
+ipsla                                                                                                                                      
+ operation 1
+  type icmp echo
+   destination address 1.2.4.41
+   frequency 300
+  !
+ !
+ operation 20
+  type icmp echo
+   destination address 208.75.11.249
+   frequency 300
+  !
+ !
+ operation 30
+  type icmp echo
+   destination address 64.47.43.158
+   frequency 300
+  !
+ !
+ operation 40
+  type icmp echo
+   destination address 4.30.61.109
+   frequency 300
+  !
+ !
+ operation 1000
+  type udp jitter
+   source address 1.2.4.40
+   destination address 1.2.4.41
+   statistics hourly
+    buckets 24
+   !
+   tos 184
+   destination port 16500
+   frequency 10
+   statistics interval 3600
+   !
+   verify-data
+  !
+ !
+ schedule operation 1
+  start-time now
+  life forever
+ !
+ schedule operation 20
+  start-time now
+  life forever
+ !
+ schedule operation 30
+  start-time now
+  life forever
+ !
+ schedule operation 40
+  start-time now
+  life forever
+ !
+ schedule operation 1000
+  start-time now
+  life forever
+ !
+!
+ipsla
+ operation 2
+  type icmp echo
+   source address 2607:0000::118:9a41:40
+   destination address 2607:0000::118:9a41:80
+   frequency 60
+  !
+ !
+ operation 3
+  type icmp echo
+   source address abcd:abcd::118:9a41:40
+   destination address 2607:0000::118:9a41:b1
+   frequency 60
+  !
+ !
+ operation 4
+  type icmp echo
+   source address 1.2.20.77
+   destination address 1.2.20.78
+   frequency 10
+  !
+ !
+ operation 5
+  type icmp echo
+   source address 1.2.20.77
+   destination address 1.2.20.74
+   frequency 10
+  !
+ !
+ reaction operation 2
+  react timeout
+   action trigger
+   threshold type consecutive 3
+  !
+ !
+ reaction operation 3
+  react timeout
+   action trigger
+   threshold type consecutive 3
+  !
+ !
+ reaction operation 4
+  react timeout
+   action trigger
+   threshold type consecutive 3
+  !
+ !
+ reaction operation 5
+  react timeout
+   action trigger
+   threshold type consecutive 3
+  !
+ !
+ schedule operation 2
+  start-time now
+  life forever
+ !
+ schedule operation 3
+  start-time now
+  life forever
+ !
+ schedule operation 4
+  start-time now
+  life forever
+ !
+ schedule operation 5
+  start-time now
+  life forever
+ !
+ responder
+  type udp ipv4 address 1.2.4.41 port 12345
+ !
+!
+ip sla 10
+ icmp-echo 1.2.3.4 source-interface GigabitEthernet0/0/3
+ path-echo 1.2.3.4 source-ip 2.3.4.5
+ request-data-size 64
+ frequency 600
+ owner SOME_OWNER
+ tos 184
+ tag edfwrgth
+ history hours-of-statistics-kept 4
+ paths-of-statistics-kept 3
+ hops-of-statistics-kept 30
+ history distributions-of-statistics-kept 5
+ history statistics-distribution-interval 10
+ history lives-kept 2
+ history buckets-kept 25
+ samples-of-history-kept 10
+ history filter failures
+ udp-jitter 130.59.38.105 5000
+!
+ip sla timeout 100
+!
+

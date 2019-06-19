@@ -1,0 +1,7 @@
+!
+hostname no_snmp_server
+!
+no ip name-server
+no snmp-server
+!
+

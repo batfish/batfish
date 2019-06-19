@@ -1,0 +1,50 @@
+!
+hostname cisco_stcapp
+!
+stcapp ccm-group 1
+stcapp
+stcapp feature access-code
+ prefix *
+ call forward all *42
+ call forward cancel *43
+ pickup group *9                                                                                                                           
+stcapp supplementary-services
+ port 2/0
+  fallback-dn 1234567890
+ port 2/1
+  fallback-dn 1234567890
+ port 2/2
+  fallback-dn 1234567890
+ port 2/3
+  fallback-dn 1234567890
+ port 2/4
+  fallback-dn 1234567890
+ port 2/5
+  fallback-dn 1234567890
+ port 2/6
+  fallback-dn 1234567890
+ port 2/7
+  fallback-dn 1234567890
+ port 2/8
+  fallback-dn 1234567890
+ port 2/9
+  fallback-dn 1234567890
+ port 2/10
+  fallback-dn 1234567890
+ port 2/11
+  fallback-dn 1234567890
+ port 2/12
+  fallback-dn 1234567890
+ port 2/13
+  fallback-dn 1234567890
+ port 2/14
+  fallback-dn 1234567890
+ port 2/15
+  fallback-dn 1234567890
+ port 2/16
+  fallback-dn 1234567890
+ port 2/17
+  fallback-dn 1234567890
+  cptone call-waiting repetition interval 6
+
+!

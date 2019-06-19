@@ -1,0 +1,293 @@
+!
+hostname cisco_misc
+!
+! the following line seem to be added by RANCID
+No l4r_shim subsystem is included in this platform.
+!
+ap group default-group
+appletalk routing
+archive
+ log config
+  hidekeys
+  logging enable
+  logging size 200
+  notify syslog contenttype plaintext
+ maximum 14
+ path flash:myconfig
+ path tftp://172.16.1.10/
+ write-memory
+no bloggerd log-dump all
+bloggerd log-throttle
+no bloggerd log-transfer
+bridge-domain 707
+bsd-client server url https://cloudsso.cisco.com/as/token.oauth2
+buffers small permanent 60
+cluster enable ts 0
+cluster run
+coap http enable
+config-register 0x2102
+configure maintenance profile normal-mode
+ router ospf 1
+  no isolate
+ router bgp 12345
+  no isolate
+ no ip pim isolate
+configure maintenance profile maintenance-mode
+ ip pim isolate
+ router bgp 65601
+  isolate
+ router ospf 1
+  isolate
+configure terminal
+cops listener access-list cops-acl
+cos-queue-group queuemap-red
+ precedence 0 random-detect-label 0
+ queue low-latency strict-priority
+ random-detect-label 0 1498 9690 1
+!
+ctl-file ctl_phoneproxy_file
+ record-entry cucm-tftp trustpoint phoneproxy_trustpoint2 address 169.232.59.5
+ no shutdown
+device classifier
+dialer watch-list 76 ip 1.2.3.128 255.255.255.192
+downlink delay disable timeout 20
+no dual-mode-default-vlan
+no environment-monitor shutdown temperature
+epm logging
+ethernet lmi ce
+event manager applet Interface_Load
+ action 1.0 syslog msg "Interface Status Saved - Check disk1:1.txt"
+ action 1.0 syslog priority informational msg "$_cli_msg"
+ action 2.0 cli command "enable"
+ action 3.0 cli command "show clock | append disk1:1.txt"
+ action 4.0 cli command "show interface GigabitEthernet2/15 | append disk1:1.txt"
+ event cli pattern ".*" sync no skip no
+ event timer cron name Runat4 cron-entry "*/1 20 19 5 *"
+ set 2.0 _exit_status 1
+!
+event manager applet URLFilter_bw_safeguard
+ action 1 syslog msg "Traffic rate to URLFilter pepper has exceeded 100Mbit/s over 2 minutes, shutting down Tunnel Interface..."
+ action 2 cli command "enable"
+ action 3 cli command "config t"
+ action 4 cli command "interface Tu9"
+ action 5 cli command "shutdown"
+ action 6 syslog msg "Interface Tunnel9 to URLfilter pepper has been shutdown. It needs to be manually unshut."
+ action 7 syslog msg "Interface \"Tunnel9\" to URLfilter pepper has been shutdown. It needs to be manually unshut."
+ action 8 syslog msg ""
+ event interface name Tunnel9 parameter transmit_rate_bps entry-op ge entry-val 100000000 entry-type rate average-factor 2 poll-interval 60
+!
+exception crashinfo maximum-files 1
+exception-slave core-file C2960-WM3-core
+exception memory ignore overflow io
+exception memory ignore overflow processor
+fabric-mode 40G
+no fabricpath mode transit
+fex 111
+ description "HOOBOO"
+ pinning max-links 1
+ type N2232TM-E
+gatekeeper
+ gw-type-prefix 88*
+ lrq forward-queries add-hop-count
+ no shutdown
+ zone local SVL-GK.cenic.net cenic.net invia SVL-GK.cenic.net outvia SVL-GK.cenic.net
+ zone remote LAX-GK.cenic.net cenic.net 137.164.29.2 1719
+!
+global-port-security
+ age 2
+ delete-dynamic-learn
+!
+hardware ip glean throttle maximum 1000
+hpm topN enable
+ip flow-aggregation cache source-prefix
+ enabled
+!
+ip inspect WAAS flush-timeout 10
+ip internal event-history static-rt size small
+ip mfwd event-history packet size small
+ip ospf name-lookup
+ip spd queue max-threshold 123
+ip spd queue min-threshold 123
+ipc zone default
+ association 1
+  no shutdown
+  protocol sctp
+   local-port 5000
+    assoc-retransmit 5
+    local-ip 1.2.3.4
+    path-retransmit 5
+    retransmit-timeout 300 10000
+   remote-port 5000
+    remote-ip 5.6.7.8
+ipv6 enable-acl-cam-sharing
+ipv6 global-mtu 1500
+keystore type default
+l2 vfi foobar manual
+ bridge-domain 709
+ mtu 9014
+ neighbor 1.2.3.4 encapsulation mpls
+ neighbor 2.3.4.5 encapsulation mpls
+ vpn id 706
+!
+l2protocol tunnel cos 5
+lag "[aa]-1X10-PNI-TO-ME" dynamic id 1
+ deploy
+ lacp-timeout short
+ physical-port 1/4 tunable-optic sfpp channel 71
+ port-name "Peering: [aa] Me PNI CLR-6692" ethernet 1/1
+ ports ethernet 1/1
+ primary-port 1/1
+!
+no license grace-period
+no lldp run
+load-balance policies
+ load-balance fm6000 profile LoadBalance_Profile1_5tuple
+  distribution symmetric-hash mac-ip
+  fields ip protocol dst-ip dst-port src-ip src-port
+  no fields mac
+  hash symmetric
+load-interval default 5
+locale CH
+lpts pifib hardware police
+  flow snmp rate 500
+!
+mac address-table aging-time 1800
+management-access inside
+map-class dialer swiRZ2
+ dialer fast-idle 5
+ dialer idle-timeout 360
+!
+media-termination mymta
+ address 2.3.4.5 interface inside
+ address 3.4.4.6 interface outside
+memory reserve critical 8192
+mirror location 0/RSP0/CPU0 disk0:disk1:
+no monitor-interface service-module
+no mpls strip
+no timeout
+name 1.2.3.4 hello
+nv
+ satellite 100
+  description LA2/180/RR0202
+  ip address 10.0.0.2
+  serial-number CAT1840U2EE
+  type asr9000v
+ !
+!
+object-group service SVCGRP-ICMP
+ service-object icmp echo
+no onep
+password-policy minimum-length 7
+phone-proxy ASA-phone-proxy
+ cipc security-mode authenticated
+ media-termination mymta
+ tftp-server address 1.2.3.4 interface inside
+ tls-proxy ASA-tls-proxy
+poap transit
+policy-map type inspect dns preset_dns_map
+ parameters
+  id-mismatch action log
+  id-randomization
+  message-length maximum 512
+  message-length maximum client auto
+  no tcp-inspection
+policy-map global_policy
+ class inspection_default
+  inspect dns preset_dns_map
+  inspect esmtp
+  inspect ftp
+  inspect ip-options
+  inspect h323 h225
+  inspect h323 ras
+  inspect http ucla_http_inspect
+  inspect netbios
+  inspect snmp
+  inspect tftp
+ class ICMP-cmap
+  inspect icmp
+ class TCP-cmap
+  set connection advanced-options tcp-state-bypass
+ class class-default
+  user-statistics accounting
+policy-map type inspect http ucla_http_inspect
+ parameters
+  protocol-violation action drop-connection log
+pool vrf default ipv4 mgmt-net
+  address-range 130.59.60.189 130.59.60.190
+!
+port-profile default max-ports 512
+pseudowire-class atom-eth-iw
+ control-word
+ encapsulation mpls
+ interworking ethernet
+!
+power-mgr disable
+process-max-time 23
+qos-mapping
+ dscp decode-map BBone_Std
+  dscp-value 2 3 4 5 6 7 8 9 to priority 0 drop-precedence 0
+ pcp decode-map BBone_Std
+  pcp-value 3 4 7 to priority 0
+!
+rp mgmtethernet forwarding
+rx-cos-slot all queuemap-red
+sap cache-timeout 30
+no schedule tech-support
+sensor fanspeed-control off
+service-policy global_policy global
+slot-table-cos queuemap-red
+ destination-slot all queuemap-red
+!
+sntp server 1.2.3.4
+software auto-upgrade enable
+tap aggregation
+ mode exclusive
+ mode exclusive no-errdisable Ethernet1
+tftp-server disk0:abcdefg.bin
+time-range ACCTIME-247
+ periodic daily 0:00 to 23:59
+timeout xlate 3:00:00
+timeout pat-xlate 0:00:30
+timeout conn 1:00:00 half-closed 0:10:00 udp 0:02:00 sctp 0:02:00 icmp 0:00:02
+timeout half-closed 0:10:00
+timeout icmp 0:00:02
+timeout icmp-error 0:00:02
+timeout sunrpc 0:10:00 h323 0:05:00 h225 1:00:00 mgcp 0:05:00 mgcp-pat 0:05:00
+timeout sip 0:30:00 sip_media 0:02:00 sip-invite 0:03:00 sip-disconnect 0:02:00
+timeout sip-provisional-media 0:02:00 uauth 0:05:00 absolute
+timeout tcp-proxy-reassembly 0:01:00
+timeout floating-conn 0:00:00
+timeout conn-holddown 0:00:15
+timeout igp stale-route 0:01:10
+tls-proxy ASA-tls-proxy
+ server trust-point _internal_PP_ctl_phoneproxy_file
+transceiver qsfp default-mode 4x10G
+tunnel-group 1.2.3.4 ipsec-attributes
+ peer-id-validate nocheck
+Using 12345 out of 5678 bytes
+virtual-service
+  signing level cisco
+vlan ifdescr detail
+vpc domain 32
+  auto-recovery
+  delay restore 150
+  no dual-active exclude interface-vlan
+  graceful consistency-check
+  ip arp synchronize
+  peer-config-check-bypass
+  peer-gateway
+  peer-keepalive destination 1.2.3.4 source 1.2.3.5
+  peer-switch
+  role priority 8192
+  system-priority 4096
+no vstack
+wrr-queue cos-map 0 0 1
+wrr unicast-bandwidth 50
+xconnect logging pseudowire status
+xdr multicast-group internal issu-slots-split
+xdr multicast-group mode individual
+xml agent tty
+!
+Cryptochecksum:8a138d9f7c12c6cb1180f831d7a5bc9f
+end
+!

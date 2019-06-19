@@ -1,0 +1,43 @@
+!
+hostname ios_xr_taskgroup
+!
+taskgroup priv1
+ task read acl
+ task read bgp
+ task read cdp
+ task read cef
+ task read ppp
+ task read qos
+ task read rib
+ task read dwdm
+ task read hdlc
+ task read ipv4
+ task read ipv6
+ task read isis
+ task read lpts
+ task read ospf
+ task read ouni
+ task read vlan
+ task read l2vpn
+ task read static
+ task read system
+ task read logging
+ task read monitor
+ task read mpls-te
+ task read network
+ task read pos-dpt
+ task read mpls-ldp
+ task read interface
+ task read inventory
+ task read multicast
+ task read route-map
+ task read sonet-sdh
+ task read tty-access
+ task read config-mgmt
+ task read mpls-static
+ task read route-policy
+!
+!
+taskgroup childgroup
+ inherit taskgroup priv1
+!

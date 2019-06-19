@@ -1,0 +1,8 @@
+!RANCID-CONTENT-TYPE: cisco-nx
+!
+hostname nexus_ssh
+!
+ssh key rsa 2048
+ssh login-attempts 3
+!
+

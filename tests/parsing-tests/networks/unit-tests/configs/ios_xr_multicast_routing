@@ -1,0 +1,62 @@
+!
+hostname MCastRouting
+!
+multicast-routing
+ address-family ipv4
+  multipath
+  interface all enable
+ !
+ address-family ipv6
+  multipath
+  interface all enable
+ !
+!
+multicast-routing
+ address-family ipv4
+  interface TenGigE0/0/2/3.900
+   boundary mcast-boundary
+  !
+  interface TenGigE0/0/2/3.901
+   boundary mcast-boundary
+  !
+  interface TenGigE0/0/2/3.902
+   boundary mcast-boundary
+  !
+  interface TenGigE0/0/2/3.903
+   boundary mcast-boundary
+  !
+  interface TenGigE0/0/2/3.904
+   boundary mcast-boundary
+  !
+  interface TenGigE0/0/2/3.905
+   boundary mcast-boundary
+  !
+  interface TenGigE0/0/2/3.906
+   boundary mcast-boundary
+  !
+  interface TenGigE0/0/2/3.907
+   boundary mcast-boundary
+  !
+  interface TenGigE0/0/2/3.908
+   boundary mcast-boundary
+  !
+  interface TenGigE0/0/2/3.909
+   boundary mcast-boundary
+  !
+  interface TenGigE0/0/2/3.910
+   boundary mcast-boundary
+  !
+  interface TenGigE0/0/2/3.911
+   boundary mcast-boundary
+  !
+  interface TenGigE0/0/2/3.912
+   boundary mcast-boundar                                                                                                                  
+  !
+  interface TenGigE0/0/2/3.913
+   boundary mcast-boundary
+  !
+  interface all enable
+ !
+!
+
+end

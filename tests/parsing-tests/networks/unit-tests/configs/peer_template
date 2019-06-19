@@ -1,0 +1,33 @@
+!
+hostname peer_template
+!
+feature bgp
+!
+router bgp 64601
+  address-family ipv4 unicast
+    network 10.98.25.0/25
+    network 100.78.0.0/29
+    network 100.78.3.0/29
+    network 100.93.104.127/32
+    maximum-paths 16
+    maximum-paths ibgp 16
+  template peer RAAS
+    remote-as 65511
+    update-source loopback1
+    ebgp-multihop 2
+    address-family ipv4 unicast
+      route-map PROTECT-LEAF in
+      maximum-prefix 8000 90
+  template peer SPINE
+    remote-as 64802
+    address-family ipv4 unicast
+      allowas-in 1
+  neighbor 100.93.100.16
+    inherit peer SPINE
+    description a simple inheritance example
+  neighbor 10.98.25.0/25
+    inherit peer RAAS
+    description inheritance in which the neighbor is a prefix
+    maximum-peers 32
+!
+end

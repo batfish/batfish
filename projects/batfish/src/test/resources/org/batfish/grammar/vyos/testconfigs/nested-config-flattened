@@ -1,0 +1,2 @@
+####BATFISH FLATTENED VYOS CONFIG####
+set system config-management commit-revisions 20

@@ -1,0 +1,14 @@
+!
+hostname eos
+boot system flash fake.swi
+!
+ip community-list expanded eos_exp permit 1
+ip community-list expanded eos_exp_multi permit 0:10:20:3
+ip community-list standard eos_std_gshut permit GSHUT
+ip community-list standard eos_std permit 0:1
+ip community-list standard eos_std_internet permit internet
+ip community-list standard eos_std_local_AS permit local-as
+ip community-list standard eos_std_no_adv permit no-advertise
+ip community-list standard eos_std_no_export permit no-export
+ip community-list standard eos_std_multi permit 0:1 0:2 0:3
+!

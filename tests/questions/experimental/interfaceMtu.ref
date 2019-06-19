@@ -1,0 +1,60 @@
+{
+  "class" : "org.batfish.question.filtertable.FilterTableQuestion",
+  "columns" : [
+    "Interface",
+    "MTU"
+  ],
+  "filter" : "MTU > 0",
+  "innerQuestion" : {
+    "class" : "org.batfish.question.interfaceproperties.InterfacePropertiesQuestion",
+    "excludeShutInterfaces" : false,
+    "interfaces" : "Gig.*",
+    "nodes" : "as1core2",
+    "properties" : ".*",
+    "differential" : false,
+    "displayHints" : {
+      "textDesc" : "${interface} has MTU ${mtu}"
+    },
+    "includeOneTableKeys" : true
+  },
+  "differential" : false,
+  "includeOneTableKeys" : true,
+  "instance" : {
+    "description" : "Finds interfaces where the configured MTU matches the specified comparator and mtuBytes.",
+    "instanceName" : "qname",
+    "longDescription" : "For example, if comparator is '<' and mtuBytes is 1500, then only interfaces where the configured MTU is less than 1500 bytes will be returned.",
+    "tags" : [
+      "hygiene"
+    ],
+    "variables" : {
+      "comparator" : {
+        "description" : "Returned devices will satisfy <comparator> <mtuBytes>. Use '<' to find devices that do not have MTU smaller than the specified <mtuBytes> MTU",
+        "displayName" : "Comparator",
+        "optional" : true,
+        "type" : "comparator",
+        "value" : ">"
+      },
+      "interfaces" : {
+        "description" : "Evaluate interfaces matching this specifier",
+        "displayName" : "Interfaces",
+        "optional" : false,
+        "type" : "interfacesSpec",
+        "value" : "Gig.*"
+      },
+      "mtuBytes" : {
+        "description" : "The reference MTU in bytes against which to check the configured MTU",
+        "displayName" : "MTU Bytes",
+        "optional" : false,
+        "type" : "integer",
+        "value" : 0
+      },
+      "nodes" : {
+        "description" : "Include nodes matching this specifier",
+        "displayName" : "Nodes",
+        "optional" : false,
+        "type" : "nodeSpec",
+        "value" : "as1core2"
+      }
+    }
+  }
+}

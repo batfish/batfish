@@ -1,0 +1,20 @@
+net del all
+#
+net add hostname cumulus_nclu_interface
+#
+net add bond bond1 bond slaves swp1
+net add bond bond2 bond slaves swp2
+net add bond bond3 bond slaves swp3
+net add interface bond2.4094 ip address 10.0.1.1/24
+net add interface bond2.4094 ip address 172.16.0.1/24
+net add interface bond2.4094 clag backup-ip 192.0.2.1 vrf mgmt
+net add interface bond2.4094 clag peer-ip 10.0.0.2
+net add interface bond2.4094 clag priority 1000
+net add interface bond2.4094 clag sys-mac 00:11:22:33:44:55
+net add interface bond3.4094 clag backup-ip 192.168.0.1
+net add interface eth0 ip address 10.0.2.1/24
+net add interface swp4 ip address 10.0.3.1/24
+net add interface swp5.1 ip address 10.0.4.1/24
+net add interface swp5.1 vrf vrf1
+#
+net commit

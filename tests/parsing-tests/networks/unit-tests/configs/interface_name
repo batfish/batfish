@@ -1,0 +1,13 @@
+!
+hostname interface_name
+interface FastEthernet12/13
+!
+interface Vlan100
+!
+interface Port-channel1
+!
+! the following can appear in IOS XR 
+interface preconfigure HundredGigE0/6/0/8
+ shutdown
+!
+end

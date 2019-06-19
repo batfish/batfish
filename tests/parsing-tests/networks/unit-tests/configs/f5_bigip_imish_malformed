@@ -1,0 +1,25 @@
+#TMSH-VERSION: 13.1.1
+
+sys global-settings {
+    hostname f5_bigip_imish_malformed
+}
+
+!
+! ge (min) less than prefix-length is ineffectual
+ip prefix-list pl1 seq 10 permit 10.0.0.0/24 ge 16
+! le (max) less than prefix-length is impossible
+ip prefix-list pl1 seq 20 permit 10.0.0.0/24 le 16
+! le (max) less than ge (min) is impossible
+ip prefix-list pl1 seq 30 permit 10.0.0.0/24 ge 28 le 26
+
+router bgp 1
+ neighbor undeclared description hello
+ neighbor 3.3.3.3 remote-as 2
+ neighbor 3.3.3.3 peer-group undefined-peer-group
+ neighbor undeclared-peer-group remote-as 3
+ neighbor 2::2 remote-as 4
+ neighbor 2::2 route-map rm1 out
+ neighbor undeclared-peer-group route-map rm1 out
+!
+end
+

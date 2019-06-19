@@ -1,0 +1,54 @@
+!
+hostname cisco_dhcp
+!
+dhcprelay server 1.2.3.4 outside
+dhcprelay server 1.2.3.5 outside
+dhcprelay enable inside
+dhcprelay timeout 60
+dhcp ipv4
+ profile irnc-dhcp relay
+  helper-address vrf default 137.164.55.68
+  lease 0 0 5
+  pool mgmt-net
+  dns-server 130.59.31.251 130.59.31.248
+  domain-name switch.ch
+  subnet-mask 255.255.255.240
+  default-router 13.9.2.1
+ !
+ interface Bundle-Ether4.12 relay profile irnc-dhcp
+ interface Bundle-Ether4.13 relay profile irnc-dhcp
+ interface Bundle-Ether1.1031 relay profile irnc-dhcp
+ interface Bundle-Ether1.1032 relay profile irnc-dhcp
+!
+no ip dhcp packet strict-validation
+ip dhcp pool abcdefg
+  network 1.2.3.0 255.255.255.0
+  default-router 1.2.3.1
+  domain-name example.com
+  dns-server 2.3.4.5 3.4.5.6
+  lease infinite
+  host 1.59.4.1 255.255.255.192
+  client-identifier 01e4.115b.e6d8.b4
+  client-name cetitlan-admin
+  bootfile pxelinux.0
+  next-server 136.243.111.220
+  hardware-address 0025.90fc.6d00
+  option 42 ip 130.59.48.65
+!
+ip dhcp relay
+ip dhcp relay information option
+no ip dhcp relay information option vpn
+no ip dhcp relay source-address hsrp
+no ip dhcp relay sub-option type cisco
+no ip dhcp smart-relay global
+no ip dhcp snooping
+no ip dhcp snooping information option
+ip dhcp snooping verify mac-address
+no ip dhcp use vrf connected
+ipv6 dhcp relay
+no ipv6 dhcp relay option vpn
+no ipv6 dhcp relay option type cisco
+no ipv6 dhcp relay source-interface
+service dhcp
+!
+

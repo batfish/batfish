@@ -1,0 +1,10 @@
+!RANCID-CONTENT-TYPE: cisco-nx
+!
+hostname nexus_ntp
+!
+no ntp allow control
+no ntp passive
+ntp server 10.1.2.3 use-vrf management key 12345 version 2 source Management1
+!
+ntp server 1.2.3.4 minpoll 10 source Loopback0
+!

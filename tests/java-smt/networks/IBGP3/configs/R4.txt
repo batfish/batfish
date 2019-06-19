@@ -1,0 +1,23 @@
+hostname R4
+
+interface Loopback0
+ ip address 4.4.4.4 255.255.255.0
+!
+interface Serial0
+ ip address 11.10.10.2 255.255.255.0
+!
+interface Serial1
+ ip address 10.13.13.2 255.255.255.0
+!
+
+router bgp 200
+ network 4.4.4.0/24
+ neighbor 3.3.3.3 remote-as 200
+ neighbor 3.3.3.3 update-source Loopback0
+ neighbor 10.13.13.1 remote-as 400
+!
+
+router ospf 10
+  network 4.4.4.4 0.0.0.255 area 0
+  network 11.10.10.0 0.0.0.255 area 0
+!

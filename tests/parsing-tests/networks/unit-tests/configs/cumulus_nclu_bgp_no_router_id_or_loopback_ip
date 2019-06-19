@@ -1,0 +1,7 @@
+net del all
+#
+net add hostname cumulus_nclu_bgp_no_router_id_or_loopback_ip
+#
+net add bgp autonomous-system 65500
+net add loopback lo
+net commit

@@ -1,0 +1,23 @@
+#
+set system host-name default-applications
+#
+set interfaces ge-0/0/0 unit 0 family inet address 1.2.3.4/24
+#
+set applications application-set APPSET1 application junos-http
+set applications application-set APPSET1 application junos-https
+set applications application-set APPSET2 application junos-http
+set applications application-set APPSET2 application junos-https
+set applications application-set APPSET2 application any
+#
+set security policies from-zone z1 to-zone z2 policy p1 match application junos-http
+set security policies from-zone z1 to-zone z2 policy p1 match application junos-https
+set security policies from-zone z1 to-zone z2 policy p1 then permit
+set security policies from-zone z1 to-zone z3 policy p1 match application APPSET1
+set security policies from-zone z1 to-zone z3 policy p1 then permit
+set security policies from-zone z1 to-zone z4 policy p1 match application APPSET2
+set security policies from-zone z1 to-zone z4 policy p1 then permit
+set security policies from-zone z1 to-zone z5 policy p1 match application junos-http
+set security policies from-zone z1 to-zone z5 policy p1 match application junos-https
+set security policies from-zone z1 to-zone z5 policy p1 match application any
+set security policies from-zone z1 to-zone z5 policy p1 then permit
+set security zones security-zone z1 interfaces ge-0/0/0.0

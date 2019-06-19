@@ -1,0 +1,20 @@
+!
+hostname isr_voip
+!
+ephone-dn-template 2
+ call-forward busy 11111111111111
+ call-forward noan 22222222222222 timeout 16
+!
+telephony-service
+ ip source-address 111.111.111.111 port 1111
+ max-conferences 8 gain -6
+ max-ephones 25
+ srst dn line-mode dual
+ srst dn template 2
+ srst ephone description srst fallback auto-provisioned phone : Sep 01 1970 00:00:00
+ srst mode auto-provision none
+ transfer-system full-consult
+!
+
+!
+

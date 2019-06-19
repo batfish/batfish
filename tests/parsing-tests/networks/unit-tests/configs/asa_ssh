@@ -1,0 +1,10 @@
+!
+hostname asa_ssh
+!
+ssh stricthostkeycheck
+ssh 1.2.3.0 255.255.255.0 inside
+ssh 1.2.3.0 255.255.255.0 mgmt
+ssh key-exchange group dh-group1-sha1
+no ssh stricthostkeycheck
+ssh timeout 30
+!

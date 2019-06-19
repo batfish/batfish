@@ -1,0 +1,83 @@
+! This is an IOS XR file format.
+hostname IosXrMultiCast
+!
+router mld
+ version 1
+router igmp
+ version 2
+ interface TenGigE0/7/0/19
+  router disable
+ !
+ interface Bundle-Ether3.99
+  router disable
+ !
+!
+router igmp
+ interface all router disable                                                                                                              
+!
+router msdp
+ peer 169.232.1.3
+  connect-source Loopback0
+  description bd11f2.csb1 MSDP Peer
+  mesh-group ucla_msdp_mesh
+  shutdown
+ !
+ peer 137.164.27.5
+  connect-source HundredGigE0/2/0/0.292
+  remote-as 2153
+  description HPR MSDP Peer
+  sa-filter in list MSDP_filter
+  sa-filter out list MSDP_filter
+ !
+ peer 169.232.1.22
+  connect-source Loopback0
+  description cr03f2.csb1 MSDP Peer
+  mesh-group ucla_msdp_mesh
+ !
+ peer 169.232.1.23
+  connect-source Loopback0
+  description cr03f1.anderson MSDP Peer
+  mesh-group ucla_msdp_mesh
+ !
+ peer 137.164.16.108
+  connect-source Loopback0
+  remote-as 2152
+  description DC/ISP MSDP Peer
+  sa-filter in list MSDP_filter
+  sa-filter out list MSDP_filter
+ !
+lldp
+router pim
+ address-family ipv4
+  interface Bundle-Ether101
+   enable
+  !
+  interface Bundle-Ether103
+   enable
+  !
+  interface Bundle-Ether201
+   bsr-border
+   enable
+  !
+  interface HundredGigE0/1/0/0.292
+   bsr-border
+   enable
+  !
+ !
+ address-family ipv6
+  interface Bundle-Ether101
+   enable
+  !
+  interface Bundle-Ether103
+   enable
+  !
+  interface Bundle-Ether201
+   bsr-border
+   enable
+  !
+  interface HundredGigE0/1/0/0.292
+   bsr-border
+   enable
+  !
+ !
+end

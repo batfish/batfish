@@ -1,0 +1,38 @@
+hostname r2
+!
+interface FastEthernet0/0
+ no shutdown
+ description connect to r1
+ duplex half
+ speed 100
+ ip address 1.2.0.2 255.255.255.0
+!
+interface FastEthernet1/0
+ no shutdown
+ duplex half
+ speed 100
+ description connect to r3
+ ip address 2.0.3.23 255.255.255.0
+!
+interface FastEthernet1/1
+ no shutdown
+ duplex half
+ speed 100
+ description connect to r4
+ ip address 2.0.4.24 255.255.255.0
+!
+interface Loopback0
+ ip address 2.2.2.2 255.255.255.255
+!
+router bgp 2
+ bgp router-id 2.2.2.2
+ neighbor 1.2.0.1 remote-as 1
+ ! dynamic session here, should get connections from r3, r4
+ neighbor r3r4group peer-group
+ bgp listen range 9.9.9.0/24 peer-group r3r4group
+ neighbor r3r4group remote-as 3
+ neighbor r3r4group activate
+ neighbor r3r4group update-source Loopback0
+!
+ip route 9.9.9.3 255.255.255.255 FastEthernet1/0
+ip route 9.9.9.4 255.255.255.255 FastEthernet1/1

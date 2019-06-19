@@ -1,0 +1,389 @@
+{
+  "answerElements" : [
+    {
+      "class" : "org.batfish.datamodel.answers.ParseVendorConfigurationAnswerElement",
+      "fileMap" : {
+        "internet-host" : [
+          "hosts/internet-host.json"
+        ],
+        "iptables/z1-firewall.v4" : [
+          "iptables/z1-firewall.v4"
+        ],
+        "iptables/z2-firewall.v4" : [
+          "iptables/z2-firewall.v4"
+        ],
+        "iptables/z2-host2.v4" : [
+          "iptables/z2-host2.v4"
+        ],
+        "r1" : [
+          "configs/r1.cfg"
+        ],
+        "r2" : [
+          "configs/r2.cfg"
+        ],
+        "r3" : [
+          "configs/r3.cfg"
+        ],
+        "z1-firewall" : [
+          "configs/z1-firewall.cfg",
+          "hosts/z1-firewall.json"
+        ],
+        "z1-host1" : [
+          "hosts/z1-host1.json"
+        ],
+        "z1-host2" : [
+          "hosts/z1-host2.json"
+        ],
+        "z2-firewall" : [
+          "configs/z2-firewall.cfg",
+          "hosts/z2-firewall.json"
+        ],
+        "z2-host1" : [
+          "hosts/z2-host1.json"
+        ],
+        "z2-host2" : [
+          "hosts/z2-host2.json"
+        ]
+      },
+      "parseStatus" : {
+        "configs/r1.cfg" : "PASSED",
+        "configs/r2.cfg" : "PASSED",
+        "configs/r3.cfg" : "PASSED",
+        "configs/z1-firewall.cfg" : "PASSED",
+        "configs/z2-firewall.cfg" : "PASSED",
+        "hosts/internet-host.json" : "PASSED",
+        "hosts/z1-firewall.json" : "PASSED",
+        "hosts/z1-host1.json" : "PASSED",
+        "hosts/z1-host2.json" : "PASSED",
+        "hosts/z2-firewall.json" : "PASSED",
+        "hosts/z2-host1.json" : "PASSED",
+        "hosts/z2-host2.json" : "PASSED",
+        "iptables/z1-firewall.v4" : "PASSED",
+        "iptables/z2-firewall.v4" : "PASSED",
+        "iptables/z2-host2.v4" : "PASSED"
+      },
+      "version" : "0.36.0",
+      "warnings" : {
+        "configs/r1.cfg" : {
+          "Red flags" : [
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "No hostname set in file: 'configs/r1.cfg'\n"
+            }
+          ]
+        },
+        "configs/r2.cfg" : {
+          "Red flags" : [
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "No hostname set in file: 'configs/r2.cfg'\n"
+            }
+          ]
+        },
+        "configs/r3.cfg" : {
+          "Red flags" : [
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "No hostname set in file: 'configs/r3.cfg'\n"
+            }
+          ]
+        },
+        "configs/z1-firewall.cfg" : {
+          "Red flags" : [
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "No hostname set in file: 'configs/z1-firewall.cfg'\n"
+            }
+          ]
+        },
+        "configs/z2-firewall.cfg" : {
+          "Red flags" : [
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "No hostname set in file: 'configs/z2-firewall.cfg'\n"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "class" : "org.batfish.datamodel.answers.ConvertConfigurationAnswerElement",
+      "convertStatus" : {
+        "internet-host" : "PASSED",
+        "r1" : "PASSED",
+        "r2" : "PASSED",
+        "r3" : "PASSED",
+        "z1-firewall" : "PASSED",
+        "z1-host1" : "PASSED",
+        "z1-host2" : "PASSED",
+        "z2-firewall" : "PASSED",
+        "z2-host1" : "PASSED",
+        "z2-host2" : "PASSED"
+      },
+      "definedStructures" : {
+        "configs/r1.cfg" : {
+          "interface" : {
+            "Ethernet0" : {
+              "definitionLines" : [
+                7,
+                8
+              ],
+              "numReferrers" : 1
+            },
+            "Ethernet1" : {
+              "definitionLines" : [
+                4,
+                5
+              ],
+              "numReferrers" : 1
+            },
+            "Ethernet2" : {
+              "definitionLines" : [
+                1,
+                2
+              ],
+              "numReferrers" : 1
+            }
+          }
+        },
+        "configs/r2.cfg" : {
+          "interface" : {
+            "Ethernet0" : {
+              "definitionLines" : [
+                7,
+                8
+              ],
+              "numReferrers" : 1
+            },
+            "Ethernet1" : {
+              "definitionLines" : [
+                4,
+                5
+              ],
+              "numReferrers" : 1
+            },
+            "Ethernet2" : {
+              "definitionLines" : [
+                1,
+                2
+              ],
+              "numReferrers" : 1
+            }
+          }
+        },
+        "configs/r3.cfg" : {
+          "interface" : {
+            "Ethernet0" : {
+              "definitionLines" : [
+                7,
+                8
+              ],
+              "numReferrers" : 1
+            },
+            "Ethernet1" : {
+              "definitionLines" : [
+                4,
+                5
+              ],
+              "numReferrers" : 1
+            },
+            "Ethernet2" : {
+              "definitionLines" : [
+                1,
+                2
+              ],
+              "numReferrers" : 1
+            }
+          }
+        },
+        "configs/z1-firewall.cfg" : {
+          "interface" : {
+            "Ethernet0" : {
+              "definitionLines" : [
+                4,
+                5
+              ],
+              "numReferrers" : 1
+            },
+            "Ethernet1" : {
+              "definitionLines" : [
+                1,
+                2
+              ],
+              "numReferrers" : 1
+            }
+          }
+        },
+        "configs/z2-firewall.cfg" : {
+          "interface" : {
+            "Ethernet0" : {
+              "definitionLines" : [
+                4,
+                5
+              ],
+              "numReferrers" : 1
+            },
+            "Ethernet1" : {
+              "definitionLines" : [
+                1,
+                2
+              ],
+              "numReferrers" : 1
+            }
+          }
+        },
+        "hosts/internet-host.json" : { },
+        "hosts/z1-host1.json" : { },
+        "hosts/z1-host2.json" : { },
+        "hosts/z2-host1.json" : { },
+        "hosts/z2-host2.json" : { }
+      },
+      "fileMap" : {
+        "configs/r1.cfg" : [
+          "r1"
+        ],
+        "configs/r2.cfg" : [
+          "r2"
+        ],
+        "configs/r3.cfg" : [
+          "r3"
+        ],
+        "configs/z1-firewall.cfg" : [
+          "z1-firewall"
+        ],
+        "configs/z2-firewall.cfg" : [
+          "z2-firewall"
+        ],
+        "hosts/internet-host.json" : [
+          "internet-host"
+        ],
+        "hosts/z1-host1.json" : [
+          "z1-host1"
+        ],
+        "hosts/z1-host2.json" : [
+          "z1-host2"
+        ],
+        "hosts/z2-host1.json" : [
+          "z2-host1"
+        ],
+        "hosts/z2-host2.json" : [
+          "z2-host2"
+        ]
+      },
+      "referencedStructures" : {
+        "configs/r1.cfg" : {
+          "interface" : {
+            "Ethernet0" : {
+              "interface" : [
+                7
+              ]
+            },
+            "Ethernet1" : {
+              "interface" : [
+                4
+              ]
+            },
+            "Ethernet2" : {
+              "interface" : [
+                1
+              ]
+            }
+          }
+        },
+        "configs/r2.cfg" : {
+          "interface" : {
+            "Ethernet0" : {
+              "interface" : [
+                7
+              ]
+            },
+            "Ethernet1" : {
+              "interface" : [
+                4
+              ]
+            },
+            "Ethernet2" : {
+              "interface" : [
+                1
+              ]
+            }
+          }
+        },
+        "configs/r3.cfg" : {
+          "interface" : {
+            "Ethernet0" : {
+              "interface" : [
+                7
+              ]
+            },
+            "Ethernet1" : {
+              "interface" : [
+                4
+              ]
+            },
+            "Ethernet2" : {
+              "interface" : [
+                1
+              ]
+            }
+          }
+        },
+        "configs/z1-firewall.cfg" : {
+          "interface" : {
+            "Ethernet0" : {
+              "interface" : [
+                4
+              ]
+            },
+            "Ethernet1" : {
+              "interface" : [
+                1
+              ]
+            }
+          }
+        },
+        "configs/z2-firewall.cfg" : {
+          "interface" : {
+            "Ethernet0" : {
+              "interface" : [
+                4
+              ]
+            },
+            "Ethernet1" : {
+              "interface" : [
+                1
+              ]
+            }
+          }
+        }
+      },
+      "version" : "0.36.0"
+    },
+    {
+      "class" : "org.batfish.datamodel.answers.InitInfoAnswerElement",
+      "parseStatus" : {
+        "configs/r1.cfg" : "PASSED",
+        "configs/r2.cfg" : "PASSED",
+        "configs/r3.cfg" : "PASSED",
+        "configs/z1-firewall.cfg" : "PASSED",
+        "configs/z2-firewall.cfg" : "PASSED",
+        "hosts/internet-host.json" : "PASSED",
+        "hosts/z1-firewall.json" : "PASSED",
+        "hosts/z1-host1.json" : "PASSED",
+        "hosts/z1-host2.json" : "PASSED",
+        "hosts/z2-firewall.json" : "PASSED",
+        "hosts/z2-host1.json" : "PASSED",
+        "hosts/z2-host2.json" : "PASSED",
+        "iptables/z1-firewall.v4" : "PASSED",
+        "iptables/z2-firewall.v4" : "PASSED",
+        "iptables/z2-host2.v4" : "PASSED"
+      }
+    }
+  ],
+  "status" : "SUCCESS",
+  "summary" : {
+    "numFailed" : 0,
+    "numPassed" : 0,
+    "numResults" : 0
+  }
+}

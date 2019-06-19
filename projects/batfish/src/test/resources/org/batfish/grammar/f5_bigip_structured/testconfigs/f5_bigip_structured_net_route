@@ -1,0 +1,21 @@
+#TMSH-VERSION: 13.1.1
+
+sys global-settings {
+    hostname f5_bigip_structured_net_route
+}
+
+net interface 1.0 { }
+net vlan /Common/vlan1 {
+    interfaces {
+        1.0 { }
+    }
+}
+net self /Common/self1 {
+    address 192.0.2.254/24
+    vlan /Common/vlan1
+}
+
+net route /Common/route1 {
+    gw 192.0.2.1
+    network 10.0.0.0/8
+}

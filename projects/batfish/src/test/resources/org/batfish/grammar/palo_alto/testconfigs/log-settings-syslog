@@ -1,0 +1,5 @@
+set deviceconfig system hostname log-settings-syslog
+set shared log-settings syslog SLNAME1 server SNAME1 server 1.1.1.1
+set shared log-settings syslog SLNAME1 server SNAME2 server 2.2.2.2
+set shared log-settings syslog SLNAME2 server SNAME1 server 3.3.3.3
+set vsys vsys1 log-settings syslog SLNAME1 server SNAME1 server 4.4.4.4

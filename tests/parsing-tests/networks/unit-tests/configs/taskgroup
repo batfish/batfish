@@ -1,0 +1,11 @@
+!
+hostname taskgroup
+!
+taskgroup priv2
+ task read bgp
+ task read rib
+ task read route-map
+ task read route-policy
+ task execute basic-services
+!
+ 

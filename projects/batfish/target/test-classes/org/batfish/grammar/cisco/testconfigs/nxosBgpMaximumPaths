@@ -1,0 +1,15 @@
+feature bgp
+!
+hostname nxosBgpMaximumPaths
+!
+router bgp 1
+  vrf justebgp
+    address-family ipv4 unicast
+      maximum-paths 4
+  vrf justibgp
+    address-family ipv4 unicast
+      maximum-paths ibgp 4
+  vrf both
+    address-family ipv4 unicast
+      maximum-paths eibgp 4
+!

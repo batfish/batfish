@@ -1,0 +1,9 @@
+!
+hostname arista_enabled
+!
+boot system flash fake.swi
+!
+router bgp 1
+ router-id 1.1.1.1
+ ! default is for multipath-relax to be enabled
+!

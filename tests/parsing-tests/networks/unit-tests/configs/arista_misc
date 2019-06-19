@@ -1,0 +1,46 @@
+!
+hostname arista_misc
+!
+a1awesomehost#show running
+cvx
+ no shutdown
+!
+daemon abcd
+ exec /mnt/flash/blah/installed/blorp_example.py
+!
+daemon efgh
+ exec /mnt/flash/bleh/installed/blerp_example.py
+ no shutdown
+!
+ip pim rp-address 1.2.3.4
+management api http-commands
+ protocol unix-socket
+ no shutdown
+ vrf mgmt
+  no shutdown
+!
+management console
+ idle-timeout 60
+!
+ip access-list standard sshabc
+  10 permit 1.2.4.8/16
+!
+management ssh
+ authentication mode password
+ ip access-group sshabc in
+ idle-timeout 60
+ shutdown
+!
+management telnet
+ idle-timeout 10
+ ip access-group abc in
+ no shutdown
+Pagination disabled.
+switchport default mode routed
+!
+management cvx
+ no shutdown
+ server host 1.2.3.4
+ shutdown
+!
+

@@ -1,0 +1,44 @@
+{
+    "class": "org.batfish.question.bgpsessionstatus.BgpSessionStatusQuestion",
+    "differential": false,
+    "nodes": "${nodes}",
+    "remoteNodes": "${remoteNodes}",
+    "status": "${status}",
+    "type": "${type}",
+    "instance": {
+        "description": "Returns the dynamic status of configured BGP sessions.",
+        "longDescription": "Checks whether configured BGP peerings can be established. Each row represents one configured BGP peering and contains information about the session it is configured to establish. For dynamic peerings, one row is shown per compatible remote peer. Possible statuses for each session are NOT_COMPATIBLE, ESTABLISHED, and NOT_ESTABLISHED. NOT_COMPATIBLE sessions are those where one or both peers are misconfigured; the BgpSessionCompatibility question provides further insight into the nature of the configuration error. NOT_ESTABLISHED sessions are those that are configured compatibly but will not come up because peers cannot reach each other (e.g., due to being blocked by an ACL). ESTABLISHED sessions are those that are compatible and are expected to come up.",
+        "instanceName": "bgpSessionStatus",
+        "tags": [
+            "bgp",
+            "dataplane",
+            "status"
+        ],
+        "variables": {
+            "nodes": {
+                "description": "Include sessions whose first node matches this specifier",
+                "type": "nodeSpec",
+                "optional": true,
+                "displayName": "Nodes"
+            },
+            "remoteNodes": {
+                "description": "Include sessions whose second node matches this specifier",
+                "type": "nodeSpec",
+                "optional": true,
+                "displayName": "Remote Nodes"
+            },
+            "status": {
+                "description": "Only include sessions for which status matches this regex",
+                "type": "bgpSessionStatus",
+                "optional": true,
+                "displayName": "Status"
+            },
+            "type": {
+                "description": "Only include sessions for which type (ibgp, ebgp_singlehop, ebgp_multihop) matches this regex",
+                "type": "bgpSessionType",
+                "optional": true,
+                "displayName": "Type"
+            }
+        }
+    }
+}

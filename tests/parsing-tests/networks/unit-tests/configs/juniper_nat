@@ -1,0 +1,34 @@
+#
+set system host-name juniper_nat
+#
+set security nat source pool-utilization-alarm raise-threshold 85 clear-threshold 60
+#
+set security nat source pool POOL address 10.10.10.10/24
+#
+set security nat source rule-set SRC-NAT from zone trust
+set security nat source rule-set SRC-NAT to interface ge-0/0/0.0
+#
+set security nat source rule-set SRC-NAT rule SRC-RULE1 match destination-address 1.1.1.1/24
+set security nat source rule-set SRC-NAT rule SRC-RULE1 match destination-address-name NAME
+set security nat source rule-set SRC-NAT rule SRC-RULE1 match source-address 1.1.1.1/24
+set security nat source rule-set SRC-NAT rule SRC-RULE1 match source-address-name SA-NAME
+set security nat source rule-set SRC-NAT rule SRC-RULE1 then source-nat off
+#
+set security nat source rule-set SRC-NAT rule SRC-RULE2 match destination-address 2.2.2.2/24
+set security nat source rule-set SRC-NAT rule SRC-RULE2 then source-nat interface
+#
+set security nat source rule-set SRC-NAT rule SRC-RULE3 match destination-address 3.3.3.3/24
+set security nat source rule-set SRC-NAT rule SRC-RULE3 then source-nat pool POOL
+#
+set security nat destination pool POOL address 10.10.10.10/24
+#
+set security nat destination rule-set DST-NAT from interface ge-0/0/0.0
+#
+set security nat destination rule-set DST-NAT rule DST-RULE match destination-address 2.2.2.2/24
+set security nat destination rule-set DST-NAT rule DST-RULE match destination-address-name NAME
+set security nat destination rule-set DST-NAT rule DST-RULE match source-address 2.2.2.2/24
+set security nat destination rule-set DST-NAT rule DST-RULE match source-address-name SA-NAME
+set security nat destination rule-set DST-NAT rule DST-RULE then destination-nat pool POOL
+#
+set interfaces ge-0/0/0 unit 0 family inet address 1.0.0.1/24
+set security zones security-zone trust interfaces ge-0/0/0.0

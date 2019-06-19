@@ -1,0 +1,11 @@
+[
+  {
+    "class" : "org.batfish.minesweeper.answers.SmtReachabilityAnswerElement",
+    "flowHistory" : {
+      "class" : "org.batfish.minesweeper.answers.FlowHistory"
+    },
+    "result" : {
+      "verified" : true
+    }
+  }
+]

@@ -1,0 +1,46 @@
+#TMSH-VERSION: 13.1.1
+
+sys global-settings {
+  hostname f5_bigip_structured_dnat
+}
+ltm node /Common/node_used {
+    address 192.0.2.10
+}
+ltm pool /Common/pool_used {
+    members {
+        /Common/node_used:80 {
+            address 192.0.2.10
+        }
+    }
+}
+ltm virtual /Common/virtual_used {
+    destination /Common/192.0.2.1:80
+    ip-protocol tcp
+    mask 255.255.255.255
+    pool /Common/pool_used
+    source 0.0.0.0/0
+    translate-address enabled
+    translate-port enabled
+}
+ltm virtual-address /Common/192.0.2.1 {
+    address 192.0.2.1
+    arp enabled
+    mask 255.255.255.255
+    route-advertisement selective
+}
+net interface 1.0 {
+    bundle enabled
+    bundle-speed 40G
+}
+net self /Common/SOME_SELF {
+    address 192.0.2.254/24
+    allow-service all
+    traffic-group /Common/traffic-group-local-only
+    vlan /Common/SOME_VLAN
+}
+net vlan /Common/SOME_VLAN {
+    interfaces {
+        1.0 { }
+    }
+    tag 100
+}

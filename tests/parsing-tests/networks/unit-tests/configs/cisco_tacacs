@@ -1,0 +1,61 @@
+!
+hostname cisco_tacacs
+!
+feature tacacs+
+no ip tacacs source-interface
+ip tacacs source-interface loopback0
+ip tacacs source-interface Loopback0
+no tacacs-server directed-request
+tacacs server 1.2.3.4
+tacacs server example.com
+tacacs server EACACS
+ address ipv4 1.2.3.4
+ single-connection
+tacacs-server deadtime 0
+tacacs-server directed-request
+tacacs-server host 1.2.3.4 key 7 "hello"
+tacacs-server host 1.2.3.4 key 7 "hello" port 49
+tacacs-server host 1.2.3.4 port 49
+ key 0 hello
+tacacs-server host 1.2.3.4 single-connection
+tacacs-server host 1.2.3.4 test username test password test idle-time 0
+tacacs-server key 7 00112233445566778899AABBCCDD
+tacacs-server retransmit 5
+tacacs-server test username test password test idle-time 0
+tacacs-server timeout 5
+tacacs source-interface Loopback0 vrf default
+!
+tacacs server 1.example.com
+ key 7 0123456789ABCDEF012345
+ address ipv4 1.2.3.4
+!
+tacacs server 2.example.com
+ address ipv4 1.2.3.5
+ key 7 0123456789ABCDEF012346
+!
+tacacs server 3.example.com
+ address ipv6 dead:beef::1
+ key 7 0123456789ABCDEF012347
+!
+tacacs server 4.example.com
+ address ipv4 1.2.3.6
+!
+tacacs server 5.example.com
+ address ipv6 dead:beef::2
+!
+tacacs server 6.example.com
+ key 7 010203040506070809
+!
+tacacs server 7.example.com
+ key 0 abcd1234
+!
+tacacs server 8.example.com
+ key hello,world
+ timeout 5
+!
+! IOS-XR
+tacacs-server host 1.2.3.4 port 123
+ key 7 0123456789ABCD
+ timeout 3
+!
+!

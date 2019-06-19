@@ -1,0 +1,84 @@
+!
+hostname cisco_ospf
+!
+interface loopback0
+ ip address 1.1.1.1 255.255.255.255
+!
+interface ethernet0/0
+ ip address 2.2.2.0 255.255.255.0
+ ip router ospf 1 area 0.0.0.0
+ ip ospf shutdown
+!
+interface ethernet0/0
+ ip address 3.3.3.0 255.255.255.0
+ ip ospf 1 area 0
+ no ip ospf passive-interface
+!
+interface ethernet1/0
+ ip address 4.4.4.0 255.255.255.0
+ ip ospf abcdefg area 0
+ no ip ospf passive-interface
+!
+router ospf 1
+  address-family ipv4
+  area 0.0.0.0 authentication message-digest
+  area 0.0.0.0 default-cost 5
+  area 0.0.0.0 filter-list prefix filterName in
+  area 0.0.0.0 filter-list prefix filterName out
+  area 0.0.0.0 nssa
+  area 0.0.0.0 nssa default-information-originate
+  area 0.0.0.0 nssa default-information-originate metric 5
+  area 0.0.0.0 nssa default-information-originate metric-type 1
+  area 0.0.0.0 nssa no-redistribution
+  area 0.0.0.0 nssa no-redistribution no-summary
+  area 0.0.0.0 nssa no-redistribution default-information-originate no-summary
+  area 0.0.0.0 nssa no-summary
+  area 0.0.0.0 range 1.2.3.0/24
+  area 0.0.0.0 range 1.2.3.0/24 cost 17
+  area 0.0.0.0 range 1.2.3.0 255.255.255.0
+  area 0.0.0.0 range 1.2.3.0 255.255.255.0 advertise
+  area 0.0.0.0 range 1.2.3.0 255.255.255.0 advertise cost 10
+  area 0.0.0.0 range 1.2.3.0 255.255.255.0 cost 10
+  area 0.0.0.0 range 1.2.3.0 255.255.255.0 not-advertise
+  auto-cost reference-bandwidth 40 Gbps
+  capability lls
+  capability transit
+  capability vrf-lite
+  default-information originate always metric 10 metric-type 1 route-map DEFAULT_ORIGINATE_OSPF
+  default-metric 11
+  discard-route external
+  discard-route internal
+  distance 110
+  distribute-list aclin in
+  distribute-list aclin in ethernet0/0
+  distribute-list aclout out
+  distribute-list prefix plin in
+  distribute-list prefix plout out
+  distribute-list route-map rmin in
+  distribute-list route-map rmout out
+  graceful-restart
+  graceful-restart grace-period 180
+  ip ospf event-history hello size small
+  ispf
+  log-adjacency-changes detail
+  log-adj-changes
+  maximum-paths 32
+  priority 10
+  redistribute direct route-map DIRECT_OSPF
+  redistribute eigrp 5 metric 6 route-map eigrp-ospf-route-map
+  redistribute ospf 2 match internal
+  router-id 1.2.3.4
+  fast-reroute per-prefix
+  snmp context ospf1
+  timers lsa-arrival 1000
+  timers throttle lsa 0 50 5000
+  timers throttle spf 50 50 5000
+  area 0
+    cost 2500
+    network point-to-point
+    dead-interval 6
+    hello-interval 2
+  area 0 filter-list prefix INFILTER in
+  area 0 filter-list prefix OUTFILTER out
+!
+ospf name-lookup

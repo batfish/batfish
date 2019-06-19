@@ -1,0 +1,13 @@
+#TMSH-VERSION: 13.1.1
+
+sys global-settings {
+    hostname f5_bigip_imish_route_map_set_origin
+}
+
+!
+!!! imish configuration starts here
+!
+route-map rm1 permit 10
+ set origin igp
+!
+end

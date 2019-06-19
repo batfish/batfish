@@ -1,0 +1,12 @@
+!
+hostname cisco_additional_paths
+!
+router bgp 1
+   bgp additional-paths install
+   bgp additional-paths select all
+   bgp additional-paths send receive
+   neighbor 1.2.3.4 activate
+   neighbor 1.2.3.4 advertise additional-paths all
+!
+!
+

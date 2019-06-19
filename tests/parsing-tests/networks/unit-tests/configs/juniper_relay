@@ -1,0 +1,11 @@
+#
+set system host-name juniper_relay
+#
+set forwarding-options dhcp-relay server-group site-dhcp 1.2.3.4
+set forwarding-options dhcp-relay active-server-group site-dhcp
+set forwarding-options dhcp-relay group relay active-server-group site-dhcp
+set forwarding-options dhcp-relay group relay interface irb.10
+set forwarding-options dhcp-relay group relay interface irb.20
+set forwarding-options dhcp-relay forward-snooped-clients all-interfaces
+#
+

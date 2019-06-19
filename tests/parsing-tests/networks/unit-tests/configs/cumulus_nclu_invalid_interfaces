@@ -1,0 +1,23 @@
+net del all
+#
+net add hostname cumulus_nclu_invalid_interfaces
+#
+# one valid, one invalid
+net add bond bond1 bond slaves swp1,unknown_interface
+# unknown
+net add interface unknown_interface ip address 10.0.0.1/24
+# cannot configure loopback via net add interface
+net add interface lo ip address 10.0.2.1/24
+# illegal subinterface
+net add interface mgmt.1 ip address 10.0.3.1/24
+# invalid vlan number
+net add interface swp1.5000 ip address 10.0.4.1/24
+# cannot configure vrf loopback here
+net add vrf vrf1
+net add interface vrf1 ip address 10.0.5.1/24
+# name of vxlan
+net add vxlan v1 vxlan id 10001
+net add interface v1 ip address 10.0.6.1/24
+#
+net commit
+

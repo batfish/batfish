@@ -1,0 +1,43 @@
+{
+    "class": "org.batfish.question.comparefilters.CompareFiltersQuestion",
+    "differential": true,
+    "filters": "${filters}",
+    "ignoreComposites": "${ignoreComposites}",
+    "nodes": "${nodes}",
+    "instance": {
+      "description": "Compares filters with the same name in the current and reference snapshots. Returns pairs of lines, one from each filter, that match the same flow(s) but treat them differently (i.e. one permits and the other denies the flow).",
+        "instanceName": "compareFilters",
+        "longDescription": "This question can be used to summarize how a filter has changed over time. In particular, it highlights differences that cause flows to be denied when they used to be permitted, or vice versa. The output is a table that includes pairs of lines, one from each version of the filter, that both match at least one common flow, and have different action (permit or deny). This is a differential question and the reference snapshot to compare against must be provided in the call to answer().",
+        "orderedVariableNames": [
+            "nodes",
+            "filters",
+            "ignoreComposites"
+        ],
+        "tags": [
+            "dataplane",
+            "acl",
+            "differential"
+        ],
+        "variables": {
+            "filters": {
+                "description": "Only evaluate filters that match this filter specifier",
+                "optional": true,
+                "type": "filterSpec",
+                "displayName": "Filters"
+            },
+            "ignoreComposites": {
+                "description": "Whether to ignore filters that are composed of multiple filters defined in the configs",
+                "type": "boolean",
+                "optional": true,
+                "value": false,
+                "displayName": "Ignore composite filters"
+            },
+            "nodes": {
+                "description": "Only evaluate filters present on nodes matching this node specifier",
+                "optional": true,
+                "type": "nodeSpec",
+                "displayName": "Nodes"
+            }
+        }
+    }
+}

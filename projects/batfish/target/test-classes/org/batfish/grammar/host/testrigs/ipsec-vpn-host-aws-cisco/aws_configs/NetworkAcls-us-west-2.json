@@ -1,0 +1,80 @@
+{
+ "NetworkAcls": [
+  {
+   "Associations": [
+    {
+     "NetworkAclAssociationId": "aclassoc-7a933f04", 
+     "NetworkAclId": "acl-1ced2265", 
+     "SubnetId": "subnet-9a0c48fc"
+    }
+   ], 
+   "Entries": [
+    {
+     "CidrBlock": "10.10.0.0/16", 
+     "Egress": true, 
+     "Protocol": "-1", 
+     "RuleAction": "allow", 
+     "RuleNumber": 100
+    }, 
+    {
+     "CidrBlock": "10.1.0.0/16", 
+     "Egress": true, 
+     "Protocol": "-1", 
+     "RuleAction": "allow", 
+     "RuleNumber": 200
+    }, 
+    {
+     "CidrBlock": "0.0.0.0/0", 
+     "Egress": true, 
+     "Protocol": "-1", 
+     "RuleAction": "allow", 
+     "RuleNumber": 300
+    }, 
+    {
+     "CidrBlock": "0.0.0.0/0", 
+     "Egress": true, 
+     "Protocol": "-1", 
+     "RuleAction": "deny", 
+     "RuleNumber": 32767
+    }, 
+    {
+     "CidrBlock": "10.10.0.0/16", 
+     "Egress": false, 
+     "Protocol": "-1", 
+     "RuleAction": "allow", 
+     "RuleNumber": 100
+    }, 
+    {
+     "CidrBlock": "10.1.0.0/16", 
+     "Egress": false, 
+     "Protocol": "-1", 
+     "RuleAction": "allow", 
+     "RuleNumber": 200
+    }, 
+    {
+     "CidrBlock": "0.0.0.0/0", 
+     "Egress": false, 
+     "Protocol": "-1", 
+     "RuleAction": "allow", 
+     "RuleNumber": 300
+    }, 
+    {
+     "CidrBlock": "0.0.0.0/0", 
+     "Egress": false, 
+     "Protocol": "-1", 
+     "RuleAction": "deny", 
+     "RuleNumber": 32767
+    }
+   ], 
+   "IsDefault": true, 
+   "NetworkAclId": "acl-1ced2265", 
+   "Tags": [
+    {
+     "Key": "Name", 
+     "Value": "GNS3-BGP-Test"
+    }
+   ], 
+   "VpcId": "vpc-815775e7"
+  }
+ ]
+}

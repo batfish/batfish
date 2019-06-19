@@ -1,0 +1,11 @@
+!
+ASA Version 9.6(3)8
+!
+hostname aaaAuthenticationAsa
+!
+aaa authentication ssh console authServer LOCAL
+aaa authentication telnet console authServer
+!
+telnet 0.0.0.0 0.0.0.0 inside
+http 0.0.0.0 0.0.0.0 inside
+!

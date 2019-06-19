@@ -1,0 +1,4105 @@
+[
+  {
+    "class" : "org.batfish.datamodel.table.TableAnswerElement",
+    "metadata" : {
+      "columnMetadata" : [
+        {
+          "description" : "File containing reference",
+          "isKey" : true,
+          "isValue" : false,
+          "name" : "File_Name",
+          "schema" : "String"
+        },
+        {
+          "description" : "Type of struct reference is supposed to be",
+          "isKey" : false,
+          "isValue" : false,
+          "name" : "Struct_Type",
+          "schema" : "String"
+        },
+        {
+          "description" : "The undefined reference",
+          "isKey" : true,
+          "isValue" : false,
+          "name" : "Ref_Name",
+          "schema" : "String"
+        },
+        {
+          "description" : "Context of undefined reference",
+          "isKey" : true,
+          "isValue" : false,
+          "name" : "Context",
+          "schema" : "String"
+        },
+        {
+          "description" : "Lines where reference appears",
+          "isKey" : false,
+          "isValue" : false,
+          "name" : "Lines",
+          "schema" : "FileLines"
+        }
+      ],
+      "textDesc" : "'${File_Name}' has undefined '${Struct_Type}' called '${Ref_Name}' being used as '${Context}' at line(s) ${Lines}"
+    },
+    "rows" : [
+      {
+        "File_Name" : "configs/arista_bgp",
+        "Struct_Type" : "bgp peer-group",
+        "Ref_Name" : "UNDEFINED_PEER_GROUP",
+        "Context" : "bgp neighbor statement",
+        "Lines" : {
+          "filename" : "configs/arista_bgp",
+          "lines" : [
+            11
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/arista_bgp",
+        "Struct_Type" : "route-map",
+        "Ref_Name" : "UNDEFINED_MAP",
+        "Context" : "bgp redistribute ospfv3 route-map",
+        "Lines" : {
+          "filename" : "configs/arista_bgp",
+          "lines" : [
+            13
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/arista_interface",
+        "Struct_Type" : "policy-map",
+        "Ref_Name" : "pbr-pmap",
+        "Context" : "interface service-policy",
+        "Lines" : {
+          "filename" : "configs/arista_interface",
+          "lines" : [
+            8
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/arista_interface",
+        "Struct_Type" : "policy-map",
+        "Ref_Name" : "qos-pmap",
+        "Context" : "interface service-policy",
+        "Lines" : {
+          "filename" : "configs/arista_interface",
+          "lines" : [
+            9
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/arista_misc",
+        "Struct_Type" : "ipv4 acl",
+        "Ref_Name" : "abc",
+        "Context" : "management telnet ip access-group",
+        "Lines" : {
+          "filename" : "configs/arista_misc",
+          "lines" : [
+            36
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/asa_acl",
+        "Struct_Type" : "object-group network",
+        "Ref_Name" : "drawbridge_hosts",
+        "Context" : "extended access-list network object-group",
+        "Lines" : {
+          "filename" : "configs/asa_acl",
+          "lines" : [
+            9
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/asa_interface",
+        "Struct_Type" : "policy-map",
+        "Ref_Name" : "some-interface-policy",
+        "Context" : "service-policy interface policy",
+        "Lines" : {
+          "filename" : "configs/asa_interface",
+          "lines" : [
+            8
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/asa_nat",
+        "Struct_Type" : "interface",
+        "Ref_Name" : "inside",
+        "Context" : "object nat real interface",
+        "Lines" : {
+          "filename" : "configs/asa_nat",
+          "lines" : [
+            16,
+            17,
+            18,
+            19
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/asa_nat",
+        "Struct_Type" : "interface",
+        "Ref_Name" : "inside",
+        "Context" : "twice nat real interface",
+        "Lines" : {
+          "filename" : "configs/asa_nat",
+          "lines" : [
+            7,
+            8,
+            9
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/asa_nat",
+        "Struct_Type" : "interface",
+        "Ref_Name" : "outside",
+        "Context" : "object nat mapped interface",
+        "Lines" : {
+          "filename" : "configs/asa_nat",
+          "lines" : [
+            16,
+            17,
+            18,
+            20
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/asa_nat",
+        "Struct_Type" : "interface",
+        "Ref_Name" : "outside",
+        "Context" : "twice nat mapped interface",
+        "Lines" : {
+          "filename" : "configs/asa_nat",
+          "lines" : [
+            7,
+            8,
+            9
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/asa_nat",
+        "Struct_Type" : "object network",
+        "Ref_Name" : "interface",
+        "Context" : "twice nat mapped destination network object",
+        "Lines" : {
+          "filename" : "configs/asa_nat",
+          "lines" : [
+            8
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/asa_nat",
+        "Struct_Type" : "object network",
+        "Ref_Name" : "interface",
+        "Context" : "twice nat mapped source network object",
+        "Lines" : {
+          "filename" : "configs/asa_nat",
+          "lines" : [
+            8
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/asa_nat",
+        "Struct_Type" : "object network",
+        "Ref_Name" : "net1",
+        "Context" : "twice nat real source network object",
+        "Lines" : {
+          "filename" : "configs/asa_nat",
+          "lines" : [
+            8,
+            9,
+            11,
+            12,
+            13
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/asa_nat",
+        "Struct_Type" : "object network",
+        "Ref_Name" : "net2",
+        "Context" : "twice nat mapped source network object",
+        "Lines" : {
+          "filename" : "configs/asa_nat",
+          "lines" : [
+            9,
+            11,
+            12,
+            13
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/asa_nat",
+        "Struct_Type" : "object network",
+        "Ref_Name" : "net2",
+        "Context" : "twice nat real destination network object",
+        "Lines" : {
+          "filename" : "configs/asa_nat",
+          "lines" : [
+            8
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/asa_nat",
+        "Struct_Type" : "object network",
+        "Ref_Name" : "net3",
+        "Context" : "twice nat mapped destination network object",
+        "Lines" : {
+          "filename" : "configs/asa_nat",
+          "lines" : [
+            11
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/asa_nat",
+        "Struct_Type" : "object network",
+        "Ref_Name" : "net4",
+        "Context" : "twice nat real destination network object",
+        "Lines" : {
+          "filename" : "configs/asa_nat",
+          "lines" : [
+            11
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/asa_nat",
+        "Struct_Type" : "object network",
+        "Ref_Name" : "source-mapped",
+        "Context" : "object nat mapped source network object",
+        "Lines" : {
+          "filename" : "configs/asa_nat",
+          "lines" : [
+            18,
+            22,
+            23
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/bgp_address_family",
+        "Struct_Type" : "interface",
+        "Ref_Name" : "Loopback0",
+        "Context" : "update-source interface",
+        "Lines" : {
+          "filename" : "configs/bgp_address_family",
+          "lines" : [
+            14
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/bgp_address_family",
+        "Struct_Type" : "route-map",
+        "Ref_Name" : "as1_to_as2",
+        "Context" : "bgp outbound route-map",
+        "Lines" : {
+          "filename" : "configs/bgp_address_family",
+          "lines" : [
+            26
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/bgp_address_family",
+        "Struct_Type" : "route-map",
+        "Ref_Name" : "as1_to_as3",
+        "Context" : "bgp outbound route-map",
+        "Lines" : {
+          "filename" : "configs/bgp_address_family",
+          "lines" : [
+            28
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/bgp_address_family",
+        "Struct_Type" : "route-map",
+        "Ref_Name" : "as2_to_as1",
+        "Context" : "bgp inbound route-map",
+        "Lines" : {
+          "filename" : "configs/bgp_address_family",
+          "lines" : [
+            27
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/bgp_address_family",
+        "Struct_Type" : "route-map",
+        "Ref_Name" : "as3_to_as1",
+        "Context" : "bgp inbound route-map",
+        "Lines" : {
+          "filename" : "configs/bgp_address_family",
+          "lines" : [
+            29
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/bgp_address_family",
+        "Struct_Type" : "undeclared bgp peer",
+        "Ref_Name" : "13.16.3.16",
+        "Context" : "bgp neighbor without remote-as",
+        "Lines" : {
+          "filename" : "configs/bgp_address_family",
+          "lines" : [
+            17
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/bgp_default_originate_policy",
+        "Struct_Type" : "route-policy",
+        "Ref_Name" : "EBGP_CUST_FULL_v4",
+        "Context" : "bgp neighbor route-policy out",
+        "Lines" : {
+          "filename" : "configs/bgp_default_originate_policy",
+          "lines" : [
+            13
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/bgp_default_originate_policy",
+        "Struct_Type" : "route-policy",
+        "Ref_Name" : "cust_v4_in",
+        "Context" : "bgp neighbor route-policy in",
+        "Lines" : {
+          "filename" : "configs/bgp_default_originate_policy",
+          "lines" : [
+            11
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/bgp_foundry",
+        "Struct_Type" : "route-map",
+        "Ref_Name" : "from_ucr",
+        "Context" : "bgp inbound route-map",
+        "Lines" : {
+          "filename" : "configs/bgp_foundry",
+          "lines" : [
+            10
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/bgp_foundry",
+        "Struct_Type" : "route-map",
+        "Ref_Name" : "tag-bbone-prefixes",
+        "Context" : "bgp ipv4 network statement route-map",
+        "Lines" : {
+          "filename" : "configs/bgp_foundry",
+          "lines" : [
+            15
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/bgp_route_policy",
+        "Struct_Type" : "bgp neighbor-group",
+        "Ref_Name" : "EBGP-PEER-SVL-PNI",
+        "Context" : "bgp use neighbor-group",
+        "Lines" : {
+          "filename" : "configs/bgp_route_policy",
+          "lines" : [
+            20
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/bgp_route_policy",
+        "Struct_Type" : "route-policy",
+        "Ref_Name" : "EBGP-PEER-AS11164-SVL-PNI-IN",
+        "Context" : "bgp neighbor route-policy in",
+        "Lines" : {
+          "filename" : "configs/bgp_route_policy",
+          "lines" : [
+            24
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/bgp_route_policy",
+        "Struct_Type" : "route-policy",
+        "Ref_Name" : "EBGP-PEER-AS11164-SVL-PNI-OUT",
+        "Context" : "bgp neighbor route-policy out",
+        "Lines" : {
+          "filename" : "configs/bgp_route_policy",
+          "lines" : [
+            26
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/cadant_bgp",
+        "Struct_Type" : "interface",
+        "Ref_Name" : "Loopback15",
+        "Context" : "update-source interface",
+        "Lines" : {
+          "filename" : "configs/cadant_bgp",
+          "lines" : [
+            12,
+            17
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/cadant_bgp",
+        "Struct_Type" : "route-map",
+        "Ref_Name" : "blarp",
+        "Context" : "bgp outbound route-map",
+        "Lines" : {
+          "filename" : "configs/cadant_bgp",
+          "lines" : [
+            28
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/cadant_bgp",
+        "Struct_Type" : "route-map",
+        "Ref_Name" : "blerp",
+        "Context" : "bgp outbound ipv6 route-map",
+        "Lines" : {
+          "filename" : "configs/cadant_bgp",
+          "lines" : [
+            35
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/cadant_bgp",
+        "Struct_Type" : "undeclared bgp peer",
+        "Ref_Name" : "1.2.3.4",
+        "Context" : "bgp neighbor without remote-as",
+        "Lines" : {
+          "filename" : "configs/cadant_bgp",
+          "lines" : [
+            26,
+            27,
+            28,
+            39
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/cadant_bgp",
+        "Struct_Type" : "undeclared bgp peer",
+        "Ref_Name" : "dead:beef:0:0:0:0:0:1",
+        "Context" : "bgp neighbor without remote-as",
+        "Lines" : {
+          "filename" : "configs/cadant_bgp",
+          "lines" : [
+            33,
+            34,
+            35,
+            40
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/cadant_interface",
+        "Struct_Type" : "ipv4/6 acl",
+        "Ref_Name" : "fleep-acl",
+        "Context" : "interface ip inband access-group",
+        "Lines" : {
+          "filename" : "configs/cadant_interface",
+          "lines" : [
+            130
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/cadant_interface",
+        "Struct_Type" : "ipv6 acl",
+        "Ref_Name" : "bar-filter",
+        "Context" : "interface ipv6 traffic-filter out",
+        "Lines" : {
+          "filename" : "configs/cadant_interface",
+          "lines" : [
+            86
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/cadant_interface",
+        "Struct_Type" : "ipv6 acl",
+        "Ref_Name" : "foo-filter",
+        "Context" : "interface ipv6 traffic-filter in",
+        "Lines" : {
+          "filename" : "configs/cadant_interface",
+          "lines" : [
+            85
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/cadant_isis",
+        "Struct_Type" : "ipv4/6 acl",
+        "Ref_Name" : "blah-acl-99",
+        "Context" : "router isis distribute-list acl",
+        "Lines" : {
+          "filename" : "configs/cadant_isis",
+          "lines" : [
+            15
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/cadant_isis",
+        "Struct_Type" : "ipv4/6 acl",
+        "Ref_Name" : "blah-ipv6-access-list",
+        "Context" : "router isis distribute-list acl",
+        "Lines" : {
+          "filename" : "configs/cadant_isis",
+          "lines" : [
+            20
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/cadant_misc",
+        "Struct_Type" : "interface",
+        "Ref_Name" : "Loopback0",
+        "Context" : "ntp source-interface",
+        "Lines" : {
+          "filename" : "configs/cadant_misc",
+          "lines" : [
+            80
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/cadant_misc",
+        "Struct_Type" : "interface",
+        "Ref_Name" : "Loopback0",
+        "Context" : "tacacs source-interface",
+        "Lines" : {
+          "filename" : "configs/cadant_misc",
+          "lines" : [
+            94
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/cadant_rip",
+        "Struct_Type" : "ipv4/6 acl",
+        "Ref_Name" : "blah-std-acl",
+        "Context" : "router rip distribute-list",
+        "Lines" : {
+          "filename" : "configs/cadant_rip",
+          "lines" : [
+            6
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/cadant_route_map",
+        "Struct_Type" : "ipv4 prefix-list",
+        "Ref_Name" : "bar-prefix-list",
+        "Context" : "route-map match ipv4 prefix-list",
+        "Lines" : {
+          "filename" : "configs/cadant_route_map",
+          "lines" : [
+            6
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/cadant_route_map",
+        "Struct_Type" : "ipv6 prefix-list",
+        "Ref_Name" : "baz-ipv6-prefix-list",
+        "Context" : "route-map match ipv6 prefix-list",
+        "Lines" : {
+          "filename" : "configs/cadant_route_map",
+          "lines" : [
+            10
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/cadant_snmp",
+        "Struct_Type" : "interface",
+        "Ref_Name" : "Loopback0",
+        "Context" : "snmp-server source-interface",
+        "Lines" : {
+          "filename" : "configs/cadant_snmp",
+          "lines" : [
+            18
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/cadant_snmp",
+        "Struct_Type" : "ipv4 acl",
+        "Ref_Name" : "52",
+        "Context" : "snmp server community ipv4 acl",
+        "Lines" : {
+          "filename" : "configs/cadant_snmp",
+          "lines" : [
+            7
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/cisco_additional_paths",
+        "Struct_Type" : "undeclared bgp peer",
+        "Ref_Name" : "1.2.3.4",
+        "Context" : "bgp neighbor without remote-as",
+        "Lines" : {
+          "filename" : "configs/cisco_additional_paths",
+          "lines" : [
+            8,
+            9
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/cisco_bgp",
+        "Struct_Type" : "as-path access-list",
+        "Ref_Name" : "40",
+        "Context" : "bgp neighbor filter-list access-list",
+        "Lines" : {
+          "filename" : "configs/cisco_bgp",
+          "lines" : [
+            18
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/cisco_bgp",
+        "Struct_Type" : "bgp template peer-policy",
+        "Ref_Name" : "p2",
+        "Context" : "inherited BGP peer-policy",
+        "Lines" : {
+          "filename" : "configs/cisco_bgp",
+          "lines" : [
+            36
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/cisco_bgp",
+        "Struct_Type" : "bgp template peer-policy",
+        "Ref_Name" : "p3",
+        "Context" : "inherited BGP peer-policy",
+        "Lines" : {
+          "filename" : "configs/cisco_bgp",
+          "lines" : [
+            37
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/cisco_bgp",
+        "Struct_Type" : "route-map",
+        "Ref_Name" : "abcdefg",
+        "Context" : "bgp redistribute static route-map",
+        "Lines" : {
+          "filename" : "configs/cisco_bgp",
+          "lines" : [
+            33
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/cisco_bgp",
+        "Struct_Type" : "route-map",
+        "Ref_Name" : "blah",
+        "Context" : "bgp redistribute rip route-map",
+        "Lines" : {
+          "filename" : "configs/cisco_bgp",
+          "lines" : [
+            34
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/cisco_bgp",
+        "Struct_Type" : "route-map",
+        "Ref_Name" : "bloop",
+        "Context" : "bgp redistribute connected route-map",
+        "Lines" : {
+          "filename" : "configs/cisco_bgp",
+          "lines" : [
+            28
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/cisco_bgp",
+        "Struct_Type" : "undeclared bgp peer",
+        "Ref_Name" : "10.0.0.1",
+        "Context" : "bgp neighbor without remote-as",
+        "Lines" : {
+          "filename" : "configs/cisco_bgp",
+          "lines" : [
+            39,
+            40,
+            41,
+            42
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/cisco_bgp",
+        "Struct_Type" : "undeclared bgp peer",
+        "Ref_Name" : "10.20.2.2",
+        "Context" : "bgp neighbor without remote-as",
+        "Lines" : {
+          "filename" : "configs/cisco_bgp",
+          "lines" : [
+            10
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/cisco_bgp",
+        "Struct_Type" : "undeclared bgp peer",
+        "Ref_Name" : "192.168.3.2",
+        "Context" : "bgp neighbor without remote-as",
+        "Lines" : {
+          "filename" : "configs/cisco_bgp",
+          "lines" : [
+            14
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/cisco_bgp",
+        "Struct_Type" : "undeclared bgp peer",
+        "Ref_Name" : "192.168.4.2",
+        "Context" : "bgp neighbor without remote-as",
+        "Lines" : {
+          "filename" : "configs/cisco_bgp",
+          "lines" : [
+            18
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/cisco_cable",
+        "Struct_Type" : "cable service-class",
+        "Ref_Name" : "barfoo",
+        "Context" : "cable qos enforce-rule service-class",
+        "Lines" : {
+          "filename" : "configs/cisco_cable",
+          "lines" : [
+            77
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/cisco_cable",
+        "Struct_Type" : "cable service-class",
+        "Ref_Name" : "foobar",
+        "Context" : "cable qos enforce-rule service-class",
+        "Lines" : {
+          "filename" : "configs/cisco_cable",
+          "lines" : [
+            78
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/cisco_cable",
+        "Struct_Type" : "depi-tunnel",
+        "Ref_Name" : "depitun0",
+        "Context" : "controller rf-channel depi-tunnel",
+        "Lines" : {
+          "filename" : "configs/cisco_cable",
+          "lines" : [
+            124
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/cisco_cable",
+        "Struct_Type" : "l2tp-class",
+        "Ref_Name" : "l2tpclass1",
+        "Context" : "depi-tunnel l2tp-class",
+        "Lines" : {
+          "filename" : "configs/cisco_cable",
+          "lines" : [
+            140
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/cisco_control_plane",
+        "Struct_Type" : "policy-map",
+        "Ref_Name" : "copp-policy",
+        "Context" : "control-plane service-policy input",
+        "Lines" : {
+          "filename" : "configs/cisco_control_plane",
+          "lines" : [
+            5
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/cisco_control_plane",
+        "Struct_Type" : "policy-map",
+        "Ref_Name" : "copp-policy-out",
+        "Context" : "control-plane service-policy output",
+        "Lines" : {
+          "filename" : "configs/cisco_control_plane",
+          "lines" : [
+            6
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/cisco_crypto",
+        "Struct_Type" : "crypto ipsec transform-set",
+        "Ref_Name" : "bleep",
+        "Context" : "crypto map ipsec-isakmp transform-set",
+        "Lines" : {
+          "filename" : "configs/cisco_crypto",
+          "lines" : [
+            222
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/cisco_crypto",
+        "Struct_Type" : "crypto ipsec transform-set",
+        "Ref_Name" : "hijklmnop",
+        "Context" : "ipsec profile set transform-set",
+        "Lines" : {
+          "filename" : "configs/cisco_crypto",
+          "lines" : [
+            159
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/cisco_crypto",
+        "Struct_Type" : "crypto ipsec transform-set",
+        "Ref_Name" : "mytransformset",
+        "Context" : "crypto map ipsec-isakmp transform-set",
+        "Lines" : {
+          "filename" : "configs/cisco_crypto",
+          "lines" : [
+            241
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/cisco_crypto",
+        "Struct_Type" : "crypto isakmp profile",
+        "Ref_Name" : "myisakmpprofile",
+        "Context" : "crypto map ipsec-isakmp isakmp-profile",
+        "Lines" : {
+          "filename" : "configs/cisco_crypto",
+          "lines" : [
+            237
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/cisco_crypto",
+        "Struct_Type" : "crypto isakmp profile",
+        "Ref_Name" : "someOtherprofile",
+        "Context" : "ipsec profile set isakmp-profile",
+        "Lines" : {
+          "filename" : "configs/cisco_crypto",
+          "lines" : [
+            162
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/cisco_crypto",
+        "Struct_Type" : "crypto keyring",
+        "Ref_Name" : "VRF:MMS:RMT:UPM:1143",
+        "Context" : "isakmp profile keyring",
+        "Lines" : {
+          "filename" : "configs/cisco_crypto",
+          "lines" : [
+            188
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/cisco_crypto",
+        "Struct_Type" : "crypto-dynamic-map-set",
+        "Ref_Name" : "bippety",
+        "Context" : "crypto map ipsec-isakmp crypto-dynamic-map-set",
+        "Lines" : {
+          "filename" : "configs/cisco_crypto",
+          "lines" : [
+            224
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/cisco_crypto",
+        "Struct_Type" : "ipv4/6 acl",
+        "Ref_Name" : "myvpnacl",
+        "Context" : "crypto map ipsec-isakmp acl",
+        "Lines" : {
+          "filename" : "configs/cisco_crypto",
+          "lines" : [
+            235
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/cisco_crypto",
+        "Struct_Type" : "ipv4/6 acl",
+        "Ref_Name" : "someacl",
+        "Context" : "crypto map ipsec-isakmp acl",
+        "Lines" : {
+          "filename" : "configs/cisco_crypto",
+          "lines" : [
+            219
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/cisco_domain",
+        "Struct_Type" : "interface",
+        "Ref_Name" : "Loopback666",
+        "Context" : "domain lookup source-interface",
+        "Lines" : {
+          "filename" : "configs/cisco_domain",
+          "lines" : [
+            5
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/cisco_eigrp",
+        "Struct_Type" : "interface",
+        "Ref_Name" : "FastEthernet0/1",
+        "Context" : "eigrp passive-interface",
+        "Lines" : {
+          "filename" : "configs/cisco_eigrp",
+          "lines" : [
+            147
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/cisco_eigrp",
+        "Struct_Type" : "interface",
+        "Ref_Name" : "GigabitEthernet1/5/3",
+        "Context" : "eigrp passive-interface",
+        "Lines" : {
+          "filename" : "configs/cisco_eigrp",
+          "lines" : [
+            27
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/cisco_eigrp",
+        "Struct_Type" : "interface",
+        "Ref_Name" : "GigabitEthernet2/5/3",
+        "Context" : "eigrp passive-interface",
+        "Lines" : {
+          "filename" : "configs/cisco_eigrp",
+          "lines" : [
+            28
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/cisco_eigrp",
+        "Struct_Type" : "interface",
+        "Ref_Name" : "Port-Channel34",
+        "Context" : "eigrp passive-interface",
+        "Lines" : {
+          "filename" : "configs/cisco_eigrp",
+          "lines" : [
+            29
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/cisco_eigrp",
+        "Struct_Type" : "interface",
+        "Ref_Name" : "Port-Channel35",
+        "Context" : "eigrp passive-interface",
+        "Lines" : {
+          "filename" : "configs/cisco_eigrp",
+          "lines" : [
+            30
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/cisco_eigrp",
+        "Struct_Type" : "route-map",
+        "Ref_Name" : "BGP_TO_EIGRP",
+        "Context" : "eigrp redistribute bgp route-map",
+        "Lines" : {
+          "filename" : "configs/cisco_eigrp",
+          "lines" : [
+            35
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/cisco_eigrp",
+        "Struct_Type" : "route-map",
+        "Ref_Name" : "CONNECTED_TO_EIGRP",
+        "Context" : "eigrp redistribute connected route-map",
+        "Lines" : {
+          "filename" : "configs/cisco_eigrp",
+          "lines" : [
+            36
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/cisco_eigrp",
+        "Struct_Type" : "route-map",
+        "Ref_Name" : "EIGRP_TO_EIGRP",
+        "Context" : "eigrp redistribute eigrp route-map",
+        "Lines" : {
+          "filename" : "configs/cisco_eigrp",
+          "lines" : [
+            37
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/cisco_eigrp",
+        "Struct_Type" : "route-map",
+        "Ref_Name" : "ISIS_TO_EIGRP",
+        "Context" : "eigrp redistribute isis route-map",
+        "Lines" : {
+          "filename" : "configs/cisco_eigrp",
+          "lines" : [
+            38
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/cisco_eigrp",
+        "Struct_Type" : "route-map",
+        "Ref_Name" : "OSPF_TO_EIGRP",
+        "Context" : "eigrp redistribute ospf route-map",
+        "Lines" : {
+          "filename" : "configs/cisco_eigrp",
+          "lines" : [
+            39
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/cisco_eigrp",
+        "Struct_Type" : "route-map",
+        "Ref_Name" : "RIP_TO_EIGRP",
+        "Context" : "eigrp redistribute rip route-map",
+        "Lines" : {
+          "filename" : "configs/cisco_eigrp",
+          "lines" : [
+            40
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/cisco_eigrp",
+        "Struct_Type" : "route-map",
+        "Ref_Name" : "STATIC_TO_EIGRP",
+        "Context" : "eigrp redistribute static route-map",
+        "Lines" : {
+          "filename" : "configs/cisco_eigrp",
+          "lines" : [
+            41
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/cisco_interface",
+        "Struct_Type" : "interface",
+        "Ref_Name" : "Loopback1",
+        "Context" : "vxlan source-interface",
+        "Lines" : {
+          "filename" : "configs/cisco_interface",
+          "lines" : [
+            324
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/cisco_interface",
+        "Struct_Type" : "ipv4 acl",
+        "Ref_Name" : "167",
+        "Context" : "interface ip verify access-list",
+        "Lines" : {
+          "filename" : "configs/cisco_interface",
+          "lines" : [
+            130
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/cisco_interface",
+        "Struct_Type" : "ipv4 acl",
+        "Ref_Name" : "310-systems",
+        "Context" : "interface outgoing ip access-list",
+        "Lines" : {
+          "filename" : "configs/cisco_interface",
+          "lines" : [
+            138
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/cisco_interface",
+        "Struct_Type" : "ipv4 acl",
+        "Ref_Name" : "ag1",
+        "Context" : "interface incoming ip access-list",
+        "Lines" : {
+          "filename" : "configs/cisco_interface",
+          "lines" : [
+            56
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/cisco_interface",
+        "Struct_Type" : "ipv4 acl",
+        "Ref_Name" : "ag2",
+        "Context" : "interface outgoing ip access-list",
+        "Lines" : {
+          "filename" : "configs/cisco_interface",
+          "lines" : [
+            57
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/cisco_interface",
+        "Struct_Type" : "ipv4 acl",
+        "Ref_Name" : "def",
+        "Context" : "ip nat source dynamic access-list",
+        "Lines" : {
+          "filename" : "configs/cisco_interface",
+          "lines" : [
+            92
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/cisco_interface",
+        "Struct_Type" : "ipv4 acl",
+        "Ref_Name" : "mynatacl",
+        "Context" : "ip nat destination acl",
+        "Lines" : {
+          "filename" : "configs/cisco_interface",
+          "lines" : [
+            89
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/cisco_interface",
+        "Struct_Type" : "ipv4/6 acl",
+        "Ref_Name" : "1",
+        "Context" : "interface igmp access-group acl",
+        "Lines" : {
+          "filename" : "configs/cisco_interface",
+          "lines" : [
+            78
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/cisco_interface",
+        "Struct_Type" : "ipv4/6 acl",
+        "Ref_Name" : "hpaccesslist",
+        "Context" : "interface igmp host-proxy access-list",
+        "Lines" : {
+          "filename" : "configs/cisco_interface",
+          "lines" : [
+            80
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/cisco_interface",
+        "Struct_Type" : "nat pool",
+        "Ref_Name" : "beeble",
+        "Context" : "ip nat source pool",
+        "Lines" : {
+          "filename" : "configs/cisco_interface",
+          "lines" : [
+            93
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/cisco_interface",
+        "Struct_Type" : "route-map",
+        "Ref_Name" : "SITEMAP",
+        "Context" : "interface ip vrf sitemap",
+        "Lines" : {
+          "filename" : "configs/cisco_interface",
+          "lines" : [
+            136
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/cisco_interface",
+        "Struct_Type" : "route-map",
+        "Ref_Name" : "eigrp-leak-map",
+        "Context" : "interface summary-address eigrp leak-map",
+        "Lines" : {
+          "filename" : "configs/cisco_interface",
+          "lines" : [
+            126
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/cisco_interface",
+        "Struct_Type" : "zone security",
+        "Ref_Name" : "z1",
+        "Context" : "interface zone-member security",
+        "Lines" : {
+          "filename" : "configs/cisco_interface",
+          "lines" : [
+            280
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/cisco_ip",
+        "Struct_Type" : "ipv4/6 acl",
+        "Ref_Name" : "wccp-cachelist",
+        "Context" : "ip wccp group-list",
+        "Lines" : {
+          "filename" : "configs/cisco_ip",
+          "lines" : [
+            11
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/cisco_ip",
+        "Struct_Type" : "ipv4/6 acl",
+        "Ref_Name" : "wccp-redir",
+        "Context" : "ip wccp redirect-list",
+        "Lines" : {
+          "filename" : "configs/cisco_ip",
+          "lines" : [
+            11
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/cisco_ip_route",
+        "Struct_Type" : "interface",
+        "Ref_Name" : "Dialer1",
+        "Context" : "ip route next-hop interface",
+        "Lines" : {
+          "filename" : "configs/cisco_ip_route",
+          "lines" : [
+            14
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/cisco_ip_route",
+        "Struct_Type" : "interface",
+        "Ref_Name" : "Dialer2",
+        "Context" : "ip route next-hop interface",
+        "Lines" : {
+          "filename" : "configs/cisco_ip_route",
+          "lines" : [
+            15
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/cisco_ip_route",
+        "Struct_Type" : "interface",
+        "Ref_Name" : "GigabitEthernet3/0/0.212",
+        "Context" : "ip route next-hop interface",
+        "Lines" : {
+          "filename" : "configs/cisco_ip_route",
+          "lines" : [
+            6
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/cisco_ip_route",
+        "Struct_Type" : "interface",
+        "Ref_Name" : "Loopback66",
+        "Context" : "ip route next-hop interface",
+        "Lines" : {
+          "filename" : "configs/cisco_ip_route",
+          "lines" : [
+            12
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/cisco_ip_route",
+        "Struct_Type" : "interface",
+        "Ref_Name" : "Loopback99",
+        "Context" : "ip route next-hop interface",
+        "Lines" : {
+          "filename" : "configs/cisco_ip_route",
+          "lines" : [
+            13
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/cisco_ip_route",
+        "Struct_Type" : "interface",
+        "Ref_Name" : "POS5/3:10",
+        "Context" : "ip route next-hop interface",
+        "Lines" : {
+          "filename" : "configs/cisco_ip_route",
+          "lines" : [
+            10
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/cisco_ip_route",
+        "Struct_Type" : "interface",
+        "Ref_Name" : "Serial5/0:2",
+        "Context" : "ip route next-hop interface",
+        "Lines" : {
+          "filename" : "configs/cisco_ip_route",
+          "lines" : [
+            7
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/cisco_ip_route",
+        "Struct_Type" : "interface",
+        "Ref_Name" : "Serial5/1:5",
+        "Context" : "ip route next-hop interface",
+        "Lines" : {
+          "filename" : "configs/cisco_ip_route",
+          "lines" : [
+            9
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/cisco_line",
+        "Struct_Type" : "ipv4 acl",
+        "Ref_Name" : "40",
+        "Context" : "line access-class list",
+        "Lines" : {
+          "filename" : "configs/cisco_line",
+          "lines" : [
+            6,
+            26
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/cisco_line",
+        "Struct_Type" : "ipv4 acl",
+        "Ref_Name" : "99",
+        "Context" : "line access-class list",
+        "Lines" : {
+          "filename" : "configs/cisco_line",
+          "lines" : [
+            56
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/cisco_line",
+        "Struct_Type" : "ipv4 acl",
+        "Ref_Name" : "vty-acl",
+        "Context" : "line access-class list",
+        "Lines" : {
+          "filename" : "configs/cisco_line",
+          "lines" : [
+            22
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/cisco_line",
+        "Struct_Type" : "ipv6 acl",
+        "Ref_Name" : "ipv6-vty-acl",
+        "Context" : "line access-class ipv6 list",
+        "Lines" : {
+          "filename" : "configs/cisco_line",
+          "lines" : [
+            61
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/cisco_misc",
+        "Struct_Type" : "class-map",
+        "Ref_Name" : "ICMP-cmap",
+        "Context" : "policy-map class",
+        "Lines" : {
+          "filename" : "configs/cisco_misc",
+          "lines" : [
+            206
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/cisco_misc",
+        "Struct_Type" : "class-map",
+        "Ref_Name" : "TCP-cmap",
+        "Context" : "policy-map class",
+        "Lines" : {
+          "filename" : "configs/cisco_misc",
+          "lines" : [
+            208
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/cisco_misc",
+        "Struct_Type" : "class-map",
+        "Ref_Name" : "inspection_default",
+        "Context" : "policy-map class",
+        "Lines" : {
+          "filename" : "configs/cisco_misc",
+          "lines" : [
+            195
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/cisco_misc",
+        "Struct_Type" : "ipv4/6 acl",
+        "Ref_Name" : "cops-acl",
+        "Context" : "cops listener access-list",
+        "Lines" : {
+          "filename" : "configs/cisco_misc",
+          "lines" : [
+            42
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/cisco_ntp",
+        "Struct_Type" : "interface",
+        "Ref_Name" : "Loopback0",
+        "Context" : "ntp source-interface",
+        "Lines" : {
+          "filename" : "configs/cisco_ntp",
+          "lines" : [
+            7
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/cisco_ntp",
+        "Struct_Type" : "ipv4 acl",
+        "Ref_Name" : "ntp-peer-group",
+        "Context" : "ntp access-group",
+        "Lines" : {
+          "filename" : "configs/cisco_ntp",
+          "lines" : [
+            4
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/cisco_nxos_bgp",
+        "Struct_Type" : "route-map",
+        "Ref_Name" : "AGG6_MAP",
+        "Context" : "bgp address-family aggregate-address advertise-map",
+        "Lines" : {
+          "filename" : "configs/cisco_nxos_bgp",
+          "lines" : [
+            21
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/cisco_ospf",
+        "Struct_Type" : "ipv4 prefix-list",
+        "Ref_Name" : "plin",
+        "Context" : "router ospf distribute-list prefix in",
+        "Lines" : {
+          "filename" : "configs/cisco_ospf",
+          "lines" : [
+            55
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/cisco_ospf",
+        "Struct_Type" : "ipv4 prefix-list",
+        "Ref_Name" : "plout",
+        "Context" : "router ospf distribute-list prefix out",
+        "Lines" : {
+          "filename" : "configs/cisco_ospf",
+          "lines" : [
+            56
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/cisco_ospf",
+        "Struct_Type" : "ipv4/6 acl",
+        "Ref_Name" : "aclin",
+        "Context" : "router ospf distribute-list in",
+        "Lines" : {
+          "filename" : "configs/cisco_ospf",
+          "lines" : [
+            52,
+            53
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/cisco_ospf",
+        "Struct_Type" : "ipv4/6 acl",
+        "Ref_Name" : "aclout",
+        "Context" : "router ospf distribute-list out",
+        "Lines" : {
+          "filename" : "configs/cisco_ospf",
+          "lines" : [
+            54
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/cisco_ospf",
+        "Struct_Type" : "route-map",
+        "Ref_Name" : "DEFAULT_ORIGINATE_OSPF",
+        "Context" : "ospf default-originate route-map",
+        "Lines" : {
+          "filename" : "configs/cisco_ospf",
+          "lines" : [
+            47
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/cisco_ospf",
+        "Struct_Type" : "route-map",
+        "Ref_Name" : "DIRECT_OSPF",
+        "Context" : "ospf redistribute connected route-map",
+        "Lines" : {
+          "filename" : "configs/cisco_ospf",
+          "lines" : [
+            67
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/cisco_ospf",
+        "Struct_Type" : "route-map",
+        "Ref_Name" : "eigrp-ospf-route-map",
+        "Context" : "ospf redistribute eigrp route-map",
+        "Lines" : {
+          "filename" : "configs/cisco_ospf",
+          "lines" : [
+            68
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/cisco_ospf",
+        "Struct_Type" : "route-map",
+        "Ref_Name" : "rmin",
+        "Context" : "router ospf distribute-list route-map in",
+        "Lines" : {
+          "filename" : "configs/cisco_ospf",
+          "lines" : [
+            57
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/cisco_ospf",
+        "Struct_Type" : "route-map",
+        "Ref_Name" : "rmout",
+        "Context" : "router ospf distribute-list route-map out",
+        "Lines" : {
+          "filename" : "configs/cisco_ospf",
+          "lines" : [
+            58
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/cisco_ospf_ipv6",
+        "Struct_Type" : "ipv6 prefix-list",
+        "Ref_Name" : "SWITCHLAN",
+        "Context" : "ipv6 router ospf distribute-list prefix-list in",
+        "Lines" : {
+          "filename" : "configs/cisco_ospf_ipv6",
+          "lines" : [
+            14
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/cisco_ospf_ipv6",
+        "Struct_Type" : "ipv6 prefix-list",
+        "Ref_Name" : "SWITCHLAN-OUT",
+        "Context" : "ipv6 router ospf distribute-list prefix-list out",
+        "Lines" : {
+          "filename" : "configs/cisco_ospf_ipv6",
+          "lines" : [
+            15
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/cisco_pim",
+        "Struct_Type" : "ipv4 acl",
+        "Ref_Name" : "foobar",
+        "Context" : "pim rp-address",
+        "Lines" : {
+          "filename" : "configs/cisco_pim",
+          "lines" : [
+            7
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/cisco_pim",
+        "Struct_Type" : "ipv4 acl",
+        "Ref_Name" : "foobarmap",
+        "Context" : "pim rp-address",
+        "Lines" : {
+          "filename" : "configs/cisco_pim",
+          "lines" : [
+            8
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/cisco_qos",
+        "Struct_Type" : "acl",
+        "Ref_Name" : "boop",
+        "Context" : "class-map access-group",
+        "Lines" : {
+          "filename" : "configs/cisco_qos",
+          "lines" : [
+            20
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/cisco_qos",
+        "Struct_Type" : "acl",
+        "Ref_Name" : "boop2",
+        "Context" : "class-map access-list",
+        "Lines" : {
+          "filename" : "configs/cisco_qos",
+          "lines" : [
+            21
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/cisco_qos",
+        "Struct_Type" : "class-map",
+        "Ref_Name" : "MY_CLASS_1",
+        "Context" : "policy-map event class",
+        "Lines" : {
+          "filename" : "configs/cisco_qos",
+          "lines" : [
+            129
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/cisco_qos",
+        "Struct_Type" : "class-map",
+        "Ref_Name" : "MY_CLASS_2",
+        "Context" : "policy-map event class",
+        "Lines" : {
+          "filename" : "configs/cisco_qos",
+          "lines" : [
+            131
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/cisco_qos",
+        "Struct_Type" : "class-map",
+        "Ref_Name" : "bippetyboo-drop",
+        "Context" : "policy-map class",
+        "Lines" : {
+          "filename" : "configs/cisco_qos",
+          "lines" : [
+            50
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/cisco_qos",
+        "Struct_Type" : "class-map",
+        "Ref_Name" : "bippetyboo-ndrop",
+        "Context" : "policy-map class",
+        "Lines" : {
+          "filename" : "configs/cisco_qos",
+          "lines" : [
+            66
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/cisco_qos",
+        "Struct_Type" : "class-map",
+        "Ref_Name" : "bippetyboo-ndrop-fcoe",
+        "Context" : "policy-map class",
+        "Lines" : {
+          "filename" : "configs/cisco_qos",
+          "lines" : [
+            62
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/cisco_qos",
+        "Struct_Type" : "class-map",
+        "Ref_Name" : "bleefee",
+        "Context" : "policy-map class",
+        "Lines" : {
+          "filename" : "configs/cisco_qos",
+          "lines" : [
+            102
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/cisco_qos",
+        "Struct_Type" : "class-map",
+        "Ref_Name" : "bleefee2",
+        "Context" : "policy-map class",
+        "Lines" : {
+          "filename" : "configs/cisco_qos",
+          "lines" : [
+            107
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/cisco_qos",
+        "Struct_Type" : "class-map",
+        "Ref_Name" : "blerf",
+        "Context" : "policy-map class",
+        "Lines" : {
+          "filename" : "configs/cisco_qos",
+          "lines" : [
+            98
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/cisco_qos",
+        "Struct_Type" : "class-map",
+        "Ref_Name" : "c-bleeb-drop",
+        "Context" : "policy-map class",
+        "Lines" : {
+          "filename" : "configs/cisco_qos",
+          "lines" : [
+            109
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/cisco_qos",
+        "Struct_Type" : "class-map",
+        "Ref_Name" : "c-bleeb-ndrop-fcoe",
+        "Context" : "policy-map class",
+        "Lines" : {
+          "filename" : "configs/cisco_qos",
+          "lines" : [
+            114
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/cisco_qos",
+        "Struct_Type" : "class-map",
+        "Ref_Name" : "c-foob-drop",
+        "Context" : "policy-map class",
+        "Lines" : {
+          "filename" : "configs/cisco_qos",
+          "lines" : [
+            81
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/cisco_qos",
+        "Struct_Type" : "class-map",
+        "Ref_Name" : "c-foob-ndrop",
+        "Context" : "policy-map class",
+        "Lines" : {
+          "filename" : "configs/cisco_qos",
+          "lines" : [
+            93
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/cisco_qos",
+        "Struct_Type" : "class-map",
+        "Ref_Name" : "c-foob-ndrop-fcoe",
+        "Context" : "policy-map class",
+        "Lines" : {
+          "filename" : "configs/cisco_qos",
+          "lines" : [
+            89
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/cisco_qos",
+        "Struct_Type" : "class-map",
+        "Ref_Name" : "fffoooddd",
+        "Context" : "policy-map class",
+        "Lines" : {
+          "filename" : "configs/cisco_qos",
+          "lines" : [
+            72
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/cisco_qos",
+        "Struct_Type" : "class-map",
+        "Ref_Name" : "floop",
+        "Context" : "policy-map class",
+        "Lines" : {
+          "filename" : "configs/cisco_qos",
+          "lines" : [
+            119
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/cisco_qos",
+        "Struct_Type" : "class-map type inspect",
+        "Ref_Name" : "cinspect",
+        "Context" : "policy-map type inspect class type inspect",
+        "Lines" : {
+          "filename" : "configs/cisco_qos",
+          "lines" : [
+            43
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/cisco_qos",
+        "Struct_Type" : "policy-map",
+        "Ref_Name" : "prioritize_backbone",
+        "Context" : "policy-map class service-policy",
+        "Lines" : {
+          "filename" : "configs/cisco_qos",
+          "lines" : [
+            74
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/cisco_qos",
+        "Struct_Type" : "service-template",
+        "Ref_Name" : "DEF",
+        "Context" : "class-map activate-service-template",
+        "Lines" : {
+          "filename" : "configs/cisco_qos",
+          "lines" : [
+            9
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/cisco_qos",
+        "Struct_Type" : "service-template",
+        "Ref_Name" : "GHI",
+        "Context" : "class-map service-template",
+        "Lines" : {
+          "filename" : "configs/cisco_qos",
+          "lines" : [
+            10
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/cisco_qos",
+        "Struct_Type" : "service-template",
+        "Ref_Name" : "my_TEMPLATE_NAME",
+        "Context" : "policy-map event class activate",
+        "Lines" : {
+          "filename" : "configs/cisco_qos",
+          "lines" : [
+            130
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/cisco_rip",
+        "Struct_Type" : "ipv4/6 acl",
+        "Ref_Name" : "some-ACL",
+        "Context" : "router rip distribute-list",
+        "Lines" : {
+          "filename" : "configs/cisco_rip",
+          "lines" : [
+            10,
+            11,
+            12,
+            13
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/cisco_route_map",
+        "Struct_Type" : "as-path access-list",
+        "Ref_Name" : "AS_PATH_UNDEF",
+        "Context" : "route-map match as-path access-list",
+        "Lines" : {
+          "filename" : "configs/cisco_route_map",
+          "lines" : [
+            57
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/cisco_route_map",
+        "Struct_Type" : "ipv4 acl",
+        "Ref_Name" : "test",
+        "Context" : "route-map match ipv4 access-list",
+        "Lines" : {
+          "filename" : "configs/cisco_route_map",
+          "lines" : [
+            26
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/cisco_route_map",
+        "Struct_Type" : "ipv4 prefix-list",
+        "Ref_Name" : "bobble",
+        "Context" : "route-map match ipv4 prefix-list",
+        "Lines" : {
+          "filename" : "configs/cisco_route_map",
+          "lines" : [
+            36
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/cisco_route_map",
+        "Struct_Type" : "ipv4 prefix-list",
+        "Ref_Name" : "hpr-connector-subnets",
+        "Context" : "route-map match ipv4 prefix-list",
+        "Lines" : {
+          "filename" : "configs/cisco_route_map",
+          "lines" : [
+            10
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/cisco_snmp",
+        "Struct_Type" : "interface",
+        "Ref_Name" : "Loopback0",
+        "Context" : "snmp-server source-interface",
+        "Lines" : {
+          "filename" : "configs/cisco_snmp",
+          "lines" : [
+            87
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/cisco_snmp",
+        "Struct_Type" : "interface",
+        "Ref_Name" : "Vlan1",
+        "Context" : "snmp-server source-interface",
+        "Lines" : {
+          "filename" : "configs/cisco_snmp",
+          "lines" : [
+            89
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/cisco_snmp",
+        "Struct_Type" : "interface",
+        "Ref_Name" : "mgmt0",
+        "Context" : "snmp-server source-interface",
+        "Lines" : {
+          "filename" : "configs/cisco_snmp",
+          "lines" : [
+            88
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/cisco_snmp",
+        "Struct_Type" : "ipv4 acl",
+        "Ref_Name" : "1",
+        "Context" : "snmp server community ipv4 acl",
+        "Lines" : {
+          "filename" : "configs/cisco_snmp",
+          "lines" : [
+            9
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/cisco_snmp",
+        "Struct_Type" : "ipv4 acl",
+        "Ref_Name" : "2",
+        "Context" : "snmp server community ipv4 acl",
+        "Lines" : {
+          "filename" : "configs/cisco_snmp",
+          "lines" : [
+            8,
+            10
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/cisco_snmp",
+        "Struct_Type" : "ipv4 acl",
+        "Ref_Name" : "customer-snmp",
+        "Context" : "snmp server community ipv4 acl",
+        "Lines" : {
+          "filename" : "configs/cisco_snmp",
+          "lines" : [
+            14
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/cisco_snmp",
+        "Struct_Type" : "ipv4 acl",
+        "Ref_Name" : "dummyacl",
+        "Context" : "snmp server community ipv4 acl",
+        "Lines" : {
+          "filename" : "configs/cisco_snmp",
+          "lines" : [
+            13
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/cisco_snmp",
+        "Struct_Type" : "ipv4 acl",
+        "Ref_Name" : "snmp-acl",
+        "Context" : "snmp server community ipv4 acl",
+        "Lines" : {
+          "filename" : "configs/cisco_snmp",
+          "lines" : [
+            7,
+            11
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/cisco_snmp",
+        "Struct_Type" : "ipv4 acl",
+        "Ref_Name" : "snmp-arpa-acl",
+        "Context" : "snmp server community ipv4 acl",
+        "Lines" : {
+          "filename" : "configs/cisco_snmp",
+          "lines" : [
+            12
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/cisco_snmp",
+        "Struct_Type" : "ipv4 acl",
+        "Ref_Name" : "to-VTY",
+        "Context" : "snmp server community ipv4 acl",
+        "Lines" : {
+          "filename" : "configs/cisco_snmp",
+          "lines" : [
+            16
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/cisco_snmp",
+        "Struct_Type" : "ipv4/6 acl",
+        "Ref_Name" : "8",
+        "Context" : "snmp server file transfer acl",
+        "Lines" : {
+          "filename" : "configs/cisco_snmp",
+          "lines" : [
+            67
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/cisco_snmp",
+        "Struct_Type" : "ipv4/6 acl",
+        "Ref_Name" : "8",
+        "Context" : "snmp server tftp-server list",
+        "Lines" : {
+          "filename" : "configs/cisco_snmp",
+          "lines" : [
+            92
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/cisco_snmp",
+        "Struct_Type" : "ipv6 acl",
+        "Ref_Name" : "dummyacl",
+        "Context" : "snmp server community ipv6 acl",
+        "Lines" : {
+          "filename" : "configs/cisco_snmp",
+          "lines" : [
+            15
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/cisco_snmp",
+        "Struct_Type" : "ipv6 acl",
+        "Ref_Name" : "to-VTY",
+        "Context" : "snmp server community ipv6 acl",
+        "Lines" : {
+          "filename" : "configs/cisco_snmp",
+          "lines" : [
+            16
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/cisco_tacacs",
+        "Struct_Type" : "interface",
+        "Ref_Name" : "Loopback0",
+        "Context" : "ip tacacs source-interface",
+        "Lines" : {
+          "filename" : "configs/cisco_tacacs",
+          "lines" : [
+            6,
+            7
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/cisco_tacacs",
+        "Struct_Type" : "interface",
+        "Ref_Name" : "Loopback0",
+        "Context" : "tacacs source-interface",
+        "Lines" : {
+          "filename" : "configs/cisco_tacacs",
+          "lines" : [
+            26
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/cisco_track",
+        "Struct_Type" : "interface",
+        "Ref_Name" : "GigabitEthernet0/0",
+        "Context" : "track interface",
+        "Lines" : {
+          "filename" : "configs/cisco_track",
+          "lines" : [
+            4
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/cisco_track",
+        "Struct_Type" : "interface",
+        "Ref_Name" : "GigabitEthernet0/1",
+        "Context" : "track interface",
+        "Lines" : {
+          "filename" : "configs/cisco_track",
+          "lines" : [
+            5
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/cisco_vrrp",
+        "Struct_Type" : "interface",
+        "Ref_Name" : "GigabitEthernet0/0/0/19",
+        "Context" : "router vrrp interface",
+        "Lines" : {
+          "filename" : "configs/cisco_vrrp",
+          "lines" : [
+            16
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/cisco_vrrp",
+        "Struct_Type" : "interface",
+        "Ref_Name" : "ManagementEthernet0/RSP0/CPU0/0",
+        "Context" : "router vrrp interface",
+        "Lines" : {
+          "filename" : "configs/cisco_vrrp",
+          "lines" : [
+            26
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/cisco_vrrp",
+        "Struct_Type" : "interface",
+        "Ref_Name" : "ManagementEthernet0/RSP1/CPU0/0",
+        "Context" : "router vrrp interface",
+        "Lines" : {
+          "filename" : "configs/cisco_vrrp",
+          "lines" : [
+            28
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/cisco_zone",
+        "Struct_Type" : "policy-map type inspect",
+        "Ref_Name" : "p1",
+        "Context" : "zone-pair service-policy type inspect",
+        "Lines" : {
+          "filename" : "configs/cisco_zone",
+          "lines" : [
+            5
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/colon_in_vrf",
+        "Struct_Type" : "route-map",
+        "Ref_Name" : "RMT_PBI",
+        "Context" : "bgp redistribute connected route-map",
+        "Lines" : {
+          "filename" : "configs/colon_in_vrf",
+          "lines" : [
+            6
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/f5_bigip_imish_malformed",
+        "Struct_Type" : "route-map",
+        "Ref_Name" : "rm1",
+        "Context" : "bgp neighbor address-family ipv6 route-map out",
+        "Lines" : {
+          "filename" : "configs/f5_bigip_imish_malformed",
+          "lines" : [
+            21
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/f5_bigip_imish_malformed",
+        "Struct_Type" : "route-map",
+        "Ref_Name" : "rm1",
+        "Context" : "neighbor peer-group route-map out",
+        "Lines" : {
+          "filename" : "configs/f5_bigip_imish_malformed",
+          "lines" : [
+            22
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/f5_bigip_structured_ltm",
+        "Struct_Type" : "monitor",
+        "Ref_Name" : "/Common/SOME_MONITOR",
+        "Context" : "pool monitor",
+        "Lines" : {
+          "filename" : "configs/f5_bigip_structured_ltm",
+          "lines" : [
+            33
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/f5_bigip_structured_ltm",
+        "Struct_Type" : "node",
+        "Ref_Name" : "/Common/bar",
+        "Context" : "pool member",
+        "Lines" : {
+          "filename" : "configs/f5_bigip_structured_ltm",
+          "lines" : [
+            28
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/f5_bigip_structured_ltm",
+        "Struct_Type" : "node",
+        "Ref_Name" : "/Common/foo",
+        "Context" : "pool member",
+        "Lines" : {
+          "filename" : "configs/f5_bigip_structured_ltm",
+          "lines" : [
+            23
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/f5_bigip_structured_ltm",
+        "Struct_Type" : "persistence",
+        "Ref_Name" : "/Common/SOME_PROFILE",
+        "Context" : "virtual persist persistence",
+        "Lines" : {
+          "filename" : "configs/f5_bigip_structured_ltm",
+          "lines" : [
+            97
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/f5_bigip_structured_ltm",
+        "Struct_Type" : "pool",
+        "Ref_Name" : "/Common/SOME_POOL",
+        "Context" : "virtual pool",
+        "Lines" : {
+          "filename" : "configs/f5_bigip_structured_ltm",
+          "lines" : [
+            101
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/f5_bigip_structured_ltm",
+        "Struct_Type" : "profile",
+        "Ref_Name" : "/Common/P1",
+        "Context" : "virtual profile",
+        "Lines" : {
+          "filename" : "configs/f5_bigip_structured_ltm",
+          "lines" : [
+            103
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/f5_bigip_structured_ltm",
+        "Struct_Type" : "profile",
+        "Ref_Name" : "/Common/P2",
+        "Context" : "virtual profile",
+        "Lines" : {
+          "filename" : "configs/f5_bigip_structured_ltm",
+          "lines" : [
+            104
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/f5_bigip_structured_ltm",
+        "Struct_Type" : "profile",
+        "Ref_Name" : "/Common/P3",
+        "Context" : "virtual profile",
+        "Lines" : {
+          "filename" : "configs/f5_bigip_structured_ltm",
+          "lines" : [
+            105
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/f5_bigip_structured_ltm",
+        "Struct_Type" : "profile server-ssl",
+        "Ref_Name" : "/Common/SOME_SSL_PROFILE",
+        "Context" : "monitor https ssl-profile",
+        "Lines" : {
+          "filename" : "configs/f5_bigip_structured_ltm",
+          "lines" : [
+            166
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/f5_bigip_structured_ltm",
+        "Struct_Type" : "snat-translation",
+        "Ref_Name" : "/Common/192.0.2.5",
+        "Context" : "snatpool members member",
+        "Lines" : {
+          "filename" : "configs/f5_bigip_structured_ltm",
+          "lines" : [
+            85
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/f5_bigip_structured_ltm",
+        "Struct_Type" : "snat-translation",
+        "Ref_Name" : "/Common/192.0.2.6",
+        "Context" : "snatpool members member",
+        "Lines" : {
+          "filename" : "configs/f5_bigip_structured_ltm",
+          "lines" : [
+            86
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/f5_bigip_structured_ltm",
+        "Struct_Type" : "virtual-address",
+        "Ref_Name" : "/Common/192.0.2.7",
+        "Context" : "virtual destination",
+        "Lines" : {
+          "filename" : "configs/f5_bigip_structured_ltm",
+          "lines" : [
+            90
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/f5_bigip_structured_ltm",
+        "Struct_Type" : "vlan",
+        "Ref_Name" : "/Common/MY_VLAN",
+        "Context" : "virtual vlans vlan",
+        "Lines" : {
+          "filename" : "configs/f5_bigip_structured_ltm",
+          "lines" : [
+            120
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/f5_bigip_structured_ltm",
+        "Struct_Type" : "vlan",
+        "Ref_Name" : "/Common/SOME_VLAN",
+        "Context" : "snat vlans vlan",
+        "Lines" : {
+          "filename" : "configs/f5_bigip_structured_ltm",
+          "lines" : [
+            74
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/f5_bigip_structured_net_routing_bgp",
+        "Struct_Type" : "route-map",
+        "Ref_Name" : "/Common/MY_IPV4_OUT",
+        "Context" : "bgp neighbor address-family ipv6 route-map out",
+        "Lines" : {
+          "filename" : "configs/f5_bigip_structured_net_routing_bgp",
+          "lines" : [
+            52
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/f5_bigip_structured_net_routing_bgp",
+        "Struct_Type" : "route-map",
+        "Ref_Name" : "/Common/MY_IPV6_OUT",
+        "Context" : "bgp neighbor address-family ipv6 route-map out",
+        "Lines" : {
+          "filename" : "configs/f5_bigip_structured_net_routing_bgp",
+          "lines" : [
+            33
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/f5_bigip_structured_net_routing_bgp",
+        "Struct_Type" : "route-map",
+        "Ref_Name" : "/Common/MY_KERNEL_OUT",
+        "Context" : "bgp address-family redistribute kernel route-map",
+        "Lines" : {
+          "filename" : "configs/f5_bigip_structured_net_routing_bgp",
+          "lines" : [
+            12
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/f5_bigip_structured_net_routing_bgp",
+        "Struct_Type" : "vlan",
+        "Ref_Name" : "SOME_VLAN",
+        "Context" : "bgp neighbor update-source",
+        "Lines" : {
+          "filename" : "configs/f5_bigip_structured_net_routing_bgp",
+          "lines" : [
+            40,
+            63
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/f5_bigip_structured_net_routing_route_map",
+        "Struct_Type" : "prefix-list",
+        "Ref_Name" : "/Common/MY_PREFIX_LIST",
+        "Context" : "route-map match ipv4 address prefix-list",
+        "Lines" : {
+          "filename" : "configs/f5_bigip_structured_net_routing_route_map",
+          "lines" : [
+            14
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/f5_bigip_structured_net_routing_route_map",
+        "Struct_Type" : "prefix-list",
+        "Ref_Name" : "/Common/MY_PREFIX_LIST2",
+        "Context" : "route-map match ipv4 address prefix-list",
+        "Lines" : {
+          "filename" : "configs/f5_bigip_structured_net_routing_route_map",
+          "lines" : [
+            29
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/foundry_bgp",
+        "Struct_Type" : "interface",
+        "Ref_Name" : "Loopback1",
+        "Context" : "update-source interface",
+        "Lines" : {
+          "filename" : "configs/foundry_bgp",
+          "lines" : [
+            16
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/foundry_misc",
+        "Struct_Type" : "interface",
+        "Ref_Name" : "Ethernet13/10",
+        "Context" : "ip route next-hop interface",
+        "Lines" : {
+          "filename" : "configs/foundry_misc",
+          "lines" : [
+            39
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/foundry_misc",
+        "Struct_Type" : "ipv4 acl",
+        "Ref_Name" : "blib",
+        "Context" : "ssh ipv4 access-list",
+        "Lines" : {
+          "filename" : "configs/foundry_misc",
+          "lines" : [
+            31
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/foundry_misc",
+        "Struct_Type" : "ipv6 acl",
+        "Ref_Name" : "blob",
+        "Context" : "ssh ipv6 access-list",
+        "Lines" : {
+          "filename" : "configs/foundry_misc",
+          "lines" : [
+            32
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/ios_bgp",
+        "Struct_Type" : "ipv6 prefix-list",
+        "Ref_Name" : "VPNV6_PL",
+        "Context" : "bgp inbound ipv6 prefix-list",
+        "Lines" : {
+          "filename" : "configs/ios_bgp",
+          "lines" : [
+            11
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/ios_bgp",
+        "Struct_Type" : "route-map",
+        "Ref_Name" : "ADVERTISE_MAP",
+        "Context" : "bgp address-family aggregate-address advertise-map",
+        "Lines" : {
+          "filename" : "configs/ios_bgp",
+          "lines" : [
+            5
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/ios_bgp",
+        "Struct_Type" : "route-map",
+        "Ref_Name" : "EXIST_MAP",
+        "Context" : "bgp neighbor advertise-map exist-map",
+        "Lines" : {
+          "filename" : "configs/ios_bgp",
+          "lines" : [
+            5
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/ios_bgp",
+        "Struct_Type" : "undeclared bgp peer",
+        "Ref_Name" : "1.2.3.4",
+        "Context" : "bgp neighbor without remote-as",
+        "Lines" : {
+          "filename" : "configs/ios_bgp",
+          "lines" : [
+            5
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/ios_bgp",
+        "Struct_Type" : "undeclared bgp peer-group",
+        "Ref_Name" : "UNDEFINED_PEER_GROUP",
+        "Context" : "bgp peer-group referenced before defined",
+        "Lines" : {
+          "filename" : "configs/ios_bgp",
+          "lines" : [
+            8
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/ios_interface",
+        "Struct_Type" : "policy-map",
+        "Ref_Name" : "FOOBAR",
+        "Context" : "interface service-policy",
+        "Lines" : {
+          "filename" : "configs/ios_interface",
+          "lines" : [
+            5
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/ios_standby",
+        "Struct_Type" : "track",
+        "Ref_Name" : "1",
+        "Context" : "interface standby track",
+        "Lines" : {
+          "filename" : "configs/ios_standby",
+          "lines" : [
+            12
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/ios_xr_bgp",
+        "Struct_Type" : "route-policy",
+        "Ref_Name" : "ADDITIONAL_PATHS_POLICY",
+        "Context" : "bgp additional-paths selection route-policy",
+        "Lines" : {
+          "filename" : "configs/ios_xr_bgp",
+          "lines" : [
+            8
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/ios_xr_bgp",
+        "Struct_Type" : "route-policy",
+        "Ref_Name" : "AGGREGATE_POLICY",
+        "Context" : "aggregate-address route-policy",
+        "Lines" : {
+          "filename" : "configs/ios_xr_bgp",
+          "lines" : [
+            10
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/ios_xr_bgp_neighbor_group",
+        "Struct_Type" : "bgp session-group",
+        "Ref_Name" : "CIAO",
+        "Context" : "bgp use session-group",
+        "Lines" : {
+          "filename" : "configs/ios_xr_bgp_neighbor_group",
+          "lines" : [
+            94
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/ios_xr_bgp_neighbor_group",
+        "Struct_Type" : "bgp session-group",
+        "Ref_Name" : "bippety",
+        "Context" : "bgp use session-group",
+        "Lines" : {
+          "filename" : "configs/ios_xr_bgp_neighbor_group",
+          "lines" : [
+            34
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/ios_xr_bgp_neighbor_group",
+        "Struct_Type" : "bgp session-group",
+        "Ref_Name" : "blabber",
+        "Context" : "bgp use session-group",
+        "Lines" : {
+          "filename" : "configs/ios_xr_bgp_neighbor_group",
+          "lines" : [
+            17
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/ios_xr_bgp_neighbor_group",
+        "Struct_Type" : "bgp session-group",
+        "Ref_Name" : "excellect-group",
+        "Context" : "bgp use session-group",
+        "Lines" : {
+          "filename" : "configs/ios_xr_bgp_neighbor_group",
+          "lines" : [
+            88
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/ios_xr_bgp_neighbor_group",
+        "Struct_Type" : "interface",
+        "Ref_Name" : "Loopback0",
+        "Context" : "update-source interface",
+        "Lines" : {
+          "filename" : "configs/ios_xr_bgp_neighbor_group",
+          "lines" : [
+            22,
+            36,
+            48,
+            58,
+            69
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/ios_xr_bgp_neighbor_group",
+        "Struct_Type" : "route-policy",
+        "Ref_Name" : "advertise_fooey_dc_and_isp_routes_ipv4",
+        "Context" : "bgp neighbor route-policy out",
+        "Lines" : {
+          "filename" : "configs/ios_xr_bgp_neighbor_group",
+          "lines" : [
+            25,
+            29
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/ios_xr_bgp_neighbor_group",
+        "Struct_Type" : "route-policy",
+        "Ref_Name" : "advertise_fooey_routes_only",
+        "Context" : "bgp neighbor route-policy out",
+        "Lines" : {
+          "filename" : "configs/ios_xr_bgp_neighbor_group",
+          "lines" : [
+            39
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/ios_xr_bgp_neighbor_group",
+        "Struct_Type" : "route-policy",
+        "Ref_Name" : "deny_bgp_routes",
+        "Context" : "bgp neighbor route-policy in",
+        "Lines" : {
+          "filename" : "configs/ios_xr_bgp_neighbor_group",
+          "lines" : [
+            24,
+            28
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/ios_xr_bgp_neighbor_group",
+        "Struct_Type" : "route-policy",
+        "Ref_Name" : "deny_default_network_ipv4",
+        "Context" : "bgp neighbor route-policy out",
+        "Lines" : {
+          "filename" : "configs/ios_xr_bgp_neighbor_group",
+          "lines" : [
+            60
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/ios_xr_multicast",
+        "Struct_Type" : "ipv4 acl",
+        "Ref_Name" : "MSDP_filter",
+        "Context" : "msdp peer sa-list",
+        "Lines" : {
+          "filename" : "configs/ios_xr_multicast",
+          "lines" : [
+            29,
+            30,
+            46,
+            47
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/ios_xr_multipart",
+        "Struct_Type" : "ipv4 acl",
+        "Ref_Name" : "GNS-VTY-ACCESS",
+        "Context" : "ssh ipv4 access-list",
+        "Lines" : {
+          "filename" : "configs/ios_xr_multipart",
+          "lines" : [
+            31
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/ios_xr_ospf",
+        "Struct_Type" : "interface",
+        "Ref_Name" : "Bundle-Ethernet101",
+        "Context" : "router ospf area interface",
+        "Lines" : {
+          "filename" : "configs/ios_xr_ospf",
+          "lines" : [
+            17
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/ios_xr_ospf",
+        "Struct_Type" : "interface",
+        "Ref_Name" : "Bundle-Ethernet103",
+        "Context" : "router ospf area interface",
+        "Lines" : {
+          "filename" : "configs/ios_xr_ospf",
+          "lines" : [
+            23
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/ios_xr_ospf",
+        "Struct_Type" : "interface",
+        "Ref_Name" : "Bundle-Ethernet201",
+        "Context" : "router ospf area interface",
+        "Lines" : {
+          "filename" : "configs/ios_xr_ospf",
+          "lines" : [
+            27
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/ios_xr_ospf",
+        "Struct_Type" : "interface",
+        "Ref_Name" : "HundredGigabitEthernet0/2/0/0.292",
+        "Context" : "router ospf area interface",
+        "Lines" : {
+          "filename" : "configs/ios_xr_ospf",
+          "lines" : [
+            41
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/ios_xr_ospf",
+        "Struct_Type" : "interface",
+        "Ref_Name" : "HundredGigabitEthernet0/2/0/3",
+        "Context" : "router ospf area interface",
+        "Lines" : {
+          "filename" : "configs/ios_xr_ospf",
+          "lines" : [
+            43
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/ios_xr_ospf",
+        "Struct_Type" : "interface",
+        "Ref_Name" : "Loopback0",
+        "Context" : "router ospf area interface",
+        "Lines" : {
+          "filename" : "configs/ios_xr_ospf",
+          "lines" : [
+            32
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/ios_xr_ospf",
+        "Struct_Type" : "interface",
+        "Ref_Name" : "TenGigabitEthernet0/0/0/2",
+        "Context" : "router ospf area interface",
+        "Lines" : {
+          "filename" : "configs/ios_xr_ospf",
+          "lines" : [
+            50
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/ios_xr_ospf",
+        "Struct_Type" : "interface",
+        "Ref_Name" : "TenGigabitEthernet0/0/0/4",
+        "Context" : "router ospf area interface",
+        "Lines" : {
+          "filename" : "configs/ios_xr_ospf",
+          "lines" : [
+            35
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/ios_xr_ospf",
+        "Struct_Type" : "interface",
+        "Ref_Name" : "TenGigabitEthernet0/0/0/5",
+        "Context" : "router ospf area interface",
+        "Lines" : {
+          "filename" : "configs/ios_xr_ospf",
+          "lines" : [
+            38
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/ios_xr_route_policy",
+        "Struct_Type" : "as-path-set",
+        "Ref_Name" : "chill-as-path",
+        "Context" : "route-policy as-path in",
+        "Lines" : {
+          "filename" : "configs/ios_xr_route_policy",
+          "lines" : [
+            123
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/ios_xr_route_policy",
+        "Struct_Type" : "as-path-set",
+        "Ref_Name" : "chill_aspath_141_deny",
+        "Context" : "route-policy as-path in",
+        "Lines" : {
+          "filename" : "configs/ios_xr_route_policy",
+          "lines" : [
+            129
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/ios_xr_route_policy",
+        "Struct_Type" : "as-path-set",
+        "Ref_Name" : "chill_aspath_141_permit",
+        "Context" : "route-policy as-path in",
+        "Lines" : {
+          "filename" : "configs/ios_xr_route_policy",
+          "lines" : [
+            143
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/ios_xr_route_policy",
+        "Struct_Type" : "as-path-set",
+        "Ref_Name" : "chill_aspath_142_permit",
+        "Context" : "route-policy as-path in",
+        "Lines" : {
+          "filename" : "configs/ios_xr_route_policy",
+          "lines" : [
+            145
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/ios_xr_route_policy",
+        "Struct_Type" : "as-path-set",
+        "Ref_Name" : "xo-deny-as",
+        "Context" : "route-policy as-path in",
+        "Lines" : {
+          "filename" : "configs/ios_xr_route_policy",
+          "lines" : [
+            90
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/ios_xr_route_policy",
+        "Struct_Type" : "community-set",
+        "Ref_Name" : "CF_fooey_Associates-chillmap",
+        "Context" : "route-policy community matches-any",
+        "Lines" : {
+          "filename" : "configs/ios_xr_route_policy",
+          "lines" : [
+            145
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/ios_xr_route_policy",
+        "Struct_Type" : "community-set",
+        "Ref_Name" : "DC_AT_CHILL",
+        "Context" : "route-policy community matches-any",
+        "Lines" : {
+          "filename" : "configs/ios_xr_route_policy",
+          "lines" : [
+            150
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/ios_xr_route_policy",
+        "Struct_Type" : "community-set",
+        "Ref_Name" : "EBGP-CUST-EXT",
+        "Context" : "route-policy community matches-any",
+        "Lines" : {
+          "filename" : "configs/ios_xr_route_policy",
+          "lines" : [
+            98
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/ios_xr_route_policy",
+        "Struct_Type" : "community-set",
+        "Ref_Name" : "EBGP-CUST-NOEXP-PEER-NA",
+        "Context" : "route-policy community matches-any",
+        "Lines" : {
+          "filename" : "configs/ios_xr_route_policy",
+          "lines" : [
+            88
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/ios_xr_route_policy",
+        "Struct_Type" : "community-set",
+        "Ref_Name" : "barbar_to_fooey_community_ipv4",
+        "Context" : "route-policy set community",
+        "Lines" : {
+          "filename" : "configs/ios_xr_route_policy",
+          "lines" : [
+            52
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/ios_xr_route_policy",
+        "Struct_Type" : "community-set",
+        "Ref_Name" : "blackhole-all",
+        "Context" : "route-policy community matches-any",
+        "Lines" : {
+          "filename" : "configs/ios_xr_route_policy",
+          "lines" : [
+            107,
+            158
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/ios_xr_route_policy",
+        "Struct_Type" : "community-set",
+        "Ref_Name" : "blackhole-isp",
+        "Context" : "route-policy community matches-any",
+        "Lines" : {
+          "filename" : "configs/ios_xr_route_policy",
+          "lines" : [
+            110
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/ios_xr_route_policy",
+        "Struct_Type" : "community-set",
+        "Ref_Name" : "chillmap",
+        "Context" : "route-policy community matches-any",
+        "Lines" : {
+          "filename" : "configs/ios_xr_route_policy",
+          "lines" : [
+            141
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/ios_xr_route_policy",
+        "Struct_Type" : "community-set",
+        "Ref_Name" : "community_5555",
+        "Context" : "route-policy community matches-any",
+        "Lines" : {
+          "filename" : "configs/ios_xr_route_policy",
+          "lines" : [
+            33
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/ios_xr_route_policy",
+        "Struct_Type" : "community-set",
+        "Ref_Name" : "community_5555",
+        "Context" : "route-policy delete community [not] in",
+        "Lines" : {
+          "filename" : "configs/ios_xr_route_policy",
+          "lines" : [
+            34
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/ios_xr_route_policy",
+        "Struct_Type" : "community-set",
+        "Ref_Name" : "fooey_blackhole_community",
+        "Context" : "route-policy community matches-any",
+        "Lines" : {
+          "filename" : "configs/ios_xr_route_policy",
+          "lines" : [
+            5
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/ios_xr_route_policy",
+        "Struct_Type" : "community-set",
+        "Ref_Name" : "fooey_routes_community",
+        "Context" : "route-policy community matches-any",
+        "Lines" : {
+          "filename" : "configs/ios_xr_route_policy",
+          "lines" : [
+            16
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/ios_xr_route_policy",
+        "Struct_Type" : "community-set",
+        "Ref_Name" : "scenes_No_Export",
+        "Context" : "route-policy community matches-any",
+        "Lines" : {
+          "filename" : "configs/ios_xr_route_policy",
+          "lines" : [
+            120
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/ios_xr_route_policy",
+        "Struct_Type" : "community-set",
+        "Ref_Name" : "to-peers-backbone",
+        "Context" : "route-policy community matches-any",
+        "Lines" : {
+          "filename" : "configs/ios_xr_route_policy",
+          "lines" : [
+            137
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/ios_xr_route_policy",
+        "Struct_Type" : "community-set",
+        "Ref_Name" : "wrn-expanded",
+        "Context" : "route-policy community matches-any",
+        "Lines" : {
+          "filename" : "configs/ios_xr_route_policy",
+          "lines" : [
+            129,
+            143
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/ios_xr_route_policy",
+        "Struct_Type" : "community-set",
+        "Ref_Name" : "wrn-squelch-40027",
+        "Context" : "route-policy community matches-any",
+        "Lines" : {
+          "filename" : "configs/ios_xr_route_policy",
+          "lines" : [
+            126
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/ios_xr_route_policy",
+        "Struct_Type" : "prefix-set",
+        "Ref_Name" : "EBGP-PEER-BOGONS",
+        "Context" : "route-policy prefix-set",
+        "Lines" : {
+          "filename" : "configs/ios_xr_route_policy",
+          "lines" : [
+            78
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/ios_xr_route_policy",
+        "Struct_Type" : "prefix-set",
+        "Ref_Name" : "EBGP-PEER-OTHER-UNDESIRABLES",
+        "Context" : "route-policy prefix-set",
+        "Lines" : {
+          "filename" : "configs/ios_xr_route_policy",
+          "lines" : [
+            78
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/ios_xr_route_policy",
+        "Struct_Type" : "prefix-set",
+        "Ref_Name" : "EBGP-PEER-TOO-SPECIFIC",
+        "Context" : "route-policy prefix-set",
+        "Lines" : {
+          "filename" : "configs/ios_xr_route_policy",
+          "lines" : [
+            80
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/ios_xr_route_policy",
+        "Struct_Type" : "prefix-set",
+        "Ref_Name" : "barbar_blackhole_routes",
+        "Context" : "route-policy prefix-set",
+        "Lines" : {
+          "filename" : "configs/ios_xr_route_policy",
+          "lines" : [
+            5,
+            51
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/ios_xr_route_policy",
+        "Struct_Type" : "prefix-set",
+        "Ref_Name" : "barbar_networks_ipv4",
+        "Context" : "route-policy prefix-set",
+        "Lines" : {
+          "filename" : "configs/ios_xr_route_policy",
+          "lines" : [
+            51
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/ios_xr_route_policy",
+        "Struct_Type" : "prefix-set",
+        "Ref_Name" : "barbar_networks_ipv6",
+        "Context" : "route-policy prefix-set",
+        "Lines" : {
+          "filename" : "configs/ios_xr_route_policy",
+          "lines" : [
+            21
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/ios_xr_route_policy",
+        "Struct_Type" : "prefix-set",
+        "Ref_Name" : "bippetyboppety_ipv4",
+        "Context" : "route-policy prefix-set",
+        "Lines" : {
+          "filename" : "configs/ios_xr_route_policy",
+          "lines" : [
+            44,
+            51
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/ios_xr_route_policy",
+        "Struct_Type" : "prefix-set",
+        "Ref_Name" : "local-peer-aggregates",
+        "Context" : "route-policy prefix-set",
+        "Lines" : {
+          "filename" : "configs/ios_xr_route_policy",
+          "lines" : [
+            68
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/ios_xr_route_policy",
+        "Struct_Type" : "prefix-set",
+        "Ref_Name" : "null",
+        "Context" : "route-policy prefix-set",
+        "Lines" : {
+          "filename" : "configs/ios_xr_route_policy",
+          "lines" : [
+            114
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/ios_xr_route_policy",
+        "Struct_Type" : "prefix-set",
+        "Ref_Name" : "remote-router-loopbacks",
+        "Context" : "route-policy prefix-set",
+        "Lines" : {
+          "filename" : "configs/ios_xr_route_policy",
+          "lines" : [
+            66
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/ios_xr_router_static",
+        "Struct_Type" : "interface",
+        "Ref_Name" : "GigabitEthernet0/2/1/5.290",
+        "Context" : "router static route",
+        "Lines" : {
+          "filename" : "configs/ios_xr_router_static",
+          "lines" : [
+            16
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/ios_xr_router_static",
+        "Struct_Type" : "interface",
+        "Ref_Name" : "TenGigabitEthernet0/0/2/3",
+        "Context" : "router static route",
+        "Lines" : {
+          "filename" : "configs/ios_xr_router_static",
+          "lines" : [
+            7
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/ios_xr_ssh",
+        "Struct_Type" : "ipv4 acl",
+        "Ref_Name" : "ACL99",
+        "Context" : "ssh ipv4 access-list",
+        "Lines" : {
+          "filename" : "configs/ios_xr_ssh",
+          "lines" : [
+            6
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/ios_xr_ssh",
+        "Struct_Type" : "ipv6 acl",
+        "Ref_Name" : "ipv6-vty-acl",
+        "Context" : "ssh ipv6 access-list",
+        "Lines" : {
+          "filename" : "configs/ios_xr_ssh",
+          "lines" : [
+            6
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/juniper_bgp",
+        "Struct_Type" : "policy-statement",
+        "Ref_Name" : "someexportpolicy",
+        "Context" : "bgp export policy-statement",
+        "Lines" : {
+          "filename" : "configs/juniper_bgp",
+          "lines" : [
+            10,
+            20,
+            27,
+            36
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/juniper_bgp",
+        "Struct_Type" : "policy-statement",
+        "Ref_Name" : "someimportpolicy",
+        "Context" : "bgp import policy-statement",
+        "Lines" : {
+          "filename" : "configs/juniper_bgp",
+          "lines" : [
+            13,
+            22,
+            29,
+            38
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/juniper_bgp_authentication",
+        "Struct_Type" : "authentication-key-chain",
+        "Ref_Name" : "bgp-auth1",
+        "Context" : "authentication-key-chains policy",
+        "Lines" : {
+          "filename" : "configs/juniper_bgp_authentication",
+          "lines" : [
+            23
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/juniper_forwarding_options",
+        "Struct_Type" : "dhcp-relay server-group",
+        "Ref_Name" : "site-dhcp",
+        "Context" : "dhcp relay group active-server-group",
+        "Lines" : {
+          "filename" : "configs/juniper_forwarding_options",
+          "lines" : [
+            8,
+            13
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/juniper_forwarding_options",
+        "Struct_Type" : "interface",
+        "Ref_Name" : "et-0/0/10.0",
+        "Context" : "fowarding-options dhcp-relay group interface",
+        "Lines" : {
+          "filename" : "configs/juniper_forwarding_options",
+          "lines" : [
+            15
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/juniper_forwarding_options",
+        "Struct_Type" : "interface",
+        "Ref_Name" : "ge-0/2/5.0",
+        "Context" : "fowarding-options dhcp-relay group interface",
+        "Lines" : {
+          "filename" : "configs/juniper_forwarding_options",
+          "lines" : [
+            18
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/juniper_forwarding_options",
+        "Struct_Type" : "interface",
+        "Ref_Name" : "xe-1/0/0.0",
+        "Context" : "fowarding-options dhcp-relay group interface",
+        "Lines" : {
+          "filename" : "configs/juniper_forwarding_options",
+          "lines" : [
+            10
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/juniper_interfaces",
+        "Struct_Type" : "interface",
+        "Ref_Name" : "ge-0/0/1",
+        "Context" : "routing-instance interface",
+        "Lines" : {
+          "filename" : "configs/juniper_interfaces",
+          "lines" : [
+            24
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/juniper_interfaces",
+        "Struct_Type" : "vlan",
+        "Ref_Name" : "bippetyboppety",
+        "Context" : "interface vlan",
+        "Lines" : {
+          "filename" : "configs/juniper_interfaces",
+          "lines" : [
+            20
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/juniper_misc",
+        "Struct_Type" : "interface",
+        "Ref_Name" : "lo0.0",
+        "Context" : "routing-instances vtep-source-interface",
+        "Lines" : {
+          "filename" : "configs/juniper_misc",
+          "lines" : [
+            9
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/juniper_ospf",
+        "Struct_Type" : "interface",
+        "Ref_Name" : "ae16.0",
+        "Context" : "ospf area interface",
+        "Lines" : {
+          "filename" : "configs/juniper_ospf",
+          "lines" : [
+            17,
+            18,
+            19,
+            20,
+            22,
+            23
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/juniper_ospf",
+        "Struct_Type" : "interface",
+        "Ref_Name" : "xe-0/0/1.0",
+        "Context" : "ospf area interface",
+        "Lines" : {
+          "filename" : "configs/juniper_ospf",
+          "lines" : [
+            15
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/juniper_ospf",
+        "Struct_Type" : "interface",
+        "Ref_Name" : "xe-0/0/20:0.0",
+        "Context" : "ospf area interface",
+        "Lines" : {
+          "filename" : "configs/juniper_ospf",
+          "lines" : [
+            3,
+            4,
+            5,
+            6
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/juniper_ospf",
+        "Struct_Type" : "interface",
+        "Ref_Name" : "xe-0/0/21:0.0",
+        "Context" : "ospf area interface",
+        "Lines" : {
+          "filename" : "configs/juniper_ospf",
+          "lines" : [
+            7
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/juniper_policy_statement",
+        "Struct_Type" : "routing-instance",
+        "Ref_Name" : "FORWARDING",
+        "Context" : "policy-statement from instance",
+        "Lines" : {
+          "filename" : "configs/juniper_policy_statement",
+          "lines" : [
+            17
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/juniper_relay",
+        "Struct_Type" : "interface",
+        "Ref_Name" : "irb.10",
+        "Context" : "fowarding-options dhcp-relay group interface",
+        "Lines" : {
+          "filename" : "configs/juniper_relay",
+          "lines" : [
+            7
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/juniper_relay",
+        "Struct_Type" : "interface",
+        "Ref_Name" : "irb.20",
+        "Context" : "fowarding-options dhcp-relay group interface",
+        "Lines" : {
+          "filename" : "configs/juniper_relay",
+          "lines" : [
+            8
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/juniper_routing_policy",
+        "Struct_Type" : "interface",
+        "Ref_Name" : "ge-0/0/0.99",
+        "Context" : "policy-statement from interface",
+        "Lines" : {
+          "filename" : "configs/juniper_routing_policy",
+          "lines" : [
+            9
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/juniper_snmp",
+        "Struct_Type" : "prefix-list",
+        "Ref_Name" : "bippetyboo",
+        "Context" : "snmp community prefix-list",
+        "Lines" : {
+          "filename" : "configs/juniper_snmp",
+          "lines" : [
+            5
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/juniper_system",
+        "Struct_Type" : "logical-system",
+        "Ref_Name" : "ls905",
+        "Context" : "security-profile logical-system",
+        "Lines" : {
+          "filename" : "configs/juniper_system",
+          "lines" : [
+            21
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/named_and_numbered_lists",
+        "Struct_Type" : "ipv4 acl",
+        "Ref_Name" : "1",
+        "Context" : "route-map match ipv4 access-list",
+        "Lines" : {
+          "filename" : "configs/named_and_numbered_lists",
+          "lines" : [
+            5
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/named_and_numbered_lists",
+        "Struct_Type" : "ipv4 acl",
+        "Ref_Name" : "2",
+        "Context" : "route-map match ipv4 access-list",
+        "Lines" : {
+          "filename" : "configs/named_and_numbered_lists",
+          "lines" : [
+            5
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/named_and_numbered_lists",
+        "Struct_Type" : "ipv4 acl",
+        "Ref_Name" : "4",
+        "Context" : "route-map match ipv4 access-list",
+        "Lines" : {
+          "filename" : "configs/named_and_numbered_lists",
+          "lines" : [
+            5
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/named_and_numbered_lists",
+        "Struct_Type" : "ipv4 acl",
+        "Ref_Name" : "456def",
+        "Context" : "route-map match ipv4 access-list",
+        "Lines" : {
+          "filename" : "configs/named_and_numbered_lists",
+          "lines" : [
+            5
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/named_and_numbered_lists",
+        "Struct_Type" : "ipv4 acl",
+        "Ref_Name" : "5",
+        "Context" : "route-map match ipv4 access-list",
+        "Lines" : {
+          "filename" : "configs/named_and_numbered_lists",
+          "lines" : [
+            5
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/named_and_numbered_lists",
+        "Struct_Type" : "ipv4 acl",
+        "Ref_Name" : "95qrs5",
+        "Context" : "route-map match ipv4 access-list",
+        "Lines" : {
+          "filename" : "configs/named_and_numbered_lists",
+          "lines" : [
+            5
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/named_and_numbered_lists",
+        "Struct_Type" : "ipv4 acl",
+        "Ref_Name" : "a4",
+        "Context" : "route-map match ipv4 access-list",
+        "Lines" : {
+          "filename" : "configs/named_and_numbered_lists",
+          "lines" : [
+            5
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/named_and_numbered_lists",
+        "Struct_Type" : "ipv4 acl",
+        "Ref_Name" : "abc123",
+        "Context" : "route-map match ipv4 access-list",
+        "Lines" : {
+          "filename" : "configs/named_and_numbered_lists",
+          "lines" : [
+            5
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/neighbor_nxos",
+        "Struct_Type" : "bgp template peer",
+        "Ref_Name" : "KLMN",
+        "Context" : "inherited BGP peer",
+        "Lines" : {
+          "filename" : "configs/neighbor_nxos",
+          "lines" : [
+            8
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/nexus_bgp",
+        "Struct_Type" : "route-map",
+        "Ref_Name" : "BLIB",
+        "Context" : "bgp otherwise in/outbound route-map",
+        "Lines" : {
+          "filename" : "configs/nexus_bgp",
+          "lines" : [
+            22
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/nexus_bgp",
+        "Struct_Type" : "route-map",
+        "Ref_Name" : "BLIBB",
+        "Context" : "bgp otherwise in/outbound route-map",
+        "Lines" : {
+          "filename" : "configs/nexus_bgp",
+          "lines" : [
+            19
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/nexus_bgp",
+        "Struct_Type" : "route-map",
+        "Ref_Name" : "BLOBB",
+        "Context" : "bgp redistribute connected route-map",
+        "Lines" : {
+          "filename" : "configs/nexus_bgp",
+          "lines" : [
+            16
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/nexus_bgp",
+        "Struct_Type" : "route-map",
+        "Ref_Name" : "EG_CCC",
+        "Context" : "bgp outbound route-map",
+        "Lines" : {
+          "filename" : "configs/nexus_bgp",
+          "lines" : [
+            30
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/nexus_bgp",
+        "Struct_Type" : "route-map",
+        "Ref_Name" : "IN_BBB",
+        "Context" : "bgp inbound route-map",
+        "Lines" : {
+          "filename" : "configs/nexus_bgp",
+          "lines" : [
+            29
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/nxos_ospf",
+        "Struct_Type" : "route-map",
+        "Ref_Name" : "RM_OSPF_DIRECT",
+        "Context" : "ospf redistribute connected route-map",
+        "Lines" : {
+          "filename" : "configs/nxos_ospf",
+          "lines" : [
+            20,
+            25
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/nxos_ospf",
+        "Struct_Type" : "route-map",
+        "Ref_Name" : "RM_OSPF_STATIC",
+        "Context" : "ospf redistribute static route-map",
+        "Lines" : {
+          "filename" : "configs/nxos_ospf",
+          "lines" : [
+            21
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/palo_alto/virtual-routers",
+        "Struct_Type" : "interface",
+        "Ref_Name" : "dummy",
+        "Context" : "virtual-router interface",
+        "Lines" : {
+          "filename" : "configs/palo_alto/virtual-routers",
+          "lines" : [
+            27
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/peer_template",
+        "Struct_Type" : "interface",
+        "Ref_Name" : "Loopback1",
+        "Context" : "update-source interface",
+        "Lines" : {
+          "filename" : "configs/peer_template",
+          "lines" : [
+            16
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/peer_template",
+        "Struct_Type" : "route-map",
+        "Ref_Name" : "PROTECT-LEAF",
+        "Context" : "bgp inbound route-map",
+        "Lines" : {
+          "filename" : "configs/peer_template",
+          "lines" : [
+            19
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/route_policy_as_path",
+        "Struct_Type" : "community-set",
+        "Ref_Name" : "13979:90",
+        "Context" : "route-policy set community",
+        "Lines" : {
+          "filename" : "configs/route_policy_as_path",
+          "lines" : [
+            7
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/route_policy_as_path",
+        "Struct_Type" : "community-set",
+        "Ref_Name" : "SOCAL-USERS",
+        "Context" : "route-policy community matches-any",
+        "Lines" : {
+          "filename" : "configs/route_policy_as_path",
+          "lines" : [
+            5
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/route_policy_as_path",
+        "Struct_Type" : "prefix-set",
+        "Ref_Name" : "CENIC_DC_Internal",
+        "Context" : "route-policy prefix-set",
+        "Lines" : {
+          "filename" : "configs/route_policy_as_path",
+          "lines" : [
+            25
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/route_policy_as_path",
+        "Struct_Type" : "prefix-set",
+        "Ref_Name" : "classful_default",
+        "Context" : "route-policy prefix-set",
+        "Lines" : {
+          "filename" : "configs/route_policy_as_path",
+          "lines" : [
+            14
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/route_policy_igp_cost",
+        "Struct_Type" : "community-set",
+        "Ref_Name" : "DC_AT_MEMBERS",
+        "Context" : "route-policy community matches-any",
+        "Lines" : {
+          "filename" : "configs/route_policy_igp_cost",
+          "lines" : [
+            5
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/route_policy_igp_cost",
+        "Struct_Type" : "community-set",
+        "Ref_Name" : "DC_CF_COMMODITY_PEER",
+        "Context" : "route-policy community matches-any",
+        "Lines" : {
+          "filename" : "configs/route_policy_igp_cost",
+          "lines" : [
+            5
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/route_policy_igp_cost",
+        "Struct_Type" : "community-set",
+        "Ref_Name" : "DC_CF_ISP",
+        "Context" : "route-policy community matches-any",
+        "Lines" : {
+          "filename" : "configs/route_policy_igp_cost",
+          "lines" : [
+            5
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/route_policy_igp_cost",
+        "Struct_Type" : "community-set",
+        "Ref_Name" : "HPR_CF_RE_PEER",
+        "Context" : "route-policy community matches-any",
+        "Lines" : {
+          "filename" : "configs/route_policy_igp_cost",
+          "lines" : [
+            5
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/route_policy_igp_cost",
+        "Struct_Type" : "community-set",
+        "Ref_Name" : "No_Export",
+        "Context" : "route-policy community matches-any",
+        "Lines" : {
+          "filename" : "configs/route_policy_igp_cost",
+          "lines" : [
+            7
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/route_policy_metric_type",
+        "Struct_Type" : "community-set",
+        "Ref_Name" : "No_Export",
+        "Context" : "route-policy community matches-any",
+        "Lines" : {
+          "filename" : "configs/route_policy_metric_type",
+          "lines" : [
+            5
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/route_policy_metric_type",
+        "Struct_Type" : "prefix-set",
+        "Ref_Name" : "DC_Internal",
+        "Context" : "route-policy prefix-set",
+        "Lines" : {
+          "filename" : "configs/route_policy_metric_type",
+          "lines" : [
+            7
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/route_policy_param",
+        "Struct_Type" : "community-set",
+        "Ref_Name" : "blackhole-all",
+        "Context" : "route-policy community matches-any",
+        "Lines" : {
+          "filename" : "configs/route_policy_param",
+          "lines" : [
+            13
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/route_policy_param",
+        "Struct_Type" : "prefix-set",
+        "Ref_Name" : "$cust_v4_pfx",
+        "Context" : "route-policy prefix-set",
+        "Lines" : {
+          "filename" : "configs/route_policy_param",
+          "lines" : [
+            5
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/underscore_variable",
+        "Struct_Type" : "ipv4 prefix-list",
+        "Ref_Name" : "ABC_DEF",
+        "Context" : "route-map match ipv4 prefix-list",
+        "Lines" : {
+          "filename" : "configs/underscore_variable",
+          "lines" : [
+            5
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/underscore_variable",
+        "Struct_Type" : "ipv4 prefix-list",
+        "Ref_Name" : "_GHI",
+        "Context" : "route-map match ipv4 prefix-list",
+        "Lines" : {
+          "filename" : "configs/underscore_variable",
+          "lines" : [
+            5
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/variables",
+        "Struct_Type" : "ipv4 acl",
+        "Ref_Name" : "ABC_def.gh_vlan789_out_20000101",
+        "Context" : "interface outgoing ip access-list",
+        "Lines" : {
+          "filename" : "configs/variables",
+          "lines" : [
+            5
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/variables_dos",
+        "Struct_Type" : "ipv4 acl",
+        "Ref_Name" : "ABC_def.gh_vlan789_out_20000101",
+        "Context" : "interface outgoing ip access-list",
+        "Lines" : {
+          "filename" : "configs/variables_dos",
+          "lines" : [
+            5
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/vlan_access_map2",
+        "Struct_Type" : "undeclared bgp peer",
+        "Ref_Name" : "10.10.212.233",
+        "Context" : "bgp neighbor without remote-as",
+        "Lines" : {
+          "filename" : "configs/vlan_access_map2",
+          "lines" : [
+            20
+          ]
+        }
+      }
+    ],
+    "summary" : {
+      "notes" : "Found 332 results",
+      "numFailed" : 0,
+      "numPassed" : 0,
+      "numResults" : 332
+    }
+  }
+]

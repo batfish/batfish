@@ -1,0 +1,74 @@
+!
+hostname aruba_logging
+!
+logging 1.2.3.4 type ap-debug severity informational facility local0
+logging 1.2.3.4 type arm-user-debug severity informational facility local0
+logging 1.2.3.4 type arm severity informational facility local0
+logging 1.2.3.4 type network severity informational facility local0
+logging 1.2.3.4 type security severity informational facility local0
+logging 1.2.3.4 type system severity informational facility local0
+logging 1.2.3.4 type user severity informational facility local0
+logging 1.2.3.4 type user-debug severity informational facility local0
+logging 1.2.3.4 type wireless severity informational facility local0
+logging level debugging ap-debug 1
+logging level debugging ap-debug 10
+logging level debugging system process cfgm
+logging level debugging system process processes subcat mapc
+logging level informational arm
+logging level informational arm subcat all
+logging level informational arm subcat client-match
+logging level informational arm subcat radio-mgmt
+logging level informational network
+logging level informational network subcat all
+logging level informational network subcat dhcp
+logging level informational network subcat gp
+logging level informational network subcat mobility
+logging level informational network subcat packet-dump
+logging level informational security
+logging level informational security subcat aaa
+logging level informational security subcat all
+logging level informational security subcat auth-amon
+logging level informational security subcat certmgr
+logging level informational security subcat cpsec
+logging level informational security subcat db
+logging level informational security subcat dot1x
+logging level informational security subcat firewall
+logging level informational security subcat ids
+logging level informational security subcat ids-ap
+logging level informational security subcat ike
+logging level informational security subcat kerberos
+logging level informational security subcat mobility
+logging level informational security subcat ntlm
+logging level informational security subcat packet-trace
+logging level informational security subcat vpn
+logging level informational security subcat webserver
+logging level informational security subcat wl-sync
+logging level informational system
+logging level informational system subcat all
+logging level informational system subcat amon
+logging level informational system subcat amon-ale
+logging level informational system subcat amon-amp
+logging level informational system subcat ap
+logging level informational system subcat configuration
+logging level informational system subcat gp
+logging level informational system subcat ha
+logging level informational system subcat mapc
+logging level informational system subcat messages
+logging level informational system subcat pan
+logging level informational system subcat reg-tbl
+logging level informational system subcat snmp
+logging level informational system subcat webserver
+logging level informational user
+logging level informational user subcat all
+logging level informational user subcat captive-portal
+logging level informational user subcat client-match
+logging level informational user subcat dot1x
+logging level informational user subcat mapc
+logging level informational user subcat pan
+logging level informational user subcat radius
+logging level informational user subcat voice
+logging level informational user subcat vpn
+logging level informational wireless
+logging level informational wireless subcat all
+!
+

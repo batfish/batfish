@@ -1,0 +1,16 @@
+{
+  "name": "book",
+  "addressGroups": [
+    {
+      "name": "ag1",
+      "addresses": [
+        "2.1.1.1/24",
+        "1.1.1.1:255.255.255.255"
+      ]
+    },
+    {
+      "name": "ag1",
+      "addresses": []
+    }
+  ]
+}

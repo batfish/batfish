@@ -1,0 +1,17 @@
+net del all
+#
+net add hostname node1
+#
+net add bgp autonomous-system 65100
+net add bgp ipv4 unicast redistribute static
+net add bgp neighbor swp1 interface remote-as external
+net add bgp router-id 192.0.2.1
+#
+# Interfaces
+net add interface swp1
+net add interface swp2 ip address 10.1.0.1/24
+#
+# Static route
+net add routing route 5.5.5.5/32 10.1.0.1
+#
+net commit

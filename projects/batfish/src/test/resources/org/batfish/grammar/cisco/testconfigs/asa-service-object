@@ -1,0 +1,18 @@
+!
+hostname asa-service-object
+!
+object service OS_TCPUDP
+ description blah blah blah
+ service tcp-udp source eq 65535
+!
+object service OS_ICMP
+ service icmp echo
+!
+object-group service OGS1
+ service-object object OS_TCPUDP
+ service-object udp destination eq 1234
+ service-object udp source eq cifs
+!
+object-group service OGS_UNDEF
+ service-object object OS_UNDEFINED
+!

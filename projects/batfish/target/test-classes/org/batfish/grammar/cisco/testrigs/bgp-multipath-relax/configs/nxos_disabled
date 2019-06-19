@@ -1,0 +1,8 @@
+!
+hostname nxos_disabled
+feature privilege
+!
+router bgp 1
+ router-id 1.1.1.1
+ ! default is for multipath-relax to be disabled
+!

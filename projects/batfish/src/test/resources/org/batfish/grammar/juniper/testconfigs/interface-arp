@@ -1,0 +1,5 @@
+#
+set system host-name interface-arp
+#
+set interfaces irb unit 0 family inet address 1.0.0.3/24 arp 1.0.0.2 l2-interface ae0.0 mac 01:23:45:67:89:ab
+#

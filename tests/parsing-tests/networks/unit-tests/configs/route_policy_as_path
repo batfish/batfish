@@ -1,0 +1,45 @@
+!
+hostname route_policy_as_path_set
+!
+route-policy erick-test
+  if (community matches-any SOCAL-USERS) then
+   prepend as-path 64901 3
+    set community 13979:90 additive
+  else
+    pass
+  endif
+end-policy
+!
+route-policy to_fooey
+  if destination in classful_default then
+   drop
+  elseif as-path passes-through '5556'  then
+   drop
+  elseif as-path is-local then
+   drop
+  elseif community matches-any (5555:65530, 5555:667, 5555:64000) then
+    drop
+  elseif (as-path originates-from '64527' ) then
+    set community (14041:65011)
+    set med igp-cost
+  elseif destination in CENIC_DC_Internal then
+    set community (5555:5555) additive
+    pass
+  elseif community matches-any (5555:5555, 5555:65439, 5555:65437, 5556:65418, 5556:65438, 5556:65436, 5556:[65300..65419]) then
+    set med 1000
+    pass
+  endif
+end-policy
+
+as-path-set ama-coe-as-path
+   ios-regex '^64666(_64666)*$'
+end-set
+as-path-set ama-coe-as-path2
+   ios-regex '^64666(_64666)*$' end-set
+as-path-set ama-coe-as-path3
+   ios-regex '^64666(_64666)*$',
+   ios-regex '^64666(_64666)*$',  ios-regex '^64666(_64666)*$'
+   , ios-regex '^$'
+   end-set
+!
+ 

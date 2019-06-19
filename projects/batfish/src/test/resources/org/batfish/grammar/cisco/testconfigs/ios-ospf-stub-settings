@@ -1,0 +1,41 @@
+!
+hostname ios-ospf-stub-settings
+!
+interface Ethernet0
+ ip address 10.0.0.1 255.255.255.0
+ no shutdown
+!
+interface Ethernet1
+ ip address 10.0.1.1 255.255.255.0
+ no shutdown
+!
+interface Ethernet2
+ ip address 10.0.2.1 255.255.255.0
+ no shutdown
+!
+interface Ethernet3
+ ip address 10.0.3.1 255.255.255.0
+ no shutdown
+!
+interface Ethernet4
+ ip address 10.0.4.1 255.255.255.0
+ no shutdown
+!
+interface Ethernet5
+ ip address 10.0.5.1 255.255.255.0
+ no shutdown
+!
+router ospf 1
+ network 10.0.0.0 0.0.0.255 area 0
+ network 10.0.1.0 0.0.0.255 area 1
+ network 10.0.2.0 0.0.0.255 area 2
+ network 10.0.3.0 0.0.0.255 area 3
+ network 10.0.4.0 0.0.0.255 area 4
+ network 10.0.5.0 0.0.0.255 area 5
+ area 1 nssa
+ area 1 nssa default-information-originate
+ area 2 nssa no-summary
+ area 3 stub
+ area 4 stub no-summary
+!
+!

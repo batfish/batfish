@@ -1,0 +1,6 @@
+!
+hostname arista_logging
+!
+logging format timestamp high-resolution
+!
+

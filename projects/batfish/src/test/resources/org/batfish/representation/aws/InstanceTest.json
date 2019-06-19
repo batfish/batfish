@@ -1,0 +1,219 @@
+{
+  "Reservations": [
+    {
+      "Groups": [],
+      "Instances": [
+        {
+          "AmiLaunchIndex": 0,
+          "Architecture": "x86_64",
+          "BlockDeviceMappings": [
+            {
+              "DeviceName": "/dev/xvda",
+              "Ebs": {
+                "AttachTime": "2017-12-14 22:26:15+00:00",
+                "DeleteOnTermination": true,
+                "Status": "attaching",
+                "VolumeId": "vol-0ff682e84fca0ee34"
+              }
+            }
+          ],
+          "ClientToken": "",
+          "EbsOptimized": false,
+          "EnaSupport": true,
+          "Hypervisor": "xen",
+          "ImageId": "ami-bf4193c7",
+          "InstanceId": "i-08e529f98f5659289",
+          "InstanceType": "t2.micro",
+          "KeyName": "test-fin-app",
+          "LaunchTime": "2017-12-14 22:26:15+00:00",
+          "Monitoring": {
+            "State": "disabled"
+          },
+          "NetworkInterfaces": [
+            {
+              "Attachment": {
+                "AttachTime": "2017-12-14 22:26:15+00:00",
+                "AttachmentId": "eni-attach-85c8dfe1",
+                "DeleteOnTermination": true,
+                "DeviceIndex": 0,
+                "Status": "attaching"
+              },
+              "Description": "Primary network interface",
+              "Groups": [
+                {
+                  "GroupId": "sg-adcd87d0",
+                  "GroupName": "default"
+                }
+              ],
+              "Ipv6Addresses": [],
+              "MacAddress": "02:8d:b6:0e:a4:ec",
+              "NetworkInterfaceId": "eni-a9d44c8a",
+              "OwnerId": "118292266645",
+              "PrivateIpAddress": "10.100.1.20",
+              "PrivateIpAddresses": [
+                {
+                  "Primary": true,
+                  "PrivateIpAddress": "10.100.1.20"
+                }
+              ],
+              "SourceDestCheck": true,
+              "Status": "in-use",
+              "SubnetId": "subnet-9a0c48fc",
+              "VpcId": "vpc-815775e7"
+            }
+          ],
+          "Placement": {
+            "AvailabilityZone": "us-west-2a",
+            "GroupName": "",
+            "Tenancy": "default"
+          },
+          "PrivateDnsName": "ip-10-100-1-20.us-west-2.compute.internal",
+          "PrivateIpAddress": "10.100.1.20",
+          "ProductCodes": [],
+          "PublicDnsName": "",
+          "RootDeviceName": "/dev/xvda",
+          "RootDeviceType": "ebs",
+          "SecurityGroups": [
+            {
+              "GroupId": "sg-adcd87d0",
+              "GroupName": "default"
+            }
+          ],
+          "SourceDestCheck": true,
+          "State": {
+            "Code": 0,
+            "Name": "pending"
+          },
+          "StateTransitionReason": "",
+          "SubnetId": "subnet-9a0c48fc",
+          "Tags": [
+            {
+              "Key": "Name",
+              "Value": "fin-app-02"
+            }
+          ],
+          "VirtualizationType": "hvm",
+          "VpcId": "vpc-815775e7"
+        }
+      ],
+      "OwnerId": "118292266645",
+      "ReservationId": "r-076e1678dad0a227f"
+    },
+    {
+      "Groups": [],
+      "Instances": [
+        {
+          "AmiLaunchIndex": 0,
+          "Architecture": "x86_64",
+          "BlockDeviceMappings": [
+            {
+              "DeviceName": "/dev/sda1",
+              "Ebs": {
+                "AttachTime": "2017-11-10 06:01:04+00:00",
+                "DeleteOnTermination": true,
+                "Status": "attached",
+                "VolumeId": "vol-0fee8f85aca6176cf"
+              }
+            }
+          ],
+          "ClientToken": "ohNHl1510293662251",
+          "EbsOptimized": false,
+          "EnaSupport": true,
+          "Hypervisor": "xen",
+          "ImageId": "ami-343ef84c",
+          "InstanceId": "i-05f467abe21e9b883",
+          "InstanceType": "t2.large",
+          "KeyName": "ratul",
+          "LaunchTime": "2017-12-08 22:04:59+00:00",
+          "Monitoring": {
+            "State": "disabled"
+          },
+          "NetworkInterfaces": [
+            {
+              "Attachment": {
+                "AttachTime": "2017-11-10 06:01:03+00:00",
+                "AttachmentId": "eni-attach-d112ec31",
+                "DeleteOnTermination": true,
+                "DeviceIndex": 0,
+                "Status": "attached"
+              },
+              "Description": "Primary network interface",
+              "Groups": [
+                {
+                  "GroupId": "sg-adcd87d0",
+                  "GroupName": "default"
+                }
+              ],
+              "Ipv6Addresses": [],
+              "MacAddress": "02:e3:29:f7:01:d2",
+              "NetworkInterfaceId": "eni-bd11cc9d",
+              "OwnerId": "118292266645",
+              "PrivateIpAddress": "10.100.1.71",
+              "PrivateIpAddresses": [
+                {
+                  "Primary": true,
+                  "PrivateIpAddress": "10.100.1.71"
+                }
+              ],
+              "SourceDestCheck": true,
+              "Status": "in-use",
+              "SubnetId": "subnet-9a0c48fc",
+              "VpcId": "vpc-815775e7"
+            }
+          ],
+          "Placement": {
+            "AvailabilityZone": "us-west-2a",
+            "GroupName": "",
+            "Tenancy": "default"
+          },
+          "Platform": "windows",
+          "PrivateDnsName": "ip-10-100-1-71.us-west-2.compute.internal",
+          "PrivateIpAddress": "10.100.1.71",
+          "ProductCodes": [],
+          "PublicDnsName": "",
+          "RootDeviceName": "/dev/sda1",
+          "RootDeviceType": "ebs",
+          "SecurityGroups": [
+            {
+              "GroupId": "sg-adcd87d0",
+              "GroupName": "default"
+            }
+          ],
+          "SourceDestCheck": true,
+          "State": {
+            "Code": 80,
+            "Name": "stopped"
+          },
+          "StateReason": {
+            "Code": "Client.UserInitiatedShutdown",
+            "Message": "Client.UserInitiatedShutdown: User initiated shutdown"
+          },
+          "StateTransitionReason": "User initiated (2017-12-09 00:25:19 GMT)",
+          "SubnetId": "subnet-9a0c48fc",
+          "Tags": [
+            {
+              "Key": "purpose",
+              "Value": "solarwinds"
+            },
+            {
+              "Key": "tag",
+              "Value": "GNS3-BGP-Test"
+            },
+            {
+              "Key": "creator",
+              "Value": "ratul"
+            },
+            {
+              "Key": "Name",
+              "Value": "shutdown"
+            }
+          ],
+          "VirtualizationType": "hvm",
+          "VpcId": "vpc-815775e7"
+        }
+      ],
+      "OwnerId": "118292266645",
+      "ReservationId": "r-0a8aff960bbcc658e"
+    }
+  ]
+}

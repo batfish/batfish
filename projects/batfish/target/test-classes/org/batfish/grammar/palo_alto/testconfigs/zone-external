@@ -1,0 +1,4 @@
+set deviceconfig system hostname zone-external
+
+set vsys vsys3 zone ZONE1 network external [ vsys1 sg1 ]
+set vsys vsys3 zone ZONE2 network external vsys2

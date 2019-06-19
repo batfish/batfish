@@ -1,0 +1,19 @@
+!
+hostname mac_access_list
+!
+mac access-list permitCDP
+  10 permit any 0100.0CCC.CCCC 0000.0000.0000
+  10 permit any 0100.0CCC.CCCC 0000.0000.0000 0x8843
+  20 deny any any ip
+mac access-list extended filtermac
+mac access-list ipmi_test
+ permit any any 1031 etype any 
+ permit any any any etype any 
+!
+mac access-list STPDENY
+ sequence 10 deny any 0100.0ccc.cccd ffff.ffff.ffff any etype any 
+ sequence 20 permit any any any etype any 
+ sequence 30 deny any 0180.c200.000e ffff.ffff.ffff any etype any 
+!
+
+!

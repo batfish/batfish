@@ -1,0 +1,8 @@
+!
+hostname aruba_vlan
+!
+vlan 123
+vlan-name abcdefg
+vlan abcdefg 123
+!
+

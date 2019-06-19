@@ -1,0 +1,45 @@
+!RANCID-CONTENT-TYPE: foundry
+!
+hostname foundry_misc
+!
+dot1x-enable
+optical-monitor
+qos-policy
+lag "[core]8x10G-to-lax-agg6-BE7-CLR-7753" dynamic id 5
+ ports ethernet 12/1 to 12/8 
+ primary-port 12/1
+ trunk-threshold 5
+ deploy
+ port-name "10G to lax-agg6 Te0/6/0/24 CLR-6720" ethernet 12/1
+ port-name "10G to lax-agg6 Te0/6/0/25 CLR-6721" ethernet 12/2
+ port-name "10G to lax-agg6 Te0/6/0/26 CLR-6722" ethernet 12/3
+ port-name "10G to lax-agg6 Te0/6/0/27 CLR-6723" ethernet 12/4
+ port-name "10G to lax-agg6 Te0/6/0/28 CLR-6724" ethernet 12/5
+ port-name "10G to lax-agg6 Te0/6/0/29 CLR-6725" ethernet 12/6
+ port-name "10G to lax-agg6 Te0/7/0/2 CLR-6726" ethernet 12/7
+ port-name "10G to lax-agg6 Te0/7/0/3 CLR-6727" ethernet 12/8
+!
+enable-acl-counter
+vlan-policy
+ipv6 neighbor 2607:0000:1::108:9a41:a951 ve 183 eth 1/1 0024.38af.b000                                                                     
+tag-type 9100 ethe 16/1
+logging buffered 1000                                                                                                                      
+acl-policy
+ enable-acl-counter                                                                                                                        
+!
+no transceiver-type-check
+ssh access-group blib
+ssh access-group ipv6 blob
+router msdp
+ msdp-peer 1.2.17.15 connect-source loopback 1
+ msdp-peer 1.2.17.13 connect-source loopback 1
+ msdp-peer 1.2.26.30
+ msdp-peer 1.2.26.201
+ msdp-peer 1.2.26.205
+ip route 1.2.28.104/31 ethernet 13/10 tag 64753
+enable-qos-statistics
+policy-map limitarp
+ cir 195456 cbs 1250
+!
+!
+

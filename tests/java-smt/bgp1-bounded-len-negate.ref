@@ -1,0 +1,15 @@
+[
+  {
+    "class" : "org.batfish.minesweeper.answers.SmtOneAnswerElement",
+    "result" : {
+      "forwardingModel" : [
+        "r1,Loopback0 --> _,_ (CONNECTED)",
+        "r2,Serial0 --> r1,Serial0 (BGP)"
+      ],
+      "packetModel" : {
+        "dstIp" : "42.42.42.0"
+      },
+      "verified" : false
+    }
+  }
+]

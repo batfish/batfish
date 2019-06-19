@@ -1,0 +1,53 @@
+{
+    "class": "org.batfish.question.filtertable.FilterTableQuestion",
+    "differential": false,
+    "columns": [
+        "MTU",
+        "Interface"
+    ],
+    "filter": "MTU ${comparator} ${mtuBytes}",
+    "innerQuestion": {
+        "class": "org.batfish.question.interfaceproperties.InterfacePropertiesQuestion",
+        "differential": false,
+        "interfaces": "${interfaces}",
+        "nodes": "${nodes}",
+        "displayHints": {
+            "textDesc": "${interface} has MTU ${mtu}"
+        }
+    },
+    "instance": {
+        "description": "Finds interfaces where the configured MTU matches the specified comparator and mtuBytes.",
+        "longDescription": "For example, if comparator is '<' and mtuBytes is 1500, then only interfaces where the configured MTU is less than 1500 bytes will be returned.",
+        "instanceName": "interfaceMtu",
+        "tags": [
+            "hygiene"
+        ],
+        "variables": {
+            "comparator": {
+                "description": "Returned devices will satisfy <comparator> <mtuBytes>. Use '<' to find devices that do not have MTU smaller than the specified <mtuBytes> MTU",
+                "optional": true,
+                "type": "comparator",
+                "value": "<",
+                "displayName": "Comparator"
+            },
+            "interfaces": {
+                "description": "Evaluate interfaces matching this specifier",
+                "type": "interfacesSpec",
+                "value": ".*",
+                "displayName": "Interfaces"
+            },
+            "mtuBytes": {
+                "description": "The reference MTU in bytes against which to check the configured MTU",
+                "type": "integer",
+                "value": 1500,
+                "displayName": "MTU Bytes"
+            },
+            "nodes": {
+                "description": "Include nodes matching this specifier",
+                "type": "nodeSpec",
+                "value": ".*",
+                "displayName": "Nodes"
+            }
+        }
+    }
+}

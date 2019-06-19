@@ -1,0 +1,6 @@
+#
+set system host-name preprocess-flat
+#
+set groups g1 interfaces lo0 disable
+set interfaces lo0 apply-groups g1
+set interfaces lo0 unit 0 family inet address 192.0.2.1/24

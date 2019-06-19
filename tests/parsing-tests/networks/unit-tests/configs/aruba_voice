@@ -1,0 +1,16 @@
+!
+hostname aruba_voice
+!
+dialer group evdo_us
+  dial-string AT*****
+  init-string AT*****
+!
+voice alg-based-cac enable
+voice dialplan-profile "default"
+voice logging
+voice real-time-config
+voice rtcp-inactivity disable
+voice sip
+voice sip-midcall-req-timeout disable
+!
+

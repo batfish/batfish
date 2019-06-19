@@ -1,0 +1,9 @@
+#!/bin/bash
+ALLINONE_PATH="${BATFISH_PATH}/../allinone"
+ALLINONE_JAR="$ALLINONE_PATH/target/allinone-bundle-${BATFISH_VERSION}.jar"
+CPSEP=":"
+if batfish_cygwin; then
+   ALLINONE_JAR="$(cygpath -w "$ALLINONE_JAR")"
+fi
+java ${BATFISH_JAVA_OPTS} -cp "${ALLINONE_JAR}" org.batfish.main.PreprocessJuniper "$@"
+

@@ -1,0 +1,22 @@
+[
+  {
+    "class" : "org.batfish.question.UniqueIpAssignmentsQuestionPlugin$UniqueIpAssignmentsAnswerElement",
+    "duplicateIps" : {
+      "2.1.1.2" : [
+        {
+          "hostname" : "as2border2",
+          "interface" : "Loopback0"
+        },
+        {
+          "hostname" : "as2dept1",
+          "interface" : "Loopback0"
+        }
+      ]
+    },
+    "summary" : {
+      "numFailed" : 0,
+      "numPassed" : 0,
+      "numResults" : 1
+    }
+  }
+]

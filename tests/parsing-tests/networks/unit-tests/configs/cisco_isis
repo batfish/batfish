@@ -1,0 +1,108 @@
+!
+hostname cisco_isis
+!
+interface GigabitEthernet0/1
+!
+interface Serial4/0
+!
+interface HundredGigE0/0/0/0.2302
+!
+interface GigabitEthernet0/0/1
+ isis hello-interval 3 level-2
+ port-name [bb-rive1]SAC-HPR2:RIVE1CA51O-1/13:CLR-1046
+ enable
+ load-interval 30
+ no cdp enable
+ route-only
+ bfd interval 500 min-rx 500 multiplier 3
+ ip router isis
+ ip address 137.164.25.57/30
+ ip pim-sparse
+ ip pim border
+ ip multicast-boundary 82
+ ip mtu 9180
+ ipv6 address 2607:f380::108:9a41:9391/122
+ ipv6 enable
+ ipv6 mtu 9180
+ ipv6 router isis
+ ipv6 pim-sparse
+ isis circuit-type level-2
+ isis hello-interval 3
+ isis ipv6 metric 15 level-2
+ isis metric 15 level-2
+ isis point-to-point
+ gig-default neg-off
+ sflow forwarding
+!
+router isis
+ net 49.2153.1371.6401.7008.00
+ net 49.2152.1371.6403.9016.1371.6403.9016.00
+ area-password abcdefg
+ authentication send-only
+ bfd all-interfaces
+ no hello padding
+ nsf cisco
+ nsf interface wait 123
+ nsf interval 123
+ is-type level-2
+ is-type level-2-only
+ log adjacency
+ log-adjacency-changes all
+ lsp-gen-interval 2 1 3
+ lsp-refresh-interval 12345
+ max-lsp-lifetime 12345
+ metric-style wide
+ passive-interface default
+ passive-interface GigabitEthernet0/0
+ no passive-interface GigabitEthernet0/1
+ no passive-interface Serial4/0
+ prc-interval 2 1 3
+ redistribute eigrp 1234 route-map redist-eigrp-isis level-1-2
+ redistribute static clns route-map static-to-bgp
+ set-overload-bit on-startup 123
+ spf-interval 2 1 3
+ address-family ipv4 unicast
+  metric-style wide
+  redistribute connected route-map connected-to-isis
+ exit-address-family
+ address-family ipv6 unicast
+  redistribute connected route-map connected-to-isis-v6
+  adjacency-check disable
+ exit-address-family
+ interface HundredGigE0/0/0/0.2302
+  bfd fast-detect ipv4
+  bfd minimum-interval 300
+  bfd multiplier 3
+  circuit-type level-2-only
+  hello-interval 3
+  hello-multiplier 6
+  hello-padding disable
+  point-to-point
+  suppressed
+  address-family ipv4 unicast
+   metric 99999 level 2
+  !
+  address-family ipv6 unicast
+   adjacency-check disable
+   metric 99999
+  !
+ !
+ !
+ address-family ipv6
+ exit-address-family
+!
+router isis xyz
+ fast-flood 10
+ ignore-attached-bit
+ log-adjacency-changes
+ lsp-gen-interval 5 1 20
+ lsp-refresh-interval 65000
+ max-lsp-lifetime 65535
+ metric 12345
+ metric-style wide
+ net 12.1234.1234.1234.1234.12
+ passive-interface Loopback0
+ prc-interval 5 1 20
+ spf-interval 5 1 20
+!
+

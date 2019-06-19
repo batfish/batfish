@@ -1,0 +1,13 @@
+net del all
+#
+net add hostname cumulus_nclu_vxlan_vrfs
+#
+net add vrf VRF1 vni 101000
+net add vxlan VRF1-L3VNI vxlan id 101000
+net add vxlan VRF1-L3VNI vxlan local-tunnelip 1.1.1.1
+net add vxlan VRF1-L3VNI bridge access 1000
+net add vxlan VNI2000 vxlan id 102000
+net add vxlan VNI2000 vxlan local-tunnelip 1.1.1.1
+net add vxlan VNI2000 bridge access 2000
+#
+net commit

@@ -1,0 +1,13 @@
+!
+hostname ios-bfd-template
+!
+!
+bfd-template single-hop bfd-template-used
+bfd-template single-hop bfd-template-unused
+interface Ethernet0
+ bfd template bfd-template-used
+!
+interface Ethernet0
+ bfd template bfd-template-undefined
+!
+!

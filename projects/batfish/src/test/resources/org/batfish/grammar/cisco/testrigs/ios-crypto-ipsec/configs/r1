@@ -1,0 +1,68 @@
+!
+hostname r1
+!
+crypto isakmp policy 12
+ encr aes
+ authentication pre-share
+ group 2
+ lifetime 28800
+!
+crypto keyring KEYRING
+  pre-shared-key address 2.3.4.8 key psk2
+  local-address 2.3.4.6
+!
+crypto isakmp profile ISAKMP-PROFIE
+   keyring KEYRING
+   match identity address 2.3.4.8 255.255.255.255
+   keepalive 10 retry 3
+   local-address 2.3.4.6
+!
+crypto keyring KEYRING_FOR_R3
+  pre-shared-key address 2.3.4.11 key psk3
+!
+crypto isakmp profile ISAKMP-PROFILE-FOR-R3
+   keyring KEYRING_FOR_R3
+   match identity address 2.3.4.11 255.255.255.255
+   keepalive 10 retry 3
+!
+crypto ipsec transform-set ts1 esp-aes 256 esp-md5-hmac
+ mode tunnel
+!
+crypto ipsec transform-set ts2 esp-aes 256 esp-sha-hmac
+ mode tunnel
+!
+crypto ipsec profile ipsec-profile
+ set transform-set ts1
+ set pfs group2
+!
+crypto map mymap 20 ipsec-isakmp
+ match address ACL
+ set transform-set ts1 ts2
+ set peer 2.3.4.8
+ set pfs group2
+!
+crypto map mysecondmap 20 ipsec-isakmp
+ match address ACL
+ set transform-set ts1
+ set peer 2.3.4.11
+ set pfs group2
+!
+ip access-list extended ACL
+ permit ip 1.1.1.1 0.0.0.0 2.2.2.2 0.0.0.0
+!
+interface TenGigabitEthernet0/0
+ ip address 2.3.4.6 255.255.255.0
+ crypto map mymap
+!
+interface TenGigabitEthernet0/1
+ ip address 2.3.4.7 255.255.255.0
+ crypto map mysecondmap
+!
+interface Tunnel21
+ ip address 11.12.13.17 255.255.255.0
+ shutdown
+ tunnel source 2.3.4.6
+ tunnel mode ipsec ipv4
+ tunnel destination 2.3.4.8
+ tunnel protection ipsec profile ipsec-profile
+!

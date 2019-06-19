@@ -1,0 +1,9 @@
+!RANCID-CONTENT-TYPE: paloalto
+!
+#this is a line comment
+# this is another line comment
+deviceconfig {
+    system {
+        hostname nested-config-line-comments;
+    }
+}

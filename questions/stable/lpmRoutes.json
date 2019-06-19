@@ -1,0 +1,42 @@
+{
+    "class": "org.batfish.question.lpmroutes.LpmRoutesQuestion",
+    "differential": false,
+    "instance": {
+        "description": "Returns routes that are longest prefix match for a given IP address.",
+        "instanceName": "lpmRoutes",
+        "longDescription": "Return longest prefix match routes for a given IP in the RIBs of specified nodes and VRFs.",
+        "tags": [
+            "dataplane",
+            "routing"
+        ],
+        "variables": {
+            "ip": {
+                "description": "IP address to run LPM on",
+                "type": "ip",
+                "optional": false,
+                "displayName": "IP Address"
+            },
+            "nodes": {
+                "description": "Examine routes on nodes matching this specifier",
+                "type": "nodeSpec",
+                "value": ".*",
+                "displayName": "Nodes"
+            },
+            "vrfs": {
+                "description": "Examine routes on VRFs matching this name or regex",
+                "type": "vrf",
+                "value": ".*",
+                "displayName": "VRFs"
+            }
+        },
+        "orderedVariableNames": [
+            "ip",
+            "nodes",
+            "vrfs"
+        ]
+    },
+    "ip": "${ip}",
+    "nodes": "${nodes}",
+    "rib": "main",
+    "vrfs": "${vrfs}"
+}

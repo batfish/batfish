@@ -1,0 +1,4 @@
+####BATFISH PRE-PROCESSED JUNIPER CONFIG####
+set system host-name preprocess-flat
+set interfaces lo0 disable
+set interfaces lo0 unit 0 family inet address 192.0.2.1/24

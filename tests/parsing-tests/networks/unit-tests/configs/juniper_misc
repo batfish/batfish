@@ -1,0 +1,11 @@
+#
+protect system
+set system host-name juniper_misc
+set system compress-configuration-files
+set system domain-name my.domain.name
+#
+set protocols uplink-failure-detection group G1 link-to-monitor xe-0/0/0
+#
+set routing-instances ROUTING_INSTANCE vtep-source-interface lo0.0
+#
+set virtual-chassis member 0 role routing-engine

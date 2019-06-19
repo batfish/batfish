@@ -1,0 +1,33 @@
+!RANCID-CONTENT-TYPE: paloalto
+config {
+  devices {
+    localhost.localdomain {
+      deviceconfig {
+        system {
+          hostname "palo_alto_virtual_routers";
+        }
+      }
+      network {
+        virtual-router {
+          vr1 {
+            routing-table {
+              ip {
+                static-route {
+                  sr1 {
+                    destination 0.0.0.0/0;
+                    nexthop {
+                      next-vr vr2;
+                    }
+                  }
+                }
+              }
+            }
+          }
+          vr2 {
+            interface dummy;
+          }
+        }
+      }
+    }
+  }
+}

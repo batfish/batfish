@@ -1,0 +1,22 @@
+{
+ "Subnets": [
+  {
+   "AssignIpv6AddressOnCreation": false, 
+   "AvailabilityZone": "us-west-2a", 
+   "AvailableIpAddressCount": 250, 
+   "CidrBlock": "10.100.1.0/24", 
+   "DefaultForAz": false, 
+   "Ipv6CidrBlockAssociationSet": [], 
+   "MapPublicIpOnLaunch": false, 
+   "State": "available", 
+   "SubnetId": "subnet-9a0c48fc", 
+   "Tags": [
+    {
+     "Key": "Name", 
+     "Value": "subnet-finance"
+    }
+   ], 
+   "VpcId": "vpc-815775e7"
+  }
+ ]
+}

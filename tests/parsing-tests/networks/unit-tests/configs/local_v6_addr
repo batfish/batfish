@@ -1,0 +1,8 @@
+!
+hostname local_v6_addr
+!
+router bgp 1
+   neighbor NEIGH peer-group
+   neighbor NEIGH local-v6-addr 1234::1
+!
+

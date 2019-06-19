@@ -1,0 +1,13 @@
+!
+hostname cisco_dspfarm
+!
+dspfarm profile 111 transcode  
+ description transcode profile 111
+ codec g729abr8
+ codec g729ar8
+ codec g711alaw
+ codec g711ulaw
+ maximum sessions 168
+ associate application SCCP
+!
+

@@ -1,0 +1,30 @@
+! This is an IOS XR formatted file.
+hostname bgp_route_policy
+!
+router bgp 2152
+ nsr
+ bgp default local-preference 100
+ address-family ipv6 unicast
+  bgp dampening 15 750 6000 60
+  bgp client-to-client reflection disable
+  maximum-paths ebgp 4 selective
+  network 2607:f380::/32 route-policy originate-internal-ipv6
+  redistribute connected route-policy static-connected-to-bgp
+ !
+ address-family ipv4 multicast
+  distance bgp 20 20 1
+  redistribute static route-policy static-to-bgp
+ !
+ neighbor 64.57.21.1
+  remote-as 11164
+  use neighbor-group EBGP-PEER-SVL-PNI
+  description cps AS11164 - SVL-PNI
+  address-family ipv4 unicast
+   multipath
+   route-policy EBGP-PEER-AS11164-SVL-PNI-IN in
+   maximum-prefix 500000 80 restart 60
+   route-policy EBGP-PEER-AS11164-SVL-PNI-OUT out
+  !
+ !
+!
+

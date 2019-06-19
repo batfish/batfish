@@ -1,0 +1,6 @@
+#
+set system host-name ipsec-proposal-set
+#
+set security ipsec policy policy1 proposal-set standard
+#
+set security ipsec policy policy2 proposal-set compatible

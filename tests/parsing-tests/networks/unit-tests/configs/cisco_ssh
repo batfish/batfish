@@ -1,0 +1,18 @@
+!
+hostname cisco_ssh
+!
+ip ssh authentication-retries 3
+ip ssh client source-interface Loopback0
+ip ssh port 2041 rotary 1 3
+ip ssh pubkey-chain
+  username alice
+   key-hash ssh-rsa AAAAAAAAAA alice@alice
+  username bob
+   key-hash ssh-rsa BBBBBBBBBB bob
+  quit
+!
+ip ssh source-interface Vlan10
+ip ssh version 1
+ip ssh version 2
+!
+

@@ -1,0 +1,12 @@
+#TMSH-VERSION: 13.1.1
+
+sys global-settings {
+    hostname f5_bigip_imish_bgp_process_references
+}
+net vlan /Common/vlan_used { }
+!
+!!! imish configuration starts here
+!
+router bgp 123
+ neighbor 192.0.2.1 remote-as 456
+!

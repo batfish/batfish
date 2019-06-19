@@ -1,0 +1,55 @@
+[
+  {
+    "class" : "org.batfish.minesweeper.answers.SmtOneAnswerElement",
+    "result" : {
+      "forwardingModel" : [
+        "r1,Serial0 --> r2,Serial0 (STATIC)",
+        "r2,Serial0 --> r1,Serial0 (STATIC)"
+      ],
+      "model" : {
+        "|0_CONTROL-FORWARDING_r1_Serial0|" : "true",
+        "|0_CONTROL-FORWARDING_r2_Serial0|" : "true",
+        "|0_DATA-FORWARDING_r1_Serial0|" : "true",
+        "|0_DATA-FORWARDING_r2_Serial0|" : "true",
+        "|0_FAILED-EDGE_r1_r2|" : "0",
+        "|0_FAILED-NODE_r1|" : "0",
+        "|0_FAILED-NODE_r2|" : "0",
+        "|0__on-loop_r1_r1|" : "true",
+        "|0__on-loop_r1_r2|" : "true",
+        "|0__on-loop_r2_r1|" : "true",
+        "|0__on-loop_r2_r2|" : "true",
+        "|0_dst-ip|" : "2885681152",
+        "|0_dst-port|" : "0",
+        "|0_icmp-code|" : "0",
+        "|0_icmp-type|" : "0",
+        "|0_ip-protocol|" : "0",
+        "|0_r1_OVERALL_BEST_None_metric|" : "0",
+        "|0_r1_OVERALL_BEST_None_permitted|" : "true",
+        "|0_r1_OVERALL_BEST_None_prefixLength|" : "8",
+        "|0_r1_STATIC_IMPORT_Serial0_choice|" : "true",
+        "|0_r1_STATIC_IMPORT_Serial0_permitted|" : "true",
+        "|0_r1_STATIC_IMPORT_Serial0_prefixLength|" : "8",
+        "|0_r2_OVERALL_BEST_None_metric|" : "0",
+        "|0_r2_OVERALL_BEST_None_permitted|" : "true",
+        "|0_r2_OVERALL_BEST_None_prefixLength|" : "8",
+        "|0_r2_STATIC_IMPORT_Serial0_choice|" : "true",
+        "|0_r2_STATIC_IMPORT_Serial0_permitted|" : "true",
+        "|0_r2_STATIC_IMPORT_Serial0_prefixLength|" : "8",
+        "|0_src-ip|" : "0",
+        "|0_src-port|" : "0",
+        "|0_tcp-ack|" : "false",
+        "|0_tcp-cwr|" : "false",
+        "|0_tcp-ece|" : "false",
+        "|0_tcp-fin|" : "false",
+        "|0_tcp-psh|" : "false",
+        "|0_tcp-rst|" : "false",
+        "|0_tcp-syn|" : "false",
+        "|0_tcp-urg|" : "false"
+      },
+      "packetModel" : {
+        "dstIp" : "172.0.0.0"
+      },
+      "verified" : false
+    }
+  }
+]

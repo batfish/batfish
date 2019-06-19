@@ -1,0 +1,13 @@
+# RANCID-CONTENT-TYPE: juniper
+set system host-name aggregate-defaults
+#
+set routing-options aggregate defaults passive
+set routing-options aggregate route 1.0.0.0/8
+set routing-options aggregate route 2.0.0.0/8 active
+set routing-options aggregate route 3.0.0.0/8 passive
+set routing-instances ri1 instance-type virtual-router
+set routing-instances ri1 routing-options aggregate defaults active
+set routing-instances ri1 routing-options aggregate route 1.0.0.0/8
+set routing-instances ri1 routing-options aggregate route 2.0.0.0/8 active
+set routing-instances ri1 routing-options aggregate route 3.0.0.0/8 passive
+#

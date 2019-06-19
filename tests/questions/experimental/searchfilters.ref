@@ -1,0 +1,130 @@
+{
+  "class" : "org.batfish.question.searchfilters.SearchFiltersQuestion",
+  "explain" : false,
+  "filters" : ".*",
+  "headers" : {
+    "dstIps" : "2.2.2.2",
+    "dstPorts" : "0-21,23-1000",
+    "ipProtocols" : "TCP",
+    "srcIps" : "1.1.1.1",
+    "srcPorts" : "0"
+  },
+  "invertSearch" : false,
+  "nodes" : ".*",
+  "startLocation" : "somenode",
+  "differential" : false,
+  "includeOneTableKeys" : true,
+  "instance" : {
+    "description" : "Finds flows for which a filter takes a particular behavior.",
+    "instanceName" : "qname",
+    "longDescription" : "This question searches for flows for which a filter (access control list) has a particular behavior. The behaviors can be: that the filter permits the flow (permit), that it denies the flow (deny), or that the flow is matched by a particular line (matchLine <lineNumber>). Filters are selected using node and filter specifiers, which might match multiple filters. In this case, a (possibly different) flow will be found for each filter.",
+    "tags" : [
+      "acl"
+    ],
+    "variables" : {
+      "action" : {
+        "description" : "The behavior that you want evaluated. Options are: permit|deny|matchLine <line number>. Only one option should be selected",
+        "displayName" : "Action",
+        "optional" : true,
+        "type" : "string",
+        "value" : "matchLine 0"
+      },
+      "explain" : {
+        "description" : "Include a description of the flow space matching the query.",
+        "displayName" : "Explain",
+        "optional" : true,
+        "type" : "boolean",
+        "value" : false
+      },
+      "filters" : {
+        "description" : "Only evaluate filters that match this specifier",
+        "displayName" : "Filters",
+        "optional" : true,
+        "type" : "filterSpec",
+        "value" : ".*"
+      },
+      "headers" : {
+        "description" : "Packet header constraints on the flows being searched",
+        "displayName" : "Headers",
+        "fields" : {
+          "applications" : {
+            "optional" : true,
+            "type" : "applicationSpec"
+          },
+          "dscps" : {
+            "optional" : true
+          },
+          "dstIps" : {
+            "optional" : true,
+            "type" : "ipSpaceSpec"
+          },
+          "dstPorts" : {
+            "optional" : true
+          },
+          "ecns" : {
+            "optional" : true
+          },
+          "flowStates" : {
+            "optional" : true
+          },
+          "fragmentOffsets" : {
+            "optional" : true
+          },
+          "icmpCodes" : {
+            "optional" : true
+          },
+          "icmpTypes" : {
+            "optional" : true
+          },
+          "ipProtocols" : {
+            "optional" : true,
+            "type" : "ipProtocolSpec"
+          },
+          "packetLengths" : {
+            "optional" : true
+          },
+          "srcIps" : {
+            "optional" : true,
+            "type" : "ipSpaceSpec"
+          },
+          "srcPorts" : {
+            "optional" : true
+          },
+          "tcpFlags" : {
+            "optional" : true
+          }
+        },
+        "optional" : true,
+        "type" : "headerConstraint",
+        "value" : {
+          "dstIps" : "2.2.2.2",
+          "ipProtocols" : "tcp",
+          "srcIps" : "1.1.1.1",
+          "srcPorts" : "0",
+          "dstPorts" : "0-1000,!22"
+        }
+      },
+      "invertSearch" : {
+        "description" : "Search for packet headers outside the specified headerspace, rather than inside the space.",
+        "displayName" : "Invert Search",
+        "optional" : true,
+        "type" : "boolean",
+        "value" : false
+      },
+      "nodes" : {
+        "description" : "Only evaluate filters present on nodes matching this specifier",
+        "displayName" : "Nodes",
+        "optional" : true,
+        "type" : "nodeSpec",
+        "value" : ".*"
+      },
+      "startLocation" : {
+        "description" : "Only consider specified locations as possible sources",
+        "displayName" : "Start Location",
+        "optional" : true,
+        "type" : "locationSpec",
+        "value" : "somenode"
+      }
+    }
+  }
+}

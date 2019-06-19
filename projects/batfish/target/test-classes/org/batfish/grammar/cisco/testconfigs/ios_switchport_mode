@@ -1,0 +1,38 @@
+!
+hostname ios_switchport_mode
+!
+interface Ethernet0/0
+ no shutdown
+!
+interface Ethernet0/1
+ switchport
+ no shutdown
+!
+interface Ethernet0/2
+ switchport
+ switchport mode access
+ no shutdown
+!
+interface Ethernet0/3
+ switchport
+ switchport mode trunk
+ no shutdown
+!
+interface Ethernet0/4
+  switchport
+  switchport trunk encapsulation dot1q
+  switchport trunk allowed vlan 1, 2
+  no shutdown
+!
+interface Ethernet0/5
+  switchport
+  switchport trunk encapsulation isl
+  switchport trunk allowed vlan 3, 4
+  no shutdown
+!
+interface Ethernet0/6
+  switchport
+  switchport trunk encapsulation negotiate
+  switchport trunk allowed vlan 5, 6
+  no shutdown
+!

@@ -1,0 +1,15 @@
+!
+hostname cisco_dynamic_access_policy_record
+!
+dynamic-access-policy-record vvvvvv
+ user-message "DISCONNECTED"
+ action terminate
+ webvpn
+  url-list none
+dynamic-access-policy-record DAP-incoming_generic
+ webvpn
+  url-list none
+  svc ask enable default svc
+  always-on-vpn profile-setting
+!
+

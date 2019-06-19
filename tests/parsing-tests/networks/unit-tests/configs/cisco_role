@@ -1,0 +1,16 @@
+!
+hostname cisco_role
+!
+role name default-role
+  description bbbb
+  rule 5 permit command show feature environment
+  rule 4 permit command show feature hardware
+role name tier1-ro
+  rule 2 permit command ping *
+  rule 1 permit read 
+role name tier1-rw
+  rule 2 permit command ping *
+  rule 1 permit read
+end
+!
+

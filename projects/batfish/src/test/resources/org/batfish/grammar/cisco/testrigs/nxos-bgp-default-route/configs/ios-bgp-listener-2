@@ -1,0 +1,20 @@
+! Real config from IOS emulator in GNS3, edited heavily to remove unrelated bits.
+! All commands that matter are below, enter them after `configure terminal` / `conf t`.
+!
+! Relevant IOS command to confirm route is received:
+!    `show ip bgp ipv4 unicast`
+
+hostname ios-bgp-listener-2
+!
+interface GigabitEthernet1/0
+ ip address 2.2.3.0 255.255.255.254
+ no shutdown
+!
+router bgp 65002
+ bgp log-neighbor-changes
+ neighbor 2.2.3.1 remote-as 65000
+ !
+ address-family ipv4
+  neighbor 2.2.3.1 activate
+ exit-address-family
+!

@@ -1,0 +1,44 @@
+############ MultiConfigPart running configuration
+!! IOS XR Configuration version = 5.2.1
+!! Last configuration change at Wed Feb 17 07:30:39 2016 by SES-SVC
+!
+hostname ios_xr_multipart
+clock timezone UTC UTC
+banner login ^
+
+***************************************************************************
+*                                                                         *
+*  This router is : ios_xr_multipart                                      *
+*                                                                         * 
+***************************************************************************
+^
+
+rsvp
+ interface Bundle-Ether1
+  bandwidth percentage 95
+  bandwidth 1000000
+  signalling hello graceful-restart interface-based
+ !
+ logging events nsr
+ logging events issu
+ authentication
+  key-source key-chain RSVP
+  window-size 8
+ !
+!
+
+ssh server v2
+ssh server vrf default ipv4 access-list GNS-VTY-ACCESS
+cef load-balancing fields L4
+end
+
+############ MultiConfigPart END
+
+############ MultiConfigPart admin configuration
+fpd auto-upgrade disable
+!
+confdConfig encryptedStrings DES3CBC key1 0123456789ABCDEF
+confdConfig encryptedStrings DES3CBC key2 0123456789ABCDEF
+
+############ MultiConfigPart END
+

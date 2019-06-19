@@ -1,0 +1,82 @@
+#TMSH-VERSION: 13.1.1
+
+sys global-settings {
+  hostname f5_bigip_structured_virtual_misconfigurations
+}
+
+### incompatible translations
+ltm virtual /Common/virtual_ip_forward_translate1 {
+    destination /Common/192.0.2.1:80
+    ip-forward
+    translate-address disabled
+    translate-port enabled
+}
+ltm virtual /Common/virtual_ip_forward_translate2 {
+    destination /Common/192.0.2.1:80
+    ip-forward
+    translate-address enabled
+    translate-port disabled
+}
+ltm virtual /Common/virtual_ip_forward_translate3 {
+    destination /Common/192.0.2.1:80
+    ip-forward
+    translate-address enabled
+    translate-port enabled
+}
+ltm virtual /Common/virtual_reject_translate1 {
+    destination /Common/192.0.2.1:80
+    reject
+    translate-address disabled
+    translate-port enabled
+}
+ltm virtual /Common/virtual_reject_translate2 {
+    destination /Common/192.0.2.1:80
+    reject
+    translate-address enabled
+    translate-port disabled
+}
+ltm virtual /Common/virtual_reject_translate3 {
+    destination /Common/192.0.2.1:80
+    reject
+    translate-address enabled
+    translate-port enabled
+}
+
+### Two incompatible modes
+ltm virtual /Common/virtual_ip_forward_two_incompatible1 {
+    destination /Common/192.0.2.1:80
+    ip-forward
+    pool /Common/pool
+}
+ltm virtual /Common/virtual_ip_forward_two_incompatible2 {
+    destination /Common/192.0.2.1:80
+    ip-forward
+    reject
+}
+ltm virtual /Common/virtual_pool_two_incompatible1 {
+    destination /Common/192.0.2.1:80
+    pool /Common/pool
+    ip-forward
+}
+ltm virtual /Common/virtual_pool_two_incompatible2 {
+    destination /Common/192.0.2.1:80
+    pool /Common/pool
+    reject
+}
+ltm virtual /Common/virtual_reject_two_incompatible1 {
+    destination /Common/192.0.2.1:80
+    reject
+    ip-forward
+}
+ltm virtual /Common/virtual_reject_two_incompatible2 {
+    destination /Common/192.0.2.1:80
+    reject
+    pool /Common/pool
+}
+
+ltm virtual-address /Common/192.0.2.1 {
+    address 192.0.2.1
+    arp enabled
+    mask 255.255.255.255
+    route-advertisement selective
+}

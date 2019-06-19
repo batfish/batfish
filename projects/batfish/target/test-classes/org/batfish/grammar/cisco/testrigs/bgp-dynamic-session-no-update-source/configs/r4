@@ -1,0 +1,22 @@
+!
+!
+!
+! boot system flash:EOS.swi
+hostname r4
+!
+interface FastEthernet0/0
+ no shutdown
+ description connect to r2
+ duplex half
+ speed 100
+ ip address  2.0.0.10 255.255.255.252
+!
+interface Loopback0
+ ip address 4.4.4.4 255.255.255.255
+!
+router bgp 3
+ bgp router-id 4.4.4.4
+ no auto-summary
+ neighbor 2.0.0.9 remote-as 2
+ network 4.4.4.4 mask 255.255.255.255
+!

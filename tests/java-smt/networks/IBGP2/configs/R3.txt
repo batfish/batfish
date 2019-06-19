@@ -1,0 +1,19 @@
+hostname R3
+
+interface Loopback0
+  ip address 3.3.3.3 255.255.255.255
+!
+interface Serial0
+ ip address 11.10.10.1 255.255.255.0
+!
+interface Serial1
+ ip address 10.12.12.1 255.255.255.0
+!
+
+router bgp 200
+ neighbor 4.4.4.4 remote-as 200
+ neighbor 4.4.4.4 update-source Loopback0
+ neighbor 10.12.12.2 remote-as 100
+!
+
+ip route 4.4.4.4 255.255.255.255 11.10.10.2

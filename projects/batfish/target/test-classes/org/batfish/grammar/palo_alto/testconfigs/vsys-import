@@ -1,0 +1,4 @@
+set deviceconfig system hostname vsys-import
+
+set vsys vsys1
+set vsys vsys2 import visible-vsys vsys1

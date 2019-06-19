@@ -1,0 +1,16 @@
+hostname r1
+!
+interface FastEthernet0/0
+ description connect to r2
+ no shutdown
+ duplex half
+ speed 100
+ ip address 1.2.0.1 255.255.255.0
+!
+interface Loopback0
+ ip address 1.1.1.1 255.255.255.255
+!
+router bgp 1
+ bgp router-id 1.1.1.1
+ neighbor 1.2.0.2 remote-as 2
+!

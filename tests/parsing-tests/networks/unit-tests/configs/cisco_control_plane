@@ -1,0 +1,10 @@
+!
+hostname cisco_control_plane
+!
+control-plane
+ service-policy input copp-policy
+ service-policy output copp-policy-out
+ scale-factor 1.00 module 1
+control-plane slot 1
+!
+

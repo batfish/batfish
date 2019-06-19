@@ -1,0 +1,10 @@
+!
+hostname r1
+!
+interface Ethernet0
+ ip address 1.0.0.1/24
+ vrrp 123 priority 100
+ vrrp 123 ip 1.0.0.10
+ no shutdown
+!
+!

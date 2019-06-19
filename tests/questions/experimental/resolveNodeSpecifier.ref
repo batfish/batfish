@@ -1,0 +1,32 @@
+{
+  "class" : "org.batfish.question.specifiers.SpecifiersQuestion",
+  "queryType" : "NODE",
+  "specifierFactoryVersion" : "V2",
+  "differential" : false,
+  "includeOneTableKeys" : true,
+  "instance" : {
+    "description" : "Returns the set of nodes corresponding to a nodeSpec value.",
+    "instanceName" : "qname",
+    "longDescription" : "Helper question that shows how specified nodeSpec values resolve to the nodes in the network.",
+    "tags" : [
+      "specifiers"
+    ],
+    "variables" : {
+      "grammarVersion" : {
+        "description" : "Version of grammar to use for resolution",
+        "displayName" : "Grammar version",
+        "optional" : true,
+        "type" : "string",
+        "value" : "v2"
+      },
+      "nodes" : {
+        "description" : "Input to the NodeSpecifier",
+        "displayName" : "Nodes",
+        "optional" : true,
+        "type" : "nodeSpec",
+        "value" : "input"
+      }
+    }
+  },
+  "nodeSpecifierInput" : "input"
+}

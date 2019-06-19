@@ -1,0 +1,47 @@
+set deviceconfig system hostname rulebase
+set network interface ethernet ethernet1/1 layer3 ip 1.1.1.1/24
+set network interface ethernet ethernet1/2 layer3 ip 1.1.2.1/24
+set network interface ethernet ethernet1/3 layer3 ip 1.1.3.1/24
+set network interface ethernet ethernet1/4 layer3 ip 1.1.4.1/24
+set zone z1 network layer3 [ ethernet1/1 ethernet1/2 ]
+set zone z2 network layer3 ethernet1/4
+
+set service SERVICE1 protocol tcp port 999
+
+# Block all rule is disabled, so should have no impact
+set rulebase security rules "disabled rule" disabled yes
+set rulebase security rules "disabled rule" from [ any ZONE_UNDEF ]
+set rulebase security rules "disabled rule" to any
+set rulebase security rules "disabled rule" source any
+set rulebase security rules "disabled rule" destination any
+set rulebase security rules "disabled rule" service [ any application-default SERVICE_UNDEF ]
+set rulebase security rules "disabled rule" application any
+set rulebase security rules "disabled rule" action drop
+
+set rulebase security rules RULE1 from any
+set rulebase security rules RULE1 to [ z1 z2 ]
+set rulebase security rules RULE1 source any
+set rulebase security rules RULE1 source-user any
+set rulebase security rules RULE1 destination any
+set rulebase security rules RULE1 service "SERVICE1"
+set rulebase security rules RULE1 application any
+set rulebase security rules RULE1 action deny
+
+set rulebase security rules RULE2 from any
+set rulebase security rules RULE2 to [ z1 z2 ]
+set rulebase security rules RULE2 source [ 2.2.2.2 ]
+set rulebase security rules RULE2 negate-source yes
+set rulebase security rules RULE2 destination [ 1.1.1.2 1.1.4.2 ]
+set rulebase security rules RULE2 service any
+set rulebase security rules RULE2 application any
+set rulebase security rules RULE2 action allow
+
+# Override default behavior with default deny
+# This last rule comes before the others alphabetically but should be processed last
+set rulebase security rules 3rd_RULE from any
+set rulebase security rules 3rd_RULE to any
+set rulebase security rules 3rd_RULE source any
+set rulebase security rules 3rd_RULE destination any
+set rulebase security rules 3rd_RULE service any
+set rulebase security rules 3rd_RULE application any
+set rulebase security rules 3rd_RULE action deny

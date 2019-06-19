@@ -1,0 +1,36 @@
+!
+hostname aruba_acl
+!
+ip access-list eth someethlist
+ permit any
+!
+!
+ip access-list session some_ipv4_acl
+ network 1.2.3.0 255.255.255.0 host 2.3.4.5 svc-pptp  deny log
+ any any tcp 123 125 permit log
+ any host 1.2.3.4 tcp 333 permit
+ any any svc-blah permit queue high
+ user host 4.4.4.4 any permit
+ any alias blah.example.com any deny log
+ user any udp 222 deny
+ any any svc-abcd permit tos 46 dot1p-priority 6
+ user any any src-nat
+ user any svc-http dst-nat 8080
+ user alias controller abcdefg dst-nat 8081
+ user any app bittorrent deny
+ user any app bittorrent-application deny
+ user any appcategory peer-to-peer deny
+!
+ip access-list session some_ipv6_acl
+ ipv6 user any udp 222 deny
+ ipv6 any any svc-v6-icmp permit
+ ipv6 any any svc-v6-dhcp permit
+ ipv6 any any svc-dns  permit
+ ipv6 any network abcd::/7 any permit
+ ipv6 any network dcba::/64 any permit
+ ipv6 any alias ipv6-reserved-range any deny
+ ipv6 user any icmpv6 rtr-adv deny
+ ipv6 user alias controller6 svc-https captive
+!
+!
+

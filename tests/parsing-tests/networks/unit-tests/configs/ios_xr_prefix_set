@@ -1,0 +1,19 @@
+!
+hostname preSet
+!
+prefix-set default_route
+  0.0.0.0
+end-set
+prefix-set ucla_networks
+ #boo
+  128.97.0.0/16 le 32,
+  131.179.0.0/16 le 32,
+  149.142.0.0/16 le 32,
+  # bippety boppety
+  164.67.0.0/16 le 32,
+  169.232.0.0/16 le 32,
+  192.35.225.0/24 le 32,
+  192.154.2.0/24 le 32,
+  198.17.109.0/24 le 32
+end-set
+end

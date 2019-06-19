@@ -1,0 +1,17 @@
+hostname A1
+!
+interface GigabitEthernet1/0
+ ip address 10.1.1.1 255.255.255.0
+ description connection to firewall and A2
+ no shutdown
+!
+interface FastEthernet0/0
+ ip address 11.1.1.1 255.255.255.254
+ description connection to A2
+ no shutdown
+!
+router ospf 1
+ network 10.1.1.0 0.0.0.255 area 0
+ network 11.1.1.0 0.0.0.255 area 0
+!
+end

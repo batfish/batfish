@@ -1,0 +1,13 @@
+!
+hostname aruba_user_role
+!
+user-role role1
+ access-list session abcd
+ access-list session efgh
+ captive-portal "foobar"
+ no captive-portal check-for-accounting
+ max-sessions 12345
+ vlan 123
+!
+!
+

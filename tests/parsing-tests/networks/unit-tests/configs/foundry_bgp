@@ -1,0 +1,20 @@
+!RANCID-CONTENT-TYPE: foundry
+!
+hostname foundry_bgp
+!
+router bgp
+ local-as 12345
+ bfd-enable 
+ auto-shutdown-new-neighbors
+ compare-routerid
+ timers  keep-alive 10  hold-time 30
+ neighbor bippety peer-group
+ neighbor bippety remote-as 12345
+ neighbor bippety next-hop-self
+ ! neighbor bippety password <removed>
+ neighbor bippety timers  keep-alive 10  hold-time 30
+ neighbor bippety update-source loopback 1
+ neighbor bippety soft-reconfiguration inbound
+ neighbor boop peer-group
+!
+

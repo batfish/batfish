@@ -1,0 +1,7 @@
+# random comment
+*mangle
+# rule applied to a specific interface
+-A PREROUTING -s 2.128.0.101/32 -i eth0 -j ACCEPT
+# rule applied to all interfaces
+-A PREROUTING -j DROP
+COMMIT

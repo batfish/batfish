@@ -1,0 +1,37 @@
+#
+#
+set system host-name nat-source2
+#
+# set up interfaces
+set interfaces ge-0/0/0 unit 0 family inet address 1.0.0.1/24
+set interfaces ge-0/0/1 unit 0 family inet address 2.0.0.1/24
+#
+# associate interfaces with security zones
+set security zones security-zone trust interfaces ge-0/0/0.0
+set security zones security-zone trust interfaces ge-0/0/1.0
+# 
+# set a routing instance
+set routing-instances RI interface ge-0/0/0.0
+#
+# create nat pool
+set security nat source pool POOL1 address 10.10.10.10/24
+#
+# create nats
+set security nat source rule-set RULE-SET1 from routing-instance RI
+set security nat source rule-set RULE-SET1 to interface ge-0/0/1.0
+#
+set security nat source rule-set RULE-SET1 rule RULE1 match destination-address 1.1.1.1/24
+set security nat source rule-set RULE-SET1 rule RULE1 then source-nat pool POOL1 
+#
+set security nat source rule-set RULE-SET2 from interface ge-0/0/0.0
+set security nat source rule-set RULE-SET2 to interface ge-0/0/1.0
+#
+set security nat source rule-set RULE-SET2 rule RULE1 match destination-address 2.2.2.2/24
+set security nat source rule-set RULE-SET2 rule RULE1 then source-nat pool POOL1 
+#
+set security nat source rule-set RULE-SET3 from zone trust
+set security nat source rule-set RULE-SET3 to interface ge-0/0/1.0
+#
+set security nat source rule-set RULE-SET3 rule RULE1 match destination-address 3.3.3.3/24
+set security nat source rule-set RULE-SET3 rule RULE1 then source-nat pool POOL1
+

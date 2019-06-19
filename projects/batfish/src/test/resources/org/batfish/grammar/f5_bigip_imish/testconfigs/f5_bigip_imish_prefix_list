@@ -1,0 +1,21 @@
+#TMSH-VERSION: 13.1.1
+
+sys global-settings {
+    hostname f5_bigip_imish_prefix_list
+}
+
+!
+!!! imish configuration starts here
+!
+ip prefix-list pl_simple seq 10 permit 10.0.0.0/24
+!
+ip prefix-list pl_le seq 10 permit 10.0.0.0/16 le 24
+!
+ip prefix-list pl_ge seq 10 permit 10.0.0.0/16 ge 24
+!
+ip prefix-list pl_ge_le seq 10 permit 10.0.0.0/16 ge 24 le 28
+!
+ip prefix-list pl_deny seq 10 deny 10.0.0.0/32
+ip prefix-list pl_deny seq 20 permit 10.0.0.0/16
+!
+end

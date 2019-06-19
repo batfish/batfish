@@ -1,0 +1,14 @@
+!
+hostname community_set
+
+!!! EMPTY COMMUNITY SET
+community-set foo
+end-set
+
+!!! RANGE COMMUNITY SET
+community-set 190
+ 2152:[65501..65517],
+ [2150..2153]:*
+end-set
+!
+

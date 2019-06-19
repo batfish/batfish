@@ -1,0 +1,13 @@
+#TMSH-VERSION: 13.1.1
+
+sys global-settings {
+    hostname f5_bigip_structured_interface
+}
+net interface 1.0 {
+    bundle enabled
+    bundle-speed 40G
+}
+net interface 2.0 {
+    bundle enabled
+    bundle-speed 100G
+}

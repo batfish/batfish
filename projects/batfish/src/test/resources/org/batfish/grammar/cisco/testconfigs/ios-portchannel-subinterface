@@ -1,0 +1,9 @@
+!
+hostname ios-portchannel-subinterface
+!
+interface Ethernet1
+  no shutdown
+  channel-group 1
+interface Port-Channel1
+  description foo
+interface Port-Channel1.1

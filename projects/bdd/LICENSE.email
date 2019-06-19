@@ -1,0 +1,155 @@
+Delivered-To: ratul@intentionet.com
+Received: by 10.176.68.166 with SMTP id n35csp1883955uan;
+        Wed, 25 Oct 2017 09:50:12 -0700 (PDT)
+X-Received: by 10.28.1.70 with SMTP id 67mr2309888wmb.34.1508950212871;
+        Wed, 25 Oct 2017 09:50:12 -0700 (PDT)
+ARC-Seal: i=1; a=rsa-sha256; t=1508950212; cv=none;
+        d=google.com; s=arc-20160816;
+        b=dGb/0LDPAz7ujZwJvS68M+JlkNxEWjBzwkfKI/dTxI47N8GLb1XquiTdVOoDITxux2
+         w7OFcP8VI0TNx1xjJwayyoF7OIuSofO5Ydgnpkiu3zzHmEQj8+EjYoVw+O30qIA81Tpc
+         abA+FK6w63zw7M75R7UlPnx1tXF8FrC+l3wVcCQDte2OsJaD1a9wI0FXNYxV508g+kM5
+         wfW0dG7g8yFiZ8TglMyOwhGb+x5tRZIkRrang1UOO1haNiu5PCA/bcqVGHmpdTv92Ox9
+         o3ogLK7JwoUY+LtEkT47My3lq/mlVCRT+TTzQwjDbV1u0Qr8hf9kKgoP35YZGR5MucFy
+         YeNA==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20160816;
+        h=to:subject:message-id:date:from:references:in-reply-to:reply-to
+         :mime-version:dkim-signature:arc-authentication-results;
+        bh=byQYPKS16Oi1gz/yK4veWvSgke/FXg1xTsdf4BEq9Xg=;
+        b=GbEhCuMlwwvnaYS57CpgMdWQapU2SNdY/v7HyoheBDA9f5QlNx6Wh/UXALQbpJDtjt
+         CKL6nr9Z6uYLrvU6oRW50HMnxsODJ1os5INgfrQNYUOFPB2NVnWH3aWYhpwpnwCOpvqv
+         fRUhC9DOYqp6Tx8PgqTJcQb8fpJxfpsTF6GxmNIOtHhZE7DpxGkn+0n+nmUTaCS4htrt
+         CZZHL9mUBV408xwKcS83HaGCa2vahV+4zw4VjrUyYSmkoiReJCDxDQuMrwBD3UdmlP1N
+         hvzBiRgTVdYvkv9eD+vA9/6pf7M+5LsvpGgrRY+9InD//vpJgOfcDKM2HAVEGgPRt2Gh
+         R9FQ==
+ARC-Authentication-Results: i=1; mx.google.com;
+       dkim=pass header.i=@gmail.com header.s=20161025 header.b=hwuN/WN9;
+       spf=pass (google.com: domain of joewhaley@gmail.com designates 209.85.220.41 as permitted sender) smtp.mailfrom=joewhaley@gmail.com;
+       dmarc=pass (p=NONE sp=NONE dis=NONE) header.from=gmail.com
+Return-Path: <joewhaley@gmail.com>
+Received: from mail-sor-f41.google.com (mail-sor-f41.google.com. [209.85.220.41])
+        by mx.google.com with SMTPS id q6sor1564065wrf.51.2017.10.25.09.50.12
+        for <ratul@intentionet.com>
+        (Google Transport Security);
+        Wed, 25 Oct 2017 09:50:12 -0700 (PDT)
+Received-SPF: pass (google.com: domain of joewhaley@gmail.com designates 209.85.220.41 as permitted sender) client-ip=209.85.220.41;
+Authentication-Results: mx.google.com;
+       dkim=pass header.i=@gmail.com header.s=20161025 header.b=hwuN/WN9;
+       spf=pass (google.com: domain of joewhaley@gmail.com designates 209.85.220.41 as permitted sender) smtp.mailfrom=joewhaley@gmail.com;
+       dmarc=pass (p=NONE sp=NONE dis=NONE) header.from=gmail.com
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20161025;
+        h=mime-version:reply-to:in-reply-to:references:from:date:message-id
+         :subject:to;
+        bh=byQYPKS16Oi1gz/yK4veWvSgke/FXg1xTsdf4BEq9Xg=;
+        b=hwuN/WN9sQa+nDIzGBx8qFiei4xuV+n7NUBrX1N+HKfaOxUisPLKpckNKRcoWJKaCj
+         LZ3gu45XRgQ/0h+sy9GQZ4SWzXscwSEvO2E1dSGky6LzFXjyiG1QL6GUTlt57+BsKBQl
+         3JBvrex9iyM4CcW4HNghH5qHsiH/VAOrkvz2+qEKVlGmHcaPicFAVMRSeN9JrbVg5xse
+         5rsYU0idwjSuZleMynQry25y8topzBkktUMwiun79LrrW6VAttBXbMS70GZ0wnHvqfoh
+         tbKkwEBm3u+acbaV2JzUZWgJM70QitB19oOr7ttcd7QDPgg+iao1O5ZV1WQ/bQZC1tKJ
+         Fszg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:mime-version:reply-to:in-reply-to:references
+         :from:date:message-id:subject:to;
+        bh=byQYPKS16Oi1gz/yK4veWvSgke/FXg1xTsdf4BEq9Xg=;
+        b=WVfjGBSq64uew/NV7xw9QaPRh2bfMcLtPaDRGXWMj0tSEKxDYuY5MLVTAh1TGtTP0j
+         3+amUl23ZswLPIwF6mLdbY2uLGZWPuy2hHsH0P82jqFfAA3eAVnbeJ01JdgRxGbI9W9q
+         gE7vastVhmfN+S/fpA87rYA4cjbsQrYNiHHnEjFEoSM8jEl3WfFqmQdoX5jfVICuUirw
+         MqYLUXH0kjz776J2nCvgRTVrFoygSURNE1cgBNPw8hLdhwrNULPB7+0S4iwc2f7l02oa
+         NBvD9V2M0o4Ebga881pk2IHoY6T67EdBn0PnyChap9N+KDtVL4J4v8sfdEUIxCcjQm2W
+         xeSA==
+X-Gm-Message-State: AMCzsaU+9EmGODYKHsCU+eYMAWARJSOInY5xkNW+UitOiScxdABkQDm/ aIoHztEvZN7h0p94JwK/Knx2oW3btmnRi5rcgwk2uw==
+X-Google-Smtp-Source: ABhQp+SFLDFBOhiXUdzqKo8fMVlreuMjQ3lDHXd9zqhsbm+erZ5v6CI4nfFRHIlwzWko9RwTGKNN7I7zeuV1Og9zpRI=
+X-Received: by 10.223.171.6 with SMTP id q6mr2766038wrc.117.1508950211310; Wed, 25 Oct 2017 09:50:11 -0700 (PDT)
+MIME-Version: 1.0
+Received: by 10.223.135.238 with HTTP; Wed, 25 Oct 2017 09:50:10 -0700 (PDT)
+Received: by 10.223.135.238 with HTTP; Wed, 25 Oct 2017 09:50:10 -0700 (PDT)
+Reply-To: jwhaley@alum.mit.edu
+In-Reply-To: <CANTch3Zr25HskZg0WjuAf=tFwHbZcxQ_25cJ0E77PA=Q9oC61g@mail.gmail.com>
+References: <CANTch3ZKhdG9FaXQbwWfxDnH5eT5EZyqUr5a4Z+WgqNF6dLFNQ@mail.gmail.com> <CAGQLsqUVD8bO6omA5CS3fGU3E03dh=1fcPfrhMAv+Sx=FEu9qA@mail.gmail.com> <CANTch3Zr25HskZg0WjuAf=tFwHbZcxQ_25cJ0E77PA=Q9oC61g@mail.gmail.com>
+From: John Whaley <joewhaley@gmail.com>
+Date: Wed, 25 Oct 2017 09:50:10 -0700
+Message-ID: <CAGQLsqX8Wdk-YV9m68_OzxCGSqbuUaSDJmz8DFBiu_iY=ocKaA@mail.gmail.com>
+Subject: Re: BDD library
+To: Ratul Mahajan <ratul@intentionet.com>
+Content-Type: multipart/alternative; boundary="94eb2c1cb82c543a8e055c61d9ed"
+
+--94eb2c1cb82c543a8e055c61d9ed
+Content-Type: text/plain; charset="UTF-8"
+
+You can use the note. I will try to dig up my SourceForge key at some point
+to update the repo/website.
+
+On Oct 25, 2017 8:49 AM, "Ratul Mahajan" <ratul@intentionet.com> wrote:
+
+>
+> Thanks, John!
+>
+> Is that documented someplace, or we just use this note from you as
+> evidence?
+>
+> On Wed, Oct 25, 2017 at 7:33 AM, John Whaley <joewhaley@gmail.com> wrote:
+>
+>> Hi Ratul,
+>>
+>> You can use it under the MIT license as well.
+>>
+>> -John
+>>
+>>
+>> On Oct 24, 2017 2:17 PM, "Ratul Mahajan" <ratul@intentionet.com> wrote:
+>>
+>>
+>> Hey, John -
+>>
+>> We'd like to use your BDD library in an open source project (batfish.org).
+>> As our project is licensed under Apache, the LGPL license is problematic
+>> for us.
+>>
+>> Do you make your library available under any other license (e.g., MIT or
+>> Apache)?
+>>
+>> Thanks.
+>>
+>>
+>>
+>
+
+--94eb2c1cb82c543a8e055c61d9ed
+Content-Type: text/html; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
+
+<div dir=3D"auto">You can use the note. I will try to dig up my SourceForge=
+ key at some point to update the repo/website.=C2=A0</div><div class=3D"gma=
+il_extra"><br><div class=3D"gmail_quote">On Oct 25, 2017 8:49 AM, &quot;Rat=
+ul Mahajan&quot; &lt;<a href=3D"mailto:ratul@intentionet.com">ratul@intenti=
+onet.com</a>&gt; wrote:<br type=3D"attribution"><blockquote class=3D"gmail_=
+quote" style=3D"margin:0 0 0 .8ex;border-left:1px #ccc solid;padding-left:1=
+ex"><div dir=3D"ltr"><br><div>Thanks, John!=C2=A0</div><div><br></div><div>=
+Is that documented someplace, or we just use this note from you as evidence=
+?</div></div><div class=3D"gmail_extra"><br><div class=3D"gmail_quote">On W=
+ed, Oct 25, 2017 at 7:33 AM, John Whaley <span dir=3D"ltr">&lt;<a href=3D"m=
+ailto:joewhaley@gmail.com" target=3D"_blank">joewhaley@gmail.com</a>&gt;</s=
+pan> wrote:<br><blockquote class=3D"gmail_quote" style=3D"margin:0 0 0 .8ex=
+;border-left:1px #ccc solid;padding-left:1ex"><div dir=3D"auto"><div>Hi Rat=
+ul,</div><div dir=3D"auto"><br></div><div dir=3D"auto">You can use it under=
+ the MIT license as well.</div><span class=3D"m_-2033235141256868274HOEnZb"=
+><font color=3D"#888888"><div dir=3D"auto"><br></div><div dir=3D"auto">-Joh=
+n</div></font></span><div><div class=3D"m_-2033235141256868274h5"><div dir=
+=3D"auto"><br><div class=3D"gmail_extra" dir=3D"auto"><br><div class=3D"gma=
+il_quote">On Oct 24, 2017 2:17 PM, &quot;Ratul Mahajan&quot; &lt;<a href=3D=
+"mailto:ratul@intentionet.com" target=3D"_blank">ratul@intentionet.com</a>&=
+gt; wrote:<br type=3D"attribution"><blockquote class=3D"m_-2033235141256868=
+274m_3138487555333418866quote" style=3D"margin:0 0 0 .8ex;border-left:1px #=
+ccc solid;padding-left:1ex"><div dir=3D"ltr"><br><div>Hey, John -=C2=A0</di=
+v><div><br></div><div>We&#39;d like to use your BDD library in an open sour=
+ce project (<a href=3D"http://batfish.org" target=3D"_blank">batfish.org</a=
+>). As our project is licensed under Apache, the LGPL license is problemati=
+c for us.</div><div><br></div><div>Do you make your library available under=
+ any other license (e.g., MIT or Apache)?</div><div><br></div><div>Thanks.<=
+/div></div>
+</blockquote></div><br></div></div></div></div></div>
+</blockquote></div><br></div>
+</blockquote></div></div>
+
+--94eb2c1cb82c543a8e055c61d9ed--

@@ -1,0 +1,33 @@
+#
+set system host-name firewall-combined-policies
+#
+set security zones security-zone trust interfaces ge-0/0/0.0
+set security zones security-zone untrust interfaces ge-0/0/1.0
+set interfaces ge-0/0/0 unit 0 family inet address 1.2.3.4/24
+set interfaces ge-0/0/1 unit 0 family inet address 1.2.4.4/24
+#
+set security policies from-zone trust to-zone untrust policy P0 match source-address PERMIT_ADDR
+set security policies from-zone trust to-zone untrust policy P0 match destination-address any
+set security policies from-zone trust to-zone untrust policy P0 match application any
+set security policies from-zone trust to-zone untrust policy P0 then permit
+set security policies from-zone trust to-zone untrust policy P1 match source-address ZONE_POLICY_DENY_ADDR
+set security policies from-zone trust to-zone untrust policy P1 match destination-address any
+set security policies from-zone trust to-zone untrust policy P1 match application any
+set security policies from-zone trust to-zone untrust policy P1 then deny
+#
+set security policies global policy P1 match source-address GLOBAL_POLICY_DENY_ADDR
+set security policies global policy P1 match destination-address any
+set security policies global policy P1 match application any
+set security policies global policy P1 then deny
+#
+set security policies default-policy permit-all
+#
+set security address-book global address PERMIT_ADDR 1.2.3.1/32
+set security address-book global address ZONE_POLICY_DENY_ADDR 1.2.3.1/30
+set security address-book global address GLOBAL_POLICY_DENY_ADDR 1.2.3.1/29
+#
+set firewall filter FILTER1 term TERM1 from source-address 2.2.2.2
+set firewall filter FILTER1 term TERM1 then reject
+set firewall filter FILTER1 term TERM2 from source-address 0.0.0.0/0
+set firewall filter FILTER1 term TERM2 then accept
+set interfaces ge-0/0/1 unit 0 family inet filter output FILTER1

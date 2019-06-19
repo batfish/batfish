@@ -1,0 +1,12 @@
+#
+set system host-name juniper_ntp
+#
+set system ntp boot-server 4.5.6.7
+set system ntp broadcast-client
+set system ntp server 1.2.3.4
+set system ntp server 2.3.4.5 prefer
+set system ntp server 2.3.4.6 version 3
+set system ntp server 2.3.4.7 key 33333
+set system ntp server 2.3.4.8 key 33334 version 1 prefer
+set system ntp source-address 2.3.4.5
+#

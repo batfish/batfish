@@ -1,0 +1,93 @@
+[
+  {
+    "class" : "org.batfish.question.NeighborsQuestionPlugin$NeighborsAnswerElement",
+    "roleEbgpNeighbors" : [
+      {
+        "role1" : "border",
+        "role2" : "border"
+      },
+      {
+        "role1" : "dept",
+        "role2" : "dist"
+      },
+      {
+        "role1" : "dist",
+        "role2" : "dept"
+      }
+    ],
+    "roleIbgpNeighbors" : [
+      {
+        "role1" : "border",
+        "role2" : "core"
+      },
+      {
+        "role1" : "core",
+        "role2" : "border"
+      },
+      {
+        "role1" : "core",
+        "role2" : "dist"
+      },
+      {
+        "role1" : "dist",
+        "role2" : "core"
+      }
+    ],
+    "roleLayer3Neighbors" : [
+      {
+        "role1" : "border",
+        "role2" : "border"
+      },
+      {
+        "role1" : "border",
+        "role2" : "core"
+      },
+      {
+        "role1" : "core",
+        "role2" : "border"
+      },
+      {
+        "role1" : "core",
+        "role2" : "dist"
+      },
+      {
+        "role1" : "dept",
+        "role2" : "dist"
+      },
+      {
+        "role1" : "dept",
+        "role2" : "host"
+      },
+      {
+        "role1" : "dist",
+        "role2" : "core"
+      },
+      {
+        "role1" : "dist",
+        "role2" : "dept"
+      },
+      {
+        "role1" : "host",
+        "role2" : "dept"
+      }
+    ],
+    "roleOspfNeighbors" : [
+      {
+        "role1" : "border",
+        "role2" : "core"
+      },
+      {
+        "role1" : "core",
+        "role2" : "border"
+      },
+      {
+        "role1" : "core",
+        "role2" : "dist"
+      },
+      {
+        "role1" : "dist",
+        "role2" : "core"
+      }
+    ]
+  }
+]

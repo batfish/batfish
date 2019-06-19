@@ -1,0 +1,5 @@
+#
+set system host-name policy-statement-preference
+#
+set policy-options policy-statement preference term t1 from protocol static
+set policy-options policy-statement preference term t1 then preference 123

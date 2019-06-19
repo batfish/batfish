@@ -1,0 +1,9 @@
+#
+set system host-name juniper-apply-groups-node
+#
+set groups node0 system host-name juniper-apply-groups-node0
+set groups node0 interfaces lo0 unit 1 family inet address 1.1.1.1/32
+set groups node1 system host-name juniper-apply-groups-node1
+set groups node1 interfaces lo0 unit 2 family inet address 2.2.2.2/32
+set apply-groups "${node}"
+#

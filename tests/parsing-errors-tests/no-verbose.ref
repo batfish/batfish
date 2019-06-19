@@ -1,0 +1,27 @@
+{
+  "answerElements" : [
+    {
+      "class" : "org.batfish.datamodel.answers.InitInfoAnswerElement",
+      "parseStatus" : {
+        "configs/as1r1.cfg" : "FAILED",
+        "configs/as1r2.cfg" : "PASSED",
+        "configs/as2r1.cfg" : "PASSED"
+      }
+    }
+  ],
+  "question" : {
+    "class" : "org.batfish.question.InitInfoQuestionPlugin$InitInfoQuestion",
+    "differential" : false,
+    "environmentBgpTables" : false,
+    "environmentRoutes" : false,
+    "includeOneTableKeys" : true,
+    "summary" : false,
+    "verboseError" : false
+  },
+  "status" : "SUCCESS",
+  "summary" : {
+    "numFailed" : 0,
+    "numPassed" : 0,
+    "numResults" : 0
+  }
+}

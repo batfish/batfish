@@ -1,0 +1,15 @@
+#TMSH-VERSION: 13.1.1
+
+sys global-settings {
+    hostname f5_bigip_imish_access_list
+}
+
+!
+!!! imish configuration starts here
+!
+access-list acl1 permit any
+!
+access-list acl2 deny 192.0.2.128/32
+access-list acl2 permit 192.0.2.0/24
+!
+end

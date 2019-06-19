@@ -1,0 +1,118 @@
+load-questions questions/experimental
+
+# validate filterLineReachability
+test -raw tests/questions/experimental/filterLineReachability.ref validate-template filterLineReachability filters=".*", ignoreComposites=false, nodes=".*"
+
+# validate bgpPeerConfiguration
+test -raw tests/questions/experimental/bgpPeerConfiguration.ref validate-template bgpPeerConfiguration nodes=".*", properties="local_.*"
+
+# validate bgpProcessConfiguration
+test -raw tests/questions/experimental/bgpProcessConfiguration.ref validate-template bgpProcessConfiguration nodes=".*", properties="multipath-.*"
+
+# validate bgpSessionCompatibility
+test -raw tests/questions/experimental/bgpSessionCompatibility.ref validate-template bgpSessionCompatibility nodes=".*", remoteNodes=".*", status=".*", type=".*"
+
+# validate bgpSessionStatus
+test -raw tests/questions/experimental/bgpSessionStatus.ref validate-template bgpSessionStatus nodes=".*", remoteNodes=".*", status=".*", type=".*"
+
+# test bidirectionalTraceroute
+test -raw tests/questions/experimental/bidirectionalTraceroute.ref validate-template bidirectionalTraceroute startLocation="location", ignoreFilters=false, maxTraces=0, headers={"dstIps" : "1.1.1.1/32"}
+
+# test bidirectionalTraceroute
+test -raw tests/questions/experimental/bidirectionalReachability.ref validate-template bidirectionalReachability headers={"dstIps" : "1.1.1.1/32"}, pathConstraints={"startLocation": "loc"}, returnFlowType="SUCCESS"
+
+# validate compareFilters
+test -raw tests/questions/experimental/compareFilters.ref validate-template compareFilters filters=".*", ignoreComposites=false, nodes=".*"
+
+# validate detectLoops
+test -raw tests/questions/experimental/detectLoops.ref validate-template detectLoops maxTraces=0
+
+# validate f5BigipVipConfiguration
+test -raw tests/questions/experimental/f5BigipVipConfiguration.ref validate-template f5BigipVipConfiguration nodes="abcd"
+
+# validate filterTable
+test -raw tests/questions/experimental/filterTable.ref validate-template filterTable filter = "mtu == 1500", innerQuestion={"class": "org.batfish.question.interfaceproperties.InterfacePropertiesQuestion"}, columns=["interface", "mtu"]
+
+# validate findMatchingFilterLines
+test -raw tests/questions/experimental/findMatchingFilterLines.ref validate-template findmatchingfilterlines action="deny", filters=".*", ignoreComposites=false, headers={dstIps="2.2.2.2", ipProtocols="tcp", srcIps="1.1.1.1", srcPorts="0", dstPorts="0-1000,!22"}, nodes=".*"
+
+# validate loopbackMultipathConsistency
+test -raw tests/questions/experimental/loopbackMultipathConsistency.ref validate-template loopbackMultipathConsistency maxTraces=1
+
+# validate interfaceMtu
+test -raw tests/questions/experimental/interfaceMtu.ref validate-template interfaceMtu comparator='>', interfaces='Gig.*', mtuBytes=0, nodes='as1core2'
+
+# validate interfaceProperties
+test -raw tests/questions/experimental/interfaceProperties.ref validate-template interfaceProperties excludeShutInterfaces=false, nodes=".*", interfaces=".*", properties=".*"
+
+# validate mlagProperties
+test -raw tests/questions/experimental/mlagProperties.ref validate-template mlagProperties nodes="mynodes", idRegex="myids"
+
+# validate multipathConsistency
+test -raw tests/questions/experimental/multipathConsistency.ref validate-template multipathConsistency pathConstraints={startLocation: "aaa", "endLocation":"bbb", "transitLocations": "ccc", forbiddenLocations:"ddd"}, headers={srcIps: "sss", dstIps="ddd"}, maxTraces=1
+
+# validate namedStructures
+test -raw tests/questions/experimental/namedStructures.ref validate-template namedStructures ignoreGenerated=false, indicatePresence=false, nodes=".*", structureNames=".*", structureTypes=".*"
+
+# validate nodeProperties
+test -raw tests/questions/experimental/nodeProperties.ref validate-template nodeProperties nodes=".*", properties="ntp.*"
+
+# validate ospfInterfaceConfiguration
+test -raw tests/questions/experimental/ospfInterfaceConfiguration.ref validate-template ospfInterfaceConfiguration nodes=".*", properties="props-.*"
+
+# validate ospfAreaConfiguration
+test -raw tests/questions/experimental/ospfAreaConfiguration.ref validate-template ospfAreaConfiguration nodes=".*"
+
+# validate ospfProcessConfiguration
+test -raw tests/questions/experimental/ospfProcessConfiguration.ref validate-template ospfProcessConfiguration nodes=".*", properties="props-.*"
+
+# validate ospfSessionCompatibility
+test -raw tests/questions/experimental/ospfSessionCompatibility.ref validate-template ospfSessionCompatibility nodes=".*", remoteNodes=".*"
+
+# validate prefixTracer
+test -raw tests/questions/experimental/prefixTracer.ref validate-template prefixTracer nodes=".*", prefix="0.0.0.0/0"
+
+# validate reachability
+test -raw tests/questions/experimental/reachability.ref validate-template reachability actions="success", pathConstraints={startLocation: "aaa", "endLocation":"bbb", "transitLocations": "ccc", forbiddenLocations:"ddd"}, headers={srcIps: "sss", dstIps="ddd"}, ignoreFilters=False, invertSearch=False, maxTraces=1
+
+# validate differentialReachability
+test -raw tests/questions/experimental/differentialReachability.ref validate-template differentialReachability actions="success", pathConstraints={startLocation: "aaa", "endLocation":"bbb", "transitLocations": "ccc", forbiddenLocations:"ddd"}, headers={srcIps: "sss", dstIps="ddd"}, ignoreFilters=false, invertSearch=false, maxTraces=1
+
+# validate resolveFilterSpecifier
+test -raw tests/questions/experimental/resolveFilterSpecifier.ref validate-template resolveFilterSpecifier filters="input", grammarVersion="v2", nodes="input"
+
+# validate resolveInterfaceSpecifier
+test -raw tests/questions/experimental/resolveInterfaceSpecifier.ref validate-template resolveInterfaceSpecifier grammarVersion="v2", interfaces="input", nodes="input"
+
+# validate resolveIpSpecifier
+test -raw tests/questions/experimental/resolveIpSpecifier.ref validate-template resolveIpSpecifier grammarVersion="v2", ips="1.1.1.1/24"
+
+# validate resolveIpsOfLocationSpecifier
+test -raw tests/questions/experimental/resolveIpsOfLocationSpecifier.ref validate-template resolveIpsOfLocationSpecifier grammarVersion="v2", locations="input"
+
+# validate resolveLocationSpecifier
+test -raw tests/questions/experimental/resolveLocationSpecifier.ref validate-template resolveLocationSpecifier grammarVersion="v2", locations="input"
+
+# validate resolveNodeSpecifier
+test -raw tests/questions/experimental/resolveNodeSpecifier.ref validate-template resolveNodeSpecifier grammarVersion="v2", nodes="input"
+
+# validate searchfilters
+test -raw tests/questions/experimental/searchfilters.ref validate-template searchfilters invertSearch=false, filters=".*", action="matchLine 0", headers={dstIps="2.2.2.2", ipProtocols="tcp", srcIps="1.1.1.1", srcPorts="0", dstPorts="0-1000,!22"}, nodes=".*", startLocation="somenode", explain=false
+
+# validate subnetMultipathConsistency
+test -raw tests/questions/experimental/subnetMultipathConsistency.ref validate-template subnetMultipathConsistency maxTraces=1
+
+# validate switchedVlanProperties
+test -raw tests/questions/experimental/switchedVlanProperties.ref validate-template switchedVlanProperties excludeShutInterfaces=true, interfaces="i1", nodes="n1", vlans="1-5,7"
+
+# test testRoutePolicies
+test -raw tests/questions/experimental/testRoutePolicies.ref validate-template testRoutePolicies nodes="nodes", policies="policies", direction="in", inputRoutes=[{network="0.0.0.0/0", originatorIp="1.1.1.1", originType="IGP", protocol="BGP"}]
+
+# test traceroute
+test -raw tests/questions/experimental/traceroute.ref validate-template traceroute startLocation="location", ignoreFilters=false, maxTraces=0, headers={"dstIps" : "1.1.1.1/32"}
+
+# test viModel
+test -raw tests/questions/experimental/viModel.ref validate-template viModel
+
+# validate vxlanVniProperties
+test -raw tests/questions/experimental/vxlanVniProperties.ref validate-template vxlanVniProperties nodes="nodename", properties="VLAN"

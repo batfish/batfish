@@ -1,0 +1,7 @@
+#
+set system host-name ethernet-switching-filter
+#
+set interfaces ae0 unit 0 family ethernet-switching filter input esfilter
+set firewall family ethernet-switching filter esfilter term t1 then discard
+set firewall family ethernet-switching filter esfilter2 term t1 then discard
+#

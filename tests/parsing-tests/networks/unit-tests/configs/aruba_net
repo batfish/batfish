@@ -1,0 +1,40 @@
+!
+hostname aruba_net
+!
+netdestination byname1
+ name stuff.example.com
+ name .notarealdomainhopefully.com
+!
+netdestination foobar1
+ description "foofoo"
+ host 1.2.3.4
+!
+netdestination6 foobar2
+ description "barbar"
+ invert
+ network abcd::/3
+!
+!
+netexthdr default
+!
+netservice svc-adp udp 8200
+netservice svc-bootp udp 67 69
+netservice svc-cfgm-tcp tcp 8211
+netservice svc-dhcp udp 67 68 alg dhcp
+netservice svc-dns udp 53 alg dns
+netservice svc-esp 50
+netservice svc-ftp tcp 21 alg ftp
+netservice svc-gre 47
+netservice svc-icloud tcp list "587"
+netservice svc-msrpc-tcp tcp 135 139
+netservice svc-noe-oxo udp 5000 alg noe
+netservice svc-rtsp tcp 554 alg rtsp
+netservice svc-sccp tcp 2000 alg sccp
+netservice svc-sips tcp 5061 alg sips
+netservice svc-svp 119 alg svp
+netservice svc-tftp udp 69 alg tftp
+netservice svc-v6-icmp 58
+netservice svc-vocera udp 5002 alg vocera
+netservice svc-web tcp list "80 443"
+!
+

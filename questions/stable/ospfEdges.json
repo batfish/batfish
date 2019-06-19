@@ -1,0 +1,30 @@
+{
+    "class": "org.batfish.question.edges.EdgesQuestion",
+    "differential": false,
+    "instance": {
+        "description": "Returns OSPF adjacencies.",
+        "instanceName": "ospfEdges",
+        "longDescription": "Lists all OSPF adjacencies in the network.",
+        "tags": [
+            "topology",
+            "ospf"
+        ],
+        "variables": {
+            "nodes": {
+                "description": "Include adjacencies whose first node matches this name or regex",
+                "type": "nodeSpec",
+                "value": ".*",
+                "displayName": "Nodes"
+            },
+            "remoteNodes": {
+                "description": "Include edges whose second node matches this name or regex",
+                "type": "nodeSpec",
+                "value": ".*",
+                "displayName": "Remote Nodes"
+            }
+        }
+    },
+    "edgeType": "ospf",
+    "nodes": "${nodes}",
+    "remoteNodes": "${remoteNodes}"
+}

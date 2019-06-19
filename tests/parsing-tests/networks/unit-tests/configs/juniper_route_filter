@@ -1,0 +1,17 @@
+#
+set system host-name juniper_route_filter
+#
+set policy-options policy-statement route-filter-test-v4 term t1 from route-filter 1.2.0.0/16 exact
+set policy-options policy-statement route-filter-test-v4 term t1 from route-filter 1.3.0.0/17 longer
+set policy-options policy-statement route-filter-test-v4 term t1 from route-filter 1.4.0.0/18 orlonger
+set policy-options policy-statement route-filter-test-v4 term t1 from route-filter 1.5.0.0/19 upto /24
+set policy-options policy-statement route-filter-test-v4 term t1 from route-filter 1.6.0.0/20 prefix-length-range /26-/29
+set policy-options policy-statement route-filter-test-v4 term t1 from route-filter 1.7.0.0/21 through 1.7.0.0/24
+#
+set policy-options policy-statement route-filter-test-v6 term t1 from route-filter 2001:db8:1234::/48 exact
+set policy-options policy-statement route-filter-test-v6 term t1 from route-filter 2001:db8:1235::/58 longer
+set policy-options policy-statement route-filter-test-v6 term t1 from route-filter 2001:db8:1236::/68 orlonger
+set policy-options policy-statement route-filter-test-v6 term t1 from route-filter 2001:db8:1237::/78 upto /88
+set policy-options policy-statement route-filter-test-v6 term t1 from route-filter 2001:db8:1238::/88 prefix-length-range /100-/110
+set policy-options policy-statement route-filter-test-v6 term t1 from route-filter 2001:db8:1239::/98 through 2001:db8:1239::/109
+#

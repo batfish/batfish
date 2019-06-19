@@ -1,0 +1,10 @@
+!
+hostname network6
+!
+router bgp 1234
+address-family ipv6
+  network 1A01:111:A100:1001::/64
+exit-address-family
+!
+!
+end

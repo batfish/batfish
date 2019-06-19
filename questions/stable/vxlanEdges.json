@@ -1,0 +1,30 @@
+{
+    "class": "org.batfish.question.edges.EdgesQuestion",
+    "differential": false,
+    "instance": {
+        "description": "Returns VXLAN edges.",
+        "instanceName": "vxlanEdges",
+        "longDescription": "Lists all VXLAN edges in the network.",
+        "tags": [
+            "topology",
+            "vxlan"
+        ],
+        "variables": {
+            "nodes": {
+                "description": "Include edges whose first node matches this name or regex",
+                "type": "nodeSpec",
+                "value": ".*",
+                "displayName": "Nodes"
+            },
+            "remoteNodes": {
+                "description": "Include edges whose second node matches this name or regex",
+                "type": "nodeSpec",
+                "value": ".*",
+                "displayName": "Remote Nodes"
+            }
+        }
+    },
+    "edgeType": "vxlan",
+    "nodes": "${nodes}",
+    "remoteNodes": "${remoteNodes}"
+}

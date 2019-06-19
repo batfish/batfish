@@ -1,0 +1,108 @@
+!
+hostname cisco_snmp
+!
+snmp-server
+snmp-server aaa-user cache-timeout 3600
+snmp-server community dummycommunity group network-operator
+snmp-server community dummycommunity RO snmp-acl
+snmp-server community dummycommunity RW 2
+snmp-server community dummy+dummy RO 1
+snmp-server community dummy@dummy RW 2
+snmp-server community dummycommunity use-acl snmp-acl
+snmp-server community dummycommunity use-acl snmp-arpa-acl
+snmp-server community dummyconnunity RO SystemOwner IPv4 dummyacl
+snmp-server community dummycommunity RO SystemOwner customer-snmp
+snmp-server community dummycommunity view everything RO ipv6 dummyacl 21
+snmp-server community dummycommunity RO SystemOwner IPv4 to-VTY IPv6 to-VTY
+snmp-server community-map dummycommunity context ospf1
+snmp-server chassis-id FOC1743N1BE
+snmp-server contact CENIC Core Engineering
+snmp-server context ospf1
+snmp-server enable mib np-qos-stat
+snmp-server enable traps
+snmp-server enable traps aaa server-state-change
+snmp-server enable traps bgp
+snmp-server enable traps bridge newroot
+snmp-server enable traps bridge newroot topologychange
+snmp-server enable traps bridge topologychange
+snmp-server enable traps callhome event-notify
+snmp-server enable traps callhome smtp-send-fail
+snmp-server enable traps cfs merge-failure
+snmp-server enable traps cfs state-change-notif
+snmp-server enable traps config
+snmp-server enable traps config ccmCLIRunningConfigChanged
+snmp-server enable traps cpu threshold
+snmp-server enable traps entity
+snmp-server enable traps envmon fan shutdown supply temperature status
+snmp-server enable traps feature-control ciscoFeatOpStatusChange
+snmp-server enable traps feature-control FeatureOpStatusChange
+snmp-server enable traps flash insertion removal
+snmp-server enable traps fru-ctrl
+snmp-server enable traps ipsla
+snmp-server enable traps link cisco-xcvr-mon-status-chg
+snmp-server enable traps poe police
+snmp-server enable traps poe portonoff
+snmp-server enable traps poe pwrusageoff
+snmp-server enable traps poe pwrusageon
+snmp-server enable traps rf
+snmp-server enable traps snmp authentication
+snmp-server enable traps snmp authentication linkdown linkup coldstart warmstart
+snmp-server enable traps stpx inconsistency
+snmp-server enable traps stpx inconsistency root-inconsistency loop-inconsistency
+snmp-server enable traps stpx loop-inconsistency
+snmp-server enable traps stpx root-inconsistency
+snmp-server enable traps syslog
+snmp-server enable traps sysmgr cseFailSwCoreNotifyExtended
+snmp-server enable traps tty
+snmp-server enable traps upgrade UpgradeJobStatusNotify
+snmp-server enable traps upgrade UpgradeOpNotifyOnCompletion
+snmp-server enable traps vlancreate
+snmp-server enable traps vlandelete
+snmp-server enable traps vlan-membership
+snmp-server enable traps vtp
+snmp-server enable traps vtp notifs
+snmp-server enable traps vtp vlancreate
+snmp-server enable traps vtp vlandelete
+snmp-server engineID local 000000090200000652D6C000
+snmp-server file-transfer access-group 8 protocol tftp
+snmp-server group cenic-nms v2c IPv4 auth
+snmp-server host 10.1.2.3 xyx
+snmp-server host 10.1.2.3 use-vrf management
+snmp-server host 10.1.2.3 version 2c dummycommunity 
+snmp-server host 10.1.2.3 vrf mangement
+snmp-server host 10.1.2.3 informs version 2c dummycommunity
+snmp-server ifindex persist
+snmp-server ifmib stats cache
+snmp-server location UC Santa Cruz 4900M
+snmp-server logging threshold oid-processing 1000
+snmp-server manager
+snmp-server max-ifindex-per-module 40
+snmp-server mib community-map my_acl_for_public context public1
+snmp-server mib community-map community#1234 context public1
+snmp-server overload-control 0 0
+snmp-server packetsize 512
+snmp-server priority high
+snmp-server protocol enable
+snmp-server queue-length 1000
+snmp-server source-interface trap loopback0
+snmp-server source-interface trap mgmt0
+snmp-server source-interface trap Vlan1
+snmp-server system-shutdown
+snmp-server tcp-session auth
+snmp-server tftp-server-list 8
+snmp-server trap link ietf
+snmp-server trap-source Loopback0
+snmp-server trap-source IPv4 Loopback0
+snmp-server trap-timeout 10
+snmp-server traps snmp linkup
+snmp-server user admin network-admin auth md5 dummypassword priv dummyprivacypassword localizedkey
+snmp-server view NOROUTES mib-2 included
+snmp-server view NOROUTES lsystem included
+snmp-server vrf Management
+no snmp-server aaa exclusive-behavior enable 
+no snmp-server enable traps callhome event-notify
+no snmp-server globalEnforcePriv
+no snmp-server location
+no snmp-server contact
+!
+

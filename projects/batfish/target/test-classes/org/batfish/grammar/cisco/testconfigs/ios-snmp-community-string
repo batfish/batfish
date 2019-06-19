@@ -1,0 +1,9 @@
+!
+version 15.3
+!
+hostname ios-snmp-community-string
+!
+snmp-server community "quoted$#!@" RO 80
+snmp-server community test$#!@ RO 90
+access-list 80 permit 10.0.0.10
+access-list 90 permit 10.0.0.10

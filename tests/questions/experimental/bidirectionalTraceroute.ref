@@ -1,0 +1,107 @@
+{
+  "class" : "org.batfish.question.traceroute.BidirectionalTracerouteQuestion",
+  "headers" : {
+    "dstIps" : "1.1.1.1/32"
+  },
+  "ignoreFilters" : false,
+  "maxTraces" : 0,
+  "startLocation" : "location",
+  "differential" : false,
+  "includeOneTableKeys" : true,
+  "instance" : {
+    "description" : "Traces the path(s) for the specified flow, along with path(s) for reverse flows.",
+    "instanceName" : "qname",
+    "longDescription" : "This question performs a virtual traceroute in the network from a starting node. A destination IP and ingress (source) node must be specified. Other IP headers are given default values if unspecified.\nIf the trace succeeds, a traceroute is performed in the reverse direction.",
+    "orderedVariableNames" : [
+      "startLocation",
+      "headers",
+      "maxTraces",
+      "ignoreFilters"
+    ],
+    "tags" : [
+      "dataplane",
+      "traceroute"
+    ],
+    "variables" : {
+      "headers" : {
+        "description" : "Packet header constraints",
+        "displayName" : "Headers",
+        "fields" : {
+          "applications" : {
+            "optional" : true,
+            "type" : "applicationSpec"
+          },
+          "dscps" : {
+            "optional" : true
+          },
+          "dstIps" : {
+            "optional" : false,
+            "type" : "ipSpaceSpec"
+          },
+          "dstPorts" : {
+            "optional" : true
+          },
+          "ecns" : {
+            "optional" : true
+          },
+          "flowStates" : {
+            "optional" : true
+          },
+          "fragmentOffsets" : {
+            "optional" : true
+          },
+          "icmpCodes" : {
+            "optional" : true
+          },
+          "icmpTypes" : {
+            "optional" : true
+          },
+          "ipProtocols" : {
+            "optional" : true,
+            "type" : "ipProtocolSpec"
+          },
+          "packetLengths" : {
+            "optional" : true
+          },
+          "srcIps" : {
+            "optional" : true,
+            "type" : "ipSpaceSpec"
+          },
+          "srcPorts" : {
+            "optional" : true
+          },
+          "tcpFlags" : {
+            "optional" : true
+          }
+        },
+        "optional" : false,
+        "type" : "headerConstraint",
+        "value" : {
+          "dstIps" : "1.1.1.1/32"
+        }
+      },
+      "ignoreFilters" : {
+        "description" : "If set, filters/ACLs encountered along the path are ignored",
+        "displayName" : "Ignore Filters",
+        "optional" : true,
+        "type" : "boolean",
+        "value" : false
+      },
+      "maxTraces" : {
+        "description" : "Limit the number of traces returned",
+        "displayName" : "Max Traces",
+        "optional" : true,
+        "type" : "integer",
+        "value" : 0
+      },
+      "startLocation" : {
+        "description" : "Location (node and interface combination) to start tracing from",
+        "displayName" : "Start Location",
+        "minLength" : 1,
+        "optional" : false,
+        "type" : "locationSpec",
+        "value" : "location"
+      }
+    }
+  }
+}

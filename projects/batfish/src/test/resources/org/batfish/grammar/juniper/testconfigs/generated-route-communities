@@ -1,0 +1,4 @@
+#
+set system host-name generated-route-communities
+#
+set routing-options generate route 1.1.1.0/24 community 1:1

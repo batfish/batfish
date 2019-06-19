@@ -1,0 +1,15 @@
+!
+hostname route_policy_metric_type
+!
+route-policy to_csuchico
+ if community matches-any No_Export then
+  drop
+ elseif destination in DC_Internal then
+  set metric-type internal
+  set community (2152:2152)
+ else
+  drop
+ endif
+end-policy
+!
+

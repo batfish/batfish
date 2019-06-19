@@ -1,0 +1,18 @@
+# any (preferably small) network will do
+init-snapshot networks/fattree-examples/fattree2/
+
+# schedule both works, the first of which takes looong, in the background with fixed workIds
+set-background-execution true
+set-fixed-workitem-id 00000000-0000-0000-0000-000000000001
+get sleep duration=100000
+set-fixed-workitem-id 00000000-0000-0000-0000-000000000002
+get sleep duration=3
+
+# kill the first work and wait for the another one to finish
+kill-work 00000000-0000-0000-0000-000000000001
+poll-work 00000000-0000-0000-0000-000000000002
+
+# now check what happened with each
+test -raw tests/watchdog/w1.ref get-work-status 00000000-0000-0000-0000-000000000001
+test -raw tests/watchdog/w2.ref get-work-status 00000000-0000-0000-0000-000000000002
+

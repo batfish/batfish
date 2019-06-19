@@ -1,0 +1,14 @@
+!
+hostname eos-vxlan-no-loopback-address
+boot system flash fake.swi
+!
+interface Loopback1
+ description vxlan_vtep
+!
+interface Vxlan1
+  description vxlan vti
+  vxlan source-interface Loopback1
+  vxlan multicast-group 227.10.1.1
+  !
+  vxlan vlan 2 vni 10002
+!

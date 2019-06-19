@@ -1,0 +1,84 @@
+<?xml version="1.0"?>
+<ruleset name="batfish-pmd-ruleset"
+    xmlns="http://pmd.sourceforge.net/ruleset/2.0.0"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://pmd.sourceforge.net/ruleset/2.0.0 http://pmd.sourceforge.net/ruleset_2_0_0.xsd">
+
+  <description>
+    This ruleset defines the PMD rules for project "batfish".
+  </description>
+
+  <!--
+       If you need to exclude something, see https://pmd.github.io/pmd-6.4.0/pmd_rules_java.html
+  -->
+
+  <rule ref="category/java/bestpractices.xml">
+     <exclude name="AbstractClassWithoutAbstractMethod"/>
+     <exclude name="AccessorClassGeneration"/>
+     <exclude name="AccessorMethodGeneration"/>
+     <exclude name="ArrayIsStoredDirectly"/>
+     <exclude name="AvoidPrintStackTrace"/>
+     <exclude name="AvoidStringBufferField"/>
+     <exclude name="AvoidUsingHardCodedIP"/>
+     <exclude name="CheckResultSet"/>
+     <exclude name="ForLoopCanBeForeach"/>
+     <exclude name="GuardLogStatement"/>
+     <exclude name="JUnitAssertionsShouldIncludeMessage"/>
+     <exclude name="JUnitTestContainsTooManyAsserts"/>
+     <exclude name="JUnitTestsShouldIncludeAssert"/>
+     <exclude name="MethodReturnsInternalArray"/>
+     <exclude name="OneDeclarationPerLine"/>
+     <exclude name="PositionLiteralsFirstInCaseInsensitiveComparisons"/>
+     <exclude name="PositionLiteralsFirstInComparisons"/>
+     <exclude name="PreserveStackTrace"/>
+     <exclude name="SystemPrintln"/>
+     <exclude name="UnusedPrivateMethod"/> <!--reenable after resolution of https://github.com/pmd/pmd/issues/1189 -->
+     <exclude name="UseVarargs"/>
+  </rule>
+
+  <rule ref="category/java/design.xml/UselessOverridingMethod"/>
+
+  <rule ref="category/java/errorprone.xml">
+     <exclude name="AssignmentInOperand"/>
+     <exclude name="AvoidCatchingNPE"/>
+     <exclude name="AvoidCatchingThrowable"/>
+     <exclude name="AvoidDuplicateLiterals"/>
+     <exclude name="AvoidFieldNameMatchingMethodName"/>
+     <exclude name="AvoidFieldNameMatchingTypeName"/>
+     <exclude name="AvoidLiteralsInIfCondition"/>
+     <exclude name="BeanMembersShouldSerialize"/>
+     <exclude name="CompareObjectsWithEquals"/>
+     <exclude name="ConstructorCallsOverridableMethod"/>
+     <exclude name="DataflowAnomalyAnalysis"/>
+     <exclude name="DoNotCallSystemExit"/>
+     <exclude name="EmptyCatchBlock"/>
+     <exclude name="EmptyIfStmt"/>
+     <exclude name="JUnitSpelling"/>
+     <exclude name="MissingBreakInSwitch"/>
+     <exclude name="MissingStaticMethodInNonInstantiatableClass"/>
+     <exclude name="LoggerIsNotStaticFinal"/>
+     <exclude name="MoreThanOneLogger"/>
+     <exclude name="NullAssignment"/>
+     <exclude name="OverrideBothEqualsAndHashcode"/>
+     <exclude name="SimpleDateFormatNeedsLocale"/>
+     <exclude name="UseLocaleWithCaseConversions"/>
+  </rule>
+
+  <rule ref="category/java/bestpractices.xml/UnusedFormalParameter">
+    <properties>
+      <!-- Ignore @JsonProperty methods -->
+      <property name="violationSuppressXPath"
+                value="//MethodDeclaration/../Annotation/SingleMemberAnnotation/Name[@Image='JsonProperty']" />
+    </properties>
+  </rule>
+
+  <!--
+  <rule ref="category/java/bestpractices.xml/UnusedPrivateMethod">
+    <properties>
+      <property name="ignoredAnnotations"
+                value="java.lang.Deprecated|com.fasterxml.jackson.annotation.JsonCreator|com.fasterxml.jackson.annotation.JsonProperty|com.fasterxml.jackson.annotation.JsonValue"/>
+    </properties>
+  </rule>
+-->
+</ruleset>
+

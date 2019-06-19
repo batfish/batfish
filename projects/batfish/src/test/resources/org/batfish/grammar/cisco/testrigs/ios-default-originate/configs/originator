@@ -1,0 +1,49 @@
+!
+hostname originator
+!
+interface Loopback0
+ ip address 1.1.1.1 255.255.255.255
+!
+! To listener 1
+interface Ethernet1
+ ip address 10.1.1.1 255.255.255.0
+!
+! To listener 2
+interface Ethernet2
+ ip address 10.2.2.1 255.255.255.0
+!
+! To listener 3
+interface Ethernet3
+ ip address 10.3.3.1 255.255.255.0
+!
+router bgp 1
+ bgp router-id 1.1.1.1
+ !
+ ! Listener 1: default-originate route skips export policy, so default route should appear
+ neighbor 10.1.1.2 remote-as 2
+ neighbor 10.1.1.2 default-originate
+ neighbor 10.1.1.2 route-map DENY_DEFAULT out
+ !
+ ! Listener 2: only default-originate if route to 1.2.3.4 is present, which it is
+ neighbor 10.2.2.2 remote-as 2
+ neighbor 10.2.2.2 default-originate route-map PERMIT_1234
+ !
+ ! Listener 3: only default-originate if route to 5.6.7.8 is present, which it isn't
+ neighbor 10.3.3.2 remote-as 2
+ neighbor 10.3.3.2 default-originate route-map PERMIT_5678
+!
+!
+route-map DENY_DEFAULT deny 10
+ match ip address ip prefix-list PREFIX_ZERO
+!
+route-map PERMIT_1234 permit 10
+ match ip address ip prefix-list PREFIX_1234
+!
+route-map PERMIT_5678 permit 10
+ match ip address ip prefix-list PREFIX_5678
+!
+ip prefix-list PREFIX_ZERO seq 10 permit 0.0.0.0/0
+ip prefix-list PREFIX_1234 seq 10 permit 1.2.3.4/32
+ip prefix-list PREFIX_5678 seq 10 permit 5.6.7.8/32
+!
+ip route 1.2.3.4 255.255.255.255 Null0

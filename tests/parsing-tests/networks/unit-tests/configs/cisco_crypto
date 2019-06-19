@@ -1,0 +1,302 @@
+!
+hostname cisco_crypto
+!
+crypto ca certificate chain blahblah
+ certificate self-signed 01
+   56789ABC 56789ABC 56789ABC 56789ABC 56789ABC 56789ABC 56789ABC 56789ABC
+   56789ABC 56789ABC 56789ABC 56789ABC 56789ABC 56789ABC 56789ABC 56789ABC
+   56789ABC 56789ABC 56789ABC 56789ABC 56789ABC 56789ABC 56789ABC 56789ABC
+   56789ABC 56789ABC 56789ABC 56789ABC 56789ABC 56789ABC 56789ABC 56789ABC
+   56789ABC 56789ABC 56789ABC 56789ABC 56789ABC 56789ABC 56789ABC 56789ABC
+   56789ABC 56789ABC 56789ABC 56789ABC 56789ABC 56789ABC 56789ABC 56789ABC
+   56789ABC 56789ABC 56789ABC 56789ABC 56789ABC 56789ABC 56789ABC 56789ABC
+   56789ABC 56789ABC 56789ABC 56789ABC 56789ABC 56789ABC 56789ABC 56789ABC
+   56789ABC 56789ABC 56789ABC 56789ABC 56789ABC 56789ABC 56789ABC 56789ABC
+   56789ABC 56789ABC 56789ABC 56789ABC 56789ABC 56789ABC 56789ABC 56789ABC
+   56789ABC 56789ABC 56789ABC 56789ABC 56789ABC 56789ABC 56789ABC 56789ABC
+   56789ABC 56789ABC 56789ABC 56789ABC 56789ABC 56789ABC 56789ABC 56789ABC
+   56789ABC 56789ABC 56789ABC 56789ABC 56789ABC 56789ABC 56789ABC 56789ABC
+   56789ABC 56789ABC 56789ABC 56789ABC 56789ABC 56789ABC 56789ABC 56789ABC
+   56789ABC 56789ABC 56789ABC 56789ABC 56789ABC 56789ABC 56789ABC 56789ABC
+   56789ABC 56789ABC 56789ABC 56789ABC 56789ABC 56789ABC 56789ABC 56789ABC
+   56789ABC 56789ABC 56789ABC 56789ABC 56789ABC 56789ABC 56789ABC 56789ABC
+   56789ABC 56789ABC 56789ABC 56789ABC 56789ABC 56789ABC 56789ABC 56789ABC
+   56789ABC 56789ABC 56789ABC 56789ABC 56789ABC 56789ABC 56789ABC 56789ABC
+   56789ABC 56789ABC 56789ABC 56789ABC 56789ABC 56789ABC 56789ABC 56789ABC
+   56789ABC 56789ABC 56789ABC 56789ABC 56789ABC 56789ABC 56789ABC 56789ABC
+  quit
+!
+crypto ca certificate chain bleepblorp
+ certificate 2345FEDB
+    0123ABCD 0123ABCD 0123ABCD 0123ABCD 0123ABCD 0123ABCD 0123ABCD 0123ABCD
+    0123ABCD 0123ABCD 0123ABCD 0123ABCD 0123ABCD 0123ABCD 0123ABCD 0123ABCD
+    0123ABCD 0123ABCD 0123ABCD 0123ABCD 0123ABCD 0123ABCD 0123ABCD 0123ABCD
+    0123ABCD 0123ABCD 0123ABCD 0123ABCD 0123ABCD 0123ABCD 0123ABCD 0123ABCD
+    0123ABCD 0123ABCD 0123ABCD 0123ABCD 0123ABCD 0123ABCD 0123ABCD 0123ABCD
+    0123ABCD 0123ABCD 0123ABCD 0123ABCD 0123ABCD 0123ABCD 0123ABCD 0123ABCD
+    0123ABCD 0123ABCD 0123ABCD 0123ABCD 0123ABCD 0123ABCD 0123ABCD 0123ABCD
+    0123ABCD 0123ABCD 0123ABCD 0123ABCD 0123ABCD 0123ABCD 0123ABCD 0123ABCD
+    0123ABCD 0123ABCD 0123ABCD 0123ABCD 0123ABCD 0123ABCD 0123ABCD 0123ABCD
+    0123ABCD 0123ABCD 0123ABCD 0123ABCD 0123ABCD 0123ABCD 0123ABCD 0123ABCD
+    0123ABCD 0123ABCD 0123ABCD 0123ABCD 0123ABCD 0123ABCD 0123ABCD 0123ABCD
+    0123ABCD 0123ABCD 0123ABCD 0123ABCD 0123ABCD 0123ABCD 0123ABCD 0123ABCD
+    0123ABCD 0123ABCD 0123ABCD 0123ABCD 0123ABCD 0123ABCD 0123ABCD 0123ABCD
+    0123ABCD 0123ABCD 0123ABCD 0123ABCD 0123ABCD 0123ABCD 0123ABCD 0123EF
+  quit
+crypto ca certificate chain blorpbleep
+ certificate ca 0123456789ABCDEF
+    0123ABCD 0123ABCD 0123ABCD 0123ABCD 0123ABCD 0123ABCD 0123ABCD 0123ABCD
+    0123ABCD 0123ABCD 0123ABCD 0123ABCD 0123ABCD 0123ABCD 0123ABCD 0123ABCD
+    0123ABCD 0123ABCD 0123ABCD 0123ABCD 0123ABCD 0123ABCD 0123ABCD 0123ABCD
+    0123ABCD 0123ABCD 0123ABCD 0123ABCD 0123ABCD 0123ABCD 0123ABCD 0123ABCD
+    0123ABCD 0123ABCD 0123ABCD 0123ABCD 0123ABCD 0123ABCD 0123ABCD 0123ABCD
+    0123ABCD 0123ABCD 0123ABCD 0123ABCD 0123ABCD 0123ABCD 0123ABCD 0123ABCD
+    0123ABCD 0123ABCD 0123ABCD 0123ABCD 0123ABCD 0123ABCD 0123ABCD 0123ABCD
+    0123ABCD 0123ABCD 0123ABCD 0123ABCD 0123ABCD 0123ABCD 0123ABCD 0123ABCD
+    0123ABCD 0123ABCD 0123ABCD 0123ABCD 0123ABCD 0123ABCD 0123ABCD 0123ABCD
+    0123ABCD 0123ABCD 0123ABCD 0123ABCD 0123ABCD 0123ABCD 0123ABCD 0123ABCD
+    0123ABCD 0123ABCD 0123ABCD 0123ABCD 0123ABCD 0123ABCD 0123ABCD 0123ABCD
+    0123ABCD 0123ABCD 0123ABCD 0123ABCD 0123ABCD 0123ABCD 0123ABCD 0123ABCD
+    0123ABCD 0123ABCD 0123ABCD 0123ABCD 0123ABCD 0123ABCD 0123ABCD 0123ABCD
+    0123ABCD 0123ABCD 0123ABCD 0123ABCD 0123ABCD 0123ABCD 0123ABCD 0123ABCD
+    0123ABCD 0123ABCD 0123ABCD 0123ABCD 0123ABCD 0123ABCD 0123ABCD 0123ABCD
+    0123ABCD 0123ABCD 0123ABCD 0123ABCD 0123ABCD 0123ABCD 0123ABCD 0123ABCD
+    0123ABCD 0123ABCD 0123ABCD 0123ABCD 0123ABCD 0123ABCD 0123ABCD 0123ABCD
+    0123ABCD 0123ABCD 0123ABCD 0123ABCD 0123ABCD 0123ABCD 0123ABCD 0123ABCD
+    0123ABCD 0123ABCD 0123ABCD 0123ABCD 0123ABCD 0123ABCD 0123ABCD 0123ABCD
+    0123ABCD 0123ABCD 0123ABCD 0123ABCD 0123ABCD 0123ABCD 0123ABCD 0123ABCD
+    0123ABCD 0123ABCD 0123ABCD 0123ABCD 0123ABCD 0123ABCD 0123ABCD 0123ABCD
+    0123ABCD 0123ABCD
+  quit
+crypto ca lookup local
+crypto ca server
+ cdp-url http://a.b.c/ccc/ddd.crl
+ issuer-name CN=a.b.c
+ shutdown
+ smtp from-address admin@boop.beep
+crypto ca trustpoint abcdefg
+ crl configure
+ enrollment self
+ fqdn none
+ keypair grwejuifgnwrouif
+ subject-name cn="ccccccccc";ou="aaaaa";o="bbbbbbb"
+ no validation-usage
+crypto ca trustpool policy
+crypto csr-params BATFISH
+  country US
+  state WA
+  locality Seattle
+  organization-name Batfish
+  organization-unit Network Validation
+  common-name batfish.org
+
+! ASA crypto dynmaic-maps (https://www.cisco.com/c/en/us/support/docs/security/asa-5500-x-series-next-generation-firewalls/118652-configure-asa-00.html)
+crypto dynamic-map asadynamicmaps 65534 set ikev1 transform-set ESP-3DES-MD5-trans ESP-3DES-SHA-TRANS ESP-3DES-MD5 ESP-3DES-SHA
+crypto dynamic-map asadynamicmaps 65535 set pfs group1
+crypto dynamic-map asadynamicmaps 65535 set ikev1 transform-set ESP-3DES-MD5 ESP-AES-128-SHA ESP-AES-128-MD5 ESP-AES-192-SHA ESP-AES-192-MD5 ESP-AES-256-SHA ESP-AES-256-MD5 ESP-3DES-SHA ESP-DES-SHA ESP-DES-MD5
+crypto dynamic-map asadynamicmaps 65535 set security-association lifetime seconds 28800
+crypto dynamic-map asadynamicmaps 65535 set security-association lifetime kilobytes 4608000
+
+crypto dynamic-map mydefaultcryptomap 65534 
+  set transform-set ESP-3DES-MD5-trans ESP-3DES-SHA-TRANS ESP-3DES-MD5 ESP-3DES-SHA
+crypto dynamic-map mydefaultcryptomap 65535 
+  set pfs group1
+crypto dynamic-map mydefaultcryptomap 65535
+  set transform-set ESP-3DES-MD5 ESP-AES-128-SHA ESP-AES-128-MD5 ESP-AES-192-SHA ESP-AES-192-MD5 ESP-AES-256-SHA ESP-AES-256-MD5 ESP-3DES-SHA ESP-DES-SHA ESP-DES-MD5
+crypto dynamic-map mydefaultcryptomap 65535 
+  set security-association lifetime seconds 28800
+crypto dynamic-map mydefaultcryptomap 65535 
+  set security-association lifetime kilobytes 4608000
+crypto dynamic-map mydynamicmap 1
+ set transform-set ESP-3DES-MD5 ESP-3DES-SHA
+crypto engine large-mod-accel
+crypto ca trustpool policy
+ auto-import
+crypto ikev1 am-disable
+crypto ikev1 enable outside
+crypto ikev1 enable inside
+crypto ikev1 ipsec-over-tcp port 12345
+crypto ikev1 policy 10
+ authentication pre-share
+ encryption aes
+ group 2
+ hash sha
+ lifetime 86400
+crypto ikev2 enable bleep
+crypto ikev2 keyring VPN_KEY
+ peer bacdef
+  address 1.2.3.4
+  pre-shared-key somekey
+ !
+!
+crypto ikev2 policy 10
+ encryption aes-256
+ group 21
+ integrity sha512
+ lifetime seconds none
+ prf sha512
+ proposal someproposal
+!
+crypto ikev2 profile myprofile
+ authentication local pre-share
+ authentication remote pre-share
+ keyring local somekey
+ match address local interface Loopback8
+ match identity remote address 1.2.3.4 255.255.255.255
+ match identity remote address 5.6.7.8 255.255.255.255
+!
+crypto ikev2 proposal VPN_PROPOSAL1
+ encryption aes-cbc-256 aes-cbc-192 aes-cbc-128
+ group 14
+ integrity sha512 sha384 sha256
+crypto ikev2 remote-access trustpoint blahblah
+crypto ipsec df-bit clear
+crypto ipsec ikev1 transform-set ESP-AES-256-MD5 esp-aes-256 esp-md5-hmac
+crypto ipsec ikev2 ipsec-proposal ffffffffff
+ protocol esp encryption aes-256
+ protocol esp integrity sha-1
+crypto ipsec profile abcdefg
+ set transform-set hijklmnop
+ set ikev2-profile someprofile
+ set security-association lifetime kilobytes disable
+ set isakmp-profile someOtherprofile
+!
+crypto ipsec nat-transparency udp-encapsulation
+crypto ipsec nat-transparency spi-matching
+crypto ipsec security-association pmtu-aging infinite
+crypto ipsec transform-set ESP-3DES-MD5 esp-3des esp-md5-hmac
+ mode transport
+ mode tunnel
+crypto ipsec transform-set IPSEC_AES_256 esp-aes 256 esp-sha-hmac
+crypto ipsec transform-set cipts1 esp-aes 256 esp-sha256-hmac
+crypto ipsec transform-set cipts2 esp-aes 256 esp-sha512-hmac
+crypto ipsec transform-set noAuthHeader esp-aes 256
+crypto isakmp identity address
+crypto isakmp invalid-spi-recovery
+crypto isakmp keepalive 10 3 periodic
+crypto isakmp key ~99a9aaa_aaaa9aa|||aaaaaaa address 1.2.3.4
+! Cisco documentation: https://www.cisco.com/c/en/us/td/docs/ios-xml/ios/sec_conn_dplane/configuration/12-4t/sec-ipsec-data-plane-12-4t-book/sec-ipsec-nat-transp.html#GUID-CCD71C21-1234-419D-9327-80522F1CBBB6
+crypto isakmp nat keepalive 30
+crypto isakmp policy 1
+  authentication pre-share
+  encr 3des
+  group 2
+  hash md5
+  lifetime 28800
+!
+crypto isakmp profile myprofile
+   keyring VRF:MMS:RMT:UPM:1143
+   match identity address 1.2.3.4 255.255.255.255
+   reverse-route
+   self-identity 2.3.4.6
+   vrf VRF:MMS:RMT:UPM:1143
+   keepalive 10 retry 3
+!
+crypto key generate rsa general-keys modulus 1024
+crypto key param rsa label abcdefg modulus 1024
+crypto key pubkey-chain rsa
+ named-key a.example.com
+  address 1.2.3.4
+  key-string
+   56789ABC 56789ABC 56789ABC 56789ABC 56789ABC 56789ABC 56789ABC 56789ABC
+   56789ABC 56789ABC 56789ABC 56789ABC 56789ABC 56789ABC 56789ABC 56789ABC
+   56789ABC 56789ABC 56789ABC 56789ABC 56789ABC 56789ABC 56789ABC 56789ABC
+   56789ABC 56789ABC 56789ABC 56789ABC 56789ABC 56789ABC 56789ABC 56789ABC
+   56789ABC 56789ABC 56789ABC 56789ABC 56789ABC 56789ABC 56789ABC 56789ABC
+   56789ABC 56789ABC 56789ABC 56789ABC 56789ABC 56789ABC 56789ABC 56789ABC
+   56789ABC 56789ABC 56789ABC 56789ABC 56789ABC 56789ABC 56789ABC 56789ABC
+   56789ABC 56789ABC 56789ABC 56789ABC 56789ABC 56789ABC 56789ABC 56789ABC
+   56789ABC 56789ABC 56789ABC 56789ABC 56789ABC 56789ABC 56789ABC 56789ABC
+   56789ABC 0001
+  quit
+crypto keyring VRF:ABC:DEF:GHI:1234
+  pre-shared-key address 1.1.1.1 key 9Aa9#A%X9AaAAAAAa
+!
+crypto map myothermap 65535 ipsec-isakmp dynamic mydefaultcryptomap
+crypto map myothermap redundancy replay-interval inbound 1000 outbound 1000
+crypto map myothermap interface outside
+crypto map VPN 5 ipsec-isakmp
+  match address someacl
+  set pfs group14
+  set peer 1.2.3.4
+  set transform-set bleep
+  set security-association lifetime seconds 86400
+crypto map VPN 10 ipsec-isakmp dynamic bippety
+
+! ASA crypto-map configs (https://www.cisco.com/c/en/us/td/docs/security/asa/asa84/configuration/guide/asa_84_cli_config/vpn_site2site.html)
+crypto map asacryptomap 10 match address someacl
+crypto map asacryptomap 10 set pfs
+crypto map asacryptomap 10 set peer 1.2.3.4
+crypto map asacryptomap 10 set ikev1 transform-set bleep
+crypto map asacryptomap 10 set security-association lifetime seconds 86400
+
+crypto map VPNMAP 2 ipsec-isakmp
+  description bippety boppety
+  match address myvpnacl
+  reverse-route
+  set isakmp-profile myisakmpprofile
+  set peer 1.2.3.4
+  set pfs group2
+  set security-association lifetime seconds 14400
+  set transform-set mytransformset
+!
+crypto pki certificate chain fff
+  certificate fff
+   fffff fffff
+  quit
+!
+crypto pki certificate chain ggg
+ certificate self-signed 01
+  0123ABCD 0123ABCD 0123ABCD 0123ABCD 0123ABCD 0123ABCD 0123ABCD 0123ABCD
+  0123ABCD 0123ABCD 0123ABCD 0123ABCD 0123ABCD 0123ABCD 0123ABCD 0123ABCD
+  0123ABCD 0123ABCD 0123ABCD 0123ABCD 0123ABCD 0123ABCD 0123ABCD 0123ABCD
+  0123ABCD 0123ABCD 0123ABCD 0123ABCD 0123ABCD 0123ABCD 0123ABCD 0123ABCD
+  0123ABCD 0123ABCD 0123ABCD 0123ABCD 0123ABCD 0123ABCD 0123ABCD 0123ABCD
+  0123ABCD 0123ABCD 0123ABCD 0123ABCD 0123ABCD 0123ABCD 0123ABCD 0123ABCD
+  0123ABCD 0123ABCD 0123ABCD 0123ABCD 0123ABCD 0123ABCD 0123ABCD 0123ABCD
+  0123ABCD 0123ABCD 0123ABCD 0123ABCD 0123ABCD 0123ABCD 0123ABCD 0123ABCD
+  0123ABCD 0123ABCD 0123ABCD 0123ABCD 0123ABCD 0123ABCD 0123ABCD 0123ABCD
+  0123ABCD 0123ABCD 0123ABCD 0123ABCD 0123ABCD 0123ABCD 0123ABCD 0123ABCD
+  0123ABCD 0123ABCD 0123ABCD 0123ABCD 0123ABCD 0123ABCD 0123ABCD 0123ABCD
+  0123ABCD 0123ABCD 0123ABCD 0123ABCD 0123ABCD 0123ABCD 0123ABCD 0123ABCD
+  0123ABCD 0123ABCD 0123ABCD 0123ABCD 0123ABCD 0123ABCD 0123ABCD 0123ABCD
+  0123ABCD 0123ABCD 0123ABCD 0123ABCD 0123ABCD 0123ABCD 0123ABCD 0123ABCD
+  0123ABCD 0123ABCD 0123ABCD 0123ABCD 0123ABCD 0123ABCD 0123ABCD 0123ABCD
+  0123ABCD 0123ABCD 0123ABCD 0123ABCD 0123ABCD 0123ABCD 0123ABCD 0123ABCD
+  0123ABCD 0123ABCD 0123ABCD 0123ABCD 0123ABCD 0123ABCD 0123ABCD 0123ABCD
+  0123ABCD 0123ABCD 0123ABCD 0123EF
+   quit
+crypto pki certificate chain TP-self-signed-2698589343
+crypto pki token default removal timeout 0
+crypto pki trustpoint HTTPS_SS_CERT_KEYPAIR
+ enrollment selfsigned
+ revocation-check none
+ rsakeypair HTTPS_SS_CERT_KEYPAIR
+ serial-number
+ subject-name cn=gawerfowefoiwejfio
+ no validation-usage
+!
+crypto pki server CN
+ no database archive
+ issuer-name cn=CN
+ grant auto
+ cdp-url http://192.168.0.1/CN.crl
+!
+key chain mykeychain1
+ key 1
+  key-string 7 0023353555485A15240155
+!
+key chain mykeychain2
+ key 1
+  accept-lifetime 00:00:00 december 01 2014 infinite
+  cryptographic-algorithm HMAC-MD5
+  key-string password 0123456789ABCDEF01234567
+  send-lifetime 00:00:00 december 01 2014 infinite
+ !
+!
+no crypto engine software ipsec
+!
+no crypto isakmp enable
+no crypto isakmp nat-traversal
+!
+!

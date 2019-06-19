@@ -1,0 +1,18 @@
+#
+set system host-name juniper_isis
+#
+set groups gname protocols isis interface <*.*> family inet bfd-liveness-detection minimum-interval 100
+#
+set interfaces ge-0/0/0 unit 0
+#
+set protocols isis interface ge-0/0/0.0 disable
+set protocols isis interface ge-0/0/0.0 level 1 disable
+set protocols isis interface ge-0/0/0.0 passive
+set protocols isis interface ge-0/0/0.0 level 1 passive
+set protocols isis interface ge-0/0/0.0 level 2 priority 65
+set protocols isis interface ge-0/0/0.0 ldp-synchronization
+set protocols isis interface ge-0/0/0.0 node-link-protection
+set protocols isis overload timeout 30
+set protocols isis overload
+#
+

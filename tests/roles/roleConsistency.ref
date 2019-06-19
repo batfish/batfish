@@ -1,0 +1,58 @@
+[
+  {
+    "class" : "org.batfish.question.RoleConsistencyQuestionPlugin$RoleConsistencyAnswerElement",
+    "answers" : [
+      {
+        "conformers" : [
+          "as1border1",
+          "as1border2",
+          "as2border1",
+          "as2border2",
+          "as3border1",
+          "as3border2"
+        ],
+        "name" : "LoggingServers",
+        "role" : "border"
+      },
+      {
+        "conformers" : [
+          "as1core1",
+          "as2core2",
+          "as3core1"
+        ],
+        "definition" : [
+          "1.1.1.1",
+          "2.2.2.2"
+        ],
+        "name" : "LoggingServers",
+        "outliers" : [
+          "as2core1"
+        ],
+        "role" : "core"
+      },
+      {
+        "conformers" : [
+          "as2dept1"
+        ],
+        "name" : "LoggingServers",
+        "role" : "dept"
+      },
+      {
+        "conformers" : [
+          "as2dist1",
+          "as2dist2"
+        ],
+        "name" : "LoggingServers",
+        "role" : "dist"
+      },
+      {
+        "conformers" : [
+          "host1",
+          "host2"
+        ],
+        "name" : "LoggingServers",
+        "role" : "host"
+      }
+    ]
+  }
+]

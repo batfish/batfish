@@ -1,0 +1,13 @@
+{
+  "class" : "org.batfish.question.initialization.ConversionStatusQuestion",
+  "differential" : false,
+  "includeOneTableKeys" : true,
+  "instance" : {
+    "description" : "Displays vendor independent conversion status.",
+    "instanceName" : "qname",
+    "longDescription" : "For each node in a snapshot, returns the vendor independent conversion status: pass, fail, converted with warnings.",
+    "tags" : [
+      "initialization"
+    ]
+  }
+}

@@ -1,0 +1,31 @@
+! This is an ASA device.
+ASA Version 9.9
+!
+hostname asa_acl
+!
+access-list outside_in extended permit udp any4 host 1.2.3.4 eq tftp
+access-list Local_LAN_Access standard permit host 0.0.0.0
+access-list outside remark some-remark with multiple words and 1 or 2 numbers
+access-list outside extended permit tcp object-group drawbridge_hosts interface outside eq https
+!
+! Inline service object specifiers
+access-list inline_specifiers extended permit object icmp-alternate-address any any
+access-list inline_specifiers extended permit object icmp-conversion-error any any
+access-list inline_specifiers extended permit object icmp-echo any any
+access-list inline_specifiers extended permit object icmp-echo-reply any any
+access-list inline_specifiers extended permit object icmp-information-reply any any
+access-list inline_specifiers extended permit object icmp-information-request any any
+access-list inline_specifiers extended permit object icmp-mask-reply any any
+access-list inline_specifiers extended permit object icmp-mask-request any any
+access-list inline_specifiers extended permit object icmp-mobile-redirect any any
+access-list inline_specifiers extended permit object icmp-parameter-problem any any
+access-list inline_specifiers extended permit object icmp-redirect any any
+access-list inline_specifiers extended permit object icmp-router-advertisement any any
+access-list inline_specifiers extended permit object icmp-router-solicitation any any
+access-list inline_specifiers extended permit object icmp-source-quench any any
+access-list inline_specifiers extended permit object icmp-time-exceeded any any
+access-list inline_specifiers extended permit object icmp-timestamp-reply any any
+access-list inline_specifiers extended permit object icmp-timestamp-request any any
+access-list inline_specifiers extended permit object icmp-traceroute any any
+access-list inline_specifiers extended permit object icmp-unreachable any any
+access-list inline_specifiers extended permit object ospf any any

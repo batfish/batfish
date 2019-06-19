@@ -1,0 +1,15 @@
+!
+hostname aaaAuthenticationIosNoDefault
+!
+aaa new-model
+!
+aaa authentication login noAuth local none
+aaa authentication login hasAuth local
+!
+line con 0
+line vty 0
+  login authentication hasAuth
+line vty 1 4
+line aux 0
+  login authentication noAuth
+!

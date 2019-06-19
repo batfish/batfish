@@ -1,0 +1,47 @@
+{
+  "answerElements" : [
+    {
+      "class" : "org.batfish.datamodel.answers.InitInfoAnswerElement",
+      "parseStatus" : {
+        "configs/as1r1.cfg" : "PARTIALLY_UNRECOGNIZED",
+        "configs/as1r2.cfg" : "PASSED",
+        "configs/as2r1.cfg" : "PASSED"
+      },
+      "warnings" : {
+        "as1r1" : {
+          "Red flags" : [
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "Could not determine update source for BGP neighbor: '10.12.11.2'"
+            }
+          ]
+        },
+        "configs/as1r1.cfg" : {
+          "Parse warnings" : [
+            {
+              "Comment" : "This syntax is unrecognized",
+              "Line" : 5,
+              "Parser_Context" : "[if_inner s_interface stanza cisco_configuration]",
+              "Text" : "ip address 10.12.11.1 255.255.255.0aaaaa:wq"
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "question" : {
+    "class" : "org.batfish.question.InitInfoQuestionPlugin$InitInfoQuestion",
+    "differential" : false,
+    "environmentBgpTables" : false,
+    "environmentRoutes" : false,
+    "includeOneTableKeys" : true,
+    "summary" : false,
+    "verboseError" : false
+  },
+  "status" : "SUCCESS",
+  "summary" : {
+    "numFailed" : 0,
+    "numPassed" : 0,
+    "numResults" : 0
+  }
+}

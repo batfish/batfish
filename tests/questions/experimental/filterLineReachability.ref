@@ -1,0 +1,39 @@
+{
+  "class" : "org.batfish.question.filterlinereachability.FilterLineReachabilityQuestion",
+  "filters" : ".*",
+  "ignoreComposites" : false,
+  "nodes" : ".*",
+  "differential" : false,
+  "includeOneTableKeys" : true,
+  "instance" : {
+    "description" : "Returns unreachable lines in filters (ACLs and firewall rules).",
+    "instanceName" : "qname",
+    "longDescription" : "Finds all lines in the specified filters that will not match any packet, either because of being shadowed by prior lines or because of its match condition being empty.",
+    "tags" : [
+      "acl"
+    ],
+    "variables" : {
+      "filters" : {
+        "description" : "Specifier for filters to test",
+        "displayName" : "Filters",
+        "optional" : true,
+        "type" : "filterSpec",
+        "value" : ".*"
+      },
+      "ignoreComposites" : {
+        "description" : "Whether to ignore filters that are composed of multiple filters defined in the configs",
+        "displayName" : "Ignore composite filters",
+        "optional" : true,
+        "type" : "boolean",
+        "value" : false
+      },
+      "nodes" : {
+        "description" : "Examine filters on nodes matching this specifier",
+        "displayName" : "Nodes",
+        "optional" : true,
+        "type" : "nodeSpec",
+        "value" : ".*"
+      }
+    }
+  }
+}

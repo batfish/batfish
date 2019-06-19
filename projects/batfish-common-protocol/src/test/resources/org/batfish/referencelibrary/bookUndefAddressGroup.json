@@ -1,0 +1,10 @@
+{
+  "name": "book",
+  "serviceEndpoints": [
+    {
+      "name": "se1",
+      "address": "ag1",
+      "service": "sog1"
+    }
+  ]
+}

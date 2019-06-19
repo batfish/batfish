@@ -1,0 +1,30 @@
+net del all
+#
+net add hostname cumulus_nclu_routing
+#
+net add bond bond1 bond slaves swp0
+net add bond bond1 ip address 10.1.0.1/24
+net add interface eth0.4094 ip address 10.1.1.1/24
+net add interface swp1 ip address 10.1.2.1/24
+net add interface swp2 ip address 10.1.3.1/24
+net add loopback lo ip address 10.1.4.1/24
+net add vrf vrf1 ip address 10.1.5.1/24
+net add vrf vrf1 ip address 10.1.6.1/24
+#
+net add routing route 10.0.1.0/24 10.1.0.1
+net add routing route 10.0.1.0/24 10.1.0.2
+#
+net add routing route-map rm1 permit 1 match interface bond1
+net add routing route-map rm1 permit 2 match interface lo
+net add routing route-map rm1 permit 3 match interface eth0.4094
+net add routing route-map rm1 permit 4 match interface swp1-2
+net add routing route-map rm2 deny 1 match interface vrf1
+net add routing route-map rm2 permit 2
+#
+net commit
+
+# The following will append those commands to the appropriate files.
+# There are some configuration commands that are not yet supported by nclu.
+# ========================================================================
+sudo sh -c "printf 'vrf vrf1\n  ip route 10.0.2.0/24 192.0.2.1\n' >> /etc/frr/frr.conf"
+sudo sh -c "printf 'vrf vrf1\n  ip route 10.0.2.0/24 192.0.2.2\n' >> /etc/frr/frr.conf"

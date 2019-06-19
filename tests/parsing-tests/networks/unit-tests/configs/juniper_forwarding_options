@@ -1,0 +1,86 @@
+#
+set system host-name juniper_forwarding_options
+#
+set forwarding-options apply-groups g1
+set forwarding-options analyzer analyzer input ingress interface ge-0/0/0.0
+set forwarding-options analyzer analyzer input egress interface ge-0/0/1.0
+set forwarding-options analyzer analyzer output interface ge-0/0/2.0
+set forwarding-options dhcp-relay active-server-group site-dhcp
+set forwarding-options dhcp-relay active-server-group test2
+set forwarding-options dhcp-relay group clientgrp interface xe-1/0/0.0
+set forwarding-options dhcp-relay group clientgrp overrides layer2-unicast-replies
+set forwarding-options dhcp-relay group clientgrp overrides trust-option-82
+set forwarding-options dhcp-relay group relay active-server-group site-dhcp
+set forwarding-options dhcp-relay group relay interface all
+set forwarding-options dhcp-relay group relay interface et-0/0/10.0
+set forwarding-options dhcp-relay group relay overrides allow-snooped-clients
+set forwarding-options dhcp-relay group test2 active-server-group test2
+set forwarding-options dhcp-relay group test2 interface ge-0/2/5.0
+set forwarding-options dhcp-relay overrides allow-snooped-clients
+set forwarding-options dhcp-relay overrides always-write-giaddr
+set forwarding-options dhcp-relay overrides bootp-support
+set forwarding-options dhcp-relay overrides delete-binding-on-renegotiation
+set forwarding-options dhcp-relay overrides no-arp
+set forwarding-options dhcp-relay server-group dhcpgrp 1.2.3.4
+set forwarding-options dhcp-relay server-group dhcpgrp 2.3.4.5
+set forwarding-options dhcp-relay server-group test2 3.4.5.6
+set forwarding-options enhanced-hash-key family inet incoming-interface-index
+set forwarding-options family inet6 route-accounting
+set forwarding-options hash-key family inet layer-3
+set forwarding-options hash-key family inet layer-4
+set forwarding-options hash-key family mpls label-1
+set forwarding-options hash-key family mpls label-2
+set forwarding-options hash-key family mpls payload ip
+set forwarding-options helpers bootp description "Global Relay Service"
+set forwarding-options helpers bootp interface ae1.1116
+set forwarding-options helpers bootp interface all
+set forwarding-options helpers bootp interface xe-0/0/18.949 description "use Housing server for this interface"
+set forwarding-options helpers bootp interface xe-0/0/18.949 server 5.5.5.5
+set forwarding-options helpers bootp interface xe-0/0/18.952
+set forwarding-options helpers bootp interface xe-1/0/0.100 server 6.6.6.6 routing-instance TEST_VRF_100
+set forwarding-options helpers bootp interface xe-1/0/0.119 server 7.7.7.7 routing-instance TEST_VRF_103
+set forwarding-options helpers bootp relay-agent-option
+set forwarding-options helpers bootp server 8.8.8.8
+set forwarding-options helpers bootp server 9.9.9.9
+set forwarding-options helpers traceoptions file bootp size 10m world-readable
+set forwarding-options helpers traceoptions flag all
+set forwarding-options helpers traceoptions level all
+set forwarding-options load-balance equal-weighted-mode
+set forwarding-options load-balance indexed-load-balance
+set forwarding-options multicast resolve-rate 1000
+set forwarding-options port-mirroring family inet output interface ge-0/2/2.0 next-hop 11.11.11.11
+set forwarding-options port-mirroring family inet output no-filter-check
+set forwarding-options port-mirroring input rate 1
+set forwarding-options port-mirroring input run-length 1
+set forwarding-options sampling family inet output flow-active-timeout 60
+set forwarding-options sampling family inet output flow-inactive-timeout 15
+set forwarding-options sampling family inet output flow-server 22.22.22.22 autonomous-system-type origin
+set forwarding-options sampling family inet output flow-server 22.22.22.22 port 9999
+set forwarding-options sampling family inet output flow-server 22.22.22.22 source-address 33.33.33.33
+set forwarding-options sampling family inet output flow-server 22.22.22.22 version 5
+set forwarding-options sampling family inet output flow-server 10.181.3.2 port 1111
+set forwarding-options sampling family inet output flow-server 10.181.3.2 version 5
+set forwarding-options sampling family inet output interface sp-1/0/0 source-address 44.44.44.44
+set forwarding-options sampling input max-packets-per-second 2500
+set forwarding-options sampling input rate 4096
+set forwarding-options sampling input run-length 0
+set forwarding-options sampling instance blorp family inet6 output flow-server 41.41.41.41 port 4141
+set forwarding-options sampling instance blorp family inet6 output flow-server 41.41.41.41 version-ipfix template ipv6_template
+set forwarding-options sampling instance blorp family inet6 output inline-jflow flow-export-rate 100
+set forwarding-options sampling instance blorp family inet6 output inline-jflow source-address 51.51.51.51
+set forwarding-options sampling instance blorp family inet output flow-server 23.23.23.23 port 2323
+set forwarding-options sampling instance blorp family inet output flow-server 23.23.23.23 version-ipfix template ipv4_template
+set forwarding-options sampling instance blorp family inet output inline-jflow flow-export-rate 100
+set forwarding-options sampling instance blorp family inet output inline-jflow source-address 54.54.54.54
+set forwarding-options sampling instance blorp input rate 4096dd
+set forwarding-options sampling instance bloo family inet6 output flow-server 62.62.62.62 version9 template netflow_template_ipv6
+set forwarding-options sampling instance bloo input rate 1
+set forwarding-options sampling instance bloo input run-length 0
+set forwarding-options sampling traceoptions file sampled.log size 20m files 20 world-readable
+set forwarding-options sampling traceoptions file sampled size 10m files 10 world-readable
+set forwarding-options sampling traceoptions flag all
+set forwarding-options storm-control-profiles default all
+#
+set groups DHCP forwarding-options helpers bootp interface <*> server 1.2.4.11
+set forwarding-options helpers bootp apply-groups DHCP
+#

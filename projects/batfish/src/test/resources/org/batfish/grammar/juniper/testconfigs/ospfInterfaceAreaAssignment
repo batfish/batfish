@@ -1,0 +1,17 @@
+#
+set system host-name ospfInterfaceAreaAssignment
+#
+set interfaces xe-0/0/0 unit 0 family inet address 1.0.0.0/24
+set interfaces xe-0/0/0 unit 1 family inet address 1.0.0.0/24
+set interfaces xe-0/0/0 unit 2
+set interfaces xe-0/0/0 unit 3
+#
+set protocols ospf area 0.0.0.0 interface xe-0/0/0.0
+#
+set protocols ospf area 0.0.0.1 interface xe-0/0/0.1 passive
+#
+set protocols ospf area 0.0.0.0 interface xe-0/0/0.2
+#
+set protocols ospf area 0.0.0.1 interface xe-0/0/0.3 passive
+#
+

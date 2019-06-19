@@ -1,0 +1,23 @@
+{
+  "class" : "org.batfish.question.initialization.ParseWarningQuestion",
+  "aggregateDuplicates" : true,
+  "differential" : false,
+  "includeOneTableKeys" : true,
+  "instance" : {
+    "description" : "Returns warnings that occurred when parsing the snapshot.",
+    "instanceName" : "qname",
+    "longDescription" : "Return warnings such as failure to recognize certain lines and lack of support for certain features.",
+    "tags" : [
+      "initialization"
+    ],
+    "variables" : {
+      "aggregateDuplicates" : {
+        "description" : "Whether to aggregate duplicate results",
+        "displayName" : "Aggregate duplicates",
+        "optional" : true,
+        "type" : "boolean",
+        "value" : true
+      }
+    }
+  }
+}

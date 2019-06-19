@@ -1,0 +1,7 @@
+#
+set system host-name bgp-type-internal
+#
+set protocols bgp group MYGROUP family inet unicast
+set protocols bgp group MYGROUP type internal
+set protocols bgp group MYGROUP neighbor 1.1.1.1
+set protocols bgp group MYGROUP local-as 1

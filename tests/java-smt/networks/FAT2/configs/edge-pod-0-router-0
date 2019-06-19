@@ -1,0 +1,9 @@
+interface Loopback0
+  ip address 70.0.2.0/32
+!
+interface Serial0
+  ip address 10.0.0.1/31
+!
+router bgp 2
+  network 70.0.2.0/24
+!

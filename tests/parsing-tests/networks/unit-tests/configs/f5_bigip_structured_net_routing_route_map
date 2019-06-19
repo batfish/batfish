@@ -1,0 +1,45 @@
+#TMSH-VERSION: 13.1.1
+
+sys global-settings {
+    hostname f5_bigip_structured_net_routing_route_map
+}
+
+net routing route-map /Common/MY_ROUTE_MAP {
+    entries {
+        10 {
+            action deny
+            match {
+                ipv4 {
+                    address {
+                        prefix-list /Common/MY_PREFIX_LIST
+                    }
+                }
+            }
+            set {
+                community {
+                    value { 1:2 33:44 }
+                }
+            }
+        }
+        20 {
+            action permit
+            match {
+                ipv4 {
+                    address {
+                        prefix-list /Common/MY_PREFIX_LIST2
+                    }
+                }
+            }
+            set {
+                community {
+                    value { 55:66 }
+                }
+            }
+        }
+        999 {
+            action deny
+        }
+    }
+    route-domain /Common/0
+}
+

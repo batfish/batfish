@@ -1,0 +1,4 @@
+#
+set system host-name juniper_application
+#
+set applications application APP description APP-description

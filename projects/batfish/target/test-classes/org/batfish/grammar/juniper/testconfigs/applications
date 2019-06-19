@@ -1,0 +1,16 @@
+#
+set system host-name applications
+#
+set applications application a1 protocol tcp
+set applications application a1 destination-port 12
+set applications application a1 source-port 34
+set applications application a2 protocol udp
+set applications application a2 destination-port 56
+set applications application a2 source-port 78
+set applications application a3 protocol udp
+set applications application a3 destination-port 56
+set applications application a3 source-port 78
+set security policies from-zone trust to-zone untrust policy p1 match application a1
+set security policies from-zone trust to-zone untrust policy p1 match application a_undef
+set security policies global policy p1 match application a3
+#

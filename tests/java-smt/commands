@@ -1,0 +1,154 @@
+#this file assumes that we are running from top-level source directory
+
+add-batfish-option haltonconverterror
+add-batfish-option haltonparseerror
+add-batfish-option loglevel fatal
+add-batfish-option initinfo false
+
+# all tests with BGP only
+init-snapshot tests/java-smt/networks/BGP1 tr-smt-bgp1
+test tests/java-smt/bgp1-forwarding.ref get smt-forwarding dstIps=["42.42.42.0"], fullModel=True
+test tests/java-smt/bgp1-reachability.ref get smt-reachability finalNodeRegex="r1", finalIfaceRegex="Loopback.*", fullModel=True
+test tests/java-smt/bgp1-reachability-negate.ref get smt-reachability finalNodeRegex="r1", finalIfaceRegex="Loopback.*", negate=True
+test tests/java-smt/bgp1-bounded-len.ref get smt-bounded-length finalNodeRegex="r1", dstIps=[42.42.42.1], finalIfaceRegex="Loopback.*", bound=1, fullModel=True
+test tests/java-smt/bgp1-bounded-len-negate.ref get smt-bounded-length finalNodeRegex="r1", dstIps=[42.42.42.0], finalIfaceRegex="Loopback.*", bound=1, negate=True
+test tests/java-smt/bgp1-bounded-len2.ref get smt-bounded-length finalNodeRegex="r1", dstIps=[42.42.42.1], finalIfaceRegex="Loopback.*", bound=0, fullModel=True
+test tests/java-smt/bgp1-routing-loop.ref get smt-routing-loop fullModel=True
+test tests/java-smt/bgp1-multipath.ref get smt-multipath-consistency finalNodeRegex="r1", finalIfaceRegex="Loopback.*", fullModel=True
+
+# all tests with ospf only
+init-snapshot tests/java-smt/networks/OSPF3 tr-smt-ospf3
+test tests/java-smt/ospf3-forward.ref get smt-forwarding dstIps=["70.70.70.70"], fullModel=True
+test tests/java-smt/ospf3-reachable.ref get smt-reachability finalNodeRegex="r3", finalIfaceRegex="Loopback.*", fullModel=True
+test tests/java-smt/ospf3-bounded-len.ref get smt-bounded-length finalNodeRegex="r3", finalIfaceRegex="Loopback.*", bound=2, fullModel=True
+test tests/java-smt/ospf3-bounded-len2.ref get smt-bounded-length finalNodeRegex="r3", finalIfaceRegex="Loopback.*", bound=1, fullModel=True
+test tests/java-smt/ospf3-equal-len.ref get smt-equal-length finalNodeRegex="r3", finalIfaceRegex="Loopback.*", ingressNodeRegex="r(1|2)", fullModel=True
+test tests/java-smt/ospf3-equal-len2.ref get smt-equal-length finalNodeRegex="r3", finalIfaceRegex="Loopback.*", ingressNodeRegex="r(1|0)", fullModel=True
+test tests/java-smt/ospf3-routing-loop.ref get smt-routing-loop fullModel=True
+test tests/java-smt/ospf3-multipath.ref get smt-multipath-consistency finalNodeRegex="r3", finalIfaceRegex="Loopback.*", fullModel=True
+test tests/java-smt/ospf3-deterministic.ref get smt-deterministic
+test tests/java-smt/ospf3-node-failures1.ref get smt-reachability finalNodeRegex="r3", ingressNodeRegex="r0", notFailNodeRegex="r3|r0", finalIfaceRegex="Loopback.*", fullModel=True, nodeFailures=1
+test tests/java-smt/ospf3-node-failures2.ref get smt-reachability finalNodeRegex="r3", ingressNodeRegex="r0", notFailNodeRegex="r3|r0", finalIfaceRegex="Loopback.*", fullModel=True, nodeFailures=2
+
+
+# ospf with different costs along different edges
+init-snapshot tests/java-smt/networks/OSPF-COST tr-smt-ospf-cost
+test tests/java-smt/ospf-cost.ref get smt-forwarding dstIps=["192.168.8.3"], fullModel=True
+
+# local consistency with bgp + environment
+init-snapshot tests/java-smt/networks/ENV2 tr-smt-env2
+test tests/java-smt/env2-local.ref get smt-local-consistency nodeRegex=".*", fullModel=True
+test tests/java-smt/env2-local2.ref get smt-local-consistency nodeRegex="", fullModel=True
+
+# forwarding loop with static routes
+init-snapshot tests/java-smt/networks/STATIC2 tr-smt-static2
+test tests/java-smt/static2-forward.ref get smt-forwarding dstIps=["172.0.0.0"], fullModel=True
+test tests/java-smt/static2-loop.ref get smt-routing-loop fullModel=True
+
+# forwarding with next hop ip
+init-snapshot tests/java-smt/networks/STATIC3 tr-smt-static3
+test tests/java-smt/static3-reachability1.ref get smt-reachability ingressNodeRegex="host1", finalNodeRegex="host3"
+test tests/java-smt/static3-reachability2.ref get smt-reachability ingressNodeRegex="host1", finalNodeRegex="host3", dstIps=["192.168.8.2"]
+test tests/java-smt/static3-reachability3.ref get smt-reachability ingressNodeRegex="host1", finalNodeRegex="host3", dstIps=["192.168.8.1"]
+
+# Correct BGP network semantics if there is an IGP route
+init-snapshot tests/java-smt/networks/BGP3 tr-smt-bgp3
+test tests/java-smt/bgp3-forwarding1.ref get smt-forwarding dstIps=["69.69.69.0"], fullModel=True
+test tests/java-smt/bgp3-forwarding2.ref get smt-forwarding dstIps=["42.42.42.0"], fullModel=True
+
+# redistribution of different protocols
+init-snapshot tests/java-smt/networks/REDISTRIBUTE1 tr-smt-redistribute1
+test tests/java-smt/redistribute1-forwarding1.ref get smt-forwarding dstIps=["70.70.70.70"], fullModel=True
+test tests/java-smt/redistribute1-forwarding2.ref get smt-forwarding dstIps=["69.69.69.0"], fullModel=True
+test tests/java-smt/redistribute1-forwarding3.ref get smt-forwarding dstIps=["180.0.0.0"], fullModel=True
+test tests/java-smt/redistribute1-forwarding4.ref get smt-forwarding dstIps=["140.0.0.0"], fullModel=True
+
+# Ensure correct handling of inactive links in OSPF
+init-snapshot tests/java-smt/networks/OSPF1 tr-smt-ospf1
+test tests/java-smt/ospf1-forwarding.ref get smt-forwarding dstIps=["70.70.70.70"], fullModel=True
+
+# OSPF routes propagated even when not in FIB
+init-snapshot tests/java-smt/networks/OSPF2 tr-smt-ospf2
+test tests/java-smt/ospf2-forwarding.ref get smt-forwarding dstIps=["70.70.70.70"], fullModel=True
+init-snapshot tests/java-smt/networks/OSPF4 tr-smt-ospf4
+test tests/java-smt/ospf4-forwarding.ref get smt-forwarding dstIps=["70.70.70.70"], fullModel=True
+
+# Ensure prepending updates path
+init-snapshot tests/java-smt/networks/PREPEND1 tr-smt-prepend1
+test tests/java-smt/prepend1-forwarding.ref get smt-forwarding dstIps=["41.41.41.1"], fullModel=True
+
+# Ensure we can find one of multiple stable solutions
+init-snapshot tests/java-smt/networks/STABLE3 tr-smt-stable3
+test tests/java-smt/stable3-forwarding.ref get smt-forwarding dstIps=["42.42.42.0"]
+test tests/java-smt/stable3-nondeterministic.ref get smt-deterministic
+
+# Check proper dropping behavior when the metric has overflow
+init-snapshot tests/java-smt/networks/OVERFLOW1 tr-smt-overflow1
+test tests/java-smt/overflow1-forwarding.ref get smt-forwarding dstIps=["41.41.41.1"], modelOverflow=True, fullModel=True
+
+# Check correct handling of OSPF areas
+init-snapshot tests/java-smt/networks/AREA1 tr-smt-area1
+test tests/java-smt/area1-forwarding.ref get smt-forwarding dstIps=["70.70.70.70"], fullModel=True
+
+# Check correct handling of aggregation
+init-snapshot tests/java-smt/networks/AGGREGATION1 tr-smt-aggregation1
+test tests/java-smt/aggregation1-forwarding.ref get smt-forwarding dstIps=["42.42.42.1"], fullModel=True
+init-snapshot tests/java-smt/networks/AGGREGATION2
+test tests/java-smt/aggregation2-forwarding.ref get smt-forwarding dstIps=["42.42.42.1"], fullModel=True
+
+# Proper handling of import prefix-list and route-map
+init-snapshot tests/java-smt/networks/ENV3 tr-smt-env3
+test tests/java-smt/env3-local.ref get smt-local-consistency fullModel=True, minimize=True 
+
+# Ensure ACLs are applied to data forwarding
+init-snapshot tests/java-smt/networks/ACL1 tr-smt-acl1
+test tests/java-smt/acl1-forwarding.ref get smt-forwarding dstIps=["70.70.70.70"], fullModel=True
+test tests/java-smt/acl1-multipath.ref get smt-multipath-consistency dstIps=[70.70.70.70], finalNodeRegex="r3", finalIfaceRegex="Loopback.*", fullModel=True
+test tests/java-smt/acl1-differential1.ref get smt-reachability diffType=any, failures=1, failNode1Regex="r2", failNode2Regex="r3"
+test tests/java-smt/acl1-differential2.ref get smt-reachability diffType=reduced, failures=1, failNode1Regex="r0", failNode2Regex="r1"
+test tests/java-smt/acl1-differential3.ref get smt-reachability dstIps=[70.70.70.70], diffType=increased, failures=1
+
+# Check correctness of iBGP encoding
+init-snapshot tests/java-smt/networks/IBGP1 tr-smt-ibgp1
+test tests/java-smt/ibgp1-forwarding.ref get smt-forwarding dstIps=["20.20.20.20"], fullModel=True, baseEnvType=none
+
+# Check correctness of bgpRanking attribute
+init-snapshot tests/java-smt/networks/LP tr-smt-lp
+test tests/java-smt/lp-reachability1.ref get smt-reachability finalNodeRegex="r1", ingressNodeRegex="r2", finalIfaceRegex="Loopback.*", fullModel=True, bgpRanking=[]
+test tests/java-smt/lp-reachability2.ref get smt-reachability finalNodeRegex="r1", ingressNodeRegex="r2", finalIfaceRegex="Loopback.*", fullModel=True, bgpRanking=["localpref"]
+test tests/java-smt/lp-reachability3.ref get smt-reachability finalNodeRegex="r1", ingressNodeRegex="r2", finalIfaceRegex="Loopback.*", fullModel=True
+
+# Check correctness of multiple ASes using both iBGP and eBGP. Also ensures
+# correct handling of transitivity and path metric update
+init-snapshot tests/java-smt/networks/IBGP2 tr-smt-ibgp2
+test tests/java-smt/ibgp2-forwarding.ref get smt-forwarding dstIps=["4.4.4.4"], fullModel=True, baseEnvType=none
+
+# Check correct handling of IGP metric cost for iBGP with eBGP
+init-snapshot tests/java-smt/networks/IBGP3 tr-smt-ibgp3
+test tests/java-smt/ibgp3-forwarding.ref get smt-forwarding dstIps=["4.4.4.4"], fullModel=True, baseEnvType=none
+
+# Check correct handling of add and delete community commands
+init-snapshot tests/java-smt/networks/COMMUNITY1 tr-smt-community1
+test tests/java-smt/community1.ref get smt-forwarding dstIps=["42.42.42.1"], fullModel=True
+
+# Testing reachability with failures in the campus network with external filters
+init-snapshot tests/java-smt/networks/CAMPUS2 tr-smt-campus2
+test tests/java-smt/campus2-reachability1.ref get smt-reachability ingressNodeRegex="as2border.*", finalNodeRegex="as2dept1", finalIfaceRegex="FastEthernet1/0" , failures=0
+test tests/java-smt/campus2-reachability2.ref get smt-reachability ingressNodeRegex="as2border.*", finalNodeRegex="as2dept1", finalIfaceRegex="FastEthernet1/0" , failures=1
+#test tests/java-smt/campus2-reachability3.ref get smt-reachability ingressNodeRegex="as2border.*", finalNodeRegex="as2dept1", finalIfaceRegex="FastEthernet1/0" , failures=2, noEnvironment=True
+
+# Test dataplane reachability on compressed network. Disabled until compression works with generalized headerspaces
+# test tests/java-smt/compressed-reachability1.ref get reachability ingressNodeRegex="as2border.*", finalNodeRegex="as2dept1", srcIps=['0.0.0.0'], dstIps=['2.34.101.4'], srcPorts=[0], dstPorts=[0], ipProtocols=['ICMP'],  useCompression=True
+
+# Test differential reachabililty 
+init-snapshot tests/java-smt/networks/OSPF5 tr-smt-ospf5
+test tests/java-smt/differential1.ref get smt-reachability finalNodeRegex="r3", finalIfaceRegex="Loopback.*", failures=1, diffType=any, dstIps=["70.70.70.70"]
+test tests/java-smt/differential2.ref get smt-reachability finalNodeRegex="r3", finalIfaceRegex="Loopback.*", failures=2, diffType=any, ingressNodeRegex="r0", failNode1Regex="r0", dstIps=["70.70.70.70"]
+
+# Put everything together in example network
+#init-snapshot tests/java-smt/networks/example tr-smt-example
+#test tests/java-smt/differential3.ref get smt-reachability failures=1, diffType=any, ingressNodeRegex="host1", finalNodeRegex="as3core1", failNode1Regex="as2border2", failNode2Regex="as3border1", noEnvironment=True
+
+# Test BDD-based encoding of route-maps and ACLs
+init-snapshot tests/java-smt/networks/BDD1 tr-bdd1
+test tests/java-smt/roles1.ref get smt-roles equivType=policy

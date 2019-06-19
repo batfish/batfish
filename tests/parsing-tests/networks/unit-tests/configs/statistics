@@ -1,0 +1,8 @@
+!
+hostname statistics
+!
+statistics
+ tm-voq-collection
+ extended-counters priority all
+!
+ 

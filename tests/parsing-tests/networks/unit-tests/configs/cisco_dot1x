@@ -1,0 +1,11 @@
+!
+hostname cisco_dot1x
+!
+dot1x guest-vlan supplicant
+dot1x supplicant controlled transient
+dot1x supplicant force-multicast
+dot1x system-auth-control
+dot1x test timeout 30
+dot1x test timeout 5
+!
+

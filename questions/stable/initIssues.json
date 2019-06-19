@@ -1,0 +1,12 @@
+{
+    "class": "org.batfish.question.initialization.InitIssuesQuestion",
+    "differential": false,
+    "instance": {
+        "description": "Returns issues encountered when processing the snapshot.",
+        "longDescription": "Reports issues encountered by Batfish, including failure to recognize certain lines in the configuration, lack of support for certain features, and errors when converting to vendor-independent models.",
+        "instanceName": "initIssues",
+        "tags": [
+            "initialization"
+        ]
+    }
+}

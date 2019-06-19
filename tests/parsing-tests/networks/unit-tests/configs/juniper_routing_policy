@@ -1,0 +1,10 @@
+#
+set system host-name juniper_routing_policy
+#
+set interfaces ge-0/0/0 unit 0 family inet address 1.1.1.1/24 primary
+set interfaces ge-0/0/0 unit 0 family inet address 2.2.2.2/24
+#
+set policy-options policy-statement POLICY-NAME term TERM1 from interface ge-0/0/0.0
+set policy-options policy-statement POLICY-NAME term TERM1 then accept
+set policy-options policy-statement POLICY-NAME term TERM2 from interface ge-0/0/0.99
+set policy-options policy-statement POLICY-NAME term TERM2 then accept

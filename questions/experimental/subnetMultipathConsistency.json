@@ -1,0 +1,28 @@
+{
+    "class": "org.batfish.question.multipath.MultipathConsistencyQuestion",
+    "differential": false,
+    "headers": {
+      "dstIps": "ofLocation(enter(.*))"
+    },
+    "maxTraces": "${maxTraces}",
+    "pathConstraints": {
+      "startLocation": "enter(.*)"
+    },
+    "instance": {
+        "description": "Validates multipath consistency between all pairs of subnets.",
+        "instanceName": "subnetMultipathConsistency",
+        "longDescription": "Searches across all flows between subnets that are treated differently (i.e., dropped versus forwarded) by different paths in the network and returns example flows.",
+        "tags": [
+            "dataplane",
+            "reachability"
+        ],
+        "variables": {
+            "maxTraces": {
+                "description": "Limit the number of traces returned",
+                "optional": true,
+                "type": "integer",
+                "displayName": "Max Traces"
+            }
+        }
+    }
+}

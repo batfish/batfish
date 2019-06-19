@@ -1,0 +1,13 @@
+#TMSH-VERSION: 13.1.1
+
+sys global-settings {
+    hostname f5_bigip_imish_recovery
+}
+
+!
+!!! imish configuration starts here
+!
+access-list acl1 permit uh_oh_this_is_unrecognized_text
+!
+access-list acl2 permit 10.0.0.0/24
+end

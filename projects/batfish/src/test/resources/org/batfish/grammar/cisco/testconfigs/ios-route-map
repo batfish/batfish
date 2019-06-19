@@ -1,0 +1,44 @@
+!
+hostname ios-route-map
+!
+router ospf 1
+  router-id 10.1.1.1
+  passive-interface default
+  vrf blah1
+    default-information originate route-map rm_ospf
+    redistribute static route-map rm_ospf
+    redistribute bgp 1234 route-map rm_ospf
+    redistribute connected route-map rm_ospf
+    redistribute direct route-map rm_undef
+!
+router bgp 2
+  router-id 10.1.1.2
+  vrf VRFNAME
+  address-family ipv4 unicast
+  default-originate route-map rm_bgp
+  redistribute connected route-map rm_bgp
+  redistribute ospf route-map rm_bgp
+  redistribute ospf3 route-map rm_bgp
+  redistribute rip route-map rm_bgp
+  redistribute static route-map rm_bgp
+  neighbor 1.2.3.4 remote-as 1234
+    address-family ipv4 unicast
+    route-map rm_bgp out
+    route-map rm_bgp in
+  network 10.1.1.3 route-map rm_bgp
+!
+route-map rm_ospf permit 10
+  match ip address 1.2.3.4
+!
+route-map rm_if permit 10
+  match ip address 1.2.3.4
+!
+route-map rm_bgp permit 10
+  match ip address 1.2.3.4
+!
+route-map rm_unused permit 10
+  match ip address prefix-list pre_list
+!
+interface FastEthernet0/0
+  ip policy route-map rm_if
+!

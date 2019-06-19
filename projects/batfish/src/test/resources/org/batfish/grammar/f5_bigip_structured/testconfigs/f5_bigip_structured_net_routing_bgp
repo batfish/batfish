@@ -1,0 +1,124 @@
+#TMSH-VERSION: 13.1.1
+
+sys global-settings {
+    hostname f5_bigip_structured_net_routing_bgp
+}
+
+net interface 1.0 {
+    bundle enabled
+    bundle-speed 40G
+}
+
+net vlan /Common/SOME_VLAN {
+    interfaces {
+        1.0 { }
+    }
+    tag 100
+}
+
+net self /Common/SOME_SELF {
+    address 192.0.2.2/24
+    allow-service all
+    traffic-group /Common/traffic-group-local-only
+    vlan /Common/SOME_VLAN
+}
+
+net routing prefix-list /Common/MY_IPV4_PL {
+    entries {
+        10 {
+            action permit
+            prefix 10.0.0.0/24
+        }
+    }
+}
+
+net routing route-map /Common/MY_KERNEL_OUT {
+    entries {
+        10 {
+            action permit
+        }
+    }
+}
+
+net routing route-map /Common/MY_IPV4_OUT {
+    entries {
+        10 {
+            action permit
+            match {
+                ipv4 {
+                    address {
+                        prefix-list /Common/MY_IPV4_PL
+                    }
+                }
+            }
+            set {
+                community {
+                    value { 2:2 }
+                }
+            }
+        }
+    }
+}
+
+net routing bgp /Common/my_bgp {
+    address-family {
+        ipv4 {
+            redistribute {
+                kernel {
+                    route-map /Common/MY_KERNEL_OUT
+                }
+            }
+        }
+        ipv6 { }
+    }
+    local-as 123
+    neighbor {
+        dead:beef::1 {
+            address-family {
+                ipv4 {
+                    activate disabled
+                }
+                ipv6 {
+                    capability {
+                        graceful-restart disabled
+                    }
+                    maximum-prefix {
+                        value 12345
+                    }
+                    route-map {
+                        out /Common/MY_IPV6_OUT
+                    }
+                }
+            }
+            description "Cool IPv6 BGP neighbor description"
+            fall-over bfd
+            remote-as 234
+            update-source /Common/SOME_VLAN
+        }
+        192.0.2.1 {
+            address-family {
+                ipv4 {
+                    capability {
+                        graceful-restart disabled
+                    }
+                    maximum-prefix {
+                        value 23456
+                    }
+                    route-map {
+                        out /Common/MY_IPV4_OUT
+                    }
+                }
+                ipv6 {
+                    activate disabled
+                }
+            }
+            description "Cool IPv4 BGP neighbor description"
+            fall-over bfd
+            remote-as 456
+            update-source /Common/SOME_VLAN
+        }
+    }
+    profile /Common/bgp
+    route-domain /Common/0
+}
+

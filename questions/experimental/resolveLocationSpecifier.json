@@ -1,0 +1,28 @@
+{
+    "class": "org.batfish.question.specifiers.SpecifiersQuestion",
+    "locationSpecifierInput": "${locations}",
+    "queryType": "location",
+    "specifierFactoryVersion": "${grammarVersion}", 
+    "instance": {
+        "description": "Returns the set of locations corresponding to a locationSpec value.",
+        "instanceName": "resolveLocationSpecifier",
+        "longDescription": "Helper question that shows how specified locationSpec values resolve to the locations in the network.",
+        "tags": [
+            "specifiers"
+        ],
+        "variables": {
+            "grammarVersion": {
+                "description": "Version of grammar to use for resolution",
+                "optional": true,
+                "type": "string",
+                "displayName": "Grammar version"               
+            },
+            "locations": {
+                "description": "Input to the LocationSpecifier",
+                "optional": true,
+                "type": "locationSpec",
+                "displayName": "Locations"
+            }
+        }
+    }
+}

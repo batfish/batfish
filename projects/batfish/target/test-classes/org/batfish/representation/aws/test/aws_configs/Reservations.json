@@ -1,0 +1,246 @@
+{
+  "Reservations": [
+    {
+      "Groups": [],
+      "Instances": [
+        {
+          "AmiLaunchIndex": 0,
+          "Architecture": "x86_64",
+          "BlockDeviceMappings": [
+            {
+              "DeviceName": "/dev/sda1",
+              "Ebs": {
+                "AttachTime": "2017-09-26 23:55:54+00:00",
+                "DeleteOnTermination": false,
+                "Status": "attached",
+                "VolumeId": "vol-0ebf36fbbffb5b9ea"
+              }
+            },
+            {
+              "DeviceName": "/dev/sdf",
+              "Ebs": {
+                "AttachTime": "2017-09-26 23:55:54+00:00",
+                "DeleteOnTermination": false,
+                "Status": "attached",
+                "VolumeId": "vol-0991eeea5ff3d30cd"
+              }
+            }
+          ],
+          "ClientToken": "bLnuq1506470152405",
+          "EbsOptimized": false,
+          "Hypervisor": "xen",
+          "ImageId": "ami-07a25e7f",
+          "InstanceId": "i-075dc46a9bc347264",
+          "InstanceType": "t2.xlarge",
+          "KeyName": "arista-demo-vpc",
+          "LaunchTime": "2017-09-26 23:55:53+00:00",
+          "Monitoring": {
+            "State": "disabled"
+          },
+          "NetworkInterfaces": [
+            {
+              "Attachment": {
+                "AttachTime": "2017-09-26 23:55:53+00:00",
+                "AttachmentId": "eni-attach-f9e96a17",
+                "DeleteOnTermination": true,
+                "DeviceIndex": 0,
+                "Status": "attached"
+              },
+              "Description": "Primary network interface",
+              "Groups": [
+                {
+                  "GroupId": "sg-331ad04e",
+                  "GroupName": "Arista Demo"
+                }
+              ],
+              "Ipv6Addresses": [],
+              "MacAddress": "02:eb:c0:c9:ba:72",
+              "NetworkInterfaceId": "eni-d2b094fc",
+              "OwnerId": "118292266645",
+              "PrivateDnsName": "ip-192-168-1-18.us-west-2.compute.internal",
+              "PrivateIpAddress": "192.168.2.18",
+              "PrivateIpAddresses": [
+                {
+                  "Primary": true,
+                  "PrivateDnsName": "ip-192-168-2-18.us-west-2.compute.internal",
+                  "PrivateIpAddress": "192.168.2.18"
+                }
+              ],
+              "SourceDestCheck": true,
+              "Status": "in-use",
+              "SubnetId": "subnet-073b8061",
+              "VpcId": "vpc-b390fad5"
+            }
+          ],
+          "Placement": {
+            "AvailabilityZone": "us-west-2a",
+            "GroupName": "",
+            "Tenancy": "default"
+          },
+          "PrivateDnsName": "ip-192-168-2-18.us-west-2.compute.internal",
+          "PrivateIpAddress": "192.168.2.18",
+          "ProductCodes": [],
+          "PublicDnsName": "",
+          "RootDeviceName": "/dev/sda1",
+          "RootDeviceType": "ebs",
+          "SecurityGroups": [
+            {
+              "GroupId": "sg-55510831",
+              "GroupName": "Arista Demo"
+            }
+          ],
+          "SourceDestCheck": true,
+          "State": {
+            "Code": 80,
+            "Name": "running"
+          },
+          "StateReason": {
+            "Code": "Client.UserInitiatedShutdown",
+            "Message": "Client.UserInitiatedShutdown: User initiated shutdown"
+          },
+          "StateTransitionReason": "User initiated (2017-09-27 05:59:34 GMT)",
+          "SubnetId": "subnet-1641fa70",
+          "Tags": [
+            {
+              "Key": "Application",
+              "Value": "Arista CVP"
+            },
+            {
+              "Key": "Name",
+              "Value": "test-instance"
+            }
+          ],
+          "VirtualizationType": "hvm",
+          "VpcId": "vpc-b390fad5"
+        }
+      ],
+      "OwnerId": "118292266645",
+      "ReservationId": "r-0cd5ffefa8ca8eabc"
+    },
+    {
+      "Groups": [],
+      "Instances": [
+        {
+          "AmiLaunchIndex": 0,
+          "Architecture": "x86_64",
+          "BlockDeviceMappings": [
+            {
+              "DeviceName": "/dev/xvda",
+              "Ebs": {
+                "AttachTime": "2018-03-26 21:56:18+00:00",
+                "DeleteOnTermination": true,
+                "Status": "attached",
+                "VolumeId": "vol-09c8b6900a39cf921"
+              }
+            },
+            {
+              "DeviceName": "/dev/xvdcz",
+              "Ebs": {
+                "AttachTime": "2018-03-26 21:56:18+00:00",
+                "DeleteOnTermination": true,
+                "Status": "attached",
+                "VolumeId": "vol-03113cc4a103a061f"
+              }
+            }
+          ],
+          "ClientToken": "40b58991-3f49-10f9-af0e-bc52e784c143_subnet-b26c24fa_1",
+          "EbsOptimized": false,
+          "EnaSupport": true,
+          "Hypervisor": "xen",
+          "IamInstanceProfile": {
+            "Arn": "arn:aws:iam::118292266645:instance-profile/CM-ECS-UZCDCF32A729-ECSInstanceProfile-JDC82IKUI7UM",
+            "Id": "AIPAJ73SPIEKTVQUGXG22"
+          },
+          "ImageId": "ami-a64d9ade",
+          "InstanceId": "i-066b1b9957b9200e7",
+          "InstanceType": "t2.small",
+          "LaunchTime": "2018-03-26 21:56:17+00:00",
+          "Monitoring": {
+            "State": "disabled"
+          },
+          "NetworkInterfaces": [
+            {
+              "Association": {
+                "IpOwnerId": "amazon",
+                "PublicDnsName": "ec2-54-191-107-22.us-west-2.compute.amazonaws.com",
+                "PublicIp": "54.191.107.22"
+              },
+              "Attachment": {
+                "AttachTime": "2018-03-26 21:56:17+00:00",
+                "AttachmentId": "eni-attach-0f612575552cfed9b",
+                "DeleteOnTermination": true,
+                "DeviceIndex": 0,
+                "Status": "attached"
+              },
+              "Description": "",
+              "Groups": [
+                {
+                  "GroupId": "sg-08893f1a4413ccfc1",
+                  "GroupName": "Test-Instance-SG"
+                }
+              ],
+              "Ipv6Addresses": [],
+              "MacAddress": "06:c1:67:bb:bf:28",
+              "NetworkInterfaceId": "eni-05e8949c37b78cf4d",
+              "OwnerId": "118292266645",
+              "PrivateDnsName": "ip-10-193-16-105.us-west-2.compute.internal",
+              "PrivateIpAddress": "10.193.16.105",
+              "PrivateIpAddresses": [
+                {
+                  "Association": {
+                    "IpOwnerId": "amazon",
+                    "PublicDnsName": "ec2-54-191-107-22.us-west-2.compute.amazonaws.com",
+                    "PublicIp": "54.191.107.22"
+                  },
+                  "Primary": true,
+                  "PrivateDnsName": "ip-10-193-16-105.us-west-2.compute.internal",
+                  "PrivateIpAddress": "10.193.16.105"
+                }
+              ],
+              "SourceDestCheck": true,
+              "Status": "in-use",
+              "SubnetId": "subnet-b26c24fa",
+              "VpcId": "vpc-6f6f8316"
+            }
+          ],
+          "Placement": {
+            "AvailabilityZone": "us-west-2b",
+            "GroupName": "",
+            "Tenancy": "default"
+          },
+          "PrivateDnsName": "ip-10-193-16-105.us-west-2.compute.internal",
+          "PrivateIpAddress": "10.193.16.105",
+          "ProductCodes": [],
+          "PublicDnsName": "ec2-54-191-107-22.us-west-2.compute.amazonaws.com",
+          "PublicIpAddress": "54.191.107.22",
+          "RootDeviceName": "/dev/xvda",
+          "RootDeviceType": "ebs",
+          "SecurityGroups": [
+            {
+              "GroupId": "sg-08893f1a4413ccfc1",
+              "GroupName": "Test-Instance-SG"
+            }
+          ],
+          "SourceDestCheck": true,
+          "State": {
+            "Code": 16,
+            "Name": "running"
+          },
+          "StateTransitionReason": "",
+          "SubnetId": "subnet-b26c24fa",
+          "Tags": [
+            {
+              "Key": "Name",
+              "Value": "Test host"
+            }
+          ],
+          "VirtualizationType": "hvm",
+          "VpcId": "vpc-6f6f8316"
+        }
+      ],
+      "OwnerId": "118292266645",
+      "RequesterId": "903220451833",
+      "ReservationId": "r-038ad1d6ad1680145"
+    }
+  ]
+}

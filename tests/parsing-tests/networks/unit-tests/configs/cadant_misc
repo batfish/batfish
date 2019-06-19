@@ -1,0 +1,104 @@
+#
+shelfname ""
+hostname "cadant_misc"
+#
+accounting AccountList tacacs TACPLUS
+aging idle-mac 573696
+aging stale-mac 86400
+arp timeout 345600
+arp state searching cable unicast 2
+arp state searching cable broadcast no
+authentication default local none
+authentication AuthenList tacacs TACPLUS local
+authorization AuthorList tacacs TACPLUS local
+authorization author_default local
+autorecovery on
+cos-mapping down-max-traffic-burst 123456 class-id 1
+cos-mapping up-tos-and-mask  0 class-id 1
+enable encrypted-password 0123456789abcdef0123456789abcdef privilege 15
+fan monitor 0 no shutdown
+fan offset 123
+ftp-server
+ip no domain-lookup
+ip ssh no shutdown
+ip ssh private-key dsa1024
+0123456789abcdef0123456789abcdef0123456789abcdef01
+0123456789abcdef0123456789abcdef0123456789abcdef01
+0123456789abcdef0123456789abcdef0123456789abcdef01
+0123456789abcdef0123456789abcdef0123456789abcdef01
+0123456789abcdef0123456789abcdef0123456789abcdef01
+0123456789abcdef0123456789abcdef0123456789abcdef01
+0123456789abcdef0123456789abcdef0123456789abcdef01
+0123456789abcdef0123456789abcdef0123456789abcdef01
+0123456789abcdef0123456789abcdef0123456789abcdef01
+0123456789abcdef0123456789abcdef0123456789abcdef01
+0123456789abcdef0123456789abcdef0123456789abcdef01
+0123456789abcdef0123456789abcdef0123456789abcdef01
+0123456789abcdef0123456789abcdef0123456789abcdef01
+0123456789abcdef0123456789abcdef0123456789abcdef01
+0123456789abcdef0123456789abcdef0123456789abcdef01
+0123456789abcdef0123456789abcdef0123456789abcdef01
+0123456789abcdef0123456789abcdef0123456789abcdef01
+0123456789abcdef0123456789abcdef0123456789abcdef01
+0123456789abcdef0123456789abcdef0123456789abcdef01
+0123456789abcdef0123456789abcdef0123456789abcdef01
+0123456789abcdef0123456789abcdef0123456789abcdef01
+0123456789abcdef0123456789abcdef0123456789abcdef01
+0123456789abcdef0123456789abcdef0123456789abcdef01
+0123456789abcdef0123456789abcdef0123456789abcdef01
+0123456789abcdef0123456789abcdef0123456789abcdef01
+0123456789abcdef0123456789abcdef0123456789abcdef01
+0123456789abcdef0123456789abcdef0123456789abcdef01
+0123456789abcdef0123456789abcdef0123456789abcdef01
+0123456789abcdef0123456789abcdef0123456789abcdef01
+0123456789abcdef01234567
+/end # end of ssh private-key
+ip ssh public-key dsa1024
+0123456789abcdef0123456789abcdef0123456789abcdef01
+0123456789abcdef0123456789abcdef0123456789abcdef01
+0123456789abcdef0123456789abcdef0123456789abcdef01
+0123456789abcdef0123456789abcdef0123456789abcdef01
+0123456789abcdef0123456789abcdef0123456789abcdef01
+0123456789abcdef0123456789abcdef0123456789abcdef01
+0123456789abcdef0123456789abcdef0123456789abcdef01
+0123456789abcdef0123456789abcdef0123456789abcdef01
+0123456789abcdef0123456789abcdef0123456789abcdef01
+0123456789abcdef0123456789abcdef0123456789abcdef01
+0123456789abcdef0123456789abcdef0123456789abcdef01
+0123456789abcdef0123456789abcdef0123
+/end  # end of ssh public-key
+ipv6 dhcp relay use-link-address no
+ipv6 hop-limit 123
+ipv6 nd state searching cable multicast no
+ipv6 nd state searching cable unicast 3
+ipv6 pd-route-injection
+key chain abc key 0 key-string 0123456789abcdef hidden
+key chain def key 1 key-string 0123456789abcdef hidden
+ntp authentication
+ntp server 1.2.3.4 minpoll 6 maxpoll 7 version 4 key 0
+ntp server 5.6.7.8 minpoll 6 maxpoll 7 version 4 key 0
+ntp source-interface loopback 0
+power-monitor A no shutdown
+power-monitor B no shutdown
+slot 0 spare-group 0 failback-override fpgaCrcErr auto
+slot 0 spare-group 0 manual
+slot 0 type ucam name "slot0-foo"
+slot 1 spare-group 0
+slot 1 type dcam-b name "slot1-bar"
+slot 2 type rsm name "slot3-rsm"
+slot 7 no shutdown
+tacacs group TACPLUS host 1.2.3.4
+tacacs group TACPLUS host 2.3.4.5
+tacacs host 1.2.3.4 port 12 timeout 3  key "01234567890abcdef01234567890abcdef" hidden
+tacacs host 2.3.4.5 port 34 timeout 3  key "01234567890abcdef01234567890abcdef" hidden
+tacacs source-interface loopback 0
+telnet-server
+username "admin" privilege 15 encrypted-password 0123456789abcdef0123456789abcdef
+video vpme shared-secret default
+vrf default
+ auto-import enable
+exit
+vrf vrf-foo1
+ auto-import enable
+exit
+#

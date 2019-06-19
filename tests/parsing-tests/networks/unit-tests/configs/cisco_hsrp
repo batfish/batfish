@@ -1,0 +1,48 @@
+!
+hostname cisco_hsrp
+!
+router hsrp
+ interface TenGigE0/0/2/3
+  address-family ipv4
+   hsrp
+    preempt
+    address 137.164.220.247
+    track object 1 2
+   !
+  !
+  address-family ipv6
+   hsrp 132
+   preempt
+   priority 95
+   address global 2001:67c:13c0:132::2
+   address linklocal autoconfig legacy-compatible
+ !
+!
+ interface TenGigE0/0/2/2
+  address-family ipv4
+   hsrp 1
+    preempt
+    priority 105
+    address 1.2.3.4
+    track object StaticOriginationRoutes
+    authentication SwiMCH15
+   !
+  !
+ !
+!
+interface TenGigE0/0/2/2
+ no hsrp bfd
+ hsrp delay minimum 0 reload 0
+ no hsrp use-bia
+ hsrp 123
+  authentication cisco
+  authentication text blah
+  ip 1.2.3.4
+  mac-address 0123.4567.89AB
+  name bloop
+  no preempt
+  preempt delay minimum 300 reload 300 sync 0 
+  priority 100 forwarding-threshold lower 0 upper 100
+  timers  1  4
+!
+

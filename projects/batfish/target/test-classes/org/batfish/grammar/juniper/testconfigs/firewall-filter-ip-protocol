@@ -1,0 +1,5 @@
+#
+set system host-name firewall-filter-ip-protocol
+#
+set firewall filter FILTER term TERM from ip-protocol tcp
+set firewall filter FILTER term TERM then accept

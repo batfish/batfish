@@ -1,0 +1,8 @@
+!
+hostname aruba_vpn
+!
+vpn-dialer default-dialer
+  ike authentication PRE-SHARE ******
+!
+!
+

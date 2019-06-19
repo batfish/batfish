@@ -1,0 +1,10 @@
+net del all
+#
+net add hostname cumulus_nclu_dns
+#
+net add dns nameserver ipv4 192.0.2.3
+net add dns nameserver ipv4 192.0.2.4
+net add dns nameserver ipv6 1::1
+net add dns nameserver ipv6 1::2
+#
+net commit

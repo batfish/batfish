@@ -1,0 +1,9 @@
+!
+hostname cisco_mac_acl
+!
+access-list 700 permit 0000.0000.0000 ffff.ffff.ffff
+access-list 1199 permit 0000.0000.0000 ffff.ffff.ffff 0000.0000.0000 ffff.ffff.ffff
+mac access-list copp-system-p-acl-mac-cdp-udld-vtp
+  10 permit any 0100.0ccc.cccc 0000.0000.0000 
+!
+

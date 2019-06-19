@@ -1,0 +1,97 @@
+[
+  {
+    "class" : "org.batfish.minesweeper.answers.SmtReachabilityAnswerElement",
+    "flowHistory" : {
+      "class" : "org.batfish.minesweeper.answers.FlowHistory",
+      "traces" : {
+        "Flow<ingressNode:host1 ingressVrf:default srcIp:0.0.0.0 dstIp:192.168.8.1 ipProtocol:HOPOPT dscp: 0 ecn:0 fragmentOffset:0 packetLength:0 state:NEW tag:SMT>" : {
+          "environments" : {
+            "BASE" : {
+              "testrigName" : "tr-smt-static3"
+            }
+          },
+          "flow" : {
+            "dscp" : 0,
+            "dstIp" : "192.168.8.1",
+            "dstPort" : 0,
+            "ecn" : 0,
+            "fragmentOffset" : 0,
+            "icmpCode" : 0,
+            "icmpVar" : 0,
+            "ingressNode" : "host1",
+            "ingressVrf" : "default",
+            "ipProtocol" : "HOPOPT",
+            "packetLength" : 0,
+            "srcIp" : "0.0.0.0",
+            "srcPort" : 0,
+            "state" : "NEW",
+            "tag" : "SMT",
+            "tcpFlagsAck" : 1,
+            "tcpFlagsCwr" : 1,
+            "tcpFlagsEce" : 1,
+            "tcpFlagsFin" : 1,
+            "tcpFlagsPsh" : 1,
+            "tcpFlagsRst" : 1,
+            "tcpFlagsSyn" : 1,
+            "tcpFlagsUrg" : 1
+          },
+          "paths" : {
+            "BASE" : [
+              {
+                "disposition" : "ACCEPTED",
+                "hops" : [
+                  {
+                    "edge" : {
+                      "node1" : "host1",
+                      "node1interface" : "eth0",
+                      "node2" : "r1",
+                      "node2interface" : "Ethernet0/0"
+                    },
+                    "routes" : [
+                      "StaticRoute<0.0.0.0/0,nhip:192.168.1.2,nhint:dynamic>"
+                    ]
+                  },
+                  {
+                    "edge" : {
+                      "node1" : "r1",
+                      "node1interface" : "Ethernet0/1",
+                      "node2" : "r2",
+                      "node2interface" : "Ethernet0/0"
+                    },
+                    "routes" : [
+                      "StaticRoute<192.168.8.0/24,nhip:10.10.10.1,nhint:dynamic>"
+                    ]
+                  },
+                  {
+                    "edge" : {
+                      "node1" : "r2",
+                      "node1interface" : "Ethernet0/1",
+                      "node2" : "r3",
+                      "node2interface" : "Ethernet0/0"
+                    },
+                    "routes" : [
+                      "StaticRoute<192.168.8.0/24,nhip:10.10.11.1,nhint:dynamic>"
+                    ]
+                  }
+                ],
+                "notes" : "ACCEPTED"
+              }
+            ]
+          }
+        }
+      }
+    },
+    "result" : {
+      "forwardingModel" : [
+        "host1,eth0 --> r1,Ethernet0/0 (STATIC)",
+        "host3,eth0 --> r3,Ethernet0/1 (CONNECTED)",
+        "r1,Ethernet0/1 --> r2,Ethernet0/0 (STATIC)",
+        "r2,Ethernet0/1 --> r3,Ethernet0/0 (STATIC)"
+      ],
+      "packetModel" : {
+        "dstIp" : "192.168.8.1"
+      },
+      "verified" : false
+    }
+  }
+]

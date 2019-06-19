@@ -1,0 +1,10 @@
+boot system flash this-is-an-arista-device.swi
+!
+hostname arista-ospf-redistribute-bgp
+!
+router ospf 1
+ redistribute bgp
+ redistribute bgp route-map MAP
+ redistribute bgp 65100
+ redistribute bgp 65100 route-map MAP
+ redistribute bgp 65100 metric 10

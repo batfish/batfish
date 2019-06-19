@@ -1,0 +1,32 @@
+#
+set system host-name juniper_snmp
+set snmp community "dummycommunity"
+set snmp community "dummycommunity" authorization read-only
+set snmp community "dummycommunity" client-list-name bippetyboo
+set snmp community "dummycommunity" clients 1.2.3.0/24
+set snmp community "dummycommunity" view myviewname1
+set snmp contact "some contact"
+set snmp description abcdefg
+set snmp filter-duplicates
+set snmp filter-interfaces interfaces "^lc|^pf|^lo0\.1638"
+set snmp location "some location"
+set snmp interface ge-0/0/0.0
+set snmp name my-snmp-name
+set snmp stats-cache-lifetime 30
+set snmp traceoptions flag pdu
+set snmp trap-group mytrapgroup categories authentication
+set snmp trap-group mytrapgroup categories chassis
+set snmp trap-group mytrapgroup categories link
+set snmp trap-group mytrapgroup categories routing
+set snmp trap-group mytrapgroup categories startup
+set snmp trap-group mytrapgroup categories vrrp-events
+set snmp trap-group mytrapgroup targets 1.2.3.4
+set snmp trap-group mytrapgroup targets 2.3.4.5
+set snmp trap-group mytrapgroup version v2
+set snmp trap-options source-address 4.5.6.7
+set snmp trap-options source-address 8.9.0.1
+set snmp trap-options source-address 5.3.7.4
+set snmp trap-options source-address 8.5.3.3
+set snmp view myviewname1 oid myoidname1 exclude
+set snmp view myviewname2 oid myoidname2 include
+#

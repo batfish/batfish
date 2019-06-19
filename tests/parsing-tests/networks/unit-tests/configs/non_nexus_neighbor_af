@@ -1,0 +1,16 @@
+!
+hostname non_nexus_neighbor_af
+!
+router bgp 2
+ bgp log-neighbor-changes
+ neighbor 10.0.0.0 remote-as 1
+ !
+ address-family ipv4
+  neighbor 10.0.0.0 activate
+  neighbor 10.0.0.0 soft-reconfiguration inbound
+  no auto-summary
+  no synchronization
+  network 192.168.100.100 mask 255.255.255.255
+ exit-address-family
+!
+

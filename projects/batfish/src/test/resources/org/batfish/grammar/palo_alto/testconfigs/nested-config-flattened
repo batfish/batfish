@@ -1,0 +1,2 @@
+####BATFISH FLATTENED PALO ALTO CONFIG####
+set deviceconfig system hostname nested-config

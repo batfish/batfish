@@ -1,0 +1,25 @@
+deviceconfig {
+    system {
+        hostname nested-config-structure-def;
+    }
+}
+network {
+    interface {
+        ethernet {
+            ethernet1/1 {
+                layer3 {
+                    ip {
+                        1.1.1.1/24;
+                    }
+                }
+            }
+            ethernet1/2 {
+                layer3 {
+                    ip {
+                        1.1.2.1/24;
+                    }
+                }
+            }
+        }
+    }
+}

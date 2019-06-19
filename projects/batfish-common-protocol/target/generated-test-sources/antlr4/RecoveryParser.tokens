@@ -1,0 +1,17 @@
+BLOCK=1
+INNER=2
+OTHER=3
+SIMPLE=4
+BLANK_LINE=5
+COMMENT_LINE=6
+COMMENT_TAIL=7
+NEWLINE=8
+WS=9
+ENTER_BAD_MODE=10
+M_BadMode_nonexistent=11
+'block'=1
+'inner'=2
+'other'=3
+'simple'=4
+'enter-bad-mode'=10
+'nonexistent'=11

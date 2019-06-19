@@ -1,0 +1,113 @@
+[
+  {
+    "class" : "org.batfish.minesweeper.answers.RoleAnswerElement",
+    "exportBgpEcs" : [
+      [
+        "r1,Serial1 --> _,_",
+        "r1,Serial2 --> _,_",
+        "r1,Serial3 --> _,_",
+        "r1,Serial4 --> _,_"
+      ],
+      [
+        "r1,Serial10 --> _,_",
+        "r1,Serial11 --> _,_"
+      ],
+      [
+        "r1,Serial12 --> _,_",
+        "r1,Serial13 --> _,_"
+      ],
+      [
+        "r1,Serial14 --> _,_",
+        "r1,Serial15 --> _,_"
+      ],
+      [
+        "r1,Serial5 --> _,_",
+        "r1,Serial6 --> _,_"
+      ],
+      [
+        "r1,Serial7 --> _,_"
+      ],
+      [
+        "r1,Serial8 --> _,_",
+        "r1,Serial9 --> _,_"
+      ]
+    ],
+    "importBgpEcs" : [
+      [
+        "r1,Serial1 --> _,_",
+        "r1,Serial2 --> _,_",
+        "r1,Serial3 --> _,_",
+        "r1,Serial4 --> _,_"
+      ],
+      [
+        "r1,Serial10 --> _,_",
+        "r1,Serial11 --> _,_"
+      ],
+      [
+        "r1,Serial12 --> _,_",
+        "r1,Serial13 --> _,_"
+      ],
+      [
+        "r1,Serial14 --> _,_",
+        "r1,Serial15 --> _,_"
+      ],
+      [
+        "r1,Serial5 --> _,_",
+        "r1,Serial6 --> _,_"
+      ],
+      [
+        "r1,Serial7 --> _,_"
+      ],
+      [
+        "r1,Serial8 --> _,_",
+        "r1,Serial9 --> _,_"
+      ]
+    ],
+    "incomingAclEcs" : [
+      [
+        "r1,Serial1 --> _,_",
+        "r1,Serial2 --> _,_"
+      ],
+      [
+        "r1,Serial10 --> _,_",
+        "r1,Serial11 --> _,_",
+        "r1,Serial12 --> _,_",
+        "r1,Serial13 --> _,_",
+        "r1,Serial14 --> _,_",
+        "r1,Serial15 --> _,_",
+        "r1,Serial7 --> _,_",
+        "r1,Serial8 --> _,_",
+        "r1,Serial9 --> _,_"
+      ],
+      [
+        "r1,Serial3 --> _,_"
+      ],
+      [
+        "r1,Serial4 --> _,_",
+        "r1,Serial5 --> _,_"
+      ],
+      [
+        "r1,Serial6 --> _,_"
+      ]
+    ],
+    "outgoingAclEcs" : [
+      [
+        "r1,Serial1 --> _,_",
+        "r1,Serial10 --> _,_",
+        "r1,Serial11 --> _,_",
+        "r1,Serial12 --> _,_",
+        "r1,Serial13 --> _,_",
+        "r1,Serial14 --> _,_",
+        "r1,Serial15 --> _,_",
+        "r1,Serial2 --> _,_",
+        "r1,Serial3 --> _,_",
+        "r1,Serial4 --> _,_",
+        "r1,Serial5 --> _,_",
+        "r1,Serial6 --> _,_",
+        "r1,Serial7 --> _,_",
+        "r1,Serial8 --> _,_",
+        "r1,Serial9 --> _,_"
+      ]
+    ]
+  }
+]

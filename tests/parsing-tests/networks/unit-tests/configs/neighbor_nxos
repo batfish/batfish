@@ -1,0 +1,12 @@
+!
+feature bgp
+!
+hostname neighbor_nxos
+!
+router bgp 2
+ neighbor 10.1.1.0/25
+ inherit peer KLMN
+ description 12345:ABCD:EFG:10.1.1.0/25:abc@def.ghi:123-456-7890 1:
+!
+end
+

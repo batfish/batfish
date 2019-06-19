@@ -1,0 +1,12 @@
+!
+hostname ios_xr_ntp
+!
+ntp
+ authentication-key 12 md5 encrypted 053811060F787E0A11
+ server 1.2.3.4 prefer
+ source Loopback0
+ update-calendar
+ log-internal-sync
+ interface Loopback123
+!
+

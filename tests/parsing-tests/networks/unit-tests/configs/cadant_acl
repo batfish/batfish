@@ -1,0 +1,30 @@
+#
+shelfname ""
+hostname "cadant_acl"
+#
+access-list 50
+  name stdAcl-foo
+  remark "Hey there"
+  permit 1.2.3.0 0.0.0.255
+exit
+access-list 51
+  permit 2.3.4.0 0.0.0.255
+  deny   any
+exit
+access-list 99
+  name stdAcl-bar
+  permit 3.4.5.6
+exit
+ipv6 access-list ipv6-acl-foo
+  remark "Hello again"
+  deny   tcp any any range 123 456
+  deny   udp any any range netbios-ns netbios-ss
+  permit icmp any any 123
+  permit ip host dead:beef::1 any
+  permit nd any dead::/8 nd-type 133
+  permit tcp dead::/36 eq www beef::/33
+  permit tcp dead::/36 eq telnet beef::/33
+  permit udp dead:beef::/36 beef:dead::/36
+  permit udp any eq 123 any eq 456
+exit
+#

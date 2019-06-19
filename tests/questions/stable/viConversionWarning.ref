@@ -1,0 +1,13 @@
+{
+  "class" : "org.batfish.question.initialization.ConversionWarningQuestion",
+  "differential" : false,
+  "includeOneTableKeys" : true,
+  "instance" : {
+    "description" : "Returns Batfish warnings that occurred when converting to vendor independent model.",
+    "instanceName" : "qname",
+    "longDescription" : "When converting configurations to a vendor independent model Batfish may generate warnings for unsupported features and for unexpected configurations (e.g., missing definitions). This question lists those warnings.",
+    "tags" : [
+      "initialization"
+    ]
+  }
+}

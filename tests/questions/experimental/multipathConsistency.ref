@@ -1,0 +1,114 @@
+{
+  "class" : "org.batfish.question.multipath.MultipathConsistencyQuestion",
+  "headers" : {
+    "dstIps" : "ddd",
+    "srcIps" : "sss"
+  },
+  "maxTraces" : 1,
+  "pathConstraints" : {
+    "endLocation" : "bbb",
+    "forbiddenLocations" : "ddd",
+    "startLocation" : "aaa",
+    "transitLocations" : "ccc"
+  },
+  "differential" : false,
+  "includeOneTableKeys" : true,
+  "instance" : {
+    "description" : "Validates multipath consistency.",
+    "instanceName" : "qname",
+    "longDescription" : "Searches across all flows in the network and returns example flows that are treated differently (i.e., dropped versus forwarded) by different paths in the presence of multipath routing.",
+    "tags" : [
+      "dataplane",
+      "reachability"
+    ],
+    "variables" : {
+      "headers" : {
+        "description" : "Packet header constraints",
+        "displayName" : "Headers",
+        "fields" : {
+          "applications" : {
+            "optional" : true
+          },
+          "dscps" : {
+            "optional" : true
+          },
+          "dstIps" : {
+            "optional" : true
+          },
+          "dstPorts" : {
+            "optional" : true
+          },
+          "ecns" : {
+            "optional" : true
+          },
+          "flowStates" : {
+            "optional" : true
+          },
+          "fragmentOffsets" : {
+            "optional" : true
+          },
+          "icmpCodes" : {
+            "optional" : true
+          },
+          "icmpTypes" : {
+            "optional" : true
+          },
+          "ipProtocols" : {
+            "optional" : true
+          },
+          "packetLengths" : {
+            "optional" : true
+          },
+          "srcIps" : {
+            "optional" : true
+          },
+          "srcPorts" : {
+            "optional" : true
+          },
+          "tcpFlags" : {
+            "optional" : true
+          }
+        },
+        "optional" : true,
+        "type" : "headerConstraint",
+        "value" : {
+          "srcIps" : "sss",
+          "dstIps" : "ddd"
+        }
+      },
+      "maxTraces" : {
+        "description" : "Limit the number of traces returned",
+        "displayName" : "Max Traces",
+        "optional" : true,
+        "type" : "integer",
+        "value" : 1
+      },
+      "pathConstraints" : {
+        "description" : "Constraint the path a flow can take (start/end/transit locations)",
+        "displayName" : "Path Constraints",
+        "fields" : {
+          "startLocation" : {
+            "optional" : true
+          },
+          "endLocation" : {
+            "optional" : true
+          },
+          "transitLocations" : {
+            "optional" : true
+          },
+          "forbiddenLocations" : {
+            "optional" : true
+          }
+        },
+        "optional" : true,
+        "type" : "pathConstraint",
+        "value" : {
+          "startLocation" : "aaa",
+          "endLocation" : "bbb",
+          "transitLocations" : "ccc",
+          "forbiddenLocations" : "ddd"
+        }
+      }
+    }
+  }
+}

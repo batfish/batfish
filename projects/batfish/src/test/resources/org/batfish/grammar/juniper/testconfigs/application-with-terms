@@ -1,0 +1,10 @@
+#
+set system host-name application-with-terms
+#
+set applications application a1 term t1 protocol tcp destination-port 1
+set applications application a1 term t1 protocol tcp source-port 2
+set applications application a1 term t2 protocol udp destination-port 3
+set applications application a1 term t2 protocol udp source-port 4
+set security policies global policy p1 match application a1
+set security policies global policy p1 then permit
+#

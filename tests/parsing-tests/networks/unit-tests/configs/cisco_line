@@ -1,0 +1,67 @@
+!
+hostname cisco_line
+!
+line vty 0 15
+ session-timeout 15
+ access-class 40 in
+ logout-warning 20
+ escape-character 0x61
+ exec-timeout 15 0
+ login authentication blah
+ timeout login response 120
+ vacant-message ^C
+    Unauthorized access prohibited
+^C
+ no vacant-message
+ speed 38400
+!
+line console
+ exec-timeout 15
+line vty
+ session-limit 64
+ access-class vty-acl in
+!
+line 0/0/0 0/0/15
+ session-timeout 60
+ access-class 40 in
+ login authentication SecurID
+ no exec
+ transport preferred none
+ transport input telnet
+ transport output none
+line 35 48
+ session-timeout 540
+ location Covel Opt81 Network
+ absolute-timeout 540
+ session-disconnect-warning 30 message You will be disconnected in 30 seconds
+ modem Host
+ terminal-type vt100
+ no exec
+ transport input all
+ databits 7
+ stopbits 1
+ flowcontrol hardware
+line 2
+ no activation-character
+ login local
+ transport input ssh telnet
+ privilege level 15
+ no exec
+ exec-timeout 0 15
+ exec-timeout 1
+ location The end of the world
+ script dialer EVDO
+!
+line vty 0 4
+ access-class 99 in
+ accounting commands default
+ exec-timeout 60 0
+ password xxx
+ logging synchronous
+ ipv6 access-class ipv6-vty-acl in
+ rxspeed 300
+ transport preferred none
+ txspeed 500
+ notify
+!
+!

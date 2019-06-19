@@ -1,0 +1,21 @@
+{
+    "class": "org.batfish.question.UndefinedReferencesQuestionPlugin$UndefinedReferencesQuestion",
+    "differential": false,
+    "nodes": "${nodes}",
+    "instance": {
+        "description": "Identifies undefined references in configuration.",
+        "instanceName": "undefinedReferences",
+        "longDescription": "Finds configurations that have references to named structures (e.g., ACLs) that are not defined. Such occurrences indicate errors and can have serious consequences in some cases.",
+        "tags": [
+            "hygiene"
+        ],
+        "variables": {
+            "nodes": {
+                "description": "Look for undefined references on nodes matching this name or regex",
+                "type": "nodeSpec",
+                "value": ".*",
+                "displayName": "Nodes"
+            }
+        }
+    }
+}

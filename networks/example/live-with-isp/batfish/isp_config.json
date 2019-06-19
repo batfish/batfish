@@ -1,0 +1,20 @@
+{
+	"borderInterfaces": [
+		{
+			"borderInterface": {
+				"hostname": "as2border1",
+				"interface": "GigabitEthernet0/0"
+			}
+		},
+		{
+			"borderInterface": {
+				"hostname": "as2border2",
+				"interface": "GigabitEthernet0/0"
+			}
+		}
+	],
+	"filter": {
+			"onlyRemoteAsns": [],
+			"onlyRemoteIps": []
+	}
+}

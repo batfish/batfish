@@ -1,0 +1,68 @@
+!
+hostname cisco_acl
+!
+ip access-list BLAH-BLAH
+   10 permit icmp any any packet-too-big
+   20 permit ip any any tracked
+   30 permit ospf any any
+   40 permit tcp any any eq bgp
+   50 permit udp any any eq bootps bootpc ntp
+   60 permit tcp any any eq mlag ttl eq 255
+   70 permit udp any any eq mlag ttl eq 255
+   80 permit vrrp any any
+   90 permit ahp any any
+   100 permit pim any any
+   110 permit igmp any any
+   120 permit tcp any any range 1 10
+   130 remark REMOVED
+   140 permit udp 10.0.0.0/19 any eq snmp
+   180 permit udp host 10.0.0.0 any eq snmp
+   210 remark REMOVED
+   220 permit tcp 10.0.0.0/19 any eq ssh
+   260 permit tcp host 10.0.0.0 any eq ssh
+   270 permit tcp any any eq microsoft-ds 5432
+   ! 5 is ICMP type redirect, 2 is Type of Service and Network
+   280 permit icmp any any 5 2
+   290 permit icmp any any time-exceeded ! believe this is type 11, any code
+   300 permit icmp any any ttl-exceeded  ! type 11, code 0
+   410 deny ip any any log
+!
+! 'extended' is the name
+ip access-list extended
+! 'standard' is the name
+ip access-list standard
+!
+ip access-list blah
+ 10 permit ip any any
+!
+ip prefix-list allowprefix seq 10 permit 192.0.2.0/24 eq 24
+ip prefix-list allowprefix 20 permit 209.165.201.0/24 le 32
+!
+prefix-list allowprefix-asa seq 10 permit 192.0.2.0/24 le 32
+prefix-list allowprefix-asa 20 permit 209.165.201.0/24 le 32
+!
+access-list dynamic-extended
+!
+! Cisco command reference: https://www.cisco.com/c/en/us/td/docs/switches/datacenter/sw/4_1/nx-os/security/configuration/guide/sec_nx-os-cfg/sec_arpinspect.html#wp1158411
+arp access-list unnumberedArpAcl
+    permit ip any mac any
+    permit ip any mac any log
+    permit ip host 10.0.0.1 mac host 0000.0000.0001
+    permit ip 10.0.0.0 0.0.0.255 mac 0000.0000.0001 FFFF.FFFF.0000
+    permit request ip any mac any
+    permit request ip host 10.0.0.1 mac host 0000.0000.0001
+    permit response ip any any mac any
+    permit response ip host 10.0.0.1 any mac host 0000.0000.0001
+    permit response ip any any mac any any
+    permit response ip any host 10.0.0.2 mac any host 0000.0000.0002
+!
+arp access-list numberedArpAcl
+    10 deny ip any mac any
+!
+ip access-list test-codes
+    10 permit udp any any eq bfd
+    20 permit udp any any eq bfd-echo
+!
+access-list TEST extended deny ip any any log 7 interval 600
+access-list TEST extended deny ip any any log default
+access-list TEST extended deny ip any any log disable

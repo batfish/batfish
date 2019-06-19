@@ -1,0 +1,40 @@
+{
+  "class" : "org.batfish.question.ipsecsessionstatus.IpsecSessionStatusQuestion",
+  "nodes" : "n1",
+  "remoteNodes" : "n2",
+  "status" : ".*",
+  "differential" : false,
+  "includeOneTableKeys" : true,
+  "instance" : {
+    "description" : "Returns the status of configured IPSec sessions.",
+    "instanceName" : "qname",
+    "longDescription" : "Shows configuration settings and status for each configured IPSec tunnel in the network. The status is IPSEC_SESSION_ESTABLISHED for tunnels that are expected to be established; it is IKE_PHASE1_FAILED if IKE parameters negotiation failed; it is IKE_PHASE1_KEY_MISMATCH if IKE negotiation was successful but IKE keys do not match; it is IPSEC_PHASE2_FAILED if negotiation of IPsec parameters failed; and it is MISSING_END_POINT if the remote endpoint for a configured IPsec tunnel could not be found in the network.",
+    "tags" : [
+      "ipsec",
+      "status"
+    ],
+    "variables" : {
+      "nodes" : {
+        "description" : "Include sessions whose first node matches this specifier",
+        "displayName" : "Nodes",
+        "optional" : true,
+        "type" : "nodeSpec",
+        "value" : "n1"
+      },
+      "remoteNodes" : {
+        "description" : "Include sessions whose second node matches this specifier",
+        "displayName" : "Remote Nodes",
+        "optional" : true,
+        "type" : "nodeSpec",
+        "value" : "n2"
+      },
+      "status" : {
+        "description" : "Only include IPSec sessions for which status matches this regex",
+        "displayName" : "Status",
+        "optional" : true,
+        "type" : "ipsecSessionStatus",
+        "value" : ".*"
+      }
+    }
+  }
+}

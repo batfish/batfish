@@ -1,0 +1,23 @@
+#
+system {
+  host-name preprocess-hierarchical;
+}
+groups {
+  g1 {
+    interfaces {
+      lo0 {
+        disable;
+      }
+    }
+  }
+}
+interfaces {
+  lo0 {
+    apply-groups g1;
+    unit 0 {
+      family inet {
+        address 192.0.2.1/24;
+      }
+    }
+  }
+}

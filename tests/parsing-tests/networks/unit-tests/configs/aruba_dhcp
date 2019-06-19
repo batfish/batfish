@@ -1,0 +1,15 @@
+!
+hostname aruba_dhcp
+!
+ip dhcp excluded-address 1.2.3.4 1.2.3.5
+ip dhcp pool foopool
+ authoritative
+ default-router 2.2.2.2
+ dns-server 3.3.3.3 3.3.3.4
+ domain-name example.com
+ lease 7 0 0 0
+ network 4.4.4.0 255.255.255.0
+!
+service dhcp
+!
+

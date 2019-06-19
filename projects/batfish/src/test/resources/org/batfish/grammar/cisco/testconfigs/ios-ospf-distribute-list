@@ -1,0 +1,24 @@
+!
+hostname ios-ospf-distribute-list
+!
+ip access-list extended aclin
+ip access-list extended aclout
+!
+ip prefix-list plin permit 0.0.0.0/0
+ip prefix-list plout permit 0.0.0.0/0
+!
+route-map rmin permit 100
+route-map rmout permit 100
+!
+router ospf 1
+ distribute-list aclin in
+ distribute-list aclout out
+!
+router ospf 2 vrf v2
+ distribute-list prefix plin in
+ distribute-list prefix plout out
+!
+router ospf 3 vrf v3
+ distribute-list route-map rmin in
+ distribute-list route-map rmout out
+!

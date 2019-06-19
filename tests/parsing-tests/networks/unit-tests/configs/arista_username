@@ -1,0 +1,9 @@
+!
+hostname arista_username
+!
+enable secret 5 $1$5C7CVuxv$nnhvQ21cl8fsuw/HTaYpA/
+no aaa root
+!
+username admin role network-admin secret 5 $1$5C7CVuxv$nnhvQ21cl8fsuw/HTaYpA/
+username noc secret sha512 $6$RMxgK5ALGIf.nWEC$tHuKCyfNtJMCY561P52dTzHUmYMmLxb/Mxik.j3vMUs8lMCPocM00/NAS.SN6GCWx7d/vQIgxnClyQLAb7n3x0
+!

@@ -1,0 +1,8 @@
+!
+hostname switchport_range
+!
+interface FastEthernet0/1
+ switchport mode trunk
+ switchport trunk allowed vlan 12,34,56-78,99
+!
+end

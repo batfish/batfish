@@ -1,0 +1,19 @@
+add-batfish-option ppt
+add-batfish-option verboseparse
+add-batfish-option haltonconverterror
+add-batfish-option haltonparseerror
+add-batfish-option disableunrecognized
+
+# Ensure that every line in the `unit-tests` network parses, that Batfish tracks
+# the right references and extract the right node properties.
+test -compareall tests/parsing-tests/unit-tests.ref init-snapshot tests/parsing-tests/networks/unit-tests
+test tests/parsing-tests/unit-tests-undefined.ref get undefinedreferences
+test tests/parsing-tests/unit-tests-unused.ref get unusedstructures
+test tests/parsing-tests/unit-tests-vimodel.ref get viModel
+test tests/parsing-tests/unit-tests-warnings.ref get parsewarning
+
+# The srx-testbed currently has a bunch of stuff not in unit-tests. Keep testing it for now.
+test -compareall tests/parsing-tests/srx-testbed.ref init-snapshot tests/parsing-tests/networks/srx-testbed
+
+# The example-juniper currently has a bunch of stuff not in unit-tests. Keep testing it for now.
+test -compareall tests/parsing-tests/example-juniper.ref init-snapshot tests/parsing-tests/networks/example-juniper

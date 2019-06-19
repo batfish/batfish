@@ -1,0 +1,16 @@
+#
+set system host-name juniper_bgp_remove_private_as
+#
+set protocols bgp family inet unicast
+set protocols bgp group someipv4bgpgroup family inet unicast
+set protocols bgp family inet6 unicast
+set protocols bgp group someipv6bgpgroup family inet6 unicast
+set protocols bgp graceful-restart
+set protocols bgp group someipv4bgpgroup remove-private all
+set protocols bgp group someipv4bgpgroup remove-private nearest
+set protocols bgp group someipv4bgpgroup remove-private replace
+set protocols bgp group someipv4bgpgroup remove-private no-peer-loop-check
+set protocols bgp group someipv6bgpgroup remove-private all
+set protocols bgp group someipv6bgpgroup remove-private nearest
+set protocols bgp group someipv6bgpgroup remove-private replace
+set protocols bgp group someipv6bgpgroup remove-private no-peer-loop-check

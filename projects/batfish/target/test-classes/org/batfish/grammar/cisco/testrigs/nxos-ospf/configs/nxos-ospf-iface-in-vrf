@@ -1,0 +1,20 @@
+!
+hostname nxos-ospf-iface-in-vrf
+feature privilege
+!
+vrf context OTHER-VRF
+!
+interface Ethernet1
+ ip address 10.0.0.1/30
+ ip ospf network point-to-point
+ no ip ospf passive-interface
+ ip router ospf 1 area 0.0.0.1
+ vrf member OTHER-VRF
+!
+router ospf 1
+ passive-interface default
+ router-id 2.3.4.5
+ vrf OTHER-VRF
+  max-metric router-lsa
+!
+!

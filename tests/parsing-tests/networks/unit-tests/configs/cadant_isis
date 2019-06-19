@@ -1,0 +1,26 @@
+#
+shelfname ""
+hostname "cadant_isis"
+#
+router isis
+ authentication key-chain isis level-1
+ authentication mode text level-1
+ is-type level-1
+ lsp-gen-interval 1234 level-1
+ lsp-refresh-interval 12345
+ max-lsp-lifetime 23456
+ metric-style wide level-1
+ net 12.3456.7890.1234.5678.90
+ address-family ipv4
+  distribute-list blah-acl-99 out connected
+  enable
+  redistribute connected level-1
+ exit
+ address-family ipv6
+  distribute-list blah-ipv6-access-list out connected
+  enable
+  redistribute connected level-1
+ exit
+ no shutdown
+exit
+#

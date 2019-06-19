@@ -1,0 +1,12 @@
+!
+hostname community_list_named
+!
+ip prefix-list PFX_LIST seq 10 permit 10.0.0.0/15 le 32
+!
+ip community-list standard COMM_LIST_NAME permit 75:42
+!
+route-map TO_NEIGHBOR permit 30
+  match ip address prefix-list PFX_LIST
+  set community community-list COMM_LIST_NAME additive
+!
+

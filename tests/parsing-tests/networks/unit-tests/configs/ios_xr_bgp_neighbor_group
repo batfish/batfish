@@ -1,0 +1,97 @@
+! This is an IOS XR formatted file.
+hostname ios_xr_bgp_neighbor_group
+!
+router bgp 5555
+ af-group blappety address-family ipv4 unicast                                               
+  send-community-ebgp
+  remove-private-AS
+  soft-reconfiguration inbound always
+ !
+ af-group blabbety address-family ipv6 unicast                                               
+  send-community-ebgp
+  remove-private-AS
+  soft-reconfiguration inbound always
+ !
+ session-group blibber
+  remote-as 12345
+  use session-group blabber
+  description Blibber
+ !
+ neighbor-group BGPMonitor
+  remote-as 65202
+  update-source Loopback0
+  address-family ipv4 unicast
+   route-policy deny_bgp_routes in
+   route-policy advertise_fooey_dc_and_isp_routes_ipv4 out
+  !
+  address-family ipv4 multicast
+   route-policy deny_bgp_routes in
+   route-policy advertise_fooey_dc_and_isp_routes_ipv4 out
+  !
+ !
+ neighbor-group foobar-iBGP_ipv4
+  use neighbor-group BGPMonitor
+  use session-group bippety
+  remote-as 5555
+  update-source Loopback0
+  session-open-mode both
+  address-family ipv4 unicast
+   route-policy advertise_fooey_routes_only out
+   soft-reconfiguration inbound always
+  !
+  address-family ipv4 multicast
+   soft-reconfiguration inbound always
+  !
+ !
+ neighbor-group foobar-iBGP_ipv6
+  remote-as 5555
+  update-source Loopback0
+  address-family ipv6 unicast
+   soft-reconfiguration inbound always
+  !
+  address-family ipv6 multicast
+   soft-reconfiguration inbound always
+  !
+ !
+ neighbor-group foobar-iBGP_border_ipv4
+  remote-as 5555
+  update-source Loopback0
+  address-family ipv4 unicast
+   route-policy deny_default_network_ipv4 out
+   soft-reconfiguration inbound always
+  !
+  address-family ipv4 multicast
+   soft-reconfiguration inbound always
+  !
+ !
+ neighbor-group foobar-iBGP_border_ipv6
+  remote-as 5555
+  update-source Loopback0
+  address-family ipv6 unicast
+   soft-reconfiguration inbound always
+  !
+  address-family ipv6 multicast
+   soft-reconfiguration inbound always
+  !
+ !
+ neighbor 1.2.1.1
+  use neighbor-group foobar-iBGP_ipv4
+  send-extended-community-ebgp inheritance-disable
+  description htegiofnoirwejhg
+ !
+ neighbor 1.2.1.2
+  use neighbor-group foobar-iBGP_ipv4
+  description hejtuignrfojfgner
+ !
+ neighbor 1.2.1.3
+  use neighbor-group foobar-iBGP_border_ipv4
+  use session-group excellect-group
+  timers 30 90
+  description bafjewoifj
+ !
+ session-group OLA
+  remote-as 21
+  use session-group CIAO
+  description OLA CIAO
+ !
+end

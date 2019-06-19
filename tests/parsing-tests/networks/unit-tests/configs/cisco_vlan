@@ -1,0 +1,42 @@
+!
+hostname cisco_vlan
+!
+no vlan 1
+vlan 2
+ name myfavoritevlan
+ trunk group elephants
+vlan 396 name grgrgrgrgr
+ mtu 5000
+ tagged ethe 1/2
+ tb-vlan1 1002
+ tb-vlan2 1003
+ state active
+ priority 2
+ bridge 1
+ stp type ieee
+ priority force
+ router-interface ve 396
+ shutdown
+ no spanning-tree
+!
+vlan dot1Q tag native
+no vlan dot1Q tag native
+vlan 1054 name fuiwehguiowhgoiuw
+ name SysEng.Fusion
+ backupcrf enable
+ media fddi
+ parent 1005
+ private-vlan community
+ remote-span
+ tagged ethe 5/1
+ tagged ethe 15/2
+ no untagged e 1/1 e 5/2 to 5/7 e 6/1 to 6/2 
+ no multicast passive
+ transparent-hw-flooding
+!
+vlan access-map aaaaaaaaaaaaaa
+  match ip address bbbbbbbbbbb
+  action forward
+  statistics per-entry
+!
+

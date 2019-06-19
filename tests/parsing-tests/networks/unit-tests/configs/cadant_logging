@@ -1,0 +1,11 @@
+#
+shelfname ""
+hostname "cadant_logging"
+#
+logging host 1.2.3.4 facility local0
+logging local-volatile 8
+no logging override event 12345678
+logging source-interface loopback 0
+logging syslog 8
+logging proprietary
+#

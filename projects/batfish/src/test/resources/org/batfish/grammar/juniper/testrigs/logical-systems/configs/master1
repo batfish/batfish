@@ -1,0 +1,33 @@
+# RANCID-CONTENT-TYPE: juniper
+#
+set system host-name master1
+#
+### hostname can be manually configured for ls
+set logical-systems ls2 system host-name ls2.example.com
+### xe-0/0/0 exists only on master
+set interfaces xe-0/0/0 unit 0 family inet address 10.0.0.1/24
+#
+### xe-0/0/1 is split between master and ls1
+set interfaces xe-0/0/1 mtu 2345
+set interfaces xe-0/0/1 unit 1 family inet address 10.0.2.1/24
+#
+set logical-systems ls1 interfaces xe-0/0/1 unit 0
+set logical-systems ls1 interfaces xe-0/0/1 unit 0 family inet address 10.0.1.1/24
+#
+### xe-0/0/2 exists only on the logical system
+set logical-systems ls1 interfaces xe-0/0/2 unit 0 family inet address 10.0.3.1/24
+#
+### some structures defined on master are visible on ls, but can be overridden
+# defined only on master
+set firewall family inet filter ff1 term t1 then accept
+set policy-options policy-statement ps1 term t1 then accept
+# defined on both
+set firewall family inet filter ff2 term t1 then accept
+set logical-systems ls1 firewall family inet filter ff2 term t1 then reject
+set policy-options policy-statement ps2 term t1 then accept
+set logical-systems ls1 policy-options policy-statement ps2 term t1 then reject
+# defined only on ls
+set logical-systems ls1 firewall family inet filter ff3 term t1 then reject
+set logical-systems ls1 policy-options policy-statement ps3 term t1 then reject
+#
+

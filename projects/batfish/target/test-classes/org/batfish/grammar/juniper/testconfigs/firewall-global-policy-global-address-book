@@ -1,0 +1,12 @@
+#
+set system host-name firewall-global-policy-global-address-book
+#
+set security zones security-zone trust interfaces ge-0/0/0.0
+set security zones security-zone untrust interfaces ge-0/0/1.0
+set interfaces ge-0/0/1 unit 0 family inet address 1.2.4.4/24
+set interfaces ge-0/0/0 unit 0 family inet address 1.2.3.4/24
+set security policies global policy GLOBAL match source-address ADDR1
+set security policies global policy GLOBAL match destination-address any
+set security policies global policy GLOBAL match application any
+set security policies global policy GLOBAL then permit
+set security address-book global address ADDR1 1.2.3.5/32

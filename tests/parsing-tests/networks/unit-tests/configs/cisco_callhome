@@ -1,0 +1,72 @@
+!
+hostname cisco_callhome
+!
+callhome
+ data-privacy level normal
+ destination-profile p
+ destination-profile p alert-group all
+ destination-profile p email-addr fake2@example.com
+ destination-profile p format short-txt
+ destination-profile p format XML
+ destination-profile p message-level 3
+ destination-profile p message-size 5000000
+ destination-profile p transport-method email
+ no destination-profile p transport-method http
+ diagnostic-signature
+  active
+  profile foobar
+ duplicate-message throttle
+ email-contact fake@example.com
+ enable
+ no enable
+ periodic-inventory notification
+ periodic-inventory notification interval  7
+ periodic-inventory notification timeofday 08:00
+ phone-contact +1-555-555-5555
+ streetaddress 555 Fake St, Fakeville
+ switch-priority 7
+ transport email smtp-server 1.2.3.4 port 25 use-vrf management
+ transport email from FAKE4@EXAMPLE.COM
+ transport email reply-to fake5@example.com
+ no transport http proxy enable
+ transport http use-vrf default
+!
+no call-home reporting anonymous
+call-home reporting anonymous
+ alert-group configuration
+ contact abcdefg
+ contact-email-addr a@support.ccc
+ contact-name fewrgbefw
+ contract-id 12345
+ customer-id 1235
+ mail-server 1.2.3.4 priority 1
+ mail-server a.b.c priority 2
+ phone-number +123455677
+ sender from asfad@ggesg.gwf
+ sender reply-to hrteg@hrtg.fewf
+ service active
+ site-id rgtrfff
+ source-interface Vlan156
+ source-ip-address "1.2.3.4"
+ street-address A B C D
+ profile "mns"
+  destination preferred-msg-format short-text
+  destination address email a@b.c
+  no active
+  no destination transport-method http
+  subscribe-to-alert-group diagnostic severity minor
+  subscribe-to-alert-group environment severity minor
+  subscribe-to-alert-group syslog severity minor pattern ".*"call-home
+ profile ppppppp
+  destination address http https://a.b.c/d
+  destination address email callhome@cisco.com
+  destination transport-method http
+  subscribe-to-alert-group diagnostic
+  subscribe-to-alert-group environment
+  subscribe-to-alert-group inventory periodic monthly 27
+  subscribe-to-alert-group configuration periodic monthly 27
+  subscribe-to-alert-group telemetry periodic daily
+ vrf default
+ntp distribute
+!
+

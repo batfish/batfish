@@ -1,0 +1,10 @@
+!
+hostname cisco_ipv6
+!
+ipv6 adjacency route distance 250
+ipv6 adjacency-stale-timer 1380
+ipv6 icmp internal event-history ipv6-sync-event size small
+ipv6 nd fast-path
+ipv6 nd off-list timeout 180
+!
+

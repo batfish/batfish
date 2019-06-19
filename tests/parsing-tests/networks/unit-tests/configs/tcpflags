@@ -1,0 +1,11 @@
+!
+hostname tcpflags
+!
+access-list 100
+ permit tcp 1.2.3.4/31 any ack
+ permit tcp 1.2.3.4/31 any rst
+ permit tcp 1.2.3.4/31 any syn ack urg psh rst ece fin cwr
+ permit tcp 1.2.3.4/31 any fin
+ permit tcp 1.2.3.4/31 any fin ack
+!
+

@@ -1,0 +1,23 @@
+{
+  "class" : "org.batfish.question.aaaauthenticationlogin.AaaAuthenticationLoginQuestion",
+  "nodes" : ".*",
+  "differential" : false,
+  "includeOneTableKeys" : true,
+  "instance" : {
+    "description" : "Returns nodes that do not require authentication on all virtual terminal lines.",
+    "instanceName" : "qname",
+    "longDescription" : "Lists all nodes in the network for which there is a virtual terminal line that does not require authentication.",
+    "tags" : [
+      "hygiene"
+    ],
+    "variables" : {
+      "nodes" : {
+        "description" : "Examine AAA Authentication on nodes matching this name or regex",
+        "displayName" : "Nodes",
+        "optional" : false,
+        "type" : "nodeSpec",
+        "value" : ".*"
+      }
+    }
+  }
+}

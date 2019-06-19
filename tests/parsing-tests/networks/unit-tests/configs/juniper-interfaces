@@ -1,0 +1,18 @@
+#
+set system host-name interfaceMtu
+#
+set groups MTU_GROUP interfaces "<[xe][et]-*>" mtu 9300
+set groups MTU_GROUP interfaces "<[xe][et]-*>" unit <*> family inet mtu 9000
+#
+set interfaces node1:xe-0/0/0 apply-groups MTU_GROUP
+set interfaces node1:xe-0/0/0:0 apply-groups MTU_GROUP
+set interfaces node1:xe-0/0/0:0.0 apply-groups MTU_GROUP
+set interfaces xe-0/0/0 apply-groups MTU_GROUP
+set interfaces xe-0/0/0:0 apply-groups MTU_GROUP
+set interfaces xe-0/0/0:0.0 apply-groups MTU_GROUP
+set interfaces xe-0/0/0.0 apply-groups MTU_GROUP
+#
+set interfaces xe-0/0/0:0 unit 0 family inet address 10.1.2.3/31
+#
+set protocols ospf area 0.0.0.0 interface xe-0/0/0:0.0
+

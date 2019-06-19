@@ -1,0 +1,8 @@
+#
+set system host-name ospf-disable
+#
+set interfaces ge-0/0/0 unit 0 family inet address 10.0.0.0/31
+#
+set protocols ospf area 0.0.0.0 interface ge-0/0/0.0
+set protocols ospf disable
+#

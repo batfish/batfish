@@ -1,0 +1,140 @@
+#
+shelfname ""
+hostname "cadant_interface"
+#
+interface cable-downstream 1/2
+ power-level 123
+exit
+interface cable-downstream 1/2/3
+ cable cable-mac 12
+ cable channel-id 1
+ cable frequency 123456789
+ cable no shutdown
+ description "blah"
+exit
+interface cable-downstream 5/0/0
+ cable dsg dcd-enable
+ cable dsg timer-list 1
+ cable dsg tunnel-group 1234 priority 1
+ cable dsg tunnel-group 5678 priority 1
+exit
+interface cable-upstream 1/0/0
+ cable cable-mac 1
+ cable connector 0
+ cable ingress-cancellation interval 123
+ cable frequency 12345678
+ cable supervision 12/0/0-23
+ description "bleh"
+exit
+interface cable-upstream 1/0/10 no shutdown
+interface cable-upstream 1/0/10 shutdown
+interface cable-upstream 1/0/0.0
+ cable channel-id 1
+ cable docsis-mode atdma
+ cable modulation-profile 23
+ cable pre-eq-enable true
+ no shutdown
+ description "blarp"
+exit
+interface cable-mac 1 cable bundle master
+interface cable-mac 2 cable bundle cable-mac 1
+interface cable-mac 3 cable bundle cable-mac 1
+interface cable-mac 1
+ description "cable-mac 1"
+ cable cm-dynamic-multi-tuner
+ cable cm-ip-prov-mode apm
+ cable cm-tcs-max-size 5
+ cable downstream-bonding-group dynamic enable
+ cable dsg mode 30DOCSIS_SUPPORT
+ cable dynamic-rcc
+ cable dynamic-secret reject
+ cable mcast-fwd-by-dsid
+ cable mult-tx-chl-mode
+ cable tftp-enforce
+ cable upstream-bonding-group dynamic enable
+ cable upstream graceful-tcs-reduction
+ cable upstream ranging-poll t4-multiplier
+ cable verbose-cm-rcp
+exit
+interface cable-mac 1.1
+ cable dhcp-giaddr policy
+ cable helper-address 5.6.7.8
+ cable helper-address 5.6.7.9
+ cable source-verify dhcp
+ description "foobar"
+ ip address 1.2.3.0 255.255.255.252
+ ip igmp
+ ip igmp multicast-static-only
+ ip igmp static-group 239.0.0.1 source 1.1.1.1 # layer 3 (support bundles)
+ ip igmp static-group 239.0.0.1 source 2.2.2.2 # layer 3 (support bundles)
+ ip igmp static-group 239.1.0.1 source 3.3.3.3 # layer 3 (support bundles)
+ ip igmp static-group 239.1.0.1 source 4.4.4.4 # layer 3 (support bundles)
+ ip unreachables no
+ ip vrf forwarding foovrf
+ ipv6 enable
+ ipv6 address dead:beef::1/64
+ ipv6 address beef:dead::1/64  dhcp-link-address host
+ ipv6 dhcp relay destination dead:beef::5
+ ipv6 dhcp relay destination dead:beef::6
+ ipv6 nd dad attempts 0
+ ipv6 nd managed-config-flag
+ ipv6 nd other-config-flag
+ ipv6 nd prefix feed:beef:200::/64 off-link
+ ipv6 nd ra interval 123 45
+ ipv6 nd ra lifetime 1234
+ ipv6 traffic-filter foo-filter in
+ ipv6 traffic-filter bar-filter out
+exit
+interface cable-mac 1.2
+ description "bleep"
+ cable dhcp-giaddr policy
+ cable helper-address 6.7.8.9
+ cable helper-address 7.8.9.0
+ cable source-verify dhcp
+ cable submgmt default filter-group cm downstream 123
+ cable submgmt default filter-group cm upstream 456
+ cable submgmt default filter-group host downstream 123
+ cable submgmt default filter-group host upstream 456
+ ip address 2.2.2.0 255.255.255.128
+ ip address 3.3.3.0 255.255.255.192 secondary
+ ip address 4.4.4.0 255.255.255.240 secondary
+ ip address 5.5.0.0 255.255.254.0 secondary dhcp-giaddr
+ ip unreachables no
+exit
+interface ethernet 6/0.0
+ description "squeee"
+ ip address 11.22.33.44 255.255.255.252
+ ip igmp
+ ip igmp version 3
+ ip pim sparse-mode-ssm
+ ip router isis
+ ip unreachables no
+ ipv6 address dada:ebeb::2/126
+ isis circuit-type level-1
+ ipv6 enable
+ ipv6 router isis
+ isis ds-hello-interval 12345 level-1
+ isis hello-interval 12345 level-1
+ isis hello-multiplier 5 level-1
+ isis lsp-interval 21
+ isis protocol no shutdown
+ isis small-hello
+ isis wide-metric 2121 level-1
+exit
+interface ethernet 6/0.48
+ encapsulation dot1q 48
+ ip address 22.33.44.55 255.255.255.252
+ ip vrf forwarding bleepvrf
+exit
+interface ethernet 6/1
+ ip inband access-group fleep-acl
+ flowcontrol receive on
+ flowcontrol send on
+ no shutdown
+interface mgmt 6/0
+ no ip address
+ no active ip
+ no shutdown
+exit
+exit
+#

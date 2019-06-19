@@ -1,0 +1,9 @@
+!
+hostname ios_bfd
+!
+bfd-template single-hop GRE
+ interval min-tx 800 min-rx 800 multiplier 3
+ echo
+!
+!
+

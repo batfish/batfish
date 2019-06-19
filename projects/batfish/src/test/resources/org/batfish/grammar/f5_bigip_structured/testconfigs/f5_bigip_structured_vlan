@@ -1,0 +1,43 @@
+#TMSH-VERSION: 13.1.1
+
+sys global-settings {
+    hostname f5_bigip_structured_vlan
+}
+net interface 1.0 {
+    bundle enabled
+    bundle-speed 40G
+}
+net interface 2.0 {
+    bundle enabled
+    bundle-speed 40G
+}
+net interface 3.0 {
+    bundle enabled
+    bundle-speed 40G
+}
+net vlan /Common/MYVLAN {
+    interfaces {
+        1.0 { }
+        trunk1 { }
+    }
+    tag 123
+}
+net self /Common/MYSELF {
+    address 10.0.0.1/24
+    allow-service all
+    traffic-group /Common/traffic-group-local-only
+    vlan /Common/MYVLAN
+}
+net self /Common/MYSELF6 {
+    address 1::1/64
+    allow-service all
+    traffic-group /Common/traffic-group-local-only
+    vlan /Common/MYVLAN
+}
+net trunk trunk1 {
+    interfaces {
+        2.0
+        3.0
+    }
+    lacp enabled
+}

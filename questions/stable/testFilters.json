@@ -1,0 +1,59 @@
+{
+    "class": "org.batfish.question.testfilters.TestFiltersQuestion",
+    "differential": false,
+    "filters": "${filters}",
+    "headers": "${headers}",
+    "nodes": "${nodes}",
+    "startLocation": "${startLocation}",
+    "instance": {
+        "description": "Returns how a flow is processed by a filter (ACLs, firewall rules).",
+        "instanceName": "testFilters",
+        "longDescription": "Shows how the specified flow is processed through the specified filters, returning its permit/deny status as well as the line(s) it matched.",
+        "tags": [
+            "acl"
+        ],
+        "variables": {
+            "filters": {
+                "description": "Only consider filters that match this specifier",
+                "type": "filterSpec",
+                "value": ".*",
+                "displayName": "Filters"
+            },
+            "nodes": {
+                "description": "Only examine filters on nodes matching this specifier",
+                "type": "nodeSpec",
+                "value": ".*",
+                "displayName": "Nodes"
+            },
+            "headers": {
+                "description": "Packet header constraints",
+                "optional": false,
+                "type": "headerConstraint",
+                "displayName": "Headers",
+                "fields": {
+                    "applications": { "optional": true, "type": "applicationSpec"},
+                    "dscps": { "optional": true },
+                    "dstIps": { "optional": false, "type": "ipSpaceSpec"},
+                    "dstPorts": { "optional": true },
+                    "ecns": { "optional": true },
+                    "flowStates": { "optional": true },
+                    "fragmentOffsets": { "optional": true },
+                    "icmpCodes": { "optional": true },
+                    "icmpTypes": { "optional": true },
+                    "ipProtocols": { "optional": true, "type": "ipProtocolSpec"},
+                    "packetLengths": { "optional": true },
+                    "srcIps": { "optional": true, "type": "ipSpaceSpec"},
+                    "srcPorts": { "optional": true },
+                    "tcpFlags": { "optional": true }
+                }
+            },
+            "startLocation": {
+                "description": "Location to start tracing from",
+                "minLength": 1,
+                "type": "string",
+                "optional": true,
+                "displayName": "Start Location"
+            }
+        }
+    }
+}

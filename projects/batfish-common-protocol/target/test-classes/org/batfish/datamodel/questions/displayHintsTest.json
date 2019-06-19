@@ -1,0 +1,43 @@
+{
+  "compositions": {
+    "mynode": {
+      "schema": "Node",
+      "dictionary": {
+        "hostname": "node1"
+      }
+    },
+    "myinterface": {
+      "schema": "Interface",
+      "dictionary": {
+        "hostname": "nodes1",
+        "interface": "interfaces1"
+      }
+    }
+  },
+  "extractions" : {
+    "node1": {
+      "schema": "String",
+      "method": {
+        "use": "prefix",
+        "index" : 1
+      }
+    },
+    "interfaces1": {
+      "schema" : "List<String>",
+      "method": {
+        "use": "suffixOfsuffix",
+        "filter": "$"
+      }
+    },
+    "nodes1": {
+      "schema": "List<Integer>",
+      "method": {
+        "use": "prefixOfSuffix",
+        "filter": "$.*",
+        "index": 0
+      }
+    }
+  },
+  "textDesc" : "${mynode} has nothing on ${myinterface}"
+}
+

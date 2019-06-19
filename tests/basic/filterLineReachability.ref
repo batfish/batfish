@@ -1,0 +1,93 @@
+[
+  {
+    "class" : "org.batfish.datamodel.table.TableAnswerElement",
+    "metadata" : {
+      "columnMetadata" : [
+        {
+          "description" : "Filter sources",
+          "isKey" : true,
+          "isValue" : false,
+          "name" : "Sources",
+          "schema" : "List<String>"
+        },
+        {
+          "description" : "Filter line that cannot be matched (i.e., unreachable)",
+          "isKey" : true,
+          "isValue" : false,
+          "name" : "Unreachable_Line",
+          "schema" : "String"
+        },
+        {
+          "description" : "Action performed by the unreachable line (e.g., PERMIT or DENY)",
+          "isKey" : true,
+          "isValue" : false,
+          "name" : "Unreachable_Line_Action",
+          "schema" : "String"
+        },
+        {
+          "description" : "Lines that, when combined, cover the unreachable line",
+          "isKey" : false,
+          "isValue" : true,
+          "name" : "Blocking_Lines",
+          "schema" : "List<String>"
+        },
+        {
+          "description" : "Whether unreachable line has an action different from the blocking line(s)",
+          "isKey" : false,
+          "isValue" : true,
+          "name" : "Different_Action",
+          "schema" : "Boolean"
+        },
+        {
+          "description" : "The reason a line is unreachable",
+          "isKey" : false,
+          "isValue" : true,
+          "name" : "Reason",
+          "schema" : "String"
+        },
+        {
+          "description" : "Additional information",
+          "isKey" : false,
+          "isValue" : false,
+          "name" : "Additional_Info",
+          "schema" : "String"
+        }
+      ],
+      "textDesc" : "Filters ${Sources} contain an unreachable line: ${Unreachable_Line}"
+    },
+    "rows" : [
+      {
+        "Sources" : [
+          "as2dept1: RESTRICT_HOST_TRAFFIC_OUT"
+        ],
+        "Unreachable_Line_Action" : "DENY",
+        "Unreachable_Line" : "deny   ip 1.128.0.0 0.0.255.255 2.128.0.0 0.0.255.255",
+        "Blocking_Lines" : [
+          "permit ip any 2.128.0.0 0.0.255.255"
+        ],
+        "Different_Action" : true,
+        "Reason" : "BLOCKING_LINES",
+        "Additional_Info" : null
+      },
+      {
+        "Sources" : [
+          "as2dept1: RESTRICT_HOST_TRAFFIC_IN"
+        ],
+        "Unreachable_Line_Action" : "PERMIT",
+        "Unreachable_Line" : "permit icmp any any",
+        "Blocking_Lines" : [
+          "deny   ip any any"
+        ],
+        "Different_Action" : true,
+        "Reason" : "BLOCKING_LINES",
+        "Additional_Info" : null
+      }
+    ],
+    "summary" : {
+      "notes" : "Found 2 results",
+      "numFailed" : 0,
+      "numPassed" : 0,
+      "numResults" : 2
+    }
+  }
+]

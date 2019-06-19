@@ -1,0 +1,17 @@
+!
+hostname arubaCryptoTransformSet
+!
+crypto ipsec transform-set ts1 esp-aes128 esp-md5-hmac
+!
+crypto ipsec transform-set ts2 esp-aes192 esp-sha-hmac
+!
+crypto ipsec transform-set ts3 esp-aes256 esp-md5-hmac
+!
+crypto ipsec transform-set ts4 esp-des esp-sha-hmac
+!
+crypto ipsec transform-set ts5 esp-3des esp-md5-hmac
+!
+crypto ipsec transform-set ts6 esp-aes128-gcm esp-md5-hmac
+!
+crypto ipsec transform-set ts7 esp-aes256-gcm esp-md5-hmac
+!

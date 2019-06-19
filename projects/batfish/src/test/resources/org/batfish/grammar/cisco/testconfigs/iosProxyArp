@@ -1,0 +1,15 @@
+!!!!!! trick Batfish into recognizing this as an IOS device. !!!!!!
+! exit-address-family
+!!!!!! trick Batfish into recognizing this as an IOS device. !!!!!!
+!
+hostname iosProxyArp
+!
+interface Ethernet0/0
+!
+interface Ethernet0/1
+ ip proxy-arp
+!
+interface Ethernet0/2
+ no ip proxy-arp
+!
+

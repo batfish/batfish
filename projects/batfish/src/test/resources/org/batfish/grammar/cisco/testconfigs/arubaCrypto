@@ -1,0 +1,12 @@
+!
+hostname arubaCrypto
+!
+netservice netserviceName udp 67 68 alg dhcp
+!
+crypto isakmp policy 20
+  hash sha2-256-128
+  group 19
+  encryption aes128
+  authentication rsa-sig
+!
+crypto isakmp policy 30

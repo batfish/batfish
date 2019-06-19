@@ -1,0 +1,28 @@
+! boot system flash:/EOS-4.19.1F.swi
+!
+hostname eos-allowed-vlans
+!
+interface Port-Channel1
+   switchport trunk allowed vlan 1,2
+   switchport mode trunk
+!
+interface Port-Channel2
+   switchport mode trunk
+   switchport trunk allowed vlan 2,3
+!
+interface Port-Channel3
+   switchport mode trunk
+   switchport trunk allowed vlan none
+!
+interface Port-Channel4
+   switchport trunk allowed vlan none
+   switchport mode trunk
+!
+interface Port-Channel5
+   switchport mode trunk
+!
+interface Port-Channel6
+   switchport trunk allowed vlan 1,2
+   switchport trunk allowed vlan add 3,4
+   switchport mode trunk
+!

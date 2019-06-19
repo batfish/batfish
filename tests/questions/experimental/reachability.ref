@@ -1,0 +1,154 @@
+{
+  "class" : "org.batfish.question.specifiers.SpecifiersReachabilityQuestion",
+  "actions" : "ACCEPTED,DELIVERED_TO_SUBNET,EXITS_NETWORK",
+  "headers" : {
+    "dstIps" : "ddd",
+    "srcIps" : "sss"
+  },
+  "ignoreFilters" : false,
+  "invertSearch" : false,
+  "maxTraces" : 1,
+  "pathConstraints" : {
+    "endLocation" : "bbb",
+    "forbiddenLocations" : "ddd",
+    "startLocation" : "aaa",
+    "transitLocations" : "ccc"
+  },
+  "differential" : false,
+  "includeOneTableKeys" : true,
+  "instance" : {
+    "description" : "Finds flows that match the specified path and header space conditions.",
+    "instanceName" : "qname",
+    "longDescription" : "Searches across all flows that match the specified conditions and returns examples of such flows. This question can be used to ensure that certain services are globally accessible and parts of the network are perfectly isolated from each other.",
+    "orderedVariableNames" : [
+      "pathConstraints",
+      "headers",
+      "actions",
+      "maxTraces",
+      "invertSearch",
+      "ignoreFilters"
+    ],
+    "tags" : [
+      "dataplane",
+      "reachability"
+    ],
+    "variables" : {
+      "actions" : {
+        "description" : "Only return flows for which the disposition is from this set",
+        "displayName" : "Actions",
+        "optional" : true,
+        "type" : "dispositionSpec",
+        "value" : "success"
+      },
+      "headers" : {
+        "description" : "Packet header constraints",
+        "displayName" : "Headers",
+        "fields" : {
+          "applications" : {
+            "optional" : true,
+            "type" : "applicationSpec"
+          },
+          "dscps" : {
+            "optional" : true
+          },
+          "dstIps" : {
+            "optional" : true,
+            "type" : "ipSpaceSpec"
+          },
+          "dstPorts" : {
+            "optional" : true
+          },
+          "ecns" : {
+            "optional" : true
+          },
+          "flowStates" : {
+            "optional" : true
+          },
+          "fragmentOffsets" : {
+            "optional" : true
+          },
+          "icmpCodes" : {
+            "optional" : true
+          },
+          "icmpTypes" : {
+            "optional" : true
+          },
+          "ipProtocols" : {
+            "optional" : true,
+            "type" : "ipProtocolSpec"
+          },
+          "packetLengths" : {
+            "optional" : true
+          },
+          "srcIps" : {
+            "optional" : true,
+            "type" : "ipSpaceSpec"
+          },
+          "srcPorts" : {
+            "optional" : true
+          },
+          "tcpFlags" : {
+            "optional" : true
+          }
+        },
+        "optional" : true,
+        "type" : "headerConstraint",
+        "value" : {
+          "srcIps" : "sss",
+          "dstIps" : "ddd"
+        }
+      },
+      "ignoreFilters" : {
+        "description" : "Do not apply filters/ACLs during analysis",
+        "displayName" : "Ignore Filters",
+        "optional" : true,
+        "type" : "boolean",
+        "value" : false
+      },
+      "invertSearch" : {
+        "description" : "Search for packet headers outside the specified headerspace, rather than inside the space.",
+        "displayName" : "Invert Search",
+        "optional" : true,
+        "type" : "boolean",
+        "value" : false
+      },
+      "maxTraces" : {
+        "description" : "Limit the number of traces returned",
+        "displayName" : "Max Traces",
+        "optional" : true,
+        "type" : "integer",
+        "value" : 1
+      },
+      "pathConstraints" : {
+        "description" : "Constraint the path a flow can take (start/end/transit locations)",
+        "displayName" : "Path Constraints",
+        "fields" : {
+          "startLocation" : {
+            "optional" : true,
+            "type" : "locationSpec"
+          },
+          "endLocation" : {
+            "optional" : true,
+            "type" : "nodeSpec"
+          },
+          "transitLocations" : {
+            "optional" : true,
+            "type" : "nodeSpec"
+          },
+          "forbiddenLocations" : {
+            "optional" : true,
+            "type" : "nodeSpec"
+          }
+        },
+        "optional" : true,
+        "type" : "pathConstraint",
+        "value" : {
+          "startLocation" : "aaa",
+          "endLocation" : "bbb",
+          "transitLocations" : "ccc",
+          "forbiddenLocations" : "ddd"
+        }
+      }
+    }
+  }
+}

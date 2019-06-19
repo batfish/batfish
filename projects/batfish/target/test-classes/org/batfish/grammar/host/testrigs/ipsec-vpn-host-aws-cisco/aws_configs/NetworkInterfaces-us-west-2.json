@@ -1,0 +1,41 @@
+{
+ "NetworkInterfaces": [
+  {
+   "Attachment": {
+    "AttachTime": "2017-11-10 06:01:03+00:00", 
+    "AttachmentId": "eni-attach-d112ec31", 
+    "DeleteOnTermination": true, 
+    "DeviceIndex": 0, 
+    "InstanceId": "i-05f467abe21e9b883", 
+    "InstanceOwnerId": "118292266645", 
+    "Status": "attached"
+   }, 
+   "AvailabilityZone": "us-west-2a", 
+   "Description": "Primary network interface", 
+   "Groups": [
+    {
+     "GroupId": "sg-adcd87d0", 
+     "GroupName": "default"
+    }
+   ], 
+   "InterfaceType": "interface", 
+   "Ipv6Addresses": [], 
+   "MacAddress": "02:e3:29:f7:01:d2", 
+   "NetworkInterfaceId": "eni-bd11cc9d", 
+   "OwnerId": "118292266645", 
+   "PrivateIpAddress": "10.100.1.71", 
+   "PrivateIpAddresses": [
+    {
+     "Primary": true, 
+     "PrivateIpAddress": "10.100.1.71"
+    }
+   ], 
+   "RequesterManaged": false, 
+   "SourceDestCheck": true, 
+   "Status": "in-use", 
+   "SubnetId": "subnet-9a0c48fc", 
+   "TagSet": [], 
+   "VpcId": "vpc-815775e7"
+  }
+ ]
+}

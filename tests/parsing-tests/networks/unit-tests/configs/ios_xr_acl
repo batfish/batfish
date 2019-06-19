@@ -1,0 +1,9 @@
+!
+hostname ios_xr_acl
+!
+ethernet-services access-list sc-coe
+ 10 deny host 0000.0000.0000 any
+ 20 permit any any
+!
+!
+

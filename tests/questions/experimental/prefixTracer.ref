@@ -1,0 +1,32 @@
+{
+  "class" : "org.batfish.question.prefixtracer.PrefixTracerQuestion",
+  "nodes" : ".*",
+  "prefix" : "0.0.0.0/0",
+  "differential" : false,
+  "includeOneTableKeys" : true,
+  "instance" : {
+    "description" : "Traces prefix propagation through the network.",
+    "instanceName" : "qname",
+    "longDescription" : "Shows how prefixes are treated by devices in the network during routing.",
+    "tags" : [
+      "dataplane",
+      "routing"
+    ],
+    "variables" : {
+      "nodes" : {
+        "description" : "Include prefix tracing information for nodes matching this name or regex",
+        "displayName" : "Nodes",
+        "optional" : true,
+        "type" : "nodeSpec",
+        "value" : ".*"
+      },
+      "prefix" : {
+        "description" : "The prefix to trace. Expected format is A.B.C.D/Y",
+        "displayName" : "Prefix",
+        "optional" : true,
+        "type" : "prefix",
+        "value" : "0.0.0.0/0"
+      }
+    }
+  }
+}

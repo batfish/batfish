@@ -1,0 +1,22 @@
+{
+    "class": "org.batfish.question.loop.DetectLoopsQuestion",
+    "differential": false,
+    "maxTraces": "${maxTraces}",
+    "instance": {
+        "description": "Detects forwarding loops.",
+        "instanceName": "detectLoops",
+        "longDescription": "Searches across all possible flows in the network and returns example flows that will experience forwarding loops.",
+        "tags": [
+            "dataplane",
+            "reachability"
+        ],
+        "variables": {
+             "maxTraces": {
+                "description": "Limit the number of traces returned",
+                "optional": true,
+                "type": "integer",
+                "displayName": "Max Traces"
+            }
+        }
+    }
+}

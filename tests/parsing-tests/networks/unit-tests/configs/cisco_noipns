@@ -1,0 +1,6 @@
+!
+hostname no_ip_name_server
+!
+no ip name-server
+!
+

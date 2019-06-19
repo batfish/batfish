@@ -1,0 +1,50 @@
+{
+ "Vpcs": [
+  {
+   "CidrBlock": "192.168.0.0/16", 
+   "CidrBlockAssociationSet": [
+    {
+     "AssociationId": "vpc-cidr-assoc-c32b03ab", 
+     "CidrBlock": "192.168.0.0/16", 
+     "CidrBlockState": {
+      "State": "associated"
+     }
+    }
+   ], 
+   "DhcpOptionsId": "dopt-5870b93d", 
+   "InstanceTenancy": "default", 
+   "IsDefault": false, 
+   "State": "available", 
+   "Tags": [
+    {
+     "Key": "Name", 
+     "Value": "Arista Demo"
+    }
+   ], 
+   "VpcId": "vpc-b390fad5"
+  },
+  {
+   "CidrBlock": "10.193.0.0/16",
+   "CidrBlockAssociationSet": [
+    {
+     "AssociationId": "vpc-cidr-assoc-78b81613",
+     "CidrBlock": "10.193.0.0/16",
+     "CidrBlockState": {
+      "State": "associated"
+     }
+    }
+   ],
+   "DhcpOptionsId": "dopt-5870b93d",
+   "InstanceTenancy": "default",
+   "IsDefault": false,
+   "State": "available",
+   "Tags": [
+    {
+     "Key": "Name",
+     "Value": "Test VPC"
+    }
+   ],
+   "VpcId": "vpc-6f6f8316"
+  }
+ ]
+}

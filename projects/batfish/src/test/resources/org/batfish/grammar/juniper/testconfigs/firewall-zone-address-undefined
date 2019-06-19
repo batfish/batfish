@@ -1,0 +1,20 @@
+#
+set system host-name firewall-zone-address-undefined
+#
+set security policies from-zone trust to-zone untrust policy UNDEF_DEST match source-address DEFINED_ADDR
+set security policies from-zone trust to-zone untrust policy UNDEF_DEST match destination-address UNDEFINED_ADDR
+set security policies from-zone trust to-zone untrust policy UNDEF_DEST match destination-address DEFINED_ADDR
+set security policies from-zone trust to-zone untrust policy UNDEF_DEST match application any
+set security policies from-zone trust to-zone untrust policy UNDEF_DEST then permit
+#
+set security policies from-zone untrust to-zone trust policy UNDEF_SRC_DEST match source-address DEFINED_ADDR
+set security policies from-zone untrust to-zone trust policy UNDEF_SRC_DEST match source-address UNDEFINED_ADDR
+set security policies from-zone untrust to-zone trust policy UNDEF_SRC_DEST match destination-address UNDEFINED_ADDR
+set security policies from-zone untrust to-zone trust policy UNDEF_SRC_DEST match application any
+set security policies from-zone untrust to-zone trust policy UNDEF_SRC_DEST then permit
+#
+set security address-book global address DEFINED_ADDR 2.2.2.2
+set security zones security-zone trust interfaces ge-0/0/0.0
+set security zones security-zone untrust interfaces ge-0/0/1.0
+set interfaces ge-0/0/1 unit 0 family inet address 1.2.4.4/24
+set interfaces ge-0/0/0 unit 0 family inet address 1.2.3.4/24

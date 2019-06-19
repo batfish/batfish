@@ -1,0 +1,28 @@
+set deviceconfig system hostname drop-inter-vsys-misconfigured-external-egress
+set network interface ethernet ethernet1/1 layer3 ip 10.0.1.1/24
+set network interface ethernet ethernet1/2 layer3 ip 10.0.2.1/24
+set network virtual-router vr1 interface ethernet1/1
+set network virtual-router vr1 interface ethernet1/2
+set vsys vsys1 import network interface ethernet1/1
+set vsys vsys1 import visible-vsys vsys2
+set vsys vsys1 zone zin network layer3 ethernet1/1
+set vsys vsys1 zone vsys1-vsys2 network external vsys2
+set vsys vsys2 import network interface ethernet1/2
+set vsys vsys2 import visible-vsys vsys1
+set vsys vsys2 zone zout network layer3 ethernet1/2
+! external zone is misconfigured because it is missing 'vsys1' at end
+set vsys vsys2 zone vsys2-vsys1 network external
+set vsys vsys1 rulebase security rules rule1 from any
+set vsys vsys1 rulebase security rules rule1 to any
+set vsys vsys1 rulebase security rules rule1 action allow
+set vsys vsys1 rulebase security rules rule1 source any
+set vsys vsys1 rulebase security rules rule1 destination any
+set vsys vsys1 rulebase security rules rule1 application any
+set vsys vsys1 rulebase security rules rule1 service any
+set vsys vsys2 rulebase security rules rule1 from any
+set vsys vsys2 rulebase security rules rule1 to any
+set vsys vsys2 rulebase security rules rule1 action allow
+set vsys vsys2 rulebase security rules rule1 source any
+set vsys vsys2 rulebase security rules rule1 destination any
+set vsys vsys2 rulebase security rules rule1 application any
+set vsys vsys2 rulebase security rules rule1 service any

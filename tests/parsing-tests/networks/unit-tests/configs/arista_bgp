@@ -1,0 +1,17 @@
+!
+hostname arista_bgp
+!
+boot system flash fake.swi
+!
+router bgp 1
+ no bgp bestpath as-path multipath-relax
+ update wait-for-convergence
+ update wait-install
+ address-family ipv4
+  neighbor UNDEFINED_PEER_GROUP activate
+ redistribute ospf3 match internal route-map ROUTE_MAP
+ redistribute ospf3 match external route-map UNDEFINED_MAP
+!
+route-map ROUTE_MAP deny 10
+!
+

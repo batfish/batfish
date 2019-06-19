@@ -1,0 +1,49 @@
+{
+  "compositions": {
+    "oneNode": {
+      "schema": "Node",
+      "dictionary": {
+        "name": "nodeFromPrefix"
+      }
+    },
+    "oneInterface": {
+      "schema": "List<Interface>",
+      "dictionary": {
+        "hostname": "nodeFromPrefix",
+        "interface": "interfaceListFromPrefixOfSuffix"
+      }
+    }
+  },
+  "extractions" : {
+    "nodeFromPrefix": {
+      "schema": "String",
+      "method": {
+        "use": "prefix",
+        "index" : 1
+      }
+    },
+    "mtuFromSuffixOfSuffix": {
+      "schema": "Integer",
+      "method": {
+        "use": "suffixOfsuffix",
+        "filter": "$"
+      }
+    },
+    "addressCountFromFuncOfSuffix": {
+      "schema": "Integer",
+      "method": {
+        "use": "funcOfsuffix",
+        "filter": "$.addresses.length()"
+      }
+    },
+    "interfaceListFromPrefixOfSuffix": {
+      "schema": "List<String>",
+      "method": {
+        "use": "prefixOfSuffix",
+        "filter": "$.*",
+        "index": 0
+      }
+    }
+  },
+  "textDesc" : "${oneNode} has ${oneInterface} with MTU ${mtuFromSuffixOfSuffix}"
+}

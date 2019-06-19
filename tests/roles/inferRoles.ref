@@ -1,0 +1,54 @@
+[
+  {
+    "class" : "org.batfish.question.InferRolesQuestionPlugin$InferRolesAnswerElement",
+    "matchingNodesCount" : {
+      "auto0" : 13,
+      "auto1" : 13
+    },
+    "roleDimensions" : [
+      {
+        "name" : "auto0",
+        "roleRegexes" : [
+          "\\p{Alpha}+\\p{Digit}+(\\p{Alpha}+)\\p{Digit}+"
+        ],
+        "roles" : [
+          {
+            "caseSensitive" : false,
+            "name" : "border",
+            "regex" : "\\p{Alpha}+\\p{Digit}+border\\p{Digit}+"
+          },
+          {
+            "caseSensitive" : false,
+            "name" : "core",
+            "regex" : "\\p{Alpha}+\\p{Digit}+core\\p{Digit}+"
+          },
+          {
+            "caseSensitive" : false,
+            "name" : "dept",
+            "regex" : "\\p{Alpha}+\\p{Digit}+dept\\p{Digit}+"
+          },
+          {
+            "caseSensitive" : false,
+            "name" : "dist",
+            "regex" : "\\p{Alpha}+\\p{Digit}+dist\\p{Digit}+"
+          }
+        ],
+        "type" : "AUTO"
+      },
+      {
+        "name" : "auto1",
+        "roleRegexes" : [
+          "(\\p{Alpha}+)\\p{Digit}+\\p{Alpha}+\\p{Digit}+"
+        ],
+        "roles" : [
+          {
+            "caseSensitive" : false,
+            "name" : "as",
+            "regex" : "as\\p{Digit}+\\p{Alpha}+\\p{Digit}+"
+          }
+        ],
+        "type" : "AUTO"
+      }
+    ]
+  }
+]

@@ -1,0 +1,30 @@
+{
+    "class": "org.batfish.question.edges.EdgesQuestion",
+    "differential": false,
+    "instance": {
+        "description": "Returns IPSec tunnels.",
+        "instanceName": "ipsecEdges",
+        "longDescription": "Lists all IPSec tunnels in the network.",
+        "tags": [
+            "topology",
+            "ipsec"
+        ],
+        "variables": {
+            "nodes": {
+                "description": "Include tunnels whose first node matches this name or regex",
+                "type": "nodeSpec",
+                "value": ".*",
+                "displayName": "Nodes"
+            },
+            "remoteNodes": {
+                "description": "Include tunnels whose second node matches this name or regex",
+                "type": "nodeSpec",
+                "value": ".*",
+                "displayName": "Remote Nodes"
+            }
+        }
+    },
+    "edgeType": "ipsec",
+    "nodes": "${nodes}",
+    "remoteNodes": "${remoteNodes}"
+}

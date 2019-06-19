@@ -1,0 +1,74 @@
+load-questions questions/stable
+
+# validate aaaAuthenticationLogin
+test -raw tests/questions/stable/aaaAuthenticationLogin.ref validate-template aaaAuthenticationLogin nodes=".*"
+
+# validate definedStructures
+test -raw tests/questions/stable/definedStructures.ref validate-template definedStructures nodes="n1", names="m1", types="t1"
+
+# validate fileParseStatus
+test -raw tests/questions/stable/fileParseStatus.ref validate-template fileParseStatus
+
+# validate ipOwners
+test -raw tests/questions/stable/ipOwners.ref validate-template ipOwners duplicatesOnly=false
+
+# validate initIssues
+test -raw tests/questions/stable/initIssues.ref validate-template initIssues
+
+# validate edges
+test -raw tests/questions/stable/edges.ref validate-template edges edgeType="bgp", nodes=".*", remoteNodes=".*"
+
+# validate bgpEdges
+test -raw tests/questions/stable/bgpEdges.ref validate-template bgpEdges nodes=".*", remoteNodes=".*"
+
+# validate eigrpEdges
+test -raw tests/questions/stable/eigrpEdges.ref validate-template eigrpEdges nodes=".*", remoteNodes=".*"
+
+# validate ipsecEdges
+test -raw tests/questions/stable/ipsecEdges.ref validate-template ipsecEdges nodes=".*", remoteNodes=".*"
+
+# validate isisEdges
+test -raw tests/questions/stable/isisEdges.ref validate-template isisEdges nodes=".*", remoteNodes=".*"
+
+# validate layer1Edges
+test -raw tests/questions/stable/layer1Edges.ref validate-template layer1Edges nodes=".*", remoteNodes=".*"
+
+# validate layer3Edges
+test -raw tests/questions/stable/layer3Edges.ref validate-template layer3Edges nodes=".*", remoteNodes=".*"
+
+# validate ospfEdges
+test -raw tests/questions/stable/ospfEdges.ref validate-template ospfEdges nodes=".*", remoteNodes=".*"
+
+# validate vxlanEdges
+test -raw tests/questions/stable/vxlanEdges.ref validate-template vxlanEdges nodes=".*", remoteNodes=".*"
+
+# validate ipsecSessionStatus
+test -raw tests/questions/stable/ipsecSessionStatus.ref validate-template ipsecSessionStatus nodes="n1", remoteNodes="n2", status=".*"
+
+# validate lpmRoutes
+test -raw tests/questions/stable/lpmRoutes.ref validate-template lpmRoutes ip="1.1.1.1", nodes="n1", vrfs="default"
+
+# validate parseWarning
+test -raw tests/questions/stable/parseWarning.ref validate-template parseWarning aggregateDuplicates=true
+
+# validate referencedStructures
+test -raw tests/questions/stable/referencedStructures.ref validate-template referencedStructures nodes="n1", names="m1", types="t1"
+
+# validate routes
+test -raw tests/questions/stable/routes.ref validate-template routes network="1.1.1.1/24", nodes="n1", vrfs="default", rib="main", protocols="igp"
+
+# test testfilters
+test  -raw tests/questions/stable/testfilters.ref validate-template testfilters headers={"srcIps": "1.1.1.1/32"}, filters=".*",  nodes=".*", startLocation="node1"
+
+# test undefinedReferences
+test -raw tests/questions/stable/undefinedReferences.ref validate-template undefinedreferences nodes=".*"
+
+# validate unusedstructures
+test -raw tests/questions/stable/unusedStructures.ref validate-template unusedstructures nodes=".*"
+
+# validate viConversionStatus
+test -raw tests/questions/stable/viConversionStatus.ref validate-template viConversionStatus
+
+# validate viConversionWarning
+test -raw tests/questions/stable/viConversionWarning.ref validate-template viConversionWarning
+

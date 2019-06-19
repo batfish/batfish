@@ -1,0 +1,7 @@
+!
+hostname arista_ip_route
+!
+ip route 1.2.3.32/29 Null0 name bippety
+ip route 2.3.4.5/32 3.4.5.6 name boppety
+!
+

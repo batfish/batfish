@@ -1,0 +1,29 @@
+{
+    "class": "org.batfish.question.vxlanproperties.VxlanVniPropertiesQuestion",
+    "differential": false,
+    "nodes": "${nodes}",
+    "properties": "${properties}",
+    "instance": {
+        "description": "Returns configuration settings of VXLANs.",
+        "instanceName": "vxlanVniProperties",
+        "longDescription": "Lists VNI-level network segment settings configured for VXLANs.",
+        "tags": [
+            "configuration",
+            "vxlan"
+        ],
+        "variables": {
+            "nodes": {
+                "description": "Include nodes matching this specifier",
+                "type": "nodeSpec",
+                "optional": true,
+                "displayName": "Nodes"
+            },
+            "properties": {
+                "description": "Include properties matching this specifier",
+                "type": "vxlanVniPropertySpec",
+                "optional": true,
+                "displayName": "Properties"
+            }
+        }
+    }
+}

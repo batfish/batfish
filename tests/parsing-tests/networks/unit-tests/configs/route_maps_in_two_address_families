@@ -1,0 +1,30 @@
+!
+hostname route_maps_in_two_address_families
+!
+feature bgp
+!
+router bgp 1
+  template peer ABC
+    address-family ipv4 unicast
+      send-community
+      route-map FROM_ABC_V4 in
+      maximum-prefix 200 90
+      soft-reconfiguration inbound
+    address-family ipv6 unicast
+      send-community
+      route-map FROM_ABC_V6 in
+      maximum-prefix 200 90
+      soft-reconfiguration inbound
+  neighbor 1.1.1.1 remote-as 2
+    inherit peer ABC
+!
+ip prefix-list v4_list permit 0.0.0.0/0
+ipv6 prefix-list v6_list permit ::0/128
+!
+route-map FROM_ABC_V4 permit 100
+  match ip address prefix-list v4_list
+!
+route-map FROM_ABC_V6 permit 100
+  match ipv6 address prefix-list v6_list
+!
+end

@@ -1,0 +1,36 @@
+{
+    "class": "org.batfish.question.specifiers.SpecifiersQuestion",
+    "filterSpecifierInput": "${filters}",
+    "nodeSpecifierInput": "${nodes}",
+    "queryType": "filter",
+    "specifierFactoryVersion": "${grammarVersion}", 
+    "instance": {
+        "description": "Returns the set of filters corresponding to a filterSpec value.",
+        "instanceName": "resolveFilterSpecifier",
+        "longDescription": "Helper question that shows how specified filterSpec values resolve to the filters in the network.",
+        "tags": [
+            "specifiers"
+        ],
+        "variables": {
+            "filters": {
+                "description": "Input to the FilterSpecifier",
+                "optional": true,
+                "type": "filterSpec",
+                "displayName": "Filters"
+            },
+            "grammarVersion": {
+                "description": "Version of grammar to use for resolution",
+                "optional": true,
+                "type": "string",
+                "displayName": "Grammar version"               
+            },
+            "nodes": {
+                "description": "Input to the NodeSpecifier",
+                "optional": true,
+                "type": "nodeSpec",
+                "displayName": "Nodes"
+            }
+
+        }
+    }
+}

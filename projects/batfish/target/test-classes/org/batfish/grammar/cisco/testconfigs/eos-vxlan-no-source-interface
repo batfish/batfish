@@ -1,0 +1,11 @@
+!
+hostname eos-vxlan-no-source-interface
+boot system flash fake.swi
+!
+interface Vxlan1
+  description vxlan vti
+  !
+  vxlan flood vtep 1.1.1.5 1.1.1.6
+  !
+  vxlan vlan 2 vni 10002
+!

@@ -1,0 +1,12 @@
+net del all
+#
+net add hostname cumulus_nclu_bond_references
+#
+net add bond bond1 bond slaves swp0
+net add bond bond2 bond slaves swp1
+net add interface bond2.4094 ip address 10.0.0.1/24
+net add routing route-map rm1 permit 2 match interface bond1
+net add routing route-map rm1 permit 2 match interface bond2.4094
+net add bridge bridge ports bond1
+#
+net commit

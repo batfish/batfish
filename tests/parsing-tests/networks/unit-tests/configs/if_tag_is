@@ -1,0 +1,21 @@
+!
+hostname if_tag_is 
+!
+route-policy FOO 
+  if tag is 12 then
+    set tag 12 
+    pass
+  endif
+  if tag eq 13 then
+    set tag 13 
+    pass
+  endif
+  if tag ge 14 then
+    set tag 100 
+    pass
+  endif
+  if tag le 10 then
+    set tag 9 
+    pass
+  endif
+end-policy

@@ -1,0 +1,13 @@
+#TMSH-VERSION: 13.1.1
+
+sys global-settings {
+    hostname f5_bigip_structured_trunk_references
+}
+net trunk trunk_used { }
+net trunk trunk_unused { }
+net vlan /Common/vlan1 {
+    interfaces {
+        trunk_used { }
+        trunk_undefined { }
+    }
+}

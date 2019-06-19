@@ -1,0 +1,14 @@
+!                                                                                                                                                                                                                 
+hostname ios-xr-community-set
+# IOS XR
+!
+community-set set1
+  ios-regex '^1234:.*',
+  *:*,
+  # Some comment
+  1:2,
+  *:3,
+  4:*,
+  6:[100..103]
+end-set
+end

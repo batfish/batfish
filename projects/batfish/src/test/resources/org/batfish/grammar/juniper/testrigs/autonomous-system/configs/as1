@@ -1,0 +1,8 @@
+#
+set system host-name as1
+#
+set routing-options autonomous-system 1
+set protocols bgp neighbor 1.0.0.1 local-address 1.0.0.0
+set protocols bgp neighbor 1.0.0.1 peer-as 2
+#
+

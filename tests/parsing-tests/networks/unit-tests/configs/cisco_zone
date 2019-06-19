@@ -1,0 +1,12 @@
+!
+hostname cisco-zone
+!
+zone-pair security zp1 source z1 destination z2
+ service-policy type inspect p1
+!
+zone security z1
+zone security z2
+!
+zone t1
+!
+

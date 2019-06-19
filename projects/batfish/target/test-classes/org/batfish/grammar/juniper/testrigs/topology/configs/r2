@@ -1,0 +1,18 @@
+#
+set system host-name r2
+#
+### not layer-3 adjacent to r1:ge-0/0/0.0, but in same broadcast domain
+set interfaces ge-0/0/0 unit 0 family inet address 1.0.0.2/31
+#
+### layer-3 adjacent to r1:ge-0/0/1.0, in same broadcast domain
+set interfaces ge-0/0/1 unit 0 family inet address 2.0.0.1/31
+#
+### Aggregate interface
+set chassis aggregated-devices ethernet device-count 1
+set interfaces ae0 aggregated-ether-options link-speed 1g
+set interfaces ae0 unit 0 family inet address 3.0.0.1/31
+### wired to r1:ge-0/0/2, member of aggregate
+set interfaces ge-0/0/2 ether-options 802.3ad ae0
+### wired to r1:ge-0/0/3, member of aggregate
+set interfaces ge-0/0/3 ether-options 802.3ad ae0
+#

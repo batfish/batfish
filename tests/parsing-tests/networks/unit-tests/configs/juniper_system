@@ -1,0 +1,28 @@
+# RANCID-CONTENT-TYPE: juniper
+#
+set system host-name juniper_system
+#
+set system allow-v4mapped-packets
+set system auto-snapshot
+set system no-redirects-ipv6
+set system no-ping-record-route
+set system no-ping-time-stamp
+set system saved-core-files 10
+set system saved-core-context
+set system static-host-mapping host1 inet 1.2.3.4
+#
+set system ports console log-out-on-disconnect
+#
+set system security-profile ls1 policy maximum 40000
+set system security-profile ls1 scheduler maximum 64
+set system security-profile ls1 zone maximum 256
+set system security-profile ls1 flow-session maximum 1572864
+set system security-profile ls1 flow-gate maximum 524288
+set system security-profile ls1 logical-system ls905
+#
+set system services dhcp traceoptions flag all
+set system services dhcp pool 1.2.8.0/26 address-range low 1.2.8.2 high 1.2.80.60
+set system services dhcp pool 1.2.8.0/26 name-server 1.2.6.1
+set system services dhcp pool 1.2.8.0/26 domain-search now.com
+#
+

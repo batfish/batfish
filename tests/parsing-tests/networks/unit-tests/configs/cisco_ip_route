@@ -1,0 +1,26 @@
+!
+hostname cisco_ip_route
+!
+ip route 1.2.3.4/32 2.3.4.5
+!
+ip route 1.2.37.104 255.255.255.248 GigabitEthernet3/0/0.212 tag 32361
+ip route 1.2.39.17 255.255.255.255 Serial5/0:2
+ip route 1.2.39.22 255.255.255.255 1.2.32.39 210
+ip route 1.2.39.32 255.255.255.255 Serial5/1:5 1.2.32.59 240
+ip route 1.2.39.69 255.255.255.255 POS5/3:10
+!
+ip route 0.0.0.0 0.0.0.0 loopback 66 100
+ip route 0.0.0.0 0.0.0.0 loopback99 150
+ip route 0.0.0.0 0.0.0.0 dialer 1 250
+ip route 0.0.0.0 0.0.0.0 Dialer2 300
+!
+ip route 1.2.3.0 255.255.255.128 2.3.4.5 10 name bippety
+ip route vrf myvrf 0.0.0.0 0.0.0.0 5.6.7.8 global
+ip route vrf myvrf 0.0.0.0 0.0.0.0 5.6.7.8 global 100 name boppety
+!
+ipv6 route ::/0 loopback 66 100
+ipv6 route ::/0 loopback99 150
+ipv6 route ::/0 dialer 1 250
+ipv6 route ::/0 Dialer2 300
+!
+end

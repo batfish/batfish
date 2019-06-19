@@ -1,0 +1,54 @@
+!
+hostname cisco_flow
+!
+flow record FLOW_RECORD_V9_1
+ match ipv4 tos                                                                                                                            
+ match ipv4 protocol
+ match ipv4 source address
+ match ipv4 destination address
+ match transport source-port
+ match transport destination-port
+ match interface input
+ collect transport tcp flags
+ collect interface output
+ collect counter bytes
+ collect counter packets
+ collect timestamp sys-uptime first
+ collect timestamp sys-uptime last
+flow exporter FLOW_EXPORTER_1
+ description geriogjweoifjwofwf
+ destination 1.2.3.4
+ export-protocol netflow-v5
+ source Loopback0
+ transport udp 9807
+ version v9
+  options interface-table timeout 60
+  options sampler-table timeout 60
+flow exporter-map bbbbbb
+ transport udp 9901
+ source Loopback0
+ destination 1.2.3.4
+flow monitor FLOW_MONITOR_1
+ description fdgnuij53ht8953gh
+ exporter FLOW_EXPORTER_1
+ cache timeout active 60
+ statistics packet size
+ record FLOW_RECORD_V9_1
+!
+flow monitor-map ddddddddddddd
+ record ipv4
+ exporter fffffffffff
+ cache entries 1000000
+ cache timeout active 290
+ cache timeout inactive 280
+!
+flow platform cache timeout inactive 60
+!
+flow hardware export threshold 70 linecard 90
+!
+flow-sampler-map SAMPLE
+ mode random one-out-of 512
+!
+interface GigabitEthernet0/1
+ flow-sampler SAMPLE
+!

@@ -1,0 +1,19 @@
+!
+hostname mos_interface
+!
+interface ap1
+!
+interface et1
+ source et2
+!
+interface et2
+ no negotiation
+ phy 1ge
+ source et1
+ speed 100
+ trimode speed force 1000full
+!
+interface ma1
+!
+!
+

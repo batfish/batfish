@@ -1,0 +1,22 @@
+!
+hostname cisco_vdc
+!
+vdc combined-hostname
+vdc cisco_vdc id 1
+  limit-resource module-type f3
+  cpu-share 5
+  ha-policy single-sup reload dual-sup switchover
+  allocate interface Ethernet1/1-24
+  allocate interface Ethernet2/1-24
+  limit-resource vlan minimum 16 maximum 4094
+  limit-resource monitor-session-erspan-dst minimum 0 maximum 23
+  limit-resource vrf minimum 2 maximum 4096
+  limit-resource port-channel minimum 0 maximum 768
+  limit-resource u4route-mem minimum 96 maximum 96
+  limit-resource u6route-mem minimum 24 maximum 24
+  limit-resource m4route-mem minimum 58 maximum 58
+  limit-resource m6route-mem minimum 8 maximum 8
+  limit-resource monitor-session-inband-src minimum 0 maximum 1
+  limit-resource anycast_bundleid minimum 0 maximum 16
+  limit-resource monitor-session-extended minimum 0 maximum 16
+

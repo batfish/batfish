@@ -1,0 +1,34 @@
+!
+hostname cisco_system
+!
+no system admin-vdc
+no system auto-upgrade epld
+system default dce-mode edge
+system default dce-mode off
+system default interface 40g auto-negotiation
+system default interface congestion mode core
+system default interface congestion mode edge
+system default interface pause mode core
+system default interface pause mode edge
+no system default interface slow-speed mode core
+no system default interface slow-speed mode edge
+no system default link-fail laser-on
+system default switchport
+no system default switchport fabricpath
+no system default switchport monitor exclude header
+system default switchport shutdown
+system fabric
+  service-policy type queuing input POLICY
+system fabric-mode full-rate
+system flowcontrol bus auto
+system jumbomtu 9100
+system module-type m1 f1 m1xl f2 m2xl 
+system mtu 9000
+system mtu routing 1500
+system qos
+system routing hierarchical max-mode l3 64b-alpm 
+system routing max-mode l3
+system urpf disable
+system vlan 1025 reserve
+!
+

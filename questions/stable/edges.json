@@ -1,0 +1,61 @@
+{
+    "class": "org.batfish.question.edges.EdgesQuestion",
+    "differential": false,
+    "instance": {
+        "description": "Returns different types of network adjacencies in a snapshot.",
+        "instanceName": "edges",
+        "longDescription": "Lists network adjacencies of different types (e.g., Layer 3, BGP, OSPF) in the form of edges. This question is deprecated in favor of specific edges question such as bgpEdges and layer3Edges.",
+        "tags": [
+            "topology"
+        ],
+        "variables": {
+            "edgeType": {
+                "values": [
+                    {
+                        "name": "bgp"
+                    },
+                    {
+                        "name": "eigrp"
+                    },
+                    {
+                        "name": "ipsec"
+                    },
+                    {
+                        "name": "isis"
+                    },
+                    {
+                        "name": "layer1"
+                    },
+                    {
+                        "name": "layer3"
+                    },
+                    {
+                        "name": "ospf"
+                    },
+                    {
+                        "name": "vxlan"
+                    }
+                ],
+                "description": "Types of edges to include. Default is layer3.",
+                "type": "string",
+                "value": "layer3",
+                "displayName": "Edge Type"
+            },
+            "nodes": {
+                "description": "Include edges whose first node matches this name or regex",
+                "type": "nodeSpec",
+                "value": ".*",
+                "displayName": "Nodes"
+            },
+            "remoteNodes": {
+                "description": "Include edges whose second node matches this name or regex",
+                "type": "nodeSpec",
+                "value": ".*",
+                "displayName": "Remote Nodes"
+            }
+        }
+    },
+    "edgeType": "${edgeType}",
+    "nodes": "${nodes}",
+    "remoteNodes": "${remoteNodes}"
+}

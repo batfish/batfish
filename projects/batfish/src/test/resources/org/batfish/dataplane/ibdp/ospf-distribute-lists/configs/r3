@@ -1,0 +1,15 @@
+hostname r3
+!
+interface GigabitEthernet0/0
+ ip address 192.168.13.2 255.255.255.0
+!
+router ospf 1
+ redistribute static metric-type 2
+ network 192.168.13.0 0.0.0.255 area 1
+ distribute-list prefix filter_2 in
+!
+ip route 192.168.10.0 255.255.255.0 Null0
+ip route 192.168.9.0 255.255.255.0 Null0
+!
+ip prefix-list filter_2 seq 5 deny 2.2.2.0/24
+ip prefix-list filter_2 seq 10 permit 0.0.0.0/0 le 32

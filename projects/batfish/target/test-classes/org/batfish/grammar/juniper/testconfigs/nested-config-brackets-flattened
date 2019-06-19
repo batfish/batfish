@@ -1,0 +1,6 @@
+####BATFISH FLATTENED JUNIPER CONFIG####
+set security policies global policy GLOBAL match source-address ADDR1
+set security policies global policy GLOBAL match source-address ADDRSET
+set security policies global policy GLOBAL match destination-address any
+set security policies global policy GLOBAL then permit
+set security zones security-zone trust host-inbound-traffic system-services ssh

@@ -1,0 +1,44 @@
+!
+hostname commSet
+!
+community-set community_52
+  ios-regex '^52:.*'
+end-set
+community-set all_community
+  *:*
+end-set
+community-set hpr_routes_community
+  ios-regex '2153:*'
+end-set
+community-set hpr_blackhole_community
+  2153:666
+end-set
+community-set ucla_blackhole_community
+  52:666
+end-set
+community-set ucla_to_hpr_community_ipv4
+  52:2153
+end-set
+community-set ucla_to_hpr_community_ipv6
+  2153:65418
+end-set
+community-set dc_and_isp_routes_community
+  ios-regex '2152:*'
+end-set
+community-set dc_and_isp_blackhole_community
+  2152:666
+end-set
+community-set cenic_default_network_community
+  2152:65530
+end-set
+community-set ucla_to_dc_and_isp_community_ipv4
+  52:65498
+end-set
+community-set ucla_to_dc_and_isp_community_ipv6
+  2152:65418
+end-set
+community-set EBGP-PEER
+  # CF (Commodity Peer) All Commodity Peer routes
+  1234:65299
+end-set
+end

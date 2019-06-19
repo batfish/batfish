@@ -1,0 +1,62 @@
+!
+hostname L2VPN
+!
+l2vpn
+ bridge group TEST-GROUP-1
+  bridge-domain TEST-DOMAIN-1
+   mac
+    limit
+     maximum 15000
+     action flood
+    !
+   !
+   mtu 9014
+   interface Bundle-Ether9.1
+   !
+   neighbor 1.2.3.4 pw-id 123
+   !
+   vfi HES-SO-VPLS-full-mesh
+    neighbor 1.5.5.5 pw-id 707
+    !
+    neighbor 1.5.2.3 pw-id 707
+    !
+   routed interface BVI1
+  !
+  logging
+   bridge-domain
+   pseudowire
+   vfi
+  !
+ !
+ xconnect group scidmz_155
+  p2p HGE_0-1_155
+   interface HundredGigE0/2/0/0.155
+   interface HundredGigE0/2/0/1.155
+  !
+  p2p FFHS
+    interface GigabitEthernet0/0/0/4.2399
+    neighbor ipv4 130.59.255.69 pw-id 2
+    monitor-session RSPAN
+    neighbor ipv6 2001:620:0:8018::2 pw-id 1
+     source 2001:620:0:c000::86
+     l2tp static
+      local cookie size 8 value 0x0 0x0
+      local session 1
+      remote cookie size 8 value 0x0 0x0
+      remote session 1
+    !
+  !
+ !
+ xconnect group scidmz_862
+  p2p HGE_0-1_862
+   interface HundredGigE0/2/0/0.862
+   interface HundredGigE0/2/0/1.862
+  !
+ !
+ xconnect group scidmz_963
+  p2p HGE_0-1_963
+   interface HundredGigE0/2/0/0.963
+   interface HundredGigE0/2/0/1.963
+  !
+ !
+end

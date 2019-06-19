@@ -1,0 +1,7 @@
+!
+hostname ios-bad-interface-name
+!
+interface bad-interface-name0
+!
+ip route 0.0.0.0 0.0.0.0 bad-interface-name0
+!

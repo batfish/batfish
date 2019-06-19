@@ -1,0 +1,8 @@
+!
+hostname encoding_test
+!
+!
+interface Loopback0
+ ip address 10.0.0.1 255.255.255.255
+!
+end

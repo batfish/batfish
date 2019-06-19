@@ -1,0 +1,15 @@
+add-batfish-option haltonconverterror
+add-batfish-option haltonparseerror
+add-batfish-option verboseparse
+
+del-network batfish-tests-roles
+init-network -setname batfish-tests-roles
+init-snapshot tests/roles/networks/example roles-example
+debug-post -file networks/batfish-tests-roles/noderoles tests/roles/default.json
+
+test tests/roles/inferRoles.ref get inferRoles
+test tests/roles/roles.ref get roles roleDimension="default"
+test tests/roles/perRole.ref get perRole question={"class": "org.batfish.question.CompareSameNameQuestionPlugin$CompareSameNameQuestion"}, roleDimension="default"
+test tests/roles/perRoleOutliers.ref get perRoleOutliers hypothesis="sameName", roleDimension="default"
+test tests/roles/roleConsistency.ref get roleConsistency propertyName="LoggingServers", roleDimension="default"
+test tests/roles/nsRoleConsistency.ref get namedStructureRoleConsistency hypothesis="sameName", structType="CommunityList", roleDimension="default"

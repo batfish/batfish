@@ -1,0 +1,8 @@
+set deviceconfig system hostname address-objects
+
+# nested group
+set address-group group1 static group0
+
+# circular nesting
+set address-group group2 static group0
+set address-group group0 static group2

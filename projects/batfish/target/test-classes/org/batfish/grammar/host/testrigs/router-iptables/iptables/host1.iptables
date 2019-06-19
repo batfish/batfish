@@ -1,0 +1,4 @@
+*mangle
+:PREROUTING DROP [0:0]
+-A PREROUTING -p udp --dport 53 -j ACCEPT
+COMMIT

@@ -1,0 +1,10 @@
+!
+hostname cisco_vpn
+!
+vpn load-balancing 
+ redirect-fqdn enable
+ priority 9
+ cluster ip address 1.2.3.4
+ cluster encryption
+ participate
+!

@@ -1,0 +1,30 @@
+{
+    "class": "org.batfish.question.edges.EdgesQuestion",
+    "differential": false,
+    "instance": {
+        "description": "Returns BGP adjacencies.",
+        "instanceName": "bgpEdges",
+        "longDescription": "Lists all BGP adjacencies in the network.",
+        "tags": [
+            "topology",
+            "bgp"
+        ],
+        "variables": {
+            "nodes": {
+                "description": "Include adjacencies whose first node matches this name or regex",
+                "type": "nodeSpec",
+                "value": ".*",
+                "displayName": "Nodes"
+            },
+            "remoteNodes": {
+                "description": "Include adjacencies whose second node matches this name or regex",
+                "type": "nodeSpec",
+                "value": ".*",
+                "displayName": "Remote Nodes"
+            }
+        }
+    },
+    "edgeType": "bgp",
+    "nodes": "${nodes}",
+    "remoteNodes": "${remoteNodes}"
+}

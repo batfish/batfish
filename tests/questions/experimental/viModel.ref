@@ -1,0 +1,13 @@
+{
+  "class" : "org.batfish.question.VIModelQuestionPlugin$VIModelQuestion",
+  "differential" : false,
+  "includeOneTableKeys" : true,
+  "instance" : {
+    "description" : "Lists configuration attributes of nodes and edges in the network.",
+    "instanceName" : "qname",
+    "longDescription" : "Returns a JSON dictionary with all of the configuration parameters and neighbor relations stored in the vendor independent data-model.",
+    "tags" : [
+      "configuration"
+    ]
+  }
+}

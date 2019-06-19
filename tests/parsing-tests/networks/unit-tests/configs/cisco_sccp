@@ -1,0 +1,15 @@
+!
+hostname cisco_sccp
+!
+sccp local FastEthernet0/0
+sccp ccm 1.2.3.4 identifier 2 version 7.0 
+sccp ccm 2.3.4.5 identifier 1 version 7.0 
+sccp
+sccp ccm group 1
+ description egrhwofiwjgrij
+ bind interface FastEthernet0/0
+ associate ccm 1 priority 1
+ associate ccm 2 priority 2
+ switchback method graceful
+!
+

@@ -1,0 +1,13 @@
+!
+hostname ios-eigrp-redistribution
+!
+interface Ethernet0
+ ip address 10.0.0.1 255.255.255.0
+ no shutdown
+!
+router eigrp 1
+ network 10.0.0.0 0.0.0.255
+ redistribute connected metric 100 10 0 0 1500
+ redistribute ospf 1
+ default-metric 200 20 0 0 1500
+!

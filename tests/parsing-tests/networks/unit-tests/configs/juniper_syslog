@@ -1,0 +1,88 @@
+#
+set system host-name juniper_syslog
+#
+set system syslog archive size 100k files 3
+set system syslog archive size 10m files 10
+set system syslog archive size 1m files 20
+set system syslog console authorization info
+set system syslog file * archive files 10
+set system syslog file * archive size 10m
+set system syslog file changes.log archive size 10m files 10
+set system syslog file changes.log archive size 1m files 20
+set system syslog file changes.log change-log any
+set system syslog file cli.log archive size 10m files 10
+set system syslog file cli.log archive size 1m files 20
+set system syslog file cli.log interactive-commands any
+set system syslog file config-changes change-log info
+set system syslog file default-log-messages any any
+set system syslog file default-log-messages any info
+set system syslog file default-log-messages match "someregextext"
+set system syslog file default-log-messages structured-data
+set system syslog file * explicit-priority
+set system syslog file firewall.log archive size 10m files 10
+set system syslog file firewall.log archive size 1m files 20
+set system syslog file firewall.log firewall info
+set system syslog file interactive-commands any any
+set system syslog file interactive-commands interactive-commands any
+set system syslog file interactive-commands interactive-commands error
+set system syslog file logfile-authorization authorization any
+set system syslog file logfile-daemon daemon any
+set system syslog file logfile-dfc dfc any
+set system syslog file logfile-external external any
+set system syslog file logfile-firewall firewall any
+set system syslog file logfile-ftp ftp any
+set system syslog file logfile-interactive-commands interactive-commands any
+set system syslog file logfile-kernel kernel any
+set system syslog file logfile-pfe pfe any
+set system syslog file logfile-user user any
+set system syslog file messages any any
+set system syslog file messages any critical
+set system syslog file messages any notice
+set system syslog file messages archive files 20
+set system syslog file messages archive size 10m files 10
+set system syslog file messages archive size 10m files 20
+set system syslog file messages archive size 1m files 20
+set system syslog file messages archive size 2m
+set system syslog file messages authorization info
+set system syslog file messages daemon info
+set system syslog file messages firewall none
+set system syslog file messages interactive-commands notice
+set system syslog file messages user info
+set system syslog file policy_session archive size 1000k world-readable
+set system syslog file policy_session match RT_FLOW
+set system syslog file policy_session match RT_FLOW_SESSION
+set system syslog file policy_session structured-data
+set system syslog file policy_session user error
+set system syslog file policy_session user info
+set system syslog file security any notice
+set system syslog file security archive files 5
+set system syslog file security archive size 10m
+set system syslog file security authorization any
+set system syslog file security firewall any
+set system syslog file security interactive-commands any
+set system syslog source-address 5.6.7.8
+set system syslog host 1.2.3.4 allow-duplicates
+set system syslog host 1.2.3.4 any any
+set system syslog host 1.2.3.4 any emergency
+set system syslog host 1.2.3.4 any info
+set system syslog host 1.2.3.4 any notice
+set system syslog host 1.2.3.4 change-log any
+set system syslog host 1.2.3.4 daemon info
+set system syslog host 1.2.3.4 explicit-priority
+set system syslog host 1.2.3.4 facility-override local0
+set system syslog host 1.2.3.4 facility-override local1
+set system syslog host 1.2.3.4 facility-override local6
+set system syslog host 1.2.3.4 facility-override local7
+set system syslog host 1.2.3.4 firewall any
+set system syslog host 1.2.3.4 interactive-commands any
+set system syslog host 1.2.3.4 kernel notice
+set system syslog host 1.2.3.4 log-prefix abcdefg
+set system syslog host 1.2.3.4 match BIPPETY
+set system syslog host 1.2.3.4 port 1234 structured-data
+set system syslog host 1.2.3.4 source-address 3.4.5.6
+set system syslog host 1.2.3.4 user info
+set system syslog time-format millisecond
+set system syslog time-format year
+set system syslog user * any emergency
+#
+

@@ -1,0 +1,33 @@
+#TMSH-VERSION: 13.1.1
+
+sys global-settings {
+    hostname f5_bigip_structured_malformed
+}
+
+net self /Common/self1 {
+    address 10.0.0.2/24
+}
+
+net route /Common/missing_gw {
+    network 192.0.2.1/32
+}
+
+net route /Common/bad_gw {
+    network 192.0.2.2/32
+    gw 172.16.0.1
+}
+
+net route /Common/mixed_protocols1 {
+    network 192.0.2.2/32
+    gw deaf:beef::1
+}
+
+net route /Common/mixed_protocols2 {
+    network dead:beef::/64
+    gw 10.0.0.5
+}
+
+net route /Common/missing_network {
+    gw 10.0.0.1
+}
+

@@ -1,0 +1,32 @@
+{
+  "class" : "org.batfish.question.mlag.MlagPropertiesQuestion",
+  "idRegex" : "myids",
+  "nodes" : "mynodes",
+  "differential" : false,
+  "includeOneTableKeys" : true,
+  "instance" : {
+    "description" : "Returns MLAG configuration.",
+    "instanceName" : "qname",
+    "longDescription" : "Lists the configuration settings for each MLAG domain in the network.",
+    "tags" : [
+      "configuration",
+      "mlag"
+    ],
+    "variables" : {
+      "idRegex" : {
+        "description" : "Include MLAG IDs matching this java Regex",
+        "displayName" : "MLAG ID Regex",
+        "optional" : true,
+        "type" : "javaRegex",
+        "value" : "myids"
+      },
+      "nodes" : {
+        "description" : "Include nodes matching this specifier",
+        "displayName" : "Nodes",
+        "optional" : true,
+        "type" : "nodeSpec",
+        "value" : "mynodes"
+      }
+    }
+  }
+}

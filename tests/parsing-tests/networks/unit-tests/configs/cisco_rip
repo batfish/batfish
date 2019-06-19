@@ -1,0 +1,22 @@
+!
+hostname cisco_rip
+!
+router rip
+ no auto-summary
+ default-information originate
+ default-information originate on-passive
+ default-information originate route-map mapName
+ default-metric 1
+ distribute-list some-ACL in
+ distribute-list some-ACL in Ethernet0
+ distribute-list some-ACL out
+ distribute-list some-ACL out Ethernet0
+ network 1.2.3.0
+ passive-interface default
+ no passive-interface Bundle1.23
+ timers basic 10 20 30 40
+ version 2
+ distance 12
+ distance 123 1.1.1.1 0.0.0.0
+!
+!

@@ -1,0 +1,20 @@
+!
+hostname ios-ospf-passive1
+!
+interface Ethernet1
+ ip address 10.0.1.0 255.255.255.0
+ no shutdown
+!
+interface Ethernet2
+ ip address 10.0.2.0 255.255.255.0
+ no shutdown
+!
+router ospf 1
+ router-id 1.2.3.4
+ network 10.0.1.0 0.0.0.255 area 0
+ network 10.0.2.0 0.0.0.255 area 0
+ passive-interface Ethernet2
+ no passive-interface default
+ passive-interface Ethernet1
+!
+!

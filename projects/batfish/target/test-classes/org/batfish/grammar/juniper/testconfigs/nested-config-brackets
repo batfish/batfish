@@ -1,0 +1,25 @@
+#RANCID-CONTENT-TYPE: juniper
+security {
+    policies {
+        global {
+            policy GLOBAL {
+                match {
+                    source-address [ ADDR1 ADDRSET ];
+                    destination-address any;
+                }
+                then {
+                    permit;
+                }
+            }
+        }
+    }
+    zones {
+        security-zone trust {
+            host-inbound-traffic {
+                system-services {
+                    ssh;
+                }
+            }
+        }
+    }
+}

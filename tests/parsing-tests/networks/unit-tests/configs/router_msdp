@@ -1,0 +1,7 @@
+!
+hostname router_msdp
+!
+router msdp
+ sa-filter in 137.164.27.74 route-map MSDP-SA-FILTER rp-route-map MSDP-SA-RP-FILTER
+!
+

@@ -1,0 +1,25 @@
+deviceconfig {
+    system {
+        hostname nested-config-brackets;
+    }
+}
+mgt-config {
+    access-domain {
+        All {
+            vsys [ VSYSNAME1 VSYSNAME2];
+        }
+    }
+}
+shared {
+    log-settings {
+        syslog {
+            SYSLOGNAME {
+                server {
+                    SERVERNAME {
+                        server 1.1.1.1;
+                    }
+                }
+            }
+        }
+    }
+}

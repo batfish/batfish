@@ -1,0 +1,15 @@
+net del all
+#
+net add hostname cumulus_nclu_vrf_references
+#
+net add bgp vrf vrf1 autonomous-system 65501
+net add bond bond1 vrf vrf1
+net add interface eth0 clag backup-ip 192.0.2.1 vrf vrf1
+net add interface eth0 vrf vrf1
+net add vlan 2 vrf vrf1
+net add routing route-map rm1 permit 1 match interface vrf1
+net add vrf vrf1
+net add interface swp0 vrf vrf2
+net add vrf vrf3
+#
+net commit

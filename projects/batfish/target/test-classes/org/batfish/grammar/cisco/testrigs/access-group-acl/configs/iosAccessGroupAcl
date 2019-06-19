@@ -1,0 +1,23 @@
+!!!!!! trick Batfish into recognizing this as an IOS device. !!!!!!
+! exit-address-family
+!!!!!! trick Batfish into recognizing this as an IOS device. !!!!!!
+
+hostname iosAccessGroupAcl
+
+mac access-list extended mac_acl
+ permit any c100.0000.0000 0000.0000.0000
+
+access-list ip_acl extended permit ip 1.2.3.4 0.0.0.255 4.3.2.1 0.0.255.255
+
+mac access-list extended mac_acl_unused
+ permit any c200.0000.0000 0000.0000.0000
+
+access-list ip_acl_unused extended permit ip 2.3.4.5 0.0.0.255 5.4.3.2 0.0.255.255
+
+class-map match-any class_map
+  match access-group name mac_acl
+  match access-group name ip_acl
+  match access-group name mac_acl_udef
+  match access-group name ip_acl_udef
+
+

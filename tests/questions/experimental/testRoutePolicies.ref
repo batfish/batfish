@@ -1,0 +1,86 @@
+{
+  "class" : "org.batfish.question.testroutepolicies.TestRoutePoliciesQuestion",
+  "direction" : "IN",
+  "inputRoutes" : [
+    {
+      "asPath" : [ ],
+      "localPreference" : 0,
+      "metric" : 0,
+      "network" : "0.0.0.0/0",
+      "nextHopIp" : "AUTO/NONE(-1l)",
+      "originType" : "igp",
+      "originatorIp" : "1.1.1.1",
+      "protocol" : "bgp",
+      "weight" : 0
+    }
+  ],
+  "nodes" : "nodes",
+  "policies" : "policies",
+  "differential" : false,
+  "includeOneTableKeys" : true,
+  "instance" : {
+    "description" : "Evaluates the processing of a route by a given policy.",
+    "instanceName" : "qname",
+    "longDescription" : "Find how the specified route is processed through the specified routing policies.",
+    "orderedVariableNames" : [
+      "nodes",
+      "policies",
+      "inputRoutes",
+      "direction"
+    ],
+    "tags" : [
+      "routing"
+    ],
+    "variables" : {
+      "direction" : {
+        "allowedValues" : [
+          "in",
+          "out"
+        ],
+        "description" : "The direction of the route, with respect to the device (IN/OUT)",
+        "displayName" : "Direction",
+        "optional" : false,
+        "type" : "string",
+        "value" : "in",
+        "values" : [
+          {
+            "description" : "The route is inbound to the device",
+            "name" : "in"
+          },
+          {
+            "description" : "The route is outbound from the device",
+            "name" : "out"
+          }
+        ]
+      },
+      "inputRoutes" : {
+        "description" : "The BGP route announcements to test the policy on",
+        "displayName" : "Input Routes",
+        "optional" : false,
+        "type" : "bgpRoutes",
+        "value" : [
+          {
+            "network" : "0.0.0.0/0",
+            "originatorIp" : "1.1.1.1",
+            "originType" : "IGP",
+            "protocol" : "BGP"
+          }
+        ]
+      },
+      "nodes" : {
+        "description" : "Only examine filters on nodes matching this specifier",
+        "displayName" : "Nodes",
+        "optional" : false,
+        "type" : "nodeSpec",
+        "value" : "nodes"
+      },
+      "policies" : {
+        "description" : "Only consider policies that match this specifier",
+        "displayName" : "Policies",
+        "optional" : false,
+        "type" : "string",
+        "value" : "policies"
+      }
+    }
+  }
+}

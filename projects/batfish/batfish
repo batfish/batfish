@@ -1,0 +1,12 @@
+#!/bin/bash
+BATFISH="${BASH_SOURCE[0]}"
+BATFISH_PATH="$(dirname ${BATFISH})"
+ALLINONE_PATH="${BATFISH_PATH}/../allinone"
+ALLINONE_JAR="$ALLINONE_PATH/target/allinone-bundle-${BATFISH_VERSION}.jar"
+CPSEP=":"
+if batfish_cygwin; then
+   ALLINONE_JAR="$(cygpath -w "$ALLINONE_JAR")"
+   CPSEP=";"
+fi
+java ${BATFISH_JAVA_OPTS} -cp "${ALLINONE_JAR}${CPSEP}${BATFISH_CLASSPATH}" org.batfish.main.Driver "$@"
+

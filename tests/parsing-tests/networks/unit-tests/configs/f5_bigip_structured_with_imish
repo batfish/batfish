@@ -1,0 +1,68 @@
+#TMSH-VERSION: 13.1.1
+
+sys global-settings {
+    hostname f5_bigip_structured_with_imish
+}
+
+!
+access-list acl1 permit any
+access-list acl2 permit 192.0.2.0/24
+!
+bfd gtsm enable
+!
+interface lo
+!
+interface tmm
+!
+interface vlan1
+!
+ip prefix-list pl1 seq 10 permit 192.0.2.0/24
+ip prefix-list pl1 seq 20 permit 172.16.0.0/24 le 26
+ip prefix-list pl1 seq 30 permit 10.0.0.0/24 ge 26 le 28
+!
+router bgp 65500
+ bgp always-compare-med
+ bgp deterministic-med
+ bgp graceful-restart restart-time 123
+ bgp router-id 192.0.2.100
+ max-paths ebgp 12
+ neighbor pg1 peer-group
+ no neighbor pg1 capability graceful-restart
+ neighbor pg1 fall-over pfd
+ neighbor pg1 maximum-prefix 12345
+ neighbor pg1 next-hop-self
+ neighbor 1:2:3:: remote-as 555
+ neighbor 1:2:3::4:5:6 remote-as 555
+ neighbor 1:2:3:4:5:6:7:: remote-as 555
+ neighbor ::1:2:3:4:5:6 remote-as 555
+ neighbor ::1:2:3:4:5:6:7 remote-as 555
+ neighbor 1:2::3:4.5.6.7 remote-as 555
+ neighbor 1:2:3:4:5:6:9.8.7.6 remote-as 555
+ neighbor 10.0.0.1 remote-as 65501
+ neighbor 10.0.0.1 description desc1
+ neighbor 10.0.0.1 next-hop-self
+ neighbor 10.0.0.1 peer-group pg1
+ neighbor 10.0.0.1 update-source us1
+ redistribute kernel
+ redistribute kernel route-map rm1
+!
+no service password-encryption
+!
+route-map rm1 permit 1
+ match ip address acl1
+ match ip address prefix-list pl1
+ set community 1:2 3:4
+ set metric 50
+ set origin egp
+ set origin igp
+ set origin incomplete
+!
+route-map rm1 deny 2
+!
+line con 0
+ login
+line vty 0 39
+ login
+!
+end
+

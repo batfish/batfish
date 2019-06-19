@@ -1,0 +1,15 @@
+#
+set system host-name firewall-global-address-book
+#
+set security policies from-zone trust to-zone untrust policy PNAME match source-address ADDRSET
+set security policies from-zone trust to-zone untrust policy PNAME match destination-address any
+set security policies from-zone trust to-zone untrust policy PNAME match application any
+set security policies from-zone trust to-zone untrust policy PNAME then permit
+set security zones security-zone trust interfaces ge-0/0/0.0
+set security zones security-zone untrust interfaces ge-0/0/1.0
+set interfaces ge-0/0/1 unit 0 family inet address 1.2.4.4/24
+set interfaces ge-0/0/0 unit 0 family inet address 1.2.3.4/24
+set security address-book global address ADDR1 2.2.2.2/32
+set security address-book global address ADDR2 wildcard-address 1.3.3.4/255.254.255.255
+set security address-book global address-set ADDRSET address ADDR2
+set security address-book global address-set ADDRSET address ADDR1

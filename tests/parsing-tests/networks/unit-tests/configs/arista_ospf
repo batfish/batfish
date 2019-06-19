@@ -1,0 +1,7 @@
+!
+hostname arista_ospf
+!
+router ospf 1
+ no default-information originate
+!
+

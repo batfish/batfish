@@ -1,0 +1,28 @@
+{
+    "class": "org.batfish.question.multipath.MultipathConsistencyQuestion",
+    "differential": false,
+    "headers": {
+      "dstIps": "ofLocation([type(loopback)])"
+    },
+    "maxTraces": "${maxTraces}",
+    "pathConstraints": {
+      "startLocation": "[type(loopback)]"
+    },
+    "instance": {
+        "description": "Validates multipath consistency between all pairs of loopbacks.",
+        "instanceName": "loopbackMultipathConsistency",
+        "longDescription": "Finds flows between loopbacks that are treated differently (i.e., dropped versus forwarded) by different paths in the presence of multipath routing.",
+        "tags": [
+            "dataplane",
+            "reachability"
+        ],
+        "variables": {
+            "maxTraces": {
+                "description": "Limit the number of traces returned",
+                "optional": true,
+                "type": "integer",
+                "displayName": "Max Traces"
+            }
+        }
+    }
+}

@@ -1,0 +1,21 @@
+interface Loopback0
+  ip address 70.0.2.0/32
+!
+interface Serial0
+  ip address 10.0.25.0/31
+!
+interface Serial1
+  ip address 10.0.27.0/31
+!
+interface Serial2
+  ip address 10.0.24.0/31
+!
+interface Serial3
+  ip address 10.0.26.0/31
+!
+router bgp 2
+  neighbor 10.0.25.1 remote-as 9
+  neighbor 10.0.27.1 remote-as 17
+  neighbor 10.0.24.1 remote-as 5
+  neighbor 10.0.26.1 remote-as 13
+!

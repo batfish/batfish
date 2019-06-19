@@ -1,0 +1,22 @@
+!
+hostname cisco_privilege
+!
+privilege clear level 3 mode exec command dns-hosts
+privilege cmd level 5 mode exec command export
+privilege configure level 15 interface
+privilege configure level 3 router
+privilege configure level 3 inter
+privilege configure level 3 hostname
+privilege exec level 3 show startup-config
+privilege exec level 3 show running-config view full
+privilege exec level 15 write memory
+privilege exec level 15 write
+privilege exec level 15 configure terminal
+privilege exec level 15 configure
+privilege interface level 3 ip address
+privilege interface level 15 switchport
+privilege ipenacl level 3 permit ip any any
+privilege router level 3 network
+privilege show level 5 mode exec command import
+!
+

@@ -1,0 +1,104 @@
+!
+hostname cisco_aaa
+!
+aaa accounting commands 0 default start-stop group tacacs+
+aaa accounting commands 1 default start-stop group tacacs+
+aaa accounting commands 15 default start-stop group tacacs+
+aaa accounting commands 0-1,15 default stop-only group tacacs+
+aaa accounting commands all default stop-only group tacacs+
+aaa accounting commands 0 default
+ action-type start-stop
+ group tacacs+
+!
+aaa accounting connection default wait-start group radius
+aaa accounting connection default
+ action-type start-stop
+ group radius
+!
+aaa accounting delay-start all
+aaa accounting exec default start-stop group tacacs+
+aaa accounting exec default start-stop radius
+aaa accounting exec default wait-start group radius
+aaa accounting exec default
+ action-type start-stop
+ group tacacs+
+!
+aaa accounting identity default start-stop group MEE
+aaa accounting nested
+aaa accounting network default start-stop group tacacs+
+aaa accounting network default
+ action-type start-stop
+ group tacacs+
+!
+aaa accounting send stop-record authentication failure
+aaa accounting system default start-stop group tacacs+
+aaa accounting system default
+ action-type start-stop
+ group tacacs+
+!
+! Cisco command reference: https://www.cisco.com/c/en/us/td/docs/ios/12_2/security/command/reference/fsecur_r/srfacct.html#wpmkr1031586
+aaa accounting update 30
+aaa accounting update newinfo
+aaa accounting update newinfo 30
+aaa accounting update periodic 30
+aaa accounting update newinfo periodic 30
+!
+aaa authentication banner ^CUnauthorized access prohibited by law - disconnect now!^C
+aaa authentication dot1x default group radius
+aaa authentication enable default enable
+aaa authentication enable implicit-user
+aaa authentication http console TACACS+ LOCAL
+aaa authentication include telnet outside 1.2.3.4 255.255.255.255 0.0.0.0 0.0.0.0 user_telnet
+aaa authentication login blah group tacacs+ enable
+aaa authentication login default line
+aaa authentication login default tacacs+ enable
+aaa authentication login default group tacacs+ local enable
+no aaa authentication login invalid-username-log
+aaa authentication login privilege-mode
+aaa authentication policy local allow-nopassword-remote-login
+aaa authentication policy on-failure log
+aaa authentication policy on-success log
+aaa authentication ppp default group radius
+aaa authentication ppp dialup if-needed group radius group tacacs+
+aaa authentication telnet console TACACS+ LOCAL
+aaa authentication username-prompt "Local Username: "
+aaa authorization auth-proxy default group MEE
+aaa authorization commands 0 default group tacacs+ local none 
+aaa authorization commands 1 default group tacacs+ local none 
+aaa authorization commands 15 default group tacacs+ local none 
+aaa authorization config-commands
+aaa authorization console
+aaa authorization exec default group tacacs+ local none 
+aaa authorization exec default tacacs+ none
+aaa authorization exec ffffff none
+aaa authorization include telnet outside 1.2.3.4 255.255.255.255 0.0.0.0 0.0.0.0 User_Telnet
+aaa authorization network default group tacacs+ 
+aaa authorization reverse-access default none
+aaa server radius dynamic-author
+ client 12.5.1.61 server-key 7 KKKKAAA
+ client nameMe server-key 0 KKKKAAA
+ port 12
+ auth-type all
+ ignore session-key
+ ignore server-key
+aaa group server radius fguiwrego
+ server 1.2.3.4 auth-port 1812 acct-port 1813
+ server name somename
+ no source-interface
+!
+aaa group server tacacs+ authservers
+ ip tacacs source-interface FastEthernet0/1
+ vrf Management
+ server-private 1.2.3.4 port 49
+ !
+ server-private 2.3.4.5 port 49
+ !
+ server-private 1.2.3.4 auth-port 1812 acct-port 1813 key 7 KKKKAAA
+!
+aaa new-model
+no aaa new-model
+no aaa root
+aaa session-id common
+no aaa user default-role
+!
+

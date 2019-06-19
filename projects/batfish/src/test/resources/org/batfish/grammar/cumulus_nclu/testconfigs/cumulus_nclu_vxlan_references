@@ -1,0 +1,9 @@
+net del all
+#
+net add hostname cumulus_nclu_vxlan_references
+net add vxlan v2 vxlan id 10002
+net add vxlan v2 bridge access 2
+net add vxlan v2 vxlan local-tunnelip 192.0.2.1
+net add bridge bridge ports v2
+#
+net commit

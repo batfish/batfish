@@ -1,0 +1,11 @@
+! 
+hostname openflow
+!
+openflow
+   description dmfilter:F01C01
+   controller tcp:10.1.168.218:6633
+   bind interface Ethernet1
+   default-action drop
+   enable
+!
+end

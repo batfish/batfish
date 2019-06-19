@@ -1,0 +1,4 @@
+!
+hostname no_aaa_group_server
+!
+no aaa group server tacacs+ tacacs

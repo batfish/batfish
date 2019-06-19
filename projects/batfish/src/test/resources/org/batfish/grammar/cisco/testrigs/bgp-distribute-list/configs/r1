@@ -1,0 +1,12 @@
+hostname r1
+!
+interface FastEthernet0/0
+ ip address 1.1.0.1 255.255.255.0
+!
+interface Loopback0
+ ip address 1.1.1.1 255.255.255.255
+!
+router bgp 1
+ bgp router-id 1.1.1.1
+ neighbor 1.1.0.2 remote-as 10
+!

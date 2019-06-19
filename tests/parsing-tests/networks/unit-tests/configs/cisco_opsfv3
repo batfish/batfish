@@ -1,0 +1,38 @@
+!
+hostname cisco_ospfv3
+!
+interface ethernet0/0
+ ip address 2.2.2.0 255.255.255.0
+ ip router ospf 1 area 0.0.0.0
+ ip ospf shutdown
+!
+ospfv3 name-lookup
+router ospfv3 1
+  address-family ipv6 unicast
+    redistribute direct route-map DIRECT_OSPF
+    timers throttle spf 200 1000 5000
+    distance 110
+    maximum-paths 8
+  address-family ipv6
+  exit-address-family
+  auto-cost reference-bandwidth 40 Gbps
+  discard-route external
+  discard-route internal
+  graceful-restart
+  graceful-restart grace-period 180
+  log-adjacency-changes detail
+  max-metric router-lsa on-startup 600
+  maximum-paths 16
+  ospfv3 event-history hello size small
+  ospfv3 event-history redistribution size small
+  ospfv3 event-history spf size small
+  ospfv3 event-history lsa size small
+  ospfv3 event-history flooding size small
+  ospfv3 event-history ha size small
+  ospfv3 event-history event size small
+  ospfv3 event-history adjacency size small
+  ospfv3 event-history cli size medium
+  router-id 2.3.4.5
+  timers lsa-arrival 1000
+  timers throttle lsa 0 50 5000
+!

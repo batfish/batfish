@@ -1,0 +1,72 @@
+{
+  "class" : "org.batfish.question.routes.RoutesQuestion",
+  "network" : "1.1.1.0/24",
+  "nodes" : "n1",
+  "protocols" : "igp",
+  "rib" : "MAIN",
+  "vrfs" : "default",
+  "differential" : false,
+  "includeOneTableKeys" : true,
+  "instance" : {
+    "description" : "Returns routing tables.",
+    "instanceName" : "qname",
+    "longDescription" : "Shows routes for specified RIB, VRF, and node(s).",
+    "tags" : [
+      "dataplane",
+      "routing"
+    ],
+    "variables" : {
+      "network" : {
+        "description" : "Examine routes for networks matching this prefix",
+        "displayName" : "Network",
+        "optional" : true,
+        "type" : "prefix",
+        "value" : "1.1.1.1/24"
+      },
+      "nodes" : {
+        "description" : "Examine routes on nodes matching this specifier",
+        "displayName" : "Nodes",
+        "optional" : false,
+        "type" : "nodeSpec",
+        "value" : "n1"
+      },
+      "protocols" : {
+        "description" : "Examine routes for protocols matching this specifier",
+        "displayName" : "Protocols",
+        "optional" : true,
+        "type" : "routingProtocolSpec",
+        "value" : "igp"
+      },
+      "rib" : {
+        "allowedValues" : [
+          "bgp",
+          "evpn",
+          "main"
+        ],
+        "description" : "Only return routes from a given protocol RIB",
+        "displayName" : "RIB",
+        "optional" : true,
+        "type" : "string",
+        "value" : "main",
+        "values" : [
+          {
+            "name" : "main"
+          },
+          {
+            "name" : "bgp"
+          },
+          {
+            "name" : "evpn"
+          }
+        ]
+      },
+      "vrfs" : {
+        "description" : "Examine routes on VRFs matching this name or regex",
+        "displayName" : "VRFs",
+        "optional" : false,
+        "type" : "vrf",
+        "value" : "default"
+      }
+    }
+  }
+}

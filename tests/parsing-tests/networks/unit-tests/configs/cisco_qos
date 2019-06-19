@@ -1,0 +1,155 @@
+!RANCID-CONTENT-TYPE: cisco
+!
+hostname cisco_qos
+!
+class-map type control subscriber match-none ABC
+ match result-type aaa-timeout
+ match authorization-status authorized
+ match method dot1x
+ match activated-service-template DEF
+ match service-template GHI
+class-map type network-qos match-any bippety
+  description dum dee dum
+  match cos 0,5-7
+class-map type network-qos match-any boppety
+  match cos 1-2,4
+  match protocol fcoe mpls
+  match protocol fcoe
+!
+class-map type pbr match-any boop
+ 10 match ip access-group boop
+ 20 match access-list boop2
+!
+class-map match-any cos_all
+  match class-map blip
+  match cos  0  1  2  3  4  5  6  7
+!
+object-group ip address BIPPETY
+ 10 1.2.3.0/24
+ 20 2.3.4.0/24
+ 30 host 3.4.5.6
+object network obj_any
+ subnet 0.0.0.0 0.0.0.0
+object-group network 1.2.3.4-24
+ network-object 1.2.3.4 255.255.255.0
+object-group network dns_servers
+ description External DNS Servers
+ network-object host 1.2.2.1
+object-group network ntp_servers
+ description External NTP Servers
+ network-object host 1.1.1.1
+ network-object 1.1.1.1 255.255.255.255
+policy-map type inspect pminspect
+ class type inspect cinspect
+  inspect
+ class class-default
+  drop log
+  pass
+policy-map type network-qos default-ploosh-policy
+ description gawff
+  class type network-qos bippetyboo-drop
+    bandwidth remaining percent 10
+    queue-limit dscp cs2 percent 80
+    queue-limit dscp cs3 percent 90
+    queue-limit dscp cs6 percent 100
+    queue-limit dscp cs7 percent 100
+    queue-buffers ratio 10
+    no pause
+    congestion-control tail-drop
+    no congestion-control random-detect
+    shape kbps 5000000
+    mtu 1500
+  class type network-qos bippetyboo-ndrop-fcoe
+    pause
+    no congestion-control random-detect
+    mtu 2112
+  class type network-qos bippetyboo-ndrop
+    pause
+    no congestion-control random-detect
+    mtu 2112
+  end-policy-map
+policy-map type control-plane feefoo
+ class fffoooddd
+  set cos 7
+  service-policy prioritize_backbone
+  trust dscp
+  police cir 36000 kbps bc 250 ms conform transmit violate drop
+   conform-action transmit
+   exceed-action set-dscp-transmit dscp table policed-dscp
+   violate-action drop
+policy-map type network-qos default-foob-policy
+  class type network-qos c-foob-drop
+    random-detect aggregate minimum-thresh 1024 maximum-thresh 2048 mark-prob 10
+    fair-queue
+     random-detect
+    no pause
+    congestion-control tail-drop
+    no congestion-control random-detect
+    mtu 1500
+  class type network-qos c-foob-ndrop-fcoe
+    pause
+    no congestion-control random-detect
+    mtu 2112
+  class type network-qos c-foob-ndrop
+    pause
+    no congestion-control random-detect
+    mtu 2112
+policy-map type pbr blorf
+ 10 class blerf
+  set nexthop 1.2.3.4
+!
+policy-map type queueing qqqqq
+  class type queuing bleefee
+    priority level 1
+    bandwidth remaining percent 14
+      dbl
+policy-map type queuing qqqqq2
+  class type queuing bleefee2
+policy-map type network-qos default-bleeb-policy
+  class type network-qos c-bleeb-drop
+    no pause
+    congestion-control tail-drop
+    no congestion-control random-detect
+    mtu 1500
+  class type network-qos c-bleeb-ndrop-fcoe
+    pause
+    no congestion-control random-detect
+    mtu 2112
+policy-map type network-qos default-fleep-policy
+  class type network-qos floop
+    no pause
+    congestion-control tail-drop
+    no congestion-control random-detect
+    mtu 1500
+policy-map type control subscriber my-bogus-policy
+ event session-started match-all
+  10 class always do-until-failure
+   20 authenticate using dot1x priority 10
+ event authentication-failure match-first
+  5 class MY_CLASS_1 do-until-failure
+   10 activate service-template my_TEMPLATE_NAME
+  10 class MY_CLASS_2 do-until-failure
+   10 pause reauthentication
+   20 authorize
+   30 terminate dot1x
+   40 authenticate using mab priority 10
+   50 authentication-restart 60
+   60 terminate mab
+   70 authentication-restart 60
+   80 clear-session
+   90 resume reauthentication
+!
+service-template template_name
+ access-group ACL_NAME
+ description Service template for Fail open mode
+ inactivity-timer 3600 
+ linksec policy must-secure
+ linksec policy should-secure
+ vlan 313
+ voice vlan
+ tag USER_DEFINED_TAG
+table-map tablemap1
+ default copy
+ from 10,12 to 14
+ map from 0 to 8
+!

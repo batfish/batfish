@@ -1,0 +1,15 @@
+!
+hostname cisco_ip_nat
+!
+ip nat pool abc prefix-length 32  
+ range 10.1.2.3 10.1.2.4
+!
+!
+ip nat pool example-1-dynamic-nat-pool 192.168.0.128 192.168.0.254 prefix-length 24
+!
+ip nat pool example-2-dynamic-nat-pool 192.168.0.128 192.168.0.254 netmask 255.255.255.0
+!
+!
+ip nat outside source static 6.6.6.6 7.7.7.7 add-route no-alias
+!
+

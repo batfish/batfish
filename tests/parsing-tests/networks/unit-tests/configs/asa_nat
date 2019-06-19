@@ -1,0 +1,24 @@
+! This is an ASA device.
+ASA Version 9.9
+!
+hostname asa_nat
+!
+nat (any,any) source dynamic source-net pat-pool pool block-allocation round-robin
+nat (inside,outside) source dynamic net1 net2 interface
+nat (inside,outside) source dynamic net1 interface destination static interface net2
+nat (inside,outside) source static net1 net2 route-lookup
+nat source dynamic source-net pat-pool pool extended flat include-reserve
+nat source static net1 net2 destination static net3 net4
+nat source static net1 net2 dns no-proxy-arp unidirectional
+nat source static net1 net2 service service1 service2
+!
+object network source-real
+ nat (inside,outside) dynamic interface
+ nat (inside,outside) dynamic 1.1.1.1
+ nat (inside,outside) dynamic source-mapped dns
+ nat (inside,any) dynamic source-mapped interface
+ nat (any,outside) dynamic pat-pool WORD interface flat
+ nat (any,any) static interface
+ nat static source-mapped no-proxy-arp route-lookup
+ nat static source-mapped service sctp ftp bgp
+!

@@ -1,0 +1,36 @@
+#
+#
+set system host-name nat-dest
+#
+set security nat destination pool POOL1 address 10.10.10.10/24
+set security nat destination pool POOL2 address 10.10.10.10 to 10.10.10.20
+#
+set security nat destination rule-set RULE-SET-RI from routing-instance RI
+set security nat destination rule-set RULE-SET-RI rule RULE1 match source-port 5
+set security nat destination rule-set RULE-SET-RI rule RULE1 then destination-nat off
+#
+set security nat destination rule-set RULE-SET-ZONE from zone ZONE
+set security nat destination rule-set RULE-SET-ZONE rule RULE1 match source-port 80
+set security nat destination rule-set RULE-SET-ZONE rule RULE1 match destination-port 100 to 200
+set security nat destination rule-set RULE-SET-ZONE rule RULE1 match destination-address-name NAME
+set security nat destination rule-set RULE-SET-ZONE rule RULE1 match source-address-name SA-NAME
+set security nat destination rule-set RULE-SET-ZONE rule RULE1 then destination-nat off
+#
+set security nat destination rule-set RULE-SET-ZONE rule RULE2 match source-address 2.2.2.2/24
+set security nat destination rule-set RULE-SET-ZONE rule RULE2 match destination-address-name DA-NAME
+set security nat destination rule-set RULE-SET-ZONE rule RULE2 then destination-nat pool POOL2
+#
+set security nat destination rule-set RULE-SET-ZONE rule RULE3 match source-address 3.3.3.3/24
+set security nat destination rule-set RULE-SET-ZONE rule RULE3 match destination-address 1.1.1.1/32
+set security nat destination rule-set RULE-SET-ZONE rule RULE3 then destination-nat pool POOL1
+#
+set security nat destination rule-set RULE-SET-IFACE from interface ge-0/0/0.0
+set security nat destination rule-set RULE-SET-IFACE rule RULE3 match source-port 6
+set security nat destination rule-set RULE-SET-IFACE rule RULE3 then destination-nat off
+#
+set interfaces ge-0/0/0 unit 0 family inet address 1.0.0.1/24
+#
+set security zones security-zone ZONE interfaces ge-0/0/0.0
+#
+set routing-instances RI instance-type virtual-router
+set routing-instances RI interface ge-0/0/0.0

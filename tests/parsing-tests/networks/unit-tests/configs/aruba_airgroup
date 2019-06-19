@@ -1,0 +1,18 @@
+!
+hostname aruba_airgroup
+!
+airgroup active-wireless-discovery "enable"
+airgroup cppm-server aaa
+airgroup dlna "disable"
+airgroup location-discovery "enable"
+airgroup mdns "disable"
+airgroup service "abcd" enable
+airgroup service "efgh" disable
+airgroupservice "airplay"
+ description "AirPlay"
+ id "_airplay._tcp"
+ id "_appletv-v2._tcp"
+ id "_raop._tcp"
+!
+!
+

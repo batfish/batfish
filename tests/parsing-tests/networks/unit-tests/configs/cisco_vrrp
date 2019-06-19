@@ -1,0 +1,38 @@
+!
+hostname cisco_vrrp
+!
+interface Ethernet0
+ ip address 1.0.0.0/24
+ vrrp 123 authentication text bleep
+ vrrp 123 description 123desc
+ vrrp 123 ip 1.0.0.1
+ vrrp 1234 ipv6 ::1
+ no vrrp 123 preempt
+ vrrp 123 preempt delay minimum 222
+ vrrp 123 preempt delay reload 222
+ vrrp 123 priority 234
+!
+router vrrp
+ interface GigabitEthernet0/0/0/19
+  address-family ipv4
+   vrrp 1
+    priority 90
+    address 130.59.54.193
+   !
+  !
+ !
+!
+router vrrp
+ interface MgmtEth0/RSP0/CPU0/0
+ !
+ interface MgmtEth0/RSP1/CPU0/0
+  address-family ipv4
+   vrrp 1
+    priority 90
+    address 130.59.51.65
+   !
+  !
+ !
+!
+!
+

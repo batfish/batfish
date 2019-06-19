@@ -1,0 +1,80 @@
+{
+  "name": "book",
+  "addressGroups": [
+    {
+      "name": "ag1",
+      "addresses": [
+        "2.1.1.1/24",
+        "1.1.1.1:255.255.255.255"
+      ]
+    },
+    {
+      "name": "ag2",
+      "addresses": []
+    }
+  ],
+  "filterGroups": [
+    {
+      "name": "fg1",
+      "filters": [
+        "name:abc",
+        "ipv4:def"
+      ]
+    },
+    {
+      "name": "fg2",
+      "filters": []
+    }
+  ],
+  "interfaceGroups": [
+    {
+      "name": "ig1",
+      "interfaces": [
+        {
+          "hostname": "host1",
+          "interface": "eth1"
+        }
+      ]
+    },
+    {
+      "name": "ig2",
+      "interfaces": []
+    }
+  ],
+  "serviceEndpoints": [
+    {
+      "name": "se1",
+      "address": "ag1",
+      "service": "sog1"
+    },
+    {
+      "name": "se2",
+      "address": "ag2",
+      "service": "sog2"
+    }
+  ],
+  "serviceObjectGroups": [
+    {
+      "name": "sog1",
+      "services": [
+        "so1",
+        "sog2"
+      ]
+    },
+    {
+      "name": "sog2"
+    }
+  ],
+  "serviceObjects": [
+    {
+      "name": "so1",
+      "ipProtocol": "tcp",
+      "ports": "2-3"
+    },
+    {
+      "name": "so2",
+      "ipProtocol": "udp",
+      "ports": "23-23"
+    }
+  ]
+}

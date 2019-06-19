@@ -1,0 +1,26 @@
+{
+    "class": "org.batfish.question.nodeproperties.NodePropertiesQuestion",
+    "differential": false,
+    "nodes": "${nodes}",
+    "properties": "${properties}",
+    "instance": {
+        "description": "Returns configuration settings of nodes.",
+        "instanceName": "nodeProperties",
+        "longDescription": "Lists global settings of devices in the network. Settings that are specific to interfaces, routing protocols, etc. are available via other questions.",
+        "tags": ["configuration"],
+        "variables": {
+            "nodes": {
+                "description": "Include nodes matching this name or regex",
+                "type": "nodeSpec",
+                "optional": true,
+                "displayName": "Nodes"
+            },
+            "properties": {
+                "description": "Include properties matching this regex",
+                "type": "nodePropertySpec",
+                "optional": true,
+                "displayName": "Properties"
+            }
+        }
+    }
+}

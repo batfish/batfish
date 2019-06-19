@@ -1,0 +1,16 @@
+#
+set system host-name juniperAuthenticationOrder
+#
+set groups group1 system authentication-order radius
+set groups group2 system services telnet authentication-order tacplus
+set groups group2 system services telnet authentication-order password
+set apply-groups group1
+#
+set system services telnet apply-groups group2
+set system services ssh authentication-order radius
+set system services ssh authentication-order tacplus
+set system services ftp
+set system ports console authentication-order tacplus
+set system ports auxiliary disable
+set system ports auxiliary authentication-order tacplus
+set system ports auxiliary authentication-order radius

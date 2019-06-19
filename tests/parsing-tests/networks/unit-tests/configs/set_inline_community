@@ -1,0 +1,7 @@
+!
+hostname set_inline_community
+!
+route-policy FOOBAR 
+  set community (1:2)
+end-policy
+!

@@ -1,0 +1,88 @@
+!
+hostname aruba_aaa
+!
+aaa authentication captive-portal "default"
+ default-guest-role "goo"
+ default-role "hoo"
+ no enable-welcome-page
+ guest-logon
+ login-page "http://1.2.3.4/blah.php"
+ max-authentication-failures 123
+ protocol-http
+ redirect-pause 8
+ server-group "florf"
+ welcome-page "http://www.example.com"
+ white-list "flarg"
+!
+aaa authentication dot1x "foofoofoo"
+ machine-authentication blacklist-on-failure
+ machine-authentication cache-timeout 1
+ machine-authentication machine-default-role "Deny-All"
+ machine-authentication user-default-role "Deny-All"
+ max-authentication-failures 123
+ reauthentication
+ termination eap-type eap-tls
+ timer quiet-period 123
+ wpa-fast-handover
+!
+aaa authentication mac "default"
+aaa authentication mac "abcd"
+ case upper
+ delimiter colon
+ delimiter dash
+ max-authentication-failures 123
+ reauthentication
+ timer reauth-period server
+!
+aaa authentication mgmt
+ enable
+ server-group "floof"
+!
+aaa authentication stateful-dot1x
+aaa authentication stateful-kerberos "default"
+aaa authentication stateful-ntlm "default"
+aaa authentication vpn "default"
+aaa authentication wired
+aaa authentication wispr "default"
+aaa authentication-server radius "ababcdcd"
+   host "5.4.3.2"
+!
+aaa authentication-server tacacs "4.4.4.4"
+ host "4.4.4.4"
+ session-authorization
+!
+aaa bandwidth-contract foobarcontract mbits 50
+aaa derivation-rules user abcdefg
+  set role condition macaddr contains "01:23:45:67:89:ab" set-value Deny-All description "blibbety"
+!
+aaa group server tacacs+ authservers
+ ip vrf forwarding Mgmt-vrf
+ server-private 2.3.4.5 timeout 2 key 7 0123456789ABCDEF0123456789AB
+!
+aaa password-policy mgmt
+aaa profile "fooprofile"
+ authentication-dot1x "bleep"
+ authentication-mac "blarp"
+ dot1x-default-role "Deny-All"
+ dot1x-server-group "blorp"
+ enforce-dhcp
+ initial-role "Deny-All"
+ mac-default-role "Deny-All"
+ mac-server-group "msgfoo"
+ radius-accounting "blorp"
+ radius-interim-accounting
+ rfc-3576-server "1.2.3.4"
+ rfc-3576-server "1.2.3.5"
+ no wired-to-wireless-roam
+!
+aaa rfc-3576-server "1.2.3.4"
+aaa server-group "mygroupfoo"
+ allow-fail-through
+ auth-server ABCD
+ auth-server HIJK
+ load-balance
+ set role condition role value-of
+!
+aaa user fast-age
+!
+

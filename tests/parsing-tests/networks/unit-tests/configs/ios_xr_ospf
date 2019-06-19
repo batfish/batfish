@@ -1,0 +1,102 @@
+!
+hostname ios_xr_ospf
+!
+router ospf 2
+ nsr
+ log adjacency changes detail
+ router-id 169.232.1.4
+ authentication message-digest
+ maximum paths 16
+ maximum redistributed-prefixes 50
+ mtu-ignore enable
+ nsf cisco
+ address-family ipv4 unicast
+ default-information originate metric 10 route-policy ospf_default_ipv4
+ area 0
+  range 10.0.0.0/15 advertise
+  interface Bundle-Ether101
+   bfd fast-detect
+   network broadcast
+   message-digest-key 20 md5 encrypted FF00FF00FF00FF00FF00FF
+   priority 2
+  !
+  interface Bundle-Ether103
+   network broadcast
+   priority 2
+  !
+  interface Bundle-Ether201
+   cost 1
+   network point-to-point
+   passive enable
+  !
+  interface Loopback0
+   passive enable
+  !
+  interface TenGigE0/0/0/4
+   passive enable
+  !
+  interface TenGigE0/0/0/5
+   passive enable
+  !
+  interface HundredGigE0/2/0/0.292
+  !
+  interface HundredGigE0/2/0/3
+   network broadcast
+  !
+ !
+ area 60
+  authentication message-digest
+  nssa no-summary
+  interface TenGigE0/0/0/2
+   network broadcast
+  !
+ !
+!
+!
+router ospfv3 1
+ nsr
+ maximum paths 16
+ maximum redistributed-prefixes 50
+ mtu-ignore
+ router-id 169.232.1.4
+ log adjacency changes detail
+ default-information originate metric 10 route-policy ospf_default_ipv6
+ area 0
+  range 2222:0:0::/52 advertise
+  interface Loopback0
+   cost 1
+   passive
+  !
+  interface TenGigE0/0/0/4
+   bfd multiplier 5
+   bfd fast-detect
+   bfd minimum-interval 200
+  !
+  interface TenGigE0/0/0/5
+   passive
+  !
+  interface Bundle-Ether101
+   network broadcast
+   priority 2
+   dead-interval 3
+   hello-interval 1
+  !
+  interface Bundle-Ether103
+   network broadcast
+   priority 2
+   dead-interval 3
+   hello-interval 1
+  !
+  interface Bundle-Ether201
+   passive
+  !
+  interface HundredGigE0/2/0/3
+   network broadcast
+  !
+  interface HundredGigE0/2/0/0.292
+  !
+ !
+!
+end
+!
+

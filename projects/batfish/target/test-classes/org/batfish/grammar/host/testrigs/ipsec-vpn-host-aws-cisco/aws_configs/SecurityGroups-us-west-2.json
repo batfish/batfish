@@ -1,0 +1,44 @@
+{
+ "SecurityGroups": [
+  {
+   "Description": "default VPC security group", 
+   "GroupId": "sg-adcd87d0", 
+   "GroupName": "default", 
+   "IpPermissions": [
+    {
+     "IpProtocol": "-1", 
+     "IpRanges": [
+      {
+       "CidrIp": "0.0.0.0/0", 
+       "Description": "Default"
+      }
+     ], 
+     "Ipv6Ranges": [], 
+     "PrefixListIds": [], 
+     "UserIdGroupPairs": []
+    }
+   ], 
+   "IpPermissionsEgress": [
+    {
+     "IpProtocol": "-1", 
+     "IpRanges": [
+      {
+       "CidrIp": "0.0.0.0/0"
+      }
+     ], 
+     "Ipv6Ranges": [], 
+     "PrefixListIds": [], 
+     "UserIdGroupPairs": []
+    }
+   ], 
+   "OwnerId": "118292266645", 
+   "Tags": [
+    {
+     "Key": "Name", 
+     "Value": "GNS3-BGP-Test-Default"
+    }
+   ], 
+   "VpcId": "vpc-815775e7"
+  }
+ ]
+}

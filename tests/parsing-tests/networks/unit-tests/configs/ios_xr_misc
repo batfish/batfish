@@ -1,0 +1,10 @@
+!! IOS XR Configuration 5.3.4
+!
+hostname ios_xr_misc
+!
+bfd
+ trap singlehop pre-mapped
+!
+ipv4 netmask-format bit-count
+!
+!

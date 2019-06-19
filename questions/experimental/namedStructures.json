@@ -1,0 +1,48 @@
+{
+    "class": "org.batfish.question.namedstructures.NamedStructuresQuestion",
+    "differential": false,
+    "ignoreGenerated": "${ignoreGenerated}",
+    "indicatePresence": "${indicatePresence}",
+    "nodes": "${nodes}",
+    "structureNames": "${structureNames}",
+    "structureTypes": "${structureTypes}",
+    "instance": {
+        "description": "Returns named structure definitions.",
+        "instanceName": "namedStructures",
+        "longDescription": "Return structures defined in the configurations, represented in a vendor-independent JSON format.",
+        "tags": ["configuration"],
+        "variables": {
+            "ignoreGenerated": {
+                "description": "Whether to ignore auto-generated structures",
+                "type": "boolean",
+                "optional": true,
+                "value": true,
+                "displayName": "Ignore auto-generated structures"
+            },
+            "indicatePresence": {
+                "description": "Output if the structure is present or absent",
+                "type": "boolean",
+                "optional": true,
+                "displayName": "Indicate presence"
+            },
+            "nodes": {
+                "description": "Include nodes matching this specifier",
+                "type": "nodeSpec",
+                "optional": true,
+                "displayName": "Nodes"
+            },
+            "structureTypes": {
+                "description": "Include structures of this type",
+                "type": "namedStructureSpec",
+                "optional": true,
+                "displayName": "Structure types"
+            },
+            "structureNames": {
+                "description": "Include structures matching this name or regex",
+                "type": "structureName",
+                "optional": true,
+                "displayName": "Structure names"
+            }
+        }
+    }
+}

@@ -1,0 +1,5 @@
+set deviceconfig system hostname mgmt-iface
+#
+set deviceconfig system ip-address 12.25.51.103
+set deviceconfig system netmask 255.255.255.128
+set deviceconfig system default-gateway 12.25.51.1

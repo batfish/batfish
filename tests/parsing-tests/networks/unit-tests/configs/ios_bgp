@@ -1,0 +1,15 @@
+!
+hostname ios_bgp
+!
+router bgp 1
+ neighbor 1.2.3.4 advertise-map ADVERTISE_MAP exist-map EXIST_MAP
+ neighbor 1::1 remote-as 2
+ address-family ipv4
+  neighbor UNDEFINED_PEER_GROUP activate
+ address-family vpnv6
+  neighbor 1::1 activate
+  neighbor 1::1 prefix-list VPNV6_PL in
+ exit-address-family
+!
+!
+

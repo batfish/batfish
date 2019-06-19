@@ -1,0 +1,60 @@
+!
+hostname cisco_mpls
+!
+mpls label range 16 262143
+mpls ldp
+ address-family ipv4
+  discovery targeted-hello accept
+  label
+   local
+    allocate for host-routes
+    advertise
+     disable
+     for mpls-ldp
+     explicit-null for mpls-ldp                                                                                                            
+    !
+   !
+  !
+ !
+ igp sync delay on-session-up 60
+ interface TenGigE0/0/2/0
+ !
+ log
+  adjacency
+  neighbor
+  nsr
+  session-protection
+ !
+ neighbor
+  password encrypted 12345
+ !
+ nsr
+ router-id 1.2.3.4
+ session protection
+!
+mpls ldp session protection
+mpls traffic-eng
+ affinity-map bippety bit-position 1
+ attribute-set auto-backup boo
+  affinity include bippety
+ !
+ auto-tunnel backup
+  tunnel-id min 10000 max 11000
+ !
+ interface Bundle-Ether1
+  attribute-names bippety boppety
+  auto-tunnel backup
+   attribute-set boo
+   nhop-only
+   exclude srlg preferred
+  !
+ !
+ logging events frr-protection
+ logging events issu
+ logging events nsr
+ reoptimize 900
+ reoptimize timers delay after-frr 50
+ reoptimize timers delay cleanup 60
+!
+!
+

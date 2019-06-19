@@ -1,0 +1,21 @@
+!
+hostname bgp_foundry
+!
+router bgp
+ local-as 2153
+ bfd-enable
+ neighbor ucr peer-group
+ address-family ipv4 unicast
+  graceful-restart restart-time 20
+  neighbor ucr route-map in from_ucr
+ exit-address-family
+   
+ address-family ipv4 multicast
+  dampening
+  network 137.164.17.0/24 route-map tag-bbone-prefixes
+ exit-address-family
+   
+ address-family l2vpn vpls
+ exit-address-family
+!
+

@@ -1,0 +1,17 @@
+#
+set system host-name ike-proposal
+#
+set security ike proposal proposal1 authentication-algorithm md5
+set security ike proposal proposal1 authentication-method pre-shared-keys
+set security ike proposal proposal1 dh-group group14
+set security ike proposal proposal1 encryption-algorithm 3des-cbc
+set security ike proposal proposal1 lifetime-seconds 50000
+#
+set security ike policy policy1 proposal-set standard
+#
+set security ike policy policy2 proposal-set basic
+
+
+
+
+

@@ -1,0 +1,19 @@
+#!/bin/bash
+BATFISH_CLIENT=${BASH_SOURCE[0]}
+BATFISH_CLIENT_PATH=$(dirname ${BATFISH_CLIENT})
+ALLINONE_PATH="${BATFISH_CLIENT_PATH}/../allinone"
+ALLINONE_JAR="$ALLINONE_PATH/target/allinone-bundle-${BATFISH_VERSION}.jar"
+CPSEP=":"
+if batfish_cygwin; then
+   ALLINONE_JAR="$(cygpath -w "$ALLINONE_JAR")"
+   BATFISH_CLIENT_JAVA_ARGS="$BATFISH_CLIENT_JAVA_ARGS -Djline.terminal=jline.UnixTerminal"
+   stty -icanon min 1 -echo
+   CPSEP=";"
+fi
+java ${BATFISH_CLIENT_JAVA_ARGS} -cp "${ALLINONE_JAR}${CPSEP}${BATFISH_CLIENT_CLASSPATH}" org.batfish.client.Main "$@"
+EXIT_CODE=$?
+if batfish_cygwin; then
+   stty icanon echo
+fi
+exit ${EXIT_CODE}
+

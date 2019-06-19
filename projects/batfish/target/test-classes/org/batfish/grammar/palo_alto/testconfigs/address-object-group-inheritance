@@ -1,0 +1,30 @@
+set deviceconfig system hostname address-object-group-inheritance
+set network interface ethernet ethernet1/1 layer3 ip 1.1.1.1/24
+set network interface ethernet ethernet1/2 layer3 ip 1.1.2.1/24
+set zone z1 network layer3 ethernet1/1
+set zone z2 network layer3 ethernet1/2
+
+set rulebase security rules RULE1 from any
+set rulebase security rules RULE1 to any
+set rulebase security rules RULE1 source 11.11.11.11
+set rulebase security rules RULE1 destination 33.33.33.33
+set rulebase security rules RULE1 service any
+set rulebase security rules RULE1 application any
+set rulebase security rules RULE1 action allow
+
+set rulebase security rules RULE2 from any
+set rulebase security rules RULE2 to any
+set rulebase security rules RULE2 source 44.44.44.44
+set rulebase security rules RULE2 destination 22.22.22.22
+set rulebase security rules RULE2 service any
+set rulebase security rules RULE2 application any
+set rulebase security rules RULE2 action allow
+
+# Note: object definition comes after rules (reference) in config dump
+
+# an address object named 11.11.11.11 with value 10.10.10.10
+set address 11.11.11.11 ip-netmask 10.10.10.10
+
+# an address group named 22.22.22.22 containing object above
+set address-group 22.22.22.22 static 11.11.11.11
+

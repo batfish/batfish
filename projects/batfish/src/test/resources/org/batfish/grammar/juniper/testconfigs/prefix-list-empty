@@ -1,0 +1,20 @@
+set system host-name prefix-list-empty
+
+set policy-options prefix-list EMPTY_PREFIX_LIST
+
+
+set firewall family inet filter TEST_FILTER_SOURCE term TEST_TERM from source-prefix-list EMPTY_PREFIX_LIST
+set firewall family inet filter TEST_FILTER_SOURCE term TEST_TERM then accept
+
+set firewall family inet filter TEST_FILTER_SOURCE_EXCEPT term TEST_TERM_EXCEPT from source-prefix-list EMPTY_PREFIX_LIST except
+set firewall family inet filter TEST_FILTER_SOURCE_EXCEPT term TEST_TERM_EXCEPT then accept
+
+
+set firewall family inet filter TEST_FILTER_DESTINATION term TEST_TERM from destination-prefix-list EMPTY_PREFIX_LIST
+set firewall family inet filter TEST_FILTER_DESTINATION term TEST_TERM then accept
+
+set firewall family inet filter TEST_FILTER_DESTINATION_EXCEPT term TEST_TERM_EXCEPT from destination-prefix-list EMPTY_PREFIX_LIST except
+set firewall family inet filter TEST_FILTER_DESTINATION_EXCEPT term TEST_TERM_EXCEPT then accept
+
+set firewall family inet filter TEST_FILTER term TEST_TERM from prefix-list EMPTY_PREFIX_LIST
+set firewall family inet filter TEST_FILTER term TEST_TERM then accept

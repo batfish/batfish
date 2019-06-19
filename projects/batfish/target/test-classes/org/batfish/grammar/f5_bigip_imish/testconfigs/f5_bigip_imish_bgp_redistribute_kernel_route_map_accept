@@ -1,0 +1,16 @@
+#TMSH-VERSION: 13.1.1
+
+sys global-settings {
+    hostname f5_bigip_imish_bgp_redistribute_kernel_route_map_accept
+}
+
+!
+!!! imish configuration starts here
+!
+route-map rm1 permit 10
+!
+router bgp 1
+ redistribute kernel route-map rm1
+ neighbor 192.0.2.2 remote-as 2
+!
+end

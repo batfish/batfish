@@ -1,0 +1,47 @@
+!
+hostname cisco_ospf_multi_process
+!
+interface ethernet0/0
+ ip address 2.2.2.0 255.255.255.0
+ ip router ospf 1 area 0.0.0.0
+!
+interface ethernet1/0
+ ip address 3.3.3.0 255.255.255.0
+ ip router ospf ignored area 0.0.0.0
+!
+interface loopback0
+ ip address 1.1.1.1 255.255.255.255
+!
+router ospf ignored
+  area 1 range 3.3.3.0 255.255.255.0
+!
+router ospf 1
+  address-family ipv4
+  area 0.0.0.0 authentication message-digest
+  area 0.0.0.0 default-cost 5
+  area 0.0.0.0 filter-list prefix filterName in
+  area 0.0.0.0 filter-list prefix filterName out
+  area 0.0.0.0 nssa
+  area 0.0.0.0 nssa default-information-originate
+  area 0.0.0.0 nssa default-information-originate metric 5
+  area 0.0.0.0 nssa default-information-originate metric-type 1
+  area 0.0.0.0 nssa no-redistribution
+  area 0.0.0.0 nssa no-redistribution no-summary
+  area 0.0.0.0 nssa no-redistribution default-information-originate no-summary
+  area 0.0.0.0 nssa no-summary
+  area 0.0.0.0 range 1.2.3.0/24
+  area 0.0.0.0 range 1.2.3.0/24 cost 17
+  area 0.0.0.0 range 1.2.3.0 255.255.255.0
+  area 0.0.0.0 range 1.2.3.0 255.255.255.0 advertise
+  area 0.0.0.0 range 1.2.3.0 255.255.255.0 advertise cost 10
+  area 0.0.0.0 range 1.2.3.0 255.255.255.0 cost 10
+  area 0.0.0.0 range 1.2.3.0 255.255.255.0 not-advertise
+  passive-interface loopback0
+!
+! This process should be discarded in the VI datamodel until 
+! multi-process support is there, since it has no interfaces
+router ospf abcdefg
+  passive-interface default
+  timers throttle lsa 0 50 5000
+  timers throttle spf 50 50 5000
+!

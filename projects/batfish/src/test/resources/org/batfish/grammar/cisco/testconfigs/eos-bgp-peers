@@ -1,0 +1,9 @@
+!
+boot system flash eos.swi
+hostname eos-bgp-peers
+!
+router bgp 1
+ neighbor 1.1.1.1 description foo
+ neighbor 1.1.1.1 remote-as 1
+ neighbor 2.2.2.2 description bar
+!

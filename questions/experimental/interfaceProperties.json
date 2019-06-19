@@ -1,0 +1,42 @@
+{
+    "class": "org.batfish.question.interfaceproperties.InterfacePropertiesQuestion",
+    "differential": false,
+    "excludeShutInterfaces": "${excludeShutInterfaces}",
+    "interfaces": "${interfaces}",
+    "nodes": "${nodes}",
+    "properties": "${properties}",
+    "instance": {
+        "description": "Returns configuration settings of interfaces.",
+        "instanceName": "interfaceProperties",
+        "longDescription": "Lists interface-level settings of interfaces. Settings for routing protocols, VRFs, and zones etc. that are attached to interfaces are available via other questions.",
+        "tags": [
+            "configuration"
+        ],
+        "variables": {
+            "excludeShutInterfaces": {
+                "description": "Exclude interfaces that are shutdown",
+                "type": "boolean",
+                "optional": true,
+                "displayName": "Exclude Shut Interfaces"
+            },
+            "interfaces": {
+                "description": "Include interfaces matching this specifier",
+                "type": "interfacesSpec",
+                "optional": true,
+                "displayName": "Interfaces"
+            },
+            "nodes": {
+                "description": "Include nodes matching this specifier",
+                "type": "nodeSpec",
+                "optional": true,
+                "displayName": "Nodes"
+            },
+            "properties": {
+                "description": "Include properties matching this specifier",
+                "type": "interfacePropertySpec",
+                "optional": true,
+                "displayName": "Properties"
+            }
+        }
+    }
+}

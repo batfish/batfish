@@ -1,0 +1,13 @@
+!
+hostname cisco_wsma
+!
+wsma agent notify
+ profile httplistener
+ profile httpslistener
+wsma profile listener httplistener
+ transport http
+wsma agent filesys
+ profile httplistener
+ profile httpslistener
+!
+

@@ -1,0 +1,29 @@
+# RANCID-CONTENT-TYPE: juniper
+#
+set system host-name juniper_interfaces
+#
+set interfaces ae0 unit 0 family ethernet-switching vlan members 1-1000
+set interfaces fab0 description "Fabric interface 0"
+set interfaces ge-0/0/0 forwarding-class-accounting
+set interfaces ge-1/0/0 ether-options 802.3ad ae0
+set interfaces ge-2/0/0 unit 0 bandwidth 5
+set interfaces ge-2/0/0 unit 1 bandwidth 5c
+set interfaces ge-3/0/0 unit 0 bandwidth 5k
+set interfaces ge-4/0/0 unit 0 bandwidth 5m
+set interfaces ge-5/0/0 unit 0 bandwidth 5g
+set interfaces xe-0/0/0:0 gigether-options loopback
+set interfaces xe-0/0/0:0 unit 0 family ethernet-switching vlan members all
+set interfaces irb unit 5 family inet address 1.2.3.1/24 vrrp-group 5 authentication-type md5
+set interfaces irb unit 5 family inet address 1.2.3.0/24 vrrp-group 5 authentication-key abcdefg
+set interfaces irb unit 5 family inet address 1.2.3.0/24 vrrp-group 5 authentication-key "$9$dLV2aZGi.fzDiORSeXxDikqmT"
+set interfaces irb unit 5 family inet tcp-mss 1400
+set interfaces xe-0/0/5:0 unit 0 family ethernet-switching vlan members bippetyboppety
+set interfaces xe-0/0/6 native-vlan-id 11
+set interfaces vme unit 0 family inet address 100.100.100.100/32
+#
+set routing-instances SOME_INSTANCE interface ge-0/0/1
+#
+set vlans unused-vlan
+set vlans unused-vlan vlan-id 2000
+#
+set groups VRRP-A logical-systems <*> interfaces <*> unit <*> family inet address <*> vrrp-group <*> preempt hold-time 60

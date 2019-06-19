@@ -1,0 +1,292 @@
+#TMSH-VERSION: 13.1.1
+
+sys global-settings {
+  hostname f5_bigip_structured_ltm
+}
+ltm global-settings connection {
+    default-vs-syn-challenge-threshold 12345
+}
+ltm global-settings rule { }
+ltm default-node-monitor {
+    rule none
+}
+ltm ifile /Common/SOME_FILE {
+    file-name /Common/SOME_FILE
+}
+ltm node /Common/SOME_LTM_NODE {
+    address 192.0.2.1
+}
+ltm pool /Common/SOME_LTM_POOL {
+    description "foo"
+    load-balancing-mode least-connections-member
+    members {
+        /Common/foo:80 {
+            address 192.0.2.2
+            description bar.baz
+            priority-group 2
+        }
+        /Common/bar:80 {
+            address 192.0.2.3
+        }
+    }
+    min-active-members 1
+    monitor /Common/SOME_MONITOR
+    service-down-action reset
+    slow-ramp-time 123
+}
+ltm rule /Common/SOME_RULE1 {
+when HTTP_REQUEST priority 10 {
+     HTTP::header replace X-Forwarded-For [IP::remote_addr];
+     HTTP::header replace "X-Forwarded-Proto" "http";
+}
+}
+ltm rule /Common/SOME_RULE2 {
+when HTTP_REQUEST priority 10 {
+     HTTP::header replace X-Forwarded-For [IP::remote_addr];
+     HTTP::header replace "X-Forwarded-Proto" "https";
+}
+}
+ltm rule /Common/SOME_RULE3 {
+when HTTP_REQUEST priority 20 {
+  if { [active_members [LB::server pool]] == 0 } {
+    HTTP::respond 200 content [ifile get foobar] "Content-Type" "text/html"
+  }
+}
+}
+ltm rule /Common/SOME_RULE4 {
+when CLIENT_ACCEPTED {
+    set tcp_done [clock clicks -milliseconds]
+}
+
+when CLIENTSSL_HANDSHAKE {
+   set tls_done [clock clicks -milliseconds]
+   set delta [expr {$tls_done - $tcp_done}]
+      log local0. "TLS handshake took $delta milliseconds for Client IP is [IP::client_addr]"
+}
+}
+ltm snat /Common/SOME_SNAT {
+    origins {
+        0.0.0.0/0 { }
+    }
+    snatpool /Common/SOME_SNATPOOL
+    vlans { }
+    vlans {
+        /Common/SOME_VLAN
+    }
+    vlans-disabled
+    vlans-enabled
+}
+ltm snat-translation /Common/192.0.2.4 {
+    address 192.0.2.5
+    traffic-group /Common/traffic-group-1
+}
+ltm snatpool /Common/SOME_SNATPOOL {
+    members {
+        /Common/192.0.2.5
+        /Common/192.0.2.6
+    }
+}
+ltm virtual /Common/SOME_VIRTUAL {
+    destination /Common/192.0.2.7:80
+    disabled
+    enabled
+    ip-forward
+    ip-protocol tcp
+    mask 255.255.255.255
+    persist {
+        /Common/SOME_PROFILE {
+            default yes
+        }
+    }
+    pool /Common/SOME_POOL
+    profiles {
+        /Common/P1 { }
+        /Common/P2 { }
+        /Common/P3 { }
+    }
+    reject
+    rules {
+        /Common/SOME_RULE1
+    }
+    source 0.0.0.0/0
+    source-address-translation {
+        pool /Common/SOME_SNATPOOL
+        type snat
+    }
+    translate-address enabled
+    translate-port enabled
+    vlans { }
+    vlans {
+        /Common/MY_VLAN
+    }
+    vlans-disabled
+    vlans-enabled
+}
+ltm virtual-address /Common/192.0.2.8 {
+    address 192.0.2.9
+    arp disabled
+    arp enabled
+    icmp-echo disabled
+    icmp-echo enabled
+    mask 255.255.255.255
+    route-advertisement selective
+    traffic-group /Common/traffic-group-1
+}
+ltm monitor http /Common/SOME_MONITOR1 {
+    adaptive disabled
+    defaults-from /Common/http
+    destination *:80
+    interval 5
+    ip-dscp 0
+    recv somerecvup
+    recv-disable none
+    send "GET /some/path HTTP/1.1
+Host: somehost.example.com
+Connection: Close
+
+"
+    time-until-up 0
+    timeout 12
+}
+ltm monitor https /Common/SOME_MONITOR2 {
+    adaptive disabled
+    cipherlist DEFAULT:+SHA:+3DES:+kEDH
+    compatibility enabled
+    defaults-from /Common/https
+    destination *:443
+    interval 5
+    ip-dscp 0
+    recv somerecvup
+    recv-disable none
+    send "GET /some/path HTTP/1.1
+Host: somehost.example.com
+Connection: Close
+
+"
+    ssl-profile /Common/SOME_SSL_PROFILE
+    time-until-up 0
+    timeout 16
+}
+ltm persistence source-addr /Common/SOME_PERSISTENCE_SOURCE_ADDR {
+    app-service none
+    defaults-from /Common/source_addr
+    timeout 60
+}
+ltm persistence ssl /Common/SOME_PERSISTENCE_SSL {
+    app-service none
+    defaults-from /Common/ssl
+    match-across-pools disabled
+    match-across-services disabled
+    match-across-virtuals disabled
+    override-connection-limit disabled
+    timeout 300
+}
+ltm profile client-ssl /Common/SOME_PROFILE_CLIENT_SSL {
+    alert-timeout indefinite
+    allow-dynamic-record-sizing disabled
+    allow-non-ssl disabled
+    app-service none
+    cache-size 262144
+    cache-timeout 3600
+    cert /Common/example1.crt
+    cert-extension-includes { basic-constraints subject-alternative-name }
+    cert-key-chain {
+       chain1 {
+            cert /Common/example2.crt
+            chain /Common/example3.crt
+            key foobar
+            passphrase $M$TheQuickBrownFoxJumpsOverTheLazyDogTheQuickBro=
+        }
+    }
+    cert-lifespan 30
+    cert-lookup-by-ipaddr-port disabled
+    chain /Common/example4.crt
+    cipher-group none
+    ciphers !SSLv2:!EXPORT:!DHE+AES-GCM:!DHE+AES:!DHE+3DES:ECDHE+AES-GCM:ECDHE+AES:RSA+AES-GCM:RSA+AES:ECDHE+3DES:RSA+3DES:-MD5:DES-CBC3-SHA:-SSLv3:-RC4
+    defaults-from /Common/clientssl
+    generic-alert enabled
+    handshake-timeout 10
+    inherit-certkeychain false
+    key foobar
+    max-active-handshakes indefinite
+    max-aggregate-renegotiation-per-minute indefinite
+    max-renegotiations-per-minute 5
+    maximum-record-size 16384
+    mod-ssl-methods disabled
+    mode enabled
+    ocsp-stapling enabled
+    options { dont-insert-empty-fragments }
+    passphrase $M$TheQuickBrownFoxJumpsOverTheLazyDogTheQuickBro=
+    peer-no-renegotiate-timeout 10
+    proxy-ca-cert /Common/example5.crt
+    proxy-ca-key /Common/example5.key
+    proxy-ssl disabled
+    proxy-ssl-passthrough disabled
+    renegotiate-max-record-delay indefinite
+    renegotiate-period indefinite
+    renegotiate-size indefinite
+    renegotiation enabled
+    secure-renegotiation require
+    server-name none
+    session-mirroring disabled
+    session-ticket disabled
+    session-ticket-timeout 0
+    sni-default false
+    sni-require false
+    ssl-forward-proxy disabled
+    ssl-forward-proxy-bypass disabled
+    ssl-sign-hash any
+    strict-resume disabled
+    unclean-shutdown enabled
+}
+ltm profile ocsp-stapling-params /Common/SOME_PROFILE_OCSP_STAPLING_PARAMS {
+    dns-resolver /Common/SOME_DNS_RESOLVER
+    responder-url http://ocsp.example.com
+    sign-hash sha1
+    status-age 86400
+    trusted-responders /Common/example6.crt
+}
+ltm profile one-connect /Common/oneconnect {
+    app-service none
+    idle-timeout-override disabled
+    limit-type none
+    max-age 86400
+    max-reuse 12345
+    max-size 123456
+    source-mask any
+}
+ltm profile server-ssl /Common/SOME_PROFILE_SERVER_SSL {
+    alert-timeout indefinite
+    app-service none
+    cache-size 262144
+    cache-timeout 3600
+    cert /Common/example7.crt
+    chain none
+    cipher-group none
+    ciphers !SSLv2:!EXPORT:!DHE+AES-GCM:!DHE+AES:!DHE+3DES:ECDHE+AES-GCM:ECDHE+AES:RSA+AES-GCM:RSA+AES:ECDHE+3DES:RSA+3DES:-MD5:DES-CBC3-SHA:-SSLv3:-RC4
+    defaults-from /Common/serverssl
+    generic-alert enabled
+    handshake-timeout 10
+    key foobar
+    max-active-handshakes indefinite
+    mod-ssl-methods disabled
+    mode enabled
+    options { dont-insert-empty-fragments }
+    proxy-ssl disabled
+    proxy-ssl-passthrough disabled
+    renegotiate-period indefinite
+    renegotiate-size indefinite
+    renegotiation enabled
+    secure-renegotiation require-strict
+    server-name none
+    session-mirroring disabled
+    session-ticket disabled
+    sni-default false
+    sni-require false
+    ssl-forward-proxy disabled
+    ssl-forward-proxy-bypass disabled
+    ssl-sign-hash any
+    strict-resume disabled
+    unclean-shutdown enabled
+}
+

@@ -1,0 +1,16 @@
+#
+set system host-name application-set-nested
+#
+set applications application a1 protocol tcp
+set applications application a1 source-port 1
+set applications application-set appset1 application a1
+set applications application-set appset2 application-set appset1
+set applications application-set appset3 application appset2
+#
+set security policies from-zone z1 to-zone z2 policy p1 match application appset1
+set security policies from-zone z1 to-zone z2 policy p1 then permit
+set security policies from-zone z1 to-zone z3 policy p1 match application appset2
+set security policies from-zone z1 to-zone z3 policy p1 then permit
+set security policies from-zone z1 to-zone z4 policy p1 match application appset3
+set security policies from-zone z1 to-zone z4 policy p1 then permit
+set security zones security-zone z1 interfaces ge-0/0/0.0

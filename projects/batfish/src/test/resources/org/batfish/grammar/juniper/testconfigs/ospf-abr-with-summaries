@@ -1,0 +1,10 @@
+#
+set system host-name ospf-abr-with-summaries
+#
+set interfaces ge-0/0/0 unit 0 family inet address 10.0.0.1/31
+set interfaces ge-0/0/1 unit 0 family inet address 10.0.1.2/31
+#
+set protocols ospf area 0.0.0.0 interface ge-0/0/0.0
+set protocols ospf area 0.0.0.1 interface ge-0/0/1.0
+set protocols ospf area 0.0.0.1 stub no-summaries
+set protocols ospf area 0.0.0.1 area-range 10.0.1.0/24

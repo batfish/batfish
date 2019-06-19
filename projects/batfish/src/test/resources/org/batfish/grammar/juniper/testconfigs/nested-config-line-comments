@@ -1,0 +1,7 @@
+!RANCID-CONTENT-TYPE: juniper
+!
+#this is a line comment
+# this is another line comment
+system {
+    host-name nested-config-line-comments;
+}

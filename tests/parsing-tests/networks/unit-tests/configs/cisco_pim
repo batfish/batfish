@@ -1,0 +1,11 @@
+!
+hostname cisco_pim
+!
+ip pim bidir-rp-limit 6
+ip pim event-history hello size small
+ip pim mtu 1500
+ip pim rp-address 1.2.3.4 access-list foobar override
+ip pim rp-address 1.2.3.4 route-map foobarmap
+ip pim sg-expiry-timer 180
+ip pim ssm range 232.0.0.0/8
+!

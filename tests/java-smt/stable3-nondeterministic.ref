@@ -1,0 +1,38 @@
+[
+  {
+    "class" : "org.batfish.minesweeper.answers.SmtDeterminismAnswerElement",
+    "flow" : {
+      "dscp" : 0,
+      "dstIp" : "42.42.42.0",
+      "dstPort" : 0,
+      "ecn" : 0,
+      "fragmentOffset" : 0,
+      "icmpCode" : 0,
+      "icmpVar" : 0,
+      "ingressNode" : "(none)",
+      "ingressVrf" : "default",
+      "ipProtocol" : "HOPOPT",
+      "packetLength" : 0,
+      "srcIp" : "0.0.0.0",
+      "srcPort" : 0,
+      "state" : "NEW",
+      "tag" : "SMT",
+      "tcpFlagsAck" : 1,
+      "tcpFlagsCwr" : 1,
+      "tcpFlagsEce" : 1,
+      "tcpFlagsFin" : 1,
+      "tcpFlagsPsh" : 1,
+      "tcpFlagsRst" : 1,
+      "tcpFlagsSyn" : 1,
+      "tcpFlagsUrg" : 1
+    },
+    "forwardingCase1" : [
+      "r2,Serial0 --> r1,Serial0 -- BgpRoute<42.42.42.0/32,nhip:192.168.42.2,nhint:dynamic>",
+      "r3,Serial0 --> r2,Serial1 -- BgpRoute<42.42.42.0/32,nhip:192.168.43.2,nhint:dynamic>"
+    ],
+    "forwardingCase2" : [
+      "r2,Serial1 --> r3,Serial0 -- BgpRoute<42.42.42.0/32,nhip:192.168.43.1,nhint:dynamic>",
+      "r3,Serial1 --> r1,Serial1 -- BgpRoute<42.42.42.0/32,nhip:192.168.44.2,nhint:dynamic>"
+    ]
+  }
+]

@@ -1,0 +1,144 @@
+#TMSH-VERSION: 13.1.1
+
+sys global-settings {
+  hostname f5_bigip_structured_ltm_virtual_disabled
+}
+
+### Virtual-server configuration
+### - only qualitative difference between them is whether or not they are disabled
+ltm virtual /Common/virtual_disabled {
+    disabled
+    destination /Common/192.0.2.1:80
+    ip-protocol tcp
+    pool /Common/pool_disabled
+    source-address-translation {
+        pool /Common/snatpool_disabled
+        type snat
+    }
+    translate-address enabled
+    translate-port enabled
+}
+
+ltm virtual /Common/virtual_enabled {
+    enabled
+    destination /Common/192.0.2.2:80
+    ip-protocol tcp
+    pool /Common/pool_enabled
+    source-address-translation {
+        pool /Common/snatpool_enabled
+        type snat
+    }
+    translate-address enabled
+    translate-port enabled
+}
+
+ltm virtual /Common/virtual_implicitly_enabled {
+    destination /Common/192.0.2.3:80
+    ip-protocol tcp
+    pool /Common/pool_implicitly_enabled
+    source-address-translation {
+        pool /Common/snatpool_implicitly_enabled
+        type snat
+    }
+    translate-address enabled
+    translate-port enabled
+}
+
+### LTM dependencies
+### - all qualitatively identical
+
+# nodes
+ltm node /Common/node_disabled {
+    address 192.0.2.11
+}
+ltm node /Common/node_enabled {
+    address 192.0.2.12
+}
+ltm node /Common/node_implicitly_enabled {
+    address 192.0.2.13
+}
+
+# DNAT pools
+ltm pool /Common/pool_disabled {
+    members {
+        /Common/node_disabled:80 {
+            address 192.0.2.11
+        }
+    }
+}
+ltm pool /Common/pool_enabled {
+    members {
+        /Common/node_enabled:80 {
+            address 192.0.2.12
+        }
+    }
+}
+ltm pool /Common/pool_implicitly_enabled {
+    members {
+        /Common/node_implicitly_enabled:80 {
+            address 192.0.2.13
+        }
+    }
+}
+
+# SNAT translations
+ltm snat-translation /Common/10.0.0.1 {
+    address 10.0.0.1
+}
+ltm snat-translation /Common/10.0.0.2 {
+    address 10.0.0.2
+}
+ltm snat-translation /Common/10.0.0.3 {
+    address 10.0.0.3
+}
+
+# SNAT pools
+ltm snatpool /Common/snatpool_disabled {
+    members {
+       /Common/10.0.0.1
+    }
+}
+ltm snatpool /Common/snatpool_enabled {
+    members {
+       /Common/10.0.0.2
+    }
+}
+ltm snatpool /Common/snatpool_implicitly_enabled {
+    members {
+       /Common/10.0.0.3
+    }
+}
+
+# Virtual addresses
+ltm virtual-address /Common/192.0.2.1 {
+    address 192.0.2.1
+    arp enabled
+    route-advertisement selective
+}
+ltm virtual-address /Common/192.0.2.2 {
+    address 192.0.2.2
+    arp enabled
+    route-advertisement selective
+}
+ltm virtual-address /Common/192.0.2.3 {
+    address 192.0.2.3
+    arp enabled
+    route-advertisement selective
+}
+
+### Interface configuration
+net interface 1.0 { }
+net self /Common/self1 {
+    address 192.0.2.254/24
+    vlan /Common/vlan1
+}
+net self /Common/self2 {
+    address 10.0.0.254/24
+    vlan /Common/vlan1
+}
+net vlan /Common/vlan1 {
+    interfaces {
+        1.0 { }
+    }
+}
+

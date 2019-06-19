@@ -1,0 +1,12 @@
+set deviceconfig system hostname ike-crypto-profiles
+#
+set network ike crypto-profiles ike-crypto-profiles default encryption [ aes-128-cbc 3des ]
+set network ike crypto-profiles ike-crypto-profiles default hash sha1
+set network ike crypto-profiles ike-crypto-profiles default dh-group group2
+set network ike crypto-profiles ike-crypto-profiles default lifetime hours 123
+#
+set network ike crypto-profiles ike-crypto-profiles profile1 encryption aes-256-cbc
+set network ike crypto-profiles ike-crypto-profiles profile1 hash sha384
+set network ike crypto-profiles ike-crypto-profiles profile1 dh-group group19
+set network ike crypto-profiles ike-crypto-profiles profile1 lifetime seconds 8
+#

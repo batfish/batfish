@@ -1,0 +1,35 @@
+!
+boot system flash this-is-an-arista-device.swi
+!
+hostname as2-advertise-inactive
+!
+interface Ethernet0/0
+ ip address 10.0.12.2 255.255.255.0
+ no shutdown
+!
+interface Ethernet0/1
+ ip address 10.0.23.2 255.255.255.0
+ no shutdown
+!
+interface Loopback0
+ ip address 10.2.2.2 255.255.255.255
+!
+ip route 0.0.0.0 0.0.0.0 10.0.12.254
+!
+route-map deny-all deny 10
+!
+route-map permit-all permit 10
+!
+router bgp 2
+ bgp router-id 10.2.2.2
+ bgp advertise-inactive
+ neighbor 10.0.12.1 remote-as 1
+ neighbor 10.0.12.1 activate
+ neighbor 10.0.12.1 route-map permit-all in
+ neighbor 10.0.12.1 route-map deny-all out
+ neighbor 10.0.23.3 remote-as 3
+ neighbor 10.0.23.3 activate
+ neighbor 10.0.23.3 route-map deny-all in
+ neighbor 10.0.23.3 route-map permit-all out
+!
+!

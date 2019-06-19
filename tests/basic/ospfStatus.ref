@@ -1,0 +1,14 @@
+[
+  {
+    "class" : "org.batfish.question.OspfStatusQuestionPlugin$OspfStatusAnswerElement",
+    "ospfStatuses" : [
+      {
+        "interface" : {
+          "hostname" : "as1border1",
+          "interface" : "Loopback0"
+        },
+        "ospfStatus" : "ENABLED_PASSIVE"
+      }
+    ]
+  }
+]

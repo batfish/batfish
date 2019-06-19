@@ -1,0 +1,27 @@
+! boot system flash:EOS.swi
+hostname r1
+interface Ethernet1
+   no switchport
+   ip address 10.14.0.1/24
+!
+interface Loopback0
+   ip address 1.0.0.1/32
+!
+! set up a separate interface for test prefix
+interface Loopback1
+   ip address 9.9.9.9/32
+ip routing
+!
+router bgp 1
+!!! This router 9.9.9.9 ID is the same as r3
+   router-id 9.9.9.9
+   neighbor 4.0.0.1 remote-as 1
+   neighbor 4.0.0.1 update-source Loopback0
+   ! Advertise our test route. It should make it to r2 but not r3
+   network 9.9.9.9/32
+!
+ip route 2.0.0.1/32 10.14.0.4
+ip route 3.0.0.1/32 10.14.0.4
+ip route 4.0.0.1/32 10.14.0.4
+!
+end

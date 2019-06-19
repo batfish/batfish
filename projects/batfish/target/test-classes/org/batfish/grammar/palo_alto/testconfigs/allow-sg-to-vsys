@@ -1,0 +1,16 @@
+set deviceconfig system hostname allow-sg-to-vsys
+set network interface ethernet ethernet1/1 layer3 ip 10.0.1.1/24
+set network interface ethernet ethernet1/2 layer3 ip 10.0.2.1/24
+set network virtual-router vr1 interface ethernet1/1
+set network virtual-router vr1 interface ethernet1/2
+set vsys vsys1 import network interface ethernet1/1
+set vsys vsys1 zone zin network layer3 ethernet1/1
+set vsys vsys1 zone vsys1-sg1 network external sg1
+set network shared-gateway sg1 import network interface ethernet1/2
+set vsys vsys1 rulebase security rules rule1 from vsys1-sg1
+set vsys vsys1 rulebase security rules rule1 to zin
+set vsys vsys1 rulebase security rules rule1 action allow
+set vsys vsys1 rulebase security rules rule1 source any
+set vsys vsys1 rulebase security rules rule1 destination any
+set vsys vsys1 rulebase security rules rule1 application any
+set vsys vsys1 rulebase security rules rule1 service any

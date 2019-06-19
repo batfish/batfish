@@ -1,0 +1,17 @@
+!
+!RANCID-CONTENT-TYPE: cisco
+!
+hostname ios-access-vlan
+!
+!
+interface Ethernet1
+  switchport mode access
+  switchport access vlan 1
+!
+interface Ethernet2
+  ip address 1.1.1.1 255.255.255.254
+  no switchport
+!
+!
+interface Ethernet3
+  switchport mode trunk

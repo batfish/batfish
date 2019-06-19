@@ -1,0 +1,4 @@
+!
+hostname  aaa_authentication_login_default_tacacs_local
+!
+aaa authentication login default tacacs local

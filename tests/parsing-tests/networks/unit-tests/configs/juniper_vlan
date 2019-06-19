@@ -1,0 +1,15 @@
+# RANCID-CONTENT-TYPE: juniper
+# 
+set system host-name juniper_vlan
+#
+set vlans VLAN30 vlan-id 30
+set vlans VLAN30 l3-interface vlan.30
+set vlans VLAN40 vlan-id 40
+set vlans VLAN40 l3-interface vlan.40
+#
+set interfaces xe-0/0/0 unit 0 family ethernet-switching port-mode trunk
+set interfaces xe-0/0/0 unit 0 family ethernet-switching vlan members VLAN30
+set interfaces xe-0/0/0 unit 0 family ethernet-switching vlan members VLAN40
+set interfaces xe-0/0/0 unit 0 family ethernet-switching vlan members 50
+set interfaces xe-0/0/0 unit 0 family ethernet-switching native-vlan-id 666
+#

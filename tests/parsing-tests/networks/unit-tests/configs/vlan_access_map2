@@ -1,0 +1,30 @@
+! 
+hostname vlan_access_map4
+!
+!!!!!!!!!!!!!!!!!!!!!!!
+! A10
+!
+!!!!!!!!!!!!!!!!!!!!!!!!
+! Arista
+!
+!
+!!!!!!!!!!!!!!!!!!!!!!!!!
+! Cisco
+! Air - options
+flow exporter-map FEM1
+ version v9
+  options interface-table timeout 60
+!
+! Ari - shut -- I made this part of shutdown_bgp_tail
+router bgp 410
+	neighbor 10.10.212.233 shut
+!
+! Ari - i couldn't make this one parse; it goes to interface stanza
+! Command to control use of the QSFP ports
+interface breakout module 1 port 34-36 map 10g-4x
+!
+! Ari - i don't know why this one isn't parsing
+route-policy EBGP-PEER
+  set community (8075:51000)
+  pass
+end-policy

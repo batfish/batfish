@@ -1,0 +1,6 @@
+!
+hostname ip_prefix_list_single_line
+!
+ip prefix-list DENY-IPV4-ANY-IN seq 100 deny 0.0.0.0/0 le 32
+!
+end

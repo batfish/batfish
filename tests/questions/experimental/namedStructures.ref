@@ -1,0 +1,55 @@
+{
+  "class" : "org.batfish.question.namedstructures.NamedStructuresQuestion",
+  "ignoreGenerated" : false,
+  "indicatePresence" : false,
+  "nodes" : ".*",
+  "structureNames" : ".*",
+  "structureTypes" : ".*",
+  "differential" : false,
+  "includeOneTableKeys" : true,
+  "instance" : {
+    "description" : "Returns named structure definitions.",
+    "instanceName" : "qname",
+    "longDescription" : "Return structures defined in the configurations, represented in a vendor-independent JSON format.",
+    "tags" : [
+      "configuration"
+    ],
+    "variables" : {
+      "ignoreGenerated" : {
+        "description" : "Whether to ignore auto-generated structures",
+        "displayName" : "Ignore auto-generated structures",
+        "optional" : true,
+        "type" : "boolean",
+        "value" : false
+      },
+      "indicatePresence" : {
+        "description" : "Output if the structure is present or absent",
+        "displayName" : "Indicate presence",
+        "optional" : true,
+        "type" : "boolean",
+        "value" : false
+      },
+      "nodes" : {
+        "description" : "Include nodes matching this specifier",
+        "displayName" : "Nodes",
+        "optional" : true,
+        "type" : "nodeSpec",
+        "value" : ".*"
+      },
+      "structureNames" : {
+        "description" : "Include structures matching this name or regex",
+        "displayName" : "Structure names",
+        "optional" : true,
+        "type" : "structureName",
+        "value" : ".*"
+      },
+      "structureTypes" : {
+        "description" : "Include structures of this type",
+        "displayName" : "Structure types",
+        "optional" : true,
+        "type" : "namedStructureSpec",
+        "value" : ".*"
+      }
+    }
+  }
+}

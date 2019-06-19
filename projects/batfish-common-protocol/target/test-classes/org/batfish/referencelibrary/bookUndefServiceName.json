@@ -1,0 +1,11 @@
+{
+  "name": "book",
+  "serviceObjectGroups": [
+    {
+      "name": "sog1",
+      "services": [
+        "so1"
+      ]
+    }
+  ]
+}

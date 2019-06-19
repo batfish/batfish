@@ -1,0 +1,33 @@
+!
+hostname pim
+!
+router pim
+ rp-address 137.164.17.1
+ address-family ipv4
+  rp-address 137.164.16.1 override
+  rpf-vector
+  log neighbor changes
+  interface Bundle-Ether5
+   bsr-border
+   dr-priority 200
+  !
+  interface Bundle-Ether6
+   bsr-border
+   disable
+  !
+  interface TenGigE0/2/0/0
+  !
+  interface TenGigE0/2/0/1
+ !
+!
+ipv6 router pim
+!
+interface loopback 1
+ port-name riv-hpr3 Primary Loopback
+ ip address 137.164.17.8/32
+ ip pim-sparse
+ ipv6 address 2607:f380::108:9a41:1081/124
+ ipv6 enable
+ ipv6 pim-sparse
+!
+

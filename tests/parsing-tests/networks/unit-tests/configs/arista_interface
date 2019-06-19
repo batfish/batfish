@@ -1,0 +1,17 @@
+!
+hostname arista_interface
+!
+interface Vlan1
+ ip address 1.2.3.4/23
+ ip address 2.3.4.5/24 secondary
+ ip helper-address 5.5.5.5
+ service-policy type pbr input pbr-pmap
+ service-policy type qos input qos-pmap
+ vrf forwarding mgmt
+ vrrp 1 ip 1.2.3.4
+ vrrp 1 ip 2.3.4.5 secondary
+ vrrp 1 preempt delay minimum 360
+ vrrp 1 preempt delay reload 360
+ vrrp 1 priority 110
+!
+

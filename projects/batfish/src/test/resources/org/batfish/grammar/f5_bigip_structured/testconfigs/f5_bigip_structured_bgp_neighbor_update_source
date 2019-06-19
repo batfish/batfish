@@ -1,0 +1,104 @@
+#TMSH-VERSION: 13.1.1
+
+sys global-settings {
+    hostname f5_bigip_structured_bgp_neighbor_update_source
+}
+
+net interface 1.0 { }
+net interface 2.0 { }
+net interface 3.0 { }
+net interface 4.0 { }
+net interface 5.0 { }
+
+net vlan /Common/vlan1 {
+    interfaces {
+        1.0 { }
+    }
+    tag 100
+}
+
+net vlan /Common/vlan2 {
+    interfaces {
+        2.0 { }
+    }
+    tag 200
+}
+
+net vlan /Common/vlan3 {
+    interfaces {
+        3.0 { }
+    }
+    tag 300
+}
+
+net vlan /Common/vlan4 {
+    interfaces {
+        4.0 { }
+    }
+    tag 300
+}
+
+net vlan /Common/vlan5 {
+    interfaces {
+        5.0 { }
+    }
+    tag 300
+}
+
+net self /Common/self1 {
+    address 10.0.0.1/24
+    allow-service all
+    vlan /Common/vlan1
+}
+
+net self /Common/self2 {
+    address 10.0.1.1/24
+    allow-service all
+    vlan /Common/vlan2
+}
+
+net self /Common/self3 {
+    address 10.0.2.1/24
+    allow-service all
+    vlan /Common/vlan3
+}
+
+net self /Common/self5 {
+    address 10.255.255.255/24
+    allow-service all
+    vlan /Common/vlan5
+}
+
+net routing bgp /Common/bgp1 {
+    local-as 1
+    neighbor {
+        10.0.0.2 {
+            remote-as 2
+            update-source /Common/vlan2
+        }
+        10.0.1.2 {
+            ebgp-multihop 2
+            remote-as 2
+            update-source /Common/vlan1
+        }
+        10.0.2.2 {
+            remote-as 1
+            update-source /Common/vlan1
+        }
+        10.0.0.3 {
+            remote-as 1
+        }
+        10.0.0.4 {
+            remote-as 1
+            update/source /Common/undefined_vlan
+        }
+        10.0.0.5 {
+            remote-as 1
+            update/source /Common/vlan4
+        }
+        10.0.3.2 {
+            remote-as 1
+        }
+    }
+}
+

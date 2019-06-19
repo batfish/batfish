@@ -1,0 +1,28 @@
+### DEFAULT BEHAVIOR: RECOVER FROM AND IGNORE UNRECOGNIZED LINES
+#parsing error
+test -compareall tests/parsing-errors-tests/recovery-parsing-error.ref init-snapshot tests/parsing-errors-tests/networks/single-fail
+test -compareall tests/parsing-errors-tests/recovery-no-verbose.ref get initinfo verboseError=false
+#test -compareall tests/parsing-errors-tests/verbose.ref get initinfo verboseError=true
+
+#parsing Iptables error
+test -compareall tests/parsing-errors-tests/recovery-init-invalid-iptables.ref init-snapshot tests/parsing-errors-tests/networks/invalid-iptables
+test -compareall tests/parsing-errors-tests/recovery-invalid-ip-no-verbose.ref get initinfo
+
+#all config files failed in parsing step
+test -compareall tests/parsing-errors-tests/recovery-all-parsing-failed.ref init-snapshot tests/parsing-errors-tests/networks/all-fail
+
+### DISABLE RECOVERY ALTOGETHER SO THAT UNRECOGNIZED LINES CAUSE PARSING FAILURE
+add-batfish-option disableunrecognized
+
+#parsing error
+test -compareall tests/parsing-errors-tests/parsing-error.ref init-snapshot tests/parsing-errors-tests/networks/single-fail
+test -compareall tests/parsing-errors-tests/no-verbose.ref get initinfo verboseError=false
+#test -compareall tests/parsing-errors-tests/verbose.ref get initinfo verboseError=true
+
+#parsing Iptables error
+test -compareall tests/parsing-errors-tests/init-invalid-iptables.ref init-snapshot tests/parsing-errors-tests/networks/invalid-iptables
+test -compareall tests/parsing-errors-tests/invalid-ip-no-verbose.ref get initinfo
+
+#all config files failed in parsing step
+test -compareall tests/parsing-errors-tests/all-parsing-failed.ref init-snapshot tests/parsing-errors-tests/networks/all-fail
+

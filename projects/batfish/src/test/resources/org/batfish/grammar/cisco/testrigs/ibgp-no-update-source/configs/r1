@@ -1,0 +1,19 @@
+hostname r1
+!
+interface Loopback0
+   ip address 1.1.1.1/32
+!
+interface Ethernet1
+   ip address 10.0.0.1/24
+!
+!
+! Missing update-source
+router bgp 1
+   router-id 1.1.1.1
+   redistribute static
+   neighbor 2.2.2.2 remote-as 1
+!
+ip route 2.2.2.2/32 10.0.0.2
+ip route 7.7.7.7/32 Null0
+!
+end

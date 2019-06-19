@@ -1,0 +1,24 @@
+hostname r4
+!
+interface FastEthernet0/0
+ no shutdown
+ description connect to r2
+ duplex half
+ speed 100
+ ip address 2.0.4.42 255.255.255.0
+!
+interface Loopback0
+ ip address 9.9.99.4 255.255.255.255
+!
+interface Loopback1
+ ip address 9.9.9.44 255.255.255.255
+!
+router bgp 3
+ bgp router-id 4.4.4.4
+ no auto-summary
+ neighbor 2.2.2.2 remote-as 2
+ neighbor 2.2.2.2 update-source Loopback0
+ neighbor 2.2.2.2 ebgp-multihop
+ network 9.9.9.44 mask 255.255.255.255
+!
+ip route 2.2.2.2 255.255.255.255 FastEthernet0/0

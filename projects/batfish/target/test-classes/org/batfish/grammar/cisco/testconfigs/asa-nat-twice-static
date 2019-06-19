@@ -1,0 +1,45 @@
+! This is an ASA device.
+ASA Version 9.9
+!
+hostname asa-nat-twice-static
+!
+interface GigabitEthernet0/0
+ nameif inside
+ security-level 100
+ ip address 1.0.0.1 255.255.255.0
+!
+interface GigabitEthernet0/1
+ nameif outside
+ security-level 0
+ ip address 2.0.0.1 255.255.255.0
+!
+object network source-real
+ host 1.1.1.1
+object network source-mapped
+ host 2.2.2.2
+object network dest-mapped
+ host 3.3.3.3
+object network dest-real
+ host 4.4.4.4
+object network source-real-subnet
+ subnet 5.5.5.0 255.255.255.0
+object network source-mapped-subnet
+ subnet 6.6.6.0 255.255.255.0
+!
+object-group network source-real-group
+ network-object object source-real
+ network-object host 1.1.1.5
+object-group network source-mapped-group
+ network-object host 2.2.2.5
+ network-object object source-mapped
+!
+nat (inside,outside) after-auto source static source-real source-mapped destination static dest-mapped dest-real description Static Twice NAT
+nat (inside,outside) source static source-real source-mapped
+nat source static source-real-group source-mapped-group
+nat (inside,any) source static undef-source-real source-mapped-group inactive
+nat (any,outside) source static source-real-group undef-source-mapped
+nat (outside,inside) source static any any
+nat (inside,outside) source static source-real-subnet source-mapped-subnet
+nat source static source-real-subnet source-mapped-subnet
+nat source static source-real-subnet source-mapped-subnet destination static dest-mapped dest-real
+!

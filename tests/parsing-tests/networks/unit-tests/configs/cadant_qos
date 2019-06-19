@@ -1,0 +1,13 @@
+#
+shelfname ""
+hostname "cadant_qos"
+#
+qos-sc enforce-rule foo1 enforce-name bar1 trigger 123456 history 0:30 sampling-interval 10
+qos-sc name foo1 and-mask 0xbe dir 2
+qos-sc name foo2 dir 1
+qos-sc name bar1 max-tr-rate 1234567 max-tr-burst 1234567 max-burst 1234567 dir 1
+qos-sc name bar2 priority 3 dir 1 forbidden-attr-mask-value 0xFFFF0000
+qos-sc name bar3 priority 1 max-tr-rate 1234567 max-tr-burst 1234567 max-burst 1234567 dir 1
+qos-sc name bar4 priority 2 max-tr-rate 1234567 max-tr-burst 1234567 min-res-rate 1234567 max-burst 1234567
+qos-sc name bar5 priority 4 max-tr-rate 1234567 max-tr-burst 1234567 max-burst 1234567 req-policy 0x1234ABCD
+#

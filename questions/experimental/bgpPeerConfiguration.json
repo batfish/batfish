@@ -1,0 +1,30 @@
+{
+    "class": "org.batfish.question.bgpproperties.BgpPeerConfigurationQuestion",
+    "differential": false,
+    "nodes": "${nodes}",
+    "properties": "${properties}",
+    "instance": {
+        "description": "Returns configuration settings for BGP peerings.",
+        "instanceName": "bgpPeerConfiguration",
+        "longDescription": "Reports configuration settings for each configured BGP peering on each node in the network. This question reports peer-specific settings. Settings that are process-wide are reported by the bgpProcessConfiguration question.",
+        "tags": [
+            "bgp",
+            "configuration"
+        ],
+        "variables": {
+            "nodes": {
+                "description": "Include nodes matching this name or regex",
+                "type": "nodeSpec",
+                "optional": true,
+                "displayName": "Nodes"
+            },
+            "properties": {
+                "description": "Include properties matching this regex",
+                "type": "bgpPeerPropertySpec",
+                "optional": true,
+                "displayName": "Properties"
+            }
+
+        }
+    }
+}

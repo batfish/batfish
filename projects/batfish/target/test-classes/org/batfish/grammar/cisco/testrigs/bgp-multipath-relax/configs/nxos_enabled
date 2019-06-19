@@ -1,0 +1,8 @@
+!
+hostname nxos_enabled
+feature privilege
+!
+router bgp 1
+ router-id 1.1.1.1
+ bestpath as-path multipath-relax
+!

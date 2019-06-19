@@ -1,0 +1,36 @@
+{
+  "class" : "org.batfish.question.ospfprocess.OspfProcessConfigurationQuestion",
+  "nodes" : ".*",
+  "properties" : "props-.*",
+  "differential" : false,
+  "includeOneTableKeys" : true,
+  "instance" : {
+    "description" : "Returns configuration parameters for OSPF routing processes.",
+    "instanceName" : "qname",
+    "longDescription" : "Returns the values of important properties for all OSPF processes running across the network.",
+    "orderedVariableNames" : [
+      "nodes",
+      "properties"
+    ],
+    "tags" : [
+      "configuration",
+      "ospf"
+    ],
+    "variables" : {
+      "nodes" : {
+        "description" : "Include nodes matching this name or regex",
+        "displayName" : "Nodes",
+        "optional" : true,
+        "type" : "nodeSpec",
+        "value" : ".*"
+      },
+      "properties" : {
+        "description" : "Include properties matching this regex",
+        "displayName" : "Properties",
+        "optional" : true,
+        "type" : "ospfPropertySpec",
+        "value" : "props-.*"
+      }
+    }
+  }
+}
