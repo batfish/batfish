@@ -1365,6 +1365,82 @@ public class TracerouteEngineImplTest {
   }
 
   @Test
+  public void testSessionReturnFibLookupDifferentVrf() throws IOException {
+    String i1Name = "i1";
+    String i2Name = "i2";
+    NetworkFactory nf = new NetworkFactory();
+    Configuration c =
+        nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS).build();
+    String hostname = c.getHostname();
+    Vrf.Builder vb = nf.vrfBuilder().setOwner(c);
+    Vrf vrf1 = vb.build();
+    Vrf vrf2 = vb.build();
+    Flow flow =
+        Flow.builder()
+            .setDstIp(Ip.parse("10.0.2.2"))
+            .setDstPort(NamedPort.SSH.number()) // arbitrary
+            .setIngressNode(c.getHostname())
+            .setIngressInterface(i1Name)
+            .setIpProtocol(IpProtocol.TCP)
+            .setSrcIp(Ip.parse("10.0.1.2"))
+            .setSrcPort(NamedPort.EPHEMERAL_LOWEST.number())
+            .setTag("tag")
+            .build();
+    Interface.Builder ib = nf.interfaceBuilder().setActive(true).setOwner(c);
+    ib.setName(i1Name)
+        .setVrf(vrf1)
+        .setAddresses(ConcreteInterfaceAddress.parse("10.0.1.1/24"))
+        .build();
+    ib.setName("i2")
+        .setVrf(vrf2)
+        .setAddresses(ConcreteInterfaceAddress.parse("10.0.2.1/24"))
+        .setFirewallSessionInterfaceInfo(
+            new FirewallSessionInterfaceInfo(true, ImmutableSet.of(i2Name), null, null))
+        .build();
+    vrf1.getStaticRoutes()
+        .add(
+            StaticRoute.builder()
+                .setAdmin(1)
+                .setNetwork(Prefix.ZERO)
+                .setNextVrf(vrf2.getName())
+                .build());
+    vrf2.getStaticRoutes()
+        .add(
+            StaticRoute.builder()
+                .setAdmin(1)
+                .setNetwork(Prefix.ZERO)
+                .setNextVrf(vrf1.getName())
+                .build());
+    Batfish batfish = BatfishTestUtils.getBatfish(ImmutableSortedMap.of(hostname, c), _tempFolder);
+    batfish.computeDataPlane();
+    DataPlane dp = batfish.loadDataPlane();
+
+    TracerouteEngineImpl te = new TracerouteEngineImpl(dp, Topology.EMPTY);
+    List<TraceAndReverseFlow> forwardTraces =
+        te.computeTracesAndReverseFlows(ImmutableSet.of(flow), false).get(flow);
+
+    assertThat(forwardTraces, hasSize(1));
+
+    TraceAndReverseFlow forwardTrace = forwardTraces.iterator().next();
+
+    // forward flow should be delivered out i2
+    assertThat(forwardTraces, contains(hasTrace(hasDisposition(DELIVERED_TO_SUBNET))));
+
+    Flow reverseFlow = forwardTrace.getReverseFlow();
+
+    List<TraceAndReverseFlow> reverseTraces =
+        te.computeTracesAndReverseFlows(
+                ImmutableSet.of(reverseFlow), forwardTrace.getNewFirewallSessions(), false)
+            .get(reverseFlow);
+
+    assertThat(reverseTraces, hasSize(1));
+    // return flow should be delivered out i1
+    assertThat(
+        reverseTraces.iterator().next().getTrace().getDisposition(),
+        equalTo(FlowDisposition.DELIVERED_TO_SUBNET));
+  }
+
+  @Test
   public void testEstablishedFlowDisposition() throws IOException {
     // Construct network
     NetworkFactory nf = new NetworkFactory();
