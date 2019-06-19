@@ -11,6 +11,7 @@ import org.batfish.datamodel.ConcreteInterfaceAddress;
 public class Interface implements Serializable {
 
   private static final long serialVersionUID = 1L;
+  static final String NULL_INTERFACE_NAME = "null0";
 
   private final @Nonnull InterfaceBridgeSettings _bridge;
   private @Nullable InterfaceClagSettings _clag;
