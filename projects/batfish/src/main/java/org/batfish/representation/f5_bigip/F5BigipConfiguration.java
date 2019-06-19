@@ -1206,7 +1206,7 @@ public class F5BigipConfiguration extends VendorConfiguration {
     // packet filter for established connections. However, packet filters are not fully supported at
     // this point
     newIface.setFirewallSessionInterfaceInfo(
-        new FirewallSessionInterfaceInfo(ImmutableList.of(newIface.getName()), null, null));
+        new FirewallSessionInterfaceInfo(false, ImmutableList.of(newIface.getName()), null, null));
     return newIface;
   }
 

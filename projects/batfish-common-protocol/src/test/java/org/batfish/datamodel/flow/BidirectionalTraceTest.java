@@ -20,7 +20,8 @@ public final class BidirectionalTraceTest {
     Flow flow1 = Flow.builder().setIngressNode("ingressNode").setTag("tag1").build();
     Flow flow2 = Flow.builder().setIngressNode("ingressNode").setTag("tag2").build();
     FirewallSessionTraceInfo session =
-        new FirewallSessionTraceInfo("hostname", null, null, ImmutableSet.of(), TRUE, null);
+        new FirewallSessionTraceInfo(
+            "hostname", new AcceptVrf("dummy"), ImmutableSet.of(), TRUE, null);
     new EqualsTester()
         .addEqualityGroup(
             new Key(flow1, ImmutableSet.of(), flow1), new Key(flow1, ImmutableSet.of(), flow1))
@@ -44,7 +45,8 @@ public final class BidirectionalTraceTest {
             .getKey(),
         equalTo(new Key(flow2, ImmutableSet.of(), flow1)));
     FirewallSessionTraceInfo session =
-        new FirewallSessionTraceInfo("hostname", null, null, ImmutableSet.of(), TRUE, null);
+        new FirewallSessionTraceInfo(
+            "hostname", new AcceptVrf("dummy"), ImmutableSet.of(), TRUE, null);
     Trace failTrace = new Trace(DENIED_IN, ImmutableList.of());
     assertThat(
         new BidirectionalTrace(flow1, failTrace, ImmutableSet.of(session), null, null).getKey(),

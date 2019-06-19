@@ -38,6 +38,7 @@ import org.batfish.common.plugin.TracerouteEngine;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.answers.Schema;
+import org.batfish.datamodel.flow.AcceptVrf;
 import org.batfish.datamodel.flow.BidirectionalTrace;
 import org.batfish.datamodel.flow.FirewallSessionTraceInfo;
 import org.batfish.datamodel.flow.Trace;
@@ -156,7 +157,8 @@ public final class BidirectionalTracerouteAnswererTest {
     Trace forwardTrace = new Trace(ACCEPTED, ImmutableList.of());
     Trace reverseTrace = new Trace(NEIGHBOR_UNREACHABLE, ImmutableList.of());
     FirewallSessionTraceInfo session =
-        new FirewallSessionTraceInfo("session", null, null, ImmutableSet.of(), TRUE, null);
+        new FirewallSessionTraceInfo(
+            "session", new AcceptVrf("dummy"), ImmutableSet.of(), TRUE, null);
     TraceAndReverseFlow forwardTarf =
         new TraceAndReverseFlow(forwardTrace, REVERSE_FLOW, ImmutableList.of(session));
     TraceAndReverseFlow reverseTarf =
@@ -183,7 +185,8 @@ public final class BidirectionalTracerouteAnswererTest {
     Trace sessionForwardTrace = new Trace(ACCEPTED, ImmutableList.of());
     Trace noSessionForwardTrace = new Trace(DELIVERED_TO_SUBNET, ImmutableList.of());
     FirewallSessionTraceInfo session =
-        new FirewallSessionTraceInfo("session", null, null, ImmutableSet.of(), TRUE, null);
+        new FirewallSessionTraceInfo(
+            "session", new AcceptVrf("dummy"), ImmutableSet.of(), TRUE, null);
     TraceAndReverseFlow sessionForwardTarf =
         new TraceAndReverseFlow(sessionForwardTrace, REVERSE_FLOW, ImmutableList.of(session));
     TraceAndReverseFlow noSessionForwardTarf =
@@ -232,9 +235,11 @@ public final class BidirectionalTracerouteAnswererTest {
     Trace t4 = new Trace(DENIED_IN, ImmutableList.of());
 
     FirewallSessionTraceInfo session1 =
-        new FirewallSessionTraceInfo("session1", null, null, ImmutableSet.of(), TRUE, null);
+        new FirewallSessionTraceInfo(
+            "session1", new AcceptVrf("dummy"), ImmutableSet.of(), TRUE, null);
     FirewallSessionTraceInfo session2 =
-        new FirewallSessionTraceInfo("session2", null, null, ImmutableSet.of(), TRUE, null);
+        new FirewallSessionTraceInfo(
+            "session2", new AcceptVrf("dummy"), ImmutableSet.of(), TRUE, null);
 
     {
       // All BidirectionalTraces have the same key, so are in the same group.
@@ -374,9 +379,11 @@ public final class BidirectionalTracerouteAnswererTest {
     {
       // Sessions in the key
       FirewallSessionTraceInfo session1 =
-          new FirewallSessionTraceInfo("session1", null, null, ImmutableSet.of(), TRUE, null);
+          new FirewallSessionTraceInfo(
+              "session1", new AcceptVrf("dummy"), ImmutableSet.of(), TRUE, null);
       FirewallSessionTraceInfo session2 =
-          new FirewallSessionTraceInfo("session2", null, null, ImmutableSet.of(), TRUE, null);
+          new FirewallSessionTraceInfo(
+              "session2", new AcceptVrf("dummy"), ImmutableSet.of(), TRUE, null);
       Set<FirewallSessionTraceInfo> sessions = ImmutableSet.of(session1, session2);
 
       BidirectionalTrace bt = new BidirectionalTrace(FORWARD_FLOW, t1, sessions, REVERSE_FLOW, t1);

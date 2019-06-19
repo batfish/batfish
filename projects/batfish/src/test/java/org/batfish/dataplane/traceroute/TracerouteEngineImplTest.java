@@ -69,6 +69,7 @@ import org.batfish.common.plugin.TracerouteEngine;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
+import org.batfish.datamodel.DataPlane;
 import org.batfish.datamodel.FirewallSessionInterfaceInfo;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.FlowDisposition;
@@ -79,22 +80,26 @@ import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpAccessListLine;
 import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.LineAction;
+import org.batfish.datamodel.NamedPort;
 import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.TcpFlagsMatchConditions;
+import org.batfish.datamodel.Topology;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.acl.AclLineMatchExprs;
 import org.batfish.datamodel.acl.MatchSrcInterface;
 import org.batfish.datamodel.acl.OriginatingFromDevice;
 import org.batfish.datamodel.collections.NodeInterfacePair;
+import org.batfish.datamodel.flow.AcceptVrf;
 import org.batfish.datamodel.flow.EnterInputIfaceStep;
 import org.batfish.datamodel.flow.ExitOutputIfaceStep;
 import org.batfish.datamodel.flow.FilterStep;
 import org.batfish.datamodel.flow.FilterStep.FilterStepDetail;
 import org.batfish.datamodel.flow.FilterStep.FilterType;
 import org.batfish.datamodel.flow.FirewallSessionTraceInfo;
+import org.batfish.datamodel.flow.ForwardOutInterface;
 import org.batfish.datamodel.flow.Hop;
 import org.batfish.datamodel.flow.OriginateStep;
 import org.batfish.datamodel.flow.RouteInfo;
@@ -1303,6 +1308,63 @@ public class TracerouteEngineImplTest {
   }
 
   @Test
+  public void testSessionReturnFibLookupSameVrf() throws IOException {
+    String i1Name = "i1";
+    String i2Name = "i2";
+    NetworkFactory nf = new NetworkFactory();
+    Configuration c =
+        nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS).build();
+    String hostname = c.getHostname();
+    Vrf.Builder vb = nf.vrfBuilder().setOwner(c);
+    Vrf vrf = vb.build();
+    Flow flow =
+        Flow.builder()
+            .setDstIp(Ip.parse("10.0.2.2"))
+            .setDstPort(NamedPort.SSH.number()) // arbitrary
+            .setIngressNode(c.getHostname())
+            .setIngressInterface(i1Name)
+            .setIpProtocol(IpProtocol.TCP)
+            .setSrcIp(Ip.parse("10.0.1.2"))
+            .setSrcPort(NamedPort.EPHEMERAL_LOWEST.number())
+            .setTag("tag")
+            .build();
+    Interface.Builder ib = nf.interfaceBuilder().setActive(true).setOwner(c).setVrf(vrf);
+    ib.setName(i1Name).setAddresses(ConcreteInterfaceAddress.parse("10.0.1.1/24")).build();
+    ib.setName("i2")
+        .setAddresses(ConcreteInterfaceAddress.parse("10.0.2.1/24"))
+        .setFirewallSessionInterfaceInfo(
+            new FirewallSessionInterfaceInfo(true, ImmutableSet.of(i2Name), null, null))
+        .build();
+    Batfish batfish = BatfishTestUtils.getBatfish(ImmutableSortedMap.of(hostname, c), _tempFolder);
+    batfish.computeDataPlane();
+    DataPlane dp = batfish.loadDataPlane();
+
+    TracerouteEngineImpl te = new TracerouteEngineImpl(dp, Topology.EMPTY);
+    List<TraceAndReverseFlow> forwardTraces =
+        te.computeTracesAndReverseFlows(ImmutableSet.of(flow), false).get(flow);
+
+    assertThat(forwardTraces, hasSize(1));
+
+    TraceAndReverseFlow forwardTrace = forwardTraces.iterator().next();
+
+    // forward flow should be delivered out i2
+    assertThat(forwardTraces, contains(hasTrace(hasDisposition(DELIVERED_TO_SUBNET))));
+
+    Flow reverseFlow = forwardTrace.getReverseFlow();
+
+    List<TraceAndReverseFlow> reverseTraces =
+        te.computeTracesAndReverseFlows(
+                ImmutableSet.of(reverseFlow), forwardTrace.getNewFirewallSessions(), false)
+            .get(reverseFlow);
+
+    assertThat(reverseTraces, hasSize(1));
+    // return flow should be delivered out i1
+    assertThat(
+        reverseTraces.iterator().next().getTrace().getDisposition(),
+        equalTo(FlowDisposition.DELIVERED_TO_SUBNET));
+  }
+
+  @Test
   public void testEstablishedFlowDisposition() throws IOException {
     // Construct network
     NetworkFactory nf = new NetworkFactory();
@@ -1446,7 +1508,7 @@ public class TracerouteEngineImplTest {
         .setAddress(ConcreteInterfaceAddress.parse("1.1.2.1/24"))
         .setFirewallSessionInterfaceInfo(
             new FirewallSessionInterfaceInfo(
-                ImmutableSet.of(i2Name), incomingAclName, outgoingAclName))
+                false, ImmutableSet.of(i2Name), incomingAclName, outgoingAclName))
         .build();
 
     String i3Name = "iface3";
@@ -1463,7 +1525,7 @@ public class TracerouteEngineImplTest {
             always().apply(assignSourceIp(poolIp, poolIp), assignSourcePort(2000, 2000)).build())
         .setFirewallSessionInterfaceInfo(
             new FirewallSessionInterfaceInfo(
-                ImmutableSet.of(i4Name), incomingAclName, outgoingAclName))
+                false, ImmutableSet.of(i4Name), incomingAclName, outgoingAclName))
         .build();
 
     // Compute data plane
@@ -1512,8 +1574,7 @@ public class TracerouteEngineImplTest {
                       contains(
                           new FirewallSessionTraceInfo(
                               c1.getHostname(),
-                              i1Name,
-                              null,
+                              new ForwardOutInterface(i1Name, null),
                               ImmutableSet.of(i2Name),
                               match5Tuple(dstIp, dstPort, srcIp, srcPort, ipProtocol),
                               null))))));
@@ -1598,8 +1659,7 @@ public class TracerouteEngineImplTest {
                       contains(
                           new FirewallSessionTraceInfo(
                               c1.getHostname(),
-                              i1Name,
-                              null,
+                              new ForwardOutInterface(i1Name, null),
                               ImmutableSet.of(i4Name),
                               match5Tuple(dstIp, dstPort, poolIp, 2000, ipProtocol),
                               always()
@@ -1646,7 +1706,7 @@ public class TracerouteEngineImplTest {
     ib.setName(c2i2Name)
         .setAddress(ConcreteInterfaceAddress.parse("1.1.2.1/24"))
         .setFirewallSessionInterfaceInfo(
-            new FirewallSessionInterfaceInfo(ImmutableSet.of(c2i2Name), null, null))
+            new FirewallSessionInterfaceInfo(false, ImmutableSet.of(c2i2Name), null, null))
         .build();
 
     // Compute data plane
@@ -1698,8 +1758,8 @@ public class TracerouteEngineImplTest {
                       contains(
                           new FirewallSessionTraceInfo(
                               c2.getHostname(),
-                              c2i1Name,
-                              new NodeInterfacePair(c1.getHostname(), c1i1Name),
+                              new ForwardOutInterface(
+                                  c2i1Name, new NodeInterfacePair(c1.getHostname(), c1i1Name)),
                               ImmutableSet.of(c2i2Name),
                               match5Tuple(dstIp, dstPort, srcIp, srcPort, ipProtocol),
                               null))))));
@@ -1738,7 +1798,7 @@ public class TracerouteEngineImplTest {
         .setAddress(ConcreteInterfaceAddress.parse("1.1.1.1/24"))
         .setFirewallSessionInterfaceInfo(
             new FirewallSessionInterfaceInfo(
-                ImmutableSet.of(c1i1Name), sessionIngressFilter.getName(), null))
+                false, ImmutableSet.of(c1i1Name), sessionIngressFilter.getName(), null))
         .build();
 
     String c1i2Name = "c1i2";
@@ -1749,7 +1809,7 @@ public class TracerouteEngineImplTest {
         .setAddress(ConcreteInterfaceAddress.parse("1.1.2.1/24"))
         .setFirewallSessionInterfaceInfo(
             new FirewallSessionInterfaceInfo(
-                ImmutableSet.of(c1i2Name), null, sessionEgressFilter.getName()))
+                false, ImmutableSet.of(c1i2Name), null, sessionEgressFilter.getName()))
         .build();
 
     Configuration c2 = cb.build();
@@ -1793,7 +1853,11 @@ public class TracerouteEngineImplTest {
       Flow flow = protoFlow;
       FirewallSessionTraceInfo session =
           new FirewallSessionTraceInfo(
-              c1.getHostname(), null, null, ImmutableSet.of(c1i1Name), TRUE, null);
+              c1.getHostname(),
+              new AcceptVrf(vrf1.getName()),
+              ImmutableSet.of(c1i1Name),
+              TRUE,
+              null);
       List<TraceAndReverseFlow> results =
           tracerouteEngine
               .computeTracesAndReverseFlows(ImmutableSet.of(flow), ImmutableSet.of(session), false)
@@ -1812,7 +1876,11 @@ public class TracerouteEngineImplTest {
       Flow flow = protoFlow;
       FirewallSessionTraceInfo session =
           new FirewallSessionTraceInfo(
-              c1.getHostname(), c1i2Name, null, ImmutableSet.of(c1i1Name), TRUE, null);
+              c1.getHostname(),
+              new ForwardOutInterface(c1i2Name, null),
+              ImmutableSet.of(c1i1Name),
+              TRUE,
+              null);
       List<TraceAndReverseFlow> results =
           tracerouteEngine
               .computeTracesAndReverseFlows(ImmutableSet.of(flow), ImmutableSet.of(session), false)
@@ -1835,8 +1903,7 @@ public class TracerouteEngineImplTest {
       FirewallSessionTraceInfo session =
           new FirewallSessionTraceInfo(
               c1.getHostname(),
-              c1i2Name,
-              new NodeInterfacePair(c2.getHostname(), c2i1Name),
+              new ForwardOutInterface(c1i2Name, new NodeInterfacePair(c2.getHostname(), c2i1Name)),
               ImmutableSet.of(c1i1Name),
               TRUE,
               null);
@@ -1861,8 +1928,7 @@ public class TracerouteEngineImplTest {
       FirewallSessionTraceInfo session =
           new FirewallSessionTraceInfo(
               c1.getHostname(),
-              c1i2Name,
-              new NodeInterfacePair(c2.getHostname(), c2i1Name),
+              new ForwardOutInterface(c1i2Name, new NodeInterfacePair(c2.getHostname(), c2i1Name)),
               ImmutableSet.of(c1i1Name),
               TRUE,
               null);
@@ -1879,8 +1945,7 @@ public class TracerouteEngineImplTest {
       FirewallSessionTraceInfo session =
           new FirewallSessionTraceInfo(
               c1.getHostname(),
-              c1i2Name,
-              new NodeInterfacePair(c2.getHostname(), c2i1Name),
+              new ForwardOutInterface(c1i2Name, new NodeInterfacePair(c2.getHostname(), c2i1Name)),
               ImmutableSet.of(c1i1Name),
               TRUE,
               null);
@@ -1899,8 +1964,7 @@ public class TracerouteEngineImplTest {
       FirewallSessionTraceInfo session =
           new FirewallSessionTraceInfo(
               c1.getHostname(),
-              c1i2Name,
-              new NodeInterfacePair(c2.getHostname(), c2i1Name),
+              new ForwardOutInterface(c1i2Name, new NodeInterfacePair(c2.getHostname(), c2i1Name)),
               ImmutableSet.of(c1i1Name),
               TRUE,
               always().apply(assignSourceIp(ip11, ip11)).build());
@@ -1927,8 +1991,7 @@ public class TracerouteEngineImplTest {
       FirewallSessionTraceInfo session =
           new FirewallSessionTraceInfo(
               c1.getHostname(),
-              c1i2Name,
-              new NodeInterfacePair(c2.getHostname(), c2i1Name),
+              new ForwardOutInterface(c1i2Name, new NodeInterfacePair(c2.getHostname(), c2i1Name)),
               ImmutableSet.of(c1i1Name),
               TRUE,
               always().apply(assignSourceIp(ip11, ip11)).build());
@@ -1944,8 +2007,7 @@ public class TracerouteEngineImplTest {
       FirewallSessionTraceInfo session =
           new FirewallSessionTraceInfo(
               c1.getHostname(),
-              c1i2Name,
-              new NodeInterfacePair(c2.getHostname(), c2i1Name),
+              new ForwardOutInterface(c1i2Name, new NodeInterfacePair(c2.getHostname(), c2i1Name)),
               ImmutableSet.of(c1i1Name),
               TRUE,
               always().apply(assignSourceIp(ip11, ip11)).build());
