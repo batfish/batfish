@@ -91,3 +91,4 @@ net commit
 # ========================================================================
 sudo sh -c "printf 'username cumulus nopassword\n' >> /etc/frr/frr.conf"
 sudo sh -c "printf 'vrf vrf1\n  ip route 0.0.0.0/0 192.0.2.1\n' >> /etc/frr/frr.conf"
+sudo sh -c "printf 'vrf vrf1\n exit-vrf\n' >> /etc/frr/frr.conf"

@@ -181,6 +181,11 @@ EVPN
   'evpn'
 ;
 
+EXIT_VRF
+:
+  'exit-vrf'
+;
+
 EXTERNAL
 :
   'external'
@@ -906,6 +911,11 @@ F_WordSegment
 mode M_Printf;
 
 // FRR in printf keywords
+
+M_Printf_EXIT_VRF
+:
+  'exit-vrf' -> type ( EXIT_VRF )
+;
 
 M_Printf_IP
 :
