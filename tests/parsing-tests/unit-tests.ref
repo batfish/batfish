@@ -41265,7 +41265,7 @@
             "        VLAN:'vlan'",
             "        suffixes = (range_set",
             "          (range",
-            "            low = (uint16",
+            "            low = (uint32",
             "              d = DEC:'4')))",
             "        (v_hw_address",
             "          HWADDRESS:'hwaddress'",
@@ -74112,7 +74112,7 @@
             },
             {
               "Comment" : "This feature is not currently supported",
-              "Line" : 91,
+              "Line" : 92,
               "Parser_Context" : "[frr_username s_extra_configuration statement cumulus_nclu_configuration]",
               "Text" : "username cumulus nopassword\\n"
             }
@@ -85935,7 +85935,7 @@
               "vrf self-reference" : [
                 75,
                 76,
-                92
+                93
               ]
             }
           },
