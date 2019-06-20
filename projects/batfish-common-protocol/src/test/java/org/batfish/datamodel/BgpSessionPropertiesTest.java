@@ -11,6 +11,7 @@ import static org.junit.Assert.assertTrue;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.testing.EqualsTester;
 import java.io.IOException;
+import java.util.EnumSet;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.datamodel.BgpSessionProperties.Builder;
 import org.batfish.datamodel.BgpSessionProperties.SessionType;
@@ -71,7 +72,15 @@ public class BgpSessionPropertiesTest {
     Ip headIp = Ip.parse("1.1.1.1");
     Ip tailIp = Ip.parse("2.2.2.2");
     BgpSessionProperties bsp =
-        BgpSessionProperties.builder().setTailIp(tailIp).setHeadIp(headIp).build();
+        BgpSessionProperties.builder()
+            .setAdditionalPaths(true)
+            .setAddressFamilies(EnumSet.allOf(Type.class))
+            .setAdvertiseExternal(true)
+            .setAdvertiseInactive(true)
+            .setTailIp(tailIp)
+            .setHeadIp(headIp)
+            .setSessionType(SessionType.EBGP_MULTIHOP)
+            .build();
     assertThat(BatfishObjectMapper.clone(bsp, BgpSessionProperties.class), equalTo(bsp));
   }
 

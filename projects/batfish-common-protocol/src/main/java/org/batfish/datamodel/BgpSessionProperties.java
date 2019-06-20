@@ -321,6 +321,8 @@ public final class BgpSessionProperties {
         _addressFamilies,
         _advertiseExternal,
         _advertiseInactive,
+        _headIp,
+        _tailIp,
         _sessionType.ordinal());
   }
 
