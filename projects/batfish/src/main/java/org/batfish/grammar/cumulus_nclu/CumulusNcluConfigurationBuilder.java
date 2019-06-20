@@ -631,7 +631,7 @@ public class CumulusNcluConfigurationBuilder extends CumulusNcluParserBaseListen
       _w.redFlag(
           String.format(
               "All referenced vxlan instances must be created via 'net add vxlan <name> vxlan id <id>' before line: %s",
-              getFullText(ctx)));
+              getFullText(ctx.getParent())));
       _currentVxlans = ImmutableList.of();
     } else {
       _currentVxlans =
