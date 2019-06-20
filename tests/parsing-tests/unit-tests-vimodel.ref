@@ -15849,6 +15849,7 @@
             "autostate" : true,
             "bandwidth" : 1.0E12,
             "firewallSessionInterfaceInfo" : {
+              "fibLookup" : false,
               "sessionInterfaces" : [
                 "/Common/MYVLAN"
               ]
@@ -22965,6 +22966,7 @@
               "ge-0/0/0.0"
             ],
             "firewallSessionInterfaceInfo" : {
+              "fibLookup" : false,
               "sessionInterfaces" : [
                 "ge-0/0/0.0"
               ]
@@ -29918,6 +29920,7 @@
             "allowedVlans" : "",
             "autostate" : true,
             "firewallSessionInterfaceInfo" : {
+              "fibLookup" : true,
               "sessionInterfaces" : [
                 "ethernet1/2"
               ]

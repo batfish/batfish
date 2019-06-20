@@ -60,12 +60,14 @@ import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.acl.Evaluator;
 import org.batfish.datamodel.collections.NodeInterfacePair;
+import org.batfish.datamodel.flow.Accept;
 import org.batfish.datamodel.flow.ExitOutputIfaceStep;
 import org.batfish.datamodel.flow.ExitOutputIfaceStep.ExitOutputIfaceStepDetail;
 import org.batfish.datamodel.flow.FilterStep;
 import org.batfish.datamodel.flow.FilterStep.FilterStepDetail;
 import org.batfish.datamodel.flow.FilterStep.FilterType;
 import org.batfish.datamodel.flow.FirewallSessionTraceInfo;
+import org.batfish.datamodel.flow.ForwardOutInterface;
 import org.batfish.datamodel.flow.Hop;
 import org.batfish.datamodel.flow.InboundStep;
 import org.batfish.datamodel.flow.InboundStep.InboundStepDetail;
@@ -76,6 +78,7 @@ import org.batfish.datamodel.flow.RouteInfo;
 import org.batfish.datamodel.flow.RoutingStep;
 import org.batfish.datamodel.flow.RoutingStep.Builder;
 import org.batfish.datamodel.flow.RoutingStep.RoutingStepDetail;
+import org.batfish.datamodel.flow.SessionAction;
 import org.batfish.datamodel.flow.SetupSessionStep;
 import org.batfish.datamodel.flow.Step;
 import org.batfish.datamodel.flow.StepAction;
@@ -92,6 +95,7 @@ import org.batfish.datamodel.transformation.Transformation;
 import org.batfish.datamodel.transformation.TransformationEvaluator;
 import org.batfish.datamodel.transformation.TransformationEvaluator.TransformationResult;
 import org.batfish.datamodel.visitors.FibActionVisitor;
+import org.batfish.datamodel.visitors.SessionActionVisitor;
 
 /**
  * Generates {@link Trace Traces} for a particular flow. Does depth-first search over all ECMP paths
@@ -503,15 +507,40 @@ class FlowTracer {
    */
   @VisibleForTesting
   void fibLookup(Ip dstIp, String currentNodeName, Fib fib) {
-    fibLookup(dstIp, currentNodeName, fib, new Stack<>());
+    fibLookup(
+        dstIp,
+        currentNodeName,
+        fib,
+        fibForward ->
+            forkTracerSameNode()
+                .forwardOutInterface(
+                    _currentConfig.getAllInterfaces().get(fibForward.getInterfaceName()),
+                    fibForward.getArpIp()),
+        new Stack<>());
   }
 
   /**
    * Perform a FIB lookup of {@code dstIp} on {@code fib} of {@code currentNodeName} and take
-   * corresponding actions given {@code intraHopBreadcrumbs} already produced at this node.
+   * corresponding actions. Use {@code forwardOutInterfaceHandler} to handle forwarding action.
    */
   @VisibleForTesting
-  void fibLookup(Ip dstIp, String currentNodeName, Fib fib, Stack<Breadcrumb> intraHopBreadcrumbs) {
+  void fibLookup(
+      Ip dstIp, String currentNodeName, Fib fib, Consumer<FibForward> forwardOutInterfaceHandler) {
+    fibLookup(dstIp, currentNodeName, fib, forwardOutInterfaceHandler, new Stack<>());
+  }
+
+  /**
+   * Perform a FIB lookup of {@code dstIp} on {@code fib} of {@code currentNodeName} and take
+   * corresponding actions given {@code intraHopBreadcrumbs} already produced at this node. Use
+   * {@code forwardOutInterfaceHandler} to handle forwarding action.
+   */
+  @VisibleForTesting
+  void fibLookup(
+      Ip dstIp,
+      String currentNodeName,
+      Fib fib,
+      Consumer<FibForward> forwardOutInterfaceHandler,
+      Stack<Breadcrumb> intraHopBreadcrumbs) {
     // Loop detection
     Breadcrumb breadcrumb = new Breadcrumb(currentNodeName, _vrfName, _currentFlow);
     if (_breadcrumbs.contains(breadcrumb)) {
@@ -546,10 +575,7 @@ class FlowTracer {
             new FibActionVisitor<Void>() {
               @Override
               public Void visitFibForward(FibForward fibForward) {
-                forkTracerSameNode()
-                    .forwardOutInterface(
-                        _currentConfig.getAllInterfaces().get(fibForward.getInterfaceName()),
-                        fibForward.getArpIp());
+                forwardOutInterfaceHandler.accept(fibForward);
                 return null;
               }
 
@@ -566,6 +592,7 @@ class FlowTracer {
                         dstIp,
                         currentNodeName,
                         _tracerouteContext.getFib(currentNodeName, nextVrf).get(),
+                        forwardOutInterfaceHandler,
                         intraHopBreadcrumbs);
                 intraHopBreadcrumbs.pop();
                 return null;
@@ -660,7 +687,7 @@ class FlowTracer {
         incomingInterface.getFirewallSessionInterfaceInfo() != null,
         "Cannot have a session entering an interface without FirewallSessionInterfaceInfo");
 
-    // apply imcoming ACL
+    // apply incoming ACL
     String incomingAclName =
         incomingInterface.getFirewallSessionInterfaceInfo().getIncomingAclName();
     if (incomingAclName != null
@@ -668,69 +695,111 @@ class FlowTracer {
       return true;
     }
 
-    // cycle detection
-    Breadcrumb breadcrumb = new Breadcrumb(currentNodeName, _vrfName, flow);
-    if (_breadcrumbs.contains(breadcrumb)) {
-      buildLoopTrace();
-      return true;
+    // apply transformation
+    Transformation transformation = session.getTransformation();
+    if (transformation != null) {
+      TransformationResult result =
+          TransformationEvaluator.eval(
+              transformation, flow, inputIfaceName, ipAccessLists, ipSpaces);
+      _steps.addAll(result.getTraceSteps());
+      _currentFlow = result.getOutputFlow();
     }
 
-    _breadcrumbs.push(breadcrumb);
-    try {
-      // apply transformation
-      Transformation transformation = session.getTransformation();
-      if (transformation != null) {
-        TransformationResult result =
-            TransformationEvaluator.eval(
-                transformation, flow, inputIfaceName, ipAccessLists, ipSpaces);
-        _steps.addAll(result.getTraceSteps());
-        _currentFlow = result.getOutputFlow();
-      }
-      if (session.getOutgoingInterface() == null) {
-        // Accepted by this node (vrf of incoming interface).
-        buildAcceptTrace();
-        return true;
-      }
+    session
+        .getAction()
+        .accept(
+            new SessionActionVisitor<Void>() {
+              @Override
+              public Void visitAcceptVrf(Accept acceptVrf) {
+                // Accepted by VRF
+                buildAcceptTrace();
+                return null;
+              }
 
-      Interface outgoingInterface = config.getAllInterfaces().get(session.getOutgoingInterface());
-      checkState(
-          outgoingInterface.getFirewallSessionInterfaceInfo() != null,
-          "Cannot have a session exiting an interface without FirewallSessionInterfaceInfo");
-      // apply outgoing ACL
-      String outgoingAclName =
-          outgoingInterface.getFirewallSessionInterfaceInfo().getOutgoingAclName();
-      if (outgoingAclName != null
-          && applyFilter(ipAccessLists.get(outgoingAclName), FilterType.EGRESS_FILTER) == DENIED) {
-        return true;
-      }
+              @Override
+              public Void visitFibLookup(org.batfish.datamodel.flow.FibLookup fibLookup) {
+                fibLookup(
+                    _currentFlow.getDstIp(),
+                    currentNodeName,
+                    _tracerouteContext.getFib(currentNodeName, _vrfName).get(),
+                    fibForward -> {
+                      String outgoingIfaceName = fibForward.getInterfaceName();
 
-      if (session.getNextHop() == null) {
-        /* ARP error. Currently we can't use buildArpFailureTrace for sessions, because forwarding
-         * analysis disposition maps currently include routing conditions, which do not apply to
-         * sessions.
-         *
-         * ARP failure is only possible for sessions that have an outgoing interface but no next
-         * hop. This only happens when the user started the trace entering the outgoing interface.
-         * For now, just always call this EXITS_NETWORK. In the future we may want to apply the
-         * normal ARP error disposition logic, which would require factoring out routing-independent
-         * disposition maps in forwarding analysis.
-         */
-        buildArpFailureTrace(session.getOutgoingInterface(), FlowDisposition.EXITS_NETWORK);
-        return true;
-      }
+                      // TODO: handle ACLs
 
-      _steps.add(buildExitOutputIfaceStep(outgoingInterface.getName(), TRANSMITTED));
-      _hops.add(new Hop(new Node(currentNodeName), _steps));
+                      SortedSet<NodeInterfacePair> neighborIfaces =
+                          _tracerouteContext.getInterfaceNeighbors(
+                              currentNodeName, outgoingIfaceName);
+                      if (neighborIfaces.isEmpty()) {
+                        FlowDisposition disposition =
+                            _tracerouteContext.computeDisposition(
+                                currentNodeName, outgoingIfaceName, _currentFlow.getDstIp());
 
-      // Forward to neighbor.
-      forkTracerFollowEdge(
-              new NodeInterfacePair(currentNodeName, session.getOutgoingInterface()),
-              session.getNextHop())
-          .processHop();
-      return true;
-    } finally {
-      _breadcrumbs.pop();
-    }
+                        buildArpFailureTrace(outgoingIfaceName, disposition);
+                      } else {
+                        processOutgoingInterfaceEdges(
+                            outgoingIfaceName, fibForward.getArpIp(), neighborIfaces);
+                      }
+                    });
+                return null;
+              }
+
+              @Override
+              public Void visitForwardOutInterface(ForwardOutInterface forwardOutInterface) {
+                // cycle detection
+                Breadcrumb breadcrumb = new Breadcrumb(currentNodeName, _vrfName, flow);
+                if (_breadcrumbs.contains(breadcrumb)) {
+                  buildLoopTrace();
+                  return null;
+                }
+                _breadcrumbs.push(breadcrumb);
+                try {
+                  NodeInterfacePair nextHop = forwardOutInterface.getNextHop();
+                  String outgoingInterfaceName = forwardOutInterface.getOutgoingInterface();
+                  Interface outgoingInterface =
+                      config.getAllInterfaces().get(outgoingInterfaceName);
+                  checkState(
+                      outgoingInterface.getFirewallSessionInterfaceInfo() != null,
+                      "Cannot have a session exiting an interface without FirewallSessionInterfaceInfo");
+
+                  // apply outgoing ACL
+                  String outgoingAclName =
+                      outgoingInterface.getFirewallSessionInterfaceInfo().getOutgoingAclName();
+                  if (outgoingAclName != null
+                      && applyFilter(ipAccessLists.get(outgoingAclName), FilterType.EGRESS_FILTER)
+                          == DENIED) {
+                    return null;
+                  }
+
+                  if (nextHop == null) {
+                    /* ARP error. Currently we can't use buildArpFailureTrace for sessions, because forwarding
+                     * analysis disposition maps currently include routing conditions, which do not apply to
+                     * sessions.
+                     *
+                     * ARP failure is only possible for sessions that have an outgoing interface but no next
+                     * hop. This only happens when the user started the trace entering the outgoing interface.
+                     * For now, just always call this EXITS_NETWORK. In the future we may want to apply the
+                     * normal ARP error disposition logic, which would require factoring out routing-independent
+                     * disposition maps in forwarding analysis.
+                     */
+                    buildArpFailureTrace(outgoingInterfaceName, FlowDisposition.EXITS_NETWORK);
+                    return null;
+                  }
+
+                  _steps.add(buildExitOutputIfaceStep(outgoingInterfaceName, TRANSMITTED));
+                  _hops.add(new Hop(new Node(currentNodeName), _steps));
+
+                  // Forward to neighbor.
+                  forkTracerFollowEdge(
+                          new NodeInterfacePair(currentNodeName, outgoingInterfaceName), nextHop)
+                      .processHop();
+                  return null;
+                } finally {
+                  _breadcrumbs.pop();
+                }
+              }
+            });
+    return true;
   }
 
   private void buildNullRoutedTrace() {
@@ -809,10 +878,16 @@ class FlowTracer {
   @Nonnull
   private FirewallSessionTraceInfo buildFirewallSessionTraceInfo(
       @Nonnull FirewallSessionInterfaceInfo firewallSessionInterfaceInfo) {
+    SessionAction action =
+        firewallSessionInterfaceInfo.getFibLookup()
+            ? org.batfish.datamodel.flow.FibLookup.INSTANCE
+            : _ingressInterface != null
+                ? new ForwardOutInterface(_ingressInterface, _lastHopNodeAndOutgoingInterface)
+                : Accept.INSTANCE;
+
     return new FirewallSessionTraceInfo(
         _currentNode.getName(),
-        _ingressInterface,
-        _lastHopNodeAndOutgoingInterface,
+        action,
         firewallSessionInterfaceInfo.getSessionInterfaces(),
         match5Tuple(
             _currentFlow.getDstIp(),

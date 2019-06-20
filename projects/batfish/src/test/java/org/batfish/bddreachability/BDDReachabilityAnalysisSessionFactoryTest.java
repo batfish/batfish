@@ -181,7 +181,7 @@ public class BDDReachabilityAnalysisSessionFactoryTest {
 
       // Create sessions for flows exiting FW:I3
       fwi3.setFirewallSessionInterfaceInfo(
-          new FirewallSessionInterfaceInfo(ImmutableSet.of(FWI3), null, null));
+          new FirewallSessionInterfaceInfo(false, ImmutableSet.of(FWI3), null, null));
     }
 
     _configs = ImmutableMap.of(FW, fw, R1, r1, R2, r2, R3, r3);
@@ -189,7 +189,7 @@ public class BDDReachabilityAnalysisSessionFactoryTest {
 
     // temporarily add a FirewallSessionInterfaceInfo to FW to force its last hops to be tracked
     fwi1.setFirewallSessionInterfaceInfo(
-        new FirewallSessionInterfaceInfo(ImmutableList.of(FWI2), null, null));
+        new FirewallSessionInterfaceInfo(false, ImmutableList.of(FWI2), null, null));
     Set<org.batfish.datamodel.Edge> edges =
         ImmutableSet.of(
             // R1:I1 -- FW:I1
