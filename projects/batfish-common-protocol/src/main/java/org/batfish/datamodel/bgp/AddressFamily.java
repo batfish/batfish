@@ -1,5 +1,6 @@
 package org.batfish.datamodel.bgp;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import java.io.Serializable;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -14,4 +15,13 @@ public abstract class AddressFamily implements Serializable {
 
   @Override
   public abstract boolean equals(@Nullable Object obj);
+
+  @JsonIgnore
+  public abstract Type getType();
+
+  /** BGP address family type */
+  public enum Type {
+    IPV4_UNICAST,
+    EVPN
+  }
 }
