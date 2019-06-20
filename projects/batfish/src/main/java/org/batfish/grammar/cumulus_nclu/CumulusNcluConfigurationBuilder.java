@@ -5,9 +5,11 @@ import static com.google.common.base.Preconditions.checkState;
 import static com.google.common.base.Predicates.not;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.google.common.collect.BoundType;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableRangeSet;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Iterables;
 import com.google.common.collect.Range;
 import com.google.common.collect.RangeSet;
 import java.util.Arrays;
@@ -16,7 +18,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.stream.IntStream;
+import java.util.stream.LongStream;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.antlr.v4.runtime.ParserRuleContext;
@@ -32,6 +34,7 @@ import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Ip6;
 import org.batfish.datamodel.LineAction;
+import org.batfish.datamodel.LongSpace;
 import org.batfish.datamodel.MacAddress;
 import org.batfish.datamodel.Prefix;
 import org.batfish.grammar.ParseTreePrettyPrinter;
@@ -164,6 +167,7 @@ public class CumulusNcluConfigurationBuilder extends CumulusNcluParserBaseListen
   private static final Pattern PHYSICAL_INTERFACE_PATTERN = Pattern.compile("(swp|eth)[0-9]+");
   private static final Pattern SUBINTERFACE_PATTERN = Pattern.compile("^(.*)\\.([0-9]+)$");
   private static final Pattern VLAN_INTERFACE_PATTERN = Pattern.compile("^vlan([0-9]+)$");
+  private static final int MAX_VXLAN_ID = (1 << 24) - 1; // 24 bit number
 
   private static int toInteger(Uint16Context ctx) {
     return Integer.parseInt(ctx.getText(), 10);
@@ -210,10 +214,25 @@ public class CumulusNcluConfigurationBuilder extends CumulusNcluParserBaseListen
     return Prefix.parse(ctx.getText());
   }
 
-  private static @Nonnull Range<Integer> toRange(RangeContext ctx) {
-    int low = toInteger(ctx.low);
-    int high = ctx.high != null ? toInteger(ctx.high) : low;
+  private static @Nonnull Range<Long> toRange(RangeContext ctx) {
+    long low = toLong(ctx.low);
+    long high = ctx.high != null ? toLong(ctx.high) : low;
     return Range.closed(low, high);
+  }
+
+  /**
+   * Convert a range context to an integer range.
+   *
+   * @throws IllegalArgumentException if the values are out of range
+   */
+  private static @Nonnull Range<Integer> toRangeInt(RangeContext ctx) {
+    long low = toLong(ctx.low);
+    long high = ctx.high != null ? toLong(ctx.high) : low;
+    checkArgument(
+        low <= Integer.MAX_VALUE && high <= Integer.MAX_VALUE,
+        "Invalid integer range: %s",
+        ctx.getText());
+    return Range.closed((int) low, (int) high);
   }
 
   private static @Nonnull Range<Integer> toRange(Vlan_rangeContext ctx) {
@@ -222,10 +241,39 @@ public class CumulusNcluConfigurationBuilder extends CumulusNcluParserBaseListen
     return Range.closed(low, high);
   }
 
-  private static @Nonnull RangeSet<Integer> toRangeSet(Range_setContext ctx) {
+  private static @Nonnull RangeSet<Long> toRangeSet(Range_setContext ctx) {
     return ctx.range().stream()
         .map(CumulusNcluConfigurationBuilder::toRange)
         .collect(ImmutableRangeSet.toImmutableRangeSet());
+  }
+
+  /**
+   * Convert a range set context to a range set of integers.
+   *
+   * @throws IllegalArgumentException if the values are out of range
+   */
+  private static @Nonnull RangeSet<Integer> toRangeSetInt(Range_setContext ctx) {
+    return ctx.range().stream()
+        .map(CumulusNcluConfigurationBuilder::toRangeInt)
+        .collect(ImmutableRangeSet.toImmutableRangeSet());
+  }
+
+  /**
+   * Check that the given RangeSet is upper-bounded by {@code maxValue}, otherwise throw {@link
+   * IllegalArgumentException}
+   */
+  private static void checkUpperBound(RangeSet<? extends Number> rangeSet, long maxValue) {
+    Range<? extends Number> range =
+        Iterables.getFirst(rangeSet.asDescendingSetOfRanges(), Range.singleton(maxValue));
+    assert range != null; // range set won't give us null ranges
+    Number upperBound = range.upperEndpoint();
+    checkArgument(
+        range.upperBoundType() == BoundType.CLOSED
+            ? upperBound.longValue() <= maxValue
+            : upperBound.longValue() < maxValue,
+        "Invalid range %s, max value allowed is %d",
+        rangeSet,
+        maxValue);
   }
 
   private static @Nonnull RangeSet<Integer> toRangeSet(Vlan_range_setContext ctx) {
@@ -234,7 +282,7 @@ public class CumulusNcluConfigurationBuilder extends CumulusNcluParserBaseListen
         .collect(ImmutableRangeSet.toImmutableRangeSet());
   }
 
-  private static @Nonnull Set<String> toStrings(Glob_range_setContext ctx) {
+  private static @Nonnull Set<String> toStrings(Glob_range_setContext ctx, long maxValue) {
     if (ctx.unnumbered != null) {
       return ImmutableSet.of(ctx.unnumbered.getText());
     }
@@ -245,28 +293,34 @@ public class CumulusNcluConfigurationBuilder extends CumulusNcluParserBaseListen
     Matcher matcher = NUMBERED_WORD_PATTERN.matcher(baseWord);
     matcher.matches(); // parser+lexer guarantee match
     String prefix = matcher.group(1);
-    int firstIntervalStart = Integer.parseInt(matcher.group(2), 10);
-    int firstIntervalEnd =
+    long firstIntervalStart = Long.parseLong(matcher.group(2), 10);
+    long firstIntervalEnd =
         ctx.first_interval_end != null
-            ? Integer.parseInt(ctx.first_interval_end.getText(), 10)
+            ? Long.parseLong(ctx.first_interval_end.getText(), 10)
             : firstIntervalStart;
+    checkArgument(firstIntervalStart <= maxValue && firstIntervalEnd <= maxValue);
     // add first interval
-    ImmutableRangeSet.Builder<Integer> builder =
-        ImmutableRangeSet.<Integer>builder()
-            .add(Range.closed(firstIntervalStart, firstIntervalEnd));
+    ImmutableRangeSet.Builder<Long> builder =
+        ImmutableRangeSet.<Long>builder().add(Range.closed(firstIntervalStart, firstIntervalEnd));
     if (ctx.other_numeric_ranges != null) {
       // add other intervals
-      builder.addAll(toRangeSet(ctx.other_numeric_ranges));
+      RangeSet<Long> rangeSet = toRangeSet(ctx.other_numeric_ranges);
+      checkUpperBound(rangeSet, maxValue);
+      builder.addAll(rangeSet);
     }
     return builder.build().asRanges().stream()
-        .flatMapToInt(r -> IntStream.rangeClosed(r.lowerEndpoint(), r.upperEndpoint()))
+        .flatMapToLong(r -> LongStream.rangeClosed(r.lowerEndpoint(), r.upperEndpoint()))
         .mapToObj(i -> String.format("%s%d", prefix, i))
         .collect(ImmutableSet.toImmutableSet());
   }
 
   private static @Nonnull Set<String> toStrings(GlobContext ctx) {
+    return toStrings(ctx, Long.MAX_VALUE);
+  }
+
+  private static @Nonnull Set<String> toStrings(GlobContext ctx, long maxValue) {
     return ctx.glob_range_set().stream()
-        .flatMap(grs -> toStrings(grs).stream())
+        .flatMap(grs -> toStrings(grs, maxValue).stream())
         .collect(ImmutableSet.toImmutableSet());
   }
 
@@ -547,7 +601,7 @@ public class CumulusNcluConfigurationBuilder extends CumulusNcluParserBaseListen
           CumulusStructureType.VLAN, name, CumulusStructureUsage.VLAN_SELF_REFERENCE, line);
     } else {
       Set<String> names =
-          IntegerSpace.of(toRangeSet(ctx.suffixes)).enumerate().stream()
+          LongSpace.of(toRangeSet(ctx.suffixes)).enumerate().stream()
               .map(suffix -> String.format("vlan%d", suffix))
               .collect(ImmutableSet.toImmutableSet());
       _currentVlans = initVlansIfAbsent(names, line);
@@ -569,7 +623,7 @@ public class CumulusNcluConfigurationBuilder extends CumulusNcluParserBaseListen
 
   @Override
   public void enterA_vxlan(A_vxlanContext ctx) {
-    Set<String> names = toStrings(ctx.names);
+    Set<String> names = toStrings(ctx.names, MAX_VXLAN_ID);
     if (ctx.vx_vxlan() != null && ctx.vx_vxlan().vxv_id() != null) {
       // create them if necessary when setting id
       _currentVxlans = initVxlansIfAbsent(names, ctx);
@@ -895,7 +949,7 @@ public class CumulusNcluConfigurationBuilder extends CumulusNcluParserBaseListen
 
   @Override
   public void exitBrbr_vids(Brbr_vidsContext ctx) {
-    _c.getBridge().setVids(IntegerSpace.of(toRangeSet(ctx.ids)));
+    _c.getBridge().setVids(IntegerSpace.of(toRangeSetInt(ctx.ids)));
   }
 
   @Override
