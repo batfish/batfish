@@ -353,7 +353,7 @@ public abstract class NumberSpace<
    * completeSpace}. Differs from {@link #toString()} in that this method can return {@code "all"}
    * (if this space equals the {@code completeSpace} or {@code "none"} (if this space is empty).
    */
-  public String toStringAsSubsetOf(NumberSpace<T, S, B> completeSpace) {
+  public String toStringAsSubsetOf(NumberSpace<?, ?, ?> completeSpace) {
     return isEmpty() ? "none" : equals(completeSpace) ? "all" : toString();
   }
 }
