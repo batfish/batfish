@@ -41573,6 +41573,19 @@
             "            IP_ADDRESS:'192.0.2.1'  <== mode:M_Printf)",
             "          NEWLINE:'\\n'  <== mode:M_Printf))",
             "      EXTRA_CONFIGURATION_FOOTER:'' >> /etc/frr/frr.conf\"'  <== mode:M_Printf",
+            "      NEWLINE:'\\n'))",
+            "  (statement",
+            "    (s_extra_configuration",
+            "      EXTRA_CONFIGURATION_HEADER:'sudo sh -c \"printf ''",
+            "      (frr_vrf",
+            "        VRF:'vrf'  <== mode:M_Printf",
+            "        name = (word",
+            "          WORD:'vrf1'  <== mode:M_Printf)",
+            "        NEWLINE:'\\n'  <== mode:M_Printf",
+            "        (frr_exit_vrf",
+            "          EXIT_VRF:'exit-vrf'  <== mode:M_Printf",
+            "          NEWLINE:'\\n'  <== mode:M_Printf))",
+            "      EXTRA_CONFIGURATION_FOOTER:'' >> /etc/frr/frr.conf\"'  <== mode:M_Printf",
             "      NEWLINE:'\\n\\n'))",
             "  EOF:<EOF>)"
           ]
@@ -78872,7 +78885,7 @@
               "definitionLines" : [
                 16
               ],
-              "numReferrers" : 9
+              "numReferrers" : 10
             }
           },
           "vxlan" : {
@@ -85935,7 +85948,8 @@
               "vrf self-reference" : [
                 75,
                 76,
-                93
+                93,
+                94
               ]
             }
           },

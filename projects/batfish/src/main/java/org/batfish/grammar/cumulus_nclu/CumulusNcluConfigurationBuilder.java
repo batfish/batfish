@@ -81,6 +81,7 @@ import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.Brbr_vlan_awareContext
 import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.Cumulus_nclu_configurationContext;
 import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.Dn4Context;
 import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.Dn6Context;
+import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.Frr_exit_vrfContext;
 import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.Frr_unrecognizedContext;
 import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.Frr_usernameContext;
 import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.Frr_vrfContext;
@@ -979,6 +980,11 @@ public class CumulusNcluConfigurationBuilder extends CumulusNcluParserBaseListen
 
   @Override
   public void exitFrr_vrf(Frr_vrfContext ctx) {
+    _currentVrf = null;
+  }
+
+  @Override
+  public void exitFrr_exit_vrf(Frr_exit_vrfContext ctx) {
     _currentVrf = null;
   }
 
