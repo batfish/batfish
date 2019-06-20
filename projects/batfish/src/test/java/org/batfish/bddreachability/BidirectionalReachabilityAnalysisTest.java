@@ -175,7 +175,7 @@ public final class BidirectionalReachabilityAnalysisTest {
     Interface fwI2 = ib.setAddress(ConcreteInterfaceAddress.parse("255.255.255.0/24")).build();
 
     fwI2.setFirewallSessionInterfaceInfo(
-        new FirewallSessionInterfaceInfo(ImmutableList.of(fwI2.getName()), null, null));
+        new FirewallSessionInterfaceInfo(false, ImmutableList.of(fwI2.getName()), null, null));
 
     SortedMap<String, Configuration> configurations =
         ImmutableSortedMap.of(
@@ -432,7 +432,7 @@ public final class BidirectionalReachabilityAnalysisTest {
             .build());
 
     fwI2.setFirewallSessionInterfaceInfo(
-        new FirewallSessionInterfaceInfo(ImmutableList.of(fwI2.getName()), null, null));
+        new FirewallSessionInterfaceInfo(false, ImmutableList.of(fwI2.getName()), null, null));
 
     SortedMap<String, Configuration> configurations =
         ImmutableSortedMap.of(
@@ -605,7 +605,7 @@ public final class BidirectionalReachabilityAnalysisTest {
     IpAccessList permitUdpAcl =
         nf.aclBuilder().setOwner(fw).setLines(ImmutableList.of(permitUdpLine)).build();
     fwI2.setFirewallSessionInterfaceInfo(
-        new FirewallSessionInterfaceInfo(ImmutableList.of(), null, permitUdpAcl.getName()));
+        new FirewallSessionInterfaceInfo(false, ImmutableList.of(), null, permitUdpAcl.getName()));
 
     // transform source IP before setting up session on fwI3
     Ip poolIp = Ip.parse("5.5.5.5");
@@ -618,7 +618,7 @@ public final class BidirectionalReachabilityAnalysisTest {
             .build());
 
     fwI3.setFirewallSessionInterfaceInfo(
-        new FirewallSessionInterfaceInfo(ImmutableList.of(fwI3.getName()), null, null));
+        new FirewallSessionInterfaceInfo(false, ImmutableList.of(fwI3.getName()), null, null));
 
     SortedMap<String, Configuration> configurations =
         ImmutableSortedMap.of(

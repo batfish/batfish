@@ -16,22 +16,36 @@ public final class FirewallSessionTraceInfoTest {
   public void testEquals() {
     new EqualsTester()
         .addEqualityGroup(
-            new FirewallSessionTraceInfo("A", "B", null, ImmutableSet.of(), TRUE, null),
-            new FirewallSessionTraceInfo("A", "B", null, ImmutableSet.of(), TRUE, null))
-        .addEqualityGroup(
-            new FirewallSessionTraceInfo("A1", "B", null, ImmutableSet.of(), TRUE, null))
-        .addEqualityGroup(
-            new FirewallSessionTraceInfo("A", "B1", null, ImmutableSet.of(), TRUE, null))
+            new FirewallSessionTraceInfo(
+                "A", new ForwardOutInterface("B", null), ImmutableSet.of(), TRUE, null),
+            new FirewallSessionTraceInfo(
+                "A", new ForwardOutInterface("B", null), ImmutableSet.of(), TRUE, null))
         .addEqualityGroup(
             new FirewallSessionTraceInfo(
-                "A", "B", new NodeInterfacePair("", ""), ImmutableSet.of(), TRUE, null))
-        .addEqualityGroup(
-            new FirewallSessionTraceInfo("A", "B1", null, ImmutableSet.of(""), TRUE, null))
-        .addEqualityGroup(
-            new FirewallSessionTraceInfo("A", "B1", null, ImmutableSet.of(), FALSE, null))
+                "A1", new ForwardOutInterface("B", null), ImmutableSet.of(), TRUE, null))
         .addEqualityGroup(
             new FirewallSessionTraceInfo(
-                "A", "B1", null, ImmutableSet.of(), TRUE, always().build()))
+                "A", new ForwardOutInterface("B1", null), ImmutableSet.of(), TRUE, null))
+        .addEqualityGroup(
+            new FirewallSessionTraceInfo(
+                "A",
+                new ForwardOutInterface("B", new NodeInterfacePair("", "")),
+                ImmutableSet.of(),
+                TRUE,
+                null))
+        .addEqualityGroup(
+            new FirewallSessionTraceInfo(
+                "A", new ForwardOutInterface("B1", null), ImmutableSet.of(""), TRUE, null))
+        .addEqualityGroup(
+            new FirewallSessionTraceInfo(
+                "A", new ForwardOutInterface("B1", null), ImmutableSet.of(), FALSE, null))
+        .addEqualityGroup(
+            new FirewallSessionTraceInfo(
+                "A",
+                new ForwardOutInterface("B1", null),
+                ImmutableSet.of(),
+                TRUE,
+                always().build()))
         .testEquals();
   }
 }

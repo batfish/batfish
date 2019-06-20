@@ -12,12 +12,12 @@ public final class FirewallSessionInterfaceInfoTest {
     ImmutableSet<String> ifaces = ImmutableSet.of("A");
     new EqualsTester()
         .addEqualityGroup(
-            new FirewallSessionInterfaceInfo(ifaces, "IN_ACL", "OUT_ACL"),
-            new FirewallSessionInterfaceInfo(ifaces, "IN_ACL", "OUT_ACL"))
-        .addEqualityGroup(new FirewallSessionInterfaceInfo(ifaces, "IN_ACL", null))
-        .addEqualityGroup(new FirewallSessionInterfaceInfo(ifaces, null, "OUT_ACL"))
+            new FirewallSessionInterfaceInfo(false, ifaces, "IN_ACL", "OUT_ACL"),
+            new FirewallSessionInterfaceInfo(false, ifaces, "IN_ACL", "OUT_ACL"))
+        .addEqualityGroup(new FirewallSessionInterfaceInfo(false, ifaces, "IN_ACL", null))
+        .addEqualityGroup(new FirewallSessionInterfaceInfo(false, ifaces, null, "OUT_ACL"))
         .addEqualityGroup(
-            new FirewallSessionInterfaceInfo(ImmutableSet.of("B"), "IN_ACL", "OUT_ACL"))
+            new FirewallSessionInterfaceInfo(false, ImmutableSet.of("B"), "IN_ACL", "OUT_ACL"))
         .testEquals();
   }
 }

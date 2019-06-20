@@ -933,7 +933,8 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
                               computeOutgoingFilterName(computeObjectName(sgName, sgName))))))
               .build());
       newIface.setFirewallSessionInterfaceInfo(
-          new FirewallSessionInterfaceInfo(sharedGateway.getImportedInterfaces(), null, null));
+          new FirewallSessionInterfaceInfo(
+              true, sharedGateway.getImportedInterfaces(), null, null));
     } else if (zone != null) {
       newIface.setZoneName(zone.getName());
       if (zone.getType() == Type.LAYER3) {
@@ -947,7 +948,7 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
                                     computeObjectName(zone.getVsys().getName(), zone.getName()))))))
                 .build());
         newIface.setFirewallSessionInterfaceInfo(
-            new FirewallSessionInterfaceInfo(zone.getInterfaceNames(), null, null));
+            new FirewallSessionInterfaceInfo(true, zone.getInterfaceNames(), null, null));
       }
     } else {
       // Do not allow any traffic to exit an unzoned interface
