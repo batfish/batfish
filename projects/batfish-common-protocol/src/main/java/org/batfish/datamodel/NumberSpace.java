@@ -254,7 +254,7 @@ public abstract class NumberSpace<
     return getRanges().size() == 1 && isSingletonRange(getRanges().iterator().next());
   }
 
-  private final boolean isSingletonRange(Range<T> range) {
+  private boolean isSingletonRange(Range<T> range) {
     // note that argument is guaranteed to be closedOpen Range
     return range.upperEndpoint().equals(discreteDomain().next(range.lowerEndpoint()));
   }
@@ -329,7 +329,7 @@ public abstract class NumberSpace<
     return newBuilder().including(getThis());
   }
 
-  private final @Nonnull String toRangeString(Range<T> r) {
+  private @Nonnull String toRangeString(Range<T> r) {
     return isSingletonRange(r)
         ? r.lowerEndpoint().toString()
         : String.format("%s-%s", r.lowerEndpoint(), discreteDomain().previous(r.upperEndpoint()));
@@ -349,11 +349,11 @@ public abstract class NumberSpace<
   }
 
   /**
-   * Returns a string representation of the given {@code space} as a subset of the given {@code
+   * Returns a string representation of this NumberSpace as a subset of the given {@code
    * completeSpace}. Differs from {@link #toString()} in that this method can return {@code "all"}
-   * or {@code "none"}.
+   * (if this space equals the {@code completeSpace} or {@code "none"} (if this space is empty).
    */
-  public static String numSpaceToString(NumberSpace space, NumberSpace completeSpace) {
-    return space.isEmpty() ? "none" : space.equals(completeSpace) ? "all" : space.toString();
+  public String toStringAsSubsetOf(NumberSpace<T, S, B> completeSpace) {
+    return isEmpty() ? "none" : equals(completeSpace) ? "all" : toString();
   }
 }
