@@ -147,13 +147,4 @@ public final class LongSpace extends NumberSpace<Long, LongSpace, LongSpace.Buil
   protected @Nonnull Builder newBuilder() {
     return builder();
   }
-
-  /**
-   * Returns a string representation of the given {@code space} as a subset of the given {@code
-   * completeSpace}. Differs from {@link NumberSpace#toString() toString()} in that this method can
-   * return {@code "all"} or {@code "none"}.
-   */
-  public static String longSpaceToString(LongSpace space, LongSpace completeSpace) {
-    return space.isEmpty() ? "none" : space.equals(completeSpace) ? "all" : space.toString();
-  }
 }

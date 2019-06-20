@@ -347,4 +347,13 @@ public abstract class NumberSpace<
     other._rangeset.asRanges().forEach(builder::including);
     return builder.build();
   }
+
+  /**
+   * Returns a string representation of the given {@code space} as a subset of the given {@code
+   * completeSpace}. Differs from {@link #toString()} in that this method can return {@code "all"}
+   * or {@code "none"}.
+   */
+  public static String numSpaceToString(NumberSpace space, NumberSpace completeSpace) {
+    return space.isEmpty() ? "none" : space.equals(completeSpace) ? "all" : space.toString();
+  }
 }
