@@ -62,7 +62,7 @@ public final class ConjunctsBuilder extends AclLineMatchExprSetBuilder {
      * conjunct separately (so we can detect and remove redundant conjuncts). This could create some
      * extra work though, so only do this if the conjunction won't be unsat after adding.
      */
-    if (_ipAccessListToBdd.toBdd(expr).and(getBdd()).isZero()) {
+    if (!_ipAccessListToBdd.toBdd(expr).andsat(getBdd())) {
       /*
        * expr is inconsistent with the other conjuncts. Just add it now.
        */

@@ -73,7 +73,7 @@ public class BDDInteger {
     long value = 0;
     for (int i = 0; i < _bitvec.length; i++) {
       BDD bitBDD = _bitvec[_bitvec.length - i - 1];
-      if (!satAssignment.and(bitBDD).isZero()) {
+      if (satAssignment.andsat(bitBDD)) {
         value |= ((long) 1) << i;
       }
     }
