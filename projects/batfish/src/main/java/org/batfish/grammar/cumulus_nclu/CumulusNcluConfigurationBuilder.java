@@ -1332,14 +1332,37 @@ public class CumulusNcluConfigurationBuilder extends CumulusNcluParserBaseListen
             getFullText(ctx),
             ctx.toString(Arrays.asList(_parser.getParser().getRuleNames())),
             "This syntax is unrecognized");
+    unrecognized(warning, ctx);
+  }
 
+  @Override
+  public void visitErrorNode(ErrorNode errorNode) {
+    Token token = errorNode.getSymbol();
+    int line = token.getLine();
+    String lineText = errorNode.getText().replace("\n", "").replace("\r", "").trim();
+
+    if (token instanceof UnrecognizedLineToken) {
+      UnrecognizedLineToken unrecToken = (UnrecognizedLineToken) token;
+      ParseWarning warning =
+          new ParseWarning(
+              line, lineText, unrecToken.getParserContext(), "This syntax is unrecognized");
+      unrecognized(warning, null);
+    } else {
+      String msg = String.format("Unrecognized Line: %d: %s", line, lineText);
+      _w.redFlag(msg + " Subsequent lines may not be processed correctly");
+    }
+  }
+
+  private void unrecognized(ParseWarning warning, @Nullable ParserRuleContext ctx) {
     // for testing
     if (_parser.getSettings().getDisableUnrecognized()) {
       try {
         String warningStr = BatfishObjectMapper.writePrettyString(warning);
         String parseTreeStr =
-            ParseTreePrettyPrinter.print(
-                ctx, _parser, _parser.getSettings().getPrintParseTreeLineNums());
+            ctx != null
+                ? ParseTreePrettyPrinter.print(
+                    ctx, _parser, _parser.getSettings().getPrintParseTreeLineNums())
+                : "";
         throw new BatfishException(
             String.format(
                 "Forcing failure on unrecognized line: %s\n%s", warningStr, parseTreeStr));
@@ -1350,24 +1373,5 @@ public class CumulusNcluConfigurationBuilder extends CumulusNcluParserBaseListen
 
     _w.getParseWarnings().add(warning);
     _c.setUnrecognized(true);
-  }
-
-  @Override
-  public void visitErrorNode(ErrorNode errorNode) {
-    Token token = errorNode.getSymbol();
-    int line = token.getLine();
-    String lineText = errorNode.getText().replace("\n", "").replace("\r", "").trim();
-    _c.setUnrecognized(true);
-
-    if (token instanceof UnrecognizedLineToken) {
-      UnrecognizedLineToken unrecToken = (UnrecognizedLineToken) token;
-      _w.getParseWarnings()
-          .add(
-              new ParseWarning(
-                  line, lineText, unrecToken.getParserContext(), "This syntax is unrecognized"));
-    } else {
-      String msg = String.format("Unrecognized Line: %d: %s", line, lineText);
-      _w.redFlag(msg + " Subsequent lines may not be processed correctly");
-    }
   }
 }
