@@ -19,6 +19,11 @@ public final class Ipv4UnicastAddressFamily extends AddressFamily {
   }
 
   @Override
+  public Type getType() {
+    return Type.IPV4_UNICAST;
+  }
+
+  @Override
   public boolean equals(@Nullable Object obj) {
     return obj instanceof Ipv4UnicastAddressFamily;
   }
