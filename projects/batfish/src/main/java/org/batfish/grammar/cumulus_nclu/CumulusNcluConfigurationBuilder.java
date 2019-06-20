@@ -5,9 +5,11 @@ import static com.google.common.base.Preconditions.checkState;
 import static com.google.common.base.Predicates.not;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.google.common.collect.BoundType;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableRangeSet;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Iterables;
 import com.google.common.collect.Range;
 import com.google.common.collect.RangeSet;
 import java.util.Arrays;
@@ -261,9 +263,15 @@ public class CumulusNcluConfigurationBuilder extends CumulusNcluParserBaseListen
    * IllegalArgumentException}
    */
   private static void checkUpperBound(RangeSet<? extends Number> rangeSet, long maxValue) {
+    Range<? extends Number> range =
+        Iterables.getFirst(rangeSet.asDescendingSetOfRanges(), Range.singleton(maxValue));
+    assert range != null; // range set won't give us null ranges
+    Number upperBound = range.upperEndpoint();
     checkArgument(
-        rangeSet.span().upperEndpoint().longValue() <= maxValue,
-        "Invalid range %s, max value allowed id %d",
+        range.upperBoundType() == BoundType.CLOSED
+            ? upperBound.longValue() <= maxValue
+            : upperBound.longValue() < maxValue,
+        "Invalid range %s, max value allowed is %d",
         rangeSet,
         maxValue);
   }
