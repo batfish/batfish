@@ -69,6 +69,7 @@ net add vlan 4 ip address-virtual 01:23:45:67:89:ab 192.168.0.1/24
 net add vlan 4 vlan-id 4
 net add vlan 4 vlan-raw-device bridge
 net add vlan 4 vrf vrf1
+net add vlan 4 hwaddress 44:44:44:FF:FF:FF
 net add vrf mgmt
 net add vrf mgmt ip address 10.0.0.2/8
 net add vrf vrf1 vni 10001

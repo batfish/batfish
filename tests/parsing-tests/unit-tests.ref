@@ -41261,6 +41261,21 @@
             "    (s_net_add",
             "      NET:'net'",
             "      ADD:'add'",
+            "      (a_vlan",
+            "        VLAN:'vlan'",
+            "        suffixes = (range_set",
+            "          (range",
+            "            low = (uint16",
+            "              d = DEC:'4')))",
+            "        (v_hw_address",
+            "          HWADDRESS:'hwaddress'",
+            "          mac = (mac_address",
+            "            MAC_ADDRESS:'44:44:44:FF:FF:FF')",
+            "          NEWLINE:'\\n'))))",
+            "  (statement",
+            "    (s_net_add",
+            "      NET:'net'",
+            "      ADD:'add'",
             "      (a_vrf",
             "        VRF:'vrf'",
             "        names = (glob",
@@ -74053,31 +74068,31 @@
             },
             {
               "Comment" : "This feature is not currently supported",
-              "Line" : 78,
+              "Line" : 79,
               "Parser_Context" : "[vxb_arp_nd_suppress vx_bridge a_vxlan s_net_add statement cumulus_nclu_configuration]",
               "Text" : "arp-nd-suppress on"
             },
             {
               "Comment" : "This feature is not currently supported",
-              "Line" : 79,
+              "Line" : 80,
               "Parser_Context" : "[vxb_learning vx_bridge a_vxlan s_net_add statement cumulus_nclu_configuration]",
               "Text" : "learning off"
             },
             {
               "Comment" : "This feature is not currently supported",
-              "Line" : 80,
+              "Line" : 81,
               "Parser_Context" : "[vx_stp a_vxlan s_net_add statement cumulus_nclu_configuration]",
               "Text" : "stp bpduguard"
             },
             {
               "Comment" : "This feature is not currently supported",
-              "Line" : 81,
+              "Line" : 82,
               "Parser_Context" : "[vx_stp a_vxlan s_net_add statement cumulus_nclu_configuration]",
               "Text" : "stp portbpdufilter"
             },
             {
               "Comment" : "This feature is not currently supported",
-              "Line" : 90,
+              "Line" : 91,
               "Parser_Context" : "[frr_username s_extra_configuration statement cumulus_nclu_configuration]",
               "Text" : "username cumulus nopassword\\n"
             }
@@ -78819,7 +78834,7 @@
               "definitionLines" : [
                 67
               ],
-              "numReferrers" : 5
+              "numReferrers" : 6
             }
           },
           "vrf" : {
@@ -78839,13 +78854,13 @@
           "vxlan" : {
             "vni10001" : {
               "definitionLines" : [
-                77
+                78
               ],
               "numReferrers" : 1
             },
             "vni10004" : {
               "definitionLines" : [
-                83
+                84
               ],
               "numReferrers" : 1
             }
@@ -85863,7 +85878,8 @@
                 68,
                 69,
                 70,
-                71
+                71,
+                72
               ]
             }
           },
@@ -85876,9 +85892,9 @@
                 41
               ],
               "vrf self-reference" : [
-                72,
                 73,
-                75
+                74,
+                76
               ]
             },
             "vrf1" : {
@@ -85893,21 +85909,21 @@
                 71
               ],
               "vrf self-reference" : [
-                74,
                 75,
-                91
+                76,
+                92
               ]
             }
           },
           "vxlan" : {
             "vni10001" : {
               "vxlan self-reference" : [
-                77
+                78
               ]
             },
             "vni10004" : {
               "vxlan self-reference" : [
-                83
+                84
               ]
             }
           }

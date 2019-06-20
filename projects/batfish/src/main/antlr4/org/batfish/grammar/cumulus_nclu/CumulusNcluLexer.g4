@@ -191,6 +191,11 @@ HOSTNAME
   'hostname'
 ;
 
+HWADDRESS
+:
+  'hwaddress'
+;
+
 IBURST
 :
   'iburst'
