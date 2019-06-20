@@ -147,4 +147,9 @@ public final class LongSpace extends NumberSpace<Long, LongSpace, LongSpace.Buil
   protected @Nonnull Builder newBuilder() {
     return builder();
   }
+
+  @VisibleForTesting
+  public static String longSpaceToString(LongSpace space, LongSpace completeSpace) {
+    return space.isEmpty() ? "none" : space.equals(completeSpace) ? "all" : space.toString();
+  }
 }

@@ -2,9 +2,11 @@ package org.batfish.datamodel;
 
 import static org.batfish.datamodel.LongSpace.EMPTY;
 import static org.batfish.datamodel.LongSpace.builder;
+import static org.batfish.datamodel.LongSpace.longSpaceToString;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.nullValue;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
@@ -422,5 +424,22 @@ public final class LongSpaceTest {
         space.union(space2), equalTo(LongSpace.builder().including(Range.closed(0L, 90L)).build()));
 
     assertThat(LONGSPACE1.union(EMPTY), equalTo(LONGSPACE1));
+  }
+
+  @Test
+  public void testLongSpaceToString_none() {
+    assertEquals("none", longSpaceToString(LongSpace.EMPTY, LONGSPACE1));
+  }
+
+  @Test
+  public void testLongSpaceToString_all() {
+    assertEquals("all", longSpaceToString(LONGSPACE1, LONGSPACE1));
+  }
+
+  @Test
+  public void testLongSpaceToString_mid() {
+    // if not empty or the complete space, use LongSpace.toString
+    LongSpace space = LongSpace.of(Range.closedOpen(10L, 1000L));
+    assertEquals(space.toString(), longSpaceToString(space, LONGSPACE1));
   }
 }
