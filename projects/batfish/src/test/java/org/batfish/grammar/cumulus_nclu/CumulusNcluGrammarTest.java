@@ -110,11 +110,18 @@ import org.batfish.dataplane.ibdp.IncrementalDataPlane;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
 import org.batfish.main.TestrigText;
+import org.batfish.representation.cumulus.BgpL2vpnEvpnAddressFamily;
+import org.batfish.representation.cumulus.BgpNeighbor;
+import org.batfish.representation.cumulus.BgpProcess;
+import org.batfish.representation.cumulus.BgpRedistributionPolicy;
+import org.batfish.representation.cumulus.BgpVrf;
 import org.batfish.representation.cumulus.Bond;
 import org.batfish.representation.cumulus.CumulusInterfaceType;
 import org.batfish.representation.cumulus.CumulusNcluConfiguration;
+import org.batfish.representation.cumulus.CumulusRoutingProtocol;
 import org.batfish.representation.cumulus.CumulusStructureType;
 import org.batfish.representation.cumulus.Interface;
+import org.batfish.representation.cumulus.RemoteAsType;
 import org.batfish.representation.cumulus.RouteMap;
 import org.batfish.representation.cumulus.RouteMapMatchInterface;
 import org.batfish.representation.cumulus.StaticRoute;
@@ -363,6 +370,112 @@ public final class CumulusNcluGrammarTest {
                       .build())
               .getBooleanValue());
     }
+  }
+
+  @Test
+  public void testBgpExtraction() throws IOException {
+    CumulusNcluConfiguration vc = parseVendorConfig("cumulus_nclu_bgp");
+
+    // bgp process should be created
+    assertThat(vc.getBgpProcess(), notNullValue());
+
+    BgpProcess proc = vc.getBgpProcess();
+
+    // autonomous system
+    assertThat(
+        "Ensure autonomous-sytem is set",
+        proc.getDefaultVrf().getAutonomousSystem(),
+        equalTo(65500L));
+
+    // ipv4 unicast
+    assertThat(
+        "Ensure ipv4 unicast is enabled", proc.getDefaultVrf().getIpv4Unicast(), notNullValue());
+
+    assertThat(
+        "Ensure ipv4 unicast network is extracted",
+        proc.getDefaultVrf().getIpv4Unicast().getNetworks().keySet(),
+        contains(Prefix.strict("192.0.2.1/32")));
+
+    assertThat(
+        "Ensure ipv4 unicast redistribution of connected routes",
+        proc.getDefaultVrf().getIpv4Unicast().getRedistributionPolicies().keySet(),
+        contains(CumulusRoutingProtocol.CONNECTED));
+    BgpRedistributionPolicy rc =
+        proc.getDefaultVrf()
+            .getIpv4Unicast()
+            .getRedistributionPolicies()
+            .get(CumulusRoutingProtocol.CONNECTED);
+    assertThat(
+        "Ensure redistribution policy has correct protocol",
+        rc.getProtocol(),
+        equalTo(CumulusRoutingProtocol.CONNECTED));
+    assertThat(
+        "Ensure redistribution policy uses correct route-map", rc.getRouteMap(), equalTo("rm1"));
+
+    // l2vpn evpn
+    assertThat("Ensure l2vpn evpn is enabled", proc.getDefaultVrf().getL2VpnEvpn(), notNullValue());
+    BgpL2vpnEvpnAddressFamily l2vpnEvpn = proc.getDefaultVrf().getL2VpnEvpn();
+
+    assertTrue("Ensure l2vpn evpn advertise-all-vni is extracted", l2vpnEvpn.getAdvertiseAllVni());
+    assertTrue(
+        "Ensure l2vpn evpn advertise-default-gw is extracted", l2vpnEvpn.getAdvertiseDefaultGw());
+    assertThat(
+        "Ensure l2vpn evpn advertise ipv4 unicast is extracted",
+        l2vpnEvpn.getAdvertiseIpv4Unicast(),
+        notNullValue());
+
+    // interface neighbor
+    assertThat(
+        "Ensure interface neighbor is extracted",
+        proc.getDefaultVrf().getNeighbors().keySet(),
+        containsInAnyOrder("swp1", "swp2", "swp3"));
+    BgpNeighbor in = proc.getDefaultVrf().getNeighbors().get("swp1");
+    assertThat("Ensure interface neighbor has correct name", in.getName(), equalTo("swp1"));
+    assertThat(
+        "Ensure interface uses correct remote-as type",
+        in.getRemoteAsType(),
+        equalTo(RemoteAsType.EXTERNAL));
+
+    // router-id
+    assertThat(
+        "Ensure router-id is extracted",
+        proc.getDefaultVrf().getRouterId(),
+        equalTo(Ip.parse("192.0.2.2")));
+
+    //// VRF settings
+    assertThat(proc.getVrfs().keySet(), contains("vrf1"));
+    BgpVrf vrf = proc.getVrfs().get("vrf1");
+    assertThat("Ensure vrf uses correct name", vrf.getVrfName(), equalTo("vrf1"));
+
+    // autonomous-system
+    assertThat("Ensure autonomous-sytem is set", vrf.getAutonomousSystem(), equalTo(65501L));
+
+    // redistribution
+    assertThat(
+        "Ensure ipv4 unicast redistribution of connected and static routes for vrf",
+        vrf.getIpv4Unicast().getRedistributionPolicies().keySet(),
+        containsInAnyOrder(CumulusRoutingProtocol.CONNECTED, CumulusRoutingProtocol.STATIC));
+    assertThat(
+        "Ensure connected redistribution policy has correct protocol for vrf",
+        vrf.getIpv4Unicast()
+            .getRedistributionPolicies()
+            .get(CumulusRoutingProtocol.CONNECTED)
+            .getProtocol(),
+        equalTo(CumulusRoutingProtocol.CONNECTED));
+    assertThat(
+        "Ensure static redistribution policy has correct protocol for vrf",
+        vrf.getIpv4Unicast()
+            .getRedistributionPolicies()
+            .get(CumulusRoutingProtocol.STATIC)
+            .getProtocol(),
+        equalTo(CumulusRoutingProtocol.STATIC));
+
+    // l2vpn evpn
+    assertThat("Ensure l2vpn evpn is enabled for vrf", vrf.getL2VpnEvpn(), notNullValue());
+    assertThat(
+        "Ensure l2vpn evpn advertise ipv4 unicast is extracted for vrf",
+        vrf.getL2VpnEvpn().getAdvertiseIpv4Unicast(),
+        notNullValue());
   }
 
   @Test
