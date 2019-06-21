@@ -64,9 +64,11 @@ import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.Ble_advertise_all_vniC
 import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.Ble_advertise_default_gwContext;
 import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.Ble_advertise_ipv4_unicastContext;
 import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.Bn_interfaceContext;
-import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.Bni_remote_as_externalContext;
-import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.Bni_remote_as_internalContext;
-import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.Bni_remote_as_numberContext;
+import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.Bn_peerContext;
+import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.Bn_peer_groupContext;
+import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.Bnp_descriptionContext;
+import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.Bnp_peer_groupContext;
+import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.Bnp_remote_asContext;
 import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.Bob_accessContext;
 import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.Bob_pvidContext;
 import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.Bob_vidsContext;
@@ -137,7 +139,9 @@ import org.batfish.representation.cumulus.BgpInterfaceNeighbor;
 import org.batfish.representation.cumulus.BgpIpv4UnicastAddressFamily;
 import org.batfish.representation.cumulus.BgpL2VpnEvpnIpv4Unicast;
 import org.batfish.representation.cumulus.BgpL2vpnEvpnAddressFamily;
+import org.batfish.representation.cumulus.BgpNeighbor;
 import org.batfish.representation.cumulus.BgpNetwork;
+import org.batfish.representation.cumulus.BgpPeerGroupNeighbor;
 import org.batfish.representation.cumulus.BgpProcess;
 import org.batfish.representation.cumulus.BgpRedistributionPolicy;
 import org.batfish.representation.cumulus.BgpVrf;
@@ -326,7 +330,7 @@ public class CumulusNcluConfigurationBuilder extends CumulusNcluParserBaseListen
   }
 
   private @Nullable CumulusNcluConfiguration _c;
-  private @Nullable BgpInterfaceNeighbor _currentBgpInterfaceNeighbor;
+  private @Nullable BgpNeighbor _currentBgpNeighbor;
   private @Nullable String _currentBgpNeighborName;
   private @Nullable BgpProcess _currentBgpProcess;
   private @Nullable BgpVrf _currentBgpVrf;
@@ -660,6 +664,11 @@ public class CumulusNcluConfigurationBuilder extends CumulusNcluParserBaseListen
   }
 
   @Override
+  public void exitB_neighbor(B_neighborContext ctx) {
+    _currentBgpNeighborName = null;
+  }
+
+  @Override
   public void enterB_vrf(B_vrfContext ctx) {
     String name = ctx.name.getText();
     if (initVrfsIfAbsent(ImmutableSet.of(name), ctx, CumulusStructureUsage.BGP_VRF).isEmpty()) {
@@ -672,6 +681,7 @@ public class CumulusNcluConfigurationBuilder extends CumulusNcluParserBaseListen
 
   @Override
   public void enterBn_interface(Bn_interfaceContext ctx) {
+    assert _currentBgpNeighborName != null;
     if (!referenceAbstractInterfaces(
         ImmutableSet.of(_currentBgpNeighborName),
         ctx,
@@ -682,10 +692,34 @@ public class CumulusNcluConfigurationBuilder extends CumulusNcluParserBaseListen
               _currentBgpNeighborName, getFullText(ctx)));
       return;
     }
-    _currentBgpInterfaceNeighbor =
+
+    assert _currentBgpVrf != null;
+    _currentBgpNeighbor =
         _currentBgpVrf
-            .getInterfaceNeighbors()
+            .getNeighbors()
             .computeIfAbsent(_currentBgpNeighborName, BgpInterfaceNeighbor::new);
+  }
+
+  @Override
+  public void exitBn_interface(Bn_interfaceContext ctx) {
+    _currentBgpNeighbor = null;
+  }
+
+  @Override
+  public void enterBn_peer(Bn_peerContext ctx) {
+    assert _currentBgpNeighborName != null;
+    assert _currentBgpVrf != null;
+    // TODO: only IP neighbors should be created here.
+    //  Peer group neighbors must have already been declared.
+    _currentBgpNeighbor =
+        _currentBgpVrf
+            .getNeighbors()
+            .computeIfAbsent(_currentBgpNeighborName, BgpPeerGroupNeighbor::new);
+  }
+
+  @Override
+  public void exitBn_peer(Bn_peerContext ctx) {
+    _currentBgpNeighbor = null;
   }
 
   @Override
@@ -787,11 +821,6 @@ public class CumulusNcluConfigurationBuilder extends CumulusNcluParserBaseListen
   }
 
   @Override
-  public void exitB_neighbor(B_neighborContext ctx) {
-    _currentBgpNeighborName = null;
-  }
-
-  @Override
   public void exitB_router_id(B_router_idContext ctx) {
     _currentBgpVrf.setRouterId(toIp(ctx.id));
   }
@@ -860,21 +889,41 @@ public class CumulusNcluConfigurationBuilder extends CumulusNcluParserBaseListen
   }
 
   @Override
-  public void exitBni_remote_as_external(Bni_remote_as_externalContext ctx) {
-    _currentBgpInterfaceNeighbor.setRemoteAsType(RemoteAsType.EXTERNAL);
-    _currentBgpInterfaceNeighbor.setRemoteAs(null);
+  public void exitBn_peer_group(Bn_peer_groupContext ctx) {
+    assert _currentBgpNeighborName != null;
+    assert _currentBgpVrf != null;
+    _currentBgpNeighbor =
+        _currentBgpVrf
+            .getNeighbors()
+            .computeIfAbsent(_currentBgpNeighborName, BgpPeerGroupNeighbor::new);
   }
 
   @Override
-  public void exitBni_remote_as_internal(Bni_remote_as_internalContext ctx) {
-    _currentBgpInterfaceNeighbor.setRemoteAsType(RemoteAsType.INTERNAL);
-    _currentBgpInterfaceNeighbor.setRemoteAs(null);
+  public void exitBnp_description(Bnp_descriptionContext ctx) {
+    assert _currentBgpNeighbor != null;
+    _currentBgpNeighbor.setDescription(ctx.text.getText());
   }
 
   @Override
-  public void exitBni_remote_as_number(Bni_remote_as_numberContext ctx) {
-    _currentBgpInterfaceNeighbor.setRemoteAsType(RemoteAsType.EXPLICIT);
-    _currentBgpInterfaceNeighbor.setRemoteAs(toLong(ctx.as));
+  public void exitBnp_peer_group(Bnp_peer_groupContext ctx) {
+    assert _currentBgpNeighbor != null;
+    _currentBgpNeighbor.setPeerGroup(ctx.name.getText());
+  }
+
+  @Override
+  public void exitBnp_remote_as(Bnp_remote_asContext ctx) {
+    assert _currentBgpNeighbor != null;
+    if (ctx.EXTERNAL() != null) {
+      _currentBgpNeighbor.setRemoteAsType(RemoteAsType.EXTERNAL);
+      _currentBgpNeighbor.setRemoteAs(null);
+    } else if (ctx.INTERNAL() != null) {
+      _currentBgpNeighbor.setRemoteAsType(RemoteAsType.INTERNAL);
+      _currentBgpNeighbor.setRemoteAs(null);
+    } else {
+      assert ctx.as != null;
+      _currentBgpNeighbor.setRemoteAsType(RemoteAsType.EXPLICIT);
+      _currentBgpNeighbor.setRemoteAs(toLong(ctx.as));
+    }
   }
 
   @Override
@@ -1266,7 +1315,7 @@ public class CumulusNcluConfigurationBuilder extends CumulusNcluParserBaseListen
     return interfaces;
   }
 
-  /** Returns already-present or newly-created {@link Vlans}s with given {@code names}. */
+  /** Returns already-present or newly-created {@link Vlan}s with given {@code names}. */
   private @Nonnull List<Vlan> initVlansIfAbsent(Set<String> names, int line) {
     return names.stream()
         .map(

@@ -156,7 +156,6 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
   }
 
   private void addInterfaceNeighbor(
-      String peerInterface,
       BgpInterfaceNeighbor neighbor,
       @Nullable Long localAs,
       BgpVrf bgpVrf,
@@ -166,7 +165,7 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
     RoutingPolicy.Builder peerExportPolicy =
         RoutingPolicy.builder()
             .setOwner(_c)
-            .setName(computeBgpPeerExportPolicyName(vrfName, peerInterface));
+            .setName(computeBgpPeerExportPolicyName(vrfName, neighbor.getName()));
 
     Conjunction peerExportConditions = new Conjunction();
     If peerExportConditional =
@@ -185,10 +184,12 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
     BgpUnnumberedPeerConfig.Builder builder =
         BgpUnnumberedPeerConfig.builder()
             .setBgpProcess(newProc)
+            .setDescription(neighbor.getDescription())
             .setExportPolicy(peerExportPolicy.build().getName())
+            .setGroup(neighbor.getPeerGroup())
             .setLocalAs(localAs)
             .setLocalIp(BGP_UNNUMBERED_IP)
-            .setPeerInterface(peerInterface)
+            .setPeerInterface(neighbor.getName())
             .setRemoteAsns(computeRemoteAsns(neighbor, localAs))
             .setSendCommunity(true);
     builder.setIpv4UnicastAddressFamily(Ipv4UnicastAddressFamily.instance());
@@ -302,7 +303,7 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
     return _bgpProcess != null
         && Stream.concat(
                 Stream.of(_bgpProcess.getDefaultVrf()), _bgpProcess.getVrfs().values().stream())
-            .flatMap(vrf -> vrf.getInterfaceNeighbors().keySet().stream())
+            .flatMap(vrf -> vrf.getNeighbors().keySet().stream())
             .anyMatch(Predicate.isEqual(ifaceName));
   }
 
@@ -378,15 +379,20 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
             bgpVrf -> {
               Long localAs = bgpVrf.getAutonomousSystem();
               bgpVrf
-                  .getInterfaceNeighbors()
+                  .getNeighbors()
                   .forEach(
-                      (peerInterface, neighbor) ->
-                          addInterfaceNeighbor(
-                              peerInterface,
-                              neighbor,
-                              localAs,
-                              bgpVrf,
-                              _c.getVrfs().get(bgpVrf.getVrfName()).getBgpProcess()));
+                      (neighborName, neighbor) -> {
+                        if (!(neighbor instanceof BgpInterfaceNeighbor)) {
+                          return;
+                        }
+                        BgpInterfaceNeighbor interfaceNeighbor = (BgpInterfaceNeighbor) neighbor;
+                        interfaceNeighbor.inheritFrom(bgpVrf.getNeighbors());
+                        addInterfaceNeighbor(
+                            interfaceNeighbor,
+                            localAs,
+                            bgpVrf,
+                            _c.getVrfs().get(bgpVrf.getVrfName()).getBgpProcess());
+                      });
             });
   }
 
