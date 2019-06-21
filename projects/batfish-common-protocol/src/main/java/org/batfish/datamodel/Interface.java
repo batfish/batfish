@@ -477,6 +477,9 @@ public final class Interface extends ComparableStructure<String> {
   /**
    * Represents a directional dependency between two interfaces. Owner of this object <b>depends
    * on</b> the interface name described by this object.
+   *
+   * <p>Note that it is important to record even mis-configured dependencies. Therefore callers may
+   * not assume that the interface named by {@link #getInterfaceName()} actually exists.
    */
   @ParametersAreNonnullByDefault
   public static final class Dependency implements Serializable {

@@ -3433,12 +3433,9 @@ public final class CiscoConfiguration extends VendorConfiguration {
           Matcher m = INTERFACE_WITH_SUBINTERFACE.matcher(iface.getName());
           if (m.matches()) {
             String parentInterfaceName = m.group(1);
-            Interface parentInterface = _interfaces.get(parentInterfaceName);
-            if (parentInterface != null) {
-              org.batfish.datamodel.Interface viIface = c.getAllInterfaces().get(ifaceName);
-              if (viIface != null) {
-                viIface.addDependency(new Dependency(parentInterfaceName, DependencyType.BIND));
-              }
+            org.batfish.datamodel.Interface viIface = c.getAllInterfaces().get(ifaceName);
+            if (viIface != null) {
+              viIface.addDependency(new Dependency(parentInterfaceName, DependencyType.BIND));
             }
           }
           // Tunnels

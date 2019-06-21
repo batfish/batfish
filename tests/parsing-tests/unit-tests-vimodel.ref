@@ -4643,7 +4643,7 @@
         "interfaces" : {
           "Ethernet6/0.0" : {
             "name" : "Ethernet6/0.0",
-            "active" : true,
+            "active" : false,
             "additionalArpIps" : {
               "class" : "org.batfish.datamodel.EmptyIpSpace"
             },
@@ -4677,7 +4677,7 @@
           },
           "Ethernet6/0.48" : {
             "name" : "Ethernet6/0.48",
-            "active" : true,
+            "active" : false,
             "additionalArpIps" : {
               "class" : "org.batfish.datamodel.EmptyIpSpace"
             },
@@ -9721,7 +9721,7 @@
           },
           "HundredGigabitEthernet0/0/0/0.2302" : {
             "name" : "HundredGigabitEthernet0/0/0/0.2302",
-            "active" : true,
+            "active" : false,
             "additionalArpIps" : {
               "class" : "org.batfish.datamodel.EmptyIpSpace"
             },
@@ -19362,7 +19362,7 @@
           },
           "HundredGigabitEthernet0/2/0/0.292" : {
             "name" : "HundredGigabitEthernet0/2/0/0.292",
-            "active" : true,
+            "active" : false,
             "additionalArpIps" : {
               "class" : "org.batfish.datamodel.EmptyIpSpace"
             },

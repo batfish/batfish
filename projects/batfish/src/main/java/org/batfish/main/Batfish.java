@@ -1921,12 +1921,15 @@ public class Batfish extends PluginConsumer implements IBatfish {
                           iface
                               .getDependencies()
                               .forEach(
-                                  dependency ->
-                                      graph.addEdge(
-                                          // Reverse edge direction to aid topological sort
-                                          dependency.getInterfaceName(),
-                                          iface.getName(),
-                                          dependency)));
+                                  dependency -> {
+                                    String depName = dependency.getInterfaceName();
+                                    if (!allInterfaces.containsKey(depName)) {
+                                      // Dependency on missing interface.
+                                      return;
+                                    }
+                                    // Reverse edge direction to aid topological sort
+                                    graph.addEdge(depName, iface.getName(), dependency);
+                                  }));
 
               // Traverse interfaces in topological order and deactivate if necessary
               for (TopologicalOrderIterator<String, Dependency> iterator =
