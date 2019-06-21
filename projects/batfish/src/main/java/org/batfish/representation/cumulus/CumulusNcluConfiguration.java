@@ -215,7 +215,7 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
         for (VniSettings vxlan : _c.getVrfs().get(bgpVrf.getVrfName()).getVniSettings().values()) {
           RouteDistinguisher rd =
               RouteDistinguisher.from(newProc.getRouterId(), vniToIndex.get(vxlan.getVni()));
-          ExtendedCommunity rt = ExtendedCommunity.target(localAs, vxlan.getVni());
+          ExtendedCommunity rt = toRouteTarget(localAs, vxlan.getVni());
           // Advertise L2 VNIs
           l2Vnis.add(
               Layer2VniConfig.builder()
@@ -238,7 +238,7 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
                       RouteDistinguisher.from(
                           _c.getVrfs().get(vrf.getName()).getBgpProcess().getRouterId(),
                           vniToIndex.get(l3Vni));
-                  ExtendedCommunity rt = ExtendedCommunity.target(localAs, l3Vni);
+                  ExtendedCommunity rt = toRouteTarget(localAs, l3Vni);
                   l3Vnis.add(
                       Layer3VniConfig.builder()
                           .setVni(l3Vni)
@@ -921,6 +921,15 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
         .map(entry -> toRoutingPolicyStatement(entry))
         .forEach(builder::addStatement);
     return builder.addStatement(Statements.ReturnFalse.toStaticStatement()).build();
+  }
+
+  /**
+   * Convert AS number and VXLAN ID to an extended route target community. If the AS number is a
+   * 4-byte as, only the lower 2 bytes are used.
+   */
+  @Nonnull
+  private ExtendedCommunity toRouteTarget(long asn, long vxlanId) {
+    return ExtendedCommunity.target(asn & 0xFFFFL, vxlanId);
   }
 
   private @Nonnull Statement toRoutingPolicyStatement(RouteMapEntry entry) {
