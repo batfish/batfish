@@ -134,8 +134,6 @@ public final class BDDFibGenerator {
 
   /**
    * Generate edges from vrf to nextVrf
-   *
-   * @param includedNode
    */
   private @Nonnull Stream<Edge> generateRules_PostInVrf_PostInVrf(
       Predicate<String> includedNode, BiFunction<String, String, StateExpr> postInVrf) {
