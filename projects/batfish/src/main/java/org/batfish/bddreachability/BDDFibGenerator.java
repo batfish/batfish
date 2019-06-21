@@ -17,9 +17,10 @@ import org.batfish.symbolic.state.StateExpr;
  * Module used to generate forwarding {@link Edge}s with configurable pre/postStates.
  *
  * <p>{@link BDDFibGenerator} encodes the network's forwarding behavior in BDDs for reachability
- * analysis. Input is the result maps from {@link ForwardingAnalysis}, with constraints converted to
- * {@link BDD}s. Forwarding behavior can be used in different ways, i.e., different parts of the
- * reachability analysis graph, so the pre/post states of the forwarding subgraph are configurable.
+ * analysis. Input is the result maps from {@link org.batfish.datamodel.ForwardingAnalysis}, with
+ * constraints converted to {@link BDD}s. Forwarding behavior can be used in different ways, i.e.,
+ * different parts of the reachability analysis graph, so the pre/post states of the forwarding
+ * subgraph are configurable.
  */
 @ParametersAreNonnullByDefault
 public final class BDDFibGenerator {
