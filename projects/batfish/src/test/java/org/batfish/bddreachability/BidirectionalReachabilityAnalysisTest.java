@@ -826,8 +826,6 @@ public final class BidirectionalReachabilityAnalysisTest {
     assertBidirAcceptSingleNode(makeFibLookupNetwork(false, false, false, false));
   }
 
-  // TODO: enable after fixing ReversePassOriginationState handling of ACCEPT
-  @Ignore
   @Test
   public void testFibLookupBidirAcceptDualNodeSingleVrf() throws IOException {
     assertBidirAcceptDualNode(makeFibLookupNetwork(true, false, false, false));
@@ -839,8 +837,6 @@ public final class BidirectionalReachabilityAnalysisTest {
     assertBidirAcceptSingleNode(makeFibLookupNetwork(false, true, false, false));
   }
 
-  // TODO: enable after fixing ReversePassOriginationState handling of ACCEPT
-  @Ignore
   @Test
   public void testFibLookupBidirAcceptDualNodeSingleVrfBlockNonSessionReverse() throws IOException {
     assertBidirAcceptDualNode(makeFibLookupNetwork(true, true, false, false));
@@ -851,8 +847,6 @@ public final class BidirectionalReachabilityAnalysisTest {
     assertBidirAcceptSingleNode(makeFibLookupNetwork(false, false, true, false));
   }
 
-  // TODO: enable after fixing ReversePassOriginationState handling of ACCEPT
-  @Ignore
   @Test
   public void testFibLookupBidirAcceptDualNodeDualVrf() throws IOException {
     assertBidirAcceptDualNode(makeFibLookupNetwork(true, false, true, false));
@@ -863,8 +857,6 @@ public final class BidirectionalReachabilityAnalysisTest {
     assertBidirReturnNoRouteSingleNode(makeFibLookupNetwork(false, false, true, true));
   }
 
-  // TODO: enable after fixing ReversePassOriginationState handling of ACCEPT
-  @Ignore
   @Test
   public void testFibLookupBidirAcceptDualNodeDualVrfMissingEgressRoute() throws IOException {
     assertBidirReturnNoRouteDualNode(makeFibLookupNetwork(true, false, true, true));
