@@ -75,5 +75,9 @@ public interface StateExprVisitor<R> {
 
   R visitPreOutVrfSession(PreOutVrfSession preOutVrfSession);
 
+  R visitPreOutVrf(PreOutVrf preOutVrf);
+
   R visitQuery();
+
+  R visitVrfAccept(VrfAccept vrfAccept);
 }

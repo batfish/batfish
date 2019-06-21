@@ -28,6 +28,7 @@ import org.batfish.symbolic.state.PreOutVrf;
 import org.batfish.symbolic.state.PreOutVrfSession;
 import org.batfish.symbolic.state.StateExpr;
 import org.batfish.symbolic.state.StateExprVisitor;
+import org.batfish.symbolic.state.VrfAccept;
 
 /**
  * Converts successful flow termination states from the forward pass of a bidirectional reachability
@@ -232,5 +233,10 @@ public class ReversePassOriginationState implements StateExprVisitor<StateExpr> 
   @Override
   public StateExpr visitPreOutVrfSession(PreOutVrfSession preOutVrfSession) {
     return null;
+  }
+
+  @Override
+  public StateExpr visitVrfAccept(VrfAccept vrfAccept) {
+    return new OriginateVrf(vrfAccept.getHostname(), vrfAccept.getVrf());
   }
 }

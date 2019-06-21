@@ -28,6 +28,7 @@ import org.batfish.symbolic.state.PreOutVrf;
 import org.batfish.symbolic.state.PreOutVrfSession;
 import org.batfish.symbolic.state.StateExpr;
 import org.batfish.symbolic.state.StateExprVisitor;
+import org.batfish.symbolic.state.VrfAccept;
 
 /**
  * For {@link StateExpr StateExprs} that correspond to points where a firewall session would get
@@ -225,6 +226,11 @@ final class SessionCreationNodeVisitor implements StateExprVisitor<NodeInterface
 
   @Override
   public NodeInterfacePair visitPreOutVrfSession(PreOutVrfSession preOutVrfSession) {
+    return null;
+  }
+
+  @Override
+  public NodeInterfacePair visitVrfAccept(VrfAccept vrfAccept) {
     return null;
   }
 }

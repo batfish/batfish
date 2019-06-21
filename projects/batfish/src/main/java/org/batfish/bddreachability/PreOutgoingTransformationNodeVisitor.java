@@ -27,6 +27,7 @@ import org.batfish.symbolic.state.PreOutInterfaceNeighborUnreachable;
 import org.batfish.symbolic.state.PreOutVrf;
 import org.batfish.symbolic.state.PreOutVrfSession;
 import org.batfish.symbolic.state.StateExprVisitor;
+import org.batfish.symbolic.state.VrfAccept;
 
 /**
  * If the input node occurs right before an outgoing transformation is applied (possibly with an
@@ -219,6 +220,11 @@ public class PreOutgoingTransformationNodeVisitor implements StateExprVisitor<No
 
   @Override
   public NodeInterfacePair visitPreOutVrfSession(PreOutVrfSession preOutVrfSession) {
+    return null;
+  }
+
+  @Override
+  public NodeInterfacePair visitVrfAccept(VrfAccept vrfAccept) {
     return null;
   }
 }
