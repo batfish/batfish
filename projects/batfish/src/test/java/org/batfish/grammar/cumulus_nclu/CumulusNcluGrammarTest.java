@@ -110,8 +110,8 @@ import org.batfish.dataplane.ibdp.IncrementalDataPlane;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
 import org.batfish.main.TestrigText;
-import org.batfish.representation.cumulus.BgpInterfaceNeighbor;
 import org.batfish.representation.cumulus.BgpL2vpnEvpnAddressFamily;
+import org.batfish.representation.cumulus.BgpNeighbor;
 import org.batfish.representation.cumulus.BgpProcess;
 import org.batfish.representation.cumulus.BgpRedistributionPolicy;
 import org.batfish.representation.cumulus.BgpVrf;
@@ -427,9 +427,9 @@ public final class CumulusNcluGrammarTest {
     // interface neighbor
     assertThat(
         "Ensure interface neighbor is extracted",
-        proc.getDefaultVrf().getInterfaceNeighbors().keySet(),
+        proc.getDefaultVrf().getNeighbors().keySet(),
         containsInAnyOrder("swp1", "swp2", "swp3"));
-    BgpInterfaceNeighbor in = proc.getDefaultVrf().getInterfaceNeighbors().get("swp1");
+    BgpNeighbor in = proc.getDefaultVrf().getNeighbors().get("swp1");
     assertThat("Ensure interface neighbor has correct name", in.getName(), equalTo("swp1"));
     assertThat(
         "Ensure interface uses correct remote-as type",
@@ -476,6 +476,28 @@ public final class CumulusNcluGrammarTest {
         "Ensure l2vpn evpn advertise ipv4 unicast is extracted for vrf",
         vrf.getL2VpnEvpn().getAdvertiseIpv4Unicast(),
         notNullValue());
+  }
+
+  @Test
+  public void testBgpPeerGroup() throws IOException {
+    Configuration c = parseConfig("cumulus_nclu_bgp_peer_group");
+    String swp1 = "swp1";
+    long internalAs = 65500L;
+
+    assertThat(c, hasDefaultVrf(hasBgpProcess(hasInterfaceNeighbors(hasKey(swp1)))));
+    org.batfish.datamodel.BgpProcess p = c.getDefaultVrf().getBgpProcess();
+    BgpUnnumberedPeerConfig i1 = p.getInterfaceNeighbors().get(swp1);
+    assertThat(i1, hasRemoteAs(equalTo(ALL_AS_NUMBERS.difference(LongSpace.of(internalAs)))));
+
+    String swp2 = "swp2";
+    assertThat(c, hasDefaultVrf(hasBgpProcess(hasInterfaceNeighbors(hasKey(swp2)))));
+    BgpUnnumberedPeerConfig i2 = p.getInterfaceNeighbors().get(swp2);
+    assertThat(i2, hasRemoteAs(internalAs));
+
+    String swp3 = "swp3";
+    assertThat(c, hasDefaultVrf(hasBgpProcess(hasInterfaceNeighbors(hasKey(swp3)))));
+    BgpUnnumberedPeerConfig i3 = p.getInterfaceNeighbors().get(swp3);
+    assertThat(i3, hasRemoteAs(17L));
   }
 
   @Test
