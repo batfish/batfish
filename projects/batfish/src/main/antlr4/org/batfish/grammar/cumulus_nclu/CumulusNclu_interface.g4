@@ -64,7 +64,7 @@ ic_backup_ip
 
 ic_peer_ip
 :
-  PEER_IP peer_ip = ip_address NEWLINE
+  PEER_IP (peer_ip = ip_address | LINK_LOCAL) NEWLINE
 ;
 
 ic_priority

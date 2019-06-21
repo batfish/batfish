@@ -1047,10 +1047,12 @@ public class CumulusNcluConfigurationBuilder extends CumulusNcluParserBaseListen
 
   @Override
   public void exitIc_peer_ip(Ic_peer_ipContext ctx) {
-    Ip peerIp = toIp(ctx.peer_ip);
+    Ip peerIp = ctx.peer_ip != null ? toIp(ctx.peer_ip) : null;
     _currentInterfaces.forEach(
         iface -> {
-          iface.getOrInitClag().setPeerIp(peerIp);
+          InterfaceClagSettings clag = iface.getOrInitClag();
+          clag.setPeerIp(peerIp);
+          clag.setPeerIpLinkLocal(ctx.LINK_LOCAL() != null);
         });
   }
 

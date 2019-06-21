@@ -256,6 +256,11 @@ LEARNING
   'learning'
 ;
 
+LINK_LOCAL
+:
+  'linklocal'
+;
+
 LO
 :
   'lo'

@@ -714,6 +714,14 @@ public final class CumulusNcluGrammarTest {
   }
 
   @Test
+  public void testClagExtranctionLinkLocalPeer() throws IOException {
+    CumulusNcluConfiguration c = parseVendorConfig("cumulus_nclu_clag_linklocal");
+
+    String ifaceName = "peerlink.4094";
+    assertTrue(c.getInterfaces().get(ifaceName).getClag().isPeerIpLinkLocal());
+  }
+
+  @Test
   public void testDnsConversion() throws IOException {
     Configuration c = parseConfig("cumulus_nclu_dns");
 
