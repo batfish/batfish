@@ -98,6 +98,7 @@ import static org.batfish.datamodel.matchers.InterfaceMatchers.hasMlagId;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasMtu;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasNativeVlan;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasOspfArea;
+import static org.batfish.datamodel.matchers.InterfaceMatchers.hasOspfAreaName;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasSpeed;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasSwitchPortEncapsulation;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasSwitchPortMode;
@@ -5048,6 +5049,21 @@ public class CiscoGrammarTest {
 
     // Confirm interface definition is tracked for the alias name
     assertThat(ccae, hasDefinedStructure(filename, INTERFACE, "ifname"));
+  }
+
+  // https://github.com/batfish/batfish/issues/4124
+  @Test
+  public void testAsaInterfaceOspfWithInheritance() throws IOException {
+    String hostname = "asa-interface-ospf";
+    Configuration c = parseConfig(hostname);
+    assertThat(
+        c,
+        hasInterface(
+            "LAB-INT",
+            allOf(
+                hasBandwidth(0.0d),
+                hasOspfAreaName(0L),
+                hasInterfaceType(InterfaceType.AGGREGATE_CHILD))));
   }
 
   @Test
