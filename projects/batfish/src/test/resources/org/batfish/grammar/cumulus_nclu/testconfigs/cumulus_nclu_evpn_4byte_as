@@ -1,0 +1,16 @@
+net del all
+#
+net add hostname cumulus_nclu_evpn_4byte_as
+#
+net add interface swp1
+net add bgp autonomous-system 65570
+net add bgp router-id 192.0.0.0
+# Neighbor
+net add bgp neighbor swp1 interface remote-as external
+net add bgp l2vpn evpn advertise-all-vni
+net add bgp l2vpn evpn neighbor swp1 activate
+# VNIs for default VRF
+net add vxlan vni70001 vxlan id 70001
+net add vxlan vni70001 vxlan local-tunnelip 192.0.2.11
+net add vxlan vni70001 bridge access 7
+

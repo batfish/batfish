@@ -2,17 +2,21 @@ package org.batfish.datamodel;
 
 import static com.google.common.base.MoreObjects.firstNonNull;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Range;
 import java.io.Serializable;
+import java.util.Collection;
+import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
 import java.util.SortedSet;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import org.batfish.datamodel.bgp.AddressFamily;
 import org.batfish.datamodel.bgp.EvpnAddressFamily;
 import org.batfish.datamodel.bgp.Ipv4UnicastAddressFamily;
 import org.batfish.datamodel.dataplane.rib.RibGroup;
@@ -353,6 +357,19 @@ public abstract class BgpPeerConfig implements Serializable {
   @Nullable
   public EvpnAddressFamily getEvpnAddressFamily() {
     return _evpnAddressFamily;
+  }
+
+  /** Return a collection of all non-null {@link AddressFamily} configs at this peer */
+  @JsonIgnore
+  public Collection<AddressFamily> getAllAddressFamilies() {
+    HashSet<AddressFamily> collection = new HashSet<>();
+    if (getIpv4UnicastAddressFamily() != null) {
+      collection.add(getIpv4UnicastAddressFamily());
+    }
+    if (getEvpnAddressFamily() != null) {
+      collection.add(getEvpnAddressFamily());
+    }
+    return ImmutableSet.copyOf(collection);
   }
 
   public void setExportPolicySources(@Nonnull SortedSet<String> exportPolicySources) {

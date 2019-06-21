@@ -156,6 +156,11 @@ DENY
   'deny'
 ;
 
+DESCRIPTION
+:
+  'description'
+;
+
 DNS
 :
   'dns'
@@ -181,6 +186,11 @@ EVPN
   'evpn'
 ;
 
+EXIT_VRF
+:
+  'exit-vrf'
+;
+
 EXTERNAL
 :
   'external'
@@ -189,6 +199,11 @@ EXTERNAL
 HOSTNAME
 :
   'hostname'
+;
+
+HWADDRESS
+:
+  'hwaddress'
 ;
 
 IBURST
@@ -244,6 +259,11 @@ L2VPN
 LEARNING
 :
   'learning'
+;
+
+LINKLOCAL
+:
+  'linklocal'
 ;
 
 LO
@@ -309,6 +329,11 @@ OFF
 ON
 :
   'on'
+;
+
+PEER_GROUP
+:
+  'peer-group'
 ;
 
 PEER_IP
@@ -818,7 +843,7 @@ F_NonWhitespaceChar
 fragment
 F_NumberedWord
 :
-  F_Word F_Uint16
+  F_Word F_Uint32
 ;
 
 fragment
@@ -843,6 +868,26 @@ F_Uint16
   | '65' [0-4] F_Digit F_Digit
   | '655' [0-2] F_Digit
   | '6553' [0-5]
+;
+
+fragment
+F_Uint32
+:
+// 0-4294967295
+  F_Digit
+  | F_PositiveDigit F_Digit F_Digit? F_Digit? F_Digit? F_Digit? F_Digit?
+  F_Digit? F_Digit? F_Digit?
+  | [1-3] F_Digit F_Digit F_Digit F_Digit F_Digit F_Digit F_Digit F_Digit
+  F_Digit
+  | '4' [0-1] F_Digit F_Digit F_Digit F_Digit F_Digit F_Digit F_Digit F_Digit
+  | '42' [0-8] F_Digit F_Digit F_Digit F_Digit F_Digit F_Digit F_Digit
+  | '429' [0-3] F_Digit F_Digit F_Digit F_Digit F_Digit F_Digit
+  | '4294' [0-8] F_Digit F_Digit F_Digit F_Digit F_Digit
+  | '42949' [0-5] F_Digit F_Digit F_Digit F_Digit
+  | '429496' [0-6] F_Digit F_Digit F_Digit
+  | '4294967' [0-1] F_Digit F_Digit
+  | '42949672' [0-8] F_Digit
+  | '429496729' [0-5]
 ;
 
 fragment
@@ -881,6 +926,11 @@ F_WordSegment
 mode M_Printf;
 
 // FRR in printf keywords
+
+M_Printf_EXIT_VRF
+:
+  'exit-vrf' -> type ( EXIT_VRF )
+;
 
 M_Printf_IP
 :

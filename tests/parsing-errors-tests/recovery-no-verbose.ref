@@ -5,7 +5,8 @@
       "parseStatus" : {
         "configs/as1r1.cfg" : "PARTIALLY_UNRECOGNIZED",
         "configs/as1r2.cfg" : "PASSED",
-        "configs/as2r1.cfg" : "PASSED"
+        "configs/as2r1.cfg" : "PASSED",
+        "configs/cumulus_nclu_range" : "PARTIALLY_UNRECOGNIZED"
       },
       "warnings" : {
         "as1r1" : {
@@ -23,6 +24,16 @@
               "Line" : 5,
               "Parser_Context" : "[if_inner s_interface stanza cisco_configuration]",
               "Text" : "ip address 10.12.11.1 255.255.255.0aaaaa:wq"
+            }
+          ]
+        },
+        "configs/cumulus_nclu_range" : {
+          "Parse warnings" : [
+            {
+              "Comment" : "This syntax is unrecognized",
+              "Line" : 6,
+              "Parser_Context" : "[uint32 glob_range_set glob a_vxlan s_net_add statement cumulus_nclu_configuration]",
+              "Text" : "net add vxlan vni4294967295-4294967296 vxlan local-tunnelip 1.1.1.1"
             }
           ]
         }

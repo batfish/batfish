@@ -156,7 +156,6 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
   }
 
   private void addInterfaceNeighbor(
-      String peerInterface,
       BgpInterfaceNeighbor neighbor,
       @Nullable Long localAs,
       BgpVrf bgpVrf,
@@ -166,7 +165,7 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
     RoutingPolicy.Builder peerExportPolicy =
         RoutingPolicy.builder()
             .setOwner(_c)
-            .setName(computeBgpPeerExportPolicyName(vrfName, peerInterface));
+            .setName(computeBgpPeerExportPolicyName(vrfName, neighbor.getName()));
 
     Conjunction peerExportConditions = new Conjunction();
     If peerExportConditional =
@@ -185,10 +184,12 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
     BgpUnnumberedPeerConfig.Builder builder =
         BgpUnnumberedPeerConfig.builder()
             .setBgpProcess(newProc)
+            .setDescription(neighbor.getDescription())
             .setExportPolicy(peerExportPolicy.build().getName())
+            .setGroup(neighbor.getPeerGroup())
             .setLocalAs(localAs)
             .setLocalIp(BGP_UNNUMBERED_IP)
-            .setPeerInterface(peerInterface)
+            .setPeerInterface(neighbor.getName())
             .setRemoteAsns(computeRemoteAsns(neighbor, localAs))
             .setSendCommunity(true);
     builder.setIpv4UnicastAddressFamily(Ipv4UnicastAddressFamily.instance());
@@ -215,7 +216,7 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
         for (VniSettings vxlan : _c.getVrfs().get(bgpVrf.getVrfName()).getVniSettings().values()) {
           RouteDistinguisher rd =
               RouteDistinguisher.from(newProc.getRouterId(), vniToIndex.get(vxlan.getVni()));
-          ExtendedCommunity rt = ExtendedCommunity.target(localAs, vxlan.getVni());
+          ExtendedCommunity rt = toRouteTarget(localAs, vxlan.getVni());
           // Advertise L2 VNIs
           l2Vnis.add(
               Layer2VniConfig.builder()
@@ -238,7 +239,7 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
                       RouteDistinguisher.from(
                           _c.getVrfs().get(vrf.getName()).getBgpProcess().getRouterId(),
                           vniToIndex.get(l3Vni));
-                  ExtendedCommunity rt = ExtendedCommunity.target(localAs, l3Vni);
+                  ExtendedCommunity rt = toRouteTarget(localAs, l3Vni);
                   l3Vnis.add(
                       Layer3VniConfig.builder()
                           .setVni(l3Vni)
@@ -302,7 +303,7 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
     return _bgpProcess != null
         && Stream.concat(
                 Stream.of(_bgpProcess.getDefaultVrf()), _bgpProcess.getVrfs().values().stream())
-            .flatMap(vrf -> vrf.getInterfaceNeighbors().keySet().stream())
+            .flatMap(vrf -> vrf.getNeighbors().keySet().stream())
             .anyMatch(Predicate.isEqual(ifaceName));
   }
 
@@ -378,15 +379,20 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
             bgpVrf -> {
               Long localAs = bgpVrf.getAutonomousSystem();
               bgpVrf
-                  .getInterfaceNeighbors()
+                  .getNeighbors()
                   .forEach(
-                      (peerInterface, neighbor) ->
-                          addInterfaceNeighbor(
-                              peerInterface,
-                              neighbor,
-                              localAs,
-                              bgpVrf,
-                              _c.getVrfs().get(bgpVrf.getVrfName()).getBgpProcess()));
+                      (neighborName, neighbor) -> {
+                        if (!(neighbor instanceof BgpInterfaceNeighbor)) {
+                          return;
+                        }
+                        BgpInterfaceNeighbor interfaceNeighbor = (BgpInterfaceNeighbor) neighbor;
+                        interfaceNeighbor.inheritFrom(bgpVrf.getNeighbors());
+                        addInterfaceNeighbor(
+                            interfaceNeighbor,
+                            localAs,
+                            bgpVrf,
+                            _c.getVrfs().get(bgpVrf.getVrfName()).getBgpProcess());
+                      });
             });
   }
 
@@ -921,6 +927,19 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
         .map(entry -> toRoutingPolicyStatement(entry))
         .forEach(builder::addStatement);
     return builder.addStatement(Statements.ReturnFalse.toStaticStatement()).build();
+  }
+
+  /**
+   * Convert AS number and VXLAN ID to an extended route target community. If the AS number is a
+   * 4-byte as, only the lower 2 bytes are used.
+   *
+   * <p>See <a
+   * href="https://docs.cumulusnetworks.com/display/DOCS/Ethernet+Virtual+Private+Network+-+EVPN#EthernetVirtualPrivateNetwork-EVPN-RD-auto-derivationAuto-derivationofRDsandRTs">
+   * cumulus documentation</a> for detailed explanation.
+   */
+  @Nonnull
+  private ExtendedCommunity toRouteTarget(long asn, long vxlanId) {
+    return ExtendedCommunity.target(asn & 0xFFFFL, vxlanId);
   }
 
   private @Nonnull Statement toRoutingPolicyStatement(RouteMapEntry entry) {

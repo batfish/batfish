@@ -9,6 +9,10 @@ net add bgp l2vpn evpn  advertise-all-vni
 net add bgp l2vpn evpn  advertise-default-gw
 net add bgp l2vpn evpn  advertise ipv4 unicast
 net add bgp l2vpn evpn  neighbor swp1 activate
+net add bgp neighbor GROUP peer-group
+net add bgp neighbor GROUP description Some peer group
+net add bgp neighbor GROUP remote-as internal
+net add bgp neighbor swp3 interface peer-group GROUP
 net add bgp neighbor swp1 interface remote-as external
 net add bgp neighbor swp2 interface remote-as internal
 net add bgp neighbor swp3 interface remote-as 65000
@@ -69,6 +73,7 @@ net add vlan 4 ip address-virtual 01:23:45:67:89:ab 192.168.0.1/24
 net add vlan 4 vlan-id 4
 net add vlan 4 vlan-raw-device bridge
 net add vlan 4 vrf vrf1
+net add vlan 4 hwaddress 44:44:44:FF:FF:FF
 net add vrf mgmt
 net add vrf mgmt ip address 10.0.0.2/8
 net add vrf vrf1 vni 10001
@@ -82,6 +87,7 @@ net add vxlan vni10001,10002-10003 stp portbpdufilter
 net add vxlan vni10001,10002-10003 vxlan local-tunnelip 192.0.2.10
 net add vxlan vni10004 vxlan id 10004
 net add vxlan vni10004 vxlan local-tunnelip 192.0.2.10
+net add vxlan vni70004-70007 vxlan local-tunnelip 192.0.2.10
 net commit
 
 # The following will append those commands to the appropriate files.
@@ -89,3 +95,4 @@ net commit
 # ========================================================================
 sudo sh -c "printf 'username cumulus nopassword\n' >> /etc/frr/frr.conf"
 sudo sh -c "printf 'vrf vrf1\n  ip route 0.0.0.0/0 192.0.2.1\n' >> /etc/frr/frr.conf"
+sudo sh -c "printf 'vrf vrf1\n exit-vrf\n' >> /etc/frr/frr.conf"

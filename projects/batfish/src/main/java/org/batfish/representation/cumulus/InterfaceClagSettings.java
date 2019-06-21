@@ -14,6 +14,7 @@ public final class InterfaceClagSettings implements Serializable {
   private @Nullable Ip _backupIp;
   private @Nullable String _backupIpVrf;
   private @Nullable Ip _peerIp;
+  private boolean _peerIpLinkLocal;
   private @Nullable Integer _priority;
   private @Nullable MacAddress _sysMac;
 
@@ -27,6 +28,10 @@ public final class InterfaceClagSettings implements Serializable {
 
   public @Nullable Ip getPeerIp() {
     return _peerIp;
+  }
+
+  public boolean isPeerIpLinkLocal() {
+    return _peerIpLinkLocal;
   }
 
   public @Nullable Integer getPriority() {
@@ -47,6 +52,10 @@ public final class InterfaceClagSettings implements Serializable {
 
   public void setPeerIp(@Nullable Ip peerIp) {
     _peerIp = peerIp;
+  }
+
+  public void setPeerIpLinkLocal(boolean peerIpLinkLocal) {
+    _peerIpLinkLocal = peerIpLinkLocal;
   }
 
   public void setPriority(@Nullable Integer priority) {

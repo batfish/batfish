@@ -689,13 +689,15 @@ public class Batfish extends PluginConsumer implements IBatfish {
               /*
               Bandwidth for aggregate child interfaces (e.g. units) should be inherited from parent.
               */
-              iface.getDependencies().stream()
-                  .filter(d -> d.getType() == DependencyType.BIND)
-                  .findFirst()
-                  .map(Dependency::getInterfaceName)
-                  .map(interfaces::get)
-                  .map(Interface::getBandwidth)
-                  .ifPresent(iface::setBandwidth);
+              double bandwidth =
+                  iface.getDependencies().stream()
+                      .filter(d -> d.getType() == DependencyType.BIND)
+                      .findFirst()
+                      .map(Dependency::getInterfaceName)
+                      .map(interfaces::get)
+                      .map(Interface::getBandwidth)
+                      .orElse(0.0);
+              iface.setBandwidth(bandwidth);
             });
   }
 
