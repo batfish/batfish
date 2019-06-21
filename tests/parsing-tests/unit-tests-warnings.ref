@@ -562,189 +562,189 @@
       },
       {
         "Filename" : "configs/cumulus_nclu",
-        "Line" : 29,
+        "Line" : 33,
         "Text" : "vlan-aware",
         "Parser_Context" : "[brbr_vlan_aware bridge_bridge a_bridge s_net_add statement cumulus_nclu_configuration]",
         "Comment" : "This feature is not currently supported"
       },
       {
         "Filename" : "configs/cumulus_nclu",
-        "Line" : 32,
+        "Line" : 36,
         "Text" : "dot1x eap-reauth-period 0",
         "Parser_Context" : "[a_dot1x s_net_add statement cumulus_nclu_configuration]",
         "Comment" : "This feature is not currently supported"
       },
       {
         "Filename" : "configs/cumulus_nclu",
-        "Line" : 33,
+        "Line" : 37,
         "Text" : "dot1x mab-activation-delay 30",
         "Parser_Context" : "[a_dot1x s_net_add statement cumulus_nclu_configuration]",
         "Comment" : "This feature is not currently supported"
       },
       {
         "Filename" : "configs/cumulus_nclu",
-        "Line" : 34,
+        "Line" : 38,
         "Text" : "dot1x radius accounting-port 1234",
         "Parser_Context" : "[a_dot1x s_net_add statement cumulus_nclu_configuration]",
         "Comment" : "This feature is not currently supported"
       },
       {
         "Filename" : "configs/cumulus_nclu",
-        "Line" : 35,
+        "Line" : 39,
         "Text" : "dot1x radius authentication-port 2345",
         "Parser_Context" : "[a_dot1x s_net_add statement cumulus_nclu_configuration]",
         "Comment" : "This feature is not currently supported"
       },
       {
         "Filename" : "configs/cumulus_nclu",
-        "Line" : 49,
+        "Line" : 53,
         "Text" : "ptp global domain-number 0",
         "Parser_Context" : "[a_ptp s_net_add statement cumulus_nclu_configuration]",
         "Comment" : "This feature is not currently supported"
       },
       {
         "Filename" : "configs/cumulus_nclu",
-        "Line" : 50,
+        "Line" : 54,
         "Text" : "ptp global logging-level 5",
         "Parser_Context" : "[a_ptp s_net_add statement cumulus_nclu_configuration]",
         "Comment" : "This feature is not currently supported"
       },
       {
         "Filename" : "configs/cumulus_nclu",
-        "Line" : 51,
+        "Line" : 55,
         "Text" : "ptp global path-trace-enabled no",
         "Parser_Context" : "[a_ptp s_net_add statement cumulus_nclu_configuration]",
         "Comment" : "This feature is not currently supported"
       },
       {
         "Filename" : "configs/cumulus_nclu",
-        "Line" : 52,
+        "Line" : 56,
         "Text" : "ptp global priority1 255",
         "Parser_Context" : "[a_ptp s_net_add statement cumulus_nclu_configuration]",
         "Comment" : "This feature is not currently supported"
       },
       {
         "Filename" : "configs/cumulus_nclu",
-        "Line" : 53,
+        "Line" : 57,
         "Text" : "ptp global slave-only no",
         "Parser_Context" : "[a_ptp s_net_add statement cumulus_nclu_configuration]",
         "Comment" : "This feature is not currently supported"
       },
       {
         "Filename" : "configs/cumulus_nclu",
-        "Line" : 54,
+        "Line" : 58,
         "Text" : "ptp global summary-interval 0",
         "Parser_Context" : "[a_ptp s_net_add statement cumulus_nclu_configuration]",
         "Comment" : "This feature is not currently supported"
       },
       {
         "Filename" : "configs/cumulus_nclu",
-        "Line" : 55,
+        "Line" : 59,
         "Text" : "ptp global time-stamping",
         "Parser_Context" : "[a_ptp s_net_add statement cumulus_nclu_configuration]",
         "Comment" : "This feature is not currently supported"
       },
       {
         "Filename" : "configs/cumulus_nclu",
-        "Line" : 56,
+        "Line" : 60,
         "Text" : "ptp global use-syslog yes",
         "Parser_Context" : "[a_ptp s_net_add statement cumulus_nclu_configuration]",
         "Comment" : "This feature is not currently supported"
       },
       {
         "Filename" : "configs/cumulus_nclu",
-        "Line" : 57,
+        "Line" : 61,
         "Text" : "ptp global verbose no",
         "Parser_Context" : "[a_ptp s_net_add statement cumulus_nclu_configuration]",
         "Comment" : "This feature is not currently supported"
       },
       {
         "Filename" : "configs/cumulus_nclu",
-        "Line" : 58,
+        "Line" : 62,
         "Text" : "defaults datacenter",
         "Parser_Context" : "[r_defaults_datacenter a_routing s_net_add statement cumulus_nclu_configuration]",
         "Comment" : "This feature is not currently supported"
       },
       {
         "Filename" : "configs/cumulus_nclu",
-        "Line" : 59,
+        "Line" : 63,
         "Text" : "log syslog informational",
         "Parser_Context" : "[r_log a_routing s_net_add statement cumulus_nclu_configuration]",
         "Comment" : "This feature is not currently supported"
       },
       {
         "Filename" : "configs/cumulus_nclu",
-        "Line" : 62,
+        "Line" : 66,
         "Text" : "service integrated-vtysh-config",
         "Parser_Context" : "[r_service_integrated_vtysh_config a_routing s_net_add statement cumulus_nclu_configuration]",
         "Comment" : "This feature is not currently supported"
       },
       {
         "Filename" : "configs/cumulus_nclu",
-        "Line" : 63,
+        "Line" : 67,
         "Text" : "snmp-server listening-address localhost",
         "Parser_Context" : "[a_snmp_server s_net_add statement cumulus_nclu_configuration]",
         "Comment" : "This feature is not currently supported"
       },
       {
         "Filename" : "configs/cumulus_nclu",
-        "Line" : 64,
+        "Line" : 68,
         "Text" : "time ntp server 0.pool.ntp.example.com iburst",
         "Parser_Context" : "[a_time s_net_add statement cumulus_nclu_configuration]",
         "Comment" : "This feature is not currently supported"
       },
       {
         "Filename" : "configs/cumulus_nclu",
-        "Line" : 65,
+        "Line" : 69,
         "Text" : "time ntp source eth0",
         "Parser_Context" : "[a_time s_net_add statement cumulus_nclu_configuration]",
         "Comment" : "This feature is not currently supported"
       },
       {
         "Filename" : "configs/cumulus_nclu",
-        "Line" : 66,
+        "Line" : 70,
         "Text" : "time zone Etc/UTC",
         "Parser_Context" : "[a_time s_net_add statement cumulus_nclu_configuration]",
         "Comment" : "This feature is not currently supported"
       },
       {
         "Filename" : "configs/cumulus_nclu",
-        "Line" : 70,
+        "Line" : 74,
         "Text" : "vlan-raw-device bridge",
         "Parser_Context" : "[v_vlan_raw_device a_vlan s_net_add statement cumulus_nclu_configuration]",
         "Comment" : "This feature is not currently supported"
       },
       {
         "Filename" : "configs/cumulus_nclu",
-        "Line" : 79,
+        "Line" : 83,
         "Text" : "arp-nd-suppress on",
         "Parser_Context" : "[vxb_arp_nd_suppress vx_bridge a_vxlan s_net_add statement cumulus_nclu_configuration]",
         "Comment" : "This feature is not currently supported"
       },
       {
         "Filename" : "configs/cumulus_nclu",
-        "Line" : 80,
+        "Line" : 84,
         "Text" : "learning off",
         "Parser_Context" : "[vxb_learning vx_bridge a_vxlan s_net_add statement cumulus_nclu_configuration]",
         "Comment" : "This feature is not currently supported"
       },
       {
         "Filename" : "configs/cumulus_nclu",
-        "Line" : 81,
+        "Line" : 85,
         "Text" : "stp bpduguard",
         "Parser_Context" : "[vx_stp a_vxlan s_net_add statement cumulus_nclu_configuration]",
         "Comment" : "This feature is not currently supported"
       },
       {
         "Filename" : "configs/cumulus_nclu",
-        "Line" : 82,
+        "Line" : 86,
         "Text" : "stp portbpdufilter",
         "Parser_Context" : "[vx_stp a_vxlan s_net_add statement cumulus_nclu_configuration]",
         "Comment" : "This feature is not currently supported"
       },
       {
         "Filename" : "configs/cumulus_nclu",
-        "Line" : 92,
+        "Line" : 96,
         "Text" : "username cumulus nopassword\\n",
         "Parser_Context" : "[frr_username s_extra_configuration statement cumulus_nclu_configuration]",
         "Comment" : "This feature is not currently supported"

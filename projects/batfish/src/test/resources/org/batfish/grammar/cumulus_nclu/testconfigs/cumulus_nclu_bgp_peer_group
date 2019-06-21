@@ -1,0 +1,15 @@
+net del all
+#
+net add hostname cumulus_nclu_bgp_peer_group
+#
+net add bgp autonomous-system 65500
+net add bgp neighbor GROUP peer-group
+net add bgp neighbor GROUP remote-as external
+net add bgp neighbor swp1 interface peer-group GROUP
+net add bgp neighbor swp2 interface peer-group GROUP
+net add bgp neighbor swp2 interface remote-as internal
+net add bgp neighbor swp3 interface peer-group GROUP
+net add bgp neighbor swp3 interface remote-as 17
+net add bgp router-id 192.0.2.2
+#
+net commit

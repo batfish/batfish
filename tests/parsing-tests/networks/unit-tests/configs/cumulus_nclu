@@ -9,6 +9,10 @@ net add bgp l2vpn evpn  advertise-all-vni
 net add bgp l2vpn evpn  advertise-default-gw
 net add bgp l2vpn evpn  advertise ipv4 unicast
 net add bgp l2vpn evpn  neighbor swp1 activate
+net add bgp neighbor GROUP peer-group
+net add bgp neighbor GROUP description Some peer group
+net add bgp neighbor GROUP remote-as internal
+net add bgp neighbor swp3 interface peer-group GROUP
 net add bgp neighbor swp1 interface remote-as external
 net add bgp neighbor swp2 interface remote-as internal
 net add bgp neighbor swp3 interface remote-as 65000
