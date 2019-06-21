@@ -80,6 +80,7 @@ import org.batfish.datamodel.BumTransportMethod;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConnectedRoute;
+import org.batfish.datamodel.Edge;
 import org.batfish.datamodel.IntegerSpace;
 import org.batfish.datamodel.Interface.Dependency;
 import org.batfish.datamodel.Interface.DependencyType;
@@ -101,6 +102,7 @@ import org.batfish.datamodel.bgp.Layer3VniConfig;
 import org.batfish.datamodel.bgp.RouteDistinguisher;
 import org.batfish.datamodel.bgp.VniConfig;
 import org.batfish.datamodel.bgp.community.ExtendedCommunity;
+import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.matchers.VniSettingsMatchers;
 import org.batfish.datamodel.routing_policy.Environment;
 import org.batfish.datamodel.routing_policy.Environment.Direction;
@@ -719,6 +721,31 @@ public final class CumulusNcluGrammarTest {
 
     String ifaceName = "peerlink.4094";
     assertTrue(c.getInterfaces().get(ifaceName).getClag().isPeerIpLinkLocal());
+  }
+
+  @Test
+  public void testClagConversionLinkLocalPeer() throws IOException {
+    final String testrigName = "clag-linklocal-peering";
+    final String node1 = "n1";
+    final String node2 = "n2";
+    final String peerlink = "peerlink.4094";
+    Batfish batfish =
+        BatfishTestUtils.getBatfishFromTestrigText(
+            TestrigText.builder()
+                .setConfigurationText(TESTRIGS_PREFIX + testrigName, ImmutableSet.of(node1, node2))
+                .setLayer1TopologyText(TESTRIGS_PREFIX + testrigName)
+                .build(),
+            _folder);
+
+    // Expect an l3 edge to come up on the peer link interface
+    Edge edge =
+        new Edge(new NodeInterfacePair(node1, peerlink), new NodeInterfacePair(node2, peerlink));
+    assertThat(
+        batfish
+            .getTopologyProvider()
+            .getInitialLayer3Topology(batfish.getNetworkSnapshot())
+            .getEdges(),
+        containsInAnyOrder(edge, edge.reverse()));
   }
 
   @Test

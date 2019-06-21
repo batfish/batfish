@@ -71,6 +71,7 @@ public final class InterfaceClagSettings implements Serializable {
         .setBackupIp(_backupIp)
         .setBackupIpVrf(_backupIpVrf)
         .setPeerIp(_peerIp)
+        .setPeerLinkLocal(_peerIpLinkLocal)
         .setPriority(_priority)
         .setSysMac(_sysMac)
         .build();
