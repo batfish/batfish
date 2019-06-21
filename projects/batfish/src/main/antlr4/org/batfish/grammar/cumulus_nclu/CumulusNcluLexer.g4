@@ -156,6 +156,11 @@ DENY
   'deny'
 ;
 
+DESCRIPTION
+:
+  'description'
+;
+
 DNS
 :
   'dns'
@@ -324,6 +329,11 @@ OFF
 ON
 :
   'on'
+;
+
+PEER_GROUP
+:
+  'peer-group'
 ;
 
 PEER_IP
