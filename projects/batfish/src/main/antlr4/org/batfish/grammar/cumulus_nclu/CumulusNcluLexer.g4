@@ -256,7 +256,7 @@ LEARNING
   'learning'
 ;
 
-LINK_LOCAL
+LINKLOCAL
 :
   'linklocal'
 ;

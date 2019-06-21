@@ -1052,7 +1052,7 @@ public class CumulusNcluConfigurationBuilder extends CumulusNcluParserBaseListen
         iface -> {
           InterfaceClagSettings clag = iface.getOrInitClag();
           clag.setPeerIp(peerIp);
-          clag.setPeerIpLinkLocal(ctx.LINK_LOCAL() != null);
+          clag.setPeerIpLinkLocal(ctx.LINKLOCAL() != null);
         });
   }
 
