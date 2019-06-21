@@ -926,6 +926,10 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
   /**
    * Convert AS number and VXLAN ID to an extended route target community. If the AS number is a
    * 4-byte as, only the lower 2 bytes are used.
+   *
+   * <p>See <a
+   * href="https://docs.cumulusnetworks.com/display/DOCS/Ethernet+Virtual+Private+Network+-+EVPN#EthernetVirtualPrivateNetwork-EVPN-RD-auto-derivationAuto-derivationofRDsandRTs">
+   * cumulus documentation</a> for detailed explanation.
    */
   @Nonnull
   private ExtendedCommunity toRouteTarget(long asn, long vxlanId) {
