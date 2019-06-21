@@ -39,10 +39,10 @@ public final class FirewallSessionTraceInfo {
       return false;
     }
     FirewallSessionTraceInfo that = (FirewallSessionTraceInfo) o;
-    return Objects.equals(_hostname, that._hostname)
-        && Objects.equals(_incomingInterfaces, that._incomingInterfaces)
-        && Objects.equals(_action, that._action)
-        && Objects.equals(_sessionFlows, that._sessionFlows)
+    return _hostname.equals(that._hostname)
+        && _incomingInterfaces.equals(that._incomingInterfaces)
+        && _action.equals(that._action)
+        && _sessionFlows.equals(that._sessionFlows)
         && Objects.equals(_transformation, that._transformation);
   }
 

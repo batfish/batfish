@@ -7,7 +7,6 @@ import static org.batfish.bddreachability.TestNetworkSources.ORIGINATING_FROM_DE
 import static org.batfish.bddreachability.TestNetworkSources.PEER_IFACE_NAME;
 import static org.batfish.bddreachability.TestNetworkSources.PEER_NAME;
 import static org.batfish.bddreachability.TestNetworkSources.VRF_NAME;
-import static org.batfish.bddreachability.transition.Transitions.compose;
 import static org.batfish.bddreachability.transition.Transitions.constraint;
 import static org.batfish.bddreachability.transition.Transitions.removeSourceConstraint;
 import static org.hamcrest.Matchers.equalTo;
@@ -210,12 +209,12 @@ public class BDDReachabilityAnalysisFactorySourcesTest {
    * forward direction.
    */
   @Test
-  public void postInVrf_NodeAccept() {
-    // PostInVrf -> NodeAccept edge.
+  public void nodeAccept_Accept() {
+    // NodeAccept -> Accept edge.
     Transition transition =
-        edges.get(new PostInVrf(CONFIG_NAME, VRF_NAME)).get(new NodeAccept(CONFIG_NAME));
-    BDD headerSpaceBdd = factory.getVrfAcceptBDDs().get(CONFIG_NAME).get(VRF_NAME);
-    assertEquals(transition, compose(constraint(headerSpaceBdd), removeSourceConstraint(srcMgr)));
+        edges.get(new NodeAccept(CONFIG_NAME)).get(org.batfish.symbolic.state.Accept.INSTANCE);
+
+    assertThat(transition, equalTo(removeSourceConstraint(srcMgr)));
   }
 
   @Test

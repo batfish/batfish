@@ -10,7 +10,7 @@ public class IsInstanceThat<SuperT, SubT extends SuperT> extends TypeSafeDiagnos
 
   private final Matcher<? super SubT> _subMatcher;
 
-  IsInstanceThat(Class<SubT> clazz, Matcher<? super SubT> subMatcher) {
+  public IsInstanceThat(Class<SubT> clazz, Matcher<? super SubT> subMatcher) {
     _class = clazz;
     _subMatcher = subMatcher;
   }

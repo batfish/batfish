@@ -9,6 +9,7 @@ import static org.batfish.bddreachability.transition.Transitions.removeLastHopCo
 import static org.batfish.bddreachability.transition.Transitions.removeSourceConstraint;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Streams;
 import java.util.Collection;
@@ -16,6 +17,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
+import java.util.Set;
 import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
@@ -29,12 +31,23 @@ import org.batfish.common.bdd.BDDPacket;
 import org.batfish.common.bdd.BDDSourceManager;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.FirewallSessionInterfaceInfo;
+import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.collections.NodeInterfacePair;
+import org.batfish.datamodel.flow.Accept;
+import org.batfish.datamodel.flow.FibLookup;
+import org.batfish.datamodel.flow.ForwardOutInterface;
+import org.batfish.datamodel.flow.SessionAction;
+import org.batfish.datamodel.visitors.SessionActionVisitor;
 import org.batfish.symbolic.state.NodeAccept;
 import org.batfish.symbolic.state.NodeDropAclIn;
 import org.batfish.symbolic.state.NodeDropAclOut;
 import org.batfish.symbolic.state.NodeInterfaceDeliveredToSubnet;
+import org.batfish.symbolic.state.NodeInterfaceExitsNetwork;
+import org.batfish.symbolic.state.NodeInterfaceInsufficientInfo;
+import org.batfish.symbolic.state.NodeInterfaceNeighborUnreachable;
+import org.batfish.symbolic.state.PostInVrfSession;
 import org.batfish.symbolic.state.PreInInterface;
+import org.batfish.symbolic.state.PreOutVrfSession;
 import org.batfish.symbolic.state.StateExpr;
 
 /**
@@ -78,7 +91,8 @@ public class SessionInstrumentation {
       LastHopOutgoingInterfaceManager lastHopMgr,
       Map<String, Map<String, Supplier<BDD>>> filterBdds,
       Stream<Edge> originalEdges,
-      Map<String, List<BDDFirewallSessionTraceInfo>> initializedSessions) {
+      Map<String, List<BDDFirewallSessionTraceInfo>> initializedSessions,
+      BDDFibGenerator bddFibGenerator) {
     SessionInstrumentation instrumentation =
         new SessionInstrumentation(bddPacket, configs, srcMgrs, lastHopMgr, filterBdds);
     Stream<Edge> newEdges = instrumentation.computeNewEdges(initializedSessions);
@@ -90,8 +104,40 @@ public class SessionInstrumentation {
     Stream<Edge> instrumentedEdges =
         constrainOutEdges(
             originalEdges, computeNonSessionPreInInterfaceOutEdgeConstraints(initializedSessions));
+    Stream<Edge> sessionFibLookupEdges =
+        computeSessionFibLookupSubgraph(initializedSessions, bddFibGenerator);
 
-    return Stream.concat(newEdges, instrumentedEdges);
+    return Streams.concat(newEdges, instrumentedEdges, sessionFibLookupEdges);
+  }
+
+  @Nonnull
+  @VisibleForTesting
+  static Stream<Edge> computeSessionFibLookupSubgraph(
+      Map<String, List<BDDFirewallSessionTraceInfo>> initializedSessions,
+      BDDFibGenerator bddFibGenerator) {
+    Set<String> nodesWithSessionFibLookup = computeNodesWithFibLookup(initializedSessions);
+    return bddFibGenerator.generateForwardingEdges(
+        nodesWithSessionFibLookup::contains,
+        PostInVrfSession::new,
+        (host1, iface1, host2, iface2) -> new PreInInterface(host2, iface2),
+        PreOutVrfSession::new,
+        NodeInterfaceDeliveredToSubnet::new,
+        NodeInterfaceExitsNetwork::new,
+        NodeInterfaceInsufficientInfo::new,
+        NodeInterfaceNeighborUnreachable::new);
+  }
+
+  @Nonnull
+  private static Set<String> computeNodesWithFibLookup(
+      Map<String, List<BDDFirewallSessionTraceInfo>> initializedSessions) {
+    return initializedSessions.entrySet().stream()
+        .filter(
+            initializedSessionsEntry ->
+                initializedSessionsEntry.getValue().stream()
+                    .map(BDDFirewallSessionTraceInfo::getAction)
+                    .anyMatch(FibLookup.class::isInstance))
+        .map(Entry::getKey)
+        .collect(ImmutableSet.toImmutableSet());
   }
 
   /** For each input edge, apply an additional constraint from the map if any. */
@@ -155,40 +201,104 @@ public class SessionInstrumentation {
     return Streams.concat(
         computeNewSuccessEdges(sessionInfo),
         nodeDropAclInEdges(sessionInfo),
-        nodeDropAclOutEdges(sessionInfo));
+        nodeDropAclOutEdges(sessionInfo),
+        postInVrfSessionEdges(sessionInfo));
   }
 
   @Nonnull
   private Stream<Edge> computeNewSuccessEdges(BDDFirewallSessionTraceInfo sessionInfo) {
-    String outIface = sessionInfo.getOutgoingInterface();
+    return sessionInfo
+        .getAction()
+        .accept(
+            new SessionActionVisitor<Stream<Edge>>() {
+              @Override
+              public Stream<Edge> visitAcceptVrf(Accept acceptVrf) {
+                // The forward flow originated from the device, so the session delivers it to the
+                // device.
+                return nodeAcceptEdges(sessionInfo);
+              }
 
-    NodeInterfacePair nextHop = sessionInfo.getNextHop();
+              @Override
+              public Stream<Edge> visitFibLookup(FibLookup fibLookup) {
+                // Handled elsewhere via subgraph copy+transform
+                return Stream.of();
+              }
 
-    if (outIface == null) {
-      // The forward flow originated from the device, so the session delivers it to the device.
-      return nodeAcceptEdges(sessionInfo);
-    } else if (nextHop == null) {
-      /* Forward query started with OriginateInterfaceLink(hostname, outIface). As long as the
-       * return flow reaches that interface link, we don't care what it's disposition might be.
-       * In every case we say the flow is successfully returned to the origination point. So we can
-       * use any disposition state for that interface link, and choose DELIVERED_TO_SUBNET
-       * arbitrarily.
-       */
-      return nodeInterfaceDeliveredToSubnetEdges(sessionInfo);
-    } else {
-      return preInInterfaceEdges(sessionInfo);
-    }
+              @Override
+              public Stream<Edge> visitForwardOutInterface(
+                  ForwardOutInterface forwardOutInterface) {
+                if (forwardOutInterface.getNextHop() == null) {
+                  /* Forward query started with OriginateInterfaceLink(hostname, outIface). As long as the
+                   * return flow reaches that interface link, we don't care what it's disposition might be.
+                   * In every case we say the flow is successfully returned to the origination point. So we can
+                   * use any disposition state for that interface link, and choose DELIVERED_TO_SUBNET
+                   * arbitrarily.
+                   */
+                  return nodeInterfaceDeliveredToSubnetEdges(sessionInfo);
+                } else {
+                  return preInInterfaceEdges(sessionInfo);
+                }
+              }
+            });
+  }
+
+  /** Produce PreInInterface->PostInVrfSession edges conditioned on sessionFlows BDD */
+  private Stream<Edge> computePostInVrfSessionEdges(BDDFirewallSessionTraceInfo sessionInfo) {
+    // sanity check
+    assert sessionInfo.getAction() instanceof FibLookup;
+
+    String hostname = sessionInfo.getHostname();
+    BDD sessionFlows = sessionInfo.getSessionFlows();
+    Map<String, Interface> ifaces = _configs.get(hostname).getAllInterfaces();
+    return sessionInfo.getIncomingInterfaces().stream()
+        .map(
+            incomingInterface ->
+                new Edge(
+                    new PreInInterface(hostname, incomingInterface),
+                    new PostInVrfSession(
+                        hostname, ifaces.get(incomingInterface).getVrf().getName()),
+                    sessionFlows));
+  }
+
+  @Nonnull
+  @VisibleForTesting
+  Stream<Edge> postInVrfSessionEdges(BDDFirewallSessionTraceInfo sessionInfo) {
+    return sessionInfo
+        .getAction()
+        .accept(
+            new SessionActionVisitor<Stream<Edge>>() {
+              @Override
+              public Stream<Edge> visitAcceptVrf(Accept acceptVrf) {
+                return Stream.of();
+              }
+
+              @Override
+              public Stream<Edge> visitFibLookup(FibLookup fibLookup) {
+                return computePostInVrfSessionEdges(sessionInfo);
+              }
+
+              @Override
+              public Stream<Edge> visitForwardOutInterface(
+                  ForwardOutInterface forwardOutInterface) {
+                return Stream.of();
+              }
+            });
   }
 
   @VisibleForTesting
   Stream<Edge> preInInterfaceEdges(BDDFirewallSessionTraceInfo sessionInfo) {
-    checkArgument(
-        sessionInfo.getOutgoingInterface() != null && sessionInfo.getNextHop() != null,
-        "Not a PreInInterface session");
+    SessionAction action = sessionInfo.getAction();
 
+    // sanity check
+    assert action instanceof ForwardOutInterface;
+
+    ForwardOutInterface forwardOutInterface = (ForwardOutInterface) action;
+    NodeInterfacePair nextHop = forwardOutInterface.getNextHop();
+
+    checkArgument(nextHop != null, "Not a PreInInterface session");
+
+    String outIface = forwardOutInterface.getOutgoingInterface();
     String hostname = sessionInfo.getHostname();
-    String outIface = sessionInfo.getOutgoingInterface();
-    NodeInterfacePair nextHop = sessionInfo.getNextHop();
     BDDSourceManager srcMgr = _srcMgrs.get(hostname);
     StateExpr postState = new PreInInterface(nextHop.getHostname(), nextHop.getInterface());
 
@@ -230,47 +340,68 @@ public class SessionInstrumentation {
       return Stream.of();
     }
 
-    String outIface = sessionInfo.getOutgoingInterface();
-
-    if (outIface == null) {
-      return Stream.of();
-    }
-
-    String hostname = sessionInfo.getHostname();
-    BDDSourceManager srcMgr = _srcMgrs.get(hostname);
-    StateExpr postState = new NodeDropAclOut(hostname);
-    BDD sessionFlows = sessionInfo.getSessionFlows();
-
-    Transition denyOutAcl = constraint(getOutgoingSessionFilterBdd(hostname, outIface).not());
-
-    return sessionInfo.getIncomingInterfaces().stream()
-        .map(
-            inIface -> {
-              StateExpr preState = new PreInInterface(hostname, inIface);
-              BDD inAclBdd = getIncomingSessionFilterBdd(hostname, inIface);
-
-              Transition transition =
-                  compose(
-                      constraint(sessionFlows.and(inAclBdd)),
-                      sessionInfo.getTransformation(),
-                      denyOutAcl,
-                      removeSourceConstraint(srcMgr),
-                      removeLastHopConstraint(_lastHopMgr, hostname));
-              if (transition == Zero.INSTANCE) {
-                return null;
+    return sessionInfo
+        .getAction()
+        .accept(
+            new SessionActionVisitor<Stream<Edge>>() {
+              @Override
+              public Stream<Edge> visitAcceptVrf(Accept acceptVrf) {
+                return Stream.of();
               }
-              return new Edge(preState, postState, transition);
-            })
-        .filter(Objects::nonNull);
+
+              @Override
+              public Stream<Edge> visitFibLookup(FibLookup fibLookup) {
+                return Stream.of();
+              }
+
+              @Override
+              public Stream<Edge> visitForwardOutInterface(
+                  ForwardOutInterface forwardOutInterface) {
+                String outIface = forwardOutInterface.getOutgoingInterface();
+                String hostname = sessionInfo.getHostname();
+                BDDSourceManager srcMgr = _srcMgrs.get(hostname);
+                StateExpr postState = new NodeDropAclOut(hostname);
+                BDD sessionFlows = sessionInfo.getSessionFlows();
+
+                Transition denyOutAcl =
+                    constraint(getOutgoingSessionFilterBdd(hostname, outIface).not());
+
+                return sessionInfo.getIncomingInterfaces().stream()
+                    .map(
+                        inIface -> {
+                          StateExpr preState = new PreInInterface(hostname, inIface);
+                          BDD inAclBdd = getIncomingSessionFilterBdd(hostname, inIface);
+
+                          Transition transition =
+                              compose(
+                                  constraint(sessionFlows.and(inAclBdd)),
+                                  sessionInfo.getTransformation(),
+                                  denyOutAcl,
+                                  removeSourceConstraint(srcMgr),
+                                  removeLastHopConstraint(_lastHopMgr, hostname));
+                          if (transition == Zero.INSTANCE) {
+                            return null;
+                          }
+                          return new Edge(preState, postState, transition);
+                        })
+                    .filter(Objects::nonNull);
+              }
+            });
   }
 
   @VisibleForTesting
   Stream<Edge> nodeInterfaceDeliveredToSubnetEdges(BDDFirewallSessionTraceInfo sessionInfo) {
-    checkArgument(
-        sessionInfo.getOutgoingInterface() != null && sessionInfo.getNextHop() == null,
-        "Not a delivered to subnet session");
+    SessionAction action = sessionInfo.getAction();
+
+    // sanity check
+    assert action instanceof ForwardOutInterface;
+
+    ForwardOutInterface forwardOutInterface = (ForwardOutInterface) action;
+
+    checkArgument(forwardOutInterface.getNextHop() == null, "Not a delivered to subnet session");
+
     String hostname = sessionInfo.getHostname();
-    String outIface = sessionInfo.getOutgoingInterface();
+    String outIface = forwardOutInterface.getOutgoingInterface();
     StateExpr postState = new NodeInterfaceDeliveredToSubnet(hostname, outIface);
     Transition outAcl = constraint(getOutgoingSessionFilterBdd(hostname, outIface));
     return sessionInfo.getIncomingInterfaces().stream()
@@ -298,9 +429,9 @@ public class SessionInstrumentation {
 
   @VisibleForTesting
   Stream<Edge> nodeAcceptEdges(BDDFirewallSessionTraceInfo sessionInfo) {
-    checkArgument(
-        sessionInfo.getOutgoingInterface() == null && sessionInfo.getNextHop() == null,
-        "Not an accept session");
+    // sanity check
+    assert sessionInfo.getAction() instanceof Accept;
+
     String hostname = sessionInfo.getHostname();
     BDDSourceManager srcMgr = _srcMgrs.get(hostname);
 
