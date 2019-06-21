@@ -661,8 +661,6 @@ public final class BDDReachabilityAnalysisFactory {
                 new Edge(
                     new NodeAccept(node),
                     Accept.INSTANCE,
-                    // TODO is this ok?
-                    // TODO one function for src constraint/ last hhop stuff
                     compose(
                         removeSourceConstraint(_bddSourceManagers.get(node)),
                         removeLastHopConstraint(_lastHopMgr, node))));
@@ -683,7 +681,6 @@ public final class BDDReachabilityAnalysisFactory {
                 new Edge(
                     new NodeDropNoRoute(node),
                     DropNoRoute.INSTANCE,
-                    // TODO is this ok?
                     compose(
                         removeSourceConstraint(_bddSourceManagers.get(node)),
                         removeLastHopConstraint(_lastHopMgr, node))));

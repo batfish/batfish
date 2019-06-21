@@ -2,9 +2,7 @@ package org.batfish.bddreachability;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.Streams;
-import io.vavr.Function4;
 import java.util.Map;
-import java.util.function.BiFunction;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 import javax.annotation.Nonnull;
@@ -15,7 +13,14 @@ import org.batfish.symbolic.state.NodeDropNoRoute;
 import org.batfish.symbolic.state.NodeDropNullRoute;
 import org.batfish.symbolic.state.StateExpr;
 
-/** Module used to generate forwarding {@link Edge}s with configurable pre/postStates */
+/**
+ * Module used to generate forwarding {@link Edge}s with configurable pre/postStates.
+ *
+ * <p>{@link BDDFibGenerator} encodes the network's forwarding behavior in BDDs for reachability
+ * analysis. Input is the result maps from {@link ForwardingAnalysis}, with constraints converted to
+ * {@link BDD}s. Forwarding behavior can be used in different ways, i.e., different parts of the
+ * reachability analysis graph, so the pre/post states of the forwarding subgraph are configurable.
+ */
 @ParametersAreNonnullByDefault
 public final class BDDFibGenerator {
 
@@ -71,16 +76,20 @@ public final class BDDFibGenerator {
     _nullRoutedBDDs = nullRoutedBDDs;
   }
 
+  /**
+   * Generate edges related to forwarding using the provided state constructors and node-inclusion
+   * criteria.
+   */
   @Nonnull
   public Stream<Edge> generateForwardingEdges(
       Predicate<String> includedNode,
-      BiFunction<String, String, StateExpr> postInVrf,
-      Function4<String, String, String, String, StateExpr> preOutEdge,
-      BiFunction<String, String, StateExpr> preOutVrf,
-      BiFunction<String, String, StateExpr> preOutInterfaceDeliveredToSubnet,
-      BiFunction<String, String, StateExpr> preOutInterfaceExitsNetwork,
-      BiFunction<String, String, StateExpr> preOutInterfaceInsufficientInfo,
-      BiFunction<String, String, StateExpr> preOutInterfaceNeighborUnreachable) {
+      StateExprConstructor2 postInVrf,
+      StateExprConstructor4 preOutEdge,
+      StateExprConstructor2 preOutVrf,
+      StateExprConstructor2 preOutInterfaceDeliveredToSubnet,
+      StateExprConstructor2 preOutInterfaceExitsNetwork,
+      StateExprConstructor2 preOutInterfaceInsufficientInfo,
+      StateExprConstructor2 preOutInterfaceNeighborUnreachable) {
     return Streams.concat(
         generateRules_PostInVrf_NodeAccept(includedNode, postInVrf),
         generateRules_PostInVrf_NodeDropNoRoute(includedNode, postInVrf),
@@ -100,7 +109,7 @@ public final class BDDFibGenerator {
   @Nonnull
   @VisibleForTesting
   Stream<Edge> generateRules_PostInVrf_NodeAccept(
-      Predicate<String> includedNode, BiFunction<String, String, StateExpr> postInVrf) {
+      Predicate<String> includedNode, StateExprConstructor2 postInVrf) {
     return _vrfAcceptBDDs.entrySet().stream()
         .filter(byNodeEntry -> includedNode.test(byNodeEntry.getKey()))
         .flatMap(
@@ -119,7 +128,7 @@ public final class BDDFibGenerator {
   @Nonnull
   @VisibleForTesting
   Stream<Edge> generateRules_PostInVrf_NodeDropNoRoute(
-      Predicate<String> includedNode, BiFunction<String, String, StateExpr> postInVrf) {
+      Predicate<String> includedNode, StateExprConstructor2 postInVrf) {
     return _vrfAcceptBDDs.entrySet().stream()
         .filter(byNodeEntry -> includedNode.test(byNodeEntry.getKey()))
         .flatMap(
@@ -142,7 +151,7 @@ public final class BDDFibGenerator {
   @Nonnull
   @VisibleForTesting
   Stream<Edge> generateRules_PostInVrf_PostInVrf(
-      Predicate<String> includedNode, BiFunction<String, String, StateExpr> postInVrf) {
+      Predicate<String> includedNode, StateExprConstructor2 postInVrf) {
     return _nextVrfBDDs.entrySet().stream()
         .filter(byNodeEntry -> includedNode.test(byNodeEntry.getKey()))
         .flatMap(
@@ -170,8 +179,8 @@ public final class BDDFibGenerator {
   @VisibleForTesting
   Stream<Edge> generateRules_PostInVrf_PreOutVrf(
       Predicate<String> includedNode,
-      BiFunction<String, String, StateExpr> postInVrf,
-      BiFunction<String, String, StateExpr> preOutVrf) {
+      StateExprConstructor2 postInVrf,
+      StateExprConstructor2 preOutVrf) {
     return _vrfAcceptBDDs.entrySet().stream()
         .filter(byNodeEntry -> includedNode.test(byNodeEntry.getKey()))
         .flatMap(
@@ -193,7 +202,7 @@ public final class BDDFibGenerator {
   @Nonnull
   @VisibleForTesting
   Stream<Edge> generateRules_PreOutVrf_NodeDropNullRoute(
-      Predicate<String> includedNode, BiFunction<String, String, StateExpr> preOutVrf) {
+      Predicate<String> includedNode, StateExprConstructor2 preOutVrf) {
     return _nullRoutedBDDs.entrySet().stream()
         .filter(byNodeEntry -> includedNode.test(byNodeEntry.getKey()))
         .flatMap(
@@ -215,8 +224,8 @@ public final class BDDFibGenerator {
   @VisibleForTesting
   Stream<Edge> generateRules_PreOutVrf_PreOutEdge(
       Predicate<String> includedNode,
-      BiFunction<String, String, StateExpr> preOutVrf,
-      Function4<String, String, String, String, StateExpr> preOutEdge) {
+      StateExprConstructor2 preOutVrf,
+      StateExprConstructor4 preOutEdge) {
     return _arpTrueEdgeBDDs.entrySet().stream()
         .filter(byNodeEntry -> includedNode.test(byNodeEntry.getKey()))
         .flatMap(
@@ -247,11 +256,11 @@ public final class BDDFibGenerator {
   @VisibleForTesting
   Stream<Edge> generateRules_PreOutVrf_PreOutInterfaceDisposition(
       Predicate<String> includedNode,
-      BiFunction<String, String, StateExpr> preOutVrf,
-      BiFunction<String, String, StateExpr> preOutInterfaceDeliveredToSubnet,
-      BiFunction<String, String, StateExpr> preOutInterfaceExitsNetwork,
-      BiFunction<String, String, StateExpr> preOutInterfaceInsufficientInfo,
-      BiFunction<String, String, StateExpr> preOutInterfaceNeighborUnreachable) {
+      StateExprConstructor2 preOutVrf,
+      StateExprConstructor2 preOutInterfaceDeliveredToSubnet,
+      StateExprConstructor2 preOutInterfaceExitsNetwork,
+      StateExprConstructor2 preOutInterfaceInsufficientInfo,
+      StateExprConstructor2 preOutInterfaceNeighborUnreachable) {
     return Streams.concat(
         generateRules_PreOutVrf_PreOutInterfaceDisposition(
             includedNode, _deliveredToSubnetBDDs, preOutVrf, preOutInterfaceDeliveredToSubnet),
@@ -268,8 +277,8 @@ public final class BDDFibGenerator {
   static Stream<Edge> generateRules_PreOutVrf_PreOutInterfaceDisposition(
       Predicate<String> includedNode,
       Map<String, Map<String, Map<String, BDD>>> dispositionBddMap,
-      BiFunction<String, String, StateExpr> preOutVrfConstructor,
-      BiFunction<String, String, StateExpr> preOutInterfaceDispositionConstructor) {
+      StateExprConstructor2 preOutVrfConstructor,
+      StateExprConstructor2 preOutInterfaceDispositionConstructor) {
     return dispositionBddMap.entrySet().stream()
         .filter(byNodeEntry -> includedNode.test(byNodeEntry.getKey()))
         .flatMap(
