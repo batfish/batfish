@@ -1,0 +1,14 @@
+! See: https://github.com/batfish/batfish/issues/4124
+!
+ASA Version 9.6(3)8
+!
+hostname asa-interface-ospf
+!
+interface Port-channel1.1
+ vlan 1
+ nameif LAB-INT
+ security-level 10
+ ip address 192.168.1.1 255.255.255.0 standby 192.168.1.2
+!
+router ospf 2
+ network 192.168.0.0 255.255.0.0 area 0
