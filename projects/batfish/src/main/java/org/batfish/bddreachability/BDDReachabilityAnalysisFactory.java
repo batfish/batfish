@@ -110,6 +110,7 @@ import org.batfish.symbolic.state.PreOutInterfaceNeighborUnreachable;
 import org.batfish.symbolic.state.PreOutVrf;
 import org.batfish.symbolic.state.Query;
 import org.batfish.symbolic.state.StateExpr;
+import org.batfish.symbolic.state.VrfAccept;
 
 /**
  * Constructs a the reachability graph for {@link BDDReachabilityAnalysis}. The public API is very
@@ -639,6 +640,7 @@ public final class BDDReachabilityAnalysisFactory {
         generateRules_PreOutEdgePostNat_PreInInterface(),
         generateRules_PreOutInterfaceDisposition_NodeInterfaceDisposition(),
         generateRules_PreOutInterfaceDisposition_NodeDropAclOut(),
+        generateRules_VrfAccept_NodeAccept(),
         generateFibRules());
   }
 
@@ -1070,6 +1072,17 @@ public final class BDDReachabilityAnalysisFactory {
                                       .map(preState -> new Edge(preState, postState, transition));
                                 });
                       });
+            });
+  }
+
+  @Nonnull
+  private Stream<Edge> generateRules_VrfAccept_NodeAccept() {
+    return _vrfAcceptBDDs.entrySet().stream()
+        .flatMap(
+            vrfAcceptBDDsByNodeVrfEntry -> {
+              String hostname = vrfAcceptBDDsByNodeVrfEntry.getKey();
+              return vrfAcceptBDDsByNodeVrfEntry.getValue().keySet().stream()
+                  .map(vrf -> new Edge(new VrfAccept(hostname, vrf), new NodeAccept(hostname)));
             });
   }
 
