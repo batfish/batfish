@@ -369,7 +369,7 @@ public final class CumulusNcluGrammarTest {
   public void testBgpPeerGroup() throws IOException {
     Configuration c = parseConfig("cumulus_nclu_bgp_peer_group");
     String swp1 = "swp1";
-    long internalAs = 65500;
+    long internalAs = 65500L;
 
     assertThat(c, hasDefaultVrf(hasBgpProcess(hasInterfaceNeighbors(hasKey(swp1)))));
     org.batfish.datamodel.BgpProcess p = c.getDefaultVrf().getBgpProcess();
@@ -380,6 +380,11 @@ public final class CumulusNcluGrammarTest {
     assertThat(c, hasDefaultVrf(hasBgpProcess(hasInterfaceNeighbors(hasKey(swp2)))));
     BgpUnnumberedPeerConfig i2 = p.getInterfaceNeighbors().get(swp2);
     assertThat(i2, hasRemoteAs(internalAs));
+
+    String swp3 = "swp3";
+    assertThat(c, hasDefaultVrf(hasBgpProcess(hasInterfaceNeighbors(hasKey(swp3)))));
+    BgpUnnumberedPeerConfig i3 = p.getInterfaceNeighbors().get(swp3);
+    assertThat(i3, hasRemoteAs(17L));
   }
 
   @Test
