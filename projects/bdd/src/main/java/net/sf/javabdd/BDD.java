@@ -170,9 +170,9 @@ public abstract class BDD {
    * !this.and(that).isZero()}.
    *
    * @param that BDD to 'and' with
-   * @return whether the and is satisfiable
+   * @return whether the 'and' is satisfiable
    */
-  public abstract boolean andsat(BDD that);
+  public abstract boolean andSat(BDD that);
 
   /**
    * Returns the logical 'nand' of two BDDs. This is a shortcut for calling "apply" with the "nand"

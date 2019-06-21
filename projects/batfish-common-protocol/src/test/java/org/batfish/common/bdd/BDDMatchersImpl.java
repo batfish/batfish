@@ -14,7 +14,7 @@ final class BDDMatchersImpl {
 
     @Override
     public boolean matches(Object o) {
-      return ((BDD) o).andsat(_other);
+      return ((BDD) o).andSat(_other);
     }
 
     @Override

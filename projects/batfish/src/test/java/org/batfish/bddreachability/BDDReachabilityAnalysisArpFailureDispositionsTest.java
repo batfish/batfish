@@ -143,7 +143,7 @@ public class BDDReachabilityAnalysisArpFailureDispositionsTest {
                       String.format(
                           "dispositions %s and %s should not intersect",
                           disposition1, disposition2),
-                      bdd1.andsat(bdd2));
+                      bdd1.andSat(bdd2));
                 }));
   }
 

@@ -243,7 +243,7 @@ public final class JFactory extends BDDFactory {
     }
 
     @Override
-    public boolean andsat(BDD that) {
+    public boolean andSat(BDD that) {
       if (applycache == null) {
         applycache = BddCacheI_init(cachesize);
       }

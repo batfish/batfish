@@ -55,10 +55,10 @@ public final class BDDPrefixTest {
     Prefix p3 = Prefix.strict("192.0.3.0/24");
 
     assertThat(_bddPrefix.isPrefix(p1), equalTo(_bddPrefix.isPrefix(p1)));
-    assertFalse(_bddPrefix.isPrefix(p1).andsat(_bddPrefix.isPrefix(p2)));
-    assertFalse(_bddPrefix.isPrefix(p1).andsat(_bddPrefix.isPrefix(p3)));
+    assertFalse(_bddPrefix.isPrefix(p1).andSat(_bddPrefix.isPrefix(p2)));
+    assertFalse(_bddPrefix.isPrefix(p1).andSat(_bddPrefix.isPrefix(p3)));
     assertThat(_bddPrefix.isPrefix(p2), equalTo(_bddPrefix.isPrefix(p2)));
-    assertFalse(_bddPrefix.isPrefix(p2).andsat(_bddPrefix.isPrefix(p3)));
+    assertFalse(_bddPrefix.isPrefix(p2).andSat(_bddPrefix.isPrefix(p3)));
     assertThat(_bddPrefix.isPrefix(p3), equalTo(_bddPrefix.isPrefix(p3)));
   }
 

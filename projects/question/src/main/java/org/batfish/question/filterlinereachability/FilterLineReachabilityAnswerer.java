@@ -506,7 +506,7 @@ public class FilterLineReachabilityAnswerer extends Answerer {
     for (int prevLineNum = 0; prevLineNum < blockedLineNum && !restOfLine.isZero(); prevLineNum++) {
       BDD prevLine = bdds.get(prevLineNum);
 
-      if (!prevLine.andsat(restOfLine)) {
+      if (!prevLine.andSat(restOfLine)) {
         continue;
       }
 
@@ -572,7 +572,7 @@ public class FilterLineReachabilityAnswerer extends Answerer {
       if (lineBDD.isZero()) {
         // This line is unmatchable
         answerRows.addUnreachableLine(aclSpec, lineNum, true, ImmutableSortedSet.of());
-      } else if (unmatchedPackets.isZero() || !lineBDD.andsat(unmatchedPackets)) {
+      } else if (unmatchedPackets.isZero() || !lineBDD.andSat(unmatchedPackets)) {
         // No unmatched packets in the ACL match this line, so this line is unreachable.
         List<LineAction> actions =
             lines.stream().map(IpAccessListLine::getAction).collect(Collectors.toList());

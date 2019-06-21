@@ -220,7 +220,7 @@ public class CompareFiltersAnswerer extends Answerer {
                             j < referenceActions.size() ? referenceActions.get(j) : LineAction.DENY;
                         return referenceAction != currentAction;
                       })
-                  .filter(j -> currentLineBdd.andsat(referenceLineBdds.get(j)))
+                  .filter(j -> currentLineBdd.andSat(referenceLineBdds.get(j)))
                   .mapToObj(
                       j ->
                           new FilterDifference(
