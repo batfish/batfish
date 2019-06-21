@@ -1463,4 +1463,23 @@ public final class CumulusNcluGrammarTest {
     assertThat(vrf2BgpPeer.getIpv4UnicastAddressFamily(), notNullValue());
     assertThat(vrf2BgpPeer.getEvpnAddressFamily(), nullValue());
   }
+
+  @Test
+  public void testEvpnConversions4byteAS() throws IOException {
+    Configuration c = parseConfig("cumulus_nclu_evpn_4byte_as");
+
+    BgpUnnumberedPeerConfig bgpPeer =
+        c.getDefaultVrf().getBgpProcess().getInterfaceNeighbors().get("swp1");
+    Ip routerId = Ip.parse("192.0.0.0");
+    ImmutableSortedSet<Layer2VniConfig> expectedL2Vnis =
+        ImmutableSortedSet.of(
+            Layer2VniConfig.builder()
+                .setVni(70001)
+                .setVrf(DEFAULT_VRF_NAME)
+                .setRouteDistinguisher(RouteDistinguisher.from(routerId, 0))
+                // Using lower 2 bytes of the AS number
+                .setRouteTarget(ExtendedCommunity.target(34, 70001))
+                .build());
+    assertThat(bgpPeer.getEvpnAddressFamily().getL2VNIs(), equalTo(expectedL2Vnis));
+  }
 }
