@@ -37,7 +37,7 @@
     <module name="IllegalImport">
       <property name="illegalClasses"
                 value="com.google.common.io.Files,com.google.common.base.Objects,org.hamcrest.CoreMatchers,org.hamcrest.MatcherAssert,com.fasterxml.jackson.annotation.JsonPropertyDescription"/>
-      <property name="illegalPkgs" value="sun.reflect"/>
+      <property name="illegalPkgs" value="sun.reflect,io.vavr.collection,io.vavr.concurrent,io.vavr.control"/>
     </module>
 
     <!-- Repeated this module with regex filter for classes -->
