@@ -5061,6 +5061,7 @@ public class CiscoGrammarTest {
         hasInterface(
             "LAB-INT",
             allOf(
+                isActive(false),
                 hasBandwidth(0.0d),
                 hasOspfAreaName(0L),
                 hasInterfaceType(InterfaceType.AGGREGATE_CHILD))));
