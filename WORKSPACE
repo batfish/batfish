@@ -1139,22 +1139,6 @@ load("@sqlite_jdbc//:rules.bzl", "sqlite_jdbc_compile")
 
 sqlite_jdbc_compile()
 
-# vavr
-maven_repository(
-    name = "vavr",
-    transitive_deps = [
-        "c9f28385e6ca99f9c253c4eef879720663905329:io.vavr:vavr:0.10.0",
-        "2088877806b1c07514a134fa10d6a7ad480cac70:io.vavr:vavr-match:0.10.0",
-    ],
-    deps = [
-        "io.vavr:vavr:0.10.0",
-    ],
-)
-
-load("@vavr//:rules.bzl", "vavr_compile")
-
-vavr_compile()
-
 ##########################################################
 ## Third section: tools
 
