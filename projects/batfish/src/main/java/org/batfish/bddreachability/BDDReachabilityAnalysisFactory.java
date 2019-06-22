@@ -657,15 +657,7 @@ public final class BDDReachabilityAnalysisFactory {
   }
 
   private Stream<Edge> generateRules_NodeAccept_Accept(Set<String> finalNodes) {
-    return finalNodes.stream()
-        .map(
-            node ->
-                new Edge(
-                    new NodeAccept(node),
-                    Accept.INSTANCE,
-                    compose(
-                        removeSourceConstraint(_bddSourceManagers.get(node)),
-                        removeLastHopConstraint(_lastHopMgr, node))));
+    return finalNodes.stream().map(node -> new Edge(new NodeAccept(node), Accept.INSTANCE));
   }
 
   private static Stream<Edge> generateRules_NodeDropAclIn_DropAclIn(Set<String> finalNodes) {
@@ -1082,7 +1074,14 @@ public final class BDDReachabilityAnalysisFactory {
             vrfAcceptBDDsByNodeVrfEntry -> {
               String hostname = vrfAcceptBDDsByNodeVrfEntry.getKey();
               return vrfAcceptBDDsByNodeVrfEntry.getValue().keySet().stream()
-                  .map(vrf -> new Edge(new VrfAccept(hostname, vrf), new NodeAccept(hostname)));
+                  .map(
+                      vrf ->
+                          new Edge(
+                              new VrfAccept(hostname, vrf),
+                              new NodeAccept(hostname),
+                              compose(
+                                  removeSourceConstraint(_bddSourceManagers.get(hostname)),
+                                  removeLastHopConstraint(_lastHopMgr, hostname))));
             });
   }
 
