@@ -91,7 +91,6 @@ import org.batfish.symbolic.state.PreInInterface;
 import org.batfish.symbolic.state.StateExpr;
 import org.hamcrest.Matchers;
 import org.junit.BeforeClass;
-import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
@@ -761,7 +760,7 @@ public final class BidirectionalReachabilityAnalysisTest {
     Vrf ingressVrf = nf.vrfBuilder().setName(INGRESS_VRF).setOwner(ingressNode).build();
     Vrf egressVrf = nf.vrfBuilder().setName(EGRESS_VRF).setOwner(ingressNode).build();
 
-    Interface.Builder ib = nf.interfaceBuilder().setOwner(ingressNode).setActive(true);
+    Interface.Builder ib = Interface.builder().setOwner(ingressNode).setActive(true);
     ib.setName(INGRESS_IFACE).setVrf(ingressVrf).setAddress(INGRESS_IFACE_ADDRESS).build();
     ib.setName(EGRESS_IFACE)
         .setVrf(separateEgressVrf ? egressVrf : ingressVrf)
@@ -804,7 +803,9 @@ public final class BidirectionalReachabilityAnalysisTest {
 
     Configuration neighbor = cb.setHostname(NEIGHBOR).build();
     Vrf neighborVrf = nf.vrfBuilder().setName(NEIGHBOR_VRF).setOwner(neighbor).build();
-    ib.setOwner(neighbor)
+    Interface.builder()
+        .setActive(true)
+        .setOwner(neighbor)
         .setVrf(neighborVrf)
         .setName(NEIGHBOR_IFACE)
         .setAddress(NEIGHBOR_IFACE_ADDRESS)
