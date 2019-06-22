@@ -1570,6 +1570,9 @@ public final class Interface extends ComparableStructure<String> {
   @JsonProperty(PROP_ALL_PREFIXES)
   public void setAllAddresses(Iterable<? extends InterfaceAddress> allAddresses) {
     _allAddresses = ImmutableSortedSet.copyOf(allAddresses);
+    // Clear cached values
+    _allLinkLocalAddresses = null;
+    _allConcreteAddresses = null;
   }
 
   @JsonProperty(PROP_AUTOSTATE)
@@ -1799,6 +1802,9 @@ public final class Interface extends ComparableStructure<String> {
   @JsonProperty(PROP_PREFIX)
   public void setAddress(InterfaceAddress address) {
     _address = address;
+    // Clear cached values
+    _allLinkLocalAddresses = null;
+    _allConcreteAddresses = null;
   }
 
   @JsonIgnore
