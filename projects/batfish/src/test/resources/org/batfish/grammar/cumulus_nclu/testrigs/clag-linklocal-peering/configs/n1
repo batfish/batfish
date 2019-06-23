@@ -1,0 +1,19 @@
+net del all
+#
+net add hostname n1
+#
+net add interface swp5-6
+# peerlink
+net add bond peerlink bond slaves swp5-6
+net add interface peerlink.4094 clag peer-ip linklocal
+net add interface peerlink.4094 clag priority 1000
+net add interface peerlink.4094 clag sys-mac 00:11:22:33:44:55
+
+# clag bonds
+net add bond clag1bond bond slaves swp1
+net add bond clag1bond clag id 1
+net add bond clag2bond bond slaves swp2
+net add bond clag2bond clag id 2
+
+#
+net commit
