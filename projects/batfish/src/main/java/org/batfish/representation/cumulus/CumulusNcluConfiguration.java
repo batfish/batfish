@@ -97,6 +97,7 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
   public static final int DEFAULT_STATIC_ROUTE_METRIC = 0;
   public static final String LOOPBACK_INTERFACE_NAME = "lo";
   private static final long serialVersionUID = 1L;
+  private static final Ip CLAG_LINK_LOCAL_IP = Ip.parse("169.254.40.94");
 
   private static WithEnvironmentExpr bgpRedistributeWithEnvironmentExpr(
       BooleanExpr expr, OriginType originType) {
@@ -418,8 +419,17 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
       return;
     }
     Interface clagSourceInterface = clagSourceInterfaces.get(0);
-    Ip peerAddress = clagSourceInterface.getClag().getPeerIp();
     String sourceInterfaceName = clagSourceInterface.getName();
+    Ip peerAddress = clagSourceInterface.getClag().getPeerIp();
+    // Special case link-local addresses when no other addresses are defined
+    org.batfish.datamodel.Interface viInterface = _c.getAllInterfaces().get(sourceInterfaceName);
+    if (peerAddress == null
+        && clagSourceInterface.getClag().isPeerIpLinkLocal()
+        && viInterface.getAllAddresses().isEmpty()) {
+      LinkLocalAddress lla = LinkLocalAddress.of(CLAG_LINK_LOCAL_IP);
+      viInterface.setAddress(lla);
+      viInterface.setAllAddresses(ImmutableSet.of(lla));
+    }
     String peerInterfaceName = clagSourceInterface.getSuperInterfaceName();
     _c.setMlags(
         ImmutableMap.of(
