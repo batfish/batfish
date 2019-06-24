@@ -15,10 +15,10 @@ import org.batfish.common.bdd.BDDPacket;
 import org.batfish.datamodel.Ip;
 import org.batfish.symbolic.state.EdgeStateExpr;
 import org.batfish.symbolic.state.InterfaceStateExpr;
-import org.batfish.symbolic.state.NodeAccept;
 import org.batfish.symbolic.state.NodeDropNoRoute;
 import org.batfish.symbolic.state.NodeDropNullRoute;
 import org.batfish.symbolic.state.StateExprVisitor;
+import org.batfish.symbolic.state.VrfAccept;
 import org.batfish.symbolic.state.VrfStateExpr;
 import org.junit.Test;
 
@@ -139,11 +139,12 @@ public final class BDDFibGeneratorTest {
             routableBDDs,
             ImmutableMap.of(),
             ImmutableMap.of());
-    Edge expectedEdge = new Edge(new TestPostInVrf(NODE1, VRF1), new NodeAccept(NODE1), DSTIP1);
+    Edge expectedEdge =
+        new Edge(new TestPostInVrf(NODE1, VRF1), new VrfAccept(NODE1, VRF1), DSTIP1);
 
     assertThat(
         generator
-            .generateRules_PostInVrf_NodeAccept(NODE1::equals, TestPostInVrf::new)
+            .generateRules_PostInVrf_VrfAccept(NODE1::equals, TestPostInVrf::new)
             .collect(ImmutableList.toImmutableList()),
         contains(expectedEdge));
     // ensure edge is produced by top-level generation function

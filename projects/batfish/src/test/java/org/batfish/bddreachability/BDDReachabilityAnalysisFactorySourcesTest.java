@@ -44,6 +44,7 @@ import org.batfish.symbolic.state.PreOutInterfaceExitsNetwork;
 import org.batfish.symbolic.state.PreOutInterfaceInsufficientInfo;
 import org.batfish.symbolic.state.PreOutInterfaceNeighborUnreachable;
 import org.batfish.symbolic.state.StateExpr;
+import org.batfish.symbolic.state.VrfAccept;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Test;
@@ -209,10 +210,10 @@ public class BDDReachabilityAnalysisFactorySourcesTest {
    * forward direction.
    */
   @Test
-  public void nodeAccept_Accept() {
+  public void vrfAccept_NodeAccept() {
     // NodeAccept -> Accept edge.
     Transition transition =
-        edges.get(new NodeAccept(CONFIG_NAME)).get(org.batfish.symbolic.state.Accept.INSTANCE);
+        edges.get(new VrfAccept(CONFIG_NAME, VRF_NAME)).get(new NodeAccept(CONFIG_NAME));
 
     assertThat(transition, equalTo(removeSourceConstraint(srcMgr)));
   }
