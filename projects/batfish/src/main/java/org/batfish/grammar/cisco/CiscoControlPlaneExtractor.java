@@ -648,6 +648,7 @@ import org.batfish.grammar.cisco.CiscoParser.If_eos_mlagContext;
 import org.batfish.grammar.cisco.CiscoParser.If_ip_access_groupContext;
 import org.batfish.grammar.cisco.CiscoParser.If_ip_addressContext;
 import org.batfish.grammar.cisco.CiscoParser.If_ip_address_secondaryContext;
+import org.batfish.grammar.cisco.CiscoParser.If_ip_forwardContext;
 import org.batfish.grammar.cisco.CiscoParser.If_ip_helper_addressContext;
 import org.batfish.grammar.cisco.CiscoParser.If_ip_igmpContext;
 import org.batfish.grammar.cisco.CiscoParser.If_ip_inband_access_groupContext;
@@ -2448,6 +2449,13 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     String description = getDescription(ctx.description_line());
     for (Interface currentInterface : _currentInterfaces) {
       currentInterface.setDescription(description);
+    }
+  }
+
+  @Override
+  public void enterIf_ip_forward(If_ip_forwardContext ctx) {
+    if (ctx.NO() != null) {
+      todo(ctx);
     }
   }
 
