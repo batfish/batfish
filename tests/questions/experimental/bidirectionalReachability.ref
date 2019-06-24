@@ -85,16 +85,20 @@
         "displayName" : "Path Constraints",
         "fields" : {
           "startLocation" : {
-            "optional" : true
+            "optional" : true,
+            "type" : "locationSpec"
           },
           "endLocation" : {
-            "optional" : true
+            "optional" : true,
+            "type" : "nodeSpec"
           },
           "transitLocations" : {
-            "optional" : true
+            "optional" : true,
+            "type" : "nodeSpec"
           },
           "forbiddenLocations" : {
-            "optional" : true
+            "optional" : true,
+            "type" : "nodeSpec"
           }
         },
         "optional" : true,
