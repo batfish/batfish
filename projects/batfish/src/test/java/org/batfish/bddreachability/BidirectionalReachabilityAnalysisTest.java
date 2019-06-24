@@ -24,7 +24,9 @@ import static org.batfish.datamodel.acl.AclLineMatchExprs.match;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.matchDst;
 import static org.batfish.datamodel.transformation.Transformation.always;
 import static org.batfish.datamodel.transformation.TransformationStep.assignSourceIp;
+import static org.batfish.main.BatfishTestUtils.getBatfish;
 import static org.hamcrest.Matchers.allOf;
+import static org.hamcrest.Matchers.anEmptyMap;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.equalTo;
@@ -74,7 +76,6 @@ import org.batfish.datamodel.acl.AclLineMatchExprs;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.flow.ForwardOutInterface;
 import org.batfish.main.Batfish;
-import org.batfish.main.BatfishTestUtils;
 import org.batfish.question.bidirectionalreachability.BidirectionalReachabilityResult;
 import org.batfish.specifier.InterfaceLinkLocation;
 import org.batfish.specifier.InterfaceLocation;
@@ -231,7 +232,7 @@ public final class BidirectionalReachabilityAnalysisTest {
     SortedMap<String, Configuration> configurations =
         ImmutableSortedMap.of(
             source1.getHostname(), source1, source2.getHostname(), source2, fw.getHostname(), fw);
-    Batfish batfish = BatfishTestUtils.getBatfish(configurations, temp);
+    Batfish batfish = getBatfish(configurations, temp);
     batfish.computeDataPlane();
 
     IpSpaceAssignment assignment =
@@ -489,7 +490,7 @@ public final class BidirectionalReachabilityAnalysisTest {
     SortedMap<String, Configuration> configurations =
         ImmutableSortedMap.of(
             source1.getHostname(), source1, source2.getHostname(), source2, fw.getHostname(), fw);
-    Batfish batfish = BatfishTestUtils.getBatfish(configurations, temp);
+    Batfish batfish = getBatfish(configurations, temp);
     batfish.computeDataPlane();
 
     Location source1Loc = new InterfaceLocation(source1.getHostname(), source1Iface.getName());
@@ -675,7 +676,7 @@ public final class BidirectionalReachabilityAnalysisTest {
     SortedMap<String, Configuration> configurations =
         ImmutableSortedMap.of(
             source1.getHostname(), source1, source2.getHostname(), source2, fw.getHostname(), fw);
-    Batfish batfish = BatfishTestUtils.getBatfish(configurations, temp);
+    Batfish batfish = getBatfish(configurations, temp);
     batfish.computeDataPlane();
 
     Location source1Loc = new InterfaceLocation(source1.getHostname(), source1Iface.getName());
@@ -963,7 +964,7 @@ public final class BidirectionalReachabilityAnalysisTest {
       IpSpace dstIpSpaceOfInterest,
       Set<FlowDisposition> forwardDispositions)
       throws IOException {
-    Batfish batfish = BatfishTestUtils.getBatfish(configurations, temp);
+    Batfish batfish = getBatfish(configurations, temp);
     batfish.computeDataPlane();
 
     // Bidirectional analysis
@@ -999,7 +1000,7 @@ public final class BidirectionalReachabilityAnalysisTest {
       IpSpace dstIpSpaceOfInterest,
       Set<FlowDisposition> forwardDispositions)
       throws IOException {
-    Batfish batfish = BatfishTestUtils.getBatfish(configurations, temp);
+    Batfish batfish = getBatfish(configurations, temp);
     batfish.computeDataPlane();
 
     IpSpace srcIpSpaceOfInterest =
