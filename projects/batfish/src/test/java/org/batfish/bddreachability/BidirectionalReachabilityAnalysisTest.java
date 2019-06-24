@@ -78,6 +78,7 @@ import org.batfish.specifier.InterfaceLinkLocation;
 import org.batfish.specifier.InterfaceLocation;
 import org.batfish.specifier.IpSpaceAssignment;
 import org.batfish.specifier.Location;
+import org.batfish.symbolic.IngressLocation;
 import org.batfish.symbolic.state.NodeAccept;
 import org.batfish.symbolic.state.NodeInterfaceDeliveredToSubnet;
 import org.batfish.symbolic.state.NodeInterfaceExitsNetwork;
@@ -729,13 +730,31 @@ public final class BidirectionalReachabilityAnalysisTest {
         IpSpaceAssignment.builder().assign(sourceLoc, ip1.toIpSpace()).build();
 
     // forward final node is n2
+    BDDReachabilityAnalysis analysis =
+        new BDDReachabilityAnalysisFactory(
+                PKT, configs, batfish.loadDataPlane().getForwardingAnalysis(), false, true)
+            .bddReachabilityAnalysis(
+                assignment,
+                matchDst(ip2),
+                ImmutableSet.of(),
+                ImmutableSet.of(),
+                ImmutableSet.of(n2.getHostname()),
+                FlowDisposition.SUCCESS_DISPOSITIONS);
+
+    // should get successful result only
+    assertThat(
+        analysis.getIngressLocationReachableBDDs(),
+        hasEntry(
+            equalTo(IngressLocation.interfaceLink(n1.getHostname(), i1.getName())), not(isZero())));
+
+    // forward final node is n2
     BidirectionalReachabilityAnalysis analysisEndingAtN2 =
         new BidirectionalReachabilityAnalysis(
             PKT,
             configs,
             batfish.loadDataPlane().getForwardingAnalysis(),
             assignment,
-            matchDst(ip1.toIpSpace()),
+            matchDst(ip2),
             ImmutableSet.of(),
             ImmutableSet.of(),
             ImmutableSet.of(n2.getHostname()),
@@ -757,7 +776,7 @@ public final class BidirectionalReachabilityAnalysisTest {
             configs,
             batfish.loadDataPlane().getForwardingAnalysis(),
             assignment,
-            matchDst(ip2.toIpSpace()),
+            matchDst(ip2),
             ImmutableSet.of(),
             ImmutableSet.of(),
             ImmutableSet.of(n1.getHostname()),
