@@ -27,6 +27,7 @@ import org.batfish.symbolic.state.PreOutInterfaceNeighborUnreachable;
 import org.batfish.symbolic.state.PreOutVrf;
 import org.batfish.symbolic.state.StateExpr;
 import org.batfish.symbolic.state.StateExprVisitor;
+import org.batfish.symbolic.state.VrfAccept;
 
 /**
  * Convert origination states to their corresponding termination states. Returns null for
@@ -215,6 +216,11 @@ public class OriginationStateToTerminationState implements StateExprVisitor<List
 
   @Override
   public List<StateExpr> visitQuery() {
+    return null;
+  }
+
+  @Override
+  public List<StateExpr> visitVrfAccept(VrfAccept vrfAccept) {
     return null;
   }
 }

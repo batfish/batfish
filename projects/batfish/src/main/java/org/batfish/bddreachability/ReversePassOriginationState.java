@@ -25,21 +25,17 @@ import org.batfish.symbolic.state.PreOutInterfaceNeighborUnreachable;
 import org.batfish.symbolic.state.PreOutVrf;
 import org.batfish.symbolic.state.StateExpr;
 import org.batfish.symbolic.state.StateExprVisitor;
+import org.batfish.symbolic.state.VrfAccept;
 
 /**
  * Converts successful flow termination states from the forward pass of a bidirectional reachability
  * query to the corresponding origination state for the return pass (if any). If the state does not
- * have a corresponding origination state, returns null.
+ * have a corresponding origination state, returns {@code null}.
  *
  * <p>{@link NodeInterfaceDeliveredToSubnet} and {@link NodeInterfaceExitsNetwork} states are mapped
  * to corresponding {@link OriginateInterfaceLink} states.
  *
- * <p>TODO: handle ACCEPT disposition
- *
- * <p>Flows accepted by a VRF in the forward pass should be originated by {@link OriginateVrf} in
- * the return pass. This isn't implemented yet, because there is no corresponding AcceptVrf state.
- * We can either add one, or else split the packets accepted at a {@link NodeAccept} state into
- * multiple {@link OriginateVrf} states by dst IP.
+ * <p>{@link VrfAccept} states are mapped to corresponding {@link OriginateVrf} states.
  */
 public class ReversePassOriginationState implements StateExprVisitor<StateExpr> {
   private static final ReversePassOriginationState INSTANCE = new ReversePassOriginationState();
@@ -214,5 +210,10 @@ public class ReversePassOriginationState implements StateExprVisitor<StateExpr> 
   @Override
   public StateExpr visitQuery() {
     return null;
+  }
+
+  @Override
+  public StateExpr visitVrfAccept(VrfAccept vrfAccept) {
+    return new OriginateVrf(vrfAccept.getHostname(), vrfAccept.getVrf());
   }
 }

@@ -110,6 +110,7 @@ import org.batfish.symbolic.state.PreOutInterfaceNeighborUnreachable;
 import org.batfish.symbolic.state.PreOutVrf;
 import org.batfish.symbolic.state.Query;
 import org.batfish.symbolic.state.StateExpr;
+import org.batfish.symbolic.state.VrfAccept;
 
 /**
  * Constructs a the reachability graph for {@link BDDReachabilityAnalysis}. The public API is very
@@ -639,6 +640,7 @@ public final class BDDReachabilityAnalysisFactory {
         generateRules_PreOutEdgePostNat_PreInInterface(),
         generateRules_PreOutInterfaceDisposition_NodeInterfaceDisposition(),
         generateRules_PreOutInterfaceDisposition_NodeDropAclOut(),
+        generateRules_VrfAccept_NodeAccept(),
         generateFibRules());
   }
 
@@ -655,15 +657,7 @@ public final class BDDReachabilityAnalysisFactory {
   }
 
   private Stream<Edge> generateRules_NodeAccept_Accept(Set<String> finalNodes) {
-    return finalNodes.stream()
-        .map(
-            node ->
-                new Edge(
-                    new NodeAccept(node),
-                    Accept.INSTANCE,
-                    compose(
-                        removeSourceConstraint(_bddSourceManagers.get(node)),
-                        removeLastHopConstraint(_lastHopMgr, node))));
+    return finalNodes.stream().map(node -> new Edge(new NodeAccept(node), Accept.INSTANCE));
   }
 
   private static Stream<Edge> generateRules_NodeDropAclIn_DropAclIn(Set<String> finalNodes) {
@@ -1070,6 +1064,24 @@ public final class BDDReachabilityAnalysisFactory {
                                       .map(preState -> new Edge(preState, postState, transition));
                                 });
                       });
+            });
+  }
+
+  @Nonnull
+  private Stream<Edge> generateRules_VrfAccept_NodeAccept() {
+    return _vrfAcceptBDDs.entrySet().stream()
+        .flatMap(
+            vrfAcceptBDDsByNodeVrfEntry -> {
+              String hostname = vrfAcceptBDDsByNodeVrfEntry.getKey();
+              return vrfAcceptBDDsByNodeVrfEntry.getValue().keySet().stream()
+                  .map(
+                      vrf ->
+                          new Edge(
+                              new VrfAccept(hostname, vrf),
+                              new NodeAccept(hostname),
+                              compose(
+                                  removeSourceConstraint(_bddSourceManagers.get(hostname)),
+                                  removeLastHopConstraint(_lastHopMgr, hostname))));
             });
   }
 
