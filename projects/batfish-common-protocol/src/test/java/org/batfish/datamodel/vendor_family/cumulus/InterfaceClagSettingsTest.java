@@ -32,6 +32,7 @@ public final class InterfaceClagSettingsTest {
         .addEqualityGroup(builder.build().toString())
         .addEqualityGroup(builder.setSysMac(MacAddress.of(5L)).build())
         .addEqualityGroup(builder.build().toString())
+        .addEqualityGroup(builder.setPeerLinkLocal(true))
         .testEquals();
   }
 
@@ -42,6 +43,7 @@ public final class InterfaceClagSettingsTest {
             .setBackupIp(Ip.ZERO)
             .setBackupIpVrf("foo")
             .setPeerIp(Ip.ZERO)
+            .setPeerLinkLocal(true)
             .setPriority(5)
             .setSysMac(MacAddress.of(5L))
             .build();
@@ -56,6 +58,7 @@ public final class InterfaceClagSettingsTest {
             .setBackupIp(Ip.ZERO)
             .setBackupIpVrf("foo")
             .setPeerIp(Ip.ZERO)
+            .setPeerLinkLocal(true)
             .setPriority(5)
             .setSysMac(MacAddress.of(5L))
             .build();
