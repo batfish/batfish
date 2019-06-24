@@ -166,6 +166,15 @@ public abstract class BDD {
   }
 
   /**
+   * Return true iff the {@code and} of the two BDDs is satisfiable. Equivalent to {@code
+   * !this.and(that).isZero()}.
+   *
+   * @param that BDD to 'and' with
+   * @return whether the 'and' is satisfiable
+   */
+  public abstract boolean andSat(BDD that);
+
+  /**
    * Returns the logical 'nand' of two BDDs. This is a shortcut for calling "apply" with the "nand"
    * operator.
    *
