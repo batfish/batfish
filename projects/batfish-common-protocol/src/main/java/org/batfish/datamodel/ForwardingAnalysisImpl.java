@@ -149,7 +149,7 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
             routesWithUnownedNextHopIpArpFalse =
                 computeRoutesWithNextHopIpArpFalseFilter(
                     routesWithNextHopIpArpFalse,
-                    route -> !ipSpaceToBDD.toBDD(route.getNextHopIp()).and(unownedIpsBDD).isZero());
+                    route -> ipSpaceToBDD.toBDD(route.getNextHopIp()).andSat(unownedIpsBDD));
 
         /* node -> vrf -> interface -> set of routes on that vrf that forward out that interface
          * with next hop ip owned by the snapshot devices and that gets no arp reply
@@ -157,7 +157,7 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
         Map<String, Map<String, Map<String, Set<AbstractRoute>>>> routesWithOwnedNextHopIpArpFalse =
             computeRoutesWithNextHopIpArpFalseFilter(
                 routesWithNextHopIpArpFalse,
-                route -> ipSpaceToBDD.toBDD(route.getNextHopIp()).and(unownedIpsBDD).isZero());
+                route -> !ipSpaceToBDD.toBDD(route.getNextHopIp()).andSat(unownedIpsBDD));
 
         /* node -> vrf -> interface -> dst ips for which that vrf forwards out that interface,
          * ARPing for a next-hop IP and receiving no reply
@@ -1392,7 +1392,7 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
           Entry::getKey,
           nodeEntry ->
               nodeEntry.getValue().entrySet().stream()
-                  .filter(ifaceEntry -> !ifaceEntry.getValue().and(unownedIpsBDD).isZero())
+                  .filter(ifaceEntry -> ifaceEntry.getValue().andSat(unownedIpsBDD))
                   .map(Entry::getKey)
                   .collect(ImmutableSet.toImmutableSet()));
     }
