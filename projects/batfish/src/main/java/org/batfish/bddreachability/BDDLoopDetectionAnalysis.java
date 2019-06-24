@@ -148,7 +148,7 @@ public class BDDLoopDetectionAnalysis {
 
         dirty = newDirty;
         if (dirty.contains(stateExpr)) {
-          if (!reachable.get(stateExpr).and(bdd).isZero()) {
+          if (reachable.get(stateExpr).andSat(bdd)) {
             return true;
           }
         }

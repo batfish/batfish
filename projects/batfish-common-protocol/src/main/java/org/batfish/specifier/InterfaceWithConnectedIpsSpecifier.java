@@ -55,7 +55,7 @@ public final class InterfaceWithConnectedIpsSpecifier implements InterfaceSpecif
   }
 
   private boolean interfaceAddressMatchesIpSpace(ConcreteInterfaceAddress i) {
-    return !_ipSpaceBdd.and(_ipSpaceToBdd.toBDD(i.getPrefix())).isZero();
+    return _ipSpaceBdd.andSat(_ipSpaceToBdd.toBDD(i.getPrefix()));
   }
 
   @Override
