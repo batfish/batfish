@@ -261,6 +261,7 @@ public class BasicTests extends BDDTestCase {
     while (i > 0) {
       ret = ret.andWith((i & 1) == 1 ? f.ithVar(bit) : f.nithVar(bit));
       i >>>= 1;
+      ++bit;
     }
     return ret;
   }
@@ -331,6 +332,7 @@ public class BasicTests extends BDDTestCase {
         for (int j = 0; j < 16; ++j) {
           b = makePartiallyConstrainedInteger(bdd, j);
           c = a.and(b);
+          bdd.setCacheSize(123); // clear cache between ops
           assertEquals(a.andSat(b), !c.isZero());
           assertEquals(b.andSat(a), !c.isZero());
           b.free();
