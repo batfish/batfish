@@ -43,7 +43,13 @@ import org.batfish.symbolic.state.VrfAccept;
 public class ReversePassOriginationState implements StateExprVisitor<StateExpr> {
   private final @Nonnull Predicate<String> _isFinalNode;
 
-  private ReversePassOriginationState(Predicate<String> isFinalNode) {
+  /**
+   * Construct a {@link ReversePassOriginationState}.
+   *
+   * @param isFinalNode Only return non-null origination states when the state being visited is for
+   *     a final node as determined by {@code isFinalNode}.
+   */
+  public ReversePassOriginationState(Predicate<String> isFinalNode) {
     _isFinalNode = isFinalNode;
   }
 

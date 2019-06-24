@@ -27,6 +27,7 @@ import static org.batfish.datamodel.transformation.Transformation.always;
 import static org.batfish.datamodel.transformation.TransformationStep.assignSourceIp;
 import static org.batfish.main.BatfishTestUtils.getBatfish;
 import static org.hamcrest.Matchers.allOf;
+import static org.hamcrest.Matchers.anEmptyMap;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.equalTo;
@@ -78,7 +79,6 @@ import org.batfish.specifier.InterfaceLinkLocation;
 import org.batfish.specifier.InterfaceLocation;
 import org.batfish.specifier.IpSpaceAssignment;
 import org.batfish.specifier.Location;
-import org.batfish.symbolic.IngressLocation;
 import org.batfish.symbolic.state.NodeAccept;
 import org.batfish.symbolic.state.NodeInterfaceDeliveredToSubnet;
 import org.batfish.symbolic.state.NodeInterfaceExitsNetwork;
@@ -725,27 +725,9 @@ public final class BidirectionalReachabilityAnalysisTest {
     Batfish batfish = getBatfish(configs, temp);
     batfish.computeDataPlane();
 
-    Location sourceLoc = new InterfaceLinkLocation(n1.getHostname(), i1.getName());
+    Location sourceLoc = new InterfaceLocation(n1.getHostname(), i1.getName());
     IpSpaceAssignment assignment =
         IpSpaceAssignment.builder().assign(sourceLoc, ip1.toIpSpace()).build();
-
-    // forward final node is n2
-    BDDReachabilityAnalysis analysis =
-        new BDDReachabilityAnalysisFactory(
-                PKT, configs, batfish.loadDataPlane().getForwardingAnalysis(), false, true)
-            .bddReachabilityAnalysis(
-                assignment,
-                matchDst(ip2),
-                ImmutableSet.of(),
-                ImmutableSet.of(),
-                ImmutableSet.of(n2.getHostname()),
-                FlowDisposition.SUCCESS_DISPOSITIONS);
-
-    // should get successful result only
-    assertThat(
-        analysis.getIngressLocationReachableBDDs(),
-        hasEntry(
-            equalTo(IngressLocation.interfaceLink(n1.getHostname(), i1.getName())), not(isZero())));
 
     // forward final node is n2
     BidirectionalReachabilityAnalysis analysisEndingAtN2 =
@@ -763,11 +745,12 @@ public final class BidirectionalReachabilityAnalysisTest {
     // should get successful result only
     assertThat(
         analysisEndingAtN2.getResult().getStartLocationReturnPassSuccessBdds(),
-        hasEntry(equalTo(sourceLoc), not(isZero())));
+        hasEntry(
+            equalTo(sourceLoc),
+            equalTo(PKT.getDstIpSpaceToBDD().toBDD(ip2).and(PKT.getSrcIpSpaceToBDD().toBDD(ip1)))));
     // should get successful result only
     assertThat(
-        analysisEndingAtN2.getResult().getStartLocationReturnPassFailureBdds(),
-        hasEntry(equalTo(sourceLoc), isZero()));
+        analysisEndingAtN2.getResult().getStartLocationReturnPassFailureBdds(), anEmptyMap());
 
     // forward final node is n1
     BidirectionalReachabilityAnalysis analysisEndingAtN1 =
@@ -784,10 +767,8 @@ public final class BidirectionalReachabilityAnalysisTest {
 
     // forward analysis should fail, should get neither success nor failure return pass results
     assertThat(
-        analysisEndingAtN1.getResult().getStartLocationReturnPassSuccessBdds(),
-        hasEntry(equalTo(sourceLoc), isZero()));
+        analysisEndingAtN1.getResult().getStartLocationReturnPassSuccessBdds(), anEmptyMap());
     assertThat(
-        analysisEndingAtN1.getResult().getStartLocationReturnPassFailureBdds(),
-        hasEntry(equalTo(sourceLoc), isZero()));
+        analysisEndingAtN1.getResult().getStartLocationReturnPassFailureBdds(), anEmptyMap());
   }
 }
