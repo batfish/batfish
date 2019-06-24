@@ -8,10 +8,10 @@ import java.util.stream.Stream;
 import javax.annotation.Nonnull;
 import javax.annotation.ParametersAreNonnullByDefault;
 import net.sf.javabdd.BDD;
-import org.batfish.symbolic.state.NodeAccept;
 import org.batfish.symbolic.state.NodeDropNoRoute;
 import org.batfish.symbolic.state.NodeDropNullRoute;
 import org.batfish.symbolic.state.StateExpr;
+import org.batfish.symbolic.state.VrfAccept;
 
 /**
  * Module used to generate forwarding {@link Edge}s with configurable pre/postStates.
@@ -92,7 +92,7 @@ public final class BDDFibGenerator {
       StateExprConstructor2 preOutInterfaceInsufficientInfo,
       StateExprConstructor2 preOutInterfaceNeighborUnreachable) {
     return Streams.concat(
-        generateRules_PostInVrf_NodeAccept(includedNode, postInVrf),
+        generateRules_PostInVrf_VrfAccept(includedNode, postInVrf),
         generateRules_PostInVrf_NodeDropNoRoute(includedNode, postInVrf),
         generateRules_PostInVrf_PostInVrf(includedNode, postInVrf),
         generateRules_PostInVrf_PreOutVrf(includedNode, postInVrf, preOutVrf),
@@ -109,7 +109,7 @@ public final class BDDFibGenerator {
 
   @Nonnull
   @VisibleForTesting
-  Stream<Edge> generateRules_PostInVrf_NodeAccept(
+  Stream<Edge> generateRules_PostInVrf_VrfAccept(
       Predicate<String> includedNode, StateExprConstructor2 postInVrf) {
     return _vrfAcceptBDDs.entrySet().stream()
         .filter(byNodeEntry -> includedNode.test(byNodeEntry.getKey()))
@@ -122,7 +122,7 @@ public final class BDDFibGenerator {
                           String vrf = vrfEntry.getKey();
                           BDD acceptBDD = vrfEntry.getValue();
                           return new Edge(
-                              postInVrf.apply(node, vrf), new NodeAccept(node), acceptBDD);
+                              postInVrf.apply(node, vrf), new VrfAccept(node, vrf), acceptBDD);
                         }));
   }
 

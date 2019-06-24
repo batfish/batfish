@@ -4,6 +4,8 @@ public interface StateExprVisitor<R> {
 
   R visitAccept();
 
+  R visitDeliveredToSubnet();
+
   R visitDropAclIn();
 
   R visitDropAclOut();
@@ -13,8 +15,6 @@ public interface StateExprVisitor<R> {
   R visitDropNullRoute();
 
   R visitExitsNetwork();
-
-  R visitDeliveredToSubnet();
 
   R visitInsufficientInfo();
 
@@ -52,8 +52,6 @@ public interface StateExprVisitor<R> {
 
   R visitPreInInterface(PreInInterface preInInterface);
 
-  R visitPreOutVrf(PreOutVrf preOutVrf);
-
   R visitPreOutEdge(PreOutEdge preOutEdge);
 
   R visitPreOutEdgePostNat(PreOutEdgePostNat preOutInterface);
@@ -69,5 +67,9 @@ public interface StateExprVisitor<R> {
   R visitPreOutInterfaceNeighborUnreachable(
       PreOutInterfaceNeighborUnreachable preOutInterfaceNeighborUnreachable);
 
+  R visitPreOutVrf(PreOutVrf preOutVrf);
+
   R visitQuery();
+
+  R visitVrfAccept(VrfAccept vrfAccept);
 }
