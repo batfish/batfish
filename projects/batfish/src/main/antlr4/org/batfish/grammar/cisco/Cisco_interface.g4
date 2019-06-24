@@ -314,6 +314,11 @@ if_ip_flow_monitor
    ) NEWLINE
 ;
 
+if_ip_forward
+:
+   NO? IP FORWARD NEWLINE
+;
+
 if_ip_helper_address
 :
    IP HELPER_ADDRESS address = IP_ADDRESS NEWLINE
@@ -1725,6 +1730,7 @@ if_inner
    | if_ip_address_secondary
    | if_ip_dhcp
    | if_ip_flow_monitor
+   | if_ip_forward
    | if_ip_helper_address
    | if_ip_inband_access_group
    | if_ip_igmp
