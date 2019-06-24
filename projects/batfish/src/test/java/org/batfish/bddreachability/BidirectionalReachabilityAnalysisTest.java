@@ -81,7 +81,6 @@ import org.batfish.specifier.InterfaceLinkLocation;
 import org.batfish.specifier.InterfaceLocation;
 import org.batfish.specifier.IpSpaceAssignment;
 import org.batfish.specifier.Location;
-import org.batfish.symbolic.state.NodeAccept;
 import org.batfish.symbolic.state.NodeInterfaceDeliveredToSubnet;
 import org.batfish.symbolic.state.NodeInterfaceExitsNetwork;
 import org.batfish.symbolic.state.NodeInterfaceInsufficientInfo;
@@ -90,6 +89,7 @@ import org.batfish.symbolic.state.OriginateInterfaceLink;
 import org.batfish.symbolic.state.OriginateVrf;
 import org.batfish.symbolic.state.PreInInterface;
 import org.batfish.symbolic.state.StateExpr;
+import org.batfish.symbolic.state.VrfAccept;
 import org.hamcrest.Matchers;
 import org.junit.BeforeClass;
 import org.junit.Rule;
@@ -175,7 +175,7 @@ public final class BidirectionalReachabilityAnalysisTest {
                 dst2.and(src1))),
         equalTo(
             ImmutableMap.of(
-                new NodeAccept("NODE"),
+                new VrfAccept("NODE", "VRF"),
                 dst2.and(src1),
                 new NodeInterfaceDeliveredToSubnet("NODE", "IFACE"),
                 dst1.and(src2),
