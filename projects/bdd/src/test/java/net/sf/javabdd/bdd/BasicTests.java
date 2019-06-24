@@ -334,7 +334,6 @@ public class BasicTests extends BDDTestCase {
           c = a.and(b);
           bdd.setCacheSize(123); // clear cache between ops
           assertEquals(a.andSat(b), !c.isZero());
-          assertEquals(b.andSat(a), !c.isZero());
           b.free();
           c.free();
         }
