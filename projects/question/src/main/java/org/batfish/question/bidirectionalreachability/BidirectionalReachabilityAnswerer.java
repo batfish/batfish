@@ -62,6 +62,7 @@ public final class BidirectionalReachabilityAnswerer extends Answerer {
                 getIpSpaceSpecifierOrDefault(
                     _headerConstraints.getDstIps(),
                     new ConstantIpSpaceSpecifier(UniverseIpSpace.INSTANCE)))
+            .setFinalNodesSpecifier(pathConstraints.getEndLocation())
             .setForbiddenTransitNodesSpecifier(pathConstraints.getForbiddenLocations())
             .setHeaderSpace(headerSpace)
             .setIgnoreFilters(false)

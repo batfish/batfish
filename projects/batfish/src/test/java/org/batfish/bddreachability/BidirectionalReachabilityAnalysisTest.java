@@ -747,6 +747,79 @@ public final class BidirectionalReachabilityAnalysisTest {
             fwLocFailBdd.and(dstIpBdd)));
   }
 
+  @Test
+  public void testForwardPassFinalNodes() throws IOException {
+    Ip ip1 = Ip.parse("10.0.0.1");
+    Ip ip2 = Ip.parse("10.0.0.2");
+
+    NetworkFactory nf = new NetworkFactory();
+    Configuration.Builder cb =
+        nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS);
+
+    Configuration n1 = cb.build();
+    Configuration n2 = cb.build();
+
+    Vrf.Builder vb = nf.vrfBuilder();
+    Vrf v1 = vb.setOwner(n1).build();
+    Vrf v2 = vb.setOwner(n2).build();
+
+    Interface.Builder ib = nf.interfaceBuilder().setActive(true);
+    Interface i1 =
+        ib.setAddresses(ConcreteInterfaceAddress.create(ip1, 24)).setOwner(n1).setVrf(v1).build();
+    ib.setAddresses(ConcreteInterfaceAddress.create(ip2, 24)).setOwner(n2).setVrf(v2).build();
+
+    SortedMap<String, Configuration> configs =
+        ImmutableSortedMap.of(n1.getHostname(), n1, n2.getHostname(), n2);
+    Batfish batfish = getBatfish(configs, temp);
+    batfish.computeDataPlane();
+
+    Location sourceLoc = new InterfaceLocation(n1.getHostname(), i1.getName());
+    IpSpaceAssignment assignment =
+        IpSpaceAssignment.builder().assign(sourceLoc, ip1.toIpSpace()).build();
+
+    // forward final node is n2
+    BidirectionalReachabilityAnalysis analysisEndingAtN2 =
+        new BidirectionalReachabilityAnalysis(
+            PKT,
+            configs,
+            batfish.loadDataPlane().getForwardingAnalysis(),
+            assignment,
+            matchDst(ip2),
+            ImmutableSet.of(),
+            ImmutableSet.of(),
+            ImmutableSet.of(n2.getHostname()),
+            FlowDisposition.SUCCESS_DISPOSITIONS);
+
+    // should get successful result only
+    assertThat(
+        analysisEndingAtN2.getResult().getStartLocationReturnPassSuccessBdds(),
+        hasEntry(
+            equalTo(sourceLoc),
+            equalTo(PKT.getDstIpSpaceToBDD().toBDD(ip2).and(PKT.getSrcIpSpaceToBDD().toBDD(ip1)))));
+    // should get successful result only
+    assertThat(
+        analysisEndingAtN2.getResult().getStartLocationReturnPassFailureBdds(), anEmptyMap());
+
+    // forward final node is n1
+    BidirectionalReachabilityAnalysis analysisEndingAtN1 =
+        new BidirectionalReachabilityAnalysis(
+            PKT,
+            configs,
+            batfish.loadDataPlane().getForwardingAnalysis(),
+            assignment,
+            matchDst(ip2),
+            ImmutableSet.of(),
+            ImmutableSet.of(),
+            ImmutableSet.of(n1.getHostname()),
+            FlowDisposition.SUCCESS_DISPOSITIONS);
+
+    // forward analysis should fail, should get neither success nor failure return pass results
+    assertThat(
+        analysisEndingAtN1.getResult().getStartLocationReturnPassSuccessBdds(), anEmptyMap());
+    assertThat(
+        analysisEndingAtN1.getResult().getStartLocationReturnPassFailureBdds(), anEmptyMap());
+  }
+
   private static @Nonnull SortedMap<String, Configuration> makeFibLookupNetwork(
       boolean withNeighbor,
       boolean blockNonSessionReverse,

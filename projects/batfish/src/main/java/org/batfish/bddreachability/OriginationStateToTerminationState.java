@@ -153,8 +153,7 @@ public class OriginationStateToTerminationState implements StateExprVisitor<List
 
   @Override
   public List<StateExpr> visitOriginateVrf(OriginateVrf originateVrf) {
-    // TODO: we need a NodeVrfAccept here.
-    return ImmutableList.of(new NodeAccept(originateVrf.getHostname()));
+    return ImmutableList.of(new VrfAccept(originateVrf.getHostname(), originateVrf.getVrf()));
   }
 
   @Override

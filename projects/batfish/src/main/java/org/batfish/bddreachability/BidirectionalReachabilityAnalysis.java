@@ -26,6 +26,7 @@ import java.util.Set;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import javax.annotation.Nonnull;
 import net.sf.javabdd.BDD;
 import org.batfish.bddreachability.transition.TransformationToTransition;
 import org.batfish.common.bdd.BDDPacket;
@@ -60,6 +61,7 @@ public final class BidirectionalReachabilityAnalysis {
   private final Supplier<Map<StateExpr, BDD>> _returnPassOrigBdds;
   private final Supplier<Map<String, List<BDDFirewallSessionTraceInfo>>> _initializedSessions;
   private final Supplier<BDDReachabilityAnalysis> _returnPassAnalysis;
+  private final @Nonnull Set<String> _forwardPassFinalNodes;
   private final Supplier<Map<Location, BDD>> _forwardPassStartLocationToReturnPassFailureBdds;
   private final Supplier<Map<StateExpr, StateExpr>>
       _forwardPassTerminationStateToReturnPassOriginationState;
@@ -88,6 +90,7 @@ public final class BidirectionalReachabilityAnalysis {
       _factory =
           new BDDReachabilityAnalysisFactory(bddPacket, configs, forwardingAnalysis, false, true);
       _forbiddenTransitNodes = ImmutableSet.copyOf(forbiddenTransitNodes);
+      _forwardPassFinalNodes = forwardPassFinalNodes;
       _requiredTransitNodes = ImmutableSet.copyOf(requiredTransitNodes);
 
       _zero = bddPacket.getFactory().zero();
@@ -189,7 +192,7 @@ public final class BidirectionalReachabilityAnalysis {
     return _forwardPassForwardReachableBdds.get().keySet().stream()
         .map(
             term -> {
-              StateExpr orig = reverseTraceOriginationState(term);
+              StateExpr orig = reverseTraceOriginationState(_forwardPassFinalNodes::contains, term);
               return orig == null ? null : Maps.immutableEntry(term, orig);
             })
         .filter(Objects::nonNull)
