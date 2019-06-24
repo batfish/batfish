@@ -11,6 +11,7 @@ import static org.batfish.bddreachability.BDDReverseTransformationRangesImpl.Tra
 import static org.batfish.bddreachability.BidirectionalReachabilityAnalysis.computeReturnPassQueryConstraints;
 import static org.batfish.bddreachability.transition.Transitions.compose;
 import static org.batfish.bddreachability.transition.Transitions.constraint;
+import static org.batfish.common.bdd.BDDMatchers.isZero;
 import static org.batfish.datamodel.FlowDisposition.ACCEPTED;
 import static org.batfish.datamodel.FlowDisposition.DELIVERED_TO_SUBNET;
 import static org.batfish.datamodel.FlowDisposition.DENIED_IN;
@@ -24,11 +25,13 @@ import static org.batfish.datamodel.acl.AclLineMatchExprs.match;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.matchDst;
 import static org.batfish.datamodel.transformation.Transformation.always;
 import static org.batfish.datamodel.transformation.TransformationStep.assignSourceIp;
+import static org.batfish.main.BatfishTestUtils.getBatfish;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasEntry;
+import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -693,5 +696,79 @@ public final class BidirectionalReachabilityAnalysisTest {
             source2LocFailBdd.and(dstIpBdd),
             fwI2Loc,
             fwLocFailBdd.and(dstIpBdd)));
+  }
+
+  @Test
+  public void testForwardPassFinalNodes() throws IOException {
+    Ip ip1 = Ip.parse("10.0.0.1");
+    Ip ip2 = Ip.parse("10.0.0.2");
+
+    NetworkFactory nf = new NetworkFactory();
+    Configuration.Builder cb =
+        nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS);
+
+    Configuration n1 = cb.build();
+    Configuration n2 = cb.build();
+
+    Vrf.Builder vb = nf.vrfBuilder();
+    Vrf v1 = vb.setOwner(n1).build();
+    Vrf v2 = vb.setOwner(n2).build();
+
+    Interface.Builder ib = nf.interfaceBuilder().setActive(true);
+    Interface i1 =
+        ib.setAddresses(ConcreteInterfaceAddress.create(ip1, 24)).setOwner(n1).setVrf(v1).build();
+    ib.setAddresses(ConcreteInterfaceAddress.create(ip2, 24)).setOwner(n2).setVrf(v2).build();
+
+    SortedMap<String, Configuration> configs =
+        ImmutableSortedMap.of(n1.getHostname(), n1, n2.getHostname(), n2);
+    Batfish batfish = getBatfish(configs, temp);
+    batfish.computeDataPlane();
+
+    Location sourceLoc = new InterfaceLinkLocation(n1.getHostname(), i1.getName());
+    IpSpaceAssignment assignment =
+        IpSpaceAssignment.builder().assign(sourceLoc, ip1.toIpSpace()).build();
+
+    // forward final node is n2
+    BidirectionalReachabilityAnalysis analysisEndingAtN2 =
+        new BidirectionalReachabilityAnalysis(
+            PKT,
+            configs,
+            batfish.loadDataPlane().getForwardingAnalysis(),
+            assignment,
+            matchDst(ip1.toIpSpace()),
+            ImmutableSet.of(),
+            ImmutableSet.of(),
+            ImmutableSet.of(n2.getHostname()),
+            FlowDisposition.SUCCESS_DISPOSITIONS);
+
+    // should get successful result only
+    assertThat(
+        analysisEndingAtN2.getResult().getStartLocationReturnPassSuccessBdds(),
+        hasEntry(equalTo(sourceLoc), not(isZero())));
+    // should get successful result only
+    assertThat(
+        analysisEndingAtN2.getResult().getStartLocationReturnPassFailureBdds(),
+        hasEntry(equalTo(sourceLoc), isZero()));
+
+    // forward final node is n1
+    BidirectionalReachabilityAnalysis analysisEndingAtN1 =
+        new BidirectionalReachabilityAnalysis(
+            PKT,
+            configs,
+            batfish.loadDataPlane().getForwardingAnalysis(),
+            assignment,
+            matchDst(ip2.toIpSpace()),
+            ImmutableSet.of(),
+            ImmutableSet.of(),
+            ImmutableSet.of(n1.getHostname()),
+            FlowDisposition.SUCCESS_DISPOSITIONS);
+
+    // forward analysis should fail, should get neither success nor failure return pass results
+    assertThat(
+        analysisEndingAtN1.getResult().getStartLocationReturnPassSuccessBdds(),
+        hasEntry(equalTo(sourceLoc), isZero()));
+    assertThat(
+        analysisEndingAtN1.getResult().getStartLocationReturnPassFailureBdds(),
+        hasEntry(equalTo(sourceLoc), isZero()));
   }
 }
