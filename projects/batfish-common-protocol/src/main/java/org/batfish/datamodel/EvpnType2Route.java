@@ -47,7 +47,7 @@ public final class EvpnType2Route extends EvpnRoute<EvpnType2Route.Builder, Evpn
       return new EvpnType2Route(
           getAdmin(),
           _asPath,
-          _clusterList.build(),
+          _clusterList,
           _communities,
           _discard,
           _ip,
