@@ -10,8 +10,6 @@ import org.batfish.datamodel.routing_policy.expr.CommunitySetExpr;
 
 public class RoutePolicyCommunitySetInline extends RoutePolicyCommunitySet {
 
-  private static final long serialVersionUID = 1L;
-
   private List<CommunitySetElem> _elements;
 
   public RoutePolicyCommunitySetInline(List<CommunitySetElem> elements) {

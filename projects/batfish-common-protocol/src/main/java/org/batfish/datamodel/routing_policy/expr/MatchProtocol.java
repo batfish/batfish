@@ -23,7 +23,6 @@ import org.batfish.datamodel.routing_policy.Result;
 @ParametersAreNonnullByDefault
 public final class MatchProtocol extends BooleanExpr {
   private static final String PROP_PROTOCOLS = "protocols";
-  private static final long serialVersionUID = 1L;
 
   @Nonnull private final Set<RoutingProtocol> _protocols;
 

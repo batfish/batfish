@@ -74,8 +74,6 @@ public final class LongSpace extends NumberSpace<Long, LongSpace, LongSpace.Buil
 
   private static final String ERROR_MESSAGE_TEMPLATE = "Invalid range specification %s";
 
-  private static final long serialVersionUID = 1L;
-
   public static @Nonnull Builder builder() {
     return new Builder();
   }

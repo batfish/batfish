@@ -12,8 +12,6 @@ import org.batfish.datamodel.routing_policy.Result;
  */
 public final class RouteIsClassful extends BooleanExpr {
 
-  private static final long serialVersionUID = 1L;
-
   private static final RouteIsClassful INSTANCE = new RouteIsClassful();
 
   private RouteIsClassful() {}

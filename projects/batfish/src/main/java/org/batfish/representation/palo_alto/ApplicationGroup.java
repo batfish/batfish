@@ -10,7 +10,6 @@ import java.util.TreeSet;
 
 /** Represents a Palo Alto application-group */
 public final class ApplicationGroup implements Serializable {
-  private static final long serialVersionUID = 1L;
 
   private final Set<String> _members;
 

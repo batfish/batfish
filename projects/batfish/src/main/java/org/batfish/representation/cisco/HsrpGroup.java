@@ -9,8 +9,6 @@ import org.batfish.datamodel.tracking.TrackAction;
 
 public class HsrpGroup implements Serializable {
 
-  private static final long serialVersionUID = 1L;
-
   private String _authentication;
 
   private final int _groupNumber;

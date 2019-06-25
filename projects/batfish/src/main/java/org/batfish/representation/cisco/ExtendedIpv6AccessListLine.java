@@ -13,8 +13,6 @@ import org.batfish.datamodel.TcpFlagsMatchConditions;
 
 public class ExtendedIpv6AccessListLine implements Serializable {
 
-  private static final long serialVersionUID = 1L;
-
   private final LineAction _action;
 
   private final Set<Integer> _dscps;

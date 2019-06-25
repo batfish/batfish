@@ -30,9 +30,8 @@ public class ConvertConfigurationAnswerElement extends InitStepAnswerElement
     implements Serializable {
 
   /** A non-default number because we changed the class */
-  private static final long serialVersionUID = 2L;
-
   private static final String PROP_DEFINED_STRUCTURES = "definedStructures";
+
   private static final String PROP_CONVERT_STATUS = "convertStatus";
   private static final String PROP_ERRORS = "errors";
   private static final String PROP_FILE_MAP = "fileMap";

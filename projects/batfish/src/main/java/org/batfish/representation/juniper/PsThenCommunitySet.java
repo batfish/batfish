@@ -17,8 +17,6 @@ import org.batfish.datamodel.routing_policy.statement.Statement;
 @ParametersAreNonnullByDefault
 public final class PsThenCommunitySet extends PsThen {
 
-  private static final long serialVersionUID = 1L;
-
   private JuniperConfiguration _configuration;
 
   private final String _name;

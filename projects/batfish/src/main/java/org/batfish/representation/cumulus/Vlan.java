@@ -14,8 +14,6 @@ import org.batfish.datamodel.MacAddress;
 /** Layer-3 integrated routing and bridging VLAN interface */
 public class Vlan implements Serializable {
 
-  private static final long serialVersionUID = 1L;
-
   private final @Nonnull List<InterfaceAddress> _addresses;
   private final @Nonnull Map<MacAddress, Set<InterfaceAddress>> _addressVirtuals;
   private final @Nonnull String _name;

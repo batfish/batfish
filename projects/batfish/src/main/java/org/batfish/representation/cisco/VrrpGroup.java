@@ -5,8 +5,6 @@ import org.batfish.datamodel.Ip;
 
 public class VrrpGroup implements Serializable {
 
-  private static final long serialVersionUID = 1L;
-
   private String _authenticationTextHash;
 
   private final Integer _name;

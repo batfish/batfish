@@ -6,8 +6,6 @@ import javax.annotation.Nullable;
 
 public class BgpRedistributionPolicy implements Serializable {
 
-  private static final long serialVersionUID = 1L;
-
   private final @Nonnull CumulusRoutingProtocol _protocol;
   private final @Nullable String _routeMap;
 

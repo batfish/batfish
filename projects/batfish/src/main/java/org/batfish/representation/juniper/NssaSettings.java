@@ -5,8 +5,6 @@ import org.batfish.datamodel.ospf.OspfDefaultOriginateType;
 
 public class NssaSettings implements Serializable {
 
-  private static final long serialVersionUID = 1L;
-
   private OspfDefaultOriginateType _defaultLsaType;
 
   private boolean _noSummaries;

@@ -76,8 +76,6 @@ public class IpAccessList implements Serializable {
   private static final String PROP_SOURCE_NAME = "sourceName";
   private static final String PROP_SOURCE_TYPE = "sourceType";
 
-  private static final long serialVersionUID = 1L;
-
   static boolean bothNullOrSameName(IpAccessList a, IpAccessList b) {
     if (a == null && b == null) {
       return true;

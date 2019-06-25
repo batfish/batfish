@@ -15,7 +15,6 @@ import org.batfish.datamodel.acl.PermittedByAcl;
 import org.batfish.datamodel.acl.TrueExpr;
 
 public final class ServiceGroup implements ServiceGroupMember {
-  private static final long serialVersionUID = 1L;
 
   private final String _name;
 

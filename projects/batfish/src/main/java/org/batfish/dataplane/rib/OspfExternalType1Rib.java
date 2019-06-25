@@ -7,8 +7,6 @@ import org.batfish.datamodel.OspfExternalType1Route;
 @ParametersAreNonnullByDefault
 public class OspfExternalType1Rib extends AbstractRib<OspfExternalType1Route> {
 
-  private static final long serialVersionUID = 1L;
-
   private final String _hostname;
 
   public OspfExternalType1Rib(String hostname) {

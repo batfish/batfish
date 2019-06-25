@@ -15,8 +15,6 @@ import org.batfish.datamodel.visitors.VoidCommunitySetExprVisitor;
 public class NamedCommunitySet extends CommunitySetExpr {
   private static final String PROP_NAME = "name";
 
-  private static final long serialVersionUID = 1L;
-
   @JsonCreator
   private static NamedCommunitySet create(@JsonProperty(PROP_NAME) String name) {
     return new NamedCommunitySet(requireNonNull(name));

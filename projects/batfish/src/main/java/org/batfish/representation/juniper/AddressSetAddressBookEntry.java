@@ -9,8 +9,6 @@ import org.batfish.datamodel.IpWildcard;
 
 public final class AddressSetAddressBookEntry extends AddressBookEntry {
 
-  private static final long serialVersionUID = 1L;
-
   private final SortedMap<String, AddressSetEntry> _entries;
 
   public AddressSetAddressBookEntry(String name) {

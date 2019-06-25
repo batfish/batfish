@@ -14,8 +14,6 @@ import org.codehaus.jettison.json.JSONObject;
 
 public class Vpc implements AwsVpcEntity, Serializable {
 
-  private static final long serialVersionUID = 1L;
-
   private Prefix _cidrBlock;
 
   private Set<Prefix> _cidrBlockAssociations;

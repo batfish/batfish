@@ -87,7 +87,6 @@ public class ReferenceBook implements Comparable<ReferenceBook>, Serializable {
     }
   }
 
-  private static final long serialVersionUID = 1L;
   private static final String PROP_ADDRESS_GROUPS = "addressGroups";
   private static final String PROP_FILTER_GROUPS = "filterGroups";
   private static final String PROP_INTERFACE_GROUPS = "interfaceGroups";

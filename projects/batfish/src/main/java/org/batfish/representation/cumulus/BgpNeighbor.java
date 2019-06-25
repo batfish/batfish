@@ -8,8 +8,6 @@ import javax.annotation.Nullable;
 /** Parent for all BGP neighbors. */
 public abstract class BgpNeighbor implements Serializable {
 
-  private static final long serialVersionUID = 1L;
-
   private final @Nonnull String _name;
   private @Nullable String _description;
   private @Nullable String _peerGroup;

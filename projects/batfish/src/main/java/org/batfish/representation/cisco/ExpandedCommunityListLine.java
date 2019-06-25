@@ -5,8 +5,6 @@ import org.batfish.datamodel.LineAction;
 
 public class ExpandedCommunityListLine implements Serializable {
 
-  private static final long serialVersionUID = 1L;
-
   private LineAction _action;
   private String _regex;
 

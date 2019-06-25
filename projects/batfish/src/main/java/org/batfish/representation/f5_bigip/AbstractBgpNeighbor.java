@@ -9,8 +9,6 @@ import javax.annotation.ParametersAreNonnullByDefault;
 @ParametersAreNonnullByDefault
 public abstract class AbstractBgpNeighbor implements Serializable {
 
-  private static final long serialVersionUID = 1L;
-
   private @Nullable String _description;
   private final @Nonnull BgpNeighborIpv4AddressFamily _ipv4AddressFamily;
   private final @Nonnull BgpNeighborIpv6AddressFamily _ipv6AddressFamily;

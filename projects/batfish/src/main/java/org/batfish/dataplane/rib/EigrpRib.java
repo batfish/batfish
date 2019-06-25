@@ -9,8 +9,6 @@ import org.batfish.datamodel.EigrpRoute;
 @ParametersAreNonnullByDefault
 public class EigrpRib extends AbstractRib<EigrpRoute> {
 
-  private static final long serialVersionUID = 1L;
-
   public EigrpRib() {
     super();
   }

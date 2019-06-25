@@ -4,8 +4,6 @@ import java.io.Serializable;
 
 public class AwsFamily implements Serializable {
 
-  private static final long serialVersionUID = 1L;
-
   private String _region;
 
   private String _subnetId;

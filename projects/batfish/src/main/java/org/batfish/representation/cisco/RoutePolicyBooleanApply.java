@@ -7,8 +7,6 @@ import org.batfish.datamodel.routing_policy.expr.CallExpr;
 
 public class RoutePolicyBooleanApply extends RoutePolicyBoolean {
 
-  private static final long serialVersionUID = 1L;
-
   private String _name;
 
   public RoutePolicyBooleanApply(String name) {

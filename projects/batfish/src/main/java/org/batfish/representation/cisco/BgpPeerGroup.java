@@ -10,8 +10,6 @@ import org.batfish.datamodel.Ip;
 
 public abstract class BgpPeerGroup implements Serializable {
 
-  private static final long serialVersionUID = 1L;
-
   protected Boolean _active;
   protected Boolean _additionalPathsReceive;
   protected Boolean _additionalPathsSelectAll;

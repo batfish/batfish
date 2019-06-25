@@ -14,8 +14,6 @@ import javax.annotation.Nullable;
 public class VarCommunityHalf implements CommunityHalfExpr {
   private static final String PROP_VAR = "var";
 
-  private static final long serialVersionUID = 1L;
-
   @JsonCreator
   private static @Nonnull VarCommunityHalf create(@JsonProperty(PROP_VAR) String var) {
     return new VarCommunityHalf(requireNonNull(var));

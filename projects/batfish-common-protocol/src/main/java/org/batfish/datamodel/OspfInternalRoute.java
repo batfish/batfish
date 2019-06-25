@@ -6,8 +6,6 @@ import javax.annotation.ParametersAreNonnullByDefault;
 @ParametersAreNonnullByDefault
 public abstract class OspfInternalRoute extends OspfRoute {
 
-  private static final long serialVersionUID = 1L;
-
   protected OspfInternalRoute(
       Prefix network,
       Ip nextHopIp,

@@ -23,8 +23,6 @@ public class RdsInstance implements AwsVpcEntity, Serializable {
     UNAVAILABLE
   }
 
-  private static final long serialVersionUID = 1L;
-
   private String _dbInstanceIdentifier;
 
   private Status _dbInstanceStatus = Status.UNAVAILABLE;
@@ -51,10 +49,6 @@ public class RdsInstance implements AwsVpcEntity, Serializable {
     }
     initSubnets(jObj.getJSONObject(JSON_KEY_DB_SUBNET_GROUP).getJSONArray(JSON_KEY_SUBNETS));
     initSecurityGroups(jObj.getJSONArray(JSON_KEY_VPC_SECURITY_GROUPS));
-  }
-
-  public static long getSerialVersionUID() {
-    return serialVersionUID;
   }
 
   @Override

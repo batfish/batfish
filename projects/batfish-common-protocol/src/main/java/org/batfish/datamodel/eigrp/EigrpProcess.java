@@ -17,7 +17,7 @@ public class EigrpProcess implements Comparable<EigrpProcess>, Serializable {
   private static final String PROP_EXPORT_POLICY = "export-policy";
   private static final String PROP_MODE = "eigrp-mode";
   private static final String PROP_ROUTER_ID = "router-id";
-  private static final long serialVersionUID = 1L;
+
   private final Long _asn;
   private final String _exportPolicy;
   private final EigrpProcessMode _mode;

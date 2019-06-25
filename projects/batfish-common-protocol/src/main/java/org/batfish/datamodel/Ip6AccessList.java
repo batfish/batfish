@@ -9,8 +9,6 @@ import org.batfish.common.util.ComparableStructure;
 public class Ip6AccessList extends ComparableStructure<String> {
   private static final String PROP_LINES = "lines";
 
-  private static final long serialVersionUID = 1L;
-
   private List<Ip6AccessListLine> _lines;
 
   @JsonCreator

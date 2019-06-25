@@ -62,8 +62,6 @@ public final class IpWildcardSetIpSpace extends IpSpace {
   private static final String PROP_BLACKLIST = "blacklist";
   private static final String PROP_WHITELIST = "whitelist";
 
-  private static final long serialVersionUID = 1L;
-
   public static Builder builder() {
     return new Builder();
   }

@@ -21,7 +21,6 @@ public class Edge implements Serializable, Comparable<Edge> {
   private static final String PROP_INT2 = "node2interface";
   private static final String PROP_NODE1 = "node1";
   private static final String PROP_NODE2 = "node2";
-  private static final long serialVersionUID = 1L;
 
   @Nonnull private final NodeInterfacePair _tail;
   @Nonnull private final NodeInterfacePair _head;

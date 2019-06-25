@@ -8,7 +8,6 @@ import org.batfish.common.util.ComparableStructure;
 /** Represents the IKE proposal used for IKE phase 1 negotiation */
 public class IkePhase1Proposal extends ComparableStructure<String> {
 
-  private static final long serialVersionUID = 1L;
   private static final String PROP_AUTHENTICATION_METHOD = "authenticationMethod";
   private static final String PROP_ENCRYPTION_ALGORITHM = "encryptionAlgorithm";
   private static final String PROP_DIFFIE_HELLMAN_GROUP = "diffieHellmanGroup";

@@ -9,7 +9,6 @@ import javax.annotation.Nullable;
 public class PermittedByAcl extends AclLineMatchExpr {
   private static final String PROP_ACL_NAME = "aclName";
   private static final String PROP_DEFAULT_ACCEPT = "defaultAccept";
-  private static final long serialVersionUID = 1L;
 
   private final String _aclName;
   private final boolean _defaultAccept;

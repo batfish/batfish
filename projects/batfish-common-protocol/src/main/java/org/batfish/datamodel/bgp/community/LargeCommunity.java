@@ -16,8 +16,6 @@ import javax.annotation.ParametersAreNonnullByDefault;
 @ParametersAreNonnullByDefault
 public final class LargeCommunity extends Community {
 
-  private static final long serialVersionUID = 1L;
-
   private final long _globalAdministrator;
   private final long _localData1;
   private final long _localData2;

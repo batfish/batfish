@@ -10,8 +10,6 @@ import org.batfish.datamodel.acl.AclLineMatchExprs;
 /** Represents a {@code ScreenOption} checking unknown protocol */
 public final class IpUnknownProtocol implements ScreenOption {
 
-  private static final long serialVersionUID = 1L;
-
   private static final int LARGEST_VALID_PROTOCOL = 143;
   private static final String IP_UNKNOWN_PROTOCOL = "ip unknown-protocol";
 

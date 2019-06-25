@@ -9,7 +9,6 @@ import com.google.common.base.MoreObjects;
 public class OriginatingFromDevice extends AclLineMatchExpr {
 
   public static final OriginatingFromDevice INSTANCE = new OriginatingFromDevice();
-  private static final long serialVersionUID = 1L;
 
   private OriginatingFromDevice() {
     super(null);

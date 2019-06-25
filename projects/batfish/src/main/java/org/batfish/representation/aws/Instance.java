@@ -66,8 +66,6 @@ public class Instance implements AwsVpcEntity, Serializable {
     }
   }
 
-  private static final long serialVersionUID = 1L;
-
   private final String _instanceId;
 
   private final List<String> _networkInterfaces;

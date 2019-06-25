@@ -12,8 +12,6 @@ import org.batfish.datamodel.ConcreteInterfaceAddress;
 /** A virtual routing and forwarding instance */
 public class Vrf implements Serializable {
 
-  private static final long serialVersionUID = 1L;
-
   private final @Nonnull List<ConcreteInterfaceAddress> _addresses;
   private final @Nonnull String _name;
   private final @Nonnull Set<StaticRoute> _staticRoutes;

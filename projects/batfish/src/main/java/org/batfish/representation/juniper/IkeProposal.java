@@ -8,8 +8,6 @@ import org.batfish.datamodel.IkeHashingAlgorithm;
 
 public class IkeProposal implements Serializable {
 
-  private static final long serialVersionUID = 1L;
-
   // https://www.juniper.net/documentation/en_US/junos/topics/reference/configuration-statement/security-edit-lifetime-seconds-ike.html
   private static final Integer DEFAULT_LIFETIME_SECONDS = 28800;
 

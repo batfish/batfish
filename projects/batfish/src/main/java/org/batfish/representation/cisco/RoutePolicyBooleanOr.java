@@ -8,7 +8,6 @@ import org.batfish.datamodel.routing_policy.expr.Disjunction;
 
 public class RoutePolicyBooleanOr extends RoutePolicyBoolean {
 
-  private static final long serialVersionUID = 1L;
   private RoutePolicyBoolean _left;
   private RoutePolicyBoolean _right;
 

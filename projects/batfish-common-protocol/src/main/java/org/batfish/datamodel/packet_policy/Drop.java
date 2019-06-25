@@ -9,7 +9,6 @@ import javax.annotation.ParametersAreNonnullByDefault;
 @ParametersAreNonnullByDefault
 public final class Drop implements Action {
 
-  private static final long serialVersionUID = 1L;
   private static final Drop INSTANCE = new Drop();
 
   private Drop() {}

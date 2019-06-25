@@ -200,6 +200,4 @@ public final class IntegerSpace extends NumberSpace<Integer, IntegerSpace, Integ
       return builder;
     }
   }
-
-  private static final long serialVersionUID = 1L;
 }

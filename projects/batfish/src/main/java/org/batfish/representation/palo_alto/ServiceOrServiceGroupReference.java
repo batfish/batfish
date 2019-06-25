@@ -6,7 +6,6 @@ import javax.annotation.Nullable;
 
 public class ServiceOrServiceGroupReference
     implements Serializable, Comparable<ServiceOrServiceGroupReference> {
-  private static final long serialVersionUID = 1L;
 
   private final String _name;
 

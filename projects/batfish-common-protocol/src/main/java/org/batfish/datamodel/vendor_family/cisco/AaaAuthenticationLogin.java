@@ -9,8 +9,6 @@ public class AaaAuthenticationLogin implements Serializable {
 
   public static final String DEFAULT_LIST_NAME = "default";
 
-  private static final long serialVersionUID = 1L;
-
   private SortedMap<String, AaaAuthenticationLoginList> _lists;
 
   private boolean _privilegeMode;

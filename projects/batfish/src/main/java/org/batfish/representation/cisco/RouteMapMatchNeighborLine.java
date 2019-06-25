@@ -6,8 +6,6 @@ import org.batfish.datamodel.routing_policy.expr.BooleanExpr;
 
 public class RouteMapMatchNeighborLine extends RouteMapMatchLine {
 
-  private static final long serialVersionUID = 1L;
-
   private String _neighborIp;
 
   public RouteMapMatchNeighborLine(String neighborIP) {

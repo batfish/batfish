@@ -78,8 +78,6 @@ import org.batfish.vendor.VendorConfiguration;
 
 public final class PaloAltoConfiguration extends VendorConfiguration {
 
-  private static final long serialVersionUID = 1L;
-
   /** This is the name of an application that matches all traffic */
   public static final String CATCHALL_APPLICATION_NAME = "any";
 

@@ -10,8 +10,6 @@ import javax.annotation.ParametersAreNonnullByDefault;
 @ParametersAreNonnullByDefault
 public final class SnatPool implements Serializable {
 
-  private static final long serialVersionUID = 1L;
-
   private final @Nonnull Set<String> _members;
 
   private final @Nonnull String _name;

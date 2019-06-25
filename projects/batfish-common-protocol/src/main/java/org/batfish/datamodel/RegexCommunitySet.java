@@ -25,7 +25,6 @@ import org.batfish.datamodel.visitors.VoidCommunitySetExprVisitor;
 public final class RegexCommunitySet extends CommunitySetExpr {
 
   private final class PatternSupplier implements Supplier<Pattern>, Serializable {
-    private static final long serialVersionUID = 1L;
 
     @Override
     public Pattern get() {
@@ -34,8 +33,6 @@ public final class RegexCommunitySet extends CommunitySetExpr {
   }
 
   private static final String PROP_REGEX = "regex";
-
-  private static final long serialVersionUID = 1L;
 
   @JsonCreator
   private static @Nonnull RegexCommunitySet create(@JsonProperty(PROP_REGEX) String regex) {

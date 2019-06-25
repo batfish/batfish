@@ -7,8 +7,6 @@ import org.batfish.datamodel.IsisRoute;
 @ParametersAreNonnullByDefault
 public class IsisLevelRib extends AbstractRib<IsisRoute> {
 
-  private static final long serialVersionUID = 1L;
-
   public IsisLevelRib(boolean withBackups) {
     super(withBackups);
   }

@@ -7,8 +7,6 @@ import org.batfish.datamodel.DiffieHellmanGroup;
 
 public class IpsecProfile implements Serializable {
 
-  private static final long serialVersionUID = 1L;
-
   private String _isakmpProfile;
 
   private final String _name;

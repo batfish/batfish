@@ -5,8 +5,6 @@ import org.batfish.datamodel.Ip;
 
 public class NatGatewayAddress implements Serializable {
 
-  private static final long serialVersionUID = 1L;
-
   public final String _allocationId;
   public final String _networkInterfaceId;
   public final Ip _privateIp;

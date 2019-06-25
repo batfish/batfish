@@ -7,8 +7,6 @@ import org.batfish.datamodel.Prefix;
 /** A network to be exported over BGP. */
 public class BgpNetwork implements Serializable {
 
-  private static final long serialVersionUID = 1L;
-
   private final @Nonnull Prefix _network;
 
   public BgpNetwork(Prefix network) {

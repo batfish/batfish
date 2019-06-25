@@ -26,8 +26,6 @@ public class Ip6 implements Comparable<Ip6>, Serializable {
 
   private static final int NUM_BYTES = 16;
 
-  private static final long serialVersionUID = 1L;
-
   public static final Ip6 ZERO = new Ip6(BigInteger.ZERO);
 
   private static String asIpv6AddressString(BigInteger ipv6AddressAsBigInteger) {

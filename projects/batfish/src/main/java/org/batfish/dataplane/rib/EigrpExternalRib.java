@@ -8,8 +8,6 @@ import org.batfish.datamodel.EigrpExternalRoute;
 @ParametersAreNonnullByDefault
 public class EigrpExternalRib extends AbstractRib<EigrpExternalRoute> {
 
-  private static final long serialVersionUID = 1L;
-
   public EigrpExternalRib() {
     super(true);
   }

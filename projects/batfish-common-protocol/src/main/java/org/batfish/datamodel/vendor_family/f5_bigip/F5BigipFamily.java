@@ -49,8 +49,6 @@ public final class F5BigipFamily implements Serializable {
   private static final String PROP_VIRTUAL_ADDRESSES = "virtualAddresses";
   private static final String PROP_VIRTUALS = "virtuals";
 
-  private static final long serialVersionUID = 1L;
-
   public static @Nonnull Builder builder() {
     return new Builder();
   }

@@ -15,8 +15,6 @@ public final class DeniedByNamedIpSpace extends IpSpaceTraceEvent {
   private static final String PROP_DESCRIPTION = "description";
   private static final String PROP_NAME = "name";
 
-  private static final long serialVersionUID = 1L;
-
   private static String computeDescription(
       @Nonnull Ip ip,
       @Nonnull String ipDescription,

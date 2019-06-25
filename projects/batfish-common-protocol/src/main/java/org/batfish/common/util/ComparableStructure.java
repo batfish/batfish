@@ -9,7 +9,7 @@ public abstract class ComparableStructure<KeyT extends Comparable<? super KeyT>>
     implements Comparable<ComparableStructure<? extends KeyT>>, Serializable {
 
   protected static final String PROP_NAME = "name";
-  private static final long serialVersionUID = 1L;
+
   protected KeyT _key;
 
   @JsonCreator

@@ -8,8 +8,6 @@ import java.util.TreeSet;
 
 public class VirtualRouter implements Serializable {
 
-  private static final long serialVersionUID = 1L;
-
   private final NavigableSet<String> _interfaceNames;
 
   private final String _name;

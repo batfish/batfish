@@ -16,8 +16,6 @@ public class Ip6Wildcard implements Serializable, Comparable<Ip6Wildcard> {
 
   public static final Ip6Wildcard ANY = new Ip6Wildcard(Ip6.ZERO, Ip6.MAX);
 
-  private static final long serialVersionUID = 1L;
-
   private static Ip6 parseAddress(String str) {
     if (str.contains(";")) {
       String[] parts = str.split(";");

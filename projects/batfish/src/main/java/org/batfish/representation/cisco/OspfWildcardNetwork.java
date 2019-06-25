@@ -5,8 +5,6 @@ import org.batfish.datamodel.Ip;
 
 public class OspfWildcardNetwork implements Comparable<OspfWildcardNetwork>, Serializable {
 
-  private static final long serialVersionUID = 1L;
-
   private long _area;
   private Ip _prefix;
   private Ip _wildcard;

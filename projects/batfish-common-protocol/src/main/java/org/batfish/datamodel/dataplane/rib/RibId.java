@@ -13,7 +13,7 @@ import org.batfish.datamodel.GenericRib;
 /** Uniquely identifies a named {@link GenericRib} */
 @ParametersAreNonnullByDefault
 public final class RibId implements Serializable {
-  private static final long serialVersionUID = 1;
+
   private static final String PROP_HOSTNAME = "hostname";
   private static final String PROP_VRF_NAME = "vrfname";
   private static final String PROP_RIB_NAME = "ribname";

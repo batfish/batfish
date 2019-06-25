@@ -18,8 +18,6 @@ import org.batfish.common.util.ComparableStructure;
 public class Route6FilterList extends ComparableStructure<String> {
   private static final String PROP_LINES = "lines";
 
-  private static final long serialVersionUID = 1L;
-
   private final Supplier<Set<Prefix6>> _deniedCache;
 
   private List<Route6FilterLine> _lines;
@@ -27,7 +25,6 @@ public class Route6FilterList extends ComparableStructure<String> {
   private final Supplier<Set<Prefix6>> _permittedCache;
 
   private static class CacheSupplier implements Supplier<Set<Prefix6>>, Serializable {
-    private static final long serialVersionUID = 1L;
 
     @Override
     public Set<Prefix6> get() {

@@ -9,8 +9,6 @@ import org.batfish.datamodel.visitors.GenericIpSpaceVisitor;
 public class IpWildcardIpSpace extends IpSpace {
   private static final String PROP_IP_WILDCARD = "ipWildcard";
 
-  private static final long serialVersionUID = 1L;
-
   private final IpWildcard _ipWildcard;
 
   @JsonCreator

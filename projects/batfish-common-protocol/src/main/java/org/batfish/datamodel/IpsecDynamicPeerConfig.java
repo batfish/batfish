@@ -12,8 +12,6 @@ import javax.annotation.Nullable;
 public final class IpsecDynamicPeerConfig extends IpsecPeerConfig implements Serializable {
   private static final String PROP_IKE_PHASE1_POLICIES = "ikePhase1Policies";
 
-  private static final long serialVersionUID = 1L;
-
   @Nonnull private List<String> _ikePhase1Policies;
 
   @JsonCreator

@@ -22,8 +22,6 @@ import org.batfish.datamodel.Ip;
 @ParametersAreNonnullByDefault
 public final class ExtendedCommunity extends Community {
 
-  private static final long serialVersionUID = 1L;
-
   private static final Set<Byte> _validTypes =
       ImmutableSet.of(
           (byte) 0x00,

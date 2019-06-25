@@ -6,8 +6,6 @@ import java.util.List;
 
 public class RoutePolicy implements Serializable {
 
-  private static final long serialVersionUID = 1L;
-
   private final String _name;
 
   private List<RoutePolicyStatement> _stmtList;

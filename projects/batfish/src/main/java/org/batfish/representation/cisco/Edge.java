@@ -4,8 +4,6 @@ import java.io.Serializable;
 
 public class Edge implements Serializable {
 
-  private static final long serialVersionUID = 1L;
-
   private String _host1;
   private String _host2;
   private String _int1;

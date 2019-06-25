@@ -11,8 +11,6 @@ import org.batfish.datamodel.routing_policy.statement.Statement;
 @ParametersAreNonnullByDefault
 public final class RoutePolicySetLocalPref extends RoutePolicySetStatement {
 
-  private static final long serialVersionUID = 1L;
-
   private LongExpr _pref;
 
   public RoutePolicySetLocalPref(LongExpr intExpr) {

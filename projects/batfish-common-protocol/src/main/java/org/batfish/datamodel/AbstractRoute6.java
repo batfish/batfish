@@ -18,8 +18,6 @@ public abstract class AbstractRoute6 implements Serializable {
 
   public static final int NO_TAG = -1;
 
-  private static final long serialVersionUID = 1L;
-
   protected final Prefix6 _network;
 
   protected final Ip6 _nextHopIp;
