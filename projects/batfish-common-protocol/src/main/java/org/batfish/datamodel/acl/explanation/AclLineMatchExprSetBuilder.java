@@ -64,7 +64,7 @@ public abstract class AclLineMatchExprSetBuilder {
      * We do this by maintaining _orExprBDDs (the disjunction of the BDDs in _exprs). If exprBdd
      * is disjoint from that intersection, we know nothing is redundant, and can skip the check.
      */
-    if (!_exprs.isEmpty() && !exprBdd.and(_orExprBDDs).isZero()) {
+    if (!_exprs.isEmpty() && exprBdd.andSat(_orExprBDDs)) {
       // try to remove something
       List<AclLineMatchExpr> toRemove = new ArrayList<>();
       _exprs.forEach(

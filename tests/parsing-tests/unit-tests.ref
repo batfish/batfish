@@ -23105,6 +23105,17 @@
             "          OUTPUT:'output'",
             "          NEWLINE:'\\n'))",
             "      (if_inner",
+            "        (if_ip_forward",
+            "          IP:'ip'",
+            "          FORWARD:'forward'",
+            "          NEWLINE:'\\n'))",
+            "      (if_inner",
+            "        (if_ip_forward",
+            "          NO:'no'",
+            "          IP:'ip'",
+            "          FORWARD:'forward'",
+            "          NEWLINE:'\\n'))",
+            "      (if_inner",
             "        (if_ip_helper_address",
             "          IP:'ip'",
             "          HELPER_ADDRESS:'helper-address'",
@@ -68722,7 +68733,26 @@
             "                (rbnx_n_af_soft_reconfiguration",
             "                  SOFT_RECONFIGURATION:'soft-reconfiguration'",
             "                  INBOUND:'inbound'",
-            "                  NEWLINE:'\\n\\n\\n'))))))))",
+            "                  NEWLINE:'\\n'))))))",
+            "      (router_bgp_nxos_toplevel",
+            "        (rbnx_proc_vrf_common",
+            "          (rbnx_neighbor",
+            "            NEIGHBOR:'neighbor'",
+            "            ip = IP_ADDRESS:'1.1.1.1'  <== mode:M_NEIGHBOR",
+            "            NEWLINE:'\\n'",
+            "            (rbnx_n_inner",
+            "              (rbnx_n_common",
+            "                (rbnx_n_bfd",
+            "                  BFD:'bfd'",
+            "                  NEWLINE:'\\n')))",
+            "            (rbnx_n_inner",
+            "              (rbnx_n_common",
+            "                (rbnx_n_inherit",
+            "                  INHERIT:'inherit'",
+            "                  PEER:'peer'",
+            "                  peer = (variable",
+            "                    VARIABLE:'PEER_BLLF')",
+            "                  NEWLINE:'\\n'))))))))",
             "  EOF:<EOF>)"
           ]
         },
@@ -73803,13 +73833,19 @@
           "Parse warnings" : [
             {
               "Comment" : "This feature is not currently supported",
-              "Line" : 279,
+              "Line" : 77,
+              "Parser_Context" : "[if_ip_forward if_inner s_interface stanza cisco_configuration]",
+              "Text" : "no ip forward"
+            },
+            {
+              "Comment" : "This feature is not currently supported",
+              "Line" : 281,
               "Parser_Context" : "[if_zone_member if_inner s_interface stanza cisco_configuration]",
               "Text" : "zone-member t1"
             },
             {
               "Comment" : "This feature is not currently supported",
-              "Line" : 315,
+              "Line" : 317,
               "Parser_Context" : "[iftunnel_mode if_tunnel if_inner s_interface stanza cisco_configuration]",
               "Text" : "mode gre multipoint"
             }
@@ -77575,25 +77611,25 @@
           "interface" : {
             "Async1" : {
               "definitionLines" : [
-                282
+                284
               ],
               "numReferrers" : 1
             },
             "Cable1/2/3:4" : {
               "definitionLines" : [
-                284
+                286
               ],
               "numReferrers" : 1
             },
             "Crypto-Engine1/2/3" : {
               "definitionLines" : [
-                286
+                288
               ],
               "numReferrers" : 1
             },
             "Dot11Radio0" : {
               "definitionLines" : [
-                288
+                290
               ],
               "numReferrers" : 1
             },
@@ -77872,58 +77908,58 @@
                 277,
                 278,
                 279,
-                280
+                280,
+                281,
+                282
               ],
               "numReferrers" : 1
             },
             "Ethernet1/11" : {
               "definitionLines" : [
-                290
+                292
               ],
               "numReferrers" : 1
             },
             "Ethernet1/12" : {
               "definitionLines" : [
-                346,
-                347
+                348,
+                349
               ],
               "numReferrers" : 1
             },
             "GigabitEthernet0/0" : {
               "definitionLines" : [
-                292,
-                293,
                 294,
                 295,
-                296
+                296,
+                297,
+                298
               ],
               "numReferrers" : 1
             },
             "Loopback0" : {
               "definitionLines" : [
-                298,
-                299,
                 300,
-                301
+                301,
+                302,
+                303
               ],
               "numReferrers" : 1
             },
             "Modular-Cable1/2/3:4" : {
               "definitionLines" : [
-                303
+                305
               ],
               "numReferrers" : 1
             },
             "Null0" : {
               "definitionLines" : [
-                305
+                307
               ],
               "numReferrers" : 1
             },
             "Tunnel0" : {
               "definitionLines" : [
-                309,
-                310,
                 311,
                 312,
                 313,
@@ -77933,73 +77969,75 @@
                 317,
                 318,
                 319,
-                320
+                320,
+                321,
+                322
               ],
               "numReferrers" : 1
             },
             "Vlan1" : {
               "definitionLines" : [
-                330
+                332
               ],
               "numReferrers" : 1
             },
             "Vlan1005" : {
               "definitionLines" : [
-                336
+                338
               ],
               "numReferrers" : 1
             },
             "Vlan1006" : {
               "definitionLines" : [
-                338
+                340
               ],
               "numReferrers" : 1
             },
             "Vlan111" : {
               "definitionLines" : [
-                321
+                323
               ],
               "numReferrers" : 1
             },
             "Vlan1234" : {
               "definitionLines" : [
-                340
+                342
               ],
               "numReferrers" : 1
             },
             "Vlan2" : {
               "definitionLines" : [
-                332
+                334
               ],
               "numReferrers" : 1
             },
             "Vlan3" : {
               "definitionLines" : [
-                334
+                336
               ],
               "numReferrers" : 1
             },
             "Vlan4094" : {
               "definitionLines" : [
-                342
+                344
               ],
               "numReferrers" : 1
             },
             "Wideband-Cable1/2/3:4" : {
               "definitionLines" : [
-                344
+                346
               ],
               "numReferrers" : 1
             },
             "inside" : {
               "definitionLines" : [
-                293
+                295
               ],
               "numReferrers" : 1
             },
             "tunnel-ip6" : {
               "definitionLines" : [
-                307
+                309
               ],
               "numReferrers" : 1
             }
@@ -78007,11 +78045,11 @@
           "vxlan" : {
             "Vxlan1" : {
               "definitionLines" : [
-                323,
-                324,
                 325,
                 326,
-                327
+                327,
+                328,
+                329
               ],
               "numReferrers" : 1
             }
@@ -82202,7 +82240,7 @@
                 31,
                 32
               ],
-              "numReferrers" : 0
+              "numReferrers" : 1
             }
           }
         },
@@ -84881,27 +84919,27 @@
           "interface" : {
             "Async1" : {
               "interface" : [
-                282
+                284
               ]
             },
             "Cable1/2/3:4" : {
               "interface" : [
-                284
+                286
               ]
             },
             "Cellular0" : {
               "tunnel source" : [
-                318
+                320
               ]
             },
             "Crypto-Engine1/2/3" : {
               "interface" : [
-                286
+                288
               ]
             },
             "Dot11Radio0" : {
               "interface" : [
-                288
+                290
               ]
             },
             "Ethernet0" : {
@@ -84909,119 +84947,119 @@
                 7
               ],
               "tunnel source" : [
-                319
+                321
               ]
             },
             "Ethernet1/11" : {
               "interface" : [
-                290
+                292
               ]
             },
             "Ethernet1/12" : {
               "interface" : [
-                346
+                348
               ]
             },
             "GigabitEthernet0/0" : {
               "interface" : [
-                292
+                294
               ]
             },
             "Loopback0" : {
               "interface" : [
-                298
+                300
               ]
             },
             "Loopback1" : {
               "vxlan source-interface" : [
-                324
+                326
               ]
             },
             "Modular-Cable1/2/3:4" : {
               "interface" : [
-                303
+                305
               ]
             },
             "Null0" : {
               "interface" : [
-                305
+                307
               ]
             },
             "Tunnel0" : {
               "interface" : [
-                309
+                311
               ]
             },
             "Vlan1" : {
               "interface" : [
-                330
+                332
               ]
             },
             "Vlan1005" : {
               "interface" : [
-                336
+                338
               ]
             },
             "Vlan1006" : {
               "interface" : [
-                338
+                340
               ]
             },
             "Vlan111" : {
               "interface" : [
-                321
+                323
               ]
             },
             "Vlan1234" : {
               "interface" : [
-                340
+                342
               ]
             },
             "Vlan2" : {
               "interface" : [
-                332
+                334
               ]
             },
             "Vlan3" : {
               "interface" : [
-                334
+                336
               ]
             },
             "Vlan4094" : {
               "interface" : [
-                342
+                344
               ]
             },
             "Wideband-Cable1/2/3:4" : {
               "interface" : [
-                344
+                346
               ]
             },
             "inside" : {
               "interface" : [
-                293
+                295
               ]
             },
             "tunnel-ip6" : {
               "interface" : [
-                307
+                309
               ]
             }
           },
           "ipv4 acl" : {
             "167" : {
               "interface ip verify access-list" : [
-                130
+                132
               ]
             },
             "310-systems" : {
               "interface outgoing ip access-list" : [
-                138
+                140
               ]
             },
             "abc" : {
               "ip nat source dynamic access-list" : [
-                93
+                95
               ]
             },
             "ag1" : {
@@ -85036,64 +85074,64 @@
             },
             "def" : {
               "ip nat source dynamic access-list" : [
-                92
+                94
               ]
             },
             "mynatacl" : {
               "ip nat destination acl" : [
-                89
+                91
               ]
             }
           },
           "ipv4/6 acl" : {
             "1" : {
               "interface igmp access-group acl" : [
-                78
+                80
               ]
             },
             "hpaccesslist" : {
               "interface igmp host-proxy access-list" : [
-                80
+                82
               ]
             }
           },
           "nat pool" : {
             "beeble" : {
               "ip nat source pool" : [
-                93
+                95
               ]
             }
           },
           "route-map" : {
             "SITEMAP" : {
               "interface ip vrf sitemap" : [
-                136
+                138
               ]
             },
             "eigrp-leak-map" : {
               "interface summary-address eigrp leak-map" : [
-                126
+                128
               ]
             }
           },
           "vxlan" : {
             "Vxlan1" : {
               "vxlan" : [
-                323
+                325
               ]
             }
           },
           "zone" : {
             "t1" : {
               "interface zone-member" : [
-                279
+                281
               ]
             }
           },
           "zone security" : {
             "z1" : {
               "interface zone-member security" : [
-                280
+                282
               ]
             }
           }
@@ -87968,6 +88006,13 @@
           }
         },
         "configs/nexus_bgp" : {
+          "bgp template peer" : {
+            "PEER_BLLF" : {
+              "inherited BGP peer" : [
+                35
+              ]
+            }
+          },
           "route-map" : {
             "BLIB" : {
               "bgp otherwise in/outbound route-map" : [
@@ -88940,19 +88985,19 @@
           "interface" : {
             "Loopback1" : {
               "vxlan source-interface" : [
-                324
+                326
               ]
             }
           },
           "ipv4 acl" : {
             "167" : {
               "interface ip verify access-list" : [
-                130
+                132
               ]
             },
             "310-systems" : {
               "interface outgoing ip access-list" : [
-                138
+                140
               ]
             },
             "ag1" : {
@@ -88967,50 +89012,50 @@
             },
             "def" : {
               "ip nat source dynamic access-list" : [
-                92
+                94
               ]
             },
             "mynatacl" : {
               "ip nat destination acl" : [
-                89
+                91
               ]
             }
           },
           "ipv4/6 acl" : {
             "1" : {
               "interface igmp access-group acl" : [
-                78
+                80
               ]
             },
             "hpaccesslist" : {
               "interface igmp host-proxy access-list" : [
-                80
+                82
               ]
             }
           },
           "nat pool" : {
             "beeble" : {
               "ip nat source pool" : [
-                93
+                95
               ]
             }
           },
           "route-map" : {
             "SITEMAP" : {
               "interface ip vrf sitemap" : [
-                136
+                138
               ]
             },
             "eigrp-leak-map" : {
               "interface summary-address eigrp leak-map" : [
-                126
+                128
               ]
             }
           },
           "zone security" : {
             "z1" : {
               "interface zone-member security" : [
-                280
+                282
               ]
             }
           }
@@ -90946,6 +90991,10 @@
             {
               "tag" : "MISCELLANEOUS",
               "text" : "Router-id is not manually configured for BGP process in VRF default. Unable to infer default router-id as no interfaces have IP addresses"
+            },
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "BGP neighbor 1.1.1.1 in vrf default: could not determine update source"
             }
           ]
         },

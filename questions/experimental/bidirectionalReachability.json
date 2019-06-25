@@ -42,10 +42,10 @@
                 "type": "pathConstraint",
                 "displayName": "Path Constraints",
                 "fields": {
-                    "startLocation": { "optional": true },
-                    "endLocation": { "optional": true },
-                    "transitLocations": { "optional": true },
-                    "forbiddenLocations": { "optional": true }
+                    "startLocation": { "optional": true, "type": "locationSpec" },
+                    "endLocation": { "optional": true, "type": "nodeSpec" },
+                    "transitLocations": { "optional": true, "type": "nodeSpec" },
+                    "forbiddenLocations": { "optional": true, "type": "nodeSpec" }
                 }
             },
             "returnFlowType": {
