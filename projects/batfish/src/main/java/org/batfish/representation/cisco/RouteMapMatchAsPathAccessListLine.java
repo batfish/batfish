@@ -11,8 +11,6 @@ import org.batfish.datamodel.routing_policy.expr.NamedAsPathSet;
 
 public class RouteMapMatchAsPathAccessListLine extends RouteMapMatchLine {
 
-  private static final long serialVersionUID = 1L;
-
   private final Set<String> _listNames;
 
   public RouteMapMatchAsPathAccessListLine(Set<String> names) {

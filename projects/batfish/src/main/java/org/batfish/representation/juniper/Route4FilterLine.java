@@ -7,8 +7,6 @@ import org.batfish.datamodel.Route6FilterList;
 
 public abstract class Route4FilterLine extends RouteFilterLine {
 
-  private static final long serialVersionUID = 1L;
-
   protected final Prefix _prefix;
 
   private final Set<PsThen> _thens;

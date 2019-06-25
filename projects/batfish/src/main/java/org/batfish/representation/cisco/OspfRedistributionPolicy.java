@@ -11,8 +11,6 @@ public class OspfRedistributionPolicy extends RedistributionPolicy {
 
   public static final OspfMetricType DEFAULT_METRIC_TYPE = OspfMetricType.E2;
 
-  private static final long serialVersionUID = 1L;
-
   private Long _metric;
 
   private OspfMetricType _metricType;

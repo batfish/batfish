@@ -15,8 +15,6 @@ public final class AsPathAccessListLine implements Serializable, Comparable<AsPa
   private static final String PROP_ACTION = "action";
   private static final String PROP_REGEX = "regex";
 
-  private static final long serialVersionUID = 1L;
-
   @Nonnull private LineAction _action;
 
   @Nonnull private String _regex;

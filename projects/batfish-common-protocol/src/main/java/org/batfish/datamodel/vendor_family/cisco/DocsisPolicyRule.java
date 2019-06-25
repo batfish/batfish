@@ -7,8 +7,6 @@ import java.io.Serializable;
 public final class DocsisPolicyRule implements Serializable {
   private static final String PROP_NAME = "name";
 
-  private static final long serialVersionUID = 1L;
-
   private final String _name;
 
   @JsonCreator

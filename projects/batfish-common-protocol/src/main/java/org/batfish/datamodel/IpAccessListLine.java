@@ -61,8 +61,6 @@ public final class IpAccessListLine implements Serializable {
 
   public static final IpAccessListLine REJECT_ALL = rejecting("REJECT_ALL", TrueExpr.INSTANCE);
 
-  private static final long serialVersionUID = 1L;
-
   public static Builder accepting() {
     return new Builder().setAction(LineAction.PERMIT);
   }

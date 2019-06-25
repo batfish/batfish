@@ -9,8 +9,6 @@ import org.batfish.datamodel.IntegerSpace;
 /** Settings for bridged ports */
 public class Bridge implements Serializable {
 
-  private static final long serialVersionUID = 1L;
-
   private @Nonnull Set<String> _ports;
   private int _pvid;
   private @Nonnull IntegerSpace _vids;

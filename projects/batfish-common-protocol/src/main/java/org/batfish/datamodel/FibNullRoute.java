@@ -5,8 +5,6 @@ import org.batfish.datamodel.visitors.FibActionVisitor;
 /** A {@link FibAction} that discards a packet. */
 public final class FibNullRoute implements FibAction {
 
-  private static final long serialVersionUID = 1L;
-
   public static final FibNullRoute INSTANCE = new FibNullRoute();
 
   private FibNullRoute() {}

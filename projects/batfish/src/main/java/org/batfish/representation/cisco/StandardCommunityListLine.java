@@ -6,8 +6,6 @@ import org.batfish.datamodel.LineAction;
 
 public class StandardCommunityListLine implements Serializable {
 
-  private static final long serialVersionUID = 1L;
-
   private LineAction _action;
   private List<Long> _communities;
 

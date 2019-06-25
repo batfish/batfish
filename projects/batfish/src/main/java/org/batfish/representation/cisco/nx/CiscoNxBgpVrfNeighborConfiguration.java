@@ -13,7 +13,6 @@ import org.batfish.common.Warnings;
  * config-router-vrf-neighbor} levels.
  */
 public class CiscoNxBgpVrfNeighborConfiguration implements Serializable {
-  private static final long serialVersionUID = 1L;
 
   /**
    * Determines whether to remote private AS numbers from AS paths ({@link #ALL}) or replace them

@@ -17,8 +17,6 @@ import org.batfish.datamodel.routing_policy.statement.Statement;
 @ParametersAreNonnullByDefault
 public final class RouteMapSetCommunity implements RouteMapSet {
 
-  private static final long serialVersionUID = 1L;
-
   private final @Nonnull Set<Long> _communities;
 
   public RouteMapSetCommunity(Collection<Long> communities) {

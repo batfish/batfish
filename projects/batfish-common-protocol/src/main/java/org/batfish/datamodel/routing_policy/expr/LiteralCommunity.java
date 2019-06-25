@@ -24,8 +24,6 @@ import org.batfish.datamodel.visitors.VoidCommunitySetExprVisitor;
 public class LiteralCommunity extends CommunitySetExpr {
   private static final String PROP_COMMUNITY = "community";
 
-  private static final long serialVersionUID = 1L;
-
   @JsonCreator
   private static @Nonnull LiteralCommunity create(
       @Nullable @JsonProperty(PROP_COMMUNITY) Community community) {

@@ -12,8 +12,6 @@ import org.codehaus.jettison.json.JSONObject;
 
 public class NetworkInterface implements AwsVpcEntity, Serializable {
 
-  private static final long serialVersionUID = 1L;
-
   private final Ip _associationPublicIp;
 
   private final String _attachmentInstanceId;

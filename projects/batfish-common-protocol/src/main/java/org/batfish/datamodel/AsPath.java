@@ -20,7 +20,6 @@ import org.apache.commons.lang3.StringUtils;
 @ParametersAreNonnullByDefault
 public final class AsPath implements Serializable, Comparable<AsPath> {
 
-  private static final long serialVersionUID = 1L;
   private static final AsPath EMPTY = new AsPath(ImmutableList.of());
 
   /**

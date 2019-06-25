@@ -22,8 +22,6 @@ public class IptablesMatch implements Serializable {
     SOURCE_PORT,
   }
 
-  private static final long serialVersionUID = 1L;
-
   private boolean _inverted;
 
   private Object _matchData;

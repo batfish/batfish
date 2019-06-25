@@ -30,8 +30,6 @@ public final class IpWildcard implements Serializable, Comparable<IpWildcard> {
   private static final long ALL_BITS_MASKED = 0xFFFFFFFFL;
   public static final IpWildcard ANY = new IpWildcard(Ip.ZERO, ALL_BITS_MASKED);
 
-  private static final long serialVersionUID = 1L;
-
   private static Ip parseAddress(String str) {
     if (str.contains(":")) {
       String[] parts = str.split(":");

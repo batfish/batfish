@@ -21,8 +21,6 @@ public final class MatchPrefix6Set extends BooleanExpr {
   private static final String PROP_PREFIX = "prefix";
   private static final String PROP_PREFIX_SET = "prefixSet";
 
-  private static final long serialVersionUID = 1L;
-
   @Nonnull private final Prefix6Expr _prefix;
   @Nonnull private final Prefix6SetExpr _prefixSet;
 

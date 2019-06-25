@@ -64,8 +64,6 @@ public class HostConfiguration extends VendorConfiguration {
 
   private static final String RAW_PREROUTING = "raw::PREROUTING";
 
-  private static final long serialVersionUID = 1L;
-
   public static HostConfiguration fromJson(String filename, String text, Warnings warnings)
       throws IOException {
     HostConfiguration hostConfiguration =

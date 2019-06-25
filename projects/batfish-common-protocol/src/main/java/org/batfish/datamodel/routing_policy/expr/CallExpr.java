@@ -17,8 +17,6 @@ import org.batfish.datamodel.routing_policy.RoutingPolicy;
 public final class CallExpr extends BooleanExpr {
   private static final String PROP_CALLED_POLICY_NAME = "calledPolicyName";
 
-  private static final long serialVersionUID = 1L;
-
   private final String _calledPolicyName;
 
   @JsonCreator

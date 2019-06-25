@@ -110,8 +110,6 @@ public class F5BigipConfiguration extends VendorConfiguration {
   private static final TransformationStep ASSIGN_EPHEMERAL_SOURCE_PORT =
       new AssignPortFromPool(TransformationType.SOURCE_NAT, PortField.SOURCE, 1024, 65535);
 
-  private static final long serialVersionUID = 1L;
-
   static final String REFBOOK_SOURCE_POOLS = "pools";
   static final String REFBOOK_SOURCE_VIRTUAL_ADDRESSES = "virtualAddresses";
 

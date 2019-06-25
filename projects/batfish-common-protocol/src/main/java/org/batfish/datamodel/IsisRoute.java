@@ -93,8 +93,6 @@ public class IsisRoute extends AbstractRoute {
   private static final String PROP_OVERLOAD = "overload";
   private static final String PROP_SYSTEM_ID = "systemId";
 
-  private static final long serialVersionUID = 1L;
-
   @JsonCreator
   private static @Nonnull IsisRoute createIsisRoute(
       @JsonProperty(PROP_ADMINISTRATIVE_COST) int administrativeCost,

@@ -14,8 +14,6 @@ import org.batfish.datamodel.Prefix;
 /** A statically-configured route */
 public class StaticRoute implements Serializable {
 
-  private static final long serialVersionUID = 1L;
-
   private final @Nonnull Prefix _network;
   private final @Nullable Ip _nextHopIp;
   private final @Nullable String _nextHopInterface;

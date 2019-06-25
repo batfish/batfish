@@ -8,8 +8,6 @@ import javax.annotation.Nonnull;
 /** Named structure that implements routing policy via a series of ordered entries */
 public class RouteMap implements Serializable {
 
-  private static final long serialVersionUID = 1L;
-
   private final @Nonnull SortedMap<Integer, RouteMapEntry> _entries;
   private final @Nonnull String _name;
 

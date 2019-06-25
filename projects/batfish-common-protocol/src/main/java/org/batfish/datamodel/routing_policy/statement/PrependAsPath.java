@@ -21,8 +21,6 @@ import org.batfish.datamodel.routing_policy.expr.AsPathListExpr;
 public final class PrependAsPath extends Statement {
   private static final String PROP_EXPR = "expr";
 
-  private static final long serialVersionUID = 1L;
-
   @Nonnull private AsPathListExpr _expr;
 
   @JsonCreator

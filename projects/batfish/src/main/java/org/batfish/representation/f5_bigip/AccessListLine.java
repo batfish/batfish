@@ -13,8 +13,6 @@ import org.batfish.datamodel.acl.MatchHeaderSpace;
 @ParametersAreNonnullByDefault
 public class AccessListLine implements Serializable {
 
-  private static final long serialVersionUID = 1L;
-
   private final @Nonnull LineAction _action;
   private final @Nonnull Prefix _prefix;
   private final @Nonnull String _text;

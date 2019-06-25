@@ -15,7 +15,7 @@ import javax.annotation.ParametersAreNonnullByDefault;
 /** Configuration settings for EVPN address family */
 @ParametersAreNonnullByDefault
 public final class EvpnAddressFamily extends AddressFamily {
-  private static final long serialVersionUID = 1L;
+
   private static final String PROP_L2_VNIS = "l2Vnis";
   private static final String PROP_L3_VNIS = "l3Vnis";
 

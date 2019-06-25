@@ -75,7 +75,6 @@ public class BgpProcess implements Serializable {
   }
 
   private class ClusterIdsSupplier implements Serializable, Supplier<Set<Long>> {
-    private static final long serialVersionUID = 1L;
 
     @Override
     public Set<Long> get() {
@@ -97,8 +96,6 @@ public class BgpProcess implements Serializable {
   private static final String PROP_ACTIVE_NEIGHBORS = "neighbors";
   private static final String PROP_ROUTER_ID = "routerId";
   private static final String PROP_TIE_BREAKER = "tieBreaker";
-
-  private static final long serialVersionUID = 1L;
 
   private final int _ebgpAdminCost;
   private final int _ibgpAdminCost;

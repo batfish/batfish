@@ -74,8 +74,6 @@ public class VpnConnection implements AwsVpcEntity, Serializable {
 
   private static final int BGP_NEIGHBOR_DEFAULT_METRIC = 0;
 
-  private static final long serialVersionUID = 1L;
-
   private static DiffieHellmanGroup toDiffieHellmanGroup(String perfectForwardSecrecy) {
     switch (perfectForwardSecrecy) {
       case "group2":

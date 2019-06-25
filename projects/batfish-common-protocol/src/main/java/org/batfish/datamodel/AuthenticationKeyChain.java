@@ -8,7 +8,6 @@ import java.util.TreeMap;
 
 public class AuthenticationKeyChain implements Serializable {
 
-  private static final long serialVersionUID = 1L;
   private static final String PROP_DESCRIPTION = "description";
   private static final String PROP_KEYS = "keys";
   private static final String PROP_NAME = "name";

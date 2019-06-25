@@ -9,8 +9,6 @@ import org.batfish.datamodel.IpWildcard;
 
 public final class FwFromDestinationAddress extends FwFrom {
 
-  private static final long serialVersionUID = 1L;
-
   @Nullable private final IpWildcard _ipWildcard;
 
   public FwFromDestinationAddress(IpWildcard ipWildcard) {

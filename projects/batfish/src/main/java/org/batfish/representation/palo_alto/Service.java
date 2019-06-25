@@ -18,7 +18,6 @@ import org.batfish.datamodel.acl.MatchHeaderSpace;
 
 @ParametersAreNonnullByDefault
 public final class Service implements ServiceGroupMember {
-  private static final long serialVersionUID = 1L;
 
   private final String _name;
   @Nullable private String _description;

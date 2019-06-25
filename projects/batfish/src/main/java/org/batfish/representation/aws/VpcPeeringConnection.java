@@ -7,8 +7,6 @@ import org.codehaus.jettison.json.JSONObject;
 
 public class VpcPeeringConnection implements AwsVpcEntity, Serializable {
 
-  private static final long serialVersionUID = 1L;
-
   private final Prefix _accepterVpcCidrBlock;
 
   private final String _accepterVpcId;

@@ -13,7 +13,7 @@ public class EigrpInterfaceSettings implements Serializable {
   private static final String PROP_ENABLED = "enabled";
   private static final String PROP_METRIC = "metric";
   private static final String PROP_PASSIVE = "passive";
-  private static final long serialVersionUID = 1L;
+
   private final long _asn;
   private final boolean _enabled;
   private @Nonnull final EigrpMetric _metric;

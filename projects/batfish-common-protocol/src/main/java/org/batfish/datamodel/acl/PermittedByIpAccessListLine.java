@@ -16,8 +16,6 @@ public final class PermittedByIpAccessListLine implements TerminalTraceEvent {
   private static final String PROP_LINE_DESCRIPTION = "lineDescription";
   private static final String PROP_NAME = "name";
 
-  private static final long serialVersionUID = 1L;
-
   @JsonCreator
   private static PermittedByIpAccessListLine create(
       @Nullable @JsonProperty(PROP_DESCRIPTION) String description,

@@ -12,8 +12,6 @@ import org.codehaus.jettison.json.JSONObject;
 
 public class NatGateway implements AwsVpcEntity, Serializable {
 
-  private static final long serialVersionUID = 1L;
-
   // we ignore the state and tags fields
 
   private List<NatGatewayAddress> _natGatewayAddresses = new LinkedList<>();

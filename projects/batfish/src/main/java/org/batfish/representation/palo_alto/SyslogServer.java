@@ -4,7 +4,6 @@ import java.io.Serializable;
 
 /** PAN datamodel component containing server information for a syslog server */
 public final class SyslogServer implements Serializable {
-  private static final long serialVersionUID = 1L;
 
   private String _address;
 

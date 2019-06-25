@@ -10,8 +10,6 @@ import org.batfish.datamodel.routing_policy.statement.Statement;
 /** Represents a {@code `set weight [n]`} line in a route-map. */
 public class RouteMapSetWeightLine extends RouteMapSetLine {
 
-  private static final long serialVersionUID = 1L;
-
   private int _weight;
 
   public RouteMapSetWeightLine(int weight) {

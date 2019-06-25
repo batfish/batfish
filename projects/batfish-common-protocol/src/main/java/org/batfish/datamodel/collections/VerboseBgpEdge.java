@@ -14,8 +14,6 @@ public final class VerboseBgpEdge implements Serializable {
   private static final String PROP_NODE2_SESSION = "node2Session";
   private static final String PROP_NODE2_SESSION_ID = "node2SessionId";
 
-  private static final long serialVersionUID = 1L;
-
   @Nonnull private final IpEdge _edgeSummary;
   @Nonnull private final BgpPeerConfig _session1;
   @Nonnull private final BgpPeerConfig _session2;

@@ -105,8 +105,6 @@ public class IsisProcess implements Serializable {
   private static final String PROP_OVERLOAD = "overload";
   private static final String PROP_REFERENCE_BANDWIDTH = "referenceBandwidth";
 
-  private static final long serialVersionUID = 1L;
-
   public static @Nonnull Builder builder() {
     return new Builder();
   }

@@ -8,8 +8,6 @@ import javax.annotation.ParametersAreNonnullByDefault;
 @ParametersAreNonnullByDefault
 public final class BgpRedistributionPolicy implements Serializable {
 
-  private static final long serialVersionUID = 1L;
-
   private final @Nonnull F5BigipRoutingProtocol _protocol;
 
   private @Nullable String _routeMap;

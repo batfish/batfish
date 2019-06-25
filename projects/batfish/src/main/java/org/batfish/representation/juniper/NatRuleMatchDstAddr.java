@@ -9,8 +9,6 @@ import org.batfish.datamodel.Prefix;
 @ParametersAreNonnullByDefault
 public final class NatRuleMatchDstAddr implements NatRuleMatch {
 
-  private static final long serialVersionUID = 1L;
-
   private final Prefix _prefix;
 
   public NatRuleMatchDstAddr(Prefix prefix) {

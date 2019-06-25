@@ -9,7 +9,6 @@ import org.batfish.datamodel.HeaderSpace;
 
 public class MatchHeaderSpace extends AclLineMatchExpr {
   private static final String PROP_HEADER_SPACE = "headerSpace";
-  private static final long serialVersionUID = 1L;
 
   private final HeaderSpace _headerSpace;
 

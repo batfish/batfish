@@ -10,8 +10,6 @@ import org.batfish.datamodel.IntegerSpace;
 /** Bridge settings for various interface types. */
 public class InterfaceBridgeSettings implements Serializable {
 
-  private static final long serialVersionUID = 1L;
-
   private @Nullable Integer _access;
   private @Nullable Integer _pvid;
   private @Nonnull IntegerSpace _vids;

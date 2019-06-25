@@ -13,7 +13,6 @@ import javax.annotation.ParametersAreNonnullByDefault;
 @ParametersAreNonnullByDefault
 public class Return implements Statement {
   private static final String PROP_ACTION = "action";
-  private static final long serialVersionUID = 1;
 
   private final Action _action;
 

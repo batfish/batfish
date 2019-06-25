@@ -10,7 +10,6 @@ import org.batfish.datamodel.ConcreteInterfaceAddress;
 /** A physical or logical interface */
 public class Interface implements Serializable {
 
-  private static final long serialVersionUID = 1L;
   static final String NULL_INTERFACE_NAME = "null0";
 
   private final @Nonnull InterfaceBridgeSettings _bridge;

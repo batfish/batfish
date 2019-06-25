@@ -24,8 +24,6 @@ public class CommunityHalvesExpr extends CommunitySetExpr {
   private static final String PROP_LEFT = "left";
   private static final String PROP_RIGHT = "right";
 
-  private static final long serialVersionUID = 1L;
-
   @JsonCreator
   private static @Nonnull CommunityHalvesExpr create(
       @JsonProperty(PROP_LEFT) CommunityHalfExpr left,

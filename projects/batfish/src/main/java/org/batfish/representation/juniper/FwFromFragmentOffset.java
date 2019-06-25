@@ -9,8 +9,6 @@ import org.batfish.datamodel.SubRange;
 
 public class FwFromFragmentOffset extends FwFrom {
 
-  private static final long serialVersionUID = 1L;
-
   private boolean _except;
 
   private SubRange _offsetRange;

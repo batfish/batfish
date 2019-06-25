@@ -20,8 +20,6 @@ import org.batfish.datamodel.routing_policy.expr.MatchProtocol;
 /** Represents a "from interface" line in a {@link PsTerm} */
 public final class PsFromInterface extends PsFrom {
 
-  private static final long serialVersionUID = 1L;
-
   private final String _name;
 
   public PsFromInterface(String name) {

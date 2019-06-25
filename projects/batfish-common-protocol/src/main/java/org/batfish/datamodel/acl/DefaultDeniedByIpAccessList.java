@@ -13,8 +13,6 @@ import org.batfish.datamodel.LineAction;
 public final class DefaultDeniedByIpAccessList implements TerminalTraceEvent {
   private static final String PROP_NAME = "name";
 
-  private static final long serialVersionUID = 1L;
-
   private static String computeDescription(
       @Nonnull String name, @Nullable String sourceName, @Nullable String sourceType) {
     if (sourceName != null) {

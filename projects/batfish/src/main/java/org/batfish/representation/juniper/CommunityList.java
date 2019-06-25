@@ -10,8 +10,6 @@ import java.util.Set;
 
 public final class CommunityList implements Serializable {
 
-  private static final long serialVersionUID = 1L;
-
   private boolean _invertMatch;
 
   private final List<CommunityListLine> _lines;

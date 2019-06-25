@@ -5,7 +5,6 @@ import java.util.Objects;
 
 public class TrueExpr extends AclLineMatchExpr {
   public static final TrueExpr INSTANCE = new TrueExpr();
-  private static final long serialVersionUID = 1L;
 
   private TrueExpr() {
     super(null);

@@ -12,8 +12,6 @@ import javax.annotation.ParametersAreNonnullByDefault;
 public final class AnnotatedRoute<R extends AbstractRoute>
     implements AbstractRouteDecorator, Serializable {
 
-  private static final long serialVersionUID = 1L;
-
   @Nonnull private final R _route;
   @Nonnull private final String _sourceVrf;
   private int _hashCode;

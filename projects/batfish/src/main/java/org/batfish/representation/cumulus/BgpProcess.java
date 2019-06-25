@@ -10,7 +10,6 @@ import org.batfish.datamodel.Ip;
 /** BGP routing process */
 public class BgpProcess implements Serializable {
 
-  private static final long serialVersionUID = 1L;
   public static final Ip BGP_UNNUMBERED_IP = Ip.parse("169.254.0.1");
 
   private final @Nonnull BgpVrf _defaultVrf;

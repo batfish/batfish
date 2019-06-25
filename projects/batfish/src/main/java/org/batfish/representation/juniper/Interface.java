@@ -22,8 +22,6 @@ import org.batfish.datamodel.VrrpGroup;
 
 public class Interface implements Serializable {
 
-  private static final long serialVersionUID = 1L;
-
   public static double getDefaultBandwidthByName(String name) {
     if (name.startsWith("xe")) {
       return 1E10;

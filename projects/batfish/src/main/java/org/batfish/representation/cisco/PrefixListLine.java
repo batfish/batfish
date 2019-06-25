@@ -7,8 +7,6 @@ import org.batfish.datamodel.SubRange;
 
 public class PrefixListLine implements Serializable {
 
-  private static final long serialVersionUID = 1L;
-
   private LineAction _action;
 
   private SubRange _lengthRange;

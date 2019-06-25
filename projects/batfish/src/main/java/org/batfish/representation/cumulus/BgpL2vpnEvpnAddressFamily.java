@@ -6,8 +6,6 @@ import javax.annotation.Nullable;
 /** L2VPN EVPN settings for BGP */
 public class BgpL2vpnEvpnAddressFamily implements Serializable {
 
-  private static final long serialVersionUID = 1L;
-
   private boolean _advertiseAllVni;
   private boolean _advertiseDefaultGw;
   private @Nullable BgpL2VpnEvpnIpv4Unicast _advertiseIpv4Unicast;

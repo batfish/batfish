@@ -8,7 +8,6 @@ import javax.annotation.ParametersAreNonnullByDefault;
 @ParametersAreNonnullByDefault
 public final class Ipv4UnicastAddressFamily extends AddressFamily {
 
-  private static final long serialVersionUID = 1L;
   private static final Ipv4UnicastAddressFamily INSTANCE = new Ipv4UnicastAddressFamily();
 
   private Ipv4UnicastAddressFamily() {}

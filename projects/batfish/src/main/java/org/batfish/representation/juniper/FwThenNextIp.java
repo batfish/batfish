@@ -4,8 +4,6 @@ import org.batfish.datamodel.Prefix;
 
 public class FwThenNextIp implements FwThen {
 
-  private static final long serialVersionUID = 1L;
-
   private final Prefix _nextPrefix;
 
   public FwThenNextIp(Prefix nextPrefix) {

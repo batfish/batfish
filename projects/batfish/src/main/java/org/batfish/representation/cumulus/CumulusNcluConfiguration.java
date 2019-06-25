@@ -96,7 +96,7 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
   public static final int DEFAULT_STATIC_ROUTE_ADMINISTRATIVE_DISTANCE = 1;
   public static final int DEFAULT_STATIC_ROUTE_METRIC = 0;
   public static final String LOOPBACK_INTERFACE_NAME = "lo";
-  private static final long serialVersionUID = 1L;
+
   private static final Ip CLAG_LINK_LOCAL_IP = Ip.parse("169.254.40.94");
 
   private static WithEnvironmentExpr bgpRedistributeWithEnvironmentExpr(

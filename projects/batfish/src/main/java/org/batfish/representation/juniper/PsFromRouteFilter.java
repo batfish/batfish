@@ -17,8 +17,6 @@ import org.batfish.datamodel.routing_policy.expr.NamedPrefixSet;
 /** Represents a "from route-filter" line in a {@link PsTerm} */
 public final class PsFromRouteFilter extends PsFrom {
 
-  private static final long serialVersionUID = 1L;
-
   private String _routeFilterName;
 
   public PsFromRouteFilter(String routeFilterName) {

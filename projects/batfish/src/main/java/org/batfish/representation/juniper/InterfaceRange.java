@@ -14,8 +14,6 @@ import javax.annotation.ParametersAreNonnullByDefault;
 @ParametersAreNonnullByDefault
 public class InterfaceRange extends Interface implements Serializable {
 
-  private static final long serialVersionUID = 1L;
-
   private final List<InterfaceRangeMemberRange> _memberRanges;
 
   private final List<InterfaceRangeMember> _members;

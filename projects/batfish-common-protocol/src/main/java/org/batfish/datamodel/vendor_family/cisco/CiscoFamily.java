@@ -28,8 +28,6 @@ public class CiscoFamily implements Serializable {
   private static final String PROP_SSH = "ssh";
   private static final String PROP_USERS = "users";
 
-  private static final long serialVersionUID = 1L;
-
   private Aaa _aaa;
 
   private SortedMap<String, String> _banners;

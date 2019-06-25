@@ -9,8 +9,6 @@ import org.batfish.datamodel.routing_policy.expr.SubRangeExpr;
 
 public class RoutePolicyBooleanAsPathNeighborIs extends RoutePolicyBoolean {
 
-  private static final long serialVersionUID = 1L;
-
   private boolean _exact;
 
   private List<SubRangeExpr> _range;

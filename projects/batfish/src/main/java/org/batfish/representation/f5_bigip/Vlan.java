@@ -14,8 +14,6 @@ import javax.annotation.ParametersAreNonnullByDefault;
 @ParametersAreNonnullByDefault
 public final class Vlan implements Serializable {
 
-  private static final long serialVersionUID = 1L;
-
   private final @Nonnull Map<String, VlanInterface> _interfaces;
 
   private final @Nonnull String _name;

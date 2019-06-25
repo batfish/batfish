@@ -11,8 +11,6 @@ public final class Interface implements Serializable {
 
   public static final Double DEFAULT_BANDWIDTH = 1E12D;
 
-  private static final long serialVersionUID = 1L;
-
   private @Nullable Double _bandwidth;
   private @Nullable Boolean _disabled;
   private final @Nonnull String _name;

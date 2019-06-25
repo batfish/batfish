@@ -139,8 +139,6 @@ public final class Configuration implements Serializable {
   private static final String PROP_VRFS = "vrfs";
   private static final String PROP_ZONES = "zones";
 
-  private static final long serialVersionUID = 1L;
-
   private static final int VLAN_NORMAL_MAX_DEFAULT = 4094;
 
   private static final int VLAN_NORMAL_MIN_DEFAULT = 1;

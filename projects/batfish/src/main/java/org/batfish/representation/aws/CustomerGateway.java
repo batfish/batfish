@@ -7,8 +7,6 @@ import org.codehaus.jettison.json.JSONObject;
 
 public class CustomerGateway implements AwsVpcEntity, Serializable {
 
-  private static final long serialVersionUID = 1L;
-
   private final String _bgpAsn;
 
   private final String _customerGatewayId;

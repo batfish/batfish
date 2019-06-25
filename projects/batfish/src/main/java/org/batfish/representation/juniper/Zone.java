@@ -16,8 +16,6 @@ public final class Zone implements Serializable {
     GLOBAL
   }
 
-  private static final long serialVersionUID = 1L;
-
   private AddressBook _addressBook;
 
   private AddressBookType _addressBookType;

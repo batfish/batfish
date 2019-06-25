@@ -7,8 +7,6 @@ import org.batfish.datamodel.routing_policy.expr.MatchEntireCommunitySet;
 
 public class RoutePolicyBooleanCommunityMatchesEvery extends RoutePolicyBoolean {
 
-  private static final long serialVersionUID = 1L;
-
   private RoutePolicyCommunitySet _commSet;
 
   public RoutePolicyBooleanCommunityMatchesEvery(RoutePolicyCommunitySet commSet) {

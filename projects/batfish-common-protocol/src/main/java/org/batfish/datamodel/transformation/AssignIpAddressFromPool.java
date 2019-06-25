@@ -17,7 +17,6 @@ import org.batfish.datamodel.flow.TransformationStep.TransformationType;
 /** A {@link TransformationStep} that transforms the destination IP */
 @ParametersAreNonnullByDefault
 public final class AssignIpAddressFromPool implements TransformationStep, Serializable {
-  private static final long serialVersionUID = 1L;
 
   private static final String PROP_TRANSFORMATION_TYPE = "transformationType";
   private static final String PROP_IP_FIELD = "ipField";

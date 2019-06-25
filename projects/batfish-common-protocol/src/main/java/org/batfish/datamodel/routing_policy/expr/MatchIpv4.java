@@ -7,8 +7,6 @@ import org.batfish.datamodel.routing_policy.Result;
 /** Boolean expression that evaluates to true if the given {@link Environment} has an IPv4 route. */
 public final class MatchIpv4 extends BooleanExpr {
 
-  private static final long serialVersionUID = 1L;
-
   private static final MatchIpv4 INSTANCE = new MatchIpv4();
 
   private MatchIpv4() {}

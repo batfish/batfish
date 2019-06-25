@@ -10,8 +10,6 @@ import javax.annotation.Nullable;
 public class DecrementPriority implements TrackAction {
   private static final String PROP_SUBTRAHEND = "subtrahend";
 
-  private static final long serialVersionUID = 1L;
-
   private final int _subtrahend;
 
   @JsonCreator

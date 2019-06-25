@@ -18,7 +18,6 @@ import org.batfish.datamodel.routing_policy.expr.CommunitySetExpr;
 @ParametersAreNonnullByDefault
 public final class AddCommunity extends Statement {
   private static final String PROP_EXPR = "expr";
-  private static final long serialVersionUID = 1L;
 
   private final CommunitySetExpr _expr;
 

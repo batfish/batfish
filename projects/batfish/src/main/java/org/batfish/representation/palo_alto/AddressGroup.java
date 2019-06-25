@@ -14,7 +14,6 @@ import org.batfish.datamodel.IpSpace;
 
 /** Represents a Palo Alto address group */
 public final class AddressGroup implements Serializable {
-  private static final long serialVersionUID = 1L;
 
   private String _description;
 

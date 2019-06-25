@@ -7,8 +7,6 @@ import org.batfish.datamodel.RoutingProtocol;
 
 public abstract class RedistributionPolicy implements Serializable {
 
-  private static final long serialVersionUID = 1L;
-
   protected final RoutingProtocol _destinationProtocol;
 
   protected String _routeMap;

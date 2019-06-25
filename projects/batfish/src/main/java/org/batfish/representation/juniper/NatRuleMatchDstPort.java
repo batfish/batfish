@@ -7,8 +7,6 @@ import javax.annotation.ParametersAreNonnullByDefault;
 @ParametersAreNonnullByDefault
 public final class NatRuleMatchDstPort implements NatRuleMatch {
 
-  private static final long serialVersionUID = 1L;
-
   private final int _from;
 
   private final int _to;

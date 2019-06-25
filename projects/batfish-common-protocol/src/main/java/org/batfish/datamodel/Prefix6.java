@@ -12,8 +12,6 @@ public class Prefix6 implements Comparable<Prefix6>, Serializable {
 
   public static final int MAX_PREFIX_LENGTH = 128;
 
-  private static final long serialVersionUID = 1L;
-
   public static final Prefix6 ZERO = new Prefix6(Ip6.ZERO, 0);
 
   private static BigInteger getNetworkEnd(BigInteger networkStart, int prefixLength) {

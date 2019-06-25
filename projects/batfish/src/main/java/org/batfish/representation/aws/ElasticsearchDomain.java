@@ -15,8 +15,6 @@ import org.codehaus.jettison.json.JSONObject;
 
 public class ElasticsearchDomain implements AwsVpcEntity, Serializable {
 
-  private static final long serialVersionUID = 1L;
-
   private List<String> _securityGroups;
 
   private String _domainName;

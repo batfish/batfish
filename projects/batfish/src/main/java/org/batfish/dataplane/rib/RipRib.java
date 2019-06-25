@@ -13,8 +13,6 @@ import org.batfish.datamodel.RoutingProtocol;
 @ParametersAreNonnullByDefault
 public class RipRib extends AbstractRib<RipRoute> {
 
-  private static final long serialVersionUID = 1L;
-
   public RipRib() {
     super();
   }

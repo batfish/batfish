@@ -26,8 +26,6 @@ import org.batfish.dataplane.rib.RouteAdvertisement.Reason;
 @ParametersAreNonnullByDefault
 final class RibTree<R extends AbstractRouteDecorator> implements Serializable {
 
-  private static final long serialVersionUID = 1L;
-
   @Nonnull private final PrefixTrieMultiMap<R> _root;
   @Nonnull private final AbstractRib<R> _owner;
 

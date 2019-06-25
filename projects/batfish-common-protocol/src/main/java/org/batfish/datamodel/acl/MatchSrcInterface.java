@@ -14,7 +14,6 @@ import javax.annotation.Nullable;
 
 public class MatchSrcInterface extends AclLineMatchExpr {
   private static final String PROP_SRC_INTERFACES = "srcInterfaces";
-  private static final long serialVersionUID = 1L;
 
   private final Set<String> _srcInterfaces;
 

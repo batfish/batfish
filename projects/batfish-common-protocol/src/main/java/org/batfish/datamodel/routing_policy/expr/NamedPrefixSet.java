@@ -16,8 +16,6 @@ import org.batfish.datamodel.routing_policy.Environment;
 public final class NamedPrefixSet extends PrefixSetExpr {
   private static final String PROP_NAME = "name";
 
-  private static final long serialVersionUID = 1L;
-
   private final String _name;
 
   @JsonCreator

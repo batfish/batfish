@@ -17,14 +17,10 @@ import javax.annotation.ParametersAreNonnullByDefault;
 @ParametersAreNonnullByDefault
 public class InterfaceRangeMemberRange implements Serializable {
 
-  private static final long serialVersionUID = 1L;
-
   private static final Pattern INTERFACE_ID_PATTERN =
       Pattern.compile("^([a-z][a-z])-([0-9]+)/([0-9]+)/([0-9]+)$");
 
   private class InterfaceComponents implements Serializable {
-
-    private static final long serialVersionUID = 1L;
 
     @Nonnull final String _type;
     final int _fpc;

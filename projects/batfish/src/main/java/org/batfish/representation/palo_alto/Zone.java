@@ -23,8 +23,6 @@ public final class Zone implements Serializable {
     VIRTUAL_WIRE,
   }
 
-  private static final long serialVersionUID = 1L;
-
   private final Set<String> _externalNames;
 
   private final Set<String> _interfaceNames;
