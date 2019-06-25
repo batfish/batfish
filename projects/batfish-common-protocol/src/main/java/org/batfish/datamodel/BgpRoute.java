@@ -9,7 +9,7 @@ import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 import com.google.common.collect.ImmutableSortedSet;
-import com.google.common.collect.Ordering;
+import java.util.Collections;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
@@ -47,7 +47,9 @@ public abstract class BgpRoute<B extends Builder<B, R>, R extends BgpRoute<B, R>
       extends AbstractRouteBuilder<B, R> {
 
     @Nonnull protected AsPath _asPath;
-    @Nonnull protected ImmutableSortedSet.Builder<Long> _clusterList;
+    // Invariant: either immutable or a local copy shielded from external mutations.
+    @Nonnull protected SortedSet<Long> _clusterList;
+    // Invariant: either immutable or a local copy shielded from external mutations.
     @Nonnull protected SortedSet<Community> _communities;
     protected boolean _discard;
     protected long _localPreference;
@@ -62,8 +64,8 @@ public abstract class BgpRoute<B extends Builder<B, R>, R extends BgpRoute<B, R>
 
     public Builder() {
       _asPath = AsPath.empty();
-      _communities = new TreeSet<>();
-      _clusterList = new ImmutableSortedSet.Builder<>(Ordering.natural());
+      _communities = ImmutableSortedSet.of();
+      _clusterList = ImmutableSortedSet.of();
     }
 
     /**
@@ -92,12 +94,16 @@ public abstract class BgpRoute<B extends Builder<B, R>, R extends BgpRoute<B, R>
 
     @Nonnull
     public SortedSet<Long> getClusterList() {
-      return _clusterList.build();
+      return _clusterList instanceof ImmutableSortedSet
+          ? _clusterList
+          : Collections.unmodifiableSortedSet(_clusterList);
     }
 
     @Nonnull
     public SortedSet<Community> getCommunities() {
-      return _communities;
+      return _communities instanceof ImmutableSortedSet
+          ? _communities
+          : Collections.unmodifiableSortedSet(_communities);
     }
 
     public long getLocalPreference() {
@@ -139,43 +145,63 @@ public abstract class BgpRoute<B extends Builder<B, R>, R extends BgpRoute<B, R>
 
     /** Overwrite the clusterList attribute */
     public B setClusterList(Set<Long> clusterList) {
-      _clusterList = new ImmutableSortedSet.Builder<>(Ordering.natural());
-      _clusterList.addAll(clusterList);
+      _clusterList =
+          clusterList instanceof ImmutableSortedSet
+              ? (ImmutableSortedSet<Long>) clusterList
+              : new TreeSet<>(clusterList);
       return getThis();
     }
 
     /** Add to the cluster list attribute */
     public B addClusterList(Set<Long> clusterList) {
+      if (_clusterList instanceof ImmutableSortedSet) {
+        _clusterList = new TreeSet<>(_clusterList);
+      }
       _clusterList.addAll(clusterList);
       return getThis();
     }
 
     /** Add to the cluster list attribute */
     public B addToClusterList(Long cluster) {
+      if (_clusterList instanceof ImmutableSortedSet) {
+        _clusterList = new TreeSet<>(_clusterList);
+      }
       _clusterList.add(cluster);
       return getThis();
     }
 
     /** Overwrite communities */
     public B setCommunities(Set<Community> communities) {
-      _communities = new TreeSet<>(communities);
+      _communities =
+          communities instanceof ImmutableSortedSet
+              ? (ImmutableSortedSet<Community>) communities
+              : new TreeSet<>(communities);
       return getThis();
     }
 
     /** Add communities */
     public B addCommunities(Set<Community> communities) {
+      if (_communities instanceof ImmutableSortedSet) {
+        _communities = new TreeSet<>(_communities);
+      }
       _communities.addAll(communities);
       return getThis();
     }
 
     /** Add a single community */
     public B addCommunity(Community community) {
+      if (_communities instanceof ImmutableSortedSet) {
+        _communities = new TreeSet<>(_communities);
+      }
       _communities.add(community);
       return getThis();
     }
 
     /** Add communities */
     public B removeCommunities(Set<Community> communities) {
+      if (_communities instanceof ImmutableSortedSet) {
+        _communities = new TreeSet<>(_communities);
+      }
       _communities.removeAll(communities);
       return getThis();
     }
