@@ -28061,6 +28061,9 @@
           },
           "~OSPF_EXPORT_POLICY:default~" : {
             "name" : "~OSPF_EXPORT_POLICY:default~"
+          },
+          "~OSPF_EXPORT_POLICY:foo~" : {
+            "name" : "~OSPF_EXPORT_POLICY:foo~"
           }
         },
         "vendorFamily" : {
@@ -28159,6 +28162,24 @@
             "interfaces" : [
               "Ethernet0/0"
             ]
+          },
+          "foo" : {
+            "name" : "foo",
+            "ospfProcesses" : {
+              "100" : {
+                "adminCosts" : {
+                  "ospf" : 110,
+                  "ospfE1" : 110,
+                  "ospfE2" : 110,
+                  "ospfIA" : 110
+                },
+                "exportPolicy" : "~OSPF_EXPORT_POLICY:foo~",
+                "processId" : "100",
+                "referenceBandwidth" : 4.0E10,
+                "routerId" : "1.1.1.2",
+                "summaryAdminCost" : 254
+              }
+            }
           }
         }
       },
