@@ -2,8 +2,6 @@ package org.batfish.bddreachability;
 
 import static org.batfish.bddreachability.BDDFirewallSessionTraceInfoMatchers.hasAction;
 import static org.batfish.bddreachability.BDDFirewallSessionTraceInfoMatchers.hasIncomingInterfaces;
-import static org.batfish.bddreachability.BDDFirewallSessionTraceInfoMatchers.hasNextHop;
-import static org.batfish.bddreachability.BDDFirewallSessionTraceInfoMatchers.hasOutgoingInterface;
 import static org.batfish.bddreachability.BDDFirewallSessionTraceInfoMatchers.hasSessionFlows;
 import static org.batfish.bddreachability.BDDFirewallSessionTraceInfoMatchers.hasTransformation;
 import static org.batfish.bddreachability.BDDReachabilityAnalysisSessionFactory.computeInitializedSesssions;
@@ -34,7 +32,6 @@ import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasEntry;
-import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThat;
@@ -81,7 +78,6 @@ import org.batfish.datamodel.acl.AclLineMatchExprs;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.flow.ForwardOutInterface;
 import org.batfish.main.Batfish;
-import org.batfish.main.BatfishTestUtils;
 import org.batfish.question.bidirectionalreachability.BidirectionalReachabilityResult;
 import org.batfish.specifier.InterfaceLinkLocation;
 import org.batfish.specifier.InterfaceLocation;
@@ -118,39 +114,34 @@ public final class BidirectionalReachabilityAnalysisTest {
           NEIGHBOR_UNREACHABLE,
           INSUFFICIENT_INFO);
 
-  private static BDDPacket PKT;
-
+  //// Common static fields for session fiblookup tests
   // nodes
-  private static final String INGRESS_NODE = "ingressNode";
-  private static final String NEIGHBOR = "neighbor";
+  private static final String SFL_INGRESS_NODE = "ingressNode";
+  private static final String SFL_NEIGHBOR = "neighbor";
 
   // vrfs
-  private static final String EGRESS_VRF = "egressVrf";
-  private static final String INGRESS_VRF = "ingressVrf";
-  private static final String NEIGHBOR_VRF = "neighborVrf";
+  private static final String SFL_EGRESS_VRF = "egressVrf";
+  private static final String SFL_INGRESS_VRF = "ingressVrf";
+  private static final String SFL_NEIGHBOR_VRF = "neighborVrf";
 
   // interfaces
-  private static final String EGRESS_IFACE = "egressIface";
-  private static final String INGRESS_IFACE = "ingressIface";
-  private static final String NEIGHBOR_IFACE = "neighborIface";
+  private static final String SFL_EGRESS_IFACE = "egressIface";
+  private static final String SFL_INGRESS_IFACE = "ingressIface";
+  private static final String SFL_NEIGHBOR_IFACE = "neighborIface";
 
   // addresses
-  private static final ConcreteInterfaceAddress EGRESS_IFACE_ADDRESS =
+  private static final ConcreteInterfaceAddress SFL_EGRESS_IFACE_ADDRESS =
       ConcreteInterfaceAddress.parse("10.0.12.1/24");
-  private static final ConcreteInterfaceAddress INGRESS_IFACE_ADDRESS =
+  private static final ConcreteInterfaceAddress SFL_INGRESS_IFACE_ADDRESS =
       ConcreteInterfaceAddress.parse("10.0.0.1/24");
-  private static final ConcreteInterfaceAddress NEIGHBOR_IFACE_ADDRESS =
+  private static final ConcreteInterfaceAddress SFL_NEIGHBOR_IFACE_ADDRESS =
       ConcreteInterfaceAddress.parse("10.0.12.2/24");
 
   // locations
-  private static Location INGRESS_LOCATION;
+  private static Location SFL_INGRESS_LOCATION;
 
-  private static IpSpaceToBDD TO_DST_IP_BDD;
-  private static IpSpaceToBDD TO_SRC_IP_BDD;
-
-  private static IpSpace DST_IP_SPACE_SINGLE_NODE;
-  private static IpSpace DST_IP_SPACE_DUAL_NODE;
-
+  private static IpSpace SFL_DST_IP_SPACE_SINGLE_NODE;
+  private static IpSpace SFL_DST_IP_SPACE_DUAL_NODE;
 
   //// Common static fields for ForwardPassFinalNodes tests
   // nodes
@@ -180,15 +171,13 @@ public final class BidirectionalReachabilityAnalysisTest {
   @Rule public TemporaryFolder temp = new TemporaryFolder();
 
   @BeforeClass
-  public static void setup() {
-    PKT = new BDDPacket();
-    INGRESS_LOCATION = new InterfaceLinkLocation(INGRESS_NODE, INGRESS_IFACE);
-    TO_DST_IP_BDD = new IpSpaceToBDD(PKT.getDstIp());
-    TO_SRC_IP_BDD = new IpSpaceToBDD(PKT.getSrcIp());
-    DST_IP_SPACE_SINGLE_NODE =
+  public static void setupSessionFiblookupTests() {
+    SFL_INGRESS_LOCATION = new InterfaceLinkLocation(SFL_INGRESS_NODE, SFL_INGRESS_IFACE);
+    SFL_DST_IP_SPACE_SINGLE_NODE =
         AclIpSpace.difference(
-            EGRESS_IFACE_ADDRESS.getPrefix().toIpSpace(), EGRESS_IFACE_ADDRESS.getIp().toIpSpace());
-    DST_IP_SPACE_DUAL_NODE = NEIGHBOR_IFACE_ADDRESS.getIp().toIpSpace();
+            SFL_EGRESS_IFACE_ADDRESS.getPrefix().toIpSpace(),
+            SFL_EGRESS_IFACE_ADDRESS.getIp().toIpSpace());
+    SFL_DST_IP_SPACE_DUAL_NODE = SFL_NEIGHBOR_IFACE_ADDRESS.getIp().toIpSpace();
   }
 
   @BeforeClass
@@ -917,7 +906,7 @@ public final class BidirectionalReachabilityAnalysisTest {
             FPFN_END_EXIT_ADDRESS.getIp().toIpSpace()));
   }
 
-  private static @Nonnull SortedMap<String, Configuration> makeFibLookupNetwork(
+  private static @Nonnull SortedMap<String, Configuration> makeSessionFibLookupNetwork(
       boolean withNeighbor,
       boolean blockNonSessionReverse,
       boolean separateEgressVrf,
@@ -925,18 +914,18 @@ public final class BidirectionalReachabilityAnalysisTest {
     NetworkFactory nf = new NetworkFactory();
     Configuration.Builder cb =
         nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS);
-    Configuration ingressNode = cb.setHostname(INGRESS_NODE).build();
+    Configuration ingressNode = cb.setHostname(SFL_INGRESS_NODE).build();
 
-    Vrf ingressVrf = nf.vrfBuilder().setName(INGRESS_VRF).setOwner(ingressNode).build();
-    Vrf egressVrf = nf.vrfBuilder().setName(EGRESS_VRF).setOwner(ingressNode).build();
+    Vrf ingressVrf = nf.vrfBuilder().setName(SFL_INGRESS_VRF).setOwner(ingressNode).build();
+    Vrf egressVrf = nf.vrfBuilder().setName(SFL_EGRESS_VRF).setOwner(ingressNode).build();
 
     Interface.Builder ib = Interface.builder().setOwner(ingressNode).setActive(true);
-    ib.setName(INGRESS_IFACE).setVrf(ingressVrf).setAddress(INGRESS_IFACE_ADDRESS).build();
-    ib.setName(EGRESS_IFACE)
+    ib.setName(SFL_INGRESS_IFACE).setVrf(ingressVrf).setAddress(SFL_INGRESS_IFACE_ADDRESS).build();
+    ib.setName(SFL_EGRESS_IFACE)
         .setVrf(separateEgressVrf ? egressVrf : ingressVrf)
-        .setAddress(EGRESS_IFACE_ADDRESS)
+        .setAddress(SFL_EGRESS_IFACE_ADDRESS)
         .setFirewallSessionInterfaceInfo(
-            new FirewallSessionInterfaceInfo(true, ImmutableSet.of(EGRESS_IFACE), null, null))
+            new FirewallSessionInterfaceInfo(true, ImmutableSet.of(SFL_EGRESS_IFACE), null, null))
         .setIncomingFilter(
             blockNonSessionReverse
                 ? IpAccessList.builder()
@@ -952,7 +941,7 @@ public final class BidirectionalReachabilityAnalysisTest {
           .add(
               StaticRoute.builder()
                   .setNetwork(Prefix.ZERO)
-                  .setNextVrf(EGRESS_VRF)
+                  .setNextVrf(SFL_EGRESS_VRF)
                   .setAdmin(1)
                   .build());
       if (!missingEgressVrfNextVrfRoute) {
@@ -961,7 +950,7 @@ public final class BidirectionalReachabilityAnalysisTest {
             .add(
                 StaticRoute.builder()
                     .setNetwork(Prefix.ZERO)
-                    .setNextVrf(INGRESS_VRF)
+                    .setNextVrf(SFL_INGRESS_VRF)
                     .setAdmin(1)
                     .build());
       }
@@ -971,14 +960,14 @@ public final class BidirectionalReachabilityAnalysisTest {
       return ImmutableSortedMap.of(ingressNode.getHostname(), ingressNode);
     }
 
-    Configuration neighbor = cb.setHostname(NEIGHBOR).build();
-    Vrf neighborVrf = nf.vrfBuilder().setName(NEIGHBOR_VRF).setOwner(neighbor).build();
+    Configuration neighbor = cb.setHostname(SFL_NEIGHBOR).build();
+    Vrf neighborVrf = nf.vrfBuilder().setName(SFL_NEIGHBOR_VRF).setOwner(neighbor).build();
     Interface.builder()
         .setActive(true)
         .setOwner(neighbor)
         .setVrf(neighborVrf)
-        .setName(NEIGHBOR_IFACE)
-        .setAddress(NEIGHBOR_IFACE_ADDRESS)
+        .setName(SFL_NEIGHBOR_IFACE)
+        .setAddress(SFL_NEIGHBOR_IFACE_ADDRESS)
         .build();
     neighborVrf
         .getStaticRoutes()
@@ -986,76 +975,80 @@ public final class BidirectionalReachabilityAnalysisTest {
             StaticRoute.builder()
                 .setNetwork(Prefix.ZERO)
                 .setAdmin(1)
-                .setNextHopIp(EGRESS_IFACE_ADDRESS.getIp())
+                .setNextHopIp(SFL_EGRESS_IFACE_ADDRESS.getIp())
                 .build());
 
-    return ImmutableSortedMap.of(INGRESS_NODE, ingressNode, NEIGHBOR, neighbor);
+    return ImmutableSortedMap.of(SFL_INGRESS_NODE, ingressNode, SFL_NEIGHBOR, neighbor);
   }
 
   @Test
-  public void testFibLookupBidirAcceptSingleNodeSingleVrf() throws IOException {
-    assertBidirAcceptSingleNode(makeFibLookupNetwork(false, false, false, false));
+  public void testSessionFibLookupAcceptSingleNodeSingleVrf() throws IOException {
+    assertSessionFiblookupAcceptSingleNode(makeSessionFibLookupNetwork(false, false, false, false));
   }
 
   @Test
-  public void testFibLookupBidirAcceptDualNodeSingleVrf() throws IOException {
-    assertBidirAcceptDualNode(makeFibLookupNetwork(true, false, false, false));
+  public void testSessionFibLookupAcceptDualNodeSingleVrf() throws IOException {
+    assertSessionFiblookupAcceptDualNode(makeSessionFibLookupNetwork(true, false, false, false));
   }
 
   @Test
-  public void testFibLookupBidirAcceptSingleNodeSingleVrfBlockNonSessionReverse()
+  public void testSessionFibLookupAcceptSingleNodeSingleVrfBlockNonSessionReverse()
       throws IOException {
-    assertBidirAcceptSingleNode(makeFibLookupNetwork(false, true, false, false));
+    assertSessionFiblookupAcceptSingleNode(makeSessionFibLookupNetwork(false, true, false, false));
   }
 
   @Test
-  public void testFibLookupBidirAcceptDualNodeSingleVrfBlockNonSessionReverse() throws IOException {
-    assertBidirAcceptDualNode(makeFibLookupNetwork(true, true, false, false));
-  }
-
-  @Test
-  public void testFibLookupBidirAcceptSingleNodeDualVrf() throws IOException {
-    assertBidirAcceptSingleNode(makeFibLookupNetwork(false, false, true, false));
-  }
-
-  @Test
-  public void testFibLookupBidirAcceptDualNodeDualVrf() throws IOException {
-    assertBidirAcceptDualNode(makeFibLookupNetwork(true, false, true, false));
-  }
-
-  @Test
-  public void testFibLookupBidirAcceptSingleNodeDualVrfMissingEgressRoute() throws IOException {
-    assertBidirReturnNoRouteSingleNode(makeFibLookupNetwork(false, false, true, true));
-  }
-
-  @Test
-  public void testFibLookupBidirAcceptDualNodeDualVrfMissingEgressRoute() throws IOException {
-    assertBidirReturnNoRouteDualNode(makeFibLookupNetwork(true, false, true, true));
-  }
-
-  private void assertBidirAcceptSingleNode(SortedMap<String, Configuration> configurations)
+  public void testSessionFibLookupAcceptDualNodeSingleVrfBlockNonSessionReverse()
       throws IOException {
-    assertBidirAccept(
-        configurations, DST_IP_SPACE_SINGLE_NODE, ImmutableSet.of(DELIVERED_TO_SUBNET));
+    assertSessionFiblookupAcceptDualNode(makeSessionFibLookupNetwork(true, true, false, false));
   }
 
-  private void assertBidirAcceptDualNode(SortedMap<String, Configuration> configurations)
+  @Test
+  public void testSessionFibLookupAcceptSingleNodeDualVrf() throws IOException {
+    assertSessionFiblookupAcceptSingleNode(makeSessionFibLookupNetwork(false, false, true, false));
+  }
+
+  @Test
+  public void testSessionFibLookupAcceptDualNodeDualVrf() throws IOException {
+    assertSessionFiblookupAcceptDualNode(makeSessionFibLookupNetwork(true, false, true, false));
+  }
+
+  @Test
+  public void testSessionFibLookupAcceptSingleNodeDualVrfMissingEgressRoute() throws IOException {
+    assertSessionFiblookupReturnNoRouteSingleNode(
+        makeSessionFibLookupNetwork(false, false, true, true));
+  }
+
+  @Test
+  public void testSessionFibLookupAcceptDualNodeDualVrfMissingEgressRoute() throws IOException {
+    assertSessionFiblookupReturnNoRouteDualNode(
+        makeSessionFibLookupNetwork(true, false, true, true));
+  }
+
+  private void assertSessionFiblookupAcceptSingleNode(
+      SortedMap<String, Configuration> configurations) throws IOException {
+    assertSessionFiblookupAccept(
+        configurations, SFL_DST_IP_SPACE_SINGLE_NODE, ImmutableSet.of(DELIVERED_TO_SUBNET));
+  }
+
+  private void assertSessionFiblookupAcceptDualNode(SortedMap<String, Configuration> configurations)
       throws IOException {
-    assertBidirAccept(configurations, DST_IP_SPACE_DUAL_NODE, ALL_DISPOSITIONS);
+    assertSessionFiblookupAccept(configurations, SFL_DST_IP_SPACE_DUAL_NODE, ALL_DISPOSITIONS);
   }
 
-  private void assertBidirReturnNoRouteSingleNode(SortedMap<String, Configuration> configurations)
-      throws IOException {
-    assertBidirReturnNoRoute(
-        configurations, DST_IP_SPACE_SINGLE_NODE, ImmutableSet.of(DELIVERED_TO_SUBNET));
+  private void assertSessionFiblookupReturnNoRouteSingleNode(
+      SortedMap<String, Configuration> configurations) throws IOException {
+    assertSessionFiblookupReturnNoRoute(
+        configurations, SFL_DST_IP_SPACE_SINGLE_NODE, ImmutableSet.of(DELIVERED_TO_SUBNET));
   }
 
-  private void assertBidirReturnNoRouteDualNode(SortedMap<String, Configuration> configurations)
-      throws IOException {
-    assertBidirReturnNoRoute(configurations, DST_IP_SPACE_DUAL_NODE, ALL_DISPOSITIONS);
+  private void assertSessionFiblookupReturnNoRouteDualNode(
+      SortedMap<String, Configuration> configurations) throws IOException {
+    assertSessionFiblookupReturnNoRoute(
+        configurations, SFL_DST_IP_SPACE_DUAL_NODE, ALL_DISPOSITIONS);
   }
 
-  private void assertBidirAccept(
+  private void assertSessionFiblookupAccept(
       SortedMap<String, Configuration> configurations,
       IpSpace dstIpSpaceOfInterest,
       Set<FlowDisposition> forwardDispositions)
@@ -1069,7 +1062,9 @@ public final class BidirectionalReachabilityAnalysisTest {
             PKT,
             configurations,
             batfish.loadDataPlane().getForwardingAnalysis(),
-            IpSpaceAssignment.builder().assign(INGRESS_LOCATION, UniverseIpSpace.INSTANCE).build(),
+            IpSpaceAssignment.builder()
+                .assign(SFL_INGRESS_LOCATION, UniverseIpSpace.INSTANCE)
+                .build(),
             matchDst(dstIpSpaceOfInterest),
             ImmutableSet.of(),
             ImmutableSet.of(),
@@ -1081,17 +1076,17 @@ public final class BidirectionalReachabilityAnalysisTest {
         result.getStartLocationReturnPassSuccessBdds(),
         equalTo(
             ImmutableMap.of(
-                INGRESS_LOCATION,
+                SFL_INGRESS_LOCATION,
                 dstIpSpaceOfInterest
-                    .accept(TO_DST_IP_BDD)
+                    .accept(PKT.getDstIpSpaceToBDD())
                     .and(
                         difference(
-                                INGRESS_IFACE_ADDRESS.getPrefix().toIpSpace(),
-                                INGRESS_IFACE_ADDRESS.getIp().toIpSpace())
-                            .accept(TO_SRC_IP_BDD)))));
+                                SFL_INGRESS_IFACE_ADDRESS.getPrefix().toIpSpace(),
+                                SFL_INGRESS_IFACE_ADDRESS.getIp().toIpSpace())
+                            .accept(PKT.getSrcIpSpaceToBDD())))));
   }
 
-  private void assertBidirReturnNoRoute(
+  private void assertSessionFiblookupReturnNoRoute(
       SortedMap<String, Configuration> configurations,
       IpSpace dstIpSpaceOfInterest,
       Set<FlowDisposition> forwardDispositions)
@@ -1100,7 +1095,7 @@ public final class BidirectionalReachabilityAnalysisTest {
     batfish.computeDataPlane();
 
     IpSpace srcIpSpaceOfInterest =
-        AclIpSpace.rejecting(NEIGHBOR_IFACE_ADDRESS.getPrefix().toIpSpace())
+        AclIpSpace.rejecting(SFL_NEIGHBOR_IFACE_ADDRESS.getPrefix().toIpSpace())
             .thenPermitting(UniverseIpSpace.INSTANCE)
             .build();
 
@@ -1110,7 +1105,9 @@ public final class BidirectionalReachabilityAnalysisTest {
             PKT,
             configurations,
             batfish.loadDataPlane().getForwardingAnalysis(),
-            IpSpaceAssignment.builder().assign(INGRESS_LOCATION, UniverseIpSpace.INSTANCE).build(),
+            IpSpaceAssignment.builder()
+                .assign(SFL_INGRESS_LOCATION, UniverseIpSpace.INSTANCE)
+                .build(),
             AclLineMatchExprs.match(
                 HeaderSpace.builder()
                     .setDstIps(dstIpSpaceOfInterest)
@@ -1126,9 +1123,9 @@ public final class BidirectionalReachabilityAnalysisTest {
         result.getStartLocationReturnPassFailureBdds(),
         equalTo(
             ImmutableMap.of(
-                INGRESS_LOCATION,
+                SFL_INGRESS_LOCATION,
                 dstIpSpaceOfInterest
-                    .accept(TO_DST_IP_BDD)
-                    .and(srcIpSpaceOfInterest.accept(TO_SRC_IP_BDD)))));
+                    .accept(PKT.getDstIpSpaceToBDD())
+                    .and(srcIpSpaceOfInterest.accept(PKT.getSrcIpSpaceToBDD())))));
   }
 }
