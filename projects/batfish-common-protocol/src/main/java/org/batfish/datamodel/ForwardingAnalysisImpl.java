@@ -663,15 +663,12 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
                                         fibsByVrfEntry.getValue(), /* fib */
                                         matchingIps
                                             .get(hostname)
-                                            .get(fibsByVrfEntry.getKey()), /* matchingIps */
-                                        fibs.get(hostname) /* fibsByVrf */)));
+                                            .get(fibsByVrfEntry.getKey()) /* matchingIps */)));
                   }));
     }
   }
 
-  @VisibleForTesting
-  static Map<String, IpSpace> computeNextVrfIps(
-      Fib fib, Map<Prefix, IpSpace> matchingIps, Map<String, Fib> fibsByVrf) {
+  private static Map<String, IpSpace> computeNextVrfIps(Fib fib, Map<Prefix, IpSpace> matchingIps) {
     return fib.allEntries().stream()
         .filter(fibEntry -> fibEntry.getAction() instanceof FibNextVrf)
         .collect(
@@ -1537,10 +1534,10 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
                                 return;
                               }
                               Configuration c = configurations.get(node);
-                              assert node != null : node + " is null";
+                              assert c != null : node + " is null";
                               Interface iface = c.getAllInterfaces().get(i);
-                              assert iface != null : node + "[" + iface + "] is null";
-                              assert iface.getActive() : node + "[" + iface + "] is not active";
+                              assert iface != null : node + "[" + i + "] is null";
+                              assert iface.getActive() : node + "[" + i + "] is not active";
                             })));
   }
 
@@ -1560,10 +1557,10 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
                         return;
                       }
                       Configuration c = configurations.get(node);
-                      assert node != null : node + " is null";
+                      assert c != null : node + " is null";
                       Interface iface = c.getAllInterfaces().get(i);
-                      assert iface != null : node + "[" + iface + "] is null";
-                      assert iface.getActive() : node + "[" + iface + "] is not active";
+                      assert iface != null : node + "[" + i + "] is null";
+                      assert iface.getActive() : node + "[" + i + "] is not active";
                     }));
   }
 
@@ -1614,8 +1611,8 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
    * Mapping: node -&gt; vrf -&gt; route -&gt; nexthopinterface -&gt; resolved nextHopIp -&gt;
    * interfaceRoutes
    */
-  @VisibleForTesting
-  static Map<String, Map<String, Map<AbstractRoute, Map<String, Map<Ip, Set<AbstractRoute>>>>>>
+  private static Map<
+          String, Map<String, Map<AbstractRoute, Map<String, Map<Ip, Set<AbstractRoute>>>>>>
       computeNextHopInterfacesByNodeVrf(Map<String, Map<String, Fib>> fibsByNode) {
     try (ActiveSpan span =
         GlobalTracer.get()
@@ -1634,9 +1631,8 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
   }
 
   /** Mapping: route -&gt; nexthopinterface -&gt; resolved nextHopIp -&gt; interfaceRoutes */
-  @VisibleForTesting
-  static Map<AbstractRoute, Map<String, Map<Ip, Set<AbstractRoute>>>> computeNextHopInterfaces(
-      Fib fib) {
+  private static Map<AbstractRoute, Map<String, Map<Ip, Set<AbstractRoute>>>>
+      computeNextHopInterfaces(Fib fib) {
     return fib.allEntries().stream()
         .filter(fibEntry -> fibEntry.getAction() instanceof FibForward)
         .collect(
