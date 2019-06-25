@@ -3300,7 +3300,8 @@ s_vlan_cisco
       )
    ) null_rest_of_line
    (
-      vlan_null
+      vlan_vn_segment
+      | vlan_null
    )*
 ;
 
@@ -4281,6 +4282,11 @@ viafv_preempt
 viafv_priority
 :
    PRIORITY priority = DEC NEWLINE
+;
+
+vlan_vn_segment
+:
+   VN_SEGMENT vni = DEC NEWLINE
 ;
 
 vlan_null

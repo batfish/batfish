@@ -13848,6 +13848,11 @@ VNI
    'vni'
 ;
 
+VN_SEGMENT
+:
+   'vn-segment'
+;
+
 VOCERA
 :
    'vocera'
