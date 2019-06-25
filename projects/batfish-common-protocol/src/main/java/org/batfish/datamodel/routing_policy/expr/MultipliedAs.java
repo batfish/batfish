@@ -16,9 +16,8 @@ public final class MultipliedAs extends AsPathListExpr {
   private static final String PROP_EXPR = "expr";
   private static final String PROP_NUMBER = "number";
 
-  @Nonnull private AsExpr _expr;
-
-  @Nonnull private IntExpr _number;
+  @Nonnull private final AsExpr _expr;
+  @Nonnull private final IntExpr _number;
 
   @JsonCreator
   private static MultipliedAs jsonCreator(
@@ -35,7 +34,7 @@ public final class MultipliedAs extends AsPathListExpr {
   }
 
   @Override
-  public boolean equals(Object obj) {
+  public boolean equals(@Nullable Object obj) {
     if (this == obj) {
       return true;
     } else if (!(obj instanceof MultipliedAs)) {
@@ -75,13 +74,5 @@ public final class MultipliedAs extends AsPathListExpr {
     result = prime * result + _expr.hashCode();
     result = prime * result + _number.hashCode();
     return result;
-  }
-
-  public void setExpr(AsExpr expr) {
-    _expr = expr;
-  }
-
-  public void setNumber(IntExpr number) {
-    _number = number;
   }
 }
