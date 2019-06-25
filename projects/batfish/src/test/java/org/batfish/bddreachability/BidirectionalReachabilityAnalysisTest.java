@@ -114,8 +114,8 @@ public final class BidirectionalReachabilityAnalysisTest {
 
   //// Common static fields for ForwardPassFinalNodes tests
   // nodes
-  private static final String FPFN_N1 = "n1";
-  private static final String FPFN_N2 = "n2";
+  private static final String FPFN_START_NODE = "startNode";
+  private static final String FPFN_END_NODE = "endNode";
 
   // interfaces
   private static final String FPFN_INGRESS_IFACE = "ingressIface";
@@ -145,8 +145,8 @@ public final class BidirectionalReachabilityAnalysisTest {
     Configuration.Builder cb =
         nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS);
 
-    Configuration n1 = cb.setHostname(FPFN_N1).build();
-    Configuration n2 = cb.setHostname(FPFN_N2).build();
+    Configuration n1 = cb.setHostname(FPFN_START_NODE).build();
+    Configuration n2 = cb.setHostname(FPFN_END_NODE).build();
 
     Vrf.Builder vb = nf.vrfBuilder();
     Vrf v1 = vb.setOwner(n1).build();
@@ -774,8 +774,18 @@ public final class BidirectionalReachabilityAnalysisTest {
       Location startLocation, IpSpace srcIpSpace, IpSpace dstIpSpace) {
     IpSpaceAssignment assignment =
         IpSpaceAssignment.builder().assign(startLocation, srcIpSpace).build();
-    //// Start from InterfaceLocation: egressIface
-    // forward final node is n2
+
+    BDDReachabilityAnalysis a =
+        new BDDReachabilityAnalysisFactory(PKT, FPFN_CONFIGS, FPFN_FORWARDING_ANALYSIS, false, true)
+            .bddReachabilityAnalysis(
+                assignment,
+                matchDst(dstIpSpace),
+                ImmutableSet.of(),
+                ImmutableSet.of(),
+                ImmutableSet.of(FPFN_END_NODE),
+                SUCCESS_DISPOSITIONS);
+
+    // forward final node is expected end node, so return pass should happen
     BidirectionalReachabilityAnalysis analysisFromEgressToN2 =
         new BidirectionalReachabilityAnalysis(
             PKT,
@@ -785,7 +795,7 @@ public final class BidirectionalReachabilityAnalysisTest {
             matchDst(dstIpSpace),
             ImmutableSet.of(),
             ImmutableSet.of(),
-            ImmutableSet.of(FPFN_N2),
+            ImmutableSet.of(FPFN_END_NODE),
             SUCCESS_DISPOSITIONS);
 
     // should get successful result only
@@ -800,7 +810,7 @@ public final class BidirectionalReachabilityAnalysisTest {
     assertThat(
         analysisFromEgressToN2.getResult().getStartLocationReturnPassFailureBdds(), anEmptyMap());
 
-    // forward final node is n1
+    // forward final node is start node (where no traffic will end), so no return pass
     BidirectionalReachabilityAnalysis analysisFromEgressToN1 =
         new BidirectionalReachabilityAnalysis(
             PKT,
@@ -810,7 +820,7 @@ public final class BidirectionalReachabilityAnalysisTest {
             matchDst(dstIpSpace),
             ImmutableSet.of(),
             ImmutableSet.of(),
-            ImmutableSet.of(FPFN_N1),
+            ImmutableSet.of(FPFN_START_NODE),
             SUCCESS_DISPOSITIONS);
 
     // forward analysis should fail, should get neither success nor failure return pass results
@@ -823,7 +833,7 @@ public final class BidirectionalReachabilityAnalysisTest {
   @Test
   public void testForwardPassFinalNodesFromInterfaceLocationToNode() throws IOException {
     assertForwardPassFinalNodesRespected(
-        new InterfaceLocation(FPFN_N1, FPFN_EGRESS_IFACE),
+        new InterfaceLocation(FPFN_START_NODE, FPFN_EGRESS_IFACE),
         FPFN_EGRESS_ADDRESS.getIp().toIpSpace(),
         FPFN_NEIGHBOR_ADDRESS.getIp().toIpSpace());
   }
@@ -831,7 +841,7 @@ public final class BidirectionalReachabilityAnalysisTest {
   @Test
   public void testForwardPassFinalNodesFromInterfaceLinkLocationToNode() throws IOException {
     assertForwardPassFinalNodesRespected(
-        new InterfaceLinkLocation(FPFN_N1, FPFN_INGRESS_IFACE),
+        new InterfaceLinkLocation(FPFN_START_NODE, FPFN_INGRESS_IFACE),
         AclIpSpace.difference(
             FPFN_INGRESS_ADDRESS.getPrefix().toIpSpace(), FPFN_INGRESS_ADDRESS.getIp().toIpSpace()),
         FPFN_NEIGHBOR_ADDRESS.getIp().toIpSpace());
@@ -841,7 +851,7 @@ public final class BidirectionalReachabilityAnalysisTest {
   public void testForwardPassFinalNodesFromInterfaceLocationToInterfaceDisposition()
       throws IOException {
     assertForwardPassFinalNodesRespected(
-        new InterfaceLocation(FPFN_N1, FPFN_EGRESS_IFACE),
+        new InterfaceLocation(FPFN_START_NODE, FPFN_EGRESS_IFACE),
         FPFN_EGRESS_ADDRESS.getIp().toIpSpace(),
         AclIpSpace.difference(
             FPFN_NEIGHBOR_EXIT_ADDRESS.getPrefix().toIpSpace(),
@@ -852,7 +862,7 @@ public final class BidirectionalReachabilityAnalysisTest {
   public void testForwardPassFinalNodesFromInterfaceLinkLocationToInterfaceDisposition()
       throws IOException {
     assertForwardPassFinalNodesRespected(
-        new InterfaceLinkLocation(FPFN_N1, FPFN_INGRESS_IFACE),
+        new InterfaceLinkLocation(FPFN_START_NODE, FPFN_INGRESS_IFACE),
         AclIpSpace.difference(
             FPFN_INGRESS_ADDRESS.getPrefix().toIpSpace(), FPFN_INGRESS_ADDRESS.getIp().toIpSpace()),
         AclIpSpace.difference(
