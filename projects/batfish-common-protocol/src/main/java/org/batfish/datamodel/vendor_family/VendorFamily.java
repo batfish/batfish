@@ -26,7 +26,6 @@ public class VendorFamily implements Serializable {
   private static final String PROP_CUMULUS = "cumulus";
   private static final String PROP_F5_BIGIP = "f5Bigip";
   private static final String PROP_JUNIPER = "juniper";
-  private static final long serialVersionUID = 1L;
 
   private static Type toFamilyType(Object family) {
     if (family instanceof AwsFamily) {

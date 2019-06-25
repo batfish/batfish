@@ -179,8 +179,6 @@ public final class BgpAdvertisementGroup implements Serializable {
   private static final String PROP_TX_AS = "txAs";
   private static final String PROP_TX_PEER = "txPeer";
 
-  private static final long serialVersionUID = 1L;
-
   public static @Nonnull Builder builder() {
     return new Builder();
   }

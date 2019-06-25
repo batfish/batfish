@@ -7,8 +7,6 @@ import javax.annotation.Nonnull;
 
 public class CryptoMapSet implements Serializable {
 
-  private static final long serialVersionUID = 1L;
-
   private boolean _dynamic;
 
   private List<CryptoMapEntry> _cryptoMapEntries;

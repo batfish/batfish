@@ -202,8 +202,6 @@ public final class OspfProcess implements Serializable {
   private static final String PROP_RFC1583 = "rfc1583Compatible";
   private static final String PROP_SUMMARY_ADMIN = "summaryAdminCost";
 
-  private static final long serialVersionUID = 1L;
-
   /** Builder to be used for tests (maintains pointer to {@link NetworkFactory} */
   public static Builder builder(@Nullable NetworkFactory networkFactory) {
     return new Builder(networkFactory);

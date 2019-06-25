@@ -10,8 +10,6 @@ import javax.annotation.Nullable;
 /** Rib group configuration */
 public class RibGroup implements Serializable {
 
-  private static final long serialVersionUID = 1;
-
   @Nonnull private String _name;
   @Nullable private String _exportRib;
   @Nonnull private List<String> _importPolicies;

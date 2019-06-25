@@ -19,7 +19,6 @@ import javax.annotation.ParametersAreNonnullByDefault;
 @ParametersAreNonnullByDefault
 public final class LocalRoute extends AbstractRoute {
 
-  private static final long serialVersionUID = 1L;
   private static final String PROP_SOURCE_PREFIX_LENGTH = "sourcePrefixLength";
 
   private final String _nextHopInterface;

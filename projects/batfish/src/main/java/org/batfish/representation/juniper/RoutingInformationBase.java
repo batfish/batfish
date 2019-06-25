@@ -16,8 +16,6 @@ public class RoutingInformationBase implements Serializable {
   public static final String RIB_ISIS = "iso.0";
   public static final String RIB_MPLS = "mpls.0";
 
-  private static final long serialVersionUID = 1L;
-
   private final Map<Prefix, AggregateRoute> _aggregateRoutes;
   private final Map<Prefix, GeneratedRoute> _generatedRoutes;
   private final String _name;

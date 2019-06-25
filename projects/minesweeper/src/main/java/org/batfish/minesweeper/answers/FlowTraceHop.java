@@ -23,8 +23,6 @@ public final class FlowTraceHop implements Comparable<FlowTraceHop>, Serializabl
   private static final String PROP_FILTER_OUT = "filterOut";
   private static final String PROP_ROUTES = "routes";
 
-  private static final long serialVersionUID = 1L;
-
   private static final String PROP_TRANSFORMED_FLOW = "transformedFlow";
 
   private final Edge _edge;

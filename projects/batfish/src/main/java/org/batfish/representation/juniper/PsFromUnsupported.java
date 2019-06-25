@@ -7,7 +7,6 @@ import org.batfish.datamodel.routing_policy.expr.BooleanExprs;
 
 /** Represents an unsupported "from" line in a {@link PsTerm} */
 public final class PsFromUnsupported extends PsFrom {
-  private static final long serialVersionUID = 1L;
 
   @Override
   public BooleanExpr toBooleanExpr(JuniperConfiguration jc, Configuration c, Warnings warnings) {

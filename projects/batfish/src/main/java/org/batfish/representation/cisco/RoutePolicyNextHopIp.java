@@ -9,8 +9,6 @@ import org.batfish.datamodel.routing_policy.expr.NextHopExpr;
 
 public class RoutePolicyNextHopIp extends RoutePolicyNextHop {
 
-  private static final long serialVersionUID = 1L;
-
   private Ip _address;
 
   public RoutePolicyNextHopIp(Ip address) {

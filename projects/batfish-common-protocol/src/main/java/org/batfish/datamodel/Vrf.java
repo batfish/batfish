@@ -80,8 +80,6 @@ public class Vrf extends ComparableStructure<String> {
   private static final String PROP_STATIC_ROUTES = "staticRoutes";
   private static final String PROP_VNI_SETTINGS = "vniSettings";
 
-  private static final long serialVersionUID = 1L;
-
   private SortedMap<RoutingProtocol, RibGroup> _appliedRibGroups;
   private BgpProcess _bgpProcess;
   private String _description;

@@ -22,7 +22,6 @@ public final class VirtualAddress implements Serializable {
   private static final String PROP_MASK6 = "mask6";
   private static final String PROP_NAME = "name";
   private static final String PROP_ROUTE_ADVERTISEMENT_MODE = "routeAdvertisementMode";
-  private static final long serialVersionUID = 1L;
 
   @JsonCreator
   private static @Nonnull VirtualAddress create(@JsonProperty(PROP_NAME) @Nullable String name) {

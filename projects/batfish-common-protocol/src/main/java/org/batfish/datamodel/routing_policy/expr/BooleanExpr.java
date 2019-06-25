@@ -18,7 +18,6 @@ import org.batfish.datamodel.routing_policy.RoutingPolicy;
 /** A base class for all boolean expressions that are allowed inside a {@link RoutingPolicy} */
 @JsonTypeInfo(use = JsonTypeInfo.Id.CLASS, property = "class")
 public abstract class BooleanExpr implements Serializable {
-  private static final long serialVersionUID = 1L;
 
   protected static final String PROP_COMMENT = "comment";
 

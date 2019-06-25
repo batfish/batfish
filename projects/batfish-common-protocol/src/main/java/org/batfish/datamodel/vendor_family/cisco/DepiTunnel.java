@@ -6,8 +6,6 @@ import java.io.Serializable;
 
 public class DepiTunnel implements Serializable {
 
-  private static final long serialVersionUID = 1L;
-
   private static final String PROP_NAME = "name";
 
   private final String _name;

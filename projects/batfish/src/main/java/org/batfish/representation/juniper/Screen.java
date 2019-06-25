@@ -7,8 +7,6 @@ import java.util.List;
 /** Represents Juniper screens */
 public final class Screen implements Serializable {
 
-  private static final long serialVersionUID = 1L;
-
   private final String _name;
   private final List<ScreenOption> _screenOptions;
   private ScreenAction _action;

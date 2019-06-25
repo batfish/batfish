@@ -10,8 +10,6 @@ import org.batfish.datamodel.routing_policy.expr.MatchMetric;
 /** Represents a "from metric" line in a {@link PsTerm} */
 public class PsFromMetric extends PsFrom {
 
-  private static final long serialVersionUID = 1L;
-
   private final int _metric;
 
   public PsFromMetric(int metric) {

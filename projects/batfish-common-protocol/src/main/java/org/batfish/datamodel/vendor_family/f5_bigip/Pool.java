@@ -20,7 +20,6 @@ public final class Pool implements Serializable {
   private static final String PROP_MEMBERS = "members";
   private static final String PROP_MONITOR = "monitor";
   private static final String PROP_NAME = "name";
-  private static final long serialVersionUID = 1L;
 
   @JsonCreator
   private static @Nonnull Pool create(

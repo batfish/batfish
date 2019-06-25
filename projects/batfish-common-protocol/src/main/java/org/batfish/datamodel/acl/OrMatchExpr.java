@@ -12,7 +12,6 @@ import javax.annotation.Nullable;
 
 public class OrMatchExpr extends AclLineMatchExpr {
   private static final String PROP_DISJUNCTS = "disjuncts";
-  private static final long serialVersionUID = 1L;
 
   private final SortedSet<AclLineMatchExpr> _disjuncts;
 

@@ -13,8 +13,6 @@ public class Prefix6Space implements Serializable {
 
   private static class BitTrie implements Serializable {
 
-    private static final long serialVersionUID = 1L;
-
     private BitTrieNode _root;
 
     public BitTrie() {
@@ -55,8 +53,6 @@ public class Prefix6Space implements Serializable {
   }
 
   private static class BitTrieNode implements Serializable {
-
-    private static final long serialVersionUID = 1L;
 
     private BitTrieNode _left;
 
@@ -158,8 +154,6 @@ public class Prefix6Space implements Serializable {
       }
     }
   }
-
-  private static final long serialVersionUID = 1L;
 
   private BitTrie _trie;
 

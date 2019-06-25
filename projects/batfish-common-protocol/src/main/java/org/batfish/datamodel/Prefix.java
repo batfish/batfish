@@ -26,8 +26,6 @@ public final class Prefix implements Comparable<Prefix>, Serializable {
   /** Maximum prefix length (number of bits) for a IPv4 address, which is 32 */
   public static final int MAX_PREFIX_LENGTH = 32;
 
-  private static final long serialVersionUID = 1L;
-
   /** A "0.0.0.0/0" prefix */
   public static final Prefix ZERO = create(Ip.ZERO, 0);
 

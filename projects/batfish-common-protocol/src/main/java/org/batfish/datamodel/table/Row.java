@@ -51,8 +51,6 @@ import org.batfish.datamodel.questions.Exclusion;
 @ParametersAreNonnullByDefault
 public class Row implements Comparable<Row>, Serializable {
 
-  private static final long serialVersionUID = 1L;
-
   public abstract static class RowBuilder {
 
     @Nonnull protected final ObjectNode _data;

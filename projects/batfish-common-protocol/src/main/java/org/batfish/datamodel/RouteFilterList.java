@@ -27,8 +27,6 @@ public class RouteFilterList implements Serializable {
   private static final String PROP_LINES = "lines";
   private static final String PROP_NAME = "name";
 
-  private static final long serialVersionUID = 1L;
-
   private final Supplier<Set<Prefix>> _deniedCache;
 
   @Nonnull private List<RouteFilterLine> _lines;
@@ -38,7 +36,6 @@ public class RouteFilterList implements Serializable {
   private final Supplier<Set<Prefix>> _permittedCache;
 
   private static class CacheSupplier implements Supplier<Set<Prefix>>, Serializable {
-    private static final long serialVersionUID = 1L;
 
     @Override
     public Set<Prefix> get() {

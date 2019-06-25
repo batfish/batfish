@@ -13,8 +13,6 @@ import org.batfish.datamodel.visitors.FibActionVisitor;
 @ParametersAreNonnullByDefault
 public final class FibForward implements FibAction {
 
-  private static final long serialVersionUID = 1L;
-
   private final @Nonnull Ip _arpIp;
   private final @Nonnull String _interfaceName;
 

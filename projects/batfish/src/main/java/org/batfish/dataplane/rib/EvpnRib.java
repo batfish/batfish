@@ -10,8 +10,6 @@ import org.batfish.datamodel.MultipathEquivalentAsPathMatchMode;
 @ParametersAreNonnullByDefault
 public final class EvpnRib<R extends EvpnRoute<?, ?>> extends BgpRib<R> {
 
-  private static final long serialVersionUID = 1L;
-
   public EvpnRib(
       @Nullable Rib mainRib,
       BgpTieBreaker tieBreaker,

@@ -11,8 +11,6 @@ import org.batfish.datamodel.SubRange;
 /** Representation of a route-filter with a IPv4 prefix and an address mask */
 public final class Route4FilterLineAddressMask extends Route4FilterLine {
 
-  private static final long serialVersionUID = 1L;
-
   private final Ip _addressMask;
 
   public Route4FilterLineAddressMask(Prefix prefix, Ip addressMask) {

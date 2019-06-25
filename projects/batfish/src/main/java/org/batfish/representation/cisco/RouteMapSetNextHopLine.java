@@ -10,8 +10,6 @@ import org.batfish.datamodel.routing_policy.statement.Statement;
 
 public class RouteMapSetNextHopLine extends RouteMapSetLine {
 
-  private static final long serialVersionUID = 1L;
-
   private List<Ip> _nextHops;
 
   public RouteMapSetNextHopLine(List<Ip> nextHops) {

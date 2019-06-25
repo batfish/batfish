@@ -28,8 +28,6 @@ import org.batfish.vendor.VendorConfiguration;
 
 public class IptablesVendorConfiguration extends IptablesConfiguration {
 
-  private static final long serialVersionUID = 1L;
-
   private String _hostname;
 
   private transient Map<IpAccessListLine, String> _lineInInterfaces;

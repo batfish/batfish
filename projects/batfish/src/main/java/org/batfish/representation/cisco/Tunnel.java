@@ -16,8 +16,6 @@ public final class Tunnel implements Serializable {
     IPSEC
   }
 
-  private static final long serialVersionUID = 1L;
-
   private Ip _destination;
 
   private String _ipsecProfileName;

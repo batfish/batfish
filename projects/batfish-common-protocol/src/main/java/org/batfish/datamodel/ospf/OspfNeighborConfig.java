@@ -20,8 +20,6 @@ public final class OspfNeighborConfig implements Serializable {
   private static final String PROP_PASSIVE = "passive";
   private static final String PROP_VRF = "vrf";
 
-  private static final long serialVersionUID = 1L;
-
   private final long _area;
   private final String _interfaceName;
   private final boolean _isPassive;

@@ -11,7 +11,6 @@ import javax.annotation.Nullable;
  * config-router-vrf-af} levels.
  */
 public final class CiscoNxBgpRedistributionPolicy implements Serializable {
-  private static final long serialVersionUID = 1L;
 
   public CiscoNxBgpRedistributionPolicy(String routeMap) {
     this._routeMap = routeMap;

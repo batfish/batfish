@@ -7,8 +7,6 @@ import org.batfish.datamodel.routing_policy.statement.Statement;
 
 public class RoutePolicyDeleteAllStatement extends RoutePolicyDeleteStatement {
 
-  private static final long serialVersionUID = 1L;
-
   @Override
   public RoutePolicyDeleteType getDeleteType() {
     return RoutePolicyDeleteType.ALL;

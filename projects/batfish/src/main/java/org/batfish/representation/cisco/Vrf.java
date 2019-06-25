@@ -13,9 +13,6 @@ import org.batfish.datamodel.bgp.community.ExtendedCommunity;
 import org.batfish.representation.cisco.nx.CiscoNxBgpVrfConfiguration;
 
 public final class Vrf implements Serializable {
-
-  private static final long serialVersionUID = 1L;
-
   @Nonnull private final Map<Long, EigrpProcess> _eigrpProcesses;
   @Nullable private CiscoNxBgpVrfConfiguration _bgpNxConfig;
   @Nullable private BgpProcess _bgpProcess;

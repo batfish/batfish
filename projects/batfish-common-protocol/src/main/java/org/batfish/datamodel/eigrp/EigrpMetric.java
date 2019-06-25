@@ -20,7 +20,7 @@ public class EigrpMetric implements Serializable {
   private static final String PROP_NAMED_BANDWIDTH = "named-bandwidth";
   private static final String PROP_NAMED_DELAY = "named-delay";
   private static final String PROP_MODE = "mode";
-  private static final long serialVersionUID = 1L;
+
   public static final long EIGRP_BANDWIDTH = 10_000_000L;
   public static final long EIGRP_DELAY_PICO = 1_000_000L;
   private static final long EIGRP_CLASSIC_SCALE = 256L;

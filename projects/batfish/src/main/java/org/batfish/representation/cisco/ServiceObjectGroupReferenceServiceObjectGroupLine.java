@@ -9,8 +9,6 @@ import org.batfish.datamodel.acl.PermittedByAcl;
 public final class ServiceObjectGroupReferenceServiceObjectGroupLine
     implements ServiceObjectGroupLine {
 
-  private static final long serialVersionUID = 1L;
-
   private final String _name;
 
   public ServiceObjectGroupReferenceServiceObjectGroupLine(@Nonnull String name) {

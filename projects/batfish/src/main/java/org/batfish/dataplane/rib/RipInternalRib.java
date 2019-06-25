@@ -7,8 +7,6 @@ import org.batfish.datamodel.RipInternalRoute;
 @ParametersAreNonnullByDefault
 public class RipInternalRib extends AbstractRib<RipInternalRoute> {
 
-  private static final long serialVersionUID = 1L;
-
   public RipInternalRib() {
     super();
   }

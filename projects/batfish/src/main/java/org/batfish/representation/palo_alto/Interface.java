@@ -24,8 +24,6 @@ public final class Interface implements Serializable {
 
   public static final int DEFAULT_INTERFACE_MTU = 1500;
 
-  private static final long serialVersionUID = 1L;
-
   private boolean _active;
   @Nullable private ConcreteInterfaceAddress _address;
   @Nonnull private final Set<ConcreteInterfaceAddress> _allAddresses;

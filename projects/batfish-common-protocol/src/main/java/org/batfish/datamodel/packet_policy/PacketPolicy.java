@@ -21,8 +21,6 @@ public final class PacketPolicy implements Serializable {
   private static final String PROP_NAME = "name";
   private static final String PROP_STATEMENTS = "statements";
 
-  private static final long serialVersionUID = 1L;
-
   @Nonnull private final String _name;
   @Nonnull private final List<Statement> _statements;
   @Nonnull private final Return _defaultAction;

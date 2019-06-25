@@ -55,6 +55,7 @@
      <exclude name="EmptyIfStmt"/>
      <exclude name="JUnitSpelling"/>
      <exclude name="MissingBreakInSwitch"/>
+     <exclude name="MissingSerialVersionUID"/>
      <exclude name="MissingStaticMethodInNonInstantiatableClass"/>
      <exclude name="LoggerIsNotStaticFinal"/>
      <exclude name="MoreThanOneLogger"/>

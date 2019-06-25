@@ -15,8 +15,6 @@ import org.batfish.datamodel.AnnotatedRoute;
 public abstract class AnnotatedRib<R extends AbstractRoute> extends AbstractRib<AnnotatedRoute<R>>
     implements Serializable {
 
-  private static final long serialVersionUID = 1L;
-
   AnnotatedRib() {
     super();
   }

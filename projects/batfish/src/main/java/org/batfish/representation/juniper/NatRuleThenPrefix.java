@@ -22,7 +22,6 @@ import org.batfish.datamodel.transformation.TransformationStep;
 /** A {@link NatRule} that NATs using the configured IP Prefix. */
 @ParametersAreNonnullByDefault
 public class NatRuleThenPrefix implements NatRuleThen, Serializable {
-  private static final long serialVersionUID = 1L;
 
   private final Prefix _prefix;
 

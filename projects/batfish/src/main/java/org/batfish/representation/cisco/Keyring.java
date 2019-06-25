@@ -11,8 +11,6 @@ import org.batfish.datamodel.IpWildcard;
 
 public class Keyring implements Serializable {
 
-  private static final long serialVersionUID = 1L;
-
   @Nullable private Ip _localAddress;
 
   @Nonnull private String _localInterfaceName;

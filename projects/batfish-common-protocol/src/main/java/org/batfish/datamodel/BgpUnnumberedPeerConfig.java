@@ -80,8 +80,6 @@ public final class BgpUnnumberedPeerConfig extends BgpPeerConfig {
 
   private static final String PROP_PEER_INTERFACE = "peerInterface";
 
-  private static final long serialVersionUID = 1L;
-
   public static Builder builder() {
     return new Builder();
   }

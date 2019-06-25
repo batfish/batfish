@@ -15,8 +15,6 @@ import org.batfish.datamodel.routing_policy.Environment;
 public final class LiteralEigrpMetric extends EigrpMetricExpr {
   private static final String PROP_METRIC = "metric";
 
-  private static final long serialVersionUID = 1L;
-
   @Nonnull private final EigrpMetric _metric;
 
   @JsonCreator

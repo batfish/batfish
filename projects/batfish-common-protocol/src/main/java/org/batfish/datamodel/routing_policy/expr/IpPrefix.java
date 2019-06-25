@@ -16,8 +16,6 @@ public final class IpPrefix extends PrefixExpr {
   private static final String PROP_IP = "ip";
   private static final String PROP_PREFIX_LENGTH = "prefixLength";
 
-  private static final long serialVersionUID = 1L;
-
   @Nonnull private IpExpr _ip;
 
   @Nonnull private IntExpr _prefixLength;

@@ -15,8 +15,6 @@ public class EmptyCommunitySetExpr extends CommunitySetExpr {
 
   public static final EmptyCommunitySetExpr INSTANCE = new EmptyCommunitySetExpr();
 
-  private static final long serialVersionUID = 1L;
-
   @JsonCreator
   private static @Nonnull EmptyCommunitySetExpr create() {
     return INSTANCE;

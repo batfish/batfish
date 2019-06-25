@@ -12,8 +12,6 @@ import javax.annotation.ParametersAreNonnullByDefault;
 public class MsPair<T1 extends Comparable<? super T1>, T2 extends Comparable<? super T2>>
     implements Serializable, Comparable<MsPair<T1, T2>> {
 
-  private static final long serialVersionUID = 1L;
-
   @Nullable private final T1 _first;
   @Nullable private final T2 _second;
 

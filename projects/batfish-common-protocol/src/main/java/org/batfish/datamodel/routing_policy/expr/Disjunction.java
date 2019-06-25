@@ -21,8 +21,6 @@ import org.batfish.datamodel.routing_policy.RoutingPolicy;
 public final class Disjunction extends BooleanExpr {
   private static final String PROP_DISJUNCTS = "disjuncts";
 
-  private static final long serialVersionUID = 1L;
-
   private List<BooleanExpr> _disjuncts;
 
   public Disjunction() {

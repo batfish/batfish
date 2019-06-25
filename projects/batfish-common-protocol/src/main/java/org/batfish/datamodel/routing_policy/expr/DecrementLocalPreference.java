@@ -6,8 +6,6 @@ import org.batfish.datamodel.routing_policy.Environment;
 
 public final class DecrementLocalPreference extends LongExpr {
 
-  private static final long serialVersionUID = 1L;
-
   private long _subtrahend;
 
   @JsonCreator

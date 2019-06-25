@@ -112,8 +112,6 @@ public final class TcpFlagsMatchConditions
           .thenComparing(TcpFlagsMatchConditions::getUseSyn)
           .thenComparing(TcpFlagsMatchConditions::getUseUrg);
 
-  private static final long serialVersionUID = 1L;
-
   public static Builder builder() {
     return new Builder();
   }

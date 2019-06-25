@@ -8,8 +8,6 @@ import org.batfish.datamodel.routing_policy.expr.MatchColor;
 /** Represents a "from color" line in a {@link PsTerm} */
 public final class PsFromColor extends PsFrom {
 
-  private static final long serialVersionUID = 1L;
-
   private final int _color;
 
   public PsFromColor(int color) {

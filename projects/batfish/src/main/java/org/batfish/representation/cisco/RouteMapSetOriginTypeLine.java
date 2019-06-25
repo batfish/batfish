@@ -9,8 +9,6 @@ import org.batfish.datamodel.routing_policy.statement.Statement;
 
 public class RouteMapSetOriginTypeLine extends RouteMapSetLine {
 
-  private static final long serialVersionUID = 1L;
-
   private OriginExpr _originExpr;
 
   public RouteMapSetOriginTypeLine(OriginExpr originExpr) {

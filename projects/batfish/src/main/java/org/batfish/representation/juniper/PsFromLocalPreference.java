@@ -10,8 +10,6 @@ import org.batfish.datamodel.routing_policy.expr.MatchLocalPreference;
 /** Represents a "from local-preference" line in a {@link PsTerm} */
 public final class PsFromLocalPreference extends PsFrom {
 
-  private static final long serialVersionUID = 1L;
-
   private final int _localPreference;
 
   public PsFromLocalPreference(int localPreference) {

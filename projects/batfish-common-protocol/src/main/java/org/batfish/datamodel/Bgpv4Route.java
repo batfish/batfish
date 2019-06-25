@@ -21,8 +21,6 @@ import org.batfish.datamodel.bgp.community.Community;
 @ParametersAreNonnullByDefault
 public final class Bgpv4Route extends BgpRoute<Bgpv4Route.Builder, Bgpv4Route> {
 
-  private static final long serialVersionUID = 1L;
-
   /** Builder for {@link Bgpv4Route} */
   public static final class Builder extends BgpRoute.Builder<Builder, Bgpv4Route> {
 

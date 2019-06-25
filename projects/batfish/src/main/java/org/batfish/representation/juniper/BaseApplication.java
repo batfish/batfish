@@ -17,8 +17,6 @@ public final class BaseApplication implements Application, Serializable {
 
   public static final class Term implements Serializable {
 
-    private static final long serialVersionUID = 1L;
-
     private HeaderSpace _headerSpace;
 
     public Term() {
@@ -42,8 +40,6 @@ public final class BaseApplication implements Application, Serializable {
       _headerSpace = headerSpace;
     }
   }
-
-  private static final long serialVersionUID = 1L;
 
   private boolean _ipv6;
 

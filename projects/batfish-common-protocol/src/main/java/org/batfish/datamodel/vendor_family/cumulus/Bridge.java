@@ -52,7 +52,6 @@ public final class Bridge implements Serializable {
   private static final String PROP_PORTS = "ports";
   private static final String PROP_PVID = "pvid";
   private static final String PROP_VIDS = "vids";
-  private static final long serialVersionUID = 1L;
 
   public static @Nonnull Builder builder() {
     return new Builder();

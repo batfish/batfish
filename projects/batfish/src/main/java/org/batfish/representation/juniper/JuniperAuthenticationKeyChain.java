@@ -6,8 +6,6 @@ import java.util.TreeMap;
 
 public class JuniperAuthenticationKeyChain implements Serializable {
 
-  private static final long serialVersionUID = 1L;
-
   private final int _definitionLine;
 
   private String _description;

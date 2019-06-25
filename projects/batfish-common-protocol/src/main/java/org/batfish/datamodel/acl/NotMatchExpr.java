@@ -8,7 +8,6 @@ import javax.annotation.Nullable;
 
 public class NotMatchExpr extends AclLineMatchExpr {
   private static final String PROP_OPERAND = "operand";
-  private static final long serialVersionUID = 1L;
 
   private final AclLineMatchExpr _operand;
 

@@ -7,8 +7,6 @@ public final class Ip6AccessListLine extends Header6Space {
   private static final String PROP_ACTION = "action";
   private static final String PROP_NAME = "name";
 
-  private static final long serialVersionUID = 1L;
-
   private LineAction _action;
 
   private String _name;

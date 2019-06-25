@@ -7,7 +7,6 @@ import org.batfish.common.BatfishException;
  * IP space that is never defined.
  */
 public class UndefinedReferenceException extends BatfishException {
-  private static final long serialVersionUID = 1L;
 
   public UndefinedReferenceException(String msg) {
     super(msg);

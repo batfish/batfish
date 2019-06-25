@@ -19,8 +19,6 @@ import javax.annotation.Nonnull;
  */
 public class InterfaceRangeMember implements Serializable {
 
-  private static final long serialVersionUID = 1L;
-
   private static final Pattern SOLO_PATTERN = Pattern.compile("[0-9]+");
 
   private static final Pattern RANGE_PATTERN = Pattern.compile("\\[[0-9]+-[0-9]+]");

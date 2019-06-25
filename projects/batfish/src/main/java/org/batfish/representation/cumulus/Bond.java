@@ -12,8 +12,6 @@ import org.batfish.datamodel.InterfaceAddress;
 /** A logical layer-1 bond interface */
 public class Bond implements Serializable {
 
-  private static final long serialVersionUID = 1L;
-
   private final @Nonnull InterfaceBridgeSettings _bridge;
   private @Nullable Integer _clagId;
   private final @Nonnull List<InterfaceAddress> _ipAddresses;

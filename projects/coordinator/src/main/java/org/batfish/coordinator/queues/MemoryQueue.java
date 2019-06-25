@@ -10,8 +10,6 @@ import org.batfish.coordinator.QueuedWork;
 
 public class MemoryQueue extends LinkedList<QueuedWork> implements WorkQueue {
 
-  private static final long serialVersionUID = -6556862067531610584L;
-
   @Override
   public boolean delete(QueuedWork qWork) {
     return remove(qWork);

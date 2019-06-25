@@ -16,8 +16,6 @@ import org.batfish.datamodel.visitors.VoidCommunitySetExprVisitor;
 @JsonTypeInfo(use = JsonTypeInfo.Id.CLASS, property = "class")
 public abstract class CommunitySetExpr implements Serializable {
 
-  private static final long serialVersionUID = 1L;
-
   public abstract <T> T accept(CommunitySetExprVisitor<T> visitor);
 
   public abstract void accept(VoidCommunitySetExprVisitor visitor);

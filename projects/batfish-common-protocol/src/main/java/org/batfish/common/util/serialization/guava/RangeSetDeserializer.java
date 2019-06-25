@@ -13,8 +13,6 @@ import javax.annotation.Nonnull;
 public final class RangeSetDeserializer extends StdDelegatingDeserializer<RangeSet<Comparable>>
     implements ContextualDeserializer {
 
-  private static final long serialVersionUID = 1L;
-
   public RangeSetDeserializer(@Nonnull JavaType type) {
     super(new RangeSetDeserializerConverter(type));
   }

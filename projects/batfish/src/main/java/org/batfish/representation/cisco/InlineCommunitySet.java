@@ -7,8 +7,6 @@ import javax.annotation.Nonnull;
 
 public final class InlineCommunitySet extends CommunitySet {
 
-  private static final long serialVersionUID = 1L;
-
   public InlineCommunitySet(@Nonnull Collection<Long> communities) {
     this(
         communities.stream()

@@ -11,8 +11,6 @@ import org.batfish.datamodel.LineAction;
 
 public class StandardIpv6AccessListLine implements Serializable {
 
-  private static final long serialVersionUID = 1L;
-
   private final LineAction _action;
 
   private final Set<Integer> _dscps;

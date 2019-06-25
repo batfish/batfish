@@ -7,7 +7,7 @@ import org.batfish.datamodel.Ip;
 
 /** Used during IKE phase 1 negotiation for authentication */
 public class NamedRsaPubKey implements Serializable {
-  private static final long serialVersionUID = 1L;
+
   @Nonnull private String _name;
   @Nullable private Ip _address;
   @Nullable private String _key;

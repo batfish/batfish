@@ -8,8 +8,6 @@ import org.batfish.datamodel.Ip;
 /** Named VXLAN per-VNI settings */
 public class Vxlan implements Serializable {
 
-  private static final long serialVersionUID = 1L;
-
   private @Nullable Integer _bridgeAccessVlan;
   private @Nullable Integer _id;
   private @Nullable Ip _localTunnelip;

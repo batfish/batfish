@@ -12,8 +12,6 @@ import org.batfish.datamodel.routing_policy.statement.Statements;
 
 public class RoutePolicyDispositionStatement extends RoutePolicyStatement {
 
-  private static final long serialVersionUID = 1L;
-
   private RoutePolicyDispositionType _dispositionType;
 
   public RoutePolicyDispositionStatement(RoutePolicyDispositionType dType) {

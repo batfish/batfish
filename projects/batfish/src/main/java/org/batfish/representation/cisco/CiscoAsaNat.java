@@ -21,7 +21,7 @@ import org.batfish.datamodel.transformation.Transformation;
 @ParametersAreNonnullByDefault
 public final class CiscoAsaNat implements Comparable<CiscoAsaNat>, Serializable {
   public static final String ANY_INTERFACE = "any";
-  private static final long serialVersionUID = 1L;
+
   /** If true, this NAT rule is inactive and will not be used. */
   private boolean _inactive;
   /** NATs optionally specify an inside, or 'real', interface. May be ANY_INTERFACE */

@@ -16,8 +16,6 @@ public final class DeniedByAclIpSpaceLine extends IpSpaceTraceEvent {
   private static final String PROP_LINE_DESCRIPTION = "lineDescription";
   private static final String PROP_NAME = "name";
 
-  private static final long serialVersionUID = 1L;
-
   private static String computeDescription(
       @Nonnull String name,
       int index,

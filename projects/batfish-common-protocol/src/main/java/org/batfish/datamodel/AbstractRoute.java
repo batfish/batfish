@@ -20,8 +20,6 @@ import javax.annotation.ParametersAreNonnullByDefault;
 @ParametersAreNonnullByDefault
 public abstract class AbstractRoute implements AbstractRouteDecorator, Serializable {
 
-  private static final long serialVersionUID = 1L;
-
   /** Indicates a route has no tag associated with it */
   public static final int NO_TAG = -1;
 

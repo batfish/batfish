@@ -14,8 +14,6 @@ import org.batfish.common.BatfishException;
 /** A closed interval of integers. */
 public final class SubRange implements Serializable, Comparable<SubRange> {
 
-  private static final long serialVersionUID = 1L;
-
   private final int _end;
 
   private final int _start;

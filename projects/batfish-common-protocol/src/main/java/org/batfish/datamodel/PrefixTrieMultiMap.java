@@ -33,8 +33,6 @@ import javax.annotation.ParametersAreNonnullByDefault;
 @ParametersAreNonnullByDefault
 public final class PrefixTrieMultiMap<T> implements Serializable {
 
-  private static final long serialVersionUID = 1L;
-
   /**
    * Combine two nodes into a tree -- a newly created node, and an existing node. The existing node
    * cannot be the parent of the new node.
@@ -105,7 +103,6 @@ public final class PrefixTrieMultiMap<T> implements Serializable {
   }
 
   private static final class Node<T> implements Serializable {
-    private static final long serialVersionUID = 1L;
 
     @Nonnull private final Prefix _prefix;
     @Nonnull private Set<T> _elements;

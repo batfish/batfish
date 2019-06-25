@@ -8,8 +8,6 @@ import org.batfish.datamodel.routing_policy.expr.CallExpr;
 /** Represents a "from policy" line in a {@link PsTerm} */
 public final class PsFromPolicyStatement extends PsFrom {
 
-  private static final long serialVersionUID = 1L;
-
   private final String _policyStatement;
 
   public PsFromPolicyStatement(String policyStatement) {

@@ -16,7 +16,6 @@ import org.batfish.datamodel.RoutingProtocol;
  * config-router-vrf-af} levels.
  */
 public class CiscoNxBgpVrfAddressFamilyConfiguration implements Serializable {
-  private static final long serialVersionUID = 1L;
 
   public CiscoNxBgpVrfAddressFamilyConfiguration() {
     _aggregateNetworks = new HashMap<>();

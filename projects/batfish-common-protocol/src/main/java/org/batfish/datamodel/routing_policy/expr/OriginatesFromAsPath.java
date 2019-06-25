@@ -20,8 +20,6 @@ public final class OriginatesFromAsPath extends BooleanExpr {
   private static final String PROP_AS_RANGE = "asRange";
   private static final String PROP_EXACT = "exact";
 
-  private static final long serialVersionUID = 1L;
-
   @Nonnull private final List<SubRangeExpr> _asRange;
   private final boolean _exact;
 

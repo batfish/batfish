@@ -116,8 +116,6 @@ import org.batfish.dataplane.rib.StaticRib;
 
 public class VirtualRouter implements Serializable {
 
-  private static final long serialVersionUID = 1L;
-
   /** The BGP routing process. Null if BGP is not configured for this VRF */
   @Nullable transient BgpRoutingProcess _bgpRoutingProcess;
 

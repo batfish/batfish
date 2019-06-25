@@ -8,8 +8,6 @@ import javax.annotation.Nullable;
 /** A firewall filter on Juniper */
 public final class FirewallFilter implements Serializable {
 
-  private static final long serialVersionUID = 1L;
-
   private final Family _family;
 
   /*

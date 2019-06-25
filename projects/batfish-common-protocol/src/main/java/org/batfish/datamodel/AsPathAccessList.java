@@ -23,8 +23,6 @@ public final class AsPathAccessList implements Serializable {
   private static final String PROP_LINES = "lines";
   private static final String PROP_NAME = "name";
 
-  private static final long serialVersionUID = 1L;
-
   private transient Set<AsPath> _deniedCache;
 
   @Nonnull private final List<AsPathAccessListLine> _lines;

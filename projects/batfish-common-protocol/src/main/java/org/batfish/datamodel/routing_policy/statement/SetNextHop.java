@@ -17,7 +17,6 @@ import org.batfish.datamodel.routing_policy.expr.NextHopExpr;
 public final class SetNextHop extends Statement {
   private static final String PROP_DESTINATION_VRF = "destinationVrf";
   private static final String PROP_EXPR = "expr";
-  private static final long serialVersionUID = 1L;
 
   private boolean _destinationVrf;
 
