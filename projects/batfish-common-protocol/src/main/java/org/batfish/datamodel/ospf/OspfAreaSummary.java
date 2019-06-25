@@ -13,8 +13,6 @@ public final class OspfAreaSummary implements Serializable {
   private static final String PROP_ADVERTISE = "advertise";
   private static final String PROP_METRIC = "metric";
 
-  private static final long serialVersionUID = 1L;
-
   private final boolean _advertised;
   @Nullable private final Long _metric;
 

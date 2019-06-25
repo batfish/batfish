@@ -25,7 +25,6 @@ import javax.annotation.ParametersAreNonnullByDefault;
 @ParametersAreNonnullByDefault
 public abstract class Community implements Serializable, Comparable<Community> {
 
-  private static final long serialVersionUID = 1L;
   @Nullable private transient BigInteger _bigInt;
 
   @JsonCreator

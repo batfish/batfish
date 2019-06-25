@@ -6,8 +6,6 @@ import org.batfish.datamodel.routing_policy.expr.CommunitySetExpr;
 
 public class CommunitySetElemIosRegex implements CommunitySetElem {
 
-  private static final long serialVersionUID = 1L;
-
   private final String _regex;
 
   public CommunitySetElemIosRegex(@Nonnull String regex) {

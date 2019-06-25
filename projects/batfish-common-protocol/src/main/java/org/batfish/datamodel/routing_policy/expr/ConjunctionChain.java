@@ -31,7 +31,6 @@ import org.batfish.datamodel.routing_policy.RoutingPolicy;
 @ParametersAreNonnullByDefault
 public final class ConjunctionChain extends BooleanExpr {
 
-  private static final long serialVersionUID = 1L;
   private static final String PROP_SUBROUTINES = "subroutines";
 
   @Nonnull private final List<BooleanExpr> _subroutines;

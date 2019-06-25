@@ -20,8 +20,6 @@ import org.codehaus.jettison.json.JSONObject;
 
 public class Subnet implements AwsVpcEntity, Serializable {
 
-  private static final long serialVersionUID = 1L;
-
   private Set<Long> _allocatedIps = new HashSet<>();
 
   private Prefix _cidrBlock;

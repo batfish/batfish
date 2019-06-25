@@ -6,8 +6,6 @@ import org.batfish.datamodel.isis.IsisOption;
 
 public class JuniperAuthenticationKey implements Serializable {
 
-  private static final long serialVersionUID = 1L;
-
   private static final IsisAuthenticationAlgorithm DEFAULT_ISIS_AUTHENTICATION_ALGORITHM =
       IsisAuthenticationAlgorithm.MD5;
 

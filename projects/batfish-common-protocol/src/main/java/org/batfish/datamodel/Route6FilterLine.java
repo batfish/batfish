@@ -11,8 +11,6 @@ public class Route6FilterLine implements Serializable {
   private static final String PROP_LENGTH_RANGE = "lengthRange";
   private static final String PROP_IP_WILDCARD = "ipWildcard";
 
-  private static final long serialVersionUID = 1L;
-
   private final LineAction _action;
 
   private final SubRange _lengthRange;

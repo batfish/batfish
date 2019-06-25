@@ -8,8 +8,6 @@ import org.batfish.datamodel.routing_policy.statement.Statement;
 
 public class RoutePolicySetOrigin extends RoutePolicySetStatement {
 
-  private static final long serialVersionUID = 1L;
-
   private OriginExpr _origin;
 
   public RoutePolicySetOrigin(OriginExpr origin) {

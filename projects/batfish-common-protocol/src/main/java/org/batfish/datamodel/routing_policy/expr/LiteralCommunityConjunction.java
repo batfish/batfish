@@ -23,8 +23,6 @@ import org.batfish.datamodel.visitors.VoidCommunitySetExprVisitor;
 public final class LiteralCommunityConjunction extends CommunitySetExpr {
   private static final String PROP_REQUIRED_COMMUNITIES = "requiredCommunities";
 
-  private static final long serialVersionUID = 1L;
-
   @JsonCreator
   private static @Nonnull LiteralCommunityConjunction create(
       @JsonProperty(PROP_REQUIRED_COMMUNITIES) SortedSet<Community> requiredCommunities) {

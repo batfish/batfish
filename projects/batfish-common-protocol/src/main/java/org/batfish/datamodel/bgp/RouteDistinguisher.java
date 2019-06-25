@@ -21,8 +21,6 @@ import org.batfish.datamodel.Ip;
 @ParametersAreNonnullByDefault
 public final class RouteDistinguisher implements Serializable, Comparable<RouteDistinguisher> {
 
-  private static final long serialVersionUID = 1L;
-
   private static final String ERR_MSG_SHORT_TEMPLATE =
       "ASN value required to be in range 0 to 0xFFFF, %d was provided";
   private static final String ERR_MSG_INT_TEMPLATE =

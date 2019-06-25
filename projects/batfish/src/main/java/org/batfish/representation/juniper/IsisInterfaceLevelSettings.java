@@ -6,8 +6,6 @@ import org.batfish.datamodel.isis.IsisHelloAuthenticationType;
 
 public class IsisInterfaceLevelSettings implements Serializable {
 
-  private static final long serialVersionUID = 1L;
-
   private boolean _enabled;
 
   @Nullable private String _helloAuthenticationKey;

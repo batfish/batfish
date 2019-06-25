@@ -8,8 +8,6 @@ import org.batfish.datamodel.RoutingProtocol;
 @ParametersAreNonnullByDefault
 public class OspfRib extends AbstractRib<OspfRoute> {
 
-  private static final long serialVersionUID = 1L;
-
   public OspfRib() {
     super();
   }

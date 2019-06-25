@@ -6,8 +6,6 @@ import org.batfish.common.util.ComparableStructure;
 
 public class LoggingHost extends ComparableStructure<String> {
 
-  private static final long serialVersionUID = 1L;
-
   @JsonCreator
   public LoggingHost(@JsonProperty(PROP_NAME) String name) {
     super(name);

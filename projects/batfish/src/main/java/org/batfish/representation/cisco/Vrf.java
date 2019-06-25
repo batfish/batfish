@@ -10,8 +10,6 @@ import org.batfish.representation.cisco.nx.CiscoNxBgpVrfConfiguration;
 
 public final class Vrf implements Serializable {
 
-  private static final long serialVersionUID = 1L;
-
   private final Map<Long, EigrpProcess> _eigrpProcesses;
 
   private CiscoNxBgpVrfConfiguration _bgpNxConfig;

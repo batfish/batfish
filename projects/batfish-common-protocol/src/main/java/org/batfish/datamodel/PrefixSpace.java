@@ -23,8 +23,6 @@ public class PrefixSpace implements Serializable {
 
   private static class BitTrie implements Serializable {
 
-    private static final long serialVersionUID = 1L;
-
     private BitTrieNode _root;
 
     public BitTrie() {
@@ -77,8 +75,6 @@ public class PrefixSpace implements Serializable {
   }
 
   private static class BitTrieNode implements Serializable {
-
-    private static final long serialVersionUID = 1L;
 
     private BitTrieNode _left;
 
@@ -180,8 +176,6 @@ public class PrefixSpace implements Serializable {
       }
     }
   }
-
-  private static final long serialVersionUID = 1L;
 
   /**
    * Converts an IPv4 address into a {@link BitSet} useful for prefix matching. The highest bit of

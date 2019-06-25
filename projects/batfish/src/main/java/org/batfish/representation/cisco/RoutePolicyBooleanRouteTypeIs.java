@@ -9,8 +9,6 @@ import org.batfish.datamodel.routing_policy.expr.RouteTypeExpr;
 
 public class RoutePolicyBooleanRouteTypeIs extends RoutePolicyBoolean {
 
-  private static final long serialVersionUID = 1L;
-
   private RouteTypeExpr _type;
 
   @JsonCreator

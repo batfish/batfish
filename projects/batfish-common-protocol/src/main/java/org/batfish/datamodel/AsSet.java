@@ -27,8 +27,6 @@ public class AsSet implements Serializable, Comparable<AsSet> {
   private static final LoadingCache<AsSet, AsSet> CACHE =
       CacheBuilder.newBuilder().softValues().maximumSize(1 << 16).build(CacheLoader.from(x -> x));
 
-  private static final long serialVersionUID = 1L;
-
   private final long[] _value;
 
   private AsSet(long[] value) {

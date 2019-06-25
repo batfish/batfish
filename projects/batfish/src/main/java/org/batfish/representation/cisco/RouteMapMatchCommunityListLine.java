@@ -16,8 +16,6 @@ import org.batfish.datamodel.routing_policy.expr.NamedCommunitySet;
  */
 public class RouteMapMatchCommunityListLine extends RouteMapMatchLine {
 
-  private static final long serialVersionUID = 1L;
-
   private final Set<String> _listNames;
 
   public RouteMapMatchCommunityListLine(Set<String> names) {

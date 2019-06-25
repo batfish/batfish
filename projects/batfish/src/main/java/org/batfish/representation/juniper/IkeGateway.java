@@ -5,8 +5,6 @@ import org.batfish.datamodel.Ip;
 
 public class IkeGateway implements Serializable {
 
-  private static final long serialVersionUID = 1L;
-
   private Ip _address;
 
   private String _externalInterface;

@@ -7,8 +7,6 @@ import org.codehaus.jettison.json.JSONObject;
 
 public class VgwTelemetry implements Serializable {
 
-  private static final long serialVersionUID = 1L;
-
   private final int _acceptedRouteCount;
 
   private final Ip _outsideIpAddress;

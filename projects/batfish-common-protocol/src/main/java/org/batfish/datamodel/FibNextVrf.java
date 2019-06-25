@@ -8,8 +8,6 @@ import org.batfish.datamodel.visitors.FibActionVisitor;
 @ParametersAreNonnullByDefault
 public class FibNextVrf implements FibAction {
 
-  private static final long serialVersionUID = 1L;
-
   private final @Nonnull String _nextVrf;
 
   public FibNextVrf(String nextVrf) {

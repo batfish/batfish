@@ -20,8 +20,6 @@ public class BatfishException extends RuntimeException {
   public static class BatfishStackTrace extends AnswerElement implements Serializable {
     private static final String PROP_LINES = "answer";
 
-    private static final long serialVersionUID = 1L;
-
     private final transient BatfishException _exception;
 
     private final List<String> _lines;
@@ -48,8 +46,6 @@ public class BatfishException extends RuntimeException {
       return _lines;
     }
   }
-
-  private static final long serialVersionUID = 1L;
 
   /**
    * Constructs a BatfishException with a detail message

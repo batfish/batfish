@@ -6,8 +6,6 @@ import java.util.List;
 
 public class StandardIpv6AccessList implements Serializable {
 
-  private static final long serialVersionUID = 1L;
-
   private List<StandardIpv6AccessListLine> _lines;
 
   private final String _name;

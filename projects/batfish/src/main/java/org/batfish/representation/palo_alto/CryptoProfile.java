@@ -20,8 +20,6 @@ public final class CryptoProfile implements Serializable {
     IPSEC,
   }
 
-  private static final long serialVersionUID = 1L;
-
   /** null implies no authentiation */
   @Nullable private IpsecAuthenticationAlgorithm _authAlgorithm;
 

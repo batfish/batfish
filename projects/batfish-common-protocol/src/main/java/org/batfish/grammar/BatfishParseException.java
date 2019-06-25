@@ -9,8 +9,6 @@ import org.batfish.common.ErrorDetails;
 @ParametersAreNonnullByDefault
 public class BatfishParseException extends BatfishException {
 
-  private static final long serialVersionUID = 1L;
-
   private final @Nonnull ErrorDetails _errorDetails;
 
   public BatfishParseException(String msg, @Nullable Throwable cause, ErrorDetails errorDetails) {

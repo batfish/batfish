@@ -13,7 +13,6 @@ import org.batfish.common.Warnings;
  * config-router-vrf-neighbor-af} levels.
  */
 public class CiscoNxBgpVrfNeighborAddressFamilyConfiguration implements Serializable {
-  private static final long serialVersionUID = 1L;
 
   public CiscoNxBgpVrfNeighborAddressFamilyConfiguration() {
     _inheritPeerPolicies = new TreeMap<>();

@@ -49,8 +49,6 @@ public class MockRib implements GenericRib<AnnotatedRoute<AbstractRoute>> {
     }
   }
 
-  private static final long serialVersionUID = 1L;
-
   public static Builder builder() {
     return new Builder();
   }

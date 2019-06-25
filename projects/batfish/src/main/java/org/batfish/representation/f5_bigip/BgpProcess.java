@@ -12,8 +12,6 @@ import org.batfish.datamodel.Ip;
 @ParametersAreNonnullByDefault
 public final class BgpProcess implements Serializable {
 
-  private static final long serialVersionUID = 1L;
-
   private boolean _alwaysCompareMed;
   private boolean _deterministicMed;
   private final @Nonnull BgpIpv4AddressFamily _ipv4AddressFamily;

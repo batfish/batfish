@@ -18,8 +18,6 @@ import org.batfish.datamodel.routing_policy.Result;
 public final class MatchCommunitySet extends BooleanExpr {
   private static final String PROP_EXPR = "expr";
 
-  private static final long serialVersionUID = 1L;
-
   private final CommunitySetExpr _expr;
 
   @JsonCreator

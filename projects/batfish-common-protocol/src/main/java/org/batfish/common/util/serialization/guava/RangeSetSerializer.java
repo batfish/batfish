@@ -10,8 +10,6 @@ import javax.annotation.Nonnull;
 /** Custom serializer for {@link RangeSet} */
 public final class RangeSetSerializer extends StdDelegatingSerializer {
 
-  private static final long serialVersionUID = 1L;
-
   public RangeSetSerializer(@Nonnull JavaType type) {
     super(new RangeSetSerializerConverter(type));
   }

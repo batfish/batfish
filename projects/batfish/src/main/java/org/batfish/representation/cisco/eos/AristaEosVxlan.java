@@ -8,7 +8,6 @@ import java.util.TreeSet;
 import org.batfish.datamodel.Ip;
 
 public class AristaEosVxlan implements Serializable {
-  private static final long serialVersionUID = 1L;
 
   public static final Integer DEFAULT_UDP_PORT = 4789;
 

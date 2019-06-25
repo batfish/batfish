@@ -6,8 +6,6 @@ import java.util.TreeMap;
 
 public class RouteMap implements Serializable {
 
-  private static final long serialVersionUID = 1L;
-
   private NavigableMap<Integer, RouteMapClause> _clauses;
 
   private final String _name;

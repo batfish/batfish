@@ -15,8 +15,6 @@ import org.batfish.datamodel.SubRange;
 @ParametersAreNonnullByDefault
 public final class PrefixListEntry implements Serializable {
 
-  private static final long serialVersionUID = 1L;
-
   private @Nullable LineAction _action;
 
   private @Nullable SubRange _lengthRange;

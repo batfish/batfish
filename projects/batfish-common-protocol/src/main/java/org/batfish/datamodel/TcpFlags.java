@@ -28,8 +28,6 @@ public final class TcpFlags implements Serializable, Comparable<TcpFlags> {
   private final boolean _syn;
   private final boolean _urg;
 
-  private static final long serialVersionUID = 1L;
-
   @JsonCreator
   public TcpFlags(
       @JsonProperty(PROP_ACK) boolean ack,

@@ -12,8 +12,6 @@ import org.batfish.datamodel.LineAction;
 @ParametersAreNonnullByDefault
 public final class RouteMapEntry implements Serializable {
 
-  private static final long serialVersionUID = 1L;
-
   private @Nullable LineAction _action;
   private @Nullable MatchAccessList _matchAccessList;
   private @Nullable RouteMapMatchPrefixList _matchPrefixList;

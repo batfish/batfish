@@ -25,8 +25,6 @@ public final class Zone extends ComparableStructure<String> {
   private static final String PROP_TO_HOST_FILTER = "toHostFilter";
   private static final String PROP_TO_ZONE_POLICIES = "toZonePolicies";
 
-  private static final long serialVersionUID = 1L;
-
   @Nullable private String _fromHostFilterName;
 
   @Nullable private String _inboundFilterName;

@@ -109,8 +109,6 @@ public final class HsrpGroup implements Serializable {
   private static final String PROP_PRIORITY = "priority";
   private static final String PROP_TRACK_ACTIONS = "trackActions";
 
-  private static final long serialVersionUID = 1L;
-
   public static @Nonnull Builder builder() {
     return new Builder();
   }

@@ -22,8 +22,6 @@ import org.codehaus.jettison.json.JSONObject;
 
 public class NetworkAcl implements AwsVpcEntity, Serializable {
 
-  private static final long serialVersionUID = 1L;
-
   private static final String SOURCE_TYPE_NAME = "Network ACL";
 
   private List<NetworkAclEntry> _entries = new LinkedList<>();

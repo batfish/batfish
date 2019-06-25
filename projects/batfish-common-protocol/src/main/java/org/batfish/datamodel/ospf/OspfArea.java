@@ -190,8 +190,6 @@ public class OspfArea implements Serializable {
   private static final String PROP_SUMMARIES = "summaries";
   private static final String PROP_SUMMARY_FILTER = "summaryFilter";
 
-  private static final long serialVersionUID = 1L;
-
   public static Builder builder(NetworkFactory networkFactory) {
     return new Builder(networkFactory);
   }

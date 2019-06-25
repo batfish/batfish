@@ -8,8 +8,6 @@ import org.batfish.datamodel.KernelRoute;
 @ParametersAreNonnullByDefault
 public class KernelRib extends AnnotatedRib<KernelRoute> {
 
-  private static final long serialVersionUID = 1L;
-
   public KernelRib() {
     super();
   }

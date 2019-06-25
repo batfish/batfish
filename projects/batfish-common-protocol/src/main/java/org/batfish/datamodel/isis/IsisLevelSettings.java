@@ -23,8 +23,6 @@ public class IsisLevelSettings implements Serializable {
 
   private static final String PROP_WIDE_METRICS_ONLY = "wideMetricsOnly";
 
-  private static final long serialVersionUID = 1L;
-
   public static Builder builder() {
     return new Builder();
   }

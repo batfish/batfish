@@ -9,9 +9,7 @@ import java.util.function.Supplier;
  * the assumption that it's an infinite recursion, throw an exception.
  */
 public class NonRecursiveSupplier<T> implements Supplier<T>, com.google.common.base.Supplier<T> {
-  public static final class NonRecursiveSupplierException extends RuntimeException {
-    public static final long serialVersionUID = 1;
-  }
+  public static final class NonRecursiveSupplierException extends RuntimeException {}
 
   private final Supplier<T> _inner;
 

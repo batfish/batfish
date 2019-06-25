@@ -8,8 +8,6 @@ import org.batfish.datamodel.Prefix6;
 @ParametersAreNonnullByDefault
 public class Ipv6Origin implements Serializable {
 
-  private static final long serialVersionUID = 1L;
-
   private final @Nonnull Prefix6 _prefix6;
 
   public Ipv6Origin(Prefix6 prefix6) {

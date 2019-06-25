@@ -37,8 +37,6 @@ public class Route implements Serializable {
 
   public static final int DEFAULT_STATIC_ROUTE_COST = 0;
 
-  private static final long serialVersionUID = 1L;
-
   private Prefix _destinationCidrBlock;
   private State _state;
   private String _target;

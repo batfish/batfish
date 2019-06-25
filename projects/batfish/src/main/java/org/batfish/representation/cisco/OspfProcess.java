@@ -38,8 +38,6 @@ public class OspfProcess implements Serializable {
 
   public static final long MAX_METRIC_ROUTER_LSA = 0xFFFFL;
 
-  private static final long serialVersionUID = 1L;
-
   private long _defaultInformationMetric;
 
   private OspfMetricType _defaultInformationMetricType;

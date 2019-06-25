@@ -33,8 +33,6 @@ public class Region implements Serializable {
     void accept(T t) throws E;
   }
 
-  private static final long serialVersionUID = 1L;
-
   private Map<String, Address> _addresses = new HashMap<>();
 
   private Map<String, Set<SecurityGroup>> _configurationSecurityGroups = new HashMap<>();

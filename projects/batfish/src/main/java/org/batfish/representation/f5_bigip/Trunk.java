@@ -10,8 +10,6 @@ import javax.annotation.ParametersAreNonnullByDefault;
 @ParametersAreNonnullByDefault
 public final class Trunk implements Serializable {
 
-  private static final long serialVersionUID = 1L;
-
   private final @Nonnull Set<String> _interfaces;
 
   private final @Nonnull String _name;

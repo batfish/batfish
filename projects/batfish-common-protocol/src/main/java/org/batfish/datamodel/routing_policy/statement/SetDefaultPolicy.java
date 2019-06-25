@@ -17,8 +17,6 @@ import org.batfish.datamodel.routing_policy.RoutingPolicy;
 public final class SetDefaultPolicy extends Statement {
   private static final String PROP_DEFAULT_POLICY = "defaultPolicy";
 
-  private static final long serialVersionUID = 1L;
-
   @Nonnull private final String _defaultPolicy;
 
   @JsonCreator

@@ -23,7 +23,6 @@ import org.batfish.datamodel.acl.AclLineMatchExpr;
  */
 @ParametersAreNonnullByDefault
 public final class Transformation implements Serializable {
-  private static final long serialVersionUID = 1L;
 
   private static final String PROP_GUARD = "guard";
   private static final String PROP_TRANSFORMATION_STEPS = "transformationSteps";

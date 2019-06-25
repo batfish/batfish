@@ -7,8 +7,6 @@ import org.batfish.datamodel.routing_policy.Environment;
 public class LiteralLong extends LongExpr {
   private static final String PROP_VALUE = "value";
 
-  private static final long serialVersionUID = 1L;
-
   private long _value;
 
   @JsonCreator

@@ -20,8 +20,6 @@ public final class PassesThroughAsPath extends BooleanExpr {
   private static final String PROP_EXACT = "exact";
   private static final String PROP_RANGE = "range";
 
-  private static final long serialVersionUID = 1L;
-
   private final boolean _exact;
   @Nonnull private final List<SubRangeExpr> _range;
 

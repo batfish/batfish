@@ -8,8 +8,6 @@ import org.batfish.datamodel.routing_policy.statement.Statement;
 
 public class RoutePolicyApplyStatement extends RoutePolicyStatement {
 
-  private static final long serialVersionUID = 1L;
-
   private String _applyName;
 
   public RoutePolicyApplyStatement(String name) {

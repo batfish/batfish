@@ -18,8 +18,6 @@ import org.batfish.datamodel.bgp.community.Community;
 @ParametersAreNonnullByDefault
 public final class EvpnType2Route extends EvpnRoute<EvpnType2Route.Builder, EvpnType2Route> {
 
-  private static final long serialVersionUID = 1L;
-
   /** Builder for {@link EvpnType2Route} */
   @ParametersAreNonnullByDefault
   public static final class Builder

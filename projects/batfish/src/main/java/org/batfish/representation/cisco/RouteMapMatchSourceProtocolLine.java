@@ -11,7 +11,6 @@ import org.batfish.datamodel.routing_policy.expr.MatchProtocol;
 
 /** A Cisco {@link RouteMapMatchLine} that matches routes with the given source protocol. */
 public class RouteMapMatchSourceProtocolLine extends RouteMapMatchLine {
-  private static final long serialVersionUID = 1L;
 
   private Set<RoutingProtocol> _protocols;
 

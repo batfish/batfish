@@ -12,8 +12,6 @@ public class PeerAddressNextHop extends NextHopExpr {
     return _instance;
   }
 
-  private static final long serialVersionUID = 1L;
-
   private PeerAddressNextHop() {}
 
   @Override

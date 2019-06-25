@@ -5,8 +5,6 @@ import org.batfish.common.util.ComparableStructure;
 
 public class NtpServer extends ComparableStructure<String> {
 
-  private static final long serialVersionUID = 1L;
-
   private String _vrf;
 
   public NtpServer(@JsonProperty(PROP_NAME) String hostname) {

@@ -12,8 +12,6 @@ import org.batfish.datamodel.routing_policy.expr.NamedPrefixSet;
 
 public class RouteMapMatchIpPrefixListLine extends RouteMapMatchLine {
 
-  private static final long serialVersionUID = 1L;
-
   private Set<String> _listNames;
 
   public RouteMapMatchIpPrefixListLine(Set<String> names) {

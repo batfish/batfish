@@ -13,8 +13,6 @@ import org.codehaus.jettison.json.JSONObject;
 
 public class InternetGateway implements AwsVpcEntity, Serializable {
 
-  private static final long serialVersionUID = 1L;
-
   private List<String> _attachmentVpcIds = new LinkedList<>();
 
   private String _internetGatewayId;

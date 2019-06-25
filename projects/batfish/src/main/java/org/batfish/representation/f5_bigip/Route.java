@@ -12,7 +12,6 @@ import org.batfish.datamodel.Prefix6;
 public final class Route implements Serializable {
 
   public static final long METRIC = 0L;
-  private static final long serialVersionUID = 1L;
 
   private @Nullable Ip _gw;
   private @Nullable Ip6 _gw6;

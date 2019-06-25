@@ -17,8 +17,6 @@ import org.batfish.datamodel.ConcreteInterfaceAddress;
 @ParametersAreNonnullByDefault
 public final class Self implements Serializable {
 
-  private static final long serialVersionUID = 1L;
-
   private @Nullable ConcreteInterfaceAddress _address;
 
   private final @Nonnull String _name;

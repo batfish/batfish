@@ -13,8 +13,6 @@ import org.batfish.datamodel.routing_policy.statement.Statement;
 @ParametersAreNonnullByDefault
 public class RouteMapSetMetric implements RouteMapSet {
 
-  private static final long serialVersionUID = 1L;
-
   private final long _metric;
 
   public RouteMapSetMetric(long metric) {

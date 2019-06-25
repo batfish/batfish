@@ -127,7 +127,6 @@ public final class BatfishObjectMapper {
    * which is better suited towards complex, highly-nested objects.
    */
   private static class PrettyPrinter extends DefaultPrettyPrinter {
-    private static final long serialVersionUID = 1L;
 
     public PrettyPrinter() {
       _arrayIndenter = DefaultIndenter.SYSTEM_LINEFEED_INSTANCE;

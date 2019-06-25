@@ -13,8 +13,6 @@ import javax.annotation.ParametersAreNonnullByDefault;
 @ParametersAreNonnullByDefault
 public class AccessList implements Serializable {
 
-  private static final long serialVersionUID = 1L;
-
   private final List<AccessListLine> _lines;
   private final @Nonnull String _name;
 

@@ -67,7 +67,6 @@ public final class InterfaceClagSettings implements Serializable {
   private static final String PROP_PEER_IP_LINK_LOCAL = "peerIpLinkLocal";
   private static final String PROP_PRIORITY = "priority";
   private static final String PROP_SYS_MAC = "sysMac";
-  private static final long serialVersionUID = 1L;
 
   public static @Nonnull Builder builder() {
     return new Builder();

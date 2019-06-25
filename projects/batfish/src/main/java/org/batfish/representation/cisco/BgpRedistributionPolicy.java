@@ -7,8 +7,6 @@ public class BgpRedistributionPolicy extends RedistributionPolicy implements Ser
 
   public static final String OSPF_PROCESS_NUMBER = "OSPF_PROCESS_NUMBER";
 
-  private static final long serialVersionUID = 1L;
-
   private Long _metric;
 
   public BgpRedistributionPolicy(RoutingProtocol sourceProtocol) {

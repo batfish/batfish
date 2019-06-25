@@ -11,8 +11,6 @@ import org.batfish.datamodel.Prefix;
 @ParametersAreNonnullByDefault
 public final class SubnetNetworkObject implements Serializable, NetworkObject {
 
-  private static final long serialVersionUID = 1L;
-
   private NetworkObjectInfo _info;
 
   @Nonnull private final Prefix _subnet;

@@ -23,8 +23,6 @@ public final class OspfNeighbor implements Serializable, Comparable<OspfNeighbor
   private static final String PROP_NAME = "name";
   private static final String PROP_VRF = "vrf";
 
-  private static final long serialVersionUID = 1L;
-
   // TODO: don't store full Config/Interface objects, but identifiers instead.
   private long _area;
   private Interface _iface;

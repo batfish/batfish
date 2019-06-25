@@ -41,8 +41,6 @@ import org.batfish.vendor.VendorConfiguration;
 
 public class VyosConfiguration extends VendorConfiguration {
 
-  private static final long serialVersionUID = 1L;
-
   private BgpProcess _bgpProcess;
 
   private Configuration _c;

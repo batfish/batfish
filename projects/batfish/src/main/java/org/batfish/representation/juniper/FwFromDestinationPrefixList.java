@@ -11,8 +11,6 @@ import org.batfish.datamodel.RouteFilterList;
 
 public final class FwFromDestinationPrefixList extends FwFrom {
 
-  private static final long serialVersionUID = 1L;
-
   private final String _name;
 
   public FwFromDestinationPrefixList(String name) {

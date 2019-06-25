@@ -9,8 +9,6 @@ import org.batfish.datamodel.ospf.StubType;
 
 public class OspfArea implements Serializable {
 
-  private static final long serialVersionUID = 1L;
-
   private boolean _injectDefaultRoute = false;
 
   private int _metricOfDefaultRoute = 0;

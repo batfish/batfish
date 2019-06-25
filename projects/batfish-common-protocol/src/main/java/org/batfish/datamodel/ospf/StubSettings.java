@@ -25,8 +25,6 @@ public class StubSettings implements Serializable {
 
   private static final String PROP_SUPPRESS_TYPE3 = "suppressType3";
 
-  private static final long serialVersionUID = 1L;
-
   public static Builder builder() {
     return new Builder();
   }

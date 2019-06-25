@@ -7,8 +7,6 @@ import javax.annotation.Nonnull;
 
 public class ExtendedAccessList implements Serializable {
 
-  private static final long serialVersionUID = 1L;
-
   @Nonnull private List<ExtendedAccessListLine> _lines;
   @Nonnull private final String _name;
   private StandardAccessList _parent;

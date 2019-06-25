@@ -7,8 +7,6 @@ import javax.annotation.ParametersAreNonnullByDefault;
 @ParametersAreNonnullByDefault
 public class NamedAsPath implements Serializable {
 
-  private static final long serialVersionUID = 1L;
-
   private final String _name;
 
   private final String _regex;

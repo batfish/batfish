@@ -26,7 +26,6 @@ public class StaticRoute extends AbstractRoute implements Comparable<StaticRoute
 
   static final long DEFAULT_STATIC_ROUTE_METRIC = 0L;
   private static final String PROP_NEXT_VRF = "nextVrf";
-  private static final long serialVersionUID = 1L;
 
   private final long _metric;
   @Nonnull private final String _nextHopInterface;

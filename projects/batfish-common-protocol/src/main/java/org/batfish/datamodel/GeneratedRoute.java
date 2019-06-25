@@ -127,8 +127,6 @@ public final class GeneratedRoute extends AbstractRoute implements Comparable<Ge
   private static final String PROP_GENERATION_POLICY_SOURCES = "generationPolicySources";
   private static final String PROP_METRIC = "metric";
 
-  private static final long serialVersionUID = 1L;
-
   private final AsPath _asPath;
   @Nullable private final String _attributePolicy;
   @Nonnull private final SortedSet<Community> _communities;

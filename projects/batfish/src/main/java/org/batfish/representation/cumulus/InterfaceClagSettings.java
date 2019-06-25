@@ -9,8 +9,6 @@ import org.batfish.datamodel.MacAddress;
 /** CLAG settings for a layer-3 interface */
 public final class InterfaceClagSettings implements Serializable {
 
-  private static final long serialVersionUID = 1L;
-
   private @Nullable Ip _backupIp;
   private @Nullable String _backupIpVrf;
   private @Nullable Ip _peerIp;

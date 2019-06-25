@@ -16,7 +16,6 @@ import org.batfish.datamodel.routing_policy.expr.EmptyCommunitySetExpr;
 
 public final class SetCommunity extends Statement {
 
-  private static final long serialVersionUID = 1L;
   private static final String PROP_EXPR = "expr";
 
   public static final SetCommunity NONE = new SetCommunity(EmptyCommunitySetExpr.INSTANCE);

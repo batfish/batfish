@@ -304,8 +304,6 @@ public final class CiscoConfiguration extends VendorConfiguration {
 
   public static final String NXOS_MANAGEMENT_INTERFACE_PREFIX = "mgmt";
 
-  private static final long serialVersionUID = 1L;
-
   public static final String VENDOR_NAME = "cisco";
 
   private static final int VLAN_NORMAL_MAX_CISCO = 1005;

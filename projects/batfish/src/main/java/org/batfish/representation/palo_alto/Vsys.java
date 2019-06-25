@@ -24,8 +24,6 @@ public final class Vsys implements Serializable {
     SHARED
   }
 
-  private static final long serialVersionUID = 1L;
-
   private final SortedMap<String, AddressGroup> _addressGroups;
 
   private final SortedMap<String, AddressObject> _addressObjects;

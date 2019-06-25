@@ -31,8 +31,6 @@ import org.batfish.datamodel.VniSettings;
 
 public final class IncrementalDataPlane implements Serializable, DataPlane {
 
-  private static final long serialVersionUID = 1L;
-
   public static class Builder {
 
     private Map<Ip, Map<String, Set<String>>> _ipVrfOwners;
@@ -62,8 +60,6 @@ public final class IncrementalDataPlane implements Serializable, DataPlane {
   private final class ConfigurationsSupplier
       implements Serializable, Supplier<Map<String, Configuration>> {
 
-    private static final long serialVersionUID = 1L;
-
     @Override
     public Map<String, Configuration> get() {
       return computeConfigurations();
@@ -73,8 +69,6 @@ public final class IncrementalDataPlane implements Serializable, DataPlane {
   private final class FibsSupplier
       implements Serializable, Supplier<Map<String, Map<String, Fib>>> {
 
-    private static final long serialVersionUID = 1L;
-
     @Override
     public Map<String, Map<String, Fib>> get() {
       return computeFibs();
@@ -83,8 +77,6 @@ public final class IncrementalDataPlane implements Serializable, DataPlane {
 
   private final class ForwardingAnalysisSupplier
       implements Serializable, Supplier<ForwardingAnalysis> {
-
-    private static final long serialVersionUID = 1L;
 
     @Override
     public ForwardingAnalysis get() {

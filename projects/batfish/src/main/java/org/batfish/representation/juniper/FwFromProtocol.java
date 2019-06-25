@@ -9,8 +9,6 @@ import org.batfish.datamodel.IpProtocol;
 
 public final class FwFromProtocol extends FwFrom {
 
-  private static final long serialVersionUID = 1L;
-
   private final IpProtocol _protocol;
 
   public FwFromProtocol(IpProtocol protocol) {

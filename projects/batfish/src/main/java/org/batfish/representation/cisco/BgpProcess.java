@@ -19,8 +19,6 @@ public class BgpProcess implements Serializable {
 
   private static final int DEFAULT_BGP_DEFAULT_METRIC = 0;
 
-  private static final long serialVersionUID = 1L;
-
   private Map<String, NamedBgpPeerGroup> _afGroups;
 
   private Map<Prefix6, BgpAggregateIpv6Network> _aggregateIpv6Networks;

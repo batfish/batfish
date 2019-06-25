@@ -14,8 +14,6 @@ import javax.annotation.Nullable;
 public abstract class AclLineMatchExpr implements Serializable, Comparable<AclLineMatchExpr> {
   protected static final String PROP_DESCRIPTION = "description";
 
-  private static final long serialVersionUID = 1L;
-
   protected final @Nullable String _description;
 
   @JsonCreator

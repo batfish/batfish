@@ -13,8 +13,6 @@ import javax.annotation.ParametersAreNonnullByDefault;
 @ParametersAreNonnullByDefault
 public abstract class RipRoute extends AbstractRoute {
 
-  private static final long serialVersionUID = 1L;
-
   /** Maximum allowable route metric in RIP */
   public static final long MAX_ROUTE_METRIC = 16;
 

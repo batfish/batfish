@@ -13,7 +13,6 @@ import org.batfish.common.Warnings;
  * {@code config-router-vrf} level are global to the BGP configuration at the device level.
  */
 public final class CiscoNxBgpGlobalConfiguration implements Serializable {
-  private static final long serialVersionUID = 1L;
 
   public CiscoNxBgpGlobalConfiguration() {
     _enforceFirstAs = false; // disabled by default

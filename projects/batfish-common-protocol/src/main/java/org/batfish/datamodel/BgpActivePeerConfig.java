@@ -17,8 +17,6 @@ import org.batfish.datamodel.dataplane.rib.RibGroup;
 public final class BgpActivePeerConfig extends BgpPeerConfig {
   private static final String PROP_PEER_ADDRESS = "peerAddress";
 
-  static final long serialVersionUID = 1L;
-
   /** The remote peer's IP address */
   @Nullable private final Ip _peerAddress;
 

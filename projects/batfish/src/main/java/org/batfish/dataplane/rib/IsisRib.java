@@ -10,8 +10,6 @@ import org.batfish.datamodel.IsisRoute;
 @ParametersAreNonnullByDefault
 public class IsisRib extends AbstractRib<IsisRoute> {
 
-  private static final long serialVersionUID = 1L;
-
   public static final Comparator<IsisRoute> routePreferenceComparator =
       Comparator.comparing(IsisRoute::getAdministrativeCost)
           .thenComparing(IsisRib::levelCost)
