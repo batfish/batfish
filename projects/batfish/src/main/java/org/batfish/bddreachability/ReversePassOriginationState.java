@@ -2,7 +2,6 @@ package org.batfish.bddreachability;
 
 import java.util.function.Predicate;
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import org.batfish.symbolic.state.NodeAccept;
 import org.batfish.symbolic.state.NodeDropAclIn;
 import org.batfish.symbolic.state.NodeDropAclOut;
@@ -54,15 +53,6 @@ public class ReversePassOriginationState implements StateExprVisitor<StateExpr> 
    */
   public ReversePassOriginationState(Predicate<String> isFinalNode) {
     _isFinalNode = isFinalNode;
-  }
-
-  /**
-   * Returns the origination state for the reverse of the trace ending terminating at {@code expr}
-   * for a final node as determined by {@code isFinalNode}.
-   */
-  public static @Nullable StateExpr reverseTraceOriginationState(
-      Predicate<String> isFinalNode, StateExpr expr) {
-    return expr.accept(new ReversePassOriginationState(isFinalNode));
   }
 
   @Override
