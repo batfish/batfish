@@ -45,7 +45,7 @@ public final class EvpnType3Route extends EvpnRoute<EvpnType3Route.Builder, Evpn
       return new EvpnType3Route(
           getAdmin(),
           _asPath,
-          _clusterList.build(),
+          _clusterList,
           _communities,
           _discard,
           _localPreference,

@@ -191,7 +191,7 @@ ro_max_metric
       | stub = INCLUDE_STUB
       |
       (
-         on_startup = ON_STARTUP DEC
+         on_startup = ON_STARTUP DEC?
       )
       |
       (
@@ -199,7 +199,11 @@ ro_max_metric
       )
       |
       (
-         wait_for_bgp = WAIT_FOR BGP bgptag = variable_max_metric
+         wait_for_bgp_nx = WAIT_FOR BGP bgptag = variable_max_metric
+      )
+      |
+      (
+         WAIT_FOR_BGP
       )
    )* NEWLINE
 ;

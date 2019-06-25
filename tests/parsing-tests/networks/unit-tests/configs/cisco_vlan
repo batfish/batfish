@@ -30,7 +30,7 @@ vlan 1054 name fuiwehguiowhgoiuw
  remote-span
  tagged ethe 5/1
  tagged ethe 15/2
- no untagged e 1/1 e 5/2 to 5/7 e 6/1 to 6/2 
+ no untagged e 1/1 e 5/2 to 5/7 e 6/1 to 6/2
  no multicast passive
  transparent-hw-flooding
 !
@@ -39,4 +39,6 @@ vlan access-map aaaaaaaaaaaaaa
   action forward
   statistics per-entry
 !
-
+vlan 10
+  vn-segment 10010
+!

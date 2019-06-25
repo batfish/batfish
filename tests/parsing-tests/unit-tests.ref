@@ -426,9 +426,6 @@
         "cisco_vpn" : [
           "configs/cisco_vpn"
         ],
-        "cisco_vrf" : [
-          "configs/cisco_vrf"
-        ],
         "cisco_vrrp" : [
           "configs/cisco_vrrp"
         ],
@@ -802,6 +799,9 @@
         "nxos_system" : [
           "configs/nxos_system"
         ],
+        "nxos_vrf" : [
+          "configs/nxos_vrf"
+        ],
         "openflow" : [
           "configs/openflow"
         ],
@@ -894,9 +894,6 @@
         ],
         "vmx4" : [
           "configs/gh-2658-juniper-vrf-import-export.cfg"
-        ],
-        "vrf_context" : [
-          "configs/vrf_context"
         ],
         "vxlan" : [
           "configs/vxlan"
@@ -1041,7 +1038,6 @@
         "configs/cisco_voice" : "PASSED",
         "configs/cisco_vpdn" : "PASSED",
         "configs/cisco_vpn" : "PASSED",
-        "configs/cisco_vrf" : "PASSED",
         "configs/cisco_vrrp" : "PASSED",
         "configs/cisco_webvpn" : "PASSED",
         "configs/cisco_wsma" : "PASSED",
@@ -1075,6 +1071,7 @@
         "configs/foundry_interface" : "PASSED",
         "configs/foundry_misc" : "PASSED",
         "configs/foundry_vlan_group" : "PASSED",
+        "configs/foundry_vrf" : "UNSUPPORTED",
         "configs/gh-2658-juniper-vrf-import-export.cfg" : "PASSED",
         "configs/host2" : "PASSED",
         "configs/if_tag_is" : "PASSED",
@@ -1171,6 +1168,7 @@
         "configs/nxos_ospf" : "PASSED",
         "configs/nxos_route_map_continue" : "PASSED",
         "configs/nxos_system" : "PASSED",
+        "configs/nxos_vrf" : "PASSED",
         "configs/openflow" : "PASSED",
         "configs/palo_alto/applications" : "PASSED",
         "configs/palo_alto/interfaces" : "PASSED",
@@ -1197,7 +1195,6 @@
         "configs/variables" : "PASSED",
         "configs/variables_dos" : "PASSED",
         "configs/vlan_access_map2" : "PASSED",
-        "configs/vrf_context" : "PASSED",
         "configs/vxlan" : "PASSED",
         "hosts/host1.json" : "PASSED",
         "hosts/host2.json" : "PASSED",
@@ -2259,13 +2256,14 @@
             "      name = (variable",
             "        VARIABLE:'vrfName')",
             "      NEWLINE:'\\n'",
-            "      (vrfd_null",
+            "      (vrfd_rd",
             "        RD:'rd'",
-            "        (null_rest_of_line",
-            "          DEC:'2'",
+            "        rd = (route_distinguisher",
+            "          (bgp_asn",
+            "            asn = DEC:'2')",
             "          COLON:':'",
-            "          DEC:'700'",
-            "          NEWLINE:'\\n'))",
+            "          DEC:'700')",
+            "        NEWLINE:'\\n')",
             "      (vrfd_description",
             "        (description_line",
             "          DESCRIPTION:'description'",
@@ -38160,6 +38158,16 @@
             "        (null_rest_of_line",
             "          VARIABLE:'per-entry'",
             "          NEWLINE:'\\n'))))",
+            "  (stanza",
+            "    (s_vlan_cisco",
+            "      VLAN:'vlan'",
+            "      DEC:'10'",
+            "      (null_rest_of_line",
+            "        NEWLINE:'\\n')",
+            "      (vlan_vn_segment",
+            "        VN_SEGMENT:'vn-segment'",
+            "        vni = DEC:'10010'",
+            "        NEWLINE:'\\n')))",
             "  EOF:<EOF>)"
           ]
         },
@@ -39199,80 +39207,6 @@
             "      (vpn_null",
             "        PARTICIPATE:'participate'",
             "        (null_rest_of_line",
-            "          NEWLINE:'\\n'))))",
-            "  EOF:<EOF>)"
-          ]
-        },
-        "configs/cisco_vrf" : {
-          "sentences" : [
-            "(cisco_configuration",
-            "  (stanza",
-            "    (s_hostname",
-            "      HOSTNAME:'hostname'",
-            "      VARIABLE:'cisco_vrf'",
-            "      NEWLINE:'\\n'))",
-            "  (stanza",
-            "    (s_vrf_context",
-            "      VRF:'vrf'",
-            "      CONTEXT:'context'",
-            "      name = (variable",
-            "        MANAGEMENT:'management')",
-            "      NEWLINE:'\\n'",
-            "      (vrfc_address_family",
-            "        ADDRESS_FAMILY:'address-family'",
-            "        IPV4:'ipv4'",
-            "        UNICAST:'unicast'",
-            "        NEWLINE:'\\n')",
-            "      (vrfc_address_family",
-            "        ADDRESS_FAMILY:'address-family'",
-            "        IPV6:'ipv6'",
-            "        UNICAST:'unicast'",
-            "        NEWLINE:'\\n')",
-            "      (vrfc_null",
-            "        IP:'ip'",
-            "        PIM:'pim'",
-            "        (null_rest_of_line",
-            "          BIDIR_RP_LIMIT:'bidir-rp-limit'",
-            "          DEC:'6'",
-            "          NEWLINE:'\\n'))",
-            "      (vrfc_null",
-            "        IP:'ip'",
-            "        PIM:'pim'",
-            "        (null_rest_of_line",
-            "          SG_EXPIRY_TIMER:'sg-expiry-timer'",
-            "          DEC:'180'",
-            "          NEWLINE:'\\n'))",
-            "      (vrfc_ip_route",
-            "        IP:'ip'",
-            "        ROUTE:'route'",
-            "        (ip_route_tail",
-            "          prefix = IP_PREFIX:'0.0.0.0/0'",
-            "          nexthopip = IP_ADDRESS:'1.2.3.4'",
-            "          NEWLINE:'\\n'))",
-            "      (vrfc_null",
-            "        MDT:'mdt'",
-            "        (null_rest_of_line",
-            "          VARIABLE:'enforce-bgp-mdt-safi'",
-            "          NEWLINE:'\\n'))",
-            "      (vrfc_null",
-            "        MDT:'mdt'",
-            "        (null_rest_of_line",
-            "          MTU:'mtu'",
-            "          DEC:'1376'",
-            "          NEWLINE:'\\n'))",
-            "      (vrfc_null",
-            "        MDT:'mdt'",
-            "        (null_rest_of_line",
-            "          PIM:'pim'",
-            "          HELLO_INTERVAL:'hello-interval'",
-            "          DEC:'30000'",
-            "          NEWLINE:'\\n'))",
-            "      (vrfc_null",
-            "        MDT:'mdt'",
-            "        (null_rest_of_line",
-            "          PIM:'pim'",
-            "          VARIABLE:'jp-interval'",
-            "          DEC:'60'",
             "          NEWLINE:'\\n'))))",
             "  EOF:<EOF>)"
           ]
@@ -68723,7 +68657,26 @@
             "                (rbnx_n_af_soft_reconfiguration",
             "                  SOFT_RECONFIGURATION:'soft-reconfiguration'",
             "                  INBOUND:'inbound'",
-            "                  NEWLINE:'\\n\\n\\n'))))))))",
+            "                  NEWLINE:'\\n'))))))",
+            "      (router_bgp_nxos_toplevel",
+            "        (rbnx_proc_vrf_common",
+            "          (rbnx_neighbor",
+            "            NEIGHBOR:'neighbor'",
+            "            ip = IP_ADDRESS:'1.1.1.1'  <== mode:M_NEIGHBOR",
+            "            NEWLINE:'\\n'",
+            "            (rbnx_n_inner",
+            "              (rbnx_n_common",
+            "                (rbnx_n_bfd",
+            "                  BFD:'bfd'",
+            "                  NEWLINE:'\\n')))",
+            "            (rbnx_n_inner",
+            "              (rbnx_n_common",
+            "                (rbnx_n_inherit",
+            "                  INHERIT:'inherit'",
+            "                  PEER:'peer'",
+            "                  peer = (variable",
+            "                    VARIABLE:'PEER_BLLF')",
+            "                  NEWLINE:'\\n'))))))))",
             "  EOF:<EOF>)"
           ]
         },
@@ -69200,7 +69153,7 @@
             "          external_lsa = EXTERNAL_LSA:'external-lsa'",
             "          on_startup = ON_STARTUP:'on-startup'",
             "          DEC:'111'",
-            "          wait_for_bgp = WAIT_FOR:'wait-for'",
+            "          wait_for_bgp_nx = WAIT_FOR:'wait-for'",
             "          BGP:'bgp'",
             "          bgptag = (variable_max_metric",
             "            DEC:'12345')",
@@ -69227,7 +69180,7 @@
             "          external_lsa = EXTERNAL_LSA:'external-lsa'",
             "          on_startup = ON_STARTUP:'on-startup'",
             "          DEC:'86400'",
-            "          wait_for_bgp = WAIT_FOR:'wait-for'",
+            "          wait_for_bgp_nx = WAIT_FOR:'wait-for'",
             "          BGP:'bgp'",
             "          bgptag = (variable_max_metric",
             "            DEC:'12345')",
@@ -69262,6 +69215,25 @@
             "          ROUTE_MAP:'route-map'",
             "          map = VARIABLE:'RM_OSPF_DIRECT'  <== mode:M_RouteMap",
             "          NEWLINE:'\\n'))))",
+            "  (stanza",
+            "    (s_router_ospf",
+            "      ROUTER:'router'",
+            "      OSPF:'ospf'",
+            "      name = (variable",
+            "        DEC:'100')",
+            "      VRF:'vrf'",
+            "      vrf = (variable",
+            "        VARIABLE:'foo')",
+            "      NEWLINE:'\\n'",
+            "      (ro_max_metric",
+            "        MAX_METRIC:'max-metric'",
+            "        ROUTER_LSA:'router-lsa'",
+            "        stub = INCLUDE_STUB:'include-stub'",
+            "        summary_lsa = SUMMARY_LSA:'summary-lsa'",
+            "        external_lsa = EXTERNAL_LSA:'external-lsa'",
+            "        on_startup = ON_STARTUP:'on-startup'",
+            "        WAIT_FOR_BGP:'wait-for-bgp'",
+            "        NEWLINE:'\\n')))",
             "  (stanza",
             "    (s_router_ospf",
             "      ROUTER:'router'",
@@ -70199,6 +70171,148 @@
             "            NETWORK_QOS:'network-qos'",
             "            JUMBO:'jumbo'",
             "            NEWLINE:'\\n')))))",
+            "  EOF:<EOF>)"
+          ]
+        },
+        "configs/nxos_vrf" : {
+          "sentences" : [
+            "(cisco_configuration",
+            "  (stanza",
+            "    (s_hostname",
+            "      HOSTNAME:'hostname'",
+            "      VARIABLE:'nxos_vrf'",
+            "      NEWLINE:'\\n'))",
+            "  (stanza",
+            "    (s_vrf_context",
+            "      VRF:'vrf'",
+            "      CONTEXT:'context'",
+            "      name = (variable",
+            "        MANAGEMENT:'management')",
+            "      NEWLINE:'\\n'",
+            "      (vrfc_address_family",
+            "        ADDRESS_FAMILY:'address-family'",
+            "        IPV4:'ipv4'",
+            "        UNICAST:'unicast'",
+            "        NEWLINE:'\\n')",
+            "      (vrfc_address_family",
+            "        ADDRESS_FAMILY:'address-family'",
+            "        IPV6:'ipv6'",
+            "        UNICAST:'unicast'",
+            "        NEWLINE:'\\n')",
+            "      (vrfc_null",
+            "        IP:'ip'",
+            "        PIM:'pim'",
+            "        (null_rest_of_line",
+            "          BIDIR_RP_LIMIT:'bidir-rp-limit'",
+            "          DEC:'6'",
+            "          NEWLINE:'\\n'))",
+            "      (vrfc_null",
+            "        IP:'ip'",
+            "        PIM:'pim'",
+            "        (null_rest_of_line",
+            "          SG_EXPIRY_TIMER:'sg-expiry-timer'",
+            "          DEC:'180'",
+            "          NEWLINE:'\\n'))",
+            "      (vrfc_ip_route",
+            "        IP:'ip'",
+            "        ROUTE:'route'",
+            "        (ip_route_tail",
+            "          prefix = IP_PREFIX:'0.0.0.0/0'",
+            "          nexthopip = IP_ADDRESS:'1.2.3.4'",
+            "          NEWLINE:'\\n'))",
+            "      (vrfc_null",
+            "        MDT:'mdt'",
+            "        (null_rest_of_line",
+            "          VARIABLE:'enforce-bgp-mdt-safi'",
+            "          NEWLINE:'\\n'))",
+            "      (vrfc_null",
+            "        MDT:'mdt'",
+            "        (null_rest_of_line",
+            "          MTU:'mtu'",
+            "          DEC:'1376'",
+            "          NEWLINE:'\\n'))",
+            "      (vrfc_null",
+            "        MDT:'mdt'",
+            "        (null_rest_of_line",
+            "          PIM:'pim'",
+            "          HELLO_INTERVAL:'hello-interval'",
+            "          DEC:'30000'",
+            "          NEWLINE:'\\n'))",
+            "      (vrfc_null",
+            "        MDT:'mdt'",
+            "        (null_rest_of_line",
+            "          PIM:'pim'",
+            "          VARIABLE:'jp-interval'",
+            "          DEC:'60'",
+            "          NEWLINE:'\\n'))))",
+            "  (stanza",
+            "    (s_vrf_context",
+            "      VRF:'vrf'",
+            "      CONTEXT:'context'",
+            "      name = (variable",
+            "        VARIABLE:'vrf1')",
+            "      NEWLINE:'\\n'",
+            "      (vrfc_vni",
+            "        VNI:'vni'",
+            "        vni = DEC:'11111'",
+            "        NEWLINE:'\\n')",
+            "      (vrfc_rd",
+            "        RD:'rd'",
+            "        (route_distinguisher",
+            "          IP_ADDRESS:'1.1.1.1'",
+            "          COLON:':'",
+            "          DEC:'9')",
+            "        NEWLINE:'\\n')",
+            "      (vrfc_rd",
+            "        RD:'rd'",
+            "        (route_distinguisher",
+            "          (bgp_asn",
+            "            asn = DEC:'22222')",
+            "          COLON:':'",
+            "          DEC:'9')",
+            "        NEWLINE:'\\n')",
+            "      (vrfc_rd",
+            "        RD:'rd'",
+            "        (route_distinguisher",
+            "          (bgp_asn",
+            "            asn4b = FLOAT:'3333.3333')",
+            "          COLON:':'",
+            "          DEC:'9')",
+            "        NEWLINE:'\\n')",
+            "      (vrfc_rd",
+            "        RD:'rd'",
+            "        AUTO:'auto'",
+            "        NEWLINE:'\\n')",
+            "      (vrfc_address_family",
+            "        ADDRESS_FAMILY:'address-family'",
+            "        IPV4:'ipv4'",
+            "        UNICAST:'unicast'",
+            "        NEWLINE:'\\n'",
+            "        (vrfc_route_target",
+            "          ROUTE_TARGET:'route-target'",
+            "          BOTH:'both'",
+            "          AUTO:'auto'",
+            "          NEWLINE:'\\n')",
+            "        (vrfc_route_target",
+            "          ROUTE_TARGET:'route-target'",
+            "          BOTH:'both'",
+            "          AUTO:'auto'",
+            "          EVPN:'evpn'",
+            "          NEWLINE:'\\n'))",
+            "      (vrfc_shutdown",
+            "        SHUTDOWN:'shutdown'",
+            "        NEWLINE:'\\n')",
+            "      (vrfc_shutdown",
+            "        NO:'no'",
+            "        SHUTDOWN:'shutdown'",
+            "        NEWLINE:'\\n')",
+            "      (vrfc_ip_route",
+            "        IP:'ip'",
+            "        ROUTE:'route'",
+            "        (ip_route_tail",
+            "          prefix = IP_PREFIX:'0.0.0.0/0'",
+            "          nexthopip = IP_ADDRESS:'1.2.3.4'",
+            "          NEWLINE:'\\n\\n'))))",
             "  EOF:<EOF>)"
           ]
         },
@@ -72980,106 +73094,6 @@
             "          NEWLINE:'\\n'))",
             "      END_POLICY:'end-policy'",
             "      NEWLINE:'\\n\\n'))",
-            "  EOF:<EOF>)"
-          ]
-        },
-        "configs/vrf_context" : {
-          "sentences" : [
-            "(cisco_configuration",
-            "  (stanza",
-            "    (s_hostname",
-            "      HOSTNAME:'hostname'",
-            "      VARIABLE:'vrf_context'",
-            "      NEWLINE:'\\n'))",
-            "  (stanza",
-            "    (s_vrf_context",
-            "      VRF:'vrf'",
-            "      CONTEXT:'context'",
-            "      name = (variable",
-            "        VARIABLE:'aa')",
-            "      NEWLINE:'\\n'))",
-            "  (stanza",
-            "    (s_vrf_context",
-            "      VRF:'vrf'",
-            "      CONTEXT:'context'",
-            "      name = (variable",
-            "        MANAGEMENT:'management')",
-            "      NEWLINE:'\\n'",
-            "      (vrfc_ip_route",
-            "        IP:'ip'",
-            "        ROUTE:'route'",
-            "        (ip_route_tail",
-            "          prefix = IP_PREFIX:'0.0.0.0/0'",
-            "          nexthopip = IP_ADDRESS:'1.2.3.4'",
-            "          NEWLINE:'\\n'))))",
-            "  (stanza",
-            "    (s_spanning_tree",
-            "      SPANNING_TREE:'spanning-tree'",
-            "      (spanning_tree_null",
-            "        MODE:'mode'",
-            "        (null_rest_of_line",
-            "          MST:'mst'",
-            "          NEWLINE:'\\n'))))",
-            "  (stanza",
-            "    (ip_route_stanza",
-            "      IP:'ip'",
-            "      ROUTE:'route'",
-            "      (ip_route_tail",
-            "        prefix = IP_PREFIX:'1.1.1.0/24'",
-            "        nexthopip = IP_ADDRESS:'5.6.7.8'",
-            "        NEWLINE:'\\n')))",
-            "  (stanza",
-            "    (s_vrf_definition",
-            "      VRF:'vrf'",
-            "      name = (variable",
-            "        VARIABLE:'LHCONE')",
-            "      NEWLINE:'\\n'",
-            "      (vrfd_null",
-            "        RD:'rd'",
-            "        (null_rest_of_line",
-            "          DEC:'2153'",
-            "          COLON:':'",
-            "          DEC:'1001'",
-            "          NEWLINE:'\\n'))",
-            "      (vrfd_null",
-            "        ROUTE_TARGET:'route-target'",
-            "        (null_rest_of_line",
-            "          EXPORT:'export'",
-            "          DEC:'2153'",
-            "          COLON:':'",
-            "          DEC:'1001'",
-            "          NEWLINE:'\\n'))",
-            "      (vrfd_null",
-            "        ROUTE_TARGET:'route-target'",
-            "        (null_rest_of_line",
-            "          IMPORT:'import'",
-            "          DEC:'2153'",
-            "          COLON:':'",
-            "          DEC:'1001'",
-            "          NEWLINE:'\\n'))",
-            "      (vrfd_address_family",
-            "        ADDRESS_FAMILY:'address-family'",
-            "        IPV4:'ipv4'",
-            "        MAX_ROUTE:'max-route'",
-            "        DEC:'5121'",
-            "        NEWLINE:'\\n'",
-            "        EXIT_ADDRESS_FAMILY:'exit-address-family'",
-            "        NEWLINE:'\\n')",
-            "      (vrfd_address_family",
-            "        ADDRESS_FAMILY:'address-family'",
-            "        IPV6:'ipv6'",
-            "        MAX_ROUTE:'max-route'",
-            "        DEC:'129'",
-            "        NEWLINE:'\\n'",
-            "        EXIT_ADDRESS_FAMILY:'exit-address-family'",
-            "        NEWLINE:'\\n')",
-            "      EXIT_VRF:'exit-vrf'",
-            "      NEWLINE:'\\n'))",
-            "  (stanza",
-            "    (s_null",
-            "      (null_single",
-            "        END:'end'",
-            "        NEWLINE:'\\n\\n')))",
             "  EOF:<EOF>)"
           ]
         },
@@ -75978,6 +75992,16 @@
             }
           ]
         },
+        "configs/nxos_vrf" : {
+          "Parse warnings" : [
+            {
+              "Comment" : "This feature is not currently supported",
+              "Line" : 26,
+              "Parser_Context" : "[vrfc_shutdown s_vrf_context stanza cisco_configuration]",
+              "Text" : "shutdown"
+            }
+          ]
+        },
         "configs/peer_template" : {
           "Parse warnings" : [
             {
@@ -76168,7 +76192,6 @@
         "cisco_voice" : "PASSED",
         "cisco_vpdn" : "PASSED",
         "cisco_vpn" : "PASSED",
-        "cisco_vrf" : "PASSED",
         "cisco_vrrp" : "PASSED",
         "cisco_webvpn" : "PASSED",
         "cisco_wsma" : "PASSED",
@@ -76291,6 +76314,7 @@
         "nxos_ospf" : "PASSED",
         "nxos_route_map_continue" : "PASSED",
         "nxos_system" : "PASSED",
+        "nxos_vrf" : "PASSED",
         "openflow" : "PASSED",
         "ospf-disable" : "PASSED",
         "palo_alto_virtual_routers" : "PASSED",
@@ -76322,7 +76346,6 @@
         "variables_dos" : "PASSED",
         "vlan_access_map4" : "PASSED",
         "vmx4" : "WARNINGS",
-        "vrf_context" : "PASSED",
         "vxlan" : "PASSED"
       },
       "definedStructures" : {
@@ -78708,7 +78731,6 @@
         "configs/cisco_voice" : { },
         "configs/cisco_vpdn" : { },
         "configs/cisco_vpn" : { },
-        "configs/cisco_vrf" : { },
         "configs/cisco_vrrp" : {
           "interface" : {
             "Ethernet0" : {
@@ -82211,7 +82233,7 @@
                 31,
                 32
               ],
-              "numReferrers" : 0
+              "numReferrers" : 1
             }
           }
         },
@@ -82396,6 +82418,7 @@
           }
         },
         "configs/nxos_system" : { },
+        "configs/nxos_vrf" : { },
         "configs/openflow" : { },
         "configs/palo_alto/applications" : {
           "application-group" : {
@@ -82954,7 +82977,6 @@
             }
           }
         },
-        "configs/vrf_context" : { },
         "configs/vxlan" : { },
         "hosts/host1.json" : { }
       },
@@ -83373,9 +83395,6 @@
         "configs/cisco_vpn" : [
           "cisco_vpn"
         ],
-        "configs/cisco_vrf" : [
-          "cisco_vrf"
-        ],
         "configs/cisco_vrrp" : [
           "cisco_vrrp"
         ],
@@ -83761,6 +83780,9 @@
         "configs/nxos_system" : [
           "nxos_system"
         ],
+        "configs/nxos_vrf" : [
+          "nxos_vrf"
+        ],
         "configs/openflow" : [
           "openflow"
         ],
@@ -83838,9 +83860,6 @@
         ],
         "configs/vlan_access_map2" : [
           "vlan_access_map4"
-        ],
-        "configs/vrf_context" : [
-          "vrf_context"
         ],
         "configs/vxlan" : [
           "vxlan"
@@ -87977,6 +87996,13 @@
           }
         },
         "configs/nexus_bgp" : {
+          "bgp template peer" : {
+            "PEER_BLLF" : {
+              "inherited BGP peer" : [
+                35
+              ]
+            }
+          },
           "route-map" : {
             "BLIB" : {
               "bgp otherwise in/outbound route-map" : [
@@ -90955,6 +90981,10 @@
             {
               "tag" : "MISCELLANEOUS",
               "text" : "Router-id is not manually configured for BGP process in VRF default. Unable to infer default router-id as no interfaces have IP addresses"
+            },
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "BGP neighbor 1.1.1.1 in vrf default: could not determine update source"
             }
           ]
         },
@@ -91213,7 +91243,6 @@
         "configs/cisco_voice" : "PASSED",
         "configs/cisco_vpdn" : "PASSED",
         "configs/cisco_vpn" : "PASSED",
-        "configs/cisco_vrf" : "PASSED",
         "configs/cisco_vrrp" : "PASSED",
         "configs/cisco_webvpn" : "PASSED",
         "configs/cisco_wsma" : "PASSED",
@@ -91247,6 +91276,7 @@
         "configs/foundry_interface" : "PASSED",
         "configs/foundry_misc" : "PASSED",
         "configs/foundry_vlan_group" : "PASSED",
+        "configs/foundry_vrf" : "UNSUPPORTED",
         "configs/gh-2658-juniper-vrf-import-export.cfg" : "PASSED",
         "configs/host2" : "PASSED",
         "configs/if_tag_is" : "PASSED",
@@ -91343,6 +91373,7 @@
         "configs/nxos_ospf" : "PASSED",
         "configs/nxos_route_map_continue" : "PASSED",
         "configs/nxos_system" : "PASSED",
+        "configs/nxos_vrf" : "PASSED",
         "configs/openflow" : "PASSED",
         "configs/palo_alto/applications" : "PASSED",
         "configs/palo_alto/interfaces" : "PASSED",
@@ -91369,7 +91400,6 @@
         "configs/variables" : "PASSED",
         "configs/variables_dos" : "PASSED",
         "configs/vlan_access_map2" : "PASSED",
-        "configs/vrf_context" : "PASSED",
         "configs/vxlan" : "PASSED",
         "hosts/host1.json" : "PASSED",
         "hosts/host2.json" : "PASSED",
