@@ -12826,40 +12826,6 @@
           }
         }
       },
-      "cisco_vrf" : {
-        "configurationFormat" : "CISCO_IOS",
-        "name" : "cisco_vrf",
-        "defaultCrossZoneAction" : "PERMIT",
-        "defaultInboundAction" : "PERMIT",
-        "deviceType" : "SWITCH",
-        "vendorFamily" : {
-          "cisco" : {
-            "hostname" : "cisco_vrf",
-            "logging" : {
-              "on" : true
-            }
-          }
-        },
-        "vrfs" : {
-          "default" : {
-            "name" : "default"
-          },
-          "management" : {
-            "name" : "management",
-            "staticRoutes" : [
-              {
-                "class" : "org.batfish.datamodel.StaticRoute",
-                "administrativeCost" : 1,
-                "metric" : 0,
-                "network" : "0.0.0.0/0",
-                "nextHopInterface" : "dynamic",
-                "nextHopIp" : "1.2.3.4",
-                "tag" : -1
-              }
-            ]
-          }
-        }
-      },
       "cisco_vrrp" : {
         "configurationFormat" : "CISCO_IOS",
         "name" : "cisco_vrrp",
@@ -27314,6 +27280,31 @@
                 "type" : "ReturnFalse"
               }
             ]
+          },
+          "~BGP_PEER_EXPORT_POLICY:default:1.1.1.1~" : {
+            "name" : "~BGP_PEER_EXPORT_POLICY:default:1.1.1.1~",
+            "statements" : [
+              {
+                "class" : "org.batfish.datamodel.routing_policy.statement.If",
+                "comment" : "peer-export policy main conditional: exitAccept if true / exitReject if false",
+                "falseStatements" : [
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                    "type" : "ExitReject"
+                  }
+                ],
+                "guard" : {
+                  "class" : "org.batfish.datamodel.routing_policy.expr.CallExpr",
+                  "calledPolicyName" : "~BGP_COMMON_EXPORT_POLICY:default~"
+                },
+                "trueStatements" : [
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                    "type" : "ExitAccept"
+                  }
+                ]
+              }
+            ]
           }
         },
         "vendorFamily" : {
@@ -27334,6 +27325,30 @@
               "multipathEbgp" : true,
               "multipathEquivalentAsPathMatchMode" : "EXACT_PATH",
               "multipathIbgp" : true,
+              "neighbors" : {
+                "1.1.1.1/32" : {
+                  "class" : "org.batfish.datamodel.BgpActivePeerConfig",
+                  "additionalPathsReceive" : false,
+                  "additionalPathsSelectAll" : false,
+                  "additionalPathsSend" : false,
+                  "advertiseExternal" : false,
+                  "advertiseInactive" : true,
+                  "allowLocalAsIn" : false,
+                  "allowRemoteAsOut" : false,
+                  "clusterId" : 0,
+                  "defaultMetric" : 0,
+                  "ebgpMultihop" : false,
+                  "enforceFirstAs" : true,
+                  "exportPolicy" : "~BGP_PEER_EXPORT_POLICY:default:1.1.1.1~",
+                  "group" : "PEER_BLLF",
+                  "ipv4UnicastAddressFamily" : { },
+                  "localAs" : 1,
+                  "peerAddress" : "1.1.1.1",
+                  "remoteAsns" : "12345",
+                  "routeReflectorClient" : false,
+                  "sendCommunity" : true
+                }
+              },
               "tieBreaker" : "ARRIVAL_ORDER"
             }
           }
@@ -28046,6 +28061,9 @@
           },
           "~OSPF_EXPORT_POLICY:default~" : {
             "name" : "~OSPF_EXPORT_POLICY:default~"
+          },
+          "~OSPF_EXPORT_POLICY:foo~" : {
+            "name" : "~OSPF_EXPORT_POLICY:foo~"
           }
         },
         "vendorFamily" : {
@@ -28144,6 +28162,24 @@
             "interfaces" : [
               "Ethernet0/0"
             ]
+          },
+          "foo" : {
+            "name" : "foo",
+            "ospfProcesses" : {
+              "100" : {
+                "adminCosts" : {
+                  "ospf" : 110,
+                  "ospfE1" : 110,
+                  "ospfE2" : 110,
+                  "ospfIA" : 110
+                },
+                "exportPolicy" : "~OSPF_EXPORT_POLICY:foo~",
+                "processId" : "100",
+                "referenceBandwidth" : 4.0E10,
+                "routerId" : "1.1.1.2",
+                "summaryAdminCost" : 254
+              }
+            }
           }
         }
       },
@@ -29323,6 +29359,54 @@
         "vrfs" : {
           "default" : {
             "name" : "default"
+          }
+        }
+      },
+      "nxos_vrf" : {
+        "configurationFormat" : "CISCO_IOS",
+        "name" : "nxos_vrf",
+        "defaultCrossZoneAction" : "PERMIT",
+        "defaultInboundAction" : "PERMIT",
+        "deviceType" : "SWITCH",
+        "vendorFamily" : {
+          "cisco" : {
+            "hostname" : "nxos_vrf",
+            "logging" : {
+              "on" : true
+            }
+          }
+        },
+        "vrfs" : {
+          "default" : {
+            "name" : "default"
+          },
+          "management" : {
+            "name" : "management",
+            "staticRoutes" : [
+              {
+                "class" : "org.batfish.datamodel.StaticRoute",
+                "administrativeCost" : 1,
+                "metric" : 0,
+                "network" : "0.0.0.0/0",
+                "nextHopInterface" : "dynamic",
+                "nextHopIp" : "1.2.3.4",
+                "tag" : -1
+              }
+            ]
+          },
+          "vrf1" : {
+            "name" : "vrf1",
+            "staticRoutes" : [
+              {
+                "class" : "org.batfish.datamodel.StaticRoute",
+                "administrativeCost" : 1,
+                "metric" : 0,
+                "network" : "0.0.0.0/0",
+                "nextHopInterface" : "dynamic",
+                "nextHopIp" : "1.2.3.4",
+                "tag" : -1
+              }
+            ]
           }
         }
       },
@@ -36425,51 +36509,6 @@
             "name" : "vr",
             "interfaces" : [
               "lo0.1"
-            ]
-          }
-        }
-      },
-      "vrf_context" : {
-        "configurationFormat" : "CISCO_IOS",
-        "name" : "vrf_context",
-        "defaultCrossZoneAction" : "PERMIT",
-        "defaultInboundAction" : "PERMIT",
-        "deviceType" : "SWITCH",
-        "vendorFamily" : {
-          "cisco" : {
-            "hostname" : "vrf_context",
-            "logging" : {
-              "on" : true
-            }
-          }
-        },
-        "vrfs" : {
-          "default" : {
-            "name" : "default",
-            "staticRoutes" : [
-              {
-                "class" : "org.batfish.datamodel.StaticRoute",
-                "administrativeCost" : 1,
-                "metric" : 0,
-                "network" : "1.1.1.0/24",
-                "nextHopInterface" : "dynamic",
-                "nextHopIp" : "5.6.7.8",
-                "tag" : -1
-              }
-            ]
-          },
-          "management" : {
-            "name" : "management",
-            "staticRoutes" : [
-              {
-                "class" : "org.batfish.datamodel.StaticRoute",
-                "administrativeCost" : 1,
-                "metric" : 0,
-                "network" : "0.0.0.0/0",
-                "nextHopInterface" : "dynamic",
-                "nextHopIp" : "1.2.3.4",
-                "tag" : -1
-              }
             ]
           }
         }

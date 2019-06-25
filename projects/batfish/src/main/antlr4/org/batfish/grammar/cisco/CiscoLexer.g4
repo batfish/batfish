@@ -4373,6 +4373,11 @@ EVENTS
    'events'
 ;
 
+EVPN
+:
+   'evpn'
+;
+
 EXACT
 :
    'exact'
@@ -13848,6 +13853,11 @@ VNI
    'vni'
 ;
 
+VN_SEGMENT
+:
+   'vn-segment'
+;
+
 VOCERA
 :
    'vocera'
@@ -14018,6 +14028,11 @@ VXLAN
 WAIT_FOR
 :
   'wait-for'
+;
+
+WAIT_FOR_BGP
+:
+  'wait-for-bgp'
 ;
 
 WAIT_IGP_CONVERGENCE

@@ -8,11 +8,9 @@ import static org.batfish.common.bdd.BDDUtils.swapPairing;
 import com.google.common.base.Suppliers;
 import com.google.common.collect.ImmutableMap;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.Set;
 import java.util.function.Supplier;
 import javax.annotation.Nonnull;
 import net.sf.javabdd.BDD;
@@ -217,53 +215,6 @@ public class BDDPacket {
     addBitNames(name, STATE_LENGTH, _nextFreeBDDVarIdx, false);
     _nextFreeBDDVarIdx += bits;
     return var;
-  }
-
-  /*
-   * Converts a BDD to the graphviz DOT format for debugging.
-   */
-  public String dot(BDD bdd) {
-    StringBuilder sb = new StringBuilder();
-    sb.append("digraph G {\n");
-    sb.append("0 [shape=box, label=\"0\", style=filled, shape=box, height=0.3, width=0.3];\n");
-    sb.append("1 [shape=box, label=\"1\", style=filled, shape=box, height=0.3, width=0.3];\n");
-    dotRec(sb, bdd, new HashSet<>());
-    sb.append("}");
-    return sb.toString();
-  }
-
-  /*
-   * Creates a unique id for a bdd node when generating
-   * a DOT file for graphviz
-   */
-  private Integer dotId(BDD bdd) {
-    if (bdd.isZero()) {
-      return 0;
-    }
-    if (bdd.isOne()) {
-      return 1;
-    }
-    return bdd.hashCode() + 2;
-  }
-
-  /*
-   * Recursively builds each of the intermediate BDD nodes in the
-   * graphviz DOT format.
-   */
-  private void dotRec(StringBuilder sb, BDD bdd, Set<BDD> visited) {
-    if (bdd.isOne() || bdd.isZero() || visited.contains(bdd)) {
-      return;
-    }
-    int val = dotId(bdd);
-    int valLow = dotId(bdd.low());
-    int valHigh = dotId(bdd.high());
-    String name = _bitNames.get(bdd.var());
-    sb.append(val).append(" [label=\"").append(name).append("\"]\n");
-    sb.append(val).append(" -> ").append(valLow).append("[style=dotted]\n");
-    sb.append(val).append(" -> ").append(valHigh).append("[style=filled]\n");
-    visited.add(bdd);
-    dotRec(sb, bdd.low(), visited);
-    dotRec(sb, bdd.high(), visited);
   }
 
   public IpSpaceToBDD getDstIpSpaceToBDD() {

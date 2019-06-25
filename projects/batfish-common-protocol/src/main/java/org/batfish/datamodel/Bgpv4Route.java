@@ -49,7 +49,7 @@ public final class Bgpv4Route extends BgpRoute<Bgpv4Route.Builder, Bgpv4Route> {
           getMetric(),
           firstNonNull(_nextHopInterface, Route.UNSET_NEXT_HOP_INTERFACE),
           _originatorIp,
-          _clusterList.build(),
+          _clusterList,
           _receivedFromRouteReflectorClient,
           _originType,
           _protocol,
