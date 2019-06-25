@@ -14030,6 +14030,11 @@ WAIT_FOR
   'wait-for'
 ;
 
+WAIT_FOR_BGP
+:
+  'wait-for-bgp'
+;
+
 WAIT_IGP_CONVERGENCE
 :
    'wait-igp-convergence'

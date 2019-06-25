@@ -24,9 +24,11 @@ router ospf ignored
  vrf OTHER
   redistribute direct route-map RM_OSPF_DIRECT
 !
+router ospf 100 vrf foo
+ max-metric router-lsa include-stub summary-lsa external-lsa on-startup wait-for-bgp  
+!
 router ospf 1
  vrf OTHER
   area 1 stub
 
 !
-
