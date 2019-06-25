@@ -4527,14 +4527,14 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   }
 
   @Override
-  public void enterVrfc_rd(Vrfc_rdContext ctx) {
+  public void exitVrfc_rd(Vrfc_rdContext ctx) {
     if (ctx.AUTO() == null) {
       currentVrf().setRouteDistinguisher(toRouteDistinguisher(ctx.route_distinguisher()));
     }
   }
 
   @Override
-  public void enterVrfc_route_target(Vrfc_route_targetContext ctx) {
+  public void exitVrfc_route_target(Vrfc_route_targetContext ctx) {
     ExtendedCommunity rt = ctx.AUTO() != null ? null : toRouteTarget(ctx.route_target());
     if (ctx.IMPORT() != null || ctx.BOTH() != null) {
       currentVrf().setRouteImportTarget(rt);
@@ -4545,7 +4545,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   }
 
   @Override
-  public void enterVrfc_shutdown(Vrfc_shutdownContext ctx) {
+  public void exitVrfc_shutdown(Vrfc_shutdownContext ctx) {
     if (ctx.NO() == null) {
       todo(ctx);
     }
@@ -4553,7 +4553,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   }
 
   @Override
-  public void enterVrfc_vni(Vrfc_vniContext ctx) {
+  public void exitVrfc_vni(Vrfc_vniContext ctx) {
     currentVrf().setVni(toInteger(ctx.vni));
   }
 
