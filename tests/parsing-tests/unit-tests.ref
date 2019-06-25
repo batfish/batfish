@@ -38160,6 +38160,16 @@
             "        (null_rest_of_line",
             "          VARIABLE:'per-entry'",
             "          NEWLINE:'\\n'))))",
+            "  (stanza",
+            "    (s_vlan_cisco",
+            "      VLAN:'vlan'",
+            "      DEC:'10'",
+            "      (null_rest_of_line",
+            "        NEWLINE:'\\n')",
+            "      (vlan_vn_segment",
+            "        VN_SEGMENT:'vn-segment'",
+            "        vni = DEC:'10010'",
+            "        NEWLINE:'\\n')))",
             "  EOF:<EOF>)"
           ]
         },
