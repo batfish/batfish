@@ -1,6 +1,7 @@
 package org.batfish.bddreachability;
 
-import javax.annotation.Nullable;
+import java.util.function.Predicate;
+import javax.annotation.Nonnull;
 import org.batfish.symbolic.state.NodeAccept;
 import org.batfish.symbolic.state.NodeDropAclIn;
 import org.batfish.symbolic.state.NodeDropAclOut;
@@ -30,7 +31,8 @@ import org.batfish.symbolic.state.VrfAccept;
 /**
  * Converts successful flow termination states from the forward pass of a bidirectional reachability
  * query to the corresponding origination state for the return pass (if any). If the state does not
- * have a corresponding origination state, returns {@code null}.
+ * have a corresponding origination state, or if the state should be filtered out because it does
+ * not correspond to a permitted final node, returns {@code null}.
  *
  * <p>{@link NodeInterfaceDeliveredToSubnet} and {@link NodeInterfaceExitsNetwork} states are mapped
  * to corresponding {@link OriginateInterfaceLink} states.
@@ -38,12 +40,16 @@ import org.batfish.symbolic.state.VrfAccept;
  * <p>{@link VrfAccept} states are mapped to corresponding {@link OriginateVrf} states.
  */
 public class ReversePassOriginationState implements StateExprVisitor<StateExpr> {
-  private static final ReversePassOriginationState INSTANCE = new ReversePassOriginationState();
+  private final @Nonnull Predicate<String> _isFinalNode;
 
-  private ReversePassOriginationState() {}
-
-  public static @Nullable StateExpr reverseTraceOriginationState(StateExpr expr) {
-    return expr.accept(INSTANCE);
+  /**
+   * Construct a {@link ReversePassOriginationState}.
+   *
+   * @param isFinalNode Only return non-null origination states when the state being visited is for
+   *     a final node as determined by {@code isFinalNode}.
+   */
+  public ReversePassOriginationState(Predicate<String> isFinalNode) {
+    _isFinalNode = isFinalNode;
   }
 
   @Override
@@ -118,12 +124,18 @@ public class ReversePassOriginationState implements StateExprVisitor<StateExpr> 
 
   @Override
   public StateExpr visitNodeInterfaceDeliveredToSubnet(NodeInterfaceDeliveredToSubnet state) {
-    return new OriginateInterfaceLink(state.getHostname(), state.getInterface());
+    String hostname = state.getHostname();
+    return _isFinalNode.test(hostname)
+        ? new OriginateInterfaceLink(hostname, state.getInterface())
+        : null;
   }
 
   @Override
   public StateExpr visitNodeInterfaceExitsNetwork(NodeInterfaceExitsNetwork state) {
-    return new OriginateInterfaceLink(state.getHostname(), state.getInterface());
+    String hostname = state.getHostname();
+    return _isFinalNode.test(hostname)
+        ? new OriginateInterfaceLink(hostname, state.getInterface())
+        : null;
   }
 
   @Override
@@ -214,6 +226,7 @@ public class ReversePassOriginationState implements StateExprVisitor<StateExpr> 
 
   @Override
   public StateExpr visitVrfAccept(VrfAccept vrfAccept) {
-    return new OriginateVrf(vrfAccept.getHostname(), vrfAccept.getVrf());
+    String hostname = vrfAccept.getHostname();
+    return _isFinalNode.test(hostname) ? new OriginateVrf(hostname, vrfAccept.getVrf()) : null;
   }
 }
