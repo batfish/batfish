@@ -30,7 +30,7 @@ router bgp 1
       route-map EG_CCC out
       send-community both
       soft-reconfiguration inbound
-
-
+  neighbor 1.1.1.1
+    bfd
+    inherit peer PEER_BLLF
 !
-
