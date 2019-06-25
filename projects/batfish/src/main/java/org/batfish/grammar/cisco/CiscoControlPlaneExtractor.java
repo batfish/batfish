@@ -4431,7 +4431,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   @Override
   public void exitRo_max_metric(Ro_max_metricContext ctx) {
-    if (ctx.on_startup != null || ctx.wait_for_bgp != null) {
+    if (ctx.on_startup != null || ctx.wait_for_bgp_nx != null || !ctx.WAIT_FOR_BGP().isEmpty()) {
       return;
     }
     _currentOspfProcess.setMaxMetricRouterLsa(true);
