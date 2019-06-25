@@ -27314,6 +27314,31 @@
                 "type" : "ReturnFalse"
               }
             ]
+          },
+          "~BGP_PEER_EXPORT_POLICY:default:1.1.1.1~" : {
+            "name" : "~BGP_PEER_EXPORT_POLICY:default:1.1.1.1~",
+            "statements" : [
+              {
+                "class" : "org.batfish.datamodel.routing_policy.statement.If",
+                "comment" : "peer-export policy main conditional: exitAccept if true / exitReject if false",
+                "falseStatements" : [
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                    "type" : "ExitReject"
+                  }
+                ],
+                "guard" : {
+                  "class" : "org.batfish.datamodel.routing_policy.expr.CallExpr",
+                  "calledPolicyName" : "~BGP_COMMON_EXPORT_POLICY:default~"
+                },
+                "trueStatements" : [
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                    "type" : "ExitAccept"
+                  }
+                ]
+              }
+            ]
           }
         },
         "vendorFamily" : {
@@ -27334,6 +27359,30 @@
               "multipathEbgp" : true,
               "multipathEquivalentAsPathMatchMode" : "EXACT_PATH",
               "multipathIbgp" : true,
+              "neighbors" : {
+                "1.1.1.1/32" : {
+                  "class" : "org.batfish.datamodel.BgpActivePeerConfig",
+                  "additionalPathsReceive" : false,
+                  "additionalPathsSelectAll" : false,
+                  "additionalPathsSend" : false,
+                  "advertiseExternal" : false,
+                  "advertiseInactive" : true,
+                  "allowLocalAsIn" : false,
+                  "allowRemoteAsOut" : false,
+                  "clusterId" : 0,
+                  "defaultMetric" : 0,
+                  "ebgpMultihop" : false,
+                  "enforceFirstAs" : true,
+                  "exportPolicy" : "~BGP_PEER_EXPORT_POLICY:default:1.1.1.1~",
+                  "group" : "PEER_BLLF",
+                  "ipv4UnicastAddressFamily" : { },
+                  "localAs" : 1,
+                  "peerAddress" : "1.1.1.1",
+                  "remoteAsns" : "12345",
+                  "routeReflectorClient" : false,
+                  "sendCommunity" : true
+                }
+              },
               "tieBreaker" : "ARRIVAL_ORDER"
             }
           }

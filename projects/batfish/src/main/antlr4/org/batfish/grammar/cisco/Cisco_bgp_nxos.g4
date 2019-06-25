@@ -332,7 +332,8 @@ rbnx_n_inner
 
 rbnx_n_common
 :
-    rbnx_n_capability
+    rbnx_n_bfd
+    | rbnx_n_capability
     | rbnx_n_default
     | rbnx_n_description
     | rbnx_n_disable_connected_check
@@ -504,6 +505,11 @@ rbnx_n_af_unsuppress_map
 rbnx_n_af_weight
 :
     WEIGHT weight = DEC NEWLINE
+;
+
+rbnx_n_bfd
+:
+    BFD NEWLINE
 ;
 
 rbnx_n_capability

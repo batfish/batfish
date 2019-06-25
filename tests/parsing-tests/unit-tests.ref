@@ -68723,7 +68723,26 @@
             "                (rbnx_n_af_soft_reconfiguration",
             "                  SOFT_RECONFIGURATION:'soft-reconfiguration'",
             "                  INBOUND:'inbound'",
-            "                  NEWLINE:'\\n\\n\\n'))))))))",
+            "                  NEWLINE:'\\n'))))))",
+            "      (router_bgp_nxos_toplevel",
+            "        (rbnx_proc_vrf_common",
+            "          (rbnx_neighbor",
+            "            NEIGHBOR:'neighbor'",
+            "            ip = IP_ADDRESS:'1.1.1.1'  <== mode:M_NEIGHBOR",
+            "            NEWLINE:'\\n'",
+            "            (rbnx_n_inner",
+            "              (rbnx_n_common",
+            "                (rbnx_n_bfd",
+            "                  BFD:'bfd'",
+            "                  NEWLINE:'\\n')))",
+            "            (rbnx_n_inner",
+            "              (rbnx_n_common",
+            "                (rbnx_n_inherit",
+            "                  INHERIT:'inherit'",
+            "                  PEER:'peer'",
+            "                  peer = (variable",
+            "                    VARIABLE:'PEER_BLLF')",
+            "                  NEWLINE:'\\n'))))))))",
             "  EOF:<EOF>)"
           ]
         },
@@ -82211,7 +82230,7 @@
                 31,
                 32
               ],
-              "numReferrers" : 0
+              "numReferrers" : 1
             }
           }
         },
@@ -87977,6 +87996,13 @@
           }
         },
         "configs/nexus_bgp" : {
+          "bgp template peer" : {
+            "PEER_BLLF" : {
+              "inherited BGP peer" : [
+                35
+              ]
+            }
+          },
           "route-map" : {
             "BLIB" : {
               "bgp otherwise in/outbound route-map" : [
@@ -90955,6 +90981,10 @@
             {
               "tag" : "MISCELLANEOUS",
               "text" : "Router-id is not manually configured for BGP process in VRF default. Unable to infer default router-id as no interfaces have IP addresses"
+            },
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "BGP neighbor 1.1.1.1 in vrf default: could not determine update source"
             }
           ]
         },
