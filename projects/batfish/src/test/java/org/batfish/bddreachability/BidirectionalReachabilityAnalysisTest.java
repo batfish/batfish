@@ -122,13 +122,13 @@ public final class BidirectionalReachabilityAnalysisTest {
   private static final String FPFN_EGRESS_IFACE = "egressIface";
 
   // interface addresses
-  private static final ConcreteInterfaceAddress FPFN_INGRESS_ADDRESS =
+  private static final ConcreteInterfaceAddress FPFN_START_INGRESS_ADDRESS =
       ConcreteInterfaceAddress.parse("10.0.1.1/24");
-  private static final ConcreteInterfaceAddress FPFN_EGRESS_ADDRESS =
+  private static final ConcreteInterfaceAddress FPFN_START_EGRESS_ADDRESS =
       ConcreteInterfaceAddress.parse("10.0.2.1/24");
-  private static final ConcreteInterfaceAddress FPFN_NEIGHBOR_ADDRESS =
+  private static final ConcreteInterfaceAddress FPFN_END_NEIGHBOR_ADDRESS =
       ConcreteInterfaceAddress.parse("10.0.2.2/24");
-  private static final ConcreteInterfaceAddress FPFN_NEIGHBOR_EXIT_ADDRESS =
+  private static final ConcreteInterfaceAddress FPFN_END_EXIT_ADDRESS =
       ConcreteInterfaceAddress.parse("10.0.3.1/24");
 
   // computed data
@@ -154,7 +154,7 @@ public final class BidirectionalReachabilityAnalysisTest {
         .add(
             StaticRoute.builder()
                 .setNetwork(Prefix.ZERO)
-                .setNextHopIp(FPFN_NEIGHBOR_ADDRESS.getIp())
+                .setNextHopIp(FPFN_END_NEIGHBOR_ADDRESS.getIp())
                 .setAdmin(1)
                 .build());
     Vrf v2 = vb.setOwner(n2).build();
@@ -162,18 +162,20 @@ public final class BidirectionalReachabilityAnalysisTest {
         .add(
             StaticRoute.builder()
                 .setNetwork(Prefix.ZERO)
-                .setNextHopIp(FPFN_EGRESS_ADDRESS.getIp())
+                .setNextHopIp(FPFN_START_EGRESS_ADDRESS.getIp())
                 .setAdmin(1)
                 .build());
 
     Interface.Builder ib = nf.interfaceBuilder().setActive(true);
-    ib.setName(FPFN_INGRESS_IFACE)
-        .setAddresses(FPFN_INGRESS_ADDRESS)
-        .setOwner(n1)
-        .setVrf(v1)
-        .build();
-    ib.setName(FPFN_EGRESS_IFACE).setAddresses(FPFN_EGRESS_ADDRESS).setOwner(n1).setVrf(v1).build();
-    ib.setName(null).setAddresses(FPFN_NEIGHBOR_ADDRESS).setOwner(n2).setVrf(v2).build();
+    // start node interfaces
+    ib.setOwner(n1).setVrf(v1);
+    ib.setName(FPFN_INGRESS_IFACE).setAddresses(FPFN_START_INGRESS_ADDRESS).build();
+    ib.setName(FPFN_EGRESS_IFACE).setAddresses(FPFN_START_EGRESS_ADDRESS).build();
+
+    // end node interfaces
+    ib.setName(null).setOwner(n2).setVrf(v2);
+    ib.setAddresses(FPFN_END_NEIGHBOR_ADDRESS).build();
+    ib.setAddresses(FPFN_END_EXIT_ADDRESS).build();
 
     FPFN_CONFIGS = ImmutableSortedMap.of(n1.getHostname(), n1, n2.getHostname(), n2);
     Batfish batfish = getBatfish(FPFN_CONFIGS, FPFN_TEMP);
@@ -775,16 +777,6 @@ public final class BidirectionalReachabilityAnalysisTest {
     IpSpaceAssignment assignment =
         IpSpaceAssignment.builder().assign(startLocation, srcIpSpace).build();
 
-    BDDReachabilityAnalysis a =
-        new BDDReachabilityAnalysisFactory(PKT, FPFN_CONFIGS, FPFN_FORWARDING_ANALYSIS, false, true)
-            .bddReachabilityAnalysis(
-                assignment,
-                matchDst(dstIpSpace),
-                ImmutableSet.of(),
-                ImmutableSet.of(),
-                ImmutableSet.of(FPFN_END_NODE),
-                SUCCESS_DISPOSITIONS);
-
     // forward final node is expected end node, so return pass should happen
     BidirectionalReachabilityAnalysis analysisFromEgressToN2 =
         new BidirectionalReachabilityAnalysis(
@@ -834,8 +826,8 @@ public final class BidirectionalReachabilityAnalysisTest {
   public void testForwardPassFinalNodesFromInterfaceLocationToNode() throws IOException {
     assertForwardPassFinalNodesRespected(
         new InterfaceLocation(FPFN_START_NODE, FPFN_EGRESS_IFACE),
-        FPFN_EGRESS_ADDRESS.getIp().toIpSpace(),
-        FPFN_NEIGHBOR_ADDRESS.getIp().toIpSpace());
+        FPFN_START_EGRESS_ADDRESS.getIp().toIpSpace(),
+        FPFN_END_NEIGHBOR_ADDRESS.getIp().toIpSpace());
   }
 
   @Test
@@ -843,8 +835,9 @@ public final class BidirectionalReachabilityAnalysisTest {
     assertForwardPassFinalNodesRespected(
         new InterfaceLinkLocation(FPFN_START_NODE, FPFN_INGRESS_IFACE),
         AclIpSpace.difference(
-            FPFN_INGRESS_ADDRESS.getPrefix().toIpSpace(), FPFN_INGRESS_ADDRESS.getIp().toIpSpace()),
-        FPFN_NEIGHBOR_ADDRESS.getIp().toIpSpace());
+            FPFN_START_INGRESS_ADDRESS.getPrefix().toIpSpace(),
+            FPFN_START_INGRESS_ADDRESS.getIp().toIpSpace()),
+        FPFN_END_NEIGHBOR_ADDRESS.getIp().toIpSpace());
   }
 
   @Test
@@ -852,10 +845,10 @@ public final class BidirectionalReachabilityAnalysisTest {
       throws IOException {
     assertForwardPassFinalNodesRespected(
         new InterfaceLocation(FPFN_START_NODE, FPFN_EGRESS_IFACE),
-        FPFN_EGRESS_ADDRESS.getIp().toIpSpace(),
+        FPFN_START_EGRESS_ADDRESS.getIp().toIpSpace(),
         AclIpSpace.difference(
-            FPFN_NEIGHBOR_EXIT_ADDRESS.getPrefix().toIpSpace(),
-            FPFN_NEIGHBOR_EXIT_ADDRESS.getIp().toIpSpace()));
+            FPFN_END_EXIT_ADDRESS.getPrefix().toIpSpace(),
+            FPFN_END_EXIT_ADDRESS.getIp().toIpSpace()));
   }
 
   @Test
@@ -864,9 +857,10 @@ public final class BidirectionalReachabilityAnalysisTest {
     assertForwardPassFinalNodesRespected(
         new InterfaceLinkLocation(FPFN_START_NODE, FPFN_INGRESS_IFACE),
         AclIpSpace.difference(
-            FPFN_INGRESS_ADDRESS.getPrefix().toIpSpace(), FPFN_INGRESS_ADDRESS.getIp().toIpSpace()),
+            FPFN_START_INGRESS_ADDRESS.getPrefix().toIpSpace(),
+            FPFN_START_INGRESS_ADDRESS.getIp().toIpSpace()),
         AclIpSpace.difference(
-            FPFN_NEIGHBOR_EXIT_ADDRESS.getPrefix().toIpSpace(),
-            FPFN_NEIGHBOR_EXIT_ADDRESS.getIp().toIpSpace()));
+            FPFN_END_EXIT_ADDRESS.getPrefix().toIpSpace(),
+            FPFN_END_EXIT_ADDRESS.getIp().toIpSpace()));
   }
 }
