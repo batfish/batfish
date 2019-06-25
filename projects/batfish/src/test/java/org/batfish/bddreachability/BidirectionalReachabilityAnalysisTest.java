@@ -20,11 +20,14 @@ import static org.batfish.datamodel.FlowDisposition.INSUFFICIENT_INFO;
 import static org.batfish.datamodel.FlowDisposition.NEIGHBOR_UNREACHABLE;
 import static org.batfish.datamodel.FlowDisposition.NO_ROUTE;
 import static org.batfish.datamodel.FlowDisposition.NULL_ROUTED;
+import static org.batfish.datamodel.FlowDisposition.SUCCESS_DISPOSITIONS;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.match;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.matchDst;
 import static org.batfish.datamodel.transformation.Transformation.always;
 import static org.batfish.datamodel.transformation.TransformationStep.assignSourceIp;
+import static org.batfish.main.BatfishTestUtils.getBatfish;
 import static org.hamcrest.Matchers.allOf;
+import static org.hamcrest.Matchers.anEmptyMap;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.equalTo;
@@ -52,17 +55,20 @@ import org.batfish.bddreachability.transition.Transition;
 import org.batfish.common.bdd.BDDPacket;
 import org.batfish.common.bdd.HeaderSpaceToBDD;
 import org.batfish.common.bdd.IpSpaceToBDD;
+import org.batfish.datamodel.AclIpSpace;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.FirewallSessionInterfaceInfo;
 import org.batfish.datamodel.FlowDisposition;
+import org.batfish.datamodel.ForwardingAnalysis;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpAccessListLine;
 import org.batfish.datamodel.IpProtocol;
+import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.StaticRoute;
@@ -75,7 +81,6 @@ import org.batfish.specifier.InterfaceLinkLocation;
 import org.batfish.specifier.InterfaceLocation;
 import org.batfish.specifier.IpSpaceAssignment;
 import org.batfish.specifier.Location;
-import org.batfish.symbolic.state.NodeAccept;
 import org.batfish.symbolic.state.NodeInterfaceDeliveredToSubnet;
 import org.batfish.symbolic.state.NodeInterfaceExitsNetwork;
 import org.batfish.symbolic.state.NodeInterfaceInsufficientInfo;
@@ -84,7 +89,10 @@ import org.batfish.symbolic.state.OriginateInterfaceLink;
 import org.batfish.symbolic.state.OriginateVrf;
 import org.batfish.symbolic.state.PreInInterface;
 import org.batfish.symbolic.state.StateExpr;
+import org.batfish.symbolic.state.VrfAccept;
 import org.hamcrest.Matchers;
+import org.junit.BeforeClass;
+import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
@@ -104,7 +112,76 @@ public final class BidirectionalReachabilityAnalysisTest {
           NEIGHBOR_UNREACHABLE,
           INSUFFICIENT_INFO);
 
+  //// Common static fields for ForwardPassFinalNodes tests
+  // nodes
+  private static final String FPFN_START_NODE = "startNode";
+  private static final String FPFN_END_NODE = "endNode";
+
+  // interfaces
+  private static final String FPFN_INGRESS_IFACE = "ingressIface";
+  private static final String FPFN_EGRESS_IFACE = "egressIface";
+
+  // interface addresses
+  private static final ConcreteInterfaceAddress FPFN_START_INGRESS_ADDRESS =
+      ConcreteInterfaceAddress.parse("10.0.1.1/24");
+  private static final ConcreteInterfaceAddress FPFN_START_EGRESS_ADDRESS =
+      ConcreteInterfaceAddress.parse("10.0.2.1/24");
+  private static final ConcreteInterfaceAddress FPFN_END_NEIGHBOR_ADDRESS =
+      ConcreteInterfaceAddress.parse("10.0.2.2/24");
+  private static final ConcreteInterfaceAddress FPFN_END_EXIT_ADDRESS =
+      ConcreteInterfaceAddress.parse("10.0.3.1/24");
+
+  // computed data
+  private static SortedMap<String, Configuration> FPFN_CONFIGS;
+  private static ForwardingAnalysis FPFN_FORWARDING_ANALYSIS;
+
+  @ClassRule public static final TemporaryFolder FPFN_TEMP = new TemporaryFolder();
+
   @Rule public TemporaryFolder temp = new TemporaryFolder();
+
+  @BeforeClass
+  public static void setupForwardPassFinalNodesTests() throws IOException {
+    NetworkFactory nf = new NetworkFactory();
+    Configuration.Builder cb =
+        nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS);
+
+    Configuration n1 = cb.setHostname(FPFN_START_NODE).build();
+    Configuration n2 = cb.setHostname(FPFN_END_NODE).build();
+
+    Vrf.Builder vb = nf.vrfBuilder();
+    Vrf v1 = vb.setOwner(n1).build();
+    v1.getStaticRoutes()
+        .add(
+            StaticRoute.builder()
+                .setNetwork(Prefix.ZERO)
+                .setNextHopIp(FPFN_END_NEIGHBOR_ADDRESS.getIp())
+                .setAdmin(1)
+                .build());
+    Vrf v2 = vb.setOwner(n2).build();
+    v2.getStaticRoutes()
+        .add(
+            StaticRoute.builder()
+                .setNetwork(Prefix.ZERO)
+                .setNextHopIp(FPFN_START_EGRESS_ADDRESS.getIp())
+                .setAdmin(1)
+                .build());
+
+    Interface.Builder ib = nf.interfaceBuilder().setActive(true);
+    // start node interfaces
+    ib.setOwner(n1).setVrf(v1);
+    ib.setName(FPFN_INGRESS_IFACE).setAddresses(FPFN_START_INGRESS_ADDRESS).build();
+    ib.setName(FPFN_EGRESS_IFACE).setAddresses(FPFN_START_EGRESS_ADDRESS).build();
+
+    // end node interfaces
+    ib.setName(null).setOwner(n2).setVrf(v2);
+    ib.setAddresses(FPFN_END_NEIGHBOR_ADDRESS).build();
+    ib.setAddresses(FPFN_END_EXIT_ADDRESS).build();
+
+    FPFN_CONFIGS = ImmutableSortedMap.of(n1.getHostname(), n1, n2.getHostname(), n2);
+    Batfish batfish = getBatfish(FPFN_CONFIGS, FPFN_TEMP);
+    batfish.computeDataPlane();
+    FPFN_FORWARDING_ANALYSIS = batfish.loadDataPlane().getForwardingAnalysis();
+  }
 
   @Test
   public void testReturnPassQueryConstraints() {
@@ -123,7 +200,7 @@ public final class BidirectionalReachabilityAnalysisTest {
                 dst2.and(src1))),
         equalTo(
             ImmutableMap.of(
-                new NodeAccept("NODE"),
+                new VrfAccept("NODE", "VRF"),
                 dst2.and(src1),
                 new NodeInterfaceDeliveredToSubnet("NODE", "IFACE"),
                 dst1.and(src2),
@@ -693,5 +770,97 @@ public final class BidirectionalReachabilityAnalysisTest {
             source2LocFailBdd.and(dstIpBdd),
             fwI2Loc,
             fwLocFailBdd.and(dstIpBdd)));
+  }
+
+  private void assertForwardPassFinalNodesRespected(
+      Location startLocation, IpSpace srcIpSpace, IpSpace dstIpSpace) {
+    IpSpaceAssignment assignment =
+        IpSpaceAssignment.builder().assign(startLocation, srcIpSpace).build();
+
+    // forward final node is expected end node, so return pass should happen
+    BidirectionalReachabilityAnalysis analysisFromEgressToN2 =
+        new BidirectionalReachabilityAnalysis(
+            PKT,
+            FPFN_CONFIGS,
+            FPFN_FORWARDING_ANALYSIS,
+            assignment,
+            matchDst(dstIpSpace),
+            ImmutableSet.of(),
+            ImmutableSet.of(),
+            ImmutableSet.of(FPFN_END_NODE),
+            SUCCESS_DISPOSITIONS);
+
+    // should get successful result only
+    assertThat(
+        analysisFromEgressToN2.getResult().getStartLocationReturnPassSuccessBdds(),
+        hasEntry(
+            equalTo(startLocation),
+            equalTo(
+                dstIpSpace
+                    .accept(PKT.getDstIpSpaceToBDD())
+                    .and(srcIpSpace.accept(PKT.getSrcIpSpaceToBDD())))));
+    assertThat(
+        analysisFromEgressToN2.getResult().getStartLocationReturnPassFailureBdds(), anEmptyMap());
+
+    // forward final node is start node (where no traffic will end), so no return pass
+    BidirectionalReachabilityAnalysis analysisFromEgressToN1 =
+        new BidirectionalReachabilityAnalysis(
+            PKT,
+            FPFN_CONFIGS,
+            FPFN_FORWARDING_ANALYSIS,
+            assignment,
+            matchDst(dstIpSpace),
+            ImmutableSet.of(),
+            ImmutableSet.of(),
+            ImmutableSet.of(FPFN_START_NODE),
+            SUCCESS_DISPOSITIONS);
+
+    // forward analysis should fail, should get neither success nor failure return pass results
+    assertThat(
+        analysisFromEgressToN1.getResult().getStartLocationReturnPassSuccessBdds(), anEmptyMap());
+    assertThat(
+        analysisFromEgressToN1.getResult().getStartLocationReturnPassFailureBdds(), anEmptyMap());
+  }
+
+  @Test
+  public void testForwardPassFinalNodesFromInterfaceLocationToNode() throws IOException {
+    assertForwardPassFinalNodesRespected(
+        new InterfaceLocation(FPFN_START_NODE, FPFN_EGRESS_IFACE),
+        FPFN_START_EGRESS_ADDRESS.getIp().toIpSpace(),
+        FPFN_END_NEIGHBOR_ADDRESS.getIp().toIpSpace());
+  }
+
+  @Test
+  public void testForwardPassFinalNodesFromInterfaceLinkLocationToNode() throws IOException {
+    assertForwardPassFinalNodesRespected(
+        new InterfaceLinkLocation(FPFN_START_NODE, FPFN_INGRESS_IFACE),
+        AclIpSpace.difference(
+            FPFN_START_INGRESS_ADDRESS.getPrefix().toIpSpace(),
+            FPFN_START_INGRESS_ADDRESS.getIp().toIpSpace()),
+        FPFN_END_NEIGHBOR_ADDRESS.getIp().toIpSpace());
+  }
+
+  @Test
+  public void testForwardPassFinalNodesFromInterfaceLocationToInterfaceDisposition()
+      throws IOException {
+    assertForwardPassFinalNodesRespected(
+        new InterfaceLocation(FPFN_START_NODE, FPFN_EGRESS_IFACE),
+        FPFN_START_EGRESS_ADDRESS.getIp().toIpSpace(),
+        AclIpSpace.difference(
+            FPFN_END_EXIT_ADDRESS.getPrefix().toIpSpace(),
+            FPFN_END_EXIT_ADDRESS.getIp().toIpSpace()));
+  }
+
+  @Test
+  public void testForwardPassFinalNodesFromInterfaceLinkLocationToInterfaceDisposition()
+      throws IOException {
+    assertForwardPassFinalNodesRespected(
+        new InterfaceLinkLocation(FPFN_START_NODE, FPFN_INGRESS_IFACE),
+        AclIpSpace.difference(
+            FPFN_START_INGRESS_ADDRESS.getPrefix().toIpSpace(),
+            FPFN_START_INGRESS_ADDRESS.getIp().toIpSpace()),
+        AclIpSpace.difference(
+            FPFN_END_EXIT_ADDRESS.getPrefix().toIpSpace(),
+            FPFN_END_EXIT_ADDRESS.getIp().toIpSpace()));
   }
 }
