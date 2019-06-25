@@ -54,6 +54,7 @@ import org.batfish.bddreachability.transition.Transition;
 import org.batfish.common.bdd.BDDPacket;
 import org.batfish.common.bdd.HeaderSpaceToBDD;
 import org.batfish.common.bdd.IpSpaceToBDD;
+import org.batfish.datamodel.AclIpSpace;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
@@ -65,6 +66,7 @@ import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpAccessListLine;
 import org.batfish.datamodel.IpProtocol;
+import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.StaticRoute;
@@ -699,8 +701,9 @@ public final class BidirectionalReachabilityAnalysisTest {
 
   @Test
   public void testForwardPassFinalNodes() throws IOException {
-    Ip ip1 = Ip.parse("10.0.0.1");
-    Ip ip2 = Ip.parse("10.0.0.2");
+    Ip egressIp = Ip.parse("10.0.2.1");
+    ConcreteInterfaceAddress ingressAddress = ConcreteInterfaceAddress.parse("10.0.1.1/24");
+    Ip ip2 = Ip.parse("10.0.2.2");
 
     NetworkFactory nf = new NetworkFactory();
     Configuration.Builder cb =
@@ -712,10 +715,21 @@ public final class BidirectionalReachabilityAnalysisTest {
     Vrf.Builder vb = nf.vrfBuilder();
     Vrf v1 = vb.setOwner(n1).build();
     Vrf v2 = vb.setOwner(n2).build();
+    v2.getStaticRoutes()
+        .add(
+            StaticRoute.builder()
+                .setNetwork(Prefix.ZERO)
+                .setNextHopIp(egressIp)
+                .setAdmin(1)
+                .build());
 
     Interface.Builder ib = nf.interfaceBuilder().setActive(true);
-    Interface i1 =
-        ib.setAddresses(ConcreteInterfaceAddress.create(ip1, 24)).setOwner(n1).setVrf(v1).build();
+    Interface ingressIface = ib.setAddresses(ingressAddress).setOwner(n1).setVrf(v1).build();
+    Interface egressIface =
+        ib.setAddresses(ConcreteInterfaceAddress.create(egressIp, 24))
+            .setOwner(n1)
+            .setVrf(v1)
+            .build();
     ib.setAddresses(ConcreteInterfaceAddress.create(ip2, 24)).setOwner(n2).setVrf(v2).build();
 
     SortedMap<String, Configuration> configs =
@@ -723,17 +737,18 @@ public final class BidirectionalReachabilityAnalysisTest {
     Batfish batfish = getBatfish(configs, temp);
     batfish.computeDataPlane();
 
-    Location sourceLoc = new InterfaceLocation(n1.getHostname(), i1.getName());
-    IpSpaceAssignment assignment =
-        IpSpaceAssignment.builder().assign(sourceLoc, ip1.toIpSpace()).build();
+    //// Start from InterfaceLocation: egressIface
+    Location egressLoc = new InterfaceLocation(n1.getHostname(), egressIface.getName());
+    IpSpaceAssignment assignmentEgress =
+        IpSpaceAssignment.builder().assign(egressLoc, egressIp.toIpSpace()).build();
 
     // forward final node is n2
-    BidirectionalReachabilityAnalysis analysisEndingAtN2 =
+    BidirectionalReachabilityAnalysis analysisFromEgressToN2 =
         new BidirectionalReachabilityAnalysis(
             PKT,
             configs,
             batfish.loadDataPlane().getForwardingAnalysis(),
-            assignment,
+            assignmentEgress,
             matchDst(ip2),
             ImmutableSet.of(),
             ImmutableSet.of(),
@@ -742,21 +757,23 @@ public final class BidirectionalReachabilityAnalysisTest {
 
     // should get successful result only
     assertThat(
-        analysisEndingAtN2.getResult().getStartLocationReturnPassSuccessBdds(),
+        analysisFromEgressToN2.getResult().getStartLocationReturnPassSuccessBdds(),
         hasEntry(
-            equalTo(sourceLoc),
-            equalTo(PKT.getDstIpSpaceToBDD().toBDD(ip2).and(PKT.getSrcIpSpaceToBDD().toBDD(ip1)))));
-    // should get successful result only
+            equalTo(egressLoc),
+            equalTo(
+                PKT.getDstIpSpaceToBDD()
+                    .toBDD(ip2)
+                    .and(PKT.getSrcIpSpaceToBDD().toBDD(egressIp)))));
     assertThat(
-        analysisEndingAtN2.getResult().getStartLocationReturnPassFailureBdds(), anEmptyMap());
+        analysisFromEgressToN2.getResult().getStartLocationReturnPassFailureBdds(), anEmptyMap());
 
     // forward final node is n1
-    BidirectionalReachabilityAnalysis analysisEndingAtN1 =
+    BidirectionalReachabilityAnalysis analysisFromEgressToN1 =
         new BidirectionalReachabilityAnalysis(
             PKT,
             configs,
             batfish.loadDataPlane().getForwardingAnalysis(),
-            assignment,
+            assignmentEgress,
             matchDst(ip2),
             ImmutableSet.of(),
             ImmutableSet.of(),
@@ -765,8 +782,60 @@ public final class BidirectionalReachabilityAnalysisTest {
 
     // forward analysis should fail, should get neither success nor failure return pass results
     assertThat(
-        analysisEndingAtN1.getResult().getStartLocationReturnPassSuccessBdds(), anEmptyMap());
+        analysisFromEgressToN1.getResult().getStartLocationReturnPassSuccessBdds(), anEmptyMap());
     assertThat(
-        analysisEndingAtN1.getResult().getStartLocationReturnPassFailureBdds(), anEmptyMap());
+        analysisFromEgressToN1.getResult().getStartLocationReturnPassFailureBdds(), anEmptyMap());
+
+    //// Start from InterfaceLinkLocation: ingressIface
+    IpSpace ingressIpSpace =
+        AclIpSpace.difference(
+            ingressAddress.getPrefix().toIpSpace(), ingressAddress.getIp().toIpSpace());
+    Location ingressLoc = new InterfaceLinkLocation(n1.getHostname(), ingressIface.getName());
+    IpSpaceAssignment assignmentIngress =
+        IpSpaceAssignment.builder().assign(ingressLoc, ingressIpSpace).build();
+
+    // forward final node is n2
+    BidirectionalReachabilityAnalysis analysisFromIngressToN2 =
+        new BidirectionalReachabilityAnalysis(
+            PKT,
+            configs,
+            batfish.loadDataPlane().getForwardingAnalysis(),
+            assignmentIngress,
+            matchDst(ip2),
+            ImmutableSet.of(),
+            ImmutableSet.of(),
+            ImmutableSet.of(n2.getHostname()),
+            FlowDisposition.SUCCESS_DISPOSITIONS);
+
+    // should get successful result only
+    assertThat(
+        analysisFromIngressToN2.getResult().getStartLocationReturnPassSuccessBdds(),
+        hasEntry(
+            equalTo(ingressLoc),
+            equalTo(
+                PKT.getDstIpSpaceToBDD()
+                    .toBDD(ip2)
+                    .and(ingressIpSpace.accept(PKT.getSrcIpSpaceToBDD())))));
+    assertThat(
+        analysisFromIngressToN2.getResult().getStartLocationReturnPassFailureBdds(), anEmptyMap());
+
+    // forward final node is n1
+    BidirectionalReachabilityAnalysis analysisFromIngressToN1 =
+        new BidirectionalReachabilityAnalysis(
+            PKT,
+            configs,
+            batfish.loadDataPlane().getForwardingAnalysis(),
+            assignmentIngress,
+            matchDst(ip2),
+            ImmutableSet.of(),
+            ImmutableSet.of(),
+            ImmutableSet.of(n1.getHostname()),
+            FlowDisposition.SUCCESS_DISPOSITIONS);
+
+    // forward analysis should fail, should get neither success nor failure return pass results
+    assertThat(
+        analysisFromIngressToN1.getResult().getStartLocationReturnPassSuccessBdds(), anEmptyMap());
+    assertThat(
+        analysisFromIngressToN1.getResult().getStartLocationReturnPassFailureBdds(), anEmptyMap());
   }
 }
