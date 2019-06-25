@@ -42,8 +42,6 @@ public abstract class EvpnRoute<B extends Builder<B, R>, R extends BgpRoute<B, R
     public abstract R build();
   }
 
-  private static final long serialVersionUID = 1L;
-
   static final String PROP_ROUTE_DISTINGUISHER = "routeDistinguisher";
   @Nonnull protected final RouteDistinguisher _routeDistinguisher;
 

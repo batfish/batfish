@@ -10,8 +10,6 @@ import javax.annotation.ParametersAreNonnullByDefault;
 @ParametersAreNonnullByDefault
 public class RipInternalRoute extends RipRoute {
 
-  private static final long serialVersionUID = 1L;
-
   @JsonCreator
   public RipInternalRoute(
       @JsonProperty(PROP_NETWORK) Prefix network,

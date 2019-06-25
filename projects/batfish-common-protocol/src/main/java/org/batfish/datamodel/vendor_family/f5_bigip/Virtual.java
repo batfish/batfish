@@ -39,7 +39,6 @@ public final class Virtual implements Serializable {
   private static final String PROP_TRANSLATE_PORT = "translatePort";
   private static final String PROP_VLANS = "vlans";
   private static final String PROP_VLANS_ENABLED = "vlansEnabled";
-  private static final long serialVersionUID = 1L;
 
   @JsonCreator
   private static @Nonnull Virtual create(

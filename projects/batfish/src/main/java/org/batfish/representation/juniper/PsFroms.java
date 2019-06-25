@@ -9,8 +9,6 @@ import javax.annotation.Nullable;
 /** Represents all {@link PsFrom} statements in a single {@link PsTerm} */
 public final class PsFroms implements Serializable {
 
-  private static final long serialVersionUID = 1L;
-
   private boolean _atLeastOneFrom = false;
 
   private final Set<PsFromAsPath> _fromAsPaths;

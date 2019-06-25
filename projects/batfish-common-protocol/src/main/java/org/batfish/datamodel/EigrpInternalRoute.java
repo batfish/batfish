@@ -12,8 +12,6 @@ import org.batfish.datamodel.eigrp.EigrpMetric;
 /** Represents an internal EIGRP route */
 public class EigrpInternalRoute extends EigrpRoute {
 
-  private static final long serialVersionUID = 1L;
-
   private EigrpInternalRoute(
       int admin,
       long processAsn,

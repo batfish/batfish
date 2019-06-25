@@ -8,8 +8,6 @@ import org.batfish.datamodel.routing_policy.expr.LiteralCommunity;
 
 public class CommunitySetElemHalves implements CommunitySetElem {
 
-  private static final long serialVersionUID = 1L;
-
   private final CommunitySetElemHalfExpr _prefix;
 
   private final CommunitySetElemHalfExpr _suffix;

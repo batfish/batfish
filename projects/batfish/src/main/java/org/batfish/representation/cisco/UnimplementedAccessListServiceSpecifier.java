@@ -10,7 +10,6 @@ import org.batfish.datamodel.acl.FalseExpr;
  * configurations may match against. Can never match any line.
  */
 public final class UnimplementedAccessListServiceSpecifier implements AccessListServiceSpecifier {
-  private static final long serialVersionUID = 1L;
 
   public static final UnimplementedAccessListServiceSpecifier INSTANCE =
       new UnimplementedAccessListServiceSpecifier();

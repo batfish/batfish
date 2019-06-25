@@ -16,7 +16,6 @@ import org.batfish.datamodel.bgp.community.ExtendedCommunity;
  */
 @ParametersAreNonnullByDefault
 public abstract class VniConfig implements Serializable {
-  private static final long serialVersionUID = 1L;
 
   public static final String PROP_VNI = "vni";
   public static final String PROP_VRF = "vrf";

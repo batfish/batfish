@@ -17,7 +17,6 @@ import org.batfish.datamodel.Prefix6;
  * {@code config-router-vrf} levels are VRF-specific BGP configuration.
  */
 public final class CiscoNxBgpVrfConfiguration implements Serializable {
-  private static final long serialVersionUID = 1L;
 
   public CiscoNxBgpVrfConfiguration() {
     this._addressFamilies = new HashMap<>(); // all address families disabled by default

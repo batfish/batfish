@@ -6,8 +6,6 @@ import java.util.List;
 
 public class Prefix6List implements Serializable {
 
-  private static final long serialVersionUID = 1L;
-
   private List<Prefix6ListLine> _lines;
 
   private final String _name;

@@ -17,7 +17,6 @@ import javax.annotation.ParametersAreNonnullByDefault;
 @ParametersAreNonnullByDefault
 public final class LinkLocalAddress extends InterfaceAddress {
 
-  private static final long serialVersionUID = 1L;
   private static final int NETWORK_BITS = 16;
   private static final Prefix PREFIX = Prefix.create(Ip.parse("169.254.0.0"), NETWORK_BITS);
   private static final String STR_PREFIX = "link-local";

@@ -37,8 +37,6 @@ public final class Application implements Serializable {
     }
   }
 
-  private static final long serialVersionUID = 1L;
-
   @Nullable private String _description;
 
   @Nonnull private final String _name;

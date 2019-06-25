@@ -12,7 +12,6 @@ import javax.annotation.ParametersAreNonnullByDefault;
 @ParametersAreNonnullByDefault
 public abstract class OspfRoute extends AbstractRoute {
 
-  private static final long serialVersionUID = 1L;
   /** Indicate that this route has no defined area (e.g., external routes) */
   public static final long NO_AREA = -1L;
 

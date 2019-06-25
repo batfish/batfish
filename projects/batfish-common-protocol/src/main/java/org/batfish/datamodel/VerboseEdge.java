@@ -13,8 +13,6 @@ public final class VerboseEdge implements Serializable, Comparable<VerboseEdge> 
   private static final String PROP_NODE1_INTERFACE = "node1Interface";
   private static final String PROP_NODE2_INTERFACE = "node2Interface";
 
-  private static final long serialVersionUID = 1L;
-
   private final Edge _edgeSummary;
 
   private final Interface _node1Interface;

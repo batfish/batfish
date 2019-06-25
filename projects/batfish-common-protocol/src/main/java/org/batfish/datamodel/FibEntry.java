@@ -11,7 +11,7 @@ import javax.annotation.ParametersAreNonnullByDefault;
 
 @ParametersAreNonnullByDefault
 public final class FibEntry implements Serializable {
-  private static final long serialVersionUID = 1L;
+
   @Nonnull private final FibAction _action;
   @Nonnull private final List<AbstractRoute> _resolutionSteps;
   private transient int _hashCode;

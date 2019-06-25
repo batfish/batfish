@@ -7,7 +7,6 @@ import org.batfish.common.BatfishException;
  * example, two named IP spaces can reference each other, rendering both invalid.
  */
 public class CircularReferenceException extends BatfishException {
-  private static final long serialVersionUID = 1L;
 
   public CircularReferenceException(String msg) {
     super(msg);

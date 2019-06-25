@@ -8,8 +8,6 @@ import javax.annotation.ParametersAreNonnullByDefault;
 @ParametersAreNonnullByDefault
 public class Vlan implements Serializable {
 
-  private static final long serialVersionUID = 1L;
-
   private final String _name;
 
   private @Nullable Integer _vlanId;

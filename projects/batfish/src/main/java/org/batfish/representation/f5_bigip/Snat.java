@@ -15,8 +15,6 @@ import org.batfish.datamodel.Prefix6;
 @ParametersAreNonnullByDefault
 public final class Snat implements Serializable {
 
-  private static final long serialVersionUID = 1L;
-
   private final @Nonnull Map<Prefix, Ipv4Origin> _ipv4Origins;
   private final @Nonnull Map<Prefix6, Ipv6Origin> _ipv6Origins;
   private final @Nonnull String _name;

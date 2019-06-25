@@ -9,8 +9,6 @@ import org.codehaus.jettison.json.JSONObject;
 
 public class RouteTable implements AwsVpcEntity, Serializable {
 
-  private static final long serialVersionUID = 1L;
-
   private List<Route> _routes = new LinkedList<>();
 
   private List<RouteTableAssociation> _routeTableAssociations = new LinkedList<>();

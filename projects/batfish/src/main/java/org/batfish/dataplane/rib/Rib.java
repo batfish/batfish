@@ -14,8 +14,6 @@ import org.batfish.datamodel.AnnotatedRoute;
 @ParametersAreNonnullByDefault
 public class Rib extends AnnotatedRib<AbstractRoute> implements Serializable {
 
-  private static final long serialVersionUID = 1L;
-
   /** Create a new empty RIB. */
   public Rib() {
     super();

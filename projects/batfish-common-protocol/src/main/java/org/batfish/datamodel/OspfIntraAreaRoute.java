@@ -14,7 +14,6 @@ import javax.annotation.ParametersAreNonnullByDefault;
 @ParametersAreNonnullByDefault
 public class OspfIntraAreaRoute extends OspfInternalRoute {
 
-  private static final long serialVersionUID = 1L;
   private static final Interner<OspfIntraAreaRoute> _cache = Interners.newWeakInterner();
   private int _hashCode;
 

@@ -18,9 +18,7 @@ import javax.annotation.Nullable;
 public final class IntersectHeaderSpaces {
   private IntersectHeaderSpaces() {}
 
-  static final class NoIntersection extends Exception {
-    public static final long serialVersionUID = 1;
-  }
+  static final class NoIntersection extends Exception {}
 
   private static boolean isUniverse(@Nullable IpSpace ipSpace) {
     return ipSpace == null

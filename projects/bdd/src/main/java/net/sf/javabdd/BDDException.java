@@ -36,8 +36,6 @@ package net.sf.javabdd;
  */
 public class BDDException extends RuntimeException {
   /** Version ID for serialization. */
-  private static final long serialVersionUID = 3761969363112243251L;
-
   public BDDException() {
     super();
   }

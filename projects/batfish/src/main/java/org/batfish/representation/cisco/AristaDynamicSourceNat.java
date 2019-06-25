@@ -17,7 +17,7 @@ import org.batfish.datamodel.transformation.Transformation;
 /** Representation of a Arista dynamic source NAT. */
 @ParametersAreNonnullByDefault
 public final class AristaDynamicSourceNat implements Serializable {
-  private static final long serialVersionUID = 1L;
+
   private final @Nonnull String _natAclName;
   private final String _natPoolName;
   private final boolean _overload;

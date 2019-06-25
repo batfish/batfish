@@ -15,7 +15,7 @@ import org.batfish.datamodel.transformation.Transformation;
 import org.batfish.datamodel.transformation.TransformationStep;
 
 public class CiscoIosStaticNat extends CiscoIosNat {
-  private static final long serialVersionUID = 1L;
+
   private Prefix _localNetwork;
   private Prefix _globalNetwork;
 

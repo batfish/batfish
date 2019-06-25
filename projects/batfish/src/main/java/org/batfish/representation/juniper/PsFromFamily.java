@@ -11,8 +11,6 @@ import org.batfish.datamodel.routing_policy.expr.MatchIpv6;
 /** Represents a "from family" line in a {@link PsTerm} */
 public class PsFromFamily extends PsFrom {
 
-  private static final long serialVersionUID = 1L;
-
   private final AddressFamily _family;
 
   public PsFromFamily(@Nonnull AddressFamily family) {

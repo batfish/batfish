@@ -9,8 +9,6 @@ import org.batfish.datamodel.SubRange;
 
 public class FwFromIcmpCode extends FwFrom {
 
-  private static final long serialVersionUID = 1L;
-
   private SubRange _icmpCodeRange;
 
   public FwFromIcmpCode(SubRange icmpCodeRange) {

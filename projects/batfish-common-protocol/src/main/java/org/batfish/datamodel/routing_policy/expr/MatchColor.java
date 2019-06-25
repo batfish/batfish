@@ -9,7 +9,6 @@ import org.batfish.datamodel.routing_policy.Result;
 
 public final class MatchColor extends BooleanExpr {
 
-  private static final long serialVersionUID = 1L;
   private static final String PROP_COLOR = "color";
 
   private final int _color;

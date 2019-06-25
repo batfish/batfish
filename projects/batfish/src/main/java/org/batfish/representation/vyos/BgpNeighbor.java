@@ -5,8 +5,6 @@ import org.batfish.datamodel.Ip;
 
 public class BgpNeighbor implements Serializable {
 
-  private static final long serialVersionUID = 1L;
-
   private String _exportRouteMap;
 
   private String _importRouteMap;

@@ -11,8 +11,6 @@ import org.batfish.datamodel.Ip;
 /** Loopback adapter */
 public class Loopback implements Serializable {
 
-  private static final long serialVersionUID = 1L;
-
   private final @Nonnull List<ConcreteInterfaceAddress> _addresses;
   private @Nullable Ip _clagVxlanAnycastIp;
   private boolean _configured;

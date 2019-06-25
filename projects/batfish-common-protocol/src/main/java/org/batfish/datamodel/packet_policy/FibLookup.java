@@ -17,7 +17,6 @@ import javax.annotation.ParametersAreNonnullByDefault;
 @ParametersAreNonnullByDefault
 public final class FibLookup implements Action {
 
-  private static final long serialVersionUID = 1L;
   private static final String PROP_VRF_NAME = "vrfName";
 
   @Nonnull private final String _vrfName;

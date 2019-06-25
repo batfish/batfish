@@ -35,8 +35,6 @@ public class Ip implements Comparable<Ip>, Serializable {
 
   public static final Ip MAX = create(0xFFFFFFFFL);
 
-  private static final long serialVersionUID = 1L;
-
   public static final Ip ZERO = create(0L);
 
   /**

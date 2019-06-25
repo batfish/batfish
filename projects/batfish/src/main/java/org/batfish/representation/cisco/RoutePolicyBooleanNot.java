@@ -7,8 +7,6 @@ import org.batfish.datamodel.routing_policy.expr.Not;
 
 public class RoutePolicyBooleanNot extends RoutePolicyBoolean {
 
-  private static final long serialVersionUID = 1L;
-
   private RoutePolicyBoolean _operand;
 
   public RoutePolicyBooleanNot(RoutePolicyBoolean operand) {

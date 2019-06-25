@@ -19,8 +19,6 @@ import org.batfish.datamodel.routing_policy.expr.MatchPrefixSet;
  */
 public class RouteMapMatchInterface implements RouteMapMatch {
 
-  private static final long serialVersionUID = 1L;
-
   private final @Nonnull Set<String> _interfaces;
 
   public RouteMapMatchInterface(Set<String> interfaces) {

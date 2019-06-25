@@ -6,8 +6,6 @@ import java.util.List;
 
 public class IpAsPathAccessList implements Serializable {
 
-  private static final long serialVersionUID = 1L;
-
   private List<IpAsPathAccessListLine> _lines;
 
   private final String _name;

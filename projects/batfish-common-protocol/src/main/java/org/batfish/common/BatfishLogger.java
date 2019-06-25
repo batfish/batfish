@@ -17,7 +17,6 @@ import javax.annotation.Nullable;
 public final class BatfishLogger {
 
   public static class BatfishLoggerHistory extends ArrayList<HistoryItem> {
-    private static final long serialVersionUID = 1L;
 
     public String toString(int logLevel) {
       StringBuilder sb = new StringBuilder();
@@ -31,7 +30,7 @@ public final class BatfishLogger {
   }
 
   private static class HistoryItem implements Serializable {
-    private static final long serialVersionUID = 1L;
+
     private final int _level;
     @Nonnull private final String _message;
 

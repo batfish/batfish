@@ -24,8 +24,6 @@ import org.batfish.datamodel.collections.NodeInterfacePair;
  */
 public final class Topology implements Serializable {
 
-  private static final long serialVersionUID = 1L;
-
   public static final Topology EMPTY = new Topology(ImmutableSortedSet.of());
 
   @JsonCreator

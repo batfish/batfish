@@ -9,8 +9,6 @@ import org.batfish.datamodel.routing_policy.expr.MatchProtocol;
 /** Represents a "from protocol" line in a {@link PsTerm} */
 public final class PsFromProtocol extends PsFrom {
 
-  private static final long serialVersionUID = 1L;
-
   private final RoutingProtocol _protocol;
 
   public PsFromProtocol(RoutingProtocol protocol) {

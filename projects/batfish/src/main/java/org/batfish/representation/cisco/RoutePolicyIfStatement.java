@@ -10,8 +10,6 @@ import org.batfish.datamodel.routing_policy.statement.Statement;
 
 public class RoutePolicyIfStatement extends RoutePolicyStatement {
 
-  private static final long serialVersionUID = 1L;
-
   private RoutePolicyElseBlock _elseBlock;
 
   private List<RoutePolicyElseIfBlock> _elseIfBlocks;

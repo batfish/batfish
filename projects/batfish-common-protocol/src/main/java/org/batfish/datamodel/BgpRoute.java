@@ -273,8 +273,6 @@ public abstract class BgpRoute<B extends Builder<B, R>, R extends BgpRoute<B, R>
   static final String PROP_SRC_PROTOCOL = "srcProtocol";
   static final String PROP_WEIGHT = "weight";
 
-  private static final long serialVersionUID = 1L;
-
   @Nonnull protected final AsPath _asPath;
   @Nonnull protected final SortedSet<Long> _clusterList;
   @Nonnull protected final SortedSet<Community> _communities;

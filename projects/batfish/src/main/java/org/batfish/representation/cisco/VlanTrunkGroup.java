@@ -8,7 +8,6 @@ import org.batfish.datamodel.SubRange;
 /** A VLAN trunk group configuration, Arista-specific concept */
 @ParametersAreNonnullByDefault
 public final class VlanTrunkGroup implements Serializable {
-  private static final long serialVersionUID = 1L;
 
   private String _name;
   private IntegerSpace _vlans;

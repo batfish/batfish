@@ -605,8 +605,6 @@ public final class JFactory extends BDDFactory {
 
   private static class JavaBDDException extends BDDException {
     /** Version ID for serialization. */
-    private static final long serialVersionUID = 3257289144995952950L;
-
     JavaBDDException(int x) {
       super(errorstrings[-x]);
     }

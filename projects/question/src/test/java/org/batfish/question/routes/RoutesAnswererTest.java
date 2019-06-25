@@ -495,8 +495,6 @@ public class RoutesAnswererTest {
   /** Mock rib that only supports one operation: returning pre-set routes. */
   static class MockRib<R extends AbstractRouteDecorator> implements GenericRib<R> {
 
-    private static final long serialVersionUID = 1L;
-
     private Set<R> _routes;
 
     MockRib() {

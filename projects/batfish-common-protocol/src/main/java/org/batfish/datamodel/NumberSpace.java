@@ -166,8 +166,6 @@ public abstract class NumberSpace<
 
   protected static final String ERROR_MESSAGE_TEMPLATE = "Invalid range specification %s";
 
-  private static final long serialVersionUID = 1L;
-
   /*
    * Invariant: always ensure ranges are stored in canonical form (enforced in builder methods)
    * and immutable (enforced in constructor)

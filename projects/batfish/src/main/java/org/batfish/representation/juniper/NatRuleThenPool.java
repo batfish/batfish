@@ -28,8 +28,6 @@ import org.batfish.datamodel.transformation.TransformationStep;
 @ParametersAreNonnullByDefault
 public final class NatRuleThenPool implements NatRuleThen, Serializable {
 
-  private static final long serialVersionUID = 1L;
-
   private final String _poolName;
 
   public NatRuleThenPool(String poolName) {

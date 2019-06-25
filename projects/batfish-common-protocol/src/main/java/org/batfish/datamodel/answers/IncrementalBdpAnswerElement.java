@@ -18,8 +18,6 @@ public class IncrementalBdpAnswerElement extends DataPlaneAnswerElement {
   private static final String PROP_OSPF_INTERNAL_ITERATIONS = "ospfInternalIterations";
   private static final String PROP_WARNINGS = "warnings";
 
-  private static final long serialVersionUID = 1L;
-
   private SortedMap<Integer, Integer> _bgpBestPathRibRoutesByIteration;
 
   private SortedMap<Integer, Integer> _bgpMultipathRibRoutesByIteration;

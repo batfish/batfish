@@ -4,8 +4,6 @@ import java.io.Serializable;
 
 public final class IpsecVpn implements Serializable {
 
-  private static final long serialVersionUID = 1L;
-
   private String _bindInterface;
 
   private String _gateway;

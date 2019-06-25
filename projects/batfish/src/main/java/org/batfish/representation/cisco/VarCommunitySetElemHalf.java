@@ -6,8 +6,6 @@ import org.batfish.datamodel.routing_policy.expr.VarCommunityHalf;
 
 public class VarCommunitySetElemHalf implements CommunitySetElemHalfExpr {
 
-  private static final long serialVersionUID = 1L;
-
   private final String _var;
 
   public VarCommunitySetElemHalf(@Nonnull String var) {

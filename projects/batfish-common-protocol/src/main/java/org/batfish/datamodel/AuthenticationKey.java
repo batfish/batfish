@@ -14,8 +14,6 @@ public class AuthenticationKey implements Serializable {
   private static final String PROP_SECRET = "secret";
   private static final String PROP_START_TIME = "startTime";
 
-  private static final long serialVersionUID = 1L;
-
   private static final IsisAuthenticationAlgorithm DEFAULT_ISIS_AUTHENTICATION_ALGORITHM =
       IsisAuthenticationAlgorithm.MD5;
 

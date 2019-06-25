@@ -11,8 +11,6 @@ import org.batfish.datamodel.LineAction;
 
 public class ApplicationSet implements ApplicationSetMember, Serializable {
 
-  private static final long serialVersionUID = 1L;
-
   private List<ApplicationSetMemberReference> _members;
 
   public ApplicationSet() {

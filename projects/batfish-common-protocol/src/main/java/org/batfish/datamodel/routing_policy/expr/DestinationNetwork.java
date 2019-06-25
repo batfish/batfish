@@ -7,8 +7,6 @@ import org.batfish.datamodel.routing_policy.Environment;
 /** Expression that extracts a route's destination network given a routing policy environment. */
 public final class DestinationNetwork extends PrefixExpr {
 
-  private static final long serialVersionUID = 1L;
-
   private static final DestinationNetwork INSTANCE = new DestinationNetwork();
 
   private DestinationNetwork() {}

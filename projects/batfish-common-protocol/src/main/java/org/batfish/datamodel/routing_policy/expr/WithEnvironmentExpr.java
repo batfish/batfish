@@ -25,8 +25,6 @@ public final class WithEnvironmentExpr extends BooleanExpr {
   private static final String PROP_POST_TRUE_STATEMENTS = "postTrueStatements";
   private static final String PROP_PRE_STATEMENTS = "preStatements";
 
-  private static final long serialVersionUID = 1L;
-
   private BooleanExpr _expr;
   private List<Statement> _postStatements;
   private List<Statement> _postTrueStatements;

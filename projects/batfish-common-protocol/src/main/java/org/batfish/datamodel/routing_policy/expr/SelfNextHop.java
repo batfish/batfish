@@ -9,8 +9,6 @@ import org.batfish.datamodel.routing_policy.Environment;
 /** Implements BGP next-hop-self semantics */
 public class SelfNextHop extends NextHopExpr {
 
-  private static final long serialVersionUID = 1L;
-
   private static final SelfNextHop _instance = new SelfNextHop();
 
   public static SelfNextHop getInstance() {

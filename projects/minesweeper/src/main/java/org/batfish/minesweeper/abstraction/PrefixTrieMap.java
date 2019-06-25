@@ -17,8 +17,6 @@ public class PrefixTrieMap implements Serializable {
 
   private class ByteTrie implements Serializable {
 
-    private static final long serialVersionUID = 1L;
-
     private ByteTrieNode _root;
 
     ByteTrie() {
@@ -35,8 +33,6 @@ public class PrefixTrieMap implements Serializable {
   }
 
   private class ByteTrieNode implements Serializable {
-
-    private static final long serialVersionUID = 1L;
 
     private ByteTrieNode _left;
 
@@ -133,8 +129,6 @@ public class PrefixTrieMap implements Serializable {
       }
     }
   }
-
-  private static final long serialVersionUID = 1L;
 
   private ByteTrie _trie;
 

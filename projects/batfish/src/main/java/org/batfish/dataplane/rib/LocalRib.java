@@ -7,8 +7,6 @@ import org.batfish.datamodel.LocalRoute;
 @ParametersAreNonnullByDefault
 public class LocalRib extends AnnotatedRib<LocalRoute> {
 
-  private static final long serialVersionUID = 1L;
-
   public LocalRib() {
     super();
   }

@@ -10,8 +10,6 @@ import org.batfish.datamodel.routing_policy.statement.Statement;
 
 public class RouteMapSetAsPathPrependLine extends RouteMapSetLine {
 
-  private static final long serialVersionUID = 1L;
-
   private List<AsExpr> _asList;
 
   public RouteMapSetAsPathPrependLine(List<AsExpr> asList) {

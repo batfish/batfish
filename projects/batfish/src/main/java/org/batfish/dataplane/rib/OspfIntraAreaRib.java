@@ -6,8 +6,6 @@ import org.batfish.datamodel.OspfIntraAreaRoute;
 @ParametersAreNonnullByDefault
 public class OspfIntraAreaRib extends AbstractRib<OspfIntraAreaRoute> {
 
-  private static final long serialVersionUID = 1L;
-
   public OspfIntraAreaRib() {
     super();
   }

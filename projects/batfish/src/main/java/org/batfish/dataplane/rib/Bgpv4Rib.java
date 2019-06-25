@@ -10,8 +10,6 @@ import org.batfish.datamodel.MultipathEquivalentAsPathMatchMode;
 @ParametersAreNonnullByDefault
 public final class Bgpv4Rib extends BgpRib<Bgpv4Route> {
 
-  private static final long serialVersionUID = 1L;
-
   public Bgpv4Rib(
       @Nullable Rib mainRib,
       BgpTieBreaker tieBreaker,

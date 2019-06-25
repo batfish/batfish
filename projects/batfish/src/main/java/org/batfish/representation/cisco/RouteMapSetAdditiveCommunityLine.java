@@ -10,8 +10,6 @@ import org.batfish.datamodel.routing_policy.statement.Statement;
 
 public class RouteMapSetAdditiveCommunityLine extends RouteMapSetLine {
 
-  private static final long serialVersionUID = 1L;
-
   private List<StandardCommunity> _communities;
 
   public RouteMapSetAdditiveCommunityLine(List<StandardCommunity> communities) {

@@ -10,8 +10,6 @@ import org.batfish.datamodel.routing_policy.expr.PrefixSetExpr;
 
 public class RoutePolicyPrefixSetName extends RoutePolicyPrefixSet {
 
-  private static final long serialVersionUID = 1L;
-
   private final String _name;
 
   public RoutePolicyPrefixSetName(String name) {

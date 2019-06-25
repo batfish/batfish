@@ -18,7 +18,6 @@ import org.antlr.v4.runtime.ParserRuleContext;
 import org.batfish.grammar.BatfishCombinedParser;
 
 public class Warnings implements Serializable {
-  private static final long serialVersionUID = 1L;
 
   public static final String TAG_PEDANTIC = "MISCELLANEOUS";
 
@@ -166,7 +165,7 @@ public class Warnings implements Serializable {
 
   /** A class to represent a parse warning in a file. */
   public static final class ParseWarning implements Serializable {
-    private static final long serialVersionUID = 1L;
+
     private static final String PROP_COMMENT = "Comment";
     private static final String PROP_LINE = "Line";
     private static final String PROP_PARSER_CONTEXT = "Parser_Context";

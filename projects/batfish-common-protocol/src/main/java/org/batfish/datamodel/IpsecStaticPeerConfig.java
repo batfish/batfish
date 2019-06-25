@@ -13,8 +13,6 @@ public final class IpsecStaticPeerConfig extends IpsecPeerConfig implements Seri
   private static final String PROP_DESTINATION_ADDRESS = "destinationAddress";
   private static final String PROP_IKE_PHASE1_POLICY = "ikePhase1Policy";
 
-  private static final long serialVersionUID = 1L;
-
   @Nonnull private Ip _destinationAddress;
 
   @Nullable private String _ikePhase1Policy;

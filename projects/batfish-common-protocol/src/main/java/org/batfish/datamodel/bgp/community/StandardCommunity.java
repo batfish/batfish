@@ -15,7 +15,6 @@ import javax.annotation.ParametersAreNonnullByDefault;
  */
 @ParametersAreNonnullByDefault
 public final class StandardCommunity extends Community {
-  private static final long serialVersionUID = 1L;
 
   private long _value;
 

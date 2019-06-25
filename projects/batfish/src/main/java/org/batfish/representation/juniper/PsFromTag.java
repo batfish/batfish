@@ -10,8 +10,6 @@ import org.batfish.datamodel.routing_policy.expr.MatchTag;
 /** Represents a "from tag" line in a {@link PsTerm} */
 public class PsFromTag extends PsFrom {
 
-  private static final long serialVersionUID = 1L;
-
   private final int _tag;
 
   public PsFromTag(int tag) {

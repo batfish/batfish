@@ -65,8 +65,6 @@ public class Interface implements Serializable {
    */
   private static final double TUNNEL_IOS_DELAY = 50E9D;
 
-  private static final long serialVersionUID = 1L;
-
   public static @Nullable Double getDefaultBandwidth(
       @Nonnull String name, @Nonnull ConfigurationFormat format) {
     Double defaultSpeed = getDefaultSpeed(name, format);

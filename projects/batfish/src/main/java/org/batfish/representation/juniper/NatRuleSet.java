@@ -24,8 +24,6 @@ import org.batfish.representation.juniper.Nat.Type;
 @ParametersAreNonnullByDefault
 public final class NatRuleSet implements Serializable, Comparable<NatRuleSet> {
 
-  private static final long serialVersionUID = 1L;
-
   private final NatPacketLocation _fromLocation;
 
   private final List<NatRule> _rules;

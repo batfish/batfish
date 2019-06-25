@@ -13,7 +13,6 @@ import org.batfish.datamodel.LineAction;
 /** PAN datamodel component containing security rule configuration */
 @ParametersAreNonnullByDefault
 public final class Rule implements Serializable {
-  private static final long serialVersionUID = 1L;
 
   // Name of the rule
   @Nonnull private final String _name;

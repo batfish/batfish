@@ -482,7 +482,6 @@ public final class Interface extends ComparableStructure<String> {
   public static final class Dependency implements Serializable {
     @Nonnull private final String _interfaceName;
     @Nonnull private final DependencyType _type;
-    private static final long serialVersionUID = 1L;
 
     public Dependency(String interfaceName, DependencyType type) {
       _interfaceName = interfaceName;
@@ -596,8 +595,6 @@ public final class Interface extends ComparableStructure<String> {
   private static final String PROP_VRF = "vrf";
   private static final String PROP_VRRP_GROUPS = "vrrpGroups";
   private static final String PROP_ZONE = "zone";
-
-  private static final long serialVersionUID = 1L;
 
   public static Builder builder() {
     return new Builder(null);

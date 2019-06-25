@@ -30,8 +30,6 @@ public final class Nat implements Serializable {
     }
   }
 
-  private static final long serialVersionUID = 1L;
-
   private final Map<String, NatPool> _pools;
 
   private final Map<String, NatRuleSet> _ruleSets;

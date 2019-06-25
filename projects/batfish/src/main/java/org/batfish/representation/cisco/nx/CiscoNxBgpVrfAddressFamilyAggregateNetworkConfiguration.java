@@ -11,7 +11,6 @@ import javax.annotation.Nullable;
  * config-router-af} or {@code config-router-vrf-af} levels.
  */
 public class CiscoNxBgpVrfAddressFamilyAggregateNetworkConfiguration implements Serializable {
-  private static final long serialVersionUID = 1L;
 
   public CiscoNxBgpVrfAddressFamilyAggregateNetworkConfiguration() {
     _asSet = false;

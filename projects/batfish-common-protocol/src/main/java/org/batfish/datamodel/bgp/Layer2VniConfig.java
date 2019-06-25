@@ -17,7 +17,6 @@ import org.batfish.datamodel.bgp.community.ExtendedCommunity;
 @ParametersAreNonnullByDefault
 public class Layer2VniConfig extends VniConfig
     implements Serializable, Comparable<Layer2VniConfig> {
-  private static final long serialVersionUID = 1L;
 
   private Layer2VniConfig(
       int vni,

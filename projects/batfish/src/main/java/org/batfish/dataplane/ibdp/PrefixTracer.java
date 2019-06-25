@@ -17,14 +17,12 @@ import org.batfish.datamodel.routing_policy.Environment.Direction;
 /** Keeps data about which prefixes where advertised to neighboring routers */
 public class PrefixTracer implements Serializable {
 
-  private static final long serialVersionUID = 1L;
   static final String SENT = "sent";
   static final String FILTERED_OUT = "filtered_out";
   static final String FILTERED_IN = "filtered_in";
   static final String RECEIVED = "received";
 
   public class Neighbor implements Serializable {
-    private static final long serialVersionUID = 1L;
 
     private final String _hostname;
     private final Ip _ip;

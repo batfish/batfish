@@ -11,8 +11,6 @@ import javax.annotation.Nullable;
 public class TrackInterface implements TrackMethod {
   private static final String PROP_TRACKED_INTERFACE = "trackedInterface";
 
-  private static final long serialVersionUID = 1L;
-
   private final String _trackedInterface;
 
   @JsonCreator

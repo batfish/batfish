@@ -18,8 +18,6 @@ import javax.annotation.ParametersAreNonnullByDefault;
 @ParametersAreNonnullByDefault
 public final class ConnectedRoute extends AbstractRoute {
 
-  private static final long serialVersionUID = 1L;
-
   @Nonnull private final String _nextHopInterface;
 
   @JsonCreator

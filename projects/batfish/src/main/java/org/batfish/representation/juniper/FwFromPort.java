@@ -9,8 +9,6 @@ import org.batfish.datamodel.SubRange;
 
 public final class FwFromPort extends FwFrom {
 
-  private static final long serialVersionUID = 1L;
-
   private final SubRange _portRange;
 
   public FwFromPort(int port) {

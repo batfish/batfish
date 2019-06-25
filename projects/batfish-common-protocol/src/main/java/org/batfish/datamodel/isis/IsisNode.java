@@ -16,7 +16,6 @@ public final class IsisNode implements Comparable<IsisNode>, Serializable {
 
   private static final String PROP_NODE = "node";
   private static final String PROP_INTERFACE = "interface";
-  private static final long serialVersionUID = 1L;
 
   private final String _node;
   private final String _interfaceName;

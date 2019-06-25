@@ -10,8 +10,6 @@ public abstract class IpSpaceTraceEvent implements TraceEvent {
 
   protected static final String PROP_IP_DESCRIPTION = "ipDescription";
 
-  private static final long serialVersionUID = 1L;
-
   private final String _description;
 
   private final Ip _ip;

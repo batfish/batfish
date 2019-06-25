@@ -13,8 +13,6 @@ public final class DistributeList implements Serializable {
     ROUTE_MAP
   }
 
-  private static final long serialVersionUID = 1L;
-
   @Nonnull private DistributeListFilterType _filterType;
   @Nonnull private String _filterName;
 

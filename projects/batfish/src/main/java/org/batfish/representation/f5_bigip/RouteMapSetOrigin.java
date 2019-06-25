@@ -14,8 +14,6 @@ import org.batfish.datamodel.routing_policy.statement.Statement;
 @ParametersAreNonnullByDefault
 public class RouteMapSetOrigin implements RouteMapSet {
 
-  private static final long serialVersionUID = 1L;
-
   private final @Nonnull OriginType _origin;
 
   public RouteMapSetOrigin(OriginType origin) {

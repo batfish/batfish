@@ -5,8 +5,6 @@ import java.util.List;
 
 public class RoutePolicyElseIfBlock implements Serializable {
 
-  private static final long serialVersionUID = 1L;
-
   private RoutePolicyBoolean _guard;
   private List<RoutePolicyStatement> _stmtList;
 

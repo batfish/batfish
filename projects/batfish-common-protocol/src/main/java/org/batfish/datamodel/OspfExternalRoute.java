@@ -115,8 +115,6 @@ public abstract class OspfExternalRoute extends OspfRoute {
   protected static final String PROP_COST_TO_ADVERTISER = "costToAdvertiser";
   protected static final String PROP_LSA_METRIC = "lsaMetric";
 
-  private static final long serialVersionUID = 1L;
-
   @Nonnull private final String _advertiser;
   private final long _costToAdvertiser;
   private final long _lsaMetric;

@@ -18,7 +18,6 @@ import org.batfish.datamodel.transformation.Transformation;
  * order in which they should be evaluated when converted to {@link Transformation}s.
  */
 public abstract class CiscoIosNat implements Comparable<CiscoIosNat>, Serializable {
-  private static final long serialVersionUID = 1L;
 
   private RuleAction _action;
 

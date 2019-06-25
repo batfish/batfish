@@ -19,7 +19,6 @@ import org.batfish.datamodel.bgp.community.ExtendedCommunity;
 @ParametersAreNonnullByDefault
 public final class Layer3VniConfig extends VniConfig
     implements Serializable, Comparable<Layer3VniConfig> {
-  private static final long serialVersionUID = 1L;
 
   private static final String PROP_ADVERTISE_V4_UNICAST = "advertiseV4Unicast";
 

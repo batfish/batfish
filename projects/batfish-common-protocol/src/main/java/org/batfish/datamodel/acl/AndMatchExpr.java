@@ -12,7 +12,6 @@ import javax.annotation.Nullable;
 
 public class AndMatchExpr extends AclLineMatchExpr {
   private static final String PROP_CONJUNCTS = "conjuncts";
-  private static final long serialVersionUID = 1L;
 
   private final SortedSet<AclLineMatchExpr> _conjuncts;
 
