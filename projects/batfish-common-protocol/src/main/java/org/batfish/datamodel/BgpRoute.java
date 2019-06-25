@@ -5,6 +5,9 @@ import static com.google.common.base.Preconditions.checkArgument;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.cache.CacheBuilder;
+import com.google.common.cache.CacheLoader;
+import com.google.common.cache.LoadingCache;
 import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Ordering;
 import java.util.Set;
@@ -20,6 +23,23 @@ import org.batfish.datamodel.bgp.community.Community;
 @ParametersAreNonnullByDefault
 public abstract class BgpRoute<B extends Builder<B, R>, R extends BgpRoute<B, R>>
     extends AbstractRoute {
+
+  // Soft values: let it be garbage collected in times of pressure.
+  // Maximum size 2^16: Just some upper bound on cache size, well less than GiB.
+  //   (8 bytes seems smallest possible entry (set(long)), would be 1 MiB total).
+  private static final LoadingCache<SortedSet<Community>, SortedSet<Community>> COMMUNITY_CACHE =
+      CacheBuilder.newBuilder()
+          .softValues()
+          .maximumSize(1 << 16)
+          .build(CacheLoader.from(ImmutableSortedSet::copyOf));
+  // Soft values: let it be garbage collected in times of pressure.
+  // Maximum size 2^16: Just some upper bound on cache size, well less than GiB.
+  //   (8 bytes seems smallest possible entry (set(long)), would be 1 MiB total).
+  private static final LoadingCache<SortedSet<Long>, SortedSet<Long>> CLUSTER_CACHE =
+      CacheBuilder.newBuilder()
+          .softValues()
+          .maximumSize(1 << 16)
+          .build(CacheLoader.from(ImmutableSortedSet::copyOf));
 
   /** Builder for {@link BgpRoute} */
   @ParametersAreNonnullByDefault
@@ -274,9 +294,9 @@ public abstract class BgpRoute<B extends Builder<B, R>, R extends BgpRoute<B, R>
         "Invalid BgpRoute protocol");
     _asPath = firstNonNull(asPath, AsPath.empty());
     _clusterList =
-        clusterList == null ? ImmutableSortedSet.of() : ImmutableSortedSet.copyOf(clusterList);
+        clusterList == null ? ImmutableSortedSet.of() : CLUSTER_CACHE.getUnchecked(clusterList);
     _communities =
-        communities == null ? ImmutableSortedSet.of() : ImmutableSortedSet.copyOf(communities);
+        communities == null ? ImmutableSortedSet.of() : COMMUNITY_CACHE.getUnchecked(communities);
     _discard = discard;
     _localPreference = localPreference;
     _med = med;
