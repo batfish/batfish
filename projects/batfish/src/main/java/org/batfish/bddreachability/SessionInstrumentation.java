@@ -119,6 +119,8 @@ public class SessionInstrumentation {
     return bddFibGenerator.generateForwardingEdges(
         nodesWithSessionFibLookup::contains,
         PostInVrfSession::new,
+        // egress ACLs / transformations are currently unsupported for FibLookup sessions, so skip
+        // PreOutEdge and go straight to PreInInterface
         (host1, iface1, host2, iface2) -> new PreInInterface(host2, iface2),
         PreOutVrfSession::new,
         NodeInterfaceDeliveredToSubnet::new,
@@ -220,7 +222,8 @@ public class SessionInstrumentation {
 
               @Override
               public Stream<Edge> visitFibLookup(FibLookup fibLookup) {
-                // Handled elsewhere via subgraph copy+transform
+                // Does not necessarily lead to success, so handled separately in
+                // postInVrfSessionEdges
                 return Stream.of();
               }
 
@@ -244,8 +247,11 @@ public class SessionInstrumentation {
 
   /** Produce PreInInterface->PostInVrfSession edges conditioned on sessionFlows BDD */
   private Stream<Edge> computePostInVrfSessionEdges(BDDFirewallSessionTraceInfo sessionInfo) {
-    // sanity check
-    assert sessionInfo.getAction() instanceof FibLookup;
+    SessionAction action = sessionInfo.getAction();
+    checkArgument(
+        action instanceof FibLookup,
+        "Unsupported session action for PreInInterface->PostInVrfSession edge: %s",
+        action);
 
     String hostname = sessionInfo.getHostname();
     BDD sessionFlows = sessionInfo.getSessionFlows();
@@ -288,9 +294,10 @@ public class SessionInstrumentation {
   @VisibleForTesting
   Stream<Edge> preInInterfaceEdges(BDDFirewallSessionTraceInfo sessionInfo) {
     SessionAction action = sessionInfo.getAction();
-
-    // sanity check
-    assert action instanceof ForwardOutInterface;
+    checkArgument(
+        action instanceof ForwardOutInterface,
+        "Unsupported session action for PreInInterface->PreInInterface edge: %s",
+        action);
 
     ForwardOutInterface forwardOutInterface = (ForwardOutInterface) action;
     NodeInterfacePair nextHop = forwardOutInterface.getNextHop();
@@ -393,8 +400,10 @@ public class SessionInstrumentation {
   Stream<Edge> nodeInterfaceDeliveredToSubnetEdges(BDDFirewallSessionTraceInfo sessionInfo) {
     SessionAction action = sessionInfo.getAction();
 
-    // sanity check
-    assert action instanceof ForwardOutInterface;
+    checkArgument(
+        action instanceof ForwardOutInterface,
+        "Unsupported session action for PreInInterface->NodeInterfaceDeliveredToSubnet edge: %s",
+        action);
 
     ForwardOutInterface forwardOutInterface = (ForwardOutInterface) action;
 
@@ -429,8 +438,11 @@ public class SessionInstrumentation {
 
   @VisibleForTesting
   Stream<Edge> nodeAcceptEdges(BDDFirewallSessionTraceInfo sessionInfo) {
-    // sanity check
-    assert sessionInfo.getAction() instanceof Accept;
+    SessionAction action = sessionInfo.getAction();
+    checkArgument(
+        action instanceof Accept,
+        "Unsupported session action for PreInInterface->NodeAccept edge: %s",
+        action);
 
     String hostname = sessionInfo.getHostname();
     BDDSourceManager srcMgr = _srcMgrs.get(hostname);
