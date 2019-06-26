@@ -895,7 +895,13 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
     applyBridgeSettings(iface.getBridge(), newIface);
 
     // TODO: support explicitly-configured bandwidth
-    newIface.setBandwidth(DEFAULT_PORT_BANDWIDTH);
+    if (iface.getSpeed() != null) {
+      double speed = iface.getSpeed() * 10e6;
+      newIface.setSpeed(speed);
+      newIface.setBandwidth(speed);
+    } else {
+      newIface.setBandwidth(DEFAULT_PORT_BANDWIDTH);
+    }
 
     return newIface;
   }
