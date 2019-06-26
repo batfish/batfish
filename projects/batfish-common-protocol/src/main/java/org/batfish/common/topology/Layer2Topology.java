@@ -147,16 +147,6 @@ public final class Layer2Topology {
   }
 
   /**
-   * Return the representative of the broadcast domain of {@code nodeInterfacePair}, or {@link
-   * Optional#empty} if not represented in the layer-2 topology.
-   */
-  public @Nonnull Optional<Layer2Node> getBroadcastDomainRepresentative(
-      NodeInterfacePair nodeInterfacePair) {
-    return getBroadcastDomainRepresentative(
-        nodeInterfacePair.getHostname(), nodeInterfacePair.getInterface());
-  }
-
-  /**
    * Return the representative of the broadcast domain of the interface represented by {@code
    * hostname} and {@code interfaceName}, or {@link Optional#empty} if not represented in the
    * layer-2 topology.
