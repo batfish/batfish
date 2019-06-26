@@ -1364,7 +1364,7 @@ public class VirtualRouter implements Serializable {
             .map(
                 adv -> {
                   Bgpv4Route bgpRoute =
-                      exportNonBgpRouteToBgp(
+                      _bgpRoutingProcess.exportNonBgpRouteToBgp(
                           adv.getRoute(), ourConfigId, remoteConfigId, ourConfig, session);
                   return bgpRoute == null
                       ? null
@@ -1646,6 +1646,8 @@ public class VirtualRouter implements Serializable {
       newBgpSessionEstablishedHook(
           edge, getBgpSessionProperties(bgpTopology, edge), allNodes, nc, bgpTopology);
     }
+    _bgpRoutingProcess.redistribute(
+        RibDelta.<AnnotatedRoute<AbstractRoute>>builder().add(_mainRib.getTypedRoutes()).build());
   }
 
   /** Deal with a newly established BGP session. */
