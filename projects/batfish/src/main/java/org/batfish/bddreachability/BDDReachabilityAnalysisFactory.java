@@ -1414,7 +1414,8 @@ public final class BDDReachabilityAnalysisFactory {
                       _lastHopMgr,
                       _aclPermitBDDs,
                       Stream.concat(generateEdges(), generateDispositionEdges(_configs.keySet())),
-                      initializedSessions)),
+                      initializedSessions,
+                      _bddFibGenerator)),
               generateRootEdges(returnPassOrigBdds),
               generateQueryEdges(dispositions));
       returnPassEdges = instrumentForbiddenTransitNodes(forbiddenTransitNodes, returnPassEdges);

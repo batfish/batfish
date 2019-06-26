@@ -50,11 +50,15 @@ public interface StateExprVisitor<R> {
 
   R visitPostInVrf(PostInVrf postInVrf);
 
+  R visitPostInVrfSession(PostInVrfSession postInVrfSession);
+
   R visitPreInInterface(PreInInterface preInInterface);
 
   R visitPreOutEdge(PreOutEdge preOutEdge);
 
   R visitPreOutEdgePostNat(PreOutEdgePostNat preOutInterface);
+
+  R visitPreOutEdgeSession(PreOutEdgeSession preOutEdgeSession);
 
   R visitPreOutInterfaceDeliveredToSubnet(
       PreOutInterfaceDeliveredToSubnet preOutInterfaceDeliveredToSubnet);
@@ -68,6 +72,8 @@ public interface StateExprVisitor<R> {
       PreOutInterfaceNeighborUnreachable preOutInterfaceNeighborUnreachable);
 
   R visitPreOutVrf(PreOutVrf preOutVrf);
+
+  R visitPreOutVrfSession(PreOutVrfSession preOutVrfSession);
 
   R visitQuery();
 
