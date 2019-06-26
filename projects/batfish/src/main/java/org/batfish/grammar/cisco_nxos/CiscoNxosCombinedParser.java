@@ -13,7 +13,7 @@ public class CiscoNxosCombinedParser
   public static final String DEBUG_FLAG_USE_NEW_CISCO_NXOS_PARSER = "newnxos";
 
   private static final BatfishANTLRErrorStrategyFactory NEWLINE_BASED_RECOVERY =
-      new BatfishANTLRErrorStrategy.BatfishANTLRErrorStrategyFactory(CiscoLexer.NEWLINE, "\n");
+      new BatfishANTLRErrorStrategy.BatfishANTLRErrorStrategyFactory(CiscoNxosLexer.NEWLINE, "\n");
 
   public CiscoNxosCombinedParser(String input, GrammarSettings settings) {
     super(
