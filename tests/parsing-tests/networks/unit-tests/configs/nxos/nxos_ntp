@@ -1,6 +1,6 @@
 !RANCID-CONTENT-TYPE: cisco-nx
 !
-hostname nexus_ntp
+hostname nxos_ntp
 !
 no ntp allow control
 no ntp passive

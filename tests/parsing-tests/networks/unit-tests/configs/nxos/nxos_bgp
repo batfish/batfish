@@ -1,9 +1,11 @@
 !RANCID-CONTENT-TYPE: cisco-nx
 !
-hostname nexus_bgp
+hostname nxos_bgp
 feature bgp
 !
 router bgp 1
+  bestpath as-path multipath-relax
+  bestpath compare-routerid
   enforce-first-as
   event-history periodic
   event-history events
