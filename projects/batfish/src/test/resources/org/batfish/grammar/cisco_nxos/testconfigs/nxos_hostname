@@ -1,0 +1,4 @@
+!RANCID-CONTENT-TYPE: cisco-nx
+!
+hostname nxos_hostname
+!

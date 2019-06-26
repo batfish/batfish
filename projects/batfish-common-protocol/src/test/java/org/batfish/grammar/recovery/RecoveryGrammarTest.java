@@ -18,7 +18,8 @@ public class RecoveryGrammarTest {
   public void testParsingRecovery() {
     String recoveryText = CommonUtil.readResource("org/batfish/grammar/recovery/recovery_text");
     int totalLines = recoveryText.split("\n", -1).length;
-    GrammarSettings settings = new MockGrammarSettings(false, 0, 0, 0, false, false, true, true);
+    GrammarSettings settings =
+        new MockGrammarSettings(false, 0, 0, 0, false, false, true, true, false);
     RecoveryCombinedParser cp = new RecoveryCombinedParser(recoveryText, settings);
     RecoveryContext ctx = cp.parse();
     RecoveryExtractor extractor = new RecoveryExtractor();
@@ -50,7 +51,8 @@ public class RecoveryGrammarTest {
   @Test
   public void testParsingRecoveryWithModes() {
     String recoveryText = CommonUtil.readResource("org/batfish/grammar/recovery/recovery_badmode");
-    GrammarSettings settings = new MockGrammarSettings(false, 0, 0, 0, false, false, true, true);
+    GrammarSettings settings =
+        new MockGrammarSettings(false, 0, 0, 0, false, false, true, true, false);
     RecoveryCombinedParser cp = new RecoveryCombinedParser(recoveryText, settings);
     RecoveryContext ctx = cp.parse();
     RecoveryExtractor extractor = new RecoveryExtractor();
