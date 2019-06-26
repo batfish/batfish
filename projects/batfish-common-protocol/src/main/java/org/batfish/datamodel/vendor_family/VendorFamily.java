@@ -94,7 +94,7 @@ public class VendorFamily implements Serializable {
     _cisco = cisco;
   }
 
-  @JsonProperty(PROP_CISCO)
+  @JsonProperty(PROP_CISCO_NXOS)
   public void setCiscoNxos(CiscoNxosFamily ciscoNxos) {
     _ciscoNxos = ciscoNxos;
   }
