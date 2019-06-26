@@ -1,6 +1,7 @@
 {
   "class" : "org.batfish.question.edges.EdgesQuestion",
   "edgeType" : "BGP",
+  "initial" : true,
   "nodes" : ".*",
   "remoteNodes" : ".*",
   "differential" : false,
@@ -9,6 +10,12 @@
     "description" : "Returns different types of network adjacencies in a snapshot.",
     "instanceName" : "qname",
     "longDescription" : "Lists network adjacencies of different types (e.g., Layer 3, BGP, OSPF) in the form of edges. This question is deprecated in favor of specific edges question such as bgpEdges and layer3Edges.",
+    "orderedVariableNames" : [
+      "edgeType",
+      "nodes",
+      "remoteNodes",
+      "initial"
+    ],
     "tags" : [
       "topology"
     ],
@@ -55,6 +62,13 @@
             "name" : "vxlan"
           }
         ]
+      },
+      "initial" : {
+        "description" : "Use the initial topology (pre-dataplane computation)",
+        "displayName" : "Use Initial Topology",
+        "optional" : false,
+        "type" : "boolean",
+        "value" : true
       },
       "nodes" : {
         "description" : "Include edges whose first node matches this name or regex",
