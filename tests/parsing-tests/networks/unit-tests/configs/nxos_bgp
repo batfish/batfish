@@ -1,9 +1,0 @@
-!
-hostname nxos_bgp
-feature privilege
-!
-router bgp 1
- bestpath as-path multipath-relax
- bestpath compare-routerid
-!
-

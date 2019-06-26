@@ -3080,41 +3080,10 @@
         }
       },
       {
-        "Structure_Type" : "extended ipv4 access-list",
-        "Structure_Name" : "blah",
-        "Source_Lines" : {
-          "filename" : "configs/nxos_acl",
-          "lines" : [
-            9,
-            10
-          ]
-        }
-      },
-      {
-        "Structure_Type" : "extended ipv4 access-list",
-        "Structure_Name" : "extended",
-        "Source_Lines" : {
-          "filename" : "configs/nxos_acl",
-          "lines" : [
-            5
-          ]
-        }
-      },
-      {
-        "Structure_Type" : "extended ipv4 access-list",
-        "Structure_Name" : "standard",
-        "Source_Lines" : {
-          "filename" : "configs/nxos_acl",
-          "lines" : [
-            7
-          ]
-        }
-      },
-      {
         "Structure_Type" : "route-map",
         "Structure_Name" : "foobar",
         "Source_Lines" : {
-          "filename" : "configs/nxos_route_map_continue",
+          "filename" : "configs/nxos/nxos_route_map_continue",
           "lines" : [
             6,
             7,
@@ -3225,6 +3194,37 @@
             112,
             113,
             114
+          ]
+        }
+      },
+      {
+        "Structure_Type" : "extended ipv4 access-list",
+        "Structure_Name" : "blah",
+        "Source_Lines" : {
+          "filename" : "configs/nxos_acl",
+          "lines" : [
+            9,
+            10
+          ]
+        }
+      },
+      {
+        "Structure_Type" : "extended ipv4 access-list",
+        "Structure_Name" : "extended",
+        "Source_Lines" : {
+          "filename" : "configs/nxos_acl",
+          "lines" : [
+            5
+          ]
+        }
+      },
+      {
+        "Structure_Type" : "extended ipv4 access-list",
+        "Structure_Name" : "standard",
+        "Source_Lines" : {
+          "filename" : "configs/nxos_acl",
+          "lines" : [
+            7
           ]
         }
       },
