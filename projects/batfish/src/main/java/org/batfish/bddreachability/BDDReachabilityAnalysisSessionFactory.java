@@ -29,6 +29,10 @@ import org.batfish.common.bdd.BDDSourceManager;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.collections.NodeInterfacePair;
+import org.batfish.datamodel.flow.Accept;
+import org.batfish.datamodel.flow.FibLookup;
+import org.batfish.datamodel.flow.ForwardOutInterface;
+import org.batfish.datamodel.flow.SessionAction;
 import org.batfish.symbolic.state.StateExpr;
 
 /**
@@ -185,6 +189,7 @@ final class BDDReachabilityAnalysisSessionFactory {
         _reverseFlowTransformationFactory.reverseFlowOutgoingTransformation(
             hostname, outIface.getName());
 
+    boolean fibLookup = outIface.getFirewallSessionInterfaceInfo().getFibLookup();
     ImmutableList.Builder<BDDFirewallSessionTraceInfo> builder = ImmutableList.builder();
     srcMgr
         .getSourceBDDs()
@@ -214,16 +219,18 @@ final class BDDReachabilityAnalysisSessionFactory {
                         srcMgr.existsSource(srcToOutIfaceBdd));
                 builder.add(
                     new BDDFirewallSessionTraceInfo(
-                        hostname, sessionInterfaces, null, null, sessionBdd, transformation));
+                        hostname, sessionInterfaces, Accept.INSTANCE, sessionBdd, transformation));
               } else {
                 Transition incomingTransformation =
                     _reverseFlowTransformationFactory.reverseFlowIncomingTransformation(
                         hostname, src);
-
                 Map<NodeInterfacePair, BDD> nextHops = lastHopOutIfaceBdds.get(src);
                 if (nextHops.isEmpty()) {
                   // The src interface has no neighbors
                   assert !_lastHopManager.hasLastHopConstraint(srcToOutIfaceBdd);
+
+                  SessionAction action =
+                      fibLookup ? FibLookup.INSTANCE : new ForwardOutInterface(src, null);
 
                   BDD incomingTransformationRange =
                       _reverseTransformationRanges.reverseIncomingTransformationRange(
@@ -240,8 +247,7 @@ final class BDDReachabilityAnalysisSessionFactory {
                       new BDDFirewallSessionTraceInfo(
                           hostname,
                           sessionInterfaces,
-                          null,
-                          src,
+                          action,
                           sessionBdd,
                           compose(
                               outgoingTransformation,
@@ -268,6 +274,8 @@ final class BDDReachabilityAnalysisSessionFactory {
                       // Next hop for session flows
                       NodeInterfacePair lastHop =
                           lastHopOutIface == NO_LAST_HOP ? null : lastHopOutIface;
+                      SessionAction action =
+                          fibLookup ? FibLookup.INSTANCE : new ForwardOutInterface(src, lastHop);
 
                       BDD incomingTransformationRange =
                           _reverseTransformationRanges.reverseIncomingTransformationRange(
@@ -281,8 +289,7 @@ final class BDDReachabilityAnalysisSessionFactory {
                           new BDDFirewallSessionTraceInfo(
                               hostname,
                               sessionInterfaces,
-                              lastHop,
-                              src,
+                              action,
                               sessionBdd,
                               compose(
                                   outgoingTransformation,

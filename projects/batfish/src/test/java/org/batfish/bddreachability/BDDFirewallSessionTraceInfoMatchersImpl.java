@@ -1,15 +1,28 @@
 package org.batfish.bddreachability;
 
 import java.util.Set;
+import javax.annotation.Nonnull;
 import net.sf.javabdd.BDD;
 import org.batfish.bddreachability.transition.Transition;
-import org.batfish.datamodel.collections.NodeInterfacePair;
+import org.batfish.datamodel.flow.SessionAction;
 import org.hamcrest.FeatureMatcher;
 import org.hamcrest.Matcher;
 
 public class BDDFirewallSessionTraceInfoMatchersImpl {
-  static final class HasHostname extends FeatureMatcher<BDDFirewallSessionTraceInfo, String> {
 
+  static final class HasAction extends FeatureMatcher<BDDFirewallSessionTraceInfo, SessionAction> {
+    public HasAction(Matcher<? super SessionAction> subMatcher) {
+      super(subMatcher, "A BDDFirewallSessionTraceInfo with action:", "action");
+    }
+
+    @Override
+    protected @Nonnull SessionAction featureValueOf(
+        BDDFirewallSessionTraceInfo bddFirewallSessionTraceInfo) {
+      return bddFirewallSessionTraceInfo.getAction();
+    }
+  }
+
+  static final class HasHostname extends FeatureMatcher<BDDFirewallSessionTraceInfo, String> {
     public HasHostname(Matcher<? super String> subMatcher) {
       super(subMatcher, "A BDDFirewallSessionTraceInfo with hostname:", "hostname");
     }
@@ -32,32 +45,6 @@ public class BDDFirewallSessionTraceInfoMatchersImpl {
     @Override
     protected Set<String> featureValueOf(BDDFirewallSessionTraceInfo bddFirewallSessionTraceInfo) {
       return bddFirewallSessionTraceInfo.getIncomingInterfaces();
-    }
-  }
-
-  static final class HasNextHop
-      extends FeatureMatcher<BDDFirewallSessionTraceInfo, NodeInterfacePair> {
-    public HasNextHop(Matcher<? super NodeInterfacePair> subMatcher) {
-      super(subMatcher, "A BDDFirewallSessionTraceInfo with nextHop:", "nextHop");
-    }
-
-    @Override
-    protected NodeInterfacePair featureValueOf(
-        BDDFirewallSessionTraceInfo bddFirewallSessionTraceInfo) {
-      return bddFirewallSessionTraceInfo.getNextHop();
-    }
-  }
-
-  static final class HasOutgoingInterface
-      extends FeatureMatcher<BDDFirewallSessionTraceInfo, String> {
-    public HasOutgoingInterface(Matcher<? super String> subMatcher) {
-      super(
-          subMatcher, "A BDDFirewallSessionTraceInfo with outgoingInterface:", "outgoingInterface");
-    }
-
-    @Override
-    protected String featureValueOf(BDDFirewallSessionTraceInfo bddFirewallSessionTraceInfo) {
-      return bddFirewallSessionTraceInfo.getOutgoingInterface();
     }
   }
 
