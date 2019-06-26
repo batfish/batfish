@@ -3758,72 +3758,72 @@
         }
       },
       {
-        "File_Name" : "configs/nexus_bgp",
+        "File_Name" : "configs/nxos/nexus_bgp",
         "Struct_Type" : "route-map",
         "Ref_Name" : "BLIB",
         "Context" : "bgp otherwise in/outbound route-map",
         "Lines" : {
-          "filename" : "configs/nexus_bgp",
+          "filename" : "configs/nxos/nexus_bgp",
           "lines" : [
             22
           ]
         }
       },
       {
-        "File_Name" : "configs/nexus_bgp",
+        "File_Name" : "configs/nxos/nexus_bgp",
         "Struct_Type" : "route-map",
         "Ref_Name" : "BLIBB",
         "Context" : "bgp otherwise in/outbound route-map",
         "Lines" : {
-          "filename" : "configs/nexus_bgp",
+          "filename" : "configs/nxos/nexus_bgp",
           "lines" : [
             19
           ]
         }
       },
       {
-        "File_Name" : "configs/nexus_bgp",
+        "File_Name" : "configs/nxos/nexus_bgp",
         "Struct_Type" : "route-map",
         "Ref_Name" : "BLOBB",
         "Context" : "bgp redistribute connected route-map",
         "Lines" : {
-          "filename" : "configs/nexus_bgp",
+          "filename" : "configs/nxos/nexus_bgp",
           "lines" : [
             16
           ]
         }
       },
       {
-        "File_Name" : "configs/nexus_bgp",
+        "File_Name" : "configs/nxos/nexus_bgp",
         "Struct_Type" : "route-map",
         "Ref_Name" : "EG_CCC",
         "Context" : "bgp outbound route-map",
         "Lines" : {
-          "filename" : "configs/nexus_bgp",
+          "filename" : "configs/nxos/nexus_bgp",
           "lines" : [
             30
           ]
         }
       },
       {
-        "File_Name" : "configs/nexus_bgp",
+        "File_Name" : "configs/nxos/nexus_bgp",
         "Struct_Type" : "route-map",
         "Ref_Name" : "IN_BBB",
         "Context" : "bgp inbound route-map",
         "Lines" : {
-          "filename" : "configs/nexus_bgp",
+          "filename" : "configs/nxos/nexus_bgp",
           "lines" : [
             29
           ]
         }
       },
       {
-        "File_Name" : "configs/nxos_ospf",
+        "File_Name" : "configs/nxos/nxos_ospf",
         "Struct_Type" : "route-map",
         "Ref_Name" : "RM_OSPF_DIRECT",
         "Context" : "ospf redistribute connected route-map",
         "Lines" : {
-          "filename" : "configs/nxos_ospf",
+          "filename" : "configs/nxos/nxos_ospf",
           "lines" : [
             20,
             25
@@ -3831,12 +3831,12 @@
         }
       },
       {
-        "File_Name" : "configs/nxos_ospf",
+        "File_Name" : "configs/nxos/nxos_ospf",
         "Struct_Type" : "route-map",
         "Ref_Name" : "RM_OSPF_STATIC",
         "Context" : "ospf redistribute static route-map",
         "Lines" : {
-          "filename" : "configs/nxos_ospf",
+          "filename" : "configs/nxos/nxos_ospf",
           "lines" : [
             21
           ]
