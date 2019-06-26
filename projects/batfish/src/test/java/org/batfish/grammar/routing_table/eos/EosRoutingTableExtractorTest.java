@@ -12,6 +12,7 @@ import static org.junit.Assert.assertThat;
 import com.google.common.collect.ImmutableSortedMap;
 import java.io.IOException;
 import java.util.Set;
+import javax.annotation.ParametersAreNonnullByDefault;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.batfish.common.Warnings;
 import org.batfish.common.util.CommonUtil;
@@ -34,6 +35,7 @@ import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
 /** Tests for {@link EosRoutingTableExtractor}. */
+@ParametersAreNonnullByDefault
 public final class EosRoutingTableExtractorTest {
   @Rule public TemporaryFolder temp = new TemporaryFolder();
 
@@ -69,7 +71,12 @@ public final class EosRoutingTableExtractorTest {
             ImmutableSortedMap.of(c1.getHostname(), c1, c2.getHostname(), c2), temp);
 
     GrammarSettings settings =
-        new MockGrammarSettings(true, 0, 0, 0, false, false, true, true, false);
+        MockGrammarSettings.builder()
+            .setDisableUnrecognized(true)
+            .setThrowOnLexerError(true)
+            .setThrowOnParserError(true)
+            .build();
+
     Warnings warnings = new Warnings();
 
     String showIpRoute =
