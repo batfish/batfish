@@ -754,15 +754,6 @@
         "nexus" : [
           "configs/nexus"
         ],
-        "nexus_bgp" : [
-          "configs/nxos/nexus_bgp"
-        ],
-        "nexus_ntp" : [
-          "configs/nxos/nexus_ntp"
-        ],
-        "nexus_ssh" : [
-          "configs/nxos/nexus_ssh"
-        ],
         "no_aaa_group_server" : [
           "configs/no_aaa_group_server"
         ],
@@ -790,11 +781,17 @@
         "nxos_misc" : [
           "configs/nxos/nxos_misc"
         ],
+        "nxos_ntp" : [
+          "configs/nxos/nxos_ntp"
+        ],
         "nxos_ospf" : [
           "configs/nxos/nxos_ospf"
         ],
         "nxos_route_map_continue" : [
           "configs/nxos/nxos_route_map_continue"
+        ],
+        "nxos_ssh" : [
+          "configs/nxos/nxos_ssh"
         ],
         "nxos_system" : [
           "configs/nxos/nxos_system"
@@ -1158,14 +1155,13 @@
         "configs/nexus" : "PASSED",
         "configs/no_aaa_group_server" : "PASSED",
         "configs/non_nexus_neighbor_af" : "PASSED",
-        "configs/nxos/nexus_bgp" : "PASSED",
-        "configs/nxos/nexus_ntp" : "PASSED",
-        "configs/nxos/nexus_ssh" : "PASSED",
         "configs/nxos/nxos_bgp" : "PASSED",
         "configs/nxos/nxos_interface" : "PASSED",
         "configs/nxos/nxos_misc" : "PASSED",
+        "configs/nxos/nxos_ntp" : "PASSED",
         "configs/nxos/nxos_ospf" : "PASSED",
         "configs/nxos/nxos_route_map_continue" : "PASSED",
+        "configs/nxos/nxos_ssh" : "PASSED",
         "configs/nxos/nxos_system" : "PASSED",
         "configs/nxos/nxos_vrf" : "PASSED",
         "configs/nxos_acl" : "PASSED",
@@ -68579,13 +68575,13 @@
             "  EOF:<EOF>)"
           ]
         },
-        "configs/nxos/nexus_bgp" : {
+        "configs/nxos/nxos_bgp" : {
           "sentences" : [
             "(cisco_configuration",
             "  (stanza",
             "    (s_hostname",
             "      HOSTNAME:'hostname'",
-            "      VARIABLE:'nexus_bgp'",
+            "      VARIABLE:'nxos_bgp'",
             "      NEWLINE:'\\n'))",
             "  (stanza",
             "    (s_feature",
@@ -68600,6 +68596,19 @@
             "      procnum = (bgp_asn",
             "        asn = DEC:'1')",
             "      NEWLINE:'\\n'",
+            "      (router_bgp_nxos_toplevel",
+            "        (rbnx_proc_vrf_common",
+            "          (rbnx_bestpath",
+            "            BESTPATH:'bestpath'",
+            "            AS_PATH:'as-path'",
+            "            MULTIPATH_RELAX:'multipath-relax'  <== mode:M_AsPath",
+            "            NEWLINE:'\\n')))",
+            "      (router_bgp_nxos_toplevel",
+            "        (rbnx_proc_vrf_common",
+            "          (rbnx_bestpath",
+            "            BESTPATH:'bestpath'",
+            "            COMPARE_ROUTERID:'compare-routerid'",
+            "            NEWLINE:'\\n')))",
             "      (router_bgp_nxos_toplevel",
             "        (rbnx_enforce_first_as",
             "          ENFORCE_FIRST_AS:'enforce-first-as'",
@@ -68780,134 +68789,6 @@
             "  EOF:<EOF>)"
           ]
         },
-        "configs/nxos/nexus_ntp" : {
-          "sentences" : [
-            "(cisco_configuration",
-            "  (stanza",
-            "    (s_hostname",
-            "      HOSTNAME:'hostname'",
-            "      VARIABLE:'nexus_ntp'",
-            "      NEWLINE:'\\n'))",
-            "  (stanza",
-            "    (s_ntp",
-            "      NO:'no'",
-            "      NTP:'ntp'",
-            "      (ntp_common",
-            "        (ntp_null",
-            "          ALLOW:'allow'",
-            "          (null_rest_of_line",
-            "            CONTROL:'control'",
-            "            NEWLINE:'\\n')))))",
-            "  (stanza",
-            "    (s_ntp",
-            "      NO:'no'",
-            "      NTP:'ntp'",
-            "      (ntp_common",
-            "        (ntp_null",
-            "          PASSIVE:'passive'",
-            "          (null_rest_of_line",
-            "            NEWLINE:'\\n')))))",
-            "  (stanza",
-            "    (s_ntp",
-            "      NTP:'ntp'",
-            "      (ntp_common",
-            "        (ntp_server",
-            "          SERVER:'server'",
-            "          hostname = (variable",
-            "            IP_ADDRESS:'10.1.2.3')",
-            "          USE_VRF:'use-vrf'",
-            "          vrf = (variable",
-            "            MANAGEMENT:'management')",
-            "          KEY:'key'",
-            "          key = DEC:'12345'",
-            "          VERSION:'version'",
-            "          ver = DEC:'2'",
-            "          SOURCE:'source'",
-            "          src_interface = (interface_name",
-            "            VARIABLE:'Management1')",
-            "          NEWLINE:'\\n'))))",
-            "  (stanza",
-            "    (s_ntp",
-            "      NTP:'ntp'",
-            "      (ntp_common",
-            "        (ntp_server",
-            "          SERVER:'server'",
-            "          hostname = (variable",
-            "            IP_ADDRESS:'1.2.3.4')",
-            "          MINPOLL:'minpoll'",
-            "          DEC:'10'",
-            "          SOURCE:'source'",
-            "          src_interface = (interface_name",
-            "            VARIABLE:'Loopback0')",
-            "          NEWLINE:'\\n'))))",
-            "  EOF:<EOF>)"
-          ]
-        },
-        "configs/nxos/nexus_ssh" : {
-          "sentences" : [
-            "(cisco_configuration",
-            "  (stanza",
-            "    (s_hostname",
-            "      HOSTNAME:'hostname'",
-            "      VARIABLE:'nexus_ssh'",
-            "      NEWLINE:'\\n'))",
-            "  (stanza",
-            "    (s_ssh",
-            "      SSH:'ssh'",
-            "      (ssh_null",
-            "        KEY:'key'",
-            "        (null_rest_of_line",
-            "          RSA:'rsa'",
-            "          DEC:'2048'",
-            "          NEWLINE:'\\n'))))",
-            "  (stanza",
-            "    (s_ssh",
-            "      SSH:'ssh'",
-            "      (ssh_null",
-            "        LOGIN_ATTEMPTS:'login-attempts'",
-            "        (null_rest_of_line",
-            "          DEC:'3'",
-            "          NEWLINE:'\\n'))))",
-            "  EOF:<EOF>)"
-          ]
-        },
-        "configs/nxos/nxos_bgp" : {
-          "sentences" : [
-            "(cisco_configuration",
-            "  (stanza",
-            "    (s_hostname",
-            "      HOSTNAME:'hostname'",
-            "      VARIABLE:'nxos_bgp'",
-            "      NEWLINE:'\\n'))",
-            "  (stanza",
-            "    (s_feature",
-            "      FEATURE:'feature'",
-            "      (variable",
-            "        PRIVILEGE:'privilege')",
-            "      NEWLINE:'\\n'))",
-            "  (stanza",
-            "    (router_bgp_stanza",
-            "      ROUTER:'router'",
-            "      BGP:'bgp'",
-            "      procnum = (bgp_asn",
-            "        asn = DEC:'1')",
-            "      NEWLINE:'\\n'",
-            "      (router_bgp_nxos_toplevel",
-            "        (rbnx_proc_vrf_common",
-            "          (rbnx_bestpath",
-            "            BESTPATH:'bestpath'",
-            "            AS_PATH:'as-path'",
-            "            MULTIPATH_RELAX:'multipath-relax'  <== mode:M_AsPath",
-            "            NEWLINE:'\\n')))",
-            "      (router_bgp_nxos_toplevel",
-            "        (rbnx_proc_vrf_common",
-            "          (rbnx_bestpath",
-            "            BESTPATH:'bestpath'",
-            "            COMPARE_ROUTERID:'compare-routerid'",
-            "            NEWLINE:'\\n')))))",
-            "  EOF:<EOF>)"
-          ]
-        },
         "configs/nxos/nxos_interface" : {
           "sentences" : [
             "(cisco_configuration",
@@ -69045,6 +68926,69 @@
             "        VARIABLE:'max-length'",
             "        DEC:'45'",
             "        NEWLINE:'\\n')))",
+            "  EOF:<EOF>)"
+          ]
+        },
+        "configs/nxos/nxos_ntp" : {
+          "sentences" : [
+            "(cisco_configuration",
+            "  (stanza",
+            "    (s_hostname",
+            "      HOSTNAME:'hostname'",
+            "      VARIABLE:'nxos_ntp'",
+            "      NEWLINE:'\\n'))",
+            "  (stanza",
+            "    (s_ntp",
+            "      NO:'no'",
+            "      NTP:'ntp'",
+            "      (ntp_common",
+            "        (ntp_null",
+            "          ALLOW:'allow'",
+            "          (null_rest_of_line",
+            "            CONTROL:'control'",
+            "            NEWLINE:'\\n')))))",
+            "  (stanza",
+            "    (s_ntp",
+            "      NO:'no'",
+            "      NTP:'ntp'",
+            "      (ntp_common",
+            "        (ntp_null",
+            "          PASSIVE:'passive'",
+            "          (null_rest_of_line",
+            "            NEWLINE:'\\n')))))",
+            "  (stanza",
+            "    (s_ntp",
+            "      NTP:'ntp'",
+            "      (ntp_common",
+            "        (ntp_server",
+            "          SERVER:'server'",
+            "          hostname = (variable",
+            "            IP_ADDRESS:'10.1.2.3')",
+            "          USE_VRF:'use-vrf'",
+            "          vrf = (variable",
+            "            MANAGEMENT:'management')",
+            "          KEY:'key'",
+            "          key = DEC:'12345'",
+            "          VERSION:'version'",
+            "          ver = DEC:'2'",
+            "          SOURCE:'source'",
+            "          src_interface = (interface_name",
+            "            VARIABLE:'Management1')",
+            "          NEWLINE:'\\n'))))",
+            "  (stanza",
+            "    (s_ntp",
+            "      NTP:'ntp'",
+            "      (ntp_common",
+            "        (ntp_server",
+            "          SERVER:'server'",
+            "          hostname = (variable",
+            "            IP_ADDRESS:'1.2.3.4')",
+            "          MINPOLL:'minpoll'",
+            "          DEC:'10'",
+            "          SOURCE:'source'",
+            "          src_interface = (interface_name",
+            "            VARIABLE:'Loopback0')",
+            "          NEWLINE:'\\n'))))",
             "  EOF:<EOF>)"
           ]
         },
@@ -70059,6 +70003,34 @@
             "        PERMIT:'permit')",
             "      num = DEC:'310'",
             "      NEWLINE:'\\n'))",
+            "  EOF:<EOF>)"
+          ]
+        },
+        "configs/nxos/nxos_ssh" : {
+          "sentences" : [
+            "(cisco_configuration",
+            "  (stanza",
+            "    (s_hostname",
+            "      HOSTNAME:'hostname'",
+            "      VARIABLE:'nxos_ssh'",
+            "      NEWLINE:'\\n'))",
+            "  (stanza",
+            "    (s_ssh",
+            "      SSH:'ssh'",
+            "      (ssh_null",
+            "        KEY:'key'",
+            "        (null_rest_of_line",
+            "          RSA:'rsa'",
+            "          DEC:'2048'",
+            "          NEWLINE:'\\n'))))",
+            "  (stanza",
+            "    (s_ssh",
+            "      SSH:'ssh'",
+            "      (ssh_null",
+            "        LOGIN_ATTEMPTS:'login-attempts'",
+            "        (null_rest_of_line",
+            "          DEC:'3'",
+            "          NEWLINE:'\\n'))))",
             "  EOF:<EOF>)"
           ]
         },
@@ -76299,9 +76271,6 @@
         "neighbor_nxos" : "WARNINGS",
         "network6" : "PASSED",
         "nexus" : "PASSED",
-        "nexus_bgp" : "WARNINGS",
-        "nexus_ntp" : "PASSED",
-        "nexus_ssh" : "PASSED",
         "no_aaa_group_server" : "PASSED",
         "no_ip_name_server" : "PASSED",
         "no_mask_reply" : "PASSED",
@@ -76311,8 +76280,10 @@
         "nxos_bgp" : "WARNINGS",
         "nxos_interface" : "PASSED",
         "nxos_misc" : "PASSED",
+        "nxos_ntp" : "PASSED",
         "nxos_ospf" : "PASSED",
         "nxos_route_map_continue" : "PASSED",
+        "nxos_ssh" : "PASSED",
         "nxos_system" : "PASSED",
         "nxos_vrf" : "PASSED",
         "openflow" : "PASSED",
@@ -82220,12 +82191,10 @@
         "configs/nexus" : { },
         "configs/no_aaa_group_server" : { },
         "configs/non_nexus_neighbor_af" : { },
-        "configs/nxos/nexus_bgp" : {
+        "configs/nxos/nxos_bgp" : {
           "bgp template peer" : {
             "PEER_BLLF" : {
               "definitionLines" : [
-                23,
-                24,
                 25,
                 26,
                 27,
@@ -82233,15 +82202,14 @@
                 29,
                 30,
                 31,
-                32
+                32,
+                33,
+                34
               ],
               "numReferrers" : 1
             }
           }
         },
-        "configs/nxos/nexus_ntp" : { },
-        "configs/nxos/nexus_ssh" : { },
-        "configs/nxos/nxos_bgp" : { },
         "configs/nxos/nxos_interface" : {
           "interface" : {
             "Ethernet0/0" : {
@@ -82264,6 +82232,7 @@
           }
         },
         "configs/nxos/nxos_misc" : { },
+        "configs/nxos/nxos_ntp" : { },
         "configs/nxos/nxos_ospf" : {
           "interface" : {
             "Ethernet0/0" : {
@@ -82394,6 +82363,7 @@
             }
           }
         },
+        "configs/nxos/nxos_ssh" : { },
         "configs/nxos/nxos_system" : { },
         "configs/nxos/nxos_vrf" : { },
         "configs/nxos_acl" : {
@@ -83750,15 +83720,6 @@
         "configs/non_nexus_neighbor_af" : [
           "non_nexus_neighbor_af"
         ],
-        "configs/nxos/nexus_bgp" : [
-          "nexus_bgp"
-        ],
-        "configs/nxos/nexus_ntp" : [
-          "nexus_ntp"
-        ],
-        "configs/nxos/nexus_ssh" : [
-          "nexus_ssh"
-        ],
         "configs/nxos/nxos_bgp" : [
           "nxos_bgp"
         ],
@@ -83768,11 +83729,17 @@
         "configs/nxos/nxos_misc" : [
           "nxos_misc"
         ],
+        "configs/nxos/nxos_ntp" : [
+          "nxos_ntp"
+        ],
         "configs/nxos/nxos_ospf" : [
           "nxos_ospf"
         ],
         "configs/nxos/nxos_route_map_continue" : [
           "nxos_route_map_continue"
+        ],
+        "configs/nxos/nxos_ssh" : [
+          "nxos_ssh"
         ],
         "configs/nxos/nxos_system" : [
           "nxos_system"
@@ -87995,38 +87962,38 @@
             }
           }
         },
-        "configs/nxos/nexus_bgp" : {
+        "configs/nxos/nxos_bgp" : {
           "bgp template peer" : {
             "PEER_BLLF" : {
               "inherited BGP peer" : [
-                35
+                37
               ]
             }
           },
           "route-map" : {
             "BLIB" : {
               "bgp otherwise in/outbound route-map" : [
-                22
+                24
               ]
             },
             "BLIBB" : {
               "bgp otherwise in/outbound route-map" : [
-                19
+                21
               ]
             },
             "BLOBB" : {
               "bgp redistribute connected route-map" : [
-                16
+                18
               ]
             },
             "EG_CCC" : {
               "bgp outbound route-map" : [
-                30
+                32
               ]
             },
             "IN_BBB" : {
               "bgp inbound route-map" : [
-                29
+                31
               ]
             }
           }
@@ -90356,31 +90323,31 @@
             }
           }
         },
-        "configs/nxos/nexus_bgp" : {
+        "configs/nxos/nxos_bgp" : {
           "route-map" : {
             "BLIB" : {
               "bgp otherwise in/outbound route-map" : [
-                22
+                24
               ]
             },
             "BLIBB" : {
               "bgp otherwise in/outbound route-map" : [
-                19
+                21
               ]
             },
             "BLOBB" : {
               "bgp redistribute connected route-map" : [
-                16
+                18
               ]
             },
             "EG_CCC" : {
               "bgp outbound route-map" : [
-                30
+                32
               ]
             },
             "IN_BBB" : {
               "bgp inbound route-map" : [
-                29
+                31
               ]
             }
           }
@@ -90976,18 +90943,6 @@
             }
           ]
         },
-        "nexus_bgp" : {
-          "Red flags" : [
-            {
-              "tag" : "MISCELLANEOUS",
-              "text" : "Router-id is not manually configured for BGP process in VRF default. Unable to infer default router-id as no interfaces have IP addresses"
-            },
-            {
-              "tag" : "MISCELLANEOUS",
-              "text" : "BGP neighbor 1.1.1.1 in vrf default: could not determine update source"
-            }
-          ]
-        },
         "non_nexus_neighbor_af" : {
           "Red flags" : [
             {
@@ -91001,6 +90956,10 @@
             {
               "tag" : "MISCELLANEOUS",
               "text" : "Router-id is not manually configured for BGP process in VRF default. Unable to infer default router-id as no interfaces have IP addresses"
+            },
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "BGP neighbor 1.1.1.1 in vrf default: could not determine update source"
             }
           ]
         },
@@ -91363,14 +91322,13 @@
         "configs/nexus" : "PASSED",
         "configs/no_aaa_group_server" : "PASSED",
         "configs/non_nexus_neighbor_af" : "PASSED",
-        "configs/nxos/nexus_bgp" : "PASSED",
-        "configs/nxos/nexus_ntp" : "PASSED",
-        "configs/nxos/nexus_ssh" : "PASSED",
         "configs/nxos/nxos_bgp" : "PASSED",
         "configs/nxos/nxos_interface" : "PASSED",
         "configs/nxos/nxos_misc" : "PASSED",
+        "configs/nxos/nxos_ntp" : "PASSED",
         "configs/nxos/nxos_ospf" : "PASSED",
         "configs/nxos/nxos_route_map_continue" : "PASSED",
+        "configs/nxos/nxos_ssh" : "PASSED",
         "configs/nxos/nxos_system" : "PASSED",
         "configs/nxos/nxos_vrf" : "PASSED",
         "configs/nxos_acl" : "PASSED",
