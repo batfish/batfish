@@ -1,5 +1,7 @@
 package org.batfish.config;
 
+import static org.batfish.grammar.cisco_nxos.CiscoNxosCombinedParser.DEBUG_FLAG_USE_NEW_CISCO_NXOS_PARSER;
+
 import com.google.common.collect.ImmutableList;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -485,6 +487,11 @@ public final class Settings extends BaseSettings implements GrammarSettings {
 
   public boolean getUnimplementedRecord() {
     return !_config.getBoolean(BfConsts.ARG_UNIMPLEMENTED_SUPPRESS);
+  }
+
+  @Override
+  public boolean getUseNewCiscoNxosParser() {
+    return debugFlagEnabled(DEBUG_FLAG_USE_NEW_CISCO_NXOS_PARSER);
   }
 
   public boolean getVerboseParse() {

@@ -68,7 +68,8 @@ public final class NxosRoutingTableExtractorTest {
         BatfishTestUtils.getBatfish(
             ImmutableSortedMap.of(c1.getHostname(), c1, c2.getHostname(), c2), temp);
 
-    GrammarSettings settings = new MockGrammarSettings(true, 0, 0, 0, false, false, true, true);
+    GrammarSettings settings =
+        new MockGrammarSettings(true, 0, 0, 0, false, false, true, true, false);
     Warnings warnings = new Warnings();
 
     String showIpRoute =

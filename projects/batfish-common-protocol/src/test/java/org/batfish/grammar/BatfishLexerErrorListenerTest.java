@@ -16,7 +16,8 @@ public final class BatfishLexerErrorListenerTest {
   @Test
   public void testNonRecoveryLexerErrorNode() {
     String recoveryText = CommonUtil.readResource("org/batfish/grammar/non_recovery_lexer_error");
-    GrammarSettings settings = new MockGrammarSettings(false, 0, 0, 0, false, false, false, false);
+    GrammarSettings settings =
+        new MockGrammarSettings(false, 0, 0, 0, false, false, false, false, false);
     NonRecoveryCombinedParser cp = new NonRecoveryCombinedParser(recoveryText, settings);
     RecoveryContext ctx = cp.parse();
     RecoveryExtractor extractor = new RecoveryExtractor();

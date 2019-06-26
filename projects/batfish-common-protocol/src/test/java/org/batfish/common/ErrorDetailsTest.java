@@ -29,7 +29,7 @@ public class ErrorDetailsTest {
           RecoveryParser.class,
           RecoveryLexer.class,
           "",
-          new MockGrammarSettings(false, 0, 0, 0, false, false, true, true),
+          new MockGrammarSettings(false, 0, 0, 0, false, false, true, true, false),
           new BatfishANTLRErrorStrategy.BatfishANTLRErrorStrategyFactory(
               RecoveryLexer.NEWLINE, "\n"),
           BatfishLexerRecoveryStrategy.WHITESPACE_AND_NEWLINES);

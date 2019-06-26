@@ -22,6 +22,8 @@ public class MockGrammarSettings implements GrammarSettings {
 
   private final boolean _throwOnParserError;
 
+  private boolean _useNewCiscoNxosParser;
+
   /**
    * Constructor where all {@link GrammarSettings} settings must be explicitly provided
    *
@@ -32,6 +34,7 @@ public class MockGrammarSettings implements GrammarSettings {
    * @param printParseTree See {@link GrammarSettings#getPrintParseTree()}
    * @param throwOnLexerError See {@link GrammarSettings#getThrowOnLexerError()}
    * @param throwOnParserError See {@link GrammarSettings#getThrowOnParserError()}
+   * @param useNewCiscoNxosParser See {@link GrammarSettings#getUseNewCiscoNxosParser()}
    */
   public MockGrammarSettings(
       boolean disableUnrecognized,
@@ -41,7 +44,8 @@ public class MockGrammarSettings implements GrammarSettings {
       boolean printParseTree,
       boolean printParseTreeLineNums,
       boolean throwOnLexerError,
-      boolean throwOnParserError) {
+      boolean throwOnParserError,
+      boolean useNewCiscoNxosParser) {
     _disableUnrecognized = disableUnrecognized;
     _maxParserContextLines = maxParserContextLines;
     _maxParserContextTokens = maxParserContextTokens;
@@ -50,6 +54,7 @@ public class MockGrammarSettings implements GrammarSettings {
     _printParseTreeLineNums = printParseTreeLineNums;
     _throwOnLexerError = throwOnLexerError;
     _throwOnParserError = throwOnParserError;
+    _useNewCiscoNxosParser = useNewCiscoNxosParser;
   }
 
   @Override
@@ -90,6 +95,11 @@ public class MockGrammarSettings implements GrammarSettings {
   @Override
   public boolean getThrowOnParserError() {
     return _throwOnParserError;
+  }
+
+  @Override
+  public boolean getUseNewCiscoNxosParser() {
+    return _useNewCiscoNxosParser;
   }
 
   @Override
