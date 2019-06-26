@@ -66,6 +66,9 @@ public interface GrammarSettings {
    */
   boolean getThrowOnParserError();
 
+  /** Whether or not to use the new standalone Cisco NX-OS parser */
+  boolean getUseNewCiscoNxosParser();
+
   /**
    * See {@link GrammarSettings#getDisableUnrecognized()}
    *

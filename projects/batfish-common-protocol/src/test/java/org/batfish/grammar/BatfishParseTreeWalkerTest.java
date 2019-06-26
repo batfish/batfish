@@ -35,7 +35,7 @@ public final class BatfishParseTreeWalkerTest {
   }
 
   private static final GrammarSettings SETTINGS =
-      new MockGrammarSettings(true, 0, 0, 0, false, false, true, true);
+      new MockGrammarSettings(true, 0, 0, 0, false, false, true, true, false);
 
   private static final String TEXT = "simple\n";
 

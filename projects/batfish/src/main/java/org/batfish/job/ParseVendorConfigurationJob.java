@@ -27,6 +27,8 @@ import org.batfish.grammar.ParseTreePrettyPrinter;
 import org.batfish.grammar.VendorConfigurationFormatDetector;
 import org.batfish.grammar.cisco.CiscoCombinedParser;
 import org.batfish.grammar.cisco.CiscoControlPlaneExtractor;
+import org.batfish.grammar.cisco_nxos.CiscoNxosCombinedParser;
+import org.batfish.grammar.cisco_nxos.CiscoNxosControlPlaneExtractor;
 import org.batfish.grammar.cumulus_nclu.CumulusNcluCombinedParser;
 import org.batfish.grammar.cumulus_nclu.CumulusNcluControlPlaneExtractor;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredCombinedParser;
@@ -193,6 +195,13 @@ public class ParseVendorConfigurationJob extends BatfishJob<ParseVendorConfigura
             }
           } while (!newFileText.equals(fileText));
           _logger.info("OK\n");
+          if (format == ConfigurationFormat.CISCO_NX && _settings.getUseNewCiscoNxosParser()) {
+            CiscoNxosCombinedParser ciscoNxosParser =
+                new CiscoNxosCombinedParser(newFileText, _settings);
+            combinedParser = ciscoNxosParser;
+            extractor = new CiscoNxosControlPlaneExtractor(newFileText, ciscoNxosParser, _warnings);
+            break;
+          }
           CiscoCombinedParser ciscoParser = new CiscoCombinedParser(newFileText, _settings, format);
           combinedParser = ciscoParser;
           extractor = new CiscoControlPlaneExtractor(newFileText, ciscoParser, format, _warnings);

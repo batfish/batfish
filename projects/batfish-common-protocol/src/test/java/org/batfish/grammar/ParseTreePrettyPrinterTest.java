@@ -46,7 +46,7 @@ public class ParseTreePrettyPrinterTest {
   @Test
   public void testGetParseTreeSentencesLineNumbers() {
     String configText = CommonUtil.readResource("org/batfish/grammar/line_numbers");
-    GrammarSettings settings = new MockGrammarSettings(false, 0, 0, 1000, true, true, true, true);
+    GrammarSettings settings = new MockGrammarSettings(false, 0, 0, 1000, true, true, true, true, false);
     RecoveryCombinedParser cp = new RecoveryCombinedParser(configText, settings);
     ParserRuleContext tree = cp.parse();
     ParseTreeSentences ptSentencesLineNums =
@@ -64,7 +64,7 @@ public class ParseTreePrettyPrinterTest {
   @Test
   public void testGetParseTreeSentencesMappedLineNumbers() {
     String configText = CommonUtil.readResource("org/batfish/grammar/line_numbers");
-    GrammarSettings settings = new MockGrammarSettings(false, 0, 0, 1000, true, true, true, true);
+    GrammarSettings settings = new MockGrammarSettings(false, 0, 0, 1000, true, true, true, true, false);
     FlattenerLineMap lineMap = new FlattenerLineMap();
     /* Map words on each line to different original lines */
     /* (first) simple */
