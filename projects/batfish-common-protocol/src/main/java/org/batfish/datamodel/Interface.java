@@ -751,6 +751,7 @@ public final class Interface extends ComparableStructure<String> {
   @Nullable private transient Set<ConcreteInterfaceAddress> _allConcreteAddresses;
   /** Cache of all link-local addresses */
   @Nullable private transient Set<LinkLocalAddress> _allLinkLocalAddresses;
+
   private boolean _autoState;
   @Nullable private Double _bandwidth;
   private transient boolean _blacklisted;
