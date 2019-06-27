@@ -128,7 +128,7 @@ public class PropertySpecifierTest {
   public void fillPropertyMap() {
     Configuration configuration = new Configuration("hostname", ConfigurationFormat.CISCO_IOS);
     configuration.setInterfaces(
-        ImmutableSortedMap.of("i1", Interface.builder().setName("i1").setOwner(null).build()));
+        ImmutableSortedMap.of("i1", Interface.builder().setName("i1").build()));
     String property = NodePropertySpecifier.INTERFACES;
     PropertyDescriptor<Configuration> propertyDescriptor =
         NodePropertySpecifier.JAVA_MAP.get(property);
@@ -158,7 +158,7 @@ public class PropertySpecifierTest {
   public void testFillPropertyMapForAllInterfaceProperties() {
     // all interface properties should be process correctly without throwing exceptions
     Configuration configuration = new Configuration("hostname", ConfigurationFormat.CISCO_IOS);
-    Interface i1 = Interface.builder().setName("i1").setOwner(null).build();
+    Interface i1 = Interface.builder().setName("i1").build();
     configuration.setInterfaces(ImmutableSortedMap.of("i1", i1));
     InterfacePropertySpecifier.JAVA_MAP
         .entrySet()
