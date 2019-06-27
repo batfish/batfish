@@ -91,6 +91,7 @@ import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.Frrv_ip_routeContext;
 import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.GlobContext;
 import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.Glob_range_setContext;
 import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.I_ip_addressContext;
+import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.I_link_speedContext;
 import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.I_vrfContext;
 import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.Ib_accessContext;
 import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.Ib_pvidContext;
@@ -175,6 +176,16 @@ public class CumulusNcluConfigurationBuilder extends CumulusNcluParserBaseListen
   private static final int MAX_VXLAN_ID = (1 << 24) - 1; // 24 bit number
 
   private static int toInteger(Uint16Context ctx) {
+    return Integer.parseInt(ctx.getText(), 10);
+  }
+
+  /**
+   * Attempt to parse uint32 into an {@code int} value.
+   *
+   * @throws NumberFormatException if the value cannot be represented as a <em>signed</em> java
+   *     integer
+   */
+  private static int toInteger(Uint32Context ctx) {
     return Integer.parseInt(ctx.getText(), 10);
   }
 
@@ -1041,6 +1052,11 @@ public class CumulusNcluConfigurationBuilder extends CumulusNcluParserBaseListen
   public void exitI_ip_address(I_ip_addressContext ctx) {
     ConcreteInterfaceAddress address = toInterfaceAddress(ctx.address);
     _currentInterfaces.forEach(iface -> iface.getIpAddresses().add(address));
+  }
+
+  @Override
+  public void exitI_link_speed(I_link_speedContext ctx) {
+    _currentInterfaces.forEach(iface -> iface.setSpeed(toInteger(ctx.speed)));
   }
 
   @Override

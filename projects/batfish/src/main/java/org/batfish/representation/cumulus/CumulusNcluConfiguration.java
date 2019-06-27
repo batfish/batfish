@@ -98,6 +98,10 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
   public static final String LOOPBACK_INTERFACE_NAME = "lo";
 
   private static final Ip CLAG_LINK_LOCAL_IP = Ip.parse("169.254.40.94");
+  /**
+   * Conversion factor for interface speed units. In the config Mbps are used, VI model expects bps
+   */
+  private static final double SPEED_CONVERSION_FACTOR = 10e6;
 
   private static WithEnvironmentExpr bgpRedistributeWithEnvironmentExpr(
       BooleanExpr expr, OriginType originType) {
@@ -894,8 +898,13 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
 
     applyBridgeSettings(iface.getBridge(), newIface);
 
-    // TODO: support explicitly-configured bandwidth
-    newIface.setBandwidth(DEFAULT_PORT_BANDWIDTH);
+    if (iface.getSpeed() != null) {
+      double speed = iface.getSpeed() * SPEED_CONVERSION_FACTOR;
+      newIface.setSpeed(speed);
+      newIface.setBandwidth(speed);
+    } else {
+      newIface.setBandwidth(DEFAULT_PORT_BANDWIDTH);
+    }
 
     return newIface;
   }

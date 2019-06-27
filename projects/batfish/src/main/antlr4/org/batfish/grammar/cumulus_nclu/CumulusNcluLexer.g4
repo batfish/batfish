@@ -261,6 +261,11 @@ LEARNING
   'learning'
 ;
 
+LINK
+:
+  'link'
+;
+
 LINKLOCAL
 :
   'linklocal'
@@ -434,6 +439,11 @@ STATIC
 STP
 :
   'stp'
+;
+
+SPEED
+:
+  'speed'
 ;
 
 SYS_MAC
