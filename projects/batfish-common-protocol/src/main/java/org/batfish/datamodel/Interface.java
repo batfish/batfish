@@ -1475,7 +1475,7 @@ public final class Interface extends ComparableStructure<String> {
     return _spanningTreePortfast;
   }
 
-  /** The link speed of this interface */
+  /** The link speed of this interface, in bits per second (bps) */
   public @Nullable Double getSpeed() {
     return _speed;
   }

@@ -25,6 +25,7 @@ import static org.batfish.datamodel.matchers.InterfaceMatchers.hasDependencies;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasEncapsulationVlan;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasMlagId;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasNativeVlan;
+import static org.batfish.datamodel.matchers.InterfaceMatchers.hasSpeed;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasSwitchPortMode;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasVlan;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasVrfName;
@@ -815,6 +816,7 @@ public final class CumulusNcluGrammarTest {
             "swp4",
             "swp5",
             "swp5.1",
+            "swp6",
             "vrf1"));
 
     assertThat(
@@ -833,7 +835,8 @@ public final class CumulusNcluGrammarTest {
                     "swp2",
                     "swp3",
                     "swp4",
-                    "swp5"))));
+                    "swp5",
+                    "swp6"))));
     assertThat(c, hasVrf("mgmt", hasInterfaces(containsInAnyOrder("mgmt"))));
     assertThat(c, hasVrf("vrf1", hasInterfaces(containsInAnyOrder("vrf1", "swp5.1"))));
 
@@ -875,6 +878,8 @@ public final class CumulusNcluGrammarTest {
     assertThat(c, hasInterface("swp3", hasBandwidth(10E9D)));
     assertThat(c, hasInterface("swp4", hasBandwidth(10E9D)));
     assertThat(c, hasInterface("swp5", hasBandwidth(10E9D)));
+    assertThat(c, hasInterface("swp6", hasSpeed(10E11D)));
+    assertThat(c, hasInterface("swp6", hasBandwidth(10E11D)));
 
     // channel group
     assertThat(c.getAllInterfaces().get("swp1").getChannelGroup(), equalTo("bond1"));
@@ -895,7 +900,7 @@ public final class CumulusNcluGrammarTest {
         "Ensure interfaces are created",
         vc.getInterfaces().keySet(),
         containsInAnyOrder(
-            "bond2.4094", "bond3.4094", "eth0", "swp1", "swp2", "swp3", "swp4", "swp5.1"));
+            "bond2.4094", "bond3.4094", "eth0", "swp1", "swp2", "swp3", "swp4", "swp5.1", "swp6"));
 
     // encapsulation vlan
     assertThat(
@@ -994,6 +999,14 @@ public final class CumulusNcluGrammarTest {
         "Ensure type is correctly calculated",
         vc.getInterfaces().get("swp5.1").getType(),
         equalTo(CumulusInterfaceType.PHYSICAL_SUBINTERFACE));
+
+    // interface speed
+    assertThat(vc.getInterfaces().get("swp1").getSpeed(), nullValue());
+    assertThat(vc.getInterfaces().get("swp2").getSpeed(), nullValue());
+    assertThat(vc.getInterfaces().get("swp3").getSpeed(), nullValue());
+    assertThat(vc.getInterfaces().get("swp4").getSpeed(), nullValue());
+    assertThat(vc.getInterfaces().get("swp5.1").getSpeed(), nullValue());
+    assertThat(vc.getInterfaces().get("swp6").getSpeed(), equalTo(100_000));
   }
 
   @Test
