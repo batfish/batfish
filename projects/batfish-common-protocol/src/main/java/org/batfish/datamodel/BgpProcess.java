@@ -23,10 +23,10 @@ public class BgpProcess implements Serializable {
 
   public static class Builder extends NetworkFactoryBuilder<BgpProcess> {
 
-    private Integer _ebgpAdminCost;
-    private Integer _ibgpAdminCost;
-    private Ip _routerId;
-    private Vrf _vrf;
+    @Nullable private Integer _ebgpAdminCost;
+    @Nullable private Integer _ibgpAdminCost;
+    @Nullable private Ip _routerId;
+    @Nullable private Vrf _vrf;
 
     private Builder(@Nullable NetworkFactory networkFactory) {
       super(networkFactory, BgpProcess.class);
@@ -48,26 +48,31 @@ public class BgpProcess implements Serializable {
      * Sets {@link #setEbgpAdminCost(int) ebgpAdminCost} and {@link #setIbgpAdminCost(int)
      * ibgpAdminCost} to default BGP administrative costs for the given {@link ConfigurationFormat}.
      */
+    @Nonnull
     public Builder setAdminCostsToVendorDefaults(@Nonnull ConfigurationFormat format) {
       return setEbgpAdminCost(RoutingProtocol.BGP.getDefaultAdministrativeCost(format))
           .setIbgpAdminCost(RoutingProtocol.IBGP.getDefaultAdministrativeCost(format));
     }
 
+    @Nonnull
     public Builder setEbgpAdminCost(int ebgpAdminCost) {
       _ebgpAdminCost = ebgpAdminCost;
       return this;
     }
 
+    @Nonnull
     public Builder setIbgpAdminCost(int ibgpAdminCost) {
       _ibgpAdminCost = ibgpAdminCost;
       return this;
     }
 
+    @Nonnull
     public Builder setRouterId(Ip routerId) {
       _routerId = routerId;
       return this;
     }
 
+    @Nonnull
     public Builder setVrf(Vrf vrf) {
       _vrf = vrf;
       return this;
@@ -223,14 +228,12 @@ public class BgpProcess implements Serializable {
 
   /** Returns the admin cost for eBGP routes in this process */
   @JsonProperty(PROP_EBGP_ADMIN_COST)
-  @Nonnull
   private int getEbgpAdminCost() {
     return _ebgpAdminCost;
   }
 
   /** Returns the admin cost for iBGP routes in this process */
   @JsonProperty(PROP_IBGP_ADMIN_COST)
-  @Nonnull
   private int getIbgpAdminCost() {
     return _ibgpAdminCost;
   }
