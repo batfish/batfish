@@ -2,6 +2,7 @@ package org.batfish.datamodel.bgp;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import java.io.Serializable;
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 
@@ -17,6 +18,15 @@ public abstract class AddressFamily implements Serializable {
 
   @JsonIgnore
   public abstract Type getType();
+
+  /** Builder for an {@link AddressFamily} */
+  public abstract static class Builder<B extends Builder<B, F>, F extends AddressFamily> {
+    @Nonnull
+    public abstract B getThis();
+
+    @Nonnull
+    public abstract F build();
+  }
 
   /** BGP address family type */
   public enum Type {

@@ -104,7 +104,12 @@ public class BgpSessionPropertiesTest {
         getAddressFamilyIntersection(
             peer1,
             peerBuilder
-                .setEvpnAddressFamily(new EvpnAddressFamily(ImmutableSet.of(), ImmutableSet.of()))
+                .setEvpnAddressFamily(
+                    EvpnAddressFamily.builder()
+                        .setL2Vnis(ImmutableSet.of())
+                        .setL3Vnis(ImmutableSet.of())
+                        .setPropagateUnmatched(true)
+                        .build())
                 .build()),
         contains(Type.IPV4_UNICAST));
     // Clear ipv4, should get empty intersection back
