@@ -27,7 +27,7 @@ public class RoutePolicyDispositionStatement extends RoutePolicyStatement {
           If ifStatement =
               new If(
                   BooleanExprs.CALL_EXPR_CONTEXT,
-                  ImmutableList.of(Statements.ReturnFalse.toStaticStatement()),
+                  ImmutableList.of(Statements.ReturnTrue.toStaticStatement()),
                   ImmutableList.of(Statements.ExitAccept.toStaticStatement()));
           statements.add(ifStatement);
           break;
