@@ -17624,6 +17624,40 @@
                     ]
                   }
                 ]
+              },
+              {
+                "class" : "org.batfish.datamodel.routing_policy.statement.If",
+                "falseStatements" : [
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.If",
+                    "falseStatements" : [
+                      {
+                        "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                        "type" : "DefaultAction"
+                      }
+                    ],
+                    "guard" : {
+                      "class" : "org.batfish.datamodel.routing_policy.expr.BooleanExprs$StaticBooleanExpr",
+                      "type" : "CallStatementContext"
+                    },
+                    "trueStatements" : [
+                      {
+                        "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                        "type" : "Return"
+                      }
+                    ]
+                  }
+                ],
+                "guard" : {
+                  "class" : "org.batfish.datamodel.routing_policy.expr.BooleanExprs$StaticBooleanExpr",
+                  "type" : "CallExprContext"
+                },
+                "trueStatements" : [
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                    "type" : "ReturnLocalDefaultAction"
+                  }
+                ]
               }
             ]
           }
@@ -31086,6 +31120,40 @@
                     ]
                   }
                 ]
+              },
+              {
+                "class" : "org.batfish.datamodel.routing_policy.statement.If",
+                "falseStatements" : [
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.If",
+                    "falseStatements" : [
+                      {
+                        "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                        "type" : "DefaultAction"
+                      }
+                    ],
+                    "guard" : {
+                      "class" : "org.batfish.datamodel.routing_policy.expr.BooleanExprs$StaticBooleanExpr",
+                      "type" : "CallStatementContext"
+                    },
+                    "trueStatements" : [
+                      {
+                        "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                        "type" : "Return"
+                      }
+                    ]
+                  }
+                ],
+                "guard" : {
+                  "class" : "org.batfish.datamodel.routing_policy.expr.BooleanExprs$StaticBooleanExpr",
+                  "type" : "CallExprContext"
+                },
+                "trueStatements" : [
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                    "type" : "ReturnLocalDefaultAction"
+                  }
+                ]
               }
             ]
           },
@@ -31478,6 +31546,40 @@
                     "type" : "ExitReject"
                   }
                 ]
+              },
+              {
+                "class" : "org.batfish.datamodel.routing_policy.statement.If",
+                "falseStatements" : [
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.If",
+                    "falseStatements" : [
+                      {
+                        "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                        "type" : "DefaultAction"
+                      }
+                    ],
+                    "guard" : {
+                      "class" : "org.batfish.datamodel.routing_policy.expr.BooleanExprs$StaticBooleanExpr",
+                      "type" : "CallStatementContext"
+                    },
+                    "trueStatements" : [
+                      {
+                        "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                        "type" : "Return"
+                      }
+                    ]
+                  }
+                ],
+                "guard" : {
+                  "class" : "org.batfish.datamodel.routing_policy.expr.BooleanExprs$StaticBooleanExpr",
+                  "type" : "CallExprContext"
+                },
+                "trueStatements" : [
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                    "type" : "ReturnLocalDefaultAction"
+                  }
+                ]
               }
             ]
           }
@@ -31605,6 +31707,40 @@
                     ]
                   }
                 ]
+              },
+              {
+                "class" : "org.batfish.datamodel.routing_policy.statement.If",
+                "falseStatements" : [
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.If",
+                    "falseStatements" : [
+                      {
+                        "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                        "type" : "DefaultAction"
+                      }
+                    ],
+                    "guard" : {
+                      "class" : "org.batfish.datamodel.routing_policy.expr.BooleanExprs$StaticBooleanExpr",
+                      "type" : "CallStatementContext"
+                    },
+                    "trueStatements" : [
+                      {
+                        "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                        "type" : "Return"
+                      }
+                    ]
+                  }
+                ],
+                "guard" : {
+                  "class" : "org.batfish.datamodel.routing_policy.expr.BooleanExprs$StaticBooleanExpr",
+                  "type" : "CallExprContext"
+                },
+                "trueStatements" : [
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                    "type" : "ReturnLocalDefaultAction"
+                  }
+                ]
               }
             ]
           }
@@ -31713,6 +31849,40 @@
                     "type" : "ExitReject"
                   }
                 ]
+              },
+              {
+                "class" : "org.batfish.datamodel.routing_policy.statement.If",
+                "falseStatements" : [
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.If",
+                    "falseStatements" : [
+                      {
+                        "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                        "type" : "DefaultAction"
+                      }
+                    ],
+                    "guard" : {
+                      "class" : "org.batfish.datamodel.routing_policy.expr.BooleanExprs$StaticBooleanExpr",
+                      "type" : "CallStatementContext"
+                    },
+                    "trueStatements" : [
+                      {
+                        "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                        "type" : "Return"
+                      }
+                    ]
+                  }
+                ],
+                "guard" : {
+                  "class" : "org.batfish.datamodel.routing_policy.expr.BooleanExprs$StaticBooleanExpr",
+                  "type" : "CallExprContext"
+                },
+                "trueStatements" : [
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                    "type" : "ReturnLocalDefaultAction"
+                  }
+                ]
               }
             ]
           }
@@ -31775,6 +31945,40 @@
                   {
                     "class" : "org.batfish.datamodel.routing_policy.statement.CallStatement",
                     "calledPolicyName" : "global_cust_v4"
+                  }
+                ]
+              },
+              {
+                "class" : "org.batfish.datamodel.routing_policy.statement.If",
+                "falseStatements" : [
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.If",
+                    "falseStatements" : [
+                      {
+                        "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                        "type" : "DefaultAction"
+                      }
+                    ],
+                    "guard" : {
+                      "class" : "org.batfish.datamodel.routing_policy.expr.BooleanExprs$StaticBooleanExpr",
+                      "type" : "CallStatementContext"
+                    },
+                    "trueStatements" : [
+                      {
+                        "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                        "type" : "Return"
+                      }
+                    ]
+                  }
+                ],
+                "guard" : {
+                  "class" : "org.batfish.datamodel.routing_policy.expr.BooleanExprs$StaticBooleanExpr",
+                  "type" : "CallExprContext"
+                },
+                "trueStatements" : [
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                    "type" : "ReturnLocalDefaultAction"
                   }
                 ]
               }
@@ -31947,6 +32151,40 @@
                     ]
                   }
                 ]
+              },
+              {
+                "class" : "org.batfish.datamodel.routing_policy.statement.If",
+                "falseStatements" : [
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.If",
+                    "falseStatements" : [
+                      {
+                        "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                        "type" : "DefaultAction"
+                      }
+                    ],
+                    "guard" : {
+                      "class" : "org.batfish.datamodel.routing_policy.expr.BooleanExprs$StaticBooleanExpr",
+                      "type" : "CallStatementContext"
+                    },
+                    "trueStatements" : [
+                      {
+                        "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                        "type" : "Return"
+                      }
+                    ]
+                  }
+                ],
+                "guard" : {
+                  "class" : "org.batfish.datamodel.routing_policy.expr.BooleanExprs$StaticBooleanExpr",
+                  "type" : "CallExprContext"
+                },
+                "trueStatements" : [
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                    "type" : "ReturnLocalDefaultAction"
+                  }
+                ]
               }
             ]
           }
@@ -32103,6 +32341,40 @@
                     "type" : "SetLocalDefaultActionAccept"
                   }
                 ]
+              },
+              {
+                "class" : "org.batfish.datamodel.routing_policy.statement.If",
+                "falseStatements" : [
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.If",
+                    "falseStatements" : [
+                      {
+                        "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                        "type" : "DefaultAction"
+                      }
+                    ],
+                    "guard" : {
+                      "class" : "org.batfish.datamodel.routing_policy.expr.BooleanExprs$StaticBooleanExpr",
+                      "type" : "CallStatementContext"
+                    },
+                    "trueStatements" : [
+                      {
+                        "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                        "type" : "Return"
+                      }
+                    ]
+                  }
+                ],
+                "guard" : {
+                  "class" : "org.batfish.datamodel.routing_policy.expr.BooleanExprs$StaticBooleanExpr",
+                  "type" : "CallExprContext"
+                },
+                "trueStatements" : [
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                    "type" : "ReturnLocalDefaultAction"
+                  }
+                ]
               }
             ]
           },
@@ -32192,6 +32464,40 @@
                         "type" : "SetLocalDefaultActionAccept"
                       }
                     ]
+                  }
+                ]
+              },
+              {
+                "class" : "org.batfish.datamodel.routing_policy.statement.If",
+                "falseStatements" : [
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.If",
+                    "falseStatements" : [
+                      {
+                        "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                        "type" : "DefaultAction"
+                      }
+                    ],
+                    "guard" : {
+                      "class" : "org.batfish.datamodel.routing_policy.expr.BooleanExprs$StaticBooleanExpr",
+                      "type" : "CallStatementContext"
+                    },
+                    "trueStatements" : [
+                      {
+                        "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                        "type" : "Return"
+                      }
+                    ]
+                  }
+                ],
+                "guard" : {
+                  "class" : "org.batfish.datamodel.routing_policy.expr.BooleanExprs$StaticBooleanExpr",
+                  "type" : "CallExprContext"
+                },
+                "trueStatements" : [
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                    "type" : "ReturnLocalDefaultAction"
                   }
                 ]
               }
@@ -32305,6 +32611,40 @@
                     "type" : "ExitReject"
                   }
                 ]
+              },
+              {
+                "class" : "org.batfish.datamodel.routing_policy.statement.If",
+                "falseStatements" : [
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.If",
+                    "falseStatements" : [
+                      {
+                        "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                        "type" : "DefaultAction"
+                      }
+                    ],
+                    "guard" : {
+                      "class" : "org.batfish.datamodel.routing_policy.expr.BooleanExprs$StaticBooleanExpr",
+                      "type" : "CallStatementContext"
+                    },
+                    "trueStatements" : [
+                      {
+                        "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                        "type" : "Return"
+                      }
+                    ]
+                  }
+                ],
+                "guard" : {
+                  "class" : "org.batfish.datamodel.routing_policy.expr.BooleanExprs$StaticBooleanExpr",
+                  "type" : "CallExprContext"
+                },
+                "trueStatements" : [
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                    "type" : "ReturnLocalDefaultAction"
+                  }
+                ]
               }
             ]
           },
@@ -32321,6 +32661,40 @@
                   {
                     "class" : "org.batfish.datamodel.routing_policy.statement.CallStatement",
                     "calledPolicyName" : "cccc"
+                  }
+                ]
+              },
+              {
+                "class" : "org.batfish.datamodel.routing_policy.statement.If",
+                "falseStatements" : [
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.If",
+                    "falseStatements" : [
+                      {
+                        "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                        "type" : "DefaultAction"
+                      }
+                    ],
+                    "guard" : {
+                      "class" : "org.batfish.datamodel.routing_policy.expr.BooleanExprs$StaticBooleanExpr",
+                      "type" : "CallStatementContext"
+                    },
+                    "trueStatements" : [
+                      {
+                        "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                        "type" : "Return"
+                      }
+                    ]
+                  }
+                ],
+                "guard" : {
+                  "class" : "org.batfish.datamodel.routing_policy.expr.BooleanExprs$StaticBooleanExpr",
+                  "type" : "CallExprContext"
+                },
+                "trueStatements" : [
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                    "type" : "ReturnLocalDefaultAction"
                   }
                 ]
               }
@@ -32419,6 +32793,40 @@
                         "type" : "SetLocalDefaultActionAccept"
                       }
                     ]
+                  }
+                ]
+              },
+              {
+                "class" : "org.batfish.datamodel.routing_policy.statement.If",
+                "falseStatements" : [
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.If",
+                    "falseStatements" : [
+                      {
+                        "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                        "type" : "DefaultAction"
+                      }
+                    ],
+                    "guard" : {
+                      "class" : "org.batfish.datamodel.routing_policy.expr.BooleanExprs$StaticBooleanExpr",
+                      "type" : "CallStatementContext"
+                    },
+                    "trueStatements" : [
+                      {
+                        "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                        "type" : "Return"
+                      }
+                    ]
+                  }
+                ],
+                "guard" : {
+                  "class" : "org.batfish.datamodel.routing_policy.expr.BooleanExprs$StaticBooleanExpr",
+                  "type" : "CallExprContext"
+                },
+                "trueStatements" : [
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                    "type" : "ReturnLocalDefaultAction"
                   }
                 ]
               }
@@ -32592,6 +33000,40 @@
                     "type" : "Unsuppress"
                   }
                 ]
+              },
+              {
+                "class" : "org.batfish.datamodel.routing_policy.statement.If",
+                "falseStatements" : [
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.If",
+                    "falseStatements" : [
+                      {
+                        "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                        "type" : "DefaultAction"
+                      }
+                    ],
+                    "guard" : {
+                      "class" : "org.batfish.datamodel.routing_policy.expr.BooleanExprs$StaticBooleanExpr",
+                      "type" : "CallStatementContext"
+                    },
+                    "trueStatements" : [
+                      {
+                        "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                        "type" : "Return"
+                      }
+                    ]
+                  }
+                ],
+                "guard" : {
+                  "class" : "org.batfish.datamodel.routing_policy.expr.BooleanExprs$StaticBooleanExpr",
+                  "type" : "CallExprContext"
+                },
+                "trueStatements" : [
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                    "type" : "ReturnLocalDefaultAction"
+                  }
+                ]
               }
             ]
           },
@@ -32655,6 +33097,40 @@
                         "type" : "SetLocalDefaultActionAccept"
                       }
                     ]
+                  }
+                ]
+              },
+              {
+                "class" : "org.batfish.datamodel.routing_policy.statement.If",
+                "falseStatements" : [
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.If",
+                    "falseStatements" : [
+                      {
+                        "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                        "type" : "DefaultAction"
+                      }
+                    ],
+                    "guard" : {
+                      "class" : "org.batfish.datamodel.routing_policy.expr.BooleanExprs$StaticBooleanExpr",
+                      "type" : "CallStatementContext"
+                    },
+                    "trueStatements" : [
+                      {
+                        "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                        "type" : "Return"
+                      }
+                    ]
+                  }
+                ],
+                "guard" : {
+                  "class" : "org.batfish.datamodel.routing_policy.expr.BooleanExprs$StaticBooleanExpr",
+                  "type" : "CallExprContext"
+                },
+                "trueStatements" : [
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                    "type" : "ReturnLocalDefaultAction"
                   }
                 ]
               }
@@ -32811,6 +33287,40 @@
                     ]
                   }
                 ]
+              },
+              {
+                "class" : "org.batfish.datamodel.routing_policy.statement.If",
+                "falseStatements" : [
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.If",
+                    "falseStatements" : [
+                      {
+                        "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                        "type" : "DefaultAction"
+                      }
+                    ],
+                    "guard" : {
+                      "class" : "org.batfish.datamodel.routing_policy.expr.BooleanExprs$StaticBooleanExpr",
+                      "type" : "CallStatementContext"
+                    },
+                    "trueStatements" : [
+                      {
+                        "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                        "type" : "Return"
+                      }
+                    ]
+                  }
+                ],
+                "guard" : {
+                  "class" : "org.batfish.datamodel.routing_policy.expr.BooleanExprs$StaticBooleanExpr",
+                  "type" : "CallExprContext"
+                },
+                "trueStatements" : [
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                    "type" : "ReturnLocalDefaultAction"
+                  }
+                ]
               }
             ]
           },
@@ -32867,6 +33377,40 @@
                         "type" : "SetLocalDefaultActionAccept"
                       }
                     ]
+                  }
+                ]
+              },
+              {
+                "class" : "org.batfish.datamodel.routing_policy.statement.If",
+                "falseStatements" : [
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.If",
+                    "falseStatements" : [
+                      {
+                        "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                        "type" : "DefaultAction"
+                      }
+                    ],
+                    "guard" : {
+                      "class" : "org.batfish.datamodel.routing_policy.expr.BooleanExprs$StaticBooleanExpr",
+                      "type" : "CallStatementContext"
+                    },
+                    "trueStatements" : [
+                      {
+                        "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                        "type" : "Return"
+                      }
+                    ]
+                  }
+                ],
+                "guard" : {
+                  "class" : "org.batfish.datamodel.routing_policy.expr.BooleanExprs$StaticBooleanExpr",
+                  "type" : "CallExprContext"
+                },
+                "trueStatements" : [
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                    "type" : "ReturnLocalDefaultAction"
                   }
                 ]
               }
@@ -32941,6 +33485,40 @@
                     "type" : "ExitReject"
                   }
                 ]
+              },
+              {
+                "class" : "org.batfish.datamodel.routing_policy.statement.If",
+                "falseStatements" : [
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.If",
+                    "falseStatements" : [
+                      {
+                        "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                        "type" : "DefaultAction"
+                      }
+                    ],
+                    "guard" : {
+                      "class" : "org.batfish.datamodel.routing_policy.expr.BooleanExprs$StaticBooleanExpr",
+                      "type" : "CallStatementContext"
+                    },
+                    "trueStatements" : [
+                      {
+                        "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                        "type" : "Return"
+                      }
+                    ]
+                  }
+                ],
+                "guard" : {
+                  "class" : "org.batfish.datamodel.routing_policy.expr.BooleanExprs$StaticBooleanExpr",
+                  "type" : "CallExprContext"
+                },
+                "trueStatements" : [
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                    "type" : "ReturnLocalDefaultAction"
+                  }
+                ]
               }
             ]
           },
@@ -32977,6 +33555,40 @@
                         "type" : "SetLocalDefaultActionAccept"
                       }
                     ]
+                  }
+                ]
+              },
+              {
+                "class" : "org.batfish.datamodel.routing_policy.statement.If",
+                "falseStatements" : [
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.If",
+                    "falseStatements" : [
+                      {
+                        "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                        "type" : "DefaultAction"
+                      }
+                    ],
+                    "guard" : {
+                      "class" : "org.batfish.datamodel.routing_policy.expr.BooleanExprs$StaticBooleanExpr",
+                      "type" : "CallStatementContext"
+                    },
+                    "trueStatements" : [
+                      {
+                        "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                        "type" : "Return"
+                      }
+                    ]
+                  }
+                ],
+                "guard" : {
+                  "class" : "org.batfish.datamodel.routing_policy.expr.BooleanExprs$StaticBooleanExpr",
+                  "type" : "CallExprContext"
+                },
+                "trueStatements" : [
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                    "type" : "ReturnLocalDefaultAction"
                   }
                 ]
               }
@@ -33074,6 +33686,40 @@
                   {
                     "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
                     "type" : "SetLocalDefaultActionAccept"
+                  }
+                ]
+              },
+              {
+                "class" : "org.batfish.datamodel.routing_policy.statement.If",
+                "falseStatements" : [
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.If",
+                    "falseStatements" : [
+                      {
+                        "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                        "type" : "DefaultAction"
+                      }
+                    ],
+                    "guard" : {
+                      "class" : "org.batfish.datamodel.routing_policy.expr.BooleanExprs$StaticBooleanExpr",
+                      "type" : "CallStatementContext"
+                    },
+                    "trueStatements" : [
+                      {
+                        "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                        "type" : "Return"
+                      }
+                    ]
+                  }
+                ],
+                "guard" : {
+                  "class" : "org.batfish.datamodel.routing_policy.expr.BooleanExprs$StaticBooleanExpr",
+                  "type" : "CallExprContext"
+                },
+                "trueStatements" : [
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                    "type" : "ReturnLocalDefaultAction"
                   }
                 ]
               }
@@ -33186,6 +33832,40 @@
                     ]
                   }
                 ]
+              },
+              {
+                "class" : "org.batfish.datamodel.routing_policy.statement.If",
+                "falseStatements" : [
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.If",
+                    "falseStatements" : [
+                      {
+                        "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                        "type" : "DefaultAction"
+                      }
+                    ],
+                    "guard" : {
+                      "class" : "org.batfish.datamodel.routing_policy.expr.BooleanExprs$StaticBooleanExpr",
+                      "type" : "CallStatementContext"
+                    },
+                    "trueStatements" : [
+                      {
+                        "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                        "type" : "Return"
+                      }
+                    ]
+                  }
+                ],
+                "guard" : {
+                  "class" : "org.batfish.datamodel.routing_policy.expr.BooleanExprs$StaticBooleanExpr",
+                  "type" : "CallExprContext"
+                },
+                "trueStatements" : [
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                    "type" : "ReturnLocalDefaultAction"
+                  }
+                ]
               }
             ]
           },
@@ -33226,6 +33906,40 @@
                         "type" : "SetLocalDefaultActionAccept"
                       }
                     ]
+                  }
+                ]
+              },
+              {
+                "class" : "org.batfish.datamodel.routing_policy.statement.If",
+                "falseStatements" : [
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.If",
+                    "falseStatements" : [
+                      {
+                        "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                        "type" : "DefaultAction"
+                      }
+                    ],
+                    "guard" : {
+                      "class" : "org.batfish.datamodel.routing_policy.expr.BooleanExprs$StaticBooleanExpr",
+                      "type" : "CallStatementContext"
+                    },
+                    "trueStatements" : [
+                      {
+                        "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                        "type" : "Return"
+                      }
+                    ]
+                  }
+                ],
+                "guard" : {
+                  "class" : "org.batfish.datamodel.routing_policy.expr.BooleanExprs$StaticBooleanExpr",
+                  "type" : "CallExprContext"
+                },
+                "trueStatements" : [
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                    "type" : "ReturnLocalDefaultAction"
                   }
                 ]
               }
@@ -33926,6 +34640,40 @@
                     "type" : "ExitReject"
                   }
                 ]
+              },
+              {
+                "class" : "org.batfish.datamodel.routing_policy.statement.If",
+                "falseStatements" : [
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.If",
+                    "falseStatements" : [
+                      {
+                        "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                        "type" : "DefaultAction"
+                      }
+                    ],
+                    "guard" : {
+                      "class" : "org.batfish.datamodel.routing_policy.expr.BooleanExprs$StaticBooleanExpr",
+                      "type" : "CallStatementContext"
+                    },
+                    "trueStatements" : [
+                      {
+                        "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                        "type" : "Return"
+                      }
+                    ]
+                  }
+                ],
+                "guard" : {
+                  "class" : "org.batfish.datamodel.routing_policy.expr.BooleanExprs$StaticBooleanExpr",
+                  "type" : "CallExprContext"
+                },
+                "trueStatements" : [
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                    "type" : "ReturnLocalDefaultAction"
+                  }
+                ]
               }
             ]
           }
@@ -33989,6 +34737,40 @@
                   {
                     "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
                     "type" : "SetLocalDefaultActionAccept"
+                  }
+                ]
+              },
+              {
+                "class" : "org.batfish.datamodel.routing_policy.statement.If",
+                "falseStatements" : [
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.If",
+                    "falseStatements" : [
+                      {
+                        "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                        "type" : "DefaultAction"
+                      }
+                    ],
+                    "guard" : {
+                      "class" : "org.batfish.datamodel.routing_policy.expr.BooleanExprs$StaticBooleanExpr",
+                      "type" : "CallStatementContext"
+                    },
+                    "trueStatements" : [
+                      {
+                        "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                        "type" : "Return"
+                      }
+                    ]
+                  }
+                ],
+                "guard" : {
+                  "class" : "org.batfish.datamodel.routing_policy.expr.BooleanExprs$StaticBooleanExpr",
+                  "type" : "CallExprContext"
+                },
+                "trueStatements" : [
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                    "type" : "ReturnLocalDefaultAction"
                   }
                 ]
               }
@@ -34751,6 +35533,40 @@
                   {
                     "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
                     "type" : "SetLocalDefaultActionAccept"
+                  }
+                ]
+              },
+              {
+                "class" : "org.batfish.datamodel.routing_policy.statement.If",
+                "falseStatements" : [
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.If",
+                    "falseStatements" : [
+                      {
+                        "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                        "type" : "DefaultAction"
+                      }
+                    ],
+                    "guard" : {
+                      "class" : "org.batfish.datamodel.routing_policy.expr.BooleanExprs$StaticBooleanExpr",
+                      "type" : "CallStatementContext"
+                    },
+                    "trueStatements" : [
+                      {
+                        "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                        "type" : "Return"
+                      }
+                    ]
+                  }
+                ],
+                "guard" : {
+                  "class" : "org.batfish.datamodel.routing_policy.expr.BooleanExprs$StaticBooleanExpr",
+                  "type" : "CallExprContext"
+                },
+                "trueStatements" : [
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                    "type" : "ReturnLocalDefaultAction"
                   }
                 ]
               }

@@ -46,6 +46,10 @@ import org.hamcrest.Matcher;
 
 public class ConfigurationMatchers {
 
+  public static HasConfigurationFormat hasConfigurationFormat(ConfigurationFormat format) {
+    return new HasConfigurationFormat(equalTo(format));
+  }
+
   public static HasConfigurationFormat hasConfigurationFormat(
       @Nonnull Matcher<? super ConfigurationFormat> subMatcher) {
     return new HasConfigurationFormat(subMatcher);

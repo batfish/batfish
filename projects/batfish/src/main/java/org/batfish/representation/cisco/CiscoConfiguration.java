@@ -3098,17 +3098,20 @@ public final class CiscoConfiguration extends VendorConfiguration {
     for (RoutePolicyStatement routePolicyStatement : routePolicy.getStatements()) {
       routePolicyStatement.applyTo(statements, this, c, _w);
     }
-    If nonBoolean =
-        new If(
-            BooleanExprs.CALL_STATEMENT_CONTEXT,
-            Collections.singletonList(Statements.Return.toStaticStatement()),
-            Collections.singletonList(Statements.DefaultAction.toStaticStatement()));
-    @SuppressWarnings("unused") // TODO(https://github.com/batfish/batfish/issues/1306)
-    If endPolicy =
+    // At the end of a routing policy, we terminate based on the context.
+    // 1. we're in call expr context, so we return the local default action of this policy.
+    // 2. we're in call statement context, so we just return
+    // 3. otherwise, we reach the end of the policy and return the policy's default action.
+    If endPolicyBasedOnContext =
         new If(
             BooleanExprs.CALL_EXPR_CONTEXT,
             Collections.singletonList(Statements.ReturnLocalDefaultAction.toStaticStatement()),
-            Collections.singletonList(nonBoolean));
+            Collections.singletonList(
+                new If(
+                    BooleanExprs.CALL_STATEMENT_CONTEXT,
+                    Collections.singletonList(Statements.Return.toStaticStatement()),
+                    Collections.singletonList(Statements.DefaultAction.toStaticStatement()))));
+    statements.add(endPolicyBasedOnContext);
     return rp;
   }
 
