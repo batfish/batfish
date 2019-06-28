@@ -3100,6 +3100,43 @@ public class CiscoGrammarTest {
   }
 
   @Test
+  public void testIosXrPrefixSet() throws IOException {
+    String hostname = "ios-xr-prefix-set";
+    Configuration c = parseConfig(hostname);
+    assertThat(c, hasConfigurationFormat(ConfigurationFormat.CISCO_IOS_XR));
+
+    Prefix permittedPrefix = Prefix.parse("1.2.3.4/32");
+    Prefix rejectedPrefix = Prefix.parse("2.0.0.0/8");
+
+    StaticRoute permittedRoute =
+        StaticRoute.builder().setAdministrativeCost(1).setNetwork(permittedPrefix).build();
+    StaticRoute rejectedRoute =
+        StaticRoute.builder().setAdministrativeCost(1).setNetwork(rejectedPrefix).build();
+
+    // The route-policy accepts and rejects the same prefixes.
+    RoutingPolicy rp = c.getRoutingPolicies().get("rp_ip");
+    assertThat(rp, notNullValue());
+    assertTrue(
+        rp.process(permittedRoute, Bgpv4Route.builder(), null, DEFAULT_VRF_NAME, Direction.OUT));
+    assertFalse(
+        rp.process(rejectedRoute, Bgpv4Route.builder(), null, DEFAULT_VRF_NAME, Direction.OUT));
+
+    // The BGP peer export policy also accepts and rejects the same prefixes.
+    BgpActivePeerConfig bgpCfg =
+        c.getDefaultVrf().getBgpProcess().getActiveNeighbors().get(Prefix.parse("10.1.1.1/32"));
+    assertThat(bgpCfg, notNullValue());
+    RoutingPolicy bgpRpOut = c.getRoutingPolicies().get(bgpCfg.getExportPolicy());
+    assertThat(bgpRpOut, notNullValue());
+
+    assertTrue(
+        bgpRpOut.process(
+            permittedRoute, Bgpv4Route.builder(), null, DEFAULT_VRF_NAME, Direction.OUT));
+    assertFalse(
+        bgpRpOut.process(
+            rejectedRoute, Bgpv4Route.builder(), null, DEFAULT_VRF_NAME, Direction.OUT));
+  }
+
+  @Test
   public void testIosProxyArp() throws IOException {
     Configuration proxyArpOmitted = parseConfig("iosProxyArp");
     assertThat(proxyArpOmitted, hasInterfaces(hasEntry(equalTo("Ethernet0/0"), isProxyArp())));
