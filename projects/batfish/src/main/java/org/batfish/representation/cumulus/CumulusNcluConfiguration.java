@@ -257,7 +257,12 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
                 }
               });
 
-      builder.setEvpnAddressFamily(new EvpnAddressFamily(l2Vnis.build(), l3Vnis.build()));
+      builder.setEvpnAddressFamily(
+          EvpnAddressFamily.builder()
+              .setL2Vnis(l2Vnis.build())
+              .setL3Vnis(l3Vnis.build())
+              .setPropagateUnmatched(true)
+              .build());
     }
     builder.build();
   }

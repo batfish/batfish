@@ -156,7 +156,11 @@ public class BgpRoutingProcessTest {
             .setLocalIp(localIp)
             .setLocalAs(2L)
             .setEvpnAddressFamily(
-                new EvpnAddressFamily(ImmutableSet.of(), ImmutableSet.of(vniConfig1, vniConfig2)))
+                EvpnAddressFamily.builder()
+                    .setL2Vnis(ImmutableSet.of())
+                    .setL3Vnis(ImmutableSet.of(vniConfig1, vniConfig2))
+                    .setPropagateUnmatched(true)
+                    .build())
             .build();
     _bgpProcess
         .getActiveNeighbors()
@@ -250,7 +254,11 @@ public class BgpRoutingProcessTest {
             .setLocalIp(localIp)
             .setLocalAs(2L)
             .setEvpnAddressFamily(
-                new EvpnAddressFamily(ImmutableSet.of(), ImmutableSet.of(vniConfig1, vniConfig2)))
+                EvpnAddressFamily.builder()
+                    .setL2Vnis(ImmutableSet.of())
+                    .setL3Vnis(ImmutableSet.of(vniConfig1, vniConfig2))
+                    .setPropagateUnmatched(true)
+                    .build())
             .build();
     _bgpProcess
         .getActiveNeighbors()

@@ -14412,7 +14412,8 @@
                         "vni" : 10001,
                         "vrf" : "vrf1"
                       }
-                    ]
+                    ],
+                    "propagateUnmatched" : true
                   },
                   "exportPolicy" : "~BGP_PEER_EXPORT_POLICY:default:swp1~",
                   "ipv4UnicastAddressFamily" : { },
@@ -14445,7 +14446,8 @@
                         "vni" : 10001,
                         "vrf" : "vrf1"
                       }
-                    ]
+                    ],
+                    "propagateUnmatched" : true
                   },
                   "exportPolicy" : "~BGP_PEER_EXPORT_POLICY:default:swp2~",
                   "ipv4UnicastAddressFamily" : { },
@@ -14478,7 +14480,8 @@
                         "vni" : 10001,
                         "vrf" : "vrf1"
                       }
-                    ]
+                    ],
+                    "propagateUnmatched" : true
                   },
                   "exportPolicy" : "~BGP_PEER_EXPORT_POLICY:default:swp3~",
                   "group" : "GROUP",
