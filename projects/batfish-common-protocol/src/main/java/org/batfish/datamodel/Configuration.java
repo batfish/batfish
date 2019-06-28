@@ -9,7 +9,6 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.ImmutableSortedSet;
-import com.google.common.collect.Iterables;
 import com.google.common.collect.Ordering;
 import java.io.Serializable;
 import java.util.Collections;
@@ -290,10 +289,7 @@ public final class Configuration implements Serializable {
     for (Vrf vrf : _vrfs.values()) {
       BgpProcess bgpProcess = vrf.getBgpProcess();
       if (bgpProcess != null) {
-        for (BgpPeerConfig neighbor :
-            Iterables.concat(
-                bgpProcess.getActiveNeighbors().values(),
-                bgpProcess.getPassiveNeighbors().values())) {
+        for (BgpPeerConfig neighbor : bgpProcess.getAllPeerConfigs()) {
           neighbor.setExportPolicySources(getRoutingPolicySources(neighbor.getExportPolicy()));
           neighbor.setImportPolicySources(getRoutingPolicySources(neighbor.getImportPolicy()));
         }
