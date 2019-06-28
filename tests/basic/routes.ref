@@ -799,6 +799,21 @@
       },
       {
         "Node" : {
+          "id" : "node-as3border1",
+          "name" : "as3border1"
+        },
+        "VRF" : "default",
+        "Network" : "2.128.0.0/16",
+        "Next_Hop_IP" : "10.23.21.2",
+        "Next_Hop_Interface" : "dynamic",
+        "Next_Hop" : "as2border2",
+        "Protocol" : "bgp",
+        "Tag" : null,
+        "Admin_Distance" : 20,
+        "Metric" : 50
+      },
+      {
+        "Node" : {
           "id" : "node-as2core2",
           "name" : "as2core2"
         },
@@ -3949,6 +3964,21 @@
       },
       {
         "Node" : {
+          "id" : "node-as1border1",
+          "name" : "as1border1"
+        },
+        "VRF" : "default",
+        "Network" : "2.128.0.0/16",
+        "Next_Hop_IP" : "10.12.11.2",
+        "Next_Hop_Interface" : "dynamic",
+        "Next_Hop" : "as2border1",
+        "Protocol" : "bgp",
+        "Tag" : null,
+        "Admin_Distance" : 20,
+        "Metric" : 50
+      },
+      {
+        "Node" : {
           "id" : "node-as1border2",
           "name" : "as1border2"
         },
@@ -5164,10 +5194,10 @@
       }
     ],
     "summary" : {
-      "notes" : "Found 339 results",
+      "notes" : "Found 341 results",
       "numFailed" : 0,
       "numPassed" : 0,
-      "numResults" : 339
+      "numResults" : 341
     }
   }
 ]
