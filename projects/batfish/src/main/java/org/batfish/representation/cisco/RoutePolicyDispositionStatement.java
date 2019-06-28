@@ -34,8 +34,15 @@ public class RoutePolicyDispositionStatement extends RoutePolicyStatement {
         }
 
       case DROP:
-        statements.add(Statements.ExitReject.toStaticStatement());
-        break;
+        {
+          If ifStatement =
+              new If(
+                  BooleanExprs.CALL_EXPR_CONTEXT,
+                  ImmutableList.of(Statements.ReturnFalse.toStaticStatement()),
+                  ImmutableList.of(Statements.ExitReject.toStaticStatement()));
+          statements.add(ifStatement);
+          break;
+        }
 
       case PASS:
         {
