@@ -1,5 +1,6 @@
 package org.batfish.dataplane.protocols;
 
+import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasNextHopIp;
 import static org.batfish.dataplane.protocols.BgpProtocolHelper.convertGeneratedRouteToBgp;
 import static org.batfish.dataplane.protocols.BgpProtocolHelper.convertNonBgpRouteToBgpRoute;
 import static org.hamcrest.Matchers.empty;
@@ -119,7 +120,11 @@ public final class BgpProtocolHelperTransformBgpRouteOnExportTest {
           _sessionProperties,
           _fromBgpProcess,
           _toBgpProcess,
-          convertGeneratedRouteToBgp((GeneratedRoute) route, _fromBgpProcess.getRouterId(), false));
+          convertGeneratedRouteToBgp(
+              (GeneratedRoute) route,
+              _fromBgpProcess.getRouterId(),
+              _fromNeighbor.getLocalIp(),
+              false));
     } else if (route instanceof Bgpv4Route) {
       return BgpProtocolHelper.transformBgpRoutePreExport(
           _fromNeighbor,
@@ -166,6 +171,14 @@ public final class BgpProtocolHelperTransformBgpRouteOnExportTest {
       assertThat(runTransformBgpRoutePreExport(_baseAggRouteBuilder.build()), not(nullValue()));
       assertThat(runTransformBgpRoutePreExport(_baseBgpRouteBuilder.build()), not(nullValue()));
     }
+  }
+
+  @Test
+  public void testConvertGeneratedToBgpHasNextHop() {
+    Ip nextHopIp = Ip.parse("1.1.1.1");
+    assertThat(
+        convertGeneratedRouteToBgp(_baseAggRouteBuilder.build(), Ip.ZERO, nextHopIp, false),
+        hasNextHopIp(nextHopIp));
   }
 
   /**
