@@ -137,7 +137,12 @@ public class EvpnTest {
         .setLocalIp(ipNode1)
         .setLocalAs(1L)
         .setBgpProcess(bgpProcess1)
-        .setEvpnAddressFamily(new EvpnAddressFamily(ImmutableSet.of(), ImmutableSet.of(vniConfig1)))
+        .setEvpnAddressFamily(
+            EvpnAddressFamily.builder()
+                .setL2Vnis(ImmutableSet.of())
+                .setL3Vnis(ImmutableSet.of(vniConfig1))
+                .setPropagateUnmatched(true)
+                .build())
         .setExportPolicy(policyName)
         .build();
     nf.bgpNeighborBuilder()
@@ -147,7 +152,12 @@ public class EvpnTest {
         .setLocalIp(ipNode2)
         .setLocalAs(2L)
         .setBgpProcess(bgpProcess2)
-        .setEvpnAddressFamily(new EvpnAddressFamily(ImmutableSet.of(), ImmutableSet.of(vniConfig2)))
+        .setEvpnAddressFamily(
+            EvpnAddressFamily.builder()
+                .setL2Vnis(ImmutableSet.of())
+                .setL3Vnis(ImmutableSet.of(vniConfig2))
+                .setPropagateUnmatched(true)
+                .build())
         .setExportPolicy(policyName)
         .build();
 
