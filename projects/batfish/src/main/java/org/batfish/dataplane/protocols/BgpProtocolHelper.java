@@ -218,7 +218,7 @@ public final class BgpProtocolHelper {
    */
   @Nonnull
   public static Bgpv4Route convertGeneratedRouteToBgp(
-      GeneratedRoute generatedRoute, Ip routerId, boolean nonRouting) {
+      GeneratedRoute generatedRoute, Ip routerId, Ip nextHopIp, boolean nonRouting) {
     return Bgpv4Route.builder()
         .setAdmin(generatedRoute.getAdministrativeCost())
         .setAsPath(generatedRoute.getAsPath())
@@ -226,6 +226,7 @@ public final class BgpProtocolHelper {
         .setMetric(generatedRoute.getMetric())
         .setSrcProtocol(RoutingProtocol.AGGREGATE)
         .setProtocol(RoutingProtocol.AGGREGATE)
+        .setNextHopIp(nextHopIp)
         .setNetwork(generatedRoute.getNetwork())
         .setLocalPreference(Bgpv4Route.DEFAULT_LOCAL_PREFERENCE)
         /*

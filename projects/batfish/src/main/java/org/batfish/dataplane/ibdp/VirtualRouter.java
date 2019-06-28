@@ -765,7 +765,7 @@ public class VirtualRouter implements Serializable {
       // Prevent route from being merged into the main RIB by marking it non-routing
       Bgpv4Route br =
           BgpProtocolHelper.convertGeneratedRouteToBgp(
-              gr, _vrf.getBgpProcess().getRouterId(), true);
+              gr, _vrf.getBgpProcess().getRouterId(), Ip.ZERO, true);
       /* TODO: tests for this */
       RibDelta<Bgpv4Route> d1 = _bgpRoutingProcess._bgpv4Rib.mergeRouteGetDelta(br);
       _bgpRoutingProcess._bgpv4DeltaBuilder.from(d1);
@@ -1694,7 +1694,8 @@ public class VirtualRouter implements Serializable {
             .map(
                 r -> {
                   // Activate route and convert to BGP if activated
-                  Bgpv4Route bgpv4Route = processNeighborSpecificGeneratedRoute(r);
+                  Bgpv4Route bgpv4Route =
+                      processNeighborSpecificGeneratedRoute(r, sessionProperties.getHeadIp());
                   if (bgpv4Route == null) {
                     // Route was not activated
                     return null;
@@ -1726,7 +1727,8 @@ public class VirtualRouter implements Serializable {
    * @return a new {@link Bgpv4Route} if the {@code generatedRoute} was activated.
    */
   @Nullable
-  private Bgpv4Route processNeighborSpecificGeneratedRoute(@Nonnull GeneratedRoute generatedRoute) {
+  private Bgpv4Route processNeighborSpecificGeneratedRoute(
+      @Nonnull GeneratedRoute generatedRoute, Ip nextHopIp) {
     String policyName = generatedRoute.getGenerationPolicy();
     RoutingPolicy policy = policyName != null ? _c.getRoutingPolicies().get(policyName) : null;
     GeneratedRoute.Builder builder =
@@ -1734,7 +1736,7 @@ public class VirtualRouter implements Serializable {
             generatedRoute, policy, _mainRib.getTypedRoutes(), _vrf.getName());
     return builder != null
         ? BgpProtocolHelper.convertGeneratedRouteToBgp(
-            builder.build(), _vrf.getBgpProcess().getRouterId(), false)
+            builder.build(), _vrf.getBgpProcess().getRouterId(), nextHopIp, false)
         : null;
   }
 
@@ -1839,6 +1841,7 @@ public class VirtualRouter implements Serializable {
             ? BgpProtocolHelper.convertGeneratedRouteToBgp(
                     (GeneratedRoute) exportCandidate.getRoute(),
                     _bgpRoutingProcess.getRouterId(),
+                    sessionProperties.getHeadIp(),
                     false)
                 .toBuilder()
             : BgpProtocolHelper.convertNonBgpRouteToBgpRoute(
