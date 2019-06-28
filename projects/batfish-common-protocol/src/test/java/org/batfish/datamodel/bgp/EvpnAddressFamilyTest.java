@@ -67,12 +67,14 @@ public class EvpnAddressFamilyTest {
 
   @Test
   public void testJsonSerialization() throws IOException {
-    EvpnAddressFamily af =
+    Builder builder =
         builder()
             .setL2Vnis(ImmutableSet.of())
             .setL3Vnis(ImmutableSet.of())
-            .setPropagateUnmatched(true)
-            .build();
-    assertThat(BatfishObjectMapper.clone(af, EvpnAddressFamily.class), equalTo(af));
+            .setPropagateUnmatched(true);
+    EvpnAddressFamily af1 = builder.build();
+    assertThat(BatfishObjectMapper.clone(af1, EvpnAddressFamily.class), equalTo(af1));
+    EvpnAddressFamily af2 = builder.setPropagateUnmatched(false).build();
+    assertThat(BatfishObjectMapper.clone(af2, EvpnAddressFamily.class), equalTo(af2));
   }
 }
