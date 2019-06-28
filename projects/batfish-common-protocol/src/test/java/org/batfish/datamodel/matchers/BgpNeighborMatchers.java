@@ -8,37 +8,19 @@ import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.BgpPeerConfig;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.LongSpace;
-import org.batfish.datamodel.matchers.BgpNeighborMatchersImpl.HasAllowLocalAsIn;
-import org.batfish.datamodel.matchers.BgpNeighborMatchersImpl.HasAllowRemoteAsOut;
+import org.batfish.datamodel.bgp.Ipv4UnicastAddressFamily;
 import org.batfish.datamodel.matchers.BgpNeighborMatchersImpl.HasClusterId;
 import org.batfish.datamodel.matchers.BgpNeighborMatchersImpl.HasDescription;
 import org.batfish.datamodel.matchers.BgpNeighborMatchersImpl.HasEnforceFirstAs;
-import org.batfish.datamodel.matchers.BgpNeighborMatchersImpl.HasExportPolicy;
+import org.batfish.datamodel.matchers.BgpNeighborMatchersImpl.HasIpv4UnicastAddressFamily;
 import org.batfish.datamodel.matchers.BgpNeighborMatchersImpl.HasLocalAs;
 import org.batfish.datamodel.matchers.BgpNeighborMatchersImpl.HasLocalIp;
 import org.batfish.datamodel.matchers.BgpNeighborMatchersImpl.HasRemoteAs;
-import org.batfish.datamodel.matchers.BgpNeighborMatchersImpl.HasSendCommunity;
 import org.hamcrest.Matcher;
 
 /** Matchers for {@link BgpPeerConfig} */
 @ParametersAreNonnullByDefault
 public class BgpNeighborMatchers {
-
-  /**
-   * Provides a matcher that matches if the {@link BgpPeerConfig}'s allowLocalAsIn is {@code value}.
-   */
-  public static HasAllowLocalAsIn hasAllowLocalAsIn(boolean value) {
-    return new HasAllowLocalAsIn(equalTo(value));
-  }
-
-  /**
-   * Provides a matcher that matches if the {@link BgpPeerConfig}'s allowRemoteAsOut is {@code
-   * value}.
-   */
-  public static HasAllowRemoteAsOut hasAllowRemoteAsOut(boolean value) {
-    return new HasAllowRemoteAsOut(equalTo(value));
-  }
-
   /**
    * Provides a matcher that matches if the {@link BgpPeerConfig}'s clusterId is {@code
    * expectedClusterId}.
@@ -49,18 +31,20 @@ public class BgpNeighborMatchers {
 
   /**
    * Provides a matcher that matches if the {@link BgpPeerConfig} has the specified {@code
-   * expectedExportPolicy}.
-   */
-  public static @Nonnull Matcher<BgpPeerConfig> hasExportPolicy(String expectedExportPolicy) {
-    return new HasExportPolicy(equalTo(expectedExportPolicy));
-  }
-
-  /**
-   * Provides a matcher that matches if the {@link BgpPeerConfig} has the specified {@code
    * expectedDescription}.
    */
   public static @Nonnull Matcher<BgpPeerConfig> hasDescription(String expectedDescription) {
     return new HasDescription(equalTo(expectedDescription));
+  }
+
+  /**
+   * Provides a matcher that matches if the {@link BgpPeerConfig} has a {@link
+   * Ipv4UnicastAddressFamily} that matches {@code submatcher}.
+   */
+  @Nonnull
+  public static Matcher<BgpPeerConfig> hasIpv4UnicastAddressFamily(
+      @Nonnull Matcher<? super Ipv4UnicastAddressFamily> subMatcher) {
+    return new HasIpv4UnicastAddressFamily(subMatcher);
   }
 
   /**
@@ -130,13 +114,5 @@ public class BgpNeighborMatchers {
    */
   public static Matcher<BgpPeerConfig> hasRemoteAs(Matcher<? super LongSpace> subMatcher) {
     return new HasRemoteAs(subMatcher);
-  }
-
-  /**
-   * Provides a matcher that matches if the {@link BgpPeerConfig}'s sendCommunity is equal to the
-   * given value.
-   */
-  public static Matcher<BgpPeerConfig> hasSendCommunity(boolean value) {
-    return new HasSendCommunity(equalTo(value));
   }
 }

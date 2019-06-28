@@ -103,6 +103,7 @@ import org.batfish.datamodel.acl.OrMatchExpr;
 import org.batfish.datamodel.acl.OriginatingFromDevice;
 import org.batfish.datamodel.acl.PermittedByAcl;
 import org.batfish.datamodel.acl.TrueExpr;
+import org.batfish.datamodel.bgp.AddressFamilySettings;
 import org.batfish.datamodel.bgp.Ipv4UnicastAddressFamily;
 import org.batfish.datamodel.bgp.community.StandardCommunity;
 import org.batfish.datamodel.dataplane.rib.RibId;
@@ -397,27 +398,29 @@ public final class JuniperConfiguration extends VendorConfiguration {
               .get();
 
       boolean allowLocalAsIn = loops > 0;
-      neighbor.setAllowLocalAsIn(allowLocalAsIn);
+      AddressFamilySettings.Builder ipv4AfSettingsBuilder = AddressFamilySettings.builder();
+      Ipv4UnicastAddressFamily.Builder ipv4AfBuilder = Ipv4UnicastAddressFamily.builder();
+      ipv4AfSettingsBuilder.setAllowLocalAsIn(allowLocalAsIn);
       Boolean advertisePeerAs = ig.getAdvertisePeerAs();
       if (advertisePeerAs == null) {
         advertisePeerAs = false;
       }
-      neighbor.setAllowRemoteAsOut(advertisePeerAs);
+      ipv4AfSettingsBuilder.setAllowRemoteAsOut(advertisePeerAs);
       Boolean advertiseExternal = ig.getAdvertiseExternal();
       if (advertiseExternal == null) {
         advertiseExternal = false;
       }
-      neighbor.setAdvertiseExternal(advertiseExternal);
+      ipv4AfSettingsBuilder.setAdvertiseExternal(advertiseExternal);
       Boolean advertiseInactive = ig.getAdvertiseInactive();
       if (advertiseInactive == null) {
         advertiseInactive = false;
       }
-      neighbor.setAdvertiseInactive(advertiseInactive);
+      ipv4AfSettingsBuilder.setAdvertiseInactive(advertiseInactive);
       neighbor.setGroup(ig.getGroupName());
 
       // import policies
       String peerImportPolicyName = "~PEER_IMPORT_POLICY:" + ig.getRemoteAddress() + "~";
-      neighbor.setImportPolicy(peerImportPolicyName);
+      ipv4AfBuilder.setImportPolicy(peerImportPolicyName);
       RoutingPolicy peerImportPolicy = new RoutingPolicy(peerImportPolicyName, _c);
       _c.getRoutingPolicies().put(peerImportPolicyName, peerImportPolicy);
       // default import policy is to accept
@@ -459,7 +462,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
 
       // export policies
       String peerExportPolicyName = computePeerExportPolicyName(ig.getRemoteAddress());
-      neighbor.setExportPolicy(peerExportPolicyName);
+      ipv4AfBuilder.setExportPolicy(peerExportPolicyName);
       RoutingPolicy peerExportPolicy = new RoutingPolicy(peerExportPolicyName, _c);
       _c.getRoutingPolicies().put(peerExportPolicyName, peerExportPolicy);
       peerExportPolicy.getStatements().add(new SetDefaultPolicy(DEFAULT_BGP_EXPORT_POLICY_NAME));
@@ -530,7 +533,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
 
       // TODO: find out if there is a juniper equivalent of cisco
       // send-community
-      neighbor.setSendCommunity(true);
+      ipv4AfSettingsBuilder.setSendCommunity(true);
 
       // inherit update-source
       Ip localIp = ig.getLocalAddress();
@@ -569,7 +572,8 @@ public final class JuniperConfiguration extends VendorConfiguration {
         neighbor.setLocalIp(localIp);
       }
       neighbor.setBgpProcess(proc);
-      neighbor.setIpv4UnicastAddressFamily(Ipv4UnicastAddressFamily.instance());
+      neighbor.setIpv4UnicastAddressFamily(
+          ipv4AfBuilder.setAddressFamilySettings(ipv4AfSettingsBuilder.build()).build());
       neighbor.build();
     }
     proc.setMultipathEbgp(multipathEbgpSet);

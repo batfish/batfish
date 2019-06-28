@@ -38,6 +38,8 @@ import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.answers.Schema;
 import org.batfish.datamodel.answers.SelfDescribingObject;
+import org.batfish.datamodel.bgp.AddressFamilySettings;
+import org.batfish.datamodel.bgp.Ipv4UnicastAddressFamily;
 import org.batfish.datamodel.pojo.Node;
 import org.batfish.datamodel.questions.BgpPeerPropertySpecifier;
 import org.batfish.datamodel.table.Row;
@@ -62,9 +64,13 @@ public final class BgpPeerConfigurationAnswererTest {
             .setPeerAddress(Ip.parse("2.2.2.2"))
             .setRouteReflectorClient(false)
             .setGroup("g1")
-            .setImportPolicySources(ImmutableSortedSet.of("p1"))
-            .setExportPolicySources(ImmutableSortedSet.of("p2"))
-            .setSendCommunity(false)
+            .setIpv4UnicastAddressFamily(
+                Ipv4UnicastAddressFamily.builder()
+                    .setImportPolicySources(ImmutableSortedSet.of("p1"))
+                    .setExportPolicySources(ImmutableSortedSet.of("p2"))
+                    .setAddressFamilySettings(
+                        AddressFamilySettings.builder().setSendCommunity(false).build())
+                    .build())
             .build();
     BgpPassivePeerConfig passivePeer =
         BgpPassivePeerConfig.builder()
@@ -75,9 +81,13 @@ public final class BgpPeerConfigurationAnswererTest {
             .setRouteReflectorClient(true)
             .setClusterId(Ip.parse("5.5.5.5").asLong())
             .setGroup("g2")
-            .setImportPolicySources(ImmutableSortedSet.of("p3"))
-            .setExportPolicySources(ImmutableSortedSet.of("p4"))
-            .setSendCommunity(false)
+            .setIpv4UnicastAddressFamily(
+                Ipv4UnicastAddressFamily.builder()
+                    .setAddressFamilySettings(
+                        AddressFamilySettings.builder().setSendCommunity(false).build())
+                    .setImportPolicySources(ImmutableSortedSet.of("p3"))
+                    .setExportPolicySources(ImmutableSortedSet.of("p4"))
+                    .build())
             .build();
     BgpUnnumberedPeerConfig unnumberedPeer =
         BgpUnnumberedPeerConfig.builder()
@@ -88,9 +98,13 @@ public final class BgpPeerConfigurationAnswererTest {
             .setRouteReflectorClient(true)
             .setClusterId(Ip.parse("6.6.6.6").asLong())
             .setGroup("g3")
-            .setImportPolicySources(ImmutableSortedSet.of("p5"))
-            .setExportPolicySources(ImmutableSortedSet.of("p6"))
-            .setSendCommunity(false)
+            .setIpv4UnicastAddressFamily(
+                Ipv4UnicastAddressFamily.builder()
+                    .setImportPolicySources(ImmutableSortedSet.of("p5"))
+                    .setExportPolicySources(ImmutableSortedSet.of("p6"))
+                    .setAddressFamilySettings(
+                        AddressFamilySettings.builder().setSendCommunity(false).build())
+                    .build())
             .build();
 
     BgpProcess process = new BgpProcess(Ip.ZERO, ConfigurationFormat.CISCO_IOS);
@@ -226,7 +240,11 @@ public final class BgpPeerConfigurationAnswererTest {
   @Test
   public void getRemoteIpActivePeer() {
     Ip ip = Ip.parse("1.1.1.1");
-    BgpActivePeerConfig activePeerConfig = BgpActivePeerConfig.builder().setPeerAddress(ip).build();
+    BgpActivePeerConfig activePeerConfig =
+        BgpActivePeerConfig.builder()
+            .setPeerAddress(ip)
+            .setIpv4UnicastAddressFamily(Ipv4UnicastAddressFamily.builder().build())
+            .build();
     assertThat(getRemoteIp(activePeerConfig), equalTo(new SelfDescribingObject(Schema.IP, ip)));
   }
 
@@ -234,7 +252,10 @@ public final class BgpPeerConfigurationAnswererTest {
   public void getRemoteIpPassivePeer() {
     Prefix prefix = Prefix.create(Ip.parse("1.1.1.1"), 23);
     BgpPassivePeerConfig passivePeerConfig =
-        BgpPassivePeerConfig.builder().setPeerPrefix(prefix).build();
+        BgpPassivePeerConfig.builder()
+            .setPeerPrefix(prefix)
+            .setIpv4UnicastAddressFamily(Ipv4UnicastAddressFamily.builder().build())
+            .build();
     assertThat(
         getRemoteIp(passivePeerConfig), equalTo(new SelfDescribingObject(Schema.PREFIX, prefix)));
   }

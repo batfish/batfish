@@ -59,12 +59,12 @@ public class NetworkFactory {
 
   public BgpActivePeerConfig.Builder bgpNeighborBuilder() {
     return BgpActivePeerConfig.builder()
-        .setIpv4UnicastAddressFamily(Ipv4UnicastAddressFamily.instance());
+        .setIpv4UnicastAddressFamily(Ipv4UnicastAddressFamily.builder().build());
   }
 
   public BgpPassivePeerConfig.Builder bgpDynamicNeighborBuilder() {
     return BgpPassivePeerConfig.builder()
-        .setIpv4UnicastAddressFamily(Ipv4UnicastAddressFamily.instance());
+        .setIpv4UnicastAddressFamily(Ipv4UnicastAddressFamily.builder().build());
   }
 
   public BgpProcess.Builder bgpProcessBuilder() {

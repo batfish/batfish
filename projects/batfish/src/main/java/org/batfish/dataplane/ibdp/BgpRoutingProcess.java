@@ -472,7 +472,7 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
           transformBgpRouteOnImport(
               route,
               ourBgpConfig.getLocalAs(),
-              ourBgpConfig.getAllowLocalAsIn(),
+              ourBgpConfig.getEvpnAddressFamily().getAddressFamilySettings().getAllowLocalAsIn(),
               sessionProperties.isEbgp(),
               _process,
               ourConfigId.getPeerInterface());
@@ -481,7 +481,7 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
       }
 
       // Process route through import policy, if one exists
-      String importPolicyName = ourBgpConfig.getImportPolicy();
+      String importPolicyName = ourBgpConfig.getEvpnAddressFamily().getImportPolicy();
       boolean acceptIncoming = true;
       if (importPolicyName != null) {
         RoutingPolicy importPolicy = _c.getRoutingPolicies().get(importPolicyName);
@@ -613,7 +613,8 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
           @Nonnull BgpSessionProperties sessionProperties) {
     // TODO: bring back prefix tracing
 
-    RoutingPolicy exportPolicy = _c.getRoutingPolicies().get(ourConfig.getExportPolicy());
+    RoutingPolicy exportPolicy =
+        _c.getRoutingPolicies().get(ourConfig.getEvpnAddressFamily().getExportPolicy());
     B transformedOutgoingRouteBuilder =
         BgpProtocolHelper.transformBgpRoutePreExport(
             ourConfig,
@@ -621,7 +622,8 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
             sessionProperties,
             _process,
             getNeighborBgpProcess(remoteConfigId, allNodes)._process,
-            exportCandidate);
+            exportCandidate,
+            ourConfig.getEvpnAddressFamily().getType());
 
     if (transformedOutgoingRouteBuilder == null) {
       // This route could not be exported for core bgp protocol reasons

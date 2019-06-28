@@ -17,6 +17,7 @@ import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.LongSpace;
 import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.bgp.Ipv4UnicastAddressFamily;
 import org.batfish.datamodel.questions.ConfiguredSessionStatus;
 import org.junit.Before;
 import org.junit.Test;
@@ -97,7 +98,9 @@ public final class BgpSessionAnswererUtilsTest {
   public void testUnnumberedStatuses() {
     BgpPeerConfigId id = new BgpPeerConfigId("c", "vrf", "iface");
     BgpUnnumberedPeerConfig.Builder peerBuilder =
-        BgpUnnumberedPeerConfig.builder().setPeerInterface("iface");
+        BgpUnnumberedPeerConfig.builder()
+            .setPeerInterface("iface")
+            .setIpv4UnicastAddressFamily(Ipv4UnicastAddressFamily.builder().build());
     MutableValueGraph<BgpPeerConfigId, BgpSessionProperties> topology =
         ValueGraphBuilder.directed().allowsSelfLoops(false).build();
 

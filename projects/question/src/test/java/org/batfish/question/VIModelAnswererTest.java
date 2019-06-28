@@ -21,6 +21,7 @@ import org.batfish.datamodel.NetworkConfigurations;
 import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.Vrf;
+import org.batfish.datamodel.bgp.Ipv4UnicastAddressFamily;
 import org.batfish.datamodel.collections.IpEdge;
 import org.batfish.datamodel.collections.VerboseBgpEdge;
 import org.junit.Test;
@@ -47,10 +48,16 @@ public class VIModelAnswererTest {
             .setPeerAddress(ip2)
             .setLocalAs(1L)
             .setRemoteAs(2L)
+            .setIpv4UnicastAddressFamily(Ipv4UnicastAddressFamily.builder().build())
             .build();
     BgpPeerConfigId id2 = new BgpPeerConfigId("c2", "vrf2", prefix1, false);
     BgpActivePeerConfig peer2 =
-        BgpActivePeerConfig.builder().setPeerAddress(ip1).setLocalAs(2L).setRemoteAs(1L).build();
+        BgpActivePeerConfig.builder()
+            .setPeerAddress(ip1)
+            .setLocalAs(2L)
+            .setRemoteAs(1L)
+            .setIpv4UnicastAddressFamily(Ipv4UnicastAddressFamily.builder().build())
+            .build();
 
     // Create topology with edges between the peers
     MutableValueGraph<BgpPeerConfigId, BgpSessionProperties> topology =

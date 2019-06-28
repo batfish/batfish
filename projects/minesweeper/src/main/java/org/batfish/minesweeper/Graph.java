@@ -1142,10 +1142,13 @@ public class Graph {
     }
     if (proto.isBgp()) {
       BgpPeerConfig n = findBgpNeighbor(ge);
-      if (n == null || n.getImportPolicy() == null) {
+      if (n == null
+          || n.getIpv4UnicastAddressFamily() == null
+          || n.getIpv4UnicastAddressFamily().getImportPolicy() == null) {
         return null;
       }
-      return conf.getRoutingPolicies().get(n.getImportPolicy());
+      String importPolicy = n.getIpv4UnicastAddressFamily().getImportPolicy();
+      return conf.getRoutingPolicies().get(importPolicy);
     }
     throw new BatfishException("TODO: findImportRoutingPolicy: " + proto.name());
   }
@@ -1173,10 +1176,13 @@ public class Graph {
     if (proto.isBgp()) {
       BgpPeerConfig n = findBgpNeighbor(ge);
       // if no neighbor (e.g., loopback), or no export policy
-      if (n == null || n.getExportPolicy() == null) {
+      if (n == null
+          || n.getIpv4UnicastAddressFamily() == null
+          || n.getIpv4UnicastAddressFamily().getExportPolicy() == null) {
         return null;
       }
-      return conf.getRoutingPolicies().get(n.getExportPolicy());
+      String exportPolicy = n.getIpv4UnicastAddressFamily().getExportPolicy();
+      return conf.getRoutingPolicies().get(exportPolicy);
     }
     throw new BatfishException("TODO: findExportRoutingPolicy for " + proto.name());
   }

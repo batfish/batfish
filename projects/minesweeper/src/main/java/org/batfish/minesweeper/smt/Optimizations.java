@@ -543,12 +543,13 @@ class Optimizations {
   private boolean isDefaultBgpExport(Configuration conf, BgpPeerConfig n) {
 
     // Check if valid neighbor
-    if (n == null || n.getExportPolicy() == null) {
+    String exportPolicy = n.getIpv4UnicastAddressFamily().getExportPolicy();
+    if (n == null || exportPolicy == null) {
       return true;
     }
 
     // Ensure a single if statement
-    RoutingPolicy pol = conf.getRoutingPolicies().get(n.getExportPolicy());
+    RoutingPolicy pol = conf.getRoutingPolicies().get(exportPolicy);
     List<Statement> stmts = pol.getStatements();
     if (stmts.size() != 1) {
       return false;

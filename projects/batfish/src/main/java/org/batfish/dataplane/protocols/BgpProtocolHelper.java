@@ -23,6 +23,8 @@ import org.batfish.datamodel.OriginType;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.Route;
 import org.batfish.datamodel.RoutingProtocol;
+import org.batfish.datamodel.bgp.AddressFamily;
+import org.batfish.datamodel.bgp.AddressFamily.Type;
 import org.batfish.datamodel.bgp.community.Community;
 import org.batfish.datamodel.bgp.community.StandardCommunity;
 
@@ -37,6 +39,7 @@ public final class BgpProtocolHelper {
    * @param toNeighbor {@link BgpPeerConfig} to which to export {@code route}
    * @param sessionProperties {@link BgpSessionProperties} representing the <em>incoming</em> edge:
    *     i.e. the edge from {@code toNeighbor} to {@code fromNeighbor}
+   * @param afType
    */
   @Nullable
   public static <R extends BgpRoute<B, R>, B extends BgpRoute.Builder<B, R>>
@@ -46,7 +49,8 @@ public final class BgpProtocolHelper {
           BgpSessionProperties sessionProperties,
           BgpProcess fromBgpProcess,
           BgpProcess toBgpProcess,
-          BgpRoute<B, R> route) {
+          BgpRoute<B, R> route,
+          Type afType) {
 
     // Make a new builder
     B builder = route.toBuilder();
@@ -78,17 +82,18 @@ public final class BgpProtocolHelper {
         !sessionProperties.isEbgp() && toNeighbor.getRouteReflectorClient());
 
     SortedSet<Community> communities = route.getCommunities();
+    AddressFamily af = fromNeighbor.getAddressFamily(afType);
     // Do not export route if it has NO_ADVERTISE community, or if its AS path contains the remote
     // peer's AS and local peer has not set getAllowRemoteOut
     if (communities.contains(StandardCommunity.of(WellKnownCommunity.NO_ADVERTISE))
         || (sessionProperties.isEbgp()
             && route.getAsPath().containsAs(toNeighbor.getLocalAs())
-            && !fromNeighbor.getAllowRemoteAsOut())) {
+            && !af.getAddressFamilySettings().getAllowRemoteAsOut())) {
       return null;
     }
 
     // Set transformed route's communities
-    if (fromNeighbor.getSendCommunity()) {
+    if (af.getAddressFamilySettings().getSendCommunity()) {
       builder.addCommunities(communities);
     } else {
       builder.setCommunities(ImmutableSet.of());

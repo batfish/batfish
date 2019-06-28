@@ -46,6 +46,7 @@ import org.batfish.datamodel.RouteFilterList;
 import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.SubRange;
+import org.batfish.datamodel.bgp.AddressFamilySettings;
 import org.batfish.datamodel.bgp.Ipv4UnicastAddressFamily;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.routing_policy.expr.Conjunction;
@@ -368,16 +369,26 @@ public class VpnConnection implements AwsVpcEntity, Serializable {
           vpnGatewayCfgNode.getDefaultVrf().setBgpProcess(proc);
         }
 
-        BgpActivePeerConfig.Builder cgBgpPeerConfig =
-            BgpActivePeerConfig.builder()
-                .setPeerAddress(ipsecTunnel.getCgwInsideAddress())
-                .setRemoteAs(ipsecTunnel.getCgwBgpAsn())
-                .setBgpProcess(proc)
-                .setLocalAs(ipsecTunnel.getVgwBgpAsn())
-                .setLocalIp(ipsecTunnel.getVgwInsideAddress())
-                .setDefaultMetric(BGP_NEIGHBOR_DEFAULT_METRIC)
-                .setIpv4UnicastAddressFamily(Ipv4UnicastAddressFamily.instance())
-                .setSendCommunity(false);
+        // pre-defined policy names across bgp peers
+        String rpRejectAllName = "~REJECT_ALL~";
+        String rpAcceptAllEbgpAndSetNextHopSelfName = "~ACCEPT_ALL_EBGP_AND_SET_NEXT_HOP_SELF~";
+        String rpAcceptAllName = "~ACCEPT_ALL~";
+        String originationPolicyName = vpnId + "_origination";
+
+        BgpActivePeerConfig.builder()
+            .setPeerAddress(ipsecTunnel.getCgwInsideAddress())
+            .setRemoteAs(ipsecTunnel.getCgwBgpAsn())
+            .setBgpProcess(proc)
+            .setLocalAs(ipsecTunnel.getVgwBgpAsn())
+            .setLocalIp(ipsecTunnel.getVgwInsideAddress())
+            .setDefaultMetric(BGP_NEIGHBOR_DEFAULT_METRIC)
+            .setIpv4UnicastAddressFamily(
+                Ipv4UnicastAddressFamily.builder()
+                    .setAddressFamilySettings(
+                        AddressFamilySettings.builder().setSendCommunity(true).build())
+                    .setExportPolicy(originationPolicyName)
+                    .build())
+            .build();
 
         VpnGateway vpnGateway = region.getVpnGateways().get(_vpnGatewayId);
         List<String> attachmentVpcIds = vpnGateway.getAttachmentVpcIds();
@@ -405,27 +416,37 @@ public class VpnConnection implements AwsVpcEntity, Serializable {
             .setLocalAs(ipsecTunnel.getVgwBgpAsn())
             .setLocalIp(vgwToVpcIfaceAddress)
             .setDefaultMetric(BGP_NEIGHBOR_DEFAULT_METRIC)
-            .setIpv4UnicastAddressFamily(Ipv4UnicastAddressFamily.instance())
-            .setSendCommunity(true);
+            .setIpv4UnicastAddressFamily(
+                Ipv4UnicastAddressFamily.builder()
+                    .setAddressFamilySettings(
+                        AddressFamilySettings.builder().setSendCommunity(true).build())
+                    .setExportPolicy(rpAcceptAllEbgpAndSetNextHopSelfName)
+                    .setImportPolicy(rpRejectAllName)
+                    .build())
+            .build();
 
         // iBGP connection from VPC
-        BgpActivePeerConfig.Builder vpcToVgwBgpPeerConfig = BgpActivePeerConfig.builder();
-        vpcToVgwBgpPeerConfig.setPeerAddress(vgwToVpcIfaceAddress);
         BgpProcess vpcProc = new BgpProcess(vpcIfaceAddress, ebgpAdminCost, ibgpAdminCost);
         vpcNode.getDefaultVrf().setBgpProcess(vpcProc);
         vpcProc.setMultipathEquivalentAsPathMatchMode(
             MultipathEquivalentAsPathMatchMode.EXACT_PATH);
-        vpcToVgwBgpPeerConfig.setBgpProcess(vpcProc);
-        vpcToVgwBgpPeerConfig.setLocalAs(ipsecTunnel.getVgwBgpAsn());
-        vpcToVgwBgpPeerConfig.setLocalIp(vpcIfaceAddress);
-        vpcToVgwBgpPeerConfig.setRemoteAs(ipsecTunnel.getVgwBgpAsn());
-        vpcToVgwBgpPeerConfig.setDefaultMetric(BGP_NEIGHBOR_DEFAULT_METRIC);
-        vpcToVgwBgpPeerConfig.setIpv4UnicastAddressFamily(Ipv4UnicastAddressFamily.instance());
-        vpcToVgwBgpPeerConfig.setSendCommunity(true);
+        BgpActivePeerConfig.builder()
+            .setPeerAddress(vgwToVpcIfaceAddress)
+            .setBgpProcess(vpcProc)
+            .setLocalAs(ipsecTunnel.getVgwBgpAsn())
+            .setLocalIp(vpcIfaceAddress)
+            .setRemoteAs(ipsecTunnel.getVgwBgpAsn())
+            .setDefaultMetric(BGP_NEIGHBOR_DEFAULT_METRIC)
+            .setIpv4UnicastAddressFamily(
+                Ipv4UnicastAddressFamily.builder()
+                    .setAddressFamilySettings(
+                        AddressFamilySettings.builder().setSendCommunity(true).build())
+                    .setImportPolicy(rpAcceptAllName)
+                    .setExportPolicy(rpRejectAllName)
+                    .build())
+            .build();
 
-        String rpRejectAllName = "~REJECT_ALL~";
-
-        String rpAcceptAllEbgpAndSetNextHopSelfName = "~ACCEPT_ALL_EBGP_AND_SET_NEXT_HOP_SELF~";
+        // Actually construct all the named policies, put them in the configuration
         If acceptIffEbgp =
             new If(
                 new MatchProtocol(RoutingProtocol.BGP),
@@ -437,26 +458,19 @@ public class VpnConnection implements AwsVpcEntity, Serializable {
         vpnGatewayCfgNode.getRoutingPolicies().put(vgwRpAcceptAllBgp.getName(), vgwRpAcceptAllBgp);
         vgwRpAcceptAllBgp.setStatements(
             ImmutableList.of(new SetNextHop(SelfNextHop.getInstance(), false), acceptIffEbgp));
-        vgwToVpcBuilder.setExportPolicy(rpAcceptAllEbgpAndSetNextHopSelfName);
         RoutingPolicy vgwRpRejectAll = new RoutingPolicy(rpRejectAllName, vpnGatewayCfgNode);
         vpnGatewayCfgNode.getRoutingPolicies().put(rpRejectAllName, vgwRpRejectAll);
-        vgwToVpcBuilder.setImportPolicy(rpRejectAllName);
 
-        String rpAcceptAllName = "~ACCEPT_ALL~";
         RoutingPolicy vpcRpAcceptAll = new RoutingPolicy(rpAcceptAllName, vpcNode);
         vpcNode.getRoutingPolicies().put(rpAcceptAllName, vpcRpAcceptAll);
         vpcRpAcceptAll.setStatements(ImmutableList.of(Statements.ExitAccept.toStaticStatement()));
-        vpcToVgwBgpPeerConfig.setImportPolicy(rpAcceptAllName);
         RoutingPolicy vpcRpRejectAll = new RoutingPolicy(rpRejectAllName, vpcNode);
         vpcNode.getRoutingPolicies().put(rpRejectAllName, vpcRpRejectAll);
-        vpcToVgwBgpPeerConfig.setExportPolicy(rpRejectAllName);
 
         Vpc vpc = region.getVpcs().get(vpcId);
-        String originationPolicyName = vpnId + "_origination";
         RoutingPolicy originationRoutingPolicy =
             new RoutingPolicy(originationPolicyName, vpnGatewayCfgNode);
         vpnGatewayCfgNode.getRoutingPolicies().put(originationPolicyName, originationRoutingPolicy);
-        cgBgpPeerConfig.setExportPolicy(originationPolicyName);
         If originationIf = new If();
         List<Statement> statements = originationRoutingPolicy.getStatements();
         statements.add(originationIf);
@@ -484,10 +498,6 @@ public class VpnConnection implements AwsVpcEntity, Serializable {
             .add(
                 new MatchPrefixSet(
                     DestinationNetwork.instance(), new NamedPrefixSet(originationPolicyName)));
-
-        cgBgpPeerConfig.build();
-        vgwToVpcBuilder.build();
-        vpcToVgwBgpPeerConfig.build();
       }
 
       // static routes (if configured)

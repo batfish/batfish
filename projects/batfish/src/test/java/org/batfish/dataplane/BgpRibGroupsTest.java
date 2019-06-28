@@ -28,6 +28,7 @@ import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.Vrf;
+import org.batfish.datamodel.bgp.Ipv4UnicastAddressFamily;
 import org.batfish.datamodel.dataplane.rib.RibGroup;
 import org.batfish.datamodel.dataplane.rib.RibId;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
@@ -162,7 +163,8 @@ public class BgpRibGroupsTest {
         .setPeerAddress(Ip.parse("1.1.1.3"))
         .setLocalIp(Ip.parse("1.1.1.2"))
         .setAppliedRibGroup(rg)
-        .setExportPolicy(EXPORT_ALL)
+        .setIpv4UnicastAddressFamily(
+            Ipv4UnicastAddressFamily.builder().setExportPolicy(EXPORT_ALL).build())
         .build();
     nf.bgpNeighborBuilder()
         .setBgpProcess(bgpProc1)
@@ -170,7 +172,8 @@ public class BgpRibGroupsTest {
         .setRemoteAs(3L)
         .setPeerAddress(Ip.parse("1.1.1.5"))
         .setLocalIp(Ip.parse("1.1.1.4"))
-        .setExportPolicy(EXPORT_ALL)
+        .setIpv4UnicastAddressFamily(
+            Ipv4UnicastAddressFamily.builder().setExportPolicy(EXPORT_ALL).build())
         .build();
 
     // R2
@@ -201,7 +204,8 @@ public class BgpRibGroupsTest {
         .setRemoteAs(1L)
         .setPeerAddress(Ip.parse("1.1.1.2"))
         .setLocalIp(Ip.parse("1.1.1.3"))
-        .setExportPolicy(EXPORT_STATIC)
+        .setIpv4UnicastAddressFamily(
+            Ipv4UnicastAddressFamily.builder().setExportPolicy(EXPORT_STATIC).build())
         .build();
 
     // R3
@@ -232,7 +236,8 @@ public class BgpRibGroupsTest {
         .setRemoteAs(1L)
         .setPeerAddress(Ip.parse("1.1.1.4"))
         .setLocalIp(Ip.parse("1.1.1.5"))
-        .setExportPolicy(EXPORT_STATIC)
+        .setIpv4UnicastAddressFamily(
+            Ipv4UnicastAddressFamily.builder().setExportPolicy(EXPORT_STATIC).build())
         .build();
 
     return ImmutableSortedMap.of("r1", c1, "r2", c2, "r3", c3);

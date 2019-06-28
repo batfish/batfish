@@ -88,19 +88,20 @@ public class BgpPeerPropertySpecifier extends PropertySpecifier {
           .put(
               IMPORT_POLICY,
               new PropertyDescriptor<>(
-                  BgpPeerConfig::getImportPolicySources,
+                  c -> c.getIpv4UnicastAddressFamily().getImportPolicySources(),
                   Schema.set(Schema.STRING),
                   "Names of import policies to be applied to routes received by this peer"))
           .put(
               EXPORT_POLICY,
               new PropertyDescriptor<>(
-                  BgpPeerConfig::getExportPolicySources,
+                  c -> c.getIpv4UnicastAddressFamily().getExportPolicySources(),
                   Schema.set(Schema.STRING),
                   "Names of export policies to be applied to routes exported by this peer"))
           .put(
               SEND_COMMUNITY,
               new PropertyDescriptor<>(
-                  BgpPeerConfig::getSendCommunity,
+                  c ->
+                      c.getIpv4UnicastAddressFamily().getAddressFamilySettings().getSendCommunity(),
                   Schema.BOOLEAN,
                   "Whether this peer propagates communities"))
           .build();

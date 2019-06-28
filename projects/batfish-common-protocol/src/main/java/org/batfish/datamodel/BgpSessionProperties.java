@@ -248,14 +248,34 @@ public final class BgpSessionProperties {
     assert listenerIp != null;
 
     SessionType sessionType = getSessionType(initiator);
+
+    assert listener.getIpv4UnicastAddressFamily() != null;
+    assert initiator.getIpv4UnicastAddressFamily() != null;
     return new BgpSessionProperties(
         !SessionType.isEbgp(sessionType)
-            && listener.getAdditionalPathsReceive()
-            && initiator.getAdditionalPathsSend()
-            && initiator.getAdditionalPathsSelectAll(),
+            && listener
+                .getIpv4UnicastAddressFamily()
+                .getAddressFamilySettings()
+                .getAdditionalPathsReceive()
+            && initiator
+                .getIpv4UnicastAddressFamily()
+                .getAddressFamilySettings()
+                .getAdditionalPathsSend()
+            && initiator
+                .getIpv4UnicastAddressFamily()
+                .getAddressFamilySettings()
+                .getAdditionalPathsSelectAll(),
         getAddressFamilyIntersection(initiator, listener),
-        !SessionType.isEbgp(sessionType) && initiator.getAdvertiseExternal(),
-        SessionType.isEbgp(sessionType) && initiator.getAdvertiseInactive(),
+        !SessionType.isEbgp(sessionType)
+            && initiator
+                .getIpv4UnicastAddressFamily()
+                .getAddressFamilySettings()
+                .getAdvertiseExternal(),
+        SessionType.isEbgp(sessionType)
+            && initiator
+                .getIpv4UnicastAddressFamily()
+                .getAddressFamilySettings()
+                .getAdvertiseInactive(),
         reverseDirection ? listenerIp : initiatorIp,
         reverseDirection ? initiatorIp : listenerIp,
         sessionType);

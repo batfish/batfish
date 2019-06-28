@@ -3,10 +3,12 @@ package org.batfish.grammar.cumulus_nclu;
 import static org.batfish.datamodel.BgpPeerConfig.ALL_AS_NUMBERS;
 import static org.batfish.datamodel.Configuration.DEFAULT_VRF_NAME;
 import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasPrefix;
-import static org.batfish.datamodel.matchers.BgpNeighborMatchers.hasExportPolicy;
+import static org.batfish.datamodel.matchers.AddressFamilyMatchers.hasAddressFamilySettings;
+import static org.batfish.datamodel.matchers.AddressFamilyMatchers.hasExportPolicy;
+import static org.batfish.datamodel.matchers.AddressFamilySettingsMatchers.hasSendCommunity;
+import static org.batfish.datamodel.matchers.BgpNeighborMatchers.hasIpv4UnicastAddressFamily;
 import static org.batfish.datamodel.matchers.BgpNeighborMatchers.hasLocalAs;
 import static org.batfish.datamodel.matchers.BgpNeighborMatchers.hasRemoteAs;
-import static org.batfish.datamodel.matchers.BgpNeighborMatchers.hasSendCommunity;
 import static org.batfish.datamodel.matchers.BgpProcessMatchers.hasInterfaceNeighbors;
 import static org.batfish.datamodel.matchers.BgpProcessMatchers.hasRouterId;
 import static org.batfish.datamodel.matchers.BgpRouteMatchers.isBgpv4RouteThat;
@@ -253,9 +255,12 @@ public final class CumulusNcluGrammarTest {
                                 hasLocalAs(65100L),
                                 hasRemoteAs(
                                     BgpPeerConfig.ALL_AS_NUMBERS.difference(LongSpace.of(65100L))),
-                                hasSendCommunity(true),
-                                hasExportPolicy(
-                                    computeBgpPeerExportPolicyName(DEFAULT_VRF_NAME, iface)))))))));
+                                hasIpv4UnicastAddressFamily(
+                                    allOf(
+                                        hasAddressFamilySettings(hasSendCommunity(true)),
+                                        hasExportPolicy(
+                                            computeBgpPeerExportPolicyName(
+                                                DEFAULT_VRF_NAME, iface)))))))))));
     assertThat(
         configs.get(node2),
         hasVrf(
@@ -270,9 +275,12 @@ public final class CumulusNcluGrammarTest {
                                 hasLocalAs(65101L),
                                 hasRemoteAs(
                                     BgpPeerConfig.ALL_AS_NUMBERS.difference(LongSpace.of(65101L))),
-                                hasSendCommunity(true),
-                                hasExportPolicy(
-                                    computeBgpPeerExportPolicyName(DEFAULT_VRF_NAME, iface)))))))));
+                                hasIpv4UnicastAddressFamily(
+                                    allOf(
+                                        hasAddressFamilySettings(hasSendCommunity(true)),
+                                        hasExportPolicy(
+                                            computeBgpPeerExportPolicyName(
+                                                DEFAULT_VRF_NAME, iface)))))))))));
 
     // Ensure reachability between nodes
     batfish.computeDataPlane();
@@ -301,8 +309,12 @@ public final class CumulusNcluGrammarTest {
     assertThat(pc, hasPeerInterface(peerInterface));
     assertThat(pc, hasLocalAs(65500L));
     assertThat(pc, hasRemoteAs(equalTo(ALL_AS_NUMBERS.difference(LongSpace.of(65500L)))));
-    assertThat(pc, hasExportPolicy(peerExportPolicyName));
-    assertThat(pc, hasSendCommunity(true));
+    assertThat(
+        pc,
+        hasIpv4UnicastAddressFamily(
+            allOf(
+                hasExportPolicy(peerExportPolicyName),
+                hasAddressFamilySettings(hasSendCommunity(true)))));
 
     BgpUnnumberedPeerConfig pc2 =
         c.getDefaultVrf().getBgpProcess().getInterfaceNeighbors().get("swp2");

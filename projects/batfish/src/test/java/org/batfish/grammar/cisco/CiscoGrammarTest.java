@@ -26,9 +26,11 @@ import static org.batfish.datamodel.matchers.AaaAuthenticationMatchers.hasLogin;
 import static org.batfish.datamodel.matchers.AaaMatchers.hasAuthentication;
 import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasPrefix;
 import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasProtocol;
+import static org.batfish.datamodel.matchers.AddressFamilyMatchers.hasAddressFamilySettings;
+import static org.batfish.datamodel.matchers.AddressFamilySettingsMatchers.hasAllowRemoteAsOut;
 import static org.batfish.datamodel.matchers.AndMatchExprMatchers.hasConjuncts;
 import static org.batfish.datamodel.matchers.AndMatchExprMatchers.isAndMatchExprThat;
-import static org.batfish.datamodel.matchers.BgpNeighborMatchers.hasAllowRemoteAsOut;
+import static org.batfish.datamodel.matchers.BgpNeighborMatchers.hasIpv4UnicastAddressFamily;
 import static org.batfish.datamodel.matchers.BgpNeighborMatchers.hasLocalAs;
 import static org.batfish.datamodel.matchers.BgpNeighborMatchers.hasRemoteAs;
 import static org.batfish.datamodel.matchers.BgpProcessMatchers.hasActiveNeighbor;
@@ -3130,7 +3132,8 @@ public class CiscoGrammarTest {
     BgpActivePeerConfig bgpCfg =
         c.getDefaultVrf().getBgpProcess().getActiveNeighbors().get(Prefix.parse("10.1.1.1/32"));
     assertThat(bgpCfg, notNullValue());
-    RoutingPolicy bgpRpOut = c.getRoutingPolicies().get(bgpCfg.getExportPolicy());
+    RoutingPolicy bgpRpOut =
+        c.getRoutingPolicies().get(bgpCfg.getIpv4UnicastAddressFamily().getExportPolicy());
     assertThat(bgpRpOut, notNullValue());
 
     assertTrue(
@@ -4031,7 +4034,11 @@ public class CiscoGrammarTest {
     assertThat(
         c,
         hasDefaultVrf(
-            hasBgpProcess(hasActiveNeighbor(neighborWithRemoteAs, hasAllowRemoteAsOut(true)))));
+            hasBgpProcess(
+                hasActiveNeighbor(
+                    neighborWithRemoteAs,
+                    hasIpv4UnicastAddressFamily(
+                        hasAddressFamilySettings(hasAllowRemoteAsOut(true)))))));
   }
 
   @Test
@@ -5054,13 +5061,20 @@ public class CiscoGrammarTest {
             hasBgpProcess(
                 hasActiveNeighbor(
                     Prefix.parse("2.2.2.2/32"),
-                    allOf(hasRemoteAs(2L), hasLocalAs(1L), hasAllowRemoteAsOut(true))))));
+                    allOf(
+                        hasRemoteAs(2L),
+                        hasLocalAs(1L),
+                        hasIpv4UnicastAddressFamily(
+                            hasAddressFamilySettings(hasAllowRemoteAsOut(true))))))));
     assertThat(
         c,
         ConfigurationMatchers.hasVrf(
             "bar",
             hasBgpProcess(
-                hasActiveNeighbor(Prefix.parse("3.3.3.3/32"), hasAllowRemoteAsOut(false)))));
+                hasActiveNeighbor(
+                    Prefix.parse("3.3.3.3/32"),
+                    hasIpv4UnicastAddressFamily(
+                        hasAddressFamilySettings(hasAllowRemoteAsOut(false)))))));
   }
 
   @Test
@@ -5932,6 +5946,8 @@ public class CiscoGrammarTest {
             .getBgpProcess()
             .getActiveNeighbors()
             .get(Prefix.parse("1.1.1.1/32"))
+            .getIpv4UnicastAddressFamily()
+            .getAddressFamilySettings()
             .getAdvertiseInactive());
   }
 
@@ -5944,6 +5960,8 @@ public class CiscoGrammarTest {
             .getBgpProcess()
             .getActiveNeighbors()
             .get(Prefix.parse("1.1.1.1/32"))
+            .getIpv4UnicastAddressFamily()
+            .getAddressFamilySettings()
             .getAdvertiseInactive());
   }
 
@@ -5956,6 +5974,8 @@ public class CiscoGrammarTest {
             .getBgpProcess()
             .getActiveNeighbors()
             .get(Prefix.parse("1.1.1.1/32"))
+            .getIpv4UnicastAddressFamily()
+            .getAddressFamilySettings()
             .getAdvertiseInactive());
   }
 }

@@ -38,6 +38,7 @@ import org.batfish.datamodel.OriginType;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.Vrf;
+import org.batfish.datamodel.bgp.AddressFamilySettings;
 import org.batfish.datamodel.bgp.Ipv4UnicastAddressFamily;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.routing_policy.expr.BooleanExpr;
@@ -310,23 +311,26 @@ final class CiscoNxConversions {
     @Nullable
     CiscoNxBgpVrfNeighborAddressFamilyConfiguration naf4 = neighbor.getIpv4UnicastAddressFamily();
     @Nullable CiscoNxBgpVrfAddressFamilyConfiguration af4 = vrfConfig.getIpv4UnicastAddressFamily();
+    Ipv4UnicastAddressFamily.Builder ipv4FamilyBuilder = Ipv4UnicastAddressFamily.builder();
 
     if (naf4 != null) {
-      newNeighborBuilder.setAdvertiseInactive(
-          !firstNonNull(
-              naf4.getSuppressInactive(), af4 != null ? af4.getSuppressInactive() : Boolean.FALSE));
-      newNeighborBuilder.setAllowLocalAsIn(firstNonNull(naf4.getAllowAsIn(), Boolean.FALSE));
-      newNeighborBuilder.setAllowRemoteAsOut(
-          firstNonNull(naf4.getDisablePeerAsCheck(), Boolean.FALSE));
-      String inboundMap = naf4.getInboundRouteMap();
-      newNeighborBuilder.setImportPolicy(
-          inboundMap != null && c.getRoutingPolicies().containsKey(inboundMap) ? inboundMap : null);
-      newNeighborBuilder.setSendCommunity(
-          firstNonNull(naf4.getSendCommunityStandard(), Boolean.FALSE));
+      ipv4FamilyBuilder.setAddressFamilySettings(
+          AddressFamilySettings.builder()
+              .setAdvertiseInactive(
+                  !firstNonNull(
+                      naf4.getSuppressInactive(),
+                      af4 != null ? af4.getSuppressInactive() : Boolean.FALSE))
+              .setAllowLocalAsIn(firstNonNull(naf4.getAllowAsIn(), Boolean.FALSE))
+              .setAllowRemoteAsOut(firstNonNull(naf4.getDisablePeerAsCheck(), Boolean.FALSE))
+              .setSendCommunity(firstNonNull(naf4.getSendCommunityStandard(), Boolean.FALSE))
+              .build());
       newNeighborBuilder.setRouteReflectorClient(
           firstNonNull(naf4.getRouteReflectorClient(), Boolean.FALSE));
+      String inboundMap = naf4.getInboundRouteMap();
+
+      ipv4FamilyBuilder.setImportPolicy(
+          inboundMap != null && c.getRoutingPolicies().containsKey(inboundMap) ? inboundMap : null);
     }
-    newNeighborBuilder.setIpv4UnicastAddressFamily(Ipv4UnicastAddressFamily.instance());
 
     // Export policy
     List<Statement> exportStatements = new LinkedList<>();
@@ -384,7 +388,8 @@ final class CiscoNxConversions {
             c);
     exportPolicy.setStatements(exportStatements);
     c.getRoutingPolicies().put(exportPolicy.getName(), exportPolicy);
-    newNeighborBuilder.setExportPolicy(exportPolicy.getName());
+    ipv4FamilyBuilder.setExportPolicy(exportPolicy.getName());
+    newNeighborBuilder.setIpv4UnicastAddressFamily(ipv4FamilyBuilder.build());
 
     return newNeighborBuilder.build();
   }

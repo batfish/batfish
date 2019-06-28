@@ -126,6 +126,7 @@ public class IspModelingUtilsTest {
             .setRemoteAs(1L)
             .setLocalIp(Ip.parse("2.2.2.2"))
             .setLocalAs(2L)
+            .setIpv4UnicastAddressFamily(Ipv4UnicastAddressFamily.builder().build())
             .build();
 
     BgpActivePeerConfig reversedPeer = IspModelingUtils.getBgpPeerOnIsp(bgpActivePeerConfig);
@@ -143,6 +144,7 @@ public class IspModelingUtilsTest {
             .setRemoteAs(1L)
             .setLocalIp(Ip.parse("2.2.2.2"))
             .setLocalAs(2L)
+            .setIpv4UnicastAddressFamily(Ipv4UnicastAddressFamily.builder().build())
             .build();
     BgpActivePeerConfig validPeer =
         BgpActivePeerConfig.builder()
@@ -150,6 +152,7 @@ public class IspModelingUtilsTest {
             .setRemoteAs(1L)
             .setLocalIp(Ip.parse("3.3.3.3"))
             .setLocalAs(2L)
+            .setIpv4UnicastAddressFamily(Ipv4UnicastAddressFamily.builder().build())
             .build();
 
     assertFalse(
@@ -170,7 +173,7 @@ public class IspModelingUtilsTest {
             .setRemoteAs(1L)
             .setLocalIp(Ip.parse("2.2.2.2"))
             .setLocalAs(2L)
-            .setIpv4UnicastAddressFamily(Ipv4UnicastAddressFamily.instance())
+            .setIpv4UnicastAddressFamily(Ipv4UnicastAddressFamily.builder().build())
             .build();
     IspInfo ispInfo = new IspInfo(ImmutableList.of(interfaceAddress), ImmutableList.of(peer));
 
@@ -220,6 +223,7 @@ public class IspModelingUtilsTest {
             .setRemoteAs(1L)
             .setLocalIp(Ip.parse("2.2.2.2"))
             .setLocalAs(2L)
+            .setIpv4UnicastAddressFamily(Ipv4UnicastAddressFamily.builder().build())
             .build();
     IspInfo ispInfo =
         new IspInfo(ImmutableList.of(interfaceAddress, interfaceAddress2), ImmutableList.of(peer));
@@ -253,6 +257,7 @@ public class IspModelingUtilsTest {
             .setRemoteAs(1L)
             .setLocalIp(Ip.parse("2.2.2.2"))
             .setLocalAs(2L)
+            .setIpv4UnicastAddressFamily(Ipv4UnicastAddressFamily.builder().build())
             .build();
     BgpProcess bgpProcess = new BgpProcess(Ip.ZERO, ConfigurationFormat.CISCO_IOS);
     bgpProcess.getActiveNeighbors().put(Prefix.parse("1.1.1.1/32"), peer);
@@ -277,7 +282,10 @@ public class IspModelingUtilsTest {
             .setLocalAs(1L)
             .setPeerAddress(Ip.parse("2.2.2.2"))
             .setRemoteAs(2L)
-            .setExportPolicy(IspModelingUtils.EXPORT_POLICY_ON_ISP)
+            .setIpv4UnicastAddressFamily(
+                Ipv4UnicastAddressFamily.builder()
+                    .setExportPolicy(IspModelingUtils.EXPORT_POLICY_ON_ISP)
+                    .build())
             .build();
     assertThat(ispInfo.getBgpActivePeerConfigs(), equalTo(ImmutableList.of(reversedPeer)));
     assertThat(
@@ -303,6 +311,7 @@ public class IspModelingUtilsTest {
             .setRemoteAs(1L)
             .setLocalIp(Ip.parse("2.2.2.2"))
             .setLocalAs(2L)
+            .setIpv4UnicastAddressFamily(Ipv4UnicastAddressFamily.builder().build())
             .build();
     BgpProcess bgpProcess = new BgpProcess(Ip.ZERO, ConfigurationFormat.CISCO_IOS);
     bgpProcess.getActiveNeighbors().put(Prefix.parse("1.1.1.1/32"), peer);
@@ -363,6 +372,7 @@ public class IspModelingUtilsTest {
             .setRemoteAs(1L)
             .setLocalIp(Ip.parse("2.2.2.2"))
             .setLocalAs(2L)
+            .setIpv4UnicastAddressFamily(Ipv4UnicastAddressFamily.builder().build())
             .build();
     BgpProcess bgpProcess = new BgpProcess(Ip.ZERO, ConfigurationFormat.CISCO_IOS);
     bgpProcess.getActiveNeighbors().put(Prefix.parse("1.1.1.1/32"), peer);
@@ -402,6 +412,7 @@ public class IspModelingUtilsTest {
             .setRemoteAs(1L)
             .setLocalIp(Ip.parse("2.2.2.2"))
             .setLocalAs(2L)
+            .setIpv4UnicastAddressFamily(Ipv4UnicastAddressFamily.builder().build())
             .build();
     BgpProcess bgpProcess = new BgpProcess(Ip.ZERO, ConfigurationFormat.CISCO_IOS);
     bgpProcess.getActiveNeighbors().put(Prefix.parse("1.1.1.1/32"), peer);
@@ -442,9 +453,11 @@ public class IspModelingUtilsTest {
                                     .setRemoteAs(1L)
                                     .setLocalIp(Ip.parse("240.1.1.2"))
                                     .setLocalAs(IspModelingUtils.INTERNET_AS)
-                                    .setExportPolicy(IspModelingUtils.EXPORT_POLICY_ON_INTERNET)
                                     .setIpv4UnicastAddressFamily(
-                                        Ipv4UnicastAddressFamily.instance())
+                                        Ipv4UnicastAddressFamily.builder()
+                                            .setExportPolicy(
+                                                IspModelingUtils.EXPORT_POLICY_ON_INTERNET)
+                                            .build())
                                     .build())))))));
 
     assertThat(internetAndIsps, hasKey("isp_1"));
@@ -474,18 +487,22 @@ public class IspModelingUtilsTest {
                                 .setPeerAddress(Ip.parse("2.2.2.2"))
                                 .setRemoteAs(2L)
                                 .setLocalIp(Ip.parse("1.1.1.1"))
-                                .setExportPolicy(IspModelingUtils.EXPORT_POLICY_ON_ISP)
                                 .setLocalAs(1L)
-                                .setIpv4UnicastAddressFamily(Ipv4UnicastAddressFamily.instance())
+                                .setIpv4UnicastAddressFamily(
+                                    Ipv4UnicastAddressFamily.builder()
+                                        .setExportPolicy(IspModelingUtils.EXPORT_POLICY_ON_ISP)
+                                        .build())
                                 .build(),
                             Prefix.parse("240.1.1.2/32"),
                             BgpActivePeerConfig.builder()
                                 .setPeerAddress(Ip.parse("240.1.1.2"))
                                 .setRemoteAs(IspModelingUtils.INTERNET_AS)
                                 .setLocalIp(Ip.parse("240.1.1.3"))
-                                .setExportPolicy(IspModelingUtils.EXPORT_POLICY_ON_ISP)
                                 .setLocalAs(1L)
-                                .setIpv4UnicastAddressFamily(Ipv4UnicastAddressFamily.instance())
+                                .setIpv4UnicastAddressFamily(
+                                    Ipv4UnicastAddressFamily.builder()
+                                        .setExportPolicy(IspModelingUtils.EXPORT_POLICY_ON_ISP)
+                                        .build())
                                 .build()))))));
   }
 
@@ -568,6 +585,7 @@ public class IspModelingUtilsTest {
         .setRemoteAs(1234L)
         .setLocalIp(Ip.parse("1.1.1.1"))
         .setLocalAs(1L)
+        .setIpv4UnicastAddressFamily(Ipv4UnicastAddressFamily.builder().build())
         .build();
 
     Configuration configuration2 =
@@ -586,6 +604,7 @@ public class IspModelingUtilsTest {
         .setRemoteAs(1234L)
         .setLocalIp(Ip.parse("2.2.2.2"))
         .setLocalAs(1L)
+        .setIpv4UnicastAddressFamily(Ipv4UnicastAddressFamily.builder().build())
         .build();
 
     Map<String, Configuration> internetAndIsps =
@@ -640,6 +659,7 @@ public class IspModelingUtilsTest {
         .setRemoteAs(1234L)
         .setLocalIp(Ip.parse("1.1.1.1"))
         .setLocalAs(1L)
+        .setIpv4UnicastAddressFamily(Ipv4UnicastAddressFamily.builder().build())
         .build();
 
     // passing non-existent border interfaces

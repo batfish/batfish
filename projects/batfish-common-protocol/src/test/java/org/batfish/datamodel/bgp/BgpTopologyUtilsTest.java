@@ -101,6 +101,10 @@ public class BgpTopologyUtilsTest {
             .setLocalAs(1L)
             .setPeerAddress(ip2)
             .setRemoteAs(2L)
+            .setIpv4UnicastAddressFamily(
+                Ipv4UnicastAddressFamily.builder()
+                    .setAddressFamilySettings(AddressFamilySettings.builder().build())
+                    .build())
             .build();
     _node1BgpProcess.setNeighbors(ImmutableSortedMap.of(peer1PeerPrefix, peer1));
 
@@ -111,6 +115,10 @@ public class BgpTopologyUtilsTest {
             .setLocalAs(2L)
             .setRemoteAs(1L)
             .setPeerPrefix(peer2PeerPrefix)
+            .setIpv4UnicastAddressFamily(
+                Ipv4UnicastAddressFamily.builder()
+                    .setAddressFamilySettings(AddressFamilySettings.builder().build())
+                    .build())
             .build();
     _node2BgpProcess.setPassiveNeighbors(ImmutableSortedMap.of(peer2PeerPrefix, peer2));
 
@@ -143,6 +151,7 @@ public class BgpTopologyUtilsTest {
             .setLocalAs(1L)
             .setPeerAddress(ip2)
             .setRemoteAs(2L)
+            .setIpv4UnicastAddressFamily(Ipv4UnicastAddressFamily.builder().build())
             .build();
     _node1BgpProcess.setNeighbors(ImmutableSortedMap.of(peer1PeerPrefix, peer1));
 
@@ -152,6 +161,7 @@ public class BgpTopologyUtilsTest {
             .setLocalIp(Ip.AUTO)
             .setLocalAs(2L)
             .setRemoteAs(1L)
+            .setIpv4UnicastAddressFamily(Ipv4UnicastAddressFamily.builder().build())
             .setPeerPrefix(prefixForPeer1);
 
     BgpPassivePeerConfig peer2 = passivePeerBuilder.build();
@@ -183,11 +193,23 @@ public class BgpTopologyUtilsTest {
     String iface2 = "iface2";
 
     BgpUnnumberedPeerConfig.Builder builder =
-        BgpUnnumberedPeerConfig.builder().setLocalIp(Ip.parse("169.254.0.1"));
+        BgpUnnumberedPeerConfig.builder()
+            .setIpv4UnicastAddressFamily(Ipv4UnicastAddressFamily.builder().build())
+            .setLocalIp(Ip.parse("169.254.0.1"));
     BgpUnnumberedPeerConfig peer1 =
-        builder.setLocalAs(1L).setRemoteAs(2L).setPeerInterface(iface1).build();
+        builder
+            .setLocalAs(1L)
+            .setRemoteAs(2L)
+            .setIpv4UnicastAddressFamily(Ipv4UnicastAddressFamily.builder().build())
+            .setPeerInterface(iface1)
+            .build();
     BgpUnnumberedPeerConfig peer2 =
-        builder.setLocalAs(2L).setRemoteAs(1L).setPeerInterface(iface2).build();
+        builder
+            .setLocalAs(2L)
+            .setRemoteAs(1L)
+            .setIpv4UnicastAddressFamily(Ipv4UnicastAddressFamily.builder().build())
+            .setPeerInterface(iface2)
+            .build();
     _node1BgpProcess.setInterfaceNeighbors(ImmutableSortedMap.of(iface1, peer1));
     _node2BgpProcess.setInterfaceNeighbors(ImmutableSortedMap.of(iface2, peer2));
 
@@ -237,9 +259,19 @@ public class BgpTopologyUtilsTest {
     BgpUnnumberedPeerConfig.Builder builder =
         BgpUnnumberedPeerConfig.builder().setLocalIp(Ip.parse("169.254.0.1"));
     BgpUnnumberedPeerConfig peer1 =
-        builder.setLocalAs(1L).setRemoteAs(1L).setPeerInterface(iface1).build();
+        builder
+            .setLocalAs(1L)
+            .setRemoteAs(1L)
+            .setPeerInterface(iface1)
+            .setIpv4UnicastAddressFamily(Ipv4UnicastAddressFamily.builder().build())
+            .build();
     BgpUnnumberedPeerConfig peer2 =
-        builder.setLocalAs(1L).setRemoteAs(1L).setPeerInterface(iface2).build();
+        builder
+            .setLocalAs(1L)
+            .setRemoteAs(1L)
+            .setPeerInterface(iface2)
+            .setIpv4UnicastAddressFamily(Ipv4UnicastAddressFamily.builder().build())
+            .build();
     _node1BgpProcess.setInterfaceNeighbors(ImmutableSortedMap.of(iface1, peer1));
     _node2BgpProcess.setInterfaceNeighbors(ImmutableSortedMap.of(iface2, peer2));
 
@@ -271,9 +303,19 @@ public class BgpTopologyUtilsTest {
     BgpUnnumberedPeerConfig.Builder builder =
         BgpUnnumberedPeerConfig.builder().setLocalIp(Ip.parse("169.254.0.1"));
     BgpUnnumberedPeerConfig peer1 =
-        builder.setLocalAs(1L).setRemoteAs(2L).setPeerInterface(iface1).build();
+        builder
+            .setLocalAs(1L)
+            .setRemoteAs(2L)
+            .setPeerInterface(iface1)
+            .setIpv4UnicastAddressFamily(Ipv4UnicastAddressFamily.builder().build())
+            .build();
     BgpUnnumberedPeerConfig peer2 =
-        builder.setLocalAs(2L).setRemoteAs(3L).setPeerInterface(iface2).build();
+        builder
+            .setLocalAs(2L)
+            .setRemoteAs(3L)
+            .setPeerInterface(iface2)
+            .setIpv4UnicastAddressFamily(Ipv4UnicastAddressFamily.builder().build())
+            .build();
     _node1BgpProcess.setInterfaceNeighbors(ImmutableSortedMap.of(iface1, peer1));
     _node2BgpProcess.setInterfaceNeighbors(ImmutableSortedMap.of(iface2, peer2));
 
