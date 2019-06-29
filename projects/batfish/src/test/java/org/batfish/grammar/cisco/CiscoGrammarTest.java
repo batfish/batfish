@@ -3106,10 +3106,13 @@ public class CiscoGrammarTest {
     assertThat(c, hasConfigurationFormat(ConfigurationFormat.CISCO_IOS_XR));
 
     Prefix permittedPrefix = Prefix.parse("1.2.3.4/32");
+    Prefix permittedPrefix2 = Prefix.parse("1.2.3.5/32");
     Prefix rejectedPrefix = Prefix.parse("2.0.0.0/8");
 
     StaticRoute permittedRoute =
         StaticRoute.builder().setAdministrativeCost(1).setNetwork(permittedPrefix).build();
+    StaticRoute permittedRoute2 =
+        StaticRoute.builder().setAdministrativeCost(1).setNetwork(permittedPrefix2).build();
     StaticRoute rejectedRoute =
         StaticRoute.builder().setAdministrativeCost(1).setNetwork(rejectedPrefix).build();
 
@@ -3118,6 +3121,8 @@ public class CiscoGrammarTest {
     assertThat(rp, notNullValue());
     assertTrue(
         rp.process(permittedRoute, Bgpv4Route.builder(), null, DEFAULT_VRF_NAME, Direction.OUT));
+    assertTrue(
+        rp.process(permittedRoute2, Bgpv4Route.builder(), null, DEFAULT_VRF_NAME, Direction.OUT));
     assertFalse(
         rp.process(rejectedRoute, Bgpv4Route.builder(), null, DEFAULT_VRF_NAME, Direction.OUT));
 
@@ -3131,6 +3136,9 @@ public class CiscoGrammarTest {
     assertTrue(
         bgpRpOut.process(
             permittedRoute, Bgpv4Route.builder(), null, DEFAULT_VRF_NAME, Direction.OUT));
+    assertTrue(
+        bgpRpOut.process(
+            permittedRoute2, Bgpv4Route.builder(), null, DEFAULT_VRF_NAME, Direction.OUT));
     assertFalse(
         bgpRpOut.process(
             rejectedRoute, Bgpv4Route.builder(), null, DEFAULT_VRF_NAME, Direction.OUT));
