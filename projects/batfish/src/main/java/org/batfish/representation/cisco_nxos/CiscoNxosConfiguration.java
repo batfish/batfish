@@ -7,7 +7,6 @@ import static org.batfish.datamodel.Configuration.DEFAULT_VRF_NAME;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.ImmutableSortedSet;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
