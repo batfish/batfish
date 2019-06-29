@@ -122,7 +122,8 @@ public class JuniperConfigurationTest {
    * @return the created interface
    */
   private static org.batfish.datamodel.Interface createInterface(Configuration c) {
-    org.batfish.datamodel.Interface iface = new org.batfish.datamodel.Interface("iface");
+    org.batfish.datamodel.Interface iface =
+        org.batfish.datamodel.Interface.builder().setName("iface").build();
     Vrf vrf = new Vrf("vrf");
     vrf.setInterfaces(ImmutableSortedMap.of("iface", iface));
     c.setVrfs(ImmutableMap.of("vrf", vrf));

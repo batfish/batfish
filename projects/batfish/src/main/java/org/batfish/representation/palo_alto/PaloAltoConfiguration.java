@@ -901,7 +901,11 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
   private org.batfish.datamodel.Interface toInterface(Interface iface) {
     String name = iface.getName();
     org.batfish.datamodel.Interface newIface =
-        new org.batfish.datamodel.Interface(name, _c, batfishInterfaceType(iface.getType(), _w));
+        org.batfish.datamodel.Interface.builder()
+            .setName(name)
+            .setOwner(_c)
+            .setType(batfishInterfaceType(iface.getType(), _w))
+            .build();
     Integer mtu = iface.getMtu();
     if (mtu != null) {
       newIface.setMtu(mtu);

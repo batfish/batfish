@@ -1306,7 +1306,13 @@ public final class JuniperConfiguration extends VendorConfiguration {
    */
   private org.batfish.datamodel.Interface toInterfaceNonUnit(Interface iface) {
     String name = iface.getName();
-    org.batfish.datamodel.Interface newIface = new org.batfish.datamodel.Interface(name, _c);
+    org.batfish.datamodel.Interface newIface =
+        org.batfish.datamodel.Interface.builder()
+            .setName(name)
+            .setType(
+                org.batfish.datamodel.Interface.computeInterfaceType(
+                    name, _c.getConfigurationFormat()))
+            .build();
     newIface.setDeclaredNames(ImmutableSortedSet.of(name));
     newIface.setDescription(iface.getDescription());
 
@@ -1331,7 +1337,8 @@ public final class JuniperConfiguration extends VendorConfiguration {
 
   private org.batfish.datamodel.Interface toInterface(Interface iface) {
     String name = iface.getName();
-    org.batfish.datamodel.Interface newIface = new org.batfish.datamodel.Interface(name, _c);
+    org.batfish.datamodel.Interface newIface =
+        org.batfish.datamodel.Interface.builder().setName(name).setOwner(_c).build();
     newIface.setDeclaredNames(ImmutableSortedSet.of(name));
     newIface.setDescription(iface.getDescription());
     Integer mtu = iface.getMtu();
@@ -3104,6 +3111,9 @@ public final class JuniperConfiguration extends VendorConfiguration {
     }
     _c.getAllInterfaces().put(ifaceName, viIface);
     vrf.getInterfaces().put(ifaceName, viIface);
+    if (viIface.getOwner() == null) {
+      viIface.setOwner(_c);
+    }
   }
 
   private org.batfish.datamodel.Zone toZone(Zone zone) {
