@@ -527,8 +527,7 @@ public final class BDDReachabilityAnalysisFactoryTest {
             hasEntry(equalTo(vrf.getName()), equalTo(PKT.getFactory().zero()))));
 
     // when interface is blacklisted, its Ip does not belong to the VRF
-    iface.setActive(true);
-    iface.setBlacklisted(true);
+    iface.blacklist();
     batfish = BatfishTestUtils.getBatfish(configs, temp);
     batfish.computeDataPlane();
     factory =

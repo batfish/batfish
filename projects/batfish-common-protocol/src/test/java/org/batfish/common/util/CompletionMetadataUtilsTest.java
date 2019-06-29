@@ -51,7 +51,9 @@ public final class CompletionMetadataUtilsTest {
       String nodeName, ConfigurationFormat configFormat, String... interfaceNames) {
     Configuration config = new Configuration(nodeName, configFormat);
     for (String interfaceName : interfaceNames) {
-      config.getAllInterfaces().put(interfaceName, new Interface(interfaceName, config));
+      config
+          .getAllInterfaces()
+          .put(interfaceName, Interface.builder().setName(interfaceName).setOwner(config).build());
     }
     return config;
   }
