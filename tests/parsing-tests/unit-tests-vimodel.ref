@@ -14416,6 +14416,9 @@
                     "propagateUnmatched" : true
                   },
                   "exportPolicy" : "~BGP_PEER_EXPORT_POLICY:default:swp1~",
+                  "exportPolicySources" : [
+                    "rm1"
+                  ],
                   "ipv4UnicastAddressFamily" : { },
                   "localAs" : 65500,
                   "localIp" : "169.254.0.1",
@@ -14450,6 +14453,9 @@
                     "propagateUnmatched" : true
                   },
                   "exportPolicy" : "~BGP_PEER_EXPORT_POLICY:default:swp2~",
+                  "exportPolicySources" : [
+                    "rm1"
+                  ],
                   "ipv4UnicastAddressFamily" : { },
                   "localAs" : 65500,
                   "localIp" : "169.254.0.1",
@@ -14484,6 +14490,9 @@
                     "propagateUnmatched" : true
                   },
                   "exportPolicy" : "~BGP_PEER_EXPORT_POLICY:default:swp3~",
+                  "exportPolicySources" : [
+                    "rm1"
+                  ],
                   "group" : "GROUP",
                   "ipv4UnicastAddressFamily" : { },
                   "localAs" : 65500,

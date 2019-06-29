@@ -9,6 +9,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Supplier;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Iterables;
 import java.io.Serializable;
 import java.util.Objects;
 import java.util.Set;
@@ -285,6 +286,16 @@ public class BgpProcess implements Serializable {
   @JsonProperty(PROP_TIE_BREAKER)
   public BgpTieBreaker getTieBreaker() {
     return _tieBreaker;
+  }
+
+  /**
+   * Return an iterable over all types of {@link BgpPeerConfig peer configurations} defined for this
+   * process
+   */
+  @JsonIgnore
+  public Iterable<BgpPeerConfig> getAllPeerConfigs() {
+    return Iterables.concat(
+        _activeNeighbors.values(), _passiveNeighbors.values(), _interfaceNeighbors.values());
   }
 
   @JsonProperty(PROP_INTERFACE_NEIGHBORS)
