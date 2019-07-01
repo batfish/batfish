@@ -136,7 +136,7 @@ public final class TopologyProviderImpl implements TopologyProvider {
       assert span != null; // avoid unused warning
       Map<String, Configuration> configurations = _batfish.loadConfigurations(networkSnapshot);
       return TopologyUtil.computeLayer3Topology(
-          getInitialRawLayer3Topology(networkSnapshot), ImmutableSet.of(), configurations);
+          getRawLayer3Topology(networkSnapshot), ImmutableSet.of(), configurations);
     }
   }
 
@@ -261,7 +261,7 @@ public final class TopologyProviderImpl implements TopologyProvider {
   }
 
   @Override
-  public Topology getInitialRawLayer3Topology(NetworkSnapshot networkSnapshot) {
+  public Topology getRawLayer3Topology(NetworkSnapshot networkSnapshot) {
     try {
       return _rawLayer3Topologies.get(
           networkSnapshot, () -> computeRawLayer3Topology(networkSnapshot));
