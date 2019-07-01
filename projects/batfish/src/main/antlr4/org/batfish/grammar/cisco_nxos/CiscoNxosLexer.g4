@@ -8,14 +8,44 @@ tokens {
   SUBDOMAIN_NAME
 }
 
+ACCESS
+:
+  'access'
+;
+
+ADD
+:
+  'add'
+;
+
 ADDRESS
 :
   'address'
 ;
 
+ALLOWED
+:
+  'allowed'
+;
+
+DOT1Q
+:
+  'dot1q'
+;
+
+ENCAPSULATION
+:
+  'encapsulation'
+;
+
 ETHERNET
 :
   [Ee] [Tt] [Hh] [Ee] [Rr] [Nn] [Ee] [Tt]
+;
+
+EXCEPT
+:
+  'except'
 ;
 
 FEATURE
@@ -75,9 +105,19 @@ MGMT
   [Mm] [Gg] [Mm] [Tt]
 ;
 
+NATIVE
+:
+  'native'
+;
+
 NO
 :
   'no'
+;
+
+NONE
+:
+  'none'
 ;
 
 PORT_CHANNEL
@@ -88,6 +128,11 @@ PORT_CHANNEL
 REDIRECTS
 :
   'redirects'
+;
+
+REMOVE
+:
+  'remove'
 ;
 
 SECONDARY
@@ -105,6 +150,16 @@ SWITCHPORT
   'switchport'
 ;
 
+TRUNK
+:
+  'trunk'
+;
+
+VLAN
+:
+  'vlan'
+;
+
 // Other Tokens
 
 BLANK_LINE
@@ -115,6 +170,11 @@ BLANK_LINE
   {lastTokenType() == NEWLINE|| lastTokenType() == -1}?
 
   F_Newline* -> channel ( HIDDEN )
+;
+
+COMMA
+:
+  ','
 ;
 
 COMMENT_LINE

@@ -12,7 +12,8 @@ interface_address
 
 interface_name
 :
-  prefix = interface_prefix middle = interface_middle? first = uint8
+  prefix = interface_prefix middle = interface_middle? parent_suffix =
+  interface_parent_suffix? first = uint8
 ;
 
 interface_prefix
@@ -27,12 +28,12 @@ interface_middle
 :
   (
     uint8 FORWARD_SLASH
-  )+ parent_suffix = interface_parent_suffix?
+  )+
 ;
 
 interface_parent_suffix
 :
-  uint8 period = PERIOD
+  num = uint8 period = PERIOD
 ;
 
 ip_address

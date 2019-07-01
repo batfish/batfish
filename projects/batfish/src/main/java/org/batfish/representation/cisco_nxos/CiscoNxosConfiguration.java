@@ -23,6 +23,7 @@ import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.Interface.Dependency;
 import org.batfish.datamodel.Interface.DependencyType;
 import org.batfish.datamodel.LineAction;
+import org.batfish.datamodel.SwitchportMode;
 import org.batfish.datamodel.vendor_family.cisco_nxos.CiscoNxosFamily;
 import org.batfish.vendor.VendorConfiguration;
 
@@ -38,20 +39,20 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
    * NOTE: Entries are sorted by priority. Do not reorder unless you have a good reason.
    */
   private static final Map<String, String> CISCO_NXOS_INTERFACE_PREFIXES;
-
-  private static final Pattern CISCO_NXOS_INTERFACE_PREFIX_REGEX;
+  private static final Pattern CISCO_NXOS_INTERFACE_PREFIXES_REGEX;
 
   static {
     CISCO_NXOS_INTERFACE_PREFIXES =
         ImmutableMap.<String, String>builder()
             .put("Ethernet", "Ethernet")
-            .put("Loopback", "Loopback")
+            .put("loopback", "loopback")
+            .put("mgmt", "mgmt")
             .put("Null", "Null")
             .put("nve", "nve")
-            .put("Port-channel", "Port-Channel")
+            .put("Port-channel", "Port-channel")
             .put("Vlan", "Vlan")
             .build();
-    CISCO_NXOS_INTERFACE_PREFIX_REGEX =
+    CISCO_NXOS_INTERFACE_PREFIXES_REGEX =
         Pattern.compile(
             CISCO_NXOS_INTERFACE_PREFIXES.values().stream()
                 .map(String::toLowerCase)
@@ -82,7 +83,7 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
 
   @Override
   public String canonicalizeInterfaceName(String ifaceName) {
-    Matcher matcher = CISCO_NXOS_INTERFACE_PREFIX_REGEX.matcher(ifaceName.toLowerCase());
+    Matcher matcher = CISCO_NXOS_INTERFACE_PREFIXES_REGEX.matcher(ifaceName.toLowerCase());
     if (!matcher.find()) {
       throw new BatfishException("Invalid interface name: '" + ifaceName + "'");
     }
@@ -148,6 +149,36 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
     newIfaceBuilder.setActive(!iface.getShutdown());
 
     newIfaceBuilder.setAddresses(iface.getAddress(), iface.getSecondaryAddresses());
+
+    // switchport+vlan settings
+    SwitchportMode switchportMode = iface.getSwitchportMode();
+    newIfaceBuilder.setSwitchportMode(switchportMode);
+    switch (iface.getSwitchportMode()) {
+      case ACCESS:
+        newIfaceBuilder.setSwitchport(true);
+        newIfaceBuilder.setAccessVlan(iface.getAccessVlan());
+        break;
+
+      case NONE:
+        newIfaceBuilder.setEncapsulationVlan(iface.getEncapsulationVlan());
+        break;
+
+      case TRUNK:
+        newIfaceBuilder.setSwitchport(true);
+        newIfaceBuilder.setAllowedVlans(iface.getAllowedVlans());
+        newIfaceBuilder.setNativeVlan(iface.getNativeVlan());
+        break;
+
+      case DOT1Q_TUNNEL:
+      case DYNAMIC_AUTO:
+      case DYNAMIC_DESIRABLE:
+      case FEX_FABRIC:
+      case TAP:
+      case TOOL:
+      default:
+        // unsupported
+        break;
+    }
 
     org.batfish.datamodel.Interface newIface = newIfaceBuilder.build();
     String vrfName = firstNonNull(iface.getVrfMember(), DEFAULT_VRF_NAME);
