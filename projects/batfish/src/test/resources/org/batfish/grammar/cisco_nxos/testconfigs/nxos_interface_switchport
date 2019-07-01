@@ -25,12 +25,12 @@ interface mgmt0
   no shutdown
 !
 
-! Port-channel interface with no configuration:
+! port-channel interface with no configuration:
 ! - shutdown = false
 ! - switchport = true
 ! - switchport mode = access
 ! - switchport access vlan = 1 
-interface Port-channel1
+interface port-channel1
 !
 
 ! Ethernet interface with no switchport and no shutdown:
@@ -59,20 +59,20 @@ interface Ethernet1/2.2
   encapsulation dot1q 2
 !
 
-! Port-channel interface with no switchport and no shutdown:
+! port-channel interface with no switchport and no shutdown:
 ! - shutdown = false
 ! - switchport = false
 ! - switchport mode = NONE
-interface Port-channel2
+interface port-channel2
   no switchport
   no shutdown
 !
 
-! Port-channel subinterface with no configuration:
+! port-channel subinterface with no configuration:
 ! - shutdown = true
 ! - switchport = false
 ! - switchport mode = NONE
-interface Port-channel2.1
+interface port-channel2.1
 !
 
 ! Ethernet interface with no shutdown before no switchport (no shutdown is remembered):

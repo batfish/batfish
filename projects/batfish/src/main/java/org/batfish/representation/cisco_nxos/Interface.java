@@ -15,6 +15,19 @@ public final class Interface implements Serializable {
 
   public static final IntegerSpace VLAN_RANGE = IntegerSpace.of(Range.closed(1, 4094));
 
+  /**
+   * Returns the shutdown status for an interface when shutdown is not explicitly configured. Once
+   * explicitly configured, inference no longer applies for the life of the interface.
+   *
+   * <ul>
+   *   <li>Ethernet and port-channel parent interfaces are active by default iff they are in
+   *       switchport mode.
+   *   <li>Ethernet and port-channel subinterfaces are shut down by default.
+   *   <li>loopback interfaces are active by default.
+   *   <li>mgmt interfaces are active by default.
+   *   <li>vlan interfaces are shut down by default.
+   * </ul>
+   */
   private static boolean defaultShutdown(
       SwitchportMode switchportMode, CiscoNxosInterfaceType type) {
     switch (type) {
@@ -22,9 +35,11 @@ public final class Interface implements Serializable {
       case PORT_CHANNEL:
         return switchportMode == SwitchportMode.NONE;
 
+      case VLAN:
+        return true;
+
       case LOOPBACK:
       case MGMT:
-      case VLAN:
       default:
         return false;
     }
@@ -53,7 +68,7 @@ public final class Interface implements Serializable {
     initDefaultSwitchportSettings(parentInterface != null, type);
 
     // Set defaults for individual switchport modes
-    // - only effective when correspoinding switchport mode is active
+    // - only effective when corresponding switchport mode is active
     _accessVlan = 1;
     _nativeVlan = 1;
     _allowedVlans = VLAN_RANGE;

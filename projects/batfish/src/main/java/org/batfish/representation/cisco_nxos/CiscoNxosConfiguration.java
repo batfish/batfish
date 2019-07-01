@@ -49,7 +49,7 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
             .put("mgmt", "mgmt")
             .put("Null", "Null")
             .put("nve", "nve")
-            .put("Port-channel", "Port-channel")
+            .put("port-channel", "port-channel")
             .put("Vlan", "Vlan")
             .build();
     CISCO_NXOS_INTERFACE_PREFIXES_REGEX =

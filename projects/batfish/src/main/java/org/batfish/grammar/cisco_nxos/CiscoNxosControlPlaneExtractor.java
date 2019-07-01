@@ -87,7 +87,7 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
   }
 
   private @Nullable <T, U extends T> T convProblem(
-      Class<T> returnType, ParserRuleContext ctx, U defaultReturnValue) {
+      Class<T> returnType, ParserRuleContext ctx, @Nullable U defaultReturnValue) {
     _w.redFlag(convErrorMessage(returnType, ctx));
     return defaultReturnValue;
   }

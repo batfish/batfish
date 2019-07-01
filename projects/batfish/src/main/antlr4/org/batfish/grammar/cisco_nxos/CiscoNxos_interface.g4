@@ -110,14 +110,22 @@ interface_range
   )?
 ;
 
+/*
+ * These two rules are added only for type safety; they force the Extractor to convert respecting
+ * specific valid VLAN ranges (1-3967 vs. 1-4094) which differs based on the containing rule.
+ *
+ * When adding grammar using vlan IDs, choose the rule corresponding to the correct allowed range.
+ */
 restricted_vlan_id
 :
+// 1-3967
   UINT8
   | UINT16
 ;
 
 vlan_id
 :
+// 1-4094
   UINT8
   | UINT16
 ;
