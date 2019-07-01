@@ -1,6 +1,7 @@
 package org.batfish.dataplane.protocols;
 
 import static org.batfish.dataplane.protocols.BgpProtocolHelper.transformBgpRouteOnImport;
+import static org.batfish.dataplane.protocols.BgpProtocolHelper.transformBgpRoutePostExport;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.notNullValue;
@@ -14,6 +15,7 @@ import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.OriginType;
 import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.Route;
 import org.batfish.datamodel.RoutingProtocol;
 import org.junit.Before;
 import org.junit.Test;
@@ -109,5 +111,14 @@ public class BgpProtocolHelperTest {
         "AdminDistance is set",
         builder.getAdmin(),
         equalTo(RoutingProtocol.BGP.getDefaultAdministrativeCost(ConfigurationFormat.CISCO_IOS)));
+  }
+
+  @Test
+  public void testTransformPostExportClearTag() {
+    Builder builder = _baseBgpRouteBuilder.setTag(Integer.MAX_VALUE);
+    transformBgpRoutePostExport(builder, true, 1);
+    assertThat("Tag is cleared", builder.getTag(), equalTo(Route.UNSET_ROUTE_TAG));
+    transformBgpRoutePostExport(builder, false, 1);
+    assertThat("Tag is cleared", builder.getTag(), equalTo(Route.UNSET_ROUTE_TAG));
   }
 }
