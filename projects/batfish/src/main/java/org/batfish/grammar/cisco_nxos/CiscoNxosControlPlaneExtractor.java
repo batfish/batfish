@@ -22,7 +22,6 @@ import org.batfish.grammar.ControlPlaneExtractor;
 import org.batfish.grammar.UnrecognizedLineToken;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Cisco_nxos_configurationContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.I_ip_addressContext;
-import org.batfish.grammar.cisco_nxos.CiscoNxosParser.I_ip_address_secondaryContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.I_no_shutdownContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Interface_addressContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Ip_addressContext;
@@ -114,13 +113,13 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
   @Override
   public void exitI_ip_address(I_ip_addressContext ctx) {
     InterfaceAddress address = toInterfaceAddress(ctx.addr);
-    _currentInterfaces.forEach(iface -> iface.setAddress(address));
-  }
-
-  @Override
-  public void exitI_ip_address_secondary(I_ip_address_secondaryContext ctx) {
-    InterfaceAddress address = toInterfaceAddress(ctx.addr);
-    _currentInterfaces.forEach(iface -> iface.getSecondaryAddresses().add(address));
+    if (ctx.SECONDARY() != null) {
+      // secondary addresses are appended
+      _currentInterfaces.forEach(iface -> iface.getSecondaryAddresses().add(address));
+    } else {
+      // primary address is replaced
+      _currentInterfaces.forEach(iface -> iface.setAddress(address));
+    }
   }
 
   @Override

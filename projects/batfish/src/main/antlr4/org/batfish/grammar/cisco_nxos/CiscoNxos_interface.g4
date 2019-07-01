@@ -10,32 +10,39 @@ s_interface
 :
   INTERFACE irange = interface_range NEWLINE
   (
-    i_ip_address
-    | i_ip_address_secondary
-    | i_no_shutdown
-    | i_no_switchport
+    i_ip
+    | i_no
     | i_null
   )*
 ;
 
-i_ip_address
+i_ip
 :
-  IP ADDRESS addr = interface_address NEWLINE
+  IP i_ip_address
 ;
 
-i_ip_address_secondary
+i_ip_address
 :
-  IP ADDRESS addr = interface_address SECONDARY NEWLINE
+  ADDRESS addr = interface_address SECONDARY? NEWLINE
+;
+
+i_no
+:
+  NO
+  (
+    i_no_shutdown
+    | i_no_switchport
+  )
 ;
 
 i_no_shutdown
 :
-  NO SHUTDOWN NEWLINE
+  SHUTDOWN NEWLINE
 ;
 
 i_no_switchport
 :
-  NO SWITCHPORT NEWLINE
+  SWITCHPORT NEWLINE
 ;
 
 i_null
