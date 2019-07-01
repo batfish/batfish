@@ -5,7 +5,7 @@ options {
 }
 
 tokens {
-  WORD
+  SUBDOMAIN_NAME
 }
 
 ADDRESS
@@ -26,6 +26,9 @@ FEATURE
 HOSTNAME
 :
   'hostname'
+  // Mode is needed so as not to interfere with interface names.
+  // E.g. 'Ethernet1' should be ETHERNET UINT8 rather than SUBDOMAIN_NAME
+  // May be revisited as grammar is fleshed out.
   {
     if (lastTokenType() == NEWLINE || lastTokenType() == -1) {
       pushMode(M_Hostname);
@@ -418,15 +421,21 @@ F_WordChar
 
 mode M_Hostname;
 
+M_Hostname_SUBDOMAIN_NAME
+:
+  (
+    (
+      [A-Za-z0-9_]
+      | '-'
+    )+ '.'
+  )*
+  (
+    [A-Za-z0-9_]
+    | '-'
+  )+ -> type ( SUBDOMAIN_NAME ) , popMode
+;
+
 M_Hostname_WS
 :
   F_Whitespace+ -> channel ( HIDDEN )
-;
-
-M_Hostname_WORD
-:
-  (
-    [A-Za-z0-9._]
-    | '-'
-  )+ -> type ( WORD ) , popMode
 ;

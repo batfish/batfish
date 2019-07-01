@@ -13,6 +13,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.common.BatfishException;
@@ -36,15 +37,26 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
    *
    * NOTE: Entries are sorted by priority. Do not reorder unless you have a good reason.
    */
-  private static final Map<String, String> CISCO_NXOS_INTERFACE_PREFIXES =
-      ImmutableMap.<String, String>builder()
-          .put("Ethernet", "Ethernet")
-          .put("Loopback", "Loopback")
-          .put("Null", "Null")
-          .put("nve", "nve")
-          .put("Port-channel", "Port-Channel")
-          .put("Vlan", "Vlan")
-          .build();
+  private static final Map<String, String> CISCO_NXOS_INTERFACE_PREFIXES;
+
+  private static final Pattern CISCO_NXOS_INTERFACE_PREFIX_REGEX;
+
+  static {
+    CISCO_NXOS_INTERFACE_PREFIXES =
+        ImmutableMap.<String, String>builder()
+            .put("Ethernet", "Ethernet")
+            .put("Loopback", "Loopback")
+            .put("Null", "Null")
+            .put("nve", "nve")
+            .put("Port-channel", "Port-Channel")
+            .put("Vlan", "Vlan")
+            .build();
+    CISCO_NXOS_INTERFACE_PREFIX_REGEX =
+        Pattern.compile(
+            CISCO_NXOS_INTERFACE_PREFIXES.values().stream()
+                .map(String::toLowerCase)
+                .collect(Collectors.joining("|")));
+  }
 
   /** Returns canonical prefix of interface name if valid, else {@code null}. */
   public static @Nullable String getCanonicalInterfaceNamePrefix(String prefix) {
@@ -70,7 +82,7 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
 
   @Override
   public String canonicalizeInterfaceName(String ifaceName) {
-    Matcher matcher = Pattern.compile("[A-Za-z][-A-Za-z0-9]*[A-Za-z]").matcher(ifaceName);
+    Matcher matcher = CISCO_NXOS_INTERFACE_PREFIX_REGEX.matcher(ifaceName.toLowerCase());
     if (!matcher.find()) {
       throw new BatfishException("Invalid interface name: '" + ifaceName + "'");
     }

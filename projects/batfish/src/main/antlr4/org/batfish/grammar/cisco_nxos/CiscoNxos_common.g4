@@ -50,6 +50,11 @@ null_rest_of_line
   ~NEWLINE* NEWLINE
 ;
 
+subdomain_name
+:
+  SUBDOMAIN_NAME
+;
+
 uint8
 :
   UINT8
@@ -59,9 +64,4 @@ uint16
 :
   UINT8
   | UINT16
-;
-
-word
-:
-  WORD
 ;

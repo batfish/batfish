@@ -21,7 +21,7 @@ statement
 
 s_hostname
 :
-  HOSTNAME hostname = word NEWLINE
+  HOSTNAME hostname = subdomain_name NEWLINE
 ;
 
 s_null
