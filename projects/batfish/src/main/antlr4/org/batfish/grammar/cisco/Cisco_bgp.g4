@@ -451,6 +451,7 @@ neighbor_group_rb_stanza
       | update_source_bgp_tail
       | use_neighbor_group_bgp_tail
       | use_session_group_bgp_tail
+      | null_bgp_tail
    )*
 ;
 
