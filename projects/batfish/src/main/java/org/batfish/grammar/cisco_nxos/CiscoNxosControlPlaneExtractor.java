@@ -316,7 +316,7 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
     if (!VLAN_RANGE.contains(value)) {
       _w.redFlag(
           String.format(
-              "Expected VLANs in range %s, but got '%d' in: %s",
+              "Expected VLANs in range %s, but got '%s' in: %s",
               VLAN_RANGE, rangeText, getFullText(messageCtx)));
       return null;
     }
