@@ -157,7 +157,8 @@ public final class BgpProtocolHelperTransformBgpRouteOnExportTest {
    * and the class variables representing the BGP session.
    */
   private void runTransformBgpRoutePostExport(Bgpv4Route.Builder routeBuilder) {
-    BgpProtocolHelper.transformBgpRoutePostExport(routeBuilder, _fromNeighbor, _sessionProperties);
+    BgpProtocolHelper.transformBgpRoutePostExport(
+        routeBuilder, _sessionProperties.isEbgp(), _fromNeighbor.getLocalAs());
   }
 
   /**
@@ -333,5 +334,25 @@ public final class BgpProtocolHelperTransformBgpRouteOnExportTest {
     setUpPeers(false);
     transformedBgpRoute = runTransformBgpRoutePreExport(bgpv4Route);
     assertThat(transformedBgpRoute.getWeight(), equalTo(0));
+  }
+
+  @Test
+  public void testNonBgpToBgpKeepTag() {
+    int tag = 100;
+    setUpPeers(false);
+    assertThat(
+        convertNonBgpRouteToBgpRoute(
+                StaticRoute.builder()
+                    .setNetwork(Prefix.ZERO)
+                    .setNextHopInterface("foo")
+                    .setAdministrativeCost(1)
+                    .setTag(tag)
+                    .build(),
+                _fromBgpProcess.getRouterId(),
+                _sessionProperties.getTailIp(),
+                170,
+                RoutingProtocol.BGP)
+            .getTag(),
+        equalTo(tag));
   }
 }
