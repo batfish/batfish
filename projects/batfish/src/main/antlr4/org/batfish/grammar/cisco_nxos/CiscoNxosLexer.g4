@@ -4,6 +4,20 @@ options {
   superClass = 'org.batfish.grammar.cisco_nxos.parsing.CiscoNxosBaseLexer';
 }
 
+tokens {
+  SUBDOMAIN_NAME
+}
+
+ADDRESS
+:
+  'address'
+;
+
+ETHERNET
+:
+  [Ee] [Tt] [Hh] [Ee] [Rr] [Nn] [Ee] [Tt]
+;
+
 FEATURE
 :
   'feature'
@@ -12,11 +26,83 @@ FEATURE
 HOSTNAME
 :
   'hostname'
+  // Mode is needed so as not to interfere with interface names.
+  // E.g. 'Ethernet1' should be ETHERNET UINT8 rather than SUBDOMAIN_NAME
+  // May be revisited as grammar is fleshed out.
+  {
+    if (lastTokenType() == NEWLINE || lastTokenType() == -1) {
+      pushMode(M_Hostname);
+    }
+  }
+
+;
+
+INTERFACE
+:
+// most common abbreviation
+  'int'
+  (
+    'erface'
+  )?
+;
+
+IP
+:
+  'ip'
+;
+
+IP_ADDRESS
+:
+  F_IpAddress
+;
+
+IP_PREFIX
+:
+  F_IpPrefix
+;
+
+LOOPBACK
+:
+// most common abbreviation
+  [Ll] [Oo]
+  (
+    [Oo] [Pp] [Bb] [Aa] [Cc] [Kk]
+  )?
+;
+
+MGMT
+:
+  [Mm] [Gg] [Mm] [Tt]
 ;
 
 NO
 :
   'no'
+;
+
+PORT_CHANNEL
+:
+  [Pp] [Oo] [Rr] [Tt] '-' [Cc] [Hh] [Aa] [Nn] [Nn] [Ee] [Ll]
+;
+
+REDIRECTS
+:
+  'redirects'
+;
+
+SECONDARY
+:
+  'secondary'
+;
+
+SHUTDOWN
+:
+  'shutdown'
+;
+
+SWITCHPORT
+:
+  'switchport'
 ;
 
 // Other Tokens
@@ -41,9 +127,14 @@ COMMENT_LINE
   F_NonNewline* F_Newline+ -> channel ( HIDDEN )
 ;
 
-COMMENT_TAIL
+DASH
 :
-  '!' F_NonNewline* -> channel ( HIDDEN )
+  '-'
+;
+
+FORWARD_SLASH
+:
+  '/'
 ;
 
 NEWLINE
@@ -51,9 +142,19 @@ NEWLINE
   F_Newline+
 ;
 
-WORD
+PERIOD
 :
-  F_WordChar+
+  '.'
+;
+
+UINT8
+:
+  F_Uint8
+;
+
+UINT16
+:
+  F_Uint16
 ;
 
 WS
@@ -316,4 +417,25 @@ fragment
 F_WordChar
 :
   ~[ \t\n\r{}[\]]
+;
+
+mode M_Hostname;
+
+M_Hostname_SUBDOMAIN_NAME
+:
+  (
+    (
+      [A-Za-z0-9_]
+      | '-'
+    )+ '.'
+  )*
+  (
+    [A-Za-z0-9_]
+    | '-'
+  )+ -> type ( SUBDOMAIN_NAME ) , popMode
+;
+
+M_Hostname_WS
+:
+  F_Whitespace+ -> channel ( HIDDEN )
 ;

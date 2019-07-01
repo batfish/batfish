@@ -1,0 +1,15 @@
+!RANCID-CONTENT-TYPE: cisco-nx
+!
+hostname nxos_interface_ip_address
+!
+interface Ethernet1/1
+  no switchport
+  no ip redirects
+  ip address 10.0.0.4/24
+  ! below assignment should replace above assignment
+  ip address 10.0.0.1/24 
+  ip address 10.0.0.3/24 secondary 
+  ! below assignment should append to secondary addresses
+  ip address 10.0.0.2 255.255.255.0 secondary
+!
+!
