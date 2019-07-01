@@ -76,7 +76,9 @@ public final class TopologyProviderImpl implements TopologyProvider {
 
   @Override
   public OspfTopology getOspfTopology(NetworkSnapshot networkSnapshot) {
-    return _ospfTopologies.getUnchecked(networkSnapshot);
+    return OspfTopologyUtils.computeOspfTopology(
+        NetworkConfigurations.of(_batfish.loadConfigurations(networkSnapshot)),
+        getLayer3Topology(networkSnapshot));
   }
 
   @Override
@@ -142,6 +144,11 @@ public final class TopologyProviderImpl implements TopologyProvider {
 
   private final IBatfish _batfish;
   private final StorageProvider _storage;
+
+  // NOTE: only the "raw" or "initial" versions of topologies are cached. This choice was made to
+  // ease developer iteration on BDP: if the dataplane is re-generated (presumably, via a call to
+  // generate_dataplane), the backend will not cache dataplane-derived topologies.
+
   private final LoadingCache<NetworkSnapshot, IpOwners> _ipOwners =
       CacheBuilder.newBuilder()
           .maximumSize(MAX_CACHED_SNAPSHOTS)
@@ -181,10 +188,6 @@ public final class TopologyProviderImpl implements TopologyProvider {
       CacheBuilder.newBuilder()
           .maximumSize(MAX_CACHED_SNAPSHOTS)
           .build(CacheLoader.from(this::computeInitialOspfTopology));
-  private final LoadingCache<NetworkSnapshot, OspfTopology> _ospfTopologies =
-      CacheBuilder.newBuilder()
-          .maximumSize(MAX_CACHED_SNAPSHOTS)
-          .build(CacheLoader.from(this::computeOspfTopology));
 
   private final LoadingCache<NetworkSnapshot, IpsecTopology> _initialIpsecTopologies =
       CacheBuilder.newBuilder()
