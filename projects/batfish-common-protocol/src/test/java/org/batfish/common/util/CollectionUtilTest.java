@@ -64,11 +64,9 @@ public class CollectionUtilTest {
   @Test
   public void testToMap() {
     Set<String> m = ImmutableSet.of("a", "b");
-    Set<String> ms = ImmutableSet.of("a", "b");
-    assertThat(m, equalTo(ms));
 
     assertThat(
-        toMap(m, Function.identity(), Function.identity()),
-        equalTo(ImmutableMap.of("a", "a", "b", "b")));
+        toMap(m, Function.identity(), x -> x.equals("a") ? 0 : 1),
+        equalTo(ImmutableMap.of("a", 0, "b", 1)));
   }
 }
