@@ -149,7 +149,7 @@ bn_interface
 :
   INTERFACE
   (
-    | bnp_peer_group
+    bnp_peer_group
     | bnp_remote_as
   )
 ;
