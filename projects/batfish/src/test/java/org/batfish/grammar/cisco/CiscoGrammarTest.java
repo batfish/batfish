@@ -26,8 +26,8 @@ import static org.batfish.datamodel.matchers.AaaAuthenticationMatchers.hasLogin;
 import static org.batfish.datamodel.matchers.AaaMatchers.hasAuthentication;
 import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasPrefix;
 import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasProtocol;
+import static org.batfish.datamodel.matchers.AddressFamilyCapabilitiesMatchers.hasAllowRemoteAsOut;
 import static org.batfish.datamodel.matchers.AddressFamilyMatchers.hasAddressFamilySettings;
-import static org.batfish.datamodel.matchers.AddressFamilySettingsMatchers.hasAllowRemoteAsOut;
 import static org.batfish.datamodel.matchers.AndMatchExprMatchers.hasConjuncts;
 import static org.batfish.datamodel.matchers.AndMatchExprMatchers.isAndMatchExprThat;
 import static org.batfish.datamodel.matchers.BgpNeighborMatchers.hasIpv4UnicastAddressFamily;
@@ -5947,7 +5947,7 @@ public class CiscoGrammarTest {
             .getActiveNeighbors()
             .get(Prefix.parse("1.1.1.1/32"))
             .getIpv4UnicastAddressFamily()
-            .getAddressFamilySettings()
+            .getAddressFamilyCapabilities()
             .getAdvertiseInactive());
   }
 
@@ -5961,7 +5961,7 @@ public class CiscoGrammarTest {
             .getActiveNeighbors()
             .get(Prefix.parse("1.1.1.1/32"))
             .getIpv4UnicastAddressFamily()
-            .getAddressFamilySettings()
+            .getAddressFamilyCapabilities()
             .getAdvertiseInactive());
   }
 
@@ -5975,7 +5975,7 @@ public class CiscoGrammarTest {
             .getActiveNeighbors()
             .get(Prefix.parse("1.1.1.1/32"))
             .getIpv4UnicastAddressFamily()
-            .getAddressFamilySettings()
+            .getAddressFamilyCapabilities()
             .getAdvertiseInactive());
   }
 }

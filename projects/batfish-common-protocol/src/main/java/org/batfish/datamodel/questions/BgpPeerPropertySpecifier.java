@@ -101,7 +101,9 @@ public class BgpPeerPropertySpecifier extends PropertySpecifier {
               SEND_COMMUNITY,
               new PropertyDescriptor<>(
                   c ->
-                      c.getIpv4UnicastAddressFamily().getAddressFamilySettings().getSendCommunity(),
+                      c.getIpv4UnicastAddressFamily()
+                          .getAddressFamilyCapabilities()
+                          .getSendCommunity(),
                   Schema.BOOLEAN,
                   "Whether this peer propagates communities"))
           .build();

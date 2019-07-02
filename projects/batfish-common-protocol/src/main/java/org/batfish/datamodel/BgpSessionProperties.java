@@ -255,26 +255,26 @@ public final class BgpSessionProperties {
         !SessionType.isEbgp(sessionType)
             && listener
                 .getIpv4UnicastAddressFamily()
-                .getAddressFamilySettings()
+                .getAddressFamilyCapabilities()
                 .getAdditionalPathsReceive()
             && initiator
                 .getIpv4UnicastAddressFamily()
-                .getAddressFamilySettings()
+                .getAddressFamilyCapabilities()
                 .getAdditionalPathsSend()
             && initiator
                 .getIpv4UnicastAddressFamily()
-                .getAddressFamilySettings()
+                .getAddressFamilyCapabilities()
                 .getAdditionalPathsSelectAll(),
         getAddressFamilyIntersection(initiator, listener),
         !SessionType.isEbgp(sessionType)
             && initiator
                 .getIpv4UnicastAddressFamily()
-                .getAddressFamilySettings()
+                .getAddressFamilyCapabilities()
                 .getAdvertiseExternal(),
         SessionType.isEbgp(sessionType)
             && initiator
                 .getIpv4UnicastAddressFamily()
-                .getAddressFamilySettings()
+                .getAddressFamilyCapabilities()
                 .getAdvertiseInactive(),
         reverseDirection ? listenerIp : initiatorIp,
         reverseDirection ? initiatorIp : listenerIp,

@@ -17,7 +17,7 @@ public abstract class AddressFamily implements Serializable {
   static final String PROP_IMPORT_POLICY = "importPolicy";
   static final String PROP_IMPORT_POLICY_SOURCES = "importPolicySources";
 
-  @Nonnull protected final AddressFamilySettings _addressFamilySettings;
+  @Nonnull protected final AddressFamilyCapabilities _addressFamilyCapabilities;
   // Policies
   @Nullable protected final String _exportPolicy;
   @Nullable protected final String _importPolicy;
@@ -26,12 +26,12 @@ public abstract class AddressFamily implements Serializable {
   @Nonnull protected SortedSet<String> _exportPolicySources;
 
   protected AddressFamily(
-      @Nonnull AddressFamilySettings addressFamilySettings,
+      @Nonnull AddressFamilyCapabilities addressFamilyCapabilities,
       @Nullable String exportPolicy,
       SortedSet<String> exportPolicySources,
       @Nullable String importPolicy,
       SortedSet<String> importPolicySources) {
-    _addressFamilySettings = addressFamilySettings;
+    _addressFamilyCapabilities = addressFamilyCapabilities;
     _exportPolicy = exportPolicy;
     _exportPolicySources = exportPolicySources;
     _importPolicy = importPolicy;
@@ -39,8 +39,8 @@ public abstract class AddressFamily implements Serializable {
   }
 
   @Nonnull
-  public AddressFamilySettings getAddressFamilySettings() {
-    return _addressFamilySettings;
+  public AddressFamilyCapabilities getAddressFamilyCapabilities() {
+    return _addressFamilyCapabilities;
   }
 
   /** The policy governing all advertisements sent to this peer */
@@ -92,14 +92,15 @@ public abstract class AddressFamily implements Serializable {
   @ParametersAreNonnullByDefault
   public abstract static class Builder<B extends Builder<B, F>, F extends AddressFamily> {
 
-    @Nullable protected AddressFamilySettings _addressFamilySettings;
+    @Nullable protected AddressFamilyCapabilities _addressFamilyCapabilities;
     @Nullable protected String _exportPolicy;
     @Nullable protected String _importPolicy;
     @Nonnull protected SortedSet<String> _importPolicySources = ImmutableSortedSet.of();
     @Nonnull protected SortedSet<String> _exportPolicySources = ImmutableSortedSet.of();
 
-    public B setAddressFamilySettings(@Nullable AddressFamilySettings addressFamilySettings) {
-      _addressFamilySettings = addressFamilySettings;
+    public B setAddressFamilyCapabilities(
+        @Nullable AddressFamilyCapabilities addressFamilyCapabilities) {
+      _addressFamilyCapabilities = addressFamilyCapabilities;
       return getThis();
     }
 

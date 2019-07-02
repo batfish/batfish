@@ -13,8 +13,8 @@ import static org.batfish.datamodel.flow.TransformationStep.TransformationType.S
 import static org.batfish.datamodel.flow.TransformationStep.TransformationType.STATIC_NAT;
 import static org.batfish.datamodel.matchers.AaaAuthenticationLoginListMatchers.hasMethods;
 import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasPrefix;
+import static org.batfish.datamodel.matchers.AddressFamilyCapabilitiesMatchers.hasAllowLocalAsIn;
 import static org.batfish.datamodel.matchers.AddressFamilyMatchers.hasAddressFamilySettings;
-import static org.batfish.datamodel.matchers.AddressFamilySettingsMatchers.hasAllowLocalAsIn;
 import static org.batfish.datamodel.matchers.AnnotatedRouteMatchers.hasSourceVrf;
 import static org.batfish.datamodel.matchers.BgpNeighborMatchers.hasClusterId;
 import static org.batfish.datamodel.matchers.BgpNeighborMatchers.hasEnforceFirstAs;

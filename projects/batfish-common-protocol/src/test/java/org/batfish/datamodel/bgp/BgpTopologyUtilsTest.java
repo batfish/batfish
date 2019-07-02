@@ -103,7 +103,7 @@ public class BgpTopologyUtilsTest {
             .setRemoteAs(2L)
             .setIpv4UnicastAddressFamily(
                 Ipv4UnicastAddressFamily.builder()
-                    .setAddressFamilySettings(AddressFamilySettings.builder().build())
+                    .setAddressFamilyCapabilities(AddressFamilyCapabilities.builder().build())
                     .build())
             .build();
     _node1BgpProcess.setNeighbors(ImmutableSortedMap.of(peer1PeerPrefix, peer1));
@@ -117,7 +117,7 @@ public class BgpTopologyUtilsTest {
             .setPeerPrefix(peer2PeerPrefix)
             .setIpv4UnicastAddressFamily(
                 Ipv4UnicastAddressFamily.builder()
-                    .setAddressFamilySettings(AddressFamilySettings.builder().build())
+                    .setAddressFamilyCapabilities(AddressFamilyCapabilities.builder().build())
                     .build())
             .build();
     _node2BgpProcess.setPassiveNeighbors(ImmutableSortedMap.of(peer2PeerPrefix, peer2));

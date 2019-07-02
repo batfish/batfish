@@ -12,7 +12,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.apache.commons.lang3.SerializationUtils;
 import org.batfish.common.util.BatfishObjectMapper;
-import org.batfish.datamodel.bgp.AddressFamilySettings;
+import org.batfish.datamodel.bgp.AddressFamilyCapabilities;
 import org.batfish.datamodel.bgp.EvpnAddressFamily;
 import org.batfish.datamodel.bgp.Ipv4UnicastAddressFamily;
 import org.batfish.datamodel.dataplane.rib.RibGroup;
@@ -47,8 +47,8 @@ public final class BgpUnnumberedPeerConfigTest {
             builder
                 .setIpv4UnicastAddressFamily(
                     Ipv4UnicastAddressFamily.builder()
-                        .setAddressFamilySettings(
-                            AddressFamilySettings.builder().setSendCommunity(true).build())
+                        .setAddressFamilyCapabilities(
+                            AddressFamilyCapabilities.builder().setSendCommunity(true).build())
                         .build())
                 .build())
         .addEqualityGroup(

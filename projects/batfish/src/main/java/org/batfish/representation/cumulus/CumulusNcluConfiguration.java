@@ -56,7 +56,7 @@ import org.batfish.datamodel.PrefixSpace;
 import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.SwitchportMode;
 import org.batfish.datamodel.VniSettings;
-import org.batfish.datamodel.bgp.AddressFamilySettings;
+import org.batfish.datamodel.bgp.AddressFamilyCapabilities;
 import org.batfish.datamodel.bgp.EvpnAddressFamily;
 import org.batfish.datamodel.bgp.Ipv4UnicastAddressFamily;
 import org.batfish.datamodel.bgp.Layer2VniConfig;
@@ -199,8 +199,8 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
             .setRemoteAsns(computeRemoteAsns(neighbor, localAs))
             .setIpv4UnicastAddressFamily(
                 Ipv4UnicastAddressFamily.builder()
-                    .setAddressFamilySettings(
-                        AddressFamilySettings.builder().setSendCommunity(true).build())
+                    .setAddressFamilyCapabilities(
+                        AddressFamilyCapabilities.builder().setSendCommunity(true).build())
                     .setExportPolicy(routingPolicy.getName())
                     .build());
 
@@ -267,8 +267,8 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
               .setL2Vnis(l2Vnis.build())
               .setL3Vnis(l3Vnis.build())
               .setPropagateUnmatched(true)
-              .setAddressFamilySettings(
-                  AddressFamilySettings.builder().setSendCommunity(true).build())
+              .setAddressFamilyCapabilities(
+                  AddressFamilyCapabilities.builder().setSendCommunity(true).build())
               .setExportPolicy(routingPolicy.getName())
               .build());
     }

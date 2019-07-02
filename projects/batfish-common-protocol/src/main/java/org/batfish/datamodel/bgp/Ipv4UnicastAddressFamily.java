@@ -2,7 +2,7 @@ package org.batfish.datamodel.bgp;
 
 import static com.google.common.base.MoreObjects.firstNonNull;
 import static com.google.common.base.Preconditions.checkArgument;
-import static org.batfish.datamodel.bgp.AddressFamilySettings.PROP_ADDRESS_FAMILY_SETTINGS;
+import static org.batfish.datamodel.bgp.AddressFamilyCapabilities.PROP_ADDRESS_FAMILY_SETTINGS;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -18,13 +18,13 @@ import javax.annotation.ParametersAreNonnullByDefault;
 public final class Ipv4UnicastAddressFamily extends AddressFamily {
 
   private Ipv4UnicastAddressFamily(
-      @Nonnull AddressFamilySettings addressFamilySettings,
+      @Nonnull AddressFamilyCapabilities addressFamilyCapabilities,
       @Nullable String exportPolicy,
       SortedSet<String> exportPolicySources,
       @Nullable String importPolicy,
       SortedSet<String> importPolicySources) {
     super(
-        addressFamilySettings,
+        addressFamilyCapabilities,
         exportPolicy,
         exportPolicySources,
         importPolicy,
@@ -35,14 +35,14 @@ public final class Ipv4UnicastAddressFamily extends AddressFamily {
   private static Ipv4UnicastAddressFamily jsonCreator(
       // super fields
       @Nullable @JsonProperty(PROP_ADDRESS_FAMILY_SETTINGS)
-          AddressFamilySettings addressFamilySettings,
+          AddressFamilyCapabilities addressFamilyCapabilities,
       @Nullable @JsonProperty(PROP_EXPORT_POLICY) String exportPolicy,
       @Nullable @JsonProperty(PROP_EXPORT_POLICY_SOURCES) SortedSet<String> exportPolicySources,
       @Nullable @JsonProperty(PROP_IMPORT_POLICY) String importPolicy,
       @Nullable @JsonProperty(PROP_IMPORT_POLICY_SOURCES) SortedSet<String> importPolicySources) {
-    checkArgument(addressFamilySettings != null, "Missing %s", PROP_ADDRESS_FAMILY_SETTINGS);
+    checkArgument(addressFamilyCapabilities != null, "Missing %s", PROP_ADDRESS_FAMILY_SETTINGS);
     return new Ipv4UnicastAddressFamily(
-        addressFamilySettings,
+        addressFamilyCapabilities,
         exportPolicy,
         firstNonNull(exportPolicySources, ImmutableSortedSet.of()),
         importPolicy,
@@ -63,7 +63,7 @@ public final class Ipv4UnicastAddressFamily extends AddressFamily {
       return false;
     }
     Ipv4UnicastAddressFamily that = (Ipv4UnicastAddressFamily) o;
-    return _addressFamilySettings.equals(that._addressFamilySettings)
+    return _addressFamilyCapabilities.equals(that._addressFamilyCapabilities)
         && Objects.equals(_exportPolicy, that._exportPolicy)
         && Objects.equals(_importPolicy, that._importPolicy)
         && _exportPolicySources.equals(that._exportPolicySources)
@@ -73,7 +73,7 @@ public final class Ipv4UnicastAddressFamily extends AddressFamily {
   @Override
   public int hashCode() {
     return Objects.hash(
-        _addressFamilySettings,
+        _addressFamilyCapabilities,
         _exportPolicy,
         _exportPolicySources,
         _importPolicy,
@@ -88,7 +88,7 @@ public final class Ipv4UnicastAddressFamily extends AddressFamily {
       extends AddressFamily.Builder<Builder, Ipv4UnicastAddressFamily> {
 
     private Builder() {
-      _addressFamilySettings = AddressFamilySettings.builder().build();
+      _addressFamilyCapabilities = AddressFamilyCapabilities.builder().build();
     }
 
     @Nonnull
@@ -100,9 +100,9 @@ public final class Ipv4UnicastAddressFamily extends AddressFamily {
     @Nonnull
     @Override
     public Ipv4UnicastAddressFamily build() {
-      checkArgument(_addressFamilySettings != null, "Missing %s", PROP_ADDRESS_FAMILY_SETTINGS);
+      checkArgument(_addressFamilyCapabilities != null, "Missing %s", PROP_ADDRESS_FAMILY_SETTINGS);
       return new Ipv4UnicastAddressFamily(
-          _addressFamilySettings,
+          _addressFamilyCapabilities,
           _exportPolicy,
           _exportPolicySources,
           _importPolicy,

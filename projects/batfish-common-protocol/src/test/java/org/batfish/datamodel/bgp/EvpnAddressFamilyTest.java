@@ -28,8 +28,8 @@ public class EvpnAddressFamilyTest {
         .addEqualityGroup(af, af, builder.build())
         .addEqualityGroup(
             builder
-                .setAddressFamilySettings(
-                    AddressFamilySettings.builder().setSendCommunity(true).build())
+                .setAddressFamilyCapabilities(
+                    AddressFamilyCapabilities.builder().setSendCommunity(true).build())
                 .build())
         .addEqualityGroup(builder.setExportPolicy("export").build())
         .addEqualityGroup(builder.setImportPolicy("import").build())
@@ -68,8 +68,8 @@ public class EvpnAddressFamilyTest {
   public void testJavaSerialization() {
     EvpnAddressFamily af =
         builder()
-            .setAddressFamilySettings(
-                AddressFamilySettings.builder().setSendCommunity(true).build())
+            .setAddressFamilyCapabilities(
+                AddressFamilyCapabilities.builder().setSendCommunity(true).build())
             .setExportPolicy("export")
             .setImportPolicy("import")
             .setExportPolicySources(ImmutableSortedSet.of("foo"))
@@ -85,8 +85,8 @@ public class EvpnAddressFamilyTest {
   public void testJsonSerialization() throws IOException {
     Builder builder =
         builder()
-            .setAddressFamilySettings(
-                AddressFamilySettings.builder().setSendCommunity(true).build())
+            .setAddressFamilyCapabilities(
+                AddressFamilyCapabilities.builder().setSendCommunity(true).build())
             .setExportPolicy("export")
             .setImportPolicy("import")
             .setExportPolicySources(ImmutableSortedSet.of("foo"))

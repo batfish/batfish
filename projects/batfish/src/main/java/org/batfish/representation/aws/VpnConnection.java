@@ -46,7 +46,7 @@ import org.batfish.datamodel.RouteFilterList;
 import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.SubRange;
-import org.batfish.datamodel.bgp.AddressFamilySettings;
+import org.batfish.datamodel.bgp.AddressFamilyCapabilities;
 import org.batfish.datamodel.bgp.Ipv4UnicastAddressFamily;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.routing_policy.expr.Conjunction;
@@ -384,8 +384,8 @@ public class VpnConnection implements AwsVpcEntity, Serializable {
             .setDefaultMetric(BGP_NEIGHBOR_DEFAULT_METRIC)
             .setIpv4UnicastAddressFamily(
                 Ipv4UnicastAddressFamily.builder()
-                    .setAddressFamilySettings(
-                        AddressFamilySettings.builder().setSendCommunity(true).build())
+                    .setAddressFamilyCapabilities(
+                        AddressFamilyCapabilities.builder().setSendCommunity(true).build())
                     .setExportPolicy(originationPolicyName)
                     .build())
             .build();
@@ -418,8 +418,8 @@ public class VpnConnection implements AwsVpcEntity, Serializable {
             .setDefaultMetric(BGP_NEIGHBOR_DEFAULT_METRIC)
             .setIpv4UnicastAddressFamily(
                 Ipv4UnicastAddressFamily.builder()
-                    .setAddressFamilySettings(
-                        AddressFamilySettings.builder().setSendCommunity(true).build())
+                    .setAddressFamilyCapabilities(
+                        AddressFamilyCapabilities.builder().setSendCommunity(true).build())
                     .setExportPolicy(rpAcceptAllEbgpAndSetNextHopSelfName)
                     .setImportPolicy(rpRejectAllName)
                     .build())
@@ -439,8 +439,8 @@ public class VpnConnection implements AwsVpcEntity, Serializable {
             .setDefaultMetric(BGP_NEIGHBOR_DEFAULT_METRIC)
             .setIpv4UnicastAddressFamily(
                 Ipv4UnicastAddressFamily.builder()
-                    .setAddressFamilySettings(
-                        AddressFamilySettings.builder().setSendCommunity(true).build())
+                    .setAddressFamilyCapabilities(
+                        AddressFamilyCapabilities.builder().setSendCommunity(true).build())
                     .setImportPolicy(rpAcceptAllName)
                     .setExportPolicy(rpRejectAllName)
                     .build())

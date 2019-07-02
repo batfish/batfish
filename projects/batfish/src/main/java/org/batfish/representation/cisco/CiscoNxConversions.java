@@ -38,7 +38,7 @@ import org.batfish.datamodel.OriginType;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.Vrf;
-import org.batfish.datamodel.bgp.AddressFamilySettings;
+import org.batfish.datamodel.bgp.AddressFamilyCapabilities;
 import org.batfish.datamodel.bgp.Ipv4UnicastAddressFamily;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.routing_policy.expr.BooleanExpr;
@@ -314,8 +314,8 @@ final class CiscoNxConversions {
     Ipv4UnicastAddressFamily.Builder ipv4FamilyBuilder = Ipv4UnicastAddressFamily.builder();
 
     if (naf4 != null) {
-      ipv4FamilyBuilder.setAddressFamilySettings(
-          AddressFamilySettings.builder()
+      ipv4FamilyBuilder.setAddressFamilyCapabilities(
+          AddressFamilyCapabilities.builder()
               .setAdvertiseInactive(
                   !firstNonNull(
                       naf4.getSuppressInactive(),

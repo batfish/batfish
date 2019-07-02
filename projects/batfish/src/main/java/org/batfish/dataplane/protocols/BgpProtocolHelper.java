@@ -88,12 +88,12 @@ public final class BgpProtocolHelper {
     if (communities.contains(StandardCommunity.of(WellKnownCommunity.NO_ADVERTISE))
         || (sessionProperties.isEbgp()
             && route.getAsPath().containsAs(toNeighbor.getLocalAs())
-            && !af.getAddressFamilySettings().getAllowRemoteAsOut())) {
+            && !af.getAddressFamilyCapabilities().getAllowRemoteAsOut())) {
       return null;
     }
 
     // Set transformed route's communities
-    if (af.getAddressFamilySettings().getSendCommunity()) {
+    if (af.getAddressFamilyCapabilities().getSendCommunity()) {
       builder.addCommunities(communities);
     } else {
       builder.setCommunities(ImmutableSet.of());

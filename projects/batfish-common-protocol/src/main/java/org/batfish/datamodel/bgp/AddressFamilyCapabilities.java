@@ -10,8 +10,15 @@ import java.util.Objects;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 
+/**
+ * Encapsulates fine-grained configuration of a BGP peer capabilities for a single {@link
+ * AddressFamily}. These capabilities control route propagation between two BGP neighbors.
+ *
+ * <p>For example, in order for BGP add-path fean, both neighbors must have {@link
+ * #getAdditionalPathsSend()} and {@link #getAdditionalPathsReceive()} enabled.
+ */
 @ParametersAreNonnullByDefault
-public final class AddressFamilySettings implements Serializable {
+public final class AddressFamilyCapabilities implements Serializable {
   private static final String PROP_ADDITIONAL_PATHS_RECEIVE = "additionalPathsReceive";
   private static final String PROP_ADDITIONAL_PATHS_SELECT_ALL = "additionalPathsSelectAll";
   private static final String PROP_ADDITIONAL_PATHS_SEND = "additionalPathsSend";
@@ -31,7 +38,7 @@ public final class AddressFamilySettings implements Serializable {
   private final boolean _allowRemoteAsOut;
   private final boolean _sendCommunity;
 
-  private AddressFamilySettings(
+  private AddressFamilyCapabilities(
       boolean additionalPathsReceive,
       boolean additionalPathsSelectAll,
       boolean additionalPathsSend,
@@ -51,7 +58,7 @@ public final class AddressFamilySettings implements Serializable {
   }
 
   @JsonCreator
-  private static AddressFamilySettings jsonCreator(
+  private static AddressFamilyCapabilities jsonCreator(
       @Nullable @JsonProperty(PROP_ADDITIONAL_PATHS_RECEIVE) Boolean additionalPathsReceive,
       @Nullable @JsonProperty(PROP_ADDITIONAL_PATHS_SELECT_ALL) Boolean additionalPathsSelectAll,
       @Nullable @JsonProperty(PROP_ADDITIONAL_PATHS_SEND) Boolean additionalPathsSend,
@@ -144,10 +151,10 @@ public final class AddressFamilySettings implements Serializable {
     if (this == o) {
       return true;
     }
-    if (!(o instanceof AddressFamilySettings)) {
+    if (!(o instanceof AddressFamilyCapabilities)) {
       return false;
     }
-    AddressFamilySettings that = (AddressFamilySettings) o;
+    AddressFamilyCapabilities that = (AddressFamilyCapabilities) o;
     return _additionalPathsReceive == that._additionalPathsReceive
         && _additionalPathsSelectAll == that._additionalPathsSelectAll
         && _additionalPathsSend == that._additionalPathsSend
@@ -186,7 +193,7 @@ public final class AddressFamilySettings implements Serializable {
   }
 
   /**
-   * Return a builder for {@link AddressFamilySettings} By default all values are initialized to
+   * Return a builder for {@link AddressFamilyCapabilities} By default all values are initialized to
    * {@code false}.
    */
   public static Builder builder() {
@@ -245,8 +252,8 @@ public final class AddressFamilySettings implements Serializable {
       return this;
     }
 
-    public AddressFamilySettings build() {
-      return new AddressFamilySettings(
+    public AddressFamilyCapabilities build() {
+      return new AddressFamilyCapabilities(
           _additionalPathsReceive,
           _additionalPathsSelectAll,
           _additionalPathsSend,

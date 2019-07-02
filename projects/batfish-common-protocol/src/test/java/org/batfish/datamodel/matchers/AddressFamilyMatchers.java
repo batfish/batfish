@@ -4,7 +4,7 @@ import static org.hamcrest.Matchers.equalTo;
 
 import javax.annotation.Nonnull;
 import org.batfish.datamodel.bgp.AddressFamily;
-import org.batfish.datamodel.bgp.AddressFamilySettings;
+import org.batfish.datamodel.bgp.AddressFamilyCapabilities;
 import org.batfish.datamodel.matchers.AddressFamilyMatchersImpl.HasAddressFamilySettings;
 import org.batfish.datamodel.matchers.AddressFamilyMatchersImpl.HasExportPolicy;
 import org.hamcrest.Matcher;
@@ -16,7 +16,7 @@ public final class AddressFamilyMatchers {
    * addressFamilySettings}.
    */
   public static @Nonnull Matcher<AddressFamily> hasAddressFamilySettings(
-      Matcher<? super AddressFamilySettings> addressFamilySettings) {
+      Matcher<? super AddressFamilyCapabilities> addressFamilySettings) {
     return new HasAddressFamilySettings(addressFamilySettings);
   }
 

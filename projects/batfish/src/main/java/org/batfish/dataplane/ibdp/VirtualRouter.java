@@ -677,7 +677,7 @@ public class VirtualRouter implements Serializable {
             && transformedOutgoingRoute.getAsPath().containsAs(neighbor.getLocalAs())
             && !neighbor
                 .getIpv4UnicastAddressFamily()
-                .getAddressFamilySettings()
+                .getAddressFamilyCapabilities()
                 .getAllowLocalAsIn()) {
           // skip routes containing peer's AS unless
           // disable-peer-as-check (getAllowRemoteAsOut) is set
@@ -1052,7 +1052,7 @@ public class VirtualRouter implements Serializable {
                 ourBgpConfig.getLocalAs(),
                 ourBgpConfig
                     .getIpv4UnicastAddressFamily()
-                    .getAddressFamilySettings()
+                    .getAddressFamilyCapabilities()
                     .getAllowLocalAsIn(),
                 sessionProperties.isEbgp(),
                 _bgpRoutingProcess._process,

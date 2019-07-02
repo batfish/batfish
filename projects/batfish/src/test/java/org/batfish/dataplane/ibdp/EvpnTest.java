@@ -29,7 +29,7 @@ import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.VniSettings;
 import org.batfish.datamodel.Vrf;
-import org.batfish.datamodel.bgp.AddressFamilySettings;
+import org.batfish.datamodel.bgp.AddressFamilyCapabilities;
 import org.batfish.datamodel.bgp.EvpnAddressFamily;
 import org.batfish.datamodel.bgp.Ipv4UnicastAddressFamily;
 import org.batfish.datamodel.bgp.Layer3VniConfig;
@@ -143,8 +143,8 @@ public class EvpnTest {
                 .setL2Vnis(ImmutableSet.of())
                 .setL3Vnis(ImmutableSet.of(vniConfig1))
                 .setPropagateUnmatched(true)
-                .setAddressFamilySettings(
-                    AddressFamilySettings.builder().setSendCommunity(true).build())
+                .setAddressFamilyCapabilities(
+                    AddressFamilyCapabilities.builder().setSendCommunity(true).build())
                 .setExportPolicy(policyName)
                 .build())
         .setIpv4UnicastAddressFamily(
@@ -161,8 +161,8 @@ public class EvpnTest {
                 .setL2Vnis(ImmutableSet.of())
                 .setL3Vnis(ImmutableSet.of(vniConfig2))
                 .setPropagateUnmatched(true)
-                .setAddressFamilySettings(
-                    AddressFamilySettings.builder().setSendCommunity(true).build())
+                .setAddressFamilyCapabilities(
+                    AddressFamilyCapabilities.builder().setSendCommunity(true).build())
                 .setExportPolicy(policyName)
                 .build())
         .setIpv4UnicastAddressFamily(

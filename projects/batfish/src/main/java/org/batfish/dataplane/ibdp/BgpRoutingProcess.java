@@ -472,7 +472,10 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
           transformBgpRouteOnImport(
               route,
               ourBgpConfig.getLocalAs(),
-              ourBgpConfig.getEvpnAddressFamily().getAddressFamilySettings().getAllowLocalAsIn(),
+              ourBgpConfig
+                  .getEvpnAddressFamily()
+                  .getAddressFamilyCapabilities()
+                  .getAllowLocalAsIn(),
               sessionProperties.isEbgp(),
               _process,
               ourConfigId.getPeerInterface());

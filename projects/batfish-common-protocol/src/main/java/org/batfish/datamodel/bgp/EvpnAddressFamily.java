@@ -2,7 +2,7 @@ package org.batfish.datamodel.bgp;
 
 import static com.google.common.base.MoreObjects.firstNonNull;
 import static com.google.common.base.Preconditions.checkArgument;
-import static org.batfish.datamodel.bgp.AddressFamilySettings.PROP_ADDRESS_FAMILY_SETTINGS;
+import static org.batfish.datamodel.bgp.AddressFamilyCapabilities.PROP_ADDRESS_FAMILY_SETTINGS;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -29,7 +29,7 @@ public final class EvpnAddressFamily extends AddressFamily {
 
   protected EvpnAddressFamily(
       // super fields
-      @Nonnull AddressFamilySettings addressFamilySettings,
+      @Nonnull AddressFamilyCapabilities addressFamilyCapabilities,
       @Nullable String exportPolicy,
       SortedSet<String> exportPolicySources,
       @Nullable String importPolicy,
@@ -39,7 +39,7 @@ public final class EvpnAddressFamily extends AddressFamily {
       Set<Layer3VniConfig> l3Vnis,
       boolean propagateUnmatched) {
     super(
-        addressFamilySettings,
+        addressFamilyCapabilities,
         exportPolicy,
         exportPolicySources,
         importPolicy,
@@ -53,7 +53,7 @@ public final class EvpnAddressFamily extends AddressFamily {
   private static EvpnAddressFamily create(
       // super fields
       @Nullable @JsonProperty(PROP_ADDRESS_FAMILY_SETTINGS)
-          AddressFamilySettings addressFamilySettings,
+          AddressFamilyCapabilities addressFamilyCapabilities,
       @Nullable @JsonProperty(PROP_EXPORT_POLICY) String exportPolicy,
       @Nullable @JsonProperty(PROP_EXPORT_POLICY_SOURCES) SortedSet<String> exportPolicySources,
       @Nullable @JsonProperty(PROP_IMPORT_POLICY) String importPolicy,
@@ -64,7 +64,7 @@ public final class EvpnAddressFamily extends AddressFamily {
       @Nullable @JsonProperty(PROP_PROPAGATE_UNMATCHED) Boolean propagateUnmatched) {
     checkArgument(propagateUnmatched != null, "Missing %s", PROP_PROPAGATE_UNMATCHED);
     return new Builder()
-        .setAddressFamilySettings(addressFamilySettings)
+        .setAddressFamilyCapabilities(addressFamilyCapabilities)
         .setExportPolicy(exportPolicy)
         .setExportPolicySources(firstNonNull(exportPolicySources, ImmutableSortedSet.of()))
         .setImportPolicy(importPolicy)
@@ -113,7 +113,7 @@ public final class EvpnAddressFamily extends AddressFamily {
       return false;
     }
     EvpnAddressFamily that = (EvpnAddressFamily) o;
-    return _addressFamilySettings.equals(that._addressFamilySettings)
+    return _addressFamilyCapabilities.equals(that._addressFamilyCapabilities)
         && Objects.equals(_exportPolicy, that._exportPolicy)
         && Objects.equals(_importPolicy, that._importPolicy)
         && _exportPolicySources.equals(that._exportPolicySources)
@@ -127,7 +127,7 @@ public final class EvpnAddressFamily extends AddressFamily {
   @Override
   public int hashCode() {
     return Objects.hash(
-        _addressFamilySettings,
+        _addressFamilyCapabilities,
         _exportPolicy,
         _exportPolicySources,
         _importPolicy,
@@ -150,7 +150,7 @@ public final class EvpnAddressFamily extends AddressFamily {
     private Builder() {
       _l2Vnis = ImmutableSortedSet.of();
       _l3Vnis = ImmutableSortedSet.of();
-      _addressFamilySettings = AddressFamilySettings.builder().build();
+      _addressFamilyCapabilities = AddressFamilyCapabilities.builder().build();
     }
 
     @Nonnull
@@ -180,10 +180,10 @@ public final class EvpnAddressFamily extends AddressFamily {
     @Nonnull
     @Override
     public EvpnAddressFamily build() {
-      checkArgument(_addressFamilySettings != null, "Missing %s", PROP_ADDRESS_FAMILY_SETTINGS);
+      checkArgument(_addressFamilyCapabilities != null, "Missing %s", PROP_ADDRESS_FAMILY_SETTINGS);
       checkArgument(_propagateUnmatched != null, "Missing %s", PROP_PROPAGATE_UNMATCHED);
       return new EvpnAddressFamily(
-          _addressFamilySettings,
+          _addressFamilyCapabilities,
           _exportPolicy,
           _exportPolicySources,
           _importPolicy,

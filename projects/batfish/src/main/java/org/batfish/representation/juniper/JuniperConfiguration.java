@@ -103,7 +103,7 @@ import org.batfish.datamodel.acl.OrMatchExpr;
 import org.batfish.datamodel.acl.OriginatingFromDevice;
 import org.batfish.datamodel.acl.PermittedByAcl;
 import org.batfish.datamodel.acl.TrueExpr;
-import org.batfish.datamodel.bgp.AddressFamilySettings;
+import org.batfish.datamodel.bgp.AddressFamilyCapabilities;
 import org.batfish.datamodel.bgp.Ipv4UnicastAddressFamily;
 import org.batfish.datamodel.bgp.community.StandardCommunity;
 import org.batfish.datamodel.dataplane.rib.RibId;
@@ -398,7 +398,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
               .get();
 
       boolean allowLocalAsIn = loops > 0;
-      AddressFamilySettings.Builder ipv4AfSettingsBuilder = AddressFamilySettings.builder();
+      AddressFamilyCapabilities.Builder ipv4AfSettingsBuilder = AddressFamilyCapabilities.builder();
       Ipv4UnicastAddressFamily.Builder ipv4AfBuilder = Ipv4UnicastAddressFamily.builder();
       ipv4AfSettingsBuilder.setAllowLocalAsIn(allowLocalAsIn);
       Boolean advertisePeerAs = ig.getAdvertisePeerAs();
@@ -573,7 +573,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
       }
       neighbor.setBgpProcess(proc);
       neighbor.setIpv4UnicastAddressFamily(
-          ipv4AfBuilder.setAddressFamilySettings(ipv4AfSettingsBuilder.build()).build());
+          ipv4AfBuilder.setAddressFamilyCapabilities(ipv4AfSettingsBuilder.build()).build());
       neighbor.build();
     }
     proc.setMultipathEbgp(multipathEbgpSet);

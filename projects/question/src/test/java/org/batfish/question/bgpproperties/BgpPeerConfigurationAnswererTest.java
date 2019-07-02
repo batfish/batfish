@@ -38,7 +38,7 @@ import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.answers.Schema;
 import org.batfish.datamodel.answers.SelfDescribingObject;
-import org.batfish.datamodel.bgp.AddressFamilySettings;
+import org.batfish.datamodel.bgp.AddressFamilyCapabilities;
 import org.batfish.datamodel.bgp.Ipv4UnicastAddressFamily;
 import org.batfish.datamodel.pojo.Node;
 import org.batfish.datamodel.questions.BgpPeerPropertySpecifier;
@@ -68,8 +68,8 @@ public final class BgpPeerConfigurationAnswererTest {
                 Ipv4UnicastAddressFamily.builder()
                     .setImportPolicySources(ImmutableSortedSet.of("p1"))
                     .setExportPolicySources(ImmutableSortedSet.of("p2"))
-                    .setAddressFamilySettings(
-                        AddressFamilySettings.builder().setSendCommunity(false).build())
+                    .setAddressFamilyCapabilities(
+                        AddressFamilyCapabilities.builder().setSendCommunity(false).build())
                     .build())
             .build();
     BgpPassivePeerConfig passivePeer =
@@ -83,8 +83,8 @@ public final class BgpPeerConfigurationAnswererTest {
             .setGroup("g2")
             .setIpv4UnicastAddressFamily(
                 Ipv4UnicastAddressFamily.builder()
-                    .setAddressFamilySettings(
-                        AddressFamilySettings.builder().setSendCommunity(false).build())
+                    .setAddressFamilyCapabilities(
+                        AddressFamilyCapabilities.builder().setSendCommunity(false).build())
                     .setImportPolicySources(ImmutableSortedSet.of("p3"))
                     .setExportPolicySources(ImmutableSortedSet.of("p4"))
                     .build())
@@ -102,8 +102,8 @@ public final class BgpPeerConfigurationAnswererTest {
                 Ipv4UnicastAddressFamily.builder()
                     .setImportPolicySources(ImmutableSortedSet.of("p5"))
                     .setExportPolicySources(ImmutableSortedSet.of("p6"))
-                    .setAddressFamilySettings(
-                        AddressFamilySettings.builder().setSendCommunity(false).build())
+                    .setAddressFamilyCapabilities(
+                        AddressFamilyCapabilities.builder().setSendCommunity(false).build())
                     .build())
             .build();
 

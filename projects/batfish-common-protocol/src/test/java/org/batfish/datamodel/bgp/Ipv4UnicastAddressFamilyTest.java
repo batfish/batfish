@@ -21,8 +21,8 @@ public class Ipv4UnicastAddressFamilyTest {
         .addEqualityGroup(af, af, builder.build())
         .addEqualityGroup(
             builder
-                .setAddressFamilySettings(
-                    AddressFamilySettings.builder().setSendCommunity(true).build())
+                .setAddressFamilyCapabilities(
+                    AddressFamilyCapabilities.builder().setSendCommunity(true).build())
                 .build())
         .addEqualityGroup(builder.setExportPolicy("export").build())
         .addEqualityGroup(builder.setImportPolicy("import").build())

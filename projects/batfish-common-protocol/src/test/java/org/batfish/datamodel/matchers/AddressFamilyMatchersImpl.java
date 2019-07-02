@@ -2,7 +2,7 @@ package org.batfish.datamodel.matchers;
 
 import javax.annotation.Nonnull;
 import org.batfish.datamodel.bgp.AddressFamily;
-import org.batfish.datamodel.bgp.AddressFamilySettings;
+import org.batfish.datamodel.bgp.AddressFamilyCapabilities;
 import org.hamcrest.FeatureMatcher;
 import org.hamcrest.Matcher;
 
@@ -19,14 +19,14 @@ public final class AddressFamilyMatchersImpl {
   }
 
   static final class HasAddressFamilySettings
-      extends FeatureMatcher<AddressFamily, AddressFamilySettings> {
-    HasAddressFamilySettings(@Nonnull Matcher<? super AddressFamilySettings> subMatcher) {
+      extends FeatureMatcher<AddressFamily, AddressFamilyCapabilities> {
+    HasAddressFamilySettings(@Nonnull Matcher<? super AddressFamilyCapabilities> subMatcher) {
       super(subMatcher, "An AddressFamily with addressFamilySettings:", "addressFamilySettings");
     }
 
     @Override
-    protected AddressFamilySettings featureValueOf(AddressFamily actual) {
-      return actual.getAddressFamilySettings();
+    protected AddressFamilyCapabilities featureValueOf(AddressFamily actual) {
+      return actual.getAddressFamilyCapabilities();
     }
   }
 

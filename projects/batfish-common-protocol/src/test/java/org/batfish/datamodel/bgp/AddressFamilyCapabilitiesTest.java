@@ -1,6 +1,6 @@
 package org.batfish.datamodel.bgp;
 
-import static org.batfish.datamodel.bgp.AddressFamilySettings.builder;
+import static org.batfish.datamodel.bgp.AddressFamilyCapabilities.builder;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 
@@ -8,16 +8,16 @@ import com.google.common.testing.EqualsTester;
 import java.io.IOException;
 import org.apache.commons.lang3.SerializationUtils;
 import org.batfish.common.util.BatfishObjectMapper;
-import org.batfish.datamodel.bgp.AddressFamilySettings.Builder;
+import org.batfish.datamodel.bgp.AddressFamilyCapabilities.Builder;
 import org.junit.Test;
 
-/** Tests of {@link AddressFamilySettings} */
-public class AddressFamilySettingsTest {
+/** Tests of {@link AddressFamilyCapabilities} */
+public class AddressFamilyCapabilitiesTest {
 
   @Test
   public void testEquals() {
     Builder builder = builder();
-    AddressFamilySettings afs = builder.build();
+    AddressFamilyCapabilities afs = builder.build();
     new EqualsTester()
         .addEqualityGroup(afs, afs, builder.build())
         .addEqualityGroup(builder.setAdditionalPathsReceive(true).build())
@@ -34,7 +34,7 @@ public class AddressFamilySettingsTest {
 
   @Test
   public void testJavaSerialization() {
-    AddressFamilySettings afs =
+    AddressFamilyCapabilities afs =
         builder()
             .setAdditionalPathsReceive(true)
             .setAdditionalPathsSelectAll(true)
@@ -50,7 +50,7 @@ public class AddressFamilySettingsTest {
 
   @Test
   public void testJsonSerialization() throws IOException {
-    AddressFamilySettings afs =
+    AddressFamilyCapabilities afs =
         builder()
             .setAdditionalPathsReceive(true)
             .setAdditionalPathsSelectAll(true)
@@ -61,6 +61,6 @@ public class AddressFamilySettingsTest {
             .setAllowRemoteAsOut(true)
             .setSendCommunity(true)
             .build();
-    assertThat(BatfishObjectMapper.clone(afs, AddressFamilySettings.class), equalTo(afs));
+    assertThat(BatfishObjectMapper.clone(afs, AddressFamilyCapabilities.class), equalTo(afs));
   }
 }

@@ -131,7 +131,7 @@ import org.batfish.datamodel.acl.OrMatchExpr;
 import org.batfish.datamodel.acl.OriginatingFromDevice;
 import org.batfish.datamodel.acl.PermittedByAcl;
 import org.batfish.datamodel.acl.TrueExpr;
-import org.batfish.datamodel.bgp.AddressFamilySettings;
+import org.batfish.datamodel.bgp.AddressFamilyCapabilities;
 import org.batfish.datamodel.bgp.Ipv4UnicastAddressFamily;
 import org.batfish.datamodel.eigrp.EigrpInterfaceSettings;
 import org.batfish.datamodel.eigrp.EigrpMetric;
@@ -1956,8 +1956,8 @@ public final class CiscoConfiguration extends VendorConfiguration {
       }
       newNeighborBuilder.setBgpProcess(newBgpProcess);
 
-      AddressFamilySettings ipv4AfSettings =
-          AddressFamilySettings.builder()
+      AddressFamilyCapabilities ipv4AfSettings =
+          AddressFamilyCapabilities.builder()
               .setAdditionalPathsReceive(lpg.getAdditionalPathsReceive())
               .setAdditionalPathsSelectAll(lpg.getAdditionalPathsSelectAll())
               .setAdditionalPathsSend(lpg.getAdditionalPathsSend())
@@ -1979,7 +1979,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
               .build();
       newNeighborBuilder.setIpv4UnicastAddressFamily(
           Ipv4UnicastAddressFamily.builder()
-              .setAddressFamilySettings(ipv4AfSettings)
+              .setAddressFamilyCapabilities(ipv4AfSettings)
               .setImportPolicy(peerImportPolicyName)
               .setExportPolicy(computeBgpPeerExportPolicyName(vrfName, lpg.getName()))
               .build());

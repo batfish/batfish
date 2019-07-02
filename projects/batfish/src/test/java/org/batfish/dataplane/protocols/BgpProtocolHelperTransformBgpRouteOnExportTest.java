@@ -32,7 +32,7 @@ import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.bgp.AddressFamily.Type;
-import org.batfish.datamodel.bgp.AddressFamilySettings;
+import org.batfish.datamodel.bgp.AddressFamilyCapabilities;
 import org.batfish.datamodel.bgp.Ipv4UnicastAddressFamily;
 import org.batfish.datamodel.bgp.community.Community;
 import org.batfish.datamodel.bgp.community.StandardCommunity;
@@ -210,8 +210,8 @@ public final class BgpProtocolHelperTransformBgpRouteOnExportTest {
           _nf.bgpNeighborBuilder()
               .setIpv4UnicastAddressFamily(
                   Ipv4UnicastAddressFamily.builder()
-                      .setAddressFamilySettings(
-                          AddressFamilySettings.builder().setSendCommunity(true).build())
+                      .setAddressFamilyCapabilities(
+                          AddressFamilyCapabilities.builder().setSendCommunity(true).build())
                       .build())
               .setLocalAs(AS1)
               .setRemoteAsns(_fromNeighbor.getRemoteAsns())
