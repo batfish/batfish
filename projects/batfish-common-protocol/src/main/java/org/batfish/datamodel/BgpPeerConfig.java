@@ -1,12 +1,12 @@
 package org.batfish.datamodel;
 
 import static com.google.common.base.MoreObjects.firstNonNull;
+import static com.google.common.base.Preconditions.checkArgument;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Range;
 import java.io.Serializable;
 import java.util.Collection;
@@ -27,13 +27,6 @@ public abstract class BgpPeerConfig implements Serializable {
   /** A range expressing entire range of valid AS numbers */
   public static final LongSpace ALL_AS_NUMBERS = LongSpace.of(Range.closed(1L, 0xFFFFFFFFL));
 
-  static final String PROP_ADDITIONAL_PATHS_RECEIVE = "additionalPathsReceive";
-  static final String PROP_ADDITIONAL_PATHS_SELECT_ALL = "additionalPathsSelectAll";
-  static final String PROP_ADDITIONAL_PATHS_SEND = "additionalPathsSend";
-  static final String PROP_ADVERTISE_EXTERNAL = "advertiseExternal";
-  static final String PROP_ADVERTISE_INACTIVE = "advertiseInactive";
-  static final String PROP_ALLOW_LOCAL_AS_IN = "allowLocalAsIn";
-  static final String PROP_ALLOW_REMOTE_AS_OUT = "allowRemoteAsOut";
   static final String PROP_APPLIED_RIB_GROUP = "appliedRibGroup";
   static final String PROP_AUTHENTICATION_SETTINGS = "authenticationSettings";
   static final String PROP_CLUSTER_ID = "clusterId";
@@ -41,27 +34,15 @@ public abstract class BgpPeerConfig implements Serializable {
   static final String PROP_DESCRIPTION = "description";
   static final String PROP_EBGP_MULTIHOP = "ebgpMultihop";
   static final String PROP_ENFORCE_FIRST_AS = "enforceFirstAs";
-  static final String PROP_EXPORT_POLICY = "exportPolicy";
-  static final String PROP_EXPORT_POLICY_SOURCES = "exportPolicySources";
   static final String PROP_GENERATED_ROUTES = "generatedRoutes";
   static final String PROP_GROUP = "group";
-  static final String PROP_IMPORT_POLICY = "importPolicy";
-  static final String PROP_IMPORT_POLICY_SOURCES = "importPolicySources";
   static final String PROP_LOCAL_AS = "localAs";
   static final String PROP_LOCAL_IP = "localIp";
   static final String PROP_REMOTE_ASNS = "remoteAsns";
   static final String PROP_ROUTE_REFLECTOR = "routeReflectorClient";
-  static final String PROP_SEND_COMMUNITY = "sendCommunity";
   static final String PROP_IPV4_UNICAST_ADDRESS_FAMILY = "ipv4UnicastAddressFamily";
   static final String PROP_EVPN_ADDRESS_FAMILY = "evpnAddressFamily";
 
-  private final boolean _additionalPathsReceive;
-  private final boolean _additionalPathsSelectAll;
-  private final boolean _additionalPathsSend;
-  private final boolean _advertiseExternal;
-  private final boolean _advertiseInactive;
-  private final boolean _allowLocalAsIn;
-  private final boolean _allowRemoteAsOut;
   @Nullable private final RibGroup _appliedRibGroup;
   @Nullable private final BgpAuthenticationSettings _authenticationSettings;
   /** The cluster id associated with this peer to be used in route reflection */
@@ -72,8 +53,6 @@ public abstract class BgpPeerConfig implements Serializable {
   protected final String _description;
   private final boolean _ebgpMultihop;
   private final boolean _enforceFirstAs;
-  @Nullable private final String _exportPolicy;
-  @Nonnull private SortedSet<String> _exportPolicySources;
   /**
    * The set of generated and/or aggregate routes to be potentially sent to this peer before
    * outbound policies are taken into account
@@ -86,8 +65,6 @@ public abstract class BgpPeerConfig implements Serializable {
    */
   @Nullable private final String _group;
 
-  @Nullable private final String _importPolicy;
-  @Nonnull private SortedSet<String> _importPolicySources;
   /** The autonomous system number of the containing BGP process as reported to this peer */
   @Nullable private final Long _localAs;
   /** The ip address of the containing router as reported to this peer */
@@ -101,20 +78,7 @@ public abstract class BgpPeerConfig implements Serializable {
   @Nullable private Ipv4UnicastAddressFamily _ipv4UnicastAddressFamily;
   @Nullable private EvpnAddressFamily _evpnAddressFamily;
 
-  /**
-   * Flag governing whether to include community numbers in outgoing route advertisements to this
-   * peer
-   */
-  private boolean _sendCommunity;
-
   protected BgpPeerConfig(
-      boolean additionalPathsReceive,
-      boolean additionalPathsSelectAll,
-      boolean additionalPathsSend,
-      boolean advertiseExternal,
-      boolean advertiseInactive,
-      boolean allowLocalAsIn,
-      boolean allowRemoteAsOut,
       @Nullable RibGroup appliedRibGroup,
       @Nullable BgpAuthenticationSettings authenticationSettings,
       @Nullable Long clusterId,
@@ -122,26 +86,14 @@ public abstract class BgpPeerConfig implements Serializable {
       @Nullable String description,
       boolean ebgpMultihop,
       boolean enforceFirstAs,
-      @Nullable String exportPolicy,
-      @Nullable SortedSet<String> exportPolicySources,
       @Nullable Set<GeneratedRoute> generatedRoutes,
       @Nullable String group,
-      @Nullable String importPolicy,
-      @Nullable SortedSet<String> importPolicySources,
       @Nullable Long localAs,
       @Nullable Ip localIp,
       @Nullable LongSpace remoteAsns,
       boolean routeReflectorClient,
-      boolean sendCommunity,
       @Nullable Ipv4UnicastAddressFamily ipv4UnicastAddressFamily,
       @Nullable EvpnAddressFamily evpnAddressFamily) {
-    _additionalPathsReceive = additionalPathsReceive;
-    _additionalPathsSelectAll = additionalPathsSelectAll;
-    _additionalPathsSend = additionalPathsSend;
-    _advertiseExternal = advertiseExternal;
-    _advertiseInactive = advertiseInactive;
-    _allowLocalAsIn = allowLocalAsIn;
-    _allowRemoteAsOut = allowRemoteAsOut;
     _appliedRibGroup = appliedRibGroup;
     _authenticationSettings = authenticationSettings;
     _clusterId = clusterId;
@@ -149,17 +101,12 @@ public abstract class BgpPeerConfig implements Serializable {
     _description = description;
     _ebgpMultihop = ebgpMultihop;
     _enforceFirstAs = enforceFirstAs;
-    _exportPolicy = exportPolicy;
-    _exportPolicySources = firstNonNull(exportPolicySources, ImmutableSortedSet.of());
     _generatedRoutes = firstNonNull(generatedRoutes, ImmutableSet.of());
     _group = group;
-    _importPolicy = importPolicy;
-    _importPolicySources = firstNonNull(importPolicySources, ImmutableSortedSet.of());
     _localAs = localAs;
     _localIp = localIp;
     _remoteAsns = firstNonNull(remoteAsns, ALL_AS_NUMBERS);
     _routeReflectorClient = routeReflectorClient;
-    _sendCommunity = sendCommunity;
     _ipv4UnicastAddressFamily = ipv4UnicastAddressFamily;
     _evpnAddressFamily = evpnAddressFamily;
   }
@@ -168,51 +115,6 @@ public abstract class BgpPeerConfig implements Serializable {
   public boolean hasCompatibleRemoteAsns(@Nullable Long asNumber) {
     return _remoteAsns.equals(ALL_AS_NUMBERS)
         || (asNumber != null && _remoteAsns.contains(asNumber));
-  }
-
-  @JsonProperty(PROP_ADDITIONAL_PATHS_RECEIVE)
-  public boolean getAdditionalPathsReceive() {
-    return _additionalPathsReceive;
-  }
-
-  @JsonProperty(PROP_ADDITIONAL_PATHS_SELECT_ALL)
-  public boolean getAdditionalPathsSelectAll() {
-    return _additionalPathsSelectAll;
-  }
-
-  @JsonProperty(PROP_ADDITIONAL_PATHS_SEND)
-  public boolean getAdditionalPathsSend() {
-    return _additionalPathsSend;
-  }
-
-  /**
-   * Whether to advertise the best eBGP route for each network independently of whether it is the
-   * best BGP route for that network
-   */
-  @JsonProperty(PROP_ADVERTISE_EXTERNAL)
-  public boolean getAdvertiseExternal() {
-    return _advertiseExternal;
-  }
-
-  /**
-   * Whether to advertise the best BGP route for each network independently of whether it is the
-   * best overall route for that network
-   */
-  @JsonProperty(PROP_ADVERTISE_INACTIVE)
-  public boolean getAdvertiseInactive() {
-    return _advertiseInactive;
-  }
-
-  /** Whether to allow reception of advertisements containing the local AS number in the AS-path */
-  @JsonProperty(PROP_ALLOW_LOCAL_AS_IN)
-  public boolean getAllowLocalAsIn() {
-    return _allowLocalAsIn;
-  }
-
-  /** Whether to allow sending of advertisements containing the remote AS number in the AS-path */
-  @JsonProperty(PROP_ALLOW_REMOTE_AS_OUT)
-  public boolean getAllowRemoteAsOut() {
-    return _allowRemoteAsOut;
   }
 
   /** Return the {@link RibGroup} applied to this config */
@@ -262,19 +164,6 @@ public abstract class BgpPeerConfig implements Serializable {
     return _enforceFirstAs;
   }
 
-  /** The policy governing all advertisements sent to this peer */
-  @Nullable
-  @JsonProperty(PROP_EXPORT_POLICY)
-  public String getExportPolicy() {
-    return _exportPolicy;
-  }
-
-  @Nonnull
-  @JsonProperty(PROP_EXPORT_POLICY_SOURCES)
-  public SortedSet<String> getExportPolicySources() {
-    return _exportPolicySources;
-  }
-
   /** Generated routes specific to this peer not otherwise imported into any of this node's RIBs */
   @Nonnull
   @JsonProperty(PROP_GENERATED_ROUTES)
@@ -289,19 +178,6 @@ public abstract class BgpPeerConfig implements Serializable {
   @JsonProperty(PROP_GROUP)
   public String getGroup() {
     return _group;
-  }
-
-  /** Routing policy governing all advertisements received from this peer */
-  @Nullable
-  @JsonProperty(PROP_IMPORT_POLICY)
-  public String getImportPolicy() {
-    return _importPolicy;
-  }
-
-  @Nonnull
-  @JsonProperty(PROP_IMPORT_POLICY_SOURCES)
-  public SortedSet<String> getImportPolicySources() {
-    return _importPolicySources;
   }
 
   /** The local autonomous system of this peering */
@@ -329,12 +205,6 @@ public abstract class BgpPeerConfig implements Serializable {
   @JsonProperty(PROP_ROUTE_REFLECTOR)
   public boolean getRouteReflectorClient() {
     return _routeReflectorClient;
-  }
-
-  /** Whether or not to propagate the community attribute(s) of advertisements to this peer */
-  @JsonProperty(PROP_SEND_COMMUNITY)
-  public boolean getSendCommunity() {
-    return _sendCommunity;
   }
 
   /**
@@ -370,12 +240,22 @@ public abstract class BgpPeerConfig implements Serializable {
     return ImmutableSet.copyOf(collection);
   }
 
-  public void setExportPolicySources(@Nonnull SortedSet<String> exportPolicySources) {
-    _exportPolicySources = exportPolicySources;
-  }
-
-  public void setImportPolicySources(@Nonnull SortedSet<String> importPolicySources) {
-    _importPolicySources = importPolicySources;
+  /**
+   * Return an {@link AddressFamily} for a given address family type.
+   *
+   * @throws IllegalArgumentException if the family type is unrecognized.
+   */
+  @JsonIgnore
+  @Nullable
+  public AddressFamily getAddressFamily(AddressFamily.Type type) {
+    switch (type) {
+      case IPV4_UNICAST:
+        return _ipv4UnicastAddressFamily;
+      case EVPN:
+        return _evpnAddressFamily;
+      default:
+        throw new IllegalArgumentException(String.format("Unknown address family type: %s", type));
+    }
   }
 
   @Override
@@ -387,28 +267,16 @@ public abstract class BgpPeerConfig implements Serializable {
       return false;
     }
     BgpPeerConfig that = (BgpPeerConfig) o;
-    return _additionalPathsReceive == that._additionalPathsReceive
-        && _additionalPathsSelectAll == that._additionalPathsSelectAll
-        && _additionalPathsSend == that._additionalPathsSend
-        && _advertiseExternal == that._advertiseExternal
-        && _advertiseInactive == that._advertiseInactive
-        && _allowLocalAsIn == that._allowLocalAsIn
-        && _allowRemoteAsOut == that._allowRemoteAsOut
-        && _defaultMetric == that._defaultMetric
+    return _defaultMetric == that._defaultMetric
         && _ebgpMultihop == that._ebgpMultihop
         && _enforceFirstAs == that._enforceFirstAs
         && _routeReflectorClient == that._routeReflectorClient
-        && _sendCommunity == that._sendCommunity
         && Objects.equals(_appliedRibGroup, that._appliedRibGroup)
         && Objects.equals(_authenticationSettings, that._authenticationSettings)
         && Objects.equals(_clusterId, that._clusterId)
         && Objects.equals(_description, that._description)
-        && Objects.equals(_exportPolicy, that._exportPolicy)
-        && Objects.equals(_exportPolicySources, that._exportPolicySources)
         && Objects.equals(_generatedRoutes, that._generatedRoutes)
         && Objects.equals(_group, that._group)
-        && Objects.equals(_importPolicy, that._importPolicy)
-        && Objects.equals(_importPolicySources, that._importPolicySources)
         && Objects.equals(_localAs, that._localAs)
         && Objects.equals(_localIp, that._localIp)
         && _remoteAsns.equals(that._remoteAsns)
@@ -419,13 +287,6 @@ public abstract class BgpPeerConfig implements Serializable {
   @Override
   public int hashCode() {
     return Objects.hash(
-        _additionalPathsReceive,
-        _additionalPathsSelectAll,
-        _additionalPathsSend,
-        _advertiseExternal,
-        _advertiseInactive,
-        _allowLocalAsIn,
-        _allowRemoteAsOut,
         _appliedRibGroup,
         _authenticationSettings,
         _clusterId,
@@ -433,29 +294,17 @@ public abstract class BgpPeerConfig implements Serializable {
         _description,
         _ebgpMultihop,
         _enforceFirstAs,
-        _exportPolicy,
-        _exportPolicySources,
         _generatedRoutes,
         _group,
-        _importPolicy,
-        _importPolicySources,
         _localAs,
         _localIp,
         _remoteAsns,
         _routeReflectorClient,
-        _sendCommunity,
         _ipv4UnicastAddressFamily,
         _evpnAddressFamily);
   }
 
   public abstract static class Builder<S extends Builder<S, T>, T extends BgpPeerConfig> {
-    protected boolean _additionalPathsReceive;
-    protected boolean _additionalPathsSelectAll;
-    protected boolean _additionalPathsSend;
-    protected boolean _advertiseExternal;
-    protected boolean _advertiseInactive;
-    protected boolean _allowLocalAsIn;
-    protected boolean _allowRemoteAsOut;
     @Nullable protected RibGroup _appliedRibGroup;
     @Nullable protected BgpAuthenticationSettings _authenticationSettings;
     @Nullable protected BgpProcess _bgpProcess;
@@ -474,7 +323,6 @@ public abstract class BgpPeerConfig implements Serializable {
     @Nullable protected Ip _localIp;
     @Nonnull protected LongSpace _remoteAsns;
     protected boolean _routeReflectorClient;
-    protected boolean _sendCommunity;
     @Nullable protected Ipv4UnicastAddressFamily _ipv4UnicastAddressFamily;
     @Nullable protected EvpnAddressFamily _evpnAddressFamily;
 
@@ -488,41 +336,6 @@ public abstract class BgpPeerConfig implements Serializable {
     public abstract T build();
 
     protected abstract S getThis();
-
-    public S setAdditionalPathsReceive(boolean additionalPathsReceive) {
-      _additionalPathsReceive = additionalPathsReceive;
-      return getThis();
-    }
-
-    public S setAdditionalPathsSelectAll(boolean additionalPathsSelectAll) {
-      _additionalPathsSelectAll = additionalPathsSelectAll;
-      return getThis();
-    }
-
-    public S setAdditionalPathsSend(boolean additionalPathsSend) {
-      _additionalPathsSend = additionalPathsSend;
-      return getThis();
-    }
-
-    public S setAdvertiseExternal(boolean advertiseExternal) {
-      _advertiseExternal = advertiseExternal;
-      return getThis();
-    }
-
-    public S setAdvertiseInactive(boolean advertiseInactive) {
-      _advertiseInactive = advertiseInactive;
-      return getThis();
-    }
-
-    public S setAllowLocalAsIn(boolean allowLocalAsIn) {
-      _allowLocalAsIn = allowLocalAsIn;
-      return getThis();
-    }
-
-    public S setAllowRemoteAsOut(boolean allowRemoteAsOut) {
-      _allowRemoteAsOut = allowRemoteAsOut;
-      return getThis();
-    }
 
     public S setAppliedRibGroup(@Nullable RibGroup ribGroup) {
       _appliedRibGroup = ribGroup;
@@ -568,16 +381,6 @@ public abstract class BgpPeerConfig implements Serializable {
       return getThis();
     }
 
-    public S setExportPolicy(String exportPolicy) {
-      _exportPolicy = exportPolicy;
-      return getThis();
-    }
-
-    public S setExportPolicySources(@Nullable SortedSet<String> exportPolicySources) {
-      _exportPolicySources = exportPolicySources;
-      return getThis();
-    }
-
     public S setGeneratedRoutes(@Nullable Set<GeneratedRoute> generatedRoutes) {
       _generatedRoutes = generatedRoutes;
       return getThis();
@@ -585,16 +388,6 @@ public abstract class BgpPeerConfig implements Serializable {
 
     public S setGroup(@Nullable String group) {
       _group = group;
-      return getThis();
-    }
-
-    public S setImportPolicy(@Nullable String importPolicy) {
-      _importPolicy = importPolicy;
-      return getThis();
-    }
-
-    public S setImportPolicySources(@Nullable SortedSet<String> importPolicySources) {
-      _importPolicySources = importPolicySources;
       return getThis();
     }
 
@@ -627,11 +420,6 @@ public abstract class BgpPeerConfig implements Serializable {
       return getThis();
     }
 
-    public S setSendCommunity(boolean sendCommunity) {
-      _sendCommunity = sendCommunity;
-      return getThis();
-    }
-
     public S setIpv4UnicastAddressFamily(
         @Nullable Ipv4UnicastAddressFamily ipv4UnicastAddressFamily) {
       _ipv4UnicastAddressFamily = ipv4UnicastAddressFamily;
@@ -641,6 +429,12 @@ public abstract class BgpPeerConfig implements Serializable {
     public S setEvpnAddressFamily(@Nullable EvpnAddressFamily evpnAddressFamily) {
       _evpnAddressFamily = evpnAddressFamily;
       return getThis();
+    }
+
+    protected final void checkValid() {
+      checkArgument(
+          _ipv4UnicastAddressFamily != null || _evpnAddressFamily != null,
+          "At least one address family required for BGP peer");
     }
   }
 }

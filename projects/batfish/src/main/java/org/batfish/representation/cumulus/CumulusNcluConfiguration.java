@@ -56,6 +56,7 @@ import org.batfish.datamodel.PrefixSpace;
 import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.SwitchportMode;
 import org.batfish.datamodel.VniSettings;
+import org.batfish.datamodel.bgp.AddressFamilyCapabilities;
 import org.batfish.datamodel.bgp.EvpnAddressFamily;
 import org.batfish.datamodel.bgp.Ipv4UnicastAddressFamily;
 import org.batfish.datamodel.bgp.Layer2VniConfig;
@@ -186,18 +187,22 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
         .getDisjuncts()
         .add(new CallExpr(computeBgpCommonExportPolicyName(vrfName)));
 
+    RoutingPolicy routingPolicy = peerExportPolicy.build();
     BgpUnnumberedPeerConfig.Builder builder =
         BgpUnnumberedPeerConfig.builder()
             .setBgpProcess(newProc)
             .setDescription(neighbor.getDescription())
-            .setExportPolicy(peerExportPolicy.build().getName())
             .setGroup(neighbor.getPeerGroup())
             .setLocalAs(localAs)
             .setLocalIp(BGP_UNNUMBERED_IP)
             .setPeerInterface(neighbor.getName())
             .setRemoteAsns(computeRemoteAsns(neighbor, localAs))
-            .setSendCommunity(true);
-    builder.setIpv4UnicastAddressFamily(Ipv4UnicastAddressFamily.instance());
+            .setIpv4UnicastAddressFamily(
+                Ipv4UnicastAddressFamily.builder()
+                    .setAddressFamilyCapabilities(
+                        AddressFamilyCapabilities.builder().setSendCommunity(true).build())
+                    .setExportPolicy(routingPolicy.getName())
+                    .build());
 
     BgpL2vpnEvpnAddressFamily evpnConfig = bgpVrf.getL2VpnEvpn();
     // sadly, we allow localAs == null in VI datamodel above
@@ -262,6 +267,9 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
               .setL2Vnis(l2Vnis.build())
               .setL3Vnis(l3Vnis.build())
               .setPropagateUnmatched(true)
+              .setAddressFamilyCapabilities(
+                  AddressFamilyCapabilities.builder().setSendCommunity(true).build())
+              .setExportPolicy(routingPolicy.getName())
               .build());
     }
     builder.build();

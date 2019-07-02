@@ -62,6 +62,7 @@ import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.answers.Schema;
 import org.batfish.datamodel.answers.SelfDescribingObject;
+import org.batfish.datamodel.bgp.Ipv4UnicastAddressFamily;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.pojo.Node;
 import org.batfish.datamodel.questions.ConfiguredSessionStatus;
@@ -104,6 +105,7 @@ public class BgpSessionCompatibilityAnswererTest {
             .setPeerAddress(remoteIp)
             .setLocalAs(1L)
             .setRemoteAs(2L)
+            .setIpv4UnicastAddressFamily(Ipv4UnicastAddressFamily.builder().build())
             .build();
 
     Row row = getActivePeerRow(peerId, peer, ImmutableMap.of(), null);
@@ -138,12 +140,16 @@ public class BgpSessionCompatibilityAnswererTest {
             .setPeerAddress(remoteIp)
             .setLocalAs(1L)
             .setRemoteAs(2L)
+            .setIpv4UnicastAddressFamily(Ipv4UnicastAddressFamily.builder().build())
             .build();
 
     // Remote active peer
     BgpPeerConfigId remotePeerId =
         new BgpPeerConfigId("c2", "vrf2", Prefix.create(localIp, Prefix.MAX_PREFIX_LENGTH), false);
-    BgpActivePeerConfig remotePeer = BgpActivePeerConfig.builder().build();
+    BgpActivePeerConfig remotePeer =
+        BgpActivePeerConfig.builder()
+            .setIpv4UnicastAddressFamily(Ipv4UnicastAddressFamily.builder().build())
+            .build();
 
     Map<Ip, Set<String>> ipOwners =
         ImmutableMap.of(localIp, ImmutableSet.of("c1"), remoteIp, ImmutableSet.of("c2"));
@@ -184,6 +190,7 @@ public class BgpSessionCompatibilityAnswererTest {
             .setLocalIp(Ip.AUTO)
             .setPeerPrefix(remotePrefix)
             .setLocalAs(1L)
+            .setIpv4UnicastAddressFamily(Ipv4UnicastAddressFamily.builder().build())
             .build();
 
     List<Row> rows = getPassivePeerRows(peerId, peer, null, null);
@@ -217,6 +224,7 @@ public class BgpSessionCompatibilityAnswererTest {
             .setPeerPrefix(remotePrefix)
             .setLocalAs(1L)
             .setRemoteAsns(remoteAsns)
+            .setIpv4UnicastAddressFamily(Ipv4UnicastAddressFamily.builder().build())
             .build();
 
     MutableValueGraph<BgpPeerConfigId, BgpSessionProperties> bgpTopology =
@@ -256,6 +264,7 @@ public class BgpSessionCompatibilityAnswererTest {
             .setPeerPrefix(remotePrefix)
             .setLocalAs(1L)
             .setRemoteAsns(remoteAsns)
+            .setIpv4UnicastAddressFamily(Ipv4UnicastAddressFamily.builder().build())
             .build();
 
     // Remote peers
@@ -267,6 +276,7 @@ public class BgpSessionCompatibilityAnswererTest {
             .setPeerAddress(localIp)
             .setLocalAs(2L)
             .setRemoteAs(1L)
+            .setIpv4UnicastAddressFamily(Ipv4UnicastAddressFamily.builder().build())
             .build();
     Ip remote2Ip = Ip.parse("2.2.2.2");
     BgpPeerConfigId remote2Id = new BgpPeerConfigId("c3", "vrf3", localAddress, false);
@@ -276,6 +286,7 @@ public class BgpSessionCompatibilityAnswererTest {
             .setPeerAddress(localIp)
             .setLocalAs(3L)
             .setRemoteAs(1L)
+            .setIpv4UnicastAddressFamily(Ipv4UnicastAddressFamily.builder().build())
             .build();
 
     MutableValueGraph<BgpPeerConfigId, BgpSessionProperties> bgpTopology =
@@ -324,7 +335,11 @@ public class BgpSessionCompatibilityAnswererTest {
     // Unnumbered peer missing remote AS for which we're generating a row
     BgpPeerConfigId peerId = new BgpPeerConfigId("c1", "vrf1", "iface");
     BgpUnnumberedPeerConfig peer =
-        BgpUnnumberedPeerConfig.builder().setPeerInterface("iface").setLocalAs(1L).build();
+        BgpUnnumberedPeerConfig.builder()
+            .setPeerInterface("iface")
+            .setLocalAs(1L)
+            .setIpv4UnicastAddressFamily(Ipv4UnicastAddressFamily.builder().build())
+            .build();
 
     Row row = getUnnumberedPeerRow(peerId, peer, null);
     Row expected =
@@ -356,6 +371,7 @@ public class BgpSessionCompatibilityAnswererTest {
             .setLocalAs(1L)
             .setRemoteAs(2L)
             .setLocalIp(unnumIp)
+            .setIpv4UnicastAddressFamily(Ipv4UnicastAddressFamily.builder().build())
             .build();
 
     // Remote unnumbered peer
@@ -366,6 +382,7 @@ public class BgpSessionCompatibilityAnswererTest {
             .setLocalAs(2L)
             .setRemoteAs(1L)
             .setLocalIp(unnumIp)
+            .setIpv4UnicastAddressFamily(Ipv4UnicastAddressFamily.builder().build())
             .build();
 
     MutableValueGraph<BgpPeerConfigId, BgpSessionProperties> bgpTopology =
@@ -405,6 +422,7 @@ public class BgpSessionCompatibilityAnswererTest {
             .setPeerAddress(ip2)
             .setLocalAs(1L)
             .setRemoteAs(2L)
+            .setIpv4UnicastAddressFamily(Ipv4UnicastAddressFamily.builder().build())
             .build();
     BgpPeerConfigId id2 =
         new BgpPeerConfigId("c2", "vrf2", Prefix.create(ip1, Prefix.MAX_PREFIX_LENGTH), false);
@@ -414,6 +432,7 @@ public class BgpSessionCompatibilityAnswererTest {
             .setPeerAddress(ip1)
             .setLocalAs(2L)
             .setRemoteAs(1L)
+            .setIpv4UnicastAddressFamily(Ipv4UnicastAddressFamily.builder().build())
             .build();
     IBatfish batfish =
         new MockBatfish(

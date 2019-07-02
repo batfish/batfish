@@ -18,6 +18,7 @@ import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.bgp.AddressFamily;
 import org.batfish.datamodel.bgp.AddressFamily.Type;
+import org.batfish.datamodel.bgp.AddressFamilyCapabilities;
 import org.batfish.datamodel.bgp.EvpnAddressFamily;
 
 /**
@@ -248,17 +249,40 @@ public final class BgpSessionProperties {
     assert listenerIp != null;
 
     SessionType sessionType = getSessionType(initiator);
+
+    assert listener.getIpv4UnicastAddressFamily() != null;
+    assert initiator.getIpv4UnicastAddressFamily() != null;
     return new BgpSessionProperties(
-        !SessionType.isEbgp(sessionType)
-            && listener.getAdditionalPathsReceive()
-            && initiator.getAdditionalPathsSend()
-            && initiator.getAdditionalPathsSelectAll(),
+        computeAdditionalPaths(initiator, listener, sessionType),
         getAddressFamilyIntersection(initiator, listener),
-        !SessionType.isEbgp(sessionType) && initiator.getAdvertiseExternal(),
-        SessionType.isEbgp(sessionType) && initiator.getAdvertiseInactive(),
+        !SessionType.isEbgp(sessionType)
+            && initiator
+                .getIpv4UnicastAddressFamily()
+                .getAddressFamilyCapabilities()
+                .getAdvertiseExternal(),
+        SessionType.isEbgp(sessionType)
+            && initiator
+                .getIpv4UnicastAddressFamily()
+                .getAddressFamilyCapabilities()
+                .getAdvertiseInactive(),
         reverseDirection ? listenerIp : initiatorIp,
         reverseDirection ? initiatorIp : listenerIp,
         sessionType);
+  }
+
+  /** Computes whether two peers have compatible configuration to enable add-path */
+  private static boolean computeAdditionalPaths(
+      BgpPeerConfig initiator, BgpPeerConfig listener, SessionType sessionType) {
+    // TODO: support address families other than IPv4 unicast
+    AddressFamilyCapabilities initiatorCapabilities =
+        initiator.getIpv4UnicastAddressFamily().getAddressFamilyCapabilities();
+    return !SessionType.isEbgp(sessionType)
+        && listener
+            .getIpv4UnicastAddressFamily()
+            .getAddressFamilyCapabilities()
+            .getAdditionalPathsReceive()
+        && initiatorCapabilities.getAdditionalPathsSend()
+        && initiatorCapabilities.getAdditionalPathsSelectAll();
   }
 
   @VisibleForTesting

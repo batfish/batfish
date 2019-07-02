@@ -16,6 +16,7 @@ import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.datamodel.BgpSessionProperties.Builder;
 import org.batfish.datamodel.BgpSessionProperties.SessionType;
 import org.batfish.datamodel.bgp.AddressFamily.Type;
+import org.batfish.datamodel.bgp.AddressFamilyCapabilities;
 import org.batfish.datamodel.bgp.EvpnAddressFamily;
 import org.batfish.datamodel.bgp.Ipv4UnicastAddressFamily;
 import org.junit.Test;
@@ -32,7 +33,11 @@ public class BgpSessionPropertiesTest {
             .setLocalAs(1L)
             .setRemoteAs(2L)
             .setPeerAddress(ip2)
-            .setAdvertiseInactive(true)
+            .setIpv4UnicastAddressFamily(
+                Ipv4UnicastAddressFamily.builder()
+                    .setAddressFamilyCapabilities(
+                        AddressFamilyCapabilities.builder().setAdvertiseInactive(true).build())
+                    .build())
             .build();
     BgpActivePeerConfig p2 =
         BgpActivePeerConfig.builder()
@@ -40,7 +45,11 @@ public class BgpSessionPropertiesTest {
             .setLocalAs(1L)
             .setRemoteAs(2L)
             .setPeerAddress(ip1)
-            .setAdvertiseInactive(false)
+            .setIpv4UnicastAddressFamily(
+                Ipv4UnicastAddressFamily.builder()
+                    .setAddressFamilyCapabilities(
+                        AddressFamilyCapabilities.builder().setAdvertiseInactive(true).build())
+                    .build())
             .build();
     BgpSessionProperties session = BgpSessionProperties.from(p1, p2, false);
     assertTrue(session.getAdvertiseInactive());
@@ -94,8 +103,11 @@ public class BgpSessionPropertiesTest {
             .setLocalAs(1L)
             .setRemoteAs(2L)
             .setPeerAddress(ip2)
-            .setAdvertiseInactive(true)
-            .setIpv4UnicastAddressFamily(Ipv4UnicastAddressFamily.instance());
+            .setIpv4UnicastAddressFamily(
+                Ipv4UnicastAddressFamily.builder()
+                    .setAddressFamilyCapabilities(
+                        AddressFamilyCapabilities.builder().setAdvertiseInactive(true).build())
+                    .build());
     BgpActivePeerConfig peer1 = peerBuilder.build();
 
     // intersection with itself only contains ipv4

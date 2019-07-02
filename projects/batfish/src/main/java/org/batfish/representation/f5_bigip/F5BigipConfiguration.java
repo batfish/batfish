@@ -293,12 +293,14 @@ public class F5BigipConfiguration extends VendorConfiguration {
             .setBgpProcess(newProc)
             .setDescription(neighbor.getDescription())
             .setEbgpMultihop(neighbor.getEbgpMultihop() != null)
-            .setExportPolicy(peerExportPolicy.build().getName())
             .setLocalAs(proc.getLocalAs())
             .setLocalIp(updateSource)
             .setPeerAddress(neighbor.getAddress())
             .setRemoteAsns(remoteAsns)
-            .setIpv4UnicastAddressFamily(Ipv4UnicastAddressFamily.instance());
+            .setIpv4UnicastAddressFamily(
+                Ipv4UnicastAddressFamily.builder()
+                    .setExportPolicy(peerExportPolicy.build().getName())
+                    .build());
     builder.build();
   }
 

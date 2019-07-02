@@ -131,6 +131,7 @@ import org.batfish.datamodel.acl.OrMatchExpr;
 import org.batfish.datamodel.acl.OriginatingFromDevice;
 import org.batfish.datamodel.acl.PermittedByAcl;
 import org.batfish.datamodel.acl.TrueExpr;
+import org.batfish.datamodel.bgp.AddressFamilyCapabilities;
 import org.batfish.datamodel.bgp.Ipv4UnicastAddressFamily;
 import org.batfish.datamodel.eigrp.EigrpInterfaceSettings;
 import org.batfish.datamodel.eigrp.EigrpMetric;
@@ -1955,27 +1956,33 @@ public final class CiscoConfiguration extends VendorConfiguration {
       }
       newNeighborBuilder.setBgpProcess(newBgpProcess);
 
-      newNeighborBuilder.setAdditionalPathsReceive(lpg.getAdditionalPathsReceive());
-      newNeighborBuilder.setAdditionalPathsSelectAll(lpg.getAdditionalPathsSelectAll());
-      newNeighborBuilder.setAdditionalPathsSend(lpg.getAdditionalPathsSend());
-      /*
-       * On Arista EOS, advertise-inactive is a command that we parse and extract;
-       *
-       * On Cisco IOS & NXOS, advertise-inactive is true by default. This can be modified by
-       * "bgp suppress-inactive" command,
-       * which we currently do not parse/extract. So we choose the default value here.
-       *
-       * For other Cisco OS variations (e.g., IOS-XR) we did not find a similar command and for now,
-       * we assume behavior to be identical to IOS/NXOS family.
-       */
-      if (_vendor.equals(ConfigurationFormat.ARISTA)) {
-        newNeighborBuilder.setAdvertiseInactive(lpg.getAdvertiseInactive());
-      } else {
-        newNeighborBuilder.setAdvertiseInactive(true);
-      }
-      newNeighborBuilder.setAllowLocalAsIn(lpg.getAllowAsIn());
-      newNeighborBuilder.setAllowRemoteAsOut(
-          firstNonNull(lpg.getDisablePeerAsCheck(), Boolean.TRUE));
+      AddressFamilyCapabilities ipv4AfSettings =
+          AddressFamilyCapabilities.builder()
+              .setAdditionalPathsReceive(lpg.getAdditionalPathsReceive())
+              .setAdditionalPathsSelectAll(lpg.getAdditionalPathsSelectAll())
+              .setAdditionalPathsSend(lpg.getAdditionalPathsSend())
+              .setAllowLocalAsIn(lpg.getAllowAsIn())
+              .setAllowRemoteAsOut(firstNonNull(lpg.getDisablePeerAsCheck(), Boolean.TRUE))
+              /*
+               * On Arista EOS, advertise-inactive is a command that we parse and extract;
+               *
+               * On Cisco IOS & NXOS, advertise-inactive is true by default. This can be modified by
+               * "bgp suppress-inactive" command,
+               * which we currently do not parse/extract. So we choose the default value here.
+               *
+               * For other Cisco OS variations (e.g., IOS-XR) we did not find a similar command and for now,
+               * we assume behavior to be identical to IOS/NXOS family.
+               */
+              .setAdvertiseInactive(
+                  _vendor.equals(ConfigurationFormat.ARISTA) ? lpg.getAdvertiseInactive() : true)
+              .setSendCommunity(lpg.getSendCommunity())
+              .build();
+      newNeighborBuilder.setIpv4UnicastAddressFamily(
+          Ipv4UnicastAddressFamily.builder()
+              .setAddressFamilyCapabilities(ipv4AfSettings)
+              .setImportPolicy(peerImportPolicyName)
+              .setExportPolicy(computeBgpPeerExportPolicyName(vrfName, lpg.getName()))
+              .build());
       newNeighborBuilder.setRouteReflectorClient(lpg.getRouteReflectorClient());
       newNeighborBuilder.setClusterId(clusterId.asLong());
       newNeighborBuilder.setDefaultMetric(defaultMetric);
@@ -1985,14 +1992,8 @@ public final class CiscoConfiguration extends VendorConfiguration {
         newNeighborBuilder.setGeneratedRoutes(ImmutableSet.of(defaultRoute.build()));
       }
       newNeighborBuilder.setGroup(lpg.getGroupName());
-      if (peerImportPolicyName != null) {
-        newNeighborBuilder.setImportPolicy(peerImportPolicyName);
-      }
       newNeighborBuilder.setLocalAs(localAs);
       newNeighborBuilder.setLocalIp(updateSource);
-      newNeighborBuilder.setExportPolicy(computeBgpPeerExportPolicyName(vrfName, lpg.getName()));
-      newNeighborBuilder.setSendCommunity(lpg.getSendCommunity());
-      newNeighborBuilder.setIpv4UnicastAddressFamily(Ipv4UnicastAddressFamily.instance());
       newNeighborBuilder.build();
     }
     return newBgpProcess;

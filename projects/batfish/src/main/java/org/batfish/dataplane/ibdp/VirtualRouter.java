@@ -79,6 +79,7 @@ import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.Topology;
 import org.batfish.datamodel.VniSettings;
 import org.batfish.datamodel.Vrf;
+import org.batfish.datamodel.bgp.AddressFamily.Type;
 import org.batfish.datamodel.bgp.BgpTopology;
 import org.batfish.datamodel.bgp.BgpTopology.EdgeId;
 import org.batfish.datamodel.bgp.community.Community;
@@ -669,12 +670,15 @@ public class VirtualRouter implements Serializable {
 
         // Incoming srcProtocol
         transformedIncomingRouteBuilder.setSrcProtocol(targetProtocol);
-        String importPolicyName = neighbor.getImportPolicy();
+        String importPolicyName = neighbor.getIpv4UnicastAddressFamily().getImportPolicy();
         // TODO: ensure there is always an import policy
 
         if (ebgp
             && transformedOutgoingRoute.getAsPath().containsAs(neighbor.getLocalAs())
-            && !neighbor.getAllowLocalAsIn()) {
+            && !neighbor
+                .getIpv4UnicastAddressFamily()
+                .getAddressFamilyCapabilities()
+                .getAllowLocalAsIn()) {
           // skip routes containing peer's AS unless
           // disable-peer-as-check (getAllowRemoteAsOut) is set
           continue;
@@ -1046,7 +1050,10 @@ public class VirtualRouter implements Serializable {
             transformBgpRouteOnImport(
                 remoteRoute,
                 ourBgpConfig.getLocalAs(),
-                ourBgpConfig.getAllowLocalAsIn(),
+                ourBgpConfig
+                    .getIpv4UnicastAddressFamily()
+                    .getAddressFamilyCapabilities()
+                    .getAllowLocalAsIn(),
                 sessionProperties.isEbgp(),
                 _bgpRoutingProcess._process,
                 ourConfigId.getPeerInterface());
@@ -1056,7 +1063,7 @@ public class VirtualRouter implements Serializable {
         }
 
         // Process route through import policy, if one exists
-        String importPolicyName = ourBgpConfig.getImportPolicy();
+        String importPolicyName = ourBgpConfig.getIpv4UnicastAddressFamily().getImportPolicy();
         boolean acceptIncoming = true;
         // TODO: ensure there is always an import policy
         if (importPolicyName != null) {
@@ -1833,7 +1840,8 @@ public class VirtualRouter implements Serializable {
       @Nonnull BgpPeerConfig ourConfig,
       @Nonnull BgpSessionProperties sessionProperties) {
 
-    RoutingPolicy exportPolicy = _c.getRoutingPolicies().get(ourConfig.getExportPolicy());
+    RoutingPolicy exportPolicy =
+        _c.getRoutingPolicies().get(ourConfig.getIpv4UnicastAddressFamily().getExportPolicy());
     RoutingProtocol protocol =
         sessionProperties.isEbgp() ? RoutingProtocol.BGP : RoutingProtocol.IBGP;
     Bgpv4Route.Builder transformedOutgoingRouteBuilder =
@@ -1871,7 +1879,7 @@ public class VirtualRouter implements Serializable {
           remoteConfigId.getHostname(),
           remoteIp,
           remoteConfigId.getVrfName(),
-          ourConfig.getExportPolicy(),
+          ourConfig.getIpv4UnicastAddressFamily().getExportPolicy(),
           Direction.OUT);
       return null;
     }
@@ -1887,7 +1895,7 @@ public class VirtualRouter implements Serializable {
         remoteConfigId.getHostname(),
         remoteIp,
         remoteConfigId.getVrfName(),
-        ourConfig.getExportPolicy());
+        ourConfig.getIpv4UnicastAddressFamily().getExportPolicy());
 
     return transformedOutgoingRoute;
   }
@@ -1915,7 +1923,8 @@ public class VirtualRouter implements Serializable {
       @Nonnull Map<String, Node> allNodes,
       @Nonnull BgpSessionProperties sessionProperties) {
 
-    RoutingPolicy exportPolicy = _c.getRoutingPolicies().get(ourConfig.getExportPolicy());
+    RoutingPolicy exportPolicy =
+        _c.getRoutingPolicies().get(ourConfig.getIpv4UnicastAddressFamily().getExportPolicy());
     B transformedOutgoingRouteBuilder =
         BgpProtocolHelper.transformBgpRoutePreExport(
             ourConfig,
@@ -1923,7 +1932,8 @@ public class VirtualRouter implements Serializable {
             sessionProperties,
             _vrf.getBgpProcess(),
             requireNonNull(getRemoteBgpNeighborVR(remoteConfigId, allNodes))._vrf.getBgpProcess(),
-            exportCandidate.getRoute());
+            exportCandidate.getRoute(),
+            Type.IPV4_UNICAST);
     if (transformedOutgoingRouteBuilder == null) {
       // This route could not be exported for core bgp protocol reasons
       return null;
@@ -1949,7 +1959,7 @@ public class VirtualRouter implements Serializable {
           remoteConfigId.getHostname(),
           remoteIp,
           remoteConfigId.getVrfName(),
-          ourConfig.getExportPolicy(),
+          ourConfig.getIpv4UnicastAddressFamily().getExportPolicy(),
           Direction.OUT);
       return null;
     }
@@ -1965,7 +1975,7 @@ public class VirtualRouter implements Serializable {
         remoteConfigId.getHostname(),
         remoteIp,
         remoteConfigId.getVrfName(),
-        ourConfig.getExportPolicy());
+        ourConfig.getIpv4UnicastAddressFamily().getExportPolicy());
 
     return transformedOutgoingRoute;
   }
