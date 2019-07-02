@@ -206,7 +206,11 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
 
     BgpL2vpnEvpnAddressFamily evpnConfig = bgpVrf.getL2VpnEvpn();
     // sadly, we allow localAs == null in VI datamodel above
-    if (evpnConfig != null && localAs != null) {
+    if (evpnConfig != null
+        && localAs != null
+        && neighbor.getL2vpnEvpnAddressFamily() != null
+        // l2vpn evpn AF must be explicitly activated for neighbor
+        && firstNonNull(neighbor.getL2vpnEvpnAddressFamily().getActivated(), Boolean.FALSE)) {
       ImmutableSet.Builder<Layer2VniConfig> l2Vnis = ImmutableSet.builder();
       ImmutableSet.Builder<Layer3VniConfig> l3Vnis = ImmutableSet.builder();
       ImmutableMap.Builder<Integer, Integer> vniToIndexBuilder = ImmutableMap.builder();
