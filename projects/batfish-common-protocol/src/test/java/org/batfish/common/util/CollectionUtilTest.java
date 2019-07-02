@@ -1,6 +1,7 @@
 package org.batfish.common.util;
 
 import static org.batfish.common.util.CollectionUtil.toImmutableMap;
+import static org.batfish.common.util.CollectionUtil.toMap;
 import static org.batfish.common.util.CollectionUtil.toOrderedHashCode;
 import static org.batfish.common.util.CollectionUtil.toUnorderedHashCode;
 import static org.hamcrest.Matchers.equalTo;
@@ -15,6 +16,8 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.Maps;
 import java.util.Map;
+import java.util.Set;
+import java.util.function.Function;
 import java.util.stream.Stream;
 import org.junit.Test;
 
@@ -56,5 +59,16 @@ public class CollectionUtilTest {
     assertThat(Stream.of(1).collect(toUnorderedHashCode()), equalTo(ImmutableSet.of(1).hashCode()));
     assertThat(
         Stream.of(1, 2).collect(toUnorderedHashCode()), equalTo(ImmutableSet.of(2, 1).hashCode()));
+  }
+
+  @Test
+  public void testToMap() {
+    Set<String> m = ImmutableSet.of("a", "b");
+    Set<String> ms = ImmutableSet.of("a", "b");
+    assertThat(m, equalTo(ms));
+
+    assertThat(
+        toMap(m, Function.identity(), Function.identity()),
+        equalTo(ImmutableMap.of("a", "a", "b", "b")));
   }
 }
