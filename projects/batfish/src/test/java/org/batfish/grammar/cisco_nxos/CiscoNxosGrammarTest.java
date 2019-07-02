@@ -195,9 +195,9 @@ public final class CiscoNxosGrammarTest {
             "Ethernet1/10",
             "loopback0",
             "mgmt0",
-            "Port-channel1",
-            "Port-channel2",
-            "Port-channel2.1"));
+            "port-channel1",
+            "port-channel2",
+            "port-channel2.1"));
 
     {
       org.batfish.datamodel.Interface iface = c.getAllInterfaces().get("Ethernet1/1");
@@ -217,7 +217,7 @@ public final class CiscoNxosGrammarTest {
       assertThat(iface.getSwitchportMode(), equalTo(SwitchportMode.NONE));
     }
     {
-      org.batfish.datamodel.Interface iface = c.getAllInterfaces().get("Port-channel1");
+      org.batfish.datamodel.Interface iface = c.getAllInterfaces().get("port-channel1");
       assertThat(iface, isActive());
       assertThat(iface.getSwitchportMode(), equalTo(SwitchportMode.ACCESS));
       assertThat(iface.getAccessVlan(), equalTo(1));
@@ -240,12 +240,12 @@ public final class CiscoNxosGrammarTest {
       assertThat(iface.getEncapsulationVlan(), equalTo(2));
     }
     {
-      org.batfish.datamodel.Interface iface = c.getAllInterfaces().get("Port-channel2");
+      org.batfish.datamodel.Interface iface = c.getAllInterfaces().get("port-channel2");
       assertThat(iface, isActive());
       assertThat(iface.getSwitchportMode(), equalTo(SwitchportMode.NONE));
     }
     {
-      org.batfish.datamodel.Interface iface = c.getAllInterfaces().get("Port-channel2.1");
+      org.batfish.datamodel.Interface iface = c.getAllInterfaces().get("port-channel2.1");
       assertThat(iface, isActive(false));
       assertThat(iface.getSwitchportMode(), equalTo(SwitchportMode.NONE));
       assertThat(iface.getEncapsulationVlan(), nullValue());
@@ -327,9 +327,9 @@ public final class CiscoNxosGrammarTest {
             "Ethernet1/10",
             "loopback0",
             "mgmt0",
-            "Port-channel1",
-            "Port-channel2",
-            "Port-channel2.1"));
+            "port-channel1",
+            "port-channel2",
+            "port-channel2.1"));
 
     {
       Interface iface = vc.getInterfaces().get("Ethernet1/1");
@@ -348,7 +348,7 @@ public final class CiscoNxosGrammarTest {
       assertThat(iface.getSwitchportMode(), equalTo(SwitchportMode.NONE));
     }
     {
-      Interface iface = vc.getInterfaces().get("Port-channel1");
+      Interface iface = vc.getInterfaces().get("port-channel1");
       assertFalse(iface.getShutdown());
       assertThat(iface.getSwitchportMode(), equalTo(SwitchportMode.ACCESS));
       assertThat(iface.getAccessVlan(), equalTo(1));
@@ -371,12 +371,12 @@ public final class CiscoNxosGrammarTest {
       assertThat(iface.getEncapsulationVlan(), equalTo(2));
     }
     {
-      Interface iface = vc.getInterfaces().get("Port-channel2");
+      Interface iface = vc.getInterfaces().get("port-channel2");
       assertFalse(iface.getShutdown());
       assertThat(iface.getSwitchportMode(), equalTo(SwitchportMode.NONE));
     }
     {
-      Interface iface = vc.getInterfaces().get("Port-channel2.1");
+      Interface iface = vc.getInterfaces().get("port-channel2.1");
       assertTrue(iface.getShutdown());
       assertThat(iface.getSwitchportMode(), equalTo(SwitchportMode.NONE));
       assertThat(iface.getEncapsulationVlan(), nullValue());
