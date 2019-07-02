@@ -17,6 +17,7 @@ import org.antlr.v4.runtime.ParserRuleContext;
 import org.batfish.common.BatfishException;
 import org.batfish.common.ParseTreeSentences;
 import org.batfish.common.Warnings;
+import org.batfish.common.WillNotCommitException;
 import org.batfish.config.Settings;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.answers.ParseStatus;
@@ -426,6 +427,16 @@ public class ParseVendorConfigurationJob extends BatfishJob<ParseVendorConfigura
       ParseStatus status =
           vc.getUnrecognized() ? ParseStatus.PARTIALLY_UNRECOGNIZED : ParseStatus.PASSED;
       return new ParseResult(vc, null, _filename, _ptSentences, status, _warnings);
+    } catch (WillNotCommitException e) {
+      if (_settings.getHaltOnParseError()) {
+        // Fail the job if we need to
+        return new ParseResult(
+            null, e, _filename, _ptSentences, ParseStatus.WILL_NOT_COMMIT, _warnings);
+      }
+      // Otherwise just generate a warning
+      _warnings.redFlag(e.getMessage());
+      return new ParseResult(
+          null, null, _filename, _ptSentences, ParseStatus.WILL_NOT_COMMIT, _warnings);
     } catch (Exception e) {
       return new ParseResult(
           null,
