@@ -151,6 +151,7 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
   private void markStructures() {
     markConcreteStructure(
         CiscoNxosStructureType.INTERFACE, CiscoNxosStructureUsage.INTERFACE_SELF_REFERENCE);
+    markConcreteStructure(CiscoNxosStructureType.VLAN, CiscoNxosStructureUsage.INTERFACE_VLAN);
   }
 
   @Override

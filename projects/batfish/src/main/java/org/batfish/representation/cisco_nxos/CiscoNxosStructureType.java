@@ -4,7 +4,8 @@ import javax.annotation.Nonnull;
 import org.batfish.vendor.StructureType;
 
 public enum CiscoNxosStructureType implements StructureType {
-  INTERFACE("interface");
+  INTERFACE("interface"),
+  VLAN("vlan");
 
   private final @Nonnull String _description;
 

@@ -3,6 +3,8 @@ package org.batfish.grammar.cisco_nxos;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasHostname;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasInterface;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasInterfaces;
+import static org.batfish.datamodel.matchers.DataModelMatchers.hasNumReferrers;
+import static org.batfish.datamodel.matchers.DataModelMatchers.hasUndefinedReference;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasAddress;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasAllAddresses;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasDependencies;
@@ -20,6 +22,7 @@ import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.hasEntry;
 import static org.hamcrest.Matchers.hasKey;
 import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertFalse;
@@ -45,10 +48,12 @@ import org.batfish.datamodel.Interface.Dependency;
 import org.batfish.datamodel.Interface.DependencyType;
 import org.batfish.datamodel.InterfaceType;
 import org.batfish.datamodel.SwitchportMode;
+import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
 import org.batfish.representation.cisco_nxos.CiscoNxosConfiguration;
 import org.batfish.representation.cisco_nxos.CiscoNxosInterfaceType;
+import org.batfish.representation.cisco_nxos.CiscoNxosStructureType;
 import org.batfish.representation.cisco_nxos.Interface;
 import org.junit.Rule;
 import org.junit.Test;
@@ -61,17 +66,25 @@ public final class CiscoNxosGrammarTest {
 
   @Rule public TemporaryFolder _folder = new TemporaryFolder();
 
-  private Configuration parseConfig(String hostname) throws IOException {
-    return parseTextConfigs(hostname).get(hostname.toLowerCase());
-  }
-
-  private Map<String, Configuration> parseTextConfigs(String... configurationNames)
+  private @Nonnull Batfish getBatfishForConfigurationNames(String... configurationNames)
       throws IOException {
     String[] names =
         Arrays.stream(configurationNames).map(s -> TESTCONFIGS_PREFIX + s).toArray(String[]::new);
     Batfish batfish = BatfishTestUtils.getBatfishForTextConfigs(_folder, names);
     batfish.getSettings().setDebugFlags(ImmutableList.of(DEBUG_FLAG_USE_NEW_CISCO_NXOS_PARSER));
-    return batfish.loadConfigurations();
+    return batfish;
+  }
+
+  private @Nonnull Configuration parseConfig(String hostname) throws IOException {
+    Map<String, Configuration> configs = parseTextConfigs(hostname);
+    String canonicalHostname = hostname.toLowerCase();
+    assertThat(configs, hasEntry(equalTo(canonicalHostname), hasHostname(canonicalHostname)));
+    return configs.get(canonicalHostname);
+  }
+
+  private @Nonnull Map<String, Configuration> parseTextConfigs(String... configurationNames)
+      throws IOException {
+    return getBatfishForConfigurationNames(configurationNames).loadConfigurations();
   }
 
   private @Nonnull CiscoNxosConfiguration parseVendorConfig(String hostname) {
@@ -602,5 +615,17 @@ public final class CiscoNxosGrammarTest {
 
     assertThat(vc.getInterfaces(), anEmptyMap());
     assertThat(vc.getVlans(), anEmptyMap());
+  }
+
+  @Test
+  public void testVlanReferences() throws IOException {
+    String hostname = "nxos_vlan_references";
+    String filename = String.format("configs/%s", hostname);
+    ConvertConfigurationAnswerElement ans =
+        getBatfishForConfigurationNames(hostname).loadConvertConfigurationAnswerElementOrReparse();
+
+    assertThat(ans, hasNumReferrers(filename, CiscoNxosStructureType.VLAN, "1", 1));
+    assertThat(ans, hasNumReferrers(filename, CiscoNxosStructureType.VLAN, "2", 0));
+    assertThat(ans, hasUndefinedReference(filename, CiscoNxosStructureType.VLAN, "3"));
   }
 }

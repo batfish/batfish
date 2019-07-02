@@ -1,0 +1,20 @@
+!RANCID-CONTENT-TYPE: cisco-nx
+!
+hostname nxos_vlan_references
+!
+
+! used
+vlan 1
+!
+
+! unused
+vlan 2
+!
+
+
+interface Vlan1
+!
+
+! undefined reference
+interface Vlan3
+!

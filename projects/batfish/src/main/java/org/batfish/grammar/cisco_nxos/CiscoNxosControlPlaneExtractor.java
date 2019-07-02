@@ -184,9 +184,16 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
                                 n,
                                 CiscoNxosStructureUsage.INTERFACE_SELF_REFERENCE,
                                 line);
-                            return type == VLAN
-                                ? newVlanInterface(n, i)
-                                : newNonVlanInterface(n, parentInterface, type);
+                            if (type == VLAN) {
+                              _configuration.referenceStructure(
+                                  CiscoNxosStructureType.VLAN,
+                                  Integer.toString(i),
+                                  CiscoNxosStructureUsage.INTERFACE_VLAN,
+                                  line);
+                              return newVlanInterface(n, i);
+                            } else {
+                              return newNonVlanInterface(n, parentInterface, type);
+                            }
                           });
                 })
             .collect(ImmutableList.toImmutableList());
@@ -196,13 +203,24 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
   @Override
   public void enterVlan_vlan(Vlan_vlanContext ctx) {
     IntegerSpace vlans = toVlanIdRange(ctx, ctx.vlans);
+    int line = ctx.getStart().getLine();
     if (vlans == null) {
       _currentVlans = ImmutableList.of();
       return;
     }
     _currentVlans =
         vlans.stream()
-            .map(vlanId -> _configuration.getVlans().computeIfAbsent(vlanId, Vlan::new))
+            .map(
+                vlanId ->
+                    _configuration
+                        .getVlans()
+                        .computeIfAbsent(
+                            vlanId,
+                            id -> {
+                              _configuration.defineStructure(
+                                  CiscoNxosStructureType.VLAN, Integer.toString(id), line);
+                              return new Vlan(id);
+                            }))
             .collect(ImmutableList.toImmutableList());
   }
 
