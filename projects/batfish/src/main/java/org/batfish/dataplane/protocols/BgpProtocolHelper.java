@@ -252,8 +252,8 @@ public final class BgpProtocolHelper {
    * <p>Intended for converting main RIB routes into their BGP equivalents before passing {@code
    * routeDecorator} to the export policy
    *
-   * <p>The builder returned will will have default local preference, incomplete origin type, and
-   * most other fields unset.
+   * <p>The builder returned will have default local preference, incomplete origin type, and most
+   * other fields unset.
    */
   @Nonnull
   public static Bgpv4Route.Builder convertNonBgpRouteToBgpRoute(
@@ -275,26 +275,27 @@ public final class BgpProtocolHelper {
         // TODO: support customization of route preference
         .setLocalPreference(BgpRoute.DEFAULT_LOCAL_PREFERENCE)
         .setReceivedFromIp(protocol == RoutingProtocol.BGP ? nextHopIp : Ip.ZERO)
-        .setNextHopIp(nextHopIp);
+        .setNextHopIp(nextHopIp)
+        .setTag(routeDecorator.getAbstractRoute().getTag());
     // Let everything else default to unset/empty/etc.
   }
 
   /**
-   * Perform BGP export transformations on a given route when sending an advertisement from {@code
-   * fromNeighbor} to {@code toNeighbor} after export policy as applied and route is accepted, but
-   * before route is sent onto the wire.
+   * Perform BGP export transformations on a given route <em>after</em> export policy has been
+   * applied to the route, route was accepted, but before route is sent "onto the wire".
    */
   public static <R extends BgpRoute<B, R>, B extends BgpRoute.Builder<B, R>>
-      void transformBgpRoutePostExport(
-          B routeBuilder, BgpPeerConfig fromNeighbor, BgpSessionProperties sessionProperties) {
-    if (sessionProperties.isEbgp()) {
+      void transformBgpRoutePostExport(B routeBuilder, boolean isEbgp, long localAs) {
+    if (isEbgp) {
       // if eBGP, prepend as-path sender's as-path number
       routeBuilder.setAsPath(
           AsPath.of(
               ImmutableList.<AsSet>builder()
-                  .add(AsSet.of(fromNeighbor.getLocalAs()))
+                  .add(AsSet.of(localAs))
                   .addAll(routeBuilder.getAsPath().getAsSets())
                   .build()));
+      // Tags are non-transitive
+      routeBuilder.setTag(null);
     }
   }
 

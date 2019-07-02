@@ -96,11 +96,11 @@ Batfish supports configurations for a large and growing set of (physical and vir
 * Aruba
 * AWS (VPCs, Network ACLs, VPN GW, NAT GW, Internet GW, Security Groups, etc…)
 * Cisco (All Cisco NX-OS, IOS, IOS-XE, IOS-XR and ASA devices)
-* Cumulus
+* [Cumulus](https://github.com/batfish/batfish/wiki/Packaging-snapshots-for-analysis#format-for-cumulus-configuration-files)
 * Dell Force10
-* F5 BIG-IP
+* [F5 BIG-IP](https://github.com/batfish/batfish/wiki/Packaging-snapshots-for-analysis#format-for-f5-big-ip-configuration-files)
 * Foundry
-* iptables (on hosts)
+* [iptables (on hosts)](https://github.com/batfish/batfish/wiki/Packaging-snapshots-for-analysis#format-for-host-json-files)
 * Juniper (All JunOS platforms: MX, EX, QFX, SRX, T-series, PTX)
 * MRV
 * Palo Alto Networks

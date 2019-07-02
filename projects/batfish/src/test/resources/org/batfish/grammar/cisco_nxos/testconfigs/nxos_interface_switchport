@@ -1,0 +1,173 @@
+!RANCID-CONTENT-TYPE: cisco-nx
+!
+hostname nxos_interface_switchport
+!
+! Ethernet interface with no configuration:
+! - shutdown = false
+! - active = true
+! - switchport = true
+! - switchport mode = access
+! - switchport access vlan = 1 
+interface Ethernet1/1
+!
+
+! Loopback interface with no configuration
+! - shutdown = false
+! - active = true
+! - switchport = false
+! - switchport mode = NONE
+interface Loopback0
+!
+
+! Management interface with no configuration
+! - shutdown = false
+! - active = false (management interfaces blacklisted)
+! - switchport = false
+! - switchport mode = NONE
+interface mgmt0
+  no shutdown
+!
+
+! port-channel interface with no configuration:
+! - shutdown = false
+! - active = false (no members)
+! - switchport = true
+! - switchport mode = access
+! - switchport access vlan = 1
+interface port-channel1
+!
+
+! Ethernet interface with no switchport and no shutdown:
+! - shutdown = false
+! - active = true
+! - switchport = false
+! - switchport mode = NONE
+interface Ethernet1/2
+  no switchport
+  no shutdown
+!
+
+! Ethernet subinterface with no configuration:
+! - shutdown = true
+! - active = false
+! - switchport = false
+! - switchport mode = NONE
+! - encapsulation vlan = null (1, untagged)
+interface Ethernet1/2.1
+!
+
+! Ethernet subinterface with encapsulation vlan:
+! - shutdown = true
+! - active = false
+! - switchport = false
+! - switchport mode = NONE
+! - encapsulation vlan = 2 (tagged)
+interface Ethernet1/2.2
+  encapsulation dot1q 2
+!
+
+! port-channel interface with no switchport and no shutdown:
+! - shutdown = false
+! - active = false (no members)
+! - switchport = false
+! - switchport mode = NONE
+interface port-channel2
+  no switchport
+  no shutdown
+!
+
+! port-channel subinterface with no configuration:
+! - shutdown = true
+! - active = false (parent inactive)
+! - switchport = false
+! - switchport mode = NONE
+interface port-channel2.1
+!
+
+! Ethernet interface with no shutdown before no switchport (no shutdown is remembered):
+! - shutdown = false
+! - active = true
+! - switchport = false
+! - switchport mode = NONE
+interface Ethernet1/3
+  no shutdown
+  no switchport
+!  
+  
+! Ethernet interface with access vlan
+! - shutdown = false
+! - active = true
+! - switchport = true
+! - switchport mode = ACCESS
+! - switchport access vlan = 2
+interface Ethernet1/4
+  switchport access vlan 2
+!
+
+! Ethernet interface with native vlan
+! - shutdown = false
+! - active = true
+! - switchport = true
+! - switchport mode = TRUNK
+! - switchport native vlan = 2
+! - switchport allowed vlans = 1-3967
+interface Ethernet1/5
+  switchport trunk native vlan 2
+!
+
+! Ethernet interface with allowed vlans
+! - shutdown = false
+! - active = true
+! - switchport = true
+! - switchport mode = TRUNK
+! - switchport native vlan = 1
+! - switchport allowed vlans = 1-3
+interface Ethernet1/6
+  switchport trunk allowed vlan 1-3
+!
+
+! Ethernet interface with allowed vlans set and appended
+! - shutdown = false
+! - active = true
+! - switchport = true
+! - switchport mode = TRUNK
+! - switchport native vlan = 1
+! - switchport allowed vlans = 1-3
+interface Ethernet1/7
+  switchport trunk allowed vlan 1-3
+  switchport trunk allowed vlan add 4
+!
+
+! Ethernet interface with allowed vlans blacklist
+! - shutdown = false
+! - active = true
+! - switchport = true
+! - switchport mode = TRUNK
+! - switchport native vlan = 1
+! - switchport allowed vlans = 1-3966
+interface Ethernet1/8
+  switchport trunk allowed vlan except 3967
+!
+
+! Ethernet interface with allowed vlans none
+! - shutdown = false
+! - active = true
+! - switchport = true
+! - switchport mode = TRUNK
+! - switchport native vlan = 1
+! - switchport allowed vlans = {}
+interface Ethernet1/9
+  switchport trunk allowed vlan none
+!
+
+! Ethernet interface with allowed vlans set and reduced
+! - shutdown = false
+! - active = true
+! - switchport = true
+! - switchport mode = TRUNK
+! - switchport native vlan = 1
+! - switchport allowed vlans = 1-3
+interface Ethernet1/10
+  switchport trunk allowed vlan 1-3
+  switchport trunk allowed vlan remove 3
+!

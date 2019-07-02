@@ -374,6 +374,15 @@ public abstract class BDD {
   }
 
   /**
+   * Return true iff the {@code diff} of the two BDDs is satisfiable. Equivalent to {@code
+   * !this.diff(that).isZero()}.
+   *
+   * @param that BDD to 'diff' with
+   * @return whether the 'diff' is satisfiable
+   */
+  public abstract boolean diffSat(BDD that);
+
+  /**
    * if-then-else operator.
    *
    * <p>Compare to bdd_ite.
@@ -405,6 +414,17 @@ public abstract class BDD {
    */
   public BDD lessWith(BDD that) {
     return this.applyWith(that, BDDFactory.less);
+  }
+
+  /**
+   * Return true iff the {@code less} of the two BDDs is satisfiable. Equivalent to {@code
+   * !this.less(that).isZero()}.
+   *
+   * @param that BDD to 'less' with
+   * @return whether the 'less' is satisfiable
+   */
+  public boolean lessSat(BDD that) {
+    return that.diffSat(this);
   }
 
   /**

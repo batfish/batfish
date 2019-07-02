@@ -53,18 +53,6 @@ public interface TopologyProvider {
   @Nonnull
   OspfTopology getInitialOspfTopology(@Nonnull NetworkSnapshot networkSnapshot);
 
-  /**
-   * Return the raw layer-3 {@link Topology} for a given {@link NetworkSnapshot}. The layer-3
-   * topology is constructed by inferring layer-3 adjacencies via the layer-3 information in the
-   * configurations, and pruning edges whose vertices are not in the same broadcast domain according
-   * to the layer-2 topology. Nevertheless, pruning does NOT occur for any inferred layer-3 edge
-   * where either vertex's node (i.e., hostname) does not appear in the tail of any edge of the raw
-   * layer-1 topology. Note that an absent raw layer-1 topology is treated as empty, so no pruning
-   * occurs in that case.
-   */
-  @Nonnull
-  Topology getInitialRawLayer3Topology(NetworkSnapshot networkSnapshot);
-
   /** Return the {@link VxlanTopology} for a given {@link NetworkSnapshot}. */
   @Nonnull
   VxlanTopology getInitialVxlanTopology(NetworkSnapshot snapshot);
@@ -118,12 +106,27 @@ public interface TopologyProvider {
   @Nonnull
   Topology getLayer3Topology(NetworkSnapshot snapshot);
 
+  @Nonnull
+  OspfTopology getOspfTopology(NetworkSnapshot networkSnapshot);
+
   /**
    * Return the raw {@link Layer1Topology} provided by the user in the snapshot, or {@link
    * Optional#empty()} if none provided by user.
    */
   @Nonnull
   Optional<Layer1Topology> getRawLayer1PhysicalTopology(NetworkSnapshot networkSnapshot);
+
+  /**
+   * Return the raw layer-3 {@link Topology} for a given {@link NetworkSnapshot}. The layer-3
+   * topology is constructed by inferring layer-3 adjacencies via the layer-3 information in the
+   * configurations, and pruning edges whose vertices are not in the same broadcast domain according
+   * to the layer-2 topology. Nevertheless, pruning does NOT occur for any inferred layer-3 edge
+   * where either vertex's node (i.e., hostname) does not appear in the tail of any edge of the raw
+   * layer-1 topology. Note that an absent raw layer-1 topology is treated as empty, so no pruning
+   * occurs in that case.
+   */
+  @Nonnull
+  Topology getRawLayer3Topology(NetworkSnapshot networkSnapshot);
 
   /**
    * Returns the {@link VxlanTopology} corresponding to the converged {@link

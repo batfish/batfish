@@ -66,12 +66,6 @@ public class FilterLineReachabilityAnswerer extends Answerer {
 
     Map<String, Set<IpAccessList>> specifiedAcls = getSpecifiedFilters(question, ctxt);
 
-    // did we get any filters at all?
-    if (specifiedAcls.values().stream().allMatch(fset -> fset.size() == 0)) {
-      throw new IllegalArgumentException(
-          "Did not find any filters that meets the specified criteria. (Tips: Set 'ignoreGenerated' to false if you want to analyze combined filters; use 'resolveFilterSpecifier' question to see which filters your nodes and filters match.)");
-    }
-
     SortedMap<String, Configuration> configurations = _batfish.loadConfigurations();
     List<AclSpecs> aclSpecs = getAclSpecs(configurations, specifiedAcls, answerRows);
     answerAclReachability(aclSpecs, answerRows);

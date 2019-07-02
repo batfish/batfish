@@ -1,16 +1,14 @@
 package org.batfish.topology;
 
-import static org.batfish.datamodel.ospf.OspfTopologyUtils.computeOspfTopology;
-
-import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
+import com.google.common.cache.CacheLoader;
+import com.google.common.cache.LoadingCache;
 import com.google.common.collect.ImmutableSet;
 import io.opentracing.ActiveSpan;
 import io.opentracing.util.GlobalTracer;
 import java.io.IOException;
 import java.util.Map;
 import java.util.Optional;
-import java.util.concurrent.ExecutionException;
 import javax.annotation.Nonnull;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.common.BatfishException;
@@ -27,44 +25,176 @@ import org.batfish.datamodel.Topology;
 import org.batfish.datamodel.bgp.BgpTopology;
 import org.batfish.datamodel.ipsec.IpsecTopology;
 import org.batfish.datamodel.ospf.OspfTopology;
+import org.batfish.datamodel.ospf.OspfTopologyUtils;
 import org.batfish.datamodel.vxlan.VxlanTopology;
 import org.batfish.datamodel.vxlan.VxlanTopologyUtils;
 import org.batfish.storage.StorageProvider;
 
 @ParametersAreNonnullByDefault
 public final class TopologyProviderImpl implements TopologyProvider {
-  private static final int MAX_CACHED_SNAPSHOTS = 3;
-
-  private final IBatfish _batfish;
-  private final Cache<NetworkSnapshot, IpOwners> _ipOwners;
-  private final Cache<NetworkSnapshot, IpsecTopology> _ipsecTopologies;
-  private final Cache<NetworkSnapshot, Optional<Layer1Topology>> _layer1LogicalTopologies;
-  private final Cache<NetworkSnapshot, Optional<Layer1Topology>> _layer1PhysicalTopologies;
-  private final Cache<NetworkSnapshot, Optional<Layer2Topology>> _layer2Topologies;
-  private final Cache<NetworkSnapshot, Topology> _layer3Topologies;
-  private final Cache<NetworkSnapshot, OspfTopology> _ospfTopologies;
-  private final Cache<NetworkSnapshot, Optional<Layer1Topology>> _rawLayer1PhysicalTopologies;
-  private final Cache<NetworkSnapshot, Topology> _rawLayer3Topologies;
-  private final StorageProvider _storage;
-  private final Cache<NetworkSnapshot, VxlanTopology> _vxlanTopologies;
-
   /** Create a new topology provider for a given instance of {@link IBatfish} */
   public TopologyProviderImpl(IBatfish batfish, StorageProvider storage) {
     _batfish = batfish;
-    _ipOwners = CacheBuilder.newBuilder().maximumSize(MAX_CACHED_SNAPSHOTS).build();
-    _ipsecTopologies = CacheBuilder.newBuilder().maximumSize(MAX_CACHED_SNAPSHOTS).build();
-    _layer1LogicalTopologies = CacheBuilder.newBuilder().maximumSize(MAX_CACHED_SNAPSHOTS).build();
-    _layer1PhysicalTopologies = CacheBuilder.newBuilder().maximumSize(MAX_CACHED_SNAPSHOTS).build();
-    _layer2Topologies =
-        CacheBuilder.newBuilder().maximumSize(MAX_CACHED_SNAPSHOTS).softValues().build();
-    _layer3Topologies = CacheBuilder.newBuilder().maximumSize(MAX_CACHED_SNAPSHOTS).build();
-    _ospfTopologies = CacheBuilder.newBuilder().maximumSize(MAX_CACHED_SNAPSHOTS).build();
-    _rawLayer1PhysicalTopologies =
-        CacheBuilder.newBuilder().maximumSize(MAX_CACHED_SNAPSHOTS).build();
-    _rawLayer3Topologies = CacheBuilder.newBuilder().maximumSize(MAX_CACHED_SNAPSHOTS).build();
     _storage = storage;
-    _vxlanTopologies = CacheBuilder.newBuilder().maximumSize(MAX_CACHED_SNAPSHOTS).build();
   }
+
+  @Override
+  public IpOwners getIpOwners(NetworkSnapshot snapshot) {
+    return _ipOwners.getUnchecked(snapshot);
+  }
+
+  @Override
+  public Optional<Layer1Topology> getLayer1LogicalTopology(NetworkSnapshot networkSnapshot) {
+    return _layer1LogicalTopologies.getUnchecked(networkSnapshot);
+  }
+
+  @Override
+  public Optional<Layer1Topology> getLayer1PhysicalTopology(NetworkSnapshot networkSnapshot) {
+    return _layer1PhysicalTopologies.getUnchecked(networkSnapshot);
+  }
+
+  @Override
+  @Nonnull
+  public IpsecTopology getInitialIpsecTopology(NetworkSnapshot networkSnapshot) {
+    return _initialIpsecTopologies.getUnchecked(networkSnapshot);
+  }
+
+  @Override
+  public Optional<Layer2Topology> getInitialLayer2Topology(NetworkSnapshot networkSnapshot) {
+    return _initialLayer2Topologies.getUnchecked(networkSnapshot);
+  }
+
+  @Override
+  public Topology getInitialLayer3Topology(NetworkSnapshot networkSnapshot) {
+    return _initialLayer3Topologies.getUnchecked(networkSnapshot);
+  }
+
+  @Override
+  public OspfTopology getInitialOspfTopology(NetworkSnapshot networkSnapshot) {
+    return _initialOspfTopologies.getUnchecked(networkSnapshot);
+  }
+
+  @Override
+  public OspfTopology getOspfTopology(NetworkSnapshot networkSnapshot) {
+    return computeOspfTopology(networkSnapshot);
+  }
+
+  @Override
+  public Optional<Layer1Topology> getRawLayer1PhysicalTopology(NetworkSnapshot networkSnapshot) {
+    return _rawLayer1PhysicalTopologies.getUnchecked(networkSnapshot);
+  }
+
+  @Override
+  public Topology getRawLayer3Topology(NetworkSnapshot networkSnapshot) {
+    return _rawLayer3Topologies.getUnchecked(networkSnapshot);
+  }
+
+  @Override
+  public VxlanTopology getInitialVxlanTopology(NetworkSnapshot snapshot) {
+    return _initialVxlanTopologies.getUnchecked(snapshot);
+  }
+
+  @Override
+  public @Nonnull BgpTopology getBgpTopology(NetworkSnapshot snapshot) {
+    try {
+      return _storage.loadBgpTopology(snapshot);
+    } catch (IOException e) {
+      throw new BatfishException("Could not load BGP topology", e);
+    }
+  }
+
+  @Override
+  public @Nonnull Optional<Layer2Topology> getLayer2Topology(NetworkSnapshot snapshot) {
+    try {
+      return _storage.loadLayer2Topology(snapshot);
+    } catch (IOException e) {
+      throw new BatfishException("Could not load layer-2 topology", e);
+    }
+  }
+
+  @Override
+  public @Nonnull Topology getLayer3Topology(NetworkSnapshot snapshot) {
+    try {
+      return _storage.loadLayer3Topology(snapshot);
+    } catch (IOException e) {
+      throw new BatfishException("Could not load layer-3 topology", e);
+    }
+  }
+
+  @Override
+  public @Nonnull VxlanTopology getVxlanTopology(NetworkSnapshot snapshot) {
+    try {
+      return _storage.loadVxlanTopology(snapshot);
+    } catch (IOException e) {
+      throw new BatfishException("Could not load VXLAN topology", e);
+    }
+  }
+
+  ///////////////////////////////////////////////////////////////////////////////////////////////
+  // PRIVATE IMPLEMENTATION
+  ///////////////////////////////////////////////////////////////////////////////////////////////
+
+  /**
+   * The maximum number of different snapshots for which any specific topology will be cached. Note
+   * that the set of snapshots for any given topology will not be the same.
+   */
+  private static final int MAX_CACHED_SNAPSHOTS = 3;
+
+  private final IBatfish _batfish;
+  private final StorageProvider _storage;
+
+  // NOTE: only the "raw" or "initial" versions of topologies are cached. This choice was made to
+  // ease developer iteration on BDP: if the dataplane is re-generated (presumably, via a call to
+  // generate_dataplane), the backend will not cache dataplane-derived topologies.
+
+  private final LoadingCache<NetworkSnapshot, IpOwners> _ipOwners =
+      CacheBuilder.newBuilder()
+          .maximumSize(MAX_CACHED_SNAPSHOTS)
+          .build(CacheLoader.from(this::computeIpOwners));
+
+  private final LoadingCache<NetworkSnapshot, Optional<Layer1Topology>> _layer1LogicalTopologies =
+      CacheBuilder.newBuilder()
+          .maximumSize(MAX_CACHED_SNAPSHOTS)
+          .build(CacheLoader.from(this::computeLayer1LogicalTopology));
+  private final LoadingCache<NetworkSnapshot, Optional<Layer1Topology>>
+      _rawLayer1PhysicalTopologies =
+          CacheBuilder.newBuilder()
+              .maximumSize(MAX_CACHED_SNAPSHOTS)
+              .build(CacheLoader.from(this::computeRawLayer1PhysicalTopology));
+  private final LoadingCache<NetworkSnapshot, Optional<Layer1Topology>> _layer1PhysicalTopologies =
+      CacheBuilder.newBuilder()
+          .maximumSize(MAX_CACHED_SNAPSHOTS)
+          .build(CacheLoader.from(this::computeLayer1PhysicalTopology));
+
+  private final LoadingCache<NetworkSnapshot, Optional<Layer2Topology>> _initialLayer2Topologies =
+      CacheBuilder.newBuilder()
+          .maximumSize(MAX_CACHED_SNAPSHOTS)
+          .softValues()
+          .build(CacheLoader.from(this::computeInitialLayer2Topology));
+
+  private final LoadingCache<NetworkSnapshot, Topology> _rawLayer3Topologies =
+      CacheBuilder.newBuilder()
+          .maximumSize(MAX_CACHED_SNAPSHOTS)
+          .build(CacheLoader.from(this::computeRawLayer3Topology));
+
+  private final LoadingCache<NetworkSnapshot, Topology> _initialLayer3Topologies =
+      CacheBuilder.newBuilder()
+          .maximumSize(MAX_CACHED_SNAPSHOTS)
+          .build(CacheLoader.from(this::computeInitialLayer3Topology));
+
+  private final LoadingCache<NetworkSnapshot, OspfTopology> _initialOspfTopologies =
+      CacheBuilder.newBuilder()
+          .maximumSize(MAX_CACHED_SNAPSHOTS)
+          .build(CacheLoader.from(this::computeInitialOspfTopology));
+
+  private final LoadingCache<NetworkSnapshot, IpsecTopology> _initialIpsecTopologies =
+      CacheBuilder.newBuilder()
+          .maximumSize(MAX_CACHED_SNAPSHOTS)
+          .build(CacheLoader.from(this::computeInitialIpsecTopology));
+  private final LoadingCache<NetworkSnapshot, VxlanTopology> _initialVxlanTopologies =
+      CacheBuilder.newBuilder()
+          .maximumSize(MAX_CACHED_SNAPSHOTS)
+          .build(CacheLoader.from(this::computeVxlanTopology));
 
   private @Nonnull IpOwners computeIpOwners(NetworkSnapshot snapshot) {
     try (ActiveSpan span =
@@ -130,13 +260,15 @@ public final class TopologyProviderImpl implements TopologyProvider {
     }
   }
 
-  private Topology computeLayer3Topology(NetworkSnapshot networkSnapshot) {
+  private Topology computeInitialLayer3Topology(NetworkSnapshot networkSnapshot) {
     try (ActiveSpan span =
-        GlobalTracer.get().buildSpan("TopologyProviderImpl::computeLayer3Topology").startActive()) {
+        GlobalTracer.get()
+            .buildSpan("TopologyProviderImpl::computeInitialLayer3Topology")
+            .startActive()) {
       assert span != null; // avoid unused warning
       Map<String, Configuration> configurations = _batfish.loadConfigurations(networkSnapshot);
       return TopologyUtil.computeLayer3Topology(
-          getInitialRawLayer3Topology(networkSnapshot), ImmutableSet.of(), configurations);
+          getRawLayer3Topology(networkSnapshot), ImmutableSet.of(), configurations);
     }
   }
 
@@ -166,152 +298,33 @@ public final class TopologyProviderImpl implements TopologyProvider {
     }
   }
 
+  private @Nonnull OspfTopology computeInitialOspfTopology(NetworkSnapshot snapshot) {
+    try (ActiveSpan span =
+        GlobalTracer.get()
+            .buildSpan("TopologyProviderImpl::computeInitialOspfTopology")
+            .startActive()) {
+      assert span != null; // avoid unused warning
+      return OspfTopologyUtils.computeOspfTopology(
+          NetworkConfigurations.of(_batfish.loadConfigurations(snapshot)),
+          getInitialLayer3Topology(snapshot));
+    }
+  }
+
+  private @Nonnull OspfTopology computeOspfTopology(NetworkSnapshot snapshot) {
+    try (ActiveSpan span =
+        GlobalTracer.get().buildSpan("TopologyProviderImpl::computeOspfTopology").startActive()) {
+      assert span != null; // avoid unused warning
+      return OspfTopologyUtils.computeOspfTopology(
+          NetworkConfigurations.of(_batfish.loadConfigurations(snapshot)),
+          getLayer3Topology(snapshot));
+    }
+  }
+
   private @Nonnull VxlanTopology computeVxlanTopology(NetworkSnapshot snapshot) {
     try (ActiveSpan span =
         GlobalTracer.get().buildSpan("TopologyProviderImpl::computeVxlanTopology").startActive()) {
       assert span != null; // avoid unused warning
       return VxlanTopologyUtils.computeVxlanTopology(_batfish.loadConfigurations(snapshot));
-    }
-  }
-
-  /** Return the {@link IpOwners} for a given snapshot. */
-  @Override
-  public IpOwners getIpOwners(NetworkSnapshot snapshot) {
-    try {
-      return _ipOwners.get(snapshot, () -> computeIpOwners(snapshot));
-    } catch (ExecutionException e) {
-      return computeIpOwners(snapshot);
-    }
-  }
-
-  @Override
-  public Optional<Layer1Topology> getLayer1LogicalTopology(NetworkSnapshot networkSnapshot) {
-    try {
-      return _layer1LogicalTopologies.get(
-          networkSnapshot, () -> computeLayer1LogicalTopology(networkSnapshot));
-    } catch (ExecutionException e) {
-      return computeLayer1LogicalTopology(networkSnapshot);
-    }
-  }
-
-  @Override
-  public Optional<Layer1Topology> getLayer1PhysicalTopology(NetworkSnapshot networkSnapshot) {
-    try {
-      return _layer1PhysicalTopologies.get(
-          networkSnapshot, () -> computeLayer1PhysicalTopology(networkSnapshot));
-    } catch (ExecutionException e) {
-      return computeLayer1PhysicalTopology(networkSnapshot);
-    }
-  }
-
-  @Override
-  @Nonnull
-  public IpsecTopology getInitialIpsecTopology(NetworkSnapshot networkSnapshot) {
-    try {
-      return _ipsecTopologies.get(
-          networkSnapshot, () -> computeInitialIpsecTopology(networkSnapshot));
-    } catch (ExecutionException e) {
-      return computeInitialIpsecTopology(networkSnapshot);
-    }
-  }
-
-  @Override
-  public Optional<Layer2Topology> getInitialLayer2Topology(NetworkSnapshot networkSnapshot) {
-    try {
-      return _layer2Topologies.get(
-          networkSnapshot, () -> computeInitialLayer2Topology(networkSnapshot));
-    } catch (ExecutionException e) {
-      return computeInitialLayer2Topology(networkSnapshot);
-    }
-  }
-
-  @Override
-  public Topology getInitialLayer3Topology(NetworkSnapshot networkSnapshot) {
-    try {
-      return _layer3Topologies.get(networkSnapshot, () -> computeLayer3Topology(networkSnapshot));
-    } catch (ExecutionException e) {
-      return computeLayer3Topology(networkSnapshot);
-    }
-  }
-
-  @Override
-  public OspfTopology getInitialOspfTopology(NetworkSnapshot networkSnapshot) {
-    try {
-      return _ospfTopologies.get(
-          networkSnapshot,
-          () ->
-              computeOspfTopology(
-                  NetworkConfigurations.of(_batfish.loadConfigurations(networkSnapshot)),
-                  getInitialLayer3Topology(networkSnapshot)));
-    } catch (ExecutionException e) {
-      return computeOspfTopology(
-          NetworkConfigurations.of(_batfish.loadConfigurations(networkSnapshot)),
-          getInitialLayer3Topology(networkSnapshot));
-    }
-  }
-
-  @Override
-  public Optional<Layer1Topology> getRawLayer1PhysicalTopology(NetworkSnapshot networkSnapshot) {
-    try {
-      return _rawLayer1PhysicalTopologies.get(
-          networkSnapshot, () -> computeRawLayer1PhysicalTopology(networkSnapshot));
-    } catch (ExecutionException e) {
-      return computeRawLayer1PhysicalTopology(networkSnapshot);
-    }
-  }
-
-  @Override
-  public Topology getInitialRawLayer3Topology(NetworkSnapshot networkSnapshot) {
-    try {
-      return _rawLayer3Topologies.get(
-          networkSnapshot, () -> computeRawLayer3Topology(networkSnapshot));
-    } catch (ExecutionException e) {
-      return computeRawLayer3Topology(networkSnapshot);
-    }
-  }
-
-  @Override
-  public VxlanTopology getInitialVxlanTopology(NetworkSnapshot snapshot) {
-    try {
-      return _vxlanTopologies.get(snapshot, () -> computeVxlanTopology(snapshot));
-    } catch (ExecutionException e) {
-      return computeVxlanTopology(snapshot);
-    }
-  }
-
-  @Override
-  public @Nonnull BgpTopology getBgpTopology(NetworkSnapshot snapshot) {
-    try {
-      return _storage.loadBgpTopology(snapshot);
-    } catch (IOException e) {
-      throw new BatfishException("Could not load BGP topology", e);
-    }
-  }
-
-  @Override
-  public @Nonnull Optional<Layer2Topology> getLayer2Topology(NetworkSnapshot snapshot) {
-    try {
-      return _storage.loadLayer2Topology(snapshot);
-    } catch (IOException e) {
-      throw new BatfishException("Could not load layer-2 topology", e);
-    }
-  }
-
-  @Override
-  public @Nonnull Topology getLayer3Topology(NetworkSnapshot snapshot) {
-    try {
-      return _storage.loadLayer3Topology(snapshot);
-    } catch (IOException e) {
-      throw new BatfishException("Could not load layer-3 topology", e);
-    }
-  }
-
-  @Override
-  public @Nonnull VxlanTopology getVxlanTopology(NetworkSnapshot snapshot) {
-    try {
-      return _storage.loadVxlanTopology(snapshot);
-    } catch (IOException e) {
-      throw new BatfishException("Could not load VXLAN topology", e);
     }
   }
 }

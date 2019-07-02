@@ -16,7 +16,7 @@
       "filters" : {
         "description" : "Input to the FilterSpecifier",
         "displayName" : "Filters",
-        "optional" : true,
+        "optional" : false,
         "type" : "filterSpec",
         "value" : "input"
       },
@@ -28,7 +28,7 @@
         "value" : "v2"
       },
       "nodes" : {
-        "description" : "Input to the NodeSpecifier",
+        "description" : "Input to the NodeSpecifier that specifies the set of nodes that should be considered",
         "displayName" : "Nodes",
         "optional" : true,
         "type" : "nodeSpec",

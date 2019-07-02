@@ -150,9 +150,11 @@ import static org.hamcrest.Matchers.iterableWithSize;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -186,6 +188,7 @@ import org.batfish.datamodel.AnnotatedRoute;
 import org.batfish.datamodel.BgpPeerConfig;
 import org.batfish.datamodel.BgpProcess;
 import org.batfish.datamodel.Bgpv4Route;
+import org.batfish.datamodel.Bgpv4Route.Builder;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
@@ -3027,6 +3030,28 @@ public final class FlatJuniperGrammarTest {
         interfacePolicy.call(
             envWithRoute(c, new ConnectedRoute(Prefix.parse("10.0.0.9/30"), "nextHop")));
     assertThat(result.getBooleanValue(), equalTo(false));
+
+    /*
+    Metric policy should accept route with metric 100, but not other metrics.
+    Last "from metric" statement overrides previous statements
+      set policy-options policy-statement METRIC_POLICY term T1 from metric 50
+      set policy-options policy-statement METRIC_POLICY term T1 from metric 100
+     */
+    RoutingPolicy metricPolicy = c.getRoutingPolicies().get("METRIC_POLICY");
+    Builder bgpRouteBuilder =
+        Bgpv4Route.builder()
+            .setOriginatorIp(Ip.ZERO)
+            .setNetwork(Prefix.ZERO)
+            .setProtocol(RoutingProtocol.BGP)
+            .setOriginType(OriginType.INCOMPLETE);
+    result = metricPolicy.call(envWithRoute(c, bgpRouteBuilder.setMetric(100).build()));
+    assertTrue(result.getBooleanValue());
+
+    result = metricPolicy.call(envWithRoute(c, bgpRouteBuilder.setMetric(50).build()));
+    assertFalse(result.getBooleanValue());
+
+    result = metricPolicy.call(envWithRoute(c, bgpRouteBuilder.setMetric(51).build()));
+    assertFalse(result.getBooleanValue());
 
     /*
     NETWORK_POLICY should accept routes with networks matching any prefix list or route filter line.
