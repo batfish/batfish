@@ -18,6 +18,7 @@ import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.bgp.AddressFamily;
 import org.batfish.datamodel.bgp.AddressFamily.Type;
+import org.batfish.datamodel.bgp.AddressFamilyCapabilities;
 import org.batfish.datamodel.bgp.EvpnAddressFamily;
 
 /**
@@ -252,19 +253,7 @@ public final class BgpSessionProperties {
     assert listener.getIpv4UnicastAddressFamily() != null;
     assert initiator.getIpv4UnicastAddressFamily() != null;
     return new BgpSessionProperties(
-        !SessionType.isEbgp(sessionType)
-            && listener
-                .getIpv4UnicastAddressFamily()
-                .getAddressFamilyCapabilities()
-                .getAdditionalPathsReceive()
-            && initiator
-                .getIpv4UnicastAddressFamily()
-                .getAddressFamilyCapabilities()
-                .getAdditionalPathsSend()
-            && initiator
-                .getIpv4UnicastAddressFamily()
-                .getAddressFamilyCapabilities()
-                .getAdditionalPathsSelectAll(),
+        computeAdditionalPaths(initiator, listener, sessionType),
         getAddressFamilyIntersection(initiator, listener),
         !SessionType.isEbgp(sessionType)
             && initiator
@@ -279,6 +268,21 @@ public final class BgpSessionProperties {
         reverseDirection ? listenerIp : initiatorIp,
         reverseDirection ? initiatorIp : listenerIp,
         sessionType);
+  }
+
+  /** Computes whether two peers have compatible configuration to enable add-path */
+  private static boolean computeAdditionalPaths(
+      BgpPeerConfig initiator, BgpPeerConfig listener, SessionType sessionType) {
+    // TODO: support address families other than IPv4 unicast
+    AddressFamilyCapabilities initiatorCapabilities =
+        initiator.getIpv4UnicastAddressFamily().getAddressFamilyCapabilities();
+    return !SessionType.isEbgp(sessionType)
+        && listener
+            .getIpv4UnicastAddressFamily()
+            .getAddressFamilyCapabilities()
+            .getAdditionalPathsReceive()
+        && initiatorCapabilities.getAdditionalPathsSend()
+        && initiatorCapabilities.getAdditionalPathsSelectAll();
   }
 
   @VisibleForTesting

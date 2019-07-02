@@ -7,9 +7,11 @@ import com.fasterxml.jackson.annotation.JsonValue;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSortedSet;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
@@ -20,6 +22,8 @@ import org.batfish.datamodel.BgpPeerConfig;
 import org.batfish.datamodel.BgpUnnumberedPeerConfig;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.answers.Schema;
+import org.batfish.datamodel.bgp.AddressFamily;
+import org.batfish.datamodel.bgp.AddressFamilyCapabilities;
 
 /**
  * Enables specification of a set of BGP peer properties.
@@ -88,22 +92,29 @@ public class BgpPeerPropertySpecifier extends PropertySpecifier {
           .put(
               IMPORT_POLICY,
               new PropertyDescriptor<>(
-                  c -> c.getIpv4UnicastAddressFamily().getImportPolicySources(),
+                  c ->
+                      Optional.ofNullable(c.getIpv4UnicastAddressFamily())
+                          .map(AddressFamily::getImportPolicySources)
+                          .orElse(ImmutableSortedSet.of()),
                   Schema.set(Schema.STRING),
                   "Names of import policies to be applied to routes received by this peer"))
           .put(
               EXPORT_POLICY,
               new PropertyDescriptor<>(
-                  c -> c.getIpv4UnicastAddressFamily().getExportPolicySources(),
+                  c ->
+                      Optional.ofNullable(c.getIpv4UnicastAddressFamily())
+                          .map(AddressFamily::getExportPolicySources)
+                          .orElse(ImmutableSortedSet.of()),
                   Schema.set(Schema.STRING),
                   "Names of export policies to be applied to routes exported by this peer"))
           .put(
               SEND_COMMUNITY,
               new PropertyDescriptor<>(
                   c ->
-                      c.getIpv4UnicastAddressFamily()
-                          .getAddressFamilyCapabilities()
-                          .getSendCommunity(),
+                      Optional.ofNullable(c.getIpv4UnicastAddressFamily())
+                          .map(AddressFamily::getAddressFamilyCapabilities)
+                          .map(AddressFamilyCapabilities::getSendCommunity)
+                          .orElse(false),
                   Schema.BOOLEAN,
                   "Whether this peer propagates communities"))
           .build();

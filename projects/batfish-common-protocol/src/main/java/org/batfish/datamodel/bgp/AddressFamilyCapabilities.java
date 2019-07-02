@@ -22,7 +22,6 @@ public final class AddressFamilyCapabilities implements Serializable {
   private static final String PROP_ADDITIONAL_PATHS_RECEIVE = "additionalPathsReceive";
   private static final String PROP_ADDITIONAL_PATHS_SELECT_ALL = "additionalPathsSelectAll";
   private static final String PROP_ADDITIONAL_PATHS_SEND = "additionalPathsSend";
-  static final String PROP_ADDRESS_FAMILY_SETTINGS = "addressFamilySettings";
   private static final String PROP_ADVERTISE_EXTERNAL = "advertiseExternal";
   private static final String PROP_ADVERTISE_INACTIVE = "advertiseInactive";
   private static final String PROP_ALLOW_LOCAL_AS_IN = "allowLocalAsIn";

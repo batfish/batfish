@@ -28,7 +28,7 @@
               }
             ],
             "ipv4UnicastAddressFamily" : {
-              "addressFamilySettings" : {
+              "addressFamilyCapabilities" : {
                 "additionalPathsReceive" : false,
                 "additionalPathsSelectAll" : false,
                 "additionalPathsSend" : false,
@@ -62,7 +62,7 @@
             "ebgpMultihop" : false,
             "enforceFirstAs" : false,
             "ipv4UnicastAddressFamily" : {
-              "addressFamilySettings" : {
+              "addressFamilyCapabilities" : {
                 "additionalPathsReceive" : false,
                 "additionalPathsSelectAll" : false,
                 "additionalPathsSend" : false,
@@ -112,7 +112,7 @@
               }
             ],
             "ipv4UnicastAddressFamily" : {
-              "addressFamilySettings" : {
+              "addressFamilyCapabilities" : {
                 "additionalPathsReceive" : false,
                 "additionalPathsSelectAll" : false,
                 "additionalPathsSend" : false,
@@ -146,7 +146,7 @@
             "ebgpMultihop" : false,
             "enforceFirstAs" : false,
             "ipv4UnicastAddressFamily" : {
-              "addressFamilySettings" : {
+              "addressFamilyCapabilities" : {
                 "additionalPathsReceive" : false,
                 "additionalPathsSelectAll" : false,
                 "additionalPathsSend" : false,
@@ -184,7 +184,7 @@
             "ebgpMultihop" : false,
             "enforceFirstAs" : false,
             "ipv4UnicastAddressFamily" : {
-              "addressFamilySettings" : {
+              "addressFamilyCapabilities" : {
                 "additionalPathsReceive" : false,
                 "additionalPathsSelectAll" : false,
                 "additionalPathsSend" : false,
@@ -226,7 +226,7 @@
               }
             ],
             "ipv4UnicastAddressFamily" : {
-              "addressFamilySettings" : {
+              "addressFamilyCapabilities" : {
                 "additionalPathsReceive" : false,
                 "additionalPathsSelectAll" : false,
                 "additionalPathsSend" : false,
@@ -268,7 +268,7 @@
             "ebgpMultihop" : false,
             "enforceFirstAs" : false,
             "ipv4UnicastAddressFamily" : {
-              "addressFamilySettings" : {
+              "addressFamilyCapabilities" : {
                 "additionalPathsReceive" : false,
                 "additionalPathsSelectAll" : false,
                 "additionalPathsSend" : false,
@@ -310,7 +310,7 @@
               }
             ],
             "ipv4UnicastAddressFamily" : {
-              "addressFamilySettings" : {
+              "addressFamilyCapabilities" : {
                 "additionalPathsReceive" : false,
                 "additionalPathsSelectAll" : false,
                 "additionalPathsSend" : false,
@@ -352,7 +352,7 @@
             "ebgpMultihop" : false,
             "enforceFirstAs" : false,
             "ipv4UnicastAddressFamily" : {
-              "addressFamilySettings" : {
+              "addressFamilyCapabilities" : {
                 "additionalPathsReceive" : false,
                 "additionalPathsSelectAll" : false,
                 "additionalPathsSend" : false,
@@ -360,7 +360,7 @@
                 "advertiseInactive" : false,
                 "allowLocalAsIn" : false,
                 "allowRemoteAsOut" : false,
-                "sendCommunity" : true
+                "sendCommunity" : false
               },
               "exportPolicy" : "~ACCEPT_ALL_EBGP_AND_SET_NEXT_HOP_SELF~",
               "importPolicy" : "~REJECT_ALL~"
@@ -383,7 +383,7 @@
             "ebgpMultihop" : false,
             "enforceFirstAs" : false,
             "ipv4UnicastAddressFamily" : {
-              "addressFamilySettings" : {
+              "addressFamilyCapabilities" : {
                 "additionalPathsReceive" : false,
                 "additionalPathsSelectAll" : false,
                 "additionalPathsSend" : false,
@@ -422,7 +422,7 @@
             "ebgpMultihop" : false,
             "enforceFirstAs" : false,
             "ipv4UnicastAddressFamily" : {
-              "addressFamilySettings" : {
+              "addressFamilyCapabilities" : {
                 "additionalPathsReceive" : false,
                 "additionalPathsSelectAll" : false,
                 "additionalPathsSend" : false,
@@ -453,7 +453,7 @@
             "ebgpMultihop" : false,
             "enforceFirstAs" : false,
             "ipv4UnicastAddressFamily" : {
-              "addressFamilySettings" : {
+              "addressFamilyCapabilities" : {
                 "additionalPathsReceive" : false,
                 "additionalPathsSelectAll" : false,
                 "additionalPathsSend" : false,
@@ -461,7 +461,7 @@
                 "advertiseInactive" : false,
                 "allowLocalAsIn" : false,
                 "allowRemoteAsOut" : false,
-                "sendCommunity" : true
+                "sendCommunity" : false
               },
               "exportPolicy" : "~ACCEPT_ALL_EBGP_AND_SET_NEXT_HOP_SELF~",
               "importPolicy" : "~REJECT_ALL~"
@@ -2872,7 +2872,7 @@
                   "enforceFirstAs" : false,
                   "group" : "FW",
                   "ipv4UnicastAddressFamily" : {
-                    "addressFamilySettings" : {
+                    "addressFamilyCapabilities" : {
                       "additionalPathsReceive" : false,
                       "additionalPathsSelectAll" : false,
                       "additionalPathsSend" : false,
@@ -2902,7 +2902,7 @@
                   "enforceFirstAs" : false,
                   "group" : "FW",
                   "ipv4UnicastAddressFamily" : {
-                    "addressFamilySettings" : {
+                    "addressFamilyCapabilities" : {
                       "additionalPathsReceive" : false,
                       "additionalPathsSelectAll" : false,
                       "additionalPathsSend" : false,
@@ -2927,7 +2927,7 @@
                   "ebgpMultihop" : false,
                   "enforceFirstAs" : false,
                   "ipv4UnicastAddressFamily" : {
-                    "addressFamilySettings" : {
+                    "addressFamilyCapabilities" : {
                       "additionalPathsReceive" : false,
                       "additionalPathsSelectAll" : false,
                       "additionalPathsSend" : false,
@@ -2956,7 +2956,7 @@
                   "ebgpMultihop" : false,
                   "enforceFirstAs" : false,
                   "ipv4UnicastAddressFamily" : {
-                    "addressFamilySettings" : {
+                    "addressFamilyCapabilities" : {
                       "additionalPathsReceive" : false,
                       "additionalPathsSelectAll" : false,
                       "additionalPathsSend" : false,
@@ -2992,7 +2992,7 @@
                     }
                   ],
                   "ipv4UnicastAddressFamily" : {
-                    "addressFamilySettings" : {
+                    "addressFamilyCapabilities" : {
                       "additionalPathsReceive" : false,
                       "additionalPathsSelectAll" : false,
                       "additionalPathsSend" : false,
@@ -3032,7 +3032,7 @@
                     }
                   ],
                   "ipv4UnicastAddressFamily" : {
-                    "addressFamilySettings" : {
+                    "addressFamilyCapabilities" : {
                       "additionalPathsReceive" : false,
                       "additionalPathsSelectAll" : false,
                       "additionalPathsSend" : false,
@@ -5331,7 +5331,7 @@
                   "ebgpMultihop" : false,
                   "enforceFirstAs" : false,
                   "ipv4UnicastAddressFamily" : {
-                    "addressFamilySettings" : {
+                    "addressFamilyCapabilities" : {
                       "additionalPathsReceive" : false,
                       "additionalPathsSelectAll" : false,
                       "additionalPathsSend" : false,
@@ -5355,7 +5355,7 @@
                   "ebgpMultihop" : false,
                   "enforceFirstAs" : false,
                   "ipv4UnicastAddressFamily" : {
-                    "addressFamilySettings" : {
+                    "addressFamilyCapabilities" : {
                       "additionalPathsReceive" : false,
                       "additionalPathsSelectAll" : false,
                       "additionalPathsSend" : false,
@@ -5379,7 +5379,7 @@
                   "ebgpMultihop" : false,
                   "enforceFirstAs" : false,
                   "ipv4UnicastAddressFamily" : {
-                    "addressFamilySettings" : {
+                    "addressFamilyCapabilities" : {
                       "additionalPathsReceive" : false,
                       "additionalPathsSelectAll" : false,
                       "additionalPathsSend" : false,
@@ -5387,7 +5387,7 @@
                       "advertiseInactive" : false,
                       "allowLocalAsIn" : false,
                       "allowRemoteAsOut" : false,
-                      "sendCommunity" : true
+                      "sendCommunity" : false
                     },
                     "exportPolicy" : "~ACCEPT_ALL_EBGP_AND_SET_NEXT_HOP_SELF~",
                     "importPolicy" : "~REJECT_ALL~"
@@ -5497,7 +5497,7 @@
                   "ebgpMultihop" : false,
                   "enforceFirstAs" : false,
                   "ipv4UnicastAddressFamily" : {
-                    "addressFamilySettings" : {
+                    "addressFamilyCapabilities" : {
                       "additionalPathsReceive" : false,
                       "additionalPathsSelectAll" : false,
                       "additionalPathsSend" : false,

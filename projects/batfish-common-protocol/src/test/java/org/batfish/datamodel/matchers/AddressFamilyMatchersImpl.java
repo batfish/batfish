@@ -6,7 +6,7 @@ import org.batfish.datamodel.bgp.AddressFamilyCapabilities;
 import org.hamcrest.FeatureMatcher;
 import org.hamcrest.Matcher;
 
-public final class AddressFamilyMatchersImpl {
+final class AddressFamilyMatchersImpl {
   static final class HasExportPolicy extends FeatureMatcher<AddressFamily, String> {
     HasExportPolicy(@Nonnull Matcher<? super String> subMatcher) {
       super(subMatcher, "A AddressFamily with exportPolicy:", "exportPolicy");

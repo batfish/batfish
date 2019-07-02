@@ -39,7 +39,7 @@ public final class BgpProtocolHelper {
    * @param toNeighbor {@link BgpPeerConfig} to which to export {@code route}
    * @param sessionProperties {@link BgpSessionProperties} representing the <em>incoming</em> edge:
    *     i.e. the edge from {@code toNeighbor} to {@code fromNeighbor}
-   * @param afType {@link AddressFamily.Type} the address family, for which to look up the settings
+   * @param afType {@link AddressFamily.Type} the address family for which to look up the settings
    */
   @Nullable
   public static <R extends BgpRoute<B, R>, B extends BgpRoute.Builder<B, R>>

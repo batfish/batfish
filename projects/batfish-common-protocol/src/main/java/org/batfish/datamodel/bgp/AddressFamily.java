@@ -12,6 +12,7 @@ import javax.annotation.ParametersAreNonnullByDefault;
 /** Base class for all BGP address family config */
 @ParametersAreNonnullByDefault
 public abstract class AddressFamily implements Serializable {
+  static final String PROP_ADDRESS_FAMILY_CAPABILITIES = "addressFamilyCapabilities";
   static final String PROP_EXPORT_POLICY = "exportPolicy";
   static final String PROP_EXPORT_POLICY_SOURCES = "exportPolicySources";
   static final String PROP_IMPORT_POLICY = "importPolicy";
@@ -38,6 +39,7 @@ public abstract class AddressFamily implements Serializable {
     _importPolicySources = importPolicySources;
   }
 
+  @JsonProperty(PROP_ADDRESS_FAMILY_CAPABILITIES)
   @Nonnull
   public AddressFamilyCapabilities getAddressFamilyCapabilities() {
     return _addressFamilyCapabilities;
@@ -98,27 +100,32 @@ public abstract class AddressFamily implements Serializable {
     @Nonnull protected SortedSet<String> _importPolicySources = ImmutableSortedSet.of();
     @Nonnull protected SortedSet<String> _exportPolicySources = ImmutableSortedSet.of();
 
+    @Nonnull
     public B setAddressFamilyCapabilities(
         @Nullable AddressFamilyCapabilities addressFamilyCapabilities) {
       _addressFamilyCapabilities = addressFamilyCapabilities;
       return getThis();
     }
 
+    @Nonnull
     public B setExportPolicy(@Nullable String exportPolicy) {
       _exportPolicy = exportPolicy;
       return getThis();
     }
 
+    @Nonnull
     public B setImportPolicy(@Nullable String importPolicy) {
       _importPolicy = importPolicy;
       return getThis();
     }
 
+    @Nonnull
     public B setImportPolicySources(SortedSet<String> importPolicySources) {
       _importPolicySources = importPolicySources;
       return getThis();
     }
 
+    @Nonnull
     public B setExportPolicySources(SortedSet<String> exportPolicySources) {
       _exportPolicySources = exportPolicySources;
       return getThis();

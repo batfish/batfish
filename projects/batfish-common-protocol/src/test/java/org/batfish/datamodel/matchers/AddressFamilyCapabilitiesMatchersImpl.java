@@ -5,7 +5,7 @@ import org.batfish.datamodel.bgp.AddressFamilyCapabilities;
 import org.hamcrest.FeatureMatcher;
 import org.hamcrest.Matcher;
 
-public final class AddressFamilyCapabilitiesMatchersImpl {
+final class AddressFamilyCapabilitiesMatchersImpl {
 
   static final class HasAllowLocalAsIn extends FeatureMatcher<AddressFamilyCapabilities, Boolean> {
     HasAllowLocalAsIn(@Nonnull Matcher<? super Boolean> subMatcher) {

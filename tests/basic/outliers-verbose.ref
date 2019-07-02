@@ -2416,7 +2416,7 @@
                 "enforceFirstAs" : false,
                 "group" : "as1",
                 "ipv4UnicastAddressFamily" : {
-                  "addressFamilySettings" : {
+                  "addressFamilyCapabilities" : {
                     "additionalPathsReceive" : true,
                     "additionalPathsSelectAll" : true,
                     "additionalPathsSend" : true,
@@ -2442,7 +2442,7 @@
                 "enforceFirstAs" : false,
                 "group" : "bad-ebgp",
                 "ipv4UnicastAddressFamily" : {
-                  "addressFamilySettings" : {
+                  "addressFamilyCapabilities" : {
                     "additionalPathsReceive" : true,
                     "additionalPathsSelectAll" : true,
                     "additionalPathsSend" : true,
@@ -2467,7 +2467,7 @@
                 "enforceFirstAs" : false,
                 "group" : "xanadu",
                 "ipv4UnicastAddressFamily" : {
-                  "addressFamilySettings" : {
+                  "addressFamilyCapabilities" : {
                     "additionalPathsReceive" : true,
                     "additionalPathsSelectAll" : true,
                     "additionalPathsSend" : true,
@@ -2492,7 +2492,7 @@
                 "enforceFirstAs" : false,
                 "group" : "as2",
                 "ipv4UnicastAddressFamily" : {
-                  "addressFamilySettings" : {
+                  "addressFamilyCapabilities" : {
                     "additionalPathsReceive" : true,
                     "additionalPathsSelectAll" : true,
                     "additionalPathsSend" : true,

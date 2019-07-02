@@ -2,7 +2,6 @@ package org.batfish.datamodel.bgp;
 
 import static com.google.common.base.MoreObjects.firstNonNull;
 import static com.google.common.base.Preconditions.checkArgument;
-import static org.batfish.datamodel.bgp.AddressFamilyCapabilities.PROP_ADDRESS_FAMILY_SETTINGS;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -18,7 +17,7 @@ import javax.annotation.ParametersAreNonnullByDefault;
 public final class Ipv4UnicastAddressFamily extends AddressFamily {
 
   private Ipv4UnicastAddressFamily(
-      @Nonnull AddressFamilyCapabilities addressFamilyCapabilities,
+      AddressFamilyCapabilities addressFamilyCapabilities,
       @Nullable String exportPolicy,
       SortedSet<String> exportPolicySources,
       @Nullable String importPolicy,
@@ -34,13 +33,14 @@ public final class Ipv4UnicastAddressFamily extends AddressFamily {
   @JsonCreator
   private static Ipv4UnicastAddressFamily jsonCreator(
       // super fields
-      @Nullable @JsonProperty(PROP_ADDRESS_FAMILY_SETTINGS)
+      @Nullable @JsonProperty(PROP_ADDRESS_FAMILY_CAPABILITIES)
           AddressFamilyCapabilities addressFamilyCapabilities,
       @Nullable @JsonProperty(PROP_EXPORT_POLICY) String exportPolicy,
       @Nullable @JsonProperty(PROP_EXPORT_POLICY_SOURCES) SortedSet<String> exportPolicySources,
       @Nullable @JsonProperty(PROP_IMPORT_POLICY) String importPolicy,
       @Nullable @JsonProperty(PROP_IMPORT_POLICY_SOURCES) SortedSet<String> importPolicySources) {
-    checkArgument(addressFamilyCapabilities != null, "Missing %s", PROP_ADDRESS_FAMILY_SETTINGS);
+    checkArgument(
+        addressFamilyCapabilities != null, "Missing %s", PROP_ADDRESS_FAMILY_CAPABILITIES);
     return new Ipv4UnicastAddressFamily(
         addressFamilyCapabilities,
         exportPolicy,
@@ -100,7 +100,8 @@ public final class Ipv4UnicastAddressFamily extends AddressFamily {
     @Nonnull
     @Override
     public Ipv4UnicastAddressFamily build() {
-      checkArgument(_addressFamilyCapabilities != null, "Missing %s", PROP_ADDRESS_FAMILY_SETTINGS);
+      checkArgument(
+          _addressFamilyCapabilities != null, "Missing %s", PROP_ADDRESS_FAMILY_CAPABILITIES);
       return new Ipv4UnicastAddressFamily(
           _addressFamilyCapabilities,
           _exportPolicy,

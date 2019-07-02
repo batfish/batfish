@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import org.batfish.common.BatfishException;
 import org.batfish.datamodel.BgpActivePeerConfig;
@@ -16,6 +17,7 @@ import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.LongSpace;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.RouteFilterLine;
+import org.batfish.datamodel.bgp.AddressFamily;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.routing_policy.expr.BooleanExpr;
 import org.batfish.datamodel.routing_policy.expr.CallExpr;
@@ -543,8 +545,12 @@ class Optimizations {
   private boolean isDefaultBgpExport(Configuration conf, BgpPeerConfig n) {
 
     // Check if valid neighbor
-    String exportPolicy = n.getIpv4UnicastAddressFamily().getExportPolicy();
-    if (n == null || exportPolicy == null) {
+    String exportPolicy =
+        Optional.ofNullable(n)
+            .map(BgpPeerConfig::getIpv4UnicastAddressFamily)
+            .map(AddressFamily::getExportPolicy)
+            .orElse(null);
+    if (exportPolicy == null) {
       return true;
     }
 

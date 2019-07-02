@@ -12,6 +12,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Optional;
 import java.util.Queue;
 import java.util.Set;
 import java.util.SortedMap;
@@ -40,6 +41,7 @@ import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.Topology;
 import org.batfish.datamodel.Vrf;
+import org.batfish.datamodel.bgp.AddressFamily;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.ospf.OspfArea;
 import org.batfish.datamodel.ospf.OspfProcess;
@@ -1142,13 +1144,11 @@ public class Graph {
     }
     if (proto.isBgp()) {
       BgpPeerConfig n = findBgpNeighbor(ge);
-      if (n == null
-          || n.getIpv4UnicastAddressFamily() == null
-          || n.getIpv4UnicastAddressFamily().getImportPolicy() == null) {
-        return null;
-      }
-      String importPolicy = n.getIpv4UnicastAddressFamily().getImportPolicy();
-      return conf.getRoutingPolicies().get(importPolicy);
+      return Optional.ofNullable(n)
+          .map(BgpPeerConfig::getIpv4UnicastAddressFamily)
+          .map(AddressFamily::getImportPolicy)
+          .map(policy -> conf.getRoutingPolicies().get(policy))
+          .orElse(null);
     }
     throw new BatfishException("TODO: findImportRoutingPolicy: " + proto.name());
   }
@@ -1175,14 +1175,12 @@ public class Graph {
     }
     if (proto.isBgp()) {
       BgpPeerConfig n = findBgpNeighbor(ge);
-      // if no neighbor (e.g., loopback), or no export policy
-      if (n == null
-          || n.getIpv4UnicastAddressFamily() == null
-          || n.getIpv4UnicastAddressFamily().getExportPolicy() == null) {
-        return null;
-      }
-      String exportPolicy = n.getIpv4UnicastAddressFamily().getExportPolicy();
-      return conf.getRoutingPolicies().get(exportPolicy);
+      // if no neighbor (e.g., loopback) or no export policy, return null
+      return Optional.ofNullable(n)
+          .map(BgpPeerConfig::getIpv4UnicastAddressFamily)
+          .map(AddressFamily::getExportPolicy)
+          .map(policy -> conf.getRoutingPolicies().get(policy))
+          .orElse(null);
     }
     throw new BatfishException("TODO: findExportRoutingPolicy for " + proto.name());
   }

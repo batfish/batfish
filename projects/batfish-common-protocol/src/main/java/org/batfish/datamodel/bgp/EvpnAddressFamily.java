@@ -2,7 +2,6 @@ package org.batfish.datamodel.bgp;
 
 import static com.google.common.base.MoreObjects.firstNonNull;
 import static com.google.common.base.Preconditions.checkArgument;
-import static org.batfish.datamodel.bgp.AddressFamilyCapabilities.PROP_ADDRESS_FAMILY_SETTINGS;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -29,7 +28,7 @@ public final class EvpnAddressFamily extends AddressFamily {
 
   protected EvpnAddressFamily(
       // super fields
-      @Nonnull AddressFamilyCapabilities addressFamilyCapabilities,
+      AddressFamilyCapabilities addressFamilyCapabilities,
       @Nullable String exportPolicy,
       SortedSet<String> exportPolicySources,
       @Nullable String importPolicy,
@@ -52,7 +51,7 @@ public final class EvpnAddressFamily extends AddressFamily {
   @JsonCreator
   private static EvpnAddressFamily create(
       // super fields
-      @Nullable @JsonProperty(PROP_ADDRESS_FAMILY_SETTINGS)
+      @Nullable @JsonProperty(PROP_ADDRESS_FAMILY_CAPABILITIES)
           AddressFamilyCapabilities addressFamilyCapabilities,
       @Nullable @JsonProperty(PROP_EXPORT_POLICY) String exportPolicy,
       @Nullable @JsonProperty(PROP_EXPORT_POLICY_SOURCES) SortedSet<String> exportPolicySources,
@@ -180,7 +179,8 @@ public final class EvpnAddressFamily extends AddressFamily {
     @Nonnull
     @Override
     public EvpnAddressFamily build() {
-      checkArgument(_addressFamilyCapabilities != null, "Missing %s", PROP_ADDRESS_FAMILY_SETTINGS);
+      checkArgument(
+          _addressFamilyCapabilities != null, "Missing %s", PROP_ADDRESS_FAMILY_CAPABILITIES);
       checkArgument(_propagateUnmatched != null, "Missing %s", PROP_PROPAGATE_UNMATCHED);
       return new EvpnAddressFamily(
           _addressFamilyCapabilities,

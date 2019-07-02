@@ -375,6 +375,7 @@ public class VpnConnection implements AwsVpcEntity, Serializable {
         String rpAcceptAllName = "~ACCEPT_ALL~";
         String originationPolicyName = vpnId + "_origination";
 
+        // CG peer config
         BgpActivePeerConfig.builder()
             .setPeerAddress(ipsecTunnel.getCgwInsideAddress())
             .setRemoteAs(ipsecTunnel.getCgwBgpAsn())
@@ -408,8 +409,9 @@ public class VpnConnection implements AwsVpcEntity, Serializable {
             vpcNode.getAllInterfaces().get(_vpnGatewayId).getConcreteAddress().getIp();
         Ip vgwToVpcIfaceAddress =
             vpnGatewayCfgNode.getAllInterfaces().get(vpcId).getConcreteAddress().getIp();
-        BgpActivePeerConfig.Builder vgwToVpcBuilder = BgpActivePeerConfig.builder();
-        vgwToVpcBuilder
+
+        // vgw to VPC
+        BgpActivePeerConfig.builder()
             .setPeerAddress(vpcIfaceAddress)
             .setRemoteAs(ipsecTunnel.getVgwBgpAsn())
             .setBgpProcess(proc)
@@ -418,8 +420,7 @@ public class VpnConnection implements AwsVpcEntity, Serializable {
             .setDefaultMetric(BGP_NEIGHBOR_DEFAULT_METRIC)
             .setIpv4UnicastAddressFamily(
                 Ipv4UnicastAddressFamily.builder()
-                    .setAddressFamilyCapabilities(
-                        AddressFamilyCapabilities.builder().setSendCommunity(true).build())
+                    .setAddressFamilyCapabilities(AddressFamilyCapabilities.builder().build())
                     .setExportPolicy(rpAcceptAllEbgpAndSetNextHopSelfName)
                     .setImportPolicy(rpRejectAllName)
                     .build())
@@ -430,6 +431,7 @@ public class VpnConnection implements AwsVpcEntity, Serializable {
         vpcNode.getDefaultVrf().setBgpProcess(vpcProc);
         vpcProc.setMultipathEquivalentAsPathMatchMode(
             MultipathEquivalentAsPathMatchMode.EXACT_PATH);
+        // VPC to vgw
         BgpActivePeerConfig.builder()
             .setPeerAddress(vgwToVpcIfaceAddress)
             .setBgpProcess(vpcProc)

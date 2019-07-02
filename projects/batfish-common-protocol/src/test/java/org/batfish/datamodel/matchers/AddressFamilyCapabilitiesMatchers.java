@@ -15,7 +15,7 @@ public final class AddressFamilyCapabilitiesMatchers {
    * Provides a matcher that matches if the {@link AddressFamilyCapabilities}'s allowLocalAsIn is
    * {@code value}.
    */
-  public static HasAllowLocalAsIn hasAllowLocalAsIn(boolean value) {
+  public static Matcher<AddressFamilyCapabilities> hasAllowLocalAsIn(boolean value) {
     return new HasAllowLocalAsIn(equalTo(value));
   }
 
@@ -23,7 +23,7 @@ public final class AddressFamilyCapabilitiesMatchers {
    * Provides a matcher that matches if the {@link AddressFamilyCapabilities}'s allowRemoteAsOut is
    * {@code value}.
    */
-  public static HasAllowRemoteAsOut hasAllowRemoteAsOut(boolean value) {
+  public static Matcher<AddressFamilyCapabilities> hasAllowRemoteAsOut(boolean value) {
     return new HasAllowRemoteAsOut(equalTo(value));
   }
 
