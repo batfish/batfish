@@ -27,6 +27,7 @@ import org.antlr.v4.runtime.tree.ErrorNode;
 import org.batfish.common.BatfishException;
 import org.batfish.common.Warnings;
 import org.batfish.common.Warnings.ParseWarning;
+import org.batfish.common.WillNotCommitException;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.IntegerSpace;
@@ -675,7 +676,9 @@ public class CumulusNcluConfigurationBuilder extends CumulusNcluParserBaseListen
     _currentBgpNeighborName = ctx.name.getText();
     _currentBgpNeighbor = _currentBgpVrf.getNeighbors().get(_currentBgpNeighborName);
 
-    assert _currentBgpNeighbor != null; // Ensure neighbor exists
+    if (_currentBgpNeighbor == null) {
+      throw new WillNotCommitException(getFullText(ctx));
+    }
     if (_currentBgpNeighbor.getIpv4UnicastAddressFamily() == null) {
       _currentBgpNeighbor.setIpv4UnicastAddressFamily(new BgpNeighborIpv4UnicastAddressFamily());
     }
@@ -949,7 +952,10 @@ public class CumulusNcluConfigurationBuilder extends CumulusNcluParserBaseListen
     _currentBgpNeighborName = ctx.name.getText();
     _currentBgpNeighbor = _currentBgpVrf.getNeighbors().get(_currentBgpNeighborName);
 
-    assert _currentBgpNeighbor != null; // Ensure neighbor exists
+    if (_currentBgpNeighbor == null) {
+      throw new WillNotCommitException(getFullText(ctx));
+    }
+
     if (_currentBgpNeighbor.getL2vpnEvpnAddressFamily() == null) {
       _currentBgpNeighbor.setL2vpnEvpnAddressFamily(new BgpNeighborL2vpnEvpnAddressFamily());
     }
