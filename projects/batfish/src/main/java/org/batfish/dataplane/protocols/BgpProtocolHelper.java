@@ -3,7 +3,6 @@ package org.batfish.dataplane.protocols;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import java.util.Set;
-import java.util.SortedSet;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -25,7 +24,6 @@ import org.batfish.datamodel.Route;
 import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.bgp.AddressFamily;
 import org.batfish.datamodel.bgp.AddressFamily.Type;
-import org.batfish.datamodel.bgp.community.Community;
 import org.batfish.datamodel.bgp.community.StandardCommunity;
 
 @ParametersAreNonnullByDefault
@@ -82,11 +80,12 @@ public final class BgpProtocolHelper {
         !sessionProperties.isEbgp()
             && toNeighbor.getAddressFamily(afType).getRouteReflectorClient());
 
-    SortedSet<Community> communities = route.getCommunities();
     AddressFamily af = fromNeighbor.getAddressFamily(afType);
+    assert af != null; // invariant of proper queue setup and route exchange for this AF type
+
     // Do not export route if it has NO_ADVERTISE community, or if its AS path contains the remote
     // peer's AS and local peer has not set getAllowRemoteOut
-    if (communities.contains(StandardCommunity.of(WellKnownCommunity.NO_ADVERTISE))
+    if (route.getCommunities().contains(StandardCommunity.of(WellKnownCommunity.NO_ADVERTISE))
         || (sessionProperties.isEbgp()
             && route.getAsPath().containsAs(toNeighbor.getLocalAs())
             && !af.getAddressFamilyCapabilities().getAllowRemoteAsOut())) {
@@ -94,10 +93,12 @@ public final class BgpProtocolHelper {
     }
 
     // Set transformed route's communities
+    builder.setCommunities(ImmutableSet.of());
     if (af.getAddressFamilyCapabilities().getSendCommunity()) {
-      builder.addCommunities(communities);
-    } else {
-      builder.setCommunities(ImmutableSet.of());
+      builder.addCommunities(route.getStandardCommunities());
+    }
+    if (af.getAddressFamilyCapabilities().getSendExtendedCommunity()) {
+      builder.addCommunities(route.getExtendedCommunities());
     }
 
     /*
