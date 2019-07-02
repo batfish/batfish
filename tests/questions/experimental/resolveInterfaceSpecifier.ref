@@ -22,12 +22,12 @@
       "interfaces" : {
         "description" : "Input to the interfaceSpecifier",
         "displayName" : "Interfaces",
-        "optional" : true,
+        "optional" : false,
         "type" : "interfacesSpec",
         "value" : "input"
       },
       "nodes" : {
-        "description" : "Input to the NodeSpecifier",
+        "description" : "Input to the NodeSpecifier that specifies the set of nodes that should be considered",
         "displayName" : "Nodes",
         "optional" : true,
         "type" : "nodeSpec",
