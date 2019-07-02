@@ -7,6 +7,7 @@ import static org.batfish.datamodel.Configuration.DEFAULT_VRF_NAME;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Range;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -20,8 +21,10 @@ import org.batfish.common.BatfishException;
 import org.batfish.common.VendorConversionException;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
+import org.batfish.datamodel.IntegerSpace;
 import org.batfish.datamodel.Interface.Dependency;
 import org.batfish.datamodel.Interface.DependencyType;
+import org.batfish.datamodel.InterfaceType;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.SwitchportMode;
 import org.batfish.datamodel.vendor_family.cisco_nxos.CiscoNxosFamily;
@@ -40,6 +43,8 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
    */
   private static final Map<String, String> CISCO_NXOS_INTERFACE_PREFIXES;
   private static final Pattern CISCO_NXOS_INTERFACE_PREFIXES_REGEX;
+  private static final IntegerSpace DEFAULT_RESERVED_VLAN_RANGE =
+      IntegerSpace.of(Range.closed(3968, 4094));
 
   static {
     CISCO_NXOS_INTERFACE_PREFIXES =
@@ -72,13 +77,15 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
   }
 
   private transient Configuration _c;
-
   private @Nullable String _hostname;
-
   private final @Nonnull Map<String, Interface> _interfaces;
+  private @Nonnull IntegerSpace _reservedVlanRange;
+  private final @Nonnull Map<Integer, Vlan> _vlans;
 
   public CiscoNxosConfiguration() {
     _interfaces = new HashMap<>();
+    _reservedVlanRange = DEFAULT_RESERVED_VLAN_RANGE;
+    _vlans = new HashMap<>();
   }
 
   @Override
@@ -113,6 +120,16 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
     return CiscoNxosFamily.builder().build();
   }
 
+  /** Disable Vlan interfaces without corresponding top-level vlan declaration. */
+  private void disableUnregisteredVlanInterfaces() {
+    _c.getAllInterfaces().values().stream()
+        .filter(
+            iface ->
+                iface.getInterfaceType() == InterfaceType.VLAN
+                    && !_vlans.keySet().contains(iface.getVlan()))
+        .forEach(iface -> iface.setActive(false));
+  }
+
   @Override
   public @Nullable String getHostname() {
     return _hostname;
@@ -122,9 +139,19 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
     return _interfaces;
   }
 
+  /** Range of VLAN IDs reserved by the system and therefore unassignable. */
+  public @Nonnull IntegerSpace getReservedVlanRange() {
+    return _reservedVlanRange;
+  }
+
+  public @Nonnull Map<Integer, Vlan> getVlans() {
+    return _vlans;
+  }
+
   private void markStructures() {
     markConcreteStructure(
         CiscoNxosStructureType.INTERFACE, CiscoNxosStructureUsage.INTERFACE_SELF_REFERENCE);
+    markConcreteStructure(CiscoNxosStructureType.VLAN, CiscoNxosStructureUsage.INTERFACE_VLAN);
   }
 
   @Override
@@ -179,12 +206,34 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
         // unsupported
         break;
     }
+    newIfaceBuilder.setVlan(iface.getVlan());
+    newIfaceBuilder.setAutoState(iface.getAutostate());
+
+    newIfaceBuilder.setType(toInterfaceType(iface.getType(), parent != null));
 
     org.batfish.datamodel.Interface newIface = newIfaceBuilder.build();
     String vrfName = firstNonNull(iface.getVrfMember(), DEFAULT_VRF_NAME);
     newIface.setVrf(_c.getVrfs().get(vrfName));
     newIface.setOwner(_c);
     return newIface;
+  }
+
+  private @Nonnull InterfaceType toInterfaceType(
+      CiscoNxosInterfaceType type, boolean subinterface) {
+    switch (type) {
+      case ETHERNET:
+        return subinterface ? InterfaceType.LOGICAL : InterfaceType.PHYSICAL;
+      case LOOPBACK:
+        return InterfaceType.LOOPBACK;
+      case MGMT:
+        return InterfaceType.PHYSICAL;
+      case PORT_CHANNEL:
+        return subinterface ? InterfaceType.AGGREGATE_CHILD : InterfaceType.AGGREGATED;
+      case VLAN:
+        return InterfaceType.VLAN;
+      default:
+        return InterfaceType.UNKNOWN;
+    }
   }
 
   private @Nonnull Configuration toVendorIndependentConfiguration() {
@@ -195,6 +244,7 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
 
     convertVrfs();
     convertInterfaces();
+    disableUnregisteredVlanInterfaces();
 
     markStructures();
     return _c;

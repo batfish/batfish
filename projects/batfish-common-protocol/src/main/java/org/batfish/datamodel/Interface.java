@@ -42,6 +42,7 @@ public final class Interface extends ComparableStructure<String> {
     private boolean _active;
     private InterfaceAddress _address;
     private @Nullable IntegerSpace _allowedVlans;
+    private boolean _autoState;
     @Nullable private Double _bandwidth;
     private boolean _blacklisted;
     private SortedSet<String> _declaredNames;
@@ -83,6 +84,7 @@ public final class Interface extends ComparableStructure<String> {
       super(networkFactory, Interface.class);
       _active = true;
       _additionalArpIps = EmptyIpSpace.INSTANCE;
+      _autoState = true;
       _declaredNames = ImmutableSortedSet.of();
       _hsrpGroups = ImmutableMap.of();
       _secondaryAddresses = ImmutableSet.of();
@@ -111,6 +113,7 @@ public final class Interface extends ComparableStructure<String> {
       if (_allowedVlans != null) {
         iface.setAllowedVlans(_allowedVlans);
       }
+      iface.setAutoState(_autoState);
       iface.setBandwidth(_bandwidth);
       iface.setBlacklisted(_blacklisted);
       iface.setDeclaredNames(_declaredNames);
@@ -232,6 +235,11 @@ public final class Interface extends ComparableStructure<String> {
 
     public @Nonnull Builder setAllowedVlans(@Nullable IntegerSpace allowedVlans) {
       _allowedVlans = allowedVlans;
+      return this;
+    }
+
+    public @Nonnull Builder setAutoState(boolean autoState) {
+      _autoState = autoState;
       return this;
     }
 
