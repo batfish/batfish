@@ -111,6 +111,7 @@ public class InitIssuesAnswerer extends Answerer {
         case PARTIALLY_UNRECOGNIZED:
           // Other issues are already in the table for these files (e.g. stack trace, parse warn)
           continue;
+        case WILL_NOT_COMMIT:
         default:
           rows.add(
               getRow(
