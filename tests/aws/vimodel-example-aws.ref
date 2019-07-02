@@ -70,7 +70,7 @@
                 "advertiseInactive" : false,
                 "allowLocalAsIn" : false,
                 "allowRemoteAsOut" : false,
-                "sendCommunity" : true
+                "sendCommunity" : false
               },
               "exportPolicy" : "vpn-ba2e34a8-2_origination"
             },
@@ -154,7 +154,7 @@
                 "advertiseInactive" : false,
                 "allowLocalAsIn" : false,
                 "allowRemoteAsOut" : false,
-                "sendCommunity" : true
+                "sendCommunity" : false
               },
               "exportPolicy" : "vpn-ba2e34a8-1_origination"
             },
@@ -192,7 +192,7 @@
                 "advertiseInactive" : false,
                 "allowLocalAsIn" : false,
                 "allowRemoteAsOut" : false,
-                "sendCommunity" : true
+                "sendCommunity" : false
               },
               "exportPolicy" : "vpn-ba2e34a8-2_origination"
             },
@@ -276,7 +276,7 @@
                 "advertiseInactive" : false,
                 "allowLocalAsIn" : false,
                 "allowRemoteAsOut" : false,
-                "sendCommunity" : true
+                "sendCommunity" : false
               },
               "exportPolicy" : "vpn-ba2e34a8-1_origination"
             },
@@ -360,7 +360,7 @@
                 "advertiseInactive" : false,
                 "allowLocalAsIn" : false,
                 "allowRemoteAsOut" : false,
-                "sendCommunity" : false
+                "sendCommunity" : true
               },
               "exportPolicy" : "~ACCEPT_ALL_EBGP_AND_SET_NEXT_HOP_SELF~",
               "importPolicy" : "~REJECT_ALL~"
@@ -461,7 +461,7 @@
                 "advertiseInactive" : false,
                 "allowLocalAsIn" : false,
                 "allowRemoteAsOut" : false,
-                "sendCommunity" : false
+                "sendCommunity" : true
               },
               "exportPolicy" : "~ACCEPT_ALL_EBGP_AND_SET_NEXT_HOP_SELF~",
               "importPolicy" : "~REJECT_ALL~"
@@ -5339,7 +5339,7 @@
                       "advertiseInactive" : false,
                       "allowLocalAsIn" : false,
                       "allowRemoteAsOut" : false,
-                      "sendCommunity" : true
+                      "sendCommunity" : false
                     },
                     "exportPolicy" : "vpn-ba2e34a8-2_origination"
                   },
@@ -5363,7 +5363,7 @@
                       "advertiseInactive" : false,
                       "allowLocalAsIn" : false,
                       "allowRemoteAsOut" : false,
-                      "sendCommunity" : true
+                      "sendCommunity" : false
                     },
                     "exportPolicy" : "vpn-ba2e34a8-1_origination"
                   },
@@ -5387,7 +5387,7 @@
                       "advertiseInactive" : false,
                       "allowLocalAsIn" : false,
                       "allowRemoteAsOut" : false,
-                      "sendCommunity" : false
+                      "sendCommunity" : true
                     },
                     "exportPolicy" : "~ACCEPT_ALL_EBGP_AND_SET_NEXT_HOP_SELF~",
                     "importPolicy" : "~REJECT_ALL~"

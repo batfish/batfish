@@ -386,7 +386,7 @@ public class VpnConnection implements AwsVpcEntity, Serializable {
             .setIpv4UnicastAddressFamily(
                 Ipv4UnicastAddressFamily.builder()
                     .setAddressFamilyCapabilities(
-                        AddressFamilyCapabilities.builder().setSendCommunity(true).build())
+                        AddressFamilyCapabilities.builder().setSendCommunity(false).build())
                     .setExportPolicy(originationPolicyName)
                     .build())
             .build();
@@ -420,7 +420,8 @@ public class VpnConnection implements AwsVpcEntity, Serializable {
             .setDefaultMetric(BGP_NEIGHBOR_DEFAULT_METRIC)
             .setIpv4UnicastAddressFamily(
                 Ipv4UnicastAddressFamily.builder()
-                    .setAddressFamilyCapabilities(AddressFamilyCapabilities.builder().build())
+                    .setAddressFamilyCapabilities(
+                        AddressFamilyCapabilities.builder().setSendCommunity(true).build())
                     .setExportPolicy(rpAcceptAllEbgpAndSetNextHopSelfName)
                     .setImportPolicy(rpRejectAllName)
                     .build())
