@@ -22,7 +22,7 @@
       "ips" : {
         "description" : "Input to the IP space specifier",
         "displayName" : "IP specifier input",
-        "optional" : true,
+        "optional" : false,
         "type" : "ipSpaceSpec",
         "value" : "1.1.1.1/24"
       }
