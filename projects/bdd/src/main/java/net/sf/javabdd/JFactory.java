@@ -251,6 +251,14 @@ public final class JFactory extends BDDFactory {
     }
 
     @Override
+    public boolean diffSat(BDD that) {
+      if (applycache == null) {
+        applycache = BddCacheI_init(cachesize);
+      }
+      return diffsat_rec(_index, ((BDDImpl) that)._index);
+    }
+
+    @Override
     public BDD apply(BDD that, BDDOp opr) {
       int x = _index;
       int y = ((BDDImpl) that)._index;
@@ -874,6 +882,7 @@ public final class JFactory extends BDDFactory {
   private static final int bddop_not = 10;
   private static final int bddop_simplify = 11;
   private static final int bddop_andsat = 12;
+  private static final int bddop_diffsat = 13;
 
   @Override
   public BDD orAll(BDD... bddOperands) {
@@ -1472,6 +1481,48 @@ public final class JFactory extends BDDFactory {
     entry.b = r;
     entry.c = bddop_and;
     entry.res = res;
+
+    return res;
+  }
+
+  private boolean diffsat_rec(int l, int r) {
+    if (ISZERO(l) || ISONE(r)) {
+      return false;
+    } else if (ISONE(l) || ISZERO(r)) {
+      return true;
+    } else if (l == r) {
+      return false;
+    }
+
+    // TODO: should we also check for diff? For now, don't since diff_sat should be real fast.
+    BddCacheDataI entry = BddCache_lookupI(applycache, APPLYHASH(l, r, bddop_diffsat));
+    if (entry.a == l && entry.b == r && entry.c == bddop_diffsat) {
+      if (CACHESTATS) {
+        cachestats.opHit++;
+      }
+      // We set entry.res to BDDZERO for false and BDDONE for true.
+      return entry.res == BDDONE;
+    }
+    if (CACHESTATS) {
+      cachestats.opMiss++;
+    }
+
+    boolean res;
+    if (LEVEL(l) == LEVEL(r)) {
+      res = diffsat_rec(LOW(l), LOW(r)) || diffsat_rec(HIGH(l), HIGH(r));
+    } else if (LEVEL(l) < LEVEL(r)) {
+      res = diffsat_rec(LOW(l), r) || diffsat_rec(HIGH(l), r);
+    } else {
+      res = diffsat_rec(l, LOW(r)) || diffsat_rec(l, HIGH(r));
+    }
+
+    if (CACHESTATS && entry.a != -1) {
+      cachestats.opOverwrite++;
+    }
+    entry.a = l;
+    entry.b = r;
+    entry.c = bddop_diffsat;
+    entry.res = res ? BDDONE : BDDZERO;
 
     return res;
   }

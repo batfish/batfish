@@ -1588,14 +1588,14 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
                       IpSpace rightIpSpace = rightIfaceMap.get(iface);
                       BDD bdd = toBDD.visit(ipSpace);
                       BDD rightBDD = toBDD.visit(rightIpSpace);
-                      assert bdd.diff(rightBDD).isZero()
+                      assert !bdd.diffSat(rightBDD)
                           : "Left BDDs larger for node "
                               + node
                               + " VRF "
                               + vrf
                               + " interface "
                               + iface;
-                      assert rightBDD.diff(bdd).isZero()
+                      assert !rightBDD.diffSat(bdd)
                           : "Right BDDs larger for node "
                               + node
                               + " VRF "
