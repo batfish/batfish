@@ -52,6 +52,7 @@ import org.batfish.datamodel.matchers.InterfaceMatchersImpl.HasVrf;
 import org.batfish.datamodel.matchers.InterfaceMatchersImpl.HasVrfName;
 import org.batfish.datamodel.matchers.InterfaceMatchersImpl.HasZoneName;
 import org.batfish.datamodel.matchers.InterfaceMatchersImpl.IsActive;
+import org.batfish.datamodel.matchers.InterfaceMatchersImpl.IsAutoState;
 import org.batfish.datamodel.matchers.InterfaceMatchersImpl.IsOspfPassive;
 import org.batfish.datamodel.matchers.InterfaceMatchersImpl.IsOspfPointToPoint;
 import org.batfish.datamodel.matchers.InterfaceMatchersImpl.IsProxyArp;
@@ -433,6 +434,24 @@ public final class InterfaceMatchers {
    */
   public static IsActive isActive(@Nonnull Matcher<? super Boolean> subMatcher) {
     return new IsActive(subMatcher);
+  }
+
+  /** A matcher that matches if the interface's autoState flag is {@code true}. */
+  public static @Nonnull Matcher<Interface> isAutoState() {
+    return isAutoState(true);
+  }
+
+  /** A matcher that matches if the interface's autoState flag is {@code expectedAutoState}. */
+  public static @Nonnull Matcher<Interface> isAutoState(boolean expectedAutoState) {
+    return isAutoState(equalTo(expectedAutoState));
+  }
+
+  /**
+   * A matcher that matches if the interface's autoState flag matches the provided {@code
+   * subMatcher}.
+   */
+  public static Matcher<Interface> isAutoState(Matcher<? super Boolean> subMatcher) {
+    return new IsAutoState(subMatcher);
   }
 
   /** Provides a matcher that matches if the interface runs OSPF in passive mode. */

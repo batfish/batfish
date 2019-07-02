@@ -1,7 +1,14 @@
 package org.batfish.grammar.cisco_nxos;
 
 import static org.batfish.representation.cisco_nxos.CiscoNxosConfiguration.getCanonicalInterfaceNamePrefix;
+import static org.batfish.representation.cisco_nxos.CiscoNxosInterfaceType.ETHERNET;
+import static org.batfish.representation.cisco_nxos.CiscoNxosInterfaceType.LOOPBACK;
+import static org.batfish.representation.cisco_nxos.CiscoNxosInterfaceType.MGMT;
+import static org.batfish.representation.cisco_nxos.CiscoNxosInterfaceType.PORT_CHANNEL;
+import static org.batfish.representation.cisco_nxos.CiscoNxosInterfaceType.VLAN;
 import static org.batfish.representation.cisco_nxos.Interface.VLAN_RANGE;
+import static org.batfish.representation.cisco_nxos.Interface.newNonVlanInterface;
+import static org.batfish.representation.cisco_nxos.Interface.newVlanInterface;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Range;
@@ -27,6 +34,7 @@ import org.batfish.grammar.UnrecognizedLineToken;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Cisco_nxos_configurationContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.I_encapsulationContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.I_ip_addressContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.I_no_autostateContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.I_no_shutdownContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.I_no_switchportContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.I_switchport_accessContext;
@@ -35,26 +43,25 @@ import org.batfish.grammar.cisco_nxos.CiscoNxosParser.I_switchport_trunk_nativeC
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Interface_addressContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Interface_prefixContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Ip_addressContext;
-import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Restricted_vlan_idContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.S_hostnameContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.S_interfaceContext;
-import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Uint8Context;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Uint16Context;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Vlan_idContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Vlan_id_rangeContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Vlan_vlanContext;
 import org.batfish.representation.cisco_nxos.CiscoNxosConfiguration;
 import org.batfish.representation.cisco_nxos.CiscoNxosInterfaceType;
 import org.batfish.representation.cisco_nxos.CiscoNxosStructureType;
 import org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage;
 import org.batfish.representation.cisco_nxos.Interface;
+import org.batfish.representation.cisco_nxos.Vlan;
 import org.batfish.vendor.VendorConfiguration;
 
 @ParametersAreNonnullByDefault
 public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseListener
     implements ControlPlaneExtractor {
 
-  private static final IntegerSpace RESTRICTED_VLAN_RANGE = IntegerSpace.of(Range.closed(1, 3967));
-
-  private static int toInteger(Uint8Context ctx) {
+  private static int toInteger(Uint16Context ctx) {
     return Integer.parseInt(ctx.getText());
   }
 
@@ -71,6 +78,11 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
 
   private @Nullable CiscoNxosConfiguration _configuration;
   private @Nullable List<Interface> _currentInterfaces;
+  private @Nullable IntegerSpace _currentValidVlanRange;
+
+  @SuppressWarnings("unused")
+  private @Nullable List<Vlan> _currentVlans;
+
   private final CiscoNxosCombinedParser _parser;
   private @Nonnull final String _text;
   private @Nonnull final Warnings _w;
@@ -95,6 +107,7 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
   @Override
   public void enterCisco_nxos_configuration(Cisco_nxos_configurationContext ctx) {
     _configuration = new CiscoNxosConfiguration();
+    _currentValidVlanRange = VLAN_RANGE.difference(_configuration.getReservedVlanRange());
   }
 
   @Override
@@ -125,32 +138,95 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
                 "%s%s%s", canonicalPrefix, middle, ctx.irange.iname.parent_suffix.num.getText());
     int first = toInteger(ctx.irange.iname.first);
     int last = ctx.irange.last != null ? toInteger(ctx.irange.last) : first;
+
+    // flip first and last if range is backwards
+    if (last < first) {
+      int tmp = last;
+      last = first;
+      first = tmp;
+    }
+
+    // disallow subinterfaces except for physical and port-channel interfaces
+    if (type != ETHERNET && type != PORT_CHANNEL && parentInterface != null) {
+      _w.redFlag(
+          String.format(
+              "Cannot construct subinterface for interface type '%s' in: %s",
+              type, getFullText(ctx)));
+      _currentInterfaces = ImmutableList.of();
+      return;
+    }
+
+    // Validate VLAN numbers
+    if (type == VLAN
+        && !_currentValidVlanRange.contains(IntegerSpace.of(Range.closed(first, last)))) {
+      _w.redFlag(
+          String.format(
+              "Vlan number(s) outside of range %s in Vlan interface declaration: %s",
+              _currentValidVlanRange, getFullText(ctx)));
+      _currentInterfaces = ImmutableList.of();
+      return;
+    }
+
     _currentInterfaces =
         IntStream.range(first, last + 1)
-            .mapToObj(i -> lead + i)
-            .map(
-                ifaceName ->
-                    _configuration
-                        .getInterfaces()
-                        .computeIfAbsent(
-                            ifaceName,
-                            n -> {
-                              _configuration.defineStructure(
-                                  CiscoNxosStructureType.INTERFACE, n, line);
+            .mapToObj(
+                i -> {
+                  String ifaceName = lead + i;
+                  return _configuration
+                      .getInterfaces()
+                      .computeIfAbsent(
+                          ifaceName,
+                          n -> {
+                            _configuration.defineStructure(
+                                CiscoNxosStructureType.INTERFACE, n, line);
+                            _configuration.referenceStructure(
+                                CiscoNxosStructureType.INTERFACE,
+                                n,
+                                CiscoNxosStructureUsage.INTERFACE_SELF_REFERENCE,
+                                line);
+                            if (type == VLAN) {
                               _configuration.referenceStructure(
-                                  CiscoNxosStructureType.INTERFACE,
-                                  n,
-                                  CiscoNxosStructureUsage.INTERFACE_SELF_REFERENCE,
+                                  CiscoNxosStructureType.VLAN,
+                                  Integer.toString(i),
+                                  CiscoNxosStructureUsage.INTERFACE_VLAN,
                                   line);
-                              return new Interface(n, parentInterface, type);
-                            }))
+                              return newVlanInterface(n, i);
+                            } else {
+                              return newNonVlanInterface(n, parentInterface, type);
+                            }
+                          });
+                })
             .collect(ImmutableList.toImmutableList());
     _currentInterfaces.forEach(i -> i.getDeclaredNames().add(declaredName));
   }
 
   @Override
+  public void enterVlan_vlan(Vlan_vlanContext ctx) {
+    IntegerSpace vlans = toVlanIdRange(ctx, ctx.vlans);
+    int line = ctx.getStart().getLine();
+    if (vlans == null) {
+      _currentVlans = ImmutableList.of();
+      return;
+    }
+    _currentVlans =
+        vlans.stream()
+            .map(
+                vlanId ->
+                    _configuration
+                        .getVlans()
+                        .computeIfAbsent(
+                            vlanId,
+                            id -> {
+                              _configuration.defineStructure(
+                                  CiscoNxosStructureType.VLAN, Integer.toString(id), line);
+                              return new Vlan(id);
+                            }))
+            .collect(ImmutableList.toImmutableList());
+  }
+
+  @Override
   public void exitI_encapsulation(I_encapsulationContext ctx) {
-    Integer vlanId = toRestrictedVlanId(ctx, ctx.vlan);
+    Integer vlanId = toVlanId(ctx, ctx.vlan);
     if (vlanId == null) {
       return;
     }
@@ -170,6 +246,11 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
   }
 
   @Override
+  public void exitI_no_autostate(I_no_autostateContext ctx) {
+    _currentInterfaces.forEach(iface -> iface.setAutostate(false));
+  }
+
+  @Override
   public void exitI_no_shutdown(I_no_shutdownContext ctx) {
     _currentInterfaces.forEach(iface -> iface.setShutdown(false));
   }
@@ -181,7 +262,7 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
 
   @Override
   public void exitI_switchport_access(I_switchport_accessContext ctx) {
-    Integer vlanId = toRestrictedVlanId(ctx, ctx.vlan);
+    Integer vlanId = toVlanId(ctx, ctx.vlan);
     if (vlanId == null) {
       return;
     }
@@ -207,7 +288,7 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
         // invalid VLAN to exclude
         return;
       }
-      vlans = VLAN_RANGE.difference(IntegerSpace.of(except));
+      vlans = _currentValidVlanRange.difference(IntegerSpace.of(except));
     } else if (ctx.NONE() != null) {
       vlans = IntegerSpace.EMPTY;
     } else {
@@ -229,7 +310,7 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
 
   @Override
   public void exitI_switchport_trunk_native(I_switchport_trunk_nativeContext ctx) {
-    Integer vlanId = toRestrictedVlanId(ctx, ctx.vlan);
+    Integer vlanId = toVlanId(ctx, ctx.vlan);
     if (vlanId == null) {
       return;
     }
@@ -248,6 +329,11 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
   @Override
   public void exitS_interface(S_interfaceContext ctx) {
     _currentInterfaces = null;
+  }
+
+  @Override
+  public void exitVlan_vlan(Vlan_vlanContext ctx) {
+    _currentVlans = null;
   }
 
   private @Nonnull String getFullText(ParserRuleContext ctx) {
@@ -271,39 +357,28 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
     _w.todo(ctx, getFullText(ctx), _parser);
   }
 
-  private @Nullable Integer toRestrictedVlanId(
-      ParserRuleContext messageCtx, Restricted_vlan_idContext ctx) {
-    int vlan = Integer.parseInt(ctx.getText());
-    if (!RESTRICTED_VLAN_RANGE.contains(vlan)) {
-      _w.redFlag(
-          String.format(
-              "Expected VLAN in range %s, but got '%d' in: %s",
-              RESTRICTED_VLAN_RANGE, vlan, getFullText(messageCtx)));
-      return null;
-    }
-    return vlan;
-  }
-
   private @Nullable CiscoNxosInterfaceType toType(Interface_prefixContext ctx) {
     if (ctx.ETHERNET() != null) {
-      return CiscoNxosInterfaceType.ETHERNET;
+      return ETHERNET;
     } else if (ctx.LOOPBACK() != null) {
-      return CiscoNxosInterfaceType.LOOPBACK;
+      return LOOPBACK;
     } else if (ctx.MGMT() != null) {
-      return CiscoNxosInterfaceType.MGMT;
+      return MGMT;
     } else if (ctx.PORT_CHANNEL() != null) {
-      return CiscoNxosInterfaceType.PORT_CHANNEL;
+      return PORT_CHANNEL;
+    } else if (ctx.VLAN() != null) {
+      return VLAN;
     }
     return convProblem(CiscoNxosInterfaceType.class, ctx, null);
   }
 
   private @Nullable Integer toVlanId(ParserRuleContext messageCtx, Vlan_idContext ctx) {
     int vlan = Integer.parseInt(ctx.getText());
-    if (!VLAN_RANGE.contains(vlan)) {
+    if (!_currentValidVlanRange.contains(vlan)) {
       _w.redFlag(
           String.format(
               "Expected VLAN in range %s, but got '%d' in: %s",
-              VLAN_RANGE, vlan, getFullText(messageCtx)));
+              _currentValidVlanRange, vlan, getFullText(messageCtx)));
       return null;
     }
     return vlan;
@@ -313,11 +388,11 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
       ParserRuleContext messageCtx, Vlan_id_rangeContext ctx) {
     String rangeText = ctx.getText();
     IntegerSpace value = IntegerSpace.parse(rangeText);
-    if (!VLAN_RANGE.contains(value)) {
+    if (!_currentValidVlanRange.contains(value)) {
       _w.redFlag(
           String.format(
               "Expected VLANs in range %s, but got '%s' in: %s",
-              VLAN_RANGE, rangeText, getFullText(messageCtx)));
+              _currentValidVlanRange, rangeText, getFullText(messageCtx)));
       return null;
     }
     return value;

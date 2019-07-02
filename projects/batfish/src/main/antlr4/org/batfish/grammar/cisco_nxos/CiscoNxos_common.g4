@@ -13,7 +13,7 @@ interface_address
 interface_name
 :
   prefix = interface_prefix middle = interface_middle? parent_suffix =
-  interface_parent_suffix? first = uint8
+  interface_parent_suffix? first = uint16
 ;
 
 interface_prefix
@@ -22,6 +22,7 @@ interface_prefix
   | LOOPBACK
   | MGMT
   | PORT_CHANNEL
+  | VLAN
 ;
 
 interface_middle
@@ -33,7 +34,7 @@ interface_middle
 
 interface_parent_suffix
 :
-  num = uint8 period = PERIOD
+  num = uint16 period = PERIOD
 ;
 
 ip_address
@@ -65,4 +66,27 @@ uint16
 :
   UINT8
   | UINT16
+;
+
+vlan_id
+:
+// 1-4094
+  UINT8
+  | UINT16
+;
+
+vlan_id_range
+:
+  intervals += vlan_id_interval
+  (
+    COMMA intervals += vlan_id_interval
+  )*
+;
+
+vlan_id_interval
+:
+  low = vlan_id
+  (
+    DASH high = vlan_id
+  )?
 ;

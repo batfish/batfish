@@ -13,6 +13,16 @@ ACCESS
   'access'
 ;
 
+ACCESS_GROUP
+:
+  'access-group'
+;
+
+ACCESS_MAP
+:
+  'access-map'
+;
+
 ADD
 :
   'add'
@@ -28,9 +38,19 @@ ALLOWED
   'allowed'
 ;
 
+AUTOSTATE
+:
+  'autostate'
+;
+
+CONFIGURATION
+:
+  'configuration'
+;
+
 DOT1Q
 :
-  'dot1q'
+  [Dd] [Oo] [Tt] '1' [Qq]
 ;
 
 ENCAPSULATION
@@ -48,9 +68,29 @@ EXCEPT
   'except'
 ;
 
+EXPLICIT_TRACKING
+:
+  'explicit-tracking'
+;
+
+FAST_LEAVE
+:
+  'fast-leave'
+;
+
 FEATURE
 :
   'feature'
+;
+
+FILTER
+:
+  'filter'
+;
+
+GROUP_TIMEOUT
+:
+  'group-timeout'
 ;
 
 HOSTNAME
@@ -91,6 +131,16 @@ IP_PREFIX
   F_IpPrefix
 ;
 
+LAST_MEMBER_QUERY_INTERVAL
+:
+  'last-member-query-interval'
+;
+
+LINK_LOCAL_GROUPS_SUPPRESSION
+:
+  'link-local-groups-suppression'
+;
+
 LOOPBACK
 :
 // most common abbreviation
@@ -100,9 +150,24 @@ LOOPBACK
   )?
 ;
 
+MEDIA
+:
+  'media'
+;
+
 MGMT
 :
   [Mm] [Gg] [Mm] [Tt]
+;
+
+MROUTER
+:
+  'mrouter'
+;
+
+NAME
+:
+  'name'
 ;
 
 NATIVE
@@ -125,6 +190,36 @@ PORT_CHANNEL
   [Pp] [Oo] [Rr] [Tt] '-' [Cc] [Hh] [Aa] [Nn] [Nn] [Ee] [Ll]
 ;
 
+PROXY
+:
+  'proxy'
+;
+
+PROXY_LEAVE
+:
+  'proxy-leave'
+;
+
+QUERIER
+:
+  'querier'
+;
+
+QUERIER_TIMEOUT
+:
+  'querier-timeout'
+;
+
+QUERY_INTERVAL
+:
+  'query-interval'
+;
+
+QUERY_MAX_RESPONSE_TIME
+:
+  'query-max-response-time'
+;
+
 REDIRECTS
 :
   'redirects'
@@ -133,6 +228,26 @@ REDIRECTS
 REMOVE
 :
   'remove'
+;
+
+REPORT_FLOOD
+:
+  'report-flood'
+;
+
+REPORT_POLICY
+:
+  'report-policy'
+;
+
+REPORT_SUPPRESSION
+:
+  'report-suppression'
+;
+
+ROBUSTNESS_VARIABLE
+:
+  'robustness-variable'
 ;
 
 SECONDARY
@@ -145,6 +260,26 @@ SHUTDOWN
   'shutdown'
 ;
 
+STARTUP_QUERY_COUNT
+:
+  'startup-query-count'
+;
+
+STARTUP_QUERY_INTERVAL
+:
+  'startup-query-interval'
+;
+
+STATE
+:
+  'state'
+;
+
+STATIC_GROUP
+:
+  'static-group'
+;
+
 SWITCHPORT
 :
   'switchport'
@@ -155,9 +290,24 @@ TRUNK
   'trunk'
 ;
 
+V3_REPORT_SUPPRESSION
+:
+  'v3-report-suppression'
+;
+
+VERSION
+:
+  'version'
+;
+
 VLAN
 :
-  'vlan'
+  [Vv] [Ll] [Aa] [Nn]
+;
+
+XCONNECT
+:
+  'xconnect'
 ;
 
 // Other Tokens
