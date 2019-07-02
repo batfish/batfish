@@ -79,7 +79,10 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
   private @Nullable CiscoNxosConfiguration _configuration;
   private @Nullable List<Interface> _currentInterfaces;
   private @Nullable IntegerSpace _currentValidVlanRange;
+
+  @SuppressWarnings("unused")
   private @Nullable List<Vlan> _currentVlans;
+
   private final CiscoNxosCombinedParser _parser;
   private @Nonnull final String _text;
   private @Nonnull final Warnings _w;
