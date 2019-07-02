@@ -14,7 +14,6 @@
         "variables": {
             "filters": {
                 "description": "Input to the FilterSpecifier",
-                "optional": true,
                 "type": "filterSpec",
                 "displayName": "Filters"
             },
@@ -25,8 +24,9 @@
                 "displayName": "Grammar version"               
             },
             "nodes": {
-                "description": "Input to the NodeSpecifier",
+                "description": "Input to the NodeSpecifier that specifies the set of nodes that should be considered",
                 "optional": true,
+                "default": "/.*/",
                 "type": "nodeSpec",
                 "displayName": "Nodes"
             }
