@@ -20,7 +20,6 @@
             "ips": {
                 "description": "Input to the IP space specifier",
                 "optional": true,
-                "value": "",
                 "type": "ipSpaceSpec",
                 "displayName": "IP specifier input"
             }
