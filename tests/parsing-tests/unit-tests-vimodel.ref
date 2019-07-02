@@ -13621,35 +13621,6 @@
             "type" : "AGGREGATED",
             "vrf" : "default"
           },
-          "bond1.4094" : {
-            "name" : "bond1.4094",
-            "active" : true,
-            "additionalArpIps" : {
-              "class" : "org.batfish.datamodel.EmptyIpSpace"
-            },
-            "allPrefixes" : [
-              "192.0.2.6/24"
-            ],
-            "allowedVlans" : "",
-            "autostate" : true,
-            "encapsulationVlan" : 4094,
-            "mtu" : 1500,
-            "ospfDeadInterval" : 0,
-            "ospfEnabled" : false,
-            "ospfHelloMultiplier" : 0,
-            "ospfPassive" : false,
-            "ospfPointToPoint" : false,
-            "prefix" : "192.0.2.6/24",
-            "proxyArp" : false,
-            "ripEnabled" : false,
-            "ripPassive" : false,
-            "spanningTreePortfast" : false,
-            "switchport" : false,
-            "switchportMode" : "NONE",
-            "switchportTrunkEncapsulation" : "DOT1Q",
-            "type" : "LOGICAL",
-            "vrf" : "default"
-          },
           "bond2" : {
             "name" : "bond2",
             "active" : false,
@@ -14022,14 +13993,6 @@
             "vrf" : "vrf1"
           }
         },
-        "mlags" : {
-          "~CUMULUS_CLAG_DOMAIN~" : {
-            "id" : "~CUMULUS_CLAG_DOMAIN~",
-            "localInterface" : "bond1.4094",
-            "peerAddress" : "192.0.2.5",
-            "peerInterface" : "bond1"
-          }
-        },
         "routingPolicies" : {
           "rm1" : {
             "name" : "rm1",
@@ -14396,16 +14359,6 @@
             "bridge" : {
               "pvid" : 2,
               "vids" : "1-3"
-            },
-            "interfaceClagSettings" : {
-              "bond1.4094" : {
-                "backupIp" : "192.0.2.4",
-                "backupIpVrf" : "mgmt",
-                "peerIp" : "192.0.2.5",
-                "peerIpLinkLocal" : false,
-                "priority" : 1000,
-                "sysMac" : "00:11:22:33:44:55"
-              }
             }
           }
         },
@@ -14588,7 +14541,6 @@
             },
             "interfaces" : [
               "bond1",
-              "bond1.4094",
               "bond2",
               "lo",
               "swp1",
