@@ -26,7 +26,7 @@
             "nodes": {
                 "description": "Input to the NodeSpecifier that specifies the set of nodes that should be considered",
                 "optional": true,
-                "default": "/.*/",
+                "value": "/.*/",
                 "type": "nodeSpec",
                 "displayName": "Nodes"
             }
