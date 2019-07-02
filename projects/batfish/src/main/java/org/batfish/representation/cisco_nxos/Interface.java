@@ -56,6 +56,7 @@ public final class Interface implements Serializable {
     checkArgument(type != CiscoNxosInterfaceType.VLAN, "Expected non-VLAN interface type");
     return new Interface(name, parentInterface, type, null);
   }
+
   /** Construct a Vlan interface with given {@code name} and {@code vlan} ID. */
   public static @Nonnull Interface newVlanInterface(String name, int vlan) {
     return new Interface(name, null, CiscoNxosInterfaceType.VLAN, vlan);
