@@ -1,5 +1,7 @@
 package org.batfish.representation.cisco_nxos;
 
+import static com.google.common.base.Preconditions.checkArgument;
+
 import com.google.common.collect.Range;
 import java.io.Serializable;
 import java.util.HashSet;
@@ -45,9 +47,24 @@ public final class Interface implements Serializable {
     }
   }
 
+  /**
+   * Construct a non-Vlan interface with given {@code name}, {@code parentInterface}, and {@code
+   * type}.
+   */
+  public static @Nonnull Interface newNonVlanInterface(
+      String name, String parentInterface, CiscoNxosInterfaceType type) {
+    checkArgument(type != CiscoNxosInterfaceType.VLAN, "Expected non-VLAN interface type");
+    return new Interface(name, parentInterface, type, null);
+  }
+  /** Construct a Vlan interface with given {@code name} and {@code vlan} ID. */
+  public static @Nonnull Interface newVlanInterface(String name, int vlan) {
+    return new Interface(name, null, CiscoNxosInterfaceType.VLAN, vlan);
+  }
+
   private @Nullable Integer _accessVlan;
   private @Nullable InterfaceAddress _address;
   private @Nullable IntegerSpace _allowedVlans;
+  private boolean _autostate;
   private final @Nonnull Set<String> _declaredNames;
   private @Nullable Integer _encapsulationVlan;
   private final @Nonnull String _name;
@@ -57,14 +74,18 @@ public final class Interface implements Serializable {
   private @Nullable Boolean _shutdown;
   private @Nonnull SwitchportMode _switchportMode;
   private final @Nonnull CiscoNxosInterfaceType _type;
+  private final @Nullable Integer _vlan;
   private @Nullable String _vrfMember;
 
-  public Interface(String name, String parentInterface, CiscoNxosInterfaceType type) {
+  private Interface(
+      String name, String parentInterface, CiscoNxosInterfaceType type, @Nullable Integer vlan) {
     _name = name;
     _parentInterface = parentInterface;
     _declaredNames = new HashSet<>();
     _secondaryAddresses = new HashSet<>();
     _type = type;
+    _vlan = vlan;
+    _autostate = true;
     initDefaultSwitchportSettings(parentInterface != null, type);
 
     // Set defaults for individual switchport modes
@@ -85,6 +106,10 @@ public final class Interface implements Serializable {
 
   public @Nullable IntegerSpace getAllowedVlans() {
     return _allowedVlans;
+  }
+
+  public boolean getAutostate() {
+    return _autostate;
   }
 
   public @Nonnull Set<String> getDeclaredNames() {
@@ -118,6 +143,14 @@ public final class Interface implements Serializable {
 
   public SwitchportMode getSwitchportMode() {
     return _switchportMode;
+  }
+
+  public @Nonnull CiscoNxosInterfaceType getType() {
+    return _type;
+  }
+
+  public @Nullable Integer getVlan() {
+    return _vlan;
   }
 
   public @Nullable String getVrfMember() {
@@ -155,6 +188,10 @@ public final class Interface implements Serializable {
 
   public void setAllowedVlans(@Nullable IntegerSpace allowedVlans) {
     _allowedVlans = allowedVlans;
+  }
+
+  public void setAutostate(boolean autostate) {
+    _autostate = autostate;
   }
 
   public void setEncapsulationVlan(@Nullable Integer encapsulationVlan) {

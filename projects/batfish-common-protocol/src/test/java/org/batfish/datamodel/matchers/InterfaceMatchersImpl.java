@@ -450,6 +450,17 @@ final class InterfaceMatchersImpl {
     }
   }
 
+  static final class IsAutoState extends FeatureMatcher<Interface, Boolean> {
+    IsAutoState(@Nonnull Matcher<? super Boolean> subMatcher) {
+      super(subMatcher, "an Interface with autoState:", "autoState");
+    }
+
+    @Override
+    protected Boolean featureValueOf(Interface actual) {
+      return actual.getAutoState();
+    }
+  }
+
   static final class IsOspfPassive extends FeatureMatcher<Interface, Boolean> {
     IsOspfPassive(@Nonnull Matcher<? super Boolean> subMatcher) {
       super(subMatcher, "an Interface with ospfPassive:", "ospfPassive");

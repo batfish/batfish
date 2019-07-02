@@ -6,11 +6,16 @@ import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasInterfaces
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasAddress;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasAllAddresses;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasDependencies;
+import static org.batfish.datamodel.matchers.InterfaceMatchers.hasInterfaceType;
+import static org.batfish.datamodel.matchers.InterfaceMatchers.hasSwitchPortMode;
+import static org.batfish.datamodel.matchers.InterfaceMatchers.hasVlan;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.isActive;
+import static org.batfish.datamodel.matchers.InterfaceMatchers.isAutoState;
 import static org.batfish.datamodel.matchers.MapMatchers.hasKeys;
 import static org.batfish.grammar.cisco_nxos.CiscoNxosCombinedParser.DEBUG_FLAG_USE_NEW_CISCO_NXOS_PARSER;
 import static org.batfish.main.BatfishTestUtils.configureBatfishTestSettings;
 import static org.hamcrest.Matchers.allOf;
+import static org.hamcrest.Matchers.anEmptyMap;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.empty;
@@ -36,12 +41,14 @@ import org.batfish.config.Settings;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.IntegerSpace;
+import org.batfish.datamodel.InterfaceType;
 import org.batfish.datamodel.Interface.Dependency;
 import org.batfish.datamodel.Interface.DependencyType;
 import org.batfish.datamodel.SwitchportMode;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
 import org.batfish.representation.cisco_nxos.CiscoNxosConfiguration;
+import org.batfish.representation.cisco_nxos.CiscoNxosInterfaceType;
 import org.batfish.representation.cisco_nxos.Interface;
 import org.junit.Rule;
 import org.junit.Test;
@@ -218,7 +225,7 @@ public final class CiscoNxosGrammarTest {
     }
     {
       org.batfish.datamodel.Interface iface = c.getAllInterfaces().get("port-channel1");
-      assertThat(iface, isActive());
+      assertThat(iface, isActive(false));
       assertThat(iface.getSwitchportMode(), equalTo(SwitchportMode.ACCESS));
       assertThat(iface.getAccessVlan(), equalTo(1));
     }
@@ -241,7 +248,7 @@ public final class CiscoNxosGrammarTest {
     }
     {
       org.batfish.datamodel.Interface iface = c.getAllInterfaces().get("port-channel2");
-      assertThat(iface, isActive());
+      assertThat(iface, isActive(false));
       assertThat(iface.getSwitchportMode(), equalTo(SwitchportMode.NONE));
     }
     {
@@ -287,7 +294,7 @@ public final class CiscoNxosGrammarTest {
       assertThat(iface, isActive());
       assertThat(iface.getSwitchportMode(), equalTo(SwitchportMode.TRUNK));
       assertThat(iface.getNativeVlan(), equalTo(1));
-      assertThat(iface.getAllowedVlans(), equalTo(IntegerSpace.of(Range.closed(1, 4093))));
+      assertThat(iface.getAllowedVlans(), equalTo(IntegerSpace.of(Range.closed(1, 3966))));
     }
     {
       org.batfish.datamodel.Interface iface = c.getAllInterfaces().get("Ethernet1/9");
@@ -418,7 +425,7 @@ public final class CiscoNxosGrammarTest {
       assertFalse(iface.getShutdown());
       assertThat(iface.getSwitchportMode(), equalTo(SwitchportMode.TRUNK));
       assertThat(iface.getNativeVlan(), equalTo(1));
-      assertThat(iface.getAllowedVlans(), equalTo(IntegerSpace.of(Range.closed(1, 4093))));
+      assertThat(iface.getAllowedVlans(), equalTo(IntegerSpace.of(Range.closed(1, 3966))));
     }
     {
       Interface iface = vc.getInterfaces().get("Ethernet1/9");
@@ -469,5 +476,131 @@ public final class CiscoNxosGrammarTest {
       assertThat(iface.getSwitchportMode(), equalTo(SwitchportMode.ACCESS));
       assertThat(iface.getAccessVlan(), equalTo(1));
     }
+  }
+
+  @Test
+  public void testVlanConversion() throws IOException {
+    String hostname = "nxos_vlan";
+    Configuration c = parseConfig(hostname);
+
+    assertThat(
+        c.getAllInterfaces(),
+        hasKeys("Ethernet1/1", "Vlan1", "Vlan2", "Vlan3", "Vlan4", "Vlan6", "Vlan7"));
+    {
+      org.batfish.datamodel.Interface iface = c.getAllInterfaces().get("Vlan1");
+      assertThat(iface, isActive(false));
+      assertThat(iface, isAutoState());
+      assertThat(iface, hasVlan(1));
+      assertThat(iface, hasSwitchPortMode(SwitchportMode.NONE));
+      assertThat(iface, hasInterfaceType(InterfaceType.VLAN));
+    }
+    {
+      org.batfish.datamodel.Interface iface = c.getAllInterfaces().get("Vlan2");
+      assertThat(iface, isActive(false));
+      assertThat(iface, isAutoState());
+      assertThat(iface, hasVlan(2));
+      assertThat(iface, hasSwitchPortMode(SwitchportMode.NONE));
+      assertThat(iface, hasInterfaceType(InterfaceType.VLAN));
+    }
+    {
+      org.batfish.datamodel.Interface iface = c.getAllInterfaces().get("Vlan3");
+      assertThat(iface, isActive(false));
+      assertThat(iface, isAutoState(false));
+      assertThat(iface, hasVlan(3));
+      assertThat(iface, hasSwitchPortMode(SwitchportMode.NONE));
+      assertThat(iface, hasInterfaceType(InterfaceType.VLAN));
+    }
+    {
+      org.batfish.datamodel.Interface iface = c.getAllInterfaces().get("Vlan4");
+      assertThat(iface, isActive(false));
+      assertThat(iface, isAutoState());
+      assertThat(iface, hasVlan(4));
+      assertThat(iface, hasSwitchPortMode(SwitchportMode.NONE));
+      assertThat(iface, hasInterfaceType(InterfaceType.VLAN));
+    }
+    {
+      org.batfish.datamodel.Interface iface = c.getAllInterfaces().get("Vlan6");
+      assertThat(iface, isActive());
+      assertThat(iface, isAutoState(false));
+      assertThat(iface, hasVlan(6));
+      assertThat(iface, hasSwitchPortMode(SwitchportMode.NONE));
+      assertThat(iface, hasInterfaceType(InterfaceType.VLAN));
+    }
+    {
+      org.batfish.datamodel.Interface iface = c.getAllInterfaces().get("Vlan7");
+      assertThat(iface, isActive());
+      assertThat(iface, isAutoState());
+      assertThat(iface, hasVlan(7));
+      assertThat(iface, hasSwitchPortMode(SwitchportMode.NONE));
+      assertThat(iface, hasInterfaceType(InterfaceType.VLAN));
+    }
+  }
+
+  @Test
+  public void testVlanExtraction() {
+    String hostname = "nxos_vlan";
+    CiscoNxosConfiguration vc = parseVendorConfig(hostname);
+
+    assertThat(
+        vc.getInterfaces(),
+        hasKeys("Ethernet1/1", "Vlan1", "Vlan2", "Vlan3", "Vlan4", "Vlan6", "Vlan7"));
+    assertThat(vc.getVlans(), hasKeys(2, 4, 6, 7, 8));
+    {
+      Interface iface = vc.getInterfaces().get("Vlan1");
+      assertTrue(iface.getShutdown());
+      assertTrue(iface.getAutostate());
+      assertThat(iface.getVlan(), equalTo(1));
+      assertThat(iface.getSwitchportMode(), equalTo(SwitchportMode.NONE));
+      assertThat(iface.getType(), equalTo(CiscoNxosInterfaceType.VLAN));
+    }
+    {
+      Interface iface = vc.getInterfaces().get("Vlan2");
+      assertTrue(iface.getShutdown());
+      assertTrue(iface.getAutostate());
+      assertThat(iface.getVlan(), equalTo(2));
+      assertThat(iface.getSwitchportMode(), equalTo(SwitchportMode.NONE));
+      assertThat(iface.getType(), equalTo(CiscoNxosInterfaceType.VLAN));
+    }
+    {
+      Interface iface = vc.getInterfaces().get("Vlan3");
+      assertFalse(iface.getShutdown());
+      assertFalse(iface.getAutostate());
+      assertThat(iface.getVlan(), equalTo(3));
+      assertThat(iface.getSwitchportMode(), equalTo(SwitchportMode.NONE));
+      assertThat(iface.getType(), equalTo(CiscoNxosInterfaceType.VLAN));
+    }
+    {
+      Interface iface = vc.getInterfaces().get("Vlan4");
+      assertFalse(iface.getShutdown());
+      assertTrue(iface.getAutostate());
+      assertThat(iface.getVlan(), equalTo(4));
+      assertThat(iface.getSwitchportMode(), equalTo(SwitchportMode.NONE));
+      assertThat(iface.getType(), equalTo(CiscoNxosInterfaceType.VLAN));
+    }
+    {
+      Interface iface = vc.getInterfaces().get("Vlan6");
+      assertFalse(iface.getShutdown());
+      assertFalse(iface.getAutostate());
+      assertThat(iface.getVlan(), equalTo(6));
+      assertThat(iface.getSwitchportMode(), equalTo(SwitchportMode.NONE));
+      assertThat(iface.getType(), equalTo(CiscoNxosInterfaceType.VLAN));
+    }
+    {
+      Interface iface = vc.getInterfaces().get("Vlan7");
+      assertFalse(iface.getShutdown());
+      assertTrue(iface.getAutostate());
+      assertThat(iface.getVlan(), equalTo(7));
+      assertThat(iface.getSwitchportMode(), equalTo(SwitchportMode.NONE));
+      assertThat(iface.getType(), equalTo(CiscoNxosInterfaceType.VLAN));
+    }
+  }
+
+  @Test
+  public void testVlanExtractionInvalid() {
+    String hostname = "nxos_vlan_invalid";
+    CiscoNxosConfiguration vc = parseVendorConfig(hostname);
+
+    assertThat(vc.getInterfaces(), anEmptyMap());
+    assertThat(vc.getVlans(), anEmptyMap());
   }
 }
