@@ -34,6 +34,7 @@ import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.Topology;
 import org.batfish.datamodel.Vrf;
+import org.batfish.datamodel.bgp.Ipv4UnicastAddressFamily;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.routing_policy.expr.Disjunction;
 import org.batfish.datamodel.routing_policy.expr.MatchProtocol;
@@ -136,13 +137,19 @@ public class RouteReflectionTest {
         .setRemoteAs(1L)
         .setLocalIp(edge1EbgpIfaceIp)
         .setPeerAddress(as1PeeringIp)
-        .setExportPolicy(edge1EbgpExportPolicy.getName())
+        .setIpv4UnicastAddressFamily(
+            Ipv4UnicastAddressFamily.builder()
+                .setExportPolicy(edge1EbgpExportPolicy.getName())
+                .build())
         .build();
     RoutingPolicy edge1IbgpExportPolicy = _defaultExportPolicyBuilder.setOwner(edge1).build();
     _nb.setRemoteAs(2L)
         .setLocalIp(edge1LoopbackIp)
         .setPeerAddress(rrLoopbackIp)
-        .setExportPolicy(edge1IbgpExportPolicy.getName())
+        .setIpv4UnicastAddressFamily(
+            Ipv4UnicastAddressFamily.builder()
+                .setExportPolicy(edge1IbgpExportPolicy.getName())
+                .build())
         .build();
 
     Configuration rr = _cb.setHostname(RR_NAME).build();
@@ -165,7 +172,8 @@ public class RouteReflectionTest {
         .setClusterId(rrLoopbackIp.asLong())
         .setRemoteAs(2L)
         .setLocalIp(rrLoopbackIp)
-        .setExportPolicy(rrExportPolicy.getName());
+        .setIpv4UnicastAddressFamily(
+            Ipv4UnicastAddressFamily.builder().setExportPolicy(rrExportPolicy.getName()).build());
     if (edge1RouteReflectorClient) {
       _nb.setRouteReflectorClient(true);
     }
@@ -196,13 +204,19 @@ public class RouteReflectionTest {
         .setRemoteAs(3L)
         .setLocalIp(edge2EbgpIfaceIp)
         .setPeerAddress(as3PeeringIp)
-        .setExportPolicy(edge2EbgpExportPolicy.getName())
+        .setIpv4UnicastAddressFamily(
+            Ipv4UnicastAddressFamily.builder()
+                .setExportPolicy(edge2EbgpExportPolicy.getName())
+                .build())
         .build();
     RoutingPolicy edge2IbgpExportPolicy = _defaultExportPolicyBuilder.setOwner(edge2).build();
     _nb.setRemoteAs(2L)
         .setLocalIp(edge2LoopbackIp)
         .setPeerAddress(rrLoopbackIp)
-        .setExportPolicy(edge2IbgpExportPolicy.getName())
+        .setIpv4UnicastAddressFamily(
+            Ipv4UnicastAddressFamily.builder()
+                .setExportPolicy(edge2IbgpExportPolicy.getName())
+                .build())
         .build();
 
     SortedMap<String, Configuration> configurations =
@@ -274,13 +288,19 @@ public class RouteReflectionTest {
         .setRemoteAs(1L)
         .setLocalIp(edge1EbgpIfaceIp)
         .setPeerAddress(as1PeeringIp)
-        .setExportPolicy(edge1EbgpExportPolicy.getName())
+        .setIpv4UnicastAddressFamily(
+            Ipv4UnicastAddressFamily.builder()
+                .setExportPolicy(edge1EbgpExportPolicy.getName())
+                .build())
         .build();
     RoutingPolicy edge1IbgpExportPolicy = _defaultExportPolicyBuilder.setOwner(edge1).build();
     _nb.setRemoteAs(2L)
         .setLocalIp(edge1LoopbackIp)
         .setPeerAddress(rr1LoopbackIp)
-        .setExportPolicy(edge1IbgpExportPolicy.getName())
+        .setIpv4UnicastAddressFamily(
+            Ipv4UnicastAddressFamily.builder()
+                .setExportPolicy(edge1IbgpExportPolicy.getName())
+                .build())
         .build();
 
     Configuration rr1 = _cb.setHostname(RR1_NAME).build();
@@ -304,7 +324,8 @@ public class RouteReflectionTest {
         .setClusterId(rr1LoopbackIp.asLong())
         .setRemoteAs(2L)
         .setLocalIp(rr1LoopbackIp)
-        .setExportPolicy(rr1ExportPolicy.getName())
+        .setIpv4UnicastAddressFamily(
+            Ipv4UnicastAddressFamily.builder().setExportPolicy(rr1ExportPolicy.getName()).build())
         .setRouteReflectorClient(true)
         .setPeerAddress(edge1LoopbackIp)
         .build();
@@ -330,7 +351,10 @@ public class RouteReflectionTest {
         .setLocalIp(rr2LoopbackIp)
         .setPeerAddress(rr1LoopbackIp)
         .setRouteReflectorClient(true)
-        .setExportPolicy(edge2IbgpExportPolicy.getName())
+        .setIpv4UnicastAddressFamily(
+            Ipv4UnicastAddressFamily.builder()
+                .setExportPolicy(edge2IbgpExportPolicy.getName())
+                .build())
         .build();
 
     SortedMap<String, Configuration> configurations =

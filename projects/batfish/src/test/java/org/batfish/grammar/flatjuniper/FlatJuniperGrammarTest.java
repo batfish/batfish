@@ -13,10 +13,12 @@ import static org.batfish.datamodel.flow.TransformationStep.TransformationType.S
 import static org.batfish.datamodel.flow.TransformationStep.TransformationType.STATIC_NAT;
 import static org.batfish.datamodel.matchers.AaaAuthenticationLoginListMatchers.hasMethods;
 import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasPrefix;
+import static org.batfish.datamodel.matchers.AddressFamilyCapabilitiesMatchers.hasAllowLocalAsIn;
+import static org.batfish.datamodel.matchers.AddressFamilyMatchers.hasAddressFamilySettings;
 import static org.batfish.datamodel.matchers.AnnotatedRouteMatchers.hasSourceVrf;
-import static org.batfish.datamodel.matchers.BgpNeighborMatchers.hasAllowLocalAsIn;
 import static org.batfish.datamodel.matchers.BgpNeighborMatchers.hasClusterId;
 import static org.batfish.datamodel.matchers.BgpNeighborMatchers.hasEnforceFirstAs;
+import static org.batfish.datamodel.matchers.BgpNeighborMatchers.hasIpv4UnicastAddressFamily;
 import static org.batfish.datamodel.matchers.BgpNeighborMatchers.hasLocalAs;
 import static org.batfish.datamodel.matchers.BgpNeighborMatchers.hasRemoteAs;
 import static org.batfish.datamodel.matchers.BgpProcessMatchers.hasActiveNeighbor;
@@ -672,14 +674,22 @@ public final class FlatJuniperGrammarTest {
         hasDefaultVrf(
             hasBgpProcess(
                 hasActiveNeighbor(
-                    Prefix.parse("2.2.2.2/32"), allOf(hasAllowLocalAsIn(true), hasLocalAs(1L))))));
+                    Prefix.parse("2.2.2.2/32"),
+                    allOf(
+                        hasIpv4UnicastAddressFamily(
+                            hasAddressFamilySettings(hasAllowLocalAsIn(true))),
+                        hasLocalAs(1L))))));
     assertThat(
         c,
         hasVrf(
             "FOO",
             hasBgpProcess(
                 hasActiveNeighbor(
-                    Prefix.parse("3.3.3.3/32"), allOf(hasAllowLocalAsIn(true), hasLocalAs(1L))))));
+                    Prefix.parse("3.3.3.3/32"),
+                    allOf(
+                        hasIpv4UnicastAddressFamily(
+                            hasAddressFamilySettings(hasAllowLocalAsIn(true))),
+                        hasLocalAs(1L))))));
   }
 
   @Test
@@ -691,7 +701,11 @@ public final class FlatJuniperGrammarTest {
             "FOO",
             hasBgpProcess(
                 hasActiveNeighbor(
-                    Prefix.parse("2.2.2.2/32"), allOf(hasAllowLocalAsIn(true), hasLocalAs(1L))))));
+                    Prefix.parse("2.2.2.2/32"),
+                    allOf(
+                        hasIpv4UnicastAddressFamily(
+                            hasAddressFamilySettings(hasAllowLocalAsIn(true))),
+                        hasLocalAs(1L))))));
   }
 
   /** Tests support for dynamic bgp parsing using "bgp allow" command */

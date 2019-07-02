@@ -29,7 +29,9 @@ import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.VniSettings;
 import org.batfish.datamodel.Vrf;
+import org.batfish.datamodel.bgp.AddressFamilyCapabilities;
 import org.batfish.datamodel.bgp.EvpnAddressFamily;
+import org.batfish.datamodel.bgp.Ipv4UnicastAddressFamily;
 import org.batfish.datamodel.bgp.Layer3VniConfig;
 import org.batfish.datamodel.bgp.Layer3VniConfig.Builder;
 import org.batfish.datamodel.bgp.RouteDistinguisher;
@@ -131,7 +133,6 @@ public class EvpnTest {
             .setRouteDistinguisher(RouteDistinguisher.from(bgpProcess2.getRouterId(), 2))
             .build();
     nf.bgpNeighborBuilder()
-        .setSendCommunity(true)
         .setPeerAddress(ipNode2)
         .setRemoteAs(2L)
         .setLocalIp(ipNode1)
@@ -142,11 +143,14 @@ public class EvpnTest {
                 .setL2Vnis(ImmutableSet.of())
                 .setL3Vnis(ImmutableSet.of(vniConfig1))
                 .setPropagateUnmatched(true)
+                .setAddressFamilyCapabilities(
+                    AddressFamilyCapabilities.builder().setSendCommunity(true).build())
+                .setExportPolicy(policyName)
                 .build())
-        .setExportPolicy(policyName)
+        .setIpv4UnicastAddressFamily(
+            Ipv4UnicastAddressFamily.builder().setExportPolicy(policyName).build())
         .build();
     nf.bgpNeighborBuilder()
-        .setSendCommunity(true)
         .setPeerAddress(ipNode1)
         .setRemoteAs(1L)
         .setLocalIp(ipNode2)
@@ -157,8 +161,12 @@ public class EvpnTest {
                 .setL2Vnis(ImmutableSet.of())
                 .setL3Vnis(ImmutableSet.of(vniConfig2))
                 .setPropagateUnmatched(true)
+                .setAddressFamilyCapabilities(
+                    AddressFamilyCapabilities.builder().setSendCommunity(true).build())
+                .setExportPolicy(policyName)
                 .build())
-        .setExportPolicy(policyName)
+        .setIpv4UnicastAddressFamily(
+            Ipv4UnicastAddressFamily.builder().setExportPolicy(policyName).build())
         .build();
 
     return ImmutableSortedMap.of(c1.getHostname(), c1, c2.getHostname(), c2);

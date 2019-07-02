@@ -286,7 +286,7 @@ public class BgpRoutingProcessTest {
             .setLocalAs(1L)
             .setRemoteAs(1L)
             .setPeerAddress(ip2)
-            .setIpv4UnicastAddressFamily(Ipv4UnicastAddressFamily.instance())
+            .setIpv4UnicastAddressFamily(Ipv4UnicastAddressFamily.builder().build())
             .build();
 
     BgpProcess bgpProc =

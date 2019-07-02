@@ -18,6 +18,7 @@ import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.LongSpace;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.Vrf;
+import org.batfish.datamodel.bgp.Ipv4UnicastAddressFamily;
 import org.batfish.datamodel.pojo.Node;
 import org.batfish.datamodel.questions.BgpProcessPropertySpecifier;
 import org.batfish.datamodel.table.Row;
@@ -39,6 +40,7 @@ public class BgpProcessConfigurationAnswererTest {
         .setRemoteAsns(LongSpace.of(200L))
         .setLocalIp(Ip.parse("1.1.1.1"))
         .setPeerAddress(Ip.parse("2.2.2.2"))
+        .setIpv4UnicastAddressFamily(Ipv4UnicastAddressFamily.builder().build())
         .build();
     BgpPassivePeerConfig.builder()
         .setBgpProcess(proc)
@@ -46,6 +48,7 @@ public class BgpProcessConfigurationAnswererTest {
         .setRemoteAsns(LongSpace.of(300L))
         .setLocalIp(Ip.parse("1.1.1.2"))
         .setPeerPrefix(Prefix.create(Ip.parse("3.3.3.0"), 24))
+        .setIpv4UnicastAddressFamily(Ipv4UnicastAddressFamily.builder().build())
         .build();
     BgpUnnumberedPeerConfig.builder()
         .setBgpProcess(proc)
@@ -53,6 +56,7 @@ public class BgpProcessConfigurationAnswererTest {
         .setRemoteAsns(LongSpace.of(400L))
         .setLocalIp(Ip.parse("169.254.0.1"))
         .setPeerInterface("iface")
+        .setIpv4UnicastAddressFamily(Ipv4UnicastAddressFamily.builder().build())
         .build();
 
     Vrf vrf = new Vrf("vrf");

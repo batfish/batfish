@@ -86,6 +86,7 @@ import org.batfish.datamodel.VniSettings;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.answers.Schema;
 import org.batfish.datamodel.bgp.BgpTopology;
+import org.batfish.datamodel.bgp.Ipv4UnicastAddressFamily;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.eigrp.EigrpEdge;
 import org.batfish.datamodel.eigrp.EigrpInterface;
@@ -286,13 +287,21 @@ public class EdgesAnswererTest {
     Ip ip2 = Ip.parse("2.2.2.2");
 
     BgpActivePeerConfig activePeer1 =
-        BgpActivePeerConfig.builder().setLocalIp(ip1).setLocalAs(1L).build();
+        BgpActivePeerConfig.builder()
+            .setLocalIp(ip1)
+            .setLocalAs(1L)
+            .setIpv4UnicastAddressFamily(Ipv4UnicastAddressFamily.builder().build())
+            .build();
     bgp1.getActiveNeighbors().put(Prefix.create(ip2, Prefix.MAX_PREFIX_LENGTH), activePeer1);
     BgpPeerConfigId activeId1 =
         new BgpPeerConfigId("host1", "vrf1", Prefix.create(ip2, Prefix.MAX_PREFIX_LENGTH), false);
 
     BgpActivePeerConfig activePeer2 =
-        BgpActivePeerConfig.builder().setLocalIp(ip2).setLocalAs(2L).build();
+        BgpActivePeerConfig.builder()
+            .setLocalIp(ip2)
+            .setLocalAs(2L)
+            .setIpv4UnicastAddressFamily(Ipv4UnicastAddressFamily.builder().build())
+            .build();
     bgp2.getActiveNeighbors().put(Prefix.create(ip1, Prefix.MAX_PREFIX_LENGTH), activePeer2);
     BgpPeerConfigId activeId2 =
         new BgpPeerConfigId("host2", "vrf2", Prefix.create(ip1, Prefix.MAX_PREFIX_LENGTH), false);
@@ -306,6 +315,7 @@ public class EdgesAnswererTest {
             .setPeerInterface(iface1)
             .setLocalAs(1L)
             .setLocalIp(Ip.parse("169.254.0.1"))
+            .setIpv4UnicastAddressFamily(Ipv4UnicastAddressFamily.builder().build())
             .build();
     bgp1.getInterfaceNeighbors().put(iface1, unnumPeer1);
     BgpPeerConfigId unnumId1 = new BgpPeerConfigId("host1", "vrf1", iface1);
@@ -315,6 +325,7 @@ public class EdgesAnswererTest {
             .setPeerInterface(iface2)
             .setLocalAs(2L)
             .setLocalIp(Ip.parse("169.254.0.1"))
+            .setIpv4UnicastAddressFamily(Ipv4UnicastAddressFamily.builder().build())
             .build();
     bgp2.getInterfaceNeighbors().put(iface2, unnumPeer2);
     BgpPeerConfigId unnumId2 = new BgpPeerConfigId("host2", "vrf2", iface2);

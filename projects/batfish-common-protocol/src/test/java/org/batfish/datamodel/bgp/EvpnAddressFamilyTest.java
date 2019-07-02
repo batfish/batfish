@@ -5,6 +5,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.testing.EqualsTester;
 import java.io.IOException;
 import org.apache.commons.lang3.SerializationUtils;
@@ -25,6 +26,15 @@ public class EvpnAddressFamilyTest {
     EvpnAddressFamily af = builder.build();
     new EqualsTester()
         .addEqualityGroup(af, af, builder.build())
+        .addEqualityGroup(
+            builder
+                .setAddressFamilyCapabilities(
+                    AddressFamilyCapabilities.builder().setSendCommunity(true).build())
+                .build())
+        .addEqualityGroup(builder.setExportPolicy("export").build())
+        .addEqualityGroup(builder.setImportPolicy("import").build())
+        .addEqualityGroup(builder.setExportPolicySources(ImmutableSortedSet.of("foo")).build())
+        .addEqualityGroup(builder.setImportPolicySources(ImmutableSortedSet.of("bar")).build())
         .addEqualityGroup(
             builder
                 .setL2Vnis(
@@ -58,6 +68,12 @@ public class EvpnAddressFamilyTest {
   public void testJavaSerialization() {
     EvpnAddressFamily af =
         builder()
+            .setAddressFamilyCapabilities(
+                AddressFamilyCapabilities.builder().setSendCommunity(true).build())
+            .setExportPolicy("export")
+            .setImportPolicy("import")
+            .setExportPolicySources(ImmutableSortedSet.of("foo"))
+            .setImportPolicySources(ImmutableSortedSet.of("bar"))
             .setL2Vnis(ImmutableSet.of())
             .setL3Vnis(ImmutableSet.of())
             .setPropagateUnmatched(true)
@@ -69,6 +85,12 @@ public class EvpnAddressFamilyTest {
   public void testJsonSerialization() throws IOException {
     Builder builder =
         builder()
+            .setAddressFamilyCapabilities(
+                AddressFamilyCapabilities.builder().setSendCommunity(true).build())
+            .setExportPolicy("export")
+            .setImportPolicy("import")
+            .setExportPolicySources(ImmutableSortedSet.of("foo"))
+            .setImportPolicySources(ImmutableSortedSet.of("bar"))
             .setL2Vnis(ImmutableSet.of())
             .setL3Vnis(ImmutableSet.of())
             .setPropagateUnmatched(true);

@@ -26,8 +26,23 @@ public final class EvpnAddressFamily extends AddressFamily {
   @Nonnull private final SortedSet<Layer3VniConfig> _l3VNIs;
   private final boolean _propagateUnmatched;
 
-  private EvpnAddressFamily(
-      Set<Layer2VniConfig> l2Vnis, Set<Layer3VniConfig> l3Vnis, boolean propagateUnmatched) {
+  protected EvpnAddressFamily(
+      // super fields
+      AddressFamilyCapabilities addressFamilyCapabilities,
+      @Nullable String exportPolicy,
+      SortedSet<String> exportPolicySources,
+      @Nullable String importPolicy,
+      SortedSet<String> importPolicySources,
+      // local fields
+      Set<Layer2VniConfig> l2Vnis,
+      Set<Layer3VniConfig> l3Vnis,
+      boolean propagateUnmatched) {
+    super(
+        addressFamilyCapabilities,
+        exportPolicy,
+        exportPolicySources,
+        importPolicy,
+        importPolicySources);
     _l2VNIs = ImmutableSortedSet.copyOf(l2Vnis);
     _l3VNIs = ImmutableSortedSet.copyOf(l3Vnis);
     _propagateUnmatched = propagateUnmatched;
@@ -35,11 +50,24 @@ public final class EvpnAddressFamily extends AddressFamily {
 
   @JsonCreator
   private static EvpnAddressFamily create(
+      // super fields
+      @Nullable @JsonProperty(PROP_ADDRESS_FAMILY_CAPABILITIES)
+          AddressFamilyCapabilities addressFamilyCapabilities,
+      @Nullable @JsonProperty(PROP_EXPORT_POLICY) String exportPolicy,
+      @Nullable @JsonProperty(PROP_EXPORT_POLICY_SOURCES) SortedSet<String> exportPolicySources,
+      @Nullable @JsonProperty(PROP_IMPORT_POLICY) String importPolicy,
+      @Nullable @JsonProperty(PROP_IMPORT_POLICY_SOURCES) SortedSet<String> importPolicySources,
+      // local fields
       @Nullable @JsonProperty(PROP_L2_VNIS) Set<Layer2VniConfig> l2Vnis,
       @Nullable @JsonProperty(PROP_L3_VNIS) Set<Layer3VniConfig> l3Vnis,
       @Nullable @JsonProperty(PROP_PROPAGATE_UNMATCHED) Boolean propagateUnmatched) {
     checkArgument(propagateUnmatched != null, "Missing %s", PROP_PROPAGATE_UNMATCHED);
     return new Builder()
+        .setAddressFamilyCapabilities(addressFamilyCapabilities)
+        .setExportPolicy(exportPolicy)
+        .setExportPolicySources(firstNonNull(exportPolicySources, ImmutableSortedSet.of()))
+        .setImportPolicy(importPolicy)
+        .setImportPolicySources(firstNonNull(importPolicySources, ImmutableSortedSet.of()))
         .setL2Vnis(firstNonNull(l2Vnis, ImmutableSortedSet.of()))
         .setL3Vnis(firstNonNull(l3Vnis, ImmutableSortedSet.of()))
         .setPropagateUnmatched(propagateUnmatched)
@@ -84,14 +112,28 @@ public final class EvpnAddressFamily extends AddressFamily {
       return false;
     }
     EvpnAddressFamily that = (EvpnAddressFamily) o;
-    return _l2VNIs.equals(that._l2VNIs)
+    return _addressFamilyCapabilities.equals(that._addressFamilyCapabilities)
+        && Objects.equals(_exportPolicy, that._exportPolicy)
+        && Objects.equals(_importPolicy, that._importPolicy)
+        && _exportPolicySources.equals(that._exportPolicySources)
+        && _importPolicySources.equals(that._importPolicySources)
+        // local fields
+        && _l2VNIs.equals(that._l2VNIs)
         && _l3VNIs.equals(that._l3VNIs)
         && _propagateUnmatched == that._propagateUnmatched;
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(_l2VNIs, _l3VNIs, _propagateUnmatched);
+    return Objects.hash(
+        _addressFamilyCapabilities,
+        _exportPolicy,
+        _exportPolicySources,
+        _importPolicy,
+        _importPolicySources,
+        _l2VNIs,
+        _l3VNIs,
+        _propagateUnmatched);
   }
 
   @Nonnull
@@ -107,6 +149,7 @@ public final class EvpnAddressFamily extends AddressFamily {
     private Builder() {
       _l2Vnis = ImmutableSortedSet.of();
       _l3Vnis = ImmutableSortedSet.of();
+      _addressFamilyCapabilities = AddressFamilyCapabilities.builder().build();
     }
 
     @Nonnull
@@ -136,8 +179,18 @@ public final class EvpnAddressFamily extends AddressFamily {
     @Nonnull
     @Override
     public EvpnAddressFamily build() {
+      checkArgument(
+          _addressFamilyCapabilities != null, "Missing %s", PROP_ADDRESS_FAMILY_CAPABILITIES);
       checkArgument(_propagateUnmatched != null, "Missing %s", PROP_PROPAGATE_UNMATCHED);
-      return new EvpnAddressFamily(_l2Vnis, _l3Vnis, _propagateUnmatched);
+      return new EvpnAddressFamily(
+          _addressFamilyCapabilities,
+          _exportPolicy,
+          _exportPolicySources,
+          _importPolicy,
+          _importPolicySources,
+          _l2Vnis,
+          _l3Vnis,
+          _propagateUnmatched);
     }
   }
 }

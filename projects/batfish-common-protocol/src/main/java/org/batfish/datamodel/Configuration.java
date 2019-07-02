@@ -26,6 +26,7 @@ import javax.annotation.Nullable;
 import org.batfish.common.BatfishException;
 import org.batfish.common.Warnings;
 import org.batfish.datamodel.NetworkFactory.NetworkFactoryBuilder;
+import org.batfish.datamodel.bgp.AddressFamily;
 import org.batfish.datamodel.ospf.OspfProcess;
 import org.batfish.datamodel.packet_policy.PacketPolicy;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
@@ -290,8 +291,10 @@ public final class Configuration implements Serializable {
       BgpProcess bgpProcess = vrf.getBgpProcess();
       if (bgpProcess != null) {
         for (BgpPeerConfig neighbor : bgpProcess.getAllPeerConfigs()) {
-          neighbor.setExportPolicySources(getRoutingPolicySources(neighbor.getExportPolicy()));
-          neighbor.setImportPolicySources(getRoutingPolicySources(neighbor.getImportPolicy()));
+          for (AddressFamily af : neighbor.getAllAddressFamilies()) {
+            af.setExportPolicySources(getRoutingPolicySources(af.getExportPolicy()));
+            af.setImportPolicySources(getRoutingPolicySources(af.getImportPolicy()));
+          }
         }
       }
       for (OspfProcess ospfProcess : vrf.getOspfProcesses().values()) {

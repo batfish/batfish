@@ -6,11 +6,13 @@ import static org.junit.Assert.assertTrue;
 
 import com.google.common.collect.ImmutableSortedMap;
 import org.batfish.datamodel.BgpActivePeerConfig;
+import org.batfish.datamodel.BgpActivePeerConfig.Builder;
 import org.batfish.datamodel.BgpPassivePeerConfig;
 import org.batfish.datamodel.BgpProcess;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.bgp.Ipv4UnicastAddressFamily;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
@@ -23,14 +25,21 @@ public class BgpProcessPropertySpecifierTest {
     BgpProcess emptyProcess = new BgpProcess(Ip.ZERO, ConfigurationFormat.CISCO_IOS);
     assertFalse("no rr clients", isRouteReflector(emptyProcess));
 
-    BgpActivePeerConfig activePeerWithRRC =
-        BgpActivePeerConfig.builder().setRouteReflectorClient(true).build();
-    BgpActivePeerConfig activePeerWithoutRRC =
-        BgpActivePeerConfig.builder().setRouteReflectorClient(false).build();
+    Builder builder =
+        BgpActivePeerConfig.builder()
+            .setIpv4UnicastAddressFamily(Ipv4UnicastAddressFamily.builder().build());
+    BgpActivePeerConfig activePeerWithRRC = builder.setRouteReflectorClient(true).build();
+    BgpActivePeerConfig activePeerWithoutRRC = builder.setRouteReflectorClient(false).build();
     BgpPassivePeerConfig passivePeerWithRRC =
-        BgpPassivePeerConfig.builder().setRouteReflectorClient(true).build();
+        BgpPassivePeerConfig.builder()
+            .setRouteReflectorClient(true)
+            .setIpv4UnicastAddressFamily(Ipv4UnicastAddressFamily.builder().build())
+            .build();
     BgpPassivePeerConfig passivePeerWithoutRRC =
-        BgpPassivePeerConfig.builder().setRouteReflectorClient(false).build();
+        BgpPassivePeerConfig.builder()
+            .setRouteReflectorClient(false)
+            .setIpv4UnicastAddressFamily(Ipv4UnicastAddressFamily.builder().build())
+            .build();
     Prefix p32a = Prefix.parse("1.2.3.4/32");
     Prefix p32b = Prefix.parse("1.2.3.5/32");
     Prefix p30a = Prefix.parse("1.2.3.4/30");

@@ -31,6 +31,9 @@ import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.Vrf;
+import org.batfish.datamodel.bgp.AddressFamily.Type;
+import org.batfish.datamodel.bgp.AddressFamilyCapabilities;
+import org.batfish.datamodel.bgp.Ipv4UnicastAddressFamily;
 import org.batfish.datamodel.bgp.community.Community;
 import org.batfish.datamodel.bgp.community.StandardCommunity;
 import org.junit.Before;
@@ -124,7 +127,8 @@ public final class BgpProtocolHelperTransformBgpRouteOnExportTest {
               (GeneratedRoute) route,
               _fromBgpProcess.getRouterId(),
               _fromNeighbor.getLocalIp(),
-              false));
+              false),
+          Type.IPV4_UNICAST);
     } else if (route instanceof Bgpv4Route) {
       return BgpProtocolHelper.transformBgpRoutePreExport(
           _fromNeighbor,
@@ -132,7 +136,8 @@ public final class BgpProtocolHelperTransformBgpRouteOnExportTest {
           _sessionProperties,
           _fromBgpProcess,
           _toBgpProcess,
-          (Bgpv4Route) route);
+          (Bgpv4Route) route,
+          Type.IPV4_UNICAST);
     } else {
       RoutingProtocol protocol =
           _sessionProperties.isEbgp() ? RoutingProtocol.BGP : RoutingProtocol.IBGP;
@@ -148,7 +153,8 @@ public final class BgpProtocolHelperTransformBgpRouteOnExportTest {
                   _sessionProperties.getTailIp(),
                   protocol.getDefaultAdministrativeCost(ConfigurationFormat.CISCO_IOS),
                   protocol)
-              .build());
+              .build(),
+          Type.IPV4_UNICAST);
     }
   }
 
@@ -203,7 +209,11 @@ public final class BgpProtocolHelperTransformBgpRouteOnExportTest {
       // Now set sendCommunity and make sure communities appear in transformed routes.
       _fromNeighbor =
           _nf.bgpNeighborBuilder()
-              .setSendCommunity(true)
+              .setIpv4UnicastAddressFamily(
+                  Ipv4UnicastAddressFamily.builder()
+                      .setAddressFamilyCapabilities(
+                          AddressFamilyCapabilities.builder().setSendCommunity(true).build())
+                      .build())
               .setLocalAs(AS1)
               .setRemoteAsns(_fromNeighbor.getRemoteAsns())
               .build();
