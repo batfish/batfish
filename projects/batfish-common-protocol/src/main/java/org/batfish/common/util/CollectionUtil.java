@@ -41,6 +41,11 @@ public final class CollectionUtil {
     return map.entrySet().stream().collect(ImmutableMap.toImmutableMap(keyFunction, valueFunction));
   }
 
+  public static <K1, K2, V> Map<K2, V> toMap(
+      Set<K1> set, Function<K1, K2> keyFunction, Function<K1, V> valueFunction) {
+    return set.stream().collect(Collectors.toMap(keyFunction, valueFunction));
+  }
+
   public static <E, K, V> Map<K, V> toImmutableMap(
       Collection<E> set, Function<E, K> keyFunction, Function<E, V> valueFunction) {
     return set.stream().collect(ImmutableMap.toImmutableMap(keyFunction, valueFunction));
