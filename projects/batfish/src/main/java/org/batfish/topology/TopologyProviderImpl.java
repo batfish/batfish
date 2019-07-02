@@ -76,9 +76,7 @@ public final class TopologyProviderImpl implements TopologyProvider {
 
   @Override
   public OspfTopology getOspfTopology(NetworkSnapshot networkSnapshot) {
-    return OspfTopologyUtils.computeOspfTopology(
-        NetworkConfigurations.of(_batfish.loadConfigurations(networkSnapshot)),
-        getLayer3Topology(networkSnapshot));
+    return computeOspfTopology(networkSnapshot);
   }
 
   @Override
@@ -264,7 +262,9 @@ public final class TopologyProviderImpl implements TopologyProvider {
 
   private Topology computeInitialLayer3Topology(NetworkSnapshot networkSnapshot) {
     try (ActiveSpan span =
-        GlobalTracer.get().buildSpan("TopologyProviderImpl::computeLayer3Topology").startActive()) {
+        GlobalTracer.get()
+            .buildSpan("TopologyProviderImpl::computeInitialLayer3Topology")
+            .startActive()) {
       assert span != null; // avoid unused warning
       Map<String, Configuration> configurations = _batfish.loadConfigurations(networkSnapshot);
       return TopologyUtil.computeLayer3Topology(
@@ -299,15 +299,25 @@ public final class TopologyProviderImpl implements TopologyProvider {
   }
 
   private @Nonnull OspfTopology computeInitialOspfTopology(NetworkSnapshot snapshot) {
-    return OspfTopologyUtils.computeOspfTopology(
-        NetworkConfigurations.of(_batfish.loadConfigurations(snapshot)),
-        getInitialLayer3Topology(snapshot));
+    try (ActiveSpan span =
+        GlobalTracer.get()
+            .buildSpan("TopologyProviderImpl::computeInitialOspfTopology")
+            .startActive()) {
+      assert span != null; // avoid unused warning
+      return OspfTopologyUtils.computeOspfTopology(
+          NetworkConfigurations.of(_batfish.loadConfigurations(snapshot)),
+          getInitialLayer3Topology(snapshot));
+    }
   }
 
   private @Nonnull OspfTopology computeOspfTopology(NetworkSnapshot snapshot) {
-    return OspfTopologyUtils.computeOspfTopology(
-        NetworkConfigurations.of(_batfish.loadConfigurations(snapshot)),
-        getLayer3Topology(snapshot));
+    try (ActiveSpan span =
+        GlobalTracer.get().buildSpan("TopologyProviderImpl::computeOspfTopology").startActive()) {
+      assert span != null; // avoid unused warning
+      return OspfTopologyUtils.computeOspfTopology(
+          NetworkConfigurations.of(_batfish.loadConfigurations(snapshot)),
+          getLayer3Topology(snapshot));
+    }
   }
 
   private @Nonnull VxlanTopology computeVxlanTopology(NetworkSnapshot snapshot) {
