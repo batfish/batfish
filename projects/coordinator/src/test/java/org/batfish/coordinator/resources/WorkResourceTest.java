@@ -46,7 +46,7 @@ public final class WorkResourceTest extends WorkMgrServiceV2TestBase {
   }
 
   @Test
-  public void testGetWorkStatusMissingNetwork() throws IOException {
+  public void testGetWorkStatusMissingNetwork() {
     String network = "network1";
     UUID workId = UUID.randomUUID();
     Response response = getWorkItemTarget(network, workId.toString()).get();
@@ -55,7 +55,7 @@ public final class WorkResourceTest extends WorkMgrServiceV2TestBase {
   }
 
   @Test
-  public void testGetWorkStatusMissingWorkItem() throws IOException {
+  public void testGetWorkStatusMissingWorkItem() {
     String network = "network1";
     UUID workId = UUID.randomUUID();
     Main.getWorkMgr().initNetwork(network, null);
@@ -65,7 +65,7 @@ public final class WorkResourceTest extends WorkMgrServiceV2TestBase {
   }
 
   @Test
-  public void testGetWorkStatusInvalidUuid() throws IOException {
+  public void testGetWorkStatusInvalidUuid() {
     String network = "network1";
     Main.getWorkMgr().initNetwork(network, null);
     Response response = getWorkItemTarget(network, "@@@").get();

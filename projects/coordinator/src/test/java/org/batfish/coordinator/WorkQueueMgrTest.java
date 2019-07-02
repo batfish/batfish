@@ -302,7 +302,7 @@ public final class WorkQueueMgrTest {
   }
 
   @Test
-  public void getCompletedWorkBadFilter() throws Exception {
+  public void getCompletedWorkBadFilter() {
     // Make sure we get no results or error filtering on a bogus snapshot
     List<QueuedWork> works0 =
         _workQueueMgr.getCompletedWork(new NetworkId("bogus"), new SnapshotId("bogus"));

@@ -388,7 +388,7 @@ public final class CumulusNcluGrammarTest {
   }
 
   @Test
-  public void testBgpExtraction() throws IOException {
+  public void testBgpExtraction() {
     CumulusNcluConfiguration vc = parseVendorConfig("cumulus_nclu_bgp");
 
     // bgp process should be created
@@ -562,7 +562,7 @@ public final class CumulusNcluGrammarTest {
   }
 
   @Test
-  public void testBondExtraction() throws IOException {
+  public void testBondExtraction() {
     CumulusNcluConfiguration vc = parseVendorConfig("cumulus_nclu_bond");
     String bond1Name = "bond1";
     String bond2Name = "bond2";
@@ -677,7 +677,7 @@ public final class CumulusNcluGrammarTest {
   }
 
   @Test
-  public void testBridgeExtraction() throws IOException {
+  public void testBridgeExtraction() {
     CumulusNcluConfiguration vc = parseVendorConfig("cumulus_nclu_bridge");
 
     // bridge
@@ -751,7 +751,7 @@ public final class CumulusNcluGrammarTest {
   }
 
   @Test
-  public void testClagExtranctionLinkLocalPeer() throws IOException {
+  public void testClagExtranctionLinkLocalPeer() {
     CumulusNcluConfiguration c = parseVendorConfig("cumulus_nclu_clag_linklocal");
 
     String ifaceName = "peerlink.4094";
@@ -791,7 +791,7 @@ public final class CumulusNcluGrammarTest {
   }
 
   @Test
-  public void testDnsExtraction() throws IOException {
+  public void testDnsExtraction() {
     CumulusNcluConfiguration vc = parseVendorConfig("cumulus_nclu_dns");
 
     assertThat(vc.getIpv4Nameservers(), contains(Ip.parse("192.0.2.3"), Ip.parse("192.0.2.4")));
@@ -905,7 +905,7 @@ public final class CumulusNcluGrammarTest {
   }
 
   @Test
-  public void testInterfaceExtraction() throws IOException {
+  public void testInterfaceExtraction() {
     CumulusNcluConfiguration vc = parseVendorConfig("cumulus_nclu_interface");
 
     assertThat(
@@ -1051,7 +1051,7 @@ public final class CumulusNcluGrammarTest {
   }
 
   @Test
-  public void testLoopbackExtraction() throws IOException {
+  public void testLoopbackExtraction() {
     CumulusNcluConfiguration vc = parseVendorConfig("cumulus_nclu_loopback");
 
     assertTrue("Ensure loopback is configured", vc.getLoopback().getConfigured());
@@ -1068,7 +1068,7 @@ public final class CumulusNcluGrammarTest {
   }
 
   @Test
-  public void testLoopbackMissingExtraction() throws IOException {
+  public void testLoopbackMissingExtraction() {
     CumulusNcluConfiguration vc = parseVendorConfig("cumulus_nclu_loopback_missing");
 
     assertFalse("Ensure loopback is disabled", vc.getLoopback().getConfigured());
@@ -1171,7 +1171,7 @@ public final class CumulusNcluGrammarTest {
   }
 
   @Test
-  public void testRoutingExtraction() throws IOException {
+  public void testRoutingExtraction() {
     CumulusNcluConfiguration vc = parseVendorConfig("cumulus_nclu_routing");
 
     // static route (main vrf)
@@ -1299,7 +1299,7 @@ public final class CumulusNcluGrammarTest {
   }
 
   @Test
-  public void testVlanExtraction() throws IOException {
+  public void testVlanExtraction() {
     CumulusNcluConfiguration vc = parseVendorConfig("cumulus_nclu_vlan");
 
     // vlan interfaces
@@ -1370,7 +1370,7 @@ public final class CumulusNcluGrammarTest {
   }
 
   @Test
-  public void testVrfExtraction() throws IOException {
+  public void testVrfExtraction() {
     CumulusNcluConfiguration vc = parseVendorConfig("cumulus_nclu_vrf");
 
     // vrfs
@@ -1409,7 +1409,7 @@ public final class CumulusNcluGrammarTest {
   }
 
   @Test
-  public void testVxlanExtraction() throws IOException {
+  public void testVxlanExtraction() {
     CumulusNcluConfiguration vc = parseVendorConfig("cumulus_nclu_vxlan");
 
     // vxlan interfaces

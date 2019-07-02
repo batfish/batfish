@@ -99,7 +99,7 @@ public final class QuestionSettingsJsonPathResourceTest extends WorkMgrServiceV2
   }
 
   @Before
-  public void initTestEnvironment() throws Exception {
+  public void initTestEnvironment() {
     _idManager =
         new LocalIdManager() {
           @Override

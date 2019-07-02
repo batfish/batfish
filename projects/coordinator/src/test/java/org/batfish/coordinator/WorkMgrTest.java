@@ -1628,7 +1628,7 @@ public final class WorkMgrTest {
   }
 
   @Test
-  public void testInitSnapshot() throws Exception {
+  public void testInitSnapshot() {
     String networkName = "network";
     String snapshotName = "snapshotName";
     String fileName = "file.type";
@@ -1646,7 +1646,7 @@ public final class WorkMgrTest {
   }
 
   @Test
-  public void testInitSnapshotBadPackaging() throws Exception {
+  public void testInitSnapshotBadPackaging() {
     String networkName = "network";
     String snapshotName = "snapshotName";
     String fileName = "file.type";
@@ -1785,7 +1785,7 @@ public final class WorkMgrTest {
   }
 
   @Test
-  public void testProcessAnswerRowsNotFound() throws IOException {
+  public void testProcessAnswerRowsNotFound() {
     String columnName = "issue";
     int maxRows = 1;
     int rowOffset = 0;
@@ -2599,7 +2599,7 @@ public final class WorkMgrTest {
   }
 
   @Test
-  public void testDeleteSnapshotAbsent() throws IOException {
+  public void testDeleteSnapshotAbsent() {
     String network = "network1";
     String snapshot = "snapshot1";
     _manager.initNetwork(network, null);
@@ -2625,7 +2625,7 @@ public final class WorkMgrTest {
   }
 
   @Test
-  public void testDeleteNetworkAbsent() throws IOException {
+  public void testDeleteNetworkAbsent() {
     String network = "network1";
 
     // deletion should do no work
@@ -2633,7 +2633,7 @@ public final class WorkMgrTest {
   }
 
   @Test
-  public void testDeleteNetworkPresent() throws IOException {
+  public void testDeleteNetworkPresent() {
     String network = "network1";
     _manager.initNetwork(network, null);
 

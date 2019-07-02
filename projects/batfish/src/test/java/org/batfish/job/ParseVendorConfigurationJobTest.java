@@ -17,7 +17,7 @@ import org.junit.Test;
 public class ParseVendorConfigurationJobTest {
   private static final String HOST_TESTCONFIGS_PREFIX = "org/batfish/grammar/host/testconfigs/";
 
-  private static ParseVendorConfigurationResult parseHost(String resourcePath) throws Exception {
+  private static ParseVendorConfigurationResult parseHost(String resourcePath) {
     return new ParseVendorConfigurationJob(
             new Settings(),
             CommonUtil.readResource(resourcePath),

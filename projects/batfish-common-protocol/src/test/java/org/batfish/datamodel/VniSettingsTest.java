@@ -40,7 +40,7 @@ public class VniSettingsTest {
   }
 
   @Test
-  public void testJavaSerialization() throws IOException {
+  public void testJavaSerialization() {
     SortedSet<Ip> bumTransportIps = ImmutableSortedSet.of(Ip.parse("2.2.2.2"), Ip.parse("2.2.2.3"));
     VniSettings vs =
         VniSettings.builder()

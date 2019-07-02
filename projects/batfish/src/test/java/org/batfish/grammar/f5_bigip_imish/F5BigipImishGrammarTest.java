@@ -854,7 +854,7 @@ public final class F5BigipImishGrammarTest {
   }
 
   @Test
-  public void testRouteMapSetMetricExtraction() throws IOException {
+  public void testRouteMapSetMetricExtraction() {
     F5BigipConfiguration vc = parseVendorConfig("f5_bigip_imish_route_map_set_metric");
     String rmName = "rm1";
 
@@ -886,7 +886,7 @@ public final class F5BigipImishGrammarTest {
   }
 
   @Test
-  public void testRouteMapSetOriginExtraction() throws IOException {
+  public void testRouteMapSetOriginExtraction() {
     F5BigipConfiguration vc = parseVendorConfig("f5_bigip_imish_route_map_set_origin");
     String rmName = "rm1";
 

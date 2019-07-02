@@ -42,7 +42,6 @@ import static org.junit.Assert.assertThat;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedSet;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -119,7 +118,7 @@ public class AutoCompleteUtilsTest {
   }
 
   @Test
-  public void testAddressGroupAutocomplete() throws IOException {
+  public void testAddressGroupAutocomplete() {
     ReferenceLibrary library =
         new ReferenceLibrary(
             ImmutableList.of(
@@ -161,7 +160,7 @@ public class AutoCompleteUtilsTest {
   }
 
   @Test
-  public void testBgpPeerPropertySpecAutocomplete() throws IOException {
+  public void testBgpPeerPropertySpecAutocomplete() {
     assertThat(
         AutoCompleteUtils.autoComplete(Type.BGP_PEER_PROPERTY_SPEC, "as", 5).stream()
             .map(AutocompleteSuggestion::getText)
@@ -170,7 +169,7 @@ public class AutoCompleteUtilsTest {
   }
 
   @Test
-  public void testBgpProcessPropertySpecAutocomplete() throws IOException {
+  public void testBgpProcessPropertySpecAutocomplete() {
     assertThat(
         AutoCompleteUtils.autoComplete(Type.BGP_PROCESS_PROPERTY_SPEC, "multi", 5).stream()
             .map(AutocompleteSuggestion::getText)
@@ -181,7 +180,7 @@ public class AutoCompleteUtilsTest {
   }
 
   @Test
-  public void testBgpSessionStatusAutocomplete() throws IOException {
+  public void testBgpSessionStatusAutocomplete() {
     assertThat(
         AutoCompleteUtils.autoComplete(Type.BGP_SESSION_STATUS, "match", 5).stream()
             .map(AutocompleteSuggestion::getText)
@@ -192,7 +191,7 @@ public class AutoCompleteUtilsTest {
   }
 
   @Test
-  public void testBgpSessionTypeAutocomplete() throws IOException {
+  public void testBgpSessionTypeAutocomplete() {
     assertThat(
         AutoCompleteUtils.autoComplete(Type.BGP_SESSION_TYPE, "bgp", 10).stream()
             .map(AutocompleteSuggestion::getText)
@@ -207,7 +206,7 @@ public class AutoCompleteUtilsTest {
   }
 
   @Test
-  public void testDispositionSpecAutocomplete() throws IOException {
+  public void testDispositionSpecAutocomplete() {
     assertThat(
         AutoCompleteUtils.autoComplete(Type.DISPOSITION_SPEC, "s", 5).stream()
             .map(AutocompleteSuggestion::getText)
@@ -221,7 +220,7 @@ public class AutoCompleteUtilsTest {
   }
 
   @Test
-  public void testFilterAutocomplete() throws IOException {
+  public void testFilterAutocomplete() {
     String network = "network";
     String snapshot = "snapshot";
 
@@ -243,7 +242,7 @@ public class AutoCompleteUtilsTest {
   }
 
   @Test
-  public void testFlowStateAutocomplete() throws IOException {
+  public void testFlowStateAutocomplete() {
     assertThat(
         AutoCompleteUtils.autoComplete(Type.FLOW_STATE, "e", 5).stream()
             .map(AutocompleteSuggestion::getText)
@@ -252,7 +251,7 @@ public class AutoCompleteUtilsTest {
   }
 
   @Test
-  public void testInterfaceAutocomplete() throws IOException {
+  public void testInterfaceAutocomplete() {
     String network = "network";
     String snapshot = "snapshot";
 
@@ -274,7 +273,7 @@ public class AutoCompleteUtilsTest {
   }
 
   @Test
-  public void testInterfaceGroupAutocomplete() throws IOException {
+  public void testInterfaceGroupAutocomplete() {
     ReferenceLibrary library =
         new ReferenceLibrary(
             ImmutableList.of(
@@ -318,7 +317,7 @@ public class AutoCompleteUtilsTest {
   }
 
   @Test
-  public void testInterfacePropertySpecAutocomplete() throws IOException {
+  public void testInterfacePropertySpecAutocomplete() {
     assertThat(
         AutoCompleteUtils.autoComplete(Type.INTERFACE_PROPERTY_SPEC, "vlan", 5).stream()
             .map(AutocompleteSuggestion::getText)
@@ -329,7 +328,7 @@ public class AutoCompleteUtilsTest {
   }
 
   @Test
-  public void testIpAutocomplete() throws IOException {
+  public void testIpAutocomplete() {
     String network = "network";
     String snapshot = "snapshot";
 
@@ -348,7 +347,7 @@ public class AutoCompleteUtilsTest {
   }
 
   @Test
-  public void testIpProtocolSpecAutocomplete() throws IOException {
+  public void testIpProtocolSpecAutocomplete() {
     assertThat(
         AutoCompleteUtils.autoComplete(Type.IP_PROTOCOL_SPEC, "OSP", 5).stream()
             .map(AutocompleteSuggestion::getText)
@@ -357,7 +356,7 @@ public class AutoCompleteUtilsTest {
   }
 
   @Test
-  public void testIpsecSessionStatusAutocomplete() throws IOException {
+  public void testIpsecSessionStatusAutocomplete() {
     assertThat(
         AutoCompleteUtils.autoComplete(Type.IPSEC_SESSION_STATUS, "phase", 5).stream()
             .map(AutocompleteSuggestion::getText)
@@ -379,7 +378,7 @@ public class AutoCompleteUtilsTest {
   }
 
   @Test
-  public void testNodePropertySpecAutocomplete() throws IOException {
+  public void testNodePropertySpecAutocomplete() {
     assertThat(
         AutoCompleteUtils.autoComplete(Type.NODE_PROPERTY_SPEC, "dns", 5).stream()
             .map(AutocompleteSuggestion::getText)
@@ -388,7 +387,7 @@ public class AutoCompleteUtilsTest {
   }
 
   @Test
-  public void testQueryWithNoMatchesHasSuggestions() throws IOException {
+  public void testQueryWithNoMatchesHasSuggestions() {
     CompletionMetadata completionMetadata = getMockCompletionMetadata();
 
     // the query 'leax' does not match any node names so removing characters off the end should give
@@ -403,7 +402,7 @@ public class AutoCompleteUtilsTest {
 
   @Ignore
   @Test
-  public void testNodeNameAutocompleteEmptyString() throws IOException {
+  public void testNodeNameAutocompleteEmptyString() {
     CompletionMetadata completionMetadata = getMockCompletionMetadata();
 
     // All node names in alphabetical order with escaped names at the end
@@ -419,7 +418,7 @@ public class AutoCompleteUtilsTest {
   }
 
   @Test
-  public void testNodeNameAutocompleteNonPrefixCharacter() throws IOException {
+  public void testNodeNameAutocompleteNonPrefixCharacter() {
     CompletionMetadata completionMetadata = getMockCompletionMetadata();
 
     // All node names containing ‘o’ in alphabetical order with escaped names at the end
@@ -433,7 +432,7 @@ public class AutoCompleteUtilsTest {
   }
 
   @Test
-  public void testNodeNameAutocompleteOnePrefixCharacter() throws IOException {
+  public void testNodeNameAutocompleteOnePrefixCharacter() {
     CompletionMetadata completionMetadata = getMockCompletionMetadata();
 
     // “Spine” suggested first because the input string is a prefix of it; “host1” and “host2” come
@@ -448,7 +447,7 @@ public class AutoCompleteUtilsTest {
   }
 
   @Test
-  public void testNodeNameAutocompletePrefixQuery() throws IOException {
+  public void testNodeNameAutocompletePrefixQuery() {
     CompletionMetadata completionMetadata = getMockCompletionMetadata();
 
     // Node names where the input string is a prefix suggested first, then node names containing the
@@ -463,7 +462,7 @@ public class AutoCompleteUtilsTest {
   }
 
   @Test
-  public void testNodeNameAutocompleteUnmatchableCharacterAtEnd() throws IOException {
+  public void testNodeNameAutocompleteUnmatchableCharacterAtEnd() {
     CompletionMetadata completionMetadata = getMockCompletionMetadata();
 
     // “leax” does not match any of the node names so removing characters from the end until there
@@ -479,7 +478,7 @@ public class AutoCompleteUtilsTest {
 
   @Ignore
   @Test
-  public void testNodeNameAutocompleteUnmatchableCharacter() throws IOException {
+  public void testNodeNameAutocompleteUnmatchableCharacter() {
     CompletionMetadata completionMetadata = getMockCompletionMetadata();
 
     // None of the nodenames contain “x” so removing characters from the end of the input string
@@ -496,7 +495,7 @@ public class AutoCompleteUtilsTest {
   }
 
   @Test
-  public void testNodeNameAutocompleteUnmatchableCharacterInMiddle() throws IOException {
+  public void testNodeNameAutocompleteUnmatchableCharacterInMiddle() {
     CompletionMetadata completionMetadata = getMockCompletionMetadata();
 
     // ‘Leaxf’ does not result in any suggestions so removing characters off the end until there are
@@ -511,7 +510,7 @@ public class AutoCompleteUtilsTest {
   }
 
   @Test
-  public void testNodeNameAutocompleteEscapedPartial() throws IOException {
+  public void testNodeNameAutocompleteEscapedPartial() {
     CompletionMetadata completionMetadata = getMockCompletionMetadata();
 
     // Only one node name contains “/leaf” (escaped)
@@ -532,7 +531,7 @@ public class AutoCompleteUtilsTest {
   }
 
   @Test
-  public void testNodeNameAutocompleteUnescapedPartial() throws IOException {
+  public void testNodeNameAutocompleteUnescapedPartial() {
     CompletionMetadata completionMetadata = getMockCompletionMetadata();
 
     // Unescaped input doesn’t match anything, adding quotes gives us one match
@@ -546,7 +545,7 @@ public class AutoCompleteUtilsTest {
   }
 
   @Test
-  public void testNodeNameAutocompleteValidInputIncluded() throws IOException {
+  public void testNodeNameAutocompleteValidInputIncluded() {
     CompletionMetadata completionMetadata = getMockCompletionMetadata();
 
     // Since the input text ‘leaf’ is valid it is included as the first suggestion
@@ -561,7 +560,7 @@ public class AutoCompleteUtilsTest {
 
   @Ignore
   @Test
-  public void testAlreadySpecifiedSuggestionsFilteredOut() throws IOException {
+  public void testAlreadySpecifiedSuggestionsFilteredOut() {
     List<AutocompleteSuggestion> suggestions =
         AutoCompleteUtils.autoComplete(Type.ROUTING_PROTOCOL_SPEC, "EIGRP-INT, EIGRP-", 10);
 
@@ -573,7 +572,7 @@ public class AutoCompleteUtilsTest {
 
   @Ignore
   @Test
-  public void testRoutingProtocolSpecifiedMultipleTimes() throws IOException {
+  public void testRoutingProtocolSpecifiedMultipleTimes() {
     List<AutocompleteSuggestion> suggestions =
         AutoCompleteUtils.autoComplete(Type.ROUTING_PROTOCOL_SPEC, "EIGRP-INT, EIGRP-INT", 10);
 
@@ -586,7 +585,7 @@ public class AutoCompleteUtilsTest {
 
   @Ignore
   @Test
-  public void testIpSpaceSpecEmptyString() throws IOException {
+  public void testIpSpaceSpecEmptyString() {
     CompletionMetadata completionMetadata = getMockCompletionMetadata();
 
     // Any Ips first in ascending order, then any node names in alphabetical order, then any partial
@@ -627,7 +626,7 @@ public class AutoCompleteUtilsTest {
 
   @Ignore
   @Test
-  public void testIpSpeceSpecSingleDigitQuery() throws IOException {
+  public void testIpSpeceSpecSingleDigitQuery() {
     CompletionMetadata completionMetadata = getMockCompletionMetadata();
 
     // first ip addresses that begin with 1 in ascending order followed by those that contain a 1,
@@ -652,7 +651,7 @@ public class AutoCompleteUtilsTest {
 
   @Ignore
   @Test
-  public void testIpSpaceSpecSingleDigitAndPeriod() throws IOException {
+  public void testIpSpaceSpecSingleDigitAndPeriod() {
     CompletionMetadata completionMetadata = getMockCompletionMetadata();
 
     // First Ip addresses that begin with ‘1.’, then addresses that contain the value 1 (as in
@@ -675,7 +674,7 @@ public class AutoCompleteUtilsTest {
 
   @Ignore
   @Test
-  public void testIpSpaceSpecPartialIpQuery() throws IOException {
+  public void testIpSpaceSpecPartialIpQuery() {
     CompletionMetadata completionMetadata = getMockCompletionMetadata();
 
     // First any Ip addresses that begin with ‘1.2’, then addresses that contain the value 1 as one
@@ -698,7 +697,7 @@ public class AutoCompleteUtilsTest {
 
   @Ignore
   @Test
-  public void testIpSpaceSpecValidIpQuery() throws IOException {
+  public void testIpSpaceSpecValidIpQuery() {
     CompletionMetadata completionMetadata = getMockCompletionMetadata();
 
     // Exact match first, then any addresses that contain ‘1.2.3.4’, then any operators that we can
@@ -722,7 +721,7 @@ public class AutoCompleteUtilsTest {
 
   @Ignore
   @Test
-  public void testIpSpaceSpecIpRange() throws IOException {
+  public void testIpSpaceSpecIpRange() {
     CompletionMetadata completionMetadata = getMockCompletionMetadata();
 
     // Only Ip addresses that are greater than the address at the start of the range in ascending
@@ -745,7 +744,7 @@ public class AutoCompleteUtilsTest {
 
   @Ignore
   @Test
-  public void testIpSpaceSpecIpRangeNoEndRange() throws IOException {
+  public void testIpSpaceSpecIpRangeNoEndRange() {
     CompletionMetadata completionMetadata = getMockCompletionMetadata();
 
     // None of the addresses in the network are less than 11.2.3.4 so those shouldn’t be suggested
@@ -769,7 +768,7 @@ public class AutoCompleteUtilsTest {
 
   @Ignore
   @Test
-  public void testIpSpaceSpecSingleLetterCharacter() throws IOException {
+  public void testIpSpaceSpecSingleLetterCharacter() {
     CompletionMetadata completionMetadata = getMockCompletionMetadata();
 
     // First any node names that begin with ‘e’, then partial suggestions that begin with ‘e’
@@ -803,7 +802,7 @@ public class AutoCompleteUtilsTest {
 
   @Ignore
   @Test
-  public void testIpSpaceSpecFunctionsOnly() throws IOException {
+  public void testIpSpaceSpecFunctionsOnly() {
     CompletionMetadata completionMetadata = getMockCompletionMetadata();
 
     // Just the valid function names in alphabetical order
@@ -827,7 +826,7 @@ public class AutoCompleteUtilsTest {
 
   @Ignore
   @Test
-  public void testInterfacesSpecEmptyString() throws IOException {
+  public void testInterfacesSpecEmptyString() {
     CompletionMetadata completionMetadata = getMockCompletionMetadata();
 
     // Alphabetical with interfaces first and then nodes, then functions with valid completions,
@@ -873,7 +872,7 @@ public class AutoCompleteUtilsTest {
 
   @Ignore
   @Test
-  public void testInterfacesSpecSingleCharacter() throws IOException {
+  public void testInterfacesSpecSingleCharacter() {
     CompletionMetadata completionMetadata = getMockCompletionMetadata();
 
     // First interfaces beginning with 'e', then nodes beginning with 'e', then interfaces
@@ -912,7 +911,7 @@ public class AutoCompleteUtilsTest {
 
   @Ignore
   @Test
-  public void testInterfacesSpecNodeNamePrefix() throws IOException {
+  public void testInterfacesSpecNodeNamePrefix() {
     CompletionMetadata completionMetadata = getMockCompletionMetadata();
 
     // “Router1” first because the input text is a prefix, then interfaces, nodes, functions
@@ -945,7 +944,7 @@ public class AutoCompleteUtilsTest {
 
   @Ignore
   @Test
-  public void testInterfacesSpecExactMatch() throws IOException {
+  public void testInterfacesSpecExactMatch() {
     CompletionMetadata completionMetadata = getMockCompletionMetadata();
 
     // Exact match first, then suggestions where input string is a prefix, then any remaining
@@ -968,7 +967,7 @@ public class AutoCompleteUtilsTest {
 
   @Ignore
   @Test
-  public void testInterfacesSpecInvalid() throws IOException {
+  public void testInterfacesSpecInvalid() {
     CompletionMetadata completionMetadata = getMockCompletionMetadata();
 
     // ‘leaxf’ does not result in any suggestions so removing characters off the end until there are
@@ -992,7 +991,7 @@ public class AutoCompleteUtilsTest {
 
   @Ignore
   @Test
-  public void testInterfacesSpecInterfaceWithNode() throws IOException {
+  public void testInterfacesSpecInterfaceWithNode() {
     CompletionMetadata completionMetadata = getMockCompletionMetadata();
 
     // First any partial suggestions: first interfaces on the node, then functions, then operators
@@ -1016,7 +1015,7 @@ public class AutoCompleteUtilsTest {
 
   @Ignore
   @Test
-  public void testInterfacesSpecValidInterface() throws IOException {
+  public void testInterfacesSpecValidInterface() {
     CompletionMetadata completionMetadata = getMockCompletionMetadata();
 
     // First any suggestions that would make a valid input, then any partial suggestions
@@ -1037,7 +1036,7 @@ public class AutoCompleteUtilsTest {
   }
 
   @Test
-  public void testNodeRoleDimensionAutocomplete() throws IOException {
+  public void testNodeRoleDimensionAutocomplete() {
     String network = "network";
 
     NodeRoleDimension suggested = NodeRoleDimension.builder().setName("someDimension").build();
@@ -1064,7 +1063,7 @@ public class AutoCompleteUtilsTest {
   }
 
   @Test
-  public void testNodeRoleNameAutocomplete() throws IOException {
+  public void testNodeRoleNameAutocomplete() {
     String network = "network";
 
     NodeRolesData nodeRolesData =
@@ -1093,7 +1092,7 @@ public class AutoCompleteUtilsTest {
   }
 
   @Test
-  public void testNodeSpecAutocomplete() throws IOException {
+  public void testNodeSpecAutocomplete() {
     String network = "network";
     String snapshot = "snapshot";
 
@@ -1112,7 +1111,7 @@ public class AutoCompleteUtilsTest {
   }
 
   @Test
-  public void testOspfPropertySpecAutocomplete() throws IOException {
+  public void testOspfPropertySpecAutocomplete() {
     assertThat(
         AutoCompleteUtils.autoComplete(Type.OSPF_PROPERTY_SPEC, "area", 5).stream()
             .map(AutocompleteSuggestion::getText)
@@ -1121,7 +1120,7 @@ public class AutoCompleteUtilsTest {
   }
 
   @Test
-  public void testPrefixAutocomplete() throws IOException {
+  public void testPrefixAutocomplete() {
     String network = "network";
     String snapshot = "snapshot";
 
@@ -1140,7 +1139,7 @@ public class AutoCompleteUtilsTest {
   }
 
   @Test
-  public void testProtocolAutocomplete() throws IOException {
+  public void testProtocolAutocomplete() {
     assertThat(
         AutoCompleteUtils.autoComplete(Type.PROTOCOL, "h", 5).stream()
             .map(AutocompleteSuggestion::getText)
@@ -1149,7 +1148,7 @@ public class AutoCompleteUtilsTest {
   }
 
   @Test
-  public void testReferenceBookAutocomplete() throws IOException {
+  public void testReferenceBookAutocomplete() {
     ReferenceLibrary library =
         new ReferenceLibrary(
             ImmutableList.of(
@@ -1186,7 +1185,7 @@ public class AutoCompleteUtilsTest {
   }
 
   @Test
-  public void testRoutingPolicyNameAutocomplete() throws IOException {
+  public void testRoutingPolicyNameAutocomplete() {
     String network = "network";
     String snapshot = "snapshot";
 
@@ -1215,7 +1214,7 @@ public class AutoCompleteUtilsTest {
   }
 
   @Test
-  public void testRoutingProtocolSpecAutocomplete() throws IOException {
+  public void testRoutingProtocolSpecAutocomplete() {
     assertThat(
         AutoCompleteUtils.autoComplete(Type.ROUTING_PROTOCOL_SPEC, "bgp", 5).stream()
             .map(AutocompleteSuggestion::getText)
@@ -1236,7 +1235,7 @@ public class AutoCompleteUtilsTest {
   }
 
   @Test
-  public void testStructureNameAutocomplete() throws IOException {
+  public void testStructureNameAutocomplete() {
     String network = "network";
     String snapshot = "snapshot";
 
@@ -1258,7 +1257,7 @@ public class AutoCompleteUtilsTest {
   }
 
   @Test
-  public void testVrfAutocomplete() throws IOException {
+  public void testVrfAutocomplete() {
     String network = "network";
     String snapshot = "snapshot";
 
@@ -1278,7 +1277,7 @@ public class AutoCompleteUtilsTest {
   }
 
   @Test
-  public void testZoneAutocomplete() throws IOException {
+  public void testZoneAutocomplete() {
     String network = "network";
     String snapshot = "snapshot";
 
@@ -1298,7 +1297,7 @@ public class AutoCompleteUtilsTest {
   }
 
   @Test
-  public void testAutocompleteUnsupportedType() throws IOException {
+  public void testAutocompleteUnsupportedType() {
     Type type = Type.ANSWER_ELEMENT;
 
     assertThat(

@@ -89,7 +89,7 @@ public final class QuestionSettingsResourceTest extends WorkMgrServiceV2TestBase
   }
 
   @Before
-  public void initTestEnvironment() throws Exception {
+  public void initTestEnvironment() {
     _idManager =
         new LocalIdManager() {
           @Override

@@ -98,7 +98,7 @@ public class WorkMgrServiceV2Test extends WorkMgrServiceV2TestBase {
   }
 
   @Test
-  public void testGetQuestionTemplatesConfigured() throws Exception {
+  public void testGetQuestionTemplatesConfigured() {
     String templateName = "template1";
     String templateText = writeTemplateFile(templateName);
     Response response =
@@ -128,7 +128,7 @@ public class WorkMgrServiceV2Test extends WorkMgrServiceV2TestBase {
   }
 
   @Test
-  public void testGetQuestionTemplatesConfiguredVerbose() throws Exception {
+  public void testGetQuestionTemplatesConfiguredVerbose() {
     String templateName = "template1";
     String hiddenTemplateName = "__template2";
     String templateText = writeTemplateFile(templateName);

@@ -66,7 +66,7 @@ public final class NetworkNodeRolesResourceTest extends WorkMgrServiceV2TestBase
   }
 
   @Test
-  public void testGetNodeRolesDefault() throws IOException {
+  public void testGetNodeRolesDefault() {
     String network = "someContainer";
     Main.getWorkMgr().initNetwork(network, null);
     NodeRolesData nodeRolesData = NodeRolesData.builder().build();
@@ -78,7 +78,7 @@ public final class NetworkNodeRolesResourceTest extends WorkMgrServiceV2TestBase
   }
 
   @Test
-  public void testGetNodeRolesMissingNetwork() throws IOException {
+  public void testGetNodeRolesMissingNetwork() {
     String network = "someContainer";
     Response response = getNodeRolesTarget(network).get();
 
@@ -197,7 +197,7 @@ public final class NetworkNodeRolesResourceTest extends WorkMgrServiceV2TestBase
   }
 
   @Test
-  public void testPutNodeRolesNull() throws IOException {
+  public void testPutNodeRolesNull() {
     String network = "someContainer";
     Main.getWorkMgr().initNetwork(network, null);
     Response response =

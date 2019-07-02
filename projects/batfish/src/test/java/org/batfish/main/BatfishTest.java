@@ -92,7 +92,7 @@ public class BatfishTest {
       };
 
   @Test
-  public void testAnswerBadQuestion() throws IOException {
+  public void testAnswerBadQuestion() {
     // missing class field
     Batfish batfish =
         BatfishTestUtils.getBatfish(
@@ -484,7 +484,7 @@ public class BatfishTest {
             new TestStorageProvider() {
               @Override
               public String loadQuestionSettings(
-                  NetworkId network, QuestionSettingsId questionSettingsId) throws IOException {
+                  NetworkId network, QuestionSettingsId questionSettingsId) {
                 return questionSettings;
               }
             },
@@ -511,7 +511,7 @@ public class BatfishTest {
             new TestStorageProvider() {
               @Override
               public String loadQuestionSettings(
-                  NetworkId networkId, QuestionSettingsId questionSettingsId) throws IOException {
+                  NetworkId networkId, QuestionSettingsId questionSettingsId) {
                 return null;
               }
             },

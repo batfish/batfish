@@ -1060,7 +1060,7 @@ public class WorkMgr extends AbstractCoordinator {
       String referenceSnapshot,
       String analysis,
       Set<String> analysisQuestions)
-      throws JsonProcessingException, FileNotFoundException {
+      throws JsonProcessingException {
     Set<String> questions =
         analysisQuestions.isEmpty() ? listAnalysisQuestions(network, analysis) : analysisQuestions;
     ImmutableSortedMap.Builder<String, String> result = ImmutableSortedMap.naturalOrder();
@@ -1086,8 +1086,7 @@ public class WorkMgr extends AbstractCoordinator {
       String snapshot,
       String referenceSnapshot,
       String analysis,
-      Set<String> analysisQuestions)
-      throws JsonProcessingException, FileNotFoundException {
+      Set<String> analysisQuestions) {
     Set<String> questions =
         analysisQuestions.isEmpty() ? listAnalysisQuestions(network, analysis) : analysisQuestions;
     ImmutableSortedMap.Builder<String, AnswerMetadata> result = ImmutableSortedMap.naturalOrder();
@@ -1110,8 +1109,7 @@ public class WorkMgr extends AbstractCoordinator {
       @Nonnull String snapshot,
       @Nonnull String question,
       @Nullable String referenceSnapshot,
-      @Nullable String analysis)
-      throws JsonProcessingException, FileNotFoundException {
+      @Nullable String analysis) {
     try {
       NetworkId networkId = _idManager.getNetworkId(network);
       AnalysisId analysisId =

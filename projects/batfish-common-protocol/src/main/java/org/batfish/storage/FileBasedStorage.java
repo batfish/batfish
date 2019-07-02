@@ -587,7 +587,7 @@ public final class FileBasedStorage implements StorageProvider {
 
   @Override
   public String loadQuestionClassId(
-      NetworkId networkId, QuestionId questionId, AnalysisId analysisId) throws IOException {
+      NetworkId networkId, QuestionId questionId, AnalysisId analysisId) {
     return Question.parseQuestion(loadQuestion(networkId, questionId, analysisId)).getName();
   }
 
@@ -754,7 +754,7 @@ public final class FileBasedStorage implements StorageProvider {
   }
 
   private @Nonnull Path getSnapshotObjectPath(
-      NetworkId networkId, SnapshotId snapshotId, String key) throws IOException {
+      NetworkId networkId, SnapshotId snapshotId, String key) {
     String encodedKey = toBase64(key);
     return _d.getSnapshotObjectsDir(networkId, snapshotId).resolve(encodedKey);
   }
@@ -867,8 +867,7 @@ public final class FileBasedStorage implements StorageProvider {
   }
 
   @VisibleForTesting
-  Path getSnapshotInputObjectPath(NetworkId networkId, SnapshotId snapshotId, String key)
-      throws IOException {
+  Path getSnapshotInputObjectPath(NetworkId networkId, SnapshotId snapshotId, String key) {
     Path relativePath = objectKeyToRelativePath(key);
     return _d.getSnapshotInputObjectsDir(networkId, snapshotId).resolve(relativePath);
   }
