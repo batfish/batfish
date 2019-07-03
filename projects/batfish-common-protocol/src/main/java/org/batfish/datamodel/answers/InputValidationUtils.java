@@ -75,7 +75,7 @@ public final class InputValidationUtils {
             Grammar.LOCATION_SPECIFIER, query, completionMetadata, nodeRolesData, referenceLibrary);
       case NAMED_STRUCTURE_SPEC:
         return ParboiledInputValidator.validateEnumSet(
-            NamedStructurePropertySpecifier.JAVA_MAP.keySet(), query);
+            NamedStructurePropertySpecifier.ALL.getMatchingProperties(), query);
       case NODE_SPEC:
         return ParboiledInputValidator.validate(
             Grammar.NODE_SPECIFIER, query, completionMetadata, nodeRolesData, referenceLibrary);
