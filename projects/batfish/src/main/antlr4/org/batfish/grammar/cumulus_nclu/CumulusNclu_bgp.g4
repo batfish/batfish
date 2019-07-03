@@ -33,7 +33,8 @@ b_ipv4_unicast
 :
   IPV4 UNICAST
   (
-    bi4_network
+    bi4_neighbor
+    | bi4_network
     | bi4_redistribute_connected
     | bi4_redistribute_static
   )
@@ -42,6 +43,25 @@ b_ipv4_unicast
 bi4_network
 :
   NETWORK network = ip_prefix NEWLINE
+;
+
+bi4_neighbor
+:
+  NEIGHBOR name = word
+  (
+    bi4n_activate
+    | bi4n_route_reflector_client
+  )
+;
+
+bi4n_activate
+:
+  ACTIVATE NEWLINE
+;
+
+bi4n_route_reflector_client
+:
+  ROUTE_REFLECTOR_CLIENT NEWLINE
 ;
 
 bi4_redistribute_connected
@@ -88,13 +108,23 @@ ble_advertise_ipv4_unicast
 
 ble_neighbor
 :
-  NEIGHBOR name = word blen_activate
+  NEIGHBOR name = word
+  (
+    blen_activate
+    | blen_route_reflector_client
+  )
 ;
 
 blen_activate
 :
   ACTIVATE NEWLINE
 ;
+
+blen_route_reflector_client
+:
+  ROUTE_REFLECTOR_CLIENT NEWLINE
+;
+
 
 /*
  * This is a mess. The Cumulus grammar is ambiguous - you can't quite tell what grammar is legal
