@@ -68797,6 +68797,12 @@
             "        PRIVILEGE:'privilege')",
             "      NEWLINE:'\\n'))",
             "  (stanza",
+            "    (s_feature",
+            "      FEATURE:'feature'",
+            "      (variable",
+            "        BFD:'bfd')",
+            "      NEWLINE:'\\n'))",
+            "  (stanza",
             "    (s_interface",
             "      INTERFACE:'interface'",
             "      iname = (interface_name",
@@ -68850,6 +68856,38 @@
             "          NO:'no'",
             "          SHUTDOWN:'shutdown'",
             "          NEWLINE:'\\n'))))",
+            "  (stanza",
+            "    (s_interface",
+            "      INTERFACE:'interface'",
+            "      iname = (interface_name",
+            "        name_prefix_alpha = M_Interface_PREFIX:'Ethernet'  <== mode:M_Interface",
+            "        DEC:'0'  <== mode:M_Interface",
+            "        FORWARD_SLASH:'/'  <== mode:M_Interface",
+            "        (range",
+            "          (subrange",
+            "            low = DEC:'1'  <== mode:M_Interface)))",
+            "      NEWLINE:'\\n'  <== mode:M_Interface",
+            "      (if_inner",
+            "        (if_bfd",
+            "          BFD:'bfd'",
+            "          (nxos_if_bfd_per_link",
+            "            PER_LINK:'per-link'",
+            "            NEWLINE:'\\n')))",
+            "      (if_inner",
+            "        (if_bfd",
+            "          BFD:'bfd'",
+            "          (if_bfd_neighbor",
+            "            NEIGHBOR:'neighbor'",
+            "            SRC_IP:'src-ip'  <== mode:M_NEIGHBOR",
+            "            src_ip = IP_ADDRESS:'10.1.1.1'",
+            "            DEST_IP:'dest-ip'",
+            "            dst_ip = IP_ADDRESS:'10.2.2.2'",
+            "            NEWLINE:'\\n')))",
+            "      (if_inner",
+            "        (if_mtu",
+            "          MTU:'mtu'",
+            "          mtu_size = DEC:'2000'",
+            "          NEWLINE:'\\n\\n'))))",
             "  EOF:<EOF>)"
           ]
         },
@@ -75945,13 +75983,13 @@
           "Parse warnings" : [
             {
               "Comment" : "Unsupported: route-preference declared in interface IP address",
-              "Line" : 6,
+              "Line" : 7,
               "Parser_Context" : "[if_ip_address if_inner s_interface stanza cisco_configuration]",
               "Text" : "ip address 1.2.3.4/24 route-preference 10 tag 12345"
             },
             {
               "Comment" : "Unsupported: tag declared in interface IP address",
-              "Line" : 6,
+              "Line" : 7,
               "Parser_Context" : "[if_ip_address if_inner s_interface stanza cisco_configuration]",
               "Text" : "ip address 1.2.3.4/24 route-preference 10 tag 12345"
             }
@@ -82224,18 +82262,27 @@
           "interface" : {
             "Ethernet0/0" : {
               "definitionLines" : [
-                5,
                 6,
                 7,
                 8,
-                9
+                9,
+                10
+              ],
+              "numReferrers" : 1
+            },
+            "Ethernet0/1" : {
+              "definitionLines" : [
+                15,
+                16,
+                17,
+                18
               ],
               "numReferrers" : 1
             },
             "nve1" : {
               "definitionLines" : [
-                11,
-                12
+                12,
+                13
               ],
               "numReferrers" : 1
             }
@@ -88012,12 +88059,17 @@
           "interface" : {
             "Ethernet0/0" : {
               "interface" : [
-                5
+                6
+              ]
+            },
+            "Ethernet0/1" : {
+              "interface" : [
+                15
               ]
             },
             "nve1" : {
               "interface" : [
-                11
+                12
               ]
             }
           }
