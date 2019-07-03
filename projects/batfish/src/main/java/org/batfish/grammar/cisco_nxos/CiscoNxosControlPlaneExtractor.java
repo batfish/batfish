@@ -47,7 +47,7 @@ import org.batfish.grammar.cisco_nxos.CiscoNxosParser.I_switchport_accessContext
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.I_switchport_trunk_allowedContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.I_switchport_trunk_nativeContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Interface_addressContext;
-import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Interface_bandwidthContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Interface_bandwidth_kbpsContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Interface_prefixContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Ip_addressContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.S_hostnameContext;
@@ -482,7 +482,7 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
   }
 
   private @Nullable Integer toBandwidth(
-      ParserRuleContext messageCtx, Interface_bandwidthContext ctx) {
+      ParserRuleContext messageCtx, Interface_bandwidth_kbpsContext ctx) {
     int bandwidth = Integer.parseInt(ctx.getText());
     if (!BANDWIDTH_RANGE.contains(bandwidth)) {
       _w.redFlag(

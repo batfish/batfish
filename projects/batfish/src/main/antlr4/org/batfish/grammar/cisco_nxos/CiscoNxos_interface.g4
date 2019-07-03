@@ -23,12 +23,12 @@ s_interface
 
 i_bandwidth
 :
-  BANDWIDTH bw = interface_bandwidth NEWLINE
+  BANDWIDTH bw = interface_bandwidth_kbps NEWLINE
 ;
 
-interface_bandwidth
+interface_bandwidth_kbps
 :
-// 1-100000000
+// 1-100000000, units are kbps (for effective range of 1kbps-100Gbps)
   UINT8
   | UINT16
   | UINT32
