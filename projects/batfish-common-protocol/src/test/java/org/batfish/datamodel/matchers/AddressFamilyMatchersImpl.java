@@ -9,7 +9,7 @@ import org.hamcrest.Matcher;
 final class AddressFamilyMatchersImpl {
   static final class HasExportPolicy extends FeatureMatcher<AddressFamily, String> {
     HasExportPolicy(@Nonnull Matcher<? super String> subMatcher) {
-      super(subMatcher, "A AddressFamily with exportPolicy:", "exportPolicy");
+      super(subMatcher, "An AddressFamily with exportPolicy:", "exportPolicy");
     }
 
     @Override
@@ -18,15 +18,26 @@ final class AddressFamilyMatchersImpl {
     }
   }
 
-  static final class HasAddressFamilySettings
+  static final class HasAddressFamilyCapabilities
       extends FeatureMatcher<AddressFamily, AddressFamilyCapabilities> {
-    HasAddressFamilySettings(@Nonnull Matcher<? super AddressFamilyCapabilities> subMatcher) {
+    HasAddressFamilyCapabilities(@Nonnull Matcher<? super AddressFamilyCapabilities> subMatcher) {
       super(subMatcher, "An AddressFamily with addressFamilySettings:", "addressFamilySettings");
     }
 
     @Override
     protected AddressFamilyCapabilities featureValueOf(AddressFamily actual) {
       return actual.getAddressFamilyCapabilities();
+    }
+  }
+
+  static final class HasRouteReflectorClient extends FeatureMatcher<AddressFamily, Boolean> {
+    HasRouteReflectorClient(@Nonnull Matcher<? super Boolean> subMatcher) {
+      super(subMatcher, "An AddressFamily with routeReflectorClient:", "routeReflectorClient");
+    }
+
+    @Override
+    protected Boolean featureValueOf(AddressFamily actual) {
+      return actual.getRouteReflectorClient();
     }
   }
 

@@ -4,8 +4,10 @@ import static org.batfish.datamodel.BgpPeerConfig.ALL_AS_NUMBERS;
 import static org.batfish.datamodel.Configuration.DEFAULT_VRF_NAME;
 import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasPrefix;
 import static org.batfish.datamodel.matchers.AddressFamilyCapabilitiesMatchers.hasSendCommunity;
-import static org.batfish.datamodel.matchers.AddressFamilyMatchers.hasAddressFamilySettings;
+import static org.batfish.datamodel.matchers.AddressFamilyMatchers.hasAddressFamilyCapabilites;
 import static org.batfish.datamodel.matchers.AddressFamilyMatchers.hasExportPolicy;
+import static org.batfish.datamodel.matchers.AddressFamilyMatchers.hasRouteReflectorClient;
+import static org.batfish.datamodel.matchers.BgpNeighborMatchers.hasEvpnAddressFamily;
 import static org.batfish.datamodel.matchers.BgpNeighborMatchers.hasIpv4UnicastAddressFamily;
 import static org.batfish.datamodel.matchers.BgpNeighborMatchers.hasLocalAs;
 import static org.batfish.datamodel.matchers.BgpNeighborMatchers.hasRemoteAs;
@@ -257,7 +259,7 @@ public final class CumulusNcluGrammarTest {
                                     BgpPeerConfig.ALL_AS_NUMBERS.difference(LongSpace.of(65100L))),
                                 hasIpv4UnicastAddressFamily(
                                     allOf(
-                                        hasAddressFamilySettings(hasSendCommunity(true)),
+                                        hasAddressFamilyCapabilites(hasSendCommunity(true)),
                                         hasExportPolicy(
                                             computeBgpPeerExportPolicyName(
                                                 DEFAULT_VRF_NAME, iface)))))))))));
@@ -277,7 +279,7 @@ public final class CumulusNcluGrammarTest {
                                     BgpPeerConfig.ALL_AS_NUMBERS.difference(LongSpace.of(65101L))),
                                 hasIpv4UnicastAddressFamily(
                                     allOf(
-                                        hasAddressFamilySettings(hasSendCommunity(true)),
+                                        hasAddressFamilyCapabilites(hasSendCommunity(true)),
                                         hasExportPolicy(
                                             computeBgpPeerExportPolicyName(
                                                 DEFAULT_VRF_NAME, iface)))))))))));
@@ -314,7 +316,7 @@ public final class CumulusNcluGrammarTest {
         hasIpv4UnicastAddressFamily(
             allOf(
                 hasExportPolicy(peerExportPolicyName),
-                hasAddressFamilySettings(hasSendCommunity(true)))));
+                hasAddressFamilyCapabilites(hasSendCommunity(true)))));
 
     BgpUnnumberedPeerConfig pc2 =
         c.getDefaultVrf().getBgpProcess().getInterfaceNeighbors().get("swp2");
@@ -323,6 +325,7 @@ public final class CumulusNcluGrammarTest {
     BgpUnnumberedPeerConfig pc3 =
         c.getDefaultVrf().getBgpProcess().getInterfaceNeighbors().get("swp3");
     assertThat(pc3, hasRemoteAs(equalTo(LongSpace.of(65000L))));
+    assertThat(pc3, hasEvpnAddressFamily(hasRouteReflectorClient(true)));
 
     //// generated routing policies
 

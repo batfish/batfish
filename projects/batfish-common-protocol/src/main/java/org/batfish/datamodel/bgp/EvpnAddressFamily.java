@@ -33,6 +33,7 @@ public final class EvpnAddressFamily extends AddressFamily {
       SortedSet<String> exportPolicySources,
       @Nullable String importPolicy,
       SortedSet<String> importPolicySources,
+      boolean routeReflectorClient,
       // local fields
       Set<Layer2VniConfig> l2Vnis,
       Set<Layer3VniConfig> l3Vnis,
@@ -42,7 +43,8 @@ public final class EvpnAddressFamily extends AddressFamily {
         exportPolicy,
         exportPolicySources,
         importPolicy,
-        importPolicySources);
+        importPolicySources,
+        routeReflectorClient);
     _l2VNIs = ImmutableSortedSet.copyOf(l2Vnis);
     _l3VNIs = ImmutableSortedSet.copyOf(l3Vnis);
     _propagateUnmatched = propagateUnmatched;
@@ -57,6 +59,7 @@ public final class EvpnAddressFamily extends AddressFamily {
       @Nullable @JsonProperty(PROP_EXPORT_POLICY_SOURCES) SortedSet<String> exportPolicySources,
       @Nullable @JsonProperty(PROP_IMPORT_POLICY) String importPolicy,
       @Nullable @JsonProperty(PROP_IMPORT_POLICY_SOURCES) SortedSet<String> importPolicySources,
+      @Nullable @JsonProperty(ROUTE_REFLECTOR_CLIENT) Boolean routeReflectorClient,
       // local fields
       @Nullable @JsonProperty(PROP_L2_VNIS) Set<Layer2VniConfig> l2Vnis,
       @Nullable @JsonProperty(PROP_L3_VNIS) Set<Layer3VniConfig> l3Vnis,
@@ -68,6 +71,7 @@ public final class EvpnAddressFamily extends AddressFamily {
         .setExportPolicySources(firstNonNull(exportPolicySources, ImmutableSortedSet.of()))
         .setImportPolicy(importPolicy)
         .setImportPolicySources(firstNonNull(importPolicySources, ImmutableSortedSet.of()))
+        .setRouteReflectorClient(firstNonNull(routeReflectorClient, Boolean.FALSE))
         .setL2Vnis(firstNonNull(l2Vnis, ImmutableSortedSet.of()))
         .setL3Vnis(firstNonNull(l3Vnis, ImmutableSortedSet.of()))
         .setPropagateUnmatched(propagateUnmatched)
@@ -117,6 +121,7 @@ public final class EvpnAddressFamily extends AddressFamily {
         && Objects.equals(_importPolicy, that._importPolicy)
         && _exportPolicySources.equals(that._exportPolicySources)
         && _importPolicySources.equals(that._importPolicySources)
+        && _routeReflectorClient == that._routeReflectorClient
         // local fields
         && _l2VNIs.equals(that._l2VNIs)
         && _l3VNIs.equals(that._l3VNIs)
@@ -131,6 +136,7 @@ public final class EvpnAddressFamily extends AddressFamily {
         _exportPolicySources,
         _importPolicy,
         _importPolicySources,
+        _routeReflectorClient,
         _l2VNIs,
         _l3VNIs,
         _propagateUnmatched);
@@ -188,6 +194,7 @@ public final class EvpnAddressFamily extends AddressFamily {
           _exportPolicySources,
           _importPolicy,
           _importPolicySources,
+          _routeReflectorClient,
           _l2Vnis,
           _l3Vnis,
           _propagateUnmatched);

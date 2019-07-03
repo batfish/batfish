@@ -17,6 +17,7 @@ public abstract class AddressFamily implements Serializable {
   static final String PROP_EXPORT_POLICY_SOURCES = "exportPolicySources";
   static final String PROP_IMPORT_POLICY = "importPolicy";
   static final String PROP_IMPORT_POLICY_SOURCES = "importPolicySources";
+  static final String ROUTE_REFLECTOR_CLIENT = "routeReflectorClient";
 
   @Nonnull protected final AddressFamilyCapabilities _addressFamilyCapabilities;
   // Policies
@@ -25,18 +26,21 @@ public abstract class AddressFamily implements Serializable {
   // Policy sources
   @Nonnull protected SortedSet<String> _importPolicySources;
   @Nonnull protected SortedSet<String> _exportPolicySources;
+  protected final boolean _routeReflectorClient;
 
   protected AddressFamily(
       @Nonnull AddressFamilyCapabilities addressFamilyCapabilities,
       @Nullable String exportPolicy,
       SortedSet<String> exportPolicySources,
       @Nullable String importPolicy,
-      SortedSet<String> importPolicySources) {
+      SortedSet<String> importPolicySources,
+      boolean routeReflectorClient) {
     _addressFamilyCapabilities = addressFamilyCapabilities;
     _exportPolicy = exportPolicy;
     _exportPolicySources = exportPolicySources;
     _importPolicy = importPolicy;
     _importPolicySources = importPolicySources;
+    _routeReflectorClient = routeReflectorClient;
   }
 
   @JsonProperty(PROP_ADDRESS_FAMILY_CAPABILITIES)
@@ -71,6 +75,12 @@ public abstract class AddressFamily implements Serializable {
     return _importPolicySources;
   }
 
+  /** Whether or not this peer is a route-reflector client of ours */
+  @JsonProperty(ROUTE_REFLECTOR_CLIENT)
+  public boolean getRouteReflectorClient() {
+    return _routeReflectorClient;
+  }
+
   @JsonIgnore
   public void setExportPolicySources(@Nonnull SortedSet<String> exportPolicySources) {
     _exportPolicySources = exportPolicySources;
@@ -99,6 +109,7 @@ public abstract class AddressFamily implements Serializable {
     @Nullable protected String _importPolicy;
     @Nonnull protected SortedSet<String> _importPolicySources = ImmutableSortedSet.of();
     @Nonnull protected SortedSet<String> _exportPolicySources = ImmutableSortedSet.of();
+    protected boolean _routeReflectorClient;
 
     @Nonnull
     public B setAddressFamilyCapabilities(
@@ -128,6 +139,12 @@ public abstract class AddressFamily implements Serializable {
     @Nonnull
     public B setExportPolicySources(SortedSet<String> exportPolicySources) {
       _exportPolicySources = exportPolicySources;
+      return getThis();
+    }
+
+    @Nonnull
+    public B setRouteReflectorClient(boolean routeReflectorClient) {
+      _routeReflectorClient = routeReflectorClient;
       return getThis();
     }
 
