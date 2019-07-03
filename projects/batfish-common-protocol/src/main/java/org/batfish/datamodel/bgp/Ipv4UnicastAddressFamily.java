@@ -21,13 +21,15 @@ public final class Ipv4UnicastAddressFamily extends AddressFamily {
       @Nullable String exportPolicy,
       SortedSet<String> exportPolicySources,
       @Nullable String importPolicy,
-      SortedSet<String> importPolicySources) {
+      SortedSet<String> importPolicySources,
+      boolean routeReflectorClient) {
     super(
         addressFamilyCapabilities,
         exportPolicy,
         exportPolicySources,
         importPolicy,
-        importPolicySources);
+        importPolicySources,
+        routeReflectorClient);
   }
 
   @JsonCreator
@@ -38,7 +40,8 @@ public final class Ipv4UnicastAddressFamily extends AddressFamily {
       @Nullable @JsonProperty(PROP_EXPORT_POLICY) String exportPolicy,
       @Nullable @JsonProperty(PROP_EXPORT_POLICY_SOURCES) SortedSet<String> exportPolicySources,
       @Nullable @JsonProperty(PROP_IMPORT_POLICY) String importPolicy,
-      @Nullable @JsonProperty(PROP_IMPORT_POLICY_SOURCES) SortedSet<String> importPolicySources) {
+      @Nullable @JsonProperty(PROP_IMPORT_POLICY_SOURCES) SortedSet<String> importPolicySources,
+      @Nullable @JsonProperty(ROUTE_REFLECTOR_CLIENT) Boolean routeReflectorClient) {
     checkArgument(
         addressFamilyCapabilities != null, "Missing %s", PROP_ADDRESS_FAMILY_CAPABILITIES);
     return new Ipv4UnicastAddressFamily(
@@ -46,7 +49,8 @@ public final class Ipv4UnicastAddressFamily extends AddressFamily {
         exportPolicy,
         firstNonNull(exportPolicySources, ImmutableSortedSet.of()),
         importPolicy,
-        firstNonNull(importPolicySources, ImmutableSortedSet.of()));
+        firstNonNull(importPolicySources, ImmutableSortedSet.of()),
+        firstNonNull(routeReflectorClient, Boolean.FALSE));
   }
 
   @Override
@@ -67,7 +71,8 @@ public final class Ipv4UnicastAddressFamily extends AddressFamily {
         && Objects.equals(_exportPolicy, that._exportPolicy)
         && Objects.equals(_importPolicy, that._importPolicy)
         && _exportPolicySources.equals(that._exportPolicySources)
-        && _importPolicySources.equals(that._importPolicySources);
+        && _importPolicySources.equals(that._importPolicySources)
+        && _routeReflectorClient == that._routeReflectorClient;
   }
 
   @Override
@@ -77,7 +82,8 @@ public final class Ipv4UnicastAddressFamily extends AddressFamily {
         _exportPolicy,
         _exportPolicySources,
         _importPolicy,
-        _importPolicySources);
+        _importPolicySources,
+        _routeReflectorClient);
   }
 
   public static Builder builder() {
@@ -107,7 +113,8 @@ public final class Ipv4UnicastAddressFamily extends AddressFamily {
           _exportPolicy,
           _exportPolicySources,
           _importPolicy,
-          _importPolicySources);
+          _importPolicySources,
+          _routeReflectorClient);
     }
   }
 }

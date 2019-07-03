@@ -8,10 +8,12 @@ import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.BgpPeerConfig;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.LongSpace;
+import org.batfish.datamodel.bgp.EvpnAddressFamily;
 import org.batfish.datamodel.bgp.Ipv4UnicastAddressFamily;
 import org.batfish.datamodel.matchers.BgpNeighborMatchersImpl.HasClusterId;
 import org.batfish.datamodel.matchers.BgpNeighborMatchersImpl.HasDescription;
 import org.batfish.datamodel.matchers.BgpNeighborMatchersImpl.HasEnforceFirstAs;
+import org.batfish.datamodel.matchers.BgpNeighborMatchersImpl.HasEvpnAddressFamily;
 import org.batfish.datamodel.matchers.BgpNeighborMatchersImpl.HasIpv4UnicastAddressFamily;
 import org.batfish.datamodel.matchers.BgpNeighborMatchersImpl.HasLocalAs;
 import org.batfish.datamodel.matchers.BgpNeighborMatchersImpl.HasLocalIp;
@@ -45,6 +47,16 @@ public class BgpNeighborMatchers {
   public static Matcher<BgpPeerConfig> hasIpv4UnicastAddressFamily(
       @Nonnull Matcher<? super Ipv4UnicastAddressFamily> subMatcher) {
     return new HasIpv4UnicastAddressFamily(subMatcher);
+  }
+
+  /**
+   * Provides a matcher that matches if the {@link BgpPeerConfig} has a {@link EvpnAddressFamily}
+   * that matches {@code submatcher}.
+   */
+  @Nonnull
+  public static Matcher<BgpPeerConfig> hasEvpnAddressFamily(
+      @Nonnull Matcher<? super EvpnAddressFamily> subMatcher) {
+    return new HasEvpnAddressFamily(subMatcher);
   }
 
   /**

@@ -60,6 +60,7 @@ public class EvpnAddressFamilyTest {
                             .build()))
                 .build())
         .addEqualityGroup(builder.setPropagateUnmatched(true).build())
+        .addEqualityGroup(builder.setRouteReflectorClient(true))
         .addEqualityGroup(new Object())
         .testEquals();
   }

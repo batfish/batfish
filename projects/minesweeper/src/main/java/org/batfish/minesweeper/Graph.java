@@ -582,7 +582,7 @@ public class Graph {
 
   // TODO: very inefficient
   /*
-   * Initialize iBGP neighbors by looking for nieghbors
+   * Initialize iBGP neighbors by looking for neighbors
    * with the same AS number.
    */
   private void initIbgpNeighbors() {
@@ -639,7 +639,9 @@ public class Graph {
           Set<String> clients = new HashSet<>();
           ns.forEach(
               (r2, n) -> {
-                if (n.getRouteReflectorClient()) {
+                if (Optional.ofNullable(n.getIpv4UnicastAddressFamily())
+                    .map(AddressFamily::getRouteReflectorClient)
+                    .orElse(false)) {
                   clients.add(r2);
                   _routeReflectorParent.put(r2, r1);
                 }

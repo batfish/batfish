@@ -42,13 +42,13 @@
               "importPolicy" : "PROTECT_LOOPBACK",
               "importPolicySources" : [
                 "PROTECT_LOOPBACK"
-              ]
+              ],
+              "routeReflectorClient" : false
             },
             "localAs" : 65301,
             "localIp" : "169.254.13.238",
             "peerAddress" : "169.254.13.237",
-            "remoteAsns" : "65401",
-            "routeReflectorClient" : false
+            "remoteAsns" : "65401"
           },
           "node1SessionId" : {
             "hostname" : "lhr-border-02",
@@ -72,13 +72,13 @@
                 "allowRemoteAsOut" : false,
                 "sendCommunity" : false
               },
-              "exportPolicy" : "vpn-ba2e34a8-2_origination"
+              "exportPolicy" : "vpn-ba2e34a8-2_origination",
+              "routeReflectorClient" : false
             },
             "localAs" : 65401,
             "localIp" : "169.254.13.237",
             "peerAddress" : "169.254.13.238",
-            "remoteAsns" : "65301",
-            "routeReflectorClient" : false
+            "remoteAsns" : "65301"
           },
           "node2SessionId" : {
             "hostname" : "vgw-81fd279f",
@@ -126,13 +126,13 @@
               "importPolicy" : "PROTECT_LOOPBACK",
               "importPolicySources" : [
                 "PROTECT_LOOPBACK"
-              ]
+              ],
+              "routeReflectorClient" : false
             },
             "localAs" : 65301,
             "localIp" : "169.254.15.194",
             "peerAddress" : "169.254.15.193",
-            "remoteAsns" : "65401",
-            "routeReflectorClient" : false
+            "remoteAsns" : "65401"
           },
           "node1SessionId" : {
             "hostname" : "lhr-border-02",
@@ -156,13 +156,13 @@
                 "allowRemoteAsOut" : false,
                 "sendCommunity" : false
               },
-              "exportPolicy" : "vpn-ba2e34a8-1_origination"
+              "exportPolicy" : "vpn-ba2e34a8-1_origination",
+              "routeReflectorClient" : false
             },
             "localAs" : 65401,
             "localIp" : "169.254.15.193",
             "peerAddress" : "169.254.15.194",
-            "remoteAsns" : "65301",
-            "routeReflectorClient" : false
+            "remoteAsns" : "65301"
           },
           "node2SessionId" : {
             "hostname" : "vgw-81fd279f",
@@ -194,13 +194,13 @@
                 "allowRemoteAsOut" : false,
                 "sendCommunity" : false
               },
-              "exportPolicy" : "vpn-ba2e34a8-2_origination"
+              "exportPolicy" : "vpn-ba2e34a8-2_origination",
+              "routeReflectorClient" : false
             },
             "localAs" : 65401,
             "localIp" : "169.254.13.237",
             "peerAddress" : "169.254.13.238",
-            "remoteAsns" : "65301",
-            "routeReflectorClient" : false
+            "remoteAsns" : "65301"
           },
           "node1SessionId" : {
             "hostname" : "vgw-81fd279f",
@@ -240,13 +240,13 @@
               "importPolicy" : "PROTECT_LOOPBACK",
               "importPolicySources" : [
                 "PROTECT_LOOPBACK"
-              ]
+              ],
+              "routeReflectorClient" : false
             },
             "localAs" : 65301,
             "localIp" : "169.254.13.238",
             "peerAddress" : "169.254.13.237",
-            "remoteAsns" : "65401",
-            "routeReflectorClient" : false
+            "remoteAsns" : "65401"
           },
           "node2SessionId" : {
             "hostname" : "lhr-border-02",
@@ -278,13 +278,13 @@
                 "allowRemoteAsOut" : false,
                 "sendCommunity" : false
               },
-              "exportPolicy" : "vpn-ba2e34a8-1_origination"
+              "exportPolicy" : "vpn-ba2e34a8-1_origination",
+              "routeReflectorClient" : false
             },
             "localAs" : 65401,
             "localIp" : "169.254.15.193",
             "peerAddress" : "169.254.15.194",
-            "remoteAsns" : "65301",
-            "routeReflectorClient" : false
+            "remoteAsns" : "65301"
           },
           "node1SessionId" : {
             "hostname" : "vgw-81fd279f",
@@ -324,13 +324,13 @@
               "importPolicy" : "PROTECT_LOOPBACK",
               "importPolicySources" : [
                 "PROTECT_LOOPBACK"
-              ]
+              ],
+              "routeReflectorClient" : false
             },
             "localAs" : 65301,
             "localIp" : "169.254.15.194",
             "peerAddress" : "169.254.15.193",
-            "remoteAsns" : "65401",
-            "routeReflectorClient" : false
+            "remoteAsns" : "65401"
           },
           "node2SessionId" : {
             "hostname" : "lhr-border-02",
@@ -363,13 +363,13 @@
                 "sendCommunity" : true
               },
               "exportPolicy" : "~ACCEPT_ALL_EBGP_AND_SET_NEXT_HOP_SELF~",
-              "importPolicy" : "~REJECT_ALL~"
+              "importPolicy" : "~REJECT_ALL~",
+              "routeReflectorClient" : false
             },
             "localAs" : 65401,
             "localIp" : "240.0.0.6",
             "peerAddress" : "240.0.0.7",
-            "remoteAsns" : "65401",
-            "routeReflectorClient" : false
+            "remoteAsns" : "65401"
           },
           "node1SessionId" : {
             "hostname" : "vgw-81fd279f",
@@ -394,13 +394,13 @@
                 "sendCommunity" : true
               },
               "exportPolicy" : "~REJECT_ALL~",
-              "importPolicy" : "~ACCEPT_ALL~"
+              "importPolicy" : "~ACCEPT_ALL~",
+              "routeReflectorClient" : false
             },
             "localAs" : 65401,
             "localIp" : "240.0.0.7",
             "peerAddress" : "240.0.0.6",
-            "remoteAsns" : "65401",
-            "routeReflectorClient" : false
+            "remoteAsns" : "65401"
           },
           "node2SessionId" : {
             "hostname" : "vpc-815775e7",
@@ -433,13 +433,13 @@
                 "sendCommunity" : true
               },
               "exportPolicy" : "~REJECT_ALL~",
-              "importPolicy" : "~ACCEPT_ALL~"
+              "importPolicy" : "~ACCEPT_ALL~",
+              "routeReflectorClient" : false
             },
             "localAs" : 65401,
             "localIp" : "240.0.0.7",
             "peerAddress" : "240.0.0.6",
-            "remoteAsns" : "65401",
-            "routeReflectorClient" : false
+            "remoteAsns" : "65401"
           },
           "node1SessionId" : {
             "hostname" : "vpc-815775e7",
@@ -464,13 +464,13 @@
                 "sendCommunity" : true
               },
               "exportPolicy" : "~ACCEPT_ALL_EBGP_AND_SET_NEXT_HOP_SELF~",
-              "importPolicy" : "~REJECT_ALL~"
+              "importPolicy" : "~REJECT_ALL~",
+              "routeReflectorClient" : false
             },
             "localAs" : 65401,
             "localIp" : "240.0.0.6",
             "peerAddress" : "240.0.0.7",
-            "remoteAsns" : "65401",
-            "routeReflectorClient" : false
+            "remoteAsns" : "65401"
           },
           "node2SessionId" : {
             "hostname" : "vgw-81fd279f",
@@ -2886,13 +2886,13 @@
                     "importPolicy" : "SET_LOCAL_PREF",
                     "importPolicySources" : [
                       "SET_LOCAL_PREF"
-                    ]
+                    ],
+                    "routeReflectorClient" : false
                   },
                   "localAs" : 65301,
                   "localIp" : "10.10.10.38",
                   "peerAddress" : "10.10.10.37",
-                  "remoteAsns" : "65201",
-                  "routeReflectorClient" : false
+                  "remoteAsns" : "65201"
                 },
                 "10.10.10.45/32" : {
                   "class" : "org.batfish.datamodel.BgpActivePeerConfig",
@@ -2912,13 +2912,13 @@
                       "allowRemoteAsOut" : true,
                       "sendCommunity" : false
                     },
-                    "exportPolicy" : "~BGP_PEER_EXPORT_POLICY:default:10.10.10.45~"
+                    "exportPolicy" : "~BGP_PEER_EXPORT_POLICY:default:10.10.10.45~",
+                    "routeReflectorClient" : false
                   },
                   "localAs" : 65301,
                   "localIp" : "10.10.10.46",
                   "peerAddress" : "10.10.10.45",
-                  "remoteAsns" : "65202",
-                  "routeReflectorClient" : false
+                  "remoteAsns" : "65202"
                 },
                 "10.10.30.2/32" : {
                   "class" : "org.batfish.datamodel.BgpActivePeerConfig",
@@ -2941,13 +2941,13 @@
                     "importPolicy" : "PROTECT_LOOPBACK",
                     "importPolicySources" : [
                       "PROTECT_LOOPBACK"
-                    ]
+                    ],
+                    "routeReflectorClient" : false
                   },
                   "localAs" : 65301,
                   "localIp" : "10.10.30.1",
                   "peerAddress" : "10.10.30.2",
-                  "remoteAsns" : "65331",
-                  "routeReflectorClient" : false
+                  "remoteAsns" : "65331"
                 },
                 "10.10.255.7/32" : {
                   "class" : "org.batfish.datamodel.BgpActivePeerConfig",
@@ -2966,13 +2966,13 @@
                       "allowRemoteAsOut" : true,
                       "sendCommunity" : false
                     },
-                    "exportPolicy" : "~BGP_PEER_EXPORT_POLICY:default:10.10.255.7~"
+                    "exportPolicy" : "~BGP_PEER_EXPORT_POLICY:default:10.10.255.7~",
+                    "routeReflectorClient" : false
                   },
                   "localAs" : 65301,
                   "localIp" : "10.10.255.8",
                   "peerAddress" : "10.10.255.7",
-                  "remoteAsns" : "65301",
-                  "routeReflectorClient" : false
+                  "remoteAsns" : "65301"
                 },
                 "169.254.13.237/32" : {
                   "class" : "org.batfish.datamodel.BgpActivePeerConfig",
@@ -3006,13 +3006,13 @@
                     "importPolicy" : "PROTECT_LOOPBACK",
                     "importPolicySources" : [
                       "PROTECT_LOOPBACK"
-                    ]
+                    ],
+                    "routeReflectorClient" : false
                   },
                   "localAs" : 65301,
                   "localIp" : "169.254.13.238",
                   "peerAddress" : "169.254.13.237",
-                  "remoteAsns" : "65401",
-                  "routeReflectorClient" : false
+                  "remoteAsns" : "65401"
                 },
                 "169.254.15.193/32" : {
                   "class" : "org.batfish.datamodel.BgpActivePeerConfig",
@@ -3046,13 +3046,13 @@
                     "importPolicy" : "PROTECT_LOOPBACK",
                     "importPolicySources" : [
                       "PROTECT_LOOPBACK"
-                    ]
+                    ],
+                    "routeReflectorClient" : false
                   },
                   "localAs" : 65301,
                   "localIp" : "169.254.15.194",
                   "peerAddress" : "169.254.15.193",
-                  "remoteAsns" : "65401",
-                  "routeReflectorClient" : false
+                  "remoteAsns" : "65401"
                 }
               },
               "tieBreaker" : "ROUTER_ID"
@@ -5341,13 +5341,13 @@
                       "allowRemoteAsOut" : false,
                       "sendCommunity" : false
                     },
-                    "exportPolicy" : "vpn-ba2e34a8-2_origination"
+                    "exportPolicy" : "vpn-ba2e34a8-2_origination",
+                    "routeReflectorClient" : false
                   },
                   "localAs" : 65401,
                   "localIp" : "169.254.13.237",
                   "peerAddress" : "169.254.13.238",
-                  "remoteAsns" : "65301",
-                  "routeReflectorClient" : false
+                  "remoteAsns" : "65301"
                 },
                 "169.254.15.194/32" : {
                   "class" : "org.batfish.datamodel.BgpActivePeerConfig",
@@ -5365,13 +5365,13 @@
                       "allowRemoteAsOut" : false,
                       "sendCommunity" : false
                     },
-                    "exportPolicy" : "vpn-ba2e34a8-1_origination"
+                    "exportPolicy" : "vpn-ba2e34a8-1_origination",
+                    "routeReflectorClient" : false
                   },
                   "localAs" : 65401,
                   "localIp" : "169.254.15.193",
                   "peerAddress" : "169.254.15.194",
-                  "remoteAsns" : "65301",
-                  "routeReflectorClient" : false
+                  "remoteAsns" : "65301"
                 },
                 "240.0.0.7/32" : {
                   "class" : "org.batfish.datamodel.BgpActivePeerConfig",
@@ -5390,13 +5390,13 @@
                       "sendCommunity" : true
                     },
                     "exportPolicy" : "~ACCEPT_ALL_EBGP_AND_SET_NEXT_HOP_SELF~",
-                    "importPolicy" : "~REJECT_ALL~"
+                    "importPolicy" : "~REJECT_ALL~",
+                    "routeReflectorClient" : false
                   },
                   "localAs" : 65401,
                   "localIp" : "240.0.0.6",
                   "peerAddress" : "240.0.0.7",
-                  "remoteAsns" : "65401",
-                  "routeReflectorClient" : false
+                  "remoteAsns" : "65401"
                 }
               },
               "tieBreaker" : "ARRIVAL_ORDER"
@@ -5508,13 +5508,13 @@
                       "sendCommunity" : true
                     },
                     "exportPolicy" : "~REJECT_ALL~",
-                    "importPolicy" : "~ACCEPT_ALL~"
+                    "importPolicy" : "~ACCEPT_ALL~",
+                    "routeReflectorClient" : false
                   },
                   "localAs" : 65401,
                   "localIp" : "240.0.0.7",
                   "peerAddress" : "240.0.0.6",
-                  "remoteAsns" : "65401",
-                  "routeReflectorClient" : false
+                  "remoteAsns" : "65401"
                 }
               },
               "tieBreaker" : "ARRIVAL_ORDER"

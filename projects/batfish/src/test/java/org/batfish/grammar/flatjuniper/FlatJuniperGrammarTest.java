@@ -14,7 +14,7 @@ import static org.batfish.datamodel.flow.TransformationStep.TransformationType.S
 import static org.batfish.datamodel.matchers.AaaAuthenticationLoginListMatchers.hasMethods;
 import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasPrefix;
 import static org.batfish.datamodel.matchers.AddressFamilyCapabilitiesMatchers.hasAllowLocalAsIn;
-import static org.batfish.datamodel.matchers.AddressFamilyMatchers.hasAddressFamilySettings;
+import static org.batfish.datamodel.matchers.AddressFamilyMatchers.hasAddressFamilyCapabilites;
 import static org.batfish.datamodel.matchers.AnnotatedRouteMatchers.hasSourceVrf;
 import static org.batfish.datamodel.matchers.BgpNeighborMatchers.hasClusterId;
 import static org.batfish.datamodel.matchers.BgpNeighborMatchers.hasEnforceFirstAs;
@@ -677,7 +677,7 @@ public final class FlatJuniperGrammarTest {
                     Prefix.parse("2.2.2.2/32"),
                     allOf(
                         hasIpv4UnicastAddressFamily(
-                            hasAddressFamilySettings(hasAllowLocalAsIn(true))),
+                            hasAddressFamilyCapabilites(hasAllowLocalAsIn(true))),
                         hasLocalAs(1L))))));
     assertThat(
         c,
@@ -688,7 +688,7 @@ public final class FlatJuniperGrammarTest {
                     Prefix.parse("3.3.3.3/32"),
                     allOf(
                         hasIpv4UnicastAddressFamily(
-                            hasAddressFamilySettings(hasAllowLocalAsIn(true))),
+                            hasAddressFamilyCapabilites(hasAllowLocalAsIn(true))),
                         hasLocalAs(1L))))));
   }
 
@@ -704,7 +704,7 @@ public final class FlatJuniperGrammarTest {
                     Prefix.parse("2.2.2.2/32"),
                     allOf(
                         hasIpv4UnicastAddressFamily(
-                            hasAddressFamilySettings(hasAllowLocalAsIn(true))),
+                            hasAddressFamilyCapabilites(hasAllowLocalAsIn(true))),
                         hasLocalAs(1L))))));
   }
 

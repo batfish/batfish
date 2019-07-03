@@ -28,6 +28,7 @@ public class Ipv4UnicastAddressFamilyTest {
         .addEqualityGroup(builder.setImportPolicy("import").build())
         .addEqualityGroup(builder.setExportPolicySources(ImmutableSortedSet.of("foo")).build())
         .addEqualityGroup(builder.setImportPolicySources(ImmutableSortedSet.of("bar")).build())
+        .addEqualityGroup(builder.setRouteReflectorClient(true))
         .addEqualityGroup(new Object())
         .testEquals();
   }

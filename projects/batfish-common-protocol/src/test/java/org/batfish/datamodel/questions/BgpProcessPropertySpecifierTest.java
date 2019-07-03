@@ -9,6 +9,7 @@ import org.batfish.datamodel.BgpActivePeerConfig;
 import org.batfish.datamodel.BgpActivePeerConfig.Builder;
 import org.batfish.datamodel.BgpPassivePeerConfig;
 import org.batfish.datamodel.BgpProcess;
+import org.batfish.datamodel.BgpUnnumberedPeerConfig;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Prefix;
@@ -25,20 +26,29 @@ public class BgpProcessPropertySpecifierTest {
     BgpProcess emptyProcess = new BgpProcess(Ip.ZERO, ConfigurationFormat.CISCO_IOS);
     assertFalse("no rr clients", isRouteReflector(emptyProcess));
 
-    Builder builder =
-        BgpActivePeerConfig.builder()
-            .setIpv4UnicastAddressFamily(Ipv4UnicastAddressFamily.builder().build());
-    BgpActivePeerConfig activePeerWithRRC = builder.setRouteReflectorClient(true).build();
-    BgpActivePeerConfig activePeerWithoutRRC = builder.setRouteReflectorClient(false).build();
+    Ipv4UnicastAddressFamily.Builder v4afBuilder = Ipv4UnicastAddressFamily.builder();
+    Builder builder = BgpActivePeerConfig.builder();
+    BgpActivePeerConfig activePeerWithRRC =
+        builder
+            .setIpv4UnicastAddressFamily(v4afBuilder.setRouteReflectorClient(true).build())
+            .build();
+    BgpActivePeerConfig activePeerWithoutRRC =
+        builder
+            .setIpv4UnicastAddressFamily(v4afBuilder.setRouteReflectorClient(false).build())
+            .build();
     BgpPassivePeerConfig passivePeerWithRRC =
         BgpPassivePeerConfig.builder()
-            .setRouteReflectorClient(true)
-            .setIpv4UnicastAddressFamily(Ipv4UnicastAddressFamily.builder().build())
+            .setIpv4UnicastAddressFamily(v4afBuilder.setRouteReflectorClient(true).build())
             .build();
     BgpPassivePeerConfig passivePeerWithoutRRC =
         BgpPassivePeerConfig.builder()
-            .setRouteReflectorClient(false)
-            .setIpv4UnicastAddressFamily(Ipv4UnicastAddressFamily.builder().build())
+            .setIpv4UnicastAddressFamily(v4afBuilder.setRouteReflectorClient(false).build())
+            .build();
+    String peerInterface = "iface";
+    BgpUnnumberedPeerConfig unnumberedPeerWithRRC =
+        BgpUnnumberedPeerConfig.builder()
+            .setPeerInterface(peerInterface)
+            .setIpv4UnicastAddressFamily(v4afBuilder.setRouteReflectorClient(true).build())
             .build();
     Prefix p32a = Prefix.parse("1.2.3.4/32");
     Prefix p32b = Prefix.parse("1.2.3.5/32");
@@ -54,6 +64,12 @@ public class BgpProcessPropertySpecifierTest {
     BgpProcess hasPassiveNeighbor = new BgpProcess(Ip.ZERO, ConfigurationFormat.CISCO_IOS);
     hasPassiveNeighbor.setPassiveNeighbors(ImmutableSortedMap.of(p30a, passivePeerWithRRC));
     assertTrue("has passive rr client", isRouteReflector(hasPassiveNeighbor));
+
+    // One unnumbered peer RRC
+    BgpProcess hasUnnumberedNeighbor = new BgpProcess(Ip.ZERO, ConfigurationFormat.CISCO_IOS);
+    hasUnnumberedNeighbor.setInterfaceNeighbors(
+        ImmutableSortedMap.of(peerInterface, unnumberedPeerWithRRC));
+    assertTrue("has unnumbered rr client", isRouteReflector(hasUnnumberedNeighbor));
 
     // Mix
     BgpProcess hasNeighborMix = new BgpProcess(Ip.ZERO, ConfigurationFormat.CISCO_IOS);
