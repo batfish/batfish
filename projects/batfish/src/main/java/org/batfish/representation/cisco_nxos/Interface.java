@@ -15,6 +15,16 @@ import org.batfish.datamodel.SwitchportMode;
 /** A layer-2- or layer-3-capable network interface */
 public final class Interface implements Serializable {
 
+  public static final double BANDWIDTH_CONVERSION_FACTOR = 1000D; // kbits
+
+  private static final double DEFAULT_INTERFACE_BANDWIDTH = 1E12D;
+
+  /** Loopback bandwidth */
+  private static final double DEFAULT_LOOPBACK_BANDWIDTH = 8E9D;
+  /** NX-OS Ethernet 802.3z - may not apply for non-NX-OS */
+  private static final double DEFAULT_NXOS_ETHERNET_SPEED = 1E9D;
+
+  private static final double DEFAULT_VLAN_BANDWIDTH = 1E9D;
   public static final IntegerSpace VLAN_RANGE = IntegerSpace.of(Range.closed(1, 4094));
 
   /**
@@ -22,20 +32,22 @@ public final class Interface implements Serializable {
    * explicitly configured, inference no longer applies for the life of the interface.
    *
    * <ul>
-   *   <li>Ethernet and port-channel parent interfaces are active by default iff they are in
-   *       switchport mode.
+   *   <li>Ethernet parent interfaces are shutdown by default iff they are not in switchport mode.
+   *   <li>port-channel parent interfaces are not shutdown by default.
    *   <li>Ethernet and port-channel subinterfaces are shut down by default.
-   *   <li>loopback interfaces are active by default.
-   *   <li>mgmt interfaces are active by default.
-   *   <li>vlan interfaces are shut down by default.
+   *   <li>loopback interfaces are not shutdown by default.
+   *   <li>mgmt interfaces are not shutdown by default.
+   *   <li>vlan interfaces are shutdown by default.
    * </ul>
    */
   private static boolean defaultShutdown(
-      SwitchportMode switchportMode, CiscoNxosInterfaceType type) {
+      SwitchportMode switchportMode, CiscoNxosInterfaceType type, boolean subinterface) {
     switch (type) {
       case ETHERNET:
-      case PORT_CHANNEL:
         return switchportMode == SwitchportMode.NONE;
+
+      case PORT_CHANNEL:
+        return subinterface;
 
       case VLAN:
         return true;
@@ -44,6 +56,36 @@ public final class Interface implements Serializable {
       case MGMT:
       default:
         return false;
+    }
+  }
+
+  public static @Nullable Double getDefaultBandwidth(CiscoNxosInterfaceType type) {
+    Double defaultSpeed = getDefaultSpeed(type);
+    if (defaultSpeed != null) {
+      return defaultSpeed;
+    }
+    switch (type) {
+      case LOOPBACK:
+        return DEFAULT_LOOPBACK_BANDWIDTH;
+      case PORT_CHANNEL:
+        return null;
+      case VLAN:
+        return DEFAULT_VLAN_BANDWIDTH;
+      default:
+        // Use default bandwidth for other interface types that have no speed
+        return DEFAULT_INTERFACE_BANDWIDTH;
+    }
+  }
+
+  public static @Nullable Double getDefaultSpeed(CiscoNxosInterfaceType type) {
+    if (type == CiscoNxosInterfaceType.ETHERNET) {
+      return DEFAULT_NXOS_ETHERNET_SPEED;
+    } else {
+      // loopback
+      // port-Channel
+      // Vlan
+      // ... others
+      return null;
     }
   }
 
@@ -66,6 +108,8 @@ public final class Interface implements Serializable {
   private @Nullable InterfaceAddress _address;
   private @Nullable IntegerSpace _allowedVlans;
   private boolean _autostate;
+  private @Nullable Integer _bandwidth;
+  private @Nullable String _channelGroup;
   private final @Nonnull Set<String> _declaredNames;
   private @Nullable Integer _encapsulationVlan;
   private final @Nonnull String _name;
@@ -113,6 +157,15 @@ public final class Interface implements Serializable {
     return _autostate;
   }
 
+  /** Bandwidth in kbits */
+  public @Nullable Integer getBandwidth() {
+    return _bandwidth;
+  }
+
+  public @Nullable String getChannelGroup() {
+    return _channelGroup;
+  }
+
   public @Nonnull Set<String> getDeclaredNames() {
     return _declaredNames;
   }
@@ -139,7 +192,9 @@ public final class Interface implements Serializable {
   }
 
   public boolean getShutdown() {
-    return _shutdown != null ? _shutdown : defaultShutdown(_switchportMode, _type);
+    return _shutdown != null
+        ? _shutdown
+        : defaultShutdown(_switchportMode, _type, _parentInterface != null);
   }
 
   public SwitchportMode getSwitchportMode() {
@@ -193,6 +248,14 @@ public final class Interface implements Serializable {
 
   public void setAutostate(boolean autostate) {
     _autostate = autostate;
+  }
+
+  public void setBandwidth(@Nullable Integer bandwidth) {
+    _bandwidth = bandwidth;
+  }
+
+  public void setChannelGroup(@Nullable String channelGroup) {
+    _channelGroup = channelGroup;
   }
 
   public void setEncapsulationVlan(@Nullable Integer encapsulationVlan) {

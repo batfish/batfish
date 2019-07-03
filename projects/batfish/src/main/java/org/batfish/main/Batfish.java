@@ -669,6 +669,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
                     iface.getDependencies().stream()
                         .map(dependency -> interfaces.get(dependency.getInterfaceName()))
                         .filter(Objects::nonNull)
+                        .filter(Interface::getActive)
                         .map(Interface::getBandwidth)
                         .filter(Objects::nonNull)
                         .mapToDouble(Double::doubleValue)

@@ -1,0 +1,76 @@
+!RANCID-CONTENT-TYPE: cisco-nx
+!
+hostname nxos_port_channel
+!
+
+! port-channel with no members:
+! - shutdown = false (default)
+! - active = false (no members)
+interface port-channel1
+!
+
+! port-channel with shutdown member:
+! - shutdown = false (default)
+! - active = false (no active members)
+interface port-channel2
+!
+interface Ethernet1/2
+  shutdown
+  channel-group 2
+!
+
+! port-channel with active members:
+! - shutdown = false (default)
+! - active = true (2/3 active members)
+! - each member has bandwidth 100Mbits (unit is kilobits)
+interface port-channel3
+!
+interface Ethernet1/3
+  channel-group 3
+  bandwidth 100000
+!
+interface Ethernet1/4
+  channel-group 3
+  bandwidth 100000
+!
+interface Ethernet1/5
+  channel-group 3
+  bandwidth 100000
+  shutdown
+!
+
+! interface range channel-group with missing port-channel
+! should create port-channel, copy interface settings to new port-channel
+interface Ethernet1/6-7
+  no switchport
+  no shutdown
+  bandwidth 100000
+  channel-group 4
+!
+
+! interface range channel-group force with missing port-channel
+! should create port-channel, copy settings of first interface to others and new port-channel
+interface Ethernet1/8
+ no switchport
+ no shutdown
+  bandwidth 100000
+!
+interface Ethernet1/9
+  no shutdown
+  bandwidth 100000
+!
+interface Ethernet1/8-9
+  bandwidth 100000
+  channel-group 5 force
+!
+
+! interface range channel-group force with pre-existing port-channel
+! should copy settings (switchport access) of port-channel to interfaces
+interface port-channel 6
+!
+interface Ethernet1/10-11
+  no switchport
+  no shutdown
+  bandwidth 100000
+  channel-group 6 force
+!
