@@ -40198,6 +40198,396 @@
             "    (s_net_add",
             "      NET:'net'",
             "      ADD:'add'",
+            "      (a_interface",
+            "        INTERFACE:'interface'",
+            "        interfaces = (glob",
+            "          (glob_range_set",
+            "            base_word = (numbered_word",
+            "              NUMBERED_WORD:'swp1')",
+            "            COMMA:','",
+            "            other_numeric_ranges = (range_set",
+            "              (range",
+            "                low = (uint32",
+            "                  d = DEC:'2')",
+            "                DASH:'-'",
+            "                high = (uint32",
+            "                  d = DEC:'3')))))",
+            "        NEWLINE:'\\n')))",
+            "  (statement",
+            "    (s_net_add",
+            "      NET:'net'",
+            "      ADD:'add'",
+            "      (a_interface",
+            "        INTERFACE:'interface'",
+            "        interfaces = (glob",
+            "          (glob_range_set",
+            "            base_word = (numbered_word",
+            "              NUMBERED_WORD:'eth0')))",
+            "        (i_vrf",
+            "          VRF:'vrf'",
+            "          name = (word",
+            "            WORD:'mgmt')",
+            "          NEWLINE:'\\n'))))",
+            "  (statement",
+            "    (s_net_add",
+            "      NET:'net'",
+            "      ADD:'add'",
+            "      (a_interface",
+            "        INTERFACE:'interface'",
+            "        interfaces = (glob",
+            "          (glob_range_set",
+            "            base_word = (numbered_word",
+            "              NUMBERED_WORD:'swp1')))",
+            "        (i_bridge",
+            "          BRIDGE:'bridge'",
+            "          (ib_access",
+            "            ACCESS:'access'",
+            "            vlan = (vlan_id",
+            "              v = DEC:'3')",
+            "            NEWLINE:'\\n')))))",
+            "  (statement",
+            "    (s_net_add",
+            "      NET:'net'",
+            "      ADD:'add'",
+            "      (a_interface",
+            "        INTERFACE:'interface'",
+            "        interfaces = (glob",
+            "          (glob_range_set",
+            "            base_word = (numbered_word",
+            "              NUMBERED_WORD:'swp2')))",
+            "        (i_bridge",
+            "          BRIDGE:'bridge'",
+            "          (ib_pvid",
+            "            PVID:'pvid'",
+            "            id = (vlan_id",
+            "              v = DEC:'4')",
+            "            NEWLINE:'\\n')))))",
+            "  (statement",
+            "    (s_net_add",
+            "      NET:'net'",
+            "      ADD:'add'",
+            "      (a_interface",
+            "        INTERFACE:'interface'",
+            "        interfaces = (glob",
+            "          (glob_range_set",
+            "            base_word = (numbered_word",
+            "              NUMBERED_WORD:'swp2')))",
+            "        (i_bridge",
+            "          BRIDGE:'bridge'",
+            "          (ib_vids",
+            "            VIDS:'vids'",
+            "            vlans = (vlan_range_set",
+            "              (vlan_range",
+            "                low = (vlan_id",
+            "                  v = DEC:'5')",
+            "                DASH:'-'",
+            "                high = (vlan_id",
+            "                  v = DEC:'6')))",
+            "            NEWLINE:'\\n')))))",
+            "  (statement",
+            "    (s_net_add",
+            "      NET:'net'",
+            "      ADD:'add'",
+            "      (a_loopback",
+            "        LOOPBACK:'loopback'",
+            "        LO:'lo'",
+            "        NEWLINE:'\\n')))",
+            "  (statement",
+            "    (s_net_add",
+            "      NET:'net'",
+            "      ADD:'add'",
+            "      (a_loopback",
+            "        LOOPBACK:'loopback'",
+            "        LO:'lo'",
+            "        (l_clag",
+            "          CLAG:'clag'",
+            "          (lc_vxlan_anycast_ip",
+            "            VXLAN_ANYCAST_IP:'vxlan-anycast-ip'",
+            "            ip = (ip_address",
+            "              IP_ADDRESS:'192.0.2.7')",
+            "            NEWLINE:'\\n')))))",
+            "  (statement",
+            "    (s_net_add",
+            "      NET:'net'",
+            "      ADD:'add'",
+            "      (a_loopback",
+            "        LOOPBACK:'loopback'",
+            "        LO:'lo'",
+            "        (l_ip_address",
+            "          IP:'ip'",
+            "          ADDRESS:'address'",
+            "          address = (interface_address",
+            "            IP_PREFIX:'192.0.2.8/32')",
+            "          NEWLINE:'\\n'))))",
+            "  (statement",
+            "    (s_net_add",
+            "      NET:'net'",
+            "      ADD:'add'",
+            "      (a_bond",
+            "        BOND:'bond'",
+            "        name = (word",
+            "          NUMBERED_WORD:'bond1')",
+            "        (bond_bond",
+            "          BOND:'bond'",
+            "          (bobo_slaves",
+            "            SLAVES:'slaves'",
+            "            slaves = (glob",
+            "              (glob_range_set",
+            "                base_word = (numbered_word",
+            "                  NUMBERED_WORD:'swp1'))",
+            "              COMMA:','",
+            "              (glob_range_set",
+            "                base_word = (numbered_word",
+            "                  NUMBERED_WORD:'swp2')",
+            "                DASH:'-'",
+            "                first_interval_end = (uint32",
+            "                  d = DEC:'4')",
+            "                COMMA:','",
+            "                other_numeric_ranges = (range_set",
+            "                  (range",
+            "                    low = (uint32",
+            "                      d = DEC:'5'))))",
+            "              COMMA:','",
+            "              (glob_range_set",
+            "                base_word = (numbered_word",
+            "                  NUMBERED_WORD:'swp6')",
+            "                COMMA:','",
+            "                other_numeric_ranges = (range_set",
+            "                  (range",
+            "                    low = (uint32",
+            "                      d = DEC:'7')",
+            "                    DASH:'-'",
+            "                    high = (uint32",
+            "                      d = DEC:'8')))))",
+            "            NEWLINE:'\\n')))))",
+            "  (statement",
+            "    (s_net_add",
+            "      NET:'net'",
+            "      ADD:'add'",
+            "      (a_bond",
+            "        BOND:'bond'",
+            "        name = (word",
+            "          NUMBERED_WORD:'bond1')",
+            "        (bond_bridge",
+            "          BRIDGE:'bridge'",
+            "          (bob_access",
+            "            ACCESS:'access'",
+            "            vlan = (vlan_id",
+            "              v = DEC:'2')",
+            "            NEWLINE:'\\n')))))",
+            "  (statement",
+            "    (s_net_add",
+            "      NET:'net'",
+            "      ADD:'add'",
+            "      (a_bond",
+            "        BOND:'bond'",
+            "        name = (word",
+            "          NUMBERED_WORD:'bond2')",
+            "        (bond_bridge",
+            "          BRIDGE:'bridge'",
+            "          (bob_pvid",
+            "            PVID:'pvid'",
+            "            id = (vlan_id",
+            "              v = DEC:'1')",
+            "            NEWLINE:'\\n')))))",
+            "  (statement",
+            "    (s_net_add",
+            "      NET:'net'",
+            "      ADD:'add'",
+            "      (a_bond",
+            "        BOND:'bond'",
+            "        name = (word",
+            "          NUMBERED_WORD:'bond2')",
+            "        (bond_bridge",
+            "          BRIDGE:'bridge'",
+            "          (bob_vids",
+            "            VIDS:'vids'",
+            "            vlans = (vlan_range_set",
+            "              (vlan_range",
+            "                low = (vlan_id",
+            "                  v = DEC:'3'))",
+            "              COMMA:','",
+            "              (vlan_range",
+            "                low = (vlan_id",
+            "                  v = DEC:'4')",
+            "                DASH:'-'",
+            "                high = (vlan_id",
+            "                  v = DEC:'5')))",
+            "            NEWLINE:'\\n')))))",
+            "  (statement",
+            "    (s_net_add",
+            "      NET:'net'",
+            "      ADD:'add'",
+            "      (a_interface",
+            "        INTERFACE:'interface'",
+            "        interfaces = (glob",
+            "          (glob_range_set",
+            "            base_word = (numbered_word",
+            "              NUMBERED_WORD:'bond1.4094')))",
+            "        (i_ip_address",
+            "          IP:'ip'",
+            "          ADDRESS:'address'",
+            "          address = (interface_address",
+            "            IP_PREFIX:'192.0.2.6/24')",
+            "          NEWLINE:'\\n'))))",
+            "  (statement",
+            "    (s_net_add",
+            "      NET:'net'",
+            "      ADD:'add'",
+            "      (a_bridge",
+            "        BRIDGE:'bridge'",
+            "        (bridge_bridge",
+            "          BRIDGE:'bridge'",
+            "          (brbr_ports",
+            "            PORTS:'ports'",
+            "            ports = (glob",
+            "              (glob_range_set",
+            "                base_word = (numbered_word",
+            "                  NUMBERED_WORD:'bond1'))",
+            "              COMMA:','",
+            "              (glob_range_set",
+            "                base_word = (numbered_word",
+            "                  NUMBERED_WORD:'swp1'))",
+            "              COMMA:','",
+            "              (glob_range_set",
+            "                base_word = (numbered_word",
+            "                  NUMBERED_WORD:'vni10001')))",
+            "            NEWLINE:'\\n')))))",
+            "  (statement",
+            "    (s_net_add",
+            "      NET:'net'",
+            "      ADD:'add'",
+            "      (a_bridge",
+            "        BRIDGE:'bridge'",
+            "        (bridge_bridge",
+            "          BRIDGE:'bridge'",
+            "          (brbr_pvid",
+            "            PVID:'pvid'",
+            "            pvid = (vlan_id",
+            "              v = DEC:'2')",
+            "            NEWLINE:'\\n')))))",
+            "  (statement",
+            "    (s_net_add",
+            "      NET:'net'",
+            "      ADD:'add'",
+            "      (a_bridge",
+            "        BRIDGE:'bridge'",
+            "        (bridge_bridge",
+            "          BRIDGE:'bridge'",
+            "          (brbr_vids",
+            "            VIDS:'vids'",
+            "            ids = (range_set",
+            "              (range",
+            "                low = (uint32",
+            "                  d = DEC:'1'))",
+            "              COMMA:','",
+            "              (range",
+            "                low = (uint32",
+            "                  d = DEC:'2')",
+            "                DASH:'-'",
+            "                high = (uint32",
+            "                  d = DEC:'3')))",
+            "            NEWLINE:'\\n')))))",
+            "  (statement",
+            "    (s_net_add",
+            "      NET:'net'",
+            "      ADD:'add'",
+            "      (a_bridge",
+            "        BRIDGE:'bridge'",
+            "        (bridge_bridge",
+            "          BRIDGE:'bridge'",
+            "          (brbr_vlan_aware",
+            "            VLAN_AWARE:'vlan-aware'",
+            "            NEWLINE:'\\n')))))",
+            "  (statement",
+            "    (s_net_add",
+            "      NET:'net'",
+            "      ADD:'add'",
+            "      (a_bond",
+            "        BOND:'bond'",
+            "        name = (word",
+            "          NUMBERED_WORD:'bond1')",
+            "        (bond_clag_id",
+            "          CLAG:'clag'",
+            "          ID:'id'",
+            "          id = (uint16",
+            "            d = DEC:'1')",
+            "          NEWLINE:'\\n'))))",
+            "  (statement",
+            "    (s_net_add",
+            "      NET:'net'",
+            "      ADD:'add'",
+            "      (a_interface",
+            "        INTERFACE:'interface'",
+            "        interfaces = (glob",
+            "          (glob_range_set",
+            "            base_word = (numbered_word",
+            "              NUMBERED_WORD:'bond1.4094')))",
+            "        (i_clag",
+            "          CLAG:'clag'",
+            "          (ic_backup_ip",
+            "            BACKUP_IP:'backup-ip'",
+            "            backup_ip = (ip_address",
+            "              IP_ADDRESS:'192.0.2.4')",
+            "            VRF:'vrf'",
+            "            vrf = (word",
+            "              WORD:'mgmt')",
+            "            NEWLINE:'\\n')))))",
+            "  (statement",
+            "    (s_net_add",
+            "      NET:'net'",
+            "      ADD:'add'",
+            "      (a_interface",
+            "        INTERFACE:'interface'",
+            "        interfaces = (glob",
+            "          (glob_range_set",
+            "            base_word = (numbered_word",
+            "              NUMBERED_WORD:'bond1.4094')))",
+            "        (i_clag",
+            "          CLAG:'clag'",
+            "          (ic_peer_ip",
+            "            PEER_IP:'peer-ip'",
+            "            peer_ip = (ip_address",
+            "              IP_ADDRESS:'192.0.2.5')",
+            "            NEWLINE:'\\n')))))",
+            "  (statement",
+            "    (s_net_add",
+            "      NET:'net'",
+            "      ADD:'add'",
+            "      (a_interface",
+            "        INTERFACE:'interface'",
+            "        interfaces = (glob",
+            "          (glob_range_set",
+            "            base_word = (numbered_word",
+            "              NUMBERED_WORD:'bond1.4094')))",
+            "        (i_clag",
+            "          CLAG:'clag'",
+            "          (ic_priority",
+            "            PRIORITY:'priority'",
+            "            priority = (uint16",
+            "              d = DEC:'1000')",
+            "            NEWLINE:'\\n')))))",
+            "  (statement",
+            "    (s_net_add",
+            "      NET:'net'",
+            "      ADD:'add'",
+            "      (a_interface",
+            "        INTERFACE:'interface'",
+            "        interfaces = (glob",
+            "          (glob_range_set",
+            "            base_word = (numbered_word",
+            "              NUMBERED_WORD:'bond1.4094')))",
+            "        (i_clag",
+            "          CLAG:'clag'",
+            "          (ic_sys_mac",
+            "            SYS_MAC:'sys-mac'",
+            "            mac = (mac_address",
+            "              MAC_ADDRESS:'00:11:22:33:44:55')",
+            "            NEWLINE:'\\n')))))",
+            "  (statement",
+            "    (s_net_add",
+            "      NET:'net'",
+            "      ADD:'add'",
             "      (a_bgp",
             "        BGP:'bgp'",
             "        (b_common",
@@ -40206,6 +40596,124 @@
             "            as = (uint32",
             "              d = DEC:'65500')",
             "            NEWLINE:'\\n')))))",
+            "  (statement",
+            "    (s_net_add",
+            "      NET:'net'",
+            "      ADD:'add'",
+            "      (a_bgp",
+            "        BGP:'bgp'",
+            "        (b_common",
+            "          (b_neighbor",
+            "            NEIGHBOR:'neighbor'",
+            "            name = (word",
+            "              WORD:'GROUP')",
+            "            (bn_peer_group",
+            "              PEER_GROUP:'peer-group'",
+            "              NEWLINE:'\\n'))))))",
+            "  (statement",
+            "    (s_net_add",
+            "      NET:'net'",
+            "      ADD:'add'",
+            "      (a_bgp",
+            "        BGP:'bgp'",
+            "        (b_common",
+            "          (b_neighbor",
+            "            NEIGHBOR:'neighbor'",
+            "            name = (word",
+            "              WORD:'GROUP')",
+            "            (bn_peer",
+            "              (bnp_description",
+            "                DESCRIPTION:'description'",
+            "                WORD:'Some'",
+            "                WORD:'peer'",
+            "                text = WORD:'group'",
+            "                NEWLINE:'\\n')))))))",
+            "  (statement",
+            "    (s_net_add",
+            "      NET:'net'",
+            "      ADD:'add'",
+            "      (a_bgp",
+            "        BGP:'bgp'",
+            "        (b_common",
+            "          (b_neighbor",
+            "            NEIGHBOR:'neighbor'",
+            "            name = (word",
+            "              WORD:'GROUP')",
+            "            (bn_peer",
+            "              (bnp_remote_as",
+            "                REMOTE_AS:'remote-as'",
+            "                INTERNAL:'internal'",
+            "                NEWLINE:'\\n')))))))",
+            "  (statement",
+            "    (s_net_add",
+            "      NET:'net'",
+            "      ADD:'add'",
+            "      (a_bgp",
+            "        BGP:'bgp'",
+            "        (b_common",
+            "          (b_neighbor",
+            "            NEIGHBOR:'neighbor'",
+            "            name = (word",
+            "              NUMBERED_WORD:'swp1')",
+            "            (bn_interface",
+            "              INTERFACE:'interface'",
+            "              (bnp_remote_as",
+            "                REMOTE_AS:'remote-as'",
+            "                EXTERNAL:'external'",
+            "                NEWLINE:'\\n')))))))",
+            "  (statement",
+            "    (s_net_add",
+            "      NET:'net'",
+            "      ADD:'add'",
+            "      (a_bgp",
+            "        BGP:'bgp'",
+            "        (b_common",
+            "          (b_neighbor",
+            "            NEIGHBOR:'neighbor'",
+            "            name = (word",
+            "              NUMBERED_WORD:'swp2')",
+            "            (bn_interface",
+            "              INTERFACE:'interface'",
+            "              (bnp_remote_as",
+            "                REMOTE_AS:'remote-as'",
+            "                INTERNAL:'internal'",
+            "                NEWLINE:'\\n')))))))",
+            "  (statement",
+            "    (s_net_add",
+            "      NET:'net'",
+            "      ADD:'add'",
+            "      (a_bgp",
+            "        BGP:'bgp'",
+            "        (b_common",
+            "          (b_neighbor",
+            "            NEIGHBOR:'neighbor'",
+            "            name = (word",
+            "              NUMBERED_WORD:'swp3')",
+            "            (bn_interface",
+            "              INTERFACE:'interface'",
+            "              (bnp_peer_group",
+            "                PEER_GROUP:'peer-group'",
+            "                name = (word",
+            "                  WORD:'GROUP')",
+            "                NEWLINE:'\\n')))))))",
+            "  (statement",
+            "    (s_net_add",
+            "      NET:'net'",
+            "      ADD:'add'",
+            "      (a_bgp",
+            "        BGP:'bgp'",
+            "        (b_common",
+            "          (b_neighbor",
+            "            NEIGHBOR:'neighbor'",
+            "            name = (word",
+            "              NUMBERED_WORD:'swp3')",
+            "            (bn_interface",
+            "              INTERFACE:'interface'",
+            "              (bnp_remote_as",
+            "                REMOTE_AS:'remote-as'",
+            "                as = (uint32",
+            "                  d = DEC:'65000')",
+            "                NEWLINE:'\\n')))))))",
             "  (statement",
             "    (s_net_add",
             "      NET:'net'",
@@ -40238,6 +40746,40 @@
             "              rm = (word",
             "                NUMBERED_WORD:'rm1')",
             "              NEWLINE:'\\n'))))))",
+            "  (statement",
+            "    (s_net_add",
+            "      NET:'net'",
+            "      ADD:'add'",
+            "      (a_bgp",
+            "        BGP:'bgp'",
+            "        (b_common",
+            "          (b_ipv4_unicast",
+            "            IPV4:'ipv4'",
+            "            UNICAST:'unicast'",
+            "            (bi4_neighbor",
+            "              NEIGHBOR:'neighbor'",
+            "              name = (word",
+            "                NUMBERED_WORD:'swp3')",
+            "              (bi4n_activate",
+            "                ACTIVATE:'activate'",
+            "                NEWLINE:'\\n')))))))",
+            "  (statement",
+            "    (s_net_add",
+            "      NET:'net'",
+            "      ADD:'add'",
+            "      (a_bgp",
+            "        BGP:'bgp'",
+            "        (b_common",
+            "          (b_ipv4_unicast",
+            "            IPV4:'ipv4'",
+            "            UNICAST:'unicast'",
+            "            (bi4_neighbor",
+            "              NEIGHBOR:'neighbor'",
+            "              name = (word",
+            "                NUMBERED_WORD:'swp3')",
+            "              (bi4n_route_reflector_client",
+            "                ROUTE_REFLECTOR_CLIENT:'route-reflector-client'",
+            "                NEWLINE:'\\n')))))))",
             "  (statement",
             "    (s_net_add",
             "      NET:'net'",
@@ -40303,30 +40845,15 @@
             "      (a_bgp",
             "        BGP:'bgp'",
             "        (b_common",
-            "          (b_neighbor",
-            "            NEIGHBOR:'neighbor'",
-            "            name = (word",
-            "              WORD:'GROUP')",
-            "            (bn_peer_group",
-            "              PEER_GROUP:'peer-group'",
-            "              NEWLINE:'\\n'))))))",
-            "  (statement",
-            "    (s_net_add",
-            "      NET:'net'",
-            "      ADD:'add'",
-            "      (a_bgp",
-            "        BGP:'bgp'",
-            "        (b_common",
-            "          (b_neighbor",
-            "            NEIGHBOR:'neighbor'",
-            "            name = (word",
-            "              WORD:'GROUP')",
-            "            (bn_peer",
-            "              (bnp_description",
-            "                DESCRIPTION:'description'",
-            "                WORD:'Some'",
-            "                WORD:'peer'",
-            "                text = WORD:'group'",
+            "          (b_l2vpn",
+            "            L2VPN:'l2vpn'",
+            "            EVPN:'evpn'",
+            "            (ble_neighbor",
+            "              NEIGHBOR:'neighbor'",
+            "              name = (word",
+            "                NUMBERED_WORD:'swp2')",
+            "              (blen_activate",
+            "                ACTIVATE:'activate'",
             "                NEWLINE:'\\n')))))))",
             "  (statement",
             "    (s_net_add",
@@ -40335,84 +40862,15 @@
             "      (a_bgp",
             "        BGP:'bgp'",
             "        (b_common",
-            "          (b_neighbor",
-            "            NEIGHBOR:'neighbor'",
-            "            name = (word",
-            "              WORD:'GROUP')",
-            "            (bn_peer",
-            "              (bnp_remote_as",
-            "                REMOTE_AS:'remote-as'",
-            "                INTERNAL:'internal'",
-            "                NEWLINE:'\\n')))))))",
-            "  (statement",
-            "    (s_net_add",
-            "      NET:'net'",
-            "      ADD:'add'",
-            "      (a_bgp",
-            "        BGP:'bgp'",
-            "        (b_common",
-            "          (b_neighbor",
-            "            NEIGHBOR:'neighbor'",
-            "            name = (word",
-            "              NUMBERED_WORD:'swp3')",
-            "            (bn_interface",
-            "              INTERFACE:'interface'",
-            "              (bnp_peer_group",
-            "                PEER_GROUP:'peer-group'",
-            "                name = (word",
-            "                  WORD:'GROUP')",
-            "                NEWLINE:'\\n')))))))",
-            "  (statement",
-            "    (s_net_add",
-            "      NET:'net'",
-            "      ADD:'add'",
-            "      (a_bgp",
-            "        BGP:'bgp'",
-            "        (b_common",
-            "          (b_neighbor",
-            "            NEIGHBOR:'neighbor'",
-            "            name = (word",
-            "              NUMBERED_WORD:'swp1')",
-            "            (bn_interface",
-            "              INTERFACE:'interface'",
-            "              (bnp_remote_as",
-            "                REMOTE_AS:'remote-as'",
-            "                EXTERNAL:'external'",
-            "                NEWLINE:'\\n')))))))",
-            "  (statement",
-            "    (s_net_add",
-            "      NET:'net'",
-            "      ADD:'add'",
-            "      (a_bgp",
-            "        BGP:'bgp'",
-            "        (b_common",
-            "          (b_neighbor",
-            "            NEIGHBOR:'neighbor'",
-            "            name = (word",
-            "              NUMBERED_WORD:'swp2')",
-            "            (bn_interface",
-            "              INTERFACE:'interface'",
-            "              (bnp_remote_as",
-            "                REMOTE_AS:'remote-as'",
-            "                INTERNAL:'internal'",
-            "                NEWLINE:'\\n')))))))",
-            "  (statement",
-            "    (s_net_add",
-            "      NET:'net'",
-            "      ADD:'add'",
-            "      (a_bgp",
-            "        BGP:'bgp'",
-            "        (b_common",
-            "          (b_neighbor",
-            "            NEIGHBOR:'neighbor'",
-            "            name = (word",
-            "              NUMBERED_WORD:'swp3')",
-            "            (bn_interface",
-            "              INTERFACE:'interface'",
-            "              (bnp_remote_as",
-            "                REMOTE_AS:'remote-as'",
-            "                as = (uint32",
-            "                  d = DEC:'65000')",
+            "          (b_l2vpn",
+            "            L2VPN:'l2vpn'",
+            "            EVPN:'evpn'",
+            "            (ble_neighbor",
+            "              NEIGHBOR:'neighbor'",
+            "              name = (word",
+            "                NUMBERED_WORD:'swp3')",
+            "              (blen_activate",
+            "                ACTIVATE:'activate'",
             "                NEWLINE:'\\n')))))))",
             "  (statement",
             "    (s_net_add",
@@ -40517,184 +40975,6 @@
             "    (s_net_add",
             "      NET:'net'",
             "      ADD:'add'",
-            "      (a_bond",
-            "        BOND:'bond'",
-            "        name = (word",
-            "          NUMBERED_WORD:'bond1')",
-            "        (bond_bond",
-            "          BOND:'bond'",
-            "          (bobo_slaves",
-            "            SLAVES:'slaves'",
-            "            slaves = (glob",
-            "              (glob_range_set",
-            "                base_word = (numbered_word",
-            "                  NUMBERED_WORD:'swp1'))",
-            "              COMMA:','",
-            "              (glob_range_set",
-            "                base_word = (numbered_word",
-            "                  NUMBERED_WORD:'swp2')",
-            "                DASH:'-'",
-            "                first_interval_end = (uint32",
-            "                  d = DEC:'4')",
-            "                COMMA:','",
-            "                other_numeric_ranges = (range_set",
-            "                  (range",
-            "                    low = (uint32",
-            "                      d = DEC:'5'))))",
-            "              COMMA:','",
-            "              (glob_range_set",
-            "                base_word = (numbered_word",
-            "                  NUMBERED_WORD:'swp6')",
-            "                COMMA:','",
-            "                other_numeric_ranges = (range_set",
-            "                  (range",
-            "                    low = (uint32",
-            "                      d = DEC:'7')",
-            "                    DASH:'-'",
-            "                    high = (uint32",
-            "                      d = DEC:'8')))))",
-            "            NEWLINE:'\\n')))))",
-            "  (statement",
-            "    (s_net_add",
-            "      NET:'net'",
-            "      ADD:'add'",
-            "      (a_bond",
-            "        BOND:'bond'",
-            "        name = (word",
-            "          NUMBERED_WORD:'bond1')",
-            "        (bond_bridge",
-            "          BRIDGE:'bridge'",
-            "          (bob_access",
-            "            ACCESS:'access'",
-            "            vlan = (vlan_id",
-            "              v = DEC:'2')",
-            "            NEWLINE:'\\n')))))",
-            "  (statement",
-            "    (s_net_add",
-            "      NET:'net'",
-            "      ADD:'add'",
-            "      (a_bond",
-            "        BOND:'bond'",
-            "        name = (word",
-            "          NUMBERED_WORD:'bond2')",
-            "        (bond_bridge",
-            "          BRIDGE:'bridge'",
-            "          (bob_pvid",
-            "            PVID:'pvid'",
-            "            id = (vlan_id",
-            "              v = DEC:'1')",
-            "            NEWLINE:'\\n')))))",
-            "  (statement",
-            "    (s_net_add",
-            "      NET:'net'",
-            "      ADD:'add'",
-            "      (a_bond",
-            "        BOND:'bond'",
-            "        name = (word",
-            "          NUMBERED_WORD:'bond2')",
-            "        (bond_bridge",
-            "          BRIDGE:'bridge'",
-            "          (bob_vids",
-            "            VIDS:'vids'",
-            "            vlans = (vlan_range_set",
-            "              (vlan_range",
-            "                low = (vlan_id",
-            "                  v = DEC:'3'))",
-            "              COMMA:','",
-            "              (vlan_range",
-            "                low = (vlan_id",
-            "                  v = DEC:'4')",
-            "                DASH:'-'",
-            "                high = (vlan_id",
-            "                  v = DEC:'5')))",
-            "            NEWLINE:'\\n')))))",
-            "  (statement",
-            "    (s_net_add",
-            "      NET:'net'",
-            "      ADD:'add'",
-            "      (a_bond",
-            "        BOND:'bond'",
-            "        name = (word",
-            "          NUMBERED_WORD:'bond1')",
-            "        (bond_clag_id",
-            "          CLAG:'clag'",
-            "          ID:'id'",
-            "          id = (uint16",
-            "            d = DEC:'1')",
-            "          NEWLINE:'\\n'))))",
-            "  (statement",
-            "    (s_net_add",
-            "      NET:'net'",
-            "      ADD:'add'",
-            "      (a_bridge",
-            "        BRIDGE:'bridge'",
-            "        (bridge_bridge",
-            "          BRIDGE:'bridge'",
-            "          (brbr_ports",
-            "            PORTS:'ports'",
-            "            ports = (glob",
-            "              (glob_range_set",
-            "                base_word = (numbered_word",
-            "                  NUMBERED_WORD:'bond1'))",
-            "              COMMA:','",
-            "              (glob_range_set",
-            "                base_word = (numbered_word",
-            "                  NUMBERED_WORD:'swp1'))",
-            "              COMMA:','",
-            "              (glob_range_set",
-            "                base_word = (numbered_word",
-            "                  NUMBERED_WORD:'vni10001')))",
-            "            NEWLINE:'\\n')))))",
-            "  (statement",
-            "    (s_net_add",
-            "      NET:'net'",
-            "      ADD:'add'",
-            "      (a_bridge",
-            "        BRIDGE:'bridge'",
-            "        (bridge_bridge",
-            "          BRIDGE:'bridge'",
-            "          (brbr_pvid",
-            "            PVID:'pvid'",
-            "            pvid = (vlan_id",
-            "              v = DEC:'2')",
-            "            NEWLINE:'\\n')))))",
-            "  (statement",
-            "    (s_net_add",
-            "      NET:'net'",
-            "      ADD:'add'",
-            "      (a_bridge",
-            "        BRIDGE:'bridge'",
-            "        (bridge_bridge",
-            "          BRIDGE:'bridge'",
-            "          (brbr_vids",
-            "            VIDS:'vids'",
-            "            ids = (range_set",
-            "              (range",
-            "                low = (uint32",
-            "                  d = DEC:'1'))",
-            "              COMMA:','",
-            "              (range",
-            "                low = (uint32",
-            "                  d = DEC:'2')",
-            "                DASH:'-'",
-            "                high = (uint32",
-            "                  d = DEC:'3')))",
-            "            NEWLINE:'\\n')))))",
-            "  (statement",
-            "    (s_net_add",
-            "      NET:'net'",
-            "      ADD:'add'",
-            "      (a_bridge",
-            "        BRIDGE:'bridge'",
-            "        (bridge_bridge",
-            "          BRIDGE:'bridge'",
-            "          (brbr_vlan_aware",
-            "            VLAN_AWARE:'vlan-aware'",
-            "            NEWLINE:'\\n')))))",
-            "  (statement",
-            "    (s_net_add",
-            "      NET:'net'",
-            "      ADD:'add'",
             "      (a_dns",
             "        DNS:'dns'",
             "        (dns_nameserver",
@@ -40758,218 +41038,6 @@
             "          WORD:'radius'",
             "          WORD:'authentication-port'",
             "          DEC:'2345'",
-            "          NEWLINE:'\\n'))))",
-            "  (statement",
-            "    (s_net_add",
-            "      NET:'net'",
-            "      ADD:'add'",
-            "      (a_interface",
-            "        INTERFACE:'interface'",
-            "        interfaces = (glob",
-            "          (glob_range_set",
-            "            base_word = (numbered_word",
-            "              NUMBERED_WORD:'bond1.4094')))",
-            "        (i_clag",
-            "          CLAG:'clag'",
-            "          (ic_backup_ip",
-            "            BACKUP_IP:'backup-ip'",
-            "            backup_ip = (ip_address",
-            "              IP_ADDRESS:'192.0.2.4')",
-            "            VRF:'vrf'",
-            "            vrf = (word",
-            "              WORD:'mgmt')",
-            "            NEWLINE:'\\n')))))",
-            "  (statement",
-            "    (s_net_add",
-            "      NET:'net'",
-            "      ADD:'add'",
-            "      (a_interface",
-            "        INTERFACE:'interface'",
-            "        interfaces = (glob",
-            "          (glob_range_set",
-            "            base_word = (numbered_word",
-            "              NUMBERED_WORD:'bond1.4094')))",
-            "        (i_clag",
-            "          CLAG:'clag'",
-            "          (ic_peer_ip",
-            "            PEER_IP:'peer-ip'",
-            "            peer_ip = (ip_address",
-            "              IP_ADDRESS:'192.0.2.5')",
-            "            NEWLINE:'\\n')))))",
-            "  (statement",
-            "    (s_net_add",
-            "      NET:'net'",
-            "      ADD:'add'",
-            "      (a_interface",
-            "        INTERFACE:'interface'",
-            "        interfaces = (glob",
-            "          (glob_range_set",
-            "            base_word = (numbered_word",
-            "              NUMBERED_WORD:'bond1.4094')))",
-            "        (i_clag",
-            "          CLAG:'clag'",
-            "          (ic_priority",
-            "            PRIORITY:'priority'",
-            "            priority = (uint16",
-            "              d = DEC:'1000')",
-            "            NEWLINE:'\\n')))))",
-            "  (statement",
-            "    (s_net_add",
-            "      NET:'net'",
-            "      ADD:'add'",
-            "      (a_interface",
-            "        INTERFACE:'interface'",
-            "        interfaces = (glob",
-            "          (glob_range_set",
-            "            base_word = (numbered_word",
-            "              NUMBERED_WORD:'bond1.4094')))",
-            "        (i_clag",
-            "          CLAG:'clag'",
-            "          (ic_sys_mac",
-            "            SYS_MAC:'sys-mac'",
-            "            mac = (mac_address",
-            "              MAC_ADDRESS:'00:11:22:33:44:55')",
-            "            NEWLINE:'\\n')))))",
-            "  (statement",
-            "    (s_net_add",
-            "      NET:'net'",
-            "      ADD:'add'",
-            "      (a_interface",
-            "        INTERFACE:'interface'",
-            "        interfaces = (glob",
-            "          (glob_range_set",
-            "            base_word = (numbered_word",
-            "              NUMBERED_WORD:'bond1.4094')))",
-            "        (i_ip_address",
-            "          IP:'ip'",
-            "          ADDRESS:'address'",
-            "          address = (interface_address",
-            "            IP_PREFIX:'192.0.2.6/24')",
-            "          NEWLINE:'\\n'))))",
-            "  (statement",
-            "    (s_net_add",
-            "      NET:'net'",
-            "      ADD:'add'",
-            "      (a_interface",
-            "        INTERFACE:'interface'",
-            "        interfaces = (glob",
-            "          (glob_range_set",
-            "            base_word = (numbered_word",
-            "              NUMBERED_WORD:'eth0')))",
-            "        (i_vrf",
-            "          VRF:'vrf'",
-            "          name = (word",
-            "            WORD:'mgmt')",
-            "          NEWLINE:'\\n'))))",
-            "  (statement",
-            "    (s_net_add",
-            "      NET:'net'",
-            "      ADD:'add'",
-            "      (a_interface",
-            "        INTERFACE:'interface'",
-            "        interfaces = (glob",
-            "          (glob_range_set",
-            "            base_word = (numbered_word",
-            "              NUMBERED_WORD:'swp1')))",
-            "        (i_bridge",
-            "          BRIDGE:'bridge'",
-            "          (ib_access",
-            "            ACCESS:'access'",
-            "            vlan = (vlan_id",
-            "              v = DEC:'3')",
-            "            NEWLINE:'\\n')))))",
-            "  (statement",
-            "    (s_net_add",
-            "      NET:'net'",
-            "      ADD:'add'",
-            "      (a_interface",
-            "        INTERFACE:'interface'",
-            "        interfaces = (glob",
-            "          (glob_range_set",
-            "            base_word = (numbered_word",
-            "              NUMBERED_WORD:'swp2')))",
-            "        (i_bridge",
-            "          BRIDGE:'bridge'",
-            "          (ib_pvid",
-            "            PVID:'pvid'",
-            "            id = (vlan_id",
-            "              v = DEC:'4')",
-            "            NEWLINE:'\\n')))))",
-            "  (statement",
-            "    (s_net_add",
-            "      NET:'net'",
-            "      ADD:'add'",
-            "      (a_interface",
-            "        INTERFACE:'interface'",
-            "        interfaces = (glob",
-            "          (glob_range_set",
-            "            base_word = (numbered_word",
-            "              NUMBERED_WORD:'swp2')))",
-            "        (i_bridge",
-            "          BRIDGE:'bridge'",
-            "          (ib_vids",
-            "            VIDS:'vids'",
-            "            vlans = (vlan_range_set",
-            "              (vlan_range",
-            "                low = (vlan_id",
-            "                  v = DEC:'5')",
-            "                DASH:'-'",
-            "                high = (vlan_id",
-            "                  v = DEC:'6')))",
-            "            NEWLINE:'\\n')))))",
-            "  (statement",
-            "    (s_net_add",
-            "      NET:'net'",
-            "      ADD:'add'",
-            "      (a_interface",
-            "        INTERFACE:'interface'",
-            "        interfaces = (glob",
-            "          (glob_range_set",
-            "            base_word = (numbered_word",
-            "              NUMBERED_WORD:'swp1')",
-            "            COMMA:','",
-            "            other_numeric_ranges = (range_set",
-            "              (range",
-            "                low = (uint32",
-            "                  d = DEC:'2')",
-            "                DASH:'-'",
-            "                high = (uint32",
-            "                  d = DEC:'3')))))",
-            "        NEWLINE:'\\n')))",
-            "  (statement",
-            "    (s_net_add",
-            "      NET:'net'",
-            "      ADD:'add'",
-            "      (a_loopback",
-            "        LOOPBACK:'loopback'",
-            "        LO:'lo'",
-            "        NEWLINE:'\\n')))",
-            "  (statement",
-            "    (s_net_add",
-            "      NET:'net'",
-            "      ADD:'add'",
-            "      (a_loopback",
-            "        LOOPBACK:'loopback'",
-            "        LO:'lo'",
-            "        (l_clag",
-            "          CLAG:'clag'",
-            "          (lc_vxlan_anycast_ip",
-            "            VXLAN_ANYCAST_IP:'vxlan-anycast-ip'",
-            "            ip = (ip_address",
-            "              IP_ADDRESS:'192.0.2.7')",
-            "            NEWLINE:'\\n')))))",
-            "  (statement",
-            "    (s_net_add",
-            "      NET:'net'",
-            "      ADD:'add'",
-            "      (a_loopback",
-            "        LOOPBACK:'loopback'",
-            "        LO:'lo'",
-            "        (l_ip_address",
-            "          IP:'ip'",
-            "          ADDRESS:'address'",
-            "          address = (interface_address",
-            "            IP_PREFIX:'192.0.2.8/32')",
             "          NEWLINE:'\\n'))))",
             "  (statement",
             "    (s_net_add",
@@ -74069,163 +74137,163 @@
           "Parse warnings" : [
             {
               "Comment" : "This feature is not currently supported",
-              "Line" : 33,
+              "Line" : 24,
               "Parser_Context" : "[brbr_vlan_aware bridge_bridge a_bridge s_net_add statement cumulus_nclu_configuration]",
               "Text" : "vlan-aware"
             },
             {
               "Comment" : "This feature is not currently supported",
-              "Line" : 36,
+              "Line" : 60,
               "Parser_Context" : "[a_dot1x s_net_add statement cumulus_nclu_configuration]",
               "Text" : "dot1x eap-reauth-period 0"
             },
             {
               "Comment" : "This feature is not currently supported",
-              "Line" : 37,
+              "Line" : 61,
               "Parser_Context" : "[a_dot1x s_net_add statement cumulus_nclu_configuration]",
               "Text" : "dot1x mab-activation-delay 30"
             },
             {
               "Comment" : "This feature is not currently supported",
-              "Line" : 38,
+              "Line" : 62,
               "Parser_Context" : "[a_dot1x s_net_add statement cumulus_nclu_configuration]",
               "Text" : "dot1x radius accounting-port 1234"
             },
             {
               "Comment" : "This feature is not currently supported",
-              "Line" : 39,
+              "Line" : 63,
               "Parser_Context" : "[a_dot1x s_net_add statement cumulus_nclu_configuration]",
               "Text" : "dot1x radius authentication-port 2345"
             },
             {
               "Comment" : "This feature is not currently supported",
-              "Line" : 53,
+              "Line" : 65,
               "Parser_Context" : "[a_ptp s_net_add statement cumulus_nclu_configuration]",
               "Text" : "ptp global domain-number 0"
             },
             {
               "Comment" : "This feature is not currently supported",
-              "Line" : 54,
+              "Line" : 66,
               "Parser_Context" : "[a_ptp s_net_add statement cumulus_nclu_configuration]",
               "Text" : "ptp global logging-level 5"
             },
             {
               "Comment" : "This feature is not currently supported",
-              "Line" : 55,
+              "Line" : 67,
               "Parser_Context" : "[a_ptp s_net_add statement cumulus_nclu_configuration]",
               "Text" : "ptp global path-trace-enabled no"
             },
             {
               "Comment" : "This feature is not currently supported",
-              "Line" : 56,
+              "Line" : 68,
               "Parser_Context" : "[a_ptp s_net_add statement cumulus_nclu_configuration]",
               "Text" : "ptp global priority1 255"
             },
             {
               "Comment" : "This feature is not currently supported",
-              "Line" : 57,
+              "Line" : 69,
               "Parser_Context" : "[a_ptp s_net_add statement cumulus_nclu_configuration]",
               "Text" : "ptp global slave-only no"
             },
             {
               "Comment" : "This feature is not currently supported",
-              "Line" : 58,
+              "Line" : 70,
               "Parser_Context" : "[a_ptp s_net_add statement cumulus_nclu_configuration]",
               "Text" : "ptp global summary-interval 0"
             },
             {
               "Comment" : "This feature is not currently supported",
-              "Line" : 59,
+              "Line" : 71,
               "Parser_Context" : "[a_ptp s_net_add statement cumulus_nclu_configuration]",
               "Text" : "ptp global time-stamping"
             },
             {
               "Comment" : "This feature is not currently supported",
-              "Line" : 60,
+              "Line" : 72,
               "Parser_Context" : "[a_ptp s_net_add statement cumulus_nclu_configuration]",
               "Text" : "ptp global use-syslog yes"
             },
             {
               "Comment" : "This feature is not currently supported",
-              "Line" : 61,
+              "Line" : 73,
               "Parser_Context" : "[a_ptp s_net_add statement cumulus_nclu_configuration]",
               "Text" : "ptp global verbose no"
             },
             {
               "Comment" : "This feature is not currently supported",
-              "Line" : 62,
+              "Line" : 75,
               "Parser_Context" : "[r_defaults_datacenter a_routing s_net_add statement cumulus_nclu_configuration]",
               "Text" : "defaults datacenter"
             },
             {
               "Comment" : "This feature is not currently supported",
-              "Line" : 63,
+              "Line" : 76,
               "Parser_Context" : "[r_log a_routing s_net_add statement cumulus_nclu_configuration]",
               "Text" : "log syslog informational"
             },
             {
               "Comment" : "This feature is not currently supported",
-              "Line" : 66,
+              "Line" : 79,
               "Parser_Context" : "[r_service_integrated_vtysh_config a_routing s_net_add statement cumulus_nclu_configuration]",
               "Text" : "service integrated-vtysh-config"
             },
             {
               "Comment" : "This feature is not currently supported",
-              "Line" : 67,
+              "Line" : 81,
               "Parser_Context" : "[a_snmp_server s_net_add statement cumulus_nclu_configuration]",
               "Text" : "snmp-server listening-address localhost"
             },
             {
               "Comment" : "This feature is not currently supported",
-              "Line" : 68,
+              "Line" : 82,
               "Parser_Context" : "[a_time s_net_add statement cumulus_nclu_configuration]",
               "Text" : "time ntp server 0.pool.ntp.example.com iburst"
             },
             {
               "Comment" : "This feature is not currently supported",
-              "Line" : 69,
+              "Line" : 83,
               "Parser_Context" : "[a_time s_net_add statement cumulus_nclu_configuration]",
               "Text" : "time ntp source eth0"
             },
             {
               "Comment" : "This feature is not currently supported",
-              "Line" : 70,
+              "Line" : 84,
               "Parser_Context" : "[a_time s_net_add statement cumulus_nclu_configuration]",
               "Text" : "time zone Etc/UTC"
             },
             {
               "Comment" : "This feature is not currently supported",
-              "Line" : 74,
+              "Line" : 89,
               "Parser_Context" : "[v_vlan_raw_device a_vlan s_net_add statement cumulus_nclu_configuration]",
               "Text" : "vlan-raw-device bridge"
             },
             {
               "Comment" : "This feature is not currently supported",
-              "Line" : 83,
+              "Line" : 98,
               "Parser_Context" : "[vxb_arp_nd_suppress vx_bridge a_vxlan s_net_add statement cumulus_nclu_configuration]",
               "Text" : "arp-nd-suppress on"
             },
             {
               "Comment" : "This feature is not currently supported",
-              "Line" : 84,
+              "Line" : 99,
               "Parser_Context" : "[vxb_learning vx_bridge a_vxlan s_net_add statement cumulus_nclu_configuration]",
               "Text" : "learning off"
             },
             {
               "Comment" : "This feature is not currently supported",
-              "Line" : 85,
+              "Line" : 100,
               "Parser_Context" : "[vx_stp a_vxlan s_net_add statement cumulus_nclu_configuration]",
               "Text" : "stp bpduguard"
             },
             {
               "Comment" : "This feature is not currently supported",
-              "Line" : 86,
+              "Line" : 101,
               "Parser_Context" : "[vx_stp a_vxlan s_net_add statement cumulus_nclu_configuration]",
               "Text" : "stp portbpdufilter"
             },
             {
               "Comment" : "This feature is not currently supported",
-              "Line" : 96,
+              "Line" : 111,
               "Parser_Context" : "[frr_username s_extra_configuration statement cumulus_nclu_configuration]",
               "Text" : "username cumulus nopassword\\n"
             }
@@ -78894,13 +78962,13 @@
           "bond" : {
             "bond1" : {
               "definitionLines" : [
-                25
+                15
               ],
               "numReferrers" : 1
             },
             "bond2" : {
               "definitionLines" : [
-                27
+                17
               ],
               "numReferrers" : 1
             }
@@ -78908,61 +78976,61 @@
           "interface" : {
             "bond1.4094" : {
               "definitionLines" : [
-                40
+                19
               ],
               "numReferrers" : 5
             },
             "eth0" : {
               "definitionLines" : [
-                45
+                7
               ],
               "numReferrers" : 1
             },
             "swp1" : {
               "definitionLines" : [
-                16
+                6
               ],
               "numReferrers" : 4
             },
             "swp2" : {
               "definitionLines" : [
-                17
+                6
               ],
               "numReferrers" : 5
             },
             "swp3" : {
               "definitionLines" : [
-                15
+                6
               ],
               "numReferrers" : 4
             },
             "swp4" : {
               "definitionLines" : [
-                25
+                15
               ],
               "numReferrers" : 1
             },
             "swp5" : {
               "definitionLines" : [
-                25
+                15
               ],
               "numReferrers" : 1
             },
             "swp6" : {
               "definitionLines" : [
-                25
+                15
               ],
               "numReferrers" : 1
             },
             "swp7" : {
               "definitionLines" : [
-                25
+                15
               ],
               "numReferrers" : 1
             },
             "swp8" : {
               "definitionLines" : [
-                25
+                15
               ],
               "numReferrers" : 1
             }
@@ -78970,9 +79038,9 @@
           "loopback" : {
             "lo" : {
               "definitionLines" : [
-                50,
-                51,
-                52
+                11,
+                12,
+                13
               ],
               "numReferrers" : 4
             }
@@ -78980,7 +79048,7 @@
           "route-map" : {
             "rm1" : {
               "definitionLines" : [
-                65
+                78
               ],
               "numReferrers" : 1
             }
@@ -78988,7 +79056,7 @@
           "vlan" : {
             "vlan4" : {
               "definitionLines" : [
-                71
+                86
               ],
               "numReferrers" : 6
             }
@@ -78996,13 +79064,13 @@
           "vrf" : {
             "mgmt" : {
               "definitionLines" : [
-                40
+                7
               ],
               "numReferrers" : 5
             },
             "vrf1" : {
               "definitionLines" : [
-                20
+                51
               ],
               "numReferrers" : 10
             }
@@ -79010,13 +79078,13 @@
           "vxlan" : {
             "vni10001" : {
               "definitionLines" : [
-                82
+                97
               ],
               "numReferrers" : 1
             },
             "vni10004" : {
               "definitionLines" : [
-                88
+                103
               ],
               "numReferrers" : 1
             }
@@ -85912,186 +85980,186 @@
           "abstract interface" : {
             "lo" : {
               "route-map match interface" : [
-                65
+                78
               ]
             },
             "swp1" : {
               "bgp neighbor interface" : [
-                16
+                36
               ]
             },
             "swp2" : {
               "bgp neighbor interface" : [
-                17
+                37
               ]
             },
             "swp3" : {
               "bgp neighbor interface" : [
-                15,
-                18
+                38,
+                39
               ]
             }
           },
           "bond" : {
             "bond1" : {
               "bond self-reference" : [
-                25
+                15
               ]
             },
             "bond2" : {
               "bond self-reference" : [
-                27
+                17
               ]
             }
           },
           "interface" : {
             "bond1.4094" : {
               "interface self-reference" : [
-                40,
-                41,
-                42,
-                43,
-                44
+                19,
+                27,
+                28,
+                29,
+                30
               ]
             },
             "eth0" : {
               "interface self-reference" : [
-                45
+                7
               ]
             },
             "swp1" : {
               "bgp neighbor interface" : [
-                16
+                36
               ],
               "bond slave" : [
-                25
+                15
               ],
               "interface self-reference" : [
-                46,
-                49
+                6,
+                8
               ]
             },
             "swp2" : {
               "bgp neighbor interface" : [
-                17
+                37
               ],
               "bond slave" : [
-                25
+                15
               ],
               "interface self-reference" : [
-                47,
-                48,
-                49
+                6,
+                9,
+                10
               ]
             },
             "swp3" : {
               "bgp neighbor interface" : [
-                15,
-                18
+                38,
+                39
               ],
               "bond slave" : [
-                25
+                15
               ],
               "interface self-reference" : [
-                49
+                6
               ]
             },
             "swp4" : {
               "bond slave" : [
-                25
+                15
               ]
             },
             "swp5" : {
               "bond slave" : [
-                25
+                15
               ]
             },
             "swp6" : {
               "bond slave" : [
-                25
+                15
               ]
             },
             "swp7" : {
               "bond slave" : [
-                25
+                15
               ]
             },
             "swp8" : {
               "bond slave" : [
-                25
+                15
               ]
             }
           },
           "loopback" : {
             "lo" : {
               "loopback self-reference" : [
-                50,
-                51,
-                52
+                11,
+                12,
+                13
               ]
             }
           },
           "route-map" : {
             "rm1" : {
               "bgp ipv4 unicast redistribute connected route-map" : [
-                7
+                41
               ]
             }
           },
           "vlan" : {
             "vlan4" : {
               "vlan self-reference" : [
-                71,
-                72,
-                73,
-                74,
-                75,
-                76
+                86,
+                87,
+                88,
+                89,
+                90,
+                91
               ]
             }
           },
           "vrf" : {
             "mgmt" : {
               "interface clag backup-ip vrf" : [
-                40
+                27
               ],
               "interface vrf" : [
-                45
+                7
               ],
               "vrf self-reference" : [
-                77,
-                78,
-                80
+                92,
+                93,
+                95
               ]
             },
             "vrf1" : {
               "bgp vrf" : [
-                20,
-                21,
-                22,
-                23,
-                24
+                51,
+                52,
+                53,
+                54,
+                55
               ],
               "vlan vrf" : [
-                75
+                90
               ],
               "vrf self-reference" : [
-                79,
-                80,
-                97,
-                98
+                94,
+                95,
+                112,
+                113
               ]
             }
           },
           "vxlan" : {
             "vni10001" : {
               "vxlan self-reference" : [
-                82
+                97
               ]
             },
             "vni10004" : {
               "vxlan self-reference" : [
-                88
+                103
               ]
             }
           }

@@ -2,54 +2,66 @@ net del all
 #
 net add hostname cumulus_nclu
 #
+# Interfaces
+net add interface swp1,2-3
+net add interface eth0 vrf mgmt
+net add interface swp1 bridge access 3
+net add interface swp2 bridge pvid 4
+net add interface swp2 bridge vids 5-6
+net add loopback lo
+net add loopback lo clag vxlan-anycast-ip 192.0.2.7
+net add loopback lo ip address 192.0.2.8/32
+# Bonds
+net add bond bond1 bond slaves swp1,swp2-4,5,swp6,7-8
+net add bond bond1 bridge access 2
+net add bond bond2 bridge pvid 1
+net add bond bond2 bridge vids 3,4-5
+net add interface bond1.4094 ip address 192.0.2.6/24
+# Bridges
+net add bridge bridge ports bond1,swp1,vni10001
+net add bridge bridge pvid 2
+net add bridge bridge vids 1,2-3
+net add bridge bridge vlan-aware
+# CLAG
+net add bond bond1 clag id 1
+net add interface bond1.4094 clag backup-ip 192.0.2.4 vrf mgmt
+net add interface bond1.4094 clag peer-ip 192.0.2.5
+net add interface bond1.4094 clag priority 1000
+net add interface bond1.4094 clag sys-mac 00:11:22:33:44:55
+# BGP, EVPN
 net add bgp autonomous-system 65500
-net add bgp ipv4 unicast network 192.0.2.1/32 
-net add bgp ipv4 unicast redistribute connected route-map rm1
-net add bgp l2vpn evpn  advertise-all-vni
-net add bgp l2vpn evpn  advertise-default-gw
-net add bgp l2vpn evpn  advertise ipv4 unicast
-net add bgp l2vpn evpn  neighbor swp1 activate
 net add bgp neighbor GROUP peer-group
 net add bgp neighbor GROUP description Some peer group
 net add bgp neighbor GROUP remote-as internal
-net add bgp neighbor swp3 interface peer-group GROUP
 net add bgp neighbor swp1 interface remote-as external
 net add bgp neighbor swp2 interface remote-as internal
+net add bgp neighbor swp3 interface peer-group GROUP
 net add bgp neighbor swp3 interface remote-as 65000
+net add bgp ipv4 unicast network 192.0.2.1/32
+net add bgp ipv4 unicast redistribute connected route-map rm1
+net add bgp ipv4 unicast neighbor swp3 activate
+net add bgp ipv4 unicast neighbor swp3 route-reflector-client
+net add bgp l2vpn evpn advertise-all-vni
+net add bgp l2vpn evpn advertise-default-gw
+net add bgp l2vpn evpn advertise ipv4 unicast
+net add bgp l2vpn evpn neighbor swp1 activate
+net add bgp l2vpn evpn neighbor swp2 activate
+net add bgp l2vpn evpn neighbor swp3 activate
 net add bgp router-id 192.0.2.2
 net add bgp vrf vrf1 autonomous-system 65501
 net add bgp vrf vrf1 ipv4 unicast redistribute connected
 net add bgp vrf vrf1 ipv4 unicast redistribute static
 net add bgp vrf vrf1 l2vpn evpn  advertise ipv4 unicast
 net add bgp vrf vrf1 router-id 192.0.2.3
-net add bond bond1 bond slaves swp1,swp2-4,5,swp6,7-8
-net add bond bond1 bridge access 2
-net add bond bond2 bridge pvid 1
-net add bond bond2 bridge vids 3,4-5
-net add bond bond1 clag id 1
-net add bridge bridge ports bond1,swp1,vni10001
-net add bridge bridge pvid 2
-net add bridge bridge vids 1,2-3
-net add bridge bridge vlan-aware
+# DNS
 net add dns nameserver ipv4 192.0.2.3
 net add dns nameserver ipv6 dead:beef::1
+# Dot1x
 net add dot1x eap-reauth-period 0
 net add dot1x mab-activation-delay 30
 net add dot1x radius accounting-port 1234
 net add dot1x radius authentication-port 2345
-net add interface bond1.4094 clag backup-ip 192.0.2.4 vrf mgmt
-net add interface bond1.4094 clag peer-ip 192.0.2.5
-net add interface bond1.4094 clag priority 1000
-net add interface bond1.4094 clag sys-mac 00:11:22:33:44:55
-net add interface bond1.4094 ip address 192.0.2.6/24
-net add interface eth0 vrf mgmt
-net add interface swp1 bridge access 3
-net add interface swp2 bridge pvid 4
-net add interface swp2 bridge vids 5-6
-net add interface swp1,2-3
-net add loopback lo
-net add loopback lo clag vxlan-anycast-ip 192.0.2.7
-net add loopback lo ip address 192.0.2.8/32
+# PTP
 net add ptp global domain-number 0
 net add ptp global logging-level 5
 net add ptp global path-trace-enabled no
@@ -59,15 +71,18 @@ net add ptp global summary-interval 0
 net add ptp global time-stamping
 net add ptp global use-syslog yes
 net add ptp global verbose no
+# Routing config
 net add routing defaults datacenter
 net add routing log syslog informational
 net add routing route 192.0.2.0/24 10.0.0.1
 net add routing route-map rm1 permit 1 match interface lo
 net add routing service integrated-vtysh-config
+# SNMP/NTP
 net add snmp-server listening-address localhost
 net add time ntp server 0.pool.ntp.example.com iburst
 net add time ntp source eth0
 net add time zone Etc/UTC
+# VLAN & VXLAN
 net add vlan 4 ip address 192.0.2.9/24
 net add vlan 4 ip address-virtual 01:23:45:67:89:ab 192.168.0.1/24
 net add vlan 4 vlan-id 4
