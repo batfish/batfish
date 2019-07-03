@@ -5,7 +5,8 @@ options {
 }
 
 tokens {
-  SUBDOMAIN_NAME
+  SUBDOMAIN_NAME,
+  VRF_NAME
 }
 
 ACCESS
@@ -33,6 +34,11 @@ ADDRESS
   'address'
 ;
 
+ADDRESS_FAMILY
+:
+  'address-family'
+;
+
 ALLOWED
 :
   'allowed'
@@ -56,6 +62,16 @@ CHANNEL_GROUP
 CONFIGURATION
 :
   'configuration'
+;
+
+CONTEXT
+:
+  'context' -> pushMode ( M_VrfName )
+;
+
+DESCRIPTION
+:
+  'description'
 ;
 
 DOT1Q
@@ -146,6 +162,16 @@ IP_PREFIX
   F_IpPrefix
 ;
 
+IPV4
+:
+  'ipv4'
+;
+
+IPV6
+:
+  'ipv6'
+;
+
 LAST_MEMBER_QUERY_INTERVAL
 :
   'last-member-query-interval'
@@ -165,9 +191,19 @@ LOOPBACK
   )?
 ;
 
+MAXIMUM
+:
+  'maximum'
+;
+
 MEDIA
 :
   'media'
+;
+
+MEMBER
+:
+  'member' -> pushMode ( M_VrfName )
 ;
 
 MGMT
@@ -305,6 +341,11 @@ TRUNK
   'trunk'
 ;
 
+UNICAST
+:
+  'unicast'
+;
+
 V3_REPORT_SUPPRESSION
 :
   'v3-report-suppression'
@@ -318,6 +359,11 @@ VERSION
 VLAN
 :
   [Vv] [Ll] [Aa] [Nn]
+;
+
+VRF
+:
+  'vrf'
 ;
 
 XCONNECT
@@ -659,6 +705,19 @@ F_Uint32
 ;
 
 fragment
+F_VrfName
+:
+  F_VrfNameChar+
+;
+
+fragment
+F_VrfNameChar
+:
+  [0-9A-Za-z!@#$^*_=+.;:{}]
+  | '-'
+;
+
+fragment
 F_Whitespace
 :
   ' '
@@ -690,6 +749,18 @@ M_Hostname_SUBDOMAIN_NAME
 ;
 
 M_Hostname_WS
+:
+  F_Whitespace+ -> channel ( HIDDEN )
+;
+
+mode M_VrfName;
+
+M_VrfName_VRF_NAME
+:
+  F_VrfName -> type ( VRF_NAME ) , popMode
+;
+
+M_VrfName_WS
 :
   F_Whitespace+ -> channel ( HIDDEN )
 ;

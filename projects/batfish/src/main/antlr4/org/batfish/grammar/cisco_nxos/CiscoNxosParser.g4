@@ -1,6 +1,6 @@
 parser grammar CiscoNxosParser;
 
-import CiscoNxos_common, CiscoNxos_interface, CiscoNxos_vlan;
+import CiscoNxos_common, CiscoNxos_interface, CiscoNxos_vlan, CiscoNxos_vrf;
 
 options {
   superClass = 'org.batfish.grammar.cisco_nxos.parsing.CiscoNxosBaseParser';
@@ -18,6 +18,7 @@ statement
   | s_interface
   | s_null
   | s_vlan
+  | s_vrf_context
 ;
 
 s_hostname

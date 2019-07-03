@@ -18,6 +18,7 @@ s_interface
     | i_null
     | i_shutdown
     | i_switchport
+    | i_vrf_member
   )*
 ;
 
@@ -139,6 +140,11 @@ i_switchport_trunk_allowed
 i_switchport_trunk_native
 :
   NATIVE VLAN vlan = vlan_id NEWLINE
+;
+
+i_vrf_member
+:
+  VRF MEMBER name = vrf_name NEWLINE
 ;
 
 interface_range
