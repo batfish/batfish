@@ -77,6 +77,7 @@ public class EvpnAddressFamilyTest {
             .setImportPolicySources(ImmutableSortedSet.of("bar"))
             .setL2Vnis(ImmutableSet.of())
             .setL3Vnis(ImmutableSet.of())
+            .setRouteReflectorClient(true)
             .setPropagateUnmatched(true)
             .build();
     assertThat(SerializationUtils.clone(af), equalTo(af));
@@ -94,6 +95,7 @@ public class EvpnAddressFamilyTest {
             .setImportPolicySources(ImmutableSortedSet.of("bar"))
             .setL2Vnis(ImmutableSet.of())
             .setL3Vnis(ImmutableSet.of())
+            .setRouteReflectorClient(true)
             .setPropagateUnmatched(true);
     EvpnAddressFamily af1 = builder.build();
     assertThat(BatfishObjectMapper.clone(af1, EvpnAddressFamily.class), equalTo(af1));

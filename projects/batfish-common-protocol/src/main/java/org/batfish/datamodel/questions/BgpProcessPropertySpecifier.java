@@ -47,7 +47,7 @@ public class BgpProcessPropertySpecifier extends PropertySpecifier {
           .put(
               ROUTE_REFLECTOR,
               new PropertyDescriptor<>(
-                  BgpProcessPropertySpecifier::isRouteReflector,
+                  BgpProcessPropertySpecifier::isIpv4UnicastRouteReflector,
                   Schema.BOOLEAN,
                   "Whether any BGP peer in this process is configured as a route reflector client, for ipv4 unicast address family"))
           .put(
@@ -133,7 +133,7 @@ public class BgpProcessPropertySpecifier extends PropertySpecifier {
    * Returns {@code true} iff the given process has any BGP peer configured as a route reflector
    * client, for IPv4 unicast family.
    */
-  public static boolean isRouteReflector(BgpProcess p) {
+  public static boolean isIpv4UnicastRouteReflector(BgpProcess p) {
     return StreamSupport.stream(p.getAllPeerConfigs().spliterator(), false)
         .map(BgpPeerConfig::getIpv4UnicastAddressFamily)
         .filter(Objects::nonNull)

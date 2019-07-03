@@ -40,6 +40,7 @@ public class Ipv4UnicastAddressFamilyTest {
             .setExportPolicy("export")
             .setImportPolicy("import")
             .setExportPolicySources(ImmutableSortedSet.of("foo"))
+            .setRouteReflectorClient(true)
             .build();
     assertThat(SerializationUtils.clone(af), equalTo(af));
   }
@@ -51,6 +52,7 @@ public class Ipv4UnicastAddressFamilyTest {
             .setExportPolicy("export")
             .setImportPolicy("import")
             .setExportPolicySources(ImmutableSortedSet.of("foo"))
+            .setRouteReflectorClient(true)
             .build();
     assertThat(BatfishObjectMapper.clone(af, Ipv4UnicastAddressFamily.class), equalTo(af));
   }
