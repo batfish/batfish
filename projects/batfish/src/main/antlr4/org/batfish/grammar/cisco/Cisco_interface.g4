@@ -89,6 +89,7 @@ if_bfd
      | if_bfd_neighbor
      | if_bfd_optimize
      | if_bfd_template
+     | nxos_if_bfd_per_link
   )
 ;
 
@@ -1811,4 +1812,9 @@ if_inner
  
    | if_null_single
    | if_null_block
+;
+
+nxos_if_bfd_per_link
+:
+  PER_LINK NEWLINE
 ;

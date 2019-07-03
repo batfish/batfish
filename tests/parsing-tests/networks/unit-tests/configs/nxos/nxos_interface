@@ -1,6 +1,7 @@
 !
 hostname nxos_interface
 feature privilege
+feature bfd
 !
 interface Ethernet0/0
  ip address 1.2.3.4/24 route-preference 10 tag 12345
@@ -11,3 +12,7 @@ interface Ethernet0/0
 interface nve1
  no shutdown
 !
+interface Ethernet0/1
+  bfd per-link
+  bfd neighbor src-ip 10.1.1.1 dest-ip 10.2.2.2
+  mtu 2000

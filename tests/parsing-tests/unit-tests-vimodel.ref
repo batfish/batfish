@@ -27904,6 +27904,35 @@
             "type" : "PHYSICAL",
             "vrf" : "default"
           },
+          "Ethernet0/1" : {
+            "name" : "Ethernet0/1",
+            "active" : true,
+            "additionalArpIps" : {
+              "class" : "org.batfish.datamodel.EmptyIpSpace"
+            },
+            "allowedVlans" : "",
+            "autostate" : true,
+            "bandwidth" : 1.0E9,
+            "declaredNames" : [
+              "Ethernet0/1"
+            ],
+            "mtu" : 2000,
+            "ospfDeadInterval" : 0,
+            "ospfEnabled" : false,
+            "ospfHelloMultiplier" : 0,
+            "ospfPassive" : false,
+            "ospfPointToPoint" : false,
+            "proxyArp" : false,
+            "ripEnabled" : false,
+            "ripPassive" : false,
+            "spanningTreePortfast" : false,
+            "speed" : 1.0E9,
+            "switchport" : false,
+            "switchportMode" : "NONE",
+            "switchportTrunkEncapsulation" : "DOT1Q",
+            "type" : "PHYSICAL",
+            "vrf" : "default"
+          },
           "nve1" : {
             "name" : "nve1",
             "active" : true,
@@ -27936,6 +27965,7 @@
         "vendorFamily" : {
           "cisco" : {
             "features" : {
+              "bfd" : true,
               "privilege" : true
             },
             "hostname" : "nxos_interface"
@@ -27946,6 +27976,7 @@
             "name" : "default",
             "interfaces" : [
               "Ethernet0/0",
+              "Ethernet0/1",
               "nve1"
             ]
           }

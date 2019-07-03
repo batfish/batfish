@@ -2291,14 +2291,14 @@
       },
       {
         "Filename" : "configs/nxos/nxos_interface",
-        "Line" : 6,
+        "Line" : 7,
         "Text" : "ip address 1.2.3.4/24 route-preference 10 tag 12345",
         "Parser_Context" : "[if_ip_address if_inner s_interface stanza cisco_configuration]",
         "Comment" : "Unsupported: route-preference declared in interface IP address"
       },
       {
         "Filename" : "configs/nxos/nxos_interface",
-        "Line" : 6,
+        "Line" : 7,
         "Text" : "ip address 1.2.3.4/24 route-preference 10 tag 12345",
         "Parser_Context" : "[if_ip_address if_inner s_interface stanza cisco_configuration]",
         "Comment" : "Unsupported: tag declared in interface IP address"
