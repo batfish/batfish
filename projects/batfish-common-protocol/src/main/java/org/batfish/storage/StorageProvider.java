@@ -241,9 +241,15 @@ public interface StorageProvider {
       String settings, NetworkId networkId, QuestionSettingsId questionSettingsId)
       throws IOException;
 
-  /** Retrieve the question class ID associated with the given question. */
+  /**
+   * Retrieve the question class ID associated with the given question.
+   *
+   * @throws FileNotFoundException if question does not exist
+   * @throws IOException if there is an error reading the question class ID
+   */
   @Nonnull
-  String loadQuestionClassId(NetworkId networkId, QuestionId questionId, AnalysisId analysisId);
+  String loadQuestionClassId(NetworkId networkId, QuestionId questionId, AnalysisId analysisId)
+      throws FileNotFoundException, IOException;
 
   /**
    * Returns {@code true} iff metadata for the analysis with specified ID exists.
