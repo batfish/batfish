@@ -62,7 +62,6 @@ public final class BgpPeerConfigurationAnswererTest {
             .setRemoteAsns(LongSpace.of(200L))
             .setLocalIp(Ip.parse("1.1.1.1"))
             .setPeerAddress(Ip.parse("2.2.2.2"))
-            .setRouteReflectorClient(false)
             .setGroup("g1")
             .setIpv4UnicastAddressFamily(
                 Ipv4UnicastAddressFamily.builder()
@@ -70,6 +69,7 @@ public final class BgpPeerConfigurationAnswererTest {
                     .setExportPolicySources(ImmutableSortedSet.of("p2"))
                     .setAddressFamilyCapabilities(
                         AddressFamilyCapabilities.builder().setSendCommunity(false).build())
+                    .setRouteReflectorClient(false)
                     .build())
             .build();
     BgpPassivePeerConfig passivePeer =
@@ -78,7 +78,6 @@ public final class BgpPeerConfigurationAnswererTest {
             .setRemoteAsns(LongSpace.of(300L))
             .setLocalIp(Ip.parse("1.1.1.2"))
             .setPeerPrefix(Prefix.create(Ip.parse("3.3.3.0"), 24))
-            .setRouteReflectorClient(true)
             .setClusterId(Ip.parse("5.5.5.5").asLong())
             .setGroup("g2")
             .setIpv4UnicastAddressFamily(
@@ -87,6 +86,7 @@ public final class BgpPeerConfigurationAnswererTest {
                         AddressFamilyCapabilities.builder().setSendCommunity(false).build())
                     .setImportPolicySources(ImmutableSortedSet.of("p3"))
                     .setExportPolicySources(ImmutableSortedSet.of("p4"))
+                    .setRouteReflectorClient(true)
                     .build())
             .build();
     BgpUnnumberedPeerConfig unnumberedPeer =
@@ -95,7 +95,6 @@ public final class BgpPeerConfigurationAnswererTest {
             .setRemoteAsns(LongSpace.of(400L))
             .setLocalIp(Ip.parse("169.254.0.1"))
             .setPeerInterface("iface")
-            .setRouteReflectorClient(true)
             .setClusterId(Ip.parse("6.6.6.6").asLong())
             .setGroup("g3")
             .setIpv4UnicastAddressFamily(
@@ -104,6 +103,7 @@ public final class BgpPeerConfigurationAnswererTest {
                     .setExportPolicySources(ImmutableSortedSet.of("p6"))
                     .setAddressFamilyCapabilities(
                         AddressFamilyCapabilities.builder().setSendCommunity(false).build())
+                    .setRouteReflectorClient(true)
                     .build())
             .build();
 

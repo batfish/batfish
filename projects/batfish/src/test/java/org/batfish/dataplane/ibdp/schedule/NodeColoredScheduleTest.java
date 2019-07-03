@@ -28,6 +28,7 @@ import org.batfish.datamodel.NetworkConfigurations;
 import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.bgp.BgpTopology;
+import org.batfish.datamodel.bgp.Ipv4UnicastAddressFamily;
 import org.batfish.datamodel.ospf.OspfArea;
 import org.batfish.datamodel.ospf.OspfProcess;
 import org.batfish.datamodel.ospf.OspfTopology;
@@ -112,7 +113,8 @@ public class NodeColoredScheduleTest {
         .setPeerAddress(R1_IP)
         .setBgpProcess(r2Proc)
         .setLocalAs(2L)
-        .setRouteReflectorClient(true)
+        .setIpv4UnicastAddressFamily(
+            Ipv4UnicastAddressFamily.builder().setRouteReflectorClient(true).build())
         .setLocalIp(R2_IP)
         .build();
 

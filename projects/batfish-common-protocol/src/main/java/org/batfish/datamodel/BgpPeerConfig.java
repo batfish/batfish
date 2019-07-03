@@ -39,7 +39,6 @@ public abstract class BgpPeerConfig implements Serializable {
   static final String PROP_LOCAL_AS = "localAs";
   static final String PROP_LOCAL_IP = "localIp";
   static final String PROP_REMOTE_ASNS = "remoteAsns";
-  static final String PROP_ROUTE_REFLECTOR = "routeReflectorClient";
   static final String PROP_IPV4_UNICAST_ADDRESS_FAMILY = "ipv4UnicastAddressFamily";
   static final String PROP_EVPN_ADDRESS_FAMILY = "evpnAddressFamily";
 
@@ -71,8 +70,6 @@ public abstract class BgpPeerConfig implements Serializable {
   @Nullable private final Ip _localIp;
 
   @Nonnull protected final LongSpace _remoteAsns;
-  /** Flag indicating that this neighbor is a route reflector client */
-  private final boolean _routeReflectorClient;
 
   // Address families
   @Nullable private Ipv4UnicastAddressFamily _ipv4UnicastAddressFamily;
@@ -91,7 +88,6 @@ public abstract class BgpPeerConfig implements Serializable {
       @Nullable Long localAs,
       @Nullable Ip localIp,
       @Nullable LongSpace remoteAsns,
-      boolean routeReflectorClient,
       @Nullable Ipv4UnicastAddressFamily ipv4UnicastAddressFamily,
       @Nullable EvpnAddressFamily evpnAddressFamily) {
     _appliedRibGroup = appliedRibGroup;
@@ -106,7 +102,6 @@ public abstract class BgpPeerConfig implements Serializable {
     _localAs = localAs;
     _localIp = localIp;
     _remoteAsns = firstNonNull(remoteAsns, ALL_AS_NUMBERS);
-    _routeReflectorClient = routeReflectorClient;
     _ipv4UnicastAddressFamily = ipv4UnicastAddressFamily;
     _evpnAddressFamily = evpnAddressFamily;
   }
@@ -201,12 +196,6 @@ public abstract class BgpPeerConfig implements Serializable {
     return _remoteAsns;
   }
 
-  /** Whether or not this peer is a route-reflector client */
-  @JsonProperty(PROP_ROUTE_REFLECTOR)
-  public boolean getRouteReflectorClient() {
-    return _routeReflectorClient;
-  }
-
   /**
    * Return settings for the IPv4 unicast address family. Presence of this field indicates the peer
    * should participate in the exchange of IPv4 routes
@@ -270,7 +259,6 @@ public abstract class BgpPeerConfig implements Serializable {
     return _defaultMetric == that._defaultMetric
         && _ebgpMultihop == that._ebgpMultihop
         && _enforceFirstAs == that._enforceFirstAs
-        && _routeReflectorClient == that._routeReflectorClient
         && Objects.equals(_appliedRibGroup, that._appliedRibGroup)
         && Objects.equals(_authenticationSettings, that._authenticationSettings)
         && Objects.equals(_clusterId, that._clusterId)
@@ -299,7 +287,6 @@ public abstract class BgpPeerConfig implements Serializable {
         _localAs,
         _localIp,
         _remoteAsns,
-        _routeReflectorClient,
         _ipv4UnicastAddressFamily,
         _evpnAddressFamily);
   }
@@ -322,7 +309,6 @@ public abstract class BgpPeerConfig implements Serializable {
     @Nullable protected Long _localAs;
     @Nullable protected Ip _localIp;
     @Nonnull protected LongSpace _remoteAsns;
-    protected boolean _routeReflectorClient;
     @Nullable protected Ipv4UnicastAddressFamily _ipv4UnicastAddressFamily;
     @Nullable protected EvpnAddressFamily _evpnAddressFamily;
 
@@ -412,11 +398,6 @@ public abstract class BgpPeerConfig implements Serializable {
 
     public S setRemoteAsns(LongSpace remoteAs) {
       _remoteAsns = remoteAs;
-      return getThis();
-    }
-
-    public S setRouteReflectorClient(boolean routeReflectorClient) {
-      _routeReflectorClient = routeReflectorClient;
       return getThis();
     }
 

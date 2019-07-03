@@ -25,6 +25,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.function.Predicate;
@@ -197,11 +198,16 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
             .setLocalIp(BGP_UNNUMBERED_IP)
             .setPeerInterface(neighbor.getName())
             .setRemoteAsns(computeRemoteAsns(neighbor, localAs))
+            // Ipv4 unicast is enabled by default
             .setIpv4UnicastAddressFamily(
                 Ipv4UnicastAddressFamily.builder()
                     .setAddressFamilyCapabilities(
                         AddressFamilyCapabilities.builder().setSendCommunity(true).build())
                     .setExportPolicy(routingPolicy.getName())
+                    .setRouteReflectorClient(
+                        Optional.ofNullable(neighbor.getIpv4UnicastAddressFamily())
+                            .map(BgpNeighborIpv4UnicastAddressFamily::getRouteReflectorClient)
+                            .orElse(false))
                     .build());
 
     BgpL2vpnEvpnAddressFamily evpnConfig = bgpVrf.getL2VpnEvpn();
@@ -273,6 +279,10 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
               .setPropagateUnmatched(true)
               .setAddressFamilyCapabilities(
                   AddressFamilyCapabilities.builder().setSendCommunity(true).build())
+              .setRouteReflectorClient(
+                  firstNonNull(
+                      neighbor.getL2vpnEvpnAddressFamily().getRouteReflectorClient(),
+                      Boolean.FALSE))
               .setExportPolicy(routingPolicy.getName())
               .build());
     }

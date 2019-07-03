@@ -543,12 +543,12 @@
                       "allowRemoteAsOut" : true,
                       "sendCommunity" : false
                     },
-                    "exportPolicy" : "~BGP_PEER_EXPORT_POLICY:default:1.2.3.4~"
+                    "exportPolicy" : "~BGP_PEER_EXPORT_POLICY:default:1.2.3.4~",
+                    "routeReflectorClient" : false
                   },
                   "localAs" : 1,
                   "peerAddress" : "1.2.3.4",
-                  "remoteAsns" : "1",
-                  "routeReflectorClient" : false
+                  "remoteAsns" : "1"
                 }
               },
               "tieBreaker" : "ARRIVAL_ORDER"
@@ -3282,13 +3282,13 @@
                       "sendCommunity" : true
                     },
                     "exportPolicy" : "~PEER_EXPORT_POLICY:10.1.1.0/24~",
-                    "importPolicy" : "~PEER_IMPORT_POLICY:10.1.1.0/24~"
+                    "importPolicy" : "~PEER_IMPORT_POLICY:10.1.1.0/24~",
+                    "routeReflectorClient" : false
                   },
                   "localAs" : 1,
                   "localIp" : "1.1.1.1",
                   "peerPrefix" : "10.1.1.0/24",
-                  "remoteAsns" : "2",
-                  "routeReflectorClient" : false
+                  "remoteAsns" : "2"
                 }
               },
               "multipathEbgp" : true,
@@ -3591,12 +3591,12 @@
                       "sendCommunity" : true
                     },
                     "exportPolicy" : "~PEER_EXPORT_POLICY:1.1.1.1/32~",
-                    "importPolicy" : "~PEER_IMPORT_POLICY:1.1.1.1/32~"
+                    "importPolicy" : "~PEER_IMPORT_POLICY:1.1.1.1/32~",
+                    "routeReflectorClient" : false
                   },
                   "localAs" : 1,
                   "peerAddress" : "1.1.1.1",
-                  "remoteAsns" : "2",
-                  "routeReflectorClient" : false
+                  "remoteAsns" : "2"
                 }
               },
               "tieBreaker" : "ARRIVAL_ORDER"
@@ -3849,12 +3849,12 @@
                       "allowRemoteAsOut" : true,
                       "sendCommunity" : true
                     },
-                    "exportPolicy" : "~BGP_PEER_EXPORT_POLICY:default:1.10.1.1~"
+                    "exportPolicy" : "~BGP_PEER_EXPORT_POLICY:default:1.10.1.1~",
+                    "routeReflectorClient" : false
                   },
                   "localAs" : 1,
                   "peerAddress" : "1.10.1.1",
-                  "remoteAsns" : "1",
-                  "routeReflectorClient" : false
+                  "remoteAsns" : "1"
                 },
                 "10.12.11.2/32" : {
                   "class" : "org.batfish.datamodel.BgpActivePeerConfig",
@@ -3874,12 +3874,12 @@
                       "allowRemoteAsOut" : true,
                       "sendCommunity" : true
                     },
-                    "exportPolicy" : "~BGP_PEER_EXPORT_POLICY:default:10.12.11.2~"
+                    "exportPolicy" : "~BGP_PEER_EXPORT_POLICY:default:10.12.11.2~",
+                    "routeReflectorClient" : false
                   },
                   "localAs" : 1,
                   "peerAddress" : "10.12.11.2",
-                  "remoteAsns" : "2",
-                  "routeReflectorClient" : false
+                  "remoteAsns" : "2"
                 }
               },
               "tieBreaker" : "ARRIVAL_ORDER"
@@ -4274,12 +4274,12 @@
                       "allowRemoteAsOut" : true,
                       "sendCommunity" : false
                     },
-                    "exportPolicy" : "~BGP_PEER_EXPORT_POLICY:default:64.57.21.1~"
+                    "exportPolicy" : "~BGP_PEER_EXPORT_POLICY:default:64.57.21.1~",
+                    "routeReflectorClient" : false
                   },
                   "localAs" : 2152,
                   "peerAddress" : "64.57.21.1",
-                  "remoteAsns" : "11164",
-                  "routeReflectorClient" : false
+                  "remoteAsns" : "11164"
                 }
               },
               "tieBreaker" : "ARRIVAL_ORDER"
@@ -7141,12 +7141,12 @@
                     "exportPolicySources" : [
                       "AGGREGATE-MAP",
                       "CONNECTED-TO-BGP"
-                    ]
+                    ],
+                    "routeReflectorClient" : false
                   },
                   "localAs" : 1,
                   "peerAddress" : "10.0.1.2",
-                  "remoteAsns" : "65001",
-                  "routeReflectorClient" : false
+                  "remoteAsns" : "65001"
                 }
               },
               "tieBreaker" : "ARRIVAL_ORDER"
@@ -9125,13 +9125,13 @@
                       "allowRemoteAsOut" : true,
                       "sendCommunity" : false
                     },
-                    "exportPolicy" : "~BGP_PEER_EXPORT_POLICY:default:10.10.20.0/24~"
+                    "exportPolicy" : "~BGP_PEER_EXPORT_POLICY:default:10.10.20.0/24~",
+                    "routeReflectorClient" : false
                   },
                   "localAs" : 12076,
                   "localIp" : "AUTO/NONE(-1l)",
                   "peerPrefix" : "10.10.20.0/24",
-                  "remoteAsns" : "65001-65005",
-                  "routeReflectorClient" : false
+                  "remoteAsns" : "65001-65005"
                 }
               },
               "multipathEbgp" : false,
@@ -10974,12 +10974,12 @@
                       "allowRemoteAsOut" : false,
                       "sendCommunity" : false
                     },
-                    "exportPolicy" : "~BGP_PEER_EXPORT_POLICY:default:2.2.2.2~"
+                    "exportPolicy" : "~BGP_PEER_EXPORT_POLICY:default:2.2.2.2~",
+                    "routeReflectorClient" : false
                   },
                   "localAs" : 65500,
                   "peerAddress" : "2.2.2.2",
-                  "remoteAsns" : "6600",
-                  "routeReflectorClient" : false
+                  "remoteAsns" : "6600"
                 }
               },
               "tieBreaker" : "ARRIVAL_ORDER"
@@ -14447,7 +14447,8 @@
                         "vrf" : "vrf1"
                       }
                     ],
-                    "propagateUnmatched" : true
+                    "propagateUnmatched" : true,
+                    "routeReflectorClient" : false
                   },
                   "ipv4UnicastAddressFamily" : {
                     "addressFamilyCapabilities" : {
@@ -14463,13 +14464,13 @@
                     "exportPolicy" : "~BGP_PEER_EXPORT_POLICY:default:swp1~",
                     "exportPolicySources" : [
                       "rm1"
-                    ]
+                    ],
+                    "routeReflectorClient" : false
                   },
                   "localAs" : 65500,
                   "localIp" : "169.254.0.1",
                   "peerInterface" : "swp1",
-                  "remoteAsns" : "1-65499,65501-4294967295",
-                  "routeReflectorClient" : false
+                  "remoteAsns" : "1-65499,65501-4294967295"
                 },
                 "swp2" : {
                   "class" : "org.batfish.datamodel.BgpUnnumberedPeerConfig",
@@ -14501,7 +14502,8 @@
                         "vrf" : "vrf1"
                       }
                     ],
-                    "propagateUnmatched" : true
+                    "propagateUnmatched" : true,
+                    "routeReflectorClient" : false
                   },
                   "ipv4UnicastAddressFamily" : {
                     "addressFamilyCapabilities" : {
@@ -14517,13 +14519,13 @@
                     "exportPolicy" : "~BGP_PEER_EXPORT_POLICY:default:swp2~",
                     "exportPolicySources" : [
                       "rm1"
-                    ]
+                    ],
+                    "routeReflectorClient" : false
                   },
                   "localAs" : 65500,
                   "localIp" : "169.254.0.1",
                   "peerInterface" : "swp2",
-                  "remoteAsns" : "65500",
-                  "routeReflectorClient" : false
+                  "remoteAsns" : "65500"
                 },
                 "swp3" : {
                   "class" : "org.batfish.datamodel.BgpUnnumberedPeerConfig",
@@ -14555,7 +14557,8 @@
                         "vrf" : "vrf1"
                       }
                     ],
-                    "propagateUnmatched" : true
+                    "propagateUnmatched" : true,
+                    "routeReflectorClient" : false
                   },
                   "group" : "GROUP",
                   "ipv4UnicastAddressFamily" : {
@@ -14572,13 +14575,13 @@
                     "exportPolicy" : "~BGP_PEER_EXPORT_POLICY:default:swp3~",
                     "exportPolicySources" : [
                       "rm1"
-                    ]
+                    ],
+                    "routeReflectorClient" : true
                   },
                   "localAs" : 65500,
                   "localIp" : "169.254.0.1",
                   "peerInterface" : "swp3",
-                  "remoteAsns" : "65000",
-                  "routeReflectorClient" : false
+                  "remoteAsns" : "65000"
                 }
               },
               "multipathEbgp" : false,
@@ -15734,12 +15737,12 @@
                       "allowRemoteAsOut" : false,
                       "sendCommunity" : false
                     },
-                    "exportPolicy" : "~BGP_PEER_EXPORT_POLICY:1:3.3.3.3~"
+                    "exportPolicy" : "~BGP_PEER_EXPORT_POLICY:1:3.3.3.3~",
+                    "routeReflectorClient" : false
                   },
                   "localAs" : 1,
                   "peerAddress" : "3.3.3.3",
-                  "remoteAsns" : "2",
-                  "routeReflectorClient" : false
+                  "remoteAsns" : "2"
                 }
               },
               "tieBreaker" : "ARRIVAL_ORDER"
@@ -16223,12 +16226,12 @@
                       "allowRemoteAsOut" : false,
                       "sendCommunity" : false
                     },
-                    "exportPolicy" : "~BGP_PEER_EXPORT_POLICY:/Common/my_bgp:192.0.2.1~"
+                    "exportPolicy" : "~BGP_PEER_EXPORT_POLICY:/Common/my_bgp:192.0.2.1~",
+                    "routeReflectorClient" : false
                   },
                   "localAs" : 123,
                   "peerAddress" : "192.0.2.1",
-                  "remoteAsns" : "456",
-                  "routeReflectorClient" : false
+                  "remoteAsns" : "456"
                 }
               },
               "tieBreaker" : "ARRIVAL_ORDER"
@@ -16656,12 +16659,12 @@
                     "exportPolicy" : "~BGP_PEER_EXPORT_POLICY:65500:10.0.0.1~",
                     "exportPolicySources" : [
                       "rm1"
-                    ]
+                    ],
+                    "routeReflectorClient" : false
                   },
                   "localAs" : 65500,
                   "peerAddress" : "10.0.0.1",
-                  "remoteAsns" : "65501",
-                  "routeReflectorClient" : false
+                  "remoteAsns" : "65501"
                 }
               },
               "tieBreaker" : "ARRIVAL_ORDER"
@@ -19142,12 +19145,12 @@
                       "allowRemoteAsOut" : true,
                       "sendCommunity" : false
                     },
-                    "exportPolicy" : "~BGP_PEER_EXPORT_POLICY:default:1.2.1.1~"
+                    "exportPolicy" : "~BGP_PEER_EXPORT_POLICY:default:1.2.1.1~",
+                    "routeReflectorClient" : false
                   },
                   "localAs" : 5555,
                   "peerAddress" : "1.2.1.1",
-                  "remoteAsns" : "5555",
-                  "routeReflectorClient" : false
+                  "remoteAsns" : "5555"
                 },
                 "1.2.1.2/32" : {
                   "class" : "org.batfish.datamodel.BgpActivePeerConfig",
@@ -19168,12 +19171,12 @@
                       "allowRemoteAsOut" : true,
                       "sendCommunity" : false
                     },
-                    "exportPolicy" : "~BGP_PEER_EXPORT_POLICY:default:1.2.1.2~"
+                    "exportPolicy" : "~BGP_PEER_EXPORT_POLICY:default:1.2.1.2~",
+                    "routeReflectorClient" : false
                   },
                   "localAs" : 5555,
                   "peerAddress" : "1.2.1.2",
-                  "remoteAsns" : "5555",
-                  "routeReflectorClient" : false
+                  "remoteAsns" : "5555"
                 },
                 "1.2.1.3/32" : {
                   "class" : "org.batfish.datamodel.BgpActivePeerConfig",
@@ -19194,12 +19197,12 @@
                       "allowRemoteAsOut" : true,
                       "sendCommunity" : false
                     },
-                    "exportPolicy" : "~BGP_PEER_EXPORT_POLICY:default:1.2.1.3~"
+                    "exportPolicy" : "~BGP_PEER_EXPORT_POLICY:default:1.2.1.3~",
+                    "routeReflectorClient" : false
                   },
                   "localAs" : 5555,
                   "peerAddress" : "1.2.1.3",
-                  "remoteAsns" : "5555",
-                  "routeReflectorClient" : false
+                  "remoteAsns" : "5555"
                 }
               },
               "tieBreaker" : "ARRIVAL_ORDER"
@@ -21116,12 +21119,12 @@
                       "sendCommunity" : true
                     },
                     "exportPolicy" : "~PEER_EXPORT_POLICY:3.4.5.7/32~",
-                    "importPolicy" : "~PEER_IMPORT_POLICY:3.4.5.7/32~"
+                    "importPolicy" : "~PEER_IMPORT_POLICY:3.4.5.7/32~",
+                    "routeReflectorClient" : false
                   },
                   "localAs" : 1,
                   "peerAddress" : "3.4.5.7",
-                  "remoteAsns" : "12345",
-                  "routeReflectorClient" : false
+                  "remoteAsns" : "12345"
                 }
               },
               "tieBreaker" : "ARRIVAL_ORDER"
@@ -21492,12 +21495,12 @@
                       "sendCommunity" : true
                     },
                     "exportPolicy" : "~PEER_EXPORT_POLICY:172.16.2.1/32~",
-                    "importPolicy" : "~PEER_IMPORT_POLICY:172.16.2.1/32~"
+                    "importPolicy" : "~PEER_IMPORT_POLICY:172.16.2.1/32~",
+                    "routeReflectorClient" : false
                   },
                   "localAs" : 65533,
                   "peerAddress" : "172.16.2.1",
-                  "remoteAsns" : "65530",
-                  "routeReflectorClient" : false
+                  "remoteAsns" : "65530"
                 },
                 "172.16.2.2/32" : {
                   "class" : "org.batfish.datamodel.BgpActivePeerConfig",
@@ -21522,12 +21525,12 @@
                       "sendCommunity" : true
                     },
                     "exportPolicy" : "~PEER_EXPORT_POLICY:172.16.2.2/32~",
-                    "importPolicy" : "~PEER_IMPORT_POLICY:172.16.2.2/32~"
+                    "importPolicy" : "~PEER_IMPORT_POLICY:172.16.2.2/32~",
+                    "routeReflectorClient" : false
                   },
                   "localAs" : 65533,
                   "peerAddress" : "172.16.2.2",
-                  "remoteAsns" : "65530",
-                  "routeReflectorClient" : false
+                  "remoteAsns" : "65530"
                 }
               },
               "tieBreaker" : "ARRIVAL_ORDER"
@@ -27005,12 +27008,12 @@
                       "allowRemoteAsOut" : true,
                       "sendCommunity" : false
                     },
-                    "exportPolicy" : "~BGP_PEER_EXPORT_POLICY:default:1.1.1.1~"
+                    "exportPolicy" : "~BGP_PEER_EXPORT_POLICY:default:1.1.1.1~",
+                    "routeReflectorClient" : false
                   },
                   "localAs" : 1,
                   "peerAddress" : "1.1.1.1",
-                  "remoteAsns" : "1",
-                  "routeReflectorClient" : false
+                  "remoteAsns" : "1"
                 },
                 "3.3.3.3/32" : {
                   "class" : "org.batfish.datamodel.BgpActivePeerConfig",
@@ -27030,12 +27033,12 @@
                       "allowRemoteAsOut" : true,
                       "sendCommunity" : false
                     },
-                    "exportPolicy" : "~BGP_PEER_EXPORT_POLICY:default:3.3.3.3~"
+                    "exportPolicy" : "~BGP_PEER_EXPORT_POLICY:default:3.3.3.3~",
+                    "routeReflectorClient" : false
                   },
                   "localAs" : 1,
                   "peerAddress" : "3.3.3.3",
-                  "remoteAsns" : "3",
-                  "routeReflectorClient" : false
+                  "remoteAsns" : "3"
                 },
                 "4.4.4.4/32" : {
                   "class" : "org.batfish.datamodel.BgpActivePeerConfig",
@@ -27055,12 +27058,12 @@
                       "allowRemoteAsOut" : true,
                       "sendCommunity" : false
                     },
-                    "exportPolicy" : "~BGP_PEER_EXPORT_POLICY:default:4.4.4.4~"
+                    "exportPolicy" : "~BGP_PEER_EXPORT_POLICY:default:4.4.4.4~",
+                    "routeReflectorClient" : false
                   },
                   "localAs" : 1,
                   "peerAddress" : "4.4.4.4",
-                  "remoteAsns" : "4",
-                  "routeReflectorClient" : false
+                  "remoteAsns" : "4"
                 }
               },
               "tieBreaker" : "ARRIVAL_ORDER"
@@ -27489,12 +27492,12 @@
                       "allowRemoteAsOut" : true,
                       "sendCommunity" : false
                     },
-                    "exportPolicy" : "~BGP_PEER_EXPORT_POLICY:default:10.0.0.0~"
+                    "exportPolicy" : "~BGP_PEER_EXPORT_POLICY:default:10.0.0.0~",
+                    "routeReflectorClient" : false
                   },
                   "localAs" : 2,
                   "peerAddress" : "10.0.0.0",
-                  "remoteAsns" : "1",
-                  "routeReflectorClient" : false
+                  "remoteAsns" : "1"
                 }
               },
               "tieBreaker" : "ARRIVAL_ORDER"
@@ -27851,12 +27854,12 @@
                       "allowRemoteAsOut" : false,
                       "sendCommunity" : true
                     },
-                    "exportPolicy" : "~BGP_PEER_EXPORT_POLICY:default:1.1.1.1~"
+                    "exportPolicy" : "~BGP_PEER_EXPORT_POLICY:default:1.1.1.1~",
+                    "routeReflectorClient" : false
                   },
                   "localAs" : 1,
                   "peerAddress" : "1.1.1.1",
-                  "remoteAsns" : "12345",
-                  "routeReflectorClient" : false
+                  "remoteAsns" : "12345"
                 }
               },
               "tieBreaker" : "ROUTER_ID"
@@ -30692,12 +30695,12 @@
                       "allowRemoteAsOut" : false,
                       "sendCommunity" : false
                     },
-                    "exportPolicy" : "~BGP_PEER_EXPORT_POLICY:default:10.98.25.0/25~"
+                    "exportPolicy" : "~BGP_PEER_EXPORT_POLICY:default:10.98.25.0/25~",
+                    "routeReflectorClient" : false
                   },
                   "localAs" : 64601,
                   "peerPrefix" : "10.98.25.0/25",
-                  "remoteAsns" : "65511",
-                  "routeReflectorClient" : false
+                  "remoteAsns" : "65511"
                 }
               },
               "multipathEbgp" : true,
@@ -30723,12 +30726,12 @@
                       "allowRemoteAsOut" : false,
                       "sendCommunity" : false
                     },
-                    "exportPolicy" : "~BGP_PEER_EXPORT_POLICY:default:100.93.100.16~"
+                    "exportPolicy" : "~BGP_PEER_EXPORT_POLICY:default:100.93.100.16~",
+                    "routeReflectorClient" : false
                   },
                   "localAs" : 64601,
                   "peerAddress" : "100.93.100.16",
-                  "remoteAsns" : "64802",
-                  "routeReflectorClient" : false
+                  "remoteAsns" : "64802"
                 }
               },
               "tieBreaker" : "ARRIVAL_ORDER"
@@ -31150,12 +31153,12 @@
                     "importPolicy" : "FROM_ABC_V4",
                     "importPolicySources" : [
                       "FROM_ABC_V4"
-                    ]
+                    ],
+                    "routeReflectorClient" : false
                   },
                   "localAs" : 1,
                   "peerAddress" : "1.1.1.1",
-                  "remoteAsns" : "2",
-                  "routeReflectorClient" : false
+                  "remoteAsns" : "2"
                 }
               },
               "tieBreaker" : "ARRIVAL_ORDER"
@@ -37604,13 +37607,13 @@
                     "exportPolicySources" : [
                       "export-loopback"
                     ],
-                    "importPolicy" : "~PEER_IMPORT_POLICY:172.16.3.2/32~"
+                    "importPolicy" : "~PEER_IMPORT_POLICY:172.16.3.2/32~",
+                    "routeReflectorClient" : false
                   },
                   "localAs" : 65002,
                   "localIp" : "172.16.3.1",
                   "peerAddress" : "172.16.3.2",
-                  "remoteAsns" : "65003",
-                  "routeReflectorClient" : false
+                  "remoteAsns" : "65003"
                 },
                 "172.16.5.2/32" : {
                   "class" : "org.batfish.datamodel.BgpActivePeerConfig",
@@ -37637,13 +37640,13 @@
                     "exportPolicySources" : [
                       "export-loopback"
                     ],
-                    "importPolicy" : "~PEER_IMPORT_POLICY:172.16.5.2/32~"
+                    "importPolicy" : "~PEER_IMPORT_POLICY:172.16.5.2/32~",
+                    "routeReflectorClient" : false
                   },
                   "localAs" : 65002,
                   "localIp" : "172.16.5.1",
                   "peerAddress" : "172.16.5.2",
-                  "remoteAsns" : "65004",
-                  "routeReflectorClient" : false
+                  "remoteAsns" : "65004"
                 },
                 "172.16.7.2/32" : {
                   "class" : "org.batfish.datamodel.BgpActivePeerConfig",
@@ -37670,13 +37673,13 @@
                     "exportPolicySources" : [
                       "export-loopback"
                     ],
-                    "importPolicy" : "~PEER_IMPORT_POLICY:172.16.7.2/32~"
+                    "importPolicy" : "~PEER_IMPORT_POLICY:172.16.7.2/32~",
+                    "routeReflectorClient" : false
                   },
                   "localAs" : 65002,
                   "localIp" : "172.16.7.1",
                   "peerAddress" : "172.16.7.2",
-                  "remoteAsns" : "65005",
-                  "routeReflectorClient" : false
+                  "remoteAsns" : "65005"
                 },
                 "192.168.1.1/32" : {
                   "class" : "org.batfish.datamodel.BgpActivePeerConfig",
@@ -37700,13 +37703,13 @@
                       "sendCommunity" : true
                     },
                     "exportPolicy" : "~PEER_EXPORT_POLICY:192.168.1.1/32~",
-                    "importPolicy" : "~PEER_IMPORT_POLICY:192.168.1.1/32~"
+                    "importPolicy" : "~PEER_IMPORT_POLICY:192.168.1.1/32~",
+                    "routeReflectorClient" : false
                   },
                   "localAs" : 65500,
                   "localIp" : "192.168.1.2",
                   "peerAddress" : "192.168.1.1",
-                  "remoteAsns" : "65500",
-                  "routeReflectorClient" : false
+                  "remoteAsns" : "65500"
                 },
                 "192.168.1.3/32" : {
                   "class" : "org.batfish.datamodel.BgpActivePeerConfig",
@@ -37730,13 +37733,13 @@
                       "sendCommunity" : true
                     },
                     "exportPolicy" : "~PEER_EXPORT_POLICY:192.168.1.3/32~",
-                    "importPolicy" : "~PEER_IMPORT_POLICY:192.168.1.3/32~"
+                    "importPolicy" : "~PEER_IMPORT_POLICY:192.168.1.3/32~",
+                    "routeReflectorClient" : false
                   },
                   "localAs" : 65500,
                   "localIp" : "192.168.1.2",
                   "peerAddress" : "192.168.1.3",
-                  "remoteAsns" : "65500",
-                  "routeReflectorClient" : false
+                  "remoteAsns" : "65500"
                 },
                 "192.168.1.5/32" : {
                   "class" : "org.batfish.datamodel.BgpActivePeerConfig",
@@ -37760,13 +37763,13 @@
                       "sendCommunity" : true
                     },
                     "exportPolicy" : "~PEER_EXPORT_POLICY:192.168.1.5/32~",
-                    "importPolicy" : "~PEER_IMPORT_POLICY:192.168.1.5/32~"
+                    "importPolicy" : "~PEER_IMPORT_POLICY:192.168.1.5/32~",
+                    "routeReflectorClient" : false
                   },
                   "localAs" : 65500,
                   "localIp" : "192.168.1.2",
                   "peerAddress" : "192.168.1.5",
-                  "remoteAsns" : "65500",
-                  "routeReflectorClient" : false
+                  "remoteAsns" : "65500"
                 },
                 "192.168.1.44/32" : {
                   "class" : "org.batfish.datamodel.BgpActivePeerConfig",
@@ -37790,13 +37793,13 @@
                       "sendCommunity" : true
                     },
                     "exportPolicy" : "~PEER_EXPORT_POLICY:192.168.1.44/32~",
-                    "importPolicy" : "~PEER_IMPORT_POLICY:192.168.1.44/32~"
+                    "importPolicy" : "~PEER_IMPORT_POLICY:192.168.1.44/32~",
+                    "routeReflectorClient" : false
                   },
                   "localAs" : 65500,
                   "localIp" : "192.168.1.2",
                   "peerAddress" : "192.168.1.44",
-                  "remoteAsns" : "65500",
-                  "routeReflectorClient" : false
+                  "remoteAsns" : "65500"
                 }
               },
               "tieBreaker" : "ARRIVAL_ORDER"

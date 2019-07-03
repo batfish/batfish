@@ -46,7 +46,6 @@ public final class BgpUnnumberedPeerConfig extends BgpPeerConfig {
               _localIp,
               _peerInterface,
               _remoteAsns,
-              _routeReflectorClient,
               _ipv4UnicastAddressFamily,
               _evpnAddressFamily);
       if (_bgpProcess != null) {
@@ -88,7 +87,6 @@ public final class BgpUnnumberedPeerConfig extends BgpPeerConfig {
       @JsonProperty(PROP_LOCAL_IP) @Nullable Ip localIp,
       @JsonProperty(PROP_PEER_INTERFACE) @Nullable String peerInterface,
       @JsonProperty(PROP_REMOTE_ASNS) @Nullable LongSpace remoteAsns,
-      @JsonProperty(PROP_ROUTE_REFLECTOR) boolean routeReflectorClient,
       @JsonProperty(PROP_IPV4_UNICAST_ADDRESS_FAMILY) @Nullable
           Ipv4UnicastAddressFamily ipv4UnicastAddressFamily,
       @JsonProperty(PROP_EVPN_ADDRESS_FAMILY) @Nullable EvpnAddressFamily evpnAddressFamily) {
@@ -107,7 +105,6 @@ public final class BgpUnnumberedPeerConfig extends BgpPeerConfig {
         localIp,
         peerInterface,
         firstNonNull(remoteAsns, LongSpace.EMPTY),
-        routeReflectorClient,
         ipv4UnicastAddressFamily,
         evpnAddressFamily);
   }
@@ -128,7 +125,6 @@ public final class BgpUnnumberedPeerConfig extends BgpPeerConfig {
       @Nullable Ip localIp,
       @Nonnull String peerInterface,
       @Nullable LongSpace remoteAsns,
-      boolean routeReflectorClient,
       @Nullable Ipv4UnicastAddressFamily ipv4UnicastAddressFamily,
       @Nullable EvpnAddressFamily evpnAddressFamily) {
     super(
@@ -144,7 +140,6 @@ public final class BgpUnnumberedPeerConfig extends BgpPeerConfig {
         localAs,
         localIp,
         remoteAsns,
-        routeReflectorClient,
         ipv4UnicastAddressFamily,
         evpnAddressFamily);
     _peerInterface = peerInterface;

@@ -324,12 +324,14 @@ final class CiscoNxConversions {
               .setAllowRemoteAsOut(firstNonNull(naf4.getDisablePeerAsCheck(), Boolean.FALSE))
               .setSendCommunity(firstNonNull(naf4.getSendCommunityStandard(), Boolean.FALSE))
               .build());
-      newNeighborBuilder.setRouteReflectorClient(
-          firstNonNull(naf4.getRouteReflectorClient(), Boolean.FALSE));
       String inboundMap = naf4.getInboundRouteMap();
 
-      ipv4FamilyBuilder.setImportPolicy(
-          inboundMap != null && c.getRoutingPolicies().containsKey(inboundMap) ? inboundMap : null);
+      ipv4FamilyBuilder
+          .setImportPolicy(
+              inboundMap != null && c.getRoutingPolicies().containsKey(inboundMap)
+                  ? inboundMap
+                  : null)
+          .setRouteReflectorClient(firstNonNull(naf4.getRouteReflectorClient(), Boolean.FALSE));
     }
 
     // Export policy
