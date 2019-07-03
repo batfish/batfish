@@ -6,7 +6,6 @@ import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedSet;
-import java.io.IOException;
 import java.util.Set;
 import org.batfish.coordinator.WorkMgrServiceV2TestBase;
 import org.batfish.role.NodeRole;
@@ -17,7 +16,7 @@ import org.junit.Test;
 public class NodeRolesDataBeanTest extends WorkMgrServiceV2TestBase {
 
   @Test
-  public void testProperties() throws IOException {
+  public void testProperties() {
     String snapshot = "snapshot1";
     String dimension = "someDimension";
     String role = "someRole";

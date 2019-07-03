@@ -165,7 +165,7 @@ public final class SnapshotResourceTest extends WorkMgrServiceV2TestBase {
   }
 
   @Test
-  public void testGetPojoTopologyMissingNetwork() throws IOException {
+  public void testGetPojoTopologyMissingNetwork() {
     String network = "network1";
     String snapshot = "snapshot1";
     Response response = getPojoTopologyTarget(network, snapshot).get();
@@ -174,7 +174,7 @@ public final class SnapshotResourceTest extends WorkMgrServiceV2TestBase {
   }
 
   @Test
-  public void testGetPojoTopologyMissingSnapshot() throws IOException {
+  public void testGetPojoTopologyMissingSnapshot() {
     String network = "network1";
     String snapshot = "snapshot1";
     Main.getWorkMgr().initNetwork(network, null);
@@ -196,7 +196,7 @@ public final class SnapshotResourceTest extends WorkMgrServiceV2TestBase {
   }
 
   @Test
-  public void testGetSnapshotMetadataMissingNetwork() throws IOException {
+  public void testGetSnapshotMetadataMissingNetwork() {
     String network = "network1";
     String snapshot = "snapshot1";
     Response response = getTarget(network, snapshot).get();
@@ -205,7 +205,7 @@ public final class SnapshotResourceTest extends WorkMgrServiceV2TestBase {
   }
 
   @Test
-  public void testGetSnapshotMetadataMissingSnapshot() throws IOException {
+  public void testGetSnapshotMetadataMissingSnapshot() {
     String network = "network1";
     String snapshot = "snapshot1";
     Main.getWorkMgr().initNetwork(network, null);
@@ -227,7 +227,7 @@ public final class SnapshotResourceTest extends WorkMgrServiceV2TestBase {
   }
 
   @Test
-  public void testGetTopologyMissingNetwork() throws IOException {
+  public void testGetTopologyMissingNetwork() {
     String network = "network1";
     String snapshot = "snapshot1";
     Response response = getTopologyTarget(network, snapshot).get();
@@ -236,7 +236,7 @@ public final class SnapshotResourceTest extends WorkMgrServiceV2TestBase {
   }
 
   @Test
-  public void testGetTopologyMissingSnapshot() throws IOException {
+  public void testGetTopologyMissingSnapshot() {
     String network = "network1";
     String snapshot = "snapshot1";
     Main.getWorkMgr().initNetwork(network, null);

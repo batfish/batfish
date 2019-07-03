@@ -2558,7 +2558,7 @@ public class CiscoGrammarTest {
   }
 
   @Test
-  public void testIosOspfDistributeList() throws IOException {
+  public void testIosOspfDistributeList() {
     CiscoConfiguration c = parseCiscoConfig("iosOspfDistributeList", ConfigurationFormat.CISCO_IOS);
     DistributeList globalInPrefix =
         new DistributeList("block_5", DistributeListFilterType.PREFIX_LIST);
@@ -4170,7 +4170,7 @@ public class CiscoGrammarTest {
   }
 
   @Test
-  public void testEosVxlanCiscoConfig() throws IOException {
+  public void testEosVxlanCiscoConfig() {
     String hostname = "eos-vxlan";
 
     CiscoConfiguration config = parseCiscoConfig(hostname, ConfigurationFormat.ARISTA);

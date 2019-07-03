@@ -15,7 +15,6 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableList;
-import java.io.IOException;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
@@ -63,7 +62,7 @@ public class SearchFiltersDifferentialTest {
   }
 
   @Test
-  public void testAclLineAddedRemoved() throws IOException {
+  public void testAclLineAddedRemoved() {
     Ip ip = Ip.parse("1.2.3.4");
     Configuration baseConfig = _cb.build();
     Configuration deltaConfig = _cb.build();
@@ -99,7 +98,7 @@ public class SearchFiltersDifferentialTest {
   }
 
   @Test
-  public void testDenyWithExplanations() throws IOException {
+  public void testDenyWithExplanations() {
     Ip ip = Ip.parse("1.2.3.4");
     Configuration baseConfig = _cb.build();
     Configuration deltaConfig = _cb.build();

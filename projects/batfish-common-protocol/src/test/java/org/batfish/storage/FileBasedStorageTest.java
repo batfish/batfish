@@ -207,19 +207,19 @@ public final class FileBasedStorageTest {
   }
 
   @Test
-  public void testObjectKeyToRelativePathRejectsAbsolute() throws IOException {
+  public void testObjectKeyToRelativePathRejectsAbsolute() {
     _thrown.expect(IllegalArgumentException.class);
     objectKeyToRelativePath("/foo/bar");
   }
 
   @Test
-  public void testObjectKeyToRelativePathRejectsNonNormalized() throws IOException {
+  public void testObjectKeyToRelativePathRejectsNonNormalized() {
     _thrown.expect(IllegalArgumentException.class);
     objectKeyToRelativePath("foo/../../bar");
   }
 
   @Test
-  public void testObjectKeyToRelativePathValid() throws IOException {
+  public void testObjectKeyToRelativePathValid() {
     // no exception should be thrown
     objectKeyToRelativePath("foo/bar");
   }

@@ -7,7 +7,6 @@ import static org.batfish.datamodel.transformation.TransformationStep.assignSour
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.ImmutableSortedSet;
-import java.io.IOException;
 import java.util.SortedMap;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
@@ -45,7 +44,7 @@ public final class TestNetwork {
   public final Interface _link2Dst;
   public final IpAccessList _link2SrcSourceNatAcl;
 
-  public TestNetwork() throws IOException {
+  public TestNetwork() {
     NetworkFactory nf = new NetworkFactory();
     Builder cb = nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS);
     Interface.Builder ib = nf.interfaceBuilder().setBandwidth(1E9d);

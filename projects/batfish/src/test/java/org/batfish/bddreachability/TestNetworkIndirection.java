@@ -2,7 +2,6 @@ package org.batfish.bddreachability;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSortedMap;
-import java.io.IOException;
 import java.util.SortedMap;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
@@ -31,7 +30,7 @@ public final class TestNetworkIndirection {
   public final Interface _iface;
   public final Configuration _node;
 
-  public TestNetworkIndirection() throws IOException {
+  public TestNetworkIndirection() {
     NetworkFactory nf = new NetworkFactory();
     Builder cb = nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS);
     Interface.Builder ib = nf.interfaceBuilder().setActive(true).setBandwidth(1E9d);

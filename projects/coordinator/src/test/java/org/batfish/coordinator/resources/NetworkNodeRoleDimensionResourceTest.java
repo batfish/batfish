@@ -102,7 +102,7 @@ public final class NetworkNodeRoleDimensionResourceTest extends WorkMgrServiceV2
   }
 
   @Test
-  public void testGetNodeRoleDimensionMissingNetwork() throws IOException {
+  public void testGetNodeRoleDimensionMissingNetwork() {
     String network = "network1";
     String dimension = "dimension1";
 
@@ -131,7 +131,7 @@ public final class NetworkNodeRoleDimensionResourceTest extends WorkMgrServiceV2
   }
 
   @Test
-  public void testPutNodeRoleDimensionMissingNetwork() throws IOException {
+  public void testPutNodeRoleDimensionMissingNetwork() {
     String network = "network1";
     String dimension = "dimension1";
 

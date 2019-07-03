@@ -12,7 +12,6 @@ import static org.batfish.common.CoordConstsV2.RSC_SETTINGS;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.junit.Assert.assertThat;
 
-import java.io.IOException;
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.client.Invocation.Builder;
 import javax.ws.rs.core.MediaType;
@@ -71,7 +70,7 @@ public class IssueConfigResourceTest extends WorkMgrServiceV2TestBase {
   }
 
   @Test
-  public void testDelIssueConfig() throws IOException {
+  public void testDelIssueConfig() {
     String network = "myNetwork";
     String major = "major";
     String minor = "minor";
@@ -87,7 +86,7 @@ public class IssueConfigResourceTest extends WorkMgrServiceV2TestBase {
   }
 
   @Test
-  public void testGetIssueConfig() throws IOException {
+  public void testGetIssueConfig() {
     String network = "myNetwork";
     String major = "major";
     String minor = "minor";

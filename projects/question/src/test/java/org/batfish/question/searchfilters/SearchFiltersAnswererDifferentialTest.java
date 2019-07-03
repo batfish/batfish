@@ -13,7 +13,6 @@ import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
 import com.google.common.collect.ImmutableList;
-import java.io.IOException;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
@@ -70,7 +69,7 @@ public class SearchFiltersAnswererDifferentialTest {
   }
 
   @Test
-  public void testMatchSrcInterface() throws IOException {
+  public void testMatchSrcInterface() {
     Configuration baseConfig = _cb.build();
     Configuration deltaConfig = _cb.build();
     _ib.setName(IFACE1).setOwner(baseConfig).build();
@@ -105,7 +104,7 @@ public class SearchFiltersAnswererDifferentialTest {
   }
 
   @Test
-  public void testAclLineAddedRemoved() throws IOException {
+  public void testAclLineAddedRemoved() {
     Configuration config = _cb.build();
     IpAccessList baseAcl = _ab.setOwner(config).build();
     IpAccessList deltaAcl =
@@ -138,7 +137,7 @@ public class SearchFiltersAnswererDifferentialTest {
   }
 
   @Test
-  public void testSourceInterfaceParameter() throws IOException {
+  public void testSourceInterfaceParameter() {
     Configuration baseConfig = _cb.build();
     Configuration deltaConfig = _cb.build();
     _ib.setName(IFACE1).setOwner(baseConfig).build();

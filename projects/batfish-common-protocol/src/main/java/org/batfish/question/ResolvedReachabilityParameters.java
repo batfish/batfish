@@ -10,7 +10,6 @@ import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.DataPlane;
 import org.batfish.datamodel.FlowDisposition;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
-import org.batfish.datamodel.questions.InvalidReachabilityParametersException;
 import org.batfish.specifier.IpSpaceAssignment;
 
 /**
@@ -44,7 +43,7 @@ public final class ResolvedReachabilityParameters {
 
     private Set<String> _requiredTransitNodes;
 
-    public ResolvedReachabilityParameters build() throws InvalidReachabilityParametersException {
+    public ResolvedReachabilityParameters build() {
       return new ResolvedReachabilityParameters(this);
     }
 

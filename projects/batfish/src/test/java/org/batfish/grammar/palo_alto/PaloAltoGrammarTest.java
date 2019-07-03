@@ -190,7 +190,7 @@ public final class PaloAltoGrammarTest {
   }
 
   @Test
-  public void testAddressGroups() throws IOException {
+  public void testAddressGroups() {
     PaloAltoConfiguration c = parsePaloAltoConfig("address-groups");
 
     Vsys vsys = c.getVirtualSystems().get(DEFAULT_VSYS_NAME);
@@ -237,7 +237,7 @@ public final class PaloAltoGrammarTest {
   }
 
   @Test
-  public void testAddressGroupsNested() throws IOException {
+  public void testAddressGroupsNested() {
     PaloAltoConfiguration c = parsePaloAltoConfig("address-groups-nested");
 
     Vsys vsys = c.getVirtualSystems().get(DEFAULT_VSYS_NAME);
@@ -288,7 +288,7 @@ public final class PaloAltoGrammarTest {
   }
 
   @Test
-  public void testAddressObjectGroupNameConflict() throws IOException {
+  public void testAddressObjectGroupNameConflict() {
     PaloAltoConfiguration c = parsePaloAltoConfig("address-object-group-name-conflict");
 
     Vsys vsys = c.getVirtualSystems().get(DEFAULT_VSYS_NAME);
@@ -318,7 +318,7 @@ public final class PaloAltoGrammarTest {
   }
 
   @Test
-  public void testAddressObjects() throws IOException {
+  public void testAddressObjects() {
     PaloAltoConfiguration c = parsePaloAltoConfig("address-objects");
 
     Vsys vsys = c.getVirtualSystems().get(DEFAULT_VSYS_NAME);
@@ -674,7 +674,7 @@ public final class PaloAltoGrammarTest {
   }
 
   @Test
-  public void testMgmtIface() throws IOException {
+  public void testMgmtIface() {
     PaloAltoConfiguration c = parsePaloAltoConfig("mgmt-iface");
 
     assertThat(c.getMgmtIfaceAddress(), equalTo(Ip.parse("12.25.51.103")));
@@ -699,7 +699,7 @@ public final class PaloAltoGrammarTest {
   }
 
   @Test
-  public void testNestedConfigLineMap() throws IOException {
+  public void testNestedConfigLineMap() {
     String hostname = "nested-config";
     Flattener flattener =
         Batfish.flatten(
@@ -1006,7 +1006,7 @@ public final class PaloAltoGrammarTest {
   }
 
   @Test
-  public void testStaticRouteExtraction() throws IOException {
+  public void testStaticRouteExtraction() {
     String hostname = "static-route";
     PaloAltoConfiguration vc = parsePaloAltoConfig(hostname);
     String vrName = "vr2";

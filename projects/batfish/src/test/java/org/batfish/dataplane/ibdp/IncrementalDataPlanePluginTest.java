@@ -410,7 +410,7 @@ public class IncrementalDataPlanePluginTest {
   }
 
   @Test
-  public void testStaticNextVrfRoute() throws IOException {
+  public void testStaticNextVrfRoute() {
     String hostname = "n1";
     String nextVrf = "nextVrf";
     NetworkFactory nf = new NetworkFactory();

@@ -45,7 +45,7 @@ public final class BridgeTest {
   }
 
   @Test
-  public void testJavaSerialization() throws IOException {
+  public void testJavaSerialization() {
     Bridge bridge =
         Bridge.builder()
             .setPorts(ImmutableSet.of("a"))

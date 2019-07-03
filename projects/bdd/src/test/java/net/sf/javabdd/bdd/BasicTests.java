@@ -32,7 +32,6 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.not;
 import static org.junit.Assert.assertThat;
 
-import java.io.IOException;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -752,7 +751,7 @@ public class BasicTests extends BDDTestCase {
     }
   }
 
-  void tEnsureCapacity2() throws IOException {
+  void tEnsureCapacity2() {
     reset();
     assertTrue(hasNext());
     while (hasNext()) {
