@@ -9449,6 +9449,11 @@ PERIODIC_REFRESH
    'periodic-refresh'
 ;
 
+PER_LINK
+:
+   'per-link'
+;
+
 PERMANENT
 :
    'permanent'
