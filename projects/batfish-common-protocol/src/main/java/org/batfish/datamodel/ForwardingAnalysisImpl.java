@@ -3,6 +3,8 @@ package org.batfish.datamodel;
 import static com.google.common.base.MoreObjects.firstNonNull;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.collect.Ordering.natural;
+import static java.util.stream.Collectors.groupingBy;
+import static java.util.stream.Collectors.mapping;
 import static org.batfish.common.util.CollectionUtil.toImmutableMap;
 
 import com.google.common.annotations.VisibleForTesting;
@@ -42,6 +44,9 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
 
   // node -> vrf -> interface -> destination IPs for which arp will fail
   private final Map<String, Map<String, Map<String, IpSpace>>> _arpFalse;
+
+  // node -> vrf -> nextVrf -> IPs that vrf delegates to nextVrf
+  private final Map<String, Map<String, Map<String, IpSpace>>> _nextVrfIpsByNodeVrf;
 
   // node -> vrf -> destination IPs that will be null routes
   private final Map<String, Map<String, IpSpace>> _nullRoutedIps;
@@ -89,6 +94,7 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
       Map<String, Map<String, Map<String, Set<AbstractRoute>>>> routesWithNextHop =
           computeRoutesWithNextHop(fibs);
       _nullRoutedIps = computeNullRoutedIps(matchingIps, fibs);
+      _nextVrfIpsByNodeVrf = computeNextVrfIpsByNodeVrf(matchingIps, fibs);
       _routableIps = computeRoutableIps(fibs);
 
       /* Compute _arpReplies: for each interface, the set of arp IPs for which that interface will
@@ -143,7 +149,7 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
             routesWithUnownedNextHopIpArpFalse =
                 computeRoutesWithNextHopIpArpFalseFilter(
                     routesWithNextHopIpArpFalse,
-                    route -> !ipSpaceToBDD.toBDD(route.getNextHopIp()).and(unownedIpsBDD).isZero());
+                    route -> ipSpaceToBDD.toBDD(route.getNextHopIp()).andSat(unownedIpsBDD));
 
         /* node -> vrf -> interface -> set of routes on that vrf that forward out that interface
          * with next hop ip owned by the snapshot devices and that gets no arp reply
@@ -151,7 +157,7 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
         Map<String, Map<String, Map<String, Set<AbstractRoute>>>> routesWithOwnedNextHopIpArpFalse =
             computeRoutesWithNextHopIpArpFalseFilter(
                 routesWithNextHopIpArpFalse,
-                route -> ipSpaceToBDD.toBDD(route.getNextHopIp()).and(unownedIpsBDD).isZero());
+                route -> !ipSpaceToBDD.toBDD(route.getNextHopIp()).andSat(unownedIpsBDD));
 
         /* node -> vrf -> interface -> dst ips for which that vrf forwards out that interface,
          * ARPing for a next-hop IP and receiving no reply
@@ -424,9 +430,10 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
       @Nonnull IpSpace ipsRoutedThroughInterface,
       @Nonnull Map<String, Map<String, Set<Ip>>> interfaceOwnedIps) {
     IpSpace ipsAssignedToThisInterface =
-        computeIpsAssignedToThisInterface(iface, interfaceOwnedIps);
+        computeIpsAssignedToThisInterfaceForArpReplies(iface, interfaceOwnedIps);
     if (ipsAssignedToThisInterface == EmptyIpSpace.INSTANCE) {
-      // if no IPs are assigned to this interface, it replies to no ARP requests.
+      // if no IPs are assigned to this interface at all (not even link-local), it replies to no ARP
+      // requests.
       return EmptyIpSpace.INSTANCE;
     }
     /* Accept IPs assigned to this interface */
@@ -446,19 +453,30 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
     return interfaceArpReplies.build();
   }
 
+  /**
+   * Compute IP addresses "assigned" to this interface for the purposes for ARP replies. This is a
+   * space of IPs that an interface will send an ARP reply for. Includes IPs that an interface owns
+   * (explicitly assigned or virtual) as well as any defined link-local addresses.
+   */
   @VisibleForTesting
-  static IpSpace computeIpsAssignedToThisInterface(
+  static IpSpace computeIpsAssignedToThisInterfaceForArpReplies(
       Interface iface, Map<String, Map<String, Set<Ip>>> interfaceOwnedIps) {
-    if (iface.getAllConcreteAddresses().isEmpty()) {
-      return EmptyIpSpace.INSTANCE;
-    }
-
-    Set<Ip> ips = interfaceOwnedIps.get(iface.getOwner().getHostname()).get(iface.getName());
-    if (ips == null || ips.isEmpty()) {
+    /*
+     * If a device has no interfaces with concrete IPs, it will not appear in interfaceOwnedIps.
+     * When we get the owned IP space for such interfaces, there could be an NPE, work around that
+     */
+    Set<Ip> concreteIps =
+        interfaceOwnedIps
+            .getOrDefault(iface.getOwner().getHostname(), ImmutableMap.of())
+            .getOrDefault(iface.getName(), ImmutableSet.of());
+    Set<LinkLocalAddress> linkLocalIps = iface.getAllLinkLocalAddresses();
+    if (concreteIps.isEmpty() && linkLocalIps.isEmpty()) {
       return EmptyIpSpace.INSTANCE;
     }
     IpWildcardSetIpSpace.Builder ipsAssignedToThisInterfaceBuilder = IpWildcardSetIpSpace.builder();
-    ips.forEach(ip -> ipsAssignedToThisInterfaceBuilder.including(IpWildcard.create(ip)));
+    concreteIps.forEach(ip -> ipsAssignedToThisInterfaceBuilder.including(IpWildcard.create(ip)));
+    linkLocalIps.forEach(
+        addr -> ipsAssignedToThisInterfaceBuilder.including(IpWildcard.create(addr.getIp())));
     return ipsAssignedToThisInterfaceBuilder.build();
   }
 
@@ -621,6 +639,50 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
                                 }));
                   }));
     }
+  }
+
+  @VisibleForTesting
+  static Map<String, Map<String, Map<String, IpSpace>>> computeNextVrfIpsByNodeVrf(
+      Map<String, Map<String, Map<Prefix, IpSpace>>> matchingIps,
+      Map<String, Map<String, Fib>> fibs) {
+    try (ActiveSpan span =
+        GlobalTracer.get().buildSpan("ForwardingAnalysisImpl.computeNextVrfIps").startActive()) {
+      assert span != null; // avoid unused warning
+      return fibs.entrySet().stream()
+          .collect(
+              ImmutableMap.toImmutableMap(
+                  Entry::getKey /* hostname */,
+                  fibsByHostnameEntry -> {
+                    String hostname = fibsByHostnameEntry.getKey();
+                    return fibsByHostnameEntry.getValue().entrySet().stream()
+                        .collect(
+                            ImmutableMap.toImmutableMap(
+                                Entry::getKey /* vrf */,
+                                fibsByVrfEntry ->
+                                    computeNextVrfIps(
+                                        fibsByVrfEntry.getValue(), /* fib */
+                                        matchingIps
+                                            .get(hostname)
+                                            .get(fibsByVrfEntry.getKey()) /* matchingIps */)));
+                  }));
+    }
+  }
+
+  private static Map<String, IpSpace> computeNextVrfIps(Fib fib, Map<Prefix, IpSpace> matchingIps) {
+    return fib.allEntries().stream()
+        .filter(fibEntry -> fibEntry.getAction() instanceof FibNextVrf)
+        .collect(
+            groupingBy(
+                fibEntry -> ((FibNextVrf) fibEntry.getAction()).getNextVrf(),
+                mapping(FibEntry::getTopLevelRoute, ImmutableSet.toImmutableSet())))
+        .entrySet()
+        .stream()
+        .collect(
+            ImmutableMap.toImmutableMap(
+                Entry::getKey /* nextVrf */,
+                routesByNextVrfEntry ->
+                    computeRouteMatchConditions(
+                        routesByNextVrfEntry.getValue() /* routes */, matchingIps)));
   }
 
   @VisibleForTesting
@@ -984,6 +1046,11 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
   }
 
   @Override
+  public Map<String, Map<String, Map<String, IpSpace>>> getNextVrfIps() {
+    return _nextVrfIpsByNodeVrf;
+  }
+
+  @Override
   public Map<String, Map<String, IpSpace>> getNullRoutedIps() {
     return _nullRoutedIps;
   }
@@ -1322,7 +1389,7 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
           Entry::getKey,
           nodeEntry ->
               nodeEntry.getValue().entrySet().stream()
-                  .filter(ifaceEntry -> !ifaceEntry.getValue().and(unownedIpsBDD).isZero())
+                  .filter(ifaceEntry -> ifaceEntry.getValue().andSat(unownedIpsBDD))
                   .map(Entry::getKey)
                   .collect(ImmutableSet.toImmutableSet()));
     }
@@ -1467,10 +1534,10 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
                                 return;
                               }
                               Configuration c = configurations.get(node);
-                              assert node != null : node + " is null";
+                              assert c != null : node + " is null";
                               Interface iface = c.getAllInterfaces().get(i);
-                              assert iface != null : node + "[" + iface + "] is null";
-                              assert iface.getActive() : node + "[" + iface + "] is not active";
+                              assert iface != null : node + "[" + i + "] is null";
+                              assert iface.getActive() : node + "[" + i + "] is not active";
                             })));
   }
 
@@ -1490,10 +1557,10 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
                         return;
                       }
                       Configuration c = configurations.get(node);
-                      assert node != null : node + " is null";
+                      assert c != null : node + " is null";
                       Interface iface = c.getAllInterfaces().get(i);
-                      assert iface != null : node + "[" + iface + "] is null";
-                      assert iface.getActive() : node + "[" + iface + "] is not active";
+                      assert iface != null : node + "[" + i + "] is null";
+                      assert iface.getActive() : node + "[" + i + "] is not active";
                     }));
   }
 
@@ -1521,14 +1588,14 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
                       IpSpace rightIpSpace = rightIfaceMap.get(iface);
                       BDD bdd = toBDD.visit(ipSpace);
                       BDD rightBDD = toBDD.visit(rightIpSpace);
-                      assert bdd.diff(rightBDD).isZero()
+                      assert !bdd.diffSat(rightBDD)
                           : "Left BDDs larger for node "
                               + node
                               + " VRF "
                               + vrf
                               + " interface "
                               + iface;
-                      assert rightBDD.diff(bdd).isZero()
+                      assert !rightBDD.diffSat(bdd)
                           : "Right BDDs larger for node "
                               + node
                               + " VRF "
@@ -1544,8 +1611,8 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
    * Mapping: node -&gt; vrf -&gt; route -&gt; nexthopinterface -&gt; resolved nextHopIp -&gt;
    * interfaceRoutes
    */
-  @VisibleForTesting
-  static Map<String, Map<String, Map<AbstractRoute, Map<String, Map<Ip, Set<AbstractRoute>>>>>>
+  private static Map<
+          String, Map<String, Map<AbstractRoute, Map<String, Map<Ip, Set<AbstractRoute>>>>>>
       computeNextHopInterfacesByNodeVrf(Map<String, Map<String, Fib>> fibsByNode) {
     try (ActiveSpan span =
         GlobalTracer.get()
@@ -1564,9 +1631,8 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
   }
 
   /** Mapping: route -&gt; nexthopinterface -&gt; resolved nextHopIp -&gt; interfaceRoutes */
-  @VisibleForTesting
-  static Map<AbstractRoute, Map<String, Map<Ip, Set<AbstractRoute>>>> computeNextHopInterfaces(
-      Fib fib) {
+  private static Map<AbstractRoute, Map<String, Map<Ip, Set<AbstractRoute>>>>
+      computeNextHopInterfaces(Fib fib) {
     return fib.allEntries().stream()
         .filter(fibEntry -> fibEntry.getAction() instanceof FibForward)
         .collect(

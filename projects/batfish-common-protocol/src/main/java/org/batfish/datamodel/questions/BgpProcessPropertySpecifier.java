@@ -2,8 +2,6 @@ package org.batfish.datamodel.questions;
 
 import static com.google.common.base.Preconditions.checkArgument;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonValue;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -24,7 +22,6 @@ import org.batfish.datamodel.BgpTieBreaker;
 import org.batfish.datamodel.MultipathEquivalentAsPathMatchMode;
 import org.batfish.datamodel.answers.Schema;
 import org.batfish.specifier.ConstantEnumSetSpecifier;
-import org.batfish.specifier.EnumSetSpecifier;
 import org.batfish.specifier.SpecifierFactories;
 
 /**
@@ -104,46 +101,34 @@ public class BgpProcessPropertySpecifier extends PropertySpecifier {
   public static final BgpProcessPropertySpecifier ALL =
       new BgpProcessPropertySpecifier(JAVA_MAP.keySet());
 
-  @Nullable private final String _expression;
+  @Nonnull private final List<String> _properties;
 
-  private final EnumSetSpecifier<String> _enumSetSpecifier;
-
-  @JsonCreator
-  private static BgpProcessPropertySpecifier create(@Nullable String expression) {
-    return new BgpProcessPropertySpecifier(expression);
-  }
-
-  public BgpProcessPropertySpecifier(@Nullable String expression) {
-    this(
-        expression,
+  /**
+   * Create a bgp process property specifier from provided expression. If the expression is null or
+   * empty, a specifier with all properties is returned.
+   */
+  public static BgpProcessPropertySpecifier create(@Nullable String expression) {
+    return new BgpProcessPropertySpecifier(
         SpecifierFactories.getEnumSetSpecifierOrDefault(
-            expression, JAVA_MAP.keySet(), new ConstantEnumSetSpecifier<>(JAVA_MAP.keySet())));
+                expression, JAVA_MAP.keySet(), new ConstantEnumSetSpecifier<>(JAVA_MAP.keySet()))
+            .resolve());
   }
 
   /** Returns a specifier that maps to all properties in {@code properties} */
   public BgpProcessPropertySpecifier(Set<String> properties) {
-    this(null, new ConstantEnumSetSpecifier<>(properties));
     Set<String> diffSet = Sets.difference(properties, JAVA_MAP.keySet());
     checkArgument(
-        diffSet.isEmpty(), "Invalid properties supplied to the property specifier: %s", diffSet);
-  }
-
-  private BgpProcessPropertySpecifier(
-      @Nullable String expression, EnumSetSpecifier<String> enumSetSpecifier) {
-    _expression = expression;
-    _enumSetSpecifier = enumSetSpecifier;
+        diffSet.isEmpty(),
+        "Invalid properties supplied: %s. Valid properties are %s",
+        diffSet,
+        JAVA_MAP.keySet());
+    _properties = properties.stream().sorted().collect(ImmutableList.toImmutableList());
   }
 
   @Nonnull
   @Override
   public List<String> getMatchingProperties() {
-    return _enumSetSpecifier.resolve().stream().sorted().collect(ImmutableList.toImmutableList());
-  }
-
-  @Override
-  @JsonValue
-  public String toString() {
-    return _expression;
+    return _properties;
   }
 
   /**

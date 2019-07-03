@@ -8,7 +8,12 @@ options {
 
 frr_vrf
 :
-  VRF name = word NEWLINE frrv_ip_route*
+  VRF name = word NEWLINE frrv_ip_route* frr_exit_vrf?
+;
+
+frr_exit_vrf
+:
+  EXIT_VRF NEWLINE
 ;
 
 frrv_ip_route

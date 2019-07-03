@@ -58,7 +58,7 @@ public final class OspfInterfaceConfigurationAnswerer extends Answerer {
     Set<String> nodes = question.getNodesSpecifier().resolve(_batfish.specifierContext());
 
     Set<String> matchingProperties =
-        ImmutableSet.copyOf(question.getProperties().getMatchingProperties());
+        ImmutableSet.copyOf(question.getPropertySpecifier().getMatchingProperties());
     List<String> orderedProperties =
         COLUMNS_FROM_PROP_SPEC.stream()
             .filter(matchingProperties::contains)

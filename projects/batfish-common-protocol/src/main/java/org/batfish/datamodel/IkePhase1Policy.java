@@ -13,7 +13,6 @@ public class IkePhase1Policy extends ComparableStructure<String> {
 
   public static final String PREFIX_RSA_PUB = "RSA_PUB";
 
-  private static final long serialVersionUID = 1L;
   private static final String PROP_IKE_PHASE1_PROPOSALS = "ikePhase1Proposals";
   private static final String PROP_IKE_PHASE1_KEY = "ikePhase1Key";
   private static final String PROP_REMOTE_IDENTITY = "remoteIdentity";

@@ -19,7 +19,6 @@
             },
             "locations": {
                 "description": "Input to the LocationSpecifier",
-                "optional": true,
                 "type": "locationSpec",
                 "displayName": "Locations"
             }

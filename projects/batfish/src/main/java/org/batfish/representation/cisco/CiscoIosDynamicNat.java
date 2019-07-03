@@ -29,7 +29,6 @@ import org.batfish.datamodel.transformation.TransformationStep;
 
 /** Representation of a Cisco IOS dynamic NAT. */
 public final class CiscoIosDynamicNat extends CiscoIosNat {
-  private static final long serialVersionUID = 1L;
 
   private @Nullable String _aclName;
   private @Nullable String _natPool;

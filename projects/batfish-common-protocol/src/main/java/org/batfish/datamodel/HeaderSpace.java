@@ -508,8 +508,6 @@ public class HeaderSpace implements Serializable, Comparable<HeaderSpace> {
   private static final String PROP_STATES = "states";
   private static final String PROP_TCP_FLAGS_MATCH_CONDITIONS = "tcpFlagsMatchConditions";
 
-  private static final long serialVersionUID = 1L;
-
   public static Builder builder() {
     return new Builder();
   }

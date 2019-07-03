@@ -21,8 +21,6 @@ import org.codehaus.jettison.json.JSONObject;
 
 public class SecurityGroup implements AwsVpcEntity, Serializable {
 
-  private static final long serialVersionUID = 1L;
-
   private final String _groupId;
 
   private final String _groupName;

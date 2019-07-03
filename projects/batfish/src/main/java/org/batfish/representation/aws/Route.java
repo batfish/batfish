@@ -37,8 +37,6 @@ public class Route implements Serializable {
 
   public static final int DEFAULT_STATIC_ROUTE_COST = 0;
 
-  private static final long serialVersionUID = 1L;
-
   private Prefix _destinationCidrBlock;
   private State _state;
   private String _target;
@@ -223,7 +221,8 @@ public class Route implements Serializable {
             ConcreteInterfaceAddress remoteVpcIfaceAddress =
                 ConcreteInterfaceAddress.create(
                     peeringLink.getEndIp(), peeringLink.getPrefixLength());
-            Interface remoteVpcIface = new Interface(remoteVpcIfaceName, remoteVpcCfgNode);
+            Interface remoteVpcIface =
+                Interface.builder().setName(remoteVpcIfaceName).setOwner(remoteVpcCfgNode).build();
             remoteVpcCfgNode.getAllInterfaces().put(remoteVpcIfaceName, remoteVpcIface);
             remoteVpcCfgNode
                 .getDefaultVrf()

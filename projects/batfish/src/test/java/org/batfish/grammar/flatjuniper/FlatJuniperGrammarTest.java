@@ -13,10 +13,12 @@ import static org.batfish.datamodel.flow.TransformationStep.TransformationType.S
 import static org.batfish.datamodel.flow.TransformationStep.TransformationType.STATIC_NAT;
 import static org.batfish.datamodel.matchers.AaaAuthenticationLoginListMatchers.hasMethods;
 import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasPrefix;
+import static org.batfish.datamodel.matchers.AddressFamilyCapabilitiesMatchers.hasAllowLocalAsIn;
+import static org.batfish.datamodel.matchers.AddressFamilyMatchers.hasAddressFamilySettings;
 import static org.batfish.datamodel.matchers.AnnotatedRouteMatchers.hasSourceVrf;
-import static org.batfish.datamodel.matchers.BgpNeighborMatchers.hasAllowLocalAsIn;
 import static org.batfish.datamodel.matchers.BgpNeighborMatchers.hasClusterId;
 import static org.batfish.datamodel.matchers.BgpNeighborMatchers.hasEnforceFirstAs;
+import static org.batfish.datamodel.matchers.BgpNeighborMatchers.hasIpv4UnicastAddressFamily;
 import static org.batfish.datamodel.matchers.BgpNeighborMatchers.hasLocalAs;
 import static org.batfish.datamodel.matchers.BgpNeighborMatchers.hasRemoteAs;
 import static org.batfish.datamodel.matchers.BgpProcessMatchers.hasActiveNeighbor;
@@ -148,9 +150,11 @@ import static org.hamcrest.Matchers.iterableWithSize;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -184,6 +188,7 @@ import org.batfish.datamodel.AnnotatedRoute;
 import org.batfish.datamodel.BgpPeerConfig;
 import org.batfish.datamodel.BgpProcess;
 import org.batfish.datamodel.Bgpv4Route;
+import org.batfish.datamodel.Bgpv4Route.Builder;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
@@ -669,14 +674,22 @@ public final class FlatJuniperGrammarTest {
         hasDefaultVrf(
             hasBgpProcess(
                 hasActiveNeighbor(
-                    Prefix.parse("2.2.2.2/32"), allOf(hasAllowLocalAsIn(true), hasLocalAs(1L))))));
+                    Prefix.parse("2.2.2.2/32"),
+                    allOf(
+                        hasIpv4UnicastAddressFamily(
+                            hasAddressFamilySettings(hasAllowLocalAsIn(true))),
+                        hasLocalAs(1L))))));
     assertThat(
         c,
         hasVrf(
             "FOO",
             hasBgpProcess(
                 hasActiveNeighbor(
-                    Prefix.parse("3.3.3.3/32"), allOf(hasAllowLocalAsIn(true), hasLocalAs(1L))))));
+                    Prefix.parse("3.3.3.3/32"),
+                    allOf(
+                        hasIpv4UnicastAddressFamily(
+                            hasAddressFamilySettings(hasAllowLocalAsIn(true))),
+                        hasLocalAs(1L))))));
   }
 
   @Test
@@ -688,7 +701,11 @@ public final class FlatJuniperGrammarTest {
             "FOO",
             hasBgpProcess(
                 hasActiveNeighbor(
-                    Prefix.parse("2.2.2.2/32"), allOf(hasAllowLocalAsIn(true), hasLocalAs(1L))))));
+                    Prefix.parse("2.2.2.2/32"),
+                    allOf(
+                        hasIpv4UnicastAddressFamily(
+                            hasAddressFamilySettings(hasAllowLocalAsIn(true))),
+                        hasLocalAs(1L))))));
   }
 
   /** Tests support for dynamic bgp parsing using "bgp allow" command */
@@ -3015,6 +3032,28 @@ public final class FlatJuniperGrammarTest {
     assertThat(result.getBooleanValue(), equalTo(false));
 
     /*
+    Metric policy should accept route with metric 100, but not other metrics.
+    Last "from metric" statement overrides previous statements
+      set policy-options policy-statement METRIC_POLICY term T1 from metric 50
+      set policy-options policy-statement METRIC_POLICY term T1 from metric 100
+     */
+    RoutingPolicy metricPolicy = c.getRoutingPolicies().get("METRIC_POLICY");
+    Builder bgpRouteBuilder =
+        Bgpv4Route.builder()
+            .setOriginatorIp(Ip.ZERO)
+            .setNetwork(Prefix.ZERO)
+            .setProtocol(RoutingProtocol.BGP)
+            .setOriginType(OriginType.INCOMPLETE);
+    result = metricPolicy.call(envWithRoute(c, bgpRouteBuilder.setMetric(100).build()));
+    assertTrue(result.getBooleanValue());
+
+    result = metricPolicy.call(envWithRoute(c, bgpRouteBuilder.setMetric(50).build()));
+    assertFalse(result.getBooleanValue());
+
+    result = metricPolicy.call(envWithRoute(c, bgpRouteBuilder.setMetric(51).build()));
+    assertFalse(result.getBooleanValue());
+
+    /*
     NETWORK_POLICY should accept routes with networks matching any prefix list or route filter line.
     Prefix lists are all defined as PLX = [ X.X.X.0/24 ].
       set policy-options policy-statement NETWORK_POLICY term T1 from prefix-list PL1
@@ -4694,15 +4733,16 @@ public final class FlatJuniperGrammarTest {
         c.getAllInterfaces().get(i0Name).getFirewallSessionInterfaceInfo(),
         equalTo(
             new FirewallSessionInterfaceInfo(
-                ImmutableList.of(i0Name, i1Name), "FILTER1", "FILTER2")));
+                false, ImmutableList.of(i0Name, i1Name), "FILTER1", "FILTER2")));
 
     assertThat(
         c.getAllInterfaces().get(i1Name).getFirewallSessionInterfaceInfo(),
-        equalTo(new FirewallSessionInterfaceInfo(ImmutableList.of(i0Name, i1Name), null, null)));
+        equalTo(
+            new FirewallSessionInterfaceInfo(false, ImmutableList.of(i0Name, i1Name), null, null)));
 
     assertThat(
         c.getAllInterfaces().get(i2Name).getFirewallSessionInterfaceInfo(),
-        equalTo(new FirewallSessionInterfaceInfo(ImmutableList.of(i2Name), null, null)));
+        equalTo(new FirewallSessionInterfaceInfo(false, ImmutableList.of(i2Name), null, null)));
 
     // ge-0/0/0.3 is not part of any zoone, so no firewall session interface info.
     assertThat(c.getAllInterfaces().get(i3Name).getFirewallSessionInterfaceInfo(), nullValue());

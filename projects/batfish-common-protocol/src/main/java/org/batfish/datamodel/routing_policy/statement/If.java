@@ -2,6 +2,8 @@ package org.batfish.datamodel.routing_policy.statement;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.base.MoreObjects;
+import com.google.common.base.MoreObjects.ToStringHelper;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import java.util.ArrayList;
@@ -22,8 +24,6 @@ public class If extends Statement {
   private static final String PROP_FALSE_STATEMENTS = "falseStatements";
   private static final String PROP_GUARD = "guard";
   private static final String PROP_TRUE_STATEMENTS = "trueStatements";
-
-  private static final long serialVersionUID = 1L;
 
   private List<Statement> _falseStatements;
 
@@ -69,6 +69,18 @@ public class If extends Statement {
       childSources.addAll(_guard.collectSources(parentSources, routingPolicies, w));
     }
     return childSources.build();
+  }
+
+  @Override
+  public String toString() {
+    ToStringHelper h = MoreObjects.toStringHelper(this).add("guard", _guard);
+    if (_trueStatements != null && !_trueStatements.isEmpty()) {
+      h.add("trueStatements", _trueStatements);
+    }
+    if (_falseStatements != null && !_falseStatements.isEmpty()) {
+      h.add("falseStatements", _falseStatements);
+    }
+    return h.toString();
   }
 
   @Override

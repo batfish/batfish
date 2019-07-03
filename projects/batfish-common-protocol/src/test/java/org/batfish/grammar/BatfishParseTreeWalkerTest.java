@@ -3,6 +3,7 @@ package org.batfish.grammar;
 import static org.batfish.common.util.ThrowableMatchers.hasStackTrace;
 import static org.hamcrest.Matchers.containsString;
 
+import javax.annotation.ParametersAreNonnullByDefault;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.batfish.common.BatfishException;
 import org.batfish.grammar.recovery.RecoveryCombinedParser;
@@ -11,7 +12,9 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
+@ParametersAreNonnullByDefault
 public final class BatfishParseTreeWalkerTest {
+
   private static final class TestEnterThrowingParseTreeListener extends RecoveryParserBaseListener {
     private static void throwEnter() {
       throw new BatfishException("fail enterEveryRule");
@@ -35,7 +38,11 @@ public final class BatfishParseTreeWalkerTest {
   }
 
   private static final GrammarSettings SETTINGS =
-      new MockGrammarSettings(true, 0, 0, 0, false, false, true, true);
+      MockGrammarSettings.builder()
+          .setDisableUnrecognized(true)
+          .setThrowOnLexerError(true)
+          .setThrowOnParserError(true)
+          .build();
 
   private static final String TEXT = "simple\n";
 

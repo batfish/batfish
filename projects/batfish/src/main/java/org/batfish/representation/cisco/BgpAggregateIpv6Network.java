@@ -4,8 +4,6 @@ import org.batfish.datamodel.Prefix6;
 
 public class BgpAggregateIpv6Network extends BgpAggregateNetwork {
 
-  private static final long serialVersionUID = 1L;
-
   private Prefix6 _prefix6;
 
   public BgpAggregateIpv6Network(Prefix6 prefix6) {

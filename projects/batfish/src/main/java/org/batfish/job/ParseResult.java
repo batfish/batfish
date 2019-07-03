@@ -12,7 +12,6 @@ import org.batfish.vendor.VendorConfiguration;
 /** An intermediate class that holds a cacheable result of parsing input configuration files. */
 @ParametersAreNonnullByDefault
 public class ParseResult implements Serializable {
-  private static final long serialVersionUID = 0L;
 
   @Nullable private final VendorConfiguration _config;
   @Nonnull private final ParseTreeSentences _parseTreeSentences;

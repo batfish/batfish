@@ -1,7 +1,5 @@
 package org.batfish.question.bgpproperties;
 
-import static com.google.common.base.MoreObjects.firstNonNull;
-
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -26,28 +24,34 @@ public class BgpProcessConfigurationQuestion extends Question {
 
   @Nullable private String _nodes;
   @Nonnull private NodeSpecifier _nodeSpecifier;
-  @Nonnull private BgpProcessPropertySpecifier _properties;
+  @Nullable private String _properties;
+  @Nonnull private BgpProcessPropertySpecifier _propertySpecifier;
 
   @JsonCreator
   private static BgpProcessConfigurationQuestion create(
       @Nullable @JsonProperty(PROP_NODES) String nodes,
-      @Nullable @JsonProperty(PROP_PROPERTIES) BgpProcessPropertySpecifier propertySpec) {
+      @Nullable @JsonProperty(PROP_PROPERTIES) String properties) {
     return new BgpProcessConfigurationQuestion(
         nodes,
         SpecifierFactories.getNodeSpecifierOrDefault(nodes, AllNodesNodeSpecifier.INSTANCE),
-        firstNonNull(propertySpec, BgpProcessPropertySpecifier.ALL));
+        properties,
+        BgpProcessPropertySpecifier.create(properties));
   }
 
   public BgpProcessConfigurationQuestion(
       NodeSpecifier nodeSpecifier, BgpProcessPropertySpecifier properties) {
-    this(null, nodeSpecifier, properties);
+    this(null, nodeSpecifier, null, properties);
   }
 
   private BgpProcessConfigurationQuestion(
-      @Nullable String nodes, NodeSpecifier nodeSpecifier, BgpProcessPropertySpecifier properties) {
+      @Nullable String nodes,
+      NodeSpecifier nodeSpecifier,
+      @Nullable String properties,
+      BgpProcessPropertySpecifier propertySpecifier) {
     _nodes = nodes;
     _nodeSpecifier = nodeSpecifier;
     _properties = properties;
+    _propertySpecifier = propertySpecifier;
   }
 
   @Override
@@ -72,9 +76,15 @@ public class BgpProcessConfigurationQuestion extends Question {
     return _nodeSpecifier;
   }
 
-  @Nonnull
+  @Nullable
   @JsonProperty(PROP_PROPERTIES)
-  public BgpProcessPropertySpecifier getProperties() {
+  public String getProperties() {
     return _properties;
+  }
+
+  @Nonnull
+  @JsonIgnore
+  public BgpProcessPropertySpecifier getPropertySpecifier() {
+    return _propertySpecifier;
   }
 }

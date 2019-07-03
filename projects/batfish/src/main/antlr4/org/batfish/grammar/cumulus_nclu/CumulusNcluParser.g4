@@ -271,7 +271,8 @@ a_vlan
     (
       suffixes = range_set
       (
-        v_ip_address
+        v_hw_address
+        | v_ip_address
         | v_ip_address_virtual
         | v_vlan_raw_device
         | v_vrf
@@ -279,6 +280,11 @@ a_vlan
       )
     )
   )
+;
+
+v_hw_address
+:
+  HWADDRESS mac = mac_address NEWLINE
 ;
 
 v_ip_address

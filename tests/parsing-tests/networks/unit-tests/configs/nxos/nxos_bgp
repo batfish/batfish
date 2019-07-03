@@ -1,9 +1,11 @@
 !RANCID-CONTENT-TYPE: cisco-nx
 !
-hostname nexus_bgp
+hostname nxos_bgp
 feature bgp
 !
 router bgp 1
+  bestpath as-path multipath-relax
+  bestpath compare-routerid
   enforce-first-as
   event-history periodic
   event-history events
@@ -30,7 +32,7 @@ router bgp 1
       route-map EG_CCC out
       send-community both
       soft-reconfiguration inbound
-
-
+  neighbor 1.1.1.1
+    bfd
+    inherit peer PEER_BLLF
 !
-

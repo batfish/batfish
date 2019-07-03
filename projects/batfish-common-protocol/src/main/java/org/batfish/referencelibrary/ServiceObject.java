@@ -13,7 +13,6 @@ import org.batfish.datamodel.SubRange;
 
 public class ServiceObject implements Comparable<ServiceObject>, Serializable {
 
-  private static final long serialVersionUID = 1L;
   private static final String PROP_IP_PROTOCOL = "ipProtocol";
   private static final String PROP_NAME = "name";
   private static final String PROP_PORTS = "ports";

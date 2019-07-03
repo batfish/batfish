@@ -1,8 +1,5 @@
 package org.batfish.bddreachability;
 
-import static com.google.common.base.Preconditions.checkArgument;
-import static org.batfish.datamodel.acl.SourcesReferencedByIpAccessLists.SOURCE_ORIGINATING_FROM_DEVICE;
-
 import com.google.common.base.MoreObjects;
 import java.util.Set;
 import javax.annotation.Nonnull;
@@ -10,35 +7,26 @@ import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import net.sf.javabdd.BDD;
 import org.batfish.bddreachability.transition.Transition;
-import org.batfish.datamodel.collections.NodeInterfacePair;
+import org.batfish.datamodel.flow.SessionAction;
 
 /** BDD version of {@link org.batfish.datamodel.flow.FirewallSessionTraceInfo}. */
 @ParametersAreNonnullByDefault
 final class BDDFirewallSessionTraceInfo {
   private final @Nonnull String _hostname;
   private final @Nonnull Set<String> _incomingInterfaces;
-  private final @Nullable NodeInterfacePair _nextHop;
-  private final @Nullable String _outgoingInterface;
+  private final @Nullable SessionAction _action;
   private final @Nonnull BDD _sessionFlows;
   private final @Nonnull Transition _transformation;
 
   BDDFirewallSessionTraceInfo(
       String hostname,
       Set<String> incomingInterfaces,
-      @Nullable NodeInterfacePair nextHop,
-      @Nullable String outgoingInterface,
+      SessionAction action,
       BDD sessionFlows,
       Transition transformation) {
-    checkArgument(
-        !SOURCE_ORIGINATING_FROM_DEVICE.equals(outgoingInterface),
-        "Use null instead of SOURCE_ORIGINATING_FROM_DEVICE for outgoingInterface");
-    checkArgument(
-        (outgoingInterface != null) || (nextHop == null),
-        "If outgoingInterface is null, nextHop must be null");
     _hostname = hostname;
     _incomingInterfaces = incomingInterfaces;
-    _nextHop = nextHop;
-    _outgoingInterface = outgoingInterface;
+    _action = action;
     _sessionFlows = sessionFlows;
     _transformation = transformation;
   }
@@ -53,14 +41,10 @@ final class BDDFirewallSessionTraceInfo {
     return _incomingInterfaces;
   }
 
-  @Nullable
-  public NodeInterfacePair getNextHop() {
-    return _nextHop;
-  }
-
-  @Nullable
-  public String getOutgoingInterface() {
-    return _outgoingInterface;
+  /** The action to take on return traffic. */
+  @Nonnull
+  public SessionAction getAction() {
+    return _action;
   }
 
   @Nonnull
@@ -79,8 +63,7 @@ final class BDDFirewallSessionTraceInfo {
         .omitNullValues()
         .add("hostname", _hostname)
         .add("incomingInterfaces", _incomingInterfaces)
-        .add("nextHop", _nextHop)
-        .add("outgoingInterface", _outgoingInterface)
+        .add("action", _action)
         // sessionFlows deliberately omitted since it's not readable
         .add("transformation", _transformation)
         .toString();

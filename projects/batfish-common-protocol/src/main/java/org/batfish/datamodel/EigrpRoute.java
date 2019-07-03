@@ -15,8 +15,6 @@ public abstract class EigrpRoute extends AbstractRoute {
   static final String PROP_EIGRP_METRIC = "eigrp-metric";
   static final String PROP_PROCESS_ASN = "process-asn";
 
-  private static final long serialVersionUID = 1L;
-
   protected final int _admin;
   @Nonnull protected final EigrpMetric _metric;
   @Nonnull protected final Ip _nextHopIp;

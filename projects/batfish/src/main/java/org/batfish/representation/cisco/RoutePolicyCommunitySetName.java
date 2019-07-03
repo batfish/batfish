@@ -8,8 +8,6 @@ import org.batfish.datamodel.routing_policy.expr.NamedCommunitySet;
 
 public class RoutePolicyCommunitySetName extends RoutePolicyCommunitySet {
 
-  private static final long serialVersionUID = 1L;
-
   private final String _name;
 
   public RoutePolicyCommunitySetName(@Nonnull String name) {

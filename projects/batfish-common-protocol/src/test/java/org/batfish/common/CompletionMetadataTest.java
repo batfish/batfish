@@ -14,7 +14,7 @@ import org.junit.Test;
 public class CompletionMetadataTest {
 
   @Test
-  public void testJavaSerialization() throws IOException {
+  public void testJavaSerialization() {
     CompletionMetadata completionMetadata =
         CompletionMetadata.builder()
             .setFilterNames(ImmutableSet.of("filter"))

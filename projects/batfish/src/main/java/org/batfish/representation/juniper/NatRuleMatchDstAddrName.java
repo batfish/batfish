@@ -8,8 +8,6 @@ import javax.annotation.ParametersAreNonnullByDefault;
 @ParametersAreNonnullByDefault
 public final class NatRuleMatchDstAddrName implements NatRuleMatch {
 
-  private static final long serialVersionUID = 1L;
-
   private final String _name;
 
   public NatRuleMatchDstAddrName(String name) {

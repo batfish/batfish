@@ -31,6 +31,7 @@ import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
@@ -52,6 +53,7 @@ import org.batfish.bddreachability.transition.Transition;
 import org.batfish.common.bdd.BDDPacket;
 import org.batfish.common.bdd.HeaderSpaceToBDD;
 import org.batfish.common.bdd.IpSpaceToBDD;
+import org.batfish.datamodel.AclIpSpace;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
@@ -62,6 +64,7 @@ import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpAccessListLine;
+import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.IpSpaceReference;
 import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.Prefix;
@@ -232,7 +235,7 @@ public final class BDDReachabilityAnalysisFactoryTest {
                   matchDst(UniverseIpSpace.INSTANCE),
                   ImmutableSet.of(node),
                   ImmutableSet.of(),
-                  ImmutableSet.of(),
+                  configs.keySet(),
                   ALL_DISPOSITIONS)
               .getForwardEdgeMap();
       Set<Edge> edges = getEdges(edgeMap);
@@ -292,7 +295,7 @@ public final class BDDReachabilityAnalysisFactoryTest {
                   matchDst(UniverseIpSpace.INSTANCE),
                   ImmutableSet.of(),
                   ImmutableSet.of(node),
-                  ImmutableSet.of(),
+                  configs.keySet(),
                   ALL_DISPOSITIONS)
               .getForwardEdgeMap();
       Set<Edge> edges = getEdges(edgeMap);
@@ -302,12 +305,12 @@ public final class BDDReachabilityAnalysisFactoryTest {
           .filter(edge -> edge.getPostState() == Query.INSTANCE)
           .forEach(
               edge -> {
-                assertTrue(
+                assertFalse(
                     "Edge into query state must require requiredTransitNodes bit to be one",
-                    edge.traverseForward(ONE).and(notTransited).isZero());
-                assertTrue(
+                    edge.traverseForward(ONE).andSat(notTransited));
+                assertFalse(
                     "Edge into query state must require requiredTransitNodes bit to be one",
-                    edge.traverseBackward(ONE).and(notTransited).isZero());
+                    edge.traverseBackward(ONE).andSat(notTransited));
               });
 
       // all edges from originate states initialize the transit nodes bit to zero
@@ -325,18 +328,17 @@ public final class BDDReachabilityAnalysisFactoryTest {
                 } else {
                   hostname = ((OriginateInterfaceLink) preState).getHostname();
                 }
-                assertTrue(
+                assertFalse(
                     "Edge out of originate state must require requiredTransitNodes bit to be zero",
-                    edge.traverseForward(ONE).and(transited).isZero());
-                assertTrue(
+                    edge.traverseForward(ONE).andSat(transited));
+                assertFalse(
                     "Edge out of originate state must require requiredTransitNodes bit to be zero",
                     edge.traverseBackward(
                             bddReachabilityAnalysisFactory
                                 .getBDDSourceManagers()
                                 .get(hostname)
                                 .isValidValue())
-                        .and(transited)
-                        .isZero());
+                        .andSat(transited));
               });
 
       edges.stream()
@@ -359,36 +361,32 @@ public final class BDDReachabilityAnalysisFactoryTest {
                         .get(peername)
                         .isValidValue();
                 if (hostname.equals(node)) {
-                  assertTrue(
+                  assertFalse(
                       "Forward Edge from PreOutEdgePostNat to PreInInterface for a "
                           + "requiredTransitNode must set the requiredTransitNodes bit",
-                      edge.traverseForward(validSrc).and(notTransited).isZero());
+                      edge.traverseForward(validSrc).andSat(notTransited));
                   BDD backwardOne = edge.traverseBackward(peerValidSrc);
                   assertTrue(
                       "Backward Edge from PreOutEdgePostNat to PreInInterface for a "
                           + " requiredTransitNode must not constrain the bit after exit",
                       backwardOne.exist(requiredTransitNodesBDD).equals(backwardOne));
                 } else {
-                  assertTrue(
+                  assertFalse(
                       "Edge from PreOutEdgePostNat to PreInInterface for a "
                           + "non-requiredTransitNode must not touch the requiredTransitNodes bit",
-                      edge.traverseForward(transited.and(validSrc)).and(notTransited).isZero());
-                  assertTrue(
+                      edge.traverseForward(transited.and(validSrc)).andSat(notTransited));
+                  assertFalse(
                       "Edge from PreOutEdgePostNat to PreInInterface for a "
                           + "non-requiredTransitNode must not touch the requiredTransitNodes bit",
-                      edge.traverseForward(notTransited.and(validSrc)).and(transited).isZero());
-                  assertTrue(
+                      edge.traverseForward(notTransited.and(validSrc)).andSat(transited));
+                  assertFalse(
                       "Edge from PreOutEdgePostNat to PreInInterface for a "
                           + "non-requiredTransitNode must not touch the requiredTransitNodes bit",
-                      edge.traverseBackward(transited.and(peerValidSrc))
-                          .and(notTransited)
-                          .isZero());
-                  assertTrue(
+                      edge.traverseBackward(transited.and(peerValidSrc)).andSat(notTransited));
+                  assertFalse(
                       "Edge from PreOutEdgePostNat to PreInInterface for a "
                           + "non-requiredTransitNode must not touch the requiredTransitNodes bit",
-                      edge.traverseBackward(notTransited.and(peerValidSrc))
-                          .and(transited)
-                          .isZero());
+                      edge.traverseBackward(notTransited.and(peerValidSrc)).andSat(transited));
                 }
               });
     }
@@ -529,8 +527,7 @@ public final class BDDReachabilityAnalysisFactoryTest {
             hasEntry(equalTo(vrf.getName()), equalTo(PKT.getFactory().zero()))));
 
     // when interface is blacklisted, its Ip does not belong to the VRF
-    iface.setActive(true);
-    iface.setBlacklisted(true);
+    iface.blacklist();
     batfish = BatfishTestUtils.getBatfish(configs, temp);
     batfish.computeDataPlane();
     factory =
@@ -1449,5 +1446,174 @@ public final class BDDReachabilityAnalysisFactoryTest {
         hasEntry(
             equalTo(new PreOutVrf(hostname, "vrf2")),
             hasKey(equalTo(new PreOutEdge(hostname, "i1", neighborHostname, neighborIface)))));
+  }
+
+  private ImmutableSortedMap<String, Configuration> makeNextVrfNetwork(boolean withNeighbor) {
+    NetworkFactory nf = new NetworkFactory();
+    Configuration.Builder cb =
+        nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS);
+    Configuration ingressNode = cb.setHostname("ingressNode").build();
+    String nextVrfName = "nextVrf";
+
+    Vrf ingressVrf = nf.vrfBuilder().setName("ingressVrf").setOwner(ingressNode).build();
+    Vrf nextVrf = nf.vrfBuilder().setName(nextVrfName).setOwner(ingressNode).build();
+    StaticRoute ingressVrfNextVrfRoute =
+        StaticRoute.builder()
+            .setAdministrativeCost(1)
+            .setNetwork(Prefix.ZERO)
+            .setNextVrf(nextVrfName)
+            .build();
+    ingressVrf.setStaticRoutes(ImmutableSortedSet.of(ingressVrfNextVrfRoute));
+
+    Interface.Builder ib = nf.interfaceBuilder().setOwner(ingressNode).setActive(true);
+    ib.setName("ingressIface")
+        .setVrf(ingressVrf)
+        .setAddress(ConcreteInterfaceAddress.parse("10.0.0.1/24"))
+        .build();
+    ib.setName("egressIface")
+        .setVrf(nextVrf)
+        .setAddress(ConcreteInterfaceAddress.parse("10.0.12.1/24"))
+        .build();
+
+    if (!withNeighbor) {
+      return ImmutableSortedMap.of(ingressNode.getHostname(), ingressNode);
+    }
+
+    // Add a second config which 10.0.12.2 and is connected to C1
+    Configuration neighbor = cb.setHostname("neighbor").build();
+    Vrf neighborVrf = nf.vrfBuilder().setName("neighbor").setOwner(neighbor).build();
+    ib.setOwner(neighbor)
+        .setVrf(neighborVrf)
+        .setName("neighborIface")
+        .setAddress(ConcreteInterfaceAddress.parse("10.0.12.2/24"))
+        .build();
+
+    return ImmutableSortedMap.of(
+        ingressNode.getHostname(), ingressNode, neighbor.getHostname(), neighbor);
+  }
+
+  @Test
+  public void testNextVrfWithNeighbor() throws IOException {
+    // with neighbor, expect accepted disposition
+    ImmutableSortedMap<String, Configuration> configurations = makeNextVrfNetwork(true);
+
+    String hostname = "ingressNode";
+    String ingressIface = "ingressIface";
+    String ingressVrf = "ingressVrf";
+    String nextVrf = "nextVrf";
+    String neighborHostname = "neighbor";
+
+    Batfish batfish = BatfishTestUtils.getBatfish(configurations, temp);
+    batfish.computeDataPlane();
+
+    BDDReachabilityAnalysisFactory factory =
+        new BDDReachabilityAnalysisFactory(
+            PKT, configurations, batfish.loadDataPlane().getForwardingAnalysis(), false, false);
+
+    Ip dstIp = Ip.parse("10.0.12.2");
+    BDDReachabilityAnalysis analysis =
+        factory.bddReachabilityAnalysis(
+            IpSpaceAssignment.builder()
+                .assign(new InterfaceLinkLocation(hostname, ingressIface), UniverseIpSpace.INSTANCE)
+                .build(),
+            matchDst(dstIp),
+            ImmutableSet.of(),
+            ImmutableSet.of(),
+            ImmutableSet.of(neighborHostname),
+            ImmutableSet.of(ACCEPTED));
+
+    // Check state edge presence
+    assertThat(
+        analysis.getForwardEdgeMap(),
+        hasEntry(
+            equalTo(new PostInVrf(hostname, ingressVrf)),
+            hasKey(new PostInVrf(hostname, nextVrf))));
+
+    BDD nextVrfDstIpsBDD =
+        analysis
+            .getForwardEdgeMap()
+            .get(new PostInVrf(hostname, ingressVrf))
+            .get(new PostInVrf(hostname, nextVrf))
+            .transitForward(ONE);
+    IpSpaceToBDD ipSpaceToBDD = new IpSpaceToBDD(PKT.getDstIp());
+
+    // ingressVrf should delegate space associated with nextVrfRoute 0.0.0.0/0 minus more specific
+    // space associated with connected route 10.0.0.0/24
+    assertThat(
+        nextVrfDstIpsBDD,
+        equalTo(ONE.diff(Prefix.parse("10.0.0.0/24").toIpSpace().accept(ipSpaceToBDD))));
+
+    BDD acceptedEndToEndBDD =
+        analysis
+            .getIngressLocationReachableBDDs()
+            .get(IngressLocation.interfaceLink(hostname, ingressIface));
+
+    // Any packet with destination IP 10.0.12.2 (that of neighbor interface) entering ingressIface
+    // should be delivered and accepted
+    assertThat(
+        acceptedEndToEndBDD, equalTo(Ip.parse("10.0.12.2").toIpSpace().accept(ipSpaceToBDD)));
+  }
+
+  @Test
+  public void testNextVrfWithoutNeighbor() throws IOException {
+    // with neighbor, expect accepted disposition
+    ImmutableSortedMap<String, Configuration> configurations = makeNextVrfNetwork(false);
+
+    String hostname = "ingressNode";
+    String ingressIface = "ingressIface";
+    String ingressVrf = "ingressVrf";
+    String nextVrf = "nextVrf";
+
+    Batfish batfish = BatfishTestUtils.getBatfish(configurations, temp);
+    batfish.computeDataPlane();
+
+    BDDReachabilityAnalysisFactory factory =
+        new BDDReachabilityAnalysisFactory(
+            PKT, configurations, batfish.loadDataPlane().getForwardingAnalysis(), false, false);
+
+    IpSpace dstIpSpaceOfInterest =
+        AclIpSpace.difference(
+            Prefix.strict("10.0.12.0/24").toHostIpSpace(), Ip.parse("10.0.12.1").toIpSpace());
+    BDDReachabilityAnalysis analysis =
+        factory.bddReachabilityAnalysis(
+            IpSpaceAssignment.builder()
+                .assign(new InterfaceLinkLocation(hostname, ingressIface), UniverseIpSpace.INSTANCE)
+                .build(),
+            matchDst(dstIpSpaceOfInterest),
+            ImmutableSet.of(),
+            ImmutableSet.of(),
+            configurations.keySet(),
+            ImmutableSet.of(DELIVERED_TO_SUBNET));
+
+    // Check state edge presence
+    assertThat(
+        analysis.getForwardEdgeMap(),
+        hasEntry(
+            equalTo(new PostInVrf(hostname, ingressVrf)),
+            hasKey(new PostInVrf(hostname, nextVrf))));
+
+    BDD nextVrfDstIpsBDD =
+        analysis
+            .getForwardEdgeMap()
+            .get(new PostInVrf(hostname, ingressVrf))
+            .get(new PostInVrf(hostname, nextVrf))
+            .transitForward(ONE);
+    IpSpaceToBDD ipSpaceToBDD = new IpSpaceToBDD(PKT.getDstIp());
+
+    // ingressVrf should delegate space associated with nextVrfRoute 0.0.0.0/0 minus more specific
+    // space associated with connected route 10.0.0.0/24
+    assertThat(
+        nextVrfDstIpsBDD,
+        equalTo(ONE.diff(Prefix.parse("10.0.0.0/24").toIpSpace().accept(ipSpaceToBDD))));
+
+    BDD deliveredToSubnetEndToEndBDD =
+        analysis
+            .getIngressLocationReachableBDDs()
+            .get(IngressLocation.interfaceLink(hostname, ingressIface));
+
+    // Any packet with destination IP 10.0.12.0/24 \ 10.0.12.1 (egressInterface network minus its
+    // IP) entering ingressIface should be delivered to subnet of egressInterface
+    // TODO: Specify final interface where DELIVERED_TO_SUBNET occurs when that becomes possible
+    assertThat(deliveredToSubnetEndToEndBDD, equalTo(dstIpSpaceOfInterest.accept(ipSpaceToBDD)));
   }
 }

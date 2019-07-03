@@ -15,7 +15,6 @@ import org.batfish.datamodel.routing_policy.expr.IntExpr;
 @ParametersAreNonnullByDefault
 public final class SetWeight extends Statement {
   private static final String PROP_WEIGHT = "weight";
-  private static final long serialVersionUID = 1L;
 
   @Nonnull private IntExpr _weight;
 

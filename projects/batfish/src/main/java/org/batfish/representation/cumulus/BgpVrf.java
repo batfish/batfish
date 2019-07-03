@@ -10,10 +10,8 @@ import org.batfish.datamodel.Ip;
 /** BGP configuration for a particular VRF. */
 public class BgpVrf implements Serializable {
 
-  private static final long serialVersionUID = 1L;
-
   private @Nullable Long _autonomousSystem;
-  private final @Nonnull Map<String, BgpInterfaceNeighbor> _interfaceNeighbors;
+  private final @Nonnull Map<String, BgpNeighbor> _neighbors;
   private @Nullable BgpIpv4UnicastAddressFamily _ipv4Unicast;
   private @Nullable BgpL2vpnEvpnAddressFamily _l2VpnEvpn;
   private @Nullable Ip _routerId;
@@ -21,15 +19,15 @@ public class BgpVrf implements Serializable {
 
   public BgpVrf(String vrfName) {
     _vrfName = vrfName;
-    _interfaceNeighbors = new HashMap<>();
+    _neighbors = new HashMap<>();
   }
 
   public @Nullable Long getAutonomousSystem() {
     return _autonomousSystem;
   }
 
-  public @Nonnull Map<String, BgpInterfaceNeighbor> getInterfaceNeighbors() {
-    return _interfaceNeighbors;
+  public @Nonnull Map<String, BgpNeighbor> getNeighbors() {
+    return _neighbors;
   }
 
   public @Nullable BgpIpv4UnicastAddressFamily getIpv4Unicast() {

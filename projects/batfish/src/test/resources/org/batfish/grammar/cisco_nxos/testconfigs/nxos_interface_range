@@ -1,0 +1,11 @@
+!RANCID-CONTENT-TYPE: cisco-nx
+!
+hostname nxos_interface_range
+!
+interface Ethernet1/1-2
+  no shutdown
+  no switchport
+!
+interface Ethernet1/1.1-2
+  no shutdown
+!

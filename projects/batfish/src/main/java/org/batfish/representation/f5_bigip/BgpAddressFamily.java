@@ -10,8 +10,6 @@ import javax.annotation.ParametersAreNonnullByDefault;
 @ParametersAreNonnullByDefault
 public abstract class BgpAddressFamily implements Serializable {
 
-  private static final long serialVersionUID = 1L;
-
   private @Nonnull Map<F5BigipRoutingProtocol, BgpRedistributionPolicy> _redistributionPolicies;
 
   public BgpAddressFamily() {

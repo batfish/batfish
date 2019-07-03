@@ -391,8 +391,6 @@ public final class Flow implements Comparable<Flow>, Serializable {
   public static final String BASE_FLOW_TAG = "BASE";
   public static final String DELTA_FLOW_TAG = "DELTA";
 
-  private static final long serialVersionUID = 1L;
-
   public static Builder builder() {
     return new Builder();
   }

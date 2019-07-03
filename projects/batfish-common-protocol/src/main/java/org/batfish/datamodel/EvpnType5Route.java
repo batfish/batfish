@@ -18,8 +18,6 @@ import org.batfish.datamodel.bgp.community.Community;
 @ParametersAreNonnullByDefault
 public final class EvpnType5Route extends EvpnRoute<EvpnType5Route.Builder, EvpnType5Route> {
 
-  private static final long serialVersionUID = 1L;
-
   /** Builder for {@link EvpnType5Route} */
   @ParametersAreNonnullByDefault
   public static final class Builder extends EvpnRoute.Builder<Builder, EvpnType5Route> {
@@ -43,7 +41,7 @@ public final class EvpnType5Route extends EvpnRoute<EvpnType5Route.Builder, Evpn
       return new EvpnType5Route(
           getAdmin(),
           _asPath,
-          _clusterList.build(),
+          _clusterList,
           _communities,
           _discard,
           _localPreference,

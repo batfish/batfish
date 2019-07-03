@@ -13,6 +13,7 @@ a_interface
     i_bridge
     | i_clag
     | i_ip_address
+    | i_link_speed
     | i_vrf
     | NEWLINE
   )
@@ -64,7 +65,7 @@ ic_backup_ip
 
 ic_peer_ip
 :
-  PEER_IP peer_ip = ip_address NEWLINE
+  PEER_IP (peer_ip = ip_address | LINKLOCAL) NEWLINE
 ;
 
 ic_priority
@@ -80,6 +81,11 @@ ic_sys_mac
 i_ip_address
 :
   IP ADDRESS address = interface_address NEWLINE
+;
+
+i_link_speed
+:
+  LINK SPEED speed = uint32 NEWLINE
 ;
 
 i_vrf

@@ -7,8 +7,6 @@ import javax.annotation.Nonnull;
 
 public class StandardAccessList implements Serializable {
 
-  private static final long serialVersionUID = 1L;
-
   @Nonnull private List<StandardAccessListLine> _lines;
   @Nonnull private final String _name;
 

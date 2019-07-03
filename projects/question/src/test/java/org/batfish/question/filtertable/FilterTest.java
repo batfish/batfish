@@ -5,7 +5,6 @@ import static org.junit.Assert.assertThat;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import java.io.IOException;
 import java.util.Arrays;
 import java.util.NoSuchElementException;
 import org.batfish.common.util.BatfishObjectMapper;
@@ -22,7 +21,7 @@ public class FilterTest {
   @Rule public ExpectedException _thrown = ExpectedException.none();
 
   @Test
-  public void constructorOperators() throws IOException {
+  public void constructorOperators() {
     // check that we map the operator correctly
     assertThat(new Filter("col == 42").getOperator(), equalTo(Operator.EQ));
     assertThat(new Filter("col >= 42").getOperator(), equalTo(Operator.GE));
@@ -36,7 +35,7 @@ public class FilterTest {
   }
 
   @Test
-  public void constructorOperands() throws IOException {
+  public void constructorOperands() {
     // check that we parsed the type correctly
     assertThat(
         new Filter("col == true").getRightOperand(), equalTo(new Operand(Type.BOOLEAN, true)));

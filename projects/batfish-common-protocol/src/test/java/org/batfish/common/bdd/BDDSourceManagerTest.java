@@ -181,7 +181,7 @@ public class BDDSourceManagerTest {
     ib.setName(IFACE2).build();
     ib.setName(IFACE3)
         .setFirewallSessionInterfaceInfo(
-            new FirewallSessionInterfaceInfo(ImmutableList.of(IFACE3), null, null))
+            new FirewallSessionInterfaceInfo(false, ImmutableList.of(IFACE3), null, null))
         .build();
 
     String hostname = config.getHostname();

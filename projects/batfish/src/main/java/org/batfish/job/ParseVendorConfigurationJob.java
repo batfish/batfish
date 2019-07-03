@@ -17,6 +17,7 @@ import org.antlr.v4.runtime.ParserRuleContext;
 import org.batfish.common.BatfishException;
 import org.batfish.common.ParseTreeSentences;
 import org.batfish.common.Warnings;
+import org.batfish.common.WillNotCommitException;
 import org.batfish.config.Settings;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.answers.ParseStatus;
@@ -27,6 +28,8 @@ import org.batfish.grammar.ParseTreePrettyPrinter;
 import org.batfish.grammar.VendorConfigurationFormatDetector;
 import org.batfish.grammar.cisco.CiscoCombinedParser;
 import org.batfish.grammar.cisco.CiscoControlPlaneExtractor;
+import org.batfish.grammar.cisco_nxos.CiscoNxosCombinedParser;
+import org.batfish.grammar.cisco_nxos.CiscoNxosControlPlaneExtractor;
 import org.batfish.grammar.cumulus_nclu.CumulusNcluCombinedParser;
 import org.batfish.grammar.cumulus_nclu.CumulusNcluControlPlaneExtractor;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredCombinedParser;
@@ -193,6 +196,13 @@ public class ParseVendorConfigurationJob extends BatfishJob<ParseVendorConfigura
             }
           } while (!newFileText.equals(fileText));
           _logger.info("OK\n");
+          if (format == ConfigurationFormat.CISCO_NX && _settings.getUseNewCiscoNxosParser()) {
+            CiscoNxosCombinedParser ciscoNxosParser =
+                new CiscoNxosCombinedParser(newFileText, _settings);
+            combinedParser = ciscoNxosParser;
+            extractor = new CiscoNxosControlPlaneExtractor(newFileText, ciscoNxosParser, _warnings);
+            break;
+          }
           CiscoCombinedParser ciscoParser = new CiscoCombinedParser(newFileText, _settings, format);
           combinedParser = ciscoParser;
           extractor = new CiscoControlPlaneExtractor(newFileText, ciscoParser, format, _warnings);
@@ -417,6 +427,16 @@ public class ParseVendorConfigurationJob extends BatfishJob<ParseVendorConfigura
       ParseStatus status =
           vc.getUnrecognized() ? ParseStatus.PARTIALLY_UNRECOGNIZED : ParseStatus.PASSED;
       return new ParseResult(vc, null, _filename, _ptSentences, status, _warnings);
+    } catch (WillNotCommitException e) {
+      if (_settings.getHaltOnParseError()) {
+        // Fail the job if we need to
+        return new ParseResult(
+            null, e, _filename, _ptSentences, ParseStatus.WILL_NOT_COMMIT, _warnings);
+      }
+      // Otherwise just generate a warning
+      _warnings.redFlag(e.getMessage());
+      return new ParseResult(
+          null, null, _filename, _ptSentences, ParseStatus.WILL_NOT_COMMIT, _warnings);
     } catch (Exception e) {
       return new ParseResult(
           null,

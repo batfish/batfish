@@ -5,6 +5,7 @@ import static org.junit.Assert.assertThat;
 
 import java.io.IOException;
 import javax.annotation.Nonnull;
+import javax.annotation.ParametersAreNonnullByDefault;
 import org.antlr.v4.runtime.CharStream;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.Token;
@@ -19,7 +20,9 @@ import org.batfish.grammar.recovery.RecoveryLexer;
 import org.batfish.grammar.recovery.RecoveryParser;
 import org.junit.Test;
 
-public class ErrorDetailsTest {
+@ParametersAreNonnullByDefault
+public final class ErrorDetailsTest {
+
   private static final Integer LINE_NUMBER = 1234;
   private static final String LINE_TEXT = "tokenText";
 
@@ -29,7 +32,10 @@ public class ErrorDetailsTest {
           RecoveryParser.class,
           RecoveryLexer.class,
           "",
-          new MockGrammarSettings(false, 0, 0, 0, false, false, true, true),
+          MockGrammarSettings.builder()
+              .setThrowOnLexerError(true)
+              .setThrowOnParserError(true)
+              .build(),
           new BatfishANTLRErrorStrategy.BatfishANTLRErrorStrategyFactory(
               RecoveryLexer.NEWLINE, "\n"),
           BatfishLexerRecoveryStrategy.WHITESPACE_AND_NEWLINES);

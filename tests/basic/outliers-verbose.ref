@@ -2410,100 +2410,112 @@
             "neighbors" : {
               "1.10.1.1/32" : {
                 "class" : "org.batfish.datamodel.BgpActivePeerConfig",
-                "additionalPathsReceive" : true,
-                "additionalPathsSelectAll" : true,
-                "additionalPathsSend" : true,
-                "advertiseExternal" : false,
-                "advertiseInactive" : true,
-                "allowLocalAsIn" : false,
-                "allowRemoteAsOut" : true,
                 "clusterId" : 16843009,
                 "defaultMetric" : 0,
                 "ebgpMultihop" : false,
                 "enforceFirstAs" : false,
-                "exportPolicy" : "~BGP_PEER_EXPORT_POLICY:default:1.10.1.1~",
                 "group" : "as1",
-                "ipv4UnicastAddressFamily" : { },
+                "ipv4UnicastAddressFamily" : {
+                  "addressFamilyCapabilities" : {
+                    "additionalPathsReceive" : true,
+                    "additionalPathsSelectAll" : true,
+                    "additionalPathsSend" : true,
+                    "advertiseExternal" : false,
+                    "advertiseInactive" : true,
+                    "allowLocalAsIn" : false,
+                    "allowRemoteAsOut" : true,
+                    "sendCommunity" : true
+                  },
+                  "exportPolicy" : "~BGP_PEER_EXPORT_POLICY:default:1.10.1.1~"
+                },
                 "localAs" : 1,
                 "localIp" : "1.1.1.1",
                 "peerAddress" : "1.10.1.1",
                 "remoteAsns" : "1",
-                "routeReflectorClient" : false,
-                "sendCommunity" : true
+                "routeReflectorClient" : false
               },
               "3.2.2.2/32" : {
                 "class" : "org.batfish.datamodel.BgpActivePeerConfig",
-                "additionalPathsReceive" : true,
-                "additionalPathsSelectAll" : true,
-                "additionalPathsSend" : true,
-                "advertiseExternal" : false,
-                "advertiseInactive" : true,
-                "allowLocalAsIn" : false,
-                "allowRemoteAsOut" : true,
                 "clusterId" : 16843009,
                 "defaultMetric" : 0,
                 "ebgpMultihop" : false,
                 "enforceFirstAs" : false,
-                "exportPolicy" : "~BGP_PEER_EXPORT_POLICY:default:3.2.2.2~",
                 "group" : "bad-ebgp",
-                "ipv4UnicastAddressFamily" : { },
+                "ipv4UnicastAddressFamily" : {
+                  "addressFamilyCapabilities" : {
+                    "additionalPathsReceive" : true,
+                    "additionalPathsSelectAll" : true,
+                    "additionalPathsSend" : true,
+                    "advertiseExternal" : false,
+                    "advertiseInactive" : true,
+                    "allowLocalAsIn" : false,
+                    "allowRemoteAsOut" : true,
+                    "sendCommunity" : false
+                  },
+                  "exportPolicy" : "~BGP_PEER_EXPORT_POLICY:default:3.2.2.2~"
+                },
                 "localAs" : 1,
                 "peerAddress" : "3.2.2.2",
                 "remoteAsns" : "666",
-                "routeReflectorClient" : false,
-                "sendCommunity" : false
+                "routeReflectorClient" : false
               },
               "5.6.7.8/32" : {
                 "class" : "org.batfish.datamodel.BgpActivePeerConfig",
-                "additionalPathsReceive" : true,
-                "additionalPathsSelectAll" : true,
-                "additionalPathsSend" : true,
-                "advertiseExternal" : false,
-                "advertiseInactive" : true,
-                "allowLocalAsIn" : false,
-                "allowRemoteAsOut" : true,
                 "clusterId" : 16843009,
                 "defaultMetric" : 0,
                 "ebgpMultihop" : false,
                 "enforceFirstAs" : false,
-                "exportPolicy" : "~BGP_PEER_EXPORT_POLICY:default:5.6.7.8~",
                 "group" : "xanadu",
-                "ipv4UnicastAddressFamily" : { },
+                "ipv4UnicastAddressFamily" : {
+                  "addressFamilyCapabilities" : {
+                    "additionalPathsReceive" : true,
+                    "additionalPathsSelectAll" : true,
+                    "additionalPathsSend" : true,
+                    "advertiseExternal" : false,
+                    "advertiseInactive" : true,
+                    "allowLocalAsIn" : false,
+                    "allowRemoteAsOut" : true,
+                    "sendCommunity" : false
+                  },
+                  "exportPolicy" : "~BGP_PEER_EXPORT_POLICY:default:5.6.7.8~"
+                },
                 "localAs" : 1,
                 "peerAddress" : "5.6.7.8",
                 "remoteAsns" : "555",
-                "routeReflectorClient" : false,
-                "sendCommunity" : false
+                "routeReflectorClient" : false
               },
               "10.12.11.2/32" : {
                 "class" : "org.batfish.datamodel.BgpActivePeerConfig",
-                "additionalPathsReceive" : true,
-                "additionalPathsSelectAll" : true,
-                "additionalPathsSend" : true,
-                "advertiseExternal" : false,
-                "advertiseInactive" : true,
-                "allowLocalAsIn" : false,
-                "allowRemoteAsOut" : true,
                 "clusterId" : 16843009,
                 "defaultMetric" : 0,
                 "ebgpMultihop" : false,
                 "enforceFirstAs" : false,
-                "exportPolicy" : "~BGP_PEER_EXPORT_POLICY:default:10.12.11.2~",
-                "exportPolicySources" : [
-                  "as1_to_as2"
-                ],
                 "group" : "as2",
-                "importPolicy" : "as2_to_as1",
-                "importPolicySources" : [
-                  "as2_to_as1"
-                ],
-                "ipv4UnicastAddressFamily" : { },
+                "ipv4UnicastAddressFamily" : {
+                  "addressFamilyCapabilities" : {
+                    "additionalPathsReceive" : true,
+                    "additionalPathsSelectAll" : true,
+                    "additionalPathsSend" : true,
+                    "advertiseExternal" : false,
+                    "advertiseInactive" : true,
+                    "allowLocalAsIn" : false,
+                    "allowRemoteAsOut" : true,
+                    "sendCommunity" : true
+                  },
+                  "exportPolicy" : "~BGP_PEER_EXPORT_POLICY:default:10.12.11.2~",
+                  "exportPolicySources" : [
+                    "as1_to_as2"
+                  ],
+                  "importPolicy" : "as2_to_as1",
+                  "importPolicySources" : [
+                    "as2_to_as1"
+                  ]
+                },
                 "localAs" : 1,
                 "localIp" : "10.12.11.1",
                 "peerAddress" : "10.12.11.2",
                 "remoteAsns" : "2",
-                "routeReflectorClient" : false,
-                "sendCommunity" : true
+                "routeReflectorClient" : false
               }
             },
             "tieBreaker" : "ARRIVAL_ORDER"

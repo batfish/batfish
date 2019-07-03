@@ -1,5 +1,6 @@
 package org.batfish.dataplane.protocols;
 
+import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasNextHopIp;
 import static org.batfish.dataplane.protocols.BgpProtocolHelper.convertGeneratedRouteToBgp;
 import static org.batfish.dataplane.protocols.BgpProtocolHelper.convertNonBgpRouteToBgpRoute;
 import static org.hamcrest.Matchers.empty;
@@ -30,6 +31,9 @@ import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.Vrf;
+import org.batfish.datamodel.bgp.AddressFamily.Type;
+import org.batfish.datamodel.bgp.AddressFamilyCapabilities;
+import org.batfish.datamodel.bgp.Ipv4UnicastAddressFamily;
 import org.batfish.datamodel.bgp.community.Community;
 import org.batfish.datamodel.bgp.community.StandardCommunity;
 import org.junit.Before;
@@ -119,7 +123,12 @@ public final class BgpProtocolHelperTransformBgpRouteOnExportTest {
           _sessionProperties,
           _fromBgpProcess,
           _toBgpProcess,
-          convertGeneratedRouteToBgp((GeneratedRoute) route, _fromBgpProcess.getRouterId(), false));
+          convertGeneratedRouteToBgp(
+              (GeneratedRoute) route,
+              _fromBgpProcess.getRouterId(),
+              _fromNeighbor.getLocalIp(),
+              false),
+          Type.IPV4_UNICAST);
     } else if (route instanceof Bgpv4Route) {
       return BgpProtocolHelper.transformBgpRoutePreExport(
           _fromNeighbor,
@@ -127,7 +136,8 @@ public final class BgpProtocolHelperTransformBgpRouteOnExportTest {
           _sessionProperties,
           _fromBgpProcess,
           _toBgpProcess,
-          (Bgpv4Route) route);
+          (Bgpv4Route) route,
+          Type.IPV4_UNICAST);
     } else {
       RoutingProtocol protocol =
           _sessionProperties.isEbgp() ? RoutingProtocol.BGP : RoutingProtocol.IBGP;
@@ -143,7 +153,8 @@ public final class BgpProtocolHelperTransformBgpRouteOnExportTest {
                   _sessionProperties.getTailIp(),
                   protocol.getDefaultAdministrativeCost(ConfigurationFormat.CISCO_IOS),
                   protocol)
-              .build());
+              .build(),
+          Type.IPV4_UNICAST);
     }
   }
 
@@ -152,7 +163,8 @@ public final class BgpProtocolHelperTransformBgpRouteOnExportTest {
    * and the class variables representing the BGP session.
    */
   private void runTransformBgpRoutePostExport(Bgpv4Route.Builder routeBuilder) {
-    BgpProtocolHelper.transformBgpRoutePostExport(routeBuilder, _fromNeighbor, _sessionProperties);
+    BgpProtocolHelper.transformBgpRoutePostExport(
+        routeBuilder, _sessionProperties.isEbgp(), _fromNeighbor.getLocalAs());
   }
 
   /**
@@ -166,6 +178,14 @@ public final class BgpProtocolHelperTransformBgpRouteOnExportTest {
       assertThat(runTransformBgpRoutePreExport(_baseAggRouteBuilder.build()), not(nullValue()));
       assertThat(runTransformBgpRoutePreExport(_baseBgpRouteBuilder.build()), not(nullValue()));
     }
+  }
+
+  @Test
+  public void testConvertGeneratedToBgpHasNextHop() {
+    Ip nextHopIp = Ip.parse("1.1.1.1");
+    assertThat(
+        convertGeneratedRouteToBgp(_baseAggRouteBuilder.build(), Ip.ZERO, nextHopIp, false),
+        hasNextHopIp(nextHopIp));
   }
 
   /**
@@ -189,7 +209,11 @@ public final class BgpProtocolHelperTransformBgpRouteOnExportTest {
       // Now set sendCommunity and make sure communities appear in transformed routes.
       _fromNeighbor =
           _nf.bgpNeighborBuilder()
-              .setSendCommunity(true)
+              .setIpv4UnicastAddressFamily(
+                  Ipv4UnicastAddressFamily.builder()
+                      .setAddressFamilyCapabilities(
+                          AddressFamilyCapabilities.builder().setSendCommunity(true).build())
+                      .build())
               .setLocalAs(AS1)
               .setRemoteAsns(_fromNeighbor.getRemoteAsns())
               .build();
@@ -320,5 +344,25 @@ public final class BgpProtocolHelperTransformBgpRouteOnExportTest {
     setUpPeers(false);
     transformedBgpRoute = runTransformBgpRoutePreExport(bgpv4Route);
     assertThat(transformedBgpRoute.getWeight(), equalTo(0));
+  }
+
+  @Test
+  public void testNonBgpToBgpKeepTag() {
+    int tag = 100;
+    setUpPeers(false);
+    assertThat(
+        convertNonBgpRouteToBgpRoute(
+                StaticRoute.builder()
+                    .setNetwork(Prefix.ZERO)
+                    .setNextHopInterface("foo")
+                    .setAdministrativeCost(1)
+                    .setTag(tag)
+                    .build(),
+                _fromBgpProcess.getRouterId(),
+                _sessionProperties.getTailIp(),
+                170,
+                RoutingProtocol.BGP)
+            .getTag(),
+        equalTo(tag));
   }
 }

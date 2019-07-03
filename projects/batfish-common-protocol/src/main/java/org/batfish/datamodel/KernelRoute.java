@@ -44,8 +44,6 @@ public final class KernelRoute extends AbstractRoute implements Comparable<Kerne
     }
   }
 
-  private static final long serialVersionUID = 1L;
-
   public static Builder builder() {
     return new Builder();
   }

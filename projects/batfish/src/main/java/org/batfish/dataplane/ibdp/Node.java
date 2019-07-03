@@ -12,8 +12,6 @@ import org.batfish.dataplane.rib.Rib;
 /** Dataplane-specific encapsulation of {@link Configuration} */
 public final class Node implements Serializable {
 
-  private static final long serialVersionUID = 1L;
-
   private final Configuration _c;
 
   private final SortedMap<String, VirtualRouter> _virtualRouters;

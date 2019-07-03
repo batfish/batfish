@@ -92,7 +92,7 @@ public class BatfishTest {
       };
 
   @Test
-  public void testAnswerBadQuestion() throws IOException {
+  public void testAnswerBadQuestion() {
     // missing class field
     Batfish batfish =
         BatfishTestUtils.getBatfish(
@@ -215,10 +215,7 @@ public class BatfishTest {
         BatfishTestUtils.getBatfishFromTestrigText(testrigTextBuilder.build(), _folder);
 
     assertThat(
-        batfish
-            .getTopologyProvider()
-            .getInitialRawLayer3Topology(batfish.getNetworkSnapshot())
-            .getEdges(),
+        batfish.getTopologyProvider().getRawLayer3Topology(batfish.getNetworkSnapshot()).getEdges(),
         containsInAnyOrder(Edge.of("c1", "i1", "c2", "i2"), Edge.of("c2", "i2", "c1", "i1")));
   }
 
@@ -487,7 +484,7 @@ public class BatfishTest {
             new TestStorageProvider() {
               @Override
               public String loadQuestionSettings(
-                  NetworkId network, QuestionSettingsId questionSettingsId) throws IOException {
+                  NetworkId network, QuestionSettingsId questionSettingsId) {
                 return questionSettings;
               }
             },
@@ -514,7 +511,7 @@ public class BatfishTest {
             new TestStorageProvider() {
               @Override
               public String loadQuestionSettings(
-                  NetworkId networkId, QuestionSettingsId questionSettingsId) throws IOException {
+                  NetworkId networkId, QuestionSettingsId questionSettingsId) {
                 return null;
               }
             },

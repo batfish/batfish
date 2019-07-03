@@ -76,8 +76,6 @@ public class IsisInterfaceLevelSettings implements Serializable {
   private static final String PROP_HOLD_TIME = "holdTime";
   private static final String PROP_MODE = "mode";
 
-  private static final long serialVersionUID = 1L;
-
   public static Builder builder() {
     return new Builder();
   }

@@ -73,7 +73,7 @@ public class BgpProcessConfigurationAnswerer extends Answerer {
     if (dhints != null && dhints.getTextDesc() != null) {
       textDesc = dhints.getTextDesc();
     }
-    return new TableMetadata(createColumnMetadata(question.getProperties()), textDesc);
+    return new TableMetadata(createColumnMetadata(question.getPropertySpecifier()), textDesc);
   }
 
   @Override
@@ -85,7 +85,7 @@ public class BgpProcessConfigurationAnswerer extends Answerer {
 
     Multiset<Row> propertyRows =
         getProperties(
-            question.getProperties(),
+            question.getPropertySpecifier(),
             _batfish.specifierContext(),
             question.getNodeSpecifier(),
             tableMetadata.toColumnMap());

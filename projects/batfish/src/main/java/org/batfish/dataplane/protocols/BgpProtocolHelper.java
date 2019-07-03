@@ -23,6 +23,8 @@ import org.batfish.datamodel.OriginType;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.Route;
 import org.batfish.datamodel.RoutingProtocol;
+import org.batfish.datamodel.bgp.AddressFamily;
+import org.batfish.datamodel.bgp.AddressFamily.Type;
 import org.batfish.datamodel.bgp.community.Community;
 import org.batfish.datamodel.bgp.community.StandardCommunity;
 
@@ -37,6 +39,7 @@ public final class BgpProtocolHelper {
    * @param toNeighbor {@link BgpPeerConfig} to which to export {@code route}
    * @param sessionProperties {@link BgpSessionProperties} representing the <em>incoming</em> edge:
    *     i.e. the edge from {@code toNeighbor} to {@code fromNeighbor}
+   * @param afType {@link AddressFamily.Type} the address family for which to look up the settings
    */
   @Nullable
   public static <R extends BgpRoute<B, R>, B extends BgpRoute.Builder<B, R>>
@@ -46,7 +49,8 @@ public final class BgpProtocolHelper {
           BgpSessionProperties sessionProperties,
           BgpProcess fromBgpProcess,
           BgpProcess toBgpProcess,
-          BgpRoute<B, R> route) {
+          BgpRoute<B, R> route,
+          Type afType) {
 
     // Make a new builder
     B builder = route.toBuilder();
@@ -78,17 +82,18 @@ public final class BgpProtocolHelper {
         !sessionProperties.isEbgp() && toNeighbor.getRouteReflectorClient());
 
     SortedSet<Community> communities = route.getCommunities();
+    AddressFamily af = fromNeighbor.getAddressFamily(afType);
     // Do not export route if it has NO_ADVERTISE community, or if its AS path contains the remote
     // peer's AS and local peer has not set getAllowRemoteOut
     if (communities.contains(StandardCommunity.of(WellKnownCommunity.NO_ADVERTISE))
         || (sessionProperties.isEbgp()
             && route.getAsPath().containsAs(toNeighbor.getLocalAs())
-            && !fromNeighbor.getAllowRemoteAsOut())) {
+            && !af.getAddressFamilyCapabilities().getAllowRemoteAsOut())) {
       return null;
     }
 
     // Set transformed route's communities
-    if (fromNeighbor.getSendCommunity()) {
+    if (af.getAddressFamilyCapabilities().getSendCommunity()) {
       builder.addCommunities(communities);
     } else {
       builder.setCommunities(ImmutableSet.of());
@@ -218,7 +223,7 @@ public final class BgpProtocolHelper {
    */
   @Nonnull
   public static Bgpv4Route convertGeneratedRouteToBgp(
-      GeneratedRoute generatedRoute, Ip routerId, boolean nonRouting) {
+      GeneratedRoute generatedRoute, Ip routerId, Ip nextHopIp, boolean nonRouting) {
     return Bgpv4Route.builder()
         .setAdmin(generatedRoute.getAdministrativeCost())
         .setAsPath(generatedRoute.getAsPath())
@@ -226,6 +231,7 @@ public final class BgpProtocolHelper {
         .setMetric(generatedRoute.getMetric())
         .setSrcProtocol(RoutingProtocol.AGGREGATE)
         .setProtocol(RoutingProtocol.AGGREGATE)
+        .setNextHopIp(nextHopIp)
         .setNetwork(generatedRoute.getNetwork())
         .setLocalPreference(Bgpv4Route.DEFAULT_LOCAL_PREFERENCE)
         /*
@@ -246,8 +252,8 @@ public final class BgpProtocolHelper {
    * <p>Intended for converting main RIB routes into their BGP equivalents before passing {@code
    * routeDecorator} to the export policy
    *
-   * <p>The builder returned will will have default local preference, incomplete origin type, and
-   * most other fields unset.
+   * <p>The builder returned will have default local preference, incomplete origin type, and most
+   * other fields unset.
    */
   @Nonnull
   public static Bgpv4Route.Builder convertNonBgpRouteToBgpRoute(
@@ -269,26 +275,27 @@ public final class BgpProtocolHelper {
         // TODO: support customization of route preference
         .setLocalPreference(BgpRoute.DEFAULT_LOCAL_PREFERENCE)
         .setReceivedFromIp(protocol == RoutingProtocol.BGP ? nextHopIp : Ip.ZERO)
-        .setNextHopIp(nextHopIp);
+        .setNextHopIp(nextHopIp)
+        .setTag(routeDecorator.getAbstractRoute().getTag());
     // Let everything else default to unset/empty/etc.
   }
 
   /**
-   * Perform BGP export transformations on a given route when sending an advertisement from {@code
-   * fromNeighbor} to {@code toNeighbor} after export policy as applied and route is accepted, but
-   * before route is sent onto the wire.
+   * Perform BGP export transformations on a given route <em>after</em> export policy has been
+   * applied to the route, route was accepted, but before route is sent "onto the wire".
    */
   public static <R extends BgpRoute<B, R>, B extends BgpRoute.Builder<B, R>>
-      void transformBgpRoutePostExport(
-          B routeBuilder, BgpPeerConfig fromNeighbor, BgpSessionProperties sessionProperties) {
-    if (sessionProperties.isEbgp()) {
+      void transformBgpRoutePostExport(B routeBuilder, boolean isEbgp, long localAs) {
+    if (isEbgp) {
       // if eBGP, prepend as-path sender's as-path number
       routeBuilder.setAsPath(
           AsPath.of(
               ImmutableList.<AsSet>builder()
-                  .add(AsSet.of(fromNeighbor.getLocalAs()))
+                  .add(AsSet.of(localAs))
                   .addAll(routeBuilder.getAsPath().getAsSets())
                   .build()));
+      // Tags are non-transitive
+      routeBuilder.setTag(null);
     }
   }
 

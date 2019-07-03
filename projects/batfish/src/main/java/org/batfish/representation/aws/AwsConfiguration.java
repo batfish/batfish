@@ -18,8 +18,6 @@ public class AwsConfiguration implements Serializable, GenericConfigObject {
 
   private static final long INITIAL_GENERATED_IP = Ip.FIRST_CLASS_E_EXPERIMENTAL_IP.asLong();
 
-  private static final long serialVersionUID = 1L;
-
   private Map<String, Configuration> _configurationNodes = new HashMap<>();
 
   private AtomicLong _currentGeneratedIpAsLong;

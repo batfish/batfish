@@ -93,7 +93,7 @@ public class ReferenceBookResourceTest extends WorkMgrServiceV2TestBase {
   }
 
   @Test
-  public void testPutReferenceBookMissingNetwork() throws IOException {
+  public void testPutReferenceBookMissingNetwork() {
     String network = "network1";
     String bookName = "book1";
 

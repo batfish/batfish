@@ -23,6 +23,7 @@ import static org.junit.Assert.assertThat;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Range;
+import com.google.common.collect.Sets;
 import com.google.common.testing.EqualsTester;
 import java.io.IOException;
 import java.util.Collections;
@@ -419,6 +420,18 @@ public class PacketHeaderConstraintsTest {
     thrown.expect(IllegalArgumentException.class);
     // quoted values in a non-json list
     parseIpProtocols(BatfishObjectMapper.mapper().readValue("\"\\\"TCP\\\"\"", JsonNode.class));
+  }
+
+  @Test
+  public void testParseIpProtocolsNegation() throws IOException {
+    Set<IpProtocol> ipProtocols =
+        parseIpProtocols(BatfishObjectMapper.mapper().readValue("\"!ICMP\"", JsonNode.class));
+    assertThat(
+        ipProtocols,
+        equalTo(
+            Sets.difference(
+                ImmutableSet.copyOf(IpProtocol.values()),
+                ImmutableSet.of(IpProtocol.IP, IpProtocol.ICMP))));
   }
 
   @Test

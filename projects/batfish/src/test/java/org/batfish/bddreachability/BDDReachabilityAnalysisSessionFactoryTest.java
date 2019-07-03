@@ -1,9 +1,8 @@
 package org.batfish.bddreachability;
 
+import static org.batfish.bddreachability.BDDFirewallSessionTraceInfoMatchers.hasAction;
 import static org.batfish.bddreachability.BDDFirewallSessionTraceInfoMatchers.hasHostname;
 import static org.batfish.bddreachability.BDDFirewallSessionTraceInfoMatchers.hasIncomingInterfaces;
-import static org.batfish.bddreachability.BDDFirewallSessionTraceInfoMatchers.hasNextHop;
-import static org.batfish.bddreachability.BDDFirewallSessionTraceInfoMatchers.hasOutgoingInterface;
 import static org.batfish.bddreachability.BDDFirewallSessionTraceInfoMatchers.hasSessionFlows;
 import static org.batfish.bddreachability.BDDFirewallSessionTraceInfoMatchers.hasTransformation;
 import static org.batfish.bddreachability.BDDReachabilityAnalysisSessionFactory.computeInitializedSesssions;
@@ -16,7 +15,6 @@ import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.hasSize;
-import static org.hamcrest.Matchers.nullValue;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -43,6 +41,8 @@ import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.collections.NodeInterfacePair;
+import org.batfish.datamodel.flow.Accept;
+import org.batfish.datamodel.flow.ForwardOutInterface;
 import org.batfish.symbolic.state.OriginateVrf;
 import org.batfish.symbolic.state.PreInInterface;
 import org.batfish.symbolic.state.PreOutEdgePostNat;
@@ -181,7 +181,7 @@ public class BDDReachabilityAnalysisSessionFactoryTest {
 
       // Create sessions for flows exiting FW:I3
       fwi3.setFirewallSessionInterfaceInfo(
-          new FirewallSessionInterfaceInfo(ImmutableSet.of(FWI3), null, null));
+          new FirewallSessionInterfaceInfo(false, ImmutableSet.of(FWI3), null, null));
     }
 
     _configs = ImmutableMap.of(FW, fw, R1, r1, R2, r2, R3, r3);
@@ -189,7 +189,7 @@ public class BDDReachabilityAnalysisSessionFactoryTest {
 
     // temporarily add a FirewallSessionInterfaceInfo to FW to force its last hops to be tracked
     fwi1.setFirewallSessionInterfaceInfo(
-        new FirewallSessionInterfaceInfo(ImmutableList.of(FWI2), null, null));
+        new FirewallSessionInterfaceInfo(false, ImmutableList.of(FWI2), null, null));
     Set<org.batfish.datamodel.Edge> edges =
         ImmutableSet.of(
             // R1:I1 -- FW:I1
@@ -304,8 +304,8 @@ public class BDDReachabilityAnalysisSessionFactoryTest {
 
     assertThat(fwSession, hasHostname(FW));
     assertThat(fwSession, hasIncomingInterfaces(contains(FWI3)));
-    assertThat(fwSession, hasNextHop(new NodeInterfacePair(R1, R1I1)));
-    assertThat(fwSession, hasOutgoingInterface(FWI1));
+    assertThat(
+        fwSession, hasAction(new ForwardOutInterface(FWI1, new NodeInterfacePair(R1, R1I1))));
     assertThat(fwSession, hasSessionFlows(sessionFlows));
     assertThat(fwSession, hasTransformation(_fwI3ToI1ReverseTransformation));
   }
@@ -386,8 +386,7 @@ public class BDDReachabilityAnalysisSessionFactoryTest {
                 // R1:I1 -> FW:I1
                 hasHostname(FW),
                 hasIncomingInterfaces(contains(FWI3)),
-                hasNextHop(NEXT_HOP_R1I1),
-                hasOutgoingInterface(FWI1),
+                hasAction(new ForwardOutInterface(FWI1, NEXT_HOP_R1I1)),
                 hasSessionFlows(r1I1SessionFlows),
                 hasTransformation(
                     compose(
@@ -399,8 +398,7 @@ public class BDDReachabilityAnalysisSessionFactoryTest {
                 // R2:I1 -> FW:I1
                 hasHostname(FW),
                 hasIncomingInterfaces(contains(FWI3)),
-                hasNextHop(new NodeInterfacePair(R2, R2I1)),
-                hasOutgoingInterface(FWI1),
+                hasAction(new ForwardOutInterface(FWI1, new NodeInterfacePair(R2, R2I1))),
                 hasSessionFlows(r2I1SessionFlows),
                 hasTransformation(
                     compose(
@@ -466,16 +464,14 @@ public class BDDReachabilityAnalysisSessionFactoryTest {
                 // R1:I1 -> FW:I1
                 hasHostname(FW),
                 hasIncomingInterfaces(contains(FWI3)),
-                hasNextHop(new NodeInterfacePair(R1, R1I1)),
-                hasOutgoingInterface(FWI1),
+                hasAction(new ForwardOutInterface(FWI1, new NodeInterfacePair(R1, R1I1))),
                 hasSessionFlows(r1I1SessionFlows),
                 hasTransformation(_fwI3ToI1ReverseTransformation)),
             allOf(
                 // R3:I1 -> FW:I2
                 hasHostname(FW),
                 hasIncomingInterfaces(contains(FWI3)),
-                hasNextHop(new NodeInterfacePair(R3, R3I1)),
-                hasOutgoingInterface(FWI2),
+                hasAction(new ForwardOutInterface(FWI2, new NodeInterfacePair(R3, R3I1))),
                 hasSessionFlows(r3I1SessionFlows),
                 hasTransformation(_fwI3ToI2ReverseTransformation))));
   }
@@ -506,8 +502,7 @@ public class BDDReachabilityAnalysisSessionFactoryTest {
 
     assertThat(fwSession, hasHostname(FW));
     assertThat(fwSession, hasIncomingInterfaces(contains(FWI3)));
-    assertThat(fwSession, hasNextHop(nullValue()));
-    assertThat(fwSession, hasOutgoingInterface(nullValue()));
+    assertThat(fwSession, hasAction(Accept.INSTANCE));
     assertThat(fwSession, hasSessionFlows(sessionFlows));
     assertThat(fwSession, hasTransformation(FWI3_REVERSE_TRANSFORMATION));
   }
@@ -541,8 +536,7 @@ public class BDDReachabilityAnalysisSessionFactoryTest {
 
     assertThat(fwSession, hasHostname(FW));
     assertThat(fwSession, hasIncomingInterfaces(contains(FWI3)));
-    assertThat(fwSession, hasNextHop(nullValue()));
-    assertThat(fwSession, hasOutgoingInterface(FWI1));
+    assertThat(fwSession, hasAction(new ForwardOutInterface(FWI1, null)));
     assertThat(fwSession, hasSessionFlows(sessionFlows));
     assertThat(fwSession, hasTransformation(_fwI3ToI1ReverseTransformation));
   }

@@ -9,6 +9,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Supplier;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Iterables;
 import java.io.Serializable;
 import java.util.Objects;
 import java.util.Set;
@@ -23,10 +24,10 @@ public class BgpProcess implements Serializable {
 
   public static class Builder extends NetworkFactoryBuilder<BgpProcess> {
 
-    private Integer _ebgpAdminCost;
-    private Integer _ibgpAdminCost;
-    private Ip _routerId;
-    private Vrf _vrf;
+    @Nullable private Integer _ebgpAdminCost;
+    @Nullable private Integer _ibgpAdminCost;
+    @Nullable private Ip _routerId;
+    @Nullable private Vrf _vrf;
 
     private Builder(@Nullable NetworkFactory networkFactory) {
       super(networkFactory, BgpProcess.class);
@@ -48,26 +49,31 @@ public class BgpProcess implements Serializable {
      * Sets {@link #setEbgpAdminCost(int) ebgpAdminCost} and {@link #setIbgpAdminCost(int)
      * ibgpAdminCost} to default BGP administrative costs for the given {@link ConfigurationFormat}.
      */
+    @Nonnull
     public Builder setAdminCostsToVendorDefaults(@Nonnull ConfigurationFormat format) {
       return setEbgpAdminCost(RoutingProtocol.BGP.getDefaultAdministrativeCost(format))
           .setIbgpAdminCost(RoutingProtocol.IBGP.getDefaultAdministrativeCost(format));
     }
 
+    @Nonnull
     public Builder setEbgpAdminCost(int ebgpAdminCost) {
       _ebgpAdminCost = ebgpAdminCost;
       return this;
     }
 
+    @Nonnull
     public Builder setIbgpAdminCost(int ibgpAdminCost) {
       _ibgpAdminCost = ibgpAdminCost;
       return this;
     }
 
+    @Nonnull
     public Builder setRouterId(Ip routerId) {
       _routerId = routerId;
       return this;
     }
 
+    @Nonnull
     public Builder setVrf(Vrf vrf) {
       _vrf = vrf;
       return this;
@@ -75,7 +81,6 @@ public class BgpProcess implements Serializable {
   }
 
   private class ClusterIdsSupplier implements Serializable, Supplier<Set<Long>> {
-    private static final long serialVersionUID = 1L;
 
     @Override
     public Set<Long> get() {
@@ -97,8 +102,6 @@ public class BgpProcess implements Serializable {
   private static final String PROP_ACTIVE_NEIGHBORS = "neighbors";
   private static final String PROP_ROUTER_ID = "routerId";
   private static final String PROP_TIE_BREAKER = "tieBreaker";
-
-  private static final long serialVersionUID = 1L;
 
   private final int _ebgpAdminCost;
   private final int _ibgpAdminCost;
@@ -226,14 +229,12 @@ public class BgpProcess implements Serializable {
 
   /** Returns the admin cost for eBGP routes in this process */
   @JsonProperty(PROP_EBGP_ADMIN_COST)
-  @Nonnull
   private int getEbgpAdminCost() {
     return _ebgpAdminCost;
   }
 
   /** Returns the admin cost for iBGP routes in this process */
   @JsonProperty(PROP_IBGP_ADMIN_COST)
-  @Nonnull
   private int getIbgpAdminCost() {
     return _ibgpAdminCost;
   }
@@ -285,6 +286,16 @@ public class BgpProcess implements Serializable {
   @JsonProperty(PROP_TIE_BREAKER)
   public BgpTieBreaker getTieBreaker() {
     return _tieBreaker;
+  }
+
+  /**
+   * Return an iterable over all types of {@link BgpPeerConfig peer configurations} defined for this
+   * process
+   */
+  @JsonIgnore
+  public Iterable<BgpPeerConfig> getAllPeerConfigs() {
+    return Iterables.concat(
+        _activeNeighbors.values(), _passiveNeighbors.values(), _interfaceNeighbors.values());
   }
 
   @JsonProperty(PROP_INTERFACE_NEIGHBORS)

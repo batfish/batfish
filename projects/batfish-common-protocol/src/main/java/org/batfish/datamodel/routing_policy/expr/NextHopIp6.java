@@ -5,8 +5,6 @@ import org.batfish.datamodel.routing_policy.Environment;
 
 public class NextHopIp6 extends Ip6Expr {
 
-  private static final long serialVersionUID = 1L;
-
   @Override
   public boolean equals(Object obj) {
     if (this == obj) {

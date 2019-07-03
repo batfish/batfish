@@ -50,11 +50,11 @@ public class InterfacePropertiesAnswererTest {
   public void getProperties() {
     Configuration conf1 = new Configuration("node1", ConfigurationFormat.CISCO_IOS);
 
-    Interface iface1 = new Interface("iface1", conf1);
+    Interface iface1 = Interface.builder().setName("iface1").setOwner(conf1).build();
     iface1.setDescription("desc desc desc");
     iface1.setActive(false);
 
-    Interface iface2 = new Interface("iface2", conf1);
+    Interface iface2 = Interface.builder().setName("iface2").setOwner(conf1).build();
     iface2.setDescription("blah blah blah");
 
     conf1.getAllInterfaces().putAll(ImmutableMap.of("iface1", iface1, "iface2", iface2));
@@ -98,7 +98,8 @@ public class InterfacePropertiesAnswererTest {
     conf.getAllInterfaces().putAll(ImmutableMap.of("active", active, "shut", shut));
 
     String property = InterfacePropertySpecifier.DESCRIPTION;
-    InterfacePropertySpecifier propertySpecifier = new InterfacePropertySpecifier(property);
+    InterfacePropertySpecifier propertySpecifier =
+        new InterfacePropertySpecifier(ImmutableSet.of(property));
 
     MockSpecifierContext ctxt =
         MockSpecifierContext.builder().setConfigs(ImmutableMap.of("node", conf)).build();
@@ -129,7 +130,8 @@ public class InterfacePropertiesAnswererTest {
     MockSpecifierContext ctxt =
         MockSpecifierContext.builder().setConfigs(ImmutableMap.of(HOSTNAME, _c)).build();
 
-    InterfacePropertySpecifier propertySpecifier = new InterfacePropertySpecifier(property);
+    InterfacePropertySpecifier propertySpecifier =
+        new InterfacePropertySpecifier(ImmutableSet.of(property));
     return InterfacePropertiesAnswerer.getProperties(
         propertySpecifier,
         ctxt,

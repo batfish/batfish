@@ -7,8 +7,6 @@ import org.batfish.datamodel.IpAccessListLine;
 
 public class FwFromHostService implements Serializable {
 
-  private static final long serialVersionUID = 1L;
-
   private final HostSystemService _service;
 
   public FwFromHostService(HostSystemService service) {

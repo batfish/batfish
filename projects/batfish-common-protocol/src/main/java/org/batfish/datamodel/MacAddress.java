@@ -19,7 +19,6 @@ public class MacAddress implements Comparable<MacAddress>, Serializable {
   private static final Pattern PATTERN =
       Pattern.compile(
           "^[0-9A-Fa-f][0-9A-Fa-f]:[0-9A-Fa-f][0-9A-Fa-f]:[0-9A-Fa-f][0-9A-Fa-f]:[0-9A-Fa-f][0-9A-Fa-f]:[0-9A-Fa-f][0-9A-Fa-f]:[0-9A-Fa-f][0-9A-Fa-f]$");
-  private static final long serialVersionUID = 1L;
 
   @VisibleForTesting
   static @Nonnull String asMacAddressString(long longVal) {

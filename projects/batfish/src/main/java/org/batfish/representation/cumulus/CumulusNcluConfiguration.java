@@ -4,6 +4,7 @@ import static com.google.common.base.MoreObjects.firstNonNull;
 import static java.util.Comparator.naturalOrder;
 import static org.batfish.datamodel.MultipathEquivalentAsPathMatchMode.EXACT_PATH;
 import static org.batfish.datamodel.bgp.VniConfig.importRtPatternForAnyAs;
+import static org.batfish.representation.cumulus.BgpProcess.BGP_UNNUMBERED_IP;
 import static org.batfish.representation.cumulus.CumulusRoutingProtocol.VI_PROTOCOLS_MAP;
 
 import com.google.common.annotations.VisibleForTesting;
@@ -25,7 +26,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Set;
-import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
@@ -36,7 +36,6 @@ import org.batfish.common.util.CommonUtil;
 import org.batfish.datamodel.BgpPeerConfig;
 import org.batfish.datamodel.BgpUnnumberedPeerConfig;
 import org.batfish.datamodel.BumTransportMethod;
-import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.IntegerSpace;
@@ -47,6 +46,7 @@ import org.batfish.datamodel.InterfaceType;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Ip6;
 import org.batfish.datamodel.LineAction;
+import org.batfish.datamodel.LinkLocalAddress;
 import org.batfish.datamodel.LongSpace;
 import org.batfish.datamodel.Mlag;
 import org.batfish.datamodel.NamedPort;
@@ -56,6 +56,7 @@ import org.batfish.datamodel.PrefixSpace;
 import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.SwitchportMode;
 import org.batfish.datamodel.VniSettings;
+import org.batfish.datamodel.bgp.AddressFamilyCapabilities;
 import org.batfish.datamodel.bgp.EvpnAddressFamily;
 import org.batfish.datamodel.bgp.Ipv4UnicastAddressFamily;
 import org.batfish.datamodel.bgp.Layer2VniConfig;
@@ -96,8 +97,12 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
   public static final int DEFAULT_STATIC_ROUTE_ADMINISTRATIVE_DISTANCE = 1;
   public static final int DEFAULT_STATIC_ROUTE_METRIC = 0;
   public static final String LOOPBACK_INTERFACE_NAME = "lo";
-  private static final long serialVersionUID = 1L;
-  private static final int LINK_LOCAL_NETWORK_BITS = 16;
+
+  private static final Ip CLAG_LINK_LOCAL_IP = Ip.parse("169.254.40.94");
+  /**
+   * Conversion factor for interface speed units. In the config Mbps are used, VI model expects bps
+   */
+  private static final double SPEED_CONVERSION_FACTOR = 10e6;
 
   private static WithEnvironmentExpr bgpRedistributeWithEnvironmentExpr(
       BooleanExpr expr, OriginType originType) {
@@ -140,8 +145,7 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
   private final @Nonnull Map<String, Vxlan> _vxlans;
 
   @Nonnull
-  private static final AtomicLong _linkLocalAddress =
-      new AtomicLong(Ip.parse("169.254.0.1").asLong());
+  private static final LinkLocalAddress LINK_LOCAL_ADDRESS = LinkLocalAddress.of(BGP_UNNUMBERED_IP);
 
   public CumulusNcluConfiguration() {
     _bonds = new HashMap<>();
@@ -158,7 +162,6 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
   }
 
   private void addInterfaceNeighbor(
-      String peerInterface,
       BgpInterfaceNeighbor neighbor,
       @Nullable Long localAs,
       BgpVrf bgpVrf,
@@ -168,7 +171,7 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
     RoutingPolicy.Builder peerExportPolicy =
         RoutingPolicy.builder()
             .setOwner(_c)
-            .setName(computeBgpPeerExportPolicyName(vrfName, peerInterface));
+            .setName(computeBgpPeerExportPolicyName(vrfName, neighbor.getName()));
 
     Conjunction peerExportConditions = new Conjunction();
     If peerExportConditional =
@@ -184,20 +187,30 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
         .getDisjuncts()
         .add(new CallExpr(computeBgpCommonExportPolicyName(vrfName)));
 
+    RoutingPolicy routingPolicy = peerExportPolicy.build();
     BgpUnnumberedPeerConfig.Builder builder =
         BgpUnnumberedPeerConfig.builder()
             .setBgpProcess(newProc)
-            .setExportPolicy(peerExportPolicy.build().getName())
+            .setDescription(neighbor.getDescription())
+            .setGroup(neighbor.getPeerGroup())
             .setLocalAs(localAs)
-            .setLocalIp(_c.getAllInterfaces().get(peerInterface).getConcreteAddress().getIp())
-            .setPeerInterface(peerInterface)
+            .setLocalIp(BGP_UNNUMBERED_IP)
+            .setPeerInterface(neighbor.getName())
             .setRemoteAsns(computeRemoteAsns(neighbor, localAs))
-            .setSendCommunity(true);
-    builder.setIpv4UnicastAddressFamily(Ipv4UnicastAddressFamily.instance());
+            .setIpv4UnicastAddressFamily(
+                Ipv4UnicastAddressFamily.builder()
+                    .setAddressFamilyCapabilities(
+                        AddressFamilyCapabilities.builder().setSendCommunity(true).build())
+                    .setExportPolicy(routingPolicy.getName())
+                    .build());
 
     BgpL2vpnEvpnAddressFamily evpnConfig = bgpVrf.getL2VpnEvpn();
     // sadly, we allow localAs == null in VI datamodel above
-    if (evpnConfig != null && localAs != null) {
+    if (evpnConfig != null
+        && localAs != null
+        && neighbor.getL2vpnEvpnAddressFamily() != null
+        // l2vpn evpn AF must be explicitly activated for neighbor
+        && firstNonNull(neighbor.getL2vpnEvpnAddressFamily().getActivated(), Boolean.FALSE)) {
       ImmutableSet.Builder<Layer2VniConfig> l2Vnis = ImmutableSet.builder();
       ImmutableSet.Builder<Layer3VniConfig> l3Vnis = ImmutableSet.builder();
       ImmutableMap.Builder<Integer, Integer> vniToIndexBuilder = ImmutableMap.builder();
@@ -217,7 +230,7 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
         for (VniSettings vxlan : _c.getVrfs().get(bgpVrf.getVrfName()).getVniSettings().values()) {
           RouteDistinguisher rd =
               RouteDistinguisher.from(newProc.getRouterId(), vniToIndex.get(vxlan.getVni()));
-          ExtendedCommunity rt = ExtendedCommunity.target(localAs, vxlan.getVni());
+          ExtendedCommunity rt = toRouteTarget(localAs, vxlan.getVni());
           // Advertise L2 VNIs
           l2Vnis.add(
               Layer2VniConfig.builder()
@@ -240,7 +253,7 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
                       RouteDistinguisher.from(
                           _c.getVrfs().get(vrf.getName()).getBgpProcess().getRouterId(),
                           vniToIndex.get(l3Vni));
-                  ExtendedCommunity rt = ExtendedCommunity.target(localAs, l3Vni);
+                  ExtendedCommunity rt = toRouteTarget(localAs, l3Vni);
                   l3Vnis.add(
                       Layer3VniConfig.builder()
                           .setVni(l3Vni)
@@ -253,7 +266,15 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
                 }
               });
 
-      builder.setEvpnAddressFamily(new EvpnAddressFamily(l2Vnis.build(), l3Vnis.build()));
+      builder.setEvpnAddressFamily(
+          EvpnAddressFamily.builder()
+              .setL2Vnis(l2Vnis.build())
+              .setL3Vnis(l3Vnis.build())
+              .setPropagateUnmatched(true)
+              .setAddressFamilyCapabilities(
+                  AddressFamilyCapabilities.builder().setSendCommunity(true).build())
+              .setExportPolicy(routingPolicy.getName())
+              .build());
     }
     builder.build();
   }
@@ -295,12 +316,8 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
     }
     newIface.setAllAddresses(iface.getIpAddresses());
     if (iface.getIpAddresses().isEmpty() && isUsedForBgpUnnumbered(iface.getName())) {
-      ConcreteInterfaceAddress addr =
-          ConcreteInterfaceAddress.create(
-              Ip.create(_linkLocalAddress.getAndIncrement()), LINK_LOCAL_NETWORK_BITS);
-
-      newIface.setAddress(addr);
-      newIface.setAllAddresses(ImmutableSet.of(addr));
+      newIface.setAddress(LINK_LOCAL_ADDRESS);
+      newIface.setAllAddresses(ImmutableSet.of(LINK_LOCAL_ADDRESS));
     }
   }
 
@@ -308,7 +325,7 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
     return _bgpProcess != null
         && Stream.concat(
                 Stream.of(_bgpProcess.getDefaultVrf()), _bgpProcess.getVrfs().values().stream())
-            .flatMap(vrf -> vrf.getInterfaceNeighbors().keySet().stream())
+            .flatMap(vrf -> vrf.getNeighbors().keySet().stream())
             .anyMatch(Predicate.isEqual(ifaceName));
   }
 
@@ -384,15 +401,20 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
             bgpVrf -> {
               Long localAs = bgpVrf.getAutonomousSystem();
               bgpVrf
-                  .getInterfaceNeighbors()
+                  .getNeighbors()
                   .forEach(
-                      (peerInterface, neighbor) ->
-                          addInterfaceNeighbor(
-                              peerInterface,
-                              neighbor,
-                              localAs,
-                              bgpVrf,
-                              _c.getVrfs().get(bgpVrf.getVrfName()).getBgpProcess()));
+                      (neighborName, neighbor) -> {
+                        if (!(neighbor instanceof BgpInterfaceNeighbor)) {
+                          return;
+                        }
+                        BgpInterfaceNeighbor interfaceNeighbor = (BgpInterfaceNeighbor) neighbor;
+                        interfaceNeighbor.inheritFrom(bgpVrf.getNeighbors());
+                        addInterfaceNeighbor(
+                            interfaceNeighbor,
+                            localAs,
+                            bgpVrf,
+                            _c.getVrfs().get(bgpVrf.getVrfName()).getBgpProcess());
+                      });
             });
   }
 
@@ -418,8 +440,17 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
       return;
     }
     Interface clagSourceInterface = clagSourceInterfaces.get(0);
-    Ip peerAddress = clagSourceInterface.getClag().getPeerIp();
     String sourceInterfaceName = clagSourceInterface.getName();
+    Ip peerAddress = clagSourceInterface.getClag().getPeerIp();
+    // Special case link-local addresses when no other addresses are defined
+    org.batfish.datamodel.Interface viInterface = _c.getAllInterfaces().get(sourceInterfaceName);
+    if (peerAddress == null
+        && clagSourceInterface.getClag().isPeerIpLinkLocal()
+        && viInterface.getAllAddresses().isEmpty()) {
+      LinkLocalAddress lla = LinkLocalAddress.of(CLAG_LINK_LOCAL_IP);
+      viInterface.setAddress(lla);
+      viInterface.setAllAddresses(ImmutableSet.of(lla));
+    }
     String peerInterfaceName = clagSourceInterface.getSuperInterfaceName();
     _c.setMlags(
         ImmutableMap.of(
@@ -460,7 +491,11 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
 
   private void convertLoopback() {
     org.batfish.datamodel.Interface newIface =
-        new org.batfish.datamodel.Interface(LOOPBACK_INTERFACE_NAME, _c, InterfaceType.LOOPBACK);
+        org.batfish.datamodel.Interface.builder()
+            .setName(LOOPBACK_INTERFACE_NAME)
+            .setOwner(_c)
+            .setType(InterfaceType.LOOPBACK)
+            .build();
     newIface.setActive(true);
     if (!_loopback.getAddresses().isEmpty()) {
       newIface.setAddress(_loopback.getAddresses().get(0));
@@ -513,7 +548,11 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
 
   private org.batfish.datamodel.Interface convertVrfLoopbackInterface(Vrf vrf) {
     org.batfish.datamodel.Interface newIface =
-        new org.batfish.datamodel.Interface(vrf.getName(), _c, InterfaceType.LOOPBACK);
+        org.batfish.datamodel.Interface.builder()
+            .setName(vrf.getName())
+            .setOwner(_c)
+            .setType(InterfaceType.LOOPBACK)
+            .build();
     newIface.setActive(true);
     if (!vrf.getAddresses().isEmpty()) {
       newIface.setAddress(vrf.getAddresses().get(0));
@@ -854,7 +893,11 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
   private @Nonnull org.batfish.datamodel.Interface toInterface(Bond bond) {
     String name = bond.getName();
     org.batfish.datamodel.Interface newIface =
-        new org.batfish.datamodel.Interface(name, _c, InterfaceType.AGGREGATED);
+        org.batfish.datamodel.Interface.builder()
+            .setName(name)
+            .setOwner(_c)
+            .setType(InterfaceType.AGGREGATED)
+            .build();
 
     bond.getSlaves().forEach(slave -> _c.getAllInterfaces().get(slave).setChannelGroup(name));
     newIface.setChannelGroupMembers(bond.getSlaves());
@@ -879,13 +922,22 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
   private @Nonnull org.batfish.datamodel.Interface toInterface(Interface iface) {
     String name = iface.getName();
     org.batfish.datamodel.Interface newIface =
-        new org.batfish.datamodel.Interface(name, _c, InterfaceType.PHYSICAL);
+        org.batfish.datamodel.Interface.builder()
+            .setName(name)
+            .setOwner(_c)
+            .setType(InterfaceType.PHYSICAL)
+            .build();
     applyCommonInterfaceSettings(iface, newIface);
 
     applyBridgeSettings(iface.getBridge(), newIface);
 
-    // TODO: support explicitly-configured bandwidth
-    newIface.setBandwidth(DEFAULT_PORT_BANDWIDTH);
+    if (iface.getSpeed() != null) {
+      double speed = iface.getSpeed() * SPEED_CONVERSION_FACTOR;
+      newIface.setSpeed(speed);
+      newIface.setBandwidth(speed);
+    } else {
+      newIface.setBandwidth(DEFAULT_PORT_BANDWIDTH);
+    }
 
     return newIface;
   }
@@ -894,7 +946,11 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
       Interface iface, String superInterfaceName) {
     String name = iface.getName();
     org.batfish.datamodel.Interface newIface =
-        new org.batfish.datamodel.Interface(name, _c, InterfaceType.LOGICAL);
+        org.batfish.datamodel.Interface.builder()
+            .setName(name)
+            .setOwner(_c)
+            .setType(InterfaceType.LOGICAL)
+            .build();
     newIface.setDependencies(
         ImmutableSet.of(new Dependency(superInterfaceName, DependencyType.BIND)));
     newIface.setEncapsulationVlan(iface.getEncapsulationVlan());
@@ -904,7 +960,11 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
 
   private org.batfish.datamodel.Interface toInterface(Vlan vlan) {
     org.batfish.datamodel.Interface newIface =
-        new org.batfish.datamodel.Interface(vlan.getName(), _c, InterfaceType.VLAN);
+        org.batfish.datamodel.Interface.builder()
+            .setName(vlan.getName())
+            .setOwner(_c)
+            .setType(InterfaceType.VLAN)
+            .build();
     newIface.setActive(true);
     newIface.setVlan(vlan.getVlanId());
 
@@ -927,6 +987,19 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
         .map(entry -> toRoutingPolicyStatement(entry))
         .forEach(builder::addStatement);
     return builder.addStatement(Statements.ReturnFalse.toStaticStatement()).build();
+  }
+
+  /**
+   * Convert AS number and VXLAN ID to an extended route target community. If the AS number is a
+   * 4-byte as, only the lower 2 bytes are used.
+   *
+   * <p>See <a
+   * href="https://docs.cumulusnetworks.com/display/DOCS/Ethernet+Virtual+Private+Network+-+EVPN#EthernetVirtualPrivateNetwork-EVPN-RD-auto-derivationAuto-derivationofRDsandRTs">
+   * cumulus documentation</a> for detailed explanation.
+   */
+  @Nonnull
+  private ExtendedCommunity toRouteTarget(long asn, long vxlanId) {
+    return ExtendedCommunity.target(asn & 0xFFFFL, vxlanId);
   }
 
   private @Nonnull Statement toRoutingPolicyStatement(RouteMapEntry entry) {

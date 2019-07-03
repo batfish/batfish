@@ -10,8 +10,6 @@ import org.batfish.common.BatfishException;
 
 public final class PrefixRange implements Serializable, Comparable<PrefixRange> {
 
-  private static final long serialVersionUID = 2L;
-
   public PrefixRange(Prefix prefix, SubRange lengthRange) {
     // Canonicalize the prefix by dropping extra bits in the address that are longer than any
     // relevant length.

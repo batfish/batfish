@@ -215,7 +215,7 @@ public final class IntegerSpaceTest {
   }
 
   @Test
-  public void testJavaSerialization() throws IOException {
+  public void testJavaSerialization() {
     assertThat(SerializationUtils.clone(IntegerSpace.PORTS), equalTo(IntegerSpace.PORTS));
   }
 

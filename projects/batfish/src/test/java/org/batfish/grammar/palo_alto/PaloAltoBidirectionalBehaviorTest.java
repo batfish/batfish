@@ -1,5 +1,8 @@
 package org.batfish.grammar.palo_alto;
 
+import static org.batfish.datamodel.FlowDisposition.DELIVERED_TO_SUBNET;
+import static org.batfish.datamodel.FlowDisposition.FAILURE_DISPOSITIONS;
+import static org.batfish.datamodel.FlowDisposition.NO_ROUTE;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.in;
@@ -13,7 +16,6 @@ import javax.annotation.Nonnull;
 import org.batfish.common.plugin.TracerouteEngine;
 import org.batfish.datamodel.DataPlane;
 import org.batfish.datamodel.Flow;
-import org.batfish.datamodel.FlowDisposition;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.NamedPort;
@@ -21,7 +23,6 @@ import org.batfish.datamodel.flow.TraceAndReverseFlow;
 import org.batfish.dataplane.TracerouteEngineImpl;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
-import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -100,7 +101,7 @@ public final class PaloAltoBidirectionalBehaviorTest {
     assertThat(forwardTracesAndReverseFlows, hasSize(1));
     assertThat(
         forwardTracesAndReverseFlows.iterator().next().getTrace().getDisposition(),
-        in(FlowDisposition.FAILURE_DISPOSITIONS));
+        in(FAILURE_DISPOSITIONS));
   }
 
   private void assertBidirAccepted(String hostname) throws IOException {
@@ -121,8 +122,7 @@ public final class PaloAltoBidirectionalBehaviorTest {
 
     TraceAndReverseFlow forwardTrace = forwardTraces.iterator().next();
 
-    assertThat(
-        forwardTrace.getTrace().getDisposition(), equalTo(FlowDisposition.DELIVERED_TO_SUBNET));
+    assertThat(forwardTrace.getTrace().getDisposition(), equalTo(DELIVERED_TO_SUBNET));
 
     Flow reverseFlow = forwardTrace.getReverseFlow();
 
@@ -133,10 +133,8 @@ public final class PaloAltoBidirectionalBehaviorTest {
             .get(reverseFlow);
 
     assertThat(reverseTraces, hasSize(1));
-    // TODO: change expected disposition to DELIVERED_TO_SUBNET after sessions support routing
     assertThat(
-        reverseTraces.iterator().next().getTrace().getDisposition(),
-        equalTo(FlowDisposition.EXITS_NETWORK));
+        reverseTraces.iterator().next().getTrace().getDisposition(), equalTo(DELIVERED_TO_SUBNET));
   }
 
   @Test
@@ -327,7 +325,6 @@ public final class PaloAltoBidirectionalBehaviorTest {
     assertForwardDropped(tracerouteEngine, bidirForwardFlow(hostname, BIDIR_DEFAULT_DST_IP));
   }
 
-  @Ignore
   @Test
   public void testDropIntraVsysNextVrMissingEgress() throws IOException {
     String hostname = "drop-intra-vsys-next-vr-missing-egress";
@@ -343,8 +340,7 @@ public final class PaloAltoBidirectionalBehaviorTest {
     TraceAndReverseFlow forwardTrace = forwardTraces.iterator().next();
 
     // forward flow should be delivered due to static route with next-vr in forward direction
-    assertThat(
-        forwardTrace.getTrace().getDisposition(), equalTo(FlowDisposition.DELIVERED_TO_SUBNET));
+    assertThat(forwardTrace.getTrace().getDisposition(), equalTo(DELIVERED_TO_SUBNET));
 
     Flow reverseFlow = forwardTrace.getReverseFlow();
 
@@ -356,9 +352,7 @@ public final class PaloAltoBidirectionalBehaviorTest {
 
     assertThat(reverseTraces, hasSize(1));
     // reverse flow should be dropped due to missing reverse route
-    assertThat(
-        reverseTraces.iterator().next().getTrace().getDisposition(),
-        equalTo(FlowDisposition.NO_ROUTE));
+    assertThat(reverseTraces.iterator().next().getTrace().getDisposition(), equalTo(NO_ROUTE));
   }
 
   @Test
@@ -369,7 +363,6 @@ public final class PaloAltoBidirectionalBehaviorTest {
     assertForwardDropped(hostname);
   }
 
-  @Ignore
   @Test
   public void testAllowIntraVsysNextVr() throws IOException {
     String hostname = "allow-intra-vsys-next-vr";
@@ -382,7 +375,6 @@ public final class PaloAltoBidirectionalBehaviorTest {
     assertBidirAccepted(hostname);
   }
 
-  @Ignore
   @Test
   public void testAllowVsysToSgNextVr() throws IOException {
     String hostname = "allow-vsys-to-sg-next-vr";
@@ -394,7 +386,6 @@ public final class PaloAltoBidirectionalBehaviorTest {
     assertBidirAccepted(tracerouteEngine, bidirForwardOutsideFlow(hostname));
   }
 
-  @Ignore
   @Test
   public void testAllowInterVsysNextVr() throws IOException {
     String hostname = "allow-inter-vsys-next-vr";

@@ -6,6 +6,7 @@ import static org.junit.Assert.assertThat;
 
 import java.util.ArrayList;
 import java.util.List;
+import javax.annotation.ParametersAreNonnullByDefault;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.batfish.common.ParseTreeSentences;
 import org.batfish.common.util.CommonUtil;
@@ -13,7 +14,18 @@ import org.batfish.grammar.flattener.FlattenerLineMap;
 import org.batfish.grammar.recovery.RecoveryCombinedParser;
 import org.junit.Test;
 
-public class ParseTreePrettyPrinterTest {
+/** Test of {@link ParseTreePrettyPrinter}. */
+@ParametersAreNonnullByDefault
+public final class ParseTreePrettyPrinterTest {
+
+  private static final GrammarSettings SETTINGS =
+      MockGrammarSettings.builder()
+          .setMaxParseTreePrintLength(1000)
+          .setPrintParseTree(true)
+          .setPrintParseTreeLineNums(true)
+          .setThrowOnLexerError(true)
+          .setThrowOnParserError(true)
+          .build();
 
   @Test
   public void testParseTreePrettyPrintWithCharacterLimit() {
@@ -46,8 +58,7 @@ public class ParseTreePrettyPrinterTest {
   @Test
   public void testGetParseTreeSentencesLineNumbers() {
     String configText = CommonUtil.readResource("org/batfish/grammar/line_numbers");
-    GrammarSettings settings = new MockGrammarSettings(false, 0, 0, 1000, true, true, true, true);
-    RecoveryCombinedParser cp = new RecoveryCombinedParser(configText, settings);
+    RecoveryCombinedParser cp = new RecoveryCombinedParser(configText, SETTINGS);
     ParserRuleContext tree = cp.parse();
     ParseTreeSentences ptSentencesLineNums =
         ParseTreePrettyPrinter.getParseTreeSentences(tree, cp, true);
@@ -64,7 +75,6 @@ public class ParseTreePrettyPrinterTest {
   @Test
   public void testGetParseTreeSentencesMappedLineNumbers() {
     String configText = CommonUtil.readResource("org/batfish/grammar/line_numbers");
-    GrammarSettings settings = new MockGrammarSettings(false, 0, 0, 1000, true, true, true, true);
     FlattenerLineMap lineMap = new FlattenerLineMap();
     /* Map words on each line to different original lines */
     /* (first) simple */
@@ -77,7 +87,7 @@ public class ParseTreePrettyPrinterTest {
     lineMap.setOriginalLine(3, 7, 8);
     /* EOF */
     lineMap.setOriginalLine(5, 0, 9);
-    RecoveryCombinedParser cp = new RecoveryCombinedParser(configText, settings, lineMap);
+    RecoveryCombinedParser cp = new RecoveryCombinedParser(configText, SETTINGS, lineMap);
     ParserRuleContext tree = cp.parse();
     ParseTreeSentences ptSentencesLineNums =
         ParseTreePrettyPrinter.getParseTreeSentences(tree, cp, true);

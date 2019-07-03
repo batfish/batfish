@@ -19,13 +19,15 @@ public final class InterfaceClagSettings implements Serializable {
     private @Nullable Ip _backupIp;
     private @Nullable String _backupIpVrf;
     private @Nullable Ip _peerIp;
+    private boolean _peerIpLinkLocal;
     private @Nullable Integer _priority;
     private @Nullable MacAddress _sysMac;
 
     private Builder() {}
 
     public @Nonnull InterfaceClagSettings build() {
-      return new InterfaceClagSettings(_backupIp, _backupIpVrf, _peerIp, _priority, _sysMac);
+      return new InterfaceClagSettings(
+          _backupIp, _backupIpVrf, _peerIp, _peerIpLinkLocal, _priority, _sysMac);
     }
 
     public @Nonnull Builder setBackupIp(@Nullable Ip backupIp) {
@@ -43,6 +45,11 @@ public final class InterfaceClagSettings implements Serializable {
       return this;
     }
 
+    public @Nonnull Builder setPeerLinkLocal(boolean peerIpLinkLocal) {
+      _peerIpLinkLocal = peerIpLinkLocal;
+      return this;
+    }
+
     public @Nonnull Builder setPriority(@Nullable Integer priority) {
       _priority = priority;
       return this;
@@ -57,9 +64,9 @@ public final class InterfaceClagSettings implements Serializable {
   private static final String PROP_BACKUP_IP = "backupIp";
   private static final String PROP_BACKUP_IP_VRF = "backupIpVrf";
   private static final String PROP_PEER_IP = "peerIp";
+  private static final String PROP_PEER_IP_LINK_LOCAL = "peerIpLinkLocal";
   private static final String PROP_PRIORITY = "priority";
   private static final String PROP_SYS_MAC = "sysMac";
-  private static final long serialVersionUID = 1L;
 
   public static @Nonnull Builder builder() {
     return new Builder();
@@ -68,6 +75,7 @@ public final class InterfaceClagSettings implements Serializable {
   private final @Nullable Ip _backupIp;
   private final @Nullable String _backupIpVrf;
   private final @Nullable Ip _peerIp;
+  private final boolean _peerIpLinkLocal;
   private final @Nullable Integer _priority;
   private final @Nullable MacAddress _sysMac;
 
@@ -77,11 +85,13 @@ public final class InterfaceClagSettings implements Serializable {
       @JsonProperty(PROP_BACKUP_IP) @Nullable Ip backupIp,
       @JsonProperty(PROP_BACKUP_IP_VRF) @Nullable String backupIpVrf,
       @JsonProperty(PROP_PEER_IP) @Nullable Ip peerIp,
+      @JsonProperty(PROP_PEER_IP_LINK_LOCAL) boolean peerIpLinkLocal,
       @JsonProperty(PROP_PRIORITY) @Nullable Integer priority,
       @JsonProperty(PROP_SYS_MAC) @Nullable MacAddress sysMac) {
     _backupIp = backupIp;
     _backupIpVrf = backupIpVrf;
     _peerIp = peerIp;
+    _peerIpLinkLocal = peerIpLinkLocal;
     _priority = priority;
     _sysMac = sysMac;
   }
@@ -99,6 +109,11 @@ public final class InterfaceClagSettings implements Serializable {
   @JsonProperty(PROP_PEER_IP)
   public @Nullable Ip getPeerIp() {
     return _peerIp;
+  }
+
+  @JsonProperty(PROP_PEER_IP_LINK_LOCAL)
+  public boolean isPeerIpLinkLocal() {
+    return _peerIpLinkLocal;
   }
 
   @JsonProperty(PROP_PRIORITY)
@@ -123,13 +138,14 @@ public final class InterfaceClagSettings implements Serializable {
     return Objects.equals(_backupIp, rhs._backupIp)
         && Objects.equals(_backupIpVrf, rhs._backupIpVrf)
         && Objects.equals(_peerIp, rhs._peerIp)
+        && _peerIpLinkLocal == rhs._peerIpLinkLocal
         && Objects.equals(_priority, rhs._priority)
         && Objects.equals(_sysMac, rhs._sysMac);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(_backupIp, _backupIpVrf, _peerIp, _priority, _sysMac);
+    return Objects.hash(_backupIp, _backupIpVrf, _peerIp, _peerIpLinkLocal, _priority, _sysMac);
   }
 
   @Override
@@ -139,6 +155,7 @@ public final class InterfaceClagSettings implements Serializable {
         .add(PROP_BACKUP_IP, _backupIp)
         .add(PROP_BACKUP_IP_VRF, _backupIpVrf)
         .add(PROP_PEER_IP, _peerIp)
+        .add(PROP_PEER_IP_LINK_LOCAL, _peerIp)
         .add(PROP_PRIORITY, _priority)
         .add(PROP_SYS_MAC, _sysMac)
         .toString();

@@ -38,7 +38,6 @@ public class CommunityList extends CommunitySetExpr {
 
   private final class CommunityCacheSupplier
       implements Supplier<LoadingCache<Community, Boolean>>, Serializable {
-    private static final long serialVersionUID = 1L;
 
     @Override
     public LoadingCache<Community, Boolean> get() {
@@ -57,8 +56,6 @@ public class CommunityList extends CommunitySetExpr {
   private static final String PROP_INVERT_MATCH = "invertMatch";
   private static final String PROP_LINES = "lines";
   private static final String PROP_NAME = "name";
-
-  private static final long serialVersionUID = 1L;
 
   @JsonCreator
   private static @Nonnull CommunityList create(

@@ -32,7 +32,6 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.not;
 import static org.junit.Assert.assertThat;
 
-import java.io.IOException;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -254,6 +253,18 @@ public class BasicTests extends BDDTestCase {
     return b.hashCode() == -1 || b.hashCode() == 0x07ffffff;
   }
 
+  /** A test helper that makes a BDD constrained to match the non-zero suffix of {@code i}. */
+  static BDD makePartiallyConstrainedInteger(BDDFactory f, int i) {
+    int bit = 0;
+    BDD ret = f.one();
+    while (i > 0) {
+      ret = ret.andWith((i & 1) == 1 ? f.ithVar(bit) : f.nithVar(bit));
+      i >>>= 1;
+      ++bit;
+    }
+    return ret;
+  }
+
   void testApplyWith(
       BDDFactory bdd, BDDFactory.BDDOp op, boolean b1, boolean b2, boolean b3, boolean b4) {
     BDD a, b, c, d;
@@ -304,6 +315,30 @@ public class BasicTests extends BDDTestCase {
     assertTrue(isFreed(b));
     assertTrue(isFreed(d));
     a.free();
+  }
+
+  public void testAndSat() {
+    reset();
+    assertTrue(hasNext());
+    while (hasNext()) {
+      BDDFactory bdd = next();
+      if (bdd.varNum() < 5) {
+        bdd.setVarNum(5);
+      }
+      BDD a, b, c;
+      for (int i = 0; i < 16; ++i) {
+        a = makePartiallyConstrainedInteger(bdd, i);
+        for (int j = 0; j < 16; ++j) {
+          b = makePartiallyConstrainedInteger(bdd, j);
+          c = a.and(b);
+          bdd.setCacheSize(123); // clear cache between ops
+          assertEquals(a.andSat(b), !c.isZero());
+          b.free();
+          c.free();
+        }
+        a.free();
+      }
+    }
   }
 
   public void testOr() {
@@ -401,6 +436,30 @@ public class BasicTests extends BDDTestCase {
     }
   }
 
+  public void testDiffSat() {
+    reset();
+    assertTrue(hasNext());
+    while (hasNext()) {
+      BDDFactory bdd = next();
+      if (bdd.varNum() < 5) {
+        bdd.setVarNum(5);
+      }
+      BDD a, b, c;
+      for (int i = 0; i < 16; ++i) {
+        a = makePartiallyConstrainedInteger(bdd, i);
+        for (int j = 0; j < 16; ++j) {
+          b = makePartiallyConstrainedInteger(bdd, j);
+          c = a.diff(b);
+          bdd.setCacheSize(123); // clear cache between ops
+          assertEquals(a.diffSat(b), !c.isZero());
+          b.free();
+          c.free();
+        }
+        a.free();
+      }
+    }
+  }
+
   public void testLess() {
     reset();
     assertTrue(hasNext());
@@ -421,6 +480,30 @@ public class BasicTests extends BDDTestCase {
       less.free();
       lessLongForm.free();
       testApply(bdd, BDDFactory.less, false, true, false, false);
+    }
+  }
+
+  public void testLessSat() {
+    reset();
+    assertTrue(hasNext());
+    while (hasNext()) {
+      BDDFactory bdd = next();
+      if (bdd.varNum() < 5) {
+        bdd.setVarNum(5);
+      }
+      BDD a, b, c;
+      for (int i = 0; i < 16; ++i) {
+        a = makePartiallyConstrainedInteger(bdd, i);
+        for (int j = 0; j < 16; ++j) {
+          b = makePartiallyConstrainedInteger(bdd, j);
+          c = a.less(b);
+          bdd.setCacheSize(123); // clear cache between ops
+          assertEquals(a.lessSat(b), !c.isZero());
+          b.free();
+          c.free();
+        }
+        a.free();
+      }
     }
   }
 
@@ -668,7 +751,7 @@ public class BasicTests extends BDDTestCase {
     }
   }
 
-  void tEnsureCapacity2() throws IOException {
+  void tEnsureCapacity2() {
     reset();
     assertTrue(hasNext());
     while (hasNext()) {

@@ -4,11 +4,11 @@ import static com.google.common.base.Preconditions.checkArgument;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.base.MoreObjects;
 import java.util.Objects;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
-import org.batfish.common.BatfishException;
 import org.batfish.datamodel.routing_policy.Environment;
 import org.batfish.datamodel.routing_policy.Result;
 
@@ -16,8 +16,6 @@ import org.batfish.datamodel.routing_policy.Result;
 public final class MatchMetric extends BooleanExpr {
   private static final String PROP_COMPARATOR = "comparator";
   private static final String PROP_METRIC = "metric";
-
-  private static final long serialVersionUID = 1L;
 
   @Nonnull private final IntComparator _comparator;
   @Nonnull private final IntExpr _metric;
@@ -38,7 +36,8 @@ public final class MatchMetric extends BooleanExpr {
 
   @Override
   public Result evaluate(Environment environment) {
-    throw new BatfishException("No implementation for MatchMetric.evaluate()");
+    return _comparator.apply(
+        Math.toIntExact(environment.getOriginalRoute().getMetric()), _metric.evaluate(environment));
   }
 
   @JsonProperty(PROP_COMPARATOR)
@@ -67,5 +66,13 @@ public final class MatchMetric extends BooleanExpr {
   @Override
   public int hashCode() {
     return Objects.hash(_comparator.ordinal(), _metric);
+  }
+
+  @Override
+  public String toString() {
+    return MoreObjects.toStringHelper(MatchMetric.class)
+        .add(PROP_COMPARATOR, _comparator)
+        .add(PROP_METRIC, _metric)
+        .toString();
   }
 }

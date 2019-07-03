@@ -12,8 +12,6 @@ import javax.annotation.Nullable;
 public class LiteralCommunityHalf implements CommunityHalfExpr {
   private static final String PROP_VALUE = "value";
 
-  private static final long serialVersionUID = 1L;
-
   @JsonCreator
   private static @Nonnull LiteralCommunityHalf create(@JsonProperty(PROP_VALUE) int value) {
     return new LiteralCommunityHalf(value);

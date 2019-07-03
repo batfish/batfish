@@ -74,7 +74,7 @@ public final class SnapshotInputObjectsResourceTest extends WorkMgrServiceV2Test
   }
 
   @Test
-  public void testGetMissingNetwork() throws IOException {
+  public void testGetMissingNetwork() {
     String network = "network1";
     String snapshot = "snapshot1";
     String key = "foo/bar";
@@ -84,7 +84,7 @@ public final class SnapshotInputObjectsResourceTest extends WorkMgrServiceV2Test
   }
 
   @Test
-  public void testGetMissingSnapshot() throws IOException {
+  public void testGetMissingSnapshot() {
     String network = "network1";
     String snapshot = "snapshot1";
     Main.getWorkMgr().initNetwork(network, null);
@@ -130,7 +130,7 @@ public final class SnapshotInputObjectsResourceTest extends WorkMgrServiceV2Test
   }
 
   @Test
-  public void testListKeysMissingNetwork() throws IOException {
+  public void testListKeysMissingNetwork() {
     String network = "network1";
     String snapshot = "snapshot1";
 
@@ -139,7 +139,7 @@ public final class SnapshotInputObjectsResourceTest extends WorkMgrServiceV2Test
   }
 
   @Test
-  public void testListKeysMissingSnapshot() throws IOException {
+  public void testListKeysMissingSnapshot() {
     String network = "network1";
     String snapshot = "snapshot1";
     Main.getWorkMgr().initNetwork(network, null);

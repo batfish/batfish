@@ -4,6 +4,7 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.greaterThanOrEqualTo;
 import static org.junit.Assert.assertThat;
 
+import javax.annotation.ParametersAreNonnullByDefault;
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.grammar.BatfishParseTreeWalker;
@@ -12,14 +13,17 @@ import org.batfish.grammar.MockGrammarSettings;
 import org.batfish.grammar.recovery.RecoveryParser.RecoveryContext;
 import org.junit.Test;
 
-public class RecoveryGrammarTest {
+@ParametersAreNonnullByDefault
+public final class RecoveryGrammarTest {
+
+  private static final GrammarSettings SETTINGS =
+      MockGrammarSettings.builder().setThrowOnLexerError(true).setThrowOnParserError(true).build();
 
   @Test
   public void testParsingRecovery() {
     String recoveryText = CommonUtil.readResource("org/batfish/grammar/recovery/recovery_text");
     int totalLines = recoveryText.split("\n", -1).length;
-    GrammarSettings settings = new MockGrammarSettings(false, 0, 0, 0, false, false, true, true);
-    RecoveryCombinedParser cp = new RecoveryCombinedParser(recoveryText, settings);
+    RecoveryCombinedParser cp = new RecoveryCombinedParser(recoveryText, SETTINGS);
     RecoveryContext ctx = cp.parse();
     RecoveryExtractor extractor = new RecoveryExtractor();
     ParseTreeWalker walker = new BatfishParseTreeWalker(cp);
@@ -50,8 +54,7 @@ public class RecoveryGrammarTest {
   @Test
   public void testParsingRecoveryWithModes() {
     String recoveryText = CommonUtil.readResource("org/batfish/grammar/recovery/recovery_badmode");
-    GrammarSettings settings = new MockGrammarSettings(false, 0, 0, 0, false, false, true, true);
-    RecoveryCombinedParser cp = new RecoveryCombinedParser(recoveryText, settings);
+    RecoveryCombinedParser cp = new RecoveryCombinedParser(recoveryText, SETTINGS);
     RecoveryContext ctx = cp.parse();
     RecoveryExtractor extractor = new RecoveryExtractor();
     ParseTreeWalker walker = new BatfishParseTreeWalker(cp);

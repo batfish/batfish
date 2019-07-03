@@ -16,5 +16,6 @@ net add interface eth0 ip address 10.0.2.1/24
 net add interface swp4 ip address 10.0.3.1/24
 net add interface swp5.1 ip address 10.0.4.1/24
 net add interface swp5.1 vrf vrf1
+net add interface swp6 link speed 100000
 #
 net commit

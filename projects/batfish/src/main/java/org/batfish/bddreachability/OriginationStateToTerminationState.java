@@ -17,16 +17,20 @@ import org.batfish.symbolic.state.OriginateVrf;
 import org.batfish.symbolic.state.PostInInterface;
 import org.batfish.symbolic.state.PostInInterfacePostNat;
 import org.batfish.symbolic.state.PostInVrf;
+import org.batfish.symbolic.state.PostInVrfSession;
 import org.batfish.symbolic.state.PreInInterface;
 import org.batfish.symbolic.state.PreOutEdge;
 import org.batfish.symbolic.state.PreOutEdgePostNat;
+import org.batfish.symbolic.state.PreOutEdgeSession;
 import org.batfish.symbolic.state.PreOutInterfaceDeliveredToSubnet;
 import org.batfish.symbolic.state.PreOutInterfaceExitsNetwork;
 import org.batfish.symbolic.state.PreOutInterfaceInsufficientInfo;
 import org.batfish.symbolic.state.PreOutInterfaceNeighborUnreachable;
 import org.batfish.symbolic.state.PreOutVrf;
+import org.batfish.symbolic.state.PreOutVrfSession;
 import org.batfish.symbolic.state.StateExpr;
 import org.batfish.symbolic.state.StateExprVisitor;
+import org.batfish.symbolic.state.VrfAccept;
 
 /**
  * Convert origination states to their corresponding termination states. Returns null for
@@ -149,8 +153,7 @@ public class OriginationStateToTerminationState implements StateExprVisitor<List
 
   @Override
   public List<StateExpr> visitOriginateVrf(OriginateVrf originateVrf) {
-    // TODO: we need a NodeVrfAccept here.
-    return ImmutableList.of(new NodeAccept(originateVrf.getHostname()));
+    return ImmutableList.of(new VrfAccept(originateVrf.getHostname(), originateVrf.getVrf()));
   }
 
   @Override
@@ -215,6 +218,26 @@ public class OriginationStateToTerminationState implements StateExprVisitor<List
 
   @Override
   public List<StateExpr> visitQuery() {
+    return null;
+  }
+
+  @Override
+  public List<StateExpr> visitVrfAccept(VrfAccept vrfAccept) {
+    return null;
+  }
+
+  @Override
+  public List<StateExpr> visitPostInVrfSession(PostInVrfSession postInVrfSession) {
+    return null;
+  }
+
+  @Override
+  public List<StateExpr> visitPreOutEdgeSession(PreOutEdgeSession preOutEdgeSession) {
+    return null;
+  }
+
+  @Override
+  public List<StateExpr> visitPreOutVrfSession(PreOutVrfSession preOutVrfSession) {
     return null;
   }
 }

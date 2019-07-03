@@ -10,8 +10,6 @@ import org.batfish.datamodel.routing_policy.expr.NamedAsPathSet;
 
 public class RoutePolicyBooleanAsPathIn extends RoutePolicyBoolean {
 
-  private static final long serialVersionUID = 1L;
-
   private final AsPathSetExpr _asExpr;
 
   public RoutePolicyBooleanAsPathIn(AsPathSetExpr expr) {

@@ -9,8 +9,6 @@ import org.batfish.datamodel.Prefix;
 @ParametersAreNonnullByDefault
 public class StaticRoute implements Serializable {
 
-  private static final long serialVersionUID = 1L;
-
   private int _distance;
 
   @Nullable private String _nextHopInterface;

@@ -13,6 +13,8 @@ net add vrf vrf1 ip address 10.1.6.1/24
 #
 net add routing route 10.0.1.0/24 10.1.0.1
 net add routing route 10.0.1.0/24 10.1.0.2
+net add routing route 10.0.1.0/24 swp1
+net add routing route 10.0.1.0/24 Null0
 #
 net add routing route-map rm1 permit 1 match interface bond1
 net add routing route-map rm1 permit 2 match interface lo

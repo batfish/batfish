@@ -11,8 +11,6 @@ import org.batfish.datamodel.Prefix;
 @ParametersAreNonnullByDefault
 public final class NatPool implements Serializable {
 
-  private static final long serialVersionUID = 1L;
-
   private Ip _fromAddress;
 
   private Ip _toAddress;

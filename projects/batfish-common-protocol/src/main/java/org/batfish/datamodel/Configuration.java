@@ -9,7 +9,6 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.ImmutableSortedSet;
-import com.google.common.collect.Iterables;
 import com.google.common.collect.Ordering;
 import java.io.Serializable;
 import java.util.Collections;
@@ -27,6 +26,7 @@ import javax.annotation.Nullable;
 import org.batfish.common.BatfishException;
 import org.batfish.common.Warnings;
 import org.batfish.datamodel.NetworkFactory.NetworkFactoryBuilder;
+import org.batfish.datamodel.bgp.AddressFamily;
 import org.batfish.datamodel.ospf.OspfProcess;
 import org.batfish.datamodel.packet_policy.PacketPolicy;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
@@ -138,8 +138,6 @@ public final class Configuration implements Serializable {
   private static final String PROP_VENDOR_FAMILY = "vendorFamily";
   private static final String PROP_VRFS = "vrfs";
   private static final String PROP_ZONES = "zones";
-
-  private static final long serialVersionUID = 1L;
 
   private static final int VLAN_NORMAL_MAX_DEFAULT = 4094;
 
@@ -292,12 +290,11 @@ public final class Configuration implements Serializable {
     for (Vrf vrf : _vrfs.values()) {
       BgpProcess bgpProcess = vrf.getBgpProcess();
       if (bgpProcess != null) {
-        for (BgpPeerConfig neighbor :
-            Iterables.concat(
-                bgpProcess.getActiveNeighbors().values(),
-                bgpProcess.getPassiveNeighbors().values())) {
-          neighbor.setExportPolicySources(getRoutingPolicySources(neighbor.getExportPolicy()));
-          neighbor.setImportPolicySources(getRoutingPolicySources(neighbor.getImportPolicy()));
+        for (BgpPeerConfig neighbor : bgpProcess.getAllPeerConfigs()) {
+          for (AddressFamily af : neighbor.getAllAddressFamilies()) {
+            af.setExportPolicySources(getRoutingPolicySources(af.getExportPolicy()));
+            af.setImportPolicySources(getRoutingPolicySources(af.getImportPolicy()));
+          }
         }
       }
       for (OspfProcess ospfProcess : vrf.getOspfProcesses().values()) {

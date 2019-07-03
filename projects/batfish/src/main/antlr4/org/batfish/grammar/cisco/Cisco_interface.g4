@@ -89,6 +89,7 @@ if_bfd
      | if_bfd_neighbor
      | if_bfd_optimize
      | if_bfd_template
+     | nxos_if_bfd_per_link
   )
 ;
 
@@ -312,6 +313,11 @@ if_ip_flow_monitor
       INPUT
       | OUTPUT
    ) NEWLINE
+;
+
+if_ip_forward
+:
+   NO? IP FORWARD NEWLINE
 ;
 
 if_ip_helper_address
@@ -1725,6 +1731,7 @@ if_inner
    | if_ip_address_secondary
    | if_ip_dhcp
    | if_ip_flow_monitor
+   | if_ip_forward
    | if_ip_helper_address
    | if_ip_inband_access_group
    | if_ip_igmp
@@ -1805,4 +1812,9 @@ if_inner
  
    | if_null_single
    | if_null_block
+;
+
+nxos_if_bfd_per_link
+:
+  PER_LINK NEWLINE
 ;

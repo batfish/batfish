@@ -2,8 +2,6 @@ package org.batfish.datamodel.questions;
 
 import static com.google.common.base.Preconditions.checkArgument;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonValue;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Sets;
@@ -12,6 +10,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.Interface;
@@ -19,7 +18,6 @@ import org.batfish.datamodel.SwitchportEncapsulationType;
 import org.batfish.datamodel.SwitchportMode;
 import org.batfish.datamodel.answers.Schema;
 import org.batfish.specifier.ConstantEnumSetSpecifier;
-import org.batfish.specifier.EnumSetSpecifier;
 import org.batfish.specifier.SpecifierFactories;
 
 /**
@@ -307,46 +305,35 @@ public class InterfacePropertySpecifier extends PropertySpecifier {
                   "Name of the firewall zone to which the interface belongs"))
           .build();
 
-  public static final InterfacePropertySpecifier ALL = new InterfacePropertySpecifier(".*");
+  public static final InterfacePropertySpecifier ALL =
+      new InterfacePropertySpecifier(JAVA_MAP.keySet());
 
-  @Nullable private final String _expression;
+  @Nonnull private final List<String> _properties;
 
-  private final EnumSetSpecifier<String> _enumSetSpecifier;
-
-  @JsonCreator
-  private static InterfacePropertySpecifier create(@Nullable String expression) {
-    return new InterfacePropertySpecifier(expression);
-  }
-
-  public InterfacePropertySpecifier(@Nullable String expression) {
-    this(
-        expression,
+  /**
+   * Create a node property specifier from provided expression. If the expression is null or empty,
+   * a specifier with all properties is returned.
+   */
+  @Nonnull
+  public static InterfacePropertySpecifier create(@Nullable String expression) {
+    return new InterfacePropertySpecifier(
         SpecifierFactories.getEnumSetSpecifierOrDefault(
-            expression, JAVA_MAP.keySet(), new ConstantEnumSetSpecifier<>(JAVA_MAP.keySet())));
+                expression, JAVA_MAP.keySet(), new ConstantEnumSetSpecifier<>(JAVA_MAP.keySet()))
+            .resolve());
   }
 
   public InterfacePropertySpecifier(Set<String> properties) {
-    this(null, new ConstantEnumSetSpecifier<>(properties));
     Set<String> diffSet = Sets.difference(properties, JAVA_MAP.keySet());
     checkArgument(
-        diffSet.isEmpty(), "Invalid properties supplied to the property specifier: %s", diffSet);
-  }
-
-  private InterfacePropertySpecifier(
-      @Nullable String expression, EnumSetSpecifier<String> enumSetSpecifier) {
-    _expression = expression;
-    _enumSetSpecifier = enumSetSpecifier;
+        diffSet.isEmpty(),
+        "Invalid properties supplied: %s. Valid properties are %s",
+        diffSet,
+        JAVA_MAP.keySet());
+    _properties = properties.stream().sorted().collect(ImmutableList.toImmutableList());
   }
 
   @Override
   public List<String> getMatchingProperties() {
-    return _enumSetSpecifier.resolve().stream().sorted().collect(ImmutableList.toImmutableList());
-  }
-
-  @Override
-  @JsonValue
-  @Nullable
-  public String toString() {
-    return _expression;
+    return _properties;
   }
 }

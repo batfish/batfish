@@ -21,7 +21,6 @@ import javax.annotation.ParametersAreNonnullByDefault;
 public final class If implements Statement {
   private static final String PROP_ACTIONS = "actions";
   private static final String PROP_TRUE_STATEMENTS = "trueStatements";
-  private static final long serialVersionUID = 1;
 
   @Nonnull private final BoolExpr _matchCondition;
   @Nonnull private final List<Statement> _trueStatements;

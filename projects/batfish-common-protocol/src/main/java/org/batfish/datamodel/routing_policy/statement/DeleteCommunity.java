@@ -18,8 +18,6 @@ import org.batfish.datamodel.routing_policy.expr.CommunitySetExpr;
 public final class DeleteCommunity extends Statement {
   private static final String PROP_EXPR = "expr";
 
-  private static final long serialVersionUID = 1L;
-
   @Nonnull private final CommunitySetExpr _expr;
 
   @JsonCreator

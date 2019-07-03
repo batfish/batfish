@@ -68,7 +68,7 @@ public class NamedStructuresQuestion extends Question {
         nodes,
         SpecifierFactories.getNodeSpecifierOrDefault(nodes, AllNodesNodeSpecifier.INSTANCE),
         structureTypes,
-        new NamedStructurePropertySpecifier(structureTypes),
+        NamedStructurePropertySpecifier.create(structureTypes),
         structureNameRegex,
         ignoreGenerated,
         indicatePresence);

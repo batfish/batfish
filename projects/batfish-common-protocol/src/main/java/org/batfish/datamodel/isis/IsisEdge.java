@@ -100,7 +100,6 @@ public final class IsisEdge implements Comparable<IsisEdge>, Serializable {
   private static final String PROP_CIRCUIT_TYPE = "circuitType";
   private static final String PROP_NODE1 = "node1";
   private static final String PROP_NODE2 = "node2";
-  private static final long serialVersionUID = 1L;
 
   private final IsisLevel _circuitType;
   private final IsisNode _node1;

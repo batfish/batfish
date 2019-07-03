@@ -14,8 +14,6 @@ public class BgpGroup implements Serializable {
     INTERNAL
   }
 
-  private static final long serialVersionUID = 1L;
-
   private Boolean _advertiseExternal;
   private Boolean _advertiseInactive;
   private Boolean _advertisePeerAs;

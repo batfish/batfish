@@ -1,0 +1,73 @@
+!RANCID-CONTENT-TYPE: cisco-nx
+!
+hostname nxos_vlan
+!
+
+! individual VLAN
+vlan 2
+
+! VLAN range
+vlan 4,6-8
+
+! VLAN interface with no configuration and missing vlan declaration 
+! interfaceType = VLAN
+! vlan = 1
+! shutdown = true (default)
+! autostate = true (default)
+! active = false (shutdown, missing vlan)
+interface Vlan1
+!
+
+! VLAN interface with no configuration 
+! interfaceType = VLAN
+! vlan = 2
+! shutdown = true (default)
+! autostate = true (default)
+! active = false (shutdown)
+interface Vlan2
+!
+
+! VLAN interface with missing vlan declaration 
+! interfaceType = VLAN
+! vlan = 3
+! shutdown = false
+! autostate = false
+! active = false (no autostate but missing vlan)
+interface Vlan3
+  no shutdown
+  no autostate
+!
+
+! VLAN interface with no members, default autostate 
+! interfaceType = VLAN
+! vlan = 4
+! shutdown = false
+! autostate = true (default)
+! active = false (autostate but no members)
+interface Vlan4
+  no shutdown
+!
+
+! VLAN interface with no members, no autostate 
+! interfaceType = VLAN
+! vlan = 6
+! shutdown = false
+! autostate = false
+! active = true (no members but also no autostate)
+interface Vlan6
+  no shutdown
+  no autostate
+!
+
+! VLAN interface with member 
+! interfaceType = VLAN
+! vlan = 7
+! shutdown = false
+! autostate = true (default)
+! active = true (autostate with active member)
+interface Vlan7
+  no shutdown
+!
+interface Ethernet1/1
+  switchport access vlan 7
+!

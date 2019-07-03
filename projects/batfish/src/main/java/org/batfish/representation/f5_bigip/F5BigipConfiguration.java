@@ -110,8 +110,6 @@ public class F5BigipConfiguration extends VendorConfiguration {
   private static final TransformationStep ASSIGN_EPHEMERAL_SOURCE_PORT =
       new AssignPortFromPool(TransformationType.SOURCE_NAT, PortField.SOURCE, 1024, 65535);
 
-  private static final long serialVersionUID = 1L;
-
   static final String REFBOOK_SOURCE_POOLS = "pools";
   static final String REFBOOK_SOURCE_VIRTUAL_ADDRESSES = "virtualAddresses";
 
@@ -295,12 +293,14 @@ public class F5BigipConfiguration extends VendorConfiguration {
             .setBgpProcess(newProc)
             .setDescription(neighbor.getDescription())
             .setEbgpMultihop(neighbor.getEbgpMultihop() != null)
-            .setExportPolicy(peerExportPolicy.build().getName())
             .setLocalAs(proc.getLocalAs())
             .setLocalIp(updateSource)
             .setPeerAddress(neighbor.getAddress())
             .setRemoteAsns(remoteAsns)
-            .setIpv4UnicastAddressFamily(Ipv4UnicastAddressFamily.instance());
+            .setIpv4UnicastAddressFamily(
+                Ipv4UnicastAddressFamily.builder()
+                    .setExportPolicy(peerExportPolicy.build().getName())
+                    .build());
     builder.build();
   }
 
@@ -1169,7 +1169,7 @@ public class F5BigipConfiguration extends VendorConfiguration {
 
   private @Nonnull org.batfish.datamodel.Interface toInterface(Interface iface) {
     org.batfish.datamodel.Interface newIface =
-        new org.batfish.datamodel.Interface(iface.getName(), _c);
+        org.batfish.datamodel.Interface.builder().setName(iface.getName()).setOwner(_c).build();
     Double speed = iface.getSpeed();
     newIface.setActive(!Boolean.TRUE.equals(iface.getDisabled()));
     newIface.setSpeed(speed);
@@ -1181,7 +1181,11 @@ public class F5BigipConfiguration extends VendorConfiguration {
 
   private org.batfish.datamodel.Interface toInterface(Trunk trunk) {
     org.batfish.datamodel.Interface newIface =
-        new org.batfish.datamodel.Interface(trunk.getName(), _c, InterfaceType.AGGREGATED);
+        org.batfish.datamodel.Interface.builder()
+            .setName(trunk.getName())
+            .setOwner(_c)
+            .setType(InterfaceType.AGGREGATED)
+            .build();
     newIface.setDependencies(
         trunk.getInterfaces().stream()
             .filter(_interfaces::containsKey)
@@ -1194,7 +1198,11 @@ public class F5BigipConfiguration extends VendorConfiguration {
 
   private @Nonnull org.batfish.datamodel.Interface toInterface(Vlan vlan) {
     org.batfish.datamodel.Interface newIface =
-        new org.batfish.datamodel.Interface(vlan.getName(), _c, InterfaceType.VLAN);
+        org.batfish.datamodel.Interface.builder()
+            .setName(vlan.getName())
+            .setOwner(_c)
+            .setType(InterfaceType.VLAN)
+            .build();
     // TODO: Possibly add dependencies on ports allowing this VLAN
     newIface.setVlan(vlan.getTag());
     newIface.setBandwidth(Interface.DEFAULT_BANDWIDTH);
@@ -1206,7 +1214,7 @@ public class F5BigipConfiguration extends VendorConfiguration {
     // packet filter for established connections. However, packet filters are not fully supported at
     // this point
     newIface.setFirewallSessionInterfaceInfo(
-        new FirewallSessionInterfaceInfo(ImmutableList.of(newIface.getName()), null, null));
+        new FirewallSessionInterfaceInfo(false, ImmutableList.of(newIface.getName()), null, null));
     return newIface;
   }
 

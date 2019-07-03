@@ -7,7 +7,6 @@ import static org.batfish.bddreachability.TestNetworkSources.ORIGINATING_FROM_DE
 import static org.batfish.bddreachability.TestNetworkSources.PEER_IFACE_NAME;
 import static org.batfish.bddreachability.TestNetworkSources.PEER_NAME;
 import static org.batfish.bddreachability.TestNetworkSources.VRF_NAME;
-import static org.batfish.bddreachability.transition.Transitions.compose;
 import static org.batfish.bddreachability.transition.Transitions.constraint;
 import static org.batfish.bddreachability.transition.Transitions.removeSourceConstraint;
 import static org.hamcrest.Matchers.equalTo;
@@ -45,6 +44,7 @@ import org.batfish.symbolic.state.PreOutInterfaceExitsNetwork;
 import org.batfish.symbolic.state.PreOutInterfaceInsufficientInfo;
 import org.batfish.symbolic.state.PreOutInterfaceNeighborUnreachable;
 import org.batfish.symbolic.state.StateExpr;
+import org.batfish.symbolic.state.VrfAccept;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Test;
@@ -210,12 +210,12 @@ public class BDDReachabilityAnalysisFactorySourcesTest {
    * forward direction.
    */
   @Test
-  public void postInVrf_NodeAccept() {
-    // PostInVrf -> NodeAccept edge.
+  public void vrfAccept_NodeAccept() {
+    // NodeAccept -> Accept edge.
     Transition transition =
-        edges.get(new PostInVrf(CONFIG_NAME, VRF_NAME)).get(new NodeAccept(CONFIG_NAME));
-    BDD headerSpaceBdd = factory.getVrfAcceptBDDs().get(CONFIG_NAME).get(VRF_NAME);
-    assertEquals(transition, compose(constraint(headerSpaceBdd), removeSourceConstraint(srcMgr)));
+        edges.get(new VrfAccept(CONFIG_NAME, VRF_NAME)).get(new NodeAccept(CONFIG_NAME));
+
+    assertThat(transition, equalTo(removeSourceConstraint(srcMgr)));
   }
 
   @Test

@@ -38,7 +38,6 @@ public final class BooleanExprs {
 
   public static final class StaticBooleanExpr extends BooleanExpr {
 
-    private static final long serialVersionUID = 1L;
     private static final String PROP_TYPE = "type";
 
     private final StaticExpressionType _type;
@@ -94,6 +93,11 @@ public final class BooleanExprs {
     @Override
     public boolean equals(Object rhs) {
       return rhs instanceof StaticBooleanExpr && _type == ((StaticBooleanExpr) rhs)._type;
+    }
+
+    @Override
+    public String toString() {
+      return _type.toString();
     }
 
     @Override

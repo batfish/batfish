@@ -118,8 +118,6 @@ public final class CompletionMetadata implements Serializable {
   private static final String PROP_VRFS = "vrfs";
   private static final String PROP_ZONES = "zones";
 
-  private static final long serialVersionUID = 1L;
-
   private final Set<String> _filterNames;
 
   private final Set<NodeInterfacePair> _interfaces;

@@ -7,6 +7,7 @@ import static org.junit.Assert.assertThat;
 import java.util.Collections;
 import java.util.stream.Stream;
 import org.batfish.common.Warnings;
+import org.batfish.datamodel.bgp.Ipv4UnicastAddressFamily;
 import org.batfish.datamodel.ospf.OspfProcess;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.routing_policy.statement.CallStatement;
@@ -44,22 +45,27 @@ public class ConfigurationTest {
             .bgpNeighborBuilder()
             .setPeerAddress(Ip.ZERO)
             .setBgpProcess(bgpProcess)
-            .setExportPolicy(
-                c.getRoutingPolicies()
-                    .computeIfAbsent(bgpExportPolicyName, n -> new RoutingPolicy(n, c))
-                    .getName())
-            .setImportPolicy(
-                c.getRoutingPolicies()
-                    .computeIfAbsent(bgpImportPolicyName, n -> new RoutingPolicy(n, c))
-                    .getName())
+            .setIpv4UnicastAddressFamily(
+                Ipv4UnicastAddressFamily.builder()
+                    .setExportPolicy(
+                        c.getRoutingPolicies()
+                            .computeIfAbsent(bgpExportPolicyName, n -> new RoutingPolicy(n, c))
+                            .getName())
+                    .setImportPolicy(
+                        c.getRoutingPolicies()
+                            .computeIfAbsent(bgpImportPolicyName, n -> new RoutingPolicy(n, c))
+                            .getName())
+                    .build())
             .build();
     BgpPeerConfig neighborWithMissingPolicies =
         _factory
             .bgpNeighborBuilder()
             .setPeerAddress(Ip.MAX)
             .setBgpProcess(bgpProcess)
-            .setExportPolicy(bgpMissingExportPolicyName)
-            .setImportPolicy(null)
+            .setIpv4UnicastAddressFamily(
+                Ipv4UnicastAddressFamily.builder()
+                    .setExportPolicy(bgpMissingExportPolicyName)
+                    .build())
             .build();
 
     // Generated route
@@ -99,13 +105,17 @@ public class ConfigurationTest {
 
     // BGP tests
     assertThat(
-        neighbor.getExportPolicySources(), equalTo(Collections.singleton(bgpExportPolicyName)));
+        neighbor.getIpv4UnicastAddressFamily().getExportPolicySources(),
+        equalTo(Collections.singleton(bgpExportPolicyName)));
     assertThat(
-        neighbor.getImportPolicySources(), equalTo(Collections.singleton(bgpImportPolicyName)));
+        neighbor.getIpv4UnicastAddressFamily().getImportPolicySources(),
+        equalTo(Collections.singleton(bgpImportPolicyName)));
     assertThat(
-        neighborWithMissingPolicies.getExportPolicySources(), equalTo(Collections.emptySet()));
+        neighborWithMissingPolicies.getIpv4UnicastAddressFamily().getExportPolicySources(),
+        equalTo(Collections.emptySet()));
     assertThat(
-        neighborWithMissingPolicies.getImportPolicySources(), equalTo(Collections.emptySet()));
+        neighborWithMissingPolicies.getIpv4UnicastAddressFamily().getImportPolicySources(),
+        equalTo(Collections.emptySet()));
     // Generated route tests
     assertThat(
         gr.getAttributePolicySources(),

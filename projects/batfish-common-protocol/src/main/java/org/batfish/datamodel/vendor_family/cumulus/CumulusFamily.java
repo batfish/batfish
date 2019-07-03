@@ -45,8 +45,6 @@ public final class CumulusFamily implements Serializable {
   private static final String PROP_BRIDGE = "bridge";
   private static final String PROP_INTERFACE_CLAG_SETTINGS = "interfaceClagSettings";
 
-  private static final long serialVersionUID = 1L;
-
   public static @Nonnull Builder builder() {
     return new Builder();
   }

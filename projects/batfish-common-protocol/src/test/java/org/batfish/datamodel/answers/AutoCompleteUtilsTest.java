@@ -3,7 +3,6 @@ package org.batfish.datamodel.answers;
 import static org.batfish.datamodel.FlowDisposition.DELIVERED_TO_SUBNET;
 import static org.batfish.datamodel.FlowDisposition.EXITS_NETWORK;
 import static org.batfish.datamodel.FlowDisposition.INSUFFICIENT_INFO;
-import static org.batfish.datamodel.FlowDisposition.NEIGHBOR_UNREACHABLE_OR_EXITS_NETWORK;
 import static org.batfish.datamodel.FlowState.ESTABLISHED;
 import static org.batfish.datamodel.FlowState.NEW;
 import static org.batfish.datamodel.FlowState.RELATED;
@@ -211,7 +210,6 @@ public class AutoCompleteUtilsTest {
         equalTo(
             ImmutableSet.of(
                 SUCCESS,
-                NEIGHBOR_UNREACHABLE_OR_EXITS_NETWORK.name().toLowerCase(),
                 INSUFFICIENT_INFO.name().toLowerCase(),
                 DELIVERED_TO_SUBNET.name().toLowerCase(),
                 EXITS_NETWORK.name().toLowerCase())));

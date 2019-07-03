@@ -244,8 +244,8 @@ public final class IspModelingUtils {
           .setLocalIp(ispInterfaceIp)
           .setLocalAs(ispAs)
           .setBgpProcess(ispConfiguration.getDefaultVrf().getBgpProcess())
-          .setExportPolicy(EXPORT_POLICY_ON_ISP)
-          .setIpv4UnicastAddressFamily(Ipv4UnicastAddressFamily.instance())
+          .setIpv4UnicastAddressFamily(
+              Ipv4UnicastAddressFamily.builder().setExportPolicy(EXPORT_POLICY_ON_ISP).build())
           .build();
 
       BgpActivePeerConfig.builder()
@@ -254,8 +254,8 @@ public final class IspModelingUtils {
           .setLocalIp(internetInterfaceIp)
           .setLocalAs(INTERNET_AS)
           .setBgpProcess(internet.getDefaultVrf().getBgpProcess())
-          .setExportPolicy(EXPORT_POLICY_ON_INTERNET)
-          .setIpv4UnicastAddressFamily(Ipv4UnicastAddressFamily.instance())
+          .setIpv4UnicastAddressFamily(
+              Ipv4UnicastAddressFamily.builder().setExportPolicy(EXPORT_POLICY_ON_INTERNET).build())
           .build();
 
       internetInterfaceIp = Ip.create(internetInterfaceIp.asLong() + 2);
@@ -400,9 +400,12 @@ public final class IspModelingUtils {
                     .setLocalAs(bgpActivePeerConfig.getLocalAs())
                     .setPeerAddress(bgpActivePeerConfig.getPeerAddress())
                     .setRemoteAsns(bgpActivePeerConfig.getRemoteAsns())
-                    .setExportPolicy(bgpActivePeerConfig.getExportPolicy())
                     .setBgpProcess(bgpProcess)
-                    .setIpv4UnicastAddressFamily(Ipv4UnicastAddressFamily.instance())
+                    .setIpv4UnicastAddressFamily(
+                        Ipv4UnicastAddressFamily.builder()
+                            .setExportPolicy(
+                                bgpActivePeerConfig.getIpv4UnicastAddressFamily().getExportPolicy())
+                            .build())
                     .build());
 
     return ispConfiguration;
@@ -501,7 +504,8 @@ public final class IspModelingUtils {
         .setRemoteAs(bgpActivePeerConfig.getLocalAs())
         .setLocalIp(bgpActivePeerConfig.getPeerAddress())
         .setLocalAs(bgpActivePeerConfig.getRemoteAsns().least())
-        .setExportPolicy(EXPORT_POLICY_ON_ISP)
+        .setIpv4UnicastAddressFamily(
+            Ipv4UnicastAddressFamily.builder().setExportPolicy(EXPORT_POLICY_ON_ISP).build())
         .build();
   }
 }

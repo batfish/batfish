@@ -22,7 +22,6 @@ import org.batfish.representation.juniper.Nat.Type;
 /** A {@link NatRule} that NATs using the configured IP prefix name. */
 @ParametersAreNonnullByDefault
 public class NatRuleThenPrefixName implements NatRuleThen, Serializable {
-  private static final long serialVersionUID = 1L;
 
   private final String _name;
 

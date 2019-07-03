@@ -6,6 +6,7 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.batfish.datamodel.vendor_family.cisco.CiscoFamily;
+import org.batfish.datamodel.vendor_family.cisco_nxos.CiscoNxosFamily;
 import org.batfish.datamodel.vendor_family.cumulus.CumulusFamily;
 import org.batfish.datamodel.vendor_family.f5_bigip.F5BigipFamily;
 import org.batfish.datamodel.vendor_family.juniper.JuniperFamily;
@@ -15,6 +16,7 @@ public class VendorFamily implements Serializable {
   public enum Type {
     AWS,
     CISCO,
+    CISCO_NXOS,
     CUMULUS,
     F5_BIGIP,
     JUNIPER,
@@ -23,16 +25,18 @@ public class VendorFamily implements Serializable {
 
   private static final String PROP_AWS = "aws";
   private static final String PROP_CISCO = "cisco";
+  private static final String PROP_CISCO_NXOS = "cisco_nxos";
   private static final String PROP_CUMULUS = "cumulus";
   private static final String PROP_F5_BIGIP = "f5Bigip";
   private static final String PROP_JUNIPER = "juniper";
-  private static final long serialVersionUID = 1L;
 
   private static Type toFamilyType(Object family) {
     if (family instanceof AwsFamily) {
       return Type.AWS;
     } else if (family instanceof CiscoFamily) {
       return Type.CISCO;
+    } else if (family instanceof CiscoNxosFamily) {
+      return Type.CISCO_NXOS;
     } else if (family instanceof CumulusFamily) {
       return Type.CUMULUS;
     } else if (family instanceof F5BigipFamily) {
@@ -45,6 +49,7 @@ public class VendorFamily implements Serializable {
 
   private AwsFamily _aws;
   private CiscoFamily _cisco;
+  private CiscoNxosFamily _ciscoNxos;
   private CumulusFamily _cumulus;
   private F5BigipFamily _f5Bigip;
   private JuniperFamily _juniper;
@@ -57,6 +62,11 @@ public class VendorFamily implements Serializable {
   @JsonProperty(PROP_CISCO)
   public CiscoFamily getCisco() {
     return _cisco;
+  }
+
+  @JsonProperty(PROP_CISCO_NXOS)
+  public CiscoNxosFamily getCiscoNxos() {
+    return _ciscoNxos;
   }
 
   @JsonProperty(PROP_CUMULUS)
@@ -84,6 +94,11 @@ public class VendorFamily implements Serializable {
     _cisco = cisco;
   }
 
+  @JsonProperty(PROP_CISCO_NXOS)
+  public void setCiscoNxos(CiscoNxosFamily ciscoNxos) {
+    _ciscoNxos = ciscoNxos;
+  }
+
   @JsonProperty(PROP_CUMULUS)
   public void setCumulus(CumulusFamily cumulus) {
     _cumulus = cumulus;
@@ -104,7 +119,7 @@ public class VendorFamily implements Serializable {
   public String toString() {
     return String.join(
         " ",
-        Stream.of(_aws, _cisco, _cumulus, _f5Bigip, _juniper)
+        Stream.of(_aws, _cisco, _ciscoNxos, _cumulus, _f5Bigip, _juniper)
             .filter(f -> f != null)
             .map(f -> Objects.toString(toFamilyType(f)))
             .collect(Collectors.toList()));

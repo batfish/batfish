@@ -11,8 +11,6 @@ import org.batfish.datamodel.routing_policy.statement.Statement;
 
 public class RouteMapSetCommunityLine extends RouteMapSetLine {
 
-  private static final long serialVersionUID = 1L;
-
   private List<Long> _communities;
 
   public RouteMapSetCommunityLine(List<Long> communities) {

@@ -9,8 +9,6 @@ import org.batfish.datamodel.Ip;
 
 public class CryptoMapEntry implements Serializable {
 
-  private static final long serialVersionUID = 1L;
-
   private String _accessList;
 
   private boolean _dynamic;

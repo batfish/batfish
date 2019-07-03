@@ -668,7 +668,7 @@ class TransferSSA {
         return true;
       }
       BgpPeerConfig n = getBgpNeighbor();
-      return n.getSendCommunity();
+      return n.getIpv4UnicastAddressFamily().getAddressFamilyCapabilities().getSendCommunity();
     } else {
       return false;
     }

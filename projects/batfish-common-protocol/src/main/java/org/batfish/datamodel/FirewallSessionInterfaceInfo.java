@@ -18,31 +18,37 @@ import javax.annotation.ParametersAreNonnullByDefault;
  */
 @ParametersAreNonnullByDefault
 public final class FirewallSessionInterfaceInfo implements Serializable {
-  private static final long serialVersionUID = 1L;
+
+  private static final String PROP_FIB_LOOKUP = "fibLookup";
   private static final String PROP_SESSION_INTERFACES = "sessionInterfaces";
   private static final String PROP_INCOMING_ACL_NAME = "incomingAclName";
   private static final String PROP_OUTGOING_ACL_NAME = "outgoingAclName";
 
+  private final boolean _fibLookup;
   private final SortedSet<String> _sessionInterfaces;
   private final @Nullable String _incomingAclName;
   private final @Nullable String _outgoingAclName;
 
   public FirewallSessionInterfaceInfo(
+      boolean fibLookup,
       Iterable<String> sessionInterfaces,
       @Nullable String incomingAclName,
       @Nullable String outgoingAclName) {
     _sessionInterfaces = ImmutableSortedSet.copyOf(sessionInterfaces);
     _incomingAclName = incomingAclName;
     _outgoingAclName = outgoingAclName;
+    _fibLookup = fibLookup;
   }
 
   @JsonCreator
   private static FirewallSessionInterfaceInfo jsonCreator(
+      @JsonProperty(PROP_FIB_LOOKUP) boolean fibLookup,
       @JsonProperty(PROP_SESSION_INTERFACES) @Nullable Set<String> sessionInterfaces,
       @JsonProperty(PROP_INCOMING_ACL_NAME) @Nullable String incomingAclName,
       @JsonProperty(PROP_OUTGOING_ACL_NAME) @Nullable String outgoingAclName) {
     checkNotNull(sessionInterfaces, PROP_SESSION_INTERFACES + " cannot be null");
-    return new FirewallSessionInterfaceInfo(sessionInterfaces, incomingAclName, outgoingAclName);
+    return new FirewallSessionInterfaceInfo(
+        fibLookup, sessionInterfaces, incomingAclName, outgoingAclName);
   }
 
   @Override
@@ -54,14 +60,21 @@ public final class FirewallSessionInterfaceInfo implements Serializable {
       return false;
     }
     FirewallSessionInterfaceInfo that = (FirewallSessionInterfaceInfo) o;
-    return Objects.equals(_sessionInterfaces, that._sessionInterfaces)
+    return _fibLookup == that._fibLookup
+        && Objects.equals(_sessionInterfaces, that._sessionInterfaces)
         && Objects.equals(_incomingAclName, that._incomingAclName)
         && Objects.equals(_outgoingAclName, that._outgoingAclName);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(_sessionInterfaces, _incomingAclName, _outgoingAclName);
+    return Objects.hash(_fibLookup, _sessionInterfaces, _incomingAclName, _outgoingAclName);
+  }
+
+  /** Whether session return traffic should be forwarded via a FIB lookup */
+  @JsonProperty(PROP_FIB_LOOKUP)
+  public boolean getFibLookup() {
+    return _fibLookup;
   }
 
   /** The set of interfaces through which return flows can enter. */

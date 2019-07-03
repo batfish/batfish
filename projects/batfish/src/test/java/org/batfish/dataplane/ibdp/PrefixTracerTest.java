@@ -37,6 +37,7 @@ import org.batfish.datamodel.OriginType;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.Vrf;
+import org.batfish.datamodel.bgp.Ipv4UnicastAddressFamily;
 import org.batfish.datamodel.routing_policy.Environment.Direction;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.routing_policy.expr.LiteralOrigin;
@@ -118,7 +119,8 @@ public class PrefixTracerTest {
         .setLocalAs(1L)
         .setPeerAddress(neighbor2Ip)
         .setRemoteAs(2L)
-        .setExportPolicy(policy.getName())
+        .setIpv4UnicastAddressFamily(
+            Ipv4UnicastAddressFamily.builder().setExportPolicy(policy.getName()).build())
         .build();
 
     Configuration c2 = cb.setHostname("n2").build();
@@ -141,7 +143,8 @@ public class PrefixTracerTest {
         .setLocalAs(2L)
         .setPeerAddress(neighbor1Ip)
         .setRemoteAs(1L)
-        .setExportPolicy(policy.getName())
+        .setIpv4UnicastAddressFamily(
+            Ipv4UnicastAddressFamily.builder().setExportPolicy(policy.getName()).build())
         .build();
     return ImmutableSortedMap.of(c1.getHostname(), c1, c2.getHostname(), c2);
   }

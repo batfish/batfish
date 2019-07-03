@@ -5,6 +5,12 @@
         "description": "Returns different types of network adjacencies in a snapshot.",
         "instanceName": "edges",
         "longDescription": "Lists network adjacencies of different types (e.g., Layer 3, BGP, OSPF) in the form of edges. This question is deprecated in favor of specific edges question such as bgpEdges and layer3Edges.",
+        "orderedVariableNames": [
+            "edgeType",
+            "nodes",
+            "remoteNodes",
+            "initial"
+        ],
         "tags": [
             "topology"
         ],
@@ -52,10 +58,17 @@
                 "type": "nodeSpec",
                 "value": ".*",
                 "displayName": "Remote Nodes"
+            },
+            "initial": {
+              "description": "Use the initial topology (pre-dataplane computation)",
+              "type": "boolean",
+              "value": false,
+              "displayName": "Use Initial Topology"
             }
         }
     },
     "edgeType": "${edgeType}",
+    "initial": "${initial}",
     "nodes": "${nodes}",
     "remoteNodes": "${remoteNodes}"
 }

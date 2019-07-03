@@ -8,8 +8,6 @@ import org.batfish.datamodel.LineAction;
 
 public final class FwFromApplicationOrApplicationSet extends FwFromApplicationSetMember {
 
-  private static final long serialVersionUID = 1L;
-
   private final String _applicationOrApplicationSetName;
 
   public FwFromApplicationOrApplicationSet(String applicationOrApplicationSetName) {

@@ -41,8 +41,6 @@ import org.batfish.vendor.VendorConfiguration;
 
 public class VyosConfiguration extends VendorConfiguration {
 
-  private static final long serialVersionUID = 1L;
-
   private BgpProcess _bgpProcess;
 
   private Configuration _c;
@@ -296,7 +294,8 @@ public class VyosConfiguration extends VendorConfiguration {
 
   private org.batfish.datamodel.Interface toInterface(Interface iface) {
     String name = iface.getName();
-    org.batfish.datamodel.Interface newIface = new org.batfish.datamodel.Interface(name, _c);
+    org.batfish.datamodel.Interface newIface =
+        org.batfish.datamodel.Interface.builder().setName(name).setOwner(_c).build();
     newIface.setDeclaredNames(ImmutableSortedSet.of(name));
     newIface.setActive(true); // TODO: may have to change
     newIface.setBandwidth(iface.getBandwidth());

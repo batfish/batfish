@@ -13,7 +13,6 @@ import javax.annotation.ParametersAreNonnullByDefault;
 @ParametersAreNonnullByDefault
 public final class ConcreteInterfaceAddress extends InterfaceAddress {
 
-  private static final long serialVersionUID = 1L;
   private static final Comparator<ConcreteInterfaceAddress> COMPARATOR =
       Comparator.comparing(ConcreteInterfaceAddress::getIp)
           .thenComparing(ConcreteInterfaceAddress::getNetworkBits);
@@ -85,7 +84,6 @@ public final class ConcreteInterfaceAddress extends InterfaceAddress {
     return _networkBits;
   }
 
-  /** Return the canonical {@link Prefix} for this interface address */
   @Nonnull
   public Prefix getPrefix() {
     return Prefix.create(_ip, _networkBits);

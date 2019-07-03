@@ -5,9 +5,11 @@ import static com.google.common.base.Preconditions.checkState;
 import static com.google.common.base.Predicates.not;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.google.common.collect.BoundType;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableRangeSet;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Iterables;
 import com.google.common.collect.Range;
 import com.google.common.collect.RangeSet;
 import java.util.Arrays;
@@ -16,13 +18,16 @@ import java.util.List;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.stream.IntStream;
+import java.util.stream.LongStream;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.antlr.v4.runtime.ParserRuleContext;
+import org.antlr.v4.runtime.Token;
+import org.antlr.v4.runtime.tree.ErrorNode;
 import org.batfish.common.BatfishException;
 import org.batfish.common.Warnings;
 import org.batfish.common.Warnings.ParseWarning;
+import org.batfish.common.WillNotCommitException;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.IntegerSpace;
@@ -30,9 +35,11 @@ import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Ip6;
 import org.batfish.datamodel.LineAction;
+import org.batfish.datamodel.LongSpace;
 import org.batfish.datamodel.MacAddress;
 import org.batfish.datamodel.Prefix;
 import org.batfish.grammar.ParseTreePrettyPrinter;
+import org.batfish.grammar.UnrecognizedLineToken;
 import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.A_bgpContext;
 import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.A_bondContext;
 import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.A_dot1xContext;
@@ -51,16 +58,24 @@ import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.B_l2vpnContext;
 import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.B_neighborContext;
 import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.B_router_idContext;
 import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.B_vrfContext;
+import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.Bi4_neighborContext;
 import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.Bi4_networkContext;
 import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.Bi4_redistribute_connectedContext;
 import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.Bi4_redistribute_staticContext;
+import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.Bi4n_activateContext;
+import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.Bi4n_route_reflector_clientContext;
 import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.Ble_advertise_all_vniContext;
 import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.Ble_advertise_default_gwContext;
 import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.Ble_advertise_ipv4_unicastContext;
+import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.Ble_neighborContext;
+import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.Blen_activateContext;
+import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.Blen_route_reflector_clientContext;
 import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.Bn_interfaceContext;
-import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.Bni_remote_as_externalContext;
-import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.Bni_remote_as_internalContext;
-import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.Bni_remote_as_numberContext;
+import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.Bn_peerContext;
+import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.Bn_peer_groupContext;
+import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.Bnp_descriptionContext;
+import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.Bnp_peer_groupContext;
+import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.Bnp_remote_asContext;
 import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.Bob_accessContext;
 import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.Bob_pvidContext;
 import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.Bob_vidsContext;
@@ -75,6 +90,7 @@ import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.Brbr_vlan_awareContext
 import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.Cumulus_nclu_configurationContext;
 import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.Dn4Context;
 import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.Dn6Context;
+import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.Frr_exit_vrfContext;
 import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.Frr_unrecognizedContext;
 import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.Frr_usernameContext;
 import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.Frr_vrfContext;
@@ -82,6 +98,7 @@ import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.Frrv_ip_routeContext;
 import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.GlobContext;
 import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.Glob_range_setContext;
 import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.I_ip_addressContext;
+import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.I_link_speedContext;
 import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.I_vrfContext;
 import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.Ib_accessContext;
 import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.Ib_pvidContext;
@@ -130,7 +147,11 @@ import org.batfish.representation.cumulus.BgpInterfaceNeighbor;
 import org.batfish.representation.cumulus.BgpIpv4UnicastAddressFamily;
 import org.batfish.representation.cumulus.BgpL2VpnEvpnIpv4Unicast;
 import org.batfish.representation.cumulus.BgpL2vpnEvpnAddressFamily;
+import org.batfish.representation.cumulus.BgpNeighbor;
+import org.batfish.representation.cumulus.BgpNeighborIpv4UnicastAddressFamily;
+import org.batfish.representation.cumulus.BgpNeighborL2vpnEvpnAddressFamily;
 import org.batfish.representation.cumulus.BgpNetwork;
+import org.batfish.representation.cumulus.BgpPeerGroupNeighbor;
 import org.batfish.representation.cumulus.BgpProcess;
 import org.batfish.representation.cumulus.BgpRedistributionPolicy;
 import org.batfish.representation.cumulus.BgpVrf;
@@ -161,8 +182,19 @@ public class CumulusNcluConfigurationBuilder extends CumulusNcluParserBaseListen
   private static final Pattern PHYSICAL_INTERFACE_PATTERN = Pattern.compile("(swp|eth)[0-9]+");
   private static final Pattern SUBINTERFACE_PATTERN = Pattern.compile("^(.*)\\.([0-9]+)$");
   private static final Pattern VLAN_INTERFACE_PATTERN = Pattern.compile("^vlan([0-9]+)$");
+  private static final int MAX_VXLAN_ID = (1 << 24) - 1; // 24 bit number
 
   private static int toInteger(Uint16Context ctx) {
+    return Integer.parseInt(ctx.getText(), 10);
+  }
+
+  /**
+   * Attempt to parse uint32 into an {@code int} value.
+   *
+   * @throws NumberFormatException if the value cannot be represented as a <em>signed</em> java
+   *     integer
+   */
+  private static int toInteger(Uint32Context ctx) {
     return Integer.parseInt(ctx.getText(), 10);
   }
 
@@ -207,10 +239,25 @@ public class CumulusNcluConfigurationBuilder extends CumulusNcluParserBaseListen
     return Prefix.parse(ctx.getText());
   }
 
-  private static @Nonnull Range<Integer> toRange(RangeContext ctx) {
-    int low = toInteger(ctx.low);
-    int high = ctx.high != null ? toInteger(ctx.high) : low;
+  private static @Nonnull Range<Long> toRange(RangeContext ctx) {
+    long low = toLong(ctx.low);
+    long high = ctx.high != null ? toLong(ctx.high) : low;
     return Range.closed(low, high);
+  }
+
+  /**
+   * Convert a range context to an integer range.
+   *
+   * @throws IllegalArgumentException if the values are out of range
+   */
+  private static @Nonnull Range<Integer> toRangeInt(RangeContext ctx) {
+    long low = toLong(ctx.low);
+    long high = ctx.high != null ? toLong(ctx.high) : low;
+    checkArgument(
+        low <= Integer.MAX_VALUE && high <= Integer.MAX_VALUE,
+        "Invalid integer range: %s",
+        ctx.getText());
+    return Range.closed((int) low, (int) high);
   }
 
   private static @Nonnull Range<Integer> toRange(Vlan_rangeContext ctx) {
@@ -219,10 +266,39 @@ public class CumulusNcluConfigurationBuilder extends CumulusNcluParserBaseListen
     return Range.closed(low, high);
   }
 
-  private static @Nonnull RangeSet<Integer> toRangeSet(Range_setContext ctx) {
+  private static @Nonnull RangeSet<Long> toRangeSet(Range_setContext ctx) {
     return ctx.range().stream()
         .map(CumulusNcluConfigurationBuilder::toRange)
         .collect(ImmutableRangeSet.toImmutableRangeSet());
+  }
+
+  /**
+   * Convert a range set context to a range set of integers.
+   *
+   * @throws IllegalArgumentException if the values are out of range
+   */
+  private static @Nonnull RangeSet<Integer> toRangeSetInt(Range_setContext ctx) {
+    return ctx.range().stream()
+        .map(CumulusNcluConfigurationBuilder::toRangeInt)
+        .collect(ImmutableRangeSet.toImmutableRangeSet());
+  }
+
+  /**
+   * Check that the given RangeSet is upper-bounded by {@code maxValue}, otherwise throw {@link
+   * IllegalArgumentException}
+   */
+  private static void checkUpperBound(RangeSet<? extends Number> rangeSet, long maxValue) {
+    Range<? extends Number> range =
+        Iterables.getFirst(rangeSet.asDescendingSetOfRanges(), Range.singleton(maxValue));
+    assert range != null; // range set won't give us null ranges
+    Number upperBound = range.upperEndpoint();
+    checkArgument(
+        range.upperBoundType() == BoundType.CLOSED
+            ? upperBound.longValue() <= maxValue
+            : upperBound.longValue() < maxValue,
+        "Invalid range %s, max value allowed is %d",
+        rangeSet,
+        maxValue);
   }
 
   private static @Nonnull RangeSet<Integer> toRangeSet(Vlan_range_setContext ctx) {
@@ -231,7 +307,7 @@ public class CumulusNcluConfigurationBuilder extends CumulusNcluParserBaseListen
         .collect(ImmutableRangeSet.toImmutableRangeSet());
   }
 
-  private static @Nonnull Set<String> toStrings(Glob_range_setContext ctx) {
+  private static @Nonnull Set<String> toStrings(Glob_range_setContext ctx, long maxValue) {
     if (ctx.unnumbered != null) {
       return ImmutableSet.of(ctx.unnumbered.getText());
     }
@@ -242,33 +318,39 @@ public class CumulusNcluConfigurationBuilder extends CumulusNcluParserBaseListen
     Matcher matcher = NUMBERED_WORD_PATTERN.matcher(baseWord);
     matcher.matches(); // parser+lexer guarantee match
     String prefix = matcher.group(1);
-    int firstIntervalStart = Integer.parseInt(matcher.group(2), 10);
-    int firstIntervalEnd =
+    long firstIntervalStart = Long.parseLong(matcher.group(2), 10);
+    long firstIntervalEnd =
         ctx.first_interval_end != null
-            ? Integer.parseInt(ctx.first_interval_end.getText(), 10)
+            ? Long.parseLong(ctx.first_interval_end.getText(), 10)
             : firstIntervalStart;
+    checkArgument(firstIntervalStart <= maxValue && firstIntervalEnd <= maxValue);
     // add first interval
-    ImmutableRangeSet.Builder<Integer> builder =
-        ImmutableRangeSet.<Integer>builder()
-            .add(Range.closed(firstIntervalStart, firstIntervalEnd));
+    ImmutableRangeSet.Builder<Long> builder =
+        ImmutableRangeSet.<Long>builder().add(Range.closed(firstIntervalStart, firstIntervalEnd));
     if (ctx.other_numeric_ranges != null) {
       // add other intervals
-      builder.addAll(toRangeSet(ctx.other_numeric_ranges));
+      RangeSet<Long> rangeSet = toRangeSet(ctx.other_numeric_ranges);
+      checkUpperBound(rangeSet, maxValue);
+      builder.addAll(rangeSet);
     }
     return builder.build().asRanges().stream()
-        .flatMapToInt(r -> IntStream.rangeClosed(r.lowerEndpoint(), r.upperEndpoint()))
+        .flatMapToLong(r -> LongStream.rangeClosed(r.lowerEndpoint(), r.upperEndpoint()))
         .mapToObj(i -> String.format("%s%d", prefix, i))
         .collect(ImmutableSet.toImmutableSet());
   }
 
   private static @Nonnull Set<String> toStrings(GlobContext ctx) {
+    return toStrings(ctx, Long.MAX_VALUE);
+  }
+
+  private static @Nonnull Set<String> toStrings(GlobContext ctx, long maxValue) {
     return ctx.glob_range_set().stream()
-        .flatMap(grs -> toStrings(grs).stream())
+        .flatMap(grs -> toStrings(grs, maxValue).stream())
         .collect(ImmutableSet.toImmutableSet());
   }
 
   private @Nullable CumulusNcluConfiguration _c;
-  private @Nullable BgpInterfaceNeighbor _currentBgpInterfaceNeighbor;
+  private @Nullable BgpNeighbor _currentBgpNeighbor;
   private @Nullable String _currentBgpNeighborName;
   private @Nullable BgpProcess _currentBgpProcess;
   private @Nullable BgpVrf _currentBgpVrf;
@@ -544,7 +626,7 @@ public class CumulusNcluConfigurationBuilder extends CumulusNcluParserBaseListen
           CumulusStructureType.VLAN, name, CumulusStructureUsage.VLAN_SELF_REFERENCE, line);
     } else {
       Set<String> names =
-          IntegerSpace.of(toRangeSet(ctx.suffixes)).enumerate().stream()
+          LongSpace.of(toRangeSet(ctx.suffixes)).enumerate().stream()
               .map(suffix -> String.format("vlan%d", suffix))
               .collect(ImmutableSet.toImmutableSet());
       _currentVlans = initVlansIfAbsent(names, line);
@@ -566,7 +648,7 @@ public class CumulusNcluConfigurationBuilder extends CumulusNcluParserBaseListen
 
   @Override
   public void enterA_vxlan(A_vxlanContext ctx) {
-    Set<String> names = toStrings(ctx.names);
+    Set<String> names = toStrings(ctx.names, MAX_VXLAN_ID);
     if (ctx.vx_vxlan() != null && ctx.vx_vxlan().vxv_id() != null) {
       // create them if necessary when setting id
       _currentVxlans = initVxlansIfAbsent(names, ctx);
@@ -574,7 +656,7 @@ public class CumulusNcluConfigurationBuilder extends CumulusNcluParserBaseListen
       _w.redFlag(
           String.format(
               "All referenced vxlan instances must be created via 'net add vxlan <name> vxlan id <id>' before line: %s",
-              getFullText(ctx)));
+              getFullText(ctx.getParent())));
       _currentVxlans = ImmutableList.of();
     } else {
       _currentVxlans =
@@ -586,6 +668,45 @@ public class CumulusNcluConfigurationBuilder extends CumulusNcluParserBaseListen
   public void enterB_ipv4_unicast(B_ipv4_unicastContext ctx) {
     if (_currentBgpVrf.getIpv4Unicast() == null) {
       _currentBgpVrf.setIpv4Unicast(new BgpIpv4UnicastAddressFamily());
+    }
+  }
+
+  @Override
+  public void enterBi4_neighbor(Bi4_neighborContext ctx) {
+    _currentBgpNeighborName = ctx.name.getText();
+    _currentBgpNeighbor = _currentBgpVrf.getNeighbors().get(_currentBgpNeighborName);
+
+    if (_currentBgpNeighbor == null) {
+      throw new WillNotCommitException(getFullText(ctx));
+    }
+    if (_currentBgpNeighbor.getIpv4UnicastAddressFamily() == null) {
+      _currentBgpNeighbor.setIpv4UnicastAddressFamily(new BgpNeighborIpv4UnicastAddressFamily());
+    }
+  }
+
+  @Override
+  public void exitBi4_neighbor(Bi4_neighborContext ctx) {
+    _currentBgpNeighborName = null;
+    _currentBgpNeighbor = null;
+  }
+
+  @Override
+  public void exitBi4n_activate(Bi4n_activateContext ctx) {
+    assert _currentBgpNeighbor != null; // Ensure neighbor exists
+    assert _currentBgpNeighbor.getIpv4UnicastAddressFamily() != null;
+    _currentBgpNeighbor.getIpv4UnicastAddressFamily().setActivated(true);
+  }
+
+  @Override
+  public void exitBi4n_route_reflector_client(Bi4n_route_reflector_clientContext ctx) {
+    assert _currentBgpNeighbor != null; // Ensure neighbor exists
+    BgpNeighborIpv4UnicastAddressFamily ipv4UnicastAddressFamily =
+        _currentBgpNeighbor.getIpv4UnicastAddressFamily();
+    assert ipv4UnicastAddressFamily != null;
+    // The neighbor must have been explicitly activated for route-reflector-client to take effect
+    // https://docs.cumulusnetworks.com/display/DOCS/Border+Gateway+Protocol+-+BGP#BorderGatewayProtocol-BGP-RouteReflectors
+    if (Boolean.TRUE.equals(ipv4UnicastAddressFamily.getActivated())) {
+      ipv4UnicastAddressFamily.setRouteReflectorClient(true);
     }
   }
 
@@ -602,6 +723,11 @@ public class CumulusNcluConfigurationBuilder extends CumulusNcluParserBaseListen
   }
 
   @Override
+  public void exitB_neighbor(B_neighborContext ctx) {
+    _currentBgpNeighborName = null;
+  }
+
+  @Override
   public void enterB_vrf(B_vrfContext ctx) {
     String name = ctx.name.getText();
     if (initVrfsIfAbsent(ImmutableSet.of(name), ctx, CumulusStructureUsage.BGP_VRF).isEmpty()) {
@@ -614,6 +740,7 @@ public class CumulusNcluConfigurationBuilder extends CumulusNcluParserBaseListen
 
   @Override
   public void enterBn_interface(Bn_interfaceContext ctx) {
+    assert _currentBgpNeighborName != null;
     if (!referenceAbstractInterfaces(
         ImmutableSet.of(_currentBgpNeighborName),
         ctx,
@@ -624,10 +751,34 @@ public class CumulusNcluConfigurationBuilder extends CumulusNcluParserBaseListen
               _currentBgpNeighborName, getFullText(ctx)));
       return;
     }
-    _currentBgpInterfaceNeighbor =
+
+    assert _currentBgpVrf != null;
+    _currentBgpNeighbor =
         _currentBgpVrf
-            .getInterfaceNeighbors()
+            .getNeighbors()
             .computeIfAbsent(_currentBgpNeighborName, BgpInterfaceNeighbor::new);
+  }
+
+  @Override
+  public void exitBn_interface(Bn_interfaceContext ctx) {
+    _currentBgpNeighbor = null;
+  }
+
+  @Override
+  public void enterBn_peer(Bn_peerContext ctx) {
+    assert _currentBgpNeighborName != null;
+    assert _currentBgpVrf != null;
+    // TODO: only IP neighbors should be created here.
+    //  Peer group neighbors must have already been declared.
+    _currentBgpNeighbor =
+        _currentBgpVrf
+            .getNeighbors()
+            .computeIfAbsent(_currentBgpNeighborName, BgpPeerGroupNeighbor::new);
+  }
+
+  @Override
+  public void exitBn_peer(Bn_peerContext ctx) {
+    _currentBgpNeighbor = null;
   }
 
   @Override
@@ -646,7 +797,7 @@ public class CumulusNcluConfigurationBuilder extends CumulusNcluParserBaseListen
 
   @Override
   public void enterFrrv_ip_route(Frrv_ip_routeContext ctx) {
-    _currentVrf.getStaticRoutes().add(new StaticRoute(toPrefix(ctx.network), toIp(ctx.nhip)));
+    _currentVrf.getStaticRoutes().add(new StaticRoute(toPrefix(ctx.network), toIp(ctx.nhip), null));
   }
 
   @Override
@@ -729,11 +880,6 @@ public class CumulusNcluConfigurationBuilder extends CumulusNcluParserBaseListen
   }
 
   @Override
-  public void exitB_neighbor(B_neighborContext ctx) {
-    _currentBgpNeighborName = null;
-  }
-
-  @Override
   public void exitB_router_id(B_router_idContext ctx) {
     _currentBgpVrf.setRouterId(toIp(ctx.id));
   }
@@ -802,21 +948,81 @@ public class CumulusNcluConfigurationBuilder extends CumulusNcluParserBaseListen
   }
 
   @Override
-  public void exitBni_remote_as_external(Bni_remote_as_externalContext ctx) {
-    _currentBgpInterfaceNeighbor.setRemoteAsType(RemoteAsType.EXTERNAL);
-    _currentBgpInterfaceNeighbor.setRemoteAs(null);
+  public void enterBle_neighbor(Ble_neighborContext ctx) {
+    _currentBgpNeighborName = ctx.name.getText();
+    _currentBgpNeighbor = _currentBgpVrf.getNeighbors().get(_currentBgpNeighborName);
+
+    if (_currentBgpNeighbor == null) {
+      throw new WillNotCommitException(getFullText(ctx));
+    }
+
+    if (_currentBgpNeighbor.getL2vpnEvpnAddressFamily() == null) {
+      _currentBgpNeighbor.setL2vpnEvpnAddressFamily(new BgpNeighborL2vpnEvpnAddressFamily());
+    }
   }
 
   @Override
-  public void exitBni_remote_as_internal(Bni_remote_as_internalContext ctx) {
-    _currentBgpInterfaceNeighbor.setRemoteAsType(RemoteAsType.INTERNAL);
-    _currentBgpInterfaceNeighbor.setRemoteAs(null);
+  public void exitBle_neighbor(Ble_neighborContext ctx) {
+    _currentBgpNeighborName = null;
+    _currentBgpNeighbor = null;
   }
 
   @Override
-  public void exitBni_remote_as_number(Bni_remote_as_numberContext ctx) {
-    _currentBgpInterfaceNeighbor.setRemoteAsType(RemoteAsType.EXPLICIT);
-    _currentBgpInterfaceNeighbor.setRemoteAs(toLong(ctx.as));
+  public void exitBlen_activate(Blen_activateContext ctx) {
+    assert _currentBgpNeighbor != null; // Ensure neighbor exists
+    assert _currentBgpNeighbor.getL2vpnEvpnAddressFamily() != null;
+    _currentBgpNeighbor.getL2vpnEvpnAddressFamily().setActivated(true);
+  }
+
+  @Override
+  public void exitBlen_route_reflector_client(Blen_route_reflector_clientContext ctx) {
+    assert _currentBgpNeighbor != null; // Ensure neighbor exists
+    BgpNeighborL2vpnEvpnAddressFamily l2vpnEvpnAddressFamily =
+        _currentBgpNeighbor.getL2vpnEvpnAddressFamily();
+    assert l2vpnEvpnAddressFamily != null;
+    // The neighbor must have been explicitly activated for route-reflector-client to take effect
+    // https://docs.cumulusnetworks.com/display/DOCS/Border+Gateway+Protocol+-+BGP#BorderGatewayProtocol-BGP-RouteReflectors
+    if (Boolean.TRUE.equals(l2vpnEvpnAddressFamily.getActivated())) {
+      l2vpnEvpnAddressFamily.setRouteReflectorClient(true);
+    }
+  }
+
+  @Override
+  public void exitBn_peer_group(Bn_peer_groupContext ctx) {
+    assert _currentBgpNeighborName != null;
+    assert _currentBgpVrf != null;
+    _currentBgpNeighbor =
+        _currentBgpVrf
+            .getNeighbors()
+            .computeIfAbsent(_currentBgpNeighborName, BgpPeerGroupNeighbor::new);
+  }
+
+  @Override
+  public void exitBnp_description(Bnp_descriptionContext ctx) {
+    assert _currentBgpNeighbor != null;
+    _currentBgpNeighbor.setDescription(ctx.text.getText());
+  }
+
+  @Override
+  public void exitBnp_peer_group(Bnp_peer_groupContext ctx) {
+    assert _currentBgpNeighbor != null;
+    _currentBgpNeighbor.setPeerGroup(ctx.name.getText());
+  }
+
+  @Override
+  public void exitBnp_remote_as(Bnp_remote_asContext ctx) {
+    assert _currentBgpNeighbor != null;
+    if (ctx.EXTERNAL() != null) {
+      _currentBgpNeighbor.setRemoteAsType(RemoteAsType.EXTERNAL);
+      _currentBgpNeighbor.setRemoteAs(null);
+    } else if (ctx.INTERNAL() != null) {
+      _currentBgpNeighbor.setRemoteAsType(RemoteAsType.INTERNAL);
+      _currentBgpNeighbor.setRemoteAs(null);
+    } else {
+      assert ctx.as != null;
+      _currentBgpNeighbor.setRemoteAsType(RemoteAsType.EXPLICIT);
+      _currentBgpNeighbor.setRemoteAs(toLong(ctx.as));
+    }
   }
 
   @Override
@@ -892,7 +1098,7 @@ public class CumulusNcluConfigurationBuilder extends CumulusNcluParserBaseListen
 
   @Override
   public void exitBrbr_vids(Brbr_vidsContext ctx) {
-    _c.getBridge().setVids(IntegerSpace.of(toRangeSet(ctx.ids)));
+    _c.getBridge().setVids(IntegerSpace.of(toRangeSetInt(ctx.ids)));
   }
 
   @Override
@@ -926,9 +1132,19 @@ public class CumulusNcluConfigurationBuilder extends CumulusNcluParserBaseListen
   }
 
   @Override
+  public void exitFrr_exit_vrf(Frr_exit_vrfContext ctx) {
+    _currentVrf = null;
+  }
+
+  @Override
   public void exitI_ip_address(I_ip_addressContext ctx) {
     ConcreteInterfaceAddress address = toInterfaceAddress(ctx.address);
     _currentInterfaces.forEach(iface -> iface.getIpAddresses().add(address));
+  }
+
+  @Override
+  public void exitI_link_speed(I_link_speedContext ctx) {
+    _currentInterfaces.forEach(iface -> iface.setSpeed(toInteger(ctx.speed)));
   }
 
   @Override
@@ -984,10 +1200,12 @@ public class CumulusNcluConfigurationBuilder extends CumulusNcluParserBaseListen
 
   @Override
   public void exitIc_peer_ip(Ic_peer_ipContext ctx) {
-    Ip peerIp = toIp(ctx.peer_ip);
+    Ip peerIp = ctx.peer_ip != null ? toIp(ctx.peer_ip) : null;
     _currentInterfaces.forEach(
         iface -> {
-          iface.getOrInitClag().setPeerIp(peerIp);
+          InterfaceClagSettings clag = iface.getOrInitClag();
+          clag.setPeerIp(peerIp);
+          clag.setPeerIpLinkLocal(ctx.LINKLOCAL() != null);
         });
   }
 
@@ -1031,7 +1249,12 @@ public class CumulusNcluConfigurationBuilder extends CumulusNcluParserBaseListen
 
   @Override
   public void exitR_route(R_routeContext ctx) {
-    _c.getStaticRoutes().add(new StaticRoute(toPrefix(ctx.prefix), toIp(ctx.nhip)));
+    _c.getStaticRoutes()
+        .add(
+            new StaticRoute(
+                toPrefix(ctx.prefix),
+                ctx.nhip != null ? toIp(ctx.nhip) : null,
+                ctx.iface != null ? ctx.iface.getText() : null));
   }
 
   @Override
@@ -1196,7 +1419,7 @@ public class CumulusNcluConfigurationBuilder extends CumulusNcluParserBaseListen
     return interfaces;
   }
 
-  /** Returns already-present or newly-created {@link Vlans}s with given {@code names}. */
+  /** Returns already-present or newly-created {@link Vlan}s with given {@code names}. */
   private @Nonnull List<Vlan> initVlansIfAbsent(Set<String> names, int line) {
     return names.stream()
         .map(
@@ -1324,14 +1547,37 @@ public class CumulusNcluConfigurationBuilder extends CumulusNcluParserBaseListen
             getFullText(ctx),
             ctx.toString(Arrays.asList(_parser.getParser().getRuleNames())),
             "This syntax is unrecognized");
+    unrecognized(warning, ctx);
+  }
 
+  @Override
+  public void visitErrorNode(ErrorNode errorNode) {
+    Token token = errorNode.getSymbol();
+    int line = token.getLine();
+    String lineText = errorNode.getText().replace("\n", "").replace("\r", "").trim();
+
+    if (token instanceof UnrecognizedLineToken) {
+      UnrecognizedLineToken unrecToken = (UnrecognizedLineToken) token;
+      ParseWarning warning =
+          new ParseWarning(
+              line, lineText, unrecToken.getParserContext(), "This syntax is unrecognized");
+      unrecognized(warning, null);
+    } else {
+      String msg = String.format("Unrecognized Line: %d: %s", line, lineText);
+      _w.redFlag(msg + " Subsequent lines may not be processed correctly");
+    }
+  }
+
+  private void unrecognized(ParseWarning warning, @Nullable ParserRuleContext ctx) {
     // for testing
     if (_parser.getSettings().getDisableUnrecognized()) {
       try {
         String warningStr = BatfishObjectMapper.writePrettyString(warning);
         String parseTreeStr =
-            ParseTreePrettyPrinter.print(
-                ctx, _parser, _parser.getSettings().getPrintParseTreeLineNums());
+            ctx != null
+                ? ParseTreePrettyPrinter.print(
+                    ctx, _parser, _parser.getSettings().getPrintParseTreeLineNums())
+                : "";
         throw new BatfishException(
             String.format(
                 "Forcing failure on unrecognized line: %s\n%s", warningStr, parseTreeStr));

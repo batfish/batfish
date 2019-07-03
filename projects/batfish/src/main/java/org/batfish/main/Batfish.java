@@ -689,13 +689,15 @@ public class Batfish extends PluginConsumer implements IBatfish {
               /*
               Bandwidth for aggregate child interfaces (e.g. units) should be inherited from parent.
               */
-              iface.getDependencies().stream()
-                  .filter(d -> d.getType() == DependencyType.BIND)
-                  .findFirst()
-                  .map(Dependency::getInterfaceName)
-                  .map(interfaces::get)
-                  .map(Interface::getBandwidth)
-                  .ifPresent(iface::setBandwidth);
+              double bandwidth =
+                  iface.getDependencies().stream()
+                      .filter(d -> d.getType() == DependencyType.BIND)
+                      .findFirst()
+                      .map(Dependency::getInterfaceName)
+                      .map(interfaces::get)
+                      .map(Interface::getBandwidth)
+                      .orElse(0.0);
+              iface.setBandwidth(bandwidth);
             });
   }
 
@@ -967,8 +969,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
                   "WARNING: Disabling unusable vlan interface because no switch port is assigned "
                       + "to it: \"%s:%d\"\n",
                   hostname, vlanNumber);
-              iface.setActive(false);
-              iface.setBlacklisted(true);
+              iface.blacklist();
             }
           }
         }
@@ -1439,11 +1440,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
     SortedMap<String, BgpAdvertisementsByVrf> environmentBgpTables =
         _cachedEnvironmentBgpTables.get(snapshot);
     if (environmentBgpTables == null) {
-      ParseEnvironmentBgpTablesAnswerElement ae = loadParseEnvironmentBgpTablesAnswerElement();
-      if (!Version.isCompatibleVersion(
-          "Service", "Old processed environment BGP tables", ae.getVersion())) {
-        repairEnvironmentBgpTables();
-      }
+      loadParseEnvironmentBgpTablesAnswerElement();
       environmentBgpTables =
           deserializeEnvironmentBgpTables(_testrigSettings.getSerializeEnvironmentBgpTablesPath());
       _cachedEnvironmentBgpTables.put(snapshot, environmentBgpTables);
@@ -1482,20 +1479,28 @@ public class Batfish extends PluginConsumer implements IBatfish {
     if (!Files.exists(answerPath)) {
       repairEnvironmentBgpTables();
     }
-    ParseEnvironmentBgpTablesAnswerElement ae =
-        deserializeObject(answerPath, ParseEnvironmentBgpTablesAnswerElement.class);
-    if (!Version.isCompatibleVersion(
-        "Service", "Old processed environment BGP tables", ae.getVersion())) {
-      if (firstAttempt) {
-        repairEnvironmentRoutingTables();
-        return loadParseEnvironmentBgpTablesAnswerElement(false);
-      } else {
-        throw new BatfishException(
-            "Version error repairing environment BGP tables for parse environment BGP tables "
-                + "answer element");
+    try {
+      ParseEnvironmentBgpTablesAnswerElement ae =
+          deserializeObject(answerPath, ParseEnvironmentBgpTablesAnswerElement.class);
+      if (Version.isCompatibleVersion(
+          "Service", "Old processed environment BGP tables", ae.getVersion())) {
+        return ae;
       }
+    } catch (Exception e) {
+      /* Do nothing, this is expected on serialization or other errors. */
+      _logger.warn(
+          "Unable to load prior parse data from "
+              + _testrigSettings.getParseEnvironmentBgpTablesAnswerPath()
+              + "\n");
+    }
+
+    if (firstAttempt) {
+      repairEnvironmentBgpTables();
+      return loadParseEnvironmentBgpTablesAnswerElement(false);
     } else {
-      return ae;
+      throw new BatfishException(
+          "Version error repairing environment BGP tables for parse environment BGP tables "
+              + "answer element");
     }
   }
 
@@ -1536,12 +1541,18 @@ public class Batfish extends PluginConsumer implements IBatfish {
   private ParseVendorConfigurationAnswerElement loadParseVendorConfigurationAnswerElement(
       boolean firstAttempt) {
     if (Files.exists(_testrigSettings.getParseAnswerPath())) {
-      ParseVendorConfigurationAnswerElement pvcae =
-          deserializeObject(
-              _testrigSettings.getParseAnswerPath(), ParseVendorConfigurationAnswerElement.class);
-      if (Version.isCompatibleVersion(
-          "Service", "Old processed configurations", pvcae.getVersion())) {
-        return pvcae;
+      try {
+        ParseVendorConfigurationAnswerElement pvcae =
+            deserializeObject(
+                _testrigSettings.getParseAnswerPath(), ParseVendorConfigurationAnswerElement.class);
+        if (Version.isCompatibleVersion(
+            "Service", "Old processed configurations", pvcae.getVersion())) {
+          return pvcae;
+        }
+      } catch (Exception e) {
+        /* Do nothing, this is expected on serialization or other errors. */
+        _logger.warn(
+            "Unable to load prior parse data from " + _testrigSettings.getParseAnswerPath() + "\n");
       }
     }
     if (firstAttempt) {
@@ -2040,8 +2051,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
               for (Interface iface : configuration.getAllInterfaces().values()) {
                 if (MANAGEMENT_INTERFACES.matcher(iface.getName()).find()
                     || MANAGEMENT_VRFS.matcher(iface.getVrfName()).find()) {
-                  iface.setActive(false);
-                  iface.setBlacklisted(true);
+                  iface.blacklist();
                 }
               }
             });
@@ -2272,16 +2282,16 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
   private void repairEnvironmentBgpTables() {
     Path answerPath = _testrigSettings.getParseEnvironmentBgpTablesAnswerPath();
-    Path bgpTablesOutputPath = _testrigSettings.getSerializeEnvironmentBgpTablesPath();
     CommonUtil.deleteIfExists(answerPath);
+    Path bgpTablesOutputPath = _testrigSettings.getSerializeEnvironmentBgpTablesPath();
     CommonUtil.deleteDirectory(bgpTablesOutputPath);
     computeEnvironmentBgpTables();
   }
 
   private void repairEnvironmentRoutingTables() {
     Path answerPath = _testrigSettings.getParseEnvironmentRoutingTablesAnswerPath();
-    Path rtOutputPath = _testrigSettings.getSerializeEnvironmentRoutingTablesPath();
     CommonUtil.deleteIfExists(answerPath);
+    Path rtOutputPath = _testrigSettings.getSerializeEnvironmentRoutingTablesPath();
     CommonUtil.deleteDirectory(rtOutputPath);
     computeEnvironmentRoutingTables();
   }
@@ -2359,7 +2369,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
   @VisibleForTesting
   void initializeTopology(NetworkSnapshot networkSnapshot) {
     Map<String, Configuration> configurations = loadConfigurations();
-    Topology rawLayer3Topology = _topologyProvider.getInitialRawLayer3Topology(networkSnapshot);
+    Topology rawLayer3Topology = _topologyProvider.getRawLayer3Topology(networkSnapshot);
     checkTopology(configurations, rawLayer3Topology);
     org.batfish.datamodel.pojo.Topology pojoTopology =
         org.batfish.datamodel.pojo.Topology.create(
@@ -2581,8 +2591,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
     SnapshotId snapshotId = _settings.getTestrig();
     NodeRolesId snapshotNodeRolesId = _idResolver.getSnapshotNodeRolesId(networkId, snapshotId);
     Set<String> nodeNames = loadConfigurations().keySet();
-    Topology rawLayer3Topology =
-        _topologyProvider.getInitialRawLayer3Topology(getNetworkSnapshot());
+    Topology rawLayer3Topology = _topologyProvider.getRawLayer3Topology(getNetworkSnapshot());
     SortedSet<NodeRoleDimension> autoRoles =
         new InferRoles(nodeNames, rawLayer3Topology).inferRoles();
     NodeRolesData.Builder snapshotNodeRoles = NodeRolesData.builder();
@@ -2630,6 +2639,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
               .putBoolean(settings.getPrintParseTree())
               .putBoolean(settings.getThrowOnLexerError())
               .putBoolean(settings.getThrowOnParserError())
+              .putBoolean(settings.getUseNewCiscoNxosParser())
               .hash()
               .toString();
       long startTime = System.currentTimeMillis();
@@ -2642,7 +2652,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
         cached = result.getFilename().equals(filename);
       } catch (FileNotFoundException e) {
         result = job.parse();
-      } catch (IOException e) {
+      } catch (Exception e) {
         _logger.warnf(
             "Error deserializing cached parse result for %s: %s",
             filename, Throwables.getStackTraceAsString(e));

@@ -71,7 +71,6 @@ public final class VniSettings implements Serializable {
   private static final String PROP_UDP_PORT = "udpPort";
   private static final String PROP_VLAN = "vlan";
   private static final String PROP_VNI = "vni";
-  private static final long serialVersionUID = 1L;
 
   @Nonnull private final SortedSet<Ip> _bumTransportIps;
   @Nonnull private final BumTransportMethod _bumTransportMethod;

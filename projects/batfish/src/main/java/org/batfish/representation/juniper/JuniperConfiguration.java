@@ -103,6 +103,7 @@ import org.batfish.datamodel.acl.OrMatchExpr;
 import org.batfish.datamodel.acl.OriginatingFromDevice;
 import org.batfish.datamodel.acl.PermittedByAcl;
 import org.batfish.datamodel.acl.TrueExpr;
+import org.batfish.datamodel.bgp.AddressFamilyCapabilities;
 import org.batfish.datamodel.bgp.Ipv4UnicastAddressFamily;
 import org.batfish.datamodel.bgp.community.StandardCommunity;
 import org.batfish.datamodel.dataplane.rib.RibId;
@@ -208,8 +209,6 @@ public final class JuniperConfiguration extends VendorConfiguration {
   @VisibleForTesting static final int MAX_ISIS_COST_WITHOUT_WIDE_METRICS = 63;
 
   private static final String FIRST_LOOPBACK_INTERFACE_NAME = "lo0";
-
-  private static final long serialVersionUID = 1L;
 
   private static String communityRegexToJavaRegex(String regex) {
     String out = regex;
@@ -399,27 +398,29 @@ public final class JuniperConfiguration extends VendorConfiguration {
               .get();
 
       boolean allowLocalAsIn = loops > 0;
-      neighbor.setAllowLocalAsIn(allowLocalAsIn);
+      AddressFamilyCapabilities.Builder ipv4AfSettingsBuilder = AddressFamilyCapabilities.builder();
+      Ipv4UnicastAddressFamily.Builder ipv4AfBuilder = Ipv4UnicastAddressFamily.builder();
+      ipv4AfSettingsBuilder.setAllowLocalAsIn(allowLocalAsIn);
       Boolean advertisePeerAs = ig.getAdvertisePeerAs();
       if (advertisePeerAs == null) {
         advertisePeerAs = false;
       }
-      neighbor.setAllowRemoteAsOut(advertisePeerAs);
+      ipv4AfSettingsBuilder.setAllowRemoteAsOut(advertisePeerAs);
       Boolean advertiseExternal = ig.getAdvertiseExternal();
       if (advertiseExternal == null) {
         advertiseExternal = false;
       }
-      neighbor.setAdvertiseExternal(advertiseExternal);
+      ipv4AfSettingsBuilder.setAdvertiseExternal(advertiseExternal);
       Boolean advertiseInactive = ig.getAdvertiseInactive();
       if (advertiseInactive == null) {
         advertiseInactive = false;
       }
-      neighbor.setAdvertiseInactive(advertiseInactive);
+      ipv4AfSettingsBuilder.setAdvertiseInactive(advertiseInactive);
       neighbor.setGroup(ig.getGroupName());
 
       // import policies
       String peerImportPolicyName = "~PEER_IMPORT_POLICY:" + ig.getRemoteAddress() + "~";
-      neighbor.setImportPolicy(peerImportPolicyName);
+      ipv4AfBuilder.setImportPolicy(peerImportPolicyName);
       RoutingPolicy peerImportPolicy = new RoutingPolicy(peerImportPolicyName, _c);
       _c.getRoutingPolicies().put(peerImportPolicyName, peerImportPolicy);
       // default import policy is to accept
@@ -461,7 +462,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
 
       // export policies
       String peerExportPolicyName = computePeerExportPolicyName(ig.getRemoteAddress());
-      neighbor.setExportPolicy(peerExportPolicyName);
+      ipv4AfBuilder.setExportPolicy(peerExportPolicyName);
       RoutingPolicy peerExportPolicy = new RoutingPolicy(peerExportPolicyName, _c);
       _c.getRoutingPolicies().put(peerExportPolicyName, peerExportPolicy);
       peerExportPolicy.getStatements().add(new SetDefaultPolicy(DEFAULT_BGP_EXPORT_POLICY_NAME));
@@ -532,7 +533,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
 
       // TODO: find out if there is a juniper equivalent of cisco
       // send-community
-      neighbor.setSendCommunity(true);
+      ipv4AfSettingsBuilder.setSendCommunity(true);
 
       // inherit update-source
       Ip localIp = ig.getLocalAddress();
@@ -571,7 +572,8 @@ public final class JuniperConfiguration extends VendorConfiguration {
         neighbor.setLocalIp(localIp);
       }
       neighbor.setBgpProcess(proc);
-      neighbor.setIpv4UnicastAddressFamily(Ipv4UnicastAddressFamily.instance());
+      neighbor.setIpv4UnicastAddressFamily(
+          ipv4AfBuilder.setAddressFamilyCapabilities(ipv4AfSettingsBuilder.build()).build());
       neighbor.build();
     }
     proc.setMultipathEbgp(multipathEbgpSet);
@@ -1308,7 +1310,13 @@ public final class JuniperConfiguration extends VendorConfiguration {
    */
   private org.batfish.datamodel.Interface toInterfaceNonUnit(Interface iface) {
     String name = iface.getName();
-    org.batfish.datamodel.Interface newIface = new org.batfish.datamodel.Interface(name, _c);
+    org.batfish.datamodel.Interface newIface =
+        org.batfish.datamodel.Interface.builder()
+            .setName(name)
+            .setType(
+                org.batfish.datamodel.Interface.computeInterfaceType(
+                    name, _c.getConfigurationFormat()))
+            .build();
     newIface.setDeclaredNames(ImmutableSortedSet.of(name));
     newIface.setDescription(iface.getDescription());
 
@@ -1333,7 +1341,8 @@ public final class JuniperConfiguration extends VendorConfiguration {
 
   private org.batfish.datamodel.Interface toInterface(Interface iface) {
     String name = iface.getName();
-    org.batfish.datamodel.Interface newIface = new org.batfish.datamodel.Interface(name, _c);
+    org.batfish.datamodel.Interface newIface =
+        org.batfish.datamodel.Interface.builder().setName(name).setOwner(_c).build();
     newIface.setDeclaredNames(ImmutableSortedSet.of(name));
     newIface.setDescription(iface.getDescription());
     Integer mtu = iface.getMtu();
@@ -1366,7 +1375,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
       // create session info
       newIface.setFirewallSessionInterfaceInfo(
           new FirewallSessionInterfaceInfo(
-              zone.getInterfaces(), iface.getIncomingFilter(), iface.getOutgoingFilter()));
+              false, zone.getInterfaces(), iface.getIncomingFilter(), iface.getOutgoingFilter()));
     }
 
     String incomingFilterName = iface.getIncomingFilter();
@@ -3106,6 +3115,9 @@ public final class JuniperConfiguration extends VendorConfiguration {
     }
     _c.getAllInterfaces().put(ifaceName, viIface);
     vrf.getInterfaces().put(ifaceName, viIface);
+    if (viIface.getOwner() == null) {
+      viIface.setOwner(_c);
+    }
   }
 
   private org.batfish.datamodel.Zone toZone(Zone zone) {

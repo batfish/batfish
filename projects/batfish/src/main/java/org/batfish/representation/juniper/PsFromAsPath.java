@@ -15,8 +15,6 @@ import org.batfish.grammar.flatjuniper.AsPathRegex;
 /** Represents a "from as-path" line in a {@link PsTerm} */
 public final class PsFromAsPath extends PsFrom {
 
-  private static final long serialVersionUID = 1L;
-
   private String _asPathName;
 
   public PsFromAsPath(String asPathName) {

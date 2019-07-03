@@ -60,8 +60,6 @@ public final class GeneratedRoute6 extends AbstractRoute6 implements Comparable<
   private static final String PROP_DISCARD = "discard";
   private static final String PROP_METRIC = "metric";
 
-  private static final long serialVersionUID = 1L;
-
   private int _administrativeCost;
 
   private AsPath _asPath;

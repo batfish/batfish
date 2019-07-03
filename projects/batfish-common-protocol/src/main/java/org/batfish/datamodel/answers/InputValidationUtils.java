@@ -43,16 +43,16 @@ public final class InputValidationUtils {
         return ParboiledInputValidator.validateEnumSet(Arrays.asList(Protocol.values()), query);
       case BGP_PEER_PROPERTY_SPEC:
         return ParboiledInputValidator.validateEnumSet(
-            BgpPeerPropertySpecifier.JAVA_MAP.keySet(), query);
+            BgpPeerPropertySpecifier.ALL.getMatchingProperties(), query);
       case BGP_PROCESS_PROPERTY_SPEC:
         return ParboiledInputValidator.validateEnumSet(
-            BgpProcessPropertySpecifier.JAVA_MAP.keySet(), query);
+            BgpProcessPropertySpecifier.ALL.getMatchingProperties(), query);
       case FILTER_SPEC:
         return ParboiledInputValidator.validate(
             Grammar.FILTER_SPECIFIER, query, completionMetadata, nodeRolesData, referenceLibrary);
       case INTERFACE_PROPERTY_SPEC:
         return ParboiledInputValidator.validateEnumSet(
-            InterfacePropertySpecifier.JAVA_MAP.keySet(), query);
+            InterfacePropertySpecifier.ALL.getMatchingProperties(), query);
       case INTERFACES_SPEC:
         return ParboiledInputValidator.validate(
             Grammar.INTERFACE_SPECIFIER,
@@ -81,7 +81,7 @@ public final class InputValidationUtils {
             Grammar.NODE_SPECIFIER, query, completionMetadata, nodeRolesData, referenceLibrary);
       case NODE_PROPERTY_SPEC:
         return ParboiledInputValidator.validateEnumSet(
-            NodePropertySpecifier.JAVA_MAP.keySet(), query);
+            NodePropertySpecifier.ALL.getMatchingProperties(), query);
       case ROUTING_POLICY_SPEC:
         return ParboiledInputValidator.validate(
             Grammar.ROUTING_POLICY_SPECIFIER,

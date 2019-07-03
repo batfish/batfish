@@ -20,8 +20,6 @@ public class LogicalSystem implements Serializable {
 
   public static final String GLOBAL_ADDRESS_BOOK_NAME = "global";
 
-  private static final long serialVersionUID = 1L;
-
   private final Map<String, AddressBook> _addressBooks;
 
   private final Map<String, BaseApplication> _applications;

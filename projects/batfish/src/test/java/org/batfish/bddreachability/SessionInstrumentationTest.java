@@ -33,24 +33,35 @@ import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.collections.NodeInterfacePair;
+import org.batfish.datamodel.flow.Accept;
+import org.batfish.datamodel.flow.FibLookup;
+import org.batfish.datamodel.flow.ForwardOutInterface;
 import org.batfish.symbolic.state.NodeAccept;
 import org.batfish.symbolic.state.NodeDropAclIn;
 import org.batfish.symbolic.state.NodeDropAclOut;
 import org.batfish.symbolic.state.NodeInterfaceDeliveredToSubnet;
+import org.batfish.symbolic.state.PostInVrfSession;
 import org.batfish.symbolic.state.PreInInterface;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
+import org.junit.rules.TemporaryFolder;
 
 /** Tests for {@link SessionInstrumentation}. */
 public final class SessionInstrumentationTest {
+
+  @Rule public TemporaryFolder _folder = new TemporaryFolder();
+
   private static final String LAST_HOP_VAR_NAME = "lastHop";
 
   // hostnames
   private static String FW = "FW";
   private static String SOURCE1 = "SOURCE1";
   private static String SOURCE2 = "SOURCE2";
+
+  // vrf names
+  private static String FW_VRF = "FW:VRF";
 
   // interface names
   private static String FW_I1 = "FW:I1";
@@ -94,7 +105,7 @@ public final class SessionInstrumentationTest {
     // Setup FW
     {
       _fw = cb.setHostname(FW).build();
-      Vrf vrf = nf.vrfBuilder().setOwner(_fw).build();
+      Vrf vrf = nf.vrfBuilder().setOwner(_fw).setName(FW_VRF).build();
       Interface.Builder ib = nf.interfaceBuilder().setActive(true).setOwner(_fw).setVrf(vrf);
       _fwI1 = ib.setName(FW_I1).build();
     }
@@ -109,7 +120,7 @@ public final class SessionInstrumentationTest {
 
     // Setup source 2
     {
-      _source2 = cb.setHostname(SOURCE1).build();
+      _source2 = cb.setHostname(SOURCE2).build();
       Vrf vrf = nf.vrfBuilder().setOwner(_source2).build();
       Interface.Builder ib = nf.interfaceBuilder().setActive(true).setOwner(_source2).setVrf(vrf);
       ib.setName(SOURCE2_IFACE).build();
@@ -178,6 +189,12 @@ public final class SessionInstrumentationTest {
         .collect(ImmutableList.toImmutableList());
   }
 
+  private List<Edge> postInVrfSessionEdges(BDDFirewallSessionTraceInfo sessionInfo) {
+    return new SessionInstrumentation(PKT, configs(), _srcMgrs, _lastHopMgr, _filterBdds)
+        .postInVrfSessionEdges(sessionInfo)
+        .collect(ImmutableList.toImmutableList());
+  }
+
   private List<Edge> preInInterfaceEdges(BDDFirewallSessionTraceInfo sessionInfo) {
     return new SessionInstrumentation(PKT, configs(), _srcMgrs, _lastHopMgr, _filterBdds)
         .preInInterfaceEdges(sessionInfo)
@@ -194,7 +211,7 @@ public final class SessionInstrumentationTest {
 
     BDDFirewallSessionTraceInfo sessionInfo =
         new BDDFirewallSessionTraceInfo(
-            FW, ImmutableSet.of(FW_I1), null, null, sessionHeaders, IDENTITY);
+            FW, ImmutableSet.of(FW_I1), Accept.INSTANCE, sessionHeaders, IDENTITY);
 
     // No transformation, no ACLs
     assertThat(
@@ -212,7 +229,7 @@ public final class SessionInstrumentationTest {
 
     // FW_I1 has an incoming session ACL
     _fwI1.setFirewallSessionInterfaceInfo(
-        new FirewallSessionInterfaceInfo(ImmutableList.of(FW_I1), PERMIT_TCP, null));
+        new FirewallSessionInterfaceInfo(false, ImmutableList.of(FW_I1), PERMIT_TCP, null));
     assertThat(
         nodeAcceptEdges(sessionInfo),
         contains(
@@ -233,7 +250,7 @@ public final class SessionInstrumentationTest {
       Transition nat = Transitions.eraseAndSet(PKT.getSrcIp(), poolBdd);
       BDDFirewallSessionTraceInfo natSessionInfo =
           new BDDFirewallSessionTraceInfo(
-              FW, ImmutableSet.of(FW_I1), null, null, sessionHeaders, nat);
+              FW, ImmutableSet.of(FW_I1), Accept.INSTANCE, sessionHeaders, nat);
       assertThat(
           nodeAcceptEdges(natSessionInfo),
           contains(
@@ -251,6 +268,23 @@ public final class SessionInstrumentationTest {
   }
 
   @Test
+  public void testPostInVrfSessionEdges() {
+    BDD sessionHeaders = PKT.getDstIp().value(10L);
+    BDDFirewallSessionTraceInfo sessionInfo =
+        new BDDFirewallSessionTraceInfo(
+            FW, ImmutableSet.of(FW_I1), FibLookup.INSTANCE, sessionHeaders, IDENTITY);
+
+    assertThat(
+        postInVrfSessionEdges(sessionInfo),
+        contains(
+            allOf(
+                hasPreState(new PreInInterface(FW, FW_I1)),
+                hasPostState(new PostInVrfSession(FW, FW_VRF)),
+                hasTransition(
+                    allOf(mapsForward(ONE, sessionHeaders), mapsBackward(ONE, sessionHeaders))))));
+  }
+
+  @Test
   public void testPreInInterfaceEdges() {
     BDD sessionHeaders = PKT.getDstIp().value(10L);
     BDD srcFwI1 = _fwSrcMgr.getSourceInterfaceBDD(FW_I1);
@@ -265,8 +299,7 @@ public final class SessionInstrumentationTest {
         new BDDFirewallSessionTraceInfo(
             FW,
             ImmutableSet.of(FW_I1),
-            new NodeInterfacePair(SOURCE1, SOURCE1_IFACE),
-            FW_I1,
+            new ForwardOutInterface(FW_I1, new NodeInterfacePair(SOURCE1, SOURCE1_IFACE)),
             sessionHeaders,
             IDENTITY);
 
@@ -287,7 +320,7 @@ public final class SessionInstrumentationTest {
 
     // FW_I1 has an incoming session ACL
     _fwI1.setFirewallSessionInterfaceInfo(
-        new FirewallSessionInterfaceInfo(ImmutableList.of(FW_I1), PERMIT_TCP, null));
+        new FirewallSessionInterfaceInfo(false, ImmutableList.of(FW_I1), PERMIT_TCP, null));
     assertThat(
         preInInterfaceEdges(sessionInfo),
         contains(
@@ -309,7 +342,7 @@ public final class SessionInstrumentationTest {
 
     // FW_I1 has an outgoing session ACL
     _fwI1.setFirewallSessionInterfaceInfo(
-        new FirewallSessionInterfaceInfo(ImmutableList.of(FW_I1), null, PERMIT_TCP));
+        new FirewallSessionInterfaceInfo(false, ImmutableList.of(FW_I1), null, PERMIT_TCP));
     assertThat(
         preInInterfaceEdges(sessionInfo),
         contains(
@@ -337,8 +370,7 @@ public final class SessionInstrumentationTest {
           new BDDFirewallSessionTraceInfo(
               FW,
               ImmutableSet.of(FW_I1),
-              new NodeInterfacePair(SOURCE1, SOURCE1_IFACE),
-              FW_I1,
+              new ForwardOutInterface(FW_I1, new NodeInterfacePair(SOURCE1, SOURCE1_IFACE)),
               sessionHeaders,
               nat);
       assertThat(
@@ -370,7 +402,11 @@ public final class SessionInstrumentationTest {
 
     BDDFirewallSessionTraceInfo sessionInfo =
         new BDDFirewallSessionTraceInfo(
-            FW, ImmutableSet.of(FW_I1), null, FW_I1, sessionHeaders, IDENTITY);
+            FW,
+            ImmutableSet.of(FW_I1),
+            new ForwardOutInterface(FW_I1, null),
+            sessionHeaders,
+            IDENTITY);
 
     // No transformation, no ACLs
     List<Edge> actual = deliveredToSubnetEdges(sessionInfo);
@@ -391,7 +427,7 @@ public final class SessionInstrumentationTest {
 
     // FW_I1 has an incoming session ACL
     _fwI1.setFirewallSessionInterfaceInfo(
-        new FirewallSessionInterfaceInfo(ImmutableList.of(FW_I1), PERMIT_TCP, null));
+        new FirewallSessionInterfaceInfo(false, ImmutableList.of(FW_I1), PERMIT_TCP, null));
     assertThat(
         deliveredToSubnetEdges(sessionInfo),
         contains(
@@ -406,7 +442,7 @@ public final class SessionInstrumentationTest {
 
     // FW_I1 has an outgoing session ACL
     _fwI1.setFirewallSessionInterfaceInfo(
-        new FirewallSessionInterfaceInfo(ImmutableList.of(FW_I1), null, PERMIT_TCP));
+        new FirewallSessionInterfaceInfo(false, ImmutableList.of(FW_I1), null, PERMIT_TCP));
     assertThat(
         deliveredToSubnetEdges(sessionInfo),
         contains(
@@ -425,7 +461,11 @@ public final class SessionInstrumentationTest {
       Transition nat = Transitions.eraseAndSet(PKT.getSrcIp(), poolBdd);
       BDDFirewallSessionTraceInfo natSessionInfo =
           new BDDFirewallSessionTraceInfo(
-              FW, ImmutableSet.of(FW_I1), null, FW_I1, sessionHeaders, nat);
+              FW,
+              ImmutableSet.of(FW_I1),
+              new ForwardOutInterface(FW_I1, null),
+              sessionHeaders,
+              nat);
       assertThat(
           deliveredToSubnetEdges(natSessionInfo),
           contains(
@@ -449,14 +489,14 @@ public final class SessionInstrumentationTest {
 
     BDDFirewallSessionTraceInfo sessionInfo =
         new BDDFirewallSessionTraceInfo(
-            FW, ImmutableSet.of(FW_I1), null, null, sessionHeaders, IDENTITY);
+            FW, ImmutableSet.of(FW_I1), Accept.INSTANCE, sessionHeaders, IDENTITY);
 
     // No ACLs
     assertThat(nodeDropAclInEdges(sessionInfo), empty());
 
     // FW_I1 has an incoming session ACL
     _fwI1.setFirewallSessionInterfaceInfo(
-        new FirewallSessionInterfaceInfo(ImmutableList.of(FW_I1), PERMIT_TCP, null));
+        new FirewallSessionInterfaceInfo(false, ImmutableList.of(FW_I1), PERMIT_TCP, null));
     assertThat(
         nodeDropAclInEdges(sessionInfo),
         contains(
@@ -479,14 +519,18 @@ public final class SessionInstrumentationTest {
 
     BDDFirewallSessionTraceInfo sessionInfo =
         new BDDFirewallSessionTraceInfo(
-            FW, ImmutableSet.of(FW_I1), null, FW_I1, sessionHeaders, IDENTITY);
+            FW,
+            ImmutableSet.of(FW_I1),
+            new ForwardOutInterface(FW_I1, null),
+            sessionHeaders,
+            IDENTITY);
 
     // No ACLs
     assertThat(nodeDropAclOutEdges(sessionInfo), empty());
 
     // FW_I1 has an outgoing session ACL
     _fwI1.setFirewallSessionInterfaceInfo(
-        new FirewallSessionInterfaceInfo(ImmutableList.of(FW_I1), null, PERMIT_TCP));
+        new FirewallSessionInterfaceInfo(false, ImmutableList.of(FW_I1), null, PERMIT_TCP));
     assertThat(
         nodeDropAclOutEdges(sessionInfo),
         contains(

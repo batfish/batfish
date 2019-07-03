@@ -26,9 +26,11 @@ import static org.batfish.datamodel.matchers.AaaAuthenticationMatchers.hasLogin;
 import static org.batfish.datamodel.matchers.AaaMatchers.hasAuthentication;
 import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasPrefix;
 import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasProtocol;
+import static org.batfish.datamodel.matchers.AddressFamilyCapabilitiesMatchers.hasAllowRemoteAsOut;
+import static org.batfish.datamodel.matchers.AddressFamilyMatchers.hasAddressFamilySettings;
 import static org.batfish.datamodel.matchers.AndMatchExprMatchers.hasConjuncts;
 import static org.batfish.datamodel.matchers.AndMatchExprMatchers.isAndMatchExprThat;
-import static org.batfish.datamodel.matchers.BgpNeighborMatchers.hasAllowRemoteAsOut;
+import static org.batfish.datamodel.matchers.BgpNeighborMatchers.hasIpv4UnicastAddressFamily;
 import static org.batfish.datamodel.matchers.BgpNeighborMatchers.hasLocalAs;
 import static org.batfish.datamodel.matchers.BgpNeighborMatchers.hasRemoteAs;
 import static org.batfish.datamodel.matchers.BgpProcessMatchers.hasActiveNeighbor;
@@ -98,6 +100,7 @@ import static org.batfish.datamodel.matchers.InterfaceMatchers.hasMlagId;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasMtu;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasNativeVlan;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasOspfArea;
+import static org.batfish.datamodel.matchers.InterfaceMatchers.hasOspfAreaName;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasSpeed;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasSwitchPortEncapsulation;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasSwitchPortMode;
@@ -2555,7 +2558,7 @@ public class CiscoGrammarTest {
   }
 
   @Test
-  public void testIosOspfDistributeList() throws IOException {
+  public void testIosOspfDistributeList() {
     CiscoConfiguration c = parseCiscoConfig("iosOspfDistributeList", ConfigurationFormat.CISCO_IOS);
     DistributeList globalInPrefix =
         new DistributeList("block_5", DistributeListFilterType.PREFIX_LIST);
@@ -3096,6 +3099,52 @@ public class CiscoGrammarTest {
     assertThat(c, hasRouteFilterList("pre_combo", not(permits(rejectedPrefix))));
     assertThat(c, hasRoute6FilterList("pre_combo", permits(permittedPrefix6)));
     assertThat(c, hasRoute6FilterList("pre_combo", not(permits(rejectedPrefix6))));
+  }
+
+  @Test
+  public void testIosXrPrefixSet() throws IOException {
+    String hostname = "ios-xr-prefix-set";
+    Configuration c = parseConfig(hostname);
+    assertThat(c, hasConfigurationFormat(ConfigurationFormat.CISCO_IOS_XR));
+
+    Prefix permittedPrefix = Prefix.parse("1.2.3.4/32");
+    Prefix permittedPrefix2 = Prefix.parse("1.2.3.5/32");
+    Prefix rejectedPrefix = Prefix.parse("2.0.0.0/8");
+
+    StaticRoute permittedRoute =
+        StaticRoute.builder().setAdministrativeCost(1).setNetwork(permittedPrefix).build();
+    StaticRoute permittedRoute2 =
+        StaticRoute.builder().setAdministrativeCost(1).setNetwork(permittedPrefix2).build();
+    StaticRoute rejectedRoute =
+        StaticRoute.builder().setAdministrativeCost(1).setNetwork(rejectedPrefix).build();
+
+    // The route-policy accepts and rejects the same prefixes.
+    RoutingPolicy rp = c.getRoutingPolicies().get("rp_ip");
+    assertThat(rp, notNullValue());
+    assertTrue(
+        rp.process(permittedRoute, Bgpv4Route.builder(), null, DEFAULT_VRF_NAME, Direction.OUT));
+    assertTrue(
+        rp.process(permittedRoute2, Bgpv4Route.builder(), null, DEFAULT_VRF_NAME, Direction.OUT));
+    assertFalse(
+        rp.process(rejectedRoute, Bgpv4Route.builder(), null, DEFAULT_VRF_NAME, Direction.OUT));
+
+    // The BGP peer export policy also accepts and rejects the same prefixes.
+    BgpActivePeerConfig bgpCfg =
+        c.getDefaultVrf().getBgpProcess().getActiveNeighbors().get(Prefix.parse("10.1.1.1/32"));
+    assertThat(bgpCfg, notNullValue());
+    RoutingPolicy bgpRpOut =
+        c.getRoutingPolicies().get(bgpCfg.getIpv4UnicastAddressFamily().getExportPolicy());
+    assertThat(bgpRpOut, notNullValue());
+
+    assertTrue(
+        bgpRpOut.process(
+            permittedRoute, Bgpv4Route.builder(), null, DEFAULT_VRF_NAME, Direction.OUT));
+    assertTrue(
+        bgpRpOut.process(
+            permittedRoute2, Bgpv4Route.builder(), null, DEFAULT_VRF_NAME, Direction.OUT));
+    assertFalse(
+        bgpRpOut.process(
+            rejectedRoute, Bgpv4Route.builder(), null, DEFAULT_VRF_NAME, Direction.OUT));
   }
 
   @Test
@@ -3985,7 +4034,11 @@ public class CiscoGrammarTest {
     assertThat(
         c,
         hasDefaultVrf(
-            hasBgpProcess(hasActiveNeighbor(neighborWithRemoteAs, hasAllowRemoteAsOut(true)))));
+            hasBgpProcess(
+                hasActiveNeighbor(
+                    neighborWithRemoteAs,
+                    hasIpv4UnicastAddressFamily(
+                        hasAddressFamilySettings(hasAllowRemoteAsOut(true)))))));
   }
 
   @Test
@@ -4117,7 +4170,7 @@ public class CiscoGrammarTest {
   }
 
   @Test
-  public void testEosVxlanCiscoConfig() throws IOException {
+  public void testEosVxlanCiscoConfig() {
     String hostname = "eos-vxlan";
 
     CiscoConfiguration config = parseCiscoConfig(hostname, ConfigurationFormat.ARISTA);
@@ -5008,13 +5061,20 @@ public class CiscoGrammarTest {
             hasBgpProcess(
                 hasActiveNeighbor(
                     Prefix.parse("2.2.2.2/32"),
-                    allOf(hasRemoteAs(2L), hasLocalAs(1L), hasAllowRemoteAsOut(true))))));
+                    allOf(
+                        hasRemoteAs(2L),
+                        hasLocalAs(1L),
+                        hasIpv4UnicastAddressFamily(
+                            hasAddressFamilySettings(hasAllowRemoteAsOut(true))))))));
     assertThat(
         c,
         ConfigurationMatchers.hasVrf(
             "bar",
             hasBgpProcess(
-                hasActiveNeighbor(Prefix.parse("3.3.3.3/32"), hasAllowRemoteAsOut(false)))));
+                hasActiveNeighbor(
+                    Prefix.parse("3.3.3.3/32"),
+                    hasIpv4UnicastAddressFamily(
+                        hasAddressFamilySettings(hasAllowRemoteAsOut(false)))))));
   }
 
   @Test
@@ -5048,6 +5108,21 @@ public class CiscoGrammarTest {
 
     // Confirm interface definition is tracked for the alias name
     assertThat(ccae, hasDefinedStructure(filename, INTERFACE, "ifname"));
+  }
+
+  // https://github.com/batfish/batfish/issues/4124
+  @Test
+  public void testAsaInterfaceOspfWithInheritance() throws IOException {
+    String hostname = "asa-interface-ospf";
+    Configuration c = parseConfig(hostname);
+    assertThat(
+        c,
+        hasInterface(
+            "LAB-INT",
+            allOf(
+                hasBandwidth(0.0d),
+                hasOspfAreaName(0L),
+                hasInterfaceType(InterfaceType.AGGREGATE_CHILD))));
   }
 
   @Test
@@ -5871,6 +5946,8 @@ public class CiscoGrammarTest {
             .getBgpProcess()
             .getActiveNeighbors()
             .get(Prefix.parse("1.1.1.1/32"))
+            .getIpv4UnicastAddressFamily()
+            .getAddressFamilyCapabilities()
             .getAdvertiseInactive());
   }
 
@@ -5883,6 +5960,8 @@ public class CiscoGrammarTest {
             .getBgpProcess()
             .getActiveNeighbors()
             .get(Prefix.parse("1.1.1.1/32"))
+            .getIpv4UnicastAddressFamily()
+            .getAddressFamilyCapabilities()
             .getAdvertiseInactive());
   }
 
@@ -5895,6 +5974,8 @@ public class CiscoGrammarTest {
             .getBgpProcess()
             .getActiveNeighbors()
             .get(Prefix.parse("1.1.1.1/32"))
+            .getIpv4UnicastAddressFamily()
+            .getAddressFamilyCapabilities()
             .getAdvertiseInactive());
   }
 }

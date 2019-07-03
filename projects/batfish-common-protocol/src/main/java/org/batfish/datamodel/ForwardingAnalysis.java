@@ -22,6 +22,9 @@ public interface ForwardingAnalysis {
   /** Mapping: hostname -&gt; outInterface -&gt; dstIpsForWhichCannotReachNeighbors */
   Map<String, Map<String, Map<String, IpSpace>>> getNeighborUnreachable();
 
+  /** Mapping: hostname -&gt; vrfName -&gt; nextVrfName-&gt; dstIPsVrfDelegatesToNextVrf */
+  Map<String, Map<String, Map<String, IpSpace>>> getNextVrfIps();
+
   /** Mapping: hostname -&gt; outInterface -&gt; dstIpsForWhichNoSufficientInfoToDetermine */
   Map<String, Map<String, Map<String, IpSpace>>> getInsufficientInfo();
 

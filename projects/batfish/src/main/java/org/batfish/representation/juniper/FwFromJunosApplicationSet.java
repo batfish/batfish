@@ -8,8 +8,6 @@ import org.batfish.datamodel.LineAction;
 
 public final class FwFromJunosApplicationSet extends FwFromApplicationSetMember {
 
-  private static final long serialVersionUID = 1L;
-
   private final JunosApplicationSet _junosApplicationSet;
 
   public FwFromJunosApplicationSet(JunosApplicationSet junosApplicationSet) {

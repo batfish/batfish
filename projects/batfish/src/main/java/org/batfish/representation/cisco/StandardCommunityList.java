@@ -7,8 +7,6 @@ import javax.annotation.Nonnull;
 
 public final class StandardCommunityList implements Serializable {
 
-  private static final long serialVersionUID = 1L;
-
   private final List<StandardCommunityListLine> _lines;
 
   private final String _name;

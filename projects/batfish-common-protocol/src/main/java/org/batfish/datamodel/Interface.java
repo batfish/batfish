@@ -30,7 +30,6 @@ import org.batfish.common.util.ComparableStructure;
 import org.batfish.datamodel.NetworkFactory.NetworkFactoryBuilder;
 import org.batfish.datamodel.eigrp.EigrpInterfaceSettings;
 import org.batfish.datamodel.hsrp.HsrpGroup;
-import org.batfish.datamodel.isis.IsisInterfaceMode;
 import org.batfish.datamodel.isis.IsisInterfaceSettings;
 import org.batfish.datamodel.ospf.OspfArea;
 import org.batfish.datamodel.transformation.Transformation;
@@ -40,89 +39,52 @@ public final class Interface extends ComparableStructure<String> {
   public static class Builder extends NetworkFactoryBuilder<Interface> {
 
     private @Nullable Integer _accessVlan;
-
     private boolean _active;
-
     private InterfaceAddress _address;
-
     private @Nullable IntegerSpace _allowedVlans;
-
+    private boolean _autoState;
     @Nullable private Double _bandwidth;
-
     private boolean _blacklisted;
-
     private SortedSet<String> _declaredNames;
-
     @Nonnull private Set<Dependency> _dependencies = ImmutableSet.of();
-
     @Nullable private EigrpInterfaceSettings _eigrp;
-
     @Nullable private Integer _encapsulationVlan;
-
     private Map<Integer, HsrpGroup> _hsrpGroups;
-
     private String _hsrpVersion;
-
     private FirewallSessionInterfaceInfo _firewallSessionInterfaceInfo;
-
     private String _ospfInboundDistributeListPolicy;
-
     private IpAccessList _incomingFilter;
-
     private Transformation _incomingTransformation;
-
     private IsisInterfaceSettings _isis;
-
     private @Nullable Integer _mlagId;
-
     private String _name;
-
     private @Nullable Integer _nativeVlan;
-
     private OspfArea _ospfArea;
-
     private Integer _ospfCost;
-
     private boolean _ospfEnabled;
-
     private boolean _ospfPassive;
-
     private boolean _ospfPointToPoint;
-
     private String _ospfProcess;
-
     private IpAccessList _outgoingFilter;
-
     private Transformation _outgoingTransformation;
-
     private Configuration _owner;
-
     private IpAccessList _postTransformationIncomingFilter;
-
     private boolean _proxyArp;
-
     private IpAccessList _preTransformationOutgoingFilter;
-
     private Set<InterfaceAddress> _secondaryAddresses;
-
     private @Nullable Boolean _switchport;
-
     private @Nullable SwitchportMode _switchportMode;
-
     private @Nonnull IpSpace _additionalArpIps;
-
     private InterfaceType _type;
-
     private @Nullable Integer _vlan;
-
     private Vrf _vrf;
-
     private SortedMap<Integer, VrrpGroup> _vrrpGroups;
 
     Builder(NetworkFactory networkFactory) {
       super(networkFactory, Interface.class);
       _active = true;
       _additionalArpIps = EmptyIpSpace.INSTANCE;
+      _autoState = true;
       _declaredNames = ImmutableSortedSet.of();
       _hsrpGroups = ImmutableMap.of();
       _secondaryAddresses = ImmutableSet.of();
@@ -134,20 +96,24 @@ public final class Interface extends ComparableStructure<String> {
       String name = _name != null ? _name : generateName();
       Interface iface =
           _type == null ? new Interface(name, _owner) : new Interface(name, _owner, _type);
-      ImmutableSet.Builder<InterfaceAddress> allAddresses = ImmutableSet.builder();
       if (_accessVlan != null) {
         iface.setAccessVlan(_accessVlan);
       }
       iface.setActive(_active);
+
+      // Set addresses. If the primary address is missing from allAddresses, add it.
+      ImmutableSet.Builder<InterfaceAddress> allAddresses = ImmutableSet.builder();
       if (_address != null) {
         iface.setAddress(_address);
         allAddresses.add(_address);
       }
-      iface.setAdditionalArpIps(_additionalArpIps);
       iface.setAllAddresses(allAddresses.addAll(_secondaryAddresses).build());
+
+      iface.setAdditionalArpIps(_additionalArpIps);
       if (_allowedVlans != null) {
         iface.setAllowedVlans(_allowedVlans);
       }
+      iface.setAutoState(_autoState);
       iface.setBandwidth(_bandwidth);
       iface.setBlacklisted(_blacklisted);
       iface.setDeclaredNames(_declaredNames);
@@ -269,6 +235,11 @@ public final class Interface extends ComparableStructure<String> {
 
     public @Nonnull Builder setAllowedVlans(@Nullable IntegerSpace allowedVlans) {
       _allowedVlans = allowedVlans;
+      return this;
+    }
+
+    public @Nonnull Builder setAutoState(boolean autoState) {
+      _autoState = autoState;
       return this;
     }
 
@@ -482,7 +453,6 @@ public final class Interface extends ComparableStructure<String> {
   public static final class Dependency implements Serializable {
     @Nonnull private final String _interfaceName;
     @Nonnull private final DependencyType _type;
-    private static final long serialVersionUID = 1L;
 
     public Dependency(String interfaceName, DependencyType type) {
       _interfaceName = interfaceName;
@@ -526,16 +496,11 @@ public final class Interface extends ComparableStructure<String> {
   }
 
   private static final int DEFAULT_MTU = 1500;
-
   public static final String DYNAMIC_INTERFACE_NAME = "dynamic";
-
   public static final String NULL_INTERFACE_NAME = "null_interface";
-
   public static final Set<InterfaceType> TUNNEL_INTERFACE_TYPES =
       ImmutableSet.of(InterfaceType.TUNNEL, InterfaceType.VPN);
-
   public static final String UNSET_LOCAL_INTERFACE = "unset_local_interface";
-
   public static final String INVALID_LOCAL_INTERFACE = "invalid_local_interface";
   private static final String PROP_ACCESS_VLAN = "accessVlan";
   private static final String PROP_ACTIVE = "active";
@@ -560,9 +525,6 @@ public final class Interface extends ComparableStructure<String> {
   private static final String PROP_INCOMING_TRANSFORMATION = "incomingTransformation";
   private static final String PROP_INTERFACE_TYPE = "type";
   private static final String PROP_ISIS = "isis";
-  private static final String PROP_ISIS_COST = "isisCost";
-  private static final String PROP_ISIS_L1_INTERFACE_MODE = "isisL1InterfaceMode";
-  private static final String PROP_ISIS_L2_INTERFACE_MODE = "isisL2InterfaceMode";
   private static final String PROP_MLAG_ID = "mlagId";
   private static final String PROP_MTU = "mtu";
   private static final String PROP_NATIVE_VLAN = "nativeVlan";
@@ -596,8 +558,6 @@ public final class Interface extends ComparableStructure<String> {
   private static final String PROP_VRF = "vrf";
   private static final String PROP_VRRP_GROUPS = "vrrpGroups";
   private static final String PROP_ZONE = "zone";
-
-  private static final long serialVersionUID = 1L;
 
   public static Builder builder() {
     return new Builder(null);
@@ -791,141 +751,81 @@ public final class Interface extends ComparableStructure<String> {
   }
 
   @Nullable private Integer _accessVlan;
-
   private boolean _active;
-
   private @Nonnull IpSpace _additionalArpIps;
-
   private IntegerSpace _allowedVlans;
-
-  private SortedSet<InterfaceAddress> _allAddresses;
+  @Nonnull private SortedSet<InterfaceAddress> _allAddresses;
+  /** Cache of all concrete addresses */
+  @Nullable private transient Set<ConcreteInterfaceAddress> _allConcreteAddresses;
+  /** Cache of all link-local addresses */
+  @Nullable private transient Set<LinkLocalAddress> _allLinkLocalAddresses;
 
   private boolean _autoState;
-
   @Nullable private Double _bandwidth;
-
   private transient boolean _blacklisted;
-
   private String _channelGroup;
-
   private SortedSet<String> _channelGroupMembers;
-
   private String _cryptoMap;
-
   private SortedSet<String> _declaredNames;
-
   /** Set of interface dependencies required for this interface to active */
   @Nonnull private Set<Dependency> _dependencies;
 
   private String _description;
-
   private List<Ip> _dhcpRelayAddresses;
-
   @Nullable private EigrpInterfaceSettings _eigrp;
-
   @Nullable private Integer _encapsulationVlan;
-
   @Nullable private FirewallSessionInterfaceInfo _firewallSessionInterfaceInfo;
-
   private Map<Integer, HsrpGroup> _hsrpGroups;
-
   private IpAccessList _inboundFilter;
-
   private transient String _inboundFilterName;
-
   private IpAccessList _incomingFilter;
-
   private transient String _incomingFilterName;
-
   private Transformation _incomingTransformation;
-
   private InterfaceType _interfaceType;
-
   private IsisInterfaceSettings _isis;
-
   @Nullable private Integer _mlagId;
-
   private int _mtu;
-
   @Nullable private Integer _nativeVlan;
-
   @Nullable private Long _ospfAreaName;
-
   private Integer _ospfCost;
-
   private int _ospfDeadInterval;
-
   private boolean _ospfEnabled;
-
   private int _ospfHelloMultiplier;
-
   @Nullable private String _ospfInboundDistributeListPolicy;
-
   private boolean _ospfPassive;
-
   private boolean _ospfPointToPoint;
-
   @Nullable private String _ospfProcess;
-
   private IpAccessList _outgoingFilter;
-
   private transient String _outgoingFilterName;
-
   private Transformation _outgoingTransformation;
-
   private Configuration _owner;
-
   private InterfaceAddress _address;
-
   private IpAccessList _postTransformationIncomingFilter;
-
   private transient String _postTransformationIncomingFilterName;
-
   private boolean _proxyArp;
-
   private IpAccessList _preTransformationOutgoingFilter;
-
   private transient String _preTransformationOutgoingFilterName;
-
   private boolean _ripEnabled;
-
   private boolean _ripPassive;
-
   private String _routingPolicyName;
-
   private boolean _spanningTreePortfast;
-
   private @Nullable Double _speed;
-
   private boolean _switchport;
-
   private SwitchportMode _switchportMode;
-
   private SwitchportEncapsulationType _switchportTrunkEncapsulation;
-
   private Integer _vlan;
-
   private Vrf _vrf;
-
   private transient String _vrfName;
-
   private SortedMap<Integer, VrrpGroup> _vrrpGroups;
-
   private String _zoneName;
-
   private String _hsrpVersion;
 
-  @SuppressWarnings("unused")
-  private Interface() {
-    this(null, null);
-  }
-
   @JsonCreator
-  public Interface(@JsonProperty(PROP_NAME) String name) {
+  private Interface(@Nullable @JsonProperty(PROP_NAME) String name) {
     this(name, null);
   }
 
-  public Interface(String name, Configuration owner) {
+  private Interface(String name, Configuration owner) {
     this(name, owner, InterfaceType.UNKNOWN);
 
     // Determine interface type after setting owner
@@ -935,7 +835,7 @@ public final class Interface extends ComparableStructure<String> {
             : computeInterfaceType(_key, _owner.getConfigurationFormat());
   }
 
-  public Interface(String name, Configuration owner, @Nonnull InterfaceType interfaceType) {
+  private Interface(String name, Configuration owner, @Nonnull InterfaceType interfaceType) {
     super(name);
     _active = true;
     _additionalArpIps = EmptyIpSpace.INSTANCE;
@@ -954,12 +854,6 @@ public final class Interface extends ComparableStructure<String> {
     _switchportTrunkEncapsulation = SwitchportEncapsulationType.DOT1Q;
     _vrfName = Configuration.DEFAULT_VRF_NAME;
     _vrrpGroups = new TreeMap<>();
-  }
-
-  public void addAllowedRanges(List<SubRange> ranges) {
-    IntegerSpace.Builder b = IntegerSpace.builder().including(_allowedVlans);
-    ranges.forEach(b::including);
-    _allowedVlans = b.build();
   }
 
   @Override
@@ -1078,15 +972,39 @@ public final class Interface extends ComparableStructure<String> {
     return _allowedVlans;
   }
 
-  /** All IPV4 address/network assignments on this interface. */
+  /**
+   * All IPV4 address/network assignments on this interface. These are addresses that are routable
+   * to/through this interface.
+   */
   @JsonProperty(PROP_ALL_PREFIXES)
   public Set<ConcreteInterfaceAddress> getAllConcreteAddresses() {
-    return _allAddresses.stream()
-        .filter(a -> a instanceof ConcreteInterfaceAddress)
-        .map(a -> (ConcreteInterfaceAddress) a)
-        .collect(ImmutableSet.toImmutableSet());
+    if (_allConcreteAddresses == null) {
+      _allConcreteAddresses =
+          _allAddresses.stream()
+              .filter(a -> a instanceof ConcreteInterfaceAddress)
+              .map(a -> (ConcreteInterfaceAddress) a)
+              .collect(ImmutableSet.toImmutableSet());
+    }
+    return _allConcreteAddresses;
   }
 
+  /**
+   * Return all link-local addresses of this interface. These addresses are valid only in a given
+   * layer 2 broadcast domain, and cannot be routed to across a broadcast domain
+   */
+  @JsonIgnore
+  public Set<LinkLocalAddress> getAllLinkLocalAddresses() {
+    if (_allLinkLocalAddresses == null) {
+      _allLinkLocalAddresses =
+          _allAddresses.stream()
+              .filter(a -> a instanceof LinkLocalAddress)
+              .map(a -> (LinkLocalAddress) a)
+              .collect(ImmutableSet.toImmutableSet());
+    }
+    return _allLinkLocalAddresses;
+  }
+
+  @Nonnull
   public Set<InterfaceAddress> getAllAddresses() {
     return _allAddresses;
   }
@@ -1221,34 +1139,6 @@ public final class Interface extends ComparableStructure<String> {
   @JsonProperty(PROP_ISIS)
   public @Nullable IsisInterfaceSettings getIsis() {
     return _isis;
-  }
-
-  /** The IS-IS cost of this interface. */
-  @JsonProperty(PROP_ISIS_COST)
-  @Deprecated
-  public Integer getIsisCost() {
-    return null;
-  }
-
-  /**
-   * Specifies whether this interface is active, passive, or unconfigured with respect to IS-IS
-   * level 1.
-   */
-  @JsonProperty(PROP_ISIS_L1_INTERFACE_MODE)
-  @Deprecated
-  public IsisInterfaceMode getIsisL1InterfaceMode() {
-    return null;
-  }
-
-  /**
-   * Specifies whether this interface is active, passive, or unconfigured with respect to IS-IS
-   * level 2.
-   */
-  @JsonProperty(PROP_ISIS_L2_INTERFACE_MODE)
-  @Deprecated
-  public IsisInterfaceMode getIsisL2InterfaceMode() {
-    // TODO: deprecate properly
-    return null;
   }
 
   @JsonProperty(PROP_MLAG_ID)
@@ -1450,7 +1340,7 @@ public final class Interface extends ComparableStructure<String> {
     return _spanningTreePortfast;
   }
 
-  /** The link speed of this interface */
+  /** The link speed of this interface, in bits per second (bps) */
   public @Nullable Double getSpeed() {
     return _speed;
   }
@@ -1542,6 +1432,9 @@ public final class Interface extends ComparableStructure<String> {
   @JsonProperty(PROP_ALL_PREFIXES)
   public void setAllAddresses(Iterable<? extends InterfaceAddress> allAddresses) {
     _allAddresses = ImmutableSortedSet.copyOf(allAddresses);
+    // Clear cached values
+    _allLinkLocalAddresses = null;
+    _allConcreteAddresses = null;
   }
 
   @JsonProperty(PROP_AUTOSTATE)
@@ -1554,8 +1447,12 @@ public final class Interface extends ComparableStructure<String> {
     _bandwidth = bandwidth;
   }
 
+  /**
+   * To be used by the builder only. Use {@link #blacklist()} for public blacklisting, it enforces
+   * that the interface is inactive if blacklisted.
+   */
   @JsonIgnore
-  public void setBlacklisted(boolean blacklisted) {
+  private void setBlacklisted(boolean blacklisted) {
     _blacklisted = blacklisted;
   }
 
@@ -1662,24 +1559,6 @@ public final class Interface extends ComparableStructure<String> {
     _isis = isis;
   }
 
-  @JsonProperty(PROP_ISIS_COST)
-  @Deprecated
-  public void setIsisCost(Integer isisCost) {
-    // TODO: deprecate properly
-  }
-
-  @JsonProperty(PROP_ISIS_L1_INTERFACE_MODE)
-  @Deprecated
-  public void setIsisL1InterfaceMode(IsisInterfaceMode mode) {
-    // TODO: deprecate properly
-  }
-
-  @JsonProperty(PROP_ISIS_L2_INTERFACE_MODE)
-  @Deprecated
-  public void setIsisL2InterfaceMode(IsisInterfaceMode mode) {
-    // TODO: deprecate properly
-  }
-
   @JsonProperty(PROP_MLAG_ID)
   public void setMlagId(Integer mlagId) {
     _mlagId = mlagId;
@@ -1771,6 +1650,9 @@ public final class Interface extends ComparableStructure<String> {
   @JsonProperty(PROP_PREFIX)
   public void setAddress(InterfaceAddress address) {
     _address = address;
+    // Clear cached values
+    _allLinkLocalAddresses = null;
+    _allConcreteAddresses = null;
   }
 
   @JsonIgnore
@@ -1866,10 +1748,18 @@ public final class Interface extends ComparableStructure<String> {
     _zoneName = zoneName;
   }
 
+  public void addVrrpGroup(Integer num, @Nonnull VrrpGroup group) {
+    _vrrpGroups =
+        ImmutableSortedMap.<Integer, VrrpGroup>naturalOrder()
+            .putAll(_vrrpGroups)
+            .put(num, group)
+            .build();
+  }
+
   /** Blacklist this interface, making it inactive and blacklisted */
   public void blacklist() {
     setActive(false);
-    setBlacklisted(true);
+    _blacklisted = true;
   }
 
   /**

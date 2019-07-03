@@ -1,0 +1,22 @@
+!RANCID-CONTENT-TYPE: cisco-nx
+!
+hostname nxos_vlan_invalid
+!
+
+! invalid individual VLAN
+vlan 4000
+
+! invalid VLAN range
+vlan 2,4001
+
+! Invalid Vlan interface (in default reserved range [3967,4094]) 
+interface Vlan4002
+!
+
+! Invalid Vlan interface (> 4094) 
+interface Vlan4100
+!
+
+! Invalid: Vlans may not have subinterfaces 
+interface Vlan1.1
+!

@@ -15,8 +15,6 @@ import org.batfish.datamodel.eigrp.EigrpMetric;
 public class EigrpExternalRoute extends EigrpRoute {
   private static final String PROP_DESTINATION_ASN = "destination-asn";
 
-  private static final long serialVersionUID = 1L;
-
   /**
    * AS number where the destination resides if the destination is EIGRP, or where it was learned if
    * the destination is another process

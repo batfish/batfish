@@ -10,13 +10,14 @@ import org.batfish.datamodel.ConcreteInterfaceAddress;
 /** A physical or logical interface */
 public class Interface implements Serializable {
 
-  private static final long serialVersionUID = 1L;
+  static final String NULL_INTERFACE_NAME = "null0";
 
   private final @Nonnull InterfaceBridgeSettings _bridge;
   private @Nullable InterfaceClagSettings _clag;
   private final @Nullable Integer _encapsulationVlan;
   private final @Nonnull List<ConcreteInterfaceAddress> _ipAddresses;
   private final @Nonnull String _name;
+  private @Nullable Integer _speed;
   private final @Nullable String _superInterfaceName;
   private final @Nonnull CumulusInterfaceType _type;
   private @Nullable String _vrf;
@@ -69,6 +70,17 @@ public class Interface implements Serializable {
       _clag = new InterfaceClagSettings();
     }
     return _clag;
+  }
+
+  /** Speed in Mbps */
+  @Nullable
+  public Integer getSpeed() {
+    return _speed;
+  }
+
+  /** Set speed (assumed to be in Mbps) */
+  public void setSpeed(@Nullable Integer speed) {
+    _speed = speed;
   }
 
   public @Nullable String getSuperInterfaceName() {

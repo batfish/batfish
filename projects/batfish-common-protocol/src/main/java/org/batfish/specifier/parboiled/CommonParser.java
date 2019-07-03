@@ -9,6 +9,7 @@ import com.google.common.collect.ImmutableMap;
 import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.Map;
 import java.util.Objects;
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -86,13 +87,19 @@ public abstract class CommonParser extends BaseParser<AstNode> {
   Rule[] initIpProtocolNameRules() {
     return initValuesRules(
         Arrays.stream(IpProtocol.values())
-            .filter(p -> !p.toString().startsWith("UNNAMED"))
+            // allow UNNAMED as well since PacketHeaderConstraints is "canonicalizing" the input
+            // .filter(p -> !p.toString().startsWith("UNNAMED"))
             .collect(ImmutableList.toImmutableList()));
   }
 
   /** Initialize an array of case-insenstive rules that match stringified values in a collection. */
   <T> Rule[] initValuesRules(Collection<T> values) {
-    return values.stream().map(Objects::toString).map(this::IgnoreCase).toArray(Rule[]::new);
+    return values.stream()
+        .map(Objects::toString)
+        // longer strings first so that we can match 'longer' instead of stopping at 'long'
+        .sorted(Comparator.comparing(String::length).reversed())
+        .map(this::IgnoreCase)
+        .toArray(Rule[]::new);
   }
 
   /**

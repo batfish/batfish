@@ -16,6 +16,8 @@ public class MockForwardingAnalysis implements ForwardingAnalysis {
 
     private Map<String, Map<String, Map<Edge, IpSpace>>> _arpTrueEdge;
 
+    private Map<String, Map<String, Map<String, IpSpace>>> _nextVrfIps;
+
     private Map<String, Map<String, IpSpace>> _nullRoutedIps;
 
     private Map<String, Map<String, IpSpace>> _routableIps;
@@ -24,6 +26,7 @@ public class MockForwardingAnalysis implements ForwardingAnalysis {
       _arpReplies = ImmutableMap.of();
       _arpRequests = ImmutableMap.of();
       _arpTrueEdge = ImmutableMap.of();
+      _nextVrfIps = ImmutableMap.of();
       _nullRoutedIps = ImmutableMap.of();
       _routableIps = ImmutableMap.of();
     }
@@ -46,6 +49,11 @@ public class MockForwardingAnalysis implements ForwardingAnalysis {
 
     public Builder setArpTrueEdge(Map<String, Map<String, Map<Edge, IpSpace>>> arpTrueEdge) {
       _arpTrueEdge = arpTrueEdge;
+      return this;
+    }
+
+    public Builder setNextVrfIps(Map<String, Map<String, IpSpace>> nextVrfIps) {
+      _nullRoutedIps = nextVrfIps;
       return this;
     }
 
@@ -72,6 +80,8 @@ public class MockForwardingAnalysis implements ForwardingAnalysis {
 
   private final Map<String, Map<String, Map<Edge, IpSpace>>> _arpTrueEdge;
 
+  private final Map<String, Map<String, Map<String, IpSpace>>> _nextVrfIps;
+
   private final Map<String, Map<String, IpSpace>> _nullRoutedIps;
 
   private final Map<String, Map<String, IpSpace>> _routableIps;
@@ -80,6 +90,7 @@ public class MockForwardingAnalysis implements ForwardingAnalysis {
     _arpReplies = ImmutableMap.copyOf(builder._arpReplies);
     _arpRequests = ImmutableMap.copyOf(builder._arpRequests);
     _arpTrueEdge = ImmutableMap.copyOf(builder._arpTrueEdge);
+    _nextVrfIps = ImmutableMap.copyOf(builder._nextVrfIps);
     _nullRoutedIps = ImmutableMap.copyOf(builder._nullRoutedIps);
     _routableIps = ImmutableMap.copyOf(builder._routableIps);
   }
@@ -127,5 +138,10 @@ public class MockForwardingAnalysis implements ForwardingAnalysis {
   @Override
   public Map<String, Map<String, IpSpace>> getRoutableIps() {
     return _routableIps;
+  }
+
+  @Override
+  public Map<String, Map<String, Map<String, IpSpace>>> getNextVrfIps() {
+    return _nextVrfIps;
   }
 }

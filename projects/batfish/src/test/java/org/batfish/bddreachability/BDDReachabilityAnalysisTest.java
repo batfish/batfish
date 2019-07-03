@@ -62,6 +62,7 @@ import org.batfish.symbolic.state.PreOutEdgePostNat;
 import org.batfish.symbolic.state.PreOutInterfaceNeighborUnreachable;
 import org.batfish.symbolic.state.PreOutVrf;
 import org.batfish.symbolic.state.StateExpr;
+import org.batfish.symbolic.state.VrfAccept;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -86,6 +87,7 @@ public final class BDDReachabilityAnalysisTest {
   private String _dstIface1Name;
   private String _dstIface2Name;
   private String _dstName;
+  private VrfAccept _dstVrfAccept;
   private NodeAccept _dstNodeAccept;
   private PostInInterface _dstPostInInterface1;
   private PostInInterface _dstPostInInterface2;
@@ -110,6 +112,7 @@ public final class BDDReachabilityAnalysisTest {
 
   private String _srcName;
   private NodeAccept _srcNodeAccept;
+  private VrfAccept _srcVrfAccept;
   private PostInVrf _srcPostInVrf;
   private PreInInterface _srcPreInInterface1;
   private PreInInterface _srcPreInInterface2;
@@ -146,6 +149,7 @@ public final class BDDReachabilityAnalysisTest {
     _dstIface2Name = _net._dstIface2.getName();
     _dstName = _net._dstNode.getHostname();
     _dstNodeAccept = new NodeAccept(_dstName);
+    _dstVrfAccept = new VrfAccept(_dstName, DEFAULT_VRF_NAME);
     _dstPostInVrf = new PostInVrf(_dstName, DEFAULT_VRF_NAME);
     _dstPreOutVrf = new PreOutVrf(_dstName, DEFAULT_VRF_NAME);
 
@@ -162,6 +166,7 @@ public final class BDDReachabilityAnalysisTest {
 
     _srcName = _net._srcNode.getHostname();
     _srcNodeAccept = new NodeAccept(_srcName);
+    _srcVrfAccept = new VrfAccept(_srcName, DEFAULT_VRF_NAME);
     _srcPostInVrf = new PostInVrf(_srcName, DEFAULT_VRF_NAME);
 
     _dstPostInInterface1 = new PostInInterface(_dstName, _link1DstName);
@@ -232,6 +237,12 @@ public final class BDDReachabilityAnalysisTest {
   }
 
   @Test
+  public void testBDDTransitions_VrfAccept_NodeAccept() {
+    assertThat(bddTransition(_srcVrfAccept, _srcNodeAccept), isOne());
+    assertThat(bddTransition(_dstVrfAccept, _dstNodeAccept), isOne());
+  }
+
+  @Test
   public void testBDDTransitions_NodeAccept_Accept() {
     assertThat(bddTransition(_srcNodeAccept, Accept.INSTANCE), isOne());
     assertThat(bddTransition(_dstNodeAccept, Accept.INSTANCE), isOne());
@@ -239,23 +250,22 @@ public final class BDDReachabilityAnalysisTest {
 
   @Test
   public void testBDDTransitions_PostInVrf_outEdges() {
-    BDD nodeAccept = bddTransition(_srcPostInVrf, _srcNodeAccept);
+    BDD vrfAccept = bddTransition(_srcPostInVrf, _srcVrfAccept);
     BDD nodeDropNoRoute = bddTransition(_srcPostInVrf, new NodeDropNoRoute(_srcName));
     BDD preOutVrf = bddTransition(_srcPostInVrf, _srcPreOutVrf);
 
     // test that out edges are mutually exclusive
-    assertThat(nodeAccept, not(intersects(nodeDropNoRoute)));
-    assertThat(nodeAccept, not(intersects(preOutVrf)));
+    assertThat(vrfAccept, not(intersects(nodeDropNoRoute)));
+    assertThat(vrfAccept, not(intersects(preOutVrf)));
     assertThat(nodeDropNoRoute, not(intersects(preOutVrf)));
   }
 
   @Test
-  public void testBDDTransitions_PostInVrf_NodeAccept() {
+  public void testBDDTransitions_PostInVrf_VrfAccept() {
     assertThat(
-        bddTransition(_srcPostInVrf, new NodeAccept(_srcName)),
-        equalTo(or(_link1SrcIpBDD, _link2SrcIpBDD)));
+        bddTransition(_srcPostInVrf, _srcVrfAccept), equalTo(or(_link1SrcIpBDD, _link2SrcIpBDD)));
     assertThat(
-        bddTransition(_dstPostInVrf, new NodeAccept(_dstName)),
+        bddTransition(_dstPostInVrf, _dstVrfAccept),
         equalTo(or(_link1DstIpBDD, _link2DstIpBDD, _dstIface1IpBDD, _dstIface2IpBDD)));
   }
 

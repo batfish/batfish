@@ -17,8 +17,6 @@ import org.batfish.datamodel.routing_policy.expr.PrefixSetExpr;
 
 public class RoutePolicyBooleanNextHopIn extends RoutePolicyBoolean {
 
-  private static final long serialVersionUID = 1L;
-
   private RoutePolicyPrefixSet _prefixSet;
 
   public RoutePolicyBooleanNextHopIn(RoutePolicyPrefixSet prefixSet) {

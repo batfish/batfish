@@ -243,6 +243,22 @@ public final class JFactory extends BDDFactory {
     }
 
     @Override
+    public boolean andSat(BDD that) {
+      if (applycache == null) {
+        applycache = BddCacheI_init(cachesize);
+      }
+      return andsat_rec(_index, ((BDDImpl) that)._index);
+    }
+
+    @Override
+    public boolean diffSat(BDD that) {
+      if (applycache == null) {
+        applycache = BddCacheI_init(cachesize);
+      }
+      return diffsat_rec(_index, ((BDDImpl) that)._index);
+    }
+
+    @Override
     public BDD apply(BDD that, BDDOp opr) {
       int x = _index;
       int y = ((BDDImpl) that)._index;
@@ -597,8 +613,6 @@ public final class JFactory extends BDDFactory {
 
   private static class JavaBDDException extends BDDException {
     /** Version ID for serialization. */
-    private static final long serialVersionUID = 3257289144995952950L;
-
     JavaBDDException(int x) {
       super(errorstrings[-x]);
     }
@@ -867,6 +881,8 @@ public final class JFactory extends BDDFactory {
   /* Should *not* be used in bdd_apply calls !!! */
   private static final int bddop_not = 10;
   private static final int bddop_simplify = 11;
+  private static final int bddop_andsat = 12;
+  private static final int bddop_diffsat = 13;
 
   @Override
   public BDD orAll(BDD... bddOperands) {
@@ -1465,6 +1481,95 @@ public final class JFactory extends BDDFactory {
     entry.b = r;
     entry.c = bddop_and;
     entry.res = res;
+
+    return res;
+  }
+
+  private boolean diffsat_rec(int l, int r) {
+    if (ISZERO(l) || ISONE(r)) {
+      return false;
+    } else if (ISONE(l) || ISZERO(r)) {
+      return true;
+    } else if (l == r) {
+      return false;
+    }
+
+    // TODO: should we also check for diff? For now, don't since diff_sat should be real fast.
+    BddCacheDataI entry = BddCache_lookupI(applycache, APPLYHASH(l, r, bddop_diffsat));
+    if (entry.a == l && entry.b == r && entry.c == bddop_diffsat) {
+      if (CACHESTATS) {
+        cachestats.opHit++;
+      }
+      // We set entry.res to BDDZERO for false and BDDONE for true.
+      return entry.res == BDDONE;
+    }
+    if (CACHESTATS) {
+      cachestats.opMiss++;
+    }
+
+    boolean res;
+    if (LEVEL(l) == LEVEL(r)) {
+      res = diffsat_rec(LOW(l), LOW(r)) || diffsat_rec(HIGH(l), HIGH(r));
+    } else if (LEVEL(l) < LEVEL(r)) {
+      res = diffsat_rec(LOW(l), r) || diffsat_rec(HIGH(l), r);
+    } else {
+      res = diffsat_rec(l, LOW(r)) || diffsat_rec(l, HIGH(r));
+    }
+
+    if (CACHESTATS && entry.a != -1) {
+      cachestats.opOverwrite++;
+    }
+    entry.a = l;
+    entry.b = r;
+    entry.c = bddop_diffsat;
+    entry.res = res ? BDDONE : BDDZERO;
+
+    return res;
+  }
+
+  private boolean andsat_rec(int l, int r) {
+    if (ISZERO(l) || ISZERO(r)) {
+      return false;
+    } else if (ISONE(l) || ISONE(r)) {
+      return true;
+    } else if (l == r) {
+      return true;
+    } else if (l > r) {
+      // Since AND is symmetric, maximize caching by ensuring l < r (== handled above).
+      int t = l;
+      l = r;
+      r = t;
+    }
+
+    // TODO: should we also check for and? For now, don't since and_sat should be real fast.
+    BddCacheDataI entry = BddCache_lookupI(applycache, APPLYHASH(l, r, bddop_andsat));
+    if (entry.a == l && entry.b == r && entry.c == bddop_andsat) {
+      if (CACHESTATS) {
+        cachestats.opHit++;
+      }
+      // We set entry.res to BDDZERO for false and BDDONE for true.
+      return entry.res == BDDONE;
+    }
+    if (CACHESTATS) {
+      cachestats.opMiss++;
+    }
+
+    boolean res;
+    if (LEVEL(l) == LEVEL(r)) {
+      res = andsat_rec(LOW(l), LOW(r)) || andsat_rec(HIGH(l), HIGH(r));
+    } else if (LEVEL(l) < LEVEL(r)) {
+      res = andsat_rec(LOW(l), r) || andsat_rec(HIGH(l), r);
+    } else {
+      res = andsat_rec(l, LOW(r)) || andsat_rec(l, HIGH(r));
+    }
+
+    if (CACHESTATS && entry.a != -1) {
+      cachestats.opOverwrite++;
+    }
+    entry.a = l;
+    entry.b = r;
+    entry.c = bddop_andsat;
+    entry.res = res ? BDDONE : BDDZERO;
 
     return res;
   }

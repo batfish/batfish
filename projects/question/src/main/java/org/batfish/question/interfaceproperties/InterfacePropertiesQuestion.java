@@ -35,30 +35,32 @@ public class InterfacePropertiesQuestion extends Question {
   @Nullable private final String _nodes;
   @Nonnull private final NodeSpecifier _nodeSpecifier;
   private boolean _onlyActive;
-  @Nonnull private final InterfacePropertySpecifier _properties;
+  @Nullable private final String _properties;
+  @Nonnull private final InterfacePropertySpecifier _propertySpecifier;
 
   @JsonCreator
   private static InterfacePropertiesQuestion create(
       @Nullable @JsonProperty(PROP_EXCLUDE_SHUT_INTERFACES) Boolean excludeShutInterfaces,
       @Nullable @JsonProperty(PROP_INTERFACES) String interfaces,
       @Nullable @JsonProperty(PROP_NODES) String nodes,
-      @Nullable @JsonProperty(PROP_PROPERTIES) InterfacePropertySpecifier propertySpec) {
+      @Nullable @JsonProperty(PROP_PROPERTIES) String properties) {
     return new InterfacePropertiesQuestion(
         nodes,
         SpecifierFactories.getNodeSpecifierOrDefault(nodes, AllNodesNodeSpecifier.INSTANCE),
         interfaces,
         SpecifierFactories.getInterfaceSpecifierOrDefault(
             interfaces, AllInterfacesInterfaceSpecifier.INSTANCE),
-        firstNonNull(propertySpec, InterfacePropertySpecifier.ALL),
+        properties,
+        InterfacePropertySpecifier.create(properties),
         firstNonNull(excludeShutInterfaces, DEFAULT_EXCLUDE_SHUT_INTERFACES));
   }
 
   public InterfacePropertiesQuestion(
-      @Nonnull NodeSpecifier nodeSpecifier,
-      @Nonnull InterfaceSpecifier interfaceSpecifier,
+      NodeSpecifier nodeSpecifier,
+      InterfaceSpecifier interfaceSpecifier,
       InterfacePropertySpecifier propertySpec,
       boolean excludeShutInterfaces) {
-    this(null, nodeSpecifier, null, interfaceSpecifier, propertySpec, excludeShutInterfaces);
+    this(null, nodeSpecifier, null, interfaceSpecifier, null, propertySpec, excludeShutInterfaces);
   }
 
   private InterfacePropertiesQuestion(
@@ -66,13 +68,15 @@ public class InterfacePropertiesQuestion extends Question {
       NodeSpecifier nodeSpecifier,
       @Nullable String interfaces,
       InterfaceSpecifier interfaceSpecifier,
+      @Nullable String properties,
       InterfacePropertySpecifier propertySpec,
       boolean excludeShutInterfaces) {
     _nodes = nodes;
     _nodeSpecifier = nodeSpecifier;
     _interfaces = interfaces;
     _interfaceSpecifier = interfaceSpecifier;
-    _properties = propertySpec;
+    _properties = properties;
+    _propertySpecifier = propertySpec;
     _onlyActive = excludeShutInterfaces;
   }
 
@@ -98,6 +102,7 @@ public class InterfacePropertiesQuestion extends Question {
   }
 
   @JsonIgnore
+  @Nonnull
   public InterfaceSpecifier getInterfaceSpecifier() {
     return _interfaceSpecifier;
   }
@@ -109,12 +114,20 @@ public class InterfacePropertiesQuestion extends Question {
   }
 
   @JsonIgnore
+  @Nonnull
   public NodeSpecifier getNodeSpecifier() {
     return _nodeSpecifier;
   }
 
   @JsonProperty(PROP_PROPERTIES)
-  public InterfacePropertySpecifier getProperties() {
+  @Nullable
+  public String getProperties() {
     return _properties;
+  }
+
+  @JsonIgnore
+  @Nonnull
+  public InterfacePropertySpecifier getPropertySpecifier() {
+    return _propertySpecifier;
   }
 }

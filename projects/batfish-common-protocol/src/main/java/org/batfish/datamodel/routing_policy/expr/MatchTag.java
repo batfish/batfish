@@ -20,8 +20,6 @@ public final class MatchTag extends BooleanExpr {
   private static final String PROP_CMP = "cmp";
   private static final String PROP_TAG = "tag";
 
-  private static final long serialVersionUID = 1L;
-
   @Nonnull private final IntComparator _cmp;
   @Nonnull private final IntExpr _tag;
 

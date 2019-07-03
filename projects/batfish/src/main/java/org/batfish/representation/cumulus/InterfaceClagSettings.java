@@ -9,11 +9,10 @@ import org.batfish.datamodel.MacAddress;
 /** CLAG settings for a layer-3 interface */
 public final class InterfaceClagSettings implements Serializable {
 
-  private static final long serialVersionUID = 1L;
-
   private @Nullable Ip _backupIp;
   private @Nullable String _backupIpVrf;
   private @Nullable Ip _peerIp;
+  private boolean _peerIpLinkLocal;
   private @Nullable Integer _priority;
   private @Nullable MacAddress _sysMac;
 
@@ -27,6 +26,10 @@ public final class InterfaceClagSettings implements Serializable {
 
   public @Nullable Ip getPeerIp() {
     return _peerIp;
+  }
+
+  public boolean isPeerIpLinkLocal() {
+    return _peerIpLinkLocal;
   }
 
   public @Nullable Integer getPriority() {
@@ -49,6 +52,10 @@ public final class InterfaceClagSettings implements Serializable {
     _peerIp = peerIp;
   }
 
+  public void setPeerIpLinkLocal(boolean peerIpLinkLocal) {
+    _peerIpLinkLocal = peerIpLinkLocal;
+  }
+
   public void setPriority(@Nullable Integer priority) {
     _priority = priority;
   }
@@ -62,6 +69,7 @@ public final class InterfaceClagSettings implements Serializable {
         .setBackupIp(_backupIp)
         .setBackupIpVrf(_backupIpVrf)
         .setPeerIp(_peerIp)
+        .setPeerLinkLocal(_peerIpLinkLocal)
         .setPriority(_priority)
         .setSysMac(_sysMac)
         .build();

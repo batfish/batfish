@@ -9,7 +9,7 @@ public class EigrpRedistributionPolicy extends RedistributionPolicy {
   public static final String BGP_AS = "BGP_AS";
   public static final String EIGRP_AS_NUMBER = "EIGRP_AS_NUMBER";
   public static final String OSPF_PROCESS_NUMBER = "OSPF_PROCESS_NUMBER";
-  private static final long serialVersionUID = 1L;
+
   private @Nullable EigrpMetric _metric;
 
   public EigrpRedistributionPolicy(RoutingProtocol sourceProtocol) {

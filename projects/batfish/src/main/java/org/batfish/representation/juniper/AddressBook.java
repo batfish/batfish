@@ -14,8 +14,6 @@ import org.batfish.datamodel.IpWildcard;
 @ParametersAreNonnullByDefault
 public final class AddressBook implements Serializable {
 
-  private static final long serialVersionUID = 1L;
-
   @Nonnull private final Map<String, AddressBookEntry> _entries;
 
   @Nullable private final AddressBook _parentBook; // null for global address book

@@ -20,7 +20,7 @@ import org.batfish.datamodel.eigrp.EigrpProcessMode;
 public class EigrpProcess implements Serializable {
 
   private static final String DEFAULT_ADDRESS_FAMILY = "ipv4-unicast";
-  private static final long serialVersionUID = 1L;
+
   private final Map<String, Boolean> _interfacePassiveStatus;
   private final EigrpProcessMode _mode;
   private final Set<IpWildcard> _wildcardNetworks;

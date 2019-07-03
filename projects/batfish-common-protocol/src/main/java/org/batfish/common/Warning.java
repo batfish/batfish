@@ -13,7 +13,6 @@ import javax.annotation.ParametersAreNonnullByDefault;
 
 @ParametersAreNonnullByDefault
 public class Warning implements Serializable, Comparable<Warning> {
-  private static final long serialVersionUID = 1L;
 
   private static final String PROP_TAG = "tag";
   private static final String PROP_TEXT = "text";

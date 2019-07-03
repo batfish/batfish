@@ -129,7 +129,7 @@ public class BgpPeerConfigurationAnswerer extends Answerer {
     if (dhints != null && dhints.getTextDesc() != null) {
       textDesc = dhints.getTextDesc();
     }
-    return new TableMetadata(createColumnMetadata(question.getProperties()), textDesc);
+    return new TableMetadata(createColumnMetadata(question.getPropertySpecifier()), textDesc);
   }
 
   @Override
@@ -144,7 +144,7 @@ public class BgpPeerConfigurationAnswerer extends Answerer {
             _batfish.specifierContext(),
             question.getNodeSpecifier(),
             tableMetadata.toColumnMap(),
-            question.getProperties());
+            question.getPropertySpecifier());
 
     answer.postProcessAnswer(question, propertyRows);
     return answer;

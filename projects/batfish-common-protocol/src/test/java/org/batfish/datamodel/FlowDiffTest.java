@@ -52,7 +52,7 @@ public final class FlowDiffTest {
   }
 
   @Test
-  public void testFlowDiffPort() throws IOException {
+  public void testFlowDiffPort() {
     int dstport1 = 2000;
     int srcport1 = 3000;
     int dstport2 = 4000;

@@ -1,6 +1,7 @@
 package org.batfish.common.bdd;
 
 import static org.hamcrest.Matchers.equalTo;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
@@ -54,10 +55,10 @@ public final class BDDPrefixTest {
     Prefix p3 = Prefix.strict("192.0.3.0/24");
 
     assertThat(_bddPrefix.isPrefix(p1), equalTo(_bddPrefix.isPrefix(p1)));
-    assertTrue(_bddPrefix.isPrefix(p1).and(_bddPrefix.isPrefix(p2)).isZero());
-    assertTrue(_bddPrefix.isPrefix(p1).and(_bddPrefix.isPrefix(p3)).isZero());
+    assertFalse(_bddPrefix.isPrefix(p1).andSat(_bddPrefix.isPrefix(p2)));
+    assertFalse(_bddPrefix.isPrefix(p1).andSat(_bddPrefix.isPrefix(p3)));
     assertThat(_bddPrefix.isPrefix(p2), equalTo(_bddPrefix.isPrefix(p2)));
-    assertTrue(_bddPrefix.isPrefix(p2).and(_bddPrefix.isPrefix(p3)).isZero());
+    assertFalse(_bddPrefix.isPrefix(p2).andSat(_bddPrefix.isPrefix(p3)));
     assertThat(_bddPrefix.isPrefix(p3), equalTo(_bddPrefix.isPrefix(p3)));
   }
 

@@ -8,8 +8,6 @@ import org.batfish.datamodel.routing_policy.statement.Statement;
 
 public class RoutePolicySetWeight extends RoutePolicySetStatement {
 
-  private static final long serialVersionUID = 1L;
-
   private IntExpr _weight;
 
   public RoutePolicySetWeight(IntExpr weight) {

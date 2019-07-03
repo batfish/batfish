@@ -24,7 +24,7 @@ public class InterfacePropertySpecifierTest {
   @Test
   public void testConstructorBadProperty() {
     _thrown.expect(IllegalArgumentException.class);
-    new InterfacePropertySpecifier("ntp");
+    new InterfacePropertySpecifier(ImmutableSet.of("ntp"));
   }
 
   @Test
@@ -37,7 +37,7 @@ public class InterfacePropertySpecifierTest {
   public void getMatchingProperties() {
     // match everything
     assertThat(
-        new InterfacePropertySpecifier("/.*/").getMatchingProperties(),
+        InterfacePropertySpecifier.create("/.*/").getMatchingProperties(),
         equalTo(
             InterfacePropertySpecifier.JAVA_MAP.keySet().stream()
                 .sorted()
@@ -45,7 +45,7 @@ public class InterfacePropertySpecifierTest {
 
     // match the description
     assertThat(
-        new InterfacePropertySpecifier("/desc.*/").getMatchingProperties(),
+        InterfacePropertySpecifier.create("/desc.*/").getMatchingProperties(),
         equalTo(ImmutableList.of(InterfacePropertySpecifier.DESCRIPTION)));
   }
 

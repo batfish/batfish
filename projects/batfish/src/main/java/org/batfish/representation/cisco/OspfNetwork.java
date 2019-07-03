@@ -5,8 +5,6 @@ import org.batfish.datamodel.Prefix;
 
 public class OspfNetwork implements Comparable<OspfNetwork>, Serializable {
 
-  private static final long serialVersionUID = 1L;
-
   private long _area;
   private Prefix _prefix;
 

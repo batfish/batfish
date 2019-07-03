@@ -7,8 +7,6 @@ import org.w3c.dom.Element;
 
 public class IpsecTunnel implements Serializable {
 
-  private static final long serialVersionUID = 1L;
-
   private static String getText(Element element, String tag) {
     return element.getElementsByTagName(tag).item(0).getTextContent();
   }

@@ -78,8 +78,6 @@ import org.batfish.vendor.VendorConfiguration;
 
 public final class PaloAltoConfiguration extends VendorConfiguration {
 
-  private static final long serialVersionUID = 1L;
-
   /** This is the name of an application that matches all traffic */
   public static final String CATCHALL_APPLICATION_NAME = "any";
 
@@ -903,7 +901,11 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
   private org.batfish.datamodel.Interface toInterface(Interface iface) {
     String name = iface.getName();
     org.batfish.datamodel.Interface newIface =
-        new org.batfish.datamodel.Interface(name, _c, batfishInterfaceType(iface.getType(), _w));
+        org.batfish.datamodel.Interface.builder()
+            .setName(name)
+            .setOwner(_c)
+            .setType(batfishInterfaceType(iface.getType(), _w))
+            .build();
     Integer mtu = iface.getMtu();
     if (mtu != null) {
       newIface.setMtu(mtu);
@@ -933,7 +935,8 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
                               computeOutgoingFilterName(computeObjectName(sgName, sgName))))))
               .build());
       newIface.setFirewallSessionInterfaceInfo(
-          new FirewallSessionInterfaceInfo(sharedGateway.getImportedInterfaces(), null, null));
+          new FirewallSessionInterfaceInfo(
+              true, sharedGateway.getImportedInterfaces(), null, null));
     } else if (zone != null) {
       newIface.setZoneName(zone.getName());
       if (zone.getType() == Type.LAYER3) {
@@ -947,7 +950,7 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
                                     computeObjectName(zone.getVsys().getName(), zone.getName()))))))
                 .build());
         newIface.setFirewallSessionInterfaceInfo(
-            new FirewallSessionInterfaceInfo(zone.getInterfaceNames(), null, null));
+            new FirewallSessionInterfaceInfo(true, zone.getInterfaceNames(), null, null));
       }
     } else {
       // Do not allow any traffic to exit an unzoned interface
@@ -962,27 +965,47 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
 
   /** Convert Palo Alto specific virtual router into vendor independent model Vrf */
   private Vrf toVrf(VirtualRouter vr) {
-    Vrf vrf = new Vrf(vr.getName());
+    String vrfName = vr.getName();
+    Vrf vrf = new Vrf(vrfName);
 
     // Static routes
     for (Entry<String, StaticRoute> e : vr.getStaticRoutes().entrySet()) {
       StaticRoute sr = e.getValue();
       // Can only construct a static route if it has a destination
-      if (sr.getDestination() != null) {
-        vrf.getStaticRoutes()
-            .add(
-                org.batfish.datamodel.StaticRoute.builder()
-                    .setNextHopInterface(sr.getNextHopInterface())
-                    .setNextHopIp(sr.getNextHopIp())
-                    .setAdministrativeCost(sr.getAdminDistance())
-                    .setMetric(sr.getMetric())
-                    .setNetwork(sr.getDestination())
-                    .build());
-      } else {
+      Prefix destination = sr.getDestination();
+      if (destination == null) {
         _w.redFlag(
             String.format(
                 "Cannot convert static route %s, as it does not have a destination.", e.getKey()));
+        continue;
       }
+      String nextVrf = sr.getNextVr();
+      if (nextVrf != null) {
+        if (nextVrf.equals(vrfName)) {
+          _w.redFlag(
+              String.format(
+                  "Cannot convert static route %s, as its next-vr '%s' is its own virtual-router.",
+                  e.getKey(), nextVrf));
+          continue;
+        }
+        if (!_virtualRouters.containsKey(nextVrf)) {
+          _w.redFlag(
+              String.format(
+                  "Cannot convert static route %s, as its next-vr '%s' is not a virtual-router.",
+                  e.getKey(), nextVrf));
+          continue;
+        }
+      }
+      vrf.getStaticRoutes()
+          .add(
+              org.batfish.datamodel.StaticRoute.builder()
+                  .setNextHopInterface(sr.getNextHopInterface())
+                  .setNextHopIp(sr.getNextHopIp())
+                  .setAdministrativeCost(sr.getAdminDistance())
+                  .setMetric(sr.getMetric())
+                  .setNetwork(destination)
+                  .setNextVrf(nextVrf)
+                  .build());
     }
 
     // Interfaces

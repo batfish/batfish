@@ -18,7 +18,7 @@ import javax.annotation.ParametersAreNonnullByDefault;
  */
 @ParametersAreNonnullByDefault
 public final class Mlag implements Serializable {
-  private static final long serialVersionUID = 1L;
+
   private static final String PROP_ID = "id";
   private static final String PROP_LOCAL_INTERFACE = "localInterface";
   private static final String PROP_PEER_ADDRESS = "peerAddress";
@@ -110,17 +110,17 @@ public final class Mlag implements Serializable {
       return this;
     }
 
-    public Builder setPeerAddress(Ip peerAddress) {
+    public Builder setPeerAddress(@Nullable Ip peerAddress) {
       this._peerAddress = peerAddress;
       return this;
     }
 
-    public Builder setPeerInterface(String peerInterface) {
+    public Builder setPeerInterface(@Nullable String peerInterface) {
       this._peerInterface = peerInterface;
       return this;
     }
 
-    public Builder setLocalInterface(String localInterface) {
+    public Builder setLocalInterface(@Nullable String localInterface) {
       this._localInterface = localInterface;
       return this;
     }

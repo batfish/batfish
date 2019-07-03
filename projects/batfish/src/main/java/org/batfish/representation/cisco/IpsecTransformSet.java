@@ -14,8 +14,6 @@ import org.batfish.datamodel.IpsecProtocol;
 
 public class IpsecTransformSet implements Serializable {
 
-  private static final long serialVersionUID = 1L;
-
   @Nullable private IpsecAuthenticationAlgorithm _authenticationAlgorithm;
 
   @Nullable private EncryptionAlgorithm _encryptionAlgorithm;

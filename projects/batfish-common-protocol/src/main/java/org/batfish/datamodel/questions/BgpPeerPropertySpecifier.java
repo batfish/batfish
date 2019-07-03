@@ -2,14 +2,14 @@ package org.batfish.datamodel.questions;
 
 import static com.google.common.base.Preconditions.checkArgument;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonValue;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Sets;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -20,8 +20,9 @@ import org.batfish.datamodel.BgpPeerConfig;
 import org.batfish.datamodel.BgpUnnumberedPeerConfig;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.answers.Schema;
+import org.batfish.datamodel.bgp.AddressFamily;
+import org.batfish.datamodel.bgp.AddressFamilyCapabilities;
 import org.batfish.specifier.ConstantEnumSetSpecifier;
-import org.batfish.specifier.EnumSetSpecifier;
 import org.batfish.specifier.SpecifierFactories;
 
 /**
@@ -92,54 +93,61 @@ public class BgpPeerPropertySpecifier extends PropertySpecifier {
           .put(
               IMPORT_POLICY,
               new PropertyDescriptor<>(
-                  BgpPeerConfig::getImportPolicySources,
+                  c ->
+                      Optional.ofNullable(c.getIpv4UnicastAddressFamily())
+                          .map(AddressFamily::getImportPolicySources)
+                          .orElse(ImmutableSortedSet.of()),
                   Schema.set(Schema.STRING),
                   "Names of import policies to be applied to routes received by this peer"))
           .put(
               EXPORT_POLICY,
               new PropertyDescriptor<>(
-                  BgpPeerConfig::getExportPolicySources,
+                  c ->
+                      Optional.ofNullable(c.getIpv4UnicastAddressFamily())
+                          .map(AddressFamily::getExportPolicySources)
+                          .orElse(ImmutableSortedSet.of()),
                   Schema.set(Schema.STRING),
                   "Names of export policies to be applied to routes exported by this peer"))
           .put(
               SEND_COMMUNITY,
               new PropertyDescriptor<>(
-                  BgpPeerConfig::getSendCommunity,
+                  c ->
+                      Optional.ofNullable(c.getIpv4UnicastAddressFamily())
+                          .map(AddressFamily::getAddressFamilyCapabilities)
+                          .map(AddressFamilyCapabilities::getSendCommunity)
+                          .orElse(false),
                   Schema.BOOLEAN,
                   "Whether this peer propagates communities"))
           .build();
 
   /** A {@link BgpPeerPropertySpecifier} that matches all BGP properties. */
-  public static final BgpPeerPropertySpecifier ALL = new BgpPeerPropertySpecifier(".*");
+  public static final BgpPeerPropertySpecifier ALL =
+      new BgpPeerPropertySpecifier(JAVA_MAP.keySet());
 
-  @Nullable private final String _expression;
+  private final List<String> _properties;
 
-  private final EnumSetSpecifier<String> _enumSetSpecifier;
-
-  @JsonCreator
-  private static BgpPeerPropertySpecifier create(@Nullable String expression) {
-    return new BgpPeerPropertySpecifier(expression);
-  }
-
-  public BgpPeerPropertySpecifier(@Nullable String expression) {
-    this(
-        expression,
+  /**
+   * Create a bgp peer property specifier from provided expression. If the expression is null or
+   * empty, a specifier with all properties is returned.
+   */
+  public static BgpPeerPropertySpecifier create(@Nullable String expression) {
+    return new BgpPeerPropertySpecifier(
         SpecifierFactories.getEnumSetSpecifierOrDefault(
-            expression, JAVA_MAP.keySet(), new ConstantEnumSetSpecifier<>(JAVA_MAP.keySet())));
+                expression,
+                BgpPeerPropertySpecifier.JAVA_MAP.keySet(),
+                new ConstantEnumSetSpecifier<>(BgpPeerPropertySpecifier.JAVA_MAP.keySet()))
+            .resolve());
   }
 
   /** Returns a specifier that maps to all properties in {@code properties} */
   public BgpPeerPropertySpecifier(Set<String> properties) {
-    this(null, new ConstantEnumSetSpecifier<>(properties));
     Set<String> diffSet = Sets.difference(properties, JAVA_MAP.keySet());
     checkArgument(
-        diffSet.isEmpty(), "Invalid properties supplied to the property specifier: %s", diffSet);
-  }
-
-  private BgpPeerPropertySpecifier(
-      @Nullable String expression, EnumSetSpecifier<String> enumSetSpecifier) {
-    _expression = expression;
-    _enumSetSpecifier = enumSetSpecifier;
+        diffSet.isEmpty(),
+        "Invalid properties supplied: %s. Valid properties are %s",
+        diffSet,
+        JAVA_MAP.keySet());
+    _properties = properties.stream().sorted().collect(ImmutableList.toImmutableList());
   }
 
   /** Returns cluster ID of this peer */
@@ -151,7 +159,7 @@ public class BgpPeerPropertySpecifier extends PropertySpecifier {
 
   @Override
   public List<String> getMatchingProperties() {
-    return _enumSetSpecifier.resolve().stream().sorted().collect(ImmutableList.toImmutableList());
+    return _properties;
   }
 
   private static Ip getLocalIp(@Nonnull BgpPeerConfig peer) {
@@ -168,12 +176,5 @@ public class BgpPeerPropertySpecifier extends PropertySpecifier {
       return true;
     }
     throw new IllegalArgumentException(String.format("Unrecognized peer type: %s", peer));
-  }
-
-  @Override
-  @JsonValue
-  @Nullable
-  public String toString() {
-    return _expression;
   }
 }

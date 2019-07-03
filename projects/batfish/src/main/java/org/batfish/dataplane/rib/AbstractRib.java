@@ -28,8 +28,6 @@ import org.batfish.dataplane.rib.RouteAdvertisement.Reason;
 @ParametersAreNonnullByDefault
 public abstract class AbstractRib<R extends AbstractRouteDecorator> implements GenericRib<R> {
 
-  private static final long serialVersionUID = 1L;
-
   /** Root of our prefix trie */
   private RibTree<R> _tree;
 

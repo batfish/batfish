@@ -12,8 +12,6 @@ import org.batfish.datamodel.routing_policy.statement.Statements;
 
 public class RoutePolicyDispositionStatement extends RoutePolicyStatement {
 
-  private static final long serialVersionUID = 1L;
-
   private RoutePolicyDispositionType _dispositionType;
 
   public RoutePolicyDispositionStatement(RoutePolicyDispositionType dType) {
@@ -29,15 +27,22 @@ public class RoutePolicyDispositionStatement extends RoutePolicyStatement {
           If ifStatement =
               new If(
                   BooleanExprs.CALL_EXPR_CONTEXT,
-                  ImmutableList.of(Statements.ReturnFalse.toStaticStatement()),
+                  ImmutableList.of(Statements.ReturnTrue.toStaticStatement()),
                   ImmutableList.of(Statements.ExitAccept.toStaticStatement()));
           statements.add(ifStatement);
           break;
         }
 
       case DROP:
-        statements.add(Statements.ExitReject.toStaticStatement());
-        break;
+        {
+          If ifStatement =
+              new If(
+                  BooleanExprs.CALL_EXPR_CONTEXT,
+                  ImmutableList.of(Statements.ReturnFalse.toStaticStatement()),
+                  ImmutableList.of(Statements.ExitReject.toStaticStatement()));
+          statements.add(ifStatement);
+          break;
+        }
 
       case PASS:
         {

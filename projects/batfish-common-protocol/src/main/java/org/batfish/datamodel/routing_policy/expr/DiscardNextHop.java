@@ -11,8 +11,6 @@ public class DiscardNextHop extends NextHopExpr {
 
   public static final DiscardNextHop INSTANCE = new DiscardNextHop();
 
-  private static final long serialVersionUID = 1L;
-
   private DiscardNextHop() {}
 
   @Override

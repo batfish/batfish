@@ -21,8 +21,6 @@ public abstract class AbstractAggregateRoute implements Serializable {
 
   static final int DEFAULT_AGGREGATE_ROUTE_PREFERENCE = 130;
 
-  private static final long serialVersionUID = 1L;
-
   private Boolean _active;
 
   private AsPath _asPath;

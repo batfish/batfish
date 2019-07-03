@@ -12,8 +12,6 @@ import java.util.Objects;
 /** Represents data rows insider {@link TableAnswerElement} */
 public class Rows implements Serializable {
 
-  private static final long serialVersionUID = 1L;
-
   private Multiset<Row> _data;
 
   public Rows() {

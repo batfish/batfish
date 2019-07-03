@@ -9,8 +9,6 @@ import org.batfish.datamodel.routing_policy.expr.MatchSourceVrf;
 /** Represents a "from instance" line in a {@link PsTerm} */
 public class PsFromInstance extends PsFrom {
 
-  private static final long serialVersionUID = 1L;
-
   private String _routingInstanceName;
 
   public PsFromInstance(@Nonnull String routingInstanceName) {

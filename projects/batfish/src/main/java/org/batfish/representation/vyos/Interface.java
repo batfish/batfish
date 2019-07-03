@@ -8,8 +8,6 @@ import org.batfish.datamodel.ConcreteInterfaceAddress;
 
 public class Interface implements Serializable {
 
-  private static final long serialVersionUID = 1L;
-
   public static double getDefaultBandwidth(InterfaceType type) {
     // TODO: update with correct values
     switch (type) {

@@ -66,12 +66,6 @@ public class FilterLineReachabilityAnswerer extends Answerer {
 
     Map<String, Set<IpAccessList>> specifiedAcls = getSpecifiedFilters(question, ctxt);
 
-    // did we get any filters at all?
-    if (specifiedAcls.values().stream().allMatch(fset -> fset.size() == 0)) {
-      throw new IllegalArgumentException(
-          "Did not find any filters that meets the specified criteria. (Tips: Set 'ignoreGenerated' to false if you want to analyze combined filters; use 'resolveFilterSpecifier' question to see which filters your nodes and filters match.)");
-    }
-
     SortedMap<String, Configuration> configurations = _batfish.loadConfigurations();
     List<AclSpecs> aclSpecs = getAclSpecs(configurations, specifiedAcls, answerRows);
     answerAclReachability(aclSpecs, answerRows);
@@ -506,14 +500,13 @@ public class FilterLineReachabilityAnswerer extends Answerer {
     for (int prevLineNum = 0; prevLineNum < blockedLineNum && !restOfLine.isZero(); prevLineNum++) {
       BDD prevLine = bdds.get(prevLineNum);
 
-      BDD restOfLineOverlap = prevLine.and(restOfLine);
-      if (restOfLineOverlap.isZero()) {
+      if (!prevLine.andSat(restOfLine)) {
         continue;
       }
 
       BDD blockedLineOverlap = prevLine.and(blockedLine);
       linesByWeight.add(new LineAndWeight(prevLineNum, blockedLineOverlap.satCount()));
-      restOfLine = restOfLine.diff(restOfLineOverlap);
+      restOfLine = restOfLine.diff(prevLine);
       diffAction = diffAction || actions.get(prevLineNum) != blockedLineAction;
     }
 
@@ -573,7 +566,7 @@ public class FilterLineReachabilityAnswerer extends Answerer {
       if (lineBDD.isZero()) {
         // This line is unmatchable
         answerRows.addUnreachableLine(aclSpec, lineNum, true, ImmutableSortedSet.of());
-      } else if (unmatchedPackets.isZero() || lineBDD.and(unmatchedPackets).isZero()) {
+      } else if (unmatchedPackets.isZero() || !lineBDD.andSat(unmatchedPackets)) {
         // No unmatched packets in the ACL match this line, so this line is unreachable.
         List<LineAction> actions =
             lines.stream().map(IpAccessListLine::getAction).collect(Collectors.toList());

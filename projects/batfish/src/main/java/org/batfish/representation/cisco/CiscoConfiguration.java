@@ -131,6 +131,7 @@ import org.batfish.datamodel.acl.OrMatchExpr;
 import org.batfish.datamodel.acl.OriginatingFromDevice;
 import org.batfish.datamodel.acl.PermittedByAcl;
 import org.batfish.datamodel.acl.TrueExpr;
+import org.batfish.datamodel.bgp.AddressFamilyCapabilities;
 import org.batfish.datamodel.bgp.Ipv4UnicastAddressFamily;
 import org.batfish.datamodel.eigrp.EigrpInterfaceSettings;
 import org.batfish.datamodel.eigrp.EigrpMetric;
@@ -303,8 +304,6 @@ public final class CiscoConfiguration extends VendorConfiguration {
   static final int MAX_ADMINISTRATIVE_COST = 32767;
 
   public static final String NXOS_MANAGEMENT_INTERFACE_PREFIX = "mgmt";
-
-  private static final long serialVersionUID = 1L;
 
   public static final String VENDOR_NAME = "cisco";
 
@@ -649,7 +648,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
                                 + ifaceName
                                 + "' due to missing prefix");
                       }
-                      iface.getVrrpGroups().put(groupNum, newGroup);
+                      iface.addVrrpGroup(groupNum, newGroup);
                     });
           }
         });
@@ -1957,27 +1956,33 @@ public final class CiscoConfiguration extends VendorConfiguration {
       }
       newNeighborBuilder.setBgpProcess(newBgpProcess);
 
-      newNeighborBuilder.setAdditionalPathsReceive(lpg.getAdditionalPathsReceive());
-      newNeighborBuilder.setAdditionalPathsSelectAll(lpg.getAdditionalPathsSelectAll());
-      newNeighborBuilder.setAdditionalPathsSend(lpg.getAdditionalPathsSend());
-      /*
-       * On Arista EOS, advertise-inactive is a command that we parse and extract;
-       *
-       * On Cisco IOS & NXOS, advertise-inactive is true by default. This can be modified by
-       * "bgp suppress-inactive" command,
-       * which we currently do not parse/extract. So we choose the default value here.
-       *
-       * For other Cisco OS variations (e.g., IOS-XR) we did not find a similar command and for now,
-       * we assume behavior to be identical to IOS/NXOS family.
-       */
-      if (_vendor.equals(ConfigurationFormat.ARISTA)) {
-        newNeighborBuilder.setAdvertiseInactive(lpg.getAdvertiseInactive());
-      } else {
-        newNeighborBuilder.setAdvertiseInactive(true);
-      }
-      newNeighborBuilder.setAllowLocalAsIn(lpg.getAllowAsIn());
-      newNeighborBuilder.setAllowRemoteAsOut(
-          firstNonNull(lpg.getDisablePeerAsCheck(), Boolean.TRUE));
+      AddressFamilyCapabilities ipv4AfSettings =
+          AddressFamilyCapabilities.builder()
+              .setAdditionalPathsReceive(lpg.getAdditionalPathsReceive())
+              .setAdditionalPathsSelectAll(lpg.getAdditionalPathsSelectAll())
+              .setAdditionalPathsSend(lpg.getAdditionalPathsSend())
+              .setAllowLocalAsIn(lpg.getAllowAsIn())
+              .setAllowRemoteAsOut(firstNonNull(lpg.getDisablePeerAsCheck(), Boolean.TRUE))
+              /*
+               * On Arista EOS, advertise-inactive is a command that we parse and extract;
+               *
+               * On Cisco IOS & NXOS, advertise-inactive is true by default. This can be modified by
+               * "bgp suppress-inactive" command,
+               * which we currently do not parse/extract. So we choose the default value here.
+               *
+               * For other Cisco OS variations (e.g., IOS-XR) we did not find a similar command and for now,
+               * we assume behavior to be identical to IOS/NXOS family.
+               */
+              .setAdvertiseInactive(
+                  _vendor.equals(ConfigurationFormat.ARISTA) ? lpg.getAdvertiseInactive() : true)
+              .setSendCommunity(lpg.getSendCommunity())
+              .build();
+      newNeighborBuilder.setIpv4UnicastAddressFamily(
+          Ipv4UnicastAddressFamily.builder()
+              .setAddressFamilyCapabilities(ipv4AfSettings)
+              .setImportPolicy(peerImportPolicyName)
+              .setExportPolicy(computeBgpPeerExportPolicyName(vrfName, lpg.getName()))
+              .build());
       newNeighborBuilder.setRouteReflectorClient(lpg.getRouteReflectorClient());
       newNeighborBuilder.setClusterId(clusterId.asLong());
       newNeighborBuilder.setDefaultMetric(defaultMetric);
@@ -1987,14 +1992,8 @@ public final class CiscoConfiguration extends VendorConfiguration {
         newNeighborBuilder.setGeneratedRoutes(ImmutableSet.of(defaultRoute.build()));
       }
       newNeighborBuilder.setGroup(lpg.getGroupName());
-      if (peerImportPolicyName != null) {
-        newNeighborBuilder.setImportPolicy(peerImportPolicyName);
-      }
       newNeighborBuilder.setLocalAs(localAs);
       newNeighborBuilder.setLocalIp(updateSource);
-      newNeighborBuilder.setExportPolicy(computeBgpPeerExportPolicyName(vrfName, lpg.getName()));
-      newNeighborBuilder.setSendCommunity(lpg.getSendCommunity());
-      newNeighborBuilder.setIpv4UnicastAddressFamily(Ipv4UnicastAddressFamily.instance());
       newNeighborBuilder.build();
     }
     return newBgpProcess;
@@ -2024,8 +2023,11 @@ public final class CiscoConfiguration extends VendorConfiguration {
   private org.batfish.datamodel.Interface toInterface(
       String ifaceName, Interface iface, Map<String, IpAccessList> ipAccessLists, Configuration c) {
     org.batfish.datamodel.Interface newIface =
-        new org.batfish.datamodel.Interface(
-            ifaceName, c, computeInterfaceType(iface.getName(), c.getConfigurationFormat()));
+        org.batfish.datamodel.Interface.builder()
+            .setName(ifaceName)
+            .setOwner(c)
+            .setType(computeInterfaceType(iface.getName(), c.getConfigurationFormat()))
+            .build();
     if (newIface.getInterfaceType() == InterfaceType.VLAN) {
       newIface.setVlan(CommonUtil.getInterfaceVlanNumber(ifaceName));
     }
@@ -3100,17 +3102,20 @@ public final class CiscoConfiguration extends VendorConfiguration {
     for (RoutePolicyStatement routePolicyStatement : routePolicy.getStatements()) {
       routePolicyStatement.applyTo(statements, this, c, _w);
     }
-    If nonBoolean =
-        new If(
-            BooleanExprs.CALL_STATEMENT_CONTEXT,
-            Collections.singletonList(Statements.Return.toStaticStatement()),
-            Collections.singletonList(Statements.DefaultAction.toStaticStatement()));
-    @SuppressWarnings("unused") // TODO(https://github.com/batfish/batfish/issues/1306)
-    If endPolicy =
+    // At the end of a routing policy, we terminate based on the context.
+    // 1. we're in call expr context, so we return the local default action of this policy.
+    // 2. we're in call statement context, so we just return
+    // 3. otherwise, we reach the end of the policy and return the policy's default action.
+    If endPolicyBasedOnContext =
         new If(
             BooleanExprs.CALL_EXPR_CONTEXT,
             Collections.singletonList(Statements.ReturnLocalDefaultAction.toStaticStatement()),
-            Collections.singletonList(nonBoolean));
+            Collections.singletonList(
+                new If(
+                    BooleanExprs.CALL_STATEMENT_CONTEXT,
+                    Collections.singletonList(Statements.Return.toStaticStatement()),
+                    Collections.singletonList(Statements.DefaultAction.toStaticStatement()))));
+    statements.add(endPolicyBasedOnContext);
     return rp;
   }
 

@@ -7,14 +7,24 @@ import java.util.List;
 import org.batfish.common.BatfishException;
 
 public enum ParseStatus {
+  /** The file was empty, we have nothing to do */
   EMPTY,
+  /** Batfish has encountered an unrecoverable error during parsing */
   FAILED,
+  /** File was explicitly ignored by the user */
   IGNORED,
+  /** File is part of an unused overlay configuration */
   ORPHANED,
+  /** Some syntax was unrecognized, but Batfish processed the file */
   PARTIALLY_UNRECOGNIZED,
+  /** File was fully parsed */
   PASSED,
+  /** Batfish could not detect the file format */
   UNKNOWN,
-  UNSUPPORTED;
+  /** Batfish does not support the format/vendor config in the file */
+  UNSUPPORTED,
+  /** Configuration would be rejected by a device (failed to commit) because it is invalid */
+  WILL_NOT_COMMIT;
 
   private static final List<ParseStatus> ORDERED =
       ImmutableList.of(
@@ -47,6 +57,8 @@ public enum ParseStatus {
         return "File format is unknown";
       case UNSUPPORTED:
         return "File format is known but unsupported";
+      case WILL_NOT_COMMIT:
+        return "File contains configuration that will be rejected by a device";
       default:
         throw new BatfishException(
             String.format("Unhandled parse status explanation for status: %s", status));

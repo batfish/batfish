@@ -3,10 +3,12 @@ package org.batfish.grammar.cumulus_nclu;
 import static org.batfish.datamodel.BgpPeerConfig.ALL_AS_NUMBERS;
 import static org.batfish.datamodel.Configuration.DEFAULT_VRF_NAME;
 import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasPrefix;
-import static org.batfish.datamodel.matchers.BgpNeighborMatchers.hasExportPolicy;
+import static org.batfish.datamodel.matchers.AddressFamilyCapabilitiesMatchers.hasSendCommunity;
+import static org.batfish.datamodel.matchers.AddressFamilyMatchers.hasAddressFamilySettings;
+import static org.batfish.datamodel.matchers.AddressFamilyMatchers.hasExportPolicy;
+import static org.batfish.datamodel.matchers.BgpNeighborMatchers.hasIpv4UnicastAddressFamily;
 import static org.batfish.datamodel.matchers.BgpNeighborMatchers.hasLocalAs;
 import static org.batfish.datamodel.matchers.BgpNeighborMatchers.hasRemoteAs;
-import static org.batfish.datamodel.matchers.BgpNeighborMatchers.hasSendCommunity;
 import static org.batfish.datamodel.matchers.BgpProcessMatchers.hasInterfaceNeighbors;
 import static org.batfish.datamodel.matchers.BgpProcessMatchers.hasRouterId;
 import static org.batfish.datamodel.matchers.BgpRouteMatchers.isBgpv4RouteThat;
@@ -25,6 +27,7 @@ import static org.batfish.datamodel.matchers.InterfaceMatchers.hasDependencies;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasEncapsulationVlan;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasMlagId;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasNativeVlan;
+import static org.batfish.datamodel.matchers.InterfaceMatchers.hasSpeed;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasSwitchPortMode;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasVlan;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasVrfName;
@@ -80,6 +83,7 @@ import org.batfish.datamodel.BumTransportMethod;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConnectedRoute;
+import org.batfish.datamodel.Edge;
 import org.batfish.datamodel.IntegerSpace;
 import org.batfish.datamodel.Interface.Dependency;
 import org.batfish.datamodel.Interface.DependencyType;
@@ -101,6 +105,7 @@ import org.batfish.datamodel.bgp.Layer3VniConfig;
 import org.batfish.datamodel.bgp.RouteDistinguisher;
 import org.batfish.datamodel.bgp.VniConfig;
 import org.batfish.datamodel.bgp.community.ExtendedCommunity;
+import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.matchers.VniSettingsMatchers;
 import org.batfish.datamodel.routing_policy.Environment;
 import org.batfish.datamodel.routing_policy.Environment.Direction;
@@ -110,8 +115,8 @@ import org.batfish.dataplane.ibdp.IncrementalDataPlane;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
 import org.batfish.main.TestrigText;
-import org.batfish.representation.cumulus.BgpInterfaceNeighbor;
 import org.batfish.representation.cumulus.BgpL2vpnEvpnAddressFamily;
+import org.batfish.representation.cumulus.BgpNeighbor;
 import org.batfish.representation.cumulus.BgpProcess;
 import org.batfish.representation.cumulus.BgpRedistributionPolicy;
 import org.batfish.representation.cumulus.BgpVrf;
@@ -250,9 +255,12 @@ public final class CumulusNcluGrammarTest {
                                 hasLocalAs(65100L),
                                 hasRemoteAs(
                                     BgpPeerConfig.ALL_AS_NUMBERS.difference(LongSpace.of(65100L))),
-                                hasSendCommunity(true),
-                                hasExportPolicy(
-                                    computeBgpPeerExportPolicyName(DEFAULT_VRF_NAME, iface)))))))));
+                                hasIpv4UnicastAddressFamily(
+                                    allOf(
+                                        hasAddressFamilySettings(hasSendCommunity(true)),
+                                        hasExportPolicy(
+                                            computeBgpPeerExportPolicyName(
+                                                DEFAULT_VRF_NAME, iface)))))))))));
     assertThat(
         configs.get(node2),
         hasVrf(
@@ -267,9 +275,12 @@ public final class CumulusNcluGrammarTest {
                                 hasLocalAs(65101L),
                                 hasRemoteAs(
                                     BgpPeerConfig.ALL_AS_NUMBERS.difference(LongSpace.of(65101L))),
-                                hasSendCommunity(true),
-                                hasExportPolicy(
-                                    computeBgpPeerExportPolicyName(DEFAULT_VRF_NAME, iface)))))))));
+                                hasIpv4UnicastAddressFamily(
+                                    allOf(
+                                        hasAddressFamilySettings(hasSendCommunity(true)),
+                                        hasExportPolicy(
+                                            computeBgpPeerExportPolicyName(
+                                                DEFAULT_VRF_NAME, iface)))))))))));
 
     // Ensure reachability between nodes
     batfish.computeDataPlane();
@@ -298,8 +309,12 @@ public final class CumulusNcluGrammarTest {
     assertThat(pc, hasPeerInterface(peerInterface));
     assertThat(pc, hasLocalAs(65500L));
     assertThat(pc, hasRemoteAs(equalTo(ALL_AS_NUMBERS.difference(LongSpace.of(65500L)))));
-    assertThat(pc, hasExportPolicy(peerExportPolicyName));
-    assertThat(pc, hasSendCommunity(true));
+    assertThat(
+        pc,
+        hasIpv4UnicastAddressFamily(
+            allOf(
+                hasExportPolicy(peerExportPolicyName),
+                hasAddressFamilySettings(hasSendCommunity(true)))));
 
     BgpUnnumberedPeerConfig pc2 =
         c.getDefaultVrf().getBgpProcess().getInterfaceNeighbors().get("swp2");
@@ -373,7 +388,7 @@ public final class CumulusNcluGrammarTest {
   }
 
   @Test
-  public void testBgpExtraction() throws IOException {
+  public void testBgpExtraction() {
     CumulusNcluConfiguration vc = parseVendorConfig("cumulus_nclu_bgp");
 
     // bgp process should be created
@@ -427,14 +442,37 @@ public final class CumulusNcluGrammarTest {
     // interface neighbor
     assertThat(
         "Ensure interface neighbor is extracted",
-        proc.getDefaultVrf().getInterfaceNeighbors().keySet(),
+        proc.getDefaultVrf().getNeighbors().keySet(),
         containsInAnyOrder("swp1", "swp2", "swp3"));
-    BgpInterfaceNeighbor in = proc.getDefaultVrf().getInterfaceNeighbors().get("swp1");
+    BgpNeighbor in = proc.getDefaultVrf().getNeighbors().get("swp1");
     assertThat("Ensure interface neighbor has correct name", in.getName(), equalTo("swp1"));
     assertThat(
         "Ensure interface uses correct remote-as type",
         in.getRemoteAsType(),
         equalTo(RemoteAsType.EXTERNAL));
+
+    // l2vpn evpn route activation and reflector settings
+    assertTrue(
+        "Ensure swp2 has l2vpn evpn activated",
+        proc.getDefaultVrf().getNeighbors().get("swp2").getL2vpnEvpnAddressFamily().getActivated());
+    assertThat(
+        "Ensure swp2 does not have route reflector client enabled (wrong order)",
+        proc.getDefaultVrf()
+            .getNeighbors()
+            .get("swp2")
+            .getL2vpnEvpnAddressFamily()
+            .getRouteReflectorClient(),
+        nullValue());
+    assertTrue(
+        "Ensure swp3 has l2vpn evpn activated",
+        proc.getDefaultVrf().getNeighbors().get("swp3").getL2vpnEvpnAddressFamily().getActivated());
+    assertTrue(
+        "Ensure swp3 has route reflector client enabled",
+        proc.getDefaultVrf()
+            .getNeighbors()
+            .get("swp3")
+            .getL2vpnEvpnAddressFamily()
+            .getRouteReflectorClient());
 
     // router-id
     assertThat(
@@ -476,6 +514,28 @@ public final class CumulusNcluGrammarTest {
         "Ensure l2vpn evpn advertise ipv4 unicast is extracted for vrf",
         vrf.getL2VpnEvpn().getAdvertiseIpv4Unicast(),
         notNullValue());
+  }
+
+  @Test
+  public void testBgpPeerGroup() throws IOException {
+    Configuration c = parseConfig("cumulus_nclu_bgp_peer_group");
+    String swp1 = "swp1";
+    long internalAs = 65500L;
+
+    assertThat(c, hasDefaultVrf(hasBgpProcess(hasInterfaceNeighbors(hasKey(swp1)))));
+    org.batfish.datamodel.BgpProcess p = c.getDefaultVrf().getBgpProcess();
+    BgpUnnumberedPeerConfig i1 = p.getInterfaceNeighbors().get(swp1);
+    assertThat(i1, hasRemoteAs(equalTo(ALL_AS_NUMBERS.difference(LongSpace.of(internalAs)))));
+
+    String swp2 = "swp2";
+    assertThat(c, hasDefaultVrf(hasBgpProcess(hasInterfaceNeighbors(hasKey(swp2)))));
+    BgpUnnumberedPeerConfig i2 = p.getInterfaceNeighbors().get(swp2);
+    assertThat(i2, hasRemoteAs(internalAs));
+
+    String swp3 = "swp3";
+    assertThat(c, hasDefaultVrf(hasBgpProcess(hasInterfaceNeighbors(hasKey(swp3)))));
+    BgpUnnumberedPeerConfig i3 = p.getInterfaceNeighbors().get(swp3);
+    assertThat(i3, hasRemoteAs(17L));
   }
 
   @Test
@@ -525,7 +585,7 @@ public final class CumulusNcluGrammarTest {
   }
 
   @Test
-  public void testBondExtraction() throws IOException {
+  public void testBondExtraction() {
     CumulusNcluConfiguration vc = parseVendorConfig("cumulus_nclu_bond");
     String bond1Name = "bond1";
     String bond2Name = "bond2";
@@ -640,7 +700,7 @@ public final class CumulusNcluGrammarTest {
   }
 
   @Test
-  public void testBridgeExtraction() throws IOException {
+  public void testBridgeExtraction() {
     CumulusNcluConfiguration vc = parseVendorConfig("cumulus_nclu_bridge");
 
     // bridge
@@ -714,6 +774,39 @@ public final class CumulusNcluGrammarTest {
   }
 
   @Test
+  public void testClagExtranctionLinkLocalPeer() {
+    CumulusNcluConfiguration c = parseVendorConfig("cumulus_nclu_clag_linklocal");
+
+    String ifaceName = "peerlink.4094";
+    assertTrue(c.getInterfaces().get(ifaceName).getClag().isPeerIpLinkLocal());
+  }
+
+  @Test
+  public void testClagConversionLinkLocalPeer() throws IOException {
+    final String testrigName = "clag-linklocal-peering";
+    final String node1 = "n1";
+    final String node2 = "n2";
+    final String peerlink = "peerlink.4094";
+    Batfish batfish =
+        BatfishTestUtils.getBatfishFromTestrigText(
+            TestrigText.builder()
+                .setConfigurationText(TESTRIGS_PREFIX + testrigName, ImmutableSet.of(node1, node2))
+                .setLayer1TopologyText(TESTRIGS_PREFIX + testrigName)
+                .build(),
+            _folder);
+
+    // Expect an l3 edge to come up on the peer link interface
+    Edge edge =
+        new Edge(new NodeInterfacePair(node1, peerlink), new NodeInterfacePair(node2, peerlink));
+    assertThat(
+        batfish
+            .getTopologyProvider()
+            .getInitialLayer3Topology(batfish.getNetworkSnapshot())
+            .getEdges(),
+        containsInAnyOrder(edge, edge.reverse()));
+  }
+
+  @Test
   public void testDnsConversion() throws IOException {
     Configuration c = parseConfig("cumulus_nclu_dns");
 
@@ -721,7 +814,7 @@ public final class CumulusNcluGrammarTest {
   }
 
   @Test
-  public void testDnsExtraction() throws IOException {
+  public void testDnsExtraction() {
     CumulusNcluConfiguration vc = parseVendorConfig("cumulus_nclu_dns");
 
     assertThat(vc.getIpv4Nameservers(), contains(Ip.parse("192.0.2.3"), Ip.parse("192.0.2.4")));
@@ -758,6 +851,7 @@ public final class CumulusNcluGrammarTest {
             "swp4",
             "swp5",
             "swp5.1",
+            "swp6",
             "vrf1"));
 
     assertThat(
@@ -776,7 +870,8 @@ public final class CumulusNcluGrammarTest {
                     "swp2",
                     "swp3",
                     "swp4",
-                    "swp5"))));
+                    "swp5",
+                    "swp6"))));
     assertThat(c, hasVrf("mgmt", hasInterfaces(containsInAnyOrder("mgmt"))));
     assertThat(c, hasVrf("vrf1", hasInterfaces(containsInAnyOrder("vrf1", "swp5.1"))));
 
@@ -818,6 +913,8 @@ public final class CumulusNcluGrammarTest {
     assertThat(c, hasInterface("swp3", hasBandwidth(10E9D)));
     assertThat(c, hasInterface("swp4", hasBandwidth(10E9D)));
     assertThat(c, hasInterface("swp5", hasBandwidth(10E9D)));
+    assertThat(c, hasInterface("swp6", hasSpeed(10E11D)));
+    assertThat(c, hasInterface("swp6", hasBandwidth(10E11D)));
 
     // channel group
     assertThat(c.getAllInterfaces().get("swp1").getChannelGroup(), equalTo("bond1"));
@@ -831,14 +928,14 @@ public final class CumulusNcluGrammarTest {
   }
 
   @Test
-  public void testInterfaceExtraction() throws IOException {
+  public void testInterfaceExtraction() {
     CumulusNcluConfiguration vc = parseVendorConfig("cumulus_nclu_interface");
 
     assertThat(
         "Ensure interfaces are created",
         vc.getInterfaces().keySet(),
         containsInAnyOrder(
-            "bond2.4094", "bond3.4094", "eth0", "swp1", "swp2", "swp3", "swp4", "swp5.1"));
+            "bond2.4094", "bond3.4094", "eth0", "swp1", "swp2", "swp3", "swp4", "swp5.1", "swp6"));
 
     // encapsulation vlan
     assertThat(
@@ -937,6 +1034,14 @@ public final class CumulusNcluGrammarTest {
         "Ensure type is correctly calculated",
         vc.getInterfaces().get("swp5.1").getType(),
         equalTo(CumulusInterfaceType.PHYSICAL_SUBINTERFACE));
+
+    // interface speed
+    assertThat(vc.getInterfaces().get("swp1").getSpeed(), nullValue());
+    assertThat(vc.getInterfaces().get("swp2").getSpeed(), nullValue());
+    assertThat(vc.getInterfaces().get("swp3").getSpeed(), nullValue());
+    assertThat(vc.getInterfaces().get("swp4").getSpeed(), nullValue());
+    assertThat(vc.getInterfaces().get("swp5.1").getSpeed(), nullValue());
+    assertThat(vc.getInterfaces().get("swp6").getSpeed(), equalTo(100_000));
   }
 
   @Test
@@ -969,7 +1074,7 @@ public final class CumulusNcluGrammarTest {
   }
 
   @Test
-  public void testLoopbackExtraction() throws IOException {
+  public void testLoopbackExtraction() {
     CumulusNcluConfiguration vc = parseVendorConfig("cumulus_nclu_loopback");
 
     assertTrue("Ensure loopback is configured", vc.getLoopback().getConfigured());
@@ -986,7 +1091,7 @@ public final class CumulusNcluGrammarTest {
   }
 
   @Test
-  public void testLoopbackMissingExtraction() throws IOException {
+  public void testLoopbackMissingExtraction() {
     CumulusNcluConfiguration vc = parseVendorConfig("cumulus_nclu_loopback_missing");
 
     assertFalse("Ensure loopback is disabled", vc.getLoopback().getConfigured());
@@ -1033,9 +1138,14 @@ public final class CumulusNcluGrammarTest {
             hasStaticRoutes(
                 containsInAnyOrder(
                     builder.setNextHopIp(Ip.parse("10.1.0.1")).build(),
-                    builder.setNextHopIp(Ip.parse("10.1.0.2")).build()))));
+                    builder.setNextHopIp(Ip.parse("10.1.0.2")).build(),
+                    builder.setNextHopIp(null).setNextHopInterface("swp1").build(),
+                    builder
+                        .setNextHopInterface(org.batfish.datamodel.Interface.NULL_INTERFACE_NAME)
+                        .build()))));
 
     // static routes in vrf1
+    builder = org.batfish.datamodel.StaticRoute.builder().setAdmin(1).setMetric(0);
     builder.setNetwork(Prefix.strict("10.0.2.0/24"));
     assertThat(
         c,
@@ -1084,22 +1194,24 @@ public final class CumulusNcluGrammarTest {
   }
 
   @Test
-  public void testRoutingExtraction() throws IOException {
+  public void testRoutingExtraction() {
     CumulusNcluConfiguration vc = parseVendorConfig("cumulus_nclu_routing");
 
     // static route (main vrf)
     assertThat(
         vc.getStaticRoutes(),
         containsInAnyOrder(
-            new StaticRoute(Prefix.strict("10.0.1.0/24"), Ip.parse("10.1.0.1")),
-            new StaticRoute(Prefix.strict("10.0.1.0/24"), Ip.parse("10.1.0.2"))));
+            new StaticRoute(Prefix.strict("10.0.1.0/24"), Ip.parse("10.1.0.1"), null),
+            new StaticRoute(Prefix.strict("10.0.1.0/24"), Ip.parse("10.1.0.2"), null),
+            new StaticRoute(Prefix.strict("10.0.1.0/24"), null, "swp1"),
+            new StaticRoute(Prefix.strict("10.0.1.0/24"), null, "Null0")));
 
     // static route (alternate vrf)
     assertThat(
         vc.getVrfs().get("vrf1").getStaticRoutes(),
         containsInAnyOrder(
-            new StaticRoute(Prefix.strict("10.0.2.0/24"), Ip.parse("192.0.2.1")),
-            new StaticRoute(Prefix.strict("10.0.2.0/24"), Ip.parse("192.0.2.2"))));
+            new StaticRoute(Prefix.strict("10.0.2.0/24"), Ip.parse("192.0.2.1"), null),
+            new StaticRoute(Prefix.strict("10.0.2.0/24"), Ip.parse("192.0.2.2"), null)));
 
     // route-map keys
     assertThat(vc.getRouteMaps().keySet(), containsInAnyOrder("rm1", "rm2"));
@@ -1210,7 +1322,7 @@ public final class CumulusNcluGrammarTest {
   }
 
   @Test
-  public void testVlanExtraction() throws IOException {
+  public void testVlanExtraction() {
     CumulusNcluConfiguration vc = parseVendorConfig("cumulus_nclu_vlan");
 
     // vlan interfaces
@@ -1281,7 +1393,7 @@ public final class CumulusNcluGrammarTest {
   }
 
   @Test
-  public void testVrfExtraction() throws IOException {
+  public void testVrfExtraction() {
     CumulusNcluConfiguration vc = parseVendorConfig("cumulus_nclu_vrf");
 
     // vrfs
@@ -1320,7 +1432,7 @@ public final class CumulusNcluGrammarTest {
   }
 
   @Test
-  public void testVxlanExtraction() throws IOException {
+  public void testVxlanExtraction() {
     CumulusNcluConfiguration vc = parseVendorConfig("cumulus_nclu_vxlan");
 
     // vxlan interfaces
@@ -1455,5 +1567,24 @@ public final class CumulusNcluGrammarTest {
         c.getVrfs().get("vrf2").getBgpProcess().getInterfaceNeighbors().get("swp2");
     assertThat(vrf2BgpPeer.getIpv4UnicastAddressFamily(), notNullValue());
     assertThat(vrf2BgpPeer.getEvpnAddressFamily(), nullValue());
+  }
+
+  @Test
+  public void testEvpnConversions4byteAS() throws IOException {
+    Configuration c = parseConfig("cumulus_nclu_evpn_4byte_as");
+
+    BgpUnnumberedPeerConfig bgpPeer =
+        c.getDefaultVrf().getBgpProcess().getInterfaceNeighbors().get("swp1");
+    Ip routerId = Ip.parse("192.0.0.0");
+    ImmutableSortedSet<Layer2VniConfig> expectedL2Vnis =
+        ImmutableSortedSet.of(
+            Layer2VniConfig.builder()
+                .setVni(70001)
+                .setVrf(DEFAULT_VRF_NAME)
+                .setRouteDistinguisher(RouteDistinguisher.from(routerId, 0))
+                // Using lower 2 bytes of the AS number
+                .setRouteTarget(ExtendedCommunity.target(34, 70001))
+                .build());
+    assertThat(bgpPeer.getEvpnAddressFamily().getL2VNIs(), equalTo(expectedL2Vnis));
   }
 }

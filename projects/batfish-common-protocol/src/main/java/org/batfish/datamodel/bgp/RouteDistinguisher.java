@@ -21,8 +21,6 @@ import org.batfish.datamodel.Ip;
 @ParametersAreNonnullByDefault
 public final class RouteDistinguisher implements Serializable, Comparable<RouteDistinguisher> {
 
-  private static final long serialVersionUID = 1L;
-
   private static final String ERR_MSG_SHORT_TEMPLATE =
       "ASN value required to be in range 0 to 0xFFFF, %d was provided";
   private static final String ERR_MSG_INT_TEMPLATE =
@@ -105,6 +103,22 @@ public final class RouteDistinguisher implements Serializable, Comparable<RouteD
     checkArgument(asn1 >= 0 && asn1 <= 0xFFFFFFFFL, ERR_MSG_INT_TEMPLATE, asn1);
     checkArgument(asn2 >= 0 && asn2 <= 0xFFFFL, ERR_MSG_SHORT_TEMPLATE, asn2);
     return new RouteDistinguisher((asn1 << 16) | asn2, Type.TYPE2);
+  }
+
+  /**
+   * Create a new route distinguisher, infer the correct type (1 or 2) based on passed in values.
+   *
+   * @param asn1 a valid 4-byte administrator subfield
+   * @param asn2 a valid 2-byte assigned number subfield
+   * @throws IllegalArgumentException if the values are not
+   */
+  @Nonnull
+  public static RouteDistinguisher from(long asn1, long asn2) {
+    if (asn1 <= 0xFFFF) {
+      return from((int) asn1, asn2);
+    }
+    checkArgument(asn2 <= 0xFFFF, ERR_MSG_SHORT_TEMPLATE, asn2);
+    return from(asn1, (int) asn2);
   }
 
   public long getValue() {

@@ -3,6 +3,7 @@ package org.batfish.dataplane.ibdp;
 import static org.batfish.datamodel.Configuration.DEFAULT_VRF_NAME;
 import static org.batfish.datamodel.IpAccessListLine.REJECT_ALL;
 import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasPrefix;
+import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.hasSize;
@@ -64,6 +65,7 @@ import org.batfish.datamodel.UniverseIpSpace;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.acl.AclLineMatchExprs;
 import org.batfish.datamodel.bgp.BgpTopologyUtils;
+import org.batfish.datamodel.bgp.Ipv4UnicastAddressFamily;
 import org.batfish.datamodel.collections.RoutesByVrf;
 import org.batfish.datamodel.isis.IsisInterfaceLevelSettings;
 import org.batfish.datamodel.isis.IsisInterfaceMode;
@@ -156,7 +158,10 @@ public class IncrementalDataPlanePluginTest {
         .setLocalAs(1L)
         .setLocalIp(coreId)
         .setPeerAddress(neighborId1)
-        .setExportPolicy(_epb.setOwner(core).build().getName())
+        .setIpv4UnicastAddressFamily(
+            Ipv4UnicastAddressFamily.builder()
+                .setExportPolicy(_epb.setOwner(core).build().getName())
+                .build())
         .build();
     _nb.setRemoteAs(1L).setLocalAs(1L).setLocalIp(coreId).setPeerAddress(neighborId2).build();
 
@@ -174,7 +179,10 @@ public class IncrementalDataPlanePluginTest {
         .setLocalAs(1L)
         .setLocalIp(neighborId1)
         .setPeerAddress(coreId)
-        .setExportPolicy(_epb.setOwner(n1).build().getName())
+        .setIpv4UnicastAddressFamily(
+            Ipv4UnicastAddressFamily.builder()
+                .setExportPolicy(_epb.setOwner(n1).build().getName())
+                .build())
         .build();
 
     Configuration n2 = _cb.setHostname("n2").build();
@@ -191,7 +199,10 @@ public class IncrementalDataPlanePluginTest {
         .setLocalAs(1L)
         .setLocalIp(neighborId2)
         .setPeerAddress(coreId)
-        .setExportPolicy(_epb.setOwner(n2).build().getName())
+        .setIpv4UnicastAddressFamily(
+            Ipv4UnicastAddressFamily.builder()
+                .setExportPolicy(_epb.setOwner(n2).build().getName())
+                .build())
         .build();
 
     return ImmutableSortedMap.of(CORE_NAME, core, "n1", n1, "n2", n2);
@@ -399,6 +410,41 @@ public class IncrementalDataPlanePluginTest {
   }
 
   @Test
+  public void testStaticNextVrfRoute() {
+    String hostname = "n1";
+    String nextVrf = "nextVrf";
+    NetworkFactory nf = new NetworkFactory();
+    Configuration c =
+        nf.configurationBuilder()
+            .setHostname(hostname)
+            .setConfigurationFormat(ConfigurationFormat.CISCO_IOS)
+            .build();
+    Vrf.Builder vb = nf.vrfBuilder().setOwner(c);
+    Vrf vrf = vb.setName(DEFAULT_VRF_NAME).build();
+    vb.setName(nextVrf).build();
+    StaticRoute sr =
+        StaticRoute.builder()
+            .setNetwork(Prefix.ZERO)
+            .setNextVrf(nextVrf)
+            .setAdministrativeCost(1)
+            .build();
+    vrf.getStaticRoutes().add(sr);
+    IncrementalBdpEngine engine =
+        new IncrementalBdpEngine(
+            new IncrementalDataPlaneSettings(),
+            new BatfishLogger(BatfishLogger.LEVELSTR_DEBUG, false));
+    ComputeDataPlaneResult dp =
+        engine.computeDataPlane(
+            ImmutableMap.of(c.getHostname(), c),
+            TopologyContext.builder().build(),
+            Collections.emptySet());
+
+    // generating fibs should not crash
+    assertThat(
+        dp._dataPlane.getRibs().get(hostname).get(DEFAULT_VRF_NAME).getRoutes(), contains(sr));
+  }
+
+  @Test
   public void testBgpNeighborReachability() throws IOException {
     // Only connect one neighbor (n2) to core router
     SortedMap<String, Configuration> configs = generateNetworkWithDuplicates();
@@ -489,6 +535,7 @@ public class IncrementalDataPlanePluginTest {
             .setEbgpMultihop(false)
             .setLocalAs(1L)
             .setRemoteAs(2L)
+            .setIpv4UnicastAddressFamily(Ipv4UnicastAddressFamily.builder().build())
             .build();
 
     // the neighbor should be reachable because it is only one hop away from the initiator
@@ -522,6 +569,7 @@ public class IncrementalDataPlanePluginTest {
             .setEbgpMultihop(false)
             .setLocalAs(1L)
             .setRemoteAs(2L)
+            .setIpv4UnicastAddressFamily(Ipv4UnicastAddressFamily.builder().build())
             .build();
 
     // the neighbor should be not be reachable because it is two hops away from the initiator
@@ -555,6 +603,7 @@ public class IncrementalDataPlanePluginTest {
             .setEbgpMultihop(true)
             .setLocalAs(1L)
             .setRemoteAs(2L)
+            .setIpv4UnicastAddressFamily(Ipv4UnicastAddressFamily.builder().build())
             .build();
 
     // the neighbor should be reachable because multi-hops are allowed
@@ -589,6 +638,7 @@ public class IncrementalDataPlanePluginTest {
             .setEbgpMultihop(true)
             .setLocalAs(1L)
             .setRemoteAs(2L)
+            .setIpv4UnicastAddressFamily(Ipv4UnicastAddressFamily.builder().build())
             .build();
 
     // the neighbor should not be reachable even though multihops are allowed as traceroute would be
@@ -624,6 +674,7 @@ public class IncrementalDataPlanePluginTest {
             .setEbgpMultihop(true)
             .setLocalAs(1L)
             .setRemoteAs(2L)
+            .setIpv4UnicastAddressFamily(Ipv4UnicastAddressFamily.builder().build())
             .build();
 
     // neighbor should be reachable because ACL allows established connection back into node1 and
@@ -804,7 +855,10 @@ public class IncrementalDataPlanePluginTest {
         .setLocalIp(lo1Ip)
         .setRemoteAs(1L)
         .setBgpProcess(bgpp1)
-        .setExportPolicy(_epb.setOwner(c1).build().getName())
+        .setIpv4UnicastAddressFamily(
+            Ipv4UnicastAddressFamily.builder()
+                .setExportPolicy(_epb.setOwner(c1).build().getName())
+                .build())
         .build();
 
     // Node 2
@@ -844,7 +898,10 @@ public class IncrementalDataPlanePluginTest {
         .setLocalIp(lo2Ip)
         .setRemoteAs(1L)
         .setBgpProcess(bgpp2)
-        .setExportPolicy(_epb.setOwner(c2).build().getName())
+        .setIpv4UnicastAddressFamily(
+            Ipv4UnicastAddressFamily.builder()
+                .setExportPolicy(_epb.setOwner(c2).build().getName())
+                .build())
         .build();
 
     ImmutableSortedMap<String, Configuration> configs = ImmutableSortedMap.of("n1", c1, "n2", c2);

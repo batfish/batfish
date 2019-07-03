@@ -1,6 +1,7 @@
 package org.batfish.bddreachability;
 
-import javax.annotation.Nullable;
+import java.util.function.Predicate;
+import javax.annotation.Nonnull;
 import org.batfish.symbolic.state.NodeAccept;
 import org.batfish.symbolic.state.NodeDropAclIn;
 import org.batfish.symbolic.state.NodeDropAclOut;
@@ -15,39 +16,43 @@ import org.batfish.symbolic.state.OriginateVrf;
 import org.batfish.symbolic.state.PostInInterface;
 import org.batfish.symbolic.state.PostInInterfacePostNat;
 import org.batfish.symbolic.state.PostInVrf;
+import org.batfish.symbolic.state.PostInVrfSession;
 import org.batfish.symbolic.state.PreInInterface;
 import org.batfish.symbolic.state.PreOutEdge;
 import org.batfish.symbolic.state.PreOutEdgePostNat;
+import org.batfish.symbolic.state.PreOutEdgeSession;
 import org.batfish.symbolic.state.PreOutInterfaceDeliveredToSubnet;
 import org.batfish.symbolic.state.PreOutInterfaceExitsNetwork;
 import org.batfish.symbolic.state.PreOutInterfaceInsufficientInfo;
 import org.batfish.symbolic.state.PreOutInterfaceNeighborUnreachable;
 import org.batfish.symbolic.state.PreOutVrf;
+import org.batfish.symbolic.state.PreOutVrfSession;
 import org.batfish.symbolic.state.StateExpr;
 import org.batfish.symbolic.state.StateExprVisitor;
+import org.batfish.symbolic.state.VrfAccept;
 
 /**
  * Converts successful flow termination states from the forward pass of a bidirectional reachability
  * query to the corresponding origination state for the return pass (if any). If the state does not
- * have a corresponding origination state, returns null.
+ * have a corresponding origination state, or if the state should be filtered out because it does
+ * not correspond to a permitted final node, returns {@code null}.
  *
  * <p>{@link NodeInterfaceDeliveredToSubnet} and {@link NodeInterfaceExitsNetwork} states are mapped
  * to corresponding {@link OriginateInterfaceLink} states.
  *
- * <p>TODO: handle ACCEPT disposition
- *
- * <p>Flows accepted by a VRF in the forward pass should be originated by {@link OriginateVrf} in
- * the return pass. This isn't implemented yet, because there is no corresponding AcceptVrf state.
- * We can either add one, or else split the packets accepted at a {@link NodeAccept} state into
- * multiple {@link OriginateVrf} states by dst IP.
+ * <p>{@link VrfAccept} states are mapped to corresponding {@link OriginateVrf} states.
  */
 public class ReversePassOriginationState implements StateExprVisitor<StateExpr> {
-  private static final ReversePassOriginationState INSTANCE = new ReversePassOriginationState();
+  private final @Nonnull Predicate<String> _isFinalNode;
 
-  private ReversePassOriginationState() {}
-
-  public static @Nullable StateExpr reverseTraceOriginationState(StateExpr expr) {
-    return expr.accept(INSTANCE);
+  /**
+   * Construct a {@link ReversePassOriginationState}.
+   *
+   * @param isFinalNode Only return non-null origination states when the state being visited is for
+   *     a final node as determined by {@code isFinalNode}.
+   */
+  public ReversePassOriginationState(Predicate<String> isFinalNode) {
+    _isFinalNode = isFinalNode;
   }
 
   @Override
@@ -122,12 +127,18 @@ public class ReversePassOriginationState implements StateExprVisitor<StateExpr> 
 
   @Override
   public StateExpr visitNodeInterfaceDeliveredToSubnet(NodeInterfaceDeliveredToSubnet state) {
-    return new OriginateInterfaceLink(state.getHostname(), state.getInterface());
+    String hostname = state.getHostname();
+    return _isFinalNode.test(hostname)
+        ? new OriginateInterfaceLink(hostname, state.getInterface())
+        : null;
   }
 
   @Override
   public StateExpr visitNodeInterfaceExitsNetwork(NodeInterfaceExitsNetwork state) {
-    return new OriginateInterfaceLink(state.getHostname(), state.getInterface());
+    String hostname = state.getHostname();
+    return _isFinalNode.test(hostname)
+        ? new OriginateInterfaceLink(hostname, state.getInterface())
+        : null;
   }
 
   @Override
@@ -214,5 +225,26 @@ public class ReversePassOriginationState implements StateExprVisitor<StateExpr> 
   @Override
   public StateExpr visitQuery() {
     return null;
+  }
+
+  @Override
+  public StateExpr visitPostInVrfSession(PostInVrfSession postInVrfSession) {
+    return null;
+  }
+
+  @Override
+  public StateExpr visitPreOutEdgeSession(PreOutEdgeSession preOutEdgeSession) {
+    return null;
+  }
+
+  @Override
+  public StateExpr visitPreOutVrfSession(PreOutVrfSession preOutVrfSession) {
+    return null;
+  }
+
+  @Override
+  public StateExpr visitVrfAccept(VrfAccept vrfAccept) {
+    String hostname = vrfAccept.getHostname();
+    return _isFinalNode.test(hostname) ? new OriginateVrf(hostname, vrfAccept.getVrf()) : null;
   }
 }

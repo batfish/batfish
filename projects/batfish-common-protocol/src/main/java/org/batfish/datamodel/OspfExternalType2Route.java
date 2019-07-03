@@ -13,8 +13,6 @@ import org.batfish.datamodel.ospf.OspfMetricType;
 @ParametersAreNonnullByDefault
 public class OspfExternalType2Route extends OspfExternalRoute {
 
-  private static final long serialVersionUID = 1L;
-
   @JsonCreator
   private static OspfExternalType2Route jsonCreator(
       @Nullable @JsonProperty(PROP_NETWORK) Prefix prefix,

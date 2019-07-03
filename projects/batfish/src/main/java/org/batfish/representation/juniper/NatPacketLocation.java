@@ -37,8 +37,6 @@ public final class NatPacketLocation implements Serializable, Comparable<NatPack
     RoutingInstanceType
   }
 
-  private static final long serialVersionUID = 1L;
-
   private static final Comparator<NatPacketLocation> COMPARATOR =
       Comparator.comparing(NatPacketLocation::getType).thenComparing(NatPacketLocation::getName);
 

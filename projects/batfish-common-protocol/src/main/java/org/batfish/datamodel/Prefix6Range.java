@@ -15,8 +15,6 @@ import org.batfish.common.BatfishException;
 @ParametersAreNonnullByDefault
 public class Prefix6Range implements Serializable, Comparable<Prefix6Range> {
 
-  private static final long serialVersionUID = 1L;
-
   public static Prefix6Range fromPrefix6(Prefix6 prefix6) {
     int prefix6Length = prefix6.getPrefixLength();
     return new Prefix6Range(prefix6, new SubRange(prefix6Length, prefix6Length));

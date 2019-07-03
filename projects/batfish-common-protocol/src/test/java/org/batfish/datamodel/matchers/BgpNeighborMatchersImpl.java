@@ -4,31 +4,11 @@ import javax.annotation.Nonnull;
 import org.batfish.datamodel.BgpPeerConfig;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.LongSpace;
+import org.batfish.datamodel.bgp.Ipv4UnicastAddressFamily;
 import org.hamcrest.FeatureMatcher;
 import org.hamcrest.Matcher;
 
 final class BgpNeighborMatchersImpl {
-  static final class HasAllowLocalAsIn extends FeatureMatcher<BgpPeerConfig, Boolean> {
-    HasAllowLocalAsIn(@Nonnull Matcher<? super Boolean> subMatcher) {
-      super(subMatcher, "A BgpPeerConfig with allowLocalAsIn:", "allowLocalAsIn");
-    }
-
-    @Override
-    protected Boolean featureValueOf(BgpPeerConfig actual) {
-      return actual.getAllowLocalAsIn();
-    }
-  }
-
-  static final class HasAllowRemoteAsOut extends FeatureMatcher<BgpPeerConfig, Boolean> {
-    HasAllowRemoteAsOut(@Nonnull Matcher<? super Boolean> subMatcher) {
-      super(subMatcher, "A BgpPeerConfig with allowRemoteAsOut:", "allowRemoteAsOut");
-    }
-
-    @Override
-    protected Boolean featureValueOf(BgpPeerConfig actual) {
-      return actual.getAllowRemoteAsOut();
-    }
-  }
 
   static final class HasClusterId extends FeatureMatcher<BgpPeerConfig, Long> {
     HasClusterId(@Nonnull Matcher<? super Long> subMatcher) {
@@ -52,14 +32,16 @@ final class BgpNeighborMatchersImpl {
     }
   }
 
-  static final class HasExportPolicy extends FeatureMatcher<BgpPeerConfig, String> {
-    HasExportPolicy(@Nonnull Matcher<? super String> subMatcher) {
-      super(subMatcher, "A BgpPeerConfig with exportPolicy:", "exportPolicy");
+  static final class HasIpv4UnicastAddressFamily
+      extends FeatureMatcher<BgpPeerConfig, Ipv4UnicastAddressFamily> {
+    HasIpv4UnicastAddressFamily(@Nonnull Matcher<? super Ipv4UnicastAddressFamily> subMatcher) {
+      super(
+          subMatcher, "A BgpPeerConfig with ipv4UnicastAddressFamily:", "ipv4UnicastAddressFamily");
     }
 
     @Override
-    protected String featureValueOf(BgpPeerConfig actual) {
-      return actual.getExportPolicy();
+    protected Ipv4UnicastAddressFamily featureValueOf(BgpPeerConfig actual) {
+      return actual.getIpv4UnicastAddressFamily();
     }
   }
 
@@ -107,14 +89,5 @@ final class BgpNeighborMatchersImpl {
     }
   }
 
-  static final class HasSendCommunity extends FeatureMatcher<BgpPeerConfig, Boolean> {
-    HasSendCommunity(@Nonnull Matcher<? super Boolean> subMatcher) {
-      super(subMatcher, "A BgpPeerConfig with sendCommunity:", "sendCommunity");
-    }
-
-    @Override
-    protected Boolean featureValueOf(BgpPeerConfig actual) {
-      return actual.getSendCommunity();
-    }
-  }
+  private BgpNeighborMatchersImpl() {}
 }
