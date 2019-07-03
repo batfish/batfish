@@ -865,7 +865,7 @@ public final class BidirectionalReachabilityAnalysisTest {
   }
 
   @Test
-  public void testForwardPassFinalNodesFromInterfaceLocationToNode() throws IOException {
+  public void testForwardPassFinalNodesFromInterfaceLocationToNode() {
     assertForwardPassFinalNodesRespected(
         new InterfaceLocation(FPFN_START_NODE, FPFN_EGRESS_IFACE),
         FPFN_START_EGRESS_ADDRESS.getIp().toIpSpace(),
@@ -873,7 +873,7 @@ public final class BidirectionalReachabilityAnalysisTest {
   }
 
   @Test
-  public void testForwardPassFinalNodesFromInterfaceLinkLocationToNode() throws IOException {
+  public void testForwardPassFinalNodesFromInterfaceLinkLocationToNode() {
     assertForwardPassFinalNodesRespected(
         new InterfaceLinkLocation(FPFN_START_NODE, FPFN_INGRESS_IFACE),
         AclIpSpace.difference(
@@ -883,8 +883,7 @@ public final class BidirectionalReachabilityAnalysisTest {
   }
 
   @Test
-  public void testForwardPassFinalNodesFromInterfaceLocationToInterfaceDisposition()
-      throws IOException {
+  public void testForwardPassFinalNodesFromInterfaceLocationToInterfaceDisposition() {
     assertForwardPassFinalNodesRespected(
         new InterfaceLocation(FPFN_START_NODE, FPFN_EGRESS_IFACE),
         FPFN_START_EGRESS_ADDRESS.getIp().toIpSpace(),
@@ -894,8 +893,7 @@ public final class BidirectionalReachabilityAnalysisTest {
   }
 
   @Test
-  public void testForwardPassFinalNodesFromInterfaceLinkLocationToInterfaceDisposition()
-      throws IOException {
+  public void testForwardPassFinalNodesFromInterfaceLinkLocationToInterfaceDisposition() {
     assertForwardPassFinalNodesRespected(
         new InterfaceLinkLocation(FPFN_START_NODE, FPFN_INGRESS_IFACE),
         AclIpSpace.difference(

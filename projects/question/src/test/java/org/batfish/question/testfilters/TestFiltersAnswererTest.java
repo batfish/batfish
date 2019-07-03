@@ -20,7 +20,6 @@ import static org.junit.Assert.assertThat;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSortedMap;
-import java.io.IOException;
 import java.util.SortedMap;
 import org.batfish.common.BatfishException;
 import org.batfish.common.plugin.IBatfish;
@@ -91,7 +90,7 @@ public class TestFiltersAnswererTest {
   }
 
   @Test
-  public void testIndirection() throws IOException {
+  public void testIndirection() {
     Configuration c = _cb.build();
     IpAccessList.Builder aclb = _nf.aclBuilder().setOwner(c);
 
@@ -168,7 +167,7 @@ public class TestFiltersAnswererTest {
   }
 
   @Test
-  public void testOneRowPerFilterPerConfig() throws IOException {
+  public void testOneRowPerFilterPerConfig() {
     IpAccessList.Builder aclb = _nf.aclBuilder();
     Configuration c1 = _cb.build();
     Configuration c2 = _cb.build();
@@ -195,7 +194,7 @@ public class TestFiltersAnswererTest {
   }
 
   @Test
-  public void testOneRowPerInterface() throws IOException {
+  public void testOneRowPerInterface() {
     Configuration c1 = _cb.setHostname("c1").build();
     IpAccessList.Builder aclb = _nf.aclBuilder();
     aclb.setOwner(c1).build();
@@ -242,7 +241,7 @@ public class TestFiltersAnswererTest {
   }
 
   @Test
-  public void testFilteringByNodeAndFilterName() throws IOException {
+  public void testFilteringByNodeAndFilterName() {
     IpAccessList.Builder aclb = _nf.aclBuilder();
     Configuration c1 = _cb.build();
     Configuration c2 = _cb.build();
@@ -284,7 +283,7 @@ public class TestFiltersAnswererTest {
   }
 
   @Test
-  public void testErrorForNoMatchingNodes() throws IOException {
+  public void testErrorForNoMatchingNodes() {
     Configuration c1 = _cb.setHostname("c1").build();
     SortedMap<String, Configuration> configs = ImmutableSortedMap.of(c1.getHostname(), c1);
     IBatfish batfish =
@@ -300,7 +299,7 @@ public class TestFiltersAnswererTest {
   }
 
   @Test
-  public void testErrorForNoMatchingFilters() throws IOException {
+  public void testErrorForNoMatchingFilters() {
     Configuration c1 = _cb.setHostname("c1").build();
     SortedMap<String, Configuration> configs = ImmutableSortedMap.of(c1.getHostname(), c1);
     IBatfish batfish =

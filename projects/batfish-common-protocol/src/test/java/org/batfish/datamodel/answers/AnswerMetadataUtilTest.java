@@ -7,7 +7,6 @@ import static org.junit.Assert.assertThat;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
-import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 import org.batfish.common.BatfishLogger;
@@ -33,7 +32,7 @@ public class AnswerMetadataUtilTest {
   }
 
   @Test
-  public void testComputeAnswerMetadata() throws IOException {
+  public void testComputeAnswerMetadata() {
     String columnName = "col";
     String issueColumnName = "colIssue";
     int value = 5;
@@ -82,7 +81,7 @@ public class AnswerMetadataUtilTest {
   }
 
   @Test
-  public void testComputeAnswerMetadataInapplicable() throws IOException {
+  public void testComputeAnswerMetadataInapplicable() {
     String columnName = "col";
     List<Integer> value = ImmutableList.of(5);
 
@@ -106,7 +105,7 @@ public class AnswerMetadataUtilTest {
   }
 
   @Test
-  public void testComputeAnswerMetadataUnsuccessfulAnswer() throws IOException {
+  public void testComputeAnswerMetadataUnsuccessfulAnswer() {
     Answer testAnswer = new Answer();
     testAnswer.setStatus(AnswerStatus.FAILURE);
 

@@ -49,7 +49,7 @@ public final class NetworkObjectsResourceTest extends WorkMgrServiceV2TestBase {
   }
 
   @Test
-  public void testDeleteAbsent() throws IOException {
+  public void testDeleteAbsent() {
     String network = "network1";
     String key = "foo/bar";
     Main.getWorkMgr().initNetwork(network, null);
@@ -60,7 +60,7 @@ public final class NetworkObjectsResourceTest extends WorkMgrServiceV2TestBase {
   }
 
   @Test
-  public void testDeleteMissingNetwork() throws IOException {
+  public void testDeleteMissingNetwork() {
     String network = "network1";
     String key = "foo/bar";
     Response response = getTarget(network, key).delete();
@@ -89,7 +89,7 @@ public final class NetworkObjectsResourceTest extends WorkMgrServiceV2TestBase {
   }
 
   @Test
-  public void testGetAbsent() throws IOException {
+  public void testGetAbsent() {
     String network = "network1";
     String key = "foo/bar";
     Main.getWorkMgr().initNetwork(network, null);
@@ -99,7 +99,7 @@ public final class NetworkObjectsResourceTest extends WorkMgrServiceV2TestBase {
   }
 
   @Test
-  public void testGetMissingNetwork() throws IOException {
+  public void testGetMissingNetwork() {
     String network = "network1";
     String key = "foo/bar";
     Response response = getTarget(network, key).get();
@@ -122,7 +122,7 @@ public final class NetworkObjectsResourceTest extends WorkMgrServiceV2TestBase {
   }
 
   @Test
-  public void testPutMissingNetwork() throws IOException {
+  public void testPutMissingNetwork() {
     String network = "network1";
     String key = "foo/bar";
     String content = "baz";

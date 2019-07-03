@@ -92,7 +92,7 @@ public final class NetworkResourceTest extends WorkMgrServiceV2TestBase {
   }
 
   @Test
-  public void testForkSnapshotBadRequest() throws Exception {
+  public void testForkSnapshotBadRequest() {
     String networkName = "network";
     String snapshotName = "snapshot";
     String baseSnapshotName = "baseSnapshot";
