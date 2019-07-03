@@ -22568,6 +22568,11 @@
             "            IP:'ip'",
             "            ip = IP_ADDRESS:'1.2.3.4'",
             "            NEWLINE:'\\n')",
+            "          (if_hsrp_ip_address",
+            "            IP:'ip'",
+            "            ip = IP_ADDRESS:'1.2.3.5'",
+            "            SECONDARY:'secondary'",
+            "            NEWLINE:'\\n')",
             "          (if_hsrp_null",
             "            MAC_ADDRESS:'mac-address'",
             "            (null_rest_of_line",
@@ -68952,6 +68957,20 @@
             "            dst_ip = IP_ADDRESS:'10.2.2.2'",
             "            NEWLINE:'\\n')))",
             "      (if_inner",
+            "        (if_hsrp",
+            "          HSRP:'hsrp'",
+            "          group = DEC:'1'",
+            "          NEWLINE:'\\n'",
+            "          (if_hsrp_ip_address",
+            "            IP:'ip'",
+            "            ip = IP_ADDRESS:'1.1.1.1'",
+            "            NEWLINE:'\\n')",
+            "          (if_hsrp_ip_address",
+            "            IP:'ip'",
+            "            ip = IP_ADDRESS:'2.2.2.2'",
+            "            SECONDARY:'secondary'",
+            "            NEWLINE:'\\n')))",
+            "      (if_inner",
             "        (if_mtu",
             "          MTU:'mtu'",
             "          mtu_size = DEC:'2000'",
@@ -77666,7 +77685,8 @@
                 43,
                 44,
                 45,
-                46
+                46,
+                47
               ],
               "numReferrers" : 1
             }
@@ -82343,7 +82363,10 @@
                 15,
                 16,
                 17,
-                18
+                18,
+                19,
+                20,
+                21
               ],
               "numReferrers" : 1
             },
