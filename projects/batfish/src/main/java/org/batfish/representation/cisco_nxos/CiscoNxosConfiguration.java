@@ -2,12 +2,20 @@ package org.batfish.representation.cisco_nxos;
 
 import static com.google.common.base.MoreObjects.firstNonNull;
 import static com.google.common.base.Preconditions.checkNotNull;
+import static org.apache.commons.lang3.ObjectUtils.firstNonNull;
 import static org.batfish.datamodel.Configuration.DEFAULT_VRF_NAME;
+import static org.batfish.representation.cisco_nxos.CiscoNxosInterfaceType.PORT_CHANNEL;
+import static org.batfish.representation.cisco_nxos.Interface.BANDWIDTH_CONVERSION_FACTOR;
+import static org.batfish.representation.cisco_nxos.Interface.getDefaultBandwidth;
+import static org.batfish.representation.cisco_nxos.Interface.getDefaultSpeed;
 
+import com.google.common.collect.HashMultimap;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Multimap;
 import com.google.common.collect.Range;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -79,6 +87,7 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
   private transient Configuration _c;
   private @Nullable String _hostname;
   private final @Nonnull Map<String, Interface> _interfaces;
+  private transient Multimap<String, String> _portChannelMembers;
   private @Nonnull IntegerSpace _reservedVlanRange;
   private final @Nonnull Map<Integer, Vlan> _vlans;
 
@@ -103,13 +112,23 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
     return canonicalPrefix + suffix;
   }
 
+  private void convertInterface(Interface iface) {
+    String ifaceName = iface.getName();
+    org.batfish.datamodel.Interface newIface = toInterface(iface);
+    _c.getAllInterfaces().put(ifaceName, newIface);
+    newIface.getVrf().getInterfaces().put(ifaceName, newIface);
+  }
+
   private void convertInterfaces() {
-    _interfaces.forEach(
-        (ifaceName, iface) -> {
-          org.batfish.datamodel.Interface newIface = toInterface(iface);
-          _c.getAllInterfaces().put(ifaceName, newIface);
-          newIface.getVrf().getInterfaces().put(ifaceName, newIface);
-        });
+    _portChannelMembers = HashMultimap.create();
+    // non-port channels
+    _interfaces.values().stream()
+        .filter(iface -> iface.getType() != CiscoNxosInterfaceType.PORT_CHANNEL)
+        .forEach(this::convertInterface);
+    // port channels
+    _interfaces.values().stream()
+        .filter(iface -> iface.getType() == CiscoNxosInterfaceType.PORT_CHANNEL)
+        .forEach(this::convertInterface);
   }
 
   private void convertVrfs() {
@@ -151,6 +170,8 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
   private void markStructures() {
     markConcreteStructure(
         CiscoNxosStructureType.INTERFACE, CiscoNxosStructureUsage.INTERFACE_SELF_REFERENCE);
+    markConcreteStructure(
+        CiscoNxosStructureType.PORT_CHANNEL, CiscoNxosStructureUsage.INTERFACE_CHANNEL_GROUP);
     markConcreteStructure(CiscoNxosStructureType.VLAN, CiscoNxosStructureUsage.INTERFACE_VLAN);
   }
 
@@ -209,7 +230,38 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
     newIfaceBuilder.setVlan(iface.getVlan());
     newIfaceBuilder.setAutoState(iface.getAutostate());
 
-    newIfaceBuilder.setType(toInterfaceType(iface.getType(), parent != null));
+    CiscoNxosInterfaceType type = iface.getType();
+    newIfaceBuilder.setType(toInterfaceType(type, parent != null));
+
+    Double speed = getDefaultSpeed(type);
+    newIfaceBuilder.setSpeed(speed);
+    Integer nxosBandwidth = iface.getBandwidth();
+    Double finalBandwidth;
+    if (nxosBandwidth != null) {
+      finalBandwidth = nxosBandwidth * BANDWIDTH_CONVERSION_FACTOR;
+    } else if (speed != null) {
+      finalBandwidth = speed;
+    } else {
+      finalBandwidth = getDefaultBandwidth(type);
+    }
+    newIfaceBuilder.setBandwidth(finalBandwidth);
+
+    // port-channel members
+    String portChannel = iface.getChannelGroup();
+    if (portChannel != null) {
+      newIfaceBuilder.setChannelGroup(portChannel);
+      _portChannelMembers.put(portChannel, ifaceName);
+    }
+
+    // port-channels
+    if (type == PORT_CHANNEL) {
+      Collection<String> members = _portChannelMembers.get(ifaceName);
+      newIfaceBuilder.setChannelGroupMembers(members);
+      newIfaceBuilder.setDependencies(
+          members.stream()
+              .map(member -> new Dependency(member, DependencyType.AGGREGATE))
+              .collect(ImmutableSet.toImmutableSet()));
+    }
 
     org.batfish.datamodel.Interface newIface = newIfaceBuilder.build();
     String vrfName = firstNonNull(iface.getVrfMember(), DEFAULT_VRF_NAME);

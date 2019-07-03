@@ -13,6 +13,8 @@ import static org.batfish.representation.cisco_nxos.Interface.newVlanInterface;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Range;
 import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.IntStream;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -31,16 +33,21 @@ import org.batfish.datamodel.SwitchportMode;
 import org.batfish.grammar.BatfishParseTreeWalker;
 import org.batfish.grammar.ControlPlaneExtractor;
 import org.batfish.grammar.UnrecognizedLineToken;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Channel_idContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Cisco_nxos_configurationContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.I_bandwidthContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.I_channel_groupContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.I_encapsulationContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.I_ip_addressContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.I_no_autostateContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.I_no_shutdownContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.I_no_switchportContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.I_shutdownContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.I_switchport_accessContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.I_switchport_trunk_allowedContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.I_switchport_trunk_nativeContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Interface_addressContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Interface_bandwidth_kbpsContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Interface_prefixContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Ip_addressContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.S_hostnameContext;
@@ -60,6 +67,9 @@ import org.batfish.vendor.VendorConfiguration;
 @ParametersAreNonnullByDefault
 public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseListener
     implements ControlPlaneExtractor {
+
+  private static final IntegerSpace BANDWIDTH_RANGE = IntegerSpace.of(Range.closed(1, 100_000_000));
+  private static final IntegerSpace PORT_CHANNEL_RANGE = IntegerSpace.of(Range.closed(1, 4096));
 
   private static int toInteger(Uint16Context ctx) {
     return Integer.parseInt(ctx.getText());
@@ -94,6 +104,13 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
     _w = warnings;
   }
 
+  private boolean checkPortChannelCompatibilitySettings(Interface referenceIface, Interface iface) {
+    return Objects.equals(iface.getAccessVlan(), referenceIface.getAccessVlan())
+        && Objects.equals(iface.getAllowedVlans(), referenceIface.getAllowedVlans())
+        && Objects.equals(iface.getNativeVlan(), referenceIface.getNativeVlan())
+        && iface.getSwitchportMode() == referenceIface.getSwitchportMode();
+  }
+
   private @Nonnull String convErrorMessage(Class<?> type, ParserRuleContext ctx) {
     return String.format("Could not convert to %s: %s", type.getSimpleName(), getFullText(ctx));
   }
@@ -102,6 +119,13 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
       Class<T> returnType, ParserRuleContext ctx, @Nullable U defaultReturnValue) {
     _w.redFlag(convErrorMessage(returnType, ctx));
     return defaultReturnValue;
+  }
+
+  private void copyPortChannelCompatibilitySettings(Interface referenceIface, Interface iface) {
+    iface.setAccessVlan(referenceIface.getAccessVlan());
+    iface.setAllowedVlans(referenceIface.getAllowedVlans());
+    iface.setNativeVlan(referenceIface.getNativeVlan());
+    iface.setSwitchportMode(referenceIface.getSwitchportMode());
   }
 
   @Override
@@ -167,6 +191,17 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
       return;
     }
 
+    // Validate port-channel numbers
+    if (type == PORT_CHANNEL
+        && !PORT_CHANNEL_RANGE.contains(IntegerSpace.of(Range.closed(first, last)))) {
+      _w.redFlag(
+          String.format(
+              "port-channel number(s) outside of range %s in port-channel interface declaration: %s",
+              PORT_CHANNEL_RANGE, getFullText(ctx)));
+      _currentInterfaces = ImmutableList.of();
+      return;
+    }
+
     _currentInterfaces =
         IntStream.range(first, last + 1)
             .mapToObj(
@@ -192,6 +227,10 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
                                   line);
                               return newVlanInterface(n, i);
                             } else {
+                              if (type == PORT_CHANNEL) {
+                                _configuration.defineStructure(
+                                    CiscoNxosStructureType.PORT_CHANNEL, n, line);
+                              }
                               return newNonVlanInterface(n, parentInterface, type);
                             }
                           });
@@ -222,6 +261,90 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
                               return new Vlan(id);
                             }))
             .collect(ImmutableList.toImmutableList());
+  }
+
+  @Override
+  public void exitI_bandwidth(I_bandwidthContext ctx) {
+    Integer bandwidth = toBandwidth(ctx, ctx.bw);
+    if (bandwidth == null) {
+      return;
+    }
+    _currentInterfaces.forEach(iface -> iface.setBandwidth(bandwidth));
+  }
+
+  @Override
+  public void exitI_channel_group(I_channel_groupContext ctx) {
+    int line = ctx.getStart().getLine();
+    String channelGroup = toPortChannel(ctx, ctx.id);
+    if (channelGroup == null) {
+      return;
+    }
+    // To be added to a channel-group, all interfaces in range must be:
+    // - compatible with each other
+    // - compatible with the port-channel if it already exists
+    // If the port-channel does not exist, it is created with compatible settings.
+
+    // However, if force flag is set, then compatibility is forced as follows:
+    // - If port-channel already exists, all interfaces in range copy its settings
+    // - Otherwise, the new port-channel and interfaces beyond the first copy settings
+    //   from the first interface in the range.
+
+    boolean channelExists = _configuration.getInterfaces().containsKey(channelGroup);
+    boolean force = ctx.force != null;
+
+    _configuration.referenceStructure(
+        CiscoNxosStructureType.PORT_CHANNEL,
+        channelGroup,
+        CiscoNxosStructureUsage.INTERFACE_CHANNEL_GROUP,
+        line);
+
+    if (_currentInterfaces.isEmpty()) {
+      // Stop now, since later logic requires non-empty list
+      return;
+    }
+
+    Interface referenceIface =
+        channelExists
+            ? _configuration.getInterfaces().get(channelGroup)
+            : _currentInterfaces.iterator().next();
+
+    if (!force) {
+      Optional<Interface> incompatibleInterface =
+          _currentInterfaces.stream()
+              .filter(iface -> iface != referenceIface)
+              .filter(iface -> !checkPortChannelCompatibilitySettings(referenceIface, iface))
+              .findFirst();
+      if (incompatibleInterface.isPresent()) {
+        _w.redFlag(
+            String.format(
+                "Cannot set channel-group because interface '%s' has settings that do not conform to those of interface '%s' in: %s",
+                incompatibleInterface.get().getName(), referenceIface.getName(), getFullText(ctx)));
+        return;
+      }
+    }
+
+    Interface portChannelIface;
+    if (channelExists) {
+      portChannelIface = referenceIface;
+    } else {
+      portChannelIface =
+          newNonVlanInterface(channelGroup, null, CiscoNxosInterfaceType.PORT_CHANNEL);
+      copyPortChannelCompatibilitySettings(referenceIface, portChannelIface);
+      _configuration.getInterfaces().put(channelGroup, portChannelIface);
+      _configuration.defineStructure(CiscoNxosStructureType.INTERFACE, channelGroup, line);
+      _configuration.referenceStructure(
+          CiscoNxosStructureType.INTERFACE,
+          channelGroup,
+          CiscoNxosStructureUsage.INTERFACE_SELF_REFERENCE,
+          line);
+      _configuration.defineStructure(CiscoNxosStructureType.PORT_CHANNEL, channelGroup, line);
+    }
+
+    _currentInterfaces.forEach(
+        iface -> {
+          iface.setChannelGroup(channelGroup);
+          copyPortChannelCompatibilitySettings(referenceIface, iface);
+        });
   }
 
   @Override
@@ -258,6 +381,11 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
   @Override
   public void exitI_no_switchport(I_no_switchportContext ctx) {
     _currentInterfaces.forEach(iface -> iface.setSwitchportMode(SwitchportMode.NONE));
+  }
+
+  @Override
+  public void exitI_shutdown(I_shutdownContext ctx) {
+    _currentInterfaces.forEach(iface -> iface.setShutdown(true));
   }
 
   @Override
@@ -353,8 +481,34 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
     walker.walk(this, tree);
   }
 
+  private @Nullable Integer toBandwidth(
+      ParserRuleContext messageCtx, Interface_bandwidth_kbpsContext ctx) {
+    int bandwidth = Integer.parseInt(ctx.getText());
+    if (!BANDWIDTH_RANGE.contains(bandwidth)) {
+      _w.redFlag(
+          String.format(
+              "Expected bandwidth in range %s, but got '%d' in: %s",
+              BANDWIDTH_RANGE, bandwidth, getFullText(messageCtx)));
+      return null;
+    }
+    return bandwidth;
+  }
+
   private void todo(ParserRuleContext ctx) {
     _w.todo(ctx, getFullText(ctx), _parser);
+  }
+
+  private @Nullable String toPortChannel(ParserRuleContext messageCtx, Channel_idContext ctx) {
+    int id = Integer.parseInt(ctx.getText());
+    // not a mistake; range is 1-4096 (not zero-based).
+    if (!PORT_CHANNEL_RANGE.contains(id)) {
+      _w.redFlag(
+          String.format(
+              "Expected port-channel id in range %s, but got '%d' in: %s",
+              PORT_CHANNEL_RANGE, id, getFullText(messageCtx)));
+      return null;
+    }
+    return "port-channel" + id;
   }
 
   private @Nullable CiscoNxosInterfaceType toType(Interface_prefixContext ctx) {

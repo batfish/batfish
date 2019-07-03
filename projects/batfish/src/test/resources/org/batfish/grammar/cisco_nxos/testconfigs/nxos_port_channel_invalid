@@ -1,0 +1,41 @@
+!RANCID-CONTENT-TYPE: cisco-nx
+!
+hostname nxos_port_channel_invalid
+!
+
+! interface cannot be joined to port-channel with incompatible switchport settings
+interface port-channel1
+!
+interface Ethernet1/1
+  no switchport
+  channel-group 1
+!
+interface Ethernet1/2
+  switchport access vlan 2
+  channel-group 1
+!
+interface Ethernet1/3
+  switchport trunk native vlan 2
+  channel-group 1
+!
+interface Ethernet1/4
+  switchport trunk allowed vlan 2
+  channel-group 1
+!
+
+! interface range cannot be joined to non-existent port-channel if they are not mutually compatible
+interface Ethernet1/5
+!
+interface Ethernet1/6
+  switchport access vlan 2
+!
+interface Ethernet1/5-6
+  channel-group 2
+!
+
+! illegal port-channel number
+interface port-channel5000
+!
+interface Ethernet1/2
+  channel-group 5000 
+!

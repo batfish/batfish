@@ -7,6 +7,9 @@ import static org.batfish.datamodel.matchers.DataModelMatchers.hasNumReferrers;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasUndefinedReference;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasAddress;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasAllAddresses;
+import static org.batfish.datamodel.matchers.InterfaceMatchers.hasBandwidth;
+import static org.batfish.datamodel.matchers.InterfaceMatchers.hasChannelGroup;
+import static org.batfish.datamodel.matchers.InterfaceMatchers.hasChannelGroupMembers;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasDependencies;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasInterfaceType;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasSwitchPortMode;
@@ -489,6 +492,353 @@ public final class CiscoNxosGrammarTest {
       assertThat(iface.getSwitchportMode(), equalTo(SwitchportMode.ACCESS));
       assertThat(iface.getAccessVlan(), equalTo(1));
     }
+  }
+
+  @Test
+  public void testPortChannelConversion() throws IOException {
+    String hostname = "nxos_port_channel";
+    Configuration c = parseConfig(hostname);
+
+    assertThat(
+        c.getAllInterfaces(),
+        hasKeys(
+            "Ethernet1/2",
+            "Ethernet1/3",
+            "Ethernet1/4",
+            "Ethernet1/5",
+            "Ethernet1/6",
+            "Ethernet1/7",
+            "Ethernet1/8",
+            "Ethernet1/9",
+            "Ethernet1/10",
+            "Ethernet1/11",
+            "port-channel1",
+            "port-channel2",
+            "port-channel3",
+            "port-channel4",
+            "port-channel5",
+            "port-channel6"));
+    {
+      org.batfish.datamodel.Interface iface = c.getAllInterfaces().get("Ethernet1/2");
+      assertThat(iface, isActive(false));
+      assertThat(iface, hasChannelGroup("port-channel2"));
+      assertThat(iface, hasInterfaceType(InterfaceType.PHYSICAL));
+    }
+    {
+      org.batfish.datamodel.Interface iface = c.getAllInterfaces().get("Ethernet1/3");
+      assertThat(iface, isActive());
+      assertThat(iface, hasChannelGroup("port-channel3"));
+      assertThat(iface, hasInterfaceType(InterfaceType.PHYSICAL));
+    }
+    {
+      org.batfish.datamodel.Interface iface = c.getAllInterfaces().get("Ethernet1/4");
+      assertThat(iface, isActive());
+      assertThat(iface, hasChannelGroup("port-channel3"));
+      assertThat(iface, hasInterfaceType(InterfaceType.PHYSICAL));
+    }
+    {
+      org.batfish.datamodel.Interface iface = c.getAllInterfaces().get("Ethernet1/5");
+      assertThat(iface, isActive(false));
+      assertThat(iface, hasChannelGroup("port-channel3"));
+      assertThat(iface, hasInterfaceType(InterfaceType.PHYSICAL));
+    }
+    {
+      org.batfish.datamodel.Interface iface = c.getAllInterfaces().get("Ethernet1/6");
+      assertThat(iface, isActive());
+      assertThat(iface, hasChannelGroup("port-channel4"));
+      assertThat(iface, hasInterfaceType(InterfaceType.PHYSICAL));
+    }
+    {
+      org.batfish.datamodel.Interface iface = c.getAllInterfaces().get("Ethernet1/7");
+      assertThat(iface, isActive());
+      assertThat(iface, hasChannelGroup("port-channel4"));
+      assertThat(iface, hasInterfaceType(InterfaceType.PHYSICAL));
+    }
+    {
+      org.batfish.datamodel.Interface iface = c.getAllInterfaces().get("Ethernet1/8");
+      assertThat(iface, isActive());
+      assertThat(iface, hasChannelGroup("port-channel5"));
+      assertThat(iface, hasInterfaceType(InterfaceType.PHYSICAL));
+    }
+    {
+      org.batfish.datamodel.Interface iface = c.getAllInterfaces().get("Ethernet1/9");
+      assertThat(iface, isActive());
+      assertThat(iface, hasChannelGroup("port-channel5"));
+      assertThat(iface, hasInterfaceType(InterfaceType.PHYSICAL));
+    }
+    {
+      org.batfish.datamodel.Interface iface = c.getAllInterfaces().get("Ethernet1/10");
+      assertThat(iface, isActive());
+      assertThat(iface, hasChannelGroup("port-channel6"));
+      assertThat(iface, hasInterfaceType(InterfaceType.PHYSICAL));
+    }
+    {
+      org.batfish.datamodel.Interface iface = c.getAllInterfaces().get("Ethernet1/11");
+      assertThat(iface, isActive());
+      assertThat(iface, hasChannelGroup("port-channel6"));
+      assertThat(iface, hasInterfaceType(InterfaceType.PHYSICAL));
+    }
+    {
+      org.batfish.datamodel.Interface iface = c.getAllInterfaces().get("port-channel1");
+      assertThat(iface, isActive(false));
+      assertThat(iface, hasChannelGroupMembers(empty()));
+      assertThat(iface, hasDependencies(empty()));
+      assertThat(iface, hasInterfaceType(InterfaceType.AGGREGATED));
+    }
+    {
+      org.batfish.datamodel.Interface iface = c.getAllInterfaces().get("port-channel2");
+      assertThat(iface, isActive(false));
+      assertThat(iface, hasChannelGroupMembers(contains("Ethernet1/2")));
+      assertThat(
+          iface,
+          hasDependencies(contains(new Dependency("Ethernet1/2", DependencyType.AGGREGATE))));
+      assertThat(iface, hasInterfaceType(InterfaceType.AGGREGATED));
+    }
+    {
+      org.batfish.datamodel.Interface iface = c.getAllInterfaces().get("port-channel3");
+      assertThat(iface, isActive(true));
+      assertThat(
+          iface, hasChannelGroupMembers(contains("Ethernet1/3", "Ethernet1/4", "Ethernet1/5")));
+      assertThat(
+          iface,
+          hasDependencies(
+              containsInAnyOrder(
+                  new Dependency("Ethernet1/3", DependencyType.AGGREGATE),
+                  new Dependency("Ethernet1/4", DependencyType.AGGREGATE),
+                  new Dependency("Ethernet1/5", DependencyType.AGGREGATE))));
+      assertThat(iface, hasBandwidth(200E6));
+      assertThat(iface, hasInterfaceType(InterfaceType.AGGREGATED));
+    }
+    {
+      org.batfish.datamodel.Interface iface = c.getAllInterfaces().get("port-channel4");
+      assertThat(iface, isActive(true));
+      assertThat(iface, hasChannelGroupMembers(contains("Ethernet1/6", "Ethernet1/7")));
+      assertThat(
+          iface,
+          hasDependencies(
+              containsInAnyOrder(
+                  new Dependency("Ethernet1/6", DependencyType.AGGREGATE),
+                  new Dependency("Ethernet1/7", DependencyType.AGGREGATE))));
+      assertThat(iface, hasBandwidth(200E6));
+      assertThat(iface, hasInterfaceType(InterfaceType.AGGREGATED));
+    }
+    {
+      org.batfish.datamodel.Interface iface = c.getAllInterfaces().get("port-channel5");
+      assertThat(iface, isActive(true));
+      assertThat(iface, hasChannelGroupMembers(contains("Ethernet1/8", "Ethernet1/9")));
+      assertThat(
+          iface,
+          hasDependencies(
+              containsInAnyOrder(
+                  new Dependency("Ethernet1/8", DependencyType.AGGREGATE),
+                  new Dependency("Ethernet1/9", DependencyType.AGGREGATE))));
+      assertThat(iface, hasBandwidth(200E6));
+      assertThat(iface, hasInterfaceType(InterfaceType.AGGREGATED));
+    }
+    {
+      org.batfish.datamodel.Interface iface = c.getAllInterfaces().get("port-channel6");
+      assertThat(iface, isActive(true));
+      assertThat(iface, hasChannelGroupMembers(contains("Ethernet1/10", "Ethernet1/11")));
+      assertThat(
+          iface,
+          hasDependencies(
+              containsInAnyOrder(
+                  new Dependency("Ethernet1/10", DependencyType.AGGREGATE),
+                  new Dependency("Ethernet1/11", DependencyType.AGGREGATE))));
+      assertThat(iface, hasBandwidth(200E6));
+      assertThat(iface, hasInterfaceType(InterfaceType.AGGREGATED));
+    }
+  }
+
+  @Test
+  public void testPortChannelExtraction() {
+    String hostname = "nxos_port_channel";
+    CiscoNxosConfiguration vc = parseVendorConfig(hostname);
+
+    assertThat(
+        vc.getInterfaces(),
+        hasKeys(
+            "Ethernet1/2",
+            "Ethernet1/3",
+            "Ethernet1/4",
+            "Ethernet1/5",
+            "Ethernet1/6",
+            "Ethernet1/7",
+            "Ethernet1/8",
+            "Ethernet1/9",
+            "Ethernet1/10",
+            "Ethernet1/11",
+            "port-channel1",
+            "port-channel2",
+            "port-channel3",
+            "port-channel4",
+            "port-channel5",
+            "port-channel6"));
+    {
+      Interface iface = vc.getInterfaces().get("Ethernet1/2");
+      assertTrue(iface.getShutdown());
+      assertThat(iface.getChannelGroup(), equalTo("port-channel2"));
+      assertThat(iface.getType(), equalTo(CiscoNxosInterfaceType.ETHERNET));
+    }
+    {
+      Interface iface = vc.getInterfaces().get("Ethernet1/3");
+      assertFalse(iface.getShutdown());
+      assertThat(iface.getChannelGroup(), equalTo("port-channel3"));
+      assertThat(iface.getType(), equalTo(CiscoNxosInterfaceType.ETHERNET));
+    }
+    {
+      Interface iface = vc.getInterfaces().get("Ethernet1/4");
+      assertFalse(iface.getShutdown());
+      assertThat(iface.getChannelGroup(), equalTo("port-channel3"));
+      assertThat(iface.getType(), equalTo(CiscoNxosInterfaceType.ETHERNET));
+    }
+    {
+      Interface iface = vc.getInterfaces().get("Ethernet1/5");
+      assertTrue(iface.getShutdown());
+      assertThat(iface.getChannelGroup(), equalTo("port-channel3"));
+      assertThat(iface.getType(), equalTo(CiscoNxosInterfaceType.ETHERNET));
+    }
+    {
+      Interface iface = vc.getInterfaces().get("Ethernet1/6");
+      assertFalse(iface.getShutdown());
+      assertThat(iface.getChannelGroup(), equalTo("port-channel4"));
+      assertThat(iface.getSwitchportMode(), equalTo(SwitchportMode.NONE));
+      assertThat(iface.getType(), equalTo(CiscoNxosInterfaceType.ETHERNET));
+    }
+    {
+      Interface iface = vc.getInterfaces().get("Ethernet1/7");
+      assertFalse(iface.getShutdown());
+      assertThat(iface.getChannelGroup(), equalTo("port-channel4"));
+      assertThat(iface.getSwitchportMode(), equalTo(SwitchportMode.NONE));
+      assertThat(iface.getType(), equalTo(CiscoNxosInterfaceType.ETHERNET));
+    }
+    {
+      Interface iface = vc.getInterfaces().get("Ethernet1/8");
+      assertFalse(iface.getShutdown());
+      assertThat(iface.getChannelGroup(), equalTo("port-channel5"));
+      assertThat(iface.getSwitchportMode(), equalTo(SwitchportMode.NONE));
+      assertThat(iface.getType(), equalTo(CiscoNxosInterfaceType.ETHERNET));
+    }
+    {
+      Interface iface = vc.getInterfaces().get("Ethernet1/9");
+      assertFalse(iface.getShutdown());
+      assertThat(iface.getChannelGroup(), equalTo("port-channel5"));
+      assertThat(iface.getSwitchportMode(), equalTo(SwitchportMode.NONE));
+      assertThat(iface.getType(), equalTo(CiscoNxosInterfaceType.ETHERNET));
+    }
+    {
+      Interface iface = vc.getInterfaces().get("Ethernet1/10");
+      assertFalse(iface.getShutdown());
+      assertThat(iface.getChannelGroup(), equalTo("port-channel6"));
+      assertThat(iface.getSwitchportMode(), equalTo(SwitchportMode.ACCESS));
+      assertThat(iface.getType(), equalTo(CiscoNxosInterfaceType.ETHERNET));
+    }
+    {
+      Interface iface = vc.getInterfaces().get("Ethernet1/11");
+      assertFalse(iface.getShutdown());
+      assertThat(iface.getChannelGroup(), equalTo("port-channel6"));
+      assertThat(iface.getSwitchportMode(), equalTo(SwitchportMode.ACCESS));
+      assertThat(iface.getType(), equalTo(CiscoNxosInterfaceType.ETHERNET));
+    }
+    {
+      Interface iface = vc.getInterfaces().get("port-channel1");
+      assertFalse(iface.getShutdown());
+      assertThat(iface.getType(), equalTo(CiscoNxosInterfaceType.PORT_CHANNEL));
+    }
+    {
+      Interface iface = vc.getInterfaces().get("port-channel2");
+      assertFalse(iface.getShutdown());
+      assertThat(iface.getType(), equalTo(CiscoNxosInterfaceType.PORT_CHANNEL));
+    }
+    {
+      Interface iface = vc.getInterfaces().get("port-channel3");
+      assertFalse(iface.getShutdown());
+      assertThat(iface.getType(), equalTo(CiscoNxosInterfaceType.PORT_CHANNEL));
+    }
+    {
+      Interface iface = vc.getInterfaces().get("port-channel4");
+      assertFalse(iface.getShutdown());
+      assertThat(iface.getSwitchportMode(), equalTo(SwitchportMode.NONE));
+      assertThat(iface.getType(), equalTo(CiscoNxosInterfaceType.PORT_CHANNEL));
+    }
+    {
+      Interface iface = vc.getInterfaces().get("port-channel5");
+      assertFalse(iface.getShutdown());
+      assertThat(iface.getSwitchportMode(), equalTo(SwitchportMode.NONE));
+      assertThat(iface.getType(), equalTo(CiscoNxosInterfaceType.PORT_CHANNEL));
+    }
+    {
+      Interface iface = vc.getInterfaces().get("port-channel6");
+      assertFalse(iface.getShutdown());
+      assertThat(iface.getSwitchportMode(), equalTo(SwitchportMode.ACCESS));
+      assertThat(iface.getType(), equalTo(CiscoNxosInterfaceType.PORT_CHANNEL));
+    }
+  }
+
+  @Test
+  public void testPortChannelExtractionInvalid() {
+    String hostname = "nxos_port_channel_invalid";
+    CiscoNxosConfiguration vc = parseVendorConfig(hostname);
+
+    assertThat(
+        vc.getInterfaces(),
+        hasKeys(
+            "Ethernet1/1",
+            "Ethernet1/2",
+            "Ethernet1/3",
+            "Ethernet1/4",
+            "Ethernet1/5",
+            "Ethernet1/6",
+            "port-channel1"));
+    {
+      Interface iface = vc.getInterfaces().get("Ethernet1/1");
+      assertTrue(iface.getShutdown());
+      assertThat(iface.getChannelGroup(), nullValue());
+      assertThat(iface.getType(), equalTo(CiscoNxosInterfaceType.ETHERNET));
+    }
+    {
+      Interface iface = vc.getInterfaces().get("Ethernet1/2");
+      assertFalse(iface.getShutdown());
+      assertThat(iface.getChannelGroup(), nullValue());
+      assertThat(iface.getType(), equalTo(CiscoNxosInterfaceType.ETHERNET));
+    }
+    {
+      Interface iface = vc.getInterfaces().get("Ethernet1/3");
+      assertFalse(iface.getShutdown());
+      assertThat(iface.getChannelGroup(), nullValue());
+      assertThat(iface.getType(), equalTo(CiscoNxosInterfaceType.ETHERNET));
+    }
+    {
+      Interface iface = vc.getInterfaces().get("Ethernet1/4");
+      assertFalse(iface.getShutdown());
+      assertThat(iface.getChannelGroup(), nullValue());
+      assertThat(iface.getType(), equalTo(CiscoNxosInterfaceType.ETHERNET));
+    }
+    {
+      Interface iface = vc.getInterfaces().get("Ethernet1/5");
+      assertFalse(iface.getShutdown());
+      assertThat(iface.getChannelGroup(), nullValue());
+      assertThat(iface.getType(), equalTo(CiscoNxosInterfaceType.ETHERNET));
+    }
+    {
+      Interface iface = vc.getInterfaces().get("Ethernet1/6");
+      assertFalse(iface.getShutdown());
+      assertThat(iface.getChannelGroup(), nullValue());
+      assertThat(iface.getType(), equalTo(CiscoNxosInterfaceType.ETHERNET));
+    }
+  }
+
+  @Test
+  public void testPortChannelReferences() throws IOException {
+    String hostname = "nxos_port_channel_references";
+    String filename = String.format("configs/%s", hostname);
+    ConvertConfigurationAnswerElement ans =
+        getBatfishForConfigurationNames(hostname).loadConvertConfigurationAnswerElementOrReparse();
+
+    assertThat(
+        ans, hasNumReferrers(filename, CiscoNxosStructureType.PORT_CHANNEL, "port-channel1", 1));
+    assertThat(
+        ans, hasNumReferrers(filename, CiscoNxosStructureType.PORT_CHANNEL, "port-channel2", 0));
   }
 
   @Test
