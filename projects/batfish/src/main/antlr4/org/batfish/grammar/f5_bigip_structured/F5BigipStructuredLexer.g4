@@ -972,7 +972,7 @@ F_Uint32
 // 0-4294967295
   F_Digit
   | F_PositiveDigit F_Digit F_Digit? F_Digit? F_Digit? F_Digit? F_Digit?
-  F_Digit? F_Digit? F_Digit?
+  F_Digit? F_Digit?
   | [1-3] F_Digit F_Digit F_Digit F_Digit F_Digit F_Digit F_Digit F_Digit
   F_Digit
   | '4' [0-1] F_Digit F_Digit F_Digit F_Digit F_Digit F_Digit F_Digit F_Digit
