@@ -39,6 +39,8 @@ net add bgp neighbor swp3 interface peer-group GROUP
 net add bgp neighbor swp3 interface remote-as 65000
 net add bgp ipv4 unicast network 192.0.2.1/32
 net add bgp ipv4 unicast redistribute connected route-map rm1
+net add bgp ipv4 unicast neighbor swp3 activate
+net add bgp ipv4 unicast neighbor swp3 route-reflector-client
 net add bgp l2vpn evpn advertise-all-vni
 net add bgp l2vpn evpn advertise-default-gw
 net add bgp l2vpn evpn advertise ipv4 unicast
