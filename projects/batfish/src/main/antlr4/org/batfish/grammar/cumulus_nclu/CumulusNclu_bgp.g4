@@ -33,7 +33,8 @@ b_ipv4_unicast
 :
   IPV4 UNICAST
   (
-    bi4_network
+    bi4_neighbor
+    | bi4_network
     | bi4_redistribute_connected
     | bi4_redistribute_static
   )
