@@ -4,11 +4,6 @@ net add hostname cumulus_nclu
 #
 # Interfaces
 net add interface swp1,2-3
-net add interface bond1.4094 clag backup-ip 192.0.2.4 vrf mgmt
-net add interface bond1.4094 clag peer-ip 192.0.2.5
-net add interface bond1.4094 clag priority 1000
-net add interface bond1.4094 clag sys-mac 00:11:22:33:44:55
-net add interface bond1.4094 ip address 192.0.2.6/24
 net add interface eth0 vrf mgmt
 net add interface swp1 bridge access 3
 net add interface swp2 bridge pvid 4
@@ -16,15 +11,23 @@ net add interface swp2 bridge vids 5-6
 net add loopback lo
 net add loopback lo clag vxlan-anycast-ip 192.0.2.7
 net add loopback lo ip address 192.0.2.8/32
+# Bonds
 net add bond bond1 bond slaves swp1,swp2-4,5,swp6,7-8
 net add bond bond1 bridge access 2
 net add bond bond2 bridge pvid 1
 net add bond bond2 bridge vids 3,4-5
-net add bond bond1 clag id 1
+net add interface bond1.4094 ip address 192.0.2.6/24
+# Bridges
 net add bridge bridge ports bond1,swp1,vni10001
 net add bridge bridge pvid 2
 net add bridge bridge vids 1,2-3
 net add bridge bridge vlan-aware
+# CLAG
+net add bond bond1 clag id 1
+net add interface bond1.4094 clag backup-ip 192.0.2.4 vrf mgmt
+net add interface bond1.4094 clag peer-ip 192.0.2.5
+net add interface bond1.4094 clag priority 1000
+net add interface bond1.4094 clag sys-mac 00:11:22:33:44:55
 # BGP, EVPN
 net add bgp autonomous-system 65500
 net add bgp neighbor GROUP peer-group
