@@ -68,6 +68,13 @@ uint16
   | UINT16
 ;
 
+uint32
+:
+  UINT8
+  | UINT16
+  | UINT32
+;
+
 vlan_id
 :
 // 1-4094

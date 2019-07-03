@@ -1,0 +1,14 @@
+!RANCID-CONTENT-TYPE: cisco-nx
+!
+hostname nxos_port_channel_references
+!
+
+! referenced
+interface port-channel1
+!
+interface Ethernet1/1
+  channel-group 1
+!
+
+! unreferenced
+interface port-channel2

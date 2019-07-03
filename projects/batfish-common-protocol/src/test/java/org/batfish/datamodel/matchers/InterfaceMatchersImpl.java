@@ -1,6 +1,7 @@
 package org.batfish.datamodel.matchers;
 
 import java.util.Set;
+import java.util.SortedSet;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.datamodel.IntegerSpace;
@@ -86,6 +87,28 @@ final class InterfaceMatchersImpl {
     @Override
     protected Double featureValueOf(Interface actual) {
       return actual.getBandwidth();
+    }
+  }
+
+  static final class HasChannelGroup extends FeatureMatcher<Interface, String> {
+    HasChannelGroup(@Nonnull Matcher<? super String> subMatcher) {
+      super(subMatcher, "An Interface with channelGroup", "channelGroup");
+    }
+
+    @Override
+    protected String featureValueOf(Interface actual) {
+      return actual.getChannelGroup();
+    }
+  }
+
+  static final class HasChannelGroupMembers extends FeatureMatcher<Interface, SortedSet<String>> {
+    HasChannelGroupMembers(@Nonnull Matcher<? super SortedSet<String>> subMatcher) {
+      super(subMatcher, "An Interface with channelGroupMembers", "channelGroupMembers");
+    }
+
+    @Override
+    protected SortedSet<String> featureValueOf(Interface actual) {
+      return actual.getChannelGroupMembers();
     }
   }
 

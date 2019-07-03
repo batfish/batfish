@@ -10,12 +10,40 @@ s_interface
 :
   INTERFACE irange = interface_range NEWLINE
   (
-    i_encapsulation
+    i_bandwidth
+    | i_channel_group
+    | i_encapsulation
     | i_ip
     | i_no
     | i_null
+    | i_shutdown
     | i_switchport
   )*
+;
+
+i_bandwidth
+:
+  BANDWIDTH bw = interface_bandwidth NEWLINE
+;
+
+interface_bandwidth
+:
+// 1-100000000
+  UINT8
+  | UINT16
+  | UINT32
+;
+
+i_channel_group
+:
+  CHANNEL_GROUP id = channel_id force = FORCE? NEWLINE
+;
+
+channel_id
+:
+// 1-4096
+  UINT8
+  | UINT16
 ;
 
 i_encapsulation
@@ -64,6 +92,11 @@ i_null
   (
     IP REDIRECTS
   ) null_rest_of_line
+;
+
+i_shutdown
+:
+  SHUTDOWN NEWLINE
 ;
 
 i_switchport

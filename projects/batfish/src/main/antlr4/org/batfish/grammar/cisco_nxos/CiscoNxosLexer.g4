@@ -43,6 +43,16 @@ AUTOSTATE
   'autostate'
 ;
 
+BANDWIDTH
+:
+  'bandwidth'
+;
+
+CHANNEL_GROUP
+:
+  'channel-group'
+;
+
 CONFIGURATION
 :
   'configuration'
@@ -86,6 +96,11 @@ FEATURE
 FILTER
 :
   'filter'
+;
+
+FORCE
+:
+  'force'
 ;
 
 GROUP_TIMEOUT
@@ -334,7 +349,11 @@ COMMENT_LINE
   )* [!#]
   {lastTokenType() == NEWLINE || lastTokenType() == -1}?
 
-  F_NonNewline* F_Newline+ -> channel ( HIDDEN )
+  F_NonNewline*
+  (
+    F_Newline+
+    | EOF
+  ) -> channel ( HIDDEN )
 ;
 
 DASH
@@ -365,6 +384,11 @@ UINT8
 UINT16
 :
   F_Uint16
+;
+
+UINT32
+:
+  F_Uint32
 ;
 
 WS
@@ -612,6 +636,26 @@ F_Uint16
   | '65' [0-4] F_Digit F_Digit
   | '655' [0-2] F_Digit
   | '6553' [0-5]
+;
+
+fragment
+F_Uint32
+:
+// 0-4294967295
+  F_Digit
+  | F_PositiveDigit F_Digit F_Digit? F_Digit? F_Digit? F_Digit? F_Digit?
+  F_Digit? F_Digit? F_Digit?
+  | [1-3] F_Digit F_Digit F_Digit F_Digit F_Digit F_Digit F_Digit F_Digit
+  F_Digit
+  | '4' [0-1] F_Digit F_Digit F_Digit F_Digit F_Digit F_Digit F_Digit F_Digit
+  | '42' [0-8] F_Digit F_Digit F_Digit F_Digit F_Digit F_Digit F_Digit
+  | '429' [0-3] F_Digit F_Digit F_Digit F_Digit F_Digit F_Digit
+  | '4294' [0-8] F_Digit F_Digit F_Digit F_Digit F_Digit
+  | '42949' [0-5] F_Digit F_Digit F_Digit F_Digit
+  | '429496' [0-6] F_Digit F_Digit F_Digit
+  | '4294967' [0-1] F_Digit F_Digit
+  | '42949672' [0-8] F_Digit
+  | '429496729' [0-5]
 ;
 
 fragment

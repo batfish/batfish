@@ -45,6 +45,8 @@ public final class Interface extends ComparableStructure<String> {
     private boolean _autoState;
     @Nullable private Double _bandwidth;
     private boolean _blacklisted;
+    private @Nullable String _channelGroup;
+    private @Nonnull SortedSet<String> _channelGroupMembers;
     private SortedSet<String> _declaredNames;
     @Nonnull private Set<Dependency> _dependencies = ImmutableSet.of();
     @Nullable private EigrpInterfaceSettings _eigrp;
@@ -72,6 +74,7 @@ public final class Interface extends ComparableStructure<String> {
     private boolean _proxyArp;
     private IpAccessList _preTransformationOutgoingFilter;
     private Set<InterfaceAddress> _secondaryAddresses;
+    private @Nullable Double _speed;
     private @Nullable Boolean _switchport;
     private @Nullable SwitchportMode _switchportMode;
     private @Nonnull IpSpace _additionalArpIps;
@@ -85,6 +88,7 @@ public final class Interface extends ComparableStructure<String> {
       _active = true;
       _additionalArpIps = EmptyIpSpace.INSTANCE;
       _autoState = true;
+      _channelGroupMembers = ImmutableSortedSet.of();
       _declaredNames = ImmutableSortedSet.of();
       _hsrpGroups = ImmutableMap.of();
       _secondaryAddresses = ImmutableSet.of();
@@ -116,6 +120,8 @@ public final class Interface extends ComparableStructure<String> {
       iface.setAutoState(_autoState);
       iface.setBandwidth(_bandwidth);
       iface.setBlacklisted(_blacklisted);
+      iface.setChannelGroup(_channelGroup);
+      iface.setChannelGroupMembers(_channelGroupMembers);
       iface.setDeclaredNames(_declaredNames);
       iface.setDependencies(_dependencies);
       iface.setEigrp(_eigrp);
@@ -150,6 +156,7 @@ public final class Interface extends ComparableStructure<String> {
       iface.setPostTransformationIncomingFilter(_postTransformationIncomingFilter);
       iface.setPreTransformationOutgoingFilter(_preTransformationOutgoingFilter);
       iface.setProxyArp(_proxyArp);
+      iface.setSpeed(_speed);
       if (_switchport != null) {
         iface.setSwitchport(_switchport);
       }
@@ -250,6 +257,16 @@ public final class Interface extends ComparableStructure<String> {
 
     public Builder setBlacklisted(boolean blacklisted) {
       _blacklisted = blacklisted;
+      return this;
+    }
+
+    public @Nonnull Builder setChannelGroup(@Nullable String channelGroup) {
+      _channelGroup = channelGroup;
+      return this;
+    }
+
+    public @Nonnull Builder setChannelGroupMembers(Iterable<String> channelGroupMembers) {
+      _channelGroupMembers = ImmutableSortedSet.copyOf(channelGroupMembers);
       return this;
     }
 
@@ -413,6 +430,11 @@ public final class Interface extends ComparableStructure<String> {
 
     public @Nonnull Builder setSwitchportMode(@Nullable SwitchportMode switchportMode) {
       _switchportMode = switchportMode;
+      return this;
+    }
+
+    public @Nonnull Builder setSpeed(@Nullable Double speed) {
+      _speed = speed;
       return this;
     }
 
