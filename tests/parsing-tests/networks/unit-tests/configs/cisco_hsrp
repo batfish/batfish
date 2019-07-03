@@ -38,11 +38,11 @@ interface TenGigE0/0/2/2
   authentication cisco
   authentication text blah
   ip 1.2.3.4
+  ip 1.2.3.5 secondary
   mac-address 0123.4567.89AB
   name bloop
   no preempt
-  preempt delay minimum 300 reload 300 sync 0 
+  preempt delay minimum 300 reload 300 sync 0
   priority 100 forwarding-threshold lower 0 upper 100
   timers  1  4
 !
-

@@ -192,7 +192,7 @@ if_hsrp
 
 if_hsrp_ip_address
 :
-   IP ip = IP_ADDRESS NEWLINE
+   IP ip = IP_ADDRESS SECONDARY? NEWLINE
 ;
 
 if_hsrp_null
