@@ -108,7 +108,7 @@ Batfish supports configurations for a large and growing set of (physical and vir
 * Quanta
 * VyOS
 
-If you'd like support for additional vendors or currently-unsupported configuration features, let us know via [Slack](https://join.slack.com/t/batfish-org/shared_invite/enQtMzA0Nzg2OTAzNzQ1LTUxOTJlY2YyNTVlNGQ3MTJkOTIwZTU2YjY3YzRjZWFiYzE4ODE5ODZiNjA4NGI5NTJhZmU2ZTllOTMwZDhjMzA) or [GitHub](https://github.com/batfish/batfish/issues/new). We'll try to add support. Or, you can -- we welcome pull requests! :)
+If you'd like support for additional vendors or currently-unsupported configuration features, let us know via [Slack](https://join.slack.com/t/batfish-org/shared_invite/enQtMzA0Nzg2OTAzNzQ1LTUxOTJlY2YyNTVlNGQ3MTJkOTIwZTU2YjY3YzRjZWFiYzE4ODE5ODZiNjA4NGI5NTJhZmU2ZTllOTMwZDhjMzA) or [GitHub](https://github.com/batfish/batfish/issues/new). We'll try to add support. Or, you can &mdash; we welcome pull requests! :)
 
 ## License and Dependencies
 
