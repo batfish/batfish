@@ -5,6 +5,7 @@ import static org.hamcrest.Matchers.equalTo;
 
 import com.google.common.collect.ImmutableSet;
 import java.util.Set;
+import java.util.SortedSet;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
@@ -26,6 +27,8 @@ import org.batfish.datamodel.matchers.InterfaceMatchersImpl.HasAddress;
 import org.batfish.datamodel.matchers.InterfaceMatchersImpl.HasAllAddresses;
 import org.batfish.datamodel.matchers.InterfaceMatchersImpl.HasAllowedVlans;
 import org.batfish.datamodel.matchers.InterfaceMatchersImpl.HasBandwidth;
+import org.batfish.datamodel.matchers.InterfaceMatchersImpl.HasChannelGroup;
+import org.batfish.datamodel.matchers.InterfaceMatchersImpl.HasChannelGroupMembers;
 import org.batfish.datamodel.matchers.InterfaceMatchersImpl.HasDeclaredNames;
 import org.batfish.datamodel.matchers.InterfaceMatchersImpl.HasDependencies;
 import org.batfish.datamodel.matchers.InterfaceMatchersImpl.HasDescription;
@@ -127,12 +130,43 @@ public final class InterfaceMatchers {
     return new HasAdditionalArpIps(subMatcher);
   }
 
+  /** Provides a matcher that matches if the interface's bandwidth is {@code expectedBandwidth}. */
+  public static @Nonnull Matcher<Interface> hasBandwidth(double expectedBandwidth) {
+    return hasBandwidth(equalTo(expectedBandwidth));
+  }
+
   /**
    * Provides a matcher that matches if the provided {@code subMatcher} matches the interface's
    * bandwidth.
    */
   public static HasBandwidth hasBandwidth(@Nonnull Matcher<? super Double> subMatcher) {
     return new HasBandwidth(subMatcher);
+  }
+
+  /**
+   * Provides a matcher that matches if the interface's channelGroup is {@code
+   * expectedChannelGroup}.
+   */
+  public static @Nonnull Matcher<Interface> hasChannelGroup(@Nonnull String expectedChannelGroup) {
+    return hasChannelGroup(equalTo(expectedChannelGroup));
+  }
+
+  /**
+   * Provides a matcher that matches if the interface's channelGroup is matched by the provided
+   * {@code subMatcher}.
+   */
+  public static @Nonnull Matcher<Interface> hasChannelGroup(
+      @Nonnull Matcher<? super String> subMatcher) {
+    return new HasChannelGroup(subMatcher);
+  }
+
+  /**
+   * Provides a matcher that matches if the interface's channelGroupMembers are matched by the
+   * provided {@code subMatcher}.
+   */
+  public static @Nonnull Matcher<Interface> hasChannelGroupMembers(
+      @Nonnull Matcher<? super SortedSet<String>> subMatcher) {
+    return new HasChannelGroupMembers(subMatcher);
   }
 
   /**

@@ -87,7 +87,6 @@ public final class BgpUnnumberedPeerConfigTest {
         .addEqualityGroup(builder.setLocalIp(Ip.FIRST_CLASS_A_PRIVATE_IP).build())
         .addEqualityGroup(builder.setPeerInterface("eth0").build())
         .addEqualityGroup(builder.setRemoteAsns(LongSpace.of(11L)).build())
-        .addEqualityGroup(builder.setRouteReflectorClient(true).build())
         .addEqualityGroup(
             builder.setEvpnAddressFamily(
                 EvpnAddressFamily.builder().setPropagateUnmatched(true).build()))
@@ -125,7 +124,6 @@ public final class BgpUnnumberedPeerConfigTest {
             .setLocalIp(Ip.FIRST_CLASS_A_PRIVATE_IP)
             .setPeerInterface("eth0")
             .setRemoteAsns(LongSpace.of(11L))
-            .setRouteReflectorClient(true)
             .build();
 
     assertThat(
@@ -165,7 +163,6 @@ public final class BgpUnnumberedPeerConfigTest {
             .setLocalIp(Ip.FIRST_CLASS_A_PRIVATE_IP)
             .setPeerInterface("eth0")
             .setRemoteAsns(LongSpace.of(11L))
-            .setRouteReflectorClient(true)
             .build();
 
     assertThat(SerializationUtils.clone(bgpUnnumberedPeerConfig), equalTo(bgpUnnumberedPeerConfig));

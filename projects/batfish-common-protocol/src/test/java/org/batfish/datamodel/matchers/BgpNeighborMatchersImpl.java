@@ -4,6 +4,7 @@ import javax.annotation.Nonnull;
 import org.batfish.datamodel.BgpPeerConfig;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.LongSpace;
+import org.batfish.datamodel.bgp.EvpnAddressFamily;
 import org.batfish.datamodel.bgp.Ipv4UnicastAddressFamily;
 import org.hamcrest.FeatureMatcher;
 import org.hamcrest.Matcher;
@@ -42,6 +43,17 @@ final class BgpNeighborMatchersImpl {
     @Override
     protected Ipv4UnicastAddressFamily featureValueOf(BgpPeerConfig actual) {
       return actual.getIpv4UnicastAddressFamily();
+    }
+  }
+
+  static final class HasEvpnAddressFamily extends FeatureMatcher<BgpPeerConfig, EvpnAddressFamily> {
+    HasEvpnAddressFamily(@Nonnull Matcher<? super EvpnAddressFamily> subMatcher) {
+      super(subMatcher, "A BgpPeerConfig with evpnAddressFamily:", "evpnAddressFamily");
+    }
+
+    @Override
+    protected EvpnAddressFamily featureValueOf(BgpPeerConfig actual) {
+      return actual.getEvpnAddressFamily();
     }
   }
 

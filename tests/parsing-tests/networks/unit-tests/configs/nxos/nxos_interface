@@ -15,4 +15,7 @@ interface nve1
 interface Ethernet0/1
   bfd per-link
   bfd neighbor src-ip 10.1.1.1 dest-ip 10.2.2.2
+  hsrp 1
+    ip 1.1.1.1
+    ip 2.2.2.2 secondary
   mtu 2000

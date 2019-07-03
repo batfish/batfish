@@ -79,7 +79,8 @@ public final class BgpProtocolHelper {
 
     // note whether new route is received from route reflector client
     builder.setReceivedFromRouteReflectorClient(
-        !sessionProperties.isEbgp() && toNeighbor.getRouteReflectorClient());
+        !sessionProperties.isEbgp()
+            && toNeighbor.getAddressFamily(afType).getRouteReflectorClient());
 
     SortedSet<Community> communities = route.getCommunities();
     AddressFamily af = fromNeighbor.getAddressFamily(afType);
@@ -120,7 +121,7 @@ public final class BgpProtocolHelper {
        */
       boolean remoteRouteReceivedFromRouteReflectorClient =
           route.getReceivedFromRouteReflectorClient();
-      boolean sendingToRouteReflectorClient = fromNeighbor.getRouteReflectorClient();
+      boolean sendingToRouteReflectorClient = af.getRouteReflectorClient();
       Ip remoteReceivedFromIp = route.getReceivedFromIp();
       boolean remoteRouteOriginatedByRemoteNeighbor = Ip.ZERO.equals(remoteReceivedFromIp);
       if (!remoteRouteReceivedFromRouteReflectorClient

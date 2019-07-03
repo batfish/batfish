@@ -4,6 +4,7 @@ import javax.annotation.Nonnull;
 import org.batfish.vendor.StructureUsage;
 
 public enum CiscoNxosStructureUsage implements StructureUsage {
+  INTERFACE_CHANNEL_GROUP("interface channel-group"),
   INTERFACE_SELF_REFERENCE("interface self-reference"),
   INTERFACE_VLAN("interface vlan");
 

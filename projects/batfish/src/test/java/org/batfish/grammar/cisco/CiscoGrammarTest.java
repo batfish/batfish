@@ -27,7 +27,7 @@ import static org.batfish.datamodel.matchers.AaaMatchers.hasAuthentication;
 import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasPrefix;
 import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasProtocol;
 import static org.batfish.datamodel.matchers.AddressFamilyCapabilitiesMatchers.hasAllowRemoteAsOut;
-import static org.batfish.datamodel.matchers.AddressFamilyMatchers.hasAddressFamilySettings;
+import static org.batfish.datamodel.matchers.AddressFamilyMatchers.hasAddressFamilyCapabilites;
 import static org.batfish.datamodel.matchers.AndMatchExprMatchers.hasConjuncts;
 import static org.batfish.datamodel.matchers.AndMatchExprMatchers.isAndMatchExprThat;
 import static org.batfish.datamodel.matchers.BgpNeighborMatchers.hasIpv4UnicastAddressFamily;
@@ -4038,7 +4038,7 @@ public class CiscoGrammarTest {
                 hasActiveNeighbor(
                     neighborWithRemoteAs,
                     hasIpv4UnicastAddressFamily(
-                        hasAddressFamilySettings(hasAllowRemoteAsOut(true)))))));
+                        hasAddressFamilyCapabilites(hasAllowRemoteAsOut(true)))))));
   }
 
   @Test
@@ -5065,7 +5065,7 @@ public class CiscoGrammarTest {
                         hasRemoteAs(2L),
                         hasLocalAs(1L),
                         hasIpv4UnicastAddressFamily(
-                            hasAddressFamilySettings(hasAllowRemoteAsOut(true))))))));
+                            hasAddressFamilyCapabilites(hasAllowRemoteAsOut(true))))))));
     assertThat(
         c,
         ConfigurationMatchers.hasVrf(
@@ -5074,7 +5074,7 @@ public class CiscoGrammarTest {
                 hasActiveNeighbor(
                     Prefix.parse("3.3.3.3/32"),
                     hasIpv4UnicastAddressFamily(
-                        hasAddressFamilySettings(hasAllowRemoteAsOut(false)))))));
+                        hasAddressFamilyCapabilites(hasAllowRemoteAsOut(false)))))));
   }
 
   @Test

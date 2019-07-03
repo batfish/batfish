@@ -335,6 +335,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
       Prefix prefix = e.getKey();
       IpBgpGroup ig = e.getValue();
       Builder<?, ?> neighbor;
+      Ipv4UnicastAddressFamily.Builder ipv4AfBuilder = Ipv4UnicastAddressFamily.builder();
       Long remoteAs = ig.getType() == BgpGroupType.INTERNAL ? ig.getLocalAs() : ig.getPeerAs();
       if (ig.getDynamic()) {
         neighbor = BgpPassivePeerConfig.builder().setPeerPrefix(prefix).setRemoteAs(remoteAs);
@@ -346,7 +347,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
       // route reflection
       Ip declaredClusterId = ig.getClusterId();
       if (declaredClusterId != null) {
-        neighbor.setRouteReflectorClient(true);
+        ipv4AfBuilder.setRouteReflectorClient(true);
         neighbor.setClusterId(declaredClusterId.asLong());
       } else {
         neighbor.setClusterId(routerId.asLong());
@@ -399,7 +400,6 @@ public final class JuniperConfiguration extends VendorConfiguration {
 
       boolean allowLocalAsIn = loops > 0;
       AddressFamilyCapabilities.Builder ipv4AfSettingsBuilder = AddressFamilyCapabilities.builder();
-      Ipv4UnicastAddressFamily.Builder ipv4AfBuilder = Ipv4UnicastAddressFamily.builder();
       ipv4AfSettingsBuilder.setAllowLocalAsIn(allowLocalAsIn);
       Boolean advertisePeerAs = ig.getAdvertisePeerAs();
       if (advertisePeerAs == null) {

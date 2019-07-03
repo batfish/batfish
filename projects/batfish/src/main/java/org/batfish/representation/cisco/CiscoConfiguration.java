@@ -1982,8 +1982,8 @@ public final class CiscoConfiguration extends VendorConfiguration {
               .setAddressFamilyCapabilities(ipv4AfSettings)
               .setImportPolicy(peerImportPolicyName)
               .setExportPolicy(computeBgpPeerExportPolicyName(vrfName, lpg.getName()))
+              .setRouteReflectorClient(lpg.getRouteReflectorClient())
               .build());
-      newNeighborBuilder.setRouteReflectorClient(lpg.getRouteReflectorClient());
       newNeighborBuilder.setClusterId(clusterId.asLong());
       newNeighborBuilder.setDefaultMetric(defaultMetric);
       newNeighborBuilder.setDescription(description);

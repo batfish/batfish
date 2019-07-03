@@ -75,7 +75,10 @@ public class BgpPeerPropertySpecifier extends PropertySpecifier {
           .put(
               ROUTE_REFLECTOR_CLIENT,
               new PropertyDescriptor<>(
-                  BgpPeerConfig::getRouteReflectorClient,
+                  c ->
+                      Optional.ofNullable(c.getIpv4UnicastAddressFamily())
+                          .map(AddressFamily::getRouteReflectorClient)
+                          .orElse(false),
                   Schema.BOOLEAN,
                   "Whether this peer is a route reflector client"))
           .put(
@@ -152,7 +155,8 @@ public class BgpPeerPropertySpecifier extends PropertySpecifier {
 
   /** Returns cluster ID of this peer */
   private static Object getClusterId(BgpPeerConfig peer) {
-    return !peer.getRouteReflectorClient() || peer.getClusterId() == null
+    return peer.getAllAddressFamilies().stream().noneMatch(AddressFamily::getRouteReflectorClient)
+            || peer.getClusterId() == null
         ? null
         : Ip.create(peer.getClusterId());
   }

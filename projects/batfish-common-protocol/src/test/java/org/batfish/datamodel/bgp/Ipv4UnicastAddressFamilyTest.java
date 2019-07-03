@@ -28,6 +28,7 @@ public class Ipv4UnicastAddressFamilyTest {
         .addEqualityGroup(builder.setImportPolicy("import").build())
         .addEqualityGroup(builder.setExportPolicySources(ImmutableSortedSet.of("foo")).build())
         .addEqualityGroup(builder.setImportPolicySources(ImmutableSortedSet.of("bar")).build())
+        .addEqualityGroup(builder.setRouteReflectorClient(true))
         .addEqualityGroup(new Object())
         .testEquals();
   }
@@ -39,6 +40,7 @@ public class Ipv4UnicastAddressFamilyTest {
             .setExportPolicy("export")
             .setImportPolicy("import")
             .setExportPolicySources(ImmutableSortedSet.of("foo"))
+            .setRouteReflectorClient(true)
             .build();
     assertThat(SerializationUtils.clone(af), equalTo(af));
   }
@@ -50,6 +52,7 @@ public class Ipv4UnicastAddressFamilyTest {
             .setExportPolicy("export")
             .setImportPolicy("import")
             .setExportPolicySources(ImmutableSortedSet.of("foo"))
+            .setRouteReflectorClient(true)
             .build();
     assertThat(BatfishObjectMapper.clone(af, Ipv4UnicastAddressFamily.class), equalTo(af));
   }

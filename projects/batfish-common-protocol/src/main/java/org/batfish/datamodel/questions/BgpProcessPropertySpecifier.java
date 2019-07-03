@@ -2,7 +2,6 @@ package org.batfish.datamodel.questions;
 
 import static com.google.common.base.Preconditions.checkArgument;
 
-import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Iterables;
@@ -10,17 +9,19 @@ import com.google.common.collect.Sets;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
-import org.batfish.datamodel.BgpActivePeerConfig;
-import org.batfish.datamodel.BgpPassivePeerConfig;
+import org.batfish.datamodel.BgpPeerConfig;
 import org.batfish.datamodel.BgpProcess;
 import org.batfish.datamodel.BgpTieBreaker;
 import org.batfish.datamodel.MultipathEquivalentAsPathMatchMode;
 import org.batfish.datamodel.answers.Schema;
+import org.batfish.datamodel.bgp.AddressFamily;
 import org.batfish.specifier.ConstantEnumSetSpecifier;
 import org.batfish.specifier.SpecifierFactories;
 
@@ -49,9 +50,9 @@ public class BgpProcessPropertySpecifier extends PropertySpecifier {
           .put(
               ROUTE_REFLECTOR,
               new PropertyDescriptor<>(
-                  BgpProcessPropertySpecifier::isRouteReflector,
+                  BgpProcessPropertySpecifier::isIpv4UnicastRouteReflector,
                   Schema.BOOLEAN,
-                  "Whether any BGP peer in this process is configured as a route reflector client"))
+                  "Whether any BGP peer in this process is configured as a route reflector client, for ipv4 unicast address family"))
           .put(
               MULTIPATH_EQUIVALENT_AS_PATH_MATCH_MODE,
               new PropertyDescriptor<>(
@@ -133,13 +134,12 @@ public class BgpProcessPropertySpecifier extends PropertySpecifier {
 
   /**
    * Returns {@code true} iff the given process has any BGP peer configured as a route reflector
-   * client.
+   * client, for IPv4 unicast family.
    */
-  @VisibleForTesting
-  static boolean isRouteReflector(BgpProcess p) {
-    return p.getActiveNeighbors().values().stream()
-            .anyMatch(BgpActivePeerConfig::getRouteReflectorClient)
-        || p.getPassiveNeighbors().values().stream()
-            .anyMatch(BgpPassivePeerConfig::getRouteReflectorClient);
+  public static boolean isIpv4UnicastRouteReflector(BgpProcess p) {
+    return StreamSupport.stream(p.getAllPeerConfigs().spliterator(), false)
+        .map(BgpPeerConfig::getIpv4UnicastAddressFamily)
+        .filter(Objects::nonNull)
+        .anyMatch(AddressFamily::getRouteReflectorClient);
   }
 }
