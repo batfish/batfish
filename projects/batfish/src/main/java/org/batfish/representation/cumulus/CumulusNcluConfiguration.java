@@ -941,6 +941,7 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
 
     applyBridgeSettings(iface.getBridge(), newIface);
 
+    newIface.setDescription(iface.getAlias());
     if (iface.getSpeed() != null) {
       double speed = iface.getSpeed() * SPEED_CONVERSION_FACTOR;
       newIface.setSpeed(speed);
