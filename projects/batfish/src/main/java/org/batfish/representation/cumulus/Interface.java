@@ -12,6 +12,7 @@ public class Interface implements Serializable {
 
   static final String NULL_INTERFACE_NAME = "null0";
 
+  private @Nullable String _alias;
   private final @Nonnull InterfaceBridgeSettings _bridge;
   private @Nullable InterfaceClagSettings _clag;
   private final @Nullable Integer _encapsulationVlan;
@@ -45,6 +46,12 @@ public class Interface implements Serializable {
     _encapsulationVlan = encapsulationVlan;
   }
 
+  /** Interface alias (description) */
+  @Nullable
+  public String getAlias() {
+    return _alias;
+  }
+
   public @Nonnull InterfaceBridgeSettings getBridge() {
     return _bridge;
   }
@@ -70,6 +77,10 @@ public class Interface implements Serializable {
       _clag = new InterfaceClagSettings();
     }
     return _clag;
+  }
+
+  public void setAlias(@Nullable String alias) {
+    _alias = alias;
   }
 
   /** Speed in Mbps */

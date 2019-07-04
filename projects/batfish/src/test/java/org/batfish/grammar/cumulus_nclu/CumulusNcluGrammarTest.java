@@ -26,6 +26,7 @@ import static org.batfish.datamodel.matchers.InterfaceMatchers.hasAddress;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasAllAddresses;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasAllowedVlans;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasDependencies;
+import static org.batfish.datamodel.matchers.InterfaceMatchers.hasDescription;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasEncapsulationVlan;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasMlagId;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasNativeVlan;
@@ -906,6 +907,9 @@ public final class CumulusNcluGrammarTest {
             both(hasAllAddresses(containsInAnyOrder(ConcreteInterfaceAddress.parse("10.0.3.1/24"))))
                 .and(hasAddress(ConcreteInterfaceAddress.parse("10.0.3.1/24")))));
 
+    // description
+    assertThat(c, hasInterface("swp4", hasDescription("I am a description")));
+
     // bandwidth
     assertThat(c, hasInterface("bond1", hasBandwidth(10E9D)));
     assertThat(c, hasInterface("bond2", hasBandwidth(10E9D)));
@@ -961,6 +965,9 @@ public final class CumulusNcluGrammarTest {
         contains(
             ConcreteInterfaceAddress.parse("10.0.1.1/24"),
             ConcreteInterfaceAddress.parse("172.16.0.1/24")));
+
+    // alias
+    assertThat(vc.getInterfaces().get("swp4").getAlias(), equalTo("I am a description"));
 
     // clag backup-ip
     assertThat(

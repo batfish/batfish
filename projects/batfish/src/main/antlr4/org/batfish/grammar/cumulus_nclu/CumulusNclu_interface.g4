@@ -10,13 +10,19 @@ a_interface
 :
   INTERFACE interfaces = glob
   (
-    i_bridge
+    i_alias
+    | i_bridge
     | i_clag
     | i_ip_address
     | i_link_speed
     | i_vrf
     | NEWLINE
   )
+;
+
+i_alias
+:
+  ALIAS ALIAS_BODY NEWLINE
 ;
 
 i_bridge
