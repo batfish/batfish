@@ -119,6 +119,13 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
         && iface.getSwitchportMode() == referenceIface.getSwitchportMode();
   }
 
+  /**
+   * Clears layer-3 configuration of an interface to enable safe assignment to a new VRF.
+   *
+   * <p>NX-OS switches clear all layer-3 configuration from interfaces when an interface is assigned
+   * to a VRF, presumably to prevent accidental leakage of any connected routes from the old VRF
+   * into the new one.
+   */
   private void clearLayer3Configuration(Interface iface) {
     iface.setAddress(null);
     iface.getSecondaryAddresses().clear();
