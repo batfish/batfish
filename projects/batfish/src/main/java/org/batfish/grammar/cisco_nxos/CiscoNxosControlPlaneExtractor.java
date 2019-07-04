@@ -104,7 +104,26 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
     return Ip.parse(ctx.getText());
   }
 
+  private static long toLong(Uint32Context ctx) {
+    return Long.parseLong(ctx.getText());
+  }
+
+  private static @Nonnull Prefix toPrefix(Ip_prefixContext ctx) {
+    return Prefix.parse(ctx.getText());
+  }
+
+  private static @Nonnull Prefix toPrefix(Route_networkContext ctx) {
+    if (ctx.address != null) {
+      Ip address = toIp(ctx.address);
+      Ip mask = toIp(ctx.mask);
+      return Prefix.create(address, mask);
+    } else {
+      return toPrefix(ctx.prefix);
+    }
+  }
+
   private @Nullable CiscoNxosConfiguration _configuration;
+
   private @Nullable List<Interface> _currentInterfaces;
   private @Nullable IntegerSpace _currentValidVlanRange;
 
@@ -112,8 +131,11 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
   private @Nullable List<Vlan> _currentVlans;
 
   private Vrf _currentVrf;
+
   private final CiscoNxosCombinedParser _parser;
+
   private @Nonnull final String _text;
+
   private @Nonnull final Warnings _w;
 
   public CiscoNxosControlPlaneExtractor(
@@ -647,10 +669,6 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
     _w.todo(ctx, getFullText(ctx), _parser);
   }
 
-  private long toLong(Uint32Context ctx) {
-    return Long.parseLong(ctx.getText());
-  }
-
   private @Nullable String toPortChannel(ParserRuleContext messageCtx, Channel_idContext ctx) {
     int id = Integer.parseInt(ctx.getText());
     // not a mistake; range is 1-4096 (not zero-based).
@@ -662,20 +680,6 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
       return null;
     }
     return "port-channel" + id;
-  }
-
-  private @Nonnull Prefix toPrefix(Ip_prefixContext ctx) {
-    return Prefix.parse(ctx.getText());
-  }
-
-  private @Nonnull Prefix toPrefix(Route_networkContext ctx) {
-    if (ctx.address != null) {
-      Ip address = toIp(ctx.address);
-      Ip mask = toIp(ctx.mask);
-      return Prefix.create(address, mask);
-    } else {
-      return toPrefix(ctx.prefix);
-    }
   }
 
   private @Nullable Short toShort(ParserRuleContext messageCtx, Static_route_prefContext ctx) {
