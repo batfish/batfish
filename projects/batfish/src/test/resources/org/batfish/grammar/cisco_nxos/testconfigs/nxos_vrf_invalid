@@ -1,0 +1,16 @@
+!RANCID-CONTENT-TYPE: cisco-nx
+!
+hostname nxos_vrf_invalid
+!
+
+vrf context vrf1
+
+! Cannot add interface in switchport mode to VRF
+! - vrf = default (VS)
+! - vrf = null (VI)
+interface Ethernet1/1
+  vrf member vrf1
+!
+
+! VRF name is too long (exceeds 32 characters)
+vrf context .........1.........2.........3...

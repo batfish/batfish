@@ -273,4 +273,8 @@ public final class Interface implements Serializable {
   public void setSwitchportMode(SwitchportMode switchportMode) {
     _switchportMode = switchportMode;
   }
+
+  public void setVrfMember(String vrfMember) {
+    _vrfMember = vrfMember;
+  }
 }
