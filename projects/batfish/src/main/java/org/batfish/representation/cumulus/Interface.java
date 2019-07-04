@@ -79,9 +79,8 @@ public class Interface implements Serializable {
     return _clag;
   }
 
-  public Interface setAlias(@Nullable String alias) {
+  public void setAlias(@Nullable String alias) {
     _alias = alias;
-    return this;
   }
 
   /** Speed in Mbps */
