@@ -97,3 +97,8 @@ vlan_id_interval
     DASH high = vlan_id
   )?
 ;
+
+vrf_name
+:
+  VRF_NAME
+;
