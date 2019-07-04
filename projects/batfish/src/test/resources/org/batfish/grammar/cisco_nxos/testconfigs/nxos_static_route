@@ -1,0 +1,55 @@
+!RANCID-CONTENT-TYPE: cisco-nx
+!
+hostname nxos_static_route
+!
+
+interface Ethernet1/1
+  no switchport
+  no shutdown
+  ip address 10.255.1.1/24
+!
+interface Ethernet1/2
+  no switchport
+  no shutdown
+  vrf member vrf2
+  ip address 10.255.2.1/24
+!
+
+! discard route, ip+mask syntax
+ip route 10.0.0.0 255.255.255.0 null0
+
+! next-hop-ip route with ip+length syntax
+ip route 10.0.1.0/24 10.255.1.254
+
+! ..and next-hop interface
+ip route 10.0.2.0/24 Ethernet1/1 10.255.1.254
+
+! ..and track
+ip route 10.0.3.0/24 Ethernet1/1 10.255.1.254 track 500
+
+! ..and name
+ip route 10.0.4.0/24 Ethernet1/1 10.255.1.254 track 500 name foo
+
+!!! tag-preference combos
+! tag
+ip route 10.0.5.0/24 Ethernet1/1 10.255.1.254 track 500 name foo tag 1000
+
+! tag preference
+ip route 10.0.6.0/24 Ethernet1/1 10.255.1.254 track 500 name foo tag 1000 5
+
+! preference
+ip route 10.0.7.0/24 Ethernet1/1 10.255.1.254 track 500 name foo 5
+
+! preference tag
+ip route 10.0.8.0/24 Ethernet1/1 10.255.1.254 track 500 name foo 5 tag 1000
+
+!!! with next-hop vrf
+! ..without next-hop interface
+ip route 10.0.9.0/24 10.255.2.254 vrf vrf2 track 500 name foo 5 tag 1000
+
+! ..with next-hop interface
+ip route 10.0.10.0/24 Ethernet1/2 10.255.2.254 vrf vrf2 track 500 name foo 5 tag 1000
+
+! in non-default vrf
+vrf context vrf1
+  ip route 10.0.11.0/24 10.255.2.254

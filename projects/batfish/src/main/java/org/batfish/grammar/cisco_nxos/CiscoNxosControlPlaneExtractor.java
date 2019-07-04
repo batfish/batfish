@@ -9,6 +9,8 @@ import static org.batfish.representation.cisco_nxos.CiscoNxosInterfaceType.VLAN;
 import static org.batfish.representation.cisco_nxos.Interface.VLAN_RANGE;
 import static org.batfish.representation.cisco_nxos.Interface.newNonVlanInterface;
 import static org.batfish.representation.cisco_nxos.Interface.newVlanInterface;
+import static org.batfish.representation.cisco_nxos.StaticRoute.STATIC_ROUTE_PREFERENCE_RANGE;
+import static org.batfish.representation.cisco_nxos.StaticRoute.STATIC_ROUTE_TRACK_RANGE;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Range;
@@ -29,6 +31,7 @@ import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.IntegerSpace;
 import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.SwitchportMode;
 import org.batfish.grammar.BatfishParseTreeWalker;
 import org.batfish.grammar.ControlPlaneExtractor;
@@ -51,10 +54,17 @@ import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Interface_addressContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Interface_bandwidth_kbpsContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Interface_prefixContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Ip_addressContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Ip_prefixContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Ip_routeContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Route_networkContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.S_hostnameContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.S_interfaceContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.S_vrf_contextContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Static_route_nameContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Static_route_prefContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Track_object_numberContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Uint16Context;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Uint32Context;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Vc_no_shutdownContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Vc_shutdownContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Vlan_idContext;
@@ -66,6 +76,7 @@ import org.batfish.representation.cisco_nxos.CiscoNxosInterfaceType;
 import org.batfish.representation.cisco_nxos.CiscoNxosStructureType;
 import org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage;
 import org.batfish.representation.cisco_nxos.Interface;
+import org.batfish.representation.cisco_nxos.StaticRoute;
 import org.batfish.representation.cisco_nxos.Vlan;
 import org.batfish.representation.cisco_nxos.Vrf;
 import org.batfish.vendor.VendorConfiguration;
@@ -145,6 +156,7 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
   public void enterCisco_nxos_configuration(Cisco_nxos_configurationContext ctx) {
     _configuration = new CiscoNxosConfiguration();
     _currentValidVlanRange = VLAN_RANGE.difference(_configuration.getReservedVlanRange());
+    _currentVrf = _configuration.getDefaultVrf();
   }
 
   @Override
@@ -506,6 +518,65 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
   }
 
   @Override
+  public void exitIp_route(Ip_routeContext ctx) {
+    int line = ctx.getStart().getLine();
+    StaticRoute.Builder builder = StaticRoute.builder().setPrefix(toPrefix(ctx.network));
+    if (ctx.name != null) {
+      String name = toString(ctx, ctx.name);
+      if (name == null) {
+        return;
+      }
+      builder.setName(name);
+    }
+    if (ctx.nhint != null) {
+      String nhint = _configuration.canonicalizeInterfaceName(ctx.nhint.getText());
+      builder.setNextHopInterface(nhint);
+      _configuration.referenceStructure(
+          CiscoNxosStructureType.INTERFACE,
+          nhint,
+          CiscoNxosStructureUsage.IP_ROUTE_NEXT_HOP_INTERFACE,
+          line);
+    }
+    if (ctx.nhip != null) {
+      builder.setNextHopIp(toIp(ctx.nhip));
+    }
+    if (ctx.nhvrf != null) {
+      String vrf = toVrfName(ctx, ctx.nhvrf);
+      if (vrf == null) {
+        return;
+      }
+      _configuration.referenceStructure(
+          CiscoNxosStructureType.VRF, vrf, CiscoNxosStructureUsage.IP_ROUTE_NEXT_HOP_VRF, line);
+      builder.setNextHopVrf(vrf);
+
+      // TODO: support looking up next-hop-ip in a different VRF
+      todo(ctx);
+    }
+    if (ctx.null0 != null) {
+      builder.setDiscard(true);
+    }
+    if (ctx.pref != null) {
+      Short pref = toShort(ctx, ctx.pref);
+      if (pref == null) {
+        return;
+      }
+      builder.setPreference(pref);
+    }
+    if (ctx.tag != null) {
+      builder.setTag(toLong(ctx.tag));
+    }
+    if (ctx.track != null) {
+      Short track = toShort(ctx, ctx.track);
+      if (track == null) {
+        return;
+      }
+      builder.setTrack(track);
+    }
+    StaticRoute route = builder.build();
+    _currentVrf.getStaticRoutes().put(route.getPrefix(), route);
+  }
+
+  @Override
   public void exitS_hostname(S_hostnameContext ctx) {
     _configuration.setHostname(ctx.hostname.getText());
   }
@@ -517,7 +588,7 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
 
   @Override
   public void exitS_vrf_context(S_vrf_contextContext ctx) {
-    _currentVrf = null;
+    _currentVrf = _configuration.getDefaultVrf();
   }
 
   @Override
@@ -569,6 +640,10 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
     _w.todo(ctx, getFullText(ctx), _parser);
   }
 
+  private long toLong(Uint32Context ctx) {
+    return Long.parseLong(ctx.getText());
+  }
+
   private @Nullable String toPortChannel(ParserRuleContext messageCtx, Channel_idContext ctx) {
     int id = Integer.parseInt(ctx.getText());
     // not a mistake; range is 1-4096 (not zero-based).
@@ -580,6 +655,56 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
       return null;
     }
     return "port-channel" + id;
+  }
+
+  private @Nonnull Prefix toPrefix(Ip_prefixContext ctx) {
+    return Prefix.parse(ctx.getText());
+  }
+
+  private @Nonnull Prefix toPrefix(Route_networkContext ctx) {
+    if (ctx.address != null) {
+      Ip address = toIp(ctx.address);
+      Ip mask = toIp(ctx.mask);
+      return Prefix.create(address, mask);
+    } else {
+      return toPrefix(ctx.prefix);
+    }
+  }
+
+  private @Nullable Short toShort(ParserRuleContext messageCtx, Static_route_prefContext ctx) {
+    short pref = Short.parseShort(ctx.getText());
+    if (!STATIC_ROUTE_PREFERENCE_RANGE.contains((int) pref)) {
+      _w.redFlag(
+          String.format(
+              "Expected prefernce in range %s, but got '%d' in: %s",
+              STATIC_ROUTE_PREFERENCE_RANGE, pref, getFullText(messageCtx)));
+      return null;
+    }
+    return pref;
+  }
+
+  private @Nullable Short toShort(ParserRuleContext messageCtx, Track_object_numberContext ctx) {
+    short track = Short.parseShort(ctx.getText());
+    if (!STATIC_ROUTE_TRACK_RANGE.contains((int) track)) {
+      _w.redFlag(
+          String.format(
+              "Expected track in range %s, but got '%d' in: %s",
+              STATIC_ROUTE_TRACK_RANGE, track, getFullText(messageCtx)));
+      return null;
+    }
+    return track;
+  }
+
+  private @Nullable String toString(ParserRuleContext messageCtx, Static_route_nameContext ctx) {
+    String name = ctx.getText();
+    if (name.length() > StaticRoute.MAX_NAME_LENGTH) {
+      _w.redFlag(
+          String.format(
+              "Expected name <= %d characters,but got '%s' in: %s",
+              StaticRoute.MAX_NAME_LENGTH, name, getFullText(messageCtx)));
+      return null;
+    }
+    return name;
   }
 
   private @Nullable CiscoNxosInterfaceType toType(Interface_prefixContext ctx) {
