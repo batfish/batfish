@@ -68,6 +68,7 @@ a_bond
     | bond_bridge
     | bond_clag_id
     | bond_ip_address
+    | bond_mtu
     | bond_vrf
   )
 ;
@@ -87,6 +88,7 @@ bond_bridge
   BRIDGE
   (
     bob_access
+    | bob_learning
     | bob_pvid
     | bob_vids
   )
@@ -95,6 +97,11 @@ bond_bridge
 bob_access
 :
   ACCESS vlan = vlan_id NEWLINE
+;
+
+bob_learning
+:
+  LEARNING OFF NEWLINE
 ;
 
 bob_pvid
@@ -115,6 +122,11 @@ bond_clag_id
 bond_ip_address
 :
   IP ADDRESS address = interface_address NEWLINE
+;
+
+bond_mtu
+:
+  MTU mtu = uint16 NEWLINE
 ;
 
 bond_vrf

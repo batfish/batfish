@@ -465,6 +465,12 @@
         "cumulus_nclu_bgp_no_router_id_or_loopback_ip" : [
           "configs/cumulus_nclu_bgp_no_router_id_or_loopback_ip"
         ],
+        "cumulus_nclu_bond" : [
+          "configs/cumulus_nclu_bond"
+        ],
+        "cumulus_nclu_interface" : [
+          "configs/cumulus_nclu_interface"
+        ],
         "cumulus_nclu_invalid_bonds" : [
           "configs/cumulus_nclu_invalid_bonds"
         ],
@@ -1048,6 +1054,8 @@
         "configs/cumulus_nclu_bgp_no_address_family" : "PASSED",
         "configs/cumulus_nclu_bgp_no_router_id" : "PASSED",
         "configs/cumulus_nclu_bgp_no_router_id_or_loopback_ip" : "PASSED",
+        "configs/cumulus_nclu_bond" : "PASSED",
+        "configs/cumulus_nclu_interface" : "PASSED",
         "configs/cumulus_nclu_invalid_bonds" : "PASSED",
         "configs/cumulus_nclu_invalid_interfaces" : "PASSED",
         "configs/cumulus_nclu_invalid_vrfs" : "PASSED",
@@ -41010,7 +41018,7 @@
             "        DOT1X:'dot1x'",
             "        (null_rest_of_line",
             "          WORD:'eap-reauth-period'",
-            "          DEC:'0'",
+            "          ZERO_LITERAL:'0'",
             "          NEWLINE:'\\n'))))",
             "  (statement",
             "    (s_net_add",
@@ -41053,7 +41061,7 @@
             "        (null_rest_of_line",
             "          WORD:'global'",
             "          WORD:'domain-number'",
-            "          DEC:'0'",
+            "          ZERO_LITERAL:'0'",
             "          NEWLINE:'\\n'))))",
             "  (statement",
             "    (s_net_add",
@@ -41075,7 +41083,7 @@
             "        (null_rest_of_line",
             "          WORD:'global'",
             "          WORD:'path-trace-enabled'",
-            "          WORD:'no'",
+            "          NO:'no'",
             "          NEWLINE:'\\n'))))",
             "  (statement",
             "    (s_net_add",
@@ -41097,7 +41105,7 @@
             "        (null_rest_of_line",
             "          WORD:'global'",
             "          WORD:'slave-only'",
-            "          WORD:'no'",
+            "          NO:'no'",
             "          NEWLINE:'\\n'))))",
             "  (statement",
             "    (s_net_add",
@@ -41108,7 +41116,7 @@
             "        (null_rest_of_line",
             "          WORD:'global'",
             "          WORD:'summary-interval'",
-            "          DEC:'0'",
+            "          ZERO_LITERAL:'0'",
             "          NEWLINE:'\\n'))))",
             "  (statement",
             "    (s_net_add",
@@ -41140,7 +41148,7 @@
             "        (null_rest_of_line",
             "          WORD:'global'",
             "          WORD:'verbose'",
-            "          WORD:'no'",
+            "          NO:'no'",
             "          NEWLINE:'\\n'))))",
             "  (statement",
             "    (s_net_add",
@@ -41817,6 +41825,315 @@
             "      (null_rest_of_line",
             "        COMMIT:'commit'",
             "        NEWLINE:'\\n\\n')))",
+            "  EOF:<EOF>)"
+          ]
+        },
+        "configs/cumulus_nclu_bond" : {
+          "sentences" : [
+            "(cumulus_nclu_configuration",
+            "  (statement",
+            "    (s_null",
+            "      NET:'net'",
+            "      (null_rest_of_line",
+            "        DEL:'del'",
+            "        WORD:'all'",
+            "        NEWLINE:'\\n')))",
+            "  (statement",
+            "    (s_net_add",
+            "      NET:'net'",
+            "      ADD:'add'",
+            "      (a_hostname",
+            "        HOSTNAME:'hostname'",
+            "        hostname = (word",
+            "          WORD:'cumulus_nclu_bond')",
+            "        NEWLINE:'\\n')))",
+            "  (statement",
+            "    (s_net_add",
+            "      NET:'net'",
+            "      ADD:'add'",
+            "      (a_bond",
+            "        BOND:'bond'",
+            "        name = (word",
+            "          WORD:'AGG')",
+            "        (bond_bond",
+            "          BOND:'bond'",
+            "          (bobo_slaves",
+            "            SLAVES:'slaves'",
+            "            slaves = (glob",
+            "              (glob_range_set",
+            "                base_word = (numbered_word",
+            "                  NUMBERED_WORD:'swp1')",
+            "                DASH:'-'",
+            "                first_interval_end = (uint32",
+            "                  d = DEC:'10')))",
+            "            NEWLINE:'\\n')))))",
+            "  (statement",
+            "    (s_net_add",
+            "      NET:'net'",
+            "      ADD:'add'",
+            "      (a_bond",
+            "        BOND:'bond'",
+            "        name = (word",
+            "          WORD:'AGG')",
+            "        (bond_mtu",
+            "          MTU:'mtu'",
+            "          mtu = (uint16",
+            "            d = DEC:'200')",
+            "          NEWLINE:'\\n'))))",
+            "  (statement",
+            "    (s_net_add",
+            "      NET:'net'",
+            "      ADD:'add'",
+            "      (a_bond",
+            "        BOND:'bond'",
+            "        name = (word",
+            "          WORD:'AGG')",
+            "        (bond_bridge",
+            "          BRIDGE:'bridge'",
+            "          (bob_learning",
+            "            LEARNING:'learning'",
+            "            OFF:'off'",
+            "            NEWLINE:'\\n\\n')))))",
+            "  EOF:<EOF>)"
+          ]
+        },
+        "configs/cumulus_nclu_interface" : {
+          "sentences" : [
+            "(cumulus_nclu_configuration",
+            "  (statement",
+            "    (s_null",
+            "      NET:'net'",
+            "      (null_rest_of_line",
+            "        DEL:'del'",
+            "        WORD:'all'",
+            "        NEWLINE:'\\n')))",
+            "  (statement",
+            "    (s_net_add",
+            "      NET:'net'",
+            "      ADD:'add'",
+            "      (a_hostname",
+            "        HOSTNAME:'hostname'",
+            "        hostname = (word",
+            "          WORD:'cumulus_nclu_interface')",
+            "        NEWLINE:'\\n')))",
+            "  (statement",
+            "    (s_net_add",
+            "      NET:'net'",
+            "      ADD:'add'",
+            "      (a_interface",
+            "        INTERFACE:'interface'",
+            "        interfaces = (glob",
+            "          (glob_range_set",
+            "            base_word = (numbered_word",
+            "              NUMBERED_WORD:'swp1')))",
+            "        (i_ipv6",
+            "          IPV6:'ipv6'",
+            "          (iv6_address",
+            "            ADDRESS:'address'",
+            "            IPV6_PREFIX:'100::ffff:ffff:ffff:ffff/24'",
+            "            NEWLINE:'\\n')))))",
+            "  (statement",
+            "    (s_net_add",
+            "      NET:'net'",
+            "      ADD:'add'",
+            "      (a_interface",
+            "        INTERFACE:'interface'",
+            "        interfaces = (glob",
+            "          (glob_range_set",
+            "            base_word = (numbered_word",
+            "              NUMBERED_WORD:'swp1')))",
+            "        (i_ipv6",
+            "          IPV6:'ipv6'",
+            "          (iv6_address",
+            "            ADDRESS:'address'",
+            "            DHCP:'dhcp'",
+            "            NEWLINE:'\\n')))))",
+            "  (statement",
+            "    (s_net_add",
+            "      NET:'net'",
+            "      ADD:'add'",
+            "      (a_interface",
+            "        INTERFACE:'interface'",
+            "        interfaces = (glob",
+            "          (glob_range_set",
+            "            base_word = (numbered_word",
+            "              NUMBERED_WORD:'swp1')))",
+            "        (i_ipv6",
+            "          IPV6:'ipv6'",
+            "          (iv6_address_virtual",
+            "            ADDRESS_VIRTUAL:'address-virtual'",
+            "            mac = MAC_ADDRESS:'00:25:96:12:34:56'",
+            "            NEWLINE:'\\n')))))",
+            "  (statement",
+            "    (s_net_add",
+            "      NET:'net'",
+            "      ADD:'add'",
+            "      (a_interface",
+            "        INTERFACE:'interface'",
+            "        interfaces = (glob",
+            "          (glob_range_set",
+            "            base_word = (numbered_word",
+            "              NUMBERED_WORD:'swp1')))",
+            "        (i_ipv6",
+            "          IPV6:'ipv6'",
+            "          (iv6_forward",
+            "            FORWARD:'forward'",
+            "            ZERO_LITERAL:'0'",
+            "            NEWLINE:'\\n')))))",
+            "  (statement",
+            "    (s_net_add",
+            "      NET:'net'",
+            "      ADD:'add'",
+            "      (a_interface",
+            "        INTERFACE:'interface'",
+            "        interfaces = (glob",
+            "          (glob_range_set",
+            "            base_word = (numbered_word",
+            "              NUMBERED_WORD:'swp1')))",
+            "        (i_ipv6",
+            "          IPV6:'ipv6'",
+            "          (iv6_forward",
+            "            FORWARD:'forward'",
+            "            NO:'no'",
+            "            NEWLINE:'\\n')))))",
+            "  (statement",
+            "    (s_net_add",
+            "      NET:'net'",
+            "      ADD:'add'",
+            "      (a_interface",
+            "        INTERFACE:'interface'",
+            "        interfaces = (glob",
+            "          (glob_range_set",
+            "            base_word = (numbered_word",
+            "              NUMBERED_WORD:'swp1')))",
+            "        (i_ipv6",
+            "          IPV6:'ipv6'",
+            "          (iv6_forward",
+            "            FORWARD:'forward'",
+            "            OFF:'off'",
+            "            NEWLINE:'\\n')))))",
+            "  (statement",
+            "    (s_net_add",
+            "      NET:'net'",
+            "      ADD:'add'",
+            "      (a_interface",
+            "        INTERFACE:'interface'",
+            "        interfaces = (glob",
+            "          (glob_range_set",
+            "            base_word = (numbered_word",
+            "              NUMBERED_WORD:'swp1')))",
+            "        (i_ipv6",
+            "          IPV6:'ipv6'",
+            "          (iv6_gateway",
+            "            GATEWAY:'gateway'",
+            "            IPV6_ADDRESS:'100::ffff:ffff:ffff:ffff'",
+            "            NEWLINE:'\\n')))))",
+            "  (statement",
+            "    (s_net_add",
+            "      NET:'net'",
+            "      ADD:'add'",
+            "      (a_interface",
+            "        INTERFACE:'interface'",
+            "        interfaces = (glob",
+            "          (glob_range_set",
+            "            base_word = (numbered_word",
+            "              NUMBERED_WORD:'swp1')))",
+            "        (i_ipv6",
+            "          IPV6:'ipv6'",
+            "          (iv6_nd",
+            "            ND:'nd'",
+            "            IPV6_PREFIX:'100::ffff:ffff:ffff:ffff/23'",
+            "            NEWLINE:'\\n')))))",
+            "  (statement",
+            "    (s_net_add",
+            "      NET:'net'",
+            "      ADD:'add'",
+            "      (a_interface",
+            "        INTERFACE:'interface'",
+            "        interfaces = (glob",
+            "          (glob_range_set",
+            "            base_word = (numbered_word",
+            "              NUMBERED_WORD:'swp1')))",
+            "        (i_ipv6",
+            "          IPV6:'ipv6'",
+            "          (iv6_nd",
+            "            ND:'nd'",
+            "            (iv6_ra_interval",
+            "              RA_INTERVAL:'ra-interval'",
+            "              interval = (uint16",
+            "                d = DEC:'5555')",
+            "              NEWLINE:'\\n'))))))",
+            "  (statement",
+            "    (s_net_add",
+            "      NET:'net'",
+            "      ADD:'add'",
+            "      (a_interface",
+            "        INTERFACE:'interface'",
+            "        interfaces = (glob",
+            "          (glob_range_set",
+            "            base_word = (numbered_word",
+            "              NUMBERED_WORD:'swp1')))",
+            "        (i_ipv6",
+            "          IPV6:'ipv6'",
+            "          (iv6_nd",
+            "            ND:'nd'",
+            "            (iv6_ra_interval",
+            "              RA_INTERVAL:'ra-interval'",
+            "              MSEC:'msec'",
+            "              msecs = (uint32",
+            "                d = DEC:'1000000')",
+            "              NEWLINE:'\\n'))))))",
+            "  (statement",
+            "    (s_net_add",
+            "      NET:'net'",
+            "      ADD:'add'",
+            "      (a_interface",
+            "        INTERFACE:'interface'",
+            "        interfaces = (glob",
+            "          (glob_range_set",
+            "            base_word = (numbered_word",
+            "              NUMBERED_WORD:'swp1')))",
+            "        (i_ipv6",
+            "          IPV6:'ipv6'",
+            "          (iv6_nd",
+            "            ND:'nd'",
+            "            (iv6_ra_lifetime",
+            "              RA_LIFETIME:'ra-lifetime'",
+            "              val = (uint16",
+            "                d = DEC:'6000')",
+            "              NEWLINE:'\\n'))))))",
+            "  (statement",
+            "    (s_net_add",
+            "      NET:'net'",
+            "      ADD:'add'",
+            "      (a_interface",
+            "        INTERFACE:'interface'",
+            "        interfaces = (glob",
+            "          (glob_range_set",
+            "            base_word = (numbered_word",
+            "              NUMBERED_WORD:'swp1')))",
+            "        (i_ipv6",
+            "          IPV6:'ipv6'",
+            "          (iv6_nd",
+            "            ND:'nd'",
+            "            (iv6_suppress_ra",
+            "              SUPPRESS_RA:'suppress-ra'",
+            "              NEWLINE:'\\n'))))))",
+            "  (statement",
+            "    (s_net_add",
+            "      NET:'net'",
+            "      ADD:'add'",
+            "      (a_interface",
+            "        INTERFACE:'interface'",
+            "        interfaces = (glob",
+            "          (glob_range_set",
+            "            base_word = (numbered_word",
+            "              NUMBERED_WORD:'swp1')))",
+            "        (i_mtu",
+            "          MTU:'mtu'",
+            "          mtu = (uint16",
+            "            d = DEC:'2000')",
+            "          NEWLINE:'\\n\\n'))))",
             "  EOF:<EOF>)"
           ]
         },
@@ -76295,6 +76612,8 @@
         "cumulus_nclu_bgp_no_address_family" : "PASSED",
         "cumulus_nclu_bgp_no_router_id" : "PASSED",
         "cumulus_nclu_bgp_no_router_id_or_loopback_ip" : "WARNINGS",
+        "cumulus_nclu_bond" : "PASSED",
+        "cumulus_nclu_interface" : "PASSED",
         "cumulus_nclu_invalid_bonds" : "PASSED",
         "cumulus_nclu_invalid_interfaces" : "PASSED",
         "cumulus_nclu_invalid_vrfs" : "PASSED",
@@ -79128,6 +79447,88 @@
                 6
               ],
               "numReferrers" : 1
+            }
+          }
+        },
+        "configs/cumulus_nclu_bond" : {
+          "bond" : {
+            "AGG" : {
+              "definitionLines" : [
+                5
+              ],
+              "numReferrers" : 1
+            }
+          },
+          "interface" : {
+            "swp1" : {
+              "definitionLines" : [
+                5
+              ],
+              "numReferrers" : 1
+            },
+            "swp10" : {
+              "definitionLines" : [
+                5
+              ],
+              "numReferrers" : 1
+            },
+            "swp2" : {
+              "definitionLines" : [
+                5
+              ],
+              "numReferrers" : 1
+            },
+            "swp3" : {
+              "definitionLines" : [
+                5
+              ],
+              "numReferrers" : 1
+            },
+            "swp4" : {
+              "definitionLines" : [
+                5
+              ],
+              "numReferrers" : 1
+            },
+            "swp5" : {
+              "definitionLines" : [
+                5
+              ],
+              "numReferrers" : 1
+            },
+            "swp6" : {
+              "definitionLines" : [
+                5
+              ],
+              "numReferrers" : 1
+            },
+            "swp7" : {
+              "definitionLines" : [
+                5
+              ],
+              "numReferrers" : 1
+            },
+            "swp8" : {
+              "definitionLines" : [
+                5
+              ],
+              "numReferrers" : 1
+            },
+            "swp9" : {
+              "definitionLines" : [
+                5
+              ],
+              "numReferrers" : 1
+            }
+          }
+        },
+        "configs/cumulus_nclu_interface" : {
+          "interface" : {
+            "swp1" : {
+              "definitionLines" : [
+                5
+              ],
+              "numReferrers" : 13
             }
           }
         },
@@ -83552,6 +83953,12 @@
         "configs/cumulus_nclu_bgp_no_router_id_or_loopback_ip" : [
           "cumulus_nclu_bgp_no_router_id_or_loopback_ip"
         ],
+        "configs/cumulus_nclu_bond" : [
+          "cumulus_nclu_bond"
+        ],
+        "configs/cumulus_nclu_interface" : [
+          "cumulus_nclu_interface"
+        ],
         "configs/cumulus_nclu_invalid_bonds" : [
           "cumulus_nclu_invalid_bonds"
         ],
@@ -86201,6 +86608,88 @@
             "lo" : {
               "loopback self-reference" : [
                 6
+              ]
+            }
+          }
+        },
+        "configs/cumulus_nclu_bond" : {
+          "bond" : {
+            "AGG" : {
+              "bond self-reference" : [
+                5
+              ]
+            }
+          },
+          "interface" : {
+            "swp1" : {
+              "bond slave" : [
+                5
+              ]
+            },
+            "swp10" : {
+              "bond slave" : [
+                5
+              ]
+            },
+            "swp2" : {
+              "bond slave" : [
+                5
+              ]
+            },
+            "swp3" : {
+              "bond slave" : [
+                5
+              ]
+            },
+            "swp4" : {
+              "bond slave" : [
+                5
+              ]
+            },
+            "swp5" : {
+              "bond slave" : [
+                5
+              ]
+            },
+            "swp6" : {
+              "bond slave" : [
+                5
+              ]
+            },
+            "swp7" : {
+              "bond slave" : [
+                5
+              ]
+            },
+            "swp8" : {
+              "bond slave" : [
+                5
+              ]
+            },
+            "swp9" : {
+              "bond slave" : [
+                5
+              ]
+            }
+          }
+        },
+        "configs/cumulus_nclu_interface" : {
+          "interface" : {
+            "swp1" : {
+              "interface self-reference" : [
+                5,
+                6,
+                7,
+                8,
+                9,
+                10,
+                11,
+                12,
+                13,
+                14,
+                15,
+                16,
+                17
               ]
             }
           }
@@ -91368,6 +91857,8 @@
         "configs/cumulus_nclu_bgp_no_address_family" : "PASSED",
         "configs/cumulus_nclu_bgp_no_router_id" : "PASSED",
         "configs/cumulus_nclu_bgp_no_router_id_or_loopback_ip" : "PASSED",
+        "configs/cumulus_nclu_bond" : "PASSED",
+        "configs/cumulus_nclu_interface" : "PASSED",
         "configs/cumulus_nclu_invalid_bonds" : "PASSED",
         "configs/cumulus_nclu_invalid_interfaces" : "PASSED",
         "configs/cumulus_nclu_invalid_vrfs" : "PASSED",

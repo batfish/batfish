@@ -167,6 +167,11 @@ DESCRIPTION
   'description'
 ;
 
+DHCP
+:
+  'dhcp'
+;
+
 DNS
 :
   'dns'
@@ -200,6 +205,16 @@ EXIT_VRF
 EXTERNAL
 :
   'external'
+;
+
+FORWARD
+:
+  'forward'
+;
+
+GATEWAY
+:
+  'gateway'
 ;
 
 HOSTNAME
@@ -302,9 +317,24 @@ MATCH
   'match'
 ;
 
+MSEC
+:
+  'msec'
+;
+
+MTU
+:
+  'mtu'
+;
+
 NAMESERVER
 :
   'nameserver'
+;
+
+ND
+:
+  'nd'
 ;
 
 NEIGHBOR
@@ -320,6 +350,12 @@ NETWORK
 NET
 :
   'net'
+;
+
+NO
+:
+
+  'no'
 ;
 
 NOTIFICATIONS
@@ -382,6 +418,16 @@ PVID
   'pvid'
 ;
 
+RA_INTERVAL
+:
+  'ra-interval'
+;
+
+RA_LIFETIME
+:
+  'ra-lifetime'
+;
+
 REDISTRIBUTE
 :
   'redistribute'
@@ -442,6 +488,11 @@ SOURCE
   'source'
 ;
 
+SPEED
+:
+  'speed'
+;
+
 STATIC
 :
   'static'
@@ -452,10 +503,11 @@ STP
   'stp'
 ;
 
-SPEED
+SUPPRESS_RA
 :
-  'speed'
+  'suppress-ra'
 ;
+
 
 SYS_MAC
 :
@@ -530,6 +582,11 @@ VXLAN_ANYCAST_IP
 WARNINGS
 :
   'warnings'
+;
+
+ZERO_LITERAL
+:
+  F_Zero
 ;
 
 ZONE
@@ -941,6 +998,12 @@ F_WordSegment
 :
   F_Alpha F_WordChar*
   | F_Digit F_WordChar* F_Alpha F_WordChar*
+;
+
+fragment
+F_Zero
+:
+  '0'
 ;
 
 // Lexer Modes
