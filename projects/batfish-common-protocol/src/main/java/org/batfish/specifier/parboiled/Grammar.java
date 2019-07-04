@@ -8,16 +8,12 @@ import org.batfish.datamodel.questions.NamedStructurePropertySpecifier;
 /** Contains information on various expressions supported by this package */
 public enum Grammar {
   APPLICATION_SPECIFIER("applicationSpecifier", "application-specifier"),
-  BGP_PEER_PROPERTY_SPECIFIER("bgpPeerPropertySpecifier", "bgp-peer-property-specifier"),
-  BGP_PROCESS_PROPERTY_SPECIFIER("bgpProcessPropertySpecifier", "bgp-process-property-specifier"),
   FILTER_SPECIFIER("filterSpecifier", "filter-specifier"),
-  INTERFACE_PROPERTY_SPECIFIER("interfacePropertySpecifier", "interface-property-specifier"),
   INTERFACE_SPECIFIER("interfaceSpecifier", "interface-specifier"),
   IP_PROTOCOL_SPECIFIER("ipProtocolSpecifier", "ip-protocol-specifier"),
   IP_SPACE_SPECIFIER("ipSpecifier", "ip-specifier"),
   LOCATION_SPECIFIER("locationSpecifier", "location-specifier"),
   NAMED_STRUCTURE_SPECIFIER("namedStructureSpecifier", "named-structure-specifier"),
-  NODE_PROPERTY_SPECIFIER("nodePropertySpecifier", "node-property-specifier"),
   NODE_SPECIFIER("nodeSpecifier", "node-specifier"),
   ROUTING_POLICY_SPECIFIER("routingPolicySpecifier", "routing-policy-specifier");
 
