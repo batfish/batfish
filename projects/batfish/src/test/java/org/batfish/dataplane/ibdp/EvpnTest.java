@@ -144,7 +144,10 @@ public class EvpnTest {
                 .setL3Vnis(ImmutableSet.of(vniConfig1))
                 .setPropagateUnmatched(true)
                 .setAddressFamilyCapabilities(
-                    AddressFamilyCapabilities.builder().setSendCommunity(true).build())
+                    AddressFamilyCapabilities.builder()
+                        .setSendCommunity(true)
+                        .setSendExtendedCommunity(true)
+                        .build())
                 .setExportPolicy(policyName)
                 .build())
         .setIpv4UnicastAddressFamily(
@@ -162,7 +165,10 @@ public class EvpnTest {
                 .setL3Vnis(ImmutableSet.of(vniConfig2))
                 .setPropagateUnmatched(true)
                 .setAddressFamilyCapabilities(
-                    AddressFamilyCapabilities.builder().setSendCommunity(true).build())
+                    AddressFamilyCapabilities.builder()
+                        .setSendCommunity(true)
+                        .setSendExtendedCommunity(true)
+                        .build())
                 .setExportPolicy(policyName)
                 .build())
         .setIpv4UnicastAddressFamily(
