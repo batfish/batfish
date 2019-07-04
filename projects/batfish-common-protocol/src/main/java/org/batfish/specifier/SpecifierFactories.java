@@ -1,8 +1,8 @@
 package org.batfish.specifier;
 
-import java.util.Collection;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
+import org.batfish.specifier.parboiled.Grammar;
 import org.batfish.specifier.parboiled.ParboiledEnumSetSpecifier;
 import org.batfish.specifier.parboiled.ParboiledFilterSpecifier;
 import org.batfish.specifier.parboiled.ParboiledInterfaceSpecifier;
@@ -85,11 +85,11 @@ public final class SpecifierFactories {
   }
 
   public static <T> EnumSetSpecifier<T> getEnumSetSpecifier(
-      String input, Collection<T> allValues, Version version) {
+      String input, Grammar grammar, Version version) {
     switch (version) {
       case V1:
       case V2:
-        return ParboiledEnumSetSpecifier.parse(input, allValues);
+        return ParboiledEnumSetSpecifier.parse(input, grammar);
       default:
         throw new IllegalStateException("Unhandled grammar version " + version);
     }
@@ -142,8 +142,8 @@ public final class SpecifierFactories {
   }
 
   public static <T> EnumSetSpecifier<T> getEnumSetSpecifierOrDefault(
-      @Nullable String input, Collection<T> allValues, EnumSetSpecifier<T> defaultSpecifier) {
-    return getEnumSetSpecifierOrDefault(input, allValues, defaultSpecifier, ACTIVE_VERSION);
+      @Nullable String input, Grammar grammar, EnumSetSpecifier<T> defaultSpecifier) {
+    return getEnumSetSpecifierOrDefault(input, grammar, defaultSpecifier, ACTIVE_VERSION);
   }
 
   public static NodeSpecifier getNodeSpecifierOrDefault(
@@ -182,13 +182,10 @@ public final class SpecifierFactories {
   }
 
   public static <T> EnumSetSpecifier<T> getEnumSetSpecifierOrDefault(
-      @Nullable String input,
-      Collection<T> allValues,
-      EnumSetSpecifier<T> defaultSpecifier,
-      Version v) {
+      @Nullable String input, Grammar grammar, EnumSetSpecifier<T> defaultSpecifier, Version v) {
     return input == null || input.isEmpty()
         ? defaultSpecifier
-        : getEnumSetSpecifier(input, allValues, v);
+        : getEnumSetSpecifier(input, grammar, v);
   }
 
   public static NodeSpecifier getNodeSpecifierOrDefault(

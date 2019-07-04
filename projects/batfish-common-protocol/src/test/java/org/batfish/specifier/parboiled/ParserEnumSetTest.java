@@ -30,23 +30,30 @@ import org.parboiled.support.ParsingResult;
  */
 public class ParserEnumSetTest {
 
-  private static final Collection<String> ALL_NAMED_STRUCTURE_TYPES =
-      NamedStructurePropertySpecifier.JAVA_MAP.keySet();
-
   /** */
   @Rule public ExpectedException _thrown = ExpectedException.none();
+
+  @SuppressWarnings("unchecked")
+  private static Set<String> ALL_NAMED_STRUCTURE_TYPES =
+      (Set<String>) Grammar.getEnumValues(Grammar.NAMED_STRUCTURE_SPECIFIER);
 
   private static AbstractParseRunner<AstNode> getRunner() {
     return getRunner(ALL_NAMED_STRUCTURE_TYPES);
   }
 
-  private static AbstractParseRunner<AstNode> getRunner(Collection<String> allValues) {
-    return new ReportingParseRunner<>(Parser.instance().getEnumSetRule(allValues));
+  private static AbstractParseRunner<AstNode> getRunner(Collection<?> allValues) {
+    Parser parser = Parser.instance();
+    return new ReportingParseRunner<>(parser.input(parser.EnumSetSpec(allValues)));
+  }
+
+  private static ParboiledAutoComplete getPAC(String query, Grammar grammar) {
+    return getPAC(query, Grammar.getEnumValues(grammar));
   }
 
   private static ParboiledAutoComplete getPAC(String query, Collection<?> allValues) {
+    Parser parser = Parser.instance();
     return new ParboiledAutoComplete(
-        Parser.instance().getEnumSetRule(allValues),
+        parser.input(parser.EnumSetSpec(allValues)),
         Parser.ANCHORS,
         "network",
         "snapshot",
@@ -73,7 +80,7 @@ public class ParserEnumSetTest {
 
     Set<ParboiledAutoCompleteSuggestion> suggestions =
         new ParboiledAutoComplete(
-                Parser.instance().getEnumSetRule(ALL_NAMED_STRUCTURE_TYPES),
+                Parser.instance().getInputRule(Grammar.NAMED_STRUCTURE_SPECIFIER),
                 Parser.ANCHORS,
                 "network",
                 "snapshot",
@@ -105,7 +112,7 @@ public class ParserEnumSetTest {
 
     Set<ParboiledAutoCompleteSuggestion> suggestions =
         new ParboiledAutoComplete(
-                Parser.instance().getEnumSetRule(ALL_NAMED_STRUCTURE_TYPES),
+                Parser.instance().getInputRule(Grammar.NAMED_STRUCTURE_SPECIFIER),
                 Parser.ANCHORS,
                 "network",
                 "snapshot",
@@ -206,7 +213,7 @@ public class ParserEnumSetTest {
   public void testApplication() {
     String query = "";
     Set<ParboiledAutoCompleteSuggestion> suggestions =
-        getPAC("", Arrays.asList(Protocol.values())).run();
+        getPAC("", Grammar.APPLICATION_SPECIFIER).run();
 
     assertThat(
         suggestions,

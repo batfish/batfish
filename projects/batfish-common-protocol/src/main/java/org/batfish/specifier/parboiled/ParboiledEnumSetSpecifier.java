@@ -57,17 +57,15 @@ public final class ParboiledEnumSetSpecifier<T>
    *
    * @throws IllegalArgumentException if the parsing fails or does not produce the expected AST
    */
-  public static <T> ParboiledEnumSetSpecifier<T> parse(String input, Collection<T> allValues) {
+  @SuppressWarnings("unchecked")
+  public static <T> ParboiledEnumSetSpecifier<T> parse(String input, Grammar grammar) {
     ParsingResult<AstNode> result =
-        new ReportingParseRunner<AstNode>(Parser.instance().getEnumSetRule(allValues)).run(input);
+        new ReportingParseRunner<AstNode>(Parser.instance().getInputRule(grammar)).run(input);
 
     if (!result.parseErrors.isEmpty()) {
       throw new IllegalArgumentException(
           ParserUtils.getErrorString(
-              input,
-              Grammar.ENUM_SET_SPECIFIER,
-              (InvalidInputError) result.parseErrors.get(0),
-              Parser.ANCHORS));
+              input, grammar, (InvalidInputError) result.parseErrors.get(0), Parser.ANCHORS));
     }
 
     AstNode ast = ParserUtils.getAst(result);
@@ -77,7 +75,8 @@ public final class ParboiledEnumSetSpecifier<T>
         input,
         ast);
 
-    return new ParboiledEnumSetSpecifier<>((EnumSetAstNode) ast, allValues);
+    return new ParboiledEnumSetSpecifier<T>(
+        (EnumSetAstNode) ast, (Collection<T>) Grammar.getEnumValues(grammar));
   }
 
   @Override
