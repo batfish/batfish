@@ -44,6 +44,7 @@
             <arg>-Xlint:all</arg>
             <arg>-Xlint:-options</arg>
             <arg>-Xlint:-processing</arg>
+            <arg>-Xlint:-serial</arg>
             <arg>-XDignore.symbol.file</arg>
           </compilerArgs>
           <fork>true</fork>
