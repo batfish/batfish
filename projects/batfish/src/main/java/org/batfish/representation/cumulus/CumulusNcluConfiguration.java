@@ -202,7 +202,10 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
             .setIpv4UnicastAddressFamily(
                 Ipv4UnicastAddressFamily.builder()
                     .setAddressFamilyCapabilities(
-                        AddressFamilyCapabilities.builder().setSendCommunity(true).build())
+                        AddressFamilyCapabilities.builder()
+                            .setSendCommunity(true)
+                            .setSendExtendedCommunity(true)
+                            .build())
                     .setExportPolicy(routingPolicy.getName())
                     .setRouteReflectorClient(
                         Optional.ofNullable(neighbor.getIpv4UnicastAddressFamily())
@@ -278,7 +281,10 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
               .setL3Vnis(l3Vnis.build())
               .setPropagateUnmatched(true)
               .setAddressFamilyCapabilities(
-                  AddressFamilyCapabilities.builder().setSendCommunity(true).build())
+                  AddressFamilyCapabilities.builder()
+                      .setSendCommunity(true)
+                      .setSendExtendedCommunity(true)
+                      .build())
               .setRouteReflectorClient(
                   firstNonNull(
                       neighbor.getL2vpnEvpnAddressFamily().getRouteReflectorClient(),

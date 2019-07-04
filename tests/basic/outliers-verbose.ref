@@ -2424,7 +2424,8 @@
                     "advertiseInactive" : true,
                     "allowLocalAsIn" : false,
                     "allowRemoteAsOut" : true,
-                    "sendCommunity" : true
+                    "sendCommunity" : true,
+                    "sendExtendedCommunity" : false
                   },
                   "exportPolicy" : "~BGP_PEER_EXPORT_POLICY:default:1.10.1.1~",
                   "routeReflectorClient" : false
@@ -2450,7 +2451,8 @@
                     "advertiseInactive" : true,
                     "allowLocalAsIn" : false,
                     "allowRemoteAsOut" : true,
-                    "sendCommunity" : false
+                    "sendCommunity" : false,
+                    "sendExtendedCommunity" : false
                   },
                   "exportPolicy" : "~BGP_PEER_EXPORT_POLICY:default:3.2.2.2~",
                   "routeReflectorClient" : false
@@ -2475,7 +2477,8 @@
                     "advertiseInactive" : true,
                     "allowLocalAsIn" : false,
                     "allowRemoteAsOut" : true,
-                    "sendCommunity" : false
+                    "sendCommunity" : false,
+                    "sendExtendedCommunity" : false
                   },
                   "exportPolicy" : "~BGP_PEER_EXPORT_POLICY:default:5.6.7.8~",
                   "routeReflectorClient" : false
@@ -2500,7 +2503,8 @@
                     "advertiseInactive" : true,
                     "allowLocalAsIn" : false,
                     "allowRemoteAsOut" : true,
-                    "sendCommunity" : true
+                    "sendCommunity" : true,
+                    "sendExtendedCommunity" : false
                   },
                   "exportPolicy" : "~BGP_PEER_EXPORT_POLICY:default:10.12.11.2~",
                   "exportPolicySources" : [
