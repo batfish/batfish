@@ -31,6 +31,9 @@ public final class StaticRoute implements Serializable {
 
     public @Nonnull StaticRoute build() {
       checkArgument(
+          _nextHopInterface == null || _nextHopIp != null,
+          "Cannot specify nextHopInterface without nextHopIp");
+      checkArgument(
           !_discard || (_nextHopInterface == null && _nextHopIp == null && _nextHopVrf == null),
           "Discard static route mutually exclusive with next-hop options");
       checkArgument(
@@ -154,6 +157,10 @@ public final class StaticRoute implements Serializable {
     return _name;
   }
 
+  /**
+   * The interface used for ARP lookup and forwarding. If not {@code null}, must be a member of
+   * {@link #getNextHopVrf}.
+   */
   public @Nullable String getNextHopInterface() {
     return _nextHopInterface;
   }
@@ -162,6 +169,10 @@ public final class StaticRoute implements Serializable {
     return _nextHopIp;
   }
 
+  /**
+   * The {@link Vrf} used for lookup of the {@link #getNextHopIp}. To be effective, this {@link Vrf}
+   * should be distinct from the VRF in which this route is installed.
+   */
   public @Nullable String getNextHopVrf() {
     return _nextHopVrf;
   }

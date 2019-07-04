@@ -23,11 +23,8 @@ ip_route
     NAME name = static_route_name
   )?
   (
-    TAG tag = uint32 pref = static_route_pref?
-    | pref = static_route_pref
-    (
-      TAG tag = uint32
-    )?
+    (TAG tag = uint32) pref = static_route_pref?
+    | pref = static_route_pref (TAG tag = uint32)?
   )? NEWLINE
 ;
 
