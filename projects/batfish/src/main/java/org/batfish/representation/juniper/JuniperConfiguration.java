@@ -533,7 +533,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
 
       // TODO: find out if there is a juniper equivalent of cisco
       // send-community
-      ipv4AfSettingsBuilder.setSendCommunity(true);
+      ipv4AfSettingsBuilder.setSendCommunity(true).setSendExtendedCommunity(true);
 
       // inherit update-source
       Ip localIp = ig.getLocalAddress();

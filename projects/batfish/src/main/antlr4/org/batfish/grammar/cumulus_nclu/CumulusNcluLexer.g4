@@ -5,6 +5,7 @@ options {
 }
 
 tokens {
+  ALIAS_BODY,
   EXTRA_CONFIGURATION_FOOTER,
   USERNAME
 }
@@ -69,6 +70,11 @@ ADVERTISE_DEFAULT_GW
 ALERTS
 :
   'alerts'
+;
+
+ALIAS
+:
+  'alias' -> pushMode(M_Alias)
 ;
 
 ARP_ND_SUPPRESS
@@ -891,7 +897,7 @@ F_Uint32
 // 0-4294967295
   F_Digit
   | F_PositiveDigit F_Digit F_Digit? F_Digit? F_Digit? F_Digit? F_Digit?
-  F_Digit? F_Digit? F_Digit?
+  F_Digit? F_Digit?
   | [1-3] F_Digit F_Digit F_Digit F_Digit F_Digit F_Digit F_Digit F_Digit
   F_Digit
   | '4' [0-1] F_Digit F_Digit F_Digit F_Digit F_Digit F_Digit F_Digit F_Digit
@@ -938,6 +944,19 @@ F_WordSegment
 ;
 
 // Lexer Modes
+
+mode M_Alias;
+
+M_Alias_WS
+:
+  F_Whitespace+ -> channel(HIDDEN)
+;
+
+M_Alias_ALIAS_BODY
+:
+  F_NonNewlineChar+ -> type(ALIAS_BODY) , popMode
+;
+
 mode M_Printf;
 
 // FRR in printf keywords

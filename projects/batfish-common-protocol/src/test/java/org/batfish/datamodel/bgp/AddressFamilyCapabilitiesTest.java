@@ -28,6 +28,7 @@ public class AddressFamilyCapabilitiesTest {
         .addEqualityGroup(builder.setAllowLocalAsIn(true).build())
         .addEqualityGroup(builder.setAllowRemoteAsOut(true).build())
         .addEqualityGroup(builder.setSendCommunity(true).build())
+        .addEqualityGroup(builder.setSendExtendedCommunity(true).build())
         .addEqualityGroup(new Object())
         .testEquals();
   }
@@ -44,6 +45,7 @@ public class AddressFamilyCapabilitiesTest {
             .setAllowLocalAsIn(true)
             .setAllowRemoteAsOut(true)
             .setSendCommunity(true)
+            .setSendExtendedCommunity(true)
             .build();
     assertThat(SerializationUtils.clone(afs), equalTo(afs));
   }
@@ -60,6 +62,7 @@ public class AddressFamilyCapabilitiesTest {
             .setAllowLocalAsIn(true)
             .setAllowRemoteAsOut(true)
             .setSendCommunity(true)
+            .setSendExtendedCommunity(true)
             .build();
     assertThat(BatfishObjectMapper.clone(afs, AddressFamilyCapabilities.class), equalTo(afs));
   }
