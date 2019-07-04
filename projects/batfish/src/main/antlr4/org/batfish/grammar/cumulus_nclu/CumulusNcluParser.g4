@@ -31,7 +31,8 @@ s_extra_configuration
 :
   EXTRA_CONFIGURATION_HEADER
   (
-    frr_username
+    frr_router
+    | frr_username
     | frr_vrf
     | // frr_unrecognized must be last
     frr_unrecognized

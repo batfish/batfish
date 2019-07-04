@@ -67,6 +67,11 @@ ADVERTISE_DEFAULT_GW
   'advertise-default-gw'
 ;
 
+AGENTX
+:
+  'agentx'
+;
+
 ALERTS
 :
   'alerts'
@@ -75,6 +80,11 @@ ALERTS
 ALIAS
 :
   'alias' -> pushMode(M_Alias)
+;
+
+ALWAYS_COMPARE_MED
+:
+  'always-compare-med'
 ;
 
 ARP_ND_SUPPRESS
@@ -395,6 +405,11 @@ REMOTE_AS
 ROUTE
 :
   'route'
+;
+
+ROUTER
+:
+  'router'
 ;
 
 ROUTE_MAP
@@ -971,9 +986,19 @@ M_Printf_IP
   'ip' -> type ( IP )
 ;
 
+M_Printf_DEC
+:
+   F_Digit+ -> type ( DEC )
+;
+
 M_Printf_ROUTE
 :
   'route' -> type ( ROUTE )
+;
+
+M_Printf_ROUTER
+:
+  'router' -> type ( ROUTER )
 ;
 
 M_Printf_VRF
