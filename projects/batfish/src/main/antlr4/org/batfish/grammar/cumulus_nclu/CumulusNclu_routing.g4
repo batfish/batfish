@@ -10,12 +10,18 @@ a_routing
 :
   ROUTING
   (
-    r_defaults_datacenter
+    r_agentx
+    | r_defaults_datacenter
     | r_log
     | r_route
     | r_route_map
     | r_service_integrated_vtysh_config
   )
+;
+
+r_agentx
+:
+  AGENTX NEWLINE
 ;
 
 r_defaults_datacenter

@@ -52,6 +52,7 @@ import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.A_timeContext;
 import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.A_vlanContext;
 import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.A_vrfContext;
 import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.A_vxlanContext;
+import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.B_always_compare_medContext;
 import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.B_autonomous_systemContext;
 import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.B_ipv4_unicastContext;
 import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.B_l2vpnContext;
@@ -873,6 +874,11 @@ public class CumulusNcluConfigurationBuilder extends CumulusNcluParserBaseListen
   @Override
   public void exitA_vxlan(A_vxlanContext ctx) {
     _currentVxlans = null;
+  }
+
+  @Override
+  public void exitB_always_compare_med(B_always_compare_medContext ctx) {
+    todo(ctx);
   }
 
   @Override

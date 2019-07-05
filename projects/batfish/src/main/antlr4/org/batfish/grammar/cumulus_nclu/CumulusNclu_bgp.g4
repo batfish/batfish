@@ -17,11 +17,17 @@ a_bgp
 
 b_common
 :
-  b_autonomous_system
+  b_always_compare_med
+  | b_autonomous_system
   | b_ipv4_unicast
   | b_l2vpn
   | b_neighbor
   | b_router_id
+;
+
+b_always_compare_med
+:
+  ALWAYS_COMPARE_MED NEWLINE
 ;
 
 b_autonomous_system

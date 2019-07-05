@@ -1,0 +1,5 @@
+net del all
+#
+net add hostname cumulus_nclu_routing
+#
+net add routing agentx
