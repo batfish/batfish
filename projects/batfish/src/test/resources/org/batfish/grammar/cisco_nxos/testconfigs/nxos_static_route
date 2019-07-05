@@ -54,3 +54,6 @@ ip route 10.0.10.0/24 Ethernet1/2 10.255.2.254 vrf vrf2 track 500 name foo 5 tag
 vrf context vrf1
   ! route in non-default vrf
   ip route 10.0.11.0/24 10.255.2.254
+
+  ! undefined reference to next hop interface Ethernet1/100
+  ip route 10.0.12.0/24 Ethernet1/100 10.255.2.254
