@@ -10,7 +10,6 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Range;
 import com.google.common.collect.Sets;
 import com.google.common.collect.Streams;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.Objects;
 import java.util.Set;
@@ -20,6 +19,7 @@ import javax.annotation.Nullable;
 import org.batfish.specifier.ConstantEnumSetSpecifier;
 import org.batfish.specifier.NoIpProtocolsIpProtocolSpecifier;
 import org.batfish.specifier.SpecifierFactories;
+import org.batfish.specifier.parboiled.Grammar;
 
 /**
  * A set of constraints on an IPv4 packet header, where each field (i.e., constraint) is a {@link
@@ -188,8 +188,8 @@ public class PacketHeaderConstraints {
 
     return SpecifierFactories.getEnumSetSpecifierOrDefault(
             input,
-            Arrays.asList(Protocol.values()),
-            new ConstantEnumSetSpecifier<>(ImmutableSet.of()))
+            Grammar.APPLICATION_SPECIFIER,
+            new ConstantEnumSetSpecifier<Protocol>(ImmutableSet.of()))
         .resolve();
   }
 
