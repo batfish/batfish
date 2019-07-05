@@ -129,7 +129,7 @@ iv6_address_virtual
 
 iv6_forward
 :
-  FORWARD (ZERO_LITERAL | NO | OFF) NEWLINE
+  FORWARD (zero | NO | OFF) NEWLINE
 ;
 
 iv6_gateway

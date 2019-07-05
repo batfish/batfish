@@ -584,11 +584,6 @@ WARNINGS
   'warnings'
 ;
 
-ZERO_LITERAL
-:
-  F_Zero
-;
-
 ZONE
 :
   'zone'
@@ -998,12 +993,6 @@ F_WordSegment
 :
   F_Alpha F_WordChar*
   | F_Digit F_WordChar* F_Alpha F_WordChar*
-;
-
-fragment
-F_Zero
-:
-  '0'
 ;
 
 // Lexer Modes
