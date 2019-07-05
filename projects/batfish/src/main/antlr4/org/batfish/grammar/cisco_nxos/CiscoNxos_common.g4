@@ -52,9 +52,22 @@ null_rest_of_line
   ~NEWLINE* NEWLINE
 ;
 
+route_network
+:
+  address = ip_address mask = ip_address
+  | prefix = ip_prefix
+;
+
 subdomain_name
 :
   SUBDOMAIN_NAME
+;
+
+track_object_number
+:
+// 1-512
+  UINT8
+  | UINT16
 ;
 
 uint8
@@ -100,5 +113,5 @@ vlan_id_interval
 
 vrf_name
 :
-  VRF_NAME
+  WORD
 ;
