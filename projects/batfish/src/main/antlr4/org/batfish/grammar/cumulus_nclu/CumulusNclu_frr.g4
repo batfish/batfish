@@ -6,6 +6,11 @@ options {
   tokenVocab = CumulusNcluLexer;
 }
 
+frr_router
+:
+  ROUTER frr_null_rest_of_line
+;
+
 frr_vrf
 :
   VRF name = word NEWLINE frrv_ip_route* frr_exit_vrf?
