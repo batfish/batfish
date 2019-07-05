@@ -153,27 +153,6 @@ public final class ParboiledAutoComplete {
             .run());
   }
 
-  /**
-   * The entry point for auto completing enum sets. Given the {@code query} and {@code allValues} in
-   * the set, this function will produce at most {@code maxSuggestions} suggestions
-   */
-  public static <T> List<AutocompleteSuggestion> autoCompleteEnumSet(
-      Collection<T> allValues, String network, String snapshot, String query, int maxSuggestions) {
-    Parser parser = Parser.instance();
-    return toAutoCompleteSuggestions(
-        new ParboiledAutoComplete(
-                parser.getEnumSetRule(allValues),
-                Parser.ANCHORS,
-                network,
-                snapshot,
-                query,
-                maxSuggestions,
-                CompletionMetadata.EMPTY,
-                NodeRolesData.builder().build(),
-                new ReferenceLibrary(null))
-            .run());
-  }
-
   Set<ParboiledAutoCompleteSuggestion> run() {
     Set<PotentialMatch> potentialMatches = getPotentialMatches(_query);
 

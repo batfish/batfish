@@ -3,13 +3,10 @@ package org.batfish.datamodel.answers;
 import static org.batfish.datamodel.Names.escapeNameIfNeeded;
 
 import com.google.common.collect.ImmutableList;
-import java.util.Arrays;
 import javax.annotation.Nonnull;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.common.CompletionMetadata;
-import org.batfish.datamodel.Protocol;
 import org.batfish.datamodel.answers.InputValidationNotes.Validity;
-import org.batfish.datamodel.questions.NamedStructurePropertySpecifier;
 import org.batfish.datamodel.questions.Variable;
 import org.batfish.referencelibrary.ReferenceLibrary;
 import org.batfish.role.NodeRolesData;
@@ -36,7 +33,12 @@ public final class InputValidationUtils {
 
     switch (varType) {
       case APPLICATION_SPEC:
-        return ParboiledInputValidator.validateEnumSet(Arrays.asList(Protocol.values()), query);
+        return ParboiledInputValidator.validate(
+            Grammar.APPLICATION_SPECIFIER,
+            query,
+            completionMetadata,
+            nodeRolesData,
+            referenceLibrary);
       case FILTER_SPEC:
         return ParboiledInputValidator.validate(
             Grammar.FILTER_SPECIFIER, query, completionMetadata, nodeRolesData, referenceLibrary);
@@ -61,8 +63,12 @@ public final class InputValidationUtils {
         return ParboiledInputValidator.validate(
             Grammar.LOCATION_SPECIFIER, query, completionMetadata, nodeRolesData, referenceLibrary);
       case NAMED_STRUCTURE_SPEC:
-        return ParboiledInputValidator.validateEnumSet(
-            NamedStructurePropertySpecifier.JAVA_MAP.keySet(), query);
+        return ParboiledInputValidator.validate(
+            Grammar.NAMED_STRUCTURE_SPECIFIER,
+            query,
+            completionMetadata,
+            nodeRolesData,
+            referenceLibrary);
       case NODE_SPEC:
         return ParboiledInputValidator.validate(
             Grammar.NODE_SPECIFIER, query, completionMetadata, nodeRolesData, referenceLibrary);
