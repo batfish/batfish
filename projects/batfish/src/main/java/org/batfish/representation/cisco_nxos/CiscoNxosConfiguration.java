@@ -183,11 +183,16 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
 
   private void markStructures() {
     markConcreteStructure(
-        CiscoNxosStructureType.INTERFACE, CiscoNxosStructureUsage.INTERFACE_SELF_REFERENCE);
+        CiscoNxosStructureType.INTERFACE,
+        CiscoNxosStructureUsage.INTERFACE_SELF_REFERENCE,
+        CiscoNxosStructureUsage.IP_ROUTE_NEXT_HOP_INTERFACE);
     markConcreteStructure(
         CiscoNxosStructureType.PORT_CHANNEL, CiscoNxosStructureUsage.INTERFACE_CHANNEL_GROUP);
     markConcreteStructure(CiscoNxosStructureType.VLAN, CiscoNxosStructureUsage.INTERFACE_VLAN);
-    markConcreteStructure(CiscoNxosStructureType.VRF, CiscoNxosStructureUsage.INTERFACE_VRF_MEMBER);
+    markConcreteStructure(
+        CiscoNxosStructureType.VRF,
+        CiscoNxosStructureUsage.INTERFACE_VRF_MEMBER,
+        CiscoNxosStructureUsage.IP_ROUTE_NEXT_HOP_VRF);
   }
 
   @Override

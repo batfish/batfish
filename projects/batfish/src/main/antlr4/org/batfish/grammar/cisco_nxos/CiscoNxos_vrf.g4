@@ -11,6 +11,7 @@ s_vrf_context
   VRF CONTEXT name = vrf_name NEWLINE
   (
     vc_address_family
+    | vc_ip
     | vc_no
     | vc_null
     | vc_shutdown
@@ -45,6 +46,11 @@ vcaf6u_null
   (
     MAXIMUM
   ) null_rest_of_line
+;
+
+vc_ip
+:
+  IP ip_route
 ;
 
 vc_no
