@@ -177,6 +177,11 @@ DESCRIPTION
   'description'
 ;
 
+DHCP
+:
+  'dhcp'
+;
+
 DNS
 :
   'dns'
@@ -210,6 +215,16 @@ EXIT_VRF
 EXTERNAL
 :
   'external'
+;
+
+FORWARD
+:
+  'forward'
+;
+
+GATEWAY
+:
+  'gateway'
 ;
 
 HOSTNAME
@@ -312,9 +327,24 @@ MATCH
   'match'
 ;
 
+MSEC
+:
+  'msec'
+;
+
+MTU
+:
+  'mtu'
+;
+
 NAMESERVER
 :
   'nameserver'
+;
+
+ND
+:
+  'nd'
 ;
 
 NEIGHBOR
@@ -330,6 +360,12 @@ NETWORK
 NET
 :
   'net'
+;
+
+NO
+:
+
+  'no'
 ;
 
 NOTIFICATIONS
@@ -390,6 +426,16 @@ PTP
 PVID
 :
   'pvid'
+;
+
+RA_INTERVAL
+:
+  'ra-interval'
+;
+
+RA_LIFETIME
+:
+  'ra-lifetime'
 ;
 
 REDISTRIBUTE
@@ -457,6 +503,11 @@ SOURCE
   'source'
 ;
 
+SPEED
+:
+  'speed'
+;
+
 STATIC
 :
   'static'
@@ -467,10 +518,11 @@ STP
   'stp'
 ;
 
-SPEED
+SUPPRESS_RA
 :
-  'speed'
+  'suppress-ra'
 ;
+
 
 SYS_MAC
 :

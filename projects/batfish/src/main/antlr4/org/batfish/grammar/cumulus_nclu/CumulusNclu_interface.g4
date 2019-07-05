@@ -14,7 +14,9 @@ a_interface
     | i_bridge
     | i_clag
     | i_ip_address
+    | i_ipv6
     | i_link_speed
+    | i_mtu
     | i_vrf
     | NEWLINE
   )
@@ -89,9 +91,81 @@ i_ip_address
   IP ADDRESS address = interface_address NEWLINE
 ;
 
+i_ipv6
+:
+  IPV6
+  (
+    iv6_address
+    | iv6_address_virtual
+    | iv6_forward
+    | iv6_gateway
+    | iv6_nd
+  )
+;
+
 i_link_speed
 :
   LINK SPEED speed = uint32 NEWLINE
+;
+
+i_mtu
+:
+  MTU mtu = uint16 NEWLINE
+;
+
+iv6_address
+:
+  ADDRESS
+  (
+    IPV6_PREFIX
+    | DHCP
+  ) NEWLINE
+;
+
+iv6_address_virtual
+:
+  ADDRESS_VIRTUAL mac = MAC_ADDRESS NEWLINE
+;
+
+iv6_forward
+:
+  FORWARD (zero | NO | OFF) NEWLINE
+;
+
+iv6_gateway
+:
+  GATEWAY IPV6_ADDRESS NEWLINE
+;
+
+iv6_nd
+:
+  ND
+  (
+    IPV6_PREFIX NEWLINE
+    | iv6_ra_interval
+    | iv6_ra_lifetime
+    | iv6_suppress_ra
+  )
+;
+
+iv6_ra_interval
+:
+  RA_INTERVAL
+  (
+    interval = uint16
+    | MSEC msecs = uint32
+  )
+  NEWLINE
+;
+
+iv6_ra_lifetime
+:
+  RA_LIFETIME val = uint16 NEWLINE
+;
+
+iv6_suppress_ra
+:
+  SUPPRESS_RA NEWLINE
 ;
 
 i_vrf

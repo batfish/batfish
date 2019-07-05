@@ -1,0 +1,7 @@
+net del all
+#
+net add hostname cumulus_nclu_bond
+#
+net add bond AGG bond slaves swp1-10
+net add bond AGG mtu 200
+net add bond AGG bridge learning off

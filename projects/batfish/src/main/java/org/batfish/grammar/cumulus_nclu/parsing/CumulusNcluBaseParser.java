@@ -64,6 +64,11 @@ public abstract class CumulusNcluBaseParser extends BatfishParser {
     return true;
   }
 
+  /** Returns {@code true} iff {@code t}'s text is "0". */
+  protected static boolean isZero(Token t) {
+    return t.getText().equals("0");
+  }
+
   public CumulusNcluBaseParser(TokenStream input) {
     super(input);
   }
