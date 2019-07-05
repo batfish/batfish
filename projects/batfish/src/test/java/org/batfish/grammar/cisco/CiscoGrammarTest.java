@@ -2072,7 +2072,7 @@ public class CiscoGrammarTest {
     Long originatorAs = 1L;
     Bgpv4Route redistributedStaticRoute =
         Bgpv4Route.builder()
-            .setTag(25)
+            .setTag(25L)
             .setNetwork(Prefix.ZERO)
             .setNextHopIp(originatorIp)
             .setAdmin(20)

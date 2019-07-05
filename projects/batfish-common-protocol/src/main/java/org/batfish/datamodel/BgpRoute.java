@@ -459,7 +459,7 @@ public abstract class BgpRoute<B extends Builder<B, R>, R extends BgpRoute<B, R>
   }
 
   @Override
-  public int getTag() {
+  public long getTag() {
     return NO_TAG;
   }
 

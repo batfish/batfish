@@ -107,7 +107,7 @@ public final class KernelRoute extends AbstractRoute implements Comparable<Kerne
   }
 
   @Override
-  public int getTag() {
+  public long getTag() {
     return NO_TAG;
   }
 

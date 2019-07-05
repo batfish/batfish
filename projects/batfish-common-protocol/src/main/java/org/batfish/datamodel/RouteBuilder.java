@@ -18,7 +18,7 @@ public class RouteBuilder {
 
   private RoutingProtocol _protocol;
 
-  private int _tag;
+  private long _tag;
 
   private String _vrf;
 
@@ -77,7 +77,7 @@ public class RouteBuilder {
     _protocol = protocol;
   }
 
-  public void setTag(int tag) {
+  public void setTag(long tag) {
     _tag = tag;
   }
 

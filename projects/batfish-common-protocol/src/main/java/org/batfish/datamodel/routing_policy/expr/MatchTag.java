@@ -13,7 +13,7 @@ import org.batfish.datamodel.routing_policy.Result;
 
 /**
  * Boolean expression that evaluates whether an {@link Environment}'s route's BGP tag matches a
- * given {@link IntExpr} using a given {@link IntComparator}.
+ * given {@link LongExpr} using a given {@link IntComparator}.
  */
 @ParametersAreNonnullByDefault
 public final class MatchTag extends BooleanExpr {
@@ -21,25 +21,25 @@ public final class MatchTag extends BooleanExpr {
   private static final String PROP_TAG = "tag";
 
   @Nonnull private final IntComparator _cmp;
-  @Nonnull private final IntExpr _tag;
+  @Nonnull private final LongExpr _tag;
 
   @JsonCreator
   private static MatchTag jsonCreator(
       @Nullable @JsonProperty(PROP_CMP) IntComparator cmp,
-      @Nullable @JsonProperty(PROP_TAG) IntExpr tag) {
+      @Nullable @JsonProperty(PROP_TAG) LongExpr tag) {
     checkArgument(cmp != null, "%s must be provided", PROP_CMP);
     checkArgument(tag != null, "%s must be provided", PROP_TAG);
     return new MatchTag(cmp, tag);
   }
 
-  public MatchTag(IntComparator cmp, IntExpr tag) {
+  public MatchTag(IntComparator cmp, LongExpr tag) {
     _cmp = cmp;
     _tag = tag;
   }
 
   @Override
   public Result evaluate(Environment environment) {
-    int lhs;
+    long lhs;
     if (environment.getReadFromIntermediateBgpAttributes()) {
       lhs = environment.getIntermediateBgpAttributes().getTag();
     } else if (environment.getUseOutputAttributes()) {
@@ -47,7 +47,7 @@ public final class MatchTag extends BooleanExpr {
     } else {
       lhs = environment.getOriginalRoute().getTag();
     }
-    int rhs = _tag.evaluate(environment);
+    long rhs = _tag.evaluate(environment);
     return _cmp.apply(lhs, rhs);
   }
 
@@ -59,7 +59,7 @@ public final class MatchTag extends BooleanExpr {
 
   @JsonProperty(PROP_TAG)
   @Nonnull
-  public IntExpr getTag() {
+  public LongExpr getTag() {
     return _tag;
   }
 

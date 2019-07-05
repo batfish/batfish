@@ -17553,7 +17553,7 @@
                   "class" : "org.batfish.datamodel.routing_policy.expr.MatchTag",
                   "cmp" : "EQ",
                   "tag" : {
-                    "class" : "org.batfish.datamodel.routing_policy.expr.LiteralInt",
+                    "class" : "org.batfish.datamodel.routing_policy.expr.LiteralLong",
                     "value" : 12
                   }
                 },
@@ -17563,7 +17563,7 @@
                     "statement" : {
                       "class" : "org.batfish.datamodel.routing_policy.statement.SetTag",
                       "tag" : {
-                        "class" : "org.batfish.datamodel.routing_policy.expr.LiteralInt",
+                        "class" : "org.batfish.datamodel.routing_policy.expr.LiteralLong",
                         "value" : 12
                       }
                     }
@@ -17614,7 +17614,7 @@
                   "class" : "org.batfish.datamodel.routing_policy.expr.MatchTag",
                   "cmp" : "EQ",
                   "tag" : {
-                    "class" : "org.batfish.datamodel.routing_policy.expr.LiteralInt",
+                    "class" : "org.batfish.datamodel.routing_policy.expr.LiteralLong",
                     "value" : 13
                   }
                 },
@@ -17624,7 +17624,7 @@
                     "statement" : {
                       "class" : "org.batfish.datamodel.routing_policy.statement.SetTag",
                       "tag" : {
-                        "class" : "org.batfish.datamodel.routing_policy.expr.LiteralInt",
+                        "class" : "org.batfish.datamodel.routing_policy.expr.LiteralLong",
                         "value" : 13
                       }
                     }
@@ -17675,7 +17675,7 @@
                   "class" : "org.batfish.datamodel.routing_policy.expr.MatchTag",
                   "cmp" : "GE",
                   "tag" : {
-                    "class" : "org.batfish.datamodel.routing_policy.expr.LiteralInt",
+                    "class" : "org.batfish.datamodel.routing_policy.expr.LiteralLong",
                     "value" : 14
                   }
                 },
@@ -17685,7 +17685,7 @@
                     "statement" : {
                       "class" : "org.batfish.datamodel.routing_policy.statement.SetTag",
                       "tag" : {
-                        "class" : "org.batfish.datamodel.routing_policy.expr.LiteralInt",
+                        "class" : "org.batfish.datamodel.routing_policy.expr.LiteralLong",
                         "value" : 100
                       }
                     }
@@ -17736,7 +17736,7 @@
                   "class" : "org.batfish.datamodel.routing_policy.expr.MatchTag",
                   "cmp" : "LE",
                   "tag" : {
-                    "class" : "org.batfish.datamodel.routing_policy.expr.LiteralInt",
+                    "class" : "org.batfish.datamodel.routing_policy.expr.LiteralLong",
                     "value" : 10
                   }
                 },
@@ -17746,7 +17746,7 @@
                     "statement" : {
                       "class" : "org.batfish.datamodel.routing_policy.statement.SetTag",
                       "tag" : {
-                        "class" : "org.batfish.datamodel.routing_policy.expr.LiteralInt",
+                        "class" : "org.batfish.datamodel.routing_policy.expr.LiteralLong",
                         "value" : 9
                       }
                     }
@@ -28420,7 +28420,7 @@
                   "class" : "org.batfish.datamodel.routing_policy.expr.MatchTag",
                   "cmp" : "EQ",
                   "tag" : {
-                    "class" : "org.batfish.datamodel.routing_policy.expr.LiteralInt",
+                    "class" : "org.batfish.datamodel.routing_policy.expr.LiteralLong",
                     "value" : 100
                   }
                 },
@@ -28453,7 +28453,7 @@
                   "class" : "org.batfish.datamodel.routing_policy.expr.MatchTag",
                   "cmp" : "EQ",
                   "tag" : {
-                    "class" : "org.batfish.datamodel.routing_policy.expr.LiteralInt",
+                    "class" : "org.batfish.datamodel.routing_policy.expr.LiteralLong",
                     "value" : 10
                   }
                 },
@@ -28502,7 +28502,7 @@
                   "class" : "org.batfish.datamodel.routing_policy.expr.MatchTag",
                   "cmp" : "EQ",
                   "tag" : {
-                    "class" : "org.batfish.datamodel.routing_policy.expr.LiteralInt",
+                    "class" : "org.batfish.datamodel.routing_policy.expr.LiteralLong",
                     "value" : 120
                   }
                 },
@@ -28542,7 +28542,7 @@
                   "class" : "org.batfish.datamodel.routing_policy.expr.MatchTag",
                   "cmp" : "EQ",
                   "tag" : {
-                    "class" : "org.batfish.datamodel.routing_policy.expr.LiteralInt",
+                    "class" : "org.batfish.datamodel.routing_policy.expr.LiteralLong",
                     "value" : 130
                   }
                 },
@@ -28582,7 +28582,7 @@
                   "class" : "org.batfish.datamodel.routing_policy.expr.MatchTag",
                   "cmp" : "EQ",
                   "tag" : {
-                    "class" : "org.batfish.datamodel.routing_policy.expr.LiteralInt",
+                    "class" : "org.batfish.datamodel.routing_policy.expr.LiteralLong",
                     "value" : 140
                   }
                 },
@@ -28622,7 +28622,7 @@
                   "class" : "org.batfish.datamodel.routing_policy.expr.MatchTag",
                   "cmp" : "EQ",
                   "tag" : {
-                    "class" : "org.batfish.datamodel.routing_policy.expr.LiteralInt",
+                    "class" : "org.batfish.datamodel.routing_policy.expr.LiteralLong",
                     "value" : 150
                   }
                 },
@@ -28662,7 +28662,7 @@
                   "class" : "org.batfish.datamodel.routing_policy.expr.MatchTag",
                   "cmp" : "EQ",
                   "tag" : {
-                    "class" : "org.batfish.datamodel.routing_policy.expr.LiteralInt",
+                    "class" : "org.batfish.datamodel.routing_policy.expr.LiteralLong",
                     "value" : 160
                   }
                 },
@@ -28702,7 +28702,7 @@
                   "class" : "org.batfish.datamodel.routing_policy.expr.MatchTag",
                   "cmp" : "EQ",
                   "tag" : {
-                    "class" : "org.batfish.datamodel.routing_policy.expr.LiteralInt",
+                    "class" : "org.batfish.datamodel.routing_policy.expr.LiteralLong",
                     "value" : 170
                   }
                 },
@@ -28742,7 +28742,7 @@
                   "class" : "org.batfish.datamodel.routing_policy.expr.MatchTag",
                   "cmp" : "EQ",
                   "tag" : {
-                    "class" : "org.batfish.datamodel.routing_policy.expr.LiteralInt",
+                    "class" : "org.batfish.datamodel.routing_policy.expr.LiteralLong",
                     "value" : 180
                   }
                 },
@@ -28782,7 +28782,7 @@
                   "class" : "org.batfish.datamodel.routing_policy.expr.MatchTag",
                   "cmp" : "EQ",
                   "tag" : {
-                    "class" : "org.batfish.datamodel.routing_policy.expr.LiteralInt",
+                    "class" : "org.batfish.datamodel.routing_policy.expr.LiteralLong",
                     "value" : 190
                   }
                 },
@@ -28822,7 +28822,7 @@
                   "class" : "org.batfish.datamodel.routing_policy.expr.MatchTag",
                   "cmp" : "EQ",
                   "tag" : {
-                    "class" : "org.batfish.datamodel.routing_policy.expr.LiteralInt",
+                    "class" : "org.batfish.datamodel.routing_policy.expr.LiteralLong",
                     "value" : 200
                   }
                 },
@@ -28862,7 +28862,7 @@
                   "class" : "org.batfish.datamodel.routing_policy.expr.MatchTag",
                   "cmp" : "EQ",
                   "tag" : {
-                    "class" : "org.batfish.datamodel.routing_policy.expr.LiteralInt",
+                    "class" : "org.batfish.datamodel.routing_policy.expr.LiteralLong",
                     "value" : 20
                   }
                 },
@@ -28891,7 +28891,7 @@
                   "class" : "org.batfish.datamodel.routing_policy.expr.MatchTag",
                   "cmp" : "EQ",
                   "tag" : {
-                    "class" : "org.batfish.datamodel.routing_policy.expr.LiteralInt",
+                    "class" : "org.batfish.datamodel.routing_policy.expr.LiteralLong",
                     "value" : 210
                   }
                 },
@@ -28931,7 +28931,7 @@
                   "class" : "org.batfish.datamodel.routing_policy.expr.MatchTag",
                   "cmp" : "EQ",
                   "tag" : {
-                    "class" : "org.batfish.datamodel.routing_policy.expr.LiteralInt",
+                    "class" : "org.batfish.datamodel.routing_policy.expr.LiteralLong",
                     "value" : 220
                   }
                 },
@@ -28973,7 +28973,7 @@
                   "class" : "org.batfish.datamodel.routing_policy.expr.MatchTag",
                   "cmp" : "EQ",
                   "tag" : {
-                    "class" : "org.batfish.datamodel.routing_policy.expr.LiteralInt",
+                    "class" : "org.batfish.datamodel.routing_policy.expr.LiteralLong",
                     "value" : 240
                   }
                 },
@@ -29015,7 +29015,7 @@
                   "class" : "org.batfish.datamodel.routing_policy.expr.MatchTag",
                   "cmp" : "EQ",
                   "tag" : {
-                    "class" : "org.batfish.datamodel.routing_policy.expr.LiteralInt",
+                    "class" : "org.batfish.datamodel.routing_policy.expr.LiteralLong",
                     "value" : 250
                   }
                 },
@@ -29057,7 +29057,7 @@
                   "class" : "org.batfish.datamodel.routing_policy.expr.MatchTag",
                   "cmp" : "EQ",
                   "tag" : {
-                    "class" : "org.batfish.datamodel.routing_policy.expr.LiteralInt",
+                    "class" : "org.batfish.datamodel.routing_policy.expr.LiteralLong",
                     "value" : 260
                   }
                 },
@@ -29099,7 +29099,7 @@
                   "class" : "org.batfish.datamodel.routing_policy.expr.MatchTag",
                   "cmp" : "EQ",
                   "tag" : {
-                    "class" : "org.batfish.datamodel.routing_policy.expr.LiteralInt",
+                    "class" : "org.batfish.datamodel.routing_policy.expr.LiteralLong",
                     "value" : 270
                   }
                 },
@@ -29141,7 +29141,7 @@
                   "class" : "org.batfish.datamodel.routing_policy.expr.MatchTag",
                   "cmp" : "EQ",
                   "tag" : {
-                    "class" : "org.batfish.datamodel.routing_policy.expr.LiteralInt",
+                    "class" : "org.batfish.datamodel.routing_policy.expr.LiteralLong",
                     "value" : 280
                   }
                 },
@@ -29183,7 +29183,7 @@
                   "class" : "org.batfish.datamodel.routing_policy.expr.MatchTag",
                   "cmp" : "EQ",
                   "tag" : {
-                    "class" : "org.batfish.datamodel.routing_policy.expr.LiteralInt",
+                    "class" : "org.batfish.datamodel.routing_policy.expr.LiteralLong",
                     "value" : 290
                   }
                 },
@@ -29274,7 +29274,7 @@
                   "class" : "org.batfish.datamodel.routing_policy.expr.MatchTag",
                   "cmp" : "EQ",
                   "tag" : {
-                    "class" : "org.batfish.datamodel.routing_policy.expr.LiteralInt",
+                    "class" : "org.batfish.datamodel.routing_policy.expr.LiteralLong",
                     "value" : 30
                   }
                 },
@@ -29348,7 +29348,7 @@
                   "class" : "org.batfish.datamodel.routing_policy.expr.MatchTag",
                   "cmp" : "EQ",
                   "tag" : {
-                    "class" : "org.batfish.datamodel.routing_policy.expr.LiteralInt",
+                    "class" : "org.batfish.datamodel.routing_policy.expr.LiteralLong",
                     "value" : 60
                   }
                 },
@@ -29398,7 +29398,7 @@
                   "class" : "org.batfish.datamodel.routing_policy.expr.MatchTag",
                   "cmp" : "EQ",
                   "tag" : {
-                    "class" : "org.batfish.datamodel.routing_policy.expr.LiteralInt",
+                    "class" : "org.batfish.datamodel.routing_policy.expr.LiteralLong",
                     "value" : 70
                   }
                 },
@@ -29448,7 +29448,7 @@
                   "class" : "org.batfish.datamodel.routing_policy.expr.MatchTag",
                   "cmp" : "EQ",
                   "tag" : {
-                    "class" : "org.batfish.datamodel.routing_policy.expr.LiteralInt",
+                    "class" : "org.batfish.datamodel.routing_policy.expr.LiteralLong",
                     "value" : 80
                   }
                 },
@@ -29498,7 +29498,7 @@
                   "class" : "org.batfish.datamodel.routing_policy.expr.MatchTag",
                   "cmp" : "EQ",
                   "tag" : {
-                    "class" : "org.batfish.datamodel.routing_policy.expr.LiteralInt",
+                    "class" : "org.batfish.datamodel.routing_policy.expr.LiteralLong",
                     "value" : 90
                   }
                 },

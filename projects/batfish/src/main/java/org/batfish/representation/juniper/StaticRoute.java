@@ -31,7 +31,7 @@ public class StaticRoute implements Serializable {
 
   private Prefix _prefix;
 
-  private Integer _tag;
+  private Long _tag;
 
   private Boolean _noInstall;
 
@@ -80,7 +80,7 @@ public class StaticRoute implements Serializable {
     return _prefix;
   }
 
-  public Integer getTag() {
+  public Long getTag() {
     return _tag;
   }
 
@@ -108,7 +108,7 @@ public class StaticRoute implements Serializable {
     _noInstall = noInstall;
   }
 
-  public void setTag(int tag) {
+  public void setTag(long tag) {
     _tag = tag;
   }
 }

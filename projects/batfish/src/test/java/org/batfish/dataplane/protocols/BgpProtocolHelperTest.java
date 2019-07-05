@@ -1,5 +1,6 @@
 package org.batfish.dataplane.protocols;
 
+import static org.batfish.datamodel.AbstractRoute.MAX_TAG;
 import static org.batfish.dataplane.protocols.BgpProtocolHelper.transformBgpRouteOnImport;
 import static org.batfish.dataplane.protocols.BgpProtocolHelper.transformBgpRoutePostExport;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -115,7 +116,7 @@ public class BgpProtocolHelperTest {
 
   @Test
   public void testTransformPostExportClearTag() {
-    Builder builder = _baseBgpRouteBuilder.setTag(Integer.MAX_VALUE);
+    Builder builder = _baseBgpRouteBuilder.setTag(MAX_TAG);
     transformBgpRoutePostExport(builder, true, 1);
     assertThat("Tag is cleared", builder.getTag(), equalTo(Route.UNSET_ROUTE_TAG));
     transformBgpRoutePostExport(builder, false, 1);

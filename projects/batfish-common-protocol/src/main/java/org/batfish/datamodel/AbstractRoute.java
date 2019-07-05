@@ -20,8 +20,11 @@ import javax.annotation.ParametersAreNonnullByDefault;
 @ParametersAreNonnullByDefault
 public abstract class AbstractRoute implements AbstractRouteDecorator, Serializable {
 
+  // unsigned 32-bit int max
+  public static final long MAX_TAG = 0xFFFFFFFFL;
+
   /** Indicates a route has no tag associated with it */
-  public static final int NO_TAG = -1;
+  public static final long NO_TAG = -1L;
 
   static final String PROP_ADMINISTRATIVE_COST = "administrativeCost";
   public static final String PROP_METRIC = "metric";
@@ -115,7 +118,7 @@ public abstract class AbstractRoute implements AbstractRouteDecorator, Serializa
 
   /** Return the route's tag or {@link #NO_TAG} if no tag is present */
   @JsonIgnore
-  public abstract int getTag();
+  public abstract long getTag();
 
   @Override
   public String toString() {

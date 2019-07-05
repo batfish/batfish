@@ -77,7 +77,7 @@ public abstract class EigrpRoute extends AbstractRoute {
   public abstract RoutingProtocol getProtocol();
 
   @Override
-  public int getTag() {
+  public long getTag() {
     // TODO support EIGRP route tags
     // https://github.com/batfish/batfish/issues/1945
     return NO_TAG;
