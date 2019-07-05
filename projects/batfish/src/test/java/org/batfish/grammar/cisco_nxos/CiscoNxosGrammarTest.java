@@ -1,6 +1,12 @@
 package org.batfish.grammar.cisco_nxos;
 
 import static org.batfish.datamodel.Configuration.DEFAULT_VRF_NAME;
+import static org.batfish.datamodel.Interface.NULL_INTERFACE_NAME;
+import static org.batfish.datamodel.Route.UNSET_NEXT_HOP_INTERFACE;
+import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasAdministrativeCost;
+import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasNextHopInterface;
+import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasNextHopIp;
+import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasPrefix;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasHostname;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasInterface;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasInterfaces;
@@ -18,6 +24,7 @@ import static org.batfish.datamodel.matchers.InterfaceMatchers.hasVlan;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.isActive;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.isAutoState;
 import static org.batfish.datamodel.matchers.MapMatchers.hasKeys;
+import static org.batfish.datamodel.matchers.StaticRouteMatchers.hasTag;
 import static org.batfish.grammar.cisco_nxos.CiscoNxosCombinedParser.DEBUG_FLAG_USE_NEW_CISCO_NXOS_PARSER;
 import static org.batfish.main.BatfishTestUtils.configureBatfishTestSettings;
 import static org.batfish.representation.cisco_nxos.CiscoNxosConfiguration.NULL_VRF_NAME;
@@ -849,7 +856,139 @@ public final class CiscoNxosGrammarTest {
   }
 
   @Test
-  public void testStaticRouteExtraction() throws IOException {
+  public void testStaticRouteConversion() throws IOException {
+    String hostname = "nxos_static_route";
+    Configuration c = parseConfig(hostname);
+
+    assertThat(c.getVrfs(), hasKeys(DEFAULT_VRF_NAME, NULL_VRF_NAME, "vrf1"));
+    assertThat(
+        c.getDefaultVrf().getStaticRoutes(),
+        containsInAnyOrder(
+            hasPrefix(Prefix.strict("10.0.0.0/24")),
+            hasPrefix(Prefix.strict("10.0.1.0/24")),
+            hasPrefix(Prefix.strict("10.0.2.0/24")),
+            hasPrefix(Prefix.strict("10.0.3.0/24")),
+            hasPrefix(Prefix.strict("10.0.4.0/24")),
+            hasPrefix(Prefix.strict("10.0.5.0/24")),
+            hasPrefix(Prefix.strict("10.0.6.0/24")),
+            hasPrefix(Prefix.strict("10.0.7.0/24")),
+            hasPrefix(Prefix.strict("10.0.8.0/24"))));
+    assertThat(
+        c.getVrfs().get("vrf1").getStaticRoutes(),
+        contains(hasPrefix(Prefix.strict("10.0.11.0/24"))));
+    {
+      org.batfish.datamodel.StaticRoute route =
+          c.getDefaultVrf().getStaticRoutes().stream()
+              .filter(r -> r.getNetwork().equals(Prefix.strict("10.0.0.0/24")))
+              .findFirst()
+              .get();
+      assertThat(route, hasNextHopInterface(NULL_INTERFACE_NAME));
+      assertThat(route, hasAdministrativeCost(1));
+      assertThat(route, hasTag(0L));
+    }
+    {
+      org.batfish.datamodel.StaticRoute route =
+          c.getDefaultVrf().getStaticRoutes().stream()
+              .filter(r -> r.getNetwork().equals(Prefix.strict("10.0.1.0/24")))
+              .findFirst()
+              .get();
+      assertThat(route, hasNextHopInterface(UNSET_NEXT_HOP_INTERFACE));
+      assertThat(route, hasAdministrativeCost(1));
+      assertThat(route, hasTag(0L));
+      assertThat(route, hasNextHopIp(Ip.parse("10.255.1.254")));
+    }
+    {
+      org.batfish.datamodel.StaticRoute route =
+          c.getDefaultVrf().getStaticRoutes().stream()
+              .filter(r -> r.getNetwork().equals(Prefix.strict("10.0.2.0/24")))
+              .findFirst()
+              .get();
+      assertThat(route, hasNextHopInterface("Ethernet1/1"));
+      assertThat(route, hasAdministrativeCost(1));
+      assertThat(route, hasTag(0L));
+      assertThat(route, hasNextHopIp(Ip.parse("10.255.1.254")));
+    }
+    {
+      org.batfish.datamodel.StaticRoute route =
+          c.getDefaultVrf().getStaticRoutes().stream()
+              .filter(r -> r.getNetwork().equals(Prefix.strict("10.0.3.0/24")))
+              .findFirst()
+              .get();
+      assertThat(route, hasAdministrativeCost(1));
+      assertThat(route, hasTag(0L));
+      assertThat(route, hasNextHopIp(Ip.parse("10.255.1.254")));
+      assertThat(route, hasNextHopInterface("Ethernet1/1"));
+    }
+    {
+      org.batfish.datamodel.StaticRoute route =
+          c.getDefaultVrf().getStaticRoutes().stream()
+              .filter(r -> r.getNetwork().equals(Prefix.strict("10.0.4.0/24")))
+              .findFirst()
+              .get();
+      assertThat(route, hasAdministrativeCost(1));
+      assertThat(route, hasTag(0L));
+      assertThat(route, hasNextHopIp(Ip.parse("10.255.1.254")));
+      assertThat(route, hasNextHopInterface("Ethernet1/1"));
+    }
+    {
+      org.batfish.datamodel.StaticRoute route =
+          c.getDefaultVrf().getStaticRoutes().stream()
+              .filter(r -> r.getNetwork().equals(Prefix.strict("10.0.5.0/24")))
+              .findFirst()
+              .get();
+      assertThat(route, hasAdministrativeCost(1));
+      assertThat(route, hasTag(1000L));
+      assertThat(route, hasNextHopIp(Ip.parse("10.255.1.254")));
+      assertThat(route, hasNextHopInterface("Ethernet1/1"));
+    }
+    {
+      org.batfish.datamodel.StaticRoute route =
+          c.getDefaultVrf().getStaticRoutes().stream()
+              .filter(r -> r.getNetwork().equals(Prefix.strict("10.0.6.0/24")))
+              .findFirst()
+              .get();
+      assertThat(route, hasAdministrativeCost(5));
+      assertThat(route, hasTag(1000L));
+      assertThat(route, hasNextHopIp(Ip.parse("10.255.1.254")));
+      assertThat(route, hasNextHopInterface("Ethernet1/1"));
+    }
+    {
+      org.batfish.datamodel.StaticRoute route =
+          c.getDefaultVrf().getStaticRoutes().stream()
+              .filter(r -> r.getNetwork().equals(Prefix.strict("10.0.7.0/24")))
+              .findFirst()
+              .get();
+      assertThat(route, hasAdministrativeCost(5));
+      assertThat(route, hasTag(0L));
+      assertThat(route, hasNextHopIp(Ip.parse("10.255.1.254")));
+      assertThat(route, hasNextHopInterface("Ethernet1/1"));
+    }
+    {
+      org.batfish.datamodel.StaticRoute route =
+          c.getDefaultVrf().getStaticRoutes().stream()
+              .filter(r -> r.getNetwork().equals(Prefix.strict("10.0.8.0/24")))
+              .findFirst()
+              .get();
+      assertThat(route, hasAdministrativeCost(5));
+      assertThat(route, hasTag(1000L));
+      assertThat(route, hasNextHopIp(Ip.parse("10.255.1.254")));
+      assertThat(route, hasNextHopInterface("Ethernet1/1"));
+    }
+    // TODO: support next-hop-vrf used by 10.0.9.0/24 and 10.0.10.0/24
+    {
+      org.batfish.datamodel.StaticRoute route =
+          c.getVrfs().get("vrf1").getStaticRoutes().stream()
+              .filter(r -> r.getNetwork().equals(Prefix.strict("10.0.11.0/24")))
+              .findFirst()
+              .get();
+      assertThat(route, hasAdministrativeCost(1));
+      assertThat(route, hasTag(0L));
+      assertThat(route, hasNextHopIp(Ip.parse("10.255.2.254")));
+    }
+  }
+
+  @Test
+  public void testStaticRouteExtraction() {
     String hostname = "nxos_static_route";
     CiscoNxosConfiguration vc = parseVendorConfig(hostname);
 

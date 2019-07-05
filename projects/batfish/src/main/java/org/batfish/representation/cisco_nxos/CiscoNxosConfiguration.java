@@ -1,7 +1,11 @@
 package org.batfish.representation.cisco_nxos;
 
+import static com.google.common.base.MoreObjects.firstNonNull;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static org.batfish.datamodel.Configuration.DEFAULT_VRF_NAME;
+import static org.batfish.datamodel.Interface.NULL_INTERFACE_NAME;
+import static org.batfish.datamodel.Route.UNSET_NEXT_HOP_INTERFACE;
+import static org.batfish.datamodel.Route.UNSET_ROUTE_NEXT_HOP_IP;
 import static org.batfish.representation.cisco_nxos.CiscoNxosInterfaceType.PORT_CHANNEL;
 import static org.batfish.representation.cisco_nxos.Interface.BANDWIDTH_CONVERSION_FACTOR;
 import static org.batfish.representation.cisco_nxos.Interface.getDefaultBandwidth;
@@ -11,16 +15,20 @@ import com.google.common.collect.HashMultimap;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Range;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.common.BatfishException;
@@ -133,6 +141,21 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
     _interfaces.values().stream()
         .filter(iface -> iface.getType() == CiscoNxosInterfaceType.PORT_CHANNEL)
         .forEach(this::convertInterface);
+  }
+
+  private void convertStaticRoutes() {
+    Stream.concat(Stream.of(_defaultVrf), _vrfs.values().stream())
+        .forEach(this::convertStaticRoutes);
+  }
+
+  private void convertStaticRoutes(Vrf vrf) {
+    _c.getVrfs()
+        .get(vrf.getName())
+        .setStaticRoutes(
+            vrf.getStaticRoutes().values().stream()
+                .map(this::toStaticRoute)
+                .filter(Objects::nonNull)
+                .collect(ImmutableSortedSet.toImmutableSortedSet(Comparator.naturalOrder())));
   }
 
   private void convertVrfs() {
@@ -325,6 +348,31 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
     }
   }
 
+  private @Nullable org.batfish.datamodel.StaticRoute toStaticRoute(StaticRoute staticRoute) {
+    // TODO: VI and VS support for lookup of next-hop-ip in a different VRF
+    if (staticRoute.getNextHopVrf() != null) {
+      return null;
+    }
+    // TODO: support track object number
+    String nextHopInterface = staticRoute.getNextHopInterface();
+    String newNextHopInterface;
+    if (nextHopInterface != null) {
+      newNextHopInterface = nextHopInterface;
+    } else if (staticRoute.getDiscard()) {
+      newNextHopInterface = NULL_INTERFACE_NAME;
+    } else {
+      newNextHopInterface = UNSET_NEXT_HOP_INTERFACE;
+    }
+    return org.batfish.datamodel.StaticRoute.builder()
+        .setAdministrativeCost((int) staticRoute.getPreference())
+        .setMetric(0L)
+        .setNetwork(staticRoute.getPrefix())
+        .setNextHopInterface(newNextHopInterface)
+        .setNextHopIp(firstNonNull(staticRoute.getNextHopIp(), UNSET_ROUTE_NEXT_HOP_IP))
+        .setTag(staticRoute.getTag())
+        .build();
+  }
+
   private @Nonnull Configuration toVendorIndependentConfiguration() {
     _c = new Configuration(_hostname, ConfigurationFormat.CISCO_NX);
     _c.getVendorFamily().setCiscoNxos(createCiscoNxosFamily());
@@ -334,6 +382,7 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
     convertVrfs();
     convertInterfaces();
     disableUnregisteredVlanInterfaces();
+    convertStaticRoutes();
 
     markStructures();
     return _c;
