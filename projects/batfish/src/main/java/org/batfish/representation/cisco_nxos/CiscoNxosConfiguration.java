@@ -348,6 +348,11 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
     }
   }
 
+  /**
+   * Converts the supplied {@code staticRoute} to a a vendor-independent {@link
+   * org.batfish.datamodel.StaticRoute} if all options are supported and static route contains no
+   * undefined references. Otherwise, returns {@code null}.
+   */
   private @Nullable org.batfish.datamodel.StaticRoute toStaticRoute(StaticRoute staticRoute) {
     // TODO: VI and VS support for lookup of next-hop-ip in a different VRF
     if (staticRoute.getNextHopVrf() != null) {
@@ -357,6 +362,10 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
     String nextHopInterface = staticRoute.getNextHopInterface();
     String newNextHopInterface;
     if (nextHopInterface != null) {
+      if (!_interfaces.containsKey(nextHopInterface)) {
+        // undefined reference
+        return null;
+      }
       newNextHopInterface = nextHopInterface;
     } else if (staticRoute.getDiscard()) {
       newNextHopInterface = NULL_INTERFACE_NAME;
