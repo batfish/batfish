@@ -31,7 +31,7 @@ public class StaticRoute extends AbstractRoute implements Comparable<StaticRoute
   @Nonnull private final String _nextHopInterface;
   @Nonnull private final Ip _nextHopIp;
   @Nullable private String _nextVrf;
-  private final int _tag;
+  private final long _tag;
   // The comparator has no impact on route preference in RIBs and should not be used as such
   private static final Comparator<StaticRoute> COMPARATOR =
       comparing(StaticRoute::getNetwork)
@@ -74,7 +74,7 @@ public class StaticRoute extends AbstractRoute implements Comparable<StaticRoute
       @Nullable String nextVrf,
       int administrativeCost,
       long metric,
-      int tag,
+      long tag,
       boolean nonForwarding,
       boolean nonRouting) {
     super(network, administrativeCost, nonRouting, nonForwarding);
@@ -161,7 +161,7 @@ public class StaticRoute extends AbstractRoute implements Comparable<StaticRoute
   @Override
   @JsonIgnore(false)
   @JsonProperty(PROP_TAG)
-  public int getTag() {
+  public long getTag() {
     return _tag;
   }
 

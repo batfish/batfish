@@ -291,7 +291,7 @@ public class IsisRoute extends AbstractRoute {
   }
 
   @Override
-  public int getTag() {
+  public long getTag() {
     return NO_TAG;
   }
 }

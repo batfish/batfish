@@ -65,7 +65,7 @@ public class HostStaticRoute implements Serializable {
   }
 
   public StaticRoute toStaticRoute() {
-    int tag = _tag == null ? AbstractRoute.NO_TAG : _tag;
+    long tag = _tag == null ? AbstractRoute.NO_TAG : _tag;
     StaticRoute sr =
         StaticRoute.builder()
             .setNetwork(_prefix)

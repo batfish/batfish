@@ -223,7 +223,7 @@ public abstract class OspfExternalRoute extends OspfRoute {
   }
 
   @Override
-  public int getTag() {
+  public long getTag() {
     return NO_TAG;
   }
 }

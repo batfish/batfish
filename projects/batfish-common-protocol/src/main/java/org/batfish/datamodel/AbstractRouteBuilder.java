@@ -19,7 +19,7 @@ public abstract class AbstractRouteBuilder<
   // It's fine for fields below to default to false/unset in the common case
   private boolean _nonForwarding;
   private boolean _nonRouting;
-  private int _tag = Route.UNSET_ROUTE_TAG;
+  private long _tag = Route.UNSET_ROUTE_TAG;
 
   @Nonnull
   public abstract T build();
@@ -89,12 +89,12 @@ public abstract class AbstractRouteBuilder<
     return getThis();
   }
 
-  public final int getTag() {
+  public final long getTag() {
     return _tag;
   }
 
   @Nonnull
-  public final S setTag(@Nullable Integer tag) {
+  public final S setTag(@Nullable Long tag) {
     _tag = firstNonNull(tag, Route.UNSET_ROUTE_TAG);
     return getThis();
   }

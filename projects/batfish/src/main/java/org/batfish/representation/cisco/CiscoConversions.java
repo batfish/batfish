@@ -1385,7 +1385,7 @@ class CiscoConversions {
         .setNextHopIp(staticRoute.getNextHopIp())
         .setNextHopInterface(nextHopInterface)
         .setAdministrativeCost(staticRoute.getDistance())
-        .setTag(firstNonNull(staticRoute.getTag(), -1))
+        .setTag(firstNonNull(staticRoute.getTag(), -1L))
         .build();
   }
 

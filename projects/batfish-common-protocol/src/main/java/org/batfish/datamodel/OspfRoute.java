@@ -68,7 +68,7 @@ public abstract class OspfRoute extends AbstractRoute {
   public abstract RoutingProtocol getProtocol();
 
   @Override
-  public int getTag() {
+  public long getTag() {
     return NO_TAG;
   }
 }

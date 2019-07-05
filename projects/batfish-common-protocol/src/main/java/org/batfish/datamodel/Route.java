@@ -32,7 +32,7 @@ public class Route implements Comparable<Route>, Serializable {
 
   public static final Ip UNSET_ROUTE_NEXT_HOP_IP = Ip.AUTO;
 
-  public static final int UNSET_ROUTE_TAG = -1;
+  public static final long UNSET_ROUTE_TAG = -1L;
   private static final String PROP_VRF = "vrf";
 
   private final int _administrativeCost;
@@ -51,7 +51,7 @@ public class Route implements Comparable<Route>, Serializable {
 
   private final RoutingProtocol _protocol;
 
-  private final int _tag;
+  private final long _tag;
 
   private final String _vrf;
 
@@ -66,7 +66,7 @@ public class Route implements Comparable<Route>, Serializable {
       @JsonProperty(PROP_ADMINISTRATIVE_COST) int administrativeCost,
       @JsonProperty(PROP_METRIC) long metric,
       @JsonProperty(PROP_PROTOCOL) RoutingProtocol protocol,
-      @JsonProperty(PROP_TAG) int tag) {
+      @JsonProperty(PROP_TAG) long tag) {
     _network = network;
     _nextHopIp = nextHopIp;
     _node = node;
@@ -109,7 +109,7 @@ public class Route implements Comparable<Route>, Serializable {
     if (result != 0) {
       return result;
     }
-    result = Integer.compare(_tag, rhs._tag);
+    result = Long.compare(_tag, rhs._tag);
     return result;
   }
 
@@ -189,7 +189,7 @@ public class Route implements Comparable<Route>, Serializable {
   }
 
   @JsonProperty(PROP_TAG)
-  public int getTag() {
+  public long getTag() {
     return _tag;
   }
 
@@ -208,14 +208,14 @@ public class Route implements Comparable<Route>, Serializable {
     result = prime * result + _node.hashCode();
     result = prime * result + _network.hashCode();
     result = prime * result + _protocol.ordinal();
-    result = prime * result + _tag;
+    result = prime * result + Long.hashCode(_tag);
     result = prime * result + _vrf.hashCode();
     return result;
   }
 
   @Override
   public String toString() {
-    String tag = Integer.toString(_tag);
+    String tag = Long.toString(_tag);
     if (_tag == UNSET_ROUTE_TAG) {
       tag = "none";
     }

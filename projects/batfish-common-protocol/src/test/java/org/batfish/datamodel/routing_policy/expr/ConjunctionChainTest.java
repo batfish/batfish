@@ -45,10 +45,10 @@ public class ConjunctionChainTest {
           .setStatements(
               ImmutableList.of(
                   new If(
-                      new MatchTag(IntComparator.EQ, new LiteralInt(1)),
+                      new MatchTag(IntComparator.EQ, new LiteralLong(1)),
                       ImmutableList.of(Statements.ReturnTrue.toStaticStatement())),
                   new If(
-                      new MatchTag(IntComparator.EQ, new LiteralInt(2)),
+                      new MatchTag(IntComparator.EQ, new LiteralLong(2)),
                       ImmutableList.of(Statements.ReturnFalse.toStaticStatement()))))
           .build();
   private static RoutingPolicy P2 =
@@ -155,7 +155,7 @@ public class ConjunctionChainTest {
     // Route with tag 1 and NETWORK_1 should be accepted by both policies, no metric change
     Environment environment =
         buildEnvironment(
-            policiesMap, DEFAULT_POLICY.getName(), srb.setTag(1).setNetwork(NETWORK_1).build());
+            policiesMap, DEFAULT_POLICY.getName(), srb.setTag(1L).setNetwork(NETWORK_1).build());
     Result result = conjunctionChain.evaluate(environment);
     assertThat(environment.getOutputRoute().getMetric(), equalTo(10L));
     assertThat(result, equalTo(new Result(true, false, false, false)));
@@ -163,7 +163,7 @@ public class ConjunctionChainTest {
     // Route with tag 2 and NETWORK_1 should be rejected by first policy, no metric change
     environment =
         buildEnvironment(
-            policiesMap, DEFAULT_POLICY.getName(), srb.setTag(2).setNetwork(NETWORK_1).build());
+            policiesMap, DEFAULT_POLICY.getName(), srb.setTag(2L).setNetwork(NETWORK_1).build());
     result = conjunctionChain.evaluate(environment);
     assertThat(environment.getOutputRoute().getMetric(), equalTo(10L));
     assertThat(result, equalTo(new Result(false, false, false, false)));
@@ -171,7 +171,7 @@ public class ConjunctionChainTest {
     // Route with tag 1 and NETWORK_2 should be rejected by second policy, no metric change
     environment =
         buildEnvironment(
-            policiesMap, DEFAULT_POLICY.getName(), srb.setTag(1).setNetwork(NETWORK_2).build());
+            policiesMap, DEFAULT_POLICY.getName(), srb.setTag(1L).setNetwork(NETWORK_2).build());
     result = conjunctionChain.evaluate(environment);
     assertThat(environment.getOutputRoute().getMetric(), equalTo(10L));
     assertThat(result, equalTo(new Result(false, false, false, false)));
@@ -179,7 +179,7 @@ public class ConjunctionChainTest {
     // Route with tag 3 and NETWORK_3 should fall through both policies, hit default, update metric
     environment =
         buildEnvironment(
-            policiesMap, DEFAULT_POLICY.getName(), srb.setTag(3).setNetwork(NETWORK_3).build());
+            policiesMap, DEFAULT_POLICY.getName(), srb.setTag(3L).setNetwork(NETWORK_3).build());
     result = conjunctionChain.evaluate(environment);
     assertThat(environment.getOutputRoute().getMetric(), equalTo(500L));
     assertThat(result, equalTo(new Result(false, false, true, false)));

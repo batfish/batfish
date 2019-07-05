@@ -35,7 +35,7 @@ public class RouteRowAttribute implements Comparable<RouteRowAttribute> {
 
   @Nullable private final String _originProtocol;
 
-  @Nullable private final Integer _tag;
+  @Nullable private final Long _tag;
 
   private RouteRowAttribute(
       String nextHop,
@@ -45,7 +45,7 @@ public class RouteRowAttribute implements Comparable<RouteRowAttribute> {
       Long localPreference,
       List<String> communities,
       String originalProtocol,
-      Integer tag) {
+      Long tag) {
     _nextHop = nextHop;
     _adminDistance = adminDistance;
     _metric = metric;
@@ -92,7 +92,7 @@ public class RouteRowAttribute implements Comparable<RouteRowAttribute> {
   }
 
   @Nullable
-  public Integer getTag() {
+  public Long getTag() {
     return _tag;
   }
 
@@ -107,7 +107,7 @@ public class RouteRowAttribute implements Comparable<RouteRowAttribute> {
           .thenComparing(RouteRowAttribute::getAsPath, nullsLast(AsPath::compareTo))
           .thenComparing(RouteRowAttribute::getLocalPreference, nullsLast(Long::compareTo))
           .thenComparing(RouteRowAttribute::getOriginProtocol, nullsLast(String::compareTo))
-          .thenComparing(RouteRowAttribute::getTag, nullsLast(Integer::compareTo))
+          .thenComparing(RouteRowAttribute::getTag, nullsLast(Long::compareTo))
           .thenComparing(
               routeRowAttribute -> routeRowAttribute.getCommunities().toString(),
               nullsLast(String::compareTo));
@@ -165,7 +165,7 @@ public class RouteRowAttribute implements Comparable<RouteRowAttribute> {
 
     @Nullable private String _originProtocol;
 
-    @Nullable private Integer _tag;
+    @Nullable private Long _tag;
 
     public RouteRowAttribute build() {
       if (_tag != null && _tag == AbstractRoute.NO_TAG) {
@@ -217,7 +217,7 @@ public class RouteRowAttribute implements Comparable<RouteRowAttribute> {
       return this;
     }
 
-    public Builder setTag(Integer tag) {
+    public Builder setTag(Long tag) {
       _tag = tag;
       return this;
     }

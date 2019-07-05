@@ -5040,7 +5040,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
 
   @Override
   public void exitRoa_tag(Roa_tagContext ctx) {
-    int tag = toInt(ctx.tag);
+    long tag = toLong(ctx.tag);
     _currentAggregateRoute.setTag(tag);
   }
 

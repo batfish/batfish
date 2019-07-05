@@ -9,21 +9,21 @@ import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.routing_policy.Environment;
 import org.batfish.datamodel.routing_policy.Result;
-import org.batfish.datamodel.routing_policy.expr.IntExpr;
+import org.batfish.datamodel.routing_policy.expr.LongExpr;
 
 @ParametersAreNonnullByDefault
 public final class SetTag extends Statement {
   private static final String PROP_TAG = "tag";
 
-  @Nonnull private final IntExpr _tag;
+  @Nonnull private final LongExpr _tag;
 
   @JsonCreator
-  private static SetTag jsonCreator(@Nullable @JsonProperty(PROP_TAG) IntExpr expr) {
+  private static SetTag jsonCreator(@Nullable @JsonProperty(PROP_TAG) LongExpr expr) {
     checkArgument(expr != null, "%s must be provided", PROP_TAG);
     return new SetTag(expr);
   }
 
-  public SetTag(IntExpr expr) {
+  public SetTag(LongExpr expr) {
     _tag = expr;
   }
 
@@ -41,7 +41,7 @@ public final class SetTag extends Statement {
   @Override
   public Result execute(Environment environment) {
     Result result = new Result();
-    int tag = _tag.evaluate(environment);
+    long tag = _tag.evaluate(environment);
     environment.getOutputRoute().setTag(tag);
     if (environment.getWriteToIntermediateBgpAttributes()) {
       environment.getIntermediateBgpAttributes().setTag(tag);
@@ -51,7 +51,7 @@ public final class SetTag extends Statement {
 
   @JsonProperty(PROP_TAG)
   @Nonnull
-  public IntExpr getTag() {
+  public LongExpr getTag() {
     return _tag;
   }
 
