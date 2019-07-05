@@ -18,6 +18,7 @@ set security policies global policy p1 match source-address-excluded
 #
 set security policies from-zone A to-zone B policy 123-4 description "123-4 description"
 set security policies from-zone A to-zone B policy 123-4 then count
+set security policies from-zone A to-zone B policy 123-4 then permit services-offload
 set security policies from-zone A to-zone B policy 123-4 then trace
 #
 set security zones security-zone ZONE-protocols host-inbound-traffic protocols all
