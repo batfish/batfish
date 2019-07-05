@@ -10,6 +10,7 @@ interface Ethernet1/1
   ip address 10.0.0.1/24
 !
 
-vrf context vrf1
-
 ip route 10.0.1.0/24 Ethernet1/1 10.0.0.2 vrf vrf1
+
+!!! Keep VRF definitions under default VRF configuration to avoid accidental leakage
+vrf context vrf1

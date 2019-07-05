@@ -3,8 +3,6 @@
 hostname nxos_vrf
 !
 
-vrf context vrf1
-
 ! Add interface to vrf1
 ! - shutdown = false
 ! - active = true
@@ -46,15 +44,19 @@ interface Ethernet1/4
   ip address 10.0.4.1/24
 !
 
-! Add interface to shutdown vrf3
+! Add interface to shutdown VRF vrf3
 ! - shutdown = false
 ! - active = false (vrf3 is shutdown)
 ! - address = 10.0.5.1/24
-vrf context vrf3
-  shutdown
 interface Ethernet1/5
   no switchport
   no shutdown
   vrf member vrf3
   ip address 10.0.5.1/24
 !
+
+!!! Keep VRF definitions under default VRF configuration to avoid accidental leakage
+vrf context vrf1
+
+vrf context vrf3
+  shutdown
