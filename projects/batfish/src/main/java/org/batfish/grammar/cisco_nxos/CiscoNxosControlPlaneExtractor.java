@@ -600,6 +600,8 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
         return;
       }
       builder.setTrack(track);
+      // TODO: support track object number
+      todo(ctx);
     }
     StaticRoute route = builder.build();
     _currentVrf.getStaticRoutes().put(route.getPrefix(), route);
