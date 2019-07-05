@@ -98,7 +98,7 @@ public class EosRoutingTableExtractor extends EosRoutingTableParserBaseListener
     for (int i = 0; i < ctx.nexthopifaces.size(); i++) {
       String nextHopInterface = ctx.nexthopifaces.get(i).getText();
       // TODO: support EOS route tags
-      int tag = Route.UNSET_ROUTE_TAG;
+      long tag = Route.UNSET_ROUTE_TAG;
       // TODO: support EOS next hop
       if (ctx.IS_DIRECTLY_CONNECTED() != null) {
         admin = 0;

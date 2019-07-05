@@ -2,19 +2,19 @@ package org.batfish.representation.cisco;
 
 import org.batfish.common.Warnings;
 import org.batfish.datamodel.Configuration;
-import org.batfish.datamodel.routing_policy.expr.IntExpr;
+import org.batfish.datamodel.routing_policy.expr.LongExpr;
 import org.batfish.datamodel.routing_policy.statement.SetTag;
 import org.batfish.datamodel.routing_policy.statement.Statement;
 
 public class RoutePolicySetTag extends RoutePolicySetStatement {
 
-  private IntExpr _tag;
+  private LongExpr _tag;
 
-  public RoutePolicySetTag(IntExpr intExpr) {
-    _tag = intExpr;
+  public RoutePolicySetTag(LongExpr longExpr) {
+    _tag = longExpr;
   }
 
-  public IntExpr getTag() {
+  public LongExpr getTag() {
     return _tag;
   }
 

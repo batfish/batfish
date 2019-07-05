@@ -3152,15 +3152,15 @@ public final class FlatJuniperGrammarTest {
     srb = StaticRoute.builder().setAdministrativeCost(100).setNetwork(testPrefix);
     result =
         tagPolicy.call(
-            Environment.builder(c, DEFAULT_VRF_NAME).setOutputRoute(srb.setTag(1)).build());
+            Environment.builder(c, DEFAULT_VRF_NAME).setOutputRoute(srb.setTag(1L)).build());
     assertThat(result.getBooleanValue(), equalTo(true));
     result =
         tagPolicy.call(
-            Environment.builder(c, DEFAULT_VRF_NAME).setOutputRoute(srb.setTag(2)).build());
+            Environment.builder(c, DEFAULT_VRF_NAME).setOutputRoute(srb.setTag(2L)).build());
     assertThat(result.getBooleanValue(), equalTo(true));
     result =
         tagPolicy.call(
-            Environment.builder(c, DEFAULT_VRF_NAME).setOutputRoute(srb.setTag(3)).build());
+            Environment.builder(c, DEFAULT_VRF_NAME).setOutputRoute(srb.setTag(3L)).build());
     assertThat(result.getBooleanValue(), equalTo(false));
   }
 

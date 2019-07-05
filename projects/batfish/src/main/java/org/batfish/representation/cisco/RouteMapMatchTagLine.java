@@ -7,7 +7,7 @@ import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.routing_policy.expr.BooleanExpr;
 import org.batfish.datamodel.routing_policy.expr.Disjunction;
 import org.batfish.datamodel.routing_policy.expr.IntComparator;
-import org.batfish.datamodel.routing_policy.expr.LiteralInt;
+import org.batfish.datamodel.routing_policy.expr.LiteralLong;
 import org.batfish.datamodel.routing_policy.expr.MatchTag;
 
 public class RouteMapMatchTagLine extends RouteMapMatchLine {
@@ -27,7 +27,7 @@ public class RouteMapMatchTagLine extends RouteMapMatchLine {
     Disjunction d = new Disjunction();
     List<BooleanExpr> disjuncts = d.getDisjuncts();
     for (int tag : _tags) {
-      disjuncts.add(new MatchTag(IntComparator.EQ, new LiteralInt(tag)));
+      disjuncts.add(new MatchTag(IntComparator.EQ, new LiteralLong(tag)));
     }
     return d.simplify();
   }

@@ -312,7 +312,7 @@ public final class GeneratedRoute extends AbstractRoute implements Comparable<Ge
   }
 
   @Override
-  public int getTag() {
+  public long getTag() {
     return NO_TAG;
   }
 

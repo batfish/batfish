@@ -47,7 +47,7 @@ public class AbstractRibTest {
           .setNextHopInterface(null)
           .setAdministrativeCost(1)
           .setMetric(0L)
-          .setTag(0)
+          .setTag(0L)
           .build();
   @Rule public ExpectedException _expectedException = ExpectedException.none();
 
@@ -84,7 +84,7 @@ public class AbstractRibTest {
             .setNextHopInterface(null)
             .setAdministrativeCost(1)
             .setMetric(0L)
-            .setTag(0);
+            .setTag(0L);
     for (String prefixStr : testPrefixes) {
       StaticRoute r = srb.setNetwork(Prefix.parse(prefixStr)).build();
       _rib.mergeRouteGetDelta(r);
@@ -103,7 +103,7 @@ public class AbstractRibTest {
             .setNextHopInterface(null)
             .setAdministrativeCost(1)
             .setMetric(0L)
-            .setTag(0)
+            .setTag(0L)
             .build();
     for (int i = 0; i < 5; i++) {
       _rib.mergeRouteGetDelta(route);
@@ -123,7 +123,7 @@ public class AbstractRibTest {
             .setNextHopInterface(null)
             .setAdministrativeCost(1)
             .setMetric(0L)
-            .setTag(0);
+            .setTag(0L);
     StaticRoute r1 = srb.setNetwork(Prefix.parse("1.1.1.1/32")).build();
     StaticRoute r2 = srb.setNetwork(Prefix.parse("128.1.1.1/32")).build();
     _rib.mergeRouteGetDelta(r1);
@@ -257,7 +257,7 @@ public class AbstractRibTest {
             .setNextHopInterface(null)
             .setAdministrativeCost(1)
             .setMetric(0L)
-            .setTag(0)
+            .setTag(0L)
             .build();
 
     // Exception because ImmutableSet
@@ -279,7 +279,7 @@ public class AbstractRibTest {
             .setNextHopInterface(null)
             .setAdministrativeCost(1)
             .setMetric(0L)
-            .setTag(0)
+            .setTag(0L)
             .build();
 
     _rib.mergeRouteGetDelta(r1);
@@ -341,7 +341,7 @@ public class AbstractRibTest {
             .setNextHopInterface(null)
             .setAdministrativeCost(1)
             .setMetric(0L)
-            .setTag(1)
+            .setTag(1L)
             .build();
     _rib.mergeRoute(_mostGeneralRoute);
     _rib.mergeRoute(r);
@@ -375,7 +375,7 @@ public class AbstractRibTest {
             .setNextHopInterface(null)
             .setAdministrativeCost(1)
             .setMetric(0L)
-            .setTag(1)
+            .setTag(1L)
             .build();
     StaticRoute r2 =
         StaticRoute.builder()
@@ -384,7 +384,7 @@ public class AbstractRibTest {
             .setNextHopInterface(null)
             .setAdministrativeCost(1)
             .setMetric(0L)
-            .setTag(1)
+            .setTag(1L)
             .build();
 
     _rib.mergeRoute(r1);
@@ -405,7 +405,7 @@ public class AbstractRibTest {
             .setNextHopInterface(null)
             .setAdministrativeCost(1)
             .setMetric(0L)
-            .setTag(1);
+            .setTag(1L);
 
     Ip ip = Ip.parse("1.1.1.1");
     StaticRoute r32 = builder.setNetwork(Prefix.create(ip, 32)).build();
@@ -428,7 +428,7 @@ public class AbstractRibTest {
             .setNextHopInterface(null)
             .setAdministrativeCost(1)
             .setMetric(0L)
-            .setTag(0);
+            .setTag(0L);
     // Non forwarding 1.2.3.4/32
     _rib.mergeRouteGetDelta(
         b.setNetwork(Prefix.parse("1.2.3.4/32")).setNonForwarding(true).build());
@@ -457,7 +457,7 @@ public class AbstractRibTest {
             .setNextHopInterface(null)
             .setAdministrativeCost(1)
             .setMetric(0L)
-            .setTag(0);
+            .setTag(0L);
     _rib.mergeRouteGetDelta(
         b.setNetwork(Prefix.parse("1.2.3.4/32")).setNonForwarding(true).build());
     _rib.mergeRouteGetDelta(

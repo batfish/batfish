@@ -51,7 +51,7 @@ public class RipInternalRoute extends RipRoute {
   }
 
   @Override
-  public int getTag() {
+  public long getTag() {
     return NO_TAG;
   }
 

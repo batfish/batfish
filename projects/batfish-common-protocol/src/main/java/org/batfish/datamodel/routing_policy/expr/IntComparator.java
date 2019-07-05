@@ -26,4 +26,21 @@ public enum IntComparator {
         throw new BatfishException("Invalid " + IntComparator.class.getSimpleName());
     }
   }
+
+  public Result apply(long lhs, long rhs) {
+    switch (this) {
+      case EQ:
+        return new Result(lhs == rhs);
+      case GE:
+        return new Result(lhs >= rhs);
+      case GT:
+        return new Result(lhs > rhs);
+      case LE:
+        return new Result(lhs <= rhs);
+      case LT:
+        return new Result(lhs < rhs);
+      default:
+        throw new BatfishException("Invalid " + IntComparator.class.getSimpleName());
+    }
+  }
 }

@@ -7179,7 +7179,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     Ip nextHopIp = Route.UNSET_ROUTE_NEXT_HOP_IP;
     String nextHopInterface = null;
     int distance = DEFAULT_STATIC_ROUTE_DISTANCE;
-    Integer tag = null;
+    Long tag = null;
     Integer track = null;
     boolean permanent = ctx.perm != null;
     if (ctx.nexthopip != null) {
@@ -7208,7 +7208,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       distance = toInteger(ctx.distance);
     }
     if (ctx.tag != null) {
-      tag = toInteger(ctx.tag);
+      tag = toLong(ctx.tag);
     }
     if (ctx.track != null) {
       track = toInteger(ctx.track);
@@ -9333,9 +9333,9 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       if (ctx.distance != null) {
         distance = toInteger(ctx.distance);
       }
-      Integer tag = null;
+      Long tag = null;
       if (ctx.tag != null) {
-        tag = toInteger(ctx.tag);
+        tag = toLong(ctx.tag);
       }
 
       boolean permanent = ctx.PERMANENT() != null;
@@ -11915,7 +11915,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   private RoutePolicyBoolean toRoutePolicyBoolean(Boolean_tag_is_rp_stanzaContext ctx) {
     IntComparator cmp = toIntComparator(ctx.int_comp());
-    IntExpr rhs = toTagIntExpr(ctx.int_expr());
+    LongExpr rhs = toTagLongExpr(ctx.int_expr());
     return new RoutePolicyBooleanTagIs(cmp, rhs);
   }
 
@@ -12234,7 +12234,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   }
 
   private RoutePolicyStatement toRoutePolicyStatement(Set_tag_rp_stanzaContext ctx) {
-    IntExpr tag = toTagIntExpr(ctx.tag);
+    LongExpr tag = toTagLongExpr(ctx.tag);
     return new RoutePolicySetTag(tag);
   }
 
@@ -12311,15 +12311,15 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     return new SubRangeExpr(first, last);
   }
 
-  private IntExpr toTagIntExpr(Int_exprContext ctx) {
+  private LongExpr toTagLongExpr(Int_exprContext ctx) {
     if (ctx.DEC() != null && ctx.DASH() == null && ctx.PLUS() == null) {
-      int val = toInteger(ctx.DEC());
-      return new LiteralInt(val);
+      long val = toLong(ctx.DEC());
+      return new LiteralLong(val);
     } else if (ctx.RP_VARIABLE() != null) {
       String var = ctx.RP_VARIABLE().getText();
-      return new VarInt(var);
+      return new VarLong(var);
     } else {
-      throw convError(IntExpr.class, ctx);
+      throw convError(LongExpr.class, ctx);
     }
   }
 

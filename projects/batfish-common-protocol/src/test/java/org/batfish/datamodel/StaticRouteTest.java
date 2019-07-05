@@ -26,7 +26,7 @@ public final class StaticRouteTest {
             .setNextHopInterface("Ethernet0")
             .setNextVrf("otherVrf")
             .setAdministrativeCost(1)
-            .setTag(0)
+            .setTag(0L)
             .setMetric(123)
             .build();
     assertThat(sr.getNextHopIp(), equalTo(Ip.parse("192.168.1.1")));
@@ -34,7 +34,7 @@ public final class StaticRouteTest {
     assertThat(sr.getNextHopInterface(), equalTo("Ethernet0"));
     assertThat(sr.getNextVrf(), equalTo("otherVrf"));
     assertThat(sr.getAdministrativeCost(), equalTo(1));
-    assertThat(sr.getTag(), equalTo(0));
+    assertThat(sr.getTag(), equalTo(0L));
     assertThat(sr.getMetric(), equalTo(123L));
   }
 
@@ -86,7 +86,7 @@ public final class StaticRouteTest {
             .setNextHopInterface("Ethernet0")
             .setNextVrf("otherVrf")
             .setAdministrativeCost(1)
-            .setTag(0)
+            .setTag(0L)
             .setMetric(123)
             .build();
 
@@ -107,7 +107,7 @@ public final class StaticRouteTest {
         .addEqualityGroup(b.setNextHopIp(Ip.parse("2.2.2.2")).build())
         .addEqualityGroup(b.setNextHopInterface("Ethernet0").build())
         .addEqualityGroup(b.setNextVrf("otherVrf").build())
-        .addEqualityGroup(b.setTag(4).build())
+        .addEqualityGroup(b.setTag(4L).build())
         .addEqualityGroup(new Object())
         .testEquals();
   }
@@ -121,7 +121,7 @@ public final class StaticRouteTest {
             .setNextHopInterface("Ethernet0")
             .setNextVrf("otherVrf")
             .setAdministrativeCost(1)
-            .setTag(0)
+            .setTag(0L)
             .setMetric(123)
             .build();
 
@@ -137,7 +137,7 @@ public final class StaticRouteTest {
             .setNextHopInterface("Ethernet0")
             .setNextVrf("otherVrf")
             .setAdministrativeCost(1)
-            .setTag(0)
+            .setTag(0L)
             .setMetric(123)
             .build();
 

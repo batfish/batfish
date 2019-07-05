@@ -305,7 +305,7 @@ public class VirtualRouterTest {
                 .setNextHopInterface("Ethernet1")
                 .setAdministrativeCost(1)
                 .setMetric(0L)
-                .setTag(1)
+                .setTag(1L)
                 .build(),
             StaticRoute.builder()
                 .setNetwork(Prefix.parse("2.2.2.2/32"))
@@ -313,7 +313,7 @@ public class VirtualRouterTest {
                 .setNextHopInterface(null)
                 .setAdministrativeCost(1)
                 .setMetric(0L)
-                .setTag(1)
+                .setTag(1L)
                 .build(),
             StaticRoute.builder()
                 .setNetwork(Prefix.parse("3.3.3.3/32"))
@@ -321,7 +321,7 @@ public class VirtualRouterTest {
                 .setNextHopInterface("Ethernet1")
                 .setAdministrativeCost(1)
                 .setMetric(0L)
-                .setTag(1)
+                .setTag(1L)
                 .build(),
             StaticRoute.builder()
                 .setNetwork(Prefix.parse("4.4.4.4/32"))
@@ -329,7 +329,7 @@ public class VirtualRouterTest {
                 .setNextHopInterface(Interface.NULL_INTERFACE_NAME)
                 .setAdministrativeCost(1)
                 .setMetric(0L)
-                .setTag(1)
+                .setTag(1L)
                 .build(),
 
             // These do not get activated due to missing/incorrect interface names
@@ -339,7 +339,7 @@ public class VirtualRouterTest {
                 .setNextHopInterface("Eth1")
                 .setAdministrativeCost(1)
                 .setMetric(0L)
-                .setTag(1)
+                .setTag(1L)
                 .build(),
             StaticRoute.builder()
                 .setNetwork(Prefix.parse("6.6.6.6/32"))
@@ -347,7 +347,7 @@ public class VirtualRouterTest {
                 .setNextHopInterface(null)
                 .setAdministrativeCost(1)
                 .setMetric(0L)
-                .setTag(1)
+                .setTag(1L)
                 .build());
     vr.getConfiguration()
         .getVrfs()
@@ -432,7 +432,7 @@ public class VirtualRouterTest {
                 .setNextHopInterface(null)
                 .setAdministrativeCost(1)
                 .setMetric(0L)
-                .setTag(0)
+                .setTag(0L)
                 .build());
     vr._vrf.setStaticRoutes(routeSet);
 
@@ -463,7 +463,7 @@ public class VirtualRouterTest {
             .setNextHopInterface(null)
             .setAdministrativeCost(1)
             .setMetric(0L)
-            .setTag(1)
+            .setTag(1L)
             .build();
     StaticRoute sr2 =
         StaticRoute.builder()
@@ -472,7 +472,7 @@ public class VirtualRouterTest {
             .setNextHopInterface(null)
             .setAdministrativeCost(100)
             .setMetric(0L)
-            .setTag(1)
+            .setTag(1L)
             .build();
     RibDelta.Builder<AbstractRoute> builder = RibDelta.<AbstractRoute>builder().add(sr1);
 
@@ -497,7 +497,7 @@ public class VirtualRouterTest {
             .setNextHopInterface(null)
             .setAdministrativeCost(1)
             .setMetric(0L)
-            .setTag(1)
+            .setTag(1L)
             .build();
     StaticRoute sr2 =
         StaticRoute.builder()
@@ -506,7 +506,7 @@ public class VirtualRouterTest {
             .setNextHopInterface(null)
             .setAdministrativeCost(100)
             .setMetric(0L)
-            .setTag(1)
+            .setTag(1L)
             .build();
     RibDelta.Builder<AbstractRoute> builder = RibDelta.builder();
 

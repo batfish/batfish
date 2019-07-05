@@ -37,7 +37,7 @@ public abstract class AbstractAggregateRoute implements Serializable {
 
   private final Prefix _prefix;
 
-  private Integer _tag;
+  private Long _tag;
 
   public AbstractAggregateRoute(Prefix prefix) {
     _prefix = prefix;
@@ -77,7 +77,7 @@ public abstract class AbstractAggregateRoute implements Serializable {
     return _prefix;
   }
 
-  public final @Nullable Integer getTag() {
+  public final @Nullable Long getTag() {
     return _tag;
   }
 
@@ -108,7 +108,7 @@ public abstract class AbstractAggregateRoute implements Serializable {
     _preference = preference;
   }
 
-  public final void setTag(@Nullable Integer tag) {
+  public final void setTag(@Nullable Long tag) {
     _tag = tag;
   }
 }

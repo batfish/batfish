@@ -102,7 +102,7 @@ public class GeneratedRouteHelperTest {
                         .setNextHopInterface("eth0")
                         .setAdministrativeCost(1)
                         .setMetric(0L)
-                        .setTag(1)
+                        .setTag(1L)
                         .build())),
             vrf.getName());
 
