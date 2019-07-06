@@ -117,7 +117,7 @@ import org.batfish.dataplane.rib.StaticRib;
 
 public class VirtualRouter implements Serializable {
 
-  /** The BGP routing process. Null if BGP is not configured for this VRF */
+  /** The BGP routing process. {@code null} if BGP is not configured for this VRF */
   @Nullable transient BgpRoutingProcess _bgpRoutingProcess;
 
   /** Parent configuration for this virtual router */
@@ -151,17 +151,21 @@ public class VirtualRouter implements Serializable {
   transient KernelRib _kernelRib;
   transient LocalRib _localRib;
 
-  /** The main RIB, a combination different protocol RIBs */
-  final Rib _mainRib;
+  /** The default main RIB, contains routes from different protocol RIBs */
+  private final Rib _mainRib;
 
+  /** All named main RIBs, including {@link RibId#DEFAULT_RIB_NAME} */
   private final Map<String, Rib> _mainRibs;
 
   /** Keeps track of changes to the main RIB */
   @VisibleForTesting
   transient RibDelta.Builder<AnnotatedRoute<AbstractRoute>> _mainRibRouteDeltaBuilder;
 
-  @Nonnull final String _name;
+  /** The VRF name for this virtual router */
+  @Nonnull private final String _name;
+  /** Parent {@link Node} on which this virtual router resides */
   @Nonnull private final Node _node;
+
   private transient Map<String, OspfRoutingProcess> _ospfProcesses;
 
   transient RipInternalRib _ripInternalRib;
@@ -249,8 +253,7 @@ public class VirtualRouter implements Serializable {
 
   /** Lookup the VirtualRouter owner of a remote BGP neighbor. */
   @Nullable
-  @VisibleForTesting
-  static VirtualRouter getRemoteBgpNeighborVR(
+  private static VirtualRouter getRemoteBgpNeighborVR(
       @Nonnull BgpPeerConfigId bgpId, @Nonnull final Map<String, Node> allNodes) {
     return allNodes.get(bgpId.getHostname()).getVirtualRouters().get(bgpId.getVrfName());
   }
@@ -2185,5 +2188,11 @@ public class VirtualRouter implements Serializable {
       return ImmutableSet.of();
     }
     return _bgpRoutingProcess._evpnRib.getTypedRoutes();
+  }
+
+  /** Return the VRF name */
+  @Nonnull
+  public String getName() {
+    return _name;
   }
 }
