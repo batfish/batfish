@@ -8,7 +8,7 @@ ip access-list acl_global_options
   fragments permit-all
   ignore routable
   statistics per-entry
-  
+
 ip access-list acl_indices
   ! index should start at 10 if no existing rules
   deny 1 any any
@@ -50,7 +50,7 @@ ip access-list acl_common_ip_options_source_ip
   permit ip 10.0.1.0/24 any
   permit ip addrgroup mysrcaddrgroup any
   permit ip host 10.0.2.2 any
-  
+
 ip access-list acl_common_ip_options_dscp
   !!! Match DSCP
   ! 0-63
@@ -89,7 +89,7 @@ ip access-list acl_common_ip_options_packet_length
   permit ip any any packet-length gt 300
   permit ip any any packet-length neq 400
   permit ip any any packet-length range 500 600
-  
+
 ip access-list acl_common_ip_options_precedence
   !!! Match precedence
   ! 0-7
@@ -107,7 +107,8 @@ ip access-list acl_common_ip_options_ttl
   !!! Match TTL
   ! 0-255
   permit ip any any ttl 5
-  
+
+!!! ICMP options
 ip access-list acl_icmp
   ! match ICMP code 0-255
   permit icmp any any 0
@@ -159,6 +160,7 @@ ip access-list acl_icmp
   permit icmp any any ttl-exceeded
   permit icmp any any unreachable                                                                                                             
 
+!!! IGMP options
 ip access-list acl_igmp
   !!! Match IGMP message type
   ! 0-15
@@ -220,7 +222,7 @@ ip access-list acl_tcp_source_port
   permit tcp any neq 15 any
   permit tcp any portgroup mysrcportgroup any
   permit tcp any range 20 25 any
-  
+
 ip access-list acl_tcp_http_method
   !!! Match HTTP method  
   ! 1-7
@@ -253,7 +255,7 @@ ip access-list acl_tcp_options
 
   !!! Match established connections
   permit tcp any any established
-  
+
 !!! UDP options
 ip access-list acl_udp_destination_port
   !!! Match destination port
