@@ -11,6 +11,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Sets;
+import com.google.common.collect.Streams;
 import com.google.common.collect.Table;
 import com.google.common.graph.EndpointPair;
 import io.opentracing.ActiveSpan;
@@ -44,17 +45,16 @@ import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Edge;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Interface.DependencyType;
-import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.InterfaceType;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.IpsecSession;
-import org.batfish.datamodel.LinkLocalAddress;
 import org.batfish.datamodel.NetworkConfigurations;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.SwitchportMode;
 import org.batfish.datamodel.Topology;
 import org.batfish.datamodel.VniSettings;
+import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.ipsec.IpsecTopology;
 import org.batfish.datamodel.vxlan.VxlanNode;
 import org.batfish.datamodel.vxlan.VxlanTopology;
@@ -400,7 +400,7 @@ public final class TopologyUtil {
         rawLayer1Topology.getGraph().edges().stream()
             .map(l1Edge -> l1Edge.getNode1().getHostname())
             .collect(ImmutableSet.toImmutableSet());
-    return new Topology(
+    Stream<Edge> filteredEdgeStream =
         synthesizeL3Topology(configurations).getEdges().stream()
             // keep if either node is in tail of edge in raw layer-1, or if vertices are in same
             // broadcast domain
@@ -408,7 +408,54 @@ public final class TopologyUtil {
                 edge ->
                     !rawLayer1TailNodes.contains(edge.getNode1())
                         || !rawLayer1TailNodes.contains(edge.getNode2())
-                        || layer2Topology.inSameBroadcastDomain(edge.getHead(), edge.getTail()))
+                        || layer2Topology.inSameBroadcastDomain(edge.getHead(), edge.getTail()));
+    NetworkConfigurations nc = NetworkConfigurations.of(configurations);
+    // Look over all L1 logical edges and see if they both have link-local addresses
+    Stream<Edge> layer1LLAEdgeStream =
+        computeLayer1LogicalTopology(rawLayer1Topology, configurations).getGraph().edges().stream()
+            .filter(
+                edge ->
+                    // at least one link-local address exists on both edge endpoints
+                    !nc.getInterface(
+                                edge.getNode1().getHostname(), edge.getNode1().getInterfaceName())
+                            .map(Interface::getAllLinkLocalAddresses)
+                            .map(Set::isEmpty)
+                            .orElse(true)
+                        && !nc.getInterface(
+                                edge.getNode2().getHostname(), edge.getNode2().getInterfaceName())
+                            .map(Interface::getAllLinkLocalAddresses)
+                            .map(Set::isEmpty)
+                            .orElse(true))
+            .flatMap(
+                edge -> {
+                  Edge l3Edge =
+                      new Edge(
+                          new NodeInterfacePair(
+                              edge.getNode1().getHostname(), edge.getNode1().getInterfaceName()),
+                          new NodeInterfacePair(
+                              edge.getNode2().getHostname(), edge.getNode2().getInterfaceName()));
+                  // Return forward and reverse edges (L1 topology not guaranteed to be symmetric)
+                  // In the end it collapses to a set anyway
+                  return Stream.of(l3Edge, l3Edge.reverse());
+                });
+    // Special-case sub-interfaces of aggregate interfaces
+    ImmutableSet<NodeInterfacePair> subInterfaces =
+        configurations.values().stream()
+            .flatMap(c -> c.getActiveInterfaces().values().stream())
+            .filter(i -> i.getInterfaceType() == InterfaceType.AGGREGATE_CHILD)
+            .map(i -> new NodeInterfacePair(i.getOwner().getHostname(), i.getName()))
+            .collect(ImmutableSet.toImmutableSet());
+
+    Stream<Edge> subInterfaceLLAStream =
+        subInterfaces.stream()
+            .flatMap(
+                i1 ->
+                    subInterfaces.stream()
+                        .filter(
+                            i2 -> !i1.equals(i2) && layer2Topology.inSameBroadcastDomain(i1, i2))
+                        .map(i2 -> new Edge(i1, i2)));
+    return new Topology(
+        Streams.concat(filteredEdgeStream, layer1LLAEdgeStream, subInterfaceLLAStream)
             .collect(ImmutableSortedSet.toImmutableSortedSet(Comparator.naturalOrder())));
   }
 
@@ -432,12 +479,9 @@ public final class TopologyUtil {
    *
    * @param rawLayer3Topology raw layer 3 {@link Topology}
    * @param overlayEdges overlay edges to be added to the rawLayer3Topology
-   * @param configurations configurations for which these edges exist
    */
   public static @Nonnull Topology computeLayer3Topology(
-      Topology rawLayer3Topology,
-      Set<Edge> overlayEdges,
-      Map<String, Configuration> configurations) {
+      Topology rawLayer3Topology, Set<Edge> overlayEdges) {
     return new Topology(
         ImmutableSortedSet.<Edge>naturalOrder()
             .addAll(rawLayer3Topology.getEdges())
@@ -752,17 +796,6 @@ public final class TopologyUtil {
     return false;
   }
 
-  @Nonnull
-  private static Prefix getAddressPrefix(InterfaceAddress addr) {
-    if (addr instanceof ConcreteInterfaceAddress) {
-      return ((ConcreteInterfaceAddress) addr).getPrefix();
-    } else if (addr instanceof LinkLocalAddress) {
-      return ((LinkLocalAddress) addr).getPrefix();
-    } else {
-      throw new IllegalArgumentException("Unknown interface address type: " + addr.getClass());
-    }
-  }
-
   /**
    * Returns a {@link Topology} inferred from the L3 configuration of interfaces on the devices.
    *
@@ -777,9 +810,8 @@ public final class TopologyUtil {
               continue;
             }
             // Look at all allocated addresses to determine subnet buckets
-            // L3 edges must exist between interfaces with any IP address.
-            for (InterfaceAddress address : iface.getAllAddresses()) {
-              Prefix prefix = getAddressPrefix(address);
+            for (ConcreteInterfaceAddress address : iface.getAllConcreteAddresses()) {
+              Prefix prefix = address.getPrefix();
               if (prefix.getPrefixLength() < Prefix.MAX_PREFIX_LENGTH) {
                 List<Interface> interfaceBucket =
                     prefixInterfaces.computeIfAbsent(prefix, k -> new LinkedList<>());
@@ -804,10 +836,7 @@ public final class TopologyUtil {
           .flatMap(Collection::stream)
           .filter(
               iface ->
-                  iface.getAllConcreteAddresses().stream().anyMatch(ia -> p.containsIp(ia.getIp()))
-                      // Treat all link-local addresses as potential candidates.
-                      // Further trimming based on broadcast domains is done later in the pipeline.
-                      || !iface.getAllLinkLocalAddresses().isEmpty())
+                  iface.getAllConcreteAddresses().stream().anyMatch(ia -> p.containsIp(ia.getIp())))
           .forEach(candidateInterfaces::add);
 
       for (Interface iface1 : bucketEntry.getValue()) {

@@ -13641,6 +13641,7 @@
             ],
             "allowedVlans" : "",
             "autostate" : true,
+            "bandwidth" : 8.0E10,
             "encapsulationVlan" : 4094,
             "mtu" : 1500,
             "ospfDeadInterval" : 0,
@@ -13656,7 +13657,7 @@
             "switchport" : false,
             "switchportMode" : "NONE",
             "switchportTrunkEncapsulation" : "DOT1Q",
-            "type" : "LOGICAL",
+            "type" : "AGGREGATE_CHILD",
             "vrf" : "default"
           },
           "bond2" : {
