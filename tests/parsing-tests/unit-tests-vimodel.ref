@@ -25812,7 +25812,7 @@
             "name" : "zone~A~to~zone~B",
             "lines" : [
               {
-                "action" : "DENY",
+                "action" : "PERMIT",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.AndMatchExpr",
                   "conjuncts" : [
