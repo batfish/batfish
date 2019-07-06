@@ -80,7 +80,8 @@ public class BgpRoutingProcessTest {
     _vrf.setBgpProcess(_bgpProcess);
     _vrf2.setBgpProcess(_bgpProcess2);
     _routingProcess =
-        new BgpRoutingProcess(_bgpProcess, _c, DEFAULT_VRF_NAME, new Rib(), BgpTopology.EMPTY);
+        new BgpRoutingProcess(
+            _bgpProcess, _c, DEFAULT_VRF_NAME, new Rib(), BgpTopology.EMPTY, new PrefixTracer());
   }
 
   @Test
@@ -318,7 +319,8 @@ public class BgpRoutingProcessTest {
 
     BgpTopology topology = new BgpTopology(graph);
     BgpRoutingProcess routingProcess =
-        new BgpRoutingProcess(bgpProc, _c, DEFAULT_VRF_NAME, new Rib(), topology);
+        new BgpRoutingProcess(
+            bgpProc, _c, DEFAULT_VRF_NAME, new Rib(), topology, new PrefixTracer());
 
     // No compatible peers for IPv4
     assertThat(
