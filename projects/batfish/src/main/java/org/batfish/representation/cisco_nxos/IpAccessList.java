@@ -17,4 +17,12 @@ public final class IpAccessList implements Serializable {
     _name = name;
     _lines = new TreeMap<>();
   }
+
+  public @Nonnull SortedMap<Long, IpAccessListLine> getLines() {
+    return _lines;
+  }
+
+  public @Nonnull String getName() {
+    return _name;
+  }
 }
