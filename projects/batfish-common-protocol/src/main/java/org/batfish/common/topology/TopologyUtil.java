@@ -394,6 +394,7 @@ public final class TopologyUtil {
   @VisibleForTesting
   static @Nonnull Topology computeRawLayer3Topology(
       @Nonnull Layer1Topology rawLayer1Topology,
+      @Nonnull Layer1Topology layer1LogicalTopology,
       @Nonnull Layer2Topology layer2Topology,
       @Nonnull Map<String, Configuration> configurations) {
     Set<String> rawLayer1TailNodes =
@@ -412,7 +413,7 @@ public final class TopologyUtil {
     NetworkConfigurations nc = NetworkConfigurations.of(configurations);
     // Look over all L1 logical edges and see if they both have link-local addresses
     Stream<Edge> layer1LLAEdgeStream =
-        computeLayer1LogicalTopology(rawLayer1Topology, configurations).getGraph().edges().stream()
+        layer1LogicalTopology.getGraph().edges().stream()
             .filter(
                 edge ->
                     // at least one link-local address exists on both edge endpoints
@@ -466,10 +467,14 @@ public final class TopologyUtil {
    */
   public static @Nonnull Topology computeRawLayer3Topology(
       @Nonnull Optional<Layer1Topology> rawLayer1PhysicalTopology,
+      @Nonnull Optional<Layer1Topology> layer1LogicalTopology,
       @Nonnull Optional<Layer2Topology> layer2Topology,
       @Nonnull Map<String, Configuration> configurations) {
     return rawLayer1PhysicalTopology
-        .map(l1 -> computeRawLayer3Topology(l1, layer2Topology.get(), configurations))
+        .map(
+            l1 ->
+                computeRawLayer3Topology(
+                    l1, layer1LogicalTopology.get(), layer2Topology.get(), configurations))
         .orElse(synthesizeL3Topology(configurations));
   }
 

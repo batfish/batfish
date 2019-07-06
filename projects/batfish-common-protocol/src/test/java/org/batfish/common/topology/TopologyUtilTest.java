@@ -872,7 +872,8 @@ public final class TopologyUtilTest {
       _ib.setOwner(c2).setVrf(v2).setName(c2i1Name).setAddress(p1Addr2).build();
 
       Map<String, Configuration> configs = ImmutableMap.of(c1Name, c1, c2Name, c2);
-      Topology layer3Topology = computeRawLayer3Topology(rawL1AllPresent, sameDomain, configs);
+      Topology layer3Topology =
+          computeRawLayer3Topology(rawL1AllPresent, Layer1Topology.EMPTY, sameDomain, configs);
       assertThat(layer3Topology.getEdges(), containsInAnyOrder(c1i1c2i1, c2i1c1i1));
     }
 
@@ -883,7 +884,8 @@ public final class TopologyUtilTest {
 
       Map<String, Configuration> configs = ImmutableMap.of(c1Name, c1, c2Name, c2);
       Topology layer3Topology =
-          computeRawLayer3Topology(rawL1AllPresent, differentDomains, configs);
+          computeRawLayer3Topology(
+              rawL1AllPresent, Layer1Topology.EMPTY, differentDomains, configs);
       assertThat(layer3Topology.getEdges(), empty());
     }
 
@@ -893,7 +895,8 @@ public final class TopologyUtilTest {
       _ib.setOwner(c2).setVrf(v2).setName(c2i1Name).setAddress(p2Addr1).build();
 
       Map<String, Configuration> configs = ImmutableMap.of(c1Name, c1, c2Name, c2);
-      Topology layer3Topology = computeRawLayer3Topology(rawL1AllPresent, sameDomain, configs);
+      Topology layer3Topology =
+          computeRawLayer3Topology(rawL1AllPresent, Layer1Topology.EMPTY, sameDomain, configs);
       assertThat(layer3Topology.getEdges(), empty());
     }
 
@@ -904,7 +907,8 @@ public final class TopologyUtilTest {
 
       Map<String, Configuration> configs = ImmutableMap.of(c1Name, c1, c2Name, c2);
       Topology layer3Topology =
-          computeRawLayer3Topology(rawL1AllPresent, differentDomains, configs);
+          computeRawLayer3Topology(
+              rawL1AllPresent, Layer1Topology.EMPTY, differentDomains, configs);
       assertThat(layer3Topology.getEdges(), empty());
     }
 
@@ -916,7 +920,8 @@ public final class TopologyUtilTest {
 
       Map<String, Configuration> configs = ImmutableMap.of(c1Name, c1, c2Name, c2);
       Topology layer3Topology =
-          computeRawLayer3Topology(rawL1NonePresent, differentDomains, configs);
+          computeRawLayer3Topology(
+              rawL1NonePresent, Layer1Topology.EMPTY, differentDomains, configs);
       assertThat(layer3Topology.getEdges(), containsInAnyOrder(c1i1c2i1, c2i1c1i1));
     }
   }
@@ -1033,6 +1038,7 @@ public final class TopologyUtilTest {
     Topology layer3Topology =
         computeRawLayer3Topology(
             rawLayer1Topology,
+            Layer1Topology.EMPTY,
             computeLayer2Topology(
                 computeLayer1LogicalTopology(layer1PhysicalTopology, configurations),
                 VxlanTopology.EMPTY,
@@ -1170,6 +1176,7 @@ public final class TopologyUtilTest {
     Topology layer3Topology =
         computeRawLayer3Topology(
             rawLayer1Topology,
+            Layer1Topology.EMPTY,
             computeLayer2Topology(
                 computeLayer1LogicalTopology(layer1PhysicalTopology, configurations),
                 VxlanTopology.EMPTY,
@@ -1352,13 +1359,16 @@ public final class TopologyUtilTest {
     Interface i1 = _ib.setOwner(c1).setAddress(LinkLocalAddress.of(ip)).build();
     Interface i2 = _ib.setOwner(c2).setAddress(LinkLocalAddress.of(ip)).build();
 
+    Layer1Topology layer1Topology =
+        new Layer1Topology(
+            Collections.singleton(
+                new Layer1Edge(
+                    new Layer1Node(c1.getHostname(), i1.getName()),
+                    new Layer1Node(c2.getHostname(), i2.getName()))));
     Topology t =
         computeRawLayer3Topology(
-            new Layer1Topology(
-                Collections.singleton(
-                    new Layer1Edge(
-                        new Layer1Node(c1.getHostname(), i1.getName()),
-                        new Layer1Node(c2.getHostname(), i2.getName())))),
+            layer1Topology,
+            layer1Topology,
             Layer2Topology.EMPTY,
             ImmutableMap.of(c1.getHostname(), c1, c2.getHostname(), c2));
     Edge edge =
