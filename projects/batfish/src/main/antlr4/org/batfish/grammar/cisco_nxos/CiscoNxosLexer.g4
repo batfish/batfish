@@ -5,6 +5,7 @@ options {
 }
 
 tokens {
+  REMARK_TEXT,
   SUBDOMAIN_NAME,
   WORD
 }
@@ -19,9 +20,59 @@ ACCESS_GROUP
   'access-group'
 ;
 
+ACCESS_LIST
+:
+  'access-list' -> pushMode ( M_Word )
+;
+
 ACCESS_MAP
 :
   'access-map'
+;
+
+ACK
+:
+  'ack'
+;
+
+ACL_COMMON_IP_OPTIONS
+:
+  'acl_common_ip_options'
+;
+
+ACL_GLOBAL_OPTIONS
+:
+  'acl_global_options'
+;
+
+ACL_ICMP
+:
+  'acl_icmp'
+;
+
+ACL_IGMP
+:
+  'acl_igmp'
+;
+
+ACL_INDICES
+:
+  'acl_indices'
+;
+
+ACL_SIMPLE_PROTOCOLS
+:
+  'acl_simple_protocols'
+;
+
+ACL_TCP
+:
+  'acl_tcp'
+;
+
+ACL_UDP
+:
+  'acl_udp'
 ;
 
 ADD
@@ -39,9 +90,94 @@ ADDRESS_FAMILY
   'address-family'
 ;
 
+ADDRGROUP
+:
+  'addrgroup' -> pushMode ( M_Word )
+;
+
+ADMINISTRATIVELY_PROHIBITED
+:
+  'administratively-prohibited'
+;
+
+AF11
+:
+  'af11'
+;
+
+AF12
+:
+  'af12'
+;
+
+AF13
+:
+  'af13'
+;
+
+AF21
+:
+  'af21'
+;
+
+AF22
+:
+  'af22'
+;
+
+AF23
+:
+  'af23'
+;
+
+AF31
+:
+  'af31'
+;
+
+AF32
+:
+  'af32'
+;
+
+AF33
+:
+  'af33'
+;
+
+AF41
+:
+  'af41'
+;
+
+AF42
+:
+  'af42'
+;
+
+AF43
+:
+  'af43'
+;
+
+AHP
+:
+  'ahp'
+;
+
 ALLOWED
 :
   'allowed'
+;
+
+ALTERNATE_ADDRESS
+:
+  'alternate-address'
+;
+
+ANY
+:
+  'any'
 ;
 
 AUTOSTATE
@@ -54,9 +190,39 @@ BANDWIDTH
   'bandwidth'
 ;
 
+BGP
+:
+  'bgp'
+;
+
+BIFF
+:
+  'biff'
+;
+
+BOOTPC
+:
+  'bootpc'
+;
+
+BOOTPS
+:
+  'bootps'
+;
+
 CHANNEL_GROUP
 :
   'channel-group'
+;
+
+CHARGEN
+:
+  'chargen'
+;
+
+CMD
+:
+  'cmd'
 ;
 
 CONFIGURATION
@@ -64,9 +230,84 @@ CONFIGURATION
   'configuration'
 ;
 
+CONNECT
+:
+  'connect'
+;
+
 CONTEXT
 :
   'context' -> pushMode ( M_Word )
+;
+
+CONVERSION_ERROR
+:
+  'conversion-error'
+;
+
+CRITICAL
+:
+  'critical'
+;
+
+CS1
+:
+  'cs1'
+;
+
+CS2
+:
+  'cs2'
+;
+
+CS3
+:
+  'cs3'
+;
+
+CS4
+:
+  'cs4'
+;
+
+CS5
+:
+  'cs5'
+;
+
+CS6
+:
+  'cs6'
+;
+
+CS7
+:
+  'cs7'
+;
+
+DAYTIME
+:
+  'daytime'
+;
+
+DEFAULT
+:
+  'default'
+;
+
+DELETE
+:
+  'delete'
+;
+
+DENY_ALL
+:
+  'deny-all'
+;
+
+DENY
+:
+  'deny'
 ;
 
 DESCRIPTION
@@ -74,14 +315,89 @@ DESCRIPTION
   'description'
 ;
 
+DISCARD
+:
+  'discard'
+;
+
+DNSIX
+:
+  'dnsix'
+;
+
+DOD_HOST_PROHIBITED
+:
+  'dod-host-prohibited'
+;
+
+DOD_NET_PROHIBITED
+:
+  'dod-net-prohibited'
+;
+
+DOMAIN
+:
+  'domain'
+;
+
 DOT1Q
 :
   [Dd] [Oo] [Tt] '1' [Qq]
 ;
 
+DRIP
+:
+  'drip'
+;
+
+DSCP
+:
+  'dscp'
+;
+
+DVMRP
+:
+  'dvmrp'
+;
+
+ECHO
+:
+  'echo'
+;
+
+ECHO_REPLY
+:
+  'echo-reply'
+;
+
+EF
+:
+  'ef'
+;
+
+EIGRP
+:
+  'eigrp'
+;
+
 ENCAPSULATION
 :
   'encapsulation'
+;
+
+EQ
+:
+  'eq'
+;
+
+ESP
+:
+  'esp'
+;
+
+ESTABLISHED
+:
+  'established'
 ;
 
 ETHERNET
@@ -92,6 +408,11 @@ ETHERNET
 EXCEPT
 :
   'except'
+;
+
+EXEC
+:
+  'exec'
 ;
 
 EXPLICIT_TRACKING
@@ -114,14 +435,129 @@ FILTER
   'filter'
 ;
 
+FIN
+:
+  'fin'
+;
+
+FINGER
+:
+  'finger'
+;
+
+FLASH
+:
+  'flash'
+;
+
+FLASH_OVERRIDE
+:
+  'flash-override'
+;
+
 FORCE
 :
   'force'
 ;
 
+FRAGMENTS
+:
+  'fragments'
+;
+
+FTP_DATA
+:
+  'ftp-data'
+;
+
+FTP
+:
+  'ftp'
+;
+
+GENERAL_PARAMETER_PROBLEM
+:
+  'general-parameter-problem'
+;
+
+GET
+:
+  'get'
+;
+
+GOPHER
+:
+  'gopher'
+;
+
+GRE
+:
+  'gre'
+;
+
 GROUP_TIMEOUT
 :
   'group-timeout'
+;
+
+GT
+:
+  'gt'
+;
+
+HEAD
+:
+  'head'
+;
+
+HOST
+:
+  'host'
+;
+
+HOST_ISOLATED
+:
+  'host-isolated'
+;
+
+HOST_PRECEDENCE_UNREACHABLE
+:
+  'host-precedence-unreachable'
+;
+
+HOST_QUERY
+:
+  'host-query'
+;
+
+HOST_REDIRECT
+:
+  'host-redirect'
+;
+
+HOST_REPORT
+:
+  'host-report'
+;
+
+HOST_TOS_REDIRECT
+:
+  'host-tos-redirect'
+;
+
+HOST_TOS_UNREACHABLE
+:
+  'host-tos-unreachable'
+;
+
+HOST_UNKNOWN
+:
+  'host-unknown'
+;
+
+HOST_UNREACHABLE
+:
+  'host-unreachable'
 ;
 
 HOSTNAME
@@ -138,6 +574,46 @@ HOSTNAME
 
 ;
 
+HTTP_METHOD
+:
+  'http-method'
+;
+
+ICMP
+:
+  'icmp'
+;
+
+IDENT
+:
+  'ident'
+;
+
+IGMP
+:
+  'igmp'
+;
+
+IGNORE
+:
+  'ignore'
+;
+
+IMMEDIATE
+:
+  'immediate'
+;
+
+INFORMATION_REPLY
+:
+  'information-reply'
+;
+
+INFORMATION_REQUEST
+:
+  'information-request'
+;
+
 INTERFACE
 :
 // most common abbreviation
@@ -145,6 +621,11 @@ INTERFACE
   (
     'erface'
   )?
+;
+
+INTERNET
+:
+  'internet'
 ;
 
 IP
@@ -162,6 +643,26 @@ IPV6
   'ipv6'
 ;
 
+IRC
+:
+  'irc'
+;
+
+ISAKMP
+:
+  'isakmp'
+;
+
+KLOGIN
+:
+  'klogin'
+;
+
+KSHELL
+:
+  'kshell'
+;
+
 LAST_MEMBER_QUERY_INTERVAL
 :
   'last-member-query-interval'
@@ -172,6 +673,16 @@ LINK_LOCAL_GROUPS_SUPPRESSION
   'link-local-groups-suppression'
 ;
 
+LOG
+:
+  'log'
+;
+
+LOGIN
+:
+  'login'
+;
+
 LOOPBACK
 :
 // most common abbreviation
@@ -179,6 +690,26 @@ LOOPBACK
   (
     [Oo] [Pp] [Bb] [Aa] [Cc] [Kk]
   )?
+;
+
+LPD
+:
+  'lpd'
+;
+
+LT
+:
+  'lt'
+;
+
+MASK_REPLY
+:
+  'mask-reply'
+;
+
+MASK_REQUEST
+:
+  'mask-request'
 ;
 
 MAXIMUM
@@ -201,6 +732,16 @@ MGMT
   [Mm] [Gg] [Mm] [Tt]
 ;
 
+MOBILE_IP
+:
+  'mobile-ip'
+;
+
+MOBILE_REDIRECT
+:
+  'mobile-redirect'
+;
+
 MROUTER
 :
   'mrouter'
@@ -211,9 +752,69 @@ NAME
   'name' -> pushMode ( M_Word )
 ;
 
+NAMESERVER
+:
+  'nameserver'
+;
+
 NATIVE
 :
   'native'
+;
+
+NEQ
+:
+  'neq'
+;
+
+NETBIOS_DGM
+:
+  'netbios-dgm'
+;
+
+NETBIOS_NS
+:
+  'netbios-ns'
+;
+
+NETBIOS_SS
+:
+  'netbios-ss'
+;
+
+NET_REDIRECT
+:
+  'net-redirect'
+;
+
+NET_TOS_REDIRECT
+:
+  'net-tos-redirect'
+;
+
+NET_TOS_UNREACHABLE
+:
+  'net-tos-unreachable'
+;
+
+NET_UNREACHABLE
+:
+  'net-unreachable'
+;
+
+NETWORK
+:
+  'network'
+;
+
+NETWORK_UNKNOWN
+:
+  'network-unknown'
+;
+
+NNTP
+:
+  'nntp'
 ;
 
 NO
@@ -221,9 +822,29 @@ NO
   'no'
 ;
 
+NO_ROOM_FOR_OPTION
+:
+  'no-room-for-option'
+;
+
 NONE
 :
   'none'
+;
+
+NON500_ISAKMP
+:
+  'non500-isakmp'
+;
+
+NOS
+:
+  'nos'
+;
+
+NTP
+:
+  'ntp'
 ;
 
 NULL0
@@ -231,9 +852,114 @@ NULL0
   [Nn] [Uu] [Ll] [Ll] ' '* '0'
 ;
 
+NVE
+:
+  'nve'
+;
+
+OPTION_MISSING
+:
+  'option-missing'
+;
+
+OSPF
+:
+  'ospf'
+;
+
+PACKET_LENGTH
+:
+  'packet-length'
+;
+
+PACKET_TOO_BIG
+:
+  'packet-too-big'
+;
+
+PARAMETER_PROBLEM
+:
+  'parameter-problem'
+;
+
+PCP
+:
+  'pcp'
+;
+
+PER_ENTRY
+:
+  'per-entry'
+;
+
+PERMIT_ALL
+:
+  'permit-all'
+;
+
+PERMIT
+:
+  'permit'
+;
+
+PIM_AUTO_RP
+:
+  'pim-auto-rp'
+;
+
+PIM
+:
+  'pim'
+;
+
+POP2
+:
+  'pop2'
+;
+
+POP3
+:
+  'pop3'
+;
+
 PORT_CHANNEL
 :
   [Pp] [Oo] [Rr] [Tt] '-' [Cc] [Hh] [Aa] [Nn] [Nn] [Ee] [Ll]
+;
+
+PORT_UNREACHABLE
+:
+  'port-unreachable'
+;
+
+PORTGROUP
+:
+  'portgroup' -> pushMode ( M_Word )
+;
+
+POST
+:
+  'post'
+;
+
+PRECEDENCE
+:
+  'precedence'
+;
+
+PRECEDENCE_UNREACHABLE
+:
+  'precedence-unreachable'
+;
+
+PRIORITY
+:
+  'priority'
+;
+
+PROTOCOL_UNREACHABLE
+:
+  'protocol-unreachable'
 ;
 
 PROXY
@@ -244,6 +970,16 @@ PROXY
 PROXY_LEAVE
 :
   'proxy-leave'
+;
+
+PSH
+:
+  'psh'
+;
+
+PUT
+:
+  'put'
 ;
 
 QUERIER
@@ -266,9 +1002,29 @@ QUERY_MAX_RESPONSE_TIME
   'query-max-response-time'
 ;
 
+RANGE
+:
+  'range'
+;
+
+REASSEMBLY_TIMEOUT
+:
+  'reassembly-timeout'
+;
+
+REDIRECT
+:
+  'redirect'
+;
+
 REDIRECTS
 :
   'redirects'
+;
+
+REMARK
+:
+  'remark' -> pushMode ( M_Remark )
 ;
 
 REMOVE
@@ -291,14 +1047,44 @@ REPORT_SUPPRESSION
   'report-suppression'
 ;
 
+RIP
+:
+  'rip'
+;
+
 ROBUSTNESS_VARIABLE
 :
   'robustness-variable'
 ;
 
+ROUTABLE
+:
+  'routable'
+;
+
 ROUTE
 :
   'route'
+;
+
+ROUTER_ADVERTISEMENT
+:
+  'router-advertisement'
+;
+
+ROUTER_SOLICITATION
+:
+  'router-solicitation'
+;
+
+ROUTINE
+:
+  'routine'
+;
+
+RST
+:
+  'rst'
 ;
 
 SECONDARY
@@ -309,6 +1095,31 @@ SECONDARY
 SHUTDOWN
 :
   'shutdown'
+;
+
+SMTP
+:
+  'smtp'
+;
+
+SNMP
+:
+  'snmp'
+;
+
+SNMPTRAP
+:
+  'snmptrap'
+;
+
+SOURCE_QUENCH
+:
+  'source-quench'
+;
+
+SOURCE_ROUTE_FAILED
+:
+  'source-route-failed'
 ;
 
 STARTUP_QUERY_COUNT
@@ -331,14 +1142,99 @@ STATIC_GROUP
   'static-group'
 ;
 
+STATISTICS
+:
+  'statistics'
+;
+
+SUNRPC
+:
+  'sunrpc'
+;
+
 SWITCHPORT
 :
   'switchport'
 ;
 
+SYN
+:
+  'syn'
+;
+
+SYSLOG
+:
+  'syslog'
+;
+
+TACACS
+:
+  'tacacs'
+;
+
 TAG
 :
   'tag'
+;
+
+TALK
+:
+  'talk'
+;
+
+TCP_FLAGS_MASK
+:
+  'tcp-flags-mask'
+;
+
+TCP_OPTION_LENGTH
+:
+  'tcp-option-length'
+;
+
+TCP
+:
+  'tcp'
+;
+
+TELNET
+:
+  'telnet'
+;
+
+TFTP
+:
+  'tftp'
+;
+
+TIME_EXCEEDED
+:
+  'time-exceeded'
+;
+
+TIMESTAMP_REPLY
+:
+  'timestamp-reply'
+;
+
+TIMESTAMP_REQUEST
+:
+  'timestamp-request'
+;
+
+TIME
+:
+  'time'
+;
+
+TRACEROUTE
+:
+  'traceroute'
+;
+
+TRACE
+:
+  'trace'
 ;
 
 TRACK
@@ -351,9 +1247,39 @@ TRUNK
   'trunk'
 ;
 
+TTL
+:
+  'ttl'
+;
+
+TTL_EXCEEDED
+:
+  'ttl-exceeded'
+;
+
+UDP
+:
+  'udp'
+;
+
 UNICAST
 :
   'unicast'
+;
+
+UNREACHABLE
+:
+  'unreachable'
+;
+
+URG
+:
+  'urg'
+;
+
+UUCP
+:
+  'uucp'
 ;
 
 V3_REPORT_SUPPRESSION
@@ -371,6 +1297,11 @@ VLAN
   [Vv] [Ll] [Aa] [Nn]
 ;
 
+VNI
+:
+  'vni'
+;
+
 VRF
 :
   'vrf'
@@ -383,9 +1314,29 @@ VRF
 
 ;
 
+WHOIS
+:
+  'whois'
+;
+
+WHO
+:
+  'who'
+;
+
+WWW
+:
+  'www'
+;
+
 XCONNECT
 :
   'xconnect'
+;
+
+XDMCP
+:
+  'xdmcp'
 ;
 
 // Other Tokens
@@ -772,6 +1723,20 @@ M_Hostname_SUBDOMAIN_NAME
 M_Hostname_WS
 :
   F_Whitespace+ -> channel ( HIDDEN )
+;
+
+mode M_Remark;
+
+M_Remark_WS
+:
+  F_Whitespace+ -> channel ( HIDDEN )
+;
+
+M_Remark_REMARK_TEXT
+// Keep below M_Remark_WS
+
+:
+  F_NonNewline+ -> type ( REMARK_TEXT ) , popMode
 ;
 
 mode M_Word;

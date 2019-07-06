@@ -1,0 +1,6 @@
+!RANCID-CONTENT-TYPE: cisco-nx
+!
+hostname nxos_ip_access_list_references
+!
+
+ip access-list acl_unused

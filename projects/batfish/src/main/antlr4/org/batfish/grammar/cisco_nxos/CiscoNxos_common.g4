@@ -47,6 +47,12 @@ ip_prefix
   IP_PREFIX
 ;
 
+line_action
+:
+  DENY
+  | PERMIT
+;
+
 null_rest_of_line
 :
   ~NEWLINE* NEWLINE
@@ -109,6 +115,14 @@ vlan_id_interval
   (
     DASH high = vlan_id
   )?
+;
+
+vni_number
+:
+// 0-16777215
+  UINT8
+  | UINT16
+  | UINT32
 ;
 
 vrf_name

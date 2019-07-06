@@ -509,6 +509,47 @@ public final class CiscoNxosGrammarTest {
   }
 
   @Test
+  public void testIpAccessListExtraction() {
+    String hostname = "nxos_ip_access_list";
+    CiscoNxosConfiguration vc = parseVendorConfig(hostname);
+
+    assertThat(
+        vc.getIpAccessLists(),
+        hasKeys(
+            "acl_global_options",
+            "acl_indices",
+            "acl_simple_protocols",
+            "acl_common_ip_options_destination_ip",
+            "acl_common_ip_options_source_ip",
+            "acl_common_ip_options_dscp",
+            "acl_common_ip_options_packet_length",
+            "acl_common_ip_options_precedence",
+            "acl_common_ip_options_ttl",
+            "acl_common_ip_options_log",
+            "acl_icmp",
+            "acl_igmp",
+            "acl_tcp_flags",
+            "acl_tcp_destination_port",
+            "acl_tcp_source_port",
+            "acl_tcp_http_method",
+            "acl_tcp_options",
+            "acl_udp_vxlan",
+            "acl_udp_destination_port",
+            "acl_udp_source_port"));
+  }
+
+  @Test
+  public void testIpAccessListReferences() throws IOException {
+    String hostname = "nxos_ip_access_list_references";
+    String filename = String.format("configs/%s", hostname);
+    ConvertConfigurationAnswerElement ans =
+        getBatfishForConfigurationNames(hostname).loadConvertConfigurationAnswerElementOrReparse();
+
+    assertThat(
+        ans, hasNumReferrers(filename, CiscoNxosStructureType.IP_ACCESS_LIST, "acl_unused", 0));
+  }
+
+  @Test
   public void testPortChannelConversion() throws IOException {
     String hostname = "nxos_port_channel";
     Configuration c = parseConfig(hostname);
