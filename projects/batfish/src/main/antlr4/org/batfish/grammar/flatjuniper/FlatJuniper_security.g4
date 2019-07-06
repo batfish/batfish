@@ -1214,6 +1214,7 @@ sepctxpt_permit
    PERMIT
    (
       apply
+      | sepctxptp_services_offload
       | sepctxptp_tunnel
    )
 ;
@@ -1221,6 +1222,11 @@ sepctxpt_permit
 sepctxpt_trace
 :
    TRACE
+;
+
+sepctxptp_services_offload
+:
+   SERVICES_OFFLOAD apply
 ;
 
 sepctxptp_tunnel
