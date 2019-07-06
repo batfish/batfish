@@ -28,6 +28,7 @@ import static org.batfish.datamodel.matchers.InterfaceMatchers.hasAllowedVlans;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasDependencies;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasDescription;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasEncapsulationVlan;
+import static org.batfish.datamodel.matchers.InterfaceMatchers.hasInterfaceType;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasMlagId;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasNativeVlan;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasSpeed;
@@ -90,6 +91,7 @@ import org.batfish.datamodel.Edge;
 import org.batfish.datamodel.IntegerSpace;
 import org.batfish.datamodel.Interface.Dependency;
 import org.batfish.datamodel.Interface.DependencyType;
+import org.batfish.datamodel.InterfaceType;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Ip6;
 import org.batfish.datamodel.LineAction;
@@ -932,6 +934,11 @@ public final class CumulusNcluGrammarTest {
     assertThat(c.getAllInterfaces().get("bond1").getChannelGroupMembers(), contains("swp1"));
     assertThat(c.getAllInterfaces().get("bond2").getChannelGroupMembers(), contains("swp2"));
     assertThat(c.getAllInterfaces().get("bond3").getChannelGroupMembers(), contains("swp3"));
+
+    // type
+    assertThat(c, hasInterface("bond3", hasInterfaceType(InterfaceType.AGGREGATED)));
+    assertThat(c, hasInterface("bond3.4094", hasInterfaceType(InterfaceType.AGGREGATE_CHILD)));
+    assertThat(c, hasInterface("swp5.1", hasInterfaceType(InterfaceType.LOGICAL)));
   }
 
   @Test

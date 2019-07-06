@@ -160,8 +160,7 @@ class IncrementalBdpEngine {
                       initialTopologyContext.getRawLayer1PhysicalTopology(),
                       newLayer2Topology,
                       configurations),
-                  toEdgeSet(newIpsecTopology, configurations),
-                  configurations);
+                  toEdgeSet(newIpsecTopology, configurations));
 
           // Initialize BGP topology
           BgpTopology newBgpTopology =

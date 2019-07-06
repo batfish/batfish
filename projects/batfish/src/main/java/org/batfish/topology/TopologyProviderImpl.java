@@ -266,9 +266,8 @@ public final class TopologyProviderImpl implements TopologyProvider {
             .buildSpan("TopologyProviderImpl::computeInitialLayer3Topology")
             .startActive()) {
       assert span != null; // avoid unused warning
-      Map<String, Configuration> configurations = _batfish.loadConfigurations(networkSnapshot);
       return TopologyUtil.computeLayer3Topology(
-          getRawLayer3Topology(networkSnapshot), ImmutableSet.of(), configurations);
+          getRawLayer3Topology(networkSnapshot), ImmutableSet.of());
     }
   }
 
