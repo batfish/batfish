@@ -966,7 +966,10 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
         org.batfish.datamodel.Interface.builder()
             .setName(name)
             .setOwner(_c)
-            .setType(InterfaceType.LOGICAL)
+            .setType(
+                iface.getType() == CumulusInterfaceType.BOND_SUBINTERFACE
+                    ? InterfaceType.AGGREGATE_CHILD
+                    : InterfaceType.LOGICAL)
             .build();
     newIface.setDependencies(
         ImmutableSet.of(new Dependency(superInterfaceName, DependencyType.BIND)));
