@@ -292,6 +292,7 @@ public final class TopologyProviderImpl implements TopologyProvider {
       Map<String, Configuration> configurations = _batfish.loadConfigurations(networkSnapshot);
       return TopologyUtil.computeRawLayer3Topology(
           getRawLayer1PhysicalTopology(networkSnapshot),
+          getLayer1LogicalTopology(networkSnapshot),
           getInitialLayer2Topology(networkSnapshot),
           configurations);
     }
