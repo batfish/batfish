@@ -5,6 +5,7 @@ options {
 }
 
 tokens {
+  ALIAS_BODY,
   EXTRA_CONFIGURATION_FOOTER,
   USERNAME
 }
@@ -66,9 +67,24 @@ ADVERTISE_DEFAULT_GW
   'advertise-default-gw'
 ;
 
+AGENTX
+:
+  'agentx'
+;
+
 ALERTS
 :
   'alerts'
+;
+
+ALIAS
+:
+  'alias' -> pushMode(M_Alias)
+;
+
+ALWAYS_COMPARE_MED
+:
+  'always-compare-med'
 ;
 
 ARP_ND_SUPPRESS
@@ -161,6 +177,11 @@ DESCRIPTION
   'description'
 ;
 
+DHCP
+:
+  'dhcp'
+;
+
 DNS
 :
   'dns'
@@ -194,6 +215,16 @@ EXIT_VRF
 EXTERNAL
 :
   'external'
+;
+
+FORWARD
+:
+  'forward'
+;
+
+GATEWAY
+:
+  'gateway'
 ;
 
 HOSTNAME
@@ -296,9 +327,24 @@ MATCH
   'match'
 ;
 
+MSEC
+:
+  'msec'
+;
+
+MTU
+:
+  'mtu'
+;
+
 NAMESERVER
 :
   'nameserver'
+;
+
+ND
+:
+  'nd'
 ;
 
 NEIGHBOR
@@ -314,6 +360,12 @@ NETWORK
 NET
 :
   'net'
+;
+
+NO
+:
+
+  'no'
 ;
 
 NOTIFICATIONS
@@ -376,6 +428,16 @@ PVID
   'pvid'
 ;
 
+RA_INTERVAL
+:
+  'ra-interval'
+;
+
+RA_LIFETIME
+:
+  'ra-lifetime'
+;
+
 REDISTRIBUTE
 :
   'redistribute'
@@ -389,6 +451,11 @@ REMOTE_AS
 ROUTE
 :
   'route'
+;
+
+ROUTER
+:
+  'router'
 ;
 
 ROUTE_MAP
@@ -436,6 +503,11 @@ SOURCE
   'source'
 ;
 
+SPEED
+:
+  'speed'
+;
+
 STATIC
 :
   'static'
@@ -446,10 +518,11 @@ STP
   'stp'
 ;
 
-SPEED
+SUPPRESS_RA
 :
-  'speed'
+  'suppress-ra'
 ;
+
 
 SYS_MAC
 :
@@ -938,6 +1011,19 @@ F_WordSegment
 ;
 
 // Lexer Modes
+
+mode M_Alias;
+
+M_Alias_WS
+:
+  F_Whitespace+ -> channel(HIDDEN)
+;
+
+M_Alias_ALIAS_BODY
+:
+  F_NonNewlineChar+ -> type(ALIAS_BODY) , popMode
+;
+
 mode M_Printf;
 
 // FRR in printf keywords
@@ -952,9 +1038,19 @@ M_Printf_IP
   'ip' -> type ( IP )
 ;
 
+M_Printf_DEC
+:
+   F_Digit+ -> type ( DEC )
+;
+
 M_Printf_ROUTE
 :
   'route' -> type ( ROUTE )
+;
+
+M_Printf_ROUTER
+:
+  'router' -> type ( ROUTER )
 ;
 
 M_Printf_VRF

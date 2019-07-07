@@ -176,9 +176,9 @@ public final class FixedPointTopologyTest {
         .setLayer2Topology(Optional.of(l2))
         .setLayer3Topology(
             computeLayer3Topology(
-                computeRawLayer3Topology(Optional.of(l1), Optional.of(l2), configs),
-                ImmutableSet.of(),
-                configs))
+                computeRawLayer3Topology(
+                    Optional.of(l1), Optional.of(l1), Optional.of(l2), configs),
+                ImmutableSet.of()))
         .setOspfTopology(OspfTopology.EMPTY)
         .setRawLayer1PhysicalTopology(Optional.of(l1))
         .build();

@@ -19,6 +19,7 @@ import org.batfish.datamodel.answers.Schema;
 import org.batfish.datamodel.vendor_family.VendorFamily;
 import org.batfish.specifier.ConstantEnumSetSpecifier;
 import org.batfish.specifier.SpecifierFactories;
+import org.batfish.specifier.parboiled.Grammar;
 
 /**
  * Enables specification a set of node properties.
@@ -312,8 +313,8 @@ public class NodePropertySpecifier extends PropertySpecifier {
     return new NodePropertySpecifier(
         SpecifierFactories.getEnumSetSpecifierOrDefault(
                 expression,
-                NodePropertySpecifier.JAVA_MAP.keySet(),
-                new ConstantEnumSetSpecifier<>(NodePropertySpecifier.JAVA_MAP.keySet()))
+                Grammar.NODE_PROPERTY_SPECIFIER,
+                new ConstantEnumSetSpecifier<>(JAVA_MAP.keySet()))
             .resolve());
   }
 

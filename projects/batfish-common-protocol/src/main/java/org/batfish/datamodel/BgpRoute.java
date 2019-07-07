@@ -8,7 +8,9 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedSet;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Set;
 import java.util.SortedSet;
@@ -18,6 +20,8 @@ import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.BgpRoute.Builder;
 import org.batfish.datamodel.bgp.community.Community;
+import org.batfish.datamodel.bgp.community.ExtendedCommunity;
+import org.batfish.datamodel.bgp.community.StandardCommunity;
 
 /** A generic BGP route containing the common properties among different types of BGP routes */
 @ParametersAreNonnullByDefault
@@ -180,7 +184,7 @@ public abstract class BgpRoute<B extends Builder<B, R>, R extends BgpRoute<B, R>
     }
 
     /** Add communities */
-    public B addCommunities(Set<Community> communities) {
+    public B addCommunities(Collection<? extends Community> communities) {
       if (_communities instanceof ImmutableSortedSet) {
         _communities = new TreeSet<>(_communities);
       }
@@ -290,6 +294,10 @@ public abstract class BgpRoute<B extends Builder<B, R>, R extends BgpRoute<B, R>
   /* NOTE: Cisco-only attribute */
   protected final int _weight;
 
+  // Cached values
+  @Nonnull private Set<StandardCommunity> _standardCommunities;
+  @Nonnull private Set<ExtendedCommunity> _extendedCommunities;
+
   protected BgpRoute(
       @Nullable Prefix network,
       @Nullable Ip nextHopIp,
@@ -333,6 +341,18 @@ public abstract class BgpRoute<B extends Builder<B, R>, R extends BgpRoute<B, R>
     _receivedFromRouteReflectorClient = receivedFromRouteReflectorClient;
     _srcProtocol = srcProtocol;
     _weight = weight;
+
+    // Cache community values
+    _standardCommunities =
+        _communities.stream()
+            .filter(StandardCommunity.class::isInstance)
+            .map(StandardCommunity.class::cast)
+            .collect(ImmutableSet.toImmutableSet());
+    _extendedCommunities =
+        _communities.stream()
+            .filter(ExtendedCommunity.class::isInstance)
+            .map(ExtendedCommunity.class::cast)
+            .collect(ImmutableSet.toImmutableSet());
   }
 
   @Nonnull
@@ -347,10 +367,25 @@ public abstract class BgpRoute<B extends Builder<B, R>, R extends BgpRoute<B, R>
     return _clusterList;
   }
 
+  /** Return the set of all community attributes */
   @Nonnull
   @JsonProperty(PROP_COMMUNITIES)
   public SortedSet<Community> getCommunities() {
     return _communities;
+  }
+
+  /** Return only standard community attributes */
+  @Nonnull
+  @JsonIgnore
+  public Set<StandardCommunity> getStandardCommunities() {
+    return _standardCommunities;
+  }
+
+  /** Return only extended community attributes */
+  @Nonnull
+  @JsonIgnore
+  public Set<ExtendedCommunity> getExtendedCommunities() {
+    return _extendedCommunities;
   }
 
   @JsonProperty(PROP_DISCARD)
@@ -424,7 +459,7 @@ public abstract class BgpRoute<B extends Builder<B, R>, R extends BgpRoute<B, R>
   }
 
   @Override
-  public int getTag() {
+  public long getTag() {
     return NO_TAG;
   }
 

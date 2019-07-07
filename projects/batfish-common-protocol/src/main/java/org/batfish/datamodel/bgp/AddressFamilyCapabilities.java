@@ -27,6 +27,7 @@ public final class AddressFamilyCapabilities implements Serializable {
   private static final String PROP_ALLOW_LOCAL_AS_IN = "allowLocalAsIn";
   private static final String PROP_ALLOW_REMOTE_AS_OUT = "allowRemoteAsOut";
   private static final String PROP_SEND_COMMUNITY = "sendCommunity";
+  private static final String PROP_SEND_EXTENDED_COMMUNITY = "sendExtendedCommunity";
 
   private final boolean _additionalPathsReceive;
   private final boolean _additionalPathsSelectAll;
@@ -36,6 +37,7 @@ public final class AddressFamilyCapabilities implements Serializable {
   private final boolean _allowLocalAsIn;
   private final boolean _allowRemoteAsOut;
   private final boolean _sendCommunity;
+  private final boolean _sendExtendedCommunity;
 
   private AddressFamilyCapabilities(
       boolean additionalPathsReceive,
@@ -45,7 +47,8 @@ public final class AddressFamilyCapabilities implements Serializable {
       boolean advertiseInactive,
       boolean allowLocalAsIn,
       boolean allowRemoteAsOut,
-      boolean sendCommunity) {
+      boolean sendCommunity,
+      boolean sendExtendedCommunity) {
     _additionalPathsReceive = additionalPathsReceive;
     _additionalPathsSelectAll = additionalPathsSelectAll;
     _additionalPathsSend = additionalPathsSend;
@@ -54,6 +57,7 @@ public final class AddressFamilyCapabilities implements Serializable {
     _allowLocalAsIn = allowLocalAsIn;
     _allowRemoteAsOut = allowRemoteAsOut;
     _sendCommunity = sendCommunity;
+    _sendExtendedCommunity = sendExtendedCommunity;
   }
 
   @JsonCreator
@@ -65,7 +69,8 @@ public final class AddressFamilyCapabilities implements Serializable {
       @Nullable @JsonProperty(PROP_ADVERTISE_INACTIVE) Boolean advertiseInactive,
       @Nullable @JsonProperty(PROP_ALLOW_LOCAL_AS_IN) Boolean allowLocalAsIn,
       @Nullable @JsonProperty(PROP_ALLOW_REMOTE_AS_OUT) Boolean allowRemoteAsOut,
-      @Nullable @JsonProperty(PROP_SEND_COMMUNITY) Boolean sendCommunity) {
+      @Nullable @JsonProperty(PROP_SEND_COMMUNITY) Boolean sendCommunity,
+      @Nullable @JsonProperty(PROP_SEND_EXTENDED_COMMUNITY) Boolean sendExtendedCommunity) {
 
     checkArgument(additionalPathsReceive != null, "Missing %s", PROP_ADDITIONAL_PATHS_RECEIVE);
     checkArgument(additionalPathsSelectAll != null, "Missing %s", PROP_ADDITIONAL_PATHS_SELECT_ALL);
@@ -75,6 +80,7 @@ public final class AddressFamilyCapabilities implements Serializable {
     checkArgument(allowLocalAsIn != null, "Missing %s", PROP_ALLOW_LOCAL_AS_IN);
     checkArgument(allowRemoteAsOut != null, "Missing %s", PROP_ALLOW_REMOTE_AS_OUT);
     checkArgument(sendCommunity != null, "Missing %s", PROP_SEND_COMMUNITY);
+    checkArgument(sendExtendedCommunity != null, "Missing %s", PROP_SEND_COMMUNITY);
     return builder()
         .setAdditionalPathsReceive(additionalPathsReceive)
         .setAdditionalPathsSelectAll(additionalPathsSelectAll)
@@ -84,6 +90,7 @@ public final class AddressFamilyCapabilities implements Serializable {
         .setAllowLocalAsIn(allowLocalAsIn)
         .setAllowRemoteAsOut(allowRemoteAsOut)
         .setSendCommunity(sendCommunity)
+        .setSendExtendedCommunity(sendExtendedCommunity)
         .build();
   }
 
@@ -139,10 +146,22 @@ public final class AddressFamilyCapabilities implements Serializable {
     return _allowRemoteAsOut;
   }
 
-  /** Whether or not to propagate the community attribute(s) of advertisements to this peer */
+  /**
+   * Whether or not to propagate the <em>standard</em> community attribute(s) of advertisements to
+   * this peer
+   */
   @JsonProperty(PROP_SEND_COMMUNITY)
   public boolean getSendCommunity() {
     return _sendCommunity;
+  }
+
+  /**
+   * Whether or not to propagate the <em>extended</em> community attribute(s) of advertisements to
+   * this peer
+   */
+  @JsonProperty(PROP_SEND_EXTENDED_COMMUNITY)
+  public boolean getSendExtendedCommunity() {
+    return _sendExtendedCommunity;
   }
 
   @Override
@@ -161,7 +180,8 @@ public final class AddressFamilyCapabilities implements Serializable {
         && _advertiseInactive == that._advertiseInactive
         && _allowLocalAsIn == that._allowLocalAsIn
         && _allowRemoteAsOut == that._allowRemoteAsOut
-        && _sendCommunity == that._sendCommunity;
+        && _sendCommunity == that._sendCommunity
+        && _sendExtendedCommunity == that._sendExtendedCommunity;
   }
 
   @Override
@@ -174,7 +194,8 @@ public final class AddressFamilyCapabilities implements Serializable {
         _advertiseInactive,
         _allowLocalAsIn,
         _allowRemoteAsOut,
-        _sendCommunity);
+        _sendCommunity,
+        _sendExtendedCommunity);
   }
 
   @Override
@@ -188,6 +209,7 @@ public final class AddressFamilyCapabilities implements Serializable {
         .add(PROP_ALLOW_LOCAL_AS_IN, _allowLocalAsIn)
         .add(PROP_ALLOW_REMOTE_AS_OUT, _allowRemoteAsOut)
         .add(PROP_SEND_COMMUNITY, _sendCommunity)
+        .add(PROP_SEND_EXTENDED_COMMUNITY, _sendExtendedCommunity)
         .toString();
   }
 
@@ -208,6 +230,7 @@ public final class AddressFamilyCapabilities implements Serializable {
     private boolean _allowLocalAsIn;
     private boolean _allowRemoteAsOut;
     private boolean _sendCommunity;
+    private boolean _sendExtendedCommunity;
 
     private Builder() {}
 
@@ -251,6 +274,11 @@ public final class AddressFamilyCapabilities implements Serializable {
       return this;
     }
 
+    public Builder setSendExtendedCommunity(boolean sendExtendedCommunity) {
+      _sendExtendedCommunity = sendExtendedCommunity;
+      return this;
+    }
+
     public AddressFamilyCapabilities build() {
       return new AddressFamilyCapabilities(
           _additionalPathsReceive,
@@ -260,7 +288,8 @@ public final class AddressFamilyCapabilities implements Serializable {
           _advertiseInactive,
           _allowLocalAsIn,
           _allowRemoteAsOut,
-          _sendCommunity);
+          _sendCommunity,
+          _sendExtendedCommunity);
     }
   }
 }

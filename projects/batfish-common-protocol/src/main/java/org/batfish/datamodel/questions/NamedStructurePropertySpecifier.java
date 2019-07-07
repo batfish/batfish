@@ -14,6 +14,7 @@ import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.answers.Schema;
 import org.batfish.specifier.ConstantEnumSetSpecifier;
 import org.batfish.specifier.SpecifierFactories;
+import org.batfish.specifier.parboiled.Grammar;
 
 /** Enables specification a set of named structures. */
 @ParametersAreNonnullByDefault
@@ -130,7 +131,9 @@ public class NamedStructurePropertySpecifier extends PropertySpecifier {
   public static NamedStructurePropertySpecifier create(String expression) {
     return new NamedStructurePropertySpecifier(
         SpecifierFactories.getEnumSetSpecifierOrDefault(
-                expression, JAVA_MAP.keySet(), new ConstantEnumSetSpecifier<>(JAVA_MAP.keySet()))
+                expression,
+                Grammar.NAMED_STRUCTURE_SPECIFIER,
+                new ConstantEnumSetSpecifier<>(JAVA_MAP.keySet()))
             .resolve());
   }
 

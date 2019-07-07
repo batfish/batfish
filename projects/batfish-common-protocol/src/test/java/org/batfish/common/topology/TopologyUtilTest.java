@@ -9,7 +9,6 @@ import static org.batfish.common.topology.TopologyUtil.computeLayer2Topology;
 import static org.batfish.common.topology.TopologyUtil.computeRawLayer3Topology;
 import static org.batfish.common.topology.TopologyUtil.computeVniInterNodeEdges;
 import static org.batfish.common.topology.TopologyUtil.computeVniName;
-import static org.batfish.common.topology.TopologyUtil.synthesizeL3Topology;
 import static org.batfish.datamodel.matchers.EdgeMatchers.hasHead;
 import static org.batfish.datamodel.matchers.EdgeMatchers.hasNode1;
 import static org.batfish.datamodel.matchers.EdgeMatchers.hasNode2;
@@ -30,6 +29,7 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.graph.GraphBuilder;
 import com.google.common.graph.MutableGraph;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
@@ -872,7 +872,8 @@ public final class TopologyUtilTest {
       _ib.setOwner(c2).setVrf(v2).setName(c2i1Name).setAddress(p1Addr2).build();
 
       Map<String, Configuration> configs = ImmutableMap.of(c1Name, c1, c2Name, c2);
-      Topology layer3Topology = computeRawLayer3Topology(rawL1AllPresent, sameDomain, configs);
+      Topology layer3Topology =
+          computeRawLayer3Topology(rawL1AllPresent, Layer1Topology.EMPTY, sameDomain, configs);
       assertThat(layer3Topology.getEdges(), containsInAnyOrder(c1i1c2i1, c2i1c1i1));
     }
 
@@ -883,7 +884,8 @@ public final class TopologyUtilTest {
 
       Map<String, Configuration> configs = ImmutableMap.of(c1Name, c1, c2Name, c2);
       Topology layer3Topology =
-          computeRawLayer3Topology(rawL1AllPresent, differentDomains, configs);
+          computeRawLayer3Topology(
+              rawL1AllPresent, Layer1Topology.EMPTY, differentDomains, configs);
       assertThat(layer3Topology.getEdges(), empty());
     }
 
@@ -893,7 +895,8 @@ public final class TopologyUtilTest {
       _ib.setOwner(c2).setVrf(v2).setName(c2i1Name).setAddress(p2Addr1).build();
 
       Map<String, Configuration> configs = ImmutableMap.of(c1Name, c1, c2Name, c2);
-      Topology layer3Topology = computeRawLayer3Topology(rawL1AllPresent, sameDomain, configs);
+      Topology layer3Topology =
+          computeRawLayer3Topology(rawL1AllPresent, Layer1Topology.EMPTY, sameDomain, configs);
       assertThat(layer3Topology.getEdges(), empty());
     }
 
@@ -904,7 +907,8 @@ public final class TopologyUtilTest {
 
       Map<String, Configuration> configs = ImmutableMap.of(c1Name, c1, c2Name, c2);
       Topology layer3Topology =
-          computeRawLayer3Topology(rawL1AllPresent, differentDomains, configs);
+          computeRawLayer3Topology(
+              rawL1AllPresent, Layer1Topology.EMPTY, differentDomains, configs);
       assertThat(layer3Topology.getEdges(), empty());
     }
 
@@ -916,7 +920,8 @@ public final class TopologyUtilTest {
 
       Map<String, Configuration> configs = ImmutableMap.of(c1Name, c1, c2Name, c2);
       Topology layer3Topology =
-          computeRawLayer3Topology(rawL1NonePresent, differentDomains, configs);
+          computeRawLayer3Topology(
+              rawL1NonePresent, Layer1Topology.EMPTY, differentDomains, configs);
       assertThat(layer3Topology.getEdges(), containsInAnyOrder(c1i1c2i1, c2i1c1i1));
     }
   }
@@ -1033,6 +1038,7 @@ public final class TopologyUtilTest {
     Topology layer3Topology =
         computeRawLayer3Topology(
             rawLayer1Topology,
+            Layer1Topology.EMPTY,
             computeLayer2Topology(
                 computeLayer1LogicalTopology(layer1PhysicalTopology, configurations),
                 VxlanTopology.EMPTY,
@@ -1170,6 +1176,7 @@ public final class TopologyUtilTest {
     Topology layer3Topology =
         computeRawLayer3Topology(
             rawLayer1Topology,
+            Layer1Topology.EMPTY,
             computeLayer2Topology(
                 computeLayer1LogicalTopology(layer1PhysicalTopology, configurations),
                 VxlanTopology.EMPTY,
@@ -1344,7 +1351,7 @@ public final class TopologyUtilTest {
   }
 
   @Test
-  public void testSynthesizeTopology_linkLocalAddresses() {
+  public void testComputeLayer3Topology_linkLocalAddresses() {
     _cb.setConfigurationFormat(ConfigurationFormat.CISCO_IOS);
     Configuration c1 = _cb.build();
     Configuration c2 = _cb.build();
@@ -1352,7 +1359,18 @@ public final class TopologyUtilTest {
     Interface i1 = _ib.setOwner(c1).setAddress(LinkLocalAddress.of(ip)).build();
     Interface i2 = _ib.setOwner(c2).setAddress(LinkLocalAddress.of(ip)).build();
 
-    Topology t = synthesizeL3Topology(ImmutableMap.of(c1.getHostname(), c1, c2.getHostname(), c2));
+    Layer1Topology layer1Topology =
+        new Layer1Topology(
+            Collections.singleton(
+                new Layer1Edge(
+                    new Layer1Node(c1.getHostname(), i1.getName()),
+                    new Layer1Node(c2.getHostname(), i2.getName()))));
+    Topology t =
+        computeRawLayer3Topology(
+            layer1Topology,
+            layer1Topology,
+            Layer2Topology.EMPTY,
+            ImmutableMap.of(c1.getHostname(), c1, c2.getHostname(), c2));
     Edge edge =
         new Edge(
             new NodeInterfacePair(c1.getHostname(), i1.getName()),

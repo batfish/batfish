@@ -1,0 +1,22 @@
+!RANCID-CONTENT-TYPE: cisco-nx
+!
+hostname nxos_vrf_references
+!
+
+! Add interface to vrf_used
+interface Ethernet1/1
+  no switchport
+  no shutdown
+  vrf member vrf_used
+!
+
+! Add interface to non-existent vrf_undefined
+interface Ethernet1/2
+  no switchport
+  no shutdown
+  vrf member vrf_undefined
+!
+
+!!! Keep VRF definitions under default VRF configuration to avoid accidental leakage
+vrf context vrf_used
+vrf context vrf_unused

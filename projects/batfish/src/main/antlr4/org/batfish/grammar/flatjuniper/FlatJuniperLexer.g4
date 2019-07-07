@@ -4763,6 +4763,11 @@ RANGE
    'range'
 ;
 
+RANGE_ADDRESS
+:
+   'range-address'
+;
+
 RAS
 :
    'ras'
@@ -5188,6 +5193,16 @@ SECURITY_ZONE
    'security-zone'
 ;
 
+SELF
+:
+   'self'
+;
+
+SEND
+:
+   'send'
+;
+
 SERVER
 :
    'server'
@@ -5218,14 +5233,9 @@ SERVICES
    'services'
 ;
 
-SELF
+SERVICES_OFFLOAD
 :
-   'self'
-;
-
-SEND
-:
-   'send'
+   'services-offload'
 ;
 
 SET

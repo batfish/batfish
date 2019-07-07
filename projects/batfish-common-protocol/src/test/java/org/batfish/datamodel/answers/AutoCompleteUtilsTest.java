@@ -60,6 +60,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
+/** Tests for {@link org.batfish.datamodel.answers.AutoCompleteUtils} */
 public class AutoCompleteUtilsTest {
 
   @Rule public ExpectedException _thrown = ExpectedException.none();

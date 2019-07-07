@@ -348,7 +348,7 @@ public final class BgpProtocolHelperTransformBgpRouteOnExportTest {
 
   @Test
   public void testNonBgpToBgpKeepTag() {
-    int tag = 100;
+    long tag = 100L;
     setUpPeers(false);
     assertThat(
         convertNonBgpRouteToBgpRoute(

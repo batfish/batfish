@@ -541,7 +541,8 @@
                       "advertiseInactive" : true,
                       "allowLocalAsIn" : false,
                       "allowRemoteAsOut" : true,
-                      "sendCommunity" : false
+                      "sendCommunity" : false,
+                      "sendExtendedCommunity" : false
                     },
                     "exportPolicy" : "~BGP_PEER_EXPORT_POLICY:default:1.2.3.4~",
                     "routeReflectorClient" : false
@@ -3279,7 +3280,8 @@
                       "advertiseInactive" : false,
                       "allowLocalAsIn" : false,
                       "allowRemoteAsOut" : false,
-                      "sendCommunity" : true
+                      "sendCommunity" : true,
+                      "sendExtendedCommunity" : true
                     },
                     "exportPolicy" : "~PEER_EXPORT_POLICY:10.1.1.0/24~",
                     "importPolicy" : "~PEER_IMPORT_POLICY:10.1.1.0/24~",
@@ -3588,7 +3590,8 @@
                       "advertiseInactive" : false,
                       "allowLocalAsIn" : false,
                       "allowRemoteAsOut" : false,
-                      "sendCommunity" : true
+                      "sendCommunity" : true,
+                      "sendExtendedCommunity" : true
                     },
                     "exportPolicy" : "~PEER_EXPORT_POLICY:1.1.1.1/32~",
                     "importPolicy" : "~PEER_IMPORT_POLICY:1.1.1.1/32~",
@@ -3847,7 +3850,8 @@
                       "advertiseInactive" : true,
                       "allowLocalAsIn" : false,
                       "allowRemoteAsOut" : true,
-                      "sendCommunity" : true
+                      "sendCommunity" : true,
+                      "sendExtendedCommunity" : false
                     },
                     "exportPolicy" : "~BGP_PEER_EXPORT_POLICY:default:1.10.1.1~",
                     "routeReflectorClient" : false
@@ -3872,7 +3876,8 @@
                       "advertiseInactive" : true,
                       "allowLocalAsIn" : false,
                       "allowRemoteAsOut" : true,
-                      "sendCommunity" : true
+                      "sendCommunity" : true,
+                      "sendExtendedCommunity" : false
                     },
                     "exportPolicy" : "~BGP_PEER_EXPORT_POLICY:default:10.12.11.2~",
                     "routeReflectorClient" : false
@@ -4272,7 +4277,8 @@
                       "advertiseInactive" : true,
                       "allowLocalAsIn" : false,
                       "allowRemoteAsOut" : true,
-                      "sendCommunity" : false
+                      "sendCommunity" : false,
+                      "sendExtendedCommunity" : false
                     },
                     "exportPolicy" : "~BGP_PEER_EXPORT_POLICY:default:64.57.21.1~",
                     "routeReflectorClient" : false
@@ -7135,7 +7141,8 @@
                       "advertiseInactive" : true,
                       "allowLocalAsIn" : false,
                       "allowRemoteAsOut" : true,
-                      "sendCommunity" : false
+                      "sendCommunity" : false,
+                      "sendExtendedCommunity" : false
                     },
                     "exportPolicy" : "~BGP_PEER_EXPORT_POLICY:aVrfWithInnerStatements:10.0.1.2~",
                     "exportPolicySources" : [
@@ -9123,7 +9130,8 @@
                       "advertiseInactive" : true,
                       "allowLocalAsIn" : false,
                       "allowRemoteAsOut" : true,
-                      "sendCommunity" : false
+                      "sendCommunity" : false,
+                      "sendExtendedCommunity" : false
                     },
                     "exportPolicy" : "~BGP_PEER_EXPORT_POLICY:default:10.10.20.0/24~",
                     "routeReflectorClient" : false
@@ -10972,7 +10980,8 @@
                       "advertiseInactive" : true,
                       "allowLocalAsIn" : false,
                       "allowRemoteAsOut" : false,
-                      "sendCommunity" : false
+                      "sendCommunity" : false,
+                      "sendExtendedCommunity" : false
                     },
                     "exportPolicy" : "~BGP_PEER_EXPORT_POLICY:default:2.2.2.2~",
                     "routeReflectorClient" : false
@@ -13632,6 +13641,7 @@
             ],
             "allowedVlans" : "",
             "autostate" : true,
+            "bandwidth" : 8.0E10,
             "encapsulationVlan" : 4094,
             "mtu" : 1500,
             "ospfDeadInterval" : 0,
@@ -13647,7 +13657,7 @@
             "switchport" : false,
             "switchportMode" : "NONE",
             "switchportTrunkEncapsulation" : "DOT1Q",
-            "type" : "LOGICAL",
+            "type" : "AGGREGATE_CHILD",
             "vrf" : "default"
           },
           "bond2" : {
@@ -14431,7 +14441,8 @@
                       "advertiseInactive" : false,
                       "allowLocalAsIn" : false,
                       "allowRemoteAsOut" : false,
-                      "sendCommunity" : true
+                      "sendCommunity" : true,
+                      "sendExtendedCommunity" : true
                     },
                     "exportPolicy" : "~BGP_PEER_EXPORT_POLICY:default:swp1~",
                     "exportPolicySources" : [
@@ -14459,7 +14470,8 @@
                       "advertiseInactive" : false,
                       "allowLocalAsIn" : false,
                       "allowRemoteAsOut" : false,
-                      "sendCommunity" : true
+                      "sendCommunity" : true,
+                      "sendExtendedCommunity" : true
                     },
                     "exportPolicy" : "~BGP_PEER_EXPORT_POLICY:default:swp1~",
                     "exportPolicySources" : [
@@ -14486,7 +14498,8 @@
                       "advertiseInactive" : false,
                       "allowLocalAsIn" : false,
                       "allowRemoteAsOut" : false,
-                      "sendCommunity" : true
+                      "sendCommunity" : true,
+                      "sendExtendedCommunity" : true
                     },
                     "exportPolicy" : "~BGP_PEER_EXPORT_POLICY:default:swp2~",
                     "exportPolicySources" : [
@@ -14514,7 +14527,8 @@
                       "advertiseInactive" : false,
                       "allowLocalAsIn" : false,
                       "allowRemoteAsOut" : false,
-                      "sendCommunity" : true
+                      "sendCommunity" : true,
+                      "sendExtendedCommunity" : true
                     },
                     "exportPolicy" : "~BGP_PEER_EXPORT_POLICY:default:swp2~",
                     "exportPolicySources" : [
@@ -14541,7 +14555,8 @@
                       "advertiseInactive" : false,
                       "allowLocalAsIn" : false,
                       "allowRemoteAsOut" : false,
-                      "sendCommunity" : true
+                      "sendCommunity" : true,
+                      "sendExtendedCommunity" : true
                     },
                     "exportPolicy" : "~BGP_PEER_EXPORT_POLICY:default:swp3~",
                     "exportPolicySources" : [
@@ -14570,7 +14585,8 @@
                       "advertiseInactive" : false,
                       "allowLocalAsIn" : false,
                       "allowRemoteAsOut" : false,
-                      "sendCommunity" : true
+                      "sendCommunity" : true,
+                      "sendExtendedCommunity" : true
                     },
                     "exportPolicy" : "~BGP_PEER_EXPORT_POLICY:default:swp3~",
                     "exportPolicySources" : [
@@ -14874,6 +14890,438 @@
             "name" : "default",
             "interfaces" : [
               "lo"
+            ]
+          }
+        }
+      },
+      "cumulus_nclu_bond" : {
+        "configurationFormat" : "CUMULUS_NCLU",
+        "name" : "cumulus_nclu_bond",
+        "defaultCrossZoneAction" : "PERMIT",
+        "defaultInboundAction" : "PERMIT",
+        "deviceType" : "SWITCH",
+        "interfaces" : {
+          "AGG" : {
+            "name" : "AGG",
+            "active" : true,
+            "additionalArpIps" : {
+              "class" : "org.batfish.datamodel.EmptyIpSpace"
+            },
+            "allowedVlans" : "",
+            "autostate" : true,
+            "bandwidth" : 1.0E11,
+            "channelGroupMembers" : [
+              "swp1",
+              "swp10",
+              "swp2",
+              "swp3",
+              "swp4",
+              "swp5",
+              "swp6",
+              "swp7",
+              "swp8",
+              "swp9"
+            ],
+            "mtu" : 1500,
+            "ospfDeadInterval" : 0,
+            "ospfEnabled" : false,
+            "ospfHelloMultiplier" : 0,
+            "ospfPassive" : false,
+            "ospfPointToPoint" : false,
+            "proxyArp" : false,
+            "ripEnabled" : false,
+            "ripPassive" : false,
+            "spanningTreePortfast" : false,
+            "switchport" : false,
+            "switchportMode" : "NONE",
+            "switchportTrunkEncapsulation" : "DOT1Q",
+            "type" : "AGGREGATED",
+            "vrf" : "default"
+          },
+          "lo" : {
+            "name" : "lo",
+            "active" : true,
+            "additionalArpIps" : {
+              "class" : "org.batfish.datamodel.EmptyIpSpace"
+            },
+            "allowedVlans" : "",
+            "autostate" : true,
+            "mtu" : 1500,
+            "ospfDeadInterval" : 0,
+            "ospfEnabled" : false,
+            "ospfHelloMultiplier" : 0,
+            "ospfPassive" : false,
+            "ospfPointToPoint" : false,
+            "proxyArp" : false,
+            "ripEnabled" : false,
+            "ripPassive" : false,
+            "spanningTreePortfast" : false,
+            "switchport" : false,
+            "switchportMode" : "NONE",
+            "switchportTrunkEncapsulation" : "DOT1Q",
+            "type" : "LOOPBACK",
+            "vrf" : "default"
+          },
+          "swp1" : {
+            "name" : "swp1",
+            "active" : true,
+            "additionalArpIps" : {
+              "class" : "org.batfish.datamodel.EmptyIpSpace"
+            },
+            "allowedVlans" : "",
+            "autostate" : true,
+            "bandwidth" : 1.0E10,
+            "channelGroup" : "AGG",
+            "mtu" : 1500,
+            "ospfDeadInterval" : 0,
+            "ospfEnabled" : false,
+            "ospfHelloMultiplier" : 0,
+            "ospfPassive" : false,
+            "ospfPointToPoint" : false,
+            "proxyArp" : false,
+            "ripEnabled" : false,
+            "ripPassive" : false,
+            "spanningTreePortfast" : false,
+            "switchport" : false,
+            "switchportMode" : "NONE",
+            "switchportTrunkEncapsulation" : "DOT1Q",
+            "type" : "PHYSICAL",
+            "vrf" : "default"
+          },
+          "swp10" : {
+            "name" : "swp10",
+            "active" : true,
+            "additionalArpIps" : {
+              "class" : "org.batfish.datamodel.EmptyIpSpace"
+            },
+            "allowedVlans" : "",
+            "autostate" : true,
+            "bandwidth" : 1.0E10,
+            "channelGroup" : "AGG",
+            "mtu" : 1500,
+            "ospfDeadInterval" : 0,
+            "ospfEnabled" : false,
+            "ospfHelloMultiplier" : 0,
+            "ospfPassive" : false,
+            "ospfPointToPoint" : false,
+            "proxyArp" : false,
+            "ripEnabled" : false,
+            "ripPassive" : false,
+            "spanningTreePortfast" : false,
+            "switchport" : false,
+            "switchportMode" : "NONE",
+            "switchportTrunkEncapsulation" : "DOT1Q",
+            "type" : "PHYSICAL",
+            "vrf" : "default"
+          },
+          "swp2" : {
+            "name" : "swp2",
+            "active" : true,
+            "additionalArpIps" : {
+              "class" : "org.batfish.datamodel.EmptyIpSpace"
+            },
+            "allowedVlans" : "",
+            "autostate" : true,
+            "bandwidth" : 1.0E10,
+            "channelGroup" : "AGG",
+            "mtu" : 1500,
+            "ospfDeadInterval" : 0,
+            "ospfEnabled" : false,
+            "ospfHelloMultiplier" : 0,
+            "ospfPassive" : false,
+            "ospfPointToPoint" : false,
+            "proxyArp" : false,
+            "ripEnabled" : false,
+            "ripPassive" : false,
+            "spanningTreePortfast" : false,
+            "switchport" : false,
+            "switchportMode" : "NONE",
+            "switchportTrunkEncapsulation" : "DOT1Q",
+            "type" : "PHYSICAL",
+            "vrf" : "default"
+          },
+          "swp3" : {
+            "name" : "swp3",
+            "active" : true,
+            "additionalArpIps" : {
+              "class" : "org.batfish.datamodel.EmptyIpSpace"
+            },
+            "allowedVlans" : "",
+            "autostate" : true,
+            "bandwidth" : 1.0E10,
+            "channelGroup" : "AGG",
+            "mtu" : 1500,
+            "ospfDeadInterval" : 0,
+            "ospfEnabled" : false,
+            "ospfHelloMultiplier" : 0,
+            "ospfPassive" : false,
+            "ospfPointToPoint" : false,
+            "proxyArp" : false,
+            "ripEnabled" : false,
+            "ripPassive" : false,
+            "spanningTreePortfast" : false,
+            "switchport" : false,
+            "switchportMode" : "NONE",
+            "switchportTrunkEncapsulation" : "DOT1Q",
+            "type" : "PHYSICAL",
+            "vrf" : "default"
+          },
+          "swp4" : {
+            "name" : "swp4",
+            "active" : true,
+            "additionalArpIps" : {
+              "class" : "org.batfish.datamodel.EmptyIpSpace"
+            },
+            "allowedVlans" : "",
+            "autostate" : true,
+            "bandwidth" : 1.0E10,
+            "channelGroup" : "AGG",
+            "mtu" : 1500,
+            "ospfDeadInterval" : 0,
+            "ospfEnabled" : false,
+            "ospfHelloMultiplier" : 0,
+            "ospfPassive" : false,
+            "ospfPointToPoint" : false,
+            "proxyArp" : false,
+            "ripEnabled" : false,
+            "ripPassive" : false,
+            "spanningTreePortfast" : false,
+            "switchport" : false,
+            "switchportMode" : "NONE",
+            "switchportTrunkEncapsulation" : "DOT1Q",
+            "type" : "PHYSICAL",
+            "vrf" : "default"
+          },
+          "swp5" : {
+            "name" : "swp5",
+            "active" : true,
+            "additionalArpIps" : {
+              "class" : "org.batfish.datamodel.EmptyIpSpace"
+            },
+            "allowedVlans" : "",
+            "autostate" : true,
+            "bandwidth" : 1.0E10,
+            "channelGroup" : "AGG",
+            "mtu" : 1500,
+            "ospfDeadInterval" : 0,
+            "ospfEnabled" : false,
+            "ospfHelloMultiplier" : 0,
+            "ospfPassive" : false,
+            "ospfPointToPoint" : false,
+            "proxyArp" : false,
+            "ripEnabled" : false,
+            "ripPassive" : false,
+            "spanningTreePortfast" : false,
+            "switchport" : false,
+            "switchportMode" : "NONE",
+            "switchportTrunkEncapsulation" : "DOT1Q",
+            "type" : "PHYSICAL",
+            "vrf" : "default"
+          },
+          "swp6" : {
+            "name" : "swp6",
+            "active" : true,
+            "additionalArpIps" : {
+              "class" : "org.batfish.datamodel.EmptyIpSpace"
+            },
+            "allowedVlans" : "",
+            "autostate" : true,
+            "bandwidth" : 1.0E10,
+            "channelGroup" : "AGG",
+            "mtu" : 1500,
+            "ospfDeadInterval" : 0,
+            "ospfEnabled" : false,
+            "ospfHelloMultiplier" : 0,
+            "ospfPassive" : false,
+            "ospfPointToPoint" : false,
+            "proxyArp" : false,
+            "ripEnabled" : false,
+            "ripPassive" : false,
+            "spanningTreePortfast" : false,
+            "switchport" : false,
+            "switchportMode" : "NONE",
+            "switchportTrunkEncapsulation" : "DOT1Q",
+            "type" : "PHYSICAL",
+            "vrf" : "default"
+          },
+          "swp7" : {
+            "name" : "swp7",
+            "active" : true,
+            "additionalArpIps" : {
+              "class" : "org.batfish.datamodel.EmptyIpSpace"
+            },
+            "allowedVlans" : "",
+            "autostate" : true,
+            "bandwidth" : 1.0E10,
+            "channelGroup" : "AGG",
+            "mtu" : 1500,
+            "ospfDeadInterval" : 0,
+            "ospfEnabled" : false,
+            "ospfHelloMultiplier" : 0,
+            "ospfPassive" : false,
+            "ospfPointToPoint" : false,
+            "proxyArp" : false,
+            "ripEnabled" : false,
+            "ripPassive" : false,
+            "spanningTreePortfast" : false,
+            "switchport" : false,
+            "switchportMode" : "NONE",
+            "switchportTrunkEncapsulation" : "DOT1Q",
+            "type" : "PHYSICAL",
+            "vrf" : "default"
+          },
+          "swp8" : {
+            "name" : "swp8",
+            "active" : true,
+            "additionalArpIps" : {
+              "class" : "org.batfish.datamodel.EmptyIpSpace"
+            },
+            "allowedVlans" : "",
+            "autostate" : true,
+            "bandwidth" : 1.0E10,
+            "channelGroup" : "AGG",
+            "mtu" : 1500,
+            "ospfDeadInterval" : 0,
+            "ospfEnabled" : false,
+            "ospfHelloMultiplier" : 0,
+            "ospfPassive" : false,
+            "ospfPointToPoint" : false,
+            "proxyArp" : false,
+            "ripEnabled" : false,
+            "ripPassive" : false,
+            "spanningTreePortfast" : false,
+            "switchport" : false,
+            "switchportMode" : "NONE",
+            "switchportTrunkEncapsulation" : "DOT1Q",
+            "type" : "PHYSICAL",
+            "vrf" : "default"
+          },
+          "swp9" : {
+            "name" : "swp9",
+            "active" : true,
+            "additionalArpIps" : {
+              "class" : "org.batfish.datamodel.EmptyIpSpace"
+            },
+            "allowedVlans" : "",
+            "autostate" : true,
+            "bandwidth" : 1.0E10,
+            "channelGroup" : "AGG",
+            "mtu" : 1500,
+            "ospfDeadInterval" : 0,
+            "ospfEnabled" : false,
+            "ospfHelloMultiplier" : 0,
+            "ospfPassive" : false,
+            "ospfPointToPoint" : false,
+            "proxyArp" : false,
+            "ripEnabled" : false,
+            "ripPassive" : false,
+            "spanningTreePortfast" : false,
+            "switchport" : false,
+            "switchportMode" : "NONE",
+            "switchportTrunkEncapsulation" : "DOT1Q",
+            "type" : "PHYSICAL",
+            "vrf" : "default"
+          }
+        },
+        "vendorFamily" : {
+          "cumulus" : {
+            "bridge" : {
+              "pvid" : 1,
+              "vids" : ""
+            }
+          }
+        },
+        "vrfs" : {
+          "default" : {
+            "name" : "default",
+            "interfaces" : [
+              "AGG",
+              "lo",
+              "swp1",
+              "swp10",
+              "swp2",
+              "swp3",
+              "swp4",
+              "swp5",
+              "swp6",
+              "swp7",
+              "swp8",
+              "swp9"
+            ]
+          }
+        }
+      },
+      "cumulus_nclu_interface" : {
+        "configurationFormat" : "CUMULUS_NCLU",
+        "name" : "cumulus_nclu_interface",
+        "defaultCrossZoneAction" : "PERMIT",
+        "defaultInboundAction" : "PERMIT",
+        "deviceType" : "SWITCH",
+        "interfaces" : {
+          "lo" : {
+            "name" : "lo",
+            "active" : true,
+            "additionalArpIps" : {
+              "class" : "org.batfish.datamodel.EmptyIpSpace"
+            },
+            "allowedVlans" : "",
+            "autostate" : true,
+            "mtu" : 1500,
+            "ospfDeadInterval" : 0,
+            "ospfEnabled" : false,
+            "ospfHelloMultiplier" : 0,
+            "ospfPassive" : false,
+            "ospfPointToPoint" : false,
+            "proxyArp" : false,
+            "ripEnabled" : false,
+            "ripPassive" : false,
+            "spanningTreePortfast" : false,
+            "switchport" : false,
+            "switchportMode" : "NONE",
+            "switchportTrunkEncapsulation" : "DOT1Q",
+            "type" : "LOOPBACK",
+            "vrf" : "default"
+          },
+          "swp1" : {
+            "name" : "swp1",
+            "active" : true,
+            "additionalArpIps" : {
+              "class" : "org.batfish.datamodel.EmptyIpSpace"
+            },
+            "allowedVlans" : "",
+            "autostate" : true,
+            "bandwidth" : 1.0E10,
+            "mtu" : 1500,
+            "ospfDeadInterval" : 0,
+            "ospfEnabled" : false,
+            "ospfHelloMultiplier" : 0,
+            "ospfPassive" : false,
+            "ospfPointToPoint" : false,
+            "proxyArp" : false,
+            "ripEnabled" : false,
+            "ripPassive" : false,
+            "spanningTreePortfast" : false,
+            "switchport" : false,
+            "switchportMode" : "NONE",
+            "switchportTrunkEncapsulation" : "DOT1Q",
+            "type" : "PHYSICAL",
+            "vrf" : "default"
+          }
+        },
+        "vendorFamily" : {
+          "cumulus" : {
+            "bridge" : {
+              "pvid" : 1,
+              "vids" : ""
+            }
+          }
+        },
+        "vrfs" : {
+          "default" : {
+            "name" : "default",
+            "interfaces" : [
+              "lo",
+              "swp1"
             ]
           }
         }
@@ -15484,6 +15932,55 @@
           }
         }
       },
+      "cumulus_nclu_routing" : {
+        "configurationFormat" : "CUMULUS_NCLU",
+        "name" : "cumulus_nclu_routing",
+        "defaultCrossZoneAction" : "PERMIT",
+        "defaultInboundAction" : "PERMIT",
+        "deviceType" : "SWITCH",
+        "interfaces" : {
+          "lo" : {
+            "name" : "lo",
+            "active" : true,
+            "additionalArpIps" : {
+              "class" : "org.batfish.datamodel.EmptyIpSpace"
+            },
+            "allowedVlans" : "",
+            "autostate" : true,
+            "mtu" : 1500,
+            "ospfDeadInterval" : 0,
+            "ospfEnabled" : false,
+            "ospfHelloMultiplier" : 0,
+            "ospfPassive" : false,
+            "ospfPointToPoint" : false,
+            "proxyArp" : false,
+            "ripEnabled" : false,
+            "ripPassive" : false,
+            "spanningTreePortfast" : false,
+            "switchport" : false,
+            "switchportMode" : "NONE",
+            "switchportTrunkEncapsulation" : "DOT1Q",
+            "type" : "LOOPBACK",
+            "vrf" : "default"
+          }
+        },
+        "vendorFamily" : {
+          "cumulus" : {
+            "bridge" : {
+              "pvid" : 1,
+              "vids" : ""
+            }
+          }
+        },
+        "vrfs" : {
+          "default" : {
+            "name" : "default",
+            "interfaces" : [
+              "lo"
+            ]
+          }
+        }
+      },
       "eos_mlag" : {
         "configurationFormat" : "ARISTA",
         "name" : "eos_mlag",
@@ -15735,7 +16232,8 @@
                       "advertiseInactive" : false,
                       "allowLocalAsIn" : false,
                       "allowRemoteAsOut" : false,
-                      "sendCommunity" : false
+                      "sendCommunity" : false,
+                      "sendExtendedCommunity" : false
                     },
                     "exportPolicy" : "~BGP_PEER_EXPORT_POLICY:1:3.3.3.3~",
                     "routeReflectorClient" : false
@@ -16224,7 +16722,8 @@
                       "advertiseInactive" : false,
                       "allowLocalAsIn" : false,
                       "allowRemoteAsOut" : false,
-                      "sendCommunity" : false
+                      "sendCommunity" : false,
+                      "sendExtendedCommunity" : false
                     },
                     "exportPolicy" : "~BGP_PEER_EXPORT_POLICY:/Common/my_bgp:192.0.2.1~",
                     "routeReflectorClient" : false
@@ -16654,7 +17153,8 @@
                       "advertiseInactive" : false,
                       "allowLocalAsIn" : false,
                       "allowRemoteAsOut" : false,
-                      "sendCommunity" : false
+                      "sendCommunity" : false,
+                      "sendExtendedCommunity" : false
                     },
                     "exportPolicy" : "~BGP_PEER_EXPORT_POLICY:65500:10.0.0.1~",
                     "exportPolicySources" : [
@@ -17486,7 +17986,7 @@
                   "class" : "org.batfish.datamodel.routing_policy.expr.MatchTag",
                   "cmp" : "EQ",
                   "tag" : {
-                    "class" : "org.batfish.datamodel.routing_policy.expr.LiteralInt",
+                    "class" : "org.batfish.datamodel.routing_policy.expr.LiteralLong",
                     "value" : 12
                   }
                 },
@@ -17496,7 +17996,7 @@
                     "statement" : {
                       "class" : "org.batfish.datamodel.routing_policy.statement.SetTag",
                       "tag" : {
-                        "class" : "org.batfish.datamodel.routing_policy.expr.LiteralInt",
+                        "class" : "org.batfish.datamodel.routing_policy.expr.LiteralLong",
                         "value" : 12
                       }
                     }
@@ -17547,7 +18047,7 @@
                   "class" : "org.batfish.datamodel.routing_policy.expr.MatchTag",
                   "cmp" : "EQ",
                   "tag" : {
-                    "class" : "org.batfish.datamodel.routing_policy.expr.LiteralInt",
+                    "class" : "org.batfish.datamodel.routing_policy.expr.LiteralLong",
                     "value" : 13
                   }
                 },
@@ -17557,7 +18057,7 @@
                     "statement" : {
                       "class" : "org.batfish.datamodel.routing_policy.statement.SetTag",
                       "tag" : {
-                        "class" : "org.batfish.datamodel.routing_policy.expr.LiteralInt",
+                        "class" : "org.batfish.datamodel.routing_policy.expr.LiteralLong",
                         "value" : 13
                       }
                     }
@@ -17608,7 +18108,7 @@
                   "class" : "org.batfish.datamodel.routing_policy.expr.MatchTag",
                   "cmp" : "GE",
                   "tag" : {
-                    "class" : "org.batfish.datamodel.routing_policy.expr.LiteralInt",
+                    "class" : "org.batfish.datamodel.routing_policy.expr.LiteralLong",
                     "value" : 14
                   }
                 },
@@ -17618,7 +18118,7 @@
                     "statement" : {
                       "class" : "org.batfish.datamodel.routing_policy.statement.SetTag",
                       "tag" : {
-                        "class" : "org.batfish.datamodel.routing_policy.expr.LiteralInt",
+                        "class" : "org.batfish.datamodel.routing_policy.expr.LiteralLong",
                         "value" : 100
                       }
                     }
@@ -17669,7 +18169,7 @@
                   "class" : "org.batfish.datamodel.routing_policy.expr.MatchTag",
                   "cmp" : "LE",
                   "tag" : {
-                    "class" : "org.batfish.datamodel.routing_policy.expr.LiteralInt",
+                    "class" : "org.batfish.datamodel.routing_policy.expr.LiteralLong",
                     "value" : 10
                   }
                 },
@@ -17679,7 +18179,7 @@
                     "statement" : {
                       "class" : "org.batfish.datamodel.routing_policy.statement.SetTag",
                       "tag" : {
-                        "class" : "org.batfish.datamodel.routing_policy.expr.LiteralInt",
+                        "class" : "org.batfish.datamodel.routing_policy.expr.LiteralLong",
                         "value" : 9
                       }
                     }
@@ -19143,7 +19643,8 @@
                       "advertiseInactive" : true,
                       "allowLocalAsIn" : false,
                       "allowRemoteAsOut" : true,
-                      "sendCommunity" : false
+                      "sendCommunity" : false,
+                      "sendExtendedCommunity" : false
                     },
                     "exportPolicy" : "~BGP_PEER_EXPORT_POLICY:default:1.2.1.1~",
                     "routeReflectorClient" : false
@@ -19169,7 +19670,8 @@
                       "advertiseInactive" : true,
                       "allowLocalAsIn" : false,
                       "allowRemoteAsOut" : true,
-                      "sendCommunity" : false
+                      "sendCommunity" : false,
+                      "sendExtendedCommunity" : false
                     },
                     "exportPolicy" : "~BGP_PEER_EXPORT_POLICY:default:1.2.1.2~",
                     "routeReflectorClient" : false
@@ -19195,7 +19697,8 @@
                       "advertiseInactive" : true,
                       "allowLocalAsIn" : false,
                       "allowRemoteAsOut" : true,
-                      "sendCommunity" : false
+                      "sendCommunity" : false,
+                      "sendExtendedCommunity" : false
                     },
                     "exportPolicy" : "~BGP_PEER_EXPORT_POLICY:default:1.2.1.3~",
                     "routeReflectorClient" : false
@@ -21116,7 +21619,8 @@
                       "advertiseInactive" : true,
                       "allowLocalAsIn" : true,
                       "allowRemoteAsOut" : false,
-                      "sendCommunity" : true
+                      "sendCommunity" : true,
+                      "sendExtendedCommunity" : true
                     },
                     "exportPolicy" : "~PEER_EXPORT_POLICY:3.4.5.7/32~",
                     "importPolicy" : "~PEER_IMPORT_POLICY:3.4.5.7/32~",
@@ -21492,7 +21996,8 @@
                       "advertiseInactive" : false,
                       "allowLocalAsIn" : false,
                       "allowRemoteAsOut" : false,
-                      "sendCommunity" : true
+                      "sendCommunity" : true,
+                      "sendExtendedCommunity" : true
                     },
                     "exportPolicy" : "~PEER_EXPORT_POLICY:172.16.2.1/32~",
                     "importPolicy" : "~PEER_IMPORT_POLICY:172.16.2.1/32~",
@@ -21522,7 +22027,8 @@
                       "advertiseInactive" : false,
                       "allowLocalAsIn" : false,
                       "allowRemoteAsOut" : false,
-                      "sendCommunity" : true
+                      "sendCommunity" : true,
+                      "sendExtendedCommunity" : true
                     },
                     "exportPolicy" : "~PEER_EXPORT_POLICY:172.16.2.2/32~",
                     "importPolicy" : "~PEER_IMPORT_POLICY:172.16.2.2/32~",
@@ -25306,7 +25812,7 @@
             "name" : "zone~A~to~zone~B",
             "lines" : [
               {
-                "action" : "DENY",
+                "action" : "PERMIT",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.AndMatchExpr",
                   "conjuncts" : [
@@ -27006,7 +27512,8 @@
                       "advertiseInactive" : true,
                       "allowLocalAsIn" : false,
                       "allowRemoteAsOut" : true,
-                      "sendCommunity" : false
+                      "sendCommunity" : false,
+                      "sendExtendedCommunity" : false
                     },
                     "exportPolicy" : "~BGP_PEER_EXPORT_POLICY:default:1.1.1.1~",
                     "routeReflectorClient" : false
@@ -27031,7 +27538,8 @@
                       "advertiseInactive" : true,
                       "allowLocalAsIn" : false,
                       "allowRemoteAsOut" : true,
-                      "sendCommunity" : false
+                      "sendCommunity" : false,
+                      "sendExtendedCommunity" : false
                     },
                     "exportPolicy" : "~BGP_PEER_EXPORT_POLICY:default:3.3.3.3~",
                     "routeReflectorClient" : false
@@ -27056,7 +27564,8 @@
                       "advertiseInactive" : true,
                       "allowLocalAsIn" : false,
                       "allowRemoteAsOut" : true,
-                      "sendCommunity" : false
+                      "sendCommunity" : false,
+                      "sendExtendedCommunity" : false
                     },
                     "exportPolicy" : "~BGP_PEER_EXPORT_POLICY:default:4.4.4.4~",
                     "routeReflectorClient" : false
@@ -27490,7 +27999,8 @@
                       "advertiseInactive" : true,
                       "allowLocalAsIn" : false,
                       "allowRemoteAsOut" : true,
-                      "sendCommunity" : false
+                      "sendCommunity" : false,
+                      "sendExtendedCommunity" : false
                     },
                     "exportPolicy" : "~BGP_PEER_EXPORT_POLICY:default:10.0.0.0~",
                     "routeReflectorClient" : false
@@ -27852,7 +28362,8 @@
                       "advertiseInactive" : true,
                       "allowLocalAsIn" : false,
                       "allowRemoteAsOut" : false,
-                      "sendCommunity" : true
+                      "sendCommunity" : true,
+                      "sendExtendedCommunity" : false
                     },
                     "exportPolicy" : "~BGP_PEER_EXPORT_POLICY:default:1.1.1.1~",
                     "routeReflectorClient" : false
@@ -28342,7 +28853,7 @@
                   "class" : "org.batfish.datamodel.routing_policy.expr.MatchTag",
                   "cmp" : "EQ",
                   "tag" : {
-                    "class" : "org.batfish.datamodel.routing_policy.expr.LiteralInt",
+                    "class" : "org.batfish.datamodel.routing_policy.expr.LiteralLong",
                     "value" : 100
                   }
                 },
@@ -28375,7 +28886,7 @@
                   "class" : "org.batfish.datamodel.routing_policy.expr.MatchTag",
                   "cmp" : "EQ",
                   "tag" : {
-                    "class" : "org.batfish.datamodel.routing_policy.expr.LiteralInt",
+                    "class" : "org.batfish.datamodel.routing_policy.expr.LiteralLong",
                     "value" : 10
                   }
                 },
@@ -28424,7 +28935,7 @@
                   "class" : "org.batfish.datamodel.routing_policy.expr.MatchTag",
                   "cmp" : "EQ",
                   "tag" : {
-                    "class" : "org.batfish.datamodel.routing_policy.expr.LiteralInt",
+                    "class" : "org.batfish.datamodel.routing_policy.expr.LiteralLong",
                     "value" : 120
                   }
                 },
@@ -28464,7 +28975,7 @@
                   "class" : "org.batfish.datamodel.routing_policy.expr.MatchTag",
                   "cmp" : "EQ",
                   "tag" : {
-                    "class" : "org.batfish.datamodel.routing_policy.expr.LiteralInt",
+                    "class" : "org.batfish.datamodel.routing_policy.expr.LiteralLong",
                     "value" : 130
                   }
                 },
@@ -28504,7 +29015,7 @@
                   "class" : "org.batfish.datamodel.routing_policy.expr.MatchTag",
                   "cmp" : "EQ",
                   "tag" : {
-                    "class" : "org.batfish.datamodel.routing_policy.expr.LiteralInt",
+                    "class" : "org.batfish.datamodel.routing_policy.expr.LiteralLong",
                     "value" : 140
                   }
                 },
@@ -28544,7 +29055,7 @@
                   "class" : "org.batfish.datamodel.routing_policy.expr.MatchTag",
                   "cmp" : "EQ",
                   "tag" : {
-                    "class" : "org.batfish.datamodel.routing_policy.expr.LiteralInt",
+                    "class" : "org.batfish.datamodel.routing_policy.expr.LiteralLong",
                     "value" : 150
                   }
                 },
@@ -28584,7 +29095,7 @@
                   "class" : "org.batfish.datamodel.routing_policy.expr.MatchTag",
                   "cmp" : "EQ",
                   "tag" : {
-                    "class" : "org.batfish.datamodel.routing_policy.expr.LiteralInt",
+                    "class" : "org.batfish.datamodel.routing_policy.expr.LiteralLong",
                     "value" : 160
                   }
                 },
@@ -28624,7 +29135,7 @@
                   "class" : "org.batfish.datamodel.routing_policy.expr.MatchTag",
                   "cmp" : "EQ",
                   "tag" : {
-                    "class" : "org.batfish.datamodel.routing_policy.expr.LiteralInt",
+                    "class" : "org.batfish.datamodel.routing_policy.expr.LiteralLong",
                     "value" : 170
                   }
                 },
@@ -28664,7 +29175,7 @@
                   "class" : "org.batfish.datamodel.routing_policy.expr.MatchTag",
                   "cmp" : "EQ",
                   "tag" : {
-                    "class" : "org.batfish.datamodel.routing_policy.expr.LiteralInt",
+                    "class" : "org.batfish.datamodel.routing_policy.expr.LiteralLong",
                     "value" : 180
                   }
                 },
@@ -28704,7 +29215,7 @@
                   "class" : "org.batfish.datamodel.routing_policy.expr.MatchTag",
                   "cmp" : "EQ",
                   "tag" : {
-                    "class" : "org.batfish.datamodel.routing_policy.expr.LiteralInt",
+                    "class" : "org.batfish.datamodel.routing_policy.expr.LiteralLong",
                     "value" : 190
                   }
                 },
@@ -28744,7 +29255,7 @@
                   "class" : "org.batfish.datamodel.routing_policy.expr.MatchTag",
                   "cmp" : "EQ",
                   "tag" : {
-                    "class" : "org.batfish.datamodel.routing_policy.expr.LiteralInt",
+                    "class" : "org.batfish.datamodel.routing_policy.expr.LiteralLong",
                     "value" : 200
                   }
                 },
@@ -28784,7 +29295,7 @@
                   "class" : "org.batfish.datamodel.routing_policy.expr.MatchTag",
                   "cmp" : "EQ",
                   "tag" : {
-                    "class" : "org.batfish.datamodel.routing_policy.expr.LiteralInt",
+                    "class" : "org.batfish.datamodel.routing_policy.expr.LiteralLong",
                     "value" : 20
                   }
                 },
@@ -28813,7 +29324,7 @@
                   "class" : "org.batfish.datamodel.routing_policy.expr.MatchTag",
                   "cmp" : "EQ",
                   "tag" : {
-                    "class" : "org.batfish.datamodel.routing_policy.expr.LiteralInt",
+                    "class" : "org.batfish.datamodel.routing_policy.expr.LiteralLong",
                     "value" : 210
                   }
                 },
@@ -28853,7 +29364,7 @@
                   "class" : "org.batfish.datamodel.routing_policy.expr.MatchTag",
                   "cmp" : "EQ",
                   "tag" : {
-                    "class" : "org.batfish.datamodel.routing_policy.expr.LiteralInt",
+                    "class" : "org.batfish.datamodel.routing_policy.expr.LiteralLong",
                     "value" : 220
                   }
                 },
@@ -28895,7 +29406,7 @@
                   "class" : "org.batfish.datamodel.routing_policy.expr.MatchTag",
                   "cmp" : "EQ",
                   "tag" : {
-                    "class" : "org.batfish.datamodel.routing_policy.expr.LiteralInt",
+                    "class" : "org.batfish.datamodel.routing_policy.expr.LiteralLong",
                     "value" : 240
                   }
                 },
@@ -28937,7 +29448,7 @@
                   "class" : "org.batfish.datamodel.routing_policy.expr.MatchTag",
                   "cmp" : "EQ",
                   "tag" : {
-                    "class" : "org.batfish.datamodel.routing_policy.expr.LiteralInt",
+                    "class" : "org.batfish.datamodel.routing_policy.expr.LiteralLong",
                     "value" : 250
                   }
                 },
@@ -28979,7 +29490,7 @@
                   "class" : "org.batfish.datamodel.routing_policy.expr.MatchTag",
                   "cmp" : "EQ",
                   "tag" : {
-                    "class" : "org.batfish.datamodel.routing_policy.expr.LiteralInt",
+                    "class" : "org.batfish.datamodel.routing_policy.expr.LiteralLong",
                     "value" : 260
                   }
                 },
@@ -29021,7 +29532,7 @@
                   "class" : "org.batfish.datamodel.routing_policy.expr.MatchTag",
                   "cmp" : "EQ",
                   "tag" : {
-                    "class" : "org.batfish.datamodel.routing_policy.expr.LiteralInt",
+                    "class" : "org.batfish.datamodel.routing_policy.expr.LiteralLong",
                     "value" : 270
                   }
                 },
@@ -29063,7 +29574,7 @@
                   "class" : "org.batfish.datamodel.routing_policy.expr.MatchTag",
                   "cmp" : "EQ",
                   "tag" : {
-                    "class" : "org.batfish.datamodel.routing_policy.expr.LiteralInt",
+                    "class" : "org.batfish.datamodel.routing_policy.expr.LiteralLong",
                     "value" : 280
                   }
                 },
@@ -29105,7 +29616,7 @@
                   "class" : "org.batfish.datamodel.routing_policy.expr.MatchTag",
                   "cmp" : "EQ",
                   "tag" : {
-                    "class" : "org.batfish.datamodel.routing_policy.expr.LiteralInt",
+                    "class" : "org.batfish.datamodel.routing_policy.expr.LiteralLong",
                     "value" : 290
                   }
                 },
@@ -29196,7 +29707,7 @@
                   "class" : "org.batfish.datamodel.routing_policy.expr.MatchTag",
                   "cmp" : "EQ",
                   "tag" : {
-                    "class" : "org.batfish.datamodel.routing_policy.expr.LiteralInt",
+                    "class" : "org.batfish.datamodel.routing_policy.expr.LiteralLong",
                     "value" : 30
                   }
                 },
@@ -29270,7 +29781,7 @@
                   "class" : "org.batfish.datamodel.routing_policy.expr.MatchTag",
                   "cmp" : "EQ",
                   "tag" : {
-                    "class" : "org.batfish.datamodel.routing_policy.expr.LiteralInt",
+                    "class" : "org.batfish.datamodel.routing_policy.expr.LiteralLong",
                     "value" : 60
                   }
                 },
@@ -29320,7 +29831,7 @@
                   "class" : "org.batfish.datamodel.routing_policy.expr.MatchTag",
                   "cmp" : "EQ",
                   "tag" : {
-                    "class" : "org.batfish.datamodel.routing_policy.expr.LiteralInt",
+                    "class" : "org.batfish.datamodel.routing_policy.expr.LiteralLong",
                     "value" : 70
                   }
                 },
@@ -29370,7 +29881,7 @@
                   "class" : "org.batfish.datamodel.routing_policy.expr.MatchTag",
                   "cmp" : "EQ",
                   "tag" : {
-                    "class" : "org.batfish.datamodel.routing_policy.expr.LiteralInt",
+                    "class" : "org.batfish.datamodel.routing_policy.expr.LiteralLong",
                     "value" : 80
                   }
                 },
@@ -29420,7 +29931,7 @@
                   "class" : "org.batfish.datamodel.routing_policy.expr.MatchTag",
                   "cmp" : "EQ",
                   "tag" : {
-                    "class" : "org.batfish.datamodel.routing_policy.expr.LiteralInt",
+                    "class" : "org.batfish.datamodel.routing_policy.expr.LiteralLong",
                     "value" : 90
                   }
                 },
@@ -30693,7 +31204,8 @@
                       "advertiseInactive" : true,
                       "allowLocalAsIn" : false,
                       "allowRemoteAsOut" : false,
-                      "sendCommunity" : false
+                      "sendCommunity" : false,
+                      "sendExtendedCommunity" : false
                     },
                     "exportPolicy" : "~BGP_PEER_EXPORT_POLICY:default:10.98.25.0/25~",
                     "routeReflectorClient" : false
@@ -30724,7 +31236,8 @@
                       "advertiseInactive" : true,
                       "allowLocalAsIn" : true,
                       "allowRemoteAsOut" : false,
-                      "sendCommunity" : false
+                      "sendCommunity" : false,
+                      "sendExtendedCommunity" : false
                     },
                     "exportPolicy" : "~BGP_PEER_EXPORT_POLICY:default:100.93.100.16~",
                     "routeReflectorClient" : false
@@ -31147,7 +31660,8 @@
                       "advertiseInactive" : true,
                       "allowLocalAsIn" : false,
                       "allowRemoteAsOut" : false,
-                      "sendCommunity" : true
+                      "sendCommunity" : true,
+                      "sendExtendedCommunity" : false
                     },
                     "exportPolicy" : "~BGP_PEER_EXPORT_POLICY:default:1.1.1.1~",
                     "importPolicy" : "FROM_ABC_V4",
@@ -37601,7 +38115,8 @@
                       "advertiseInactive" : false,
                       "allowLocalAsIn" : false,
                       "allowRemoteAsOut" : false,
-                      "sendCommunity" : true
+                      "sendCommunity" : true,
+                      "sendExtendedCommunity" : true
                     },
                     "exportPolicy" : "~PEER_EXPORT_POLICY:172.16.3.2/32~",
                     "exportPolicySources" : [
@@ -37634,7 +38149,8 @@
                       "advertiseInactive" : false,
                       "allowLocalAsIn" : false,
                       "allowRemoteAsOut" : false,
-                      "sendCommunity" : true
+                      "sendCommunity" : true,
+                      "sendExtendedCommunity" : true
                     },
                     "exportPolicy" : "~PEER_EXPORT_POLICY:172.16.5.2/32~",
                     "exportPolicySources" : [
@@ -37667,7 +38183,8 @@
                       "advertiseInactive" : false,
                       "allowLocalAsIn" : false,
                       "allowRemoteAsOut" : false,
-                      "sendCommunity" : true
+                      "sendCommunity" : true,
+                      "sendExtendedCommunity" : true
                     },
                     "exportPolicy" : "~PEER_EXPORT_POLICY:172.16.7.2/32~",
                     "exportPolicySources" : [
@@ -37700,7 +38217,8 @@
                       "advertiseInactive" : false,
                       "allowLocalAsIn" : false,
                       "allowRemoteAsOut" : false,
-                      "sendCommunity" : true
+                      "sendCommunity" : true,
+                      "sendExtendedCommunity" : true
                     },
                     "exportPolicy" : "~PEER_EXPORT_POLICY:192.168.1.1/32~",
                     "importPolicy" : "~PEER_IMPORT_POLICY:192.168.1.1/32~",
@@ -37730,7 +38248,8 @@
                       "advertiseInactive" : false,
                       "allowLocalAsIn" : false,
                       "allowRemoteAsOut" : false,
-                      "sendCommunity" : true
+                      "sendCommunity" : true,
+                      "sendExtendedCommunity" : true
                     },
                     "exportPolicy" : "~PEER_EXPORT_POLICY:192.168.1.3/32~",
                     "importPolicy" : "~PEER_IMPORT_POLICY:192.168.1.3/32~",
@@ -37760,7 +38279,8 @@
                       "advertiseInactive" : false,
                       "allowLocalAsIn" : false,
                       "allowRemoteAsOut" : false,
-                      "sendCommunity" : true
+                      "sendCommunity" : true,
+                      "sendExtendedCommunity" : true
                     },
                     "exportPolicy" : "~PEER_EXPORT_POLICY:192.168.1.5/32~",
                     "importPolicy" : "~PEER_IMPORT_POLICY:192.168.1.5/32~",
@@ -37790,7 +38310,8 @@
                       "advertiseInactive" : false,
                       "allowLocalAsIn" : false,
                       "allowRemoteAsOut" : false,
-                      "sendCommunity" : true
+                      "sendCommunity" : true,
+                      "sendExtendedCommunity" : true
                     },
                     "exportPolicy" : "~PEER_EXPORT_POLICY:192.168.1.44/32~",
                     "importPolicy" : "~PEER_IMPORT_POLICY:192.168.1.44/32~",

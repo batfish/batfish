@@ -24,6 +24,7 @@ import org.batfish.datamodel.bgp.AddressFamily;
 import org.batfish.datamodel.bgp.AddressFamilyCapabilities;
 import org.batfish.specifier.ConstantEnumSetSpecifier;
 import org.batfish.specifier.SpecifierFactories;
+import org.batfish.specifier.parboiled.Grammar;
 
 /**
  * Enables specification of a set of BGP peer properties.
@@ -137,8 +138,8 @@ public class BgpPeerPropertySpecifier extends PropertySpecifier {
     return new BgpPeerPropertySpecifier(
         SpecifierFactories.getEnumSetSpecifierOrDefault(
                 expression,
-                BgpPeerPropertySpecifier.JAVA_MAP.keySet(),
-                new ConstantEnumSetSpecifier<>(BgpPeerPropertySpecifier.JAVA_MAP.keySet()))
+                Grammar.BGP_PEER_PROPERTY_SPECIFIER,
+                new ConstantEnumSetSpecifier<>(JAVA_MAP.keySet()))
             .resolve());
   }
 

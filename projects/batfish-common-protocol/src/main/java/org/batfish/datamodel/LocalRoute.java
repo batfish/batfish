@@ -110,7 +110,7 @@ public final class LocalRoute extends AbstractRoute {
   }
 
   @Override
-  public int getTag() {
+  public long getTag() {
     return Route.UNSET_ROUTE_TAG;
   }
 

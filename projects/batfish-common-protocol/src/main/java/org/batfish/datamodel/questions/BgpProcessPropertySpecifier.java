@@ -24,6 +24,7 @@ import org.batfish.datamodel.answers.Schema;
 import org.batfish.datamodel.bgp.AddressFamily;
 import org.batfish.specifier.ConstantEnumSetSpecifier;
 import org.batfish.specifier.SpecifierFactories;
+import org.batfish.specifier.parboiled.Grammar;
 
 /**
  * Enables specification a set of BGP process properties.
@@ -111,7 +112,9 @@ public class BgpProcessPropertySpecifier extends PropertySpecifier {
   public static BgpProcessPropertySpecifier create(@Nullable String expression) {
     return new BgpProcessPropertySpecifier(
         SpecifierFactories.getEnumSetSpecifierOrDefault(
-                expression, JAVA_MAP.keySet(), new ConstantEnumSetSpecifier<>(JAVA_MAP.keySet()))
+                expression,
+                Grammar.BGP_PROCESS_PROPERTY_SPECIFIER,
+                new ConstantEnumSetSpecifier<>(JAVA_MAP.keySet()))
             .resolve());
   }
 

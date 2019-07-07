@@ -1,0 +1,62 @@
+!RANCID-CONTENT-TYPE: cisco-nx
+!
+hostname nxos_vrf
+!
+
+! Add interface to vrf1
+! - shutdown = false
+! - active = true
+interface Ethernet1/1
+  no switchport
+  no shutdown
+  vrf member vrf1
+!
+
+! Add interface to non-existent vrf2
+! - allowed, but inactive without later declaration of vrf2
+! - shutdown = false
+! - active = false (vrf2 does not exist)
+interface Ethernet1/2
+  no switchport
+  no shutdown
+  vrf member vrf2
+!
+
+! Add interface with pre-existing l3 configuration to vrf1
+! - shutdown = false
+! - active = true
+! - address = null (erased by vrf member assignment)
+interface Ethernet1/3
+  no switchport
+  no shutdown
+  ip address 10.0.3.1/24
+  vrf member vrf1
+!
+
+! Add interface to vrf1, then apply l3 configuration
+! - shutdown = false
+! - active = true
+! - address = 10.0.4.1/24
+interface Ethernet1/4
+  no switchport
+  no shutdown
+  vrf member vrf1
+  ip address 10.0.4.1/24
+!
+
+! Add interface to shutdown VRF vrf3
+! - shutdown = false
+! - active = false (vrf3 is shutdown)
+! - address = 10.0.5.1/24
+interface Ethernet1/5
+  no switchport
+  no shutdown
+  vrf member vrf3
+  ip address 10.0.5.1/24
+!
+
+!!! Keep VRF definitions under default VRF configuration to avoid accidental leakage
+vrf context vrf1
+
+vrf context vrf3
+  shutdown

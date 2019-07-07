@@ -3,17 +3,10 @@ package org.batfish.datamodel.answers;
 import static org.batfish.datamodel.Names.escapeNameIfNeeded;
 
 import com.google.common.collect.ImmutableList;
-import java.util.Arrays;
 import javax.annotation.Nonnull;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.common.CompletionMetadata;
-import org.batfish.datamodel.Protocol;
 import org.batfish.datamodel.answers.InputValidationNotes.Validity;
-import org.batfish.datamodel.questions.BgpPeerPropertySpecifier;
-import org.batfish.datamodel.questions.BgpProcessPropertySpecifier;
-import org.batfish.datamodel.questions.InterfacePropertySpecifier;
-import org.batfish.datamodel.questions.NamedStructurePropertySpecifier;
-import org.batfish.datamodel.questions.NodePropertySpecifier;
 import org.batfish.datamodel.questions.Variable;
 import org.batfish.referencelibrary.ReferenceLibrary;
 import org.batfish.role.NodeRolesData;
@@ -40,19 +33,36 @@ public final class InputValidationUtils {
 
     switch (varType) {
       case APPLICATION_SPEC:
-        return ParboiledInputValidator.validateEnumSet(Arrays.asList(Protocol.values()), query);
+        return ParboiledInputValidator.validate(
+            Grammar.APPLICATION_SPECIFIER,
+            query,
+            completionMetadata,
+            nodeRolesData,
+            referenceLibrary);
       case BGP_PEER_PROPERTY_SPEC:
-        return ParboiledInputValidator.validateEnumSet(
-            BgpPeerPropertySpecifier.ALL.getMatchingProperties(), query);
+        return ParboiledInputValidator.validate(
+            Grammar.BGP_PEER_PROPERTY_SPECIFIER,
+            query,
+            completionMetadata,
+            nodeRolesData,
+            referenceLibrary);
       case BGP_PROCESS_PROPERTY_SPEC:
-        return ParboiledInputValidator.validateEnumSet(
-            BgpProcessPropertySpecifier.ALL.getMatchingProperties(), query);
+        return ParboiledInputValidator.validate(
+            Grammar.BGP_PROCESS_PROPERTY_SPECIFIER,
+            query,
+            completionMetadata,
+            nodeRolesData,
+            referenceLibrary);
       case FILTER_SPEC:
         return ParboiledInputValidator.validate(
             Grammar.FILTER_SPECIFIER, query, completionMetadata, nodeRolesData, referenceLibrary);
       case INTERFACE_PROPERTY_SPEC:
-        return ParboiledInputValidator.validateEnumSet(
-            InterfacePropertySpecifier.ALL.getMatchingProperties(), query);
+        return ParboiledInputValidator.validate(
+            Grammar.INTERFACE_PROPERTY_SPECIFIER,
+            query,
+            completionMetadata,
+            nodeRolesData,
+            referenceLibrary);
       case INTERFACES_SPEC:
         return ParboiledInputValidator.validate(
             Grammar.INTERFACE_SPECIFIER,
@@ -74,14 +84,22 @@ public final class InputValidationUtils {
         return ParboiledInputValidator.validate(
             Grammar.LOCATION_SPECIFIER, query, completionMetadata, nodeRolesData, referenceLibrary);
       case NAMED_STRUCTURE_SPEC:
-        return ParboiledInputValidator.validateEnumSet(
-            NamedStructurePropertySpecifier.ALL.getMatchingProperties(), query);
+        return ParboiledInputValidator.validate(
+            Grammar.NAMED_STRUCTURE_SPECIFIER,
+            query,
+            completionMetadata,
+            nodeRolesData,
+            referenceLibrary);
       case NODE_SPEC:
         return ParboiledInputValidator.validate(
             Grammar.NODE_SPECIFIER, query, completionMetadata, nodeRolesData, referenceLibrary);
       case NODE_PROPERTY_SPEC:
-        return ParboiledInputValidator.validateEnumSet(
-            NodePropertySpecifier.ALL.getMatchingProperties(), query);
+        return ParboiledInputValidator.validate(
+            Grammar.NODE_PROPERTY_SPECIFIER,
+            query,
+            completionMetadata,
+            nodeRolesData,
+            referenceLibrary);
       case ROUTING_POLICY_SPEC:
         return ParboiledInputValidator.validate(
             Grammar.ROUTING_POLICY_SPECIFIER,

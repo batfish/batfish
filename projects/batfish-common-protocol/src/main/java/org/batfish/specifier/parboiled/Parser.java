@@ -102,11 +102,16 @@ public class Parser extends CommonParser {
   @Override
   Rule getInputRule(Grammar grammar) {
     switch (grammar) {
-      case ENUM_SET_SPECIFIER:
-        throw new IllegalArgumentException(
-            "Method cannot be called for EnumSet grammars. Call getEnumSetRule instead.");
+      case APPLICATION_SPECIFIER:
+        return input(EnumSetSpec(Grammar.getEnumValues(grammar)));
+      case BGP_PEER_PROPERTY_SPECIFIER:
+        return input(EnumSetSpec(Grammar.getEnumValues(grammar)));
+      case BGP_PROCESS_PROPERTY_SPECIFIER:
+        return input(EnumSetSpec(Grammar.getEnumValues(grammar)));
       case FILTER_SPECIFIER:
         return input(FilterSpec());
+      case INTERFACE_PROPERTY_SPECIFIER:
+        return input(EnumSetSpec(Grammar.getEnumValues(grammar)));
       case INTERFACE_SPECIFIER:
         return input(InterfaceSpec());
       case IP_PROTOCOL_SPECIFIER:
@@ -115,6 +120,10 @@ public class Parser extends CommonParser {
         return input(IpSpaceSpec());
       case LOCATION_SPECIFIER:
         return input(LocationSpec());
+      case NAMED_STRUCTURE_SPECIFIER:
+        return input(EnumSetSpec(Grammar.getEnumValues(grammar)));
+      case NODE_PROPERTY_SPECIFIER:
+        return input(EnumSetSpec(Grammar.getEnumValues(grammar)));
       case NODE_SPECIFIER:
         return input(NodeSpec());
       case ROUTING_POLICY_SPECIFIER:
@@ -123,10 +132,6 @@ public class Parser extends CommonParser {
         throw new IllegalArgumentException(
             "Main grammar rule not defined for " + grammar.getFriendlyName());
     }
-  }
-
-  <T> Rule getEnumSetRule(Collection<T> allValues) {
-    return input(EnumSetSpec(allValues));
   }
 
   /** Matches Reference Book name. */

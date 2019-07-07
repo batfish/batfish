@@ -1,5 +1,12 @@
 package org.batfish.grammar.cisco_nxos;
 
+import static org.batfish.datamodel.Configuration.DEFAULT_VRF_NAME;
+import static org.batfish.datamodel.Interface.NULL_INTERFACE_NAME;
+import static org.batfish.datamodel.Route.UNSET_NEXT_HOP_INTERFACE;
+import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasAdministrativeCost;
+import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasNextHopInterface;
+import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasNextHopIp;
+import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasPrefix;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasHostname;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasInterface;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasInterfaces;
@@ -17,8 +24,10 @@ import static org.batfish.datamodel.matchers.InterfaceMatchers.hasVlan;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.isActive;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.isAutoState;
 import static org.batfish.datamodel.matchers.MapMatchers.hasKeys;
+import static org.batfish.datamodel.matchers.StaticRouteMatchers.hasTag;
 import static org.batfish.grammar.cisco_nxos.CiscoNxosCombinedParser.DEBUG_FLAG_USE_NEW_CISCO_NXOS_PARSER;
 import static org.batfish.main.BatfishTestUtils.configureBatfishTestSettings;
+import static org.batfish.representation.cisco_nxos.CiscoNxosConfiguration.NULL_VRF_NAME;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.anEmptyMap;
 import static org.hamcrest.Matchers.contains;
@@ -50,14 +59,19 @@ import org.batfish.datamodel.IntegerSpace;
 import org.batfish.datamodel.Interface.Dependency;
 import org.batfish.datamodel.Interface.DependencyType;
 import org.batfish.datamodel.InterfaceType;
+import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.SwitchportMode;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
+import org.batfish.datamodel.matchers.VrfMatchers;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
 import org.batfish.representation.cisco_nxos.CiscoNxosConfiguration;
 import org.batfish.representation.cisco_nxos.CiscoNxosInterfaceType;
 import org.batfish.representation.cisco_nxos.CiscoNxosStructureType;
 import org.batfish.representation.cisco_nxos.Interface;
+import org.batfish.representation.cisco_nxos.StaticRoute;
+import org.batfish.representation.cisco_nxos.Vrf;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
@@ -842,6 +856,316 @@ public final class CiscoNxosGrammarTest {
   }
 
   @Test
+  public void testStaticRouteConversion() throws IOException {
+    String hostname = "nxos_static_route";
+    Configuration c = parseConfig(hostname);
+
+    assertThat(c.getVrfs(), hasKeys(DEFAULT_VRF_NAME, NULL_VRF_NAME, "vrf1"));
+    assertThat(
+        c.getDefaultVrf().getStaticRoutes(),
+        containsInAnyOrder(
+            hasPrefix(Prefix.strict("10.0.0.0/24")),
+            hasPrefix(Prefix.strict("10.0.1.0/24")),
+            hasPrefix(Prefix.strict("10.0.2.0/24")),
+            hasPrefix(Prefix.strict("10.0.3.0/24")),
+            hasPrefix(Prefix.strict("10.0.4.0/24")),
+            hasPrefix(Prefix.strict("10.0.5.0/24")),
+            hasPrefix(Prefix.strict("10.0.6.0/24")),
+            hasPrefix(Prefix.strict("10.0.7.0/24")),
+            hasPrefix(Prefix.strict("10.0.8.0/24"))));
+    assertThat(
+        c.getVrfs().get("vrf1").getStaticRoutes(),
+        contains(hasPrefix(Prefix.strict("10.0.11.0/24"))));
+    {
+      org.batfish.datamodel.StaticRoute route =
+          c.getDefaultVrf().getStaticRoutes().stream()
+              .filter(r -> r.getNetwork().equals(Prefix.strict("10.0.0.0/24")))
+              .findFirst()
+              .get();
+      assertThat(route, hasNextHopInterface(NULL_INTERFACE_NAME));
+      assertThat(route, hasAdministrativeCost(1));
+      assertThat(route, hasTag(0L));
+    }
+    {
+      org.batfish.datamodel.StaticRoute route =
+          c.getDefaultVrf().getStaticRoutes().stream()
+              .filter(r -> r.getNetwork().equals(Prefix.strict("10.0.1.0/24")))
+              .findFirst()
+              .get();
+      assertThat(route, hasNextHopInterface(UNSET_NEXT_HOP_INTERFACE));
+      assertThat(route, hasAdministrativeCost(1));
+      assertThat(route, hasTag(0L));
+      assertThat(route, hasNextHopIp(Ip.parse("10.255.1.254")));
+    }
+    {
+      org.batfish.datamodel.StaticRoute route =
+          c.getDefaultVrf().getStaticRoutes().stream()
+              .filter(r -> r.getNetwork().equals(Prefix.strict("10.0.2.0/24")))
+              .findFirst()
+              .get();
+      assertThat(route, hasNextHopInterface("Ethernet1/1"));
+      assertThat(route, hasAdministrativeCost(1));
+      assertThat(route, hasTag(0L));
+      assertThat(route, hasNextHopIp(Ip.parse("10.255.1.254")));
+    }
+    {
+      org.batfish.datamodel.StaticRoute route =
+          c.getDefaultVrf().getStaticRoutes().stream()
+              .filter(r -> r.getNetwork().equals(Prefix.strict("10.0.3.0/24")))
+              .findFirst()
+              .get();
+      assertThat(route, hasAdministrativeCost(1));
+      assertThat(route, hasTag(0L));
+      assertThat(route, hasNextHopIp(Ip.parse("10.255.1.254")));
+      assertThat(route, hasNextHopInterface("Ethernet1/1"));
+    }
+    {
+      org.batfish.datamodel.StaticRoute route =
+          c.getDefaultVrf().getStaticRoutes().stream()
+              .filter(r -> r.getNetwork().equals(Prefix.strict("10.0.4.0/24")))
+              .findFirst()
+              .get();
+      assertThat(route, hasAdministrativeCost(1));
+      assertThat(route, hasTag(0L));
+      assertThat(route, hasNextHopIp(Ip.parse("10.255.1.254")));
+      assertThat(route, hasNextHopInterface("Ethernet1/1"));
+    }
+    {
+      org.batfish.datamodel.StaticRoute route =
+          c.getDefaultVrf().getStaticRoutes().stream()
+              .filter(r -> r.getNetwork().equals(Prefix.strict("10.0.5.0/24")))
+              .findFirst()
+              .get();
+      assertThat(route, hasAdministrativeCost(1));
+      assertThat(route, hasTag(1000L));
+      assertThat(route, hasNextHopIp(Ip.parse("10.255.1.254")));
+      assertThat(route, hasNextHopInterface("Ethernet1/1"));
+    }
+    {
+      org.batfish.datamodel.StaticRoute route =
+          c.getDefaultVrf().getStaticRoutes().stream()
+              .filter(r -> r.getNetwork().equals(Prefix.strict("10.0.6.0/24")))
+              .findFirst()
+              .get();
+      assertThat(route, hasAdministrativeCost(5));
+      assertThat(route, hasTag(1000L));
+      assertThat(route, hasNextHopIp(Ip.parse("10.255.1.254")));
+      assertThat(route, hasNextHopInterface("Ethernet1/1"));
+    }
+    {
+      org.batfish.datamodel.StaticRoute route =
+          c.getDefaultVrf().getStaticRoutes().stream()
+              .filter(r -> r.getNetwork().equals(Prefix.strict("10.0.7.0/24")))
+              .findFirst()
+              .get();
+      assertThat(route, hasAdministrativeCost(5));
+      assertThat(route, hasTag(0L));
+      assertThat(route, hasNextHopIp(Ip.parse("10.255.1.254")));
+      assertThat(route, hasNextHopInterface("Ethernet1/1"));
+    }
+    {
+      org.batfish.datamodel.StaticRoute route =
+          c.getDefaultVrf().getStaticRoutes().stream()
+              .filter(r -> r.getNetwork().equals(Prefix.strict("10.0.8.0/24")))
+              .findFirst()
+              .get();
+      assertThat(route, hasAdministrativeCost(5));
+      assertThat(route, hasTag(1000L));
+      assertThat(route, hasNextHopIp(Ip.parse("10.255.1.254")));
+      assertThat(route, hasNextHopInterface("Ethernet1/1"));
+    }
+    // TODO: support next-hop-vrf used by 10.0.9.0/24 and 10.0.10.0/24
+    {
+      org.batfish.datamodel.StaticRoute route =
+          c.getVrfs().get("vrf1").getStaticRoutes().stream()
+              .filter(r -> r.getNetwork().equals(Prefix.strict("10.0.11.0/24")))
+              .findFirst()
+              .get();
+      assertThat(route, hasAdministrativeCost(1));
+      assertThat(route, hasTag(0L));
+      assertThat(route, hasNextHopIp(Ip.parse("10.255.2.254")));
+    }
+  }
+
+  @Test
+  public void testStaticRouteExtraction() {
+    String hostname = "nxos_static_route";
+    CiscoNxosConfiguration vc = parseVendorConfig(hostname);
+
+    assertThat(vc.getVrfs(), hasKeys("vrf1"));
+    assertThat(
+        vc.getDefaultVrf().getStaticRoutes().asMap(),
+        hasKeys(
+            Prefix.strict("10.0.0.0/24"),
+            Prefix.strict("10.0.1.0/24"),
+            Prefix.strict("10.0.2.0/24"),
+            Prefix.strict("10.0.3.0/24"),
+            Prefix.strict("10.0.4.0/24"),
+            Prefix.strict("10.0.5.0/24"),
+            Prefix.strict("10.0.6.0/24"),
+            Prefix.strict("10.0.7.0/24"),
+            Prefix.strict("10.0.8.0/24"),
+            Prefix.strict("10.0.9.0/24"),
+            Prefix.strict("10.0.10.0/24")));
+    assertThat(
+        vc.getVrfs().get("vrf1").getStaticRoutes().asMap(),
+        hasKeys(Prefix.strict("10.0.11.0/24"), Prefix.strict("10.0.12.0/24")));
+    {
+      StaticRoute route =
+          vc.getDefaultVrf().getStaticRoutes().get(Prefix.strict("10.0.0.0/24")).iterator().next();
+      assertTrue(route.getDiscard());
+      assertThat(route.getPreference(), equalTo((short) 1));
+      assertThat(route.getTag(), equalTo(0L));
+    }
+    {
+      StaticRoute route =
+          vc.getDefaultVrf().getStaticRoutes().get(Prefix.strict("10.0.1.0/24")).iterator().next();
+      assertFalse(route.getDiscard());
+      assertThat(route.getPreference(), equalTo((short) 1));
+      assertThat(route.getTag(), equalTo(0L));
+      assertThat(route.getNextHopIp(), equalTo(Ip.parse("10.255.1.254")));
+    }
+    {
+      StaticRoute route =
+          vc.getDefaultVrf().getStaticRoutes().get(Prefix.strict("10.0.2.0/24")).iterator().next();
+      assertFalse(route.getDiscard());
+      assertThat(route.getPreference(), equalTo((short) 1));
+      assertThat(route.getTag(), equalTo(0L));
+      assertThat(route.getNextHopIp(), equalTo(Ip.parse("10.255.1.254")));
+      assertThat(route.getNextHopInterface(), equalTo("Ethernet1/1"));
+    }
+    {
+      StaticRoute route =
+          vc.getDefaultVrf().getStaticRoutes().get(Prefix.strict("10.0.3.0/24")).iterator().next();
+      assertFalse(route.getDiscard());
+      assertThat(route.getPreference(), equalTo((short) 1));
+      assertThat(route.getTag(), equalTo(0L));
+      assertThat(route.getNextHopIp(), equalTo(Ip.parse("10.255.1.254")));
+      assertThat(route.getNextHopInterface(), equalTo("Ethernet1/1"));
+      assertThat(route.getTrack(), equalTo((short) 500));
+    }
+    {
+      StaticRoute route =
+          vc.getDefaultVrf().getStaticRoutes().get(Prefix.strict("10.0.4.0/24")).iterator().next();
+      assertFalse(route.getDiscard());
+      assertThat(route.getPreference(), equalTo((short) 1));
+      assertThat(route.getTag(), equalTo(0L));
+      assertThat(route.getNextHopIp(), equalTo(Ip.parse("10.255.1.254")));
+      assertThat(route.getNextHopInterface(), equalTo("Ethernet1/1"));
+      assertThat(route.getTrack(), equalTo((short) 500));
+      assertThat(route.getName(), equalTo("foo"));
+    }
+    {
+      StaticRoute route =
+          vc.getDefaultVrf().getStaticRoutes().get(Prefix.strict("10.0.5.0/24")).iterator().next();
+      assertFalse(route.getDiscard());
+      assertThat(route.getPreference(), equalTo((short) 1));
+      assertThat(route.getTag(), equalTo(1000L));
+      assertThat(route.getNextHopIp(), equalTo(Ip.parse("10.255.1.254")));
+      assertThat(route.getNextHopInterface(), equalTo("Ethernet1/1"));
+      assertThat(route.getTrack(), equalTo((short) 500));
+      assertThat(route.getName(), equalTo("foo"));
+    }
+    {
+      StaticRoute route =
+          vc.getDefaultVrf().getStaticRoutes().get(Prefix.strict("10.0.6.0/24")).iterator().next();
+      assertFalse(route.getDiscard());
+      assertThat(route.getPreference(), equalTo((short) 5));
+      assertThat(route.getTag(), equalTo(1000L));
+      assertThat(route.getNextHopIp(), equalTo(Ip.parse("10.255.1.254")));
+      assertThat(route.getNextHopInterface(), equalTo("Ethernet1/1"));
+      assertThat(route.getTrack(), equalTo((short) 500));
+      assertThat(route.getName(), equalTo("foo"));
+    }
+    {
+      StaticRoute route =
+          vc.getDefaultVrf().getStaticRoutes().get(Prefix.strict("10.0.7.0/24")).iterator().next();
+      assertFalse(route.getDiscard());
+      assertThat(route.getPreference(), equalTo((short) 5));
+      assertThat(route.getTag(), equalTo(0L));
+      assertThat(route.getNextHopIp(), equalTo(Ip.parse("10.255.1.254")));
+      assertThat(route.getNextHopInterface(), equalTo("Ethernet1/1"));
+      assertThat(route.getTrack(), equalTo((short) 500));
+      assertThat(route.getName(), equalTo("foo"));
+    }
+    {
+      StaticRoute route =
+          vc.getDefaultVrf().getStaticRoutes().get(Prefix.strict("10.0.8.0/24")).iterator().next();
+      assertFalse(route.getDiscard());
+      assertThat(route.getPreference(), equalTo((short) 5));
+      assertThat(route.getTag(), equalTo(1000L));
+      assertThat(route.getNextHopIp(), equalTo(Ip.parse("10.255.1.254")));
+      assertThat(route.getNextHopInterface(), equalTo("Ethernet1/1"));
+      assertThat(route.getTrack(), equalTo((short) 500));
+      assertThat(route.getName(), equalTo("foo"));
+    }
+    {
+      StaticRoute route =
+          vc.getDefaultVrf().getStaticRoutes().get(Prefix.strict("10.0.9.0/24")).iterator().next();
+      assertFalse(route.getDiscard());
+      assertThat(route.getPreference(), equalTo((short) 5));
+      assertThat(route.getTag(), equalTo(1000L));
+      assertThat(route.getNextHopIp(), equalTo(Ip.parse("10.255.2.254")));
+      assertThat(route.getNextHopInterface(), nullValue());
+      assertThat(route.getTrack(), equalTo((short) 500));
+      assertThat(route.getName(), equalTo("foo"));
+      assertThat(route.getNextHopVrf(), equalTo("vrf2"));
+    }
+    {
+      StaticRoute route =
+          vc.getDefaultVrf().getStaticRoutes().get(Prefix.strict("10.0.10.0/24")).iterator().next();
+      assertFalse(route.getDiscard());
+      assertThat(route.getPreference(), equalTo((short) 5));
+      assertThat(route.getTag(), equalTo(1000L));
+      assertThat(route.getNextHopIp(), equalTo(Ip.parse("10.255.2.254")));
+      assertThat(route.getNextHopInterface(), equalTo("Ethernet1/2"));
+      assertThat(route.getTrack(), equalTo((short) 500));
+      assertThat(route.getName(), equalTo("foo"));
+      assertThat(route.getNextHopVrf(), equalTo("vrf2"));
+    }
+    {
+      StaticRoute route =
+          vc.getVrfs()
+              .get("vrf1")
+              .getStaticRoutes()
+              .get(Prefix.strict("10.0.11.0/24"))
+              .iterator()
+              .next();
+      assertFalse(route.getDiscard());
+      assertThat(route.getPreference(), equalTo((short) 1));
+      assertThat(route.getTag(), equalTo(0L));
+      assertThat(route.getNextHopIp(), equalTo(Ip.parse("10.255.2.254")));
+      assertThat(route.getNextHopVrf(), nullValue());
+    }
+    {
+      StaticRoute route =
+          vc.getVrfs()
+              .get("vrf1")
+              .getStaticRoutes()
+              .get(Prefix.strict("10.0.12.0/24"))
+              .iterator()
+              .next();
+      assertFalse(route.getDiscard());
+      assertThat(route.getPreference(), equalTo((short) 1));
+      assertThat(route.getTag(), equalTo(0L));
+      assertThat(route.getNextHopIp(), equalTo(Ip.parse("10.255.2.254")));
+      assertThat(route.getNextHopInterface(), equalTo("Ethernet1/100"));
+      assertThat(route.getNextHopVrf(), nullValue());
+    }
+  }
+
+  @Test
+  public void testStaticRouteReferences() throws IOException {
+    String hostname = "nxos_static_route_references";
+    String filename = String.format("configs/%s", hostname);
+    ConvertConfigurationAnswerElement ans =
+        getBatfishForConfigurationNames(hostname).loadConvertConfigurationAnswerElementOrReparse();
+
+    assertThat(ans, hasNumReferrers(filename, CiscoNxosStructureType.INTERFACE, "Ethernet1/1", 2));
+    assertThat(ans, hasNumReferrers(filename, CiscoNxosStructureType.VRF, "vrf1", 2));
+  }
+
+  @Test
   public void testVlanConversion() throws IOException {
     String hostname = "nxos_vlan";
     Configuration c = parseConfig(hostname);
@@ -977,5 +1301,134 @@ public final class CiscoNxosGrammarTest {
     assertThat(ans, hasNumReferrers(filename, CiscoNxosStructureType.VLAN, "1", 1));
     assertThat(ans, hasNumReferrers(filename, CiscoNxosStructureType.VLAN, "2", 0));
     assertThat(ans, hasUndefinedReference(filename, CiscoNxosStructureType.VLAN, "3"));
+  }
+
+  @Test
+  public void testVrfConversion() throws IOException {
+    String hostname = "nxos_vrf";
+    Configuration c = parseConfig(hostname);
+
+    assertThat(c.getVrfs(), hasKeys(DEFAULT_VRF_NAME, NULL_VRF_NAME, "vrf1", "vrf3"));
+    {
+      org.batfish.datamodel.Vrf vrf = c.getVrfs().get(DEFAULT_VRF_NAME);
+      assertThat(vrf, VrfMatchers.hasInterfaces(empty()));
+    }
+    {
+      org.batfish.datamodel.Vrf vrf = c.getVrfs().get(NULL_VRF_NAME);
+      assertThat(vrf, VrfMatchers.hasInterfaces(contains("Ethernet1/2")));
+    }
+    {
+      org.batfish.datamodel.Vrf vrf = c.getVrfs().get("vrf1");
+      assertThat(
+          vrf, VrfMatchers.hasInterfaces(contains("Ethernet1/1", "Ethernet1/3", "Ethernet1/4")));
+    }
+    {
+      org.batfish.datamodel.Vrf vrf = c.getVrfs().get("vrf3");
+      assertThat(vrf, VrfMatchers.hasInterfaces(contains("Ethernet1/5")));
+    }
+
+    assertThat(
+        c.getAllInterfaces(),
+        hasKeys("Ethernet1/1", "Ethernet1/2", "Ethernet1/3", "Ethernet1/4", "Ethernet1/5"));
+    {
+      org.batfish.datamodel.Interface iface = c.getAllInterfaces().get("Ethernet1/1");
+      assertThat(iface, isActive());
+    }
+    {
+      org.batfish.datamodel.Interface iface = c.getAllInterfaces().get("Ethernet1/2");
+      assertThat(iface, isActive(false));
+    }
+    {
+      org.batfish.datamodel.Interface iface = c.getAllInterfaces().get("Ethernet1/3");
+      assertThat(iface, isActive());
+      assertThat(iface, hasAddress(nullValue()));
+    }
+    {
+      org.batfish.datamodel.Interface iface = c.getAllInterfaces().get("Ethernet1/4");
+      assertThat(iface, isActive());
+      assertThat(iface, hasAddress("10.0.4.1/24"));
+    }
+    {
+      org.batfish.datamodel.Interface iface = c.getAllInterfaces().get("Ethernet1/5");
+      assertThat(iface, isActive(false));
+      assertThat(iface, hasAddress("10.0.5.1/24"));
+    }
+  }
+
+  @Test
+  public void testVrfExtraction() {
+    String hostname = "nxos_vrf";
+    CiscoNxosConfiguration vc = parseVendorConfig(hostname);
+
+    assertThat(vc.getVrfs(), hasKeys("vrf1", "vrf3"));
+    {
+      Vrf vrf = vc.getDefaultVrf();
+      assertFalse(vrf.getShutdown());
+    }
+    {
+      Vrf vrf = vc.getVrfs().get("vrf1");
+      assertFalse(vrf.getShutdown());
+    }
+    {
+      Vrf vrf = vc.getVrfs().get("vrf3");
+      assertTrue(vrf.getShutdown());
+    }
+
+    assertThat(
+        vc.getInterfaces(),
+        hasKeys("Ethernet1/1", "Ethernet1/2", "Ethernet1/3", "Ethernet1/4", "Ethernet1/5"));
+    {
+      Interface iface = vc.getInterfaces().get("Ethernet1/1");
+      assertFalse(iface.getShutdown());
+      assertThat(iface.getVrfMember(), equalTo("vrf1"));
+    }
+    {
+      Interface iface = vc.getInterfaces().get("Ethernet1/2");
+      assertFalse(iface.getShutdown());
+      assertThat(iface.getVrfMember(), equalTo("vrf2"));
+    }
+    {
+      Interface iface = vc.getInterfaces().get("Ethernet1/3");
+      assertFalse(iface.getShutdown());
+      assertThat(iface.getVrfMember(), equalTo("vrf1"));
+      assertThat(iface.getAddress(), nullValue());
+    }
+    {
+      Interface iface = vc.getInterfaces().get("Ethernet1/4");
+      assertFalse(iface.getShutdown());
+      assertThat(iface.getVrfMember(), equalTo("vrf1"));
+      assertThat(iface.getAddress(), equalTo(ConcreteInterfaceAddress.parse("10.0.4.1/24")));
+    }
+    {
+      Interface iface = vc.getInterfaces().get("Ethernet1/5");
+      assertFalse(iface.getShutdown());
+      assertThat(iface.getVrfMember(), equalTo("vrf3"));
+      assertThat(iface.getAddress(), equalTo(ConcreteInterfaceAddress.parse("10.0.5.1/24")));
+    }
+  }
+
+  @Test
+  public void testVrfExtractionInvalid() {
+    String hostname = "nxos_vrf_invalid";
+    CiscoNxosConfiguration vc = parseVendorConfig(hostname);
+
+    assertThat(vc.getVrfs(), hasKeys("vrf1"));
+    assertThat(vc.getInterfaces(), hasKeys("Ethernet1/1"));
+    {
+      Interface iface = vc.getInterfaces().get("Ethernet1/1");
+      assertThat(iface.getVrfMember(), nullValue());
+    }
+  }
+
+  @Test
+  public void testVrfReferences() throws IOException {
+    String hostname = "nxos_vrf_references";
+    String filename = String.format("configs/%s", hostname);
+    ConvertConfigurationAnswerElement ans =
+        getBatfishForConfigurationNames(hostname).loadConvertConfigurationAnswerElementOrReparse();
+
+    assertThat(ans, hasNumReferrers(filename, CiscoNxosStructureType.VRF, "vrf_used", 1));
+    assertThat(ans, hasNumReferrers(filename, CiscoNxosStructureType.VRF, "vrf_unused", 0));
+    assertThat(ans, hasUndefinedReference(filename, CiscoNxosStructureType.VRF, "vrf_undefined"));
   }
 }

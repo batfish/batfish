@@ -54,6 +54,15 @@ public final class AbstractRouteDecoratorMatchers {
   }
 
   /**
+   * Provides a matcher that matches when the route's nextHopInterface is {@code
+   * expectedNextHopInterface}.
+   */
+  public static @Nonnull Matcher<AbstractRouteDecorator> hasNextHopInterface(
+      @Nonnull String expectedNextHopInterface) {
+    return new HasNextHopInterface(equalTo(expectedNextHopInterface));
+  }
+
+  /**
    * Provides a matcher that matches when the supplied {@code subMatcher} matches the {@link
    * AbstractRouteDecorator}'s nextHopInterface.
    */

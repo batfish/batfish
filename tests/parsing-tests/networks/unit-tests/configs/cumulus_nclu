@@ -49,6 +49,7 @@ net add bgp l2vpn evpn neighbor swp2 activate
 net add bgp l2vpn evpn neighbor swp3 activate
 net add bgp router-id 192.0.2.2
 net add bgp vrf vrf1 autonomous-system 65501
+net add bgp vrf vrf1 always-compare-med
 net add bgp vrf vrf1 ipv4 unicast redistribute connected
 net add bgp vrf vrf1 ipv4 unicast redistribute static
 net add bgp vrf vrf1 l2vpn evpn  advertise ipv4 unicast
@@ -111,3 +112,4 @@ net commit
 sudo sh -c "printf 'username cumulus nopassword\n' >> /etc/frr/frr.conf"
 sudo sh -c "printf 'vrf vrf1\n  ip route 0.0.0.0/0 192.0.2.1\n' >> /etc/frr/frr.conf"
 sudo sh -c "printf 'vrf vrf1\n exit-vrf\n' >> /etc/frr/frr.conf"
+sudo sh -c "printf 'router bgp 65000 vrf FOO\n neighbor 1.1.1.1 interface peer-group A_GROUP\n' >> /etc/frr/frr.conf"

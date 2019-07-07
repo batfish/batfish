@@ -56,7 +56,7 @@ public class InputValidationUtilsTest {
         equalTo(
             new InputValidationNotes(
                 Validity.INVALID,
-                getErrorMessage(Grammar.ENUM_SET_SPECIFIER.getFriendlyName(), 6),
+                getErrorMessage(Grammar.BGP_PEER_PROPERTY_SPECIFIER.getFriendlyName(), 6),
                 6)));
   }
 
@@ -73,7 +73,7 @@ public class InputValidationUtilsTest {
         equalTo(
             new InputValidationNotes(
                 Validity.INVALID,
-                getErrorMessage(Grammar.ENUM_SET_SPECIFIER.getFriendlyName(), 6),
+                getErrorMessage(Grammar.BGP_PROCESS_PROPERTY_SPECIFIER.getFriendlyName(), 6),
                 6)));
   }
 
@@ -90,7 +90,7 @@ public class InputValidationUtilsTest {
         equalTo(
             new InputValidationNotes(
                 Validity.INVALID,
-                getErrorMessage(Grammar.ENUM_SET_SPECIFIER.getFriendlyName(), 6),
+                getErrorMessage(Grammar.INTERFACE_PROPERTY_SPECIFIER.getFriendlyName(), 6),
                 6)));
   }
 
@@ -126,7 +126,7 @@ public class InputValidationUtilsTest {
         equalTo(
             new InputValidationNotes(
                 Validity.INVALID,
-                getErrorMessage(Grammar.ENUM_SET_SPECIFIER.getFriendlyName(), 6),
+                getErrorMessage(Grammar.NODE_PROPERTY_SPECIFIER.getFriendlyName(), 6),
                 6)));
   }
 }

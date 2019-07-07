@@ -5,7 +5,8 @@ options {
 }
 
 tokens {
-  SUBDOMAIN_NAME
+  SUBDOMAIN_NAME,
+  WORD
 }
 
 ACCESS
@@ -33,6 +34,11 @@ ADDRESS
   'address'
 ;
 
+ADDRESS_FAMILY
+:
+  'address-family'
+;
+
 ALLOWED
 :
   'allowed'
@@ -56,6 +62,16 @@ CHANNEL_GROUP
 CONFIGURATION
 :
   'configuration'
+;
+
+CONTEXT
+:
+  'context' -> pushMode ( M_Word )
+;
+
+DESCRIPTION
+:
+  'description'
 ;
 
 DOT1Q
@@ -136,14 +152,14 @@ IP
   'ip'
 ;
 
-IP_ADDRESS
+IPV4
 :
-  F_IpAddress
+  'ipv4'
 ;
 
-IP_PREFIX
+IPV6
 :
-  F_IpPrefix
+  'ipv6'
 ;
 
 LAST_MEMBER_QUERY_INTERVAL
@@ -165,9 +181,19 @@ LOOPBACK
   )?
 ;
 
+MAXIMUM
+:
+  'maximum'
+;
+
 MEDIA
 :
   'media'
+;
+
+MEMBER
+:
+  'member' -> pushMode ( M_Word )
 ;
 
 MGMT
@@ -182,7 +208,7 @@ MROUTER
 
 NAME
 :
-  'name'
+  'name' -> pushMode ( M_Word )
 ;
 
 NATIVE
@@ -198,6 +224,11 @@ NO
 NONE
 :
   'none'
+;
+
+NULL0
+:
+  [Nn] [Uu] [Ll] [Ll] ' '* '0'
 ;
 
 PORT_CHANNEL
@@ -265,6 +296,11 @@ ROBUSTNESS_VARIABLE
   'robustness-variable'
 ;
 
+ROUTE
+:
+  'route'
+;
+
 SECONDARY
 :
   'secondary'
@@ -300,9 +336,24 @@ SWITCHPORT
   'switchport'
 ;
 
+TAG
+:
+  'tag'
+;
+
+TRACK
+:
+  'track'
+;
+
 TRUNK
 :
   'trunk'
+;
+
+UNICAST
+:
+  'unicast'
 ;
 
 V3_REPORT_SUPPRESSION
@@ -318,6 +369,18 @@ VERSION
 VLAN
 :
   [Vv] [Ll] [Aa] [Nn]
+;
+
+VRF
+:
+  'vrf'
+  // If not first word on line, should be followed by VRF name
+  {
+    if (!(lastTokenType() == NEWLINE || lastTokenType() == -1)) {
+      pushMode(M_Word);
+    }
+  }
+
 ;
 
 XCONNECT
@@ -364,6 +427,16 @@ DASH
 FORWARD_SLASH
 :
   '/'
+;
+
+IP_ADDRESS
+:
+  F_IpAddress
+;
+
+IP_PREFIX
+:
+  F_IpPrefix
 ;
 
 NEWLINE
@@ -668,9 +741,16 @@ F_Whitespace
 ;
 
 fragment
+F_Word
+:
+  F_WordChar+
+;
+
+fragment
 F_WordChar
 :
-  ~[ \t\n\r{}[\]]
+  [0-9A-Za-z!@#$^*_=+.;:{}]
+  | '-'
 ;
 
 mode M_Hostname;
@@ -690,6 +770,18 @@ M_Hostname_SUBDOMAIN_NAME
 ;
 
 M_Hostname_WS
+:
+  F_Whitespace+ -> channel ( HIDDEN )
+;
+
+mode M_Word;
+
+M_Word_WORD
+:
+  F_Word -> type ( WORD ) , popMode
+;
+
+M_Word_WS
 :
   F_Whitespace+ -> channel ( HIDDEN )
 ;

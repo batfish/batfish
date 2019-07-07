@@ -137,3 +137,8 @@ word
 :
   ~NEWLINE
 ;
+
+zero
+:
+  d = DEC { isZero($d) }?
+;

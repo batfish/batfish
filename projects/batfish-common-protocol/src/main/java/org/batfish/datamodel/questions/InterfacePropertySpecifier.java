@@ -19,6 +19,7 @@ import org.batfish.datamodel.SwitchportMode;
 import org.batfish.datamodel.answers.Schema;
 import org.batfish.specifier.ConstantEnumSetSpecifier;
 import org.batfish.specifier.SpecifierFactories;
+import org.batfish.specifier.parboiled.Grammar;
 
 /**
  * Enables specification a set of interface properties.
@@ -318,7 +319,9 @@ public class InterfacePropertySpecifier extends PropertySpecifier {
   public static InterfacePropertySpecifier create(@Nullable String expression) {
     return new InterfacePropertySpecifier(
         SpecifierFactories.getEnumSetSpecifierOrDefault(
-                expression, JAVA_MAP.keySet(), new ConstantEnumSetSpecifier<>(JAVA_MAP.keySet()))
+                expression,
+                Grammar.INTERFACE_PROPERTY_SPECIFIER,
+                new ConstantEnumSetSpecifier<>(JAVA_MAP.keySet()))
             .resolve());
   }
 

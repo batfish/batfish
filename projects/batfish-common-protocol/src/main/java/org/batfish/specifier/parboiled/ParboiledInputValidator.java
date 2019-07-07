@@ -5,7 +5,6 @@ import static org.batfish.datamodel.answers.InputValidationUtils.getErrorMessage
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
-import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -154,22 +153,6 @@ public final class ParboiledInputValidator {
             completionMetadata,
             nodeRolesData,
             referenceLibrary)
-        .run();
-  }
-
-  /**
-   * The entry point for validating enum sets, based on the {@code query} and {@code allEnumValues}
-   */
-  public static <T> InputValidationNotes validateEnumSet(
-      Collection<T> allEnumValues, String query) {
-    Parser parser = Parser.instance();
-    return new ParboiledInputValidator(
-            parser.getEnumSetRule(allEnumValues),
-            Grammar.ENUM_SET_SPECIFIER,
-            query,
-            CompletionMetadata.EMPTY,
-            NodeRolesData.builder().build(),
-            new ReferenceLibrary(null))
         .run();
   }
 

@@ -141,7 +141,7 @@ public class IosRoutingTableExtractor extends IosRoutingTableParserBaseListener
         nextHopIp = nextHopIps.get(i);
       }
       // TODO: support IOS route tags
-      int tag = Route.UNSET_ROUTE_TAG;
+      long tag = Route.UNSET_ROUTE_TAG;
       // TODO: support IOS next hop
       if (protocol == RoutingProtocol.BGP
           && admin

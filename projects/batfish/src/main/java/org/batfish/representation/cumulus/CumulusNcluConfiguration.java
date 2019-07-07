@@ -202,7 +202,10 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
             .setIpv4UnicastAddressFamily(
                 Ipv4UnicastAddressFamily.builder()
                     .setAddressFamilyCapabilities(
-                        AddressFamilyCapabilities.builder().setSendCommunity(true).build())
+                        AddressFamilyCapabilities.builder()
+                            .setSendCommunity(true)
+                            .setSendExtendedCommunity(true)
+                            .build())
                     .setExportPolicy(routingPolicy.getName())
                     .setRouteReflectorClient(
                         Optional.ofNullable(neighbor.getIpv4UnicastAddressFamily())
@@ -278,7 +281,10 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
               .setL3Vnis(l3Vnis.build())
               .setPropagateUnmatched(true)
               .setAddressFamilyCapabilities(
-                  AddressFamilyCapabilities.builder().setSendCommunity(true).build())
+                  AddressFamilyCapabilities.builder()
+                      .setSendCommunity(true)
+                      .setSendExtendedCommunity(true)
+                      .build())
               .setRouteReflectorClient(
                   firstNonNull(
                       neighbor.getL2vpnEvpnAddressFamily().getRouteReflectorClient(),
@@ -941,6 +947,7 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
 
     applyBridgeSettings(iface.getBridge(), newIface);
 
+    newIface.setDescription(iface.getAlias());
     if (iface.getSpeed() != null) {
       double speed = iface.getSpeed() * SPEED_CONVERSION_FACTOR;
       newIface.setSpeed(speed);
@@ -959,7 +966,10 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
         org.batfish.datamodel.Interface.builder()
             .setName(name)
             .setOwner(_c)
-            .setType(InterfaceType.LOGICAL)
+            .setType(
+                iface.getType() == CumulusInterfaceType.BOND_SUBINTERFACE
+                    ? InterfaceType.AGGREGATE_CHILD
+                    : InterfaceType.LOGICAL)
             .build();
     newIface.setDependencies(
         ImmutableSet.of(new Dependency(superInterfaceName, DependencyType.BIND)));

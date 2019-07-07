@@ -74,7 +74,7 @@ public class RibDeltaTest {
             .setNextHopInterface(null)
             .setAdministrativeCost(1)
             .setMetric(0L)
-            .setTag(1)
+            .setTag(1L)
             .build();
     // Route 2 & 3 should be equal
     StaticRoute route2 =
@@ -84,7 +84,7 @@ public class RibDeltaTest {
             .setNextHopInterface(null)
             .setAdministrativeCost(1)
             .setMetric(0L)
-            .setTag(1)
+            .setTag(1L)
             .build();
     StaticRoute route3 =
         StaticRoute.builder()
@@ -93,7 +93,7 @@ public class RibDeltaTest {
             .setNextHopInterface(null)
             .setAdministrativeCost(1)
             .setMetric(0L)
-            .setTag(1)
+            .setTag(1L)
             .build();
     _builder.add(route1);
     _builder.add(route2);
@@ -118,7 +118,7 @@ public class RibDeltaTest {
             .setNextHopInterface(null)
             .setAdministrativeCost(1)
             .setMetric(0L)
-            .setTag(1)
+            .setTag(1L)
             .build();
     // Route 2 & 3 should be equal
     StaticRoute route2 =
@@ -128,7 +128,7 @@ public class RibDeltaTest {
             .setNextHopInterface(null)
             .setAdministrativeCost(1)
             .setMetric(0L)
-            .setTag(1)
+            .setTag(1L)
             .build();
     StaticRoute route3 =
         StaticRoute.builder()
@@ -137,7 +137,7 @@ public class RibDeltaTest {
             .setNextHopInterface(null)
             .setAdministrativeCost(1)
             .setMetric(0L)
-            .setTag(1)
+            .setTag(1L)
             .build();
     _builder.remove(route1, Reason.WITHDRAW);
     _builder.remove(route2, Reason.WITHDRAW);

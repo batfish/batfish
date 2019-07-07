@@ -39,7 +39,7 @@ public class FirstMatchChainTest {
           .setStatements(
               ImmutableList.of(
                   new If(
-                      new MatchTag(IntComparator.EQ, new LiteralInt(1)),
+                      new MatchTag(IntComparator.EQ, new LiteralLong(1)),
                       ImmutableList.of(Statements.ReturnTrue.toStaticStatement()))))
           .build();
   private static RoutingPolicy P2 =
@@ -48,7 +48,7 @@ public class FirstMatchChainTest {
           .setStatements(
               ImmutableList.of(
                   new If(
-                      new MatchTag(IntComparator.EQ, new LiteralInt(2)),
+                      new MatchTag(IntComparator.EQ, new LiteralLong(2)),
                       ImmutableList.of(Statements.ReturnFalse.toStaticStatement()))))
           .build();
   private static RoutingPolicy DEFAULT_POLICY =
@@ -134,19 +134,19 @@ public class FirstMatchChainTest {
 
     // Route with tag 1 should be accepted by policy 1, no metric change
     Environment environment =
-        buildEnvironment(policiesMap, DEFAULT_POLICY.getName(), srb.setTag(1).build());
+        buildEnvironment(policiesMap, DEFAULT_POLICY.getName(), srb.setTag(1L).build());
     Result result = policiesChain.evaluate(environment);
     assertThat(environment.getOutputRoute().getMetric(), equalTo(10L));
     assertThat(result, equalTo(new Result(true, false, false, false)));
 
     // Route with tag 2 should be rejected by policy 2, no metric change
-    environment = buildEnvironment(policiesMap, DEFAULT_POLICY.getName(), srb.setTag(2).build());
+    environment = buildEnvironment(policiesMap, DEFAULT_POLICY.getName(), srb.setTag(2L).build());
     result = policiesChain.evaluate(environment);
     assertThat(environment.getOutputRoute().getMetric(), equalTo(10L));
     assertThat(result, equalTo(new Result(false, false, false, false)));
 
     // Route with tag 3 should fall through policies 1 and 2, hit default policy, and update metric
-    environment = buildEnvironment(policiesMap, DEFAULT_POLICY.getName(), srb.setTag(3).build());
+    environment = buildEnvironment(policiesMap, DEFAULT_POLICY.getName(), srb.setTag(3L).build());
     result = policiesChain.evaluate(environment);
     assertThat(environment.getOutputRoute().getMetric(), equalTo(500L));
     assertThat(result, equalTo(new Result(false, false, true, false)));

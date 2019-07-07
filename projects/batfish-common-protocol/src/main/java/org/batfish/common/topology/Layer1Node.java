@@ -1,12 +1,14 @@
 package org.batfish.common.topology;
 
 import static com.google.common.base.MoreObjects.toStringHelper;
+import static com.google.common.base.Preconditions.checkArgument;
 import static java.util.Objects.requireNonNull;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.Comparator;
 import java.util.Objects;
+import java.util.Optional;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -83,7 +85,13 @@ public final class Layer1Node implements Comparable<Layer1Node> {
    * interface, the physical node is treated as a logical node and returned.
    */
   public @Nullable Layer1Node toLogicalNode(NetworkConfigurations networkConfigurations) {
-    Interface iface = networkConfigurations.getInterface(_hostname, _interfaceName).get();
+    Optional<Interface> optIface = networkConfigurations.getInterface(_hostname, _interfaceName);
+    checkArgument(
+        optIface.isPresent(),
+        "Unable to create logical node for missing interface %s[%s]",
+        _hostname,
+        _interfaceName);
+    Interface iface = optIface.get();
     if (iface.getChannelGroup() == null) {
       return this;
     }

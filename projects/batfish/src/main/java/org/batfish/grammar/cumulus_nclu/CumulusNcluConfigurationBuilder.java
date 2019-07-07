@@ -52,6 +52,7 @@ import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.A_timeContext;
 import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.A_vlanContext;
 import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.A_vrfContext;
 import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.A_vxlanContext;
+import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.B_always_compare_medContext;
 import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.B_autonomous_systemContext;
 import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.B_ipv4_unicastContext;
 import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.B_l2vpnContext;
@@ -97,6 +98,7 @@ import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.Frr_vrfContext;
 import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.Frrv_ip_routeContext;
 import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.GlobContext;
 import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.Glob_range_setContext;
+import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.I_aliasContext;
 import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.I_ip_addressContext;
 import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.I_link_speedContext;
 import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.I_vrfContext;
@@ -875,6 +877,11 @@ public class CumulusNcluConfigurationBuilder extends CumulusNcluParserBaseListen
   }
 
   @Override
+  public void exitB_always_compare_med(B_always_compare_medContext ctx) {
+    todo(ctx);
+  }
+
+  @Override
   public void exitB_autonomous_system(B_autonomous_systemContext ctx) {
     _currentBgpVrf.setAutonomousSystem(toLong(ctx.as));
   }
@@ -1134,6 +1141,11 @@ public class CumulusNcluConfigurationBuilder extends CumulusNcluParserBaseListen
   @Override
   public void exitFrr_exit_vrf(Frr_exit_vrfContext ctx) {
     _currentVrf = null;
+  }
+
+  @Override
+  public void exitI_alias(I_aliasContext ctx) {
+    _currentInterfaces.forEach(iface -> iface.setAlias(ctx.ALIAS_BODY().getText().trim()));
   }
 
   @Override

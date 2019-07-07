@@ -12,7 +12,11 @@ import java.util.Set;
 import java.util.stream.Stream;
 import org.batfish.common.CompletionMetadata;
 import org.batfish.datamodel.Protocol;
+import org.batfish.datamodel.questions.BgpPeerPropertySpecifier;
+import org.batfish.datamodel.questions.BgpProcessPropertySpecifier;
+import org.batfish.datamodel.questions.InterfacePropertySpecifier;
 import org.batfish.datamodel.questions.NamedStructurePropertySpecifier;
+import org.batfish.datamodel.questions.NodePropertySpecifier;
 import org.batfish.referencelibrary.ReferenceLibrary;
 import org.batfish.role.NodeRolesData;
 import org.batfish.specifier.parboiled.Anchor.Type;
@@ -30,23 +34,34 @@ import org.parboiled.support.ParsingResult;
  */
 public class ParserEnumSetTest {
 
-  private static final Collection<String> ALL_NAMED_STRUCTURE_TYPES =
-      NamedStructurePropertySpecifier.JAVA_MAP.keySet();
-
   /** */
   @Rule public ExpectedException _thrown = ExpectedException.none();
+
+  @SuppressWarnings("unchecked")
+  private static Set<String> ALL_NAMED_STRUCTURE_TYPES =
+      (Set<String>) Grammar.getEnumValues(Grammar.NAMED_STRUCTURE_SPECIFIER);
 
   private static AbstractParseRunner<AstNode> getRunner() {
     return getRunner(ALL_NAMED_STRUCTURE_TYPES);
   }
 
-  private static AbstractParseRunner<AstNode> getRunner(Collection<String> allValues) {
-    return new ReportingParseRunner<>(Parser.instance().getEnumSetRule(allValues));
+  private static AbstractParseRunner<AstNode> getRunner(Grammar grammar) {
+    return new ReportingParseRunner<>(Parser.instance().getInputRule(grammar));
+  }
+
+  private static AbstractParseRunner<AstNode> getRunner(Collection<?> allValues) {
+    Parser parser = Parser.instance();
+    return new ReportingParseRunner<>(parser.input(parser.EnumSetSpec(allValues)));
+  }
+
+  private static ParboiledAutoComplete getPAC(String query, Grammar grammar) {
+    return getPAC(query, Grammar.getEnumValues(grammar));
   }
 
   private static ParboiledAutoComplete getPAC(String query, Collection<?> allValues) {
+    Parser parser = Parser.instance();
     return new ParboiledAutoComplete(
-        Parser.instance().getEnumSetRule(allValues),
+        parser.input(parser.EnumSetSpec(allValues)),
         Parser.ANCHORS,
         "network",
         "snapshot",
@@ -55,6 +70,20 @@ public class ParserEnumSetTest {
         CompletionMetadata.EMPTY,
         NodeRolesData.builder().build(),
         new ReferenceLibrary(null));
+  }
+
+  /** A helper to test parsing of different types of enums */
+  private static void testParseOtherProperties(String value1, String value2, Grammar grammar) {
+    String query = String.format("%s,%s", value1, value2);
+
+    Collection<?> allValues = Grammar.getEnumValues(grammar);
+
+    EnumSetAstNode expectedAst =
+        new UnionEnumSetAstNode(
+            new ValueEnumSetAstNode<>(value1, allValues),
+            new ValueEnumSetAstNode<>(value2, allValues));
+
+    assertThat(ParserUtils.getAst(getRunner(grammar).run(query)), equalTo(expectedAst));
   }
 
   /** This testParses if we have proper completion annotations on the rules */
@@ -73,7 +102,7 @@ public class ParserEnumSetTest {
 
     Set<ParboiledAutoCompleteSuggestion> suggestions =
         new ParboiledAutoComplete(
-                Parser.instance().getEnumSetRule(ALL_NAMED_STRUCTURE_TYPES),
+                Parser.instance().getInputRule(Grammar.NAMED_STRUCTURE_SPECIFIER),
                 Parser.ANCHORS,
                 "network",
                 "snapshot",
@@ -105,7 +134,7 @@ public class ParserEnumSetTest {
 
     Set<ParboiledAutoCompleteSuggestion> suggestions =
         new ParboiledAutoComplete(
-                Parser.instance().getEnumSetRule(ALL_NAMED_STRUCTURE_TYPES),
+                Parser.instance().getInputRule(Grammar.NAMED_STRUCTURE_SPECIFIER),
                 Parser.ANCHORS,
                 "network",
                 "snapshot",
@@ -206,7 +235,7 @@ public class ParserEnumSetTest {
   public void testApplication() {
     String query = "";
     Set<ParboiledAutoCompleteSuggestion> suggestions =
-        getPAC("", Arrays.asList(Protocol.values())).run();
+        getPAC("", Grammar.APPLICATION_SPECIFIER).run();
 
     assertThat(
         suggestions,
@@ -243,5 +272,41 @@ public class ParserEnumSetTest {
     assertThat(
         getPAC("longer", allValues).run(),
         containsInAnyOrder(new ParboiledAutoCompleteSuggestion(",", 6, Type.ENUM_SET_SET_OP)));
+  }
+
+  /** Test that bgp peer properties are being parsed */
+  @Test
+  public void testParseBgpPeerProperties() {
+    testParseOtherProperties(
+        BgpPeerPropertySpecifier.LOCAL_IP,
+        BgpPeerPropertySpecifier.LOCAL_AS,
+        Grammar.BGP_PEER_PROPERTY_SPECIFIER);
+  }
+
+  /** Test that bgp process properties are being parsed */
+  @Test
+  public void testParseBgpProcessProperties() {
+    testParseOtherProperties(
+        BgpProcessPropertySpecifier.ROUTE_REFLECTOR,
+        BgpProcessPropertySpecifier.TIE_BREAKER,
+        Grammar.BGP_PROCESS_PROPERTY_SPECIFIER);
+  }
+
+  /** Test that interface properties are being parsed */
+  @Test
+  public void testParseInterfaceProperties() {
+    testParseOtherProperties(
+        InterfacePropertySpecifier.DESCRIPTION,
+        InterfacePropertySpecifier.ACCESS_VLAN,
+        Grammar.INTERFACE_PROPERTY_SPECIFIER);
+  }
+
+  /** Test that interface properties are being parsed */
+  @Test
+  public void testParseNodeProperties() {
+    testParseOtherProperties(
+        NodePropertySpecifier.NTP_SERVERS,
+        NodePropertySpecifier.DNS_SERVERS,
+        Grammar.NODE_PROPERTY_SPECIFIER);
   }
 }
