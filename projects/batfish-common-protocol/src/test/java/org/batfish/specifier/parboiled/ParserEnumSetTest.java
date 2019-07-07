@@ -37,12 +37,11 @@ public class ParserEnumSetTest {
   /** */
   @Rule public ExpectedException _thrown = ExpectedException.none();
 
-  @SuppressWarnings("unchecked")
-  private static Set<String> ALL_NAMED_STRUCTURE_TYPES =
-      (Set<String>) Grammar.getEnumValues(Grammar.NAMED_STRUCTURE_SPECIFIER);
+  private static Collection<?> ALL_NAMED_STRUCTURE_TYPES =
+      Grammar.getEnumValues(Grammar.NAMED_STRUCTURE_SPECIFIER);
 
   private static AbstractParseRunner<AstNode> getRunner() {
-    return getRunner(ALL_NAMED_STRUCTURE_TYPES);
+    return getRunner(Grammar.NAMED_STRUCTURE_SPECIFIER);
   }
 
   private static AbstractParseRunner<AstNode> getRunner(Grammar grammar) {
@@ -159,8 +158,7 @@ public class ParserEnumSetTest {
   @Test
   public void testParseNamedStructureType() {
     String query = NamedStructurePropertySpecifier.IP_ACCESS_LIST;
-    ValueEnumSetAstNode<String> expectedAst =
-        new ValueEnumSetAstNode<>(query, ALL_NAMED_STRUCTURE_TYPES);
+    EnumSetAstNode expectedAst = new ValueEnumSetAstNode<>(query, ALL_NAMED_STRUCTURE_TYPES);
 
     assertThat(ParserUtils.getAst(getRunner().run(query)), equalTo(expectedAst));
     assertThat(ParserUtils.getAst(getRunner().run(" " + query + " ")), equalTo(expectedAst));
@@ -176,8 +174,7 @@ public class ParserEnumSetTest {
   @Test
   public void testParseNamedStructureTypeCaseInsensitive() {
     String query = NamedStructurePropertySpecifier.IP_ACCESS_LIST.toLowerCase();
-    ValueEnumSetAstNode<String> expectedAst =
-        new ValueEnumSetAstNode<>(query, ALL_NAMED_STRUCTURE_TYPES);
+    EnumSetAstNode expectedAst = new ValueEnumSetAstNode<>(query, ALL_NAMED_STRUCTURE_TYPES);
 
     assertThat(ParserUtils.getAst(getRunner().run(query)), equalTo(expectedAst));
     assertThat(ParserUtils.getAst(getRunner().run(" " + query + " ")), equalTo(expectedAst));
