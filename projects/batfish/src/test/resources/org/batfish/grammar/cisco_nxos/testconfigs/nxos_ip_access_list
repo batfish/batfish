@@ -75,7 +75,7 @@ ip access-list acl_common_ip_options_dscp
   permit ip any any dscp cs6
   permit ip any any dscp cs7
   permit ip any any dscp default
-  permit ip any any dscp ef                                                                                                                 
+  permit ip any any dscp ef
 
 ip access-list acl_common_ip_options_log
   !!! Log
@@ -158,7 +158,7 @@ ip access-list acl_icmp
   permit icmp any any timestamp-request
   permit icmp any any traceroute
   permit icmp any any ttl-exceeded
-  permit icmp any any unreachable                                                                                                             
+  permit icmp any any unreachable
 
 !!! IGMP options
 ip access-list acl_igmp
@@ -174,7 +174,7 @@ ip access-list acl_tcp_destination_port
   !!! Match destination port
   ! 0-65535
   permit tcp any any eq 1
-  permit tcp any any gt 5                                                                                                                   
+  permit tcp any any gt 5
   permit tcp any any lt 10
   permit tcp any any neq 15
   permit tcp any any portgroup mydstportgroup
@@ -212,19 +212,19 @@ ip access-list acl_tcp_destination_port
   permit tcp any any eq time
   permit tcp any any eq uucp
   permit tcp any any eq whois
-  permit tcp any any eq www  
+  permit tcp any any eq www
 
 ip access-list acl_tcp_source_port
   !!! Match source port
   permit tcp any eq 1 any
-  permit tcp any gt 5 any                                                                                                                   
+  permit tcp any gt 5 any
   permit tcp any lt 10 any
   permit tcp any neq 15 any
   permit tcp any portgroup mysrcportgroup any
   permit tcp any range 20 25 any
 
 ip access-list acl_tcp_http_method
-  !!! Match HTTP method  
+  !!! Match HTTP method
   ! 1-7
   permit tcp any any http-method 2
   permit tcp any any http-method connect
@@ -261,7 +261,7 @@ ip access-list acl_udp_destination_port
   !!! Match destination port
   ! 0-65535
   permit udp any any eq 1
-  permit udp any any gt 5                                                                                                                   
+  permit udp any any gt 5
   permit udp any any lt 10
   permit udp any any neq 15
   permit udp any any portgroup mydstportgroup
@@ -292,13 +292,13 @@ ip access-list acl_udp_destination_port
   permit udp any any eq talk
   permit udp any any eq tftp
   permit udp any any eq time
-  permit udp any any eq who                                                                                                                 
+  permit udp any any eq who
   permit udp any any eq xdmcp
 
 ip access-list acl_udp_source_port
   !!! Match source port
   permit udp any eq 1 any
-  permit udp any gt 5 any                                                                                                                   
+  permit udp any gt 5 any
   permit udp any lt 10 any
   permit udp any neq 15 any
   permit udp any portgroup mysrcportgroup any

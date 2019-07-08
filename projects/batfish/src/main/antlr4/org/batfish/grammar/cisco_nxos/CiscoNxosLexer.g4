@@ -300,14 +300,14 @@ DELETE
   'delete'
 ;
 
-DENY_ALL
-:
-  'deny-all'
-;
-
 DENY
 :
   'deny'
+;
+
+DENY_ALL
+:
+  'deny-all'
 ;
 
 DESCRIPTION
@@ -827,14 +827,14 @@ NO_ROOM_FOR_OPTION
   'no-room-for-option'
 ;
 
-NONE
-:
-  'none'
-;
-
 NON500_ISAKMP
 :
   'non500-isakmp'
+;
+
+NONE
+:
+  'none'
 ;
 
 NOS
@@ -892,24 +892,24 @@ PER_ENTRY
   'per-entry'
 ;
 
-PERMIT_ALL
-:
-  'permit-all'
-;
-
 PERMIT
 :
   'permit'
 ;
 
-PIM_AUTO_RP
+PERMIT_ALL
 :
-  'pim-auto-rp'
+  'permit-all'
 ;
 
 PIM
 :
   'pim'
+;
+
+PIM_AUTO_RP
+:
+  'pim-auto-rp'
 ;
 
 POP2
@@ -1182,6 +1182,11 @@ TALK
   'talk'
 ;
 
+TCP
+:
+  'tcp'
+;
+
 TCP_FLAGS_MASK
 :
   'tcp-flags-mask'
@@ -1192,11 +1197,6 @@ TCP_OPTION_LENGTH
   'tcp-option-length'
 ;
 
-TCP
-:
-  'tcp'
-;
-
 TELNET
 :
   'telnet'
@@ -1205,6 +1205,11 @@ TELNET
 TFTP
 :
   'tftp'
+;
+
+TIME
+:
+  'time'
 ;
 
 TIME_EXCEEDED
@@ -1220,11 +1225,6 @@ TIMESTAMP_REPLY
 TIMESTAMP_REQUEST
 :
   'timestamp-request'
-;
-
-TIME
-:
-  'time'
 ;
 
 TRACEROUTE
