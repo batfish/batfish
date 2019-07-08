@@ -1,6 +1,7 @@
 parser grammar CiscoNxosParser;
 
-import CiscoNxos_common, CiscoNxos_interface, CiscoNxos_static, CiscoNxos_vlan, CiscoNxos_vrf;
+import
+CiscoNxos_common, CiscoNxos_interface, CiscoNxos_ip_access_list, CiscoNxos_static, CiscoNxos_vlan, CiscoNxos_vrf;
 
 options {
   superClass = 'org.batfish.grammar.cisco_nxos.parsing.CiscoNxosBaseParser';
@@ -29,7 +30,11 @@ s_hostname
 
 s_ip
 :
-  IP ip_route
+  IP
+  (
+    ip_access_list
+    | ip_route
+  )
 ;
 
 s_null

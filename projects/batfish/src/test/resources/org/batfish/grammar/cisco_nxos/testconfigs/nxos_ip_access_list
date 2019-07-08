@@ -1,0 +1,310 @@
+!RANCID-CONTENT-TYPE: cisco-nx
+!
+hostname nxos_ip_access_list
+!
+
+ip access-list acl_global_options
+  fragments deny-all
+  fragments permit-all
+  ignore routable
+  statistics per-entry
+
+ip access-list acl_indices
+  ! index should start at 10 if no existing rules
+  deny 1 any any
+  15 deny 2 any any
+  ! index should be 25, i.e. 10 plus highest index when not specified
+  deny 3 any any
+  ! should occur between rules 10 and 15 in iteration order
+  13 deny 4 any any
+  remark This remark should have index 35
+  1 remark This remark should have index 1
+
+! The following protocols all have same options available.
+! Specifying a number instead of acronym for protocol only allows simple options, even if the
+! protocol corresponding to the number has more options when its acronym is used.
+ip access-list acl_simple_protocols
+  permit ahp any any
+  permit eigrp any any
+  permit esp any any
+  permit gre any any
+  permit ip any any
+  permit nos any any
+  permit ospf any any
+  permit pcp any any
+  permit pim any any
+  ! 0-255
+  permit 1 any any
+
+!!! Common IP options
+ip access-list acl_common_ip_options_destination_ip
+  !!! Match destination IP
+  permit ip any 10.0.0.0 0.0.0.255
+  permit ip any 10.0.1.0/24
+  permit ip any addrgroup mysrcaddrgroup
+  permit ip any host 10.0.2.2
+
+ip access-list acl_common_ip_options_source_ip
+  !!! Match source IP
+  permit ip 10.0.0.0 0.0.0.255 any
+  permit ip 10.0.1.0/24 any
+  permit ip addrgroup mysrcaddrgroup any
+  permit ip host 10.0.2.2 any
+
+ip access-list acl_common_ip_options_dscp
+  !!! Match DSCP
+  ! 0-63
+  permit ip any any dscp 1
+  permit ip any any dscp af11
+  permit ip any any dscp af12
+  permit ip any any dscp af13
+  permit ip any any dscp af21
+  permit ip any any dscp af22
+  permit ip any any dscp af23
+  permit ip any any dscp af31
+  permit ip any any dscp af32
+  permit ip any any dscp af33
+  permit ip any any dscp af41
+  permit ip any any dscp af42
+  permit ip any any dscp af43
+  permit ip any any dscp cs1
+  permit ip any any dscp cs2
+  permit ip any any dscp cs3
+  permit ip any any dscp cs4
+  permit ip any any dscp cs5
+  permit ip any any dscp cs6
+  permit ip any any dscp cs7
+  permit ip any any dscp default
+  permit ip any any dscp ef
+
+ip access-list acl_common_ip_options_log
+  !!! Log
+  permit ip any any log
+
+ip access-list acl_common_ip_options_packet_length
+  !!! Match packet-length
+  ! 20-9210
+  permit ip any any packet-length eq 100
+  permit ip any any packet-length lt 200
+  permit ip any any packet-length gt 300
+  permit ip any any packet-length neq 400
+  permit ip any any packet-length range 500 600
+
+ip access-list acl_common_ip_options_precedence
+  !!! Match precedence
+  ! 0-7
+  permit ip any any precedence 5
+  permit ip any any precedence critical
+  permit ip any any precedence flash
+  permit ip any any precedence flash-override
+  permit ip any any precedence immediate
+  permit ip any any precedence internet
+  permit ip any any precedence network
+  permit ip any any precedence priority
+  permit ip any any precedence routine
+
+ip access-list acl_common_ip_options_ttl
+  !!! Match TTL
+  ! 0-255
+  permit ip any any ttl 5
+
+!!! ICMP options
+ip access-list acl_icmp
+  ! match ICMP code 0-255
+  permit icmp any any 0
+  ! match ICMP code and type (each 0-255)
+  permit icmp any any 1 2
+  ! remaining matches are for combo of code+type
+  permit icmp any any administratively-prohibited
+  permit icmp any any alternate-address
+  permit icmp any any conversion-error
+  permit icmp any any dod-host-prohibited
+  permit icmp any any dod-net-prohibited
+  permit icmp any any echo
+  permit icmp any any echo-reply
+  permit icmp any any general-parameter-problem
+  permit icmp any any host-isolated
+  permit icmp any any host-precedence-unreachable
+  permit icmp any any host-redirect
+  permit icmp any any host-tos-redirect
+  permit icmp any any host-tos-unreachable
+  permit icmp any any host-unknown
+  permit icmp any any host-unreachable
+  permit icmp any any information-reply
+  permit icmp any any information-request
+  permit icmp any any mask-reply
+  permit icmp any any mask-request
+  permit icmp any any mobile-redirect
+  permit icmp any any net-redirect
+  permit icmp any any net-tos-redirect
+  permit icmp any any net-tos-unreachable
+  permit icmp any any net-unreachable
+  permit icmp any any network-unknown
+  permit icmp any any no-room-for-option
+  permit icmp any any option-missing
+  permit icmp any any packet-too-big
+  permit icmp any any parameter-problem
+  permit icmp any any port-unreachable
+  permit icmp any any precedence-unreachable
+  permit icmp any any protocol-unreachable
+  permit icmp any any reassembly-timeout
+  permit icmp any any redirect
+  permit icmp any any router-advertisement
+  permit icmp any any router-solicitation
+  permit icmp any any source-quench
+  permit icmp any any source-route-failed
+  permit icmp any any time-exceeded
+  permit icmp any any timestamp-reply
+  permit icmp any any timestamp-request
+  permit icmp any any traceroute
+  permit icmp any any ttl-exceeded
+  permit icmp any any unreachable
+
+!!! IGMP options
+ip access-list acl_igmp
+  !!! Match IGMP message type
+  ! 0-15
+  permit igmp any any 5
+  permit igmp any any host-query
+  permit igmp any any host-report
+  permit igmp any any pim
+
+!!! TCP options
+ip access-list acl_tcp_destination_port
+  !!! Match destination port
+  ! 0-65535
+  permit tcp any any eq 1
+  permit tcp any any gt 5
+  permit tcp any any lt 10
+  permit tcp any any neq 15
+  permit tcp any any portgroup mydstportgroup
+  permit tcp any any range 20 25
+  !! Match named ports
+  permit tcp any any eq bgp
+  permit tcp any any eq chargen
+  permit tcp any any eq cmd
+  permit tcp any any eq daytime
+  permit tcp any any eq discard
+  permit tcp any any eq domain
+  permit tcp any any eq drip
+  permit tcp any any eq echo
+  permit tcp any any eq exec
+  permit tcp any any eq finger
+  permit tcp any any eq ftp
+  permit tcp any any eq ftp-data
+  permit tcp any any eq gopher
+  permit tcp any any eq hostname
+  permit tcp any any eq ident
+  permit tcp any any eq irc
+  permit tcp any any eq klogin
+  permit tcp any any eq kshell
+  permit tcp any any eq login
+  permit tcp any any eq lpd
+  permit tcp any any eq nntp
+  permit tcp any any eq pim-auto-rp
+  permit tcp any any eq pop2
+  permit tcp any any eq pop3
+  permit tcp any any eq smtp
+  permit tcp any any eq sunrpc
+  permit tcp any any eq tacacs
+  permit tcp any any eq talk
+  permit tcp any any eq telnet
+  permit tcp any any eq time
+  permit tcp any any eq uucp
+  permit tcp any any eq whois
+  permit tcp any any eq www
+
+ip access-list acl_tcp_source_port
+  !!! Match source port
+  permit tcp any eq 1 any
+  permit tcp any gt 5 any
+  permit tcp any lt 10 any
+  permit tcp any neq 15 any
+  permit tcp any portgroup mysrcportgroup any
+  permit tcp any range 20 25 any
+
+ip access-list acl_tcp_http_method
+  !!! Match HTTP method
+  ! 1-7
+  permit tcp any any http-method 2
+  permit tcp any any http-method connect
+  permit tcp any any http-method delete
+  permit tcp any any http-method get
+  permit tcp any any http-method head
+  permit tcp any any http-method post
+  permit tcp any any http-method put
+  permit tcp any any http-method trace
+
+ip access-list acl_tcp_flags
+  !!! Match TCP flags
+  permit tcp any any ack
+  ! No explicit CWR matching outside of tcp-flags-mask
+  ! No explicit ECE matching outside of tcp-flags-mask
+  permit tcp any any fin
+  permit tcp any any psh
+  permit tcp any any rst
+  permit tcp any any syn
+  permit tcp any any urg
+  ! 0-63
+  permit tcp any any tcp-flags-mask 50
+
+ip access-list acl_tcp_options
+  !!! Match TCP options
+  ! 0-40, must be multiple of 4
+  permit tcp any any tcp-option-length 8
+
+  !!! Match established connections
+  permit tcp any any established
+
+!!! UDP options
+ip access-list acl_udp_destination_port
+  !!! Match destination port
+  ! 0-65535
+  permit udp any any eq 1
+  permit udp any any gt 5
+  permit udp any any lt 10
+  permit udp any any neq 15
+  permit udp any any portgroup mydstportgroup
+  permit udp any any range 20 25
+  !! Match named ports
+  permit udp any any eq biff
+  permit udp any any eq bootpc
+  permit udp any any eq bootps
+  permit udp any any eq discard
+  permit udp any any eq dnsix
+  permit udp any any eq domain
+  permit udp any any eq echo
+  permit udp any any eq isakmp
+  permit udp any any eq mobile-ip
+  permit udp any any eq nameserver
+  permit udp any any eq netbios-dgm
+  permit udp any any eq netbios-ns
+  permit udp any any eq netbios-ss
+  permit udp any any eq non500-isakmp
+  permit udp any any eq ntp
+  permit udp any any eq pim-auto-rp
+  permit udp any any eq rip
+  permit udp any any eq snmp
+  permit udp any any eq snmptrap
+  permit udp any any eq sunrpc
+  permit udp any any eq syslog
+  permit udp any any eq tacacs
+  permit udp any any eq talk
+  permit udp any any eq tftp
+  permit udp any any eq time
+  permit udp any any eq who
+  permit udp any any eq xdmcp
+
+ip access-list acl_udp_source_port
+  !!! Match source port
+  permit udp any eq 1 any
+  permit udp any gt 5 any
+  permit udp any lt 10 any
+  permit udp any neq 15 any
+  permit udp any portgroup mysrcportgroup any
+  permit udp any range 20 25 any
+
+ip access-list acl_udp_vxlan
+  !!! Match VXLAN
+  ! 0-16777215
+  permit udp any any nve vni 10000
