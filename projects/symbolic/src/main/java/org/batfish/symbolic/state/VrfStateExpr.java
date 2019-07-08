@@ -45,4 +45,9 @@ public abstract class VrfStateExpr implements StateExpr {
   public final int hashCode() {
     return 31 * 31 * getClass().hashCode() + 31 * _hostname.hashCode() + _vrf.hashCode();
   }
+
+  @Override
+  public final String toString() {
+    return String.format("%s{%s.%s}", getClass().getSimpleName(), _hostname, _vrf);
+  }
 }

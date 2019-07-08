@@ -67,4 +67,11 @@ public abstract class EdgeStateExpr implements StateExpr {
   public final int hashCode() {
     return Objects.hash(getClass(), _srcHostname, _srcInterface, _dstHostname, _dstInterface);
   }
+
+  @Override
+  public final String toString() {
+    return String.format(
+        "%s{%s[%s]->%s[%s]}",
+        getClass().getSimpleName(), _srcHostname, _srcInterface, _dstHostname, _dstInterface);
+  }
 }
