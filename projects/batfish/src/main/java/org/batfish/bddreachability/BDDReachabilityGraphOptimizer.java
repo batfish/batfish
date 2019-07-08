@@ -51,7 +51,7 @@ public class BDDReachabilityGraphOptimizer {
     opt.optimize();
     return opt._edges.cellSet().stream()
         .map(cell -> new Edge(cell.getRowKey(), cell.getColumnKey(), cell.getValue()))
-        .collect(ImmutableSet.toImmutableSet());
+        .collect(ImmutableList.toImmutableList());
   }
 
   // These three maps need to be kept in sync.
