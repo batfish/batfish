@@ -7,17 +7,17 @@ import static org.batfish.bddreachability.transition.Transitions.mergeComposed;
 import static org.batfish.bddreachability.transition.Transitions.or;
 
 import com.google.common.collect.HashBasedTable;
+import com.google.common.collect.HashMultimap;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
+import com.google.common.collect.Multimap;
 import com.google.common.collect.Table;
 import java.util.ArrayDeque;
 import java.util.Collection;
-import java.util.Map;
-import java.util.Map.Entry;
+import java.util.HashSet;
 import java.util.Queue;
 import java.util.Set;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 import javax.annotation.Nullable;
 import org.batfish.bddreachability.transition.AddLastHopConstraint;
 import org.batfish.bddreachability.transition.AddNoLastHopConstraint;
@@ -52,8 +52,12 @@ public class BDDReachabilityGraphOptimizer {
         .collect(ImmutableSet.toImmutableSet());
   }
 
+  // These three maps need to be kept in sync.
   // source -> target -> transition function
   private final Table<StateExpr, StateExpr, Transition> _edges;
+  private final Multimap<StateExpr, StateExpr> _preStates;
+  private final Multimap<StateExpr, StateExpr> _postStates;
+
   private final Set<StateExpr> _statesToKeep;
   private final boolean _keepSelfLoops;
 
@@ -66,16 +70,18 @@ public class BDDReachabilityGraphOptimizer {
 
   private BDDReachabilityGraphOptimizer(
       Collection<Edge> edges, Set<StateExpr> statesToKeep, boolean keepSelfLoops) {
-    _edges = computeEdgeTable(edges);
+    _edges = HashBasedTable.create();
+    _preStates = HashMultimap.create();
+    _postStates = HashMultimap.create();
+    for (Edge edge : edges) {
+      _edges.put(edge.getPreState(), edge.getPostState(), edge.getTransition());
+      _preStates.put(edge.getPostState(), edge.getPreState());
+      _postStates.put(edge.getPreState(), edge.getPostState());
+    }
+
     _statesToKeep = ImmutableSet.copyOf(statesToKeep);
     _keepSelfLoops = keepSelfLoops;
     _origEdges = _edges.size();
-  }
-
-  private static Table<StateExpr, StateExpr, Transition> computeEdgeTable(Collection<Edge> edges) {
-    Table<StateExpr, StateExpr, Transition> tbl = HashBasedTable.create();
-    edges.forEach(edge -> tbl.put(edge.getPreState(), edge.getPostState(), edge.getTransition()));
-    return tbl;
   }
 
   @SuppressWarnings("unused")
@@ -98,114 +104,150 @@ public class BDDReachabilityGraphOptimizer {
             _edges.size()));
   }
 
+  /**
+   * A fixed-point computation to optimize the graph.
+   *
+   * <ol>
+   *   <li>Mark every state in the graph as dirty.
+   *   <li>For each dirty state, try to delete it. If successful, mark all affects states
+   *       (neighboring states that lost incoming or outgoing edges) as dirty.
+   *   <li>Repeat until convergence.
+   * </ol>
+   */
   private void optimize() {
-    Set<StateExpr> candidateSet =
-        _edges.cellSet().stream()
-            .flatMap(cell -> Stream.of(cell.getRowKey(), cell.getColumnKey()))
-            .collect(Collectors.toSet());
+    Set<StateExpr> candidateSet = new HashSet<>();
+    candidateSet.addAll(_preStates.keySet());
+    candidateSet.addAll(_postStates.keySet());
     Queue<StateExpr> candidateQueue = new ArrayDeque<>(candidateSet);
+
     while (!candidateQueue.isEmpty()) {
-      StateExpr candidate = candidateQueue.poll();
+      // Invariant: candidateSet and candidateQueue have the same elements, queued exactly once.
+      assert candidateQueue.size() == candidateSet.size();
+
+      StateExpr candidate = candidateQueue.remove();
       candidateSet.remove(candidate);
+
       if (!_keepSelfLoops) {
+        // Even if we want to keep candidate, it's always safe to delete self loops.
         removeSelfLoops(candidate);
       }
-      if (!_statesToKeep.contains(candidate)) {
-        tryToRemove(candidate).filter(candidateSet::add).forEach(candidateQueue::add);
+      if (_statesToKeep.contains(candidate)) {
+        // We need this state expr.
+        continue;
       }
+
+      // Get all affected states, and mark all the ones that were not already candidates as dirty.
+      tryToRemove(candidate).stream().filter(candidateSet::add).forEach(candidateQueue::add);
     }
   }
 
   private void removeSelfLoops(StateExpr preState) {
     checkState(!_keepSelfLoops);
-    for (Entry<StateExpr, Transition> outEdge : _edges.row(preState).entrySet()) {
-      StateExpr postState = outEdge.getKey();
-      Transition transition = outEdge.getValue();
-      if (isRemovableSelfLoop(preState, postState, transition)) {
-        // self-loop that adds nothing
-        _selfLoops++;
-        removeEdge(preState, postState, transition);
-      }
+    @Nullable Transition t = _edges.get(preState, preState);
+    if (t == null || !isRemovableSelfLoop(t)) {
+      // not present or not safe to remove.
+      return;
     }
+    assert _preStates.containsEntry(preState, preState);
+    assert _postStates.containsEntry(preState, preState);
+
+    _selfLoops++;
+    _edges.remove(preState, preState);
+    _preStates.remove(preState, preState);
+    _postStates.remove(preState, preState);
   }
 
   /**
-   * Try to remove the candidate state, and return any neighboring states whose degrees changed as a
-   * result.
+   * Try to remove the candidate state, returning any neighboring states whose edges were affected.
    */
-  private Stream<StateExpr> tryToRemove(StateExpr candidate) {
+  private Collection<StateExpr> tryToRemove(StateExpr candidate) {
     assert !_statesToKeep.contains(candidate);
-    Map<StateExpr, Transition> inEdges = _edges.column(candidate);
-    if (inEdges.isEmpty()) {
+    Collection<StateExpr> inStates = _preStates.get(candidate);
+    if (inStates.isEmpty()) {
       // root node. prune
       _rootsPruned++;
-      return _edges.row(candidate).entrySet().stream()
-          .peek(entry -> this.removeEdge(candidate, entry.getKey(), entry.getValue()))
-          .map(Entry::getKey);
+      Collection<StateExpr> affectedStates = _postStates.removeAll(candidate);
+      for (StateExpr oldNext : affectedStates) {
+        _edges.remove(candidate, oldNext);
+        _preStates.remove(oldNext, candidate);
+      }
+      return affectedStates;
     }
-    Map<StateExpr, Transition> outEdges = _edges.row(candidate);
-    if (outEdges.isEmpty()) {
+    Collection<StateExpr> outStates = _postStates.get(candidate);
+    if (outStates.isEmpty()) {
       // leaf node. prune
       _leavesPruned++;
-      return _edges.column(candidate).entrySet().stream()
-          .peek(entry -> this.removeEdge(entry.getKey(), candidate, entry.getValue()))
-          .map(Entry::getKey);
+      Collection<StateExpr> affectedStates = _preStates.removeAll(candidate);
+      for (StateExpr oldPrev : affectedStates) {
+        _edges.remove(oldPrev, candidate);
+        _postStates.remove(oldPrev, candidate);
+      }
+      return affectedStates;
     }
-    if (inEdges.size() == 1 && outEdges.size() == 1) {
-      // try to remove candidate and compose its edges
-      Entry<StateExpr, Transition> inEdge = Iterables.getOnlyElement(inEdges.entrySet());
-      Entry<StateExpr, Transition> outEdge = Iterables.getOnlyElement(outEdges.entrySet());
 
-      if (inEdge.getKey().equals(candidate)) {
-        // self-loop. handled elsewhere
-        assert inEdge.equals(outEdge);
-        return Stream.of();
-      }
+    if (inStates.size() > 1 || outStates.size() > 1) {
+      // For now, only consider merging edges when we can merge all the way through.
+      return ImmutableSet.of();
+    }
 
-      @Nullable Transition composed = mergeComposed(inEdge.getValue(), outEdge.getValue());
-      if (composed == null) {
-        // do nothing. In some cases it may still be best to merge, but punting for now
-        return Stream.of();
-      }
+    /* Try to remove candidate and compose its incoming and outgoing edges. */
 
-      removeEdge(inEdge.getKey(), candidate, inEdge.getValue());
-      removeEdge(candidate, outEdge.getKey(), outEdge.getValue());
+    StateExpr prev = Iterables.getOnlyElement(inStates);
+    StateExpr next = Iterables.getOnlyElement(outStates);
+    assert _edges.contains(prev, candidate);
+    assert _edges.contains(candidate, next);
 
-      StateExpr prev = inEdge.getKey();
-      StateExpr next = outEdge.getKey();
+    if (prev.equals(candidate)) {
+      // self-loop. handled elsewhere
+      assert next.equals(candidate);
+      return ImmutableSet.of();
+    }
 
-      if (composed == ZERO) {
-        _splicedAndDropped++;
-        return Stream.of(prev, next);
+    @Nullable
+    Transition composed = mergeComposed(_edges.get(prev, candidate), _edges.get(candidate, next));
+    if (composed == null) {
+      // do nothing. In some cases it may still be best to merge, but punting for now
+      return ImmutableSet.of();
+    }
+
+    if (composed == ZERO) {
+      _splicedAndDropped++;
+    } else {
+      Transition oldTransition = _edges.put(prev, next, composed);
+
+      if (oldTransition == null) {
+        // There wasn't already an edge from prev to next, Mark as a splice and update the
+        // bookkeeping.
+        _nodesSpliced++;
+        _postStates.put(prev, next);
+        _preStates.put(next, prev);
       } else {
-        Transition oldTransition = _edges.put(prev, next, composed);
-
-        if (oldTransition == null) {
-          // There wasn't already an edge from prev to next, so this didn't change their degree
-          _nodesSpliced++;
-          return Stream.of();
-        } else {
-          // there already was an edge from prev to next did have an edge, so merge with it.
-          // their degrees change, so mark them dirty
-          _edges.put(prev, next, or(composed, oldTransition));
-          return Stream.of(prev, next);
-        }
+        // There already was an edge from prev to next. Merge them, but don't update bookkeeping.
+        _edges.put(prev, next, or(composed, oldTransition));
       }
     }
 
-    // do nothing
-    return Stream.of();
+    // Remove old edges last to avoid deleting and then recreating the collections internal to the
+    // maps; could happen during splicing.
+    _edges.remove(prev, candidate);
+    _preStates.remove(candidate, prev);
+    _postStates.remove(prev, candidate);
+
+    _edges.remove(candidate, next);
+    _postStates.remove(candidate, next);
+    _preStates.remove(next, candidate);
+
+    return ImmutableList.of(prev, next);
   }
 
-  private void removeEdge(StateExpr preState, StateExpr postState, Transition transition) {
-    checkState(_edges.remove(preState, postState) == transition);
-  }
-
-  private boolean isRemovableSelfLoop(StateExpr preState, StateExpr postState, Transition t) {
+  /**
+   * Returns true iff the given transition is safe to remove, namely that the set of flows after
+   * transitioning the edge can never contain more flows than before transitioning.
+   *
+   * <p>Mathematically, this condition is {@code forall x, x.or(t.transitForward(x)) == x}.
+   */
+  private boolean isRemovableSelfLoop(Transition t) {
     checkState(!_keepSelfLoops);
-    if (!preState.equals(postState)) {
-      return false;
-    }
     if (t == ZERO || t == IDENTITY) {
       return true;
     }
@@ -213,7 +255,6 @@ public class BDDReachabilityGraphOptimizer {
         || t instanceof AddSourceConstraint
         || t instanceof AddLastHopConstraint
         || t instanceof AddNoLastHopConstraint) {
-      // forall x,y. x.or(x.and(y)) == x
       return true;
     }
     return false;
