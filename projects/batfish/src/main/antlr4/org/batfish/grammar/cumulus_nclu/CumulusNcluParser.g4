@@ -63,7 +63,7 @@ s_net_add
 
 a_bond
 :
-  BOND name = word
+  BOND bonds += word ( COMMA bonds += word )*
   (
     bond_bond
     | bond_bridge
