@@ -58,7 +58,9 @@ public final class BgpProtocolHelper {
     RoutingProtocol routeProtocol = route.getProtocol();
 
     builder.setReceivedFromIp(fromNeighborIp);
-    builder.setProtocol(sessionProperties.isEbgp() ? RoutingProtocol.BGP : RoutingProtocol.IBGP);
+    RoutingProtocol outgoingProtocol =
+        sessionProperties.isEbgp() ? RoutingProtocol.BGP : RoutingProtocol.IBGP;
+    builder.setProtocol(outgoingProtocol);
     builder.setSrcProtocol(route.getProtocol());
 
     // Clear a bunch of non-transitive attributes
@@ -66,7 +68,7 @@ public final class BgpProtocolHelper {
     builder.setDiscard(false);
     builder.setNonRouting(false);
     builder.setNonForwarding(false);
-    builder.setAdmin(toBgpProcess.getAdminCost(builder.getProtocol()));
+    builder.setAdmin(toBgpProcess.getAdminCost(outgoingProtocol));
     builder.setTag(null);
 
     // Set originatorIP
@@ -76,12 +78,14 @@ public final class BgpProtocolHelper {
     }
 
     // note whether new route is received from route reflector client
+    AddressFamily toNeighborAf = toNeighbor.getAddressFamily(afType);
+    assert toNeighborAf
+        != null; // invariant of proper queue setup and route exchange for this AF type
     builder.setReceivedFromRouteReflectorClient(
-        !sessionProperties.isEbgp()
-            && toNeighbor.getAddressFamily(afType).getRouteReflectorClient());
+        !sessionProperties.isEbgp() && toNeighborAf.getRouteReflectorClient());
 
     AddressFamily af = fromNeighbor.getAddressFamily(afType);
-    assert af != null; // invariant of proper queue setup and route exchange for this AF type
+    assert af != null;
 
     // Do not export route if it has NO_ADVERTISE community, or if its AS path contains the remote
     // peer's AS and local peer has not set getAllowRemoteOut

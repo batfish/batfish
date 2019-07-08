@@ -59,7 +59,7 @@ public class IncrementalDataPlanePlugin extends DataPlanePlugin {
         ((IncrementalDataPlane) answer._dataPlane)
             .getNodes().values().stream()
                 .flatMap(n -> n.getVirtualRouters().values().stream())
-                .mapToInt(vr -> vr._mainRib.getTypedRoutes().size())
+                .mapToInt(vr -> vr.getMainRib().getTypedRoutes().size())
                 .average()
                 .orElse(0.00d);
     _logger.infof(
