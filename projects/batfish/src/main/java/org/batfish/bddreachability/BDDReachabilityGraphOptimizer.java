@@ -241,10 +241,12 @@ public class BDDReachabilityGraphOptimizer {
     return ImmutableList.of(prev, next);
   }
 
-  private void removeEdge(StateExpr preState, StateExpr postState, Transition transition) {
-    checkState(_edges.remove(preState, postState) == transition);
-  }
-
+  /**
+   * Returns true iff the given transition is safe to remove, namely that the set of flows after
+   * transitioning the edge can never contain more flows than before transitioning.
+   *
+   * <p>Mathematically, this condition is {@code forall x, x.or(x.transition(t)) == x}.
+   */
   private boolean isRemovableSelfLoop(Transition t) {
     checkState(!_keepSelfLoops);
     if (t == ZERO || t == IDENTITY) {
@@ -254,7 +256,6 @@ public class BDDReachabilityGraphOptimizer {
         || t instanceof AddSourceConstraint
         || t instanceof AddLastHopConstraint
         || t instanceof AddNoLastHopConstraint) {
-      // forall x,y. x.or(x.and(y)) == x
       return true;
     }
     return false;
