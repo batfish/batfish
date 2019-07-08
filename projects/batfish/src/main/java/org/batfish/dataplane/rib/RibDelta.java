@@ -30,7 +30,7 @@ import org.batfish.dataplane.rib.RouteAdvertisement.Reason;
 public final class RibDelta<R> {
 
   /** Sorted for deterministic iteration order */
-  private ImmutableSortedMap<Prefix, List<RouteAdvertisement<R>>> _actions;
+  private final ImmutableSortedMap<Prefix, List<RouteAdvertisement<R>>> _actions;
 
   private static final RibDelta<Object> EMPTY = new RibDelta<>(ImmutableSortedMap.of());
 

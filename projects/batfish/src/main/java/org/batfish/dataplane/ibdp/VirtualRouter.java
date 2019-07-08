@@ -490,13 +490,16 @@ public class VirtualRouter implements Serializable {
 
   /**
    * Initializes BGP RIBs prior to any dataplane iterations based on the external BGP advertisements
-   * coming into the network
+   * coming into the network.
+   *
+   * <p>Note: assumes the external advertisements are pre-transformation and will run import policy
+   * on them, if present.
    *
    * @param externalAdverts a set of external BGP advertisements
    * @param ipOwners mapping of IPs to their owners in our network
    * @param bgpTopology the bgp peering relationships
    */
-  void initBaseBgpRibs(
+  void processExternalBgpAdvertisements(
       Set<BgpAdvertisement> externalAdverts,
       Map<Ip, Set<String>> ipOwners,
       final Map<String, Node> allNodes,

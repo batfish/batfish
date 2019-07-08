@@ -626,7 +626,7 @@ class IncrementalBdpEngine {
             .flatMap(n -> n.getVirtualRouters().values().stream())
             .forEach(
                 vr -> {
-                  vr.initBaseBgpRibs(
+                  vr.processExternalBgpAdvertisements(
                       externalAdverts, ipOwners, nodes, bgpTopology, networkConfigurations);
                   vr.queueInitialBgpMessages(bgpTopology, nodes, networkConfigurations);
                 });

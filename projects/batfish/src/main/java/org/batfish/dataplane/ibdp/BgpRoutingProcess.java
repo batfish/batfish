@@ -1,6 +1,7 @@
 package org.batfish.dataplane.ibdp;
 
 import static com.google.common.base.MoreObjects.firstNonNull;
+import static com.google.common.base.Preconditions.checkArgument;
 import static org.batfish.common.util.CollectionUtil.toImmutableSortedMap;
 import static org.batfish.common.util.CollectionUtil.toOrderedHashCode;
 import static org.batfish.datamodel.MultipathEquivalentAsPathMatchMode.EXACT_PATH;
@@ -290,7 +291,12 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
             edge ->
                 graph
                     .edgeValue(edge.nodeU(), edge.nodeV())
-                    .get()
+                    .orElseThrow(
+                        () ->
+                            new IllegalStateException(
+                                String.format(
+                                    "Bgp session without session properties for edge %s -> %s",
+                                    edge.nodeU(), edge.nodeV())))
                     .getAddressFamilies()
                     .contains(familyType)) // ensure the session contains desired address family
         .map(edge -> new EdgeId(edge.nodeU(), edge.nodeV()));
@@ -389,6 +395,9 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
               assert vniVrf != null; // Invariant guaranteed by proper conversion
               VniSettings vniSettings = vniVrf.getVniSettings().get(vniConfig.getVni());
               assert vniSettings != null; // Invariant guaranteed by proper conversion
+              if (vniSettings.getSourceAddress() == null) {
+                return;
+              }
               EvpnType3Route route =
                   initEvpnType3Route(
                       ebgpAdmin,
@@ -404,24 +413,33 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
                 initializationBuilder.from(d);
               } else {
                 // Merge into our sibling VRF corresponding to the VNI
+                BgpRoutingProcess bgpRoutingProcess =
+                    n.getVirtualRouters().get(vniVrf.getName()).getBgpRoutingProcess();
+                checkArgument(bgpRoutingProcess != null, "Missing bgp process for vrf %s", vniVrf);
                 initializationBuilder.from(
-                    n.getVirtualRouters()
-                        .get(vniVrf.getName())
-                        .getBgpRoutingProcess()
-                        .processCrossVrfEvpnRoute(new RouteAdvertisement<>(route)));
+                    bgpRoutingProcess.processCrossVrfEvpnRoute(new RouteAdvertisement<>(route)));
               }
             });
     _evpnInitializationDelta = initializationBuilder.build();
     _changeSet.from(_evpnDeltaBuilder.build());
   }
 
+  /**
+   * Create a new {@link EvpnType3Route} based on given {@link VniSettings}. Assumes VniSettings are
+   * valid (e.g., have properly set source address).
+   */
   @Nonnull
+  @VisibleForTesting
   static EvpnType3Route initEvpnType3Route(
       int ebgpAdmin,
       VniSettings vniSettings,
       ExtendedCommunity routeTarget,
       RouteDistinguisher routeDistinguisher,
       Ip routerId) {
+    checkArgument(
+        vniSettings.getSourceAddress() != null,
+        "Cannot construct type 3 route for invalid VNI %s",
+        vniSettings.getVni());
     // Locally all routes start as eBGP routes in our own RIB
     EvpnType3Route.Builder type3RouteBuilder = EvpnType3Route.builder();
     type3RouteBuilder.setAdmin(ebgpAdmin);
@@ -458,6 +476,8 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
     BgpPeerConfigId ourConfigId = edge.head();
     BgpPeerConfig ourBgpConfig = nc.getBgpPeerConfig(ourConfigId);
     assert ourBgpConfig != null; // because the edge exists
+    assert ourBgpConfig.getLocalAs() != null;
+    assert ourBgpConfig.getEvpnAddressFamily() != null;
     // sessionProperties represents the incoming edge, so its tailIp is the remote peer's IP
     BgpSessionProperties sessionProperties = getSessionProperties(_topology, edge);
     Ip remoteIp = sessionProperties.getTailIp();
