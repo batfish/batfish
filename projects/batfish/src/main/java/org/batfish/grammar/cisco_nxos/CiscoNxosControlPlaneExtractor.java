@@ -53,6 +53,8 @@ import org.batfish.grammar.cisco_nxos.CiscoNxosParser.I_vrf_memberContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Interface_addressContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Interface_bandwidth_kbpsContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Interface_prefixContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Ip_access_listContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Ip_access_list_nameContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Ip_addressContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Ip_prefixContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Ip_routeContext;
@@ -76,6 +78,7 @@ import org.batfish.representation.cisco_nxos.CiscoNxosInterfaceType;
 import org.batfish.representation.cisco_nxos.CiscoNxosStructureType;
 import org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage;
 import org.batfish.representation.cisco_nxos.Interface;
+import org.batfish.representation.cisco_nxos.IpAccessList;
 import org.batfish.representation.cisco_nxos.StaticRoute;
 import org.batfish.representation.cisco_nxos.Vlan;
 import org.batfish.representation.cisco_nxos.Vrf;
@@ -123,19 +126,19 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
   }
 
   private @Nullable CiscoNxosConfiguration _configuration;
-
   private @Nullable List<Interface> _currentInterfaces;
+
+  @SuppressWarnings("unused")
+  private @Nullable IpAccessList _currentIpAccessList;
+
   private @Nullable IntegerSpace _currentValidVlanRange;
 
   @SuppressWarnings("unused")
   private @Nullable List<Vlan> _currentVlans;
 
   private Vrf _currentVrf;
-
   private final CiscoNxosCombinedParser _parser;
-
   private @Nonnull final String _text;
-
   private @Nonnull final Warnings _w;
 
   public CiscoNxosControlPlaneExtractor(
@@ -186,6 +189,30 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
     _configuration = new CiscoNxosConfiguration();
     _currentValidVlanRange = VLAN_RANGE.difference(_configuration.getReservedVlanRange());
     _currentVrf = _configuration.getDefaultVrf();
+  }
+
+  @Override
+  public void enterIp_access_list(Ip_access_listContext ctx) {
+    String name = toString(ctx, ctx.name);
+    if (name == null) {
+      _currentIpAccessList = new IpAccessList("dummy");
+      return;
+    }
+    _currentIpAccessList =
+        _configuration
+            .getIpAccessLists()
+            .computeIfAbsent(
+                name,
+                n -> {
+                  _configuration.defineStructure(
+                      CiscoNxosStructureType.IP_ACCESS_LIST, name, ctx.getStart().getLine());
+                  return new IpAccessList(n);
+                });
+  }
+
+  @Override
+  public void exitIp_access_list(Ip_access_listContext ctx) {
+    _currentIpAccessList = null;
   }
 
   @Override
@@ -706,6 +733,18 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
       return null;
     }
     return track;
+  }
+
+  private @Nullable String toString(ParserRuleContext messageCtx, Ip_access_list_nameContext ctx) {
+    String name = ctx.getText();
+    if (name.length() > IpAccessList.MAX_NAME_LENGTH) {
+      _w.redFlag(
+          String.format(
+              "Expected name <= %d characters,but got '%s' in: %s",
+              IpAccessList.MAX_NAME_LENGTH, name, getFullText(messageCtx)));
+      return null;
+    }
+    return name;
   }
 
   private @Nullable String toString(ParserRuleContext messageCtx, Static_route_nameContext ctx) {
