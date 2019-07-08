@@ -29,7 +29,7 @@ import org.batfish.dataplane.rib.RouteAdvertisement.Reason;
 public abstract class AbstractRib<R extends AbstractRouteDecorator> implements GenericRib<R> {
 
   /** Root of our prefix trie */
-  private RibTree<R> _tree;
+  private final RibTree<R> _tree;
 
   /** Memoized set of all routes in this RIB */
   @Nullable private Set<R> _allRoutes;

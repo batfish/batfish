@@ -558,7 +558,7 @@ class IncrementalBdpEngine {
             .flatMap(n -> n.getVirtualRouters().values().stream())
             .forEach(
                 vr -> {
-                  importRib(vr._mainRib, vr._independentRib);
+                  importRib(vr.getMainRib(), vr._independentRib);
                   vr.activateStaticRoutes();
                 });
       }
@@ -626,7 +626,7 @@ class IncrementalBdpEngine {
             .flatMap(n -> n.getVirtualRouters().values().stream())
             .forEach(
                 vr -> {
-                  vr.initBaseBgpRibs(
+                  vr.processExternalBgpAdvertisements(
                       externalAdverts, ipOwners, nodes, bgpTopology, networkConfigurations);
                   vr.queueInitialBgpMessages(bgpTopology, nodes, networkConfigurations);
                 });
@@ -760,7 +760,7 @@ class IncrementalBdpEngine {
       int numMainRibRoutes =
           nodes.values().stream()
               .flatMap(n -> n.getVirtualRouters().values().stream())
-              .mapToInt(vr -> vr._mainRib.getTypedRoutes().size())
+              .mapToInt(vr -> vr.getMainRib().getTypedRoutes().size())
               .sum();
       ae.getMainRibRoutesByIteration().put(dependentRoutesIterations, numMainRibRoutes);
     }
@@ -952,7 +952,7 @@ class IncrementalBdpEngine {
             .forEach(
                 vr -> {
                   importRib(vr._ripRib, vr._ripInternalRib);
-                  importRib(vr._independentRib, vr._ripRib, vr._name);
+                  importRib(vr._independentRib, vr._ripRib, vr.getName());
                 });
       }
     }

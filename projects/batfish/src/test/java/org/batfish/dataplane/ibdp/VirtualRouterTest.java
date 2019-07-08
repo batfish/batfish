@@ -382,7 +382,7 @@ public class VirtualRouterTest {
     assertThat(vr._ripRib.getRoutes(), empty());
 
     // Main RIB
-    assertThat(vr._mainRib.getRoutes(), empty());
+    assertThat(vr.getMainRib().getRoutes(), empty());
   }
 
   /** Check that initialization of RIP internal routes happens correctly */
@@ -768,7 +768,7 @@ public class VirtualRouterTest {
             .map(r -> new AnnotatedRoute<>(r, vrfWithRoutesName))
             .collect(ImmutableSet.toImmutableSet());
     for (AnnotatedRoute<AbstractRoute> r : annotatedRoutes) {
-      vrWithRoutes._mainRibRouteDeltaBuilder.from(vrWithRoutes._mainRib.mergeRouteGetDelta(r));
+      vrWithRoutes._mainRibRouteDeltaBuilder.from(vrWithRoutes.getMainRib().mergeRouteGetDelta(r));
     }
 
     // Run initial leaking (i.e. what would happen at beginning of
@@ -780,7 +780,7 @@ public class VirtualRouterTest {
 
     // Clear emptyVr's RIB and queues and run intermediate leaking (i.e. what would happen in one
     // computeDependentRoutesIteration()); all routes should leak from vrWithRoutes' main RIB delta
-    emptyVr._mainRib.clear();
+    emptyVr.getMainRib().clear();
     emptyVr.initCrossVrfQueues();
     emptyVr.queueCrossVrfImports();
     emptyVr.processCrossVrfRoutes();
