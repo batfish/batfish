@@ -379,7 +379,7 @@ public final class BDDReachabilityAnalysisFactory {
             Configuration node = nodeEntry.getValue();
             TransformationToTransition toTransition = initTransformationToTransformation(node);
             return toImmutableMap(
-                node.getAllInterfaces(),
+                node.getActiveInterfaces(),
                 Entry::getKey, /* iface */
                 ifaceEntry ->
                     toTransition.toTransition(ifaceEntry.getValue().getIncomingTransformation()));
@@ -400,7 +400,7 @@ public final class BDDReachabilityAnalysisFactory {
             Configuration node = nodeEntry.getValue();
             TransformationToTransition toTransition = initTransformationToTransformation(node);
             return toImmutableMap(
-                nodeEntry.getValue().getAllInterfaces(),
+                nodeEntry.getValue().getActiveInterfaces(),
                 Entry::getKey, /* iface */
                 ifaceEntry ->
                     toTransition.toTransition(ifaceEntry.getValue().getOutgoingTransformation()));
@@ -457,7 +457,7 @@ public final class BDDReachabilityAnalysisFactory {
           configs,
           Entry::getKey,
           configEntry ->
-              configEntry.getValue().getAllInterfaces().values().stream()
+              configEntry.getValue().getActiveInterfaces().values().stream()
                   .filter(iface -> iface.getRoutingPolicyName() != null)
                   .collect(
                       ImmutableMap.toImmutableMap(
@@ -693,7 +693,7 @@ public final class BDDReachabilityAnalysisFactory {
     return finalNodes.stream()
         .map(_configs::get)
         .filter(Objects::nonNull) // remove finalNodes that don't exist on this network
-        .flatMap(c -> c.getAllInterfaces().values().stream())
+        .flatMap(c -> c.getActiveInterfaces().values().stream())
         .map(
             iface -> {
               String node = iface.getOwner().getHostname();
@@ -733,7 +733,7 @@ public final class BDDReachabilityAnalysisFactory {
 
   private Stream<Edge> generateRules_PostInInterface_NodeDropAclIn() {
     return _configs.values().stream()
-        .map(Configuration::getAllInterfaces)
+        .map(Configuration::getActiveInterfaces)
         .map(Map::values)
         .flatMap(Collection::stream)
         .filter(iface -> iface.getPostTransformationIncomingFilter() != null)
@@ -872,7 +872,7 @@ public final class BDDReachabilityAnalysisFactory {
         .flatMap(Collection::stream)
         .flatMap(vrf -> vrf.getInterfaces().values().stream())
         // Policy-based routing edges handled elsewhere
-        .filter(iface -> iface.getRoutingPolicyName() == null)
+        .filter(iface -> iface.getActive() && iface.getRoutingPolicyName() == null)
         .map(
             iface -> {
               String aclName = iface.getIncomingFilterName();
@@ -907,7 +907,7 @@ public final class BDDReachabilityAnalysisFactory {
               String preNatAcl =
                   _configs
                       .get(node1)
-                      .getAllInterfaces()
+                      .getActiveInterfaces()
                       .get(iface1)
                       .getPreTransformationOutgoingFilterName();
 
@@ -938,7 +938,7 @@ public final class BDDReachabilityAnalysisFactory {
               String preNatAcl =
                   _configs
                       .get(node1)
-                      .getAllInterfaces()
+                      .getActiveInterfaces()
                       .get(iface1)
                       .getPreTransformationOutgoingFilterName();
 
@@ -971,7 +971,7 @@ public final class BDDReachabilityAnalysisFactory {
               String iface2 = edge.getInt2();
 
               String aclName =
-                  _configs.get(node1).getAllInterfaces().get(iface1).getOutgoingFilterName();
+                  _configs.get(node1).getActiveInterfaces().get(iface1).getOutgoingFilterName();
 
               if (aclName == null) {
                 return Stream.of();
@@ -1001,7 +1001,11 @@ public final class BDDReachabilityAnalysisFactory {
               BDD aclPermitBDD =
                   ignorableAclPermitBDD(
                       node1,
-                      _configs.get(node1).getAllInterfaces().get(iface1).getOutgoingFilterName());
+                      _configs
+                          .get(node1)
+                          .getActiveInterfaces()
+                          .get(iface1)
+                          .getOutgoingFilterName());
               assert aclPermitBDD != null;
 
               return new Edge(
@@ -1113,7 +1117,7 @@ public final class BDDReachabilityAnalysisFactory {
 
   private Stream<Edge> generateRules_PreOutInterfaceDisposition_NodeInterfaceDisposition() {
     return _configs.values().stream()
-        .flatMap(config -> config.getAllInterfaces().values().stream())
+        .flatMap(config -> config.getActiveInterfaces().values().stream())
         .flatMap(
             iface -> {
               String node = iface.getOwner().getHostname();
@@ -1526,7 +1530,7 @@ public final class BDDReachabilityAnalysisFactory {
           .forEach(
               configuration ->
                   configuration
-                      .getAllInterfaces()
+                      .getActiveInterfaces()
                       .values()
                       .forEach(
                           iface -> {
