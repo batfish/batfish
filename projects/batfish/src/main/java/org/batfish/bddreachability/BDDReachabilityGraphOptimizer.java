@@ -55,8 +55,8 @@ public class BDDReachabilityGraphOptimizer {
   // These three maps need to be kept in sync.
   // source -> target -> transition function
   private final Table<StateExpr, StateExpr, Transition> _edges;
-  private final Multimap<StateExpr, StateExpr> _inEdges;
-  private final Multimap<StateExpr, StateExpr> _outEdges;
+  private final Multimap<StateExpr, StateExpr> _preStates;
+  private final Multimap<StateExpr, StateExpr> _postStates;
 
   private final Set<StateExpr> _statesToKeep;
   private final boolean _keepSelfLoops;
@@ -71,12 +71,12 @@ public class BDDReachabilityGraphOptimizer {
   private BDDReachabilityGraphOptimizer(
       Collection<Edge> edges, Set<StateExpr> statesToKeep, boolean keepSelfLoops) {
     _edges = HashBasedTable.create();
-    _inEdges = HashMultimap.create();
-    _outEdges = HashMultimap.create();
+    _preStates = HashMultimap.create();
+    _postStates = HashMultimap.create();
     for (Edge edge : edges) {
       _edges.put(edge.getPreState(), edge.getPostState(), edge.getTransition());
-      _inEdges.put(edge.getPostState(), edge.getPreState());
-      _outEdges.put(edge.getPreState(), edge.getPostState());
+      _preStates.put(edge.getPostState(), edge.getPreState());
+      _postStates.put(edge.getPreState(), edge.getPostState());
     }
 
     _statesToKeep = ImmutableSet.copyOf(statesToKeep);
@@ -116,8 +116,8 @@ public class BDDReachabilityGraphOptimizer {
    */
   private void optimize() {
     Set<StateExpr> candidateSet = new HashSet<>();
-    candidateSet.addAll(_inEdges.keySet());
-    candidateSet.addAll(_outEdges.keySet());
+    candidateSet.addAll(_preStates.keySet());
+    candidateSet.addAll(_postStates.keySet());
     Queue<StateExpr> candidateQueue = new ArrayDeque<>(candidateSet);
 
     while (!candidateQueue.isEmpty()) {
@@ -128,7 +128,7 @@ public class BDDReachabilityGraphOptimizer {
       candidateSet.remove(candidate);
 
       if (!_keepSelfLoops) {
-        // Even if we want to keep candidate, it's always save to delete self loops.
+        // Even if we want to keep candidate, it's always safe to delete self loops.
         removeSelfLoops(candidate);
       }
       if (_statesToKeep.contains(candidate)) {
@@ -148,40 +148,39 @@ public class BDDReachabilityGraphOptimizer {
       // not present or not safe to remove.
       return;
     }
-    assert _inEdges.containsEntry(preState, preState);
-    assert _outEdges.containsEntry(preState, preState);
+    assert _preStates.containsEntry(preState, preState);
+    assert _postStates.containsEntry(preState, preState);
 
     _selfLoops++;
     _edges.remove(preState, preState);
-    _inEdges.remove(preState, preState);
-    _outEdges.remove(preState, preState);
+    _preStates.remove(preState, preState);
+    _postStates.remove(preState, preState);
   }
 
   /**
-   * Try to remove the candidate state, and return any neighboring states whose degrees changed as a
-   * result.
+   * Try to remove the candidate state, returning any neighboring states whose edges were affected.
    */
   private Collection<StateExpr> tryToRemove(StateExpr candidate) {
     assert !_statesToKeep.contains(candidate);
-    Collection<StateExpr> inStates = _inEdges.get(candidate);
+    Collection<StateExpr> inStates = _preStates.get(candidate);
     if (inStates.isEmpty()) {
       // root node. prune
       _rootsPruned++;
-      Collection<StateExpr> affectedStates = _outEdges.removeAll(candidate);
+      Collection<StateExpr> affectedStates = _postStates.removeAll(candidate);
       for (StateExpr oldNext : affectedStates) {
         _edges.remove(candidate, oldNext);
-        _inEdges.remove(oldNext, candidate);
+        _preStates.remove(oldNext, candidate);
       }
       return affectedStates;
     }
-    Collection<StateExpr> outStates = _outEdges.get(candidate);
+    Collection<StateExpr> outStates = _postStates.get(candidate);
     if (outStates.isEmpty()) {
       // leaf node. prune
       _leavesPruned++;
-      Collection<StateExpr> affectedStates = _inEdges.removeAll(candidate);
+      Collection<StateExpr> affectedStates = _preStates.removeAll(candidate);
       for (StateExpr oldPrev : affectedStates) {
         _edges.remove(oldPrev, candidate);
-        _outEdges.remove(oldPrev, candidate);
+        _postStates.remove(oldPrev, candidate);
       }
       return affectedStates;
     }
@@ -217,13 +216,13 @@ public class BDDReachabilityGraphOptimizer {
       Transition oldTransition = _edges.put(prev, next, composed);
 
       if (oldTransition == null) {
-        // There wasn't already an edge from prev to next, so this did not change their degree.
+        // There wasn't already an edge from prev to next, Mark as a splice and update the
+        // bookkeeping.
         _nodesSpliced++;
-        _outEdges.put(prev, next);
-        _inEdges.put(next, prev);
+        _postStates.put(prev, next);
+        _preStates.put(next, prev);
       } else {
-        // there already was an edge from prev to next did have an edge, so merge with it.
-        // their degrees change, so mark them dirty
+        // There already was an edge from prev to next. Merge them, but don't update bookkeeping.
         _edges.put(prev, next, or(composed, oldTransition));
       }
     }
@@ -231,12 +230,12 @@ public class BDDReachabilityGraphOptimizer {
     // Remove old edges last to avoid deleting and then recreating the collections internal to the
     // maps; could happen during splicing.
     _edges.remove(prev, candidate);
-    _inEdges.remove(candidate, prev);
-    _outEdges.remove(prev, candidate);
+    _preStates.remove(candidate, prev);
+    _postStates.remove(prev, candidate);
 
     _edges.remove(candidate, next);
-    _outEdges.remove(candidate, next);
-    _inEdges.remove(next, candidate);
+    _postStates.remove(candidate, next);
+    _preStates.remove(next, candidate);
 
     return ImmutableList.of(prev, next);
   }
