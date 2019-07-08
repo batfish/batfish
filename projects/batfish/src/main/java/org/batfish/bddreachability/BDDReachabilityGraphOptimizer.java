@@ -244,7 +244,7 @@ public class BDDReachabilityGraphOptimizer {
    * Returns true iff the given transition is safe to remove, namely that the set of flows after
    * transitioning the edge can never contain more flows than before transitioning.
    *
-   * <p>Mathematically, this condition is {@code forall x, x.or(x.transition(t)) == x}.
+   * <p>Mathematically, this condition is {@code forall x, x.or(t.transitForward(x)) == x}.
    */
   private boolean isRemovableSelfLoop(Transition t) {
     checkState(!_keepSelfLoops);
