@@ -8,6 +8,7 @@ import static org.batfish.bddreachability.transition.Transitions.or;
 
 import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.HashMultimap;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Multimap;
@@ -160,13 +161,13 @@ public class BDDReachabilityGraphOptimizer {
    * Try to remove the candidate state, and return any neighboring states whose degrees changed as a
    * result.
    */
-  private Set<StateExpr> tryToRemove(StateExpr candidate) {
+  private Collection<StateExpr> tryToRemove(StateExpr candidate) {
     assert !_statesToKeep.contains(candidate);
     Collection<StateExpr> inStates = _inEdges.get(candidate);
     if (inStates.isEmpty()) {
       // root node. prune
       _rootsPruned++;
-      Set<StateExpr> affectedStates = ImmutableSet.copyOf(_outEdges.removeAll(candidate));
+      Collection<StateExpr> affectedStates = _outEdges.removeAll(candidate);
       for (StateExpr oldNext : affectedStates) {
         _edges.remove(candidate, oldNext);
         _inEdges.remove(oldNext, candidate);
@@ -177,7 +178,7 @@ public class BDDReachabilityGraphOptimizer {
     if (outStates.isEmpty()) {
       // leaf node. prune
       _leavesPruned++;
-      Set<StateExpr> affectedStates = ImmutableSet.copyOf(_inEdges.removeAll(candidate));
+      Collection<StateExpr> affectedStates = _inEdges.removeAll(candidate);
       for (StateExpr oldPrev : affectedStates) {
         _edges.remove(oldPrev, candidate);
         _outEdges.remove(oldPrev, candidate);
@@ -237,7 +238,7 @@ public class BDDReachabilityGraphOptimizer {
     _outEdges.remove(candidate, next);
     _inEdges.remove(next, candidate);
 
-    return ImmutableSet.of(prev, next);
+    return ImmutableList.of(prev, next);
   }
 
   private void removeEdge(StateExpr preState, StateExpr postState, Transition transition) {
