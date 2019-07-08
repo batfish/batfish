@@ -8,8 +8,10 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Table;
 import io.opentracing.ActiveSpan;
 import io.opentracing.util.GlobalTracer;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
@@ -28,18 +30,27 @@ public class BDDLoopDetectionAnalysis {
   private final Table<StateExpr, StateExpr, Transition> _forwardEdgeTable;
   private final Set<StateExpr> _ingressLocationStates;
 
-  public BDDLoopDetectionAnalysis(
+  private BDDLoopDetectionAnalysis(
       BDDPacket bddPacket,
       Table<StateExpr, StateExpr, Transition> forwardEdgeTable,
       Set<StateExpr> ingressLocationStates) {
     _bddPacket = bddPacket;
-    _forwardEdgeTable = forwardEdgeTable;
     _ingressLocationStates = ingressLocationStates;
+    _forwardEdgeTable = forwardEdgeTable;
+  }
+
+  private static Collection<Edge> getLoopEdges(
+      Stream<Edge> inEdges, Set<StateExpr> ingressLocationStates) {
+    List<Edge> edges = inEdges.collect(Collectors.toList());
+    return BDDReachabilityGraphOptimizer.optimize(edges, ingressLocationStates, true);
   }
 
   public BDDLoopDetectionAnalysis(
       BDDPacket bddPacket, Stream<Edge> edges, Set<StateExpr> ingressLocationStates) {
-    this(bddPacket, BDDReachabilityUtils.computeForwardEdgeTable(edges), ingressLocationStates);
+    this(
+        bddPacket,
+        BDDReachabilityUtils.computeForwardEdgeTable(getLoopEdges(edges, ingressLocationStates)),
+        ingressLocationStates);
   }
 
   /*
