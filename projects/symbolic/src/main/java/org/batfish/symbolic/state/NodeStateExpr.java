@@ -37,4 +37,9 @@ public abstract class NodeStateExpr implements StateExpr {
   public final int hashCode() {
     return 31 * getClass().hashCode() + _hostname.hashCode();
   }
+
+  @Override
+  public final String toString() {
+    return String.format("%s{%s}", getClass().getSimpleName(), _hostname);
+  }
 }
