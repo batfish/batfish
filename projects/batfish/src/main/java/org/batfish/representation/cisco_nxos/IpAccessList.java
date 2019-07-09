@@ -10,12 +10,18 @@ public final class IpAccessList implements Serializable {
 
   public static final int MAX_NAME_LENGTH = 64;
 
+  private @Nonnull FragmentsBehavior _fragmentsBehavior;
   private final @Nonnull SortedMap<Long, IpAccessListLine> _lines;
   private final @Nonnull String _name;
 
   public IpAccessList(String name) {
     _name = name;
     _lines = new TreeMap<>();
+    _fragmentsBehavior = FragmentsBehavior.DEFAULT;
+  }
+
+  public @Nonnull FragmentsBehavior getFragmentsBehavior() {
+    return _fragmentsBehavior;
   }
 
   public @Nonnull SortedMap<Long, IpAccessListLine> getLines() {
@@ -24,5 +30,9 @@ public final class IpAccessList implements Serializable {
 
   public @Nonnull String getName() {
     return _name;
+  }
+
+  public void setFragmentsBehavior(FragmentsBehavior fragmentsBehavior) {
+    _fragmentsBehavior = fragmentsBehavior;
   }
 }

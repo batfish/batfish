@@ -71,6 +71,8 @@ public enum NamedPort {
   DNSIX(195),
   /** Domain Name Service. */
   DOMAIN(53),
+  /** Dynamic Routing Information Protocol (TCP and UDP) */
+  DRIP(3949),
   /** Display Support Protocol. */
   DSP(33),
   /** Echo. */

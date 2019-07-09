@@ -3,7 +3,17 @@ package org.batfish.representation.cisco_nxos;
 import java.io.Serializable;
 
 /** A line of an {@link IpAccessList}. */
-public interface IpAccessListLine extends Serializable {
+public abstract class IpAccessListLine implements Serializable {
 
-  <T> T accept(IpAccessListLineVisitor<T> visitor);
+  private final long _line;
+
+  protected IpAccessListLine(long line) {
+    _line = line;
+  }
+
+  public abstract <T> T accept(IpAccessListLineVisitor<T> visitor);
+
+  public long getLine() {
+    return _line;
+  }
 }
