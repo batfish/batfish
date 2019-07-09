@@ -1426,16 +1426,18 @@ public class VirtualRouter implements Serializable {
                               allNodes,
                               session,
                               Type.IPV4_UNICAST);
-                      return !transformedRoute.isPresent()
-                          ? null
-                          // REPLACE does not make sense across routers, update with WITHDRAW
-                          : RouteAdvertisement.<Bgpv4Route>builder()
-                              .setReason(
-                                  adv.getReason() == Reason.REPLACE
-                                      ? Reason.WITHDRAW
-                                      : adv.getReason())
-                              .setRoute(transformedRoute.get())
-                              .build();
+                      // REPLACE does not make sense across routers, update with WITHDRAW
+                      return transformedRoute
+                          .map(
+                              bgpv4Route ->
+                                  RouteAdvertisement.<Bgpv4Route>builder()
+                                      .setReason(
+                                          adv.getReason() == Reason.REPLACE
+                                              ? Reason.WITHDRAW
+                                              : adv.getReason())
+                                      .setRoute(bgpv4Route)
+                                      .build())
+                          .orElse(null);
                     })
                 .filter(Objects::nonNull),
             mainRibExports);
