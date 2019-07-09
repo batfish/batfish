@@ -135,6 +135,8 @@ public class Variable {
         String name = value._name.toLowerCase();
         map.put(name, value);
       }
+      /** Synonyms for backward compatibility (July 9, 2019) */
+      map.put("bgpSessionType".toLowerCase(), BGP_SESSION_TYPE_SPEC);
       return map.build();
     }
 
