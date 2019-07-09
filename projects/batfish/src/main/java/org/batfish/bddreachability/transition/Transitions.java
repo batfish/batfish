@@ -122,8 +122,13 @@ public final class Transitions {
   }
 
   /**
-   * Try to compose two transitions by merging into a single atomic transition (i.e. without using
-   * {@link Composite}). If it cannot be done, return {@code null}.
+   * Try to compose two transitions by merging into a "simpler" transition.
+   *
+   * <p>The definition of a single transition being simpler than two transitions is open-ended, but
+   * typically involves reducing the total number of operations involved (i.e. is not a simple
+   * {@link Composite} of the two input transitions).
+   *
+   * <p>If no simplification can be found, return {@code null}.
    */
   public static @Nullable Transition mergeComposed(Transition t1, Transition t2) {
     if (t1 == ZERO || t2 == ZERO) {
@@ -139,6 +144,16 @@ public final class Transitions {
       BDD bdd1 = ((Constraint) t1).getConstraint();
       BDD bdd2 = ((Constraint) t2).getConstraint();
       return constraint(bdd1.and(bdd2));
+    }
+    if (t1 instanceof Constraint && t2 instanceof Branch) {
+      BDD constraintBdd = ((Constraint) t1).getConstraint();
+      Branch branch = (Branch) t2;
+      BDD guard = ((Branch) t2).getGuard();
+      if (!constraintBdd.andSat(guard)) {
+        // True branch can never be taken.
+        return compose(t1, branch.getFalseBranch());
+      }
+      // fall through
     }
     if (t1 instanceof Constraint && t2 instanceof EraseAndSet) {
       BDD constraintBdd = ((Constraint) t1).getConstraint();
