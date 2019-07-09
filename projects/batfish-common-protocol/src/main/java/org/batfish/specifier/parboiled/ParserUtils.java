@@ -1,6 +1,7 @@
 package org.batfish.specifier.parboiled;
 
 import static org.batfish.specifier.parboiled.Anchor.Type.CHAR_LITERAL;
+import static org.batfish.specifier.parboiled.Anchor.Type.ENUM_SET_VALUE;
 import static org.batfish.specifier.parboiled.Anchor.Type.IGNORE;
 import static org.batfish.specifier.parboiled.Anchor.Type.STRING_LITERAL;
 import static org.batfish.specifier.parboiled.Anchor.Type.WHITESPACE;
@@ -149,7 +150,7 @@ final class ParserUtils {
 
     // If we have descended from IGNORE go past that
     if (level > 0) {
-      Optional<PathElement> ignoreAncestor = findIgnoreAncestor(pathElements, level - 1);
+      Optional<PathElement> ignoreAncestor = findAncestorOfType(pathElements, level - 1, IGNORE);
       if (ignoreAncestor.isPresent()) {
         return findPathAnchorFromBottom(pathElements, ignoreAncestor.get().getLevel() - 1);
       }
@@ -158,10 +159,17 @@ final class ParserUtils {
     if (element.getAnchorType() == CHAR_LITERAL) {
       // if the parent label is STRING_LITERAL (e.g., "@specifier"), use that because we want to
       // autocomplete the entire string not just one of its characters
-      if (level > 0 && pathElements.get(level - 1).getAnchorType() == STRING_LITERAL) {
-        return Optional.of(pathElements.get(level - 1));
+      if (level > 0) {
+        if (pathElements.get(level - 1).getAnchorType() == STRING_LITERAL) {
+          return findPathAnchorFromBottom(pathElements, level - 1);
+        }
+        Optional<PathElement> enumSetValueAncestor =
+            findAncestorOfType(pathElements, level - 1, ENUM_SET_VALUE);
+        if (enumSetValueAncestor.isPresent()) {
+          return enumSetValueAncestor;
+        }
+        return Optional.of(element);
       }
-      return Optional.of(element);
     } else if (element.getAnchorType() != null && element.getAnchorType() != IGNORE) {
       return Optional.of(element);
     }
@@ -169,14 +177,14 @@ final class ParserUtils {
   }
 
   /**
-   * Checks if an ancestor of element at {@code level} is of Anchor.Type == IGNORE. Returns the
-   * level of the ancestor if so. Returns -1 otherwise.
+   * Checks if an ancestor of element at {@code level} is of {@code ancestorType}. Returns the
+   * ancestor if so; otherwise, returns an empty Optional.
    */
-  private static Optional<PathElement> findIgnoreAncestor(
-      List<PathElement> pathElements, int level) {
+  private static Optional<PathElement> findAncestorOfType(
+      List<PathElement> pathElements, int level, Anchor.Type ancestorType) {
     return IntStream.rangeClosed(0, level)
         .mapToObj(i -> pathElements.get(level - i)) // "level - i" to walk the list from bottom
-        .filter(e -> e.getAnchorType() == IGNORE)
+        .filter(e -> e.getAnchorType() == ancestorType)
         .findFirst();
   }
 

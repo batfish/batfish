@@ -351,14 +351,14 @@ public class Client extends AbstractClient implements IClient {
           throw new BatfishException(
               String.format("A Batfish %s must be a JSON string", expectedType.getName()));
         }
-        new BgpPeerPropertySpecifier(value.textValue());
+        BgpPeerPropertySpecifier.create(value.textValue());
         break;
       case BGP_PROCESS_PROPERTY_SPEC:
         if (!(value.isTextual())) {
           throw new BatfishException(
               String.format("A Batfish %s must be a JSON string", expectedType.getName()));
         }
-        new BgpProcessPropertySpecifier(value.textValue());
+        BgpProcessPropertySpecifier.create(value.textValue());
         break;
       case BGP_ROUTES:
         if (!(value.isArray())) {
@@ -473,7 +473,7 @@ public class Client extends AbstractClient implements IClient {
           throw new BatfishException(
               String.format("A Batfish %s must be a JSON string", expectedType.getName()));
         }
-        new InterfacePropertySpecifier(value.textValue());
+        InterfacePropertySpecifier.create(value.textValue());
         break;
       case INTERFACE_TYPE:
         if (!(value.isTextual())) {
@@ -566,14 +566,14 @@ public class Client extends AbstractClient implements IClient {
           throw new BatfishException(
               String.format("A Batfish %s must be a JSON string", expectedType.getName()));
         }
-        new NamedStructurePropertySpecifier(value.textValue());
+        NamedStructurePropertySpecifier.create(value.textValue());
         break;
       case NODE_PROPERTY_SPEC:
         if (!(value.isTextual())) {
           throw new BatfishException(
               String.format("A Batfish %s must be a JSON string", expectedType.getName()));
         }
-        new NodePropertySpecifier(value.textValue());
+        NodePropertySpecifier.create(value.textValue());
         break;
       case NODE_ROLE_DIMENSION:
         if (!value.isTextual()) {

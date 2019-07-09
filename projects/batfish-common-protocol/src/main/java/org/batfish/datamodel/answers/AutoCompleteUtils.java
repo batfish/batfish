@@ -30,12 +30,8 @@ import org.batfish.datamodel.InterfaceType;
 import org.batfish.datamodel.Protocol;
 import org.batfish.datamodel.answers.AutocompleteSuggestion.SuggestionType;
 import org.batfish.datamodel.collections.NodeInterfacePair;
-import org.batfish.datamodel.questions.BgpPeerPropertySpecifier;
-import org.batfish.datamodel.questions.BgpProcessPropertySpecifier;
 import org.batfish.datamodel.questions.ConfiguredSessionStatus;
-import org.batfish.datamodel.questions.InterfacePropertySpecifier;
 import org.batfish.datamodel.questions.IpsecSessionStatus;
-import org.batfish.datamodel.questions.NodePropertySpecifier;
 import org.batfish.datamodel.questions.OspfPropertySpecifier;
 import org.batfish.datamodel.questions.Variable;
 import org.batfish.referencelibrary.ReferenceBook;
@@ -266,12 +262,30 @@ public final class AutoCompleteUtils {
           }
         case BGP_PEER_PROPERTY_SPEC:
           {
-            suggestions = baseAutoComplete(query, BgpPeerPropertySpecifier.JAVA_MAP.keySet());
+            suggestions =
+                ParboiledAutoComplete.autoComplete(
+                    Grammar.BGP_PEER_PROPERTY_SPECIFIER,
+                    network,
+                    snapshot,
+                    query,
+                    maxSuggestions,
+                    completionMetadata,
+                    nodeRolesData,
+                    referenceLibrary);
             break;
           }
         case BGP_PROCESS_PROPERTY_SPEC:
           {
-            suggestions = baseAutoComplete(query, BgpProcessPropertySpecifier.JAVA_MAP.keySet());
+            suggestions =
+                ParboiledAutoComplete.autoComplete(
+                    Grammar.BGP_PROCESS_PROPERTY_SPECIFIER,
+                    network,
+                    snapshot,
+                    query,
+                    maxSuggestions,
+                    completionMetadata,
+                    nodeRolesData,
+                    referenceLibrary);
             break;
           }
         case BGP_SESSION_STATUS:
@@ -396,7 +410,16 @@ public final class AutoCompleteUtils {
           }
         case INTERFACE_PROPERTY_SPEC:
           {
-            suggestions = baseAutoComplete(query, InterfacePropertySpecifier.JAVA_MAP.keySet());
+            suggestions =
+                ParboiledAutoComplete.autoComplete(
+                    Grammar.INTERFACE_PROPERTY_SPECIFIER,
+                    network,
+                    snapshot,
+                    query,
+                    maxSuggestions,
+                    completionMetadata,
+                    nodeRolesData,
+                    referenceLibrary);
             break;
           }
         case IP:
@@ -479,7 +502,16 @@ public final class AutoCompleteUtils {
           }
         case NODE_PROPERTY_SPEC:
           {
-            suggestions = baseAutoComplete(query, NodePropertySpecifier.JAVA_MAP.keySet());
+            suggestions =
+                ParboiledAutoComplete.autoComplete(
+                    Grammar.NODE_PROPERTY_SPECIFIER,
+                    network,
+                    snapshot,
+                    query,
+                    maxSuggestions,
+                    completionMetadata,
+                    nodeRolesData,
+                    referenceLibrary);
             break;
           }
         case NODE_ROLE_AND_DIMENSION:

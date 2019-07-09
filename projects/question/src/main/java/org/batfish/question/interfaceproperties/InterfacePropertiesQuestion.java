@@ -5,6 +5,7 @@ import static com.google.common.base.MoreObjects.firstNonNull;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import java.util.Objects;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -35,30 +36,44 @@ public class InterfacePropertiesQuestion extends Question {
   @Nullable private final String _nodes;
   @Nonnull private final NodeSpecifier _nodeSpecifier;
   private boolean _onlyActive;
-  @Nonnull private final InterfacePropertySpecifier _properties;
+  @Nullable private final String _properties;
+  @Nonnull private final InterfacePropertySpecifier _propertySpecifier;
 
   @JsonCreator
   private static InterfacePropertiesQuestion create(
       @Nullable @JsonProperty(PROP_EXCLUDE_SHUT_INTERFACES) Boolean excludeShutInterfaces,
       @Nullable @JsonProperty(PROP_INTERFACES) String interfaces,
       @Nullable @JsonProperty(PROP_NODES) String nodes,
-      @Nullable @JsonProperty(PROP_PROPERTIES) InterfacePropertySpecifier propertySpec) {
+      @Nullable @JsonProperty(PROP_PROPERTIES) String properties) {
     return new InterfacePropertiesQuestion(
+        nodes,
+        interfaces,
+        properties,
+        firstNonNull(excludeShutInterfaces, DEFAULT_EXCLUDE_SHUT_INTERFACES));
+  }
+
+  public InterfacePropertiesQuestion(
+      @Nullable String nodes,
+      @Nullable String interfaces,
+      @Nullable String properties,
+      boolean excludeShutInterfaces) {
+    this(
         nodes,
         SpecifierFactories.getNodeSpecifierOrDefault(nodes, AllNodesNodeSpecifier.INSTANCE),
         interfaces,
         SpecifierFactories.getInterfaceSpecifierOrDefault(
             interfaces, AllInterfacesInterfaceSpecifier.INSTANCE),
-        firstNonNull(propertySpec, InterfacePropertySpecifier.ALL),
+        properties,
+        InterfacePropertySpecifier.create(properties),
         firstNonNull(excludeShutInterfaces, DEFAULT_EXCLUDE_SHUT_INTERFACES));
   }
 
   public InterfacePropertiesQuestion(
-      @Nonnull NodeSpecifier nodeSpecifier,
-      @Nonnull InterfaceSpecifier interfaceSpecifier,
+      NodeSpecifier nodeSpecifier,
+      InterfaceSpecifier interfaceSpecifier,
       InterfacePropertySpecifier propertySpec,
       boolean excludeShutInterfaces) {
-    this(null, nodeSpecifier, null, interfaceSpecifier, propertySpec, excludeShutInterfaces);
+    this(null, nodeSpecifier, null, interfaceSpecifier, null, propertySpec, excludeShutInterfaces);
   }
 
   private InterfacePropertiesQuestion(
@@ -66,13 +81,15 @@ public class InterfacePropertiesQuestion extends Question {
       NodeSpecifier nodeSpecifier,
       @Nullable String interfaces,
       InterfaceSpecifier interfaceSpecifier,
+      @Nullable String properties,
       InterfacePropertySpecifier propertySpec,
       boolean excludeShutInterfaces) {
     _nodes = nodes;
     _nodeSpecifier = nodeSpecifier;
     _interfaces = interfaces;
     _interfaceSpecifier = interfaceSpecifier;
-    _properties = propertySpec;
+    _properties = properties;
+    _propertySpecifier = propertySpec;
     _onlyActive = excludeShutInterfaces;
   }
 
@@ -98,6 +115,7 @@ public class InterfacePropertiesQuestion extends Question {
   }
 
   @JsonIgnore
+  @Nonnull
   public InterfaceSpecifier getInterfaceSpecifier() {
     return _interfaceSpecifier;
   }
@@ -109,12 +127,50 @@ public class InterfacePropertiesQuestion extends Question {
   }
 
   @JsonIgnore
+  @Nonnull
   public NodeSpecifier getNodeSpecifier() {
     return _nodeSpecifier;
   }
 
   @JsonProperty(PROP_PROPERTIES)
-  public InterfacePropertySpecifier getProperties() {
+  @Nullable
+  public String getProperties() {
     return _properties;
+  }
+
+  @JsonIgnore
+  @Nonnull
+  public InterfacePropertySpecifier getPropertySpecifier() {
+    return _propertySpecifier;
+  }
+
+  @Override
+  public boolean equals(@Nullable Object o) {
+    if (this == o) {
+      return true;
+    }
+    if (!(o instanceof InterfacePropertiesQuestion)) {
+      return false;
+    }
+    InterfacePropertiesQuestion that = (InterfacePropertiesQuestion) o;
+    return Objects.equals(_nodes, that._nodes)
+        && Objects.equals(_nodeSpecifier, that._nodeSpecifier)
+        && Objects.equals(_interfaces, that._interfaces)
+        && Objects.equals(_interfaceSpecifier, that._interfaceSpecifier)
+        && Objects.equals(_properties, that._properties)
+        && Objects.equals(_propertySpecifier, that._propertySpecifier)
+        && _onlyActive == that._onlyActive;
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(
+        _nodes,
+        _nodeSpecifier,
+        _interfaces,
+        _interfaceSpecifier,
+        _properties,
+        _propertySpecifier,
+        _onlyActive);
   }
 }

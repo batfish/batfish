@@ -5,6 +5,7 @@ import static com.google.common.base.MoreObjects.firstNonNull;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import java.util.Objects;
 import java.util.regex.Pattern;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -68,7 +69,7 @@ public class NamedStructuresQuestion extends Question {
         nodes,
         SpecifierFactories.getNodeSpecifierOrDefault(nodes, AllNodesNodeSpecifier.INSTANCE),
         structureTypes,
-        new NamedStructurePropertySpecifier(structureTypes),
+        NamedStructurePropertySpecifier.create(structureTypes),
         structureNameRegex,
         ignoreGenerated,
         indicatePresence);
@@ -163,5 +164,37 @@ public class NamedStructuresQuestion extends Question {
   @JsonIgnore
   public NamedStructurePropertySpecifier getStructureTypeSpecifier() {
     return _structureTypeSpecifier;
+  }
+
+  @Override
+  public boolean equals(@Nullable Object o) {
+    if (this == o) {
+      return true;
+    }
+    if (!(o instanceof NamedStructuresQuestion)) {
+      return false;
+    }
+    NamedStructuresQuestion that = (NamedStructuresQuestion) o;
+    return _ignoreGenerated == that._ignoreGenerated
+        && _indicatePresence == that._indicatePresence
+        && Objects.equals(_nodes, that._nodes)
+        && _nodeSpecifier.equals(that._nodeSpecifier)
+        && Objects.equals(_structureNameRegex, that._structureNameRegex)
+        && _structureNamePattern.toString().equals(that._structureNamePattern.toString())
+        && Objects.equals(_structureTypes, that._structureTypes)
+        && _structureTypeSpecifier.equals(that._structureTypeSpecifier);
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(
+        _ignoreGenerated,
+        _indicatePresence,
+        _nodes,
+        _nodeSpecifier,
+        _structureNameRegex,
+        _structureNamePattern,
+        _structureTypes,
+        _structureTypeSpecifier);
   }
 }

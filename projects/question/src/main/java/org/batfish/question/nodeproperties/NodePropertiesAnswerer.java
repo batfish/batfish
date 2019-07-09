@@ -47,8 +47,8 @@ public class NodePropertiesAnswerer extends Answerer {
                     prop ->
                         new ColumnMetadata(
                             getColumnName(prop),
-                            NodePropertySpecifier.JAVA_MAP.get(prop).getSchema(),
-                            NodePropertySpecifier.JAVA_MAP.get(prop).getDescription(),
+                            NodePropertySpecifier.getPropertyDescriptor(prop).getSchema(),
+                            NodePropertySpecifier.getPropertyDescriptor(prop).getDescription(),
                             false,
                             true))
                 .collect(Collectors.toList()))
@@ -61,7 +61,7 @@ public class NodePropertiesAnswerer extends Answerer {
     if (dhints != null && dhints.getTextDesc() != null) {
       textDesc = dhints.getTextDesc();
     }
-    return new TableMetadata(createColumnMetadata(question.getProperties()), textDesc);
+    return new TableMetadata(createColumnMetadata(question.getPropertySpecifier()), textDesc);
   }
 
   @Override
@@ -71,7 +71,7 @@ public class NodePropertiesAnswerer extends Answerer {
 
     Multiset<Row> propertyRows =
         getProperties(
-            question.getProperties(),
+            question.getPropertySpecifier(),
             _batfish.specifierContext(),
             question.getNodeSpecifier(),
             tableMetadata.toColumnMap());
@@ -103,7 +103,7 @@ public class NodePropertiesAnswerer extends Answerer {
 
       for (String property : propertySpecifier.getMatchingProperties()) {
         PropertySpecifier.fillProperty(
-            NodePropertySpecifier.JAVA_MAP.get(property),
+            NodePropertySpecifier.getPropertyDescriptor(property),
             ctxt.getConfigs().get(nodeName),
             property,
             row);

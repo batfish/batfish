@@ -58,7 +58,7 @@ public final class OspfInterfaceConfigurationAnswerer extends Answerer {
     Set<String> nodes = question.getNodesSpecifier().resolve(_batfish.specifierContext());
 
     Set<String> matchingProperties =
-        ImmutableSet.copyOf(question.getProperties().getMatchingProperties());
+        ImmutableSet.copyOf(question.getPropertySpecifier().getMatchingProperties());
     List<String> orderedProperties =
         COLUMNS_FROM_PROP_SPEC.stream()
             .filter(matchingProperties::contains)
@@ -89,9 +89,9 @@ public final class OspfInterfaceConfigurationAnswerer extends Answerer {
       columnMetadatas.add(
           new ColumnMetadata(
               property,
-              InterfacePropertySpecifier.JAVA_MAP.get(property).getSchema(),
+              InterfacePropertySpecifier.getPropertyDescriptor(property).getSchema(),
               firstNonNull(
-                  InterfacePropertySpecifier.JAVA_MAP.get(property).getDescription(),
+                  InterfacePropertySpecifier.getPropertyDescriptor(property).getDescription(),
                   "Property " + property),
               false,
               true));
@@ -164,7 +164,7 @@ public final class OspfInterfaceConfigurationAnswerer extends Answerer {
 
     for (String property : properties) {
       PropertyDescriptor<Interface> propertyDescriptor =
-          InterfacePropertySpecifier.JAVA_MAP.get(property);
+          InterfacePropertySpecifier.getPropertyDescriptor(property);
       try {
         PropertySpecifier.fillProperty(propertyDescriptor, iface, property, rowBuilder);
       } catch (ClassCastException e) {

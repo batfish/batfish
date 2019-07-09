@@ -39,9 +39,30 @@ public final class InputValidationUtils {
             completionMetadata,
             nodeRolesData,
             referenceLibrary);
+      case BGP_PEER_PROPERTY_SPEC:
+        return ParboiledInputValidator.validate(
+            Grammar.BGP_PEER_PROPERTY_SPECIFIER,
+            query,
+            completionMetadata,
+            nodeRolesData,
+            referenceLibrary);
+      case BGP_PROCESS_PROPERTY_SPEC:
+        return ParboiledInputValidator.validate(
+            Grammar.BGP_PROCESS_PROPERTY_SPECIFIER,
+            query,
+            completionMetadata,
+            nodeRolesData,
+            referenceLibrary);
       case FILTER_SPEC:
         return ParboiledInputValidator.validate(
             Grammar.FILTER_SPECIFIER, query, completionMetadata, nodeRolesData, referenceLibrary);
+      case INTERFACE_PROPERTY_SPEC:
+        return ParboiledInputValidator.validate(
+            Grammar.INTERFACE_PROPERTY_SPECIFIER,
+            query,
+            completionMetadata,
+            nodeRolesData,
+            referenceLibrary);
       case INTERFACES_SPEC:
         return ParboiledInputValidator.validate(
             Grammar.INTERFACE_SPECIFIER,
@@ -72,6 +93,13 @@ public final class InputValidationUtils {
       case NODE_SPEC:
         return ParboiledInputValidator.validate(
             Grammar.NODE_SPECIFIER, query, completionMetadata, nodeRolesData, referenceLibrary);
+      case NODE_PROPERTY_SPEC:
+        return ParboiledInputValidator.validate(
+            Grammar.NODE_PROPERTY_SPECIFIER,
+            query,
+            completionMetadata,
+            nodeRolesData,
+            referenceLibrary);
       case ROUTING_POLICY_SPEC:
         return ParboiledInputValidator.validate(
             Grammar.ROUTING_POLICY_SPECIFIER,
