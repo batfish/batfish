@@ -14,6 +14,7 @@ import com.google.common.collect.Range;
 import com.google.common.collect.RangeSet;
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 import java.util.regex.Matcher;
@@ -356,7 +357,7 @@ public class CumulusNcluConfigurationBuilder extends CumulusNcluParserBaseListen
   private @Nullable String _currentBgpNeighborName;
   private @Nullable BgpProcess _currentBgpProcess;
   private @Nullable BgpVrf _currentBgpVrf;
-  private @Nullable Bond _currentBond;
+  private @Nullable List<Bond> _currentBonds;
   private @Nullable List<Interface> _currentInterfaces;
   private @Nullable RouteMapEntry _currentRouteMapEntry;
   private @Nullable Vlan _currentVlan;
@@ -580,21 +581,24 @@ public class CumulusNcluConfigurationBuilder extends CumulusNcluParserBaseListen
 
   @Override
   public void enterA_bond(A_bondContext ctx) {
-    String name = ctx.name.getText();
+    Set<String> names = toStrings(ctx.bonds);
     int line = ctx.getStart().getLine();
-    Bond bond = _c.getBonds().get(name);
-    if (bond == null) {
-      bond = createBond(name, ctx);
+    _currentBonds = new LinkedList<>();
+    for (String name : names) {
+      Bond bond = _c.getBonds().get(name);
       if (bond == null) {
-        bond = new Bond("dummy");
-      } else {
-        _c.defineStructure(CumulusStructureType.BOND, name, line);
-        _c.referenceStructure(
-            CumulusStructureType.BOND, name, CumulusStructureUsage.BOND_SELF_REFERENCE, line);
-        _c.getBonds().put(name, bond);
+        bond = createBond(name, ctx);
+        if (bond == null) {
+          continue;
+        } else {
+          _c.defineStructure(CumulusStructureType.BOND, name, line);
+          _c.referenceStructure(
+              CumulusStructureType.BOND, name, CumulusStructureUsage.BOND_SELF_REFERENCE, line);
+          _c.getBonds().put(name, bond);
+        }
       }
+      _currentBonds.add(bond);
     }
-    _currentBond = bond;
   }
 
   @Override
@@ -827,7 +831,7 @@ public class CumulusNcluConfigurationBuilder extends CumulusNcluParserBaseListen
 
   @Override
   public void exitA_bond(A_bondContext ctx) {
-    _currentBond = null;
+    _currentBonds = null;
   }
 
   @Override
@@ -1034,36 +1038,42 @@ public class CumulusNcluConfigurationBuilder extends CumulusNcluParserBaseListen
 
   @Override
   public void exitBob_access(Bob_accessContext ctx) {
-    _currentBond.getBridge().setAccess(toInteger(ctx.vlan));
+    _currentBonds.forEach(b -> b.getBridge().setAccess(toInteger(ctx.vlan)));
   }
 
   @Override
   public void exitBob_pvid(Bob_pvidContext ctx) {
-    _currentBond.getBridge().setPvid(toInteger(ctx.id));
+    _currentBonds.forEach(b -> b.getBridge().setPvid(toInteger(ctx.id)));
   }
 
   @Override
   public void exitBob_vids(Bob_vidsContext ctx) {
-    _currentBond.getBridge().setVids(IntegerSpace.of(toRangeSet(ctx.vlans)));
+    _currentBonds.forEach(b -> b.getBridge().setVids(IntegerSpace.of(toRangeSet(ctx.vlans))));
   }
 
   @Override
   public void exitBobo_slaves(Bobo_slavesContext ctx) {
+    if (_currentBonds.isEmpty()) {
+      return;
+    }
+    if (_currentBonds.size() > 1) {
+      throw new WillNotCommitException("Cannot assign slaves to more than one bond");
+    }
     Set<String> slaves = toStrings(ctx.slaves);
-    _currentBond.setSlaves(
-        initInterfacesIfAbsent(slaves, ctx, CumulusStructureUsage.BOND_SLAVE).isEmpty()
-            ? ImmutableSet.of()
-            : slaves);
+    List<Interface> interfaces =
+        initInterfacesIfAbsent(slaves, ctx, CumulusStructureUsage.BOND_SLAVE);
+    Bond b = _currentBonds.get(0);
+    b.setSlaves(interfaces.isEmpty() ? ImmutableSet.of() : slaves);
   }
 
   @Override
   public void exitBond_clag_id(Bond_clag_idContext ctx) {
-    _currentBond.setClagId(toInteger(ctx.id));
+    _currentBonds.forEach(b -> b.setClagId(toInteger(ctx.id)));
   }
 
   @Override
   public void exitBond_ip_address(Bond_ip_addressContext ctx) {
-    _currentBond.getIpAddresses().add(toInterfaceAddress(ctx.address));
+    _currentBonds.forEach(b -> b.getIpAddresses().add(toInterfaceAddress(ctx.address)));
   }
 
   @Override
@@ -1072,7 +1082,7 @@ public class CumulusNcluConfigurationBuilder extends CumulusNcluParserBaseListen
     if (initVrfsIfAbsent(ImmutableSet.of(vrf), ctx, CumulusStructureUsage.BOND_VRF).isEmpty()) {
       return;
     }
-    _currentBond.setVrf(vrf);
+    _currentBonds.forEach(b -> b.setVrf(vrf));
   }
 
   @Override
