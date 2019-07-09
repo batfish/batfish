@@ -3,6 +3,7 @@ package org.batfish.question.ospfinterface;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import java.util.Objects;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -74,5 +75,21 @@ public final class OspfInterfaceConfigurationQuestion extends Question {
   @JsonIgnore
   public InterfacePropertySpecifier getPropertySpecifier() {
     return _propertySpecifier;
+  }
+
+  @Override
+  public boolean equals(@Nullable Object o) {
+    if (!(o instanceof OspfInterfaceConfigurationQuestion)) {
+      return false;
+    }
+    OspfInterfaceConfigurationQuestion that = (OspfInterfaceConfigurationQuestion) o;
+    return Objects.equals(_nodes, that._nodes)
+        && Objects.equals(_properties, that._properties)
+        && Objects.equals(_propertySpecifier, that._propertySpecifier);
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(_nodes, _properties, _propertySpecifier);
   }
 }

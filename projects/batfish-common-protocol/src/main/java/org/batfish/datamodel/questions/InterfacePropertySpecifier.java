@@ -8,6 +8,7 @@ import com.google.common.collect.Sets;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
@@ -344,5 +345,18 @@ public class InterfacePropertySpecifier extends PropertySpecifier {
   @Override
   public List<String> getMatchingProperties() {
     return _properties;
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (!(o instanceof InterfacePropertySpecifier)) {
+      return false;
+    }
+    return _properties.equals(((InterfacePropertySpecifier) o)._properties);
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(_properties);
   }
 }

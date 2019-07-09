@@ -9,6 +9,7 @@ import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Sets;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import javax.annotation.Nonnull;
@@ -187,5 +188,18 @@ public class BgpPeerPropertySpecifier extends PropertySpecifier {
       return true;
     }
     throw new IllegalArgumentException(String.format("Unrecognized peer type: %s", peer));
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (!(o instanceof BgpPeerPropertySpecifier)) {
+      return false;
+    }
+    return _properties.equals(((BgpPeerPropertySpecifier) o)._properties);
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(_properties);
   }
 }

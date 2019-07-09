@@ -8,8 +8,10 @@ import com.google.common.collect.Sets;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.Configuration;
@@ -309,7 +311,7 @@ public class NodePropertySpecifier extends PropertySpecifier {
 
   public static final NodePropertySpecifier ALL = new NodePropertySpecifier(JAVA_MAP.keySet());
 
-  private final List<String> _properties;
+  @Nonnull private final List<String> _properties;
 
   /**
    * Create a node property specifier from provided expression. If the expression is null or empty,
@@ -337,5 +339,18 @@ public class NodePropertySpecifier extends PropertySpecifier {
   @Override
   public List<String> getMatchingProperties() {
     return _properties;
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (!(o instanceof NodePropertySpecifier)) {
+      return false;
+    }
+    return _properties.equals(((NodePropertySpecifier) o)._properties);
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(_properties);
   }
 }

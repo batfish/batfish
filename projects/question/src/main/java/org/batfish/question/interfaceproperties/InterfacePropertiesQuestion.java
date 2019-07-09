@@ -5,6 +5,7 @@ import static com.google.common.base.MoreObjects.firstNonNull;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import java.util.Objects;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -45,6 +46,18 @@ public class InterfacePropertiesQuestion extends Question {
       @Nullable @JsonProperty(PROP_NODES) String nodes,
       @Nullable @JsonProperty(PROP_PROPERTIES) String properties) {
     return new InterfacePropertiesQuestion(
+        nodes,
+        interfaces,
+        properties,
+        firstNonNull(excludeShutInterfaces, DEFAULT_EXCLUDE_SHUT_INTERFACES));
+  }
+
+  public InterfacePropertiesQuestion(
+      @Nullable String nodes,
+      @Nullable String interfaces,
+      @Nullable String properties,
+      boolean excludeShutInterfaces) {
+    this(
         nodes,
         SpecifierFactories.getNodeSpecifierOrDefault(nodes, AllNodesNodeSpecifier.INSTANCE),
         interfaces,
@@ -129,5 +142,35 @@ public class InterfacePropertiesQuestion extends Question {
   @Nonnull
   public InterfacePropertySpecifier getPropertySpecifier() {
     return _propertySpecifier;
+  }
+
+  @Override
+  public boolean equals(@Nullable Object o) {
+    if (this == o) {
+      return true;
+    }
+    if (!(o instanceof InterfacePropertiesQuestion)) {
+      return false;
+    }
+    InterfacePropertiesQuestion that = (InterfacePropertiesQuestion) o;
+    return Objects.equals(_nodes, that._nodes)
+        && Objects.equals(_nodeSpecifier, that._nodeSpecifier)
+        && Objects.equals(_interfaces, that._interfaces)
+        && Objects.equals(_interfaceSpecifier, that._interfaceSpecifier)
+        && Objects.equals(_properties, that._properties)
+        && Objects.equals(_propertySpecifier, that._propertySpecifier)
+        && _onlyActive == that._onlyActive;
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(
+        _nodes,
+        _nodeSpecifier,
+        _interfaces,
+        _interfaceSpecifier,
+        _properties,
+        _propertySpecifier,
+        _onlyActive);
   }
 }

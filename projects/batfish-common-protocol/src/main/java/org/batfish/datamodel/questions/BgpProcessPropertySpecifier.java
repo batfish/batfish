@@ -151,4 +151,17 @@ public class BgpProcessPropertySpecifier extends PropertySpecifier {
         .filter(Objects::nonNull)
         .anyMatch(AddressFamily::getRouteReflectorClient);
   }
+
+  @Override
+  public boolean equals(Object o) {
+    if (!(o instanceof BgpProcessPropertySpecifier)) {
+      return false;
+    }
+    return _properties.equals(((BgpProcessPropertySpecifier) o)._properties);
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(_properties);
+  }
 }

@@ -3,6 +3,7 @@ package org.batfish.question.bgpproperties;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import java.util.Objects;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -30,8 +31,11 @@ public class BgpPeerConfigurationQuestion extends Question {
   private static BgpPeerConfigurationQuestion create(
       @JsonProperty(PROP_NODES) @Nullable String nodes,
       @JsonProperty(PROP_PROPERTIES) @Nullable String properties) {
-    return new BgpPeerConfigurationQuestion(
-        nodes, properties, BgpPeerPropertySpecifier.create(properties));
+    return new BgpPeerConfigurationQuestion(nodes, properties);
+  }
+
+  public BgpPeerConfigurationQuestion(@Nullable String nodes, @Nullable String properties) {
+    this(nodes, properties, BgpPeerPropertySpecifier.create(properties));
   }
 
   public BgpPeerConfigurationQuestion(
@@ -80,5 +84,21 @@ public class BgpPeerConfigurationQuestion extends Question {
   @Nonnull
   public BgpPeerPropertySpecifier getPropertySpecifier() {
     return _propertySpecifier;
+  }
+
+  @Override
+  public boolean equals(@Nullable Object o) {
+    if (!(o instanceof BgpPeerConfigurationQuestion)) {
+      return false;
+    }
+    BgpPeerConfigurationQuestion that = (BgpPeerConfigurationQuestion) o;
+    return Objects.equals(_nodes, that._nodes)
+        && Objects.equals(_properties, that._properties)
+        && Objects.equals(_propertySpecifier, that._propertySpecifier);
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(_nodes, _properties, _propertySpecifier);
   }
 }
