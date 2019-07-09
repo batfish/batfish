@@ -118,6 +118,8 @@ public class Parser extends CommonParser {
         return input(IpProtocolSpec());
       case IP_SPACE_SPECIFIER:
         return input(IpSpaceSpec());
+      case IPSEC_SESSION_STATUS_SPECIFIER:
+        return input(EnumSetSpec(Grammar.getEnumValues(grammar)));
       case LOCATION_SPECIFIER:
         return input(LocationSpec());
       case NAMED_STRUCTURE_SPECIFIER:

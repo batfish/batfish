@@ -359,7 +359,7 @@ public class AutoCompleteUtilsTest {
   @Test
   public void testIpsecSessionStatusAutocomplete() {
     assertThat(
-        AutoCompleteUtils.autoComplete(Type.IPSEC_SESSION_STATUS, "phase", 5).stream()
+        AutoCompleteUtils.autoComplete(Type.IPSEC_SESSION_STATUS_SPEC, "phase", 5).stream()
             .map(AutocompleteSuggestion::getText)
             .collect(Collectors.toSet()),
         equalTo(

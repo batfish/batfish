@@ -58,7 +58,7 @@ public class Variable {
     IP_PROTOCOL_SPEC("ipProtocolSpec", true),
     IP_SPACE_SPEC("ipSpaceSpec", true),
     IP_WILDCARD("ipWildcard", true),
-    IPSEC_SESSION_STATUS("ipsecSessionStatus", true),
+    IPSEC_SESSION_STATUS_SPEC("ipsecSessionStatusSpec", true),
     JAVA_REGEX("javaRegex", true),
     JSON_PATH("jsonPath", true),
     JSON_PATH_REGEX("jsonPathRegex", true),

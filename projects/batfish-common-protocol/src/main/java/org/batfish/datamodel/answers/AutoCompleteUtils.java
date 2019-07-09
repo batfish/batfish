@@ -31,7 +31,6 @@ import org.batfish.datamodel.Protocol;
 import org.batfish.datamodel.answers.AutocompleteSuggestion.SuggestionType;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.questions.ConfiguredSessionStatus;
-import org.batfish.datamodel.questions.IpsecSessionStatus;
 import org.batfish.datamodel.questions.OspfPropertySpecifier;
 import org.batfish.datamodel.questions.Variable;
 import org.batfish.referencelibrary.ReferenceBook;
@@ -456,14 +455,18 @@ public final class AutoCompleteUtils {
                     referenceLibrary);
             break;
           }
-        case IPSEC_SESSION_STATUS:
+        case IPSEC_SESSION_STATUS_SPEC:
           {
             suggestions =
-                baseAutoComplete(
+                ParboiledAutoComplete.autoComplete(
+                    Grammar.IPSEC_SESSION_STATUS_SPECIFIER,
+                    network,
+                    snapshot,
                     query,
-                    Stream.of(IpsecSessionStatus.values())
-                        .map(IpsecSessionStatus::name)
-                        .collect(Collectors.toSet()));
+                    maxSuggestions,
+                    completionMetadata,
+                    nodeRolesData,
+                    referenceLibrary);
             break;
           }
         case LOCATION_SPEC:
