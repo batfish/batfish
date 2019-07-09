@@ -186,6 +186,11 @@ public class IBatfishTestAdapter implements IBatfish {
   }
 
   @Override
+  public String getConfigText(String filename) {
+    throw new UnsupportedOperationException();
+  }
+
+  @Override
   public NetworkId getContainerName() {
     throw new UnsupportedOperationException();
   }

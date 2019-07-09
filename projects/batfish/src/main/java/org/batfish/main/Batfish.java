@@ -77,6 +77,7 @@ import net.sf.javabdd.BDD;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
 import org.apache.commons.configuration2.ImmutableConfiguration;
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.SerializationUtils;
 import org.batfish.bddreachability.BDDLoopDetectionAnalysis;
 import org.batfish.bddreachability.BDDReachabilityAnalysis;
@@ -2279,6 +2280,19 @@ public class Batfish extends PluginConsumer implements IBatfish {
         getStructureNames(configurations),
         getVrfs(configurations),
         getZones(configurations));
+  }
+
+  @Override
+  public String getConfigText(String filename) {
+    try {
+      InputStream inputObject =
+          _storage.loadSnapshotInputObject(
+              _settings.getContainer(), _testrigSettings.getName(), filename);
+      return IOUtils.toString(inputObject, UTF_8);
+    } catch (IOException e) {
+      _logger.errorf("Error getting config text for %s: %s", filename, e);
+      return null;
+    }
   }
 
   private void repairEnvironmentBgpTables() {

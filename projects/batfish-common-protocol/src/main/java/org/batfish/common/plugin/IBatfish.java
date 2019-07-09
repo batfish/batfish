@@ -71,6 +71,8 @@ public interface IBatfish extends IPluginConsumer {
   @Nullable
   Answerer createAnswerer(@Nonnull Question question);
 
+  String getConfigText(String filename);
+
   NetworkId getContainerName();
 
   DataPlanePlugin getDataPlanePlugin();
