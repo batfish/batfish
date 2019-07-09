@@ -18,6 +18,7 @@ import org.batfish.datamodel.questions.BgpProcessPropertySpecifier;
 import org.batfish.datamodel.questions.InterfacePropertySpecifier;
 import org.batfish.datamodel.questions.NamedStructurePropertySpecifier;
 import org.batfish.datamodel.questions.NodePropertySpecifier;
+import org.batfish.datamodel.questions.VxlanVniPropertySpecifier;
 import org.batfish.referencelibrary.ReferenceLibrary;
 import org.batfish.role.NodeRolesData;
 import org.batfish.specifier.parboiled.Anchor.Type;
@@ -326,5 +327,13 @@ public class ParserEnumSetTest {
         NodePropertySpecifier.NTP_SERVERS,
         NodePropertySpecifier.DNS_SERVERS,
         Grammar.NODE_PROPERTY_SPECIFIER);
+  }
+
+  @Test
+  public void testVxlanVniProperties() {
+    testParseOtherProperties(
+        VxlanVniPropertySpecifier.VTEP_FLOOD_LIST,
+        VxlanVniPropertySpecifier.VXLAN_PORT,
+        Grammar.VXLAN_VNI_PROPERTY_SPECIFIER);
   }
 }

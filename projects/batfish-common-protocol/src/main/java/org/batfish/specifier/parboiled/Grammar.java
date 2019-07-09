@@ -9,6 +9,7 @@ import org.batfish.datamodel.questions.BgpProcessPropertySpecifier;
 import org.batfish.datamodel.questions.InterfacePropertySpecifier;
 import org.batfish.datamodel.questions.NamedStructurePropertySpecifier;
 import org.batfish.datamodel.questions.NodePropertySpecifier;
+import org.batfish.datamodel.questions.VxlanVniPropertySpecifier;
 
 /** Contains information on various expressions supported by this package */
 public enum Grammar {
@@ -25,7 +26,8 @@ public enum Grammar {
   NAMED_STRUCTURE_SPECIFIER("namedStructureSpecifier", "named-structure-specifier"),
   NODE_PROPERTY_SPECIFIER("nodePropertySpecifier", "node-property-specifier"),
   NODE_SPECIFIER("nodeSpecifier", "node-specifier"),
-  ROUTING_POLICY_SPECIFIER("routingPolicySpecifier", "routing-policy-specifier");
+  ROUTING_POLICY_SPECIFIER("routingPolicySpecifier", "routing-policy-specifier"),
+  VXLAN_VNI_PROPERTY_SPECIFIER("vxlanVniPropertySpecifier", "vxlan-vni-property-specifier");
 
   static final String BASE_URL =
       "https://github.com/batfish/batfish/blob/master/questions/Parameters.md#";
@@ -74,6 +76,8 @@ public enum Grammar {
         return NamedStructurePropertySpecifier.ALL.getMatchingProperties();
       case NODE_PROPERTY_SPECIFIER:
         return NodePropertySpecifier.ALL.getMatchingProperties();
+      case VXLAN_VNI_PROPERTY_SPECIFIER:
+        return VxlanVniPropertySpecifier.ALL.getMatchingProperties();
       default:
         throw new IllegalArgumentException(grammar + " is not an enum grammar");
     }

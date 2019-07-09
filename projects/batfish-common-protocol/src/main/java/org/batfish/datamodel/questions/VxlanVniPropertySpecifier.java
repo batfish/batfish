@@ -1,20 +1,21 @@
 package org.batfish.datamodel.questions;
 
-import static com.google.common.base.MoreObjects.firstNonNull;
+import static com.google.common.base.Preconditions.checkArgument;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonValue;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-import java.util.Collection;
+import com.google.common.collect.Sets;
 import java.util.List;
 import java.util.Map;
-import java.util.regex.Pattern;
-import java.util.stream.Collectors;
+import java.util.Objects;
+import java.util.Set;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.answers.Schema;
+import org.batfish.specifier.ConstantEnumSetSpecifier;
+import org.batfish.specifier.SpecifierFactories;
+import org.batfish.specifier.parboiled.Grammar;
 
 /**
  * Enables specification of a set of VXLAN VNI properties.
@@ -37,7 +38,7 @@ public class VxlanVniPropertySpecifier extends PropertySpecifier {
   public static final String VTEP_FLOOD_LIST = "VTEP_Flood_List";
   public static final String VXLAN_PORT = "VXLAN_Port";
 
-  public static Map<String, PropertyDescriptor<VxlanVniPropertiesRow>> JAVA_MAP =
+  private static Map<String, PropertyDescriptor<VxlanVniPropertiesRow>> JAVA_MAP =
       new ImmutableMap.Builder<String, PropertyDescriptor<VxlanVniPropertiesRow>>()
           .put(
               LOCAL_VTEP_IP,
@@ -69,34 +70,52 @@ public class VxlanVniPropertySpecifier extends PropertySpecifier {
                   "Destination port number for the VXLAN tunnel"))
           .build();
 
-  public static final VxlanVniPropertySpecifier ALL = new VxlanVniPropertySpecifier(".*");
+  /** Includes all properties */
+  public static final VxlanVniPropertySpecifier ALL =
+      new VxlanVniPropertySpecifier(JAVA_MAP.keySet());
 
-  private final String _expression;
-
-  private final Pattern _pattern;
-
-  @JsonCreator
-  public VxlanVniPropertySpecifier(@Nullable String expression) {
-    _expression = firstNonNull(expression, ".*");
-    _pattern = Pattern.compile(_expression.trim(), Pattern.CASE_INSENSITIVE);
+  /** Returns the property descriptor for {@code property} */
+  public static PropertyDescriptor<VxlanVniPropertiesRow> getPropertyDescriptor(String property) {
+    checkArgument(JAVA_MAP.containsKey(property), "Property " + property + " does not exist");
+    return JAVA_MAP.get(property);
   }
 
-  public VxlanVniPropertySpecifier(Collection<String> properties) {
-    _expression =
-        properties.stream().map(String::trim).map(Pattern::quote).collect(Collectors.joining("|"));
-    _pattern = Pattern.compile(_expression, Pattern.CASE_INSENSITIVE);
+  @Nonnull private final List<String> _properties;
+
+  public static VxlanVniPropertySpecifier create(@Nullable String expression) {
+    return new VxlanVniPropertySpecifier(
+        SpecifierFactories.getEnumSetSpecifierOrDefault(
+                expression,
+                Grammar.VXLAN_VNI_PROPERTY_SPECIFIER,
+                new ConstantEnumSetSpecifier<>(JAVA_MAP.keySet()))
+            .resolve());
+  }
+
+  public VxlanVniPropertySpecifier(Set<String> properties) {
+    Set<String> diffSet = Sets.difference(properties, JAVA_MAP.keySet());
+    checkArgument(
+        diffSet.isEmpty(),
+        "Invalid properties supplied: %s. Valid properties are %s",
+        diffSet,
+        JAVA_MAP.keySet());
+    _properties = properties.stream().sorted().collect(ImmutableList.toImmutableList());
   }
 
   @Override
   public @Nonnull List<String> getMatchingProperties() {
-    return JAVA_MAP.keySet().stream()
-        .filter(prop -> _pattern.matcher(prop).matches())
-        .collect(ImmutableList.toImmutableList());
+    return _properties;
   }
 
   @Override
-  @JsonValue
-  public String toString() {
-    return _expression;
+  public boolean equals(Object o) {
+    if (!(o instanceof VxlanVniPropertySpecifier)) {
+      return false;
+    }
+    return _properties.equals(((VxlanVniPropertySpecifier) o)._properties);
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(_properties);
   }
 }

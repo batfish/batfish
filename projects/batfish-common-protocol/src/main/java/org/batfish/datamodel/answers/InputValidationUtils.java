@@ -114,6 +114,13 @@ public final class InputValidationUtils {
             completionMetadata,
             nodeRolesData,
             referenceLibrary);
+      case VXLAN_VNI_PROPERTY_SPEC:
+        return ParboiledInputValidator.validate(
+            Grammar.VXLAN_VNI_PROPERTY_SPECIFIER,
+            query,
+            completionMetadata,
+            nodeRolesData,
+            referenceLibrary);
       default:
         return new InputValidationNotes(Validity.VALID, ImmutableList.of());
     }

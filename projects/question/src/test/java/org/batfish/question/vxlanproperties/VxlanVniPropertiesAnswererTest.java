@@ -28,18 +28,18 @@ import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.MockDataPlane;
 import org.batfish.datamodel.VniSettings;
 import org.batfish.datamodel.Vrf;
-import org.batfish.datamodel.questions.VxlanVniPropertySpecifier;
 import org.batfish.datamodel.table.Row;
 import org.batfish.datamodel.table.Rows;
 import org.batfish.datamodel.table.TableAnswerElement;
 import org.junit.Test;
 
+/** Tests for {@link VxlanVniPropertiesAnswerer} */
 public final class VxlanVniPropertiesAnswererTest {
   @Test
   public void testAnswer() {
     VxlanVniPropertiesAnswerer answerer =
         new VxlanVniPropertiesAnswerer(
-            new VxlanVniPropertiesQuestion(null, VxlanVniPropertySpecifier.ALL),
+            new VxlanVniPropertiesQuestion(null, "/.*/"),
             new VxlanVniPropertiesAnswererTest.TestBatfish());
     TableAnswerElement answer = answerer.answer();
     assertThat(
@@ -84,7 +84,7 @@ public final class VxlanVniPropertiesAnswererTest {
   public void testSpecifyNodes() {
     VxlanVniPropertiesAnswerer answerer =
         new VxlanVniPropertiesAnswerer(
-            new VxlanVniPropertiesQuestion("minimal", VxlanVniPropertySpecifier.ALL),
+            new VxlanVniPropertiesQuestion("minimal", "/.*/"),
             new VxlanVniPropertiesAnswererTest.TestBatfish());
     TableAnswerElement answer = answerer.answer();
 
@@ -109,7 +109,7 @@ public final class VxlanVniPropertiesAnswererTest {
   public void testSpecifyProperties() {
     VxlanVniPropertiesAnswerer answerer =
         new VxlanVniPropertiesAnswerer(
-            new VxlanVniPropertiesQuestion(null, new VxlanVniPropertySpecifier(VLAN)),
+            new VxlanVniPropertiesQuestion(null, VLAN),
             new VxlanVniPropertiesAnswererTest.TestBatfish());
     TableAnswerElement answer = answerer.answer();
 
