@@ -43,6 +43,7 @@ ip access-list acl_common_ip_options_destination_ip
   permit ip any 10.0.1.0/24
   permit ip any addrgroup mysrcaddrgroup
   permit ip any host 10.0.2.2
+  permit ip any any
 
 ip access-list acl_common_ip_options_source_ip
   !!! Match source IP
@@ -50,6 +51,7 @@ ip access-list acl_common_ip_options_source_ip
   permit ip 10.0.1.0/24 any
   permit ip addrgroup mysrcaddrgroup any
   permit ip host 10.0.2.2 any
+  permit ip any any
 
 ip access-list acl_common_ip_options_dscp
   !!! Match DSCP
@@ -110,9 +112,9 @@ ip access-list acl_common_ip_options_ttl
 
 !!! ICMP options
 ip access-list acl_icmp
-  ! match ICMP code 0-255
+  ! match ICMP type 0-255
   permit icmp any any 0
-  ! match ICMP code and type (each 0-255)
+  ! match ICMP type and code (each 0-255)
   permit icmp any any 1 2
   ! remaining matches are for combo of code+type
   permit icmp any any administratively-prohibited
@@ -142,6 +144,7 @@ ip access-list acl_icmp
   permit icmp any any network-unknown
   permit icmp any any no-room-for-option
   permit icmp any any option-missing
+  ! likely IPv6
   permit icmp any any packet-too-big
   permit icmp any any parameter-problem
   permit icmp any any port-unreachable
@@ -170,7 +173,7 @@ ip access-list acl_igmp
   permit igmp any any pim
 
 !!! TCP options
-ip access-list acl_tcp_destination_port
+ip access-list acl_tcp_destination_ports
   !!! Match destination port
   ! 0-65535
   permit tcp any any eq 1
@@ -179,6 +182,7 @@ ip access-list acl_tcp_destination_port
   permit tcp any any neq 15
   permit tcp any any portgroup mydstportgroup
   permit tcp any any range 20 25
+ip access-list acl_tcp_destination_ports_named
   !! Match named ports
   permit tcp any any eq bgp
   permit tcp any any eq chargen
@@ -214,7 +218,7 @@ ip access-list acl_tcp_destination_port
   permit tcp any any eq whois
   permit tcp any any eq www
 
-ip access-list acl_tcp_source_port
+ip access-list acl_tcp_source_ports
   !!! Match source port
   permit tcp any eq 1 any
   permit tcp any gt 5 any
@@ -245,19 +249,22 @@ ip access-list acl_tcp_flags
   permit tcp any any rst
   permit tcp any any syn
   permit tcp any any urg
+
+ip access-list acl_tcp_flags_mask
   ! 0-63
   permit tcp any any tcp-flags-mask 50
 
-ip access-list acl_tcp_options
+ip access-list acl_tcp_option_length
   !!! Match TCP options
   ! 0-40, must be multiple of 4
   permit tcp any any tcp-option-length 8
 
+ip access-list acl_tcp_established
   !!! Match established connections
   permit tcp any any established
 
 !!! UDP options
-ip access-list acl_udp_destination_port
+ip access-list acl_udp_destination_ports
   !!! Match destination port
   ! 0-65535
   permit udp any any eq 1
@@ -266,6 +273,7 @@ ip access-list acl_udp_destination_port
   permit udp any any neq 15
   permit udp any any portgroup mydstportgroup
   permit udp any any range 20 25
+ip access-list acl_udp_destination_ports_named
   !! Match named ports
   permit udp any any eq biff
   permit udp any any eq bootpc
@@ -295,7 +303,7 @@ ip access-list acl_udp_destination_port
   permit udp any any eq who
   permit udp any any eq xdmcp
 
-ip access-list acl_udp_source_port
+ip access-list acl_udp_source_ports
   !!! Match source port
   permit udp any eq 1 any
   permit udp any gt 5 any
