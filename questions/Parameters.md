@@ -32,6 +32,8 @@ For many parameters types, there is a "resolver" question that may be used to le
 
 * [`routingPolicySpec`](#routing-policy-specifier)
 
+* [`vxlanVniPropertySpec`](#vxlan-vni-property-specifier)
+
 ## General notes on the grammar 
 
 * **Set operations:** Specifiers denote sets of entities (e.g., nodeSpec resolves to a set of nodes). In many cases, the grammar allows for union, intersection, and difference of such sets, respectively, using `,`, `&`, and `\`. Thus, `(node1, node2)\node1` will resolve to `node1`.
@@ -387,3 +389,17 @@ routingPolicyTerm :=
     | <b>/</b>&lt;<i>routing-policy-name-regex</i>&gt;<b>/</b>
     | <b>(</b>routingPolicySpec<b>)</b>
 </pre>
+
+## VXLAN VNI Property Specifier
+
+ A specification for a set of VXLAN VNI properties.
+
+ * `LOCAL_VTEP_IP` indicates the local VTEP IP.
+
+ * `LOCAL_VTEP_IP, VTEP_FLOOD_LIST` indicates the two properties specified.
+
+ * `/VTEP/` indicates all properties with VTEP in their name.
+
+ #### VXLAN VNI Property Specifier Grammar
+
+ A VXLAN VNI property specifier is a set of enums (see above) over the following values: LOCAL_VTEP_IP, MULTICAST_GROUP, VLAN, VNI, VTEP_FLOOD_LIST, VXLAN_PORT. 
