@@ -38,7 +38,7 @@ public class VxlanVniPropertySpecifier extends PropertySpecifier {
   public static final String VTEP_FLOOD_LIST = "VTEP_Flood_List";
   public static final String VXLAN_PORT = "VXLAN_Port";
 
-  private static Map<String, PropertyDescriptor<VxlanVniPropertiesRow>> JAVA_MAP =
+  private static final Map<String, PropertyDescriptor<VxlanVniPropertiesRow>> JAVA_MAP =
       new ImmutableMap.Builder<String, PropertyDescriptor<VxlanVniPropertiesRow>>()
           .put(
               LOCAL_VTEP_IP,

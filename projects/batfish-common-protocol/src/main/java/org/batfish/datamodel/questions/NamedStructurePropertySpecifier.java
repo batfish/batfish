@@ -39,7 +39,7 @@ public class NamedStructurePropertySpecifier extends PropertySpecifier {
   public static final String VRF = "VRF";
   public static final String ZONE = "Zone";
 
-  public static Map<String, PropertyDescriptor<Configuration>> JAVA_MAP =
+  public static final Map<String, PropertyDescriptor<Configuration>> JAVA_MAP =
       new ImmutableMap.Builder<String, PropertyDescriptor<Configuration>>()
           .put(
               AS_PATH_ACCESS_LIST,
