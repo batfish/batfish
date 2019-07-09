@@ -157,8 +157,6 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
 
   private static final IntegerSpace BANDWIDTH_RANGE = IntegerSpace.of(Range.closed(1, 100_000_000));
   private static final IntegerSpace DSCP_RANGE = IntegerSpace.of(Range.closed(0, 63));
-  private static final IntegerSpace ICMP_CODE_RANGE = IntegerSpace.of(Range.closed(0, 255));
-  private static final IntegerSpace ICMP_TYPE_RANGE = IntegerSpace.of(Range.closed(0, 255));
   private static final int MAX_VRF_NAME_LENGTH = 32;
   private static final IntegerSpace PACKET_LENGTH_RANGE = IntegerSpace.of(Range.closed(20, 9210));
   private static final IntegerSpace PORT_CHANNEL_RANGE = IntegerSpace.of(Range.closed(1, 4096));
@@ -603,12 +601,13 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
 
   @Override
   public void exitAcllal3o_dscp(Acllal3o_dscpContext ctx) {
-    Integer dscp = toInteger(ctx, ctx.dscp);
-    if (dscp == null) {
+    Optional<Integer> dscp = toInteger(ctx, ctx.dscp);
+    if (!dscp.isPresent()) {
       _currentActionIpAccessListLineUnusable = true;
       return;
+    } else {
+      _currentLayer3OptionsBuilder.setDscp(dscp.get());
     }
-    _currentLayer3OptionsBuilder.setDscp(dscp);
   }
 
   @Override
@@ -618,11 +617,12 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
 
   @Override
   public void exitAcllal3o_packet_length(Acllal3o_packet_lengthContext ctx) {
-    IntegerSpace spec = toIntegerSpace(ctx, ctx.spec);
-    if (spec == null) {
+    Optional<IntegerSpace> spec = toIntegerSpace(ctx, ctx.spec);
+    if (!spec.isPresent()) {
       _currentActionIpAccessListLineUnusable = true;
+    } else {
+      _currentLayer3OptionsBuilder.setPacketLength(spec.get());
     }
-    _currentLayer3OptionsBuilder.setPacketLength(spec);
   }
 
   @Override
@@ -664,15 +664,9 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
     Integer type = null;
     Integer code = null;
     if (ctx.type != null) {
-      type = toIcmpType(ctx, ctx.type);
-      if (type == null) {
-        _currentActionIpAccessListLineUnusable = true;
-      }
+      type = toInteger(ctx.type);
       if (ctx.code != null) {
-        code = toIcmpCode(ctx, ctx.code);
-        if (code == null) {
-          _currentActionIpAccessListLineUnusable = true;
-        }
+        code = toInteger(ctx.code);
       }
     } else if (ctx.ADMINISTRATIVELY_PROHIBITED() != null) {
       type = IcmpType.DESTINATION_UNREACHABLE;
@@ -747,9 +741,8 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
       type = IcmpType.PARAMETER_PROBLEM;
       code = IcmpCode.REQUIRED_OPTION_MISSING;
     } else if (ctx.PACKET_TOO_BIG() != null) {
-      // interpreting as ICMPv6 packet too big
-      // TODO: confirm ICMPv6
-      _currentActionIpAccessListLineUnusable = true;
+      type = IcmpType.DESTINATION_UNREACHABLE;
+      code = IcmpCode.FRAGMENTATION_NEEDED;
     } else if (ctx.PARAMETER_PROBLEM() != null) {
       type = IcmpType.PARAMETER_PROBLEM;
       code = IcmpCode.INVALID_IP_HEADER;
@@ -813,20 +806,22 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
 
   @Override
   public void exitAcllal4tcp_destination_port(Acllal4tcp_destination_portContext ctx) {
-    PortSpec portSpec = toPortSpec(ctx, ctx.port);
-    if (portSpec == null) {
+    Optional<PortSpec> portSpec = toPortSpec(ctx, ctx.port);
+    if (!portSpec.isPresent()) {
       _currentActionIpAccessListLineUnusable = true;
+    } else {
+      _currentTcpOptionsBuilder.setDstPortSpec(portSpec.get());
     }
-    _currentTcpOptionsBuilder.setDstPortSpec(portSpec);
   }
 
   @Override
   public void exitAcllal4tcp_source_port(Acllal4tcp_source_portContext ctx) {
-    PortSpec portSpec = toPortSpec(ctx, ctx.port);
-    if (portSpec == null) {
+    Optional<PortSpec> portSpec = toPortSpec(ctx, ctx.port);
+    if (!portSpec.isPresent()) {
       _currentActionIpAccessListLineUnusable = true;
+    } else {
+      _currentTcpOptionsBuilder.setSrcPortSpec(portSpec.get());
     }
-    _currentTcpOptionsBuilder.setSrcPortSpec(portSpec);
   }
 
   @Override
@@ -860,29 +855,32 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
 
   @Override
   public void exitAcllal4tcpo_tcp_flags_mask(Acllal4tcpo_tcp_flags_maskContext ctx) {
-    Integer mask = toInteger(ctx, ctx.mask);
-    if (mask == null) {
+    Optional<Integer> mask = toInteger(ctx, ctx.mask);
+    if (!mask.isPresent()) {
       _currentActionIpAccessListLineUnusable = true;
+    } else {
+      _currentTcpOptionsBuilder.setTcpFlagsMask(mask.get());
     }
-    _currentTcpOptionsBuilder.setTcpFlagsMask(mask);
   }
 
   @Override
   public void exitAcllal4udp_destination_port(Acllal4udp_destination_portContext ctx) {
-    PortSpec portSpec = toPortSpec(ctx, ctx.port);
-    if (portSpec == null) {
+    Optional<PortSpec> portSpec = toPortSpec(ctx, ctx.port);
+    if (!portSpec.isPresent()) {
       _currentActionIpAccessListLineUnusable = true;
+    } else {
+      _currentUdpOptionsBuilder.setDstPortSpec(portSpec.get());
     }
-    _currentUdpOptionsBuilder.setDstPortSpec(portSpec);
   }
 
   @Override
   public void exitAcllal4udp_source_port(Acllal4udp_source_portContext ctx) {
-    PortSpec portSpec = toPortSpec(ctx, ctx.port);
-    if (portSpec == null) {
+    Optional<PortSpec> portSpec = toPortSpec(ctx, ctx.port);
+    if (!portSpec.isPresent()) {
       _currentActionIpAccessListLineUnusable = true;
+    } else {
+      _currentUdpOptionsBuilder.setSrcPortSpec(portSpec.get());
     }
-    _currentUdpOptionsBuilder.setSrcPortSpec(portSpec);
   }
 
   @Override
@@ -1225,386 +1223,335 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
     _w.todo(ctx, getFullText(ctx), _parser);
   }
 
-  private @Nullable Integer toIcmpCode(ParserRuleContext messageCtx, Uint8Context ctx) {
-    int code = Integer.parseInt(ctx.getText());
-    if (!ICMP_CODE_RANGE.contains(code)) {
-      _w.redFlag(
-          String.format(
-              "Expected ICMP code in range %s, but got '%d' in: %s",
-              ICMP_CODE_RANGE, code, getFullText(messageCtx)));
-      return null;
-    }
-    return code;
+  private @Nonnull Optional<Integer> toInteger(
+      ParserRuleContext messageCtx, Dscp_numberContext ctx) {
+    return toIntegerInSpace(messageCtx, ctx, DSCP_RANGE, "DSCP number");
   }
 
-  private @Nullable Integer toIcmpType(ParserRuleContext messageCtx, Uint8Context ctx) {
-    int type = Integer.parseInt(ctx.getText());
-    if (!ICMP_TYPE_RANGE.contains(type)) {
-      _w.redFlag(
-          String.format(
-              "Expected ICMP type range %s, but got '%d' in: %s",
-              ICMP_TYPE_RANGE, type, getFullText(messageCtx)));
-      return null;
-    }
-    return type;
-  }
-
-  private @Nullable Integer toInteger(ParserRuleContext messageCtx, Dscp_numberContext ctx) {
-    int dscp = Integer.parseInt(ctx.getText());
-    if (!DSCP_RANGE.contains(dscp)) {
-      _w.redFlag(
-          String.format(
-              "Expected DSCP number in range %s, but got '%d' in: %s",
-              DSCP_RANGE, dscp, getFullText(messageCtx)));
-      return null;
-    }
-    return dscp;
-  }
-
-  private @Nullable Integer toInteger(ParserRuleContext messageCtx, Dscp_specContext ctx) {
+  private @Nonnull Optional<Integer> toInteger(ParserRuleContext messageCtx, Dscp_specContext ctx) {
     if (ctx.num != null) {
       return toInteger(messageCtx, ctx.num);
     } else if (ctx.AF11() != null) {
-      return DscpType.AF11.number();
+      return Optional.of(DscpType.AF11.number());
     } else if (ctx.AF12() != null) {
-      return DscpType.AF12.number();
+      return Optional.of(DscpType.AF12.number());
     } else if (ctx.AF13() != null) {
-      return DscpType.AF13.number();
+      return Optional.of(DscpType.AF13.number());
     } else if (ctx.AF21() != null) {
-      return DscpType.AF21.number();
+      return Optional.of(DscpType.AF21.number());
     } else if (ctx.AF22() != null) {
-      return DscpType.AF22.number();
+      return Optional.of(DscpType.AF22.number());
     } else if (ctx.AF23() != null) {
-      return DscpType.AF23.number();
+      return Optional.of(DscpType.AF23.number());
     } else if (ctx.AF31() != null) {
-      return DscpType.AF31.number();
+      return Optional.of(DscpType.AF31.number());
     } else if (ctx.AF32() != null) {
-      return DscpType.AF32.number();
+      return Optional.of(DscpType.AF32.number());
     } else if (ctx.AF33() != null) {
-      return DscpType.AF33.number();
+      return Optional.of(DscpType.AF33.number());
     } else if (ctx.AF41() != null) {
-      return DscpType.AF41.number();
+      return Optional.of(DscpType.AF41.number());
     } else if (ctx.AF42() != null) {
-      return DscpType.AF42.number();
+      return Optional.of(DscpType.AF42.number());
     } else if (ctx.AF43() != null) {
-      return DscpType.AF43.number();
+      return Optional.of(DscpType.AF43.number());
     } else if (ctx.CS1() != null) {
-      return DscpType.CS1.number();
+      return Optional.of(DscpType.CS1.number());
     } else if (ctx.CS2() != null) {
-      return DscpType.CS2.number();
+      return Optional.of(DscpType.CS2.number());
     } else if (ctx.CS3() != null) {
-      return DscpType.CS3.number();
+      return Optional.of(DscpType.CS3.number());
     } else if (ctx.CS4() != null) {
-      return DscpType.CS4.number();
+      return Optional.of(DscpType.CS4.number());
     } else if (ctx.CS5() != null) {
-      return DscpType.CS5.number();
+      return Optional.of(DscpType.CS5.number());
     } else if (ctx.CS6() != null) {
-      return DscpType.CS6.number();
+      return Optional.of(DscpType.CS6.number());
     } else if (ctx.CS7() != null) {
-      return DscpType.CS7.number();
+      return Optional.of(DscpType.CS7.number());
     } else if (ctx.DEFAULT() != null) {
-      return DscpType.DEFAULT.number();
+      return Optional.of(DscpType.DEFAULT.number());
     } else if (ctx.EF() != null) {
-      return DscpType.EF.number();
+      return Optional.of(DscpType.EF.number());
     } else {
       // assumed to be valid but unsupported
       todo(ctx);
-      return null;
+      return Optional.empty();
     }
   }
 
-  private @Nullable Integer toInteger(ParserRuleContext messageCtx, Packet_lengthContext ctx) {
-    int packetLength = Integer.parseInt(ctx.getText());
-    if (!PACKET_LENGTH_RANGE.contains(packetLength)) {
-      _w.redFlag(
-          String.format(
-              "Expected packet length in range %s, but got '%d' in: %s",
-              PACKET_LENGTH_RANGE, packetLength, getFullText(messageCtx)));
-      return null;
-    }
-    return packetLength;
+  private @Nonnull Optional<Integer> toInteger(
+      ParserRuleContext messageCtx, Packet_lengthContext ctx) {
+    return toIntegerInSpace(messageCtx, ctx, PACKET_LENGTH_RANGE, "packet length");
   }
 
-  private @Nullable Integer toInteger(ParserRuleContext messageCtx, Tcp_flags_maskContext ctx) {
-    int mask = Integer.parseInt(ctx.getText());
-    if (!TCP_FLAGS_MASK_RANGE.contains(mask)) {
-      _w.redFlag(
-          String.format(
-              "Expected tcp-flags-mask in range %s, but got '%d' in: %s",
-              TCP_FLAGS_MASK_RANGE, mask, getFullText(messageCtx)));
-      return null;
-    }
-    return mask;
+  private @Nonnull Optional<Integer> toInteger(
+      ParserRuleContext messageCtx, Tcp_flags_maskContext ctx) {
+    return toIntegerInSpace(messageCtx, ctx, TCP_FLAGS_MASK_RANGE, "tcp-flags-mask");
   }
 
-  private @Nullable Integer toInteger(ParserRuleContext messageCtx, Tcp_port_numberContext ctx) {
-    int port = Integer.parseInt(ctx.getText());
-    if (!TCP_PORT_RANGE.contains(port)) {
-      _w.redFlag(
-          String.format(
-              "Expected TCP port in range %s, but got '%d' in: %s",
-              TCP_PORT_RANGE, port, getFullText(messageCtx)));
-      return null;
-    }
-    return port;
+  private @Nonnull Optional<Integer> toInteger(
+      ParserRuleContext messageCtx, Tcp_port_numberContext ctx) {
+    return toIntegerInSpace(messageCtx, ctx, TCP_PORT_RANGE, "TCP port");
   }
 
-  private @Nullable Integer toInteger(ParserRuleContext messageCtx, Tcp_portContext ctx) {
+  private @Nonnull Optional<Integer> toInteger(ParserRuleContext messageCtx, Tcp_portContext ctx) {
     if (ctx.num != null) {
-      // returns null if invalid
       return toInteger(messageCtx, ctx.num);
     } else if (ctx.BGP() != null) {
-      return NamedPort.BGP.number();
+      return Optional.of(NamedPort.BGP.number());
     } else if (ctx.CHARGEN() != null) {
-      return NamedPort.CHARGEN.number();
+      return Optional.of(NamedPort.CHARGEN.number());
     } else if (ctx.CMD() != null) {
-      return NamedPort.CMDtcp_OR_SYSLOGudp.number();
+      return Optional.of(NamedPort.CMDtcp_OR_SYSLOGudp.number());
     } else if (ctx.DAYTIME() != null) {
-      return NamedPort.DAYTIME.number();
+      return Optional.of(NamedPort.DAYTIME.number());
     } else if (ctx.DISCARD() != null) {
-      return NamedPort.DISCARD.number();
+      return Optional.of(NamedPort.DISCARD.number());
     } else if (ctx.DOMAIN() != null) {
-      return NamedPort.DOMAIN.number();
+      return Optional.of(NamedPort.DOMAIN.number());
     } else if (ctx.DRIP() != null) {
-      return NamedPort.DRIP.number();
+      return Optional.of(NamedPort.DRIP.number());
     } else if (ctx.ECHO() != null) {
-      return NamedPort.ECHO.number();
+      return Optional.of(NamedPort.ECHO.number());
     } else if (ctx.EXEC() != null) {
-      return NamedPort.BIFFudp_OR_EXECtcp.number();
+      return Optional.of(NamedPort.BIFFudp_OR_EXECtcp.number());
     } else if (ctx.FINGER() != null) {
-      return NamedPort.FINGER.number();
+      return Optional.of(NamedPort.FINGER.number());
     } else if (ctx.FTP() != null) {
-      return NamedPort.FTP.number();
+      return Optional.of(NamedPort.FTP.number());
     } else if (ctx.FTP_DATA() != null) {
-      return NamedPort.FTP_DATA.number();
+      return Optional.of(NamedPort.FTP_DATA.number());
     } else if (ctx.GOPHER() != null) {
-      return NamedPort.GOPHER.number();
+      return Optional.of(NamedPort.GOPHER.number());
     } else if (ctx.HOSTNAME() != null) {
-      return NamedPort.HOSTNAME.number();
+      return Optional.of(NamedPort.HOSTNAME.number());
     } else if (ctx.IDENT() != null) {
-      return NamedPort.IDENT.number();
+      return Optional.of(NamedPort.IDENT.number());
     } else if (ctx.IRC() != null) {
-      return NamedPort.IRC.number();
+      return Optional.of(NamedPort.IRC.number());
     } else if (ctx.KLOGIN() != null) {
-      return NamedPort.KLOGIN.number();
+      return Optional.of(NamedPort.KLOGIN.number());
     } else if (ctx.KSHELL() != null) {
-      return NamedPort.KSHELL.number();
+      return Optional.of(NamedPort.KSHELL.number());
     } else if (ctx.LOGIN() != null) {
-      return NamedPort.LOGINtcp_OR_WHOudp.number();
+      return Optional.of(NamedPort.LOGINtcp_OR_WHOudp.number());
     } else if (ctx.LPD() != null) {
-      return NamedPort.LPD.number();
+      return Optional.of(NamedPort.LPD.number());
     } else if (ctx.NNTP() != null) {
-      return NamedPort.NNTP.number();
+      return Optional.of(NamedPort.NNTP.number());
     } else if (ctx.PIM_AUTO_RP() != null) {
-      return NamedPort.PIM_AUTO_RP.number();
+      return Optional.of(NamedPort.PIM_AUTO_RP.number());
     } else if (ctx.POP2() != null) {
-      return NamedPort.POP2.number();
+      return Optional.of(NamedPort.POP2.number());
     } else if (ctx.POP3() != null) {
-      return NamedPort.POP3.number();
+      return Optional.of(NamedPort.POP3.number());
     } else if (ctx.SMTP() != null) {
-      return NamedPort.SMTP.number();
+      return Optional.of(NamedPort.SMTP.number());
     } else if (ctx.SUNRPC() != null) {
-      return NamedPort.SUNRPC.number();
+      return Optional.of(NamedPort.SUNRPC.number());
     } else if (ctx.TACACS() != null) {
-      return NamedPort.TACACS.number();
+      return Optional.of(NamedPort.TACACS.number());
     } else if (ctx.TALK() != null) {
-      return NamedPort.TALK.number();
+      return Optional.of(NamedPort.TALK.number());
     } else if (ctx.TELNET() != null) {
-      return NamedPort.TELNET.number();
+      return Optional.of(NamedPort.TELNET.number());
     } else if (ctx.TIME() != null) {
-      return NamedPort.TIME.number();
+      return Optional.of(NamedPort.TIME.number());
     } else if (ctx.UUCP() != null) {
-      return NamedPort.UUCP.number();
+      return Optional.of(NamedPort.UUCP.number());
     } else if (ctx.WHOIS() != null) {
-      return NamedPort.WHOIS.number();
+      return Optional.of(NamedPort.WHOIS.number());
     } else if (ctx.WWW() != null) {
-      return NamedPort.HTTP.number();
+      return Optional.of(NamedPort.HTTP.number());
     } else {
       // assume valid but unsupported
       todo(ctx);
-      return null;
+      return Optional.empty();
     }
   }
 
-  private @Nullable Integer toInteger(ParserRuleContext messageCtx, Udp_port_numberContext ctx) {
-    int port = Integer.parseInt(ctx.getText());
-    if (!UDP_PORT_RANGE.contains(port)) {
-      _w.redFlag(
-          String.format(
-              "Expected UDP port in range %s, but got '%d' in: %s",
-              UDP_PORT_RANGE, port, getFullText(messageCtx)));
-      return null;
-    }
-    return port;
+  private @Nonnull Optional<Integer> toInteger(
+      ParserRuleContext messageCtx, Udp_port_numberContext ctx) {
+    return toIntegerInSpace(messageCtx, ctx, UDP_PORT_RANGE, "UDP port");
   }
 
-  private @Nullable Integer toInteger(ParserRuleContext messageCtx, Udp_portContext ctx) {
+  private @Nonnull Optional<Integer> toInteger(ParserRuleContext messageCtx, Udp_portContext ctx) {
     if (ctx.num != null) {
-      // returns null if invalid
       return toInteger(messageCtx, ctx.num);
     } else if (ctx.BIFF() != null) {
-      return NamedPort.BIFFudp_OR_EXECtcp.number();
+      return Optional.of(NamedPort.BIFFudp_OR_EXECtcp.number());
     } else if (ctx.BOOTPC() != null) {
-      return NamedPort.BOOTPC.number();
+      return Optional.of(NamedPort.BOOTPC.number());
     } else if (ctx.BOOTPS() != null) {
-      return NamedPort.BOOTPS_OR_DHCP.number();
+      return Optional.of(NamedPort.BOOTPS_OR_DHCP.number());
     } else if (ctx.DISCARD() != null) {
-      return NamedPort.DISCARD.number();
+      return Optional.of(NamedPort.DISCARD.number());
     } else if (ctx.DNSIX() != null) {
-      return NamedPort.DNSIX.number();
+      return Optional.of(NamedPort.DNSIX.number());
     } else if (ctx.DOMAIN() != null) {
-      return NamedPort.DOMAIN.number();
+      return Optional.of(NamedPort.DOMAIN.number());
     } else if (ctx.ECHO() != null) {
-      return NamedPort.ECHO.number();
+      return Optional.of(NamedPort.ECHO.number());
     } else if (ctx.ISAKMP() != null) {
-      return NamedPort.ISAKMP.number();
+      return Optional.of(NamedPort.ISAKMP.number());
     } else if (ctx.MOBILE_IP() != null) {
-      return NamedPort.MOBILE_IP_AGENT.number();
+      return Optional.of(NamedPort.MOBILE_IP_AGENT.number());
     } else if (ctx.NAMESERVER() != null) {
-      return NamedPort.NAMESERVER.number();
+      return Optional.of(NamedPort.NAMESERVER.number());
     } else if (ctx.NETBIOS_DGM() != null) {
-      return NamedPort.NETBIOS_DGM.number();
+      return Optional.of(NamedPort.NETBIOS_DGM.number());
     } else if (ctx.NETBIOS_NS() != null) {
-      return NamedPort.NETBIOS_NS.number();
+      return Optional.of(NamedPort.NETBIOS_NS.number());
     } else if (ctx.NETBIOS_SS() != null) {
-      return NamedPort.NETBIOS_SSN.number();
+      return Optional.of(NamedPort.NETBIOS_SSN.number());
     } else if (ctx.NON500_ISAKMP() != null) {
-      return NamedPort.NON500_ISAKMP.number();
+      return Optional.of(NamedPort.NON500_ISAKMP.number());
     } else if (ctx.NTP() != null) {
-      return NamedPort.NTP.number();
+      return Optional.of(NamedPort.NTP.number());
     } else if (ctx.PIM_AUTO_RP() != null) {
-      return NamedPort.PIM_AUTO_RP.number();
+      return Optional.of(NamedPort.PIM_AUTO_RP.number());
     } else if (ctx.RIP() != null) {
-      return NamedPort.EFStcp_OR_RIPudp.number();
+      return Optional.of(NamedPort.EFStcp_OR_RIPudp.number());
     } else if (ctx.SNMP() != null) {
-      return NamedPort.SNMP.number();
+      return Optional.of(NamedPort.SNMP.number());
     } else if (ctx.SNMPTRAP() != null) {
-      return NamedPort.SNMPTRAP.number();
+      return Optional.of(NamedPort.SNMPTRAP.number());
     } else if (ctx.SUNRPC() != null) {
-      return NamedPort.SUNRPC.number();
+      return Optional.of(NamedPort.SUNRPC.number());
     } else if (ctx.SYSLOG() != null) {
-      return NamedPort.CMDtcp_OR_SYSLOGudp.number();
+      return Optional.of(NamedPort.CMDtcp_OR_SYSLOGudp.number());
     } else if (ctx.TACACS() != null) {
-      return NamedPort.TACACS.number();
+      return Optional.of(NamedPort.TACACS.number());
     } else if (ctx.TALK() != null) {
-      return NamedPort.TALK.number();
+      return Optional.of(NamedPort.TALK.number());
     } else if (ctx.TFTP() != null) {
-      return NamedPort.TFTP.number();
+      return Optional.of(NamedPort.TFTP.number());
     } else if (ctx.TIME() != null) {
-      return NamedPort.TIME.number();
+      return Optional.of(NamedPort.TIME.number());
     } else if (ctx.WHO() != null) {
-      return NamedPort.LOGINtcp_OR_WHOudp.number();
+      return Optional.of(NamedPort.LOGINtcp_OR_WHOudp.number());
     } else if (ctx.XDMCP() != null) {
-      return NamedPort.XDMCP.number();
+      return Optional.of(NamedPort.XDMCP.number());
     } else {
       // assume valid but unsupported
       todo(ctx);
-      return null;
+      return Optional.empty();
     }
   }
 
-  private @Nullable IntegerSpace toIntegerSpace(
+  /**
+   * Convert a {@link ParserRuleContext} whose text is guaranteed to represent a valid signed 32-bit
+   * decimal integer to an {@link Integer} if it is contained in the provied {@code space}, or else
+   * {@link Optional#empty}.
+   */
+  private @Nonnull Optional<Integer> toIntegerInSpace(
+      ParserRuleContext messageCtx, ParserRuleContext ctx, IntegerSpace space, String name) {
+    int num = Integer.parseInt(ctx.getText());
+    if (!space.contains(num)) {
+      _w.addWarning(
+          messageCtx,
+          getFullText(messageCtx),
+          _parser,
+          String.format("Expected %s in range %s, but got '%d'", name, space, num));
+      return Optional.empty();
+    }
+    return Optional.of(num);
+  }
+
+  private @Nonnull Optional<IntegerSpace> toIntegerSpace(
       ParserRuleContext messageCtx, Acllal3o_packet_length_specContext ctx) {
-    Integer arg1 = toInteger(messageCtx, ctx.arg1);
-    if (arg1 == null) {
-      return null;
-    }
-    if (ctx.eq != null) {
-      return IntegerSpace.of(arg1);
-    } else if (ctx.lt != null) {
-      if (arg1 <= PACKET_LENGTH_RANGE.least()) {
-        return null;
-      }
-      return PACKET_LENGTH_RANGE.intersection(IntegerSpace.of(Range.closed(0, arg1 - 1)));
-    } else if (ctx.gt != null) {
-      if (arg1 >= PACKET_LENGTH_RANGE.greatest()) {
-        return null;
-      }
-      return PACKET_LENGTH_RANGE.intersection(
-          IntegerSpace.of(Range.closed(arg1 + 1, Integer.MAX_VALUE)));
-    } else if (ctx.neq != null) {
-      return PACKET_LENGTH_RANGE.difference(IntegerSpace.of(arg1));
-    } else if (ctx.range != null) {
-      Integer arg2 = toInteger(messageCtx, ctx.arg2);
-      if (arg2 == null) {
-        return null;
-      }
-      // both args guaranteed to be in range
-      return IntegerSpace.of(Range.closed(arg1, arg2));
-    } else {
-      // assume valid but unsupported
-      todo(ctx);
-      return null;
-    }
+    boolean range = ctx.range != null;
+    return toInteger(messageCtx, ctx.arg1)
+        .map(
+            arg1 ->
+                toIntegerSpace(
+                        messageCtx,
+                        arg1,
+                        range ? toInteger(messageCtx, ctx.arg2) : Optional.empty(),
+                        ctx.eq != null,
+                        ctx.lt != null,
+                        ctx.gt != null,
+                        ctx.neq != null,
+                        range,
+                        PACKET_LENGTH_RANGE)
+                    .orElse(null));
   }
 
-  private @Nullable IntegerSpace toIntegerSpace(
+  private @Nonnull Optional<IntegerSpace> toIntegerSpace(
       ParserRuleContext messageCtx, Acllal4tcp_port_spec_literalContext ctx) {
-    Integer arg1 = toInteger(ctx, ctx.arg1);
-    if (arg1 == null) {
-      return null;
-    }
-    if (ctx.eq != null) {
-      return IntegerSpace.of(arg1);
-    } else if (ctx.lt != null) {
-      if (arg1 <= TCP_PORT_RANGE.least()) {
-        return null;
-      }
-      return TCP_PORT_RANGE.intersection(IntegerSpace.of(Range.closed(0, arg1 - 1)));
-    } else if (ctx.gt != null) {
-      if (arg1 >= TCP_PORT_RANGE.greatest()) {
-        return null;
-      }
-      return TCP_PORT_RANGE.intersection(
-          IntegerSpace.of(Range.closed(arg1 + 1, Integer.MAX_VALUE)));
-    } else if (ctx.neq != null) {
-      return TCP_PORT_RANGE.difference(IntegerSpace.of(arg1));
-    } else if (ctx.range != null) {
-      Integer arg2 = toInteger(ctx, ctx.arg2);
-      if (arg2 == null) {
-        return null;
-      }
-      // both args guaranteed to be in range
-      return IntegerSpace.of(Range.closed(arg1, arg2));
-    } else {
-      // assume valid but unsupported
-      todo(ctx);
-      return null;
-    }
+    boolean range = ctx.range != null;
+    return toInteger(messageCtx, ctx.arg1)
+        .map(
+            arg1 ->
+                toIntegerSpace(
+                        messageCtx,
+                        arg1,
+                        range ? toInteger(messageCtx, ctx.arg2) : Optional.empty(),
+                        ctx.eq != null,
+                        ctx.lt != null,
+                        ctx.gt != null,
+                        ctx.neq != null,
+                        range,
+                        TCP_PORT_RANGE)
+                    .orElse(null));
   }
 
-  private @Nullable IntegerSpace toIntegerSpace(
+  private @Nonnull Optional<IntegerSpace> toIntegerSpace(
       ParserRuleContext messageCtx, Acllal4udp_port_spec_literalContext ctx) {
-    Integer arg1 = toInteger(ctx, ctx.arg1);
-    if (arg1 == null) {
-      return null;
-    }
-    if (ctx.eq != null) {
-      return IntegerSpace.of(arg1);
-    } else if (ctx.lt != null) {
-      if (arg1 <= UDP_PORT_RANGE.least()) {
-        return null;
+    boolean range = ctx.range != null;
+    return toInteger(messageCtx, ctx.arg1)
+        .map(
+            arg1 ->
+                toIntegerSpace(
+                        messageCtx,
+                        arg1,
+                        range ? toInteger(messageCtx, ctx.arg2) : Optional.empty(),
+                        ctx.eq != null,
+                        ctx.lt != null,
+                        ctx.gt != null,
+                        ctx.neq != null,
+                        range,
+                        UDP_PORT_RANGE)
+                    .orElse(null));
+  }
+
+  /**
+   * Helper for NX-OS integer space specifiers to convert to IntegerSpace if valid, or else {@link
+   * Optional#empty}.
+   */
+  private @Nonnull Optional<IntegerSpace> toIntegerSpace(
+      ParserRuleContext messageCtx,
+      int arg1,
+      Optional<Integer> arg2Optional,
+      boolean eq,
+      boolean lt,
+      boolean gt,
+      boolean neq,
+      boolean range,
+      IntegerSpace space) {
+    if (eq) {
+      return Optional.of(IntegerSpace.of(arg1));
+    } else if (lt) {
+      if (arg1 <= space.least()) {
+        return Optional.empty();
       }
-      return TCP_PORT_RANGE.intersection(IntegerSpace.of(Range.closed(0, arg1 - 1)));
-    } else if (ctx.gt != null) {
-      if (arg1 >= UDP_PORT_RANGE.greatest()) {
-        return null;
+      return Optional.of(space.intersection(IntegerSpace.of(Range.closed(0, arg1 - 1))));
+    } else if (gt) {
+      if (arg1 >= space.greatest()) {
+        return Optional.empty();
       }
-      return UDP_PORT_RANGE.intersection(
-          IntegerSpace.of(Range.closed(arg1 + 1, Integer.MAX_VALUE)));
-    } else if (ctx.neq != null) {
-      return UDP_PORT_RANGE.difference(IntegerSpace.of(arg1));
-    } else if (ctx.range != null) {
-      Integer arg2 = toInteger(ctx, ctx.arg2);
-      if (arg2 == null) {
-        return null;
-      }
+      return Optional.of(
+          space.intersection(IntegerSpace.of(Range.closed(arg1 + 1, Integer.MAX_VALUE))));
+    } else if (neq) {
+      return Optional.of(space.difference(IntegerSpace.of(arg1)));
+    } else if (range) {
       // both args guaranteed to be in range
-      return IntegerSpace.of(Range.closed(arg1, arg2));
+      return arg2Optional.map(arg2 -> IntegerSpace.of(Range.closed(arg1, arg2)));
     } else {
-      // assume valid but unsupported
-      todo(ctx);
-      return null;
+      // assume valid but unsupported by caller
+      todo(messageCtx);
+      return Optional.empty();
     }
   }
 
@@ -1621,31 +1568,31 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
     return "port-channel" + id;
   }
 
-  private @Nullable PortSpec toPortSpec(
+  private @Nonnull Optional<PortSpec> toPortSpec(
       ParserRuleContext messageCtx, Acllal4tcp_port_specContext ctx) {
     if (ctx.literal != null) {
-      IntegerSpace literalPorts = toIntegerSpace(messageCtx, ctx.literal);
-      return literalPorts != null ? new LiteralPortSpec(literalPorts) : null;
+      return toIntegerSpace(messageCtx, ctx.literal)
+          .map(literalPorts -> new LiteralPortSpec(literalPorts));
     } else if (ctx.group != null) {
-      return toPortSpec(ctx.group);
+      return Optional.of(toPortSpec(ctx.group));
     } else {
       // assume valid but unsupported
       todo(ctx);
-      return null;
+      return Optional.empty();
     }
   }
 
-  private @Nullable PortSpec toPortSpec(
+  private @Nonnull Optional<PortSpec> toPortSpec(
       ParserRuleContext messageCtx, Acllal4udp_port_specContext ctx) {
     if (ctx.literal != null) {
-      IntegerSpace literalPorts = toIntegerSpace(messageCtx, ctx.literal);
-      return literalPorts != null ? new LiteralPortSpec(literalPorts) : null;
+      return toIntegerSpace(messageCtx, ctx.literal)
+          .map(literalPorts -> new LiteralPortSpec(literalPorts));
     } else if (ctx.group != null) {
-      return toPortSpec(ctx.group);
+      return Optional.of(toPortSpec(ctx.group));
     } else {
       // assume valid but unsupported
       todo(ctx);
-      return null;
+      return Optional.empty();
     }
   }
 

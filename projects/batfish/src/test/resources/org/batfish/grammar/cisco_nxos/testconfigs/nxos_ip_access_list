@@ -144,7 +144,6 @@ ip access-list acl_icmp
   permit icmp any any network-unknown
   permit icmp any any no-room-for-option
   permit icmp any any option-missing
-  ! likely IPv6
   permit icmp any any packet-too-big
   permit icmp any any parameter-problem
   permit icmp any any port-unreachable
