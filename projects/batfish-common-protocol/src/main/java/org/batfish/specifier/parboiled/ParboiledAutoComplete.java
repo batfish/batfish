@@ -69,6 +69,7 @@ public final class ParboiledAutoComplete {
               .map(InterfaceGroup::getName)
               .collect(ImmutableSet.toImmutableSet());
 
+  private final Grammar _grammar;
   private final Rule _inputRule;
   private final Map<String, Anchor.Type> _completionTypes;
 
@@ -92,6 +93,7 @@ public final class ParboiledAutoComplete {
       NodeRolesData nodeRolesData,
       ReferenceLibrary referenceLibrary) {
     this(
+        grammar,
         parser.getInputRule(grammar),
         completionTypes,
         network,
@@ -104,6 +106,7 @@ public final class ParboiledAutoComplete {
   }
 
   ParboiledAutoComplete(
+      Grammar grammar,
       Rule inputRule,
       Map<String, Anchor.Type> completionTypes,
       String network,
@@ -113,6 +116,7 @@ public final class ParboiledAutoComplete {
       CompletionMetadata completionMetadata,
       NodeRolesData nodeRolesData,
       ReferenceLibrary referenceLibrary) {
+    _grammar = grammar;
     _inputRule = inputRule;
     _completionTypes = completionTypes;
     _network = network;
@@ -141,6 +145,7 @@ public final class ParboiledAutoComplete {
     Parser parser = Parser.instance();
     return toAutoCompleteSuggestions(
         new ParboiledAutoComplete(
+                grammar,
                 parser.getInputRule(grammar),
                 Parser.ANCHORS,
                 network,
@@ -188,6 +193,8 @@ public final class ParboiledAutoComplete {
         return autoCompleteLiteral(pm);
       case EOI:
         return ImmutableSet.of();
+      case ENUM_SET_VALUE:
+        return autoCompleteEnumSetValue(pm);
       case FILTER_INTERFACE_IN:
       case FILTER_INTERFACE_OUT:
         // Should delegate to interface spec
@@ -287,6 +294,21 @@ public final class ParboiledAutoComplete {
       default:
         throw new IllegalArgumentException("Unhandled completion type " + pm.getAnchorType());
     }
+  }
+
+  /** Auto completes enum set values. */
+  private Set<ParboiledAutoCompleteSuggestion> autoCompleteEnumSetValue(PotentialMatch pm) {
+    String matchPrefix = unescapeIfNeeded(pm.getMatchPrefix(), pm.getAnchorType());
+
+    return updateSuggestions(
+        AutoCompleteUtils.stringAutoComplete(
+            matchPrefix,
+            Grammar.getEnumValues(_grammar).stream()
+                .map(Object::toString)
+                .collect(ImmutableSet.toImmutableSet())),
+        !matchPrefix.equals(pm.getMatchPrefix()),
+        Anchor.Type.ENUM_SET_VALUE,
+        pm.getMatchStartIndex());
   }
 
   private Set<ParboiledAutoCompleteSuggestion> autoCompleteLiteral(PotentialMatch pm) {

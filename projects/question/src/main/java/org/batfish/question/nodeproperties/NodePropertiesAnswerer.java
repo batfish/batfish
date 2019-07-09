@@ -47,8 +47,8 @@ public class NodePropertiesAnswerer extends Answerer {
                     prop ->
                         new ColumnMetadata(
                             getColumnName(prop),
-                            NodePropertySpecifier.JAVA_MAP.get(prop).getSchema(),
-                            NodePropertySpecifier.JAVA_MAP.get(prop).getDescription(),
+                            NodePropertySpecifier.getPropertyDescriptor(prop).getSchema(),
+                            NodePropertySpecifier.getPropertyDescriptor(prop).getDescription(),
                             false,
                             true))
                 .collect(Collectors.toList()))
@@ -103,7 +103,7 @@ public class NodePropertiesAnswerer extends Answerer {
 
       for (String property : propertySpecifier.getMatchingProperties()) {
         PropertySpecifier.fillProperty(
-            NodePropertySpecifier.JAVA_MAP.get(property),
+            NodePropertySpecifier.getPropertyDescriptor(property),
             ctxt.getConfigs().get(nodeName),
             property,
             row);

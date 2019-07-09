@@ -77,7 +77,7 @@ public class InterfacePropertySpecifier extends PropertySpecifier {
   public static final String VRRP_GROUPS = "VRRP_Groups";
   public static final String ZONE_NAME = "Zone_Name";
 
-  public static final Map<String, PropertyDescriptor<Interface>> JAVA_MAP =
+  private static final Map<String, PropertyDescriptor<Interface>> JAVA_MAP =
       new ImmutableMap.Builder<String, PropertyDescriptor<Interface>>()
           .put(
               ACCESS_VLAN,
@@ -308,6 +308,12 @@ public class InterfacePropertySpecifier extends PropertySpecifier {
 
   public static final InterfacePropertySpecifier ALL =
       new InterfacePropertySpecifier(JAVA_MAP.keySet());
+
+  /** Returns the property descriptor for {@code property} */
+  public static PropertyDescriptor<Interface> getPropertyDescriptor(String property) {
+    checkArgument(JAVA_MAP.containsKey(property), "Property " + property + " does not exist");
+    return JAVA_MAP.get(property);
+  }
 
   @Nonnull private final List<String> _properties;
 

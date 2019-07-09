@@ -54,13 +54,9 @@ public class ParserEnumSetTest {
   }
 
   private static ParboiledAutoComplete getPAC(String query, Grammar grammar) {
-    return getPAC(query, Grammar.getEnumValues(grammar));
-  }
-
-  private static ParboiledAutoComplete getPAC(String query, Collection<?> allValues) {
-    Parser parser = Parser.instance();
     return new ParboiledAutoComplete(
-        parser.input(parser.EnumSetSpec(allValues)),
+        grammar,
+        Parser.instance().getInputRule(grammar),
         Parser.ANCHORS,
         "network",
         "snapshot",
@@ -101,6 +97,7 @@ public class ParserEnumSetTest {
 
     Set<ParboiledAutoCompleteSuggestion> suggestions =
         new ParboiledAutoComplete(
+                Grammar.NAMED_STRUCTURE_SPECIFIER,
                 Parser.instance().getInputRule(Grammar.NAMED_STRUCTURE_SPECIFIER),
                 Parser.ANCHORS,
                 "network",
@@ -133,6 +130,7 @@ public class ParserEnumSetTest {
 
     Set<ParboiledAutoCompleteSuggestion> suggestions =
         new ParboiledAutoComplete(
+                Grammar.NAMED_STRUCTURE_SPECIFIER,
                 Parser.instance().getInputRule(Grammar.NAMED_STRUCTURE_SPECIFIER),
                 Parser.ANCHORS,
                 "network",
@@ -227,7 +225,7 @@ public class ParserEnumSetTest {
         equalTo(expectedNode));
   }
 
-  /* Test that application enums (which are not strings) work */
+  /** Test that application enums (which are not strings) work */
   @Test
   public void testApplication() {
     String query = "";
@@ -249,26 +247,40 @@ public class ParserEnumSetTest {
                 .collect(ImmutableSet.toImmutableSet())));
   }
 
-  /* Test that application enums (which are not strings) work */
+  /**
+   * Test that in enums where some options are substrings, we autocomplete to their super strings
+   * properly, instead of limiting ourselves to the first match.
+   */
   @Test
   public void testAutoCompleteSuperStrings() {
-    Collection<String> allValues = ImmutableList.of("long", "longer");
-
     assertThat(
-        getPAC("lo", allValues).run(),
+        getPAC("ht", Grammar.APPLICATION_SPECIFIER).run(),
         containsInAnyOrder(
-            new ParboiledAutoCompleteSuggestion("long", 0, Type.ENUM_SET_VALUE),
-            new ParboiledAutoCompleteSuggestion("longer", 0, Type.ENUM_SET_VALUE)));
+            new ParboiledAutoCompleteSuggestion(Protocol.HTTP.toString(), 0, Type.ENUM_SET_VALUE),
+            new ParboiledAutoCompleteSuggestion(
+                Protocol.HTTPS.toString(), 0, Type.ENUM_SET_VALUE)));
 
     assertThat(
-        getPAC("long", allValues).run(),
+        getPAC("http", Grammar.APPLICATION_SPECIFIER).run(),
         containsInAnyOrder(
             new ParboiledAutoCompleteSuggestion(",", 4, Type.ENUM_SET_SET_OP),
-            new ParboiledAutoCompleteSuggestion("longer", 0, Type.ENUM_SET_VALUE)));
+            new ParboiledAutoCompleteSuggestion(
+                Protocol.HTTPS.toString(), 0, Type.ENUM_SET_VALUE)));
 
     assertThat(
-        getPAC("longer", allValues).run(),
-        containsInAnyOrder(new ParboiledAutoCompleteSuggestion(",", 6, Type.ENUM_SET_SET_OP)));
+        getPAC("https", Grammar.APPLICATION_SPECIFIER).run(),
+        containsInAnyOrder(new ParboiledAutoCompleteSuggestion(",", 5, Type.ENUM_SET_SET_OP)));
+  }
+
+  /** Test that we auto complete properly when the query is a non-prefix substring */
+  @Test
+  public void testAutoCompleteNonPrefixSubstrings() {
+    assertThat(
+        getPAC("tt", Grammar.APPLICATION_SPECIFIER).run(),
+        containsInAnyOrder(
+            new ParboiledAutoCompleteSuggestion(Protocol.HTTP.toString(), 0, Type.ENUM_SET_VALUE),
+            new ParboiledAutoCompleteSuggestion(
+                Protocol.HTTPS.toString(), 0, Type.ENUM_SET_VALUE)));
   }
 
   /** Test that bgp peer properties are being parsed */

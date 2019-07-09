@@ -75,7 +75,7 @@ public class NodePropertySpecifier extends PropertySpecifier {
   public static final String VRFS = "VRFs";
   public static final String ZONES = "Zones";
 
-  public static Map<String, PropertyDescriptor<Configuration>> JAVA_MAP =
+  private static Map<String, PropertyDescriptor<Configuration>> JAVA_MAP =
       new ImmutableMap.Builder<String, PropertyDescriptor<Configuration>>()
           .put(
               AS_PATH_ACCESS_LISTS,
@@ -300,6 +300,12 @@ public class NodePropertySpecifier extends PropertySpecifier {
                   Schema.set(Schema.STRING),
                   "Names of firewall zones on the node"))
           .build();
+
+  /** Returns the property descriptor for {@code property} */
+  public static PropertyDescriptor<Configuration> getPropertyDescriptor(String property) {
+    checkArgument(JAVA_MAP.containsKey(property), "Property " + property + " does not exist");
+    return JAVA_MAP.get(property);
+  }
 
   public static final NodePropertySpecifier ALL = new NodePropertySpecifier(JAVA_MAP.keySet());
 

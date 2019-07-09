@@ -38,10 +38,7 @@ public class InterfacePropertySpecifierTest {
     // match everything
     assertThat(
         InterfacePropertySpecifier.create("/.*/").getMatchingProperties(),
-        equalTo(
-            InterfacePropertySpecifier.JAVA_MAP.keySet().stream()
-                .sorted()
-                .collect(ImmutableList.toImmutableList())));
+        equalTo(InterfacePropertySpecifier.ALL.getMatchingProperties()));
 
     // match the description
     assertThat(
@@ -51,7 +48,7 @@ public class InterfacePropertySpecifierTest {
 
   @Test
   public void testMatchingPropertiesSet() {
-    Iterator<String> i = InterfacePropertySpecifier.JAVA_MAP.keySet().iterator();
+    Iterator<String> i = InterfacePropertySpecifier.ALL.getMatchingProperties().iterator();
     String prop1 = i.next();
     String prop2 = i.next();
     Set<String> firstTwoProperties = ImmutableSet.of(prop1, prop2);
@@ -72,7 +69,9 @@ public class InterfacePropertySpecifierTest {
     Interface i1 = Interface.builder().setName("i1").setIncomingFilter(acl).build();
     i1.setInboundFilterName(acl.getName());
     assertThat(
-        InterfacePropertySpecifier.JAVA_MAP.get(INCOMING_FILTER_NAME).getGetter().apply(i1),
+        InterfacePropertySpecifier.getPropertyDescriptor(INCOMING_FILTER_NAME)
+            .getGetter()
+            .apply(i1),
         equalTo(acl.getName()));
   }
 }

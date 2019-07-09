@@ -89,9 +89,9 @@ public final class OspfInterfaceConfigurationAnswerer extends Answerer {
       columnMetadatas.add(
           new ColumnMetadata(
               property,
-              InterfacePropertySpecifier.JAVA_MAP.get(property).getSchema(),
+              InterfacePropertySpecifier.getPropertyDescriptor(property).getSchema(),
               firstNonNull(
-                  InterfacePropertySpecifier.JAVA_MAP.get(property).getDescription(),
+                  InterfacePropertySpecifier.getPropertyDescriptor(property).getDescription(),
                   "Property " + property),
               false,
               true));
@@ -164,7 +164,7 @@ public final class OspfInterfaceConfigurationAnswerer extends Answerer {
 
     for (String property : properties) {
       PropertyDescriptor<Interface> propertyDescriptor =
-          InterfacePropertySpecifier.JAVA_MAP.get(property);
+          InterfacePropertySpecifier.getPropertyDescriptor(property);
       try {
         PropertySpecifier.fillProperty(propertyDescriptor, iface, property, rowBuilder);
       } catch (ClassCastException e) {

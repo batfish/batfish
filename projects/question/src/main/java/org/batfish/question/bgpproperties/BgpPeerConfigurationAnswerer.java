@@ -91,8 +91,8 @@ public class BgpPeerConfigurationAnswerer extends Answerer {
                     prop ->
                         new ColumnMetadata(
                             getColumnName(prop),
-                            BgpPeerPropertySpecifier.JAVA_MAP.get(prop).getSchema(),
-                            BgpPeerPropertySpecifier.JAVA_MAP.get(prop).getDescription(),
+                            BgpPeerPropertySpecifier.getPropertyDescriptor(prop).getSchema(),
+                            BgpPeerPropertySpecifier.getPropertyDescriptor(prop).getDescription(),
                             false,
                             true)));
     columnMetadatas.put(COL_NODE, new ColumnMetadata(COL_NODE, Schema.NODE, "Node", true, false));
@@ -198,7 +198,7 @@ public class BgpPeerConfigurationAnswerer extends Answerer {
 
     for (String property : propertySpecifier.getMatchingProperties()) {
       PropertyDescriptor<BgpPeerConfig> propertyDescriptor =
-          BgpPeerPropertySpecifier.JAVA_MAP.get(property);
+          BgpPeerPropertySpecifier.getPropertyDescriptor(property);
       try {
         PropertySpecifier.fillProperty(propertyDescriptor, peer, property, rowBuilder);
       } catch (ClassCastException e) {

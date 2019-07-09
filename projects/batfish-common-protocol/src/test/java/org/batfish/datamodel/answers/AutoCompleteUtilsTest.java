@@ -11,22 +11,26 @@ import static org.batfish.datamodel.Protocol.HTTPS;
 import static org.batfish.datamodel.Protocol.SSH;
 import static org.batfish.datamodel.answers.AutoCompleteUtils.orderSuggestions;
 import static org.batfish.datamodel.answers.AutoCompleteUtils.stringAutoComplete;
+import static org.batfish.datamodel.questions.BgpPeerPropertySpecifier.IS_PASSIVE;
 import static org.batfish.datamodel.questions.BgpPeerPropertySpecifier.LOCAL_AS;
-import static org.batfish.datamodel.questions.BgpPeerPropertySpecifier.LOCAL_IP;
+import static org.batfish.datamodel.questions.BgpPeerPropertySpecifier.REMOTE_AS;
 import static org.batfish.datamodel.questions.BgpProcessPropertySpecifier.MULTIPATH_EBGP;
 import static org.batfish.datamodel.questions.BgpProcessPropertySpecifier.MULTIPATH_EQUIVALENT_AS_PATH_MATCH_MODE;
 import static org.batfish.datamodel.questions.BgpProcessPropertySpecifier.MULTIPATH_IBGP;
 import static org.batfish.datamodel.questions.ConfiguredSessionStatus.DYNAMIC_MATCH;
 import static org.batfish.datamodel.questions.ConfiguredSessionStatus.NO_MATCH_FOUND;
 import static org.batfish.datamodel.questions.ConfiguredSessionStatus.UNIQUE_MATCH;
-import static org.batfish.datamodel.questions.InterfacePropertySpecifier.VRRP_GROUPS;
+import static org.batfish.datamodel.questions.InterfacePropertySpecifier.ACCESS_VLAN;
+import static org.batfish.datamodel.questions.InterfacePropertySpecifier.ALLOWED_VLANS;
+import static org.batfish.datamodel.questions.InterfacePropertySpecifier.AUTO_STATE_VLAN;
+import static org.batfish.datamodel.questions.InterfacePropertySpecifier.ENCAPSULATION_VLAN;
+import static org.batfish.datamodel.questions.InterfacePropertySpecifier.NATIVE_VLAN;
 import static org.batfish.datamodel.questions.IpsecSessionStatus.IKE_PHASE1_FAILED;
 import static org.batfish.datamodel.questions.IpsecSessionStatus.IKE_PHASE1_KEY_MISMATCH;
 import static org.batfish.datamodel.questions.IpsecSessionStatus.IPSEC_PHASE2_FAILED;
 import static org.batfish.datamodel.questions.NamedStructurePropertySpecifier.IKE_PHASE1_KEYS;
 import static org.batfish.datamodel.questions.NamedStructurePropertySpecifier.IKE_PHASE1_POLICIES;
 import static org.batfish.datamodel.questions.NamedStructurePropertySpecifier.IKE_PHASE1_PROPOSALS;
-import static org.batfish.datamodel.questions.NamedStructurePropertySpecifier.VRF;
 import static org.batfish.datamodel.questions.NodePropertySpecifier.DNS_SERVERS;
 import static org.batfish.datamodel.questions.NodePropertySpecifier.DNS_SOURCE_INTERFACE;
 import static org.batfish.datamodel.questions.OspfPropertySpecifier.AREAS;
@@ -159,10 +163,10 @@ public class AutoCompleteUtilsTest {
   @Test
   public void testBgpPeerPropertySpecAutocomplete() {
     assertThat(
-        AutoCompleteUtils.autoComplete(Type.BGP_PEER_PROPERTY_SPEC, "local", 5).stream()
+        AutoCompleteUtils.autoComplete(Type.BGP_PEER_PROPERTY_SPEC, "as", 5).stream()
             .map(AutocompleteSuggestion::getText)
             .collect(Collectors.toSet()),
-        equalTo(ImmutableSet.of(LOCAL_AS, LOCAL_IP)));
+        equalTo(ImmutableSet.of(LOCAL_AS, IS_PASSIVE, REMOTE_AS)));
   }
 
   @Test
@@ -319,7 +323,9 @@ public class AutoCompleteUtilsTest {
         AutoCompleteUtils.autoComplete(Type.INTERFACE_PROPERTY_SPEC, "vlan", 5).stream()
             .map(AutocompleteSuggestion::getText)
             .collect(Collectors.toSet()),
-        equalTo(ImmutableSet.of(VRF, VRRP_GROUPS)));
+        equalTo(
+            ImmutableSet.of(
+                ACCESS_VLAN, ALLOWED_VLANS, AUTO_STATE_VLAN, ENCAPSULATION_VLAN, NATIVE_VLAN)));
   }
 
   @Test

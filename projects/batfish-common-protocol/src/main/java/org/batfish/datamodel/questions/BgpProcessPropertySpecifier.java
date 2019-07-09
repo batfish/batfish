@@ -46,7 +46,7 @@ public class BgpProcessPropertySpecifier extends PropertySpecifier {
   public static final String ROUTE_REFLECTOR = "Route_Reflector";
   public static final String TIE_BREAKER = "Tie_Breaker";
 
-  public static final Map<String, PropertyDescriptor<BgpProcess>> JAVA_MAP =
+  private static final Map<String, PropertyDescriptor<BgpProcess>> JAVA_MAP =
       new ImmutableMap.Builder<String, PropertyDescriptor<BgpProcess>>()
           .put(
               ROUTE_REFLECTOR,
@@ -98,6 +98,12 @@ public class BgpProcessPropertySpecifier extends PropertySpecifier {
                           .collect(Collectors.joining(", "))
                       + ")"))
           .build();
+
+  /** Returns the property descriptor for {@code property} */
+  public static PropertyDescriptor<BgpProcess> getPropertyDescriptor(String property) {
+    checkArgument(JAVA_MAP.containsKey(property), "Property " + property + " does not exist");
+    return JAVA_MAP.get(property);
+  }
 
   /** A {@link BgpProcessPropertySpecifier} that matches all BGP properties. */
   public static final BgpProcessPropertySpecifier ALL =

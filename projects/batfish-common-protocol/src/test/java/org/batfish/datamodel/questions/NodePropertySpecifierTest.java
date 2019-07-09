@@ -25,7 +25,7 @@ public class NodePropertySpecifierTest {
 
   @Test
   public void testMatchingPropertiesSet() {
-    Iterator<String> i = NodePropertySpecifier.JAVA_MAP.keySet().iterator();
+    Iterator<String> i = NodePropertySpecifier.ALL.getMatchingProperties().iterator();
     String prop1 = i.next();
     String prop2 = i.next();
     Set<String> firstTwoProperties = ImmutableSet.of(prop1, prop2);

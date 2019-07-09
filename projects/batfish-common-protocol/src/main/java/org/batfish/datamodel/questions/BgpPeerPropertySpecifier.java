@@ -50,7 +50,7 @@ public class BgpPeerPropertySpecifier extends PropertySpecifier {
   public static final String EXPORT_POLICY = "Export_Policy";
   public static final String SEND_COMMUNITY = "Send_Community";
 
-  public static final Map<String, PropertyDescriptor<BgpPeerConfig>> JAVA_MAP =
+  private static final Map<String, PropertyDescriptor<BgpPeerConfig>> JAVA_MAP =
       new ImmutableMap.Builder<String, PropertyDescriptor<BgpPeerConfig>>()
           .put(
               LOCAL_AS,
@@ -123,6 +123,12 @@ public class BgpPeerPropertySpecifier extends PropertySpecifier {
                   Schema.BOOLEAN,
                   "Whether this peer propagates communities"))
           .build();
+
+  /** Returns the property descriptor for {@code property} */
+  public static PropertyDescriptor<BgpPeerConfig> getPropertyDescriptor(String property) {
+    checkArgument(JAVA_MAP.containsKey(property), "Property " + property + " does not exist");
+    return JAVA_MAP.get(property);
+  }
 
   /** A {@link BgpPeerPropertySpecifier} that matches all BGP properties. */
   public static final BgpPeerPropertySpecifier ALL =
