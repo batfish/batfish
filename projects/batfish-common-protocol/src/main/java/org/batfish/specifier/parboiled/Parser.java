@@ -127,6 +127,8 @@ public class Parser extends CommonParser {
         return input(NodeSpec());
       case ROUTING_POLICY_SPECIFIER:
         return input(RoutingPolicySpec());
+      case VXLAN_VNI_PROPERTY_SPECIFIER:
+        return input(EnumSetSpec(Grammar.getEnumValues(grammar)));
       default:
         throw new IllegalArgumentException(
             "Main grammar rule not defined for " + grammar.getFriendlyName());

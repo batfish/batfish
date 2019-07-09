@@ -683,7 +683,7 @@ public class Client extends AbstractClient implements IClient {
           throw new BatfishException(
               String.format("A Batfish %s must be a JSON string", expectedType.getName()));
         }
-        new VxlanVniPropertySpecifier(value.textValue());
+        VxlanVniPropertySpecifier.create(value.textValue());
         break;
       case ZONE:
         if (!value.isTextual()) {
