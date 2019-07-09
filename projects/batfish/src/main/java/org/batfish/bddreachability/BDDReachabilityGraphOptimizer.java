@@ -13,12 +13,12 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Table;
-import com.google.common.collect.Tables;
 import java.util.ArrayDeque;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Queue;
 import java.util.Set;
+import java.util.function.BiFunction;
 import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 import org.batfish.bddreachability.transition.AddLastHopConstraint;
@@ -119,8 +119,9 @@ public class BDDReachabilityGraphOptimizer {
   private void optimize() {
     // A big first pass to delete roots and leaves, since that operation does not require expensive
     // transition merges.
-    _rootsPruned = pruneAllRoots(_postStates, _preStates, _edges, _statesToKeep);
-    _leavesPruned = pruneAllRoots(_preStates, _postStates, Tables.transpose(_edges), _statesToKeep);
+    _rootsPruned = pruneAllRoots(_postStates, _preStates, _edges::remove, _statesToKeep);
+    _leavesPruned =
+        pruneAllRoots(_preStates, _postStates, (a, b) -> _edges.remove(b, a), _statesToKeep);
 
     Set<StateExpr> candidateSet = new HashSet<>();
     candidateSet.addAll(_preStates.keySet());
@@ -174,14 +175,14 @@ public class BDDReachabilityGraphOptimizer {
       StateExpr root,
       Multimap<StateExpr, StateExpr> postStates,
       Multimap<StateExpr, StateExpr> preStates,
-      Table<StateExpr, StateExpr, Transition> edgeTable,
+      BiFunction<StateExpr, StateExpr, Transition> removeEdge,
       Set<StateExpr> statesToKeep) {
     assert !statesToKeep.contains(root);
     assert !preStates.containsKey(root);
 
     Collection<StateExpr> successors = postStates.removeAll(root);
     for (StateExpr successor : successors) {
-      edgeTable.remove(root, successor);
+      removeEdge.apply(root, successor);
       preStates.remove(successor, root);
     }
     // We deleted an edge from each successor. If this was the only edge attached to it, that state
@@ -200,7 +201,7 @@ public class BDDReachabilityGraphOptimizer {
   private static int pruneAllRoots(
       Multimap<StateExpr, StateExpr> postStates,
       Multimap<StateExpr, StateExpr> preStates,
-      Table<StateExpr, StateExpr, Transition> edgeTable,
+      BiFunction<StateExpr, StateExpr, Transition> removeEdge,
       Set<StateExpr> statesToKeep) {
     int count = 0;
     Collection<StateExpr> roots =
@@ -211,7 +212,7 @@ public class BDDReachabilityGraphOptimizer {
       count += roots.size();
       roots =
           roots.stream()
-              .map(s -> pruneRoot(s, postStates, preStates, edgeTable, statesToKeep))
+              .map(s -> pruneRoot(s, postStates, preStates, removeEdge, statesToKeep))
               .flatMap(Collection::stream)
               .filter(s -> !statesToKeep.contains(s) && !preStates.containsKey(s))
               .collect(Collectors.toSet());
@@ -227,12 +228,13 @@ public class BDDReachabilityGraphOptimizer {
 
     if (!_preStates.containsKey(candidate)) {
       ++_rootsPruned;
-      return pruneRoot(candidate, _postStates, _preStates, _edges, _statesToKeep);
+      return pruneRoot(candidate, _postStates, _preStates, _edges::remove, _statesToKeep);
     }
 
     if (!_postStates.containsKey(candidate)) {
       ++_leavesPruned;
-      return pruneRoot(candidate, _preStates, _postStates, Tables.transpose(_edges), _statesToKeep);
+      return pruneRoot(
+          candidate, _preStates, _postStates, (a, b) -> _edges.remove(b, a), _statesToKeep);
     }
 
     Collection<StateExpr> inStates = _preStates.get(candidate);
