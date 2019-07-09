@@ -588,6 +588,10 @@ public final class CumulusNcluGrammarTest {
     assertThat(
         c, hasInterface("bond3", hasAddress(ConcreteInterfaceAddress.parse("192.0.2.1/24"))));
     assertThat(c, hasInterface("bond3", hasVrfName("vrf1")));
+
+    // bond 4 & 5
+    assertThat(c, hasInterface("bond4", hasAccessVlan(5)));
+    assertThat(c, hasInterface("bond5", hasAccessVlan(5)));
   }
 
   @Test
@@ -596,11 +600,11 @@ public final class CumulusNcluGrammarTest {
     String bond1Name = "bond1";
     String bond2Name = "bond2";
     String bond3Name = "bond3";
+    String bond4Name = "bond4";
+    String bond5Name = "bond5";
 
     String[] expectedSlaves =
-        new String[] {
-          "swp1", "swp2", "swp3", "swp4", "swp5", "swp6", "swp7", "swp8",
-        };
+        new String[] {"swp1", "swp2", "swp3", "swp4", "swp5", "swp6", "swp7", "swp8"};
 
     // referenced interfaces should have been created
     assertThat(vc.getInterfaces().keySet(), containsInAnyOrder(expectedSlaves));
@@ -608,7 +612,7 @@ public final class CumulusNcluGrammarTest {
     assertThat(
         "Ensure bonds were extracted",
         vc.getBonds().keySet(),
-        containsInAnyOrder(bond1Name, bond2Name, bond3Name));
+        containsInAnyOrder(bond1Name, bond2Name, bond3Name, bond4Name, bond5Name));
 
     Bond bond1 = vc.getBonds().get(bond1Name);
     Bond bond2 = vc.getBonds().get(bond2Name);
