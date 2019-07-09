@@ -11,6 +11,7 @@ import java.util.Collection;
 import java.util.Set;
 import java.util.stream.Stream;
 import org.batfish.common.CompletionMetadata;
+import org.batfish.datamodel.BgpSessionProperties.SessionType;
 import org.batfish.datamodel.Protocol;
 import org.batfish.datamodel.questions.BgpPeerPropertySpecifier;
 import org.batfish.datamodel.questions.BgpProcessPropertySpecifier;
@@ -299,6 +300,14 @@ public class ParserEnumSetTest {
         BgpProcessPropertySpecifier.ROUTE_REFLECTOR,
         BgpProcessPropertySpecifier.TIE_BREAKER,
         Grammar.BGP_PROCESS_PROPERTY_SPECIFIER);
+  }
+
+  @Test
+  public void testParseBgpSessionType() {
+    testParseOtherProperties(
+        SessionType.EBGP_SINGLEHOP.toString(),
+        SessionType.EBGP_MULTIHOP.toString(),
+        Grammar.BGP_SESSION_TYPE_SPECIFIER);
   }
 
   /** Test that interface properties are being parsed */

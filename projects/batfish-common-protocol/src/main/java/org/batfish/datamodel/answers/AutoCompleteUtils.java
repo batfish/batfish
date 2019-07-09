@@ -24,7 +24,6 @@ import javax.annotation.ParametersAreNonnullByDefault;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.text.similarity.LevenshteinDistance;
 import org.batfish.common.CompletionMetadata;
-import org.batfish.datamodel.BgpSessionProperties.SessionType;
 import org.batfish.datamodel.FlowState;
 import org.batfish.datamodel.InterfaceType;
 import org.batfish.datamodel.Protocol;
@@ -299,14 +298,18 @@ public final class AutoCompleteUtils {
             break;
           }
         case BGP_SESSION_TYPE:
+        case BGP_SESSION_TYPE_SPEC:
           {
             suggestions =
-                baseAutoComplete(
+                ParboiledAutoComplete.autoComplete(
+                    Grammar.BGP_SESSION_TYPE_SPECIFIER,
+                    network,
+                    snapshot,
                     query,
-                    Stream.of(SessionType.values())
-                        .map(SessionType::name)
-                        .collect(Collectors.toSet()));
-
+                    maxSuggestions,
+                    completionMetadata,
+                    nodeRolesData,
+                    referenceLibrary);
             break;
           }
         case DISPOSITION_SPEC:

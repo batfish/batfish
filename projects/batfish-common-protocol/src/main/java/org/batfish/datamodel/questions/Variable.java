@@ -32,7 +32,9 @@ public class Variable {
     BGP_PROCESS_PROPERTY_SPEC("bgpProcessPropertySpec", true),
     BGP_ROUTES("bgpRoutes", false),
     BGP_SESSION_STATUS("bgpSessionStatus", true),
+    /** A synonym for bgpSessionTypeSpec -- kept around for backwards compatibility */
     BGP_SESSION_TYPE("bgpSessionType", true),
+    BGP_SESSION_TYPE_SPEC("bgpSessionTypeSpec", true),
     BOOLEAN("boolean", false),
     COMPARATOR("comparator", true),
     DOUBLE("double", false),

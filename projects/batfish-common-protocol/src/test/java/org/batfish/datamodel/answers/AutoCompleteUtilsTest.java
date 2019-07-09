@@ -194,7 +194,7 @@ public class AutoCompleteUtilsTest {
   @Test
   public void testBgpSessionTypeAutocomplete() {
     assertThat(
-        AutoCompleteUtils.autoComplete(Type.BGP_SESSION_TYPE, "bgp", 10).stream()
+        AutoCompleteUtils.autoComplete(Type.BGP_SESSION_TYPE_SPEC, "bgp", 10).stream()
             .map(AutocompleteSuggestion::getText)
             .collect(Collectors.toSet()),
         equalTo(
