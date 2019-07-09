@@ -40342,8 +40342,10 @@
             "      ADD:'add'",
             "      (a_bond",
             "        BOND:'bond'",
-            "        (word",
-            "          NUMBERED_WORD:'bond1')",
+            "        bonds = (glob",
+            "          (glob_range_set",
+            "            base_word = (numbered_word",
+            "              NUMBERED_WORD:'bond1')))",
             "        (bond_bond",
             "          BOND:'bond'",
             "          (bobo_slaves",
@@ -40383,8 +40385,10 @@
             "      ADD:'add'",
             "      (a_bond",
             "        BOND:'bond'",
-            "        (word",
-            "          NUMBERED_WORD:'bond1')",
+            "        bonds = (glob",
+            "          (glob_range_set",
+            "            base_word = (numbered_word",
+            "              NUMBERED_WORD:'bond1')))",
             "        (bond_bridge",
             "          BRIDGE:'bridge'",
             "          (bob_access",
@@ -40398,8 +40402,10 @@
             "      ADD:'add'",
             "      (a_bond",
             "        BOND:'bond'",
-            "        (word",
-            "          NUMBERED_WORD:'bond2')",
+            "        bonds = (glob",
+            "          (glob_range_set",
+            "            base_word = (numbered_word",
+            "              NUMBERED_WORD:'bond2')))",
             "        (bond_bridge",
             "          BRIDGE:'bridge'",
             "          (bob_pvid",
@@ -40413,8 +40419,10 @@
             "      ADD:'add'",
             "      (a_bond",
             "        BOND:'bond'",
-            "        (word",
-            "          NUMBERED_WORD:'bond2')",
+            "        bonds = (glob",
+            "          (glob_range_set",
+            "            base_word = (numbered_word",
+            "              NUMBERED_WORD:'bond2')))",
             "        (bond_bridge",
             "          BRIDGE:'bridge'",
             "          (bob_vids",
@@ -40522,8 +40530,10 @@
             "      ADD:'add'",
             "      (a_bond",
             "        BOND:'bond'",
-            "        (word",
-            "          NUMBERED_WORD:'bond1')",
+            "        bonds = (glob",
+            "          (glob_range_set",
+            "            base_word = (numbered_word",
+            "              NUMBERED_WORD:'bond1')))",
             "        (bond_clag_id",
             "          CLAG:'clag'",
             "          ID:'id'",
@@ -41890,8 +41900,10 @@
             "      ADD:'add'",
             "      (a_bond",
             "        BOND:'bond'",
-            "        (word",
-            "          WORD:'AGG')",
+            "        bonds = (glob",
+            "          (glob_range_set",
+            "            unnumbered = (glob_word",
+            "              WORD:'AGG')))",
             "        (bond_bond",
             "          BOND:'bond'",
             "          (bobo_slaves",
@@ -41910,8 +41922,10 @@
             "      ADD:'add'",
             "      (a_bond",
             "        BOND:'bond'",
-            "        (word",
-            "          WORD:'AGG')",
+            "        bonds = (glob",
+            "          (glob_range_set",
+            "            unnumbered = (glob_word",
+            "              WORD:'AGG')))",
             "        (bond_mtu",
             "          MTU:'mtu'",
             "          mtu = (uint16",
@@ -41923,36 +41937,15 @@
             "      ADD:'add'",
             "      (a_bond",
             "        BOND:'bond'",
-            "        (word",
-            "          WORD:'AGG')",
+            "        bonds = (glob",
+            "          (glob_range_set",
+            "            unnumbered = (glob_word",
+            "              WORD:'AGG')))",
             "        (bond_bridge",
             "          BRIDGE:'bridge'",
             "          (bob_learning",
             "            LEARNING:'learning'",
             "            OFF:'off'",
-            "            NEWLINE:'\\n')))))",
-            "  (statement",
-            "    (s_net_add",
-            "      NET:'net'",
-            "      ADD:'add'",
-            "      (a_bond",
-            "        BOND:'bond'",
-            "        (word",
-            "          NUMBERED_WORD:'B1')",
-            "        COMMA:','",
-            "        (word",
-            "          NUMBERED_WORD:'B2')",
-            "        (bond_bond",
-            "          BOND:'bond'",
-            "          (bobo_slaves",
-            "            SLAVES:'slaves'",
-            "            slaves = (glob",
-            "              (glob_range_set",
-            "                base_word = (numbered_word",
-            "                  NUMBERED_WORD:'swp1')",
-            "                DASH:'-'",
-            "                first_interval_end = (uint32",
-            "                  d = DEC:'10')))",
             "            NEWLINE:'\\n\\n')))))",
             "  EOF:<EOF>)"
           ]
@@ -42223,8 +42216,10 @@
             "      ADD:'add'",
             "      (a_bond",
             "        BOND:'bond'",
-            "        (word",
-            "          LO:'lo')",
+            "        bonds = (glob",
+            "          (glob_range_set",
+            "            unnumbered = (glob_word",
+            "              LO:'lo')))",
             "        (bond_bond",
             "          BOND:'bond'",
             "          (bobo_slaves",
@@ -42251,8 +42246,10 @@
             "      ADD:'add'",
             "      (a_bond",
             "        BOND:'bond'",
-            "        (word",
-            "          NUMBERED_WORD:'vrf1')",
+            "        bonds = (glob",
+            "          (glob_range_set",
+            "            base_word = (numbered_word",
+            "              NUMBERED_WORD:'vrf1')))",
             "        (bond_bond",
             "          BOND:'bond'",
             "          (bobo_slaves",
@@ -42268,8 +42265,10 @@
             "      ADD:'add'",
             "      (a_bond",
             "        BOND:'bond'",
-            "        (word",
-            "          NUMBERED_WORD:'eth0')",
+            "        bonds = (glob",
+            "          (glob_range_set",
+            "            base_word = (numbered_word",
+            "              NUMBERED_WORD:'eth0')))",
             "        (bond_bond",
             "          BOND:'bond'",
             "          (bobo_slaves",
@@ -42285,8 +42284,10 @@
             "      ADD:'add'",
             "      (a_bond",
             "        BOND:'bond'",
-            "        (word",
-            "          NUMBERED_WORD:'swp4')",
+            "        bonds = (glob",
+            "          (glob_range_set",
+            "            base_word = (numbered_word",
+            "              NUMBERED_WORD:'swp4')))",
             "        (bond_bond",
             "          BOND:'bond'",
             "          (bobo_slaves",
@@ -42302,8 +42303,10 @@
             "      ADD:'add'",
             "      (a_bond",
             "        BOND:'bond'",
-            "        (word",
-            "          NUMBERED_WORD:'bond1.1000')",
+            "        bonds = (glob",
+            "          (glob_range_set",
+            "            base_word = (numbered_word",
+            "              NUMBERED_WORD:'bond1.1000')))",
             "        (bond_bond",
             "          BOND:'bond'",
             "          (bobo_slaves",
@@ -42319,8 +42322,10 @@
             "      ADD:'add'",
             "      (a_bond",
             "        BOND:'bond'",
-            "        (word",
-            "          NUMBERED_WORD:'vlan1')",
+            "        bonds = (glob",
+            "          (glob_range_set",
+            "            base_word = (numbered_word",
+            "              NUMBERED_WORD:'vlan1')))",
             "        (bond_bond",
             "          BOND:'bond'",
             "          (bobo_slaves",
@@ -42353,8 +42358,10 @@
             "      ADD:'add'",
             "      (a_bond",
             "        BOND:'bond'",
-            "        (word",
-            "          NUMBERED_WORD:'v1')",
+            "        bonds = (glob",
+            "          (glob_range_set",
+            "            base_word = (numbered_word",
+            "              NUMBERED_WORD:'v1')))",
             "        (bond_bond",
             "          BOND:'bond'",
             "          (bobo_slaves",
@@ -42369,7 +42376,7 @@
             "      NET:'net'",
             "      (null_rest_of_line",
             "        COMMIT:'commit'",
-            "        NEWLINE:'\\n\\n\\n')))",
+            "        NEWLINE:'\\n\\n')))",
             "  EOF:<EOF>)"
           ]
         },
@@ -42398,8 +42405,10 @@
             "      ADD:'add'",
             "      (a_bond",
             "        BOND:'bond'",
-            "        (word",
-            "          NUMBERED_WORD:'bond1')",
+            "        bonds = (glob",
+            "          (glob_range_set",
+            "            base_word = (numbered_word",
+            "              NUMBERED_WORD:'bond1')))",
             "        (bond_bond",
             "          BOND:'bond'",
             "          (bobo_slaves",
@@ -42586,8 +42595,10 @@
             "      ADD:'add'",
             "      (a_bond",
             "        BOND:'bond'",
-            "        (word",
-            "          NUMBERED_WORD:'bond1')",
+            "        bonds = (glob",
+            "          (glob_range_set",
+            "            base_word = (numbered_word",
+            "              NUMBERED_WORD:'bond1')))",
             "        (bond_bond",
             "          BOND:'bond'",
             "          (bobo_slaves",
@@ -42731,8 +42742,10 @@
             "      ADD:'add'",
             "      (a_bond",
             "        BOND:'bond'",
-            "        (word",
-            "          NUMBERED_WORD:'bond1')",
+            "        bonds = (glob",
+            "          (glob_range_set",
+            "            base_word = (numbered_word",
+            "              NUMBERED_WORD:'bond1')))",
             "        (bond_bond",
             "          BOND:'bond'",
             "          (bobo_slaves",
@@ -74803,14 +74816,6 @@
             }
           ]
         },
-        "configs/cumulus_nclu_bond" : {
-          "Red flags" : [
-            {
-              "tag" : "MISCELLANEOUS",
-              "text" : "Cannot assign slaves to more than one bond. Using the first bond: B1"
-            }
-          ]
-        },
         "configs/cumulus_nclu_invalid_bonds" : {
           "Red flags" : [
             {
@@ -79596,18 +79601,6 @@
                 5
               ],
               "numReferrers" : 1
-            },
-            "B1" : {
-              "definitionLines" : [
-                8
-              ],
-              "numReferrers" : 1
-            },
-            "B2" : {
-              "definitionLines" : [
-                8
-              ],
-              "numReferrers" : 1
             }
           },
           "interface" : {
@@ -79615,61 +79608,61 @@
               "definitionLines" : [
                 5
               ],
-              "numReferrers" : 2
+              "numReferrers" : 1
             },
             "swp10" : {
               "definitionLines" : [
                 5
               ],
-              "numReferrers" : 2
+              "numReferrers" : 1
             },
             "swp2" : {
               "definitionLines" : [
                 5
               ],
-              "numReferrers" : 2
+              "numReferrers" : 1
             },
             "swp3" : {
               "definitionLines" : [
                 5
               ],
-              "numReferrers" : 2
+              "numReferrers" : 1
             },
             "swp4" : {
               "definitionLines" : [
                 5
               ],
-              "numReferrers" : 2
+              "numReferrers" : 1
             },
             "swp5" : {
               "definitionLines" : [
                 5
               ],
-              "numReferrers" : 2
+              "numReferrers" : 1
             },
             "swp6" : {
               "definitionLines" : [
                 5
               ],
-              "numReferrers" : 2
+              "numReferrers" : 1
             },
             "swp7" : {
               "definitionLines" : [
                 5
               ],
-              "numReferrers" : 2
+              "numReferrers" : 1
             },
             "swp8" : {
               "definitionLines" : [
                 5
               ],
-              "numReferrers" : 2
+              "numReferrers" : 1
             },
             "swp9" : {
               "definitionLines" : [
                 5
               ],
-              "numReferrers" : 2
+              "numReferrers" : 1
             }
           }
         },
@@ -79684,50 +79677,6 @@
           }
         },
         "configs/cumulus_nclu_invalid_bonds" : {
-          "interface" : {
-            "swp1" : {
-              "definitionLines" : [
-                6
-              ],
-              "numReferrers" : 1
-            },
-            "swp2" : {
-              "definitionLines" : [
-                9
-              ],
-              "numReferrers" : 1
-            },
-            "swp3" : {
-              "definitionLines" : [
-                11
-              ],
-              "numReferrers" : 1
-            },
-            "swp5" : {
-              "definitionLines" : [
-                12
-              ],
-              "numReferrers" : 1
-            },
-            "swp6" : {
-              "definitionLines" : [
-                14
-              ],
-              "numReferrers" : 1
-            },
-            "swp7" : {
-              "definitionLines" : [
-                16
-              ],
-              "numReferrers" : 1
-            },
-            "swp8" : {
-              "definitionLines" : [
-                19
-              ],
-              "numReferrers" : 1
-            }
-          },
           "vrf" : {
             "vrf1" : {
               "definitionLines" : [
@@ -86774,77 +86723,57 @@
               "bond self-reference" : [
                 5
               ]
-            },
-            "B1" : {
-              "bond self-reference" : [
-                8
-              ]
-            },
-            "B2" : {
-              "bond self-reference" : [
-                8
-              ]
             }
           },
           "interface" : {
             "swp1" : {
               "bond slave" : [
-                5,
-                8
+                5
               ]
             },
             "swp10" : {
               "bond slave" : [
-                5,
-                8
+                5
               ]
             },
             "swp2" : {
               "bond slave" : [
-                5,
-                8
+                5
               ]
             },
             "swp3" : {
               "bond slave" : [
-                5,
-                8
+                5
               ]
             },
             "swp4" : {
               "bond slave" : [
-                5,
-                8
+                5
               ]
             },
             "swp5" : {
               "bond slave" : [
-                5,
-                8
+                5
               ]
             },
             "swp6" : {
               "bond slave" : [
-                5,
-                8
+                5
               ]
             },
             "swp7" : {
               "bond slave" : [
-                5,
-                8
+                5
               ]
             },
             "swp8" : {
               "bond slave" : [
-                5,
-                8
+                5
               ]
             },
             "swp9" : {
               "bond slave" : [
-                5,
-                8
+                5
               ]
             }
           }
@@ -86871,43 +86800,6 @@
           }
         },
         "configs/cumulus_nclu_invalid_bonds" : {
-          "interface" : {
-            "swp1" : {
-              "bond slave" : [
-                6
-              ]
-            },
-            "swp2" : {
-              "bond slave" : [
-                9
-              ]
-            },
-            "swp3" : {
-              "bond slave" : [
-                11
-              ]
-            },
-            "swp5" : {
-              "bond slave" : [
-                12
-              ]
-            },
-            "swp6" : {
-              "bond slave" : [
-                14
-              ]
-            },
-            "swp7" : {
-              "bond slave" : [
-                16
-              ]
-            },
-            "swp8" : {
-              "bond slave" : [
-                19
-              ]
-            }
-          },
           "vrf" : {
             "vrf1" : {
               "vrf self-reference" : [

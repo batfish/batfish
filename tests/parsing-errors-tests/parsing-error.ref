@@ -6,6 +6,7 @@
         "configs/as1r1.cfg" : "FAILED",
         "configs/as1r2.cfg" : "PASSED",
         "configs/as2r1.cfg" : "PASSED",
+        "configs/cumulus_nclu_invalid_bonds" : "FAILED",
         "configs/cumulus_nclu_range" : "FAILED"
       }
     }

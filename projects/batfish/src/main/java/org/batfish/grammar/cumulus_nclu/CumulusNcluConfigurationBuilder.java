@@ -581,8 +581,7 @@ public class CumulusNcluConfigurationBuilder extends CumulusNcluParserBaseListen
 
   @Override
   public void enterA_bond(A_bondContext ctx) {
-    List<String> names =
-        ctx.bonds.stream().map(this::getFullText).collect(ImmutableList.toImmutableList());
+    Set<String> names = toStrings(ctx.bonds);
     int line = ctx.getStart().getLine();
     _currentBonds = new LinkedList<>();
     for (String name : names) {
@@ -1054,19 +1053,15 @@ public class CumulusNcluConfigurationBuilder extends CumulusNcluParserBaseListen
 
   @Override
   public void exitBobo_slaves(Bobo_slavesContext ctx) {
-    // init slaves regardless of whether bond is present
-    Set<String> slaves = toStrings(ctx.slaves);
-    List<Interface> interfaces =
-        initInterfacesIfAbsent(slaves, ctx, CumulusStructureUsage.BOND_SLAVE);
     if (_currentBonds.isEmpty()) {
       return;
     }
     if (_currentBonds.size() > 1) {
-      _w.redFlag(
-          String.format(
-              "Cannot assign slaves to more than one bond. Using the first bond: %s",
-              _currentBonds.get(0).getName()));
+      throw new WillNotCommitException("Cannot assign slaves to more than one bond");
     }
+    Set<String> slaves = toStrings(ctx.slaves);
+    List<Interface> interfaces =
+        initInterfacesIfAbsent(slaves, ctx, CumulusStructureUsage.BOND_SLAVE);
     Bond b = _currentBonds.get(0);
     b.setSlaves(interfaces.isEmpty() ? ImmutableSet.of() : slaves);
   }
