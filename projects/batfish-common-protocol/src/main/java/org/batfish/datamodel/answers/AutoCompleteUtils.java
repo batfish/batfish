@@ -297,7 +297,6 @@ public final class AutoCompleteUtils {
                         .collect(Collectors.toSet()));
             break;
           }
-        case BGP_SESSION_TYPE:
         case BGP_SESSION_TYPE_SPEC:
           {
             suggestions =

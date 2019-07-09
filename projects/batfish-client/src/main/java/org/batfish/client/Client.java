@@ -372,7 +372,6 @@ public class Client extends AbstractClient implements IClient {
               String.format("A Batfish %s must be a JSON string", expectedType.getName()));
         }
         break;
-      case BGP_SESSION_TYPE:
       case BGP_SESSION_TYPE_SPEC:
         if (!value.isTextual()) {
           throw new BatfishException(
