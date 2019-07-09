@@ -53,6 +53,13 @@ public final class InputValidationUtils {
             completionMetadata,
             nodeRolesData,
             referenceLibrary);
+      case BGP_SESSION_TYPE_SPEC:
+        return ParboiledInputValidator.validate(
+            Grammar.BGP_SESSION_TYPE_SPECIFIER,
+            query,
+            completionMetadata,
+            nodeRolesData,
+            referenceLibrary);
       case FILTER_SPEC:
         return ParboiledInputValidator.validate(
             Grammar.FILTER_SPECIFIER, query, completionMetadata, nodeRolesData, referenceLibrary);
@@ -110,6 +117,13 @@ public final class InputValidationUtils {
       case ROUTING_POLICY_SPEC:
         return ParboiledInputValidator.validate(
             Grammar.ROUTING_POLICY_SPECIFIER,
+            query,
+            completionMetadata,
+            nodeRolesData,
+            referenceLibrary);
+      case VXLAN_VNI_PROPERTY_SPEC:
+        return ParboiledInputValidator.validate(
+            Grammar.VXLAN_VNI_PROPERTY_SPECIFIER,
             query,
             completionMetadata,
             nodeRolesData,

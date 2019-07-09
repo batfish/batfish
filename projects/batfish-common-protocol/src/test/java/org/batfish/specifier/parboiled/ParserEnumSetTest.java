@@ -11,6 +11,7 @@ import java.util.Collection;
 import java.util.Set;
 import java.util.stream.Stream;
 import org.batfish.common.CompletionMetadata;
+import org.batfish.datamodel.BgpSessionProperties.SessionType;
 import org.batfish.datamodel.Protocol;
 import org.batfish.datamodel.questions.BgpPeerPropertySpecifier;
 import org.batfish.datamodel.questions.BgpProcessPropertySpecifier;
@@ -18,6 +19,7 @@ import org.batfish.datamodel.questions.InterfacePropertySpecifier;
 import org.batfish.datamodel.questions.IpsecSessionStatus;
 import org.batfish.datamodel.questions.NamedStructurePropertySpecifier;
 import org.batfish.datamodel.questions.NodePropertySpecifier;
+import org.batfish.datamodel.questions.VxlanVniPropertySpecifier;
 import org.batfish.referencelibrary.ReferenceLibrary;
 import org.batfish.role.NodeRolesData;
 import org.batfish.specifier.parboiled.Anchor.Type;
@@ -302,6 +304,14 @@ public class ParserEnumSetTest {
         Grammar.BGP_PROCESS_PROPERTY_SPECIFIER);
   }
 
+  @Test
+  public void testParseBgpSessionType() {
+    testParseOtherProperties(
+        SessionType.EBGP_SINGLEHOP.toString(),
+        SessionType.EBGP_MULTIHOP.toString(),
+        Grammar.BGP_SESSION_TYPE_SPECIFIER);
+  }
+
   /** Test that interface properties are being parsed */
   @Test
   public void testParseInterfaceProperties() {
@@ -326,5 +336,13 @@ public class ParserEnumSetTest {
         NodePropertySpecifier.NTP_SERVERS,
         NodePropertySpecifier.DNS_SERVERS,
         Grammar.NODE_PROPERTY_SPECIFIER);
+  }
+
+  @Test
+  public void testVxlanVniProperties() {
+    testParseOtherProperties(
+        VxlanVniPropertySpecifier.VTEP_FLOOD_LIST,
+        VxlanVniPropertySpecifier.VXLAN_PORT,
+        Grammar.VXLAN_VNI_PROPERTY_SPECIFIER);
   }
 }

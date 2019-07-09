@@ -372,7 +372,7 @@ public class Client extends AbstractClient implements IClient {
               String.format("A Batfish %s must be a JSON string", expectedType.getName()));
         }
         break;
-      case BGP_SESSION_TYPE:
+      case BGP_SESSION_TYPE_SPEC:
         if (!value.isTextual()) {
           throw new BatfishException(
               String.format("A Batfish %s must be a JSON string", expectedType.getName()));
@@ -683,7 +683,7 @@ public class Client extends AbstractClient implements IClient {
           throw new BatfishException(
               String.format("A Batfish %s must be a JSON string", expectedType.getName()));
         }
-        new VxlanVniPropertySpecifier(value.textValue());
+        VxlanVniPropertySpecifier.create(value.textValue());
         break;
       case ZONE:
         if (!value.isTextual()) {

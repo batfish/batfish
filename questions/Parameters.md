@@ -10,6 +10,8 @@ For many parameters types, there is a "resolver" question that may be used to le
 
 * [`bgpProcessPropertySpec`](#bgp-process-property-specifier)
 
+* [`bgpSessionTypeSpec`](#bgp-session-type-specifier)
+
 * [`dispositionSpec`](#disposition-specifier)
 
 * [`filterSpec`](#filter-specifier)
@@ -33,6 +35,8 @@ For many parameters types, there is a "resolver" question that may be used to le
 * [`nodeSpec`](#node-specifier)
 
 * [`routingPolicySpec`](#routing-policy-specifier)
+
+* [`vxlanVniPropertySpec`](#vxlan-vni-property-specifier)
 
 ## General notes on the grammar 
 
@@ -84,6 +88,20 @@ A BGP peer property property specifier is a set of enums (see above) over the fo
 A specification for a set of BGP process properties (e.g., those returned by the `bgpProcessConfiguration` question).
 
 A BGP process property specifier is a set of enums (see above) over the following values: Multipath_Match_Mode, Multipath_EBGP, Multipath_IBGP, Neighbors, Route_Reflector, Tie_Breaker. 
+
+## BGP Session Type Specifier
+
+A specification for a set of BGP session types.
+
+* `IBGP` indicates iBGP sessions.
+
+* `EBGP_SINGLEHOP, EBGP_MULTIHOP` indicates single and multi-hop eBGP sessions.
+
+* `/EBGP/` indicates all types of eBGP sessions.
+
+#### BGP Session Type Specifier Grammar
+
+A BGP session type specifier is a set of enums (see above) over the following values: IBGP, EBGP_SINGLEHOP, EBGP_MULTIHOP, EBGP_UNNUMBERED, IBGP_UNNUMBERED, UNSET. 
 
 ## Disposition Specifier
 
@@ -403,3 +421,17 @@ routingPolicyTerm :=
     | <b>/</b>&lt;<i>routing-policy-name-regex</i>&gt;<b>/</b>
     | <b>(</b>routingPolicySpec<b>)</b>
 </pre>
+
+## VXLAN VNI Property Specifier
+
+ A specification for a set of VXLAN VNI properties.
+
+ * `LOCAL_VTEP_IP` indicates the local VTEP IP.
+
+ * `LOCAL_VTEP_IP, VTEP_FLOOD_LIST` indicates the two properties specified.
+
+ * `/VTEP/` indicates all properties with VTEP in their name.
+
+ #### VXLAN VNI Property Specifier Grammar
+
+ A VXLAN VNI property specifier is a set of enums (see above) over the following values: LOCAL_VTEP_IP, MULTICAST_GROUP, VLAN, VNI, VTEP_FLOOD_LIST, VXLAN_PORT. 

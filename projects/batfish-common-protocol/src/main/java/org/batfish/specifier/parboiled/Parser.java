@@ -103,10 +103,9 @@ public class Parser extends CommonParser {
   Rule getInputRule(Grammar grammar) {
     switch (grammar) {
       case APPLICATION_SPECIFIER:
-        return input(EnumSetSpec(Grammar.getEnumValues(grammar)));
       case BGP_PEER_PROPERTY_SPECIFIER:
-        return input(EnumSetSpec(Grammar.getEnumValues(grammar)));
       case BGP_PROCESS_PROPERTY_SPECIFIER:
+      case BGP_SESSION_TYPE_SPECIFIER:
         return input(EnumSetSpec(Grammar.getEnumValues(grammar)));
       case FILTER_SPECIFIER:
         return input(FilterSpec());
@@ -130,6 +129,8 @@ public class Parser extends CommonParser {
         return input(NodeSpec());
       case ROUTING_POLICY_SPECIFIER:
         return input(RoutingPolicySpec());
+      case VXLAN_VNI_PROPERTY_SPECIFIER:
+        return input(EnumSetSpec(Grammar.getEnumValues(grammar)));
       default:
         throw new IllegalArgumentException(
             "Main grammar rule not defined for " + grammar.getFriendlyName());

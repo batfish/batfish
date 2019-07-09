@@ -37,10 +37,10 @@
         "value" : ".*"
       },
       "type" : {
-        "description" : "Only include sessions for which type (ibgp, ebgp_singlehop, ebgp_multihop) matches this regex",
+        "description" : "Only include sessions that match this specifier",
         "displayName" : "Type",
         "optional" : true,
-        "type" : "bgpSessionType",
+        "type" : "bgpSessionTypeSpec",
         "value" : ".*"
       }
     }
