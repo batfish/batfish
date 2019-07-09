@@ -44,7 +44,7 @@ import static org.batfish.common.CoordConsts.DEFAULT_API_KEY;
 import static org.batfish.datamodel.questions.Variable.Type.ADDRESS_GROUP_NAME;
 import static org.batfish.datamodel.questions.Variable.Type.APPLICATION_SPEC;
 import static org.batfish.datamodel.questions.Variable.Type.BGP_SESSION_STATUS;
-import static org.batfish.datamodel.questions.Variable.Type.BGP_SESSION_TYPE;
+import static org.batfish.datamodel.questions.Variable.Type.BGP_SESSION_TYPE_SPEC;
 import static org.batfish.datamodel.questions.Variable.Type.BOOLEAN;
 import static org.batfish.datamodel.questions.Variable.Type.COMPARATOR;
 import static org.batfish.datamodel.questions.Variable.Type.DISPOSITION_SPEC;
@@ -473,9 +473,9 @@ public final class ClientTest {
   }
 
   @Test
-  public void testInvalidBgpSessionTypeValue() throws IOException {
+  public void testInvalidBgpSessionTypeSpecValue() throws IOException {
     String input = "5";
-    Type expectedType = BGP_SESSION_TYPE;
+    Type expectedType = BGP_SESSION_TYPE_SPEC;
     String expectedMessage =
         String.format("A Batfish %s must be a JSON string", expectedType.getName());
     validateTypeWithInvalidInput(input, expectedMessage, expectedType);
@@ -1561,10 +1561,10 @@ public final class ClientTest {
   }
 
   @Test
-  public void testValidBgpSessionTypeValue() throws IOException {
+  public void testValidBgpSessionTypeSpecValue() throws IOException {
     JsonNode sessionTypeNode = _mapper.readTree("\"sessionType\"");
     Variable variable = new Variable();
-    variable.setType(BGP_SESSION_TYPE);
+    variable.setType(BGP_SESSION_TYPE_SPEC);
     Client.validateType(sessionTypeNode, variable);
   }
 
