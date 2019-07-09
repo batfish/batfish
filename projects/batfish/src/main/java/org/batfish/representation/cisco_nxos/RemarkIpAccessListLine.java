@@ -2,11 +2,13 @@ package org.batfish.representation.cisco_nxos;
 
 import javax.annotation.Nonnull;
 
-public final class RemarkIpAccessListLine implements IpAccessListLine {
+/** An {@link IpAccessListLine} providing a comment. */
+public final class RemarkIpAccessListLine extends IpAccessListLine {
 
   private final @Nonnull String _text;
 
-  public RemarkIpAccessListLine(String text) {
+  public RemarkIpAccessListLine(long line, String text) {
+    super(line);
     _text = text;
   }
 

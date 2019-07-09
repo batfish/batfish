@@ -49,8 +49,8 @@ ip_prefix
 
 line_action
 :
-  DENY
-  | PERMIT
+  deny = DENY
+  | permit = PERMIT
 ;
 
 null_rest_of_line
