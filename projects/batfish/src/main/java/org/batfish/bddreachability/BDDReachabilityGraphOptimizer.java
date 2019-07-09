@@ -18,7 +18,7 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.Queue;
 import java.util.Set;
-import java.util.function.BiFunction;
+import java.util.function.BiConsumer;
 import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 import org.batfish.bddreachability.transition.AddLastHopConstraint;
@@ -175,14 +175,14 @@ public class BDDReachabilityGraphOptimizer {
       StateExpr root,
       Multimap<StateExpr, StateExpr> postStates,
       Multimap<StateExpr, StateExpr> preStates,
-      BiFunction<StateExpr, StateExpr, Transition> removeEdge,
+      BiConsumer<StateExpr, StateExpr> removeEdge,
       Set<StateExpr> statesToKeep) {
     assert !statesToKeep.contains(root);
     assert !preStates.containsKey(root);
 
     Collection<StateExpr> successors = postStates.removeAll(root);
     for (StateExpr successor : successors) {
-      removeEdge.apply(root, successor);
+      removeEdge.accept(root, successor);
       preStates.remove(successor, root);
     }
     // We deleted an edge from each successor. If this was the only edge attached to it, that state
@@ -201,7 +201,7 @@ public class BDDReachabilityGraphOptimizer {
   private static int pruneAllRoots(
       Multimap<StateExpr, StateExpr> postStates,
       Multimap<StateExpr, StateExpr> preStates,
-      BiFunction<StateExpr, StateExpr, Transition> removeEdge,
+      BiConsumer<StateExpr, StateExpr> removeEdge,
       Set<StateExpr> statesToKeep) {
     int count = 0;
     Collection<StateExpr> roots =
