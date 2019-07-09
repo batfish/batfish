@@ -6,6 +6,7 @@ import static org.junit.Assert.assertThat;
 import com.google.common.collect.HashMultiset;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Multiset;
 import java.util.Map;
@@ -21,13 +22,15 @@ import org.batfish.specifier.NameRegexNodeSpecifier;
 import org.batfish.specifier.NodeSpecifier;
 import org.junit.Test;
 
+/** Tests for {@link NodePropertiesAnswerer} */
 public class NodePropertiesAnswererTest {
 
   @Test
   public void getProperties() {
     String property1 = NodePropertySpecifier.CONFIGURATION_FORMAT;
     String property2 = NodePropertySpecifier.NTP_SERVERS;
-    NodePropertySpecifier propertySpec = new NodePropertySpecifier(property1 + "|" + property2);
+    NodePropertySpecifier propertySpec =
+        new NodePropertySpecifier(ImmutableSet.of(property1, property2));
 
     Configuration conf1 = new Configuration("node1", ConfigurationFormat.CISCO_IOS);
     Configuration conf2 = new Configuration("node2", ConfigurationFormat.HOST);

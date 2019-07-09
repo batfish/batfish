@@ -1,27 +1,30 @@
 package org.batfish.datamodel.questions;
 
-import static com.google.common.base.MoreObjects.firstNonNull;
+import static com.google.common.base.Preconditions.checkArgument;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonValue;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Iterables;
+import com.google.common.collect.Sets;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.regex.Pattern;
+import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.BgpPeerConfig;
 import org.batfish.datamodel.BgpProcess;
 import org.batfish.datamodel.BgpTieBreaker;
 import org.batfish.datamodel.MultipathEquivalentAsPathMatchMode;
 import org.batfish.datamodel.answers.Schema;
 import org.batfish.datamodel.bgp.AddressFamily;
+import org.batfish.specifier.ConstantEnumSetSpecifier;
+import org.batfish.specifier.SpecifierFactories;
+import org.batfish.specifier.parboiled.Grammar;
 
 /**
  * Enables specification a set of BGP process properties.
@@ -33,6 +36,7 @@ import org.batfish.datamodel.bgp.AddressFamily;
  *   <li>multipath.* --&gt; gets all properties that start with 'multipath'
  * </ul>
  */
+@ParametersAreNonnullByDefault
 public class BgpProcessPropertySpecifier extends PropertySpecifier {
 
   public static final String MULTIPATH_EQUIVALENT_AS_PATH_MATCH_MODE = "Multipath_Match_Mode";
@@ -42,7 +46,7 @@ public class BgpProcessPropertySpecifier extends PropertySpecifier {
   public static final String ROUTE_REFLECTOR = "Route_Reflector";
   public static final String TIE_BREAKER = "Tie_Breaker";
 
-  public static final Map<String, PropertyDescriptor<BgpProcess>> JAVA_MAP =
+  private static final Map<String, PropertyDescriptor<BgpProcess>> JAVA_MAP =
       new ImmutableMap.Builder<String, PropertyDescriptor<BgpProcess>>()
           .put(
               ROUTE_REFLECTOR,
@@ -95,38 +99,46 @@ public class BgpProcessPropertySpecifier extends PropertySpecifier {
                       + ")"))
           .build();
 
+  /** Returns the property descriptor for {@code property} */
+  public static PropertyDescriptor<BgpProcess> getPropertyDescriptor(String property) {
+    checkArgument(JAVA_MAP.containsKey(property), "Property " + property + " does not exist");
+    return JAVA_MAP.get(property);
+  }
+
   /** A {@link BgpProcessPropertySpecifier} that matches all BGP properties. */
-  public static final BgpProcessPropertySpecifier ALL = new BgpProcessPropertySpecifier(".*");
+  public static final BgpProcessPropertySpecifier ALL =
+      new BgpProcessPropertySpecifier(JAVA_MAP.keySet());
 
-  private final String _expression;
+  @Nonnull private final List<String> _properties;
 
-  private final Pattern _pattern;
-
-  @JsonCreator
-  public BgpProcessPropertySpecifier(@Nullable String expression) {
-    _expression = firstNonNull(expression, ".*");
-    _pattern = Pattern.compile(_expression.trim().toLowerCase()); // canonicalize
+  /**
+   * Create a bgp process property specifier from provided expression. If the expression is null or
+   * empty, a specifier with all properties is returned.
+   */
+  public static BgpProcessPropertySpecifier create(@Nullable String expression) {
+    return new BgpProcessPropertySpecifier(
+        SpecifierFactories.getEnumSetSpecifierOrDefault(
+                expression,
+                Grammar.BGP_PROCESS_PROPERTY_SPECIFIER,
+                new ConstantEnumSetSpecifier<>(JAVA_MAP.keySet()))
+            .resolve());
   }
 
   /** Returns a specifier that maps to all properties in {@code properties} */
-  public BgpProcessPropertySpecifier(Collection<String> properties) {
-    // quote and join
-    _expression =
-        properties.stream().map(String::trim).map(Pattern::quote).collect(Collectors.joining("|"));
-    _pattern = Pattern.compile(_expression, Pattern.CASE_INSENSITIVE);
+  public BgpProcessPropertySpecifier(Set<String> properties) {
+    Set<String> diffSet = Sets.difference(properties, JAVA_MAP.keySet());
+    checkArgument(
+        diffSet.isEmpty(),
+        "Invalid properties supplied: %s. Valid properties are %s",
+        diffSet,
+        JAVA_MAP.keySet());
+    _properties = properties.stream().sorted().collect(ImmutableList.toImmutableList());
   }
 
+  @Nonnull
   @Override
   public List<String> getMatchingProperties() {
-    return JAVA_MAP.keySet().stream()
-        .filter(prop -> _pattern.matcher(prop.toLowerCase()).matches())
-        .collect(ImmutableList.toImmutableList());
-  }
-
-  @Override
-  @JsonValue
-  public String toString() {
-    return _expression;
+    return _properties;
   }
 
   /**
@@ -138,5 +150,18 @@ public class BgpProcessPropertySpecifier extends PropertySpecifier {
         .map(BgpPeerConfig::getIpv4UnicastAddressFamily)
         .filter(Objects::nonNull)
         .anyMatch(AddressFamily::getRouteReflectorClient);
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (!(o instanceof BgpProcessPropertySpecifier)) {
+      return false;
+    }
+    return _properties.equals(((BgpProcessPropertySpecifier) o)._properties);
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(_properties);
   }
 }

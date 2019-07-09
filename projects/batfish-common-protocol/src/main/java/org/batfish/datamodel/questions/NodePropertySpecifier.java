@@ -1,20 +1,27 @@
 package org.batfish.datamodel.questions;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonValue;
+import static com.google.common.base.Preconditions.checkArgument;
+
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Sets;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.List;
 import java.util.Map;
-import java.util.regex.Pattern;
+import java.util.Objects;
+import java.util.Set;
 import java.util.stream.Collectors;
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.DeviceType;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.answers.Schema;
 import org.batfish.datamodel.vendor_family.VendorFamily;
+import org.batfish.specifier.ConstantEnumSetSpecifier;
+import org.batfish.specifier.SpecifierFactories;
+import org.batfish.specifier.parboiled.Grammar;
 
 /**
  * Enables specification a set of node properties.
@@ -28,6 +35,7 @@ import org.batfish.datamodel.vendor_family.VendorFamily;
  *
  * <p>In the future, we might add other specifier types, e.g., those based on Json Path
  */
+@ParametersAreNonnullByDefault
 public class NodePropertySpecifier extends PropertySpecifier {
 
   public static final String AS_PATH_ACCESS_LISTS = "AS_Path_Access_Lists";
@@ -69,7 +77,7 @@ public class NodePropertySpecifier extends PropertySpecifier {
   public static final String VRFS = "VRFs";
   public static final String ZONES = "Zones";
 
-  public static Map<String, PropertyDescriptor<Configuration>> JAVA_MAP =
+  private static Map<String, PropertyDescriptor<Configuration>> JAVA_MAP =
       new ImmutableMap.Builder<String, PropertyDescriptor<Configuration>>()
           .put(
               AS_PATH_ACCESS_LISTS,
@@ -295,35 +303,54 @@ public class NodePropertySpecifier extends PropertySpecifier {
                   "Names of firewall zones on the node"))
           .build();
 
-  public static final NodePropertySpecifier ALL = new NodePropertySpecifier(".*");
-
-  private final String _expression;
-
-  private final Pattern _pattern;
-
-  @JsonCreator
-  public NodePropertySpecifier(String expression) {
-    _expression = expression;
-    _pattern = Pattern.compile(_expression.trim(), Pattern.CASE_INSENSITIVE);
+  /** Returns the property descriptor for {@code property} */
+  public static PropertyDescriptor<Configuration> getPropertyDescriptor(String property) {
+    checkArgument(JAVA_MAP.containsKey(property), "Property " + property + " does not exist");
+    return JAVA_MAP.get(property);
   }
 
-  public NodePropertySpecifier(Collection<String> properties) {
-    // quote and join
-    _expression =
-        properties.stream().map(String::trim).map(Pattern::quote).collect(Collectors.joining("|"));
-    _pattern = Pattern.compile(_expression, Pattern.CASE_INSENSITIVE);
+  public static final NodePropertySpecifier ALL = new NodePropertySpecifier(JAVA_MAP.keySet());
+
+  @Nonnull private final List<String> _properties;
+
+  /**
+   * Create a node property specifier from provided expression. If the expression is null or empty,
+   * a specifier with all properties is returned.
+   */
+  public static NodePropertySpecifier create(@Nullable String expression) {
+    return new NodePropertySpecifier(
+        SpecifierFactories.getEnumSetSpecifierOrDefault(
+                expression,
+                Grammar.NODE_PROPERTY_SPECIFIER,
+                new ConstantEnumSetSpecifier<>(JAVA_MAP.keySet()))
+            .resolve());
+  }
+
+  public NodePropertySpecifier(Set<String> properties) {
+    Set<String> diffSet = Sets.difference(properties, JAVA_MAP.keySet());
+    checkArgument(
+        diffSet.isEmpty(),
+        "Invalid properties supplied: %s. Valid properties are %s",
+        diffSet,
+        JAVA_MAP.keySet());
+    _properties = properties.stream().sorted().collect(ImmutableList.toImmutableList());
   }
 
   @Override
   public List<String> getMatchingProperties() {
-    return JAVA_MAP.keySet().stream()
-        .filter(prop -> _pattern.matcher(prop).matches())
-        .collect(ImmutableList.toImmutableList());
+    return _properties;
   }
 
   @Override
-  @JsonValue
-  public String toString() {
-    return _expression;
+  public boolean equals(Object o) {
+    if (!(o instanceof NodePropertySpecifier)) {
+      return false;
+    }
+    return _properties.equals(((NodePropertySpecifier) o)._properties);
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(_properties);
   }
 }

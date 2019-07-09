@@ -1,19 +1,26 @@
 package org.batfish.datamodel.questions;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonValue;
+import static com.google.common.base.Preconditions.checkArgument;
+
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Sets;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.List;
 import java.util.Map;
-import java.util.regex.Pattern;
+import java.util.Objects;
+import java.util.Set;
 import java.util.stream.Collectors;
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.SwitchportEncapsulationType;
 import org.batfish.datamodel.SwitchportMode;
 import org.batfish.datamodel.answers.Schema;
+import org.batfish.specifier.ConstantEnumSetSpecifier;
+import org.batfish.specifier.SpecifierFactories;
+import org.batfish.specifier.parboiled.Grammar;
 
 /**
  * Enables specification a set of interface properties.
@@ -27,6 +34,7 @@ import org.batfish.datamodel.answers.Schema;
  *
  * <p>In the future, we might add other specifier types, e.g., those based on Json Path
  */
+@ParametersAreNonnullByDefault
 public class InterfacePropertySpecifier extends PropertySpecifier {
 
   public static final String ACCESS_VLAN = "Access_VLAN";
@@ -70,7 +78,7 @@ public class InterfacePropertySpecifier extends PropertySpecifier {
   public static final String VRRP_GROUPS = "VRRP_Groups";
   public static final String ZONE_NAME = "Zone_Name";
 
-  public static final Map<String, PropertyDescriptor<Interface>> JAVA_MAP =
+  private static final Map<String, PropertyDescriptor<Interface>> JAVA_MAP =
       new ImmutableMap.Builder<String, PropertyDescriptor<Interface>>()
           .put(
               ACCESS_VLAN,
@@ -299,35 +307,56 @@ public class InterfacePropertySpecifier extends PropertySpecifier {
                   "Name of the firewall zone to which the interface belongs"))
           .build();
 
-  public static final InterfacePropertySpecifier ALL = new InterfacePropertySpecifier(".*");
+  public static final InterfacePropertySpecifier ALL =
+      new InterfacePropertySpecifier(JAVA_MAP.keySet());
 
-  private final String _expression;
-
-  private final Pattern _pattern;
-
-  @JsonCreator
-  public InterfacePropertySpecifier(String expression) {
-    _expression = expression;
-    _pattern = Pattern.compile(_expression.trim(), Pattern.CASE_INSENSITIVE);
+  /** Returns the property descriptor for {@code property} */
+  public static PropertyDescriptor<Interface> getPropertyDescriptor(String property) {
+    checkArgument(JAVA_MAP.containsKey(property), "Property " + property + " does not exist");
+    return JAVA_MAP.get(property);
   }
 
-  public InterfacePropertySpecifier(Collection<String> properties) {
-    // quote and join
-    _expression =
-        properties.stream().map(String::trim).map(Pattern::quote).collect(Collectors.joining("|"));
-    _pattern = Pattern.compile(_expression, Pattern.CASE_INSENSITIVE);
+  @Nonnull private final List<String> _properties;
+
+  /**
+   * Create a node property specifier from provided expression. If the expression is null or empty,
+   * a specifier with all properties is returned.
+   */
+  @Nonnull
+  public static InterfacePropertySpecifier create(@Nullable String expression) {
+    return new InterfacePropertySpecifier(
+        SpecifierFactories.getEnumSetSpecifierOrDefault(
+                expression,
+                Grammar.INTERFACE_PROPERTY_SPECIFIER,
+                new ConstantEnumSetSpecifier<>(JAVA_MAP.keySet()))
+            .resolve());
+  }
+
+  public InterfacePropertySpecifier(Set<String> properties) {
+    Set<String> diffSet = Sets.difference(properties, JAVA_MAP.keySet());
+    checkArgument(
+        diffSet.isEmpty(),
+        "Invalid properties supplied: %s. Valid properties are %s",
+        diffSet,
+        JAVA_MAP.keySet());
+    _properties = properties.stream().sorted().collect(ImmutableList.toImmutableList());
   }
 
   @Override
   public List<String> getMatchingProperties() {
-    return JAVA_MAP.keySet().stream()
-        .filter(prop -> _pattern.matcher(prop).matches())
-        .collect(ImmutableList.toImmutableList());
+    return _properties;
   }
 
   @Override
-  @JsonValue
-  public String toString() {
-    return _expression;
+  public boolean equals(Object o) {
+    if (!(o instanceof InterfacePropertySpecifier)) {
+      return false;
+    }
+    return _properties.equals(((InterfacePropertySpecifier) o)._properties);
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(_properties);
   }
 }

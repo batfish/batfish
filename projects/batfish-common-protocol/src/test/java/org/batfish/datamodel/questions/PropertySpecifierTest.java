@@ -84,7 +84,7 @@ public class PropertySpecifierTest {
     configuration.setDefaultInboundAction(LineAction.PERMIT);
     String property = NodePropertySpecifier.DEFAULT_INBOUND_ACTION;
     PropertyDescriptor<Configuration> propertyDescriptor =
-        NodePropertySpecifier.JAVA_MAP.get(property);
+        NodePropertySpecifier.getPropertyDescriptor(property);
     RowBuilder row = Row.builder();
 
     PropertySpecifier.fillProperty(propertyDescriptor, configuration, property, row);
@@ -99,7 +99,7 @@ public class PropertySpecifierTest {
     Configuration configuration = new Configuration("hostname", ConfigurationFormat.CISCO_IOS);
     String property = NodePropertySpecifier.NTP_SERVERS;
     PropertyDescriptor<Configuration> propertyDescriptor =
-        NodePropertySpecifier.JAVA_MAP.get(property);
+        NodePropertySpecifier.getPropertyDescriptor(property);
     RowBuilder row = Row.builder();
 
     PropertySpecifier.fillProperty(propertyDescriptor, configuration, property, row);
@@ -114,7 +114,7 @@ public class PropertySpecifierTest {
     configuration.setNtpServers(ImmutableSortedSet.of("sa", "sb"));
     String property = NodePropertySpecifier.NTP_SERVERS;
     PropertyDescriptor<Configuration> propertyDescriptor =
-        NodePropertySpecifier.JAVA_MAP.get(property);
+        NodePropertySpecifier.getPropertyDescriptor(property);
     RowBuilder row = Row.builder();
 
     PropertySpecifier.fillProperty(propertyDescriptor, configuration, property, row);
@@ -131,7 +131,7 @@ public class PropertySpecifierTest {
         ImmutableSortedMap.of("i1", Interface.builder().setName("i1").build()));
     String property = NodePropertySpecifier.INTERFACES;
     PropertyDescriptor<Configuration> propertyDescriptor =
-        NodePropertySpecifier.JAVA_MAP.get(property);
+        NodePropertySpecifier.getPropertyDescriptor(property);
     RowBuilder row = Row.builder();
 
     PropertySpecifier.fillProperty(propertyDescriptor, configuration, property, row);
@@ -145,7 +145,7 @@ public class PropertySpecifierTest {
     Configuration configuration = new Configuration("hostname", ConfigurationFormat.CISCO_IOS);
     String property = NodePropertySpecifier.NTP_SOURCE_INTERFACE;
     PropertyDescriptor<Configuration> propertyDescriptor =
-        NodePropertySpecifier.JAVA_MAP.get(property);
+        NodePropertySpecifier.getPropertyDescriptor(property);
     RowBuilder row = Row.builder();
 
     PropertySpecifier.fillProperty(propertyDescriptor, configuration, property, row);
@@ -160,12 +160,12 @@ public class PropertySpecifierTest {
     Configuration configuration = new Configuration("hostname", ConfigurationFormat.CISCO_IOS);
     Interface i1 = Interface.builder().setName("i1").build();
     configuration.setInterfaces(ImmutableSortedMap.of("i1", i1));
-    InterfacePropertySpecifier.JAVA_MAP
-        .entrySet()
+    InterfacePropertySpecifier.ALL
+        .getMatchingProperties()
         .forEach(
-            entry -> {
-              String property = entry.getKey();
-              PropertyDescriptor<Interface> propertyDescriptor = entry.getValue();
+            property -> {
+              PropertyDescriptor<Interface> propertyDescriptor =
+                  InterfacePropertySpecifier.getPropertyDescriptor(property);
               RowBuilder row = Row.builder();
               PropertySpecifier.fillProperty(propertyDescriptor, i1, property, row);
             });

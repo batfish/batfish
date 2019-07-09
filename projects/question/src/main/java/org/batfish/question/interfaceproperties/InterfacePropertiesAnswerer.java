@@ -54,8 +54,8 @@ public class InterfacePropertiesAnswerer extends Answerer {
                     prop ->
                         new ColumnMetadata(
                             getColumnName(prop),
-                            InterfacePropertySpecifier.JAVA_MAP.get(prop).getSchema(),
-                            InterfacePropertySpecifier.JAVA_MAP.get(prop).getDescription(),
+                            InterfacePropertySpecifier.getPropertyDescriptor(prop).getSchema(),
+                            InterfacePropertySpecifier.getPropertyDescriptor(prop).getDescription(),
                             false,
                             true))
                 .collect(Collectors.toList()))
@@ -74,7 +74,7 @@ public class InterfacePropertiesAnswerer extends Answerer {
     if (dhints != null && dhints.getTextDesc() != null) {
       textDesc = dhints.getTextDesc();
     }
-    return new TableMetadata(createColumnMetadata(question.getProperties()), textDesc);
+    return new TableMetadata(createColumnMetadata(question.getPropertySpecifier()), textDesc);
   }
 
   @Override
@@ -86,7 +86,7 @@ public class InterfacePropertiesAnswerer extends Answerer {
 
     Multiset<Row> propertyRows =
         getProperties(
-            question.getProperties(),
+            question.getPropertySpecifier(),
             _batfish.specifierContext(),
             question.getNodeSpecifier(),
             question.getInterfaceSpecifier(),
@@ -152,7 +152,7 @@ public class InterfacePropertiesAnswerer extends Answerer {
 
         for (String property : propertySpecifier.getMatchingProperties()) {
           PropertyDescriptor<Interface> propertyDescriptor =
-              InterfacePropertySpecifier.JAVA_MAP.get(property);
+              InterfacePropertySpecifier.getPropertyDescriptor(property);
           try {
             PropertySpecifier.fillProperty(propertyDescriptor, iface, property, row);
           } catch (ClassCastException e) {

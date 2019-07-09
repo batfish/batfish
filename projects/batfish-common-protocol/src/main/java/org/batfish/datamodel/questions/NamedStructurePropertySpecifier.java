@@ -1,18 +1,19 @@
 package org.batfish.datamodel.questions;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonValue;
+import static com.google.common.base.Preconditions.checkArgument;
+
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Sets;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.answers.Schema;
 import org.batfish.specifier.ConstantEnumSetSpecifier;
-import org.batfish.specifier.EnumSetSpecifier;
 import org.batfish.specifier.SpecifierFactories;
 import org.batfish.specifier.parboiled.Grammar;
 
@@ -123,46 +124,47 @@ public class NamedStructurePropertySpecifier extends PropertySpecifier {
 
   /** A specifier for all properties */
   public static final NamedStructurePropertySpecifier ALL =
-      new NamedStructurePropertySpecifier("/.*/");
+      new NamedStructurePropertySpecifier(JAVA_MAP.keySet());
 
-  @Nullable private final String _expression;
+  @Nonnull private final List<String> _properties;
 
-  private final EnumSetSpecifier<String> _enumSetSpecifier;
-
-  @JsonCreator
-  private static NamedStructurePropertySpecifier create(String expression) {
-    return new NamedStructurePropertySpecifier(expression);
-  }
-
-  public NamedStructurePropertySpecifier(@Nullable String expression) {
-    this(
-        expression,
+  /** Creates the specifier object from the grammar expression */
+  public static NamedStructurePropertySpecifier create(String expression) {
+    return new NamedStructurePropertySpecifier(
         SpecifierFactories.getEnumSetSpecifierOrDefault(
-            expression,
-            Grammar.NAMED_STRUCTURE_SPECIFIER,
-            new ConstantEnumSetSpecifier<>(JAVA_MAP.keySet())));
+                expression,
+                Grammar.NAMED_STRUCTURE_SPECIFIER,
+                new ConstantEnumSetSpecifier<>(JAVA_MAP.keySet()))
+            .resolve());
   }
 
-  public NamedStructurePropertySpecifier(EnumSetSpecifier<String> enumSetSpecifier) {
-    this(null, enumSetSpecifier);
-  }
-
-  private NamedStructurePropertySpecifier(
-      @Nullable String expression, EnumSetSpecifier<String> enumSetSpecifier) {
-    _expression = expression;
-    _enumSetSpecifier = enumSetSpecifier;
+  /** Returns a specifier object that maps to the specified properties */
+  public NamedStructurePropertySpecifier(Set<String> properties) {
+    Set<String> diffSet = Sets.difference(properties, JAVA_MAP.keySet());
+    checkArgument(
+        diffSet.isEmpty(),
+        "Invalid properties supplied: %s. Valid properties are %s",
+        diffSet,
+        JAVA_MAP.keySet());
+    _properties = properties.stream().sorted().collect(ImmutableList.toImmutableList());
   }
 
   @Override
   @Nonnull
   public List<String> getMatchingProperties() {
-    return _enumSetSpecifier.resolve().stream().sorted().collect(ImmutableList.toImmutableList());
+    return _properties;
   }
 
   @Override
-  @Nullable
-  @JsonValue
-  public String toString() {
-    return _expression;
+  public boolean equals(Object o) {
+    if (!(o instanceof NamedStructurePropertySpecifier)) {
+      return false;
+    }
+    return _properties.equals(((NamedStructurePropertySpecifier) o)._properties);
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(_properties);
   }
 }
