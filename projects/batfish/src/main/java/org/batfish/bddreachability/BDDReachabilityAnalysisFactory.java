@@ -4,6 +4,7 @@ import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Predicates.alwaysTrue;
 import static org.batfish.bddreachability.BidirectionalReachabilityReturnPassInstrumentation.instrumentReturnPassEdges;
 import static org.batfish.bddreachability.SessionInstrumentation.sessionInstrumentation;
+import static org.batfish.bddreachability.transition.Transitions.ZERO;
 import static org.batfish.bddreachability.transition.Transitions.addLastHopConstraint;
 import static org.batfish.bddreachability.transition.Transitions.addNoLastHopConstraint;
 import static org.batfish.bddreachability.transition.Transitions.addOriginatingFromDeviceConstraint;
@@ -1137,6 +1138,9 @@ public final class BDDReachabilityAnalysisFactory {
                       constraint(permitBeforeNatBDD),
                       outgoingTransformation,
                       constraint(permitAfterNatBDD));
+              if (transition == ZERO) {
+                return Stream.of();
+              }
 
               return Stream.of(
                   new Edge(
