@@ -74,7 +74,7 @@ public class NodePropertySpecifier extends PropertySpecifier {
   public static final String VRFS = "VRFs";
   public static final String ZONES = "Zones";
 
-  private static Map<String, PropertyDescriptor<Configuration>> JAVA_MAP =
+  private static final Map<String, PropertyDescriptor<Configuration>> JAVA_MAP =
       new ImmutableMap.Builder<String, PropertyDescriptor<Configuration>>()
           .put(
               AS_PATH_ACCESS_LISTS,

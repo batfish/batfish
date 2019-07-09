@@ -31,7 +31,7 @@ public class OspfPropertySpecifier extends PropertySpecifier {
   public static final String RFC_1583_COMPATIBLE = "RFC1583_Compatible";
   public static final String ROUTER_ID = "Router_ID";
 
-  public static Map<String, PropertyDescriptor<OspfProcess>> JAVA_MAP =
+  public static final Map<String, PropertyDescriptor<OspfProcess>> JAVA_MAP =
       new ImmutableMap.Builder<String, PropertyDescriptor<OspfProcess>>()
           .put(
               AREA_BORDER_ROUTER,
