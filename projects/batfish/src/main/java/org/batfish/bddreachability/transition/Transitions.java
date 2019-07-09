@@ -153,6 +153,10 @@ public final class Transitions {
         // True branch can never be taken.
         return compose(t1, branch.getFalseBranch());
       }
+      if (!constraintBdd.diffSat(guard)) {
+        // False branch can never be taken.
+        return compose(t1, branch.getTrueBranch());
+      }
       // fall through
     }
     if (t1 instanceof Constraint && t2 instanceof EraseAndSet) {
