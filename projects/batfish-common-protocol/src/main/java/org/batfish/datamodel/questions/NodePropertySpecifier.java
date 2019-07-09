@@ -40,7 +40,6 @@ public class NodePropertySpecifier extends PropertySpecifier {
 
   public static final String AS_PATH_ACCESS_LISTS = "AS_Path_Access_Lists";
   public static final String AUTHENTICATION_KEY_CHAINS = "Authentication_Key_Chains";
-  public static final String CANONICAL_IP = "Canonical_IP";
   public static final String COMMUNITY_LISTS = "Community_Lists";
   public static final String CONFIGURATION_FORMAT = "Configuration_Format";
   public static final String DEFAULT_CROSS_ZONE_ACTION = "Default_Cross_Zone_Action";
@@ -55,12 +54,10 @@ public class NodePropertySpecifier extends PropertySpecifier {
   public static final String IKE_PHASE1_PROPOSALS = "IKE_Phase1_Proposals";
   public static final String INTERFACES = "Interfaces";
   public static final String IP_ACCESS_LISTS = "IP_Access_Lists";
-  public static final String IP_SPACES = "IP_Spaces";
   public static final String IP_6_ACCESS_LISTS = "IP6_Access_Lists";
   public static final String IPSEC_PEER_CONFIGS = "IPsec_Peer_Configs";
   public static final String IPSEC_PHASE2_POLICIES = "IPsec_Phase2_Policies";
   public static final String IPSEC_PHASE2_PROPOSALS = "IPsec_Phase2_Proposals";
-  public static final String IPSEC_VPNS = "IPSec_Vpns";
   public static final String LOGGING_SERVERS = "Logging_Servers";
   public static final String LOGGING_SOURCE_INTERFACE = "Logging_Source_Interface";
   public static final String NTP_SERVERS = "NTP_Servers";
