@@ -350,7 +350,9 @@ public final class BgpSessionProperties {
         _sessionType.ordinal());
   }
 
+  /** Different types of BGP sessions */
   public enum SessionType {
+    // these should all be upper case for the parse function below to work
     IBGP,
     EBGP_SINGLEHOP,
     EBGP_MULTIHOP,
@@ -362,6 +364,10 @@ public final class BgpSessionProperties {
       return sessionType == SessionType.EBGP_SINGLEHOP
           || sessionType == SessionType.EBGP_MULTIHOP
           || sessionType == EBGP_UNNUMBERED;
+    }
+
+    public static SessionType parse(String sessionType) {
+      return Enum.valueOf(SessionType.class, sessionType.toUpperCase());
     }
   }
 }
