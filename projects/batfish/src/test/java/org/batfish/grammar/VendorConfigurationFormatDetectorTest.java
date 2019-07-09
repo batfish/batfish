@@ -67,9 +67,10 @@ public class VendorConfigurationFormatDetectorTest {
   @Test
   public void testIosXr() {
     String xr = "!! IOS XR Configuration 5.2.4\n";
-    String xrRancid = "!RANCID-CONTENT-TYPE: cisco\n" + xr;
+    String xrRancid = "!RANCID-CONTENT-TYPE: cisco-xr\n";
+    String xrRancidGeneric = "!RANCID-CONTENT-TYPE: cisco\n" + xr;
 
-    for (String fileText : ImmutableList.of(xr, xrRancid)) {
+    for (String fileText : ImmutableList.of(xr, xrRancid, xrRancidGeneric)) {
       assertThat(identifyConfigurationFormat(fileText), equalTo(CISCO_IOS_XR));
     }
   }
@@ -109,8 +110,9 @@ public class VendorConfigurationFormatDetectorTest {
   public void testNxos() {
     String n7000 = "boot system bootflash:n7000-s2-dk9.7.2.1.D1.1.bin sup-2 \n";
     String nxos = "boot nxos bootflash:nxos.7.0.3.I4.7.bin \n";
+    String rancid = "!RANCID-CONTENT-TYPE: cisco-nx\n";
 
-    for (String fileText : ImmutableList.of(n7000, nxos)) {
+    for (String fileText : ImmutableList.of(n7000, nxos, rancid)) {
       assertThat(identifyConfigurationFormat(fileText), equalTo(CISCO_NX));
     }
   }

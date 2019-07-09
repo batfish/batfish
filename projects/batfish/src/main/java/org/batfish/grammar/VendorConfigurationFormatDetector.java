@@ -40,6 +40,8 @@ public final class VendorConfigurationFormatDetector {
       Pattern.compile("(?m)^!RANCID-CONTENT-TYPE: arista$");
   private static final Pattern RANCID_CISCO_NX_PATTERN =
       Pattern.compile("(?m)^!RANCID-CONTENT-TYPE: cisco-nx$");
+  private static final Pattern RANCID_CISCO_XR_PATTERN =
+      Pattern.compile("(?m)^!RANCID-CONTENT-TYPE: cisco-xr$");
   private static final Pattern RANCID_CISCO_PATTERN =
       Pattern.compile("(?m)^!RANCID-CONTENT-TYPE: cisco$");
   private static final Pattern RANCID_F5_BIGIP_STRUCTURED_PATTERN =
@@ -306,6 +308,8 @@ public final class VendorConfigurationFormatDetector {
       // subtypes
     } else if (fileTextMatches(RANCID_CISCO_NX_PATTERN)) {
       return ConfigurationFormat.CISCO_NX;
+    } else if (fileTextMatches(RANCID_CISCO_XR_PATTERN)) {
+      return ConfigurationFormat.CISCO_IOS_XR;
     } else if (fileTextMatches(RANCID_F5_BIGIP_STRUCTURED_PATTERN)) {
       return ConfigurationFormat.F5_BIGIP_STRUCTURED;
     } else if (fileTextMatches(RANCID_FORCE_10_PATTERN)) {
