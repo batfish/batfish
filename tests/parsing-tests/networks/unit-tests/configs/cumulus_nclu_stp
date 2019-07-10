@@ -1,0 +1,18 @@
+net del all
+#
+net add hostname cumulus_nclu_stp
+#
+net add interface swp1 stp bpduguard
+net add interface swp1 stp portadminedge
+net add interface swp1 stp portautoedge no
+net add interface swp1 stp portbpdufilter
+net add interface swp1 stp portnetwork
+net add interface swp1 stp portrestrole
+#
+net add bond bond1 bond slaves swp1
+net add bond bond1 stp bpduguard
+net add bond bond1 stp portadminedge
+net add bond bond1 stp portautoedge no
+net add bond bond1 stp portbpdufilter
+net add bond bond1 stp portnetwork
+net add bond bond1 stp portrestrole

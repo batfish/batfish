@@ -18,6 +18,7 @@ import org.batfish.datamodel.questions.BgpProcessPropertySpecifier;
 import org.batfish.datamodel.questions.BgpSessionStatus;
 import org.batfish.datamodel.questions.ConfiguredSessionStatus;
 import org.batfish.datamodel.questions.InterfacePropertySpecifier;
+import org.batfish.datamodel.questions.IpsecSessionStatus;
 import org.batfish.datamodel.questions.NamedStructurePropertySpecifier;
 import org.batfish.datamodel.questions.NodePropertySpecifier;
 import org.batfish.datamodel.questions.VxlanVniPropertySpecifier;
@@ -336,6 +337,14 @@ public class ParserEnumSetTest {
         InterfacePropertySpecifier.DESCRIPTION,
         InterfacePropertySpecifier.ACCESS_VLAN,
         Grammar.INTERFACE_PROPERTY_SPECIFIER);
+  }
+
+  @Test
+  public void testParseIpsecSessionStatus() {
+    testParseOtherProperties(
+        IpsecSessionStatus.MISSING_END_POINT.toString(),
+        IpsecSessionStatus.IKE_PHASE1_FAILED.toString(),
+        Grammar.IPSEC_SESSION_STATUS_SPECIFIER);
   }
 
   /** Test that interface properties are being parsed */

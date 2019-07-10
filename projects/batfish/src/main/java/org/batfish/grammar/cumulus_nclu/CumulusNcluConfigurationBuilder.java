@@ -81,6 +81,7 @@ import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.Bnp_remote_asContext;
 import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.Bob_accessContext;
 import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.Bob_pvidContext;
 import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.Bob_vidsContext;
+import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.Bobo_lacp_bypass_allowContext;
 import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.Bobo_slavesContext;
 import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.Bond_clag_idContext;
 import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.Bond_ip_addressContext;
@@ -127,6 +128,7 @@ import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.RangeContext;
 import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.Range_setContext;
 import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.Rmm_interfaceContext;
 import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.S_net_add_unrecognizedContext;
+import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.Stp_commonContext;
 import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.Uint16Context;
 import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.Uint32Context;
 import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.V_ip_addressContext;
@@ -824,6 +826,11 @@ public class CumulusNcluConfigurationBuilder extends CumulusNcluParserBaseListen
   }
 
   @Override
+  public void enterStp_common(Stp_commonContext ctx) {
+    todo(ctx);
+  }
+
+  @Override
   public void exitA_bgp(A_bgpContext ctx) {
     _currentBgpProcess = null;
     _currentBgpVrf = null;
@@ -1049,6 +1056,11 @@ public class CumulusNcluConfigurationBuilder extends CumulusNcluParserBaseListen
   @Override
   public void exitBob_vids(Bob_vidsContext ctx) {
     _currentBonds.forEach(b -> b.getBridge().setVids(IntegerSpace.of(toRangeSet(ctx.vlans))));
+  }
+
+  @Override
+  public void exitBobo_lacp_bypass_allow(Bobo_lacp_bypass_allowContext ctx) {
+    todo(ctx);
   }
 
   @Override

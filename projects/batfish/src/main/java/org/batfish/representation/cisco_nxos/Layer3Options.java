@@ -1,11 +1,12 @@
 package org.batfish.representation.cisco_nxos;
 
+import java.io.Serializable;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.datamodel.IntegerSpace;
 
 /** Options available to all {@link ActionIpAccessListLine}s. */
-public final class Layer3Options {
+public final class Layer3Options implements Serializable {
 
   public static final class Builder {
 

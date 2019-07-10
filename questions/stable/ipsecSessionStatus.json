@@ -26,8 +26,8 @@
                 "displayName": "Remote Nodes"
             },
             "status": {
-                "description": "Only include IPSec sessions for which status matches this regex",
-                "type": "ipsecSessionStatus",
+                "description": "Only include IPSec sessions for which status matches this specifier",
+                "type": "ipsecSessionStatusSpec",
                 "optional": true,
                 "displayName": "Status"
             }

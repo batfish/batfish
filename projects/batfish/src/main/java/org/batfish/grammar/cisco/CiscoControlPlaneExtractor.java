@@ -259,6 +259,7 @@ import static org.batfish.representation.cisco.CiscoStructureUsage.ROUTE_MAP_MAT
 import static org.batfish.representation.cisco.CiscoStructureUsage.ROUTE_MAP_MATCH_IPV6_ACCESS_LIST;
 import static org.batfish.representation.cisco.CiscoStructureUsage.ROUTE_MAP_MATCH_IPV6_PREFIX_LIST;
 import static org.batfish.representation.cisco.CiscoStructureUsage.ROUTE_MAP_SET_COMMUNITY;
+import static org.batfish.representation.cisco.CiscoStructureUsage.ROUTE_POLICY_APPLY;
 import static org.batfish.representation.cisco.CiscoStructureUsage.ROUTE_POLICY_AS_PATH_IN;
 import static org.batfish.representation.cisco.CiscoStructureUsage.ROUTE_POLICY_COMMUNITY_MATCHES_ANY;
 import static org.batfish.representation.cisco.CiscoStructureUsage.ROUTE_POLICY_COMMUNITY_MATCHES_EVERY;
@@ -11711,7 +11712,10 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   }
 
   private RoutePolicyBoolean toRoutePolicyBoolean(Boolean_apply_rp_stanzaContext ctx) {
-    return new RoutePolicyBooleanApply(ctx.name.getText());
+    String name = ctx.name.getText();
+    _configuration.referenceStructure(
+        ROUTE_POLICY, name, ROUTE_POLICY_APPLY, ctx.name.getStart().getLine());
+    return new RoutePolicyBooleanApply(name);
   }
 
   private RoutePolicyBoolean toRoutePolicyBoolean(Boolean_as_path_in_rp_stanzaContext ctx) {

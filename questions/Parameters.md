@@ -28,6 +28,8 @@ For many parameters types, there is a "resolver" question that may be used to le
 
 * [`ipProtocolSpec`](#ip-protocol-specifier)
 
+* [`ipsecSessionStatusSpec`](#ipsec-session-status-specifier)
+
 * [`locationSpec`](#location-specifier)
 
 * [`mlag-id-specifier`](#mlag-id-specifier)
@@ -321,6 +323,20 @@ ipTerm :=
 #### IP Specifier Resolver
 
 * `resolveIpSpecifier` shows the set of IP addresses represented by the given input.
+
+## IPSec Session Status Specifier
+
+ A specification for a set of IPSec session statuses.
+
+ * `IKE_PHASE1_FAILED` specifies a set with that status.
+
+ * `IKE_PHASE1_FAILED, IPSEC_PHASE2_FAILED` specifies a set with those two statues.
+
+ * `/phase1/` specifies a set with all statuses that have 'phase1' as a substring.
+
+#### IPSec Session Status Specifier Grammar
+
+ An IPSec session status specifier is a set of enums (see above) over the following values:   IPSEC_SESSION_ESTABLISHED, IKE_PHASE1_FAILED, IKE_PHASE1_KEY_MISMATCH, IPSEC_PHASE2_FAILED, MISSING_END_POINT. 
 
 ## Location Specifier
 
