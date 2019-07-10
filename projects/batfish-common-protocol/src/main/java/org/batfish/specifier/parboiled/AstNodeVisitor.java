@@ -112,4 +112,10 @@ interface AstNodeVisitor<T> {
   <T1> T visitValueEnumSetAstNode(ValueEnumSetAstNode<T1> valueEnumSetAstNode);
 
   T visitRegexEnumSetAstNode(RegexEnumSetAstNode regexEnumSetAstNode);
+
+  T visitUnionNameSetAstNode(UnionNameSetAstNode unionNameSetAstNode);
+
+  T visitRegexNameSetAstNode(RegexNameSetAstNode regexNameSetAstNode);
+
+  <T> T visitNameNameSetAstNode(NameNameSetAstNode tNameNameSetAstNode);
 }

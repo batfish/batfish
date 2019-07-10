@@ -3,11 +3,12 @@ package org.batfish.question.mlag;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableList.Builder;
+import com.google.common.collect.ImmutableSet;
 import java.util.Collection;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.SortedMap;
-import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 import org.batfish.common.Answerer;
@@ -23,6 +24,10 @@ import org.batfish.datamodel.table.ColumnMetadata;
 import org.batfish.datamodel.table.Row;
 import org.batfish.datamodel.table.TableAnswerElement;
 import org.batfish.datamodel.table.TableMetadata;
+import org.batfish.specifier.AllNodesNodeSpecifier;
+import org.batfish.specifier.ConstantNameSetSpecifier;
+import org.batfish.specifier.SpecifierFactories;
+import org.batfish.specifier.parboiled.Grammar;
 
 /** Answerer for the {@link MlagPropertiesQuestion} */
 public final class MlagPropertiesAnswerer extends Answerer {
@@ -39,17 +44,25 @@ public final class MlagPropertiesAnswerer extends Answerer {
   @Override
   public AnswerElement answer() {
     MlagPropertiesQuestion question = (MlagPropertiesQuestion) _question;
-    Set<String> nodes = question.getNodeSpecifier().resolve(_batfish.specifierContext());
-    Pattern mlagPattern = Pattern.compile(question.getMlagIdRegex());
+    Set<String> nodes =
+        SpecifierFactories.getNodeSpecifierOrDefault(
+                question.getNodeSpecInput(), AllNodesNodeSpecifier.INSTANCE)
+            .resolve(_batfish.specifierContext());
+    Set<String> mlagIds =
+        SpecifierFactories.getNameSetSpecifierOrDefault(
+                question.getMlagIdSpecInput(),
+                Grammar.MLAG_ID_SPECIFIER,
+                new ConstantNameSetSpecifier(getAllMlagIds(_batfish.loadConfigurations())))
+            .resolve(_batfish.specifierContext());
     SortedMap<String, Configuration> configs = _batfish.loadConfigurations();
 
-    return computeAnswer(nodes, mlagPattern, configs);
+    return computeAnswer(nodes, mlagIds, configs);
   }
 
   @VisibleForTesting
   @Nonnull
   static TableAnswerElement computeAnswer(
-      Set<String> nodes, Pattern mlagIdPattern, SortedMap<String, Configuration> configs) {
+      Set<String> nodes, Set<String> mlagIds, SortedMap<String, Configuration> configs) {
     ImmutableList<NodeToMlags> mlagConfigs =
         nodes.stream()
             .map(configs::get)
@@ -60,7 +73,7 @@ public final class MlagPropertiesAnswerer extends Answerer {
                     new NodeToMlags(
                         c.getHostname(),
                         c.getMlags().values().stream()
-                            .filter(mlag -> mlagIdPattern.matcher(mlag.getId()).matches())
+                            .filter(mlag -> mlagIds.contains(mlag.getId()))
                             .collect(Collectors.toList())))
             .filter(mc -> !mc._mlags.isEmpty())
             .collect(ImmutableList.toImmutableList());
@@ -121,5 +134,12 @@ public final class MlagPropertiesAnswerer extends Answerer {
       _hostname = hostname;
       _mlags = mlag;
     }
+  }
+
+  @VisibleForTesting
+  static Set<String> getAllMlagIds(Map<String, Configuration> configs) {
+    return configs.values().stream()
+        .flatMap(c -> c.getMlags().keySet().stream())
+        .collect(ImmutableSet.toImmutableSet());
   }
 }

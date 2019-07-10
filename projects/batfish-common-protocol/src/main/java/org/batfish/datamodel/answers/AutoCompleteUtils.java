@@ -482,6 +482,26 @@ public final class AutoCompleteUtils {
                     referenceLibrary);
             break;
           }
+        case MLAG_ID:
+          {
+            checkCompletionMetadata(completionMetadata, network, snapshot);
+            suggestions = stringAutoComplete(query, completionMetadata.getMlagIds());
+            break;
+          }
+        case MLAG_ID_SPEC:
+          {
+            suggestions =
+                ParboiledAutoComplete.autoComplete(
+                    Grammar.MLAG_ID_SPECIFIER,
+                    network,
+                    snapshot,
+                    query,
+                    maxSuggestions,
+                    completionMetadata,
+                    nodeRolesData,
+                    referenceLibrary);
+            break;
+          }
         case NAMED_STRUCTURE_SPEC:
           {
             suggestions =

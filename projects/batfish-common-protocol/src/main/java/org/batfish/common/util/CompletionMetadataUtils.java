@@ -73,6 +73,15 @@ public final class CompletionMetadataUtils {
   }
 
   @VisibleForTesting
+  public static Set<String> getMlagIds(Map<String, Configuration> configurations) {
+    ImmutableSet.Builder<String> mlags = ImmutableSet.builder();
+    configurations
+        .values()
+        .forEach(configuration -> configuration.getMlags().keySet().stream().forEach(mlags::add));
+    return mlags.build();
+  }
+
+  @VisibleForTesting
   public static Set<String> getNodes(Map<String, Configuration> configurations) {
     return ImmutableSet.copyOf(configurations.keySet());
   }

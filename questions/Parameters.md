@@ -26,6 +26,8 @@ For many parameters types, there is a "resolver" question that may be used to le
 
 * [`locationSpec`](#location-specifier)
 
+* [`mlag-id-specifier`](#mlag-id-specifier)
+
 * [`namedStructureSpec`](#named-structure-specifier)
 
 * [`nodePropertySpec`](#node-property-specifier)
@@ -52,7 +54,7 @@ For many parameters types, there is a "resolver" question that may be used to le
   * `/abc/`, `/^abc/`, `/abc$/` match strings strings containing, beginning with, and ending with 'abc'
   * `/ab[c-d]/` and `/ab(c|d)/` match strings 'abc' and 'abd'.
 
-* **Set of enums** Many parameter types such as `applicationSpec` represent a set of enumerated values. Such parameters share a common grammar, though with different base values. Example expressions for this grammar are `val1`, `/val.*/` and `val1, val2`, which respectively, refer to the value "val1", all values that match "val.*", and a set with two values. 
+* **Set of enums** Many parameter types such as `applicationSpec` or `mlagIdSpec` represent a set of values. Such parameters share a common grammar, though with different base values. Example expressions for this grammar are `val1`, `/val.*/` and `val1, val2`, which respectively, refer to the value "val1", all values that match "val.*", and a set with two values. 
 
    The specification of this grammar is:
 
@@ -332,6 +334,20 @@ locationInterface :=
 * `resolveLocationSpecifier` shows the set of locations represented by the given input.
 * `resolveIpsOfLocationSpecifier` shows the mapping from locations to IPs that will be used in `traceroute` and   `reachability` questions when IPs are not explicitly specified. 
 
+
+## MLAG ID Specifier
+
+A specification for a set of MLAG Ids.
+
+* `domain1` indicates a single domain with that name.
+
+* `domain1, domain2` indicates these two domains.
+
+* `/domain/` indicates all domains with that substring.
+
+#### MLAG ID Specifier Grammar
+
+An MLAG ID specifier grammar follows the enum set grammar (see above) with the base set of values as all Ids that appear in the snapshot. 
 
 ## Named Structure Specifier
 

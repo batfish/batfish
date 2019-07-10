@@ -92,6 +92,7 @@ public class AutoCompleteUtilsTest {
                 new NodeInterfacePair("leaf", "leafInterface"),
                 new NodeInterfacePair("\"/foo/leaf\"", "fooInterface")))
         .setIps(ImmutableSet.of("1.1.1.1", "11.2.3.4", "3.1.2.4", "1.2.3.4", "4.4.4.4"))
+        .setMlagIds(ImmutableSet.of("mlag1", "mlag2", "other"))
         .setVrfs(ImmutableSet.of("default"))
         .build();
   }
@@ -367,6 +368,30 @@ public class AutoCompleteUtilsTest {
                 IKE_PHASE1_FAILED.toString(),
                 IKE_PHASE1_KEY_MISMATCH.toString(),
                 IPSEC_PHASE2_FAILED.toString())));
+  }
+
+  @Test
+  public void testMlagIdAutocomplete() {
+    CompletionMetadata completionMetadata = getMockCompletionMetadata();
+    assertThat(
+        AutoCompleteUtils.autoComplete(
+                "network", "snapshot", Type.MLAG_ID, "ag", 10, completionMetadata, null, null)
+            .stream()
+            .map(AutocompleteSuggestion::getText)
+            .collect(Collectors.toSet()),
+        equalTo(ImmutableSet.of("mlag1", "mlag2")));
+  }
+
+  @Test
+  public void testMlagIdSpecAutocomplete() {
+    CompletionMetadata completionMetadata = getMockCompletionMetadata();
+    assertThat(
+        AutoCompleteUtils.autoComplete(
+                "network", "snapshot", Type.MLAG_ID_SPEC, "ag", 10, completionMetadata, null, null)
+            .stream()
+            .map(AutocompleteSuggestion::getText)
+            .collect(Collectors.toSet()),
+        equalTo(ImmutableSet.of("mlag1", "mlag2", ",")));
   }
 
   @Test

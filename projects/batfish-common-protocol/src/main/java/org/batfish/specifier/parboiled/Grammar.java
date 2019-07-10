@@ -23,6 +23,7 @@ public enum Grammar {
   IP_PROTOCOL_SPECIFIER("ipProtocolSpecifier", "ip-protocol-specifier"),
   IP_SPACE_SPECIFIER("ipSpecifier", "ip-specifier"),
   LOCATION_SPECIFIER("locationSpecifier", "location-specifier"),
+  MLAG_ID_SPECIFIER("mlagSpecifier", "mlag-id-specifier"),
   NAMED_STRUCTURE_SPECIFIER("namedStructureSpecifier", "named-structure-specifier"),
   NODE_PROPERTY_SPECIFIER("nodePropertySpecifier", "node-property-specifier"),
   NODE_SPECIFIER("nodeSpecifier", "node-specifier"),

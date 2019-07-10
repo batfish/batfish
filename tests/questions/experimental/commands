@@ -46,7 +46,7 @@ test -raw tests/questions/experimental/interfaceMtu.ref validate-template interf
 test -raw tests/questions/experimental/interfaceProperties.ref validate-template interfaceProperties excludeShutInterfaces=false, nodes=".*", interfaces=".*", properties=".*"
 
 # validate mlagProperties
-test -raw tests/questions/experimental/mlagProperties.ref validate-template mlagProperties nodes="mynodes", idRegex="myids"
+test -raw tests/questions/experimental/mlagProperties.ref validate-template mlagProperties nodes="mynodes", mlagIds="myids"
 
 # validate multipathConsistency
 test -raw tests/questions/experimental/multipathConsistency.ref validate-template multipathConsistency pathConstraints={startLocation: "aaa", "endLocation":"bbb", "transitLocations": "ccc", forbiddenLocations:"ddd"}, headers={srcIps: "sss", dstIps="ddd"}, maxTraces=1
