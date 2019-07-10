@@ -77,7 +77,16 @@ a_bond
 
 bond_bond
 :
-  BOND bobo_slaves
+  BOND
+  (
+    bobo_lacp_bypass_allow
+    | bobo_slaves
+  )
+;
+
+bobo_lacp_bypass_allow
+:
+  LACP_BYPASS_ALLOW NEWLINE
 ;
 
 bobo_slaves
