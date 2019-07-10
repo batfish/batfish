@@ -3,6 +3,7 @@ package org.batfish.datamodel.questions;
 /** Compatibility statuses for BgpSessionCompatibilityAnswerer */
 public enum ConfiguredSessionStatus {
   // ordered by how we evaluate status
+  // should all be upper case for parsing to work
   /** Active peer with no local IP configured; session type is IBGP or EBGP multihop */
   LOCAL_IP_UNKNOWN_STATICALLY,
   /** Active peer with no local IP configured; session type is EBGP single-hop */
@@ -28,5 +29,9 @@ public enum ConfiguredSessionStatus {
   /** Passive peer with one or more compatible remote peers */
   DYNAMIC_MATCH,
   /** Passive peer with no compatible remote peers */
-  NO_MATCH_FOUND
+  NO_MATCH_FOUND;
+
+  public static ConfiguredSessionStatus parse(String status) {
+    return Enum.valueOf(ConfiguredSessionStatus.class, status.toUpperCase());
+  }
 }

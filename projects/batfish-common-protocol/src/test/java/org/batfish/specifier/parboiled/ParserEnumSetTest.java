@@ -15,6 +15,8 @@ import org.batfish.datamodel.BgpSessionProperties.SessionType;
 import org.batfish.datamodel.Protocol;
 import org.batfish.datamodel.questions.BgpPeerPropertySpecifier;
 import org.batfish.datamodel.questions.BgpProcessPropertySpecifier;
+import org.batfish.datamodel.questions.BgpSessionStatus;
+import org.batfish.datamodel.questions.ConfiguredSessionStatus;
 import org.batfish.datamodel.questions.InterfacePropertySpecifier;
 import org.batfish.datamodel.questions.NamedStructurePropertySpecifier;
 import org.batfish.datamodel.questions.NodePropertySpecifier;
@@ -301,6 +303,22 @@ public class ParserEnumSetTest {
         BgpProcessPropertySpecifier.ROUTE_REFLECTOR,
         BgpProcessPropertySpecifier.TIE_BREAKER,
         Grammar.BGP_PROCESS_PROPERTY_SPECIFIER);
+  }
+
+  @Test
+  public void testParseBgpSessionCompatibilityStatus() {
+    testParseOtherProperties(
+        ConfiguredSessionStatus.UNIQUE_MATCH.toString(),
+        ConfiguredSessionStatus.NO_REMOTE_AS.toString(),
+        Grammar.BGP_SESSION_COMPAT_STATUS_SPECIFIER);
+  }
+
+  @Test
+  public void testParseBgpSessionStatus() {
+    testParseOtherProperties(
+        BgpSessionStatus.NOT_COMPATIBLE.toString(),
+        BgpSessionStatus.ESTABLISHED.toString(),
+        Grammar.BGP_SESSION_STATUS_SPECIFIER);
   }
 
   @Test

@@ -108,6 +108,8 @@ public class Parser extends CommonParser {
       case APPLICATION_SPECIFIER:
       case BGP_PEER_PROPERTY_SPECIFIER:
       case BGP_PROCESS_PROPERTY_SPECIFIER:
+      case BGP_SESSION_COMPAT_STATUS_SPECIFIER:
+      case BGP_SESSION_STATUS_SPECIFIER:
       case BGP_SESSION_TYPE_SPECIFIER:
         return input(EnumSetSpec(Grammar.getEnumValues(grammar)));
       case FILTER_SPECIFIER:

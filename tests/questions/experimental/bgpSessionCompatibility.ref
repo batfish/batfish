@@ -30,10 +30,10 @@
         "value" : ".*"
       },
       "status" : {
-        "description" : "Only include sessions for which status matches this regex",
-        "displayName" : "Status",
+        "description" : "Only include sessions for which compatibility status matches this specifier",
+        "displayName" : "Compatibility Status",
         "optional" : true,
-        "type" : "bgpSessionStatus",
+        "type" : "bgpSessionCompatStatusSpec",
         "value" : ".*"
       },
       "type" : {

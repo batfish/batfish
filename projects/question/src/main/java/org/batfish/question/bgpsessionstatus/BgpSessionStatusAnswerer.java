@@ -1,6 +1,9 @@
 package org.batfish.question.bgpsessionstatus;
 
 import static org.batfish.datamodel.BgpSessionProperties.getSessionType;
+import static org.batfish.datamodel.questions.BgpSessionStatus.ESTABLISHED;
+import static org.batfish.datamodel.questions.BgpSessionStatus.NOT_COMPATIBLE;
+import static org.batfish.datamodel.questions.BgpSessionStatus.NOT_ESTABLISHED;
 import static org.batfish.datamodel.questions.ConfiguredSessionStatus.UNIQUE_MATCH;
 import static org.batfish.datamodel.table.TableMetadata.toColumnMap;
 import static org.batfish.question.bgpsessionstatus.BgpSessionAnswererUtils.COL_LOCAL_AS;
@@ -16,9 +19,6 @@ import static org.batfish.question.bgpsessionstatus.BgpSessionAnswererUtils.COL_
 import static org.batfish.question.bgpsessionstatus.BgpSessionAnswererUtils.getConfiguredStatus;
 import static org.batfish.question.bgpsessionstatus.BgpSessionAnswererUtils.getLocallyBrokenStatus;
 import static org.batfish.question.bgpsessionstatus.BgpSessionAnswererUtils.matchesNodesAndType;
-import static org.batfish.question.bgpsessionstatus.BgpSessionStatusAnswerer.SessionStatus.ESTABLISHED;
-import static org.batfish.question.bgpsessionstatus.BgpSessionStatusAnswerer.SessionStatus.NOT_COMPATIBLE;
-import static org.batfish.question.bgpsessionstatus.BgpSessionStatusAnswerer.SessionStatus.NOT_ESTABLISHED;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
@@ -50,6 +50,7 @@ import org.batfish.datamodel.answers.SelfDescribingObject;
 import org.batfish.datamodel.bgp.BgpTopologyUtils;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.pojo.Node;
+import org.batfish.datamodel.questions.BgpSessionStatus;
 import org.batfish.datamodel.questions.DisplayHints;
 import org.batfish.datamodel.questions.Question;
 import org.batfish.datamodel.table.ColumnMetadata;
@@ -57,13 +58,8 @@ import org.batfish.datamodel.table.Row;
 import org.batfish.datamodel.table.TableAnswerElement;
 import org.batfish.datamodel.table.TableMetadata;
 
+/** Answerer for {@link BgpSessionStatusQuestion} */
 public class BgpSessionStatusAnswerer extends Answerer {
-
-  public enum SessionStatus {
-    ESTABLISHED,
-    NOT_ESTABLISHED,
-    NOT_COMPATIBLE
-  }
 
   static final String COL_ESTABLISHED_STATUS = "Established_Status";
 
@@ -123,7 +119,7 @@ public class BgpSessionStatusAnswerer extends Answerer {
    * Return the answer for {@link BgpSessionStatusQuestion} -- a set of BGP sessions and their
    * status.
    */
-  private List<Row> getRows(BgpSessionQuestion question) {
+  private List<Row> getRows(BgpSessionStatusQuestion question) {
     Map<String, Configuration> configurations = _batfish.loadConfigurations();
     NetworkConfigurations nc = NetworkConfigurations.of(configurations);
     Set<String> nodes = question.getNodeSpecifier().resolve(_batfish.specifierContext());
@@ -185,7 +181,7 @@ public class BgpSessionStatusAnswerer extends Answerer {
     SessionType type = getSessionType(activePeer);
 
     // Check topologies to determine the peer's status and, if applicable, remote node
-    SessionStatus status = NOT_COMPATIBLE;
+    BgpSessionStatus status = NOT_COMPATIBLE;
     Node remoteNode = null;
     if (establishedTopology.nodes().contains(activeId)
         && establishedTopology.outDegree(activeId) == 1) {
@@ -276,7 +272,7 @@ public class BgpSessionStatusAnswerer extends Answerer {
               assert sessionProps != null;
               BgpActivePeerConfig activeRemote = nc.getBgpPointToPointPeerConfig(remoteId);
               assert activeRemote != null;
-              SessionStatus status =
+              BgpSessionStatus status =
                   establishedRemotes.contains(remoteId) ? ESTABLISHED : NOT_ESTABLISHED;
               return rb.put(COL_ESTABLISHED_STATUS, status)
                   .put(COL_LOCAL_IP, sessionProps.getTailIp())
@@ -296,7 +292,7 @@ public class BgpSessionStatusAnswerer extends Answerer {
       BgpUnnumberedPeerConfig unnumPeer,
       ValueGraph<BgpPeerConfigId, BgpSessionProperties> configuredTopology,
       ValueGraph<BgpPeerConfigId, BgpSessionProperties> establishedTopology) {
-    SessionStatus status = NOT_COMPATIBLE;
+    BgpSessionStatus status = NOT_COMPATIBLE;
     BgpPeerConfigId remoteId = null;
     if (establishedTopology.nodes().contains(unnumId)
         && establishedTopology.outDegree(unnumId) == 1) {
@@ -346,8 +342,9 @@ public class BgpSessionStatusAnswerer extends Answerer {
   }
 
   private static boolean matchesQuestionFilters(
-      Row row, Set<String> nodes, Set<String> remoteNodes, BgpSessionQuestion question) {
+      Row row, Set<String> nodes, Set<String> remoteNodes, BgpSessionStatusQuestion question) {
     return matchesNodesAndType(row, nodes, remoteNodes, question)
-        && question.matchesStatus((String) row.get(COL_ESTABLISHED_STATUS, Schema.STRING));
+        && question.matchesStatus(
+            BgpSessionStatus.parse((String) row.get(COL_ESTABLISHED_STATUS, Schema.STRING)));
   }
 }

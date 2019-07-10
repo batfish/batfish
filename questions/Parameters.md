@@ -10,6 +10,10 @@ For many parameters types, there is a "resolver" question that may be used to le
 
 * [`bgpProcessPropertySpec`](#bgp-process-property-specifier)
 
+* [`bgpSessionCompatStatusSpec`](#bgp-session-compat-status-specifier)
+
+* [`bgpSessionStatusSpec`](#bgp-session-status-specifier)
+
 * [`bgpSessionTypeSpec`](#bgp-session-type-specifier)
 
 * [`dispositionSpec`](#disposition-specifier)
@@ -88,6 +92,34 @@ A BGP peer property property specifier is a set of enums (see above) over the fo
 A specification for a set of BGP process properties (e.g., those returned by the `bgpProcessConfiguration` question).
 
 A BGP process property specifier is a set of enums (see above) over the following values: Multipath_Match_Mode, Multipath_EBGP, Multipath_IBGP, Neighbors, Route_Reflector, Tie_Breaker. 
+
+## BGP Session Compat Status Specifier
+
+A specification for a set of BGP session compatibility statuses.
+
+* `UNIQUE_MATCH` specifies a singleton set with that status.
+
+* `UNIQUE_MATCH, DYNAMIC_MATCH` specifies a set with those statuses.
+
+* `/match/` specifies a set with statuses that contain that substring.
+
+#### BGP Session Compat Status Specifier Grammar
+
+A BGP session status specifier is a set of enums (see above) over the following values: LOCAL_IP_UNKNOWN_STATICALLY, NO_LOCAL_IP, NO_LOCAL_AS, NO_REMOTE_IP, NO_REMOTE_PREFIX, NO_REMOTE_AS, INVALID_LOCAL_IP, UNKNOWN_REMOTE, HALF_OPEN, MULTIPLE_REMOTES, UNIQUE_MATCH, DYNAMIC_MATCH, NO_MATCH_FOUND. 
+
+## BGP Session Status Specifier
+
+A specification for a set of BGP session statuses.
+
+* `ESTABLISHED` specifies a singleton set with that status.
+
+* `NOT_ESTABLISHED, NOT_COMPATIBLE` specifies a set with those statuses.
+
+* `/estab/` specifies a set with statuses that contain that substring.
+
+#### BGP Session Status Specifier Grammar
+
+A BGP session status specifier is a set of enums (see above) over the following values: ESTABLISHED, NOT_ESTABLISHED, NOT_COMPATIBLE. 
 
 ## BGP Session Type Specifier
 

@@ -27,10 +27,10 @@
                 "displayName": "Remote Nodes"
             },
             "status": {
-                "description": "Only include sessions for which status matches this regex",
-                "type": "bgpSessionStatus",
+                "description": "Only include sessions for which compatibility status matches this specifier",
+                "type": "bgpSessionCompatStatusSpec",
                 "optional": true,
-                "displayName": "Status"
+                "displayName": "Compatibility Status"
             },
             "type": {
                 "description": "Only include sessions that match this specifier",

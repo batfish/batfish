@@ -29,7 +29,6 @@ import org.batfish.datamodel.InterfaceType;
 import org.batfish.datamodel.Protocol;
 import org.batfish.datamodel.answers.AutocompleteSuggestion.SuggestionType;
 import org.batfish.datamodel.collections.NodeInterfacePair;
-import org.batfish.datamodel.questions.ConfiguredSessionStatus;
 import org.batfish.datamodel.questions.IpsecSessionStatus;
 import org.batfish.datamodel.questions.OspfPropertySpecifier;
 import org.batfish.datamodel.questions.Variable;
@@ -287,14 +286,32 @@ public final class AutoCompleteUtils {
                     referenceLibrary);
             break;
           }
-        case BGP_SESSION_STATUS:
+        case BGP_SESSION_COMPAT_STATUS_SPEC:
           {
             suggestions =
-                baseAutoComplete(
+                ParboiledAutoComplete.autoComplete(
+                    Grammar.BGP_SESSION_COMPAT_STATUS_SPECIFIER,
+                    network,
+                    snapshot,
                     query,
-                    Stream.of(ConfiguredSessionStatus.values())
-                        .map(ConfiguredSessionStatus::name)
-                        .collect(Collectors.toSet()));
+                    maxSuggestions,
+                    completionMetadata,
+                    nodeRolesData,
+                    referenceLibrary);
+            break;
+          }
+        case BGP_SESSION_STATUS_SPEC:
+          {
+            suggestions =
+                ParboiledAutoComplete.autoComplete(
+                    Grammar.BGP_SESSION_STATUS_SPECIFIER,
+                    network,
+                    snapshot,
+                    query,
+                    maxSuggestions,
+                    completionMetadata,
+                    nodeRolesData,
+                    referenceLibrary);
             break;
           }
         case BGP_SESSION_TYPE_SPEC:
