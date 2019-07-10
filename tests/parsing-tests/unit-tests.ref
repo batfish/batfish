@@ -74625,6 +74625,12 @@
           "Parse warnings" : [
             {
               "Comment" : "This feature is not currently supported",
+              "Line" : 19,
+              "Parser_Context" : "[bobo_lacp_bypass_allow bond_bond a_bond s_net_add statement cumulus_nclu_configuration]",
+              "Text" : "lacp-bypass-allow"
+            },
+            {
+              "Comment" : "This feature is not currently supported",
               "Line" : 25,
               "Parser_Context" : "[brbr_vlan_aware bridge_bridge a_bridge s_net_add statement cumulus_nclu_configuration]",
               "Text" : "vlan-aware"
