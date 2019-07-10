@@ -14451,6 +14451,7 @@
                     "l3Vnis" : [
                       {
                         "advertiseV4Unicast" : true,
+                        "advertisedSourceAddress" : "192.0.2.7",
                         "importRouteTarget" : "^\\d+:10001$",
                         "routeDistinguisher" : "192.0.2.3:0",
                         "routeTarget" : "2:65500:10001",
@@ -14508,6 +14509,7 @@
                     "l3Vnis" : [
                       {
                         "advertiseV4Unicast" : true,
+                        "advertisedSourceAddress" : "192.0.2.7",
                         "importRouteTarget" : "^\\d+:10001$",
                         "routeDistinguisher" : "192.0.2.3:0",
                         "routeTarget" : "2:65500:10001",
@@ -14565,6 +14567,7 @@
                     "l3Vnis" : [
                       {
                         "advertiseV4Unicast" : true,
+                        "advertisedSourceAddress" : "192.0.2.7",
                         "importRouteTarget" : "^\\d+:10001$",
                         "routeDistinguisher" : "192.0.2.3:0",
                         "routeTarget" : "2:65500:10001",

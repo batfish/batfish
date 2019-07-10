@@ -98,21 +98,13 @@ public class BgpRoutingProcessTest {
   @Test
   public void testInitEvpnType3Route() {
     Ip ip = Ip.parse("1.1.1.1");
+    Ip advertiseIp = Ip.parse("1.2.2.2");
     ExtendedCommunity routeTarget = ExtendedCommunity.target(1, 1);
     RouteDistinguisher routeDistinguisher = RouteDistinguisher.from(ip, 1);
     int admin = 20;
     EvpnType3Route route =
-        initEvpnType3Route(
-            admin,
-            VniSettings.builder()
-                .setVlan(1)
-                .setVni(10001)
-                .setBumTransportMethod(BumTransportMethod.UNICAST_FLOOD_GROUP)
-                .setSourceAddress(ip)
-                .build(),
-            routeTarget,
-            routeDistinguisher,
-            ip);
+        initEvpnType3Route(admin, advertiseIp, routeTarget, routeDistinguisher, ip);
+
     assertThat(
         route,
         equalTo(
@@ -123,7 +115,7 @@ public class BgpRoutingProcessTest {
                 .setProtocol(RoutingProtocol.BGP)
                 .setOriginType(OriginType.EGP)
                 .setLocalPreference(BgpRoute.DEFAULT_LOCAL_PREFERENCE)
-                .setVniIp(ip)
+                .setVniIp(advertiseIp)
                 .setOriginatorIp(ip)
                 .build()));
   }
@@ -143,11 +135,13 @@ public class BgpRoutingProcessTest {
             .setImportRouteTarget(VniConfig.importRtPatternForAnyAs(vni))
             .setAdvertiseV4Unicast(false);
     Layer3VniConfig vniConfig1 = vniConfigBuilder.build();
+    Ip advertiseIpVni2 = Ip.parse("3.3.3.3");
     Layer3VniConfig vniConfig2 =
         vniConfigBuilder
             .setVni(vni2)
             .setVrf(_vrf2.getName())
             .setRouteTarget(ExtendedCommunity.target(65500, vni2))
+            .setAdvertisedSourceAddress(advertiseIpVni2)
             .build();
     BgpActivePeerConfig evpnPeer =
         BgpActivePeerConfig.builder()
@@ -216,7 +210,7 @@ public class BgpRoutingProcessTest {
             .collect(ImmutableSet.toImmutableSet()),
         contains(
             EvpnType3Route.builder()
-                .setVniIp(localIp)
+                .setVniIp(advertiseIpVni2)
                 .setRouteDistinguisher(RouteDistinguisher.from(_bgpProcess.getRouterId(), 2))
                 .setCommunities(ImmutableSet.of(ExtendedCommunity.target(65500, vni2)))
                 .setLocalPreference(Bgpv4Route.DEFAULT_LOCAL_PREFERENCE)

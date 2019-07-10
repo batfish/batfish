@@ -247,6 +247,7 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
                   .setVrf(bgpVrf.getVrfName())
                   .setRouteDistinguisher(rd)
                   .setRouteTarget(rt)
+                  .setAdvertisedSourceAddress(_loopback.getClagVxlanAnycastIp())
                   .build());
         }
       }
@@ -271,6 +272,7 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
                           .setRouteTarget(rt)
                           .setImportRouteTarget(importRtPatternForAnyAs(l3Vni))
                           .setAdvertiseV4Unicast(evpnConfig.getAdvertiseIpv4Unicast() != null)
+                          .setAdvertisedSourceAddress(_loopback.getClagVxlanAnycastIp())
                           .build());
                 }
               });

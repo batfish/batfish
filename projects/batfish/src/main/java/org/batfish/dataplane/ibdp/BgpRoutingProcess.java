@@ -396,12 +396,13 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
               VniSettings vniSettings = vniVrf.getVniSettings().get(vniConfig.getVni());
               assert vniSettings != null; // Invariant guaranteed by proper conversion
               if (vniSettings.getSourceAddress() == null) {
-                return;
+                return; // Skip invalid VNIs
               }
               EvpnType3Route route =
                   initEvpnType3Route(
                       ebgpAdmin,
-                      vniSettings,
+                      firstNonNull(
+                          vniConfig.getAdvertisedSourceAddress(), vniSettings.getSourceAddress()),
                       vniConfig.getRouteTarget(),
                       vniConfig.getRouteDistinguisher(),
                       _process.getRouterId());
@@ -433,14 +434,10 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
   @VisibleForTesting
   static EvpnType3Route initEvpnType3Route(
       int ebgpAdmin,
-      VniSettings vniSettings,
+      Ip advertiseIp,
       ExtendedCommunity routeTarget,
       RouteDistinguisher routeDistinguisher,
       Ip routerId) {
-    checkArgument(
-        vniSettings.getSourceAddress() != null,
-        "Cannot construct type 3 route for invalid VNI %s",
-        vniSettings.getVni());
     // Locally all routes start as eBGP routes in our own RIB
     EvpnType3Route.Builder type3RouteBuilder = EvpnType3Route.builder();
     type3RouteBuilder.setAdmin(ebgpAdmin);
@@ -450,7 +447,7 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
     type3RouteBuilder.setOriginType(OriginType.EGP);
     type3RouteBuilder.setProtocol(RoutingProtocol.BGP);
     type3RouteBuilder.setRouteDistinguisher(routeDistinguisher);
-    type3RouteBuilder.setVniIp(vniSettings.getSourceAddress());
+    type3RouteBuilder.setVniIp(advertiseIp);
 
     return type3RouteBuilder.build();
   }

@@ -11,6 +11,7 @@ import java.util.Comparator;
 import java.util.Objects;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
+import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.bgp.community.ExtendedCommunity;
 
 /** A Layer 2 {@link VniConfig} */
@@ -21,16 +22,18 @@ public class Layer2VniConfig extends VniConfig
   private Layer2VniConfig(
       int vni,
       String vrf,
+      @Nullable Ip advertisedSourceAddress,
       RouteDistinguisher rd,
       ExtendedCommunity routeTarget,
       String importRouteTarget) {
-    super(vni, vrf, rd, routeTarget, importRouteTarget);
+    super(vni, vrf, rd, advertisedSourceAddress, routeTarget, importRouteTarget);
   }
 
   @JsonCreator
   private static Layer2VniConfig create(
       @Nullable @JsonProperty(PROP_VNI) Integer vni,
       @Nullable @JsonProperty(PROP_VRF) String vrf,
+      @Nullable @JsonProperty(PROP_ADVERTISED_SOURCE_ADDRESS) Ip advertisedSourceAddress,
       @Nullable @JsonProperty(PROP_ROUTE_DISTINGUISHER) RouteDistinguisher rd,
       @Nullable @JsonProperty(PROP_ROUTE_TARGET) ExtendedCommunity routeTarget,
       @Nullable @JsonProperty(PROP_IMPORT_ROUTE_TARGET) String importRouteTarget) {
@@ -39,7 +42,8 @@ public class Layer2VniConfig extends VniConfig
     checkArgument(rd != null, "Missing %s", PROP_ROUTE_DISTINGUISHER);
     checkArgument(routeTarget != null, "Missing %s", PROP_ROUTE_TARGET);
     checkArgument(importRouteTarget != null, "Missing %s", PROP_IMPORT_ROUTE_TARGET);
-    return new Layer2VniConfig(vni, vrf, rd, routeTarget, importRouteTarget);
+    return new Layer2VniConfig(
+        vni, vrf, advertisedSourceAddress, rd, routeTarget, importRouteTarget);
   }
 
   @Override
@@ -89,11 +93,12 @@ public class Layer2VniConfig extends VniConfig
   }
 
   public static final class Builder {
-    @Nullable protected Integer _vni;
-    @Nullable protected String _vrf;
-    @Nullable protected RouteDistinguisher _rd;
-    @Nullable protected ExtendedCommunity _routeTarget;
-    @Nullable protected String _importRouteTarget;
+    @Nullable private Integer _vni;
+    @Nullable private String _vrf;
+    @Nullable private RouteDistinguisher _rd;
+    @Nullable private ExtendedCommunity _routeTarget;
+    @Nullable private String _importRouteTarget;
+    @Nullable private Ip _advertisedSourceAddress;
 
     private Builder() {}
 
@@ -122,6 +127,11 @@ public class Layer2VniConfig extends VniConfig
       return this;
     }
 
+    public Builder setAdvertisedSourceAddress(@Nullable Ip advertisedSourceAddress) {
+      _advertisedSourceAddress = advertisedSourceAddress;
+      return this;
+    }
+
     public Layer2VniConfig build() {
       checkArgument(_vni != null, "Missing %s", PROP_VNI);
       checkArgument(_vrf != null, "Missing %s", PROP_VRF);
@@ -130,6 +140,7 @@ public class Layer2VniConfig extends VniConfig
       return new Layer2VniConfig(
           _vni,
           _vrf,
+          _advertisedSourceAddress,
           _rd,
           _routeTarget,
           firstNonNull(_importRouteTarget, importRtPatternForAnyAs(_vni)));

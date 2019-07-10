@@ -13,6 +13,7 @@ import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
+import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.bgp.community.ExtendedCommunity;
 
 /** A Layer 3 {@link VniConfig}. */
@@ -27,11 +28,12 @@ public final class Layer3VniConfig extends VniConfig
   private Layer3VniConfig(
       int vni,
       String vrf,
+      @Nullable Ip advertisedSourceAddress,
       RouteDistinguisher rd,
       ExtendedCommunity routeTarget,
       String importRouteTarget,
       boolean advertiseV4Unicast) {
-    super(vni, vrf, rd, routeTarget, importRouteTarget);
+    super(vni, vrf, rd, advertisedSourceAddress, routeTarget, importRouteTarget);
     _advertiseV4Unicast = advertiseV4Unicast;
   }
 
@@ -39,6 +41,7 @@ public final class Layer3VniConfig extends VniConfig
   private static Layer3VniConfig create(
       @Nullable @JsonProperty(PROP_VNI) Integer vni,
       @Nullable @JsonProperty(PROP_VRF) String vrf,
+      @Nullable @JsonProperty(PROP_ADVERTISED_SOURCE_ADDRESS) Ip advertisedSourceAddress,
       @Nullable @JsonProperty(PROP_ROUTE_DISTINGUISHER) RouteDistinguisher rd,
       @Nullable @JsonProperty(PROP_ROUTE_TARGET) ExtendedCommunity routeTarget,
       @Nullable @JsonProperty(PROP_IMPORT_ROUTE_TARGET) String importRouteTarget,
@@ -55,6 +58,7 @@ public final class Layer3VniConfig extends VniConfig
         .setRouteTarget(routeTarget)
         .setImportRouteTarget(importRouteTarget)
         .setAdvertiseV4Unicast(firstNonNull(advertiseV4Unicast, Boolean.FALSE))
+        .setAdvertisedSourceAddress(advertisedSourceAddress)
         .build();
   }
 
@@ -120,6 +124,7 @@ public final class Layer3VniConfig extends VniConfig
     @Nullable private RouteDistinguisher _rd;
     @Nullable private ExtendedCommunity _routeTarget;
     @Nullable private String _importRouteTarget;
+    @Nullable private Ip _advertisedSourceAddress;
     private boolean _advertiseV4Unicast;
 
     private Builder() {}
@@ -154,6 +159,11 @@ public final class Layer3VniConfig extends VniConfig
       return this;
     }
 
+    public Builder setAdvertisedSourceAddress(@Nullable Ip advertisedSourceAddress) {
+      _advertisedSourceAddress = advertisedSourceAddress;
+      return this;
+    }
+
     public Layer3VniConfig build() {
       checkArgument(_vni != null, "Missing %s", PROP_VNI);
       checkArgument(_vrf != null, "Missing %s", PROP_VRF);
@@ -165,9 +175,10 @@ public final class Layer3VniConfig extends VniConfig
         Pattern.compile(importRt);
       } catch (PatternSyntaxException e) {
         throw new IllegalArgumentException(
-            String.format("Invalid patthern %s for %s", importRt, PROP_IMPORT_ROUTE_TARGET));
+            String.format("Invalid pattern %s for %s", importRt, PROP_IMPORT_ROUTE_TARGET));
       }
-      return new Layer3VniConfig(_vni, _vrf, _rd, _routeTarget, importRt, _advertiseV4Unicast);
+      return new Layer3VniConfig(
+          _vni, _vrf, _advertisedSourceAddress, _rd, _routeTarget, importRt, _advertiseV4Unicast);
     }
   }
 }

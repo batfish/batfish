@@ -8,6 +8,7 @@ import com.google.common.testing.EqualsTester;
 import java.io.IOException;
 import org.apache.commons.lang3.SerializationUtils;
 import org.batfish.common.util.BatfishObjectMapper;
+import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.bgp.community.ExtendedCommunity;
 import org.junit.Rule;
 import org.junit.Test;
@@ -36,6 +37,7 @@ public class Layer3VniConfigTest {
         .addEqualityGroup(builder.setRouteTarget(ExtendedCommunity.of(0, 2, 1)).build())
         .addEqualityGroup(builder.setImportRouteTarget(importRtPatternForAnyAs(2)).build())
         .addEqualityGroup(builder.setAdvertiseV4Unicast(true).build())
+        .addEqualityGroup(builder.setAdvertisedSourceAddress(Ip.ZERO))
         .testEquals();
   }
 
@@ -49,6 +51,7 @@ public class Layer3VniConfigTest {
             .setRouteTarget(ExtendedCommunity.of(0, 1, 1))
             .setImportRouteTarget(importRtPatternForAnyAs(1))
             .setAdvertiseV4Unicast(false)
+            .setAdvertisedSourceAddress(Ip.ZERO)
             .build();
     assertThat(SerializationUtils.clone(vni), equalTo(vni));
   }
@@ -63,6 +66,7 @@ public class Layer3VniConfigTest {
             .setRouteTarget(ExtendedCommunity.of(0, 1, 1))
             .setImportRouteTarget(importRtPatternForAnyAs(1))
             .setAdvertiseV4Unicast(false)
+            .setAdvertisedSourceAddress(Ip.ZERO)
             .build();
     assertThat(BatfishObjectMapper.clone(vni, Layer3VniConfig.class), equalTo(vni));
   }
