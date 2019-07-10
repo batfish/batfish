@@ -60,17 +60,6 @@ public final class ParboiledNameSetSpecifier implements NameSetSpecifier {
     _grammar = grammar;
   }
 
-  private static Set<String> getAllNames(SpecifierContext ctxt, Grammar grammar) {
-    switch (grammar) {
-      case MLAG_ID_SPECIFIER:
-        return ctxt.getConfigs().values().stream()
-            .flatMap(c -> c.getMlags().keySet().stream())
-            .collect(ImmutableSet.toImmutableSet());
-      default:
-        throw new IllegalArgumentException("Cannot recover names for " + grammar);
-    }
-  }
-
   /**
    * Returns an {@link NameSetSpecifier} based on parsing the {@code input} according to the
    * specified grammar
@@ -115,6 +104,6 @@ public final class ParboiledNameSetSpecifier implements NameSetSpecifier {
 
   @Override
   public Set<String> resolve(SpecifierContext ctxt) {
-    return _ast.accept(new NameAstNodeToNames(getAllNames(ctxt, _grammar)));
+    return _ast.accept(new NameAstNodeToNames(Grammar.getNames(ctxt, _grammar)));
   }
 }
