@@ -29,10 +29,10 @@
         "value" : "n2"
       },
       "status" : {
-        "description" : "Only include IPSec sessions for which status matches this regex",
+        "description" : "Only include IPSec sessions for which status matches this specifier",
         "displayName" : "Status",
         "optional" : true,
-        "type" : "ipsecSessionStatus",
+        "type" : "ipsecSessionStatusSpec",
         "value" : ".*"
       }
     }

@@ -87,6 +87,13 @@ public final class InputValidationUtils {
       case IP_SPACE_SPEC:
         return ParboiledInputValidator.validate(
             Grammar.IP_SPACE_SPECIFIER, query, completionMetadata, nodeRolesData, referenceLibrary);
+      case IPSEC_SESSION_STATUS_SPEC:
+        return ParboiledInputValidator.validate(
+            Grammar.IPSEC_SESSION_STATUS_SPECIFIER,
+            query,
+            completionMetadata,
+            nodeRolesData,
+            referenceLibrary);
       case LOCATION_SPEC:
         return ParboiledInputValidator.validate(
             Grammar.LOCATION_SPECIFIER, query, completionMetadata, nodeRolesData, referenceLibrary);
