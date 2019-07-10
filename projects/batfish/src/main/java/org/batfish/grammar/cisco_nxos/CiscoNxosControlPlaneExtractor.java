@@ -196,15 +196,15 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
     // TODO: support exotic address types
     return ctx.iaddress != null
         ? ConcreteInterfaceAddress.parse(ctx.getText())
-        : ConcreteInterfaceAddress.create(toIp(ctx.address), toIp(ctx.mask));
+        : ConcreteInterfaceAddress.create(toIp(ctx.address), toInteger(ctx.mask));
   }
 
   private static @Nonnull Ip toIp(Ip_addressContext ctx) {
     return Ip.parse(ctx.getText());
   }
 
-  private static @Nonnull Ip toIp(Subnet_maskContext ctx) {
-    return Ip.parse(ctx.getText());
+  private static int toInteger(Subnet_maskContext ctx) {
+    return Ip.parse(ctx.getText()).numSubnetBits();
   }
 
   private static @Nonnull IpProtocol toIpProtocol(Ip_protocolContext ctx) {
@@ -266,9 +266,7 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
 
   private static @Nonnull Prefix toPrefix(Route_networkContext ctx) {
     if (ctx.address != null) {
-      Ip address = toIp(ctx.address);
-      Ip mask = toIp(ctx.mask);
-      return Prefix.create(address, mask);
+      return Prefix.create(toIp(ctx.address), toInteger(ctx.mask));
     } else {
       return toPrefix(ctx.prefix);
     }
