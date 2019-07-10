@@ -473,6 +473,7 @@ public final class FileBasedStorageTest {
             ImmutableSet.of("filter1"),
             ImmutableSet.of(new NodeInterfacePair("node", "iface")),
             ImmutableSet.of("1.1.1.1"),
+            ImmutableSet.of("mlag"),
             ImmutableSet.of("node"),
             ImmutableSet.of("1.1.1.1/30"),
             ImmutableSet.of("routing1"),

@@ -64,6 +64,8 @@ public class Variable {
     JSON_PATH_REGEX("jsonPathRegex", true),
     LOCATION_SPEC("locationSpec", true),
     LONG("long", false),
+    MLAG_ID("mlagId", true),
+    MLAG_ID_SPEC("mlagIdSpec", true),
     NAMED_STRUCTURE_SPEC("namedStructureSpec", true),
     NODE_PROPERTY_SPEC("nodePropertySpec", true),
     NODE_NAME("nodeName", true),

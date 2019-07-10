@@ -30,6 +30,20 @@ import org.batfish.datamodel.answers.AutocompleteSuggestion.SuggestionType;
     CHAR_LITERAL("CHAR_LITERAL", null, null, SuggestionType.UNKNOWN),
     /** For grammar rules that are deprecated and we ignore for auto completion */
     DEPRECATED("DEPRECATED", null, null, SuggestionType.UNKNOWN),
+    /**
+     * Denotes a set operation for enums. The full description is filled in {@link
+     * ParboiledAutoCompleteSuggestion#completeDescriptionIfNeeded}.
+     */
+    ENUM_SET_SET_OP(
+        "ENUM_SET_SET_OP", " of enumSetSpec", "enumSetSpec", SuggestionType.SET_OPERATOR),
+    /** A value in the enum */
+    ENUM_SET_VALUE("ENUM_SET_VALUE", null, null, SuggestionType.CONSTANT),
+    /** Regex over enum values */
+    ENUM_SET_REGEX("ENUM_SET_REGEX", "Regex", "regex/", SuggestionType.REGEX),
+    /**
+     * Rule for node[filter] style filterSpec. This anchor shouldn't be suggested as the rule has no
+     * literal, and things will get delegated to sub rules.
+     */
     /** Impicit anchor to mark the end of input */
     EOI("EOI", null, null, SuggestionType.UNKNOWN),
     /** For @in() function of filterSpec */
@@ -133,15 +147,15 @@ import org.batfish.datamodel.answers.AutocompleteSuggestion.SuggestionType;
     LOCATION_SET_OP(
         "INTERFACE_SET_OP", " of locations", "locationSpec", SuggestionType.SET_OPERATOR),
     /**
-     * Denotes a set operation for namedStructureSpec. The full description is filled in {@link
+     * Denotes a set operation for names. The full description is filled in {@link
      * ParboiledAutoCompleteSuggestion#completeDescriptionIfNeeded}.
      */
-    ENUM_SET_SET_OP(
-        "ENUM_SET_SET_OP", " of enumSetSpec", "enumSetSpec", SuggestionType.SET_OPERATOR),
-    /** Named structure type, e.g., ROUTE_FILTER_LIST */
-    ENUM_SET_VALUE("ENUM_SET_VALUE", null, null, SuggestionType.CONSTANT),
-    /** Regex for named structure types */
-    ENUM_SET_REGEX("ENUM_SET_REGEX", "Regex", "regex/", SuggestionType.REGEX),
+    NAME_SET_SET_OP(
+        "NAME_SET_SET_OP", " of nameSetSpec", "enumSetSpec", SuggestionType.SET_OPERATOR),
+    /** A name */
+    NAME_SET_NAME("NAME_SET_NAME", null, null, SuggestionType.CONSTANT),
+    /** Regex over names */
+    NAME_SET_REGEX("NAME_SET_REGEX", "Regex", "regex/", SuggestionType.REGEX),
     /**
      * Rule for node[filter] style filterSpec. This anchor shouldn't be suggested as the rule has no
      * literal, and things will get delegated to sub rules.
