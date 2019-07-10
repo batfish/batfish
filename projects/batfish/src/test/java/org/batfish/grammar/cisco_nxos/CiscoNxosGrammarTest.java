@@ -38,6 +38,7 @@ import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasEntry;
 import static org.hamcrest.Matchers.hasKey;
+import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
@@ -157,6 +158,18 @@ public final class CiscoNxosGrammarTest {
         (CiscoNxosConfiguration) extractor.getVendorConfiguration();
     vendorConfiguration.setFilename(TESTCONFIGS_PREFIX + hostname);
     return vendorConfiguration;
+  }
+
+  /**
+   * Temporary parsing test of port of unified Cisco NX-OS BGP grammar. The test file should be
+   * moved to parsing ref tests once bit is flipped on new parser.
+   */
+  @Test
+  public void testBgpParsingTemporary() {
+    String hostname = "nxos_bgp_parsing_temporary";
+
+    // Just test that parser does not choke.
+    assertThat(parseVendorConfig(hostname), not(nullValue()));
   }
 
   @Test
