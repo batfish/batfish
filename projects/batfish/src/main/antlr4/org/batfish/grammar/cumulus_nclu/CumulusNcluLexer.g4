@@ -287,6 +287,11 @@ L2VPN
   'l2vpn'
 ;
 
+LACP_BYPASS_ALLOW
+:
+  'lacp-bypass-allow'
+;
+
 LEARNING
 :
   'learning'
