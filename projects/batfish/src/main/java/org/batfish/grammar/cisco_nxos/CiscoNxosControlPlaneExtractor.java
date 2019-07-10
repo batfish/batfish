@@ -38,8 +38,10 @@ import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.LineAction;
+import org.batfish.datamodel.LongSpace;
 import org.batfish.datamodel.NamedPort;
 import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.SwitchportMode;
 import org.batfish.datamodel.TcpFlags;
 import org.batfish.datamodel.UniverseIpSpace;
@@ -98,13 +100,21 @@ import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Interface_addressContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Interface_bandwidth_kbpsContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Interface_prefixContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Ip_access_listContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Ip_access_list_line_numberContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Ip_access_list_nameContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Ip_addressContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Ip_prefixContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Ip_prefix_listContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Ip_prefix_list_descriptionContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Ip_prefix_list_line_numberContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Ip_prefix_list_line_prefix_lengthContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Ip_prefix_list_nameContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Ip_protocolContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Ip_routeContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Line_actionContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Packet_lengthContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Pl_actionContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Pl_descriptionContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Route_networkContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.S_hostnameContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.S_interfaceContext;
@@ -139,6 +149,8 @@ import org.batfish.representation.cisco_nxos.Interface;
 import org.batfish.representation.cisco_nxos.IpAccessList;
 import org.batfish.representation.cisco_nxos.IpAccessListLine;
 import org.batfish.representation.cisco_nxos.IpAddressSpec;
+import org.batfish.representation.cisco_nxos.IpPrefixList;
+import org.batfish.representation.cisco_nxos.IpPrefixListLine;
 import org.batfish.representation.cisco_nxos.Layer3Options;
 import org.batfish.representation.cisco_nxos.LiteralIpAddressSpec;
 import org.batfish.representation.cisco_nxos.LiteralPortSpec;
@@ -158,12 +170,22 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
 
   private static final IntegerSpace BANDWIDTH_RANGE = IntegerSpace.of(Range.closed(1, 100_000_000));
   private static final IntegerSpace DSCP_RANGE = IntegerSpace.of(Range.closed(0, 63));
+  private static final LongSpace IP_ACCESS_LIST_LINE_NUMBER_RANGE =
+      LongSpace.of(Range.closed(1L, 4294967295L));
+  private static final IntegerSpace IP_PREFIX_LIST_DESCRIPTION_LENGTH_RANGE =
+      IntegerSpace.of(Range.closed(1, 90));
+  private static final LongSpace IP_PREFIX_LIST_LINE_NUMBER_RANGE =
+      LongSpace.of(Range.closed(1L, 4294967294L));
+  private static final IntegerSpace IP_PREFIX_LIST_NAME_LENGTH_RANGE =
+      IntegerSpace.of(Range.closed(1, 63));
   private static final int MAX_VRF_NAME_LENGTH = 32;
   private static final IntegerSpace PACKET_LENGTH_RANGE = IntegerSpace.of(Range.closed(20, 9210));
   private static final IntegerSpace PORT_CHANNEL_RANGE = IntegerSpace.of(Range.closed(1, 4096));
-  private static final IntegerSpace TCP_FLAGS_MASK_RANGE = IntegerSpace.of(Range.closed(0, 63));
+  private static final IntegerSpace TCP_FLAGS_MASK_RANGE = IntegerSpace.of(Range.closed(0, 63));;
   private static final IntegerSpace TCP_PORT_RANGE = IntegerSpace.of(Range.closed(0, 65535));
   private static final IntegerSpace UDP_PORT_RANGE = IntegerSpace.of(Range.closed(0, 65535));
+  private static final IntegerSpace IP_PREFIX_LIST_PREFIX_LENGTH_RANGE =
+      IntegerSpace.of(Range.closed(1, 32));
 
   private static @Nonnull IpAddressSpec toAddressSpec(Acllal3_address_specContext ctx) {
     if (ctx.address != null) {
@@ -184,6 +206,10 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
     }
   }
 
+  private static int toInteger(Subnet_maskContext ctx) {
+    return Ip.parse(ctx.getText()).numSubnetBits();
+  }
+
   private static int toInteger(Uint16Context ctx) {
     return Integer.parseInt(ctx.getText());
   }
@@ -201,10 +227,6 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
 
   private static @Nonnull Ip toIp(Ip_addressContext ctx) {
     return Ip.parse(ctx.getText());
-  }
-
-  private static int toInteger(Subnet_maskContext ctx) {
-    return Ip.parse(ctx.getText()).numSubnetBits();
   }
 
   private static @Nonnull IpProtocol toIpProtocol(Ip_protocolContext ctx) {
@@ -273,12 +295,12 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
   }
 
   private @Nullable CiscoNxosConfiguration _configuration;
-
   private @Nullable ActionIpAccessListLine.Builder _currentActionIpAccessListLineBuilder;
   private @Nullable Boolean _currentActionIpAccessListLineUnusable;
   private @Nullable List<Interface> _currentInterfaces;
   private @Nullable IpAccessList _currentIpAccessList;
-  private @Nullable Long _currentIpAccessListLineNum;
+  private @Nullable Optional<Long> _currentIpAccessListLineNum;
+  private @Nullable IpPrefixList _currentIpPrefixList;
   private @Nullable Layer3Options.Builder _currentLayer3OptionsBuilder;
   private @Nullable TcpFlags.Builder _currentTcpFlagsBuilder;
   private @Nullable TcpOptions.Builder _currentTcpOptionsBuilder;
@@ -339,20 +361,20 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
   @Override
   public void enterAcl_line(Acl_lineContext ctx) {
     if (ctx.num != null) {
-      _currentIpAccessListLineNum = toLong(ctx.num);
+      _currentIpAccessListLineNum = toLong(ctx, ctx.num);
     } else if (!_currentIpAccessList.getLines().isEmpty()) {
-      _currentIpAccessListLineNum = _currentIpAccessList.getLines().lastKey() + 10L;
+      _currentIpAccessListLineNum = Optional.of(_currentIpAccessList.getLines().lastKey() + 10L);
     } else {
-      _currentIpAccessListLineNum = 10L;
+      _currentIpAccessListLineNum = Optional.of(10L);
     }
   }
 
   @Override
   public void enterAcll_action(Acll_actionContext ctx) {
     _currentActionIpAccessListLineBuilder =
-        ActionIpAccessListLine.builder()
-            .setAction(toLineAction(ctx.action))
-            .setLine(_currentIpAccessListLineNum);
+        ActionIpAccessListLine.builder().setAction(toLineAction(ctx.action));
+    _currentIpAccessListLineNum.ifPresent(
+        num -> _currentActionIpAccessListLineBuilder.setLine(num));
     _currentLayer3OptionsBuilder = Layer3Options.builder();
     _currentActionIpAccessListLineUnusable = false;
   }
@@ -393,6 +415,26 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
                       CiscoNxosStructureType.IP_ACCESS_LIST, name, ctx.getStart().getLine());
                   return new IpAccessList(n);
                 });
+  }
+
+  @Override
+  public void enterIp_prefix_list(Ip_prefix_listContext ctx) {
+    _currentIpPrefixList =
+        toString(ctx, ctx.name)
+            .map(
+                name ->
+                    _configuration
+                        .getIpPrefixLists()
+                        .computeIfAbsent(
+                            name,
+                            n -> {
+                              _configuration.defineStructure(
+                                  CiscoNxosStructureType.IP_PREFIX_LIST,
+                                  name,
+                                  ctx.getStart().getLine());
+                              return new IpPrefixList(n);
+                            }))
+            .orElse(new IpPrefixList("dummy"));
   }
 
   @Override
@@ -559,18 +601,21 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
 
   @Override
   public void exitAcll_action(Acll_actionContext ctx) {
-    IpAccessListLine line;
-    if (_currentActionIpAccessListLineUnusable) {
-      // unsupported, so just add current line as a remark
-      line = new RemarkIpAccessListLine(_currentIpAccessListLineNum, getFullText(ctx.getParent()));
-    } else {
-      line =
-          _currentActionIpAccessListLineBuilder
-              .setL3Options(_currentLayer3OptionsBuilder.build())
-              .build();
-    }
+    _currentIpAccessListLineNum.ifPresent(
+        num -> {
+          IpAccessListLine line;
+          if (_currentActionIpAccessListLineUnusable) {
+            // unsupported, so just add current line as a remark
+            line = new RemarkIpAccessListLine(num, getFullText(ctx.getParent()));
+          } else {
+            line =
+                _currentActionIpAccessListLineBuilder
+                    .setL3Options(_currentLayer3OptionsBuilder.build())
+                    .build();
+          }
 
-    _currentIpAccessList.getLines().put(_currentIpAccessListLineNum, line);
+          _currentIpAccessList.getLines().put(num, line);
+        });
     _currentActionIpAccessListLineBuilder = null;
     _currentActionIpAccessListLineUnusable = null;
     _currentLayer3OptionsBuilder = null;
@@ -578,11 +623,11 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
 
   @Override
   public void exitAcll_remark(Acll_remarkContext ctx) {
-    _currentIpAccessList
-        .getLines()
-        .put(
-            _currentIpAccessListLineNum,
-            new RemarkIpAccessListLine(_currentIpAccessListLineNum, ctx.text.getText()));
+    _currentIpAccessListLineNum.ifPresent(
+        num ->
+            _currentIpAccessList
+                .getLines()
+                .put(num, new RemarkIpAccessListLine(num, ctx.text.getText())));
   }
 
   @Override
@@ -1102,6 +1147,11 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
   }
 
   @Override
+  public void exitIp_prefix_list(Ip_prefix_listContext ctx) {
+    _currentIpPrefixList = null;
+  }
+
+  @Override
   public void exitIp_route(Ip_routeContext ctx) {
     int line = ctx.getStart().getLine();
     StaticRoute.Builder builder = StaticRoute.builder().setPrefix(toPrefix(ctx.network));
@@ -1160,6 +1210,79 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
     }
     StaticRoute route = builder.build();
     _currentVrf.getStaticRoutes().put(route.getPrefix(), route);
+  }
+
+  @Override
+  public void exitPl_action(Pl_actionContext ctx) {
+    if (ctx.mask != null) {
+      todo(ctx);
+      return;
+    }
+    long num;
+    if (ctx.num != null) {
+      Optional<Long> numOption = toLong(ctx, ctx.num);
+      if (!numOption.isPresent()) {
+        return;
+      }
+      num = numOption.get();
+    } else if (!_currentIpPrefixList.getLines().isEmpty()) {
+      num = _currentIpPrefixList.getLines().lastKey() + 5L;
+    } else {
+      num = 5L;
+    }
+    Prefix prefix = toPrefix(ctx.prefix);
+    int low;
+    int high;
+    int prefixLength = prefix.getPrefixLength();
+    if (ctx.eq != null) {
+      Optional<Integer> eqOption = toInteger(ctx, ctx.eq);
+      if (!eqOption.isPresent()) {
+        // invalid line
+        return;
+      }
+      int eq = eqOption.get();
+      low = eq;
+      high = eq;
+    } else if (ctx.ge != null || ctx.le != null) {
+      if (ctx.ge != null) {
+        Optional<Integer> geOption = toInteger(ctx, ctx.ge);
+        if (!geOption.isPresent()) {
+          // invalid line
+          return;
+        }
+        low = geOption.get();
+      } else {
+        low = prefixLength;
+      }
+      if (ctx.le != null) {
+        Optional<Integer> leOption = toInteger(ctx, ctx.le);
+        if (!leOption.isPresent()) {
+          // invalid line
+          return;
+        }
+        high = leOption.get();
+      } else {
+        high = Prefix.MAX_PREFIX_LENGTH;
+      }
+    } else {
+      low = prefixLength;
+      high = Prefix.MAX_PREFIX_LENGTH;
+    }
+    IpPrefixListLine pll =
+        new IpPrefixListLine(toLineAction(ctx.action), num, prefix, new SubRange(low, high));
+    _currentIpPrefixList.getLines().put(num, pll);
+  }
+
+  private @Nonnull Optional<Integer> toInteger(
+      ParserRuleContext messageCtx, Ip_prefix_list_line_prefix_lengthContext ctx) {
+    return toIntegerInSpace(
+        messageCtx, ctx, IP_PREFIX_LIST_PREFIX_LENGTH_RANGE, "ip prefix-list prefix-length bound");
+  }
+
+  @Override
+  public void exitPl_description(Pl_descriptionContext ctx) {
+    toString(ctx, ctx.text)
+        .ifPresent(description -> _currentIpPrefixList.setDescription(description));
   }
 
   @Override
@@ -1445,7 +1568,7 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
 
   /**
    * Convert a {@link ParserRuleContext} whose text is guaranteed to represent a valid signed 32-bit
-   * decimal integer to an {@link Integer} if it is contained in the provied {@code space}, or else
+   * decimal integer to an {@link Integer} if it is contained in the provided {@code space}, or else
    * {@link Optional#empty}.
    */
   private @Nonnull Optional<Integer> toIntegerInSpace(
@@ -1558,6 +1681,36 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
     }
   }
 
+  private @Nonnull Optional<Long> toLong(
+      ParserRuleContext messageCtx, Ip_access_list_line_numberContext ctx) {
+    return toLongInSpace(
+        messageCtx, ctx, IP_ACCESS_LIST_LINE_NUMBER_RANGE, "ip access-list line number");
+  }
+
+  private @Nonnull Optional<Long> toLong(
+      ParserRuleContext messageCtx, Ip_prefix_list_line_numberContext ctx) {
+    return toLongInSpace(messageCtx, ctx, IP_PREFIX_LIST_LINE_NUMBER_RANGE, "ip prefix-list seq");
+  }
+
+  /**
+   * Convert a {@link ParserRuleContext} whose text is guaranteed to represent a valid signed 64-bit
+   * decimal integer to a {@link Long} if it is contained in the provided {@code space}, or else
+   * {@link Optional#empty}.
+   */
+  private @Nonnull Optional<Long> toLongInSpace(
+      ParserRuleContext messageCtx, ParserRuleContext ctx, LongSpace space, String name) {
+    long num = Long.parseLong(ctx.getText());
+    if (!space.contains(num)) {
+      _w.addWarning(
+          messageCtx,
+          getFullText(messageCtx),
+          _parser,
+          String.format("Expected %s in range %s, but got '%d'", name, space, num));
+      return Optional.empty();
+    }
+    return Optional.of(num);
+  }
+
   private @Nullable String toPortChannel(ParserRuleContext messageCtx, Channel_idContext ctx) {
     int id = Integer.parseInt(ctx.getText());
     // not a mistake; range is 1-4096 (not zero-based).
@@ -1623,6 +1776,12 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
     return track;
   }
 
+  private @Nonnull Optional<String> toString(
+      Ip_prefix_listContext messageCtx, Ip_prefix_list_nameContext ctx) {
+    return toStringWithLengthInSpace(
+        messageCtx, ctx, IP_PREFIX_LIST_NAME_LENGTH_RANGE, "ip prefix-list name");
+  }
+
   private @Nullable String toString(ParserRuleContext messageCtx, Ip_access_list_nameContext ctx) {
     String name = ctx.getText();
     if (name.length() > IpAccessList.MAX_NAME_LENGTH) {
@@ -1635,6 +1794,12 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
     return name;
   }
 
+  private @Nonnull Optional<String> toString(
+      ParserRuleContext messageCtx, Ip_prefix_list_descriptionContext ctx) {
+    return toStringWithLengthInSpace(
+        messageCtx, ctx, IP_PREFIX_LIST_DESCRIPTION_LENGTH_RANGE, "ip prefix-list description");
+  }
+
   private @Nullable String toString(ParserRuleContext messageCtx, Static_route_nameContext ctx) {
     String name = ctx.getText();
     if (name.length() > StaticRoute.MAX_NAME_LENGTH) {
@@ -1645,6 +1810,25 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
       return null;
     }
     return name;
+  }
+
+  /**
+   * Return the text of the provided {@code ctx} if its length is within the provided {@link
+   * lengthSpace}, or else {@link Optional#empty}.
+   */
+  private @Nonnull Optional<String> toStringWithLengthInSpace(
+      ParserRuleContext messageCtx, ParserRuleContext ctx, IntegerSpace lengthSpace, String name) {
+    String text = ctx.getText();
+    if (!lengthSpace.contains(text.length())) {
+      _w.addWarning(
+          messageCtx,
+          getFullText(messageCtx),
+          _parser,
+          String.format(
+              "Expected %s with length in range %s, but got '%s'", text, lengthSpace, name));
+      return Optional.empty();
+    }
+    return Optional.of(text);
   }
 
   private @Nullable CiscoNxosInterfaceType toType(Interface_prefixContext ctx) {
