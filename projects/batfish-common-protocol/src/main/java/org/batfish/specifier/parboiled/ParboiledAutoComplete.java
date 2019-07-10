@@ -429,6 +429,7 @@ public final class ParboiledAutoComplete {
             "Cannot determine name variable type for grammar " + grammar);
     }
   }
+
   /**
    * Auto completes names for interfaces. The completion is context sensitive if an ancestor {@link
    * PathElement} indicates that nodes appeared earlier in the path. Otherwise, context-independent
