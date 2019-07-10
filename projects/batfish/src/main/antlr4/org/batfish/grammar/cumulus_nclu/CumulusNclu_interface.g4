@@ -1,6 +1,6 @@
 parser grammar CumulusNclu_interface;
 
-import CumulusNclu_common;
+import CumulusNclu_common, CumulusNclu_stp;
 
 options {
   tokenVocab = CumulusNcluLexer;
@@ -18,6 +18,7 @@ a_interface
     | i_link_speed
     | i_mtu
     | i_vrf
+    | stp_common
     | NEWLINE
   )
 ;
