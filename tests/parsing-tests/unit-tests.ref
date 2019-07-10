@@ -41703,20 +41703,25 @@
             "  (statement",
             "    (s_extra_configuration",
             "      EXTRA_CONFIGURATION_HEADER:'sudo sh -c \"printf ''",
-            "      (frr_router",
+            "      (frr_router_bgp",
             "        ROUTER:'router'  <== mode:M_Printf",
-            "        (frr_null_rest_of_line",
-            "          WORD:'bgp'  <== mode:M_Printf",
-            "          DEC:'65000'  <== mode:M_Printf",
+            "        BGP:'bgp'  <== mode:M_Printf",
+            "        asn = (uint32",
+            "          d = DEC:'65000'  <== mode:M_Printf)",
+            "        (frrb_vrf",
             "          VRF:'vrf'  <== mode:M_Printf",
-            "          WORD:'FOO'  <== mode:M_Printf",
+            "          name = (word",
+            "            WORD:'FOO'  <== mode:M_Printf)",
             "          NEWLINE:'\\n'  <== mode:M_Printf",
-            "          WORD:'neighbor'  <== mode:M_Printf",
-            "          IP_ADDRESS:'1.1.1.1'  <== mode:M_Printf",
-            "          WORD:'interface'  <== mode:M_Printf",
-            "          WORD:'peer-group'  <== mode:M_Printf",
-            "          WORD:'A_GROUP'  <== mode:M_Printf",
-            "          NEWLINE:'\\n'  <== mode:M_Printf))",
+            "          (frrbv_neighbor",
+            "            NEIGHBOR:'neighbor'  <== mode:M_Printf",
+            "            name = (ip_address",
+            "              IP_ADDRESS:'1.1.1.1'  <== mode:M_Printf)",
+            "            INTERFACE:'interface'  <== mode:M_Printf",
+            "            PEER_GROUP:'peer-group'  <== mode:M_Printf",
+            "            pg = (word",
+            "              WORD:'A_GROUP'  <== mode:M_Printf)",
+            "            NEWLINE:'\\n'  <== mode:M_Printf)))",
             "      EXTRA_CONFIGURATION_FOOTER:'' >> /etc/frr/frr.conf\"'  <== mode:M_Printf",
             "      NEWLINE:'\\n\\n'))",
             "  EOF:<EOF>)"
@@ -74813,6 +74818,10 @@
             {
               "tag" : "MISCELLANEOUS",
               "text" : "All referenced vxlan instances must be created via 'net add vxlan <name> vxlan id <id>' before line: net add vxlan vni70004-70007 vxlan local-tunnelip 192.0.2.10\n"
+            },
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "Cannot define two BGP processes with different ASNs"
             }
           ]
         },
@@ -79545,6 +79554,12 @@
             }
           },
           "vrf" : {
+            "FOO" : {
+              "definitionLines" : [
+                115
+              ],
+              "numReferrers" : 1
+            },
             "mgmt" : {
               "definitionLines" : [
                 7
@@ -86653,6 +86668,11 @@
             }
           },
           "vrf" : {
+            "FOO" : {
+              "bgp vrf" : [
+                115
+              ]
+            },
             "mgmt" : {
               "interface clag backup-ip vrf" : [
                 27

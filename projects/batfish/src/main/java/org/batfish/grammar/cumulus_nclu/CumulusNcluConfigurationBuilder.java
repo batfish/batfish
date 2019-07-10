@@ -16,6 +16,7 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -93,9 +94,12 @@ import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.Cumulus_nclu_configura
 import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.Dn4Context;
 import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.Dn6Context;
 import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.Frr_exit_vrfContext;
+import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.Frr_router_bgpContext;
 import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.Frr_unrecognizedContext;
 import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.Frr_usernameContext;
 import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.Frr_vrfContext;
+import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.Frrb_vrfContext;
+import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.Frrbv_neighborContext;
 import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.Frrv_ip_routeContext;
 import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.GlobContext;
 import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.Glob_range_setContext;
@@ -147,6 +151,7 @@ import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.Vxb_learningContext;
 import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.Vxv_idContext;
 import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.Vxv_local_tunnelipContext;
 import org.batfish.representation.cumulus.BgpInterfaceNeighbor;
+import org.batfish.representation.cumulus.BgpIpNeighbor;
 import org.batfish.representation.cumulus.BgpIpv4UnicastAddressFamily;
 import org.batfish.representation.cumulus.BgpL2VpnEvpnIpv4Unicast;
 import org.batfish.representation.cumulus.BgpL2vpnEvpnAddressFamily;
@@ -793,12 +798,57 @@ public class CumulusNcluConfigurationBuilder extends CumulusNcluParserBaseListen
   }
 
   @Override
+  public void enterFrr_router_bgp(Frr_router_bgpContext ctx) {
+    _currentBgpProcess = _c.getBgpProcess();
+    long asn = toLong(ctx.asn);
+    if (_currentBgpProcess == null) {
+      // We are a creating new process
+      _currentBgpProcess = new BgpProcess();
+      _c.setBgpProcess(_currentBgpProcess);
+      _currentBgpVrf = _currentBgpProcess.getDefaultVrf();
+      _currentBgpVrf.setAutonomousSystem(asn);
+    }
+    if (!Objects.equals(_currentBgpProcess.getDefaultVrf().getAutonomousSystem(), asn)) {
+      _w.redFlag("Cannot define two BGP processes with different ASNs");
+    }
+  }
+
+  @Override
+  public void exitFrr_router_bgp(Frr_router_bgpContext ctx) {
+    _currentBgpVrf = null;
+    _currentBgpProcess = null;
+  }
+
+  @Override
   public void enterFrr_vrf(Frr_vrfContext ctx) {
     _currentVrf =
         initVrfsIfAbsent(
                 ImmutableSet.of(ctx.name.getText()), ctx, CumulusStructureUsage.VRF_SELF_REFERENCE)
             .iterator()
             .next();
+  }
+
+  @Override
+  public void enterFrrb_vrf(Frrb_vrfContext ctx) {
+    String name = ctx.name.getText();
+    if (initVrfsIfAbsent(ImmutableSet.of(name), ctx, CumulusStructureUsage.BGP_VRF).isEmpty()) {
+      // VRF name is invalid. Set a dummy VRF so deeper parse tree node actions do not NPE.
+      _currentBgpVrf = new BgpVrf("");
+      return;
+    }
+    _currentBgpVrf = _currentBgpProcess.getVrfs().computeIfAbsent(name, BgpVrf::new);
+  }
+
+  @Override
+  public void exitFrrbv_neighbor(Frrbv_neighborContext ctx) {
+    // Create the new neighbor and assign it the peer group
+    // TODO: restructure such that neighbor creation sets _currentBgpNeighbor and further
+    //   configuration is possible in other rules
+    BgpIpNeighbor neighbor =
+        (BgpIpNeighbor)
+            _currentBgpVrf.getNeighbors().computeIfAbsent(ctx.name.getText(), BgpIpNeighbor::new);
+    neighbor.setIp(toIp(ctx.name));
+    neighbor.setPeerGroup(ctx.pg.getText());
   }
 
   @Override

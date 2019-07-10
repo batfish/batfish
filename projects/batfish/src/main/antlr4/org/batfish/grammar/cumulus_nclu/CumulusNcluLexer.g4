@@ -1028,9 +1028,24 @@ mode M_Printf;
 
 // FRR in printf keywords
 
+M_Printf_BGP
+:
+  'bgp' -> type ( BGP )
+;
+
+M_Printf_DEC
+:
+   F_Digit+ -> type ( DEC )
+;
+
 M_Printf_EXIT_VRF
 :
   'exit-vrf' -> type ( EXIT_VRF )
+;
+
+M_Printf_INTERFACE
+:
+  'interface' -> type ( INTERFACE )
 ;
 
 M_Printf_IP
@@ -1038,9 +1053,14 @@ M_Printf_IP
   'ip' -> type ( IP )
 ;
 
-M_Printf_DEC
+M_Printf_NEIGHBOR
 :
-   F_Digit+ -> type ( DEC )
+  'neighbor' -> type ( NEIGHBOR )
+;
+
+M_Printf_PEER_GROUP
+:
+  'peer-group' -> type ( PEER_GROUP )
 ;
 
 M_Printf_ROUTE

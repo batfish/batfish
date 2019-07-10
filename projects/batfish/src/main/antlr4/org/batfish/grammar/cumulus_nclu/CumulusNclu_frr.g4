@@ -6,9 +6,12 @@ options {
   tokenVocab = CumulusNcluLexer;
 }
 
-frr_router
+frr_router_bgp
 :
-  ROUTER frr_null_rest_of_line
+  ROUTER BGP asn = uint32
+  (
+    frrb_vrf
+  )
 ;
 
 frr_vrf
@@ -20,6 +23,23 @@ frr_exit_vrf
 :
   EXIT_VRF NEWLINE
 ;
+
+frrb_vrf
+:
+  VRF name = word NEWLINE
+  (
+    frrbv_neighbor
+  )
+;
+
+// NOTE: this is in no way complete/sane representation of the grammar here
+// Just need extraction for this one line here
+// Also, why is INTERFACE needed for an IP neighbor?
+frrbv_neighbor
+:
+  NEIGHBOR name = ip_address INTERFACE PEER_GROUP pg = word NEWLINE
+;
+
 
 frrv_ip_route
 :
