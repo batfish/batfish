@@ -88256,6 +88256,13 @@
                 66
               ]
             }
+          },
+          "route-policy" : {
+            "bbbb" : {
+              "route-policy apply" : [
+                28
+              ]
+            }
           }
         },
         "configs/ios_xr_router_static" : {
@@ -91132,6 +91139,13 @@
             "remote-router-loopbacks" : {
               "route-policy prefix-set" : [
                 66
+              ]
+            }
+          },
+          "route-policy" : {
+            "bbbb" : {
+              "route-policy apply" : [
+                28
               ]
             }
           }
