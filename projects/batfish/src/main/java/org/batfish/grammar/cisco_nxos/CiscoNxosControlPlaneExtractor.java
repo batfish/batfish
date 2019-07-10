@@ -111,6 +111,7 @@ import org.batfish.grammar.cisco_nxos.CiscoNxosParser.S_interfaceContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.S_vrf_contextContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Static_route_nameContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Static_route_prefContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Subnet_maskContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Tcp_flags_maskContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Tcp_portContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Tcp_port_numberContext;
@@ -199,6 +200,10 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
   }
 
   private static @Nonnull Ip toIp(Ip_addressContext ctx) {
+    return Ip.parse(ctx.getText());
+  }
+
+  private static @Nonnull Ip toIp(Subnet_maskContext ctx) {
     return Ip.parse(ctx.getText());
   }
 
