@@ -80,7 +80,7 @@ public class ParserNameSetTest {
   @Test
   public void testParseName() {
     String query = "mla";
-    NameSetAstNode expectedAst = new NameNameSetAstNode(query);
+    NameSetAstNode expectedAst = new SingletonNameSetAstNode(query);
 
     assertThat(ParserUtils.getAst(getRunner().run(query)), equalTo(expectedAst));
     assertThat(ParserUtils.getAst(getRunner().run(" " + query + " ")), equalTo(expectedAst));
@@ -109,7 +109,7 @@ public class ParserNameSetTest {
     String name = "n1";
     String regex = "re1";
     UnionNameSetAstNode expectedNode =
-        new UnionNameSetAstNode(new NameNameSetAstNode(name), new RegexNameSetAstNode(regex));
+        new UnionNameSetAstNode(new SingletonNameSetAstNode(name), new RegexNameSetAstNode(regex));
 
     assertThat(
         ParserUtils.getAst(getRunner().run(String.format("%s,/%s/", name, regex))),

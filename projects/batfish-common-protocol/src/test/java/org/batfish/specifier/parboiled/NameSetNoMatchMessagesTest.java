@@ -30,12 +30,13 @@ public class NameSetNoMatchMessagesTest {
         CompletionMetadata.builder().setMlagIds(ImmutableSet.of("b1", "b2")).build();
     assertThat(
         getMessages(
-            new NameSetNoMatchMessages(new NameNameSetAstNode("a"), Grammar.MLAG_ID_SPECIFIER),
+            new NameSetNoMatchMessages(new SingletonNameSetAstNode("a"), Grammar.MLAG_ID_SPECIFIER),
             completionMetadata),
         equalTo(ImmutableList.of(getErrorMessageMissingName("a", NAME_TYPE))));
     assertThat(
         getMessages(
-            new NameSetNoMatchMessages(new NameNameSetAstNode("b1"), Grammar.MLAG_ID_SPECIFIER),
+            new NameSetNoMatchMessages(
+                new SingletonNameSetAstNode("b1"), Grammar.MLAG_ID_SPECIFIER),
             completionMetadata),
         equalTo(ImmutableList.of()));
   }
@@ -68,7 +69,8 @@ public class NameSetNoMatchMessagesTest {
     assertThat(
         getMessages(
             new NameSetNoMatchMessages(
-                new UnionNameSetAstNode(new NameNameSetAstNode("a1"), new NameNameSetAstNode("a2")),
+                new UnionNameSetAstNode(
+                    new SingletonNameSetAstNode("a1"), new SingletonNameSetAstNode("a2")),
                 Grammar.MLAG_ID_SPECIFIER),
             completionMetadata),
         equalTo(expected));
@@ -82,7 +84,8 @@ public class NameSetNoMatchMessagesTest {
     assertThat(
         getMessages(
             new NameSetNoMatchMessages(
-                new UnionNameSetAstNode(new NameNameSetAstNode("a1"), new NameNameSetAstNode("b1")),
+                new UnionNameSetAstNode(
+                    new SingletonNameSetAstNode("a1"), new SingletonNameSetAstNode("b1")),
                 Grammar.MLAG_ID_SPECIFIER),
             completionMetadata),
         equalTo(ImmutableList.of(getErrorMessageMissingName("a1", NAME_TYPE))));

@@ -5,5 +5,5 @@ interface NameSetAstNodeVisitor<T> {
 
   T visitRegexNameSetAstNode(RegexNameSetAstNode regexNameSetAstNode);
 
-  T visitNameNameSetAstNode(NameNameSetAstNode nameNameSetAstNode);
+  T visitNameNameSetAstNode(SingletonNameSetAstNode singletonNameSetAstNode);
 }

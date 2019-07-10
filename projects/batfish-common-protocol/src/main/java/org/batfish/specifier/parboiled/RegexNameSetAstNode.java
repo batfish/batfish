@@ -4,6 +4,7 @@ import com.google.common.base.MoreObjects;
 import java.util.Objects;
 import java.util.regex.Pattern;
 
+/** Represents the AST node for a regex over set of the names */
 final class RegexNameSetAstNode implements NameSetAstNode {
   private final String _regex;
   private final Pattern _pattern;

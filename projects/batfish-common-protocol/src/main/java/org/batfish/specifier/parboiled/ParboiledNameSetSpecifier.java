@@ -29,9 +29,9 @@ public final class ParboiledNameSetSpecifier implements NameSetSpecifier {
 
     @Nonnull
     @Override
-    public Set<String> visitNameNameSetAstNode(NameNameSetAstNode nameNameSetAstNode) {
+    public Set<String> visitNameNameSetAstNode(SingletonNameSetAstNode singletonNameSetAstNode) {
       return _allNames.stream()
-          .filter(n -> n.equalsIgnoreCase(nameNameSetAstNode.getName()))
+          .filter(n -> n.equalsIgnoreCase(singletonNameSetAstNode.getName()))
           .collect(ImmutableSet.toImmutableSet());
     }
 

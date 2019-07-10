@@ -222,6 +222,7 @@ public final class CompletionMetadata implements Serializable {
     return _ips;
   }
 
+  /** Returns the full set of MLAG domain ids in the snapshot */
   @JsonProperty(PROP_MLAG_IDS)
   @Nonnull
   public Set<String> getMlagIds() {

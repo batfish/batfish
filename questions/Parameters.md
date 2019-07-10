@@ -337,7 +337,7 @@ locationInterface :=
 
 ## MLAG ID Specifier
 
-A specification for a set of MLAG Ids.
+A specification for a set of MLAG domain identifiers.
 
 * `domain1` indicates a single domain with that name.
 

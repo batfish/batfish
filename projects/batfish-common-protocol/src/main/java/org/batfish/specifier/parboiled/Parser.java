@@ -1010,7 +1010,7 @@ public class Parser extends CommonParser {
 
   @Anchor(NAME_SET_NAME)
   public <T> Rule NameSetName() {
-    return Sequence(NameLiteral(), push(new NameNameSetAstNode(pop())));
+    return Sequence(NameLiteral(), push(new SingletonNameSetAstNode(pop())));
   }
 
   @Anchor(NAME_SET_REGEX)

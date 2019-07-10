@@ -3,14 +3,15 @@ package org.batfish.specifier.parboiled;
 import com.google.common.base.MoreObjects;
 import java.util.Objects;
 
-final class NameNameSetAstNode implements NameSetAstNode {
+/** Represents the AST node for one specific name from the name set */
+final class SingletonNameSetAstNode implements NameSetAstNode {
   private final String _name;
 
-  NameNameSetAstNode(AstNode nameAst) {
+  SingletonNameSetAstNode(AstNode nameAst) {
     this(((StringAstNode) nameAst).getStr());
   }
 
-  NameNameSetAstNode(String name) {
+  SingletonNameSetAstNode(String name) {
     _name = name;
   }
 
@@ -29,10 +30,10 @@ final class NameNameSetAstNode implements NameSetAstNode {
     if (this == o) {
       return true;
     }
-    if (!(o instanceof NameNameSetAstNode)) {
+    if (!(o instanceof SingletonNameSetAstNode)) {
       return false;
     }
-    return Objects.equals(_name, ((NameNameSetAstNode) o)._name);
+    return Objects.equals(_name, ((SingletonNameSetAstNode) o)._name);
   }
 
   public String getName() {

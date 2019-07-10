@@ -47,12 +47,14 @@ public class ParboiledNameSetSpecifierTest {
   @Test
   public void testResolveName() {
     assertThat(
-        new ParboiledNameSetSpecifier(new NameNameSetAstNode("mlag1"), Grammar.MLAG_ID_SPECIFIER)
+        new ParboiledNameSetSpecifier(
+                new SingletonNameSetAstNode("mlag1"), Grammar.MLAG_ID_SPECIFIER)
             .resolve(_ctxt),
         equalTo(ImmutableSet.of("mlag1")));
     // bad names lead to empty set
     assertThat(
-        new ParboiledNameSetSpecifier(new NameNameSetAstNode("nono"), Grammar.MLAG_ID_SPECIFIER)
+        new ParboiledNameSetSpecifier(
+                new SingletonNameSetAstNode("nono"), Grammar.MLAG_ID_SPECIFIER)
             .resolve(_ctxt),
         equalTo(ImmutableSet.of()));
   }
@@ -70,7 +72,7 @@ public class ParboiledNameSetSpecifierTest {
     assertThat(
         new ParboiledNameSetSpecifier(
                 new UnionNameSetAstNode(
-                    new NameNameSetAstNode("mlag1"), new NameNameSetAstNode("mlag2")),
+                    new SingletonNameSetAstNode("mlag1"), new SingletonNameSetAstNode("mlag2")),
                 Grammar.MLAG_ID_SPECIFIER)
             .resolve(_ctxt),
         equalTo(ImmutableSet.of("mlag1", "mlag2")));

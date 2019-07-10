@@ -36,7 +36,7 @@ final class NameSetNoMatchMessages implements NoMatchMessages {
     }
 
     @Override
-    public List<String> visitNameNameSetAstNode(NameNameSetAstNode nameSetAstNode) {
+    public List<String> visitNameNameSetAstNode(SingletonNameSetAstNode nameSetAstNode) {
       return (_allNames.stream().anyMatch(n -> n.equalsIgnoreCase(nameSetAstNode.getName())))
           ? ImmutableList.of()
           : ImmutableList.of(getErrorMessageMissingName(nameSetAstNode.getName(), _nameType));
