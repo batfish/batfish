@@ -178,14 +178,14 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
       LongSpace.of(Range.closed(1L, 4294967294L));
   private static final IntegerSpace IP_PREFIX_LIST_NAME_LENGTH_RANGE =
       IntegerSpace.of(Range.closed(1, 63));
+  private static final IntegerSpace IP_PREFIX_LIST_PREFIX_LENGTH_RANGE =
+      IntegerSpace.of(Range.closed(1, 32));
   private static final int MAX_VRF_NAME_LENGTH = 32;
   private static final IntegerSpace PACKET_LENGTH_RANGE = IntegerSpace.of(Range.closed(20, 9210));
   private static final IntegerSpace PORT_CHANNEL_RANGE = IntegerSpace.of(Range.closed(1, 4096));
-  private static final IntegerSpace TCP_FLAGS_MASK_RANGE = IntegerSpace.of(Range.closed(0, 63));;
+  private static final IntegerSpace TCP_FLAGS_MASK_RANGE = IntegerSpace.of(Range.closed(0, 63));
   private static final IntegerSpace TCP_PORT_RANGE = IntegerSpace.of(Range.closed(0, 65535));
   private static final IntegerSpace UDP_PORT_RANGE = IntegerSpace.of(Range.closed(0, 65535));
-  private static final IntegerSpace IP_PREFIX_LIST_PREFIX_LENGTH_RANGE =
-      IntegerSpace.of(Range.closed(1, 32));
 
   private static @Nonnull IpAddressSpec toAddressSpec(Acllal3_address_specContext ctx) {
     if (ctx.address != null) {
@@ -1273,12 +1273,6 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
     _currentIpPrefixList.getLines().put(num, pll);
   }
 
-  private @Nonnull Optional<Integer> toInteger(
-      ParserRuleContext messageCtx, Ip_prefix_list_line_prefix_lengthContext ctx) {
-    return toIntegerInSpace(
-        messageCtx, ctx, IP_PREFIX_LIST_PREFIX_LENGTH_RANGE, "ip prefix-list prefix-length bound");
-  }
-
   @Override
   public void exitPl_description(Pl_descriptionContext ctx) {
     toString(ctx, ctx.text)
@@ -1404,6 +1398,12 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
       todo(ctx);
       return Optional.empty();
     }
+  }
+
+  private @Nonnull Optional<Integer> toInteger(
+      ParserRuleContext messageCtx, Ip_prefix_list_line_prefix_lengthContext ctx) {
+    return toIntegerInSpace(
+        messageCtx, ctx, IP_PREFIX_LIST_PREFIX_LENGTH_RANGE, "ip prefix-list prefix-length bound");
   }
 
   private @Nonnull Optional<Integer> toInteger(
