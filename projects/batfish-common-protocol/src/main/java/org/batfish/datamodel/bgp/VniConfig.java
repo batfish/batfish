@@ -9,7 +9,6 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.Ip;
-import org.batfish.datamodel.VniSettings;
 import org.batfish.datamodel.bgp.community.ExtendedCommunity;
 
 /**
@@ -69,7 +68,7 @@ public abstract class VniConfig implements Serializable {
 
   /**
    * Overrides which IP address to advertise for this VNI. If {@code null}, the {@link
-   * VniSettings#getSourceAddress()} should be used by default
+   * org.batfish.datamodel.VniSettings#getSourceAddress()} should be used by default
    */
   @Nullable
   @JsonProperty(PROP_ADVERTISED_SOURCE_ADDRESS)
