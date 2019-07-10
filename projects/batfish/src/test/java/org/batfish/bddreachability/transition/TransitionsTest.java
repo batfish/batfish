@@ -14,6 +14,7 @@ import static org.batfish.bddreachability.transition.Transitions.tryMergeDisjunc
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.instanceOf;
+import static org.hamcrest.Matchers.nullValue;
 import static org.hamcrest.Matchers.sameInstance;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
@@ -217,6 +218,29 @@ public class TransitionsTest {
     BDD v0 = var(0);
     BDD v1 = var(1);
     assertEquals(constraint(v0.and(v1)), mergeComposed(constraint(v0), constraint(v1)));
+  }
+
+  @Test
+  public void testMergeComposed_Constraint_Branch() {
+    BDD v0 = var(0);
+    BDD v1 = var(1);
+    BDD v2 = var(2);
+    BDD v3 = var(3);
+    Branch branch = new Branch(v1, constraint(v2), constraint(v3));
+
+    // constraint implies guard => guard and true branch
+    assertThat(mergeComposed(constraint(v1), branch), equalTo(constraint(v1.and(v2))));
+    assertThat(
+        mergeComposed(constraint(v1.and(v0)), branch), equalTo(constraint(v0.and(v1).and(v2))));
+
+    // constraint implies !guard => !guard and false branch
+    assertThat(mergeComposed(constraint(v1.not()), branch), equalTo(constraint(v1.not().and(v3))));
+    assertThat(
+        mergeComposed(constraint(v1.not().and(v0)), branch),
+        equalTo(constraint(v1.not().and(v0).and(v3))));
+
+    // constraint does not imply either guard or !guard => do not merge
+    assertThat(mergeComposed(constraint(v0), branch), nullValue());
   }
 
   @Test
