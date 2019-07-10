@@ -34,6 +34,9 @@ import static org.batfish.specifier.parboiled.Anchor.Type.IP_WILDCARD;
 import static org.batfish.specifier.parboiled.Anchor.Type.LOCATION_ENTER;
 import static org.batfish.specifier.parboiled.Anchor.Type.LOCATION_PARENS;
 import static org.batfish.specifier.parboiled.Anchor.Type.LOCATION_SET_OP;
+import static org.batfish.specifier.parboiled.Anchor.Type.NAME_SET_NAME;
+import static org.batfish.specifier.parboiled.Anchor.Type.NAME_SET_REGEX;
+import static org.batfish.specifier.parboiled.Anchor.Type.NAME_SET_SET_OP;
 import static org.batfish.specifier.parboiled.Anchor.Type.NODE_AND_FILTER;
 import static org.batfish.specifier.parboiled.Anchor.Type.NODE_AND_FILTER_TAIL;
 import static org.batfish.specifier.parboiled.Anchor.Type.NODE_AND_INTERFACE;
@@ -119,6 +122,8 @@ public class Parser extends CommonParser {
         return input(IpSpaceSpec());
       case LOCATION_SPECIFIER:
         return input(LocationSpec());
+      case MLAG_ID_SPECIFIER:
+        return input(NameSetSpec());
       case NAMED_STRUCTURE_SPECIFIER:
         return input(EnumSetSpec(Grammar.getEnumValues(grammar)));
       case NODE_PROPERTY_SPECIFIER:
@@ -142,7 +147,10 @@ public class Parser extends CommonParser {
   }
 
   /**
-   * Enum set grammar
+   * Enum set grammar. Shared grammar for multiple enum types, or more precisely, over a known,
+   * network-independent set of {@code values}. The values may be for Java enums such as {@link
+   * org.batfish.datamodel.Protocol} or properties in {@link
+   * org.batfish.datamodel.questions.NodePropertySpecifier}
    *
    * <pre>
    *   enumSetSpec := enumSetTerm [(,|&|\) enumSetTerm]*
@@ -972,6 +980,47 @@ public class Parser extends CommonParser {
   public Rule LocationParens() {
     // Leave the stack as is -- no need to remember that this was a parenthetical term
     return Sequence("( ", LocationSpec(), WhiteSpace(), CloseParens());
+  }
+
+  /**
+   * Name set grammar. Shared grammar for multiple types of names such as structure names or MLAG
+   * IDs.
+   *
+   * <pre>
+   *   nameSetSpec := nameSetTerm [(,|&|\) nameSetTerm]*
+   *
+   *   nameSetTerm := nameVal
+   *                 | regex over names
+   * </pre>
+   */
+
+  /** An enumSetSpec is one or more terms separated by , */
+  @Anchor(NAME_SET_SET_OP)
+  public Rule NameSetSpec() {
+    return Sequence(
+        NameSetTerm(),
+        WhiteSpace(),
+        ZeroOrMore(
+            ", ", NameSetTerm(), push(new UnionNameSetAstNode(pop(1), pop())), WhiteSpace()));
+  }
+
+  public <T> Rule NameSetTerm() {
+    return FirstOf(NameSetRegexDeprecated(), NameSetRegex(), NameSetName());
+  }
+
+  @Anchor(NAME_SET_NAME)
+  public <T> Rule NameSetName() {
+    return Sequence(NameLiteral(), push(new SingletonNameSetAstNode(pop())));
+  }
+
+  @Anchor(NAME_SET_REGEX)
+  public Rule NameSetRegex() {
+    return Sequence(Regex(), push(new RegexNameSetAstNode(pop())));
+  }
+
+  @Anchor(DEPRECATED)
+  public Rule NameSetRegexDeprecated() {
+    return Sequence(RegexDeprecated(), push(new RegexNameSetAstNode(pop())));
   }
 
   /**

@@ -9,6 +9,7 @@ import org.batfish.specifier.parboiled.ParboiledInterfaceSpecifier;
 import org.batfish.specifier.parboiled.ParboiledIpProtocolSpecifier;
 import org.batfish.specifier.parboiled.ParboiledIpSpaceSpecifier;
 import org.batfish.specifier.parboiled.ParboiledLocationSpecifier;
+import org.batfish.specifier.parboiled.ParboiledNameSetSpecifier;
 import org.batfish.specifier.parboiled.ParboiledNodeSpecifier;
 import org.batfish.specifier.parboiled.ParboiledRoutingPolicySpecifier;
 
@@ -95,6 +96,17 @@ public final class SpecifierFactories {
     }
   }
 
+  public static NameSetSpecifier getNameSetSpecifier(
+      String input, Grammar grammar, Version version) {
+    switch (version) {
+      case V1:
+      case V2:
+        return ParboiledNameSetSpecifier.parse(input, grammar);
+      default:
+        throw new IllegalStateException("Unhandled grammar version " + version);
+    }
+  }
+
   public static NodeSpecifier getNodeSpecifier(String input, Version version) {
     switch (version) {
       case V1:
@@ -146,6 +158,11 @@ public final class SpecifierFactories {
     return getEnumSetSpecifierOrDefault(input, grammar, defaultSpecifier, ACTIVE_VERSION);
   }
 
+  public static NameSetSpecifier getNameSetSpecifierOrDefault(
+      @Nullable String input, Grammar grammar, NameSetSpecifier defaultSpecifier) {
+    return getNameSetSpecifierOrDefault(input, grammar, defaultSpecifier, ACTIVE_VERSION);
+  }
+
   public static NodeSpecifier getNodeSpecifierOrDefault(
       @Nullable String input, NodeSpecifier defaultSpecifier) {
     return getNodeSpecifierOrDefault(input, defaultSpecifier, ACTIVE_VERSION);
@@ -186,6 +203,13 @@ public final class SpecifierFactories {
     return input == null || input.isEmpty()
         ? defaultSpecifier
         : getEnumSetSpecifier(input, grammar, v);
+  }
+
+  public static NameSetSpecifier getNameSetSpecifierOrDefault(
+      @Nullable String input, Grammar grammar, NameSetSpecifier defaultSpecifier, Version v) {
+    return input == null || input.isEmpty()
+        ? defaultSpecifier
+        : getNameSetSpecifier(input, grammar, v);
   }
 
   public static NodeSpecifier getNodeSpecifierOrDefault(
