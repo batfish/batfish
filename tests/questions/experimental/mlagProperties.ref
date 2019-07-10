@@ -1,6 +1,6 @@
 {
   "class" : "org.batfish.question.mlag.MlagPropertiesQuestion",
-  "idRegex" : "myids",
+  "mlagIds" : "myids",
   "nodes" : "mynodes",
   "differential" : false,
   "includeOneTableKeys" : true,
@@ -13,11 +13,11 @@
       "mlag"
     ],
     "variables" : {
-      "idRegex" : {
-        "description" : "Include MLAG IDs matching this java Regex",
-        "displayName" : "MLAG ID Regex",
+      "mlagIds" : {
+        "description" : "Include MLAG IDs matching this specifier",
+        "displayName" : "MLAG IDs",
         "optional" : true,
-        "type" : "javaRegex",
+        "type" : "mlagIdSpec",
         "value" : "myids"
       },
       "nodes" : {

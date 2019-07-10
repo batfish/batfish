@@ -128,6 +128,7 @@ import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.RangeContext;
 import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.Range_setContext;
 import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.Rmm_interfaceContext;
 import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.S_net_add_unrecognizedContext;
+import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.Stp_commonContext;
 import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.Uint16Context;
 import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.Uint32Context;
 import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.V_ip_addressContext;
@@ -822,6 +823,11 @@ public class CumulusNcluConfigurationBuilder extends CumulusNcluParserBaseListen
                     existingEntry != null && existingEntry.getAction().equals(action)
                         ? existingEntry
                         : new RouteMapEntry(num, action));
+  }
+
+  @Override
+  public void enterStp_common(Stp_commonContext ctx) {
+    todo(ctx);
   }
 
   @Override

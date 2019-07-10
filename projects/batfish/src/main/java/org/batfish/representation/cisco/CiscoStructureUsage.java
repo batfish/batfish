@@ -198,6 +198,7 @@ public enum CiscoStructureUsage implements StructureUsage {
   ROUTE_MAP_MATCH_IPV6_ACCESS_LIST("route-map match ipv6 access-list"),
   ROUTE_MAP_MATCH_IPV6_PREFIX_LIST("route-map match ipv6 prefix-list"),
   ROUTE_MAP_SET_COMMUNITY("route-map set community list"),
+  ROUTE_POLICY_APPLY("route-policy apply"),
   ROUTE_POLICY_AS_PATH_IN("route-policy as-path in"),
   ROUTE_POLICY_COMMUNITY_MATCHES_ANY("route-policy community matches-any"),
   ROUTE_POLICY_COMMUNITY_MATCHES_EVERY("route-policy community matches-every"),

@@ -71,6 +71,7 @@ a_bond
     | bond_ip_address
     | bond_mtu
     | bond_vrf
+    | stp_common
   )
 ;
 

@@ -408,9 +408,29 @@ PERMIT
   'permit'
 ;
 
+PORTADMINEDGE
+:
+  'portadminedge'
+;
+
+PORTAUTOEDGE
+:
+  'portautoedge'
+;
+
 PORTBPDUFILTER
 :
   'portbpdufilter'
+;
+
+PORTNETWORK
+:
+  'portnetwork'
+;
+
+PORTRESTROLE
+:
+  'portrestrole'
 ;
 
 PORTS
