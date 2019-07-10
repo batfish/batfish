@@ -3828,7 +3828,8 @@ public final class CiscoConfiguration extends VendorConfiguration {
         CiscoStructureUsage.BGP_ADDITIONAL_PATHS_SELECTION_ROUTE_POLICY,
         CiscoStructureUsage.BGP_AGGREGATE_ROUTE_POLICY,
         CiscoStructureUsage.BGP_NEIGHBOR_ROUTE_POLICY_IN,
-        CiscoStructureUsage.BGP_NEIGHBOR_ROUTE_POLICY_OUT);
+        CiscoStructureUsage.BGP_NEIGHBOR_ROUTE_POLICY_OUT,
+        CiscoStructureUsage.ROUTE_POLICY_APPLY);
 
     // Cable
     markConcreteStructure(
