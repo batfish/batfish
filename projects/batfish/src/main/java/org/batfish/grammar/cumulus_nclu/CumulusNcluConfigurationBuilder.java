@@ -81,6 +81,7 @@ import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.Bnp_remote_asContext;
 import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.Bob_accessContext;
 import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.Bob_pvidContext;
 import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.Bob_vidsContext;
+import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.Bobo_lacp_bypass_allowContext;
 import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.Bobo_slavesContext;
 import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.Bond_clag_idContext;
 import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.Bond_ip_addressContext;
@@ -1055,6 +1056,11 @@ public class CumulusNcluConfigurationBuilder extends CumulusNcluParserBaseListen
   @Override
   public void exitBob_vids(Bob_vidsContext ctx) {
     _currentBonds.forEach(b -> b.getBridge().setVids(IntegerSpace.of(toRangeSet(ctx.vlans))));
+  }
+
+  @Override
+  public void exitBobo_lacp_bypass_allow(Bobo_lacp_bypass_allowContext ctx) {
+    todo(ctx);
   }
 
   @Override
