@@ -140,6 +140,37 @@ public final class Transitions {
     if (t2 == IDENTITY) {
       return t1;
     }
+    if (t1 instanceof Branch) {
+      Branch branch = (Branch) t1;
+      Transition mergeTrue = mergeComposed(branch.getTrueBranch(), t2);
+      Transition mergeFalse = mergeComposed(branch.getFalseBranch(), t2);
+      if (mergeTrue != null && mergeFalse != null) {
+        return branch(branch.getGuard(), mergeTrue, mergeFalse);
+      }
+      // fall through
+    }
+    if (t1 instanceof Composite) {
+      Composite c = (Composite) t1;
+      List<Transition> transitions = c.getTransitions();
+      Transition merged = mergeComposed(transitions.get(transitions.size() - 1), t2);
+      if (merged != null) {
+        Transition[] newTransitions = transitions.toArray(new Transition[0]);
+        newTransitions[newTransitions.length - 1] = merged;
+        return compose(newTransitions);
+      }
+      // fall through
+    }
+    if (t2 instanceof Composite) {
+      Composite c = (Composite) t2;
+      List<Transition> transitions = c.getTransitions();
+      Transition merged = mergeComposed(t1, transitions.get(0));
+      if (merged != null) {
+        Transition[] newTransitions = transitions.toArray(new Transition[0]);
+        newTransitions[0] = merged;
+        return compose(newTransitions);
+      }
+      // fall through
+    }
     if (t1 instanceof Constraint && t2 instanceof Constraint) {
       BDD bdd1 = ((Constraint) t1).getConstraint();
       BDD bdd2 = ((Constraint) t2).getConstraint();
