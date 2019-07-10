@@ -150,11 +150,11 @@ public final class Transitions {
       Branch branch = (Branch) t2;
       BDD guard = ((Branch) t2).getGuard();
       if (!constraintBdd.andSat(guard)) {
-        // True branch can never be taken.
+        // True branch can never be taken. Also, t1 subsumes guard.not(), so we can elide it.
         return compose(t1, branch.getFalseBranch());
       }
       if (!constraintBdd.diffSat(guard)) {
-        // False branch can never be taken.
+        // False branch can never be taken. Also, t1 subsumes guard, so we can elide it.
         return compose(t1, branch.getTrueBranch());
       }
       // fall through
