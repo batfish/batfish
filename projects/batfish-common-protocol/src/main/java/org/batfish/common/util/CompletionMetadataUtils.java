@@ -1,6 +1,5 @@
 package org.batfish.common.util;
 
-import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableSet;
 import java.util.Map;
 import java.util.Set;
@@ -16,7 +15,6 @@ public final class CompletionMetadataUtils {
 
   private CompletionMetadataUtils() {}
 
-  @VisibleForTesting
   public static Set<String> getFilterNames(Map<String, Configuration> configurations) {
     ImmutableSet.Builder<String> filterNames = ImmutableSet.builder();
     configurations
@@ -25,7 +23,6 @@ public final class CompletionMetadataUtils {
     return filterNames.build();
   }
 
-  @VisibleForTesting
   public static Set<NodeInterfacePair> getInterfaces(Map<String, Configuration> configurations) {
     ImmutableSet.Builder<NodeInterfacePair> interfaces = ImmutableSet.builder();
     configurations
@@ -38,7 +35,6 @@ public final class CompletionMetadataUtils {
     return interfaces.build();
   }
 
-  @VisibleForTesting
   public static Set<String> getIps(Map<String, Configuration> configurations) {
     ImmutableSet.Builder<String> ips = ImmutableSet.builder();
     configurations
@@ -72,12 +68,18 @@ public final class CompletionMetadataUtils {
     return ips.build();
   }
 
-  @VisibleForTesting
+  public static Set<String> getMlagIds(Map<String, Configuration> configurations) {
+    ImmutableSet.Builder<String> mlags = ImmutableSet.builder();
+    configurations
+        .values()
+        .forEach(configuration -> configuration.getMlags().keySet().stream().forEach(mlags::add));
+    return mlags.build();
+  }
+
   public static Set<String> getNodes(Map<String, Configuration> configurations) {
     return ImmutableSet.copyOf(configurations.keySet());
   }
 
-  @VisibleForTesting
   public static Set<String> getPrefixes(Map<String, Configuration> configurations) {
     ImmutableSet.Builder<String> prefixes = ImmutableSet.builder();
     configurations
@@ -112,7 +114,6 @@ public final class CompletionMetadataUtils {
     return prefixes.build();
   }
 
-  @VisibleForTesting
   public static Set<String> getRoutingPolicyNames(Map<String, Configuration> configurations) {
     ImmutableSet.Builder<String> routingPolicyNames = ImmutableSet.builder();
     configurations
@@ -123,7 +124,6 @@ public final class CompletionMetadataUtils {
     return routingPolicyNames.build();
   }
 
-  @VisibleForTesting
   public static Set<String> getStructureNames(Map<String, Configuration> configurations) {
     ImmutableSet.Builder<String> structureNames = ImmutableSet.builder();
     configurations
@@ -151,7 +151,6 @@ public final class CompletionMetadataUtils {
     return structureNames.build();
   }
 
-  @VisibleForTesting
   public static Set<String> getVrfs(Map<String, Configuration> configurations) {
     ImmutableSet.Builder<String> vrfs = ImmutableSet.builder();
     configurations
@@ -164,7 +163,6 @@ public final class CompletionMetadataUtils {
     return vrfs.build();
   }
 
-  @VisibleForTesting
   public static Set<String> getZones(Map<String, Configuration> configurations) {
     ImmutableSet.Builder<String> zones = ImmutableSet.builder();
     configurations

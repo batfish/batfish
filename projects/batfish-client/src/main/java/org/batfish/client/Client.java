@@ -561,6 +561,18 @@ public class Client extends AbstractClient implements IClient {
               String.format("It is not a valid JSON %s value", expectedType.getName()));
         }
         break;
+      case MLAG_ID:
+        if (!(value.isTextual())) {
+          throw new BatfishException(
+              String.format("A Batfish %s must be a JSON string", expectedType.getName()));
+        }
+        break;
+      case MLAG_ID_SPEC:
+        if (!(value.isTextual())) {
+          throw new BatfishException(
+              String.format("A Batfish %s must be a JSON string", expectedType.getName()));
+        }
+        break;
       case NAMED_STRUCTURE_SPEC:
         if (!(value.isTextual())) {
           throw new BatfishException(

@@ -1,7 +1,10 @@
 package org.batfish.specifier.parboiled;
 
+import com.google.common.collect.ImmutableSet;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Set;
+import org.batfish.common.CompletionMetadata;
 import org.batfish.datamodel.BgpSessionProperties.SessionType;
 import org.batfish.datamodel.Protocol;
 import org.batfish.datamodel.questions.BgpPeerPropertySpecifier;
@@ -11,6 +14,7 @@ import org.batfish.datamodel.questions.IpsecSessionStatus;
 import org.batfish.datamodel.questions.NamedStructurePropertySpecifier;
 import org.batfish.datamodel.questions.NodePropertySpecifier;
 import org.batfish.datamodel.questions.VxlanVniPropertySpecifier;
+import org.batfish.specifier.SpecifierContext;
 
 /** Contains information on various expressions supported by this package */
 public enum Grammar {
@@ -25,6 +29,7 @@ public enum Grammar {
   IP_SPACE_SPECIFIER("ipSpecifier", "ip-specifier"),
   IPSEC_SESSION_STATUS_SPECIFIER("ipsecSessionStatusSpecifier", "ipsec-session-status-specifier"),
   LOCATION_SPECIFIER("locationSpecifier", "location-specifier"),
+  MLAG_ID_SPECIFIER("mlagSpecifier", "mlag-id-specifier"),
   NAMED_STRUCTURE_SPECIFIER("namedStructureSpecifier", "named-structure-specifier"),
   NODE_PROPERTY_SPECIFIER("nodePropertySpecifier", "node-property-specifier"),
   NODE_SPECIFIER("nodeSpecifier", "node-specifier"),
@@ -84,6 +89,47 @@ public enum Grammar {
         return VxlanVniPropertySpecifier.ALL.getMatchingProperties();
       default:
         throw new IllegalArgumentException(grammar + " is not an enum grammar");
+    }
+  }
+
+  /**
+   * Returns the set of names based on the grammar type, for grammars that use the shared name
+   * grammar (NameSetSpec)
+   */
+  public static Set<String> getNames(SpecifierContext ctxt, Grammar grammar) {
+    switch (grammar) {
+      case MLAG_ID_SPECIFIER:
+        return ctxt.getConfigs().values().stream()
+            .flatMap(c -> c.getMlags().keySet().stream())
+            .collect(ImmutableSet.toImmutableSet());
+      default:
+        throw new IllegalArgumentException("Cannot recover names for " + grammar);
+    }
+  }
+
+  /**
+   * Returns the set of names based on the grammar type, for grammars that use the shared name
+   * grammar (NameSetSpec)
+   */
+  public static Set<String> getNames(CompletionMetadata completionMetadata, Grammar grammar) {
+    switch (grammar) {
+      case MLAG_ID_SPECIFIER:
+        return completionMetadata.getMlagIds();
+      default:
+        throw new IllegalArgumentException("Cannot recover names for " + grammar);
+    }
+  }
+
+  /**
+   * Returns the type of names based on the grammar type, for grammars that use the shared name
+   * grammar (NameSetSpec)
+   */
+  public static String getNameType(Grammar grammar) {
+    switch (grammar) {
+      case MLAG_ID_SPECIFIER:
+        return "mlagId";
+      default:
+        throw new IllegalArgumentException("Cannot recover name type for " + grammar);
     }
   }
 }

@@ -181,7 +181,7 @@ public class VirtualRouter implements Serializable {
   private transient Rib _generatedRib;
 
   /** Metadata about propagated prefixes to/from neighbors */
-  private PrefixTracer _prefixTracer;
+  @Nonnull private PrefixTracer _prefixTracer;
 
   /** List of all EIGRP processes in this VRF */
   @VisibleForTesting transient ImmutableMap<Long, VirtualEigrpProcess> _virtualEigrpProcesses;
@@ -213,7 +213,8 @@ public class VirtualRouter implements Serializable {
     _vniSettings = ImmutableSet.copyOf(_vrf.getVniSettings().values());
     if (_vrf.getBgpProcess() != null) {
       _bgpRoutingProcess =
-          new BgpRoutingProcess(_vrf.getBgpProcess(), _c, _name, _mainRib, BgpTopology.EMPTY);
+          new BgpRoutingProcess(
+              _vrf.getBgpProcess(), _c, _name, _mainRib, BgpTopology.EMPTY, _prefixTracer);
     }
   }
 
@@ -1421,25 +1422,28 @@ public class VirtualRouter implements Serializable {
                 .getActions()
                 .map(
                     adv -> {
-                      Bgpv4Route transformedRoute =
-                          exportBgpRoute(
-                              adv.getRoute(),
+                      Optional<Bgpv4Route> transformedRoute =
+                          _bgpRoutingProcess.transformBgpRouteOnExport(
+                              adv.getRoute().getRoute(),
                               ourConfigId,
                               remoteConfigId,
                               ourConfig,
                               remoteConfig,
                               allNodes,
-                              session);
-                      return transformedRoute == null
-                          ? null
-                          // REPLACE does not make sense across routers, update with WITHDRAW
-                          : RouteAdvertisement.<Bgpv4Route>builder()
-                              .setReason(
-                                  adv.getReason() == Reason.REPLACE
-                                      ? Reason.WITHDRAW
-                                      : adv.getReason())
-                              .setRoute(transformedRoute)
-                              .build();
+                              session,
+                              Type.IPV4_UNICAST);
+                      // REPLACE does not make sense across routers, update with WITHDRAW
+                      return transformedRoute
+                          .map(
+                              bgpv4Route ->
+                                  RouteAdvertisement.<Bgpv4Route>builder()
+                                      .setReason(
+                                          adv.getReason() == Reason.REPLACE
+                                              ? Reason.WITHDRAW
+                                              : adv.getReason())
+                                      .setRoute(bgpv4Route)
+                                      .build())
+                          .orElse(null);
                     })
                 .filter(Objects::nonNull),
             mainRibExports);
@@ -1711,19 +1715,21 @@ public class VirtualRouter implements Serializable {
                       processNeighborSpecificGeneratedRoute(r, sessionProperties.getHeadIp());
                   if (bgpv4Route == null) {
                     // Route was not activated
-                    return null;
+                    return Optional.<Bgpv4Route>empty();
                   }
                   // Run pre-export transform, export policy, & post-export transform
-                  return exportBgpRoute(
-                      annotateRoute(bgpv4Route),
+                  return _bgpRoutingProcess.transformBgpRouteOnExport(
+                      bgpv4Route,
                       localConfigId,
                       remoteConfigId,
                       localConfig,
                       remoteConfig,
                       allNodes,
-                      sessionProperties);
+                      sessionProperties,
+                      Type.IPV4_UNICAST);
                 })
-            .filter(Objects::nonNull)
+            .filter(Optional::isPresent)
+            .map(Optional::get)
             .map(RouteAdvertisement::new)
             .collect(ImmutableSet.toImmutableSet());
 
@@ -1823,6 +1829,7 @@ public class VirtualRouter implements Serializable {
         .collect(toOrderedHashCode());
   }
 
+  @Nonnull
   PrefixTracer getPrefixTracer() {
     return _prefixTracer;
   }
@@ -1896,86 +1903,6 @@ public class VirtualRouter implements Serializable {
 
     // Successfully exported route
     Bgpv4Route transformedOutgoingRoute = transformedOutgoingRouteBuilder.build();
-    _prefixTracer.sentTo(
-        transformedOutgoingRoute.getNetwork(),
-        remoteConfigId.getHostname(),
-        remoteIp,
-        remoteConfigId.getVrfName(),
-        ourConfig.getIpv4UnicastAddressFamily().getExportPolicy());
-
-    return transformedOutgoingRoute;
-  }
-
-  /**
-   * Given a {@link BgpRoute}, run it through the BGP outbound transformations and export routing
-   * policy.
-   *
-   * @param exportCandidate a route to try and export
-   * @param ourConfig {@link BgpPeerConfig} that sends the route
-   * @param remoteConfig {@link BgpPeerConfig} that will be receiving the route
-   * @param allNodes all nodes in the network
-   * @param sessionProperties {@link BgpSessionProperties} representing the <em>incoming</em> edge:
-   *     i.e. the edge from {@code remoteConfig} to {@code ourConfig}
-   * @return The transformed route as a {@link BgpRoute}, or {@code null} if the route should not be
-   *     exported.
-   */
-  @Nullable
-  private <R extends BgpRoute<B, R>, B extends BgpRoute.Builder<B, R>> R exportBgpRoute(
-      @Nonnull AnnotatedRoute<R> exportCandidate,
-      @Nonnull BgpPeerConfigId ourConfigId,
-      @Nonnull BgpPeerConfigId remoteConfigId,
-      @Nonnull BgpPeerConfig ourConfig,
-      @Nonnull BgpPeerConfig remoteConfig,
-      @Nonnull Map<String, Node> allNodes,
-      @Nonnull BgpSessionProperties sessionProperties) {
-
-    RoutingPolicy exportPolicy =
-        _c.getRoutingPolicies().get(ourConfig.getIpv4UnicastAddressFamily().getExportPolicy());
-    B transformedOutgoingRouteBuilder =
-        BgpProtocolHelper.transformBgpRoutePreExport(
-            ourConfig,
-            remoteConfig,
-            sessionProperties,
-            _vrf.getBgpProcess(),
-            requireNonNull(getRemoteBgpNeighborVR(remoteConfigId, allNodes))._vrf.getBgpProcess(),
-            exportCandidate.getRoute(),
-            Type.IPV4_UNICAST);
-    if (transformedOutgoingRouteBuilder == null) {
-      // This route could not be exported for core bgp protocol reasons
-      return null;
-    }
-
-    // sessionProperties represents the incoming edge, so its tailIp is the remote peer's IP
-    Ip remoteIp = sessionProperties.getTailIp();
-
-    // Process transformed outgoing route by the export policy
-    boolean shouldExport =
-        exportPolicy.process(
-            exportCandidate,
-            transformedOutgoingRouteBuilder,
-            remoteIp,
-            ourConfigId.getRemotePeerPrefix(),
-            ourConfigId.getVrfName(),
-            Direction.OUT);
-
-    if (!shouldExport) {
-      // This route could not be exported due to export policy
-      _prefixTracer.filtered(
-          exportCandidate.getNetwork(),
-          remoteConfigId.getHostname(),
-          remoteIp,
-          remoteConfigId.getVrfName(),
-          ourConfig.getIpv4UnicastAddressFamily().getExportPolicy(),
-          Direction.OUT);
-      return null;
-    }
-
-    // Apply final post-policy transformations before sending advertisement to neighbor
-    BgpProtocolHelper.transformBgpRoutePostExport(
-        transformedOutgoingRouteBuilder, sessionProperties.isEbgp(), ourConfig.getLocalAs());
-
-    // Successfully exported route
-    R transformedOutgoingRoute = transformedOutgoingRouteBuilder.build();
     _prefixTracer.sentTo(
         transformedOutgoingRoute.getNetwork(),
         remoteConfigId.getHostname(),

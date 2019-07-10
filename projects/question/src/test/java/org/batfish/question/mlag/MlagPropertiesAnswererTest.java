@@ -8,8 +8,8 @@ import static org.batfish.question.mlag.MlagPropertiesAnswerer.COL_MLAG_PEER_INT
 import static org.batfish.question.mlag.MlagPropertiesAnswerer.COL_NODE;
 import static org.batfish.question.mlag.MlagPropertiesAnswerer.computeAnswer;
 import static org.batfish.question.mlag.MlagPropertiesAnswerer.configToRow;
+import static org.batfish.question.mlag.MlagPropertiesAnswerer.getAllMlagIds;
 import static org.batfish.question.mlag.MlagPropertiesAnswerer.getMetadata;
-import static org.batfish.question.mlag.MlagPropertiesQuestion.MATCH_ALL;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.equalTo;
@@ -19,7 +19,6 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
-import java.util.regex.Pattern;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Configuration.Builder;
 import org.batfish.datamodel.ConfigurationFormat;
@@ -94,7 +93,7 @@ public final class MlagPropertiesAnswererTest {
   public void testFilterNodes() {
     ImmutableSortedMap<String, Configuration> configs = getConfigs();
     TableAnswerElement answer =
-        computeAnswer(ImmutableSet.of("n1"), Pattern.compile(MATCH_ALL), configs);
+        computeAnswer(ImmutableSet.of("n1"), getAllMlagIds(configs), configs);
 
     assertThat(
         answer.getRowsList(),
@@ -105,7 +104,7 @@ public final class MlagPropertiesAnswererTest {
   public void testFilterMlags() {
     ImmutableSortedMap<String, Configuration> configs = getConfigs();
     TableAnswerElement answer =
-        computeAnswer(ImmutableSet.of("n1", "n2"), Pattern.compile(".*2"), configs);
+        computeAnswer(ImmutableSet.of("n1", "n2"), ImmutableSet.of("ID2"), configs);
 
     assertThat(
         answer.getRowsList(),

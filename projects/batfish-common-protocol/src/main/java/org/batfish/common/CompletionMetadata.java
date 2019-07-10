@@ -18,6 +18,7 @@ import org.batfish.datamodel.collections.NodeInterfacePair;
 @ParametersAreNonnullByDefault
 public final class CompletionMetadata implements Serializable {
 
+  /** Builder for {@link CompletionMetadata} */
   public static final class Builder {
 
     private Set<String> _filterNames;
@@ -25,6 +26,8 @@ public final class CompletionMetadata implements Serializable {
     private Set<NodeInterfacePair> _interfaces;
 
     private Set<String> _ips;
+
+    private Set<String> _mlagIds;
 
     private Set<String> _nodes;
 
@@ -47,6 +50,7 @@ public final class CompletionMetadata implements Serializable {
           _filterNames,
           _interfaces,
           _ips,
+          _mlagIds,
           _nodes,
           _prefixes,
           _routingPolicyNames,
@@ -67,6 +71,11 @@ public final class CompletionMetadata implements Serializable {
 
     public @Nonnull Builder setIps(Set<String> ips) {
       _ips = ImmutableSet.copyOf(ips);
+      return this;
+    }
+
+    public @Nonnull Builder setMlagIds(Set<String> mlagIds) {
+      _mlagIds = ImmutableSet.copyOf(mlagIds);
       return this;
     }
 
@@ -111,6 +120,7 @@ public final class CompletionMetadata implements Serializable {
   private static final String PROP_FILTER_NAMES = "filterNames";
   private static final String PROP_INTERFACES = "interfaces";
   private static final String PROP_IPS = "ips";
+  private static final String PROP_MLAG_IDS = "mlagIds";
   private static final String PROP_NODES = "nodes";
   private static final String PROP_PREFIXES = "prefixes";
   private static final String PROP_ROUTING_POLICY_NAMES = "routingPolicyNames";
@@ -123,6 +133,8 @@ public final class CompletionMetadata implements Serializable {
   private final Set<NodeInterfacePair> _interfaces;
 
   private final Set<String> _ips;
+
+  private final Set<String> _mlagIds;
 
   private final Set<String> _nodes;
 
@@ -149,6 +161,7 @@ public final class CompletionMetadata implements Serializable {
       @Nullable @JsonProperty(PROP_FILTER_NAMES) Set<String> filterNames,
       @Nullable @JsonProperty(PROP_INTERFACES) Set<NodeInterfacePair> interfaces,
       @Nullable @JsonProperty(PROP_IPS) Set<String> ips,
+      @Nullable @JsonProperty(PROP_MLAG_IDS) Set<String> mlagIds,
       @Nullable @JsonProperty(PROP_NODES) Set<String> nodes,
       @Nullable @JsonProperty(PROP_PREFIXES) Set<String> prefixes,
       @Nullable @JsonProperty(PROP_ROUTING_POLICY_NAMES) Set<String> routingPolicyNames,
@@ -159,6 +172,7 @@ public final class CompletionMetadata implements Serializable {
         firstNonNull(filterNames, ImmutableSet.of()),
         firstNonNull(interfaces, ImmutableSet.of()),
         firstNonNull(ips, ImmutableSet.of()),
+        firstNonNull(mlagIds, ImmutableSet.of()),
         firstNonNull(nodes, ImmutableSet.of()),
         firstNonNull(prefixes, ImmutableSet.of()),
         firstNonNull(routingPolicyNames, ImmutableSet.of()),
@@ -171,6 +185,7 @@ public final class CompletionMetadata implements Serializable {
       Set<String> filterNames,
       Set<NodeInterfacePair> interfaces,
       Set<String> ips,
+      Set<String> mlagIds,
       Set<String> nodes,
       Set<String> prefixes,
       Set<String> routingPolicyNames,
@@ -180,6 +195,7 @@ public final class CompletionMetadata implements Serializable {
     _filterNames = filterNames;
     _interfaces = interfaces;
     _ips = ips;
+    _mlagIds = mlagIds;
     _nodes = nodes;
     _prefixes = prefixes;
     _routingPolicyNames = routingPolicyNames;
@@ -204,6 +220,13 @@ public final class CompletionMetadata implements Serializable {
   @Nonnull
   public Set<String> getIps() {
     return _ips;
+  }
+
+  /** Returns the full set of MLAG domain ids in the snapshot */
+  @JsonProperty(PROP_MLAG_IDS)
+  @Nonnull
+  public Set<String> getMlagIds() {
+    return _mlagIds;
   }
 
   @JsonProperty(PROP_NODES)
@@ -254,6 +277,7 @@ public final class CompletionMetadata implements Serializable {
     return _filterNames.equals(rhs._filterNames)
         && _interfaces.equals(rhs._interfaces)
         && _ips.equals(rhs._ips)
+        && _mlagIds.equals(rhs._mlagIds)
         && _nodes.equals(rhs._nodes)
         && _prefixes.equals(rhs._prefixes)
         && _routingPolicyNames.equals(rhs._routingPolicyNames)
@@ -268,6 +292,7 @@ public final class CompletionMetadata implements Serializable {
         _filterNames,
         _interfaces,
         _ips,
+        _mlagIds,
         _nodes,
         _prefixes,
         _routingPolicyNames,
@@ -282,6 +307,7 @@ public final class CompletionMetadata implements Serializable {
         .add(PROP_FILTER_NAMES, _filterNames)
         .add(PROP_INTERFACES, _interfaces)
         .add(PROP_IPS, _ips)
+        .add(PROP_MLAG_IDS, _mlagIds)
         .add(PROP_NODES, _nodes)
         .add(PROP_PREFIXES, _prefixes)
         .add(PROP_ROUTING_POLICY_NAMES, _routingPolicyNames)

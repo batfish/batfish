@@ -1,44 +1,37 @@
 package org.batfish.question.mlag;
 
-import static com.google.common.base.MoreObjects.firstNonNull;
-
 import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.Objects;
-import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.questions.Question;
-import org.batfish.specifier.AllNodesNodeSpecifier;
-import org.batfish.specifier.NodeSpecifier;
-import org.batfish.specifier.SpecifierFactories;
 
 /** MLAG properties question */
 @ParametersAreNonnullByDefault
 public final class MlagPropertiesQuestion extends Question {
   private static final String PROP_NODES = "nodes";
-  private static final String PROP_ID_REGEX = "idRegex";
+  private static final String PROP_MLAG_IDS = "mlagIds";
 
   static final String MATCH_ALL = ".*";
 
   private final @Nullable String _nodeSpecInput;
-  private final @Nonnull String _mlagIdRegex;
+  private final @Nullable String _mlagIdSpecInput;
 
   MlagPropertiesQuestion() {
     this(null, MATCH_ALL);
   }
 
-  public MlagPropertiesQuestion(@Nullable String nodeSpecInput, String mlagIdRegex) {
+  public MlagPropertiesQuestion(@Nullable String nodeSpecInput, @Nullable String mlagIdSpecInput) {
     _nodeSpecInput = nodeSpecInput;
-    _mlagIdRegex = mlagIdRegex;
+    _mlagIdSpecInput = mlagIdSpecInput;
   }
 
   @JsonCreator
   private static MlagPropertiesQuestion create(
       @Nullable @JsonProperty(PROP_NODES) String nodeSpecInput,
-      @Nullable @JsonProperty(PROP_ID_REGEX) String mlagIdRegex) {
-    return new MlagPropertiesQuestion(nodeSpecInput, firstNonNull(mlagIdRegex, MATCH_ALL));
+      @Nullable @JsonProperty(PROP_MLAG_IDS) String mlagIdSpecInput) {
+    return new MlagPropertiesQuestion(nodeSpecInput, mlagIdSpecInput);
   }
 
   @Override
@@ -57,17 +50,10 @@ public final class MlagPropertiesQuestion extends Question {
     return _nodeSpecInput;
   }
 
-  @JsonIgnore
-  @Nonnull
-  NodeSpecifier getNodeSpecifier() {
-    return SpecifierFactories.getNodeSpecifierOrDefault(
-        _nodeSpecInput, AllNodesNodeSpecifier.INSTANCE);
-  }
-
-  @JsonProperty(PROP_ID_REGEX)
-  @Nonnull
-  public String getMlagIdRegex() {
-    return _mlagIdRegex;
+  @JsonProperty(PROP_MLAG_IDS)
+  @Nullable
+  public String getMlagIdSpecInput() {
+    return _mlagIdSpecInput;
   }
 
   @Override
@@ -80,11 +66,11 @@ public final class MlagPropertiesQuestion extends Question {
     }
     MlagPropertiesQuestion that = (MlagPropertiesQuestion) o;
     return Objects.equals(_nodeSpecInput, that._nodeSpecInput)
-        && _mlagIdRegex.equals(that._mlagIdRegex);
+        && Objects.equals(_mlagIdSpecInput, that._mlagIdSpecInput);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(_nodeSpecInput, _mlagIdRegex);
+    return Objects.hash(_nodeSpecInput, _mlagIdSpecInput);
   }
 }

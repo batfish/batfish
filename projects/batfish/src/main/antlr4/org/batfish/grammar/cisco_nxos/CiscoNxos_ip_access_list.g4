@@ -26,8 +26,8 @@ acl_fragments
 :
   FRAGMENTS
   (
-    DENY_ALL
-    | PERMIT_ALL
+    deny = DENY_ALL
+    | permit = PERMIT_ALL
   ) NEWLINE
 ;
 
@@ -118,31 +118,33 @@ acllal3_option
 
 acllal3o_dscp
 :
-  DSCP
-  (
-    num = dscp_number
-    | AF11
-    | AF12
-    | AF13
-    | AF21
-    | AF22
-    | AF23
-    | AF31
-    | AF32
-    | AF33
-    | AF41
-    | AF42
-    | AF43
-    | CS1
-    | CS2
-    | CS3
-    | CS4
-    | CS5
-    | CS6
-    | CS7
-    | DEFAULT
-    | EF
-  )
+  DSCP dscp = dscp_spec
+;
+
+dscp_spec
+:
+  num = dscp_number
+  | AF11
+  | AF12
+  | AF13
+  | AF21
+  | AF22
+  | AF23
+  | AF31
+  | AF32
+  | AF33
+  | AF41
+  | AF42
+  | AF43
+  | CS1
+  | CS2
+  | CS3
+  | CS4
+  | CS5
+  | CS6
+  | CS7
+  | DEFAULT
+  | EF
 ;
 
 dscp_number
@@ -158,16 +160,18 @@ acllal3o_log
 
 acllal3o_packet_length
 :
-  PACKET_LENGTH
-  (
-    EQ eq = packet_length
-    | LT lt = packet_length
-    | GT gt = packet_length
-    | NEQ neq = packet_length
-    // NX-OS will flip first and second args if endpoint1 > endpoint2
+  PACKET_LENGTH spec = acllal3o_packet_length_spec
+;
 
-    | RANGE endpoint1 = packet_length endpoint2 = packet_length
-  )
+acllal3o_packet_length_spec
+:
+  eq = EQ arg1 = packet_length
+  | lt = LT arg1 = packet_length
+  | gt = GT arg1 = packet_length
+  | neq = NEQ arg1 = packet_length
+  // NX-OS will flip first and second args if arg1 > arg2
+
+  | range = RANGE arg1 = packet_length arg2 = packet_length
 ;
 
 acllal3o_precedence
@@ -300,29 +304,49 @@ igmp_message_type_number
 
 acllal4_tcp
 :
-  TCP acllal3_src_address srcport = acllal4tcp_port_spec? acllal3_dst_address
-  dstport = acllal4tcp_port_spec?
+  TCP acllal3_src_address acllal4tcp_source_port? acllal3_dst_address
+  acllal4tcp_destination_port?
   (
     acllal3_option
     | acllal4tcp_option
   )* NEWLINE
 ;
 
+acllal4tcp_source_port
+:
+  port = acllal4tcp_port_spec
+;
+
+acllal4tcp_destination_port
+:
+  port = acllal4tcp_port_spec
+;
+
 acllal4tcp_port_spec
 :
-  EQ eq = tcp_port
-  | LT lt = tcp_port
-  | GT gt = tcp_port
-  | NEQ neq = tcp_port
-  | PORTGROUP name = WORD
-  // NX-OS will flip first and second args if endpoint1 > endpoint2
+  literal = acllal4tcp_port_spec_literal
+  | group = acllal4tcp_port_spec_port_group
+;
 
-  | RANGE endpoint1 = tcp_port endpoint2 = tcp_port
+acllal4tcp_port_spec_literal
+:
+  eq = EQ arg1 = tcp_port
+  | lt = LT arg1 = tcp_port
+  | gt = GT arg1 = tcp_port
+  | neq = NEQ arg1 = tcp_port
+  // NX-OS will flip first and second args if arg1 > arg2
+
+  | range = RANGE arg1 = tcp_port arg2 = tcp_port
+;
+
+acllal4tcp_port_spec_port_group
+:
+  PORTGROUP name = WORD
 ;
 
 tcp_port
 :
-  tcp_port_number
+  num = tcp_port_number
   | BGP
   | CHARGEN
   | CMD
@@ -371,6 +395,7 @@ acllal4tcp_option
   acllal4tcpo_established
   | acllal4tcpo_flags
   | acllal4tcpo_http_method
+  | acllal4tcpo_tcp_flags_mask
   | acllal4tcpo_tcp_option_length
 ;
 
@@ -387,13 +412,6 @@ acllal4tcpo_flags
   | RST
   | SYN
   | URG
-  | TCP_FLAGS_MASK mask = tcp_flags_mask
-;
-
-tcp_flags_mask
-:
-// 0-63
-  UINT8
 ;
 
 acllal4tcpo_http_method
@@ -417,6 +435,17 @@ http_method_number
   UINT8
 ;
 
+acllal4tcpo_tcp_flags_mask
+:
+  TCP_FLAGS_MASK mask = tcp_flags_mask
+;
+
+tcp_flags_mask
+:
+// 0-63
+  UINT8
+;
+
 acllal4tcpo_tcp_option_length
 :
   TCP_OPTION_LENGTH length = tcp_option_length
@@ -430,24 +459,44 @@ tcp_option_length
 
 acllal4_udp
 :
-  UDP acllal3_src_address srcport = acllal4udp_port_spec? acllal3_dst_address
-  dstport = acllal4udp_port_spec?
+  UDP acllal3_src_address acllal4udp_source_port? acllal3_dst_address
+  acllal4udp_destination_port?
   (
     acllal3_option
     | acllal4udp_option
   )* NEWLINE
 ;
 
+acllal4udp_source_port
+:
+  port = acllal4udp_port_spec
+;
+
+acllal4udp_destination_port
+:
+  port = acllal4udp_port_spec
+;
+
 acllal4udp_port_spec
 :
-  EQ eq = udp_port
-  | LT lt = udp_port
-  | GT gt = udp_port
-  | NEQ neq = udp_port
-  | PORTGROUP name = WORD
-  // NX-OS will flip first and second args if endpoint1 > endpoint2
+  literal = acllal4udp_port_spec_literal
+  | group = acllal4udp_port_spec_port_group
+;
 
-  | RANGE endpoint1 = udp_port endpoint2 = udp_port
+acllal4udp_port_spec_literal
+:
+  eq = EQ arg1 = udp_port
+  | lt = LT arg1 = udp_port
+  | gt = GT arg1 = udp_port
+  | neq = NEQ arg1 = udp_port
+  // NX-OS will flip first and second args if arg1 > arg2
+
+  | range = RANGE arg1 = udp_port arg2 = udp_port
+;
+
+acllal4udp_port_spec_port_group
+:
+  PORTGROUP name = WORD
 ;
 
 udp_port

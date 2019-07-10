@@ -97,6 +97,9 @@ public final class InputValidationUtils {
       case LOCATION_SPEC:
         return ParboiledInputValidator.validate(
             Grammar.LOCATION_SPECIFIER, query, completionMetadata, nodeRolesData, referenceLibrary);
+      case MLAG_ID_SPEC:
+        return ParboiledInputValidator.validate(
+            Grammar.MLAG_ID_SPECIFIER, query, completionMetadata, nodeRolesData, referenceLibrary);
       case NAMED_STRUCTURE_SPEC:
         return ParboiledInputValidator.validate(
             Grammar.NAMED_STRUCTURE_SPECIFIER,

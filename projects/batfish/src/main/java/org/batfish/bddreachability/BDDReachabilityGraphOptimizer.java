@@ -18,6 +18,8 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.Queue;
 import java.util.Set;
+import java.util.function.BiConsumer;
+import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 import org.batfish.bddreachability.transition.AddLastHopConstraint;
 import org.batfish.bddreachability.transition.AddNoLastHopConstraint;
@@ -49,7 +51,7 @@ public class BDDReachabilityGraphOptimizer {
     opt.optimize();
     return opt._edges.cellSet().stream()
         .map(cell -> new Edge(cell.getRowKey(), cell.getColumnKey(), cell.getValue()))
-        .collect(ImmutableSet.toImmutableSet());
+        .collect(ImmutableList.toImmutableList());
   }
 
   // These three maps need to be kept in sync.
@@ -115,6 +117,12 @@ public class BDDReachabilityGraphOptimizer {
    * </ol>
    */
   private void optimize() {
+    // A big first pass to delete roots and leaves, since that operation does not require expensive
+    // transition merges.
+    _rootsPruned = pruneAllRoots(_postStates, _preStates, _edges::remove, _statesToKeep);
+    _leavesPruned =
+        pruneAllRoots(_preStates, _postStates, (a, b) -> _edges.remove(b, a), _statesToKeep);
+
     Set<StateExpr> candidateSet = new HashSet<>();
     candidateSet.addAll(_preStates.keySet());
     candidateSet.addAll(_postStates.keySet());
@@ -158,33 +166,79 @@ public class BDDReachabilityGraphOptimizer {
   }
 
   /**
+   * Prunes a root (as defined by the parameters) and returns a collection of valid states that were
+   * successors of the root.
+   *
+   * <p>This abstracts pruning for roots or leaves based on the inputs, which may be flipped.
+   */
+  private static Collection<StateExpr> pruneRoot(
+      StateExpr root,
+      Multimap<StateExpr, StateExpr> postStates,
+      Multimap<StateExpr, StateExpr> preStates,
+      BiConsumer<StateExpr, StateExpr> removeEdge,
+      Set<StateExpr> statesToKeep) {
+    assert !statesToKeep.contains(root);
+    assert !preStates.containsKey(root);
+
+    Collection<StateExpr> successors = postStates.removeAll(root);
+    for (StateExpr successor : successors) {
+      removeEdge.accept(root, successor);
+      preStates.remove(successor, root);
+    }
+    // We deleted an edge from each successor. If this was the only edge attached to it, that state
+    // is no longer in the table and is now invalid.
+    return successors.stream()
+        .filter(s -> postStates.containsKey(s) || preStates.containsKey(s))
+        .collect(Collectors.toList());
+  }
+
+  /**
+   * Iteratively prunes all roots (as defined by the parameters), returning the number of pruned
+   * roots.
+   *
+   * <p>This abstracts pruning all roots or leaves, based on the direction of input parameters.
+   */
+  private static int pruneAllRoots(
+      Multimap<StateExpr, StateExpr> postStates,
+      Multimap<StateExpr, StateExpr> preStates,
+      BiConsumer<StateExpr, StateExpr> removeEdge,
+      Set<StateExpr> statesToKeep) {
+    int count = 0;
+    Collection<StateExpr> roots =
+        postStates.keySet().stream()
+            .filter(s -> !statesToKeep.contains(s) && !preStates.containsKey(s))
+            .collect(Collectors.toList());
+    while (!roots.isEmpty()) {
+      count += roots.size();
+      roots =
+          roots.stream()
+              .map(s -> pruneRoot(s, postStates, preStates, removeEdge, statesToKeep))
+              .flatMap(Collection::stream)
+              .filter(s -> !statesToKeep.contains(s) && !preStates.containsKey(s))
+              .collect(Collectors.toSet());
+    }
+    return count;
+  }
+
+  /**
    * Try to remove the candidate state, returning any neighboring states whose edges were affected.
    */
   private Collection<StateExpr> tryToRemove(StateExpr candidate) {
     assert !_statesToKeep.contains(candidate);
-    Collection<StateExpr> inStates = _preStates.get(candidate);
-    if (inStates.isEmpty()) {
-      // root node. prune
-      _rootsPruned++;
-      Collection<StateExpr> affectedStates = _postStates.removeAll(candidate);
-      for (StateExpr oldNext : affectedStates) {
-        _edges.remove(candidate, oldNext);
-        _preStates.remove(oldNext, candidate);
-      }
-      return affectedStates;
-    }
-    Collection<StateExpr> outStates = _postStates.get(candidate);
-    if (outStates.isEmpty()) {
-      // leaf node. prune
-      _leavesPruned++;
-      Collection<StateExpr> affectedStates = _preStates.removeAll(candidate);
-      for (StateExpr oldPrev : affectedStates) {
-        _edges.remove(oldPrev, candidate);
-        _postStates.remove(oldPrev, candidate);
-      }
-      return affectedStates;
+
+    if (!_preStates.containsKey(candidate)) {
+      ++_rootsPruned;
+      return pruneRoot(candidate, _postStates, _preStates, _edges::remove, _statesToKeep);
     }
 
+    if (!_postStates.containsKey(candidate)) {
+      ++_leavesPruned;
+      return pruneRoot(
+          candidate, _preStates, _postStates, (a, b) -> _edges.remove(b, a), _statesToKeep);
+    }
+
+    Collection<StateExpr> inStates = _preStates.get(candidate);
+    Collection<StateExpr> outStates = _postStates.get(candidate);
     if (inStates.size() > 1 || outStates.size() > 1) {
       // For now, only consider merging edges when we can merge all the way through.
       return ImmutableSet.of();
