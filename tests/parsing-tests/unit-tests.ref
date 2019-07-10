@@ -486,6 +486,9 @@
         "cumulus_nclu_routing" : [
           "configs/cumulus_nclu_routing"
         ],
+        "cumulus_nclu_stp" : [
+          "configs/cumulus_nclu_stp"
+        ],
         "eos_mlag" : [
           "configs/eos_mlag"
         ],
@@ -1064,6 +1067,7 @@
         "configs/cumulus_nclu_invalid_vrfs" : "PASSED",
         "configs/cumulus_nclu_invalid_vxlans" : "PASSED",
         "configs/cumulus_nclu_routing" : "PASSED",
+        "configs/cumulus_nclu_stp" : "PASSED",
         "configs/eos_mlag" : "PASSED",
         "configs/eos_trunk_group" : "PASSED",
         "configs/f5_bigip_imish_malformed" : "PASSED",
@@ -42908,6 +42912,229 @@
             "  EOF:<EOF>)"
           ]
         },
+        "configs/cumulus_nclu_stp" : {
+          "sentences" : [
+            "(cumulus_nclu_configuration",
+            "  (statement",
+            "    (s_null",
+            "      NET:'net'",
+            "      (null_rest_of_line",
+            "        DEL:'del'",
+            "        WORD:'all'",
+            "        NEWLINE:'\\n')))",
+            "  (statement",
+            "    (s_net_add",
+            "      NET:'net'",
+            "      ADD:'add'",
+            "      (a_hostname",
+            "        HOSTNAME:'hostname'",
+            "        hostname = (word",
+            "          WORD:'cumulus_nclu_stp')",
+            "        NEWLINE:'\\n')))",
+            "  (statement",
+            "    (s_net_add",
+            "      NET:'net'",
+            "      ADD:'add'",
+            "      (a_interface",
+            "        INTERFACE:'interface'",
+            "        interfaces = (glob",
+            "          (glob_range_set",
+            "            base_word = (numbered_word",
+            "              NUMBERED_WORD:'swp1')))",
+            "        (stp_common",
+            "          STP:'stp'",
+            "          (stp_bpduguard",
+            "            BPDUGUARD:'bpduguard'",
+            "            NEWLINE:'\\n')))))",
+            "  (statement",
+            "    (s_net_add",
+            "      NET:'net'",
+            "      ADD:'add'",
+            "      (a_interface",
+            "        INTERFACE:'interface'",
+            "        interfaces = (glob",
+            "          (glob_range_set",
+            "            base_word = (numbered_word",
+            "              NUMBERED_WORD:'swp1')))",
+            "        (stp_common",
+            "          STP:'stp'",
+            "          (stp_portadminedge",
+            "            PORTADMINEDGE:'portadminedge'",
+            "            NEWLINE:'\\n')))))",
+            "  (statement",
+            "    (s_net_add",
+            "      NET:'net'",
+            "      ADD:'add'",
+            "      (a_interface",
+            "        INTERFACE:'interface'",
+            "        interfaces = (glob",
+            "          (glob_range_set",
+            "            base_word = (numbered_word",
+            "              NUMBERED_WORD:'swp1')))",
+            "        (stp_common",
+            "          STP:'stp'",
+            "          (stp_portautoedge",
+            "            PORTAUTOEDGE:'portautoedge'",
+            "            NO:'no'",
+            "            NEWLINE:'\\n')))))",
+            "  (statement",
+            "    (s_net_add",
+            "      NET:'net'",
+            "      ADD:'add'",
+            "      (a_interface",
+            "        INTERFACE:'interface'",
+            "        interfaces = (glob",
+            "          (glob_range_set",
+            "            base_word = (numbered_word",
+            "              NUMBERED_WORD:'swp1')))",
+            "        (stp_common",
+            "          STP:'stp'",
+            "          (stp_portbpdufilter",
+            "            PORTBPDUFILTER:'portbpdufilter'",
+            "            NEWLINE:'\\n')))))",
+            "  (statement",
+            "    (s_net_add",
+            "      NET:'net'",
+            "      ADD:'add'",
+            "      (a_interface",
+            "        INTERFACE:'interface'",
+            "        interfaces = (glob",
+            "          (glob_range_set",
+            "            base_word = (numbered_word",
+            "              NUMBERED_WORD:'swp1')))",
+            "        (stp_common",
+            "          STP:'stp'",
+            "          (stp_portnetwork",
+            "            PORTNETWORK:'portnetwork'",
+            "            NEWLINE:'\\n')))))",
+            "  (statement",
+            "    (s_net_add",
+            "      NET:'net'",
+            "      ADD:'add'",
+            "      (a_interface",
+            "        INTERFACE:'interface'",
+            "        interfaces = (glob",
+            "          (glob_range_set",
+            "            base_word = (numbered_word",
+            "              NUMBERED_WORD:'swp1')))",
+            "        (stp_common",
+            "          STP:'stp'",
+            "          (stp_portrestrrole",
+            "            PORTRESTROLE:'portrestrole'",
+            "            NEWLINE:'\\n')))))",
+            "  (statement",
+            "    (s_net_add",
+            "      NET:'net'",
+            "      ADD:'add'",
+            "      (a_bond",
+            "        BOND:'bond'",
+            "        bonds = (glob",
+            "          (glob_range_set",
+            "            base_word = (numbered_word",
+            "              NUMBERED_WORD:'bond1')))",
+            "        (bond_bond",
+            "          BOND:'bond'",
+            "          (bobo_slaves",
+            "            SLAVES:'slaves'",
+            "            slaves = (glob",
+            "              (glob_range_set",
+            "                base_word = (numbered_word",
+            "                  NUMBERED_WORD:'swp1')))",
+            "            NEWLINE:'\\n')))))",
+            "  (statement",
+            "    (s_net_add",
+            "      NET:'net'",
+            "      ADD:'add'",
+            "      (a_bond",
+            "        BOND:'bond'",
+            "        bonds = (glob",
+            "          (glob_range_set",
+            "            base_word = (numbered_word",
+            "              NUMBERED_WORD:'bond1')))",
+            "        (stp_common",
+            "          STP:'stp'",
+            "          (stp_bpduguard",
+            "            BPDUGUARD:'bpduguard'",
+            "            NEWLINE:'\\n')))))",
+            "  (statement",
+            "    (s_net_add",
+            "      NET:'net'",
+            "      ADD:'add'",
+            "      (a_bond",
+            "        BOND:'bond'",
+            "        bonds = (glob",
+            "          (glob_range_set",
+            "            base_word = (numbered_word",
+            "              NUMBERED_WORD:'bond1')))",
+            "        (stp_common",
+            "          STP:'stp'",
+            "          (stp_portadminedge",
+            "            PORTADMINEDGE:'portadminedge'",
+            "            NEWLINE:'\\n')))))",
+            "  (statement",
+            "    (s_net_add",
+            "      NET:'net'",
+            "      ADD:'add'",
+            "      (a_bond",
+            "        BOND:'bond'",
+            "        bonds = (glob",
+            "          (glob_range_set",
+            "            base_word = (numbered_word",
+            "              NUMBERED_WORD:'bond1')))",
+            "        (stp_common",
+            "          STP:'stp'",
+            "          (stp_portautoedge",
+            "            PORTAUTOEDGE:'portautoedge'",
+            "            NO:'no'",
+            "            NEWLINE:'\\n')))))",
+            "  (statement",
+            "    (s_net_add",
+            "      NET:'net'",
+            "      ADD:'add'",
+            "      (a_bond",
+            "        BOND:'bond'",
+            "        bonds = (glob",
+            "          (glob_range_set",
+            "            base_word = (numbered_word",
+            "              NUMBERED_WORD:'bond1')))",
+            "        (stp_common",
+            "          STP:'stp'",
+            "          (stp_portbpdufilter",
+            "            PORTBPDUFILTER:'portbpdufilter'",
+            "            NEWLINE:'\\n')))))",
+            "  (statement",
+            "    (s_net_add",
+            "      NET:'net'",
+            "      ADD:'add'",
+            "      (a_bond",
+            "        BOND:'bond'",
+            "        bonds = (glob",
+            "          (glob_range_set",
+            "            base_word = (numbered_word",
+            "              NUMBERED_WORD:'bond1')))",
+            "        (stp_common",
+            "          STP:'stp'",
+            "          (stp_portnetwork",
+            "            PORTNETWORK:'portnetwork'",
+            "            NEWLINE:'\\n')))))",
+            "  (statement",
+            "    (s_net_add",
+            "      NET:'net'",
+            "      ADD:'add'",
+            "      (a_bond",
+            "        BOND:'bond'",
+            "        bonds = (glob",
+            "          (glob_range_set",
+            "            base_word = (numbered_word",
+            "              NUMBERED_WORD:'bond1')))",
+            "        (stp_common",
+            "          STP:'stp'",
+            "          (stp_portrestrrole",
+            "            PORTRESTROLE:'portrestrole'",
+            "            NEWLINE:'\\n\\n')))))",
+            "  EOF:<EOF>)"
+          ]
+        },
         "configs/eos_mlag" : {
           "sentences" : [
             "(cisco_configuration",
@@ -74944,6 +75171,82 @@
             }
           ]
         },
+        "configs/cumulus_nclu_stp" : {
+          "Parse warnings" : [
+            {
+              "Comment" : "This feature is not currently supported",
+              "Line" : 5,
+              "Parser_Context" : "[stp_common a_interface s_net_add statement cumulus_nclu_configuration]",
+              "Text" : "stp bpduguard"
+            },
+            {
+              "Comment" : "This feature is not currently supported",
+              "Line" : 6,
+              "Parser_Context" : "[stp_common a_interface s_net_add statement cumulus_nclu_configuration]",
+              "Text" : "stp portadminedge"
+            },
+            {
+              "Comment" : "This feature is not currently supported",
+              "Line" : 7,
+              "Parser_Context" : "[stp_common a_interface s_net_add statement cumulus_nclu_configuration]",
+              "Text" : "stp portautoedge no"
+            },
+            {
+              "Comment" : "This feature is not currently supported",
+              "Line" : 8,
+              "Parser_Context" : "[stp_common a_interface s_net_add statement cumulus_nclu_configuration]",
+              "Text" : "stp portbpdufilter"
+            },
+            {
+              "Comment" : "This feature is not currently supported",
+              "Line" : 9,
+              "Parser_Context" : "[stp_common a_interface s_net_add statement cumulus_nclu_configuration]",
+              "Text" : "stp portnetwork"
+            },
+            {
+              "Comment" : "This feature is not currently supported",
+              "Line" : 10,
+              "Parser_Context" : "[stp_common a_interface s_net_add statement cumulus_nclu_configuration]",
+              "Text" : "stp portrestrole"
+            },
+            {
+              "Comment" : "This feature is not currently supported",
+              "Line" : 13,
+              "Parser_Context" : "[stp_common a_bond s_net_add statement cumulus_nclu_configuration]",
+              "Text" : "stp bpduguard"
+            },
+            {
+              "Comment" : "This feature is not currently supported",
+              "Line" : 14,
+              "Parser_Context" : "[stp_common a_bond s_net_add statement cumulus_nclu_configuration]",
+              "Text" : "stp portadminedge"
+            },
+            {
+              "Comment" : "This feature is not currently supported",
+              "Line" : 15,
+              "Parser_Context" : "[stp_common a_bond s_net_add statement cumulus_nclu_configuration]",
+              "Text" : "stp portautoedge no"
+            },
+            {
+              "Comment" : "This feature is not currently supported",
+              "Line" : 16,
+              "Parser_Context" : "[stp_common a_bond s_net_add statement cumulus_nclu_configuration]",
+              "Text" : "stp portbpdufilter"
+            },
+            {
+              "Comment" : "This feature is not currently supported",
+              "Line" : 17,
+              "Parser_Context" : "[stp_common a_bond s_net_add statement cumulus_nclu_configuration]",
+              "Text" : "stp portnetwork"
+            },
+            {
+              "Comment" : "This feature is not currently supported",
+              "Line" : 18,
+              "Parser_Context" : "[stp_common a_bond s_net_add statement cumulus_nclu_configuration]",
+              "Text" : "stp portrestrole"
+            }
+          ]
+        },
         "configs/f5_bigip_imish_malformed" : {
           "Red flags" : [
             {
@@ -76762,6 +77065,7 @@
         "cumulus_nclu_invalid_vrfs" : "PASSED",
         "cumulus_nclu_invalid_vxlans" : "PASSED",
         "cumulus_nclu_routing" : "PASSED",
+        "cumulus_nclu_stp" : "PASSED",
         "eos_mlag" : "PASSED",
         "eos_trunk_group" : "PASSED",
         "f5_bigip_imish_malformed" : "WARNINGS",
@@ -79773,6 +80077,24 @@
           }
         },
         "configs/cumulus_nclu_routing" : { },
+        "configs/cumulus_nclu_stp" : {
+          "bond" : {
+            "bond1" : {
+              "definitionLines" : [
+                12
+              ],
+              "numReferrers" : 1
+            }
+          },
+          "interface" : {
+            "swp1" : {
+              "definitionLines" : [
+                5
+              ],
+              "numReferrers" : 7
+            }
+          }
+        },
         "configs/eos_mlag" : {
           "interface" : {
             "Port-Channel1" : {
@@ -84075,6 +84397,9 @@
         "configs/cumulus_nclu_routing" : [
           "cumulus_nclu_routing"
         ],
+        "configs/cumulus_nclu_stp" : [
+          "cumulus_nclu_stp"
+        ],
         "configs/eos_mlag" : [
           "eos_mlag"
         ],
@@ -86880,6 +87205,30 @@
             "vrf1" : {
               "vrf self-reference" : [
                 11
+              ]
+            }
+          }
+        },
+        "configs/cumulus_nclu_stp" : {
+          "bond" : {
+            "bond1" : {
+              "bond self-reference" : [
+                12
+              ]
+            }
+          },
+          "interface" : {
+            "swp1" : {
+              "bond slave" : [
+                12
+              ],
+              "interface self-reference" : [
+                5,
+                6,
+                7,
+                8,
+                9,
+                10
               ]
             }
           }
@@ -91928,6 +92277,7 @@
         "configs/cumulus_nclu_invalid_vrfs" : "PASSED",
         "configs/cumulus_nclu_invalid_vxlans" : "PASSED",
         "configs/cumulus_nclu_routing" : "PASSED",
+        "configs/cumulus_nclu_stp" : "PASSED",
         "configs/eos_mlag" : "PASSED",
         "configs/eos_trunk_group" : "PASSED",
         "configs/f5_bigip_imish_malformed" : "PASSED",
