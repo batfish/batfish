@@ -10,6 +10,7 @@ import org.batfish.datamodel.Protocol;
 import org.batfish.datamodel.questions.BgpPeerPropertySpecifier;
 import org.batfish.datamodel.questions.BgpProcessPropertySpecifier;
 import org.batfish.datamodel.questions.InterfacePropertySpecifier;
+import org.batfish.datamodel.questions.IpsecSessionStatus;
 import org.batfish.datamodel.questions.NamedStructurePropertySpecifier;
 import org.batfish.datamodel.questions.NodePropertySpecifier;
 import org.batfish.datamodel.questions.VxlanVniPropertySpecifier;
@@ -26,6 +27,7 @@ public enum Grammar {
   INTERFACE_SPECIFIER("interfaceSpecifier", "interface-specifier"),
   IP_PROTOCOL_SPECIFIER("ipProtocolSpecifier", "ip-protocol-specifier"),
   IP_SPACE_SPECIFIER("ipSpecifier", "ip-specifier"),
+  IPSEC_SESSION_STATUS_SPECIFIER("ipsecSessionStatusSpecifier", "ipsec-session-status-specifier"),
   LOCATION_SPECIFIER("locationSpecifier", "location-specifier"),
   MLAG_ID_SPECIFIER("mlagSpecifier", "mlag-id-specifier"),
   NAMED_STRUCTURE_SPECIFIER("namedStructureSpecifier", "named-structure-specifier"),
@@ -77,6 +79,8 @@ public enum Grammar {
         return Arrays.asList(SessionType.values());
       case INTERFACE_PROPERTY_SPECIFIER:
         return InterfacePropertySpecifier.ALL.getMatchingProperties();
+      case IPSEC_SESSION_STATUS_SPECIFIER:
+        return Arrays.asList(IpsecSessionStatus.values());
       case NAMED_STRUCTURE_SPECIFIER:
         return NamedStructurePropertySpecifier.ALL.getMatchingProperties();
       case NODE_PROPERTY_SPECIFIER:

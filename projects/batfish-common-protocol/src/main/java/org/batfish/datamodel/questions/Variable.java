@@ -58,7 +58,7 @@ public class Variable {
     IP_PROTOCOL_SPEC("ipProtocolSpec", true),
     IP_SPACE_SPEC("ipSpaceSpec", true),
     IP_WILDCARD("ipWildcard", true),
-    IPSEC_SESSION_STATUS("ipsecSessionStatus", true),
+    IPSEC_SESSION_STATUS_SPEC("ipsecSessionStatusSpec", true),
     JAVA_REGEX("javaRegex", true),
     JSON_PATH("jsonPath", true),
     JSON_PATH_REGEX("jsonPathRegex", true),
@@ -139,6 +139,7 @@ public class Variable {
       }
       /** Synonyms for backward compatibility (July 9, 2019) */
       map.put("bgpSessionType".toLowerCase(), BGP_SESSION_TYPE_SPEC);
+      map.put("ipsecSessionStatus".toLowerCase(), IPSEC_SESSION_STATUS_SPEC);
       return map.build();
     }
 
