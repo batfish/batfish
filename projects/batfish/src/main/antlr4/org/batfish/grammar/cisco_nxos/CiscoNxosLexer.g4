@@ -2569,7 +2569,7 @@ M_Vrf_MEMBER
 
 M_Vrf_NEWLINE
 :
-  F_Newline -> type ( NEWLINE ), popMode
+  F_Newline+ -> type ( NEWLINE ), popMode
 ;
 
 M_Vrf_WORD
