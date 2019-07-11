@@ -1425,6 +1425,7 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
 
   private @Nonnull Optional<Integer> toInteger(
       ParserRuleContext messageCtx, Interface_mtuContext ctx) {
+    assert messageCtx != null; // prevent unused warning.
     // TODO: the valid MTU ranges are dependent on interface type.
     return Optional.of(toInteger(ctx.mtu));
   }
