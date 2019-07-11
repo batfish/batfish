@@ -65,7 +65,7 @@ public final class IpOwners {
   private final Map<String, Map<String, IpSpace>> _vrfOwnedIpSpaces;
 
   public IpOwners(Map<String, Configuration> configurations) {
-    /** Mapping from a hostname to a set of all (including inactive) interfaces that node owns */
+    /* Mapping from a hostname to a set of all (including inactive) interfaces that node owns */
     Map<String, Set<Interface>> allInterfaces =
         ImmutableMap.copyOf(computeNodeInterfaces(configurations));
 
@@ -178,7 +178,7 @@ public final class IpOwners {
    * Compute a mapping of IP addresses to a set of hostnames that "own" this IP (e.g., as a network
    * interface address)
    *
-   * @param configurations {@link Configurations} keyed by hostname
+   * @param configurations map of configurations keyed by hostname
    * @param excludeInactive Whether to exclude inactive interfaces
    * @return A map of {@link Ip}s to a set of hostnames that own this IP
    */
