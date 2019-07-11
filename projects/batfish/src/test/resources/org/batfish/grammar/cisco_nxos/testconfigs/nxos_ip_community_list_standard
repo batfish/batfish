@@ -1,0 +1,26 @@
+!RANCID-CONTENT-TYPE: cisco-nx
+!
+hostname nxos_ip_community_list_standard
+!
+
+!!! list for testing sequence numbers
+! seq=1
+ip community-list standard cl_seq permit 1:1
+! seq=10
+ip community-list standard cl_seq seq 10 permit 10:10
+! seq=5
+ip community-list standard cl_seq seq 5 permit 5:5
+! seq=11
+ip community-list standard cl_seq permit 11:11
+
+!!! list for testing values
+ip community-list standard cl_values permit 1:1
+ip community-list standard cl_values permit internet
+ip community-list standard cl_values permit local-AS
+ip community-list standard cl_values permit no-advertise
+ip community-list standard cl_values permit no-export
+
+!!! list for testing match semantics
+ip community-list standard cl_test deny 1:1 2:2
+ip community-list standard cl_test permit 1:1
+ip community-list standard cl_test permit 2:2
