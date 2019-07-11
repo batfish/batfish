@@ -6,7 +6,7 @@ import static org.batfish.datamodel.questions.Variable.Type.INTERFACE_PROPERTY_S
 import static org.batfish.datamodel.questions.Variable.Type.NAMED_STRUCTURE_SPEC;
 import static org.batfish.datamodel.questions.Variable.Type.NODE_PROPERTY_SPEC;
 import static org.batfish.datamodel.questions.Variable.Type.NODE_SPEC;
-import static org.batfish.datamodel.questions.Variable.Type.OSPF_PROPERTY_SPEC;
+import static org.batfish.datamodel.questions.Variable.Type.OSPF_PROCESS_PROPERTY_SPEC;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 
@@ -103,7 +103,7 @@ public final class VariableTest {
         equalTo(NODE_PROPERTY_SPEC));
     assertThat(
         Variable.Type.fromString(CompletionType.OSPF_PROPERTY.toString()),
-        equalTo(OSPF_PROPERTY_SPEC));
+        equalTo(OSPF_PROCESS_PROPERTY_SPEC));
   }
 
   @Test

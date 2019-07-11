@@ -60,6 +60,7 @@ public final class Interface extends ComparableStructure<String> {
     private Transformation _incomingTransformation;
     private IsisInterfaceSettings _isis;
     private @Nullable Integer _mlagId;
+    private @Nullable Integer _mtu;
     private String _name;
     private @Nullable Integer _nativeVlan;
     private OspfArea _ospfArea;
@@ -135,6 +136,9 @@ public final class Interface extends ComparableStructure<String> {
       iface.setIncomingTransformation(_incomingTransformation);
       iface.setIsis(_isis);
       iface.setMlagId(_mlagId);
+      if (_mtu != null) {
+        iface.setMtu(_mtu);
+      }
       if (_nativeVlan != null) {
         iface.setNativeVlan(_nativeVlan);
       }
@@ -340,6 +344,11 @@ public final class Interface extends ComparableStructure<String> {
 
     public @Nonnull Builder setMlagId(@Nullable Integer mlagId) {
       _mlagId = mlagId;
+      return this;
+    }
+
+    public Builder setMtu(@Nullable Integer mtu) {
+      _mtu = mtu;
       return this;
     }
 

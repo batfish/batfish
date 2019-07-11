@@ -1160,6 +1160,11 @@ MROUTER
   'mrouter'
 ;
 
+MTU
+:
+  'mtu'
+;
+
 MULTICAST
 :
   'multicast'
