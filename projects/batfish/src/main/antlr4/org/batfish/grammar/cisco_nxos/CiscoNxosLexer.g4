@@ -2017,14 +2017,7 @@ VNI
 
 VRF
 :
-  'vrf'
-  // If not first word on line, should be followed by VRF name
-  {
-    if (!(lastTokenType() == NEWLINE || lastTokenType() == -1)) {
-      pushMode(M_Word);
-    }
-  }
-
+  'vrf' -> pushMode( M_Vrf )
 ;
 
 WAIT_IGP_CONVERGENCE
@@ -2558,6 +2551,33 @@ M_Remark_REMARK_TEXT
 ;
 
 M_Remark_WS
+:
+  F_Whitespace+ -> channel ( HIDDEN )
+;
+
+mode M_Vrf;
+
+M_Vrf_CONTEXT
+:
+  'context' -> type ( CONTEXT )
+;
+
+M_Vrf_MEMBER
+:
+  'member' -> type ( MEMBER )
+;
+
+M_Vrf_NEWLINE
+:
+  F_Newline -> type ( NEWLINE ), popMode
+;
+
+M_Vrf_WORD
+:
+  F_Word -> type ( WORD ) , popMode
+;
+
+M_Vrf_WS
 :
   F_Whitespace+ -> channel ( HIDDEN )
 ;
