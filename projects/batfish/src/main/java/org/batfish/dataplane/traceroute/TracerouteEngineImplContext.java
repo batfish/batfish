@@ -5,7 +5,6 @@ import static org.batfish.dataplane.traceroute.TracerouteUtils.buildSessionsByIn
 import static org.batfish.dataplane.traceroute.TracerouteUtils.validateInputs;
 
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Multimap;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -21,6 +20,7 @@ import javax.annotation.Nonnull;
 import org.batfish.common.BatfishException;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.DataPlane;
+import org.batfish.datamodel.EmptyIpSpace;
 import org.batfish.datamodel.Fib;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.FlowDisposition;
@@ -159,12 +159,16 @@ public class TracerouteEngineImplContext {
     return _sessionsByIngressInterface.get(new NodeInterfacePair(node, inputIface));
   }
 
-  boolean ownsIp(String node, String vrf, Ip ip) {
-    return _dataPlane
-        .getIpVrfOwners()
-        .getOrDefault(ip, ImmutableMap.of())
-        .getOrDefault(node, ImmutableSet.of())
-        .contains(vrf);
+  /**
+   * Whether {@code vrf} at {@code node} will accept (NB: not forward) packets destined for {@code
+   * ip}
+   */
+  boolean acceptsIp(String node, String vrf, Ip ip) {
+    return _forwardingAnalysis
+        .getAcceptsIps()
+        .getOrDefault(node, ImmutableMap.of())
+        .getOrDefault(vrf, EmptyIpSpace.INSTANCE)
+        .containsIp(ip, ImmutableMap.of());
   }
 
   /**

@@ -1,8 +1,15 @@
 package org.batfish.datamodel;
 
 import java.util.Map;
+import javax.annotation.Nonnull;
 
 public interface ForwardingAnalysis {
+  /**
+   * Return IP spaces accepted at each VRF <br>
+   * Mapping: hostname -&gt; vrfName -&gt; space of IPs accepted by that VRF
+   */
+  @Nonnull
+  Map<String, Map<String, IpSpace>> getAcceptsIps();
 
   /** Mapping: hostname -&gt; inInterface -&gt; ipsToArpReplyTo */
   Map<String, Map<String, IpSpace>> getArpReplies();
