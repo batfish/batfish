@@ -40,6 +40,8 @@ import org.batfish.datamodel.Interface.Dependency;
 import org.batfish.datamodel.Interface.DependencyType;
 import org.batfish.datamodel.InterfaceType;
 import org.batfish.datamodel.LineAction;
+import org.batfish.datamodel.RouteFilterLine;
+import org.batfish.datamodel.RouteFilterList;
 import org.batfish.datamodel.SwitchportMode;
 import org.batfish.datamodel.vendor_family.cisco_nxos.CiscoNxosFamily;
 import org.batfish.vendor.VendorConfiguration;
@@ -91,6 +93,23 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
     return null;
   }
 
+  private static @Nonnull RouteFilterLine toRouteFilterLine(IpPrefixListLine ipPrefixListLine) {
+    return new RouteFilterLine(
+        ipPrefixListLine.getAction(),
+        ipPrefixListLine.getPrefix(),
+        ipPrefixListLine.getLengthRange());
+  }
+
+  private static @Nonnull RouteFilterList toRouteFilterList(IpPrefixList ipPrefixList) {
+    String name = ipPrefixList.getName();
+    RouteFilterList rfl = new RouteFilterList(name);
+    rfl.setLines(
+        ipPrefixList.getLines().values().stream()
+            .map(CiscoNxosConfiguration::toRouteFilterLine)
+            .collect(ImmutableList.toImmutableList()));
+    return rfl;
+  }
+
   private transient Configuration _c;
   private final @Nonnull Vrf _defaultVrf;
   private @Nullable String _hostname;
@@ -99,7 +118,9 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
   private final @Nonnull Map<String, IpPrefixList> _ipPrefixLists;
   private transient Multimap<String, String> _portChannelMembers;
   private @Nonnull IntegerSpace _reservedVlanRange;
+
   private final @Nonnull Map<Integer, Vlan> _vlans;
+
   private final @Nonnull Map<String, Vrf> _vrfs;
 
   public CiscoNxosConfiguration() {
@@ -145,6 +166,12 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
     _interfaces.values().stream()
         .filter(iface -> iface.getType() == CiscoNxosInterfaceType.PORT_CHANNEL)
         .forEach(this::convertInterface);
+  }
+
+  private void convertIpPrefixLists() {
+    _ipPrefixLists.forEach(
+        (name, ipPrefixList) ->
+            _c.getRouteFilterLists().put(name, toRouteFilterList(ipPrefixList)));
   }
 
   private void convertStaticRoutes() {
@@ -404,6 +431,7 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
     convertInterfaces();
     disableUnregisteredVlanInterfaces();
     convertStaticRoutes();
+    convertIpPrefixLists();
 
     markStructures();
     return _c;

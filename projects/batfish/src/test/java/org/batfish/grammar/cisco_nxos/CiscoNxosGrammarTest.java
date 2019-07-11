@@ -13,6 +13,7 @@ import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasHostname;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasInterface;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasInterfaces;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasNumReferrers;
+import static org.batfish.datamodel.matchers.DataModelMatchers.hasRouteFilterLists;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasUndefinedReference;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasAddress;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasAllAddresses;
@@ -75,11 +76,14 @@ import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.NamedPort;
 import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.RouteFilterLine;
+import org.batfish.datamodel.RouteFilterList;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.SwitchportMode;
 import org.batfish.datamodel.TcpFlags;
 import org.batfish.datamodel.UniverseIpSpace;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
+import org.batfish.datamodel.matchers.RouteFilterListMatchers;
 import org.batfish.datamodel.matchers.VrfMatchers;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
@@ -1102,6 +1106,69 @@ public final class CiscoNxosGrammarTest {
 
     assertThat(
         ans, hasNumReferrers(filename, CiscoNxosStructureType.IP_ACCESS_LIST, "acl_unused", 0));
+  }
+
+  @Test
+  public void testIpPrefixListConversion() throws IOException {
+    String hostname = "nxos_ip_prefix_list";
+    Configuration c = parseConfig(hostname);
+
+    assertThat(c, hasRouteFilterLists(hasKeys("pl_empty", "pl_test", "pl_range")));
+    {
+      RouteFilterList r = c.getRouteFilterLists().get("pl_empty");
+      assertThat(r, RouteFilterListMatchers.hasLines(empty()));
+    }
+    {
+      RouteFilterList r = c.getRouteFilterLists().get("pl_test");
+      Iterator<RouteFilterLine> lines = r.getLines().iterator();
+      RouteFilterLine line;
+
+      line = lines.next();
+      assertThat(line.getAction(), equalTo(LineAction.PERMIT));
+      assertThat(line.getIpWildcard().toPrefix(), equalTo(Prefix.parse("10.0.3.0/24")));
+
+      line = lines.next();
+      assertThat(line.getAction(), equalTo(LineAction.PERMIT));
+      assertThat(line.getIpWildcard().toPrefix(), equalTo(Prefix.parse("10.0.1.0/24")));
+
+      line = lines.next();
+      assertThat(line.getAction(), equalTo(LineAction.DENY));
+      assertThat(line.getIpWildcard().toPrefix(), equalTo(Prefix.parse("10.0.2.0/24")));
+
+      line = lines.next();
+      assertThat(line.getAction(), equalTo(LineAction.PERMIT));
+      assertThat(line.getIpWildcard().toPrefix(), equalTo(Prefix.parse("10.0.4.0/24")));
+    }
+    {
+      RouteFilterList r = c.getRouteFilterLists().get("pl_range");
+      Iterator<RouteFilterLine> lines = r.getLines().iterator();
+      RouteFilterLine line;
+
+      line = lines.next();
+      assertThat(line.getAction(), equalTo(LineAction.PERMIT));
+      assertThat(line.getLengthRange(), equalTo(new SubRange(16, Prefix.MAX_PREFIX_LENGTH)));
+      assertThat(line.getIpWildcard().toPrefix(), equalTo(Prefix.parse("10.10.0.0/16")));
+
+      line = lines.next();
+      assertThat(line.getAction(), equalTo(LineAction.PERMIT));
+      assertThat(line.getLengthRange(), equalTo(new SubRange(24, 24)));
+      assertThat(line.getIpWildcard().toPrefix(), equalTo(Prefix.parse("10.10.0.0/16")));
+
+      line = lines.next();
+      assertThat(line.getAction(), equalTo(LineAction.PERMIT));
+      assertThat(line.getLengthRange(), equalTo(new SubRange(8, Prefix.MAX_PREFIX_LENGTH)));
+      assertThat(line.getIpWildcard().toPrefix(), equalTo(Prefix.parse("10.10.0.0/16")));
+
+      line = lines.next();
+      assertThat(line.getAction(), equalTo(LineAction.PERMIT));
+      assertThat(line.getLengthRange(), equalTo(new SubRange(20, 24)));
+      assertThat(line.getIpWildcard().toPrefix(), equalTo(Prefix.parse("10.10.0.0/16")));
+
+      line = lines.next();
+      assertThat(line.getAction(), equalTo(LineAction.PERMIT));
+      assertThat(line.getLengthRange(), equalTo(new SubRange(16, 24)));
+      assertThat(line.getIpWildcard().toPrefix(), equalTo(Prefix.parse("10.10.0.0/16")));
+    }
   }
 
   @Test
