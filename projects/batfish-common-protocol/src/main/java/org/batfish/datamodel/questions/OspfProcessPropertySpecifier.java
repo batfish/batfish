@@ -1,28 +1,24 @@
 package org.batfish.datamodel.questions;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonValue;
+import static com.google.common.base.Preconditions.checkArgument;
+
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-import java.util.Collection;
+import com.google.common.collect.Sets;
 import java.util.List;
 import java.util.Map;
-import java.util.regex.Pattern;
-import java.util.stream.Collectors;
+import java.util.Objects;
+import java.util.Set;
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import org.batfish.datamodel.answers.Schema;
 import org.batfish.datamodel.ospf.OspfProcess;
+import org.batfish.specifier.ConstantEnumSetSpecifier;
+import org.batfish.specifier.SpecifierFactories;
+import org.batfish.specifier.parboiled.Grammar;
 
-/**
- * Enables specification a set of Ospf process properties.
- *
- * <p>Example specifiers:
- *
- * <ul>
- *   <li>reference_bandwidth -&gt; gets the process's reference bandwidth
- *   <li>area.* -&gt; gets all properties that start with 'area'
- * </ul>
- */
-public class OspfPropertySpecifier extends PropertySpecifier {
+/** Enables specification of a set of Ospf process properties. */
+public class OspfProcessPropertySpecifier extends PropertySpecifier {
 
   public static final String AREA_BORDER_ROUTER = "Area_Border_Router";
   public static final String AREAS = "Areas";
@@ -31,7 +27,7 @@ public class OspfPropertySpecifier extends PropertySpecifier {
   public static final String RFC_1583_COMPATIBLE = "RFC1583_Compatible";
   public static final String ROUTER_ID = "Router_ID";
 
-  public static final Map<String, PropertyDescriptor<OspfProcess>> JAVA_MAP =
+  private static final Map<String, PropertyDescriptor<OspfProcess>> JAVA_MAP =
       new ImmutableMap.Builder<String, PropertyDescriptor<OspfProcess>>()
           .put(
               AREA_BORDER_ROUTER,
@@ -71,36 +67,56 @@ public class OspfPropertySpecifier extends PropertySpecifier {
                   OspfProcess::getRouterId, Schema.IP, "Router ID of the process"))
           .build();
 
-  public static final OspfPropertySpecifier ALL = new OspfPropertySpecifier(".*");
+  /** Holds all properties */
+  public static final OspfProcessPropertySpecifier ALL =
+      new OspfProcessPropertySpecifier(JAVA_MAP.keySet());
 
-  private final String _expression;
-
-  private final Pattern _pattern;
-
-  @JsonCreator
-  public OspfPropertySpecifier(String expression) {
-    _expression = expression;
-    _pattern = Pattern.compile(_expression.trim().toLowerCase()); // canonicalize
+  /** Returns the property descriptor for {@code property} */
+  public static PropertyDescriptor<OspfProcess> getPropertyDescriptor(String property) {
+    checkArgument(JAVA_MAP.containsKey(property), "Property " + property + " does not exist");
+    return JAVA_MAP.get(property);
   }
 
-  @JsonCreator
-  public OspfPropertySpecifier(Collection<String> properties) {
-    // quote and join
-    _expression =
-        properties.stream().map(String::trim).map(Pattern::quote).collect(Collectors.joining("|"));
-    _pattern = Pattern.compile(_expression, Pattern.CASE_INSENSITIVE);
+  @Nonnull private final List<String> _properties;
+
+  /**
+   * Create an ospf process property specifier from provided expression. If the expression is null
+   * or empty, a specifier with all properties is returned.
+   */
+  public static OspfProcessPropertySpecifier create(@Nullable String expression) {
+    return new OspfProcessPropertySpecifier(
+        SpecifierFactories.getEnumSetSpecifierOrDefault(
+                expression,
+                Grammar.OSPF_PROCESS_PROPERTY_SPECIFIER,
+                new ConstantEnumSetSpecifier<>(JAVA_MAP.keySet()))
+            .resolve());
+  }
+
+  public OspfProcessPropertySpecifier(Set<String> properties) {
+    Set<String> diffSet = Sets.difference(properties, JAVA_MAP.keySet());
+    checkArgument(
+        diffSet.isEmpty(),
+        "Invalid properties supplied: %s. Valid properties are %s",
+        diffSet,
+        JAVA_MAP.keySet());
+    _properties = properties.stream().sorted().collect(ImmutableList.toImmutableList());
   }
 
   @Override
   public List<String> getMatchingProperties() {
-    return JAVA_MAP.keySet().stream()
-        .filter(prop -> _pattern.matcher(prop.toLowerCase()).matches())
-        .collect(ImmutableList.toImmutableList());
+    return _properties;
   }
 
   @Override
-  @JsonValue
-  public String toString() {
-    return _expression;
+  public boolean equals(Object o) {
+    if (!(o instanceof OspfProcessPropertySpecifier)) {
+      return false;
+    }
+    return _properties.equals(((OspfProcessPropertySpecifier) o)._properties);
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(_properties);
   }
 }
