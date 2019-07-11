@@ -648,6 +648,11 @@ EVENTS
   'events'
 ;
 
+EVPN
+:
+  'evpn'
+;
+
 EXCEPT
 :
   'except'

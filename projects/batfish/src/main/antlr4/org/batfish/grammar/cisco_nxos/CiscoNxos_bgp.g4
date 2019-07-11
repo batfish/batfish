@@ -54,7 +54,7 @@ rb_address_family
     IPV4
     | IPV6
     | L2VPN
-  ) second = (MULTICAST | MVPN | UNICAST) NEWLINE rb_af_inner*
+  ) second = (EVPN | MULTICAST | MVPN | UNICAST) NEWLINE rb_af_inner*
 ;
 
 rb_af_inner
@@ -484,7 +484,8 @@ rb_n_address_family
   (
     IPV4
     | IPV6
-  ) second = (MULTICAST | UNICAST) NEWLINE rb_n_af_inner*
+    | L2VPN
+  ) second = (EVPN | MULTICAST | UNICAST) NEWLINE rb_n_af_inner*
 ;
 
 // We might get to this level of the hierarchy in four ways:
