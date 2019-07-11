@@ -12,7 +12,7 @@ import org.antlr.v4.runtime.tree.ParseTreeWalker;
 import org.batfish.common.BatfishException;
 import org.batfish.common.Warnings;
 import org.batfish.common.plugin.IBatfish;
-import org.batfish.common.topology.TopologyUtil;
+import org.batfish.common.topology.IpOwners;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Ip;
@@ -64,7 +64,7 @@ public class EosRoutingTableExtractor extends EosRoutingTableParserBaseListener
     _parser = parser;
     _w = w;
     Map<String, Configuration> configurations = batfish.loadConfigurations();
-    _ipOwners = TopologyUtil.computeIpNodeOwners(configurations, true);
+    _ipOwners = IpOwners.computeIpNodeOwners(configurations, true);
   }
 
   private BatfishException convError(Class<?> type, ParserRuleContext ctx) {

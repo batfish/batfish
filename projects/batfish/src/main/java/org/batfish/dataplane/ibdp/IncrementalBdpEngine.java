@@ -1,10 +1,8 @@
 package org.batfish.dataplane.ibdp;
 
-import static org.batfish.common.topology.TopologyUtil.computeIpNodeOwners;
-import static org.batfish.common.topology.TopologyUtil.computeIpVrfOwners;
+import static org.batfish.common.topology.IpOwners.computeIpNodeOwners;
 import static org.batfish.common.topology.TopologyUtil.computeLayer2Topology;
 import static org.batfish.common.topology.TopologyUtil.computeLayer3Topology;
-import static org.batfish.common.topology.TopologyUtil.computeNodeInterfaces;
 import static org.batfish.common.topology.TopologyUtil.computeRawLayer3Topology;
 import static org.batfish.common.util.CollectionUtil.toImmutableSortedMap;
 import static org.batfish.common.util.IpsecUtil.retainReachableIpsecEdges;
@@ -81,8 +79,6 @@ class IncrementalBdpEngine {
 
       // TODO: switch to topologies and owners from TopologyProvider
       Map<Ip, Set<String>> ipOwners = computeIpNodeOwners(configurations, true);
-      Map<Ip, Map<String, Set<String>>> ipVrfOwners =
-          computeIpVrfOwners(true, computeNodeInterfaces(configurations));
       TopologyContext initialTopologyContext =
           callerTopologyContext
               .toBuilder()
@@ -128,7 +124,6 @@ class IncrementalBdpEngine {
           computeFibs(nodes);
           IncrementalDataPlane partialDataplane =
               dpBuilder
-                  .setIpVrfOwners(ipVrfOwners)
                   .setNodes(nodes)
                   .setLayer3Topology(currentTopologyContext.getLayer3Topology())
                   .build();
@@ -215,7 +210,6 @@ class IncrementalBdpEngine {
           IncrementalDataPlane.builder()
               .setNodes(nodes)
               .setLayer3Topology(currentTopologyContext.getLayer3Topology())
-              .setIpVrfOwners(ipVrfOwners)
               .build();
       _bfLogger.printElapsedTime();
       return new ComputeDataPlaneResult(answerElement, finalDataplane, currentTopologyContext);

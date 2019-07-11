@@ -29,11 +29,13 @@ import org.batfish.common.bdd.BDDPacket;
 import org.batfish.common.bdd.IpSpaceToBDD;
 import org.batfish.common.bdd.MemoizedIpSpaceToBDD;
 import org.batfish.common.topology.IpOwners;
-import org.batfish.common.topology.TopologyUtil;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 
 /** Implementation of {@link ForwardingAnalysis}. */
 public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
+
+  // node -> vrf -> ips accepted by that vrf
+  private Map<String, Map<String, IpSpace>> _acceptedIps;
 
   // node -> interface -> ips that the interface would reply arp request
   private final Map<String, Map<String, IpSpace>> _arpReplies;
@@ -83,9 +85,14 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
       // IPs belonging to any interface in the network, even inactive interfaces
       // node -> interface -> IPs owned by that interface
       Map<String, Map<String, Set<Ip>>> interfaceOwnedIps =
-          TopologyUtil.computeInterfaceOwnedIps(configurations, /*excludeInactive=*/ false);
+          IpOwners.computeInterfaceOwnedIps(configurations, /*excludeInactive=*/ false);
+
+      // Owned (i.e., internal to the network) IPs
       IpSpace ownedIps = computeOwnedIps(interfaceOwnedIps);
+      // Unowned (i.e., external to the network) IPs
       BDD unownedIpsBDD = ipSpaceToBDD.visit(ownedIps).not();
+
+      _acceptedIps = computeAcceptedIps(ipOwners);
 
       // IpSpaces matched by each prefix
       // -- only will have entries for active interfaces if FIB is correct
@@ -267,6 +274,16 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
 
       assert sanityCheck(ipSpaceToBDD, configurations);
     }
+  }
+
+  /**
+   * Compute the space of IPs accepted by a VRF<br>
+   * Mapping: hostname -&gt; vrf name -&gt; space of IPs
+   */
+  private Map<String, Map<String, IpSpace>> computeAcceptedIps(IpOwners ipOwners) {
+
+    // TODO: also special case VRF-accepted IPs that are not interface IPs here.
+    return ipOwners.getVrfOwnedIpSpaces();
   }
 
   /**
@@ -1033,6 +1050,12 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
                                   someoneRepliesByInterfaceEntry ->
                                       someoneRepliesByInterfaceEntry.getValue().build()))));
     }
+  }
+
+  @Nonnull
+  @Override
+  public Map<String, Map<String, IpSpace>> getAcceptsIps() {
+    return _acceptedIps;
   }
 
   @Override
