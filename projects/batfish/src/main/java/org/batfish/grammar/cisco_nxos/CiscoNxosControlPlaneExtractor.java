@@ -86,6 +86,7 @@ import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Dscp_numberContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Dscp_specContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.I_bandwidthContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.I_channel_groupContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.I_descriptionContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.I_encapsulationContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.I_ip_addressContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.I_no_autostateContext;
@@ -98,6 +99,7 @@ import org.batfish.grammar.cisco_nxos.CiscoNxosParser.I_switchport_trunk_nativeC
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.I_vrf_memberContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Interface_addressContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Interface_bandwidth_kbpsContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Interface_descriptionContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Interface_prefixContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Ip_access_listContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Ip_access_list_line_numberContext;
@@ -170,6 +172,8 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
 
   private static final IntegerSpace BANDWIDTH_RANGE = IntegerSpace.of(Range.closed(1, 100_000_000));
   private static final IntegerSpace DSCP_RANGE = IntegerSpace.of(Range.closed(0, 63));
+  private static final IntegerSpace INTERFACE_DESCRIPTION_LENGTH_RANGE =
+      IntegerSpace.of(Range.closed(1, 254));
   private static final LongSpace IP_ACCESS_LIST_LINE_NUMBER_RANGE =
       LongSpace.of(Range.closed(1L, 4294967295L));
   private static final IntegerSpace IP_PREFIX_LIST_DESCRIPTION_LENGTH_RANGE =
@@ -1016,6 +1020,14 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
   }
 
   @Override
+  public void exitI_description(I_descriptionContext ctx) {
+    Optional<String> description = toString(ctx, ctx.desc);
+    if (description.isPresent()) {
+      _currentInterfaces.forEach(i -> i.setDescription(description.get()));
+    }
+  }
+
+  @Override
   public void exitI_encapsulation(I_encapsulationContext ctx) {
     Integer vlanId = toVlanId(ctx, ctx.vlan);
     if (vlanId == null) {
@@ -1774,6 +1786,12 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
       return null;
     }
     return track;
+  }
+
+  private @Nonnull Optional<String> toString(
+      ParserRuleContext messageCtx, Interface_descriptionContext ctx) {
+    return toStringWithLengthInSpace(
+        messageCtx, ctx, INTERFACE_DESCRIPTION_LENGTH_RANGE, "interface description");
   }
 
   private @Nonnull Optional<String> toString(
