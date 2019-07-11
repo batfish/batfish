@@ -1,7 +1,7 @@
 package org.batfish.common.topology;
 
-import static org.batfish.common.topology.TopologyUtil.computeIpInterfaceOwners;
-import static org.batfish.common.topology.TopologyUtil.computeIpNodeOwners;
+import static org.batfish.common.topology.IpOwners.computeIpInterfaceOwners;
+import static org.batfish.common.topology.IpOwners.computeIpNodeOwners;
 import static org.batfish.common.topology.TopologyUtil.computeNodeInterfaces;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.equalTo;

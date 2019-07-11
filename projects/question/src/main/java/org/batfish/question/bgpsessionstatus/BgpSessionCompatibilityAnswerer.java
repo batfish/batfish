@@ -30,8 +30,8 @@ import javax.annotation.Nonnull;
 import org.batfish.common.Answerer;
 import org.batfish.common.BatfishException;
 import org.batfish.common.plugin.IBatfish;
+import org.batfish.common.topology.IpOwners;
 import org.batfish.common.topology.Layer2Topology;
-import org.batfish.common.topology.TopologyUtil;
 import org.batfish.datamodel.BgpActivePeerConfig;
 import org.batfish.datamodel.BgpPassivePeerConfig;
 import org.batfish.datamodel.BgpPeerConfigId;
@@ -129,7 +129,7 @@ public class BgpSessionCompatibilityAnswerer extends Answerer {
             .getTopologyProvider()
             .getInitialLayer2Topology(_batfish.getNetworkSnapshot())
             .orElse(null);
-    Map<Ip, Set<String>> ipOwners = TopologyUtil.computeIpNodeOwners(configurations, true);
+    Map<Ip, Set<String>> ipOwners = IpOwners.computeIpNodeOwners(configurations, true);
     ValueGraph<BgpPeerConfigId, BgpSessionProperties> configuredTopology =
         BgpTopologyUtils.initBgpTopology(configurations, ipOwners, true, layer2Topology).getGraph();
 

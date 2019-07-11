@@ -1,7 +1,7 @@
 package org.batfish.common.topology;
 
 import static com.google.common.base.Preconditions.checkArgument;
-import static org.batfish.common.topology.TopologyUtil.computeIpInterfaceOwners;
+import static org.batfish.common.topology.IpOwners.computeIpInterfaceOwners;
 import static org.batfish.common.topology.TopologyUtil.computeLayer1LogicalTopology;
 import static org.batfish.common.topology.TopologyUtil.computeLayer1PhysicalTopology;
 import static org.batfish.common.topology.TopologyUtil.computeLayer2SelfEdges;
@@ -1235,7 +1235,7 @@ public final class TopologyUtilTest {
 
   /**
    * Tests that inactive and blacklisted interfaces are properly included or excluded from the
-   * output of {@link TopologyUtil#computeIpInterfaceOwners(Map, boolean)}
+   * output of {@link IpOwners#computeIpInterfaceOwners(Map, boolean)}
    */
   @Test
   public void testIpInterfaceOwnersActiveInclusion() {

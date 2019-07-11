@@ -24,7 +24,6 @@ import org.batfish.datamodel.Fib;
 import org.batfish.datamodel.ForwardingAnalysis;
 import org.batfish.datamodel.ForwardingAnalysisImpl;
 import org.batfish.datamodel.GenericRib;
-import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.Topology;
 import org.batfish.datamodel.VniSettings;
@@ -33,14 +32,8 @@ public final class IncrementalDataPlane implements Serializable, DataPlane {
 
   public static class Builder {
 
-    private Map<Ip, Map<String, Set<String>>> _ipVrfOwners;
     private Map<String, Node> _nodes;
     private Topology _layer3Topology;
-
-    public Builder setIpVrfOwners(Map<Ip, Map<String, Set<String>>> ipVrfOwners) {
-      _ipVrfOwners = ImmutableMap.copyOf(ipVrfOwners);
-      return this;
-    }
 
     public Builder setNodes(Map<String, Node> nodes) {
       _nodes = ImmutableMap.copyOf(nodes);
@@ -97,8 +90,6 @@ public final class IncrementalDataPlane implements Serializable, DataPlane {
   private final Supplier<ForwardingAnalysis> _forwardingAnalysis =
       Suppliers.memoize(new ForwardingAnalysisSupplier());
 
-  private final Map<Ip, Map<String, Set<String>>> _ipVrfOwners;
-
   private final Map<String, Node> _nodes;
 
   private final Topology _layer3Topology;
@@ -111,7 +102,6 @@ public final class IncrementalDataPlane implements Serializable, DataPlane {
   @Nonnull private final Table<String, String, Set<VniSettings>> _vniSettings;
 
   private IncrementalDataPlane(Builder builder) {
-    _ipVrfOwners = builder._ipVrfOwners;
     _nodes = builder._nodes;
     _layer3Topology = builder._layer3Topology;
     _bgpRoutes = computeBgpRoutes();
@@ -215,11 +205,6 @@ public final class IncrementalDataPlane implements Serializable, DataPlane {
   @Override
   public ForwardingAnalysis getForwardingAnalysis() {
     return _forwardingAnalysis.get();
-  }
-
-  @Override
-  public Map<Ip, Map<String, Set<String>>> getIpVrfOwners() {
-    return _ipVrfOwners;
   }
 
   @Nonnull

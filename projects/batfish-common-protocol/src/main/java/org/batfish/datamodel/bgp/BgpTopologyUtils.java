@@ -19,6 +19,7 @@ import java.util.Set;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.common.plugin.TracerouteEngine;
+import org.batfish.common.topology.IpOwners;
 import org.batfish.common.topology.Layer2Topology;
 import org.batfish.datamodel.BgpActivePeerConfig;
 import org.batfish.datamodel.BgpPassivePeerConfig;
@@ -51,8 +52,7 @@ public final class BgpTopologyUtils {
    * TracerouteEngine, Layer2Topology)} for more details.
    *
    * @param configurations configuration keyed by hostname
-   * @param ipOwners Ip owners (see {@link
-   *     org.batfish.common.topology.TopologyUtil#computeIpNodeOwners(Map, boolean)}
+   * @param ipOwners Ip owners (see {@link IpOwners#computeIpNodeOwners(Map, boolean)}
    * @param keepInvalid whether to keep improperly configured neighbors. If performing configuration
    *     checks, you probably want this set to {@code true}, otherwise (e.g., computing dataplane)
    *     you want this to be {@code false}.
@@ -71,8 +71,8 @@ public final class BgpTopologyUtils {
    * BgpSessionProperties}.
    *
    * @param configurations node configurations, keyed by hostname
-   * @param ipOwners network Ip owners (see {@link
-   *     org.batfish.common.topology.TopologyUtil#computeIpNodeOwners(Map, boolean)} for reference)
+   * @param ipOwners network Ip owners (see {@link IpOwners#computeIpNodeOwners(Map, boolean)} for
+   *     reference)
    * @param keepInvalid whether to keep improperly configured neighbors. If performing configuration
    *     checks, you probably want this set to {@code true}, otherwise (e.g., computing dataplane)
    *     you want this to be {@code false}.
