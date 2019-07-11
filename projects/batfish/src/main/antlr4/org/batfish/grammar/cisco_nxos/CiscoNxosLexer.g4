@@ -475,7 +475,7 @@ DENY_ALL
 
 DESCRIPTION
 :
-  'description'
+  'description' -> pushMode ( M_Remark )
 ;
 
 DETAIL
@@ -753,6 +753,11 @@ GENERAL_PARAMETER_PROBLEM
   'general-parameter-problem'
 ;
 
+GE
+:
+  'ge'
+;
+
 GET
 :
   'get'
@@ -1004,6 +1009,11 @@ LARGE
 LAST_MEMBER_QUERY_INTERVAL
 :
   'last-member-query-interval'
+;
+
+LE
+:
+  'le'
 ;
 
 LINK_LOCAL_GROUPS_SUPPRESSION
@@ -1462,7 +1472,7 @@ PRECEDENCE_UNREACHABLE
 
 PREFIX_LIST
 :
-  'prefix-list'
+  'prefix-list' -> pushMode ( M_Word )
 ;
 
 PREFIX_PEER_TIMEOUT
@@ -1693,6 +1703,11 @@ SEND
 SEND_COMMUNITY
 :
   'send-community'
+;
+
+SEQ
+:
+  'seq'
 ;
 
 SHUTDOWN
@@ -2002,14 +2017,7 @@ VNI
 
 VRF
 :
-  'vrf'
-  // If not first word on line, should be followed by VRF name
-  {
-    if (!(lastTokenType() == NEWLINE || lastTokenType() == -1)) {
-      pushMode(M_Word);
-    }
-  }
-
+  'vrf' -> pushMode( M_Vrf )
 ;
 
 WAIT_IGP_CONVERGENCE
@@ -2362,6 +2370,12 @@ F_NonNewline
 ;
 
 fragment
+F_NonWhitespace
+:
+  ~[ \t\u000C\u00A0\n\r]
+;
+
+fragment
 F_PositiveDigit
 :
   [1-9]
@@ -2531,16 +2545,41 @@ M_Password7_PASSWORD_7_MALFORMED_TEXT
 
 mode M_Remark;
 
+M_Remark_REMARK_TEXT
+:
+  F_NonWhitespace F_NonNewline* -> type ( REMARK_TEXT ) , popMode
+;
+
 M_Remark_WS
 :
   F_Whitespace+ -> channel ( HIDDEN )
 ;
 
-M_Remark_REMARK_TEXT
-// Keep below M_Remark_WS
+mode M_Vrf;
 
+M_Vrf_CONTEXT
 :
-  F_NonNewline+ -> type ( REMARK_TEXT ) , popMode
+  'context' -> type ( CONTEXT )
+;
+
+M_Vrf_MEMBER
+:
+  'member' -> type ( MEMBER )
+;
+
+M_Vrf_NEWLINE
+:
+  F_Newline+ -> type ( NEWLINE ), popMode
+;
+
+M_Vrf_WORD
+:
+  F_Word -> type ( WORD ) , popMode
+;
+
+M_Vrf_WS
+:
+  F_Whitespace+ -> channel ( HIDDEN )
 ;
 
 mode M_Word;

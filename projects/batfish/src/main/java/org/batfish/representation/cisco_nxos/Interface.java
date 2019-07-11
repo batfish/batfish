@@ -111,6 +111,7 @@ public final class Interface implements Serializable {
   private @Nullable Integer _bandwidth;
   private @Nullable String _channelGroup;
   private final @Nonnull Set<String> _declaredNames;
+  private @Nullable String _description;
   private @Nullable Integer _encapsulationVlan;
   private final @Nonnull String _name;
   private @Nullable Integer _nativeVlan;
@@ -123,7 +124,10 @@ public final class Interface implements Serializable {
   private @Nullable String _vrfMember;
 
   private Interface(
-      String name, String parentInterface, CiscoNxosInterfaceType type, @Nullable Integer vlan) {
+      String name,
+      @Nullable String parentInterface,
+      CiscoNxosInterfaceType type,
+      @Nullable Integer vlan) {
     _name = name;
     _parentInterface = parentInterface;
     _declaredNames = new HashSet<>();
@@ -131,7 +135,7 @@ public final class Interface implements Serializable {
     _type = type;
     _vlan = vlan;
     _autostate = true;
-    initDefaultSwitchportSettings(parentInterface != null, type);
+    _switchportMode = getDefaultSwitchportSettings(parentInterface != null, type);
 
     // Set defaults for individual switchport modes
     // - only effective when corresponding switchport mode is active
@@ -170,6 +174,10 @@ public final class Interface implements Serializable {
     return _declaredNames;
   }
 
+  public @Nullable String getDescription() {
+    return _description;
+  }
+
   public @Nullable Integer getEncapsulationVlan() {
     return _encapsulationVlan;
   }
@@ -197,6 +205,7 @@ public final class Interface implements Serializable {
         : defaultShutdown(_switchportMode, _type, _parentInterface != null);
   }
 
+  @Nonnull
   public SwitchportMode getSwitchportMode() {
     return _switchportMode;
   }
@@ -213,24 +222,23 @@ public final class Interface implements Serializable {
     return _vrfMember;
   }
 
-  private void initDefaultSwitchportSettings(boolean isSubinterface, CiscoNxosInterfaceType type) {
+  private static @Nonnull SwitchportMode getDefaultSwitchportSettings(
+      boolean isSubinterface, CiscoNxosInterfaceType type) {
     switch (type) {
       case ETHERNET:
       case PORT_CHANNEL:
         if (isSubinterface) {
           // this is a subinterface
-          _switchportMode = SwitchportMode.NONE;
+          return SwitchportMode.NONE;
         } else {
           // this is a parent interface
-          _switchportMode = SwitchportMode.ACCESS;
+          return SwitchportMode.ACCESS;
         }
-        break;
 
       case LOOPBACK:
       case MGMT:
       default:
-        _switchportMode = SwitchportMode.NONE;
-        break;
+        return SwitchportMode.NONE;
     }
   }
 
@@ -256,6 +264,10 @@ public final class Interface implements Serializable {
 
   public void setChannelGroup(@Nullable String channelGroup) {
     _channelGroup = channelGroup;
+  }
+
+  public void setDescription(@Nullable String description) {
+    _description = description;
   }
 
   public void setEncapsulationVlan(@Nullable Integer encapsulationVlan) {

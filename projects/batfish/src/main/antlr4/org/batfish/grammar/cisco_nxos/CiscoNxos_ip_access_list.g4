@@ -33,11 +33,19 @@ acl_fragments
 
 acl_line
 :
-  num = uint32?
+  num = ip_access_list_line_number?
   (
     acll_action
     | acll_remark
   )
+;
+
+ip_access_list_line_number
+:
+// 1-4294967295
+  UINT8
+  | UINT16
+  | UINT32
 ;
 
 acll_action

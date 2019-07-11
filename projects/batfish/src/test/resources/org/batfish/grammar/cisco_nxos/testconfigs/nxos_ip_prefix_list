@@ -1,0 +1,25 @@
+!RANCID-CONTENT-TYPE: cisco-nx
+!
+hostname nxos_ip_prefix_list
+!
+
+ip prefix-list pl_empty description An empty prefix-list
+
+!!! prefix-list with coverage of sequence numbers and permit/deny semantics
+! index 5
+ip prefix-list pl_test permit 10.0.1.0/24
+! index 10
+ip prefix-list pl_test deny 10.0.2.0/24
+! index 3
+ip prefix-list pl_test seq 3 permit 10.0.3.0/24
+! index 15
+ip prefix-list pl_test permit 10.0.4.0/24
+
+!!! prefix-list for testing length ranges
+ip prefix-list pl_range permit 10.10.0.0/16
+ip prefix-list pl_range permit 10.10.0.0/16 eq 24 
+ip prefix-list pl_range permit 10.10.0.0/16 ge 8
+ip prefix-list pl_range permit 10.10.0.0/16 ge 20 le 24
+ip prefix-list pl_range permit 10.10.0.0/16 le 24
+! TODO: discover semantics and add support
+ip prefix-list pl_range permit 10.10.0.0/16 mask 1.2.3.4

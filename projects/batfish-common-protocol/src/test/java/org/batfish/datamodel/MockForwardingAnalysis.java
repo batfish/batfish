@@ -3,23 +3,20 @@ package org.batfish.datamodel;
 import com.google.common.collect.ImmutableMap;
 import java.util.Map;
 import java.util.Set;
+import javax.annotation.Nonnull;
 
 public class MockForwardingAnalysis implements ForwardingAnalysis {
 
   public static class Builder {
 
+    private Map<String, Map<String, IpSpace>> _acceptedIps;
     private Map<String, Map<String, IpSpace>> _arpReplies;
-
     private Map<
             String, Map<String, Map<AbstractRoute, Map<String, Map<ArpIpChoice, Set<IpSpace>>>>>>
         _arpRequests;
-
     private Map<String, Map<String, Map<Edge, IpSpace>>> _arpTrueEdge;
-
     private Map<String, Map<String, Map<String, IpSpace>>> _nextVrfIps;
-
     private Map<String, Map<String, IpSpace>> _nullRoutedIps;
-
     private Map<String, Map<String, IpSpace>> _routableIps;
 
     private Builder() {
@@ -33,6 +30,11 @@ public class MockForwardingAnalysis implements ForwardingAnalysis {
 
     public MockForwardingAnalysis build() {
       return new MockForwardingAnalysis(this);
+    }
+
+    public Builder setAcceptedIps(Map<String, Map<String, IpSpace>> acceptedIps) {
+      _acceptedIps = acceptedIps;
+      return this;
     }
 
     public Builder setArpReplies(Map<String, Map<String, IpSpace>> arpReplies) {
@@ -72,27 +74,30 @@ public class MockForwardingAnalysis implements ForwardingAnalysis {
     return new Builder();
   }
 
+  private Map<String, Map<String, IpSpace>> _acceptedIps;
   private final Map<String, Map<String, IpSpace>> _arpReplies;
-
   private final Map<
           String, Map<String, Map<AbstractRoute, Map<String, Map<ArpIpChoice, Set<IpSpace>>>>>>
       _arpRequests;
-
   private final Map<String, Map<String, Map<Edge, IpSpace>>> _arpTrueEdge;
-
   private final Map<String, Map<String, Map<String, IpSpace>>> _nextVrfIps;
-
   private final Map<String, Map<String, IpSpace>> _nullRoutedIps;
-
   private final Map<String, Map<String, IpSpace>> _routableIps;
 
   public MockForwardingAnalysis(Builder builder) {
+    _acceptedIps = ImmutableMap.copyOf(builder._acceptedIps);
     _arpReplies = ImmutableMap.copyOf(builder._arpReplies);
     _arpRequests = ImmutableMap.copyOf(builder._arpRequests);
     _arpTrueEdge = ImmutableMap.copyOf(builder._arpTrueEdge);
     _nextVrfIps = ImmutableMap.copyOf(builder._nextVrfIps);
     _nullRoutedIps = ImmutableMap.copyOf(builder._nullRoutedIps);
     _routableIps = ImmutableMap.copyOf(builder._routableIps);
+  }
+
+  @Nonnull
+  @Override
+  public Map<String, Map<String, IpSpace>> getAcceptsIps() {
+    return _acceptedIps;
   }
 
   @Override
