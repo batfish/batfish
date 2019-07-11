@@ -36,6 +36,8 @@ For many parameters types, there is a "resolver" question that may be used to le
 
 * [`nodeSpec`](#node-specifier)
 
+* [`ospfProcessPropertySpec`](#ospf-process-property-specifier)
+
 * [`routingPolicySpec`](#routing-policy-specifier)
 
 * [`vxlanVniPropertySpec`](#vxlan-vni-property-specifier)
@@ -419,6 +421,34 @@ Batfish has the following device types.
 * `ISP`: A logical devie that represents a neighboring ISP. It is present when external connectivity is modeled.
 * `Router`: A device that does L3 routing and forwarding.
 * `Switch`: A device that only does L2 forwarding.
+
+## OSPF Interface Property Specifier
+
+A specification for a set of OSPF interface properties.
+
+* `OSPF_COST` specifies a set with that property.
+
+* `OSPF_COST, OSPF_PASSIVE` specifies a set with those two properties.
+
+* `/cost/` specifies a set with all properties with 'cost' in their name.
+
+#### OSPF Process Property Specifier Grammar
+
+A BGP session type specifier is a set of enums (see above) over the following values: OSPF_AREA_NAME, OSPF_COST, OSPF_PASSIVE, OSPF_POINT_TO_POINT.
+
+## OSPF Process Property Specifier
+
+A specification for a set of OSPF process properties.
+
+* `AREA_BORDER_ROUTER` specifies a set with that property.
+
+* `AREA_BORDER_ROUTER, EXPORT_POLICY_SOURCES` specifies a set with those two properties.
+
+* `/area/` specifies a set with all properties with 'area' in their name.
+
+#### OSPF Process Property Specifier Grammar
+
+A BGP session type specifier is a set of enums (see above) over the following values: AREA_BORDER_ROUTER, AREAS, EXPORT_POLICY_SOURCES, REFERENCE_BANDWIDTH, RFC_1583_COMPATIBLE, ROUTER_ID.
 
 ## Routing Policy Specifier
 

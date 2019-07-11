@@ -25,10 +25,10 @@
         "value" : ".*"
       },
       "properties" : {
-        "description" : "Include properties matching this regex",
+        "description" : "Include properties matching this specifier",
         "displayName" : "Properties",
         "optional" : true,
-        "type" : "ospfPropertySpec",
+        "type" : "ospfProcessPropertySpec",
         "value" : "props-.*"
       }
     }

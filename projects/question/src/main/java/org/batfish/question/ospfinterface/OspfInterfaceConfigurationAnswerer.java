@@ -1,15 +1,10 @@
 package org.batfish.question.ospfinterface;
 
 import static com.google.common.base.MoreObjects.firstNonNull;
-import static org.batfish.datamodel.questions.InterfacePropertySpecifier.OSPF_AREA_NAME;
-import static org.batfish.datamodel.questions.InterfacePropertySpecifier.OSPF_COST;
-import static org.batfish.datamodel.questions.InterfacePropertySpecifier.OSPF_PASSIVE;
-import static org.batfish.datamodel.questions.InterfacePropertySpecifier.OSPF_POINT_TO_POINT;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.HashMultiset;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Multiset;
 import java.util.List;
 import java.util.Map;
@@ -26,6 +21,7 @@ import org.batfish.datamodel.answers.Schema;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.ospf.OspfProcess;
 import org.batfish.datamodel.questions.InterfacePropertySpecifier;
+import org.batfish.datamodel.questions.OspfInterfacePropertySpecifier;
 import org.batfish.datamodel.questions.PropertySpecifier;
 import org.batfish.datamodel.questions.PropertySpecifier.PropertyDescriptor;
 import org.batfish.datamodel.questions.Question;
@@ -34,6 +30,8 @@ import org.batfish.datamodel.table.Row;
 import org.batfish.datamodel.table.Row.RowBuilder;
 import org.batfish.datamodel.table.TableAnswerElement;
 import org.batfish.datamodel.table.TableMetadata;
+import org.batfish.specifier.AllNodesNodeSpecifier;
+import org.batfish.specifier.SpecifierFactories;
 
 /** Implements {@link OspfInterfaceConfigurationQuestion}. */
 @ParametersAreNonnullByDefault
@@ -43,10 +41,6 @@ public final class OspfInterfaceConfigurationAnswerer extends Answerer {
   static final String COL_VRF = "VRF";
   static final String COL_PROCESS_ID = "Process_ID";
 
-  // this list also ensures order of columns excluding keys
-  static final List<String> COLUMNS_FROM_PROP_SPEC =
-      ImmutableList.of(OSPF_AREA_NAME, OSPF_PASSIVE, OSPF_COST, OSPF_POINT_TO_POINT);
-
   public OspfInterfaceConfigurationAnswerer(Question question, IBatfish batfish) {
     super(question, batfish);
   }
@@ -55,23 +49,22 @@ public final class OspfInterfaceConfigurationAnswerer extends Answerer {
   public AnswerElement answer() {
     OspfInterfaceConfigurationQuestion question = (OspfInterfaceConfigurationQuestion) _question;
     Map<String, Configuration> configurations = _batfish.loadConfigurations();
-    Set<String> nodes = question.getNodesSpecifier().resolve(_batfish.specifierContext());
+    Set<String> nodes =
+        SpecifierFactories.getNodeSpecifierOrDefault(
+                question.getNodes(), AllNodesNodeSpecifier.INSTANCE)
+            .resolve(_batfish.specifierContext());
 
-    Set<String> matchingProperties =
-        ImmutableSet.copyOf(question.getPropertySpecifier().getMatchingProperties());
-    List<String> orderedProperties =
-        COLUMNS_FROM_PROP_SPEC.stream()
-            .filter(matchingProperties::contains)
-            .collect(ImmutableList.toImmutableList());
+    List<String> properties =
+        OspfInterfacePropertySpecifier.create(question.getProperties()).getMatchingProperties();
 
     TableMetadata tableMetadata =
         createTableMetadata(
             question.getDisplayHints() != null ? question.getDisplayHints().getTextDesc() : null,
-            orderedProperties);
+            properties);
     TableAnswerElement answer = new TableAnswerElement(tableMetadata);
 
     Multiset<Row> propertyRows =
-        getRows(orderedProperties, configurations, nodes, tableMetadata.toColumnMap());
+        getRows(properties, configurations, nodes, tableMetadata.toColumnMap());
 
     answer.postProcessAnswer(question, propertyRows);
     return answer;

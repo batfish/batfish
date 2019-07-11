@@ -1,10 +1,10 @@
 package org.batfish.question.ospfprocess;
 
-import static org.batfish.datamodel.questions.OspfPropertySpecifier.AREAS;
-import static org.batfish.datamodel.questions.OspfPropertySpecifier.AREA_BORDER_ROUTER;
-import static org.batfish.datamodel.questions.OspfPropertySpecifier.EXPORT_POLICY_SOURCES;
-import static org.batfish.datamodel.questions.OspfPropertySpecifier.REFERENCE_BANDWIDTH;
-import static org.batfish.datamodel.questions.OspfPropertySpecifier.ROUTER_ID;
+import static org.batfish.datamodel.questions.OspfProcessPropertySpecifier.AREAS;
+import static org.batfish.datamodel.questions.OspfProcessPropertySpecifier.AREA_BORDER_ROUTER;
+import static org.batfish.datamodel.questions.OspfProcessPropertySpecifier.EXPORT_POLICY_SOURCES;
+import static org.batfish.datamodel.questions.OspfProcessPropertySpecifier.REFERENCE_BANDWIDTH;
+import static org.batfish.datamodel.questions.OspfProcessPropertySpecifier.ROUTER_ID;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.HashMultiset;
@@ -24,7 +24,7 @@ import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.datamodel.answers.Schema;
 import org.batfish.datamodel.ospf.OspfProcess;
 import org.batfish.datamodel.pojo.Node;
-import org.batfish.datamodel.questions.OspfPropertySpecifier;
+import org.batfish.datamodel.questions.OspfProcessPropertySpecifier;
 import org.batfish.datamodel.questions.PropertySpecifier;
 import org.batfish.datamodel.questions.PropertySpecifier.PropertyDescriptor;
 import org.batfish.datamodel.questions.Question;
@@ -58,7 +58,7 @@ public final class OspfProcessConfigurationAnswerer extends Answerer {
     OspfProcessConfigurationQuestion question = (OspfProcessConfigurationQuestion) _question;
 
     Set<String> matchingProperties =
-        ImmutableSet.copyOf(question.getProperties().getMatchingProperties());
+        ImmutableSet.copyOf(question.getPropertySpecifier().getMatchingProperties());
     List<String> orderedProperties =
         COLUMNS_FROM_PROP_SPEC.stream()
             .filter(matchingProperties::contains)
@@ -91,8 +91,8 @@ public final class OspfProcessConfigurationAnswerer extends Answerer {
       columnMetadatas.add(
           new ColumnMetadata(
               getColumnName(property),
-              OspfPropertySpecifier.JAVA_MAP.get(property).getSchema(),
-              OspfPropertySpecifier.JAVA_MAP.get(property).getDescription(),
+              OspfProcessPropertySpecifier.getPropertyDescriptor(property).getSchema(),
+              OspfProcessPropertySpecifier.getPropertyDescriptor(property).getDescription(),
               false,
               true));
     }
@@ -158,7 +158,7 @@ public final class OspfProcessConfigurationAnswerer extends Answerer {
 
     for (String property : properties) {
       PropertyDescriptor<OspfProcess> propertyDescriptor =
-          OspfPropertySpecifier.JAVA_MAP.get(property);
+          OspfProcessPropertySpecifier.getPropertyDescriptor(property);
       try {
         PropertySpecifier.fillProperty(propertyDescriptor, ospfProcess, property, rowBuilder);
       } catch (ClassCastException e) {

@@ -18,17 +18,17 @@
     ],
     "variables" : {
       "nodes" : {
-        "description" : "Include nodes matching this name or regex",
+        "description" : "Include nodes matching this specifier",
         "displayName" : "Nodes",
         "optional" : true,
         "type" : "nodeSpec",
         "value" : ".*"
       },
       "properties" : {
-        "description" : "Include properties matching this regex",
+        "description" : "Include properties matching this specifier",
         "displayName" : "Properties",
         "optional" : true,
-        "type" : "ospfPropertySpec",
+        "type" : "ospfInterfacePropertySpec",
         "value" : "props-.*"
       }
     }

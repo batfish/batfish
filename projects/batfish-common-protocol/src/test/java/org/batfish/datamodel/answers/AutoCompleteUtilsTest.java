@@ -33,8 +33,8 @@ import static org.batfish.datamodel.questions.NamedStructurePropertySpecifier.IK
 import static org.batfish.datamodel.questions.NamedStructurePropertySpecifier.IKE_PHASE1_PROPOSALS;
 import static org.batfish.datamodel.questions.NodePropertySpecifier.DNS_SERVERS;
 import static org.batfish.datamodel.questions.NodePropertySpecifier.DNS_SOURCE_INTERFACE;
-import static org.batfish.datamodel.questions.OspfPropertySpecifier.AREAS;
-import static org.batfish.datamodel.questions.OspfPropertySpecifier.AREA_BORDER_ROUTER;
+import static org.batfish.datamodel.questions.OspfProcessPropertySpecifier.AREAS;
+import static org.batfish.datamodel.questions.OspfProcessPropertySpecifier.AREA_BORDER_ROUTER;
 import static org.batfish.specifier.DispositionSpecifier.SUCCESS;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.junit.Assert.assertThat;
@@ -51,6 +51,7 @@ import org.batfish.datamodel.BgpSessionProperties.SessionType;
 import org.batfish.datamodel.answers.AutocompleteSuggestion.SuggestionType;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.questions.NodePropertySpecifier;
+import org.batfish.datamodel.questions.OspfInterfacePropertySpecifier;
 import org.batfish.datamodel.questions.Variable.Type;
 import org.batfish.referencelibrary.AddressGroup;
 import org.batfish.referencelibrary.InterfaceGroup;
@@ -1137,9 +1138,18 @@ public class AutoCompleteUtilsTest {
   }
 
   @Test
-  public void testOspfPropertySpecAutocomplete() {
+  public void testOspfInterfacePropertySpecAutocomplete() {
     assertThat(
-        AutoCompleteUtils.autoComplete(Type.OSPF_PROPERTY_SPEC, "area", 5).stream()
+        AutoCompleteUtils.autoComplete(Type.OSPF_INTERFACE_PROPERTY_SPEC, "area", 5).stream()
+            .map(AutocompleteSuggestion::getText)
+            .collect(Collectors.toSet()),
+        equalTo(ImmutableSet.of(OspfInterfacePropertySpecifier.OSPF_AREA_NAME)));
+  }
+
+  @Test
+  public void testOspfProcessPropertySpecAutocomplete() {
+    assertThat(
+        AutoCompleteUtils.autoComplete(Type.OSPF_PROCESS_PROPERTY_SPEC, "area", 5).stream()
             .map(AutocompleteSuggestion::getText)
             .collect(Collectors.toSet()),
         equalTo(ImmutableSet.of(AREA_BORDER_ROUTER, AREAS)));
