@@ -443,7 +443,7 @@ class FlowTracer {
     Ip dstIp = _currentFlow.getDstIp();
 
     // Accept if the flow is destined for this vrf on this host.
-    if (_tracerouteContext.ownsIp(currentNodeName, _vrfName, dstIp)) {
+    if (_tracerouteContext.acceptsIp(currentNodeName, _vrfName, dstIp)) {
       buildAcceptTrace();
       return;
     }
@@ -489,7 +489,7 @@ class FlowTracer {
 
         // Accept if the flow is destined for this vrf on this host.
         String currentNodeName = _currentNode.getName();
-        if (_tracerouteContext.ownsIp(currentNodeName, _vrfName, dstIp)) {
+        if (_tracerouteContext.acceptsIp(currentNodeName, _vrfName, dstIp)) {
           buildAcceptTrace();
           return true;
         }

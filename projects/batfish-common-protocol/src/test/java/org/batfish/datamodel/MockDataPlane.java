@@ -22,7 +22,6 @@ public class MockDataPlane implements DataPlane {
     @Nonnull
     private SortedMap<String, SortedMap<String, GenericRib<AnnotatedRoute<AbstractRoute>>>> _ribs;
 
-    @Nonnull private Map<Ip, Map<String, Set<String>>> _ipVrfOwners;
     @Nonnull private Table<String, String, Set<VniSettings>> _vniSettings;
 
     private Builder() {
@@ -31,7 +30,6 @@ public class MockDataPlane implements DataPlane {
       _evpnRoutes = HashBasedTable.create();
       _fibs = ImmutableMap.of();
       _ribs = ImmutableSortedMap.of();
-      _ipVrfOwners = ImmutableMap.of();
       _vniSettings = HashBasedTable.create();
     }
 
@@ -64,11 +62,6 @@ public class MockDataPlane implements DataPlane {
       return this;
     }
 
-    public Builder setIpVrfOwners(@Nonnull Map<Ip, Map<String, Set<String>>> ipVrfOwners) {
-      _ipVrfOwners = ipVrfOwners;
-      return this;
-    }
-
     public Builder setVniSettings(@Nonnull Table<String, String, Set<VniSettings>> vniSettings) {
       _vniSettings = vniSettings;
       return this;
@@ -90,7 +83,6 @@ public class MockDataPlane implements DataPlane {
   @Nonnull private Table<String, String, Set<EvpnRoute<?, ?>>> _evpnRoutes;
   @Nonnull private final Map<String, Map<String, Fib>> _fibs;
   @Nullable private final ForwardingAnalysis _forwardingAnalysis;
-  @Nonnull private final Map<Ip, Map<String, Set<String>>> _ipVrfOwners;
 
   @Nonnull
   private final SortedMap<String, SortedMap<String, GenericRib<AnnotatedRoute<AbstractRoute>>>>
@@ -104,7 +96,6 @@ public class MockDataPlane implements DataPlane {
     _evpnRoutes = builder._evpnRoutes;
     _fibs = builder._fibs;
     _forwardingAnalysis = builder._forwardingAnalysis;
-    _ipVrfOwners = builder._ipVrfOwners;
     _ribs = ImmutableSortedMap.copyOf(builder._ribs);
     _vniSettings = builder._vniSettings;
   }
@@ -131,12 +122,6 @@ public class MockDataPlane implements DataPlane {
   @Override
   public ForwardingAnalysis getForwardingAnalysis() {
     return _forwardingAnalysis;
-  }
-
-  @Nonnull
-  @Override
-  public Map<Ip, Map<String, Set<String>>> getIpVrfOwners() {
-    return _ipVrfOwners;
   }
 
   @Nonnull

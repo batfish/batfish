@@ -25,10 +25,10 @@ import javax.annotation.Nullable;
 import org.batfish.common.Answerer;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.common.plugin.Plugin;
+import org.batfish.common.topology.IpOwners;
 import org.batfish.common.topology.Layer1Topology;
 import org.batfish.common.topology.Layer2Topology;
 import org.batfish.common.topology.Layer3Edge;
-import org.batfish.common.topology.TopologyUtil;
 import org.batfish.datamodel.BgpPeerConfig;
 import org.batfish.datamodel.BgpPeerConfigId;
 import org.batfish.datamodel.BgpSessionProperties;
@@ -186,7 +186,7 @@ public class VIModelQuestionPlugin extends QuestionPlugin {
       SortedMap<String, Configuration> configs = _batfish.loadConfigurations();
       Topology topology =
           _batfish.getTopologyProvider().getInitialLayer3Topology(_batfish.getNetworkSnapshot());
-      Map<Ip, Set<String>> ipOwners = TopologyUtil.computeIpNodeOwners(configs, true);
+      Map<Ip, Set<String>> ipOwners = IpOwners.computeIpNodeOwners(configs, true);
       Layer2Topology layer2Topology =
           _batfish
               .getTopologyProvider()
