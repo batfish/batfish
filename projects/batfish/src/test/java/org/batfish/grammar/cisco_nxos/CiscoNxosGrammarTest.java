@@ -72,8 +72,10 @@ import org.batfish.datamodel.Interface.DependencyType;
 import org.batfish.datamodel.InterfaceType;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpProtocol;
+import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.NamedPort;
 import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.SwitchportMode;
 import org.batfish.datamodel.TcpFlags;
 import org.batfish.datamodel.UniverseIpSpace;
@@ -92,6 +94,8 @@ import org.batfish.representation.cisco_nxos.Interface;
 import org.batfish.representation.cisco_nxos.IpAccessList;
 import org.batfish.representation.cisco_nxos.IpAccessListLine;
 import org.batfish.representation.cisco_nxos.IpAddressSpec;
+import org.batfish.representation.cisco_nxos.IpPrefixList;
+import org.batfish.representation.cisco_nxos.IpPrefixListLine;
 import org.batfish.representation.cisco_nxos.Layer3Options;
 import org.batfish.representation.cisco_nxos.LiteralIpAddressSpec;
 import org.batfish.representation.cisco_nxos.LiteralPortSpec;
@@ -1098,6 +1102,84 @@ public final class CiscoNxosGrammarTest {
 
     assertThat(
         ans, hasNumReferrers(filename, CiscoNxosStructureType.IP_ACCESS_LIST, "acl_unused", 0));
+  }
+
+  @Test
+  public void testIpPrefixListExtraction() {
+    String hostname = "nxos_ip_prefix_list";
+    CiscoNxosConfiguration vc = parseVendorConfig(hostname);
+
+    assertThat(vc.getIpPrefixLists(), hasKeys("pl_empty", "pl_test", "pl_range"));
+
+    {
+      IpPrefixList pl = vc.getIpPrefixLists().get("pl_empty");
+      assertThat(pl.getDescription(), equalTo("An empty prefix-list"));
+      assertThat(pl.getLines(), anEmptyMap());
+    }
+    {
+      IpPrefixList pl = vc.getIpPrefixLists().get("pl_test");
+      assertThat(pl.getDescription(), nullValue());
+      assertThat(pl.getLines().keySet(), contains(3L, 5L, 10L, 15L));
+      Iterator<IpPrefixListLine> lines = pl.getLines().values().iterator();
+      IpPrefixListLine line;
+
+      line = lines.next();
+      assertThat(line.getAction(), equalTo(LineAction.PERMIT));
+      assertThat(line.getLine(), equalTo(3L));
+      assertThat(line.getPrefix(), equalTo(Prefix.parse("10.0.3.0/24")));
+
+      line = lines.next();
+      assertThat(line.getAction(), equalTo(LineAction.PERMIT));
+      assertThat(line.getLine(), equalTo(5L));
+      assertThat(line.getPrefix(), equalTo(Prefix.parse("10.0.1.0/24")));
+
+      line = lines.next();
+      assertThat(line.getAction(), equalTo(LineAction.DENY));
+      assertThat(line.getLine(), equalTo(10L));
+      assertThat(line.getPrefix(), equalTo(Prefix.parse("10.0.2.0/24")));
+
+      line = lines.next();
+      assertThat(line.getAction(), equalTo(LineAction.PERMIT));
+      assertThat(line.getLine(), equalTo(15L));
+      assertThat(line.getPrefix(), equalTo(Prefix.parse("10.0.4.0/24")));
+    }
+    {
+      IpPrefixList pl = vc.getIpPrefixLists().get("pl_range");
+      assertThat(pl.getDescription(), nullValue());
+      assertThat(pl.getLines().keySet(), contains(5L, 10L, 15L, 20L, 25L));
+      Iterator<IpPrefixListLine> lines = pl.getLines().values().iterator();
+      IpPrefixListLine line;
+
+      line = lines.next();
+      assertThat(line.getAction(), equalTo(LineAction.PERMIT));
+      assertThat(line.getLengthRange(), equalTo(new SubRange(16, Prefix.MAX_PREFIX_LENGTH)));
+      assertThat(line.getLine(), equalTo(5L));
+      assertThat(line.getPrefix(), equalTo(Prefix.parse("10.10.0.0/16")));
+
+      line = lines.next();
+      assertThat(line.getAction(), equalTo(LineAction.PERMIT));
+      assertThat(line.getLengthRange(), equalTo(new SubRange(24, 24)));
+      assertThat(line.getLine(), equalTo(10L));
+      assertThat(line.getPrefix(), equalTo(Prefix.parse("10.10.0.0/16")));
+
+      line = lines.next();
+      assertThat(line.getAction(), equalTo(LineAction.PERMIT));
+      assertThat(line.getLengthRange(), equalTo(new SubRange(8, Prefix.MAX_PREFIX_LENGTH)));
+      assertThat(line.getLine(), equalTo(15L));
+      assertThat(line.getPrefix(), equalTo(Prefix.parse("10.10.0.0/16")));
+
+      line = lines.next();
+      assertThat(line.getAction(), equalTo(LineAction.PERMIT));
+      assertThat(line.getLengthRange(), equalTo(new SubRange(20, 24)));
+      assertThat(line.getLine(), equalTo(20L));
+      assertThat(line.getPrefix(), equalTo(Prefix.parse("10.10.0.0/16")));
+
+      line = lines.next();
+      assertThat(line.getAction(), equalTo(LineAction.PERMIT));
+      assertThat(line.getLengthRange(), equalTo(new SubRange(16, 24)));
+      assertThat(line.getLine(), equalTo(25L));
+      assertThat(line.getPrefix(), equalTo(Prefix.parse("10.10.0.0/16")));
+    }
   }
 
   @Test
