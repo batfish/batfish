@@ -89,6 +89,7 @@ import org.batfish.grammar.cisco_nxos.CiscoNxosParser.I_channel_groupContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.I_descriptionContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.I_encapsulationContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.I_ip_addressContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.I_mtuContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.I_no_autostateContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.I_no_shutdownContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.I_no_switchportContext;
@@ -100,6 +101,7 @@ import org.batfish.grammar.cisco_nxos.CiscoNxosParser.I_vrf_memberContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Interface_addressContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Interface_bandwidth_kbpsContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Interface_descriptionContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Interface_mtuContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Interface_prefixContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Ip_access_listContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Ip_access_list_line_numberContext;
@@ -1049,6 +1051,15 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
   }
 
   @Override
+  public void exitI_mtu(I_mtuContext ctx) {
+    Optional<Integer> mtu = toInteger(ctx, ctx.interface_mtu());
+    if (!mtu.isPresent()) {
+      return;
+    }
+    _currentInterfaces.forEach(iface -> iface.setMtu(mtu.get()));
+  }
+
+  @Override
   public void exitI_no_autostate(I_no_autostateContext ctx) {
     _currentInterfaces.forEach(iface -> iface.setAutostate(false));
   }
@@ -1410,6 +1421,12 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
       todo(ctx);
       return Optional.empty();
     }
+  }
+
+  private @Nonnull Optional<Integer> toInteger(
+      ParserRuleContext messageCtx, Interface_mtuContext ctx) {
+    // TODO: the valid MTU ranges are dependent on interface type.
+    return Optional.of(toInteger(ctx.mtu));
   }
 
   private @Nonnull Optional<Integer> toInteger(

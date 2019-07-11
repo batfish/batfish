@@ -15,6 +15,7 @@ s_interface
     | i_description
     | i_encapsulation
     | i_ip
+    | i_mtu
     | i_no
     | i_null
     | i_shutdown
@@ -71,6 +72,17 @@ i_ip
 i_ip_address
 :
   ADDRESS addr = interface_address SECONDARY? NEWLINE
+;
+
+i_mtu
+:
+  MTU interface_mtu NEWLINE
+;
+
+interface_mtu
+:
+// range depends on interface type
+  mtu = uint16
 ;
 
 i_no
