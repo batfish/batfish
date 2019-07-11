@@ -7,8 +7,6 @@ import java.util.Set;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.datamodel.BgpSessionProperties.SessionType;
-import org.batfish.datamodel.questions.BgpSessionStatus;
-import org.batfish.datamodel.questions.ConfiguredSessionStatus;
 import org.batfish.datamodel.questions.NodesSpecifier;
 import org.batfish.datamodel.questions.Question;
 import org.batfish.specifier.AllNodesNodeSpecifier;
@@ -20,8 +18,6 @@ import org.batfish.specifier.parboiled.Grammar;
 
 /** Based on node configurations, determines the status of IBGP and EBGP sessions. */
 public abstract class BgpSessionQuestion extends Question {
-
-  private static final String MATCH_ALL = ".*";
 
   public static final String PROP_NODES = "nodes";
 
@@ -48,8 +44,7 @@ public abstract class BgpSessionQuestion extends Question {
    * @param nodes {@link NodesSpecifier} to specify matching local nodes. Default is all nodes.
    * @param remoteNodes {@link NodesSpecifier} to specify matching remote nodes. Default is all
    *     nodes.
-   * @param status {@link EnumSetSpecifier} over {@link ConfiguredSessionStatus} or {@link
-   *     BgpSessionStatus}
+   * @param status {@link EnumSetSpecifier} over one of the supported status enums
    * @param type Regular expression to match session type (see {@link SessionType})
    */
   public BgpSessionQuestion(
