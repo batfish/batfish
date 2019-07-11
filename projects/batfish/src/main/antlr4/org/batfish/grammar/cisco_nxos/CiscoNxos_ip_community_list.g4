@@ -15,7 +15,7 @@ icl_standard
 :
   STANDARD name = ip_community_list_name
   (
-    SEQ num = ip_community_list_line_number
+    SEQ seq = ip_community_list_seq
   )? action = line_action communities += standard_community+ NEWLINE
 ;
 
@@ -25,10 +25,8 @@ ip_community_list_name
   WORD
 ;
 
-ip_community_list_line_number
+ip_community_list_seq
 :
 // 1-4294967294
-  UINT8
-  | UINT16
-  | UINT32
+  uint32
 ;

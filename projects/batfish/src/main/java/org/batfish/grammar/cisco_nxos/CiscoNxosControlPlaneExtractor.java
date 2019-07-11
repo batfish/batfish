@@ -111,8 +111,8 @@ import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Ip_access_listContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Ip_access_list_line_numberContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Ip_access_list_nameContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Ip_addressContext;
-import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Ip_community_list_line_numberContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Ip_community_list_nameContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Ip_community_list_seqContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Ip_prefixContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Ip_prefix_listContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Ip_prefix_list_descriptionContext;
@@ -422,61 +422,59 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
   @Override
   public void enterIcl_standard(Icl_standardContext ctx) {
     int line = ctx.getStart().getLine();
-    Long declaredSeq;
-    if (ctx.num != null) {
-      Optional<Long> seqOpt = toLong(ctx, ctx.num);
+    Long explicitSeq;
+    if (ctx.seq != null) {
+      Optional<Long> seqOpt = toLong(ctx, ctx.seq);
       if (!seqOpt.isPresent()) {
         return;
       }
-      declaredSeq = seqOpt.get();
+      explicitSeq = seqOpt.get();
     } else {
-      declaredSeq = null;
+      explicitSeq = null;
     }
     Optional<Set<StandardCommunity>> communities = toStandardCommunitySet(ctx, ctx.communities);
     if (!communities.isPresent()) {
       return;
     }
-    toString(ctx, ctx.name)
-        .ifPresent(
-            name -> {
-              IpCommunityList communityList =
-                  _configuration
-                      .getIpCommunityLists()
-                      .computeIfAbsent(
-                          name,
-                          n -> {
-                            _configuration.defineStructure(
-                                CiscoNxosStructureType.IP_COMMUNITY_LIST_STANDARD, n, line);
-                            return new IpCommunityListStandard(n);
-                          });
-              if (!(communityList instanceof IpCommunityListStandard)) {
-                _w.addWarning(
-                    ctx,
-                    getFullText(ctx),
-                    _parser,
-                    String.format(
-                        "Cannot define standard community-list '%s' because another community-list with that name but a different type already exists.",
-                        name));
-                return;
-              }
-              IpCommunityListStandard communityListStandard =
-                  (IpCommunityListStandard) communityList;
-              SortedMap<Long, IpCommunityListStandardLine> lines = communityListStandard.getLines();
-              long seq;
-              if (declaredSeq != null) {
-                seq = declaredSeq;
-              } else if (!lines.isEmpty()) {
-                seq = communityListStandard.getLines().lastKey() + 1L;
-              } else {
-                seq = 1L;
-              }
-              communityListStandard
-                  .getLines()
-                  .put(
-                      seq,
-                      new IpCommunityListStandardLine(
-                          toLineAction(ctx.action), seq, communities.get()));
-            });
+    Optional<String> nameOpt = toString(ctx, ctx.name);
+    if (!nameOpt.isPresent()) {
+      return;
+    }
+    String name = nameOpt.get();
+    IpCommunityList communityList =
+        _configuration
+            .getIpCommunityLists()
+            .computeIfAbsent(
+                name,
+                n -> {
+                  _configuration.defineStructure(
+                      CiscoNxosStructureType.IP_COMMUNITY_LIST_STANDARD, n, line);
+                  return new IpCommunityListStandard(n);
+                });
+    if (!(communityList instanceof IpCommunityListStandard)) {
+      _w.addWarning(
+          ctx,
+          getFullText(ctx),
+          _parser,
+          String.format(
+              "Cannot define standard community-list '%s' because another community-list with that name but a different type already exists.",
+              name));
+      return;
+    }
+    IpCommunityListStandard communityListStandard = (IpCommunityListStandard) communityList;
+    SortedMap<Long, IpCommunityListStandardLine> lines = communityListStandard.getLines();
+    long seq;
+    if (explicitSeq != null) {
+      seq = explicitSeq;
+    } else if (!lines.isEmpty()) {
+      seq = lines.lastKey() + 1L;
+    } else {
+      seq = 1L;
+    }
+    communityListStandard
+        .getLines()
+        .put(
+            seq, new IpCommunityListStandardLine(toLineAction(ctx.action), seq, communities.get()));
   }
 
   @Override
@@ -1777,7 +1775,7 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
   }
 
   private @Nonnull Optional<Long> toLong(
-      ParserRuleContext messageCtx, Ip_community_list_line_numberContext ctx) {
+      ParserRuleContext messageCtx, Ip_community_list_seqContext ctx) {
     return toLongInSpace(
         messageCtx, ctx, IP_COMMUNITY_LIST_LINE_NUMBER_RANGE, "ip community-list line number");
   }

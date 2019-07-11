@@ -41,7 +41,6 @@ import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasEntry;
 import static org.hamcrest.Matchers.hasKey;
-import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertFalse;
@@ -49,15 +48,14 @@ import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Iterables;
 import com.google.common.collect.Range;
 import java.io.IOException;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.apache.commons.lang3.SerializationUtils;
@@ -135,11 +133,6 @@ public final class CiscoNxosGrammarTest {
     PKT = new BDDPacket();
     DST_IP_BDD = PKT.getDstIpSpaceToBDD();
     SRC_IP_BDD = PKT.getSrcIpSpaceToBDD();
-  }
-
-  private static @Nullable <T> T toSingletonElement(Collection<T> collection) {
-    assertThat(collection, hasSize(1));
-    return collection.iterator().next();
   }
 
   @Rule public TemporaryFolder _folder = new TemporaryFolder();
@@ -264,23 +257,6 @@ public final class CiscoNxosGrammarTest {
         containsInAnyOrder(
             ConcreteInterfaceAddress.parse("10.0.0.2/24"),
             ConcreteInterfaceAddress.parse("10.0.0.3/24")));
-  }
-
-  /**
-   * A generic test that exercised basic interface property extraction and conversion.
-   *
-   * <p>Note that this should only be for <strong>simple</strong> properties; anything with many
-   * cases deserves its own unit test. (See, e.g., {@link #testInterfaceSwitchportExtraction()}.
-   */
-  @Test
-  public void testInterfaceProperties() throws Exception {
-    Configuration c = parseConfig("nxos_interface_properties");
-    assertThat(c, hasInterface("Ethernet1/1", any(org.batfish.datamodel.Interface.class)));
-
-    org.batfish.datamodel.Interface eth11 = c.getAllInterfaces().get("Ethernet1/1");
-    assertThat(
-        eth11,
-        hasDescription("here is a description with punctuation! and IP address 1.2.3.4/24 etc."));
   }
 
   @Test
@@ -598,6 +574,23 @@ public final class CiscoNxosGrammarTest {
       assertThat(iface.getSwitchportMode(), equalTo(SwitchportMode.ACCESS));
       assertThat(iface.getAccessVlan(), equalTo(1));
     }
+  }
+
+  /**
+   * A generic test that exercised basic interface property extraction and conversion.
+   *
+   * <p>Note that this should only be for <strong>simple</strong> properties; anything with many
+   * cases deserves its own unit test. (See, e.g., {@link #testInterfaceSwitchportExtraction()}.
+   */
+  @Test
+  public void testInterfaceProperties() throws Exception {
+    Configuration c = parseConfig("nxos_interface_properties");
+    assertThat(c, hasInterface("Ethernet1/1", any(org.batfish.datamodel.Interface.class)));
+
+    org.batfish.datamodel.Interface eth11 = c.getAllInterfaces().get("Ethernet1/1");
+    assertThat(
+        eth11,
+        hasDescription("here is a description with punctuation! and IP address 1.2.3.4/24 etc."));
   }
 
   @Test
@@ -1174,7 +1167,7 @@ public final class CiscoNxosGrammarTest {
       assertThat(
           cl.getLines().values().stream()
               .map(IpCommunityListStandardLine::getCommunities)
-              .map(CiscoNxosGrammarTest::toSingletonElement)
+              .map(Iterables::getOnlyElement)
               .collect(ImmutableList.toImmutableList()),
           contains(
               StandardCommunity.of(1, 1),
