@@ -17,7 +17,7 @@ import org.batfish.specifier.ConstantEnumSetSpecifier;
 import org.batfish.specifier.SpecifierFactories;
 import org.batfish.specifier.parboiled.Grammar;
 
-/** Enables specification a set of Ospf process properties. */
+/** Enables specification of a set of Ospf process properties. */
 public class OspfProcessPropertySpecifier extends PropertySpecifier {
 
   public static final String AREA_BORDER_ROUTER = "Area_Border_Router";

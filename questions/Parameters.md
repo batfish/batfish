@@ -432,9 +432,9 @@ A specification for a set of OSPF interface properties.
 
 * `/cost/` specifies a set with all properties with 'cost' in their name.
 
-#### OSPF Process Property Specifier Grammar
+#### OSPF Interface Property Specifier Grammar
 
-A BGP session type specifier is a set of enums (see above) over the following values: OSPF_AREA_NAME, OSPF_COST, OSPF_PASSIVE, OSPF_POINT_TO_POINT.
+An OSPF interface property specifier is a set of enums (see above) over the following values: OSPF_AREA_NAME, OSPF_COST, OSPF_PASSIVE, OSPF_POINT_TO_POINT.
 
 ## OSPF Process Property Specifier
 
@@ -448,7 +448,7 @@ A specification for a set of OSPF process properties.
 
 #### OSPF Process Property Specifier Grammar
 
-A BGP session type specifier is a set of enums (see above) over the following values: AREA_BORDER_ROUTER, AREAS, EXPORT_POLICY_SOURCES, REFERENCE_BANDWIDTH, RFC_1583_COMPATIBLE, ROUTER_ID.
+An OSPF process property specifier is a set of enums (see above) over the following values: AREA_BORDER_ROUTER, AREAS, EXPORT_POLICY_SOURCES, REFERENCE_BANDWIDTH, RFC_1583_COMPATIBLE, ROUTER_ID.
 
 ## Routing Policy Specifier
 

@@ -15,7 +15,7 @@ import org.batfish.specifier.ConstantEnumSetSpecifier;
 import org.batfish.specifier.SpecifierFactories;
 import org.batfish.specifier.parboiled.Grammar;
 
-/** Enables specification a set of Ospf interface properties. */
+/** Enables specification of a set of Ospf interface properties. */
 public class OspfInterfacePropertySpecifier extends PropertySpecifier {
 
   // OSPF interface properties are a subset of interface properties

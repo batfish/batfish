@@ -36,7 +36,7 @@ public enum Grammar {
   NODE_PROPERTY_SPECIFIER("nodePropertySpecifier", "node-property-specifier"),
   NODE_SPECIFIER("nodeSpecifier", "node-specifier"),
   OSPF_INTERFACE_PROPERTY_SPECIFIER(
-      "ospfProcessPropertySpecifier", "ospf-interface-property-specifier"),
+      "ospfInterfacePropertySpecifier", "ospf-interface-property-specifier"),
   OSPF_PROCESS_PROPERTY_SPECIFIER(
       "ospfProcessPropertySpecifier", "ospf-process-property-specifier"),
   ROUTING_POLICY_SPECIFIER("routingPolicySpecifier", "routing-policy-specifier"),

@@ -16,6 +16,7 @@ public final class OspfProcessConfigurationQuestionPlugin extends QuestionPlugin
 
   @Override
   protected Question createQuestion() {
-    return new OspfProcessConfigurationQuestion((String) null, null);
+    // casting the arguments helps pick the right constructor
+    return new OspfProcessConfigurationQuestion((String) null, (String) null);
   }
 }
