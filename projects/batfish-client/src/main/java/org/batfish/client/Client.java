@@ -104,7 +104,8 @@ import org.batfish.datamodel.questions.InstanceData;
 import org.batfish.datamodel.questions.InterfacePropertySpecifier;
 import org.batfish.datamodel.questions.NamedStructurePropertySpecifier;
 import org.batfish.datamodel.questions.NodePropertySpecifier;
-import org.batfish.datamodel.questions.OspfPropertySpecifier;
+import org.batfish.datamodel.questions.OspfInterfacePropertySpecifier;
+import org.batfish.datamodel.questions.OspfProcessPropertySpecifier;
 import org.batfish.datamodel.questions.Question;
 import org.batfish.datamodel.questions.Variable;
 import org.batfish.datamodel.questions.VxlanVniPropertySpecifier;
@@ -613,12 +614,19 @@ public class Client extends AbstractClient implements IClient {
         SpecifierFactories.getNodeSpecifierOrDefault(
             value.textValue(), AllNodesNodeSpecifier.INSTANCE);
         break;
-      case OSPF_PROPERTY_SPEC:
+      case OSPF_INTERFACE_PROPERTY_SPEC:
         if (!(value.isTextual())) {
           throw new BatfishException(
               String.format("A Batfish %s must be a JSON string", expectedType.getName()));
         }
-        new OspfPropertySpecifier(value.textValue());
+        OspfInterfacePropertySpecifier.create(value.textValue());
+        break;
+      case OSPF_PROCESS_PROPERTY_SPEC:
+        if (!(value.isTextual())) {
+          throw new BatfishException(
+              String.format("A Batfish %s must be a JSON string", expectedType.getName()));
+        }
+        OspfProcessPropertySpecifier.create(value.textValue());
         break;
       case PATH_CONSTRAINT:
         if (!(value.isObject()) && !value.isNull()) {

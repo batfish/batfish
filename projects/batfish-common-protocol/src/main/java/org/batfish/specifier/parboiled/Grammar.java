@@ -13,6 +13,8 @@ import org.batfish.datamodel.questions.InterfacePropertySpecifier;
 import org.batfish.datamodel.questions.IpsecSessionStatus;
 import org.batfish.datamodel.questions.NamedStructurePropertySpecifier;
 import org.batfish.datamodel.questions.NodePropertySpecifier;
+import org.batfish.datamodel.questions.OspfInterfacePropertySpecifier;
+import org.batfish.datamodel.questions.OspfProcessPropertySpecifier;
 import org.batfish.datamodel.questions.VxlanVniPropertySpecifier;
 import org.batfish.specifier.SpecifierContext;
 
@@ -33,6 +35,10 @@ public enum Grammar {
   NAMED_STRUCTURE_SPECIFIER("namedStructureSpecifier", "named-structure-specifier"),
   NODE_PROPERTY_SPECIFIER("nodePropertySpecifier", "node-property-specifier"),
   NODE_SPECIFIER("nodeSpecifier", "node-specifier"),
+  OSPF_INTERFACE_PROPERTY_SPECIFIER(
+      "ospfInterfacePropertySpecifier", "ospf-interface-property-specifier"),
+  OSPF_PROCESS_PROPERTY_SPECIFIER(
+      "ospfProcessPropertySpecifier", "ospf-process-property-specifier"),
   ROUTING_POLICY_SPECIFIER("routingPolicySpecifier", "routing-policy-specifier"),
   VXLAN_VNI_PROPERTY_SPECIFIER("vxlanVniPropertySpecifier", "vxlan-vni-property-specifier");
 
@@ -85,6 +91,10 @@ public enum Grammar {
         return NamedStructurePropertySpecifier.ALL.getMatchingProperties();
       case NODE_PROPERTY_SPECIFIER:
         return NodePropertySpecifier.ALL.getMatchingProperties();
+      case OSPF_INTERFACE_PROPERTY_SPECIFIER:
+        return OspfInterfacePropertySpecifier.ALL.getMatchingProperties();
+      case OSPF_PROCESS_PROPERTY_SPECIFIER:
+        return OspfProcessPropertySpecifier.ALL.getMatchingProperties();
       case VXLAN_VNI_PROPERTY_SPECIFIER:
         return VxlanVniPropertySpecifier.ALL.getMatchingProperties();
       default:
