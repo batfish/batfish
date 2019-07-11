@@ -282,6 +282,8 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
 
     newIfaceBuilder.setDescription(iface.getDescription());
 
+    newIfaceBuilder.setMtu(iface.getMtu());
+
     // switchport+vlan settings
     SwitchportMode switchportMode = iface.getSwitchportMode();
     newIfaceBuilder.setSwitchportMode(switchportMode);
