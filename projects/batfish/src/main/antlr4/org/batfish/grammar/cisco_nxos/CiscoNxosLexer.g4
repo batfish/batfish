@@ -113,6 +113,11 @@ ADMINISTRATIVELY_PROHIBITED
   'administratively-prohibited'
 ;
 
+ADVERTISE
+:
+  'advertise'
+;
+
 ADVERTISE_MAP
 :
   'advertise-map'
