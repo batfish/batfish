@@ -96,9 +96,6 @@ public abstract class AbstractRouteBuilder<
   @Nonnull
   public final S setTag(@Nullable Long tag) {
     _tag = firstNonNull(tag, Route.UNSET_ROUTE_TAG);
-    if (_tag != Route.UNSET_ROUTE_TAG) {
-      new IllegalArgumentException().printStackTrace();
-    }
     return getThis();
   }
 }
