@@ -745,4 +745,22 @@ public class BatfishTest {
     _thrown.expect(hasStackTrace(containsString("Error parsing configuration file")));
     batfish.loadConfigurations();
   }
+
+  @Test
+  public void testGetConfigText() throws IOException {
+    String fileName = "fileName";
+    String configText = "sup dawg";
+
+    Map<String, String> configurations = ImmutableMap.of(fileName, configText);
+
+    Batfish batfish =
+        BatfishTestUtils.getBatfishFromTestrigText(
+            TestrigText.builder().setConfigurationText(configurations).build(), _folder);
+
+    // returns the text of the config if it exists
+    assertThat(batfish.getConfigText("configs/" + fileName), equalTo(configText));
+
+    // returns null if the config does not exist
+    assertThat(batfish.getConfigText("missing file"), equalTo(null));
+  }
 }
