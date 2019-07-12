@@ -37,6 +37,7 @@ public class IsisRoute extends AbstractRoute {
           _overload,
           requireNonNull(_protocol),
           requireNonNull(_systemId),
+          getTag(),
           getNonForwarding(),
           getNonRouting());
     }
@@ -105,7 +106,8 @@ public class IsisRoute extends AbstractRoute {
       @JsonProperty(PROP_NEXT_HOP_IP) Ip nextHopIp,
       @JsonProperty(PROP_OVERLOAD) boolean overload,
       @JsonProperty(PROP_PROTOCOL) RoutingProtocol protocol,
-      @JsonProperty(PROP_SYSTEM_ID) String systemId) {
+      @JsonProperty(PROP_SYSTEM_ID) String systemId,
+      @JsonProperty(PROP_TAG) long tag) {
     return new IsisRoute(
         administrativeCost,
         requireNonNull(area),
@@ -118,6 +120,7 @@ public class IsisRoute extends AbstractRoute {
         overload,
         requireNonNull(protocol),
         requireNonNull(systemId),
+        tag,
         false,
         false);
   }
@@ -152,9 +155,10 @@ public class IsisRoute extends AbstractRoute {
       boolean overload,
       @Nonnull RoutingProtocol protocol,
       @Nonnull String systemId,
+      long tag,
       boolean nonForwarding,
       boolean nonRouting) {
-    super(network, administrativeCost, Route.UNSET_ROUTE_TAG, nonRouting, nonForwarding);
+    super(network, administrativeCost, tag, nonRouting, nonForwarding);
     _area = area;
     _attach = attach;
     _down = down;

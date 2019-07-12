@@ -40,31 +40,21 @@ public final class ConnectedRoute extends AbstractRoute {
     this(network, nextHopInterface, adminCost, Route.UNSET_ROUTE_TAG);
   }
 
+  @Override
+  public String toString() {
+    return "ConnectedRoute{"
+        + "_network="
+        + _network
+        + ", _admin="
+        + _admin
+        + ", _tag="
+        + _tag
+        + '}';
+  }
+
   public ConnectedRoute(Prefix network, String nextHopInterface, int adminCost, long tag) {
     super(network, adminCost, tag, false, false);
     _nextHopInterface = nextHopInterface;
-  }
-
-  @Override
-  public boolean equals(Object o) {
-    if (o == this) {
-      return true;
-    } else if (!(o instanceof ConnectedRoute)) {
-      return false;
-    }
-    ConnectedRoute rhs = (ConnectedRoute) o;
-    return _network.equals(rhs._network)
-        && _admin == rhs._admin
-        && getNonRouting() == rhs.getNonRouting()
-        && getNonForwarding() == rhs.getNonForwarding()
-        && _nextHopInterface.equals(rhs._nextHopInterface)
-        && _tag == rhs._tag;
-  }
-
-  @Override
-  public int hashCode() {
-    return Objects.hash(
-        _network, _admin, getNonRouting(), getNonForwarding(), _nextHopInterface, _tag);
   }
 
   @Override
@@ -91,17 +81,6 @@ public final class ConnectedRoute extends AbstractRoute {
     return RoutingProtocol.CONNECTED;
   }
 
-  @Override
-  public Builder toBuilder() {
-    return builder()
-        .setNetwork(getNetwork())
-        .setAdmin(_admin)
-        .setNextHopInterface(_nextHopInterface)
-        .setTag(_tag)
-        .setNonRouting(getNonRouting())
-        .setNonForwarding(getNonForwarding());
-  }
-
   /** Builder for {@link ConnectedRoute} */
   public static final class Builder extends AbstractRouteBuilder<Builder, ConnectedRoute> {
     @Nullable private String _nextHopInterface;
@@ -111,7 +90,7 @@ public final class ConnectedRoute extends AbstractRoute {
     public ConnectedRoute build() {
       checkArgument(
           _nextHopInterface != null, "ConnectedRoute must have %s", PROP_NEXT_HOP_INTERFACE);
-      return new ConnectedRoute(getNetwork(), _nextHopInterface, getAdmin());
+      return new ConnectedRoute(getNetwork(), _nextHopInterface, getAdmin(), getTag());
     }
 
     @Nonnull
@@ -128,5 +107,40 @@ public final class ConnectedRoute extends AbstractRoute {
 
   public static Builder builder() {
     return new Builder();
+  }
+
+  /////// Keep #toBuilder, #equals, and #hashCode in sync ////////
+
+  @Override
+  public Builder toBuilder() {
+    return builder()
+        .setNetwork(getNetwork())
+        .setAdmin(_admin)
+        .setNextHopInterface(_nextHopInterface)
+        .setNonRouting(getNonRouting())
+        .setNonForwarding(getNonForwarding())
+        .setTag(_tag);
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (o == this) {
+      return true;
+    } else if (!(o instanceof ConnectedRoute)) {
+      return false;
+    }
+    ConnectedRoute rhs = (ConnectedRoute) o;
+    return _network.equals(rhs._network)
+        && _admin == rhs._admin
+        && getNonRouting() == rhs.getNonRouting()
+        && getNonForwarding() == rhs.getNonForwarding()
+        && _nextHopInterface.equals(rhs._nextHopInterface)
+        && _tag == rhs._tag;
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(
+        _network, _admin, getNonRouting(), getNonForwarding(), _nextHopInterface, _tag);
   }
 }

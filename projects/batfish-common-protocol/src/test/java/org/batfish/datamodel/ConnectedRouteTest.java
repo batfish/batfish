@@ -13,19 +13,19 @@ import org.junit.Test;
 public class ConnectedRouteTest {
   @Test
   public void testJavaSerialization() {
-    ConnectedRoute cr = new ConnectedRoute(Prefix.parse("1.1.1.0/24"), "Ethernet0");
+    ConnectedRoute cr = new ConnectedRoute(Prefix.parse("1.1.1.0/24"), "Ethernet0", 3, 4L);
     assertThat(SerializationUtils.clone(cr), equalTo(cr));
   }
 
   @Test
   public void testJsonSerialization() throws IOException {
-    ConnectedRoute cr = new ConnectedRoute(Prefix.parse("1.1.1.0/24"), "Ethernet0");
+    ConnectedRoute cr = new ConnectedRoute(Prefix.parse("1.1.1.0/24"), "Ethernet0", 3, 4L);
     assertThat(BatfishObjectMapper.clone(cr, ConnectedRoute.class), equalTo(cr));
   }
 
   @Test
   public void testToBuilder() {
-    ConnectedRoute cr = new ConnectedRoute(Prefix.parse("1.1.1.0/24"), "Ethernet0");
+    ConnectedRoute cr = new ConnectedRoute(Prefix.parse("1.1.1.0/24"), "Ethernet0", 3, 4L);
     assertThat(cr, equalTo(cr.toBuilder().build()));
   }
 
