@@ -1252,10 +1252,16 @@ public class AutoCompleteUtilsTest {
   @Test
   public void testRoutingProtocolSpecAutocomplete() {
     assertThat(
-        AutoCompleteUtils.autoComplete(Type.ROUTING_PROTOCOL_SPEC, "bgp", 5).stream()
+        AutoCompleteUtils.autoComplete(Type.ROUTING_PROTOCOL_SPEC, "bg", 5).stream()
             .map(AutocompleteSuggestion::getText)
             .collect(Collectors.toSet()),
         equalTo(ImmutableSet.of("bgp", "ibgp", "ebgp")));
+    // since bgp has fully matched a protocol value, we get offered a comma to extend the expression
+    assertThat(
+        AutoCompleteUtils.autoComplete(Type.ROUTING_PROTOCOL_SPEC, "bgp", 5).stream()
+            .map(AutocompleteSuggestion::getText)
+            .collect(Collectors.toSet()),
+        equalTo(ImmutableSet.of(",")));
   }
 
   @Test
