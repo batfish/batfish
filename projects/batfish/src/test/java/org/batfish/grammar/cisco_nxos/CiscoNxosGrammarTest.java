@@ -49,6 +49,7 @@ import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Iterables;
 import com.google.common.collect.Range;
 import java.io.IOException;
 import java.util.Arrays;
@@ -61,6 +62,7 @@ import org.antlr.v4.runtime.ParserRuleContext;
 import org.apache.commons.lang3.SerializationUtils;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.Warnings;
+import org.batfish.common.WellKnownCommunity;
 import org.batfish.common.bdd.BDDPacket;
 import org.batfish.common.bdd.IpSpaceToBDD;
 import org.batfish.common.util.CommonUtil;
@@ -86,6 +88,7 @@ import org.batfish.datamodel.SwitchportMode;
 import org.batfish.datamodel.TcpFlags;
 import org.batfish.datamodel.UniverseIpSpace;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
+import org.batfish.datamodel.bgp.community.StandardCommunity;
 import org.batfish.datamodel.matchers.RouteFilterListMatchers;
 import org.batfish.datamodel.matchers.VrfMatchers;
 import org.batfish.main.Batfish;
@@ -101,6 +104,8 @@ import org.batfish.representation.cisco_nxos.Interface;
 import org.batfish.representation.cisco_nxos.IpAccessList;
 import org.batfish.representation.cisco_nxos.IpAccessListLine;
 import org.batfish.representation.cisco_nxos.IpAddressSpec;
+import org.batfish.representation.cisco_nxos.IpCommunityListStandard;
+import org.batfish.representation.cisco_nxos.IpCommunityListStandardLine;
 import org.batfish.representation.cisco_nxos.IpPrefixList;
 import org.batfish.representation.cisco_nxos.IpPrefixListLine;
 import org.batfish.representation.cisco_nxos.Layer3Options;
@@ -272,26 +277,6 @@ public final class CiscoNxosGrammarTest {
     assertThat(
         vc.getInterfaces(),
         hasKeys("Ethernet1/1", "Ethernet1/2", "Ethernet1/1.1", "Ethernet1/1.2"));
-  }
-
-  /**
-   * A generic test that exercised basic interface property extraction and conversion.
-   *
-   * <p>Note that this should only be for <strong>simple</strong> properties; anything with many
-   * cases deserves its own unit test. (See, e.g., {@link #testInterfaceSwitchportExtraction()}.
-   */
-  @Test
-  public void testInterfaceProperties() throws Exception {
-    Configuration c = parseConfig("nxos_interface_properties");
-    assertThat(c, hasInterface("Ethernet1/1", any(org.batfish.datamodel.Interface.class)));
-
-    org.batfish.datamodel.Interface eth11 = c.getAllInterfaces().get("Ethernet1/1");
-    assertThat(
-        eth11,
-        allOf(
-            hasDescription(
-                "here is a description with punctuation! and IP address 1.2.3.4/24 etc."),
-            hasMtu(9216)));
   }
 
   @Test
@@ -590,6 +575,26 @@ public final class CiscoNxosGrammarTest {
       assertThat(iface.getSwitchportMode(), equalTo(SwitchportMode.ACCESS));
       assertThat(iface.getAccessVlan(), equalTo(1));
     }
+  }
+
+  /**
+   * A generic test that exercised basic interface property extraction and conversion.
+   *
+   * <p>Note that this should only be for <strong>simple</strong> properties; anything with many
+   * cases deserves its own unit test. (See, e.g., {@link #testInterfaceSwitchportExtraction()}.
+   */
+  @Test
+  public void testInterfaceProperties() throws Exception {
+    Configuration c = parseConfig("nxos_interface_properties");
+    assertThat(c, hasInterface("Ethernet1/1", any(org.batfish.datamodel.Interface.class)));
+
+    org.batfish.datamodel.Interface eth11 = c.getAllInterfaces().get("Ethernet1/1");
+    assertThat(
+        eth11,
+        allOf(
+            hasDescription(
+                "here is a description with punctuation! and IP address 1.2.3.4/24 etc."),
+            hasMtu(9216)));
   }
 
   @Test
@@ -1129,6 +1134,73 @@ public final class CiscoNxosGrammarTest {
 
     assertThat(
         ans, hasNumReferrers(filename, CiscoNxosStructureType.IP_ACCESS_LIST, "acl_unused", 0));
+  }
+
+  @Test
+  public void testIpCommunityListStandardExtraction() {
+    String hostname = "nxos_ip_community_list_standard";
+    CiscoNxosConfiguration vc = parseVendorConfig(hostname);
+
+    assertThat(vc.getIpCommunityLists(), hasKeys("cl_seq", "cl_values", "cl_test"));
+    {
+      IpCommunityListStandard cl = (IpCommunityListStandard) vc.getIpCommunityLists().get("cl_seq");
+      Iterator<IpCommunityListStandardLine> lines = cl.getLines().values().iterator();
+      IpCommunityListStandardLine line;
+
+      line = lines.next();
+      assertThat(line.getLine(), equalTo(1L));
+      assertThat(line.getCommunities(), contains(StandardCommunity.of(1, 1)));
+
+      line = lines.next();
+      assertThat(line.getLine(), equalTo(5L));
+      assertThat(line.getCommunities(), contains(StandardCommunity.of(5, 5)));
+
+      line = lines.next();
+      assertThat(line.getLine(), equalTo(10L));
+      assertThat(line.getCommunities(), contains(StandardCommunity.of(10, 10)));
+
+      line = lines.next();
+      assertThat(line.getLine(), equalTo(11L));
+      assertThat(line.getCommunities(), contains(StandardCommunity.of(11, 11)));
+
+      assertFalse(lines.hasNext());
+    }
+    {
+      IpCommunityListStandard cl =
+          (IpCommunityListStandard) vc.getIpCommunityLists().get("cl_values");
+      assertThat(
+          cl.getLines().values().stream()
+              .map(IpCommunityListStandardLine::getCommunities)
+              .map(Iterables::getOnlyElement)
+              .collect(ImmutableList.toImmutableList()),
+          contains(
+              StandardCommunity.of(1, 1),
+              StandardCommunity.of(WellKnownCommunity.INTERNET),
+              StandardCommunity.of(WellKnownCommunity.NO_EXPORT_SUBCONFED),
+              StandardCommunity.of(WellKnownCommunity.NO_ADVERTISE),
+              StandardCommunity.of(WellKnownCommunity.NO_EXPORT)));
+    }
+    {
+      IpCommunityListStandard cl =
+          (IpCommunityListStandard) vc.getIpCommunityLists().get("cl_test");
+      Iterator<IpCommunityListStandardLine> lines = cl.getLines().values().iterator();
+      IpCommunityListStandardLine line;
+
+      line = lines.next();
+      assertThat(line.getAction(), equalTo(LineAction.DENY));
+      assertThat(
+          line.getCommunities(), contains(StandardCommunity.of(1, 1), StandardCommunity.of(2, 2)));
+
+      line = lines.next();
+      assertThat(line.getAction(), equalTo(LineAction.PERMIT));
+      assertThat(line.getCommunities(), contains(StandardCommunity.of(1, 1)));
+
+      line = lines.next();
+      assertThat(line.getAction(), equalTo(LineAction.PERMIT));
+      assertThat(line.getCommunities(), contains(StandardCommunity.of(2, 2)));
+
+      assertFalse(lines.hasNext());
+    }
   }
 
   @Test
