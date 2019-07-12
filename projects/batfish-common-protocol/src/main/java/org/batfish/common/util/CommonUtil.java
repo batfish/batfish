@@ -271,7 +271,7 @@ public class CommonUtil {
     return text;
   }
 
-  private static @Nonnull Charset detectCharset(byte[] bytes) {
+  public static @Nonnull Charset detectCharset(byte[] bytes) {
     CharsetDetector detector = new CharsetDetector();
     detector.setText(bytes);
     return Charset.forName(detector.detect().getName());

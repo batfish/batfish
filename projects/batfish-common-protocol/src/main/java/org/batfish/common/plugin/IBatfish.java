@@ -1,5 +1,7 @@
 package org.batfish.common.plugin;
 
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -71,8 +73,6 @@ public interface IBatfish extends IPluginConsumer {
   @Nullable
   Answerer createAnswerer(@Nonnull Question question);
 
-  String getSnapshotInputObject(String key);
-
   NetworkId getContainerName();
 
   DataPlanePlugin getDataPlanePlugin();
@@ -104,6 +104,14 @@ public interface IBatfish extends IPluginConsumer {
    * @return the {@link ImmutableConfiguration} that represents batfish settings.
    */
   ImmutableConfiguration getSettingsConfiguration();
+
+  /**
+   * Get a snapshot input object for the given key
+   *
+   * @throws FileNotFoundException if the object for the given key does not exist
+   * @throws IOException if there is an error reading the object
+   */
+  String getSnapshotInputObject(String key) throws FileNotFoundException, IOException;
 
   String getTaskId();
 

@@ -8,6 +8,7 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.regex.Pattern.CASE_INSENSITIVE;
 import static java.util.stream.Collectors.toMap;
 import static org.batfish.bddreachability.BDDMultipathInconsistency.computeMultipathInconsistencies;
+import static org.batfish.common.util.CommonUtil.detectCharset;
 import static org.batfish.common.util.CompletionMetadataUtils.getFilterNames;
 import static org.batfish.common.util.CompletionMetadataUtils.getInterfaces;
 import static org.batfish.common.util.CompletionMetadataUtils.getIps;
@@ -2285,16 +2286,11 @@ public class Batfish extends PluginConsumer implements IBatfish {
   }
 
   @Override
-  public String getSnapshotInputObject(String key) {
-    try {
-      InputStream inputObject =
-          _storage.loadSnapshotInputObject(
-              _settings.getContainer(), _testrigSettings.getName(), key);
-      return IOUtils.toString(inputObject, UTF_8);
-    } catch (IOException e) {
-      _logger.errorf("Error getting config text for %s: %s", key, e);
-      return null;
-    }
+  public String getSnapshotInputObject(String key) throws FileNotFoundException, IOException {
+    InputStream inputObject =
+        _storage.loadSnapshotInputObject(_settings.getContainer(), _testrigSettings.getName(), key);
+    byte[] bytes = IOUtils.toByteArray(inputObject);
+    return new String(bytes, detectCharset(bytes));
   }
 
   private void repairEnvironmentBgpTables() {
