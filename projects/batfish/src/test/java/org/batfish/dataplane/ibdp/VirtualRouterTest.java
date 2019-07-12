@@ -21,7 +21,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedSet;
-import java.util.Arrays;
+import com.google.common.collect.Streams;
 import java.util.List;
 import java.util.Map;
 import java.util.Queue;
@@ -29,6 +29,7 @@ import java.util.Set;
 import java.util.SortedSet;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.function.Function;
+import java.util.stream.Stream;
 import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.AnnotatedRoute;
 import org.batfish.datamodel.BgpProcess;
@@ -85,7 +86,7 @@ import org.junit.Test;
 
 /** Tests of {@link VirtualRouter} */
 public class VirtualRouterTest {
-  /** Make a CISCO IOS router with 3 interfaces named Eth1-Eth3, /16 prefixes on each interface */
+  /** Three interfaces named Eth1-Eth3, /16 prefixes on each interface */
   private static final Map<String, ConcreteInterfaceAddress> exampleInterfaceAddresses =
       ImmutableMap.<String, ConcreteInterfaceAddress>builder()
           .put("Ethernet1", ConcreteInterfaceAddress.parse("10.1.0.0/16"))
@@ -100,11 +101,6 @@ public class VirtualRouterTest {
     interfaceAddresses.forEach(
         (ifaceName, address) ->
             ib.setName(ifaceName).setAddress(address).setBandwidth(100d).build());
-  }
-
-  private static Map<String, Node> makeIosRouters(String... hostnames) {
-    return Arrays.stream(hostnames)
-        .collect(ImmutableMap.toImmutableMap(hostname -> hostname, TestUtils::makeIosRouter));
   }
 
   private static VirtualRouter makeF5VirtualRouter(String hostname) {
@@ -228,23 +224,70 @@ public class VirtualRouterTest {
   public void testInitConnectedRib() {
     // Setup
     VirtualRouter vr = makeIosVirtualRouter(null);
-    addInterfaces(vr.getConfiguration(), exampleInterfaceAddresses);
+    Configuration c = vr.getConfiguration();
+    addInterfaces(c, exampleInterfaceAddresses);
+
+    // Add some interfaces with various types of connected routes.
+    NetworkFactory nf = new NetworkFactory();
+    Interface.Builder ib =
+        nf.interfaceBuilder().setOwner(c).setVrf(c.getDefaultVrf()).setBandwidth(100d);
+    // 99 has an empty connected routes list
+    vr.getConfiguration()
+        .getAllInterfaces()
+        .put(
+            "Ethernet99",
+            ib.setName("Ethernet99")
+                .setAddress(ConcreteInterfaceAddress.parse("99.0.0.0/8"))
+                .setConnectedRoutes(ImmutableList.of())
+                .build());
+    // 100 has a connected route with a tag
+    ConnectedRoute route100 =
+        ConnectedRoute.builder()
+            .setNetwork(Prefix.parse("100.0.0.0/8"))
+            .setNextHopInterface("Ethernet100")
+            .setTag(3L)
+            .build();
+    vr.getConfiguration()
+        .getAllInterfaces()
+        .put(
+            "Ethernet100",
+            ib.setName("Ethernet100")
+                .setAddress(ConcreteInterfaceAddress.parse("100.0.0.0/8"))
+                .setConnectedRoutes(ImmutableList.of(route100))
+                .build());
+    // 101 has a connected route that does not correspond to the interface address
+    ConnectedRoute route101 =
+        ConnectedRoute.builder()
+            .setNetwork(Prefix.parse("103.0.0.0/8"))
+            .setNextHopInterface("Ethernet101")
+            .setTag(3L)
+            .build();
+    vr.getConfiguration()
+        .getAllInterfaces()
+        .put(
+            "Ethernet101",
+            ib.setName("Ethernet101")
+                .setAddress(ConcreteInterfaceAddress.parse("101.0.0.0/8"))
+                .setConnectedRoutes(ImmutableList.of(route101))
+                .build());
+
     vr.initRibs();
 
     // Test
     vr.initConnectedRib();
 
-    // Assert that all interface prefixes have been processed
-    assertThat(
-        vr.getConnectedRib().getTypedRoutes(),
-        equalTo(
-            exampleInterfaceAddresses.entrySet().stream()
-                .map(
-                    e ->
-                        new AnnotatedRoute<>(
-                            new ConnectedRoute(e.getValue().getPrefix(), e.getKey()),
-                            DEFAULT_VRF_NAME))
-                .collect(ImmutableSet.toImmutableSet())));
+    // Assert that all interface prefixes have been processed (connectedRoutes == null),
+    // but not 99 (empty routes)
+    // and 100
+    // and 101 with "wrong" prefix and not 101 with proper prefix.
+    Set<AnnotatedRoute<ConnectedRoute>> expected =
+        Streams.concat(
+                Stream.of(route100, route101),
+                exampleInterfaceAddresses.entrySet().stream()
+                    .map(e -> new ConnectedRoute(e.getValue().getPrefix(), e.getKey())))
+            .map(r -> new AnnotatedRoute<>(r, DEFAULT_VRF_NAME))
+            .collect(ImmutableSet.toImmutableSet());
+    assertThat(vr.getConnectedRib().getTypedRoutes(), equalTo(expected));
   }
 
   /** Check that initialization of Kernel RIB is as expected */
