@@ -38,6 +38,8 @@ For many parameters types, there is a "resolver" question that may be used to le
 
 * [`ospfProcessPropertySpec`](#ospf-process-property-specifier)
 
+* [`routingProtocolSpec`](#routing-protocol-specifier)
+
 * [`routingPolicySpec`](#routing-policy-specifier)
 
 * [`vxlanVniPropertySpec`](#vxlan-vni-property-specifier)
@@ -449,6 +451,47 @@ A specification for a set of OSPF process properties.
 #### OSPF Process Property Specifier Grammar
 
 An OSPF process property specifier is a set of enums (see above) over the following values: AREA_BORDER_ROUTER, AREAS, EXPORT_POLICY_SOURCES, REFERENCE_BANDWIDTH, RFC_1583_COMPATIBLE, ROUTER_ID.
+
+## Routing Protocol Specifier
+
+ A specification for a set of routing protocols.
+
+ * `bgp` specifies a single-element set with that value.
+
+ * `bgp, ospf` specifies a set with those two values.
+
+ * `/bgp/` specifies a set with all protocols that contain 'bgp'.
+
+ #### Routing Protocol Specifier Grammar
+
+<!--
+  // Hierarchy from RoutingProtocolSpecifier.java:
+
+  //  IGP
+  //      OSPF
+  //          OSPF-INT
+  //              OSPF-INTRA
+  //              OSPF-INTER
+  //          OSPF-EXT
+  //              OSPF-EXT1
+  //              OSPF-EXT2
+  //      ISIS
+  //          ISIS-L1
+  //          ISIS-L2
+  //      EIGRP
+  //          EIGRP-INT
+  //          EIGRP-EXT
+  //      RIP
+  //  BGP
+  //      EBGP
+  //      IBGP
+  //  AGGREGATE
+  //  STATIC
+  //  LOCAL
+  //  CONNECTED
+-->
+
+ The routing protocol specifier grammar follows the set of enums grammar (see above) over protocol names. The most specific names are `ospf-intra`, `ospf-inter`, `ospf-ext1`, `ospf-ext2`, `isis-l1`, `isis-l2`, `eigrp-int`, `eigrp-ext`, `rip`, `ebgp`, `ibgp`, `aggregate`, `static`, `local`, and `connected`. Names that include multiple specific protocols are `ospf-int` (includes ospf-intra and ospf-inter), `ospf-ext` (includes ospf-ext1 and ospf-ext2), `ospf` (includes ospf-int and ospf-ext),  `isis` (includes isis-l1 and isis-l2), `eigrp` (includes eigrp-int and eigrp-ext), `igp` (includes ospf, isis, eigrp, and rip), `bgp` (includes ebgp and ibgp). Finally, `all` is a special name that indicates all protocols.
 
 ## Routing Policy Specifier
 
