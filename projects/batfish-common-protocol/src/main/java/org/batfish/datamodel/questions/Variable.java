@@ -77,7 +77,8 @@ public class Variable {
     NODE_ROLE_DIMENSION_NAME("nodeRoleDimensionName", true),
     NODE_ROLE_NAME("nodeRoleName", true),
     NODE_SPEC("nodeSpec", true),
-    OSPF_PROPERTY_SPEC("ospfPropertySpec", true),
+    OSPF_INTERFACE_PROPERTY_SPEC("ospfInterfacePropertySpec", true),
+    OSPF_PROCESS_PROPERTY_SPEC("ospfProcessPropertySpec", true),
     PATH_CONSTRAINT("pathConstraint", true),
     PREFIX("prefix", true),
     PREFIX_RANGE("prefixRange", true),
@@ -106,7 +107,7 @@ public class Variable {
             .put(CompletionType.NAMED_STRUCTURE, NAMED_STRUCTURE_SPEC)
             .put(CompletionType.NODE, NODE_SPEC)
             .put(CompletionType.NODE_PROPERTY, NODE_PROPERTY_SPEC)
-            .put(CompletionType.OSPF_PROPERTY, OSPF_PROPERTY_SPEC)
+            .put(CompletionType.OSPF_PROPERTY, OSPF_PROCESS_PROPERTY_SPEC)
             .build();
 
     @JsonCreator
@@ -142,6 +143,7 @@ public class Variable {
       map.put("bgpSessionStatus".toLowerCase(), BGP_SESSION_STATUS_SPEC);
       map.put("bgpSessionType".toLowerCase(), BGP_SESSION_TYPE_SPEC);
       map.put("ipsecSessionStatus".toLowerCase(), IPSEC_SESSION_STATUS_SPEC);
+      map.put("ospfPropertySpec".toLowerCase(), OSPF_PROCESS_PROPERTY_SPEC);
       return map.build();
     }
 

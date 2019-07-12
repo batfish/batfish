@@ -134,6 +134,9 @@ public class Parser extends CommonParser {
         return input(EnumSetSpec(Grammar.getEnumValues(grammar)));
       case NODE_SPECIFIER:
         return input(NodeSpec());
+      case OSPF_INTERFACE_PROPERTY_SPECIFIER:
+      case OSPF_PROCESS_PROPERTY_SPECIFIER:
+        return input(EnumSetSpec(Grammar.getEnumValues(grammar)));
       case ROUTING_POLICY_SPECIFIER:
         return input(RoutingPolicySpec());
       case VXLAN_VNI_PROPERTY_SPECIFIER:

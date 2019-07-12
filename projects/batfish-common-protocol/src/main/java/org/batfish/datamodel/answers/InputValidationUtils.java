@@ -131,6 +131,20 @@ public final class InputValidationUtils {
             completionMetadata,
             nodeRolesData,
             referenceLibrary);
+      case OSPF_INTERFACE_PROPERTY_SPEC:
+        return ParboiledInputValidator.validate(
+            Grammar.OSPF_INTERFACE_PROPERTY_SPECIFIER,
+            query,
+            completionMetadata,
+            nodeRolesData,
+            referenceLibrary);
+      case OSPF_PROCESS_PROPERTY_SPEC:
+        return ParboiledInputValidator.validate(
+            Grammar.OSPF_PROCESS_PROPERTY_SPECIFIER,
+            query,
+            completionMetadata,
+            nodeRolesData,
+            referenceLibrary);
       case ROUTING_POLICY_SPEC:
         return ParboiledInputValidator.validate(
             Grammar.ROUTING_POLICY_SPECIFIER,

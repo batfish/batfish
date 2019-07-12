@@ -23,8 +23,8 @@
                 "displayName": "Nodes"
             },
             "properties": {
-                "description": "Include properties matching this regex",
-                "type": "ospfPropertySpec",
+                "description": "Include properties matching this specifier",
+                "type": "ospfProcessPropertySpec",
                 "optional": true,
                 "displayName": "Properties"
             }

@@ -21,6 +21,8 @@ import org.batfish.datamodel.questions.InterfacePropertySpecifier;
 import org.batfish.datamodel.questions.IpsecSessionStatus;
 import org.batfish.datamodel.questions.NamedStructurePropertySpecifier;
 import org.batfish.datamodel.questions.NodePropertySpecifier;
+import org.batfish.datamodel.questions.OspfInterfacePropertySpecifier;
+import org.batfish.datamodel.questions.OspfProcessPropertySpecifier;
 import org.batfish.datamodel.questions.VxlanVniPropertySpecifier;
 import org.batfish.referencelibrary.ReferenceLibrary;
 import org.batfish.role.NodeRolesData;
@@ -347,13 +349,28 @@ public class ParserEnumSetTest {
         Grammar.IPSEC_SESSION_STATUS_SPECIFIER);
   }
 
-  /** Test that interface properties are being parsed */
   @Test
   public void testParseNodeProperties() {
     testParseOtherProperties(
         NodePropertySpecifier.NTP_SERVERS,
         NodePropertySpecifier.DNS_SERVERS,
         Grammar.NODE_PROPERTY_SPECIFIER);
+  }
+
+  @Test
+  public void testParseOspfInterfaceProperties() {
+    testParseOtherProperties(
+        OspfInterfacePropertySpecifier.OSPF_AREA_NAME,
+        OspfInterfacePropertySpecifier.OSPF_COST,
+        Grammar.OSPF_INTERFACE_PROPERTY_SPECIFIER);
+  }
+
+  @Test
+  public void testParseOspfProcessProperties() {
+    testParseOtherProperties(
+        OspfProcessPropertySpecifier.AREA_BORDER_ROUTER,
+        OspfProcessPropertySpecifier.AREAS,
+        Grammar.OSPF_PROCESS_PROPERTY_SPECIFIER);
   }
 
   @Test

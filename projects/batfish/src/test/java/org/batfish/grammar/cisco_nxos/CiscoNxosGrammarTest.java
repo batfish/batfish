@@ -23,6 +23,7 @@ import static org.batfish.datamodel.matchers.InterfaceMatchers.hasChannelGroupMe
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasDependencies;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasDescription;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasInterfaceType;
+import static org.batfish.datamodel.matchers.InterfaceMatchers.hasMtu;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasSwitchPortMode;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasVlan;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.isActive;
@@ -287,7 +288,10 @@ public final class CiscoNxosGrammarTest {
     org.batfish.datamodel.Interface eth11 = c.getAllInterfaces().get("Ethernet1/1");
     assertThat(
         eth11,
-        hasDescription("here is a description with punctuation! and IP address 1.2.3.4/24 etc."));
+        allOf(
+            hasDescription(
+                "here is a description with punctuation! and IP address 1.2.3.4/24 etc."),
+            hasMtu(9216)));
   }
 
   @Test

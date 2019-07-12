@@ -1,11 +1,11 @@
 package org.batfish.question.ospfprocess;
 
 import static org.batfish.datamodel.matchers.RowMatchers.hasColumn;
-import static org.batfish.datamodel.questions.OspfPropertySpecifier.AREAS;
-import static org.batfish.datamodel.questions.OspfPropertySpecifier.AREA_BORDER_ROUTER;
-import static org.batfish.datamodel.questions.OspfPropertySpecifier.EXPORT_POLICY_SOURCES;
-import static org.batfish.datamodel.questions.OspfPropertySpecifier.REFERENCE_BANDWIDTH;
-import static org.batfish.datamodel.questions.OspfPropertySpecifier.ROUTER_ID;
+import static org.batfish.datamodel.questions.OspfProcessPropertySpecifier.AREAS;
+import static org.batfish.datamodel.questions.OspfProcessPropertySpecifier.AREA_BORDER_ROUTER;
+import static org.batfish.datamodel.questions.OspfProcessPropertySpecifier.EXPORT_POLICY_SOURCES;
+import static org.batfish.datamodel.questions.OspfProcessPropertySpecifier.REFERENCE_BANDWIDTH;
+import static org.batfish.datamodel.questions.OspfProcessPropertySpecifier.ROUTER_ID;
 import static org.batfish.question.ospfprocess.OspfProcessConfigurationAnswerer.COLUMNS_FROM_PROP_SPEC;
 import static org.batfish.question.ospfprocess.OspfProcessConfigurationAnswerer.COL_NODE;
 import static org.batfish.question.ospfprocess.OspfProcessConfigurationAnswerer.COL_PROCESS_ID;

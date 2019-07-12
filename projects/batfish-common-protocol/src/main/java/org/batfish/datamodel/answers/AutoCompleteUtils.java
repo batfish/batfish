@@ -29,7 +29,6 @@ import org.batfish.datamodel.InterfaceType;
 import org.batfish.datamodel.Protocol;
 import org.batfish.datamodel.answers.AutocompleteSuggestion.SuggestionType;
 import org.batfish.datamodel.collections.NodeInterfacePair;
-import org.batfish.datamodel.questions.OspfPropertySpecifier;
 import org.batfish.datamodel.questions.Variable;
 import org.batfish.referencelibrary.ReferenceBook;
 import org.batfish.referencelibrary.ReferenceLibrary;
@@ -599,9 +598,32 @@ public final class AutoCompleteUtils {
                     referenceLibrary);
             break;
           }
-        case OSPF_PROPERTY_SPEC:
+        case OSPF_INTERFACE_PROPERTY_SPEC:
           {
-            suggestions = baseAutoComplete(query, OspfPropertySpecifier.JAVA_MAP.keySet());
+            suggestions =
+                ParboiledAutoComplete.autoComplete(
+                    Grammar.OSPF_INTERFACE_PROPERTY_SPECIFIER,
+                    network,
+                    snapshot,
+                    query,
+                    maxSuggestions,
+                    completionMetadata,
+                    nodeRolesData,
+                    referenceLibrary);
+            break;
+          }
+        case OSPF_PROCESS_PROPERTY_SPEC:
+          {
+            suggestions =
+                ParboiledAutoComplete.autoComplete(
+                    Grammar.OSPF_PROCESS_PROPERTY_SPECIFIER,
+                    network,
+                    snapshot,
+                    query,
+                    maxSuggestions,
+                    completionMetadata,
+                    nodeRolesData,
+                    referenceLibrary);
             break;
           }
         case PREFIX:

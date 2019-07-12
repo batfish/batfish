@@ -113,6 +113,7 @@ public final class Interface implements Serializable {
   private final @Nonnull Set<String> _declaredNames;
   private @Nullable String _description;
   private @Nullable Integer _encapsulationVlan;
+  private @Nullable Integer _mtu;
   private final @Nonnull String _name;
   private @Nullable Integer _nativeVlan;
   private final @Nullable String _parentInterface;
@@ -180,6 +181,10 @@ public final class Interface implements Serializable {
 
   public @Nullable Integer getEncapsulationVlan() {
     return _encapsulationVlan;
+  }
+
+  public @Nullable Integer getMtu() {
+    return _mtu;
   }
 
   public @Nonnull String getName() {
@@ -272,6 +277,10 @@ public final class Interface implements Serializable {
 
   public void setEncapsulationVlan(@Nullable Integer encapsulationVlan) {
     _encapsulationVlan = encapsulationVlan;
+  }
+
+  public void setMtu(@Nullable Integer mtu) {
+    _mtu = mtu;
   }
 
   public void setNativeVlan(@Nullable Integer nativeVlan) {
