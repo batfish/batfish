@@ -31,18 +31,6 @@ public class StaticRoute extends AbstractRoute implements Comparable<StaticRoute
   @Nonnull private final String _nextHopInterface;
   @Nonnull private final Ip _nextHopIp;
   @Nullable private String _nextVrf;
-  private final long _tag;
-  // The comparator has no impact on route preference in RIBs and should not be used as such
-  private static final Comparator<StaticRoute> COMPARATOR =
-      comparing(StaticRoute::getNetwork)
-          .thenComparing(StaticRoute::getNextHopIp)
-          .thenComparing(StaticRoute::getNextHopInterface)
-          .thenComparing(StaticRoute::getNextVrf, nullsFirst(String::compareTo))
-          .thenComparing(StaticRoute::getMetric)
-          .thenComparing(StaticRoute::getAdministrativeCost)
-          .thenComparing(StaticRoute::getTag)
-          .thenComparing(StaticRoute::getNonRouting)
-          .thenComparing(StaticRoute::getNonForwarding);
 
   private transient int _hashCode;
 
@@ -54,7 +42,7 @@ public class StaticRoute extends AbstractRoute implements Comparable<StaticRoute
       @Nullable @JsonProperty(PROP_NEXT_VRF) String nextVrf,
       @JsonProperty(PROP_ADMINISTRATIVE_COST) int administrativeCost,
       @JsonProperty(PROP_METRIC) long metric,
-      @JsonProperty(PROP_TAG) int tag) {
+      @JsonProperty(PROP_TAG) long tag) {
     return new StaticRoute(
         requireNonNull(network),
         nextHopIp,
@@ -77,51 +65,11 @@ public class StaticRoute extends AbstractRoute implements Comparable<StaticRoute
       long tag,
       boolean nonForwarding,
       boolean nonRouting) {
-    super(network, administrativeCost, nonRouting, nonForwarding);
+    super(network, administrativeCost, tag, nonRouting, nonForwarding);
     _metric = metric;
     _nextHopInterface = firstNonNull(nextHopInterface, Route.UNSET_NEXT_HOP_INTERFACE);
     _nextHopIp = firstNonNull(nextHopIp, Route.UNSET_ROUTE_NEXT_HOP_IP);
     _nextVrf = nextVrf;
-    _tag = tag;
-  }
-
-  @Override
-  public boolean equals(@Nullable Object o) {
-    if (o == this) {
-      return true;
-    } else if (!(o instanceof StaticRoute)) {
-      return false;
-    }
-    StaticRoute rhs = (StaticRoute) o;
-    return _network.equals(rhs._network)
-        && _admin == rhs._admin
-        && getNonForwarding() == rhs.getNonForwarding()
-        && getNonRouting() == rhs.getNonRouting()
-        && _metric == rhs._metric
-        && _nextHopInterface.equals(rhs._nextHopInterface)
-        && _nextHopIp.equals(rhs._nextHopIp)
-        && Objects.equals(_nextVrf, rhs._nextVrf)
-        && _tag == rhs._tag;
-  }
-
-  @Override
-  public int hashCode() {
-    int h = _hashCode;
-    if (h == 0) {
-      h =
-          Objects.hash(
-              _network,
-              _admin,
-              getNonForwarding(),
-              getNonRouting(),
-              _metric,
-              _nextHopInterface,
-              _nextHopIp,
-              _nextVrf,
-              _tag);
-      _hashCode = h;
-    }
-    return h;
   }
 
   @Override
@@ -158,13 +106,6 @@ public class StaticRoute extends AbstractRoute implements Comparable<StaticRoute
     return RoutingProtocol.STATIC;
   }
 
-  @Override
-  @JsonIgnore(false)
-  @JsonProperty(PROP_TAG)
-  public long getTag() {
-    return _tag;
-  }
-
   public static Builder builder() {
     return new Builder();
   }
@@ -175,26 +116,12 @@ public class StaticRoute extends AbstractRoute implements Comparable<StaticRoute
     return COMPARATOR.compare(this, o);
   }
 
-  @Override
-  public Builder toBuilder() {
-    return builder()
-        .setNetwork(getNetwork())
-        .setAdmin(getAdministrativeCost())
-        .setNonRouting(getNonRouting())
-        .setNonForwarding(getNonForwarding())
-        .setMetric(_metric)
-        .setNextHopInterface(_nextHopInterface)
-        .setNextHopIp(_nextHopIp)
-        .setNextVrf(_nextVrf)
-        .setTag(_tag);
-  }
-
   /** Builder for {@link StaticRoute} */
   @ParametersAreNonnullByDefault
   public static final class Builder extends AbstractRouteBuilder<Builder, StaticRoute> {
 
     private String _nextHopInterface = Route.UNSET_NEXT_HOP_INTERFACE;
-    private String _nextVrf;
+    @Nullable private String _nextVrf;
 
     private Builder() {
       // Tmp hack until parent builder is fixed and doesn't default to primitives
@@ -240,9 +167,76 @@ public class StaticRoute extends AbstractRoute implements Comparable<StaticRoute
     }
 
     @Nonnull
-    public Builder setNextVrf(String nextVrf) {
+    public Builder setNextVrf(@Nullable String nextVrf) {
       _nextVrf = nextVrf;
       return this;
     }
+  }
+
+  /////// Keep COMPARATOR, #toBuilder, #equals, and #hashCode in sync ////////
+
+  // The comparator has no impact on route preference in RIBs and should not be used as such
+  private static final Comparator<StaticRoute> COMPARATOR =
+      comparing(StaticRoute::getNetwork)
+          .thenComparing(StaticRoute::getNextHopIp)
+          .thenComparing(StaticRoute::getNextHopInterface)
+          .thenComparing(StaticRoute::getNextVrf, nullsFirst(String::compareTo))
+          .thenComparing(StaticRoute::getMetric)
+          .thenComparing(StaticRoute::getAdministrativeCost)
+          .thenComparing(StaticRoute::getTag)
+          .thenComparing(StaticRoute::getNonRouting)
+          .thenComparing(StaticRoute::getNonForwarding);
+
+  @Override
+  public Builder toBuilder() {
+    return builder()
+        .setNetwork(getNetwork())
+        .setNextHopIp(_nextHopIp)
+        .setNextHopInterface(_nextHopInterface)
+        .setNextVrf(_nextVrf)
+        .setMetric(_metric)
+        .setTag(_tag)
+        .setAdmin(getAdministrativeCost())
+        .setNonRouting(getNonRouting())
+        .setNonForwarding(getNonForwarding());
+  }
+
+  @Override
+  public boolean equals(@Nullable Object o) {
+    if (o == this) {
+      return true;
+    } else if (!(o instanceof StaticRoute)) {
+      return false;
+    }
+    StaticRoute rhs = (StaticRoute) o;
+    return _network.equals(rhs._network)
+        && _admin == rhs._admin
+        && getNonForwarding() == rhs.getNonForwarding()
+        && getNonRouting() == rhs.getNonRouting()
+        && _metric == rhs._metric
+        && _nextHopInterface.equals(rhs._nextHopInterface)
+        && _nextHopIp.equals(rhs._nextHopIp)
+        && Objects.equals(_nextVrf, rhs._nextVrf)
+        && _tag == rhs._tag;
+  }
+
+  @Override
+  public int hashCode() {
+    int h = _hashCode;
+    if (h == 0) {
+      h =
+          Objects.hash(
+              _network,
+              _admin,
+              getNonForwarding(),
+              getNonRouting(),
+              _metric,
+              _nextHopInterface,
+              _nextHopIp,
+              _nextVrf,
+              _tag);
+      _hashCode = h;
+    }
+    return h;
   }
 }

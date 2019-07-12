@@ -16,7 +16,6 @@ import java.util.stream.Collectors;
 import org.batfish.common.VendorConversionException;
 import org.batfish.common.Warnings;
 import org.batfish.common.util.BatfishObjectMapper;
-import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.Interface;
@@ -25,6 +24,7 @@ import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpAccessListLine;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.Route;
 import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
@@ -245,7 +245,7 @@ public class HostConfiguration extends VendorConfiguration {
                 .setNextHopIp(gateway)
                 .setNextHopInterface(iface.getName())
                 .setAdministrativeCost(HostStaticRoute.DEFAULT_ADMINISTRATIVE_COST)
-                .setTag(AbstractRoute.NO_TAG)
+                .setTag(Route.UNSET_ROUTE_TAG)
                 .build());
         break;
       }
@@ -259,7 +259,7 @@ public class HostConfiguration extends VendorConfiguration {
                   .setNetwork(Prefix.ZERO)
                   .setNextHopInterface(ifaceName)
                   .setAdministrativeCost(HostStaticRoute.DEFAULT_ADMINISTRATIVE_COST)
-                  .setTag(AbstractRoute.NO_TAG)
+                  .setTag(Route.UNSET_ROUTE_TAG)
                   .build());
     }
     return ImmutableList.of(_c);

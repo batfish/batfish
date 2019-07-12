@@ -15,8 +15,56 @@ public class RipInternalRoute extends RipRoute {
       @JsonProperty(PROP_NETWORK) Prefix network,
       @JsonProperty(PROP_NEXT_HOP_IP) Ip nextHopIp,
       @JsonProperty(PROP_ADMINISTRATIVE_COST) int admin,
-      @JsonProperty(PROP_METRIC) long metric) {
-    super(network, nextHopIp, admin, metric);
+      @JsonProperty(PROP_METRIC) long metric,
+      @JsonProperty(PROP_TAG) long tag) {
+    super(network, nextHopIp, admin, metric, tag);
+  }
+
+  @Nonnull
+  @Override
+  public String getNextHopInterface() {
+    return Route.UNSET_NEXT_HOP_INTERFACE;
+  }
+
+  @Override
+  public RoutingProtocol getProtocol() {
+    return RoutingProtocol.RIP;
+  }
+
+  public static Builder builder() {
+    return new Builder();
+  }
+
+  /** A {@link RipInternalRoute} builder */
+  public static class Builder extends AbstractRouteBuilder<Builder, RipInternalRoute> {
+
+    private Builder() {}
+
+    @Nonnull
+    @Override
+    public RipInternalRoute build() {
+      return new RipInternalRoute(getNetwork(), getNextHopIp(), getAdmin(), getMetric(), getTag());
+    }
+
+    @Nonnull
+    @Override
+    protected Builder getThis() {
+      return this;
+    }
+  }
+
+  /////// Keep #toBuilder, #equals, and #hashCode in sync ////////
+
+  @Override
+  public Builder toBuilder() {
+    return new Builder()
+        .setAdmin(getAdministrativeCost())
+        .setMetric(getMetric())
+        .setNetwork(getNetwork())
+        .setNextHopIp(getNextHopIp())
+        .setNonForwarding(getNonForwarding())
+        .setNonRouting(getNonRouting())
+        .setTag(getTag());
   }
 
   @Override
@@ -31,58 +79,15 @@ public class RipInternalRoute extends RipRoute {
     return _network.equals(other._network)
         && _admin == other._admin
         && _metric == other._metric
-        && _nextHopIp.equals(other._nextHopIp);
+        && _nextHopIp.equals(other._nextHopIp)
+        && getNonForwarding() == other.getNonForwarding()
+        && getNonRouting() == other.getNonRouting()
+        && _tag == other._tag;
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(_network, _admin, _metric, _nextHopIp);
-  }
-
-  @Nonnull
-  @Override
-  public String getNextHopInterface() {
-    return Route.UNSET_NEXT_HOP_INTERFACE;
-  }
-
-  @Override
-  public RoutingProtocol getProtocol() {
-    return RoutingProtocol.RIP;
-  }
-
-  @Override
-  public long getTag() {
-    return NO_TAG;
-  }
-
-  public static Builder builder() {
-    return new Builder();
-  }
-
-  @Override
-  public Builder toBuilder() {
-    return new Builder()
-        .setNetwork(getNetwork())
-        .setNextHopIp(getNextHopIp())
-        .setAdmin(getAdministrativeCost())
-        .setMetric(getMetric());
-  }
-
-  /** A {@link RipInternalRoute} builder */
-  public static class Builder extends AbstractRouteBuilder<Builder, RipInternalRoute> {
-
-    private Builder() {}
-
-    @Nonnull
-    @Override
-    public RipInternalRoute build() {
-      return new RipInternalRoute(getNetwork(), getNextHopIp(), getAdmin(), getMetric());
-    }
-
-    @Nonnull
-    @Override
-    protected Builder getThis() {
-      return this;
-    }
+    return Objects.hash(
+        _network, _admin, _metric, _nextHopIp, getNonForwarding(), getNonRouting(), _tag);
   }
 }

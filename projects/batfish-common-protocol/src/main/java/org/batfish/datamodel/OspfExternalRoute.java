@@ -46,6 +46,7 @@ public abstract class OspfExternalRoute extends OspfRoute {
                   _area,
                   _costToAdvertiser,
                   _advertiser,
+                  getTag(),
                   getNonForwarding(),
                   getNonRouting()));
         case OSPF_E2:
@@ -59,6 +60,7 @@ public abstract class OspfExternalRoute extends OspfRoute {
                   _area,
                   _costToAdvertiser,
                   _advertiser,
+                  getTag(),
                   getNonForwarding(),
                   getNonRouting()));
         default:
@@ -134,60 +136,13 @@ public abstract class OspfExternalRoute extends OspfRoute {
       long area,
       String advertiser,
       long costToAdvertiser,
+      long tag,
       boolean nonForwarding,
       boolean nonRouting) {
-    super(prefix, nextHopIp, admin, metric, area, nonRouting, nonForwarding);
+    super(prefix, nextHopIp, admin, metric, area, tag, nonRouting, nonForwarding);
     _advertiser = advertiser;
     _costToAdvertiser = costToAdvertiser;
     _lsaMetric = lsaMetric;
-  }
-
-  @Override
-  public final boolean equals(@Nullable Object o) {
-    if (this == o) {
-      return true;
-    }
-    if (o == null || getClass() != o.getClass()) {
-      return false;
-    }
-    OspfExternalRoute that = (OspfExternalRoute) o;
-    return
-    // AbstractRoute properties
-    Objects.equals(_network, that._network)
-        && _admin == that._admin
-        && getNonRouting() == that.getNonRouting()
-        && getNonForwarding() == that.getNonForwarding()
-        && _metric == that._metric
-        && _nextHopIp.equals(that._nextHopIp)
-        // OspfRoute properties
-        && _area == that._area
-        // OspfExternalRoute properties
-        && getCostToAdvertiser() == that.getCostToAdvertiser()
-        && getLsaMetric() == that.getLsaMetric()
-        && Objects.equals(getAdvertiser(), that.getAdvertiser());
-  }
-
-  @Override
-  public final int hashCode() {
-    int h = _hashCode;
-    if (h == 0) {
-      // AbstractRoute Properties
-      h = _network.hashCode();
-      h = 31 * h + _admin;
-      h = 31 * h + Long.hashCode(_metric);
-      h = 31 * h + _nextHopIp.hashCode();
-      h = 31 * h + Boolean.hashCode(getNonRouting());
-      h = 31 * h + Boolean.hashCode(getNonForwarding());
-      // OspfRoute properties
-      h = 31 * h + Long.hashCode(_area);
-      // OspfExternalRoute properties
-      h = 31 * h + _advertiser.hashCode();
-      h = 31 * h + Long.hashCode(_costToAdvertiser);
-      h = 31 * h + Long.hashCode(_lsaMetric);
-
-      _hashCode = h;
-    }
-    return h;
   }
 
   @JsonProperty(PROP_ADVERTISER)
@@ -222,8 +177,74 @@ public abstract class OspfExternalRoute extends OspfRoute {
     return getOspfMetricType().toRoutingProtocol();
   }
 
+  /////// Keep #toBuilder, #equals, and #hashCode in sync ////////
+
   @Override
-  public long getTag() {
-    return NO_TAG;
+  public final OspfExternalRoute.Builder toBuilder() {
+    return OspfExternalRoute.builder()
+        // AbstractRoute properties
+        .setNetwork(getNetwork())
+        .setNextHopIp(getNextHopIp())
+        .setAdmin(getAdministrativeCost())
+        .setMetric(getMetric())
+        .setNonForwarding(getNonForwarding())
+        .setNonRouting(getNonRouting())
+        .setTag(getTag())
+        // OspfExternalType1Route properties
+        .setOspfMetricType(getOspfMetricType())
+        .setLsaMetric(getLsaMetric())
+        .setArea(getArea())
+        .setCostToAdvertiser(getCostToAdvertiser())
+        .setAdvertiser(getAdvertiser());
+  }
+
+  @Override
+  public final boolean equals(@Nullable Object o) {
+    if (this == o) {
+      return true;
+    }
+    if (o == null || getClass() != o.getClass()) {
+      return false;
+    }
+    OspfExternalRoute that = (OspfExternalRoute) o;
+    return
+    // AbstractRoute properties
+    Objects.equals(_network, that._network)
+        && _admin == that._admin
+        && getNonRouting() == that.getNonRouting()
+        && getNonForwarding() == that.getNonForwarding()
+        && _metric == that._metric
+        && _nextHopIp.equals(that._nextHopIp)
+        && _tag == that._tag
+        // OspfRoute properties
+        && _area == that._area
+        // OspfExternalRoute properties
+        && getCostToAdvertiser() == that.getCostToAdvertiser()
+        && getLsaMetric() == that.getLsaMetric()
+        && Objects.equals(getAdvertiser(), that.getAdvertiser());
+  }
+
+  @Override
+  public final int hashCode() {
+    int h = _hashCode;
+    if (h == 0) {
+      // AbstractRoute Properties
+      h = _network.hashCode();
+      h = 31 * h + _admin;
+      h = 31 * h + Long.hashCode(_metric);
+      h = 31 * h + _nextHopIp.hashCode();
+      h = 31 * h + Boolean.hashCode(getNonRouting());
+      h = 31 * h + Boolean.hashCode(getNonForwarding());
+      h = 31 * h + Long.hashCode(_tag);
+      // OspfRoute properties
+      h = 31 * h + Long.hashCode(_area);
+      // OspfExternalRoute properties
+      h = 31 * h + _advertiser.hashCode();
+      h = 31 * h + Long.hashCode(_costToAdvertiser);
+      h = 31 * h + Long.hashCode(_lsaMetric);
+
+      _hashCode = h;
+    }
+    return h;
   }
 }

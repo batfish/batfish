@@ -24,6 +24,7 @@ import org.batfish.datamodel.OriginType;
 import org.batfish.datamodel.OspfIntraAreaRoute;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.RipInternalRoute;
+import org.batfish.datamodel.Route;
 import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.StaticRoute;
 import org.batfish.dataplane.rib.RouteAdvertisement.Reason;
@@ -306,9 +307,11 @@ public class AbstractRibTest {
     int admin = RoutingProtocol.RIP.getDefaultAdministrativeCost(ConfigurationFormat.CISCO_IOS);
     Prefix prefix = Prefix.create(Ip.parse("10.0.0.0"), 8);
     // High metric
-    RipInternalRoute oldRoute = new RipInternalRoute(prefix, Ip.ZERO, admin, 10);
+    RipInternalRoute oldRoute =
+        new RipInternalRoute(prefix, Ip.ZERO, admin, 10, Route.UNSET_ROUTE_TAG);
     // New route, lower metric, will override oldRoute
-    RipInternalRoute newRoute = new RipInternalRoute(prefix, Ip.ZERO, admin, 5);
+    RipInternalRoute newRoute =
+        new RipInternalRoute(prefix, Ip.ZERO, admin, 5, Route.UNSET_ROUTE_TAG);
 
     // First merge old route
     RibDelta<RipInternalRoute> delta = rib.mergeRouteGetDelta(oldRoute);

@@ -14,7 +14,6 @@ public class EigrpInternalRouteTest {
     EigrpInternalRoute r =
         EigrpInternalRoute.builder()
             .setNetwork(Prefix.parse("1.1.1.0/24"))
-            .setMetric(1L)
             .setEigrpMetric(
                 EigrpMetric.builder()
                     .setBandwidth(1E8)
