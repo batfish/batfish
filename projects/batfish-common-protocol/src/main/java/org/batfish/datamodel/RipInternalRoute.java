@@ -15,8 +15,9 @@ public class RipInternalRoute extends RipRoute {
       @JsonProperty(PROP_NETWORK) Prefix network,
       @JsonProperty(PROP_NEXT_HOP_IP) Ip nextHopIp,
       @JsonProperty(PROP_ADMINISTRATIVE_COST) int admin,
-      @JsonProperty(PROP_METRIC) long metric) {
-    super(network, nextHopIp, admin, metric);
+      @JsonProperty(PROP_METRIC) long metric,
+      @JsonProperty(PROP_TAG) long tag) {
+    super(network, nextHopIp, admin, metric, tag);
   }
 
   @Nonnull
@@ -42,7 +43,7 @@ public class RipInternalRoute extends RipRoute {
     @Nonnull
     @Override
     public RipInternalRoute build() {
-      return new RipInternalRoute(getNetwork(), getNextHopIp(), getAdmin(), getMetric());
+      return new RipInternalRoute(getNetwork(), getNextHopIp(), getAdmin(), getMetric(), getTag());
     }
 
     @Nonnull

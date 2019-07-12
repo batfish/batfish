@@ -3,11 +3,9 @@ package org.batfish.datamodel;
 import static com.google.common.base.MoreObjects.firstNonNull;
 import static com.google.common.base.Preconditions.checkArgument;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 
 @ParametersAreNonnullByDefault
@@ -19,13 +17,8 @@ public abstract class RipRoute extends AbstractRoute {
   protected final long _metric;
   @Nonnull protected final Ip _nextHopIp;
 
-  @JsonCreator
-  protected RipRoute(
-      @Nullable @JsonProperty(PROP_NETWORK) Prefix network,
-      @Nullable @JsonProperty(PROP_NEXT_HOP_IP) Ip nextHopIp,
-      @JsonProperty(PROP_ADMINISTRATIVE_COST) int admin,
-      @JsonProperty(PROP_METRIC) long metric) {
-    super(network, admin, Route.UNSET_ROUTE_TAG, false, false);
+  protected RipRoute(Prefix network, Ip nextHopIp, int admin, long metric, long tag) {
+    super(network, admin, tag, false, false);
     checkArgument(
         metric >= 0 && metric <= MAX_ROUTE_METRIC,
         "Invalid RIP route metric %d. Must be between 0 and %d",
