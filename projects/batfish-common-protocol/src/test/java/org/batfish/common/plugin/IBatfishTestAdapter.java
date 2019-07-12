@@ -186,7 +186,7 @@ public class IBatfishTestAdapter implements IBatfish {
   }
 
   @Override
-  public String getConfigText(String filename) {
+  public String getSnapshotInputObject(String key) {
     throw new UnsupportedOperationException();
   }
 

@@ -747,7 +747,7 @@ public class BatfishTest {
   }
 
   @Test
-  public void testGetConfigText() throws IOException {
+  public void testGetSnapshotInputObject() throws IOException {
     String fileName = "fileName";
     String configText = "sup dawg";
 
@@ -758,9 +758,9 @@ public class BatfishTest {
             TestrigText.builder().setConfigurationText(configurations).build(), _folder);
 
     // returns the text of the config if it exists
-    assertThat(batfish.getConfigText("configs/" + fileName), equalTo(configText));
+    assertThat(batfish.getSnapshotInputObject("configs/" + fileName), equalTo(configText));
 
     // returns null if the config does not exist
-    assertThat(batfish.getConfigText("missing file"), equalTo(null));
+    assertThat(batfish.getSnapshotInputObject("missing file"), equalTo(null));
   }
 }

@@ -2285,14 +2285,14 @@ public class Batfish extends PluginConsumer implements IBatfish {
   }
 
   @Override
-  public String getConfigText(String filename) {
+  public String getSnapshotInputObject(String key) {
     try {
       InputStream inputObject =
           _storage.loadSnapshotInputObject(
-              _settings.getContainer(), _testrigSettings.getName(), filename);
+              _settings.getContainer(), _testrigSettings.getName(), key);
       return IOUtils.toString(inputObject, UTF_8);
     } catch (IOException e) {
-      _logger.errorf("Error getting config text for %s: %s", filename, e);
+      _logger.errorf("Error getting config text for %s: %s", key, e);
       return null;
     }
   }
