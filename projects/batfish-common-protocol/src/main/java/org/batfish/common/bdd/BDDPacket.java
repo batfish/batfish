@@ -51,6 +51,11 @@ public class BDDPacket {
   private static final int JFACTORY_INITIAL_NODE_CACHE_SIZE =
       (JFACTORY_INITIAL_NODE_TABLE_SIZE + JFACTORY_CACHE_RATIO - 1) / JFACTORY_CACHE_RATIO;
 
+  /*
+   * The first BDD variable used to encode packets. Clients can use these bits anyway they want to.
+   */
+  public static final int FIRST_PACKET_VAR = 100;
+
   private static final int DSCP_LENGTH = 6;
   private static final int ECN_LENGTH = 2;
   private static final int FRAGMENT_OFFSET_LENGTH = 13;
@@ -64,7 +69,7 @@ public class BDDPacket {
 
   private final Map<Integer, String> _bitNames;
   private final BDDFactory _factory;
-  private int _nextFreeBDDVarIdx = 0;
+  private int _nextFreeBDDVarIdx = FIRST_PACKET_VAR;
 
   // Packet bits
   private final @Nonnull BDDInteger _dscp;
