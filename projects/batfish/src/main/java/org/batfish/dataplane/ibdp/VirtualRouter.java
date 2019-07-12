@@ -745,7 +745,8 @@ public class VirtualRouter implements Serializable {
                   prefix,
                   Route.UNSET_ROUTE_NEXT_HOP_IP,
                   RoutingProtocol.RIP.getDefaultAdministrativeCost(_c.getConfigurationFormat()),
-                  cost);
+                  cost,
+                  Route.UNSET_ROUTE_TAG);
           _ripInternalRib.mergeRouteGetDelta(route);
         }
       }
@@ -1293,7 +1294,8 @@ public class VirtualRouter implements Serializable {
           long newCost = neighborRoute.getMetric() + RipProcess.DEFAULT_RIP_COST;
           Ip nextHopIp = neighborInterface.getConcreteAddress().getIp();
           RipInternalRoute newRoute =
-              new RipInternalRoute(neighborRoute.getNetwork(), nextHopIp, admin, newCost);
+              new RipInternalRoute(
+                  neighborRoute.getNetwork(), nextHopIp, admin, newCost, Route.UNSET_ROUTE_TAG);
           if (!_ripInternalStagingRib.mergeRouteGetDelta(newRoute).isEmpty()) {
             changed = true;
           }

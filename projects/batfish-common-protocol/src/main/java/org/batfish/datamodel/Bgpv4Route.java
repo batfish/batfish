@@ -5,6 +5,7 @@ import static com.google.common.base.Preconditions.checkArgument;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.base.MoreObjects;
 import java.util.Objects;
 import java.util.SortedSet;
 import javax.annotation.Nonnull;
@@ -53,6 +54,7 @@ public final class Bgpv4Route extends BgpRoute<Bgpv4Route.Builder, Bgpv4Route> {
           _protocol,
           _receivedFromIp,
           _srcProtocol,
+          getTag(),
           _weight,
           getNonForwarding(),
           getNonRouting());
@@ -87,6 +89,7 @@ public final class Bgpv4Route extends BgpRoute<Bgpv4Route.Builder, Bgpv4Route> {
       @Nullable @JsonProperty(PROP_PROTOCOL) RoutingProtocol protocol,
       @Nullable @JsonProperty(PROP_RECEIVED_FROM_IP) Ip receivedFromIp,
       @Nullable @JsonProperty(PROP_SRC_PROTOCOL) RoutingProtocol srcProtocol,
+      @JsonProperty(PROP_TAG) long tag,
       @JsonProperty(PROP_WEIGHT) int weight) {
     checkArgument(originatorIp != null, "Missing %s", PROP_ORIGINATOR_IP);
     checkArgument(originType != null, "Missing %s", PROP_ORIGIN_TYPE);
@@ -108,6 +111,7 @@ public final class Bgpv4Route extends BgpRoute<Bgpv4Route.Builder, Bgpv4Route> {
         protocol,
         receivedFromIp,
         srcProtocol,
+        tag,
         weight,
         false,
         false);
@@ -130,6 +134,7 @@ public final class Bgpv4Route extends BgpRoute<Bgpv4Route.Builder, Bgpv4Route> {
       RoutingProtocol protocol,
       @Nullable Ip receivedFromIp,
       @Nullable RoutingProtocol srcProtocol,
+      long tag,
       int weight,
       boolean nonForwarding,
       boolean nonRouting) {
@@ -150,6 +155,7 @@ public final class Bgpv4Route extends BgpRoute<Bgpv4Route.Builder, Bgpv4Route> {
         protocol,
         receivedFromIp,
         srcProtocol,
+        tag,
         weight,
         nonForwarding,
         nonRouting);
@@ -158,6 +164,8 @@ public final class Bgpv4Route extends BgpRoute<Bgpv4Route.Builder, Bgpv4Route> {
   public static Builder builder() {
     return new Builder();
   }
+
+  /////// Keep #toBuilder, #equals, and #hashCode in sync ////////
 
   @Override
   public Builder toBuilder() {
@@ -180,6 +188,7 @@ public final class Bgpv4Route extends BgpRoute<Bgpv4Route.Builder, Bgpv4Route> {
         .setReceivedFromIp(_receivedFromIp)
         .setReceivedFromRouteReflectorClient(_receivedFromRouteReflectorClient)
         .setSrcProtocol(_srcProtocol)
+        .setTag(_tag)
         .setWeight(_weight);
   }
 
@@ -206,6 +215,7 @@ public final class Bgpv4Route extends BgpRoute<Bgpv4Route.Builder, Bgpv4Route> {
         && _protocol == other._protocol
         && _receivedFromRouteReflectorClient == other._receivedFromRouteReflectorClient
         && _srcProtocol == other._srcProtocol
+        && _tag == other._tag
         && _weight == other._weight
         && getNonRouting() == other.getNonRouting()
         && getNonForwarding() == other.getNonForwarding()
@@ -228,16 +238,44 @@ public final class Bgpv4Route extends BgpRoute<Bgpv4Route.Builder, Bgpv4Route> {
       h = h * 31 + _network.hashCode();
       h = h * 31 + _nextHopInterface.hashCode();
       h = h * 31 + _nextHopIp.hashCode();
+      h = h * 31 + Boolean.hashCode(getNonForwarding());
+      h = h * 31 + Boolean.hashCode(getNonRouting());
       h = h * 31 + _originatorIp.hashCode();
       h = h * 31 + _originType.ordinal();
       h = h * 31 + _protocol.ordinal();
       h = h * 31 + Objects.hashCode(_receivedFromIp);
       h = h * 31 + Boolean.hashCode(_receivedFromRouteReflectorClient);
       h = h * 31 + (_srcProtocol == null ? 0 : _srcProtocol.ordinal());
+      h = h * 31 + Long.hashCode(_tag);
       h = h * 31 + _weight;
 
       _hashCode = h;
     }
     return h;
+  }
+
+  @Override
+  public String toString() {
+    return MoreObjects.toStringHelper(this)
+        .omitNullValues()
+        .add("_network", _network)
+        .add("_admin", _admin)
+        .add("_tag", _tag)
+        .add("_asPath", _asPath)
+        .add("_clusterList", _clusterList)
+        .add("_communities", _communities)
+        .add("_discard", _discard)
+        .add("_localPreference", _localPreference)
+        .add("_med", _med)
+        .add("_nextHopInterface", _nextHopInterface)
+        .add("_nextHopIp", _nextHopIp)
+        .add("_originatorIp", _originatorIp)
+        .add("_originType", _originType)
+        .add("_protocol", _protocol)
+        .add("_receivedFromIp", _receivedFromIp)
+        .add("_receivedFromRouteReflectorClient", _receivedFromRouteReflectorClient)
+        .add("_srcProtocol", _srcProtocol)
+        .add("_weight", _weight)
+        .toString();
   }
 }

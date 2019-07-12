@@ -37,6 +37,7 @@ public class IsisRoute extends AbstractRoute {
           _overload,
           requireNonNull(_protocol),
           requireNonNull(_systemId),
+          getTag(),
           getNonForwarding(),
           getNonRouting());
     }
@@ -105,7 +106,8 @@ public class IsisRoute extends AbstractRoute {
       @JsonProperty(PROP_NEXT_HOP_IP) Ip nextHopIp,
       @JsonProperty(PROP_OVERLOAD) boolean overload,
       @JsonProperty(PROP_PROTOCOL) RoutingProtocol protocol,
-      @JsonProperty(PROP_SYSTEM_ID) String systemId) {
+      @JsonProperty(PROP_SYSTEM_ID) String systemId,
+      @JsonProperty(PROP_TAG) long tag) {
     return new IsisRoute(
         administrativeCost,
         requireNonNull(area),
@@ -118,6 +120,7 @@ public class IsisRoute extends AbstractRoute {
         overload,
         requireNonNull(protocol),
         requireNonNull(systemId),
+        tag,
         false,
         false);
   }
@@ -152,9 +155,10 @@ public class IsisRoute extends AbstractRoute {
       boolean overload,
       @Nonnull RoutingProtocol protocol,
       @Nonnull String systemId,
+      long tag,
       boolean nonForwarding,
       boolean nonRouting) {
-    super(network, administrativeCost, nonRouting, nonForwarding);
+    super(network, administrativeCost, tag, nonRouting, nonForwarding);
     _area = area;
     _attach = attach;
     _down = down;
@@ -166,68 +170,8 @@ public class IsisRoute extends AbstractRoute {
     _systemId = systemId;
   }
 
-  @Override
-  public boolean equals(Object o) {
-    if (this == o) {
-      return true;
-    }
-    if (!(o instanceof IsisRoute)) {
-      return false;
-    }
-    IsisRoute rhs = (IsisRoute) o;
-    return _admin == rhs._admin
-        && _area.equals(rhs._area)
-        && _attach == rhs._attach
-        && _down == rhs._down
-        && _level == rhs._level
-        && _metric == rhs._metric
-        && _network.equals(rhs._network)
-        && _nextHopIp.equals(rhs._nextHopIp)
-        && getNonForwarding() == rhs.getNonForwarding()
-        && getNonRouting() == rhs.getNonRouting()
-        && _overload == rhs._overload
-        && _protocol == rhs._protocol
-        && _systemId.equals(rhs._systemId);
-  }
-
-  @Override
-  public int hashCode() {
-    return Objects.hash(
-        _admin,
-        _area,
-        _attach,
-        _down,
-        _level.ordinal(),
-        _metric,
-        _network,
-        _nextHopIp,
-        getNonForwarding(),
-        getNonRouting(),
-        _overload,
-        _protocol.ordinal(),
-        _systemId);
-  }
-
   public static Builder builder() {
     return new Builder();
-  }
-
-  @Override
-  public Builder toBuilder() {
-    return new Builder()
-        .setAdmin(_admin)
-        .setArea(_area)
-        .setAttach(_attach)
-        .setDown(_down)
-        .setLevel(_level)
-        .setMetric(_metric)
-        .setNetwork(_network)
-        .setNextHopIp(_nextHopIp)
-        .setNonForwarding(getNonForwarding())
-        .setNonRouting(getNonRouting())
-        .setOverload(_overload)
-        .setProtocol(_protocol)
-        .setSystemId(_systemId);
   }
 
   @JsonProperty(PROP_AREA)
@@ -290,8 +234,68 @@ public class IsisRoute extends AbstractRoute {
     return _systemId;
   }
 
+  /////// Keep #toBuilder, #equals, and #hashCode in sync ////////
+
   @Override
-  public long getTag() {
-    return NO_TAG;
+  public Builder toBuilder() {
+    return new Builder()
+        .setAdmin(_admin)
+        .setArea(_area)
+        .setAttach(_attach)
+        .setDown(_down)
+        .setLevel(_level)
+        .setMetric(_metric)
+        .setNetwork(_network)
+        .setNextHopIp(_nextHopIp)
+        .setNonForwarding(getNonForwarding())
+        .setNonRouting(getNonRouting())
+        .setOverload(_overload)
+        .setProtocol(_protocol)
+        .setSystemId(_systemId)
+        .setTag(_tag);
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) {
+      return true;
+    }
+    if (!(o instanceof IsisRoute)) {
+      return false;
+    }
+    IsisRoute rhs = (IsisRoute) o;
+    return _admin == rhs._admin
+        && _area.equals(rhs._area)
+        && _attach == rhs._attach
+        && _down == rhs._down
+        && _level == rhs._level
+        && _metric == rhs._metric
+        && _network.equals(rhs._network)
+        && _nextHopIp.equals(rhs._nextHopIp)
+        && getNonForwarding() == rhs.getNonForwarding()
+        && getNonRouting() == rhs.getNonRouting()
+        && _overload == rhs._overload
+        && _protocol == rhs._protocol
+        && _systemId.equals(rhs._systemId)
+        && _tag == rhs._tag;
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(
+        _admin,
+        _area,
+        _attach,
+        _down,
+        _level.ordinal(),
+        _metric,
+        _network,
+        _nextHopIp,
+        getNonForwarding(),
+        getNonRouting(),
+        _overload,
+        _protocol.ordinal(),
+        _systemId,
+        _tag);
   }
 }

@@ -1,9 +1,7 @@
 package org.batfish.dataplane.rib;
 
 import com.google.common.collect.ImmutableSet;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
+import com.google.common.collect.LinkedHashMultimap;
 import java.util.Objects;
 import java.util.Set;
 import javax.annotation.Nonnull;
@@ -35,13 +33,14 @@ public abstract class AbstractRib<R extends AbstractRouteDecorator> implements G
   @Nullable private Set<R> _allRoutes;
 
   /**
-   * Keep a Sorted Set of alternative routes. Used to update the RIB if best routes are withdrawn
+   * Keep a (insert ordered) set of alternative routes. Used to update the RIB if best routes are
+   * withdrawn.
    */
-  @Nullable protected final Map<Prefix, Set<R>> _backupRoutes;
+  @Nullable protected final LinkedHashMultimap<Prefix, R> _backupRoutes;
 
   protected AbstractRib(boolean withBackupRoutes) {
     _allRoutes = ImmutableSet.of();
-    _backupRoutes = withBackupRoutes ? new HashMap<>(0) : null;
+    _backupRoutes = withBackupRoutes ? LinkedHashMultimap.create() : null;
     _tree = new RibTree<>(this);
   }
 
@@ -116,7 +115,7 @@ public abstract class AbstractRib<R extends AbstractRouteDecorator> implements G
    */
   private void addBackupRoute(R route) {
     if (_backupRoutes != null) {
-      _backupRoutes.computeIfAbsent(route.getNetwork(), k -> new HashSet<>(1)).add(route);
+      _backupRoutes.put(route.getNetwork(), route);
     }
   }
 

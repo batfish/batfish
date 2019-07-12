@@ -33,6 +33,7 @@ public class Route implements Comparable<Route>, Serializable {
   public static final Ip UNSET_ROUTE_NEXT_HOP_IP = Ip.AUTO;
 
   public static final long UNSET_ROUTE_TAG = -1L;
+
   private static final String PROP_VRF = "vrf";
 
   private final int _administrativeCost;

@@ -26,15 +26,17 @@ public final class StaticRouteTest {
             .setNextHopInterface("Ethernet0")
             .setNextVrf("otherVrf")
             .setAdministrativeCost(1)
-            .setTag(0L)
+            .setTag(3L)
             .setMetric(123)
+            .build()
+            .toBuilder()
             .build();
     assertThat(sr.getNextHopIp(), equalTo(Ip.parse("192.168.1.1")));
     assertThat(sr.getNetwork(), equalTo(Prefix.ZERO));
     assertThat(sr.getNextHopInterface(), equalTo("Ethernet0"));
     assertThat(sr.getNextVrf(), equalTo("otherVrf"));
     assertThat(sr.getAdministrativeCost(), equalTo(1));
-    assertThat(sr.getTag(), equalTo(0L));
+    assertThat(sr.getTag(), equalTo(3L));
     assertThat(sr.getMetric(), equalTo(123L));
   }
 

@@ -415,7 +415,8 @@ public class VirtualRouterTest {
                             Route.UNSET_ROUTE_NEXT_HOP_IP,
                             RoutingProtocol.RIP.getDefaultAdministrativeCost(
                                 vr.getConfiguration().getConfigurationFormat()),
-                            RipProcess.DEFAULT_RIP_COST))
+                            RipProcess.DEFAULT_RIP_COST,
+                            Route.UNSET_ROUTE_TAG))
                 .collect(ImmutableSet.toImmutableSet())));
   }
 

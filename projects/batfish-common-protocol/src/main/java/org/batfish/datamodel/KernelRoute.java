@@ -1,6 +1,7 @@
 package org.batfish.datamodel;
 
 import static com.google.common.base.Preconditions.checkArgument;
+import static org.batfish.datamodel.Route.UNSET_ROUTE_TAG;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -34,7 +35,7 @@ public final class KernelRoute extends AbstractRoute implements Comparable<Kerne
     @Nonnull
     @Override
     public KernelRoute build() {
-      return new KernelRoute(getNetwork());
+      return new KernelRoute(getNetwork(), getTag());
     }
 
     @Nonnull
@@ -52,29 +53,18 @@ public final class KernelRoute extends AbstractRoute implements Comparable<Kerne
   private static KernelRoute create(
       @Nullable @JsonProperty(PROP_NETWORK) Prefix network,
       @Nullable @JsonProperty(PROP_NEXT_HOP_INTERFACE) String nextHopInterface,
-      @JsonProperty(PROP_ADMINISTRATIVE_COST) int adminCost) {
+      @JsonProperty(PROP_ADMINISTRATIVE_COST) int adminCost,
+      @JsonProperty(PROP_TAG) long tag) {
     checkArgument(network != null, "Cannot create kernel route: missing %s", PROP_NETWORK);
-    return new KernelRoute(network);
+    return new KernelRoute(network, tag);
   }
 
   public KernelRoute(Prefix network) {
-    super(network, 0, false, true);
+    this(network, UNSET_ROUTE_TAG);
   }
 
-  @Override
-  public boolean equals(Object o) {
-    if (o == this) {
-      return true;
-    } else if (!(o instanceof KernelRoute)) {
-      return false;
-    }
-    KernelRoute rhs = (KernelRoute) o;
-    return _network.equals(rhs._network);
-  }
-
-  @Override
-  public int hashCode() {
-    return _network.hashCode();
+  public KernelRoute(Prefix network, long tag) {
+    super(network, 0, tag, false, true);
   }
 
   @Override
@@ -106,13 +96,26 @@ public final class KernelRoute extends AbstractRoute implements Comparable<Kerne
     return RoutingProtocol.KERNEL;
   }
 
-  @Override
-  public long getTag() {
-    return NO_TAG;
-  }
+  /////// Keep #toBuilder, #equals, and #hashCode in sync ////////
 
   @Override
   public Builder toBuilder() {
-    return builder().setNetwork(getNetwork());
+    return builder().setNetwork(getNetwork()).setTag(getTag());
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (o == this) {
+      return true;
+    } else if (!(o instanceof KernelRoute)) {
+      return false;
+    }
+    KernelRoute rhs = (KernelRoute) o;
+    return _network.equals(rhs._network) && _tag == rhs._tag;
+  }
+
+  @Override
+  public int hashCode() {
+    return _network.hashCode() * 31 + Long.hashCode(_tag);
   }
 }

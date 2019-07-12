@@ -277,7 +277,8 @@ public class RoutesAnswererUtil {
         .put(COL_NEXT_HOP, computeNextHopNode(abstractRoute.getNextHopIp(), ipOwners))
         .put(COL_PROTOCOL, abstractRoute.getProtocol())
         .put(
-            COL_TAG, abstractRoute.getTag() == AbstractRoute.NO_TAG ? null : abstractRoute.getTag())
+            COL_TAG,
+            abstractRoute.getTag() == Route.UNSET_ROUTE_TAG ? null : abstractRoute.getTag())
         .put(COL_ADMIN_DISTANCE, abstractRoute.getAdministrativeCost())
         .put(COL_METRIC, abstractRoute.getMetric())
         .build();
