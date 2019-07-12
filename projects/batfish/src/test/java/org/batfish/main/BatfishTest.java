@@ -20,6 +20,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -744,5 +745,36 @@ public class BatfishTest {
     batfish.getSettings().setHaltOnParseError(true);
     _thrown.expect(hasStackTrace(containsString("Error parsing configuration file")));
     batfish.loadConfigurations();
+  }
+
+  @Test
+  public void testGetSnapshotInputObject() throws IOException {
+    String fileName = "fileName";
+    String configText = "sup dawg";
+
+    Map<String, String> configurations = ImmutableMap.of(fileName, configText);
+
+    Batfish batfish =
+        BatfishTestUtils.getBatfishFromTestrigText(
+            TestrigText.builder().setConfigurationText(configurations).build(), _folder);
+
+    // returns the text of the config if it exists
+    assertThat(batfish.getSnapshotInputObject("configs/" + fileName), equalTo(configText));
+  }
+
+  @Test
+  public void testGetSnapshotInputObjectError() throws IOException {
+    String fileName = "fileName";
+    String configText = "sup dawg";
+
+    Map<String, String> configurations = ImmutableMap.of(fileName, configText);
+
+    Batfish batfish =
+        BatfishTestUtils.getBatfishFromTestrigText(
+            TestrigText.builder().setConfigurationText(configurations).build(), _folder);
+
+    // should throw FileNotFoundException if file not found
+    _thrown.expect(FileNotFoundException.class);
+    batfish.getSnapshotInputObject("missing file");
   }
 }

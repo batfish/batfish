@@ -44,6 +44,7 @@ java_library(
         "@auto_service//:compile",
         "@commons_collections4//:compile",
         "@commons_configuration2//:compile",
+        "@commons_io//:compile",
         "@commons_lang3//:compile",
         "@grizzly_server//:compile",
         "@guava//:compile",
