@@ -47,6 +47,7 @@ public final class Interface extends ComparableStructure<String> {
     private boolean _blacklisted;
     private @Nullable String _channelGroup;
     private @Nonnull SortedSet<String> _channelGroupMembers;
+    private @Nullable List<ConnectedRoute> _connectedRoutes;
     private SortedSet<String> _declaredNames;
     @Nonnull private Set<Dependency> _dependencies = ImmutableSet.of();
     @Nullable private String _description;
@@ -124,6 +125,7 @@ public final class Interface extends ComparableStructure<String> {
       iface.setBlacklisted(_blacklisted);
       iface.setChannelGroup(_channelGroup);
       iface.setChannelGroupMembers(_channelGroupMembers);
+      iface.setConnectedRoutes(_connectedRoutes);
       iface.setDeclaredNames(_declaredNames);
       iface.setDependencies(_dependencies);
       iface.setDescription(_description);
@@ -273,6 +275,11 @@ public final class Interface extends ComparableStructure<String> {
 
     public @Nonnull Builder setChannelGroupMembers(Iterable<String> channelGroupMembers) {
       _channelGroupMembers = ImmutableSortedSet.copyOf(channelGroupMembers);
+      return this;
+    }
+
+    public @Nonnull Builder setConnectedRoutes(@Nullable List<ConnectedRoute> routes) {
+      _connectedRoutes = routes;
       return this;
     }
 
@@ -549,6 +556,7 @@ public final class Interface extends ComparableStructure<String> {
   private static final String PROP_BANDWIDTH = "bandwidth";
   private static final String PROP_CHANNEL_GROUP = "channelGroup";
   private static final String PROP_CHANNEL_GROUP_MEMBERS = "channelGroupMembers";
+  private static final String PROP_CONNECTED_ROUTES = "connectedRoutes";
   private static final String PROP_CRYPTO_MAP = "cryptoMap";
   private static final String PROP_DECLARED_NAMES = "declaredNames";
   private static final String PROP_DESCRIPTION = "description";
@@ -803,6 +811,16 @@ public final class Interface extends ComparableStructure<String> {
   private transient boolean _blacklisted;
   private String _channelGroup;
   private SortedSet<String> _channelGroupMembers;
+
+  /**
+   * A list of the {@link ConnectedRoute} connected routes for the {@link #getAllAddresses()
+   * addresses} configured on this interface.
+   *
+   * <p>If {@code null}, the default logic in IBDP will be used to create one connected route per
+   * concrete interface address. If present, including empty, IBDP will use these routes instead.
+   */
+  @Nullable private List<ConnectedRoute> _connectedRoutes;
+
   private String _cryptoMap;
   private SortedSet<String> _declaredNames;
   /** Set of interface dependencies required for this interface to active */
@@ -1076,6 +1094,12 @@ public final class Interface extends ComparableStructure<String> {
   @JsonProperty(PROP_CHANNEL_GROUP_MEMBERS)
   public SortedSet<String> getChannelGroupMembers() {
     return _channelGroupMembers;
+  }
+
+  @JsonProperty(PROP_CONNECTED_ROUTES)
+  @Nullable
+  public List<ConnectedRoute> getConnectedRoutes() {
+    return _connectedRoutes;
   }
 
   @JsonProperty(PROP_CRYPTO_MAP)
@@ -1502,6 +1526,11 @@ public final class Interface extends ComparableStructure<String> {
   @JsonProperty(PROP_CHANNEL_GROUP_MEMBERS)
   public void setChannelGroupMembers(Iterable<String> channelGroupMembers) {
     _channelGroupMembers = ImmutableSortedSet.copyOf(channelGroupMembers);
+  }
+
+  @JsonProperty(PROP_CONNECTED_ROUTES)
+  public void setConnectedRoutes(@Nullable List<ConnectedRoute> routes) {
+    _connectedRoutes = routes;
   }
 
   @JsonProperty(PROP_CRYPTO_MAP)

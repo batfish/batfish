@@ -1,9 +1,11 @@
 package org.batfish.job;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Multimap;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.function.Function;
@@ -14,6 +16,7 @@ import org.batfish.config.Settings;
 import org.batfish.datamodel.AsPathAccessList;
 import org.batfish.datamodel.CommunityList;
 import org.batfish.datamodel.Configuration;
+import org.batfish.datamodel.ConnectedRoute;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Ip6AccessList;
 import org.batfish.datamodel.IpAccessList;
@@ -71,6 +74,33 @@ public class ConvertConfigurationJob extends BatfishJob<ConvertConfigurationResu
   }
 
   /**
+   * Applies sanity checks and finishing touches to the given {@link Interface}.
+   *
+   * <p>Sanity checks such as asserting that required properties hold.
+   *
+   * <p>Finishing touches such as converting structures to their immutable forms.
+   */
+  private static void finalizeInterface(Configuration c, Interface i, Warnings w) {
+    assert w != null; // suppress unused warning
+    if (i.getConnectedRoutes() != null) {
+      List<ConnectedRoute> routes = i.getConnectedRoutes();
+      // Connected routes sorted by network
+      long numPrefixes = routes.stream().map(ConnectedRoute::getNetwork).distinct().count();
+      if (numPrefixes != routes.size()) {
+        w.redFlag(
+            String.format(
+                "%s[%s] has duplicate prefixes in the connected routes",
+                c.getHostname(), i.getName()));
+      }
+      List<ConnectedRoute> sortedRoutes =
+          routes.stream()
+              .sorted(Comparator.comparing(ConnectedRoute::getNetwork))
+              .collect(ImmutableList.toImmutableList());
+      i.setConnectedRoutes(sortedRoutes);
+    }
+  }
+
+  /**
    * Applies sanity checks and finishing touches to the given {@link Configuration}.
    *
    * <p>Sanity checks such as asserting that required properties hold.
@@ -92,6 +122,7 @@ public class ConvertConfigurationJob extends BatfishJob<ConvertConfigurationResu
     c.setAsPathAccessLists(
         verifyAndToImmutableMap(c.getAsPathAccessLists(), AsPathAccessList::getName, w));
     c.setCommunityLists(verifyAndToImmutableMap(c.getCommunityLists(), CommunityList::getName, w));
+    c.getAllInterfaces().values().forEach(i -> finalizeInterface(c, i, w));
     c.setInterfaces(verifyAndToImmutableMap(c.getAllInterfaces(), Interface::getName, w));
     c.setIpAccessLists(verifyAndToImmutableMap(c.getIpAccessLists(), IpAccessList::getName, w));
     c.setIp6AccessLists(verifyAndToImmutableMap(c.getIp6AccessLists(), Ip6AccessList::getName, w));

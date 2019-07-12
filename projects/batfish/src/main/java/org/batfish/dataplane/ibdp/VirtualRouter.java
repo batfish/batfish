@@ -28,6 +28,7 @@ import java.io.Serializable;
 import java.util.AbstractMap.SimpleEntry;
 import java.util.Collection;
 import java.util.IdentityHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
@@ -796,11 +797,15 @@ public class VirtualRouter implements Serializable {
     // Look at all connected interfaces
     for (Interface i : _vrf.getInterfaces().values()) {
       if (i.getActive()) { // Make sure the interface is active
-        // Create a route for each interface prefix
-        for (ConcreteInterfaceAddress ifaceAddress : i.getAllConcreteAddresses()) {
-          Prefix prefix = ifaceAddress.getPrefix();
-          _connectedRib.mergeRoute(annotateRoute(new ConnectedRoute(prefix, i.getName())));
+        List<ConnectedRoute> routes = i.getConnectedRoutes();
+        if (routes == null) {
+          // Create a route for each interface prefix
+          routes =
+              i.getAllConcreteAddresses().stream()
+                  .map(addr -> new ConnectedRoute(addr.getPrefix(), i.getName()))
+                  .collect(Collectors.toList());
         }
+        routes.forEach(r -> _connectedRib.mergeRoute(annotateRoute(r)));
       }
     }
   }
