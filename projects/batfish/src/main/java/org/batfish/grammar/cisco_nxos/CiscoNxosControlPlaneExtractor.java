@@ -434,7 +434,7 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
     } else {
       explicitSeq = null;
     }
-    Optional<Set<StandardCommunity>> communities = toStandardCommunitySet(ctx, ctx.communities);
+    Optional<Set<StandardCommunity>> communities = toStandardCommunitySet(ctx.communities);
     if (!communities.isPresent()) {
       return;
     }
@@ -1910,7 +1910,7 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
   }
 
   private @Nonnull Optional<Set<StandardCommunity>> toStandardCommunitySet(
-      ParserRuleContext messageCtx, Iterable<Standard_communityContext> communities) {
+      Iterable<Standard_communityContext> communities) {
     ImmutableSet.Builder<StandardCommunity> builder = ImmutableSet.builder();
     for (Standard_communityContext communityCtx : communities) {
       Optional<StandardCommunity> community = toStandardCommunity(communityCtx);
