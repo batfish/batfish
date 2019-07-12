@@ -2,6 +2,7 @@ net del all
 #
 net add hostname cumulus_nclu_interface
 #
+# IPv6 grammar
 net add interface swp1 ipv6 address 100::ffff:ffff:ffff:ffff/24
 net add interface swp1 ipv6 address dhcp
 net add interface swp1 ipv6 address-virtual 00:25:96:12:34:56
@@ -14,4 +15,7 @@ net add interface swp1 ipv6 nd ra-interval 5555
 net add interface swp1 ipv6 nd ra-interval msec 1000000
 net add interface swp1 ipv6 nd ra-lifetime 6000
 net add interface swp1 ipv6 nd suppress-ra
+# MTU
 net add interface swp1 mtu 2000
+# Ensure breakout interface names are recognized
+net add interface swp1s2

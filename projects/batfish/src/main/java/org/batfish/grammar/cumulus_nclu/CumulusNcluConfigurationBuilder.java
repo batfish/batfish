@@ -184,7 +184,8 @@ import org.batfish.representation.cumulus.Vxlan;
 public class CumulusNcluConfigurationBuilder extends CumulusNcluParserBaseListener {
 
   private static final Pattern NUMBERED_WORD_PATTERN = Pattern.compile("^(.*[^0-9])([0-9]+)$");
-  private static final Pattern PHYSICAL_INTERFACE_PATTERN = Pattern.compile("(swp|eth)[0-9]+");
+  private static final Pattern PHYSICAL_INTERFACE_PATTERN =
+      Pattern.compile("(swp[0-9]+(s[0-9])?)|(eth[0-9]+)");
   private static final Pattern SUBINTERFACE_PATTERN = Pattern.compile("^(.*)\\.([0-9]+)$");
   private static final Pattern VLAN_INTERFACE_PATTERN = Pattern.compile("^vlan([0-9]+)$");
   private static final int MAX_VXLAN_ID = (1 << 24) - 1; // 24 bit number
