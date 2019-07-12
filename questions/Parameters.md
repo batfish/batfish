@@ -478,7 +478,7 @@ An OSPF process property specifier is a set of enums (see above) over the follow
           * `OSPF-EXT2`
     * `ISIS`
        * `ISIS-L1`
-       * ISIS-L2
+       * `ISIS-L2`
     * `EIGRP`
        * `EIGRP-INT`
        * `EIGRP-EXT`
