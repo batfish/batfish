@@ -86,6 +86,11 @@ line_action
   | permit = PERMIT
 ;
 
+literal_standard_community
+:
+  high = uint16 COLON low = uint16
+;
+
 null_rest_of_line
 :
   ~NEWLINE* NEWLINE
@@ -107,6 +112,15 @@ route_network
 :
   address = ip_address mask = subnet_mask
   | prefix = ip_prefix
+;
+
+standard_community
+:
+  literal = literal_standard_community
+  | INTERNET
+  | LOCAL_AS
+  | NO_ADVERTISE
+  | NO_EXPORT
 ;
 
 subdomain_name

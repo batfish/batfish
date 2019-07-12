@@ -333,14 +333,19 @@ CMD
   'cmd'
 ;
 
-CONFIGURATION
+COMMUNITY_LIST
 :
-  'configuration'
+  'community-list'
 ;
 
 COMPARE_ROUTERID
 :
   'compare-routerid'
+;
+
+CONFIGURATION
+:
+  'configuration'
 ;
 
 CONFED
@@ -1028,7 +1033,7 @@ LISP
 
 LOCAL_AS
 :
-  'local-as'
+  [Ll] [Oo] [Cc] [Aa] [Ll] '-' [Aa] [Ss]
 ;
 
 LOG
@@ -1268,6 +1273,16 @@ NNTP
 NO
 :
   'no'
+;
+
+NO_ADVERTISE
+:
+  'no-advertise'
+;
+
+NO_EXPORT
+:
+  'no-export'
 ;
 
 NO_PREPEND
@@ -1772,7 +1787,7 @@ STALEPATH_TIME
 
 STANDARD
 :
-  'standard'
+  'standard' -> pushMode ( M_Word )
 ;
 
 STARTUP_QUERY_COUNT
