@@ -17,6 +17,7 @@ public final class KernelRouteTest {
     new EqualsTester()
         .addEqualityGroup(kr, kr, builder.build())
         .addEqualityGroup(builder.setNetwork(Prefix.ZERO).build())
+        .addEqualityGroup((builder.setTag(5L).build()))
         .testEquals();
   }
 

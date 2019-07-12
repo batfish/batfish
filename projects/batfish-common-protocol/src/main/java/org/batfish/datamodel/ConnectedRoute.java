@@ -24,10 +24,11 @@ public final class ConnectedRoute extends AbstractRoute {
   private static ConnectedRoute create(
       @Nullable @JsonProperty(PROP_NETWORK) Prefix network,
       @Nullable @JsonProperty(PROP_NEXT_HOP_INTERFACE) String nextHopInterface,
-      @JsonProperty(PROP_ADMINISTRATIVE_COST) int adminCost) {
+      @JsonProperty(PROP_ADMINISTRATIVE_COST) int adminCost,
+      @JsonProperty(PROP_TAG) long tag) {
     checkArgument(network != null, "Cannot create connected route: missing %s", PROP_NETWORK);
     return new ConnectedRoute(
-        network, firstNonNull(nextHopInterface, Route.UNSET_NEXT_HOP_INTERFACE));
+        network, firstNonNull(nextHopInterface, Route.UNSET_NEXT_HOP_INTERFACE), adminCost, tag);
   }
 
   /** Create a connected route with admin cost of 0 */
@@ -36,7 +37,11 @@ public final class ConnectedRoute extends AbstractRoute {
   }
 
   public ConnectedRoute(Prefix network, String nextHopInterface, int adminCost) {
-    super(network, adminCost, false, false);
+    this(network, nextHopInterface, adminCost, Route.UNSET_ROUTE_TAG);
+  }
+
+  public ConnectedRoute(Prefix network, String nextHopInterface, int adminCost, long tag) {
+    super(network, adminCost, tag, false, false);
     _nextHopInterface = nextHopInterface;
   }
 
@@ -52,12 +57,14 @@ public final class ConnectedRoute extends AbstractRoute {
         && _admin == rhs._admin
         && getNonRouting() == rhs.getNonRouting()
         && getNonForwarding() == rhs.getNonForwarding()
-        && _nextHopInterface.equals(rhs._nextHopInterface);
+        && _nextHopInterface.equals(rhs._nextHopInterface)
+        && _tag == rhs._tag;
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(_network, _admin, getNonRouting(), getNonForwarding(), _nextHopInterface);
+    return Objects.hash(
+        _network, _admin, getNonRouting(), getNonForwarding(), _nextHopInterface, _tag);
   }
 
   @Override
@@ -85,18 +92,14 @@ public final class ConnectedRoute extends AbstractRoute {
   }
 
   @Override
-  public long getTag() {
-    return NO_TAG;
-  }
-
-  @Override
   public Builder toBuilder() {
     return builder()
         .setNetwork(getNetwork())
         .setAdmin(_admin)
+        .setNextHopInterface(_nextHopInterface)
+        .setTag(_tag)
         .setNonRouting(getNonRouting())
-        .setNonForwarding(getNonForwarding())
-        .setNextHopInterface(_nextHopInterface);
+        .setNonForwarding(getNonForwarding());
   }
 
   /** Builder for {@link ConnectedRoute} */

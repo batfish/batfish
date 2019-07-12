@@ -19,26 +19,6 @@ public class RipInternalRoute extends RipRoute {
     super(network, nextHopIp, admin, metric);
   }
 
-  @Override
-  public boolean equals(@Nullable Object o) {
-    if (this == o) {
-      return true;
-    }
-    if (!(o instanceof RipRoute)) {
-      return false;
-    }
-    RipRoute other = (RipRoute) o;
-    return _network.equals(other._network)
-        && _admin == other._admin
-        && _metric == other._metric
-        && _nextHopIp.equals(other._nextHopIp);
-  }
-
-  @Override
-  public int hashCode() {
-    return Objects.hash(_network, _admin, _metric, _nextHopIp);
-  }
-
   @Nonnull
   @Override
   public String getNextHopInterface() {
@@ -50,22 +30,8 @@ public class RipInternalRoute extends RipRoute {
     return RoutingProtocol.RIP;
   }
 
-  @Override
-  public long getTag() {
-    return NO_TAG;
-  }
-
   public static Builder builder() {
     return new Builder();
-  }
-
-  @Override
-  public Builder toBuilder() {
-    return new Builder()
-        .setNetwork(getNetwork())
-        .setNextHopIp(getNextHopIp())
-        .setAdmin(getAdministrativeCost())
-        .setMetric(getMetric());
   }
 
   /** A {@link RipInternalRoute} builder */
@@ -84,5 +50,43 @@ public class RipInternalRoute extends RipRoute {
     protected Builder getThis() {
       return this;
     }
+  }
+
+  /////// Keep #toBuilder, #equals, and #hashCode in sync ////////
+
+  @Override
+  public Builder toBuilder() {
+    return new Builder()
+        .setAdmin(getAdministrativeCost())
+        .setMetric(getMetric())
+        .setNetwork(getNetwork())
+        .setNextHopIp(getNextHopIp())
+        .setNonForwarding(getNonForwarding())
+        .setNonRouting(getNonRouting())
+        .setTag(getTag());
+  }
+
+  @Override
+  public boolean equals(@Nullable Object o) {
+    if (this == o) {
+      return true;
+    }
+    if (!(o instanceof RipRoute)) {
+      return false;
+    }
+    RipRoute other = (RipRoute) o;
+    return _network.equals(other._network)
+        && _admin == other._admin
+        && _metric == other._metric
+        && _nextHopIp.equals(other._nextHopIp)
+        && getNonForwarding() == other.getNonForwarding()
+        && getNonRouting() == other.getNonRouting()
+        && _tag == other._tag;
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(
+        _network, _admin, _metric, _nextHopIp, getNonForwarding(), getNonRouting(), _tag);
   }
 }

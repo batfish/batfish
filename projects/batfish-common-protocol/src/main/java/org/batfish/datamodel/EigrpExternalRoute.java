@@ -27,10 +27,11 @@ public class EigrpExternalRoute extends EigrpRoute {
       long destinationAsn,
       @Nullable Ip nextHopIp,
       @Nonnull EigrpMetric metric,
-      @Nonnull Long processAsn,
+      long processAsn,
+      long tag,
       boolean nonForwarding,
       boolean nonRouting) {
-    super(admin, network, nextHopIp, metric, processAsn, nonForwarding, nonRouting);
+    super(admin, network, nextHopIp, metric, processAsn, tag, nonForwarding, nonRouting);
     _destinationAsn = destinationAsn;
   }
 
@@ -41,35 +42,19 @@ public class EigrpExternalRoute extends EigrpRoute {
       @Nullable @JsonProperty(PROP_NETWORK) Prefix network,
       @Nullable @JsonProperty(PROP_NEXT_HOP_IP) Ip nextHopIp,
       @Nullable @JsonProperty(PROP_EIGRP_METRIC) EigrpMetric metric,
-      @Nullable @JsonProperty(PROP_PROCESS_ASN) Long processAsn) {
+      @Nullable @JsonProperty(PROP_PROCESS_ASN) Long processAsn,
+      @Nullable @JsonProperty(PROP_TAG) Long tag) {
     checkArgument(admin != null, "EIGRP route: missing %s", PROP_ADMINISTRATIVE_COST);
     checkArgument(destinationAsn != null, "EIGRP route: missing %s", PROP_DESTINATION_ASN);
     checkArgument(metric != null, "EIGRP route: missing %s", PROP_EIGRP_METRIC);
     checkArgument(processAsn != null, "EIGRP route: missing %s", PROP_PROCESS_ASN);
+    checkArgument(tag != null, "EIGRP route: missing %s", PROP_TAG);
     return new EigrpExternalRoute(
-        network, admin, destinationAsn, nextHopIp, metric, processAsn, false, false);
-  }
-
-  @Override
-  public boolean equals(Object obj) {
-    if (this == obj) {
-      return true;
-    }
-    if (!(obj instanceof EigrpExternalRoute)) {
-      return false;
-    }
-    EigrpExternalRoute rhs = (EigrpExternalRoute) obj;
-    return _admin == rhs._admin
-        && Objects.equals(_destinationAsn, rhs._destinationAsn)
-        && Objects.equals(_metric, rhs._metric)
-        && Objects.equals(_network, rhs._network)
-        && Objects.equals(_nextHopIp, rhs._nextHopIp)
-        && Objects.equals(_processAsn, rhs._processAsn);
+        network, admin, destinationAsn, nextHopIp, metric, processAsn, tag, false, false);
   }
 
   @JsonProperty(PROP_DESTINATION_ASN)
-  @Nonnull
-  public Long getDestinationAsn() {
+  public long getDestinationAsn() {
     return _destinationAsn;
   }
 
@@ -77,27 +62,6 @@ public class EigrpExternalRoute extends EigrpRoute {
   @Nonnull
   public RoutingProtocol getProtocol() {
     return RoutingProtocol.EIGRP_EX;
-  }
-
-  @Override
-  public Builder toBuilder() {
-    return builder()
-        // AbstractRoute properties
-        .setNetwork(getNetwork())
-        .setNextHopIp(getNextHopIp())
-        .setAdmin(getAdministrativeCost())
-        .setMetric(getMetric())
-        .setNonForwarding(getNonForwarding())
-        .setNonRouting(getNonRouting())
-        // EigrpExternalRoute properties
-        .setDestinationAsn(getDestinationAsn())
-        .setEigrpMetric(getEigrpMetric())
-        .setProcessAsn(getProcessAsn());
-  }
-
-  @Override
-  public final int hashCode() {
-    return hash(_admin, _destinationAsn, _metric.hashCode(), _network, _nextHopIp);
   }
 
   public static Builder builder() {
@@ -126,6 +90,7 @@ public class EigrpExternalRoute extends EigrpRoute {
           getNextHopIp(),
           requireNonNull(_eigrpMetric),
           _processAsn,
+          getTag(),
           getNonForwarding(),
           getNonRouting());
     }
@@ -150,5 +115,58 @@ public class EigrpExternalRoute extends EigrpRoute {
       _processAsn = processAsn;
       return this;
     }
+  }
+
+  /////// Keep #toBuilder, #equals, and #hashCode in sync ////////
+
+  @Override
+  public Builder toBuilder() {
+    return builder()
+        // AbstractRoute properties
+        .setNetwork(getNetwork())
+        .setNextHopIp(getNextHopIp())
+        .setAdmin(getAdministrativeCost())
+        // Skip setMetric since this builder ignores it in favor of setEigrpMetric
+        .setTag(getTag())
+        .setNonForwarding(getNonForwarding())
+        .setNonRouting(getNonRouting())
+        // EigrpExternalRoute properties
+        .setDestinationAsn(getDestinationAsn())
+        .setEigrpMetric(getEigrpMetric())
+        .setProcessAsn(getProcessAsn());
+  }
+
+  @Override
+  public boolean equals(Object obj) {
+    if (this == obj) {
+      return true;
+    }
+    if (!(obj instanceof EigrpExternalRoute)) {
+      return false;
+    }
+    EigrpExternalRoute rhs = (EigrpExternalRoute) obj;
+    return _admin == rhs._admin
+        && Objects.equals(_destinationAsn, rhs._destinationAsn)
+        && _metric.equals(rhs._metric)
+        && _network.equals(rhs._network)
+        && _nextHopIp.equals(rhs._nextHopIp)
+        && _processAsn == rhs._processAsn
+        && _tag == rhs._tag
+        && getNonForwarding() == rhs.getNonForwarding()
+        && getNonRouting() == rhs.getNonRouting();
+  }
+
+  @Override
+  public final int hashCode() {
+    return hash(
+        _network,
+        _nextHopIp,
+        _admin,
+        _tag,
+        getNonForwarding(),
+        getNonRouting(),
+        _destinationAsn,
+        _metric,
+        _processAsn);
   }
 }

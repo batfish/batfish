@@ -25,7 +25,7 @@ public abstract class RipRoute extends AbstractRoute {
       @Nullable @JsonProperty(PROP_NEXT_HOP_IP) Ip nextHopIp,
       @JsonProperty(PROP_ADMINISTRATIVE_COST) int admin,
       @JsonProperty(PROP_METRIC) long metric) {
-    super(network, admin, false, false);
+    super(network, admin, Route.UNSET_ROUTE_TAG, false, false);
     checkArgument(
         metric >= 0 && metric <= MAX_ROUTE_METRIC,
         "Invalid RIP route metric %d. Must be between 0 and %d",

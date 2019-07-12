@@ -63,6 +63,7 @@ public final class EvpnType2Route extends EvpnRoute<EvpnType2Route.Builder, Evpn
           _receivedFromRouteReflectorClient,
           _routeDistinguisher,
           _srcProtocol,
+          getTag(),
           _weight);
     }
 
@@ -125,6 +126,7 @@ public final class EvpnType2Route extends EvpnRoute<EvpnType2Route.Builder, Evpn
           boolean receivedFromRouteReflectorClient,
       @Nullable @JsonProperty(PROP_ROUTE_DISTINGUISHER) RouteDistinguisher routeDistinguisher,
       @Nullable @JsonProperty(PROP_SRC_PROTOCOL) RoutingProtocol srcProtocol,
+      @JsonProperty(PROP_TAG) long tag,
       @JsonProperty(PROP_WEIGHT) int weight) {
     checkArgument(ip != null, "Missing %s", PROP_IP);
     checkArgument(originatorIp != null, "Missing %s", PROP_ORIGINATOR_IP);
@@ -152,6 +154,7 @@ public final class EvpnType2Route extends EvpnRoute<EvpnType2Route.Builder, Evpn
         receivedFromRouteReflectorClient,
         routeDistinguisher,
         srcProtocol,
+        tag,
         weight);
   }
 
@@ -176,6 +179,7 @@ public final class EvpnType2Route extends EvpnRoute<EvpnType2Route.Builder, Evpn
       boolean receivedFromRouteReflectorClient,
       RouteDistinguisher routeDistinguisher,
       @Nullable RoutingProtocol srcProtocol,
+      long tag,
       int weight) {
     super(
         Prefix.create(ip, Prefix.MAX_PREFIX_LENGTH),
@@ -194,6 +198,7 @@ public final class EvpnType2Route extends EvpnRoute<EvpnType2Route.Builder, Evpn
         protocol,
         receivedFromIp,
         srcProtocol,
+        tag,
         weight,
         nonForwarding,
         nonRouting,
@@ -215,6 +220,8 @@ public final class EvpnType2Route extends EvpnRoute<EvpnType2Route.Builder, Evpn
   public static Builder builder() {
     return new Builder();
   }
+
+  /////// Keep #toBuilder, #equals, and #hashCode in sync ////////
 
   @Override
   public Builder toBuilder() {
@@ -240,6 +247,7 @@ public final class EvpnType2Route extends EvpnRoute<EvpnType2Route.Builder, Evpn
         .setReceivedFromRouteReflectorClient(_receivedFromRouteReflectorClient)
         .setRouteDistinguisher(_routeDistinguisher)
         .setSrcProtocol(_srcProtocol)
+        .setTag(_tag)
         .setWeight(_weight);
   }
 
@@ -273,7 +281,8 @@ public final class EvpnType2Route extends EvpnRoute<EvpnType2Route.Builder, Evpn
         && _protocol == other._protocol
         && Objects.equals(_receivedFromIp, other._receivedFromIp)
         && Objects.equals(_routeDistinguisher, other._routeDistinguisher)
-        && _srcProtocol == other._srcProtocol;
+        && _srcProtocol == other._srcProtocol
+        && _tag == other._tag;
   }
 
   @Override
@@ -299,6 +308,7 @@ public final class EvpnType2Route extends EvpnRoute<EvpnType2Route.Builder, Evpn
       h = h * 31 + Boolean.hashCode(_receivedFromRouteReflectorClient);
       h = h * 31 + _routeDistinguisher.hashCode();
       h = h * 31 + (_srcProtocol == null ? 0 : _srcProtocol.ordinal());
+      h = h * 31 + Long.hashCode(_tag);
       h = h * 31 + _weight;
 
       _hashCode = h;

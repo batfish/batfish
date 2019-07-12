@@ -23,9 +23,6 @@ public abstract class AbstractRoute implements AbstractRouteDecorator, Serializa
   // unsigned 32-bit int max
   public static final long MAX_TAG = 0xFFFFFFFFL;
 
-  /** Indicates a route has no tag associated with it */
-  public static final long NO_TAG = -1L;
-
   static final String PROP_ADMINISTRATIVE_COST = "administrativeCost";
   public static final String PROP_METRIC = "metric";
   static final String PROP_NETWORK = "network";
@@ -40,21 +37,18 @@ public abstract class AbstractRoute implements AbstractRouteDecorator, Serializa
   protected final int _admin;
   private final boolean _nonRouting;
   private final boolean _nonForwarding;
+  protected final long _tag;
 
   @JsonCreator
   protected AbstractRoute(
-      @Nullable Prefix network, int admin, boolean nonRouting, boolean nonForwarding) {
+      @Nullable Prefix network, int admin, long tag, boolean nonRouting, boolean nonForwarding) {
     checkArgument(network != null, "Cannot create a route without a %s", PROP_NETWORK);
     checkArgument(admin >= 0, "Invalid admin distance for a route: %d", admin);
     _network = network;
     _admin = admin;
     _nonForwarding = nonForwarding;
     _nonRouting = nonRouting;
-  }
-
-  /** Backwards compatible API */
-  protected AbstractRoute(@Nonnull Prefix network) {
-    this(network, 1, false, false);
+    _tag = tag;
   }
 
   @Override
@@ -116,9 +110,11 @@ public abstract class AbstractRoute implements AbstractRouteDecorator, Serializa
   @JsonIgnore
   public abstract RoutingProtocol getProtocol();
 
-  /** Return the route's tag or {@link #NO_TAG} if no tag is present */
-  @JsonIgnore
-  public abstract long getTag();
+  /** Return the route's tag or {@link Route#UNSET_ROUTE_TAG} if no tag is present */
+  @JsonProperty(PROP_TAG)
+  public final long getTag() {
+    return _tag;
+  }
 
   @Override
   public String toString() {
