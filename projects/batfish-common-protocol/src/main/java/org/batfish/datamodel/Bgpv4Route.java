@@ -5,6 +5,7 @@ import static com.google.common.base.Preconditions.checkArgument;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.base.MoreObjects;
 import java.util.Objects;
 import java.util.SortedSet;
 import javax.annotation.Nonnull;
@@ -251,5 +252,30 @@ public final class Bgpv4Route extends BgpRoute<Bgpv4Route.Builder, Bgpv4Route> {
       _hashCode = h;
     }
     return h;
+  }
+
+  @Override
+  public String toString() {
+    return MoreObjects.toStringHelper(this)
+        .omitNullValues()
+        .add("_network", _network)
+        .add("_admin", _admin)
+        .add("_tag", _tag)
+        .add("_asPath", _asPath)
+        .add("_clusterList", _clusterList)
+        .add("_communities", _communities)
+        .add("_discard", _discard)
+        .add("_localPreference", _localPreference)
+        .add("_med", _med)
+        .add("_nextHopInterface", _nextHopInterface)
+        .add("_nextHopIp", _nextHopIp)
+        .add("_originatorIp", _originatorIp)
+        .add("_originType", _originType)
+        .add("_protocol", _protocol)
+        .add("_receivedFromIp", _receivedFromIp)
+        .add("_receivedFromRouteReflectorClient", _receivedFromRouteReflectorClient)
+        .add("_srcProtocol", _srcProtocol)
+        .add("_weight", _weight)
+        .toString();
   }
 }

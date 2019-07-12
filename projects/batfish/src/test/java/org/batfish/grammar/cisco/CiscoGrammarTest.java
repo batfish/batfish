@@ -332,6 +332,7 @@ import org.batfish.datamodel.PrefixRange;
 import org.batfish.datamodel.PrefixSpace;
 import org.batfish.datamodel.RegexCommunitySet;
 import org.batfish.datamodel.RipInternalRoute;
+import org.batfish.datamodel.Route;
 import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.SubRange;
@@ -1708,7 +1709,8 @@ public class CiscoGrammarTest {
     // Check if routingPolicy rejects RIP route
     assertFalse(
         routingPolicy.process(
-            new RipInternalRoute(Prefix.parse("2.2.2.2/32"), Ip.parse("3.3.3.3"), 1, 1),
+            new RipInternalRoute(
+                Prefix.parse("2.2.2.2/32"), Ip.parse("3.3.3.3"), 1, 1, Route.UNSET_ROUTE_TAG),
             outputRouteBuilder,
             null,
             DEFAULT_VRF_NAME,
