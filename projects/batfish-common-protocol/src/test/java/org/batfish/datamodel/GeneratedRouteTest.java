@@ -35,6 +35,7 @@ public class GeneratedRouteTest {
         .addEqualityGroup(gr.setGenerationPolicy("GENERATE").build())
         .addEqualityGroup(gr.setAttributePolicy("Attribute").build())
         .addEqualityGroup(gr.setAdmin(100).build())
+        .addEqualityGroup(gr.setTag(5L).build())
         .addEqualityGroup(gr.setNonRouting(true).build())
         .addEqualityGroup(gr.setNonForwarding(true).build())
         .addEqualityGroup(new Object())
@@ -56,6 +57,7 @@ public class GeneratedRouteTest {
             .add(grb.setCommunities(ImmutableSet.of(StandardCommunity.of(111L))).build())
             .add(grb.setDiscard(true).build())
             .add(grb.setAttributePolicy(null).build())
+            .add(grb.setTag(5L).build())
             .build();
     for (int i = 0; i < ordered.size(); i++) {
       for (int j = 0; j < ordered.size(); j++) {

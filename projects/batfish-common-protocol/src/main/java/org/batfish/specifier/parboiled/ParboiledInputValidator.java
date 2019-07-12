@@ -199,6 +199,9 @@ public final class ParboiledInputValidator {
     } else if (astNode instanceof NodeAstNode) {
       return new NodeNoMatchMessages((NodeAstNode) astNode)
           .get(_completionMetadata, _nodeRolesData, _referenceLibrary);
+    } else if (astNode instanceof NameSetAstNode) {
+      return new NameSetNoMatchMessages((NameSetAstNode) astNode, _grammar)
+          .get(_completionMetadata, _nodeRolesData, _referenceLibrary);
     }
     return ImmutableList.of();
   }

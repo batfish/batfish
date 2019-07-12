@@ -19,4 +19,3 @@ net add vxlan v1 vxlan id 10001
 net add bond v1 bond slaves swp8
 #
 net commit
-

@@ -12,8 +12,9 @@ public abstract class OspfInternalRoute extends OspfRoute {
       int admin,
       long metric,
       long area,
+      long tag,
       boolean nonForwarding,
       boolean nonRouting) {
-    super(network, nextHopIp, admin, metric, area, nonRouting, nonForwarding);
+    super(network, nextHopIp, admin, metric, area, tag, nonRouting, nonForwarding);
   }
 }

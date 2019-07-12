@@ -6,6 +6,8 @@ import org.batfish.vendor.StructureType;
 public enum CiscoNxosStructureType implements StructureType {
   INTERFACE("interface"),
   IP_ACCESS_LIST("ip access-list"),
+  IP_COMMUNITY_LIST_STANDARD("ip community-list standard"),
+  IP_PREFIX_LIST("ip prefix-list"),
   PORT_CHANNEL("port-channel"),
   VLAN("vlan"),
   VRF("vrf");

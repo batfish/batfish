@@ -32,7 +32,7 @@ public class Variable {
     BGP_PROCESS_PROPERTY_SPEC("bgpProcessPropertySpec", true),
     BGP_ROUTES("bgpRoutes", false),
     BGP_SESSION_STATUS("bgpSessionStatus", true),
-    BGP_SESSION_TYPE("bgpSessionType", true),
+    BGP_SESSION_TYPE_SPEC("bgpSessionTypeSpec", true),
     BOOLEAN("boolean", false),
     COMPARATOR("comparator", true),
     DOUBLE("double", false),
@@ -58,12 +58,14 @@ public class Variable {
     IP_PROTOCOL_SPEC("ipProtocolSpec", true),
     IP_SPACE_SPEC("ipSpaceSpec", true),
     IP_WILDCARD("ipWildcard", true),
-    IPSEC_SESSION_STATUS("ipsecSessionStatus", true),
+    IPSEC_SESSION_STATUS_SPEC("ipsecSessionStatusSpec", true),
     JAVA_REGEX("javaRegex", true),
     JSON_PATH("jsonPath", true),
     JSON_PATH_REGEX("jsonPathRegex", true),
     LOCATION_SPEC("locationSpec", true),
     LONG("long", false),
+    MLAG_ID("mlagId", true),
+    MLAG_ID_SPEC("mlagIdSpec", true),
     NAMED_STRUCTURE_SPEC("namedStructureSpec", true),
     NODE_PROPERTY_SPEC("nodePropertySpec", true),
     NODE_NAME("nodeName", true),
@@ -74,7 +76,8 @@ public class Variable {
     NODE_ROLE_DIMENSION_NAME("nodeRoleDimensionName", true),
     NODE_ROLE_NAME("nodeRoleName", true),
     NODE_SPEC("nodeSpec", true),
-    OSPF_PROPERTY_SPEC("ospfPropertySpec", true),
+    OSPF_INTERFACE_PROPERTY_SPEC("ospfInterfacePropertySpec", true),
+    OSPF_PROCESS_PROPERTY_SPEC("ospfProcessPropertySpec", true),
     PATH_CONSTRAINT("pathConstraint", true),
     PREFIX("prefix", true),
     PREFIX_RANGE("prefixRange", true),
@@ -103,7 +106,7 @@ public class Variable {
             .put(CompletionType.NAMED_STRUCTURE, NAMED_STRUCTURE_SPEC)
             .put(CompletionType.NODE, NODE_SPEC)
             .put(CompletionType.NODE_PROPERTY, NODE_PROPERTY_SPEC)
-            .put(CompletionType.OSPF_PROPERTY, OSPF_PROPERTY_SPEC)
+            .put(CompletionType.OSPF_PROPERTY, OSPF_PROCESS_PROPERTY_SPEC)
             .build();
 
     @JsonCreator
@@ -135,6 +138,10 @@ public class Variable {
         String name = value._name.toLowerCase();
         map.put(name, value);
       }
+      /** Synonyms for backward compatibility (July 9, 2019) */
+      map.put("bgpSessionType".toLowerCase(), BGP_SESSION_TYPE_SPEC);
+      map.put("ipsecSessionStatus".toLowerCase(), IPSEC_SESSION_STATUS_SPEC);
+      map.put("ospfPropertySpec".toLowerCase(), OSPF_PROCESS_PROPERTY_SPEC);
       return map.build();
     }
 

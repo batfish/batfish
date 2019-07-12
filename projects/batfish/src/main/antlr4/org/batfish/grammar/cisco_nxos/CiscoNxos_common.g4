@@ -4,9 +4,31 @@ options {
   tokenVocab = CiscoNxosLexer;
 }
 
+bgp_asn
+:
+  large = uint32
+  | high = uint16 PERIOD low = uint16
+;
+
+cisco_nxos_password
+:
+// Lexer mode change required prior to entering this rule
+  PASSWORD_0? text = PASSWORD_0_TEXT
+  | PASSWORD_3
+  (
+    text = PASSWORD_3_TEXT
+    | malformed = PASSWORD_3_MALFORMED_TEXT
+  )
+  | PASSWORD_7
+  (
+    PASSWORD_7_TEXT
+    | malformed = PASSWORD_7_MALFORMED_TEXT
+  )
+;
+
 interface_address
 :
-  address = ip_address mask = ip_address
+  address = ip_address mask = subnet_mask
   | iaddress = ip_prefix
 ;
 
@@ -40,6 +62,7 @@ interface_parent_suffix
 ip_address
 :
   IP_ADDRESS
+  | SUBNET_MASK
 ;
 
 ip_prefix
@@ -47,10 +70,25 @@ ip_prefix
   IP_PREFIX
 ;
 
+ipv6_address
+:
+  IPV6_ADDRESS
+;
+
+ipv6_prefix
+:
+  IPV6_PREFIX
+;
+
 line_action
 :
-  DENY
-  | PERMIT
+  deny = DENY
+  | permit = PERMIT
+;
+
+literal_standard_community
+:
+  high = uint16 COLON low = uint16
 ;
 
 null_rest_of_line
@@ -58,15 +96,47 @@ null_rest_of_line
   ~NEWLINE* NEWLINE
 ;
 
+prefix_list_name
+:
+// 1-63 chars
+  WORD
+;
+
+route_map_name
+:
+// 1-63 chars
+  WORD
+;
+
 route_network
 :
-  address = ip_address mask = ip_address
+  address = ip_address mask = subnet_mask
   | prefix = ip_prefix
+;
+
+standard_community
+:
+  literal = literal_standard_community
+  | INTERNET
+  | LOCAL_AS
+  | NO_ADVERTISE
+  | NO_EXPORT
 ;
 
 subdomain_name
 :
   SUBDOMAIN_NAME
+;
+
+subnet_mask
+:
+  SUBNET_MASK
+;
+
+template_name
+:
+// 1-80 chars
+  WORD
 ;
 
 track_object_number

@@ -140,7 +140,8 @@ public final class BgpSessionAnswererUtils {
         return false;
       }
     }
-    return question.matchesType((String) row.get(COL_SESSION_TYPE, Schema.STRING));
+    return question.matchesType(
+        SessionType.parse((String) row.get(COL_SESSION_TYPE, Schema.STRING)));
   }
 
   private BgpSessionAnswererUtils() {}

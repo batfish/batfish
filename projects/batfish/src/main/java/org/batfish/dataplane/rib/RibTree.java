@@ -3,7 +3,6 @@ package org.batfish.dataplane.rib;
 import static org.batfish.dataplane.rib.RouteAdvertisement.Reason.REPLACE;
 
 import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.ImmutableSortedSet;
 import java.io.Serializable;
 import java.util.Set;
 import javax.annotation.Nonnull;
@@ -50,8 +49,7 @@ final class RibTree<R extends AbstractRouteDecorator> implements Serializable {
     Builder<R> b = RibDelta.builder();
     b.remove(route, reason);
     if (_root.get(route.getNetwork()).isEmpty() && _owner._backupRoutes != null) {
-      Set<? extends R> backups =
-          _owner._backupRoutes.getOrDefault(route.getNetwork(), ImmutableSortedSet.of());
+      Set<? extends R> backups = _owner._backupRoutes.get(route.getNetwork());
       if (backups.isEmpty()) {
         return b.build();
       }

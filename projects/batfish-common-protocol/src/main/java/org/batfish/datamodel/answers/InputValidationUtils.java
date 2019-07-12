@@ -39,9 +39,37 @@ public final class InputValidationUtils {
             completionMetadata,
             nodeRolesData,
             referenceLibrary);
+      case BGP_PEER_PROPERTY_SPEC:
+        return ParboiledInputValidator.validate(
+            Grammar.BGP_PEER_PROPERTY_SPECIFIER,
+            query,
+            completionMetadata,
+            nodeRolesData,
+            referenceLibrary);
+      case BGP_PROCESS_PROPERTY_SPEC:
+        return ParboiledInputValidator.validate(
+            Grammar.BGP_PROCESS_PROPERTY_SPECIFIER,
+            query,
+            completionMetadata,
+            nodeRolesData,
+            referenceLibrary);
+      case BGP_SESSION_TYPE_SPEC:
+        return ParboiledInputValidator.validate(
+            Grammar.BGP_SESSION_TYPE_SPECIFIER,
+            query,
+            completionMetadata,
+            nodeRolesData,
+            referenceLibrary);
       case FILTER_SPEC:
         return ParboiledInputValidator.validate(
             Grammar.FILTER_SPECIFIER, query, completionMetadata, nodeRolesData, referenceLibrary);
+      case INTERFACE_PROPERTY_SPEC:
+        return ParboiledInputValidator.validate(
+            Grammar.INTERFACE_PROPERTY_SPECIFIER,
+            query,
+            completionMetadata,
+            nodeRolesData,
+            referenceLibrary);
       case INTERFACES_SPEC:
         return ParboiledInputValidator.validate(
             Grammar.INTERFACE_SPECIFIER,
@@ -59,9 +87,19 @@ public final class InputValidationUtils {
       case IP_SPACE_SPEC:
         return ParboiledInputValidator.validate(
             Grammar.IP_SPACE_SPECIFIER, query, completionMetadata, nodeRolesData, referenceLibrary);
+      case IPSEC_SESSION_STATUS_SPEC:
+        return ParboiledInputValidator.validate(
+            Grammar.IPSEC_SESSION_STATUS_SPECIFIER,
+            query,
+            completionMetadata,
+            nodeRolesData,
+            referenceLibrary);
       case LOCATION_SPEC:
         return ParboiledInputValidator.validate(
             Grammar.LOCATION_SPECIFIER, query, completionMetadata, nodeRolesData, referenceLibrary);
+      case MLAG_ID_SPEC:
+        return ParboiledInputValidator.validate(
+            Grammar.MLAG_ID_SPECIFIER, query, completionMetadata, nodeRolesData, referenceLibrary);
       case NAMED_STRUCTURE_SPEC:
         return ParboiledInputValidator.validate(
             Grammar.NAMED_STRUCTURE_SPECIFIER,
@@ -72,9 +110,37 @@ public final class InputValidationUtils {
       case NODE_SPEC:
         return ParboiledInputValidator.validate(
             Grammar.NODE_SPECIFIER, query, completionMetadata, nodeRolesData, referenceLibrary);
+      case NODE_PROPERTY_SPEC:
+        return ParboiledInputValidator.validate(
+            Grammar.NODE_PROPERTY_SPECIFIER,
+            query,
+            completionMetadata,
+            nodeRolesData,
+            referenceLibrary);
+      case OSPF_INTERFACE_PROPERTY_SPEC:
+        return ParboiledInputValidator.validate(
+            Grammar.OSPF_INTERFACE_PROPERTY_SPECIFIER,
+            query,
+            completionMetadata,
+            nodeRolesData,
+            referenceLibrary);
+      case OSPF_PROCESS_PROPERTY_SPEC:
+        return ParboiledInputValidator.validate(
+            Grammar.OSPF_PROCESS_PROPERTY_SPECIFIER,
+            query,
+            completionMetadata,
+            nodeRolesData,
+            referenceLibrary);
       case ROUTING_POLICY_SPEC:
         return ParboiledInputValidator.validate(
             Grammar.ROUTING_POLICY_SPECIFIER,
+            query,
+            completionMetadata,
+            nodeRolesData,
+            referenceLibrary);
+      case VXLAN_VNI_PROPERTY_SPEC:
+        return ParboiledInputValidator.validate(
+            Grammar.VXLAN_VNI_PROPERTY_SPECIFIER,
             query,
             completionMetadata,
             nodeRolesData,

@@ -1,6 +1,7 @@
 package org.batfish.dataplane.ibdp;
 
 import static com.google.common.base.MoreObjects.firstNonNull;
+import static com.google.common.base.Preconditions.checkArgument;
 import static org.batfish.common.util.CollectionUtil.toImmutableSortedMap;
 import static org.batfish.common.util.CollectionUtil.toOrderedHashCode;
 import static org.batfish.datamodel.MultipathEquivalentAsPathMatchMode.EXACT_PATH;
@@ -81,6 +82,8 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
   @Nonnull private final Rib _mainRib;
   /** Current BGP topology */
   @Nonnull private BgpTopology _topology;
+  /** Metadata about propagated prefixes to/from neighbors */
+  @Nonnull private PrefixTracer _prefixTracer;
 
   /** Route dependency tracker for BGP IPv4 aggregate routes */
   @Nonnull
@@ -150,20 +153,21 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
    * @param configuration the parent {@link Configuration}
    * @param vrfName name of the VRF this process is in
    * @param mainRib take in a reference to MainRib for read-only use (e.g., getting IGP cost to
-   *     next-hop)
    */
   BgpRoutingProcess(
       BgpProcess process,
       Configuration configuration,
       String vrfName,
       Rib mainRib,
-      BgpTopology topology) {
+      BgpTopology topology,
+      PrefixTracer prefixTracer) {
     _process = process;
     _c = configuration;
     _vrfName = vrfName;
     // TODO: really need to have a read-only RIB interface for safety
     _mainRib = mainRib;
     _topology = topology;
+    _prefixTracer = prefixTracer;
 
     // Message queues start out empty
     _bgpv4IncomingRoutes = ImmutableSortedMap.of();
@@ -290,7 +294,12 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
             edge ->
                 graph
                     .edgeValue(edge.nodeU(), edge.nodeV())
-                    .get()
+                    .orElseThrow(
+                        () ->
+                            new IllegalStateException(
+                                String.format(
+                                    "Bgp session without session properties for edge %s -> %s",
+                                    edge.nodeU(), edge.nodeV())))
                     .getAddressFamilies()
                     .contains(familyType)) // ensure the session contains desired address family
         .map(edge -> new EdgeId(edge.nodeU(), edge.nodeV()));
@@ -389,6 +398,9 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
               assert vniVrf != null; // Invariant guaranteed by proper conversion
               VniSettings vniSettings = vniVrf.getVniSettings().get(vniConfig.getVni());
               assert vniSettings != null; // Invariant guaranteed by proper conversion
+              if (vniSettings.getSourceAddress() == null) {
+                return;
+              }
               EvpnType3Route route =
                   initEvpnType3Route(
                       ebgpAdmin,
@@ -404,24 +416,34 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
                 initializationBuilder.from(d);
               } else {
                 // Merge into our sibling VRF corresponding to the VNI
+                BgpRoutingProcess bgpRoutingProcess =
+                    n.getVirtualRouters().get(vniVrf.getName()).getBgpRoutingProcess();
+                checkArgument(
+                    bgpRoutingProcess != null, "Missing bgp process for vrf %s", vniVrf.getName());
                 initializationBuilder.from(
-                    n.getVirtualRouters()
-                        .get(vniVrf.getName())
-                        .getBgpRoutingProcess()
-                        .processCrossVrfEvpnRoute(new RouteAdvertisement<>(route)));
+                    bgpRoutingProcess.processCrossVrfEvpnRoute(new RouteAdvertisement<>(route)));
               }
             });
     _evpnInitializationDelta = initializationBuilder.build();
     _changeSet.from(_evpnDeltaBuilder.build());
   }
 
+  /**
+   * Create a new {@link EvpnType3Route} based on given {@link VniSettings}. Assumes VniSettings are
+   * valid (e.g., have properly set source address).
+   */
   @Nonnull
+  @VisibleForTesting
   static EvpnType3Route initEvpnType3Route(
       int ebgpAdmin,
       VniSettings vniSettings,
       ExtendedCommunity routeTarget,
       RouteDistinguisher routeDistinguisher,
       Ip routerId) {
+    checkArgument(
+        vniSettings.getSourceAddress() != null,
+        "Cannot construct type 3 route for invalid VNI %s",
+        vniSettings.getVni());
     // Locally all routes start as eBGP routes in our own RIB
     EvpnType3Route.Builder type3RouteBuilder = EvpnType3Route.builder();
     type3RouteBuilder.setAdmin(ebgpAdmin);
@@ -458,6 +480,8 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
     BgpPeerConfigId ourConfigId = edge.head();
     BgpPeerConfig ourBgpConfig = nc.getBgpPeerConfig(ourConfigId);
     assert ourBgpConfig != null; // because the edge exists
+    assert ourBgpConfig.getLocalAs() != null;
+    assert ourBgpConfig.getEvpnAddressFamily() != null;
     // sessionProperties represents the incoming edge, so its tailIp is the remote peer's IP
     BgpSessionProperties sessionProperties = getSessionProperties(_topology, edge);
     Ip remoteIp = sessionProperties.getTailIp();
@@ -577,7 +601,8 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
                                           ourConfig,
                                           remoteConfig,
                                           allNodes,
-                                          session)
+                                          session,
+                                          Type.EVPN)
                                       .map(
                                           r ->
                                               RouteAdvertisement.<EvpnType3Route>builder()
@@ -602,22 +627,33 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
    * @param allNodes all nodes in the network
    * @param sessionProperties {@link BgpSessionProperties} representing the <em>incoming</em> edge:
    *     i.e. the edge from {@code remoteConfig} to {@code ourConfig}
+   * @param afType {@link AddressFamily.Type} for which the transformation should occur
    * @return The transformed route as a {@link Bgpv4Route}, or {@code null} if the route should not
    *     be exported.
    */
-  private <B extends EvpnRoute.Builder<B, R>, R extends EvpnRoute<B, R>>
+  <B extends BgpRoute.Builder<B, R>, R extends BgpRoute<B, R>>
       Optional<R> transformBgpRouteOnExport(
-          @Nonnull BgpRoute<B, R> exportCandidate,
-          @Nonnull BgpPeerConfigId ourConfigId,
-          @Nonnull BgpPeerConfigId remoteConfigId,
-          @Nonnull BgpPeerConfig ourConfig,
-          @Nonnull BgpPeerConfig remoteConfig,
-          @Nonnull Map<String, Node> allNodes,
-          @Nonnull BgpSessionProperties sessionProperties) {
-    // TODO: bring back prefix tracing
+          BgpRoute<B, R> exportCandidate,
+          BgpPeerConfigId ourConfigId,
+          BgpPeerConfigId remoteConfigId,
+          BgpPeerConfig ourConfig,
+          BgpPeerConfig remoteConfig,
+          Map<String, Node> allNodes,
+          BgpSessionProperties sessionProperties,
+          AddressFamily.Type afType) {
 
-    RoutingPolicy exportPolicy =
-        _c.getRoutingPolicies().get(ourConfig.getEvpnAddressFamily().getExportPolicy());
+    // Do some sanity checking first -- AF and policies should exist
+    AddressFamily addressFamily = ourConfig.getAddressFamily(afType);
+    checkArgument(
+        addressFamily != null,
+        "Missing address family %s for BGP peer %s",
+        addressFamily,
+        ourConfigId);
+    String exportPolicyName = addressFamily.getExportPolicy();
+    assert exportPolicyName != null; // Conversion guarantee
+    RoutingPolicy exportPolicy = _c.getRoutingPolicies().get(exportPolicyName);
+    assert exportPolicy != null; // Conversion guarantee
+
     B transformedOutgoingRouteBuilder =
         BgpProtocolHelper.transformBgpRoutePreExport(
             ourConfig,
@@ -626,7 +662,7 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
             _process,
             getNeighborBgpProcess(remoteConfigId, allNodes)._process,
             exportCandidate,
-            ourConfig.getEvpnAddressFamily().getType());
+            addressFamily.getType());
 
     if (transformedOutgoingRouteBuilder == null) {
       // This route could not be exported for core bgp protocol reasons
@@ -648,6 +684,13 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
 
     if (!shouldExport) {
       // This route could not be exported due to export policy
+      _prefixTracer.filtered(
+          exportCandidate.getNetwork(),
+          remoteConfigId.getHostname(),
+          remoteIp,
+          remoteConfigId.getVrfName(),
+          exportPolicyName,
+          Direction.OUT);
       return Optional.empty();
     }
     // Apply final post-policy transformations before sending advertisement to neighbor
@@ -655,6 +698,14 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
         transformedOutgoingRouteBuilder, sessionProperties.isEbgp(), ourConfig.getLocalAs());
     // Successfully exported route
     R transformedOutgoingRoute = transformedOutgoingRouteBuilder.build();
+
+    _prefixTracer.sentTo(
+        transformedOutgoingRoute.getNetwork(),
+        remoteConfigId.getHostname(),
+        remoteIp,
+        remoteConfigId.getVrfName(),
+        exportPolicyName);
+
     return Optional.of(transformedOutgoingRoute);
   }
 

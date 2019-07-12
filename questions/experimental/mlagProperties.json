@@ -2,7 +2,7 @@
     "class": "org.batfish.question.mlag.MlagPropertiesQuestion",
     "differential": false,
     "nodes": "${nodes}",
-    "idRegex": "${idRegex}",
+    "mlagIds": "${mlagIds}",
     "instance": {
         "description": "Returns MLAG configuration.",
         "instanceName": "mlagProperties",
@@ -18,11 +18,11 @@
                 "optional": true,
                 "displayName": "Nodes"
             },
-            "idRegex": {
-                "description": "Include MLAG IDs matching this java Regex",
-                "type": "javaRegex",
+            "mlagIds": {
+                "description": "Include MLAG IDs matching this specifier",
+                "type": "mlagIdSpec",
                 "optional": true,
-                "displayName": "MLAG ID Regex"
+                "displayName": "MLAG IDs"
             }
         }
     }

@@ -7838,7 +7838,8 @@
                 "generationPolicy" : "~AGGREGATE_ROUTE_GEN:default:2.128.0.0/16~",
                 "metric" : 0,
                 "network" : "2.128.0.0/16",
-                "nextHopIp" : "AUTO/NONE(-1l)"
+                "nextHopIp" : "AUTO/NONE(-1l)",
+                "tag" : -1
               }
             ],
             "bgpProcess" : {
@@ -9124,7 +9125,8 @@
                 "generationPolicy" : "~AGGREGATE_ROUTE_GEN:default:2.128.0.0/16~",
                 "metric" : 0,
                 "network" : "2.128.0.0/16",
-                "nextHopIp" : "AUTO/NONE(-1l)"
+                "nextHopIp" : "AUTO/NONE(-1l)",
+                "tag" : -1
               }
             ],
             "bgpProcess" : {

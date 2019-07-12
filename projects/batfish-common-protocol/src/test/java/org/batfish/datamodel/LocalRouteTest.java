@@ -49,9 +49,12 @@ public class LocalRouteTest {
         .addEqualityGroup(new LocalRoute(ConcreteInterfaceAddress.parse("1.1.2.1/24"), "Ethernet0"))
         .addEqualityGroup(
             new LocalRoute(ConcreteInterfaceAddress.parse("1.1.2.1/24"), "Ethernet1"),
-            new LocalRoute(Prefix.parse("1.1.2.1/32"), "Ethernet1", 24, 0))
-        .addEqualityGroup(new LocalRoute(Prefix.parse("1.1.2.1/32"), "Ethernet1", 24, 123))
-        .addEqualityGroup(new LocalRoute(Prefix.parse("1.1.2.1/32"), "Ethernet1", 25, 123))
+            new LocalRoute(Prefix.parse("1.1.2.1/32"), "Ethernet1", 24, 0, Route.UNSET_ROUTE_TAG))
+        .addEqualityGroup(
+            new LocalRoute(Prefix.parse("1.1.2.1/32"), "Ethernet1", 24, 123, Route.UNSET_ROUTE_TAG))
+        .addEqualityGroup(
+            new LocalRoute(Prefix.parse("1.1.2.1/32"), "Ethernet1", 25, 123, Route.UNSET_ROUTE_TAG))
+        .addEqualityGroup(new LocalRoute(Prefix.parse("1.1.2.1/32"), "Ethernet1", 25, 123, 1L))
         .addEqualityGroup(new Object())
         .testEquals();
   }

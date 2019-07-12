@@ -4,6 +4,7 @@ import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Predicates.alwaysTrue;
 import static org.batfish.bddreachability.BidirectionalReachabilityReturnPassInstrumentation.instrumentReturnPassEdges;
 import static org.batfish.bddreachability.SessionInstrumentation.sessionInstrumentation;
+import static org.batfish.bddreachability.transition.Transitions.ZERO;
 import static org.batfish.bddreachability.transition.Transitions.addLastHopConstraint;
 import static org.batfish.bddreachability.transition.Transitions.addNoLastHopConstraint;
 import static org.batfish.bddreachability.transition.Transitions.addOriginatingFromDeviceConstraint;
@@ -56,7 +57,6 @@ import org.batfish.common.bdd.IpAccessListToBdd;
 import org.batfish.common.bdd.IpAccessListToBddImpl;
 import org.batfish.common.bdd.IpSpaceToBDD;
 import org.batfish.common.bdd.MemoizedIpAccessListToBdd;
-import org.batfish.common.topology.TopologyUtil;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.EmptyIpSpace;
 import org.batfish.datamodel.FlowDisposition;
@@ -267,7 +267,8 @@ public final class BDDReachabilityAnalysisFactory {
           computeDispositionBDDs(forwardingAnalysis.getInsufficientInfo(), _dstIpSpaceToBDD);
       _nullRoutedBDDs = computeNullRoutedBDDs(forwardingAnalysis, _dstIpSpaceToBDD);
       _routableBDDs = computeRoutableBDDs(forwardingAnalysis, _dstIpSpaceToBDD);
-      _vrfAcceptBDDs = computeVrfAcceptBDDs(configs, _dstIpSpaceToBDD);
+      _vrfAcceptBDDs =
+          computeVrfAcceptBDDs(configs, forwardingAnalysis.getAcceptsIps(), _dstIpSpaceToBDD);
       _nextVrfBDDs = computeNextVrfBDDs(forwardingAnalysis.getNextVrfIps(), _dstIpSpaceToBDD);
 
       _convertedPacketPolicies = convertPacketPolicies(configs);
@@ -1137,6 +1138,9 @@ public final class BDDReachabilityAnalysisFactory {
                       constraint(permitBeforeNatBDD),
                       outgoingTransformation,
                       constraint(permitAfterNatBDD));
+              if (transition == ZERO) {
+                return Stream.of();
+              }
 
               return Stream.of(
                   new Edge(
@@ -1581,22 +1585,15 @@ public final class BDDReachabilityAnalysisFactory {
   }
 
   private static Map<String, Map<String, BDD>> computeVrfAcceptBDDs(
-      Map<String, Configuration> configs, IpSpaceToBDD ipSpaceToBDD) {
+      Map<String, Configuration> configs,
+      Map<String, Map<String, IpSpace>> acceptIps,
+      IpSpaceToBDD ipSpaceToBDD) {
     try (ActiveSpan span =
         GlobalTracer.get()
             .buildSpan("BDDReachabilityAnalysisFactory.computeVrfAcceptBDDs")
             .startActive()) {
       assert span != null; // avoid unused warning
-      /*
-       * excludeInactive: true
-       * The VRF should not own (i.e. cannot accept packets destined to) the dest IP inactive interfaces. Forwarding
-       * analysis will consider these IPs to be internal to (or owned by) the network, but not owned by any particular
-       * device or link.
-       */
-      Map<String, Map<String, IpSpace>> vrfOwnedIpSpaces =
-          TopologyUtil.computeVrfOwnedIpSpaces(
-              TopologyUtil.computeIpVrfOwners(true, TopologyUtil.computeNodeInterfaces(configs)));
-
+      // Iterate over configs because we want all node/vrf keys to be present in the map
       return toImmutableMap(
           configs,
           Entry::getKey,
@@ -1605,7 +1602,7 @@ public final class BDDReachabilityAnalysisFactory {
                   nodeEntry.getValue().getVrfs(),
                   Entry::getKey,
                   vrfEntry ->
-                      vrfOwnedIpSpaces
+                      acceptIps
                           .getOrDefault(nodeEntry.getKey(), ImmutableMap.of())
                           .getOrDefault(vrfEntry.getKey(), EmptyIpSpace.INSTANCE)
                           .accept(ipSpaceToBDD)));

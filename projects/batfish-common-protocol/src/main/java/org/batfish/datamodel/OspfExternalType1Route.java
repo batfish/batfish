@@ -22,7 +22,8 @@ public class OspfExternalType1Route extends OspfExternalRoute {
       @Nullable @JsonProperty(PROP_LSA_METRIC) Long lsaMetric,
       @Nullable @JsonProperty(PROP_AREA) Long area,
       @Nullable @JsonProperty(PROP_COST_TO_ADVERTISER) Long costToAdvertiser,
-      @Nullable @JsonProperty(PROP_ADVERTISER) String advertiser) {
+      @Nullable @JsonProperty(PROP_ADVERTISER) String advertiser,
+      @JsonProperty(PROP_TAG) long tag) {
     checkArgument(prefix != null, "Missing %s", PROP_NETWORK);
     checkArgument(nextHopIp != null, "Missing %s", PROP_NEXT_HOP_IP);
     checkArgument(admin != null, "Missing %s", PROP_ADMINISTRATIVE_COST);
@@ -40,6 +41,7 @@ public class OspfExternalType1Route extends OspfExternalRoute {
         area,
         costToAdvertiser,
         advertiser,
+        tag,
         false,
         false);
   }
@@ -53,6 +55,7 @@ public class OspfExternalType1Route extends OspfExternalRoute {
       long area,
       long costToAdvertiser,
       String advertiser,
+      long tag,
       boolean nonForwarding,
       boolean nonRouting) {
     super(
@@ -64,6 +67,7 @@ public class OspfExternalType1Route extends OspfExternalRoute {
         area,
         advertiser,
         costToAdvertiser,
+        tag,
         nonForwarding,
         nonRouting);
   }
@@ -78,23 +82,5 @@ public class OspfExternalType1Route extends OspfExternalRoute {
     return OspfMetricType.E1;
   }
 
-  @Override
-  public OspfExternalRoute.Builder toBuilder() {
-    return OspfExternalRoute.builder()
-        // AbstractRoute properties
-        .setNetwork(getNetwork())
-        .setNextHopIp(getNextHopIp())
-        .setAdmin(getAdministrativeCost())
-        .setMetric(getMetric())
-        .setNonForwarding(getNonForwarding())
-        .setNonRouting(getNonRouting())
-        // OspfExternalType1Route properties
-        .setOspfMetricType(getOspfMetricType())
-        .setLsaMetric(getLsaMetric())
-        .setArea(getArea())
-        .setCostToAdvertiser(getCostToAdvertiser())
-        .setAdvertiser(getAdvertiser());
-  }
-
-  // Equals and hashcode inherited from OspfExternalRoute, since it has all the fields
+  // toBuilder, equals and hashcode inherited from OspfExternalRoute, since it has all the fields
 }

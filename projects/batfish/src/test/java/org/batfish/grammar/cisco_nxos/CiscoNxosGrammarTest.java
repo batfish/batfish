@@ -1,7 +1,9 @@
 package org.batfish.grammar.cisco_nxos;
 
+import static com.google.common.collect.Maps.immutableEntry;
 import static org.batfish.datamodel.Configuration.DEFAULT_VRF_NAME;
 import static org.batfish.datamodel.Interface.NULL_INTERFACE_NAME;
+import static org.batfish.datamodel.IpWildcard.ipWithWildcardMask;
 import static org.batfish.datamodel.Route.UNSET_NEXT_HOP_INTERFACE;
 import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasAdministrativeCost;
 import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasNextHopInterface;
@@ -11,6 +13,7 @@ import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasHostname;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasInterface;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasInterfaces;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasNumReferrers;
+import static org.batfish.datamodel.matchers.DataModelMatchers.hasRouteFilterLists;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasUndefinedReference;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasAddress;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasAllAddresses;
@@ -18,7 +21,9 @@ import static org.batfish.datamodel.matchers.InterfaceMatchers.hasBandwidth;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasChannelGroup;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasChannelGroupMembers;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasDependencies;
+import static org.batfish.datamodel.matchers.InterfaceMatchers.hasDescription;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasInterfaceType;
+import static org.batfish.datamodel.matchers.InterfaceMatchers.hasMtu;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasSwitchPortMode;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasVlan;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.isActive;
@@ -30,47 +35,87 @@ import static org.batfish.main.BatfishTestUtils.configureBatfishTestSettings;
 import static org.batfish.representation.cisco_nxos.CiscoNxosConfiguration.NULL_VRF_NAME;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.anEmptyMap;
+import static org.hamcrest.Matchers.any;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasEntry;
 import static org.hamcrest.Matchers.hasKey;
+import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Iterables;
 import com.google.common.collect.Range;
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.Iterator;
 import java.util.Map;
+import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.antlr.v4.runtime.ParserRuleContext;
+import org.apache.commons.lang3.SerializationUtils;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.Warnings;
+import org.batfish.common.WellKnownCommunity;
+import org.batfish.common.bdd.BDDPacket;
+import org.batfish.common.bdd.IpSpaceToBDD;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.config.Settings;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
+import org.batfish.datamodel.DscpType;
+import org.batfish.datamodel.IcmpCode;
+import org.batfish.datamodel.IcmpType;
 import org.batfish.datamodel.IntegerSpace;
 import org.batfish.datamodel.Interface.Dependency;
 import org.batfish.datamodel.Interface.DependencyType;
 import org.batfish.datamodel.InterfaceType;
 import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.IpProtocol;
+import org.batfish.datamodel.LineAction;
+import org.batfish.datamodel.NamedPort;
 import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.RouteFilterLine;
+import org.batfish.datamodel.RouteFilterList;
+import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.SwitchportMode;
+import org.batfish.datamodel.TcpFlags;
+import org.batfish.datamodel.UniverseIpSpace;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
+import org.batfish.datamodel.bgp.community.StandardCommunity;
+import org.batfish.datamodel.matchers.RouteFilterListMatchers;
 import org.batfish.datamodel.matchers.VrfMatchers;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
+import org.batfish.representation.cisco_nxos.ActionIpAccessListLine;
+import org.batfish.representation.cisco_nxos.AddrGroupIpAddressSpec;
 import org.batfish.representation.cisco_nxos.CiscoNxosConfiguration;
 import org.batfish.representation.cisco_nxos.CiscoNxosInterfaceType;
 import org.batfish.representation.cisco_nxos.CiscoNxosStructureType;
+import org.batfish.representation.cisco_nxos.FragmentsBehavior;
+import org.batfish.representation.cisco_nxos.IcmpOptions;
 import org.batfish.representation.cisco_nxos.Interface;
+import org.batfish.representation.cisco_nxos.IpAccessList;
+import org.batfish.representation.cisco_nxos.IpAccessListLine;
+import org.batfish.representation.cisco_nxos.IpAddressSpec;
+import org.batfish.representation.cisco_nxos.IpCommunityListStandard;
+import org.batfish.representation.cisco_nxos.IpCommunityListStandardLine;
+import org.batfish.representation.cisco_nxos.IpPrefixList;
+import org.batfish.representation.cisco_nxos.IpPrefixListLine;
+import org.batfish.representation.cisco_nxos.Layer3Options;
+import org.batfish.representation.cisco_nxos.LiteralIpAddressSpec;
+import org.batfish.representation.cisco_nxos.LiteralPortSpec;
+import org.batfish.representation.cisco_nxos.PortGroupPortSpec;
+import org.batfish.representation.cisco_nxos.PortSpec;
 import org.batfish.representation.cisco_nxos.StaticRoute;
+import org.batfish.representation.cisco_nxos.TcpOptions;
+import org.batfish.representation.cisco_nxos.UdpOptions;
 import org.batfish.representation.cisco_nxos.Vrf;
 import org.junit.Rule;
 import org.junit.Test;
@@ -79,7 +124,17 @@ import org.junit.rules.TemporaryFolder;
 @ParametersAreNonnullByDefault
 public final class CiscoNxosGrammarTest {
 
+  private static final IpSpaceToBDD DST_IP_BDD;
+  private static final BDDPacket PKT;
+  private static final IpSpaceToBDD SRC_IP_BDD;
+
   private static final String TESTCONFIGS_PREFIX = "org/batfish/grammar/cisco_nxos/testconfigs/";
+
+  static {
+    PKT = new BDDPacket();
+    DST_IP_BDD = PKT.getDstIpSpaceToBDD();
+    SRC_IP_BDD = PKT.getSrcIpSpaceToBDD();
+  }
 
   @Rule public TemporaryFolder _folder = new TemporaryFolder();
 
@@ -119,7 +174,21 @@ public final class CiscoNxosGrammarTest {
     CiscoNxosConfiguration vendorConfiguration =
         (CiscoNxosConfiguration) extractor.getVendorConfiguration();
     vendorConfiguration.setFilename(TESTCONFIGS_PREFIX + hostname);
+    // crash if not serializable
+    SerializationUtils.clone(vendorConfiguration);
     return vendorConfiguration;
+  }
+
+  /**
+   * Temporary parsing test of port of unified Cisco NX-OS BGP grammar. The test file should be
+   * moved to parsing ref tests once bit is flipped on new parser.
+   */
+  @Test
+  public void testBgpParsingTemporary() {
+    String hostname = "nxos_bgp_parsing_temporary";
+
+    // Just test that parser does not choke.
+    assertThat(parseVendorConfig(hostname), not(nullValue()));
   }
 
   @Test
@@ -508,6 +577,26 @@ public final class CiscoNxosGrammarTest {
     }
   }
 
+  /**
+   * A generic test that exercised basic interface property extraction and conversion.
+   *
+   * <p>Note that this should only be for <strong>simple</strong> properties; anything with many
+   * cases deserves its own unit test. (See, e.g., {@link #testInterfaceSwitchportExtraction()}.
+   */
+  @Test
+  public void testInterfaceProperties() throws Exception {
+    Configuration c = parseConfig("nxos_interface_properties");
+    assertThat(c, hasInterface("Ethernet1/1", any(org.batfish.datamodel.Interface.class)));
+
+    org.batfish.datamodel.Interface eth11 = c.getAllInterfaces().get("Ethernet1/1");
+    assertThat(
+        eth11,
+        allOf(
+            hasDescription(
+                "here is a description with punctuation! and IP address 1.2.3.4/24 etc."),
+            hasMtu(9216)));
+  }
+
   @Test
   public void testIpAccessListExtraction() {
     String hostname = "nxos_ip_access_list";
@@ -529,13 +618,511 @@ public final class CiscoNxosGrammarTest {
             "acl_icmp",
             "acl_igmp",
             "acl_tcp_flags",
-            "acl_tcp_destination_port",
-            "acl_tcp_source_port",
+            "acl_tcp_flags_mask",
+            "acl_tcp_destination_ports",
+            "acl_tcp_destination_ports_named",
+            "acl_tcp_source_ports",
             "acl_tcp_http_method",
-            "acl_tcp_options",
-            "acl_udp_vxlan",
-            "acl_udp_destination_port",
-            "acl_udp_source_port"));
+            "acl_tcp_option_length",
+            "acl_tcp_established",
+            "acl_udp_destination_ports",
+            "acl_udp_destination_ports_named",
+            "acl_udp_source_ports",
+            "acl_udp_vxlan"));
+    {
+      IpAccessList acl = vc.getIpAccessLists().get("acl_global_options");
+      assertThat(acl.getFragmentsBehavior(), equalTo(FragmentsBehavior.PERMIT_ALL));
+      assertThat(acl.getLines(), anEmptyMap());
+    }
+    {
+      IpAccessList acl = vc.getIpAccessLists().get("acl_indices");
+      assertThat(acl.getFragmentsBehavior(), equalTo(FragmentsBehavior.DEFAULT));
+      // check keySet directly to test iteration order
+      assertThat(acl.getLines().keySet(), contains(1L, 10L, 13L, 15L, 25L, 35L));
+    }
+    {
+      IpAccessList acl = vc.getIpAccessLists().get("acl_simple_protocols");
+      assertThat(acl.getFragmentsBehavior(), equalTo(FragmentsBehavior.DEFAULT));
+      assertThat(
+          acl.getLines().values().stream()
+              .map(ActionIpAccessListLine.class::cast)
+              .map(ActionIpAccessListLine::getProtocol)
+              .collect(Collectors.toList()), // cannot use immutable list because of null value
+          contains(
+              equalTo(IpProtocol.AHP),
+              equalTo(IpProtocol.EIGRP),
+              equalTo(IpProtocol.ESP),
+              equalTo(IpProtocol.GRE),
+              nullValue(),
+              equalTo(IpProtocol.IPIP),
+              equalTo(IpProtocol.OSPF),
+              equalTo(IpProtocol.IPCOMP),
+              equalTo(IpProtocol.PIM),
+              equalTo(IpProtocol.fromNumber(1))));
+    }
+    {
+      IpAccessList acl = vc.getIpAccessLists().get("acl_common_ip_options_destination_ip");
+      Iterator<IpAddressSpec> specs =
+          acl.getLines().values().stream()
+              .map(ActionIpAccessListLine.class::cast)
+              .map(ActionIpAccessListLine::getDstAddressSpec)
+              .collect(ImmutableList.toImmutableList())
+              .iterator();
+      IpAddressSpec spec;
+
+      spec = specs.next();
+      assertThat(
+          ((LiteralIpAddressSpec) spec).getIpSpace().accept(DST_IP_BDD),
+          equalTo(
+              ipWithWildcardMask(Ip.parse("10.0.0.0"), Ip.parse("0.0.0.255"))
+                  .toIpSpace()
+                  .accept(DST_IP_BDD)));
+
+      spec = specs.next();
+      assertThat(
+          ((LiteralIpAddressSpec) spec).getIpSpace().accept(DST_IP_BDD),
+          equalTo(Prefix.parse("10.0.1.0/24").toIpSpace().accept(DST_IP_BDD)));
+
+      spec = specs.next();
+      assertThat(((AddrGroupIpAddressSpec) spec).getName(), equalTo("mysrcaddrgroup"));
+
+      spec = specs.next();
+      assertThat(
+          ((LiteralIpAddressSpec) spec).getIpSpace().accept(DST_IP_BDD),
+          equalTo(Ip.parse("10.0.2.2").toIpSpace().accept(DST_IP_BDD)));
+
+      spec = specs.next();
+      assertThat(
+          ((LiteralIpAddressSpec) spec).getIpSpace().accept(DST_IP_BDD),
+          equalTo(UniverseIpSpace.INSTANCE.accept(DST_IP_BDD)));
+    }
+    {
+      IpAccessList acl = vc.getIpAccessLists().get("acl_common_ip_options_source_ip");
+      Iterator<IpAddressSpec> specs =
+          acl.getLines().values().stream()
+              .map(ActionIpAccessListLine.class::cast)
+              .map(ActionIpAccessListLine::getSrcAddressSpec)
+              .collect(ImmutableList.toImmutableList())
+              .iterator();
+      IpAddressSpec spec;
+
+      spec = specs.next();
+      assertThat(
+          ((LiteralIpAddressSpec) spec).getIpSpace().accept(SRC_IP_BDD),
+          equalTo(
+              ipWithWildcardMask(Ip.parse("10.0.0.0"), Ip.parse("0.0.0.255"))
+                  .toIpSpace()
+                  .accept(SRC_IP_BDD)));
+
+      spec = specs.next();
+      assertThat(
+          ((LiteralIpAddressSpec) spec).getIpSpace().accept(SRC_IP_BDD),
+          equalTo(Prefix.parse("10.0.1.0/24").toIpSpace().accept(SRC_IP_BDD)));
+
+      spec = specs.next();
+      assertThat(((AddrGroupIpAddressSpec) spec).getName(), equalTo("mysrcaddrgroup"));
+
+      spec = specs.next();
+      assertThat(
+          ((LiteralIpAddressSpec) spec).getIpSpace().accept(SRC_IP_BDD),
+          equalTo(Ip.parse("10.0.2.2").toIpSpace().accept(SRC_IP_BDD)));
+
+      spec = specs.next();
+      assertThat(
+          ((LiteralIpAddressSpec) spec).getIpSpace().accept(SRC_IP_BDD),
+          equalTo(UniverseIpSpace.INSTANCE.accept(SRC_IP_BDD)));
+    }
+    {
+      IpAccessList acl = vc.getIpAccessLists().get("acl_common_ip_options_dscp");
+      assertThat(
+          acl.getLines().values().stream()
+              .map(ActionIpAccessListLine.class::cast)
+              .map(ActionIpAccessListLine::getL3Options)
+              .map(Layer3Options::getDscp)
+              .collect(ImmutableList.toImmutableList()),
+          contains(
+              1,
+              DscpType.AF11.number(),
+              DscpType.AF12.number(),
+              DscpType.AF13.number(),
+              DscpType.AF21.number(),
+              DscpType.AF22.number(),
+              DscpType.AF23.number(),
+              DscpType.AF31.number(),
+              DscpType.AF32.number(),
+              DscpType.AF33.number(),
+              DscpType.AF41.number(),
+              DscpType.AF42.number(),
+              DscpType.AF43.number(),
+              DscpType.CS1.number(),
+              DscpType.CS2.number(),
+              DscpType.CS3.number(),
+              DscpType.CS4.number(),
+              DscpType.CS5.number(),
+              DscpType.CS6.number(),
+              DscpType.CS7.number(),
+              DscpType.DEFAULT.number(),
+              DscpType.EF.number()));
+    }
+    {
+      IpAccessList acl = vc.getIpAccessLists().get("acl_common_ip_options_log");
+      Iterator<IpAccessListLine> lines = acl.getLines().values().iterator();
+      IpAccessListLine line;
+      line = lines.next();
+      assertTrue(((ActionIpAccessListLine) line).getLog());
+    }
+    {
+      IpAccessList acl = vc.getIpAccessLists().get("acl_common_ip_options_packet_length");
+      assertThat(
+          acl.getLines().values().stream()
+              .map(ActionIpAccessListLine.class::cast)
+              .map(ActionIpAccessListLine::getL3Options)
+              .map(Layer3Options::getPacketLength)
+              .collect(ImmutableList.toImmutableList()),
+          contains(
+              IntegerSpace.of(100),
+              IntegerSpace.of(Range.closed(20, 199)),
+              IntegerSpace.of(Range.closed(301, 9210)),
+              IntegerSpace.of(Range.closed(20, 9210)).difference(IntegerSpace.of(400)),
+              IntegerSpace.of(Range.closed(500, 600))));
+    }
+    // TODO: extract and test precedence once name->value mappings are known
+    {
+      IpAccessList acl = vc.getIpAccessLists().get("acl_common_ip_options_ttl");
+      assertThat(
+          ((ActionIpAccessListLine) acl.getLines().values().iterator().next())
+              .getL3Options()
+              .getTtl(),
+          equalTo(5));
+    }
+    {
+      IpAccessList acl = vc.getIpAccessLists().get("acl_icmp");
+      assertThat(
+          acl.getLines().values().stream()
+              .filter(ActionIpAccessListLine.class::isInstance) // filter ICMPv6
+              .map(ActionIpAccessListLine.class::cast)
+              .map(ActionIpAccessListLine::getL4Options)
+              .map(IcmpOptions.class::cast)
+              .map(icmpOptions -> immutableEntry(icmpOptions.getType(), icmpOptions.getCode()))
+              .collect(ImmutableList.toImmutableList()),
+          contains(
+              immutableEntry(0, null),
+              immutableEntry(1, 2),
+              immutableEntry(
+                  IcmpType.DESTINATION_UNREACHABLE,
+                  IcmpCode.COMMUNICATION_ADMINISTRATIVELY_PROHIBITED),
+              immutableEntry(IcmpType.ALTERNATE_ADDRESS, null),
+              immutableEntry(IcmpType.CONVERSION_ERROR, null),
+              immutableEntry(
+                  IcmpType.DESTINATION_UNREACHABLE, IcmpCode.DESTINATION_HOST_PROHIBITED),
+              immutableEntry(
+                  IcmpType.DESTINATION_UNREACHABLE, IcmpCode.DESTINATION_NETWORK_PROHIBITED),
+              immutableEntry(IcmpType.ECHO_REQUEST, null),
+              immutableEntry(IcmpType.ECHO_REPLY, null),
+              immutableEntry(IcmpType.PARAMETER_PROBLEM, null),
+              immutableEntry(IcmpType.DESTINATION_UNREACHABLE, IcmpCode.SOURCE_HOST_ISOLATED),
+              immutableEntry(IcmpType.DESTINATION_UNREACHABLE, IcmpCode.HOST_PRECEDENCE_VIOLATION),
+              immutableEntry(IcmpType.REDIRECT_MESSAGE, IcmpCode.HOST_ERROR),
+              immutableEntry(IcmpType.REDIRECT_MESSAGE, IcmpCode.TOS_AND_HOST_ERROR),
+              immutableEntry(IcmpType.DESTINATION_UNREACHABLE, IcmpCode.HOST_UNREACHABLE_FOR_TOS),
+              immutableEntry(IcmpType.DESTINATION_UNREACHABLE, IcmpCode.DESTINATION_HOST_UNKNOWN),
+              immutableEntry(IcmpType.DESTINATION_UNREACHABLE, IcmpCode.HOST_UNREACHABLE),
+              immutableEntry(IcmpType.INFO_REPLY, null),
+              immutableEntry(IcmpType.INFO_REQUEST, null),
+              immutableEntry(IcmpType.MASK_REPLY, null),
+              immutableEntry(IcmpType.MASK_REQUEST, null),
+              immutableEntry(IcmpType.MOBILE_REDIRECT, null),
+              immutableEntry(IcmpType.REDIRECT_MESSAGE, IcmpCode.NETWORK_ERROR),
+              immutableEntry(IcmpType.REDIRECT_MESSAGE, IcmpCode.TOS_AND_NETWORK_ERROR),
+              immutableEntry(
+                  IcmpType.DESTINATION_UNREACHABLE, IcmpCode.NETWORK_UNREACHABLE_FOR_TOS),
+              immutableEntry(IcmpType.DESTINATION_UNREACHABLE, IcmpCode.NETWORK_UNREACHABLE),
+              immutableEntry(
+                  IcmpType.DESTINATION_UNREACHABLE, IcmpCode.DESTINATION_NETWORK_UNKNOWN),
+              immutableEntry(IcmpType.PARAMETER_PROBLEM, IcmpCode.BAD_LENGTH),
+              immutableEntry(IcmpType.PARAMETER_PROBLEM, IcmpCode.REQUIRED_OPTION_MISSING),
+              immutableEntry(IcmpType.DESTINATION_UNREACHABLE, IcmpCode.FRAGMENTATION_NEEDED),
+              immutableEntry(IcmpType.PARAMETER_PROBLEM, IcmpCode.INVALID_IP_HEADER),
+              immutableEntry(IcmpType.DESTINATION_UNREACHABLE, IcmpCode.PORT_UNREACHABLE),
+              immutableEntry(
+                  IcmpType.DESTINATION_UNREACHABLE, IcmpCode.PRECEDENCE_CUTOFF_IN_EFFECT),
+              immutableEntry(IcmpType.DESTINATION_UNREACHABLE, IcmpCode.PROTOCOL_UNREACHABLE),
+              immutableEntry(
+                  IcmpType.TIME_EXCEEDED, IcmpCode.TIME_EXCEEDED_DURING_FRAGMENT_REASSEMBLY),
+              immutableEntry(IcmpType.REDIRECT_MESSAGE, null),
+              immutableEntry(IcmpType.ROUTER_ADVERTISEMENT, null),
+              immutableEntry(IcmpType.ROUTER_SOLICITATION, null),
+              immutableEntry(IcmpType.SOURCE_QUENCH, null),
+              immutableEntry(IcmpType.DESTINATION_UNREACHABLE, IcmpCode.SOURCE_ROUTE_FAILED),
+              immutableEntry(IcmpType.TIME_EXCEEDED, null),
+              immutableEntry(IcmpType.TIMESTAMP_REPLY, null),
+              immutableEntry(IcmpType.TIMESTAMP_REQUEST, null),
+              immutableEntry(IcmpType.TRACEROUTE, null),
+              immutableEntry(IcmpType.TIME_EXCEEDED, IcmpCode.TTL_EQ_ZERO_DURING_TRANSIT),
+              immutableEntry(IcmpType.DESTINATION_UNREACHABLE, null)));
+    }
+    // TODO: extract and test IGMP types (and codes?) once name->value mappings are known
+    {
+      IpAccessList acl = vc.getIpAccessLists().get("acl_tcp_destination_ports");
+      Iterator<PortSpec> specs =
+          acl.getLines().values().stream()
+              .map(ActionIpAccessListLine.class::cast)
+              .map(ActionIpAccessListLine::getL4Options)
+              .map(TcpOptions.class::cast)
+              .map(TcpOptions::getDstPortSpec)
+              .collect(ImmutableList.toImmutableList())
+              .iterator();
+      PortSpec spec;
+
+      spec = specs.next();
+      assertThat(((LiteralPortSpec) spec).getPorts(), equalTo(IntegerSpace.of(1)));
+
+      spec = specs.next();
+      assertThat(
+          ((LiteralPortSpec) spec).getPorts(), equalTo(IntegerSpace.of(Range.closed(6, 65535))));
+
+      spec = specs.next();
+      assertThat(((LiteralPortSpec) spec).getPorts(), equalTo(IntegerSpace.of(Range.closed(0, 9))));
+
+      spec = specs.next();
+      assertThat(
+          ((LiteralPortSpec) spec).getPorts(),
+          equalTo(IntegerSpace.of(Range.closed(0, 65535)).difference(IntegerSpace.of(15))));
+
+      spec = specs.next();
+      assertThat(((PortGroupPortSpec) spec).getName(), equalTo("mydstportgroup"));
+
+      spec = specs.next();
+      assertThat(
+          ((LiteralPortSpec) spec).getPorts(), equalTo(IntegerSpace.of(Range.closed(20, 25))));
+    }
+    {
+      IpAccessList acl = vc.getIpAccessLists().get("acl_tcp_destination_ports_named");
+      assertThat(
+          acl.getLines().values().stream()
+              .map(ActionIpAccessListLine.class::cast)
+              .map(ActionIpAccessListLine::getL4Options)
+              .map(TcpOptions.class::cast)
+              .map(TcpOptions::getDstPortSpec)
+              .map(LiteralPortSpec.class::cast)
+              .map(LiteralPortSpec::getPorts)
+              .map(IntegerSpace::singletonValue)
+              .collect(ImmutableList.toImmutableList()),
+          contains(
+              NamedPort.BGP.number(),
+              NamedPort.CHARGEN.number(),
+              NamedPort.CMDtcp_OR_SYSLOGudp.number(),
+              NamedPort.DAYTIME.number(),
+              NamedPort.DISCARD.number(),
+              NamedPort.DOMAIN.number(),
+              NamedPort.DRIP.number(),
+              NamedPort.ECHO.number(),
+              NamedPort.BIFFudp_OR_EXECtcp.number(),
+              NamedPort.FINGER.number(),
+              NamedPort.FTP.number(),
+              NamedPort.FTP_DATA.number(),
+              NamedPort.GOPHER.number(),
+              NamedPort.HOSTNAME.number(),
+              NamedPort.IDENT.number(),
+              NamedPort.IRC.number(),
+              NamedPort.KLOGIN.number(),
+              NamedPort.KSHELL.number(),
+              NamedPort.LOGINtcp_OR_WHOudp.number(),
+              NamedPort.LPD.number(),
+              NamedPort.NNTP.number(),
+              NamedPort.PIM_AUTO_RP.number(),
+              NamedPort.POP2.number(),
+              NamedPort.POP3.number(),
+              NamedPort.SMTP.number(),
+              NamedPort.SUNRPC.number(),
+              NamedPort.TACACS.number(),
+              NamedPort.TALK.number(),
+              NamedPort.TELNET.number(),
+              NamedPort.TIME.number(),
+              NamedPort.UUCP.number(),
+              NamedPort.WHOIS.number(),
+              NamedPort.HTTP.number()));
+    }
+    {
+      IpAccessList acl = vc.getIpAccessLists().get("acl_tcp_source_ports");
+      Iterator<PortSpec> specs =
+          acl.getLines().values().stream()
+              .map(ActionIpAccessListLine.class::cast)
+              .map(ActionIpAccessListLine::getL4Options)
+              .map(TcpOptions.class::cast)
+              .map(TcpOptions::getSrcPortSpec)
+              .collect(ImmutableList.toImmutableList())
+              .iterator();
+      PortSpec spec;
+
+      spec = specs.next();
+      assertThat(((LiteralPortSpec) spec).getPorts(), equalTo(IntegerSpace.of(1)));
+
+      spec = specs.next();
+      assertThat(
+          ((LiteralPortSpec) spec).getPorts(), equalTo(IntegerSpace.of(Range.closed(6, 65535))));
+
+      spec = specs.next();
+      assertThat(((LiteralPortSpec) spec).getPorts(), equalTo(IntegerSpace.of(Range.closed(0, 9))));
+
+      spec = specs.next();
+      assertThat(
+          ((LiteralPortSpec) spec).getPorts(),
+          equalTo(IntegerSpace.of(Range.closed(0, 65535)).difference(IntegerSpace.of(15))));
+
+      spec = specs.next();
+      assertThat(((PortGroupPortSpec) spec).getName(), equalTo("mysrcportgroup"));
+
+      spec = specs.next();
+      assertThat(
+          ((LiteralPortSpec) spec).getPorts(), equalTo(IntegerSpace.of(Range.closed(20, 25))));
+    }
+    // TODO: extract and test http-method match
+    {
+      IpAccessList acl = vc.getIpAccessLists().get("acl_tcp_flags");
+      assertThat(
+          acl.getLines().values().stream()
+              .map(ActionIpAccessListLine.class::cast)
+              .map(ActionIpAccessListLine::getL4Options)
+              .map(TcpOptions.class::cast)
+              .map(TcpOptions::getTcpFlags)
+              .collect(ImmutableList.toImmutableList()),
+          contains(
+              TcpFlags.builder().setAck(true).build(),
+              TcpFlags.builder().setFin(true).build(),
+              TcpFlags.builder().setPsh(true).build(),
+              TcpFlags.builder().setRst(true).build(),
+              TcpFlags.builder().setSyn(true).build(),
+              TcpFlags.builder().setUrg(true).build()));
+    }
+    {
+      IpAccessList acl = vc.getIpAccessLists().get("acl_tcp_flags_mask");
+      assertThat(
+          ((TcpOptions)
+                  ((ActionIpAccessListLine) acl.getLines().values().iterator().next())
+                      .getL4Options())
+              .getTcpFlagsMask(),
+          equalTo(50));
+    }
+    // TODO: extract and test tcp-option-length match
+    {
+      IpAccessList acl = vc.getIpAccessLists().get("acl_tcp_established");
+      assertTrue(
+          ((TcpOptions)
+                  ((ActionIpAccessListLine) acl.getLines().values().iterator().next())
+                      .getL4Options())
+              .getEstablished());
+    }
+    {
+      IpAccessList acl = vc.getIpAccessLists().get("acl_udp_destination_ports");
+      Iterator<PortSpec> specs =
+          acl.getLines().values().stream()
+              .map(ActionIpAccessListLine.class::cast)
+              .map(ActionIpAccessListLine::getL4Options)
+              .map(UdpOptions.class::cast)
+              .map(UdpOptions::getDstPortSpec)
+              .collect(ImmutableList.toImmutableList())
+              .iterator();
+      PortSpec spec;
+
+      spec = specs.next();
+      assertThat(((LiteralPortSpec) spec).getPorts(), equalTo(IntegerSpace.of(1)));
+
+      spec = specs.next();
+      assertThat(
+          ((LiteralPortSpec) spec).getPorts(), equalTo(IntegerSpace.of(Range.closed(6, 65535))));
+
+      spec = specs.next();
+      assertThat(((LiteralPortSpec) spec).getPorts(), equalTo(IntegerSpace.of(Range.closed(0, 9))));
+
+      spec = specs.next();
+      assertThat(
+          ((LiteralPortSpec) spec).getPorts(),
+          equalTo(IntegerSpace.of(Range.closed(0, 65535)).difference(IntegerSpace.of(15))));
+
+      spec = specs.next();
+      assertThat(((PortGroupPortSpec) spec).getName(), equalTo("mydstportgroup"));
+
+      spec = specs.next();
+      assertThat(
+          ((LiteralPortSpec) spec).getPorts(), equalTo(IntegerSpace.of(Range.closed(20, 25))));
+    }
+    {
+      IpAccessList acl = vc.getIpAccessLists().get("acl_udp_destination_ports_named");
+      assertThat(
+          acl.getLines().values().stream()
+              .map(ActionIpAccessListLine.class::cast)
+              .map(ActionIpAccessListLine::getL4Options)
+              .map(UdpOptions.class::cast)
+              .map(UdpOptions::getDstPortSpec)
+              .map(LiteralPortSpec.class::cast)
+              .map(LiteralPortSpec::getPorts)
+              .map(IntegerSpace::singletonValue)
+              .collect(ImmutableList.toImmutableList()),
+          contains(
+              NamedPort.BIFFudp_OR_EXECtcp.number(),
+              NamedPort.BOOTPC.number(),
+              NamedPort.BOOTPS_OR_DHCP.number(),
+              NamedPort.DISCARD.number(),
+              NamedPort.DNSIX.number(),
+              NamedPort.DOMAIN.number(),
+              NamedPort.ECHO.number(),
+              NamedPort.ISAKMP.number(),
+              NamedPort.MOBILE_IP_AGENT.number(),
+              NamedPort.NAMESERVER.number(),
+              NamedPort.NETBIOS_DGM.number(),
+              NamedPort.NETBIOS_NS.number(),
+              NamedPort.NETBIOS_SSN.number(),
+              NamedPort.NON500_ISAKMP.number(),
+              NamedPort.NTP.number(),
+              NamedPort.PIM_AUTO_RP.number(),
+              NamedPort.EFStcp_OR_RIPudp.number(),
+              NamedPort.SNMP.number(),
+              NamedPort.SNMPTRAP.number(),
+              NamedPort.SUNRPC.number(),
+              NamedPort.CMDtcp_OR_SYSLOGudp.number(),
+              NamedPort.TACACS.number(),
+              NamedPort.TALK.number(),
+              NamedPort.TFTP.number(),
+              NamedPort.TIME.number(),
+              NamedPort.LOGINtcp_OR_WHOudp.number(),
+              NamedPort.XDMCP.number()));
+    }
+    {
+      IpAccessList acl = vc.getIpAccessLists().get("acl_udp_source_ports");
+      Iterator<PortSpec> specs =
+          acl.getLines().values().stream()
+              .map(ActionIpAccessListLine.class::cast)
+              .map(ActionIpAccessListLine::getL4Options)
+              .map(UdpOptions.class::cast)
+              .map(UdpOptions::getSrcPortSpec)
+              .collect(ImmutableList.toImmutableList())
+              .iterator();
+      PortSpec spec;
+
+      spec = specs.next();
+      assertThat(((LiteralPortSpec) spec).getPorts(), equalTo(IntegerSpace.of(1)));
+
+      spec = specs.next();
+      assertThat(
+          ((LiteralPortSpec) spec).getPorts(), equalTo(IntegerSpace.of(Range.closed(6, 65535))));
+
+      spec = specs.next();
+      assertThat(((LiteralPortSpec) spec).getPorts(), equalTo(IntegerSpace.of(Range.closed(0, 9))));
+
+      spec = specs.next();
+      assertThat(
+          ((LiteralPortSpec) spec).getPorts(),
+          equalTo(IntegerSpace.of(Range.closed(0, 65535)).difference(IntegerSpace.of(15))));
+
+      spec = specs.next();
+      assertThat(((PortGroupPortSpec) spec).getName(), equalTo("mysrcportgroup"));
+
+      spec = specs.next();
+      assertThat(
+          ((LiteralPortSpec) spec).getPorts(), equalTo(IntegerSpace.of(Range.closed(20, 25))));
+    }
+    // TODO: extract and test UDP nve vni match
   }
 
   @Test
@@ -547,6 +1134,214 @@ public final class CiscoNxosGrammarTest {
 
     assertThat(
         ans, hasNumReferrers(filename, CiscoNxosStructureType.IP_ACCESS_LIST, "acl_unused", 0));
+  }
+
+  @Test
+  public void testIpCommunityListStandardExtraction() {
+    String hostname = "nxos_ip_community_list_standard";
+    CiscoNxosConfiguration vc = parseVendorConfig(hostname);
+
+    assertThat(vc.getIpCommunityLists(), hasKeys("cl_seq", "cl_values", "cl_test"));
+    {
+      IpCommunityListStandard cl = (IpCommunityListStandard) vc.getIpCommunityLists().get("cl_seq");
+      Iterator<IpCommunityListStandardLine> lines = cl.getLines().values().iterator();
+      IpCommunityListStandardLine line;
+
+      line = lines.next();
+      assertThat(line.getLine(), equalTo(1L));
+      assertThat(line.getCommunities(), contains(StandardCommunity.of(1, 1)));
+
+      line = lines.next();
+      assertThat(line.getLine(), equalTo(5L));
+      assertThat(line.getCommunities(), contains(StandardCommunity.of(5, 5)));
+
+      line = lines.next();
+      assertThat(line.getLine(), equalTo(10L));
+      assertThat(line.getCommunities(), contains(StandardCommunity.of(10, 10)));
+
+      line = lines.next();
+      assertThat(line.getLine(), equalTo(11L));
+      assertThat(line.getCommunities(), contains(StandardCommunity.of(11, 11)));
+
+      assertFalse(lines.hasNext());
+    }
+    {
+      IpCommunityListStandard cl =
+          (IpCommunityListStandard) vc.getIpCommunityLists().get("cl_values");
+      assertThat(
+          cl.getLines().values().stream()
+              .map(IpCommunityListStandardLine::getCommunities)
+              .map(Iterables::getOnlyElement)
+              .collect(ImmutableList.toImmutableList()),
+          contains(
+              StandardCommunity.of(1, 1),
+              StandardCommunity.of(WellKnownCommunity.INTERNET),
+              StandardCommunity.of(WellKnownCommunity.NO_EXPORT_SUBCONFED),
+              StandardCommunity.of(WellKnownCommunity.NO_ADVERTISE),
+              StandardCommunity.of(WellKnownCommunity.NO_EXPORT)));
+    }
+    {
+      IpCommunityListStandard cl =
+          (IpCommunityListStandard) vc.getIpCommunityLists().get("cl_test");
+      Iterator<IpCommunityListStandardLine> lines = cl.getLines().values().iterator();
+      IpCommunityListStandardLine line;
+
+      line = lines.next();
+      assertThat(line.getAction(), equalTo(LineAction.DENY));
+      assertThat(
+          line.getCommunities(), contains(StandardCommunity.of(1, 1), StandardCommunity.of(2, 2)));
+
+      line = lines.next();
+      assertThat(line.getAction(), equalTo(LineAction.PERMIT));
+      assertThat(line.getCommunities(), contains(StandardCommunity.of(1, 1)));
+
+      line = lines.next();
+      assertThat(line.getAction(), equalTo(LineAction.PERMIT));
+      assertThat(line.getCommunities(), contains(StandardCommunity.of(2, 2)));
+
+      assertFalse(lines.hasNext());
+    }
+  }
+
+  @Test
+  public void testIpPrefixListConversion() throws IOException {
+    String hostname = "nxos_ip_prefix_list";
+    Configuration c = parseConfig(hostname);
+
+    assertThat(c, hasRouteFilterLists(hasKeys("pl_empty", "pl_test", "pl_range")));
+    {
+      RouteFilterList r = c.getRouteFilterLists().get("pl_empty");
+      assertThat(r, RouteFilterListMatchers.hasLines(empty()));
+    }
+    {
+      RouteFilterList r = c.getRouteFilterLists().get("pl_test");
+      Iterator<RouteFilterLine> lines = r.getLines().iterator();
+      RouteFilterLine line;
+
+      line = lines.next();
+      assertThat(line.getAction(), equalTo(LineAction.PERMIT));
+      assertThat(line.getIpWildcard().toPrefix(), equalTo(Prefix.parse("10.0.3.0/24")));
+
+      line = lines.next();
+      assertThat(line.getAction(), equalTo(LineAction.PERMIT));
+      assertThat(line.getIpWildcard().toPrefix(), equalTo(Prefix.parse("10.0.1.0/24")));
+
+      line = lines.next();
+      assertThat(line.getAction(), equalTo(LineAction.DENY));
+      assertThat(line.getIpWildcard().toPrefix(), equalTo(Prefix.parse("10.0.2.0/24")));
+
+      line = lines.next();
+      assertThat(line.getAction(), equalTo(LineAction.PERMIT));
+      assertThat(line.getIpWildcard().toPrefix(), equalTo(Prefix.parse("10.0.4.0/24")));
+    }
+    {
+      RouteFilterList r = c.getRouteFilterLists().get("pl_range");
+      Iterator<RouteFilterLine> lines = r.getLines().iterator();
+      RouteFilterLine line;
+
+      line = lines.next();
+      assertThat(line.getAction(), equalTo(LineAction.PERMIT));
+      assertThat(line.getLengthRange(), equalTo(new SubRange(16, Prefix.MAX_PREFIX_LENGTH)));
+      assertThat(line.getIpWildcard().toPrefix(), equalTo(Prefix.parse("10.10.0.0/16")));
+
+      line = lines.next();
+      assertThat(line.getAction(), equalTo(LineAction.PERMIT));
+      assertThat(line.getLengthRange(), equalTo(new SubRange(24, 24)));
+      assertThat(line.getIpWildcard().toPrefix(), equalTo(Prefix.parse("10.10.0.0/16")));
+
+      line = lines.next();
+      assertThat(line.getAction(), equalTo(LineAction.PERMIT));
+      assertThat(line.getLengthRange(), equalTo(new SubRange(8, Prefix.MAX_PREFIX_LENGTH)));
+      assertThat(line.getIpWildcard().toPrefix(), equalTo(Prefix.parse("10.10.0.0/16")));
+
+      line = lines.next();
+      assertThat(line.getAction(), equalTo(LineAction.PERMIT));
+      assertThat(line.getLengthRange(), equalTo(new SubRange(20, 24)));
+      assertThat(line.getIpWildcard().toPrefix(), equalTo(Prefix.parse("10.10.0.0/16")));
+
+      line = lines.next();
+      assertThat(line.getAction(), equalTo(LineAction.PERMIT));
+      assertThat(line.getLengthRange(), equalTo(new SubRange(16, 24)));
+      assertThat(line.getIpWildcard().toPrefix(), equalTo(Prefix.parse("10.10.0.0/16")));
+    }
+  }
+
+  @Test
+  public void testIpPrefixListExtraction() {
+    String hostname = "nxos_ip_prefix_list";
+    CiscoNxosConfiguration vc = parseVendorConfig(hostname);
+
+    assertThat(vc.getIpPrefixLists(), hasKeys("pl_empty", "pl_test", "pl_range"));
+
+    {
+      IpPrefixList pl = vc.getIpPrefixLists().get("pl_empty");
+      assertThat(pl.getDescription(), equalTo("An empty prefix-list"));
+      assertThat(pl.getLines(), anEmptyMap());
+    }
+    {
+      IpPrefixList pl = vc.getIpPrefixLists().get("pl_test");
+      assertThat(pl.getDescription(), nullValue());
+      assertThat(pl.getLines().keySet(), contains(3L, 5L, 10L, 15L));
+      Iterator<IpPrefixListLine> lines = pl.getLines().values().iterator();
+      IpPrefixListLine line;
+
+      line = lines.next();
+      assertThat(line.getAction(), equalTo(LineAction.PERMIT));
+      assertThat(line.getLine(), equalTo(3L));
+      assertThat(line.getPrefix(), equalTo(Prefix.parse("10.0.3.0/24")));
+
+      line = lines.next();
+      assertThat(line.getAction(), equalTo(LineAction.PERMIT));
+      assertThat(line.getLine(), equalTo(5L));
+      assertThat(line.getPrefix(), equalTo(Prefix.parse("10.0.1.0/24")));
+
+      line = lines.next();
+      assertThat(line.getAction(), equalTo(LineAction.DENY));
+      assertThat(line.getLine(), equalTo(10L));
+      assertThat(line.getPrefix(), equalTo(Prefix.parse("10.0.2.0/24")));
+
+      line = lines.next();
+      assertThat(line.getAction(), equalTo(LineAction.PERMIT));
+      assertThat(line.getLine(), equalTo(15L));
+      assertThat(line.getPrefix(), equalTo(Prefix.parse("10.0.4.0/24")));
+    }
+    {
+      IpPrefixList pl = vc.getIpPrefixLists().get("pl_range");
+      assertThat(pl.getDescription(), nullValue());
+      assertThat(pl.getLines().keySet(), contains(5L, 10L, 15L, 20L, 25L));
+      Iterator<IpPrefixListLine> lines = pl.getLines().values().iterator();
+      IpPrefixListLine line;
+
+      line = lines.next();
+      assertThat(line.getAction(), equalTo(LineAction.PERMIT));
+      assertThat(line.getLengthRange(), equalTo(new SubRange(16, Prefix.MAX_PREFIX_LENGTH)));
+      assertThat(line.getLine(), equalTo(5L));
+      assertThat(line.getPrefix(), equalTo(Prefix.parse("10.10.0.0/16")));
+
+      line = lines.next();
+      assertThat(line.getAction(), equalTo(LineAction.PERMIT));
+      assertThat(line.getLengthRange(), equalTo(new SubRange(24, 24)));
+      assertThat(line.getLine(), equalTo(10L));
+      assertThat(line.getPrefix(), equalTo(Prefix.parse("10.10.0.0/16")));
+
+      line = lines.next();
+      assertThat(line.getAction(), equalTo(LineAction.PERMIT));
+      assertThat(line.getLengthRange(), equalTo(new SubRange(8, Prefix.MAX_PREFIX_LENGTH)));
+      assertThat(line.getLine(), equalTo(15L));
+      assertThat(line.getPrefix(), equalTo(Prefix.parse("10.10.0.0/16")));
+
+      line = lines.next();
+      assertThat(line.getAction(), equalTo(LineAction.PERMIT));
+      assertThat(line.getLengthRange(), equalTo(new SubRange(20, 24)));
+      assertThat(line.getLine(), equalTo(20L));
+      assertThat(line.getPrefix(), equalTo(Prefix.parse("10.10.0.0/16")));
+
+      line = lines.next();
+      assertThat(line.getAction(), equalTo(LineAction.PERMIT));
+      assertThat(line.getLengthRange(), equalTo(new SubRange(16, 24)));
+      assertThat(line.getLine(), equalTo(25L));
+      assertThat(line.getPrefix(), equalTo(Prefix.parse("10.10.0.0/16")));
+    }
   }
 
   @Test

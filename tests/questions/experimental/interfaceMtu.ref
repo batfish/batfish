@@ -10,7 +10,6 @@
     "excludeShutInterfaces" : false,
     "interfaces" : "Gig.*",
     "nodes" : "as1core2",
-    "properties" : ".*",
     "differential" : false,
     "displayHints" : {
       "textDesc" : "${interface} has MTU ${mtu}"

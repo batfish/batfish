@@ -14,6 +14,7 @@ import javax.annotation.ParametersAreNullableByDefault;
 import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.AsPath;
 import org.batfish.datamodel.BgpRoute;
+import org.batfish.datamodel.Route;
 
 /**
  * Contains the non-key attributes of {@link BgpRoute}s and {@link AbstractRoute}s and defines a
@@ -168,7 +169,7 @@ public class RouteRowAttribute implements Comparable<RouteRowAttribute> {
     @Nullable private Long _tag;
 
     public RouteRowAttribute build() {
-      if (_tag != null && _tag == AbstractRoute.NO_TAG) {
+      if (_tag != null && _tag == Route.UNSET_ROUTE_TAG) {
         _tag = null;
       }
       return new RouteRowAttribute(

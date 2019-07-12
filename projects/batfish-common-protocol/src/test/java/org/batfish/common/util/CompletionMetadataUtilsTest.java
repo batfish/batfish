@@ -3,6 +3,7 @@ package org.batfish.common.util;
 import static org.batfish.common.util.CompletionMetadataUtils.getFilterNames;
 import static org.batfish.common.util.CompletionMetadataUtils.getInterfaces;
 import static org.batfish.common.util.CompletionMetadataUtils.getIps;
+import static org.batfish.common.util.CompletionMetadataUtils.getMlagIds;
 import static org.batfish.common.util.CompletionMetadataUtils.getNodes;
 import static org.batfish.common.util.CompletionMetadataUtils.getPrefixes;
 import static org.batfish.common.util.CompletionMetadataUtils.getRoutingPolicyNames;
@@ -35,6 +36,7 @@ import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpsecPhase2Policy;
 import org.batfish.datamodel.IpsecPhase2Proposal;
 import org.batfish.datamodel.IpsecStaticPeerConfig;
+import org.batfish.datamodel.Mlag;
 import org.batfish.datamodel.Route6FilterList;
 import org.batfish.datamodel.RouteFilterList;
 import org.batfish.datamodel.Vrf;
@@ -156,6 +158,26 @@ public final class CompletionMetadataUtilsTest {
 
     assertThat(
         getIps(configs), equalTo(ImmutableSet.of("1.1.1.1", "2.2.2.2", "3.3.3.3", "4.4.4.4")));
+  }
+
+  @Test
+  public void testGetMlags() {
+    String mlag1 = "mlag1";
+    String mlag2 = "mlag2";
+
+    Map<String, Configuration> configs = new HashMap<>();
+    Configuration config = createTestConfiguration("config1", ConfigurationFormat.HOST);
+
+    config.setMlags(
+        ImmutableSortedMap.of(
+            mlag1,
+            Mlag.builder().setId(mlag1).build(),
+            mlag2,
+            Mlag.builder().setId(mlag2).build()));
+
+    configs.put("config1", config);
+
+    assertThat(getMlagIds(configs), equalTo(ImmutableSet.of(mlag1, mlag2)));
   }
 
   @Test

@@ -18,40 +18,40 @@ public class RipInternalRouteTest {
   public void testConstructorAcceptsValidMetric() {
     // Test all valid metrics, there are only 16 of them. Just testing that no exceptions are thrown
     for (int m = 0; m <= RipRoute.MAX_ROUTE_METRIC; m++) {
-      new RipInternalRoute(Prefix.parse("1.1.1.1/32"), Ip.parse("2.2.2.2"), adminCost, m);
+      new RipInternalRoute(Prefix.parse("1.1.1.1/32"), Ip.parse("2.2.2.2"), adminCost, m, 1L);
     }
   }
 
   @Test
   public void testConstructorRejectsLowMetric() {
     _expectedException.expect(IllegalArgumentException.class);
-    new RipInternalRoute(Prefix.parse("1.1.1.1/32"), Ip.parse("2.2.2.2"), adminCost, 17);
+    new RipInternalRoute(Prefix.parse("1.1.1.1/32"), Ip.parse("2.2.2.2"), adminCost, 17, 1L);
   }
 
   @Test
   public void testConstructorRejectsHighMetric() {
     _expectedException.expect(IllegalArgumentException.class);
-    new RipInternalRoute(Prefix.parse("1.1.1.1/32"), Ip.parse("2.2.2.2"), adminCost, -1);
+    new RipInternalRoute(Prefix.parse("1.1.1.1/32"), Ip.parse("2.2.2.2"), adminCost, -1, 1L);
   }
 
   @Test
   public void testEquals() {
     RipInternalRoute r1 =
-        new RipInternalRoute(Prefix.parse("1.1.1.1/32"), Ip.parse("2.2.2.2"), adminCost, 1);
+        new RipInternalRoute(Prefix.parse("1.1.1.1/32"), Ip.parse("2.2.2.2"), adminCost, 1, 1L);
     RipInternalRoute r1copy =
-        new RipInternalRoute(Prefix.parse("1.1.1.1/32"), Ip.parse("2.2.2.2"), adminCost, 1);
+        new RipInternalRoute(Prefix.parse("1.1.1.1/32"), Ip.parse("2.2.2.2"), adminCost, 1, 1L);
     // Different metric from r1
     RipInternalRoute r2 =
-        new RipInternalRoute(Prefix.parse("1.1.1.1/32"), Ip.parse("2.2.2.2"), adminCost, 2);
+        new RipInternalRoute(Prefix.parse("1.1.1.1/32"), Ip.parse("2.2.2.2"), adminCost, 2, 1L);
     // Different admin cost from r1
     RipInternalRoute r3 =
-        new RipInternalRoute(Prefix.parse("1.1.1.1/32"), Ip.parse("2.2.2.2"), adminCost + 1, 1);
+        new RipInternalRoute(Prefix.parse("1.1.1.1/32"), Ip.parse("2.2.2.2"), adminCost + 1, 1, 1L);
     // Different ip from r1
     RipInternalRoute r4 =
-        new RipInternalRoute(Prefix.parse("1.1.1.1/32"), Ip.parse("2.2.2.3"), adminCost, 1);
+        new RipInternalRoute(Prefix.parse("1.1.1.1/32"), Ip.parse("2.2.2.3"), adminCost, 1, 1L);
     // Different network from r1
     RipInternalRoute r5 =
-        new RipInternalRoute(Prefix.parse("1.1.1.2/32"), Ip.parse("2.2.2.2"), adminCost, 2);
+        new RipInternalRoute(Prefix.parse("1.1.1.2/32"), Ip.parse("2.2.2.2"), adminCost, 2, 1L);
 
     assertThat(r1, equalTo(r1));
     assertThat(r1, equalTo(r1copy));

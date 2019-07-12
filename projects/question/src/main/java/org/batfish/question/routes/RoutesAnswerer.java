@@ -1,6 +1,6 @@
 package org.batfish.question.routes;
 
-import static org.batfish.common.topology.TopologyUtil.computeIpNodeOwners;
+import static org.batfish.common.topology.IpOwners.computeIpNodeOwners;
 import static org.batfish.datamodel.table.TableDiff.COL_BASE_PREFIX;
 import static org.batfish.datamodel.table.TableDiff.COL_DELTA_PREFIX;
 import static org.batfish.question.routes.RoutesAnswererUtil.getAbstractRouteRowsDiff;

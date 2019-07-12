@@ -56,8 +56,9 @@ public class BgpProcessConfigurationAnswerer extends Answerer {
                     prop ->
                         new ColumnMetadata(
                             getColumnName(prop),
-                            BgpProcessPropertySpecifier.JAVA_MAP.get(prop).getSchema(),
-                            BgpProcessPropertySpecifier.JAVA_MAP.get(prop).getDescription(),
+                            BgpProcessPropertySpecifier.getPropertyDescriptor(prop).getSchema(),
+                            BgpProcessPropertySpecifier.getPropertyDescriptor(prop)
+                                .getDescription(),
                             false,
                             true))
                 .collect(Collectors.toList()))
@@ -73,7 +74,7 @@ public class BgpProcessConfigurationAnswerer extends Answerer {
     if (dhints != null && dhints.getTextDesc() != null) {
       textDesc = dhints.getTextDesc();
     }
-    return new TableMetadata(createColumnMetadata(question.getProperties()), textDesc);
+    return new TableMetadata(createColumnMetadata(question.getPropertySpecifier()), textDesc);
   }
 
   @Override
@@ -85,7 +86,7 @@ public class BgpProcessConfigurationAnswerer extends Answerer {
 
     Multiset<Row> propertyRows =
         getProperties(
-            question.getProperties(),
+            question.getPropertySpecifier(),
             _batfish.specifierContext(),
             question.getNodeSpecifier(),
             tableMetadata.toColumnMap());
@@ -133,7 +134,7 @@ public class BgpProcessConfigurationAnswerer extends Answerer {
 
                         for (String property : propertySpecifier.getMatchingProperties()) {
                           PropertyDescriptor<BgpProcess> propertyDescriptor =
-                              BgpProcessPropertySpecifier.JAVA_MAP.get(property);
+                              BgpProcessPropertySpecifier.getPropertyDescriptor(property);
                           try {
                             PropertySpecifier.fillProperty(
                                 propertyDescriptor, bgpProcess, property, rowBuilder);

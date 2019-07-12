@@ -28,9 +28,10 @@ public abstract class EigrpRoute extends AbstractRoute {
       @Nullable Ip nextHopIp,
       @Nullable EigrpMetric metric,
       long processAsn,
+      long tag,
       boolean nonForwarding,
       boolean nonRouting) {
-    super(network, admin, nonRouting, nonForwarding);
+    super(network, admin, tag, nonRouting, nonForwarding);
     checkArgument(metric != null, "Cannot create EIGRP route: missing %s", PROP_EIGRP_METRIC);
     _admin = admin;
     _metric = metric;
@@ -75,11 +76,4 @@ public abstract class EigrpRoute extends AbstractRoute {
 
   @Override
   public abstract RoutingProtocol getProtocol();
-
-  @Override
-  public long getTag() {
-    // TODO support EIGRP route tags
-    // https://github.com/batfish/batfish/issues/1945
-    return NO_TAG;
-  }
 }

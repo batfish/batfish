@@ -33,8 +33,8 @@
                 "displayName": "Status"
             },
             "type": {
-                "description": "Only include sessions for which type (ibgp, ebgp_singlehop, ebgp_multihop) matches this regex",
-                "type": "bgpSessionType",
+                "description": "Only include sessions that match this specifier",
+                "type": "bgpSessionTypeSpec",
                 "optional": true,
                 "displayName": "Type"
             }

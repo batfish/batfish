@@ -33,8 +33,8 @@ import static org.batfish.datamodel.questions.NamedStructurePropertySpecifier.IK
 import static org.batfish.datamodel.questions.NamedStructurePropertySpecifier.IKE_PHASE1_PROPOSALS;
 import static org.batfish.datamodel.questions.NodePropertySpecifier.DNS_SERVERS;
 import static org.batfish.datamodel.questions.NodePropertySpecifier.DNS_SOURCE_INTERFACE;
-import static org.batfish.datamodel.questions.OspfPropertySpecifier.AREAS;
-import static org.batfish.datamodel.questions.OspfPropertySpecifier.AREA_BORDER_ROUTER;
+import static org.batfish.datamodel.questions.OspfProcessPropertySpecifier.AREAS;
+import static org.batfish.datamodel.questions.OspfProcessPropertySpecifier.AREA_BORDER_ROUTER;
 import static org.batfish.specifier.DispositionSpecifier.SUCCESS;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.junit.Assert.assertThat;
@@ -51,6 +51,7 @@ import org.batfish.datamodel.BgpSessionProperties.SessionType;
 import org.batfish.datamodel.answers.AutocompleteSuggestion.SuggestionType;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.questions.NodePropertySpecifier;
+import org.batfish.datamodel.questions.OspfInterfacePropertySpecifier;
 import org.batfish.datamodel.questions.Variable.Type;
 import org.batfish.referencelibrary.AddressGroup;
 import org.batfish.referencelibrary.InterfaceGroup;
@@ -64,6 +65,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
+/** Tests for {@link org.batfish.datamodel.answers.AutoCompleteUtils} */
 public class AutoCompleteUtilsTest {
 
   @Rule public ExpectedException _thrown = ExpectedException.none();
@@ -91,6 +93,7 @@ public class AutoCompleteUtilsTest {
                 new NodeInterfacePair("leaf", "leafInterface"),
                 new NodeInterfacePair("\"/foo/leaf\"", "fooInterface")))
         .setIps(ImmutableSet.of("1.1.1.1", "11.2.3.4", "3.1.2.4", "1.2.3.4", "4.4.4.4"))
+        .setMlagIds(ImmutableSet.of("mlag1", "mlag2", "other"))
         .setVrfs(ImmutableSet.of("default"))
         .build();
   }
@@ -193,7 +196,7 @@ public class AutoCompleteUtilsTest {
   @Test
   public void testBgpSessionTypeAutocomplete() {
     assertThat(
-        AutoCompleteUtils.autoComplete(Type.BGP_SESSION_TYPE, "bgp", 10).stream()
+        AutoCompleteUtils.autoComplete(Type.BGP_SESSION_TYPE_SPEC, "bgp", 10).stream()
             .map(AutocompleteSuggestion::getText)
             .collect(Collectors.toSet()),
         equalTo(
@@ -358,7 +361,7 @@ public class AutoCompleteUtilsTest {
   @Test
   public void testIpsecSessionStatusAutocomplete() {
     assertThat(
-        AutoCompleteUtils.autoComplete(Type.IPSEC_SESSION_STATUS, "phase", 5).stream()
+        AutoCompleteUtils.autoComplete(Type.IPSEC_SESSION_STATUS_SPEC, "phase", 5).stream()
             .map(AutocompleteSuggestion::getText)
             .collect(Collectors.toSet()),
         equalTo(
@@ -366,6 +369,30 @@ public class AutoCompleteUtilsTest {
                 IKE_PHASE1_FAILED.toString(),
                 IKE_PHASE1_KEY_MISMATCH.toString(),
                 IPSEC_PHASE2_FAILED.toString())));
+  }
+
+  @Test
+  public void testMlagIdAutocomplete() {
+    CompletionMetadata completionMetadata = getMockCompletionMetadata();
+    assertThat(
+        AutoCompleteUtils.autoComplete(
+                "network", "snapshot", Type.MLAG_ID, "ag", 10, completionMetadata, null, null)
+            .stream()
+            .map(AutocompleteSuggestion::getText)
+            .collect(Collectors.toSet()),
+        equalTo(ImmutableSet.of("mlag1", "mlag2")));
+  }
+
+  @Test
+  public void testMlagIdSpecAutocomplete() {
+    CompletionMetadata completionMetadata = getMockCompletionMetadata();
+    assertThat(
+        AutoCompleteUtils.autoComplete(
+                "network", "snapshot", Type.MLAG_ID_SPEC, "ag", 10, completionMetadata, null, null)
+            .stream()
+            .map(AutocompleteSuggestion::getText)
+            .collect(Collectors.toSet()),
+        equalTo(ImmutableSet.of("mlag1", "mlag2", ",")));
   }
 
   @Test
@@ -1111,9 +1138,18 @@ public class AutoCompleteUtilsTest {
   }
 
   @Test
-  public void testOspfPropertySpecAutocomplete() {
+  public void testOspfInterfacePropertySpecAutocomplete() {
     assertThat(
-        AutoCompleteUtils.autoComplete(Type.OSPF_PROPERTY_SPEC, "area", 5).stream()
+        AutoCompleteUtils.autoComplete(Type.OSPF_INTERFACE_PROPERTY_SPEC, "area", 5).stream()
+            .map(AutocompleteSuggestion::getText)
+            .collect(Collectors.toSet()),
+        equalTo(ImmutableSet.of(OspfInterfacePropertySpecifier.OSPF_AREA_NAME)));
+  }
+
+  @Test
+  public void testOspfProcessPropertySpecAutocomplete() {
+    assertThat(
+        AutoCompleteUtils.autoComplete(Type.OSPF_PROCESS_PROPERTY_SPEC, "area", 5).stream()
             .map(AutocompleteSuggestion::getText)
             .collect(Collectors.toSet()),
         equalTo(ImmutableSet.of(AREA_BORDER_ROUTER, AREAS)));

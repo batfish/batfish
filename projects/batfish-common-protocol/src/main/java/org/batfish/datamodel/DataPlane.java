@@ -21,12 +21,6 @@ public interface DataPlane extends Serializable {
 
   ForwardingAnalysis getForwardingAnalysis();
 
-  /**
-   * Return the map of Vrfs that own each Ip (as computed during dataplane computation). Map
-   * structure: Ip -&gt; hostname -&gt; set of Vrfs
-   */
-  Map<Ip, Map<String, Set<String>>> getIpVrfOwners();
-
   /** Return the set of all (main) RIBs. Map structure: hostname -&gt; VRF name -&gt; GenericRib */
   SortedMap<String, SortedMap<String, GenericRib<AnnotatedRoute<AbstractRoute>>>> getRibs();
 

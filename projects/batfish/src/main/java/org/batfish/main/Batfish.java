@@ -11,6 +11,7 @@ import static org.batfish.bddreachability.BDDMultipathInconsistency.computeMulti
 import static org.batfish.common.util.CompletionMetadataUtils.getFilterNames;
 import static org.batfish.common.util.CompletionMetadataUtils.getInterfaces;
 import static org.batfish.common.util.CompletionMetadataUtils.getIps;
+import static org.batfish.common.util.CompletionMetadataUtils.getMlagIds;
 import static org.batfish.common.util.CompletionMetadataUtils.getNodes;
 import static org.batfish.common.util.CompletionMetadataUtils.getPrefixes;
 import static org.batfish.common.util.CompletionMetadataUtils.getRoutingPolicyNames;
@@ -2274,6 +2275,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
         getFilterNames(configurations),
         getInterfaces(configurations),
         getIps(configurations),
+        getMlagIds(configurations),
         getNodes(configurations),
         getPrefixes(configurations),
         getRoutingPolicyNames(configurations),

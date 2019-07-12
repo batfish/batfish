@@ -1,5 +1,7 @@
 package org.batfish.question.ipowners;
 
+import static org.batfish.common.topology.TopologyUtil.computeNodeInterfaces;
+
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.HashMultiset;
 import com.google.common.collect.ImmutableList;
@@ -10,7 +12,7 @@ import java.util.Map;
 import java.util.Set;
 import org.batfish.common.Answerer;
 import org.batfish.common.plugin.IBatfish;
-import org.batfish.common.topology.TopologyUtil;
+import org.batfish.common.topology.IpOwners;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Ip;
@@ -39,8 +41,8 @@ class IpOwnersAnswerer extends Answerer {
   public AnswerElement answer() {
     IpOwnersQuestion question = (IpOwnersQuestion) _question;
     Map<String, Configuration> configurations = _batfish.loadConfigurations();
-    Map<Ip, Set<String>> ipNodeOwners = TopologyUtil.computeIpNodeOwners(configurations, false);
-    Map<String, Set<Interface>> interfaces = TopologyUtil.computeNodeInterfaces(configurations);
+    Map<Ip, Set<String>> ipNodeOwners = IpOwners.computeIpNodeOwners(configurations, false);
+    Map<String, Set<Interface>> interfaces = computeNodeInterfaces(configurations);
 
     TableAnswerElement answerElement = new TableAnswerElement(getTableMetadata());
 

@@ -40,6 +40,8 @@ import org.batfish.datamodel.Interface.Dependency;
 import org.batfish.datamodel.Interface.DependencyType;
 import org.batfish.datamodel.InterfaceType;
 import org.batfish.datamodel.LineAction;
+import org.batfish.datamodel.RouteFilterLine;
+import org.batfish.datamodel.RouteFilterList;
 import org.batfish.datamodel.SwitchportMode;
 import org.batfish.datamodel.vendor_family.cisco_nxos.CiscoNxosFamily;
 import org.batfish.vendor.VendorConfiguration;
@@ -91,20 +93,43 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
     return null;
   }
 
+  private static @Nonnull RouteFilterLine toRouteFilterLine(IpPrefixListLine ipPrefixListLine) {
+    return new RouteFilterLine(
+        ipPrefixListLine.getAction(),
+        ipPrefixListLine.getPrefix(),
+        ipPrefixListLine.getLengthRange());
+  }
+
+  private static @Nonnull RouteFilterList toRouteFilterList(IpPrefixList ipPrefixList) {
+    String name = ipPrefixList.getName();
+    RouteFilterList rfl = new RouteFilterList(name);
+    rfl.setLines(
+        ipPrefixList.getLines().values().stream()
+            .map(CiscoNxosConfiguration::toRouteFilterLine)
+            .collect(ImmutableList.toImmutableList()));
+    return rfl;
+  }
+
   private transient Configuration _c;
   private final @Nonnull Vrf _defaultVrf;
   private @Nullable String _hostname;
   private final @Nonnull Map<String, Interface> _interfaces;
   private final @Nonnull Map<String, IpAccessList> _ipAccessLists;
+  private final @Nonnull Map<String, IpCommunityList> _ipCommunityLists;
+  private final @Nonnull Map<String, IpPrefixList> _ipPrefixLists;
   private transient Multimap<String, String> _portChannelMembers;
   private @Nonnull IntegerSpace _reservedVlanRange;
+
   private final @Nonnull Map<Integer, Vlan> _vlans;
+
   private final @Nonnull Map<String, Vrf> _vrfs;
 
   public CiscoNxosConfiguration() {
     _defaultVrf = new Vrf(DEFAULT_VRF_NAME);
     _interfaces = new HashMap<>();
     _ipAccessLists = new HashMap<>();
+    _ipCommunityLists = new HashMap<>();
+    _ipPrefixLists = new HashMap<>();
     _reservedVlanRange = DEFAULT_RESERVED_VLAN_RANGE;
     _vlans = new HashMap<>();
     _vrfs = new HashMap<>();
@@ -143,6 +168,12 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
     _interfaces.values().stream()
         .filter(iface -> iface.getType() == CiscoNxosInterfaceType.PORT_CHANNEL)
         .forEach(this::convertInterface);
+  }
+
+  private void convertIpPrefixLists() {
+    _ipPrefixLists.forEach(
+        (name, ipPrefixList) ->
+            _c.getRouteFilterLists().put(name, toRouteFilterList(ipPrefixList)));
   }
 
   private void convertStaticRoutes() {
@@ -197,6 +228,14 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
     return _ipAccessLists;
   }
 
+  public @Nonnull Map<String, IpCommunityList> getIpCommunityLists() {
+    return _ipCommunityLists;
+  }
+
+  public @Nonnull Map<String, IpPrefixList> getIpPrefixLists() {
+    return _ipPrefixLists;
+  }
+
   /** Range of VLAN IDs reserved by the system and therefore unassignable. */
   public @Nonnull IntegerSpace getReservedVlanRange() {
     return _reservedVlanRange;
@@ -246,6 +285,10 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
     newIfaceBuilder.setActive(!iface.getShutdown());
 
     newIfaceBuilder.setAddresses(iface.getAddress(), iface.getSecondaryAddresses());
+
+    newIfaceBuilder.setDescription(iface.getDescription());
+
+    newIfaceBuilder.setMtu(iface.getMtu());
 
     // switchport+vlan settings
     SwitchportMode switchportMode = iface.getSwitchportMode();
@@ -398,6 +441,7 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
     convertInterfaces();
     disableUnregisteredVlanInterfaces();
     convertStaticRoutes();
+    convertIpPrefixLists();
 
     markStructures();
     return _c;

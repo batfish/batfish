@@ -104,7 +104,8 @@ import org.batfish.datamodel.questions.InstanceData;
 import org.batfish.datamodel.questions.InterfacePropertySpecifier;
 import org.batfish.datamodel.questions.NamedStructurePropertySpecifier;
 import org.batfish.datamodel.questions.NodePropertySpecifier;
-import org.batfish.datamodel.questions.OspfPropertySpecifier;
+import org.batfish.datamodel.questions.OspfInterfacePropertySpecifier;
+import org.batfish.datamodel.questions.OspfProcessPropertySpecifier;
 import org.batfish.datamodel.questions.Question;
 import org.batfish.datamodel.questions.Variable;
 import org.batfish.datamodel.questions.VxlanVniPropertySpecifier;
@@ -351,14 +352,14 @@ public class Client extends AbstractClient implements IClient {
           throw new BatfishException(
               String.format("A Batfish %s must be a JSON string", expectedType.getName()));
         }
-        new BgpPeerPropertySpecifier(value.textValue());
+        BgpPeerPropertySpecifier.create(value.textValue());
         break;
       case BGP_PROCESS_PROPERTY_SPEC:
         if (!(value.isTextual())) {
           throw new BatfishException(
               String.format("A Batfish %s must be a JSON string", expectedType.getName()));
         }
-        new BgpProcessPropertySpecifier(value.textValue());
+        BgpProcessPropertySpecifier.create(value.textValue());
         break;
       case BGP_ROUTES:
         if (!(value.isArray())) {
@@ -372,7 +373,7 @@ public class Client extends AbstractClient implements IClient {
               String.format("A Batfish %s must be a JSON string", expectedType.getName()));
         }
         break;
-      case BGP_SESSION_TYPE:
+      case BGP_SESSION_TYPE_SPEC:
         if (!value.isTextual()) {
           throw new BatfishException(
               String.format("A Batfish %s must be a JSON string", expectedType.getName()));
@@ -473,7 +474,7 @@ public class Client extends AbstractClient implements IClient {
           throw new BatfishException(
               String.format("A Batfish %s must be a JSON string", expectedType.getName()));
         }
-        new InterfacePropertySpecifier(value.textValue());
+        InterfacePropertySpecifier.create(value.textValue());
         break;
       case INTERFACE_TYPE:
         if (!(value.isTextual())) {
@@ -525,7 +526,7 @@ public class Client extends AbstractClient implements IClient {
         }
         IpWildcard.parse(value.textValue());
         break;
-      case IPSEC_SESSION_STATUS:
+      case IPSEC_SESSION_STATUS_SPEC:
         if (!value.isTextual()) {
           throw new BatfishException(
               String.format("A Batfish %s must be a JSON string", expectedType.getName()));
@@ -561,19 +562,31 @@ public class Client extends AbstractClient implements IClient {
               String.format("It is not a valid JSON %s value", expectedType.getName()));
         }
         break;
+      case MLAG_ID:
+        if (!(value.isTextual())) {
+          throw new BatfishException(
+              String.format("A Batfish %s must be a JSON string", expectedType.getName()));
+        }
+        break;
+      case MLAG_ID_SPEC:
+        if (!(value.isTextual())) {
+          throw new BatfishException(
+              String.format("A Batfish %s must be a JSON string", expectedType.getName()));
+        }
+        break;
       case NAMED_STRUCTURE_SPEC:
         if (!(value.isTextual())) {
           throw new BatfishException(
               String.format("A Batfish %s must be a JSON string", expectedType.getName()));
         }
-        new NamedStructurePropertySpecifier(value.textValue());
+        NamedStructurePropertySpecifier.create(value.textValue());
         break;
       case NODE_PROPERTY_SPEC:
         if (!(value.isTextual())) {
           throw new BatfishException(
               String.format("A Batfish %s must be a JSON string", expectedType.getName()));
         }
-        new NodePropertySpecifier(value.textValue());
+        NodePropertySpecifier.create(value.textValue());
         break;
       case NODE_ROLE_DIMENSION:
         if (!value.isTextual()) {
@@ -601,12 +614,19 @@ public class Client extends AbstractClient implements IClient {
         SpecifierFactories.getNodeSpecifierOrDefault(
             value.textValue(), AllNodesNodeSpecifier.INSTANCE);
         break;
-      case OSPF_PROPERTY_SPEC:
+      case OSPF_INTERFACE_PROPERTY_SPEC:
         if (!(value.isTextual())) {
           throw new BatfishException(
               String.format("A Batfish %s must be a JSON string", expectedType.getName()));
         }
-        new OspfPropertySpecifier(value.textValue());
+        OspfInterfacePropertySpecifier.create(value.textValue());
+        break;
+      case OSPF_PROCESS_PROPERTY_SPEC:
+        if (!(value.isTextual())) {
+          throw new BatfishException(
+              String.format("A Batfish %s must be a JSON string", expectedType.getName()));
+        }
+        OspfProcessPropertySpecifier.create(value.textValue());
         break;
       case PATH_CONSTRAINT:
         if (!(value.isObject()) && !value.isNull()) {
@@ -683,7 +703,7 @@ public class Client extends AbstractClient implements IClient {
           throw new BatfishException(
               String.format("A Batfish %s must be a JSON string", expectedType.getName()));
         }
-        new VxlanVniPropertySpecifier(value.textValue());
+        VxlanVniPropertySpecifier.create(value.textValue());
         break;
       case ZONE:
         if (!value.isTextual()) {

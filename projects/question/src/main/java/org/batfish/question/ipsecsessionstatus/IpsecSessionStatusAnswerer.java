@@ -10,6 +10,7 @@ import static org.batfish.datamodel.questions.IpsecSessionStatus.MISSING_END_POI
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.HashMultiset;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Multiset;
 import com.google.common.graph.ValueGraph;
 import java.util.List;
@@ -31,12 +32,17 @@ import org.batfish.datamodel.answers.Schema;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.pojo.Node;
 import org.batfish.datamodel.questions.DisplayHints;
+import org.batfish.datamodel.questions.IpsecSessionStatus;
 import org.batfish.datamodel.questions.Question;
 import org.batfish.datamodel.table.ColumnMetadata;
 import org.batfish.datamodel.table.Row;
 import org.batfish.datamodel.table.Row.RowBuilder;
 import org.batfish.datamodel.table.TableAnswerElement;
 import org.batfish.datamodel.table.TableMetadata;
+import org.batfish.specifier.AllNodesNodeSpecifier;
+import org.batfish.specifier.ConstantEnumSetSpecifier;
+import org.batfish.specifier.SpecifierFactories;
+import org.batfish.specifier.parboiled.Grammar;
 
 class IpsecSessionStatusAnswerer extends Answerer {
   static final String COL_INITIATOR = "Node";
@@ -61,9 +67,20 @@ class IpsecSessionStatusAnswerer extends Answerer {
     ValueGraph<IpsecPeerConfigId, IpsecSession> ipsecTopology =
         IpsecUtil.initIpsecTopology(configurations).getGraph();
 
-    Set<String> initiatorNodes = question.getNodeSpecifier().resolve(_batfish.specifierContext());
+    Set<String> initiatorNodes =
+        SpecifierFactories.getNodeSpecifierOrDefault(
+                question.getNodes(), AllNodesNodeSpecifier.INSTANCE)
+            .resolve(_batfish.specifierContext());
     Set<String> responderNodes =
-        question.getRemoteNodeSpecifier().resolve(_batfish.specifierContext());
+        SpecifierFactories.getNodeSpecifierOrDefault(
+                question.getRemoteNodes(), AllNodesNodeSpecifier.INSTANCE)
+            .resolve(_batfish.specifierContext());
+    Set<IpsecSessionStatus> statuses =
+        SpecifierFactories.getEnumSetSpecifierOrDefault(
+                question.getStatus(),
+                Grammar.IPSEC_SESSION_STATUS_SPECIFIER,
+                new ConstantEnumSetSpecifier<>(ImmutableSet.copyOf(IpsecSessionStatus.values())))
+            .resolve();
 
     TableAnswerElement answerElement = new TableAnswerElement(createTableMetaData(question));
 
@@ -72,9 +89,7 @@ class IpsecSessionStatusAnswerer extends Answerer {
     answerElement.postProcessAnswer(
         question,
         ipsecSessionInfos.stream()
-            .filter(
-                ipsecSessionInfo ->
-                    question.matchesStatus(ipsecSessionInfo.getIpsecSessionStatus()))
+            .filter(ipsecSessionInfo -> statuses.contains(ipsecSessionInfo.getIpsecSessionStatus()))
             .map(IpsecSessionStatusAnswerer::toRow)
             .collect(Collectors.toCollection(HashMultiset::create)));
     return answerElement;

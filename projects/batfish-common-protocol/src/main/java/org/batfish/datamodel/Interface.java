@@ -49,6 +49,7 @@ public final class Interface extends ComparableStructure<String> {
     private @Nonnull SortedSet<String> _channelGroupMembers;
     private SortedSet<String> _declaredNames;
     @Nonnull private Set<Dependency> _dependencies = ImmutableSet.of();
+    @Nullable private String _description;
     @Nullable private EigrpInterfaceSettings _eigrp;
     @Nullable private Integer _encapsulationVlan;
     private Map<Integer, HsrpGroup> _hsrpGroups;
@@ -59,6 +60,7 @@ public final class Interface extends ComparableStructure<String> {
     private Transformation _incomingTransformation;
     private IsisInterfaceSettings _isis;
     private @Nullable Integer _mlagId;
+    private @Nullable Integer _mtu;
     private String _name;
     private @Nullable Integer _nativeVlan;
     private OspfArea _ospfArea;
@@ -124,6 +126,7 @@ public final class Interface extends ComparableStructure<String> {
       iface.setChannelGroupMembers(_channelGroupMembers);
       iface.setDeclaredNames(_declaredNames);
       iface.setDependencies(_dependencies);
+      iface.setDescription(_description);
       iface.setEigrp(_eigrp);
       iface.setEncapsulationVlan(_encapsulationVlan);
       iface.setHsrpGroups(_hsrpGroups);
@@ -133,6 +136,9 @@ public final class Interface extends ComparableStructure<String> {
       iface.setIncomingTransformation(_incomingTransformation);
       iface.setIsis(_isis);
       iface.setMlagId(_mlagId);
+      if (_mtu != null) {
+        iface.setMtu(_mtu);
+      }
       if (_nativeVlan != null) {
         iface.setNativeVlan(_nativeVlan);
       }
@@ -280,6 +286,11 @@ public final class Interface extends ComparableStructure<String> {
       return this;
     }
 
+    public Builder setDescription(@Nullable String description) {
+      _description = description;
+      return this;
+    }
+
     /**
      * Name of the routing policy which is generated from the Global and Interface level inbound
      * distribute lists for OSPF
@@ -333,6 +344,11 @@ public final class Interface extends ComparableStructure<String> {
 
     public @Nonnull Builder setMlagId(@Nullable Integer mlagId) {
       _mlagId = mlagId;
+      return this;
+    }
+
+    public Builder setMtu(@Nullable Integer mtu) {
+      _mtu = mtu;
       return this;
     }
 

@@ -88,8 +88,15 @@ public final class OspfTopology {
         .collect(ImmutableList.toImmutableList());
   }
 
+  /**
+   * Returns a {@link Set} of all {@link OspfNeighborConfigId node}s present in the topology. This
+   * also includes nodes which don't have any neighbors.
+   *
+   * @return {@link Set} of {@link OspfNeighborConfigId}s
+   */
   @JsonProperty(PROP_NODES)
-  private @Nonnull Set<OspfNeighborConfigId> getNodes() {
+  @Nonnull
+  public Set<OspfNeighborConfigId> getNodes() {
     return _graph.nodes();
   }
 

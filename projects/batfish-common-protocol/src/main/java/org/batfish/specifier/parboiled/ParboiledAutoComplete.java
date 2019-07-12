@@ -69,6 +69,7 @@ public final class ParboiledAutoComplete {
               .map(InterfaceGroup::getName)
               .collect(ImmutableSet.toImmutableSet());
 
+  private final Grammar _grammar;
   private final Rule _inputRule;
   private final Map<String, Anchor.Type> _completionTypes;
 
@@ -92,6 +93,7 @@ public final class ParboiledAutoComplete {
       NodeRolesData nodeRolesData,
       ReferenceLibrary referenceLibrary) {
     this(
+        grammar,
         parser.getInputRule(grammar),
         completionTypes,
         network,
@@ -104,6 +106,7 @@ public final class ParboiledAutoComplete {
   }
 
   ParboiledAutoComplete(
+      Grammar grammar,
       Rule inputRule,
       Map<String, Anchor.Type> completionTypes,
       String network,
@@ -113,6 +116,7 @@ public final class ParboiledAutoComplete {
       CompletionMetadata completionMetadata,
       NodeRolesData nodeRolesData,
       ReferenceLibrary referenceLibrary) {
+    _grammar = grammar;
     _inputRule = inputRule;
     _completionTypes = completionTypes;
     _network = network;
@@ -141,6 +145,7 @@ public final class ParboiledAutoComplete {
     Parser parser = Parser.instance();
     return toAutoCompleteSuggestions(
         new ParboiledAutoComplete(
+                grammar,
                 parser.getInputRule(grammar),
                 Parser.ANCHORS,
                 network,
@@ -188,12 +193,14 @@ public final class ParboiledAutoComplete {
         return autoCompleteLiteral(pm);
       case EOI:
         return ImmutableSet.of();
+      case ENUM_SET_VALUE:
+        return autoCompleteEnumSetValue(pm);
       case FILTER_INTERFACE_IN:
       case FILTER_INTERFACE_OUT:
         // Should delegate to interface spec
         throw new IllegalStateException(String.format("Unexpected auto completion for %s", pm));
       case FILTER_NAME:
-        return autoCompleteGeneric(pm);
+        return autoCompleteGeneric(pm, _grammar);
       case FILTER_NAME_REGEX:
         return ImmutableSet.of(
             new ParboiledAutoCompleteSuggestion(
@@ -218,7 +225,7 @@ public final class ParboiledAutoComplete {
         // These rely on type, vrf, or zone completion that appear later in the path
         throw new IllegalStateException(String.format("Unexpected auto completion for %s", pm));
       case IP_ADDRESS:
-        return autoCompleteGeneric(pm);
+        return autoCompleteGeneric(pm, _grammar);
       case IP_ADDRESS_MASK:
         // can't help with masks
         return ImmutableSet.of();
@@ -226,7 +233,7 @@ public final class ParboiledAutoComplete {
         // don't help with numbers
         return ImmutableSet.of();
       case IP_PREFIX:
-        return autoCompleteGeneric(pm);
+        return autoCompleteGeneric(pm, _grammar);
       case IP_RANGE:
         // Relies on IP_ADDRESS completion as it appears later in the path
         throw new IllegalStateException(String.format("Unexpected auto completion for %s", pm));
@@ -236,11 +243,13 @@ public final class ParboiledAutoComplete {
       case LOCATION_PARENS:
         // Other location rules appear later in the path
         throw new IllegalStateException(String.format("Unexpected auto completion for %s", pm));
+      case NAME_SET_NAME:
+        return autoCompleteGeneric(pm, _grammar);
       case NODE_AND_INTERFACE:
         // Node or Interface based anchors should appear later in the path
         throw new IllegalStateException(String.format("Unexpected auto completion for %s", pm));
       case NODE_NAME:
-        return autoCompleteGeneric(pm);
+        return autoCompleteGeneric(pm, _grammar);
       case NODE_NAME_REGEX:
         return ImmutableSet.of(
             new ParboiledAutoCompleteSuggestion(
@@ -252,7 +261,7 @@ public final class ParboiledAutoComplete {
         // Role and dimension name rules appear later in the path
         throw new IllegalStateException(String.format("Unexpected auto completion for %s", pm));
       case NODE_ROLE_DIMENSION_NAME:
-        return autoCompleteGeneric(pm);
+        return autoCompleteGeneric(pm, _grammar);
       case NODE_ROLE_NAME:
         return autoCompleteNodeRoleName(pm);
       case NODE_TYPE:
@@ -263,9 +272,9 @@ public final class ParboiledAutoComplete {
         // Reference book name and address/interface group name should appear later in the path
         throw new IllegalStateException(String.format("Unexpected auto completion for %s", pm));
       case REFERENCE_BOOK_NAME:
-        return autoCompleteGeneric(pm);
+        return autoCompleteGeneric(pm, _grammar);
       case ROUTING_POLICY_NAME:
-        return autoCompleteGeneric(pm);
+        return autoCompleteGeneric(pm, _grammar);
       case ROUTING_POLICY_NAME_REGEX:
         return ImmutableSet.of(
             new ParboiledAutoCompleteSuggestion(
@@ -278,15 +287,30 @@ public final class ParboiledAutoComplete {
       case STRING_LITERAL:
         return autoCompleteLiteral(pm);
       case VRF_NAME:
-        return autoCompleteGeneric(pm);
+        return autoCompleteGeneric(pm, _grammar);
       case WHITESPACE:
         // nothing useful to suggest for these completion types
         return ImmutableSet.of();
       case ZONE_NAME:
-        return autoCompleteGeneric(pm);
+        return autoCompleteGeneric(pm, _grammar);
       default:
         throw new IllegalArgumentException("Unhandled completion type " + pm.getAnchorType());
     }
+  }
+
+  /** Auto completes enum set values. */
+  private Set<ParboiledAutoCompleteSuggestion> autoCompleteEnumSetValue(PotentialMatch pm) {
+    String matchPrefix = unescapeIfNeeded(pm.getMatchPrefix(), pm.getAnchorType());
+
+    return updateSuggestions(
+        AutoCompleteUtils.stringAutoComplete(
+            matchPrefix,
+            Grammar.getEnumValues(_grammar).stream()
+                .map(Object::toString)
+                .collect(ImmutableSet.toImmutableSet())),
+        !matchPrefix.equals(pm.getMatchPrefix()),
+        Anchor.Type.ENUM_SET_VALUE,
+        pm.getMatchStartIndex());
   }
 
   private Set<ParboiledAutoCompleteSuggestion> autoCompleteLiteral(PotentialMatch pm) {
@@ -332,13 +356,14 @@ public final class ParboiledAutoComplete {
     return Optional.empty();
   }
 
-  private Set<ParboiledAutoCompleteSuggestion> autoCompleteGeneric(PotentialMatch pm) {
+  private Set<ParboiledAutoCompleteSuggestion> autoCompleteGeneric(
+      PotentialMatch pm, Grammar grammar) {
     String matchPrefix = unescapeIfNeeded(pm.getMatchPrefix(), pm.getAnchorType());
     List<AutocompleteSuggestion> suggestions =
         AutoCompleteUtils.autoComplete(
             _network,
             _snapshot,
-            anchorTypeToVariableType(pm.getAnchorType()),
+            anchorTypeToVariableType(pm.getAnchorType(), grammar),
             matchPrefix,
             _maxSuggestions,
             _completionMetadata,
@@ -356,7 +381,7 @@ public final class ParboiledAutoComplete {
    * Converts completion type to variable type for cases. Throws an exception when the mapping does
    * not exist
    */
-  private static Variable.Type anchorTypeToVariableType(Anchor.Type anchorType) {
+  private static Variable.Type anchorTypeToVariableType(Anchor.Type anchorType, Grammar grammar) {
     switch (anchorType) {
       case ADDRESS_GROUP_NAME:
         return Variable.Type.ADDRESS_GROUP_NAME;
@@ -370,6 +395,8 @@ public final class ParboiledAutoComplete {
         return Variable.Type.IP;
       case IP_PREFIX:
         return Variable.Type.PREFIX;
+      case NAME_SET_NAME:
+        return grammarToNameVariableType(grammar);
       case NODE_NAME:
         return Variable.Type.NODE_NAME;
       case NODE_ROLE_NAME:
@@ -390,6 +417,20 @@ public final class ParboiledAutoComplete {
   }
 
   /**
+   * Returns the specific name variable type corresponding the grammar. The grammar is expected to
+   * be one of the ones that use NameSetSpec as the entry point.
+   */
+  private static Variable.Type grammarToNameVariableType(Grammar grammar) {
+    switch (grammar) {
+      case MLAG_ID_SPECIFIER:
+        return Variable.Type.MLAG_ID;
+      default:
+        throw new IllegalArgumentException(
+            "Cannot determine name variable type for grammar " + grammar);
+    }
+  }
+
+  /**
    * Auto completes names for interfaces. The completion is context sensitive if an ancestor {@link
    * PathElement} indicates that nodes appeared earlier in the path. Otherwise, context-independent
    * completion is used
@@ -402,7 +443,7 @@ public final class ParboiledAutoComplete {
 
     return nodeInput.isPresent()
         ? autoCompleteInterfaceName(pm, nodeInput.get())
-        : autoCompleteGeneric(pm);
+        : autoCompleteGeneric(pm, _grammar);
   }
 
   @VisibleForTesting
@@ -412,7 +453,7 @@ public final class ParboiledAutoComplete {
 
     // do context sensitive auto completion only if input is a node name or regex
     if (!(nodeAst instanceof NameNodeAstNode) && !(nodeAst instanceof NameRegexNodeAstNode)) {
-      return autoCompleteGeneric(pm);
+      return autoCompleteGeneric(pm, _grammar);
     }
 
     String interfaceNamePrefix = unescapeIfNeeded(pm.getMatchPrefix(), pm.getAnchorType());
@@ -451,7 +492,7 @@ public final class ParboiledAutoComplete {
 
     return roleDimensionInput
         .map(s -> autoCompleteNodeRoleName(pm, s))
-        .orElseGet(() -> autoCompleteGeneric(pm));
+        .orElseGet(() -> autoCompleteGeneric(pm, _grammar));
   }
 
   @VisibleForTesting
@@ -487,7 +528,7 @@ public final class ParboiledAutoComplete {
 
     return refBookInput
         .map(r -> autoCompleteReferenceBookEntity(pm, r, entityNameGetter))
-        .orElse(autoCompleteGeneric(pm));
+        .orElse(autoCompleteGeneric(pm, _grammar));
   }
 
   private static Optional<String> findReferenceBookInput(PotentialMatch pm, String query) {

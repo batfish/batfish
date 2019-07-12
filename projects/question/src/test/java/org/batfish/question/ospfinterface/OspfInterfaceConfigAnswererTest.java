@@ -5,7 +5,6 @@ import static org.batfish.datamodel.questions.InterfacePropertySpecifier.OSPF_AR
 import static org.batfish.datamodel.questions.InterfacePropertySpecifier.OSPF_COST;
 import static org.batfish.datamodel.questions.InterfacePropertySpecifier.OSPF_PASSIVE;
 import static org.batfish.datamodel.questions.InterfacePropertySpecifier.OSPF_POINT_TO_POINT;
-import static org.batfish.question.ospfinterface.OspfInterfaceConfigurationAnswerer.COLUMNS_FROM_PROP_SPEC;
 import static org.batfish.question.ospfinterface.OspfInterfaceConfigurationAnswerer.COL_INTERFACE;
 import static org.batfish.question.ospfinterface.OspfInterfaceConfigurationAnswerer.COL_PROCESS_ID;
 import static org.batfish.question.ospfinterface.OspfInterfaceConfigurationAnswerer.COL_VRF;
@@ -28,6 +27,7 @@ import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.answers.Schema;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.ospf.OspfArea;
+import org.batfish.datamodel.questions.OspfInterfacePropertySpecifier;
 import org.batfish.datamodel.table.ColumnMetadata;
 import org.batfish.datamodel.table.Row;
 import org.junit.Test;
@@ -66,10 +66,11 @@ public class OspfInterfaceConfigAnswererTest {
 
     Multiset<Row> rows =
         OspfInterfaceConfigurationAnswerer.getRows(
-            COLUMNS_FROM_PROP_SPEC,
+            OspfInterfacePropertySpecifier.ALL.getMatchingProperties(),
             ImmutableMap.of(configuration.getHostname(), configuration),
             ImmutableSet.of(configuration.getHostname()),
-            OspfInterfaceConfigurationAnswerer.createTableMetadata(null, COLUMNS_FROM_PROP_SPEC)
+            OspfInterfaceConfigurationAnswerer.createTableMetadata(
+                    null, OspfInterfacePropertySpecifier.ALL.getMatchingProperties())
                 .toColumnMap());
     assertThat(
         rows.iterator().next(),
@@ -92,7 +93,8 @@ public class OspfInterfaceConfigAnswererTest {
   @Test
   public void testMetaData() {
     List<ColumnMetadata> metas =
-        OspfInterfaceConfigurationAnswerer.createColumnMetadata(COLUMNS_FROM_PROP_SPEC);
+        OspfInterfaceConfigurationAnswerer.createColumnMetadata(
+            OspfInterfacePropertySpecifier.ALL.getMatchingProperties());
 
     assertThat(
         metas.stream().map(ColumnMetadata::getName).collect(ImmutableList.toImmutableList()),

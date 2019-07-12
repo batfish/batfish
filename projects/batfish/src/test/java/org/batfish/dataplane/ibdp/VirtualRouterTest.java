@@ -1,6 +1,6 @@
 package org.batfish.dataplane.ibdp;
 
-import static org.batfish.common.topology.TopologyUtil.computeIpNodeOwners;
+import static org.batfish.common.topology.IpOwners.computeIpNodeOwners;
 import static org.batfish.common.topology.TopologyUtil.synthesizeL3Topology;
 import static org.batfish.datamodel.Configuration.DEFAULT_VRF_NAME;
 import static org.batfish.datamodel.bgp.BgpTopologyUtils.initBgpTopology;
@@ -382,7 +382,7 @@ public class VirtualRouterTest {
     assertThat(vr._ripRib.getRoutes(), empty());
 
     // Main RIB
-    assertThat(vr._mainRib.getRoutes(), empty());
+    assertThat(vr.getMainRib().getRoutes(), empty());
   }
 
   /** Check that initialization of RIP internal routes happens correctly */
@@ -415,7 +415,8 @@ public class VirtualRouterTest {
                             Route.UNSET_ROUTE_NEXT_HOP_IP,
                             RoutingProtocol.RIP.getDefaultAdministrativeCost(
                                 vr.getConfiguration().getConfigurationFormat()),
-                            RipProcess.DEFAULT_RIP_COST))
+                            RipProcess.DEFAULT_RIP_COST,
+                            Route.UNSET_ROUTE_TAG))
                 .collect(ImmutableSet.toImmutableSet())));
   }
 
@@ -768,7 +769,7 @@ public class VirtualRouterTest {
             .map(r -> new AnnotatedRoute<>(r, vrfWithRoutesName))
             .collect(ImmutableSet.toImmutableSet());
     for (AnnotatedRoute<AbstractRoute> r : annotatedRoutes) {
-      vrWithRoutes._mainRibRouteDeltaBuilder.from(vrWithRoutes._mainRib.mergeRouteGetDelta(r));
+      vrWithRoutes._mainRibRouteDeltaBuilder.from(vrWithRoutes.getMainRib().mergeRouteGetDelta(r));
     }
 
     // Run initial leaking (i.e. what would happen at beginning of
@@ -780,7 +781,7 @@ public class VirtualRouterTest {
 
     // Clear emptyVr's RIB and queues and run intermediate leaking (i.e. what would happen in one
     // computeDependentRoutesIteration()); all routes should leak from vrWithRoutes' main RIB delta
-    emptyVr._mainRib.clear();
+    emptyVr.getMainRib().clear();
     emptyVr.initCrossVrfQueues();
     emptyVr.queueCrossVrfImports();
     emptyVr.processCrossVrfRoutes();

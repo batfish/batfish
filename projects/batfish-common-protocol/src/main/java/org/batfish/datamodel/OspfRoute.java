@@ -27,9 +27,10 @@ public abstract class OspfRoute extends AbstractRoute {
       int admin,
       long metric,
       long area,
+      long tag,
       boolean nonRouting,
       boolean nonForwarding) {
-    super(network, admin, nonRouting, nonForwarding);
+    super(network, admin, tag, nonRouting, nonForwarding);
     _metric = metric;
     _nextHopIp = firstNonNull(nextHopIp, Route.UNSET_ROUTE_NEXT_HOP_IP);
     _area = area;
@@ -66,9 +67,4 @@ public abstract class OspfRoute extends AbstractRoute {
   @Override
   @Nonnull
   public abstract RoutingProtocol getProtocol();
-
-  @Override
-  public long getTag() {
-    return NO_TAG;
-  }
 }

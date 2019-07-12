@@ -1,6 +1,7 @@
 package org.batfish.common.topology;
 
 import static org.batfish.common.topology.IpOwners.computeInterfaceHostSubnetIps;
+import static org.batfish.common.topology.IpOwners.computeIpVrfOwners;
 import static org.batfish.datamodel.matchers.IpSpaceMatchers.containsIp;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.equalTo;
@@ -10,7 +11,9 @@ import static org.hamcrest.Matchers.not;
 import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 import java.util.Map;
+import java.util.Set;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
@@ -115,5 +118,41 @@ public class IpOwnersTest {
             hasEntry(
                 equalTo(i1.getName()),
                 allOf(containsIp(prefix.getStartIp()), containsIp(prefix.getEndIp())))));
+  }
+
+  @Test
+  public void testComputeIpVrfOwners() {
+    String node = "node";
+    String vrfName = "vrf";
+    Vrf vrf = new Vrf(vrfName);
+    String activeName = "active";
+    Ip activeIp = Ip.parse("1.1.1.1");
+    String inactiveName = "inactive";
+    Ip inactiveIp = Ip.parse("2.2.2.2");
+    int networkBits = 31;
+    Map<String, Set<Interface>> allInterfaces =
+        ImmutableMap.of(
+            node,
+            ImmutableSet.of(
+                Interface.builder()
+                    .setAddress(ConcreteInterfaceAddress.create(activeIp, networkBits))
+                    .setVrf(vrf)
+                    .setName(activeName)
+                    .build(),
+                Interface.builder()
+                    .setAddress(ConcreteInterfaceAddress.create(inactiveIp, networkBits))
+                    .setActive(false)
+                    .setName(inactiveName)
+                    .setVrf(vrf)
+                    .build()));
+    Map<Ip, Map<String, Set<String>>> activeIps =
+        ImmutableMap.of(activeIp, ImmutableMap.of(node, ImmutableSet.of(activeName)));
+
+    // Test
+    Map<Ip, Map<String, Set<String>>> ipVrfOwners = computeIpVrfOwners(allInterfaces, activeIps);
+
+    assertThat(
+        ipVrfOwners,
+        equalTo(ImmutableMap.of(activeIp, ImmutableMap.of(node, ImmutableSet.of(vrfName)))));
   }
 }

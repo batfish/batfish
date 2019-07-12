@@ -27,6 +27,8 @@ import org.batfish.datamodel.table.Row;
 import org.batfish.datamodel.table.Row.RowBuilder;
 import org.batfish.datamodel.table.TableAnswerElement;
 import org.batfish.datamodel.table.TableMetadata;
+import org.batfish.specifier.AllNodesNodeSpecifier;
+import org.batfish.specifier.SpecifierFactories;
 
 /** Implements {@link VxlanVniPropertiesQuestion}. */
 public final class VxlanVniPropertiesAnswerer extends Answerer {
@@ -53,8 +55,8 @@ public final class VxlanVniPropertiesAnswerer extends Answerer {
                     prop ->
                         new ColumnMetadata(
                             prop,
-                            VxlanVniPropertySpecifier.JAVA_MAP.get(prop).getSchema(),
-                            VxlanVniPropertySpecifier.JAVA_MAP.get(prop).getDescription(),
+                            VxlanVniPropertySpecifier.getPropertyDescriptor(prop).getSchema(),
+                            VxlanVniPropertySpecifier.getPropertyDescriptor(prop).getDescription(),
                             false,
                             true))
                 .collect(Collectors.toList()))
@@ -74,20 +76,28 @@ public final class VxlanVniPropertiesAnswerer extends Answerer {
     if (dhints != null && dhints.getTextDesc() != null) {
       textDesc = dhints.getTextDesc();
     }
-    return new TableMetadata(createColumnMetadata(question.getProperties()), textDesc);
+    return new TableMetadata(
+        createColumnMetadata(VxlanVniPropertySpecifier.create(question.getProperties())), textDesc);
   }
 
   @Override
   public TableAnswerElement answer() {
     VxlanVniPropertiesQuestion question = (VxlanVniPropertiesQuestion) _question;
-    Set<String> nodes = question.getNodeSpecifier().resolve(_batfish.specifierContext());
+    Set<String> nodes =
+        SpecifierFactories.getNodeSpecifierOrDefault(
+                question.getNodes(), AllNodesNodeSpecifier.INSTANCE)
+            .resolve(_batfish.specifierContext());
     DataPlane dp = _batfish.loadDataPlane();
 
     TableMetadata tableMetadata = createTableMetadata(question);
     TableAnswerElement answer = new TableAnswerElement(tableMetadata);
 
     Multiset<Row> propertyRows =
-        getProperties(question.getProperties(), dp, nodes, tableMetadata.toColumnMap());
+        getProperties(
+            VxlanVniPropertySpecifier.create(question.getProperties()),
+            dp,
+            nodes,
+            tableMetadata.toColumnMap());
 
     answer.postProcessAnswer(question, propertyRows);
     return answer;
@@ -131,7 +141,7 @@ public final class VxlanVniPropertiesAnswerer extends Answerer {
 
           for (String property : propertySpecifier.getMatchingProperties()) {
             PropertyDescriptor<VxlanVniPropertiesRow> propertyDescriptor =
-                VxlanVniPropertySpecifier.JAVA_MAP.get(property);
+                VxlanVniPropertySpecifier.getPropertyDescriptor(property);
             try {
               PropertySpecifier.fillProperty(propertyDescriptor, vxlanVniProperties, property, row);
             } catch (ClassCastException e) {

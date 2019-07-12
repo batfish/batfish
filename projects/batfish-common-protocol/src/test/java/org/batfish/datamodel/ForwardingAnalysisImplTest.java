@@ -44,7 +44,7 @@ import com.google.common.collect.ImmutableSortedSet;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
-import org.batfish.common.topology.TopologyUtil;
+import org.batfish.common.topology.IpOwners;
 import org.batfish.datamodel.visitors.GenericIpSpaceVisitor;
 import org.junit.Before;
 import org.junit.Test;
@@ -130,7 +130,7 @@ public class ForwardingAnalysisImplTest {
             c2.getHostname(),
             ImmutableMap.of(vrf2.getName(), ImmutableMap.of(i2.getName(), ipsRoutedOutI2)));
     Map<String, Map<String, Set<Ip>>> interfaceOwnedIps =
-        TopologyUtil.computeInterfaceOwnedIps(configs, false);
+        IpOwners.computeInterfaceOwnedIps(configs, false);
     Map<String, Map<String, IpSpace>> result =
         computeArpReplies(configurations, ipsRoutedOutInterfaces, interfaceOwnedIps, routableIps);
 
@@ -232,7 +232,7 @@ public class ForwardingAnalysisImplTest {
 
     Map<String, Configuration> configs = ImmutableMap.of(config.getHostname(), config);
     Map<String, Map<String, Set<Ip>>> interfaceOwnedIps =
-        TopologyUtil.computeInterfaceOwnedIps(configs, false);
+        IpOwners.computeInterfaceOwnedIps(configs, false);
     Map<String, IpSpace> result =
         ForwardingAnalysisImpl.computeArpRepliesByInterface(
             interfaces, routableIpsByVrf, ipsRoutedOutInterfaces, interfaceOwnedIps);
@@ -289,7 +289,7 @@ public class ForwardingAnalysisImplTest {
             .build();
 
     Map<String, Map<String, Set<Ip>>> interfaceOwnedIps =
-        TopologyUtil.computeInterfaceOwnedIps(configs, false);
+        IpOwners.computeInterfaceOwnedIps(configs, false);
 
     IpSpace p1IpSpace = IpWildcard.create(P1).toIpSpace();
     IpSpace i1ArpReplies =
@@ -498,7 +498,7 @@ public class ForwardingAnalysisImplTest {
             .including(IpWildcard.create(P1), IpWildcard.create(P2))
             .build();
     Map<String, Map<String, Set<Ip>>> interfaceOwnedIps =
-        TopologyUtil.computeInterfaceOwnedIps(ImmutableMap.of(config.getHostname(), config), false);
+        IpOwners.computeInterfaceOwnedIps(ImmutableMap.of(config.getHostname(), config), false);
     IpSpace noProxyArpResult =
         computeInterfaceArpReplies(
             iNoProxyArp, routableIpsForThisVrf, ipsRoutedThroughInterface, interfaceOwnedIps);
@@ -537,7 +537,7 @@ public class ForwardingAnalysisImplTest {
         ConcreteInterfaceAddress.create(P2.getStartIp(), P2.getPrefixLength());
     Interface i = _ib.setAddresses(primary, secondary).build();
     Map<String, Map<String, Set<Ip>>> interfaceOwnedIps =
-        TopologyUtil.computeInterfaceOwnedIps(configs, false);
+        IpOwners.computeInterfaceOwnedIps(configs, false);
     IpSpace result = computeIpsAssignedToThisInterfaceForArpReplies(i, interfaceOwnedIps);
 
     assertThat(result, containsIp(P1.getStartIp()));

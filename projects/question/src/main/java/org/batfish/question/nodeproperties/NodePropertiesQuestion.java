@@ -1,10 +1,9 @@
 package org.batfish.question.nodeproperties;
 
-import static com.google.common.base.MoreObjects.firstNonNull;
-
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import java.util.Objects;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -17,7 +16,7 @@ import org.batfish.specifier.SpecifierFactories;
 /**
  * A question that returns properties of nodes in a tabular format. {@link
  * NodePropertiesQuestion#_nodes} determines which nodes are included, and {@link
- * NodePropertiesQuestion#_properties} determines which properties are included.
+ * NodePropertiesQuestion#_propertySpecifier} determines which properties are included.
  */
 @ParametersAreNonnullByDefault
 public class NodePropertiesQuestion extends Question {
@@ -28,27 +27,38 @@ public class NodePropertiesQuestion extends Question {
 
   @Nonnull private NodeSpecifier _nodeSpecifier;
 
-  @Nonnull private NodePropertySpecifier _properties;
+  @Nullable private String _properties;
+
+  @Nonnull private NodePropertySpecifier _propertySpecifier;
 
   @JsonCreator
   private static NodePropertiesQuestion create(
       @Nullable @JsonProperty(PROP_NODES) String nodes,
-      @Nullable @JsonProperty(PROP_PROPERTIES) NodePropertySpecifier propertySpec) {
-    return new NodePropertiesQuestion(
+      @Nullable @JsonProperty(PROP_PROPERTIES) String properties) {
+    return new NodePropertiesQuestion(nodes, properties);
+  }
+
+  public NodePropertiesQuestion(@Nullable String nodes, @Nullable String properties) {
+    this(
         nodes,
         SpecifierFactories.getNodeSpecifierOrDefault(nodes, AllNodesNodeSpecifier.INSTANCE),
-        firstNonNull(propertySpec, NodePropertySpecifier.ALL));
+        properties,
+        NodePropertySpecifier.create(properties));
   }
 
   public NodePropertiesQuestion(NodeSpecifier nodeSpecifier, NodePropertySpecifier propertySpec) {
-    this(null, nodeSpecifier, propertySpec);
+    this(null, nodeSpecifier, null, propertySpec);
   }
 
   private NodePropertiesQuestion(
-      @Nullable String nodes, NodeSpecifier nodeSpecifier, NodePropertySpecifier propertySpec) {
+      @Nullable String nodes,
+      NodeSpecifier nodeSpecifier,
+      @Nullable String properties,
+      NodePropertySpecifier propertySpec) {
     _nodes = nodes;
     _nodeSpecifier = nodeSpecifier;
-    _properties = propertySpec;
+    _properties = properties;
+    _propertySpecifier = propertySpec;
   }
 
   @Override
@@ -73,9 +83,32 @@ public class NodePropertiesQuestion extends Question {
     return _nodeSpecifier;
   }
 
-  @Nonnull
+  @Nullable
   @JsonProperty(PROP_PROPERTIES)
-  public NodePropertySpecifier getProperties() {
+  public String getProperties() {
     return _properties;
+  }
+
+  @Nonnull
+  @JsonIgnore
+  public NodePropertySpecifier getPropertySpecifier() {
+    return _propertySpecifier;
+  }
+
+  @Override
+  public boolean equals(@Nullable Object o) {
+    if (!(o instanceof NodePropertiesQuestion)) {
+      return false;
+    }
+    NodePropertiesQuestion that = (NodePropertiesQuestion) o;
+    return Objects.equals(_nodes, that._nodes)
+        && Objects.equals(_nodeSpecifier, that._nodeSpecifier)
+        && Objects.equals(_properties, that._properties)
+        && Objects.equals(_propertySpecifier, that._propertySpecifier);
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(_nodes, _nodeSpecifier, _properties, _propertySpecifier);
   }
 }

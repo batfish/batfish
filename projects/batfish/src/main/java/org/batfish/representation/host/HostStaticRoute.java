@@ -1,9 +1,9 @@
 package org.batfish.representation.host;
 
 import java.io.Serializable;
-import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.Route;
 import org.batfish.datamodel.StaticRoute;
 
 public class HostStaticRoute implements Serializable {
@@ -65,7 +65,7 @@ public class HostStaticRoute implements Serializable {
   }
 
   public StaticRoute toStaticRoute() {
-    long tag = _tag == null ? AbstractRoute.NO_TAG : _tag;
+    long tag = _tag == null ? Route.UNSET_ROUTE_TAG : _tag;
     StaticRoute sr =
         StaticRoute.builder()
             .setNetwork(_prefix)

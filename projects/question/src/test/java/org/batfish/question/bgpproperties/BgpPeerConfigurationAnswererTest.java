@@ -128,7 +128,7 @@ public final class BgpPeerConfigurationAnswererTest {
             ctxt,
             new NameNodeSpecifier("c"),
             BgpPeerConfigurationAnswerer.createTableMetadata(
-                    new BgpPeerConfigurationQuestion(null, null))
+                    new BgpPeerConfigurationQuestion(null, BgpPeerPropertySpecifier.ALL))
                 .toColumnMap(),
             BgpPeerPropertySpecifier.ALL);
 
@@ -201,9 +201,9 @@ public final class BgpPeerConfigurationAnswererTest {
             new NameNodeSpecifier("c"),
             BgpPeerConfigurationAnswerer.createTableMetadata(
                     new BgpPeerConfigurationQuestion(
-                        null, new BgpPeerPropertySpecifier("Local_IP")))
+                        null, new BgpPeerPropertySpecifier(ImmutableSet.of("Local_IP"))))
                 .toColumnMap(),
-            new BgpPeerPropertySpecifier("Local_IP"));
+            new BgpPeerPropertySpecifier(ImmutableSet.of("Local_IP")));
 
     Node node = new Node("c");
     Multiset<Row> expected = HashMultiset.create();

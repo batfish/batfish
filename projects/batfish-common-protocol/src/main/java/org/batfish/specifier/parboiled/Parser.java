@@ -34,6 +34,9 @@ import static org.batfish.specifier.parboiled.Anchor.Type.IP_WILDCARD;
 import static org.batfish.specifier.parboiled.Anchor.Type.LOCATION_ENTER;
 import static org.batfish.specifier.parboiled.Anchor.Type.LOCATION_PARENS;
 import static org.batfish.specifier.parboiled.Anchor.Type.LOCATION_SET_OP;
+import static org.batfish.specifier.parboiled.Anchor.Type.NAME_SET_NAME;
+import static org.batfish.specifier.parboiled.Anchor.Type.NAME_SET_REGEX;
+import static org.batfish.specifier.parboiled.Anchor.Type.NAME_SET_SET_OP;
 import static org.batfish.specifier.parboiled.Anchor.Type.NODE_AND_FILTER;
 import static org.batfish.specifier.parboiled.Anchor.Type.NODE_AND_FILTER_TAIL;
 import static org.batfish.specifier.parboiled.Anchor.Type.NODE_AND_INTERFACE;
@@ -103,23 +106,39 @@ public class Parser extends CommonParser {
   Rule getInputRule(Grammar grammar) {
     switch (grammar) {
       case APPLICATION_SPECIFIER:
+      case BGP_PEER_PROPERTY_SPECIFIER:
+      case BGP_PROCESS_PROPERTY_SPECIFIER:
+      case BGP_SESSION_TYPE_SPECIFIER:
         return input(EnumSetSpec(Grammar.getEnumValues(grammar)));
       case FILTER_SPECIFIER:
         return input(FilterSpec());
+      case INTERFACE_PROPERTY_SPECIFIER:
+        return input(EnumSetSpec(Grammar.getEnumValues(grammar)));
       case INTERFACE_SPECIFIER:
         return input(InterfaceSpec());
       case IP_PROTOCOL_SPECIFIER:
         return input(IpProtocolSpec());
       case IP_SPACE_SPECIFIER:
         return input(IpSpaceSpec());
+      case IPSEC_SESSION_STATUS_SPECIFIER:
+        return input(EnumSetSpec(Grammar.getEnumValues(grammar)));
       case LOCATION_SPECIFIER:
         return input(LocationSpec());
+      case MLAG_ID_SPECIFIER:
+        return input(NameSetSpec());
       case NAMED_STRUCTURE_SPECIFIER:
+        return input(EnumSetSpec(Grammar.getEnumValues(grammar)));
+      case NODE_PROPERTY_SPECIFIER:
         return input(EnumSetSpec(Grammar.getEnumValues(grammar)));
       case NODE_SPECIFIER:
         return input(NodeSpec());
+      case OSPF_INTERFACE_PROPERTY_SPECIFIER:
+      case OSPF_PROCESS_PROPERTY_SPECIFIER:
+        return input(EnumSetSpec(Grammar.getEnumValues(grammar)));
       case ROUTING_POLICY_SPECIFIER:
         return input(RoutingPolicySpec());
+      case VXLAN_VNI_PROPERTY_SPECIFIER:
+        return input(EnumSetSpec(Grammar.getEnumValues(grammar)));
       default:
         throw new IllegalArgumentException(
             "Main grammar rule not defined for " + grammar.getFriendlyName());
@@ -133,7 +152,10 @@ public class Parser extends CommonParser {
   }
 
   /**
-   * Enum set grammar
+   * Enum set grammar. Shared grammar for multiple enum types, or more precisely, over a known,
+   * network-independent set of {@code values}. The values may be for Java enums such as {@link
+   * org.batfish.datamodel.Protocol} or properties in {@link
+   * org.batfish.datamodel.questions.NodePropertySpecifier}
    *
    * <pre>
    *   enumSetSpec := enumSetTerm [(,|&|\) enumSetTerm]*
@@ -159,8 +181,28 @@ public class Parser extends CommonParser {
 
   @Anchor(ENUM_SET_VALUE)
   public <T> Rule EnumSetValue(Collection<T> allValues) {
-    return Sequence(
-        FirstOf(initValuesRules(allValues)), push(new ValueEnumSetAstNode<>(match(), allValues)));
+    // see javadoc for EnumSetValueTrap for why we trap
+    return FirstOf(
+        Sequence(
+            FirstOf(initValuesRules(allValues)),
+            push(new ValueEnumSetAstNode<>(match(), allValues))),
+        EnumSetValueTrap());
+  }
+
+  /**
+   * This rule "traps" all strings. By matching any ASCII string initially, it makes the parser
+   * runner think that extending the query would have made this rule match. But it never really
+   * matches anything because the last character is non-ASCII.
+   *
+   * <p>We do this to be able to control how we auto complete enum queries. Without this trap rule,
+   * EnumSetValue is not offered as a viable choice unless the entered query is a valid prefix of
+   * one of the choices.
+   *
+   * <p>The choice of non-ascii character should be different from what is used in {@link
+   * ParboiledAutoComplete#ILLEGAL_CHAR}.
+   */
+  public Rule EnumSetValueTrap() {
+    return Sequence(OneOrMore(CharRange((char) 0, (char) 127)), Ch((char) 128));
   }
 
   @Anchor(ENUM_SET_REGEX)
@@ -943,6 +985,47 @@ public class Parser extends CommonParser {
   public Rule LocationParens() {
     // Leave the stack as is -- no need to remember that this was a parenthetical term
     return Sequence("( ", LocationSpec(), WhiteSpace(), CloseParens());
+  }
+
+  /**
+   * Name set grammar. Shared grammar for multiple types of names such as structure names or MLAG
+   * IDs.
+   *
+   * <pre>
+   *   nameSetSpec := nameSetTerm [(,|&|\) nameSetTerm]*
+   *
+   *   nameSetTerm := nameVal
+   *                 | regex over names
+   * </pre>
+   */
+
+  /** An enumSetSpec is one or more terms separated by , */
+  @Anchor(NAME_SET_SET_OP)
+  public Rule NameSetSpec() {
+    return Sequence(
+        NameSetTerm(),
+        WhiteSpace(),
+        ZeroOrMore(
+            ", ", NameSetTerm(), push(new UnionNameSetAstNode(pop(1), pop())), WhiteSpace()));
+  }
+
+  public <T> Rule NameSetTerm() {
+    return FirstOf(NameSetRegexDeprecated(), NameSetRegex(), NameSetName());
+  }
+
+  @Anchor(NAME_SET_NAME)
+  public <T> Rule NameSetName() {
+    return Sequence(NameLiteral(), push(new SingletonNameSetAstNode(pop())));
+  }
+
+  @Anchor(NAME_SET_REGEX)
+  public Rule NameSetRegex() {
+    return Sequence(Regex(), push(new RegexNameSetAstNode(pop())));
+  }
+
+  @Anchor(DEPRECATED)
+  public Rule NameSetRegexDeprecated() {
+    return Sequence(RegexDeprecated(), push(new RegexNameSetAstNode(pop())));
   }
 
   /**
