@@ -2046,7 +2046,7 @@ public class CiscoGrammarTest {
      default-originate route overwriting other default routes in neighbors' RIBs.
 
      The originator has a static default route and redistributes it to BGP on both peers with a
-     route-map that sets tag to 25, so we can be certain of the route's origin in neighbors.
+     route-map that sets community 50, so we can be certain of the route's origin in neighbors.
 
      Peer 1 has no outbound route-map, so the static route should be redistributed to listener 1.
 
@@ -2074,7 +2074,7 @@ public class CiscoGrammarTest {
     long originatorAs = 1L;
     Bgpv4Route redistributedStaticRoute =
         Bgpv4Route.builder()
-            .setTag(25L)
+            .setCommunities(ImmutableSet.of(StandardCommunity.of(50)))
             .setNetwork(Prefix.ZERO)
             .setNextHopIp(originatorIp)
             .setAdmin(20)
