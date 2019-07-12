@@ -8,7 +8,6 @@ import java.io.IOException;
 import java.util.stream.Stream;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.datamodel.RoutingProtocol;
-import org.batfish.datamodel.answers.AutocompleteSuggestion;
 import org.junit.Test;
 
 /** Tests of {@link RoutingProtocolSpecifier} */
@@ -222,18 +221,5 @@ public final class RoutingProtocolSpecifierTest {
     assertThat(
         BatfishObjectMapper.mapper().readValue(serialized, RoutingProtocolSpecifier.class),
         equalTo(RoutingProtocolSpecifier.ALL_PROTOCOLS_SPECIFIER));
-  }
-
-  @Test
-  public void testAutocomplete() {
-    assertThat(
-        RoutingProtocolSpecifier.autoComplete("b").stream()
-            .map(AutocompleteSuggestion::getText)
-            .collect(ImmutableSet.toImmutableSet()),
-        equalTo(
-            ImmutableSet.of(
-                RoutingProtocolSpecifier.BGP,
-                RoutingProtocolSpecifier.EBGP,
-                RoutingProtocolSpecifier.IBGP)));
   }
 }

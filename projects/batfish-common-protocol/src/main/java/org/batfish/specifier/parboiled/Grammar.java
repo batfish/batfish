@@ -16,6 +16,7 @@ import org.batfish.datamodel.questions.NodePropertySpecifier;
 import org.batfish.datamodel.questions.OspfInterfacePropertySpecifier;
 import org.batfish.datamodel.questions.OspfProcessPropertySpecifier;
 import org.batfish.datamodel.questions.VxlanVniPropertySpecifier;
+import org.batfish.specifier.RoutingProtocolSpecifier;
 import org.batfish.specifier.SpecifierContext;
 
 /** Contains information on various expressions supported by this package */
@@ -40,6 +41,7 @@ public enum Grammar {
   OSPF_PROCESS_PROPERTY_SPECIFIER(
       "ospfProcessPropertySpecifier", "ospf-process-property-specifier"),
   ROUTING_POLICY_SPECIFIER("routingPolicySpecifier", "routing-policy-specifier"),
+  ROUTING_PROTOCOL_SPECIFIER("routingProtocolSpecifier", "routing-protocol-specifier"),
   VXLAN_VNI_PROPERTY_SPECIFIER("vxlanVniPropertySpecifier", "vxlan-vni-property-specifier");
 
   static final String BASE_URL =
@@ -95,6 +97,8 @@ public enum Grammar {
         return OspfInterfacePropertySpecifier.ALL.getMatchingProperties();
       case OSPF_PROCESS_PROPERTY_SPECIFIER:
         return OspfProcessPropertySpecifier.ALL.getMatchingProperties();
+      case ROUTING_PROTOCOL_SPECIFIER:
+        return RoutingProtocolSpecifier.getAllProtocolKeys();
       case VXLAN_VNI_PROPERTY_SPECIFIER:
         return VxlanVniPropertySpecifier.ALL.getMatchingProperties();
       default:

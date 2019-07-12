@@ -3,6 +3,7 @@ package org.batfish.specifier.parboiled;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
@@ -24,6 +25,7 @@ import org.batfish.datamodel.questions.OspfProcessPropertySpecifier;
 import org.batfish.datamodel.questions.VxlanVniPropertySpecifier;
 import org.batfish.referencelibrary.ReferenceLibrary;
 import org.batfish.role.NodeRolesData;
+import org.batfish.specifier.RoutingProtocolSpecifier;
 import org.batfish.specifier.parboiled.Anchor.Type;
 import org.junit.Rule;
 import org.junit.Test;
@@ -353,6 +355,15 @@ public class ParserEnumSetTest {
         OspfProcessPropertySpecifier.AREA_BORDER_ROUTER,
         OspfProcessPropertySpecifier.AREAS,
         Grammar.OSPF_PROCESS_PROPERTY_SPECIFIER);
+  }
+
+  @Test
+  public void testParseRoutingProtocol() {
+    // pre conditions for this test is that the keys we use are valid
+    assertTrue(
+        "ospf is a valid key", RoutingProtocolSpecifier.getAllProtocolKeys().contains("ospf"));
+    assertTrue("bgp is a valid key", RoutingProtocolSpecifier.getAllProtocolKeys().contains("bgp"));
+    testParseOtherProperties("ospf", "bgp", Grammar.ROUTING_PROTOCOL_SPECIFIER);
   }
 
   @Test
