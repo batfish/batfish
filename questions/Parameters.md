@@ -456,42 +456,40 @@ An OSPF process property specifier is a set of enums (see above) over the follow
 
  A specification for a set of routing protocols.
 
- * `bgp` specifies a single-element set with that value.
+ * `BGP` specifies a single-element set with that value.
 
- * `bgp, ospf` specifies a set with those two values.
+ * `BGP, OSPF` specifies a set with those two values.
 
- * `/bgp/` specifies a set with all protocols that contain 'bgp'.
+ * `/BGP/` specifies a set with all protocols that contain 'BGP'.
 
  #### Routing Protocol Specifier Grammar
 
-<!--
-  // Hierarchy from RoutingProtocolSpecifier.java:
+ The routing protocol specifier grammar follows the set of enums grammar (see above) over protocol names. The set of possible names include specific low-level protocols such as `OSPF-INTRA` and logical, higher-level names that denote multiple protocols. The logical name `ALL` denotes all protocols. The full hierarchy of names is:
 
-  //  IGP
-  //      OSPF
-  //          OSPF-INT
-  //              OSPF-INTRA
-  //              OSPF-INTER
-  //          OSPF-EXT
-  //              OSPF-EXT1
-  //              OSPF-EXT2
-  //      ISIS
-  //          ISIS-L1
-  //          ISIS-L2
-  //      EIGRP
-  //          EIGRP-INT
-  //          EIGRP-EXT
-  //      RIP
-  //  BGP
-  //      EBGP
-  //      IBGP
-  //  AGGREGATE
-  //  STATIC
-  //  LOCAL
-  //  CONNECTED
--->
-
- The routing protocol specifier grammar follows the set of enums grammar (see above) over protocol names. The most specific names are `ospf-intra`, `ospf-inter`, `ospf-ext1`, `ospf-ext2`, `isis-l1`, `isis-l2`, `eigrp-int`, `eigrp-ext`, `rip`, `ebgp`, `ibgp`, `aggregate`, `static`, `local`, and `connected`. Names that include multiple specific protocols are `ospf-int` (includes ospf-intra and ospf-inter), `ospf-ext` (includes ospf-ext1 and ospf-ext2), `ospf` (includes ospf-int and ospf-ext),  `isis` (includes isis-l1 and isis-l2), `eigrp` (includes eigrp-int and eigrp-ext), `igp` (includes ospf, isis, eigrp, and rip), `bgp` (includes ebgp and ibgp). Finally, `all` is a special name that indicates all protocols.
+<!-- From RoutingProtocolSpecifier.java -->
+* `ALL`
+  `* IGP`
+      `* OSPF`
+          `* OSPF-INT`
+              * `OSPF-INTRA`
+              * `OSPF-INTER`
+          * OSPF-EXT
+              * OSPF-EXT1
+              * OSPF-EXT2
+      * ISIS
+          * ISIS-L1
+          * ISIS-L2
+      * EIGRP
+          * EIGRP-INT
+          * EIGRP-EXT
+      * RIP
+  * BGP
+      * EBGP
+      * IBGP
+  * AGGREGATE
+  * STATIC
+  * LOCAL
+  * CONNECTED
 
 ## Routing Policy Specifier
 
