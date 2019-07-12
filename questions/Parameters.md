@@ -38,6 +38,8 @@ For many parameters types, there is a "resolver" question that may be used to le
 
 * [`ospfProcessPropertySpec`](#ospf-process-property-specifier)
 
+* [`routingProtocolSpec`](#routing-protocol-specifier)
+
 * [`routingPolicySpec`](#routing-policy-specifier)
 
 * [`vxlanVniPropertySpec`](#vxlan-vni-property-specifier)
@@ -449,6 +451,45 @@ A specification for a set of OSPF process properties.
 #### OSPF Process Property Specifier Grammar
 
 An OSPF process property specifier is a set of enums (see above) over the following values: AREA_BORDER_ROUTER, AREAS, EXPORT_POLICY_SOURCES, REFERENCE_BANDWIDTH, RFC_1583_COMPATIBLE, ROUTER_ID.
+
+## Routing Protocol Specifier
+
+ A specification for a set of routing protocols.
+
+ * `BGP` specifies a single-element set with that value.
+
+ * `BGP, OSPF` specifies a set with those two values.
+
+ * `/BGP/` specifies a set with all protocols that contain 'BGP'.
+
+ #### Routing Protocol Specifier Grammar
+
+ The routing protocol specifier grammar follows the set of enums grammar (see above) over protocol names. The set of possible names include specific low-level protocols such as `OSPF-INTRA` and logical, higher-level names that denote multiple protocols. The logical name `ALL` denotes all protocols. The full hierarchy of names is:
+
+<!-- From RoutingProtocolSpecifier.java -->
+`ALL`
+  * `IGP`
+    * `OSPF`
+      * `OSPF-INT`
+         * `OSPF-INTRA`
+         * `OSPF-INTER`
+      * `OSPF-EXT`
+          * `OSPF-EXT1`
+          * `OSPF-EXT2`
+    * `ISIS`
+       * `ISIS-L1`
+       * `ISIS-L2`
+    * `EIGRP`
+       * `EIGRP-INT`
+       * `EIGRP-EXT`
+    * `RIP`
+ * `BGP`
+    * `EBGP`
+    * `IBGP`
+ * `AGGREGATE`
+ * `STATIC`
+ * `LOCAL`
+ * `CONNECTED`
 
 ## Routing Policy Specifier
 

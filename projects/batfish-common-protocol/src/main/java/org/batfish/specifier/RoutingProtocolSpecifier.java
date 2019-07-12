@@ -3,13 +3,12 @@ package org.batfish.specifier;
 import static org.apache.commons.lang3.ObjectUtils.firstNonNull;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonValue;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
-import java.util.Arrays;
-import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
@@ -17,8 +16,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.RoutingProtocol;
-import org.batfish.datamodel.answers.AutoCompleteUtils;
-import org.batfish.datamodel.answers.AutocompleteSuggestion;
+import org.batfish.specifier.parboiled.Grammar;
 
 /** A way to specify groups of RoutingProtocols */
 @ParametersAreNonnullByDefault
@@ -178,10 +176,11 @@ public class RoutingProtocolSpecifier {
   }
 
   private static Set<RoutingProtocol> fromString(String text) {
-    String[] values = text.trim().split(",");
-    return Arrays.stream(values)
-        .map(String::trim)
-        .map(String::toLowerCase)
+    return SpecifierFactories.getEnumSetSpecifierOrDefault(
+            text,
+            Grammar.ROUTING_PROTOCOL_SPECIFIER,
+            new ConstantEnumSetSpecifier<>(getAllProtocolKeys()))
+        .resolve().stream()
         .map(MAP::get)
         .filter(Objects::nonNull)
         .flatMap(Set::stream)
@@ -198,12 +197,10 @@ public class RoutingProtocolSpecifier {
     _protocols = fromString(text);
   }
 
-  /**
-   * Returns a list of suggestions based on the query, based on {@link
-   * AutoCompleteUtils#baseAutoComplete}.
-   */
-  public static List<AutocompleteSuggestion> autoComplete(String query) {
-    return AutoCompleteUtils.baseAutoComplete(query, MAP.keySet());
+  /** Returns the set of all routing protocol strings used in this specifier */
+  @JsonIgnore
+  public static Set<String> getAllProtocolKeys() {
+    return MAP.keySet();
   }
 
   public Set<RoutingProtocol> getProtocols() {
