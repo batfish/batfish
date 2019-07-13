@@ -16,6 +16,7 @@ public class Vlan implements Serializable {
 
   private final @Nonnull List<InterfaceAddress> _addresses;
   private final @Nonnull Map<MacAddress, Set<InterfaceAddress>> _addressVirtuals;
+  private @Nullable String _alias;
   private final @Nonnull String _name;
   private @Nullable Integer _vlanId;
   private @Nullable String _vrf;
@@ -32,6 +33,15 @@ public class Vlan implements Serializable {
 
   public @Nonnull Map<MacAddress, Set<InterfaceAddress>> getAddressVirtuals() {
     return _addressVirtuals;
+  }
+
+  @Nullable
+  public String getAlias() {
+    return _alias;
+  }
+
+  public void setAlias(@Nullable String alias) {
+    _alias = alias;
   }
 
   public @Nonnull String getName() {
