@@ -12,6 +12,7 @@ import com.google.common.base.Predicates;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.ImmutableSet.Builder;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Iterables;
@@ -37,6 +38,7 @@ import org.batfish.common.util.CommonUtil;
 import org.batfish.datamodel.BgpPeerConfig;
 import org.batfish.datamodel.BgpUnnumberedPeerConfig;
 import org.batfish.datamodel.BumTransportMethod;
+import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.IntegerSpace;
@@ -52,6 +54,7 @@ import org.batfish.datamodel.LongSpace;
 import org.batfish.datamodel.Mlag;
 import org.batfish.datamodel.NamedPort;
 import org.batfish.datamodel.OriginType;
+import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.PrefixRange;
 import org.batfish.datamodel.PrefixSpace;
 import org.batfish.datamodel.RoutingProtocol;
@@ -516,7 +519,15 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
     if (!_loopback.getAddresses().isEmpty()) {
       newIface.setAddress(_loopback.getAddresses().get(0));
     }
-    newIface.setAllAddresses(_loopback.getAddresses());
+    Builder<ConcreteInterfaceAddress> allAddresses = ImmutableSet.builder();
+    allAddresses.addAll(_loopback.getAddresses());
+    if (_loopback.getClagVxlanAnycastIp() != null) {
+      // Just assume CLAG is correctly configured and comes up
+      allAddresses.add(
+          ConcreteInterfaceAddress.create(
+              _loopback.getClagVxlanAnycastIp(), Prefix.MAX_PREFIX_LENGTH));
+    }
+    newIface.setAllAddresses(allAddresses.build());
     _c.getAllInterfaces().put(LOOPBACK_INTERFACE_NAME, newIface);
   }
 
@@ -619,7 +630,9 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
                       VniSettings.builder()
                           .setVni(vxlan.getId())
                           .setVlan(vxlan.getBridgeAccessVlan())
-                          .setSourceAddress(vxlan.getLocalTunnelip())
+                          .setSourceAddress(
+                              firstNonNull(
+                                  _loopback.getClagVxlanAnycastIp(), vxlan.getLocalTunnelip()))
                           .setUdpPort(NamedPort.VXLAN.number())
                           .setBumTransportMethod(BumTransportMethod.UNICAST_FLOOD_GROUP)
                           .build());
