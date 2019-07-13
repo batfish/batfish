@@ -1089,7 +1089,9 @@ public final class CumulusNcluGrammarTest {
             hasAllAddresses(
                 containsInAnyOrder(
                     ConcreteInterfaceAddress.parse("10.0.0.1/32"),
-                    ConcreteInterfaceAddress.parse("10.0.1.1/24")))));
+                    ConcreteInterfaceAddress.parse("10.0.1.1/24"),
+                    // this anycast IP is here until better place for it in the VI model is found
+                    ConcreteInterfaceAddress.parse("192.0.2.1/32")))));
     assertThat(c, hasInterface("lo", hasVrfName(DEFAULT_VRF_NAME)));
     assertThat(c, hasDefaultVrf(hasInterfaces(contains("lo"))));
   }
