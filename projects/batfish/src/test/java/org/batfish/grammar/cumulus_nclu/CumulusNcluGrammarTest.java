@@ -1340,6 +1340,9 @@ public final class CumulusNcluGrammarTest {
                     ConcreteInterfaceAddress.parse("10.0.2.1/24"),
                     ConcreteInterfaceAddress.parse("10.0.3.1/24"),
                     ConcreteInterfaceAddress.parse("10.0.4.1/24")))));
+
+    // description
+    assertThat(c, hasInterface("vlan5", hasDescription("some VLAN description")));
   }
 
   @Test
@@ -1354,6 +1357,9 @@ public final class CumulusNcluGrammarTest {
     assertThat(vc.getVlans().get("vlan3").getName(), equalTo("vlan3"));
     assertThat(vc.getVlans().get("vlan4").getName(), equalTo("vlan4"));
     assertThat(vc.getVlans().get("vlan5").getName(), equalTo("vlan5"));
+
+    // alias
+    assertThat(vc.getVlans().get("vlan5").getAlias(), equalTo("some VLAN description"));
 
     // vlan-id
     assertThat(vc.getVlans().get("vlan2").getVlanId(), equalTo(2));
