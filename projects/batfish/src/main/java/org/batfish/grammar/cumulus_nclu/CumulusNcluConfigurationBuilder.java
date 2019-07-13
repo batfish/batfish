@@ -131,6 +131,7 @@ import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.S_net_add_unrecognized
 import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.Stp_commonContext;
 import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.Uint16Context;
 import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.Uint32Context;
+import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.V_aliasContext;
 import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.V_ip_addressContext;
 import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.V_ip_address_virtualContext;
 import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.V_vlan_idContext;
@@ -1317,6 +1318,11 @@ public class CumulusNcluConfigurationBuilder extends CumulusNcluParserBaseListen
   @Override
   public void exitS_net_add_unrecognized(S_net_add_unrecognizedContext ctx) {
     unrecognized(ctx);
+  }
+
+  @Override
+  public void exitV_alias(V_aliasContext ctx) {
+    _currentVlans.forEach(vlan -> vlan.setAlias(ctx.alias.getText().trim()));
   }
 
   @Override

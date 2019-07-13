@@ -294,7 +294,8 @@ a_vlan
     (
       suffixes = range_set
       (
-        v_hw_address
+        v_alias
+        | v_hw_address
         | v_ip_address
         | v_ip_address_virtual
         | v_vlan_raw_device
@@ -303,6 +304,11 @@ a_vlan
       )
     )
   )
+;
+
+v_alias
+:
+  ALIAS alias = ALIAS_BODY NEWLINE
 ;
 
 v_hw_address

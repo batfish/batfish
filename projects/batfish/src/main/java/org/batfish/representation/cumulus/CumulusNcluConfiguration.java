@@ -996,6 +996,7 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
     allAddresses.addAll(vlan.getAddresses());
     vlan.getAddressVirtuals().values().forEach(allAddresses::addAll);
     newIface.setAllAddresses(allAddresses.build());
+    newIface.setDescription(vlan.getAlias());
 
     return newIface;
   }

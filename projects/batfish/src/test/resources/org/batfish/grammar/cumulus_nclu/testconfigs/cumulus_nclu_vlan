@@ -11,5 +11,6 @@ net add vlan 2 vlan-id 2
 net add vlan 2 vrf vrf1
 net add vlan 3,4
 net add vlan 5 vlan-id 6
+net add vlan 5 alias some VLAN description
 #
 net commit
