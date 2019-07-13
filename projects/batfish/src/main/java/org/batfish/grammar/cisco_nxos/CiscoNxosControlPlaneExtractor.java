@@ -14,10 +14,13 @@ import static org.batfish.representation.cisco_nxos.StaticRoute.STATIC_ROUTE_PRE
 import static org.batfish.representation.cisco_nxos.StaticRoute.STATIC_ROUTE_TRACK_RANGE;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Range;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
+import java.util.SortedMap;
 import java.util.stream.IntStream;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -28,6 +31,7 @@ import org.antlr.v4.runtime.tree.ErrorNode;
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
 import org.batfish.common.Warnings;
 import org.batfish.common.Warnings.ParseWarning;
+import org.batfish.common.WellKnownCommunity;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.DscpType;
 import org.batfish.datamodel.IcmpCode;
@@ -45,6 +49,7 @@ import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.SwitchportMode;
 import org.batfish.datamodel.TcpFlags;
 import org.batfish.datamodel.UniverseIpSpace;
+import org.batfish.datamodel.bgp.community.StandardCommunity;
 import org.batfish.grammar.BatfishParseTreeWalker;
 import org.batfish.grammar.ControlPlaneExtractor;
 import org.batfish.grammar.UnrecognizedLineToken;
@@ -98,6 +103,7 @@ import org.batfish.grammar.cisco_nxos.CiscoNxosParser.I_switchport_accessContext
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.I_switchport_trunk_allowedContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.I_switchport_trunk_nativeContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.I_vrf_memberContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Icl_standardContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Interface_addressContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Interface_bandwidth_kbpsContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Interface_descriptionContext;
@@ -107,6 +113,8 @@ import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Ip_access_listContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Ip_access_list_line_numberContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Ip_access_list_nameContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Ip_addressContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Ip_community_list_nameContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Ip_community_list_seqContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Ip_prefixContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Ip_prefix_listContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Ip_prefix_list_descriptionContext;
@@ -116,6 +124,7 @@ import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Ip_prefix_list_nameContext
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Ip_protocolContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Ip_routeContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Line_actionContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Literal_standard_communityContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Packet_lengthContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Pl_actionContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Pl_descriptionContext;
@@ -123,6 +132,7 @@ import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Route_networkContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.S_hostnameContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.S_interfaceContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.S_vrf_contextContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Standard_communityContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Static_route_nameContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Static_route_prefContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Subnet_maskContext;
@@ -153,6 +163,9 @@ import org.batfish.representation.cisco_nxos.Interface;
 import org.batfish.representation.cisco_nxos.IpAccessList;
 import org.batfish.representation.cisco_nxos.IpAccessListLine;
 import org.batfish.representation.cisco_nxos.IpAddressSpec;
+import org.batfish.representation.cisco_nxos.IpCommunityList;
+import org.batfish.representation.cisco_nxos.IpCommunityListStandard;
+import org.batfish.representation.cisco_nxos.IpCommunityListStandardLine;
 import org.batfish.representation.cisco_nxos.IpPrefixList;
 import org.batfish.representation.cisco_nxos.IpPrefixListLine;
 import org.batfish.representation.cisco_nxos.Layer3Options;
@@ -178,6 +191,10 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
       IntegerSpace.of(Range.closed(1, 254));
   private static final LongSpace IP_ACCESS_LIST_LINE_NUMBER_RANGE =
       LongSpace.of(Range.closed(1L, 4294967295L));
+  private static final LongSpace IP_COMMUNITY_LIST_LINE_NUMBER_RANGE =
+      LongSpace.of(Range.closed(1L, 4294967294L));
+  private static final IntegerSpace IP_COMMUNITY_LIST_NAME_LENGTH_RANGE =
+      IntegerSpace.of(Range.closed(1, 63));
   private static final IntegerSpace IP_PREFIX_LIST_DESCRIPTION_LENGTH_RANGE =
       IntegerSpace.of(Range.closed(1, 90));
   private static final LongSpace IP_PREFIX_LIST_LINE_NUMBER_RANGE =
@@ -402,6 +419,64 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
     _configuration = new CiscoNxosConfiguration();
     _currentValidVlanRange = VLAN_RANGE.difference(_configuration.getReservedVlanRange());
     _currentVrf = _configuration.getDefaultVrf();
+  }
+
+  @Override
+  public void enterIcl_standard(Icl_standardContext ctx) {
+    int line = ctx.getStart().getLine();
+    Long explicitSeq;
+    if (ctx.seq != null) {
+      Optional<Long> seqOpt = toLong(ctx, ctx.seq);
+      if (!seqOpt.isPresent()) {
+        return;
+      }
+      explicitSeq = seqOpt.get();
+    } else {
+      explicitSeq = null;
+    }
+    Optional<Set<StandardCommunity>> communities = toStandardCommunitySet(ctx.communities);
+    if (!communities.isPresent()) {
+      return;
+    }
+    Optional<String> nameOpt = toString(ctx, ctx.name);
+    if (!nameOpt.isPresent()) {
+      return;
+    }
+    String name = nameOpt.get();
+    IpCommunityList communityList =
+        _configuration
+            .getIpCommunityLists()
+            .computeIfAbsent(
+                name,
+                n -> {
+                  _configuration.defineStructure(
+                      CiscoNxosStructureType.IP_COMMUNITY_LIST_STANDARD, n, line);
+                  return new IpCommunityListStandard(n);
+                });
+    if (!(communityList instanceof IpCommunityListStandard)) {
+      _w.addWarning(
+          ctx,
+          getFullText(ctx),
+          _parser,
+          String.format(
+              "Cannot define standard community-list '%s' because another community-list with that name but a different type already exists.",
+              name));
+      return;
+    }
+    IpCommunityListStandard communityListStandard = (IpCommunityListStandard) communityList;
+    SortedMap<Long, IpCommunityListStandardLine> lines = communityListStandard.getLines();
+    long seq;
+    if (explicitSeq != null) {
+      seq = explicitSeq;
+    } else if (!lines.isEmpty()) {
+      seq = lines.lastKey() + 1L;
+    } else {
+      seq = 1L;
+    }
+    communityListStandard
+        .getLines()
+        .put(
+            seq, new IpCommunityListStandardLine(toLineAction(ctx.action), seq, communities.get()));
   }
 
   @Override
@@ -1718,6 +1793,12 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
   }
 
   private @Nonnull Optional<Long> toLong(
+      ParserRuleContext messageCtx, Ip_community_list_seqContext ctx) {
+    return toLongInSpace(
+        messageCtx, ctx, IP_COMMUNITY_LIST_LINE_NUMBER_RANGE, "ip community-list line number");
+  }
+
+  private @Nonnull Optional<Long> toLong(
       ParserRuleContext messageCtx, Ip_prefix_list_line_numberContext ctx) {
     return toLongInSpace(messageCtx, ctx, IP_PREFIX_LIST_LINE_NUMBER_RANGE, "ip prefix-list seq");
   }
@@ -1806,6 +1887,41 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
     return track;
   }
 
+  private @Nonnull StandardCommunity toStandardCommunity(Literal_standard_communityContext ctx) {
+    return StandardCommunity.of(toInteger(ctx.high), toInteger(ctx.low));
+  }
+
+  private @Nonnull Optional<StandardCommunity> toStandardCommunity(Standard_communityContext ctx) {
+    if (ctx.literal != null) {
+      return Optional.of(toStandardCommunity(ctx.literal));
+    } else if (ctx.INTERNET() != null) {
+      return Optional.of(StandardCommunity.of(WellKnownCommunity.INTERNET));
+    } else if (ctx.LOCAL_AS() != null) {
+      return Optional.of(StandardCommunity.of(WellKnownCommunity.NO_EXPORT_SUBCONFED));
+    } else if (ctx.NO_ADVERTISE() != null) {
+      return Optional.of(StandardCommunity.of(WellKnownCommunity.NO_ADVERTISE));
+    } else if (ctx.NO_EXPORT() != null) {
+      return Optional.of(StandardCommunity.of(WellKnownCommunity.NO_EXPORT));
+    } else {
+      // assume valid but unsupported
+      todo(ctx);
+      return Optional.empty();
+    }
+  }
+
+  private @Nonnull Optional<Set<StandardCommunity>> toStandardCommunitySet(
+      Iterable<Standard_communityContext> communities) {
+    ImmutableSet.Builder<StandardCommunity> builder = ImmutableSet.builder();
+    for (Standard_communityContext communityCtx : communities) {
+      Optional<StandardCommunity> community = toStandardCommunity(communityCtx);
+      if (!community.isPresent()) {
+        return Optional.empty();
+      }
+      builder.add(community.get());
+    }
+    return Optional.of(builder.build());
+  }
+
   private @Nonnull Optional<String> toString(
       ParserRuleContext messageCtx, Interface_descriptionContext ctx) {
     return toStringWithLengthInSpace(
@@ -1828,6 +1944,12 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
       return null;
     }
     return name;
+  }
+
+  private Optional<String> toString(
+      ParserRuleContext messageCtx, Ip_community_list_nameContext ctx) {
+    return toStringWithLengthInSpace(
+        messageCtx, ctx, IP_COMMUNITY_LIST_NAME_LENGTH_RANGE, "ip community-list name");
   }
 
   private @Nonnull Optional<String> toString(

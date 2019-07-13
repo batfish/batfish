@@ -24,7 +24,8 @@
                 "discard" : false,
                 "metric" : 0,
                 "network" : "0.0.0.0/0",
-                "nextHopIp" : "AUTO/NONE(-1l)"
+                "nextHopIp" : "AUTO/NONE(-1l)",
+                "tag" : -1
               }
             ],
             "ipv4UnicastAddressFamily" : {
@@ -110,7 +111,8 @@
                 "discard" : false,
                 "metric" : 0,
                 "network" : "0.0.0.0/0",
-                "nextHopIp" : "AUTO/NONE(-1l)"
+                "nextHopIp" : "AUTO/NONE(-1l)",
+                "tag" : -1
               }
             ],
             "ipv4UnicastAddressFamily" : {
@@ -227,7 +229,8 @@
                 "discard" : false,
                 "metric" : 0,
                 "network" : "0.0.0.0/0",
-                "nextHopIp" : "AUTO/NONE(-1l)"
+                "nextHopIp" : "AUTO/NONE(-1l)",
+                "tag" : -1
               }
             ],
             "ipv4UnicastAddressFamily" : {
@@ -313,7 +316,8 @@
                 "discard" : false,
                 "metric" : 0,
                 "network" : "0.0.0.0/0",
-                "nextHopIp" : "AUTO/NONE(-1l)"
+                "nextHopIp" : "AUTO/NONE(-1l)",
+                "tag" : -1
               }
             ],
             "ipv4UnicastAddressFamily" : {
@@ -3004,7 +3008,8 @@
                       "discard" : false,
                       "metric" : 0,
                       "network" : "0.0.0.0/0",
-                      "nextHopIp" : "AUTO/NONE(-1l)"
+                      "nextHopIp" : "AUTO/NONE(-1l)",
+                      "tag" : -1
                     }
                   ],
                   "ipv4UnicastAddressFamily" : {
@@ -3045,7 +3050,8 @@
                       "discard" : false,
                       "metric" : 0,
                       "network" : "0.0.0.0/0",
-                      "nextHopIp" : "AUTO/NONE(-1l)"
+                      "nextHopIp" : "AUTO/NONE(-1l)",
+                      "tag" : -1
                     }
                   ],
                   "ipv4UnicastAddressFamily" : {

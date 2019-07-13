@@ -8,6 +8,7 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.regex.Pattern.CASE_INSENSITIVE;
 import static java.util.stream.Collectors.toMap;
 import static org.batfish.bddreachability.BDDMultipathInconsistency.computeMultipathInconsistencies;
+import static org.batfish.common.util.CommonUtil.detectCharset;
 import static org.batfish.common.util.CompletionMetadataUtils.getFilterNames;
 import static org.batfish.common.util.CompletionMetadataUtils.getInterfaces;
 import static org.batfish.common.util.CompletionMetadataUtils.getIps;
@@ -78,6 +79,7 @@ import net.sf.javabdd.BDD;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
 import org.apache.commons.configuration2.ImmutableConfiguration;
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.SerializationUtils;
 import org.batfish.bddreachability.BDDLoopDetectionAnalysis;
 import org.batfish.bddreachability.BDDReachabilityAnalysis;
@@ -2281,6 +2283,14 @@ public class Batfish extends PluginConsumer implements IBatfish {
         getStructureNames(configurations),
         getVrfs(configurations),
         getZones(configurations));
+  }
+
+  @Override
+  public String getSnapshotInputObject(String key) throws FileNotFoundException, IOException {
+    InputStream inputObject =
+        _storage.loadSnapshotInputObject(_settings.getContainer(), _testrigSettings.getName(), key);
+    byte[] bytes = IOUtils.toByteArray(inputObject);
+    return new String(bytes, detectCharset(bytes));
   }
 
   private void repairEnvironmentBgpTables() {

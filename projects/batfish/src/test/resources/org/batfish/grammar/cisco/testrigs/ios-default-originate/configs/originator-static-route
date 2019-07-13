@@ -15,7 +15,7 @@ interface Ethernet2
 !
 router bgp 1
  bgp router-id 1.1.1.1
- redistribute static route-map SET_TAG_50
+ redistribute static route-map SET_COMMUNITY_50
  !
  ! Neither peer will generate default route because PERMIT_1234 will prevent generation.
  !
@@ -29,8 +29,8 @@ router bgp 1
  neighbor 10.2.2.2 route-map DENY_DEFAULT out
 !
 !
-route-map SET_TAG_50 permit 10
- set tag 50
+route-map SET_COMMUNITY_50 permit 10
+ set community 50
 !
 route-map DENY_DEFAULT deny 10
  match ip address ip prefix-list PREFIX_ZERO

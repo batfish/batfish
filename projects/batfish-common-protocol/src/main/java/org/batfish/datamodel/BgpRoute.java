@@ -315,10 +315,11 @@ public abstract class BgpRoute<B extends Builder<B, R>, R extends BgpRoute<B, R>
       RoutingProtocol protocol,
       @Nullable Ip receivedFromIp,
       @Nullable RoutingProtocol srcProtocol,
+      long tag,
       int weight,
       boolean nonForwarding,
       boolean nonRouting) {
-    super(network, admin, nonRouting, nonForwarding);
+    super(network, admin, tag, nonRouting, nonForwarding);
     checkArgument(
         protocol == RoutingProtocol.BGP
             || protocol == RoutingProtocol.IBGP
@@ -456,11 +457,6 @@ public abstract class BgpRoute<B extends Builder<B, R>, R extends BgpRoute<B, R>
   @JsonProperty(PROP_SRC_PROTOCOL)
   public RoutingProtocol getSrcProtocol() {
     return _srcProtocol;
-  }
-
-  @Override
-  public long getTag() {
-    return NO_TAG;
   }
 
   @JsonProperty(PROP_WEIGHT)

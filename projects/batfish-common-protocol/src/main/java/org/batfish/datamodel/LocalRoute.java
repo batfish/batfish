@@ -29,12 +29,13 @@ public final class LocalRoute extends AbstractRoute {
         Prefix.create(interfaceAddress.getIp(), Prefix.MAX_PREFIX_LENGTH),
         nextHopInterface,
         interfaceAddress.getNetworkBits(),
-        0);
+        0,
+        Route.UNSET_ROUTE_TAG);
   }
 
   @VisibleForTesting
-  LocalRoute(Prefix network, String nextHopInterface, int sourcePrefixLength, int admin) {
-    super(network, admin, false, false);
+  LocalRoute(Prefix network, String nextHopInterface, int sourcePrefixLength, int admin, long tag) {
+    super(network, admin, tag, false, false);
     _nextHopInterface = nextHopInterface;
     _sourcePrefixLength = sourcePrefixLength;
   }
@@ -44,40 +45,15 @@ public final class LocalRoute extends AbstractRoute {
       @Nullable @JsonProperty(PROP_NETWORK) Prefix network,
       @Nullable @JsonProperty(PROP_NEXT_HOP_INTERFACE) String nextHopInterface,
       @JsonProperty(PROP_SOURCE_PREFIX_LENGTH) int sourcePrefixLength,
-      @JsonProperty(PROP_ADMINISTRATIVE_COST) int admin) {
+      @JsonProperty(PROP_ADMINISTRATIVE_COST) int admin,
+      @JsonProperty(PROP_TAG) long tag) {
     checkArgument(network != null, "LocalRoute missing %s", PROP_NETWORK);
     return new LocalRoute(
         network,
         firstNonNull(nextHopInterface, Route.UNSET_NEXT_HOP_INTERFACE),
         sourcePrefixLength,
-        admin);
-  }
-
-  @Override
-  public boolean equals(Object o) {
-    if (o == this) {
-      return true;
-    } else if (!(o instanceof LocalRoute)) {
-      return false;
-    }
-    LocalRoute rhs = (LocalRoute) o;
-    return _network.equals(rhs._network)
-        && _admin == rhs._admin
-        && getNonRouting() == rhs.getNonRouting()
-        && getNonForwarding() == rhs.getNonForwarding()
-        && _nextHopInterface.equals(rhs._nextHopInterface)
-        && _sourcePrefixLength == rhs._sourcePrefixLength;
-  }
-
-  @Override
-  public int hashCode() {
-    return Objects.hash(
-        _network,
-        _admin,
-        getNonRouting(),
-        getNonForwarding(),
-        _nextHopInterface,
-        _sourcePrefixLength);
+        admin,
+        tag);
   }
 
   @Override
@@ -109,22 +85,6 @@ public final class LocalRoute extends AbstractRoute {
     return _sourcePrefixLength;
   }
 
-  @Override
-  public long getTag() {
-    return Route.UNSET_ROUTE_TAG;
-  }
-
-  @Override
-  public AbstractRouteBuilder<Builder, LocalRoute> toBuilder() {
-    return builder()
-        .setNetwork(getNetwork())
-        .setAdmin(getAdministrativeCost())
-        .setNonRouting(getNonRouting())
-        .setNonForwarding(getNonForwarding())
-        .setNextHopInterface(_nextHopInterface)
-        .setSourcePrefixLength(_sourcePrefixLength);
-  }
-
   /** Builder for {@link org.batfish.datamodel.LocalRoute} */
   public static final class Builder extends AbstractRouteBuilder<Builder, LocalRoute> {
 
@@ -141,7 +101,8 @@ public final class LocalRoute extends AbstractRoute {
           getNetwork(),
           firstNonNull(_nextHopInterface, Route.UNSET_NEXT_HOP_INTERFACE),
           _sourcePrefixLength,
-          getAdmin());
+          getAdmin(),
+          getTag());
     }
 
     @Nonnull
@@ -163,5 +124,48 @@ public final class LocalRoute extends AbstractRoute {
 
   public static Builder builder() {
     return new Builder();
+  }
+
+  @Override
+  public AbstractRouteBuilder<Builder, LocalRoute> toBuilder() {
+    return builder()
+        .setNetwork(_network)
+        .setAdmin(_admin)
+        .setNonRouting(getNonRouting())
+        .setNonForwarding(getNonForwarding())
+        .setNextHopInterface(_nextHopInterface)
+        .setSourcePrefixLength(_sourcePrefixLength)
+        .setTag(_tag);
+  }
+
+  /////// Keep #toBuilder, #equals, and #hashCode in sync ////////
+
+  @Override
+  public boolean equals(Object o) {
+    if (o == this) {
+      return true;
+    } else if (!(o instanceof LocalRoute)) {
+      return false;
+    }
+    LocalRoute rhs = (LocalRoute) o;
+    return _network.equals(rhs._network)
+        && _admin == rhs._admin
+        && getNonRouting() == rhs.getNonRouting()
+        && getNonForwarding() == rhs.getNonForwarding()
+        && _nextHopInterface.equals(rhs._nextHopInterface)
+        && _sourcePrefixLength == rhs._sourcePrefixLength
+        && _tag == rhs._tag;
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(
+        _network,
+        _admin,
+        getNonRouting(),
+        getNonForwarding(),
+        _nextHopInterface,
+        _sourcePrefixLength,
+        _tag);
   }
 }

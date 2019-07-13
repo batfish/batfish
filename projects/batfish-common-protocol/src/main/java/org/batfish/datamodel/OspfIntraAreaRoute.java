@@ -23,13 +23,14 @@ public class OspfIntraAreaRoute extends OspfInternalRoute {
       @Nullable @JsonProperty(PROP_NEXT_HOP_IP) Ip nextHopIp,
       @Nullable @JsonProperty(PROP_ADMINISTRATIVE_COST) Integer admin,
       @Nullable @JsonProperty(PROP_METRIC) Long metric,
-      @Nullable @JsonProperty(PROP_AREA) Long area) {
+      @Nullable @JsonProperty(PROP_AREA) Long area,
+      @JsonProperty(PROP_TAG) long tag) {
     checkArgument(network != null, "%s must be specified", PROP_NETWORK);
     checkArgument(nextHopIp != null, "%s must be specified", PROP_NEXT_HOP_IP);
     checkArgument(admin != null, "%s must be specified", PROP_ADMINISTRATIVE_COST);
     checkArgument(metric != null, "%s must be specified", PROP_METRIC);
     checkArgument(area != null, "%s must be specified", PROP_AREA);
-    return new OspfIntraAreaRoute(network, nextHopIp, admin, metric, area, false, false);
+    return new OspfIntraAreaRoute(network, nextHopIp, admin, metric, area, tag, false, false);
   }
 
   public OspfIntraAreaRoute(
@@ -38,61 +39,16 @@ public class OspfIntraAreaRoute extends OspfInternalRoute {
       int admin,
       long metric,
       long area,
+      long tag,
       boolean nonForwarding,
       boolean nonRouting) {
-    super(network, nextHopIp, admin, metric, area, nonForwarding, nonRouting);
+    super(network, nextHopIp, admin, metric, area, tag, nonForwarding, nonRouting);
   }
 
   @Nonnull
   @Override
   public RoutingProtocol getProtocol() {
     return RoutingProtocol.OSPF;
-  }
-
-  @Override
-  public boolean equals(@Nullable Object o) {
-    if (o == this) {
-      return true;
-    } else if (!(o instanceof OspfIntraAreaRoute)) {
-      return false;
-    }
-    OspfIntraAreaRoute other = (OspfIntraAreaRoute) o;
-    return _network.equals(other._network)
-        && _admin == other._admin
-        && _area == other._area
-        && getNonRouting() == other.getNonRouting()
-        && getNonForwarding() == other.getNonForwarding()
-        && _metric == other._metric
-        && _nextHopIp.equals(other._nextHopIp);
-  }
-
-  @Override
-  public int hashCode() {
-    int h = _hashCode;
-    if (h == 0) {
-      h = _network.hashCode();
-      h = 31 * h + _admin;
-      h = 31 * h + Long.hashCode(_area);
-      h = 31 * h + Long.hashCode(_metric);
-      h = 31 * h + _nextHopIp.hashCode();
-
-      _hashCode = h;
-    }
-    return h;
-  }
-
-  @Override
-  public Builder toBuilder() {
-    return builder()
-        // AbstractRoute properties
-        .setNetwork(getNetwork())
-        .setNextHopIp(getNextHopIp())
-        .setAdmin(_admin)
-        .setMetric(_metric)
-        .setNonForwarding(getNonForwarding())
-        .setNonRouting(getNonRouting())
-        // OspfIntraAreaRoute properties
-        .setArea(getArea());
   }
 
   public static Builder builder() {
@@ -113,6 +69,7 @@ public class OspfIntraAreaRoute extends OspfInternalRoute {
               getAdmin(),
               getMetric(),
               _area,
+              getTag(),
               getNonForwarding(),
               getNonRouting());
       return _cache.intern(r);
@@ -130,5 +87,58 @@ public class OspfIntraAreaRoute extends OspfInternalRoute {
     }
 
     private Builder() {}
+  }
+
+  /////// Keep #toBuilder, #equals, and #hashCode in sync ////////
+
+  @Override
+  public Builder toBuilder() {
+    return builder()
+        // AbstractRoute properties
+        .setNetwork(getNetwork())
+        .setNextHopIp(getNextHopIp())
+        .setAdmin(_admin)
+        .setMetric(_metric)
+        .setNonForwarding(getNonForwarding())
+        .setNonRouting(getNonRouting())
+        .setTag(_tag)
+        // OspfIntraAreaRoute properties
+        .setArea(getArea());
+  }
+
+  @Override
+  public boolean equals(@Nullable Object o) {
+    if (o == this) {
+      return true;
+    } else if (!(o instanceof OspfIntraAreaRoute)) {
+      return false;
+    }
+    OspfIntraAreaRoute other = (OspfIntraAreaRoute) o;
+    return _network.equals(other._network)
+        && _admin == other._admin
+        && _area == other._area
+        && getNonRouting() == other.getNonRouting()
+        && getNonForwarding() == other.getNonForwarding()
+        && _metric == other._metric
+        && _nextHopIp.equals(other._nextHopIp)
+        && _tag == other._tag;
+  }
+
+  @Override
+  public int hashCode() {
+    int h = _hashCode;
+    if (h == 0) {
+      h = _network.hashCode();
+      h = 31 * h + _admin;
+      h = 31 * h + Long.hashCode(_area);
+      h = 31 * h + Long.hashCode(_metric);
+      h = 31 * h + _nextHopIp.hashCode();
+      h = 31 * h + Boolean.hashCode(getNonForwarding());
+      h = 31 * h + Boolean.hashCode(getNonRouting());
+      h = 31 * h + Long.hashCode(_tag);
+
+      _hashCode = h;
+    }
+    return h;
   }
 }

@@ -332,6 +332,7 @@ import org.batfish.datamodel.PrefixRange;
 import org.batfish.datamodel.PrefixSpace;
 import org.batfish.datamodel.RegexCommunitySet;
 import org.batfish.datamodel.RipInternalRoute;
+import org.batfish.datamodel.Route;
 import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.SubRange;
@@ -1708,7 +1709,8 @@ public class CiscoGrammarTest {
     // Check if routingPolicy rejects RIP route
     assertFalse(
         routingPolicy.process(
-            new RipInternalRoute(Prefix.parse("2.2.2.2/32"), Ip.parse("3.3.3.3"), 1, 1),
+            new RipInternalRoute(
+                Prefix.parse("2.2.2.2/32"), Ip.parse("3.3.3.3"), 1, 1, Route.UNSET_ROUTE_TAG),
             outputRouteBuilder,
             null,
             DEFAULT_VRF_NAME,
@@ -2044,7 +2046,7 @@ public class CiscoGrammarTest {
      default-originate route overwriting other default routes in neighbors' RIBs.
 
      The originator has a static default route and redistributes it to BGP on both peers with a
-     route-map that sets tag to 25, so we can be certain of the route's origin in neighbors.
+     route-map that sets community 50, so we can be certain of the route's origin in neighbors.
 
      Peer 1 has no outbound route-map, so the static route should be redistributed to listener 1.
 
@@ -2069,10 +2071,10 @@ public class CiscoGrammarTest {
 
     Ip originatorId = Ip.parse("1.1.1.1");
     Ip originatorIp = Ip.parse("10.1.1.1");
-    Long originatorAs = 1L;
+    long originatorAs = 1L;
     Bgpv4Route redistributedStaticRoute =
         Bgpv4Route.builder()
-            .setTag(25L)
+            .setCommunities(ImmutableSet.of(StandardCommunity.of(50)))
             .setNetwork(Prefix.ZERO)
             .setNextHopIp(originatorIp)
             .setAdmin(20)

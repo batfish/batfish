@@ -62,6 +62,7 @@ public abstract class EvpnRoute<B extends Builder<B, R>, R extends BgpRoute<B, R
       RoutingProtocol protocol,
       @Nullable Ip receivedFromIp,
       @Nullable RoutingProtocol srcProtocol,
+      long tag,
       int weight,
       boolean nonForwarding,
       boolean nonRouting,
@@ -83,6 +84,7 @@ public abstract class EvpnRoute<B extends Builder<B, R>, R extends BgpRoute<B, R
         protocol,
         receivedFromIp,
         srcProtocol,
+        tag,
         weight,
         nonForwarding,
         nonRouting);

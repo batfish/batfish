@@ -27,26 +27,6 @@ import org.batfish.datamodel.bgp.community.Community;
  */
 @ParametersAreNonnullByDefault
 public final class GeneratedRoute extends AbstractRoute implements Comparable<GeneratedRoute> {
-
-  // The comparator has no impact on route preference in RIBs and should not be used as such
-  private static final Comparator<GeneratedRoute> COMPARATOR =
-      Comparator.comparing(GeneratedRoute::getNetwork)
-          .thenComparing(GeneratedRoute::getNextHopIp)
-          .thenComparing(GeneratedRoute::getNextHopInterface)
-          .thenComparing(GeneratedRoute::getMetric)
-          .thenComparing(GeneratedRoute::getAdministrativeCost)
-          .thenComparing(GeneratedRoute::getTag)
-          .thenComparing(GeneratedRoute::getNonRouting)
-          .thenComparing(GeneratedRoute::getNonForwarding)
-          .thenComparing(GeneratedRoute::getAsPath)
-          .thenComparing(
-              GeneratedRoute::getAttributePolicy, Comparator.nullsLast(String::compareTo))
-          .thenComparing(
-              GeneratedRoute::getCommunities, Comparators.lexicographical(Ordering.natural()))
-          .thenComparing(GeneratedRoute::getDiscard)
-          .thenComparing(
-              GeneratedRoute::getGenerationPolicy, Comparator.nullsLast(String::compareTo));
-
   /** A {@link GeneratedRoute} builder */
   public static class Builder extends AbstractRouteBuilder<Builder, GeneratedRoute> {
 
@@ -73,6 +53,7 @@ public final class GeneratedRoute extends AbstractRoute implements Comparable<Ge
           _generationPolicy,
           getMetric(),
           firstNonNull(_nextHopInterface, Route.UNSET_NEXT_HOP_INTERFACE),
+          getTag(),
           getNonForwarding(),
           getNonRouting());
     }
@@ -127,14 +108,14 @@ public final class GeneratedRoute extends AbstractRoute implements Comparable<Ge
   private static final String PROP_GENERATION_POLICY_SOURCES = "generationPolicySources";
   private static final String PROP_METRIC = "metric";
 
-  private final AsPath _asPath;
+  @Nonnull private final AsPath _asPath;
   @Nullable private final String _attributePolicy;
   @Nonnull private final SortedSet<Community> _communities;
   private final boolean _discard;
   @Nullable private final String _generationPolicy;
-  private final Long _metric;
-  private final String _nextHopInterface;
-  private final Ip _nextHopIp;
+  private final long _metric;
+  @Nonnull private final String _nextHopInterface;
+  @Nonnull private final Ip _nextHopIp;
   // Non-final fields, not properties of the route. Should not impact equality or hashcode.
   private SortedSet<String> _attributePolicySources;
   private SortedSet<String> _generationPolicySources;
@@ -152,7 +133,8 @@ public final class GeneratedRoute extends AbstractRoute implements Comparable<Ge
       @JsonProperty(PROP_DISCARD) boolean discard,
       @Nullable @JsonProperty(PROP_GENERATION_POLICY) String generationPolicy,
       @Nullable @JsonProperty(PROP_METRIC) Long metric,
-      @Nullable @JsonProperty(PROP_NEXT_HOP_INTERFACE) String nextHopInterface) {
+      @Nullable @JsonProperty(PROP_NEXT_HOP_INTERFACE) String nextHopInterface,
+      @JsonProperty(PROP_TAG) long tag) {
     checkArgument(network != null, "GeneratedRoute missing %s", PROP_NETWORK);
     checkArgument(metric != null, "GeneratedRoute missing %s", PROP_METRIC);
     return new GeneratedRoute(
@@ -166,6 +148,7 @@ public final class GeneratedRoute extends AbstractRoute implements Comparable<Ge
         generationPolicy,
         metric,
         firstNonNull(nextHopInterface, Route.UNSET_NEXT_HOP_INTERFACE),
+        tag,
         false,
         false);
   }
@@ -179,11 +162,12 @@ public final class GeneratedRoute extends AbstractRoute implements Comparable<Ge
       @Nullable SortedSet<Community> communities,
       boolean discard,
       @Nullable String generationPolicy,
-      Long metric,
+      long metric,
       String nextHopInterface,
+      long tag,
       boolean nonForwarding,
       boolean nonRouting) {
-    super(network, administrativeCost, nonRouting, nonForwarding);
+    super(network, administrativeCost, tag, nonRouting, nonForwarding);
     _asPath = asPath;
     _attributePolicy = attributePolicy;
     _attributePolicySources = ImmutableSortedSet.of();
@@ -192,54 +176,8 @@ public final class GeneratedRoute extends AbstractRoute implements Comparable<Ge
     _generationPolicy = generationPolicy;
     _generationPolicySources = ImmutableSortedSet.of();
     _metric = metric;
-    _nextHopIp = firstNonNull(nextHopIp, Route.UNSET_ROUTE_NEXT_HOP_IP);
-    _nextHopInterface = firstNonNull(nextHopInterface, Route.UNSET_NEXT_HOP_INTERFACE);
-  }
-
-  @Override
-  public boolean equals(@Nullable Object o) {
-    if (this == o) {
-      return true;
-    }
-    if (!(o instanceof GeneratedRoute)) {
-      return false;
-    }
-    GeneratedRoute that = (GeneratedRoute) o;
-    return Objects.equals(_network, that._network)
-        && _admin == that._admin
-        && getNonRouting() == that.getNonRouting()
-        && getNonForwarding() == that.getNonForwarding()
-        && _discard == that._discard
-        && Objects.equals(_asPath, that._asPath)
-        && Objects.equals(_attributePolicy, that._attributePolicy)
-        && Objects.equals(_communities, that._communities)
-        && Objects.equals(_generationPolicy, that._generationPolicy)
-        && Objects.equals(_metric, that._metric)
-        && Objects.equals(_nextHopInterface, that._nextHopInterface)
-        && Objects.equals(_nextHopIp, that._nextHopIp);
-  }
-
-  @Override
-  public int hashCode() {
-    int h = _hashCode;
-    if (h == 0) {
-      h =
-          Objects.hash(
-              _network,
-              _admin,
-              getNonRouting(),
-              getNonForwarding(),
-              _asPath,
-              _attributePolicy,
-              _communities,
-              _discard,
-              _generationPolicy,
-              _metric,
-              _nextHopInterface,
-              _nextHopIp);
-      _hashCode = h;
-    }
-    return h;
+    _nextHopIp = nextHopIp;
+    _nextHopInterface = nextHopInterface;
   }
 
   /** A BGP AS-path attribute to associate with this generated route */
@@ -312,33 +250,9 @@ public final class GeneratedRoute extends AbstractRoute implements Comparable<Ge
   }
 
   @Override
-  public long getTag() {
-    return NO_TAG;
-  }
-
-  @Override
   public int compareTo(GeneratedRoute rhs) {
     // The comparator has no impact on route preference in RIBs and should not be used as such
     return COMPARATOR.compare(this, rhs);
-  }
-
-  @Override
-  public Builder toBuilder() {
-    return new Builder()
-        // General route properties
-        .setNetwork(getNetwork())
-        .setAdmin(getAdministrativeCost())
-        .setNonForwarding(getNonForwarding())
-        .setNonRouting(getNonRouting())
-        .setMetric(firstNonNull(getMetric(), 0L))
-        .setNextHopIp(getNextHopIp())
-        // GeneratedRoute properties
-        .setAsPath(getAsPath())
-        .setAttributePolicy(getAttributePolicy())
-        .setCommunities(getCommunities())
-        .setDiscard(getDiscard())
-        .setGenerationPolicy(getGenerationPolicy())
-        .setNextHopInterface(getNextHopInterface());
   }
 
   @JsonProperty(PROP_ATTRIBUTE_POLICY_SOURCES)
@@ -349,5 +263,94 @@ public final class GeneratedRoute extends AbstractRoute implements Comparable<Ge
   @JsonProperty(PROP_GENERATION_POLICY_SOURCES)
   public void setGenerationPolicySources(SortedSet<String> generationPolicySources) {
     _generationPolicySources = generationPolicySources;
+  }
+
+  /////// Keep COMPARATOR, #toBuilder, #equals, and #hashCode in sync ////////
+
+  // The comparator has no impact on route preference in RIBs and should not be used as such
+  private static final Comparator<GeneratedRoute> COMPARATOR =
+      Comparator.comparing(GeneratedRoute::getNetwork)
+          .thenComparing(GeneratedRoute::getNextHopIp)
+          .thenComparing(GeneratedRoute::getNextHopInterface)
+          .thenComparing(GeneratedRoute::getMetric)
+          .thenComparing(GeneratedRoute::getAdministrativeCost)
+          .thenComparing(GeneratedRoute::getTag)
+          .thenComparing(GeneratedRoute::getNonRouting)
+          .thenComparing(GeneratedRoute::getNonForwarding)
+          .thenComparing(GeneratedRoute::getAsPath)
+          .thenComparing(
+              GeneratedRoute::getAttributePolicy, Comparator.nullsLast(String::compareTo))
+          .thenComparing(
+              GeneratedRoute::getCommunities, Comparators.lexicographical(Ordering.natural()))
+          .thenComparing(GeneratedRoute::getDiscard)
+          .thenComparing(
+              GeneratedRoute::getGenerationPolicy, Comparator.nullsLast(String::compareTo));
+
+  @Override
+  public Builder toBuilder() {
+    return new Builder()
+        // General route properties
+        .setNetwork(getNetwork())
+        .setAdmin(getAdministrativeCost())
+        .setNonForwarding(getNonForwarding())
+        .setNonRouting(getNonRouting())
+        .setMetric(firstNonNull(getMetric(), 0L))
+        .setNextHopInterface(getNextHopInterface())
+        .setNextHopIp(getNextHopIp())
+        .setTag(getTag())
+        // GeneratedRoute properties
+        .setAsPath(getAsPath())
+        .setAttributePolicy(getAttributePolicy())
+        .setCommunities(getCommunities())
+        .setDiscard(getDiscard())
+        .setGenerationPolicy(getGenerationPolicy());
+  }
+
+  @Override
+  public boolean equals(@Nullable Object o) {
+    if (this == o) {
+      return true;
+    }
+    if (!(o instanceof GeneratedRoute)) {
+      return false;
+    }
+    GeneratedRoute that = (GeneratedRoute) o;
+    return Objects.equals(_network, that._network)
+        && _admin == that._admin
+        && getNonRouting() == that.getNonRouting()
+        && getNonForwarding() == that.getNonForwarding()
+        && _discard == that._discard
+        && _metric == that._metric
+        && _tag == that._tag
+        && _asPath.equals(that._asPath)
+        && Objects.equals(_attributePolicy, that._attributePolicy)
+        && _communities.equals(that._communities)
+        && Objects.equals(_generationPolicy, that._generationPolicy)
+        && _nextHopInterface.equals(that._nextHopInterface)
+        && _nextHopIp.equals(that._nextHopIp);
+  }
+
+  @Override
+  public int hashCode() {
+    int h = _hashCode;
+    if (h == 0) {
+      h =
+          Objects.hash(
+              _network,
+              _admin,
+              getNonRouting(),
+              getNonForwarding(),
+              _tag,
+              _asPath,
+              _attributePolicy,
+              _communities,
+              _discard,
+              _generationPolicy,
+              _metric,
+              _nextHopInterface,
+              _nextHopIp);
+      _hashCode = h;
+    }
+    return h;
   }
 }

@@ -53,6 +53,7 @@ public class Bgpv4RouteTest {
             .setOriginatorIp(Ip.parse("1.1.1.1"))
             .setOriginType(OriginType.IGP)
             .setProtocol(RoutingProtocol.BGP)
+            .setTag(3L)
             .build();
     assertThat(br, equalTo(br.toBuilder().build()));
   }
@@ -85,7 +86,8 @@ public class Bgpv4RouteTest {
         .addEqualityGroup(brb.setReceivedFromRouteReflectorClient(true).build())
         .addEqualityGroup(brb.setProtocol(RoutingProtocol.IBGP).build())
         .addEqualityGroup(brb.setSrcProtocol(RoutingProtocol.STATIC).build())
-        .addEqualityGroup(brb.setWeight(1).build())
+        .addEqualityGroup(brb.setTag(3L).build())
+        .addEqualityGroup(brb.setWeight(1).build(), brb.build().toBuilder().build())
         .addEqualityGroup(new Object())
         .testEquals();
   }

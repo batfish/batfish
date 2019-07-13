@@ -1092,12 +1092,11 @@ final class OspfRoutingProcess implements RoutingProcess<OspfTopology, OspfRoute
   private OspfExternalRoute.Builder transformType1and2CommonOnImport(
       OspfExternalRoute r, Ip nextHopIp) {
     assert r.getArea() != OspfRoute.NO_AREA; // Area must be set during export
-    return (OspfExternalRoute.Builder)
-        r.toBuilder()
-            .setNextHopIp(nextHopIp)
-            .setAdmin(_process.getAdminCosts().get(r.getOspfMetricType().toRoutingProtocol()))
-            // Clear non-routing bit
-            .setNonRouting(false);
+    return r.toBuilder()
+        .setNextHopIp(nextHopIp)
+        .setAdmin(_process.getAdminCosts().get(r.getOspfMetricType().toRoutingProtocol()))
+        // Clear non-routing bit
+        .setNonRouting(false);
   }
 
   /** Send out all external route updates to all neighbors */

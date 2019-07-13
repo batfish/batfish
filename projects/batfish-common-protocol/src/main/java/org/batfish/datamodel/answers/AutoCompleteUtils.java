@@ -35,7 +35,6 @@ import org.batfish.referencelibrary.ReferenceLibrary;
 import org.batfish.role.NodeRoleDimension;
 import org.batfish.role.NodeRolesData;
 import org.batfish.specifier.DispositionSpecifier;
-import org.batfish.specifier.RoutingProtocolSpecifier;
 import org.batfish.specifier.parboiled.Grammar;
 import org.batfish.specifier.parboiled.ParboiledAutoComplete;
 
@@ -673,7 +672,16 @@ public final class AutoCompleteUtils {
           }
         case ROUTING_PROTOCOL_SPEC:
           {
-            suggestions = RoutingProtocolSpecifier.autoComplete(query);
+            suggestions =
+                ParboiledAutoComplete.autoComplete(
+                    Grammar.ROUTING_PROTOCOL_SPECIFIER,
+                    network,
+                    snapshot,
+                    query,
+                    maxSuggestions,
+                    completionMetadata,
+                    nodeRolesData,
+                    referenceLibrary);
             break;
           }
         case STRUCTURE_NAME:
