@@ -14965,6 +14965,34 @@
             "type" : "LOOPBACK",
             "vrf" : "default"
           },
+          "otherbond" : {
+            "name" : "otherbond",
+            "active" : true,
+            "additionalArpIps" : {
+              "class" : "org.batfish.datamodel.EmptyIpSpace"
+            },
+            "allowedVlans" : "",
+            "autostate" : true,
+            "bandwidth" : 1.0E10,
+            "channelGroupMembers" : [
+              "swp3s0"
+            ],
+            "mtu" : 1500,
+            "ospfDeadInterval" : 0,
+            "ospfEnabled" : false,
+            "ospfHelloMultiplier" : 0,
+            "ospfPassive" : false,
+            "ospfPointToPoint" : false,
+            "proxyArp" : false,
+            "ripEnabled" : false,
+            "ripPassive" : false,
+            "spanningTreePortfast" : false,
+            "switchport" : false,
+            "switchportMode" : "NONE",
+            "switchportTrunkEncapsulation" : "DOT1Q",
+            "type" : "AGGREGATED",
+            "vrf" : "default"
+          },
           "swp1" : {
             "name" : "swp1",
             "active" : true,
@@ -15053,6 +15081,32 @@
             "autostate" : true,
             "bandwidth" : 1.0E10,
             "channelGroup" : "AGG",
+            "mtu" : 1500,
+            "ospfDeadInterval" : 0,
+            "ospfEnabled" : false,
+            "ospfHelloMultiplier" : 0,
+            "ospfPassive" : false,
+            "ospfPointToPoint" : false,
+            "proxyArp" : false,
+            "ripEnabled" : false,
+            "ripPassive" : false,
+            "spanningTreePortfast" : false,
+            "switchport" : false,
+            "switchportMode" : "NONE",
+            "switchportTrunkEncapsulation" : "DOT1Q",
+            "type" : "PHYSICAL",
+            "vrf" : "default"
+          },
+          "swp3s0" : {
+            "name" : "swp3s0",
+            "active" : true,
+            "additionalArpIps" : {
+              "class" : "org.batfish.datamodel.EmptyIpSpace"
+            },
+            "allowedVlans" : "",
+            "autostate" : true,
+            "bandwidth" : 1.0E10,
+            "channelGroup" : "otherbond",
             "mtu" : 1500,
             "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
@@ -15240,10 +15294,12 @@
             "interfaces" : [
               "AGG",
               "lo",
+              "otherbond",
               "swp1",
               "swp10",
               "swp2",
               "swp3",
+              "swp3s0",
               "swp4",
               "swp5",
               "swp6",
@@ -15309,6 +15365,31 @@
             "switchportTrunkEncapsulation" : "DOT1Q",
             "type" : "PHYSICAL",
             "vrf" : "default"
+          },
+          "swp1s2" : {
+            "name" : "swp1s2",
+            "active" : true,
+            "additionalArpIps" : {
+              "class" : "org.batfish.datamodel.EmptyIpSpace"
+            },
+            "allowedVlans" : "",
+            "autostate" : true,
+            "bandwidth" : 1.0E10,
+            "mtu" : 1500,
+            "ospfDeadInterval" : 0,
+            "ospfEnabled" : false,
+            "ospfHelloMultiplier" : 0,
+            "ospfPassive" : false,
+            "ospfPointToPoint" : false,
+            "proxyArp" : false,
+            "ripEnabled" : false,
+            "ripPassive" : false,
+            "spanningTreePortfast" : false,
+            "switchport" : false,
+            "switchportMode" : "NONE",
+            "switchportTrunkEncapsulation" : "DOT1Q",
+            "type" : "PHYSICAL",
+            "vrf" : "default"
           }
         },
         "vendorFamily" : {
@@ -15324,7 +15405,8 @@
             "name" : "default",
             "interfaces" : [
               "lo",
-              "swp1"
+              "swp1",
+              "swp1s2"
             ]
           }
         }

@@ -41965,6 +41965,25 @@
             "          (bob_learning",
             "            LEARNING:'learning'",
             "            OFF:'off'",
+            "            NEWLINE:'\\n')))))",
+            "  (statement",
+            "    (s_net_add",
+            "      NET:'net'",
+            "      ADD:'add'",
+            "      (a_bond",
+            "        BOND:'bond'",
+            "        bonds = (glob",
+            "          (glob_range_set",
+            "            unnumbered = (glob_word",
+            "              WORD:'otherbond')))",
+            "        (bond_bond",
+            "          BOND:'bond'",
+            "          (bobo_slaves",
+            "            SLAVES:'slaves'",
+            "            slaves = (glob",
+            "              (glob_range_set",
+            "                base_word = (numbered_word",
+            "                  NUMBERED_WORD:'swp3s0')))",
             "            NEWLINE:'\\n\\n')))))",
             "  EOF:<EOF>)"
           ]
@@ -42206,7 +42225,18 @@
             "          MTU:'mtu'",
             "          mtu = (uint16",
             "            d = DEC:'2000')",
-            "          NEWLINE:'\\n\\n'))))",
+            "          NEWLINE:'\\n'))))",
+            "  (statement",
+            "    (s_net_add",
+            "      NET:'net'",
+            "      ADD:'add'",
+            "      (a_interface",
+            "        INTERFACE:'interface'",
+            "        interfaces = (glob",
+            "          (glob_range_set",
+            "            base_word = (numbered_word",
+            "              NUMBERED_WORD:'swp1s2')))",
+            "        NEWLINE:'\\n\\n')))",
             "  EOF:<EOF>)"
           ]
         },
@@ -79926,6 +79956,12 @@
                 5
               ],
               "numReferrers" : 1
+            },
+            "otherbond" : {
+              "definitionLines" : [
+                8
+              ],
+              "numReferrers" : 1
             }
           },
           "interface" : {
@@ -79950,6 +79986,12 @@
             "swp3" : {
               "definitionLines" : [
                 5
+              ],
+              "numReferrers" : 1
+            },
+            "swp3s0" : {
+              "definitionLines" : [
+                8
               ],
               "numReferrers" : 1
             },
@@ -79995,9 +80037,15 @@
           "interface" : {
             "swp1" : {
               "definitionLines" : [
-                5
+                6
               ],
               "numReferrers" : 13
+            },
+            "swp1s2" : {
+              "definitionLines" : [
+                21
+              ],
+              "numReferrers" : 1
             }
           }
         },
@@ -87069,6 +87117,11 @@
               "bond self-reference" : [
                 5
               ]
+            },
+            "otherbond" : {
+              "bond self-reference" : [
+                8
+              ]
             }
           },
           "interface" : {
@@ -87090,6 +87143,11 @@
             "swp3" : {
               "bond slave" : [
                 5
+              ]
+            },
+            "swp3s0" : {
+              "bond slave" : [
+                8
               ]
             },
             "swp4" : {
@@ -87128,7 +87186,6 @@
           "interface" : {
             "swp1" : {
               "interface self-reference" : [
-                5,
                 6,
                 7,
                 8,
@@ -87140,7 +87197,13 @@
                 14,
                 15,
                 16,
-                17
+                17,
+                19
+              ]
+            },
+            "swp1s2" : {
+              "interface self-reference" : [
+                21
               ]
             }
           }
