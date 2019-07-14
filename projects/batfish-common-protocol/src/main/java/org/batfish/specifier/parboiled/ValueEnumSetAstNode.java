@@ -7,10 +7,6 @@ import java.util.Objects;
 final class ValueEnumSetAstNode<T> implements EnumSetAstNode {
   private final T _value;
 
-  ValueEnumSetAstNode(AstNode astNode, Collection<T> allValues) {
-    this(((StringAstNode) astNode).getStr(), allValues);
-  }
-
   ValueEnumSetAstNode(String stringValue, Collection<T> allValues) {
     // find the value in the collection and map to that
     _value =
@@ -21,8 +17,7 @@ final class ValueEnumSetAstNode<T> implements EnumSetAstNode {
                 () -> new IllegalArgumentException("Value not found in allValues " + stringValue));
   }
 
-  public static <T> boolean isValidValue(AstNode valueAst, Collection<T> allValues) {
-    String value = ((StringAstNode) valueAst).getStr();
+  public static <T> boolean isValidValue(String value, Collection<T> allValues) {
     return allValues.stream().anyMatch(p -> p.toString().equalsIgnoreCase(value));
   }
 

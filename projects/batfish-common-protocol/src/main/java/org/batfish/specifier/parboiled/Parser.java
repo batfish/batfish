@@ -181,9 +181,9 @@ public class Parser extends CommonParser {
   @Anchor(ENUM_SET_VALUE)
   public <T> Rule EnumSetValue(Collection<T> allValues) {
     return Sequence(
-        NameLiteral(),
-        ACTION(ValueEnumSetAstNode.isValidValue(peek(), allValues)),
-        push(new ValueEnumSetAstNode<T>(pop(), allValues)));
+        EnumValue(),
+        ACTION(ValueEnumSetAstNode.isValidValue(match(), allValues)),
+        push(new ValueEnumSetAstNode<>(match(), allValues)));
   }
 
   @Anchor(ENUM_SET_REGEX)
@@ -694,9 +694,9 @@ public class Parser extends CommonParser {
   @Anchor(IP_PROTOCOL_NAME)
   public Rule IpProtocolName() {
     return Sequence(
-        NameLiteral(),
-        ACTION(IpProtocolIpProtocolAstNode.isValidName(peek())),
-        push(new IpProtocolIpProtocolAstNode(pop())));
+        EnumValue(),
+        ACTION(IpProtocolIpProtocolAstNode.isValidName(match())),
+        push(new IpProtocolIpProtocolAstNode(match())));
   }
 
   @Anchor(IP_PROTOCOL_NUMBER)

@@ -8,13 +8,8 @@ import org.batfish.datamodel.IpProtocol;
 final class IpProtocolIpProtocolAstNode implements IpProtocolAstNode {
   private final IpProtocol _ipProtocol;
 
-  static boolean isValidName(AstNode astNode) {
-    String name = ((StringAstNode) astNode).getStr();
+  static boolean isValidName(String name) {
     return Arrays.stream(IpProtocol.values()).anyMatch(p -> p.toString().equalsIgnoreCase(name));
-  }
-
-  IpProtocolIpProtocolAstNode(AstNode astNode) {
-    this(((StringAstNode) astNode).getStr());
   }
 
   IpProtocolIpProtocolAstNode(String nameOrNum) {

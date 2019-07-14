@@ -109,6 +109,11 @@ public abstract class CommonParser extends BaseParser<AstNode> {
     return CharRange('@', '@');
   }
 
+  /** See class JavaDoc for why this is a CharRange and not Ch */
+  public Rule Dash() {
+    return CharRange('-', '-');
+  }
+
   /** [0-9] */
   public Rule Digit() {
     return CharRange('0', '9');
@@ -117,6 +122,16 @@ public abstract class CommonParser extends BaseParser<AstNode> {
   /** See class JavaDoc for why this is a CharRange and not Ch */
   public Rule Dot() {
     return CharRange('.', '.');
+  }
+
+  /**
+   * A rule for valid enum values. Start with an alphabet character or underscore, and additionally
+   * only contain digits and dashes.
+   */
+  public Rule EnumValue() {
+    return Sequence(
+        FirstOf(AlphabetChar(), Underscore()),
+        ZeroOrMore(FirstOf(AlphabetChar(), Underscore(), Number(), Dash())));
   }
 
   /** See class JavaDoc for why this is a CharRange and not Ch */
