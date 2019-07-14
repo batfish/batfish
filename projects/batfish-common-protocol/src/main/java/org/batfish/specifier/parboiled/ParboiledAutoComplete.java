@@ -23,6 +23,7 @@ import static org.batfish.specifier.parboiled.ParboiledAutoCompleteSuggestion.to
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -34,6 +35,7 @@ import java.util.stream.IntStream;
 import javax.annotation.Nonnull;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.common.CompletionMetadata;
+import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.answers.AutoCompleteUtils;
 import org.batfish.datamodel.answers.AutocompleteSuggestion;
 import org.batfish.datamodel.collections.NodeInterfacePair;
@@ -229,6 +231,8 @@ public final class ParboiledAutoComplete {
       case IP_ADDRESS_MASK:
         // can't help with masks
         return ImmutableSet.of();
+      case IP_PROTOCOL_NAME:
+        return autoCompleteIpProtocolName(pm);
       case IP_PROTOCOL_NUMBER:
         // don't help with numbers
         return ImmutableSet.of();
@@ -310,6 +314,21 @@ public final class ParboiledAutoComplete {
                 .collect(ImmutableSet.toImmutableSet())),
         !matchPrefix.equals(pm.getMatchPrefix()),
         Anchor.Type.ENUM_SET_VALUE,
+        pm.getMatchStartIndex());
+  }
+
+  /** Auto completes ip protocol names. */
+  private Set<ParboiledAutoCompleteSuggestion> autoCompleteIpProtocolName(PotentialMatch pm) {
+    String matchPrefix = unescapeIfNeeded(pm.getMatchPrefix(), pm.getAnchorType());
+
+    return updateSuggestions(
+        AutoCompleteUtils.stringAutoComplete(
+            matchPrefix,
+            Arrays.stream(IpProtocol.values())
+                .map(Object::toString)
+                .collect(ImmutableSet.toImmutableSet())),
+        !matchPrefix.equals(pm.getMatchPrefix()),
+        Anchor.Type.IP_PROTOCOL_NAME,
         pm.getMatchStartIndex());
   }
 

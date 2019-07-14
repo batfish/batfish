@@ -1,11 +1,21 @@
 package org.batfish.specifier.parboiled;
 
 import com.google.common.base.MoreObjects;
+import java.util.Arrays;
 import java.util.Objects;
 import org.batfish.datamodel.IpProtocol;
 
 final class IpProtocolIpProtocolAstNode implements IpProtocolAstNode {
   private final IpProtocol _ipProtocol;
+
+  static boolean isValidName(AstNode astNode) {
+    String name = ((StringAstNode) astNode).getStr();
+    return Arrays.stream(IpProtocol.values()).anyMatch(p -> p.toString().equalsIgnoreCase(name));
+  }
+
+  IpProtocolIpProtocolAstNode(AstNode astNode) {
+    this(((StringAstNode) astNode).getStr());
+  }
 
   IpProtocolIpProtocolAstNode(String nameOrNum) {
     _ipProtocol = IpProtocol.fromString(nameOrNum);

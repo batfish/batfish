@@ -271,12 +271,15 @@ public class ParserEnumSetTest {
         getPAC("http", Grammar.APPLICATION_SPECIFIER).run(),
         containsInAnyOrder(
             new ParboiledAutoCompleteSuggestion(",", 4, Type.ENUM_SET_SET_OP),
+            new ParboiledAutoCompleteSuggestion(Protocol.HTTP.toString(), 0, Type.ENUM_SET_VALUE),
             new ParboiledAutoCompleteSuggestion(
                 Protocol.HTTPS.toString(), 0, Type.ENUM_SET_VALUE)));
 
     assertThat(
         getPAC("https", Grammar.APPLICATION_SPECIFIER).run(),
-        containsInAnyOrder(new ParboiledAutoCompleteSuggestion(",", 5, Type.ENUM_SET_SET_OP)));
+        containsInAnyOrder(
+            new ParboiledAutoCompleteSuggestion(Protocol.HTTPS.toString(), 0, Type.ENUM_SET_VALUE),
+            new ParboiledAutoCompleteSuggestion(",", 5, Type.ENUM_SET_SET_OP)));
   }
 
   /** Test that we auto complete properly when the query is a non-prefix substring */
