@@ -90,6 +90,7 @@ i_no
   NO
   (
     i_no_autostate
+    | i_no_bfd
     | i_no_shutdown
     | i_no_switchport
   )
@@ -98,6 +99,11 @@ i_no
 i_no_autostate
 :
   AUTOSTATE NEWLINE
+;
+
+i_no_bfd
+:
+  BFD ECHO NEWLINE
 ;
 
 i_no_shutdown

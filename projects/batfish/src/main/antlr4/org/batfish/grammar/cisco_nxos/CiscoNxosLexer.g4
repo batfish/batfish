@@ -113,6 +113,11 @@ ADMINISTRATIVELY_PROHIBITED
   'administratively-prohibited'
 ;
 
+ADVERTISE
+:
+  'advertise'
+;
+
 ADVERTISE_MAP
 :
   'advertise-map'
@@ -646,6 +651,11 @@ EVENT_HISTORY
 EVENTS
 :
   'events'
+;
+
+EVPN
+:
+  'evpn'
 ;
 
 EXCEPT
