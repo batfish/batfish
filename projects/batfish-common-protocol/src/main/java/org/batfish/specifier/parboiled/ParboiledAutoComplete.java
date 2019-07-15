@@ -304,30 +304,26 @@ public final class ParboiledAutoComplete {
 
   /** Auto completes enum set values. */
   private Set<ParboiledAutoCompleteSuggestion> autoCompleteEnumSetValue(PotentialMatch pm) {
-    String matchPrefix = unescapeIfNeeded(pm.getMatchPrefix(), pm.getAnchorType());
-
     return updateSuggestions(
         AutoCompleteUtils.stringAutoComplete(
-            matchPrefix,
+            pm.getMatchPrefix(),
             Grammar.getEnumValues(_grammar).stream()
                 .map(Object::toString)
                 .collect(ImmutableSet.toImmutableSet())),
-        !matchPrefix.equals(pm.getMatchPrefix()),
+        false,
         Anchor.Type.ENUM_SET_VALUE,
         pm.getMatchStartIndex());
   }
 
   /** Auto completes ip protocol names. */
   private Set<ParboiledAutoCompleteSuggestion> autoCompleteIpProtocolName(PotentialMatch pm) {
-    String matchPrefix = unescapeIfNeeded(pm.getMatchPrefix(), pm.getAnchorType());
-
     return updateSuggestions(
         AutoCompleteUtils.stringAutoComplete(
-            matchPrefix,
+            pm.getMatchPrefix(),
             Arrays.stream(IpProtocol.values())
                 .map(Object::toString)
                 .collect(ImmutableSet.toImmutableSet())),
-        !matchPrefix.equals(pm.getMatchPrefix()),
+        false,
         Anchor.Type.IP_PROTOCOL_NAME,
         pm.getMatchStartIndex());
   }

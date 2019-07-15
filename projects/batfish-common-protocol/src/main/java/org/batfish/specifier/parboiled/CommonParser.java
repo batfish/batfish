@@ -131,7 +131,7 @@ public abstract class CommonParser extends BaseParser<AstNode> {
   public Rule EnumValue() {
     return Sequence(
         FirstOf(AlphabetChar(), Underscore()),
-        ZeroOrMore(FirstOf(AlphabetChar(), Underscore(), Number(), Dash())));
+        ZeroOrMore(FirstOf(AlphabetChar(), Underscore(), Digit(), Dash())));
   }
 
   /** See class JavaDoc for why this is a CharRange and not Ch */
