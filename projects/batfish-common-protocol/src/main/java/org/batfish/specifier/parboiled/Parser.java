@@ -96,8 +96,6 @@ public class Parser extends CommonParser {
 
   final Rule[] _interfaceTypeRules = initValuesRules(Arrays.asList(InterfaceType.values()));
 
-  final Rule[] _ipProtocolNameRules = initIpProtocolNameRules();
-
   static Parser instance() {
     return Parboiled.createParser(Parser.class);
   }
@@ -184,28 +182,10 @@ public class Parser extends CommonParser {
 
   @Anchor(ENUM_SET_VALUE)
   public <T> Rule EnumSetValue(Collection<T> allValues) {
-    // see javadoc for EnumSetValueTrap for why we trap
-    return FirstOf(
-        Sequence(
-            FirstOf(initValuesRules(allValues)),
-            push(new ValueEnumSetAstNode<>(match(), allValues))),
-        EnumSetValueTrap());
-  }
-
-  /**
-   * This rule "traps" all strings. By matching any ASCII string initially, it makes the parser
-   * runner think that extending the query would have made this rule match. But it never really
-   * matches anything because the last character is non-ASCII.
-   *
-   * <p>We do this to be able to control how we auto complete enum queries. Without this trap rule,
-   * EnumSetValue is not offered as a viable choice unless the entered query is a valid prefix of
-   * one of the choices.
-   *
-   * <p>The choice of non-ascii character should be different from what is used in {@link
-   * ParboiledAutoComplete#ILLEGAL_CHAR}.
-   */
-  public Rule EnumSetValueTrap() {
-    return Sequence(OneOrMore(CharRange((char) 0, (char) 127)), Ch((char) 128));
+    return Sequence(
+        EnumValue(),
+        ACTION(ValueEnumSetAstNode.isValidValue(match(), allValues)),
+        push(new ValueEnumSetAstNode<>(match(), allValues)));
   }
 
   @Anchor(ENUM_SET_REGEX)
@@ -715,7 +695,10 @@ public class Parser extends CommonParser {
 
   @Anchor(IP_PROTOCOL_NAME)
   public Rule IpProtocolName() {
-    return Sequence(FirstOf(_ipProtocolNameRules), push(new IpProtocolIpProtocolAstNode(match())));
+    return Sequence(
+        EnumValue(),
+        ACTION(IpProtocolIpProtocolAstNode.isValidName(match())),
+        push(new IpProtocolIpProtocolAstNode(match())));
   }
 
   @Anchor(IP_PROTOCOL_NUMBER)

@@ -17,6 +17,10 @@ final class ValueEnumSetAstNode<T> implements EnumSetAstNode {
                 () -> new IllegalArgumentException("Value not found in allValues " + stringValue));
   }
 
+  public static <T> boolean isValidValue(String value, Collection<T> allValues) {
+    return allValues.stream().anyMatch(p -> p.toString().equalsIgnoreCase(value));
+  }
+
   @Override
   public <T1> T1 accept(AstNodeVisitor<T1> visitor) {
     return visitor.visitValueEnumSetAstNode(this);

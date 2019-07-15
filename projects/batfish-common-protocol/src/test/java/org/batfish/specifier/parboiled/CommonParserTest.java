@@ -45,6 +45,39 @@ public class CommonParserTest {
   }
 
   @Test
+  public void testEnumValue() {
+    CommonParser parser = CommonParser.instance();
+    Rule rule = parser.input(parser.EnumValue());
+
+    // legal naked strings
+    assertTrue(matches("a", rule));
+    assertTrue(matches("A", rule));
+    assertTrue(matches("abc", rule));
+    assertTrue(matches("ABC", rule));
+    assertTrue(matches("_startUnderscore", rule));
+    assertTrue(matches("has9number", rule));
+    assertTrue(matches("has-dash", rule));
+
+    // illegal strings
+    assertFalse(matches("", rule)); // empty
+    assertFalse(matches("9numberstart", rule));
+    assertFalse(matches("-dashstart", rule));
+    assertFalse(matches("\"quoted\"", rule));
+    assertFalse(matches("has,", rule));
+    assertFalse(matches("has\\", rule));
+    assertFalse(matches("has&", rule));
+    assertFalse(matches("has(", rule));
+    assertFalse(matches("has)", rule));
+    assertFalse(matches("has[", rule));
+    assertFalse(matches("has]", rule));
+    assertFalse(matches("/startSlash", rule));
+    assertFalse(matches("@startAt", rule));
+    assertFalse(matches("", rule));
+    assertFalse(matches("\"", rule));
+    assertFalse(matches("\"\"", rule));
+  }
+
+  @Test
   public void testNameLiteral() {
     CommonParser parser = CommonParser.instance();
     Rule rule = parser.input(parser.NameLiteral());
