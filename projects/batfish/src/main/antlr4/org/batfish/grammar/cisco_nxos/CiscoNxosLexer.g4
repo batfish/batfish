@@ -13,6 +13,7 @@ tokens {
   PASSWORD_7,
   PASSWORD_7_MALFORMED_TEXT,
   PASSWORD_7_TEXT,
+  QUOTED_TEXT,
   REMARK_TEXT,
   SUBDOMAIN_NAME,
   WORD
@@ -2047,7 +2048,7 @@ VNI
 
 VRF
 :
-  'vrf' -> pushMode( M_Vrf )
+  'vrf' -> pushMode ( M_Vrf )
 ;
 
 WAIT_IGP_CONVERGENCE
@@ -2129,6 +2130,11 @@ COMMENT_LINE
 DASH
 :
   '-'
+;
+
+DOUBLE_QUOTE
+:
+  '"' -> pushMode ( M_DoubleQuote )
 ;
 
 FORWARD_SLASH
@@ -2504,6 +2510,18 @@ F_WordChar
   | '-'
 ;
 
+mode M_DoubleQuote;
+
+M_DoubleQuote_DOUBLE_QUOTE
+:
+  '"' -> type ( DOUBLE_QUOTE ) , popMode
+;
+
+M_DoubleQuote_QUOTED_TEXT
+:
+  ~'"'+ -> type ( QUOTED_TEXT )
+;
+
 mode M_Hostname;
 
 M_Hostname_SUBDOMAIN_NAME
@@ -2599,7 +2617,7 @@ M_Vrf_MEMBER
 
 M_Vrf_NEWLINE
 :
-  F_Newline+ -> type ( NEWLINE ), popMode
+  F_Newline+ -> type ( NEWLINE ) , popMode
 ;
 
 M_Vrf_WORD

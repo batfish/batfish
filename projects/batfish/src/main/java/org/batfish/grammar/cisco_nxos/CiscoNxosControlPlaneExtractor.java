@@ -85,6 +85,7 @@ import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Acllal4udp_port_specContex
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Acllal4udp_port_spec_literalContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Acllal4udp_port_spec_port_groupContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Acllal4udp_source_portContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.As_path_regexContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Channel_idContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Cisco_nxos_configurationContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Dscp_numberContext;
@@ -113,6 +114,9 @@ import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Ip_access_listContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Ip_access_list_line_numberContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Ip_access_list_nameContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Ip_addressContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Ip_as_path_access_listContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Ip_as_path_access_list_nameContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Ip_as_path_access_list_seqContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Ip_community_list_nameContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Ip_community_list_seqContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Ip_prefixContext;
@@ -163,6 +167,8 @@ import org.batfish.representation.cisco_nxos.Interface;
 import org.batfish.representation.cisco_nxos.IpAccessList;
 import org.batfish.representation.cisco_nxos.IpAccessListLine;
 import org.batfish.representation.cisco_nxos.IpAddressSpec;
+import org.batfish.representation.cisco_nxos.IpAsPathAccessList;
+import org.batfish.representation.cisco_nxos.IpAsPathAccessListLine;
 import org.batfish.representation.cisco_nxos.IpCommunityList;
 import org.batfish.representation.cisco_nxos.IpCommunityListStandard;
 import org.batfish.representation.cisco_nxos.IpCommunityListStandardLine;
@@ -191,6 +197,12 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
       IntegerSpace.of(Range.closed(1, 254));
   private static final LongSpace IP_ACCESS_LIST_LINE_NUMBER_RANGE =
       LongSpace.of(Range.closed(1L, 4294967295L));
+  private static final IntegerSpace IP_AS_PATH_ACCESS_LIST_NAME_LENGTH_RANGE =
+      IntegerSpace.of(Range.closed(1, 63));
+  private static final IntegerSpace IP_AS_PATH_ACCESS_LIST_REGEX_LENGTH_RANGE =
+      IntegerSpace.of(Range.closed(1, 63));
+  private static final LongSpace IP_AS_PATH_ACCESS_LIST_SEQ_RANGE =
+      LongSpace.of(Range.closed(1L, 4294967294L));
   private static final LongSpace IP_COMMUNITY_LIST_LINE_NUMBER_RANGE =
       LongSpace.of(Range.closed(1L, 4294967294L));
   private static final IntegerSpace IP_COMMUNITY_LIST_NAME_LENGTH_RANGE =
@@ -496,6 +508,52 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
                       CiscoNxosStructureType.IP_ACCESS_LIST, name, ctx.getStart().getLine());
                   return new IpAccessList(n);
                 });
+  }
+
+  @Override
+  public void enterIp_as_path_access_list(Ip_as_path_access_listContext ctx) {
+    int line = ctx.getStart().getLine();
+    Long explicitSeq;
+    if (ctx.seq != null) {
+      Optional<Long> seqOpt = toLong(ctx, ctx.seq);
+      if (!seqOpt.isPresent()) {
+        return;
+      }
+      explicitSeq = seqOpt.get();
+    } else {
+      explicitSeq = null;
+    }
+    Optional<String> nameOpt = toString(ctx, ctx.name);
+    if (!nameOpt.isPresent()) {
+      return;
+    }
+    Optional<String> regexOpt = toString(ctx, ctx.regex);
+    if (!regexOpt.isPresent()) {
+      return;
+    }
+    String name = nameOpt.get();
+    IpAsPathAccessList asPathAccessList =
+        _configuration
+            .getIpAsPathAccessLists()
+            .computeIfAbsent(
+                name,
+                n -> {
+                  _configuration.defineStructure(
+                      CiscoNxosStructureType.IP_AS_PATH_ACCESS_LIST, n, line);
+                  return new IpAsPathAccessList(n);
+                });
+    SortedMap<Long, IpAsPathAccessListLine> lines = asPathAccessList.getLines();
+    long seq;
+    if (explicitSeq != null) {
+      seq = explicitSeq;
+    } else if (!lines.isEmpty()) {
+      seq = lines.lastKey() + 1L;
+    } else {
+      seq = 1L;
+    }
+    asPathAccessList
+        .getLines()
+        .put(seq, new IpAsPathAccessListLine(toLineAction(ctx.action), seq, regexOpt.get()));
   }
 
   @Override
@@ -1787,6 +1845,12 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
   }
 
   private @Nonnull Optional<Long> toLong(
+      Ip_as_path_access_listContext messageCtx, Ip_as_path_access_list_seqContext ctx) {
+    return toLongInSpace(
+        messageCtx, ctx, IP_AS_PATH_ACCESS_LIST_SEQ_RANGE, "ip as-path access-list seq");
+  }
+
+  private @Nonnull Optional<Long> toLong(
       ParserRuleContext messageCtx, Ip_access_list_line_numberContext ctx) {
     return toLongInSpace(
         messageCtx, ctx, IP_ACCESS_LIST_LINE_NUMBER_RANGE, "ip access-list line number");
@@ -1923,15 +1987,30 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
   }
 
   private @Nonnull Optional<String> toString(
-      ParserRuleContext messageCtx, Interface_descriptionContext ctx) {
+      Ip_as_path_access_listContext messageCtx, As_path_regexContext ctx) {
     return toStringWithLengthInSpace(
-        messageCtx, ctx, INTERFACE_DESCRIPTION_LENGTH_RANGE, "interface description");
+        messageCtx,
+        ctx.dqs.text,
+        IP_AS_PATH_ACCESS_LIST_REGEX_LENGTH_RANGE,
+        "ip as-path access-list line regex");
+  }
+
+  private @Nonnull Optional<String> toString(
+      Ip_as_path_access_listContext messageCtx, Ip_as_path_access_list_nameContext ctx) {
+    return toStringWithLengthInSpace(
+        messageCtx, ctx, IP_AS_PATH_ACCESS_LIST_NAME_LENGTH_RANGE, "ip as-path access-list name");
   }
 
   private @Nonnull Optional<String> toString(
       Ip_prefix_listContext messageCtx, Ip_prefix_list_nameContext ctx) {
     return toStringWithLengthInSpace(
         messageCtx, ctx, IP_PREFIX_LIST_NAME_LENGTH_RANGE, "ip prefix-list name");
+  }
+
+  private @Nonnull Optional<String> toString(
+      ParserRuleContext messageCtx, Interface_descriptionContext ctx) {
+    return toStringWithLengthInSpace(
+        messageCtx, ctx, INTERFACE_DESCRIPTION_LENGTH_RANGE, "interface description");
   }
 
   private @Nullable String toString(ParserRuleContext messageCtx, Ip_access_list_nameContext ctx) {
