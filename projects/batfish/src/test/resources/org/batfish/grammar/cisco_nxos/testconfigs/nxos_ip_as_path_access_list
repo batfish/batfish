@@ -1,0 +1,19 @@
+!RANCID-CONTENT-TYPE: cisco-nx
+!
+hostname nxos_ip_as_path_access_list
+!
+
+!!! list for testing sequence numbers
+! seq=1
+ip as-path access-list aspacl_seq permit "^1$"
+! seq=10
+ip as-path access-list aspacl_seq seq 10 permit "^10$"
+! seq=5
+ip as-path access-list aspacl_seq seq 5 permit "^5$"
+! seq=11
+ip as-path access-list aspacl_seq permit "^11$"
+
+!!! list for testing match semantics
+ip as-path access-list aspacl_test deny "(_1_2_|_2_1_)"
+ip as-path access-list aspacl_test permit "_1_"
+ip as-path access-list aspacl_test permit "_2_"

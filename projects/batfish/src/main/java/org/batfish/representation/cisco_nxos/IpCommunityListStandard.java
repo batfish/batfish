@@ -5,8 +5,8 @@ import java.util.TreeMap;
 import javax.annotation.Nonnull;
 
 /**
- * An access-list matches a route's standard communities attribute against a set of literal standard
- * communities.
+ * An access-list that matches a route's standard communities attribute against a set of literal
+ * standard communities.
  */
 public final class IpCommunityListStandard extends IpCommunityList {
 

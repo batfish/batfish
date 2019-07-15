@@ -104,6 +104,8 @@ import org.batfish.representation.cisco_nxos.Interface;
 import org.batfish.representation.cisco_nxos.IpAccessList;
 import org.batfish.representation.cisco_nxos.IpAccessListLine;
 import org.batfish.representation.cisco_nxos.IpAddressSpec;
+import org.batfish.representation.cisco_nxos.IpAsPathAccessList;
+import org.batfish.representation.cisco_nxos.IpAsPathAccessListLine;
 import org.batfish.representation.cisco_nxos.IpCommunityListStandard;
 import org.batfish.representation.cisco_nxos.IpCommunityListStandardLine;
 import org.batfish.representation.cisco_nxos.IpPrefixList;
@@ -1134,6 +1136,37 @@ public final class CiscoNxosGrammarTest {
 
     assertThat(
         ans, hasNumReferrers(filename, CiscoNxosStructureType.IP_ACCESS_LIST, "acl_unused", 0));
+  }
+
+  @Test
+  public void testIpAsPathAccessListExtraction() {
+    String hostname = "nxos_ip_as_path_access_list";
+    CiscoNxosConfiguration vc = parseVendorConfig(hostname);
+
+    assertThat(vc.getIpAsPathAccessLists(), hasKeys("aspacl_seq", "aspacl_test"));
+    {
+      IpAsPathAccessList acl = vc.getIpAsPathAccessLists().get("aspacl_seq");
+      // check keySet directly to test iteration order
+      assertThat(acl.getLines().keySet(), contains(1L, 5L, 10L, 11L));
+    }
+    {
+      IpAsPathAccessList acl = vc.getIpAsPathAccessLists().get("aspacl_test");
+      // check keySet directly to test iteration order
+      Iterator<IpAsPathAccessListLine> lines = acl.getLines().values().iterator();
+      IpAsPathAccessListLine line;
+
+      line = lines.next();
+      assertThat(line.getAction(), equalTo(LineAction.DENY));
+      assertThat(line.getRegex(), equalTo("(_1_2_|_2_1_)"));
+
+      line = lines.next();
+      assertThat(line.getAction(), equalTo(LineAction.PERMIT));
+      assertThat(line.getRegex(), equalTo("_1_"));
+
+      line = lines.next();
+      assertThat(line.getAction(), equalTo(LineAction.PERMIT));
+      assertThat(line.getRegex(), equalTo("_2_"));
+    }
   }
 
   @Test
