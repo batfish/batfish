@@ -9,6 +9,8 @@ import org.batfish.datamodel.BgpSessionProperties.SessionType;
 import org.batfish.datamodel.Protocol;
 import org.batfish.datamodel.questions.BgpPeerPropertySpecifier;
 import org.batfish.datamodel.questions.BgpProcessPropertySpecifier;
+import org.batfish.datamodel.questions.BgpSessionStatus;
+import org.batfish.datamodel.questions.ConfiguredSessionStatus;
 import org.batfish.datamodel.questions.InterfacePropertySpecifier;
 import org.batfish.datamodel.questions.IpsecSessionStatus;
 import org.batfish.datamodel.questions.NamedStructurePropertySpecifier;
@@ -24,6 +26,9 @@ public enum Grammar {
   APPLICATION_SPECIFIER("applicationSpecifier", "application-specifier"),
   BGP_PEER_PROPERTY_SPECIFIER("bgpPeerPropertySpecifier", "bgp-peer-property-specifier"),
   BGP_PROCESS_PROPERTY_SPECIFIER("bgpProcessPropertySpecifier", "bgp-process-property-specifier"),
+  BGP_SESSION_COMPAT_STATUS_SPECIFIER(
+      "bgpSessionCompatStatusSpecifier", "bgp-session-compat-status-specifier"),
+  BGP_SESSION_STATUS_SPECIFIER("bgpSessionStatusSpecifier", "bgp-session-status-specifier"),
   BGP_SESSION_TYPE_SPECIFIER("bgpSessionTypeSpecifier", "bgp-session-type-specifier"),
   FILTER_SPECIFIER("filterSpecifier", "filter-specifier"),
   INTERFACE_PROPERTY_SPECIFIER("interfacePropertySpecifier", "interface-property-specifier"),
@@ -83,6 +88,10 @@ public enum Grammar {
         return BgpPeerPropertySpecifier.ALL.getMatchingProperties();
       case BGP_PROCESS_PROPERTY_SPECIFIER:
         return BgpProcessPropertySpecifier.ALL.getMatchingProperties();
+      case BGP_SESSION_COMPAT_STATUS_SPECIFIER:
+        return Arrays.asList(ConfiguredSessionStatus.values());
+      case BGP_SESSION_STATUS_SPECIFIER:
+        return Arrays.asList(BgpSessionStatus.values());
       case BGP_SESSION_TYPE_SPECIFIER:
         return Arrays.asList(SessionType.values());
       case INTERFACE_PROPERTY_SPECIFIER:

@@ -28,8 +28,8 @@
                 "displayName": "Remote Nodes"
             },
             "status": {
-                "description": "Only include sessions for which status matches this regex",
-                "type": "bgpSessionStatus",
+                "description": "Only include sessions for which status matches this specifier",
+                "type": "bgpSessionStatusSpec",
                 "optional": true,
                 "displayName": "Status"
             },

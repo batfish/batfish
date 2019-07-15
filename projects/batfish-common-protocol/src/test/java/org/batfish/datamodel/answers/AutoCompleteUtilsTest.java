@@ -17,6 +17,7 @@ import static org.batfish.datamodel.questions.BgpPeerPropertySpecifier.REMOTE_AS
 import static org.batfish.datamodel.questions.BgpProcessPropertySpecifier.MULTIPATH_EBGP;
 import static org.batfish.datamodel.questions.BgpProcessPropertySpecifier.MULTIPATH_EQUIVALENT_AS_PATH_MATCH_MODE;
 import static org.batfish.datamodel.questions.BgpProcessPropertySpecifier.MULTIPATH_IBGP;
+import static org.batfish.datamodel.questions.BgpSessionStatus.NOT_ESTABLISHED;
 import static org.batfish.datamodel.questions.ConfiguredSessionStatus.DYNAMIC_MATCH;
 import static org.batfish.datamodel.questions.ConfiguredSessionStatus.NO_MATCH_FOUND;
 import static org.batfish.datamodel.questions.ConfiguredSessionStatus.UNIQUE_MATCH;
@@ -183,14 +184,23 @@ public class AutoCompleteUtilsTest {
   }
 
   @Test
-  public void testBgpSessionStatusAutocomplete() {
+  public void testBgpSessionCompatStatusAutocomplete() {
     assertThat(
-        AutoCompleteUtils.autoComplete(Type.BGP_SESSION_STATUS, "match", 5).stream()
+        AutoCompleteUtils.autoComplete(Type.BGP_SESSION_COMPAT_STATUS_SPEC, "match", 5).stream()
             .map(AutocompleteSuggestion::getText)
             .collect(Collectors.toSet()),
         equalTo(
             ImmutableSet.of(
                 DYNAMIC_MATCH.toString(), NO_MATCH_FOUND.toString(), UNIQUE_MATCH.toString())));
+  }
+
+  @Test
+  public void testBgpSessionStatusAutocomplete() {
+    assertThat(
+        AutoCompleteUtils.autoComplete(Type.BGP_SESSION_STATUS_SPEC, "establish", 5).stream()
+            .map(AutocompleteSuggestion::getText)
+            .collect(Collectors.toSet()),
+        equalTo(ImmutableSet.of(ESTABLISHED.toString(), NOT_ESTABLISHED.toString())));
   }
 
   @Test

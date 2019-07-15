@@ -31,10 +31,10 @@
         "value" : ".*"
       },
       "status" : {
-        "description" : "Only include sessions for which status matches this regex",
+        "description" : "Only include sessions for which status matches this specifier",
         "displayName" : "Status",
         "optional" : true,
-        "type" : "bgpSessionStatus",
+        "type" : "bgpSessionStatusSpec",
         "value" : ".*"
       },
       "type" : {

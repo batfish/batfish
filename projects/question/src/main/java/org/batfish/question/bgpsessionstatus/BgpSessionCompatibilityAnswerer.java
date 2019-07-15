@@ -118,7 +118,7 @@ public class BgpSessionCompatibilityAnswerer extends Answerer {
    * Return the answer for {@link BgpSessionCompatibilityQuestion} -- a set of BGP sessions and
    * their compatibility.
    */
-  private List<Row> getRows(BgpSessionQuestion question) {
+  private List<Row> getRows(BgpSessionCompatibilityQuestion question) {
     Map<String, Configuration> configurations = _batfish.loadConfigurations();
     NetworkConfigurations nc = NetworkConfigurations.of(configurations);
     Set<String> nodes = question.getNodeSpecifier().resolve(_batfish.specifierContext());
@@ -298,8 +298,12 @@ public class BgpSessionCompatibilityAnswerer extends Answerer {
   }
 
   private static boolean matchesQuestionFilters(
-      Row row, Set<String> nodes, Set<String> remoteNodes, BgpSessionQuestion question) {
+      Row row,
+      Set<String> nodes,
+      Set<String> remoteNodes,
+      BgpSessionCompatibilityQuestion question) {
     return matchesNodesAndType(row, nodes, remoteNodes, question)
-        && question.matchesStatus((String) row.get(COL_CONFIGURED_STATUS, Schema.STRING));
+        && question.matchesStatus(
+            ConfiguredSessionStatus.parse((String) row.get(COL_CONFIGURED_STATUS, Schema.STRING)));
   }
 }

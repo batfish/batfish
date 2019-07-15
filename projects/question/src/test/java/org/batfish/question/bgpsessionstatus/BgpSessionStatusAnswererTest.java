@@ -59,11 +59,11 @@ import org.batfish.datamodel.bgp.BgpTopology;
 import org.batfish.datamodel.bgp.Ipv4UnicastAddressFamily;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.pojo.Node;
+import org.batfish.datamodel.questions.BgpSessionStatus;
 import org.batfish.datamodel.questions.DisplayHints;
 import org.batfish.datamodel.table.Row;
 import org.batfish.datamodel.table.TableAnswerElement;
 import org.batfish.datamodel.table.TableMetadata;
-import org.batfish.question.bgpsessionstatus.BgpSessionStatusAnswerer.SessionStatus;
 import org.batfish.specifier.MockSpecifierContext;
 import org.batfish.specifier.SpecifierContext;
 import org.junit.Test;
@@ -109,7 +109,7 @@ public class BgpSessionStatusAnswererTest {
     Row row = getActivePeerRow(peerId, peer, ImmutableMap.of(), topology, topology);
     Row expected =
         Row.builder()
-            .put(COL_ESTABLISHED_STATUS, SessionStatus.NOT_COMPATIBLE)
+            .put(COL_ESTABLISHED_STATUS, BgpSessionStatus.NOT_COMPATIBLE)
             .put(COL_LOCAL_INTERFACE, null)
             .put(COL_LOCAL_IP, null)
             .put(COL_LOCAL_AS, 1L)
@@ -170,7 +170,7 @@ public class BgpSessionStatusAnswererTest {
     Row row = getActivePeerRow(peerId, peer, ipOwners, linkedTopology, unlinkedTopology);
     Row.RowBuilder expected =
         Row.builder()
-            .put(COL_ESTABLISHED_STATUS, SessionStatus.NOT_ESTABLISHED)
+            .put(COL_ESTABLISHED_STATUS, BgpSessionStatus.NOT_ESTABLISHED)
             .put(COL_LOCAL_INTERFACE, null)
             .put(COL_LOCAL_IP, localIp)
             .put(COL_LOCAL_AS, 1L)
@@ -186,7 +186,7 @@ public class BgpSessionStatusAnswererTest {
     // Case 2: Peers are NOT both compatible, but session comes up (could happen if one peer is
     // missing local IP or has multiple compatible remotes)
     row = getActivePeerRow(peerId, peer, ipOwners, unlinkedTopology, linkedTopology);
-    expected.put(COL_ESTABLISHED_STATUS, SessionStatus.ESTABLISHED);
+    expected.put(COL_ESTABLISHED_STATUS, BgpSessionStatus.ESTABLISHED);
     assertThat(row, equalTo(expected.build()));
 
     // Case 3: Peers are compatible and able to reach each other
@@ -211,7 +211,7 @@ public class BgpSessionStatusAnswererTest {
     List<Row> rows = getPassivePeerRows(peerId, peer, null, null, null);
     Row expected =
         Row.builder()
-            .put(COL_ESTABLISHED_STATUS, SessionStatus.NOT_COMPATIBLE)
+            .put(COL_ESTABLISHED_STATUS, BgpSessionStatus.NOT_COMPATIBLE)
             .put(COL_LOCAL_INTERFACE, null)
             .put(COL_LOCAL_IP, Ip.AUTO)
             .put(COL_LOCAL_AS, 1L)
@@ -249,7 +249,7 @@ public class BgpSessionStatusAnswererTest {
     List<Row> rows = getPassivePeerRows(peerId, peer, null, bgpTopology, bgpTopology);
     Row expected =
         Row.builder()
-            .put(COL_ESTABLISHED_STATUS, SessionStatus.NOT_ESTABLISHED)
+            .put(COL_ESTABLISHED_STATUS, BgpSessionStatus.NOT_ESTABLISHED)
             .put(COL_LOCAL_INTERFACE, null)
             .put(COL_LOCAL_IP, Ip.AUTO)
             .put(COL_LOCAL_AS, 1L)
@@ -283,7 +283,7 @@ public class BgpSessionStatusAnswererTest {
     Row row = getUnnumberedPeerRow(peerId, peer, topology, topology);
     Row expected =
         Row.builder()
-            .put(COL_ESTABLISHED_STATUS, SessionStatus.NOT_COMPATIBLE)
+            .put(COL_ESTABLISHED_STATUS, BgpSessionStatus.NOT_COMPATIBLE)
             .put(COL_LOCAL_INTERFACE, new NodeInterfacePair("c1", "iface"))
             .put(COL_LOCAL_IP, null)
             .put(COL_LOCAL_AS, 1L)
@@ -331,7 +331,7 @@ public class BgpSessionStatusAnswererTest {
     Row row = getUnnumberedPeerRow(peerId, peer, bgpTopology, bgpTopology);
     Row expected =
         Row.builder()
-            .put(COL_ESTABLISHED_STATUS, SessionStatus.ESTABLISHED)
+            .put(COL_ESTABLISHED_STATUS, BgpSessionStatus.ESTABLISHED)
             .put(COL_LOCAL_INTERFACE, new NodeInterfacePair("c1", "iface"))
             .put(COL_LOCAL_IP, null)
             .put(COL_LOCAL_AS, 1L)
@@ -427,14 +427,14 @@ public class BgpSessionStatusAnswererTest {
             .put(COL_REMOTE_INTERFACE, null);
     Row expected1 =
         expectedRowBuilder
-            .put(COL_ESTABLISHED_STATUS, SessionStatus.ESTABLISHED)
+            .put(COL_ESTABLISHED_STATUS, BgpSessionStatus.ESTABLISHED)
             .put(COL_REMOTE_AS, "2")
             .put(COL_REMOTE_IP, new SelfDescribingObject(Schema.IP, remote1Ip))
             .put(COL_REMOTE_NODE, new Node("c2"))
             .build();
     Row expected2 =
         expectedRowBuilder
-            .put(COL_ESTABLISHED_STATUS, SessionStatus.NOT_ESTABLISHED)
+            .put(COL_ESTABLISHED_STATUS, BgpSessionStatus.NOT_ESTABLISHED)
             .put(COL_REMOTE_AS, "3")
             .put(COL_REMOTE_IP, new SelfDescribingObject(Schema.IP, remote2Ip))
             .put(COL_REMOTE_NODE, new Node("c3"))
@@ -556,7 +556,7 @@ public class BgpSessionStatusAnswererTest {
     Row.RowBuilder expectedRowBuilder =
         Row.builder()
             // Columns that will be the same in both rows
-            .put(COL_ESTABLISHED_STATUS, SessionStatus.ESTABLISHED)
+            .put(COL_ESTABLISHED_STATUS, BgpSessionStatus.ESTABLISHED)
             .put(COL_LOCAL_INTERFACE, null)
             .put(COL_REMOTE_INTERFACE, null)
             .put(COL_SESSION_TYPE, SessionType.EBGP_SINGLEHOP);
