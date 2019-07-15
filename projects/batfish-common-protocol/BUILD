@@ -9,6 +9,7 @@ filegroup(
         "src/main/java/org/batfish/common/DebugBatfishException.java",
         "src/main/java/org/batfish/common/ErrorDetails.java",
         "src/main/java/org/batfish/common/ParseTreeSentences.java",
+        "src/main/java/org/batfish/common/WillNotCommitException.java",
         "src/main/java/org/batfish/common/util/BatfishObjectMapper.java",
         "src/main/java/org/batfish/common/util/serialization/BatfishThirdPartyDeserializers.java",
         "src/main/java/org/batfish/common/util/serialization/BatfishThirdPartySerializationModule.java",
