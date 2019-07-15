@@ -54,12 +54,13 @@ rb_address_family
     IPV4
     | IPV6
     | L2VPN
-  ) second = (MULTICAST | MVPN | UNICAST) NEWLINE rb_af_inner*
+  ) second = (EVPN | MULTICAST | MVPN | UNICAST) NEWLINE rb_af_inner*
 ;
 
 rb_af_inner
 :
   rb_af_additional_paths
+  | rb_af_advertise
   | rb_af_aggregate_address
   | rb_af_client_to_client
   | rb_af_dampen_igp_metric
@@ -94,6 +95,11 @@ rb_af_additional_paths
     | SELECTION ROUTE_MAP mapname = route_map_name
     | SEND
   ) NEWLINE
+;
+
+rb_af_advertise
+:
+  ADVERTISE L2VPN EVPN NEWLINE
 ;
 
 rb_af_aggregate_address
@@ -484,7 +490,8 @@ rb_n_address_family
   (
     IPV4
     | IPV6
-  ) second = (MULTICAST | UNICAST) NEWLINE rb_n_af_inner*
+    | L2VPN
+  ) second = (EVPN | MULTICAST | UNICAST) NEWLINE rb_n_af_inner*
 ;
 
 // We might get to this level of the hierarchy in four ways:
