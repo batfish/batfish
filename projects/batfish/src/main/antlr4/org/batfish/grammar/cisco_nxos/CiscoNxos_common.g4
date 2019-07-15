@@ -26,6 +26,11 @@ cisco_nxos_password
   )
 ;
 
+double_quoted_string
+:
+  DOUBLE_QUOTE text = quoted_text? DOUBLE_QUOTE
+;
+
 interface_address
 :
   address = ip_address mask = subnet_mask
@@ -100,6 +105,11 @@ prefix_list_name
 :
 // 1-63 chars
   WORD
+;
+
+quoted_text
+:
+  QUOTED_TEXT
 ;
 
 route_map_name

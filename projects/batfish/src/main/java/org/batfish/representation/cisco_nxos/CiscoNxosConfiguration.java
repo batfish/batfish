@@ -115,6 +115,7 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
   private @Nullable String _hostname;
   private final @Nonnull Map<String, Interface> _interfaces;
   private final @Nonnull Map<String, IpAccessList> _ipAccessLists;
+  private final @Nonnull Map<String, IpAsPathAccessList> _ipAsPathAccessLists;
   private final @Nonnull Map<String, IpCommunityList> _ipCommunityLists;
   private final @Nonnull Map<String, IpPrefixList> _ipPrefixLists;
   private transient Multimap<String, String> _portChannelMembers;
@@ -128,6 +129,7 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
     _defaultVrf = new Vrf(DEFAULT_VRF_NAME);
     _interfaces = new HashMap<>();
     _ipAccessLists = new HashMap<>();
+    _ipAsPathAccessLists = new HashMap<>();
     _ipCommunityLists = new HashMap<>();
     _ipPrefixLists = new HashMap<>();
     _reservedVlanRange = DEFAULT_RESERVED_VLAN_RANGE;
@@ -226,6 +228,10 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
 
   public @Nonnull Map<String, IpAccessList> getIpAccessLists() {
     return _ipAccessLists;
+  }
+
+  public @Nonnull Map<String, IpAsPathAccessList> getIpAsPathAccessLists() {
+    return _ipAsPathAccessLists;
   }
 
   public @Nonnull Map<String, IpCommunityList> getIpCommunityLists() {

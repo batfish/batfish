@@ -1,4 +1,4 @@
-parser grammar CiscoNxos_ip_access_list;
+parser grammar CiscoNxos_ip_prefix_list;
 
 import CiscoNxos_common;
 
