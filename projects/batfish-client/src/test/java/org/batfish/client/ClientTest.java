@@ -43,7 +43,8 @@ import static org.batfish.client.Command.UPLOAD_CUSTOM_OBJECT;
 import static org.batfish.common.CoordConsts.DEFAULT_API_KEY;
 import static org.batfish.datamodel.questions.Variable.Type.ADDRESS_GROUP_NAME;
 import static org.batfish.datamodel.questions.Variable.Type.APPLICATION_SPEC;
-import static org.batfish.datamodel.questions.Variable.Type.BGP_SESSION_STATUS;
+import static org.batfish.datamodel.questions.Variable.Type.BGP_SESSION_COMPAT_STATUS_SPEC;
+import static org.batfish.datamodel.questions.Variable.Type.BGP_SESSION_STATUS_SPEC;
 import static org.batfish.datamodel.questions.Variable.Type.BGP_SESSION_TYPE_SPEC;
 import static org.batfish.datamodel.questions.Variable.Type.BOOLEAN;
 import static org.batfish.datamodel.questions.Variable.Type.COMPARATOR;
@@ -464,9 +465,18 @@ public final class ClientTest {
   }
 
   @Test
+  public void testInvalidBgpSessionCompatStatusValue() throws IOException {
+    String input = "5";
+    Type expectedType = BGP_SESSION_COMPAT_STATUS_SPEC;
+    String expectedMessage =
+        String.format("A Batfish %s must be a JSON string", expectedType.getName());
+    validateTypeWithInvalidInput(input, expectedMessage, expectedType);
+  }
+
+  @Test
   public void testInvalidBgpSessionStatusValue() throws IOException {
     String input = "5";
-    Type expectedType = BGP_SESSION_STATUS;
+    Type expectedType = BGP_SESSION_STATUS_SPEC;
     String expectedMessage =
         String.format("A Batfish %s must be a JSON string", expectedType.getName());
     validateTypeWithInvalidInput(input, expectedMessage, expectedType);
@@ -1553,10 +1563,18 @@ public final class ClientTest {
   }
 
   @Test
+  public void testValidBgpSessionCompatStatusValue() throws IOException {
+    JsonNode sessionStatusNode = _mapper.readTree("\"sessionStatus\"");
+    Variable variable = new Variable();
+    variable.setType(BGP_SESSION_COMPAT_STATUS_SPEC);
+    Client.validateType(sessionStatusNode, variable);
+  }
+
+  @Test
   public void testValidBgpSessionStatusValue() throws IOException {
     JsonNode sessionStatusNode = _mapper.readTree("\"sessionStatus\"");
     Variable variable = new Variable();
-    variable.setType(BGP_SESSION_STATUS);
+    variable.setType(BGP_SESSION_STATUS_SPEC);
     Client.validateType(sessionStatusNode, variable);
   }
 
