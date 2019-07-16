@@ -94,6 +94,7 @@ public class OspfSessionCompatibilityAnswererTest {
                     .setHostname("configuration_u")
                     .setInterfaceName("int_u")
                     .setVrfName("vrf_u")
+                    .setIp(Ip.parse("1.1.1.2"))
                     .build()))
         .build();
     nf.ospfProcessBuilder()
@@ -107,6 +108,7 @@ public class OspfSessionCompatibilityAnswererTest {
                     .setHostname("configuration_v")
                     .setInterfaceName("int_v")
                     .setVrfName("vrf_v")
+                    .setIp(Ip.parse("1.1.1.3"))
                     .build()))
         .build();
     _configurations =
