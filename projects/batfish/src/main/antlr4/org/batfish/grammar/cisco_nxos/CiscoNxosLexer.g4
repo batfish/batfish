@@ -1105,12 +1105,12 @@ LISP
 
 LOAD_SHARE
 :
-  'load-share' [Ll] [Oo] [Cc] [Aa] [Ll] '-' [Aa] [Ss]
+  'load-share'
 ;
 
 LOCAL_AS
 :
-  'local-as'
+  [Ll] [Oo] [Cc] [Aa] [Ll] '-' [Aa] [Ss]
 ;
 
 LOCAL_PREFERENCE
