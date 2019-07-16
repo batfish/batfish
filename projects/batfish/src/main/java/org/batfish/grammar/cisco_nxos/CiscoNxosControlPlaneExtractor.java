@@ -393,20 +393,20 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
     }
   }
 
-  private @Nullable CiscoNxosConfiguration _configuration;
-  private @Nullable ActionIpAccessListLine.Builder _currentActionIpAccessListLineBuilder;
-  private @Nullable Boolean _currentActionIpAccessListLineUnusable;
-  private @Nonnull List<Interface> _currentInterfaces = ImmutableList.of();
-  private @Nullable IpAccessList _currentIpAccessList;
-  private @Nullable Optional<Long> _currentIpAccessListLineNum;
-  private @Nullable IpPrefixList _currentIpPrefixList;
-  private @Nullable Layer3Options.Builder _currentLayer3OptionsBuilder;
-  private @Nonnull List<Nve> _currentNves = ImmutableList.of();
-  private @Nullable RouteMapEntry _currentRouteMapEntry;
-  private @Nullable TcpFlags.Builder _currentTcpFlagsBuilder;
-  private @Nullable TcpOptions.Builder _currentTcpOptionsBuilder;
-  private @Nullable UdpOptions.Builder _currentUdpOptionsBuilder;
-  private @Nullable IntegerSpace _currentValidVlanRange;
+  private CiscoNxosConfiguration _configuration;
+  private ActionIpAccessListLine.Builder _currentActionIpAccessListLineBuilder;
+  private Boolean _currentActionIpAccessListLineUnusable;
+  private List<Interface> _currentInterfaces;
+  private IpAccessList _currentIpAccessList;
+  private Optional<Long> _currentIpAccessListLineNum;
+  private IpPrefixList _currentIpPrefixList;
+  private Layer3Options.Builder _currentLayer3OptionsBuilder;
+  private List<Nve> _currentNves;
+  private RouteMapEntry _currentRouteMapEntry;
+  private TcpFlags.Builder _currentTcpFlagsBuilder;
+  private TcpOptions.Builder _currentTcpOptionsBuilder;
+  private UdpOptions.Builder _currentUdpOptionsBuilder;
+  private IntegerSpace _currentValidVlanRange;
 
   @SuppressWarnings("unused")
   private @Nullable List<Vlan> _currentVlans;
@@ -678,7 +678,7 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
 
   @Override
   public void exitS_interface_nve(S_interface_nveContext ctx) {
-    _currentNves = ImmutableList.of();
+    _currentNves = null;
   }
 
   @Override
@@ -788,7 +788,7 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
 
   @Override
   public void exitS_interface_regular(S_interface_regularContext ctx) {
-    _currentInterfaces = ImmutableList.of();
+    _currentInterfaces = null;
   }
 
   @Override
