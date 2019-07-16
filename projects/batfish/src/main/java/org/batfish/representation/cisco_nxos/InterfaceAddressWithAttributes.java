@@ -1,5 +1,7 @@
 package org.batfish.representation.cisco_nxos;
 
+import static com.google.common.base.MoreObjects.firstNonNull;
+
 import com.google.common.base.MoreObjects;
 import java.io.Serializable;
 import java.util.Objects;
@@ -19,12 +21,12 @@ public class InterfaceAddressWithAttributes implements Serializable {
     return _address;
   }
 
-  public @Nullable Long getTag() {
+  public long getTag() {
     return _tag;
   }
 
   public void setTag(@Nullable Long tag) {
-    _tag = tag;
+    _tag = firstNonNull(tag, 0L);
   }
 
   //////////////////////////////////////////////////
@@ -32,7 +34,7 @@ public class InterfaceAddressWithAttributes implements Serializable {
   //////////////////////////////////////////////////
 
   private final @Nonnull InterfaceAddress _address;
-  private @Nullable Long _tag;
+  private long _tag;
 
   @Override
   public boolean equals(Object o) {
@@ -43,7 +45,7 @@ public class InterfaceAddressWithAttributes implements Serializable {
       return false;
     }
     InterfaceAddressWithAttributes that = (InterfaceAddressWithAttributes) o;
-    return _address.equals(that._address) && Objects.equals(_tag, that._tag);
+    return _address.equals(that._address) && _tag == that._tag;
   }
 
   @Override
