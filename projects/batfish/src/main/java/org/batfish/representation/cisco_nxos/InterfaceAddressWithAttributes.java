@@ -12,7 +12,7 @@ import org.batfish.datamodel.InterfaceAddress;
 
 /** Describes the configuration for an IP address assigned to an {@link Interface}. */
 @ParametersAreNonnullByDefault
-public class InterfaceAddressWithAttributes implements Serializable {
+public final class InterfaceAddressWithAttributes implements Serializable {
   public InterfaceAddressWithAttributes(InterfaceAddress address) {
     _address = address;
   }
@@ -40,8 +40,7 @@ public class InterfaceAddressWithAttributes implements Serializable {
   public boolean equals(Object o) {
     if (this == o) {
       return true;
-    }
-    if (o == null || getClass() != o.getClass()) {
+    } else if (!(o instanceof InterfaceAddressWithAttributes)) {
       return false;
     }
     InterfaceAddressWithAttributes that = (InterfaceAddressWithAttributes) o;
