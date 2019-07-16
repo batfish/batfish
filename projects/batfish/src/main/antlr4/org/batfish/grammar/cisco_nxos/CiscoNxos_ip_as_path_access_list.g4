@@ -14,12 +14,6 @@ ip_as_path_access_list
   )? action = line_action regex = as_path_regex NEWLINE
 ;
 
-ip_as_path_access_list_name
-:
-// 1-63 characters
-  WORD
-;
-
 ip_as_path_access_list_seq
 :
 // 1-4294967294

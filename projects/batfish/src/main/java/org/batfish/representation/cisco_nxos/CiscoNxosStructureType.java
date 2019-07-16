@@ -10,6 +10,8 @@ public enum CiscoNxosStructureType implements StructureType {
   IP_COMMUNITY_LIST_STANDARD("ip community-list standard"),
   IP_PREFIX_LIST("ip prefix-list"),
   PORT_CHANNEL("port-channel"),
+  ROUTE_MAP("route-map"),
+  ROUTE_MAP_ENTRY("route-map entry"),
   VLAN("vlan"),
   VRF("vrf");
 

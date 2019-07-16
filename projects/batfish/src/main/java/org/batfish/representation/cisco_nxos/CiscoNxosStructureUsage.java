@@ -9,7 +9,10 @@ public enum CiscoNxosStructureUsage implements StructureUsage {
   INTERFACE_VLAN("interface vlan"),
   INTERFACE_VRF_MEMBER("interface vrf member"),
   IP_ROUTE_NEXT_HOP_INTERFACE("ip route next-hop-interface"),
-  IP_ROUTE_NEXT_HOP_VRF("ip route vrf");
+  IP_ROUTE_NEXT_HOP_VRF("ip route vrf"),
+  ROUTE_MAP_MATCH_COMMUNITY("route-map match community"),
+  ROUTE_MAP_MATCH_IP_ADDRESS("route-map match ip address"),
+  ROUTE_MAP_MATCH_IP_ADDRESS_PREFIX_LIST("route-map match ip address prefix-list");
 
   private final @Nonnull String _description;
 
