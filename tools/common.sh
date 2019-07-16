@@ -31,7 +31,6 @@ export BATFISH_QUESTION_PLUGIN_DIR="$PROJECTS_PATH/question/target/"
 
 export ALLINONE_COMPLETION_FILE="$BATFISH_TOOLS_PATH/completion-allinone.tmp"
 export BATFISH_COMPLETION_FILE="$BATFISH_TOOLS_PATH/completion-batfish.tmp"
-export BATFISH_CLIENT_COMPLETION_FILE="$BATFISH_TOOLS_PATH/completion-batfish-client.tmp"
 export COORDINATOR_COMPLETION_FILE="$BATFISH_TOOLS_PATH/completion-coordinator.tmp"
 
 batfish() {
@@ -81,11 +80,6 @@ batfish_build_all() {
    if [ "$BATFISH_COMPLETION_FILE" -ot "$BATFISH_PATH/target/batfish-${BATFISH_VERSION}.jar" -a -e "$BATFISH_PATH/target/batfish-${BATFISH_VERSION}.jar" ]; then
       echo -n "Generating bash completion file for batfish (via batfish_build_all) ..."
       BATFISH_PRINT_CMDLINE=no batfish -help | grep -o '^ *-[a-zA-Z0-9]*' | tr -d ' ' | tr '\n' ' ' > "$BATFISH_COMPLETION_FILE"
-      echo "OK"
-   fi
-   if [ "$BATFISH_CLIENT_COMPLETION_FILE" -ot "$BATFISH_CLIENT_PATH/target/batfish-client-${BATFISH_VERSION}.jar" -a -e "$BATFISH_CLIENT_PATH/target/batfish-client-${BATFISH_VERSION}.jar" ]; then
-      echo -n "Generating bash completion file for batfish-client (via batfish_build_all) ..."
-      BATFISH_PRINT_CMDLINE=no batfish_client -help | grep -o '^ *-[a-zA-Z0-9]*' | tr -d ' ' | tr '\n' ' ' > "$BATFISH_CLIENT_COMPLETION_FILE"
       echo "OK"
    fi
    if [ "$COORDINATOR_COMPLETION_FILE" -ot "$COORDINATOR_PATH/target/coordinator-${BATFISH_VERSION}.jar" -a -e "$COORDINATOR_PATH/target/coordinator-${BATFISH_VERSION}.jar" ]; then
@@ -170,17 +164,6 @@ batfish_expect_min_args() {
    fi
 }
 export -f batfish_expect_min_args
-
-batfish_javadocs() {
-   echo "Generating batfish project javadocs"
-   batfish_build_all doc
-   cp -r ${COMMON_PATH}/doc ${BATFISH_ROOT}/doc/batfish-common-protocol/
-   cp -r ${BATFISH_PATH}/doc ${BATFISH_ROOT}/doc/batfish/
-   cp -r ${BATFISH_CLIENT_PATH}/doc ${BATFISH_ROOT}/doc/batfish-client/
-   cp -r ${COORDINATOR_PATH}/doc ${BATFISH_ROOT}/doc/coordinator/
-   cp -r ${ALLINONE_PATH}/doc ${BATFISH_ROOT}/doc/allinone/
-}
-export -f batfish_javadocs
 
 batfish_prepare_test_rig() {
    batfish_date
@@ -271,24 +254,6 @@ _pre_build() {
 }
 export -f _pre_build
 
-batfish_client() {
-   # if cygwin, shift and replace each parameter
-   if batfish_cygwin; then
-      local NUMARGS=$#
-      for i in $(seq 1 ${NUMARGS}); do
-         local CURRENT_ARG=$1
-         local NEW_ARG="$(cygpath -w -- ${CURRENT_ARG})"
-         set -- "$@" "$NEW_ARG"
-         shift
-      done
-   fi
-   if [ "$BATFISH_CLIENT_PRINT_CMDLINE" = "yes" ]; then
-      echo "$BATFISH_CLIENT $BATFISH_CLIENT_COMMON_ARGS $@"
-   fi
-   ${BATFISH_CLIENT} ${BATFISH_CLIENT_COMMON_ARGS} "$@"
-}
-export -f batfish_client
-
 client_build() {
    bash -c '_client_build "$@"' _client_build "$@" || return 1
 }
@@ -297,11 +262,6 @@ export -f client_build
 _client_build() {
    _pre_build || return 1
    mvn install -DskipTests -pl batfish-client -am || return 1
-   if [ "$BATFISH_CLIENT_COMPLETION_FILE" -ot "$BATFISH_CLIENT_PATH/target/batfish-client-${BATFISH_VERSION}.jar" -a -e "$BATFISH_CLIENT_PATH/target/batfish-client-${BATFISH_VERSION}.jar" ]; then
-      echo -n "Generating bash completion file for batfish-client (via client_build) ..."
-      BATFISH_PRINT_CMDLINE=no batfish_client -help | grep -o '^ *-[a-zA-Z0-9]*' | tr -d ' ' | tr '\n' ' ' > "$BATFISH_CLIENT_COMPLETION_FILE"
-      echo "OK"
-   fi
 }
 export -f _client_build
 
