@@ -118,9 +118,11 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
   private final @Nonnull Map<String, IpAsPathAccessList> _ipAsPathAccessLists;
   private final @Nonnull Map<String, IpCommunityList> _ipCommunityLists;
   private final @Nonnull Map<String, IpPrefixList> _ipPrefixLists;
+  private final @Nonnull Map<Integer, Nve> _nves;
   private transient Multimap<String, String> _portChannelMembers;
   private @Nonnull IntegerSpace _reservedVlanRange;
   private final @Nonnull Map<String, RouteMap> _routeMaps;
+
   private final @Nonnull Map<Integer, Vlan> _vlans;
   private final @Nonnull Map<String, Vrf> _vrfs;
 
@@ -131,6 +133,7 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
     _ipAsPathAccessLists = new HashMap<>();
     _ipCommunityLists = new HashMap<>();
     _ipPrefixLists = new HashMap<>();
+    _nves = new HashMap<>();
     _reservedVlanRange = DEFAULT_RESERVED_VLAN_RANGE;
     _routeMaps = new HashMap<>();
     _vlans = new HashMap<>();
@@ -242,6 +245,10 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
     return _ipPrefixLists;
   }
 
+  public @Nonnull Map<Integer, Nve> getNves() {
+    return _nves;
+  }
+
   /** Range of VLAN IDs reserved by the system and therefore unassignable. */
   public @Nonnull IntegerSpace getReservedVlanRange() {
     return _reservedVlanRange;
@@ -263,7 +270,9 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
     markConcreteStructure(
         CiscoNxosStructureType.INTERFACE,
         CiscoNxosStructureUsage.INTERFACE_SELF_REFERENCE,
-        CiscoNxosStructureUsage.IP_ROUTE_NEXT_HOP_INTERFACE);
+        CiscoNxosStructureUsage.IP_ROUTE_NEXT_HOP_INTERFACE,
+        CiscoNxosStructureUsage.NVE_SOURCE_INTERFACE);
+    markConcreteStructure(CiscoNxosStructureType.NVE, CiscoNxosStructureUsage.NVE_SELF_REFERENCE);
     markConcreteStructure(
         CiscoNxosStructureType.PORT_CHANNEL, CiscoNxosStructureUsage.INTERFACE_CHANNEL_GROUP);
     markConcreteStructure(CiscoNxosStructureType.VLAN, CiscoNxosStructureUsage.INTERFACE_VLAN);

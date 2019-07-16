@@ -116,6 +116,7 @@ import org.batfish.representation.cisco_nxos.IpPrefixListLine;
 import org.batfish.representation.cisco_nxos.Layer3Options;
 import org.batfish.representation.cisco_nxos.LiteralIpAddressSpec;
 import org.batfish.representation.cisco_nxos.LiteralPortSpec;
+import org.batfish.representation.cisco_nxos.Nve;
 import org.batfish.representation.cisco_nxos.PortGroupPortSpec;
 import org.batfish.representation.cisco_nxos.PortSpec;
 import org.batfish.representation.cisco_nxos.RouteMap;
@@ -1400,6 +1401,25 @@ public final class CiscoNxosGrammarTest {
       assertThat(line.getLine(), equalTo(25L));
       assertThat(line.getPrefix(), equalTo(Prefix.parse("10.10.0.0/16")));
     }
+  }
+
+  @Test
+  public void testNveExtraction() {
+    CiscoNxosConfiguration vc = parseVendorConfig("nxos_nve");
+    Map<Integer, Nve> nves = vc.getNves();
+    assertThat(nves, hasKeys(1, 2, 3, 4));
+    Nve nve1 = nves.get(1);
+    assertFalse(nve1.isShutdown());
+    assertThat(nve1.getSourceInterface(), equalTo("loopback0"));
+    Nve nve2 = nves.get(2);
+    assertFalse(nve2.isShutdown());
+    assertThat(nve2.getSourceInterface(), equalTo("loopback0"));
+    Nve nve3 = nves.get(3);
+    assertFalse(nve3.isShutdown());
+    assertThat(nve3.getSourceInterface(), equalTo("loopback0"));
+    Nve nve4 = nves.get(4);
+    assertTrue(nve4.isShutdown());
+    assertThat(nve4.getSourceInterface(), equalTo("loopback4"));
   }
 
   @Test

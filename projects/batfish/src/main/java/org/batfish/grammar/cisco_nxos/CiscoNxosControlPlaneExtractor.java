@@ -131,6 +131,8 @@ import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Ip_routeContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Last_as_num_prependsContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Line_actionContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Literal_standard_communityContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Nve_no_shutdownContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Nve_source_interfaceContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Packet_lengthContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Pl_actionContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Pl_descriptionContext;
@@ -154,7 +156,8 @@ import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Route_map_nameContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Route_map_sequenceContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Route_networkContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.S_hostnameContext;
-import org.batfish.grammar.cisco_nxos.CiscoNxosParser.S_interfaceContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.S_interface_nveContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.S_interface_regularContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.S_route_mapContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.S_vrf_contextContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Standard_communityContext;
@@ -199,6 +202,7 @@ import org.batfish.representation.cisco_nxos.IpPrefixListLine;
 import org.batfish.representation.cisco_nxos.Layer3Options;
 import org.batfish.representation.cisco_nxos.LiteralIpAddressSpec;
 import org.batfish.representation.cisco_nxos.LiteralPortSpec;
+import org.batfish.representation.cisco_nxos.Nve;
 import org.batfish.representation.cisco_nxos.PortGroupPortSpec;
 import org.batfish.representation.cisco_nxos.PortSpec;
 import org.batfish.representation.cisco_nxos.RemarkIpAccessListLine;
@@ -397,6 +401,7 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
   private @Nullable Optional<Long> _currentIpAccessListLineNum;
   private @Nullable IpPrefixList _currentIpPrefixList;
   private @Nullable Layer3Options.Builder _currentLayer3OptionsBuilder;
+  private @Nonnull List<Nve> _currentNves = ImmutableList.of();
   private @Nullable RouteMapEntry _currentRouteMapEntry;
   private @Nullable TcpFlags.Builder _currentTcpFlagsBuilder;
   private @Nullable TcpOptions.Builder _currentTcpOptionsBuilder;
@@ -638,7 +643,46 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
   }
 
   @Override
-  public void enterS_interface(S_interfaceContext ctx) {
+  public void enterS_interface_nve(S_interface_nveContext ctx) {
+    int line = ctx.getStart().getLine();
+    int first = toInteger(ctx.nverange.iname.first);
+    int last = ctx.nverange.last != null ? toInteger(ctx.nverange.last) : first;
+    // flip first and last if range is backwards
+    if (last < first) {
+      int tmp = last;
+      last = first;
+      first = tmp;
+    }
+
+    _currentNves =
+        IntStream.range(first, last + 1)
+            .mapToObj(
+                i ->
+                    _configuration
+                        .getNves()
+                        .computeIfAbsent(
+                            i,
+                            n -> {
+                              String nveName = "nve" + i;
+                              _configuration.defineStructure(
+                                  CiscoNxosStructureType.NVE, nveName, line);
+                              _configuration.referenceStructure(
+                                  CiscoNxosStructureType.NVE,
+                                  nveName,
+                                  CiscoNxosStructureUsage.NVE_SELF_REFERENCE,
+                                  line);
+                              return new Nve(i);
+                            }))
+            .collect(ImmutableList.toImmutableList());
+  }
+
+  @Override
+  public void exitS_interface_nve(S_interface_nveContext ctx) {
+    _currentNves = ImmutableList.of();
+  }
+
+  @Override
+  public void enterS_interface_regular(S_interface_regularContext ctx) {
     int line = ctx.getStart().getLine();
     String declaredName = getFullText(ctx.irange);
     String prefix = ctx.irange.iname.prefix.getText();
@@ -740,6 +784,11 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
                 })
             .collect(ImmutableList.toImmutableList());
     _currentInterfaces.forEach(i -> i.getDeclaredNames().add(declaredName));
+  }
+
+  @Override
+  public void exitS_interface_regular(S_interface_regularContext ctx) {
+    _currentInterfaces = ImmutableList.of();
   }
 
   @Override
@@ -1471,6 +1520,26 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
   }
 
   @Override
+  public void exitNve_no_shutdown(Nve_no_shutdownContext ctx) {
+    _currentNves.forEach(n -> n.setShutdown(false));
+  }
+
+  @Override
+  public void exitNve_source_interface(Nve_source_interfaceContext ctx) {
+    Optional<String> inameOrError = toString(ctx, ctx.name);
+    if (!inameOrError.isPresent()) {
+      return;
+    }
+    String iname = inameOrError.get();
+    _configuration.referenceStructure(
+        CiscoNxosStructureType.INTERFACE,
+        iname,
+        CiscoNxosStructureUsage.NVE_SOURCE_INTERFACE,
+        ctx.name.getStart().getLine());
+    _currentNves.forEach(n -> n.setSourceInterface(iname));
+  }
+
+  @Override
   public void exitPl_action(Pl_actionContext ctx) {
     if (ctx.mask != null) {
       todo(ctx);
@@ -1740,11 +1809,6 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
   @Override
   public void exitS_hostname(S_hostnameContext ctx) {
     _configuration.setHostname(ctx.hostname.getText());
-  }
-
-  @Override
-  public void exitS_interface(S_interfaceContext ctx) {
-    _currentInterfaces = ImmutableList.of();
   }
 
   @Override
