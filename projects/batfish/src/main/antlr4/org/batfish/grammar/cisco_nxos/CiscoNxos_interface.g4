@@ -17,7 +17,6 @@ s_interface
     | i_ip
     | i_mtu
     | i_no
-    | i_null
     | i_shutdown
     | i_switchport
     | i_vrf_member
@@ -66,12 +65,21 @@ i_encapsulation
 
 i_ip
 :
-  IP i_ip_address
+  IP
+  (
+    i_ip_address
+    | i_ip_null
+  )
 ;
 
 i_ip_address
 :
   ADDRESS addr = interface_address SECONDARY? (TAG tag = uint32)? NEWLINE
+;
+
+i_ip_null
+:
+  REDIRECTS null_rest_of_line
 ;
 
 i_mtu
@@ -91,6 +99,7 @@ i_no
   (
     i_no_autostate
     | i_no_bfd
+    | i_no_null
     | i_no_shutdown
     | i_no_switchport
   )
@@ -116,11 +125,10 @@ i_no_switchport
   SWITCHPORT NEWLINE
 ;
 
-i_null
+i_no_null
 :
-  NO?
   (
-    IP REDIRECTS
+    IP
   ) null_rest_of_line
 ;
 
