@@ -16,6 +16,10 @@ public final class Nve implements Serializable {
     _shutdown = true;
   }
 
+  public int getId() {
+    return _id;
+  }
+
   public boolean isShutdown() {
     return _shutdown;
   }
