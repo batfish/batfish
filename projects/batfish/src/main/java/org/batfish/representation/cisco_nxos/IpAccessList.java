@@ -8,8 +8,6 @@ import javax.annotation.Nonnull;
 /** An access control list for IPv4 traffic */
 public final class IpAccessList implements Serializable {
 
-  public static final int MAX_NAME_LENGTH = 64;
-
   private @Nonnull FragmentsBehavior _fragmentsBehavior;
   private final @Nonnull SortedMap<Long, IpAccessListLine> _lines;
   private final @Nonnull String _name;
