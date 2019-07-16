@@ -193,6 +193,7 @@ public class OspfRoutingProcessTest {
                         .setHostname(HOSTNAME)
                         .setVrfName(VRF_NAME)
                         .setInterfaceName(ACTIVE_IFACE_NAME)
+                        .setIp(ACTIVE_ADDR_1.getIp())
                         .setArea(0L)
                         .build()))
             .build();

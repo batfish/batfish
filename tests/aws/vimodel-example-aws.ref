@@ -2848,6 +2848,7 @@
                     "area" : 0,
                     "hostname" : "lhr-border-02",
                     "interface" : "Ethernet1/0",
+                    "ip" : "10.10.10.38",
                     "passive" : false,
                     "vrf" : "default"
                   },
@@ -2855,6 +2856,7 @@
                     "area" : 0,
                     "hostname" : "lhr-border-02",
                     "interface" : "Ethernet1/1",
+                    "ip" : "10.10.10.46",
                     "passive" : false,
                     "vrf" : "default"
                   },
@@ -2862,6 +2864,7 @@
                     "area" : 0,
                     "hostname" : "lhr-border-02",
                     "interface" : "Loopback0",
+                    "ip" : "10.10.255.8",
                     "passive" : true,
                     "vrf" : "default"
                   }

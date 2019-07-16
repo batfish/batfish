@@ -7,6 +7,7 @@ import com.google.common.testing.EqualsTester;
 import java.io.IOException;
 import org.apache.commons.lang3.SerializationUtils;
 import org.batfish.common.util.BatfishObjectMapper;
+import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.ospf.OspfNeighborConfig.Builder;
 import org.junit.Test;
 
@@ -19,11 +20,13 @@ public class OspfNeighborConfigTest {
             .setArea(1L)
             .setHostname("host")
             .setVrfName("vrf")
-            .setInterfaceName("Ethernet0");
+            .setInterfaceName("Ethernet0")
+            .setIp(Ip.parse("1.1.1.1"));
     new EqualsTester()
         .addEqualityGroup(builder.build(), builder.build())
         .addEqualityGroup(builder.setArea(2L).build())
         .addEqualityGroup(builder.setInterfaceName("Ethernet11").build())
+        .addEqualityGroup(builder.setIp(Ip.parse("2.2.2.2")))
         .addEqualityGroup(builder.setPassive(true).build())
         .addEqualityGroup(builder.setHostname("otherHost").build())
         .addEqualityGroup(builder.setVrfName("otherVRF").build())
@@ -37,6 +40,7 @@ public class OspfNeighborConfigTest {
         OspfNeighborConfig.builder()
             .setArea(1L)
             .setHostname("host")
+            .setIp(Ip.parse("1.1.1.1"))
             .setVrfName("vrf")
             .setInterfaceName("Ethernet0")
             .build();
@@ -49,6 +53,7 @@ public class OspfNeighborConfigTest {
         OspfNeighborConfig.builder()
             .setArea(1L)
             .setHostname("host")
+            .setIp(Ip.parse("1.1.1.1"))
             .setVrfName("vrf")
             .setInterfaceName("Ethernet0")
             .build();

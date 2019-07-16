@@ -10,10 +10,8 @@ import com.google.common.graph.MutableValueGraph;
 import com.google.common.graph.ValueGraphBuilder;
 import java.util.Map.Entry;
 import java.util.Optional;
-import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Interface;
-import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpLink;
 import org.batfish.datamodel.NetworkConfigurations;
 import org.batfish.datamodel.Topology;
@@ -56,13 +54,18 @@ public final class OspfTopologyUtils {
             // All interfaces in this area
             for (String ifaceName : area.getInterfaces()) {
               Interface iface = config.getAllInterfaces().get(ifaceName);
-
+              // only checking and adding the concrete (primary) address of iface
+              // TODO: check if secondary addresses also participate in OSPF neighbor relationships
+              if (iface.getConcreteAddress() == null) {
+                continue;
+              }
               neighborMap.put(
                   ifaceName,
                   OspfNeighborConfig.builder()
                       .setArea(area.getAreaNumber())
                       .setHostname(config.getHostname())
                       .setInterfaceName(ifaceName)
+                      .setIp(iface.getConcreteAddress().getIp())
                       .setVrfName(vrf.getName())
                       .setPassive(iface.getOspfPassive())
                       .build());
@@ -175,24 +178,11 @@ public final class OspfTopologyUtils {
      * TODO: take into account adjacency types (multi-access/p2p/p2mp, broadcast/non-broadcast) when
      * supported
      */
-    Ip localIp =
-        configurations
-            .getInterface(localConfig.getHostname(), localConfig.getInterfaceName())
-            .map(Interface::getConcreteAddress)
-            .map(ConcreteInterfaceAddress::getIp)
-            .orElse(null);
-    Ip remoteIp =
-        configurations
-            .getInterface(remoteConfig.getHostname(), remoteConfig.getInterfaceName())
-            .map(Interface::getConcreteAddress)
-            .map(ConcreteInterfaceAddress::getIp)
-            .orElse(null);
-    if (localIp == null || remoteIp == null) {
-      return Optional.empty();
-    }
+
     // invariant localIP == ip1
     return Optional.of(
-        new OspfSessionProperties(localConfig.getArea(), new IpLink(localIp, remoteIp)));
+        new OspfSessionProperties(
+            localConfig.getArea(), new IpLink(localConfig.getIp(), remoteConfig.getIp())));
   }
 
   /** Ensure links in the graph are bi-directional */

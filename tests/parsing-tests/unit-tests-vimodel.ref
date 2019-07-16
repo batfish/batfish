@@ -2936,6 +2936,7 @@
                     "area" : 0,
                     "hostname" : "asa_ospf",
                     "interface" : "blah",
+                    "ip" : "192.168.1.0",
                     "passive" : false,
                     "vrf" : "default"
                   }
@@ -11637,6 +11638,7 @@
                     "area" : 0,
                     "hostname" : "cisco_ospf_multi_process",
                     "interface" : "Ethernet0/0",
+                    "ip" : "2.2.2.0",
                     "passive" : false,
                     "vrf" : "default"
                   }
@@ -11695,6 +11697,7 @@
                     "area" : 0,
                     "hostname" : "cisco_ospf_multi_process",
                     "interface" : "Ethernet1/0",
+                    "ip" : "3.3.3.0",
                     "passive" : false,
                     "vrf" : "default"
                   }
@@ -17957,6 +17960,7 @@
                     "area" : 0,
                     "hostname" : "host2",
                     "interface" : "Ethernet0",
+                    "ip" : "2.130.0.1",
                     "passive" : false,
                     "vrf" : "default"
                   },
@@ -17964,6 +17968,7 @@
                     "area" : 0,
                     "hostname" : "host2",
                     "interface" : "Ethernet1",
+                    "ip" : "2.131.0.1",
                     "passive" : false,
                     "vrf" : "default"
                   }
@@ -19023,6 +19028,7 @@
                     "area" : 0,
                     "hostname" : "interfacemtu",
                     "interface" : "xe-0/0/0:0.0",
+                    "ip" : "10.1.2.3",
                     "passive" : false,
                     "vrf" : "default"
                   }
@@ -28794,6 +28800,7 @@
                     "area" : 1,
                     "hostname" : "nxos_ospf",
                     "interface" : "Ethernet0/0",
+                    "ip" : "1.1.1.2",
                     "passive" : false,
                     "vrf" : "default"
                   }
