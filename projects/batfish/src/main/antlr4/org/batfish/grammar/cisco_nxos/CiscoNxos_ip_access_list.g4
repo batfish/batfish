@@ -16,12 +16,6 @@ ip_access_list
   )*
 ;
 
-ip_access_list_name
-:
-// 1-64 characters
-  WORD
-;
-
 acl_fragments
 :
   FRAGMENTS

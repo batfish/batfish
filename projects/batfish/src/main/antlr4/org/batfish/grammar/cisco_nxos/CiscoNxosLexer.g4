@@ -94,9 +94,21 @@ ADDITIONAL_PATHS
   'additional-paths'
 ;
 
+ADDITIVE
+:
+  'additive'
+;
+
 ADDRESS
 :
   'address'
+  // All other instances are followed by tokens in default mode
+  {
+    if (secondToLastTokenType() == MATCH && lastTokenType() == IP) {
+      pushMode(M_MatchIpAddress);
+    }
+  }
+
 ;
 
 ADDRESS_FAMILY
@@ -237,6 +249,13 @@ AS_OVERRIDE
 AS_PATH
 :
   'as-path'
+  // All other instances are followed by keywords
+  {
+    if (lastTokenType() == MATCH) {
+      pushMode(M_Words);
+    }
+  }
+
 ;
 
 AS_SET
@@ -339,6 +358,18 @@ CMD
   'cmd'
 ;
 
+COMMUNITY
+:
+  'community'
+  // All other instances are followed by keywords or tokens in default mode
+  {
+    if (lastTokenType() == MATCH) {
+      pushMode(M_Words);
+    }
+  }
+
+;
+
 COMMUNITY_LIST
 :
   'community-list'
@@ -377,6 +408,11 @@ CONNECTION_MODE
 CONTEXT
 :
   'context' -> pushMode ( M_Word )
+;
+
+CONTINUE
+:
+  'continue'
 ;
 
 CONVERSION_ERROR
@@ -559,6 +595,11 @@ DRIP
   'drip'
 ;
 
+DROP_ON_FAIL
+:
+  'drop-on-fail'
+;
+
 DSCP
 :
   'dscp'
@@ -689,6 +730,11 @@ EXTENDED
   'extended'
 ;
 
+EXTERNAL
+:
+  'external'
+;
+
 FAST_EXTERNAL_FALLOVER
 :
   'fast-external-fallover'
@@ -737,6 +783,11 @@ FLASH_OVERRIDE
 FORCE
 :
   'force'
+;
+
+FORCE_ORDER
+:
+  'force-order'
 ;
 
 FLUSH_ROUTES
@@ -962,6 +1013,11 @@ INTERFACE
   )?
 ;
 
+INTERNAL
+:
+  'internal'
+;
+
 INTERNET
 :
   'internet'
@@ -1022,6 +1078,11 @@ LARGE
   'large'
 ;
 
+LAST_AS
+:
+  'last-as'
+;
+
 LAST_MEMBER_QUERY_INTERVAL
 :
   'last-member-query-interval'
@@ -1042,9 +1103,19 @@ LISP
   'lisp'
 ;
 
+LOAD_SHARE
+:
+  'load-share' [Ll] [Oo] [Cc] [Aa] [Ll] '-' [Aa] [Ss]
+;
+
 LOCAL_AS
 :
-  [Ll] [Oo] [Cc] [Aa] [Ll] '-' [Aa] [Ss]
+  'local-as'
+;
+
+LOCAL_PREFERENCE
+:
+  'local-preference'
 ;
 
 LOG
@@ -1101,6 +1172,11 @@ MASK_REQUEST
   'mask-request'
 ;
 
+MATCH
+:
+  'match'
+;
+
 MAXAS_LIMIT
 :
   'maxas-limit'
@@ -1144,6 +1220,16 @@ MEDIUM
 MEMBER
 :
   'member' -> pushMode ( M_Word )
+;
+
+METRIC
+:
+  'metric'
+;
+
+METRIC_TYPE
+:
+  'metric-type'
 ;
 
 MGMT
@@ -1259,6 +1345,11 @@ NETWORK
 NETWORK_UNKNOWN
 :
   'network-unknown'
+;
+
+NEXT_HOP
+:
+  'next-hop'
 ;
 
 NEXT_HOP_SELF
@@ -1516,6 +1607,11 @@ PREFIX_PEER_WAIT
   'prefix-peer-wait'
 ;
 
+PREPEND
+:
+  'prepend'
+;
+
 PRIORITY
 :
   'priority'
@@ -1739,6 +1835,11 @@ SEND_COMMUNITY
 SEQ
 :
   'seq'
+;
+
+SET
+:
+  'set'
 ;
 
 SHUTDOWN
@@ -1991,9 +2092,24 @@ TTL_EXCEEDED
   'ttl-exceeded'
 ;
 
+TYPE_1
+:
+  'type-1'
+;
+
+TYPE_2
+:
+  'type-2'
+;
+
 UDP
 :
   'udp'
+;
+
+UNCHANGED
+:
+  'unchanged'
 ;
 
 UNICAST
@@ -2543,6 +2659,23 @@ M_Hostname_WS
   F_Whitespace+ -> channel ( HIDDEN )
 ;
 
+mode M_MatchIpAddress;
+
+M_MatchIpAddress_PREFIX_LIST
+:
+  'prefix-list' -> type ( PREFIX_LIST ) , mode ( M_Words )
+;
+
+M_MatchIpAddress_WORD
+:
+  F_Word -> type ( WORD ) , mode ( M_Words )
+;
+
+M_MatchIpAddress_WS
+:
+  F_Whitespace+ -> channel ( HIDDEN )
+;
+
 mode M_Password;
 
 M_Password_PASSWORD_0
@@ -2638,6 +2771,23 @@ M_Word_WORD
 ;
 
 M_Word_WS
+:
+  F_Whitespace+ -> channel ( HIDDEN )
+;
+
+mode M_Words;
+
+M_Words_NEWLINE
+:
+  F_Newline+ -> type ( NEWLINE ) , popMode
+;
+
+M_Words_WORD
+:
+  F_Word -> type ( WORD )
+;
+
+M_Words_WS
 :
   F_Whitespace+ -> channel ( HIDDEN )
 ;

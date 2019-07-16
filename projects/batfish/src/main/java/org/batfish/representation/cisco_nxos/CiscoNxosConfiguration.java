@@ -120,9 +120,8 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
   private final @Nonnull Map<String, IpPrefixList> _ipPrefixLists;
   private transient Multimap<String, String> _portChannelMembers;
   private @Nonnull IntegerSpace _reservedVlanRange;
-
+  private final @Nonnull Map<String, RouteMap> _routeMaps;
   private final @Nonnull Map<Integer, Vlan> _vlans;
-
   private final @Nonnull Map<String, Vrf> _vrfs;
 
   public CiscoNxosConfiguration() {
@@ -133,6 +132,7 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
     _ipCommunityLists = new HashMap<>();
     _ipPrefixLists = new HashMap<>();
     _reservedVlanRange = DEFAULT_RESERVED_VLAN_RANGE;
+    _routeMaps = new HashMap<>();
     _vlans = new HashMap<>();
     _vrfs = new HashMap<>();
   }
@@ -245,6 +245,10 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
   /** Range of VLAN IDs reserved by the system and therefore unassignable. */
   public @Nonnull IntegerSpace getReservedVlanRange() {
     return _reservedVlanRange;
+  }
+
+  public @Nonnull Map<String, RouteMap> getRouteMaps() {
+    return _routeMaps;
   }
 
   public @Nonnull Map<Integer, Vlan> getVlans() {

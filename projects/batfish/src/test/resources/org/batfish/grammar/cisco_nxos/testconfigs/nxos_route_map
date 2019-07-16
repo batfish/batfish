@@ -1,0 +1,123 @@
+!RANCID-CONTENT-TYPE: cisco-nx
+!
+hostname nxos_route_map
+!
+
+!!! Referenced structures
+ip access-list access_list1
+  10 permit ip any any
+ip as-path access-list as_path_access_list1 seq 1 permit "^$"
+ip community-list standard community_list1 seq 1 permit 1:1
+ip prefix-list prefix_list1 seq 10 permit 0.0.0.0/0
+
+
+!!! Empty route-maps
+route-map empty_deny deny 10
+
+route-map empty_permit permit 10
+
+!!! Simple matches
+route-map match_as_path permit 10
+  match as-path as_path_access_list1
+
+route-map match_community permit 10
+  match community community_list1
+
+route-map match_interface permit 10
+  match interface loopback0
+
+route-map match_ip_address permit 10
+  match ip address access_list1
+
+route-map match_ip_address_prefix_list permit 10
+  match ip address prefix-list prefix_list1
+
+route-map match_metric permit 10
+  match metric 1
+
+route-map match_tag permit 10
+  match tag 1
+
+!!! Simple sets
+route-map set_as_path_prepend_last_as permit 10
+  set as-path prepend last-as 3
+
+route-map set_as_path_prepend_literal_as permit 10
+  set as-path prepend 65000 65100
+
+route-map set_community permit 10
+  set community 1:1 1:2
+
+route-map set_community_additive permit 10
+  set community 1:1 1:2 additive
+
+route-map set_ip_next_hop_literal permit 10
+  set ip next-hop 192.0.2.1 192.0.2.2
+
+route-map set_ip_next_hop_unchanged permit 10
+  set ip next-hop unchanged
+
+route-map set_local_preference permit 10
+  set local-preference 1
+
+route-map set_metric permit 10
+  set metric 1
+
+route-map set_metric_type_external permit 10
+  set metric-type external
+
+route-map set_metric_type_internal permit 10
+  set metric-type internal
+
+route-map set_metric_type_type_1 permit 10
+  set metric-type type-1
+
+route-map set_metric_type_type_2 permit 10
+  set metric-type type-2
+
+route-map set_tag permit 10
+  set tag 1
+
+!!! Matches with undefined references
+route-map match_undefined_access_list permit 10
+  match ip address acl_undefined
+
+route-map match_undefined_community_list permit 10
+  match community cl_undefined
+
+route-map match_undefined_prefix_list permit 10
+  match ip address prefix-list pl_undefined
+
+!!! Continues
+route-map continue_skip_deny permit 10
+  continue 30
+route-map continue_skip_deny deny 30
+route-map continue_skip_deny permit 30
+
+route-map continue_from_deny_to_permit deny 10
+  continue 20
+route-map continue_from_deny_to_permit permit 20
+
+route-map continue_from_permit_to_fall_off permit 10
+  continue 20
+route-map continue_from_permit_to_fall_off permit 20
+  match tag 10
+
+route-map continue_from_permit_and_set_to_fall_off permit 10
+  set metric 10
+  continue 20
+route-map continue_from_permit_and_set_to_fall_off permit 20
+  match tag 10
+
+route-map continue_with_set_and_fall_off permit 10
+  set metric 10
+  continue 20
+route-map continue_with_set_and_fall_off permit 20
+  match tag 10
+
+route-map continue_from_set_to_match_on_set_field permit 10
+  set metric 10
+  continue 20
+route-map continue_from_set_to_match_on_set_field permit 20
+  match metric 10
+route-map continue_from_set_to_match_on_set_field deny 30
