@@ -29,6 +29,9 @@ public final class Prefix implements Comparable<Prefix>, Serializable {
   /** A "0.0.0.0/0" prefix */
   public static final Prefix ZERO = create(Ip.ZERO, 0);
 
+  /** Multicast IPs are in "244.0.0.0/4". */
+  public static final Prefix MULTICAST = create(Ip.parse("224.0.0.0"), 4);
+
   private static long wildcardMaskForPrefixLength(int prefixLength) {
     assert 0 <= prefixLength && prefixLength <= Prefix.MAX_PREFIX_LENGTH;
     return (1L << (Prefix.MAX_PREFIX_LENGTH - prefixLength)) - 1;

@@ -19,7 +19,10 @@ s_interface_nve
 :
   nverange = nve_interface_range NEWLINE
   (
-    nve_no
+    nve_global
+    | nve_host_reachability
+    | nve_member
+    | nve_no
     | nve_source_interface
   )*
 ;
@@ -218,6 +221,74 @@ nve_interface_range
   )?
 ;
 
+nve_global
+:
+  GLOBAL
+  (
+    nvg_ingress_replication
+    | nvg_mcast_group
+    | nvg_suppress_arp
+  )
+;
+
+nvg_ingress_replication
+:
+  INGRESS_REPLICATION PROTOCOL BGP NEWLINE
+;
+
+nvg_mcast_group
+:
+  MCAST_GROUP ip_address (L2 | L3) NEWLINE
+;
+
+nvg_suppress_arp
+:
+  SUPPRESS_ARP NEWLINE
+;
+
+nve_host_reachability
+:
+  HOST_REACHABILITY PROTOCOL BGP NEWLINE
+;
+
+nve_member
+:
+// 1-16777214
+  MEMBER VNI vni = vni_number ASSOCIATE_VRF? NEWLINE
+  (
+     nvm_ingress_replication
+     | nvm_mcast_group
+     | nvm_peer_vtep
+     | nvm_spine_anycast_gateway
+     | nvm_suppress_arp
+  )*
+;
+
+nvm_ingress_replication
+:
+   INGRESS_REPLICATION PROTOCOL (BGP | STATIC) NEWLINE
+;
+
+nvm_mcast_group
+:
+   MCAST_GROUP first = ip_address second = ip_address? NEWLINE
+;
+
+nvm_peer_vtep
+:
+   PEER_VTEP ip_address NEWLINE
+;
+
+nvm_spine_anycast_gateway
+:
+   SPINE_ANYCAST_GATEWAY NEWLINE
+;
+
+nvm_suppress_arp
+:
+   SUPPRESS_ARP DISABLE? NEWLINE
+;
+
 nve_no
 :
    NO nve_no_shutdown
@@ -232,4 +303,3 @@ nve_source_interface
 :
    SOURCE_INTERFACE name = interface_name NEWLINE
 ;
-

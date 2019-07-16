@@ -263,6 +263,11 @@ AS_SET
   'as-set'
 ;
 
+ASSOCIATE_VRF
+:
+  'associate-vrf'
+;
+
 ATTRIBUTE_MAP
 :
   'attribute-map'
@@ -830,6 +835,11 @@ GET
   'get'
 ;
 
+GLOBAL
+:
+  'global'
+;
+
 GOPHER
 :
   'gopher'
@@ -883,6 +893,11 @@ HOST_PRECEDENCE_UNREACHABLE
 HOST_QUERY
 :
   'host-query'
+;
+
+HOST_REACHABILITY
+:
+  'host-reachability'
 ;
 
 HOST_REDIRECT
@@ -989,6 +1004,11 @@ INFORMATION_REQUEST
   'information-request'
 ;
 
+INGRESS_REPLICATION
+:
+  'ingress-replication'
+;
+
 INHERIT
 :
   'inherit'
@@ -1068,9 +1088,19 @@ KSHELL
   'kshell'
 ;
 
+L2
+:
+  'L2'
+;
+
 L2VPN
 :
   'l2vpn'
+;
+
+L3
+:
+  'L3'
 ;
 
 LARGE
@@ -1202,6 +1232,11 @@ MAXIMUM_PREFIX
   'maximum-prefix'
 ;
 
+MCAST_GROUP
+:
+  'mcast-group'
+;
+
 MED
 :
   'med'
@@ -1219,7 +1254,13 @@ MEDIUM
 
 MEMBER
 :
-  'member' -> pushMode ( M_Word )
+  'member'
+  // All other instances are followed by keywords or tokens in default mode
+  {
+    if (lastTokenType() == VRF) {
+      pushMode(M_Word);
+    }
+  }
 ;
 
 METRIC
@@ -1527,6 +1568,11 @@ PEER_SESSION
   'peer-session'
 ;
 
+PEER_VTEP
+:
+  'peer-vtep'
+;
+
 PEERS
 :
   'peers'
@@ -1625,6 +1671,11 @@ PREPEND
 PRIORITY
 :
   'priority'
+;
+
+PROTOCOL
+:
+  'protocol'
 ;
 
 PROTOCOL_UNREACHABLE
@@ -1907,6 +1958,11 @@ SOURCE_ROUTE_FAILED
   'source-route-failed'
 ;
 
+SPINE_ANYCAST_GATEWAY
+:
+  'spine-anycast-gateway'
+;
+
 STALEPATH_TIME
 :
   'stalepath-time'
@@ -1960,6 +2016,11 @@ SUNRPC
 SUPPRESS
 :
   'suppress'
+;
+
+SUPPRESS_ARP
+:
+  'suppress-arp'
 ;
 
 SUPPRESS_FIB_PENDING

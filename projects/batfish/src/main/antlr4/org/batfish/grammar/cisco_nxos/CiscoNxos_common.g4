@@ -222,10 +222,8 @@ vlan_id_interval
 
 vni_number
 :
-// 0-16777215
-  UINT8
-  | UINT16
-  | UINT32
+// 0-16777214
+  uint32
 ;
 
 vrf_name
