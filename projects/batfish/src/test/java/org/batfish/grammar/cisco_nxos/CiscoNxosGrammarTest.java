@@ -103,6 +103,8 @@ import org.batfish.representation.cisco_nxos.AddressFamily;
 import org.batfish.representation.cisco_nxos.CiscoNxosConfiguration;
 import org.batfish.representation.cisco_nxos.CiscoNxosInterfaceType;
 import org.batfish.representation.cisco_nxos.CiscoNxosStructureType;
+import org.batfish.representation.cisco_nxos.Evpn;
+import org.batfish.representation.cisco_nxos.EvpnVni;
 import org.batfish.representation.cisco_nxos.FragmentsBehavior;
 import org.batfish.representation.cisco_nxos.IcmpOptions;
 import org.batfish.representation.cisco_nxos.Interface;
@@ -222,6 +224,43 @@ public final class CiscoNxosGrammarTest {
 
     // Just test that parser does not choke.
     assertThat(parseVendorConfig(hostname), not(nullValue()));
+  }
+
+  @Test
+  public void testEvpn() {
+    CiscoNxosConfiguration vc = parseVendorConfig("nxos_evpn");
+    Evpn evpn = vc.getEvpn();
+    assertThat(evpn, not(nullValue()));
+
+    assertThat(evpn.getVnis(), hasKeys(1, 2, 3));
+    {
+      EvpnVni vni = evpn.getVni(1);
+      assertThat(vni.getRd(), equalTo(RouteDistinguisherOrAuto.auto()));
+      assertThat(vni.getExportRt(), equalTo(RouteDistinguisherOrAuto.auto()));
+      assertThat(vni.getImportRt(), equalTo(RouteDistinguisherOrAuto.auto()));
+    }
+    {
+      EvpnVni vni = evpn.getVni(2);
+      assertThat(vni.getRd(), nullValue());
+      assertThat(
+          vni.getExportRt(),
+          equalTo(RouteDistinguisherOrAuto.of(RouteDistinguisher.from(65002, 1L))));
+      assertThat(
+          vni.getImportRt(),
+          equalTo(RouteDistinguisherOrAuto.of(RouteDistinguisher.from(65002, 2L))));
+    }
+    {
+      EvpnVni vni = evpn.getVni(3);
+      assertThat(
+          vni.getRd(),
+          equalTo(RouteDistinguisherOrAuto.of(RouteDistinguisher.from(Ip.parse("3.3.3.3"), 0))));
+      assertThat(
+          vni.getExportRt(),
+          equalTo(RouteDistinguisherOrAuto.of(RouteDistinguisher.from(65003, 2L))));
+      assertThat(
+          vni.getImportRt(),
+          equalTo(RouteDistinguisherOrAuto.of(RouteDistinguisher.from(65003, 1L))));
+    }
   }
 
   @Test
