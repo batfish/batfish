@@ -4,16 +4,12 @@ import static org.batfish.datamodel.Names.SPECIAL_CHARS;
 import static org.batfish.specifier.parboiled.Anchor.Type.OPERATOR_END;
 import static org.batfish.specifier.parboiled.Anchor.Type.STRING_LITERAL;
 
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import java.lang.reflect.Method;
-import java.util.Arrays;
 import java.util.Collection;
-import java.util.Comparator;
 import java.util.Map;
 import java.util.Objects;
 import javax.annotation.ParametersAreNonnullByDefault;
-import org.batfish.datamodel.IpProtocol;
 import org.batfish.specifier.parboiled.Anchor.Type;
 import org.parboiled.BaseParser;
 import org.parboiled.Parboiled;
@@ -83,23 +79,9 @@ public abstract class CommonParser extends BaseParser<AstNode> {
     }
   }
 
-  /** Initialize an array of rules that match known IpProtocol names */
-  Rule[] initIpProtocolNameRules() {
-    return initValuesRules(
-        Arrays.stream(IpProtocol.values())
-            // allow UNNAMED as well since PacketHeaderConstraints is "canonicalizing" the input
-            // .filter(p -> !p.toString().startsWith("UNNAMED"))
-            .collect(ImmutableList.toImmutableList()));
-  }
-
   /** Initialize an array of case-insenstive rules that match stringified values in a collection. */
   <T> Rule[] initValuesRules(Collection<T> values) {
-    return values.stream()
-        .map(Objects::toString)
-        // longer strings first so that we can match 'longer' instead of stopping at 'long'
-        .sorted(Comparator.comparing(String::length).reversed())
-        .map(this::IgnoreCase)
-        .toArray(Rule[]::new);
+    return values.stream().map(Objects::toString).map(this::IgnoreCase).toArray(Rule[]::new);
   }
 
   /**
@@ -127,6 +109,11 @@ public abstract class CommonParser extends BaseParser<AstNode> {
     return CharRange('@', '@');
   }
 
+  /** See class JavaDoc for why this is a CharRange and not Ch */
+  public Rule Dash() {
+    return CharRange('-', '-');
+  }
+
   /** [0-9] */
   public Rule Digit() {
     return CharRange('0', '9');
@@ -135,6 +122,16 @@ public abstract class CommonParser extends BaseParser<AstNode> {
   /** See class JavaDoc for why this is a CharRange and not Ch */
   public Rule Dot() {
     return CharRange('.', '.');
+  }
+
+  /**
+   * A rule for valid enum values. Start with an alphabet character or underscore, and additionally
+   * only contain digits and dashes.
+   */
+  public Rule EnumValue() {
+    return Sequence(
+        FirstOf(AlphabetChar(), Underscore()),
+        ZeroOrMore(FirstOf(AlphabetChar(), Underscore(), Digit(), Dash())));
   }
 
   /** See class JavaDoc for why this is a CharRange and not Ch */

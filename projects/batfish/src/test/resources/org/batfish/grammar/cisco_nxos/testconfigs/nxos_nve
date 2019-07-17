@@ -1,0 +1,16 @@
+!RANCID-CONTENT-TYPE: cisco-nx
+!
+hostname nxos_nve
+!
+! Required to enable NVE devices
+feature vn-segment-vlan-based
+feature nv overlay
+!
+!
+interface nve1-3
+  no shutdown
+  source-interface loopback0
+!
+interface nve4
+  source-interface loopback4
+!

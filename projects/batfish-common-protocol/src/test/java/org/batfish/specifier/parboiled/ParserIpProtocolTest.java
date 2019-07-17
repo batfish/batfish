@@ -8,7 +8,10 @@ import com.google.common.collect.ImmutableSet;
 import java.util.Arrays;
 import java.util.Set;
 import java.util.stream.Stream;
+import org.batfish.common.CompletionMetadata;
 import org.batfish.datamodel.IpProtocol;
+import org.batfish.referencelibrary.ReferenceLibrary;
+import org.batfish.role.NodeRolesData;
 import org.batfish.specifier.parboiled.Anchor.Type;
 import org.junit.Rule;
 import org.junit.Test;
@@ -172,5 +175,32 @@ public class ParserIpProtocolTest {
 
     assertThat(ParserUtils.getAst(getRunner().run("tcp,23")), equalTo(expectedNode));
     assertThat(ParserUtils.getAst(getRunner().run(" tcp , 23 ")), equalTo(expectedNode));
+  }
+
+  /** When the query is 'qq', we should match ALL superstrings, including xqq and qqx */
+  @Test
+  public void testAutoCompleteAllSuperstrings() {
+    String query = "is";
+    ParboiledAutoComplete pac =
+        new ParboiledAutoComplete(
+            Grammar.IP_PROTOCOL_SPECIFIER,
+            Parser.instance().getInputRule(Grammar.IP_PROTOCOL_SPECIFIER),
+            Parser.ANCHORS,
+            "network",
+            "snapshot",
+            query,
+            Integer.MAX_VALUE,
+            CompletionMetadata.EMPTY,
+            NodeRolesData.builder().build(),
+            new ReferenceLibrary(null));
+    assertThat(
+        pac.run(),
+        equalTo(
+            Arrays.stream(IpProtocol.values())
+                .filter(p -> p.toString().toLowerCase().contains(query))
+                .map(
+                    p ->
+                        new ParboiledAutoCompleteSuggestion(p.toString(), 0, Type.IP_PROTOCOL_NAME))
+                .collect(ImmutableSet.toImmutableSet())));
   }
 }

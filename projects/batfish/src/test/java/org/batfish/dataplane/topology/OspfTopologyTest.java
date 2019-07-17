@@ -1,10 +1,12 @@
 package org.batfish.dataplane.topology;
 
+import static org.batfish.datamodel.ospf.OspfTopologyUtils.initNeighborConfigs;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
 import java.io.IOException;
@@ -22,6 +24,7 @@ import org.batfish.datamodel.NetworkConfigurations;
 import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.ospf.OspfArea;
+import org.batfish.datamodel.ospf.OspfNeighborConfig;
 import org.batfish.datamodel.ospf.OspfNeighborConfigId;
 import org.batfish.datamodel.ospf.OspfProcess;
 import org.batfish.datamodel.ospf.OspfSessionProperties;
@@ -165,7 +168,7 @@ public class OspfTopologyTest {
     Batfish batfish = BatfishTestUtils.getBatfish(configs, folder);
 
     // Force init configs, because test batfish does not post-process configs
-    OspfTopologyUtils.initNeighborConfigs(NetworkConfigurations.of(configs));
+    initNeighborConfigs(NetworkConfigurations.of(configs));
 
     OspfTopology topology =
         batfish.getTopologyProvider().getInitialOspfTopology(batfish.getNetworkSnapshot());
@@ -213,5 +216,55 @@ public class OspfTopologyTest {
         new OspfNeighborConfigId("r3", Configuration.DEFAULT_VRF_NAME, "1", "i31");
     EdgeId edge = OspfTopology.makeEdge(r1i13, r3i31);
     assertThat(BatfishObjectMapper.clone(edge, EdgeId.class), equalTo(edge));
+  }
+
+  @Test
+  public void testInitNeighborConfigs() {
+    NetworkFactory nf = new NetworkFactory();
+    Configuration configuration =
+        nf.configurationBuilder()
+            .setHostname("conf")
+            .setConfigurationFormat(ConfigurationFormat.CISCO_IOS)
+            .build();
+
+    Vrf vrf = nf.vrfBuilder().setName("vrf").setOwner(configuration).build();
+
+    nf.interfaceBuilder()
+        .setName("iface1")
+        .setOwner(configuration)
+        .setVrf(vrf)
+        .setAddress(ConcreteInterfaceAddress.create(Ip.parse("1.1.1.1"), 31))
+        .build();
+
+    // should not be added as OSPF neighbor config
+    nf.interfaceBuilder().setName("iface2").setOwner(configuration).setVrf(vrf).build();
+
+    nf.ospfProcessBuilder()
+        .setVrf(vrf)
+        .setProcessId("ospf")
+        .setAreas(
+            ImmutableSortedMap.of(
+                1L,
+                OspfArea.builder()
+                    .setNumber(1L)
+                    .setInterfaces(ImmutableList.of("iface1", "iface2"))
+                    .build()))
+        .build();
+
+    initNeighborConfigs(
+        NetworkConfigurations.of(ImmutableMap.of(configuration.getHostname(), configuration)));
+
+    assertThat(
+        configuration.getVrfs().get("vrf").getOspfProcesses().get("ospf").getOspfNeighborConfigs(),
+        equalTo(
+            ImmutableMap.of(
+                "iface1",
+                OspfNeighborConfig.builder()
+                    .setArea(1L)
+                    .setHostname("conf")
+                    .setInterfaceName("iface1")
+                    .setVrfName("vrf")
+                    .setIp(Ip.parse("1.1.1.1"))
+                    .build())));
   }
 }

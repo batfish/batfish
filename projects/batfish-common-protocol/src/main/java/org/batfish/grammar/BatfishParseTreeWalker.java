@@ -7,6 +7,7 @@ import org.antlr.v4.runtime.tree.ParseTreeWalker;
 import org.antlr.v4.runtime.tree.RuleNode;
 import org.batfish.common.ErrorDetails;
 import org.batfish.common.ErrorDetails.ParseExceptionContext;
+import org.batfish.common.WillNotCommitException;
 
 /** Custom ParseTreeWalker that adds some additional context when exceptions occur */
 public class BatfishParseTreeWalker extends ParseTreeWalker {
@@ -40,6 +41,9 @@ public class BatfishParseTreeWalker extends ParseTreeWalker {
     try {
       ctx.exitRule(listener);
       listener.exitEveryRule(ctx);
+    } catch (WillNotCommitException e) {
+      // Re-throw WillNotCommit to get the special parse status
+      throw e;
     } catch (Exception e) {
       throw new BatfishParseException(
           String.format("Exception while walking parse tree: %s", e.getMessage()),

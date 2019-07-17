@@ -1,6 +1,8 @@
 package org.batfish.grammar.cisco_nxos;
 
+import static com.google.common.collect.Iterables.getOnlyElement;
 import static com.google.common.collect.Maps.immutableEntry;
+import static com.google.common.collect.MoreCollectors.onlyElement;
 import static org.batfish.datamodel.Configuration.DEFAULT_VRF_NAME;
 import static org.batfish.datamodel.Interface.NULL_INTERFACE_NAME;
 import static org.batfish.datamodel.IpWildcard.ipWithWildcardMask;
@@ -101,9 +103,12 @@ import org.batfish.representation.cisco_nxos.CiscoNxosStructureType;
 import org.batfish.representation.cisco_nxos.FragmentsBehavior;
 import org.batfish.representation.cisco_nxos.IcmpOptions;
 import org.batfish.representation.cisco_nxos.Interface;
+import org.batfish.representation.cisco_nxos.InterfaceAddressWithAttributes;
 import org.batfish.representation.cisco_nxos.IpAccessList;
 import org.batfish.representation.cisco_nxos.IpAccessListLine;
 import org.batfish.representation.cisco_nxos.IpAddressSpec;
+import org.batfish.representation.cisco_nxos.IpAsPathAccessList;
+import org.batfish.representation.cisco_nxos.IpAsPathAccessListLine;
 import org.batfish.representation.cisco_nxos.IpCommunityListStandard;
 import org.batfish.representation.cisco_nxos.IpCommunityListStandardLine;
 import org.batfish.representation.cisco_nxos.IpPrefixList;
@@ -111,8 +116,28 @@ import org.batfish.representation.cisco_nxos.IpPrefixListLine;
 import org.batfish.representation.cisco_nxos.Layer3Options;
 import org.batfish.representation.cisco_nxos.LiteralIpAddressSpec;
 import org.batfish.representation.cisco_nxos.LiteralPortSpec;
+import org.batfish.representation.cisco_nxos.Nve;
 import org.batfish.representation.cisco_nxos.PortGroupPortSpec;
 import org.batfish.representation.cisco_nxos.PortSpec;
+import org.batfish.representation.cisco_nxos.RouteMap;
+import org.batfish.representation.cisco_nxos.RouteMapEntry;
+import org.batfish.representation.cisco_nxos.RouteMapMatchAsPath;
+import org.batfish.representation.cisco_nxos.RouteMapMatchCommunity;
+import org.batfish.representation.cisco_nxos.RouteMapMatchInterface;
+import org.batfish.representation.cisco_nxos.RouteMapMatchIpAddress;
+import org.batfish.representation.cisco_nxos.RouteMapMatchIpAddressPrefixList;
+import org.batfish.representation.cisco_nxos.RouteMapMatchMetric;
+import org.batfish.representation.cisco_nxos.RouteMapMatchTag;
+import org.batfish.representation.cisco_nxos.RouteMapMetricType;
+import org.batfish.representation.cisco_nxos.RouteMapSetAsPathPrependLastAs;
+import org.batfish.representation.cisco_nxos.RouteMapSetAsPathPrependLiteralAs;
+import org.batfish.representation.cisco_nxos.RouteMapSetCommunity;
+import org.batfish.representation.cisco_nxos.RouteMapSetIpNextHopLiteral;
+import org.batfish.representation.cisco_nxos.RouteMapSetIpNextHopUnchanged;
+import org.batfish.representation.cisco_nxos.RouteMapSetLocalPreference;
+import org.batfish.representation.cisco_nxos.RouteMapSetMetric;
+import org.batfish.representation.cisco_nxos.RouteMapSetMetricType;
+import org.batfish.representation.cisco_nxos.RouteMapSetTag;
 import org.batfish.representation.cisco_nxos.StaticRoute;
 import org.batfish.representation.cisco_nxos.TcpOptions;
 import org.batfish.representation.cisco_nxos.UdpOptions;
@@ -251,13 +276,16 @@ public final class CiscoNxosGrammarTest {
     assertThat(vc.getInterfaces(), hasKey(ifaceName));
 
     Interface iface = vc.getInterfaces().get(ifaceName);
+    InterfaceAddressWithAttributes primary =
+        new InterfaceAddressWithAttributes(ConcreteInterfaceAddress.parse("10.0.0.1/24"));
+    InterfaceAddressWithAttributes secondary2 =
+        new InterfaceAddressWithAttributes(ConcreteInterfaceAddress.parse("10.0.0.2/24"));
+    InterfaceAddressWithAttributes secondary3 =
+        new InterfaceAddressWithAttributes(ConcreteInterfaceAddress.parse("10.0.0.3/24"));
+    secondary3.setTag(3L);
 
-    assertThat(iface.getAddress(), equalTo(ConcreteInterfaceAddress.parse("10.0.0.1/24")));
-    assertThat(
-        iface.getSecondaryAddresses(),
-        containsInAnyOrder(
-            ConcreteInterfaceAddress.parse("10.0.0.2/24"),
-            ConcreteInterfaceAddress.parse("10.0.0.3/24")));
+    assertThat(iface.getAddress(), equalTo(primary));
+    assertThat(iface.getSecondaryAddresses(), containsInAnyOrder(secondary2, secondary3));
   }
 
   @Test
@@ -1137,6 +1165,37 @@ public final class CiscoNxosGrammarTest {
   }
 
   @Test
+  public void testIpAsPathAccessListExtraction() {
+    String hostname = "nxos_ip_as_path_access_list";
+    CiscoNxosConfiguration vc = parseVendorConfig(hostname);
+
+    assertThat(vc.getIpAsPathAccessLists(), hasKeys("aspacl_seq", "aspacl_test"));
+    {
+      IpAsPathAccessList acl = vc.getIpAsPathAccessLists().get("aspacl_seq");
+      // check keySet directly to test iteration order
+      assertThat(acl.getLines().keySet(), contains(1L, 5L, 10L, 11L));
+    }
+    {
+      IpAsPathAccessList acl = vc.getIpAsPathAccessLists().get("aspacl_test");
+      // check keySet directly to test iteration order
+      Iterator<IpAsPathAccessListLine> lines = acl.getLines().values().iterator();
+      IpAsPathAccessListLine line;
+
+      line = lines.next();
+      assertThat(line.getAction(), equalTo(LineAction.DENY));
+      assertThat(line.getRegex(), equalTo("(_1_2_|_2_1_)"));
+
+      line = lines.next();
+      assertThat(line.getAction(), equalTo(LineAction.PERMIT));
+      assertThat(line.getRegex(), equalTo("_1_"));
+
+      line = lines.next();
+      assertThat(line.getAction(), equalTo(LineAction.PERMIT));
+      assertThat(line.getRegex(), equalTo("_2_"));
+    }
+  }
+
+  @Test
   public void testIpCommunityListStandardExtraction() {
     String hostname = "nxos_ip_community_list_standard";
     CiscoNxosConfiguration vc = parseVendorConfig(hostname);
@@ -1342,6 +1401,25 @@ public final class CiscoNxosGrammarTest {
       assertThat(line.getLine(), equalTo(25L));
       assertThat(line.getPrefix(), equalTo(Prefix.parse("10.10.0.0/16")));
     }
+  }
+
+  @Test
+  public void testNveExtraction() {
+    CiscoNxosConfiguration vc = parseVendorConfig("nxos_nve");
+    Map<Integer, Nve> nves = vc.getNves();
+    assertThat(nves, hasKeys(1, 2, 3, 4));
+    Nve nve1 = nves.get(1);
+    assertFalse(nve1.isShutdown());
+    assertThat(nve1.getSourceInterface(), equalTo("loopback0"));
+    Nve nve2 = nves.get(2);
+    assertFalse(nve2.isShutdown());
+    assertThat(nve2.getSourceInterface(), equalTo("loopback0"));
+    Nve nve3 = nves.get(3);
+    assertFalse(nve3.isShutdown());
+    assertThat(nve3.getSourceInterface(), equalTo("loopback0"));
+    Nve nve4 = nves.get(4);
+    assertTrue(nve4.isShutdown());
+    assertThat(nve4.getSourceInterface(), equalTo("loopback4"));
   }
 
   @Test
@@ -1689,6 +1767,267 @@ public final class CiscoNxosGrammarTest {
         ans, hasNumReferrers(filename, CiscoNxosStructureType.PORT_CHANNEL, "port-channel1", 1));
     assertThat(
         ans, hasNumReferrers(filename, CiscoNxosStructureType.PORT_CHANNEL, "port-channel2", 0));
+  }
+
+  @Test
+  public void testRouteMapExtraction() {
+    String hostname = "nxos_route_map";
+    CiscoNxosConfiguration vc = parseVendorConfig(hostname);
+
+    assertThat(
+        vc.getRouteMaps(),
+        hasKeys(
+            "empty_deny",
+            "empty_permit",
+            "match_as_path",
+            "match_community",
+            "match_interface",
+            "match_ip_address",
+            "match_ip_address_prefix_list",
+            "match_metric",
+            "match_tag",
+            "set_as_path_prepend_last_as",
+            "set_as_path_prepend_literal_as",
+            "set_community",
+            "set_community_additive",
+            "set_ip_next_hop_literal",
+            "set_ip_next_hop_unchanged",
+            "set_local_preference",
+            "set_metric",
+            "set_metric_type_external",
+            "set_metric_type_internal",
+            "set_metric_type_type_1",
+            "set_metric_type_type_2",
+            "set_tag",
+            "match_undefined_access_list",
+            "match_undefined_community_list",
+            "match_undefined_prefix_list",
+            "continue_skip_deny",
+            "continue_from_deny_to_permit",
+            "continue_from_permit_to_fall_off",
+            "continue_from_permit_and_set_to_fall_off",
+            "continue_with_set_and_fall_off",
+            "continue_from_set_to_match_on_set_field"));
+    {
+      RouteMap rm = vc.getRouteMaps().get("empty_deny");
+      assertThat(rm.getEntries().keySet(), contains(10));
+      RouteMapEntry entry = getOnlyElement(rm.getEntries().values());
+      assertThat(entry.getAction(), equalTo(LineAction.DENY));
+      assertThat(entry.getSequence(), equalTo(10));
+    }
+    {
+      RouteMap rm = vc.getRouteMaps().get("empty_permit");
+      assertThat(rm.getEntries().keySet(), contains(10));
+      RouteMapEntry entry = getOnlyElement(rm.getEntries().values());
+      assertThat(entry.getAction(), equalTo(LineAction.PERMIT));
+      assertThat(entry.getSequence(), equalTo(10));
+    }
+    {
+      RouteMap rm = vc.getRouteMaps().get("match_as_path");
+      assertThat(rm.getEntries().keySet(), contains(10));
+      RouteMapEntry entry = getOnlyElement(rm.getEntries().values());
+      assertThat(entry.getAction(), equalTo(LineAction.PERMIT));
+      assertThat(entry.getSequence(), equalTo(10));
+      RouteMapMatchAsPath match = entry.getMatchAsPath();
+      assertThat(entry.getMatches().collect(onlyElement()), equalTo(match));
+      assertThat(match.getNames(), contains("as_path_access_list1"));
+    }
+    {
+      RouteMap rm = vc.getRouteMaps().get("match_community");
+      assertThat(rm.getEntries().keySet(), contains(10));
+      RouteMapEntry entry = getOnlyElement(rm.getEntries().values());
+      assertThat(entry.getAction(), equalTo(LineAction.PERMIT));
+      assertThat(entry.getSequence(), equalTo(10));
+      RouteMapMatchCommunity match = entry.getMatchCommunity();
+      assertThat(entry.getMatches().collect(onlyElement()), equalTo(match));
+      assertThat(match.getNames(), contains("community_list1"));
+    }
+    {
+      RouteMap rm = vc.getRouteMaps().get("match_interface");
+      assertThat(rm.getEntries().keySet(), contains(10));
+      RouteMapEntry entry = getOnlyElement(rm.getEntries().values());
+      assertThat(entry.getAction(), equalTo(LineAction.PERMIT));
+      assertThat(entry.getSequence(), equalTo(10));
+      RouteMapMatchInterface match = entry.getMatchInterface();
+      assertThat(entry.getMatches().collect(onlyElement()), equalTo(match));
+      assertThat(match.getNames(), contains("loopback0"));
+    }
+    {
+      RouteMap rm = vc.getRouteMaps().get("match_ip_address");
+      assertThat(rm.getEntries().keySet(), contains(10));
+      RouteMapEntry entry = getOnlyElement(rm.getEntries().values());
+      assertThat(entry.getAction(), equalTo(LineAction.PERMIT));
+      assertThat(entry.getSequence(), equalTo(10));
+      RouteMapMatchIpAddress match = entry.getMatchIpAddress();
+      assertThat(entry.getMatches().collect(onlyElement()), equalTo(match));
+      assertThat(match.getName(), equalTo("access_list1"));
+    }
+    {
+      RouteMap rm = vc.getRouteMaps().get("match_ip_address_prefix_list");
+      assertThat(rm.getEntries().keySet(), contains(10));
+      RouteMapEntry entry = getOnlyElement(rm.getEntries().values());
+      assertThat(entry.getAction(), equalTo(LineAction.PERMIT));
+      assertThat(entry.getSequence(), equalTo(10));
+      RouteMapMatchIpAddressPrefixList match = entry.getMatchIpAddressPrefixList();
+      assertThat(entry.getMatches().collect(onlyElement()), equalTo(match));
+      assertThat(match.getNames(), contains("prefix_list1"));
+    }
+    {
+      RouteMap rm = vc.getRouteMaps().get("match_metric");
+      assertThat(rm.getEntries().keySet(), contains(10));
+      RouteMapEntry entry = getOnlyElement(rm.getEntries().values());
+      assertThat(entry.getAction(), equalTo(LineAction.PERMIT));
+      assertThat(entry.getSequence(), equalTo(10));
+      RouteMapMatchMetric match = entry.getMatchMetric();
+      assertThat(entry.getMatches().collect(onlyElement()), equalTo(match));
+      assertThat(match.getMetric(), equalTo(1L));
+    }
+    {
+      RouteMap rm = vc.getRouteMaps().get("match_tag");
+      assertThat(rm.getEntries().keySet(), contains(10));
+      RouteMapEntry entry = getOnlyElement(rm.getEntries().values());
+      assertThat(entry.getAction(), equalTo(LineAction.PERMIT));
+      assertThat(entry.getSequence(), equalTo(10));
+      RouteMapMatchTag match = entry.getMatchTag();
+      assertThat(entry.getMatches().collect(onlyElement()), equalTo(match));
+      assertThat(match.getTag(), equalTo(1L));
+    }
+    {
+      RouteMap rm = vc.getRouteMaps().get("set_as_path_prepend_last_as");
+      assertThat(rm.getEntries().keySet(), contains(10));
+      RouteMapEntry entry = getOnlyElement(rm.getEntries().values());
+      assertThat(entry.getAction(), equalTo(LineAction.PERMIT));
+      assertThat(entry.getSequence(), equalTo(10));
+      RouteMapSetAsPathPrependLastAs set =
+          (RouteMapSetAsPathPrependLastAs) entry.getSetAsPathPrepend();
+      assertThat(entry.getSets().collect(onlyElement()), equalTo(set));
+      assertThat(set.getNumPrepends(), equalTo(3));
+    }
+    {
+      RouteMap rm = vc.getRouteMaps().get("set_as_path_prepend_literal_as");
+      assertThat(rm.getEntries().keySet(), contains(10));
+      RouteMapEntry entry = getOnlyElement(rm.getEntries().values());
+      assertThat(entry.getAction(), equalTo(LineAction.PERMIT));
+      assertThat(entry.getSequence(), equalTo(10));
+      RouteMapSetAsPathPrependLiteralAs set =
+          (RouteMapSetAsPathPrependLiteralAs) entry.getSetAsPathPrepend();
+      assertThat(entry.getSets().collect(onlyElement()), equalTo(set));
+      assertThat(set.getAsNumbers(), contains(65000L, 65100L));
+    }
+    {
+      RouteMap rm = vc.getRouteMaps().get("set_community");
+      assertThat(rm.getEntries().keySet(), contains(10));
+      RouteMapEntry entry = getOnlyElement(rm.getEntries().values());
+      assertThat(entry.getAction(), equalTo(LineAction.PERMIT));
+      assertThat(entry.getSequence(), equalTo(10));
+      RouteMapSetCommunity set = entry.getSetCommunity();
+      assertThat(entry.getSets().collect(onlyElement()), equalTo(set));
+      assertThat(
+          set.getCommunities(), contains(StandardCommunity.of(1, 1), StandardCommunity.of(1, 2)));
+      assertFalse(set.getAdditive());
+    }
+    {
+      RouteMap rm = vc.getRouteMaps().get("set_community_additive");
+      assertThat(rm.getEntries().keySet(), contains(10));
+      RouteMapEntry entry = getOnlyElement(rm.getEntries().values());
+      assertThat(entry.getAction(), equalTo(LineAction.PERMIT));
+      assertThat(entry.getSequence(), equalTo(10));
+      RouteMapSetCommunity set = entry.getSetCommunity();
+      assertThat(entry.getSets().collect(onlyElement()), equalTo(set));
+      assertThat(
+          set.getCommunities(), contains(StandardCommunity.of(1, 1), StandardCommunity.of(1, 2)));
+      assertTrue(set.getAdditive());
+    }
+    {
+      RouteMap rm = vc.getRouteMaps().get("set_ip_next_hop_literal");
+      assertThat(rm.getEntries().keySet(), contains(10));
+      RouteMapEntry entry = getOnlyElement(rm.getEntries().values());
+      assertThat(entry.getAction(), equalTo(LineAction.PERMIT));
+      assertThat(entry.getSequence(), equalTo(10));
+      RouteMapSetIpNextHopLiteral set = (RouteMapSetIpNextHopLiteral) entry.getSetIpNextHop();
+      assertThat(entry.getSets().collect(onlyElement()), equalTo(set));
+      assertThat(set.getNextHops(), contains(Ip.parse("192.0.2.1"), Ip.parse("192.0.2.2")));
+    }
+    {
+      RouteMap rm = vc.getRouteMaps().get("set_ip_next_hop_unchanged");
+      assertThat(rm.getEntries().keySet(), contains(10));
+      RouteMapEntry entry = getOnlyElement(rm.getEntries().values());
+      assertThat(entry.getAction(), equalTo(LineAction.PERMIT));
+      assertThat(entry.getSequence(), equalTo(10));
+      RouteMapSetIpNextHopUnchanged set = (RouteMapSetIpNextHopUnchanged) entry.getSetIpNextHop();
+      assertThat(entry.getSets().collect(onlyElement()), equalTo(set));
+    }
+    {
+      RouteMap rm = vc.getRouteMaps().get("set_local_preference");
+      assertThat(rm.getEntries().keySet(), contains(10));
+      RouteMapEntry entry = getOnlyElement(rm.getEntries().values());
+      assertThat(entry.getAction(), equalTo(LineAction.PERMIT));
+      assertThat(entry.getSequence(), equalTo(10));
+      RouteMapSetLocalPreference set = entry.getSetLocalPreference();
+      assertThat(entry.getSets().collect(onlyElement()), equalTo(set));
+      assertThat(set.getLocalPreference(), equalTo(1L));
+    }
+    {
+      RouteMap rm = vc.getRouteMaps().get("set_metric");
+      assertThat(rm.getEntries().keySet(), contains(10));
+      RouteMapEntry entry = getOnlyElement(rm.getEntries().values());
+      assertThat(entry.getAction(), equalTo(LineAction.PERMIT));
+      assertThat(entry.getSequence(), equalTo(10));
+      RouteMapSetMetric set = entry.getSetMetric();
+      assertThat(entry.getSets().collect(onlyElement()), equalTo(set));
+      assertThat(set.getMetric(), equalTo(1L));
+    }
+    {
+      RouteMap rm = vc.getRouteMaps().get("set_metric_type_external");
+      assertThat(rm.getEntries().keySet(), contains(10));
+      RouteMapEntry entry = getOnlyElement(rm.getEntries().values());
+      assertThat(entry.getAction(), equalTo(LineAction.PERMIT));
+      assertThat(entry.getSequence(), equalTo(10));
+      RouteMapSetMetricType set = entry.getSetMetricType();
+      assertThat(entry.getSets().collect(onlyElement()), equalTo(set));
+      assertThat(set.getMetricType(), equalTo(RouteMapMetricType.EXTERNAL));
+    }
+    {
+      RouteMap rm = vc.getRouteMaps().get("set_metric_type_internal");
+      assertThat(rm.getEntries().keySet(), contains(10));
+      RouteMapEntry entry = getOnlyElement(rm.getEntries().values());
+      assertThat(entry.getAction(), equalTo(LineAction.PERMIT));
+      assertThat(entry.getSequence(), equalTo(10));
+      RouteMapSetMetricType set = entry.getSetMetricType();
+      assertThat(entry.getSets().collect(onlyElement()), equalTo(set));
+      assertThat(set.getMetricType(), equalTo(RouteMapMetricType.INTERNAL));
+    }
+    {
+      RouteMap rm = vc.getRouteMaps().get("set_metric_type_type_1");
+      assertThat(rm.getEntries().keySet(), contains(10));
+      RouteMapEntry entry = getOnlyElement(rm.getEntries().values());
+      assertThat(entry.getAction(), equalTo(LineAction.PERMIT));
+      assertThat(entry.getSequence(), equalTo(10));
+      RouteMapSetMetricType set = entry.getSetMetricType();
+      assertThat(entry.getSets().collect(onlyElement()), equalTo(set));
+      assertThat(set.getMetricType(), equalTo(RouteMapMetricType.TYPE_1));
+    }
+    {
+      RouteMap rm = vc.getRouteMaps().get("set_metric_type_type_2");
+      assertThat(rm.getEntries().keySet(), contains(10));
+      RouteMapEntry entry = getOnlyElement(rm.getEntries().values());
+      assertThat(entry.getAction(), equalTo(LineAction.PERMIT));
+      assertThat(entry.getSequence(), equalTo(10));
+      RouteMapSetMetricType set = entry.getSetMetricType();
+      assertThat(entry.getSets().collect(onlyElement()), equalTo(set));
+      assertThat(set.getMetricType(), equalTo(RouteMapMetricType.TYPE_2));
+    }
+    {
+      RouteMap rm = vc.getRouteMaps().get("set_tag");
+      assertThat(rm.getEntries().keySet(), contains(10));
+      RouteMapEntry entry = getOnlyElement(rm.getEntries().values());
+      assertThat(entry.getAction(), equalTo(LineAction.PERMIT));
+      assertThat(entry.getSequence(), equalTo(10));
+      RouteMapSetTag set = entry.getSetTag();
+      assertThat(entry.getSets().collect(onlyElement()), equalTo(set));
+      assertThat(set.getTag(), equalTo(1L));
+    }
+    // TODO: route-map 'continue' extraction
   }
 
   @Test
@@ -2233,13 +2572,15 @@ public final class CiscoNxosGrammarTest {
       Interface iface = vc.getInterfaces().get("Ethernet1/4");
       assertFalse(iface.getShutdown());
       assertThat(iface.getVrfMember(), equalTo("vrf1"));
-      assertThat(iface.getAddress(), equalTo(ConcreteInterfaceAddress.parse("10.0.4.1/24")));
+      assertThat(
+          iface.getAddress().getAddress(), equalTo(ConcreteInterfaceAddress.parse("10.0.4.1/24")));
     }
     {
       Interface iface = vc.getInterfaces().get("Ethernet1/5");
       assertFalse(iface.getShutdown());
       assertThat(iface.getVrfMember(), equalTo("vrf3"));
-      assertThat(iface.getAddress(), equalTo(ConcreteInterfaceAddress.parse("10.0.5.1/24")));
+      assertThat(
+          iface.getAddress().getAddress(), equalTo(ConcreteInterfaceAddress.parse("10.0.5.1/24")));
     }
   }
 

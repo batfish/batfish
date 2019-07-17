@@ -1268,21 +1268,13 @@ public class AutoCompleteUtilsTest {
         equalTo(ImmutableSet.of("bgp", "ibgp", "ebgp")));
   }
 
-  /**
-   * This test is ignored. At the moment, bgp does not expand to those three desired values. The way
-   * EnumSetSpecifier is setup at the moment, it does not report ibgp and ebgp because bgp fully
-   * matches and we exit the rule.
-   *
-   * <p>TODO: change that behavior
-   */
-  @Ignore
   @Test
   public void testRoutingProtocolSpecAutocompleteFullName() {
     assertThat(
         AutoCompleteUtils.autoComplete(Type.ROUTING_PROTOCOL_SPEC, "bgp", 5).stream()
             .map(AutocompleteSuggestion::getText)
             .collect(Collectors.toSet()),
-        equalTo(ImmutableSet.of("bgp", "ibgp", "ebgp")));
+        equalTo(ImmutableSet.of(",", "bgp", "ibgp", "ebgp")));
   }
 
   @Test

@@ -26,6 +26,11 @@ cisco_nxos_password
   )
 ;
 
+double_quoted_string
+:
+  DOUBLE_QUOTE text = quoted_text? DOUBLE_QUOTE
+;
+
 interface_address
 :
   address = ip_address mask = subnet_mask
@@ -59,10 +64,28 @@ interface_parent_suffix
   num = uint16 period = PERIOD
 ;
 
+ip_access_list_name
+:
+// 1-64 characters
+  WORD
+;
+
 ip_address
 :
   IP_ADDRESS
   | SUBNET_MASK
+;
+
+ip_as_path_access_list_name
+:
+// 1-63 characters
+  WORD
+;
+
+ip_community_list_name
+:
+// 1-63 characters
+  WORD
 ;
 
 ip_prefix
@@ -96,10 +119,20 @@ null_rest_of_line
   ~NEWLINE* NEWLINE
 ;
 
+nve_interface_name
+:
+  NVE first = uint8
+;
+
 prefix_list_name
 :
 // 1-63 chars
   WORD
+;
+
+quoted_text
+:
+  QUOTED_TEXT
 ;
 
 route_map_name
