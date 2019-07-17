@@ -5,6 +5,8 @@ hostname nxos_vlan
 
 ! individual VLAN
 vlan 2
+  name Name-Of-Vlan-2
+  vn-segment 12345
 
 ! VLAN range
 vlan 4,6-8

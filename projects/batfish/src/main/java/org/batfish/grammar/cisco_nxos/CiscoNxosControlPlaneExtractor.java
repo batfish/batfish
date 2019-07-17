@@ -187,6 +187,7 @@ import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Vlan_id_rangeContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Vlan_vlanContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Vni_numberContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Vrf_nameContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Vv_vn_segmentContext;
 import org.batfish.representation.cisco_nxos.ActionIpAccessListLine;
 import org.batfish.representation.cisco_nxos.AddrGroupIpAddressSpec;
 import org.batfish.representation.cisco_nxos.CiscoNxosConfiguration;
@@ -419,12 +420,10 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
   private TcpOptions.Builder _currentTcpOptionsBuilder;
   private UdpOptions.Builder _currentUdpOptionsBuilder;
   private IntegerSpace _currentValidVlanRange;
-
-  @SuppressWarnings("unused")
-  private @Nullable List<Vlan> _currentVlans;
-
+  private List<Vlan> _currentVlans;
   private Vrf _currentVrf;
-  private final CiscoNxosCombinedParser _parser;
+
+  private @Nonnull final CiscoNxosCombinedParser _parser;
   private @Nonnull final String _text;
   private @Nonnull final Warnings _w;
 
@@ -1920,6 +1919,16 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
   @Override
   public void exitVlan_vlan(Vlan_vlanContext ctx) {
     _currentVlans = null;
+  }
+
+  @Override
+  public void exitVv_vn_segment(Vv_vn_segmentContext ctx) {
+    Optional<Integer> vniOrError = toInteger(ctx, ctx.vni_number());
+    if (!vniOrError.isPresent()) {
+      return;
+    }
+    Integer vni = vniOrError.get();
+    _currentVlans.forEach(v -> v.setVni(vni));
   }
 
   private @Nonnull String getFullText(ParserRuleContext ctx) {
