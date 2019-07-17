@@ -3866,6 +3866,19 @@ public class CiscoGrammarTest {
                     hasSourceInterface("TenGigabitEthernet0/0"),
                     hasLocalAddress(Ip.parse("2.3.4.6")),
                     hasTunnelInterface(equalTo("Tunnel1"))))));
+
+    assertThat(
+        c,
+        hasIpsecPeerConfig(
+            "Tunnel2",
+            isIpsecStaticPeerConfigThat(
+                allOf(
+                    hasDestinationAddress(Ip.parse("1.2.3.4")),
+                    IpsecPeerConfigMatchers.hasIkePhase1Policy("ISAKMP-PROFILE"),
+                    IpsecPeerConfigMatchers.hasIpsecPolicy("IPSEC-PROFILE1"),
+                    hasSourceInterface("TenGigabitEthernet0/0"),
+                    hasLocalAddress(Ip.parse("2.3.4.6")),
+                    hasTunnelInterface(equalTo("Tunnel2"))))));
   }
 
   @Test
