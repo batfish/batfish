@@ -2233,6 +2233,11 @@ VLAN
   [Vv] [Ll] [Aa] [Nn]
 ;
 
+VN_SEGMENT
+:
+  'vn-segment'
+;
+
 VN_SEGMENT_VLAN_BASED
 :
   'vn-segment-vlan-based'

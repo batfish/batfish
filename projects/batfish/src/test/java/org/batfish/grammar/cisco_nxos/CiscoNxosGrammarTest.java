@@ -144,6 +144,7 @@ import org.batfish.representation.cisco_nxos.RouteMapSetTag;
 import org.batfish.representation.cisco_nxos.StaticRoute;
 import org.batfish.representation.cisco_nxos.TcpOptions;
 import org.batfish.representation.cisco_nxos.UdpOptions;
+import org.batfish.representation.cisco_nxos.Vlan;
 import org.batfish.representation.cisco_nxos.Vrf;
 import org.junit.Rule;
 import org.junit.Test;
@@ -2444,7 +2445,6 @@ public final class CiscoNxosGrammarTest {
     assertThat(
         vc.getInterfaces(),
         hasKeys("Ethernet1/1", "Vlan1", "Vlan2", "Vlan3", "Vlan4", "Vlan6", "Vlan7"));
-    assertThat(vc.getVlans(), hasKeys(2, 4, 6, 7, 8));
     {
       Interface iface = vc.getInterfaces().get("Vlan1");
       assertTrue(iface.getShutdown());
@@ -2492,6 +2492,16 @@ public final class CiscoNxosGrammarTest {
       assertThat(iface.getVlan(), equalTo(7));
       assertThat(iface.getSwitchportMode(), equalTo(SwitchportMode.NONE));
       assertThat(iface.getType(), equalTo(CiscoNxosInterfaceType.VLAN));
+    }
+
+    assertThat(vc.getVlans(), hasKeys(2, 4, 6, 7, 8));
+    {
+      Vlan vlan = vc.getVlans().get(2);
+      assertThat(vlan.getVni(), equalTo(12345));
+    }
+    {
+      Vlan vlan = vc.getVlans().get(4);
+      assertThat(vlan.getVni(), nullValue());
     }
   }
 

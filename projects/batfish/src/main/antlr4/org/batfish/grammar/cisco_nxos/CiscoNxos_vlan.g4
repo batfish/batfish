@@ -62,7 +62,11 @@ vlan_null
 
 vlan_vlan
 :
-  vlans = vlan_id_range NEWLINE vv_null*
+  vlans = vlan_id_range NEWLINE
+  (
+    vv_null
+    | vv_vn_segment
+  )*
 ;
 
 vv_null
@@ -75,4 +79,9 @@ vv_null
     | STATE
     | XCONNECT
   ) null_rest_of_line
+;
+
+vv_vn_segment
+:
+  VN_SEGMENT vni_number NEWLINE
 ;
