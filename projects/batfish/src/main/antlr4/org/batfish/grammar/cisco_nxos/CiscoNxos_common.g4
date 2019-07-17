@@ -137,6 +137,8 @@ quoted_text
 
 route_distinguisher
 :
+// The order of these rules is significant: 1:1 should be parsed as type 0, not type 2.
+// That string matches both rules with the same number of tokens; ANTLR4 will prefer the first one.
   hi0 = uint16 COLON lo0 = uint32
   | hi1 = ip_address COLON lo1 = uint16
   | hi2 = uint32 COLON lo2 = uint16
