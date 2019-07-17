@@ -131,8 +131,15 @@ import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Ip_routeContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Last_as_num_prependsContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Line_actionContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Literal_standard_communityContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Nve_memberContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Nve_no_shutdownContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Nve_source_interfaceContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Nvg_ingress_replicationContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Nvg_mcast_groupContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Nvg_suppress_arpContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Nvm_ingress_replicationContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Nvm_mcast_groupContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Nvm_suppress_arpContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Packet_lengthContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Pl_actionContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Pl_descriptionContext;
@@ -178,6 +185,7 @@ import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Vc_shutdownContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Vlan_idContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Vlan_id_rangeContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Vlan_vlanContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Vni_numberContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Vrf_nameContext;
 import org.batfish.representation.cisco_nxos.ActionIpAccessListLine;
 import org.batfish.representation.cisco_nxos.AddrGroupIpAddressSpec;
@@ -203,6 +211,8 @@ import org.batfish.representation.cisco_nxos.Layer3Options;
 import org.batfish.representation.cisco_nxos.LiteralIpAddressSpec;
 import org.batfish.representation.cisco_nxos.LiteralPortSpec;
 import org.batfish.representation.cisco_nxos.Nve;
+import org.batfish.representation.cisco_nxos.Nve.IngressReplicationProtocol;
+import org.batfish.representation.cisco_nxos.NveVni;
 import org.batfish.representation.cisco_nxos.PortGroupPortSpec;
 import org.batfish.representation.cisco_nxos.PortSpec;
 import org.batfish.representation.cisco_nxos.RemarkIpAccessListLine;
@@ -275,6 +285,7 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
   private static final IntegerSpace TCP_FLAGS_MASK_RANGE = IntegerSpace.of(Range.closed(0, 63));
   private static final IntegerSpace TCP_PORT_RANGE = IntegerSpace.of(Range.closed(0, 65535));
   private static final IntegerSpace UDP_PORT_RANGE = IntegerSpace.of(Range.closed(0, 65535));
+  private static final IntegerSpace VNI_RANGE = IntegerSpace.of(Range.closed(0, 16777214));
 
   private static @Nonnull IpAddressSpec toAddressSpec(Acllal3_address_specContext ctx) {
     if (ctx.address != null) {
@@ -402,6 +413,7 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
   private IpPrefixList _currentIpPrefixList;
   private Layer3Options.Builder _currentLayer3OptionsBuilder;
   private List<Nve> _currentNves;
+  private List<NveVni> _currentNveVnis;
   private RouteMapEntry _currentRouteMapEntry;
   private TcpFlags.Builder _currentTcpFlagsBuilder;
   private TcpOptions.Builder _currentTcpOptionsBuilder;
@@ -640,6 +652,80 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
                               return new IpPrefixList(n);
                             }))
             .orElse(new IpPrefixList("dummy"));
+  }
+
+  @Override
+  public void enterNve_member(Nve_memberContext ctx) {
+    Optional<Integer> vniOrError = toInteger(ctx, ctx.vni);
+    if (!vniOrError.isPresent()) {
+      // dummy NVE member VNI
+      _currentNveVnis = ImmutableList.of();
+      return;
+    }
+    int vni = vniOrError.get();
+    _currentNveVnis =
+        _currentNves.stream()
+            .map(nve -> nve.getMemberVni(vni))
+            .collect(ImmutableList.toImmutableList());
+    if (ctx.ASSOCIATE_VRF() != null) {
+      _currentNveVnis.forEach(memberVni -> memberVni.setAssociateVrf(true));
+    }
+  }
+
+  @Override
+  public void exitNve_member(Nve_memberContext ctx) {
+    _currentNveVnis = null;
+  }
+
+  @Override
+  public void exitNvm_ingress_replication(Nvm_ingress_replicationContext ctx) {
+    IngressReplicationProtocol protocol =
+        ctx.BGP() != null
+            ? Nve.IngressReplicationProtocol.BGP
+            : Nve.IngressReplicationProtocol.STATIC;
+    _currentNveVnis.forEach(vni -> vni.setIngressReplicationProtocol(protocol));
+  }
+
+  @Override
+  public void exitNvm_mcast_group(Nvm_mcast_groupContext ctx) {
+    Ip mcastIp = toIp(ctx.first);
+    if (!Prefix.MULTICAST.containsIp(mcastIp)) {
+      warn(ctx, String.format("IPv4 address %s is not a valid multicast IP", mcastIp));
+      return;
+    }
+    _currentNveVnis.forEach(vni -> vni.setMcastGroup(mcastIp));
+  }
+
+  @Override
+  public void exitNvm_suppress_arp(Nvm_suppress_arpContext ctx) {
+    boolean value = ctx.DISABLE() == null;
+    _currentNveVnis.forEach(vni -> vni.setSuppressArp(value));
+  }
+
+  @Override
+  public void exitNvg_ingress_replication(Nvg_ingress_replicationContext ctx) {
+    _currentNves.forEach(
+        vni -> vni.setGlobalIngressReplicationProtocol(IngressReplicationProtocol.BGP));
+  }
+
+  @Override
+  public void exitNvg_mcast_group(Nvg_mcast_groupContext ctx) {
+    Ip mcastIp = toIp(ctx.ip_address());
+    if (!Prefix.MULTICAST.containsIp(mcastIp)) {
+      warn(ctx, String.format("IPv4 address %s is not a valid multicast IP", mcastIp));
+      return;
+    }
+    if (ctx.L2() != null) {
+      _currentNves.forEach(vni -> vni.setMulticastGroupL2(mcastIp));
+    } else {
+      assert ctx.L3() != null;
+      _currentNves.forEach(vni -> vni.setMulticastGroupL3(mcastIp));
+    }
+  }
+
+  @Override
+  public void exitNvg_suppress_arp(Nvg_suppress_arpContext ctx) {
+    _currentNves.forEach(vni -> vni.setGlobalSuppressArp(true));
   }
 
   @Override
@@ -1329,7 +1415,7 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
       _currentInterfaces.forEach(iface -> iface.setAddress(address));
     }
     if (ctx.tag != null) {
-      todo(ctx, "Unsupported: tag on interface ip address");
+      warn(ctx, "Unsupported: tag on interface ip address");
       address.setTag(toLong(ctx.tag));
     }
   }
@@ -1870,7 +1956,7 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
     _w.todo(ctx, getFullText(ctx), _parser);
   }
 
-  private void todo(ParserRuleContext ctx, String message) {
+  private void warn(ParserRuleContext ctx, String message) {
     _w.addWarning(ctx, getFullText(ctx), _parser, message);
   }
 
@@ -2111,6 +2197,11 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
       todo(ctx);
       return Optional.empty();
     }
+  }
+
+  private @Nonnull Optional<Integer> toInteger(
+      ParserRuleContext messageCtx, Vni_numberContext ctx) {
+    return toIntegerInSpace(messageCtx, ctx, VNI_RANGE, "VNI");
   }
 
   private @Nonnull Optional<Integer> toInteger(

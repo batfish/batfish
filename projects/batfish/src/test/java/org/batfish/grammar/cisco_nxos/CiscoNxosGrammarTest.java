@@ -46,6 +46,7 @@ import static org.hamcrest.Matchers.hasEntry;
 import static org.hamcrest.Matchers.hasKey;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.nullValue;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
@@ -117,6 +118,8 @@ import org.batfish.representation.cisco_nxos.Layer3Options;
 import org.batfish.representation.cisco_nxos.LiteralIpAddressSpec;
 import org.batfish.representation.cisco_nxos.LiteralPortSpec;
 import org.batfish.representation.cisco_nxos.Nve;
+import org.batfish.representation.cisco_nxos.Nve.IngressReplicationProtocol;
+import org.batfish.representation.cisco_nxos.NveVni;
 import org.batfish.representation.cisco_nxos.PortGroupPortSpec;
 import org.batfish.representation.cisco_nxos.PortSpec;
 import org.batfish.representation.cisco_nxos.RouteMap;
@@ -1408,18 +1411,53 @@ public final class CiscoNxosGrammarTest {
     CiscoNxosConfiguration vc = parseVendorConfig("nxos_nve");
     Map<Integer, Nve> nves = vc.getNves();
     assertThat(nves, hasKeys(1, 2, 3, 4));
-    Nve nve1 = nves.get(1);
-    assertFalse(nve1.isShutdown());
-    assertThat(nve1.getSourceInterface(), equalTo("loopback0"));
-    Nve nve2 = nves.get(2);
-    assertFalse(nve2.isShutdown());
-    assertThat(nve2.getSourceInterface(), equalTo("loopback0"));
-    Nve nve3 = nves.get(3);
-    assertFalse(nve3.isShutdown());
-    assertThat(nve3.getSourceInterface(), equalTo("loopback0"));
-    Nve nve4 = nves.get(4);
-    assertTrue(nve4.isShutdown());
-    assertThat(nve4.getSourceInterface(), equalTo("loopback4"));
+    {
+      Nve nve = nves.get(1);
+      assertFalse(nve.isShutdown());
+      assertThat(nve.getSourceInterface(), equalTo("loopback0"));
+      assertThat(nve.getGlobalIngressReplicationProtocol(), nullValue());
+      assertTrue(nve.isGlobalSuppressArp());
+      int vni = 10001;
+      assertThat(nve.getMemberVnis(), hasKeys(vni));
+      NveVni vniConfig = nve.getMemberVni(vni);
+      assertThat(vniConfig.getVni(), equalTo(vni));
+      assertThat(vniConfig.getSuppressArp(), equalTo(Boolean.FALSE));
+      assertThat(vniConfig.getIngressReplicationProtocol(), nullValue());
+      assertThat(vniConfig.getMcastGroup(), nullValue());
+    }
+    {
+      Nve nve = nves.get(2);
+      assertFalse(nve.isShutdown());
+      assertThat(nve.getSourceInterface(), equalTo("loopback0"));
+      assertThat(nve.getGlobalIngressReplicationProtocol(), nullValue());
+      assertTrue(nve.isGlobalSuppressArp());
+    }
+    {
+      Nve nve = nves.get(3);
+      assertFalse(nve.isShutdown());
+      assertThat(nve.getSourceInterface(), equalTo("loopback0"));
+      assertThat(nve.getGlobalIngressReplicationProtocol(), nullValue());
+      assertTrue(nve.isGlobalSuppressArp());
+      assertThat(nve.getMulticastGroupL2(), nullValue());
+      assertThat(nve.getMulticastGroupL3(), nullValue());
+    }
+    {
+      Nve nve = nves.get(4);
+      assertTrue(nve.isShutdown());
+      assertThat(nve.getSourceInterface(), equalTo("loopback4"));
+      assertThat(
+          nve.getGlobalIngressReplicationProtocol(), equalTo(IngressReplicationProtocol.BGP));
+      assertFalse(nve.isGlobalSuppressArp());
+      assertEquals(nve.getMulticastGroupL2(), Ip.parse("233.0.0.0"));
+      assertEquals(nve.getMulticastGroupL3(), Ip.parse("234.0.0.0"));
+      int vni = 40001;
+      assertThat(nve.getMemberVnis(), hasKeys(vni));
+      NveVni vniConfig = nve.getMemberVni(vni);
+      assertThat(vniConfig.getSuppressArp(), nullValue());
+      assertThat(
+          vniConfig.getIngressReplicationProtocol(), equalTo(IngressReplicationProtocol.STATIC));
+      assertThat(vniConfig.getMcastGroup(), equalTo(Ip.parse("235.0.0.0")));
+    }
   }
 
   @Test
