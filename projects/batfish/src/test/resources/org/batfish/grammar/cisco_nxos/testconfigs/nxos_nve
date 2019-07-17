@@ -9,8 +9,20 @@ feature nv overlay
 !
 interface nve1-3
   no shutdown
+  host-reachability protocol bgp
   source-interface loopback0
+  global suppress-arp
+!
+interface nve1
+  member vni 10001
+    suppress-arp disable
 !
 interface nve4
+  global ingress-replication protocol bgp
+  global mcast-group 233.0.0.0 L2
+  global mcast-group 234.0.0.0 L3
   source-interface loopback4
+  member vni 40001
+    ingress-replication protocol static
+    mcast-group 235.0.0.0
 !
