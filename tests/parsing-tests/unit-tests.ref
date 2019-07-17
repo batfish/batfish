@@ -8210,7 +8210,7 @@
             "          RANGE:'range'",
             "          IP_ADDRESS:'10.0.0.10'",
             "          end = IP_ADDRESS:'10.0.0.20'",
-            "          NEWLINE:'\\n'))))",
+            "          NEWLINE:'\\n\\n'))))",
             "  (stanza",
             "    (extended_access_list_stanza",
             "      ACCESS_LIST:'access-list'",
