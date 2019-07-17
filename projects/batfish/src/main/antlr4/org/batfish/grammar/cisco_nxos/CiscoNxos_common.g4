@@ -119,6 +119,11 @@ null_rest_of_line
   ~NEWLINE* NEWLINE
 ;
 
+nve_interface_name
+:
+  NVE first = uint8
+;
+
 prefix_list_name
 :
 // 1-63 chars

@@ -8,7 +8,25 @@ options {
 
 s_interface
 :
-  INTERFACE irange = interface_range NEWLINE
+  INTERFACE
+  (
+      s_interface_nve
+      | s_interface_regular
+  )
+;
+
+s_interface_nve
+:
+  nverange = nve_interface_range NEWLINE
+  (
+    nve_no
+    | nve_source_interface
+  )*
+;
+
+s_interface_regular
+:
+  irange = interface_range NEWLINE
   (
     i_bandwidth
     | i_channel_group
@@ -191,3 +209,27 @@ interface_range
     DASH last = uint16
   )?
 ;
+
+nve_interface_range
+:
+  iname = nve_interface_name
+  (
+    DASH last = uint8
+  )?
+;
+
+nve_no
+:
+   NO nve_no_shutdown
+;
+
+nve_no_shutdown
+:
+   SHUTDOWN NEWLINE
+;
+
+nve_source_interface
+:
+   SOURCE_INTERFACE name = interface_name NEWLINE
+;
+
