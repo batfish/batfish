@@ -52,7 +52,7 @@ vcaf4u_null
 
 vcaf4u_route_target
 :
-  ROUTE_TARGET (BOTH | EXPORT | IMPORT) rd = route_distinguisher_or_auto EVPN? NEWLINE
+  ROUTE_TARGET both_export_import rd = route_distinguisher_or_auto EVPN? NEWLINE
 ;
 
 vcaf6u_null
@@ -65,7 +65,7 @@ vcaf6u_null
 
 vcaf6u_route_target
 :
-  ROUTE_TARGET (BOTH | EXPORT | IMPORT) rd = route_distinguisher_or_auto EVPN? NEWLINE
+  ROUTE_TARGET both_export_import rd = route_distinguisher_or_auto EVPN? NEWLINE
 ;
 
 vc_ip

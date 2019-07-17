@@ -26,6 +26,14 @@ cisco_nxos_password
   )
 ;
 
+// Shared NX-OS syntax for route-target, redistribution, route leak, etc.
+both_export_import
+:
+  BOTH
+  | EXPORT
+  | IMPORT
+;
+
 double_quoted_string
 :
   DOUBLE_QUOTE text = quoted_text? DOUBLE_QUOTE

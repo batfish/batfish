@@ -29,6 +29,7 @@ import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.Token;
 import org.antlr.v4.runtime.tree.ErrorNode;
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
+import org.antlr.v4.runtime.tree.TerminalNode;
 import org.batfish.common.Warnings;
 import org.batfish.common.Warnings.ParseWarning;
 import org.batfish.common.WellKnownCommunity;
@@ -87,6 +88,7 @@ import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Acllal4udp_port_spec_port_
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Acllal4udp_source_portContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.As_path_regexContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Bgp_asnContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Both_export_importContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Channel_idContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Cisco_nxos_configurationContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Dscp_numberContext;
@@ -1964,46 +1966,39 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
     _currentVrf.setVni(vni);
   }
 
-  @Override
-  public void exitVcaf4u_route_target(Vcaf4u_route_targetContext ctx) {
-    VrfAddressFamily af = _currentVrf.getAddressFamily(AddressFamily.IPV4_UNICAST);
-    RouteDistinguisherOrAuto rd = toRouteDistinguisher(ctx.rd);
-    boolean setExport = ctx.BOTH() != null || ctx.EXPORT() != null;
-    boolean setImport = ctx.BOTH() != null || ctx.IMPORT() != null;
-    boolean evpn = ctx.EVPN() != null;
-    if (!evpn && setExport) {
+  private static void setRouteTarget(
+      Route_distinguisher_or_autoContext rdOrAuto,
+      Both_export_importContext direction,
+      @Nullable TerminalNode evpn,
+      VrfAddressFamily af) {
+    RouteDistinguisherOrAuto rd = toRouteDistinguisher(rdOrAuto);
+    boolean setExport = direction.BOTH() != null || direction.EXPORT() != null;
+    boolean setImport = direction.BOTH() != null || direction.IMPORT() != null;
+    boolean isEvpn = evpn != null;
+    if (!isEvpn && setExport) {
       af.setExportRt(rd);
     }
-    if (evpn && setExport) {
+    if (isEvpn && setExport) {
       af.setExportRtEvpn(rd);
     }
-    if (!evpn && setImport) {
+    if (!isEvpn && setImport) {
       af.setImportRt(rd);
     }
-    if (evpn && setImport) {
+    if (isEvpn && setImport) {
       af.setImportRtEvpn(rd);
     }
   }
 
   @Override
+  public void exitVcaf4u_route_target(Vcaf4u_route_targetContext ctx) {
+    VrfAddressFamily af = _currentVrf.getAddressFamily(AddressFamily.IPV4_UNICAST);
+    setRouteTarget(ctx.rd, ctx.both_export_import(), ctx.EVPN(), af);
+  }
+
+  @Override
   public void exitVcaf6u_route_target(Vcaf6u_route_targetContext ctx) {
     VrfAddressFamily af = _currentVrf.getAddressFamily(AddressFamily.IPV6_UNICAST);
-    RouteDistinguisherOrAuto rd = toRouteDistinguisher(ctx.rd);
-    boolean setExport = ctx.BOTH() != null || ctx.EXPORT() != null;
-    boolean setImport = ctx.BOTH() != null || ctx.IMPORT() != null;
-    boolean evpn = ctx.EVPN() != null;
-    if (!evpn && setExport) {
-      af.setExportRt(rd);
-    }
-    if (evpn && setExport) {
-      af.setExportRtEvpn(rd);
-    }
-    if (!evpn && setImport) {
-      af.setImportRt(rd);
-    }
-    if (evpn && setImport) {
-      af.setImportRtEvpn(rd);
-    }
+    setRouteTarget(ctx.rd, ctx.both_export_import(), ctx.EVPN(), af);
   }
 
   @Override
