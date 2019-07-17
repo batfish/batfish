@@ -1437,6 +1437,11 @@ NULL0
   [Nn] [Uu] [Ll] [Ll] ' '* '0'
 ;
 
+NV
+:
+  'nv'
+;
+
 NVE
 :
   'nve'
@@ -1470,6 +1475,11 @@ OSPFV3
 OUT
 :
   'out'
+;
+
+OVERLAY
+:
+  'overlay'
 ;
 
 PACKET_LENGTH
@@ -1882,6 +1892,11 @@ SOO
   'soo'
 ;
 
+SOURCE_INTERFACE
+:
+  'source-interface'
+;
+
 SOURCE_QUENCH
 :
   'source-quench'
@@ -2155,6 +2170,11 @@ VERSION
 VLAN
 :
   [Vv] [Ll] [Aa] [Nn]
+;
+
+VN_SEGMENT_VLAN_BASED
+:
+  'vn-segment-vlan-based'
 ;
 
 VNI
