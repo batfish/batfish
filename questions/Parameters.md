@@ -72,11 +72,11 @@ Many types such as `applicationSpec` or `mlagIdSpec` are simply sets of values. 
 
 * `val1` specifies a singleton set with that value.
 
-* `/val.*/` specifies a set with all values that match `val.*`.
+* `/val.*/` specifies a set whose values all values match regex `val.*`.
 
-* `val1, val2` specifies a set with those two values. 
+* `val1, val2` specifies a set with exactly those two values. 
 
-The fulle specification of this grammar is:
+The full specification of this grammar is:
 
 <pre>
 enumSetSpec :=
@@ -111,21 +111,21 @@ A BGP process property specifier follows the [enum set grammar](#set-of-enums-or
 
 A specification for a set of BGP session compatibility statuses.
 
-A BGP session status specifier follows the [enum set grammar](#set-of-enums-or-names) over the following values:
+A BGP session compat status specifier follows the [enum set grammar](#set-of-enums-or-names) over the following values:
 
-* `LOCAL_IP_UNKNOWN_STATICALLY` -- local IP address for an iBGP or multihop eBGP session cannot be determined
-* `NO_LOCAL_IP` -- local IP address for a singlehop eBGP  session is not configured
-* `NO_LOCAL_AS` -- local AS for the session is not configured
-* `NO_REMOTE_IP` -- remote IP address for point-to-point peerings is not configured
-* `NO_REMOTE_PREFIX` -- remote prefix for dynamic peerings is not configured
-* `NO_REMOTE_AS` -- remote AS for the session is not configured
-* `INVALID_LOCAL_IP`-- configured local IP address does not belong to any active interface
-* `UNKNOWN_REMOTE` -- configured remote IP is not present in the network snapshot
-* `HALF_OPEN` -- no compatible remote peers is found in the network snapshot for a point-to-point peering
-* `MULTIPLE_REMOTES` -- multiple compatible remote peers are found for a point-to-point peering
-* `UNIQUE_MATCH` -- exactly one remote peer found for point-to-point peering
-* `DYNAMIC_MATCH` -- at least one compatible remote peer found for a dynamic peering
-* `NO_MATCH_FOUND` -- no compatible remote peers found for a dynamic peering 
+* `LOCAL_IP_UNKNOWN_STATICALLY` — local IP address for an iBGP or multihop eBGP session is not configured
+* `NO_LOCAL_IP`— local IP address for a singlehop eBGP  session is not configured
+* `NO_LOCAL_AS`— local AS for the session is not configured
+* `NO_REMOTE_IP` — remote IP address for a point-to-point peer is not configured
+* `NO_REMOTE_PREFIX` — remote prefix for a dynamic peer is not configured
+* `NO_REMOTE_AS` — remote AS for the session is not configured
+* `INVALID_LOCAL_IP` — configured local IP address does not belong to any active interface
+* `UNKNOWN_REMOTE` — configured remote IP is not present in the network snapshot
+* `HALF_OPEN` — no compatible match found in the network snapshot for a point-to-point peer
+* `MULTIPLE_REMOTES` — multiple compatible matches found for a point-to-point peer
+* `UNIQUE_MATCH` — exactly one match found for a point-to-point peer
+* `DYNAMIC_MATCH` — at least one compatible match found for a dynamic peer
+* `NO_MATCH_FOUND` — no compatible match found for a dynamic peer
 
 ## BGP Session Status Specifier
 
@@ -133,9 +133,9 @@ A specification for a set of BGP session statuses.
 
 A BGP session status specifier follows the [enum set grammar](#set-of-enums-or-names) over the following values: 
 
-* `NOT_COMPATIBLE` -- the BGP session is not compatibly configured
-* `NOT_ESTABLISHED`, -- the BGP session configuration is compatible but the session was not established  
-* `ESTABLISHED` -- the BGP session is established
+* `NOT_COMPATIBLE` — the BGP session is not compatibly configured
+* `NOT_ESTABLISHED` — the BGP session configuration is compatible but the session was not established  
+* `ESTABLISHED` — the BGP session is established
 
 ## BGP Session Type Specifier
 
@@ -383,7 +383,7 @@ locationInterface :=
 
 A specification for a set of MLAG domain identifiers.
 
-An MLAG ID specifier grammar follows the [enum set grammar](#set-of-enums-or-names) over the domain ID values that appear in the snapshot. 
+An MLAG ID specifier follows the [enum set grammar](#set-of-enums-or-names) over the domain ID values that appear in the snapshot. 
 
 ## Named Structure Specifier
 
