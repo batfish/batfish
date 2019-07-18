@@ -3529,7 +3529,10 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
 
   @Override
   public void exitAat_destination_port(Aat_destination_portContext ctx) {
-    SubRange subrange = toSubRange(ctx.subrange());
+    SubRange subrange =
+        (ctx.subrange() != null)
+            ? toSubRange(ctx.subrange())
+            : SubRange.singleton(getPortNumber(ctx.port()));
     HeaderSpace oldHeaderSpace = _currentApplicationTerm.getHeaderSpace();
     _currentApplicationTerm.setHeaderSpace(
         oldHeaderSpace
@@ -3559,7 +3562,10 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
 
   @Override
   public void exitAat_source_port(Aat_source_portContext ctx) {
-    SubRange subrange = toSubRange(ctx.subrange());
+    SubRange subrange =
+        (ctx.subrange() != null)
+            ? toSubRange(ctx.subrange())
+            : SubRange.singleton(getPortNumber(ctx.port()));
     HeaderSpace oldHeaderSpace = _currentApplicationTerm.getHeaderSpace();
     _currentApplicationTerm.setHeaderSpace(
         oldHeaderSpace

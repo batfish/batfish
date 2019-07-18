@@ -2,3 +2,6 @@
 set system host-name juniper_application
 #
 set applications application APP description APP-description
+#
+set applications application APP-POP3 protocol tcp
+set applications application APP-POP3 destination-port pop3
