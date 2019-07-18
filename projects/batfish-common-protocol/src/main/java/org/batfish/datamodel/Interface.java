@@ -80,6 +80,7 @@ public final class Interface extends ComparableStructure<String> {
     private @Nullable Boolean _switchport;
     private @Nullable SwitchportMode _switchportMode;
     private @Nonnull IpSpace _additionalArpIps;
+    @Nullable private TunnelConfiguration _tunnelConfig;
     private InterfaceType _type;
     private @Nullable Integer _vlan;
     private Vrf _vrf;
@@ -169,6 +170,7 @@ public final class Interface extends ComparableStructure<String> {
       if (_switchportMode != null) {
         iface.setSwitchportMode(_switchportMode);
       }
+      iface.setTunnelConfig(_tunnelConfig);
       if (_type != null) {
         iface.setInterfaceType(_type);
       }
@@ -454,6 +456,11 @@ public final class Interface extends ComparableStructure<String> {
       return this;
     }
 
+    public Builder setTunnelConfig(@Nullable TunnelConfiguration tunnelConfig) {
+      _tunnelConfig = tunnelConfig;
+      return this;
+    }
+
     public Builder setType(InterfaceType type) {
       _type = type;
       return this;
@@ -592,6 +599,7 @@ public final class Interface extends ComparableStructure<String> {
   private static final String PROP_SWITCHPORT = "switchport";
   private static final String PROP_SWITCHPORT_MODE = "switchportMode";
   private static final String PROP_SWITCHPORT_TRUNK_ENCAPSULATION = "switchportTrunkEncapsulation";
+  private static final String PROP_TUNNEL_CONFIG = "tunnelConfig";
   private static final String PROP_VLAN = "vlan";
   private static final String PROP_VRF = "vrf";
   private static final String PROP_VRRP_GROUPS = "vrrpGroups";
@@ -851,6 +859,7 @@ public final class Interface extends ComparableStructure<String> {
   private boolean _switchport;
   private SwitchportMode _switchportMode;
   private SwitchportEncapsulationType _switchportTrunkEncapsulation;
+  @Nullable private TunnelConfiguration _tunnelConfig;
   private Integer _vlan;
   private Vrf _vrf;
   private transient String _vrfName;
@@ -1404,6 +1413,12 @@ public final class Interface extends ComparableStructure<String> {
     return _switchportTrunkEncapsulation;
   }
 
+  /** Return non-IPSec tunnel settings associated with this interface */
+  @Nullable
+  public TunnelConfiguration getTunnelConfig() {
+    return _tunnelConfig;
+  }
+
   @JsonProperty(PROP_VLAN)
   public @Nullable Integer getVlan() {
     return _vlan;
@@ -1756,6 +1771,11 @@ public final class Interface extends ComparableStructure<String> {
   @JsonProperty(PROP_SWITCHPORT_TRUNK_ENCAPSULATION)
   public void setSwitchportTrunkEncapsulation(SwitchportEncapsulationType encapsulation) {
     _switchportTrunkEncapsulation = encapsulation;
+  }
+
+  @JsonProperty(PROP_TUNNEL_CONFIG)
+  public void setTunnelConfig(@Nullable TunnelConfiguration tunnelConfig) {
+    _tunnelConfig = tunnelConfig;
   }
 
   @JsonProperty(PROP_VLAN)
