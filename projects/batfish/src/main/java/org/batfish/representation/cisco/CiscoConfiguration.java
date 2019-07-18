@@ -3442,7 +3442,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
                         .map(org.batfish.datamodel.Interface::getConcreteAddress)
                         .map(ConcreteInterfaceAddress::getIp)
                         .orElse(null);
-                // Step 2: create tunnel configs for non-IPSec tunnels. IPSec handled separately.
+                // Step 2: create tunnel configs for non-IPsec tunnels. IPsec handled separately.
                 if (tunnel.getMode() != TunnelMode.IPSEC) {
                   // Ensure we have both src and dst IPs, otherwise don't convert
                   if (tunnel.getDestination() != null
