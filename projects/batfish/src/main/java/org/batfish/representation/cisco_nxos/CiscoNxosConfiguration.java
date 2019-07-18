@@ -45,7 +45,6 @@ import org.batfish.datamodel.RouteFilterLine;
 import org.batfish.datamodel.RouteFilterList;
 import org.batfish.datamodel.SwitchportMode;
 import org.batfish.datamodel.vendor_family.cisco_nxos.CiscoNxosFamily;
-import org.batfish.vendor.StructureType;
 import org.batfish.vendor.VendorConfiguration;
 
 /** Vendor-specific representation of a Cisco NX-OS network configuration */
@@ -145,7 +144,7 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
     _vrfs = new HashMap<>();
   }
 
-  public void defineStructure(StructureType type, String name, ParserRuleContext ctx) {
+  public void defineStructure(CiscoNxosStructureType type, String name, ParserRuleContext ctx) {
     for (int i = ctx.getStart().getLine(); i <= ctx.getStop().getLine(); ++i) {
       defineStructure(type, name, i);
     }
