@@ -1,7 +1,7 @@
 parser grammar CiscoNxosParser;
 
 import
-CiscoNxos_common, CiscoNxos_bgp, CiscoNxos_interface, CiscoNxos_ip_access_list, CiscoNxos_ip_as_path_access_list, CiscoNxos_ip_community_list, CiscoNxos_ip_prefix_list, CiscoNxos_route_map, CiscoNxos_static, CiscoNxos_vlan, CiscoNxos_vrf;
+CiscoNxos_common, CiscoNxos_bgp, CiscoNxos_evpn, CiscoNxos_interface, CiscoNxos_ip_access_list, CiscoNxos_ip_as_path_access_list, CiscoNxos_ip_community_list, CiscoNxos_ip_prefix_list, CiscoNxos_route_map, CiscoNxos_static, CiscoNxos_vlan, CiscoNxos_vrf;
 
 options {
   superClass = 'org.batfish.grammar.cisco_nxos.parsing.CiscoNxosBaseParser';
@@ -15,10 +15,12 @@ cisco_nxos_configuration
 
 statement
 :
-  s_hostname
+  s_evpn
+  | s_hostname
   | s_interface
   | s_ip
   | s_null
+  | s_nv
   | s_route_map
   | s_router
   | s_vlan
@@ -48,6 +50,11 @@ s_null
   (
     FEATURE
   ) null_rest_of_line
+;
+
+s_nv
+:
+  NV OVERLAY EVPN NEWLINE
 ;
 
 s_router
