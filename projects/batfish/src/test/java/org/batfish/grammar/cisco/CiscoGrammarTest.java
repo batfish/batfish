@@ -6040,12 +6040,6 @@ public class CiscoGrammarTest {
                 .build(),
             _folder);
 
-    Edge underlayEdge =
-        Edge.of(
-            "n1-no-static-route",
-            "TenGigabitEthernet0/0",
-            "n2-no-static-route",
-            "TenGigabitEthernet0/0");
     Edge overlayEdge = Edge.of("n1-no-static-route", "Tunnel1", "n2-no-static-route", "Tunnel1");
 
     // Overlay edge present in initial tunnel topology
@@ -6076,9 +6070,6 @@ public class CiscoGrammarTest {
                 .build(),
             _folder);
 
-    Edge underlayEdge =
-        Edge.of(
-            "n1-static-route", "TenGigabitEthernet0/0", "n2-static-route", "TenGigabitEthernet0/0");
     Edge overlayEdge = Edge.of("n1-static-route", "Tunnel1", "n2-static-route", "Tunnel1");
 
     // Overlay edge present in initial tunnel topology
