@@ -675,9 +675,20 @@ public final class TopologyUtil {
             continue;
           }
 
-          // connect only if of both of the endpoints have Tunnel interface type
+          // connect only if of both of the endpoints have Tunnel interface type, and their tunnel
+          // configs match
           if (iface1.getInterfaceType() == InterfaceType.TUNNEL
-              && iface2.getInterfaceType() == InterfaceType.TUNNEL) {
+              && iface2.getInterfaceType() == InterfaceType.TUNNEL
+              && iface1.getTunnelConfig() != null
+              && iface2.getTunnelConfig() != null
+              && iface1
+                  .getTunnelConfig()
+                  .getSourceAddress()
+                  .equals(iface2.getTunnelConfig().getDestinationAddress())
+              && iface1
+                  .getTunnelConfig()
+                  .getDestinationAddress()
+                  .equals(iface2.getTunnelConfig().getSourceAddress())) {
             builder.add(new NodeInterfacePair(iface1), new NodeInterfacePair(iface2));
           }
         }
@@ -712,24 +723,28 @@ public final class TopologyUtil {
       EndpointPair<NodeInterfacePair> edge) {
     NodeInterfacePair src = edge.nodeU();
     NodeInterfacePair dst = edge.nodeV();
-    Interface startInterface =
+    Interface tailTunnel =
         configurations
             .getInterface(src.getHostname(), src.getInterface())
             .orElseThrow(
                 () -> new IllegalStateException(String.format("Invalid tunnel interface %s", src)));
-    Interface dstInterface =
+    Interface headTunnel =
         configurations
             .getInterface(dst.getHostname(), dst.getInterface())
             .orElseThrow(
                 () -> new IllegalStateException(String.format("Invalid tunnel interface %s", dst)));
+    if (tailTunnel.getTunnelConfig() == null || headTunnel.getTunnelConfig() == null) {
+      return false;
+    }
     // TODO: see if traceroute flow needs to be customized (ICMP ping? some GRE port?
     //   something else?)
     Flow flow =
         Flow.builder()
             .setTag("Tunnel reachability check")
             .setIngressNode(src.getHostname())
-            .setIngressVrf(startInterface.getVrfName())
-            .setDstIp(dstInterface.getConcreteAddress().getIp())
+            .setIngressVrf(tailTunnel.getVrfName())
+            .setSrcIp(tailTunnel.getTunnelConfig().getSourceAddress())
+            .setDstIp(tailTunnel.getTunnelConfig().getDestinationAddress())
             .build();
     SortedMap<Flow, List<TraceAndReverseFlow>> tracerouteResult =
         tracerouteEngine.computeTracesAndReverseFlows(ImmutableSet.of(flow), false);

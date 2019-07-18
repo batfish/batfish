@@ -11,4 +11,4 @@ interface Tunnel1
   tunnel destination 1.1.1.2
   tunnel mode gre ipv4
 !
-ip route 9.9.9.2 255.255.255.255 TenGigabitEthernet0/0
+ip route 1.1.2.2 255.255.255.255 TenGigabitEthernet0/0

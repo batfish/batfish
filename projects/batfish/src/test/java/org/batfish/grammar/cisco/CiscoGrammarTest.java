@@ -6060,7 +6060,7 @@ public class CiscoGrammarTest {
     // NO overlay edge in final L3 topology
     assertThat(
         batfish.getTopologyProvider().getLayer3Topology(batfish.getNetworkSnapshot()).getEdges(),
-        containsInAnyOrder(underlayEdge, underlayEdge.reverse()));
+        empty());
   }
 
   @Test
@@ -6093,7 +6093,6 @@ public class CiscoGrammarTest {
     // overlay edge in final L3 topology as well
     assertThat(
         batfish.getTopologyProvider().getLayer3Topology(batfish.getNetworkSnapshot()).getEdges(),
-        containsInAnyOrder(
-            underlayEdge, underlayEdge.reverse(), overlayEdge, overlayEdge.reverse()));
+        containsInAnyOrder(overlayEdge, overlayEdge.reverse()));
   }
 }

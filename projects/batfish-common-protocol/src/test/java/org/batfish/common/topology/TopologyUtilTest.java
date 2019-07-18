@@ -55,6 +55,7 @@ import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.SwitchportMode;
 import org.batfish.datamodel.Topology;
+import org.batfish.datamodel.TunnelConfiguration;
 import org.batfish.datamodel.VniSettings;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.collections.NodeInterfacePair;
@@ -1387,20 +1388,44 @@ public final class TopologyUtilTest {
     Ip ip1 = Ip.parse("1.1.1.1");
     Ip ip2 = Ip.parse("1.1.1.2");
     Ip ip3 = Ip.parse("1.1.1.3");
+    Ip ip4 = Ip.parse("1.1.1.4");
     int subnetMask = 24;
+    Ip underlayIp1 = Ip.parse("4.4.4.1");
+    Ip underlayIp2 = Ip.parse("4.4.4.2");
     Interface i1 =
         _ib.setOwner(c1)
             .setAddress(ConcreteInterfaceAddress.create(ip1, subnetMask))
             .setType(InterfaceType.TUNNEL)
+            .setTunnelConfig(
+                TunnelConfiguration.builder()
+                    .setSourceAddress(underlayIp1)
+                    .setDestinationAddress(underlayIp2)
+                    .build())
             .build();
     Interface i2 =
         _ib.setOwner(c2)
             .setAddress(ConcreteInterfaceAddress.create(ip2, subnetMask))
             .setType(InterfaceType.TUNNEL)
+            .setTunnelConfig(
+                TunnelConfiguration.builder()
+                    .setSourceAddress(underlayIp2)
+                    .setDestinationAddress(underlayIp1)
+                    .build())
             .build();
+    // Dangling physical interface
     _ib.setOwner(c2)
         .setAddress(ConcreteInterfaceAddress.create(ip3, subnetMask))
         .setType(InterfaceType.PHYSICAL)
+        .build();
+    // Dangling tunnel interface, underlay src/dst config should not match any tunnels
+    _ib.setOwner(c2)
+        .setAddress(ConcreteInterfaceAddress.create(ip4, subnetMask))
+        .setType(InterfaceType.TUNNEL)
+        .setTunnelConfig(
+            TunnelConfiguration.builder()
+                .setSourceAddress(Ip.parse("4.4.4.4"))
+                .setDestinationAddress(underlayIp1)
+                .build())
         .build();
 
     assertThat(
