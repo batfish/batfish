@@ -399,6 +399,7 @@ import org.batfish.representation.cisco.EigrpProcess;
 import org.batfish.representation.cisco.NetworkObject;
 import org.batfish.representation.cisco.NetworkObjectAddressSpecifier;
 import org.batfish.representation.cisco.NetworkObjectGroupAddressSpecifier;
+import org.batfish.representation.cisco.Tunnel.TunnelMode;
 import org.batfish.representation.cisco.WildcardAddressSpecifier;
 import org.batfish.representation.cisco.eos.AristaEosVxlan;
 import org.hamcrest.Matchers;
@@ -3866,6 +3867,17 @@ public class CiscoGrammarTest {
                     hasSourceInterface("TenGigabitEthernet0/0"),
                     hasLocalAddress(Ip.parse("2.3.4.6")),
                     hasTunnelInterface(equalTo("Tunnel1"))))));
+  }
+
+  @Test
+  public void testTunnelMode() {
+    CiscoConfiguration c = parseCiscoConfig("ios-tunnel-mode", ConfigurationFormat.CISCO_IOS);
+
+    assertThat(c.getInterfaces().get("Tunnel1").getTunnel().getMode(), equalTo(TunnelMode.GRE));
+
+    assertThat(c.getInterfaces().get("Tunnel2").getTunnel().getMode(), equalTo(TunnelMode.GRE));
+
+    assertThat(c.getInterfaces().get("Tunnel3").getTunnel().getMode(), equalTo(TunnelMode.IPSEC));
   }
 
   @Test
