@@ -33,7 +33,6 @@ public final class Tunnel implements Serializable {
   public Tunnel() {
     _sourceInterfaceName = UNSET_LOCAL_INTERFACE;
     _mode = TunnelMode.GRE;
-    _protocol = IpProtocol.IP;
   }
 
   @Nullable

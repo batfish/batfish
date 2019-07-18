@@ -3874,13 +3874,10 @@ public class CiscoGrammarTest {
     CiscoConfiguration c = parseCiscoConfig("ios-tunnel-mode", ConfigurationFormat.CISCO_IOS);
 
     assertThat(c.getInterfaces().get("Tunnel1").getTunnel().getMode(), equalTo(TunnelMode.GRE));
-    assertThat(c.getInterfaces().get("Tunnel1").getTunnel().getProtocol(), equalTo(IpProtocol.IP));
 
     assertThat(c.getInterfaces().get("Tunnel2").getTunnel().getMode(), equalTo(TunnelMode.GRE));
-    assertThat(c.getInterfaces().get("Tunnel2").getTunnel().getProtocol(), equalTo(IpProtocol.IP));
 
     assertThat(c.getInterfaces().get("Tunnel3").getTunnel().getMode(), equalTo(TunnelMode.IPSEC));
-    assertThat(c.getInterfaces().get("Tunnel3").getTunnel().getProtocol(), equalTo(IpProtocol.IP));
   }
 
   @Test
