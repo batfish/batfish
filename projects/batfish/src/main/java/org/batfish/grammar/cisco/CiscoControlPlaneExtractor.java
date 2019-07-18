@@ -3371,7 +3371,6 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
         .put(
             _currentNetworkObjectName,
             new RangeNetworkObject(Ip.parse(ctx.start.getText()), Ip.parse(ctx.end.getText())));
-    _w.redFlag("Network object 'range' is not supported for access lists: " + getFullText(ctx));
   }
 
   @Override
