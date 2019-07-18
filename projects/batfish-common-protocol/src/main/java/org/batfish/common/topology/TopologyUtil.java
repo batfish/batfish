@@ -750,7 +750,17 @@ public final class TopologyUtil {
         tracerouteEngine.computeTracesAndReverseFlows(ImmutableSet.of(flow), false);
     List<TraceAndReverseFlow> traceAndReverseFlows = tracerouteResult.get(flow);
     return traceAndReverseFlows != null
-        && traceAndReverseFlows.stream().anyMatch(TopologyUtil::isSuccessfulFlow);
+        && traceAndReverseFlows.stream()
+            .filter(TopologyUtil::isSuccessfulFlow)
+            .map(
+                // Go backward direction
+                tr ->
+                    tracerouteEngine
+                        .computeTracesAndReverseFlows(ImmutableSet.of(tr.getReverseFlow()), false)
+                        .get(tr.getReverseFlow()))
+            .filter(Objects::nonNull)
+            .flatMap(List::stream)
+            .anyMatch(TopologyUtil::isSuccessfulFlow);
   }
 
   private static boolean isSuccessfulFlow(TraceAndReverseFlow tr) {
