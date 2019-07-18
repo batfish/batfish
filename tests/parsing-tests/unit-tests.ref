@@ -56952,7 +56952,41 @@
             "                DESCRIPTION:'description'",
             "                (null_filler",
             "                  M_Description_DESCRIPTION:'APP-description'  <== mode:M_Description)))))))",
-            "    NEWLINE:'\\n\\n'  <== mode:M_Description)",
+            "    NEWLINE:'\\n'  <== mode:M_Description)",
+            "  (set_line",
+            "    SET:'set'",
+            "    (set_line_tail",
+            "      (statement",
+            "        (s_common",
+            "          (s_applications",
+            "            APPLICATIONS:'applications'",
+            "            (a_application",
+            "              APPLICATION:'application'",
+            "              name = (variable",
+            "                text = VARIABLE:'APP-POP3')",
+            "              (aa_common",
+            "                (aat_protocol",
+            "                  PROTOCOL:'protocol'",
+            "                  (ip_protocol",
+            "                    TCP:'tcp'))))))))",
+            "    NEWLINE:'\\n')",
+            "  (set_line",
+            "    SET:'set'",
+            "    (set_line_tail",
+            "      (statement",
+            "        (s_common",
+            "          (s_applications",
+            "            APPLICATIONS:'applications'",
+            "            (a_application",
+            "              APPLICATION:'application'",
+            "              name = (variable",
+            "                text = VARIABLE:'APP-POP3')",
+            "              (aa_common",
+            "                (aat_destination_port",
+            "                  DESTINATION_PORT:'destination-port'",
+            "                  (port",
+            "                    POP3:'pop3'))))))))",
+            "    NEWLINE:'\\n\\n')",
             "  EOF:<EOF>)"
           ]
         },
@@ -82277,6 +82311,13 @@
             "APP" : {
               "definitionLines" : [
                 4
+              ],
+              "numReferrers" : 0
+            },
+            "APP-POP3" : {
+              "definitionLines" : [
+                6,
+                7
               ],
               "numReferrers" : 0
             }
