@@ -20,6 +20,7 @@ statement
   | s_interface
   | s_ip
   | s_null
+  | s_nv
   | s_route_map
   | s_router
   | s_vlan
@@ -49,6 +50,11 @@ s_null
   (
     FEATURE
   ) null_rest_of_line
+;
+
+s_nv
+:
+  NV OVERLAY EVPN NEWLINE
 ;
 
 s_router
