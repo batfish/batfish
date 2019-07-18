@@ -72,3 +72,9 @@ interface Tunnel1
  tunnel mode ipsec ipv4
  tunnel protection ipsec profile IPSEC-PROFILE1
 !
+interface Tunnel2
+ ip address 6.7.8.10 255.255.255.252
+ tunnel source TenGigabitEthernet0/0
+ tunnel destination 1.2.3.4
+ tunnel protection ipsec profile IPSEC-PROFILE1
+!
