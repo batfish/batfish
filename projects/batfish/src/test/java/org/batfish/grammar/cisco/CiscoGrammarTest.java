@@ -6070,6 +6070,9 @@ public class CiscoGrammarTest {
                 .build(),
             _folder);
 
+    Edge underlayEdge =
+        Edge.of(
+            "n1-static-route", "TenGigabitEthernet0/1", "n2-static-route", "TenGigabitEthernet0/1");
     Edge overlayEdge = Edge.of("n1-static-route", "Tunnel1", "n2-static-route", "Tunnel1");
 
     // Overlay edge present in initial tunnel topology
@@ -6084,6 +6087,7 @@ public class CiscoGrammarTest {
     // overlay edge in final L3 topology as well
     assertThat(
         batfish.getTopologyProvider().getLayer3Topology(batfish.getNetworkSnapshot()).getEdges(),
-        containsInAnyOrder(overlayEdge, overlayEdge.reverse()));
+        containsInAnyOrder(
+            overlayEdge, overlayEdge.reverse(), underlayEdge, underlayEdge.reverse()));
   }
 }
