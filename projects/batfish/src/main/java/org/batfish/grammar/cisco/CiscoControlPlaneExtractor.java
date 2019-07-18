@@ -3371,7 +3371,6 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
         .put(
             _currentNetworkObjectName,
             new RangeNetworkObject(Ip.parse(ctx.start.getText()), Ip.parse(ctx.end.getText())));
-    _w.redFlag("Network object 'range' is not supported for access lists: " + getFullText(ctx));
   }
 
   @Override
@@ -6782,7 +6781,9 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     int line = ctx.getStart().getLine();
     _configuration.referenceStructure(IPSEC_PROFILE, name, TUNNEL_PROTECTION_IPSEC_PROFILE, line);
     for (Interface iface : _currentInterfaces) {
-      iface.getTunnelInitIfNull().setIpsecProfileName(name);
+      Tunnel tunnel = iface.getTunnelInitIfNull();
+      tunnel.setIpsecProfileName(name);
+      tunnel.setMode(TunnelMode.IPSEC);
     }
   }
 

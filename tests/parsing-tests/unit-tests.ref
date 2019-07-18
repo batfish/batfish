@@ -8199,6 +8199,19 @@
             "          address = IP_ADDRESS:'192.168.126.64'",
             "          NEWLINE:'\\n'))))",
             "  (stanza",
+            "    (s_object",
+            "      OBJECT:'object'",
+            "      (o_network",
+            "        NETWORK:'network'",
+            "        name = (variable_permissive",
+            "          VARIABLE:'range-10.0.0.10-20')",
+            "        NEWLINE:'\\n'",
+            "        (on_range",
+            "          RANGE:'range'",
+            "          IP_ADDRESS:'10.0.0.10'",
+            "          end = IP_ADDRESS:'10.0.0.20'",
+            "          NEWLINE:'\\n\\n'))))",
+            "  (stanza",
             "    (extended_access_list_stanza",
             "      ACCESS_LIST:'access-list'",
             "      name = (variable_aclname",
@@ -77558,12 +77571,19 @@
           "extended ipv4 access-list" : {
             "ALLOW_SERVER02" : {
               "definitionLines" : [
-                8
+                12
               ],
               "numReferrers" : 0
             }
           },
           "object network" : {
+            "range-10.0.0.10-20" : {
+              "definitionLines" : [
+                9,
+                10
+              ],
+              "numReferrers" : 0
+            },
             "server02" : {
               "definitionLines" : [
                 6,
@@ -85157,7 +85177,7 @@
           "object network" : {
             "server02" : {
               "extended access-list network object" : [
-                8
+                12
               ]
             }
           }
