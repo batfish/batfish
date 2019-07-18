@@ -255,27 +255,43 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
       }
       // Advertise the L3 VNI per vrf if one is configured
       assert _bgpProcess != null; // Since we are in neighbor conversion, this must be true
-      Iterables.concat(ImmutableSet.of(_bgpProcess.getDefaultVrf()), _bgpProcess.getVrfs().values())
+      // Iterate over ALL vrfs, because even if the vrf doesn't appear in bgp process config, we
+      // must be aware of the fact that it has a VNI and advertise it.
+      _vrfs
+          .values()
           .forEach(
-              aBgpVrf -> {
-                Vrf vrf = _vrfs.get(aBgpVrf.getVrfName());
-                Integer l3Vni = vrf == null ? null : vrf.getVni();
-                if (l3Vni != null) {
-                  RouteDistinguisher rd =
-                      RouteDistinguisher.from(
-                          _c.getVrfs().get(vrf.getName()).getBgpProcess().getRouterId(),
-                          vniToIndex.get(l3Vni));
-                  ExtendedCommunity rt = toRouteTarget(localAs, l3Vni);
-                  l3Vnis.add(
-                      Layer3VniConfig.builder()
-                          .setVni(l3Vni)
-                          .setVrf(aBgpVrf.getVrfName())
-                          .setRouteDistinguisher(rd)
-                          .setRouteTarget(rt)
-                          .setImportRouteTarget(importRtPatternForAnyAs(l3Vni))
-                          .setAdvertiseV4Unicast(evpnConfig.getAdvertiseIpv4Unicast() != null)
-                          .build());
+              innerVrf -> {
+                String innerVrfName = innerVrf.getName();
+                Integer l3Vni = innerVrf.getVni();
+                if (l3Vni == null) {
+                  return;
                 }
+                RouteDistinguisher rd =
+                    RouteDistinguisher.from(
+                        Optional.ofNullable(_c.getVrfs().get(innerVrfName).getBgpProcess())
+                            .map(org.batfish.datamodel.BgpProcess::getRouterId)
+                            .orElse(bgpVrf.getRouterId()),
+                        vniToIndex.get(l3Vni));
+                ExtendedCommunity rt = toRouteTarget(localAs, l3Vni);
+                // Grab the BgpVrf for the innerVrf, if it exists
+                @Nullable
+                BgpVrf innerBgpVrf =
+                    (innerVrfName.equals(Configuration.DEFAULT_VRF_NAME)
+                        ? _bgpProcess.getDefaultVrf()
+                        : _bgpProcess.getVrfs().get(innerVrfName));
+                l3Vnis.add(
+                    Layer3VniConfig.builder()
+                        .setVni(l3Vni)
+                        .setVrf(innerVrfName)
+                        .setRouteDistinguisher(rd)
+                        .setRouteTarget(rt)
+                        .setImportRouteTarget(importRtPatternForAnyAs(l3Vni))
+                        .setAdvertiseV4Unicast(
+                            Optional.ofNullable(innerBgpVrf)
+                                .map(BgpVrf::getL2VpnEvpn)
+                                .map(BgpL2vpnEvpnAddressFamily::getAdvertiseIpv4Unicast)
+                                .isPresent())
+                        .build());
               });
 
       builder.setEvpnAddressFamily(
@@ -410,6 +426,20 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
         .forEach(
             (vrfName, bgpVrf) ->
                 _c.getVrfs().get(vrfName).setBgpProcess(toBgpProcess(vrfName, bgpVrf)));
+
+    // Create dud processes for other VRFs, so we can have proper RIBs
+    _c.getVrfs()
+        .forEach(
+            (vrfName, vrf) -> {
+              if (vrf.getBgpProcess() == null && _c.getDefaultVrf().getBgpProcess() != null) {
+                vrf.setBgpProcess(
+                    org.batfish.datamodel.BgpProcess.builder()
+                        .setRouterId(_c.getDefaultVrf().getBgpProcess().getRouterId())
+                        .setAdminCostsToVendorDefaults(ConfigurationFormat.CUMULUS_NCLU)
+                        .build());
+              }
+            });
+
     /*
      * Second pass: Add neighbors.
      * Requires all VRFs & bgp processes in a VRF to be set in VI so that we can initialize address families

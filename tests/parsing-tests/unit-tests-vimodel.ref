@@ -14705,6 +14705,14 @@
           },
           "mgmt" : {
             "name" : "mgmt",
+            "bgpProcess" : {
+              "ebgpAdminCost" : 20,
+              "ibgpAdminCost" : 200,
+              "routerId" : "192.0.2.2",
+              "multipathEbgp" : false,
+              "multipathIbgp" : false,
+              "tieBreaker" : "ARRIVAL_ORDER"
+            },
             "interfaces" : [
               "eth0",
               "mgmt"
