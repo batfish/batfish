@@ -2765,12 +2765,49 @@
           }
         },
         "ipSpaceMetadata" : {
+          "range-10.0.0.10-20" : {
+            "sourceName" : "range-10.0.0.10-20",
+            "sourceType" : "object network"
+          },
           "server02" : {
             "sourceName" : "server02",
             "sourceType" : "object network"
           }
         },
         "ipSpaces" : {
+          "range-10.0.0.10-20" : {
+            "class" : "org.batfish.datamodel.AclIpSpace",
+            "lines" : [
+              {
+                "action" : "PERMIT",
+                "ipSpace" : {
+                  "class" : "org.batfish.datamodel.PrefixIpSpace",
+                  "prefix" : "10.0.0.10/31"
+                }
+              },
+              {
+                "action" : "PERMIT",
+                "ipSpace" : {
+                  "class" : "org.batfish.datamodel.PrefixIpSpace",
+                  "prefix" : "10.0.0.12/30"
+                }
+              },
+              {
+                "action" : "PERMIT",
+                "ipSpace" : {
+                  "class" : "org.batfish.datamodel.PrefixIpSpace",
+                  "prefix" : "10.0.0.16/30"
+                }
+              },
+              {
+                "action" : "PERMIT",
+                "ipSpace" : {
+                  "class" : "org.batfish.datamodel.IpIpSpace",
+                  "ip" : "10.0.0.20"
+                }
+              }
+            ]
+          },
           "server02" : {
             "class" : "org.batfish.datamodel.IpIpSpace",
             "ip" : "192.168.126.64"
