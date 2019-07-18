@@ -3,8 +3,8 @@ package org.batfish.representation.cisco;
 import java.io.Serializable;
 import javax.annotation.Nonnull;
 import javax.annotation.ParametersAreNonnullByDefault;
-import org.batfish.datamodel.EmptyIpSpace;
 import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.IpRange;
 import org.batfish.datamodel.IpSpace;
 
 /** Represents a network object that contains an range */
@@ -47,6 +47,6 @@ public final class RangeNetworkObject implements Serializable, NetworkObject {
 
   @Override
   public IpSpace toIpSpace() {
-    return EmptyIpSpace.INSTANCE;
+    return IpRange.range(_start, _end);
   }
 }
