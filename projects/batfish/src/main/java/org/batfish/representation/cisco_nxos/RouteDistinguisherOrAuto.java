@@ -9,8 +9,10 @@ import org.batfish.datamodel.bgp.RouteDistinguisher;
 /** Either {@code auto} or an explicit {@link RouteDistinguisher}. */
 public final class RouteDistinguisherOrAuto implements Serializable {
 
+  private static final RouteDistinguisherOrAuto AUTO = new RouteDistinguisherOrAuto(null);
+
   public static RouteDistinguisherOrAuto auto() {
-    return new RouteDistinguisherOrAuto(null);
+    return AUTO;
   }
 
   public static RouteDistinguisherOrAuto of(@Nonnull RouteDistinguisher rd) {
