@@ -2762,6 +2762,33 @@
             ],
             "sourceName" : "ALLOW_SERVER02",
             "sourceType" : "extended ipv4 access-list"
+          },
+          "~SERVICE_OBJECT_GROUP~service-ssh~" : {
+            "name" : "~SERVICE_OBJECT_GROUP~service-ssh~",
+            "lines" : [
+              {
+                "action" : "PERMIT",
+                "matchCondition" : {
+                  "class" : "org.batfish.datamodel.acl.OrMatchExpr",
+                  "disjuncts" : [
+                    {
+                      "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
+                      "headerSpace" : {
+                        "dstPorts" : [
+                          "22-22"
+                        ],
+                        "ipProtocols" : [
+                          "TCP"
+                        ],
+                        "negate" : false
+                      }
+                    }
+                  ]
+                }
+              }
+            ],
+            "sourceName" : "service-ssh",
+            "sourceType" : "object-group service"
           }
         },
         "ipSpaceMetadata" : {

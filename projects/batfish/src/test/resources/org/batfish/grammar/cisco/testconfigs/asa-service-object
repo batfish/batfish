@@ -11,6 +11,8 @@ object service OS_ICMP
 object-group service OGS1
  service-object object OS_TCPUDP
  service-object udp destination eq 1234
+ service-object udp eq 1235              ! destination is optional on command entry
+ service-object udp source eq 3 eq 1236  ! .. even if source is present
  service-object udp source eq cifs
 !
 object-group service OGS_UNDEF
