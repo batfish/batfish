@@ -112,6 +112,7 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
 
   private transient Configuration _c;
   private final @Nonnull Vrf _defaultVrf;
+  private @Nullable Evpn _evpn;
   private @Nullable String _hostname;
   private final @Nonnull Map<String, Interface> _interfaces;
   private final @Nonnull Map<String, IpAccessList> _ipAccessLists;
@@ -217,6 +218,14 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
 
   public @Nonnull Vrf getDefaultVrf() {
     return _defaultVrf;
+  }
+
+  public @Nullable Evpn getEvpn() {
+    return _evpn;
+  }
+
+  public void setEvpn(@Nullable Evpn evpn) {
+    _evpn = evpn;
   }
 
   @Override

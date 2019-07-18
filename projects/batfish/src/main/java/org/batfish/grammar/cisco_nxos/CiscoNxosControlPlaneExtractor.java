@@ -93,6 +93,9 @@ import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Channel_idContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Cisco_nxos_configurationContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Dscp_numberContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Dscp_specContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Ev_vniContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Evv_rdContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Evv_route_targetContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.I_bandwidthContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.I_channel_groupContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.I_descriptionContext;
@@ -167,6 +170,7 @@ import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Route_distinguisher_or_aut
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Route_map_nameContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Route_map_sequenceContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Route_networkContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.S_evpnContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.S_hostnameContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.S_interface_nveContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.S_interface_regularContext;
@@ -204,6 +208,8 @@ import org.batfish.representation.cisco_nxos.CiscoNxosConfiguration;
 import org.batfish.representation.cisco_nxos.CiscoNxosInterfaceType;
 import org.batfish.representation.cisco_nxos.CiscoNxosStructureType;
 import org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage;
+import org.batfish.representation.cisco_nxos.Evpn;
+import org.batfish.representation.cisco_nxos.EvpnVni;
 import org.batfish.representation.cisco_nxos.FragmentsBehavior;
 import org.batfish.representation.cisco_nxos.IcmpOptions;
 import org.batfish.representation.cisco_nxos.Interface;
@@ -443,6 +449,7 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
   private CiscoNxosConfiguration _configuration;
   private ActionIpAccessListLine.Builder _currentActionIpAccessListLineBuilder;
   private Boolean _currentActionIpAccessListLineUnusable;
+  private EvpnVni _currentEvpnVni;
   private List<Interface> _currentInterfaces;
   private IpAccessList _currentIpAccessList;
   private Optional<Long> _currentIpAccessListLineNum;
@@ -543,6 +550,25 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
     _configuration = new CiscoNxosConfiguration();
     _currentValidVlanRange = VLAN_RANGE.difference(_configuration.getReservedVlanRange());
     _currentVrf = _configuration.getDefaultVrf();
+  }
+
+  @Override
+  public void enterEv_vni(Ev_vniContext ctx) {
+    Optional<Integer> vniOrError = toInteger(ctx, ctx.vni);
+    if (!vniOrError.isPresent()) {
+      // Create a dummy for subsequent configuration commands.
+      _currentEvpnVni = new EvpnVni(0);
+      return;
+    }
+    int vni = vniOrError.get();
+    Evpn e = _configuration.getEvpn();
+    assert e != null;
+    _currentEvpnVni = e.getVni(vni);
+  }
+
+  @Override
+  public void exitEv_vni(Ev_vniContext ctx) {
+    _currentEvpnVni = null;
   }
 
   @Override
@@ -760,6 +786,14 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
   @Override
   public void exitNvg_suppress_arp(Nvg_suppress_arpContext ctx) {
     _currentNves.forEach(vni -> vni.setGlobalSuppressArp(true));
+  }
+
+  @Override
+  public void enterS_evpn(S_evpnContext ctx) {
+    // TODO: check feature presence
+    if (_configuration.getEvpn() == null) {
+      _configuration.setEvpn(new Evpn());
+    }
   }
 
   @Override
@@ -1334,6 +1368,26 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
       _currentActionIpAccessListLineUnusable = true;
     } else {
       _currentUdpOptionsBuilder.setSrcPortSpec(portSpec.get());
+    }
+  }
+
+  @Override
+  public void exitEvv_rd(Evv_rdContext ctx) {
+    RouteDistinguisherOrAuto rd = toRouteDistinguisher(ctx.rd);
+    _currentEvpnVni.setRd(rd);
+  }
+
+  @Override
+  public void exitEvv_route_target(Evv_route_targetContext ctx) {
+    boolean setImport = ctx.dir.BOTH() != null || ctx.dir.IMPORT() != null;
+    boolean setExport = ctx.dir.BOTH() != null || ctx.dir.EXPORT() != null;
+    assert setImport || setExport;
+    RouteDistinguisherOrAuto rd = toRouteDistinguisher(ctx.rd);
+    if (setExport) {
+      _currentEvpnVni.setExportRt(rd);
+    }
+    if (setImport) {
+      _currentEvpnVni.setImportRt(rd);
     }
   }
 
