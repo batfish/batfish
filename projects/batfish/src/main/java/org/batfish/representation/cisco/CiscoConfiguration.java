@@ -3443,19 +3443,20 @@ public final class CiscoConfiguration extends VendorConfiguration {
                         .map(ConcreteInterfaceAddress::getIp)
                         .orElse(null);
                 // Step 2: create tunnel configs for non-IPSec tunnels. IPSec handled separately.
-                if (tunnel.getMode() != TunnelMode.IPSEC
-                    // Ensure we have both src and dst IPs, otherwise don't convert
-                    && tunnel.getDestination() != null
-                    && (tunnel.getSourceAddress() != null || parentIp != null)) {
-                  viIface.setTunnelConfig(
-                      TunnelConfiguration.builder()
-                          .setSourceAddress(firstNonNull(tunnel.getSourceAddress(), parentIp))
-                          .setDestinationAddress(tunnel.getDestination())
-                          .build());
-                } else {
-                  _w.redFlag(
-                      String.format(
-                          "Could not determine src/dst IPs for tunnel %s", iface.getName()));
+                if (tunnel.getMode() != TunnelMode.IPSEC) {
+                  // Ensure we have both src and dst IPs, otherwise don't convert
+                  if (tunnel.getDestination() != null
+                      && (tunnel.getSourceAddress() != null || parentIp != null)) {
+                    viIface.setTunnelConfig(
+                        TunnelConfiguration.builder()
+                            .setSourceAddress(firstNonNull(tunnel.getSourceAddress(), parentIp))
+                            .setDestinationAddress(tunnel.getDestination())
+                            .build());
+                  } else {
+                    _w.redFlag(
+                        String.format(
+                            "Could not determine src/dst IPs for tunnel %s", iface.getName()));
+                  }
                 }
               }
             }

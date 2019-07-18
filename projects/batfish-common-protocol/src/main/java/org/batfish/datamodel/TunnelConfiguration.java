@@ -11,8 +11,8 @@ import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 
 /**
- * Stores settings applicable to tunnel interfaces. Does not hanle IPSec configuration, for that see
- * {@link IpsecPeerConfig}
+ * Stores settings applicable to tunnel interfaces. Does not handle IPsec configuration, for that
+ * see {@link IpsecPeerConfig}
  */
 @ParametersAreNonnullByDefault
 public final class TunnelConfiguration implements Serializable {
