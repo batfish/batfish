@@ -8,5 +8,8 @@ object network server02
 !
 object network range-10.0.0.10-20
   range 10.0.0.10 10.0.0.20
+!
+object-group service service-ssh
+  service-object tcp eq ssh
 
 access-list ALLOW_SERVER02 extended permit tcp any object server02

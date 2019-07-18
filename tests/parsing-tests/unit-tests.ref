@@ -8210,6 +8210,24 @@
             "          RANGE:'range'",
             "          IP_ADDRESS:'10.0.0.10'",
             "          end = IP_ADDRESS:'10.0.0.20'",
+            "          NEWLINE:'\\n'))))",
+            "  (stanza",
+            "    (s_object_group",
+            "      OBJECT_GROUP:'object-group'",
+            "      (og_service",
+            "        SERVICE:'service'  <== mode:M_ObjectGroup",
+            "        name = (variable_group_id",
+            "          VARIABLE:'service-ssh')",
+            "        NEWLINE:'\\n'",
+            "        (ogs_service_object",
+            "          SERVICE_OBJECT:'service-object'",
+            "          (service_specifier",
+            "            (service_specifier_tcp_udp",
+            "              TCP:'tcp'",
+            "              dst_ps = (port_specifier",
+            "                EQ:'eq'",
+            "                (port",
+            "                  SSH:'ssh'))))",
             "          NEWLINE:'\\n\\n'))))",
             "  (stanza",
             "    (extended_access_list_stanza",
@@ -77571,7 +77589,7 @@
           "extended ipv4 access-list" : {
             "ALLOW_SERVER02" : {
               "definitionLines" : [
-                12
+                15
               ],
               "numReferrers" : 0
             }
@@ -77590,6 +77608,15 @@
                 7
               ],
               "numReferrers" : 1
+            }
+          },
+          "object-group service" : {
+            "service-ssh" : {
+              "definitionLines" : [
+                12,
+                13
+              ],
+              "numReferrers" : 0
             }
           }
         },
@@ -85177,7 +85204,7 @@
           "object network" : {
             "server02" : {
               "extended access-list network object" : [
-                12
+                15
               ]
             }
           }

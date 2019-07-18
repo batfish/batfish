@@ -1099,10 +1099,13 @@ public class CiscoGrammarTest {
     Flow flowIcmpPass = createIcmpFlow(IcmpType.ECHO_REQUEST);
     Flow flowIcmpFail = createIcmpFlow(IcmpType.ECHO_REPLY);
     Flow flowInlinePass1 = createFlow(IpProtocol.UDP, 1, 1234);
-    Flow flowInlinePass2 = createFlow(IpProtocol.UDP, 3020, 1); // cifs
+    Flow flowInlinePass2 = createFlow(IpProtocol.UDP, 1, 1235);
+    Flow flowInlinePass3 = createFlow(IpProtocol.UDP, 3, 1236);
+    Flow flowInlinePass4 = createFlow(IpProtocol.UDP, 3020, 1); // cifs
     Flow flowTcpPass = createFlow(IpProtocol.TCP, 65535, 1);
     Flow flowUdpPass = createFlow(IpProtocol.UDP, 65535, 1);
     Flow flowTcpFail = createFlow(IpProtocol.TCP, 65534, 1);
+    Flow flowUdpFail = createFlow(IpProtocol.UDP, 1, 1236);
 
     /* Confirm service objects have the correct number of referrers */
     assertThat(ccae, hasNumReferrers(filename, SERVICE_OBJECT, "OS_TCPUDP", 1));
@@ -1122,6 +1125,9 @@ public class CiscoGrammarTest {
     assertThat(c, hasIpAccessList(ogsAclName, not(accepts(flowTcpFail, null, c))));
     assertThat(c, hasIpAccessList(ogsAclName, accepts(flowInlinePass1, null, c)));
     assertThat(c, hasIpAccessList(ogsAclName, accepts(flowInlinePass2, null, c)));
+    assertThat(c, hasIpAccessList(ogsAclName, accepts(flowInlinePass3, null, c)));
+    assertThat(c, hasIpAccessList(ogsAclName, accepts(flowInlinePass4, null, c)));
+    assertThat(c, hasIpAccessList(ogsAclName, not(accepts(flowUdpFail, null, c))));
   }
 
   @Test
