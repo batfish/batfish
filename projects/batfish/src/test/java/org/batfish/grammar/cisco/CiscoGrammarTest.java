@@ -338,6 +338,8 @@ import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.SwitchportEncapsulationType;
 import org.batfish.datamodel.SwitchportMode;
+import org.batfish.datamodel.TunnelConfiguration;
+import org.batfish.datamodel.TunnelConfiguration.Builder;
 import org.batfish.datamodel.VniSettings;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
@@ -3893,10 +3895,22 @@ public class CiscoGrammarTest {
     CiscoConfiguration c = parseCiscoConfig("ios-tunnel-mode", ConfigurationFormat.CISCO_IOS);
 
     assertThat(c.getInterfaces().get("Tunnel1").getTunnel().getMode(), equalTo(TunnelMode.GRE));
-
     assertThat(c.getInterfaces().get("Tunnel2").getTunnel().getMode(), equalTo(TunnelMode.GRE));
-
     assertThat(c.getInterfaces().get("Tunnel3").getTunnel().getMode(), equalTo(TunnelMode.IPSEC));
+  }
+
+  @Test
+  public void testGreTunnelConversion() throws IOException {
+    Configuration c = parseConfig("ios-tunnel-mode");
+
+    Builder builder = TunnelConfiguration.builder().setSourceAddress(Ip.parse("2.3.4.6"));
+
+    assertThat(
+        c.getAllInterfaces().get("Tunnel1").getTunnelConfig(),
+        equalTo(builder.setDestinationAddress(Ip.parse("1.2.3.4")).build()));
+    assertThat(
+        c.getAllInterfaces().get("Tunnel2").getTunnelConfig(),
+        equalTo(builder.setDestinationAddress(Ip.parse("1.2.3.5")).build()));
   }
 
   @Test
