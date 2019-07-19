@@ -37,7 +37,7 @@ re_default_metric
 
 re_distribute_list
 :
-   DISTRIBUTE_LIST name = variable_distribute_list OUT iname = interface_name NEWLINE
+   DISTRIBUTE_LIST name = variable_distribute_list OUT (iname = interface_name)? NEWLINE
 ;
 
 re_eigrp_null

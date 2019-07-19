@@ -8873,8 +8873,13 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       _w.addWarning(ctx, getFullText(ctx), _parser, "No EIGRP process available");
       return;
     }
-    String filterName = ctx.name.getText();
+    if (ctx.iname == null) {
+      _w.addWarning(
+          ctx, getFullText(ctx), _parser, "Global distribute-list not supported for EIGRP");
+      return;
+    }
     String ifaceName = getCanonicalInterfaceName(ctx.iname.getText());
+    String filterName = ctx.name.getText();
     int line = ctx.name.getStart().getLine();
     _configuration.referenceStructure(
         IP_ACCESS_LIST, filterName, EIGRP_DISTRIBUTE_LIST_ACCESS_LIST_OUT, line);

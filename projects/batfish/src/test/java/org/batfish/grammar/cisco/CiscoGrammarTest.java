@@ -2580,7 +2580,14 @@ public class CiscoGrammarTest {
         equalTo(
             ImmutableMap.of(
                 "GigabitEthernet0/0",
-                new DistributeList("4", DistributeListFilterType.ACCESS_LIST))));
+                new DistributeList("2", DistributeListFilterType.ACCESS_LIST))));
+  }
+
+  @Test
+  public void testIosEigrpMarkForRouting() throws IOException {
+    Configuration c = parseConfig("ios-eigrp-distribute-list");
+
+    assertThat(c.getRouteFilterLists(), hasKey("2"));
   }
 
   @Test
