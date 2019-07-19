@@ -1,4 +1,4 @@
-package org.batfish.datamodel;
+package org.batfish.minesweeper.abstraction;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
@@ -7,6 +7,8 @@ import java.io.Serializable;
 import java.util.Collections;
 import java.util.SortedSet;
 import javax.annotation.Nullable;
+import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.Prefix;
 
 public class PrefixTrie implements Serializable {
 
