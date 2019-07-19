@@ -541,7 +541,7 @@ public class EdgesAnswerer extends Answerer {
                 COL_INTERFACE,
                 Schema.INTERFACE,
                 "Interface from which the edge originates",
-                Boolean.FALSE,
+                Boolean.TRUE,
                 Boolean.TRUE));
         columnBuilder.add(
             new ColumnMetadata(COL_IPS, Schema.set(Schema.IP), "IPs", Boolean.FALSE, Boolean.TRUE));
@@ -551,7 +551,7 @@ public class EdgesAnswerer extends Answerer {
                 COL_REMOTE_INTERFACE,
                 Schema.INTERFACE,
                 "Interface at which the edge terminates",
-                Boolean.FALSE,
+                Boolean.TRUE,
                 Boolean.TRUE));
         columnBuilder.add(
             new ColumnMetadata(
