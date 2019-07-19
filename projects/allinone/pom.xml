@@ -126,11 +126,6 @@
     </dependency>
 
     <dependency>
-      <groupId>org.batfish</groupId>
-      <artifactId>version</artifactId>
-    </dependency>
-
-    <dependency>
       <groupId>com.google.guava</groupId>
       <artifactId>guava</artifactId>
     </dependency>
