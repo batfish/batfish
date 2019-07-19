@@ -70,7 +70,7 @@ public final class Version {
     try {
       return com.microsoft.z3.Version.getString();
     } catch (Throwable e) {
-      return "unknown, unable to load library";
+      return UNKNOWN_VERSION;
     }
   }
 
