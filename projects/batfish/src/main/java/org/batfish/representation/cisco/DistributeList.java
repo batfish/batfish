@@ -4,7 +4,7 @@ import java.io.Serializable;
 import java.util.Objects;
 import javax.annotation.Nonnull;
 
-/** Represents Cisco specific distribute-list used in {@link OspfProcess} */
+/** Represents Cisco specific distribute-lists */
 public final class DistributeList implements Serializable {
   /** Different types of filter used in a distribute-list */
   public enum DistributeListFilterType {
