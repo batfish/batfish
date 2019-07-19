@@ -1115,7 +1115,6 @@ class CiscoConversions {
       EigrpProcess proc, String vrfName, Configuration c, CiscoConfiguration oldConfig) {
     org.batfish.datamodel.eigrp.EigrpProcess.Builder newProcess =
         org.batfish.datamodel.eigrp.EigrpProcess.builder();
-    org.batfish.datamodel.Vrf vrf = c.getVrfs().get(vrfName);
 
     if (proc.getAsn() == null) {
       oldConfig.getWarnings().redFlag("Invalid EIGRP process");
@@ -1124,7 +1123,6 @@ class CiscoConversions {
 
     newProcess.setAsNumber(proc.getAsn());
     newProcess.setMode(proc.getMode());
-    newProcess.setVrf(vrf);
 
     // TODO set stub process
     // newProcess.setStub(proc.isStub())
