@@ -237,10 +237,10 @@ public class IpsecUtilTest {
   public void testNegotiateIkePhase1KeyPsk() {
     IpsecSession.Builder ipsecSessionBuilder = IpsecSession.builder();
     IkePhase1Key initiatorKey = new IkePhase1Key();
-    initiatorKey.setKeyType(IkeKeyType.PRE_SHARED_KEY);
+    initiatorKey.setKeyType(IkeKeyType.PRE_SHARED_KEY_UNENCRYPTED);
     initiatorKey.setKeyHash("key1");
     IkePhase1Key responderKey = new IkePhase1Key();
-    responderKey.setKeyType(IkeKeyType.PRE_SHARED_KEY);
+    responderKey.setKeyType(IkeKeyType.PRE_SHARED_KEY_UNENCRYPTED);
     responderKey.setKeyHash("key1");
 
     negotiateIkePhase1Key(initiatorKey, responderKey, ipsecSessionBuilder);
@@ -248,7 +248,7 @@ public class IpsecUtilTest {
     assertThat(ipsecSessionBuilder.getNegotiatedIkeP1Key(), notNullValue());
     assertThat(
         ipsecSessionBuilder.getNegotiatedIkeP1Key().getKeyType(),
-        equalTo(IkeKeyType.PRE_SHARED_KEY));
+        equalTo(IkeKeyType.PRE_SHARED_KEY_UNENCRYPTED));
     assertThat(ipsecSessionBuilder.getNegotiatedIkeP1Key().getKeyHash(), equalTo("key1"));
   }
 
@@ -256,10 +256,10 @@ public class IpsecUtilTest {
   public void testNegotiateIkePhase1KeyPskFail() {
     IpsecSession.Builder ipsecSessionBuilder = IpsecSession.builder();
     IkePhase1Key initiatorKey = new IkePhase1Key();
-    initiatorKey.setKeyType(IkeKeyType.PRE_SHARED_KEY);
+    initiatorKey.setKeyType(IkeKeyType.PRE_SHARED_KEY_UNENCRYPTED);
     initiatorKey.setKeyHash("key1");
     IkePhase1Key responderKey = new IkePhase1Key();
-    responderKey.setKeyType(IkeKeyType.PRE_SHARED_KEY);
+    responderKey.setKeyType(IkeKeyType.PRE_SHARED_KEY_UNENCRYPTED);
     responderKey.setKeyHash("key2");
 
     negotiateIkePhase1Key(initiatorKey, responderKey, ipsecSessionBuilder);

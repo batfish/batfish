@@ -366,6 +366,12 @@ cipt_mode
    ) NEWLINE
 ;
 
+cis_key:
+   (
+       KEY DEC? key = VARIABLE ADDRESS ip_address = IP_ADDRESS (wildcard_mask = IP_ADDRESS)? NEWLINE
+   )
+;
+
 cis_null
 :
    (
@@ -374,7 +380,6 @@ cis_null
       | IDENTITY
       | INVALID_SPI_RECOVERY
       | KEEPALIVE
-      | KEY
       | NAT
       | NAT_TRAVERSAL
    ) null_rest_of_line
@@ -698,7 +703,8 @@ crypto_isakmp
 :
    ISAKMP
    (
-      cis_null
+      cis_key
+      | cis_null
       | cis_policy
       | cis_profile
    )

@@ -15,6 +15,7 @@ import static org.batfish.datamodel.AuthenticationMethod.LOCAL;
 import static org.batfish.datamodel.AuthenticationMethod.LOCAL_CASE;
 import static org.batfish.datamodel.AuthenticationMethod.NONE;
 import static org.batfish.datamodel.Configuration.DEFAULT_VRF_NAME;
+import static org.batfish.datamodel.Interface.UNSET_LOCAL_INTERFACE;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.and;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.matchDst;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.matchSrc;
@@ -3916,6 +3917,40 @@ public class CiscoGrammarTest {
   }
 
   @Test
+  public void testIsakmpKeyIos() throws IOException {
+    Configuration c = parseConfig("ios-crypto");
+
+    assertThat(
+        c,
+        hasIkePhase1Policy(
+            "~ISAKMP_KEY_IpWildcardIpSpace{ipWildcard=1.1.1.0/24}~",
+            allOf(
+                hasIkePhase1Key(
+                    allOf(
+                        IkePhase1KeyMatchers.hasKeyHash(
+                            CommonUtil.sha256Digest("psk1" + CommonUtil.salt())),
+                        IkePhase1KeyMatchers.hasRemoteIdentity(
+                            IpWildcard.parse("1.1.1.0/24").toIpSpace()),
+                        hasKeyType(IkeKeyType.PRE_SHARED_KEY_UNENCRYPTED))),
+                hasRemoteIdentity(equalTo(IpWildcard.parse("1.1.1.0/24").toIpSpace())),
+                hasIkePhase1Proposals(equalTo(ImmutableList.of("20"))))));
+
+    assertThat(
+        c,
+        hasIkePhase1Policy(
+            "~ISAKMP_KEY_IpWildcardIpSpace{ipWildcard=2.2.2.2}~",
+            allOf(
+                hasIkePhase1Key(
+                    allOf(
+                        IkePhase1KeyMatchers.hasKeyHash("FLgBaJHXdYY_AcHZZMgQ_RhTDJXHUBAAB"),
+                        IkePhase1KeyMatchers.hasRemoteIdentity(
+                            IpWildcard.parse("2.2.2.2").toIpSpace()),
+                        hasKeyType(IkeKeyType.PRE_SHARED_KEY_ENCRYPTED))),
+                hasRemoteIdentity(equalTo(IpWildcard.parse("2.2.2.2").toIpSpace())),
+                hasIkePhase1Proposals(equalTo(ImmutableList.of("20"))))));
+  }
+
+  @Test
   public void testIsakmpPolicyIos() throws IOException {
     Configuration c = parseConfig("ios-crypto");
     // test for IKE phase1 proposals
@@ -3997,7 +4032,7 @@ public class CiscoGrammarTest {
                         hasKeyType(IkeKeyType.RSA_PUB_KEY),
                         IkePhase1KeyMatchers.hasRemoteIdentity(Ip.parse("1.2.3.4").toIpSpace()))),
                 hasRemoteIdentity(containsIp(Ip.parse("1.2.3.4"))),
-                hasLocalInterface(equalTo(Interface.UNSET_LOCAL_INTERFACE)),
+                hasLocalInterface(equalTo(UNSET_LOCAL_INTERFACE)),
                 hasIkePhase1Proposals(equalTo(ImmutableList.of("10"))))));
   }
 

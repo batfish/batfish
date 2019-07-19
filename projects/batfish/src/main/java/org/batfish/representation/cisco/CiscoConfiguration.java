@@ -14,6 +14,7 @@ import static org.batfish.representation.cisco.CiscoConversions.convertCryptoMap
 import static org.batfish.representation.cisco.CiscoConversions.generateBgpExportPolicy;
 import static org.batfish.representation.cisco.CiscoConversions.generateBgpImportPolicy;
 import static org.batfish.representation.cisco.CiscoConversions.generateGenerationPolicy;
+import static org.batfish.representation.cisco.CiscoConversions.getIsakmpKeyGeneratedName;
 import static org.batfish.representation.cisco.CiscoConversions.getRsaPubKeyGeneratedName;
 import static org.batfish.representation.cisco.CiscoConversions.resolveIsakmpProfileIfaceNames;
 import static org.batfish.representation.cisco.CiscoConversions.resolveKeyringIfaceNames;
@@ -469,6 +470,8 @@ public final class CiscoConfiguration extends VendorConfiguration {
 
   private final Map<String, IpsecTransformSet> _ipsecTransformSets;
 
+  private final List<IsakmpKey> _isakmpKeys;
+
   private final Map<Integer, IsakmpPolicy> _isakmpPolicies;
 
   private final Map<String, IsakmpProfile> _isakmpProfiles;
@@ -576,6 +579,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
     _failoverInterfaces = new TreeMap<>();
     _failoverPrimaryAddresses = new TreeMap<>();
     _failoverStandbyAddresses = new TreeMap<>();
+    _isakmpKeys = new ArrayList<>();
     _isakmpPolicies = new TreeMap<>();
     _isakmpProfiles = new TreeMap<>();
     _inspectClassMaps = new TreeMap<>();
@@ -871,6 +875,10 @@ public final class CiscoConfiguration extends VendorConfiguration {
 
   public Map<String, IpsecTransformSet> getIpsecTransformSets() {
     return _ipsecTransformSets;
+  }
+
+  public List<IsakmpKey> getIsakmpKeys() {
+    return _isakmpKeys;
   }
 
   public Map<Integer, IsakmpPolicy> getIsakmpPolicies() {
@@ -3501,6 +3509,16 @@ public final class CiscoConfiguration extends VendorConfiguration {
                   toIkePhase1Policy(namedRsaPubKey, this, ikePhase1Key);
               c.getIkePhase1Policies().put(ikePhase1Policy.getName(), ikePhase1Policy);
             });
+
+    // RSA pub named keys to IKE phase 1 key and IKE phase 1 policy
+    _isakmpKeys.forEach(
+        isakmpKey -> {
+          IkePhase1Key ikePhase1Key = toIkePhase1Key(isakmpKey);
+          ikePhase1KeysBuilder.put(getIsakmpKeyGeneratedName(isakmpKey), ikePhase1Key);
+
+          IkePhase1Policy ikePhase1Policy = toIkePhase1Policy(isakmpKey, this, ikePhase1Key);
+          c.getIkePhase1Policies().put(ikePhase1Policy.getName(), ikePhase1Policy);
+        });
 
     c.setIkePhase1Keys(ikePhase1KeysBuilder.build());
 

@@ -80,7 +80,7 @@ public class CiscoConversionsTest {
 
     IkePhase1Key ikePhase1Key = new IkePhase1Key();
     ikePhase1Key.setKeyHash("test_key");
-    ikePhase1Key.setKeyType(IkeKeyType.PRE_SHARED_KEY);
+    ikePhase1Key.setKeyType(IkeKeyType.PRE_SHARED_KEY_UNENCRYPTED);
     ikePhase1Key.setLocalInterface("local_interface");
 
     IkePhase1Key matchingKey =
@@ -101,7 +101,7 @@ public class CiscoConversionsTest {
 
     IkePhase1Key ikePhase1Key = new IkePhase1Key();
     ikePhase1Key.setKeyHash("test_key");
-    ikePhase1Key.setKeyType(IkeKeyType.PRE_SHARED_KEY);
+    ikePhase1Key.setKeyType(IkeKeyType.PRE_SHARED_KEY_UNENCRYPTED);
     ikePhase1Key.setLocalInterface("local_interface");
 
     IkePhase1Key matchingKey =
@@ -122,7 +122,7 @@ public class CiscoConversionsTest {
 
     IkePhase1Key ikePhase1Key = new IkePhase1Key();
     ikePhase1Key.setKeyHash("test_key");
-    ikePhase1Key.setKeyType(IkeKeyType.PRE_SHARED_KEY);
+    ikePhase1Key.setKeyType(IkeKeyType.PRE_SHARED_KEY_UNENCRYPTED);
     ikePhase1Key.setLocalInterface("local_interface");
 
     IkePhase1Key matchingKey =
@@ -143,7 +143,7 @@ public class CiscoConversionsTest {
 
     IkePhase1Key ikePhase1Key = new IkePhase1Key();
     ikePhase1Key.setKeyHash("test_key");
-    ikePhase1Key.setKeyType(IkeKeyType.PRE_SHARED_KEY);
+    ikePhase1Key.setKeyType(IkeKeyType.PRE_SHARED_KEY_UNENCRYPTED);
     ikePhase1Key.setLocalInterface(INVALID_LOCAL_INTERFACE);
 
     IkePhase1Key matchingKey =
@@ -165,7 +165,7 @@ public class CiscoConversionsTest {
 
     IkePhase1Key ikePhase1Key = new IkePhase1Key();
     ikePhase1Key.setKeyHash("test_key");
-    ikePhase1Key.setKeyType(IkeKeyType.PRE_SHARED_KEY);
+    ikePhase1Key.setKeyType(IkeKeyType.PRE_SHARED_KEY_UNENCRYPTED);
     ikePhase1Key.setLocalInterface("local_interface");
     ikePhase1Key.setRemoteIdentity(IpWildcard.parse("1.2.3.4:0.0.0.0").toIpSpace());
 
@@ -185,7 +185,7 @@ public class CiscoConversionsTest {
 
     IkePhase1Key ikePhase1Key = new IkePhase1Key();
     ikePhase1Key.setKeyHash("test_key");
-    ikePhase1Key.setKeyType(IkeKeyType.PRE_SHARED_KEY);
+    ikePhase1Key.setKeyType(IkeKeyType.PRE_SHARED_KEY_UNENCRYPTED);
     ikePhase1Key.setLocalInterface("local_interface");
     ikePhase1Key.setRemoteIdentity(IpWildcard.parse("1.2.3.5:0.0.0.0").toIpSpace());
 
