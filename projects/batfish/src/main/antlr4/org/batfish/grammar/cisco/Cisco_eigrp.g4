@@ -14,7 +14,8 @@ re_classic
 
 re_classic_tail
 :
-   re_eigrp_null
+   re_distribute_list
+   | re_eigrp_null
    | re_eigrp_router_id
    | rec_address_family
    | rec_metric_weights
@@ -32,6 +33,11 @@ re_default_metric
    (
       bw_kbps = DEC delay_10us = DEC reliability = DEC eff_bw = DEC mtu = DEC
    )? NEWLINE
+;
+
+re_distribute_list
+:
+   DISTRIBUTE_LIST name = variable_distribute_list OUT iname = interface_name NEWLINE
 ;
 
 re_eigrp_null

@@ -2571,6 +2571,19 @@ public class CiscoGrammarTest {
   }
 
   @Test
+  public void testIosEigrpDistributeList() {
+    CiscoConfiguration c =
+        parseCiscoConfig("ios-eigrp-distribute-list", ConfigurationFormat.CISCO_IOS);
+
+    assertThat(
+        c.getDefaultVrf().getEigrpProcesses().get(1L).getOutboundInterfaceDistributeLists(),
+        equalTo(
+            ImmutableMap.of(
+                "GigabitEthernet0/0",
+                new DistributeList("4", DistributeListFilterType.ACCESS_LIST))));
+  }
+
+  @Test
   public void testIosOspfDistributeList() {
     CiscoConfiguration c = parseCiscoConfig("iosOspfDistributeList", ConfigurationFormat.CISCO_IOS);
     DistributeList globalInPrefix =
