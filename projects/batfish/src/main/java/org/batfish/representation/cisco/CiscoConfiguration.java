@@ -3510,7 +3510,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
               c.getIkePhase1Policies().put(ikePhase1Policy.getName(), ikePhase1Policy);
             });
 
-    // RSA pub named keys to IKE phase 1 key and IKE phase 1 policy
+    // standalone ISAKMP keys to IKE phase 1 key and IKE phase 1 policy
     _isakmpKeys.forEach(
         isakmpKey -> {
           IkePhase1Key ikePhase1Key = toIkePhase1Key(isakmpKey);

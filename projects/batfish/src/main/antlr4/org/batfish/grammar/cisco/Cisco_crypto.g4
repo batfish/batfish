@@ -366,10 +366,9 @@ cipt_mode
    ) NEWLINE
 ;
 
-cis_key:
-   (
-       KEY DEC? key = VARIABLE ADDRESS ip_address = IP_ADDRESS (wildcard_mask = IP_ADDRESS)? NEWLINE
-   )
+cis_key
+:
+   KEY DEC? key = VARIABLE ADDRESS ip_address = IP_ADDRESS (wildcard_mask = IP_ADDRESS)? NEWLINE
 ;
 
 cis_null
