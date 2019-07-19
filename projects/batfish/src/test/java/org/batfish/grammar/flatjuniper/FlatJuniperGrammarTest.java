@@ -2044,6 +2044,19 @@ public final class FlatJuniperGrammarTest {
     assertThat(area2, not(hasInjectDefaultRoute()));
   }
 
+  /** Test that we allow integers as area Ids */
+  @Test
+  public void testOspfAreaInt() throws IOException {
+    Configuration config =
+        BatfishTestUtils.parseTextConfigs(
+                _folder, "org/batfish/grammar/juniper/testconfigs/ospf-area-int")
+            .get("ospf-area-int");
+    assertTrue(
+        config.getDefaultVrf().getOspfProcesses().get(DEFAULT_VRF_NAME).getAreas().containsKey(0L));
+    assertTrue(
+        config.getDefaultVrf().getOspfProcesses().get(DEFAULT_VRF_NAME).getAreas().containsKey(1L));
+  }
+
   @Test
   public void testOspfInterfaceDisable() throws IOException {
     // Config has interfaces ge-0/0/1.0 and ge-0/0/2.0 configured in OSPF.

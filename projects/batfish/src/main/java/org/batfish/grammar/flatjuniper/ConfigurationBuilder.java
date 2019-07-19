@@ -2446,9 +2446,16 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
 
   @Override
   public void enterO_area(O_areaContext ctx) {
-    Ip areaIp = Ip.parse(ctx.area.getText());
+    long area;
+    if (ctx.area_int != null) {
+      area = toLong(ctx.area_int);
+    } else if (ctx.area_ip != null) {
+      area = Ip.parse(ctx.area_ip.getText()).asLong();
+    } else {
+      throw new BatfishException("Missing area");
+    }
     Map<Long, OspfArea> areas = _currentRoutingInstance.getOspfAreas();
-    _currentArea = areas.computeIfAbsent(areaIp.asLong(), OspfArea::new);
+    _currentArea = areas.computeIfAbsent(area, OspfArea::new);
   }
 
   @Override

@@ -10,7 +10,8 @@ o_area
 :
    AREA
    (
-      area = IP_ADDRESS
+      area_int = DEC
+      | area_ip = IP_ADDRESS
       | wildcard
    )
    (

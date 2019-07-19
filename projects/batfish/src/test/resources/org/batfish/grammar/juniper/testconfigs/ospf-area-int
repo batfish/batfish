@@ -1,0 +1,9 @@
+#
+set system host-name ospf-area-int
+#
+set interfaces ge-0/0/0 unit 0 family inet address 10.0.0.1/31
+set interfaces ge-0/0/1 unit 0 family inet address 10.0.1.2/31
+#
+set protocols ospf area 0 interface ge-0/0/0.0
+set protocols ospf area 01 interface ge-0/0/1.0
+#
