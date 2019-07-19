@@ -20,6 +20,7 @@ java_library(
     runtime_deps = [
         "//projects/minesweeper",
         "//projects/question",
+        "//projects/version",
     ],
     deps = [
         "//projects/batfish",

@@ -1,15 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
-  <modelVersion>4.0.0</modelVersion>
-
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <parent>
-    <groupId>org.batfish</groupId>
     <artifactId>batfish-parent</artifactId>
+    <groupId>org.batfish</groupId>
     <version>0.36.0</version>
   </parent>
+  <modelVersion>4.0.0</modelVersion>
 
-  <artifactId>allinone</artifactId>
+  <artifactId>version</artifactId>
 
   <packaging>jar</packaging>
 
@@ -26,13 +26,13 @@
               </goals>
               <configuration>
                 <ignoredUnusedDeclaredDependencies>
+                  <ignoredUnusedDeclaredDependency>com.google.auto.service:auto-service
+                  </ignoredUnusedDeclaredDependency>
                   <ignoredUnusedDeclaredDependency>org.lastnpe.eea:guava-eea
                   </ignoredUnusedDeclaredDependency>
                   <ignoredUnusedDeclaredDependency>org.lastnpe.eea:jdk-eea
                   </ignoredUnusedDeclaredDependency>
                   <ignoredUnusedDeclaredDependency>org.slf4j:slf4j-jdk14
-                  </ignoredUnusedDeclaredDependency>
-                  <ignoredUnusedDeclaredDependency>org.batfish:question
                   </ignoredUnusedDeclaredDependency>
                 </ignoredUnusedDeclaredDependencies>
               </configuration>
@@ -55,56 +55,10 @@
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-pmd-plugin</artifactId>
       </plugin>
-
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-shade-plugin</artifactId>
-        <executions>
-          <execution>
-            <phase>package</phase>
-            <goals>
-              <goal>shade</goal>
-            </goals>
-            <configuration>
-              <finalName>${project.artifactId}-bundle-${project.version}</finalName>
-              <filters>
-                <filter>
-                  <artifact>*:*</artifact>
-                  <excludes>
-                    <exclude>META-INF/*.DSA</exclude>
-                    <exclude>META-INF/*.RSA</exclude>
-                    <exclude>META-INF/*.SF</exclude>
-                  </excludes>
-                </filter>
-              </filters>
-              <transformers>
-                <transformer
-                    implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
-                  <manifestEntries>
-                    <Main-Class>org.batfish.allinone.Main</Main-Class>
-                  </manifestEntries>
-                </transformer>
-                <transformer
-                    implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer"/>
-              </transformers>
-            </configuration>
-          </execution>
-        </executions>
-      </plugin>
     </plugins>
   </build>
 
   <dependencies>
-    <dependency>
-      <groupId>org.batfish</groupId>
-      <artifactId>batfish</artifactId>
-    </dependency>
-
-    <dependency>
-      <groupId>org.batfish</groupId>
-      <artifactId>batfish-client</artifactId>
-    </dependency>
-
     <dependency>
       <groupId>org.batfish</groupId>
       <artifactId>batfish-common-protocol</artifactId>
@@ -112,22 +66,33 @@
 
     <dependency>
       <groupId>org.batfish</groupId>
-      <artifactId>coordinator</artifactId>
+      <artifactId>bdd</artifactId>
     </dependency>
 
     <dependency>
-      <groupId>org.batfish</groupId>
-      <artifactId>minesweeper</artifactId>
+      <groupId>com.fasterxml.jackson.core</groupId>
+      <artifactId>jackson-annotations</artifactId>
     </dependency>
 
     <dependency>
-      <groupId>org.batfish</groupId>
-      <artifactId>question</artifactId>
+      <groupId>com.fasterxml.jackson.core</groupId>
+      <artifactId>jackson-core</artifactId>
     </dependency>
 
     <dependency>
-      <groupId>org.batfish</groupId>
-      <artifactId>version</artifactId>
+      <groupId>com.fasterxml.jackson.core</groupId>
+      <artifactId>jackson-databind</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>com.google.auto.service</groupId>
+      <artifactId>auto-service</artifactId>
+      <optional>true</optional>
+    </dependency>
+
+    <dependency>
+      <groupId>com.google.code.findbugs</groupId>
+      <artifactId>jsr305</artifactId>
     </dependency>
 
     <dependency>
@@ -136,13 +101,8 @@
     </dependency>
 
     <dependency>
-      <groupId>com.uber.jaeger</groupId>
-      <artifactId>jaeger-core</artifactId>
-    </dependency>
-
-    <dependency>
-      <groupId>io.opentracing</groupId>
-      <artifactId>opentracing-util</artifactId>
+      <groupId>org.apache.commons</groupId>
+      <artifactId>commons-lang3</artifactId>
     </dependency>
 
     <!-- Provided dependencies to be available at compile time only -->
@@ -158,12 +118,10 @@
       <scope>provided</scope>
     </dependency>
 
-
     <!-- Test scope dependencies. -->
     <dependency>
-      <groupId>org.batfish</groupId>
-      <artifactId>batfish</artifactId>
-      <classifier>tests</classifier>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
       <scope>test</scope>
     </dependency>
 
@@ -175,25 +133,11 @@
     </dependency>
 
     <dependency>
-      <groupId>org.batfish</groupId>
-      <artifactId>minesweeper</artifactId>
-      <classifier>tests</classifier>
-      <scope>test</scope>
-    </dependency>
-
-    <dependency>
-      <groupId>junit</groupId>
-      <artifactId>junit</artifactId>
-      <scope>test</scope>
-    </dependency>
-
-    <dependency>
       <groupId>org.hamcrest</groupId>
       <artifactId>hamcrest</artifactId>
       <scope>test</scope>
     </dependency>
 
-    <!-- Runtime dependencies to add logging. -->
     <dependency>
       <groupId>org.slf4j</groupId>
       <artifactId>slf4j-jdk14</artifactId>

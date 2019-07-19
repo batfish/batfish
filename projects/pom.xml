@@ -640,6 +640,12 @@
         <version>${project.version}</version>
       </dependency>
 
+      <dependency>
+        <groupId>org.batfish</groupId>
+        <artifactId>version</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+
       <!-- External modules. -->
       <dependency>
         <groupId>com.fasterxml.jackson</groupId>
@@ -1016,5 +1022,6 @@
     <module>minesweeper</module>
     <module>question</module>
     <module>symbolic</module>
+    <module>version</module>
   </modules>
 </project>
