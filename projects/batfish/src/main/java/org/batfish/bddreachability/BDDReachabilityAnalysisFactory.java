@@ -671,6 +671,10 @@ public final class BDDReachabilityAnalysisFactory {
 
   private Stream<Edge> generateRules_NodeDropNoRoute_DropNoRoute(Set<String> finalNodes) {
     return finalNodes.stream()
+        /* In differential context, nodes can be added or removed. This can lead to a finalNode
+         * that doesn't exist in _configs.
+         */
+        .filter(_configs::containsKey)
         .map(
             node ->
                 new Edge(

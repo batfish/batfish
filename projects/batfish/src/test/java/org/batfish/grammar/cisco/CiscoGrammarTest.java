@@ -292,6 +292,7 @@ import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.ConnectedRoute;
 import org.batfish.datamodel.DataPlane;
 import org.batfish.datamodel.DiffieHellmanGroup;
+import org.batfish.datamodel.Edge;
 import org.batfish.datamodel.EigrpExternalRoute;
 import org.batfish.datamodel.EigrpInternalRoute;
 import org.batfish.datamodel.EncryptionAlgorithm;
@@ -339,6 +340,8 @@ import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.SwitchportEncapsulationType;
 import org.batfish.datamodel.SwitchportMode;
+import org.batfish.datamodel.TunnelConfiguration;
+import org.batfish.datamodel.TunnelConfiguration.Builder;
 import org.batfish.datamodel.VniSettings;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
@@ -3894,10 +3897,22 @@ public class CiscoGrammarTest {
     CiscoConfiguration c = parseCiscoConfig("ios-tunnel-mode", ConfigurationFormat.CISCO_IOS);
 
     assertThat(c.getInterfaces().get("Tunnel1").getTunnel().getMode(), equalTo(TunnelMode.GRE));
-
     assertThat(c.getInterfaces().get("Tunnel2").getTunnel().getMode(), equalTo(TunnelMode.GRE));
-
     assertThat(c.getInterfaces().get("Tunnel3").getTunnel().getMode(), equalTo(TunnelMode.IPSEC));
+  }
+
+  @Test
+  public void testGreTunnelConversion() throws IOException {
+    Configuration c = parseConfig("ios-tunnel-mode");
+
+    Builder builder = TunnelConfiguration.builder().setSourceAddress(Ip.parse("2.3.4.6"));
+
+    assertThat(
+        c.getAllInterfaces().get("Tunnel1").getTunnelConfig(),
+        equalTo(builder.setDestinationAddress(Ip.parse("1.2.3.4")).build()));
+    assertThat(
+        c.getAllInterfaces().get("Tunnel2").getTunnelConfig(),
+        equalTo(builder.setDestinationAddress(Ip.parse("1.2.3.5")).build()));
   }
 
   @Test
@@ -6045,5 +6060,69 @@ public class CiscoGrammarTest {
             .getIpv4UnicastAddressFamily()
             .getAddressFamilyCapabilities()
             .getAdvertiseInactive());
+  }
+
+  @Test
+  public void testTunnelTopologyNoReachability() throws IOException {
+    String snapshot = "ios-tunnels";
+
+    Batfish batfish =
+        BatfishTestUtils.getBatfishFromTestrigText(
+            TestrigText.builder()
+                .setConfigurationText(
+                    TESTRIGS_PREFIX + snapshot,
+                    ImmutableList.of("n1-no-static-route", "n2-no-static-route"))
+                .build(),
+            _folder);
+
+    Edge overlayEdge = Edge.of("n1-no-static-route", "Tunnel1", "n2-no-static-route", "Tunnel1");
+
+    // Overlay edge present in initial tunnel topology
+    assertThat(
+        batfish
+            .getTopologyProvider()
+            .getInitialTunnelTopology(batfish.getNetworkSnapshot())
+            .asEdgeSet(),
+        containsInAnyOrder(overlayEdge, overlayEdge.reverse()));
+
+    batfish.computeDataPlane();
+    // NO overlay edge in final L3 topology
+    assertThat(
+        batfish.getTopologyProvider().getLayer3Topology(batfish.getNetworkSnapshot()).getEdges(),
+        empty());
+  }
+
+  @Test
+  public void testTunnelTopologyWithReachability() throws IOException {
+    String snapshot = "ios-tunnels";
+
+    Batfish batfish =
+        BatfishTestUtils.getBatfishFromTestrigText(
+            TestrigText.builder()
+                .setConfigurationText(
+                    TESTRIGS_PREFIX + snapshot,
+                    ImmutableList.of("n1-static-route", "n2-static-route"))
+                .build(),
+            _folder);
+
+    Edge underlayEdge =
+        Edge.of(
+            "n1-static-route", "TenGigabitEthernet0/1", "n2-static-route", "TenGigabitEthernet0/1");
+    Edge overlayEdge = Edge.of("n1-static-route", "Tunnel1", "n2-static-route", "Tunnel1");
+
+    // Overlay edge present in initial tunnel topology
+    assertThat(
+        batfish
+            .getTopologyProvider()
+            .getInitialTunnelTopology(batfish.getNetworkSnapshot())
+            .asEdgeSet(),
+        containsInAnyOrder(overlayEdge, overlayEdge.reverse()));
+
+    batfish.computeDataPlane();
+    // overlay edge in final L3 topology as well
+    assertThat(
+        batfish.getTopologyProvider().getLayer3Topology(batfish.getNetworkSnapshot()).getEdges(),
+        containsInAnyOrder(
+            overlayEdge, overlayEdge.reverse(), underlayEdge, underlayEdge.reverse()));
   }
 }

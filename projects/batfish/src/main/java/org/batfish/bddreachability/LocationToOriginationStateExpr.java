@@ -22,6 +22,14 @@ class LocationToOriginationStateExpr implements LocationVisitor<Optional<StateEx
   @Override
   public Optional<StateExpr> visitInterfaceLinkLocation(
       @Nonnull InterfaceLinkLocation interfaceLinkLocation) {
+    Configuration config = _configs.get(interfaceLinkLocation.getNodeName());
+    if (config == null) {
+      return Optional.empty();
+    }
+    Interface iface = config.getAllInterfaces().get(interfaceLinkLocation.getInterfaceName());
+    if (iface == null) {
+      return Optional.empty();
+    }
     return Optional.of(
         new OriginateInterfaceLink(
             interfaceLinkLocation.getNodeName(), interfaceLinkLocation.getInterfaceName()));

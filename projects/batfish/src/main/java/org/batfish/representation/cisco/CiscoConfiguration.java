@@ -121,6 +121,7 @@ import org.batfish.datamodel.SnmpServer;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.SwitchportEncapsulationType;
 import org.batfish.datamodel.SwitchportMode;
+import org.batfish.datamodel.TunnelConfiguration;
 import org.batfish.datamodel.VniSettings;
 import org.batfish.datamodel.Zone;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
@@ -841,28 +842,6 @@ public final class CiscoConfiguration extends VendorConfiguration {
   @Override
   public String getHostname() {
     return _hostname;
-  }
-
-  private @Nullable Interface getInterfaceByTunnelAddresses(Ip sourceAddress, Prefix destPrefix) {
-    for (Interface iface : _interfaces.values()) {
-      Tunnel tunnel = iface.getTunnel();
-      if (tunnel != null
-          && tunnel.getSourceAddress() != null
-          && tunnel.getSourceAddress().equals(sourceAddress)
-          && tunnel.getDestination() != null
-          && destPrefix.containsIp(tunnel.getDestination())) {
-        /*
-         * We found a tunnel interface with the required parameters. Now return the external
-         * interface with this address.
-         */
-        return _interfaces.values().stream()
-            .filter(
-                i -> i.getAllAddresses().stream().anyMatch(p -> p.getIp().equals(sourceAddress)))
-            .findFirst()
-            .orElse(null);
-      }
-    }
-    return null;
   }
 
   public Map<String, Interface> getInterfaces() {
@@ -3456,11 +3435,38 @@ public final class CiscoConfiguration extends VendorConfiguration {
           }
           // Tunnels
           Tunnel tunnel = iface.getTunnel();
-          if (tunnel != null && isRealInterfaceName(tunnel.getSourceInterfaceName())) {
+          if (tunnel != null) {
             org.batfish.datamodel.Interface viIface = c.getAllInterfaces().get(ifaceName);
             if (viIface != null) {
-              viIface.addDependency(
-                  new Dependency(tunnel.getSourceInterfaceName(), DependencyType.BIND));
+              // Add dependency
+              if (isRealInterfaceName(tunnel.getSourceInterfaceName())) {
+                String parentIfaceName = canonicalizeInterfaceName(tunnel.getSourceInterfaceName());
+                viIface.addDependency(new Dependency(parentIfaceName, DependencyType.BIND));
+                // Also set tunnel config while we're at at it.
+                // Step one: determine IP address of parent interface
+                @Nullable
+                Ip parentIp =
+                    Optional.ofNullable(c.getActiveInterfaces().get(parentIfaceName))
+                        .map(org.batfish.datamodel.Interface::getConcreteAddress)
+                        .map(ConcreteInterfaceAddress::getIp)
+                        .orElse(null);
+                // Step 2: create tunnel configs for non-IPsec tunnels. IPsec handled separately.
+                if (tunnel.getMode() != TunnelMode.IPSEC) {
+                  // Ensure we have both src and dst IPs, otherwise don't convert
+                  if (tunnel.getDestination() != null
+                      && (tunnel.getSourceAddress() != null || parentIp != null)) {
+                    viIface.setTunnelConfig(
+                        TunnelConfiguration.builder()
+                            .setSourceAddress(firstNonNull(tunnel.getSourceAddress(), parentIp))
+                            .setDestinationAddress(tunnel.getDestination())
+                            .build());
+                  } else {
+                    _w.redFlag(
+                        String.format(
+                            "Could not determine src/dst IPs for tunnel %s", iface.getName()));
+                  }
+                }
+              }
             }
           }
         });
@@ -3510,7 +3516,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
               c.getIkePhase1Policies().put(ikePhase1Policy.getName(), ikePhase1Policy);
             });
 
-    // RSA pub named keys to IKE phase 1 key and IKE phase 1 policy
+    // standalone ISAKMP keys to IKE phase 1 key and IKE phase 1 policy
     _isakmpKeys.forEach(
         isakmpKey -> {
           IkePhase1Key ikePhase1Key = toIkePhase1Key(isakmpKey);
