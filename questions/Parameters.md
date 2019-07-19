@@ -72,7 +72,7 @@ Many types such as `applicationSpec` or `mlagIdSpec` are simply sets of values. 
 
 * `val1` specifies a singleton set with that value.
 
-* `/val.*/` specifies a set whose values all values match regex `val.*`.
+* `/val.*/` specifies a set whose values all match regex `val.*`.
 
 * `val1, val2` specifies a set with exactly those two values. 
 
