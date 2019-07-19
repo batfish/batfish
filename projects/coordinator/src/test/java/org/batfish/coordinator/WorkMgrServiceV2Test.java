@@ -227,7 +227,8 @@ public class WorkMgrServiceV2Test extends WorkMgrServiceV2TestBase {
             .header(CoordConstsV2.HTTP_HEADER_BATFISH_APIKEY, CoordConsts.DEFAULT_API_KEY)
             .get();
     assertThat(response.getStatus(), equalTo(OK.getStatusCode()));
-    Map<String, String> versionMap = response.readEntity(new GenericType<Map<String, String>>() {});
-    assertThat(versionMap, hasEntry("VersionKey", "VersionValue"));
+    assertThat(
+        response.readEntity(new GenericType<Map<String, String>>() {}),
+        hasEntry("VersionKey", "VersionValue"));
   }
 }
