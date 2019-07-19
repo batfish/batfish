@@ -3,6 +3,7 @@ package org.batfish.common;
 import static com.google.common.base.MoreObjects.firstNonNull;
 import static com.google.common.base.Preconditions.checkArgument;
 
+import com.google.common.annotations.VisibleForTesting;
 import javax.annotation.Nullable;
 import org.apache.commons.configuration2.Configuration;
 import org.apache.commons.configuration2.builder.fluent.Configurations;
@@ -13,9 +14,9 @@ import org.apache.maven.artifact.versioning.DefaultArtifactVersion;
  * different endpoints across API calls.
  */
 public final class Version {
-  private static final String PROPERTIES_PATH = "org/batfish/common/common.properties";
+  @VisibleForTesting static final String PROPERTIES_PATH = "org/batfish/common/common.properties";
 
-  static final String UNKNOWN_VERSION = "0.0.0";
+  public static final String UNKNOWN_VERSION = "0.0.0";
   /**
    * A special version string that is incompatible with all other version. Mainly used for testing.
    */
@@ -49,9 +50,14 @@ public final class Version {
    * could not be detected.
    */
   public static String getVersion() {
+    return getPropertiesVersion(PROPERTIES_PATH, "batfish_version");
+  }
+
+  /** Returns the version corresponding to the specified key, in the specified properties file */
+  public static String getPropertiesVersion(String propertiesPath, String key) {
     try {
-      Configuration config = new Configurations().properties(PROPERTIES_PATH);
-      String version = config.getString("batfish_version");
+      Configuration config = new Configurations().properties(propertiesPath);
+      String version = config.getString(key);
       if (version.contains("project.version")) {
         // For whatever reason, resource filtering didn't work.
         return UNKNOWN_VERSION;
