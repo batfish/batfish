@@ -64,82 +64,84 @@ For many parameters types, there is a "resolver" question that may be used to le
   * `/abc/`, `/^abc/`, `/abc$/` match strings strings containing, beginning with, and ending with 'abc'
   * `/ab[c-d]/` and `/ab(c|d)/` match strings 'abc' and 'abd'.
 
-* **Set of enums** Many parameter types such as `applicationSpec` or `mlagIdSpec` represent a set of values. Such parameters share a common grammar, though with different base values. Example expressions for this grammar are `val1`, `/val.*/` and `val1, val2`, which respectively, refer to the value "val1", all values that match "val.*", and a set with two values. 
-
-   The specification of this grammar is:
-
-   <pre>
-   enumSetSpec :=
-       enumSetTerm [<b>,</b> enumSetTerm]
-
-   enumSetTerm :=
-       &lt;<i>enum-value</i>&gt;
-       | <b>/</b>&lt;<i>regex-over-enum-values</i>&gt;<b>/</b>
-   </pre>
-
-
 * **Case-insensitive names:** All names and regexes use case-insensitive matching. Thus, `AS1BORDER1` is same as `as1border1` and `Ethernet0/0` is same as `ethernet0/0`.
+
+### Set of enums or names
+
+Many types such as `applicationSpec` or `mlagIdSpec` are simply sets of values. Such parameters share a common grammar, but with different base values. Example expressions for this grammar are:
+
+* `val1` specifies a singleton set with that value.
+
+* `/val.*/` specifies a set whose values all match regex `val.*`.
+
+* `val1, val2` specifies a set with exactly those two values. 
+
+The full specification of this grammar is:
+
+<pre>
+enumSetSpec :=
+   enumSetTerm [<b>,</b> enumSetTerm]
+
+enumSetTerm :=
+   &lt;<i>enum-value</i>&gt;
+   | <b>/</b>&lt;<i>regex-over-enum-values</i>&gt;<b>/</b>
+</pre>
+
 
 ## Application Specifier
 
 A combined specification for an IP protocol (e.g., TCP) and *destination* port to denote packets for common applications.
 
-An application specifier is a set of enums (see above) over the following names (with the corresponding IP protocol and destination port in parenthesis): DNS(UDP, 53), HTTP(TCP, 80), HTTPS(TCP, 443), SNMP(UDP, 161), SSH(TCP, 22), TELNET(TCP, 23).
+An application specifier follows the [enum set grammar](#set-of-enums-or-names) with the following values (with the corresponding IP protocol and destination port in parenthesis): `DNS` (UDP, 53), `HTTP` (TCP, 80), `HTTPS` (TCP, 443), `SNMP` (UDP, 161), `SSH` (TCP, 22), `TELNET` (TCP, 23).
 
 ## BGP Peer Property Specifier
 
 A specification for a set of BGP peer properties (e.g., those returned by the `bgpPeerConfiguration` question).
 
-A BGP peer property property specifier is a set of enums (see above) over the following values: Local_AS, Local_IP, Is_Passive, Remote_AS, Route_Reflector_Client, Cluster_ID, Peer_Group, Import_Policy, Export_Policy, Send_Community.
+A BGP peer property property specifier follows the [enum set grammar](#set-of-enums-or-names) over the following values: `Local_AS`, `Local_IP`, `Is_Passive`, `Remote_AS`, `Route_Reflector_Client`, `Cluster_ID`, `Peer_Group`, `Import_Policy`, `Export_Policy`, `Send_Community`.
 
 
 ## BGP Process Property Specifier
 
 A specification for a set of BGP process properties (e.g., those returned by the `bgpProcessConfiguration` question).
 
-A BGP process property specifier is a set of enums (see above) over the following values: Multipath_Match_Mode, Multipath_EBGP, Multipath_IBGP, Neighbors, Route_Reflector, Tie_Breaker. 
+A BGP process property specifier follows the [enum set grammar](#set-of-enums-or-names) over the following values: `Multipath_Match_Mode`, `Multipath_EBGP`, `Multipath_IBGP`, `Neighbors`, `Route_Reflector`, `Tie_Breaker`.
 
 ## BGP Session Compat Status Specifier
 
 A specification for a set of BGP session compatibility statuses.
 
-* `UNIQUE_MATCH` specifies a singleton set with that status.
+A BGP session compat status specifier follows the [enum set grammar](#set-of-enums-or-names) over the following values:
 
-* `UNIQUE_MATCH, DYNAMIC_MATCH` specifies a set with those statuses.
-
-* `/match/` specifies a set with statuses that contain that substring.
-
-#### BGP Session Compat Status Specifier Grammar
-
-A BGP session status specifier is a set of enums (see above) over the following values: LOCAL_IP_UNKNOWN_STATICALLY, NO_LOCAL_IP, NO_LOCAL_AS, NO_REMOTE_IP, NO_REMOTE_PREFIX, NO_REMOTE_AS, INVALID_LOCAL_IP, UNKNOWN_REMOTE, HALF_OPEN, MULTIPLE_REMOTES, UNIQUE_MATCH, DYNAMIC_MATCH, NO_MATCH_FOUND. 
+* `LOCAL_IP_UNKNOWN_STATICALLY` — local IP address for an iBGP or multihop eBGP session is not configured
+* `NO_LOCAL_IP`— local IP address for a singlehop eBGP  session is not configured
+* `NO_LOCAL_AS`— local AS for the session is not configured
+* `NO_REMOTE_IP` — remote IP address for a point-to-point peer is not configured
+* `NO_REMOTE_PREFIX` — remote prefix for a dynamic peer is not configured
+* `NO_REMOTE_AS` — remote AS for the session is not configured
+* `INVALID_LOCAL_IP` — configured local IP address does not belong to any active interface
+* `UNKNOWN_REMOTE` — configured remote IP is not present in the network snapshot
+* `HALF_OPEN` — no compatible match found in the network snapshot for a point-to-point peer
+* `MULTIPLE_REMOTES` — multiple compatible matches found for a point-to-point peer
+* `UNIQUE_MATCH` — exactly one match found for a point-to-point peer
+* `DYNAMIC_MATCH` — at least one compatible match found for a dynamic peer
+* `NO_MATCH_FOUND` — no compatible match found for a dynamic peer
 
 ## BGP Session Status Specifier
 
 A specification for a set of BGP session statuses.
 
-* `ESTABLISHED` specifies a singleton set with that status.
+A BGP session status specifier follows the [enum set grammar](#set-of-enums-or-names) over the following values: 
 
-* `NOT_ESTABLISHED, NOT_COMPATIBLE` specifies a set with those statuses.
-
-* `/estab/` specifies a set with statuses that contain that substring.
-
-#### BGP Session Status Specifier Grammar
-
-A BGP session status specifier is a set of enums (see above) over the following values: ESTABLISHED, NOT_ESTABLISHED, NOT_COMPATIBLE. 
+* `NOT_COMPATIBLE` — the BGP session is not compatibly configured
+* `NOT_ESTABLISHED` — the BGP session configuration is compatible but the session was not established  
+* `ESTABLISHED` — the BGP session is established
 
 ## BGP Session Type Specifier
 
 A specification for a set of BGP session types.
 
-* `IBGP` indicates iBGP sessions.
-
-* `EBGP_SINGLEHOP, EBGP_MULTIHOP` indicates single and multi-hop eBGP sessions.
-
-* `/EBGP/` indicates all types of eBGP sessions.
-
-#### BGP Session Type Specifier Grammar
-
-A BGP session type specifier is a set of enums (see above) over the following values: IBGP, EBGP_SINGLEHOP, EBGP_MULTIHOP, EBGP_UNNUMBERED, IBGP_UNNUMBERED, UNSET. 
+A BGP session type specifier follows the [enum set grammar](#set-of-enums-or-names) over the following values: `IBGP`, `EBGP_SINGLEHOP`, `EBGP_MULTIHOP`, `EBGP_UNNUMBERED`, `IBGP_UNNUMBERED`, `UNSET`. 
 
 ## Disposition Specifier
 
@@ -294,7 +296,7 @@ ipProtocol :=
 
 #### IP Protocol Names
 
-Batfish understands the following protocol names: AHP(51), AN(107), ANY_0_HOP_PROTOCOL(114), ANY_DISTRIBUTED_FILE_SYSTEM(68), ANY_HOST_INTERNAL_PROTOCOL(61), ANY_LOCAL_NETWORK(63), ANY_PRIVATE_ENCRYPTION_SCHEME(99), ARGUS(13), ARIS(104), AX25(93), BBN_RCC_MON(10), BNA(49), BR_SAT_MON(76), CBT(7), CFTP(62), CHAOS(16), COMPAQ_PEER(110), CPHB(73), CPNX(72), CRTP(126), CRUDP(127), DCCP(33), DCN_MEAS(19), DDP(37), DDX(116), DGP(86), EGP(8), EIGRP(88), EMCON(14), ENCAP(98), ESP(50), ETHERIP(97), FC(133), FIRE(125), GGP(3), GMTP(100), GRE(47), HIP(139), HMP(20), HOPOPT(0), I_NLSP(52), IATP(117),IPV6_ROUTE(43),IPX_IN_IP(111),IRTP(28), ISIS(124), ISO_IP(80), ISO_TP4(29), KRYPTOLAN(65), L2TP(115), LARP(91), LEAF1(25), LEAF2(26), MANAET(138), MERIT_INP(32), MFE_NSP(31), MHRP(48), MICP(95), MOBILE(55), MOBILITY(135), MPLS_IN_IP(137), MTP(92), MUX(18), NARP(54), NETBLT(30), NSFNET_IGP(85), NVPII(11), OSPF(89), PGM(113), PIM(103), PIPE(131), PNNI(102), PRM(21), PTP(123), PUP(12), PVP(75), QNX(106), RDP(27), ROHC(142), RSVP(46), RSVP_E2E_IGNORE(134), RVD(66), SAT_EXPAK(64), SAT_MON(69), SCC_SP(96), SCPS(105), SCTP(132), SDRP(42), SECURE_VMTP(82), SHIM6(140), SKIP(57), SM(122), SMP(121), SNP(109), SPRITE_RPC(90), SPS(130), SRP(119), SSCOPMCE(128), ST(5), STP(118), SUN_ND(77), SWIPE(53), TCF(87), TCP(6), THREE_PC(34), TLSP(56), TPPLUSPLUS(39), TRUNK1(23), TRUNK2(24), TTP(84), UDP(17), UDP_LITE(136), UTI(120), VINES(83), VISA(70), VMTP(81), VRRP(112), WB_EXPAK(79), WB_MON(78), WESP(141), WSN(74), XNET(15), XNS_IDP(22), XTP(36).
+Batfish understands the following protocol names (with corresponding numbers in parenthesis): `AHP` (51), `AN` (107), `ANY_0_HOP_PROTOCOL` (114), `ANY_DISTRIBUTED_FILE_SYSTEM` (68), `ANY_HOST_INTERNAL_PROTOCOL` (61), `ANY_LOCAL_NETWORK` (63), `ANY_PRIVATE_ENCRYPTION_SCHEME` (99), `ARGUS` (13), `ARIS` (104), `AX25` (93), `BBN_RCC_MON` (10), `BNA` (49), `BR_SAT_MON` (76), `CBT` (7), `CFTP` (62), `CHAOS` (16), `COMPAQ_PEER` (110), `CPHB` (73), `CPNX` (72), `CRTP` (126), `CRUDP` (127), `DCCP` (33), `DCN_MEAS` (19), `DDP` (37), `DDX` (116), `DGP` (86), `EGP` (8), `EIGRP` (88), `EMCON` (14), `ENCAP` (98), `ESP` (50), `ETHERIP` (97), `FC` (133), `FIRE` (125), `GGP` (3), `GMTP` (100), `GRE` (47), `HIP` (139), `HMP` (20), `HOPOPT` (0), `I_NLSP` (52), `IATP` (117), `IPV6_ROUTE` (43), `IPX_IN_IP` (111), `IRTP` (28), `ISIS` (124), `ISO_IP` (80), `ISO_TP4` (29), `KRYPTOLAN` (65), `L2TP` (115), `LARP` (91), `LEAF1` (25), `LEAF2` (26), `MANAET` (138), `MERIT_INP` (32), `MFE_NSP` (31), `MHRP` (48), `MICP` (95), `MOBILE` (55), `MOBILITY` (135), `MPLS_IN_IP` (137), `MTP` (92), `MUX` (18), `NARP` (54), `NETBLT` (30), `NSFNET_IGP` (85), `NVPII` (11), `OSPF` (89), `PGM` (113), `PIM` (103), `PIPE` (131), `PNNI` (102), `PRM` (21), `PTP` (123), `PUP` (12), `PVP` (75), `QNX` (106), `RDP` (27), `ROHC` (142), `RSVP` (46), `RSVP_E2E_IGNORE` (134), `RVD` (66), `SAT_EXPAK` (64), `SAT_MON` (69), `SCC_SP` (96), `SCPS` (105), `SCTP` (132), `SDRP` (42), `SECURE_VMTP` (82), `SHIM6` (140), `SKIP` (57), `SM` (122), `SMP` (121), `SNP` (109), `SPRITE_RPC` (90), `SPS` (130), `SRP` (119), `SSCOPMCE` (128), `ST` (5), `STP` (118), `SUN_ND` (77), `SWIPE` (53), `TCF` (87), `TCP` (6), `THREE_PC` (34), `TLSP` (56), `TPPLUSPLUS` (39), `TRUNK1` (23), `TRUNK2` (24), `TTP` (84), `UDP` (17), `UDP_LITE` (136), `UTI` (120), `VINES` (83), `VISA` (70), `VMTP` (81), `VRRP` (112), `WB_EXPAK` (79), `WB_MON` (78), `WESP` (141), `WSN` (74), `XNET` (15), `XNS_IDP` (22), `XTP` (36).
 
 In addition, a special name `IP` may be used to denote all IP protocols. 
 
@@ -330,17 +332,7 @@ ipTerm :=
 
 ## IPSec Session Status Specifier
 
- A specification for a set of IPSec session statuses.
-
- * `IKE_PHASE1_FAILED` specifies a set with that status.
-
- * `IKE_PHASE1_FAILED, IPSEC_PHASE2_FAILED` specifies a set with those two statues.
-
- * `/phase1/` specifies a set with all statuses that have 'phase1' as a substring.
-
-#### IPSec Session Status Specifier Grammar
-
- An IPSec session status specifier is a set of enums (see above) over the following values:   IPSEC_SESSION_ESTABLISHED, IKE_PHASE1_FAILED, IKE_PHASE1_KEY_MISMATCH, IPSEC_PHASE2_FAILED, MISSING_END_POINT. 
+ An IPSec session status specifier follows the [enum set grammar](#set-of-enums-or-names) over the following values:   `IPSEC_SESSION_ESTABLISHED`, `IKE_PHASE1_FAILED`, `IKE_PHASE1_KEY_MISMATCH`, `IPSEC_PHASE2_FAILED`, `MISSING_END_POINT`. 
 
 ## Location Specifier
 
@@ -391,28 +383,20 @@ locationInterface :=
 
 A specification for a set of MLAG domain identifiers.
 
-* `domain1` indicates a single domain with that name.
-
-* `domain1, domain2` indicates these two domains.
-
-* `/domain/` indicates all domains with that substring.
-
-#### MLAG ID Specifier Grammar
-
-An MLAG ID specifier grammar follows the enum set grammar (see above) with the base set of values as all Ids that appear in the snapshot. 
+An MLAG ID specifier follows the [enum set grammar](#set-of-enums-or-names) over the domain ID values that appear in the snapshot. 
 
 ## Named Structure Specifier
 
 A specification for a set of structure types in Batfish's vendor independent model. 
 
-A named structure specifier is a set of enums (see above) over the following values: AS_PATH_ACCESS_LIST, AUTHENTICATION_KEY_CHAIN, COMMUNITY_LIST, IKE_PHASE1_KEYS, IKE_PHASE1_POLICIES, IKE_PHASE1_PROPOSALS, IP_ACCESS_LIST, IP_6_ACCESS_LIST, IPSEC_PEER_CONFIGS, IPSEC_PHASE2_POLICIES, IPSEC_PHASE2_PROPOSALS, PBR_POLICY, ROUTE_FILTER_LIST, ROUTE_6_FILTER_LIST, ROUTING_POLICY, VRF, ZONE.
+A named structure specifier follows the [enum set grammar](#set-of-enums-or-names) over the following values: `AS_PATH_ACCESS_LIST`, `AUTHENTICATION_KEY_CHAIN`, `COMMUNITY_LIST`, `IKE_PHASE1_KEYS`, `IKE_PHASE1_POLICIES`, `IKE_PHASE1_PROPOSALS`, `IP_ACCESS_LIST`, `IP_6_ACCESS_LIST`, `IPSEC_PEER_CONFIGS`, `IPSEC_PHASE2_POLICIES`, `IPSEC_PHASE2_PROPOSALS`, `PBR_POLICY`, `ROUTE_FILTER_LIST`, `ROUTE_6_FILTER_LIST`, `ROUTING_POLICY`, `VRF`, `ZONE`.
 
 
 ## Node Property Specifier
 
 A specification for a set of node-level properties (e.g., those returned by the `nodeProperties` question).
 
-A node property specifier is a set of enums (see above) over the following values: AS_Path_Access_Lists, Authentication_Key_Chains, Canonical_IP, Community_Lists, Configuration_Format, Default_Cross_Zone_Action, Default_Inbound_Action, Device_Type, DNS_Servers, DNS_Source_Interface, Domain_Name, Hostname, IKE_Phase1_Keys, IKE_Phase1_Policies, IKE_Phase1_Proposals, Interfaces, IP_Access_Lists, IP_Spaces, IP6_Access_Lists, IPsec_Peer_Configs, IPsec_Phase2_Policies, IPsec_Phase2_Proposals, IPSec_Vpns, Logging_Servers, Logging_Source_Interface, NTP_Servers, NTP_Source_Interface, PBR_Policies, Route_Filter_Lists, Route6_Filter_Lists, Routing_Policies, SNMP_Source_Interface, SNMP_Trap_Servers, TACACS_Servers, TACACS_Source_Interface, Vendor_Family, VRFs, Zones. 
+A node property specifier follows the [enum set grammar](#set-of-enums-or-names) over the following values: `AS_Path_Access_Lists`, `Authentication_Key_Chains`, `Canonical_IP`, `Community_Lists`, `Configuration_Format`, `Default_Cross_Zone_Action`, `Default_Inbound_Action`, `Device_Type`, `DNS_Servers`, `DNS_Source_Interface`, `Domain_Name`, `Hostname`, `IKE_Phase1_Keys`, `IKE_Phase1_Policies`, `IKE_Phase1_Proposals`, `Interfaces`, `IP_Access_Lists`, `IP_Spaces`, `IP6_Access_Lists`, `IPsec_Peer_Configs`, `IPsec_Phase2_Policies`, `IPsec_Phase2_Proposals`, `IPSec_Vpns`, `Logging_Servers`, `Logging_Source_Interface`, `NTP_Servers`, `NTP_Source_Interface`, `PBR_Policies`, `Route_Filter_Lists`, `Route6_Filter_Lists`, `Routing_Policies`, `SNMP_Source_Interface`, `SNMP_Trap_Servers`, `TACACS_Servers`, `TACACS_Source_Interface`, `Vendor_Family`, `VRFs`, `Zones`. 
 
 
 ## Node Specifier
@@ -460,43 +444,19 @@ Batfish has the following device types.
 
 A specification for a set of OSPF interface properties.
 
-* `OSPF_COST` specifies a set with that property.
-
-* `OSPF_COST, OSPF_PASSIVE` specifies a set with those two properties.
-
-* `/cost/` specifies a set with all properties with 'cost' in their name.
-
-#### OSPF Interface Property Specifier Grammar
-
-An OSPF interface property specifier is a set of enums (see above) over the following values: OSPF_AREA_NAME, OSPF_COST, OSPF_PASSIVE, OSPF_POINT_TO_POINT.
+An OSPF interface property specifier follows the [enum set grammar](#set-of-enums-or-names) over the following values: `OSPF_AREA_NAME`, `OSPF_COST`, `OSPF_PASSIVE`, `OSPF_POINT_TO_POINT`.
 
 ## OSPF Process Property Specifier
 
 A specification for a set of OSPF process properties.
 
-* `AREA_BORDER_ROUTER` specifies a set with that property.
-
-* `AREA_BORDER_ROUTER, EXPORT_POLICY_SOURCES` specifies a set with those two properties.
-
-* `/area/` specifies a set with all properties with 'area' in their name.
-
-#### OSPF Process Property Specifier Grammar
-
-An OSPF process property specifier is a set of enums (see above) over the following values: AREA_BORDER_ROUTER, AREAS, EXPORT_POLICY_SOURCES, REFERENCE_BANDWIDTH, RFC_1583_COMPATIBLE, ROUTER_ID.
+An OSPF process property specifier follows the [enum set grammar](#set-of-enums-or-names) over the following values: `AREA_BORDER_ROUTER`, `AREAS`, `EXPORT_POLICY_SOURCES`, `REFERENCE_BANDWIDTH`, `RFC_1583_COMPATIBLE`, `ROUTER_ID`.
 
 ## Routing Protocol Specifier
 
  A specification for a set of routing protocols.
 
- * `BGP` specifies a single-element set with that value.
-
- * `BGP, OSPF` specifies a set with those two values.
-
- * `/BGP/` specifies a set with all protocols that contain 'BGP'.
-
- #### Routing Protocol Specifier Grammar
-
- The routing protocol specifier grammar follows the set of enums grammar (see above) over protocol names. The set of possible names include specific low-level protocols such as `OSPF-INTRA` and logical, higher-level names that denote multiple protocols. The logical name `ALL` denotes all protocols. The full hierarchy of names is:
+The routing protocol specifier grammar follows the [enum set grammar](#set-of-enums-or-names) over protocol names. The set of names include most-specific protocols such as `OSPF-INTRA` and logical names that denote multiple specific protocols. The logical name `ALL` denotes all protocols. The full hierarchy of names is:
 
 <!-- From RoutingProtocolSpecifier.java -->
 `ALL`
@@ -545,12 +505,4 @@ routingPolicyTerm :=
 
  A specification for a set of VXLAN VNI properties.
 
- * `LOCAL_VTEP_IP` indicates the local VTEP IP.
-
- * `LOCAL_VTEP_IP, VTEP_FLOOD_LIST` indicates the two properties specified.
-
- * `/VTEP/` indicates all properties with VTEP in their name.
-
- #### VXLAN VNI Property Specifier Grammar
-
- A VXLAN VNI property specifier is a set of enums (see above) over the following values: LOCAL_VTEP_IP, MULTICAST_GROUP, VLAN, VNI, VTEP_FLOOD_LIST, VXLAN_PORT. 
+A VXLAN VNI property specifier follows the [enum set grammar](#set-of-enums-or-names) over the following values: `LOCAL_VTEP_IP`, `MULTICAST_GROUP`, `VLAN`, `VNI`, `VTEP_FLOOD_LIST`, `VXLAN_PORT`. 
