@@ -1498,7 +1498,7 @@
         "ikePhase1Keys" : {
           "keyring-vpn-ba2e34a8-0" : {
             "keyHash" : "7db2fd6e9dcffcf826743b57bc0518cfcbca8f4db0b80a7a2c3f0c3b09deb49a",
-            "keyType" : "PRE_SHARED_KEY",
+            "keyType" : "PRE_SHARED_KEY_UNENCRYPTED",
             "localInterface" : "GigabitEthernet2/0",
             "remoteIdentity" : {
               "class" : "org.batfish.datamodel.IpWildcardIpSpace",
@@ -1507,7 +1507,7 @@
           },
           "keyring-vpn-ba2e34a8-1" : {
             "keyHash" : "84d71e5f49cce153c80a1f13b47989d25f2aa29d9bbc75624ab73435db792f87",
-            "keyType" : "PRE_SHARED_KEY",
+            "keyType" : "PRE_SHARED_KEY_UNENCRYPTED",
             "localInterface" : "GigabitEthernet2/0",
             "remoteIdentity" : {
               "class" : "org.batfish.datamodel.IpWildcardIpSpace",
@@ -1520,7 +1520,7 @@
             "name" : "isakmp-vpn-ba2e34a8-0",
             "ikePhase1Key" : {
               "keyHash" : "7db2fd6e9dcffcf826743b57bc0518cfcbca8f4db0b80a7a2c3f0c3b09deb49a",
-              "keyType" : "PRE_SHARED_KEY",
+              "keyType" : "PRE_SHARED_KEY_UNENCRYPTED",
               "localInterface" : "GigabitEthernet2/0",
               "remoteIdentity" : {
                 "class" : "org.batfish.datamodel.IpWildcardIpSpace",
@@ -1541,7 +1541,7 @@
             "name" : "isakmp-vpn-ba2e34a8-1",
             "ikePhase1Key" : {
               "keyHash" : "84d71e5f49cce153c80a1f13b47989d25f2aa29d9bbc75624ab73435db792f87",
-              "keyType" : "PRE_SHARED_KEY",
+              "keyType" : "PRE_SHARED_KEY_UNENCRYPTED",
               "localInterface" : "GigabitEthernet2/0",
               "remoteIdentity" : {
                 "class" : "org.batfish.datamodel.IpWildcardIpSpace",
@@ -4910,7 +4910,7 @@
         "ikePhase1Keys" : {
           "vpn-ba2e34a8-1" : {
             "keyHash" : "7db2fd6e9dcffcf826743b57bc0518cfcbca8f4db0b80a7a2c3f0c3b09deb49a",
-            "keyType" : "PRE_SHARED_KEY",
+            "keyType" : "PRE_SHARED_KEY_UNENCRYPTED",
             "localInterface" : "external1",
             "remoteIdentity" : {
               "class" : "org.batfish.datamodel.IpIpSpace",
@@ -4919,7 +4919,7 @@
           },
           "vpn-ba2e34a8-2" : {
             "keyHash" : "84d71e5f49cce153c80a1f13b47989d25f2aa29d9bbc75624ab73435db792f87",
-            "keyType" : "PRE_SHARED_KEY",
+            "keyType" : "PRE_SHARED_KEY_UNENCRYPTED",
             "localInterface" : "external2",
             "remoteIdentity" : {
               "class" : "org.batfish.datamodel.IpIpSpace",
@@ -4932,7 +4932,7 @@
             "name" : "vpn-ba2e34a8-1",
             "ikePhase1Key" : {
               "keyHash" : "7db2fd6e9dcffcf826743b57bc0518cfcbca8f4db0b80a7a2c3f0c3b09deb49a",
-              "keyType" : "PRE_SHARED_KEY",
+              "keyType" : "PRE_SHARED_KEY_UNENCRYPTED",
               "localInterface" : "external1",
               "remoteIdentity" : {
                 "class" : "org.batfish.datamodel.IpIpSpace",
@@ -4952,7 +4952,7 @@
             "name" : "vpn-ba2e34a8-2",
             "ikePhase1Key" : {
               "keyHash" : "84d71e5f49cce153c80a1f13b47989d25f2aa29d9bbc75624ab73435db792f87",
-              "keyType" : "PRE_SHARED_KEY",
+              "keyType" : "PRE_SHARED_KEY_UNENCRYPTED",
               "localInterface" : "external2",
               "remoteIdentity" : {
                 "class" : "org.batfish.datamodel.IpIpSpace",
