@@ -63,7 +63,6 @@ import org.batfish.datamodel.DataPlane;
 import org.batfish.datamodel.answers.Answer;
 import org.batfish.datamodel.answers.AnswerStatus;
 import org.batfish.datamodel.collections.BgpAdvertisementsByVrf;
-import org.batfish.datamodel.collections.RoutesByVrf;
 import org.batfish.identifiers.NetworkId;
 import org.batfish.identifiers.SnapshotId;
 import org.codehaus.jettison.json.JSONArray;
@@ -124,9 +123,6 @@ public class Driver {
   private static final Map<NetworkSnapshot, SortedMap<String, BgpAdvertisementsByVrf>>
       CACHED_ENVIRONMENT_BGP_TABLES = buildEnvironmentBgpTablesCache();
 
-  private static final Map<NetworkSnapshot, SortedMap<String, RoutesByVrf>>
-      CACHED_ENVIRONMENT_ROUTING_TABLES = buildEnvironmentRoutingTablesCache();
-
   private static final Cache<NetworkSnapshot, SortedMap<String, Configuration>> CACHED_TESTRIGS =
       buildTestrigCache();
 
@@ -144,8 +140,6 @@ public class Driver {
 
   private static final int MAX_CACHED_ENVIRONMENT_BGP_TABLES = 4;
 
-  private static final int MAX_CACHED_ENVIRONMENT_ROUTING_TABLES = 4;
-
   private static final int MAX_CACHED_TESTRIGS = 5;
 
   static Logger networkListenerLogger =
@@ -158,11 +152,6 @@ public class Driver {
   private static Map<NetworkSnapshot, SortedMap<String, BgpAdvertisementsByVrf>>
       buildEnvironmentBgpTablesCache() {
     return Collections.synchronizedMap(new LRUMap<>(MAX_CACHED_ENVIRONMENT_BGP_TABLES));
-  }
-
-  private static Map<NetworkSnapshot, SortedMap<String, RoutesByVrf>>
-      buildEnvironmentRoutingTablesCache() {
-    return Collections.synchronizedMap(new LRUMap<>(MAX_CACHED_ENVIRONMENT_ROUTING_TABLES));
   }
 
   private static Cache<NetworkSnapshot, SortedMap<String, Configuration>> buildTestrigCache() {
@@ -544,7 +533,6 @@ public class Driver {
               CACHED_TESTRIGS,
               CACHED_DATA_PLANES,
               CACHED_ENVIRONMENT_BGP_TABLES,
-              CACHED_ENVIRONMENT_ROUTING_TABLES,
               null,
               null);
 
