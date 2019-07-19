@@ -427,11 +427,15 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
             (vrfName, bgpVrf) ->
                 _c.getVrfs().get(vrfName).setBgpProcess(toBgpProcess(vrfName, bgpVrf)));
 
-    // Create dud processes for other VRFs, so we can have proper RIBs
+    // Create dud processes for other VRFs that use L3 VNIs, so we can have proper RIBs
     _c.getVrfs()
         .forEach(
             (vrfName, vrf) -> {
-              if (vrf.getBgpProcess() == null && _c.getDefaultVrf().getBgpProcess() != null) {
+              Vrf vsVrf = _vrfs.get(vrfName);
+              if (vsVrf != null
+                  && vsVrf.getVni() != null // has L3 VNI
+                  && vrf.getBgpProcess() == null // process does not already exist
+                  && _c.getDefaultVrf().getBgpProcess() != null) { // there is a default BGP proc
                 vrf.setBgpProcess(
                     org.batfish.datamodel.BgpProcess.builder()
                         .setRouterId(_c.getDefaultVrf().getBgpProcess().getRouterId())
