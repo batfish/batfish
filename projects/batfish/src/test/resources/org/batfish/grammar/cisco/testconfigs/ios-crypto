@@ -13,6 +13,10 @@ crypto isakmp policy 10
 crypto isakmp policy 30
   authentication rsa-encr
 !
+crypto isakmp key 6 FLgBaJHXdYY_AcHZZMgQ_RhTDJXHUBAAB address 2.2.2.2
+!
+crypto isakmp key psk1 address 1.1.1.1 255.255.255.0
+!
 crypto keyring ISAKMP-KEYRING-ADDRESS
   pre-shared-key address 1.2.3.4 key psk1
   local-address 2.3.4.6

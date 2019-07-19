@@ -234,7 +234,7 @@ public class VpnConnection implements AwsVpcEntity, Serializable {
   private static IkePhase1Key toIkePhase1PreSharedKey(
       IpsecTunnel ipsecTunnel, Ip remoteIdentity, String localInterface) {
     IkePhase1Key ikePhase1Key = new IkePhase1Key();
-    ikePhase1Key.setKeyType(IkeKeyType.PRE_SHARED_KEY);
+    ikePhase1Key.setKeyType(IkeKeyType.PRE_SHARED_KEY_UNENCRYPTED);
     ikePhase1Key.setKeyHash(ipsecTunnel.getIkePreSharedKeyHash());
     ikePhase1Key.setRemoteIdentity(remoteIdentity.toIpSpace());
     ikePhase1Key.setLocalInterface(localInterface);

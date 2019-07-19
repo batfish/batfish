@@ -351,6 +351,7 @@ import org.batfish.datamodel.IcmpCode;
 import org.batfish.datamodel.IcmpType;
 import org.batfish.datamodel.IkeAuthenticationMethod;
 import org.batfish.datamodel.IkeHashingAlgorithm;
+import org.batfish.datamodel.IkeKeyType;
 import org.batfish.datamodel.IntegerSpace;
 import org.batfish.datamodel.IntegerSpace.Builder;
 import org.batfish.datamodel.Ip;
@@ -535,6 +536,7 @@ import org.batfish.grammar.cisco.CiscoParser.Cipprf_set_isakmp_profileContext;
 import org.batfish.grammar.cisco.CiscoParser.Cipprf_set_pfsContext;
 import org.batfish.grammar.cisco.CiscoParser.Cipprf_set_transform_setContext;
 import org.batfish.grammar.cisco.CiscoParser.Cipt_modeContext;
+import org.batfish.grammar.cisco.CiscoParser.Cis_keyContext;
 import org.batfish.grammar.cisco.CiscoParser.Cis_policyContext;
 import org.batfish.grammar.cisco.CiscoParser.Cis_profileContext;
 import org.batfish.grammar.cisco.CiscoParser.Cisco_configurationContext;
@@ -1223,6 +1225,7 @@ import org.batfish.representation.cisco.IpBgpPeerGroup;
 import org.batfish.representation.cisco.IpsecProfile;
 import org.batfish.representation.cisco.IpsecTransformSet;
 import org.batfish.representation.cisco.Ipv6BgpPeerGroup;
+import org.batfish.representation.cisco.IsakmpKey;
 import org.batfish.representation.cisco.IsakmpPolicy;
 import org.batfish.representation.cisco.IsakmpProfile;
 import org.batfish.representation.cisco.IsisProcess;
@@ -2049,6 +2052,36 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     } else {
       throw new BatfishException("Unsupported mode " + ctx.getText());
     }
+  }
+
+  @Override
+  public void enterCis_key(Cis_keyContext ctx) {
+    int encType = ctx.DEC() != null ? toInteger(ctx.DEC()) : 0;
+    IkeKeyType ikeKeyType;
+    if (encType == 0) {
+      ikeKeyType = IkeKeyType.PRE_SHARED_KEY_UNENCRYPTED;
+    } else if (encType == 6) {
+      ikeKeyType = IkeKeyType.PRE_SHARED_KEY_ENCRYPTED;
+    } else {
+      _w.addWarning(
+          ctx,
+          getFullText(ctx),
+          _parser,
+          String.format("%s is not a valid encryption type", encType));
+      return;
+    }
+    String psk = ctx.key.getText();
+    Ip wildCardMask = ctx.wildcard_mask == null ? Ip.MAX : toIp(ctx.wildcard_mask);
+    _configuration
+        .getIsakmpKeys()
+        .add(
+            new IsakmpKey(
+                IpWildcard.ipWithWildcardMask(toIp(ctx.ip_address), wildCardMask.inverted())
+                    .toIpSpace(),
+                ikeKeyType == IkeKeyType.PRE_SHARED_KEY_UNENCRYPTED
+                    ? CommonUtil.sha256Digest(psk + CommonUtil.salt())
+                    : psk,
+                ikeKeyType));
   }
 
   @Override

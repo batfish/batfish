@@ -2,6 +2,7 @@ package org.batfish.representation.cisco;
 
 import static com.google.common.base.MoreObjects.firstNonNull;
 import static java.util.Collections.singletonList;
+import static org.batfish.datamodel.IkePhase1Policy.PREFIX_ISAKMP_KEY;
 import static org.batfish.datamodel.IkePhase1Policy.PREFIX_RSA_PUB;
 import static org.batfish.datamodel.Interface.INVALID_LOCAL_INTERFACE;
 import static org.batfish.datamodel.Interface.UNSET_LOCAL_INTERFACE;
@@ -607,7 +608,7 @@ class CiscoConversions {
   static IkePhase1Key toIkePhase1Key(Keyring keyring) {
     IkePhase1Key ikePhase1Key = new IkePhase1Key();
     ikePhase1Key.setKeyHash(keyring.getKey());
-    ikePhase1Key.setKeyType(IkeKeyType.PRE_SHARED_KEY);
+    ikePhase1Key.setKeyType(IkeKeyType.PRE_SHARED_KEY_UNENCRYPTED);
     ikePhase1Key.setLocalInterface(keyring.getLocalInterfaceName());
     if (keyring.getRemoteIdentity() != null) {
       ikePhase1Key.setRemoteIdentity(keyring.getRemoteIdentity().toIpSpace());
@@ -622,6 +623,14 @@ class CiscoConversions {
     if (rsaPubKey.getAddress() != null) {
       ikePhase1Key.setRemoteIdentity(rsaPubKey.getAddress().toIpSpace());
     }
+    return ikePhase1Key;
+  }
+
+  static IkePhase1Key toIkePhase1Key(@Nonnull IsakmpKey isakmpKey) {
+    IkePhase1Key ikePhase1Key = new IkePhase1Key();
+    ikePhase1Key.setKeyHash(isakmpKey.getKey());
+    ikePhase1Key.setKeyType(isakmpKey.getIkeKeyType());
+    ikePhase1Key.setRemoteIdentity(isakmpKey.getAddress());
     return ikePhase1Key;
   }
 
@@ -648,8 +657,34 @@ class CiscoConversions {
     return ikePhase1Policy;
   }
 
+  static IkePhase1Policy toIkePhase1Policy(
+      @Nonnull IsakmpKey isakmpKey,
+      @Nonnull CiscoConfiguration oldConfig,
+      @Nonnull IkePhase1Key ikePhase1KeyFromIsakmpKey) {
+    IkePhase1Policy ikePhase1Policy = new IkePhase1Policy(getIsakmpKeyGeneratedName(isakmpKey));
+
+    ikePhase1Policy.setIkePhase1Proposals(
+        oldConfig.getIsakmpPolicies().values().stream()
+            .filter(
+                isakmpPolicy ->
+                    isakmpPolicy.getAuthenticationMethod()
+                        == IkeAuthenticationMethod.PRE_SHARED_KEYS)
+            .map(isakmpPolicy -> isakmpPolicy.getName().toString())
+            .collect(ImmutableList.toImmutableList()));
+    ikePhase1Policy.setRemoteIdentity(isakmpKey.getAddress());
+
+    ikePhase1Policy.setIkePhase1Key(ikePhase1KeyFromIsakmpKey);
+    // ISAKMP key is not per interface so local interface will not be set
+    ikePhase1Policy.setLocalInterface(UNSET_LOCAL_INTERFACE);
+    return ikePhase1Policy;
+  }
+
   static String getRsaPubKeyGeneratedName(NamedRsaPubKey namedRsaPubKey) {
     return String.format("~%s_%s~", PREFIX_RSA_PUB, namedRsaPubKey.getName());
+  }
+
+  static String getIsakmpKeyGeneratedName(IsakmpKey isakmpKey) {
+    return String.format("~%s_%s~", PREFIX_ISAKMP_KEY, isakmpKey.getAddress());
   }
 
   static IkePhase1Policy toIkePhase1Policy(

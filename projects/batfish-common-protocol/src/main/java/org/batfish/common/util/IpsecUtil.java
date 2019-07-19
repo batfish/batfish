@@ -269,7 +269,7 @@ public class IpsecUtil {
       // RSA pub keys will not be equal and there is no common negotiated key
       // so creating an empty negotiated key
       ipsecSessionBuilder.setNegotiatedIkeP1Key(negotiatedIkePhase1Key);
-    } else if (responderKey.getKeyType().equals(IkeKeyType.PRE_SHARED_KEY)
+    } else if (responderKey.getKeyType().equals(IkeKeyType.PRE_SHARED_KEY_UNENCRYPTED)
         && responderKey.getKeyHash().equals(initiatorKey.getKeyHash())) {
       negotiatedIkePhase1Key.setKeyHash(initiatorKey.getKeyHash());
       ipsecSessionBuilder.setNegotiatedIkeP1Key(negotiatedIkePhase1Key);
