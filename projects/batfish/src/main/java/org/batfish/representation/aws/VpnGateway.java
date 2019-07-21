@@ -1,35 +1,76 @@
 package org.batfish.representation.aws;
 
+import static com.google.common.base.Preconditions.checkArgument;
+
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.base.Objects;
+import com.google.common.collect.ImmutableList;
 import java.io.Serializable;
-import java.util.LinkedList;
 import java.util.List;
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.common.Warnings;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.StaticRoute;
-import org.codehaus.jettison.json.JSONArray;
-import org.codehaus.jettison.json.JSONException;
-import org.codehaus.jettison.json.JSONObject;
 
-public class VpnGateway implements AwsVpcEntity, Serializable {
+/** Represents an AWS VPN gateway */
+@JsonIgnoreProperties(ignoreUnknown = true)
+@ParametersAreNonnullByDefault
+public final class VpnGateway implements AwsVpcEntity, Serializable {
 
-  private List<String> _attachmentVpcIds = new LinkedList<>();
+  @JsonIgnoreProperties(ignoreUnknown = true)
+  @ParametersAreNonnullByDefault
+  private static class VpcAttachment {
 
-  private String _vpnGatewayId;
+    @Nonnull private final String _vpcId;
 
-  public VpnGateway(JSONObject jObj) throws JSONException {
-    _vpnGatewayId = jObj.getString(JSON_KEY_VPN_GATEWAY_ID);
+    @JsonCreator
+    private static VpcAttachment create(@Nullable @JsonProperty(JSON_KEY_VPC_ID) String vpcId) {
+      checkArgument(vpcId != null, "Vpc id cannot be null for VPN attachment");
+      return new VpcAttachment(vpcId);
+    }
 
-    JSONArray attachments = jObj.getJSONArray(JSON_KEY_VPC_ATTACHMENTS);
-    for (int index = 0; index < attachments.length(); index++) {
-      JSONObject childObject = attachments.getJSONObject(index);
-      _attachmentVpcIds.add(childObject.getString(JSON_KEY_VPC_ID));
+    private VpcAttachment(String vpcId) {
+      _vpcId = vpcId;
+    }
+
+    @Nonnull
+    public String getVpcId() {
+      return _vpcId;
     }
   }
 
-  public List<String> getAttachmentVpcIds() {
+  @Nonnull private final List<String> _attachmentVpcIds;
+
+  @Nonnull private final String _vpnGatewayId;
+
+  @JsonCreator
+  private static VpnGateway create(
+      @Nullable @JsonProperty(JSON_KEY_VPN_GATEWAY_ID) String vpnGatewayId,
+      @Nullable @JsonProperty(JSON_KEY_VPC_ATTACHMENTS) List<VpcAttachment> vpcAttachments) {
+    checkArgument(vpnGatewayId != null, "Id cannot be null for VPC gateway");
+    checkArgument(vpcAttachments != null, "Vpc attachments cannot be nul for VPN gateway");
+
+    return new VpnGateway(
+        vpnGatewayId,
+        vpcAttachments.stream()
+            .map(VpcAttachment::getVpcId)
+            .collect(ImmutableList.toImmutableList()));
+  }
+
+  public VpnGateway(String vpnGatewayId, List<String> attachmentVpcIds) {
+    _vpnGatewayId = vpnGatewayId;
+    _attachmentVpcIds = attachmentVpcIds;
+  }
+
+  @Nonnull
+  List<String> getAttachmentVpcIds() {
     return _attachmentVpcIds;
   }
 
@@ -81,5 +122,23 @@ public class VpnGateway implements AwsVpcEntity, Serializable {
     }
 
     return cfgNode;
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) {
+      return true;
+    }
+    if (o == null || getClass() != o.getClass()) {
+      return false;
+    }
+    VpnGateway that = (VpnGateway) o;
+    return Objects.equal(_attachmentVpcIds, that._attachmentVpcIds)
+        && Objects.equal(_vpnGatewayId, that._vpnGatewayId);
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hashCode(_attachmentVpcIds, _vpnGatewayId);
   }
 }

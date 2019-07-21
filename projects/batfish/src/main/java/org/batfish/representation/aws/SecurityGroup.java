@@ -1,12 +1,21 @@
 package org.batfish.representation.aws;
 
+import static com.google.common.base.Preconditions.checkArgument;
+
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.base.MoreObjects;
+import com.google.common.base.Objects;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import java.io.Serializable;
 import java.util.HashSet;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.HeaderSpace;
@@ -15,38 +24,50 @@ import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.TcpFlagsMatchConditions;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
 import org.batfish.datamodel.visitors.HeaderSpaceConverter;
-import org.codehaus.jettison.json.JSONArray;
-import org.codehaus.jettison.json.JSONException;
-import org.codehaus.jettison.json.JSONObject;
 
-public class SecurityGroup implements AwsVpcEntity, Serializable {
+/** Represents an AWS security group */
+@JsonIgnoreProperties(ignoreUnknown = true)
+@ParametersAreNonnullByDefault
+final class SecurityGroup implements AwsVpcEntity, Serializable {
 
-  private final String _groupId;
+  @Nonnull private final String _groupId;
 
-  private final String _groupName;
+  @Nonnull private final String _groupName;
 
-  private final List<IpPermissions> _ipPermsEgress;
+  @Nonnull private final List<IpPermissions> _ipPermsEgress;
 
-  private final List<IpPermissions> _ipPermsIngress;
+  @Nonnull private final List<IpPermissions> _ipPermsIngress;
 
-  private final Set<IpWildcard> _usersIpSpace = new HashSet<>();
+  @Nonnull private final Set<IpWildcard> _usersIpSpace;
 
-  public SecurityGroup(JSONObject jObj) throws JSONException {
-    _ipPermsEgress = new LinkedList<>();
-    _ipPermsIngress = new LinkedList<>();
-    _groupId = jObj.getString(JSON_KEY_GROUP_ID);
-    _groupName = jObj.getString(JSON_KEY_GROUP_NAME);
-
-    // logger.debugf("doing security group %s\n", _groupId);
-
-    JSONArray permsEgress = jObj.getJSONArray(JSON_KEY_IP_PERMISSIONS_EGRESS);
-    initIpPerms(_ipPermsEgress, permsEgress);
-
-    JSONArray permsIngress = jObj.getJSONArray(JSON_KEY_IP_PERMISSIONS);
-    initIpPerms(_ipPermsIngress, permsIngress);
+  @JsonCreator
+  private static SecurityGroup create(
+      @Nullable @JsonProperty(JSON_KEY_GROUP_ID) String groupId,
+      @Nullable @JsonProperty(JSON_KEY_GROUP_NAME) String groupName,
+      @Nullable @JsonProperty(JSON_KEY_IP_PERMISSIONS_EGRESS) List<IpPermissions> ipPermsEgress,
+      @Nullable @JsonProperty(JSON_KEY_IP_PERMISSIONS) List<IpPermissions> ipPermsIngress) {
+    checkArgument(groupId != null, "Group id cannot be null for security groups");
+    checkArgument(groupName != null, "Group name cannot be null for security groups");
+    checkArgument(
+        ipPermsEgress != null, "Egress IP permissions list cannot be null for security groups");
+    checkArgument(
+        ipPermsIngress != null, "Ingress IP permissions list cannot be null for security groups");
+    return new SecurityGroup(groupId, groupName, ipPermsEgress, ipPermsIngress);
   }
 
-  private void addEgressAccessLines(
+  public SecurityGroup(
+      String groupId,
+      String groupName,
+      List<IpPermissions> ipPermsEgress,
+      List<IpPermissions> ipPermsIngress) {
+    _groupId = groupId;
+    _groupName = groupName;
+    _ipPermsEgress = ipPermsEgress;
+    _ipPermsIngress = ipPermsIngress;
+    _usersIpSpace = new HashSet<>();
+  }
+
+  private static void addEgressAccessLines(
       List<IpPermissions> permsList, List<IpAccessListLine> accessList, Region region) {
     for (IpPermissions ipPerms : permsList) {
       HeaderSpace headerSpace = ipPerms.toEgressIpAccessListLine(region);
@@ -58,7 +79,7 @@ public class SecurityGroup implements AwsVpcEntity, Serializable {
     }
   }
 
-  private void addIngressAccessLines(
+  private static void addIngressAccessLines(
       List<IpPermissions> permsList, List<IpAccessListLine> accessList, Region region) {
     for (IpPermissions ipPerms : permsList) {
       HeaderSpace headerSpace = ipPerms.toIngressIpAccessListLine(region);
@@ -70,7 +91,7 @@ public class SecurityGroup implements AwsVpcEntity, Serializable {
     }
   }
 
-  private void addReverseAcls(
+  private static void addReverseAcls(
       List<IpAccessListLine> inboundRules, List<IpAccessListLine> outboundRules) {
 
     List<IpAccessListLine> reverseInboundRules =
@@ -126,10 +147,12 @@ public class SecurityGroup implements AwsVpcEntity, Serializable {
     addReverseAcls(inboundRules, outboundRules);
   }
 
+  @Nonnull
   public String getGroupId() {
     return _groupId;
   }
 
+  @Nonnull
   public String getGroupName() {
     return _groupName;
   }
@@ -139,10 +162,12 @@ public class SecurityGroup implements AwsVpcEntity, Serializable {
     return _groupId;
   }
 
+  @Nonnull
   public List<IpPermissions> getIpPermsEgress() {
     return _ipPermsEgress;
   }
 
+  @Nonnull
   public List<IpPermissions> getIpPermsIngress() {
     return _ipPermsIngress;
   }
@@ -159,19 +184,42 @@ public class SecurityGroup implements AwsVpcEntity, Serializable {
         .forEach(ipWildcard -> getUsersIpSpace().add(ipWildcard));
   }
 
-  private void initIpPerms(List<IpPermissions> ipPermsList, JSONArray ipPermsJson)
-      throws JSONException {
-
-    for (int index = 0; index < ipPermsJson.length(); index++) {
-      JSONObject childObject = ipPermsJson.getJSONObject(index);
-      ipPermsList.add(new IpPermissions(childObject));
-    }
-  }
-
   private static void addToBeginning(
       List<IpAccessListLine> ipAccessListLines, List<IpAccessListLine> toBeAdded) {
     for (int i = toBeAdded.size() - 1; i >= 0; i--) {
       ipAccessListLines.add(0, toBeAdded.get(i));
     }
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) {
+      return true;
+    }
+    if (o == null || getClass() != o.getClass()) {
+      return false;
+    }
+    SecurityGroup that = (SecurityGroup) o;
+    return Objects.equal(_groupId, that._groupId)
+        && Objects.equal(_groupName, that._groupName)
+        && Objects.equal(_ipPermsEgress, that._ipPermsEgress)
+        && Objects.equal(_ipPermsIngress, that._ipPermsIngress)
+        && Objects.equal(_usersIpSpace, that._usersIpSpace);
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hashCode(_groupId, _groupName, _ipPermsEgress, _ipPermsIngress, _usersIpSpace);
+  }
+
+  @Override
+  public String toString() {
+    return MoreObjects.toStringHelper(this)
+        .add("_groupId", _groupId)
+        .add("_groupName", _groupName)
+        .add("_ipPermsEgress", _ipPermsEgress)
+        .add("_ipPermsIngress", _ipPermsIngress)
+        .add("_usersIpSpace", _usersIpSpace)
+        .toString();
   }
 }

@@ -1,44 +1,108 @@
 package org.batfish.representation.aws;
 
+import static com.google.common.base.Preconditions.checkArgument;
+
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.collect.ImmutableSet;
 import java.io.Serializable;
-import java.util.HashSet;
+import java.util.Objects;
 import java.util.Set;
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.common.Warnings;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.StaticRoute;
-import org.codehaus.jettison.json.JSONArray;
-import org.codehaus.jettison.json.JSONException;
-import org.codehaus.jettison.json.JSONObject;
 
+/** Represents an AWS VPC */
+@JsonIgnoreProperties(ignoreUnknown = true)
+@ParametersAreNonnullByDefault
 public class Vpc implements AwsVpcEntity, Serializable {
 
-  private Prefix _cidrBlock;
+  @JsonIgnoreProperties(ignoreUnknown = true)
+  @ParametersAreNonnullByDefault
+  private static final class CidrBlockAssociation implements Serializable {
 
-  private Set<Prefix> _cidrBlockAssociations;
+    @Nonnull private final Prefix _block;
 
-  private transient String _internetGatewayId;
+    @JsonCreator
+    private static CidrBlockAssociation create(
+        @Nullable @JsonProperty(JSON_KEY_CIDR_BLOCK) Prefix block) {
+      checkArgument(block != null, "CIDR block cannot be null in CIDR block association");
+      return new CidrBlockAssociation(block);
+    }
 
-  private String _vpcId;
+    public CidrBlockAssociation(Prefix block) {
+      _block = block;
+    }
 
-  private transient String _vpnGatewayId;
+    @Nonnull
+    public Prefix getBlock() {
+      return _block;
+    }
 
-  public Vpc(JSONObject jObj) throws JSONException {
-    _vpcId = jObj.getString(JSON_KEY_VPC_ID);
-    _cidrBlock = Prefix.parse(jObj.getString(JSON_KEY_CIDR_BLOCK));
-    _cidrBlockAssociations = new HashSet<>();
-    JSONArray cidrArray = jObj.getJSONArray(JSON_KEY_CIDR_BLOCK_ASSOCIATION_SET);
-    for (int index = 0; index < cidrArray.length(); index++) {
-      String cidrBlock = cidrArray.getJSONObject(index).getString(JSON_KEY_CIDR_BLOCK);
-      _cidrBlockAssociations.add(Prefix.parse(cidrBlock));
+    @Override
+    public boolean equals(Object o) {
+      if (this == o) {
+        return true;
+      }
+      if (o == null || getClass() != o.getClass()) {
+        return false;
+      }
+      CidrBlockAssociation that = (CidrBlockAssociation) o;
+      return Objects.equals(_block, that._block);
+    }
+
+    @Override
+    public int hashCode() {
+      return Objects.hash(_block);
     }
   }
 
+  @Nonnull private final Prefix _cidrBlock;
+
+  @Nonnull private final Set<Prefix> _cidrBlockAssociations;
+
+  @Nonnull private final String _vpcId;
+
+  @Nullable private transient String _vpnGatewayId;
+
+  @Nullable private transient String _internetGatewayId;
+
+  @JsonCreator
+  private static Vpc create(
+      @Nullable @JsonProperty(JSON_KEY_VPC_ID) String vpcId,
+      @Nullable @JsonProperty(JSON_KEY_CIDR_BLOCK) Prefix cidrBlock,
+      @Nullable @JsonProperty(JSON_KEY_CIDR_BLOCK_ASSOCIATION_SET)
+          Set<CidrBlockAssociation> cidrBlockAssociations) {
+    checkArgument(vpcId != null, "VPC id cannot be null");
+    checkArgument(cidrBlock != null, "CIDR block cannot be null for VPC");
+    checkArgument(
+        cidrBlockAssociations != null, "CIDR block association set cannot be null for VPC");
+    return new Vpc(
+        vpcId,
+        cidrBlock,
+        cidrBlockAssociations.stream()
+            .map(CidrBlockAssociation::getBlock)
+            .collect(ImmutableSet.toImmutableSet()));
+  }
+
+  public Vpc(String vpcId, Prefix cidrBlock, Set<Prefix> cidrBlockAssociations) {
+    _vpcId = vpcId;
+    _cidrBlock = cidrBlock;
+    _cidrBlockAssociations = cidrBlockAssociations;
+  }
+
+  @Nonnull
   public Prefix getCidrBlock() {
     return _cidrBlock;
   }
 
+  @Nonnull
   public Set<Prefix> getCidrBlockAssociations() {
     return _cidrBlockAssociations;
   }
@@ -48,10 +112,12 @@ public class Vpc implements AwsVpcEntity, Serializable {
     return _vpcId;
   }
 
+  @Nullable
   public String getInternetGatewayId() {
     return _internetGatewayId;
   }
 
+  @Nullable
   public String getVpnGatewayId() {
     return _vpnGatewayId;
   }
@@ -85,5 +151,27 @@ public class Vpc implements AwsVpcEntity, Serializable {
     // internetgateways
 
     return cfgNode;
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) {
+      return true;
+    }
+    if (o == null || getClass() != o.getClass()) {
+      return false;
+    }
+    Vpc vpc = (Vpc) o;
+    return com.google.common.base.Objects.equal(_cidrBlock, vpc._cidrBlock)
+        && com.google.common.base.Objects.equal(_cidrBlockAssociations, vpc._cidrBlockAssociations)
+        && com.google.common.base.Objects.equal(_vpcId, vpc._vpcId)
+        && com.google.common.base.Objects.equal(_vpnGatewayId, vpc._vpnGatewayId)
+        && com.google.common.base.Objects.equal(_internetGatewayId, vpc._internetGatewayId);
+  }
+
+  @Override
+  public int hashCode() {
+    return com.google.common.base.Objects.hashCode(
+        _cidrBlock, _cidrBlockAssociations, _vpcId, _vpnGatewayId, _internetGatewayId);
   }
 }

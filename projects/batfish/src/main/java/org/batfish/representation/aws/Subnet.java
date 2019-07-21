@@ -1,11 +1,20 @@
 package org.batfish.representation.aws;
 
+import static com.google.common.base.Preconditions.checkArgument;
+
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.base.Objects;
 import java.io.Serializable;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.common.BatfishException;
 import org.batfish.common.Warnings;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
@@ -15,29 +24,43 @@ import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.StaticRoute;
-import org.codehaus.jettison.json.JSONException;
-import org.codehaus.jettison.json.JSONObject;
 
+/** Representation of an AWS subnet */
+@JsonIgnoreProperties(ignoreUnknown = true)
+@ParametersAreNonnullByDefault
 public class Subnet implements AwsVpcEntity, Serializable {
 
-  private Set<Long> _allocatedIps = new HashSet<>();
+  @Nonnull private final Prefix _cidrBlock;
 
-  private Prefix _cidrBlock;
+  @Nonnull private final String _subnetId;
 
-  private transient String _internetGatewayId;
+  @Nonnull private final String _vpcId;
+
+  @Nonnull private final Set<Long> _allocatedIps;
 
   private long _lastGeneratedIp;
 
-  private String _subnetId;
-
-  private String _vpcId;
+  private transient String _internetGatewayId;
 
   private transient String _vpnGatewayId;
 
-  public Subnet(JSONObject jObj) throws JSONException {
-    _cidrBlock = Prefix.parse(jObj.getString(JSON_KEY_CIDR_BLOCK));
-    _subnetId = jObj.getString(JSON_KEY_SUBNET_ID);
-    _vpcId = jObj.getString(JSON_KEY_VPC_ID);
+  @JsonCreator
+  private static Subnet create(
+      @Nullable @JsonProperty(JSON_KEY_CIDR_BLOCK) Prefix cidrBlock,
+      @Nullable @JsonProperty(JSON_KEY_SUBNET_ID) String subnetId,
+      @Nullable @JsonProperty(JSON_KEY_VPC_ID) String vpcId) {
+    checkArgument(cidrBlock != null, "CIDR block cannot be null for subnet");
+    checkArgument(subnetId != null, "Subnet id cannot be null for subnet");
+    checkArgument(vpcId != null, "VPC id cannot be null for subnet");
+    return new Subnet(cidrBlock, subnetId, vpcId);
+  }
+
+  public Subnet(Prefix cidrBlock, String subnetId, String vpcId) {
+    _cidrBlock = cidrBlock;
+    _subnetId = subnetId;
+    _vpcId = vpcId;
+
+    _allocatedIps = new HashSet<>();
     // skipping (startIp+1) as it is used as the default gateway for instances in this subnet
     _lastGeneratedIp = _cidrBlock.getStartIp().asLong() + 1;
   }
@@ -103,7 +126,7 @@ public class Subnet implements AwsVpcEntity, Serializable {
                 (RouteTable rt) ->
                     rt.getAssociations().stream()
                         .anyMatch(
-                            (RouteTableAssociation rtAssoc) ->
+                            (RouteTable.Association rtAssoc) ->
                                 _subnetId.equals(rtAssoc.getSubnetId())))
             .collect(Collectors.toList());
     if (matchingRouteTables.size() > 1) {
@@ -123,7 +146,7 @@ public class Subnet implements AwsVpcEntity, Serializable {
         sameVpcTables.stream()
             .filter(
                 (RouteTable rt) ->
-                    rt.getAssociations().stream().anyMatch(RouteTableAssociation::isMain))
+                    rt.getAssociations().stream().anyMatch(RouteTable.Association::isMain))
             .collect(Collectors.toList());
 
     if (mainRouteTables.isEmpty()) {
@@ -219,5 +242,35 @@ public class Subnet implements AwsVpcEntity, Serializable {
     cfgNode.getVendorFamily().getAws().setRegion(region.getName());
 
     return cfgNode;
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) {
+      return true;
+    }
+    if (o == null || getClass() != o.getClass()) {
+      return false;
+    }
+    Subnet subnet = (Subnet) o;
+    return _lastGeneratedIp == subnet._lastGeneratedIp
+        && Objects.equal(_cidrBlock, subnet._cidrBlock)
+        && Objects.equal(_subnetId, subnet._subnetId)
+        && Objects.equal(_vpcId, subnet._vpcId)
+        && Objects.equal(_allocatedIps, subnet._allocatedIps)
+        && Objects.equal(_internetGatewayId, subnet._internetGatewayId)
+        && Objects.equal(_vpnGatewayId, subnet._vpnGatewayId);
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hashCode(
+        _cidrBlock,
+        _subnetId,
+        _vpcId,
+        _allocatedIps,
+        _lastGeneratedIp,
+        _internetGatewayId,
+        _vpnGatewayId);
   }
 }

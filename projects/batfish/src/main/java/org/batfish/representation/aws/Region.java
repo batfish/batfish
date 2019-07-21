@@ -1,5 +1,8 @@
 package org.batfish.representation.aws;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import java.io.IOException;
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -8,11 +11,17 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.common.BfConsts;
 import org.batfish.common.Warning;
 import org.batfish.common.Warnings;
+import org.batfish.common.util.BatfishObjectMapper;
+import org.batfish.config.Settings;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.DeviceType;
 import org.batfish.datamodel.Interface;
@@ -23,64 +32,81 @@ import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.answers.ParseVendorConfigurationAnswerElement;
 import org.batfish.main.Batfish;
 import org.batfish.representation.aws.Instance.Status;
-import org.codehaus.jettison.json.JSONArray;
-import org.codehaus.jettison.json.JSONException;
-import org.codehaus.jettison.json.JSONObject;
 
+/** Represents an AWS region */
+@ParametersAreNonnullByDefault
 public class Region implements Serializable {
 
   private interface ThrowingConsumer<T, E extends Exception> {
-    void accept(T t) throws E;
+    void accept(T t) throws E, IOException;
   }
 
-  private Map<String, Address> _addresses = new HashMap<>();
+  static final String SG_INGRESS_ACL_NAME = "~SECURITY_GROUP_INGRESS_ACL~";
 
-  private Map<String, Set<SecurityGroup>> _configurationSecurityGroups = new HashMap<>();
+  static final String SG_EGRESS_ACL_NAME = "~SECURITY_GROUP_EGRESS_ACL~";
 
-  private Map<String, CustomerGateway> _customerGateways = new HashMap<>();
+  @Nonnull private final Map<String, Address> _addresses;
 
-  private Map<String, ElasticsearchDomain> _elasticsearchDomains = new HashMap<>();
+  @Nonnull private final Map<String, Set<SecurityGroup>> _configurationSecurityGroups;
 
-  private Map<String, Instance> _instances = new HashMap<>();
+  @Nonnull private final Map<String, CustomerGateway> _customerGateways;
 
-  private Map<String, InternetGateway> _internetGateways = new HashMap<>();
+  @Nonnull private final Map<String, ElasticsearchDomain> _elasticsearchDomains;
 
-  private String _name;
+  @Nonnull private final Map<String, Instance> _instances;
 
-  private Map<String, NatGateway> _natGateways = new HashMap<>();
+  @Nonnull private final Map<String, InternetGateway> _internetGateways;
 
-  private Map<String, NetworkAcl> _networkAcls = new HashMap<>();
+  @Nonnull private final String _name;
 
-  private Map<String, NetworkInterface> _networkInterfaces = new HashMap<>();
+  @Nonnull private final Map<String, NatGateway> _natGateways;
 
-  private Map<String, RdsInstance> _rdsInstances = new HashMap<>();
+  @Nonnull private final Map<String, NetworkAcl> _networkAcls;
 
-  private Map<String, RouteTable> _routeTables = new HashMap<>();
+  @Nonnull private final Map<String, NetworkInterface> _networkInterfaces;
 
-  private Map<String, SecurityGroup> _securityGroups = new HashMap<>();
+  @Nonnull private final Map<String, RdsInstance> _rdsInstances;
 
-  private Map<String, Subnet> _subnets = new HashMap<>();
+  @Nonnull private final Map<String, RouteTable> _routeTables;
 
-  private Map<String, VpcPeeringConnection> _vpcPeerings = new HashMap<>();
+  @Nonnull private final Map<String, SecurityGroup> _securityGroups;
 
-  private Map<String, Vpc> _vpcs = new HashMap<>();
+  @Nonnull private final Map<String, Subnet> _subnets;
 
-  private Map<String, VpnConnection> _vpnConnections = new HashMap<>();
+  @Nonnull private final Map<String, VpcPeeringConnection> _vpcPeerings;
 
-  private Map<String, VpnGateway> _vpnGateways = new HashMap<>();
+  @Nonnull private final Map<String, Vpc> _vpcs;
 
-  public static final String SG_INGRESS_ACL_NAME = "~SECURITY_GROUP_INGRESS_ACL~";
-  public static final String SG_EGRESS_ACL_NAME = "~SECURITY_GROUP_EGRESS_ACL~";
+  @Nonnull private final Map<String, VpnConnection> _vpnConnections;
+
+  @Nonnull private final Map<String, VpnGateway> _vpnGateways;
 
   public Region(String name) {
     _name = name;
+    _addresses = new HashMap<>();
+    _configurationSecurityGroups = new HashMap<>();
+    _customerGateways = new HashMap<>();
+    _elasticsearchDomains = new HashMap<>();
+    _instances = new HashMap<>();
+    _internetGateways = new HashMap<>();
+    _natGateways = new HashMap<>();
+    _networkAcls = new HashMap<>();
+    _networkInterfaces = new HashMap<>();
+    _rdsInstances = new HashMap<>();
+    _routeTables = new HashMap<>();
+    _securityGroups = new HashMap<>();
+    _subnets = new HashMap<>();
+    _vpcPeerings = new HashMap<>();
+    _vpcs = new HashMap<>();
+    _vpnConnections = new HashMap<>();
+    _vpnGateways = new HashMap<>();
   }
 
-  public void addConfigElement(
-      JSONObject jsonObj, String sourceFileName, ParseVendorConfigurationAnswerElement pvcae)
-      throws JSONException {
+  void addConfigElement(
+      JsonNode json, String sourceFileName, ParseVendorConfigurationAnswerElement pvcae)
+      throws IOException {
 
-    Iterator<?> keys = jsonObj.keys();
+    Iterator<?> keys = json.fieldNames();
 
     while (keys.hasNext()) {
       String key = (String) keys.next();
@@ -91,7 +117,7 @@ public class Region implements Serializable {
 
       // All objects nested under the current key will be subjected to this function, which will
       // integrate them appropriately into this Region. Returns null on unrecognized keys.
-      ThrowingConsumer<JSONObject, JSONException> integratorFunction = getChildConsumer(key);
+      ThrowingConsumer<JsonNode, IOException> integratorFunction = getChildConsumer(key);
 
       if (integratorFunction == null) {
         // Add warning for unrecognized key in AWS file
@@ -100,119 +126,141 @@ public class Region implements Serializable {
             new Warning(
                 String.format("Unrecognized element '%s' in AWS file %s", key, sourceFileName),
                 "AWS"));
-      } else {
-        JSONArray jsonArray = jsonObj.getJSONArray(key);
-        for (int index = 0; index < jsonArray.length(); index++) {
-          integratorFunction.accept(jsonArray.getJSONObject(index));
-        }
+        continue;
+      }
+      if (!json.get(key).isArray()) {
+        pvcae.addRedFlagWarning(
+            BfConsts.RELPATH_AWS_CONFIGS_FILE,
+            new Warning(
+                String.format(
+                    "Unexpected JSON for element '%s' in AWS file %s. Expected a list.",
+                    key, sourceFileName),
+                "AWS"));
+      }
+
+      ArrayNode array = (ArrayNode) json.get(key);
+      for (int index = 0; index < array.size(); index++) {
+        integratorFunction.accept(array.get(index));
       }
     }
   }
 
-  // Given some top-level key from an AWS file, returns a function that will convert children to the
-  // appropriate type and add them to the appropriate Map (e.g. _addresses, _instances).
-  private ThrowingConsumer<JSONObject, JSONException> getChildConsumer(String elementType) {
+  /**
+   * Given some top-level key from an AWS file, returns a function that will convert children to the
+   * appropriate type and add them to the appropriate Map (e.g. _addresses, _instances).
+   *
+   * <p>Returns null for unrecognized keys.
+   */
+  @Nullable
+  private ThrowingConsumer<JsonNode, IOException> getChildConsumer(String elementType) {
     switch (elementType) {
       case AwsVpcEntity.JSON_KEY_ADDRESSES:
-        return jsonObject -> {
-          Address address = new Address(jsonObject);
+        return json -> {
+          Address address = BatfishObjectMapper.mapper().convertValue(json, Address.class);
           _addresses.put(address.getId(), address);
         };
       case AwsVpcEntity.JSON_KEY_INSTANCES:
-        return jsonObject -> {
-          Instance instance = new Instance(jsonObject);
+        return json -> {
+          Instance instance = BatfishObjectMapper.mapper().convertValue(json, Instance.class);
           if (instance.getStatus() == Status.RUNNING) {
             _instances.put(instance.getId(), instance);
           }
         };
       case AwsVpcEntity.JSON_KEY_CUSTOMER_GATEWAYS:
-        return jsonObject -> {
-          CustomerGateway cGateway = new CustomerGateway(jsonObject);
+        return json -> {
+          CustomerGateway cGateway =
+              BatfishObjectMapper.mapper().convertValue(json, CustomerGateway.class);
           _customerGateways.put(cGateway.getId(), cGateway);
         };
       case AwsVpcEntity.JSON_KEY_DB_INSTANCES:
-        return jsonObject -> {
-          RdsInstance rdsInstance = new RdsInstance(jsonObject);
+        return json -> {
+          RdsInstance rdsInstance =
+              BatfishObjectMapper.mapper().convertValue(json, RdsInstance.class);
           if (rdsInstance.getDbInstanceStatus() == RdsInstance.Status.AVAILABLE) {
             _rdsInstances.put(rdsInstance.getId(), rdsInstance);
           }
         };
       case AwsVpcEntity.JSON_KEY_DOMAIN_STATUS_LIST:
-        return jsonObject -> {
-          ElasticsearchDomain elasticsearchDomain = new ElasticsearchDomain(jsonObject);
+        return json -> {
+          ElasticsearchDomain elasticsearchDomain =
+              BatfishObjectMapper.mapper().convertValue(json, ElasticsearchDomain.class);
           // we cannot represent an elasticsearch domain without vpc and subnets as a node
           if (elasticsearchDomain.getAvailable() && elasticsearchDomain.getVpcId() != null) {
             _elasticsearchDomains.put(elasticsearchDomain.getId(), elasticsearchDomain);
           }
         };
       case AwsVpcEntity.JSON_KEY_INTERNET_GATEWAYS:
-        return jsonObject -> {
-          InternetGateway iGateway = new InternetGateway(jsonObject);
+        return json -> {
+          InternetGateway iGateway =
+              BatfishObjectMapper.mapper().convertValue(json, InternetGateway.class);
           _internetGateways.put(iGateway.getId(), iGateway);
         };
       case AwsVpcEntity.JSON_KEY_NAT_GATEWAYS:
-        return jsonObject -> {
-          NatGateway natGateway = new NatGateway(jsonObject);
+        return json -> {
+          NatGateway natGateway = BatfishObjectMapper.mapper().convertValue(json, NatGateway.class);
           _natGateways.put(natGateway.getId(), natGateway);
         };
       case AwsVpcEntity.JSON_KEY_NETWORK_ACLS:
-        return jsonObject -> {
-          NetworkAcl networkAcl = new NetworkAcl(jsonObject);
+        return json -> {
+          NetworkAcl networkAcl = BatfishObjectMapper.mapper().convertValue(json, NetworkAcl.class);
           _networkAcls.put(networkAcl.getId(), networkAcl);
         };
       case AwsVpcEntity.JSON_KEY_NETWORK_INTERFACES:
-        return jsonObject -> {
-          NetworkInterface networkInterface = new NetworkInterface(jsonObject);
+        return json -> {
+          NetworkInterface networkInterface =
+              BatfishObjectMapper.mapper().convertValue(json, NetworkInterface.class);
           _networkInterfaces.put(networkInterface.getId(), networkInterface);
         };
       case AwsVpcEntity.JSON_KEY_RESERVATIONS:
-        return jsonObject -> {
+        return json -> {
           // instances are embedded inside reservations
-          JSONArray jsonArray = jsonObject.getJSONArray(AwsVpcEntity.JSON_KEY_INSTANCES);
-          for (int index = 0; index < jsonArray.length(); index++) {
-            JSONObject childObject = jsonArray.getJSONObject(index);
-            getChildConsumer(AwsVpcEntity.JSON_KEY_INSTANCES).accept(childObject);
+          ArrayNode jsonArray = (ArrayNode) json.get(AwsVpcEntity.JSON_KEY_INSTANCES);
+          for (int index = 0; index < jsonArray.size(); index++) {
+            JsonNode childObject = jsonArray.get(index);
+            Objects.requireNonNull(getChildConsumer(AwsVpcEntity.JSON_KEY_INSTANCES))
+                .accept(childObject);
           }
         };
       case AwsVpcEntity.JSON_KEY_ROUTE_TABLES:
-        return jsonObject -> {
-          RouteTable routeTable = new RouteTable(jsonObject);
+        return json -> {
+          RouteTable routeTable = BatfishObjectMapper.mapper().convertValue(json, RouteTable.class);
           _routeTables.put(routeTable.getId(), routeTable);
         };
       case AwsVpcEntity.JSON_KEY_SECURITY_GROUPS:
-        return jsonObject -> {
-          SecurityGroup sGroup = new SecurityGroup(jsonObject);
+        return json -> {
+          SecurityGroup sGroup =
+              BatfishObjectMapper.mapper().convertValue(json, SecurityGroup.class);
           _securityGroups.put(sGroup.getId(), sGroup);
         };
       case AwsVpcEntity.JSON_KEY_SUBNETS:
-        return jsonObject -> {
-          Subnet subnet = new Subnet(jsonObject);
+        return json -> {
+          Subnet subnet = BatfishObjectMapper.mapper().convertValue(json, Subnet.class);
           _subnets.put(subnet.getId(), subnet);
         };
       case AwsVpcEntity.JSON_KEY_VPCS:
-        return jsonObject -> {
-          Vpc vpc = new Vpc(jsonObject);
+        return json -> {
+          Vpc vpc = BatfishObjectMapper.mapper().convertValue(json, Vpc.class);
           _vpcs.put(vpc.getId(), vpc);
         };
       case AwsVpcEntity.JSON_KEY_VPC_PEERING_CONNECTIONS:
-        return jsonObject -> {
+        return json -> {
           String code =
-              jsonObject
-                  .getJSONObject(AwsVpcEntity.JSON_KEY_STATUS)
-                  .getString(AwsVpcEntity.JSON_KEY_CODE);
+              json.get(AwsVpcEntity.JSON_KEY_STATUS).get(AwsVpcEntity.JSON_KEY_CODE).textValue();
           if (!code.equals(AwsVpcEntity.STATUS_DELETED)) {
-            VpcPeeringConnection vpcPeerConn = new VpcPeeringConnection(jsonObject);
+            VpcPeeringConnection vpcPeerConn =
+                BatfishObjectMapper.mapper().convertValue(json, VpcPeeringConnection.class);
             _vpcPeerings.put(vpcPeerConn.getId(), vpcPeerConn);
           }
         };
       case AwsVpcEntity.JSON_KEY_VPN_CONNECTIONS:
-        return jsonObject -> {
-          VpnConnection vpnConnection = new VpnConnection(jsonObject);
+        return json -> {
+          VpnConnection vpnConnection =
+              BatfishObjectMapper.mapper().convertValue(json, VpnConnection.class);
           _vpnConnections.put(vpnConnection.getId(), vpnConnection);
         };
       case AwsVpcEntity.JSON_KEY_VPN_GATEWAYS:
-        return jsonObject -> {
-          VpnGateway vpnGateway = new VpnGateway(jsonObject);
+        return json -> {
+          VpnGateway vpnGateway = BatfishObjectMapper.mapper().convertValue(json, VpnGateway.class);
           _vpnGateways.put(vpnGateway.getId(), vpnGateway);
         };
       default:
@@ -220,79 +268,97 @@ public class Region implements Serializable {
     }
   }
 
-  public Map<String, Address> getAddresses() {
+  @Nonnull
+  Map<String, Address> getAddresses() {
     return _addresses;
   }
 
-  public Map<String, Set<SecurityGroup>> getConfigurationSecurityGroups() {
+  @Nonnull
+  Map<String, Set<SecurityGroup>> getConfigurationSecurityGroups() {
     return _configurationSecurityGroups;
   }
 
-  public Map<String, CustomerGateway> getCustomerGateways() {
+  @Nonnull
+  Map<String, CustomerGateway> getCustomerGateways() {
     return _customerGateways;
   }
 
-  public Map<String, ElasticsearchDomain> getElasticSearchDomains() {
+  @Nonnull
+  Map<String, ElasticsearchDomain> getElasticSearchDomains() {
     return _elasticsearchDomains;
   }
 
-  public Map<String, Instance> getInstances() {
+  @Nonnull
+  Map<String, Instance> getInstances() {
     return _instances;
   }
 
-  public Map<String, InternetGateway> getInternetGateways() {
+  @Nonnull
+  Map<String, InternetGateway> getInternetGateways() {
     return _internetGateways;
   }
 
-  public String getName() {
+  @Nonnull
+  String getName() {
     return _name;
   }
 
-  public Map<String, NatGateway> getNatGateways() {
+  @Nonnull
+  Map<String, NatGateway> getNatGateways() {
     return _natGateways;
   }
 
-  public Map<String, NetworkAcl> getNetworkAcls() {
+  @Nonnull
+  Map<String, NetworkAcl> getNetworkAcls() {
     return _networkAcls;
   }
 
-  public Map<String, NetworkInterface> getNetworkInterfaces() {
+  @Nonnull
+  Map<String, NetworkInterface> getNetworkInterfaces() {
     return _networkInterfaces;
   }
 
-  public Map<String, RdsInstance> getRdsInstances() {
+  @Nonnull
+  Map<String, RdsInstance> getRdsInstances() {
     return _rdsInstances;
   }
 
-  public Map<String, RouteTable> getRouteTables() {
+  @Nonnull
+  Map<String, RouteTable> getRouteTables() {
     return _routeTables;
   }
 
-  public Map<String, SecurityGroup> getSecurityGroups() {
+  @Nonnull
+  Map<String, SecurityGroup> getSecurityGroups() {
     return _securityGroups;
   }
 
-  public Map<String, Subnet> getSubnets() {
+  @Nonnull
+  Map<String, Subnet> getSubnets() {
     return _subnets;
   }
 
-  public Map<String, VpcPeeringConnection> getVpcPeeringConnections() {
+  @Nonnull
+  Map<String, VpcPeeringConnection> getVpcPeeringConnections() {
     return _vpcPeerings;
   }
 
-  public Map<String, Vpc> getVpcs() {
+  @Nonnull
+  Map<String, Vpc> getVpcs() {
     return _vpcs;
   }
 
-  public Map<String, VpnConnection> getVpnConnections() {
+  @Nonnull
+  Map<String, VpnConnection> getVpnConnections() {
     return _vpnConnections;
   }
 
-  public Map<String, VpnGateway> getVpnGateways() {
+  @Nonnull
+  Map<String, VpnGateway> getVpnGateways() {
     return _vpnGateways;
   }
 
-  private boolean ignoreElement(String key) {
+  private static boolean ignoreElement(String key) {
     switch (key) {
       case AwsVpcEntity.JSON_KEY_AVAILABILITY_ZONES:
       case AwsVpcEntity.JSON_KEY_DHCP_OPTIONS:
@@ -307,76 +373,80 @@ public class Region implements Serializable {
     }
   }
 
-  public void toConfigurationNodes(
-      AwsConfiguration awsConfiguration, Map<String, Configuration> configurationNodes) {
+  void toConfigurationNodes(
+      AwsConfiguration awsConfiguration,
+      Map<String, Configuration> configurationNodes,
+      Settings settings,
+      Map<String, Warnings> warningsByHost) {
 
     // updates the Ips which have been allocated already in subnets of all interfaces
     updateAllocatedIps();
+
     for (Vpc vpc : getVpcs().values()) {
-      Warnings warnings = Batfish.buildWarnings(awsConfiguration.getSettings());
+      Warnings warnings = Batfish.buildWarnings(settings);
       Configuration cfgNode = vpc.toConfigurationNode(awsConfiguration, this, warnings);
       configurationNodes.put(cfgNode.getHostname(), cfgNode);
-      awsConfiguration.getWarningsByHost().put(cfgNode.getHostname(), warnings);
+      warningsByHost.put(cfgNode.getHostname(), warnings);
     }
 
     for (ElasticsearchDomain elasticsearchDomain : getElasticSearchDomains().values()) {
-      Warnings warnings = Batfish.buildWarnings(awsConfiguration.getSettings());
+      Warnings warnings = Batfish.buildWarnings(settings);
       Configuration cfgNode =
           elasticsearchDomain.toConfigurationNode(awsConfiguration, this, warnings);
       cfgNode.setDeviceType(DeviceType.HOST);
       configurationNodes.put(cfgNode.getHostname(), cfgNode);
-      awsConfiguration.getWarningsByHost().put(cfgNode.getHostname(), warnings);
+      warningsByHost.put(cfgNode.getHostname(), warnings);
     }
 
     for (InternetGateway igw : getInternetGateways().values()) {
-      Warnings warnings = Batfish.buildWarnings(awsConfiguration.getSettings());
+      Warnings warnings = Batfish.buildWarnings(settings);
       Configuration cfgNode = igw.toConfigurationNode(awsConfiguration, this);
       configurationNodes.put(cfgNode.getHostname(), cfgNode);
-      awsConfiguration.getWarningsByHost().put(cfgNode.getHostname(), warnings);
+      warningsByHost.put(cfgNode.getHostname(), warnings);
     }
 
     for (NatGateway ngw : getNatGateways().values()) {
-      Warnings warnings = Batfish.buildWarnings(awsConfiguration.getSettings());
+      Warnings warnings = Batfish.buildWarnings(settings);
       warnings.redFlag("NAT functionality not yet implemented for " + ngw.getId());
       Configuration cfgNode = ngw.toConfigurationNode(awsConfiguration, this, warnings);
       configurationNodes.put(cfgNode.getHostname(), cfgNode);
-      awsConfiguration.getWarningsByHost().put(cfgNode.getHostname(), warnings);
+      warningsByHost.put(cfgNode.getHostname(), warnings);
     }
 
     for (VpnGateway vgw : getVpnGateways().values()) {
-      Warnings warnings = Batfish.buildWarnings(awsConfiguration.getSettings());
+      Warnings warnings = Batfish.buildWarnings(settings);
       Configuration cfgNode = vgw.toConfigurationNode(awsConfiguration, this, warnings);
       configurationNodes.put(cfgNode.getHostname(), cfgNode);
-      awsConfiguration.getWarningsByHost().put(cfgNode.getHostname(), warnings);
+      warningsByHost.put(cfgNode.getHostname(), warnings);
     }
 
     for (Instance instance : getInstances().values()) {
-      Warnings warnings = Batfish.buildWarnings(awsConfiguration.getSettings());
+      Warnings warnings = Batfish.buildWarnings(settings);
       Configuration cfgNode = instance.toConfigurationNode(this, warnings);
       cfgNode.setDeviceType(DeviceType.HOST);
       configurationNodes.put(cfgNode.getHostname(), cfgNode);
-      awsConfiguration.getWarningsByHost().put(cfgNode.getHostname(), warnings);
+      warningsByHost.put(cfgNode.getHostname(), warnings);
     }
 
     for (RdsInstance rdsInstance : getRdsInstances().values()) {
-      Warnings warnings = Batfish.buildWarnings(awsConfiguration.getSettings());
+      Warnings warnings = Batfish.buildWarnings(settings);
       Configuration cfgNode = rdsInstance.toConfigurationNode(awsConfiguration, this, warnings);
       cfgNode.setDeviceType(DeviceType.HOST);
       configurationNodes.put(cfgNode.getHostname(), cfgNode);
-      awsConfiguration.getWarningsByHost().put(cfgNode.getHostname(), warnings);
+      warningsByHost.put(cfgNode.getHostname(), warnings);
     }
 
     for (Subnet subnet : getSubnets().values()) {
-      Warnings warnings = Batfish.buildWarnings(awsConfiguration.getSettings());
+      Warnings warnings = Batfish.buildWarnings(settings);
       Configuration cfgNode = subnet.toConfigurationNode(awsConfiguration, this, warnings);
       configurationNodes.put(cfgNode.getHostname(), cfgNode);
-      awsConfiguration.getWarningsByHost().put(cfgNode.getHostname(), warnings);
+      warningsByHost.put(cfgNode.getHostname(), warnings);
     }
 
     for (VpnConnection vpnConnection : getVpnConnections().values()) {
-      Warnings warnings = Batfish.buildWarnings(awsConfiguration.getSettings());
+      Warnings warnings = Batfish.buildWarnings(settings);
       vpnConnection.applyToVpnGateway(awsConfiguration, this, warnings);
-      awsConfiguration.getWarningsByHost().put(vpnConnection.getId(), warnings);
+      warningsByHost.put(vpnConnection.getId(), warnings);
     }
 
     applySecurityGroupsAcls(configurationNodes);
@@ -437,7 +507,7 @@ public class Region implements Serializable {
                             .collect(Collectors.toSet())));
   }
 
-  public void updateConfigurationSecurityGroups(String configName, SecurityGroup securityGroup) {
+  void updateConfigurationSecurityGroups(String configName, SecurityGroup securityGroup) {
     Set<SecurityGroup> securityGroups =
         getConfigurationSecurityGroups().computeIfAbsent(configName, k -> new HashSet<>());
     securityGroups.add(securityGroup);

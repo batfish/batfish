@@ -1,21 +1,30 @@
 package org.batfish.representation.aws;
 
+import static com.google.common.base.Preconditions.checkArgument;
+
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.base.Objects;
 import com.google.common.collect.ArrayListMultimap;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ListMultimap;
 import com.google.common.collect.Multimap;
 import java.io.Serializable;
-import java.util.LinkedList;
 import java.util.List;
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.common.Warnings;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.StaticRoute;
-import org.codehaus.jettison.json.JSONArray;
-import org.codehaus.jettison.json.JSONException;
-import org.codehaus.jettison.json.JSONObject;
 
+/** Represents as RDS instance */
+@JsonIgnoreProperties(ignoreUnknown = true)
+@ParametersAreNonnullByDefault
 public class RdsInstance implements AwsVpcEntity, Serializable {
 
   public enum Status {
@@ -23,32 +32,208 @@ public class RdsInstance implements AwsVpcEntity, Serializable {
     UNAVAILABLE
   }
 
-  private String _dbInstanceIdentifier;
+  @JsonIgnoreProperties(ignoreUnknown = true)
+  @ParametersAreNonnullByDefault
+  private static final class DbSubnetGroup {
 
-  private Status _dbInstanceStatus = Status.UNAVAILABLE;
+    @Nonnull private final String _vpcId;
 
-  private ListMultimap<String, String> _azsSubnetIds;
+    @Nonnull private final List<DbSubnet> _dbSubnets;
 
-  private String _availabilityZone;
+    @JsonCreator
+    private static DbSubnetGroup create(
+        @Nullable @JsonProperty(JSON_KEY_VPC_ID) String vpcId,
+        @Nullable @JsonProperty(JSON_KEY_SUBNETS) List<DbSubnet> dbSubnets) {
+      checkArgument(vpcId != null, "VPC Id cannot be null for DB subnet group");
+      checkArgument(dbSubnets != null, "Subnets cannot be null for DB subnet group");
 
-  private String _vpcId;
-
-  private boolean _multiAz;
-
-  private List<String> _securityGroups;
-
-  public RdsInstance(JSONObject jObj) throws JSONException {
-    _azsSubnetIds = ArrayListMultimap.create();
-    _securityGroups = new LinkedList<>();
-    _dbInstanceIdentifier = jObj.getString(JSON_KEY_DB_INSTANCE_IDENTIFIER);
-    _availabilityZone = jObj.getString("AvailabilityZone");
-    _vpcId = jObj.getJSONObject(JSON_KEY_DB_SUBNET_GROUP).getString(JSON_KEY_VPC_ID);
-    _multiAz = jObj.getBoolean(JSON_KEY_MULTI_AZ);
-    if (jObj.getString(JSON_KEY_DB_INSTANCE_STATUS).equalsIgnoreCase("available")) {
-      _dbInstanceStatus = Status.AVAILABLE;
+      return new DbSubnetGroup(vpcId, dbSubnets);
     }
-    initSubnets(jObj.getJSONObject(JSON_KEY_DB_SUBNET_GROUP).getJSONArray(JSON_KEY_SUBNETS));
-    initSecurityGroups(jObj.getJSONArray(JSON_KEY_VPC_SECURITY_GROUPS));
+
+    private DbSubnetGroup(String vpcId, List<DbSubnet> dbSubnets) {
+      _vpcId = vpcId;
+      _dbSubnets = dbSubnets;
+    }
+
+    @Nonnull
+    public String getVpcId() {
+      return _vpcId;
+    }
+
+    @Nonnull
+    public List<DbSubnet> getDbSubnets() {
+      return _dbSubnets;
+    }
+  }
+
+  @JsonIgnoreProperties(ignoreUnknown = true)
+  @ParametersAreNonnullByDefault
+  private static final class DbSubnet {
+
+    @Nonnull private final String _availabilityZone;
+
+    @Nonnull private final String _identifier;
+
+    @Nonnull private final String _status;
+
+    @JsonCreator
+    private static DbSubnet create(
+        @Nullable @JsonProperty(JSON_KEY_SUBNET_AVAILABILITY_ZONE) DbSubnetAz availabilityZone,
+        @Nullable @JsonProperty(JSON_KEY_SUBNET_IDENTIFIER) String identifier,
+        @Nullable @JsonProperty(JSON_KEY_SUBNET_STATUS) String status) {
+      checkArgument(availabilityZone != null, "Availability zone cannot be null for DB subnet");
+      checkArgument(identifier != null, "Identifier cannot be null for DB subnet");
+      checkArgument(status != null, "Status cannot be null for DB subnet");
+
+      return new DbSubnet(availabilityZone.getName(), identifier, status);
+    }
+
+    private DbSubnet(String availabilityZone, String identifier, String status) {
+      _availabilityZone = availabilityZone;
+      _identifier = identifier;
+      _status = status;
+    }
+
+    @Nonnull
+    public String getAvailabilityZone() {
+      return _availabilityZone;
+    }
+
+    @Nonnull
+    public String getIdentifier() {
+      return _identifier;
+    }
+
+    @Nonnull
+    public String getStatus() {
+      return _status;
+    }
+  }
+
+  @JsonIgnoreProperties(ignoreUnknown = true)
+  @ParametersAreNonnullByDefault
+  private static final class DbSubnetAz {
+
+    @Nonnull private final String _name;
+
+    @JsonCreator
+    private static DbSubnetAz create(@Nullable @JsonProperty(JSON_KEY_NAME) String name) {
+      checkArgument(name != null, "Name cannot be null for DB subnet group availability zone");
+      return new DbSubnetAz(name);
+    }
+
+    private DbSubnetAz(String name) {
+      _name = name;
+    }
+
+    @Nonnull
+    public String getName() {
+      return _name;
+    }
+  }
+
+  @JsonIgnoreProperties(ignoreUnknown = true)
+  @ParametersAreNonnullByDefault
+  private static final class VpcSecurityGroup {
+
+    @Nonnull private final String _status;
+    @Nonnull private final String _id;
+
+    @JsonCreator
+    private static VpcSecurityGroup create(
+        @Nullable @JsonProperty(JSON_KEY_STATUS) String status,
+        @Nullable @JsonProperty(JSON_KEY_VPC_SECURITY_GROUP_ID) String id) {
+      checkArgument(status != null, "Status cannot be null for VPC security group");
+      checkArgument(id != null, "Security group id cannot be null for VPC security group");
+      return new VpcSecurityGroup(status, id);
+    }
+
+    private VpcSecurityGroup(String status, String id) {
+      _status = status;
+      _id = id;
+    }
+
+    @Nonnull
+    public String getStatus() {
+      return _status;
+    }
+
+    @Nonnull
+    public String getId() {
+      return _id;
+    }
+  }
+
+  @Nonnull private final String _dbInstanceIdentifier;
+
+  @Nonnull private final Status _dbInstanceStatus;
+
+  @Nonnull private final ListMultimap<String, String> _azsSubnetIds;
+
+  @Nonnull private final String _availabilityZone;
+
+  @Nonnull private final String _vpcId;
+
+  private final boolean _multiAz;
+
+  @Nonnull private final List<String> _securityGroups;
+
+  @JsonCreator
+  private static RdsInstance create(
+      @Nullable @JsonProperty(JSON_KEY_DB_INSTANCE_IDENTIFIER) String dbInstanceIdentifier,
+      @Nullable @JsonProperty(JSON_KEY_AVAILABILITY_ZONE) String availabilityZone,
+      @Nullable @JsonProperty(JSON_KEY_DB_SUBNET_GROUP) DbSubnetGroup dbSubnetGroup,
+      @Nullable @JsonProperty(JSON_KEY_MULTI_AZ) Boolean multiAz,
+      @Nullable @JsonProperty(JSON_KEY_DB_INSTANCE_STATUS) String dbInstanceStatus,
+      @Nullable @JsonProperty(JSON_KEY_VPC_SECURITY_GROUPS)
+          List<VpcSecurityGroup> vpcSecurityGroups) {
+
+    checkArgument(
+        dbInstanceIdentifier != null, "DB instance identifier cannot be null for RDS instance");
+    checkArgument(availabilityZone != null, "Availability zone cannot be null for RDS instance");
+    checkArgument(dbSubnetGroup != null, "DB subnet group cannot be null for RDS instance");
+    checkArgument(multiAz != null, "Multi AZ key must be present for RDS instance");
+    checkArgument(dbInstanceStatus != null, "DB instance status cannot be null for RDS instance");
+    checkArgument(vpcSecurityGroups != null, "VPC security groups cannot be null for RDS instance");
+
+    ListMultimap<String, String> azsSubnetIds = ArrayListMultimap.create();
+    dbSubnetGroup
+        .getDbSubnets()
+        .forEach(
+            s -> {
+              if (s.getStatus().equalsIgnoreCase("active")) {
+                azsSubnetIds.put(s.getAvailabilityZone(), s.getIdentifier());
+              }
+            });
+
+    return new RdsInstance(
+        dbInstanceIdentifier,
+        availabilityZone,
+        dbSubnetGroup.getVpcId(),
+        multiAz,
+        dbInstanceStatus.equalsIgnoreCase("available") ? Status.AVAILABLE : Status.UNAVAILABLE,
+        azsSubnetIds,
+        vpcSecurityGroups.stream()
+            .filter(g -> g.getStatus().equalsIgnoreCase("active"))
+            .map(VpcSecurityGroup::getId)
+            .collect(ImmutableList.toImmutableList()));
+  }
+
+  public RdsInstance(
+      String dbInstanceIdentifier,
+      String availabilityZone,
+      String vpcId,
+      boolean multiAz,
+      Status dbInstanceStatus,
+      ListMultimap<String, String> azSubnetIds,
+      List<String> securityGroups) {
+    _dbInstanceIdentifier = dbInstanceIdentifier;
+    _availabilityZone = availabilityZone;
+    _vpcId = vpcId;
+    _multiAz = multiAz;
+    _dbInstanceStatus = dbInstanceStatus;
+    _azsSubnetIds = azSubnetIds;
+    _securityGroups = securityGroups;
   }
 
   @Override
@@ -60,6 +245,7 @@ public class RdsInstance implements AwsVpcEntity, Serializable {
     return _azsSubnetIds;
   }
 
+  @Nonnull
   public String getVpcId() {
     return _vpcId;
   }
@@ -68,36 +254,19 @@ public class RdsInstance implements AwsVpcEntity, Serializable {
     return _multiAz;
   }
 
+  @Nonnull
   public String getAvailabilityZone() {
     return _availabilityZone;
   }
 
+  @Nonnull
   public List<String> getSecurityGroups() {
     return _securityGroups;
   }
 
+  @Nonnull
   public Status getDbInstanceStatus() {
     return _dbInstanceStatus;
-  }
-
-  private void initSecurityGroups(JSONArray securityGroupsArray) throws JSONException {
-    for (int index = 0; index < securityGroupsArray.length(); index++) {
-      JSONObject securityGroup = securityGroupsArray.getJSONObject(index);
-      if (securityGroup.getString(JSON_KEY_STATUS).equalsIgnoreCase("active")) {
-        _securityGroups.add(securityGroup.getString(JSON_KEY_VPC_SECURITY_GROUP_ID));
-      }
-    }
-  }
-
-  private void initSubnets(JSONArray subnetsArray) throws JSONException {
-    for (int i = 0; i < subnetsArray.length(); i++) {
-      JSONObject subnet = subnetsArray.getJSONObject(i);
-      if (subnet.getString(JSON_KEY_SUBNET_STATUS).equalsIgnoreCase("active")) {
-        _azsSubnetIds.put(
-            subnet.getJSONObject(JSON_KEY_SUBNET_AVAILABILITY_ZONE).getString("Name"),
-            subnet.getString(JSON_KEY_SUBNET_IDENTIFIER));
-      }
-    }
   }
 
   public Configuration toConfigurationNode(
@@ -142,5 +311,35 @@ public class RdsInstance implements AwsVpcEntity, Serializable {
     Utils.processSecurityGroups(region, cfgNode, _securityGroups, warnings);
 
     return cfgNode;
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) {
+      return true;
+    }
+    if (o == null || getClass() != o.getClass()) {
+      return false;
+    }
+    RdsInstance that = (RdsInstance) o;
+    return _multiAz == that._multiAz
+        && Objects.equal(_dbInstanceIdentifier, that._dbInstanceIdentifier)
+        && _dbInstanceStatus == that._dbInstanceStatus
+        && Objects.equal(_azsSubnetIds, that._azsSubnetIds)
+        && Objects.equal(_availabilityZone, that._availabilityZone)
+        && Objects.equal(_vpcId, that._vpcId)
+        && Objects.equal(_securityGroups, that._securityGroups);
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hashCode(
+        _dbInstanceIdentifier,
+        _dbInstanceStatus,
+        _azsSubnetIds,
+        _availabilityZone,
+        _vpcId,
+        _multiAz,
+        _securityGroups);
   }
 }

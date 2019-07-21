@@ -1,29 +1,82 @@
 package org.batfish.representation.aws;
 
+import static com.google.common.base.Preconditions.checkArgument;
+
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.base.Objects;
+import com.google.common.collect.ImmutableList;
 import java.io.Serializable;
-import java.util.LinkedList;
 import java.util.List;
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.common.Warnings;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.StaticRoute;
-import org.codehaus.jettison.json.JSONArray;
-import org.codehaus.jettison.json.JSONException;
-import org.codehaus.jettison.json.JSONObject;
 
+/** Represents elastic search domain in AWS */
+@JsonIgnoreProperties(ignoreUnknown = true)
+@ParametersAreNonnullByDefault
 public class ElasticsearchDomain implements AwsVpcEntity, Serializable {
 
-  private List<String> _securityGroups;
+  @JsonIgnoreProperties(ignoreUnknown = true)
+  @ParametersAreNonnullByDefault
+  private static final class VpcOptions {
 
-  private String _domainName;
+    @Nonnull private final String _vpcId;
 
-  private String _vpcId;
+    @Nonnull private final List<String> _securityGroupIds;
 
-  private List<String> _subnets;
+    @Nonnull private final List<String> _subnetIds;
 
-  private boolean _available;
+    @JsonCreator
+    private static VpcOptions create(
+        @Nullable @JsonProperty(JSON_KEY_ES_VPC_ID) String vpcId,
+        @Nullable @JsonProperty(JSON_KEY_SECURITY_GROUP_IDS) List<String> securityGroupIds,
+        @Nullable @JsonProperty(JSON_KEY_SUBNET_IDS) List<String> subnetIds) {
+      checkArgument(vpcId != null, "VPC Id cannot be null for VPC options");
+      checkArgument(securityGroupIds != null, "Security group Ids cannot be null for VPC options");
+      checkArgument(subnetIds != null, "Subnet Ids cannot be null for VPC options");
+
+      return new VpcOptions(vpcId, securityGroupIds, subnetIds);
+    }
+
+    private VpcOptions(String vpcId, List<String> securityGroupIds, List<String> subnetIds) {
+      _vpcId = vpcId;
+      _securityGroupIds = securityGroupIds;
+      _subnetIds = subnetIds;
+    }
+
+    @Nonnull
+    public String getVpcId() {
+      return _vpcId;
+    }
+
+    @Nonnull
+    public List<String> getSecurityGroupIds() {
+      return _securityGroupIds;
+    }
+
+    @Nonnull
+    public List<String> getSubnetIds() {
+      return _subnetIds;
+    }
+  }
+
+  @Nonnull private final List<String> _securityGroups;
+
+  @Nonnull private final String _domainName;
+
+  @Nullable private final String _vpcId;
+
+  @Nonnull private final List<String> _subnets;
+
+  private final boolean _available;
 
   public boolean getAvailable() {
     return _available;
@@ -34,40 +87,50 @@ public class ElasticsearchDomain implements AwsVpcEntity, Serializable {
     return _domainName;
   }
 
+  @Nonnull
   public List<String> getSecurityGroups() {
     return _securityGroups;
   }
 
+  @Nonnull
   public List<String> getSubnets() {
     return _subnets;
   }
 
+  @Nullable
   public String getVpcId() {
     return _vpcId;
   }
 
-  public ElasticsearchDomain(JSONObject jObj) throws JSONException {
-    _securityGroups = new LinkedList<>();
-    _subnets = new LinkedList<>();
-    _domainName = jObj.getString(JSON_KEY_DOMAIN_NAME);
-    if (jObj.has(JSON_KEY_VPC_OPTIONS)) {
-      initVpcOptions(jObj.getJSONObject(JSON_KEY_VPC_OPTIONS));
-    }
-    if (jObj.getBoolean(JSON_KEY_CREATED) && !jObj.getBoolean(JSON_KEY_DELETED)) {
-      _available = true;
-    }
+  @JsonCreator
+  private static ElasticsearchDomain create(
+      @Nullable @JsonProperty(JSON_KEY_DOMAIN_NAME) String domainName,
+      @Nullable @JsonProperty(JSON_KEY_VPC_OPTIONS) VpcOptions vpcOptions,
+      @Nullable @JsonProperty(JSON_KEY_CREATED) Boolean created,
+      @Nullable @JsonProperty(JSON_KEY_DELETED) Boolean deleted) {
+    checkArgument(domainName != null, "Domain name cannot be null for elastic search domain");
+    checkArgument(created != null, "Created key must exist in elastic search domain");
+    checkArgument(deleted != null, "Deleted key must exist in elastic search domain");
+
+    return new ElasticsearchDomain(
+        domainName,
+        vpcOptions == null ? null : vpcOptions.getVpcId(),
+        vpcOptions == null ? ImmutableList.of() : vpcOptions.getSecurityGroupIds(),
+        vpcOptions == null ? ImmutableList.of() : vpcOptions.getSubnetIds(),
+        created && !deleted);
   }
 
-  private void initVpcOptions(JSONObject vpcOptions) throws JSONException {
-    _vpcId = vpcOptions.getString(JSON_KEY_ES_VPC_ID);
-    JSONArray securityGroupIds = vpcOptions.getJSONArray(JSON_KEY_SECURITY_GROUP_IDS);
-    for (int i = 0; i < securityGroupIds.length(); i++) {
-      _securityGroups.add(securityGroupIds.getString(i));
-    }
-    JSONArray subnetIds = vpcOptions.getJSONArray(JSON_KEY_SUBNET_IDS);
-    for (int i = 0; i < subnetIds.length(); i++) {
-      _subnets.add(subnetIds.getString(i));
-    }
+  public ElasticsearchDomain(
+      String domainName,
+      @Nullable String vpcId,
+      List<String> securityGroups,
+      List<String> subnets,
+      boolean available) {
+    _domainName = domainName;
+    _vpcId = vpcId;
+    _securityGroups = securityGroups;
+    _subnets = subnets;
+    _available = available;
   }
 
   public Configuration toConfigurationNode(
@@ -107,5 +170,26 @@ public class ElasticsearchDomain implements AwsVpcEntity, Serializable {
     Utils.processSecurityGroups(region, cfgNode, _securityGroups, warnings);
 
     return cfgNode;
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) {
+      return true;
+    }
+    if (o == null || getClass() != o.getClass()) {
+      return false;
+    }
+    ElasticsearchDomain that = (ElasticsearchDomain) o;
+    return _available == that._available
+        && Objects.equal(_securityGroups, that._securityGroups)
+        && Objects.equal(_domainName, that._domainName)
+        && Objects.equal(_vpcId, that._vpcId)
+        && Objects.equal(_subnets, that._subnets);
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hashCode(_securityGroups, _domainName, _vpcId, _subnets, _available);
   }
 }

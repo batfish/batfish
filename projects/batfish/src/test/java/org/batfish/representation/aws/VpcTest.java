@@ -1,34 +1,44 @@
 package org.batfish.representation.aws;
 
+import static org.batfish.representation.aws.AwsVpcEntity.JSON_KEY_VPCS;
 import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.hasItem;
-import static org.hamcrest.Matchers.hasSize;
-import static org.junit.Assert.assertThat;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
+import java.io.IOException;
+import java.util.LinkedList;
+import java.util.List;
+import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.datamodel.Prefix;
-import org.codehaus.jettison.json.JSONArray;
-import org.codehaus.jettison.json.JSONException;
-import org.codehaus.jettison.json.JSONObject;
+import org.hamcrest.MatcherAssert;
 import org.junit.Test;
 
+/** Tests for {@link Vpc} */
 public class VpcTest {
 
   @Test
-  public void cidrBlocks() throws JSONException {
-    String vpcs =
-        CommonUtil.readResource("org/batfish/representation/aws/VpcTest-multipleCidrBlocks.json");
+  public void testDeserialization() throws IOException {
+    String text = CommonUtil.readResource("org/batfish/representation/aws/VpcTest.json");
 
-    JSONObject jObj = new JSONObject(vpcs);
-    JSONArray vpcArray = jObj.getJSONArray("Vpcs");
+    JsonNode json = BatfishObjectMapper.mapper().readTree(text);
+    ArrayNode array = (ArrayNode) json.get(JSON_KEY_VPCS);
+    List<Vpc> vpcs = new LinkedList<>();
 
-    Vpc vpc = new Vpc(vpcArray.getJSONObject(0));
+    for (int index = 0; index < array.size(); index++) {
+      vpcs.add(BatfishObjectMapper.mapper().convertValue(array.get(index), Vpc.class));
+    }
 
-    Prefix p1 = Prefix.parse("10.100.0.0/16");
-    Prefix p2 = Prefix.parse("10.200.0.0/16");
-    assertThat(vpc.getCidrBlock(), equalTo(p1));
-    assertThat(vpc.getCidrBlockAssociations(), hasSize(2));
-    assertThat(vpc.getCidrBlockAssociations(), hasItem(p1));
-    assertThat(vpc.getCidrBlockAssociations(), hasItem(p2));
+    MatcherAssert.assertThat(
+        vpcs,
+        equalTo(
+            ImmutableList.of(
+                new Vpc(
+                    "vpc-CCCCCC",
+                    Prefix.parse("10.100.0.0/16"),
+                    ImmutableSet.of(
+                        Prefix.parse("10.100.0.0/16"), Prefix.parse("10.200.0.0/16"))))));
   }
 }

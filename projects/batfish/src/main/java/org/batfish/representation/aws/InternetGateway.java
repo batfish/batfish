@@ -1,30 +1,68 @@
 package org.batfish.representation.aws;
 
+import static com.google.common.base.Preconditions.checkArgument;
+
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.base.Objects;
+import com.google.common.collect.ImmutableList;
 import java.io.Serializable;
-import java.util.LinkedList;
 import java.util.List;
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.StaticRoute;
-import org.codehaus.jettison.json.JSONArray;
-import org.codehaus.jettison.json.JSONException;
-import org.codehaus.jettison.json.JSONObject;
 
-public class InternetGateway implements AwsVpcEntity, Serializable {
+/** Represents an AWS Internet Gateway */
+@JsonIgnoreProperties(ignoreUnknown = true)
+@ParametersAreNonnullByDefault
+public final class InternetGateway implements AwsVpcEntity, Serializable {
 
-  private List<String> _attachmentVpcIds = new LinkedList<>();
+  @Nonnull private final List<String> _attachmentVpcIds;
 
-  private String _internetGatewayId;
+  @Nonnull private String _internetGatewayId;
 
-  public InternetGateway(JSONObject jObj) throws JSONException {
-    _internetGatewayId = jObj.getString(JSON_KEY_INTERNET_GATEWAY_ID);
+  @JsonIgnoreProperties(ignoreUnknown = true)
+  @ParametersAreNonnullByDefault
+  private static class Attachment {
 
-    JSONArray attachments = jObj.getJSONArray(JSON_KEY_ATTACHMENTS);
-    for (int index = 0; index < attachments.length(); index++) {
-      JSONObject childObject = attachments.getJSONObject(index);
-      _attachmentVpcIds.add(childObject.getString(JSON_KEY_VPC_ID));
+    @Nonnull private final String _vpcId;
+
+    @JsonCreator
+    private static Attachment create(@Nullable @JsonProperty(JSON_KEY_VPC_ID) String vpcId) {
+      checkArgument(vpcId != null, "Vpc id cannot be null for Internet gateway attachment");
+      return new Attachment(vpcId);
     }
+
+    private Attachment(String vpcId) {
+      _vpcId = vpcId;
+    }
+
+    @Nonnull
+    public String getVpcId() {
+      return _vpcId;
+    }
+  }
+
+  @JsonCreator
+  private static InternetGateway create(
+      @Nullable @JsonProperty(JSON_KEY_INTERNET_GATEWAY_ID) String internetGatewayId,
+      @Nullable @JsonProperty(JSON_KEY_ATTACHMENTS) List<Attachment> attachments) {
+    checkArgument(internetGatewayId != null, "Id cannot be null for Internet gateway");
+    checkArgument(attachments != null, "Attachments cannot be nul for Internet gateway");
+
+    return new InternetGateway(
+        internetGatewayId,
+        attachments.stream().map(Attachment::getVpcId).collect(ImmutableList.toImmutableList()));
+  }
+
+  public InternetGateway(String internetGatewayId, List<String> attachmentVpcIds) {
+    _internetGatewayId = internetGatewayId;
+    _attachmentVpcIds = attachmentVpcIds;
   }
 
   @Override
@@ -72,5 +110,23 @@ public class InternetGateway implements AwsVpcEntity, Serializable {
     }
 
     return cfgNode;
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) {
+      return true;
+    }
+    if (o == null || getClass() != o.getClass()) {
+      return false;
+    }
+    InternetGateway that = (InternetGateway) o;
+    return Objects.equal(_attachmentVpcIds, that._attachmentVpcIds)
+        && Objects.equal(_internetGatewayId, that._internetGatewayId);
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hashCode(_attachmentVpcIds, _internetGatewayId);
   }
 }

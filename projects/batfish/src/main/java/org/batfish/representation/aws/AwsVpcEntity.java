@@ -10,6 +10,7 @@ public interface AwsVpcEntity {
   String JSON_KEY_ASSOCIATIONS = "Associations";
   String JSON_KEY_ATTACHMENT = "Attachment";
   String JSON_KEY_ATTACHMENTS = "Attachments";
+  String JSON_KEY_AVAILABILITY_ZONE = "AvailabilityZone";
   String JSON_KEY_AVAILABILITY_ZONES = "AvailabilityZones";
   String JSON_KEY_BGP_ASN = "BgpAsn";
   String JSON_KEY_CIDR_BLOCK = "CidrBlock";
@@ -47,8 +48,10 @@ public interface AwsVpcEntity {
   String JSON_KEY_IP_PERMISSIONS_EGRESS = "IpPermissionsEgress";
   String JSON_KEY_IP_PROTOCOL = "IpProtocol";
   String JSON_KEY_IP_RANGES = "IpRanges";
+  String JSON_KEY_KEY = "Key";
   String JSON_KEY_MAIN = "Main";
   String JSON_KEY_MULTI_AZ = "MultiAZ";
+  String JSON_KEY_NAME = "Name";
   String JSON_KEY_NAT_GATEWAY_ADDRESSES = "NatGatewayAddresses";
   String JSON_KEY_NAT_GATEWAY_ID = "NatGatewayId";
   String JSON_KEY_NAT_GATEWAYS = "NatGateways";
@@ -90,7 +93,8 @@ public interface AwsVpcEntity {
   String JSON_KEY_TO = "To";
   String JSON_KEY_TO_PORT = "ToPort";
   String JSON_KEY_TYPE = "Type";
-  String JSON_KEY_USER_ID_PAIRS = "UserIdGroupPairs";
+  String JSON_KEY_USER_GROUP_ID_PAIRS = "UserIdGroupPairs";
+  String JSON_KEY_VALUE = "Value";
   String JSON_KEY_VGW_TELEMETRY = "VgwTelemetry";
   String JSON_KEY_VPC_ATTACHMENTS = "VpcAttachments";
   String JSON_KEY_VPC_ID = "VpcId";

@@ -2,16 +2,16 @@ package org.batfish.representation.aws;
 
 import java.util.List;
 import javax.annotation.Nullable;
+import org.batfish.common.BatfishException;
 import org.batfish.common.Warnings;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.Interface;
+import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.vendor_family.AwsFamily;
-import org.codehaus.jettison.json.JSONException;
-import org.codehaus.jettison.json.JSONObject;
 
 public class Utils {
 
@@ -73,28 +73,29 @@ public class Utils {
     }
   }
 
-  public static boolean tryGetBoolean(JSONObject jsonObject, String key, boolean defaultValue)
-      throws JSONException {
-    if (jsonObject.has(key)) {
-      return jsonObject.getBoolean(key);
-    }
-    return defaultValue;
-  }
-
-  public static int tryGetInt(JSONObject jsonObject, String key, int defaultValue)
-      throws JSONException {
-    if (jsonObject.has(key)) {
-      return jsonObject.getInt(key);
-    }
-    return defaultValue;
-  }
-
   @Nullable
-  public static String tryGetString(JSONObject jsonObject, String key) throws JSONException {
-    if (jsonObject.has(key)) {
-      return jsonObject.getString(key);
+  public static IpProtocol toIpProtocol(String ipProtocolAsString) {
+    switch (ipProtocolAsString) {
+      case "tcp":
+        return IpProtocol.TCP;
+      case "udp":
+        return IpProtocol.UDP;
+      case "icmp":
+        return IpProtocol.ICMP;
+      case "-1":
+        return null;
+      default:
+        try {
+          int ipProtocolAsInt = Integer.parseInt(ipProtocolAsString);
+          return IpProtocol.fromNumber(ipProtocolAsInt);
+        } catch (NumberFormatException e) {
+          throw new BatfishException(
+              "Could not convert AWS IP protocol: \""
+                  + ipProtocolAsString
+                  + "\" to batfish Ip Protocol",
+              e);
+        }
     }
-    return null;
   }
 
   private Utils() {}

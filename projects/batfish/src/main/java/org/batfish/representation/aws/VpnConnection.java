@@ -1,12 +1,19 @@
 package org.batfish.representation.aws;
 
+import static com.google.common.base.MoreObjects.firstNonNull;
+import static com.google.common.base.Preconditions.checkArgument;
+
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.base.MoreObjects;
+import com.google.common.base.Objects;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.ImmutableSortedSet;
 import java.io.IOException;
 import java.io.Serializable;
 import java.io.StringReader;
-import java.util.LinkedList;
 import java.util.List;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -61,17 +68,16 @@ import org.batfish.datamodel.routing_policy.statement.SetNextHop;
 import org.batfish.datamodel.routing_policy.statement.SetOrigin;
 import org.batfish.datamodel.routing_policy.statement.Statement;
 import org.batfish.datamodel.routing_policy.statement.Statements;
-import org.codehaus.jettison.json.JSONArray;
-import org.codehaus.jettison.json.JSONException;
-import org.codehaus.jettison.json.JSONObject;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
+/** Represents an AWS VPN connection */
+@JsonIgnoreProperties(ignoreUnknown = true)
 @ParametersAreNonnullByDefault
-public class VpnConnection implements AwsVpcEntity, Serializable {
+public final class VpnConnection implements AwsVpcEntity, Serializable {
 
   private static final int BGP_NEIGHBOR_DEFAULT_METRIC = 0;
 
@@ -146,29 +152,85 @@ public class VpnConnection implements AwsVpcEntity, Serializable {
     }
   }
 
-  private final String _customerGatewayId;
+  @JsonIgnoreProperties(ignoreUnknown = true)
+  @ParametersAreNonnullByDefault
+  private static class VpnRoute {
 
-  private final List<IpsecTunnel> _ipsecTunnels;
+    @JsonCreator
+    private static VpnRoute create(
+        @Nullable @JsonProperty(JSON_KEY_DESTINATION_CIDR_BLOCK) Prefix destinationCidrBlock) {
+      checkArgument(
+          destinationCidrBlock != null, "Destination CIDR block cannot be null in VpnRoute");
+      return new VpnRoute(destinationCidrBlock);
+    }
 
-  private final List<Prefix> _routes;
+    @Nonnull private final Prefix _destinationCidrBlock;
 
-  private final boolean _staticRoutesOnly;
+    private VpnRoute(Prefix destinationCidrBlock) {
+      _destinationCidrBlock = destinationCidrBlock;
+    }
 
-  private final List<VgwTelemetry> _vgwTelemetrys;
+    @Nonnull
+    public Prefix getDestinationCidrBlock() {
+      return _destinationCidrBlock;
+    }
+  }
 
-  private final String _vpnConnectionId;
+  @JsonIgnoreProperties(ignoreUnknown = true)
+  @ParametersAreNonnullByDefault
+  private static class Options {
 
-  private final String _vpnGatewayId;
+    @JsonCreator
+    private static Options create(
+        @Nullable @JsonProperty(JSON_KEY_STATIC_ROUTES_ONLY) Boolean staticRoutesOnly) {
+      return new Options(firstNonNull(staticRoutesOnly, false));
+    }
 
-  public VpnConnection(JSONObject jObj) throws JSONException {
-    _vgwTelemetrys = new LinkedList<>();
-    _routes = new LinkedList<>();
-    _ipsecTunnels = new LinkedList<>();
-    _vpnConnectionId = jObj.getString(JSON_KEY_VPN_CONNECTION_ID);
-    _customerGatewayId = jObj.getString(JSON_KEY_CUSTOMER_GATEWAY_ID);
-    _vpnGatewayId = jObj.getString(JSON_KEY_VPN_GATEWAY_ID);
+    private final boolean _staticRoutesOnly;
 
-    String cgwConfiguration = jObj.getString(JSON_KEY_CUSTOMER_GATEWAY_CONFIGURATION);
+    private Options(boolean staticRoutesOnly) {
+      _staticRoutesOnly = staticRoutesOnly;
+    }
+
+    public boolean getStaticRoutesOnly() {
+      return _staticRoutesOnly;
+    }
+  }
+
+  @Nonnull private final String _customerGatewayId;
+
+  @Nonnull private final List<IpsecTunnel> _ipsecTunnels;
+
+  @Nonnull private final List<Prefix> _routes;
+
+  @Nonnull private final boolean _staticRoutesOnly;
+
+  @Nonnull private final List<VgwTelemetry> _vgwTelemetrys;
+
+  @Nonnull private final String _vpnConnectionId;
+
+  @Nonnull private final String _vpnGatewayId;
+
+  @JsonCreator
+  private static VpnConnection create(
+      @Nullable @JsonProperty(JSON_KEY_VPN_CONNECTION_ID) String vpnConnectionId,
+      @Nullable @JsonProperty(JSON_KEY_CUSTOMER_GATEWAY_ID) String customerGatewayId,
+      @Nullable @JsonProperty(JSON_KEY_VPN_GATEWAY_ID) String vpnGatewayId,
+      @Nullable @JsonProperty(JSON_KEY_CUSTOMER_GATEWAY_CONFIGURATION) String cgwConfiguration,
+      @Nullable @JsonProperty(JSON_KEY_ROUTES) List<VpnRoute> routes,
+      @Nullable @JsonProperty(JSON_KEY_VGW_TELEMETRY) List<VgwTelemetry> vgwTelemetrys,
+      @Nullable @JsonProperty(JSON_KEY_OPTIONS) Options options) {
+    checkArgument(vpnConnectionId != null, "VPN connection Id cannot be null");
+    checkArgument(
+        customerGatewayId != null, "Customer gateway Id cannot be null for VPN connection");
+    checkArgument(vpnGatewayId != null, "VPN gateway Id cannot be null for VPN connection");
+    checkArgument(
+        cgwConfiguration != null,
+        "Customer gateway configuration cannot be null for VPN connection");
+    checkArgument(routes != null, "Route list cannot be null for VPN connection");
+    checkArgument(vgwTelemetrys != null, "VGW telemetry cannot be null for VPN connection");
+    checkArgument(options != null, "Options cannot be null for VPN connection");
+
     Document document;
     try {
       DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
@@ -176,42 +238,50 @@ public class VpnConnection implements AwsVpcEntity, Serializable {
       InputSource is = new InputSource(new StringReader(cgwConfiguration));
       document = builder.parse(is);
     } catch (ParserConfigurationException | SAXException | IOException e) {
-      throw new BatfishException(
+      throw new IllegalArgumentException(
           "Could not parse XML for CustomerGatewayConfiguration for vpn connection "
-              + _vpnConnectionId
+              + vpnConnectionId
               + " "
               + e);
     }
 
-    Element vpnConnection = (Element) document.getElementsByTagName(XML_KEY_VPN_CONNECTION).item(0);
+    ImmutableList.Builder<IpsecTunnel> ipsecTunnels = new ImmutableList.Builder<>();
 
+    Element vpnConnection = (Element) document.getElementsByTagName(XML_KEY_VPN_CONNECTION).item(0);
     NodeList nodeList = document.getElementsByTagName(XML_KEY_IPSEC_TUNNEL);
 
     for (int index = 0; index < nodeList.getLength(); index++) {
       Element ipsecTunnel = (Element) nodeList.item(index);
-      _ipsecTunnels.add(new IpsecTunnel(ipsecTunnel, vpnConnection));
+      ipsecTunnels.add(IpsecTunnel.create(ipsecTunnel, vpnConnection));
     }
 
-    if (jObj.has(JSON_KEY_ROUTES)) {
-      JSONArray routes = jObj.getJSONArray(JSON_KEY_ROUTES);
-      for (int index = 0; index < routes.length(); index++) {
-        JSONObject childObject = routes.getJSONObject(index);
-        _routes.add(Prefix.parse(childObject.getString(JSON_KEY_DESTINATION_CIDR_BLOCK)));
-      }
-    }
+    return new VpnConnection(
+        vpnConnectionId,
+        customerGatewayId,
+        vpnGatewayId,
+        ipsecTunnels.build(),
+        routes.stream()
+            .map(VpnRoute::getDestinationCidrBlock)
+            .collect(ImmutableList.toImmutableList()),
+        vgwTelemetrys,
+        options.getStaticRoutesOnly());
+  }
 
-    JSONArray vgwTelemetry = jObj.getJSONArray(JSON_KEY_VGW_TELEMETRY);
-    for (int index = 0; index < vgwTelemetry.length(); index++) {
-      JSONObject childObject = vgwTelemetry.getJSONObject(index);
-      _vgwTelemetrys.add(new VgwTelemetry(childObject));
-    }
-
-    if (jObj.has(JSON_KEY_OPTIONS)) {
-      JSONObject options = jObj.getJSONObject(JSON_KEY_OPTIONS);
-      _staticRoutesOnly = Utils.tryGetBoolean(options, JSON_KEY_STATIC_ROUTES_ONLY, false);
-    } else {
-      _staticRoutesOnly = false;
-    }
+  public VpnConnection(
+      String vpnConnectionId,
+      String customerGatewayId,
+      String vpnGatewayId,
+      List<IpsecTunnel> ipsecTunnels,
+      List<Prefix> routes,
+      List<VgwTelemetry> vgwTelemetrys,
+      boolean staticRoutesOnly) {
+    _vpnConnectionId = vpnConnectionId;
+    _customerGatewayId = customerGatewayId;
+    _vpnGatewayId = vpnGatewayId;
+    _ipsecTunnels = ipsecTunnels;
+    _routes = routes;
+    _vgwTelemetrys = vgwTelemetrys;
+    _staticRoutesOnly = staticRoutesOnly;
   }
 
   @Nonnull
@@ -281,8 +351,7 @@ public class VpnConnection implements AwsVpcEntity, Serializable {
     return ipsecPhase2Policy;
   }
 
-  public void applyToVpnGateway(
-      AwsConfiguration awsConfiguration, Region region, Warnings warnings) {
+  void applyToVpnGateway(AwsConfiguration awsConfiguration, Region region, Warnings warnings) {
     if (!awsConfiguration.getConfigurationNodes().containsKey(_vpnGatewayId)) {
       warnings.redFlag(
           String.format(
@@ -313,7 +382,7 @@ public class VpnConnection implements AwsVpcEntity, Serializable {
       int idNum = i + 1;
       String vpnId = _vpnConnectionId + "-" + idNum;
       IpsecTunnel ipsecTunnel = _ipsecTunnels.get(i);
-      if (ipsecTunnel.getCgwBgpAsn() != -1 && (_staticRoutesOnly || !_routes.isEmpty())) {
+      if (ipsecTunnel.getCgwBgpAsn() != null && (_staticRoutesOnly || !_routes.isEmpty())) {
         throw new BatfishException(
             "Unexpected combination of BGP and static routes for VPN connection: \""
                 + _vpnConnectionId
@@ -361,7 +430,7 @@ public class VpnConnection implements AwsVpcEntity, Serializable {
               .build());
 
       // bgp (if configured)
-      if (ipsecTunnel.getVgwBgpAsn() != -1) {
+      if (ipsecTunnel.getVgwBgpAsn() != null) {
         BgpProcess proc = vpnGatewayCfgNode.getDefaultVrf().getBgpProcess();
         if (proc == null) {
           proc = new BgpProcess(ipsecTunnel.getVgwInsideAddress(), ebgpAdminCost, ibgpAdminCost);
@@ -524,6 +593,7 @@ public class VpnConnection implements AwsVpcEntity, Serializable {
     vpnGatewayCfgNode.setIpsecPeerConfigs(ipsecPeerConfigMapBuilder.build());
   }
 
+  @Nonnull
   public String getCustomerGatewayId() {
     return _customerGatewayId;
   }
@@ -533,10 +603,12 @@ public class VpnConnection implements AwsVpcEntity, Serializable {
     return _vpnConnectionId;
   }
 
+  @Nonnull
   public List<IpsecTunnel> getIpsecTunnels() {
     return _ipsecTunnels;
   }
 
+  @Nonnull
   public List<Prefix> getRoutes() {
     return _routes;
   }
@@ -545,15 +617,61 @@ public class VpnConnection implements AwsVpcEntity, Serializable {
     return _staticRoutesOnly;
   }
 
+  @Nonnull
   public List<VgwTelemetry> getVgwTelemetrys() {
     return _vgwTelemetrys;
   }
 
+  @Nonnull
   public String getVpnConnectionId() {
     return _vpnConnectionId;
   }
 
+  @Nonnull
   public String getVpnGatewayId() {
     return _vpnGatewayId;
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) {
+      return true;
+    }
+    if (o == null || getClass() != o.getClass()) {
+      return false;
+    }
+    VpnConnection that = (VpnConnection) o;
+    return _staticRoutesOnly == that._staticRoutesOnly
+        && Objects.equal(_customerGatewayId, that._customerGatewayId)
+        && Objects.equal(_ipsecTunnels, that._ipsecTunnels)
+        && Objects.equal(_routes, that._routes)
+        && Objects.equal(_vgwTelemetrys, that._vgwTelemetrys)
+        && Objects.equal(_vpnConnectionId, that._vpnConnectionId)
+        && Objects.equal(_vpnGatewayId, that._vpnGatewayId);
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hashCode(
+        _customerGatewayId,
+        _ipsecTunnels,
+        _routes,
+        _staticRoutesOnly,
+        _vgwTelemetrys,
+        _vpnConnectionId,
+        _vpnGatewayId);
+  }
+
+  @Override
+  public String toString() {
+    return MoreObjects.toStringHelper(this)
+        .add("_customerGatewayId", _customerGatewayId)
+        .add("_ipsecTunnels", _ipsecTunnels)
+        .add("_routes", _routes)
+        .add("_staticRoutesOnly", _staticRoutesOnly)
+        .add("_vgwTelemetrys", _vgwTelemetrys)
+        .add("_vpnConnectionId", _vpnConnectionId)
+        .add("_vpnGatewayId", _vpnGatewayId)
+        .toString();
   }
 }

@@ -1,12 +1,21 @@
 package org.batfish.representation.aws;
 
+import static com.google.common.base.Preconditions.checkArgument;
+
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.base.MoreObjects;
+import com.google.common.base.Objects;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSortedSet;
 import java.io.Serializable;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpAccessListLine;
@@ -16,31 +25,85 @@ import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
-import org.codehaus.jettison.json.JSONArray;
-import org.codehaus.jettison.json.JSONException;
-import org.codehaus.jettison.json.JSONObject;
 
-public class NetworkAcl implements AwsVpcEntity, Serializable {
+/** Represents an AWS network ACL */
+@JsonIgnoreProperties(ignoreUnknown = true)
+@ParametersAreNonnullByDefault
+public final class NetworkAcl implements AwsVpcEntity, Serializable {
 
   private static final String SOURCE_TYPE_NAME = "Network ACL";
 
-  private List<NetworkAclEntry> _entries = new LinkedList<>();
+  @JsonIgnoreProperties(ignoreUnknown = true)
+  @ParametersAreNonnullByDefault
+  static final class NetworkAclAssociation implements Serializable {
 
-  private List<NetworkAclAssociation> _networkAclAssociations = new LinkedList<>();
+    @Nonnull private final String _subnetId;
 
-  private String _networkAclId;
+    @JsonCreator
+    private static NetworkAclAssociation create(
+        @Nullable @JsonProperty(JSON_KEY_SUBNET_ID) String subnetId) {
+      checkArgument(subnetId != null, "Subnet id cannot be null for network ACL association");
+      return new NetworkAclAssociation(subnetId);
+    }
 
-  private String _vpcId;
+    public NetworkAclAssociation(String subnetId) {
+      _subnetId = subnetId;
+    }
 
-  public NetworkAcl(JSONObject jObj) throws JSONException {
-    _networkAclId = jObj.getString(JSON_KEY_NETWORK_ACL_ID);
-    _vpcId = jObj.getString(JSON_KEY_VPC_ID);
+    @Nonnull
+    public String getSubnetId() {
+      return _subnetId;
+    }
 
-    JSONArray associations = jObj.getJSONArray(JSON_KEY_ASSOCIATIONS);
-    initAssociations(associations);
+    @Override
+    public boolean equals(Object o) {
+      if (this == o) {
+        return true;
+      }
+      if (o == null || getClass() != o.getClass()) {
+        return false;
+      }
+      NetworkAclAssociation that = (NetworkAclAssociation) o;
+      return Objects.equal(_subnetId, that._subnetId);
+    }
 
-    JSONArray entries = jObj.getJSONArray(JSON_KEY_ENTRIES);
-    initEntries(entries);
+    @Override
+    public int hashCode() {
+      return Objects.hashCode(_subnetId);
+    }
+  }
+
+  @Nonnull private final List<NetworkAclEntry> _entries;
+
+  @Nonnull private final List<NetworkAclAssociation> _networkAclAssociations;
+
+  @Nonnull private final String _networkAclId;
+
+  @Nonnull private final String _vpcId;
+
+  @JsonCreator
+  private static NetworkAcl create(
+      @Nullable @JsonProperty(JSON_KEY_NETWORK_ACL_ID) String networkAclId,
+      @Nullable @JsonProperty(JSON_KEY_VPC_ID) String vpcId,
+      @Nullable @JsonProperty(JSON_KEY_ASSOCIATIONS) List<NetworkAclAssociation> associations,
+      @Nullable @JsonProperty(JSON_KEY_ENTRIES) List<NetworkAclEntry> entries) {
+    checkArgument(networkAclId != null, "Network ACL id cannot be null");
+    checkArgument(vpcId != null, "VPC id cannot be null for network ACL");
+    checkArgument(associations != null, "Associations list cannot be null for network ACL");
+    checkArgument(entries != null, "Entries list cannot be null for network ACL");
+
+    return new NetworkAcl(networkAclId, vpcId, associations, entries);
+  }
+
+  public NetworkAcl(
+      String networkAclId,
+      String vpcId,
+      List<NetworkAclAssociation> associations,
+      List<NetworkAclEntry> entries) {
+    _networkAclId = networkAclId;
+    _vpcId = vpcId;
+    _networkAclAssociations = associations;
+    _entries = entries;
   }
 
   private IpAccessList getAcl(boolean isEgress) {
@@ -59,28 +122,22 @@ public class NetworkAcl implements AwsVpcEntity, Serializable {
             headerSpaceBuilder.setSrcIps(ImmutableSortedSet.of(IpWildcard.create(prefix)));
           }
         }
-        IpProtocol protocol = IpPermissions.toIpProtocol(entry.getProtocol());
+        IpProtocol protocol = Utils.toIpProtocol(entry.getProtocol());
         String protocolStr = protocol != null ? protocol.toString() : "ALL";
         if (protocol != null) {
           headerSpaceBuilder.setIpProtocols(ImmutableSortedSet.of(protocol));
         }
-        int fromPort = entry.getFromPort();
-        int toPort = entry.getToPort();
+        int fromPort = entry.getPortRange() == null ? 0 : entry.getPortRange().getFrom();
+        int toPort = entry.getPortRange() == null ? 65535 : entry.getPortRange().getTo();
         SubRange portRange = new SubRange(fromPort, toPort);
-        if (fromPort != -1 || toPort != -1) {
-          if (fromPort == -1) {
-            fromPort = 0;
-          }
-          if (toPort == -1) {
-            toPort = 65535;
-          }
+        if (fromPort != 0 || toPort != 65535) {
           headerSpaceBuilder.setDstPorts(ImmutableSortedSet.of(portRange));
         }
         String portStr;
         if (protocol == IpProtocol.ICMP) {
           // TODO: flesh these out
           portStr = "some ICMP type(s)/code(s)";
-        } else if ((fromPort == 0 && toPort == 65535) || (fromPort == -1 && toPort == -1)) {
+        } else if ((fromPort == 0 && toPort == 65535)) {
           portStr = "ALL";
         } else {
           portStr = portRange.toString();
@@ -126,21 +183,38 @@ public class NetworkAcl implements AwsVpcEntity, Serializable {
     return getAcl(false);
   }
 
+  @Nonnull
   public String getVpcId() {
     return _vpcId;
   }
 
-  private void initAssociations(JSONArray associations) throws JSONException {
-    for (int index = 0; index < associations.length(); index++) {
-      JSONObject childObject = associations.getJSONObject(index);
-      _networkAclAssociations.add(new NetworkAclAssociation(childObject));
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) {
+      return true;
     }
+    if (o == null || getClass() != o.getClass()) {
+      return false;
+    }
+    NetworkAcl that = (NetworkAcl) o;
+    return Objects.equal(_entries, that._entries)
+        && Objects.equal(_networkAclAssociations, that._networkAclAssociations)
+        && Objects.equal(_networkAclId, that._networkAclId)
+        && Objects.equal(_vpcId, that._vpcId);
   }
 
-  private void initEntries(JSONArray entries) throws JSONException {
-    for (int index = 0; index < entries.length(); index++) {
-      JSONObject childObject = entries.getJSONObject(index);
-      _entries.add(new NetworkAclEntry(childObject));
-    }
+  @Override
+  public int hashCode() {
+    return Objects.hashCode(_entries, _networkAclAssociations, _networkAclId, _vpcId);
+  }
+
+  @Override
+  public String toString() {
+    return MoreObjects.toStringHelper(getClass())
+        .add("networkAclId", _networkAclId)
+        .add("vpcId", _vpcId)
+        .add("associations", _networkAclAssociations)
+        .add("entries", _entries)
+        .toString();
   }
 }

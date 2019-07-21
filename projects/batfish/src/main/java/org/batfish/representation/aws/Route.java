@@ -1,10 +1,26 @@
 package org.batfish.representation.aws;
 
+import static com.google.common.base.Preconditions.checkArgument;
+import static org.batfish.representation.aws.AwsVpcEntity.JSON_KEY_DESTINATION_CIDR_BLOCK;
+import static org.batfish.representation.aws.AwsVpcEntity.JSON_KEY_GATEWAY_ID;
+import static org.batfish.representation.aws.AwsVpcEntity.JSON_KEY_INSTANCE_ID;
+import static org.batfish.representation.aws.AwsVpcEntity.JSON_KEY_NAT_GATEWAY_ID;
+import static org.batfish.representation.aws.AwsVpcEntity.JSON_KEY_NETWORK_INTERFACE_ID;
+import static org.batfish.representation.aws.AwsVpcEntity.JSON_KEY_STATE;
+import static org.batfish.representation.aws.AwsVpcEntity.JSON_KEY_VPC_PEERING_CONNECTION_ID;
+
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.base.MoreObjects;
+import com.google.common.base.Objects;
 import java.io.Serializable;
 import java.util.LinkedList;
 import java.util.Set;
 import java.util.TreeSet;
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.common.BatfishException;
 import org.batfish.common.Warnings;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
@@ -14,10 +30,11 @@ import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.StaticRoute;
-import org.codehaus.jettison.json.JSONException;
-import org.codehaus.jettison.json.JSONObject;
 
-public class Route implements Serializable {
+/** Representation of a route in AWS */
+@JsonIgnoreProperties(ignoreUnknown = true)
+@ParametersAreNonnullByDefault
+public final class Route implements Serializable {
 
   public enum State {
     ACTIVE,
@@ -37,39 +54,63 @@ public class Route implements Serializable {
 
   public static final int DEFAULT_STATIC_ROUTE_COST = 0;
 
-  private Prefix _destinationCidrBlock;
-  private State _state;
-  private String _target;
-  private TargetType _targetType;
+  @Nonnull private final Prefix _destinationCidrBlock;
+  @Nonnull private final State _state;
+  @Nullable private final String _target;
+  @Nonnull private final TargetType _targetType;
 
-  public Route(JSONObject jObj) throws JSONException {
-    _destinationCidrBlock =
-        Prefix.parse(jObj.getString(AwsVpcEntity.JSON_KEY_DESTINATION_CIDR_BLOCK));
-    _state = State.valueOf(jObj.getString(AwsVpcEntity.JSON_KEY_STATE).toUpperCase());
+  @JsonCreator
+  private static Route create(
+      @Nullable @JsonProperty(JSON_KEY_DESTINATION_CIDR_BLOCK) Prefix destinationCidrBlock,
+      @Nullable @JsonProperty(JSON_KEY_STATE) String stateStr,
+      @Nullable @JsonProperty(JSON_KEY_VPC_PEERING_CONNECTION_ID) String vpcPeeringConnectionId,
+      @Nullable @JsonProperty(JSON_KEY_GATEWAY_ID) String gatewayId,
+      @Nullable @JsonProperty(JSON_KEY_NAT_GATEWAY_ID) String natGatewayId,
+      @Nullable @JsonProperty(JSON_KEY_NETWORK_INTERFACE_ID) String networkInterfaceId,
+      @Nullable @JsonProperty(JSON_KEY_INSTANCE_ID) String instanceId) {
 
-    if (jObj.has(AwsVpcEntity.JSON_KEY_VPC_PEERING_CONNECTION_ID)) {
-      _targetType = TargetType.VpcPeeringConnection;
-      _target = jObj.getString(AwsVpcEntity.JSON_KEY_VPC_PEERING_CONNECTION_ID);
-    } else if (jObj.has(AwsVpcEntity.JSON_KEY_GATEWAY_ID)) {
-      _targetType = TargetType.Gateway;
-      _target = jObj.getString(AwsVpcEntity.JSON_KEY_GATEWAY_ID);
-    } else if (jObj.has(AwsVpcEntity.JSON_KEY_NAT_GATEWAY_ID)) {
-      _targetType = TargetType.NatGateway;
-      _target = jObj.getString(AwsVpcEntity.JSON_KEY_NAT_GATEWAY_ID);
-    } else if (jObj.has(AwsVpcEntity.JSON_KEY_NETWORK_INTERFACE_ID)) {
-      _targetType = TargetType.NetworkInterface;
-      _target = jObj.getString(AwsVpcEntity.JSON_KEY_NETWORK_INTERFACE_ID);
-    } else if (jObj.has(AwsVpcEntity.JSON_KEY_INSTANCE_ID)) {
+    checkArgument(
+        destinationCidrBlock != null, "Destination CIDR block cannot be null for a route");
+    checkArgument(stateStr != null, "State cannot be null for a route");
+
+    State state = State.valueOf(stateStr.toUpperCase());
+    String target;
+    TargetType targetType;
+
+    if (vpcPeeringConnectionId != null) {
+      targetType = TargetType.VpcPeeringConnection;
+      target = vpcPeeringConnectionId;
+    } else if (gatewayId != null) {
+      targetType = TargetType.Gateway;
+      target = gatewayId;
+    } else if (natGatewayId != null) {
+      targetType = TargetType.NatGateway;
+      target = natGatewayId;
+    } else if (networkInterfaceId != null) {
+      targetType = TargetType.NetworkInterface;
+      target = networkInterfaceId;
+    } else if (instanceId != null) {
       // NOTE: so far in practice this branch is never reached after moving
       // networkInterfaceId above it!
-      _targetType = TargetType.Instance;
-      _target = jObj.getString(AwsVpcEntity.JSON_KEY_INSTANCE_ID);
-    } else if (_state == State.BLACKHOLE) {
-      _targetType = TargetType.Unavailable;
-      _target = null;
+      targetType = TargetType.Instance;
+      target = instanceId;
+    } else if (state == State.BLACKHOLE) {
+      targetType = TargetType.Unavailable;
+      target = null;
     } else {
-      throw new JSONException("Target not found in route " + jObj);
+      throw new IllegalArgumentException(
+          "Unable to determine target type in route for " + destinationCidrBlock);
     }
+
+    return new Route(destinationCidrBlock, state, target, targetType);
+  }
+
+  public Route(
+      Prefix destinationCidrBlock, State state, @Nullable String target, TargetType targetType) {
+    _destinationCidrBlock = destinationCidrBlock;
+    _state = state;
+    _target = target;
+    _targetType = targetType;
   }
 
   @Nullable
@@ -119,7 +160,7 @@ public class Route implements Serializable {
           // TODO: it is NOT clear that this is the right thing to do
           // for NATs with multiple interfaces, we should probably match on private IPs?
           srBuilder.setNextHopIp(
-              region.getNatGateways().get(_target).getNatGatewayAddresses().get(0)._privateIp);
+              region.getNatGateways().get(_target).getNatGatewayAddresses().get(0).getPrivateIp());
           break;
 
         case NetworkInterface:
@@ -259,5 +300,35 @@ public class Route implements Serializable {
       }
     }
     return srBuilder.build();
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) {
+      return true;
+    }
+    if (o == null || getClass() != o.getClass()) {
+      return false;
+    }
+    Route route = (Route) o;
+    return Objects.equal(_destinationCidrBlock, route._destinationCidrBlock)
+        && _state == route._state
+        && Objects.equal(_target, route._target)
+        && _targetType == route._targetType;
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hashCode(_destinationCidrBlock, _state, _target, _targetType);
+  }
+
+  @Override
+  public String toString() {
+    return MoreObjects.toStringHelper(this)
+        .add("_destinationCidrBlock", _destinationCidrBlock)
+        .add("_state", _state)
+        .add("_target", _target)
+        .add("_targetType", _targetType)
+        .toString();
   }
 }
