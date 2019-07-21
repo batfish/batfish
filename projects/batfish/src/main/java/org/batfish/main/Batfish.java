@@ -1706,15 +1706,11 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
       try {
         JsonNode json = BatfishObjectMapper.mapper().readTree(fileText);
-        try {
-          config.addConfigElement(regionName, json, fileName, pvcae);
-        } catch (JSONException e) {
-          throw new BatfishException("Problems parsing JSON in " + fileName, e);
-        }
+        config.addConfigElement(regionName, json, fileName, pvcae);
       } catch (IOException e) {
         pvcae.addRedFlagWarning(
             BfConsts.RELPATH_AWS_CONFIGS_FILE,
-            new Warning(String.format("AWS file %s is not valid JSON", fileName), "AWS"));
+            new Warning(String.format("Unexpected content in AWS file %s", fileName), "AWS"));
       }
     }
     return config;
