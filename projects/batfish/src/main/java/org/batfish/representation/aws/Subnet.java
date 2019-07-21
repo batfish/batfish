@@ -28,7 +28,7 @@ import org.batfish.datamodel.StaticRoute;
 /** Representation of an AWS subnet */
 @JsonIgnoreProperties(ignoreUnknown = true)
 @ParametersAreNonnullByDefault
-class Subnet implements AwsVpcEntity, Serializable {
+public class Subnet implements AwsVpcEntity, Serializable {
 
   @Nonnull private final Prefix _cidrBlock;
 
@@ -164,7 +164,7 @@ class Subnet implements AwsVpcEntity, Serializable {
   }
 
   @Nonnull
-  Prefix getCidrBlock() {
+  public Prefix getCidrBlock() {
     return _cidrBlock;
   }
 
@@ -177,7 +177,7 @@ class Subnet implements AwsVpcEntity, Serializable {
     return _internetGatewayId;
   }
 
-  String getVpcId() {
+  public String getVpcId() {
     return _vpcId;
   }
 

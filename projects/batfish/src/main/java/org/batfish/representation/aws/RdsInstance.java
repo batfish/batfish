@@ -25,9 +25,9 @@ import org.batfish.datamodel.StaticRoute;
 /** Represents as RDS instance */
 @JsonIgnoreProperties(ignoreUnknown = true)
 @ParametersAreNonnullByDefault
-final class RdsInstance implements AwsVpcEntity, Serializable {
+public final class RdsInstance implements AwsVpcEntity, Serializable {
 
-  enum Status {
+  public enum Status {
     AVAILABLE,
     UNAVAILABLE
   }
@@ -241,31 +241,31 @@ final class RdsInstance implements AwsVpcEntity, Serializable {
     return _dbInstanceIdentifier;
   }
 
-  Multimap<String, String> getAzSubnetIds() {
+  public Multimap<String, String> getAzSubnetIds() {
     return _azsSubnetIds;
   }
 
   @Nonnull
-  String getVpcId() {
+  public String getVpcId() {
     return _vpcId;
   }
 
-  boolean getMultiAz() {
+  public boolean getMultiAz() {
     return _multiAz;
   }
 
   @Nonnull
-  String getAvailabilityZone() {
+  public String getAvailabilityZone() {
     return _availabilityZone;
   }
 
   @Nonnull
-  List<String> getSecurityGroups() {
+  public List<String> getSecurityGroups() {
     return _securityGroups;
   }
 
   @Nonnull
-  Status getDbInstanceStatus() {
+  public Status getDbInstanceStatus() {
     return _dbInstanceStatus;
   }
 
