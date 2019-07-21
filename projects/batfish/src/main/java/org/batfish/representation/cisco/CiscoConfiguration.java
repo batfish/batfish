@@ -4413,6 +4413,13 @@ public final class CiscoConfiguration extends VendorConfiguration {
           }
         }
       }
+      // check EIGRP distribute lists
+      if (vrf.getEigrpProcesses().values().stream()
+          .flatMap(
+              eigrpProcess -> eigrpProcess.getOutboundInterfaceDistributeLists().values().stream())
+          .anyMatch(distributeList -> distributeList.getFilterName().equals(aclName))) {
+        return true;
+      }
     }
     return false;
   }
