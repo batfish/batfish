@@ -2,6 +2,7 @@ package org.batfish.representation.aws;
 
 import static org.batfish.representation.aws.AwsVpcEntity.JSON_KEY_NETWORK_INTERFACES;
 import static org.hamcrest.Matchers.equalTo;
+import static org.junit.Assert.assertThat;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
@@ -13,7 +14,6 @@ import java.util.List;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.datamodel.Ip;
-import org.hamcrest.MatcherAssert;
 import org.junit.Test;
 
 /** */
@@ -39,7 +39,7 @@ public class NetworkInterfaceTest {
     HashMap<Ip, Ip> map2 = new HashMap<>();
     map2.put(Ip.parse("10.100.1.20"), null);
 
-    MatcherAssert.assertThat(
+    assertThat(
         interfaces,
         equalTo(
             ImmutableList.of(

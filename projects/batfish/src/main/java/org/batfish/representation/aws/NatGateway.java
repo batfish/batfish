@@ -5,9 +5,9 @@ import static com.google.common.base.Preconditions.checkArgument;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.google.common.base.Objects;
 import java.io.Serializable;
 import java.util.List;
+import java.util.Objects;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -96,14 +96,14 @@ public final class NatGateway implements AwsVpcEntity, Serializable {
       return false;
     }
     NatGateway that = (NatGateway) o;
-    return Objects.equal(_natGatewayAddresses, that._natGatewayAddresses)
-        && Objects.equal(_natGatewayId, that._natGatewayId)
-        && Objects.equal(_subnetId, that._subnetId)
-        && Objects.equal(_vpcId, that._vpcId);
+    return Objects.equals(_natGatewayAddresses, that._natGatewayAddresses)
+        && Objects.equals(_natGatewayId, that._natGatewayId)
+        && Objects.equals(_subnetId, that._subnetId)
+        && Objects.equals(_vpcId, that._vpcId);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hashCode(_natGatewayAddresses, _natGatewayId, _subnetId, _vpcId);
+    return Objects.hash(_natGatewayAddresses, _natGatewayId, _subnetId, _vpcId);
   }
 }

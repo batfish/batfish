@@ -2,6 +2,7 @@ package org.batfish.representation.aws;
 
 import static org.batfish.representation.aws.AwsVpcEntity.JSON_KEY_VPCS;
 import static org.hamcrest.Matchers.equalTo;
+import static org.junit.Assert.assertThat;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
@@ -13,7 +14,6 @@ import java.util.List;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.datamodel.Prefix;
-import org.hamcrest.MatcherAssert;
 import org.junit.Test;
 
 /** Tests for {@link Vpc} */
@@ -31,7 +31,7 @@ public class VpcTest {
       vpcs.add(BatfishObjectMapper.mapper().convertValue(array.get(index), Vpc.class));
     }
 
-    MatcherAssert.assertThat(
+    assertThat(
         vpcs,
         equalTo(
             ImmutableList.of(

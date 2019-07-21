@@ -6,12 +6,12 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.MoreObjects;
-import com.google.common.base.Objects;
 import com.google.common.collect.ImmutableList;
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -237,18 +237,18 @@ public final class NetworkInterface implements AwsVpcEntity, Serializable {
       return false;
     }
     NetworkInterface that = (NetworkInterface) o;
-    return Objects.equal(_associationPublicIp, that._associationPublicIp)
-        && Objects.equal(_attachmentInstanceId, that._attachmentInstanceId)
-        && Objects.equal(_groups, that._groups)
-        && Objects.equal(_ipAddressAssociations, that._ipAddressAssociations)
-        && Objects.equal(_networkInterfaceId, that._networkInterfaceId)
-        && Objects.equal(_subnetId, that._subnetId)
-        && Objects.equal(_vpcId, that._vpcId);
+    return Objects.equals(_associationPublicIp, that._associationPublicIp)
+        && Objects.equals(_attachmentInstanceId, that._attachmentInstanceId)
+        && Objects.equals(_groups, that._groups)
+        && Objects.equals(_ipAddressAssociations, that._ipAddressAssociations)
+        && Objects.equals(_networkInterfaceId, that._networkInterfaceId)
+        && Objects.equals(_subnetId, that._subnetId)
+        && Objects.equals(_vpcId, that._vpcId);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hashCode(
+    return Objects.hash(
         _associationPublicIp,
         _attachmentInstanceId,
         _groups,

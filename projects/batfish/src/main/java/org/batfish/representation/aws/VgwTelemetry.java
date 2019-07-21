@@ -10,8 +10,8 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.MoreObjects;
-import com.google.common.base.Objects;
 import java.io.Serializable;
+import java.util.Objects;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -82,14 +82,14 @@ public final class VgwTelemetry implements Serializable {
     }
     VgwTelemetry that = (VgwTelemetry) o;
     return _acceptedRouteCount == that._acceptedRouteCount
-        && Objects.equal(_outsideIpAddress, that._outsideIpAddress)
-        && Objects.equal(_status, that._status)
-        && Objects.equal(_statusMessage, that._statusMessage);
+        && Objects.equals(_outsideIpAddress, that._outsideIpAddress)
+        && Objects.equals(_status, that._status)
+        && Objects.equals(_statusMessage, that._statusMessage);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hashCode(_acceptedRouteCount, _outsideIpAddress, _status, _statusMessage);
+    return Objects.hash(_acceptedRouteCount, _outsideIpAddress, _status, _statusMessage);
   }
 
   @Override

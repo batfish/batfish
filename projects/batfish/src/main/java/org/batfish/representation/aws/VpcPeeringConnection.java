@@ -5,8 +5,8 @@ import static com.google.common.base.Preconditions.checkArgument;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.google.common.base.Objects;
 import java.io.Serializable;
+import java.util.Objects;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -130,16 +130,16 @@ public final class VpcPeeringConnection implements AwsVpcEntity, Serializable {
       return false;
     }
     VpcPeeringConnection that = (VpcPeeringConnection) o;
-    return Objects.equal(_accepterVpcCidrBlock, that._accepterVpcCidrBlock)
-        && Objects.equal(_accepterVpcId, that._accepterVpcId)
-        && Objects.equal(_requesterVpcCidrBlock, that._requesterVpcCidrBlock)
-        && Objects.equal(_requesterVpcId, that._requesterVpcId)
-        && Objects.equal(_vpcPeeringConnectionId, that._vpcPeeringConnectionId);
+    return Objects.equals(_accepterVpcCidrBlock, that._accepterVpcCidrBlock)
+        && Objects.equals(_accepterVpcId, that._accepterVpcId)
+        && Objects.equals(_requesterVpcCidrBlock, that._requesterVpcCidrBlock)
+        && Objects.equals(_requesterVpcId, that._requesterVpcId)
+        && Objects.equals(_vpcPeeringConnectionId, that._vpcPeeringConnectionId);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hashCode(
+    return Objects.hash(
         _accepterVpcCidrBlock,
         _accepterVpcId,
         _requesterVpcCidrBlock,

@@ -5,10 +5,10 @@ import static com.google.common.base.Preconditions.checkArgument;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.google.common.base.Objects;
 import com.google.common.collect.ImmutableList;
 import java.io.Serializable;
 import java.util.List;
+import java.util.Objects;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -182,14 +182,14 @@ public class ElasticsearchDomain implements AwsVpcEntity, Serializable {
     }
     ElasticsearchDomain that = (ElasticsearchDomain) o;
     return _available == that._available
-        && Objects.equal(_securityGroups, that._securityGroups)
-        && Objects.equal(_domainName, that._domainName)
-        && Objects.equal(_vpcId, that._vpcId)
-        && Objects.equal(_subnets, that._subnets);
+        && Objects.equals(_securityGroups, that._securityGroups)
+        && Objects.equals(_domainName, that._domainName)
+        && Objects.equals(_vpcId, that._vpcId)
+        && Objects.equals(_subnets, that._subnets);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hashCode(_securityGroups, _domainName, _vpcId, _subnets, _available);
+    return Objects.hash(_securityGroups, _domainName, _vpcId, _subnets, _available);
   }
 }

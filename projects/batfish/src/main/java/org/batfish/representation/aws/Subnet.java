@@ -5,11 +5,11 @@ import static com.google.common.base.Preconditions.checkArgument;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.google.common.base.Objects;
 import java.io.Serializable;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
@@ -254,17 +254,17 @@ public class Subnet implements AwsVpcEntity, Serializable {
     }
     Subnet subnet = (Subnet) o;
     return _lastGeneratedIp == subnet._lastGeneratedIp
-        && Objects.equal(_cidrBlock, subnet._cidrBlock)
-        && Objects.equal(_subnetId, subnet._subnetId)
-        && Objects.equal(_vpcId, subnet._vpcId)
-        && Objects.equal(_allocatedIps, subnet._allocatedIps)
-        && Objects.equal(_internetGatewayId, subnet._internetGatewayId)
-        && Objects.equal(_vpnGatewayId, subnet._vpnGatewayId);
+        && Objects.equals(_cidrBlock, subnet._cidrBlock)
+        && Objects.equals(_subnetId, subnet._subnetId)
+        && Objects.equals(_vpcId, subnet._vpcId)
+        && Objects.equals(_allocatedIps, subnet._allocatedIps)
+        && Objects.equals(_internetGatewayId, subnet._internetGatewayId)
+        && Objects.equals(_vpnGatewayId, subnet._vpnGatewayId);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hashCode(
+    return Objects.hash(
         _cidrBlock,
         _subnetId,
         _vpcId,

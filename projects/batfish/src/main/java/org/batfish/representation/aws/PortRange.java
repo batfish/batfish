@@ -6,8 +6,8 @@ import static org.batfish.representation.aws.AwsVpcEntity.JSON_KEY_TO;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.google.common.base.Objects;
 import java.io.Serializable;
+import java.util.Objects;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 
@@ -55,6 +55,6 @@ public final class PortRange implements Serializable {
 
   @Override
   public int hashCode() {
-    return Objects.hashCode(_from, _to);
+    return Objects.hash(_from, _to);
   }
 }

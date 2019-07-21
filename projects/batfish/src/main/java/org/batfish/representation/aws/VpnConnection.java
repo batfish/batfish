@@ -7,7 +7,6 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.MoreObjects;
-import com.google.common.base.Objects;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.ImmutableSortedSet;
@@ -15,6 +14,7 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.io.StringReader;
 import java.util.List;
+import java.util.Objects;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -642,17 +642,17 @@ public final class VpnConnection implements AwsVpcEntity, Serializable {
     }
     VpnConnection that = (VpnConnection) o;
     return _staticRoutesOnly == that._staticRoutesOnly
-        && Objects.equal(_customerGatewayId, that._customerGatewayId)
-        && Objects.equal(_ipsecTunnels, that._ipsecTunnels)
-        && Objects.equal(_routes, that._routes)
-        && Objects.equal(_vgwTelemetrys, that._vgwTelemetrys)
-        && Objects.equal(_vpnConnectionId, that._vpnConnectionId)
-        && Objects.equal(_vpnGatewayId, that._vpnGatewayId);
+        && Objects.equals(_customerGatewayId, that._customerGatewayId)
+        && Objects.equals(_ipsecTunnels, that._ipsecTunnels)
+        && Objects.equals(_routes, that._routes)
+        && Objects.equals(_vgwTelemetrys, that._vgwTelemetrys)
+        && Objects.equals(_vpnConnectionId, that._vpnConnectionId)
+        && Objects.equals(_vpnGatewayId, that._vpnGatewayId);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hashCode(
+    return Objects.hash(
         _customerGatewayId,
         _ipsecTunnels,
         _routes,

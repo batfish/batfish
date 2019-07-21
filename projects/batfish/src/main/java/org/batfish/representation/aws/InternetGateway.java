@@ -5,10 +5,10 @@ import static com.google.common.base.Preconditions.checkArgument;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.google.common.base.Objects;
 import com.google.common.collect.ImmutableList;
 import java.io.Serializable;
 import java.util.List;
+import java.util.Objects;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -121,12 +121,12 @@ public final class InternetGateway implements AwsVpcEntity, Serializable {
       return false;
     }
     InternetGateway that = (InternetGateway) o;
-    return Objects.equal(_attachmentVpcIds, that._attachmentVpcIds)
-        && Objects.equal(_internetGatewayId, that._internetGatewayId);
+    return Objects.equals(_attachmentVpcIds, that._attachmentVpcIds)
+        && Objects.equals(_internetGatewayId, that._internetGatewayId);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hashCode(_attachmentVpcIds, _internetGatewayId);
+    return Objects.hash(_attachmentVpcIds, _internetGatewayId);
   }
 }

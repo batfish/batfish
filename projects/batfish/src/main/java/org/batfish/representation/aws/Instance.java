@@ -6,7 +6,6 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonValue;
-import com.google.common.base.Objects;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSortedSet;
@@ -14,6 +13,7 @@ import java.io.Serializable;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.SortedSet;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -348,18 +348,18 @@ public final class Instance implements AwsVpcEntity, Serializable {
       return false;
     }
     Instance instance = (Instance) o;
-    return Objects.equal(_instanceId, instance._instanceId)
-        && Objects.equal(_networkInterfaces, instance._networkInterfaces)
-        && Objects.equal(_securityGroups, instance._securityGroups)
+    return Objects.equals(_instanceId, instance._instanceId)
+        && Objects.equals(_networkInterfaces, instance._networkInterfaces)
+        && Objects.equals(_securityGroups, instance._securityGroups)
         && _status == instance._status
-        && Objects.equal(_subnetId, instance._subnetId)
-        && Objects.equal(_tags, instance._tags)
-        && Objects.equal(_vpcId, instance._vpcId);
+        && Objects.equals(_subnetId, instance._subnetId)
+        && Objects.equals(_tags, instance._tags)
+        && Objects.equals(_vpcId, instance._vpcId);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hashCode(
+    return Objects.hash(
         _instanceId,
         _networkInterfaces,
         _securityGroups,

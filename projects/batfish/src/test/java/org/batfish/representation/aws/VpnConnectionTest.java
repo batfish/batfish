@@ -2,6 +2,7 @@ package org.batfish.representation.aws;
 
 import static org.batfish.representation.aws.AwsVpcEntity.JSON_KEY_VPN_CONNECTIONS;
 import static org.hamcrest.Matchers.equalTo;
+import static org.junit.Assert.assertThat;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
@@ -12,7 +13,6 @@ import java.util.List;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.datamodel.Ip;
-import org.hamcrest.MatcherAssert;
 import org.junit.Test;
 
 /** Tests for {@link VpnConnection} */
@@ -31,7 +31,7 @@ public class VpnConnectionTest {
           BatfishObjectMapper.mapper().convertValue(array.get(index), VpnConnection.class));
     }
 
-    MatcherAssert.assertThat(
+    assertThat(
         vpnConnections,
         equalTo(
             ImmutableList.of(

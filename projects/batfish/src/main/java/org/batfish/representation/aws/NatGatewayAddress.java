@@ -9,8 +9,8 @@ import static org.batfish.representation.aws.AwsVpcEntity.JSON_KEY_PUBLIC_IP;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.MoreObjects;
-import com.google.common.base.Objects;
 import java.io.Serializable;
+import java.util.Objects;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -77,15 +77,15 @@ public final class NatGatewayAddress implements Serializable {
       return false;
     }
     NatGatewayAddress that = (NatGatewayAddress) o;
-    return Objects.equal(_allocationId, that._allocationId)
-        && Objects.equal(_networkInterfaceId, that._networkInterfaceId)
-        && Objects.equal(_privateIp, that._privateIp)
-        && Objects.equal(_publicIp, that._publicIp);
+    return Objects.equals(_allocationId, that._allocationId)
+        && Objects.equals(_networkInterfaceId, that._networkInterfaceId)
+        && Objects.equals(_privateIp, that._privateIp)
+        && Objects.equals(_publicIp, that._publicIp);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hashCode(_allocationId, _networkInterfaceId, _privateIp, _publicIp);
+    return Objects.hash(_allocationId, _networkInterfaceId, _privateIp, _publicIp);
   }
 
   @Override

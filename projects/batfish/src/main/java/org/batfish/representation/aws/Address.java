@@ -5,8 +5,8 @@ import static com.google.common.base.Preconditions.checkArgument;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.google.common.base.Objects;
 import java.io.Serializable;
+import java.util.Objects;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -70,13 +70,13 @@ public final class Address implements AwsVpcEntity, Serializable {
       return false;
     }
     Address address = (Address) o;
-    return Objects.equal(_instanceId, address._instanceId)
-        && Objects.equal(_privateIp, address._privateIp)
-        && Objects.equal(_publicIp, address._publicIp);
+    return Objects.equals(_instanceId, address._instanceId)
+        && Objects.equals(_privateIp, address._privateIp)
+        && Objects.equals(_publicIp, address._publicIp);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hashCode(_instanceId, _privateIp, _publicIp);
+    return Objects.hash(_instanceId, _privateIp, _publicIp);
   }
 }

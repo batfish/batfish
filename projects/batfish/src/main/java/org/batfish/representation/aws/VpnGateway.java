@@ -5,10 +5,10 @@ import static com.google.common.base.Preconditions.checkArgument;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.google.common.base.Objects;
 import com.google.common.collect.ImmutableList;
 import java.io.Serializable;
 import java.util.List;
+import java.util.Objects;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -133,12 +133,12 @@ public final class VpnGateway implements AwsVpcEntity, Serializable {
       return false;
     }
     VpnGateway that = (VpnGateway) o;
-    return Objects.equal(_attachmentVpcIds, that._attachmentVpcIds)
-        && Objects.equal(_vpnGatewayId, that._vpnGatewayId);
+    return Objects.equals(_attachmentVpcIds, that._attachmentVpcIds)
+        && Objects.equals(_vpnGatewayId, that._vpnGatewayId);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hashCode(_attachmentVpcIds, _vpnGatewayId);
+    return Objects.hash(_attachmentVpcIds, _vpnGatewayId);
   }
 }

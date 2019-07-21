@@ -6,9 +6,9 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.MoreObjects;
-import com.google.common.base.Objects;
 import java.io.Serializable;
 import java.util.List;
+import java.util.Objects;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -56,12 +56,12 @@ public final class RouteTable implements AwsVpcEntity, Serializable {
         return false;
       }
       Association that = (Association) o;
-      return _isMain == that._isMain && Objects.equal(_subnetId, that._subnetId);
+      return _isMain == that._isMain && Objects.equals(_subnetId, that._subnetId);
     }
 
     @Override
     public int hashCode() {
-      return Objects.hashCode(_isMain, _subnetId);
+      return Objects.hash(_isMain, _subnetId);
     }
   }
 
@@ -124,15 +124,15 @@ public final class RouteTable implements AwsVpcEntity, Serializable {
       return false;
     }
     RouteTable that = (RouteTable) o;
-    return Objects.equal(_routes, that._routes)
-        && Objects.equal(_associations, that._associations)
-        && Objects.equal(_routeTableId, that._routeTableId)
-        && Objects.equal(_vpcId, that._vpcId);
+    return Objects.equals(_routes, that._routes)
+        && Objects.equals(_associations, that._associations)
+        && Objects.equals(_routeTableId, that._routeTableId)
+        && Objects.equals(_vpcId, that._vpcId);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hashCode(_routes, _associations, _routeTableId, _vpcId);
+    return Objects.hash(_routes, _associations, _routeTableId, _vpcId);
   }
 
   @Override

@@ -6,12 +6,12 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.MoreObjects;
-import com.google.common.base.Objects;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSortedSet;
 import java.io.Serializable;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.TreeMap;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -64,7 +64,7 @@ public final class NetworkAcl implements AwsVpcEntity, Serializable {
         return false;
       }
       NetworkAclAssociation that = (NetworkAclAssociation) o;
-      return Objects.equal(_subnetId, that._subnetId);
+      return Objects.equals(_subnetId, that._subnetId);
     }
 
     @Override
@@ -197,15 +197,15 @@ public final class NetworkAcl implements AwsVpcEntity, Serializable {
       return false;
     }
     NetworkAcl that = (NetworkAcl) o;
-    return Objects.equal(_entries, that._entries)
-        && Objects.equal(_networkAclAssociations, that._networkAclAssociations)
-        && Objects.equal(_networkAclId, that._networkAclId)
-        && Objects.equal(_vpcId, that._vpcId);
+    return Objects.equals(_entries, that._entries)
+        && Objects.equals(_networkAclAssociations, that._networkAclAssociations)
+        && Objects.equals(_networkAclId, that._networkAclId)
+        && Objects.equals(_vpcId, that._vpcId);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hashCode(_entries, _networkAclAssociations, _networkAclId, _vpcId);
+    return Objects.hash(_entries, _networkAclAssociations, _networkAclId, _vpcId);
   }
 
   @Override

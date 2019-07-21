@@ -6,12 +6,12 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.MoreObjects;
-import com.google.common.base.Objects;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import java.io.Serializable;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -200,16 +200,16 @@ final class SecurityGroup implements AwsVpcEntity, Serializable {
       return false;
     }
     SecurityGroup that = (SecurityGroup) o;
-    return Objects.equal(_groupId, that._groupId)
-        && Objects.equal(_groupName, that._groupName)
-        && Objects.equal(_ipPermsEgress, that._ipPermsEgress)
-        && Objects.equal(_ipPermsIngress, that._ipPermsIngress)
-        && Objects.equal(_usersIpSpace, that._usersIpSpace);
+    return Objects.equals(_groupId, that._groupId)
+        && Objects.equals(_groupName, that._groupName)
+        && Objects.equals(_ipPermsEgress, that._ipPermsEgress)
+        && Objects.equals(_ipPermsIngress, that._ipPermsIngress)
+        && Objects.equals(_usersIpSpace, that._usersIpSpace);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hashCode(_groupId, _groupName, _ipPermsEgress, _ipPermsIngress, _usersIpSpace);
+    return Objects.hash(_groupId, _groupName, _ipPermsEgress, _ipPermsIngress, _usersIpSpace);
   }
 
   @Override

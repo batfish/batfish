@@ -1,8 +1,8 @@
 package org.batfish.representation.aws;
 
 import com.google.common.base.MoreObjects;
-import com.google.common.base.Objects;
 import java.io.Serializable;
+import java.util.Objects;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -325,32 +325,32 @@ public class IpsecTunnel implements Serializable {
       return false;
     }
     IpsecTunnel that = (IpsecTunnel) o;
-    return Objects.equal(_cgwBgpAsn, that._cgwBgpAsn)
+    return Objects.equals(_cgwBgpAsn, that._cgwBgpAsn)
         && _cgwInsidePrefixLength == that._cgwInsidePrefixLength
         && _ikeLifetime == that._ikeLifetime
         && _ipsecLifetime == that._ipsecLifetime
-        && Objects.equal(_vgwBgpAsn, that._vgwBgpAsn)
+        && Objects.equals(_vgwBgpAsn, that._vgwBgpAsn)
         && _vgwInsidePrefixLength == that._vgwInsidePrefixLength
-        && Objects.equal(_cgwInsideAddress, that._cgwInsideAddress)
-        && Objects.equal(_cgwOutsideAddress, that._cgwOutsideAddress)
-        && Objects.equal(_ikeAuthProtocol, that._ikeAuthProtocol)
-        && Objects.equal(_ikeEncryptionProtocol, that._ikeEncryptionProtocol)
-        && Objects.equal(_ikeMode, that._ikeMode)
-        && Objects.equal(_ikePerfectForwardSecrecy, that._ikePerfectForwardSecrecy)
-        && Objects.equal(_ikePreSharedKeyHash, that._ikePreSharedKeyHash)
-        && Objects.equal(_ipsecAuthProtocol, that._ipsecAuthProtocol)
-        && Objects.equal(_ipsecEncryptionProtocol, that._ipsecEncryptionProtocol)
-        && Objects.equal(_ipsecMode, that._ipsecMode)
-        && Objects.equal(_ipsecPerfectForwardSecrecy, that._ipsecPerfectForwardSecrecy)
-        && Objects.equal(_ipsecProtocol, that._ipsecProtocol)
-        && Objects.equal(_vgwInsideAddress, that._vgwInsideAddress)
-        && Objects.equal(_vgwOutsideAddress, that._vgwOutsideAddress)
-        && Objects.equal(_vpnConnectionAttributes, that._vpnConnectionAttributes);
+        && Objects.equals(_cgwInsideAddress, that._cgwInsideAddress)
+        && Objects.equals(_cgwOutsideAddress, that._cgwOutsideAddress)
+        && Objects.equals(_ikeAuthProtocol, that._ikeAuthProtocol)
+        && Objects.equals(_ikeEncryptionProtocol, that._ikeEncryptionProtocol)
+        && Objects.equals(_ikeMode, that._ikeMode)
+        && Objects.equals(_ikePerfectForwardSecrecy, that._ikePerfectForwardSecrecy)
+        && Objects.equals(_ikePreSharedKeyHash, that._ikePreSharedKeyHash)
+        && Objects.equals(_ipsecAuthProtocol, that._ipsecAuthProtocol)
+        && Objects.equals(_ipsecEncryptionProtocol, that._ipsecEncryptionProtocol)
+        && Objects.equals(_ipsecMode, that._ipsecMode)
+        && Objects.equals(_ipsecPerfectForwardSecrecy, that._ipsecPerfectForwardSecrecy)
+        && Objects.equals(_ipsecProtocol, that._ipsecProtocol)
+        && Objects.equals(_vgwInsideAddress, that._vgwInsideAddress)
+        && Objects.equals(_vgwOutsideAddress, that._vgwOutsideAddress)
+        && Objects.equals(_vpnConnectionAttributes, that._vpnConnectionAttributes);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hashCode(
+    return Objects.hash(
         _cgwBgpAsn,
         _cgwInsideAddress,
         _cgwInsidePrefixLength,

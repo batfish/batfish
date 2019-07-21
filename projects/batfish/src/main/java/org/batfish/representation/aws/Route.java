@@ -13,9 +13,9 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.MoreObjects;
-import com.google.common.base.Objects;
 import java.io.Serializable;
 import java.util.LinkedList;
+import java.util.Objects;
 import java.util.Set;
 import java.util.TreeSet;
 import javax.annotation.Nonnull;
@@ -311,15 +311,15 @@ public final class Route implements Serializable {
       return false;
     }
     Route route = (Route) o;
-    return Objects.equal(_destinationCidrBlock, route._destinationCidrBlock)
+    return Objects.equals(_destinationCidrBlock, route._destinationCidrBlock)
         && _state == route._state
-        && Objects.equal(_target, route._target)
+        && Objects.equals(_target, route._target)
         && _targetType == route._targetType;
   }
 
   @Override
   public int hashCode() {
-    return Objects.hashCode(_destinationCidrBlock, _state, _target, _targetType);
+    return Objects.hash(_destinationCidrBlock, _state, _target, _targetType);
   }
 
   @Override

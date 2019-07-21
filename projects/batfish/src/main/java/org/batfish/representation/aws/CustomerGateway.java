@@ -5,8 +5,8 @@ import static com.google.common.base.Preconditions.checkArgument;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.google.common.base.Objects;
 import java.io.Serializable;
+import java.util.Objects;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -80,14 +80,14 @@ public final class CustomerGateway implements AwsVpcEntity, Serializable {
       return false;
     }
     CustomerGateway that = (CustomerGateway) o;
-    return Objects.equal(_bgpAsn, that._bgpAsn)
-        && Objects.equal(_customerGatewayId, that._customerGatewayId)
-        && Objects.equal(_ipAddress, that._ipAddress)
-        && Objects.equal(_type, that._type);
+    return Objects.equals(_bgpAsn, that._bgpAsn)
+        && Objects.equals(_customerGatewayId, that._customerGatewayId)
+        && Objects.equals(_ipAddress, that._ipAddress)
+        && Objects.equals(_type, that._type);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hashCode(_bgpAsn, _customerGatewayId, _ipAddress, _type);
+    return Objects.hash(_bgpAsn, _customerGatewayId, _ipAddress, _type);
   }
 }

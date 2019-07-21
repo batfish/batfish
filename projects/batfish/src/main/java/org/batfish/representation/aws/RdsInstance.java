@@ -5,13 +5,13 @@ import static com.google.common.base.Preconditions.checkArgument;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.google.common.base.Objects;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ListMultimap;
 import com.google.common.collect.Multimap;
 import java.io.Serializable;
 import java.util.List;
+import java.util.Objects;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -323,17 +323,17 @@ public class RdsInstance implements AwsVpcEntity, Serializable {
     }
     RdsInstance that = (RdsInstance) o;
     return _multiAz == that._multiAz
-        && Objects.equal(_dbInstanceIdentifier, that._dbInstanceIdentifier)
+        && Objects.equals(_dbInstanceIdentifier, that._dbInstanceIdentifier)
         && _dbInstanceStatus == that._dbInstanceStatus
-        && Objects.equal(_azsSubnetIds, that._azsSubnetIds)
-        && Objects.equal(_availabilityZone, that._availabilityZone)
-        && Objects.equal(_vpcId, that._vpcId)
-        && Objects.equal(_securityGroups, that._securityGroups);
+        && Objects.equals(_azsSubnetIds, that._azsSubnetIds)
+        && Objects.equals(_availabilityZone, that._availabilityZone)
+        && Objects.equals(_vpcId, that._vpcId)
+        && Objects.equals(_securityGroups, that._securityGroups);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hashCode(
+    return Objects.hash(
         _dbInstanceIdentifier,
         _dbInstanceStatus,
         _azsSubnetIds,

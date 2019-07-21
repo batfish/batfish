@@ -15,7 +15,6 @@ import java.util.List;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.datamodel.Prefix;
-import org.hamcrest.MatcherAssert;
 import org.junit.Test;
 
 /** Tests for {@link VpcPeeringConnection} */
@@ -35,7 +34,7 @@ public class VpcPeeringConnectionTest {
           BatfishObjectMapper.mapper().convertValue(array.get(index), VpcPeeringConnection.class));
     }
 
-    MatcherAssert.assertThat(
+    assertThat(
         vpcPeeringConnections,
         equalTo(
             ImmutableList.of(

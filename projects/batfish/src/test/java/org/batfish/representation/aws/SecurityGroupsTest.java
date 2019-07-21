@@ -28,7 +28,6 @@ import org.batfish.datamodel.NamedPort;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.TcpFlagsMatchConditions;
-import org.hamcrest.MatcherAssert;
 import org.hamcrest.Matchers;
 import org.junit.Before;
 import org.junit.Test;
@@ -79,7 +78,7 @@ public class SecurityGroupsTest {
           BatfishObjectMapper.mapper().convertValue(array.get(index), SecurityGroup.class));
     }
 
-    MatcherAssert.assertThat(
+    assertThat(
         securityGroups,
         Matchers.equalTo(
             ImmutableList.of(
