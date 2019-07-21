@@ -154,12 +154,12 @@ final class RdsInstance implements AwsVpcEntity, Serializable {
     }
 
     @Nonnull
-     String getStatus() {
+    String getStatus() {
       return _status;
     }
 
     @Nonnull
-     String getId() {
+    String getId() {
       return _id;
     }
   }
@@ -219,7 +219,7 @@ final class RdsInstance implements AwsVpcEntity, Serializable {
             .collect(ImmutableList.toImmutableList()));
   }
 
-   RdsInstance(
+  RdsInstance(
       String dbInstanceIdentifier,
       String availabilityZone,
       String vpcId,
