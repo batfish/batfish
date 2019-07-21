@@ -15,7 +15,7 @@ import org.batfish.datamodel.Ip;
 /** Represents the configuration of a customer gateway */
 @JsonIgnoreProperties(ignoreUnknown = true)
 @ParametersAreNonnullByDefault
-public final class CustomerGateway implements AwsVpcEntity, Serializable {
+final class CustomerGateway implements AwsVpcEntity, Serializable {
 
   @Nonnull private final String _bgpAsn;
 

@@ -20,7 +20,7 @@ import org.batfish.datamodel.StaticRoute;
 /** Represents an AWS Internet Gateway */
 @JsonIgnoreProperties(ignoreUnknown = true)
 @ParametersAreNonnullByDefault
-public final class InternetGateway implements AwsVpcEntity, Serializable {
+final class InternetGateway implements AwsVpcEntity, Serializable {
 
   @Nonnull private final List<String> _attachmentVpcIds;
 
@@ -70,7 +70,7 @@ public final class InternetGateway implements AwsVpcEntity, Serializable {
     return _internetGatewayId;
   }
 
-  public Configuration toConfigurationNode(AwsConfiguration awsConfiguration, Region region) {
+  Configuration toConfigurationNode(AwsConfiguration awsConfiguration, Region region) {
     Configuration cfgNode = Utils.newAwsConfiguration(_internetGatewayId, "aws");
     cfgNode.getVendorFamily().getAws().setRegion(region.getName());
 

@@ -13,11 +13,12 @@ import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.vendor_family.AwsFamily;
 
-public class Utils {
+/** A collection for utilities for AWS vendor model */
+final class Utils {
 
   private static final NetworkFactory FACTORY = new NetworkFactory();
 
-  public static Configuration newAwsConfiguration(String name, String domainName) {
+  static Configuration newAwsConfiguration(String name, String domainName) {
     Configuration c =
         FACTORY
             .configurationBuilder()
@@ -32,7 +33,7 @@ public class Utils {
     return c;
   }
 
-  public static Interface newInterface(
+  static Interface newInterface(
       String name, Configuration c, ConcreteInterfaceAddress primaryAddress) {
     return FACTORY
         .interfaceBuilder()
@@ -53,7 +54,7 @@ public class Utils {
    * @param securityGroupsIds {@link List} of security group IDs
    * @param warnings {@link Warnings} for the configuration
    */
-  public static void processSecurityGroups(
+  static void processSecurityGroups(
       Region region,
       Configuration configuration,
       List<String> securityGroupsIds,
@@ -74,7 +75,7 @@ public class Utils {
   }
 
   @Nullable
-  public static IpProtocol toIpProtocol(String ipProtocolAsString) {
+  static IpProtocol toIpProtocol(String ipProtocolAsString) {
     switch (ipProtocolAsString) {
       case "tcp":
         return IpProtocol.TCP;

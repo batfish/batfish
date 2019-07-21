@@ -25,9 +25,9 @@ import org.batfish.datamodel.StaticRoute;
 /** Represents as RDS instance */
 @JsonIgnoreProperties(ignoreUnknown = true)
 @ParametersAreNonnullByDefault
-public class RdsInstance implements AwsVpcEntity, Serializable {
+final class RdsInstance implements AwsVpcEntity, Serializable {
 
-  public enum Status {
+  enum Status {
     AVAILABLE,
     UNAVAILABLE
   }
@@ -56,12 +56,12 @@ public class RdsInstance implements AwsVpcEntity, Serializable {
     }
 
     @Nonnull
-    public String getVpcId() {
+    String getVpcId() {
       return _vpcId;
     }
 
     @Nonnull
-    public List<DbSubnet> getDbSubnets() {
+    List<DbSubnet> getDbSubnets() {
       return _dbSubnets;
     }
   }
@@ -95,17 +95,17 @@ public class RdsInstance implements AwsVpcEntity, Serializable {
     }
 
     @Nonnull
-    public String getAvailabilityZone() {
+    String getAvailabilityZone() {
       return _availabilityZone;
     }
 
     @Nonnull
-    public String getIdentifier() {
+    String getIdentifier() {
       return _identifier;
     }
 
     @Nonnull
-    public String getStatus() {
+    String getStatus() {
       return _status;
     }
   }
@@ -127,7 +127,7 @@ public class RdsInstance implements AwsVpcEntity, Serializable {
     }
 
     @Nonnull
-    public String getName() {
+    String getName() {
       return _name;
     }
   }
@@ -154,12 +154,12 @@ public class RdsInstance implements AwsVpcEntity, Serializable {
     }
 
     @Nonnull
-    public String getStatus() {
+     String getStatus() {
       return _status;
     }
 
     @Nonnull
-    public String getId() {
+     String getId() {
       return _id;
     }
   }
@@ -219,7 +219,7 @@ public class RdsInstance implements AwsVpcEntity, Serializable {
             .collect(ImmutableList.toImmutableList()));
   }
 
-  public RdsInstance(
+   RdsInstance(
       String dbInstanceIdentifier,
       String availabilityZone,
       String vpcId,
@@ -241,35 +241,35 @@ public class RdsInstance implements AwsVpcEntity, Serializable {
     return _dbInstanceIdentifier;
   }
 
-  public Multimap<String, String> getAzSubnetIds() {
+  Multimap<String, String> getAzSubnetIds() {
     return _azsSubnetIds;
   }
 
   @Nonnull
-  public String getVpcId() {
+  String getVpcId() {
     return _vpcId;
   }
 
-  public boolean getMultiAz() {
+  boolean getMultiAz() {
     return _multiAz;
   }
 
   @Nonnull
-  public String getAvailabilityZone() {
+  String getAvailabilityZone() {
     return _availabilityZone;
   }
 
   @Nonnull
-  public List<String> getSecurityGroups() {
+  List<String> getSecurityGroups() {
     return _securityGroups;
   }
 
   @Nonnull
-  public Status getDbInstanceStatus() {
+  Status getDbInstanceStatus() {
     return _dbInstanceStatus;
   }
 
-  public Configuration toConfigurationNode(
+  Configuration toConfigurationNode(
       AwsConfiguration awsVpcConfig, Region region, Warnings warnings) {
     Configuration cfgNode = Utils.newAwsConfiguration(_dbInstanceIdentifier, "aws");
 

@@ -28,7 +28,7 @@ import org.batfish.datamodel.StaticRoute;
 /** Representation of an AWS subnet */
 @JsonIgnoreProperties(ignoreUnknown = true)
 @ParametersAreNonnullByDefault
-public class Subnet implements AwsVpcEntity, Serializable {
+class Subnet implements AwsVpcEntity, Serializable {
 
   @Nonnull private final Prefix _cidrBlock;
 
@@ -55,7 +55,7 @@ public class Subnet implements AwsVpcEntity, Serializable {
     return new Subnet(cidrBlock, subnetId, vpcId);
   }
 
-  public Subnet(Prefix cidrBlock, String subnetId, String vpcId) {
+  Subnet(Prefix cidrBlock, String subnetId, String vpcId) {
     _cidrBlock = cidrBlock;
     _subnetId = subnetId;
     _vpcId = vpcId;
@@ -65,7 +65,7 @@ public class Subnet implements AwsVpcEntity, Serializable {
     _lastGeneratedIp = _cidrBlock.getStartIp().asLong() + 1;
   }
 
-  public Set<Long> getAllocatedIps() {
+  Set<Long> getAllocatedIps() {
     return _allocatedIps;
   }
 
@@ -163,7 +163,8 @@ public class Subnet implements AwsVpcEntity, Serializable {
     return mainRouteTables.get(0);
   }
 
-  public Prefix getCidrBlock() {
+  @Nonnull
+  Prefix getCidrBlock() {
     return _cidrBlock;
   }
 
@@ -172,19 +173,19 @@ public class Subnet implements AwsVpcEntity, Serializable {
     return _subnetId;
   }
 
-  public String getInternetGatewayId() {
+  String getInternetGatewayId() {
     return _internetGatewayId;
   }
 
-  public String getVpcId() {
+  String getVpcId() {
     return _vpcId;
   }
 
-  public String getVpnGatewayId() {
+  String getVpnGatewayId() {
     return _vpnGatewayId;
   }
 
-  public Configuration toConfigurationNode(
+  Configuration toConfigurationNode(
       AwsConfiguration awsConfiguration, Region region, Warnings warnings) {
     Configuration cfgNode = Utils.newAwsConfiguration(_subnetId, "aws");
 

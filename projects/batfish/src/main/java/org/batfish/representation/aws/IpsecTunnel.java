@@ -12,7 +12,7 @@ import org.w3c.dom.Element;
 
 /** Represents an AWs IPSec tunnel */
 @ParametersAreNonnullByDefault
-public class IpsecTunnel implements Serializable {
+final class IpsecTunnel implements Serializable {
 
   private static String getText(Element element, String tag) {
     return element.getElementsByTagName(tag).item(0).getTextContent();
@@ -166,7 +166,7 @@ public class IpsecTunnel implements Serializable {
     return builder.build();
   }
 
-  public IpsecTunnel(
+  IpsecTunnel(
       @Nullable Long cgwBgpAsn,
       Ip cgwInsideAddress,
       int cgwInsidePrefixLength,
@@ -187,7 +187,7 @@ public class IpsecTunnel implements Serializable {
       Ip vgwInsideAddress,
       int vgwInsidePrefixLength,
       Ip vgwOutsideAddress,
-      String vpnConnectionAttributes) {
+      @Nullable String vpnConnectionAttributes) {
     _cgwBgpAsn = cgwBgpAsn;
     _cgwInsideAddress = cgwInsideAddress;
     _cgwInsidePrefixLength = cgwInsidePrefixLength;
@@ -216,103 +216,103 @@ public class IpsecTunnel implements Serializable {
   }
 
   @Nullable
-  public Long getCgwBgpAsn() {
+  Long getCgwBgpAsn() {
     return _cgwBgpAsn;
   }
 
   @Nonnull
-  public Ip getCgwInsideAddress() {
+  Ip getCgwInsideAddress() {
     return _cgwInsideAddress;
   }
 
-  public int getCgwInsidePrefixLength() {
+  int getCgwInsidePrefixLength() {
     return _cgwInsidePrefixLength;
   }
 
   @Nonnull
-  public Ip getCgwOutsideAddress() {
+  Ip getCgwOutsideAddress() {
     return _cgwOutsideAddress;
   }
 
   @Nonnull
-  public String getIkeAuthProtocol() {
+  String getIkeAuthProtocol() {
     return _ikeAuthProtocol;
   }
 
   @Nonnull
-  public String getIkeEncryptionProtocol() {
+  String getIkeEncryptionProtocol() {
     return _ikeEncryptionProtocol;
   }
 
-  public int getIkeLifetime() {
+  int getIkeLifetime() {
     return _ikeLifetime;
   }
 
   @Nonnull
-  public String getIkeMode() {
+  String getIkeMode() {
     return _ikeMode;
   }
 
   @Nonnull
-  public String getIkePerfectForwardSecrecy() {
+  String getIkePerfectForwardSecrecy() {
     return _ikePerfectForwardSecrecy;
   }
 
   @Nonnull
-  public String getIkePreSharedKeyHash() {
+  String getIkePreSharedKeyHash() {
     return _ikePreSharedKeyHash;
   }
 
   @Nonnull
-  public String getIpsecAuthProtocol() {
+  String getIpsecAuthProtocol() {
     return _ipsecAuthProtocol;
   }
 
   @Nonnull
-  public String getIpsecEncryptionProtocol() {
+  String getIpsecEncryptionProtocol() {
     return _ipsecEncryptionProtocol;
   }
 
-  public int getIpsecLifetime() {
+  int getIpsecLifetime() {
     return _ipsecLifetime;
   }
 
   @Nonnull
-  public String getIpsecMode() {
+  String getIpsecMode() {
     return _ipsecMode;
   }
 
   @Nonnull
-  public String getIpsecPerfectForwardSecrecy() {
+  String getIpsecPerfectForwardSecrecy() {
     return _ipsecPerfectForwardSecrecy;
   }
 
   @Nonnull
-  public String getIpsecProtocol() {
+  String getIpsecProtocol() {
     return _ipsecProtocol;
   }
 
   @Nullable
-  public Long getVgwBgpAsn() {
+  Long getVgwBgpAsn() {
     return _vgwBgpAsn;
   }
 
   @Nonnull
-  public Ip getVgwInsideAddress() {
+  Ip getVgwInsideAddress() {
     return _vgwInsideAddress;
   }
 
-  public int getVgwInsidePrefixLength() {
+  int getVgwInsidePrefixLength() {
     return _vgwInsidePrefixLength;
   }
 
   @Nonnull
-  public Ip getVgwOutsideAddress() {
+  Ip getVgwOutsideAddress() {
     return _vgwOutsideAddress;
   }
 
   @Nullable
-  public String getVpnConnectionAttributes() {
+  String getVpnConnectionAttributes() {
     return _vpnConnectionAttributes;
   }
 
@@ -401,7 +401,7 @@ public class IpsecTunnel implements Serializable {
         .toString();
   }
 
-  public static final class Builder {
+  static final class Builder {
     private Long _cgwBgpAsn;
     private Ip _cgwInsideAddress;
     private int _cgwInsidePrefixLength;
@@ -426,112 +426,112 @@ public class IpsecTunnel implements Serializable {
 
     private Builder() {}
 
-    public Builder setCgwBgpAsn(@Nullable Long cgwBgpAsn) {
+    Builder setCgwBgpAsn(@Nullable Long cgwBgpAsn) {
       this._cgwBgpAsn = cgwBgpAsn;
       return this;
     }
 
-    public Builder setcgwInsideAddress(Ip cgwInsideAddress) {
+    Builder setcgwInsideAddress(Ip cgwInsideAddress) {
       this._cgwInsideAddress = cgwInsideAddress;
       return this;
     }
 
-    public Builder setCgwInsidePrefixLength(int cgwInsidePrefixLength) {
+    Builder setCgwInsidePrefixLength(int cgwInsidePrefixLength) {
       this._cgwInsidePrefixLength = cgwInsidePrefixLength;
       return this;
     }
 
-    public Builder setcgwOutsideAddress(Ip cgwOutsideAddress) {
+    Builder setcgwOutsideAddress(Ip cgwOutsideAddress) {
       this._cgwOutsideAddress = cgwOutsideAddress;
       return this;
     }
 
-    public Builder setIkeAuthProtocol(String ikeAuthProtocol) {
+    Builder setIkeAuthProtocol(String ikeAuthProtocol) {
       this._ikeAuthProtocol = ikeAuthProtocol;
       return this;
     }
 
-    public Builder setIkeEncryptionProtocol(String ikeEncryptionProtocol) {
+    Builder setIkeEncryptionProtocol(String ikeEncryptionProtocol) {
       this._ikeEncryptionProtocol = ikeEncryptionProtocol;
       return this;
     }
 
-    public Builder setIkeLifetime(int ikeLifetime) {
+    Builder setIkeLifetime(int ikeLifetime) {
       this._ikeLifetime = ikeLifetime;
       return this;
     }
 
-    public Builder setIkeMode(String ikeMode) {
+    Builder setIkeMode(String ikeMode) {
       this._ikeMode = ikeMode;
       return this;
     }
 
-    public Builder setIkePerfectForwardSecrecy(String ikePerfectForwardSecrecy) {
+    Builder setIkePerfectForwardSecrecy(String ikePerfectForwardSecrecy) {
       this._ikePerfectForwardSecrecy = ikePerfectForwardSecrecy;
       return this;
     }
 
-    public Builder setIkePreSharedKeyHash(String ikePreSharedKeyHash) {
+    Builder setIkePreSharedKeyHash(String ikePreSharedKeyHash) {
       this._ikePreSharedKeyHash = ikePreSharedKeyHash;
       return this;
     }
 
-    public Builder setIpsecAuthProtocol(String ipsecAuthProtocol) {
+    Builder setIpsecAuthProtocol(String ipsecAuthProtocol) {
       this._ipsecAuthProtocol = ipsecAuthProtocol;
       return this;
     }
 
-    public Builder setIpsecEncryptionProtocol(String ipsecEncryptionProtocol) {
+    Builder setIpsecEncryptionProtocol(String ipsecEncryptionProtocol) {
       this._ipsecEncryptionProtocol = ipsecEncryptionProtocol;
       return this;
     }
 
-    public Builder setIpsecLifetime(int ipsecLifetime) {
+    Builder setIpsecLifetime(int ipsecLifetime) {
       this._ipsecLifetime = ipsecLifetime;
       return this;
     }
 
-    public Builder setIpsecMode(String ipsecMode) {
+    Builder setIpsecMode(String ipsecMode) {
       this._ipsecMode = ipsecMode;
       return this;
     }
 
-    public Builder setIpsecPerfectForwardSecrecy(String ipsecPerfectForwardSecrecy) {
+    Builder setIpsecPerfectForwardSecrecy(String ipsecPerfectForwardSecrecy) {
       this._ipsecPerfectForwardSecrecy = ipsecPerfectForwardSecrecy;
       return this;
     }
 
-    public Builder setIpsecProtocol(String ipsecProtocol) {
+    Builder setIpsecProtocol(String ipsecProtocol) {
       this._ipsecProtocol = ipsecProtocol;
       return this;
     }
 
-    public Builder setVgwBgpAsn(@Nullable Long vgwBgpAsn) {
+    Builder setVgwBgpAsn(@Nullable Long vgwBgpAsn) {
       this._vgwBgpAsn = vgwBgpAsn;
       return this;
     }
 
-    public Builder setVgwInsideAddress(Ip vgwInsideAddress) {
+    Builder setVgwInsideAddress(Ip vgwInsideAddress) {
       this._vgwInsideAddress = vgwInsideAddress;
       return this;
     }
 
-    public Builder setVgwInsidePrefixLength(int vgwInsidePrefixLength) {
+    Builder setVgwInsidePrefixLength(int vgwInsidePrefixLength) {
       this._vgwInsidePrefixLength = vgwInsidePrefixLength;
       return this;
     }
 
-    public Builder setVgwOutsideAddress(Ip vgwOutsideAddress) {
+    Builder setVgwOutsideAddress(Ip vgwOutsideAddress) {
       this._vgwOutsideAddress = vgwOutsideAddress;
       return this;
     }
 
-    public Builder setVpnConnectionAttributes(@Nullable String vpnConnectionAttributes) {
+    Builder setVpnConnectionAttributes(@Nullable String vpnConnectionAttributes) {
       this._vpnConnectionAttributes = vpnConnectionAttributes;
       return this;
     }
 
-    public IpsecTunnel build() {
+    IpsecTunnel build() {
       return new IpsecTunnel(
           _cgwBgpAsn,
           _cgwInsideAddress,

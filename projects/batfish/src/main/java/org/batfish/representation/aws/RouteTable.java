@@ -16,7 +16,7 @@ import javax.annotation.ParametersAreNonnullByDefault;
 /** Represents an AWS route table */
 @JsonIgnoreProperties(ignoreUnknown = true)
 @ParametersAreNonnullByDefault
-public final class RouteTable implements AwsVpcEntity, Serializable {
+final class RouteTable implements AwsVpcEntity, Serializable {
 
   @JsonIgnoreProperties(ignoreUnknown = true)
   @ParametersAreNonnullByDefault
@@ -33,17 +33,17 @@ public final class RouteTable implements AwsVpcEntity, Serializable {
       return new Association(isMain, subnetId);
     }
 
-    public Association(boolean isMain, @Nullable String subnetId) {
+    Association(boolean isMain, @Nullable String subnetId) {
       _isMain = isMain;
       _subnetId = subnetId;
     }
 
     @Nullable
-    public String getSubnetId() {
+    String getSubnetId() {
       return _subnetId;
     }
 
-    public boolean isMain() {
+    boolean isMain() {
       return _isMain;
     }
 
@@ -87,7 +87,7 @@ public final class RouteTable implements AwsVpcEntity, Serializable {
     return new RouteTable(routeTableId, vpcId, associations, routes);
   }
 
-  public RouteTable(
+  RouteTable(
       String routeTableId, String vpcId, List<Association> associations, List<Route> routes) {
     _routeTableId = routeTableId;
     _vpcId = vpcId;
@@ -96,7 +96,7 @@ public final class RouteTable implements AwsVpcEntity, Serializable {
   }
 
   @Nonnull
-  public List<Association> getAssociations() {
+  List<Association> getAssociations() {
     return _associations;
   }
 
@@ -106,12 +106,12 @@ public final class RouteTable implements AwsVpcEntity, Serializable {
   }
 
   @Nonnull
-  public List<Route> getRoutes() {
+  List<Route> getRoutes() {
     return _routes;
   }
 
   @Nonnull
-  public String getVpcId() {
+  String getVpcId() {
     return _vpcId;
   }
 

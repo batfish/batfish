@@ -20,7 +20,7 @@ import org.batfish.datamodel.Ip;
 /** Represents a network interface in an AWS VPC */
 @JsonIgnoreProperties(ignoreUnknown = true)
 @ParametersAreNonnullByDefault
-public final class NetworkInterface implements AwsVpcEntity, Serializable {
+final class NetworkInterface implements AwsVpcEntity, Serializable {
 
   @JsonIgnoreProperties(ignoreUnknown = true)
   @ParametersAreNonnullByDefault
@@ -39,7 +39,7 @@ public final class NetworkInterface implements AwsVpcEntity, Serializable {
     }
 
     @Nonnull
-    public Ip getPublicIp() {
+    Ip getPublicIp() {
       return _publicIp;
     }
   }
@@ -65,7 +65,7 @@ public final class NetworkInterface implements AwsVpcEntity, Serializable {
     }
 
     @Nullable
-    public String getInstanceId() {
+    String getInstanceId() {
       return _instanceId;
     }
   }
@@ -87,7 +87,7 @@ public final class NetworkInterface implements AwsVpcEntity, Serializable {
     }
 
     @Nonnull
-    public String getId() {
+    String getId() {
       return _id;
     }
   }
@@ -116,12 +116,12 @@ public final class NetworkInterface implements AwsVpcEntity, Serializable {
     }
 
     @Nonnull
-    public Ip getPrivateIp() {
+    Ip getPrivateIp() {
       return _privateIp;
     }
 
     @Nullable
-    public Ip getPublicIp() {
+    Ip getPublicIp() {
       return _publicIp;
     }
   }
@@ -171,7 +171,7 @@ public final class NetworkInterface implements AwsVpcEntity, Serializable {
         attachment == null ? null : attachment.getInstanceId());
   }
 
-  public NetworkInterface(
+  NetworkInterface(
       String networkInterfaceId,
       String subnetId,
       String vpcId,
@@ -189,17 +189,17 @@ public final class NetworkInterface implements AwsVpcEntity, Serializable {
   }
 
   @Nullable
-  public Ip getAssociationPublicIp() {
+  Ip getAssociationPublicIp() {
     return _associationPublicIp;
   }
 
   @Nullable
-  public String getAttachmentInstanceId() {
+  String getAttachmentInstanceId() {
     return _attachmentInstanceId;
   }
 
   @Nonnull
-  public List<String> getGroups() {
+  List<String> getGroups() {
     return _groups;
   }
 
@@ -209,22 +209,22 @@ public final class NetworkInterface implements AwsVpcEntity, Serializable {
   }
 
   @Nonnull
-  public Map<Ip, Ip> getIpAddressAssociations() {
+  Map<Ip, Ip> getIpAddressAssociations() {
     return _ipAddressAssociations;
   }
 
   @Nonnull
-  public String getNetworkInterfaceId() {
+  String getNetworkInterfaceId() {
     return _networkInterfaceId;
   }
 
   @Nonnull
-  public String getSubnetId() {
+  String getSubnetId() {
     return _subnetId;
   }
 
   @Nonnull
-  public String getVpcId() {
+  String getVpcId() {
     return _vpcId;
   }
 

@@ -29,7 +29,7 @@ import org.batfish.datamodel.acl.MatchHeaderSpace;
 /** Represents an AWS network ACL */
 @JsonIgnoreProperties(ignoreUnknown = true)
 @ParametersAreNonnullByDefault
-public final class NetworkAcl implements AwsVpcEntity, Serializable {
+final class NetworkAcl implements AwsVpcEntity, Serializable {
 
   private static final String SOURCE_TYPE_NAME = "Network ACL";
 
@@ -46,12 +46,12 @@ public final class NetworkAcl implements AwsVpcEntity, Serializable {
       return new NetworkAclAssociation(subnetId);
     }
 
-    public NetworkAclAssociation(String subnetId) {
+    NetworkAclAssociation(String subnetId) {
       _subnetId = subnetId;
     }
 
     @Nonnull
-    public String getSubnetId() {
+    String getSubnetId() {
       return _subnetId;
     }
 
@@ -95,7 +95,7 @@ public final class NetworkAcl implements AwsVpcEntity, Serializable {
     return new NetworkAcl(networkAclId, vpcId, associations, entries);
   }
 
-  public NetworkAcl(
+  NetworkAcl(
       String networkAclId,
       String vpcId,
       List<NetworkAclAssociation> associations,
@@ -166,11 +166,11 @@ public final class NetworkAcl implements AwsVpcEntity, Serializable {
     return list;
   }
 
-  public List<NetworkAclAssociation> getAssociations() {
+  List<NetworkAclAssociation> getAssociations() {
     return _networkAclAssociations;
   }
 
-  public IpAccessList getEgressAcl() {
+  IpAccessList getEgressAcl() {
     return getAcl(true);
   }
 
@@ -179,7 +179,7 @@ public final class NetworkAcl implements AwsVpcEntity, Serializable {
     return _networkAclId;
   }
 
-  public IpAccessList getIngressAcl() {
+  IpAccessList getIngressAcl() {
     return getAcl(false);
   }
 

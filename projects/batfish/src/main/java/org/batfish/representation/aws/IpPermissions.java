@@ -37,7 +37,7 @@ final class IpPermissions implements Serializable {
 
   @JsonIgnoreProperties(ignoreUnknown = true)
   @ParametersAreNonnullByDefault
-  static final class IpRange implements Serializable {
+  private static final class IpRange implements Serializable {
 
     @Nonnull private final Prefix _prefix;
 
@@ -47,7 +47,7 @@ final class IpPermissions implements Serializable {
       return new IpRange(prefix);
     }
 
-    public IpRange(Prefix prefix) {
+    IpRange(Prefix prefix) {
       _prefix = prefix;
     }
 
@@ -76,7 +76,7 @@ final class IpPermissions implements Serializable {
 
   @JsonIgnoreProperties(ignoreUnknown = true)
   @ParametersAreNonnullByDefault
-  static final class UserIdGroupPair implements Serializable {
+  private static final class UserIdGroupPair implements Serializable {
 
     @Nonnull private final String _groupId;
 
@@ -87,12 +87,12 @@ final class IpPermissions implements Serializable {
       return new UserIdGroupPair(groupId);
     }
 
-    public UserIdGroupPair(String groupId) {
+    UserIdGroupPair(String groupId) {
       _groupId = groupId;
     }
 
     @Nonnull
-    public String getGroupId() {
+    String getGroupId() {
       return _groupId;
     }
 
@@ -147,7 +147,7 @@ final class IpPermissions implements Serializable {
             .collect(ImmutableList.toImmutableList()));
   }
 
-  public IpPermissions(
+  IpPermissions(
       String ipProtocol,
       int fromPort,
       int toPort,
@@ -174,11 +174,11 @@ final class IpPermissions implements Serializable {
     return ipWildcardBuilder.build();
   }
 
-  public HeaderSpace toEgressIpAccessListLine(Region region) {
+  HeaderSpace toEgressIpAccessListLine(Region region) {
     return toHeaderSpaceBuilder().setDstIps(collectIpWildCards(region)).build();
   }
 
-  public HeaderSpace toIngressIpAccessListLine(Region region) {
+  HeaderSpace toIngressIpAccessListLine(Region region) {
     return toHeaderSpaceBuilder().setSrcIps(collectIpWildCards(region)).build();
   }
 

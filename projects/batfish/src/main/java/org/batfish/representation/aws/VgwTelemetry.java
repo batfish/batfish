@@ -20,7 +20,7 @@ import org.batfish.datamodel.Ip;
 /** Telemetry data for AWS VPN connections */
 @JsonIgnoreProperties(ignoreUnknown = true)
 @ParametersAreNonnullByDefault
-public final class VgwTelemetry implements Serializable {
+final class VgwTelemetry implements Serializable {
 
   private final int _acceptedRouteCount;
 
@@ -45,30 +45,29 @@ public final class VgwTelemetry implements Serializable {
     return new VgwTelemetry(acceptedRouteCount, outsideIpAddress, status, statusMessage);
   }
 
-  public VgwTelemetry(
-      int acceptedRouteCount, Ip outsideIpAddress, String status, String statusMessage) {
+  VgwTelemetry(int acceptedRouteCount, Ip outsideIpAddress, String status, String statusMessage) {
     _acceptedRouteCount = acceptedRouteCount;
     _outsideIpAddress = outsideIpAddress;
     _status = status;
     _statusMessage = statusMessage;
   }
 
-  public int getAcceptedRouteCount() {
+  int getAcceptedRouteCount() {
     return _acceptedRouteCount;
   }
 
   @Nonnull
-  public Ip getOutsideIpAddress() {
+  Ip getOutsideIpAddress() {
     return _outsideIpAddress;
   }
 
   @Nonnull
-  public String getStatus() {
+  String getStatus() {
     return _status;
   }
 
   @Nonnull
-  public String getStatusMessage() {
+  String getStatusMessage() {
     return _statusMessage;
   }
 

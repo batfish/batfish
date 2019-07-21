@@ -77,7 +77,7 @@ import org.xml.sax.SAXException;
 /** Represents an AWS VPN connection */
 @JsonIgnoreProperties(ignoreUnknown = true)
 @ParametersAreNonnullByDefault
-public final class VpnConnection implements AwsVpcEntity, Serializable {
+final class VpnConnection implements AwsVpcEntity, Serializable {
 
   private static final int BGP_NEIGHBOR_DEFAULT_METRIC = 0;
 
@@ -171,7 +171,7 @@ public final class VpnConnection implements AwsVpcEntity, Serializable {
     }
 
     @Nonnull
-    public Prefix getDestinationCidrBlock() {
+    Prefix getDestinationCidrBlock() {
       return _destinationCidrBlock;
     }
   }
@@ -192,7 +192,7 @@ public final class VpnConnection implements AwsVpcEntity, Serializable {
       _staticRoutesOnly = staticRoutesOnly;
     }
 
-    public boolean getStaticRoutesOnly() {
+    boolean getStaticRoutesOnly() {
       return _staticRoutesOnly;
     }
   }
@@ -267,7 +267,7 @@ public final class VpnConnection implements AwsVpcEntity, Serializable {
         options.getStaticRoutesOnly());
   }
 
-  public VpnConnection(
+  VpnConnection(
       String vpnConnectionId,
       String customerGatewayId,
       String vpnGatewayId,
@@ -594,7 +594,7 @@ public final class VpnConnection implements AwsVpcEntity, Serializable {
   }
 
   @Nonnull
-  public String getCustomerGatewayId() {
+  String getCustomerGatewayId() {
     return _customerGatewayId;
   }
 
@@ -604,31 +604,31 @@ public final class VpnConnection implements AwsVpcEntity, Serializable {
   }
 
   @Nonnull
-  public List<IpsecTunnel> getIpsecTunnels() {
+  List<IpsecTunnel> getIpsecTunnels() {
     return _ipsecTunnels;
   }
 
   @Nonnull
-  public List<Prefix> getRoutes() {
+  List<Prefix> getRoutes() {
     return _routes;
   }
 
-  public boolean getStaticRoutesOnly() {
+  boolean getStaticRoutesOnly() {
     return _staticRoutesOnly;
   }
 
   @Nonnull
-  public List<VgwTelemetry> getVgwTelemetrys() {
+  List<VgwTelemetry> getVgwTelemetrys() {
     return _vgwTelemetrys;
   }
 
   @Nonnull
-  public String getVpnConnectionId() {
+  String getVpnConnectionId() {
     return _vpnConnectionId;
   }
 
   @Nonnull
-  public String getVpnGatewayId() {
+  String getVpnGatewayId() {
     return _vpnGatewayId;
   }
 

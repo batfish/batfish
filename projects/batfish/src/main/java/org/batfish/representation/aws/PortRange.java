@@ -13,7 +13,7 @@ import javax.annotation.ParametersAreNonnullByDefault;
 
 /** Represents a port range for a network acl entry */
 @ParametersAreNonnullByDefault
-public final class PortRange implements Serializable {
+final class PortRange implements Serializable {
 
   private final int _from;
 
@@ -28,16 +28,16 @@ public final class PortRange implements Serializable {
     return new PortRange(fromPort, toPort);
   }
 
-  public PortRange(int from, int to) {
+  PortRange(int from, int to) {
     _from = from;
     _to = to;
   }
 
-  public int getFrom() {
+  int getFrom() {
     return _from;
   }
 
-  public int getTo() {
+  int getTo() {
     return _to;
   }
 

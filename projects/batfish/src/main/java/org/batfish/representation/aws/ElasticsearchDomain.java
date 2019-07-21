@@ -22,7 +22,7 @@ import org.batfish.datamodel.StaticRoute;
 /** Represents elastic search domain in AWS */
 @JsonIgnoreProperties(ignoreUnknown = true)
 @ParametersAreNonnullByDefault
-public class ElasticsearchDomain implements AwsVpcEntity, Serializable {
+final class ElasticsearchDomain implements AwsVpcEntity, Serializable {
 
   @JsonIgnoreProperties(ignoreUnknown = true)
   @ParametersAreNonnullByDefault

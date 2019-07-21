@@ -55,7 +55,7 @@ final class SecurityGroup implements AwsVpcEntity, Serializable {
     return new SecurityGroup(groupId, groupName, ipPermsEgress, ipPermsIngress);
   }
 
-  public SecurityGroup(
+  SecurityGroup(
       String groupId,
       String groupName,
       List<IpPermissions> ipPermsEgress,
@@ -148,12 +148,12 @@ final class SecurityGroup implements AwsVpcEntity, Serializable {
   }
 
   @Nonnull
-  public String getGroupId() {
+  String getGroupId() {
     return _groupId;
   }
 
   @Nonnull
-  public String getGroupName() {
+  String getGroupName() {
     return _groupName;
   }
 
@@ -163,20 +163,20 @@ final class SecurityGroup implements AwsVpcEntity, Serializable {
   }
 
   @Nonnull
-  public List<IpPermissions> getIpPermsEgress() {
+  List<IpPermissions> getIpPermsEgress() {
     return _ipPermsEgress;
   }
 
   @Nonnull
-  public List<IpPermissions> getIpPermsIngress() {
+  List<IpPermissions> getIpPermsIngress() {
     return _ipPermsIngress;
   }
 
-  public Set<IpWildcard> getUsersIpSpace() {
+  Set<IpWildcard> getUsersIpSpace() {
     return _usersIpSpace;
   }
 
-  public void updateConfigIps(Configuration configuration) {
+  void updateConfigIps(Configuration configuration) {
     configuration.getAllInterfaces().values().stream()
         .flatMap(iface -> iface.getAllConcreteAddresses().stream())
         .map(ConcreteInterfaceAddress::getIp)

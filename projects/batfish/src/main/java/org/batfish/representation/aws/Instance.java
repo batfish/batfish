@@ -30,7 +30,7 @@ import org.batfish.datamodel.StaticRoute;
 /** Representation for an EC2 instance */
 @JsonIgnoreProperties(ignoreUnknown = true)
 @ParametersAreNonnullByDefault
-public final class Instance implements AwsVpcEntity, Serializable {
+final class Instance implements AwsVpcEntity, Serializable {
 
   /** Represents the status of the instance */
   public enum Status {
@@ -277,7 +277,7 @@ public final class Instance implements AwsVpcEntity, Serializable {
     return _vpcId;
   }
 
-  public Configuration toConfigurationNode(Region region, Warnings warnings) {
+  Configuration toConfigurationNode(Region region, Warnings warnings) {
     String name = _tags.getOrDefault("Name", _instanceId);
     Configuration cfgNode = Utils.newAwsConfiguration(name, "aws");
 

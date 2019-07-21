@@ -21,7 +21,7 @@ import org.batfish.datamodel.StaticRoute;
 /** Represents an AWS VPC */
 @JsonIgnoreProperties(ignoreUnknown = true)
 @ParametersAreNonnullByDefault
-public class Vpc implements AwsVpcEntity, Serializable {
+final class Vpc implements AwsVpcEntity, Serializable {
 
   @JsonIgnoreProperties(ignoreUnknown = true)
   @ParametersAreNonnullByDefault
@@ -36,12 +36,12 @@ public class Vpc implements AwsVpcEntity, Serializable {
       return new CidrBlockAssociation(block);
     }
 
-    public CidrBlockAssociation(Prefix block) {
+    CidrBlockAssociation(Prefix block) {
       _block = block;
     }
 
     @Nonnull
-    public Prefix getBlock() {
+    Prefix getBlock() {
       return _block;
     }
 
@@ -91,19 +91,19 @@ public class Vpc implements AwsVpcEntity, Serializable {
             .collect(ImmutableSet.toImmutableSet()));
   }
 
-  public Vpc(String vpcId, Prefix cidrBlock, Set<Prefix> cidrBlockAssociations) {
+  Vpc(String vpcId, Prefix cidrBlock, Set<Prefix> cidrBlockAssociations) {
     _vpcId = vpcId;
     _cidrBlock = cidrBlock;
     _cidrBlockAssociations = cidrBlockAssociations;
   }
 
   @Nonnull
-  public Prefix getCidrBlock() {
+  Prefix getCidrBlock() {
     return _cidrBlock;
   }
 
   @Nonnull
-  public Set<Prefix> getCidrBlockAssociations() {
+  Set<Prefix> getCidrBlockAssociations() {
     return _cidrBlockAssociations;
   }
 
@@ -113,24 +113,24 @@ public class Vpc implements AwsVpcEntity, Serializable {
   }
 
   @Nullable
-  public String getInternetGatewayId() {
+  String getInternetGatewayId() {
     return _internetGatewayId;
   }
 
   @Nullable
-  public String getVpnGatewayId() {
+  String getVpnGatewayId() {
     return _vpnGatewayId;
   }
 
-  public void setInternetGatewayId(String internetGatewayId) {
+  void setInternetGatewayId(String internetGatewayId) {
     _internetGatewayId = internetGatewayId;
   }
 
-  public void setVpnGatewayId(String vpnGatewayId) {
+  void setVpnGatewayId(String vpnGatewayId) {
     _vpnGatewayId = vpnGatewayId;
   }
 
-  public Configuration toConfigurationNode(
+  Configuration toConfigurationNode(
       AwsConfiguration awsConfiguration, Region region, Warnings warnings) {
     Configuration cfgNode = Utils.newAwsConfiguration(_vpcId, "aws");
     cfgNode.getVendorFamily().getAws().setRegion(region.getName());

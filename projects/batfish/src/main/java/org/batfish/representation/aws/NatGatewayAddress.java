@@ -18,7 +18,7 @@ import org.batfish.datamodel.Ip;
 
 /** Represents an address for a NAT gateway */
 @ParametersAreNonnullByDefault
-public final class NatGatewayAddress implements Serializable {
+final class NatGatewayAddress implements Serializable {
 
   @Nonnull private final String _allocationId;
   @Nonnull private final String _networkInterfaceId;
@@ -40,8 +40,7 @@ public final class NatGatewayAddress implements Serializable {
     return new NatGatewayAddress(allocationId, networkInterfaceId, privateIp, publicIp);
   }
 
-  public NatGatewayAddress(
-      String allocationId, String networkInterfaceId, Ip privateIp, Ip publicIp) {
+  NatGatewayAddress(String allocationId, String networkInterfaceId, Ip privateIp, Ip publicIp) {
     _allocationId = allocationId;
     _networkInterfaceId = networkInterfaceId;
     _privateIp = privateIp;
@@ -49,22 +48,22 @@ public final class NatGatewayAddress implements Serializable {
   }
 
   @Nonnull
-  public String getAllocationId() {
+  String getAllocationId() {
     return _allocationId;
   }
 
   @Nonnull
-  public String getNetworkInterfaceId() {
+  String getNetworkInterfaceId() {
     return _networkInterfaceId;
   }
 
   @Nonnull
-  public Ip getPrivateIp() {
+  Ip getPrivateIp() {
     return _privateIp;
   }
 
   @Nonnull
-  public Ip getPublicIp() {
+  Ip getPublicIp() {
     return _publicIp;
   }
 

@@ -20,7 +20,7 @@ import org.batfish.datamodel.Prefix;
 
 /** Represents a network ACL entry for AWS */
 @ParametersAreNonnullByDefault
-public final class NetworkAclEntry implements Serializable {
+final class NetworkAclEntry implements Serializable {
 
   @Nonnull private final Prefix _cidrBlock;
 
@@ -52,7 +52,7 @@ public final class NetworkAclEntry implements Serializable {
         prefix, ruleAction.equals("allow"), egress, protocol, ruleNumber, portRange);
   }
 
-  public NetworkAclEntry(
+  NetworkAclEntry(
       Prefix prefix,
       boolean isAllow,
       boolean isEgress,
@@ -68,29 +68,29 @@ public final class NetworkAclEntry implements Serializable {
   }
 
   @Nonnull
-  public Prefix getCidrBlock() {
+  Prefix getCidrBlock() {
     return _cidrBlock;
   }
 
-  public boolean getIsAllow() {
+  boolean getIsAllow() {
     return _isAllow;
   }
 
-  public boolean getIsEgress() {
+  boolean getIsEgress() {
     return _isEgress;
   }
 
   @Nullable
-  public PortRange getPortRange() {
+  PortRange getPortRange() {
     return _portRange;
   }
 
   @Nonnull
-  public String getProtocol() {
+  String getProtocol() {
     return _protocol;
   }
 
-  public int getRuleNumber() {
+  int getRuleNumber() {
     return _ruleNumber;
   }
 

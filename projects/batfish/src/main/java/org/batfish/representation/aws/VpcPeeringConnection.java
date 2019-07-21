@@ -15,7 +15,7 @@ import org.batfish.datamodel.Prefix;
 /** Represents an AWS VPC peering connection */
 @JsonIgnoreProperties(ignoreUnknown = true)
 @ParametersAreNonnullByDefault
-public final class VpcPeeringConnection implements AwsVpcEntity, Serializable {
+final class VpcPeeringConnection implements AwsVpcEntity, Serializable {
 
   @JsonIgnoreProperties(ignoreUnknown = true)
   @ParametersAreNonnullByDefault
@@ -39,12 +39,12 @@ public final class VpcPeeringConnection implements AwsVpcEntity, Serializable {
     }
 
     @Nonnull
-    public String getVpcId() {
+    String getVpcId() {
       return _vpcId;
     }
 
     @Nonnull
-    public Prefix getCidrBlock() {
+    Prefix getCidrBlock() {
       return _cidrBlock;
     }
   }
@@ -78,7 +78,7 @@ public final class VpcPeeringConnection implements AwsVpcEntity, Serializable {
         requesterVpcInfo.getCidrBlock());
   }
 
-  public VpcPeeringConnection(
+  VpcPeeringConnection(
       String vpcPeeringConnectionId,
       String accepterVpcId,
       Prefix accepterVpcCidrBlock,
@@ -92,12 +92,12 @@ public final class VpcPeeringConnection implements AwsVpcEntity, Serializable {
   }
 
   @Nonnull
-  public Prefix getAccepterVpcCidrBlock() {
+  Prefix getAccepterVpcCidrBlock() {
     return _accepterVpcCidrBlock;
   }
 
   @Nonnull
-  public String getAccepterVpcId() {
+  String getAccepterVpcId() {
     return _accepterVpcId;
   }
 
@@ -107,17 +107,17 @@ public final class VpcPeeringConnection implements AwsVpcEntity, Serializable {
   }
 
   @Nonnull
-  public Prefix getRequesterVpcCidrBlock() {
+  Prefix getRequesterVpcCidrBlock() {
     return _requesterVpcCidrBlock;
   }
 
   @Nonnull
-  public String getRequesterVpcId() {
+  String getRequesterVpcId() {
     return _requesterVpcId;
   }
 
   @Nonnull
-  public String getVpcPeeringConnectionId() {
+  String getVpcPeeringConnectionId() {
     return _vpcPeeringConnectionId;
   }
 

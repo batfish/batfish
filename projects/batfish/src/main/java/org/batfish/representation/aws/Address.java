@@ -15,7 +15,7 @@ import org.batfish.datamodel.Ip;
 /** Represents an EC2 address */
 @JsonIgnoreProperties(ignoreUnknown = true)
 @ParametersAreNonnullByDefault
-public final class Address implements AwsVpcEntity, Serializable {
+final class Address implements AwsVpcEntity, Serializable {
 
   @Nullable private final String _instanceId;
 
@@ -35,7 +35,7 @@ public final class Address implements AwsVpcEntity, Serializable {
         privateIpAddress == null ? null : Ip.parse(privateIpAddress));
   }
 
-  public Address(Ip publicIp, @Nullable String instanceId, @Nullable Ip privateIp) {
+  Address(Ip publicIp, @Nullable String instanceId, @Nullable Ip privateIp) {
     _publicIp = publicIp;
     _instanceId = instanceId;
     _privateIp = privateIp;

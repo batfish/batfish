@@ -22,7 +22,7 @@ import org.batfish.datamodel.StaticRoute;
 /** Represents an AWS VPN gateway */
 @JsonIgnoreProperties(ignoreUnknown = true)
 @ParametersAreNonnullByDefault
-public final class VpnGateway implements AwsVpcEntity, Serializable {
+final class VpnGateway implements AwsVpcEntity, Serializable {
 
   @JsonIgnoreProperties(ignoreUnknown = true)
   @ParametersAreNonnullByDefault
@@ -41,7 +41,7 @@ public final class VpnGateway implements AwsVpcEntity, Serializable {
     }
 
     @Nonnull
-    public String getVpcId() {
+    String getVpcId() {
       return _vpcId;
     }
   }
@@ -64,7 +64,7 @@ public final class VpnGateway implements AwsVpcEntity, Serializable {
             .collect(ImmutableList.toImmutableList()));
   }
 
-  public VpnGateway(String vpnGatewayId, List<String> attachmentVpcIds) {
+  VpnGateway(String vpnGatewayId, List<String> attachmentVpcIds) {
     _vpnGatewayId = vpnGatewayId;
     _attachmentVpcIds = attachmentVpcIds;
   }
@@ -79,7 +79,7 @@ public final class VpnGateway implements AwsVpcEntity, Serializable {
     return _vpnGatewayId;
   }
 
-  public Configuration toConfigurationNode(
+  Configuration toConfigurationNode(
       AwsConfiguration awsConfiguration, Region region, Warnings warnings) {
     Configuration cfgNode = Utils.newAwsConfiguration(_vpnGatewayId, "aws");
     cfgNode.getVendorFamily().getAws().setRegion(region.getName());

@@ -35,7 +35,7 @@ import org.batfish.representation.aws.Instance.Status;
 
 /** Represents an AWS region */
 @ParametersAreNonnullByDefault
-public class Region implements Serializable {
+final class Region implements Serializable {
 
   private interface ThrowingConsumer<T, E extends Exception> {
     void accept(T t) throws E, IOException;

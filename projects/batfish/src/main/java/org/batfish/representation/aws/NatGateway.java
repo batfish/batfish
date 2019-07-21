@@ -17,7 +17,7 @@ import org.batfish.datamodel.Configuration;
 /** Represents an AWS NAT gateway */
 @JsonIgnoreProperties(ignoreUnknown = true)
 @ParametersAreNonnullByDefault
-public final class NatGateway implements AwsVpcEntity, Serializable {
+final class NatGateway implements AwsVpcEntity, Serializable {
 
   @Nonnull private final List<NatGatewayAddress> _natGatewayAddresses;
 
@@ -42,7 +42,7 @@ public final class NatGateway implements AwsVpcEntity, Serializable {
     return new NatGateway(natGatewayId, subnetId, vpcId, natGatewayAddresses);
   }
 
-  public NatGateway(
+  NatGateway(
       String natGatewayId,
       String subnetId,
       String vpcId,
@@ -59,12 +59,12 @@ public final class NatGateway implements AwsVpcEntity, Serializable {
   }
 
   @Nonnull
-  public List<NatGatewayAddress> getNatGatewayAddresses() {
+  List<NatGatewayAddress> getNatGatewayAddresses() {
     return _natGatewayAddresses;
   }
 
   @Nonnull
-  public String getSubnetId() {
+  String getSubnetId() {
     return _subnetId;
   }
 
@@ -73,7 +73,7 @@ public final class NatGateway implements AwsVpcEntity, Serializable {
     return _vpcId;
   }
 
-  public Configuration toConfigurationNode(
+  Configuration toConfigurationNode(
       AwsConfiguration awsConfiguration, Region region, Warnings warnings) {
     Configuration cfgNode = Utils.newAwsConfiguration(_natGatewayId, "aws");
     cfgNode.getVendorFamily().getAws().setRegion(region.getName());

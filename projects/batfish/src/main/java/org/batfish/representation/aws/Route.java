@@ -34,14 +34,14 @@ import org.batfish.datamodel.StaticRoute;
 /** Representation of a route in AWS */
 @JsonIgnoreProperties(ignoreUnknown = true)
 @ParametersAreNonnullByDefault
-public final class Route implements Serializable {
+final class Route implements Serializable {
 
-  public enum State {
+  enum State {
     ACTIVE,
     BLACKHOLE
   }
 
-  public enum TargetType {
+  enum TargetType {
     Gateway,
     Instance,
     NatGateway,
@@ -50,9 +50,9 @@ public final class Route implements Serializable {
     VpcPeeringConnection
   }
 
-  public static final int DEFAULT_STATIC_ROUTE_ADMIN = 1;
+  static final int DEFAULT_STATIC_ROUTE_ADMIN = 1;
 
-  public static final int DEFAULT_STATIC_ROUTE_COST = 0;
+  static final int DEFAULT_STATIC_ROUTE_COST = 0;
 
   @Nonnull private final Prefix _destinationCidrBlock;
   @Nonnull private final State _state;
@@ -105,8 +105,7 @@ public final class Route implements Serializable {
     return new Route(destinationCidrBlock, state, target, targetType);
   }
 
-  public Route(
-      Prefix destinationCidrBlock, State state, @Nullable String target, TargetType targetType) {
+  Route(Prefix destinationCidrBlock, State state, @Nullable String target, TargetType targetType) {
     _destinationCidrBlock = destinationCidrBlock;
     _state = state;
     _target = target;
@@ -114,7 +113,7 @@ public final class Route implements Serializable {
   }
 
   @Nullable
-  public StaticRoute toStaticRoute(
+  StaticRoute toStaticRoute(
       AwsConfiguration awsConfiguration,
       Region region,
       Ip vpcAddress,
