@@ -29,7 +29,8 @@ public class AwsParseWarningsTest {
     assertThat(
         _pvcae.getWarnings().get(RELPATH_AWS_CONFIGS_FILE).getRedFlagWarnings(),
         contains(
-            new Warning(String.format("AWS file %s is not valid JSON", _path.toString()), "AWS")));
+            new Warning(
+                String.format("Unexpected content in AWS file %s", _path.toString()), "AWS")));
   }
 
   @Test
