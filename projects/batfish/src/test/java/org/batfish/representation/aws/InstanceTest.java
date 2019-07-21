@@ -15,14 +15,13 @@ import java.util.List;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.representation.aws.Instance.Status;
-import org.codehaus.jettison.json.JSONException;
 import org.junit.Test;
 
 /** Test for {@link Instance} */
 public class InstanceTest {
 
   @Test
-  public void reservations() throws JSONException, IOException {
+  public void reservations() throws IOException {
     String text = CommonUtil.readResource("org/batfish/representation/aws/InstanceTest.json");
 
     JsonNode json = BatfishObjectMapper.mapper().readTree(text);

@@ -15,7 +15,6 @@ import org.batfish.datamodel.GenericConfigObject;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.answers.ParseVendorConfigurationAnswerElement;
-import org.codehaus.jettison.json.JSONException;
 
 /** The top-level class that represent AWS configuration */
 @ParametersAreNonnullByDefault
@@ -41,7 +40,7 @@ public class AwsConfiguration implements Serializable, GenericConfigObject {
       JsonNode json,
       String sourceFileName,
       ParseVendorConfigurationAnswerElement pvcae)
-      throws JSONException, IOException {
+      throws IOException {
     _regions
         .computeIfAbsent(region, r -> new Region(region))
         .addConfigElement(json, sourceFileName, pvcae);
