@@ -14,7 +14,6 @@ public class IncrementalBdpAnswerElement extends DataPlaneAnswerElement {
   private static final String PROP_BGP_MULTIPATH_RIB_ROUTES_BY_ITERATION =
       "bgpMultipathRibRoutesByIteration";
   private static final String PROP_DEPENDENT_ROUTES_ITERATIONS = "dependentRoutesIterations";
-  private static final String PROP_EIGRP_INTERNAL_ITERATIONS = "eigrpInternalIterations";
   private static final String PROP_OSPF_INTERNAL_ITERATIONS = "ospfInternalIterations";
   private static final String PROP_WARNINGS = "warnings";
 
