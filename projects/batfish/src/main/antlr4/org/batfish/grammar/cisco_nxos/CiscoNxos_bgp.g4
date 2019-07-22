@@ -585,7 +585,7 @@ rb_n_af_disable_peer_as_check
 
 rb_n_af_filter_list
 :
-  FILTER_LIST name = prefix_list_name
+  FILTER_LIST name = ip_as_path_access_list_name
   (
     IN
     | OUT
@@ -642,7 +642,7 @@ rb_n_af_next_hop_third_party
 
 rb_n_af_prefix_list
 :
-  PREFIX_LIST listname = prefix_list_name
+  PREFIX_LIST listname = ip_prefix_list_name
   (
     IN
     | OUT
