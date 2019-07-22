@@ -637,7 +637,7 @@ final class VpnConnection implements AwsVpcEntity, Serializable {
     if (this == o) {
       return true;
     }
-    if (o == null || getClass() != o.getClass()) {
+    if (!(o instanceof VpnConnection)) {
       return false;
     }
     VpnConnection that = (VpnConnection) o;

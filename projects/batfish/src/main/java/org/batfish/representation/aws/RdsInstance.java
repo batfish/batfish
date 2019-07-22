@@ -318,7 +318,7 @@ public final class RdsInstance implements AwsVpcEntity, Serializable {
     if (this == o) {
       return true;
     }
-    if (o == null || getClass() != o.getClass()) {
+    if (!(o instanceof RdsInstance)) {
       return false;
     }
     RdsInstance that = (RdsInstance) o;

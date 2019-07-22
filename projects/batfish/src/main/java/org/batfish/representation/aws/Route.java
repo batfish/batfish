@@ -306,7 +306,7 @@ final class Route implements Serializable {
     if (this == o) {
       return true;
     }
-    if (o == null || getClass() != o.getClass()) {
+    if (!(o instanceof Route)) {
       return false;
     }
     Route route = (Route) o;

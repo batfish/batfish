@@ -52,7 +52,7 @@ final class RouteTable implements AwsVpcEntity, Serializable {
       if (this == o) {
         return true;
       }
-      if (o == null || getClass() != o.getClass()) {
+      if (!(o instanceof Association)) {
         return false;
       }
       Association that = (Association) o;
@@ -120,7 +120,7 @@ final class RouteTable implements AwsVpcEntity, Serializable {
     if (this == o) {
       return true;
     }
-    if (o == null || getClass() != o.getClass()) {
+    if (!(o instanceof RouteTable)) {
       return false;
     }
     RouteTable that = (RouteTable) o;

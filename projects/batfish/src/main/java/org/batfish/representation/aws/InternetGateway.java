@@ -117,7 +117,7 @@ final class InternetGateway implements AwsVpcEntity, Serializable {
     if (this == o) {
       return true;
     }
-    if (o == null || getClass() != o.getClass()) {
+    if (!(o instanceof InternetGateway)) {
       return false;
     }
     InternetGateway that = (InternetGateway) o;

@@ -46,7 +46,7 @@ final class PortRange implements Serializable {
     if (this == o) {
       return true;
     }
-    if (o == null || getClass() != o.getClass()) {
+    if (!(o instanceof PortRange)) {
       return false;
     }
     PortRange portRange = (PortRange) o;

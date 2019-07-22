@@ -129,7 +129,7 @@ final class VpnGateway implements AwsVpcEntity, Serializable {
     if (this == o) {
       return true;
     }
-    if (o == null || getClass() != o.getClass()) {
+    if (!(o instanceof VpnGateway)) {
       return false;
     }
     VpnGateway that = (VpnGateway) o;

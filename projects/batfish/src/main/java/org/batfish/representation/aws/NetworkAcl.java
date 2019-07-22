@@ -60,7 +60,7 @@ final class NetworkAcl implements AwsVpcEntity, Serializable {
       if (this == o) {
         return true;
       }
-      if (o == null || getClass() != o.getClass()) {
+      if (!(o instanceof NetworkAclAssociation)) {
         return false;
       }
       NetworkAclAssociation that = (NetworkAclAssociation) o;
@@ -193,7 +193,7 @@ final class NetworkAcl implements AwsVpcEntity, Serializable {
     if (this == o) {
       return true;
     }
-    if (o == null || getClass() != o.getClass()) {
+    if (!(o instanceof NetworkAcl)) {
       return false;
     }
     NetworkAcl that = (NetworkAcl) o;

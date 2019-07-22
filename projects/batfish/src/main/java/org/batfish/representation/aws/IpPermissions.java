@@ -61,7 +61,7 @@ final class IpPermissions implements Serializable {
       if (this == o) {
         return true;
       }
-      if (o == null || getClass() != o.getClass()) {
+      if (!(o instanceof IpRange)) {
         return false;
       }
       IpRange that = (IpRange) o;
@@ -101,7 +101,7 @@ final class IpPermissions implements Serializable {
       if (this == o) {
         return true;
       }
-      if (o == null || getClass() != o.getClass()) {
+      if (!(o instanceof UserIdGroupPair)) {
         return false;
       }
       UserIdGroupPair that = (UserIdGroupPair) o;
@@ -203,7 +203,7 @@ final class IpPermissions implements Serializable {
     if (this == o) {
       return true;
     }
-    if (o == null || getClass() != o.getClass()) {
+    if (!(o instanceof IpPermissions)) {
       return false;
     }
     IpPermissions that = (IpPermissions) o;

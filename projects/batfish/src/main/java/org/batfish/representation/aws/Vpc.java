@@ -50,7 +50,7 @@ final class Vpc implements AwsVpcEntity, Serializable {
       if (this == o) {
         return true;
       }
-      if (o == null || getClass() != o.getClass()) {
+      if (!(o instanceof CidrBlockAssociation)) {
         return false;
       }
       CidrBlockAssociation that = (CidrBlockAssociation) o;
@@ -158,7 +158,7 @@ final class Vpc implements AwsVpcEntity, Serializable {
     if (this == o) {
       return true;
     }
-    if (o == null || getClass() != o.getClass()) {
+    if (!(o instanceof Vpc)) {
       return false;
     }
     Vpc vpc = (Vpc) o;

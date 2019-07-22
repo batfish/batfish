@@ -72,7 +72,7 @@ final class NatGatewayAddress implements Serializable {
     if (this == o) {
       return true;
     }
-    if (o == null || getClass() != o.getClass()) {
+    if (!(o instanceof NatGatewayAddress)) {
       return false;
     }
     NatGatewayAddress that = (NatGatewayAddress) o;

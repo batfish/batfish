@@ -99,7 +99,7 @@ final class NetworkAclEntry implements Serializable {
     if (this == o) {
       return true;
     }
-    if (o == null || getClass() != o.getClass()) {
+    if (!(o instanceof NetworkAclEntry)) {
       return false;
     }
     NetworkAclEntry that = (NetworkAclEntry) o;

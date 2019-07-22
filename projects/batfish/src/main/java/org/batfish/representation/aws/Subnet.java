@@ -250,7 +250,7 @@ public class Subnet implements AwsVpcEntity, Serializable {
     if (this == o) {
       return true;
     }
-    if (o == null || getClass() != o.getClass()) {
+    if (!(o instanceof Subnet)) {
       return false;
     }
     Subnet subnet = (Subnet) o;

@@ -344,7 +344,7 @@ final class Instance implements AwsVpcEntity, Serializable {
     if (this == o) {
       return true;
     }
-    if (o == null || getClass() != o.getClass()) {
+    if (!(o instanceof Instance)) {
       return false;
     }
     Instance instance = (Instance) o;

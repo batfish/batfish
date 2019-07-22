@@ -177,7 +177,7 @@ public final class ElasticsearchDomain implements AwsVpcEntity, Serializable {
     if (this == o) {
       return true;
     }
-    if (o == null || getClass() != o.getClass()) {
+    if (!(o instanceof ElasticsearchDomain)) {
       return false;
     }
     ElasticsearchDomain that = (ElasticsearchDomain) o;

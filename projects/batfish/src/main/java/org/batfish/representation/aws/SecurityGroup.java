@@ -196,7 +196,7 @@ final class SecurityGroup implements AwsVpcEntity, Serializable {
     if (this == o) {
       return true;
     }
-    if (o == null || getClass() != o.getClass()) {
+    if (!(o instanceof SecurityGroup)) {
       return false;
     }
     SecurityGroup that = (SecurityGroup) o;

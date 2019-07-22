@@ -321,7 +321,7 @@ final class IpsecTunnel implements Serializable {
     if (this == o) {
       return true;
     }
-    if (o == null || getClass() != o.getClass()) {
+    if (!(o instanceof IpsecTunnel)) {
       return false;
     }
     IpsecTunnel that = (IpsecTunnel) o;

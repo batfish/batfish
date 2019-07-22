@@ -76,7 +76,7 @@ final class CustomerGateway implements AwsVpcEntity, Serializable {
     if (this == o) {
       return true;
     }
-    if (o == null || getClass() != o.getClass()) {
+    if (!(o instanceof CustomerGateway)) {
       return false;
     }
     CustomerGateway that = (CustomerGateway) o;
