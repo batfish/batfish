@@ -14,24 +14,15 @@ public class IncrementalBdpAnswerElement extends DataPlaneAnswerElement {
   private static final String PROP_BGP_MULTIPATH_RIB_ROUTES_BY_ITERATION =
       "bgpMultipathRibRoutesByIteration";
   private static final String PROP_DEPENDENT_ROUTES_ITERATIONS = "dependentRoutesIterations";
-  private static final String PROP_EIGRP_INTERNAL_ITERATIONS = "eigrpInternalIterations";
   private static final String PROP_OSPF_INTERNAL_ITERATIONS = "ospfInternalIterations";
   private static final String PROP_WARNINGS = "warnings";
 
   private SortedMap<Integer, Integer> _bgpBestPathRibRoutesByIteration;
-
   private SortedMap<Integer, Integer> _bgpMultipathRibRoutesByIteration;
-
   private int _dependentRoutesIterations;
-
-  private int _eigrpInternalIterations;
-
   private SortedMap<Integer, Integer> _mainRibRoutesByIteration;
-
   private int _ospfInternalIterations;
-
   private String _version;
-
   private Warnings _warnings;
 
   public IncrementalBdpAnswerElement() {
@@ -54,11 +45,6 @@ public class IncrementalBdpAnswerElement extends DataPlaneAnswerElement {
   @JsonProperty(PROP_DEPENDENT_ROUTES_ITERATIONS)
   public int getDependentRoutesIterations() {
     return _dependentRoutesIterations;
-  }
-
-  @JsonProperty(PROP_EIGRP_INTERNAL_ITERATIONS)
-  public int getEigrpInternalIterations() {
-    return _eigrpInternalIterations;
   }
 
   @JsonProperty(MAIN_RIB_ROUTES_BY_ITERATION)
@@ -92,11 +78,6 @@ public class IncrementalBdpAnswerElement extends DataPlaneAnswerElement {
   public void setBgpMultipathRibRoutesByIteration(
       SortedMap<Integer, Integer> bgpMultipathRibRoutesByIteration) {
     _bgpMultipathRibRoutesByIteration = bgpMultipathRibRoutesByIteration;
-  }
-
-  @JsonProperty(PROP_EIGRP_INTERNAL_ITERATIONS)
-  public void setEigrpInternalIterations(int eigrpInternalIterations) {
-    _eigrpInternalIterations = eigrpInternalIterations;
   }
 
   @JsonProperty(PROP_DEPENDENT_ROUTES_ITERATIONS)
