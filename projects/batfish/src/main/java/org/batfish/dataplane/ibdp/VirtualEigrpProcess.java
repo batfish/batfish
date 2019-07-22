@@ -6,6 +6,7 @@ import static org.batfish.dataplane.rib.AbstractRib.importRib;
 import static org.batfish.dataplane.rib.RibDelta.importRibDelta;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.graph.Network;
 import java.util.ArrayList;
 import java.util.List;
@@ -18,6 +19,7 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.AnnotatedRoute;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
@@ -46,37 +48,32 @@ import org.batfish.dataplane.rib.RouteAdvertisement;
 import org.batfish.dataplane.rib.RouteAdvertisement.Reason;
 
 /** An instance of an EigrpProcess as constructed and used by {@link VirtualRouter} */
-class VirtualEigrpProcess {
+@ParametersAreNonnullByDefault
+final class VirtualEigrpProcess {
+
   private final long _asn;
-
   private final int _defaultExternalAdminCost;
-
   private final int _defaultInternalAdminCost;
-
   /** Helper RIB containing EIGRP external paths */
-  private final EigrpExternalRib _externalRib;
+  @Nonnull private final EigrpExternalRib _externalRib;
 
-  private final List<EigrpNeighborConfigId> _interfaces;
-
+  @Nonnull private final List<EigrpNeighborConfigId> _interfaces;
   /** Helper RIB containing all EIGRP paths internal to this router's ASN. */
-  private final EigrpInternalRib _internalRib;
-
+  @Nonnull private final EigrpInternalRib _internalRib;
   /**
    * Helper RIBs containing paths obtained with EIGRP during current iteration. An Adj-RIB of sorts.
    */
-  private final EigrpInternalRib _internalStagingRib;
+  @Nonnull private final EigrpInternalRib _internalStagingRib;
 
-  private final String _vrfName;
-
+  @Nonnull private final String _vrfName;
   /** Helper RIBs containing EIGRP internal and external paths. */
-  private final EigrpRib _rib;
-
+  @Nonnull private final EigrpRib _rib;
   /** Routing policy to determine whether and how to export */
   @Nullable private final RoutingPolicy _exportPolicy;
-
   /** Incoming messages into this router from each EIGRP adjacency */
-  @VisibleForTesting
-  SortedMap<EigrpEdge, Queue<RouteAdvertisement<EigrpExternalRoute>>> _incomingRoutes;
+  @Nonnull @VisibleForTesting
+  SortedMap<EigrpEdge, Queue<RouteAdvertisement<EigrpExternalRoute>>> _incomingRoutes =
+      ImmutableSortedMap.of();
 
   private EigrpExternalRib _externalStagingRib;
 
@@ -94,10 +91,22 @@ class VirtualEigrpProcess {
     _rib = new EigrpRib();
     _vrfName = vrfName;
 
-    /*
-     * Init internal routes from connected routes. For each interface prefix, construct a new
-     * internal route.
-     */
+    initInternalRoutes(vrfName, c);
+
+    // get EIGRP export policy name
+    String exportPolicyName = process.getExportPolicy();
+    if (exportPolicyName != null) {
+      _exportPolicy = c.getRoutingPolicies().get(exportPolicyName);
+    } else {
+      _exportPolicy = null;
+    }
+  }
+
+  /**
+   * Init internal routes from connected routes. For each interface prefix, construct a new internal
+   * route.
+   */
+  private void initInternalRoutes(String vrfName, Configuration c) {
     for (String ifaceName : c.getVrfs().get(vrfName).getInterfaceNames()) {
       Interface iface = c.getAllInterfaces().get(ifaceName);
       if (iface.getActive()
@@ -123,14 +132,6 @@ class VirtualEigrpProcess {
           _internalRib.mergeRoute(route);
         }
       }
-    }
-
-    // get EIGRP export policy name
-    String exportPolicyName = process.getExportPolicy();
-    if (exportPolicyName != null) {
-      _exportPolicy = c.getRoutingPolicies().get(exportPolicyName);
-    } else {
-      _exportPolicy = null;
     }
   }
 
@@ -349,7 +350,7 @@ class VirtualEigrpProcess {
   }
 
   private void queueOutgoingExternalRoutes(
-      Map<String, Node> allNodes, @Nonnull RibDelta<EigrpExternalRoute> delta) {
+      Map<String, Node> allNodes, RibDelta<EigrpExternalRoute> delta) {
     // Loop over neighbors, enqueue messages
     for (EigrpEdge edge : _incomingRoutes.keySet()) {
       Queue<RouteAdvertisement<EigrpExternalRoute>> queue =

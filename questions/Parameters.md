@@ -32,7 +32,7 @@ For many parameters types, there is a "resolver" question that may be used to le
 
 * [`locationSpec`](#location-specifier)
 
-* [`mlag-id-specifier`](#mlag-id-specifier)
+* [`mlagIdSpec`](#mlag-id-specifier)
 
 * [`namedStructureSpec`](#named-structure-specifier)
 
