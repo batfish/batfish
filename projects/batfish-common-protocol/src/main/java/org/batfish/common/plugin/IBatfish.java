@@ -26,10 +26,8 @@ import org.batfish.datamodel.answers.DataPlaneAnswerElement;
 import org.batfish.datamodel.answers.InitInfoAnswerElement;
 import org.batfish.datamodel.answers.MajorIssueConfig;
 import org.batfish.datamodel.answers.ParseEnvironmentBgpTablesAnswerElement;
-import org.batfish.datamodel.answers.ParseEnvironmentRoutingTablesAnswerElement;
 import org.batfish.datamodel.answers.ParseVendorConfigurationAnswerElement;
 import org.batfish.datamodel.collections.BgpAdvertisementsByVrf;
-import org.batfish.datamodel.collections.RoutesByVrf;
 import org.batfish.datamodel.flow.Trace;
 import org.batfish.datamodel.pojo.Environment;
 import org.batfish.datamodel.questions.Question;
@@ -121,8 +119,6 @@ public interface IBatfish extends IPluginConsumer {
 
   InitInfoAnswerElement initInfoBgpAdvertisements(boolean summary, boolean verboseError);
 
-  InitInfoAnswerElement initInfoRoutes(boolean summary, boolean verboseError);
-
   SortedMap<String, Configuration> loadConfigurations();
 
   /** Returns the configurations for given snapshot. */
@@ -134,11 +130,7 @@ public interface IBatfish extends IPluginConsumer {
 
   SortedMap<String, BgpAdvertisementsByVrf> loadEnvironmentBgpTables();
 
-  SortedMap<String, RoutesByVrf> loadEnvironmentRoutingTables();
-
   ParseEnvironmentBgpTablesAnswerElement loadParseEnvironmentBgpTablesAnswerElement();
-
-  ParseEnvironmentRoutingTablesAnswerElement loadParseEnvironmentRoutingTablesAnswerElement();
 
   ParseVendorConfigurationAnswerElement loadParseVendorConfigurationAnswerElement();
 
@@ -162,6 +154,8 @@ public interface IBatfish extends IPluginConsumer {
       String questionName,
       String questionClassName,
       BiFunction<Question, IBatfish, Answerer> answererCreator);
+
+  void registerVersion(String name, String version);
 
   void registerBgpTablePlugin(BgpTableFormat format, BgpTablePlugin bgpTablePlugin);
 

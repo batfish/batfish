@@ -108,4 +108,11 @@ public class WorkMgrServiceV2 {
   public NetworkResource getNetworkResource(@PathParam("id") String id) {
     return new NetworkResource(_apiKey, id);
   }
+
+  /** Handle request for component versions */
+  @GET
+  @Path(CoordConstsV2.RSC_VERSION)
+  public Response getVersion() {
+    return Response.ok().entity(Main.getWorkMgr().getVersions()).build();
+  }
 }

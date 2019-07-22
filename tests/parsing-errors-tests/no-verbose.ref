@@ -15,7 +15,6 @@
     "class" : "org.batfish.question.InitInfoQuestionPlugin$InitInfoQuestion",
     "differential" : false,
     "environmentBgpTables" : false,
-    "environmentRoutes" : false,
     "includeOneTableKeys" : true,
     "summary" : false,
     "verboseError" : false

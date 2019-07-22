@@ -4,6 +4,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.annotation.Nullable;
 
+@SuppressWarnings("unused") // In case we decide to bring back extraction of "show ip route" output
 public final class RoutingTableFormatDetector {
 
   public static RoutingTableFormat identifyRoutingTableFormat(String fileText) {

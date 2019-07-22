@@ -32,11 +32,9 @@ import org.batfish.datamodel.answers.DataPlaneAnswerElement;
 import org.batfish.datamodel.answers.InitInfoAnswerElement;
 import org.batfish.datamodel.answers.MajorIssueConfig;
 import org.batfish.datamodel.answers.ParseEnvironmentBgpTablesAnswerElement;
-import org.batfish.datamodel.answers.ParseEnvironmentRoutingTablesAnswerElement;
 import org.batfish.datamodel.answers.ParseVendorConfigurationAnswerElement;
 import org.batfish.datamodel.bgp.BgpTopology;
 import org.batfish.datamodel.collections.BgpAdvertisementsByVrf;
-import org.batfish.datamodel.collections.RoutesByVrf;
 import org.batfish.datamodel.flow.Trace;
 import org.batfish.datamodel.ipsec.IpsecTopology;
 import org.batfish.datamodel.ospf.OspfTopology;
@@ -279,11 +277,6 @@ public class IBatfishTestAdapter implements IBatfish {
   }
 
   @Override
-  public InitInfoAnswerElement initInfoRoutes(boolean summary, boolean verboseError) {
-    throw new UnsupportedOperationException();
-  }
-
-  @Override
   public SortedMap<String, Configuration> loadConfigurations() {
     throw new UnsupportedOperationException();
   }
@@ -309,11 +302,6 @@ public class IBatfishTestAdapter implements IBatfish {
   }
 
   @Override
-  public SortedMap<String, RoutesByVrf> loadEnvironmentRoutingTables() {
-    throw new UnsupportedOperationException();
-  }
-
-  @Override
   public Set<BgpAdvertisement> loadExternalBgpAnnouncements(
       Map<String, Configuration> configurations) {
     throw new UnsupportedOperationException();
@@ -321,12 +309,6 @@ public class IBatfishTestAdapter implements IBatfish {
 
   @Override
   public ParseEnvironmentBgpTablesAnswerElement loadParseEnvironmentBgpTablesAnswerElement() {
-    throw new UnsupportedOperationException();
-  }
-
-  @Override
-  public ParseEnvironmentRoutingTablesAnswerElement
-      loadParseEnvironmentRoutingTablesAnswerElement() {
     throw new UnsupportedOperationException();
   }
 
@@ -371,6 +353,11 @@ public class IBatfishTestAdapter implements IBatfish {
       String questionName,
       String questionClassName,
       BiFunction<Question, IBatfish, Answerer> answererCreator) {
+    throw new UnsupportedOperationException();
+  }
+
+  @Override
+  public void registerVersion(String name, String version) {
     throw new UnsupportedOperationException();
   }
 

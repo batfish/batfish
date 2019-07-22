@@ -101,6 +101,12 @@ ip_prefix
   IP_PREFIX
 ;
 
+ip_prefix_list_name
+:
+// 1-63 chars
+  WORD
+;
+
 ipv6_address
 :
   IPV6_ADDRESS
@@ -136,12 +142,6 @@ ospf_area_id
 :
   num = uint32
   | ip = ip_address
-;
-
-prefix_list_name
-:
-// 1-63 chars
-  WORD
 ;
 
 quoted_text

@@ -23,7 +23,6 @@ import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.DataPlane;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.collections.BgpAdvertisementsByVrf;
-import org.batfish.datamodel.collections.RoutesByVrf;
 import org.batfish.dataplane.ibdp.IncrementalDataPlanePlugin;
 import org.batfish.identifiers.FileBasedIdResolver;
 import org.batfish.identifiers.IdResolver;
@@ -46,10 +45,6 @@ public class BatfishTestUtils {
   }
 
   private static Map<NetworkSnapshot, SortedMap<String, BgpAdvertisementsByVrf>> makeEnvBgpCache() {
-    return Collections.synchronizedMap(new LRUMap<>(4));
-  }
-
-  private static Map<NetworkSnapshot, SortedMap<String, RoutesByVrf>> makeEnvRouteCache() {
     return Collections.synchronizedMap(new LRUMap<>(4));
   }
 
@@ -83,7 +78,6 @@ public class BatfishTestUtils {
             testrigs,
             makeDataPlaneCache(),
             makeEnvBgpCache(),
-            makeEnvRouteCache(),
             null,
             new TestFileBasedIdResolver(settings.getStorageBase()));
     if (!configurations.isEmpty()) {
@@ -126,7 +120,6 @@ public class BatfishTestUtils {
             testrigs,
             makeDataPlaneCache(),
             makeEnvBgpCache(),
-            makeEnvRouteCache(),
             null,
             new TestFileBasedIdResolver(settings.getStorageBase()));
     batfish.getSettings().setDiffQuestion(true);
@@ -174,7 +167,6 @@ public class BatfishTestUtils {
     Map<String, String> hostsText = testrigText.getHostsText();
     Map<String, String> iptablesFilesText = testrigText.getIptablesFilesText();
     String layer1TopologyText = testrigText.getLayer1TopologyText();
-    Map<String, String> routingTablesText = testrigText.getRoutingTablesText();
 
     Settings settings = new Settings(new String[] {});
     configureBatfishTestSettings(settings);
@@ -197,15 +189,12 @@ public class BatfishTestUtils {
       writeTemporaryTestrigFiles(
           ImmutableMap.of(BfConsts.RELPATH_L1_TOPOLOGY_PATH, layer1TopologyText), testrigPath);
     }
-    writeTemporaryTestrigFiles(
-        routingTablesText, settings.getBaseTestrigSettings().getEnvironmentRoutingTablesPath());
     Batfish batfish =
         new Batfish(
             settings,
             makeTestrigCache(),
             makeDataPlaneCache(),
             makeEnvBgpCache(),
-            makeEnvRouteCache(),
             null,
             new TestFileBasedIdResolver(settings.getStorageBase()));
     registerDataPlanePlugins(batfish);
@@ -257,7 +246,6 @@ public class BatfishTestUtils {
             makeTestrigCache(),
             makeDataPlaneCache(),
             makeEnvBgpCache(),
-            makeEnvRouteCache(),
             storageProvider,
             idResolver);
     registerDataPlanePlugins(batfish);
