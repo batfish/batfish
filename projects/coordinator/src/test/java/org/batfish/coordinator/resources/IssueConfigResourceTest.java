@@ -16,11 +16,11 @@ import javax.ws.rs.client.Entity;
 import javax.ws.rs.client.Invocation.Builder;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import org.batfish.common.Version;
 import org.batfish.coordinator.Main;
 import org.batfish.coordinator.WorkMgrServiceV2TestBase;
 import org.batfish.coordinator.WorkMgrTestUtils;
 import org.batfish.datamodel.answers.MinorIssueConfig;
+import org.batfish.version.BatfishVersion;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -55,7 +55,7 @@ public class IssueConfigResourceTest extends WorkMgrServiceV2TestBase {
         .path(minor)
         .request()
         .header(HTTP_HEADER_BATFISH_APIKEY, DEFAULT_API_KEY)
-        .header(HTTP_HEADER_BATFISH_VERSION, Version.getVersion());
+        .header(HTTP_HEADER_BATFISH_VERSION, BatfishVersion.VERSION);
   }
 
   private Builder getIssueSettingsTarget(String network) {
@@ -66,7 +66,7 @@ public class IssueConfigResourceTest extends WorkMgrServiceV2TestBase {
         .path(RSC_ISSUES)
         .request()
         .header(HTTP_HEADER_BATFISH_APIKEY, DEFAULT_API_KEY)
-        .header(HTTP_HEADER_BATFISH_VERSION, Version.getVersion());
+        .header(HTTP_HEADER_BATFISH_VERSION, BatfishVersion.VERSION);
   }
 
   @Test

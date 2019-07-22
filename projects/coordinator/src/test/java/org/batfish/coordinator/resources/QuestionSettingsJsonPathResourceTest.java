@@ -23,7 +23,6 @@ import javax.ws.rs.client.Invocation.Builder;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
-import org.batfish.common.Version;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.coordinator.Main;
 import org.batfish.coordinator.WorkMgrServiceV2TestBase;
@@ -31,6 +30,7 @@ import org.batfish.coordinator.WorkMgrTestUtils;
 import org.batfish.identifiers.NetworkId;
 import org.batfish.identifiers.QuestionSettingsId;
 import org.batfish.storage.TestStorageProvider;
+import org.batfish.version.BatfishVersion;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -95,7 +95,7 @@ public final class QuestionSettingsJsonPathResourceTest extends WorkMgrServiceV2
         .path(jsonPath)
         .request()
         .header(HTTP_HEADER_BATFISH_APIKEY, DEFAULT_API_KEY)
-        .header(HTTP_HEADER_BATFISH_VERSION, Version.getVersion());
+        .header(HTTP_HEADER_BATFISH_VERSION, BatfishVersion.VERSION);
   }
 
   @Before

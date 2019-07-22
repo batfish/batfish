@@ -4,7 +4,7 @@ import com.google.common.annotations.VisibleForTesting;
 import org.apache.commons.configuration2.Configuration;
 import org.apache.commons.configuration2.builder.fluent.Configurations;
 
-/** A utility class to extract version info from properties files. */
+/** A utility class to help with extracting version information. */
 public final class Version {
   @VisibleForTesting static final String PROPERTIES_PATH = "org/batfish/common/common.properties";
 
