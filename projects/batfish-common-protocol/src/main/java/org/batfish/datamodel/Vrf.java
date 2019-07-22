@@ -36,9 +36,9 @@ public class Vrf extends ComparableStructure<String> {
 
   public static class Builder extends NetworkFactoryBuilder<Vrf> {
 
-    private String _name;
-
-    private Configuration _owner;
+    @Nullable private String _name;
+    @Nullable private Configuration _owner;
+    @Nonnull private Map<Long, EigrpProcess> _eigrpProcesses = ImmutableMap.of();
 
     Builder(NetworkFactory networkFactory) {
       super(networkFactory, Vrf.class);
@@ -51,15 +51,21 @@ public class Vrf extends ComparableStructure<String> {
       if (_owner != null) {
         _owner.getVrfs().put(name, vrf);
       }
+      vrf.setEigrpProcesses(_eigrpProcesses);
       return vrf;
     }
 
-    public Builder setName(String name) {
+    public Builder setEigrpProcesses(@Nonnull Map<Long, EigrpProcess> eigrpProcesses) {
+      _eigrpProcesses = eigrpProcesses;
+      return this;
+    }
+
+    public Builder setName(@Nullable String name) {
       _name = name;
       return this;
     }
 
-    public Builder setOwner(Configuration owner) {
+    public Builder setOwner(@Nullable Configuration owner) {
       _owner = owner;
       return this;
     }
@@ -89,7 +95,7 @@ public class Vrf extends ComparableStructure<String> {
   private String _description;
   private NavigableSet<GeneratedRoute6> _generatedIpv6Routes;
   private NavigableSet<GeneratedRoute> _generatedRoutes;
-  private Map<Long, EigrpProcess> _eigrpProcesses;
+  private SortedMap<Long, EigrpProcess> _eigrpProcesses;
   @Nullable private String _crossVrfImportPolicy;
   @Nullable private List<String> _crossVrfImportVrfs;
   private transient SortedSet<String> _interfaceNames;
@@ -105,7 +111,7 @@ public class Vrf extends ComparableStructure<String> {
   public Vrf(@Nonnull String name) {
     super(name);
     _appliedRibGroups = ImmutableSortedMap.of();
-    _eigrpProcesses = new TreeMap<>();
+    _eigrpProcesses = ImmutableSortedMap.of();
     _generatedRoutes = new TreeSet<>();
     _generatedIpv6Routes = new TreeSet<>();
     _interfaces = new TreeMap<>();
@@ -159,7 +165,7 @@ public class Vrf extends ComparableStructure<String> {
     return _generatedRoutes;
   }
 
-  /** @return EIGRP routing processes for this VRF */
+  /** @return EIGRP routing processes for this VRF. This map cannot be modified. */
   @JsonProperty(PROP_EIGRP_PROCESSES)
   public Map<Long, EigrpProcess> getEigrpProcesses() {
     return _eigrpProcesses;
@@ -270,9 +276,20 @@ public class Vrf extends ComparableStructure<String> {
     _generatedRoutes = generatedRoutes;
   }
 
+  // For Jackson/Builder use only.
   @JsonProperty(PROP_EIGRP_PROCESSES)
-  public void setEigrpProcesses(Map<Long, EigrpProcess> eigrpProcesses) {
-    _eigrpProcesses = eigrpProcesses;
+  private void setEigrpProcesses(@Nullable Map<Long, EigrpProcess> eigrpProcesses) {
+    _eigrpProcesses =
+        ImmutableSortedMap.copyOf(firstNonNull(eigrpProcesses, ImmutableSortedMap.of()));
+  }
+
+  /** Add an {@link EigrpProcess} to this VRF */
+  public void addEigrpProcess(@Nonnull EigrpProcess proc) {
+    _eigrpProcesses =
+        ImmutableSortedMap.<Long, EigrpProcess>naturalOrder()
+            .putAll(_eigrpProcesses)
+            .put(proc.getAsn(), proc)
+            .build();
   }
 
   @JsonProperty(PROP_CROSS_VRF_IMPORT_POLICY)

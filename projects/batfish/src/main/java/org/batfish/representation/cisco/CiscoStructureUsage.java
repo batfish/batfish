@@ -83,6 +83,7 @@ public enum CiscoStructureUsage implements StructureUsage {
   DOCSIS_GROUP_DOCSIS_POLICY("cable load-balance docsis-group docsis-policy"),
   DOCSIS_POLICY_DOCSIS_POLICY_RULE("cable load-balance docsis-policy rule"),
   EIGRP_AF_INTERFACE("eigrp address-family af-interface"),
+  EIGRP_DISTRIBUTE_LIST_ACCESS_LIST_OUT("router eigrp distribute-list out"),
   EIGRP_PASSIVE_INTERFACE("eigrp passive-interface"),
   EIGRP_REDISTRIBUTE_BGP_MAP("eigrp redistribute bgp route-map"),
   EIGRP_REDISTRIBUTE_CONNECTED_MAP("eigrp redistribute connected route-map"),

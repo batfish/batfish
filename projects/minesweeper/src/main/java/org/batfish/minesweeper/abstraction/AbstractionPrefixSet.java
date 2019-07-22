@@ -1,10 +1,10 @@
-package org.batfish.datamodel.routing_policy.expr;
+package org.batfish.minesweeper.abstraction;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import java.util.Objects;
 import org.batfish.datamodel.Prefix;
-import org.batfish.datamodel.PrefixTrie;
 import org.batfish.datamodel.routing_policy.Environment;
+import org.batfish.datamodel.routing_policy.expr.PrefixSetExpr;
 
 /**
  * A specific kind of prefix match used only by the abstraction code Does *not* correspond to any

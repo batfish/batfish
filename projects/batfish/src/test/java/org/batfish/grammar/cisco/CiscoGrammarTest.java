@@ -15,6 +15,7 @@ import static org.batfish.datamodel.AuthenticationMethod.LOCAL;
 import static org.batfish.datamodel.AuthenticationMethod.LOCAL_CASE;
 import static org.batfish.datamodel.AuthenticationMethod.NONE;
 import static org.batfish.datamodel.Configuration.DEFAULT_VRF_NAME;
+import static org.batfish.datamodel.Interface.UNSET_LOCAL_INTERFACE;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.and;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.matchDst;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.matchSrc;
@@ -291,6 +292,7 @@ import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.ConnectedRoute;
 import org.batfish.datamodel.DataPlane;
 import org.batfish.datamodel.DiffieHellmanGroup;
+import org.batfish.datamodel.Edge;
 import org.batfish.datamodel.EigrpExternalRoute;
 import org.batfish.datamodel.EigrpInternalRoute;
 import org.batfish.datamodel.EncryptionAlgorithm;
@@ -338,6 +340,8 @@ import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.SwitchportEncapsulationType;
 import org.batfish.datamodel.SwitchportMode;
+import org.batfish.datamodel.TunnelConfiguration;
+import org.batfish.datamodel.TunnelConfiguration.Builder;
 import org.batfish.datamodel.VniSettings;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
@@ -2567,6 +2571,26 @@ public class CiscoGrammarTest {
   }
 
   @Test
+  public void testIosEigrpDistributeList() {
+    CiscoConfiguration c =
+        parseCiscoConfig("ios-eigrp-distribute-list", ConfigurationFormat.CISCO_IOS);
+
+    assertThat(
+        c.getDefaultVrf().getEigrpProcesses().get(1L).getOutboundInterfaceDistributeLists(),
+        equalTo(
+            ImmutableMap.of(
+                "GigabitEthernet0/0",
+                new DistributeList("2", DistributeListFilterType.ACCESS_LIST))));
+  }
+
+  @Test
+  public void testIosEigrpMarkForRouting() throws IOException {
+    Configuration c = parseConfig("ios-eigrp-distribute-list");
+
+    assertThat(c.getRouteFilterLists(), hasKey("2"));
+  }
+
+  @Test
   public void testIosOspfDistributeList() {
     CiscoConfiguration c = parseCiscoConfig("iosOspfDistributeList", ConfigurationFormat.CISCO_IOS);
     DistributeList globalInPrefix =
@@ -3893,10 +3917,22 @@ public class CiscoGrammarTest {
     CiscoConfiguration c = parseCiscoConfig("ios-tunnel-mode", ConfigurationFormat.CISCO_IOS);
 
     assertThat(c.getInterfaces().get("Tunnel1").getTunnel().getMode(), equalTo(TunnelMode.GRE));
-
     assertThat(c.getInterfaces().get("Tunnel2").getTunnel().getMode(), equalTo(TunnelMode.GRE));
-
     assertThat(c.getInterfaces().get("Tunnel3").getTunnel().getMode(), equalTo(TunnelMode.IPSEC));
+  }
+
+  @Test
+  public void testGreTunnelConversion() throws IOException {
+    Configuration c = parseConfig("ios-tunnel-mode");
+
+    Builder builder = TunnelConfiguration.builder().setSourceAddress(Ip.parse("2.3.4.6"));
+
+    assertThat(
+        c.getAllInterfaces().get("Tunnel1").getTunnelConfig(),
+        equalTo(builder.setDestinationAddress(Ip.parse("1.2.3.4")).build()));
+    assertThat(
+        c.getAllInterfaces().get("Tunnel2").getTunnelConfig(),
+        equalTo(builder.setDestinationAddress(Ip.parse("1.2.3.5")).build()));
   }
 
   @Test
@@ -3913,6 +3949,40 @@ public class CiscoGrammarTest {
             hostname,
             containsString(
                 "Interface TenGigabitEthernet0/1 with declared crypto-map mymap has no ip-address")));
+  }
+
+  @Test
+  public void testIsakmpKeyIos() throws IOException {
+    Configuration c = parseConfig("ios-crypto");
+
+    assertThat(
+        c,
+        hasIkePhase1Policy(
+            "~ISAKMP_KEY_IpWildcardIpSpace{ipWildcard=1.1.1.0/24}~",
+            allOf(
+                hasIkePhase1Key(
+                    allOf(
+                        IkePhase1KeyMatchers.hasKeyHash(
+                            CommonUtil.sha256Digest("psk1" + CommonUtil.salt())),
+                        IkePhase1KeyMatchers.hasRemoteIdentity(
+                            IpWildcard.parse("1.1.1.0/24").toIpSpace()),
+                        hasKeyType(IkeKeyType.PRE_SHARED_KEY_UNENCRYPTED))),
+                hasRemoteIdentity(equalTo(IpWildcard.parse("1.1.1.0/24").toIpSpace())),
+                hasIkePhase1Proposals(equalTo(ImmutableList.of("20"))))));
+
+    assertThat(
+        c,
+        hasIkePhase1Policy(
+            "~ISAKMP_KEY_IpWildcardIpSpace{ipWildcard=2.2.2.2}~",
+            allOf(
+                hasIkePhase1Key(
+                    allOf(
+                        IkePhase1KeyMatchers.hasKeyHash("FLgBaJHXdYY_AcHZZMgQ_RhTDJXHUBAAB"),
+                        IkePhase1KeyMatchers.hasRemoteIdentity(
+                            IpWildcard.parse("2.2.2.2").toIpSpace()),
+                        hasKeyType(IkeKeyType.PRE_SHARED_KEY_ENCRYPTED))),
+                hasRemoteIdentity(equalTo(IpWildcard.parse("2.2.2.2").toIpSpace())),
+                hasIkePhase1Proposals(equalTo(ImmutableList.of("20"))))));
   }
 
   @Test
@@ -3997,7 +4067,7 @@ public class CiscoGrammarTest {
                         hasKeyType(IkeKeyType.RSA_PUB_KEY),
                         IkePhase1KeyMatchers.hasRemoteIdentity(Ip.parse("1.2.3.4").toIpSpace()))),
                 hasRemoteIdentity(containsIp(Ip.parse("1.2.3.4"))),
-                hasLocalInterface(equalTo(Interface.UNSET_LOCAL_INTERFACE)),
+                hasLocalInterface(equalTo(UNSET_LOCAL_INTERFACE)),
                 hasIkePhase1Proposals(equalTo(ImmutableList.of("10"))))));
   }
 
@@ -6010,5 +6080,69 @@ public class CiscoGrammarTest {
             .getIpv4UnicastAddressFamily()
             .getAddressFamilyCapabilities()
             .getAdvertiseInactive());
+  }
+
+  @Test
+  public void testTunnelTopologyNoReachability() throws IOException {
+    String snapshot = "ios-tunnels";
+
+    Batfish batfish =
+        BatfishTestUtils.getBatfishFromTestrigText(
+            TestrigText.builder()
+                .setConfigurationText(
+                    TESTRIGS_PREFIX + snapshot,
+                    ImmutableList.of("n1-no-static-route", "n2-no-static-route"))
+                .build(),
+            _folder);
+
+    Edge overlayEdge = Edge.of("n1-no-static-route", "Tunnel1", "n2-no-static-route", "Tunnel1");
+
+    // Overlay edge present in initial tunnel topology
+    assertThat(
+        batfish
+            .getTopologyProvider()
+            .getInitialTunnelTopology(batfish.getNetworkSnapshot())
+            .asEdgeSet(),
+        containsInAnyOrder(overlayEdge, overlayEdge.reverse()));
+
+    batfish.computeDataPlane();
+    // NO overlay edge in final L3 topology
+    assertThat(
+        batfish.getTopologyProvider().getLayer3Topology(batfish.getNetworkSnapshot()).getEdges(),
+        empty());
+  }
+
+  @Test
+  public void testTunnelTopologyWithReachability() throws IOException {
+    String snapshot = "ios-tunnels";
+
+    Batfish batfish =
+        BatfishTestUtils.getBatfishFromTestrigText(
+            TestrigText.builder()
+                .setConfigurationText(
+                    TESTRIGS_PREFIX + snapshot,
+                    ImmutableList.of("n1-static-route", "n2-static-route"))
+                .build(),
+            _folder);
+
+    Edge underlayEdge =
+        Edge.of(
+            "n1-static-route", "TenGigabitEthernet0/1", "n2-static-route", "TenGigabitEthernet0/1");
+    Edge overlayEdge = Edge.of("n1-static-route", "Tunnel1", "n2-static-route", "Tunnel1");
+
+    // Overlay edge present in initial tunnel topology
+    assertThat(
+        batfish
+            .getTopologyProvider()
+            .getInitialTunnelTopology(batfish.getNetworkSnapshot())
+            .asEdgeSet(),
+        containsInAnyOrder(overlayEdge, overlayEdge.reverse()));
+
+    batfish.computeDataPlane();
+    // overlay edge in final L3 topology as well
+    assertThat(
+        batfish.getTopologyProvider().getLayer3Topology(batfish.getNetworkSnapshot()).getEdges(),
+        containsInAnyOrder(
+            overlayEdge, overlayEdge.reverse(), underlayEdge, underlayEdge.reverse()));
   }
 }
