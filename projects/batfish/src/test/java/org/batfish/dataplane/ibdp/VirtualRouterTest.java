@@ -594,7 +594,7 @@ public class VirtualRouterTest {
               assertThat(vr._bgpRoutingProcess._bgpv4IncomingRoutes, anEmptyMap());
               vr._virtualEigrpProcesses
                   .values()
-                  .forEach(process -> assertThat(process._incomingRoutes, anEmptyMap()));
+                  .forEach(process -> assertThat(process._incomingExternalRoutes, anEmptyMap()));
               assertThat(vr._isisIncomingRoutes, anEmptyMap());
             });
 
