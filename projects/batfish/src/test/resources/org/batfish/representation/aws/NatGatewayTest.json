@@ -1,0 +1,25 @@
+{
+  "NatGateways": [
+    {
+      "NatGatewayAddresses": [
+        {
+          "PublicIp": "198.11.222.33",
+          "NetworkInterfaceId": "eni-9dec76cd",
+          "AllocationId": "eipalloc-89c620ec",
+          "PrivateIp": "10.0.0.149"
+        }
+      ],
+      "VpcId": "vpc-1a2b3c4d",
+      "Tags": [
+        {
+          "Value": "IT",
+          "Key": "Department"
+        }
+      ],
+      "State": "available",
+      "NatGatewayId": "nat-05dba92075d71c408",
+      "SubnetId": "subnet-847e4dc2",
+      "CreateTime": "2015-12-01T12:26:55.983Z"
+    }
+  ]
+}

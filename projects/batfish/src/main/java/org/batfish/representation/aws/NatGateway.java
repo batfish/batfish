@@ -1,42 +1,56 @@
 package org.batfish.representation.aws;
 
+import static com.google.common.base.Preconditions.checkArgument;
+
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import java.io.Serializable;
-import java.util.LinkedList;
 import java.util.List;
+import java.util.Objects;
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.common.Warnings;
 import org.batfish.datamodel.Configuration;
-import org.batfish.datamodel.Ip;
-import org.codehaus.jettison.json.JSONArray;
-import org.codehaus.jettison.json.JSONException;
-import org.codehaus.jettison.json.JSONObject;
 
-public class NatGateway implements AwsVpcEntity, Serializable {
+/** Represents an AWS NAT gateway */
+@JsonIgnoreProperties(ignoreUnknown = true)
+@ParametersAreNonnullByDefault
+final class NatGateway implements AwsVpcEntity, Serializable {
 
-  // we ignore the state and tags fields
+  @Nonnull private final List<NatGatewayAddress> _natGatewayAddresses;
 
-  private List<NatGatewayAddress> _natGatewayAddresses = new LinkedList<>();
+  @Nonnull private final String _natGatewayId;
 
-  private String _natGatewayId;
+  @Nonnull private final String _subnetId;
 
-  private String _subnetId;
+  @Nonnull private final String _vpcId;
 
-  private String _vpcId;
+  @JsonCreator
+  private static NatGateway create(
+      @Nullable @JsonProperty(JSON_KEY_NAT_GATEWAY_ID) String natGatewayId,
+      @Nullable @JsonProperty(JSON_KEY_SUBNET_ID) String subnetId,
+      @Nullable @JsonProperty(JSON_KEY_VPC_ID) String vpcId,
+      @Nullable @JsonProperty(JSON_KEY_NAT_GATEWAY_ADDRESSES)
+          List<NatGatewayAddress> natGatewayAddresses) {
+    checkArgument(natGatewayId != null, "NAT gateway id cannot be null");
+    checkArgument(subnetId != null, "Subnet id cannot be null for nat gateway");
+    checkArgument(vpcId != null, "VPC id cannot be null for nat gateway");
+    checkArgument(natGatewayAddresses != null, "Nat gateway addresses cannot be null");
 
-  public NatGateway(JSONObject jObj) throws JSONException {
-    _natGatewayId = jObj.getString(JSON_KEY_NAT_GATEWAY_ID);
-    _subnetId = jObj.getString(JSON_KEY_SUBNET_ID);
-    _vpcId = jObj.getString(JSON_KEY_VPC_ID);
+    return new NatGateway(natGatewayId, subnetId, vpcId, natGatewayAddresses);
+  }
 
-    JSONArray addresses = jObj.getJSONArray(JSON_KEY_NAT_GATEWAY_ADDRESSES);
-    for (int index = 0; index < addresses.length(); index++) {
-      JSONObject childObject = addresses.getJSONObject(index);
-      String allocationId = childObject.getString(JSON_KEY_ALLOCATION_ID);
-      String networkInterfaceId = childObject.getString(JSON_KEY_NETWORK_INTERFACE_ID);
-      Ip privateIp = Ip.parse(childObject.getString(JSON_KEY_PRIVATE_IP));
-      Ip publicIp = Ip.parse(childObject.getString(JSON_KEY_PUBLIC_IP));
-      _natGatewayAddresses.add(
-          new NatGatewayAddress(allocationId, networkInterfaceId, privateIp, publicIp));
-    }
+  NatGateway(
+      String natGatewayId,
+      String subnetId,
+      String vpcId,
+      List<NatGatewayAddress> natGatewayAddresses) {
+    _natGatewayId = natGatewayId;
+    _subnetId = subnetId;
+    _vpcId = vpcId;
+    _natGatewayAddresses = natGatewayAddresses;
   }
 
   @Override
@@ -44,19 +58,22 @@ public class NatGateway implements AwsVpcEntity, Serializable {
     return _natGatewayId;
   }
 
-  public List<NatGatewayAddress> getNatGatewayAddresses() {
+  @Nonnull
+  List<NatGatewayAddress> getNatGatewayAddresses() {
     return _natGatewayAddresses;
   }
 
-  public String getSubnetId() {
+  @Nonnull
+  String getSubnetId() {
     return _subnetId;
   }
 
+  @Nonnull
   public String getVpcId() {
     return _vpcId;
   }
 
-  public Configuration toConfigurationNode(
+  Configuration toConfigurationNode(
       AwsConfiguration awsConfiguration, Region region, Warnings warnings) {
     Configuration cfgNode = Utils.newAwsConfiguration(_natGatewayId, "aws");
     cfgNode.getVendorFamily().getAws().setRegion(region.getName());
@@ -68,5 +85,25 @@ public class NatGateway implements AwsVpcEntity, Serializable {
     //    }
 
     return cfgNode;
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) {
+      return true;
+    }
+    if (!(o instanceof NatGateway)) {
+      return false;
+    }
+    NatGateway that = (NatGateway) o;
+    return Objects.equals(_natGatewayAddresses, that._natGatewayAddresses)
+        && Objects.equals(_natGatewayId, that._natGatewayId)
+        && Objects.equals(_subnetId, that._subnetId)
+        && Objects.equals(_vpcId, that._vpcId);
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(_natGatewayAddresses, _natGatewayId, _subnetId, _vpcId);
   }
 }

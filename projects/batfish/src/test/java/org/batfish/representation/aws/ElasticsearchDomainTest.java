@@ -2,11 +2,6 @@ package org.batfish.representation.aws;
 
 import static org.batfish.datamodel.matchers.IpAccessListMatchers.hasLines;
 import static org.batfish.representation.aws.AwsVpcEntity.JSON_KEY_DOMAIN_STATUS_LIST;
-import static org.batfish.representation.aws.matchers.ElasticsearchDomainMatchers.hasAvailable;
-import static org.batfish.representation.aws.matchers.ElasticsearchDomainMatchers.hasId;
-import static org.batfish.representation.aws.matchers.ElasticsearchDomainMatchers.hasSecurityGroups;
-import static org.batfish.representation.aws.matchers.ElasticsearchDomainMatchers.hasSubnets;
-import static org.batfish.representation.aws.matchers.ElasticsearchDomainMatchers.hasVpcId;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasItem;
@@ -14,6 +9,8 @@ import static org.hamcrest.Matchers.hasKey;
 import static org.hamcrest.Matchers.hasSize;
 import static org.junit.Assert.assertThat;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
@@ -24,6 +21,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import org.batfish.common.topology.TopologyUtil;
+import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
@@ -43,14 +41,12 @@ import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
 import org.batfish.main.TestrigText;
-import org.codehaus.jettison.json.JSONArray;
-import org.codehaus.jettison.json.JSONException;
-import org.codehaus.jettison.json.JSONObject;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
+/** Tests for {@link ElasticsearchDomain} */
 public class ElasticsearchDomainTest {
 
   @Rule public TemporaryFolder _folder = new TemporaryFolder();
@@ -136,28 +132,29 @@ public class ElasticsearchDomainTest {
   }
 
   @Test
-  public void testElasticsearchDomain() throws JSONException {
+  public void testDeserialization() throws IOException {
     String text =
         CommonUtil.readResource("org/batfish/representation/aws/ElasticsearchDomainTest.json");
 
-    JSONObject jObj = new JSONObject(text);
-    JSONArray esArray = jObj.getJSONArray(JSON_KEY_DOMAIN_STATUS_LIST);
-    List<ElasticsearchDomain> esList = new LinkedList<>();
-    for (int i = 0; i < esArray.length(); i++) {
-      esList.add(new ElasticsearchDomain(esArray.getJSONObject(i)));
+    JsonNode json = BatfishObjectMapper.mapper().readTree(text);
+    ArrayNode array = (ArrayNode) json.get(JSON_KEY_DOMAIN_STATUS_LIST);
+    List<ElasticsearchDomain> domains = new LinkedList<>();
+
+    for (int index = 0; index < array.size(); index++) {
+      domains.add(
+          BatfishObjectMapper.mapper().convertValue(array.get(index), ElasticsearchDomain.class));
     }
 
-    // checking the count of ES instance initialized
-    assertThat(esList, hasSize(1));
-
-    ElasticsearchDomain elasticsearchDomain = esList.get(0);
-
-    // checking the attributes of this ES instance
-    assertThat(elasticsearchDomain, hasId("es-domain"));
-    assertThat(elasticsearchDomain, hasAvailable(true));
-    assertThat(elasticsearchDomain, hasVpcId("vpc-b390fad5"));
-    assertThat(elasticsearchDomain, hasSubnets(ImmutableList.of("subnet-7044ff16")));
-    assertThat(elasticsearchDomain, hasSecurityGroups(ImmutableList.of("sg-55510831")));
+    assertThat(
+        domains,
+        equalTo(
+            ImmutableList.of(
+                new ElasticsearchDomain(
+                    "es-domain",
+                    "vpc-b390fad5",
+                    ImmutableList.of("sg-55510831"),
+                    ImmutableList.of("subnet-7044ff16"),
+                    true))));
   }
 
   @Test
