@@ -2423,6 +2423,13 @@ public final class CiscoNxosGrammarTest {
   }
 
   @Test
+  public void testVersionExtraction() {
+    String hostname = "nxos_version";
+    CiscoNxosConfiguration vc = parseVendorConfig(hostname);
+    assertThat(vc.getVersion(), equalTo("9.2(3) Bios:version"));
+  }
+
+  @Test
   public void testVlanConversion() throws IOException {
     String hostname = "nxos_vlan";
     Configuration c = parseConfig(hostname);

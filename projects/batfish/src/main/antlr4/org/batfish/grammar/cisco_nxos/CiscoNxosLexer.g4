@@ -2250,7 +2250,7 @@ V3_REPORT_SUPPRESSION
 
 VERSION
 :
-  'version'
+  'version' -> pushMode ( M_Remark )
 ;
 
 VLAN
