@@ -72,7 +72,7 @@ final class EigrpRoutingProcess implements RoutingProcess<EigrpTopology, EigrpRo
   /** Routing policy to determine whether and how to export */
   @Nullable private final RoutingPolicy _exportPolicy;
   /** Incoming internal route messages into this router from each EIGRP adjacency */
-  @Nonnull @VisibleForTesting
+  @Nonnull
   private SortedMap<EigrpEdge, Queue<RouteAdvertisement<EigrpInternalRoute>>>
       _incomingInternalRoutes;
   /** Incoming external route messages into this router from each EIGRP adjacency */
