@@ -530,7 +530,6 @@ class IncrementalBdpEngine {
       assert span != null; // avoid unused warning
 
       int numOspfInternalIterations;
-      int numEigrpInternalIterations;
 
       /*
        * For each virtual router, setup the initial easy-to-do routes, init protocol-based RIBs,
@@ -547,8 +546,7 @@ class IncrementalBdpEngine {
       }
 
       // EIGRP internal routes
-      numEigrpInternalIterations =
-          initEigrpInternalRoutes(nodes, topologyContext, networkConfigurations);
+      initEigrpInternalRoutes(nodes, topologyContext, networkConfigurations);
 
       // OSPF internal routes
       numOspfInternalIterations = initOspfInternalRoutes(nodes, topologyContext.getOspfTopology());
@@ -575,7 +573,6 @@ class IncrementalBdpEngine {
 
       // Set iteration stats in the answer
       ae.setOspfInternalIterations(numOspfInternalIterations);
-      ae.setEigrpInternalIterations(numEigrpInternalIterations);
     }
   }
 
@@ -802,7 +799,7 @@ class IncrementalBdpEngine {
    * @param networkConfigurations All configurations in the network
    * @return the number of iterations it took for internal EIGRP routes to converge
    */
-  private static int initEigrpInternalRoutes(
+  private static void initEigrpInternalRoutes(
       Map<String, Node> nodes,
       TopologyContext topologyContext,
       NetworkConfigurations networkConfigurations) {
@@ -850,7 +847,6 @@ class IncrementalBdpEngine {
           .flatMap(n -> n.getVirtualRouters().values().stream())
           .forEach(VirtualRouter::importEigrpInternalRoutes);
     }
-    return eigrpInternalIterations;
   }
 
   /**
