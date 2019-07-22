@@ -49,12 +49,15 @@ public final class WorkMgrTestUtils {
     Main.mainInit(new String[] {"-containerslocation", folder.getRoot().toString()});
     Main.setLogger(logger);
     Main.initAuthorizer();
-    Main.setWorkMgr(
+    WorkMgr workMgr =
         new WorkMgr(
             Main.getSettings(),
             logger,
             new FileBasedIdManager(Main.getSettings().getContainersLocation()),
-            new FileBasedStorage(Main.getSettings().getContainersLocation(), logger)));
+            new FileBasedStorage(Main.getSettings().getContainersLocation(), logger));
+    // Setup some test version data
+    workMgr.getVersions().put("VersionKey", "VersionValue");
+    Main.setWorkMgr(workMgr);
   }
 
   public static void initSnapshotWithTopology(String network, String snapshot, Set<String> nodes)

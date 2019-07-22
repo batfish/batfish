@@ -8,6 +8,7 @@ import static javax.ws.rs.core.Response.Status.UNAUTHORIZED;
 import static org.glassfish.jersey.client.ClientProperties.FOLLOW_REDIRECTS;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.collection.IsMapContaining.hasEntry;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.junit.Assert.assertThat;
 
@@ -214,5 +215,20 @@ public class WorkMgrServiceV2Test extends WorkMgrServiceV2TestBase {
     assertThat(
         resp.readEntity(String.class),
         equalTo("network 'someContainer' is not accessible by the api key: AnotherApiKey"));
+  }
+
+  @Test
+  public void testGetVersion() {
+    Response response =
+        target(CoordConsts.SVC_CFG_WORK_MGR2)
+            .path(CoordConstsV2.RSC_VERSION)
+            .request()
+            .header(CoordConstsV2.HTTP_HEADER_BATFISH_VERSION, Version.getVersion())
+            .header(CoordConstsV2.HTTP_HEADER_BATFISH_APIKEY, CoordConsts.DEFAULT_API_KEY)
+            .get();
+    assertThat(response.getStatus(), equalTo(OK.getStatusCode()));
+    assertThat(
+        response.readEntity(new GenericType<Map<String, String>>() {}),
+        hasEntry("VersionKey", "VersionValue"));
   }
 }

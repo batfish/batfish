@@ -450,6 +450,8 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
   private final TopologyProvider _topologyProvider;
 
+  private final Map<String, String> _versions;
+
   public Batfish(
       Settings settings,
       Cache<NetworkSnapshot, SortedMap<String, Configuration>> cachedConfigurations,
@@ -480,6 +482,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
             ? alternateIdResolver
             : new FileBasedIdResolver(_settings.getStorageBase());
     _topologyProvider = new TopologyProviderImpl(this, _storage);
+    _versions = new HashMap<>();
     loadPlugins();
   }
 
@@ -2037,6 +2040,15 @@ public class Batfish extends PluginConsumer implements IBatfish {
                   + "  old questionClassName: %s\n"
                   + "  new questionClassName: %s",
               questionName, oldQuestionClassName, questionClassName));
+    }
+  }
+
+  @Override
+  public void registerVersion(String name, String version) {
+    String previous = _versions.putIfAbsent(name, version);
+    if (previous != null) {
+      throw new IllegalArgumentException(
+          String.format("%s already has a registered version.", name));
     }
   }
 
