@@ -308,6 +308,11 @@ BANDWIDTH
   'bandwidth'
 ;
 
+BASH_SHELL
+:
+  'bash-shell'
+;
+
 BGP
 :
   'bgp'
@@ -573,6 +578,11 @@ DESCRIPTION
 DETAIL
 :
   'detail'
+;
+
+DHCP
+:
+  'dhcp'
 ;
 
 DIRECT
@@ -1004,6 +1014,11 @@ HOSTNAME
 
 ;
 
+HSRP
+:
+  'hsrp'
+;
+
 HTTP_METHOD
 :
   'http-method'
@@ -1103,6 +1118,11 @@ INTERFACE
   )?
 ;
 
+INTERFACE_VLAN
+:
+  'interface-vlan'
+;
+
 INTERNAL
 :
   'internal'
@@ -1173,6 +1193,11 @@ L3
   'L3'
 ;
 
+LACP
+:
+  'lacp'
+;
+
 LARGE
 :
   'large'
@@ -1201,6 +1226,11 @@ LINK_LOCAL_GROUPS_SUPPRESSION
 LISP
 :
   'lisp'
+;
+
+LLDP
+:
+  'lldp'
 ;
 
 LOAD_SHARE
@@ -1756,6 +1786,11 @@ PIM_AUTO_RP
   'pim-auto-rp'
 ;
 
+PIM6
+:
+  'pim6'
+;
+
 POINT_TO_POINT
 :
   'point-to-point'
@@ -2046,6 +2081,11 @@ RST
   'rst'
 ;
 
+SCHEDULER
+:
+  'scheduler'
+;
+
 SECONDARY
 :
   'secondary'
@@ -2074,6 +2114,11 @@ SEQ
 SET
 :
   'set'
+;
+
+SFLOW
+:
+  'sflow'
 ;
 
 SHUTDOWN
@@ -2256,6 +2301,11 @@ TACACS
   'tacacs'
 ;
 
+TACACSP
+:
+  'tacacs+'
+;
+
 TAG
 :
   'tag'
@@ -2423,7 +2473,7 @@ V3_REPORT_SUPPRESSION
 
 VERSION
 :
-  'version'
+  'version' -> pushMode ( M_Remark )
 ;
 
 VIRTUAL_LINK

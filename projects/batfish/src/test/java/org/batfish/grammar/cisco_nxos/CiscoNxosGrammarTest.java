@@ -250,7 +250,7 @@ public final class CiscoNxosGrammarTest {
     String hostname = "nxos_bgp_parsing_temporary";
 
     // Just test that parser does not choke.
-    assertThat(parseVendorConfig(hostname), not(nullValue()));
+    assertThat(parseVendorConfig(hostname), notNullValue());
   }
 
   @Test
@@ -288,6 +288,12 @@ public final class CiscoNxosGrammarTest {
           vni.getImportRt(),
           equalTo(RouteDistinguisherOrAuto.of(RouteDistinguisher.from(65003, 1L))));
     }
+  }
+
+  @Test
+  public void testFeatureParsing() {
+    // TODO: make into extraction test
+    assertThat(parseVendorConfig("nxos_feature"), notNullValue());
   }
 
   @Test
