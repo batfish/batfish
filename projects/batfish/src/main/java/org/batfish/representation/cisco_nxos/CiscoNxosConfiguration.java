@@ -268,7 +268,7 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
         nxBgpVrf.getBestpathAsPathMultipathRelax() ? PATH_LENGTH : EXACT_PATH);
 
     // Process vrf-level address family configuration, such as export policy.
-    BgpVrfAddressFamilyConfiguration ipv4af = nxBgpVrf.getIpv4UnicastAddressFamily();
+    BgpVrfIpv4AddressFamilyConfiguration ipv4af = nxBgpVrf.getIpv4UnicastAddressFamily();
     if (ipv4af != null) {
       // Batfish seems to only track the IPv4 properties for multipath ebgp/ibgp.
       newBgpProcess.setMultipathEbgp(ipv4af.getMaximumPathsEbgp() > 1);
@@ -450,10 +450,10 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
               });
     }
 
-    BgpVrfAddressFamilyConfiguration ipv6af = nxBgpVrf.getIpv6UnicastAddressFamily();
+    BgpVrfIpv6AddressFamilyConfiguration ipv6af = nxBgpVrf.getIpv6UnicastAddressFamily();
     if (ipv6af != null) {
       ipv6af
-          .getIpv6Networks()
+          .getNetworks()
           .forEach(
               (prefix6, routeMapOrEmpty) -> {
                 List<BooleanExpr> exportNetworkConditions =
@@ -485,7 +485,7 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
     // Generate BGP_NETWORK6_NETWORKS filter.
     if (ipv6af != null) {
       List<Route6FilterLine> lines =
-          ipv6af.getIpv6Networks().keySet().stream()
+          ipv6af.getNetworks().keySet().stream()
               .map(p6 -> new Route6FilterLine(LineAction.PERMIT, Prefix6Range.fromPrefix6(p6)))
               .collect(ImmutableList.toImmutableList());
       Route6FilterList localFilter6 =
@@ -660,16 +660,68 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
   private void markStructures() {
     markConcreteStructure(
         CiscoNxosStructureType.INTERFACE,
+        CiscoNxosStructureUsage.BGP_NEIGHBOR_UPDATE_SOURCE,
         CiscoNxosStructureUsage.INTERFACE_SELF_REFERENCE,
         CiscoNxosStructureUsage.IP_ROUTE_NEXT_HOP_INTERFACE,
         CiscoNxosStructureUsage.NVE_SOURCE_INTERFACE);
+    markConcreteStructure(
+        CiscoNxosStructureType.IP_ACCESS_LIST,
+        CiscoNxosStructureUsage.BGP_NEIGHBOR_PREFIX_LIST_IN,
+        CiscoNxosStructureUsage.BGP_NEIGHBOR_PREFIX_LIST_OUT);
+    markConcreteStructure(
+        CiscoNxosStructureType.IP_AS_PATH_ACCESS_LIST,
+        CiscoNxosStructureUsage.BGP_NEIGHBOR_FILTER_LIST_IN,
+        CiscoNxosStructureUsage.BGP_NEIGHBOR_FILTER_LIST_OUT,
+        CiscoNxosStructureUsage.BGP_NEIGHBOR6_FILTER_LIST_IN,
+        CiscoNxosStructureUsage.BGP_NEIGHBOR6_FILTER_LIST_OUT);
+    markConcreteStructure(
+        CiscoNxosStructureType.IP_PREFIX_LIST,
+        CiscoNxosStructureUsage.ROUTE_MAP_MATCH_IP_ADDRESS_PREFIX_LIST);
+    markConcreteStructure(
+        CiscoNxosStructureType.IPV6_ACCESS_LIST,
+        CiscoNxosStructureUsage.BGP_NEIGHBOR6_PREFIX_LIST_IN,
+        CiscoNxosStructureUsage.BGP_NEIGHBOR6_PREFIX_LIST_OUT);
     markConcreteStructure(CiscoNxosStructureType.NVE, CiscoNxosStructureUsage.NVE_SELF_REFERENCE);
     markConcreteStructure(
         CiscoNxosStructureType.PORT_CHANNEL, CiscoNxosStructureUsage.INTERFACE_CHANNEL_GROUP);
     markConcreteStructure(
         CiscoNxosStructureType.ROUTE_MAP,
+        CiscoNxosStructureUsage.BGP_ADDITIONAL_PATHS_ROUTE_MAP,
+        CiscoNxosStructureUsage.BGP_ADVERTISE_MAP,
+        CiscoNxosStructureUsage.BGP_ATTRIBUTE_MAP,
+        CiscoNxosStructureUsage.BGP_DAMPENING_ROUTE_MAP,
+        CiscoNxosStructureUsage.BGP_DEFAULT_ORIGINATE_ROUTE_MAP,
+        CiscoNxosStructureUsage.BGP_EXIST_MAP,
+        CiscoNxosStructureUsage.BGP_INJECT_MAP,
+        CiscoNxosStructureUsage.BGP_NEIGHBOR_ADVERTISE_MAP,
+        CiscoNxosStructureUsage.BGP_NEIGHBOR_EXIST_MAP,
+        CiscoNxosStructureUsage.BGP_NEIGHBOR_NON_EXIST_MAP,
+        CiscoNxosStructureUsage.BGP_NEIGHBOR_REMOTE_AS_ROUTE_MAP,
+        CiscoNxosStructureUsage.BGP_NEIGHBOR_ROUTE_MAP_IN,
+        CiscoNxosStructureUsage.BGP_NEIGHBOR_ROUTE_MAP_OUT,
+        CiscoNxosStructureUsage.BGP_NETWORK_ROUTE_MAP,
+        CiscoNxosStructureUsage.BGP_NEXTHOP_ROUTE_MAP,
+        CiscoNxosStructureUsage.BGP_REDISTRIBUTE_DIRECT_ROUTE_MAP,
+        CiscoNxosStructureUsage.BGP_REDISTRIBUTE_EIGRP_ROUTE_MAP,
+        CiscoNxosStructureUsage.BGP_REDISTRIBUTE_ISIS_ROUTE_MAP,
+        CiscoNxosStructureUsage.BGP_REDISTRIBUTE_LISP_ROUTE_MAP,
+        CiscoNxosStructureUsage.BGP_REDISTRIBUTE_OSPF_ROUTE_MAP,
+        CiscoNxosStructureUsage.BGP_REDISTRIBUTE_RIP_ROUTE_MAP,
+        CiscoNxosStructureUsage.BGP_REDISTRIBUTE_STATIC_ROUTE_MAP,
+        CiscoNxosStructureUsage.BGP_SUPPRESS_MAP,
+        CiscoNxosStructureUsage.BGP_TABLE_MAP,
+        CiscoNxosStructureUsage.BGP_UNSUPPRESS_MAP,
         CiscoNxosStructureUsage.OSPF_AREA_FILTER_LIST_IN,
         CiscoNxosStructureUsage.OSPF_AREA_FILTER_LIST_OUT);
+    markConcreteStructure(
+        CiscoNxosStructureType.BGP_TEMPLATE_PEER,
+        CiscoNxosStructureUsage.BGP_NEIGHBOR_INHERIT_PEER);
+    markConcreteStructure(
+        CiscoNxosStructureType.BGP_TEMPLATE_PEER_POLICY,
+        CiscoNxosStructureUsage.BGP_NEIGHBOR_INHERIT_PEER_POLICY);
+    markConcreteStructure(
+        CiscoNxosStructureType.BGP_TEMPLATE_PEER_SESSION,
+        CiscoNxosStructureUsage.BGP_NEIGHBOR_INHERIT_PEER_SESSION);
     markConcreteStructure(CiscoNxosStructureType.VLAN, CiscoNxosStructureUsage.INTERFACE_VLAN);
     markConcreteStructure(
         CiscoNxosStructureType.VRF,

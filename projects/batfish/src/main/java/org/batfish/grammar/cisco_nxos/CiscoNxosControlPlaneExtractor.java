@@ -50,7 +50,6 @@ import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.BGP_
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.BGP_REDISTRIBUTE_EIGRP_ROUTE_MAP;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.BGP_REDISTRIBUTE_ISIS_ROUTE_MAP;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.BGP_REDISTRIBUTE_LISP_ROUTE_MAP;
-import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.BGP_REDISTRIBUTE_OSPFV3_ROUTE_MAP;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.BGP_REDISTRIBUTE_OSPF_ROUTE_MAP;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.BGP_REDISTRIBUTE_RIP_ROUTE_MAP;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.BGP_REDISTRIBUTE_STATIC_ROUTE_MAP;
@@ -65,6 +64,7 @@ import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.IP_R
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.IP_ROUTE_NEXT_HOP_VRF;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.NVE_SELF_REFERENCE;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.NVE_SOURCE_INTERFACE;
+import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.ROUTE_MAP_MATCH_IP_ADDRESS_PREFIX_LIST;
 import static org.batfish.representation.cisco_nxos.Interface.VLAN_RANGE;
 import static org.batfish.representation.cisco_nxos.Interface.newNonVlanInterface;
 import static org.batfish.representation.cisco_nxos.Interface.newVlanInterface;
@@ -227,29 +227,34 @@ import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Ospf_area_range_costContex
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Packet_lengthContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Pl_actionContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Pl_descriptionContext;
-import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Rb_address_familyContext;
-import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Rb_af_aa_tailContext;
-import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Rb_af_additional_pathsContext;
-import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Rb_af_aggregate_addressContext;
-import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Rb_af_client_to_clientContext;
-import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Rb_af_dampeningContext;
-import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Rb_af_default_informationContext;
-import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Rb_af_default_metricContext;
-import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Rb_af_distanceContext;
-import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Rb_af_inject_mapContext;
-import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Rb_af_maximum_pathsContext;
-import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Rb_af_networkContext;
-import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Rb_af_nexthop_route_mapContext;
-import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Rb_af_redistribute_directContext;
-import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Rb_af_redistribute_eigrpContext;
-import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Rb_af_redistribute_isisContext;
-import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Rb_af_redistribute_lispContext;
-import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Rb_af_redistribute_ospfContext;
-import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Rb_af_redistribute_ospfv3Context;
-import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Rb_af_redistribute_ripContext;
-import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Rb_af_redistribute_staticContext;
-import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Rb_af_suppress_inactiveContext;
-import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Rb_af_table_mapContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Rb_af4_aggregate_addressContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Rb_af4_networkContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Rb_af4_redistribute_ospfContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Rb_af6_aggregate_addressContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Rb_af6_networkContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Rb_af6_redistribute_ospfv3Context;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Rb_af_ipv4_multicastContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Rb_af_ipv4_unicastContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Rb_af_ipv6_multicastContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Rb_af_ipv6_unicastContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Rb_afip_aa_tailContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Rb_afip_additional_pathsContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Rb_afip_client_to_clientContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Rb_afip_dampeningContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Rb_afip_default_informationContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Rb_afip_default_metricContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Rb_afip_distanceContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Rb_afip_inject_mapContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Rb_afip_maximum_pathsContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Rb_afip_nexthop_route_mapContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Rb_afip_redistribute_directContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Rb_afip_redistribute_eigrpContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Rb_afip_redistribute_isisContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Rb_afip_redistribute_lispContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Rb_afip_redistribute_ripContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Rb_afip_redistribute_staticContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Rb_afip_suppress_inactiveContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Rb_afip_table_mapContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Rb_bestpathContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Rb_cluster_idContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Rb_confederation_identifierContext;
@@ -372,7 +377,11 @@ import org.batfish.representation.cisco_nxos.AddrGroupIpAddressSpec;
 import org.batfish.representation.cisco_nxos.AddressFamily;
 import org.batfish.representation.cisco_nxos.BgpVrfAddressFamilyAggregateNetworkConfiguration;
 import org.batfish.representation.cisco_nxos.BgpVrfAddressFamilyConfiguration;
+import org.batfish.representation.cisco_nxos.BgpVrfAddressFamilyConfiguration.Type;
 import org.batfish.representation.cisco_nxos.BgpVrfConfiguration;
+import org.batfish.representation.cisco_nxos.BgpVrfIpAddressFamilyConfiguration;
+import org.batfish.representation.cisco_nxos.BgpVrfIpv4AddressFamilyConfiguration;
+import org.batfish.representation.cisco_nxos.BgpVrfIpv6AddressFamilyConfiguration;
 import org.batfish.representation.cisco_nxos.BgpVrfNeighborAddressFamilyConfiguration;
 import org.batfish.representation.cisco_nxos.BgpVrfNeighborConfiguration;
 import org.batfish.representation.cisco_nxos.BgpVrfNeighborConfiguration.RemovePrivateAsMode;
@@ -692,7 +701,7 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
   private CiscoNxosConfiguration _configuration;
   private ActionIpAccessListLine.Builder _currentActionIpAccessListLineBuilder;
   private Boolean _currentActionIpAccessListLineUnusable;
-  private BgpVrfAddressFamilyConfiguration _currentBgpVrfAddressFamily;
+  private BgpVrfIpAddressFamilyConfiguration _currentBgpVrfIpAddressFamily;
   private BgpVrfAddressFamilyAggregateNetworkConfiguration
       _currentBgpVrfAddressFamilyAggregateNetwork;
   private BgpVrfConfiguration _currentBgpVrfConfiguration;
@@ -1464,36 +1473,154 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
   }
 
   @Override
-  public void enterRb_address_family(Rb_address_familyContext ctx) {
-    String familyStr = ctx.first.getText() + '-' + ctx.second.getText();
-    _currentBgpVrfAddressFamily = _currentBgpVrfConfiguration.getOrCreateAddressFamily(familyStr);
+  public void enterRb_af_ipv4_multicast(Rb_af_ipv4_multicastContext ctx) {
+    BgpVrfAddressFamilyConfiguration af =
+        _currentBgpVrfConfiguration.getOrCreateAddressFamily(Type.IPV4_MULTICAST);
+    assert af instanceof BgpVrfIpv4AddressFamilyConfiguration;
+    _currentBgpVrfIpAddressFamily = (BgpVrfIpAddressFamilyConfiguration) af;
   }
 
   @Override
-  public void exitRb_address_family(Rb_address_familyContext ctx) {
-    _currentBgpVrfAddressFamily = null;
+  public void exitRb_af_ipv4_multicast(Rb_af_ipv4_multicastContext ctx) {
+    _currentBgpVrfIpAddressFamily = null;
   }
 
   @Override
-  public void enterRb_af_aggregate_address(Rb_af_aggregate_addressContext ctx) {
-    if (ctx.network != null) {
-      Prefix prefix = toPrefix(ctx.network);
-      _currentBgpVrfAddressFamilyAggregateNetwork =
-          _currentBgpVrfAddressFamily.getOrCreateAggregateNetwork(prefix);
-    } else if (ctx.prefix6 != null) {
-      Prefix6 prefix = toPrefix6(ctx.prefix6);
-      _currentBgpVrfAddressFamilyAggregateNetwork =
-          _currentBgpVrfAddressFamily.getOrCreateAggregateNetwork(prefix);
-    }
+  public void enterRb_af_ipv4_unicast(Rb_af_ipv4_unicastContext ctx) {
+    BgpVrfAddressFamilyConfiguration af =
+        _currentBgpVrfConfiguration.getOrCreateAddressFamily(Type.IPV4_UNICAST);
+    assert af instanceof BgpVrfIpv4AddressFamilyConfiguration;
+    _currentBgpVrfIpAddressFamily = (BgpVrfIpAddressFamilyConfiguration) af;
   }
 
   @Override
-  public void exitRb_af_aggregate_address(Rb_af_aggregate_addressContext ctx) {
+  public void exitRb_af_ipv4_unicast(Rb_af_ipv4_unicastContext ctx) {
+    _currentBgpVrfIpAddressFamily = null;
+  }
+
+  @Override
+  public void enterRb_af4_aggregate_address(Rb_af4_aggregate_addressContext ctx) {
+    assert _currentBgpVrfIpAddressFamily instanceof BgpVrfIpv4AddressFamilyConfiguration;
+    BgpVrfIpv4AddressFamilyConfiguration afConfig =
+        (BgpVrfIpv4AddressFamilyConfiguration) _currentBgpVrfIpAddressFamily;
+    Prefix prefix = toPrefix(ctx.network);
+    _currentBgpVrfAddressFamilyAggregateNetwork = afConfig.getOrCreateAggregateNetwork(prefix);
+  }
+
+  @Override
+  public void exitRb_af4_aggregate_address(Rb_af4_aggregate_addressContext ctx) {
     _currentBgpVrfAddressFamilyAggregateNetwork = null;
   }
 
   @Override
-  public void exitRb_af_aa_tail(Rb_af_aa_tailContext ctx) {
+  public void exitRb_af4_network(Rb_af4_networkContext ctx) {
+    assert _currentBgpVrfIpAddressFamily instanceof BgpVrfIpv4AddressFamilyConfiguration;
+    BgpVrfIpv4AddressFamilyConfiguration afConfig =
+        (BgpVrfIpv4AddressFamilyConfiguration) _currentBgpVrfIpAddressFamily;
+    String mapname = "";
+    if (ctx.mapname != null) {
+      Optional<String> nameOrError = toString(ctx, ctx.mapname);
+      if (!nameOrError.isPresent()) {
+        return;
+      }
+      mapname = nameOrError.get();
+      _configuration.referenceStructure(
+          ROUTE_MAP, mapname, BGP_NETWORK_ROUTE_MAP, ctx.getStart().getLine());
+    }
+
+    Prefix prefix = toPrefix(ctx.network);
+    afConfig.addIpNetwork(prefix, mapname);
+  }
+
+  @Override
+  public void exitRb_af4_redistribute_ospf(Rb_af4_redistribute_ospfContext ctx) {
+    Optional<String> nameOrError = toString(ctx, ctx.mapname);
+    if (!nameOrError.isPresent()) {
+      return;
+    }
+    String name = nameOrError.get();
+    String sourceTag = ctx.source_tag.getText();
+    _configuration.referenceStructure(
+        ROUTE_MAP, name, BGP_REDISTRIBUTE_OSPF_ROUTE_MAP, ctx.getStart().getLine());
+    _currentBgpVrfIpAddressFamily.setRedistributionPolicy(RoutingProtocol.OSPF, name, sourceTag);
+  }
+
+  @Override
+  public void enterRb_af_ipv6_multicast(Rb_af_ipv6_multicastContext ctx) {
+    BgpVrfAddressFamilyConfiguration af =
+        _currentBgpVrfConfiguration.getOrCreateAddressFamily(Type.IPV6_MULTICAST);
+    assert af instanceof BgpVrfIpv6AddressFamilyConfiguration;
+    _currentBgpVrfIpAddressFamily = (BgpVrfIpAddressFamilyConfiguration) af;
+  }
+
+  @Override
+  public void exitRb_af_ipv6_multicast(Rb_af_ipv6_multicastContext ctx) {
+    _currentBgpVrfIpAddressFamily = null;
+  }
+
+  @Override
+  public void enterRb_af_ipv6_unicast(Rb_af_ipv6_unicastContext ctx) {
+    BgpVrfAddressFamilyConfiguration af =
+        _currentBgpVrfConfiguration.getOrCreateAddressFamily(Type.IPV6_UNICAST);
+    assert af instanceof BgpVrfIpv6AddressFamilyConfiguration;
+    _currentBgpVrfIpAddressFamily = (BgpVrfIpAddressFamilyConfiguration) af;
+  }
+
+  @Override
+  public void exitRb_af_ipv6_unicast(Rb_af_ipv6_unicastContext ctx) {
+    _currentBgpVrfIpAddressFamily = null;
+  }
+
+  @Override
+  public void enterRb_af6_aggregate_address(Rb_af6_aggregate_addressContext ctx) {
+    Prefix6 prefix = toPrefix6(ctx.network);
+
+    assert _currentBgpVrfIpAddressFamily instanceof BgpVrfIpv6AddressFamilyConfiguration;
+    BgpVrfIpv6AddressFamilyConfiguration afConfig =
+        (BgpVrfIpv6AddressFamilyConfiguration) _currentBgpVrfIpAddressFamily;
+    _currentBgpVrfAddressFamilyAggregateNetwork = afConfig.getOrCreateAggregateNetwork(prefix);
+  }
+
+  @Override
+  public void exitRb_af6_aggregate_address(Rb_af6_aggregate_addressContext ctx) {
+    _currentBgpVrfAddressFamilyAggregateNetwork = null;
+  }
+
+  @Override
+  public void exitRb_af6_network(Rb_af6_networkContext ctx) {
+    String mapname = "";
+    if (ctx.mapname != null) {
+      Optional<String> nameOrError = toString(ctx, ctx.mapname);
+      if (!nameOrError.isPresent()) {
+        return;
+      }
+      mapname = nameOrError.get();
+      _configuration.referenceStructure(
+          ROUTE_MAP, mapname, BGP_NETWORK_ROUTE_MAP, ctx.getStart().getLine());
+    }
+
+    Prefix6 prefix = toPrefix6(ctx.network);
+    assert _currentBgpVrfIpAddressFamily instanceof BgpVrfIpv6AddressFamilyConfiguration;
+    BgpVrfIpv6AddressFamilyConfiguration afConfig =
+        (BgpVrfIpv6AddressFamilyConfiguration) _currentBgpVrfIpAddressFamily;
+    afConfig.addNetwork(prefix, mapname);
+  }
+
+  @Override
+  public void exitRb_af6_redistribute_ospfv3(Rb_af6_redistribute_ospfv3Context ctx) {
+    Optional<String> nameOrError = toString(ctx, ctx.mapname);
+    if (!nameOrError.isPresent()) {
+      return;
+    }
+    String name = nameOrError.get();
+    String sourceTag = ctx.source_tag.getText();
+    _configuration.referenceStructure(
+        ROUTE_MAP, name, BGP_REDISTRIBUTE_OSPF_ROUTE_MAP, ctx.getStart().getLine());
+    _currentBgpVrfIpAddressFamily.setRedistributionPolicy(RoutingProtocol.OSPF, name, sourceTag);
+  }
+
+  @Override
+  public void exitRb_afip_aa_tail(Rb_afip_aa_tailContext ctx) {
     int line = ctx.getStart().getLine();
     if (ctx.ADVERTISE_MAP() != null) {
       Optional<String> nameOrError = toString(ctx, ctx.mapname);
@@ -1527,7 +1654,7 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
   }
 
   @Override
-  public void exitRb_af_additional_paths(Rb_af_additional_pathsContext ctx) {
+  public void exitRb_afip_additional_paths(Rb_afip_additional_pathsContext ctx) {
     todo(ctx);
     if (ctx.mapname != null) {
       toString(ctx, ctx.mapname)
@@ -1539,12 +1666,12 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
   }
 
   @Override
-  public void exitRb_af_client_to_client(Rb_af_client_to_clientContext ctx) {
-    _currentBgpVrfAddressFamily.setClientToClientReflection(true);
+  public void exitRb_afip_client_to_client(Rb_afip_client_to_clientContext ctx) {
+    _currentBgpVrfIpAddressFamily.setClientToClientReflection(true);
   }
 
   @Override
-  public void exitRb_af_dampening(Rb_af_dampeningContext ctx) {
+  public void exitRb_afip_dampening(Rb_afip_dampeningContext ctx) {
     todo(ctx);
     if (ctx.mapname != null) {
       toString(ctx, ctx.mapname)
@@ -1556,31 +1683,31 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
   }
 
   @Override
-  public void exitRb_af_default_metric(Rb_af_default_metricContext ctx) {
+  public void exitRb_afip_default_metric(Rb_afip_default_metricContext ctx) {
     long metric = toLong(ctx.metric);
-    _currentBgpVrfAddressFamily.setDefaultMetric(metric);
+    _currentBgpVrfIpAddressFamily.setDefaultMetric(metric);
   }
 
   @Override
-  public void exitRb_af_default_information(Rb_af_default_informationContext ctx) {
-    _currentBgpVrfAddressFamily.setDefaultInformationOriginate(true);
+  public void exitRb_afip_default_information(Rb_afip_default_informationContext ctx) {
+    _currentBgpVrfIpAddressFamily.setDefaultInformationOriginate(true);
   }
 
   @Override
-  public void exitRb_af_distance(Rb_af_distanceContext ctx) {
+  public void exitRb_afip_distance(Rb_afip_distanceContext ctx) {
     Optional<Integer> ebgp = toInteger(ctx, ctx.ebgp);
     Optional<Integer> ibgp = toInteger(ctx, ctx.ibgp);
     Optional<Integer> local = toInteger(ctx, ctx.local);
     if (!ebgp.isPresent() || !ibgp.isPresent() || !local.isPresent()) {
       return;
     }
-    _currentBgpVrfAddressFamily.setDistanceEbgp(ebgp.get());
-    _currentBgpVrfAddressFamily.setDistanceIbgp(ibgp.get());
-    _currentBgpVrfAddressFamily.setDistanceLocal(local.get());
+    _currentBgpVrfIpAddressFamily.setDistanceEbgp(ebgp.get());
+    _currentBgpVrfIpAddressFamily.setDistanceIbgp(ibgp.get());
+    _currentBgpVrfIpAddressFamily.setDistanceLocal(local.get());
   }
 
   @Override
-  public void exitRb_af_inject_map(Rb_af_inject_mapContext ctx) {
+  public void exitRb_afip_inject_map(Rb_afip_inject_mapContext ctx) {
     Optional<String> injectMap = toString(ctx, ctx.injectmap);
     Optional<String> existMap = toString(ctx, ctx.existmap);
     if (!injectMap.isPresent() || !existMap.isPresent()) {
@@ -1594,46 +1721,24 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
   }
 
   @Override
-  public void exitRb_af_maximum_paths(Rb_af_maximum_pathsContext ctx) {
+  public void exitRb_afip_maximum_paths(Rb_afip_maximum_pathsContext ctx) {
     Optional<Integer> limitOrError = toInteger(ctx, ctx.numpaths);
     if (!limitOrError.isPresent()) {
       return;
     }
     int limit = limitOrError.get();
     if (ctx.IBGP() != null) {
-      _currentBgpVrfAddressFamily.setMaximumPathsIbgp(limit);
+      _currentBgpVrfIpAddressFamily.setMaximumPathsIbgp(limit);
     } else if (ctx.EIBGP() != null) {
-      _currentBgpVrfAddressFamily.setMaximumPathsEbgp(limit);
-      _currentBgpVrfAddressFamily.setMaximumPathsIbgp(limit);
+      _currentBgpVrfIpAddressFamily.setMaximumPathsEbgp(limit);
+      _currentBgpVrfIpAddressFamily.setMaximumPathsIbgp(limit);
     } else {
-      _currentBgpVrfAddressFamily.setMaximumPathsEbgp(limit);
+      _currentBgpVrfIpAddressFamily.setMaximumPathsEbgp(limit);
     }
   }
 
   @Override
-  public void exitRb_af_network(Rb_af_networkContext ctx) {
-    String mapname = "";
-    if (ctx.mapname != null) {
-      Optional<String> nameOrError = toString(ctx, ctx.mapname);
-      if (!nameOrError.isPresent()) {
-        return;
-      }
-      mapname = nameOrError.get();
-      _configuration.referenceStructure(
-          ROUTE_MAP, mapname, BGP_NETWORK_ROUTE_MAP, ctx.getStart().getLine());
-    }
-
-    if (ctx.network != null) {
-      Prefix prefix = toPrefix(ctx.network);
-      _currentBgpVrfAddressFamily.addIpNetwork(prefix, mapname);
-    } else if (ctx.prefix6 != null) {
-      Prefix6 prefix = toPrefix6(ctx.prefix6);
-      _currentBgpVrfAddressFamily.addIpv6Network(prefix, mapname);
-    }
-  }
-
-  @Override
-  public void exitRb_af_nexthop_route_map(Rb_af_nexthop_route_mapContext ctx) {
+  public void exitRb_afip_nexthop_route_map(Rb_afip_nexthop_route_mapContext ctx) {
     todo(ctx);
     toString(ctx, ctx.mapname)
         .ifPresent(
@@ -1643,7 +1748,7 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
   }
 
   @Override
-  public void exitRb_af_redistribute_direct(Rb_af_redistribute_directContext ctx) {
+  public void exitRb_afip_redistribute_direct(Rb_afip_redistribute_directContext ctx) {
     Optional<String> nameOrError = toString(ctx, ctx.mapname);
     if (!nameOrError.isPresent()) {
       return;
@@ -1651,11 +1756,11 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
     String name = nameOrError.get();
     _configuration.referenceStructure(
         ROUTE_MAP, name, BGP_REDISTRIBUTE_DIRECT_ROUTE_MAP, ctx.getStart().getLine());
-    _currentBgpVrfAddressFamily.setRedistributionPolicy(RoutingProtocol.CONNECTED, name, null);
+    _currentBgpVrfIpAddressFamily.setRedistributionPolicy(RoutingProtocol.CONNECTED, name, null);
   }
 
   @Override
-  public void exitRb_af_redistribute_eigrp(Rb_af_redistribute_eigrpContext ctx) {
+  public void exitRb_afip_redistribute_eigrp(Rb_afip_redistribute_eigrpContext ctx) {
     Optional<String> nameOrError = toString(ctx, ctx.mapname);
     if (!nameOrError.isPresent()) {
       return;
@@ -1664,11 +1769,11 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
     String sourceTag = ctx.source_tag.getText();
     _configuration.referenceStructure(
         ROUTE_MAP, name, BGP_REDISTRIBUTE_EIGRP_ROUTE_MAP, ctx.getStart().getLine());
-    _currentBgpVrfAddressFamily.setRedistributionPolicy(RoutingProtocol.EIGRP, name, sourceTag);
+    _currentBgpVrfIpAddressFamily.setRedistributionPolicy(RoutingProtocol.EIGRP, name, sourceTag);
   }
 
   @Override
-  public void exitRb_af_redistribute_isis(Rb_af_redistribute_isisContext ctx) {
+  public void exitRb_afip_redistribute_isis(Rb_afip_redistribute_isisContext ctx) {
     Optional<String> nameOrError = toString(ctx, ctx.mapname);
     if (!nameOrError.isPresent()) {
       return;
@@ -1677,11 +1782,12 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
     String sourceTag = ctx.source_tag.getText();
     _configuration.referenceStructure(
         ROUTE_MAP, name, BGP_REDISTRIBUTE_ISIS_ROUTE_MAP, ctx.getStart().getLine());
-    _currentBgpVrfAddressFamily.setRedistributionPolicy(RoutingProtocol.ISIS_ANY, name, sourceTag);
+    _currentBgpVrfIpAddressFamily.setRedistributionPolicy(
+        RoutingProtocol.ISIS_ANY, name, sourceTag);
   }
 
   @Override
-  public void exitRb_af_redistribute_lisp(Rb_af_redistribute_lispContext ctx) {
+  public void exitRb_afip_redistribute_lisp(Rb_afip_redistribute_lispContext ctx) {
     Optional<String> nameOrError = toString(ctx, ctx.mapname);
     if (!nameOrError.isPresent()) {
       return;
@@ -1689,37 +1795,11 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
     String name = nameOrError.get();
     _configuration.referenceStructure(
         ROUTE_MAP, name, BGP_REDISTRIBUTE_LISP_ROUTE_MAP, ctx.getStart().getLine());
-    _currentBgpVrfAddressFamily.setRedistributionPolicy(RoutingProtocol.LISP, name, null);
+    _currentBgpVrfIpAddressFamily.setRedistributionPolicy(RoutingProtocol.LISP, name, null);
   }
 
   @Override
-  public void exitRb_af_redistribute_ospf(Rb_af_redistribute_ospfContext ctx) {
-    Optional<String> nameOrError = toString(ctx, ctx.mapname);
-    if (!nameOrError.isPresent()) {
-      return;
-    }
-    String name = nameOrError.get();
-    String sourceTag = ctx.source_tag.getText();
-    _configuration.referenceStructure(
-        ROUTE_MAP, name, BGP_REDISTRIBUTE_OSPF_ROUTE_MAP, ctx.getStart().getLine());
-    _currentBgpVrfAddressFamily.setRedistributionPolicy(RoutingProtocol.OSPF, name, sourceTag);
-  }
-
-  @Override
-  public void exitRb_af_redistribute_ospfv3(Rb_af_redistribute_ospfv3Context ctx) {
-    Optional<String> nameOrError = toString(ctx, ctx.mapname);
-    if (!nameOrError.isPresent()) {
-      return;
-    }
-    String name = nameOrError.get();
-    String sourceTag = ctx.source_tag.getText();
-    _configuration.referenceStructure(
-        ROUTE_MAP, name, BGP_REDISTRIBUTE_OSPFV3_ROUTE_MAP, ctx.getStart().getLine());
-    _currentBgpVrfAddressFamily.setRedistributionPolicy(RoutingProtocol.OSPF3, name, sourceTag);
-  }
-
-  @Override
-  public void exitRb_af_redistribute_rip(Rb_af_redistribute_ripContext ctx) {
+  public void exitRb_afip_redistribute_rip(Rb_afip_redistribute_ripContext ctx) {
     Optional<String> nameOrError = toString(ctx, ctx.mapname);
     if (!nameOrError.isPresent()) {
       return;
@@ -1728,11 +1808,11 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
     String sourceTag = ctx.source_tag.getText();
     _configuration.referenceStructure(
         ROUTE_MAP, name, BGP_REDISTRIBUTE_RIP_ROUTE_MAP, ctx.getStart().getLine());
-    _currentBgpVrfAddressFamily.setRedistributionPolicy(RoutingProtocol.RIP, name, sourceTag);
+    _currentBgpVrfIpAddressFamily.setRedistributionPolicy(RoutingProtocol.RIP, name, sourceTag);
   }
 
   @Override
-  public void exitRb_af_redistribute_static(Rb_af_redistribute_staticContext ctx) {
+  public void exitRb_afip_redistribute_static(Rb_afip_redistribute_staticContext ctx) {
     Optional<String> nameOrError = toString(ctx, ctx.mapname);
     if (!nameOrError.isPresent()) {
       return;
@@ -1740,16 +1820,16 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
     String name = nameOrError.get();
     _configuration.referenceStructure(
         ROUTE_MAP, name, BGP_REDISTRIBUTE_STATIC_ROUTE_MAP, ctx.getStart().getLine());
-    _currentBgpVrfAddressFamily.setRedistributionPolicy(RoutingProtocol.STATIC, name, null);
+    _currentBgpVrfIpAddressFamily.setRedistributionPolicy(RoutingProtocol.STATIC, name, null);
   }
 
   @Override
-  public void exitRb_af_suppress_inactive(Rb_af_suppress_inactiveContext ctx) {
-    _currentBgpVrfAddressFamily.setSuppressInactive(true);
+  public void exitRb_afip_suppress_inactive(Rb_afip_suppress_inactiveContext ctx) {
+    _currentBgpVrfIpAddressFamily.setSuppressInactive(true);
   }
 
   @Override
-  public void exitRb_af_table_map(Rb_af_table_mapContext ctx) {
+  public void exitRb_afip_table_map(Rb_afip_table_mapContext ctx) {
     Optional<String> nameOrError = toString(ctx, ctx.mapname);
     if (!nameOrError.isPresent()) {
       return;
@@ -3252,11 +3332,17 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
     Optional.ofNullable(_currentRouteMapEntry.getMatchIpAddressPrefixList())
         .ifPresent(old -> names.addAll(old.getNames()));
     for (Ip_prefix_list_nameContext nameCtx : ctx.names) {
-      Optional<String> name = toString(ctx, nameCtx);
-      if (!name.isPresent()) {
+      Optional<String> nameOrError = toString(ctx, nameCtx);
+      if (!nameOrError.isPresent()) {
         return;
       }
-      names.add(name.get());
+      String name = nameOrError.get();
+      _configuration.referenceStructure(
+          IP_PREFIX_LIST,
+          name,
+          ROUTE_MAP_MATCH_IP_ADDRESS_PREFIX_LIST,
+          nameCtx.getStart().getLine());
+      names.add(name);
     }
     _currentRouteMapEntry.setMatchIpAddressPrefixList(
         new RouteMapMatchIpAddressPrefixList(names.build()));
