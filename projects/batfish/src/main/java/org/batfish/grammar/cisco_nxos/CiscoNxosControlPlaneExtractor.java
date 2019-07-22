@@ -1047,24 +1047,29 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
 
   @Override
   public void exitRb_af_distance(Rb_af_distanceContext ctx) {
-    toInteger(ctx, ctx.ebgp).ifPresent(_currentBgpVrfAddressFamily::setDistanceEbgp);
-    toInteger(ctx, ctx.ibgp).ifPresent(_currentBgpVrfAddressFamily::setDistanceIbgp);
-    toInteger(ctx, ctx.local).ifPresent(_currentBgpVrfAddressFamily::setDistanceLocal);
+    Optional<Integer> ebgp = toInteger(ctx, ctx.ebgp);
+    Optional<Integer> ibgp = toInteger(ctx, ctx.ibgp);
+    Optional<Integer> local = toInteger(ctx, ctx.local);
+    if (!ebgp.isPresent() || !ibgp.isPresent() || !local.isPresent()) {
+      return;
+    }
+    _currentBgpVrfAddressFamily.setDistanceEbgp(ebgp.get());
+    _currentBgpVrfAddressFamily.setDistanceIbgp(ibgp.get());
+    _currentBgpVrfAddressFamily.setDistanceLocal(local.get());
   }
 
   @Override
   public void exitRb_af_inject_map(Rb_af_inject_mapContext ctx) {
-    toString(ctx, ctx.injectmap)
-        .ifPresent(
-            name ->
-                _configuration.referenceStructure(
-                    ROUTE_MAP, name, BGP_INJECT_MAP, ctx.getStart().getLine()));
-
-    toString(ctx, ctx.existmap)
-        .ifPresent(
-            name ->
-                _configuration.referenceStructure(
-                    ROUTE_MAP, name, BGP_EXIST_MAP, ctx.getStart().getLine()));
+    todo(ctx);
+    Optional<String> injectMap = toString(ctx, ctx.injectmap);
+    Optional<String> existMap = toString(ctx, ctx.existmap);
+    if (!injectMap.isPresent() || !existMap.isPresent()) {
+      return;
+    }
+    _configuration.referenceStructure(
+        ROUTE_MAP, injectMap.get(), BGP_INJECT_MAP, ctx.getStart().getLine());
+    _configuration.referenceStructure(
+        ROUTE_MAP, existMap.get(), BGP_EXIST_MAP, ctx.getStart().getLine());
   }
 
   @Override
@@ -1287,8 +1292,7 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
 
   @Override
   public void exitRb_maxas_limit(Rb_maxas_limitContext ctx) {
-    Optional<Integer> limit = toInteger(ctx, ctx.limit);
-    limit.ifPresent(_currentBgpVrfConfiguration::setMaxasLimit);
+    toInteger(ctx, ctx.limit).ifPresent(_currentBgpVrfConfiguration::setMaxasLimit);
   }
 
   @Override
@@ -1347,27 +1351,26 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
   @Override
   public void exitRb_n_af_advertise_map(Rb_n_af_advertise_mapContext ctx) {
     todo(ctx);
-    toString(ctx, ctx.mapname)
-        .ifPresent(
-            name ->
-                _configuration.referenceStructure(
-                    ROUTE_MAP, name, BGP_NEIGHBOR_ADVERTISE_MAP, ctx.getStart().getLine()));
-
-    if (ctx.EXIST_MAP() != null) {
-      toString(ctx, ctx.existmap)
-          .ifPresent(
-              name ->
-                  _configuration.referenceStructure(
-                      ROUTE_MAP, name, BGP_NEIGHBOR_EXIST_MAP, ctx.getStart().getLine()));
+    Optional<String> advMap = toString(ctx, ctx.mapname);
+    Optional<String> existMap =
+        ctx.EXIST_MAP() != null ? toString(ctx, ctx.existmap) : Optional.empty();
+    Optional<String> nonExistMap =
+        ctx.NON_EXIST_MAP() != null ? toString(ctx, ctx.nonexistmap) : Optional.empty();
+    if (!advMap.isPresent()
+        || ctx.EXIST_MAP() != null && !existMap.isPresent()
+        || ctx.NON_EXIST_MAP() != null && !nonExistMap.isPresent()) {
+      return;
     }
-
-    if (ctx.NON_EXIST_MAP() != null) {
-      toString(ctx, ctx.nonexistmap)
-          .ifPresent(
-              name ->
-                  _configuration.referenceStructure(
-                      ROUTE_MAP, name, BGP_NEIGHBOR_NON_EXIST_MAP, ctx.getStart().getLine()));
-    }
+    _configuration.referenceStructure(
+        ROUTE_MAP, advMap.get(), BGP_NEIGHBOR_ADVERTISE_MAP, ctx.getStart().getLine());
+    existMap.ifPresent(
+        name ->
+            _configuration.referenceStructure(
+                ROUTE_MAP, name, BGP_NEIGHBOR_EXIST_MAP, ctx.getStart().getLine()));
+    nonExistMap.ifPresent(
+        name ->
+            _configuration.referenceStructure(
+                ROUTE_MAP, name, BGP_NEIGHBOR_NON_EXIST_MAP, ctx.getStart().getLine()));
   }
 
   @Override
