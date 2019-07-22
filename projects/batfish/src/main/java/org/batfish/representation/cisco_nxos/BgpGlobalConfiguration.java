@@ -3,6 +3,7 @@ package org.batfish.representation.cisco_nxos;
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.common.Warnings;
 
@@ -19,6 +20,7 @@ public final class BgpGlobalConfiguration implements Serializable {
     _templatePeers = new HashMap<>();
     _templatePeerPolicies = new HashMap<>();
     _templatePeerSessions = new HashMap<>();
+    _vrfs = new HashMap<>();
   }
 
   public boolean getEnforceFirstAs() {
@@ -35,6 +37,10 @@ public final class BgpGlobalConfiguration implements Serializable {
 
   public void setLocalAs(long localAs) {
     this._localAs = localAs;
+  }
+
+  public @Nonnull BgpVrfConfiguration getOrCreateVrf(String vrfName) {
+    return _vrfs.computeIfAbsent(vrfName, name -> new BgpVrfConfiguration());
   }
 
   public BgpVrfNeighborConfiguration getOrCreateTemplatePeer(String name) {
@@ -76,4 +82,5 @@ public final class BgpGlobalConfiguration implements Serializable {
   private final Map<String, BgpVrfNeighborConfiguration> _templatePeers;
   private final Map<String, BgpVrfNeighborAddressFamilyConfiguration> _templatePeerPolicies;
   private final Map<String, BgpVrfNeighborConfiguration> _templatePeerSessions;
+  private final Map<String, BgpVrfConfiguration> _vrfs;
 }

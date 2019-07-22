@@ -26,13 +26,6 @@ public final class Vrf implements Serializable {
     return _addressFamilies.computeIfAbsent(type, VrfAddressFamily::new);
   }
 
-  public BgpVrfConfiguration getBgpConfig() {
-    if (_bgpConfig == null) {
-      _bgpConfig = new BgpVrfConfiguration();
-    }
-    return _bgpConfig;
-  }
-
   public @Nonnull String getName() {
     return _name;
   }
@@ -70,7 +63,6 @@ public final class Vrf implements Serializable {
   //////////////////////////////////////////
 
   private final Map<AddressFamily, VrfAddressFamily> _addressFamilies;
-  private BgpVrfConfiguration _bgpConfig;
   private final @Nonnull String _name;
   private @Nullable RouteDistinguisherOrAuto _rd;
   private boolean _shutdown;

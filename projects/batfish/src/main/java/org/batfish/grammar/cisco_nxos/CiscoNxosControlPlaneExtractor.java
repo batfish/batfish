@@ -1,6 +1,7 @@
 package org.batfish.grammar.cisco_nxos;
 
 import static com.google.common.base.Preconditions.checkArgument;
+import static org.batfish.datamodel.Configuration.DEFAULT_VRF_NAME;
 import static org.batfish.representation.cisco_nxos.CiscoNxosConfiguration.getCanonicalInterfaceNamePrefix;
 import static org.batfish.representation.cisco_nxos.CiscoNxosInterfaceType.ETHERNET;
 import static org.batfish.representation.cisco_nxos.CiscoNxosInterfaceType.LOOPBACK;
@@ -1629,19 +1630,18 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
   @Override
   public void enterRb_vrf(Rb_vrfContext ctx) {
     String vrfName = toVrfName(ctx, ctx.name);
-    @Nullable Vrf vrf = _configuration.getVrfs().get(vrfName);
-    if (vrf == null) {
-      // TODO: warn or verify - should VRF have been declared already?
-      // Dummy BGP config
+    if (vrfName == null) {
       _currentBgpVrfConfiguration = new BgpVrfConfiguration();
-    } else {
-      _currentBgpVrfConfiguration = vrf.getBgpConfig();
+      return;
     }
+    _currentBgpVrfConfiguration =
+        _configuration.getBgpGlobalConfiguration().getOrCreateVrf(vrfName);
   }
 
   @Override
   public void exitRb_vrf(Rb_vrfContext ctx) {
-    _currentBgpVrfConfiguration = _configuration.getDefaultVrf().getBgpConfig();
+    _currentBgpVrfConfiguration =
+        _configuration.getBgpGlobalConfiguration().getOrCreateVrf(DEFAULT_VRF_NAME);
   }
 
   @Override
@@ -1652,7 +1652,8 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
 
   @Override
   public void enterRouter_bgp(Router_bgpContext ctx) {
-    _currentBgpVrfConfiguration = _configuration.getDefaultVrf().getBgpConfig();
+    _currentBgpVrfConfiguration =
+        _configuration.getBgpGlobalConfiguration().getOrCreateVrf(DEFAULT_VRF_NAME);
   }
 
   @Override
@@ -2965,7 +2966,8 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
     _w.addWarning(ctx, getFullText(ctx), _parser, message);
   }
 
-  private Optional<Integer> toInteger(ParserRuleContext messageCtx, Bgp_distanceContext ctx) {
+  private @Nonnull Optional<Integer> toInteger(
+      ParserRuleContext messageCtx, Bgp_distanceContext ctx) {
     return toIntegerInSpace(messageCtx, ctx, BGP_DISTANCE_RANGE, "BGP distance");
   }
 
@@ -3026,11 +3028,12 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
     }
   }
 
-  private Optional<Integer> toInteger(ParserRuleContext messageCtx, Ebgp_multihop_ttlContext ctx) {
+  private @Nonnull Optional<Integer> toInteger(
+      ParserRuleContext messageCtx, Ebgp_multihop_ttlContext ctx) {
     return toIntegerInSpace(messageCtx, ctx, BGP_EBGP_MULTIHOP_TTL_RANGE, "BGP ebgp-multihop ttl");
   }
 
-  private Optional<Integer> toInteger(
+  private @Nonnull Optional<Integer> toInteger(
       ParserRuleContext messageCtx, Inherit_sequence_numberContext ctx) {
     return toIntegerInSpace(
         messageCtx, ctx, BGP_INHERIT_RANGE, "BGP neighbor inherit peer-policy seq");
@@ -3058,11 +3061,13 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
         "set as-path prepend last-as number of prepends");
   }
 
-  private Optional<Integer> toInteger(ParserRuleContext messageCtx, Maxas_limitContext ctx) {
+  private @Nonnull Optional<Integer> toInteger(
+      ParserRuleContext messageCtx, Maxas_limitContext ctx) {
     return toIntegerInSpace(messageCtx, ctx, BGP_MAXAS_LIMIT_RANGE, "BGP maxas-limit");
   }
 
-  private Optional<Integer> toInteger(ParserRuleContext messageCtx, Maximum_pathsContext ctx) {
+  private @Nonnull Optional<Integer> toInteger(
+      ParserRuleContext messageCtx, Maximum_pathsContext ctx) {
     return toIntegerInSpace(messageCtx, ctx, BGP_MAXIMUM_PATHS_RANGE, "BGP maximum-paths");
   }
 
@@ -3550,7 +3555,7 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
         messageCtx, ctx, IP_AS_PATH_ACCESS_LIST_NAME_LENGTH_RANGE, "ip as-path access-list name");
   }
 
-  private Optional<String> toString(
+  private @Nonnull Optional<String> toString(
       ParserRuleContext messageCtx, Ip_community_list_nameContext ctx) {
     return toStringWithLengthInSpace(
         messageCtx, ctx, IP_COMMUNITY_LIST_NAME_LENGTH_RANGE, "ip community-list name");
