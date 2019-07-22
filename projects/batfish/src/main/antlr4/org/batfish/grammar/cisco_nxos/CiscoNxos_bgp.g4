@@ -719,7 +719,13 @@ rb_n_default
 
 rb_n_description
 :
-  DESCRIPTION desc = REMARK_TEXT NEWLINE
+  DESCRIPTION desc = bgp_neighbor_description NEWLINE
+;
+
+bgp_neighbor_description
+:
+// 1-80
+  desc = REMARK_TEXT
 ;
 
 rb_n_disable_connected_check

@@ -412,6 +412,8 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
   private static final IntegerSpace BGP_INHERIT_RANGE = IntegerSpace.of(Range.closed(1, 65535));
   private static final IntegerSpace BGP_MAXAS_LIMIT_RANGE = IntegerSpace.of(Range.closed(1, 512));
   private static final IntegerSpace BGP_MAXIMUM_PATHS_RANGE = IntegerSpace.of(Range.closed(1, 64));
+  private static final IntegerSpace BGP_NEIGHBOR_DESCRIPTION_LENGTH_RANGE =
+      IntegerSpace.of(Range.closed(1, 80));
   private static final IntegerSpace BGP_TEMPLATE_NAME_LENGTH_RANGE =
       IntegerSpace.of(Range.closed(1, 63));
   private static final IntegerSpace DSCP_RANGE = IntegerSpace.of(Range.closed(0, 63));
@@ -1522,7 +1524,10 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
 
   @Override
   public void exitRb_n_description(Rb_n_descriptionContext ctx) {
-    _currentBgpVrfNeighbor.setDescription(ctx.desc.getText().trim());
+    Optional<String> desc =
+        toStringWithLengthInSpace(
+            ctx, ctx.desc, BGP_NEIGHBOR_DESCRIPTION_LENGTH_RANGE, "bgp neighbor description");
+    desc.ifPresent(_currentBgpVrfNeighbor::setDescription);
   }
 
   @Override
