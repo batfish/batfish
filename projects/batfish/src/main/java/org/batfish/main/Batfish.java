@@ -24,6 +24,7 @@ import static org.batfish.main.ReachabilityParametersResolver.resolveReachabilit
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Throwables;
 import com.google.common.cache.Cache;
@@ -1595,21 +1596,13 @@ public class Batfish extends PluginConsumer implements IBatfish {
       String fileName = path.subpath(pathLength - 3, pathLength).toString();
       pvcae.getFileMap().put(BfConsts.RELPATH_AWS_CONFIGS_FILE, fileName);
 
-      JSONObject jsonObj = null;
       try {
-        jsonObj = new JSONObject(fileText);
-      } catch (JSONException e) {
+        JsonNode json = BatfishObjectMapper.mapper().readTree(fileText);
+        config.addConfigElement(regionName, json, fileName, pvcae);
+      } catch (IOException e) {
         pvcae.addRedFlagWarning(
             BfConsts.RELPATH_AWS_CONFIGS_FILE,
-            new Warning(String.format("AWS file %s is not valid JSON", fileName), "AWS"));
-      }
-
-      if (jsonObj != null) {
-        try {
-          config.addConfigElement(regionName, jsonObj, fileName, pvcae);
-        } catch (JSONException e) {
-          throw new BatfishException("Problems parsing JSON in " + fileName, e);
-        }
+            new Warning(String.format("Unexpected content in AWS file %s", fileName), "AWS"));
       }
     }
     return config;
