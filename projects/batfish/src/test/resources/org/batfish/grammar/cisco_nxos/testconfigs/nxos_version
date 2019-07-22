@@ -1,0 +1,6 @@
+!RANCID-CONTENT-TYPE: cisco-nx
+!
+hostname nxos_version
+!
+version 9.2(3) Bios:version
+!

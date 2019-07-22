@@ -23,6 +23,7 @@ statement
   | s_nv
   | s_route_map
   | s_router
+  | s_version
   | s_vlan
   | s_vrf_context
 ;
@@ -64,4 +65,10 @@ s_router
     router_bgp
     | router_ospf
   )
+;
+
+s_version
+:
+// arbitray string, not actual command
+  VERSION version = REMARK_TEXT NEWLINE
 ;
