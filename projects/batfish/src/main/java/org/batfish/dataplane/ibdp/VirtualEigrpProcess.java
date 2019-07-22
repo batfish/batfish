@@ -70,9 +70,9 @@ final class VirtualEigrpProcess {
   @Nonnull private final EigrpRib _rib;
   /** Routing policy to determine whether and how to export */
   @Nullable private final RoutingPolicy _exportPolicy;
-  /** Incoming messages into this router from each EIGRP adjacency */
+  /** Incoming external route messages into this router from each EIGRP adjacency */
   @Nonnull @VisibleForTesting
-  SortedMap<EigrpEdge, Queue<RouteAdvertisement<EigrpExternalRoute>>> _incomingRoutes =
+  SortedMap<EigrpEdge, Queue<RouteAdvertisement<EigrpExternalRoute>>> _incomingExternalRoutes =
       ImmutableSortedMap.of();
 
   private EigrpExternalRib _externalStagingRib;
@@ -177,14 +177,14 @@ final class VirtualEigrpProcess {
    *
    * <ul>
    *   <li>"external" RIB ({@link #_externalRib})
-   *   <li>message queue ({@link #_incomingRoutes})
+   *   <li>message queue ({@link #_incomingExternalRoutes})
    * </ul>
    *
    * @return integer hashcode
    */
   int computeIterationHashCode() {
     return _externalRib.getTypedRoutes().hashCode()
-        + _incomingRoutes.values().stream()
+        + _incomingExternalRoutes.values().stream()
             .flatMap(Queue::stream)
             .mapToInt(RouteAdvertisement::hashCode)
             .sum();
@@ -223,7 +223,7 @@ final class VirtualEigrpProcess {
    */
   void initQueues(EigrpTopology eigrpTopology) {
     Network<EigrpNeighborConfigId, EigrpEdge> network = eigrpTopology.getNetwork();
-    _incomingRoutes =
+    _incomingExternalRoutes =
         _interfaces.stream()
             .filter(network.nodes()::contains)
             .flatMap(n -> network.inEdges(n).stream())
@@ -244,7 +244,7 @@ final class VirtualEigrpProcess {
     EigrpExternalRoute.Builder routeBuilder = EigrpExternalRoute.builder();
     routeBuilder.setAdmin(_defaultExternalAdminCost).setProcessAsn(_asn);
 
-    _incomingRoutes.forEach(
+    _incomingExternalRoutes.forEach(
         (edge, queue) -> {
           Interface nextHopIntf = edge.getNode1().getInterface(nc);
           Interface connectingIntf = edge.getNode2().getInterface(nc);
@@ -352,7 +352,7 @@ final class VirtualEigrpProcess {
   private void queueOutgoingExternalRoutes(
       Map<String, Node> allNodes, RibDelta<EigrpExternalRoute> delta) {
     // Loop over neighbors, enqueue messages
-    for (EigrpEdge edge : _incomingRoutes.keySet()) {
+    for (EigrpEdge edge : _incomingExternalRoutes.keySet()) {
       Queue<RouteAdvertisement<EigrpExternalRoute>> queue =
           requireNonNull(
                   allNodes
@@ -360,7 +360,7 @@ final class VirtualEigrpProcess {
                       .getVirtualRouters()
                       .get(edge.getNode1().getVrf())
                       .getEigrpProcess(_asn))
-              ._incomingRoutes
+              ._incomingExternalRoutes
               .get(edge.reverse());
       VirtualRouter.queueDelta(queue, delta);
     }
