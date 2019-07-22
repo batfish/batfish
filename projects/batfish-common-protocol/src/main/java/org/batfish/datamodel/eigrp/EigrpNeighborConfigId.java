@@ -15,6 +15,7 @@ import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.NetworkConfigurations;
+import org.batfish.datamodel.collections.NodeInterfacePair;
 
 /**
  * Uniquely identifies an {@link EigrpNeighborConfig EIGRP neighbor configuration} in the network.
@@ -100,6 +101,12 @@ public class EigrpNeighborConfigId implements Serializable, Comparable<EigrpNeig
   @JsonIgnore
   public Interface getInterface(NetworkConfigurations nc) {
     return nc.getInterface(_hostname, _interfaceName).get();
+  }
+
+  @Nonnull
+  @JsonIgnore
+  public NodeInterfacePair getNodeInterfacePair() {
+    return new NodeInterfacePair(getHostname(), getInterfaceName());
   }
 
   @Nonnull
