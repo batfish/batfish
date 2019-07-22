@@ -101,10 +101,6 @@ public final class EigrpProcess implements Serializable {
     return _mode;
   }
 
-  public void setNeighbors(@Nonnull Map<String, EigrpNeighborConfig> neighbors) {
-    _neighbors = ImmutableSortedMap.copyOf(neighbors);
-  }
-
   /** Add an {@link EigrpNeighborConfig} to this EIGRP process */
   public void addNeighbor(@Nonnull EigrpNeighborConfig neighborConfig) {
     _neighbors =

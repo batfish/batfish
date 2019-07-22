@@ -41,7 +41,7 @@ public class EigrpTopologyUtils {
 
   /**
    * Initialize {@link EigrpNeighborConfig}s for all {@link EigrpProcess}s present under all {@link
-   * Vrf}s of all {@link Configuration}s, and store under {@link EigrpProcess#setNeighbors(Map)}.
+   * Vrf}s of all {@link Configuration}s, and store under the correct {@link EigrpProcess}.
    */
   public static void initNeighborConfigs(NetworkConfigurations configurations) {
     for (Configuration config : configurations.all()) {
