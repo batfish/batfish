@@ -91,6 +91,8 @@ final class EigrpRoutingProcess implements RoutingProcess<EigrpTopology, EigrpRo
    * round of route redistribution
    */
   @Nonnull private RibDelta<EigrpExternalRoute> _queuedForRedistribution;
+  /** Set of routes to be merged to the main RIB at the end of the iteration */
+  @Nonnull private RibDelta.Builder<EigrpRoute> _changeSet;
 
   EigrpRoutingProcess(final EigrpProcess process, final String vrfName, final Configuration c) {
     _asn = process.getAsn();
@@ -116,6 +118,7 @@ final class EigrpRoutingProcess implements RoutingProcess<EigrpTopology, EigrpRo
     _queuedForRedistribution = RibDelta.empty();
     _incomingInternalRoutes = ImmutableSortedMap.of();
     _incomingExternalRoutes = ImmutableSortedMap.of();
+    _changeSet = RibDelta.builder();
   }
 
   @Override
@@ -149,12 +152,16 @@ final class EigrpRoutingProcess implements RoutingProcess<EigrpTopology, EigrpRo
     // Process new external routes and re-advertise them as necessary
     RibDelta<EigrpExternalRoute> externalDelta = processExternalRoutes();
     sendOutExternalRoutes(externalDelta, allNodes, _topology);
+
+    // Keep track of what what updates will go into the main RIB
+    _changeSet.from(importRibDelta(_rib, internalDelta));
+    _changeSet.from(importRibDelta(_rib, externalDelta));
   }
 
   @Nonnull
   @Override
   public RibDelta<EigrpRoute> getUpdatesForMainRib() {
-    return RibDelta.<EigrpRoute>builder().build();
+    return _changeSet.build();
   }
 
   @Override
