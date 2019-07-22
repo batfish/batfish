@@ -1,7 +1,6 @@
 package org.batfish.datamodel.eigrp;
 
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableMap.Builder;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.graph.MutableNetwork;
 import com.google.common.graph.NetworkBuilder;
@@ -48,7 +47,7 @@ public class EigrpTopologyUtils {
     for (Configuration config : configurations.all()) {
       for (Vrf vrf : config.getVrfs().values()) {
         for (EigrpProcess proc : vrf.getEigrpProcesses().values()) {
-          Builder<String, EigrpNeighborConfig> neighborMap = ImmutableMap.builder();
+          ImmutableList.Builder<EigrpNeighborConfig> neighborsBuilder = ImmutableList.builder();
           for (Interface iface : vrf.getInterfaces().values()) {
             // if the interface does not belong to the current EIGRP process, skip it
             if (iface.getConcreteAddress() == null
@@ -58,8 +57,7 @@ public class EigrpTopologyUtils {
               continue;
             }
             // TODO: check if secondary addresses also participate in EIGRP neighbor relationships
-            neighborMap.put(
-                iface.getName(),
+            neighborsBuilder.add(
                 EigrpNeighborConfig.builder()
                     .setHostname(config.getHostname())
                     .setInterfaceName(iface.getName())
@@ -68,7 +66,7 @@ public class EigrpTopologyUtils {
                     .setPassive(iface.getEigrp().getPassive())
                     .build());
           }
-          proc.setNeighbors(neighborMap.build());
+          proc.addNeighbors(neighborsBuilder.build());
         }
       }
     }

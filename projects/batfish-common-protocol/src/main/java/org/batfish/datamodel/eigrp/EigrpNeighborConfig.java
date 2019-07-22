@@ -47,14 +47,14 @@ public final class EigrpNeighborConfig implements Serializable {
   @JsonCreator
   private static EigrpNeighborConfig create(
       @Nullable @JsonProperty(PROP_EXPORT_POLICY) String exportPolicy,
+      @Nullable @JsonProperty(PROP_HOSTNAME) String hostname,
       @Nullable @JsonProperty(PROP_INTERFACE) String interfaceName,
       @Nullable @JsonProperty(PROP_IP) Ip ip,
       @Nullable @JsonProperty(PROP_PASSIVE) Boolean passive,
-      @Nullable @JsonProperty(PROP_HOSTNAME) String hostname,
       @Nullable @JsonProperty(PROP_VRF) String vrf) {
+    checkArgument(hostname != null, "EigrpNeighborConfig missing %s", PROP_HOSTNAME);
     checkArgument(interfaceName != null, "EigrpNeighborConfig missing %s", PROP_INTERFACE);
     checkArgument(ip != null, "EigrpNeighborConfig missing %s", PROP_IP);
-    checkArgument(hostname != null, "EigrpNeighborConfig missing %s", PROP_HOSTNAME);
     checkArgument(vrf != null, "EigrpNeighborConfig missing %s", PROP_VRF);
     return new EigrpNeighborConfig(
         exportPolicy, interfaceName, firstNonNull(passive, Boolean.FALSE), hostname, vrf, ip);
@@ -102,10 +102,10 @@ public final class EigrpNeighborConfig implements Serializable {
   /** Builder for {@link EigrpNeighborConfig} */
   public static final class Builder {
     @Nullable private String _exportPolicy;
+    @Nullable private String _hostname;
     @Nullable private String _interfaceName;
     @Nullable private Ip _ip;
     @Nullable private Boolean _isPassive;
-    @Nullable private String _hostname;
     @Nullable private String _vrfName;
 
     private Builder() {}

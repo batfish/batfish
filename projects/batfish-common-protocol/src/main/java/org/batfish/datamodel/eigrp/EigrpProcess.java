@@ -6,9 +6,13 @@ import static com.google.common.base.Preconditions.checkArgument;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSortedMap;
 import java.io.Serializable;
+import java.util.Collection;
 import java.util.Map;
 import java.util.Objects;
+import java.util.SortedMap;
+import java.util.function.Function;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -26,7 +30,7 @@ public final class EigrpProcess implements Serializable {
   private final long _asn;
   @Nullable private final String _exportPolicy;
   @Nonnull private final EigrpProcessMode _mode;
-  @Nonnull private Map<String, EigrpNeighborConfig> _neighbors;
+  @Nonnull private SortedMap<String, EigrpNeighborConfig> _neighbors;
   @Nonnull private final Ip _routerId;
 
   private EigrpProcess(
@@ -38,7 +42,7 @@ public final class EigrpProcess implements Serializable {
     _asn = asn;
     _exportPolicy = exportPolicy;
     _mode = mode;
-    _neighbors = ImmutableMap.copyOf(neighbors);
+    _neighbors = ImmutableSortedMap.copyOf(neighbors);
     _routerId = routerId;
   }
 
@@ -77,9 +81,9 @@ public final class EigrpProcess implements Serializable {
   }
 
   /** @return All EIGRP neighbors in this process */
-  @Nullable
+  @Nonnull
   @JsonProperty(PROP_NEIGHBORS)
-  public Map<String, EigrpNeighborConfig> getNeighbors() {
+  public SortedMap<String, EigrpNeighborConfig> getNeighbors() {
     return _neighbors;
   }
 
@@ -98,7 +102,29 @@ public final class EigrpProcess implements Serializable {
   }
 
   public void setNeighbors(@Nonnull Map<String, EigrpNeighborConfig> neighbors) {
-    _neighbors = ImmutableMap.copyOf(neighbors);
+    _neighbors = ImmutableSortedMap.copyOf(neighbors);
+  }
+
+  /** Add an {@link EigrpNeighborConfig} to this EIGRP process */
+  public void addNeighbor(@Nonnull EigrpNeighborConfig neighborConfig) {
+    _neighbors =
+        ImmutableSortedMap.<String, EigrpNeighborConfig>naturalOrder()
+            .putAll(_neighbors)
+            .put(neighborConfig.getInterfaceName(), neighborConfig)
+            .build();
+  }
+
+  /** Add a {@link Collection} of {@link EigrpNeighborConfig}s to this EIGRP process */
+  public void addNeighbors(@Nonnull Collection<EigrpNeighborConfig> neighborConfigs) {
+    _neighbors =
+        ImmutableSortedMap.<String, EigrpNeighborConfig>naturalOrder()
+            .putAll(_neighbors)
+            .putAll(
+                neighborConfigs.stream()
+                    .collect(
+                        ImmutableMap.toImmutableMap(
+                            EigrpNeighborConfig::getInterfaceName, Function.identity())))
+            .build();
   }
 
   @Override
