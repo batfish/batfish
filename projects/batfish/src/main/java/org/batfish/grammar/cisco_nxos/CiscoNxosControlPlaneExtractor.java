@@ -2164,14 +2164,14 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
 
   @Override
   public void enterRb_vrf(Rb_vrfContext ctx) {
-    String vrfName = toVrfName(ctx, ctx.name);
-    if (vrfName == null) {
+    Optional<String> nameOrErr = toString(ctx, ctx.name);
+    if (!nameOrErr.isPresent()) {
       // Dummy BGP config so inner stuff works.
       _currentBgpVrfConfiguration = new BgpVrfConfiguration();
       return;
     }
     _currentBgpVrfConfiguration =
-        _configuration.getBgpGlobalConfiguration().getOrCreateVrf(vrfName);
+        _configuration.getBgpGlobalConfiguration().getOrCreateVrf(nameOrErr.get());
   }
 
   @Override
