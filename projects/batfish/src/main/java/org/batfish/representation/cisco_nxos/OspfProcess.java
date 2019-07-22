@@ -10,25 +10,25 @@ import org.batfish.datamodel.Prefix;
 
 public abstract class OspfProcess implements Serializable {
 
-  public static final int DEFAULT_AUTO_COST_REFERENCE_BANDWIDTH = 40_000; // Mbps
-  public static final int DEFAULT_TIMERS_LSA_ARRIVAL = 1000; // ms
+  public static final int DEFAULT_AUTO_COST_REFERENCE_BANDWIDTH_MBPS = 40_000; // Mbps
+  public static final int DEFAULT_TIMERS_LSA_ARRIVAL_MS = 1000; // ms
 
   // https://www.cisco.com/c/m/en_us/techdoc/dc/reference/cli/nxos/commands/ospf/timers-lsa-group-pacing-ospf.html
-  public static final int DEFAULT_TIMERS_LSA_GROUP_PACING = 240; // s
-  public static final int DEFAULT_TIMERS_THROTTLE_LSA_START_INTERVAL = 0; // ms
-  public static final int DEFAULT_TIMERS_THROTTLE_LSA_HOLD_INTERVAL = 5000; // ms
-  public static final int DEFAULT_TIMERS_THROTTLE_LSA_MAX_INTERVAL = 5000; // ms
+  public static final int DEFAULT_TIMERS_LSA_GROUP_PACING_S = 240; // s
+  public static final int DEFAULT_TIMERS_THROTTLE_LSA_START_INTERVAL_MS = 0; // ms
+  public static final int DEFAULT_TIMERS_THROTTLE_LSA_HOLD_INTERVAL_MS = 5000; // ms
+  public static final int DEFAULT_TIMERS_THROTTLE_LSA_MAX_INTERVAL_MS = 5000; // ms
 
   public @Nonnull Map<Long, OspfArea> getAreas() {
     return _areas;
   }
 
-  public int getAutoCostReferenceBandwidth() {
-    return _autoCostReferenceBandwidth;
+  public int getAutoCostReferenceBandwidthMbps() {
+    return _autoCostReferenceBandwidthMbps;
   }
 
-  public void setAutoCostReferenceBandwidth(int autoCostReferenceBandwidth) {
-    _autoCostReferenceBandwidth = autoCostReferenceBandwidth;
+  public void setAutoCostReferenceBandwidthMbps(int autoCostReferenceBandwidthMbps) {
+    _autoCostReferenceBandwidthMbps = autoCostReferenceBandwidthMbps;
   }
 
   public boolean getBfd() {
@@ -88,43 +88,43 @@ public abstract class OspfProcess implements Serializable {
   }
 
   public int getTimersLsaArrival() {
-    return _timersLsaArrival;
+    return _timersLsaArrivalMbps;
   }
 
   public void setTimersLsaArrival(int timersLsaArrival) {
-    _timersLsaArrival = timersLsaArrival;
+    _timersLsaArrivalMbps = timersLsaArrival;
   }
 
   public int getTimersLsaGroupPacing() {
-    return _timersLsaGroupPacing;
+    return _timersLsaGroupPacingS;
   }
 
   public void setTimersLsaGroupPacing(int timersLsaGroupPacing) {
-    _timersLsaGroupPacing = timersLsaGroupPacing;
+    _timersLsaGroupPacingS = timersLsaGroupPacing;
   }
 
   public int getTimersLsaHoldInterval() {
-    return _timersLsaHoldInterval;
+    return _timersLsaHoldIntervalMs;
   }
 
   public void setTimersLsaHoldInterval(int timersLsaHoldInterval) {
-    _timersLsaHoldInterval = timersLsaHoldInterval;
+    _timersLsaHoldIntervalMs = timersLsaHoldInterval;
   }
 
   public int getTimersLsaMaxInterval() {
-    return _timersLsaMaxInterval;
+    return _timersLsaMaxIntervalMs;
   }
 
   public void setTimersLsaMaxInterval(int timersLsaMaxInterval) {
-    _timersLsaMaxInterval = timersLsaMaxInterval;
+    _timersLsaMaxIntervalMs = timersLsaMaxInterval;
   }
 
   public int getTimersLsaStartInterval() {
-    return _timersLsaStartInterval;
+    return _timersLsaStartIntervalMs;
   }
 
   public void setTimersLsaStartInterval(int timersLsaStartInterval) {
-    _timersLsaStartInterval = timersLsaStartInterval;
+    _timersLsaStartIntervalMs = timersLsaStartInterval;
   }
 
   //////////////////////////////////////////
@@ -132,7 +132,7 @@ public abstract class OspfProcess implements Serializable {
   //////////////////////////////////////////
 
   private final @Nonnull Map<Long, OspfArea> _areas;
-  private int _autoCostReferenceBandwidth;
+  private int _autoCostReferenceBandwidthMbps;
   private boolean _bfd;
   private @Nullable OspfDefaultOriginate _defaultOriginate;
   private @Nullable OspfMaxMetricRouterLsa _maxMetricRouterLsa;
@@ -141,21 +141,21 @@ public abstract class OspfProcess implements Serializable {
   private @Nullable String _redistributeDirectRouteMap;
   private @Nullable String _redistributeStaticRouteMap;
   private final @Nonnull Map<Prefix, OspfSummaryAddress> _summaryAddresses;
-  private int _timersLsaArrival;
-  private int _timersLsaGroupPacing;
-  private int _timersLsaHoldInterval;
-  private int _timersLsaMaxInterval;
-  private int _timersLsaStartInterval;
+  private int _timersLsaArrivalMbps;
+  private int _timersLsaGroupPacingS;
+  private int _timersLsaHoldIntervalMs;
+  private int _timersLsaMaxIntervalMs;
+  private int _timersLsaStartIntervalMs;
 
   protected OspfProcess() {
     _areas = new HashMap<>();
-    _autoCostReferenceBandwidth = DEFAULT_AUTO_COST_REFERENCE_BANDWIDTH;
+    _autoCostReferenceBandwidthMbps = DEFAULT_AUTO_COST_REFERENCE_BANDWIDTH_MBPS;
     _networks = new HashMap<>();
     _summaryAddresses = new HashMap<>();
-    _timersLsaArrival = DEFAULT_TIMERS_LSA_ARRIVAL;
-    _timersLsaGroupPacing = DEFAULT_TIMERS_LSA_GROUP_PACING;
-    _timersLsaHoldInterval = DEFAULT_TIMERS_THROTTLE_LSA_HOLD_INTERVAL;
-    _timersLsaMaxInterval = DEFAULT_TIMERS_THROTTLE_LSA_MAX_INTERVAL;
-    _timersLsaStartInterval = DEFAULT_TIMERS_THROTTLE_LSA_START_INTERVAL;
+    _timersLsaArrivalMbps = DEFAULT_TIMERS_LSA_ARRIVAL_MS;
+    _timersLsaGroupPacingS = DEFAULT_TIMERS_LSA_GROUP_PACING_S;
+    _timersLsaHoldIntervalMs = DEFAULT_TIMERS_THROTTLE_LSA_HOLD_INTERVAL_MS;
+    _timersLsaMaxIntervalMs = DEFAULT_TIMERS_THROTTLE_LSA_MAX_INTERVAL_MS;
+    _timersLsaStartIntervalMs = DEFAULT_TIMERS_THROTTLE_LSA_START_INTERVAL_MS;
   }
 }

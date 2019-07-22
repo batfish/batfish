@@ -35,16 +35,16 @@ import static org.batfish.datamodel.matchers.StaticRouteMatchers.hasTag;
 import static org.batfish.grammar.cisco_nxos.CiscoNxosCombinedParser.DEBUG_FLAG_USE_NEW_CISCO_NXOS_PARSER;
 import static org.batfish.main.BatfishTestUtils.configureBatfishTestSettings;
 import static org.batfish.representation.cisco_nxos.CiscoNxosConfiguration.NULL_VRF_NAME;
-import static org.batfish.representation.cisco_nxos.OspfInterface.DEFAULT_DEAD_INTERVAL;
-import static org.batfish.representation.cisco_nxos.OspfInterface.DEFAULT_HELLO_INTERVAL;
+import static org.batfish.representation.cisco_nxos.OspfInterface.DEFAULT_DEAD_INTERVAL_S;
+import static org.batfish.representation.cisco_nxos.OspfInterface.DEFAULT_HELLO_INTERVAL_S;
 import static org.batfish.representation.cisco_nxos.OspfNetworkType.BROADCAST;
 import static org.batfish.representation.cisco_nxos.OspfNetworkType.POINT_TO_POINT;
-import static org.batfish.representation.cisco_nxos.OspfProcess.DEFAULT_AUTO_COST_REFERENCE_BANDWIDTH;
-import static org.batfish.representation.cisco_nxos.OspfProcess.DEFAULT_TIMERS_LSA_ARRIVAL;
-import static org.batfish.representation.cisco_nxos.OspfProcess.DEFAULT_TIMERS_LSA_GROUP_PACING;
-import static org.batfish.representation.cisco_nxos.OspfProcess.DEFAULT_TIMERS_THROTTLE_LSA_HOLD_INTERVAL;
-import static org.batfish.representation.cisco_nxos.OspfProcess.DEFAULT_TIMERS_THROTTLE_LSA_MAX_INTERVAL;
-import static org.batfish.representation.cisco_nxos.OspfProcess.DEFAULT_TIMERS_THROTTLE_LSA_START_INTERVAL;
+import static org.batfish.representation.cisco_nxos.OspfProcess.DEFAULT_AUTO_COST_REFERENCE_BANDWIDTH_MBPS;
+import static org.batfish.representation.cisco_nxos.OspfProcess.DEFAULT_TIMERS_LSA_ARRIVAL_MS;
+import static org.batfish.representation.cisco_nxos.OspfProcess.DEFAULT_TIMERS_LSA_GROUP_PACING_S;
+import static org.batfish.representation.cisco_nxos.OspfProcess.DEFAULT_TIMERS_THROTTLE_LSA_HOLD_INTERVAL_MS;
+import static org.batfish.representation.cisco_nxos.OspfProcess.DEFAULT_TIMERS_THROTTLE_LSA_MAX_INTERVAL_MS;
+import static org.batfish.representation.cisco_nxos.OspfProcess.DEFAULT_TIMERS_THROTTLE_LSA_START_INTERVAL_MS;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.anEmptyMap;
 import static org.hamcrest.Matchers.any;
@@ -1697,19 +1697,20 @@ public final class CiscoNxosGrammarTest {
 
       // check default for next test
       assertThat(
-          proc.getAutoCostReferenceBandwidth(), equalTo(DEFAULT_AUTO_COST_REFERENCE_BANDWIDTH));
+          proc.getAutoCostReferenceBandwidthMbps(),
+          equalTo(DEFAULT_AUTO_COST_REFERENCE_BANDWIDTH_MBPS));
     }
     {
       OspfProcess proc = vc.getOspfProcesses().get("auto_cost");
-      assertThat(proc.getAutoCostReferenceBandwidth(), equalTo(1_000));
+      assertThat(proc.getAutoCostReferenceBandwidthMbps(), equalTo(1_000));
     }
     {
       OspfProcess proc = vc.getOspfProcesses().get("auto_cost_m");
-      assertThat(proc.getAutoCostReferenceBandwidth(), equalTo(2_000));
+      assertThat(proc.getAutoCostReferenceBandwidthMbps(), equalTo(2_000));
     }
     {
       OspfProcess proc = vc.getOspfProcesses().get("auto_cost_g");
-      assertThat(proc.getAutoCostReferenceBandwidth(), equalTo(3_000_000));
+      assertThat(proc.getAutoCostReferenceBandwidthMbps(), equalTo(3_000_000));
       assertFalse(proc.getBfd());
     }
     {
@@ -1833,13 +1834,14 @@ public final class CiscoNxosGrammarTest {
       assertThat(sa.getTag(), equalTo(5L));
 
       // check defaults for next test
-      assertThat(proc.getTimersLsaArrival(), equalTo(DEFAULT_TIMERS_LSA_ARRIVAL));
-      assertThat(proc.getTimersLsaGroupPacing(), equalTo(DEFAULT_TIMERS_LSA_GROUP_PACING));
+      assertThat(proc.getTimersLsaArrival(), equalTo(DEFAULT_TIMERS_LSA_ARRIVAL_MS));
+      assertThat(proc.getTimersLsaGroupPacing(), equalTo(DEFAULT_TIMERS_LSA_GROUP_PACING_S));
       assertThat(
-          proc.getTimersLsaStartInterval(), equalTo(DEFAULT_TIMERS_THROTTLE_LSA_START_INTERVAL));
+          proc.getTimersLsaStartInterval(), equalTo(DEFAULT_TIMERS_THROTTLE_LSA_START_INTERVAL_MS));
       assertThat(
-          proc.getTimersLsaHoldInterval(), equalTo(DEFAULT_TIMERS_THROTTLE_LSA_HOLD_INTERVAL));
-      assertThat(proc.getTimersLsaMaxInterval(), equalTo(DEFAULT_TIMERS_THROTTLE_LSA_MAX_INTERVAL));
+          proc.getTimersLsaHoldInterval(), equalTo(DEFAULT_TIMERS_THROTTLE_LSA_HOLD_INTERVAL_MS));
+      assertThat(
+          proc.getTimersLsaMaxInterval(), equalTo(DEFAULT_TIMERS_THROTTLE_LSA_MAX_INTERVAL_MS));
     }
     {
       OspfProcess proc = vc.getOspfProcesses().get("timers");
@@ -1862,8 +1864,8 @@ public final class CiscoNxosGrammarTest {
       OspfInterface ospf = iface.getOspf();
       assertThat(ospf, notNullValue());
       // TODO: extract and test message-digest-key
-      assertThat(ospf.getDeadInterval(), equalTo(10));
-      assertThat(ospf.getHelloInterval(), equalTo(20));
+      assertThat(ospf.getDeadIntervalS(), equalTo(10));
+      assertThat(ospf.getHelloIntervalS(), equalTo(20));
       assertThat(ospf.getProcess(), equalTo("a_auth"));
       assertThat(ospf.getArea(), equalTo(0L));
       assertThat(ospf.getNetwork(), nullValue());
@@ -1872,8 +1874,8 @@ public final class CiscoNxosGrammarTest {
       Interface iface = vc.getInterfaces().get("Ethernet1/2");
       OspfInterface ospf = iface.getOspf();
       assertThat(ospf, notNullValue());
-      assertThat(ospf.getDeadInterval(), equalTo(DEFAULT_DEAD_INTERVAL));
-      assertThat(ospf.getHelloInterval(), equalTo(DEFAULT_HELLO_INTERVAL));
+      assertThat(ospf.getDeadIntervalS(), equalTo(DEFAULT_DEAD_INTERVAL_S));
+      assertThat(ospf.getHelloIntervalS(), equalTo(DEFAULT_HELLO_INTERVAL_S));
       assertThat(ospf.getProcess(), nullValue());
       assertThat(ospf.getArea(), nullValue());
       assertThat(ospf.getNetwork(), equalTo(BROADCAST));

@@ -8,8 +8,8 @@ import javax.annotation.Nullable;
 public final class OspfInterface implements Serializable {
 
   // https://www.cisco.com/c/m/en_us/techdoc/dc/reference/cli/nxos/commands/ospf/ip-ospf-dead-interval.html
-  public static final int DEFAULT_DEAD_INTERVAL = 40; // s
-  public static final int DEFAULT_HELLO_INTERVAL = 10; // s
+  public static final int DEFAULT_DEAD_INTERVAL_S = 40; // s
+  public static final int DEFAULT_HELLO_INTERVAL_S = 10; // s
 
   public @Nullable Long getArea() {
     return _area;
@@ -19,20 +19,20 @@ public final class OspfInterface implements Serializable {
     _area = area;
   }
 
-  public int getDeadInterval() {
-    return firstNonNull(_deadInterval, DEFAULT_DEAD_INTERVAL);
+  public int getDeadIntervalS() {
+    return firstNonNull(_deadIntervalS, DEFAULT_DEAD_INTERVAL_S);
   }
 
-  public void setDeadInterval(int deadInterval) {
-    _deadInterval = deadInterval;
+  public void setDeadIntervalS(int deadInterval) {
+    _deadIntervalS = deadInterval;
   }
 
-  public int getHelloInterval() {
-    return firstNonNull(_helloInterval, DEFAULT_HELLO_INTERVAL);
+  public int getHelloIntervalS() {
+    return firstNonNull(_helloIntervalS, DEFAULT_HELLO_INTERVAL_S);
   }
 
-  public void setHelloInterval(int helloInterval) {
-    _helloInterval = helloInterval;
+  public void setHelloIntervalS(int helloIntervalS) {
+    _helloIntervalS = helloIntervalS;
   }
 
   public @Nullable OspfNetworkType getNetwork() {
@@ -56,8 +56,8 @@ public final class OspfInterface implements Serializable {
   //////////////////////////////////////////
 
   private @Nullable Long _area;
-  private @Nullable Integer _deadInterval;
-  private @Nullable Integer _helloInterval;
+  private @Nullable Integer _deadIntervalS;
+  private @Nullable Integer _helloIntervalS;
   private @Nullable OspfNetworkType _network;
   private @Nullable String _process;
 }

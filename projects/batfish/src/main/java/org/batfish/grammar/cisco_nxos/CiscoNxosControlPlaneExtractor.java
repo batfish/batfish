@@ -885,7 +885,7 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
     deadIntervalOrErr.ifPresent(
         deadInterval ->
             _currentInterfaces.forEach(
-                iface -> iface.getOrCreateOspf().setDeadInterval(deadInterval)));
+                iface -> iface.getOrCreateOspf().setDeadIntervalS(deadInterval)));
   }
 
   @Override
@@ -895,7 +895,7 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
     helloIntervalOrErr.ifPresent(
         helloInterval ->
             _currentInterfaces.forEach(
-                iface -> iface.getOrCreateOspf().setHelloInterval(helloInterval)));
+                iface -> iface.getOrCreateOspf().setHelloIntervalS(helloInterval)));
   }
 
   @Override
@@ -1059,7 +1059,7 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
               ctx.gbps,
               OSPF_AUTO_COST_REFERENCE_BANDWIDTH_GBPS_RANGE,
               "router ospf auto-cost reference-bandwidth gbps")
-          .ifPresent(gbps -> _currentOspfProcess.setAutoCostReferenceBandwidth(gbps * 1000));
+          .ifPresent(gbps -> _currentOspfProcess.setAutoCostReferenceBandwidthMbps(gbps * 1000));
     } else {
       assert ctx.mbps != null;
       toIntegerInSpace(
@@ -1067,7 +1067,7 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
               ctx.mbps,
               OSPF_AUTO_COST_REFERENCE_BANDWIDTH_MBPS_RANGE,
               "router ospf auto-cost reference-bandwidth mbps")
-          .ifPresent(_currentOspfProcess::setAutoCostReferenceBandwidth);
+          .ifPresent(_currentOspfProcess::setAutoCostReferenceBandwidthMbps);
     }
   }
 
