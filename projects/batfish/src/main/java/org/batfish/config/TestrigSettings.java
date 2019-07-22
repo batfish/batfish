@@ -44,10 +44,6 @@ public final class TestrigSettings {
     return getInputPath().resolve(BfConsts.RELPATH_ENVIRONMENT_BGP_TABLES);
   }
 
-  public Path getEnvironmentRoutingTablesPath() {
-    return getInputPath().resolve(BfConsts.RELPATH_ENVIRONMENT_ROUTING_TABLES);
-  }
-
   public Path getExternalBgpAnnouncementsPath() {
     return getInputPath().resolve(BfConsts.RELPATH_EXTERNAL_BGP_ANNOUNCEMENTS);
   }
@@ -84,10 +80,6 @@ public final class TestrigSettings {
     return getOutputPath().resolve(BfConsts.RELPATH_SERIALIZED_ENVIRONMENT_BGP_TABLES);
   }
 
-  public Path getSerializeEnvironmentRoutingTablesPath() {
-    return getOutputPath().resolve(BfConsts.RELPATH_SERIALIZED_ENVIRONMENT_ROUTING_TABLES);
-  }
-
   public Path getSerializeVendorPath() {
     return getOutputPath().resolve(BfConsts.RELPATH_VENDOR_SPECIFIC_CONFIG_DIR);
   }
@@ -111,9 +103,5 @@ public final class TestrigSettings {
 
   public Path getParseEnvironmentBgpTablesAnswerPath() {
     return getOutputPath().resolve(BfConsts.RELPATH_ENVIRONMENT_BGP_TABLES_ANSWER);
-  }
-
-  public Path getParseEnvironmentRoutingTablesAnswerPath() {
-    return getOutputPath().resolve(BfConsts.RELPATH_ENVIRONMENT_ROUTING_TABLES_ANSWER);
   }
 }

@@ -1659,7 +1659,6 @@ public class WorkMgr extends AbstractCoordinator {
     Path srcTestrigDir = testrigDir.resolve(Paths.get(BfConsts.RELPATH_INPUT));
 
     // things look ok, now make the move
-    boolean routingTables = false;
     boolean bgpTables = false;
     boolean roleData = false;
     boolean referenceLibraryData = false;
@@ -1667,9 +1666,6 @@ public class WorkMgr extends AbstractCoordinator {
       String name = subFile.getFileName().toString();
       if (isEnvFile(subFile)) {
         // copy environment level files to the environment directory
-        if (name.equals(BfConsts.RELPATH_ENVIRONMENT_ROUTING_TABLES)) {
-          routingTables = true;
-        }
         if (name.equals(BfConsts.RELPATH_ENVIRONMENT_BGP_TABLES)) {
           bgpTables = true;
         }
@@ -1700,8 +1696,8 @@ public class WorkMgr extends AbstractCoordinator {
       }
     }
     _logger.infof(
-        "Environment data for snapshot:%s; bgpTables:%s, routingTables:%s, nodeRoles:%s referenceBooks:%s\n",
-        snapshotName, bgpTables, routingTables, roleData, referenceLibraryData);
+        "Environment data for snapshot:%s; bgpTables:%s, nodeRoles:%s referenceBooks:%s\n",
+        snapshotName, bgpTables, roleData, referenceLibraryData);
     _idManager.assignSnapshot(snapshotName, networkId, snapshotId);
     if (autoAnalyze) {
       for (WorkItem workItem : getAutoWorkQueue(networkName, snapshotName)) {

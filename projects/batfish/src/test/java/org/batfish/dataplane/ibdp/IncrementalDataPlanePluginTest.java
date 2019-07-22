@@ -28,7 +28,6 @@ import java.util.List;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.SortedMap;
-import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.stream.Collectors;
 import org.apache.commons.lang3.SerializationUtils;
@@ -57,7 +56,6 @@ import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.IsoAddress;
 import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.Prefix;
-import org.batfish.datamodel.Route;
 import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.TcpFlagsMatchConditions;
 import org.batfish.datamodel.Topology;
@@ -66,7 +64,6 @@ import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.acl.AclLineMatchExprs;
 import org.batfish.datamodel.bgp.BgpTopologyUtils;
 import org.batfish.datamodel.bgp.Ipv4UnicastAddressFamily;
-import org.batfish.datamodel.collections.RoutesByVrf;
 import org.batfish.datamodel.isis.IsisInterfaceLevelSettings;
 import org.batfish.datamodel.isis.IsisInterfaceMode;
 import org.batfish.datamodel.isis.IsisInterfaceSettings;
@@ -326,44 +323,6 @@ public class IncrementalDataPlanePluginTest {
     assertThat(r1AdvertisedPrefix, in(r2Prefixes));
     // Ensure that the prefix is rejected by r3, because router ids are the same
     assertThat(r1AdvertisedPrefix, not(in(r3Prefixes)));
-  }
-
-  @Test
-  public void testIosRtStaticMatchesBdp() throws IOException {
-    String testrigResourcePrefix = TESTRIGS_PREFIX + "ios-rt-static-ad";
-    List<String> configurationNames = ImmutableList.of("r1");
-    List<String> routingTableNames = ImmutableList.of("r1");
-
-    Batfish batfish =
-        BatfishTestUtils.getBatfishFromTestrigText(
-            TestrigText.builder()
-                .setConfigurationText(testrigResourcePrefix, configurationNames)
-                .setRoutingTablesText(testrigResourcePrefix, routingTableNames)
-                .build(),
-            _folder);
-    batfish.getSettings().setDataplaneEngineName(IncrementalDataPlanePlugin.PLUGIN_NAME);
-    DataPlanePlugin dataPlanePlugin = batfish.getDataPlanePlugin();
-    ComputeDataPlaneResult dp = dataPlanePlugin.computeDataPlane();
-    SortedMap<String, RoutesByVrf> environmentRoutes = batfish.loadEnvironmentRoutingTables();
-    SortedMap<String, SortedMap<String, GenericRib<AnnotatedRoute<AbstractRoute>>>> ribs =
-        dp._dataPlane.getRibs();
-    Prefix staticRoutePrefix = Prefix.parse("10.0.0.0/8");
-    Set<AbstractRoute> r1BdpRoutes = ribs.get("r1").get(DEFAULT_VRF_NAME).getRoutes();
-    AbstractRoute r1BdpRoute =
-        r1BdpRoutes.stream()
-            .filter(r -> r.getNetwork().equals(staticRoutePrefix))
-            .findFirst()
-            .get();
-    SortedSet<Route> r1EnvironmentRoutes = environmentRoutes.get("r1").get(DEFAULT_VRF_NAME);
-    Route r1EnvironmentRoute =
-        r1EnvironmentRoutes.stream()
-            .filter(r -> r.getNetwork().equals(staticRoutePrefix))
-            .findFirst()
-            .get();
-    assertThat(
-        r1BdpRoute.getAdministrativeCost(), equalTo(r1EnvironmentRoute.getAdministrativeCost()));
-    assertThat(r1BdpRoute.getMetric(), equalTo(r1EnvironmentRoute.getMetric()));
-    assertThat(r1BdpRoute.getProtocol(), equalTo(r1EnvironmentRoute.getProtocol()));
   }
 
   @Test
