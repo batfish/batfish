@@ -3,7 +3,6 @@ package org.batfish.question;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.auto.service.AutoService;
 import org.batfish.common.Answerer;
-import org.batfish.common.BatfishException;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.common.plugin.Plugin;
 import org.batfish.datamodel.answers.InitInfoAnswerElement;
@@ -22,18 +21,8 @@ public class InitInfoQuestionPlugin extends QuestionPlugin {
     public InitInfoAnswerElement answer() {
       InitInfoQuestion question = (InitInfoQuestion) _question;
       boolean b = question._environmentBgpTables;
-      boolean r = question._environmentRoutes;
-      if (b && r) {
-        throw new BatfishException(
-            String.format(
-                "Only one of the following may be true: '%s' and '%s'",
-                InitInfoQuestion.PROP_ENVIRONMENT_ROUTES,
-                InitInfoQuestion.PROP_ENVIRONMENT_BGP_TABLES));
-      }
       if (b) {
         return _batfish.initInfoBgpAdvertisements(question._summary, question._verboseError);
-      } else if (r) {
-        return _batfish.initInfoRoutes(question._summary, question._verboseError);
       } else {
         return _batfish.initInfo(question._summary, question._verboseError);
       }
@@ -51,8 +40,6 @@ public class InitInfoQuestionPlugin extends QuestionPlugin {
 
     private boolean _environmentBgpTables;
 
-    private boolean _environmentRoutes;
-
     private boolean _summary;
 
     private boolean _verboseError;
@@ -67,11 +54,6 @@ public class InitInfoQuestionPlugin extends QuestionPlugin {
     @JsonProperty(PROP_ENVIRONMENT_BGP_TABLES)
     public boolean getEnvironmentBgpTables() {
       return _environmentBgpTables;
-    }
-
-    @JsonProperty(PROP_ENVIRONMENT_ROUTES)
-    public boolean getEnvironmentRoutes() {
-      return _environmentRoutes;
     }
 
     @Override
@@ -97,11 +79,6 @@ public class InitInfoQuestionPlugin extends QuestionPlugin {
     @JsonProperty(PROP_ENVIRONMENT_BGP_TABLES)
     public void setEnvironmentBgpTables(boolean environmentBgpTables) {
       _environmentBgpTables = environmentBgpTables;
-    }
-
-    @JsonProperty(PROP_ENVIRONMENT_ROUTES)
-    public void setEnvironmentRoutes(boolean environmentRoutes) {
-      _environmentRoutes = environmentRoutes;
     }
 
     @JsonProperty(PROP_SUMMARY)

@@ -140,18 +140,6 @@ public class TestrigText {
               .next();
       return this;
     }
-
-    public Builder setRoutingTablesText(Map<String, String> routingTablesText) {
-      _routingTablesText = routingTablesText;
-      return this;
-    }
-
-    public Builder setRoutingTablesText(String testrigResourcePrefix, Iterable<String> filenames) {
-      _routingTablesText =
-          readTestrigResources(
-              testrigResourcePrefix, BfConsts.RELPATH_ENVIRONMENT_ROUTING_TABLES, filenames);
-      return this;
-    }
   }
 
   public static Builder builder() {
