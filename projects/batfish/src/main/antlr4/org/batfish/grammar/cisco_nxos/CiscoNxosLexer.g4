@@ -241,6 +241,11 @@ ANY
   'any'
 ;
 
+AREA
+:
+  'area'
+;
+
 AS_OVERRIDE
 :
   'as-override'
@@ -273,9 +278,19 @@ ATTRIBUTE_MAP
   'attribute-map'
 ;
 
+AUTHENTICATION
+:
+  'authentication'
+;
+
 AUTO
 :
   'auto'
+;
+
+AUTO_COST
+:
+  'auto-cost'
 ;
 
 AUTOSTATE
@@ -331,6 +346,11 @@ BOOTPS
 BOTH
 :
   'both'
+;
+
+BROADCAST
+:
+  'broadcast'
 ;
 
 CAPABILITY
@@ -435,6 +455,11 @@ COPY_ATTRIBUTES
   'copy-attributes'
 ;
 
+COST
+:
+  'cost'
+;
+
 COST_COMMUNITY
 :
   'cost-community'
@@ -495,9 +520,19 @@ DAYTIME
   'daytime'
 ;
 
+DEAD_INTERVAL
+:
+  'dead-interval'
+;
+
 DEFAULT
 :
   'default'
+;
+
+DEFAULT_COST
+:
+  'default-cost'
 ;
 
 DEFAULT_INFORMATION
@@ -750,6 +785,11 @@ EXTERNAL
   'external'
 ;
 
+EXTERNAL_LSA
+:
+  'external-lsa'
+;
+
 FAST_EXTERNAL_FALLOVER
 :
   'fast-external-fallover'
@@ -830,6 +870,11 @@ FTP
   'ftp'
 ;
 
+GBPS
+:
+  [Gg] [Bb] [Pp] [Ss]
+;
+
 GENERAL_PARAMETER_PROBLEM
 :
   'general-parameter-problem'
@@ -883,6 +928,11 @@ GT
 HEAD
 :
   'head'
+;
+
+HELLO_INTERVAL
+:
+  'hello-interval'
 ;
 
 HOST
@@ -1007,6 +1057,11 @@ IN
 INBOUND
 :
   'inbound'
+;
+
+INCLUDE_STUB
+:
+  'include-stub'
 ;
 
 INFORMATION_REPLY
@@ -1168,6 +1223,11 @@ LOG
   'log'
 ;
 
+LOG_ADJACENCY_CHANGES
+:
+  'log-adjacency-changes'
+;
+
 LOG_NEIGHBOR_CHANGES
 :
   'log-neighbor-changes'
@@ -1197,6 +1257,21 @@ LPD
   'lpd'
 ;
 
+LSA
+:
+  'lsa'
+;
+
+LSA_ARRIVAL
+:
+  'lsa-arrival'
+;
+
+LSA_GROUP_PACING
+:
+  'lsa-group-pacing'
+;
+
 LT
 :
   'lt'
@@ -1222,6 +1297,11 @@ MATCH
   'match'
 ;
 
+MAX_METRIC
+:
+  'max-metric'
+;
+
 MAXAS_LIMIT
 :
   'maxas-limit'
@@ -1245,6 +1325,11 @@ MAXIMUM_PEERS
 MAXIMUM_PREFIX
 :
   'maximum-prefix'
+;
+
+MBPS
+:
+  [Mm] [Bb] [Pp] [Ss]
 ;
 
 MCAST_GROUP
@@ -1276,6 +1361,17 @@ MEMBER
       pushMode(M_Word);
     }
   }
+
+;
+
+MESSAGE_DIGEST
+:
+  'message-digest'
+;
+
+MESSAGE_DIGEST_KEY
+:
+  'message-digest-key' -> pushMode ( M_Password )
 ;
 
 METRIC
@@ -1448,9 +1544,19 @@ NO_PREPEND
   'no-prepend'
 ;
 
+NO_REDISTRIBUTION
+:
+  'no-redistribution'
+;
+
 NO_ROOM_FOR_OPTION
 :
   'no-room-for-option'
+;
+
+NO_SUMMARY
+:
+  'no-summary'
 ;
 
 NON_CRITICAL
@@ -1483,6 +1589,16 @@ NOS
   'nos'
 ;
 
+NOT_ADVERTISE
+:
+  'not-advertise'
+;
+
+NSSA
+:
+  'nssa'
+;
+
 NTP
 :
   'ntp'
@@ -1508,6 +1624,11 @@ OBJSTORE
   'objstore'
 ;
 
+ON_STARTUP
+:
+  'on-startup'
+;
+
 OPTION_MISSING
 :
   'option-missing'
@@ -1521,6 +1642,13 @@ ORIGINATE
 OSPF
 :
   'ospf'
+  // All other instances are followed by keywords or tokens in default mode
+  {
+    if (lastTokenType() == ROUTER) {
+      pushMode(M_Word);
+    }
+  }
+
 ;
 
 OSPFV3
@@ -1556,6 +1684,11 @@ PARAMETER_PROBLEM
 PASSIVE
 :
   'passive'
+;
+
+PASSIVE_INTERFACE
+:
+  'passive-interface'
 ;
 
 PASSWORD
@@ -1621,6 +1754,11 @@ PIM
 PIM_AUTO_RP
 :
   'pim-auto-rp'
+;
+
+POINT_TO_POINT
+:
+  'point-to-point'
 ;
 
 POP2
@@ -1778,6 +1916,11 @@ REDISTRIBUTE
   'redistribute'
 ;
 
+REFERENCE_BANDWIDTH
+:
+  'reference-bandwidth'
+;
+
 REFLECTION
 :
   'reflection'
@@ -1883,6 +2026,11 @@ ROUTER_ID
   'router-id'
 ;
 
+ROUTER_LSA
+:
+  'router-lsa'
+;
+
 ROUTER_SOLICITATION
 :
   'router-solicitation'
@@ -1983,6 +2131,11 @@ SOURCE_ROUTE_FAILED
   'source-route-failed'
 ;
 
+SPF
+:
+  'spf'
+;
+
 SPINE_ANYCAST_GATEWAY
 :
   'spine-anycast-gateway'
@@ -2026,6 +2179,21 @@ STATIC_GROUP
 STATISTICS
 :
   'statistics'
+;
+
+STUB
+:
+  'stub'
+;
+
+SUMMARY_ADDRESS
+:
+  'summary-address'
+;
+
+SUMMARY_LSA
+:
+  'summary-lsa'
 ;
 
 SUMMARY_ONLY
@@ -2126,6 +2294,11 @@ TEMPLATE
 TFTP
 :
   'tftp'
+;
+
+THROTTLE
+:
+  'throttle'
 ;
 
 TIME
@@ -2253,6 +2426,11 @@ VERSION
   'version'
 ;
 
+VIRTUAL_LINK
+:
+  'virtual-link'
+;
+
 VLAN
 :
   [Vv] [Ll] [Aa] [Nn]
@@ -2278,6 +2456,11 @@ VRF
   'vrf' -> pushMode ( M_Vrf )
 ;
 
+WAIT_FOR
+:
+  'wait-for'
+;
+
 WAIT_IGP_CONVERGENCE
 :
   'wait-igp-convergence'
@@ -2301,6 +2484,11 @@ WHOIS
 WHO
 :
   'who'
+;
+
+WITHDRAW
+:
+  'withdraw'
 ;
 
 WWW

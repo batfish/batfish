@@ -35,6 +35,16 @@ import static org.batfish.datamodel.matchers.StaticRouteMatchers.hasTag;
 import static org.batfish.grammar.cisco_nxos.CiscoNxosCombinedParser.DEBUG_FLAG_USE_NEW_CISCO_NXOS_PARSER;
 import static org.batfish.main.BatfishTestUtils.configureBatfishTestSettings;
 import static org.batfish.representation.cisco_nxos.CiscoNxosConfiguration.NULL_VRF_NAME;
+import static org.batfish.representation.cisco_nxos.OspfInterface.DEFAULT_DEAD_INTERVAL_S;
+import static org.batfish.representation.cisco_nxos.OspfInterface.DEFAULT_HELLO_INTERVAL_S;
+import static org.batfish.representation.cisco_nxos.OspfNetworkType.BROADCAST;
+import static org.batfish.representation.cisco_nxos.OspfNetworkType.POINT_TO_POINT;
+import static org.batfish.representation.cisco_nxos.OspfProcess.DEFAULT_AUTO_COST_REFERENCE_BANDWIDTH_MBPS;
+import static org.batfish.representation.cisco_nxos.OspfProcess.DEFAULT_TIMERS_LSA_ARRIVAL_MS;
+import static org.batfish.representation.cisco_nxos.OspfProcess.DEFAULT_TIMERS_LSA_GROUP_PACING_S;
+import static org.batfish.representation.cisco_nxos.OspfProcess.DEFAULT_TIMERS_THROTTLE_LSA_HOLD_INTERVAL_MS;
+import static org.batfish.representation.cisco_nxos.OspfProcess.DEFAULT_TIMERS_THROTTLE_LSA_MAX_INTERVAL_MS;
+import static org.batfish.representation.cisco_nxos.OspfProcess.DEFAULT_TIMERS_THROTTLE_LSA_START_INTERVAL_MS;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.anEmptyMap;
 import static org.hamcrest.Matchers.any;
@@ -44,7 +54,9 @@ import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasEntry;
 import static org.hamcrest.Matchers.hasKey;
+import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.not;
+import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -52,6 +64,7 @@ import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Range;
 import java.io.IOException;
@@ -81,6 +94,7 @@ import org.batfish.datamodel.Interface.DependencyType;
 import org.batfish.datamodel.InterfaceType;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpProtocol;
+import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.NamedPort;
 import org.batfish.datamodel.Prefix;
@@ -103,6 +117,7 @@ import org.batfish.representation.cisco_nxos.AddressFamily;
 import org.batfish.representation.cisco_nxos.CiscoNxosConfiguration;
 import org.batfish.representation.cisco_nxos.CiscoNxosInterfaceType;
 import org.batfish.representation.cisco_nxos.CiscoNxosStructureType;
+import org.batfish.representation.cisco_nxos.DefaultVrfOspfProcess;
 import org.batfish.representation.cisco_nxos.Evpn;
 import org.batfish.representation.cisco_nxos.EvpnVni;
 import org.batfish.representation.cisco_nxos.FragmentsBehavior;
@@ -124,6 +139,18 @@ import org.batfish.representation.cisco_nxos.LiteralPortSpec;
 import org.batfish.representation.cisco_nxos.Nve;
 import org.batfish.representation.cisco_nxos.Nve.IngressReplicationProtocol;
 import org.batfish.representation.cisco_nxos.NveVni;
+import org.batfish.representation.cisco_nxos.OspfArea;
+import org.batfish.representation.cisco_nxos.OspfAreaAuthentication;
+import org.batfish.representation.cisco_nxos.OspfAreaNssa;
+import org.batfish.representation.cisco_nxos.OspfAreaRange;
+import org.batfish.representation.cisco_nxos.OspfAreaStub;
+import org.batfish.representation.cisco_nxos.OspfDefaultOriginate;
+import org.batfish.representation.cisco_nxos.OspfInterface;
+import org.batfish.representation.cisco_nxos.OspfMaxMetricRouterLsa;
+import org.batfish.representation.cisco_nxos.OspfMetricAuto;
+import org.batfish.representation.cisco_nxos.OspfMetricManual;
+import org.batfish.representation.cisco_nxos.OspfProcess;
+import org.batfish.representation.cisco_nxos.OspfSummaryAddress;
 import org.batfish.representation.cisco_nxos.PortGroupPortSpec;
 import org.batfish.representation.cisco_nxos.PortSpec;
 import org.batfish.representation.cisco_nxos.RouteDistinguisherOrAuto;
@@ -1501,6 +1528,363 @@ public final class CiscoNxosGrammarTest {
       assertThat(
           vniConfig.getIngressReplicationProtocol(), equalTo(IngressReplicationProtocol.STATIC));
       assertThat(vniConfig.getMcastGroup(), equalTo(Ip.parse("235.0.0.0")));
+    }
+  }
+
+  @Test
+  public void testOspfExtraction() {
+    String hostname = "nxos_ospf";
+    CiscoNxosConfiguration vc = parseVendorConfig(hostname);
+
+    assertThat(
+        vc.getOspfProcesses(),
+        hasKeys(
+            "a_auth",
+            "a_auth_m",
+            "a_default_cost",
+            "a_filter_list",
+            "a_nssa",
+            "a_nssa_no_r",
+            "a_nssa_no_s",
+            "a_nssa_rm",
+            "a_r",
+            "a_r_cost",
+            "a_r_not_advertise",
+            "a_stub",
+            "a_stub_no_summary",
+            "a_virtual_link",
+            "auto_cost",
+            "auto_cost_m",
+            "auto_cost_g",
+            "bfd",
+            "dio",
+            "dio_always",
+            "dio_route_map",
+            "dio_always_route_map",
+            "lac",
+            "lac_detail",
+            "mm",
+            "mm_external_lsa",
+            "mm_external_lsa_m",
+            "mm_include_stub",
+            "mm_on_startup",
+            "mm_on_startup_t",
+            "mm_on_startup_w",
+            "mm_on_startup_tw",
+            "mm_summary_lsa",
+            "mm_summary_lsa_m",
+            "network",
+            "pi_d",
+            "r_direct",
+            "r_mp",
+            "r_mp_t",
+            "r_mp_warn",
+            "r_mp_withdraw",
+            "r_mp_withdraw_n",
+            "r_static",
+            "sa",
+            "timers",
+            "with_vrf"));
+    {
+      DefaultVrfOspfProcess proc = vc.getOspfProcesses().get("a_auth");
+      assertThat(proc.getName(), equalTo("a_auth"));
+      assertThat(proc.getAreas(), hasKeys(0L));
+      OspfArea area = proc.getAreas().get(0L);
+      assertThat(area.getId(), equalTo(0L));
+      assertThat(area.getAuthentication(), equalTo(OspfAreaAuthentication.SIMPLE));
+    }
+    {
+      OspfProcess proc = vc.getOspfProcesses().get("a_auth_m");
+      assertThat(proc.getAreas(), hasKeys(0L));
+      OspfArea area = proc.getAreas().get(0L);
+      assertThat(area.getAuthentication(), equalTo(OspfAreaAuthentication.MESSAGE_DIGEST));
+
+      // check default for next test
+      assertThat(area.getDefaultCost(), equalTo(OspfArea.DEFAULT_DEFAULT_COST));
+    }
+    {
+      OspfProcess proc = vc.getOspfProcesses().get("a_default_cost");
+      assertThat(proc.getAreas(), hasKeys(0L));
+      OspfArea area = proc.getAreas().get(0L);
+      assertThat(area.getDefaultCost(), equalTo(10));
+    }
+    {
+      OspfProcess proc = vc.getOspfProcesses().get("a_filter_list");
+      assertThat(proc.getAreas(), hasKeys(0L));
+      OspfArea area = proc.getAreas().get(0L);
+      assertThat(area.getFilterListIn(), equalTo("rm1"));
+      assertThat(area.getFilterListOut(), equalTo("rm2"));
+    }
+    {
+      OspfProcess proc = vc.getOspfProcesses().get("a_nssa");
+      assertThat(proc.getAreas(), hasKeys(1L));
+      OspfAreaNssa nssa = (OspfAreaNssa) proc.getAreas().get(1L).getTypeSettings();
+      assertThat(nssa, notNullValue());
+      assertFalse(nssa.getNoRedistribution());
+      assertFalse(nssa.getNoSummary());
+      assertThat(nssa.getRouteMap(), nullValue());
+    }
+    {
+      OspfProcess proc = vc.getOspfProcesses().get("a_nssa_no_r");
+      assertThat(proc.getAreas(), hasKeys(1L));
+      OspfAreaNssa nssa = (OspfAreaNssa) proc.getAreas().get(1L).getTypeSettings();
+      assertThat(nssa, notNullValue());
+      assertTrue(nssa.getNoRedistribution());
+      assertFalse(nssa.getNoSummary());
+      assertThat(nssa.getRouteMap(), nullValue());
+    }
+    {
+      OspfProcess proc = vc.getOspfProcesses().get("a_nssa_no_s");
+      assertThat(proc.getAreas(), hasKeys(1L));
+      OspfAreaNssa nssa = (OspfAreaNssa) proc.getAreas().get(1L).getTypeSettings();
+      assertThat(nssa, notNullValue());
+      assertFalse(nssa.getNoRedistribution());
+      assertTrue(nssa.getNoSummary());
+      assertThat(nssa.getRouteMap(), nullValue());
+    }
+    {
+      OspfProcess proc = vc.getOspfProcesses().get("a_nssa_rm");
+      assertThat(proc.getAreas(), hasKeys(1L));
+      OspfAreaNssa nssa = (OspfAreaNssa) proc.getAreas().get(1L).getTypeSettings();
+      assertThat(nssa, notNullValue());
+      assertFalse(nssa.getNoRedistribution());
+      assertFalse(nssa.getNoSummary());
+      assertThat(nssa.getRouteMap(), equalTo("rm1"));
+    }
+    {
+      OspfProcess proc = vc.getOspfProcesses().get("a_r");
+      assertThat(proc.getAreas(), hasKeys(0L));
+      OspfArea area = proc.getAreas().get(0L);
+      Prefix prefix = Prefix.parse("1.1.1.1/32");
+      assertThat(area.getRanges(), hasKeys(prefix));
+      OspfAreaRange range = area.getRanges().get(prefix);
+      assertThat(range.getCost(), nullValue());
+      assertFalse(range.getNotAdvertise());
+    }
+    {
+      OspfProcess proc = vc.getOspfProcesses().get("a_r_cost");
+      assertThat(proc.getAreas(), hasKeys(0L));
+      OspfArea area = proc.getAreas().get(0L);
+      Prefix prefix = Prefix.parse("1.1.1.1/32");
+      assertThat(area.getRanges(), hasKeys(prefix));
+      OspfAreaRange range = area.getRanges().get(prefix);
+      assertThat(range.getCost(), equalTo(5));
+      assertFalse(range.getNotAdvertise());
+    }
+    {
+      OspfProcess proc = vc.getOspfProcesses().get("a_r_not_advertise");
+      assertThat(proc.getAreas(), hasKeys(0L));
+      OspfArea area = proc.getAreas().get(0L);
+      Prefix prefix = Prefix.parse("1.1.1.1/32");
+      assertThat(area.getRanges(), hasKeys(prefix));
+      OspfAreaRange range = area.getRanges().get(prefix);
+      assertThat(range.getCost(), nullValue());
+      assertTrue(range.getNotAdvertise());
+    }
+    {
+      OspfProcess proc = vc.getOspfProcesses().get("a_stub");
+      assertThat(proc.getAreas(), hasKeys(1L));
+      OspfAreaStub stub = (OspfAreaStub) proc.getAreas().get(1L).getTypeSettings();
+      assertThat(stub, notNullValue());
+      assertFalse(stub.getNoSummary());
+    }
+    {
+      OspfProcess proc = vc.getOspfProcesses().get("a_stub_no_summary");
+      assertThat(proc.getAreas(), hasKeys(1L));
+      OspfAreaStub stub = (OspfAreaStub) proc.getAreas().get(1L).getTypeSettings();
+      assertThat(stub, notNullValue());
+      assertTrue(stub.getNoSummary());
+
+      // check default for next test
+      assertThat(
+          proc.getAutoCostReferenceBandwidthMbps(),
+          equalTo(DEFAULT_AUTO_COST_REFERENCE_BANDWIDTH_MBPS));
+    }
+    {
+      OspfProcess proc = vc.getOspfProcesses().get("auto_cost");
+      assertThat(proc.getAutoCostReferenceBandwidthMbps(), equalTo(1_000));
+    }
+    {
+      OspfProcess proc = vc.getOspfProcesses().get("auto_cost_m");
+      assertThat(proc.getAutoCostReferenceBandwidthMbps(), equalTo(2_000));
+    }
+    {
+      OspfProcess proc = vc.getOspfProcesses().get("auto_cost_g");
+      assertThat(proc.getAutoCostReferenceBandwidthMbps(), equalTo(3_000_000));
+      assertFalse(proc.getBfd());
+    }
+    {
+      OspfProcess proc = vc.getOspfProcesses().get("bfd");
+      assertTrue(proc.getBfd());
+    }
+    {
+      OspfProcess proc = vc.getOspfProcesses().get("dio");
+      OspfDefaultOriginate defaultOriginate = proc.getDefaultOriginate();
+      assertFalse(defaultOriginate.getAlways());
+      assertThat(defaultOriginate.getRouteMap(), nullValue());
+    }
+    {
+      OspfProcess proc = vc.getOspfProcesses().get("dio_always");
+      OspfDefaultOriginate defaultOriginate = proc.getDefaultOriginate();
+      assertTrue(defaultOriginate.getAlways());
+      assertThat(defaultOriginate.getRouteMap(), nullValue());
+    }
+    {
+      OspfProcess proc = vc.getOspfProcesses().get("dio_route_map");
+      OspfDefaultOriginate defaultOriginate = proc.getDefaultOriginate();
+      assertFalse(defaultOriginate.getAlways());
+      assertThat(defaultOriginate.getRouteMap(), equalTo("rm1"));
+    }
+    {
+      OspfProcess proc = vc.getOspfProcesses().get("dio_always_route_map");
+      OspfDefaultOriginate defaultOriginate = proc.getDefaultOriginate();
+      assertTrue(defaultOriginate.getAlways());
+      assertThat(defaultOriginate.getRouteMap(), equalTo("rm1"));
+      assertThat(proc.getMaxMetricRouterLsa(), nullValue());
+    }
+    // TODO: extract and test log-adjacency-changes
+    {
+      OspfProcess proc = vc.getOspfProcesses().get("mm");
+      OspfMaxMetricRouterLsa mm = proc.getMaxMetricRouterLsa();
+      assertThat(mm.getExternalLsa(), nullValue());
+      assertFalse(mm.getIncludeStub());
+      assertThat(mm.getSummaryLsa(), nullValue());
+    }
+    {
+      OspfProcess proc = vc.getOspfProcesses().get("mm_external_lsa");
+      OspfMaxMetricRouterLsa mm = proc.getMaxMetricRouterLsa();
+      assertThat(mm.getExternalLsa(), instanceOf(OspfMetricAuto.class));
+      assertFalse(mm.getIncludeStub());
+      assertThat(mm.getSummaryLsa(), nullValue());
+    }
+    {
+      OspfProcess proc = vc.getOspfProcesses().get("mm_external_lsa_m");
+      OspfMaxMetricRouterLsa mm = proc.getMaxMetricRouterLsa();
+      assertThat(((OspfMetricManual) mm.getExternalLsa()).getMetric(), equalTo(123));
+      assertFalse(mm.getIncludeStub());
+      assertThat(mm.getSummaryLsa(), nullValue());
+    }
+    {
+      OspfProcess proc = vc.getOspfProcesses().get("mm_include_stub");
+      OspfMaxMetricRouterLsa mm = proc.getMaxMetricRouterLsa();
+      assertThat(mm.getExternalLsa(), nullValue());
+      assertTrue(mm.getIncludeStub());
+      assertThat(mm.getSummaryLsa(), nullValue());
+    }
+    // TODO: record on-startup
+    {
+      OspfProcess proc = vc.getOspfProcesses().get("mm_summary_lsa");
+      OspfMaxMetricRouterLsa mm = proc.getMaxMetricRouterLsa();
+      assertThat(mm.getExternalLsa(), nullValue());
+      assertFalse(mm.getIncludeStub());
+      assertThat(mm.getSummaryLsa(), instanceOf(OspfMetricAuto.class));
+    }
+    {
+      OspfProcess proc = vc.getOspfProcesses().get("mm_summary_lsa_m");
+      OspfMaxMetricRouterLsa mm = proc.getMaxMetricRouterLsa();
+      assertThat(mm.getExternalLsa(), nullValue());
+      assertFalse(mm.getIncludeStub());
+      assertThat(((OspfMetricManual) mm.getSummaryLsa()).getMetric(), equalTo(456));
+    }
+    {
+      OspfProcess proc = vc.getOspfProcesses().get("network");
+      assertThat(
+          proc.getNetworks(),
+          equalTo(
+              ImmutableMap.of(
+                  IpWildcard.ipWithWildcardMask(Ip.parse("192.168.0.0"), Ip.parse("0.0.255.255")),
+                  0L,
+                  IpWildcard.create(Prefix.strict("192.168.1.0/24")),
+                  0L)));
+      assertFalse(proc.getPassiveInterfaceDefault());
+    }
+    {
+      OspfProcess proc = vc.getOspfProcesses().get("pi_d");
+      assertTrue(proc.getPassiveInterfaceDefault());
+    }
+    {
+      OspfProcess proc = vc.getOspfProcesses().get("r_direct");
+      assertThat(proc.getRedistributeDirectRouteMap(), equalTo("rm1"));
+    }
+    // TODO: extract and test redistribute maximum-prefix
+    {
+      OspfProcess proc = vc.getOspfProcesses().get("r_static");
+      assertThat(proc.getRedistributeStaticRouteMap(), equalTo("rm1"));
+    }
+    {
+      OspfProcess proc = vc.getOspfProcesses().get("sa");
+      assertThat(
+          proc.getSummaryAddresses(),
+          hasKeys(
+              Prefix.strict("192.168.0.0/24"),
+              Prefix.strict("192.168.1.0/24"),
+              Prefix.strict("192.168.2.0/24")));
+      OspfSummaryAddress sa;
+
+      sa = proc.getSummaryAddresses().get(Prefix.strict("192.168.0.0/24"));
+      assertFalse(sa.getNotAdvertise());
+      assertThat(sa.getTag(), equalTo(0L));
+
+      sa = proc.getSummaryAddresses().get(Prefix.strict("192.168.1.0/24"));
+      assertTrue(sa.getNotAdvertise());
+      assertThat(sa.getTag(), equalTo(0L));
+
+      sa = proc.getSummaryAddresses().get(Prefix.strict("192.168.2.0/24"));
+      assertFalse(sa.getNotAdvertise());
+      assertThat(sa.getTag(), equalTo(5L));
+
+      // check defaults for next test
+      assertThat(proc.getTimersLsaArrival(), equalTo(DEFAULT_TIMERS_LSA_ARRIVAL_MS));
+      assertThat(proc.getTimersLsaGroupPacing(), equalTo(DEFAULT_TIMERS_LSA_GROUP_PACING_S));
+      assertThat(
+          proc.getTimersLsaStartInterval(), equalTo(DEFAULT_TIMERS_THROTTLE_LSA_START_INTERVAL_MS));
+      assertThat(
+          proc.getTimersLsaHoldInterval(), equalTo(DEFAULT_TIMERS_THROTTLE_LSA_HOLD_INTERVAL_MS));
+      assertThat(
+          proc.getTimersLsaMaxInterval(), equalTo(DEFAULT_TIMERS_THROTTLE_LSA_MAX_INTERVAL_MS));
+    }
+    {
+      OspfProcess proc = vc.getOspfProcesses().get("timers");
+      assertThat(proc.getTimersLsaArrival(), equalTo(10));
+      assertThat(proc.getTimersLsaGroupPacing(), equalTo(15));
+      assertThat(proc.getTimersLsaStartInterval(), equalTo(111));
+      assertThat(proc.getTimersLsaHoldInterval(), equalTo(222));
+      assertThat(proc.getTimersLsaMaxInterval(), equalTo(333));
+    }
+    {
+      DefaultVrfOspfProcess proc = vc.getOspfProcesses().get("with_vrf");
+      assertThat(proc.getAreas(), hasKeys(0L));
+      assertThat(proc.getVrfs(), hasKeys("v1"));
+      assertThat(proc.getVrfs().get("v1").getAreas(), hasKeys(1L));
+    }
+
+    assertThat(vc.getInterfaces(), hasKeys("Ethernet1/1", "Ethernet1/2", "Ethernet1/3"));
+    {
+      Interface iface = vc.getInterfaces().get("Ethernet1/1");
+      OspfInterface ospf = iface.getOspf();
+      assertThat(ospf, notNullValue());
+      // TODO: extract and test message-digest-key
+      assertThat(ospf.getDeadIntervalS(), equalTo(10));
+      assertThat(ospf.getHelloIntervalS(), equalTo(20));
+      assertThat(ospf.getProcess(), equalTo("a_auth"));
+      assertThat(ospf.getArea(), equalTo(0L));
+      assertThat(ospf.getNetwork(), nullValue());
+    }
+    {
+      Interface iface = vc.getInterfaces().get("Ethernet1/2");
+      OspfInterface ospf = iface.getOspf();
+      assertThat(ospf, notNullValue());
+      assertThat(ospf.getDeadIntervalS(), equalTo(DEFAULT_DEAD_INTERVAL_S));
+      assertThat(ospf.getHelloIntervalS(), equalTo(DEFAULT_HELLO_INTERVAL_S));
+      assertThat(ospf.getProcess(), nullValue());
+      assertThat(ospf.getArea(), nullValue());
+      assertThat(ospf.getNetwork(), equalTo(BROADCAST));
+    }
+    {
+      Interface iface = vc.getInterfaces().get("Ethernet1/3");
+      OspfInterface ospf = iface.getOspf();
+      assertThat(ospf, notNullValue());
+      assertThat(ospf.getNetwork(), equalTo(POINT_TO_POINT));
     }
   }
 
