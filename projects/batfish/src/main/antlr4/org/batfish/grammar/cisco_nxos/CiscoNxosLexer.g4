@@ -5,6 +5,9 @@ options {
 }
 
 tokens {
+  BANNER_BODY,
+  BANNER_DELIMITER,
+  MOTD,
   PASSWORD_0,
   PASSWORD_0_TEXT,
   PASSWORD_3,
@@ -306,6 +309,11 @@ BACKUP
 BANDWIDTH
 :
   'bandwidth'
+;
+
+BANNER
+:
+  'banner' -> pushMode ( M_Banner )
 ;
 
 BASH_SHELL
@@ -2973,6 +2981,84 @@ F_WordChar
 :
   [0-9A-Za-z!@#$^*_=+.;:{}]
   | '-'
+;
+
+mode M_Banner;
+
+M_Banner_EXEC
+:
+  'exec' -> type ( EXEC ) , mode ( M_BannerDelimiter )
+;
+
+M_Banner_MOTD
+:
+  'motd' -> type ( MOTD ) , mode ( M_BannerDelimiter )
+;
+
+M_Banner_NEWLINE
+:
+  F_Newline+ -> type ( NEWLINE ) , popMode
+;
+
+M_Banner_WS
+:
+  F_Whitespace+ -> channel ( HIDDEN )
+;
+
+mode M_BannerDelimiter;
+
+M_BannerDelimiter_BANNER_DELIMITER
+:
+  F_NonWhitespace
+  {
+    setBannerDelimiter();
+  }
+
+  -> type ( BANNER_DELIMITER ) , mode ( M_BannerText )
+;
+
+M_BannerDelimiter_WS
+:
+  F_Whitespace+ -> channel ( HIDDEN )
+;
+
+mode M_BannerText;
+
+M_BannerText_BANNER_DELIMITER
+:
+  {bannerDelimiterFollows()}?
+
+  .
+  {
+    unsetBannerDelimiter();
+  }
+
+  -> type ( BANNER_DELIMITER ) , mode ( M_BannerCleanup )
+;
+
+M_BannerText_BODY
+:
+  .
+  {
+    if (bannerDelimiterFollows()) {
+      setType(BANNER_BODY);
+    } else {
+      more();
+    }
+  }
+
+;
+
+mode M_BannerCleanup;
+
+M_BannerCleanup_IGNORED
+:
+  F_NonNewline+ -> channel ( HIDDEN )
+;
+
+M_BannerCleanup_NEWLINE
+:
+  F_Newline+ -> type ( NEWLINE ) , popMode
 ;
 
 mode M_DoubleQuote;

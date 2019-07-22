@@ -149,6 +149,8 @@ import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Acllal4udp_port_spec_liter
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Acllal4udp_port_spec_port_groupContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Acllal4udp_source_portContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.As_path_regexContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Banner_execContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Banner_motdContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Bgp_asnContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Bgp_distanceContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Both_export_importContext;
@@ -794,6 +796,18 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
   public void enterAcllal4_udp(Acllal4_udpContext ctx) {
     _currentActionIpAccessListLineBuilder.setProtocol(IpProtocol.UDP);
     _currentUdpOptionsBuilder = UdpOptions.builder();
+  }
+
+  @Override
+  public void exitBanner_exec(Banner_execContext ctx) {
+    String body = ctx.body != null ? ctx.body.getText() : "";
+    _configuration.setBannerExec(body);
+  }
+
+  @Override
+  public void exitBanner_motd(Banner_motdContext ctx) {
+    String body = ctx.body != null ? ctx.body.getText() : "";
+    _configuration.setBannerMotd(body);
   }
 
   @Override

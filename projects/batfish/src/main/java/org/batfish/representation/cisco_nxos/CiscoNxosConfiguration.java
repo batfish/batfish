@@ -113,6 +113,8 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
 
   private transient Configuration _c;
 
+  private @Nullable String _bannerExec;
+  private @Nullable String _bannerMotd;
   private final @Nonnull BgpGlobalConfiguration _bgpGlobalConfiguration;
   private final @Nonnull Vrf _defaultVrf;
   private @Nullable Evpn _evpn;
@@ -227,6 +229,22 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
                 iface.getInterfaceType() == InterfaceType.VLAN
                     && !_vlans.keySet().contains(iface.getVlan()))
         .forEach(iface -> iface.setActive(false));
+  }
+
+  public @Nullable String getBannerExec() {
+    return _bannerExec;
+  }
+
+  public void setBannerExec(@Nullable String bannerExec) {
+    _bannerExec = bannerExec;
+  }
+
+  public @Nullable String getBannerMotd() {
+    return _bannerMotd;
+  }
+
+  public void setBannerMotd(@Nullable String bannerMotd) {
+    _bannerMotd = bannerMotd;
   }
 
   public @Nonnull BgpGlobalConfiguration getBgpGlobalConfiguration() {
