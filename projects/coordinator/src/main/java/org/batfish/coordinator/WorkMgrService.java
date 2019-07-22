@@ -177,9 +177,7 @@ public class WorkMgrService {
     }
   }
 
-  private void checkClientVersion(String clientVersion) {
-    Version.checkCompatibleVersion("Service", "Client", clientVersion);
-  }
+  private void checkClientVersion(String clientVersion) {}
 
   private void checkNetworkAccessibility(String apiKey, String networkName) {
     if (!Main.getAuthorizer().isAccessibleNetwork(apiKey, networkName, true)) {
