@@ -498,9 +498,9 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
       IntegerSpace.of(Range.closed(1, 4_000));
   private static final IntegerSpace OSPF_AUTO_COST_REFERENCE_BANDWIDTH_MBPS_RANGE =
       IntegerSpace.of(Range.closed(1, 4_000_000));
-  private static final IntegerSpace OSPF_DEAD_INTERVAL_RANGE =
+  private static final IntegerSpace OSPF_DEAD_INTERVAL_S_RANGE =
       IntegerSpace.of(Range.closed(1, 65535));
-  private static final IntegerSpace OSPF_HELLO_INTERVAL_RANGE =
+  private static final IntegerSpace OSPF_HELLO_INTERVAL_S_RANGE =
       IntegerSpace.of(Range.closed(1, 65535));
   private static final IntegerSpace OSPF_MAX_METRIC_EXTERNAL_LSA_RANGE =
       IntegerSpace.of(Range.closed(1, 16777215));
@@ -508,15 +508,15 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
       IntegerSpace.of(Range.closed(1, 16777215));
   private static final IntegerSpace OSPF_PROCESS_NAME_LENGTH_RANGE =
       IntegerSpace.of(Range.closed(1, 20));
-  private static final IntegerSpace OSPF_TIMERS_LSA_ARRIVAL_RANGE =
+  private static final IntegerSpace OSPF_TIMERS_LSA_ARRIVAL_MS_RANGE =
       IntegerSpace.of(Range.closed(10, 600_000));
-  private static final IntegerSpace OSPF_TIMERS_LSA_GROUP_PACING_RANGE =
+  private static final IntegerSpace OSPF_TIMERS_LSA_GROUP_PACING_S_RANGE =
       IntegerSpace.of(Range.closed(1, 1800));
-  private static final IntegerSpace OSPF_TIMERS_LSA_HOLD_INTERVAL_RANGE =
+  private static final IntegerSpace OSPF_TIMERS_LSA_HOLD_INTERVAL_MS_RANGE =
       IntegerSpace.of(Range.closed(50, 30000));
-  private static final IntegerSpace OSPF_TIMERS_LSA_MAX_INTERVAL_RANGE =
+  private static final IntegerSpace OSPF_TIMERS_LSA_MAX_INTERVAL_MS_RANGE =
       IntegerSpace.of(Range.closed(50, 30000));
-  private static final IntegerSpace OSPF_TIMERS_LSA_START_INTERVAL_RANGE =
+  private static final IntegerSpace OSPF_TIMERS_LSA_START_INTERVAL_MS_RANGE =
       IntegerSpace.of(Range.closed(0, 5000));
   private static final IntegerSpace PACKET_LENGTH_RANGE = IntegerSpace.of(Range.closed(20, 9210));
   private static final IntegerSpace PORT_CHANNEL_RANGE = IntegerSpace.of(Range.closed(1, 4096));
@@ -881,7 +881,7 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
   @Override
   public void exitIipo_dead_interval(Iipo_dead_intervalContext ctx) {
     Optional<Integer> deadIntervalOrErr =
-        toIntegerInSpace(ctx, ctx.interval_s, OSPF_DEAD_INTERVAL_RANGE, "OSPF dead-interval");
+        toIntegerInSpace(ctx, ctx.interval_s, OSPF_DEAD_INTERVAL_S_RANGE, "OSPF dead-interval");
     deadIntervalOrErr.ifPresent(
         deadInterval ->
             _currentInterfaces.forEach(
@@ -891,7 +891,7 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
   @Override
   public void exitIipo_hello_interval(Iipo_hello_intervalContext ctx) {
     Optional<Integer> helloIntervalOrErr =
-        toIntegerInSpace(ctx, ctx.interval_s, OSPF_HELLO_INTERVAL_RANGE, "OSPF hello-interval");
+        toIntegerInSpace(ctx, ctx.interval_s, OSPF_HELLO_INTERVAL_S_RANGE, "OSPF hello-interval");
     helloIntervalOrErr.ifPresent(
         helloInterval ->
             _currentInterfaces.forEach(
@@ -1211,14 +1211,15 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
 
   @Override
   public void exitRot_lsa_arrival(Rot_lsa_arrivalContext ctx) {
-    toIntegerInSpace(ctx, ctx.time_ms, OSPF_TIMERS_LSA_ARRIVAL_RANGE, "OSPF LSA arrival interval")
+    toIntegerInSpace(
+            ctx, ctx.time_ms, OSPF_TIMERS_LSA_ARRIVAL_MS_RANGE, "OSPF LSA arrival interval")
         .ifPresent(_currentOspfProcess::setTimersLsaArrival);
   }
 
   @Override
   public void enterRot_lsa_group_pacing(Rot_lsa_group_pacingContext ctx) {
     toIntegerInSpace(
-            ctx, ctx.time_s, OSPF_TIMERS_LSA_GROUP_PACING_RANGE, "OSPF LSA group pacing interval")
+            ctx, ctx.time_s, OSPF_TIMERS_LSA_GROUP_PACING_S_RANGE, "OSPF LSA group pacing interval")
         .ifPresent(_currentOspfProcess::setTimersLsaGroupPacing);
   }
 
@@ -1228,7 +1229,7 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
         toIntegerInSpace(
             ctx,
             ctx.start_interval_ms,
-            OSPF_TIMERS_LSA_START_INTERVAL_RANGE,
+            OSPF_TIMERS_LSA_START_INTERVAL_MS_RANGE,
             "OSPF LSA start interval");
     if (!startIntervalOrErr.isPresent()) {
       return;
@@ -1237,14 +1238,17 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
         toIntegerInSpace(
             ctx,
             ctx.hold_interval_ms,
-            OSPF_TIMERS_LSA_HOLD_INTERVAL_RANGE,
+            OSPF_TIMERS_LSA_HOLD_INTERVAL_MS_RANGE,
             "OSPF LSA hold interval");
     if (!holdIntervalOrErr.isPresent()) {
       return;
     }
     Optional<Integer> maxIntervalOrErr =
         toIntegerInSpace(
-            ctx, ctx.max_interval_ms, OSPF_TIMERS_LSA_MAX_INTERVAL_RANGE, "OSPF LSA max interval");
+            ctx,
+            ctx.max_interval_ms,
+            OSPF_TIMERS_LSA_MAX_INTERVAL_MS_RANGE,
+            "OSPF LSA max interval");
     if (!maxIntervalOrErr.isPresent()) {
       return;
     }
