@@ -102,7 +102,7 @@ public final class EigrpProcess implements Serializable {
   }
 
   /** Add an {@link EigrpNeighborConfig} to this EIGRP process */
-  public void addNeighbor(@Nonnull EigrpNeighborConfig neighborConfig) {
+  public void addNeighbor(EigrpNeighborConfig neighborConfig) {
     _neighbors =
         ImmutableSortedMap.<String, EigrpNeighborConfig>naturalOrder()
             .putAll(_neighbors)
@@ -111,7 +111,7 @@ public final class EigrpProcess implements Serializable {
   }
 
   /** Add a {@link Collection} of {@link EigrpNeighborConfig}s to this EIGRP process */
-  public void addNeighbors(@Nonnull Collection<EigrpNeighborConfig> neighborConfigs) {
+  public void addNeighbors(Collection<EigrpNeighborConfig> neighborConfigs) {
     _neighbors =
         ImmutableSortedMap.<String, EigrpNeighborConfig>naturalOrder()
             .putAll(_neighbors)
