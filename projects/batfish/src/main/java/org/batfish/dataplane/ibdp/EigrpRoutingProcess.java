@@ -11,6 +11,7 @@ import com.google.common.graph.Network;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Queue;
 import java.util.Set;
 import java.util.SortedMap;
@@ -477,16 +478,22 @@ final class EigrpRoutingProcess implements RoutingProcess<EigrpTopology, EigrpRo
     // Loop over neighbors, enqueue messages
     for (EigrpEdge edge : _incomingExternalRoutes.keySet()) {
       Queue<RouteAdvertisement<EigrpExternalRoute>> queue =
-          requireNonNull(
-                  allNodes
-                      .get(edge.getNode1().getHostname())
-                      .getVirtualRouters()
-                      .get(edge.getNode1().getVrf())
-                      .getEigrpProcess(_asn))
-              ._incomingExternalRoutes
-              .get(edge.reverse());
+          getNeighborEigrpProcess(allNodes, edge, _asn)._incomingExternalRoutes.get(edge.reverse());
       VirtualRouter.queueDelta(queue, delta);
     }
+  }
+
+  @Nonnull
+  private static EigrpRoutingProcess getNeighborEigrpProcess(
+      Map<String, Node> allNodes, EigrpEdge edge, long asn) {
+    return Optional.ofNullable(allNodes.get(edge.getNode1().getHostname()))
+        .map(Node::getVirtualRouters)
+        .map(vrs -> vrs.get(edge.getNode1().getVrf()))
+        .map(vrf -> vrf.getEigrpProcess(asn))
+        .orElseThrow(
+            () ->
+                new IllegalStateException(
+                    String.format("Cannot find EigrpProcess for %s", edge.getNode1())));
   }
 
   /** Re-initialize RIBs (at the start of each iteration). */
