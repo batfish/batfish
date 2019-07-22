@@ -1,6 +1,7 @@
 package org.batfish.grammar.cisco_nxos;
 
 import static com.google.common.base.Preconditions.checkArgument;
+import static org.batfish.datamodel.IpWildcard.ipWithWildcardMask;
 import static org.batfish.representation.cisco_nxos.CiscoNxosConfiguration.getCanonicalInterfaceNamePrefix;
 import static org.batfish.representation.cisco_nxos.CiscoNxosInterfaceType.ETHERNET;
 import static org.batfish.representation.cisco_nxos.CiscoNxosInterfaceType.LOOPBACK;
@@ -111,6 +112,10 @@ import org.batfish.grammar.cisco_nxos.CiscoNxosParser.I_switchport_trunk_allowed
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.I_switchport_trunk_nativeContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.I_vrf_memberContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Icl_standardContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Iipo_dead_intervalContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Iipo_hello_intervalContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Iipo_networkContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Iipr_ospfContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Interface_addressContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Interface_bandwidth_kbpsContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Interface_descriptionContext;
@@ -146,6 +151,9 @@ import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Nvg_suppress_arpContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Nvm_ingress_replicationContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Nvm_mcast_groupContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Nvm_suppress_arpContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Ospf_area_default_costContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Ospf_area_idContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Ospf_area_range_costContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Packet_lengthContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Pl_actionContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Pl_descriptionContext;
@@ -165,11 +173,33 @@ import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Rmsapp_last_asContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Rmsapp_literalContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Rmsipnh_literalContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Rmsipnh_unchangedContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Ro_areaContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Ro_auto_costContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Ro_bfdContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Ro_default_informationContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Ro_max_metricContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Ro_networkContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Ro_passive_interfaceContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Ro_summary_addressContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Ro_vrfContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Roa_authenticationContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Roa_default_costContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Roa_filter_listContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Roa_nssaContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Roa_rangeContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Roa_stubContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Ror_directContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Ror_staticContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Rot_lsa_arrivalContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Rot_lsa_group_pacingContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Rott_lsaContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Route_distinguisherContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Route_distinguisher_or_autoContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Route_map_nameContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Route_map_sequenceContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Route_networkContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Router_ospfContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Router_ospf_nameContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.S_evpnContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.S_hostnameContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.S_interface_nveContext;
@@ -208,6 +238,7 @@ import org.batfish.representation.cisco_nxos.CiscoNxosConfiguration;
 import org.batfish.representation.cisco_nxos.CiscoNxosInterfaceType;
 import org.batfish.representation.cisco_nxos.CiscoNxosStructureType;
 import org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage;
+import org.batfish.representation.cisco_nxos.DefaultVrfOspfProcess;
 import org.batfish.representation.cisco_nxos.Evpn;
 import org.batfish.representation.cisco_nxos.EvpnVni;
 import org.batfish.representation.cisco_nxos.FragmentsBehavior;
@@ -230,6 +261,21 @@ import org.batfish.representation.cisco_nxos.LiteralPortSpec;
 import org.batfish.representation.cisco_nxos.Nve;
 import org.batfish.representation.cisco_nxos.Nve.IngressReplicationProtocol;
 import org.batfish.representation.cisco_nxos.NveVni;
+import org.batfish.representation.cisco_nxos.OspfArea;
+import org.batfish.representation.cisco_nxos.OspfAreaAuthentication;
+import org.batfish.representation.cisco_nxos.OspfAreaNssa;
+import org.batfish.representation.cisco_nxos.OspfAreaRange;
+import org.batfish.representation.cisco_nxos.OspfAreaStub;
+import org.batfish.representation.cisco_nxos.OspfDefaultOriginate;
+import org.batfish.representation.cisco_nxos.OspfInterface;
+import org.batfish.representation.cisco_nxos.OspfMaxMetricRouterLsa;
+import org.batfish.representation.cisco_nxos.OspfMetric;
+import org.batfish.representation.cisco_nxos.OspfMetricAuto;
+import org.batfish.representation.cisco_nxos.OspfMetricManual;
+import org.batfish.representation.cisco_nxos.OspfNetworkType;
+import org.batfish.representation.cisco_nxos.OspfProcess;
+import org.batfish.representation.cisco_nxos.OspfSummaryAddress;
+import org.batfish.representation.cisco_nxos.OspfVrf;
 import org.batfish.representation.cisco_nxos.PortGroupPortSpec;
 import org.batfish.representation.cisco_nxos.PortSpec;
 import org.batfish.representation.cisco_nxos.RemarkIpAccessListLine;
@@ -295,6 +341,34 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
   private static final int MAX_VRF_NAME_LENGTH = 32;
   private static final IntegerSpace NUM_AS_PATH_PREPENDS_RANGE =
       IntegerSpace.of(Range.closed(1, 10));
+  private static final IntegerSpace OSPF_AREA_DEFAULT_COST_RANGE =
+      IntegerSpace.of(Range.closed(0, 16777215));
+  private static final IntegerSpace OSPF_AREA_RANGE_COST_RANGE =
+      IntegerSpace.of(Range.closed(0, 16777215));
+  private static final IntegerSpace OSPF_AUTO_COST_REFERENCE_BANDWIDTH_GBPS_RANGE =
+      IntegerSpace.of(Range.closed(1, 4_000));
+  private static final IntegerSpace OSPF_AUTO_COST_REFERENCE_BANDWIDTH_MBPS_RANGE =
+      IntegerSpace.of(Range.closed(1, 4_000_000));
+  private static final IntegerSpace OSPF_DEAD_INTERVAL_RANGE =
+      IntegerSpace.of(Range.closed(1, 65535));
+  private static final IntegerSpace OSPF_HELLO_INTERVAL_RANGE =
+      IntegerSpace.of(Range.closed(1, 65535));
+  private static final IntegerSpace OSPF_MAX_METRIC_EXTERNAL_LSA_RANGE =
+      IntegerSpace.of(Range.closed(1, 16777215));
+  private static final IntegerSpace OSPF_MAX_METRIC_SUMMARY_LSA_RANGE =
+      IntegerSpace.of(Range.closed(1, 16777215));
+  private static final IntegerSpace OSPF_PROCESS_NAME_LENGTH_RANGE =
+      IntegerSpace.of(Range.closed(1, 20));
+  private static final IntegerSpace OSPF_TIMERS_LSA_ARRIVAL_RANGE =
+      IntegerSpace.of(Range.closed(10, 600_000));
+  private static final IntegerSpace OSPF_TIMERS_LSA_GROUP_PACING_RANGE =
+      IntegerSpace.of(Range.closed(1, 1800));
+  private static final IntegerSpace OSPF_TIMERS_LSA_HOLD_INTERVAL_RANGE =
+      IntegerSpace.of(Range.closed(50, 30000));
+  private static final IntegerSpace OSPF_TIMERS_LSA_MAX_INTERVAL_RANGE =
+      IntegerSpace.of(Range.closed(50, 30000));
+  private static final IntegerSpace OSPF_TIMERS_LSA_START_INTERVAL_RANGE =
+      IntegerSpace.of(Range.closed(0, 5000));
   private static final IntegerSpace PACKET_LENGTH_RANGE = IntegerSpace.of(Range.closed(20, 9210));
   private static final IntegerSpace PORT_CHANNEL_RANGE = IntegerSpace.of(Range.closed(1, 4096));
   private static final IntegerSpace ROUTE_MAP_ENTRY_SEQUENCE_RANGE =
@@ -399,6 +473,15 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
     }
   }
 
+  private static long toLong(Ospf_area_idContext ctx) {
+    if (ctx.ip != null) {
+      return toIp(ctx.ip).asLong();
+    } else {
+      assert ctx.num != null;
+      return toLong(ctx.num);
+    }
+  }
+
   private static long toLong(Uint32Context ctx) {
     return Long.parseLong(ctx.getText());
   }
@@ -449,6 +532,7 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
   private CiscoNxosConfiguration _configuration;
   private ActionIpAccessListLine.Builder _currentActionIpAccessListLineBuilder;
   private Boolean _currentActionIpAccessListLineUnusable;
+  private DefaultVrfOspfProcess _currentDefaultVrfOspfProcess;
   private EvpnVni _currentEvpnVni;
   private List<Interface> _currentInterfaces;
   private IpAccessList _currentIpAccessList;
@@ -457,6 +541,8 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
   private Layer3Options.Builder _currentLayer3OptionsBuilder;
   private List<Nve> _currentNves;
   private List<NveVni> _currentNveVnis;
+  private OspfArea _currentOspfArea;
+  private OspfProcess _currentOspfProcess;
   private RouteMapEntry _currentRouteMapEntry;
   private TcpFlags.Builder _currentTcpFlagsBuilder;
   private TcpOptions.Builder _currentTcpOptionsBuilder;
@@ -630,6 +716,57 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
   }
 
   @Override
+  public void exitIipo_dead_interval(Iipo_dead_intervalContext ctx) {
+    Optional<Integer> deadIntervalOrErr =
+        toIntegerInSpace(ctx, ctx.interval_s, OSPF_DEAD_INTERVAL_RANGE, "OSPF dead-interval");
+    deadIntervalOrErr.ifPresent(
+        deadInterval ->
+            _currentInterfaces.forEach(
+                iface -> iface.getOrCreateOspf().setDeadInterval(deadInterval)));
+  }
+
+  @Override
+  public void exitIipo_hello_interval(Iipo_hello_intervalContext ctx) {
+    Optional<Integer> helloIntervalOrErr =
+        toIntegerInSpace(ctx, ctx.interval_s, OSPF_HELLO_INTERVAL_RANGE, "OSPF hello-interval");
+    helloIntervalOrErr.ifPresent(
+        helloInterval ->
+            _currentInterfaces.forEach(
+                iface -> iface.getOrCreateOspf().setHelloInterval(helloInterval)));
+  }
+
+  @Override
+  public void exitIipo_network(Iipo_networkContext ctx) {
+    OspfNetworkType type;
+    if (ctx.BROADCAST() != null) {
+      type = OspfNetworkType.BROADCAST;
+    } else if (ctx.POINT_TO_POINT() != null) {
+      type = OspfNetworkType.POINT_TO_POINT;
+    } else {
+      // assume valid but unsupported
+      todo(ctx);
+      return;
+    }
+    _currentInterfaces.forEach(iface -> iface.getOrCreateOspf().setNetwork(type));
+  }
+
+  @Override
+  public void exitIipr_ospf(Iipr_ospfContext ctx) {
+    Optional<String> nameOrErr = toString(ctx, ctx.name);
+    if (!nameOrErr.isPresent()) {
+      return;
+    }
+    String name = nameOrErr.get();
+    long area = toLong(ctx.area);
+    _currentInterfaces.forEach(
+        iface -> {
+          OspfInterface ospf = iface.getOrCreateOspf();
+          ospf.setProcess(name);
+          ospf.setArea(area);
+        });
+  }
+
+  @Override
   public void enterIp_access_list(Ip_access_listContext ctx) {
     Optional<String> nameOpt = toString(ctx, ctx.name);
     if (!nameOpt.isPresent()) {
@@ -730,6 +867,366 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
     if (ctx.ASSOCIATE_VRF() != null) {
       _currentNveVnis.forEach(memberVni -> memberVni.setAssociateVrf(true));
     }
+  }
+
+  @Override
+  public void enterRo_area(Ro_areaContext ctx) {
+    long areaId = toLong(ctx.id);
+    _currentOspfArea =
+        _currentOspfProcess
+            .getAreas()
+            .computeIfAbsent(
+                areaId,
+                id -> {
+                  // TODO: use new defineStructure from batfish/batfish#4281
+                  _configuration.defineStructure(
+                      CiscoNxosStructureType.OSPF_AREA,
+                      Long.toString(id),
+                      ctx.getStart().getLine());
+                  return new OspfArea(id);
+                });
+  }
+
+  @Override
+  public void exitRo_area(Ro_areaContext ctx) {
+    _currentOspfArea = null;
+  }
+
+  @Override
+  public void exitRo_auto_cost(Ro_auto_costContext ctx) {
+    if (ctx.gbps != null) {
+      toIntegerInSpace(
+              ctx,
+              ctx.gbps,
+              OSPF_AUTO_COST_REFERENCE_BANDWIDTH_GBPS_RANGE,
+              "router ospf auto-cost reference-bandwidth gbps")
+          .ifPresent(gbps -> _currentOspfProcess.setAutoCostReferenceBandwidth(gbps * 1000));
+    } else {
+      assert ctx.mbps != null;
+      toIntegerInSpace(
+              ctx,
+              ctx.mbps,
+              OSPF_AUTO_COST_REFERENCE_BANDWIDTH_MBPS_RANGE,
+              "router ospf auto-cost reference-bandwidth mbps")
+          .ifPresent(_currentOspfProcess::setAutoCostReferenceBandwidth);
+    }
+  }
+
+  @Override
+  public void exitRo_bfd(Ro_bfdContext ctx) {
+    _currentOspfProcess.setBfd(true);
+  }
+
+  @Override
+  public void exitRo_default_information(Ro_default_informationContext ctx) {
+    String routeMap = null;
+    if (ctx.rm != null) {
+      Optional<String> routeMapOrErr = toString(ctx, ctx.rm);
+      if (!routeMapOrErr.isPresent()) {
+        return;
+      }
+      routeMap = routeMapOrErr.get();
+    }
+    OspfDefaultOriginate defaultOriginate = _currentOspfProcess.getDefaultOriginate();
+    if (defaultOriginate == null) {
+      defaultOriginate = new OspfDefaultOriginate();
+      _currentOspfProcess.setDefaultOriginate(defaultOriginate);
+    }
+    if (ctx.always != null) {
+      defaultOriginate.setAlways(true);
+    }
+    if (routeMap != null) {
+      defaultOriginate.setRouteMap(routeMap);
+    }
+  }
+
+  @Override
+  public void exitRo_max_metric(Ro_max_metricContext ctx) {
+    @Nullable OspfMetric externalLsa = null;
+    if (ctx.external_lsa != null) {
+      if (ctx.manual_external_lsa != null) {
+        Optional<Integer> externalLsaOrErr =
+            toIntegerInSpace(
+                ctx,
+                ctx.manual_external_lsa,
+                OSPF_MAX_METRIC_EXTERNAL_LSA_RANGE,
+                "OSPF external LSA max metric");
+        if (!externalLsaOrErr.isPresent()) {
+          return;
+        }
+        externalLsa = new OspfMetricManual(externalLsaOrErr.get());
+      } else {
+        externalLsa = OspfMetricAuto.instance();
+      }
+    }
+    @Nullable OspfMetric summaryLsa = null;
+    if (ctx.summary_lsa != null) {
+      if (ctx.manual_summary_lsa != null) {
+        Optional<Integer> summaryLsaOrErr =
+            toIntegerInSpace(
+                ctx,
+                ctx.manual_summary_lsa,
+                OSPF_MAX_METRIC_SUMMARY_LSA_RANGE,
+                "OSPF summary LSA max metric");
+        if (!summaryLsaOrErr.isPresent()) {
+          return;
+        }
+        summaryLsa = new OspfMetricManual(summaryLsaOrErr.get());
+      } else {
+        summaryLsa = OspfMetricAuto.instance();
+      }
+    }
+
+    OspfMaxMetricRouterLsa maxMetricRouterLsa = _currentOspfProcess.getMaxMetricRouterLsa();
+    if (maxMetricRouterLsa == null) {
+      maxMetricRouterLsa = new OspfMaxMetricRouterLsa();
+      _currentOspfProcess.setMaxMetricRouterLsa(maxMetricRouterLsa);
+    }
+    if (externalLsa != null) {
+      maxMetricRouterLsa.setExternalLsa(externalLsa);
+    }
+    if (ctx.include_stub != null) {
+      maxMetricRouterLsa.setIncludeStub(true);
+    }
+    if (summaryLsa != null) {
+      maxMetricRouterLsa.setSummaryLsa(summaryLsa);
+    }
+  }
+
+  @Override
+  public void exitRo_network(Ro_networkContext ctx) {
+    IpWildcard wildcard;
+    if (ctx.ip != null) {
+      wildcard = ipWithWildcardMask(toIp(ctx.ip), toIp(ctx.wildcard));
+    } else {
+      assert ctx.prefix != null;
+      wildcard = IpWildcard.create(toPrefix(ctx.prefix));
+    }
+    _currentOspfProcess.getNetworks().put(wildcard, toLong(ctx.id));
+  }
+
+  @Override
+  public void exitRo_passive_interface(Ro_passive_interfaceContext ctx) {
+    _currentOspfProcess.setPassiveInterfaceDefault(true);
+  }
+
+  @Override
+  public void exitRor_direct(Ror_directContext ctx) {
+    toString(ctx, ctx.rm).ifPresent(_currentOspfProcess::setRedistributeDirectRouteMap);
+  }
+
+  @Override
+  public void exitRor_static(Ror_staticContext ctx) {
+    toString(ctx, ctx.rm).ifPresent(_currentOspfProcess::setRedistributeStaticRouteMap);
+  }
+
+  @Override
+  public void exitRo_summary_address(Ro_summary_addressContext ctx) {
+    OspfSummaryAddress summaryAddress =
+        _currentOspfProcess
+            .getSummaryAddresses()
+            .computeIfAbsent(toPrefix(ctx.network), OspfSummaryAddress::new);
+    if (ctx.not_advertise != null) {
+      summaryAddress.setNotAdvertise(true);
+    } else if (ctx.tag != null) {
+      summaryAddress.setNotAdvertise(false);
+      summaryAddress.setTag(toLong(ctx.tag));
+    }
+  }
+
+  @Override
+  public void enterRo_vrf(Ro_vrfContext ctx) {
+    Optional<String> nameOrErr = toString(ctx, ctx.name);
+    if (!nameOrErr.isPresent()) {
+      _currentOspfProcess = new OspfVrf("dummy");
+      return;
+    }
+    _currentOspfProcess =
+        _currentDefaultVrfOspfProcess.getVrfs().computeIfAbsent(nameOrErr.get(), OspfVrf::new);
+  }
+
+  @Override
+  public void exitRo_vrf(Ro_vrfContext ctx) {
+    _currentOspfProcess = _currentDefaultVrfOspfProcess;
+  }
+
+  @Override
+  public void exitRot_lsa_arrival(Rot_lsa_arrivalContext ctx) {
+    toIntegerInSpace(ctx, ctx.time_ms, OSPF_TIMERS_LSA_ARRIVAL_RANGE, "OSPF LSA arrival interval")
+        .ifPresent(_currentOspfProcess::setTimersLsaArrival);
+  }
+
+  @Override
+  public void enterRot_lsa_group_pacing(Rot_lsa_group_pacingContext ctx) {
+    toIntegerInSpace(
+            ctx, ctx.time_s, OSPF_TIMERS_LSA_GROUP_PACING_RANGE, "OSPF LSA group pacing interval")
+        .ifPresent(_currentOspfProcess::setTimersLsaGroupPacing);
+  }
+
+  @Override
+  public void exitRott_lsa(Rott_lsaContext ctx) {
+    Optional<Integer> startIntervalOrErr =
+        toIntegerInSpace(
+            ctx,
+            ctx.start_interval_ms,
+            OSPF_TIMERS_LSA_START_INTERVAL_RANGE,
+            "OSPF LSA start interval");
+    if (!startIntervalOrErr.isPresent()) {
+      return;
+    }
+    Optional<Integer> holdIntervalOrErr =
+        toIntegerInSpace(
+            ctx,
+            ctx.hold_interval_ms,
+            OSPF_TIMERS_LSA_HOLD_INTERVAL_RANGE,
+            "OSPF LSA hold interval");
+    if (!holdIntervalOrErr.isPresent()) {
+      return;
+    }
+    Optional<Integer> maxIntervalOrErr =
+        toIntegerInSpace(
+            ctx, ctx.max_interval_ms, OSPF_TIMERS_LSA_MAX_INTERVAL_RANGE, "OSPF LSA max interval");
+    if (!maxIntervalOrErr.isPresent()) {
+      return;
+    }
+    _currentOspfProcess.setTimersLsaStartInterval(startIntervalOrErr.get());
+    _currentOspfProcess.setTimersLsaHoldInterval(holdIntervalOrErr.get());
+    _currentOspfProcess.setTimersLsaMaxInterval(maxIntervalOrErr.get());
+  }
+
+  @Override
+  public void exitRoa_authentication(Roa_authenticationContext ctx) {
+    _currentOspfArea.setAuthentication(
+        ctx.digest != null ? OspfAreaAuthentication.MESSAGE_DIGEST : OspfAreaAuthentication.SIMPLE);
+  }
+
+  @Override
+  public void exitRoa_default_cost(Roa_default_costContext ctx) {
+    toInteger(ctx, ctx.cost).ifPresent(_currentOspfArea::setDefaultCost);
+  }
+
+  @Override
+  public void exitRoa_filter_list(Roa_filter_listContext ctx) {
+    Optional<String> nameOrErr = toString(ctx, ctx.name);
+    if (!nameOrErr.isPresent()) {
+      return;
+    }
+    String name = nameOrErr.get();
+    CiscoNxosStructureUsage usage;
+    if (ctx.in != null) {
+      usage = CiscoNxosStructureUsage.OSPF_AREA_FILTER_LIST_IN;
+      _currentOspfArea.setFilterListIn(name);
+    } else {
+      assert ctx.out != null;
+      usage = CiscoNxosStructureUsage.OSPF_AREA_FILTER_LIST_OUT;
+      _currentOspfArea.setFilterListOut(name);
+    }
+    _configuration.referenceStructure(
+        CiscoNxosStructureType.ROUTE_MAP, name, usage, ctx.getStart().getLine());
+  }
+
+  @Override
+  public void exitRoa_nssa(Roa_nssaContext ctx) {
+    if (_currentOspfArea.getId() == 0L) {
+      _w.addWarning(ctx, getFullText(ctx), _parser, "Backbone area cannot be an NSSA");
+      return;
+    }
+    String routeMap = null;
+    if (ctx.rm != null) {
+      Optional<String> routeMapOrErr = toString(ctx, ctx.rm);
+      if (!routeMapOrErr.isPresent()) {
+        return;
+      }
+      routeMap = routeMapOrErr.get();
+    }
+    OspfAreaNssa nssa =
+        Optional.ofNullable(_currentOspfArea.getTypeSettings())
+            .filter(OspfAreaNssa.class::isInstance)
+            .map(OspfAreaNssa.class::cast)
+            .orElseGet(
+                () -> {
+                  // overwrite if missing or a different area type
+                  OspfAreaNssa newNssa = new OspfAreaNssa();
+                  _currentOspfArea.setTypeSettings(newNssa);
+                  return newNssa;
+                });
+    if (ctx.no_redistribution != null) {
+      nssa.setNoRedistribution(true);
+    }
+    if (ctx.no_summary != null) {
+      nssa.setNoSummary(true);
+    }
+    if (routeMap != null) {
+      nssa.setRouteMap(routeMap);
+    }
+  }
+
+  @Override
+  public void exitRoa_range(Roa_rangeContext ctx) {
+    Integer cost = null;
+    if (ctx.cost != null) {
+      Optional<Integer> costOrErr = toInteger(ctx, ctx.cost);
+      if (!costOrErr.isPresent()) {
+        return;
+      }
+      cost = costOrErr.get();
+    }
+    OspfAreaRange range =
+        _currentOspfArea.getRanges().computeIfAbsent(toPrefix(ctx.network), OspfAreaRange::new);
+    if (cost != null) {
+      range.setCost(cost);
+    }
+    if (ctx.not_advertise != null) {
+      range.setNotAdvertise(true);
+    }
+  }
+
+  @Override
+  public void exitRoa_stub(Roa_stubContext ctx) {
+    if (_currentOspfArea.getId() == 0L) {
+      _w.addWarning(ctx, getFullText(ctx), _parser, "Backbone area cannot be a stub");
+      return;
+    }
+    OspfAreaStub stub =
+        Optional.ofNullable(_currentOspfArea.getTypeSettings())
+            .filter(OspfAreaStub.class::isInstance)
+            .map(OspfAreaStub.class::cast)
+            .orElseGet(
+                () -> {
+                  // overwrite if missing or a different area type
+                  OspfAreaStub newStub = new OspfAreaStub();
+                  _currentOspfArea.setTypeSettings(newStub);
+                  return newStub;
+                });
+    if (ctx.no_summary != null) {
+      stub.setNoSummary(true);
+    }
+  }
+
+  @Override
+  public void enterRouter_ospf(Router_ospfContext ctx) {
+    Optional<String> nameOrErr = toString(ctx, ctx.name);
+    if (!nameOrErr.isPresent()) {
+      return;
+    }
+    _currentDefaultVrfOspfProcess =
+        _configuration
+            .getOspfProcesses()
+            .computeIfAbsent(
+                nameOrErr.get(),
+                name -> {
+                  // TODO: use new defineStructure from batfish/batfish#4281
+                  _configuration.defineStructure(
+                      CiscoNxosStructureType.ROUTER_OSPF, name, ctx.getStart().getLine());
+                  return new DefaultVrfOspfProcess(name);
+                });
+    _currentOspfProcess = _currentDefaultVrfOspfProcess;
+  }
+
+  @Override
+  public void exitRouter_ospf(Router_ospfContext ctx) {
+    _currentDefaultVrfOspfProcess = null;
+    _currentOspfProcess = null;
   }
 
   @Override
@@ -984,8 +1481,8 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
 
   @Override
   public void enterS_vrf_context(S_vrf_contextContext ctx) {
-    String name = toVrfName(ctx, ctx.name);
-    if (name == null) {
+    Optional<String> nameOrErr = toString(ctx, ctx.name);
+    if (!nameOrErr.isPresent()) {
       _currentVrf = new Vrf("dummy");
       return;
     }
@@ -993,11 +1490,11 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
         _configuration
             .getVrfs()
             .computeIfAbsent(
-                name,
-                n -> {
+                nameOrErr.get(),
+                name -> {
                   _configuration.defineStructure(
                       CiscoNxosStructureType.VRF, name, ctx.getStart().getLine());
-                  return new Vrf(n);
+                  return new Vrf(name);
                 });
   }
 
@@ -1600,16 +2097,16 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
 
   @Override
   public void exitI_vrf_member(I_vrf_memberContext ctx) {
-    String name = toVrfName(ctx, ctx.name);
-    if (name == null) {
+    Optional<String> nameOrErr = toString(ctx, ctx.name);
+    if (!nameOrErr.isPresent()) {
       return;
     }
     if (_currentInterfaces.stream()
         .anyMatch(iface -> iface.getSwitchportMode() != SwitchportMode.NONE)) {
-      _w.redFlag(
-          String.format("Cannot assign VRF to switchport interface(s) in: %s", getFullText(ctx)));
+      _w.addWarning(ctx, getFullText(ctx), _parser, "Cannot assign VRF to switchport interface(s)");
       return;
     }
+    String name = nameOrErr.get();
     _configuration.referenceStructure(
         CiscoNxosStructureType.VRF,
         name,
@@ -1656,10 +2153,11 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
       builder.setNextHopIp(toIp(ctx.nhip));
     }
     if (ctx.nhvrf != null) {
-      String vrf = toVrfName(ctx, ctx.nhvrf);
-      if (vrf == null) {
+      Optional<String> vrfOrErr = toString(ctx, ctx.nhvrf);
+      if (!vrfOrErr.isPresent()) {
         return;
       }
+      String vrf = vrfOrErr.get();
       _configuration.referenceStructure(
           CiscoNxosStructureType.VRF, vrf, CiscoNxosStructureUsage.IP_ROUTE_NEXT_HOP_VRF, line);
       builder.setNextHopVrf(vrf);
@@ -2188,6 +2686,18 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
   }
 
   private @Nonnull Optional<Integer> toInteger(
+      ParserRuleContext messageCtx, Ospf_area_default_costContext ctx) {
+    return toIntegerInSpace(
+        messageCtx, ctx, OSPF_AREA_DEFAULT_COST_RANGE, "router ospf area default-cost");
+  }
+
+  private @Nonnull Optional<Integer> toInteger(
+      ParserRuleContext messageCtx, Ospf_area_range_costContext ctx) {
+    return toIntegerInSpace(
+        messageCtx, ctx, OSPF_AREA_RANGE_COST_RANGE, "router ospf area range cost");
+  }
+
+  private @Nonnull Optional<Integer> toInteger(
       ParserRuleContext messageCtx, Packet_lengthContext ctx) {
     return toIntegerInSpace(messageCtx, ctx, PACKET_LENGTH_RANGE, "packet length");
   }
@@ -2689,6 +3199,12 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
         messageCtx, ctx, IP_PREFIX_LIST_NAME_LENGTH_RANGE, "ip prefix-list name");
   }
 
+  private @Nonnull Optional<String> toString(
+      ParserRuleContext messageCtx, Router_ospf_nameContext ctx) {
+    return toStringWithLengthInSpace(
+        messageCtx, ctx, OSPF_PROCESS_NAME_LENGTH_RANGE, "OSPF process name");
+  }
+
   private @Nullable String toString(ParserRuleContext messageCtx, Static_route_nameContext ctx) {
     String name = ctx.getText();
     if (name.length() > StaticRoute.MAX_NAME_LENGTH) {
@@ -2702,7 +3218,7 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
   }
 
   private @Nonnull Optional<String> toString(
-      S_route_mapContext messageCtx, Route_map_nameContext ctx) {
+      ParserRuleContext messageCtx, Route_map_nameContext ctx) {
     return toStringWithLengthInSpace(
         messageCtx, ctx, ROUTE_MAP_NAME_LENGTH_RANGE, "route-map name");
   }
@@ -2767,17 +3283,20 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
     return value;
   }
 
-  private @Nullable String toVrfName(ParserRuleContext messageCtx, Vrf_nameContext ctx) {
+  private @Nonnull Optional<String> toString(ParserRuleContext messageCtx, Vrf_nameContext ctx) {
     String name = ctx.getText();
     if (name.length() > MAX_VRF_NAME_LENGTH) {
-      _w.redFlag(
+      _w.addWarning(
+          messageCtx,
+          getFullText(messageCtx),
+          _parser,
           String.format(
               "VRF name cannot exceed %d chars, but was '%s' in: %s",
               MAX_VRF_NAME_LENGTH, name, getFullText(messageCtx)));
-      return null;
+      return Optional.empty();
     }
     // Case-insensitive, so just canonicalize as lower-case
-    return name.toLowerCase();
+    return Optional.of(name.toLowerCase());
   }
 
   @Override

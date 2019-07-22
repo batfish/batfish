@@ -132,6 +132,12 @@ nve_interface_name
   NVE first = uint8
 ;
 
+ospf_area_id
+:
+  num = uint32
+  | ip = ip_address
+;
+
 prefix_list_name
 :
 // 1-63 chars
@@ -168,6 +174,12 @@ route_network
 :
   address = ip_address mask = subnet_mask
   | prefix = ip_prefix
+;
+
+router_ospf_name
+:
+// 1-20 characters
+  WORD
 ;
 
 standard_community

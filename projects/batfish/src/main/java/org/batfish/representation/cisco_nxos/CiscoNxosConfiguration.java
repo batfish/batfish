@@ -120,6 +120,7 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
   private final @Nonnull Map<String, IpCommunityList> _ipCommunityLists;
   private final @Nonnull Map<String, IpPrefixList> _ipPrefixLists;
   private final @Nonnull Map<Integer, Nve> _nves;
+  private final @Nonnull Map<String, DefaultVrfOspfProcess> _ospfProcesses;
   private transient Multimap<String, String> _portChannelMembers;
   private @Nonnull IntegerSpace _reservedVlanRange;
   private final @Nonnull Map<String, RouteMap> _routeMaps;
@@ -134,6 +135,7 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
     _ipCommunityLists = new HashMap<>();
     _ipPrefixLists = new HashMap<>();
     _nves = new HashMap<>();
+    _ospfProcesses = new HashMap<>();
     _reservedVlanRange = DEFAULT_RESERVED_VLAN_RANGE;
     _routeMaps = new HashMap<>();
     _vlans = new HashMap<>();
@@ -257,6 +259,10 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
     return _nves;
   }
 
+  public @Nonnull Map<String, DefaultVrfOspfProcess> getOspfProcesses() {
+    return _ospfProcesses;
+  }
+
   /** Range of VLAN IDs reserved by the system and therefore unassignable. */
   public @Nonnull IntegerSpace getReservedVlanRange() {
     return _reservedVlanRange;
@@ -283,6 +289,10 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
     markConcreteStructure(CiscoNxosStructureType.NVE, CiscoNxosStructureUsage.NVE_SELF_REFERENCE);
     markConcreteStructure(
         CiscoNxosStructureType.PORT_CHANNEL, CiscoNxosStructureUsage.INTERFACE_CHANNEL_GROUP);
+    markConcreteStructure(
+        CiscoNxosStructureType.ROUTE_MAP,
+        CiscoNxosStructureUsage.OSPF_AREA_FILTER_LIST_IN,
+        CiscoNxosStructureUsage.OSPF_AREA_FILTER_LIST_OUT);
     markConcreteStructure(CiscoNxosStructureType.VLAN, CiscoNxosStructureUsage.INTERFACE_VLAN);
     markConcreteStructure(
         CiscoNxosStructureType.VRF,
