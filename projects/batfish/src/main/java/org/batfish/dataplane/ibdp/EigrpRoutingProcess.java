@@ -130,6 +130,11 @@ final class EigrpRoutingProcess implements RoutingProcess<EigrpTopology, EigrpRo
   public void updateTopology(EigrpTopology topology) {
     _topology = topology;
     updateQueues(topology);
+    /*
+    TODO:
+      1. Send existing routes to new neighbors
+      2. Remove routes received from edges that are now down
+    */
   }
 
   @Override
