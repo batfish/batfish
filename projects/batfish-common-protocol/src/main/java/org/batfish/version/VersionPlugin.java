@@ -1,9 +1,9 @@
 package org.batfish.version;
 
+import org.batfish.common.plugin.IBatfish;
 import org.batfish.common.plugin.ICoordinator;
 import org.batfish.common.plugin.IVersionPlugin;
 import org.batfish.common.plugin.Plugin;
-import org.batfish.common.plugin.PluginClientType;
 
 public abstract class VersionPlugin extends Plugin implements IVersionPlugin {
 
@@ -15,9 +15,21 @@ public abstract class VersionPlugin extends Plugin implements IVersionPlugin {
   protected final void pluginInitialize() {
     String name = getName();
     String version = getVersion();
-    if (_pluginConsumer.getType() == PluginClientType.COORDINATOR) {
-      ICoordinator coordinator = (ICoordinator) _pluginConsumer;
-      coordinator.registerVersion(name, version);
+    switch (_pluginConsumer.getType()) {
+      case BATFISH:
+        {
+          IBatfish batfish = (IBatfish) _pluginConsumer;
+          batfish.registerVersion(name, version);
+          break;
+        }
+      case COORDINATOR:
+        {
+          ICoordinator coordinator = (ICoordinator) _pluginConsumer;
+          coordinator.registerVersion(name, version);
+          break;
+        }
+      default:
+        break;
     }
   }
 }
