@@ -18,6 +18,7 @@ import java.util.SortedMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -536,5 +537,17 @@ final class EigrpRoutingProcess implements RoutingProcess<EigrpTopology, EigrpRo
   /** Merges staged EIGRP internal routes into the "real" EIGRP-internal RIBs */
   void unstageInternalRoutes() {
     importRib(_internalRib, _internalStagingRib);
+  }
+
+  void enqueueInternalMessages(EigrpEdge edge, Stream<RouteAdvertisement<EigrpInternalRoute>> routes) {
+    Queue<RouteAdvertisement<EigrpInternalRoute>> queue = _incomingInternalRoutes.get(edge);
+    assert queue != null;
+    routes.forEach(queue::add);
+  }
+
+  void enqueueExternalMessages(EigrpEdge edge, Stream<RouteAdvertisement<EigrpExternalRoute>> routes) {
+    Queue<RouteAdvertisement<EigrpExternalRoute>> queue = _incomingExternalRoutes.get(edge);
+    assert queue != null;
+    routes.forEach(queue::add);
   }
 }
