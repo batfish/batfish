@@ -34,7 +34,7 @@ configure maintenance profile normal-mode
  no ip pim isolate
 configure maintenance profile maintenance-mode
  ip pim isolate
- router bgp 65601
+ router bgp 12345
   isolate
  router ospf 1
   isolate

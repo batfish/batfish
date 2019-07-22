@@ -4134,7 +4134,10 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
         _dummyPeerGroup = new MasterBgpPeerGroup();
       }
       BgpProcess proc = vrf.getBgpProcess();
-      checkArgument(proc.getProcnum() == procNum);
+      if (proc.getProcnum() != procNum && procNum != 0) {
+        _w.redFlag("Cannot have multiple BGP processes with different ASNs");
+        return;
+      }
       pushPeer(proc.getMasterBgpPeerGroup());
     }
   }
