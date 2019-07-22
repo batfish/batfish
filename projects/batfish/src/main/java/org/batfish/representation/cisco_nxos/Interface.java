@@ -115,6 +115,7 @@ public final class Interface implements Serializable {
   private @Nullable Integer _mtu;
   private final @Nonnull String _name;
   private @Nullable Integer _nativeVlan;
+  private @Nullable OspfInterface _ospf;
   private final @Nullable String _parentInterface;
   private final @Nonnull Set<InterfaceAddressWithAttributes> _secondaryAddresses;
   private @Nullable Boolean _shutdown;
@@ -192,6 +193,17 @@ public final class Interface implements Serializable {
 
   public @Nullable Integer getNativeVlan() {
     return _nativeVlan;
+  }
+
+  public @Nullable OspfInterface getOspf() {
+    return _ospf;
+  }
+
+  public @Nonnull OspfInterface getOrCreateOspf() {
+    if (_ospf == null) {
+      _ospf = new OspfInterface();
+    }
+    return _ospf;
   }
 
   public @Nullable String getParentInterface() {
@@ -284,6 +296,10 @@ public final class Interface implements Serializable {
 
   public void setNativeVlan(@Nullable Integer nativeVlan) {
     _nativeVlan = nativeVlan;
+  }
+
+  public void setOspf(@Nullable OspfInterface ospf) {
+    _ospf = ospf;
   }
 
   public void setShutdown(@Nullable Boolean shutdown) {
