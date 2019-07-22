@@ -14,7 +14,6 @@ import org.batfish.common.BaseSettings;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.BfConsts;
 import org.batfish.common.CoordConsts;
-import org.batfish.common.Version;
 import org.batfish.datamodel.Ip;
 import org.batfish.grammar.GrammarSettings;
 import org.batfish.identifiers.AnalysisId;
@@ -23,6 +22,7 @@ import org.batfish.identifiers.QuestionId;
 import org.batfish.identifiers.SnapshotId;
 import org.batfish.main.Driver.RunMode;
 import org.batfish.storage.FileBasedStorageDirectoryProvider;
+import org.batfish.version.Versioned;
 
 public final class Settings extends BaseSettings implements GrammarSettings {
 
@@ -869,7 +869,7 @@ public final class Settings extends BaseSettings implements GrammarSettings {
 
     if (getBooleanOptionValue(ARG_VERSION)) {
       _config.setProperty(CAN_EXECUTE, false);
-      System.out.print(Version.getCompleteVersionString());
+      System.out.print(Versioned.getVersionsString());
       return;
     }
 

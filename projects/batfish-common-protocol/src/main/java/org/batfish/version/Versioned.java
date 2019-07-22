@@ -3,6 +3,7 @@ package org.batfish.version;
 import com.google.common.collect.ImmutableSortedMap;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.ServiceConfigurationError;
 import java.util.ServiceLoader;
 import org.batfish.common.BatfishException;
@@ -17,6 +18,18 @@ public interface Versioned {
 
   /** Returns the version of the versioned object corresponding to the name. */
   String getVersion();
+
+  /** Returns a string representation of all versioned objects. */
+  static String getVersionsString() {
+    StringBuilder sb = new StringBuilder();
+    for (Entry<String, String> entry : getVersions().entrySet()) {
+      sb.append(entry.getKey());
+      sb.append(" version: ");
+      sb.append(entry.getValue());
+      sb.append("\n");
+    }
+    return sb.toString();
+  }
 
   static Map<String, String> getVersions() {
     HashMap<String, String> ret = new HashMap<>();
