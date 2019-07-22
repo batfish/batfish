@@ -201,6 +201,7 @@ final class EigrpRoutingProcess implements RoutingProcess<EigrpTopology, EigrpRo
   }
 
   private RibDelta<EigrpInternalRoute> processInternalRoutes() {
+    assert _incomingInternalRoutes != null;
     return RibDelta.<EigrpInternalRoute>builder().build();
   }
 
@@ -208,19 +209,18 @@ final class EigrpRoutingProcess implements RoutingProcess<EigrpTopology, EigrpRo
     return RibDelta.<EigrpExternalRoute>builder().build();
   }
 
-  @SuppressWarnings("unsused")
   private void sendOutInternalRoutes(
-      RibDelta<EigrpInternalRoute> initializationDelta,
-      Map<String, Node> allNodes,
-      EigrpTopology topology) {
+      @SuppressWarnings("unused") RibDelta<EigrpInternalRoute> initializationDelta,
+      @SuppressWarnings("unused") Map<String, Node> allNodes,
+      @SuppressWarnings("unused") EigrpTopology topology) {
     // TODO: flesh out route advertisements
   }
 
   @SuppressWarnings("unsused")
   private void sendOutExternalRoutes(
-      RibDelta<EigrpExternalRoute> queuedForRedistribution,
-      Map<String, Node> allNodes,
-      EigrpTopology topology) {
+      @SuppressWarnings("unused") RibDelta<EigrpExternalRoute> queuedForRedistribution,
+      @SuppressWarnings("unused") Map<String, Node> allNodes,
+      @SuppressWarnings("unused") EigrpTopology topology) {
     // TODO: flesh out route advertisements
   }
 
