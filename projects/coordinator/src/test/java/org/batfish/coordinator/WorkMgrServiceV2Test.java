@@ -5,9 +5,11 @@ import static javax.ws.rs.core.Response.Status.INTERNAL_SERVER_ERROR;
 import static javax.ws.rs.core.Response.Status.MOVED_PERMANENTLY;
 import static javax.ws.rs.core.Response.Status.OK;
 import static javax.ws.rs.core.Response.Status.UNAUTHORIZED;
+import static org.batfish.version.Versioned.UNKNOWN_VERSION;
 import static org.glassfish.jersey.client.ClientProperties.FOLLOW_REDIRECTS;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.not;
 import static org.hamcrest.collection.IsMapContaining.hasEntry;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.junit.Assert.assertThat;
@@ -227,8 +229,9 @@ public class WorkMgrServiceV2Test extends WorkMgrServiceV2TestBase {
             .header(CoordConstsV2.HTTP_HEADER_BATFISH_APIKEY, CoordConsts.DEFAULT_API_KEY)
             .get();
     assertThat(response.getStatus(), equalTo(OK.getStatusCode()));
+    // Should get a non-unknown Batfish version
     assertThat(
         response.readEntity(new GenericType<Map<String, String>>() {}),
-        hasEntry("VersionKey", "VersionValue"));
+        hasEntry(equalTo("Batfish"), not(equalTo(UNKNOWN_VERSION))));
   }
 }

@@ -2044,15 +2044,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
   }
 
   @Override
-  public void registerVersion(String name, String version) {
-    String previous = _versions.putIfAbsent(name, version);
-    if (previous != null) {
-      throw new IllegalArgumentException(
-          String.format("%s already has a registered version.", name));
-    }
-  }
-
-  @Override
   public void registerBgpTablePlugin(BgpTableFormat format, BgpTablePlugin bgpTablePlugin) {
     _bgpTablePlugins.put(format, bgpTablePlugin);
   }

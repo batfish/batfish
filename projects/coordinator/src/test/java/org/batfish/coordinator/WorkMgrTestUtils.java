@@ -56,7 +56,6 @@ public final class WorkMgrTestUtils {
             new FileBasedIdManager(Main.getSettings().getContainersLocation()),
             new FileBasedStorage(Main.getSettings().getContainersLocation(), logger));
     // Setup some test version data
-    workMgr.getVersions().put("VersionKey", "VersionValue");
     Main.setWorkMgr(workMgr);
   }
 
