@@ -163,6 +163,8 @@ public interface IBatfish extends IPluginConsumer {
       String questionClassName,
       BiFunction<Question, IBatfish, Answerer> answererCreator);
 
+  void registerVersion(String name, String version);
+
   void registerBgpTablePlugin(BgpTableFormat format, BgpTablePlugin bgpTablePlugin);
 
   /**

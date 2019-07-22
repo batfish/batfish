@@ -368,6 +368,11 @@ public class IBatfishTestAdapter implements IBatfish {
   }
 
   @Override
+  public void registerVersion(String name, String version) {
+    throw new UnsupportedOperationException();
+  }
+
+  @Override
   public void registerBgpTablePlugin(BgpTableFormat format, BgpTablePlugin bgpTablePlugin) {
     throw new UnsupportedOperationException();
   }
