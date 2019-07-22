@@ -170,7 +170,24 @@ final class EigrpRoutingProcess implements RoutingProcess<EigrpTopology, EigrpRo
   }
 
   @Override
-  public void redistribute(RibDelta<? extends AnnotatedRoute<AbstractRoute>> mainRibDelta) {}
+  public void redistribute(RibDelta<? extends AnnotatedRoute<AbstractRoute>> mainRibDelta) {
+    RibDelta.Builder<EigrpExternalRoute> builder = RibDelta.builder();
+    mainRibDelta
+        .getActions()
+        .forEach(
+            ra -> {
+              EigrpExternalRoute outputRoute = computeEigrpExportRoute(ra.getRoute());
+              if (outputRoute == null) {
+                return; // no need to export
+              }
+              if (!ra.isWithdrawn()) {
+                builder.from(_externalRib.mergeRouteGetDelta(outputRoute));
+              } else {
+                builder.from(_externalRib.removeRouteGetDelta(outputRoute));
+              }
+            });
+    _queuedForRedistribution = builder.build();
+  }
 
   @Override
   public boolean isDirty() {
