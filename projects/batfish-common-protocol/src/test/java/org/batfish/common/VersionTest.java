@@ -9,6 +9,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
+import org.batfish.version.BatfishVersion;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -65,8 +66,8 @@ public class VersionTest {
 
   @Test
   public void versionIsRealAtRuntime() {
-    assertThat(Version.getVersion(), not(containsString("project.version")));
-    assertThat(Version.getVersion(), not(equalTo(UNKNOWN_VERSION)));
+    assertThat(BatfishVersion.VERSION, not(containsString("project.version")));
+    assertThat(BatfishVersion.VERSION, not(equalTo(UNKNOWN_VERSION)));
   }
 
   @Test

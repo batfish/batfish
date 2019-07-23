@@ -32,7 +32,6 @@ import org.batfish.common.ColumnFilter;
 import org.batfish.common.ColumnSortOption;
 import org.batfish.common.Container;
 import org.batfish.common.CoordConsts;
-import org.batfish.common.Version;
 import org.batfish.common.WorkItem;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.common.util.CommonUtil;
@@ -62,6 +61,7 @@ import org.batfish.identifiers.NetworkId;
 import org.batfish.identifiers.QuestionId;
 import org.batfish.identifiers.SnapshotId;
 import org.batfish.storage.FileBasedStorage;
+import org.batfish.version.BatfishVersion;
 import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONObject;
 import org.junit.Rule;
@@ -166,7 +166,7 @@ public class WorkMgrServiceTest {
     FileUtils.writeStringToFile(analysisFile, analysisJsonString, StandardCharsets.UTF_8);
     _service.configureAnalysis(
         CoordConsts.DEFAULT_API_KEY,
-        Version.getVersion(),
+        BatfishVersion.VERSION,
         _networkName,
         "new",
         analysisName,
@@ -179,7 +179,7 @@ public class WorkMgrServiceTest {
     String questionsToDelete = String.format("[%s]", questionName);
     _service.configureAnalysis(
         CoordConsts.DEFAULT_API_KEY,
-        Version.getVersion(),
+        BatfishVersion.VERSION,
         _networkName,
         "",
         analysisName,
@@ -190,7 +190,7 @@ public class WorkMgrServiceTest {
     JSONArray result =
         _service.configureAnalysis(
             CoordConsts.DEFAULT_API_KEY,
-            Version.getVersion(),
+            BatfishVersion.VERSION,
             _networkName,
             "",
             "analysis",
@@ -216,7 +216,7 @@ public class WorkMgrServiceTest {
 
     _service.configureAnalysis(
         CoordConsts.DEFAULT_API_KEY,
-        Version.getVersion(),
+        BatfishVersion.VERSION,
         _networkName,
         "new",
         analysisName,
@@ -253,7 +253,7 @@ public class WorkMgrServiceTest {
     JSONArray answer1Output =
         _service.getAnalysisAnswer(
             CoordConsts.DEFAULT_API_KEY,
-            Version.getVersion(),
+            BatfishVersion.VERSION,
             _networkName,
             _snapshotName,
             null,
@@ -264,7 +264,7 @@ public class WorkMgrServiceTest {
     JSONArray answer2Output =
         _service.getAnalysisAnswer(
             CoordConsts.DEFAULT_API_KEY,
-            Version.getVersion(),
+            BatfishVersion.VERSION,
             _networkName,
             _snapshotName,
             null,
@@ -410,7 +410,7 @@ public class WorkMgrServiceTest {
     FileUtils.writeStringToFile(analysisFile, analysisJsonString, StandardCharsets.UTF_8);
     _service.configureAnalysis(
         CoordConsts.DEFAULT_API_KEY,
-        Version.getVersion(),
+        BatfishVersion.VERSION,
         _networkName,
         "new",
         analysisName,
@@ -423,7 +423,7 @@ public class WorkMgrServiceTest {
     String questionsToDelete = String.format("[%s]", questionName);
     _service.configureAnalysis(
         CoordConsts.DEFAULT_API_KEY,
-        Version.getVersion(),
+        BatfishVersion.VERSION,
         _networkName,
         "",
         analysisName,
@@ -434,7 +434,7 @@ public class WorkMgrServiceTest {
     JSONArray result =
         _service.configureAnalysis(
             CoordConsts.DEFAULT_API_KEY,
-            Version.getVersion(),
+            BatfishVersion.VERSION,
             _networkName,
             "",
             "analysis",
@@ -460,7 +460,7 @@ public class WorkMgrServiceTest {
 
     _service.configureAnalysis(
         CoordConsts.DEFAULT_API_KEY,
-        Version.getVersion(),
+        BatfishVersion.VERSION,
         _networkName,
         "new",
         analysisName,
@@ -495,7 +495,7 @@ public class WorkMgrServiceTest {
     JSONArray answer1Output =
         _service.getAnalysisAnswer(
             CoordConsts.DEFAULT_API_KEY,
-            Version.getVersion(),
+            BatfishVersion.VERSION,
             _networkName,
             _snapshotName,
             null,
@@ -506,7 +506,7 @@ public class WorkMgrServiceTest {
     JSONArray answer2Output =
         _service.getAnalysisAnswer(
             CoordConsts.DEFAULT_API_KEY,
-            Version.getVersion(),
+            BatfishVersion.VERSION,
             _networkName,
             _snapshotName,
             null,
@@ -541,7 +541,7 @@ public class WorkMgrServiceTest {
 
     _service.configureAnalysis(
         CoordConsts.DEFAULT_API_KEY,
-        Version.getVersion(),
+        BatfishVersion.VERSION,
         _networkName,
         "new",
         analysisName,
@@ -572,7 +572,7 @@ public class WorkMgrServiceTest {
     JSONArray answerOutput =
         _service.getAnalysisAnswersMetrics(
             CoordConsts.DEFAULT_API_KEY,
-            Version.getVersion(),
+            BatfishVersion.VERSION,
             _networkName,
             _snapshotName,
             null,
@@ -622,7 +622,7 @@ public class WorkMgrServiceTest {
 
     _service.configureAnalysis(
         CoordConsts.DEFAULT_API_KEY,
-        Version.getVersion(),
+        BatfishVersion.VERSION,
         _networkName,
         "new",
         analysisName,
@@ -658,7 +658,7 @@ public class WorkMgrServiceTest {
     JSONArray answerOutput =
         _service.getAnalysisAnswersRows(
             CoordConsts.DEFAULT_API_KEY,
-            Version.getVersion(),
+            BatfishVersion.VERSION,
             _networkName,
             _snapshotName,
             null,
@@ -698,7 +698,7 @@ public class WorkMgrServiceTest {
 
     _service.configureAnalysis(
         CoordConsts.DEFAULT_API_KEY,
-        Version.getVersion(),
+        BatfishVersion.VERSION,
         _networkName,
         "new",
         analysisName,
@@ -729,7 +729,7 @@ public class WorkMgrServiceTest {
     JSONArray answerOutput =
         _service.getAnswerMetrics(
             CoordConsts.DEFAULT_API_KEY,
-            Version.getVersion(),
+            BatfishVersion.VERSION,
             _networkName,
             _snapshotName,
             null,
@@ -779,7 +779,7 @@ public class WorkMgrServiceTest {
     JSONArray answerOutput =
         _service.getAnswerMetrics(
             CoordConsts.DEFAULT_API_KEY,
-            Version.getVersion(),
+            BatfishVersion.VERSION,
             _networkName,
             _snapshotName,
             null,
@@ -832,7 +832,7 @@ public class WorkMgrServiceTest {
 
     _service.configureAnalysis(
         CoordConsts.DEFAULT_API_KEY,
-        Version.getVersion(),
+        BatfishVersion.VERSION,
         _networkName,
         "new",
         analysis,
@@ -861,7 +861,7 @@ public class WorkMgrServiceTest {
     JSONArray answerOutput =
         _service.getAnswerRows(
             CoordConsts.DEFAULT_API_KEY,
-            Version.getVersion(),
+            BatfishVersion.VERSION,
             _networkName,
             _snapshotName,
             null,
@@ -938,7 +938,7 @@ public class WorkMgrServiceTest {
     JSONArray answerOutput =
         _service.getAnswerRows(
             CoordConsts.DEFAULT_API_KEY,
-            Version.getVersion(),
+            BatfishVersion.VERSION,
             _networkName,
             _snapshotName,
             null,
@@ -995,7 +995,7 @@ public class WorkMgrServiceTest {
 
     _service.configureAnalysis(
         CoordConsts.DEFAULT_API_KEY,
-        Version.getVersion(),
+        BatfishVersion.VERSION,
         _networkName,
         "new",
         analysis,
@@ -1024,7 +1024,7 @@ public class WorkMgrServiceTest {
     JSONArray answerOutput =
         _service.getAnswerRows2(
             CoordConsts.DEFAULT_API_KEY,
-            Version.getVersion(),
+            BatfishVersion.VERSION,
             _networkName,
             _snapshotName,
             null,
@@ -1096,7 +1096,7 @@ public class WorkMgrServiceTest {
     JSONArray answerOutput =
         _service.getAnswerRows2(
             CoordConsts.DEFAULT_API_KEY,
-            Version.getVersion(),
+            BatfishVersion.VERSION,
             _networkName,
             _snapshotName,
             null,
@@ -1148,7 +1148,7 @@ public class WorkMgrServiceTest {
           }
         });
     _service.getWorkStatus(
-        CoordConsts.DEFAULT_API_KEY, Version.getVersion(), workItem.getId().toString());
+        CoordConsts.DEFAULT_API_KEY, BatfishVersion.VERSION, workItem.getId().toString());
 
     // networkArg should be name, not ID
     assertTrue(networkArg.isDone());

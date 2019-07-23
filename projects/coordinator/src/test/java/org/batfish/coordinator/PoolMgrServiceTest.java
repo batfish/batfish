@@ -18,10 +18,10 @@ import org.batfish.common.BatfishLogger;
 import org.batfish.common.BfConsts;
 import org.batfish.common.CoordConsts;
 import org.batfish.common.CoordConstsV2;
-import org.batfish.common.Version;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.datamodel.questions.TestQuestion;
+import org.batfish.version.BatfishVersion;
 import org.glassfish.jersey.client.ClientConfig;
 import org.glassfish.jersey.jettison.JettisonFeature;
 import org.glassfish.jersey.media.multipart.MultiPartFeature;
@@ -116,7 +116,7 @@ public final class PoolMgrServiceTest extends JerseyTest {
         .queryParam(CoordConstsV2.QP_VERBOSE, verbose)
         .request()
         .header(CoordConstsV2.HTTP_HEADER_BATFISH_APIKEY, CoordConsts.DEFAULT_API_KEY)
-        .header(CoordConsts.SVC_KEY_VERSION, Version.getVersion())
+        .header(CoordConsts.SVC_KEY_VERSION, BatfishVersion.VERSION)
         .get();
   }
 
