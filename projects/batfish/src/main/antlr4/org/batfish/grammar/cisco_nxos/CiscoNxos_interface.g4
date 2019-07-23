@@ -222,6 +222,7 @@ i_switchport
   SWITCHPORT
   (
     i_switchport_access
+    | i_switchport_mode
     | i_switchport_trunk_allowed
     | i_switchport_trunk
   )
@@ -230,6 +231,37 @@ i_switchport
 i_switchport_access
 :
   ACCESS VLAN vlan = vlan_id NEWLINE
+;
+
+i_switchport_mode
+:
+  MODE
+  (
+    i_switchport_mode_access
+    | i_switchport_mode_dot1q_tunnel
+    | i_switchport_mode_fex_fabric
+    | i_switchport_mode_trunk
+  )
+;
+
+i_switchport_mode_access
+:
+  ACCESS NEWLINE
+;
+
+i_switchport_mode_dot1q_tunnel
+:
+  DOT1Q_TUNNEL NEWLINE
+;
+
+i_switchport_mode_fex_fabric
+:
+  FEX_FABRIC NEWLINE
+;
+
+i_switchport_mode_trunk
+:
+  TRUNK NEWLINE
 ;
 
 i_switchport_trunk
