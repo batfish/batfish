@@ -15,6 +15,7 @@ import static org.batfish.representation.cisco_nxos.CiscoNxosStructureType.IP_CO
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureType.IP_PREFIX_LIST;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureType.NVE;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureType.PORT_CHANNEL;
+import static org.batfish.representation.cisco_nxos.CiscoNxosStructureType.ROUTER_OSPF;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureType.ROUTE_MAP;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureType.ROUTE_MAP_ENTRY;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureType.VLAN;
@@ -53,6 +54,7 @@ import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.BGP_
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.BGP_REDISTRIBUTE_LISP_ROUTE_MAP;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.BGP_REDISTRIBUTE_OSPFV3_ROUTE_MAP;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.BGP_REDISTRIBUTE_OSPF_ROUTE_MAP;
+import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.BGP_REDISTRIBUTE_OSPF_SOURCE_TAG;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.BGP_REDISTRIBUTE_RIP_ROUTE_MAP;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.BGP_REDISTRIBUTE_STATIC_ROUTE_MAP;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.BGP_SUPPRESS_MAP;
@@ -1541,9 +1543,11 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
       return;
     }
     String name = nameOrError.get();
-    String sourceTag = ctx.source_tag.getText();
     _configuration.referenceStructure(
         ROUTE_MAP, name, BGP_REDISTRIBUTE_OSPF_ROUTE_MAP, ctx.getStart().getLine());
+    String sourceTag = ctx.source_tag.getText();
+    _configuration.referenceStructure(
+        ROUTER_OSPF, name, BGP_REDISTRIBUTE_OSPF_SOURCE_TAG, ctx.getStart().getLine());
     _currentBgpVrfIpAddressFamily.setRedistributionPolicy(RoutingProtocol.OSPF, name, sourceTag);
   }
 

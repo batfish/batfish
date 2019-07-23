@@ -719,6 +719,9 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
         CiscoNxosStructureUsage.OSPF_AREA_FILTER_LIST_IN,
         CiscoNxosStructureUsage.OSPF_AREA_FILTER_LIST_OUT);
     markConcreteStructure(
+        CiscoNxosStructureType.ROUTER_OSPF,
+        CiscoNxosStructureUsage.BGP_REDISTRIBUTE_OSPF_SOURCE_TAG);
+    markConcreteStructure(
         CiscoNxosStructureType.BGP_TEMPLATE_PEER,
         CiscoNxosStructureUsage.BGP_NEIGHBOR_INHERIT_PEER);
     markConcreteStructure(

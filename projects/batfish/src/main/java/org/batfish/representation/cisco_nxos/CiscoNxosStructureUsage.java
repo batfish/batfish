@@ -37,6 +37,7 @@ public enum CiscoNxosStructureUsage implements StructureUsage {
   BGP_REDISTRIBUTE_ISIS_ROUTE_MAP("bgp address-family redistribute isis route-map"),
   BGP_REDISTRIBUTE_LISP_ROUTE_MAP("bgp address-family redistribute lisp route-map"),
   BGP_REDISTRIBUTE_OSPF_ROUTE_MAP("bgp address-family redistribute ospf route-map"),
+  BGP_REDISTRIBUTE_OSPF_SOURCE_TAG("bgp address-family redistribute ospf"),
   BGP_REDISTRIBUTE_OSPFV3_ROUTE_MAP("bgp address-family redistribute ospfv3 route-map"),
   BGP_REDISTRIBUTE_RIP_ROUTE_MAP("bgp address-family redistribute rip route-map"),
   BGP_REDISTRIBUTE_STATIC_ROUTE_MAP("bgp address-family redistribute static route-map"),
