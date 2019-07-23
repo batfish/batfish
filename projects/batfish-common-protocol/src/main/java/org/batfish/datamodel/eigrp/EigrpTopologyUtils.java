@@ -64,6 +64,7 @@ public class EigrpTopologyUtils {
                     .setInterfaceName(iface.getName())
                     .setIp(iface.getConcreteAddress().getIp())
                     .setVrfName(vrf.getName())
+                    .setAsn(iface.getEigrp().getAsn())
                     .setPassive(iface.getEigrp().getPassive())
                     .build());
           }

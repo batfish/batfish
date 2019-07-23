@@ -2628,6 +2628,7 @@ public class CiscoGrammarTest {
             ImmutableMap.of(
                 "Ethernet0",
                     EigrpNeighborConfig.builder()
+                        .setAsn(1L)
                         .setInterfaceName("Ethernet0")
                         .setPassive(false)
                         .setHostname("ios-eigrp-classic")
@@ -2636,6 +2637,7 @@ public class CiscoGrammarTest {
                         .build(),
                 "Ethernet1",
                     EigrpNeighborConfig.builder()
+                        .setAsn(1L)
                         .setInterfaceName("Ethernet1")
                         .setPassive(false)
                         .setHostname("ios-eigrp-classic")
@@ -2644,6 +2646,7 @@ public class CiscoGrammarTest {
                         .build(),
                 "Ethernet2",
                     EigrpNeighborConfig.builder()
+                        .setAsn(1L)
                         .setInterfaceName("Ethernet2")
                         .setPassive(true)
                         .setHostname("ios-eigrp-classic")

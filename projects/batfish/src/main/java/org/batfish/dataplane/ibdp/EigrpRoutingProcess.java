@@ -179,7 +179,7 @@ final class EigrpRoutingProcess implements RoutingProcess<EigrpTopology, EigrpRo
           || !iface.getEigrp().getEnabled()) {
         continue;
       }
-      _interfaces.add(new EigrpNeighborConfigId(c.getHostname(), iface));
+      _interfaces.add(new EigrpNeighborConfigId(iface.getEigrp().getAsn(), c.getHostname(), iface));
       requireNonNull(iface.getEigrp());
       Set<Prefix> allNetworkPrefixes =
           iface.getAllConcreteAddresses().stream()

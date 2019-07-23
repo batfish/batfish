@@ -71,6 +71,7 @@ public class EigrpTopologyUtilsTest {
             ImmutableMap.of(
                 "iface1",
                 EigrpNeighborConfig.builder()
+                    .setAsn(1L)
                     .setInterfaceName("iface1")
                     .setPassive(true)
                     .setHostname("conf")
