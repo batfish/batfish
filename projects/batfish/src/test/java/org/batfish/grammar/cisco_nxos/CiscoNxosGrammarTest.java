@@ -326,6 +326,12 @@ public final class CiscoNxosGrammarTest {
   }
 
   @Test
+  public void testIgnore() {
+    // TODO: make into a ref test
+    assertThat(parseVendorConfig("nxos_ignore"), notNullValue());
+  }
+
+  @Test
   public void testInterfaceBindDependency() throws IOException {
     String hostname = "nxos_interface_bind_dependency";
     String ifaceName = "Ethernet1/1";

@@ -219,6 +219,11 @@ AHP
   'ahp'
 ;
 
+ALIAS
+:
+  'alias'
+;
+
 ALL
 :
   'all'
@@ -356,6 +361,11 @@ BIFF
   'biff'
 ;
 
+BOOT
+:
+  'boot'
+;
+
 BOOTPC
 :
   'bootpc'
@@ -391,6 +401,11 @@ CAPABILITY
   'capability'
 ;
 
+CAUSE
+:
+  'cause'
+;
+
 CHANNEL_GROUP
 :
   'channel-group'
@@ -409,6 +424,11 @@ CLI
 CLIENT_TO_CLIENT
 :
   'client-to-client'
+;
+
+CLOCK
+:
+  'clock'
 ;
 
 CLUSTER_ID
@@ -663,6 +683,11 @@ DOMAIN
   'domain'
 ;
 
+DOMAIN_LOOKUP
+:
+  'domain-lookup'
+;
+
 DONT_CAPABILITY_NEGOTIATE
 :
   'dont-capability-negotiate'
@@ -761,6 +786,11 @@ ENFORCE_FIRST_AS
 EQ
 :
   'eq'
+;
+
+ERRDISABLE
+:
+  'errdisable'
 ;
 
 ERRORS
@@ -1221,6 +1251,18 @@ ISOLATE
   'isolate'
 ;
 
+KICKSTART
+:
+  'kickstart'
+  // name of image follows if preceded by 'boot'
+  {
+    if (lastTokenType() == BOOT) {
+      pushMode(M_Remark);
+    }
+  }
+
+;
+
 KLOGIN
 :
   'klogin'
@@ -1274,6 +1316,11 @@ LE
 LEVEL
 :
   'level'
+;
+
+LINK_FLAP
+:
+  'link-flap'
 ;
 
 LINK_LOCAL_GROUPS_SUPPRESSION
@@ -1529,7 +1576,17 @@ MVPN
 
 NAME
 :
-  'name' -> pushMode ( M_Word )
+  'name'
+  // If preceded by 'alias', name and then arbitrary text definition follow.
+  // Otherwise, just a name follows.
+  {
+    if (lastTokenType() == ALIAS) {
+      pushMode(M_AliasName);
+    } else {
+      pushMode(M_Word);
+    }
+  }
+
 ;
 
 NAMESERVER
@@ -1722,6 +1779,18 @@ NVE
   'nve'
 ;
 
+NXOS
+:
+  'nxos'
+  // name of image follows if preceded by 'boot'
+  {
+    if (lastTokenType() == BOOT) {
+      pushMode(M_Remark);
+    }
+  }
+
+;
+
 OBJSTORE
 :
   'objstore'
@@ -1869,6 +1938,11 @@ PIM6
   'pim6'
 ;
 
+POAP
+:
+  'poap'
+;
+
 POINT_TO_POINT
 :
   'point-to-point'
@@ -1969,6 +2043,11 @@ PROXY_LEAVE
   'proxy-leave'
 ;
 
+PSECURE_VIOLATION
+:
+  'psecure-violation'
+;
+
 PSH
 :
   'psh'
@@ -2022,6 +2101,11 @@ RECEIVE
 RECONNECT_INTERVAL
 :
   'reconnect-interval'
+;
+
+RECOVERY
+:
+  'recovery'
 ;
 
 REDIRECT
@@ -2184,6 +2268,11 @@ SECONDARY
   'secondary'
 ;
 
+SECURITY_VIOLATION
+:
+  'security-violation'
+;
+
 SELECTION
 :
   'selection'
@@ -2202,6 +2291,11 @@ SEND_COMMUNITY
 SEQ
 :
   'seq'
+;
+
+SERVICE
+:
+  'service'
 ;
 
 SET
@@ -2399,6 +2493,18 @@ SYSLOG
   'syslog'
 ;
 
+SYSTEM
+:
+  'system'
+  // name of image follows if preceded by 'boot'
+  {
+    if (lastTokenType() == BOOT) {
+      pushMode(M_Remark);
+    }
+  }
+
+;
+
 TABLE_MAP
 :
   'table-map'
@@ -2484,6 +2590,11 @@ TIMESTAMP_REQUEST
   'timestamp-request'
 ;
 
+TIMEZONE
+:
+  'timezone' -> pushMode(M_Remark)
+;
+
 TRACEROUTE
 :
   'traceroute'
@@ -2544,6 +2655,11 @@ TYPE_2
   'type-2'
 ;
 
+UDLD
+:
+  'udld'
+;
+
 UDP
 :
   'udp'
@@ -2577,6 +2693,11 @@ UPDATE_SOURCE
 URG
 :
   'urg'
+;
+
+USERNAME
+:
+  'username' -> pushMode ( M_Remark )
 ;
 
 UUCP
@@ -3091,6 +3212,18 @@ F_WordChar
 :
   [0-9A-Za-z!@#$^*_=+.;:{}]
   | '-'
+;
+
+mode M_AliasName;
+
+M_AliasName_WORD
+:
+  F_Word -> type ( WORD ) , mode ( M_Remark )
+;
+
+M_AliasName_WS
+:
+  F_Whitespace+ -> channel ( HIDDEN )
 ;
 
 mode M_Banner;
