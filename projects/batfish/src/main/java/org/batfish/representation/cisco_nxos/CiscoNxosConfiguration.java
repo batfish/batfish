@@ -85,6 +85,7 @@ import org.batfish.datamodel.routing_policy.statement.If;
 import org.batfish.datamodel.routing_policy.statement.SetOrigin;
 import org.batfish.datamodel.routing_policy.statement.Statements;
 import org.batfish.datamodel.vendor_family.cisco_nxos.CiscoNxosFamily;
+import org.batfish.representation.cisco_nxos.BgpVrfIpv6AddressFamilyConfiguration.Network;
 import org.batfish.vendor.VendorConfiguration;
 
 /** Vendor-specific representation of a Cisco NX-OS network configuration */
@@ -427,10 +428,12 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
     // Now we add all the per-network export policies.
     if (ipv4af != null) {
       ipv4af
-          .getIpNetworks()
+          .getNetworks()
           .forEach(
-              (prefix, routeMapOrEmpty) -> {
-                PrefixSpace exportSpace = new PrefixSpace(PrefixRange.fromPrefix(prefix));
+              network -> {
+                PrefixSpace exportSpace =
+                    new PrefixSpace(PrefixRange.fromPrefix(network.getNetwork()));
+                @Nullable String routeMap = network.getRouteMap();
                 List<BooleanExpr> exportNetworkConditions =
                     ImmutableList.of(
                         new MatchPrefixSet(
@@ -441,8 +444,8 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
                                 RoutingProtocol.IBGP,
                                 RoutingProtocol.AGGREGATE)),
                         bgpRedistributeWithEnvironmentExpr(
-                            _routeMaps.containsKey(routeMapOrEmpty)
-                                ? new CallExpr(routeMapOrEmpty)
+                            routeMap != null && _routeMaps.containsKey(routeMap)
+                                ? new CallExpr(routeMap)
                                 : BooleanExprs.TRUE,
                             OriginType.IGP));
                 newBgpProcess.addToOriginationSpace(exportSpace);
@@ -455,21 +458,22 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
       ipv6af
           .getNetworks()
           .forEach(
-              (prefix6, routeMapOrEmpty) -> {
+              network -> {
+                @Nullable String routeMap = network.getRouteMap();
                 List<BooleanExpr> exportNetworkConditions =
                     ImmutableList.of(
                         new MatchPrefix6Set(
                             new DestinationNetwork6(),
                             new ExplicitPrefix6Set(
-                                new Prefix6Space(Prefix6Range.fromPrefix6(prefix6)))),
+                                new Prefix6Space(Prefix6Range.fromPrefix6(network.getNetwork())))),
                         new Not(
                             new MatchProtocol(
                                 RoutingProtocol.BGP,
                                 RoutingProtocol.IBGP,
                                 RoutingProtocol.AGGREGATE)),
                         bgpRedistributeWithEnvironmentExpr(
-                            _routeMaps.containsKey(routeMapOrEmpty)
-                                ? new CallExpr(routeMapOrEmpty)
+                            routeMap != null && _routeMaps.containsKey(routeMap)
+                                ? new CallExpr(routeMap)
                                 : BooleanExprs.TRUE,
                             OriginType.IGP));
                 exportConditions.add(new Conjunction(exportNetworkConditions));
@@ -485,7 +489,8 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
     // Generate BGP_NETWORK6_NETWORKS filter.
     if (ipv6af != null) {
       List<Route6FilterLine> lines =
-          ipv6af.getNetworks().keySet().stream()
+          ipv6af.getNetworks().stream()
+              .map(Network::getNetwork)
               .map(p6 -> new Route6FilterLine(LineAction.PERMIT, Prefix6Range.fromPrefix6(p6)))
               .collect(ImmutableList.toImmutableList());
       Route6FilterList localFilter6 =
