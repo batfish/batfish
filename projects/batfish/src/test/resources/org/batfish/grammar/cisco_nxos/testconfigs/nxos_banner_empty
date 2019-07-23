@@ -1,0 +1,7 @@
+!RANCID-CONTENT-TYPE: cisco-nx
+!
+hostname nxos_banner_empty
+!
+! empty
+banner exec **
+!

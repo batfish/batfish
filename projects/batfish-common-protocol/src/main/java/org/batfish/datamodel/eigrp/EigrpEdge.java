@@ -57,8 +57,8 @@ public final class EigrpEdge implements Serializable, Comparable<EigrpEdge> {
     }
     return Optional.of(
         new EigrpEdge(
-            new EigrpNeighborConfigId(c1.getHostname(), iface1),
-            new EigrpNeighborConfigId(c2.getHostname(), iface2)));
+            new EigrpNeighborConfigId(eigrp1.getAsn(), c1.getHostname(), iface1),
+            new EigrpNeighborConfigId(eigrp2.getAsn(), c2.getHostname(), iface2)));
   }
 
   @Override

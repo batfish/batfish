@@ -18,8 +18,8 @@ public final class EigrpTopologyTest {
   private static @Nonnull EigrpTopology nonTrivialTopology() {
     MutableNetwork<EigrpNeighborConfigId, EigrpEdge> network =
         NetworkBuilder.directed().allowsParallelEdges(false).allowsSelfLoops(false).build();
-    EigrpNeighborConfigId n1 = new EigrpNeighborConfigId("a", "b", "c");
-    EigrpNeighborConfigId n2 = new EigrpNeighborConfigId("d", "e", "f");
+    EigrpNeighborConfigId n1 = new EigrpNeighborConfigId(2L, "a", "b", "c");
+    EigrpNeighborConfigId n2 = new EigrpNeighborConfigId(3L, "d", "e", "f");
     network.addEdge(n1, n2, new EigrpEdge(n1, n2));
     return new EigrpTopology(network);
   }

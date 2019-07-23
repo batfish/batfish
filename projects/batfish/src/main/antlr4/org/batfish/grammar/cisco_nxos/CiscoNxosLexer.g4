@@ -5,6 +5,9 @@ options {
 }
 
 tokens {
+  BANNER_BODY,
+  BANNER_DELIMITER,
+  MOTD,
   PASSWORD_0,
   PASSWORD_0_TEXT,
   PASSWORD_3,
@@ -241,6 +244,11 @@ ANY
   'any'
 ;
 
+AREA
+:
+  'area'
+;
+
 AS_OVERRIDE
 :
   'as-override'
@@ -273,9 +281,19 @@ ATTRIBUTE_MAP
   'attribute-map'
 ;
 
+AUTHENTICATION
+:
+  'authentication'
+;
+
 AUTO
 :
   'auto'
+;
+
+AUTO_COST
+:
+  'auto-cost'
 ;
 
 AUTOSTATE
@@ -291,6 +309,16 @@ BACKUP
 BANDWIDTH
 :
   'bandwidth'
+;
+
+BANNER
+:
+  'banner' -> pushMode ( M_Banner )
+;
+
+BASH_SHELL
+:
+  'bash-shell'
 ;
 
 BGP
@@ -331,6 +359,11 @@ BOOTPS
 BOTH
 :
   'both'
+;
+
+BROADCAST
+:
+  'broadcast'
 ;
 
 CAPABILITY
@@ -435,6 +468,11 @@ COPY_ATTRIBUTES
   'copy-attributes'
 ;
 
+COST
+:
+  'cost'
+;
+
 COST_COMMUNITY
 :
   'cost-community'
@@ -495,9 +533,19 @@ DAYTIME
   'daytime'
 ;
 
+DEAD_INTERVAL
+:
+  'dead-interval'
+;
+
 DEFAULT
 :
   'default'
+;
+
+DEFAULT_COST
+:
+  'default-cost'
 ;
 
 DEFAULT_INFORMATION
@@ -538,6 +586,11 @@ DESCRIPTION
 DETAIL
 :
   'detail'
+;
+
+DHCP
+:
+  'dhcp'
 ;
 
 DIRECT
@@ -750,6 +803,11 @@ EXTERNAL
   'external'
 ;
 
+EXTERNAL_LSA
+:
+  'external-lsa'
+;
+
 FAST_EXTERNAL_FALLOVER
 :
   'fast-external-fallover'
@@ -830,6 +888,11 @@ FTP
   'ftp'
 ;
 
+GBPS
+:
+  [Gg] [Bb] [Pp] [Ss]
+;
+
 GENERAL_PARAMETER_PROBLEM
 :
   'general-parameter-problem'
@@ -883,6 +946,11 @@ GT
 HEAD
 :
   'head'
+;
+
+HELLO_INTERVAL
+:
+  'hello-interval'
 ;
 
 HOST
@@ -954,6 +1022,11 @@ HOSTNAME
 
 ;
 
+HSRP
+:
+  'hsrp'
+;
+
 HTTP_METHOD
 :
   'http-method'
@@ -1009,6 +1082,11 @@ INBOUND
   'inbound'
 ;
 
+INCLUDE_STUB
+:
+  'include-stub'
+;
+
 INFORMATION_REPLY
 :
   'information-reply'
@@ -1046,6 +1124,11 @@ INTERFACE
   (
     'erface'
   )?
+;
+
+INTERFACE_VLAN
+:
+  'interface-vlan'
 ;
 
 INTERNAL
@@ -1118,6 +1201,11 @@ L3
   'L3'
 ;
 
+LACP
+:
+  'lacp'
+;
+
 LARGE
 :
   'large'
@@ -1148,6 +1236,11 @@ LISP
   'lisp'
 ;
 
+LLDP
+:
+  'lldp'
+;
+
 LOAD_SHARE
 :
   'load-share'
@@ -1166,6 +1259,11 @@ LOCAL_PREFERENCE
 LOG
 :
   'log'
+;
+
+LOG_ADJACENCY_CHANGES
+:
+  'log-adjacency-changes'
 ;
 
 LOG_NEIGHBOR_CHANGES
@@ -1197,6 +1295,21 @@ LPD
   'lpd'
 ;
 
+LSA
+:
+  'lsa'
+;
+
+LSA_ARRIVAL
+:
+  'lsa-arrival'
+;
+
+LSA_GROUP_PACING
+:
+  'lsa-group-pacing'
+;
+
 LT
 :
   'lt'
@@ -1222,6 +1335,11 @@ MATCH
   'match'
 ;
 
+MAX_METRIC
+:
+  'max-metric'
+;
+
 MAXAS_LIMIT
 :
   'maxas-limit'
@@ -1245,6 +1363,11 @@ MAXIMUM_PEERS
 MAXIMUM_PREFIX
 :
   'maximum-prefix'
+;
+
+MBPS
+:
+  [Mm] [Bb] [Pp] [Ss]
 ;
 
 MCAST_GROUP
@@ -1276,6 +1399,17 @@ MEMBER
       pushMode(M_Word);
     }
   }
+
+;
+
+MESSAGE_DIGEST
+:
+  'message-digest'
+;
+
+MESSAGE_DIGEST_KEY
+:
+  'message-digest-key' -> pushMode ( M_Password )
 ;
 
 METRIC
@@ -1448,9 +1582,19 @@ NO_PREPEND
   'no-prepend'
 ;
 
+NO_REDISTRIBUTION
+:
+  'no-redistribution'
+;
+
 NO_ROOM_FOR_OPTION
 :
   'no-room-for-option'
+;
+
+NO_SUMMARY
+:
+  'no-summary'
 ;
 
 NON_CRITICAL
@@ -1483,6 +1627,16 @@ NOS
   'nos'
 ;
 
+NOT_ADVERTISE
+:
+  'not-advertise'
+;
+
+NSSA
+:
+  'nssa'
+;
+
 NTP
 :
   'ntp'
@@ -1508,6 +1662,11 @@ OBJSTORE
   'objstore'
 ;
 
+ON_STARTUP
+:
+  'on-startup'
+;
+
 OPTION_MISSING
 :
   'option-missing'
@@ -1521,6 +1680,13 @@ ORIGINATE
 OSPF
 :
   'ospf'
+  // All other instances are followed by keywords or tokens in default mode
+  {
+    if (lastTokenType() == ROUTER) {
+      pushMode(M_Word);
+    }
+  }
+
 ;
 
 OSPFV3
@@ -1556,6 +1722,11 @@ PARAMETER_PROBLEM
 PASSIVE
 :
   'passive'
+;
+
+PASSIVE_INTERFACE
+:
+  'passive-interface'
 ;
 
 PASSWORD
@@ -1621,6 +1792,16 @@ PIM
 PIM_AUTO_RP
 :
   'pim-auto-rp'
+;
+
+PIM6
+:
+  'pim6'
+;
+
+POINT_TO_POINT
+:
+  'point-to-point'
 ;
 
 POP2
@@ -1778,6 +1959,11 @@ REDISTRIBUTE
   'redistribute'
 ;
 
+REFERENCE_BANDWIDTH
+:
+  'reference-bandwidth'
+;
+
 REFLECTION
 :
   'reflection'
@@ -1883,6 +2069,11 @@ ROUTER_ID
   'router-id'
 ;
 
+ROUTER_LSA
+:
+  'router-lsa'
+;
+
 ROUTER_SOLICITATION
 :
   'router-solicitation'
@@ -1896,6 +2087,11 @@ ROUTINE
 RST
 :
   'rst'
+;
+
+SCHEDULER
+:
+  'scheduler'
 ;
 
 SECONDARY
@@ -1926,6 +2122,11 @@ SEQ
 SET
 :
   'set'
+;
+
+SFLOW
+:
+  'sflow'
 ;
 
 SHUTDOWN
@@ -1983,6 +2184,11 @@ SOURCE_ROUTE_FAILED
   'source-route-failed'
 ;
 
+SPF
+:
+  'spf'
+;
+
 SPINE_ANYCAST_GATEWAY
 :
   'spine-anycast-gateway'
@@ -2026,6 +2232,21 @@ STATIC_GROUP
 STATISTICS
 :
   'statistics'
+;
+
+STUB
+:
+  'stub'
+;
+
+SUMMARY_ADDRESS
+:
+  'summary-address'
+;
+
+SUMMARY_LSA
+:
+  'summary-lsa'
 ;
 
 SUMMARY_ONLY
@@ -2088,6 +2309,11 @@ TACACS
   'tacacs'
 ;
 
+TACACSP
+:
+  'tacacs+'
+;
+
 TAG
 :
   'tag'
@@ -2126,6 +2352,11 @@ TEMPLATE
 TFTP
 :
   'tftp'
+;
+
+THROTTLE
+:
+  'throttle'
 ;
 
 TIME
@@ -2250,7 +2481,12 @@ V3_REPORT_SUPPRESSION
 
 VERSION
 :
-  'version'
+  'version' -> pushMode ( M_Remark )
+;
+
+VIRTUAL_LINK
+:
+  'virtual-link'
 ;
 
 VLAN
@@ -2278,6 +2514,11 @@ VRF
   'vrf' -> pushMode ( M_Vrf )
 ;
 
+WAIT_FOR
+:
+  'wait-for'
+;
+
 WAIT_IGP_CONVERGENCE
 :
   'wait-igp-convergence'
@@ -2301,6 +2542,11 @@ WHOIS
 WHO
 :
   'who'
+;
+
+WITHDRAW
+:
+  'withdraw'
 ;
 
 WWW
@@ -2735,6 +2981,84 @@ F_WordChar
 :
   [0-9A-Za-z!@#$^*_=+.;:{}]
   | '-'
+;
+
+mode M_Banner;
+
+M_Banner_EXEC
+:
+  'exec' -> type ( EXEC ) , mode ( M_BannerDelimiter )
+;
+
+M_Banner_MOTD
+:
+  'motd' -> type ( MOTD ) , mode ( M_BannerDelimiter )
+;
+
+M_Banner_NEWLINE
+:
+  F_Newline+ -> type ( NEWLINE ) , popMode
+;
+
+M_Banner_WS
+:
+  F_Whitespace+ -> channel ( HIDDEN )
+;
+
+mode M_BannerDelimiter;
+
+M_BannerDelimiter_BANNER_DELIMITER
+:
+  F_NonWhitespace
+  {
+    setBannerDelimiter();
+  }
+
+  -> type ( BANNER_DELIMITER ) , mode ( M_BannerText )
+;
+
+M_BannerDelimiter_WS
+:
+  F_Whitespace+ -> channel ( HIDDEN )
+;
+
+mode M_BannerText;
+
+M_BannerText_BANNER_DELIMITER
+:
+  {bannerDelimiterFollows()}?
+
+  .
+  {
+    unsetBannerDelimiter();
+  }
+
+  -> type ( BANNER_DELIMITER ) , mode ( M_BannerCleanup )
+;
+
+M_BannerText_BODY
+:
+  .
+  {
+    if (bannerDelimiterFollows()) {
+      setType(BANNER_BODY);
+    } else {
+      more();
+    }
+  }
+
+;
+
+mode M_BannerCleanup;
+
+M_BannerCleanup_IGNORED
+:
+  F_NonNewline+ -> channel ( HIDDEN )
+;
+
+M_BannerCleanup_NEWLINE
+:
+  F_Newline+ -> type ( NEWLINE ) , popMode
 ;
 
 mode M_DoubleQuote;
