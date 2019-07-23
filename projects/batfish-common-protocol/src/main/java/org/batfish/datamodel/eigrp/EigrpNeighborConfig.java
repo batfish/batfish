@@ -4,6 +4,7 @@ import static com.google.common.base.MoreObjects.firstNonNull;
 import static com.google.common.base.Preconditions.checkArgument;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.io.Serializable;
 import java.util.Objects;
@@ -104,6 +105,11 @@ public final class EigrpNeighborConfig implements Serializable {
   @JsonProperty(PROP_PASSIVE)
   public boolean isPassive() {
     return _isPassive;
+  }
+
+  @JsonIgnore
+  public EigrpNeighborConfigId getId() {
+    return new EigrpNeighborConfigId(_asn, _hostname, _interfaceName, _vrfName);
   }
 
   public static Builder builder() {

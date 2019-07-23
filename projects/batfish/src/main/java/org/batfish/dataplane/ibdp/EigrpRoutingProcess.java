@@ -9,8 +9,6 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.graph.Network;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Optional;
@@ -38,6 +36,7 @@ import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.eigrp.EigrpEdge;
 import org.batfish.datamodel.eigrp.EigrpMetric;
+import org.batfish.datamodel.eigrp.EigrpNeighborConfig;
 import org.batfish.datamodel.eigrp.EigrpNeighborConfigId;
 import org.batfish.datamodel.eigrp.EigrpProcess;
 import org.batfish.datamodel.eigrp.EigrpTopology;
@@ -60,10 +59,10 @@ final class EigrpRoutingProcess implements RoutingProcess<EigrpTopology, EigrpRo
   /** Helper RIB containing EIGRP external paths */
   @Nonnull private final EigrpExternalRib _externalRib;
 
-  @Nonnull private final List<EigrpNeighborConfigId> _interfaces;
   /** Helper RIB containing all EIGRP paths internal to this router's ASN. */
   @Nonnull private final EigrpInternalRib _internalRib;
 
+  @Nonnull private final EigrpProcess _process;
   @Nonnull private final String _vrfName;
   /** Helper RIBs containing EIGRP internal and external paths. */
   @Nonnull private final EigrpRib _rib;
@@ -92,13 +91,13 @@ final class EigrpRoutingProcess implements RoutingProcess<EigrpTopology, EigrpRo
   @Nonnull private RibDelta.Builder<EigrpRoute> _changeSet;
 
   EigrpRoutingProcess(final EigrpProcess process, final String vrfName, final Configuration c) {
+    _process = process;
     _asn = process.getAsn();
     _defaultExternalAdminCost =
         RoutingProtocol.EIGRP_EX.getDefaultAdministrativeCost(c.getConfigurationFormat());
     _defaultInternalAdminCost =
         RoutingProtocol.EIGRP.getDefaultAdministrativeCost(c.getConfigurationFormat());
     _externalRib = new EigrpExternalRib();
-    _interfaces = new ArrayList<>();
     _internalRib = new EigrpInternalRib();
     _rib = new EigrpRib();
     _vrfName = vrfName;
@@ -214,7 +213,6 @@ final class EigrpRoutingProcess implements RoutingProcess<EigrpTopology, EigrpRo
           || !iface.getEigrp().getEnabled()) {
         continue;
       }
-      _interfaces.add(new EigrpNeighborConfigId(iface.getEigrp().getAsn(), c.getHostname(), iface));
       requireNonNull(iface.getEigrp());
       Set<Prefix> allNetworkPrefixes =
           iface.getAllConcreteAddresses().stream()
@@ -394,17 +392,21 @@ final class EigrpRoutingProcess implements RoutingProcess<EigrpTopology, EigrpRo
    * @param eigrpTopology The topology representing EIGRP adjacencies
    */
   void updateQueues(EigrpTopology eigrpTopology) {
-    Network<EigrpNeighborConfigId, EigrpEdge> network = eigrpTopology.getNetwork();
     _incomingExternalRoutes =
-        _interfaces.stream()
-            .filter(network.nodes()::contains)
-            .flatMap(n -> network.inEdges(n).stream())
+        getIncomingEdgeStream(eigrpTopology)
             .collect(toImmutableSortedMap(Function.identity(), e -> new ConcurrentLinkedQueue<>()));
     _incomingInternalRoutes =
-        _interfaces.stream()
-            .filter(network.nodes()::contains)
-            .flatMap(n -> network.inEdges(n).stream())
+        getIncomingEdgeStream(eigrpTopology)
             .collect(toImmutableSortedMap(Function.identity(), e -> new ConcurrentLinkedQueue<>()));
+  }
+
+  @Nonnull
+  private Stream<EigrpEdge> getIncomingEdgeStream(EigrpTopology eigrpTopology) {
+    Network<EigrpNeighborConfigId, EigrpEdge> graph = eigrpTopology.getNetwork();
+    return _process.getNeighbors().values().stream()
+        .map(EigrpNeighborConfig::getId)
+        .filter(n -> graph.nodes().contains(n))
+        .flatMap(head -> eigrpTopology.getNetwork().inEdges(head).stream());
   }
 
   /**
