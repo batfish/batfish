@@ -23,6 +23,7 @@ import org.batfish.common.Container;
 import org.batfish.common.CoordConsts;
 import org.batfish.common.CoordConstsV2;
 import org.batfish.coordinator.resources.NetworkResource;
+import org.batfish.version.Versioned;
 
 /**
  * The Work Manager is a RESTful service for servicing client API calls.
@@ -107,5 +108,12 @@ public class WorkMgrServiceV2 {
   @Path(CoordConstsV2.RSC_NETWORKS + "/{id}")
   public NetworkResource getNetworkResource(@PathParam("id") String id) {
     return new NetworkResource(_apiKey, id);
+  }
+
+  /** Handle request for component versions */
+  @GET
+  @Path(CoordConstsV2.RSC_VERSION)
+  public Response getVersion() {
+    return Response.ok().entity(Versioned.getVersions()).build();
   }
 }

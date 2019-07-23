@@ -54,7 +54,6 @@ import org.batfish.common.NetworkSnapshot;
 import org.batfish.common.QuestionException;
 import org.batfish.common.Task;
 import org.batfish.common.Task.Batch;
-import org.batfish.common.Version;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.config.ConfigurationLocator;
 import org.batfish.config.Settings;
@@ -63,9 +62,9 @@ import org.batfish.datamodel.DataPlane;
 import org.batfish.datamodel.answers.Answer;
 import org.batfish.datamodel.answers.AnswerStatus;
 import org.batfish.datamodel.collections.BgpAdvertisementsByVrf;
-import org.batfish.datamodel.collections.RoutesByVrf;
 import org.batfish.identifiers.NetworkId;
 import org.batfish.identifiers.SnapshotId;
+import org.batfish.version.BatfishVersion;
 import org.codehaus.jettison.json.JSONArray;
 import org.glassfish.grizzly.http.server.HttpServer;
 import org.glassfish.jersey.grizzly2.httpserver.GrizzlyHttpServerFactory;
@@ -124,9 +123,6 @@ public class Driver {
   private static final Map<NetworkSnapshot, SortedMap<String, BgpAdvertisementsByVrf>>
       CACHED_ENVIRONMENT_BGP_TABLES = buildEnvironmentBgpTablesCache();
 
-  private static final Map<NetworkSnapshot, SortedMap<String, RoutesByVrf>>
-      CACHED_ENVIRONMENT_ROUTING_TABLES = buildEnvironmentRoutingTablesCache();
-
   private static final Cache<NetworkSnapshot, SortedMap<String, Configuration>> CACHED_TESTRIGS =
       buildTestrigCache();
 
@@ -144,8 +140,6 @@ public class Driver {
 
   private static final int MAX_CACHED_ENVIRONMENT_BGP_TABLES = 4;
 
-  private static final int MAX_CACHED_ENVIRONMENT_ROUTING_TABLES = 4;
-
   private static final int MAX_CACHED_TESTRIGS = 5;
 
   static Logger networkListenerLogger =
@@ -158,11 +152,6 @@ public class Driver {
   private static Map<NetworkSnapshot, SortedMap<String, BgpAdvertisementsByVrf>>
       buildEnvironmentBgpTablesCache() {
     return Collections.synchronizedMap(new LRUMap<>(MAX_CACHED_ENVIRONMENT_BGP_TABLES));
-  }
-
-  private static Map<NetworkSnapshot, SortedMap<String, RoutesByVrf>>
-      buildEnvironmentRoutingTablesCache() {
-    return Collections.synchronizedMap(new LRUMap<>(MAX_CACHED_ENVIRONMENT_ROUTING_TABLES));
   }
 
   private static Cache<NetworkSnapshot, SortedMap<String, Configuration>> buildTestrigCache() {
@@ -504,7 +493,7 @@ public class Driver {
   private static boolean registerWithCoordinator(String poolRegUrl, int listenPort) {
     Map<String, String> params = new HashMap<>();
     params.put(CoordConsts.SVC_KEY_ADD_WORKER, _mainSettings.getServiceHost() + ":" + listenPort);
-    params.put(CoordConsts.SVC_KEY_VERSION, Version.getVersion());
+    params.put(CoordConsts.SVC_KEY_VERSION, BatfishVersion.getVersionStatic());
 
     Object response = talkToCoordinator(poolRegUrl, params, _mainLogger);
     return response != null;
@@ -544,7 +533,6 @@ public class Driver {
               CACHED_TESTRIGS,
               CACHED_DATA_PLANES,
               CACHED_ENVIRONMENT_BGP_TABLES,
-              CACHED_ENVIRONMENT_ROUTING_TABLES,
               null,
               null);
 

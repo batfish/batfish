@@ -171,3 +171,36 @@ interface Ethernet1/10
   switchport trunk allowed vlan 1-3
   switchport trunk allowed vlan remove 3
 !
+
+! Ethernet interface with access mode set
+! - shutdown = false
+! - active = true
+! - switchport = true
+! - switchport mode = access
+! - switchport access vlan = 1
+interface Ethernet1/11
+  switchport mode access
+!
+
+! Ethernet interface with dot1q-tunnel mode set
+! TODO: semantics
+interface Ethernet1/12
+  switchport mode dot1q-tunnel
+!
+
+! Ethernet interface with fex-fabric mode set
+! TODO: semantics
+interface Ethernet1/13
+  switchport mode fex-fabric
+!
+
+! Ethernet interface with trunk mode set
+! - shutdown = false
+! - active = true
+! - switchport = true
+! - switchport mode = TRUNK
+! - switchport native vlan = 1
+! - switchport allowed vlans = 1-3967
+interface Ethernet1/14
+  switchport mode trunk
+!

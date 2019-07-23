@@ -38,6 +38,7 @@ s_interface_regular
     | i_ip
     | i_mtu
     | i_no
+    | i_null
     | i_shutdown
     | i_switchport
     | i_vrf_member
@@ -59,7 +60,7 @@ interface_bandwidth_kbps
 
 i_channel_group
 :
-  CHANNEL_GROUP id = channel_id force = FORCE? NEWLINE
+  CHANNEL_GROUP id = channel_id force = FORCE? (MODE (ACTIVE|ON|PASSIVE))? NEWLINE
 ;
 
 channel_id
@@ -90,6 +91,8 @@ i_ip
   (
     i_ip_address
     | i_ip_null
+    | i_ip_ospf
+    | i_ip_router
   )
 ;
 
@@ -101,6 +104,63 @@ i_ip_address
 i_ip_null
 :
   REDIRECTS null_rest_of_line
+;
+
+i_ip_ospf
+:
+  OSPF
+  (
+    iipo_dead_interval
+    | iipo_hello_interval
+    | iipo_message_digest_key
+    | iipo_network
+  )
+;
+
+iipo_dead_interval
+:
+  DEAD_INTERVAL interval_s = ospf_dead_interval NEWLINE
+;
+
+ospf_dead_interval
+:
+// 1-65535
+  uint16
+;
+
+iipo_hello_interval
+:
+  HELLO_INTERVAL interval_s = ospf_hello_interval NEWLINE
+;
+
+ospf_hello_interval
+:
+// 1-65535
+  uint16
+;
+
+iipo_message_digest_key
+:
+  MESSAGE_DIGEST_KEY null_rest_of_line
+;
+
+iipo_network
+:
+  NETWORK
+  (
+    BROADCAST
+    | POINT_TO_POINT
+  ) NEWLINE
+;
+
+i_ip_router
+:
+  ROUTER iipr_ospf
+;
+
+iipr_ospf
+:
+  OSPF name = router_ospf_name AREA area = ospf_area_id NEWLINE
 ;
 
 i_mtu
@@ -153,6 +213,15 @@ i_no_null
   ) null_rest_of_line
 ;
 
+i_null
+:
+  (
+    LACP
+    | SPANNING_TREE
+    | STORM_CONTROL
+  ) null_rest_of_line
+;
+
 i_shutdown
 :
   SHUTDOWN NEWLINE
@@ -163,6 +232,7 @@ i_switchport
   SWITCHPORT
   (
     i_switchport_access
+    | i_switchport_mode
     | i_switchport_trunk_allowed
     | i_switchport_trunk
   )
@@ -171,6 +241,37 @@ i_switchport
 i_switchport_access
 :
   ACCESS VLAN vlan = vlan_id NEWLINE
+;
+
+i_switchport_mode
+:
+  MODE
+  (
+    i_switchport_mode_access
+    | i_switchport_mode_dot1q_tunnel
+    | i_switchport_mode_fex_fabric
+    | i_switchport_mode_trunk
+  )
+;
+
+i_switchport_mode_access
+:
+  ACCESS NEWLINE
+;
+
+i_switchport_mode_dot1q_tunnel
+:
+  DOT1Q_TUNNEL NEWLINE
+;
+
+i_switchport_mode_fex_fabric
+:
+  FEX_FABRIC NEWLINE
+;
+
+i_switchport_mode_trunk
+:
+  TRUNK NEWLINE
 ;
 
 i_switchport_trunk

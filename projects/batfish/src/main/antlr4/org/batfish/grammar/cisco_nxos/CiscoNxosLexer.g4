@@ -5,6 +5,9 @@ options {
 }
 
 tokens {
+  BANNER_BODY,
+  BANNER_DELIMITER,
+  MOTD,
   PASSWORD_0,
   PASSWORD_0_TEXT,
   PASSWORD_3,
@@ -82,6 +85,16 @@ ACL_TCP
 ACL_UDP
 :
   'acl_udp'
+;
+
+ACTION
+:
+  'action'
+;
+
+ACTIVE
+:
+  'active'
 ;
 
 ADD
@@ -206,6 +219,11 @@ AHP
   'ahp'
 ;
 
+ALIAS
+:
+  'alias'
+;
+
 ALL
 :
   'all'
@@ -241,6 +259,11 @@ ANY
   'any'
 ;
 
+AREA
+:
+  'area'
+;
+
 AS_OVERRIDE
 :
   'as-override'
@@ -273,6 +296,21 @@ ATTRIBUTE_MAP
   'attribute-map'
 ;
 
+AUTHENTICATION
+:
+  'authentication'
+;
+
+AUTO
+:
+  'auto'
+;
+
+AUTO_COST
+:
+  'auto-cost'
+;
+
 AUTOSTATE
 :
   'autostate'
@@ -286,6 +324,16 @@ BACKUP
 BANDWIDTH
 :
   'bandwidth'
+;
+
+BANNER
+:
+  'banner' -> pushMode ( M_Banner )
+;
+
+BASH_SHELL
+:
+  'bash-shell'
 ;
 
 BGP
@@ -313,6 +361,11 @@ BIFF
   'biff'
 ;
 
+BOOT
+:
+  'boot'
+;
+
 BOOTPC
 :
   'bootpc'
@@ -328,9 +381,29 @@ BOTH
   'both'
 ;
 
+BPDUFILTER
+:
+  'bpdufilter'
+;
+
+BPDUGUARD
+:
+  'bpduguard'
+;
+
+BROADCAST
+:
+  'broadcast'
+;
+
 CAPABILITY
 :
   'capability'
+;
+
+CAUSE
+:
+  'cause'
 ;
 
 CHANNEL_GROUP
@@ -351,6 +424,11 @@ CLI
 CLIENT_TO_CLIENT
 :
   'client-to-client'
+;
+
+CLOCK
+:
+  'clock'
 ;
 
 CLUSTER_ID
@@ -430,6 +508,11 @@ COPY_ATTRIBUTES
   'copy-attributes'
 ;
 
+COST
+:
+  'cost'
+;
+
 COST_COMMUNITY
 :
   'cost-community'
@@ -490,9 +573,19 @@ DAYTIME
   'daytime'
 ;
 
+DEAD_INTERVAL
+:
+  'dead-interval'
+;
+
 DEFAULT
 :
   'default'
+;
+
+DEFAULT_COST
+:
+  'default-cost'
 ;
 
 DEFAULT_INFORMATION
@@ -533,6 +626,11 @@ DESCRIPTION
 DETAIL
 :
   'detail'
+;
+
+DHCP
+:
+  'dhcp'
 ;
 
 DIRECT
@@ -585,6 +683,11 @@ DOMAIN
   'domain'
 ;
 
+DOMAIN_LOOKUP
+:
+  'domain-lookup'
+;
+
 DONT_CAPABILITY_NEGOTIATE
 :
   'dont-capability-negotiate'
@@ -593,6 +696,11 @@ DONT_CAPABILITY_NEGOTIATE
 DOT1Q
 :
   [Dd] [Oo] [Tt] '1' [Qq]
+;
+
+DOT1Q_TUNNEL
+:
+  'dot1q-tunnel'
 ;
 
 DRIP
@@ -640,6 +748,11 @@ ECHO_REPLY
   'echo-reply'
 ;
 
+EDGE
+:
+  'edge'
+;
+
 EF
 :
   'ef'
@@ -655,6 +768,11 @@ EIBGP
   'eibgp'
 ;
 
+ENABLE
+:
+  'enable'
+;
+
 ENCAPSULATION
 :
   'encapsulation'
@@ -668,6 +786,11 @@ ENFORCE_FIRST_AS
 EQ
 :
   'eq'
+;
+
+ERRDISABLE
+:
+  'errdisable'
 ;
 
 ERRORS
@@ -730,6 +853,11 @@ EXPLICIT_TRACKING
   'explicit-tracking'
 ;
 
+EXPORT
+:
+  'export'
+;
+
 EXTENDED
 :
   'extended'
@@ -738,6 +866,11 @@ EXTENDED
 EXTERNAL
 :
   'external'
+;
+
+EXTERNAL_LSA
+:
+  'external-lsa'
 ;
 
 FAST_EXTERNAL_FALLOVER
@@ -753,6 +886,11 @@ FAST_LEAVE
 FEATURE
 :
   'feature'
+;
+
+FEX_FABRIC
+:
+  'fex-fabric'
 ;
 
 FILTER
@@ -820,6 +958,11 @@ FTP
   'ftp'
 ;
 
+GBPS
+:
+  [Gg] [Bb] [Pp] [Ss]
+;
+
 GENERAL_PARAMETER_PROBLEM
 :
   'general-parameter-problem'
@@ -870,9 +1013,19 @@ GT
   'gt'
 ;
 
+GUARD
+:
+  'guard'
+;
+
 HEAD
 :
   'head'
+;
+
+HELLO_INTERVAL
+:
+  'hello-interval'
 ;
 
 HOST
@@ -944,6 +1097,11 @@ HOSTNAME
 
 ;
 
+HSRP
+:
+  'hsrp'
+;
+
 HTTP_METHOD
 :
   'http-method'
@@ -984,6 +1142,11 @@ IMMEDIATE
   'immediate'
 ;
 
+IMPORT
+:
+  'import'
+;
+
 IN
 :
   'in'
@@ -992,6 +1155,11 @@ IN
 INBOUND
 :
   'inbound'
+;
+
+INCLUDE_STUB
+:
+  'include-stub'
 ;
 
 INFORMATION_REPLY
@@ -1031,6 +1199,11 @@ INTERFACE
   (
     'erface'
   )?
+;
+
+INTERFACE_VLAN
+:
+  'interface-vlan'
 ;
 
 INTERNAL
@@ -1078,6 +1251,18 @@ ISOLATE
   'isolate'
 ;
 
+KICKSTART
+:
+  'kickstart'
+  // name of image follows if preceded by 'boot'
+  {
+    if (lastTokenType() == BOOT) {
+      pushMode(M_Remark);
+    }
+  }
+
+;
+
 KLOGIN
 :
   'klogin'
@@ -1090,7 +1275,7 @@ KSHELL
 
 L2
 :
-  'L2'
+  [lL] '2'
 ;
 
 L2VPN
@@ -1101,6 +1286,11 @@ L2VPN
 L3
 :
   'L3'
+;
+
+LACP
+:
+  'lacp'
 ;
 
 LARGE
@@ -1123,6 +1313,16 @@ LE
   'le'
 ;
 
+LEVEL
+:
+  'level'
+;
+
+LINK_FLAP
+:
+  'link-flap'
+;
+
 LINK_LOCAL_GROUPS_SUPPRESSION
 :
   'link-local-groups-suppression'
@@ -1131,6 +1331,11 @@ LINK_LOCAL_GROUPS_SUPPRESSION
 LISP
 :
   'lisp'
+;
+
+LLDP
+:
+  'lldp'
 ;
 
 LOAD_SHARE
@@ -1153,6 +1358,11 @@ LOG
   'log'
 ;
 
+LOG_ADJACENCY_CHANGES
+:
+  'log-adjacency-changes'
+;
+
 LOG_NEIGHBOR_CHANGES
 :
   'log-neighbor-changes'
@@ -1161,6 +1371,11 @@ LOG_NEIGHBOR_CHANGES
 LOGIN
 :
   'login'
+;
+
+LOOP
+:
+  'loop'
 ;
 
 LOOPBACK
@@ -1180,6 +1395,21 @@ LOW_MEMORY
 LPD
 :
   'lpd'
+;
+
+LSA
+:
+  'lsa'
+;
+
+LSA_ARRIVAL
+:
+  'lsa-arrival'
+;
+
+LSA_GROUP_PACING
+:
+  'lsa-group-pacing'
 ;
 
 LT
@@ -1207,6 +1437,11 @@ MATCH
   'match'
 ;
 
+MAX_METRIC
+:
+  'max-metric'
+;
+
 MAXAS_LIMIT
 :
   'maxas-limit'
@@ -1230,6 +1465,11 @@ MAXIMUM_PEERS
 MAXIMUM_PREFIX
 :
   'maximum-prefix'
+;
+
+MBPS
+:
+  [Mm] [Bb] [Pp] [Ss]
 ;
 
 MCAST_GROUP
@@ -1261,6 +1501,17 @@ MEMBER
       pushMode(M_Word);
     }
   }
+
+;
+
+MESSAGE_DIGEST
+:
+  'message-digest'
+;
+
+MESSAGE_DIGEST_KEY
+:
+  'message-digest-key' -> pushMode ( M_Password )
 ;
 
 METRIC
@@ -1293,6 +1544,11 @@ MOBILE_REDIRECT
   'mobile-redirect'
 ;
 
+MODE
+:
+  'mode'
+;
+
 MROUTER
 :
   'mrouter'
@@ -1320,7 +1576,17 @@ MVPN
 
 NAME
 :
-  'name' -> pushMode ( M_Word )
+  'name'
+  // If preceded by 'alias', name and then arbitrary text definition follow.
+  // Otherwise, just a name follows.
+  {
+    if (lastTokenType() == ALIAS) {
+      pushMode(M_AliasName);
+    } else {
+      pushMode(M_Word);
+    }
+  }
+
 ;
 
 NAMESERVER
@@ -1433,9 +1699,19 @@ NO_PREPEND
   'no-prepend'
 ;
 
+NO_REDISTRIBUTION
+:
+  'no-redistribution'
+;
+
 NO_ROOM_FOR_OPTION
 :
   'no-room-for-option'
+;
+
+NO_SUMMARY
+:
+  'no-summary'
 ;
 
 NON_CRITICAL
@@ -1463,9 +1739,24 @@ NONE
   'none'
 ;
 
+NORMAL
+:
+  'normal'
+;
+
 NOS
 :
   'nos'
+;
+
+NOT_ADVERTISE
+:
+  'not-advertise'
+;
+
+NSSA
+:
+  'nssa'
 ;
 
 NTP
@@ -1488,9 +1779,31 @@ NVE
   'nve'
 ;
 
+NXOS
+:
+  'nxos'
+  // name of image follows if preceded by 'boot'
+  {
+    if (lastTokenType() == BOOT) {
+      pushMode(M_Remark);
+    }
+  }
+
+;
+
 OBJSTORE
 :
   'objstore'
+;
+
+ON
+:
+  'on'
+;
+
+ON_STARTUP
+:
+  'on-startup'
 ;
 
 OPTION_MISSING
@@ -1506,6 +1819,13 @@ ORIGINATE
 OSPF
 :
   'ospf'
+  // All other instances are followed by keywords or tokens in default mode
+  {
+    if (lastTokenType() == ROUTER) {
+      pushMode(M_Word);
+    }
+  }
+
 ;
 
 OSPFV3
@@ -1541,6 +1861,11 @@ PARAMETER_PROBLEM
 PASSIVE
 :
   'passive'
+;
+
+PASSIVE_INTERFACE
+:
+  'passive-interface'
 ;
 
 PASSWORD
@@ -1608,6 +1933,21 @@ PIM_AUTO_RP
   'pim-auto-rp'
 ;
 
+PIM6
+:
+  'pim6'
+;
+
+POAP
+:
+  'poap'
+;
+
+POINT_TO_POINT
+:
+  'point-to-point'
+;
+
 POP2
 :
   'pop2'
@@ -1618,9 +1958,19 @@ POP3
   'pop3'
 ;
 
+PORT
+:
+  'port'
+;
+
 PORT_CHANNEL
 :
   [Pp] [Oo] [Rr] [Tt] '-' [Cc] [Hh] [Aa] [Nn] [Nn] [Ee] [Ll]
+;
+
+PORT_PRIORITY
+:
+  'port-priority'
 ;
 
 PORT_UNREACHABLE
@@ -1693,6 +2043,11 @@ PROXY_LEAVE
   'proxy-leave'
 ;
 
+PSECURE_VIOLATION
+:
+  'psecure-violation'
+;
+
 PSH
 :
   'psh'
@@ -1728,6 +2083,11 @@ RANGE
   'range'
 ;
 
+RD
+:
+  'rd'
+;
+
 REASSEMBLY_TIMEOUT
 :
   'reassembly-timeout'
@@ -1743,6 +2103,11 @@ RECONNECT_INTERVAL
   'reconnect-interval'
 ;
 
+RECOVERY
+:
+  'recovery'
+;
+
 REDIRECT
 :
   'redirect'
@@ -1756,6 +2121,11 @@ REDIRECTS
 REDISTRIBUTE
 :
   'redistribute'
+;
+
+REFERENCE_BANDWIDTH
+:
+  'reference-bandwidth'
 ;
 
 REFLECTION
@@ -1823,6 +2193,11 @@ ROBUSTNESS_VARIABLE
   'robustness-variable'
 ;
 
+ROOT
+:
+  'root'
+;
+
 ROUTABLE
 :
   'routable'
@@ -1843,6 +2218,11 @@ ROUTE_REFLECTOR_CLIENT
   'route-reflector-client'
 ;
 
+ROUTE_TARGET
+:
+  'route-target'
+;
+
 ROUTER
 :
   'router'
@@ -1856,6 +2236,11 @@ ROUTER_ADVERTISEMENT
 ROUTER_ID
 :
   'router-id'
+;
+
+ROUTER_LSA
+:
+  'router-lsa'
 ;
 
 ROUTER_SOLICITATION
@@ -1873,9 +2258,19 @@ RST
   'rst'
 ;
 
+SCHEDULER
+:
+  'scheduler'
+;
+
 SECONDARY
 :
   'secondary'
+;
+
+SECURITY_VIOLATION
+:
+  'security-violation'
 ;
 
 SELECTION
@@ -1898,9 +2293,19 @@ SEQ
   'seq'
 ;
 
+SERVICE
+:
+  'service'
+;
+
 SET
 :
   'set'
+;
+
+SFLOW
+:
+  'sflow'
 ;
 
 SHUTDOWN
@@ -1958,6 +2363,16 @@ SOURCE_ROUTE_FAILED
   'source-route-failed'
 ;
 
+SPANNING_TREE
+:
+  'spanning-tree'
+;
+
+SPF
+:
+  'spf'
+;
+
 SPINE_ANYCAST_GATEWAY
 :
   'spine-anycast-gateway'
@@ -2003,6 +2418,26 @@ STATISTICS
   'statistics'
 ;
 
+STORM_CONTROL
+:
+  'storm-control'
+;
+
+STUB
+:
+  'stub'
+;
+
+SUMMARY_ADDRESS
+:
+  'summary-address'
+;
+
+SUMMARY_LSA
+:
+  'summary-lsa'
+;
+
 SUMMARY_ONLY
 :
   'summary-only'
@@ -2038,6 +2473,11 @@ SUPPRESS_MAP
   'suppress-map'
 ;
 
+SUSPEND_INDIVIDUAL
+:
+  'suspend-individual'
+;
+
 SWITCHPORT
 :
   'switchport'
@@ -2053,6 +2493,18 @@ SYSLOG
   'syslog'
 ;
 
+SYSTEM
+:
+  'system'
+  // name of image follows if preceded by 'boot'
+  {
+    if (lastTokenType() == BOOT) {
+      pushMode(M_Remark);
+    }
+  }
+
+;
+
 TABLE_MAP
 :
   'table-map'
@@ -2061,6 +2513,11 @@ TABLE_MAP
 TACACS
 :
   'tacacs'
+;
+
+TACACSP
+:
+  'tacacs+'
 ;
 
 TAG
@@ -2103,6 +2560,11 @@ TFTP
   'tftp'
 ;
 
+THROTTLE
+:
+  'throttle'
+;
+
 TIME
 :
   'time'
@@ -2128,6 +2590,11 @@ TIMESTAMP_REQUEST
   'timestamp-request'
 ;
 
+TIMEZONE
+:
+  'timezone' -> pushMode(M_Remark)
+;
+
 TRACEROUTE
 :
   'traceroute'
@@ -2146,6 +2613,11 @@ TRACK
 TRANSPORT
 :
   'transport'
+;
+
+TRAP
+:
+  'trap'
 ;
 
 TRIGGER_DELAY
@@ -2168,6 +2640,11 @@ TTL_EXCEEDED
   'ttl-exceeded'
 ;
 
+TYPE
+:
+  'type'
+;
+
 TYPE_1
 :
   'type-1'
@@ -2176,6 +2653,11 @@ TYPE_1
 TYPE_2
 :
   'type-2'
+;
+
+UDLD
+:
+  'udld'
 ;
 
 UDP
@@ -2213,6 +2695,11 @@ URG
   'urg'
 ;
 
+USERNAME
+:
+  'username' -> pushMode ( M_Remark )
+;
+
 UUCP
 :
   'uucp'
@@ -2225,7 +2712,12 @@ V3_REPORT_SUPPRESSION
 
 VERSION
 :
-  'version'
+  'version' -> pushMode ( M_Remark )
+;
+
+VIRTUAL_LINK
+:
+  'virtual-link'
 ;
 
 VLAN
@@ -2253,6 +2745,11 @@ VRF
   'vrf' -> pushMode ( M_Vrf )
 ;
 
+WAIT_FOR
+:
+  'wait-for'
+;
+
 WAIT_IGP_CONVERGENCE
 :
   'wait-igp-convergence'
@@ -2276,6 +2773,11 @@ WHOIS
 WHO
 :
   'who'
+;
+
+WITHDRAW
+:
+  'withdraw'
 ;
 
 WWW
@@ -2710,6 +3212,96 @@ F_WordChar
 :
   [0-9A-Za-z!@#$^*_=+.;:{}]
   | '-'
+;
+
+mode M_AliasName;
+
+M_AliasName_WORD
+:
+  F_Word -> type ( WORD ) , mode ( M_Remark )
+;
+
+M_AliasName_WS
+:
+  F_Whitespace+ -> channel ( HIDDEN )
+;
+
+mode M_Banner;
+
+M_Banner_EXEC
+:
+  'exec' -> type ( EXEC ) , mode ( M_BannerDelimiter )
+;
+
+M_Banner_MOTD
+:
+  'motd' -> type ( MOTD ) , mode ( M_BannerDelimiter )
+;
+
+M_Banner_NEWLINE
+:
+  F_Newline+ -> type ( NEWLINE ) , popMode
+;
+
+M_Banner_WS
+:
+  F_Whitespace+ -> channel ( HIDDEN )
+;
+
+mode M_BannerDelimiter;
+
+M_BannerDelimiter_BANNER_DELIMITER
+:
+  F_NonWhitespace
+  {
+    setBannerDelimiter();
+  }
+
+  -> type ( BANNER_DELIMITER ) , mode ( M_BannerText )
+;
+
+M_BannerDelimiter_WS
+:
+  F_Whitespace+ -> channel ( HIDDEN )
+;
+
+mode M_BannerText;
+
+M_BannerText_BANNER_DELIMITER
+:
+  {bannerDelimiterFollows()}?
+
+  .
+  {
+    unsetBannerDelimiter();
+  }
+
+  -> type ( BANNER_DELIMITER ) , mode ( M_BannerCleanup )
+;
+
+M_BannerText_BODY
+:
+  .
+  {
+    if (bannerDelimiterFollows()) {
+      setType(BANNER_BODY);
+    } else {
+      more();
+    }
+  }
+
+;
+
+mode M_BannerCleanup;
+
+M_BannerCleanup_IGNORED
+:
+  F_NonNewline+ -> channel ( HIDDEN )
+;
+
+M_BannerCleanup_NEWLINE
+:
+  F_Newline+ -> type ( NEWLINE ) , popMode
 ;
 
 mode M_DoubleQuote;

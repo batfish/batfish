@@ -5,9 +5,12 @@ import static javax.ws.rs.core.Response.Status.INTERNAL_SERVER_ERROR;
 import static javax.ws.rs.core.Response.Status.MOVED_PERMANENTLY;
 import static javax.ws.rs.core.Response.Status.OK;
 import static javax.ws.rs.core.Response.Status.UNAUTHORIZED;
+import static org.batfish.version.Versioned.UNKNOWN_VERSION;
 import static org.glassfish.jersey.client.ClientProperties.FOLLOW_REDIRECTS;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.not;
+import static org.hamcrest.collection.IsMapContaining.hasEntry;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.junit.Assert.assertThat;
 
@@ -25,10 +28,10 @@ import org.batfish.common.BfConsts;
 import org.batfish.common.Container;
 import org.batfish.common.CoordConsts;
 import org.batfish.common.CoordConstsV2;
-import org.batfish.common.Version;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.coordinator.authorizer.Authorizer;
 import org.batfish.datamodel.questions.TestQuestion;
+import org.batfish.version.BatfishVersion;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -54,7 +57,7 @@ public class WorkMgrServiceV2Test extends WorkMgrServiceV2TestBase {
     Response response =
         getContainersTarget()
             .request()
-            .header(CoordConstsV2.HTTP_HEADER_BATFISH_VERSION, Version.getVersion())
+            .header(CoordConstsV2.HTTP_HEADER_BATFISH_VERSION, BatfishVersion.getVersionStatic())
             .header(CoordConstsV2.HTTP_HEADER_BATFISH_APIKEY, CoordConsts.DEFAULT_API_KEY)
             .get();
     assertThat(response.getStatus(), equalTo(OK.getStatusCode()));
@@ -64,7 +67,7 @@ public class WorkMgrServiceV2Test extends WorkMgrServiceV2TestBase {
     response =
         getContainersTarget()
             .request()
-            .header(CoordConstsV2.HTTP_HEADER_BATFISH_VERSION, Version.getVersion())
+            .header(CoordConstsV2.HTTP_HEADER_BATFISH_VERSION, BatfishVersion.getVersionStatic())
             .header(CoordConstsV2.HTTP_HEADER_BATFISH_APIKEY, CoordConsts.DEFAULT_API_KEY)
             .get();
     assertThat(response.getStatus(), equalTo(OK.getStatusCode()));
@@ -78,7 +81,7 @@ public class WorkMgrServiceV2Test extends WorkMgrServiceV2TestBase {
             .path(CoordConstsV2.RSC_NETWORK)
             .property(FOLLOW_REDIRECTS, false)
             .request()
-            .header(CoordConstsV2.HTTP_HEADER_BATFISH_VERSION, Version.getVersion())
+            .header(CoordConstsV2.HTTP_HEADER_BATFISH_VERSION, BatfishVersion.getVersionStatic())
             .header(CoordConstsV2.HTTP_HEADER_BATFISH_APIKEY, CoordConsts.DEFAULT_API_KEY)
             .get();
     assertThat(response.getStatus(), equalTo(MOVED_PERMANENTLY.getStatusCode()));
@@ -91,7 +94,7 @@ public class WorkMgrServiceV2Test extends WorkMgrServiceV2TestBase {
         target(CoordConsts.SVC_CFG_WORK_MGR2)
             .path(CoordConstsV2.RSC_QUESTION_TEMPLATES)
             .request()
-            .header(CoordConstsV2.HTTP_HEADER_BATFISH_VERSION, Version.getVersion())
+            .header(CoordConstsV2.HTTP_HEADER_BATFISH_VERSION, BatfishVersion.getVersionStatic())
             .header(CoordConstsV2.HTTP_HEADER_BATFISH_APIKEY, CoordConsts.DEFAULT_API_KEY)
             .get();
     assertThat(response.getStatus(), equalTo(INTERNAL_SERVER_ERROR.getStatusCode()));
@@ -105,7 +108,7 @@ public class WorkMgrServiceV2Test extends WorkMgrServiceV2TestBase {
         target(CoordConsts.SVC_CFG_WORK_MGR2)
             .path(CoordConstsV2.RSC_QUESTION_TEMPLATES)
             .request()
-            .header(CoordConstsV2.HTTP_HEADER_BATFISH_VERSION, Version.getVersion())
+            .header(CoordConstsV2.HTTP_HEADER_BATFISH_VERSION, BatfishVersion.getVersionStatic())
             .header(CoordConstsV2.HTTP_HEADER_BATFISH_APIKEY, CoordConsts.DEFAULT_API_KEY)
             .get();
 
@@ -137,7 +140,7 @@ public class WorkMgrServiceV2Test extends WorkMgrServiceV2TestBase {
         target(CoordConsts.SVC_CFG_WORK_MGR2)
             .path(CoordConstsV2.RSC_QUESTION_TEMPLATES)
             .request()
-            .header(CoordConstsV2.HTTP_HEADER_BATFISH_VERSION, Version.getVersion())
+            .header(CoordConstsV2.HTTP_HEADER_BATFISH_VERSION, BatfishVersion.getVersionStatic())
             .header(CoordConstsV2.HTTP_HEADER_BATFISH_APIKEY, CoordConsts.DEFAULT_API_KEY)
             .get();
 
@@ -151,7 +154,7 @@ public class WorkMgrServiceV2Test extends WorkMgrServiceV2TestBase {
             .path(CoordConstsV2.RSC_QUESTION_TEMPLATES)
             .queryParam(CoordConstsV2.QP_VERBOSE, true)
             .request()
-            .header(CoordConstsV2.HTTP_HEADER_BATFISH_VERSION, Version.getVersion())
+            .header(CoordConstsV2.HTTP_HEADER_BATFISH_VERSION, BatfishVersion.getVersionStatic())
             .header(CoordConstsV2.HTTP_HEADER_BATFISH_APIKEY, CoordConsts.DEFAULT_API_KEY)
             .get();
 
@@ -182,7 +185,7 @@ public class WorkMgrServiceV2Test extends WorkMgrServiceV2TestBase {
         getContainersTarget()
             .path(containerName)
             .request()
-            .header(CoordConstsV2.HTTP_HEADER_BATFISH_VERSION, Version.getVersion())
+            .header(CoordConstsV2.HTTP_HEADER_BATFISH_VERSION, BatfishVersion.getVersionStatic())
             .header(CoordConstsV2.HTTP_HEADER_BATFISH_APIKEY, myKey)
             .get();
     assertThat(resp.getStatus(), equalTo(OK.getStatusCode()));
@@ -195,7 +198,7 @@ public class WorkMgrServiceV2Test extends WorkMgrServiceV2TestBase {
         getContainersTarget()
             .path(containerName)
             .request()
-            .header(CoordConstsV2.HTTP_HEADER_BATFISH_VERSION, Version.getVersion())
+            .header(CoordConstsV2.HTTP_HEADER_BATFISH_VERSION, BatfishVersion.getVersionStatic())
             .header(CoordConstsV2.HTTP_HEADER_BATFISH_APIKEY, "unknownKey")
             .get();
     assertThat(resp.getStatus(), equalTo(UNAUTHORIZED.getStatusCode()));
@@ -207,12 +210,28 @@ public class WorkMgrServiceV2Test extends WorkMgrServiceV2TestBase {
         getContainersTarget()
             .path(containerName)
             .request()
-            .header(CoordConstsV2.HTTP_HEADER_BATFISH_VERSION, Version.getVersion())
+            .header(CoordConstsV2.HTTP_HEADER_BATFISH_VERSION, BatfishVersion.getVersionStatic())
             .header(CoordConstsV2.HTTP_HEADER_BATFISH_APIKEY, otherKey)
             .get();
     assertThat(resp.getStatus(), equalTo(FORBIDDEN.getStatusCode()));
     assertThat(
         resp.readEntity(String.class),
         equalTo("network 'someContainer' is not accessible by the api key: AnotherApiKey"));
+  }
+
+  @Test
+  public void testGetVersion() {
+    Response response =
+        target(CoordConsts.SVC_CFG_WORK_MGR2)
+            .path(CoordConstsV2.RSC_VERSION)
+            .request()
+            .header(CoordConstsV2.HTTP_HEADER_BATFISH_VERSION, BatfishVersion.getVersionStatic())
+            .header(CoordConstsV2.HTTP_HEADER_BATFISH_APIKEY, CoordConsts.DEFAULT_API_KEY)
+            .get();
+    assertThat(response.getStatus(), equalTo(OK.getStatusCode()));
+    // Should get a non-unknown Batfish version
+    assertThat(
+        response.readEntity(new GenericType<Map<String, String>>() {}),
+        hasEntry(equalTo("Batfish"), not(equalTo(UNKNOWN_VERSION))));
   }
 }

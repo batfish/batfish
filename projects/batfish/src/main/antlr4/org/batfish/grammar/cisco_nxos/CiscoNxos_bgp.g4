@@ -106,8 +106,7 @@ rb_af_aggregate_address
 :
   AGGREGATE_ADDRESS
   (
-    network = ip_address MASK subnet = subnet_mask
-    | prefix = ip_prefix
+    network = route_network
     | prefix6 = ipv6_prefix
   ) rb_af_aa_tail* NEWLINE
 ;
@@ -214,8 +213,7 @@ rb_af_network
 :
   NETWORK
   (
-    address = ip_address MASK mask = subnet_mask
-    | prefix = ip_prefix
+    network = route_network
     | prefix6 = ipv6_prefix
   )
   (
@@ -585,7 +583,7 @@ rb_n_af_disable_peer_as_check
 
 rb_n_af_filter_list
 :
-  FILTER_LIST name = prefix_list_name
+  FILTER_LIST name = ip_as_path_access_list_name
   (
     IN
     | OUT
@@ -642,7 +640,7 @@ rb_n_af_next_hop_third_party
 
 rb_n_af_prefix_list
 :
-  PREFIX_LIST listname = prefix_list_name
+  PREFIX_LIST listname = ip_prefix_list_name
   (
     IN
     | OUT
@@ -719,7 +717,13 @@ rb_n_default
 
 rb_n_description
 :
-  DESCRIPTION desc = REMARK_TEXT NEWLINE
+  DESCRIPTION desc = bgp_neighbor_description NEWLINE
+;
+
+bgp_neighbor_description
+:
+// 1-80
+  desc = REMARK_TEXT
 ;
 
 rb_n_disable_connected_check

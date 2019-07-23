@@ -1,0 +1,20 @@
+!RANCID-CONTENT-TYPE: cisco-nx
+!
+hostname nxos_version
+!
+feature bash-shell
+feature bfd
+feature bgp
+feature dhcp
+feature hsrp
+feature interface-vlan
+feature lacp
+feature nv overlay
+feature ospf
+feature pim
+feature pim6
+feature scheduler
+feature sflow
+feature tacacs+
+feature vn-segment-vlan-based
+!

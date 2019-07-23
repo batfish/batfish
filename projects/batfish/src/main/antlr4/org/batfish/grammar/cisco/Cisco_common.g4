@@ -686,7 +686,7 @@ service_specifier_tcp_udp
       | TCP_UDP
       | UDP
    )
-   (SOURCE src_ps = port_specifier)? (DESTINATION dst_ps = port_specifier)?
+   (SOURCE src_ps = port_specifier)? (DESTINATION? dst_ps = port_specifier)?
 ;
 
 subrange

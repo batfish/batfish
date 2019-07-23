@@ -46,6 +46,7 @@ import org.batfish.datamodel.bgp.BgpTopologyUtils;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.eigrp.EigrpEdge;
 import org.batfish.datamodel.eigrp.EigrpTopology;
+import org.batfish.datamodel.eigrp.EigrpTopologyUtils;
 import org.batfish.datamodel.isis.IsisEdge;
 import org.batfish.datamodel.isis.IsisTopology;
 import org.batfish.datamodel.ospf.OspfNeighborConfigId;
@@ -145,7 +146,8 @@ public class EdgesAnswerer extends Answerer {
                 configurations, ipOwners, false, false, null, l2.orElse(null));
         return getBgpEdges(configurations, includeNodes, includeRemoteNodes, bgpTopology);
       case EIGRP:
-        EigrpTopology eigrpTopology = EigrpTopology.initEigrpTopology(configurations, topology);
+        EigrpTopology eigrpTopology =
+            EigrpTopologyUtils.initEigrpTopology(configurations, topology);
         return getEigrpEdges(includeNodes, includeRemoteNodes, eigrpTopology);
       case IPSEC:
         ValueGraph<IpsecPeerConfigId, IpsecSession> ipsecTopology =
@@ -541,8 +543,8 @@ public class EdgesAnswerer extends Answerer {
                 COL_INTERFACE,
                 Schema.INTERFACE,
                 "Interface from which the edge originates",
-                Boolean.FALSE,
-                Boolean.TRUE));
+                Boolean.TRUE,
+                Boolean.FALSE));
         columnBuilder.add(
             new ColumnMetadata(COL_IPS, Schema.set(Schema.IP), "IPs", Boolean.FALSE, Boolean.TRUE));
 
@@ -551,8 +553,8 @@ public class EdgesAnswerer extends Answerer {
                 COL_REMOTE_INTERFACE,
                 Schema.INTERFACE,
                 "Interface at which the edge terminates",
-                Boolean.FALSE,
-                Boolean.TRUE));
+                Boolean.TRUE,
+                Boolean.FALSE));
         columnBuilder.add(
             new ColumnMetadata(
                 COL_REMOTE_IPS, Schema.set(Schema.IP), "Remote IPs", Boolean.FALSE, Boolean.TRUE));

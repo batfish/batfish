@@ -151,6 +151,7 @@ import static org.batfish.representation.cisco.CiscoStructureUsage.DOCSIS_GROUP_
 import static org.batfish.representation.cisco.CiscoStructureUsage.DOCSIS_POLICY_DOCSIS_POLICY_RULE;
 import static org.batfish.representation.cisco.CiscoStructureUsage.DOMAIN_LOOKUP_SOURCE_INTERFACE;
 import static org.batfish.representation.cisco.CiscoStructureUsage.EIGRP_AF_INTERFACE;
+import static org.batfish.representation.cisco.CiscoStructureUsage.EIGRP_DISTRIBUTE_LIST_ACCESS_LIST_OUT;
 import static org.batfish.representation.cisco.CiscoStructureUsage.EIGRP_PASSIVE_INTERFACE;
 import static org.batfish.representation.cisco.CiscoStructureUsage.EIGRP_REDISTRIBUTE_BGP_MAP;
 import static org.batfish.representation.cisco.CiscoStructureUsage.EIGRP_REDISTRIBUTE_CONNECTED_MAP;
@@ -351,6 +352,7 @@ import org.batfish.datamodel.IcmpCode;
 import org.batfish.datamodel.IcmpType;
 import org.batfish.datamodel.IkeAuthenticationMethod;
 import org.batfish.datamodel.IkeHashingAlgorithm;
+import org.batfish.datamodel.IkeKeyType;
 import org.batfish.datamodel.IntegerSpace;
 import org.batfish.datamodel.IntegerSpace.Builder;
 import org.batfish.datamodel.Ip;
@@ -535,6 +537,7 @@ import org.batfish.grammar.cisco.CiscoParser.Cipprf_set_isakmp_profileContext;
 import org.batfish.grammar.cisco.CiscoParser.Cipprf_set_pfsContext;
 import org.batfish.grammar.cisco.CiscoParser.Cipprf_set_transform_setContext;
 import org.batfish.grammar.cisco.CiscoParser.Cipt_modeContext;
+import org.batfish.grammar.cisco.CiscoParser.Cis_keyContext;
 import org.batfish.grammar.cisco.CiscoParser.Cis_policyContext;
 import org.batfish.grammar.cisco.CiscoParser.Cis_profileContext;
 import org.batfish.grammar.cisco.CiscoParser.Cisco_configurationContext;
@@ -931,6 +934,7 @@ import org.batfish.grammar.cisco.CiscoParser.Rbnx_vrfContext;
 import org.batfish.grammar.cisco.CiscoParser.Re_autonomous_systemContext;
 import org.batfish.grammar.cisco.CiscoParser.Re_classicContext;
 import org.batfish.grammar.cisco.CiscoParser.Re_default_metricContext;
+import org.batfish.grammar.cisco.CiscoParser.Re_distribute_listContext;
 import org.batfish.grammar.cisco.CiscoParser.Re_eigrp_router_idContext;
 import org.batfish.grammar.cisco.CiscoParser.Re_networkContext;
 import org.batfish.grammar.cisco.CiscoParser.Re_passive_interfaceContext;
@@ -1223,6 +1227,7 @@ import org.batfish.representation.cisco.IpBgpPeerGroup;
 import org.batfish.representation.cisco.IpsecProfile;
 import org.batfish.representation.cisco.IpsecTransformSet;
 import org.batfish.representation.cisco.Ipv6BgpPeerGroup;
+import org.batfish.representation.cisco.IsakmpKey;
 import org.batfish.representation.cisco.IsakmpPolicy;
 import org.batfish.representation.cisco.IsakmpProfile;
 import org.batfish.representation.cisco.IsisProcess;
@@ -2049,6 +2054,36 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     } else {
       throw new BatfishException("Unsupported mode " + ctx.getText());
     }
+  }
+
+  @Override
+  public void enterCis_key(Cis_keyContext ctx) {
+    int encType = ctx.DEC() != null ? toInteger(ctx.DEC()) : 0;
+    IkeKeyType ikeKeyType;
+    if (encType == 0) {
+      ikeKeyType = IkeKeyType.PRE_SHARED_KEY_UNENCRYPTED;
+    } else if (encType == 6) {
+      ikeKeyType = IkeKeyType.PRE_SHARED_KEY_ENCRYPTED;
+    } else {
+      _w.addWarning(
+          ctx,
+          getFullText(ctx),
+          _parser,
+          String.format("%s is not a valid encryption type", encType));
+      return;
+    }
+    String psk = ctx.key.getText();
+    Ip wildCardMask = ctx.wildcard_mask == null ? Ip.MAX : toIp(ctx.wildcard_mask);
+    _configuration
+        .getIsakmpKeys()
+        .add(
+            new IsakmpKey(
+                IpWildcard.ipWithWildcardMask(toIp(ctx.ip_address), wildCardMask.inverted())
+                    .toIpSpace(),
+                ikeKeyType == IkeKeyType.PRE_SHARED_KEY_UNENCRYPTED
+                    ? CommonUtil.sha256Digest(psk + CommonUtil.salt())
+                    : psk,
+                ikeKeyType));
   }
 
   @Override
@@ -3371,7 +3406,6 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
         .put(
             _currentNetworkObjectName,
             new RangeNetworkObject(Ip.parse(ctx.start.getText()), Ip.parse(ctx.end.getText())));
-    _w.redFlag("Network object 'range' is not supported for access lists: " + getFullText(ctx));
   }
 
   @Override
@@ -6782,7 +6816,9 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     int line = ctx.getStart().getLine();
     _configuration.referenceStructure(IPSEC_PROFILE, name, TUNNEL_PROTECTION_IPSEC_PROFILE, line);
     for (Interface iface : _currentInterfaces) {
-      iface.getTunnelInitIfNull().setIpsecProfileName(name);
+      Tunnel tunnel = iface.getTunnelInitIfNull();
+      tunnel.setIpsecProfileName(name);
+      tunnel.setMode(TunnelMode.IPSEC);
     }
   }
 
@@ -8829,6 +8865,29 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       long metric = toLong(ctx.metric);
       proc.setDefaultMetric(metric);
     }
+  }
+
+  @Override
+  public void exitRe_distribute_list(Re_distribute_listContext ctx) {
+    if (_currentEigrpProcess == null) {
+      _w.addWarning(ctx, getFullText(ctx), _parser, "No EIGRP process available");
+      return;
+    }
+    if (ctx.iname == null) {
+      _w.addWarning(
+          ctx, getFullText(ctx), _parser, "Global distribute-list not supported for EIGRP");
+      return;
+    }
+    String ifaceName = getCanonicalInterfaceName(ctx.iname.getText());
+    String filterName = ctx.name.getText();
+    int line = ctx.name.getStart().getLine();
+    _configuration.referenceStructure(
+        IP_ACCESS_LIST, filterName, EIGRP_DISTRIBUTE_LIST_ACCESS_LIST_OUT, line);
+    _configuration.referenceStructure(
+        INTERFACE, ifaceName, EIGRP_DISTRIBUTE_LIST_ACCESS_LIST_OUT, line);
+    _currentEigrpProcess
+        .getOutboundInterfaceDistributeLists()
+        .put(ifaceName, new DistributeList(filterName, DistributeListFilterType.ACCESS_LIST));
   }
 
   @Override

@@ -1,39 +1,103 @@
 package org.batfish.representation.aws;
 
+import static com.google.common.base.Preconditions.checkArgument;
+
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import java.io.Serializable;
+import java.util.Objects;
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.Prefix;
-import org.codehaus.jettison.json.JSONException;
-import org.codehaus.jettison.json.JSONObject;
 
-public class VpcPeeringConnection implements AwsVpcEntity, Serializable {
+/** Represents an AWS VPC peering connection */
+@JsonIgnoreProperties(ignoreUnknown = true)
+@ParametersAreNonnullByDefault
+final class VpcPeeringConnection implements AwsVpcEntity, Serializable {
 
-  private final Prefix _accepterVpcCidrBlock;
+  @JsonIgnoreProperties(ignoreUnknown = true)
+  @ParametersAreNonnullByDefault
+  private static final class VpcInfo {
+    @Nonnull private final String _vpcId;
 
-  private final String _accepterVpcId;
+    @Nonnull private final Prefix _cidrBlock;
 
-  private final Prefix _requesterVpcCidrBlock;
+    @JsonCreator
+    private static VpcInfo create(
+        @Nullable @JsonProperty(JSON_KEY_VPC_ID) String vpcId,
+        @Nullable @JsonProperty(JSON_KEY_CIDR_BLOCK) Prefix cidrBlock) {
+      checkArgument(vpcId != null, "VPC id cannot be null in VPC info");
+      checkArgument(cidrBlock != null, "CIDR block cannot null in VPC info");
+      return new VpcInfo(vpcId, cidrBlock);
+    }
 
-  private final String _requesterVpcId;
+    private VpcInfo(String vpcId, Prefix cidrBlock) {
+      _cidrBlock = cidrBlock;
+      _vpcId = vpcId;
+    }
 
-  private final String _vpcPeeringConnectionId;
+    @Nonnull
+    String getVpcId() {
+      return _vpcId;
+    }
 
-  public VpcPeeringConnection(JSONObject jObj) throws JSONException {
-    _vpcPeeringConnectionId = jObj.getString(JSON_KEY_VPC_PEERING_CONNECTION_ID);
-
-    JSONObject accepterJson = jObj.getJSONObject(JSON_KEY_ACCEPTER_VPC_INFO);
-    _accepterVpcId = accepterJson.getString(JSON_KEY_VPC_ID);
-    _accepterVpcCidrBlock = Prefix.parse(accepterJson.getString(JSON_KEY_CIDR_BLOCK));
-
-    JSONObject requesterJson = jObj.getJSONObject(JSON_KEY_REQUESTER_VPC_INFO);
-    _requesterVpcId = requesterJson.getString(JSON_KEY_VPC_ID);
-    _requesterVpcCidrBlock = Prefix.parse(requesterJson.getString(JSON_KEY_CIDR_BLOCK));
+    @Nonnull
+    Prefix getCidrBlock() {
+      return _cidrBlock;
+    }
   }
 
-  public Prefix getAccepterVpcCidrBlock() {
+  @Nonnull private final Prefix _accepterVpcCidrBlock;
+
+  @Nonnull private final String _accepterVpcId;
+
+  @Nonnull private final Prefix _requesterVpcCidrBlock;
+
+  @Nonnull private final String _requesterVpcId;
+
+  @Nonnull private final String _vpcPeeringConnectionId;
+
+  @JsonCreator
+  private static VpcPeeringConnection create(
+      @Nullable @JsonProperty(JSON_KEY_VPC_PEERING_CONNECTION_ID) String vpcPeeringConnectionId,
+      @Nullable @JsonProperty(JSON_KEY_ACCEPTER_VPC_INFO) VpcInfo accepterVpcInfo,
+      @Nullable @JsonProperty(JSON_KEY_REQUESTER_VPC_INFO) VpcInfo requesterVpcInfo) {
+    checkArgument(vpcPeeringConnectionId != null, "VPC peering connection Id cannot be null");
+    checkArgument(
+        accepterVpcInfo != null, "Accepter VPC info cannot be null in VPC peering connection Id");
+    checkArgument(
+        requesterVpcInfo != null, "Requester VPC info cannot be null in VPC peering connection Id");
+
+    return new VpcPeeringConnection(
+        vpcPeeringConnectionId,
+        accepterVpcInfo.getVpcId(),
+        accepterVpcInfo.getCidrBlock(),
+        requesterVpcInfo.getVpcId(),
+        requesterVpcInfo.getCidrBlock());
+  }
+
+  VpcPeeringConnection(
+      String vpcPeeringConnectionId,
+      String accepterVpcId,
+      Prefix accepterVpcCidrBlock,
+      String requesterVpcId,
+      Prefix requesterVpcCidrBlock) {
+    _vpcPeeringConnectionId = vpcPeeringConnectionId;
+    _accepterVpcId = accepterVpcId;
+    _accepterVpcCidrBlock = accepterVpcCidrBlock;
+    _requesterVpcId = requesterVpcId;
+    _requesterVpcCidrBlock = requesterVpcCidrBlock;
+  }
+
+  @Nonnull
+  Prefix getAccepterVpcCidrBlock() {
     return _accepterVpcCidrBlock;
   }
 
-  public String getAccepterVpcId() {
+  @Nonnull
+  String getAccepterVpcId() {
     return _accepterVpcId;
   }
 
@@ -42,15 +106,44 @@ public class VpcPeeringConnection implements AwsVpcEntity, Serializable {
     return _vpcPeeringConnectionId;
   }
 
-  public Prefix getRequesterVpcCidrBlock() {
+  @Nonnull
+  Prefix getRequesterVpcCidrBlock() {
     return _requesterVpcCidrBlock;
   }
 
-  public String getRequesterVpcId() {
+  @Nonnull
+  String getRequesterVpcId() {
     return _requesterVpcId;
   }
 
-  public String getVpcPeeringConnectionId() {
+  @Nonnull
+  String getVpcPeeringConnectionId() {
     return _vpcPeeringConnectionId;
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) {
+      return true;
+    }
+    if (o == null || getClass() != o.getClass()) {
+      return false;
+    }
+    VpcPeeringConnection that = (VpcPeeringConnection) o;
+    return Objects.equals(_accepterVpcCidrBlock, that._accepterVpcCidrBlock)
+        && Objects.equals(_accepterVpcId, that._accepterVpcId)
+        && Objects.equals(_requesterVpcCidrBlock, that._requesterVpcCidrBlock)
+        && Objects.equals(_requesterVpcId, that._requesterVpcId)
+        && Objects.equals(_vpcPeeringConnectionId, that._vpcPeeringConnectionId);
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(
+        _accepterVpcCidrBlock,
+        _accepterVpcId,
+        _requesterVpcCidrBlock,
+        _requesterVpcId,
+        _vpcPeeringConnectionId);
   }
 }

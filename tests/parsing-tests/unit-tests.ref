@@ -8199,6 +8199,37 @@
             "          address = IP_ADDRESS:'192.168.126.64'",
             "          NEWLINE:'\\n'))))",
             "  (stanza",
+            "    (s_object",
+            "      OBJECT:'object'",
+            "      (o_network",
+            "        NETWORK:'network'",
+            "        name = (variable_permissive",
+            "          VARIABLE:'range-10.0.0.10-20')",
+            "        NEWLINE:'\\n'",
+            "        (on_range",
+            "          RANGE:'range'",
+            "          IP_ADDRESS:'10.0.0.10'",
+            "          end = IP_ADDRESS:'10.0.0.20'",
+            "          NEWLINE:'\\n'))))",
+            "  (stanza",
+            "    (s_object_group",
+            "      OBJECT_GROUP:'object-group'",
+            "      (og_service",
+            "        SERVICE:'service'  <== mode:M_ObjectGroup",
+            "        name = (variable_group_id",
+            "          VARIABLE:'service-ssh')",
+            "        NEWLINE:'\\n'",
+            "        (ogs_service_object",
+            "          SERVICE_OBJECT:'service-object'",
+            "          (service_specifier",
+            "            (service_specifier_tcp_udp",
+            "              TCP:'tcp'",
+            "              dst_ps = (port_specifier",
+            "                EQ:'eq'",
+            "                (port",
+            "                  SSH:'ssh'))))",
+            "          NEWLINE:'\\n\\n'))))",
+            "  (stanza",
             "    (extended_access_list_stanza",
             "      ACCESS_LIST:'access-list'",
             "      name = (variable_aclname",
@@ -19065,13 +19096,12 @@
             "      CRYPTO:'crypto'",
             "      (crypto_isakmp",
             "        ISAKMP:'isakmp'",
-            "        (cis_null",
+            "        (cis_key",
             "          KEY:'key'",
-            "          (null_rest_of_line",
-            "            VARIABLE:'~99a9aaa_aaaa9aa|||aaaaaaa'",
-            "            ADDRESS:'address'",
-            "            IP_ADDRESS:'1.2.3.4'",
-            "            NEWLINE:'\\n')))))",
+            "          key = VARIABLE:'~99a9aaa_aaaa9aa|||aaaaaaa'",
+            "          ADDRESS:'address'",
+            "          ip_address = IP_ADDRESS:'1.2.3.4'",
+            "          NEWLINE:'\\n'))))",
             "  (stanza",
             "    (s_crypto",
             "      CRYPTO:'crypto'",
@@ -56830,7 +56860,7 @@
             "              (o_common",
             "                (o_area",
             "                  AREA:'area'",
-            "                  area = IP_ADDRESS:'0.0.0.0'",
+            "                  area_ip = IP_ADDRESS:'0.0.0.0'",
             "                  (oa_interface",
             "                    INTERFACE:'interface'",
             "                    id = (interface_id",
@@ -56921,7 +56951,41 @@
             "                DESCRIPTION:'description'",
             "                (null_filler",
             "                  M_Description_DESCRIPTION:'APP-description'  <== mode:M_Description)))))))",
-            "    NEWLINE:'\\n\\n'  <== mode:M_Description)",
+            "    NEWLINE:'\\n'  <== mode:M_Description)",
+            "  (set_line",
+            "    SET:'set'",
+            "    (set_line_tail",
+            "      (statement",
+            "        (s_common",
+            "          (s_applications",
+            "            APPLICATIONS:'applications'",
+            "            (a_application",
+            "              APPLICATION:'application'",
+            "              name = (variable",
+            "                text = VARIABLE:'APP-POP3')",
+            "              (aa_common",
+            "                (aat_protocol",
+            "                  PROTOCOL:'protocol'",
+            "                  (ip_protocol",
+            "                    TCP:'tcp'))))))))",
+            "    NEWLINE:'\\n')",
+            "  (set_line",
+            "    SET:'set'",
+            "    (set_line_tail",
+            "      (statement",
+            "        (s_common",
+            "          (s_applications",
+            "            APPLICATIONS:'applications'",
+            "            (a_application",
+            "              APPLICATION:'application'",
+            "              name = (variable",
+            "                text = VARIABLE:'APP-POP3')",
+            "              (aa_common",
+            "                (aat_destination_port",
+            "                  DESTINATION_PORT:'destination-port'",
+            "                  (port",
+            "                    POP3:'pop3'))))))))",
+            "    NEWLINE:'\\n\\n')",
             "  EOF:<EOF>)"
           ]
         },
@@ -62718,7 +62782,7 @@
             "              (o_common",
             "                (o_area",
             "                  AREA:'area'",
-            "                  area = IP_ADDRESS:'0.1.2.3'",
+            "                  area_ip = IP_ADDRESS:'0.1.2.3'",
             "                  (oa_interface",
             "                    INTERFACE:'interface'",
             "                    id = (interface_id",
@@ -62741,7 +62805,7 @@
             "              (o_common",
             "                (o_area",
             "                  AREA:'area'",
-            "                  area = IP_ADDRESS:'0.1.2.3'",
+            "                  area_ip = IP_ADDRESS:'0.1.2.3'",
             "                  (oa_interface",
             "                    INTERFACE:'interface'",
             "                    id = (interface_id",
@@ -62766,7 +62830,7 @@
             "              (o_common",
             "                (o_area",
             "                  AREA:'area'",
-            "                  area = IP_ADDRESS:'0.1.2.3'",
+            "                  area_ip = IP_ADDRESS:'0.1.2.3'",
             "                  (oa_interface",
             "                    INTERFACE:'interface'",
             "                    id = (interface_id",
@@ -62792,7 +62856,7 @@
             "              (o_common",
             "                (o_area",
             "                  AREA:'area'",
-            "                  area = IP_ADDRESS:'0.1.2.3'",
+            "                  area_ip = IP_ADDRESS:'0.1.2.3'",
             "                  (oa_interface",
             "                    INTERFACE:'interface'",
             "                    id = (interface_id",
@@ -62819,7 +62883,7 @@
             "              (o_common",
             "                (o_area",
             "                  AREA:'area'",
-            "                  area = IP_ADDRESS:'0.1.2.3'",
+            "                  area_ip = IP_ADDRESS:'0.1.2.3'",
             "                  (oa_interface",
             "                    INTERFACE:'interface'",
             "                    id = (interface_id",
@@ -62843,7 +62907,7 @@
             "              (o_common",
             "                (o_area",
             "                  AREA:'area'",
-            "                  area = IP_ADDRESS:'0.1.2.3'",
+            "                  area_ip = IP_ADDRESS:'0.1.2.3'",
             "                  (oa_area_range",
             "                    AREA_RANGE:'area-range'",
             "                    IP_PREFIX:'1.2.0.0/16'",
@@ -62909,7 +62973,7 @@
             "              (o_common",
             "                (o_area",
             "                  AREA:'area'",
-            "                  area = IP_ADDRESS:'0.1.2.3'",
+            "                  area_ip = IP_ADDRESS:'0.1.2.3'",
             "                  (oa_nssa",
             "                    NSSA:'nssa'",
             "                    (oan_default_lsa",
@@ -62930,7 +62994,7 @@
             "              (o_common",
             "                (o_area",
             "                  AREA:'area'",
-            "                  area = IP_ADDRESS:'0.1.2.3'",
+            "                  area_ip = IP_ADDRESS:'0.1.2.3'",
             "                  (oa_nssa",
             "                    NSSA:'nssa'",
             "                    (oan_no_summaries",
@@ -62948,7 +63012,7 @@
             "              (o_common",
             "                (o_area",
             "                  AREA:'area'",
-            "                  area = IP_ADDRESS:'0.1.2.3'",
+            "                  area_ip = IP_ADDRESS:'0.1.2.3'",
             "                  (oa_area_range",
             "                    AREA_RANGE:'area-range'",
             "                    IPV6_PREFIX:'dead:beef::/56'",
@@ -62968,7 +63032,7 @@
             "              (o_common",
             "                (o_area",
             "                  AREA:'area'",
-            "                  area = IP_ADDRESS:'0.1.2.3'",
+            "                  area_ip = IP_ADDRESS:'0.1.2.3'",
             "                  (oa_interface",
             "                    INTERFACE:'interface'",
             "                    id = (interface_id",
@@ -62989,7 +63053,7 @@
             "              (o_common",
             "                (o_area",
             "                  AREA:'area'",
-            "                  area = IP_ADDRESS:'0.1.2.3'",
+            "                  area_ip = IP_ADDRESS:'0.1.2.3'",
             "                  (oa_interface",
             "                    INTERFACE:'interface'",
             "                    id = (interface_id",
@@ -63013,7 +63077,7 @@
             "              (o_common",
             "                (o_area",
             "                  AREA:'area'",
-            "                  area = IP_ADDRESS:'0.1.2.3'",
+            "                  area_ip = IP_ADDRESS:'0.1.2.3'",
             "                  (oa_interface",
             "                    INTERFACE:'interface'",
             "                    id = (interface_id",
@@ -63037,7 +63101,7 @@
             "              (o_common",
             "                (o_area",
             "                  AREA:'area'",
-            "                  area = IP_ADDRESS:'0.1.2.3'",
+            "                  area_ip = IP_ADDRESS:'0.1.2.3'",
             "                  (oa_interface",
             "                    INTERFACE:'interface'",
             "                    id = (interface_id",
@@ -63061,7 +63125,7 @@
             "              (o_common",
             "                (o_area",
             "                  AREA:'area'",
-            "                  area = IP_ADDRESS:'0.1.2.3'",
+            "                  area_ip = IP_ADDRESS:'0.1.2.3'",
             "                  (oa_interface",
             "                    INTERFACE:'interface'",
             "                    id = (interface_id",
@@ -63085,7 +63149,7 @@
             "              (o_common",
             "                (o_area",
             "                  AREA:'area'",
-            "                  area = IP_ADDRESS:'0.1.2.3'",
+            "                  area_ip = IP_ADDRESS:'0.1.2.3'",
             "                  (oa_interface",
             "                    INTERFACE:'interface'",
             "                    id = (interface_id",
@@ -63108,7 +63172,7 @@
             "              (o_common",
             "                (o_area",
             "                  AREA:'area'",
-            "                  area = IP_ADDRESS:'0.1.2.3'",
+            "                  area_ip = IP_ADDRESS:'0.1.2.3'",
             "                  (oa_interface",
             "                    INTERFACE:'interface'",
             "                    id = (interface_id",
@@ -63188,7 +63252,7 @@
             "              (o_common",
             "                (o_area",
             "                  AREA:'area'",
-            "                  area = IP_ADDRESS:'0.0.0.0'",
+            "                  area_ip = IP_ADDRESS:'0.0.0.0'",
             "                  (oa_interface",
             "                    INTERFACE:'interface'",
             "                    id = (interface_id",
@@ -63240,7 +63304,7 @@
             "              (o_common",
             "                (o_area",
             "                  AREA:'area'",
-            "                  area = IP_ADDRESS:'0.0.0.46'",
+            "                  area_ip = IP_ADDRESS:'0.0.0.46'",
             "                  (oa_stub",
             "                    STUB:'stub'))))))))",
             "    NEWLINE:'\\n')",
@@ -63256,7 +63320,7 @@
             "              (o_common",
             "                (o_area",
             "                  AREA:'area'",
-            "                  area = IP_ADDRESS:'0.0.0.46'",
+            "                  area_ip = IP_ADDRESS:'0.0.0.46'",
             "                  (oa_stub",
             "                    STUB:'stub'",
             "                    (oas_no_summaries",
@@ -63274,7 +63338,7 @@
             "              (o_common",
             "                (o_area",
             "                  AREA:'area'",
-            "                  area = IP_ADDRESS:'0.0.0.7'",
+            "                  area_ip = IP_ADDRESS:'0.0.0.7'",
             "                  (oa_stub",
             "                    STUB:'stub'",
             "                    (oas_default_metric",
@@ -77558,18 +77622,34 @@
           "extended ipv4 access-list" : {
             "ALLOW_SERVER02" : {
               "definitionLines" : [
-                8
+                15
               ],
               "numReferrers" : 0
             }
           },
           "object network" : {
+            "range-10.0.0.10-20" : {
+              "definitionLines" : [
+                9,
+                10
+              ],
+              "numReferrers" : 0
+            },
             "server02" : {
               "definitionLines" : [
                 6,
                 7
               ],
               "numReferrers" : 1
+            }
+          },
+          "object-group service" : {
+            "service-ssh" : {
+              "definitionLines" : [
+                12,
+                13
+              ],
+              "numReferrers" : 0
             }
           }
         },
@@ -82232,6 +82312,13 @@
                 4
               ],
               "numReferrers" : 0
+            },
+            "APP-POP3" : {
+              "definitionLines" : [
+                6,
+                7
+              ],
+              "numReferrers" : 0
             }
           }
         },
@@ -85157,7 +85244,7 @@
           "object network" : {
             "server02" : {
               "extended access-list network object" : [
-                8
+                15
               ]
             }
           }

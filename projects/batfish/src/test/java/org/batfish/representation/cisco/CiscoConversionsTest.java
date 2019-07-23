@@ -4,6 +4,7 @@ import static org.batfish.datamodel.Interface.INVALID_LOCAL_INTERFACE;
 import static org.batfish.representation.cisco.CiscoConversions.createAclWithSymmetricalLines;
 import static org.batfish.representation.cisco.CiscoConversions.getMatchingPsk;
 import static org.batfish.representation.cisco.CiscoConversions.sanityCheckDistributeList;
+import static org.batfish.representation.cisco.CiscoConversions.sanityCheckEigrpDistributeList;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.nullValue;
@@ -48,6 +49,25 @@ public class CiscoConversionsTest {
   }
 
   @Test
+  public void testSanityCheckEigrpDistributeListAbsentFilter() {
+    Configuration c =
+        _nf.configurationBuilder()
+            .setHostname("conf")
+            .setConfigurationFormat(ConfigurationFormat.CISCO_IOS)
+            .build();
+    CiscoConfiguration oldConfig = new CiscoConfiguration();
+    oldConfig.setWarnings(_warnings);
+    DistributeList distributeList =
+        new DistributeList("filter", DistributeListFilterType.ACCESS_LIST);
+
+    assertFalse(sanityCheckEigrpDistributeList(c, distributeList, oldConfig));
+    assertThat(
+        oldConfig.getWarnings().getRedFlagWarnings().iterator().next().getText(),
+        equalTo(
+            "distribute-list refers an undefined access-list `filter`, it will not filter anything"));
+  }
+
+  @Test
   public void testCreateAclWithSymmetricalLines() {
     IpAccessList ipAccessList =
         _nf.aclBuilder()
@@ -80,7 +100,7 @@ public class CiscoConversionsTest {
 
     IkePhase1Key ikePhase1Key = new IkePhase1Key();
     ikePhase1Key.setKeyHash("test_key");
-    ikePhase1Key.setKeyType(IkeKeyType.PRE_SHARED_KEY);
+    ikePhase1Key.setKeyType(IkeKeyType.PRE_SHARED_KEY_UNENCRYPTED);
     ikePhase1Key.setLocalInterface("local_interface");
 
     IkePhase1Key matchingKey =
@@ -101,7 +121,7 @@ public class CiscoConversionsTest {
 
     IkePhase1Key ikePhase1Key = new IkePhase1Key();
     ikePhase1Key.setKeyHash("test_key");
-    ikePhase1Key.setKeyType(IkeKeyType.PRE_SHARED_KEY);
+    ikePhase1Key.setKeyType(IkeKeyType.PRE_SHARED_KEY_UNENCRYPTED);
     ikePhase1Key.setLocalInterface("local_interface");
 
     IkePhase1Key matchingKey =
@@ -122,7 +142,7 @@ public class CiscoConversionsTest {
 
     IkePhase1Key ikePhase1Key = new IkePhase1Key();
     ikePhase1Key.setKeyHash("test_key");
-    ikePhase1Key.setKeyType(IkeKeyType.PRE_SHARED_KEY);
+    ikePhase1Key.setKeyType(IkeKeyType.PRE_SHARED_KEY_UNENCRYPTED);
     ikePhase1Key.setLocalInterface("local_interface");
 
     IkePhase1Key matchingKey =
@@ -143,7 +163,7 @@ public class CiscoConversionsTest {
 
     IkePhase1Key ikePhase1Key = new IkePhase1Key();
     ikePhase1Key.setKeyHash("test_key");
-    ikePhase1Key.setKeyType(IkeKeyType.PRE_SHARED_KEY);
+    ikePhase1Key.setKeyType(IkeKeyType.PRE_SHARED_KEY_UNENCRYPTED);
     ikePhase1Key.setLocalInterface(INVALID_LOCAL_INTERFACE);
 
     IkePhase1Key matchingKey =
@@ -165,7 +185,7 @@ public class CiscoConversionsTest {
 
     IkePhase1Key ikePhase1Key = new IkePhase1Key();
     ikePhase1Key.setKeyHash("test_key");
-    ikePhase1Key.setKeyType(IkeKeyType.PRE_SHARED_KEY);
+    ikePhase1Key.setKeyType(IkeKeyType.PRE_SHARED_KEY_UNENCRYPTED);
     ikePhase1Key.setLocalInterface("local_interface");
     ikePhase1Key.setRemoteIdentity(IpWildcard.parse("1.2.3.4:0.0.0.0").toIpSpace());
 
@@ -185,7 +205,7 @@ public class CiscoConversionsTest {
 
     IkePhase1Key ikePhase1Key = new IkePhase1Key();
     ikePhase1Key.setKeyHash("test_key");
-    ikePhase1Key.setKeyType(IkeKeyType.PRE_SHARED_KEY);
+    ikePhase1Key.setKeyType(IkeKeyType.PRE_SHARED_KEY_UNENCRYPTED);
     ikePhase1Key.setLocalInterface("local_interface");
     ikePhase1Key.setRemoteIdentity(IpWildcard.parse("1.2.3.5:0.0.0.0").toIpSpace());
 

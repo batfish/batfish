@@ -1,9 +1,13 @@
 package org.batfish.representation.aws;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import java.io.IOException;
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicLong;
+import javax.annotation.Nonnull;
+import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.common.Warnings;
 import org.batfish.config.Settings;
 import org.batfish.datamodel.Configuration;
@@ -11,63 +15,56 @@ import org.batfish.datamodel.GenericConfigObject;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.answers.ParseVendorConfigurationAnswerElement;
-import org.codehaus.jettison.json.JSONException;
-import org.codehaus.jettison.json.JSONObject;
 
+/** The top-level class that represent AWS configuration */
+@ParametersAreNonnullByDefault
 public class AwsConfiguration implements Serializable, GenericConfigObject {
 
   private static final long INITIAL_GENERATED_IP = Ip.FIRST_CLASS_E_EXPERIMENTAL_IP.asLong();
 
-  private Map<String, Configuration> _configurationNodes = new HashMap<>();
+  @Nonnull private final Map<String, Configuration> _configurationNodes;
 
-  private AtomicLong _currentGeneratedIpAsLong;
+  @Nonnull private final AtomicLong _currentGeneratedIpAsLong;
 
-  private Map<String, Region> _regions = new HashMap<>();
-
-  private Settings _settings;
-
-  private transient Map<String, Warnings> _warningsByHost;
+  @Nonnull private final Map<String, Region> _regions;
 
   public AwsConfiguration() {
+    _configurationNodes = new HashMap<>();
     _currentGeneratedIpAsLong = new AtomicLong(INITIAL_GENERATED_IP);
+    _regions = new HashMap<>();
   }
 
+  /** Adds a config subtree */
   public void addConfigElement(
       String region,
-      JSONObject jsonObj,
+      JsonNode json,
       String sourceFileName,
       ParseVendorConfigurationAnswerElement pvcae)
-      throws JSONException {
+      throws IOException {
     _regions
         .computeIfAbsent(region, r -> new Region(region))
-        .addConfigElement(jsonObj, sourceFileName, pvcae);
+        .addConfigElement(json, sourceFileName, pvcae);
   }
 
-  public Map<String, Configuration> getConfigurationNodes() {
+  @Nonnull
+  Map<String, Configuration> getConfigurationNodes() {
     return _configurationNodes;
   }
 
-  public Prefix getNextGeneratedLinkSubnet() {
+  @Nonnull
+  Prefix getNextGeneratedLinkSubnet() {
     long base = _currentGeneratedIpAsLong.getAndAdd(2L);
     assert base % 2 == 0;
     return Prefix.create(Ip.create(base), Prefix.MAX_PREFIX_LENGTH - 1);
   }
 
-  public Settings getSettings() {
-    return _settings;
-  }
-
-  public Map<String, Warnings> getWarningsByHost() {
-    return _warningsByHost;
-  }
-
+  /** Convert this AWS config to a set of VI configurations */
+  @Nonnull
   public Map<String, Configuration> toConfigurations(
       Settings settings, Map<String, Warnings> warningsByHost) {
-    _warningsByHost = warningsByHost;
-    _settings = settings;
 
     for (Region region : _regions.values()) {
-      region.toConfigurationNodes(this, _configurationNodes);
+      region.toConfigurationNodes(this, _configurationNodes, settings, warningsByHost);
     }
 
     return _configurationNodes;

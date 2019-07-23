@@ -11,6 +11,7 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.ext.Provider;
 import org.batfish.common.Version;
+import org.batfish.version.BatfishVersion;
 
 /**
  * This filter verifies that the client's version is compatible with the version of Batfish service.
@@ -37,7 +38,7 @@ public class VersionCompatibilityFilter implements ContainerRequestFilter {
               .entity(
                   String.format(
                       "Client version '%s' is not compatible with server version '%s'",
-                      clientVersion, Version.getVersion()))
+                      clientVersion, BatfishVersion.getVersionStatic()))
               .type(MediaType.APPLICATION_JSON)
               .build());
     }

@@ -15,12 +15,6 @@ ip_prefix_list
   )
 ;
 
-ip_prefix_list_name
-:
-// 1-63 characters
-  WORD
-;
-
 pl_action
 :
   (

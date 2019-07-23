@@ -2,6 +2,7 @@ package org.batfish.representation.cisco;
 
 import static com.google.common.base.MoreObjects.firstNonNull;
 import static java.util.Collections.singletonList;
+import static org.batfish.datamodel.IkePhase1Policy.PREFIX_ISAKMP_KEY;
 import static org.batfish.datamodel.IkePhase1Policy.PREFIX_RSA_PUB;
 import static org.batfish.datamodel.Interface.INVALID_LOCAL_INTERFACE;
 import static org.batfish.datamodel.Interface.UNSET_LOCAL_INTERFACE;
@@ -121,7 +122,7 @@ import org.batfish.representation.cisco.DistributeList.DistributeListFilterType;
 
 /** Utilities that convert Cisco-specific representations to vendor-independent model. */
 @ParametersAreNonnullByDefault
-class CiscoConversions {
+public class CiscoConversions {
 
   static Ip getHighestIp(Map<String, Interface> allInterfaces) {
     Map<String, Interface> interfacesToCheck;
@@ -250,7 +251,7 @@ class CiscoConversions {
    * @param vrfName Name of VRF in which the aggregate network exists
    * @param prefix The aggregate network prefix
    */
-  static void generateGenerationPolicy(Configuration c, String vrfName, Prefix prefix) {
+  public static void generateGenerationPolicy(Configuration c, String vrfName, Prefix prefix) {
     RoutingPolicy.builder()
         .setOwner(c)
         .setName(computeBgpGenerationPolicyName(true, vrfName, prefix.toString()))
@@ -460,7 +461,7 @@ class CiscoConversions {
    * {@link Configuration} to ensure they are available and tracked.
    */
   @Nullable
-  static If suppressSummarizedPrefixes(
+  public static If suppressSummarizedPrefixes(
       Configuration c, String vrfName, Stream<Prefix> summaryOnlyPrefixes) {
     Iterator<Prefix> prefixesToSuppress = summaryOnlyPrefixes.iterator();
     if (!prefixesToSuppress.hasNext()) {
@@ -607,7 +608,7 @@ class CiscoConversions {
   static IkePhase1Key toIkePhase1Key(Keyring keyring) {
     IkePhase1Key ikePhase1Key = new IkePhase1Key();
     ikePhase1Key.setKeyHash(keyring.getKey());
-    ikePhase1Key.setKeyType(IkeKeyType.PRE_SHARED_KEY);
+    ikePhase1Key.setKeyType(IkeKeyType.PRE_SHARED_KEY_UNENCRYPTED);
     ikePhase1Key.setLocalInterface(keyring.getLocalInterfaceName());
     if (keyring.getRemoteIdentity() != null) {
       ikePhase1Key.setRemoteIdentity(keyring.getRemoteIdentity().toIpSpace());
@@ -622,6 +623,14 @@ class CiscoConversions {
     if (rsaPubKey.getAddress() != null) {
       ikePhase1Key.setRemoteIdentity(rsaPubKey.getAddress().toIpSpace());
     }
+    return ikePhase1Key;
+  }
+
+  static IkePhase1Key toIkePhase1Key(@Nonnull IsakmpKey isakmpKey) {
+    IkePhase1Key ikePhase1Key = new IkePhase1Key();
+    ikePhase1Key.setKeyHash(isakmpKey.getKey());
+    ikePhase1Key.setKeyType(isakmpKey.getIkeKeyType());
+    ikePhase1Key.setRemoteIdentity(isakmpKey.getAddress());
     return ikePhase1Key;
   }
 
@@ -648,8 +657,34 @@ class CiscoConversions {
     return ikePhase1Policy;
   }
 
+  static IkePhase1Policy toIkePhase1Policy(
+      @Nonnull IsakmpKey isakmpKey,
+      @Nonnull CiscoConfiguration oldConfig,
+      @Nonnull IkePhase1Key ikePhase1KeyFromIsakmpKey) {
+    IkePhase1Policy ikePhase1Policy = new IkePhase1Policy(getIsakmpKeyGeneratedName(isakmpKey));
+
+    ikePhase1Policy.setIkePhase1Proposals(
+        oldConfig.getIsakmpPolicies().values().stream()
+            .filter(
+                isakmpPolicy ->
+                    isakmpPolicy.getAuthenticationMethod()
+                        == IkeAuthenticationMethod.PRE_SHARED_KEYS)
+            .map(isakmpPolicy -> isakmpPolicy.getName().toString())
+            .collect(ImmutableList.toImmutableList()));
+    ikePhase1Policy.setRemoteIdentity(isakmpKey.getAddress());
+
+    ikePhase1Policy.setIkePhase1Key(ikePhase1KeyFromIsakmpKey);
+    // ISAKMP key is not per interface so local interface will not be set
+    ikePhase1Policy.setLocalInterface(UNSET_LOCAL_INTERFACE);
+    return ikePhase1Policy;
+  }
+
   static String getRsaPubKeyGeneratedName(NamedRsaPubKey namedRsaPubKey) {
     return String.format("~%s_%s~", PREFIX_RSA_PUB, namedRsaPubKey.getName());
+  }
+
+  static String getIsakmpKeyGeneratedName(IsakmpKey isakmpKey) {
+    return String.format("~%s_%s~", PREFIX_ISAKMP_KEY, isakmpKey.getAddress());
   }
 
   static IkePhase1Policy toIkePhase1Policy(
@@ -1080,7 +1115,6 @@ class CiscoConversions {
       EigrpProcess proc, String vrfName, Configuration c, CiscoConfiguration oldConfig) {
     org.batfish.datamodel.eigrp.EigrpProcess.Builder newProcess =
         org.batfish.datamodel.eigrp.EigrpProcess.builder();
-    org.batfish.datamodel.Vrf vrf = c.getVrfs().get(vrfName);
 
     if (proc.getAsn() == null) {
       oldConfig.getWarnings().redFlag("Invalid EIGRP process");
@@ -1089,7 +1123,6 @@ class CiscoConversions {
 
     newProcess.setAsNumber(proc.getAsn());
     newProcess.setMode(proc.getMode());
-    newProcess.setVrf(vrf);
 
     // TODO set stub process
     // newProcess.setStub(proc.isStub())
@@ -1373,6 +1406,87 @@ class CiscoConversions {
       c.getRoutingPolicies().put(routingPolicy.getName(), routingPolicy);
       entry.getValue().setOspfInboundDistributeListPolicy(policyName);
     }
+  }
+
+  /**
+   * Computes the routing policy for the provided {@link DistributeList distributeList} and returns
+   * the name of the computed routing policy. Returns null if the provided {@link DistributeList} is
+   * not supported or if the filter referred by the {@link DistributeList} doesn't exist.
+   *
+   * <p>Also adds the computed routing policy to {@link Configuration}.
+   *
+   * @param c Vendor independent {@link Configuration configuration}
+   * @param vsConfig Vendor specific {@link CiscoConfiguration configuration}
+   * @param distributeList {@link DistributeList} which is to be converted
+   * @param vrfName Name of the VRF in which the {@link DistributeList} is defined
+   * @param asn ASN of the {@link EigrpProcess} in which the {@link DistributeList} is defined
+   * @param ifaceName Name of the interface on which the distributeList operates
+   * @return Name of the computed routing policy or null if it cannot be computed
+   */
+  @Nullable
+  static String computeEigrpDistributeListRoutingPolicy(
+      @Nonnull Configuration c,
+      @Nonnull CiscoConfiguration vsConfig,
+      @Nonnull DistributeList distributeList,
+      @Nonnull String vrfName,
+      @Nonnull Long asn,
+      @Nonnull String ifaceName) {
+    if (!sanityCheckEigrpDistributeList(c, distributeList, vsConfig)) {
+      return null;
+    }
+    String policyName = String.format("~EIGRP_DIST_LIST_%s_%s_%s", vrfName, asn, ifaceName);
+    RoutingPolicy routingPolicy = new RoutingPolicy(policyName, c);
+    routingPolicy
+        .getStatements()
+        .add(
+            new If(
+                new MatchPrefixSet(
+                    DestinationNetwork.instance(),
+                    new NamedPrefixSet(distributeList.getFilterName())),
+                ImmutableList.of(Statements.ExitAccept.toStaticStatement()),
+                ImmutableList.of(Statements.ExitReject.toStaticStatement())));
+    c.getRoutingPolicies().put(policyName, routingPolicy);
+    return policyName;
+  }
+
+  /**
+   * Checks if the {@link DistributeList distributeList} can be converted to a routing policy.
+   * Returns false if it refers to an extended access list, which is not supported and also returns
+   * false if the access-list referred by it does not exist.
+   *
+   * <p>Adds appropriate {@link org.batfish.common.Warning} if the {@link DistributeList
+   * distributeList} is not found to be valid for conversion to routing policy.
+   *
+   * @param c Vendor independent {@link Configuration configuration}
+   * @param distributeList {@link DistributeList distributeList} to be validated
+   * @param vsConfig Vendor specific {@link CiscoConfiguration configuration}
+   * @return false if the {@link DistributeList distributeList} cannot be converted to a routing
+   *     policy
+   */
+  static boolean sanityCheckEigrpDistributeList(
+      @Nonnull Configuration c,
+      @Nonnull DistributeList distributeList,
+      @Nonnull CiscoConfiguration vsConfig) {
+    if (distributeList.getFilterType() == DistributeListFilterType.ACCESS_LIST
+        && vsConfig.getExtendedAcls().containsKey(distributeList.getFilterName())) {
+      vsConfig
+          .getWarnings()
+          .redFlag(
+              String.format(
+                  "Extended access lists are not supported in EIGRP distribute-lists: %s",
+                  distributeList.getFilterName()));
+      return false;
+    } else if (!c.getRouteFilterLists().containsKey(distributeList.getFilterName())) {
+      // if referred access-list is not defined, all prefixes will be allowed
+      vsConfig
+          .getWarnings()
+          .redFlag(
+              String.format(
+                  "distribute-list refers an undefined access-list `%s`, it will not filter anything",
+                  distributeList.getFilterName()));
+      return false;
+    }
+    return true;
   }
 
   static org.batfish.datamodel.StaticRoute toStaticRoute(Configuration c, StaticRoute staticRoute) {

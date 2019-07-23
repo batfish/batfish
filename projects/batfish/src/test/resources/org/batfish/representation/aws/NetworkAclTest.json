@@ -1,0 +1,37 @@
+{
+  "NetworkAcls": [
+    {
+      "Associations": [
+        {
+          "NetworkAclAssociationId": "aclassoc-1f248c78",
+          "NetworkAclId": "acl-4db39c28",
+          "SubnetId": "subnet-1f315846"
+        }
+      ],
+      "Entries": [
+        {
+          "CidrBlock": "0.0.0.0/0",
+          "Egress": true,
+          "Protocol": "-1",
+          "RuleAction": "allow",
+          "RuleNumber": 100
+        },
+        {
+          "CidrBlock": "162.243.144.192/32",
+          "Egress": false,
+          "PortRange": {
+            "From": 3306,
+            "To": 3306
+          },
+          "Protocol": "6",
+          "RuleAction": "deny",
+          "RuleNumber": 100
+        }
+      ],
+      "IsDefault": true,
+      "NetworkAclId": "acl-4db39c28",
+      "Tags": [],
+      "VpcId": "vpc-f8fad69d"
+    }
+  ]
+}

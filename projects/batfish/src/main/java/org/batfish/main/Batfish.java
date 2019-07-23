@@ -24,6 +24,7 @@ import static org.batfish.main.ReachabilityParametersResolver.resolveReachabilit
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Throwables;
 import com.google.common.cache.Cache;
@@ -148,13 +149,12 @@ import org.batfish.datamodel.answers.InitStepAnswerElement;
 import org.batfish.datamodel.answers.MajorIssueConfig;
 import org.batfish.datamodel.answers.ParseAnswerElement;
 import org.batfish.datamodel.answers.ParseEnvironmentBgpTablesAnswerElement;
-import org.batfish.datamodel.answers.ParseEnvironmentRoutingTablesAnswerElement;
 import org.batfish.datamodel.answers.ParseStatus;
 import org.batfish.datamodel.answers.ParseVendorConfigurationAnswerElement;
 import org.batfish.datamodel.answers.RunAnalysisAnswerElement;
 import org.batfish.datamodel.collections.BgpAdvertisementsByVrf;
 import org.batfish.datamodel.collections.NodeInterfacePair;
-import org.batfish.datamodel.collections.RoutesByVrf;
+import org.batfish.datamodel.eigrp.EigrpTopologyUtils;
 import org.batfish.datamodel.flow.Trace;
 import org.batfish.datamodel.flow.TraceWrapperAsAnswerElement;
 import org.batfish.datamodel.isp_configuration.IspConfiguration;
@@ -188,7 +188,6 @@ import org.batfish.job.BatfishJobExecutor;
 import org.batfish.job.ConvertConfigurationJob;
 import org.batfish.job.FlattenVendorConfigurationJob;
 import org.batfish.job.ParseEnvironmentBgpTableJob;
-import org.batfish.job.ParseEnvironmentRoutingTableJob;
 import org.batfish.job.ParseResult;
 import org.batfish.job.ParseVendorConfigurationJob;
 import org.batfish.job.ParseVendorConfigurationResult;
@@ -219,6 +218,7 @@ import org.batfish.storage.StorageProvider;
 import org.batfish.symbolic.IngressLocation;
 import org.batfish.topology.TopologyProviderImpl;
 import org.batfish.vendor.VendorConfiguration;
+import org.batfish.version.BatfishVersion;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
 import org.jgrapht.Graph;
@@ -428,9 +428,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
   private final Map<NetworkSnapshot, SortedMap<String, BgpAdvertisementsByVrf>>
       _cachedEnvironmentBgpTables;
 
-  private final Map<NetworkSnapshot, SortedMap<String, RoutesByVrf>>
-      _cachedEnvironmentRoutingTables;
-
   private TestrigSettings _deltaTestrigSettings;
 
   private Set<ExternalBgpAdvertisementPlugin> _externalBgpAdvertisementPlugins;
@@ -460,7 +457,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
       Cache<NetworkSnapshot, SortedMap<String, Configuration>> cachedConfigurations,
       Cache<NetworkSnapshot, DataPlane> cachedDataPlanes,
       Map<NetworkSnapshot, SortedMap<String, BgpAdvertisementsByVrf>> cachedEnvironmentBgpTables,
-      Map<NetworkSnapshot, SortedMap<String, RoutesByVrf>> cachedEnvironmentRoutingTables,
       @Nullable StorageProvider alternateStorageProvider,
       @Nullable IdResolver alternateIdResolver) {
     _settings = settings;
@@ -468,7 +464,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
     _cachedConfigurations = cachedConfigurations;
     _cachedDataPlanes = cachedDataPlanes;
     _cachedEnvironmentBgpTables = cachedEnvironmentBgpTables;
-    _cachedEnvironmentRoutingTables = cachedEnvironmentRoutingTables;
     _externalBgpAdvertisementPlugins = new TreeSet<>();
     _testrigSettings = settings.getActiveTestrigSettings();
     _baseTestrigSettings = settings.getBaseTestrigSettings();
@@ -772,12 +767,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
     serializeEnvironmentBgpTables(inputPath, outputPath);
   }
 
-  private void computeEnvironmentRoutingTables() {
-    Path outputPath = _testrigSettings.getSerializeEnvironmentRoutingTablesPath();
-    Path inputPath = _testrigSettings.getEnvironmentRoutingTablesPath();
-    serializeEnvironmentRoutingTables(inputPath, outputPath);
-  }
-
   private Map<String, Configuration> convertConfigurations(
       Map<String, GenericConfigObject> vendorConfigurations,
       ConvertConfigurationAnswerElement answerElement) {
@@ -830,26 +819,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
         deserializeObjects(namesByPath, BgpAdvertisementsByVrf.class);
     _logger.printElapsedTime();
     return bgpTables;
-  }
-
-  private SortedMap<String, RoutesByVrf> deserializeEnvironmentRoutingTables(
-      Path serializeEnvironmentRoutingTablesPath) {
-    _logger.info("\n*** DESERIALIZING ENVIRONMENT ROUTING TABLES ***\n");
-    _logger.resetTimer();
-    Map<Path, String> namesByPath = new TreeMap<>();
-    try (DirectoryStream<Path> serializedRoutingTables =
-        Files.newDirectoryStream(serializeEnvironmentRoutingTablesPath)) {
-      for (Path serializedRoutingTable : serializedRoutingTables) {
-        String name = serializedRoutingTable.getFileName().toString();
-        namesByPath.put(serializedRoutingTable, name);
-      }
-    } catch (IOException e) {
-      throw new BatfishException("Error reading serialized routing tables directory", e);
-    }
-    SortedMap<String, RoutesByVrf> routingTables =
-        deserializeObjects(namesByPath, RoutesByVrf.class);
-    _logger.printElapsedTime();
-    return routingTables;
   }
 
   /**
@@ -990,11 +959,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
     return testrigSettings.getOutputPath().toFile().exists();
   }
 
-  private boolean environmentRoutingTablesExist(TestrigSettings testrigSettings) {
-    Path answerPath = testrigSettings.getParseEnvironmentRoutingTablesAnswerPath();
-    return Files.exists(answerPath);
-  }
-
   public void flatten(Path inputPath, Path outputPath) {
     _logger.info("\n*** READING FILES TO FLATTEN ***\n");
     Map<Path, String> configurationData =
@@ -1091,18 +1055,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
     SortedMap<String, BgpAdvertisementsByVrf> bgpTables =
         parseEnvironmentBgpTables(inputData, answerElement);
     return bgpTables;
-  }
-
-  private SortedMap<String, RoutesByVrf> getEnvironmentRoutingTables(
-      Path inputPath, ParseEnvironmentRoutingTablesAnswerElement answerElement) {
-    if (Files.exists(inputPath.getParent()) && !Files.exists(inputPath)) {
-      return new TreeMap<>();
-    }
-    _logger.info("\n*** READING Environment Routing Tables ***\n");
-    SortedMap<Path, String> inputData = readAllFiles(inputPath, _logger);
-    SortedMap<String, RoutesByVrf> routingTables =
-        parseEnvironmentRoutingTables(inputData, answerElement);
-    return routingTables;
   }
 
   @Override
@@ -1205,7 +1157,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
             CoordConsts.SVC_CFG_POOL_MGR,
             CoordConsts.SVC_RSC_POOL_GET_QUESTION_TEMPLATES);
     Map<String, String> params = new HashMap<>();
-    params.put(CoordConsts.SVC_KEY_VERSION, Version.getVersion());
+    params.put(CoordConsts.SVC_KEY_VERSION, BatfishVersion.getVersionStatic());
     params.put(CoordConstsV2.QP_VERBOSE, String.valueOf(verbose));
 
     JSONObject response = (JSONObject) Driver.talkToCoordinator(url, params, _logger);
@@ -1301,24 +1253,12 @@ public class Batfish extends PluginConsumer implements IBatfish {
     return answerElement;
   }
 
-  @Override
-  public InitInfoAnswerElement initInfoRoutes(boolean summary, boolean verboseError) {
-    ParseEnvironmentRoutingTablesAnswerElement parseAnswer =
-        loadParseEnvironmentRoutingTablesAnswerElement();
-    InitInfoAnswerElement answerElement = mergeParseAnswer(summary, verboseError, parseAnswer);
-    _logger.info(answerElement.toString());
-    return answerElement;
-  }
-
   private void prepareToAnswerQuestions(boolean dp) {
     if (!outputExists(_testrigSettings)) {
       createDirectories(_testrigSettings.getOutputPath());
     }
     if (!environmentBgpTablesExist(_testrigSettings)) {
       computeEnvironmentBgpTables();
-    }
-    if (!environmentRoutingTablesExist(_testrigSettings)) {
-      computeEnvironmentRoutingTables();
     }
     if (dp) {
       if (!dataPlaneDependenciesExist(_testrigSettings)) {
@@ -1453,26 +1393,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
   }
 
   @Override
-  public SortedMap<String, RoutesByVrf> loadEnvironmentRoutingTables() {
-    NetworkSnapshot snapshot = getNetworkSnapshot();
-    SortedMap<String, RoutesByVrf> environmentRoutingTables =
-        _cachedEnvironmentRoutingTables.get(snapshot);
-    if (environmentRoutingTables == null) {
-      ParseEnvironmentRoutingTablesAnswerElement pertae =
-          loadParseEnvironmentRoutingTablesAnswerElement();
-      if (!Version.isCompatibleVersion(
-          "Service", "Old processed environment routing tables", pertae.getVersion())) {
-        repairEnvironmentRoutingTables();
-      }
-      environmentRoutingTables =
-          deserializeEnvironmentRoutingTables(
-              _testrigSettings.getSerializeEnvironmentRoutingTablesPath());
-      _cachedEnvironmentRoutingTables.put(snapshot, environmentRoutingTables);
-    }
-    return environmentRoutingTables;
-  }
-
-  @Override
   public ParseEnvironmentBgpTablesAnswerElement loadParseEnvironmentBgpTablesAnswerElement() {
     return loadParseEnvironmentBgpTablesAnswerElement(true);
   }
@@ -1505,35 +1425,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
       throw new BatfishException(
           "Version error repairing environment BGP tables for parse environment BGP tables "
               + "answer element");
-    }
-  }
-
-  @Override
-  public ParseEnvironmentRoutingTablesAnswerElement
-      loadParseEnvironmentRoutingTablesAnswerElement() {
-    return loadParseEnvironmentRoutingTablesAnswerElement(true);
-  }
-
-  private ParseEnvironmentRoutingTablesAnswerElement loadParseEnvironmentRoutingTablesAnswerElement(
-      boolean firstAttempt) {
-    Path answerPath = _testrigSettings.getParseEnvironmentRoutingTablesAnswerPath();
-    if (!Files.exists(answerPath)) {
-      repairEnvironmentRoutingTables();
-    }
-    ParseEnvironmentRoutingTablesAnswerElement pertae =
-        deserializeObject(answerPath, ParseEnvironmentRoutingTablesAnswerElement.class);
-    if (!Version.isCompatibleVersion(
-        "Service", "Old processed environment routing tables", pertae.getVersion())) {
-      if (firstAttempt) {
-        repairEnvironmentRoutingTables();
-        return loadParseEnvironmentRoutingTablesAnswerElement(false);
-      } else {
-        throw new BatfishException(
-            "Version error repairing environment routing tables for parse environment routing "
-                + "tables answer element");
-      }
-    } else {
-      return pertae;
     }
   }
 
@@ -1703,21 +1594,13 @@ public class Batfish extends PluginConsumer implements IBatfish {
       String fileName = path.subpath(pathLength - 3, pathLength).toString();
       pvcae.getFileMap().put(BfConsts.RELPATH_AWS_CONFIGS_FILE, fileName);
 
-      JSONObject jsonObj = null;
       try {
-        jsonObj = new JSONObject(fileText);
-      } catch (JSONException e) {
+        JsonNode json = BatfishObjectMapper.mapper().readTree(fileText);
+        config.addConfigElement(regionName, json, fileName, pvcae);
+      } catch (IOException e) {
         pvcae.addRedFlagWarning(
             BfConsts.RELPATH_AWS_CONFIGS_FILE,
-            new Warning(String.format("AWS file %s is not valid JSON", fileName), "AWS"));
-      }
-
-      if (jsonObj != null) {
-        try {
-          config.addConfigElement(regionName, jsonObj, fileName, pvcae);
-        } catch (JSONException e) {
-          throw new BatfishException("Problems parsing JSON in " + fileName, e);
-        }
+            new Warning(String.format("Unexpected content in AWS file %s", fileName), "AWS"));
       }
     }
     return config;
@@ -1758,39 +1641,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
         "Parse environment BGP tables");
     _logger.printElapsedTime();
     return bgpTables;
-  }
-
-  private SortedMap<String, RoutesByVrf> parseEnvironmentRoutingTables(
-      SortedMap<Path, String> inputData, ParseEnvironmentRoutingTablesAnswerElement answerElement) {
-    _logger.info("\n*** PARSING ENVIRONMENT ROUTING TABLES ***\n");
-    _logger.resetTimer();
-    SortedMap<String, RoutesByVrf> routingTables = new TreeMap<>();
-    List<ParseEnvironmentRoutingTableJob> jobs = new ArrayList<>();
-    SortedMap<String, Configuration> configurations = loadConfigurations();
-    for (Entry<Path, String> routingFile : inputData.entrySet()) {
-      Path currentFile = routingFile.getKey();
-      String fileText = routingFile.getValue();
-
-      String hostname = currentFile.getFileName().toString();
-      if (!configurations.containsKey(hostname)) {
-        continue;
-      }
-
-      Warnings warnings = buildWarnings(_settings);
-      ParseEnvironmentRoutingTableJob job =
-          new ParseEnvironmentRoutingTableJob(_settings, fileText, currentFile, warnings, this);
-      jobs.add(job);
-    }
-    BatfishJobExecutor.runJobsInExecutor(
-        _settings,
-        _logger,
-        jobs,
-        routingTables,
-        answerElement,
-        _settings.getHaltOnParseError(),
-        "Parse environment routing tables");
-    _logger.printElapsedTime();
-    return routingTables;
   }
 
   /**
@@ -2255,8 +2105,10 @@ public class Batfish extends PluginConsumer implements IBatfish {
   private void postProcessSnapshot(Map<String, Configuration> configurations) {
     updateBlacklistedAndInactiveConfigs(configurations);
     postProcessAggregatedInterfaces(configurations);
-    OspfTopologyUtils.initNeighborConfigs(NetworkConfigurations.of(configurations));
+    NetworkConfigurations nc = NetworkConfigurations.of(configurations);
+    OspfTopologyUtils.initNeighborConfigs(nc);
     postProcessOspfCosts(configurations);
+    EigrpTopologyUtils.initNeighborConfigs(nc);
     computeAndStoreCompletionMetadata(configurations);
   }
 
@@ -2299,14 +2151,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
     Path bgpTablesOutputPath = _testrigSettings.getSerializeEnvironmentBgpTablesPath();
     CommonUtil.deleteDirectory(bgpTablesOutputPath);
     computeEnvironmentBgpTables();
-  }
-
-  private void repairEnvironmentRoutingTables() {
-    Path answerPath = _testrigSettings.getParseEnvironmentRoutingTablesAnswerPath();
-    CommonUtil.deleteIfExists(answerPath);
-    Path rtOutputPath = _testrigSettings.getSerializeEnvironmentRoutingTablesPath();
-    CommonUtil.deleteDirectory(rtOutputPath);
-    computeEnvironmentRoutingTables();
   }
 
   private void repairVendorConfigurations() {
@@ -2428,7 +2272,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
     Answer answer = new Answer();
     ParseEnvironmentBgpTablesAnswerElement answerElement =
         new ParseEnvironmentBgpTablesAnswerElement();
-    answerElement.setVersion(Version.getVersion());
+    answerElement.setVersion(BatfishVersion.getVersionStatic());
     answer.addAnswerElement(answerElement);
     SortedMap<String, BgpAdvertisementsByVrf> bgpTables =
         getEnvironmentBgpTables(inputPath, answerElement);
@@ -2447,37 +2291,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
     outputPath.toFile().mkdirs();
     SortedMap<Path, BgpAdvertisementsByVrf> output = new TreeMap<>();
     bgpTables.forEach(
-        (name, rt) -> {
-          Path currentOutputPath = outputPath.resolve(name);
-          output.put(currentOutputPath, rt);
-        });
-    serializeObjects(output);
-    _logger.printElapsedTime();
-  }
-
-  private Answer serializeEnvironmentRoutingTables(Path inputPath, Path outputPath) {
-    Answer answer = new Answer();
-    ParseEnvironmentRoutingTablesAnswerElement answerElement =
-        new ParseEnvironmentRoutingTablesAnswerElement();
-    answerElement.setVersion(Version.getVersion());
-    answer.addAnswerElement(answerElement);
-    SortedMap<String, RoutesByVrf> routingTables =
-        getEnvironmentRoutingTables(inputPath, answerElement);
-    serializeEnvironmentRoutingTables(routingTables, outputPath);
-    serializeObject(answerElement, _testrigSettings.getParseEnvironmentRoutingTablesAnswerPath());
-    return answer;
-  }
-
-  private void serializeEnvironmentRoutingTables(
-      SortedMap<String, RoutesByVrf> routingTables, Path outputPath) {
-    if (routingTables == null) {
-      throw new BatfishException("Exiting due to parsing error(s)");
-    }
-    _logger.info("\n*** SERIALIZING ENVIRONMENT ROUTING TABLES ***\n");
-    _logger.resetTimer();
-    outputPath.toFile().mkdirs();
-    SortedMap<Path, RoutesByVrf> output = new TreeMap<>();
-    routingTables.forEach(
         (name, rt) -> {
           Path currentOutputPath = outputPath.resolve(name);
           output.put(currentOutputPath, rt);
@@ -2567,7 +2380,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
       assert span != null; // avoid unused warning
       Answer answer = new Answer();
       ConvertConfigurationAnswerElement answerElement = new ConvertConfigurationAnswerElement();
-      answerElement.setVersion(Version.getVersion());
+      answerElement.setVersion(BatfishVersion.getVersionStatic());
       if (_settings.getVerboseParse()) {
         answer.addAnswerElement(answerElement);
       }
@@ -2883,7 +2696,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
     ParseVendorConfigurationAnswerElement answerElement =
         new ParseVendorConfigurationAnswerElement();
-    answerElement.setVersion(Version.getVersion());
+    answerElement.setVersion(BatfishVersion.getVersionStatic());
     if (_settings.getVerboseParse()) {
       answer.addAnswerElement(answerElement);
     }

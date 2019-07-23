@@ -1,35 +1,103 @@
 package org.batfish.representation.aws;
 
+import static com.google.common.base.Preconditions.checkArgument;
+
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.base.MoreObjects;
 import java.io.Serializable;
-import java.util.LinkedList;
 import java.util.List;
-import org.codehaus.jettison.json.JSONArray;
-import org.codehaus.jettison.json.JSONException;
-import org.codehaus.jettison.json.JSONObject;
+import java.util.Objects;
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+import javax.annotation.ParametersAreNonnullByDefault;
 
-public class RouteTable implements AwsVpcEntity, Serializable {
+/** Represents an AWS route table */
+@JsonIgnoreProperties(ignoreUnknown = true)
+@ParametersAreNonnullByDefault
+final class RouteTable implements AwsVpcEntity, Serializable {
 
-  private List<Route> _routes = new LinkedList<>();
+  @JsonIgnoreProperties(ignoreUnknown = true)
+  @ParametersAreNonnullByDefault
+  static class Association implements Serializable {
 
-  private List<RouteTableAssociation> _routeTableAssociations = new LinkedList<>();
+    private final boolean _isMain;
+    @Nullable private final String _subnetId;
 
-  private String _routeTableId;
+    @JsonCreator
+    private static Association create(
+        @Nullable @JsonProperty(JSON_KEY_MAIN) Boolean isMain,
+        @Nullable @JsonProperty(JSON_KEY_SUBNET_ID) String subnetId) {
+      checkArgument(isMain != null, "Main key must be present in route table association");
+      return new Association(isMain, subnetId);
+    }
 
-  private String _vpcId;
+    Association(boolean isMain, @Nullable String subnetId) {
+      _isMain = isMain;
+      _subnetId = subnetId;
+    }
 
-  public RouteTable(JSONObject jObj) throws JSONException {
-    _routeTableId = jObj.getString(JSON_KEY_ROUTE_TABLE_ID);
-    _vpcId = jObj.getString(JSON_KEY_VPC_ID);
+    @Nullable
+    String getSubnetId() {
+      return _subnetId;
+    }
 
-    JSONArray associations = jObj.getJSONArray(JSON_KEY_ASSOCIATIONS);
-    initAssociations(associations);
+    boolean isMain() {
+      return _isMain;
+    }
 
-    JSONArray routes = jObj.getJSONArray(JSON_KEY_ROUTES);
-    initRoutes(routes);
+    @Override
+    public boolean equals(Object o) {
+      if (this == o) {
+        return true;
+      }
+      if (!(o instanceof Association)) {
+        return false;
+      }
+      Association that = (Association) o;
+      return _isMain == that._isMain && Objects.equals(_subnetId, that._subnetId);
+    }
+
+    @Override
+    public int hashCode() {
+      return Objects.hash(_isMain, _subnetId);
+    }
   }
 
-  public List<RouteTableAssociation> getAssociations() {
-    return _routeTableAssociations;
+  @Nonnull private final List<Route> _routes;
+
+  @Nonnull private final List<Association> _associations;
+
+  @Nonnull private final String _routeTableId;
+
+  @Nonnull private final String _vpcId;
+
+  @JsonCreator
+  private static RouteTable create(
+      @Nullable @JsonProperty(JSON_KEY_ROUTE_TABLE_ID) String routeTableId,
+      @Nullable @JsonProperty(JSON_KEY_VPC_ID) String vpcId,
+      @Nullable @JsonProperty(JSON_KEY_ASSOCIATIONS) List<Association> associations,
+      @Nullable @JsonProperty(JSON_KEY_ROUTES) List<Route> routes) {
+    checkArgument(routeTableId != null, "Route table id cannot be null");
+    checkArgument(vpcId != null, "VPC id cannot be null for route table");
+    checkArgument(associations != null, "Associations cannot be null for route table");
+    checkArgument(routes != null, "Routes cannot be null for route table");
+
+    return new RouteTable(routeTableId, vpcId, associations, routes);
+  }
+
+  RouteTable(
+      String routeTableId, String vpcId, List<Association> associations, List<Route> routes) {
+    _routeTableId = routeTableId;
+    _vpcId = vpcId;
+    _associations = associations;
+    _routes = routes;
+  }
+
+  @Nonnull
+  List<Association> getAssociations() {
+    return _associations;
   }
 
   @Override
@@ -37,27 +105,43 @@ public class RouteTable implements AwsVpcEntity, Serializable {
     return _routeTableId;
   }
 
-  public List<Route> getRoutes() {
+  @Nonnull
+  List<Route> getRoutes() {
     return _routes;
   }
 
-  public String getVpcId() {
+  @Nonnull
+  String getVpcId() {
     return _vpcId;
   }
 
-  private void initAssociations(JSONArray associations) throws JSONException {
-
-    for (int index = 0; index < associations.length(); index++) {
-      JSONObject childObject = associations.getJSONObject(index);
-      _routeTableAssociations.add(new RouteTableAssociation(childObject));
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) {
+      return true;
     }
+    if (!(o instanceof RouteTable)) {
+      return false;
+    }
+    RouteTable that = (RouteTable) o;
+    return Objects.equals(_routes, that._routes)
+        && Objects.equals(_associations, that._associations)
+        && Objects.equals(_routeTableId, that._routeTableId)
+        && Objects.equals(_vpcId, that._vpcId);
   }
 
-  private void initRoutes(JSONArray routes) throws JSONException {
+  @Override
+  public int hashCode() {
+    return Objects.hash(_routes, _associations, _routeTableId, _vpcId);
+  }
 
-    for (int index = 0; index < routes.length(); index++) {
-      JSONObject childObject = routes.getJSONObject(index);
-      _routes.add(new Route(childObject));
-    }
+  @Override
+  public String toString() {
+    return MoreObjects.toStringHelper(this)
+        .add("_routes", _routes)
+        .add("_associations", _associations)
+        .add("_routeTableId", _routeTableId)
+        .add("_vpcId", _vpcId)
+        .toString();
   }
 }

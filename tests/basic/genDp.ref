@@ -21,7 +21,6 @@
         "7" : 122
       },
       "dependentRoutesIterations" : 7,
-      "eigrpInternalIterations" : 1,
       "mainRibRoutesByIteration" : {
         "1" : 207,
         "2" : 271,

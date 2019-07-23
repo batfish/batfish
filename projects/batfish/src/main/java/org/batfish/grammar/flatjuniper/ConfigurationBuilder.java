@@ -2446,9 +2446,16 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
 
   @Override
   public void enterO_area(O_areaContext ctx) {
-    Ip areaIp = Ip.parse(ctx.area.getText());
+    long area;
+    if (ctx.area_int != null) {
+      area = toLong(ctx.area_int);
+    } else if (ctx.area_ip != null) {
+      area = Ip.parse(ctx.area_ip.getText()).asLong();
+    } else {
+      throw new BatfishException("Missing area");
+    }
     Map<Long, OspfArea> areas = _currentRoutingInstance.getOspfAreas();
-    _currentArea = areas.computeIfAbsent(areaIp.asLong(), OspfArea::new);
+    _currentArea = areas.computeIfAbsent(area, OspfArea::new);
   }
 
   @Override
@@ -3529,7 +3536,10 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
 
   @Override
   public void exitAat_destination_port(Aat_destination_portContext ctx) {
-    SubRange subrange = toSubRange(ctx.subrange());
+    SubRange subrange =
+        (ctx.subrange() != null)
+            ? toSubRange(ctx.subrange())
+            : SubRange.singleton(getPortNumber(ctx.port()));
     HeaderSpace oldHeaderSpace = _currentApplicationTerm.getHeaderSpace();
     _currentApplicationTerm.setHeaderSpace(
         oldHeaderSpace
@@ -3559,7 +3569,10 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
 
   @Override
   public void exitAat_source_port(Aat_source_portContext ctx) {
-    SubRange subrange = toSubRange(ctx.subrange());
+    SubRange subrange =
+        (ctx.subrange() != null)
+            ? toSubRange(ctx.subrange())
+            : SubRange.singleton(getPortNumber(ctx.port()));
     HeaderSpace oldHeaderSpace = _currentApplicationTerm.getHeaderSpace();
     _currentApplicationTerm.setHeaderSpace(
         oldHeaderSpace

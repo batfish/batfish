@@ -1,0 +1,13 @@
+!RANCID-CONTENT-TYPE: cisco-nx
+!
+hostname nxos_interface_storm_control
+!
+
+! Must be switchport
+interface Ethernet1/1
+  storm-control action shutdown
+  storm-control broadcast level 0.10
+  storm-control multicast level 0.10
+
+interface Ethernet1/2
+  storm-control action trap

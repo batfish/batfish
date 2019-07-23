@@ -1584,6 +1584,22 @@ public final class CumulusNcluGrammarTest {
                 .setRouteDistinguisher(RouteDistinguisher.from(Ip.parse("192.0.1.1"), 2))
                 .setRouteTarget(ExtendedCommunity.target(65500, 10004))
                 .setImportRouteTarget(VniConfig.importRtPatternForAnyAs(10004))
+                .setAdvertiseV4Unicast(false)
+                .build(),
+            Layer3VniConfig.builder()
+                .setVni(10005)
+                .setVrf("vrf5")
+                .setRouteDistinguisher(RouteDistinguisher.from(routerId, 3))
+                .setRouteTarget(ExtendedCommunity.target(65500, 10005))
+                .setImportRouteTarget(VniConfig.importRtPatternForAnyAs(10005))
+                .setAdvertiseV4Unicast(false)
+                .build(),
+            Layer3VniConfig.builder()
+                .setVni(10006)
+                .setVrf("vrf6")
+                .setRouteDistinguisher(RouteDistinguisher.from(Ip.parse("192.0.1.1"), 4))
+                .setRouteTarget(ExtendedCommunity.target(65500, 10006))
+                .setImportRouteTarget(VniConfig.importRtPatternForAnyAs(10006))
                 .setAdvertiseV4Unicast(true)
                 .build());
 

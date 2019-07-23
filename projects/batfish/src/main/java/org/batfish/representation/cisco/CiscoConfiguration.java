@@ -10,10 +10,12 @@ import static org.batfish.datamodel.Interface.isRealInterfaceName;
 import static org.batfish.datamodel.MultipathEquivalentAsPathMatchMode.EXACT_PATH;
 import static org.batfish.datamodel.MultipathEquivalentAsPathMatchMode.PATH_LENGTH;
 import static org.batfish.representation.cisco.CiscoConversions.computeDistributeListPolicies;
+import static org.batfish.representation.cisco.CiscoConversions.computeEigrpDistributeListRoutingPolicy;
 import static org.batfish.representation.cisco.CiscoConversions.convertCryptoMapSet;
 import static org.batfish.representation.cisco.CiscoConversions.generateBgpExportPolicy;
 import static org.batfish.representation.cisco.CiscoConversions.generateBgpImportPolicy;
 import static org.batfish.representation.cisco.CiscoConversions.generateGenerationPolicy;
+import static org.batfish.representation.cisco.CiscoConversions.getIsakmpKeyGeneratedName;
 import static org.batfish.representation.cisco.CiscoConversions.getRsaPubKeyGeneratedName;
 import static org.batfish.representation.cisco.CiscoConversions.resolveIsakmpProfileIfaceNames;
 import static org.batfish.representation.cisco.CiscoConversions.resolveKeyringIfaceNames;
@@ -120,6 +122,7 @@ import org.batfish.datamodel.SnmpServer;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.SwitchportEncapsulationType;
 import org.batfish.datamodel.SwitchportMode;
+import org.batfish.datamodel.TunnelConfiguration;
 import org.batfish.datamodel.VniSettings;
 import org.batfish.datamodel.Zone;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
@@ -469,6 +472,8 @@ public final class CiscoConfiguration extends VendorConfiguration {
 
   private final Map<String, IpsecTransformSet> _ipsecTransformSets;
 
+  private final List<IsakmpKey> _isakmpKeys;
+
   private final Map<Integer, IsakmpPolicy> _isakmpPolicies;
 
   private final Map<String, IsakmpProfile> _isakmpProfiles;
@@ -576,6 +581,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
     _failoverInterfaces = new TreeMap<>();
     _failoverPrimaryAddresses = new TreeMap<>();
     _failoverStandbyAddresses = new TreeMap<>();
+    _isakmpKeys = new ArrayList<>();
     _isakmpPolicies = new TreeMap<>();
     _isakmpProfiles = new TreeMap<>();
     _inspectClassMaps = new TreeMap<>();
@@ -689,15 +695,6 @@ public final class CiscoConfiguration extends VendorConfiguration {
         .filter(line -> line instanceof RouteMapMatchIpv6AccessListLine)
         .anyMatch(
             line -> ((RouteMapMatchIpv6AccessListLine) line).getListNames().contains(eaListName));
-  }
-
-  private static void convertForPurpose(Set<RouteMap> routingRouteMaps, RouteMap map) {
-    if (routingRouteMaps.contains(map)) {
-      map.getClauses().values().stream()
-          .flatMap(clause -> clause.getMatchList().stream())
-          .filter(line -> line instanceof RouteMapMatchIpAccessListLine)
-          .forEach(line -> ((RouteMapMatchIpAccessListLine) line).setRouting(true));
-    }
   }
 
   public Map<String, IpAsPathAccessList> getAsPathAccessLists() {
@@ -839,28 +836,6 @@ public final class CiscoConfiguration extends VendorConfiguration {
     return _hostname;
   }
 
-  private @Nullable Interface getInterfaceByTunnelAddresses(Ip sourceAddress, Prefix destPrefix) {
-    for (Interface iface : _interfaces.values()) {
-      Tunnel tunnel = iface.getTunnel();
-      if (tunnel != null
-          && tunnel.getSourceAddress() != null
-          && tunnel.getSourceAddress().equals(sourceAddress)
-          && tunnel.getDestination() != null
-          && destPrefix.containsIp(tunnel.getDestination())) {
-        /*
-         * We found a tunnel interface with the required parameters. Now return the external
-         * interface with this address.
-         */
-        return _interfaces.values().stream()
-            .filter(
-                i -> i.getAllAddresses().stream().anyMatch(p -> p.getIp().equals(sourceAddress)))
-            .findFirst()
-            .orElse(null);
-      }
-    }
-    return null;
-  }
-
   public Map<String, Interface> getInterfaces() {
     return _interfaces;
   }
@@ -871,6 +846,10 @@ public final class CiscoConfiguration extends VendorConfiguration {
 
   public Map<String, IpsecTransformSet> getIpsecTransformSets() {
     return _ipsecTransformSets;
+  }
+
+  public List<IsakmpKey> getIsakmpKeys() {
+    return _isakmpKeys;
   }
 
   public Map<Integer, IsakmpPolicy> getIsakmpPolicies() {
@@ -939,77 +918,6 @@ public final class CiscoConfiguration extends VendorConfiguration {
 
   public Map<String, RoutePolicy> getRoutePolicies() {
     return _routePolicies;
-  }
-
-  private Set<RouteMap> getRoutingRouteMaps() {
-    Set<RouteMap> maps = new LinkedHashSet<>();
-    String currentMapName;
-    RouteMap currentMap;
-    // check ospf policies
-    for (Vrf vrf : _vrfs.values()) {
-      for (OspfProcess ospfProcess : vrf.getOspfProcesses().values()) {
-        for (OspfRedistributionPolicy rp : ospfProcess.getRedistributionPolicies().values()) {
-          currentMapName = rp.getRouteMap();
-          if (currentMapName != null) {
-            currentMap = _routeMaps.get(currentMapName);
-            if (currentMap != null) {
-              maps.add(currentMap);
-            }
-          }
-        }
-        currentMapName = ospfProcess.getDefaultInformationOriginateMap();
-        if (currentMapName != null) {
-          currentMap = _routeMaps.get(currentMapName);
-          if (currentMap != null) {
-            maps.add(currentMap);
-          }
-        }
-      }
-      // check bgp policies
-      BgpProcess bgpProcess = vrf.getBgpProcess();
-      if (bgpProcess != null) {
-        for (BgpRedistributionPolicy rp : bgpProcess.getRedistributionPolicies().values()) {
-          currentMapName = rp.getRouteMap();
-          if (currentMapName != null) {
-            currentMap = _routeMaps.get(currentMapName);
-            if (currentMap != null) {
-              maps.add(currentMap);
-            }
-          }
-        }
-        for (BgpPeerGroup pg : bgpProcess.getAllPeerGroups()) {
-          currentMapName = pg.getInboundRouteMap();
-          if (currentMapName != null) {
-            currentMap = _routeMaps.get(currentMapName);
-            if (currentMap != null) {
-              maps.add(currentMap);
-            }
-          }
-          currentMapName = pg.getInboundRoute6Map();
-          if (currentMapName != null) {
-            currentMap = _routeMaps.get(currentMapName);
-            if (currentMap != null) {
-              maps.add(currentMap);
-            }
-          }
-          currentMapName = pg.getOutboundRouteMap();
-          if (currentMapName != null) {
-            currentMap = _routeMaps.get(currentMapName);
-            if (currentMap != null) {
-              maps.add(currentMap);
-            }
-          }
-          currentMapName = pg.getOutboundRoute6Map();
-          if (currentMapName != null) {
-            currentMap = _routeMaps.get(currentMapName);
-            if (currentMap != null) {
-              maps.add(currentMap);
-            }
-          }
-        }
-      }
-    }
-    return maps;
   }
 
   @Nullable
@@ -2133,10 +2041,23 @@ public final class CiscoConfiguration extends VendorConfiguration {
               .setDelay(iface.getDelay())
               .build();
 
+      DistributeList distributeListForIface =
+          eigrpProcess.getOutboundInterfaceDistributeLists().get(newIface.getName());
+
       newIface.setEigrp(
           EigrpInterfaceSettings.builder()
               .setAsn(eigrpProcess.getAsn())
               .setEnabled(true)
+              .setExportPolicy(
+                  distributeListForIface != null
+                      ? computeEigrpDistributeListRoutingPolicy(
+                          c,
+                          this,
+                          distributeListForIface,
+                          vrfName,
+                          eigrpProcess.getAsn(),
+                          ifaceName)
+                      : null)
               .setMetric(metric)
               .setPassive(passive)
               .build());
@@ -3341,10 +3262,9 @@ public final class CiscoConfiguration extends VendorConfiguration {
       c.getIp6AccessLists().put(ipaList.getName(), ipaList);
     }
 
-    // convert route maps to policy maps
-    Set<RouteMap> routingRouteMaps = getRoutingRouteMaps();
+    // TODO: convert route maps that are used for PBR to PacketPolicies
+
     for (RouteMap map : _routeMaps.values()) {
-      convertForPurpose(routingRouteMaps, map);
       // convert route maps to RoutingPolicy objects
       RoutingPolicy newPolicy = toRoutingPolicy(c, map);
       c.getRoutingPolicies().put(newPolicy.getName(), newPolicy);
@@ -3448,11 +3368,38 @@ public final class CiscoConfiguration extends VendorConfiguration {
           }
           // Tunnels
           Tunnel tunnel = iface.getTunnel();
-          if (tunnel != null && isRealInterfaceName(tunnel.getSourceInterfaceName())) {
+          if (tunnel != null) {
             org.batfish.datamodel.Interface viIface = c.getAllInterfaces().get(ifaceName);
             if (viIface != null) {
-              viIface.addDependency(
-                  new Dependency(tunnel.getSourceInterfaceName(), DependencyType.BIND));
+              // Add dependency
+              if (isRealInterfaceName(tunnel.getSourceInterfaceName())) {
+                String parentIfaceName = canonicalizeInterfaceName(tunnel.getSourceInterfaceName());
+                viIface.addDependency(new Dependency(parentIfaceName, DependencyType.BIND));
+                // Also set tunnel config while we're at at it.
+                // Step one: determine IP address of parent interface
+                @Nullable
+                Ip parentIp =
+                    Optional.ofNullable(c.getActiveInterfaces().get(parentIfaceName))
+                        .map(org.batfish.datamodel.Interface::getConcreteAddress)
+                        .map(ConcreteInterfaceAddress::getIp)
+                        .orElse(null);
+                // Step 2: create tunnel configs for non-IPsec tunnels. IPsec handled separately.
+                if (tunnel.getMode() != TunnelMode.IPSEC) {
+                  // Ensure we have both src and dst IPs, otherwise don't convert
+                  if (tunnel.getDestination() != null
+                      && (tunnel.getSourceAddress() != null || parentIp != null)) {
+                    viIface.setTunnelConfig(
+                        TunnelConfiguration.builder()
+                            .setSourceAddress(firstNonNull(tunnel.getSourceAddress(), parentIp))
+                            .setDestinationAddress(tunnel.getDestination())
+                            .build());
+                  } else {
+                    _w.redFlag(
+                        String.format(
+                            "Could not determine src/dst IPs for tunnel %s", iface.getName()));
+                  }
+                }
+              }
             }
           }
         });
@@ -3501,6 +3448,16 @@ public final class CiscoConfiguration extends VendorConfiguration {
                   toIkePhase1Policy(namedRsaPubKey, this, ikePhase1Key);
               c.getIkePhase1Policies().put(ikePhase1Policy.getName(), ikePhase1Policy);
             });
+
+    // standalone ISAKMP keys to IKE phase 1 key and IKE phase 1 policy
+    _isakmpKeys.forEach(
+        isakmpKey -> {
+          IkePhase1Key ikePhase1Key = toIkePhase1Key(isakmpKey);
+          ikePhase1KeysBuilder.put(getIsakmpKeyGeneratedName(isakmpKey), ikePhase1Key);
+
+          IkePhase1Policy ikePhase1Policy = toIkePhase1Policy(isakmpKey, this, ikePhase1Key);
+          c.getIkePhase1Policies().put(ikePhase1Policy.getName(), ikePhase1Policy);
+        });
 
     c.setIkePhase1Keys(ikePhase1KeysBuilder.build());
 
@@ -3587,9 +3544,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
           vrf.getEigrpProcesses().values().stream()
               .map(proc -> CiscoConversions.toEigrpProcess(proc, vrfName, c, this))
               .filter(Objects::nonNull)
-              .forEach(
-                  eigrpProcess ->
-                      newVrf.getEigrpProcesses().put(eigrpProcess.getAsn(), eigrpProcess));
+              .forEach(newVrf::addEigrpProcess);
 
           // convert isis process
           IsisProcess isisProcess = vrf.getIsisProcess();
@@ -4390,6 +4345,13 @@ public final class CiscoConfiguration extends VendorConfiguration {
             return true;
           }
         }
+      }
+      // check EIGRP distribute lists
+      if (vrf.getEigrpProcesses().values().stream()
+          .flatMap(
+              eigrpProcess -> eigrpProcess.getOutboundInterfaceDistributeLists().values().stream())
+          .anyMatch(distributeList -> distributeList.getFilterName().equals(aclName))) {
+        return true;
       }
     }
     return false;

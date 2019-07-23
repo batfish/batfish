@@ -2,6 +2,7 @@ package org.batfish.common.topology;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static org.batfish.common.topology.IpOwners.computeIpInterfaceOwners;
+import static org.batfish.common.topology.TopologyUtil.computeInitialTunnelTopology;
 import static org.batfish.common.topology.TopologyUtil.computeLayer1LogicalTopology;
 import static org.batfish.common.topology.TopologyUtil.computeLayer1PhysicalTopology;
 import static org.batfish.common.topology.TopologyUtil.computeLayer2SelfEdges;
@@ -54,6 +55,7 @@ import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.SwitchportMode;
 import org.batfish.datamodel.Topology;
+import org.batfish.datamodel.TunnelConfiguration;
 import org.batfish.datamodel.VniSettings;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.collections.NodeInterfacePair;
@@ -1376,5 +1378,59 @@ public final class TopologyUtilTest {
             new NodeInterfacePair(c1.getHostname(), i1.getName()),
             new NodeInterfacePair(c2.getHostname(), i2.getName()));
     assertThat(t.getEdges(), containsInAnyOrder(edge, edge.reverse()));
+  }
+
+  @Test
+  public void testComputeInitialTunnelTopology() {
+    _cb.setConfigurationFormat(ConfigurationFormat.CISCO_IOS);
+    Configuration c1 = _cb.build();
+    Configuration c2 = _cb.build();
+    Ip ip1 = Ip.parse("1.1.1.1");
+    Ip ip2 = Ip.parse("1.1.1.2");
+    Ip ip3 = Ip.parse("1.1.1.3");
+    Ip ip4 = Ip.parse("1.1.1.4");
+    int subnetMask = 24;
+    Ip underlayIp1 = Ip.parse("4.4.4.1");
+    Ip underlayIp2 = Ip.parse("4.4.4.2");
+    Interface i1 =
+        _ib.setOwner(c1)
+            .setAddress(ConcreteInterfaceAddress.create(ip1, subnetMask))
+            .setType(InterfaceType.TUNNEL)
+            .setTunnelConfig(
+                TunnelConfiguration.builder()
+                    .setSourceAddress(underlayIp1)
+                    .setDestinationAddress(underlayIp2)
+                    .build())
+            .build();
+    Interface i2 =
+        _ib.setOwner(c2)
+            .setAddress(ConcreteInterfaceAddress.create(ip2, subnetMask))
+            .setType(InterfaceType.TUNNEL)
+            .setTunnelConfig(
+                TunnelConfiguration.builder()
+                    .setSourceAddress(underlayIp2)
+                    .setDestinationAddress(underlayIp1)
+                    .build())
+            .build();
+    // Dangling physical interface
+    _ib.setOwner(c2)
+        .setAddress(ConcreteInterfaceAddress.create(ip3, subnetMask))
+        .setType(InterfaceType.PHYSICAL)
+        .build();
+    // Dangling tunnel interface, underlay src/dst config should not match any tunnels
+    _ib.setOwner(c2)
+        .setAddress(ConcreteInterfaceAddress.create(ip4, subnetMask))
+        .setType(InterfaceType.TUNNEL)
+        .setTunnelConfig(
+            TunnelConfiguration.builder()
+                .setSourceAddress(Ip.parse("4.4.4.4"))
+                .setDestinationAddress(underlayIp1)
+                .build())
+        .build();
+
+    assertThat(
+        computeInitialTunnelTopology(ImmutableMap.of(c1.getHostname(), c1, c2.getHostname(), c2))
+            .asEdgeSet(),
+        containsInAnyOrder(new Edge(i1, i2), new Edge(i2, i1)));
   }
 }

@@ -184,7 +184,7 @@ public class VirtualRouter implements Serializable {
   @Nonnull private PrefixTracer _prefixTracer;
 
   /** List of all EIGRP processes in this VRF */
-  @VisibleForTesting transient ImmutableMap<Long, VirtualEigrpProcess> _virtualEigrpProcesses;
+  @VisibleForTesting transient ImmutableMap<Long, EigrpRoutingProcess> _eigrpProcesses;
 
   /**
    * VNI settings that are updated dynamically as the dataplane is being computed (e.g., based on
@@ -208,7 +208,7 @@ public class VirtualRouter implements Serializable {
     initRibs();
 
     _prefixTracer = new PrefixTracer();
-    _virtualEigrpProcesses = ImmutableMap.of();
+    _eigrpProcesses = ImmutableMap.of();
     _ospfProcesses = ImmutableMap.of();
     _vniSettings = ImmutableSet.copyOf(_vrf.getVniSettings().values());
     if (_vrf.getBgpProcess() != null) {
@@ -322,10 +322,11 @@ public class VirtualRouter implements Serializable {
 
   /** Initialize EIGRP processes */
   private void initEigrp() {
-    _virtualEigrpProcesses =
+    _eigrpProcesses =
         _vrf.getEigrpProcesses().values().stream()
-            .map(eigrpProcess -> new VirtualEigrpProcess(eigrpProcess, _name, _c))
-            .collect(ImmutableMap.toImmutableMap(VirtualEigrpProcess::getAsn, Function.identity()));
+            .map(eigrpProcess -> new EigrpRoutingProcess(eigrpProcess, _name, _c))
+            .collect(ImmutableMap.toImmutableMap(EigrpRoutingProcess::getAsn, Function.identity()));
+    _eigrpProcesses.values().forEach(p -> p.initialize(_node));
   }
 
   /**
@@ -385,7 +386,7 @@ public class VirtualRouter implements Serializable {
    * @param eigrpTopology The topology representing EIGRP adjacencies
    */
   private void initEigrpQueues(EigrpTopology eigrpTopology) {
-    _virtualEigrpProcesses.values().forEach(proc -> proc.initQueues(eigrpTopology));
+    _eigrpProcesses.values().forEach(proc -> proc.updateQueues(eigrpTopology));
   }
 
   private void initIsisQueues(IsisTopology isisTopology) {
@@ -833,17 +834,6 @@ public class VirtualRouter implements Serializable {
     }
   }
 
-  /**
-   * Initial computation of all exportable EIGRP routes for all EIGRP processes on this router
-   *
-   * @param allNodes map of all nodes, keyed by hostname
-   */
-  void initEigrpExports(Map<String, Node> allNodes) {
-    _virtualEigrpProcesses
-        .values()
-        .forEach(proc -> proc.initExports(allNodes, _mainRib.getTypedRoutes()));
-  }
-
   void initIsisExports(Map<String, Node> allNodes, NetworkConfigurations nc) {
     /* TODO: https://github.com/batfish/batfish/issues/1703 */
     IsisProcess proc = _vrf.getIsisProcess();
@@ -939,8 +929,8 @@ public class VirtualRouter implements Serializable {
   }
 
   @Nullable
-  VirtualEigrpProcess getEigrpProcess(long asn) {
-    return _virtualEigrpProcesses.get(asn);
+  EigrpRoutingProcess getEigrpProcess(long asn) {
+    return _eigrpProcesses.get(asn);
   }
 
   /** Initialize all ribs on this router. All RIBs will be empty */
@@ -1195,42 +1185,6 @@ public class VirtualRouter implements Serializable {
           }
         });
     return new SimpleEntry<>(l1DeltaBuilder.build(), l2DeltaBuilder.build());
-  }
-
-  /**
-   * Propagate EIGRP external routes from our neighbors by reading EIGRP route "advertisements" from
-   * our queues.
-   *
-   * @param allNodes mapping of node names to instances.
-   * @param nc All network configurations
-   * @return true if external routes changed
-   */
-  boolean propagateEigrpExternalRoutes(Map<String, Node> allNodes, NetworkConfigurations nc) {
-    return _virtualEigrpProcesses.values().stream()
-        .map(
-            proc ->
-                proc.unstageExternalRoutes(
-                    allNodes,
-                    proc.propagateExternalRoutes(nc),
-                    _mainRibRouteDeltaBuilder,
-                    _mainRib,
-                    _name))
-        .reduce(false, (a, b) -> a || b);
-  }
-
-  /**
-   * Propagate EIGRP internal routes from every valid EIGRP neighbors
-   *
-   * @param nodes mapping of node names to instances.
-   * @param topologyContext network topologies
-   * @param nc All network configurations
-   * @return true if new routes have been added to the staging RIB
-   */
-  boolean propagateEigrpInternalRoutes(
-      Map<String, Node> nodes, TopologyContext topologyContext, NetworkConfigurations nc) {
-    return _virtualEigrpProcesses.values().stream()
-        .map(proc -> proc.propagateInternalRoutes(nodes, topologyContext.getEigrpTopology(), nc))
-        .reduce(false, (a, b) -> a || b);
   }
 
   /**
@@ -1581,11 +1535,6 @@ public class VirtualRouter implements Serializable {
         networkConfigurations);
   }
 
-  /** Merges staged EIGRP internal routes into the "real" EIGRP-internal RIBs */
-  void unstageEigrpInternalRoutes() {
-    _virtualEigrpProcesses.values().forEach(VirtualEigrpProcess::unstageInternalRoutes);
-  }
-
   /**
    * Move IS-IS routes from L1/L2 staging RIBs into their respective "proper" RIBs. Following that,
    * move any resulting deltas into the combined IS-IS RIB, and finally, main RIB.
@@ -1634,19 +1583,6 @@ public class VirtualRouter implements Serializable {
      * Re-add independent RIP routes to ripRib for tie-breaking
      */
     importRib(_ripRib, _ripInternalRib);
-    /*
-     * Re-init/re-add routes for all EIGRP processes
-     */
-    _virtualEigrpProcesses.values().forEach(VirtualEigrpProcess::reInitForNewIteration);
-  }
-
-  /**
-   * Merge internal EIGRP RIBs into a general EIGRP RIB, then merge that into the independent RIB
-   */
-  void importEigrpInternalRoutes() {
-    _virtualEigrpProcesses
-        .values()
-        .forEach(process -> process.importInternalRoutes(_independentRib, _name));
   }
 
   /**
@@ -1824,9 +1760,9 @@ public class VirtualRouter implements Serializable {
                 .flatMap(Queue::stream),
             // Processes
             Stream.of(_ospfProcesses.values().stream().map(OspfRoutingProcess::iterationHashCode)),
-            Stream.of(_virtualEigrpProcesses)
+            Stream.of(_eigrpProcesses)
                 .flatMap(m -> m.values().stream())
-                .map(VirtualEigrpProcess::computeIterationHashCode),
+                .map(EigrpRoutingProcess::computeIterationHashCode),
             Stream.of(_bgpRoutingProcess == null ? 0 : _bgpRoutingProcess.iterationHashCode()))
         .collect(toOrderedHashCode());
   }
@@ -2022,7 +1958,12 @@ public class VirtualRouter implements Serializable {
         || !_crossVrfIncomingRoutes.values().stream().allMatch(Queue::isEmpty)
         // Processes
         || _ospfProcesses.values().stream().anyMatch(OspfRoutingProcess::isDirty)
+        || _eigrpProcesses.values().stream().anyMatch(EigrpRoutingProcess::isDirty)
         || (_bgpRoutingProcess != null && _bgpRoutingProcess.isDirty());
+  }
+
+  void eigrpIteration(Map<String, Node> allNodes) {
+    _eigrpProcesses.values().forEach(p -> p.executeIteration(allNodes));
   }
 
   /** Execute one OSPF iteration, for all processes */
@@ -2073,8 +2014,7 @@ public class VirtualRouter implements Serializable {
 
   void redistribute() {
     // TODO: expand to processes other than OSPF
-    _ospfProcesses
-        .values()
+    Streams.concat(_ospfProcesses.values().stream(), _eigrpProcesses.values().stream())
         .forEach(
             p ->
                 p.redistribute(
@@ -2083,6 +2023,15 @@ public class VirtualRouter implements Serializable {
                     RibDelta.<AnnotatedRoute<AbstractRoute>>builder()
                         .add(_mainRib.getTypedRoutes())
                         .build()));
+  }
+
+  void mergeEigrpRoutesToMainRib() {
+    _eigrpProcesses
+        .values()
+        .forEach(
+            p ->
+                _mainRibRouteDeltaBuilder.from(
+                    importRibDelta(_mainRib, p.getUpdatesForMainRib(), _name)));
   }
 
   void mergeOspfRoutesToMainRib() {

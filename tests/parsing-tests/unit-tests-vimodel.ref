@@ -2762,15 +2762,79 @@
             ],
             "sourceName" : "ALLOW_SERVER02",
             "sourceType" : "extended ipv4 access-list"
+          },
+          "~SERVICE_OBJECT_GROUP~service-ssh~" : {
+            "name" : "~SERVICE_OBJECT_GROUP~service-ssh~",
+            "lines" : [
+              {
+                "action" : "PERMIT",
+                "matchCondition" : {
+                  "class" : "org.batfish.datamodel.acl.OrMatchExpr",
+                  "disjuncts" : [
+                    {
+                      "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
+                      "headerSpace" : {
+                        "dstPorts" : [
+                          "22-22"
+                        ],
+                        "ipProtocols" : [
+                          "TCP"
+                        ],
+                        "negate" : false
+                      }
+                    }
+                  ]
+                }
+              }
+            ],
+            "sourceName" : "service-ssh",
+            "sourceType" : "object-group service"
           }
         },
         "ipSpaceMetadata" : {
+          "range-10.0.0.10-20" : {
+            "sourceName" : "range-10.0.0.10-20",
+            "sourceType" : "object network"
+          },
           "server02" : {
             "sourceName" : "server02",
             "sourceType" : "object network"
           }
         },
         "ipSpaces" : {
+          "range-10.0.0.10-20" : {
+            "class" : "org.batfish.datamodel.AclIpSpace",
+            "lines" : [
+              {
+                "action" : "PERMIT",
+                "ipSpace" : {
+                  "class" : "org.batfish.datamodel.PrefixIpSpace",
+                  "prefix" : "10.0.0.10/31"
+                }
+              },
+              {
+                "action" : "PERMIT",
+                "ipSpace" : {
+                  "class" : "org.batfish.datamodel.PrefixIpSpace",
+                  "prefix" : "10.0.0.12/30"
+                }
+              },
+              {
+                "action" : "PERMIT",
+                "ipSpace" : {
+                  "class" : "org.batfish.datamodel.PrefixIpSpace",
+                  "prefix" : "10.0.0.16/30"
+                }
+              },
+              {
+                "action" : "PERMIT",
+                "ipSpace" : {
+                  "class" : "org.batfish.datamodel.IpIpSpace",
+                  "ip" : "10.0.0.20"
+                }
+              }
+            ]
+          },
           "server02" : {
             "class" : "org.batfish.datamodel.IpIpSpace",
             "ip" : "192.168.126.64"
@@ -7398,11 +7462,20 @@
         "ikePhase1Keys" : {
           "VRF:ABC:DEF:GHI:1234" : {
             "keyHash" : "f300fd9a9833dc8b16a2c399b2b51c32fc40293606df9c1e814d978f6ebcb9f8",
-            "keyType" : "PRE_SHARED_KEY",
+            "keyType" : "PRE_SHARED_KEY_UNENCRYPTED",
             "localInterface" : "unset_local_interface",
             "remoteIdentity" : {
               "class" : "org.batfish.datamodel.IpWildcardIpSpace",
               "ipWildcard" : "1.1.1.1"
+            }
+          },
+          "~ISAKMP_KEY_IpWildcardIpSpace{ipWildcard=1.2.3.4}~" : {
+            "keyHash" : "866c1e2d1db9550f4b3e595847a78d4c8b918230c74982ab8c83642bcfbcf453",
+            "keyType" : "PRE_SHARED_KEY_UNENCRYPTED",
+            "localInterface" : "unset_local_interface",
+            "remoteIdentity" : {
+              "class" : "org.batfish.datamodel.IpWildcardIpSpace",
+              "ipWildcard" : "1.2.3.4"
             }
           },
           "~RSA_PUB_a.example.com~" : {
@@ -7427,6 +7500,26 @@
               "ipWildcard" : "1.2.3.4"
             },
             "selfIdentity" : "2.3.4.6"
+          },
+          "~ISAKMP_KEY_IpWildcardIpSpace{ipWildcard=1.2.3.4}~" : {
+            "name" : "~ISAKMP_KEY_IpWildcardIpSpace{ipWildcard=1.2.3.4}~",
+            "ikePhase1Key" : {
+              "keyHash" : "866c1e2d1db9550f4b3e595847a78d4c8b918230c74982ab8c83642bcfbcf453",
+              "keyType" : "PRE_SHARED_KEY_UNENCRYPTED",
+              "localInterface" : "unset_local_interface",
+              "remoteIdentity" : {
+                "class" : "org.batfish.datamodel.IpWildcardIpSpace",
+                "ipWildcard" : "1.2.3.4"
+              }
+            },
+            "ikePhase1Proposals" : [
+              "1"
+            ],
+            "localInterface" : "unset_local_interface",
+            "remoteIdentity" : {
+              "class" : "org.batfish.datamodel.IpWildcardIpSpace",
+              "ipWildcard" : "1.2.3.4"
+            }
           },
           "~RSA_PUB_a.example.com~" : {
             "name" : "~RSA_PUB_a.example.com~",
@@ -8065,9 +8158,9 @@
             "eigrpProcesses" : {
               "5" : {
                 "asn" : 5,
-                "eigrp-mode" : "CLASSIC",
-                "export-policy" : "~EIGRP_EXPORT_POLICY:default:5~",
-                "router-id" : "100.1.1.1"
+                "eigrpMode" : "CLASSIC",
+                "exportPolicy" : "~EIGRP_EXPORT_POLICY:default:5~",
+                "routerId" : "100.1.1.1"
               }
             },
             "interfaces" : [
@@ -25803,7 +25896,7 @@
         "deviceType" : "SWITCH",
         "ikePhase1Keys" : {
           "~IKE_PHASE1_KEY_1.2.3.4~" : {
-            "keyType" : "PRE_SHARED_KEY",
+            "keyType" : "PRE_SHARED_KEY_UNENCRYPTED",
             "localInterface" : "unset_local_interface",
             "remoteIdentity" : {
               "class" : "org.batfish.datamodel.IpWildcardIpSpace",
@@ -25815,7 +25908,7 @@
           "1.2.3.4" : {
             "name" : "1.2.3.4",
             "ikePhase1Key" : {
-              "keyType" : "PRE_SHARED_KEY",
+              "keyType" : "PRE_SHARED_KEY_UNENCRYPTED",
               "localInterface" : "unset_local_interface",
               "remoteIdentity" : {
                 "class" : "org.batfish.datamodel.IpWildcardIpSpace",

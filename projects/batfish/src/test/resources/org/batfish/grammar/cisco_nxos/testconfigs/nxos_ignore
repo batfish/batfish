@@ -1,0 +1,28 @@
+!RANCID-CONTENT-TYPE: cisco-nx
+!
+hostname nxos_ignore
+!
+boot kickstart bootflash:/n3000-uk9-kickstart.6.0.2.U3.2.bin 
+boot kickstart bootflash:/n3000-uk9-kickstart.6.0.2.U3.5.bin 
+boot kickstart bootflash:/n5000-uk9-kickstart.5.2.1.N1.9.bin
+boot kickstart bootflash:/n7000-s2-kickstart.6.2.16.bin sup-1
+boot kickstart bootflash:/n7000-s2-kickstart.6.2.16.bin sup-2
+boot nxos bootflash:/nxos.7.0.3.I2.2b.bin 
+boot nxos bootflash:/poap/nxos.7.0.3.I3.1.bin 
+boot poap enable
+boot system bootflash:/n3000-uk9.6.0.2.U3.2.bin 
+boot system bootflash:/n7000-s2-dk9.6.2.16.bin sup-1
+boot system bootflash:/n7000-s2-dk9.6.2.16.bin sup-2
+cli alias name myalias foo bar baz bootflash:/n3000-uk9p # :(){ :|:&}; :
+clock timezone GMT 0 0
+errdisable recovery cause bpduguard
+errdisable recovery cause link-flap
+errdisable recovery cause psecure-violation
+errdisable recovery cause security-violation
+errdisable recovery cause storm-control
+errdisable recovery cause udld
+no ip domain-lookup
+service dhcp
+username xxxxxxx password 5 xxxxxxx role network-admin
+username xxxxxxx password 5 xxxxxxx role network-operator
+username xxxxxxxx role network-operator                                                                                                                                                                            

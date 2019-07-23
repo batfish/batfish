@@ -1,0 +1,223 @@
+!RANCID-CONTENT-TYPE: cisco-nx
+!
+hostname nxos_ospf
+!
+
+feature ospf
+feature bfd
+
+!!! referenced structures
+route-map rm1 permit 10
+route-map rm2 permit 10
+
+!!!!! AREA
+!!! area authentication
+router ospf a_auth
+  ! Any uint32
+  area 0 authentication
+router ospf a_auth_m
+  ! Any IP
+  area 0.0.0.0 authentication message-digest
+
+!!! area default-cost
+router ospf a_default_cost
+  ! 0-16777215 (default is 1)
+  area 0 default-cost 10
+
+!!! area filter-list
+router ospf a_filter_list
+  area 0 filter-list route-map rm1 in
+  area 0 filter-list route-map rm2 out
+
+!!! area nssa
+!!! only valid in non-backbone area
+!!! All nssa options can be combined in any order
+router ospf a_nssa
+  area 1 nssa
+router ospf a_nssa_no_r
+  area 1 nssa no-redistribution
+router ospf a_nssa_no_s
+  area 1 nssa no-summary
+router ospf a_nssa_rm
+  area 1 nssa route-map rm1
+
+!!! area range
+!!! cost and not-advertise can appear in any order
+router ospf a_r
+  ! second IP must be subnet mask
+  area 0 range 1.1.1.1 255.255.255.255
+router ospf a_r_cost
+  ! 0-16777215
+  area 0 range 1.1.1.1/32 cost 5
+router ospf a_r_not_advertise
+  area 0 range 1.1.1.1/32 not-advertise
+
+!!! area stub
+!!! only valid in non-backbone area
+router ospf a_stub
+  area 1 stub
+router ospf a_stub_no_summary
+  area 1 stub no-summary
+
+!!! area virtual-link
+!!! only valid in non-backbone area
+router ospf a_virtual_link
+  area 1 virtual-link 192.0.2.10
+
+!!!!! END AREA
+
+!!! auto-cost reference-bandwidth
+! 1-20 characters
+router ospf auto_cost
+  ! 1-4,000,000 (default is 40,000) (Mbps)
+  auto-cost reference-bandwidth 1000
+
+router ospf auto_cost_m
+  ! 1-4,000,000 (default is 40,000) (Mbps)
+  auto-cost reference-bandwidth 2000 Mbps
+
+router ospf auto_cost_g
+  ! 1-4,000 (default is 40) (Gbps)
+  auto-cost reference-bandwidth 3000 Gbps
+
+!!! bfd
+router ospf bfd
+  bfd
+
+!!! default-information originate
+router ospf dio
+  default-information originate
+
+router ospf dio_always
+  default-information originate always
+
+router ospf dio_route_map
+  default-information originate route-map rm1
+
+router ospf dio_always_route_map
+  default-information originate always route-map rm1
+
+!!! log-adjacency-changes
+router ospf lac
+  log-adjacency-changes
+
+router ospf lac_detail
+  log-adjacency-changes detail
+
+!!! max-metric router-lsa
+! Note that all options below can be combined, but only in order enumerated
+! E.g. summary-lsa cannot appear before external-lsa
+router ospf mm
+  max-metric router-lsa
+
+router ospf mm_external_lsa
+  max-metric router-lsa external-lsa
+
+router ospf mm_external_lsa_m
+  ! 1-16777215
+  max-metric router-lsa external-lsa 123
+
+router ospf mm_include_stub
+  max-metric router-lsa include-stub
+
+router ospf mm_on_startup
+  max-metric router-lsa on-startup
+
+router ospf mm_on_startup_t
+  ! 5-86400 (default is 600)
+  max-metric router-lsa on-startup 50
+
+router ospf mm_on_startup_w
+  max-metric router-lsa on-startup wait-for bgp 65500
+
+router ospf mm_on_startup_tw
+  max-metric router-lsa on-startup 50 wait-for bgp 65500
+
+router ospf mm_summary_lsa
+  max-metric router-lsa summary-lsa
+
+router ospf mm_summary_lsa_m
+  ! 1-16777215
+  max-metric router-lsa summary-lsa 456
+
+!!! network (deprecated, undocumented, and yet still works)
+router ospf network
+  ! TODO: confirm second IP is a wildcard
+  network 192.168.0.0 0.0.255.255 area 0
+  network 192.168.1.0/24 area 0
+
+!!! passive-interface
+router ospf pi_d
+  passive-interface default
+
+!!! redistribute direct
+router ospf r_direct
+  redistribute direct route-map rm1
+
+!!! redistribute maximum-prefix
+!!! threshold optional, must come first, compatible with all other options
+router ospf r_mp
+  ! 1-65535
+  redistribute maximum-prefix 1
+router ospf r_mp_t
+  ! threshold 1-100 (default is 75) (pct)
+  redistribute maximum-prefix 1 50
+router ospf r_mp_warn
+  redistribute maximum-prefix 1 warning-only
+router ospf r_mp_withdraw
+  redistribute maximum-prefix 1 withdraw
+router ospf r_mp_withdraw_n
+  ! retry attempts 1-12 (default is 1)
+  ! retry timeout 60-600 (default is 300) (s)
+  redistribute maximum-prefix 1 withdraw 5 100
+
+!!! redistribute static
+router ospf r_static
+  redistribute static route-map rm1
+
+!!! summary-address
+router ospf sa
+  summary-address 192.168.0.0/24
+  summary-address 192.168.1.0 255.255.255.0 not-advertise
+  ! tag is any uint32 (default is 0)
+  summary-address 192.168.2.0 255.255.255.0 tag 5
+
+!!! timers
+router ospf timers
+  ! 10-600000 (default is 1000) (ms)
+  timers lsa-arrival 10
+
+  ! See https://www.cisco.com/c/m/en_us/techdoc/dc/reference/cli/nxos/commands/ospf/timers-lsa-group-pacing-ospf.html
+  ! 1-1800 (default is 240) (s)
+  timers lsa-group-pacing 15
+
+  ! Numerical args:
+  ! start-interval: 0-5000 (default is 0) (ms)
+  ! hold-interval: 50-30000 (default is 5000) (ms)
+  ! max-interval: 50-30000 (default is 5000) (ms)
+  timers throttle lsa 111 222 333
+
+!!!!! VRF
+router ospf with_vrf
+  area 0 authentication
+  vrf v1
+    area 1 authentication
+
+
+!!!!! interface settings
+!!! general settings
+interface Ethernet1/1
+  ! can use type 0,3,7 password
+  ip ospf message-digest-key 0 foobar
+  ! 1-65535 (default is 40) (s)
+  ip ospf dead-interval 10
+  ! 1-65535 (default is 10) (s)
+  ip ospf hello-interval 20
+  ! area ID can be uint32 or IP, a_auth used arbitrarily
+  ip router ospf a_auth area 0
+
+!!! network
+interface Ethernet1/2
+  ip ospf network broadcast
+interface Ethernet1/3
+  ip ospf network point-to-point

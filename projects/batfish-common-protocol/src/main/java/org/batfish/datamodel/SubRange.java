@@ -27,6 +27,11 @@ public final class SubRange implements Serializable, Comparable<SubRange> {
     _end = end;
   }
 
+  /** Create a new {@link SubRange} containing exactly the given value. */
+  public static SubRange singleton(int value) {
+    return new SubRange(value, value);
+  }
+
   @JsonCreator
   public SubRange(@Nullable Object o) {
     if (o instanceof String) {

@@ -18,6 +18,7 @@ import org.batfish.common.topology.Layer1Edge;
 import org.batfish.common.topology.Layer1Topology;
 import org.batfish.common.topology.Layer2Node;
 import org.batfish.common.topology.Layer2Topology;
+import org.batfish.common.topology.TunnelTopology;
 import org.batfish.datamodel.BgpPeerConfigId;
 import org.batfish.datamodel.BgpSessionProperties;
 import org.batfish.datamodel.Edge;
@@ -25,8 +26,9 @@ import org.batfish.datamodel.IpsecPeerConfigId;
 import org.batfish.datamodel.IpsecSession;
 import org.batfish.datamodel.Topology;
 import org.batfish.datamodel.bgp.BgpTopology;
+import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.eigrp.EigrpEdge;
-import org.batfish.datamodel.eigrp.EigrpInterface;
+import org.batfish.datamodel.eigrp.EigrpNeighborConfigId;
 import org.batfish.datamodel.eigrp.EigrpTopology;
 import org.batfish.datamodel.ipsec.IpsecTopology;
 import org.batfish.datamodel.isis.IsisEdge;
@@ -55,8 +57,9 @@ public final class TopologyContextTest {
         new IpsecPeerConfigId("a", "b"),
         new IpsecPeerConfigId("c", "d"),
         IpsecSession.builder().build());
-    MutableNetwork<EigrpInterface, EigrpEdge> eigrpTopology = NetworkBuilder.directed().build();
-    eigrpTopology.addNode(new EigrpInterface("a", "b", "c"));
+    MutableNetwork<EigrpNeighborConfigId, EigrpEdge> eigrpTopology =
+        NetworkBuilder.directed().build();
+    eigrpTopology.addNode(new EigrpNeighborConfigId(1L, "a", "b", "c"));
     MutableNetwork<IsisNode, IsisEdge> isisTopology = NetworkBuilder.directed().build();
     isisTopology.addNode(new IsisNode("a", "b"));
     MutableValueGraph<OspfNeighborConfigId, OspfSessionProperties> ospfTopology =
@@ -71,7 +74,7 @@ public final class TopologyContextTest {
         .addEqualityGroup(base, base, builder.build())
         .addEqualityGroup(builder.setBgpTopology(new BgpTopology(bgpTopology)).build())
         .addEqualityGroup(builder.setEigrpTopology(new EigrpTopology(eigrpTopology)).build())
-        .addEqualityGroup(builder.setIpsecTopology(new IpsecTopology(ipsecTopology)))
+        .addEqualityGroup(builder.setIpsecTopology(new IpsecTopology(ipsecTopology)).build())
         .addEqualityGroup(builder.setIsisTopology(new IsisTopology(isisTopology)).build())
         .addEqualityGroup(
             builder
@@ -97,6 +100,13 @@ public final class TopologyContextTest {
                     Optional.of(
                         new Layer1Topology(ImmutableList.of(new Layer1Edge("a", "b", "c", "d")))))
                 .build())
+        .addEqualityGroup(
+            builder
+                .setTunnelTopology(
+                    TunnelTopology.builder()
+                        .add(new NodeInterfacePair("n1", "i1"), new NodeInterfacePair("n2", "i2"))
+                        .build())
+                .build())
         .addEqualityGroup(builder.setVxlanTopology(new VxlanTopology(vxlanTopology)).build())
         .testEquals();
   }
@@ -107,8 +117,9 @@ public final class TopologyContextTest {
     MutableValueGraph<BgpPeerConfigId, BgpSessionProperties> bgpTopology =
         ValueGraphBuilder.directed().build();
     bgpTopology.addNode(new BgpPeerConfigId("a", "b", "c"));
-    MutableNetwork<EigrpInterface, EigrpEdge> eigrpTopology = NetworkBuilder.directed().build();
-    eigrpTopology.addNode(new EigrpInterface("a", "b", "c"));
+    MutableNetwork<EigrpNeighborConfigId, EigrpEdge> eigrpTopology =
+        NetworkBuilder.directed().build();
+    eigrpTopology.addNode(new EigrpNeighborConfigId(1L, "a", "b", "c"));
     MutableValueGraph<IpsecPeerConfigId, IpsecSession> ipsecTopology =
         ValueGraphBuilder.directed().allowsSelfLoops(false).build();
     ipsecTopology.putEdgeValue(
@@ -138,6 +149,10 @@ public final class TopologyContextTest {
         .setOspfTopology(new OspfTopology(ospfTopology))
         .setRawLayer1PhysicalTopology(
             Optional.of(new Layer1Topology(ImmutableList.of(new Layer1Edge("a", "b", "c", "d")))))
+        .setTunnelTopology(
+            TunnelTopology.builder()
+                .add(new NodeInterfacePair("n1", "i1"), new NodeInterfacePair("n2", "i2"))
+                .build())
         .setVxlanTopology(new VxlanTopology(vxlanTopology));
 
     assertThat(builder.build(), equalTo(builder.build().toBuilder().build()));

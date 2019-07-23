@@ -47,8 +47,8 @@ import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.collections.VerboseBgpEdge;
 import org.batfish.datamodel.collections.VerboseEigrpEdge;
 import org.batfish.datamodel.eigrp.EigrpEdge;
-import org.batfish.datamodel.eigrp.EigrpInterface;
-import org.batfish.datamodel.eigrp.EigrpTopology;
+import org.batfish.datamodel.eigrp.EigrpNeighborConfigId;
+import org.batfish.datamodel.eigrp.EigrpTopologyUtils;
 import org.batfish.datamodel.isis.IsisEdge;
 import org.batfish.datamodel.isis.IsisTopology;
 import org.batfish.datamodel.ospf.OspfTopology;
@@ -251,16 +251,20 @@ public class VIModelQuestionPlugin extends QuestionPlugin {
 
     private static SortedSet<VerboseEigrpEdge> getEigrpEdges(
         Map<String, Configuration> configs, Topology topology) {
-      Network<EigrpInterface, EigrpEdge> eigrpTopology =
-          EigrpTopology.initEigrpTopology(configs, topology).getNetwork();
+      Network<EigrpNeighborConfigId, EigrpEdge> eigrpTopology =
+          EigrpTopologyUtils.initEigrpTopology(configs, topology).getNetwork();
       NetworkConfigurations nc = NetworkConfigurations.of(configs);
       SortedSet<VerboseEigrpEdge> eigrpEdges = new TreeSet<>();
       for (Configuration c : configs.values()) {
         String hostname = c.getHostname();
         for (Vrf vrf : c.getVrfs().values()) {
           eigrpEdges.addAll(
-              vrf.getInterfaceNames().stream()
-                  .map(ifaceName -> new EigrpInterface(hostname, ifaceName, vrf.getName()))
+              vrf.getInterfaces().values().stream()
+                  .filter(iface -> iface.getEigrp() != null)
+                  .map(
+                      iface ->
+                          new EigrpNeighborConfigId(
+                              iface.getEigrp().getAsn(), hostname, iface.getName(), vrf.getName()))
                   .filter(eigrpTopology.nodes()::contains)
                   .flatMap(n -> eigrpTopology.inEdges(n).stream())
                   .map(edge -> new VerboseEigrpEdge(edge, edge.toIpEdge(nc)))

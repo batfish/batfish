@@ -15,6 +15,7 @@ import static org.batfish.datamodel.AuthenticationMethod.LOCAL;
 import static org.batfish.datamodel.AuthenticationMethod.LOCAL_CASE;
 import static org.batfish.datamodel.AuthenticationMethod.NONE;
 import static org.batfish.datamodel.Configuration.DEFAULT_VRF_NAME;
+import static org.batfish.datamodel.Interface.UNSET_LOCAL_INTERFACE;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.and;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.matchDst;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.matchSrc;
@@ -291,6 +292,7 @@ import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.ConnectedRoute;
 import org.batfish.datamodel.DataPlane;
 import org.batfish.datamodel.DiffieHellmanGroup;
+import org.batfish.datamodel.Edge;
 import org.batfish.datamodel.EigrpExternalRoute;
 import org.batfish.datamodel.EigrpInternalRoute;
 import org.batfish.datamodel.EncryptionAlgorithm;
@@ -338,6 +340,8 @@ import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.SwitchportEncapsulationType;
 import org.batfish.datamodel.SwitchportMode;
+import org.batfish.datamodel.TunnelConfiguration;
+import org.batfish.datamodel.TunnelConfiguration.Builder;
 import org.batfish.datamodel.VniSettings;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
@@ -348,6 +352,7 @@ import org.batfish.datamodel.bgp.BgpTopologyUtils;
 import org.batfish.datamodel.bgp.community.Community;
 import org.batfish.datamodel.bgp.community.StandardCommunity;
 import org.batfish.datamodel.eigrp.EigrpMetric;
+import org.batfish.datamodel.eigrp.EigrpNeighborConfig;
 import org.batfish.datamodel.eigrp.EigrpProcessMode;
 import org.batfish.datamodel.matchers.CommunityListLineMatchers;
 import org.batfish.datamodel.matchers.CommunityListMatchers;
@@ -399,6 +404,7 @@ import org.batfish.representation.cisco.EigrpProcess;
 import org.batfish.representation.cisco.NetworkObject;
 import org.batfish.representation.cisco.NetworkObjectAddressSpecifier;
 import org.batfish.representation.cisco.NetworkObjectGroupAddressSpecifier;
+import org.batfish.representation.cisco.Tunnel.TunnelMode;
 import org.batfish.representation.cisco.WildcardAddressSpecifier;
 import org.batfish.representation.cisco.eos.AristaEosVxlan;
 import org.hamcrest.Matchers;
@@ -1098,10 +1104,13 @@ public class CiscoGrammarTest {
     Flow flowIcmpPass = createIcmpFlow(IcmpType.ECHO_REQUEST);
     Flow flowIcmpFail = createIcmpFlow(IcmpType.ECHO_REPLY);
     Flow flowInlinePass1 = createFlow(IpProtocol.UDP, 1, 1234);
-    Flow flowInlinePass2 = createFlow(IpProtocol.UDP, 3020, 1); // cifs
+    Flow flowInlinePass2 = createFlow(IpProtocol.UDP, 1, 1235);
+    Flow flowInlinePass3 = createFlow(IpProtocol.UDP, 3, 1236);
+    Flow flowInlinePass4 = createFlow(IpProtocol.UDP, 3020, 1); // cifs
     Flow flowTcpPass = createFlow(IpProtocol.TCP, 65535, 1);
     Flow flowUdpPass = createFlow(IpProtocol.UDP, 65535, 1);
     Flow flowTcpFail = createFlow(IpProtocol.TCP, 65534, 1);
+    Flow flowUdpFail = createFlow(IpProtocol.UDP, 1, 1236);
 
     /* Confirm service objects have the correct number of referrers */
     assertThat(ccae, hasNumReferrers(filename, SERVICE_OBJECT, "OS_TCPUDP", 1));
@@ -1121,6 +1130,9 @@ public class CiscoGrammarTest {
     assertThat(c, hasIpAccessList(ogsAclName, not(accepts(flowTcpFail, null, c))));
     assertThat(c, hasIpAccessList(ogsAclName, accepts(flowInlinePass1, null, c)));
     assertThat(c, hasIpAccessList(ogsAclName, accepts(flowInlinePass2, null, c)));
+    assertThat(c, hasIpAccessList(ogsAclName, accepts(flowInlinePass3, null, c)));
+    assertThat(c, hasIpAccessList(ogsAclName, accepts(flowInlinePass4, null, c)));
+    assertThat(c, hasIpAccessList(ogsAclName, not(accepts(flowUdpFail, null, c))));
   }
 
   @Test
@@ -2560,6 +2572,89 @@ public class CiscoGrammarTest {
   }
 
   @Test
+  public void testIosEigrpDistributeList() {
+    CiscoConfiguration c =
+        parseCiscoConfig("ios-eigrp-distribute-list", ConfigurationFormat.CISCO_IOS);
+
+    assertThat(
+        c.getDefaultVrf().getEigrpProcesses().get(1L).getOutboundInterfaceDistributeLists(),
+        equalTo(
+            ImmutableMap.of(
+                "GigabitEthernet0/0",
+                new DistributeList("2", DistributeListFilterType.ACCESS_LIST))));
+  }
+
+  @Test
+  public void testIosEigrpDistributeListConversion() throws IOException {
+    Configuration c = parseConfig("ios-eigrp-distribute-list");
+
+    String distListPolicyName = "~EIGRP_DIST_LIST_default_1_GigabitEthernet0/0";
+
+    assertThat(
+        c.getDefaultVrf()
+            .getEigrpProcesses()
+            .get(1L)
+            .getNeighbors()
+            .get("GigabitEthernet0/0")
+            .getExportPolicy(),
+        equalTo(distListPolicyName));
+
+    assertThat(c.getRoutingPolicies(), hasKey(distListPolicyName));
+    assertThat(
+        c.getRoutingPolicies().get(distListPolicyName).getStatements(),
+        equalTo(
+            ImmutableList.of(
+                new If(
+                    new MatchPrefixSet(DestinationNetwork.instance(), new NamedPrefixSet("2")),
+                    ImmutableList.of(Statements.ExitAccept.toStaticStatement()),
+                    ImmutableList.of(Statements.ExitReject.toStaticStatement())))));
+  }
+
+  @Test
+  public void testIosEigrpMarkForRouting() throws IOException {
+    Configuration c = parseConfig("ios-eigrp-distribute-list");
+
+    assertThat(c.getRouteFilterLists(), hasKey("2"));
+  }
+
+  @Test
+  public void testIosEigrpNeighborConfigs() throws IOException {
+    Configuration c = parseConfig("ios-eigrp-classic");
+
+    assertThat(
+        c.getDefaultVrf().getEigrpProcesses().get(1L).getNeighbors(),
+        equalTo(
+            ImmutableMap.of(
+                "Ethernet0",
+                    EigrpNeighborConfig.builder()
+                        .setAsn(1L)
+                        .setInterfaceName("Ethernet0")
+                        .setPassive(false)
+                        .setHostname("ios-eigrp-classic")
+                        .setVrfName("default")
+                        .setIp(Ip.parse("10.0.0.1"))
+                        .build(),
+                "Ethernet1",
+                    EigrpNeighborConfig.builder()
+                        .setAsn(1L)
+                        .setInterfaceName("Ethernet1")
+                        .setPassive(false)
+                        .setHostname("ios-eigrp-classic")
+                        .setVrfName("default")
+                        .setIp(Ip.parse("10.0.1.1"))
+                        .build(),
+                "Ethernet2",
+                    EigrpNeighborConfig.builder()
+                        .setAsn(1L)
+                        .setInterfaceName("Ethernet2")
+                        .setPassive(true)
+                        .setHostname("ios-eigrp-classic")
+                        .setVrfName("default")
+                        .setIp(Ip.parse("10.0.2.1"))
+                        .build())));
+  }
+
+  @Test
   public void testIosOspfDistributeList() {
     CiscoConfiguration c = parseCiscoConfig("iosOspfDistributeList", ConfigurationFormat.CISCO_IOS);
     DistributeList globalInPrefix =
@@ -3866,6 +3961,42 @@ public class CiscoGrammarTest {
                     hasSourceInterface("TenGigabitEthernet0/0"),
                     hasLocalAddress(Ip.parse("2.3.4.6")),
                     hasTunnelInterface(equalTo("Tunnel1"))))));
+
+    assertThat(
+        c,
+        hasIpsecPeerConfig(
+            "Tunnel2",
+            isIpsecStaticPeerConfigThat(
+                allOf(
+                    hasDestinationAddress(Ip.parse("1.2.3.4")),
+                    IpsecPeerConfigMatchers.hasIkePhase1Policy("ISAKMP-PROFILE"),
+                    IpsecPeerConfigMatchers.hasIpsecPolicy("IPSEC-PROFILE1"),
+                    hasSourceInterface("TenGigabitEthernet0/0"),
+                    hasLocalAddress(Ip.parse("2.3.4.6")),
+                    hasTunnelInterface(equalTo("Tunnel2"))))));
+  }
+
+  @Test
+  public void testTunnelMode() {
+    CiscoConfiguration c = parseCiscoConfig("ios-tunnel-mode", ConfigurationFormat.CISCO_IOS);
+
+    assertThat(c.getInterfaces().get("Tunnel1").getTunnel().getMode(), equalTo(TunnelMode.GRE));
+    assertThat(c.getInterfaces().get("Tunnel2").getTunnel().getMode(), equalTo(TunnelMode.GRE));
+    assertThat(c.getInterfaces().get("Tunnel3").getTunnel().getMode(), equalTo(TunnelMode.IPSEC));
+  }
+
+  @Test
+  public void testGreTunnelConversion() throws IOException {
+    Configuration c = parseConfig("ios-tunnel-mode");
+
+    Builder builder = TunnelConfiguration.builder().setSourceAddress(Ip.parse("2.3.4.6"));
+
+    assertThat(
+        c.getAllInterfaces().get("Tunnel1").getTunnelConfig(),
+        equalTo(builder.setDestinationAddress(Ip.parse("1.2.3.4")).build()));
+    assertThat(
+        c.getAllInterfaces().get("Tunnel2").getTunnelConfig(),
+        equalTo(builder.setDestinationAddress(Ip.parse("1.2.3.5")).build()));
   }
 
   @Test
@@ -3882,6 +4013,40 @@ public class CiscoGrammarTest {
             hostname,
             containsString(
                 "Interface TenGigabitEthernet0/1 with declared crypto-map mymap has no ip-address")));
+  }
+
+  @Test
+  public void testIsakmpKeyIos() throws IOException {
+    Configuration c = parseConfig("ios-crypto");
+
+    assertThat(
+        c,
+        hasIkePhase1Policy(
+            "~ISAKMP_KEY_IpWildcardIpSpace{ipWildcard=1.1.1.0/24}~",
+            allOf(
+                hasIkePhase1Key(
+                    allOf(
+                        IkePhase1KeyMatchers.hasKeyHash(
+                            CommonUtil.sha256Digest("psk1" + CommonUtil.salt())),
+                        IkePhase1KeyMatchers.hasRemoteIdentity(
+                            IpWildcard.parse("1.1.1.0/24").toIpSpace()),
+                        hasKeyType(IkeKeyType.PRE_SHARED_KEY_UNENCRYPTED))),
+                hasRemoteIdentity(equalTo(IpWildcard.parse("1.1.1.0/24").toIpSpace())),
+                hasIkePhase1Proposals(equalTo(ImmutableList.of("20"))))));
+
+    assertThat(
+        c,
+        hasIkePhase1Policy(
+            "~ISAKMP_KEY_IpWildcardIpSpace{ipWildcard=2.2.2.2}~",
+            allOf(
+                hasIkePhase1Key(
+                    allOf(
+                        IkePhase1KeyMatchers.hasKeyHash("FLgBaJHXdYY_AcHZZMgQ_RhTDJXHUBAAB"),
+                        IkePhase1KeyMatchers.hasRemoteIdentity(
+                            IpWildcard.parse("2.2.2.2").toIpSpace()),
+                        hasKeyType(IkeKeyType.PRE_SHARED_KEY_ENCRYPTED))),
+                hasRemoteIdentity(equalTo(IpWildcard.parse("2.2.2.2").toIpSpace())),
+                hasIkePhase1Proposals(equalTo(ImmutableList.of("20"))))));
   }
 
   @Test
@@ -3966,7 +4131,7 @@ public class CiscoGrammarTest {
                         hasKeyType(IkeKeyType.RSA_PUB_KEY),
                         IkePhase1KeyMatchers.hasRemoteIdentity(Ip.parse("1.2.3.4").toIpSpace()))),
                 hasRemoteIdentity(containsIp(Ip.parse("1.2.3.4"))),
-                hasLocalInterface(equalTo(Interface.UNSET_LOCAL_INTERFACE)),
+                hasLocalInterface(equalTo(UNSET_LOCAL_INTERFACE)),
                 hasIkePhase1Proposals(equalTo(ImmutableList.of("10"))))));
   }
 
@@ -5979,5 +6144,138 @@ public class CiscoGrammarTest {
             .getIpv4UnicastAddressFamily()
             .getAddressFamilyCapabilities()
             .getAdvertiseInactive());
+  }
+
+  @Test
+  public void testTunnelTopologyNoReachability() throws IOException {
+    String snapshot = "ios-tunnels";
+
+    Batfish batfish =
+        BatfishTestUtils.getBatfishFromTestrigText(
+            TestrigText.builder()
+                .setConfigurationText(
+                    TESTRIGS_PREFIX + snapshot,
+                    ImmutableList.of("n1-no-static-route", "n2-no-static-route"))
+                .build(),
+            _folder);
+
+    Edge overlayEdge = Edge.of("n1-no-static-route", "Tunnel1", "n2-no-static-route", "Tunnel1");
+
+    // Overlay edge present in initial tunnel topology
+    assertThat(
+        batfish
+            .getTopologyProvider()
+            .getInitialTunnelTopology(batfish.getNetworkSnapshot())
+            .asEdgeSet(),
+        containsInAnyOrder(overlayEdge, overlayEdge.reverse()));
+
+    batfish.computeDataPlane();
+    // NO overlay edge in final L3 topology
+    assertThat(
+        batfish.getTopologyProvider().getLayer3Topology(batfish.getNetworkSnapshot()).getEdges(),
+        empty());
+  }
+
+  @Test
+  public void testTunnelTopologyWithReachability() throws IOException {
+    String snapshot = "ios-tunnels";
+
+    Batfish batfish =
+        BatfishTestUtils.getBatfishFromTestrigText(
+            TestrigText.builder()
+                .setConfigurationText(
+                    TESTRIGS_PREFIX + snapshot,
+                    ImmutableList.of("n1-static-route", "n2-static-route"))
+                .build(),
+            _folder);
+
+    Edge underlayEdge =
+        Edge.of(
+            "n1-static-route", "TenGigabitEthernet0/1", "n2-static-route", "TenGigabitEthernet0/1");
+    Edge overlayEdge = Edge.of("n1-static-route", "Tunnel1", "n2-static-route", "Tunnel1");
+
+    // Overlay edge present in initial tunnel topology
+    assertThat(
+        batfish
+            .getTopologyProvider()
+            .getInitialTunnelTopology(batfish.getNetworkSnapshot())
+            .asEdgeSet(),
+        containsInAnyOrder(overlayEdge, overlayEdge.reverse()));
+
+    batfish.computeDataPlane();
+    // overlay edge in final L3 topology as well
+    assertThat(
+        batfish.getTopologyProvider().getLayer3Topology(batfish.getNetworkSnapshot()).getEdges(),
+        containsInAnyOrder(
+            overlayEdge, overlayEdge.reverse(), underlayEdge, underlayEdge.reverse()));
+  }
+
+  @Test
+  public void testRouteMapMatchAcl() throws IOException {
+    Configuration c = parseConfig("ios-route-map-match-acl");
+    Bgpv4Route.Builder builder =
+        Bgpv4Route.builder()
+            .setOriginatorIp(Ip.parse("1.1.1.1"))
+            .setOriginType(OriginType.INCOMPLETE)
+            .setProtocol(RoutingProtocol.BGP);
+
+    Prefix prefix10 = Prefix.parse("10.0.0.0/8");
+    Prefix prefix11 = Prefix.parse("11.0.0.0/8");
+    Bgpv4Route route10 = builder.setNetwork(prefix10).build();
+    Bgpv4Route route11 = builder.setNetwork(prefix11).build();
+    Ip peerAddress = Ip.parse("2.2.2.2");
+
+    assertThat(
+        c,
+        hasRouteFilterList(
+            "ACL_PERMIT", allOf(permits(prefix10), RouteFilterListMatchers.rejects(prefix11))));
+    assertThat(
+        c,
+        hasRouteFilterList(
+            "ACL_DENY", allOf(permits(prefix11), RouteFilterListMatchers.rejects(prefix10))));
+
+    assertTrue(
+        "Route 10/8 permitted",
+        c.getRoutingPolicies()
+            .get("rm_standard_permit_permit")
+            .process(route10, Bgpv4Route.builder(), peerAddress, DEFAULT_VRF_NAME, Direction.OUT));
+    assertFalse(
+        "Route 11/8 denied",
+        c.getRoutingPolicies()
+            .get("rm_standard_permit_permit")
+            .process(route11, Bgpv4Route.builder(), peerAddress, DEFAULT_VRF_NAME, Direction.OUT));
+
+    assertFalse(
+        "Route 10/8 denied",
+        c.getRoutingPolicies()
+            .get("rm_standard_deny_permit")
+            .process(route10, Bgpv4Route.builder(), peerAddress, DEFAULT_VRF_NAME, Direction.OUT));
+    assertFalse(
+        "Route 11/8 denied",
+        c.getRoutingPolicies()
+            .get("rm_standard_permit_permit")
+            .process(route11, Bgpv4Route.builder(), peerAddress, DEFAULT_VRF_NAME, Direction.OUT));
+
+    assertFalse(
+        "Route 10/8 denied",
+        c.getRoutingPolicies()
+            .get("rm_standard_permit_deny")
+            .process(route10, Bgpv4Route.builder(), peerAddress, DEFAULT_VRF_NAME, Direction.OUT));
+    assertFalse(
+        "Route 11/8 denied",
+        c.getRoutingPolicies()
+            .get("rm_standard_permit_permit")
+            .process(route11, Bgpv4Route.builder(), peerAddress, DEFAULT_VRF_NAME, Direction.OUT));
+
+    assertFalse(
+        "Route 10/8 denied",
+        c.getRoutingPolicies()
+            .get("rm_standard_deny_deny")
+            .process(route10, Bgpv4Route.builder(), peerAddress, DEFAULT_VRF_NAME, Direction.OUT));
+    assertFalse(
+        "Route 11/8 denied",
+        c.getRoutingPolicies()
+            .get("rm_standard_permit_permit")
+            .process(route11, Bgpv4Route.builder(), peerAddress, DEFAULT_VRF_NAME, Direction.OUT));
   }
 }
