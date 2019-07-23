@@ -834,15 +834,6 @@ public class VirtualRouter implements Serializable {
     }
   }
 
-  /**
-   * Initial computation of all exportable EIGRP routes for all EIGRP processes on this router
-   *
-   * @param allNodes map of all nodes, keyed by hostname
-   */
-  void initEigrpExports(Map<String, Node> allNodes) {
-    _eigrpProcesses.values().forEach(proc -> proc.initExports(allNodes, _mainRib.getTypedRoutes()));
-  }
-
   void initIsisExports(Map<String, Node> allNodes, NetworkConfigurations nc) {
     /* TODO: https://github.com/batfish/batfish/issues/1703 */
     IsisProcess proc = _vrf.getIsisProcess();
@@ -1197,42 +1188,6 @@ public class VirtualRouter implements Serializable {
   }
 
   /**
-   * Propagate EIGRP external routes from our neighbors by reading EIGRP route "advertisements" from
-   * our queues.
-   *
-   * @param allNodes mapping of node names to instances.
-   * @param nc All network configurations
-   * @return true if external routes changed
-   */
-  boolean propagateEigrpExternalRoutes(Map<String, Node> allNodes, NetworkConfigurations nc) {
-    return _eigrpProcesses.values().stream()
-        .map(
-            proc ->
-                proc.unstageExternalRoutes(
-                    allNodes,
-                    proc.propagateExternalRoutes(nc),
-                    _mainRibRouteDeltaBuilder,
-                    _mainRib,
-                    _name))
-        .reduce(false, (a, b) -> a || b);
-  }
-
-  /**
-   * Propagate EIGRP internal routes from every valid EIGRP neighbors
-   *
-   * @param nodes mapping of node names to instances.
-   * @param topologyContext network topologies
-   * @param nc All network configurations
-   * @return true if new routes have been added to the staging RIB
-   */
-  boolean propagateEigrpInternalRoutes(
-      Map<String, Node> nodes, TopologyContext topologyContext, NetworkConfigurations nc) {
-    return _eigrpProcesses.values().stream()
-        .map(proc -> proc.propagateInternalRoutes(nodes, topologyContext.getEigrpTopology(), nc))
-        .reduce(false, (a, b) -> a || b);
-  }
-
-  /**
    * Process RIP routes from our neighbors.
    *
    * @param nodes Mapping of node names to Node instances
@@ -1580,11 +1535,6 @@ public class VirtualRouter implements Serializable {
         networkConfigurations);
   }
 
-  /** Merges staged EIGRP internal routes into the "real" EIGRP-internal RIBs */
-  void unstageEigrpInternalRoutes() {
-    _eigrpProcesses.values().forEach(EigrpRoutingProcess::unstageInternalRoutes);
-  }
-
   /**
    * Move IS-IS routes from L1/L2 staging RIBs into their respective "proper" RIBs. Following that,
    * move any resulting deltas into the combined IS-IS RIB, and finally, main RIB.
@@ -1633,15 +1583,6 @@ public class VirtualRouter implements Serializable {
      * Re-add independent RIP routes to ripRib for tie-breaking
      */
     importRib(_ripRib, _ripInternalRib);
-  }
-
-  /**
-   * Merge internal EIGRP RIBs into a general EIGRP RIB, then merge that into the independent RIB
-   */
-  void importEigrpInternalRoutes() {
-    _eigrpProcesses
-        .values()
-        .forEach(process -> process.importInternalRoutes(_independentRib, _name));
   }
 
   /**
