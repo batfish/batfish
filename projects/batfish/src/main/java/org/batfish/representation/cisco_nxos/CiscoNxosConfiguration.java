@@ -4,8 +4,14 @@ import static com.google.common.base.MoreObjects.firstNonNull;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static org.batfish.datamodel.Configuration.DEFAULT_VRF_NAME;
 import static org.batfish.datamodel.Interface.NULL_INTERFACE_NAME;
+import static org.batfish.datamodel.MultipathEquivalentAsPathMatchMode.EXACT_PATH;
+import static org.batfish.datamodel.MultipathEquivalentAsPathMatchMode.PATH_LENGTH;
 import static org.batfish.datamodel.Route.UNSET_NEXT_HOP_INTERFACE;
 import static org.batfish.datamodel.Route.UNSET_ROUTE_NEXT_HOP_IP;
+import static org.batfish.representation.cisco.CiscoConfiguration.computeBgpCommonExportPolicyName;
+import static org.batfish.representation.cisco.CiscoConfiguration.computeBgpGenerationPolicyName;
+import static org.batfish.representation.cisco.CiscoConversions.generateGenerationPolicy;
+import static org.batfish.representation.cisco.CiscoConversions.suppressSummarizedPrefixes;
 import static org.batfish.representation.cisco_nxos.CiscoNxosInterfaceType.PORT_CHANNEL;
 import static org.batfish.representation.cisco_nxos.Interface.BANDWIDTH_CONVERSION_FACTOR;
 import static org.batfish.representation.cisco_nxos.Interface.getDefaultBandwidth;
@@ -15,9 +21,11 @@ import com.google.common.collect.HashMultimap;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Range;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -34,16 +42,48 @@ import javax.annotation.Nullable;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.batfish.common.BatfishException;
 import org.batfish.common.VendorConversionException;
+import org.batfish.datamodel.BgpActivePeerConfig;
+import org.batfish.datamodel.BgpPassivePeerConfig;
+import org.batfish.datamodel.BgpTieBreaker;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
+import org.batfish.datamodel.GeneratedRoute;
 import org.batfish.datamodel.IntegerSpace;
 import org.batfish.datamodel.Interface.Dependency;
 import org.batfish.datamodel.Interface.DependencyType;
 import org.batfish.datamodel.InterfaceType;
 import org.batfish.datamodel.LineAction;
+import org.batfish.datamodel.OriginType;
+import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.Prefix6Range;
+import org.batfish.datamodel.Prefix6Space;
+import org.batfish.datamodel.PrefixRange;
+import org.batfish.datamodel.PrefixSpace;
+import org.batfish.datamodel.Route6FilterLine;
+import org.batfish.datamodel.Route6FilterList;
 import org.batfish.datamodel.RouteFilterLine;
 import org.batfish.datamodel.RouteFilterList;
+import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.SwitchportMode;
+import org.batfish.datamodel.routing_policy.RoutingPolicy;
+import org.batfish.datamodel.routing_policy.expr.BooleanExpr;
+import org.batfish.datamodel.routing_policy.expr.BooleanExprs;
+import org.batfish.datamodel.routing_policy.expr.CallExpr;
+import org.batfish.datamodel.routing_policy.expr.Conjunction;
+import org.batfish.datamodel.routing_policy.expr.DestinationNetwork;
+import org.batfish.datamodel.routing_policy.expr.DestinationNetwork6;
+import org.batfish.datamodel.routing_policy.expr.Disjunction;
+import org.batfish.datamodel.routing_policy.expr.ExplicitPrefix6Set;
+import org.batfish.datamodel.routing_policy.expr.ExplicitPrefixSet;
+import org.batfish.datamodel.routing_policy.expr.LiteralOrigin;
+import org.batfish.datamodel.routing_policy.expr.MatchPrefix6Set;
+import org.batfish.datamodel.routing_policy.expr.MatchPrefixSet;
+import org.batfish.datamodel.routing_policy.expr.MatchProtocol;
+import org.batfish.datamodel.routing_policy.expr.Not;
+import org.batfish.datamodel.routing_policy.expr.WithEnvironmentExpr;
+import org.batfish.datamodel.routing_policy.statement.If;
+import org.batfish.datamodel.routing_policy.statement.SetOrigin;
+import org.batfish.datamodel.routing_policy.statement.Statements;
 import org.batfish.datamodel.vendor_family.cisco_nxos.CiscoNxosFamily;
 import org.batfish.vendor.VendorConfiguration;
 
@@ -60,9 +100,6 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
    */
   private static final Map<String, String> CISCO_NXOS_INTERFACE_PREFIXES;
   private static final Pattern CISCO_NXOS_INTERFACE_PREFIXES_REGEX;
-  private static final IntegerSpace DEFAULT_RESERVED_VLAN_RANGE =
-      IntegerSpace.of(Range.closed(3968, 4094));
-  public static final String NULL_VRF_NAME = "~NULL_VRF~";
 
   static {
     CISCO_NXOS_INTERFACE_PREFIXES =
@@ -92,6 +129,29 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
       }
     }
     return null;
+  }
+
+  private static final IntegerSpace DEFAULT_RESERVED_VLAN_RANGE =
+      IntegerSpace.of(Range.closed(3968, 4094));
+
+  public static final String NULL_VRF_NAME = "~NULL_VRF~";
+
+  /** Routing-related constants. */
+  private static final int AGGREGATE_ROUTE_ADMIN_COST = 200;
+
+  private static WithEnvironmentExpr bgpRedistributeWithEnvironmentExpr(
+      BooleanExpr expr, OriginType originType) {
+    WithEnvironmentExpr we = new WithEnvironmentExpr();
+    we.setExpr(expr);
+    we.setPreStatements(
+        ImmutableList.of(Statements.SetWriteIntermediateBgpAttributes.toStaticStatement()));
+    we.setPostStatements(
+        ImmutableList.of(Statements.UnsetWriteIntermediateBgpAttributes.toStaticStatement()));
+    we.setPostTrueStatements(
+        ImmutableList.of(
+            Statements.SetReadIntermediateBgpAttributes.toStaticStatement(),
+            new SetOrigin(new LiteralOrigin(originType, null))));
+    return we;
   }
 
   private static @Nonnull RouteFilterLine toRouteFilterLine(IpPrefixListLine ipPrefixListLine) {
@@ -166,6 +226,282 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
     }
     String suffix = ifaceName.substring(ifacePrefix.length());
     return canonicalPrefix + suffix;
+  }
+
+  private void convertBgp() {
+    // Before we process any configuration, execute BGP inheritance.
+    _bgpGlobalConfiguration.doInherit(_w);
+
+    _bgpGlobalConfiguration
+        .getVrfs()
+        .forEach(
+            (vrfName, bgpVrfConfig) -> {
+              convertBgpVrf(_c, _bgpGlobalConfiguration, bgpVrfConfig, vrfName);
+            });
+  }
+
+  private void convertBgpVrf(
+      Configuration c,
+      BgpGlobalConfiguration nxBgpGlobal,
+      BgpVrfConfiguration nxBgpVrf,
+      String vrfName) {
+    org.batfish.datamodel.Vrf v = c.getVrfs().get(vrfName);
+    if (v == null) {
+      // Do nothing, but rely on the VRF having an undefined reference warning.
+      return;
+    }
+    int ebgpAdmin = RoutingProtocol.BGP.getDefaultAdministrativeCost(c.getConfigurationFormat());
+    int ibgpAdmin = RoutingProtocol.IBGP.getDefaultAdministrativeCost(c.getConfigurationFormat());
+    org.batfish.datamodel.BgpProcess newBgpProcess =
+        new org.batfish.datamodel.BgpProcess(
+            Conversions.getBgpRouterId(nxBgpVrf, v, _w), ebgpAdmin, ibgpAdmin);
+    if (nxBgpVrf.getBestpathCompareRouterId()) {
+      newBgpProcess.setTieBreaker(BgpTieBreaker.ROUTER_ID);
+    }
+
+    // From NX-OS docs for `bestpath as-path multipath-relax`
+    //  Allows load sharing across providers with different (but equal-length) autonomous system
+    //  paths. Without this option, the AS paths must be identical for load sharing.
+    newBgpProcess.setMultipathEquivalentAsPathMatchMode(
+        nxBgpVrf.getBestpathAsPathMultipathRelax() ? PATH_LENGTH : EXACT_PATH);
+
+    // Process vrf-level address family configuration, such as export policy.
+    BgpVrfAddressFamilyConfiguration ipv4af = nxBgpVrf.getIpv4UnicastAddressFamily();
+    if (ipv4af != null) {
+      // Batfish seems to only track the IPv4 properties for multipath ebgp/ibgp.
+      newBgpProcess.setMultipathEbgp(ipv4af.getMaximumPathsEbgp() > 1);
+      newBgpProcess.setMultipathIbgp(ipv4af.getMaximumPathsIbgp() > 1);
+    }
+
+    // Next we build up the BGP common export policy.
+    RoutingPolicy bgpCommonExportPolicy =
+        new RoutingPolicy(computeBgpCommonExportPolicyName(vrfName), c);
+    c.getRoutingPolicies().put(bgpCommonExportPolicy.getName(), bgpCommonExportPolicy);
+
+    // 1. If there are any ipv4 summary only networks, do not export the more specific routes.
+    if (ipv4af != null) {
+      Stream<Prefix> summaryOnlyNetworks =
+          ipv4af.getAggregateNetworks().entrySet().stream()
+              .filter(e -> e.getValue().getSummaryOnly())
+              .map(Entry::getKey);
+      If suppressLonger = suppressSummarizedPrefixes(c, vrfName, summaryOnlyNetworks);
+      if (suppressLonger != null) {
+        bgpCommonExportPolicy.getStatements().add(suppressLonger);
+      }
+    }
+
+    // The body of the export policy is a huge disjunction over many reasons routes may be exported.
+    Disjunction routesShouldBeExported = new Disjunction();
+    bgpCommonExportPolicy
+        .getStatements()
+        .add(
+            new If(
+                routesShouldBeExported,
+                ImmutableList.of(Statements.ReturnTrue.toStaticStatement()),
+                ImmutableList.of()));
+    // This list of reasons to export a route will be built up over the remainder of this function.
+    List<BooleanExpr> exportConditions = routesShouldBeExported.getDisjuncts();
+
+    // Generate and distribute aggregate routes.
+    if (ipv4af != null) {
+      for (Entry<Prefix, BgpVrfAddressFamilyAggregateNetworkConfiguration> e :
+          ipv4af.getAggregateNetworks().entrySet()) {
+        Prefix prefix = e.getKey();
+        BgpVrfAddressFamilyAggregateNetworkConfiguration agg = e.getValue();
+        generateGenerationPolicy(c, vrfName, prefix);
+
+        GeneratedRoute.Builder gr =
+            GeneratedRoute.builder()
+                .setNetwork(prefix)
+                .setAdmin(AGGREGATE_ROUTE_ADMIN_COST)
+                .setGenerationPolicy(
+                    computeBgpGenerationPolicyName(true, vrfName, prefix.toString()))
+                .setDiscard(true);
+
+        // Conditions to generate this route
+        List<BooleanExpr> exportAggregateConditions = new ArrayList<>();
+        exportAggregateConditions.add(
+            new MatchPrefixSet(
+                DestinationNetwork.instance(),
+                new ExplicitPrefixSet(new PrefixSpace(PrefixRange.fromPrefix(prefix)))));
+        exportAggregateConditions.add(new MatchProtocol(RoutingProtocol.AGGREGATE));
+
+        // If defined, set attribute map for aggregate network
+        BooleanExpr weInterior = BooleanExprs.TRUE;
+        String attributeMapName = agg.getAttributeMap();
+        if (attributeMapName != null) {
+          RouteMap attributeMap = _routeMaps.get(attributeMapName);
+          if (attributeMap != null) {
+            // need to apply attribute changes if this specific route is matched
+            weInterior = new CallExpr(attributeMapName);
+            gr.setAttributePolicy(attributeMapName);
+          }
+        }
+        exportAggregateConditions.add(
+            bgpRedistributeWithEnvironmentExpr(weInterior, OriginType.IGP));
+
+        v.getGeneratedRoutes().add(gr.build());
+        // Do export a generated aggregate.
+        exportConditions.add(new Conjunction(exportAggregateConditions));
+      }
+    }
+
+    // Only redistribute default route if `default-information originate` is set.
+    BooleanExpr redistributeDefaultRoute =
+        ipv4af == null || !ipv4af.getDefaultInformationOriginate()
+            ? Conversions.NOT_DEFAULT_ROUTE
+            : BooleanExprs.TRUE;
+
+    // Export RIP routes that should be redistributed.
+    BgpRedistributionPolicy ripPolicy =
+        ipv4af == null ? null : ipv4af.getRedistributionPolicy(RoutingProtocol.RIP);
+    if (ripPolicy != null) {
+      String routeMap = ripPolicy.getRouteMap();
+      org.batfish.representation.cisco_nxos.RouteMap map = _routeMaps.get(routeMap);
+      /* TODO: how do we match on source tag (aka RIP process id)? */
+      List<BooleanExpr> conditions =
+          ImmutableList.of(
+              new MatchProtocol(RoutingProtocol.RIP),
+              redistributeDefaultRoute,
+              bgpRedistributeWithEnvironmentExpr(
+                  map == null ? BooleanExprs.TRUE : new CallExpr(routeMap), OriginType.INCOMPLETE));
+      Conjunction rip = new Conjunction(conditions);
+      rip.setComment("Redistribute RIP routes into BGP");
+      exportConditions.add(rip);
+    }
+
+    // Export static routes that should be redistributed.
+    BgpRedistributionPolicy staticPolicy =
+        ipv4af == null ? null : ipv4af.getRedistributionPolicy(RoutingProtocol.STATIC);
+    if (staticPolicy != null) {
+      String routeMap = staticPolicy.getRouteMap();
+      RouteMap map = _routeMaps.get(routeMap);
+      List<BooleanExpr> conditions =
+          ImmutableList.of(
+              new MatchProtocol(RoutingProtocol.STATIC),
+              redistributeDefaultRoute,
+              bgpRedistributeWithEnvironmentExpr(
+                  map == null ? BooleanExprs.TRUE : new CallExpr(routeMap), OriginType.INCOMPLETE));
+      Conjunction staticRedist = new Conjunction(conditions);
+      staticRedist.setComment("Redistribute static routes into BGP");
+      exportConditions.add(staticRedist);
+    }
+
+    // Export connected routes that should be redistributed.
+    BgpRedistributionPolicy connectedPolicy =
+        ipv4af == null ? null : ipv4af.getRedistributionPolicy(RoutingProtocol.CONNECTED);
+    if (connectedPolicy != null) {
+      String routeMap = connectedPolicy.getRouteMap();
+      RouteMap map = _routeMaps.get(routeMap);
+      List<BooleanExpr> conditions =
+          ImmutableList.of(
+              new MatchProtocol(RoutingProtocol.CONNECTED),
+              redistributeDefaultRoute,
+              bgpRedistributeWithEnvironmentExpr(
+                  map == null ? BooleanExprs.TRUE : new CallExpr(routeMap), OriginType.INCOMPLETE));
+      Conjunction connected = new Conjunction(conditions);
+      connected.setComment("Redistribute connected routes into BGP");
+      exportConditions.add(connected);
+    }
+
+    // Export OSPF routes that should be redistributed.
+    BgpRedistributionPolicy ospfPolicy =
+        ipv4af == null ? null : ipv4af.getRedistributionPolicy(RoutingProtocol.OSPF);
+    if (ospfPolicy != null) {
+      String routeMap = ospfPolicy.getRouteMap();
+      RouteMap map = _routeMaps.get(routeMap);
+      /* TODO: how do we match on source tag (aka OSPF process)? */
+      List<BooleanExpr> conditions =
+          ImmutableList.of(
+              new MatchProtocol(RoutingProtocol.OSPF),
+              redistributeDefaultRoute,
+              bgpRedistributeWithEnvironmentExpr(
+                  map == null ? BooleanExprs.TRUE : new CallExpr(routeMap), OriginType.INCOMPLETE));
+      Conjunction ospf = new Conjunction(conditions);
+      ospf.setComment("Redistribute OSPF routes into BGP");
+      exportConditions.add(ospf);
+    }
+
+    // Now we add all the per-network export policies.
+    if (ipv4af != null) {
+      ipv4af
+          .getIpNetworks()
+          .forEach(
+              (prefix, routeMapOrEmpty) -> {
+                PrefixSpace exportSpace = new PrefixSpace(PrefixRange.fromPrefix(prefix));
+                List<BooleanExpr> exportNetworkConditions =
+                    ImmutableList.of(
+                        new MatchPrefixSet(
+                            DestinationNetwork.instance(), new ExplicitPrefixSet(exportSpace)),
+                        new Not(
+                            new MatchProtocol(
+                                RoutingProtocol.BGP,
+                                RoutingProtocol.IBGP,
+                                RoutingProtocol.AGGREGATE)),
+                        bgpRedistributeWithEnvironmentExpr(
+                            _routeMaps.containsKey(routeMapOrEmpty)
+                                ? new CallExpr(routeMapOrEmpty)
+                                : BooleanExprs.TRUE,
+                            OriginType.IGP));
+                newBgpProcess.addToOriginationSpace(exportSpace);
+                exportConditions.add(new Conjunction(exportNetworkConditions));
+              });
+    }
+
+    BgpVrfAddressFamilyConfiguration ipv6af = nxBgpVrf.getIpv6UnicastAddressFamily();
+    if (ipv6af != null) {
+      ipv6af
+          .getIpv6Networks()
+          .forEach(
+              (prefix6, routeMapOrEmpty) -> {
+                List<BooleanExpr> exportNetworkConditions =
+                    ImmutableList.of(
+                        new MatchPrefix6Set(
+                            new DestinationNetwork6(),
+                            new ExplicitPrefix6Set(
+                                new Prefix6Space(Prefix6Range.fromPrefix6(prefix6)))),
+                        new Not(
+                            new MatchProtocol(
+                                RoutingProtocol.BGP,
+                                RoutingProtocol.IBGP,
+                                RoutingProtocol.AGGREGATE)),
+                        bgpRedistributeWithEnvironmentExpr(
+                            _routeMaps.containsKey(routeMapOrEmpty)
+                                ? new CallExpr(routeMapOrEmpty)
+                                : BooleanExprs.TRUE,
+                            OriginType.IGP));
+                exportConditions.add(new Conjunction(exportNetworkConditions));
+              });
+    }
+
+    // Always export BGP or IBGP routes.
+    exportConditions.add(new MatchProtocol(RoutingProtocol.BGP, RoutingProtocol.IBGP));
+
+    // Finally, the export policy ends with returning false: do not export unmatched routes.
+    bgpCommonExportPolicy.getStatements().add(Statements.ReturnFalse.toStaticStatement());
+
+    // Generate BGP_NETWORK6_NETWORKS filter.
+    if (ipv6af != null) {
+      List<Route6FilterLine> lines =
+          ipv6af.getIpv6Networks().keySet().stream()
+              .map(p6 -> new Route6FilterLine(LineAction.PERMIT, Prefix6Range.fromPrefix6(p6)))
+              .collect(ImmutableList.toImmutableList());
+      Route6FilterList localFilter6 =
+          new Route6FilterList("~BGP_NETWORK6_NETWORKS_FILTER:" + vrfName + "~", lines);
+      c.getRoute6FilterLists().put(localFilter6.getName(), localFilter6);
+    }
+
+    // Process active neighbors first.
+    Map<Prefix, BgpActivePeerConfig> activeNeighbors =
+        Conversions.getNeighbors(c, v, newBgpProcess, nxBgpGlobal, nxBgpVrf, _w);
+    newBgpProcess.setNeighbors(ImmutableSortedMap.copyOf(activeNeighbors));
+
+    // Process passive neighbors next
+    Map<Prefix, BgpPassivePeerConfig> passiveNeighbors =
+        Conversions.getPassiveNeighbors(c, v, newBgpProcess, nxBgpGlobal, nxBgpVrf, _w);
+    newBgpProcess.setPassiveNeighbors(ImmutableSortedMap.copyOf(passiveNeighbors));
+
+    v.setBgpProcess(newBgpProcess);
   }
 
   private void convertInterface(Interface iface) {
@@ -508,6 +844,7 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
     disableUnregisteredVlanInterfaces();
     convertStaticRoutes();
     convertIpPrefixLists();
+    convertBgp();
 
     markStructures();
     return _c;

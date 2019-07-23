@@ -122,7 +122,7 @@ import org.batfish.representation.cisco.DistributeList.DistributeListFilterType;
 
 /** Utilities that convert Cisco-specific representations to vendor-independent model. */
 @ParametersAreNonnullByDefault
-class CiscoConversions {
+public class CiscoConversions {
 
   static Ip getHighestIp(Map<String, Interface> allInterfaces) {
     Map<String, Interface> interfacesToCheck;
@@ -251,7 +251,7 @@ class CiscoConversions {
    * @param vrfName Name of VRF in which the aggregate network exists
    * @param prefix The aggregate network prefix
    */
-  static void generateGenerationPolicy(Configuration c, String vrfName, Prefix prefix) {
+  public static void generateGenerationPolicy(Configuration c, String vrfName, Prefix prefix) {
     RoutingPolicy.builder()
         .setOwner(c)
         .setName(computeBgpGenerationPolicyName(true, vrfName, prefix.toString()))
@@ -461,7 +461,7 @@ class CiscoConversions {
    * {@link Configuration} to ensure they are available and tracked.
    */
   @Nullable
-  static If suppressSummarizedPrefixes(
+  public static If suppressSummarizedPrefixes(
       Configuration c, String vrfName, Stream<Prefix> summaryOnlyPrefixes) {
     Iterator<Prefix> prefixesToSuppress = summaryOnlyPrefixes.iterator();
     if (!prefixesToSuppress.hasNext()) {
