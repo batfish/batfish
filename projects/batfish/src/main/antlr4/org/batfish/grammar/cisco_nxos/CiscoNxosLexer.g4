@@ -87,6 +87,11 @@ ACL_UDP
   'acl_udp'
 ;
 
+ACTIVE
+:
+  'active'
+;
+
 ADD
 :
   'add'
@@ -1710,6 +1715,11 @@ NVE
 OBJSTORE
 :
   'objstore'
+;
+
+ON
+:
+  'on'
 ;
 
 ON_STARTUP

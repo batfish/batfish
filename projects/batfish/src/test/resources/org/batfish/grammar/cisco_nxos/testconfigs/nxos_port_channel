@@ -74,3 +74,17 @@ interface Ethernet1/10-11
   bandwidth 100000
   channel-group 6 force
 !
+
+! different channel-group modes
+interface Ethernet1/12
+  ! LACP active
+  channel-group 7 mode active
+!
+interface Ethernet1/13
+  ! not running LACP
+  channel-group 7 mode on
+!
+interface Ethernet1/14
+  ! LACP passive
+  channel-group 7 mode passive
+!
