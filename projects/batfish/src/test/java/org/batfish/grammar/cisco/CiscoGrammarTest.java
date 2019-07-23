@@ -2585,6 +2585,33 @@ public class CiscoGrammarTest {
   }
 
   @Test
+  public void testIosEigrpDistributeListConversion() throws IOException {
+    Configuration c = parseConfig("ios-eigrp-distribute-list");
+
+    String distListPolicyName = "~EIGRP_DIST_LIST_default_1_GigabitEthernet0/0";
+
+    assertThat(c.getRoutingPolicies(), hasKey(distListPolicyName));
+
+    assertThat(
+        c.getDefaultVrf()
+            .getEigrpProcesses()
+            .get(1L)
+            .getNeighbors()
+            .get("GigabitEthernet0/0")
+            .get_exportPolicy(),
+        equalTo(distListPolicyName));
+
+    assertThat(
+        c.getRoutingPolicies().get(distListPolicyName).getStatements(),
+        equalTo(
+            ImmutableList.of(
+                new If(
+                    new MatchPrefixSet(DestinationNetwork.instance(), new NamedPrefixSet("2")),
+                    ImmutableList.of(Statements.ExitAccept.toStaticStatement()),
+                    ImmutableList.of(Statements.ExitReject.toStaticStatement())))));
+  }
+
+  @Test
   public void testIosEigrpMarkForRouting() throws IOException {
     Configuration c = parseConfig("ios-eigrp-distribute-list");
 

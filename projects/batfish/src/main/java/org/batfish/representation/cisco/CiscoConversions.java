@@ -1408,6 +1408,58 @@ public class CiscoConversions {
     }
   }
 
+  @Nullable
+  static String computeEigrpDistributeListRoutingPolicy(
+      @Nonnull Configuration c,
+      @Nonnull CiscoConfiguration oldConfig,
+      @Nonnull DistributeList distributeList,
+      @Nonnull String vrfName,
+      @Nonnull Long asn,
+      @Nonnull String ifaceName) {
+    if (!sanityCheckEigrpDistributeList(c, distributeList, oldConfig)) {
+      return null;
+    }
+    String policyName = String.format("~EIGRP_DIST_LIST_%s_%s_%s", vrfName, asn, ifaceName);
+    RoutingPolicy routingPolicy = new RoutingPolicy(policyName, c);
+    routingPolicy
+        .getStatements()
+        .add(
+            new If(
+                new MatchPrefixSet(
+                    DestinationNetwork.instance(),
+                    new NamedPrefixSet(distributeList.getFilterName())),
+                ImmutableList.of(Statements.ExitAccept.toStaticStatement()),
+                ImmutableList.of(Statements.ExitReject.toStaticStatement())));
+    c.getRoutingPolicies().put(policyName, routingPolicy);
+    return policyName;
+  }
+
+  private static boolean sanityCheckEigrpDistributeList(
+      @Nonnull Configuration c,
+      @Nonnull DistributeList distributeList,
+      @Nonnull CiscoConfiguration oldConfig) {
+    if (distributeList.getFilterType() == DistributeListFilterType.ACCESS_LIST
+        && oldConfig.getExtendedAcls().containsKey(distributeList.getFilterName())) {
+      oldConfig
+          .getWarnings()
+          .redFlag(
+              String.format(
+                  "Extended access lists are not supported in EIGRP distribute-lists: %s",
+                  distributeList.getFilterName()));
+      return false;
+    } else if (!c.getRouteFilterLists().containsKey(distributeList.getFilterName())) {
+      // if referred access-list is not defined, all prefixes will be allowed
+      oldConfig
+          .getWarnings()
+          .redFlag(
+              String.format(
+                  "distribute-list refers an undefined access-list %s, it will not filter anything",
+                  distributeList.getFilterName()));
+      return false;
+    }
+    return true;
+  }
+
   static org.batfish.datamodel.StaticRoute toStaticRoute(Configuration c, StaticRoute staticRoute) {
     String nextHopInterface = staticRoute.getNextHopInterface();
     if (nextHopInterface != null && nextHopInterface.toLowerCase().startsWith("null")) {
