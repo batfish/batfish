@@ -87,6 +87,11 @@ ACL_UDP
   'acl_udp'
 ;
 
+ACTION
+:
+  'action'
+;
+
 ACTIVE
 :
   'active'
@@ -1266,6 +1271,11 @@ LE
   'le'
 ;
 
+LEVEL
+:
+  'level'
+;
+
 LINK_LOCAL_GROUPS_SUPPRESSION
 :
   'link-local-groups-suppression'
@@ -2314,6 +2324,11 @@ STATISTICS
   'statistics'
 ;
 
+STORM_CONTROL
+:
+  'storm-control'
+;
+
 STUB
 :
   'stub'
@@ -2487,6 +2502,11 @@ TRACK
 TRANSPORT
 :
   'transport'
+;
+
+TRAP
+:
+  'trap'
 ;
 
 TRIGGER_DELAY
