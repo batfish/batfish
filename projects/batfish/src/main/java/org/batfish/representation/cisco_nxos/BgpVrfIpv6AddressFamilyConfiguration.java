@@ -1,5 +1,6 @@
 package org.batfish.representation.cisco_nxos;
 
+import java.io.Serializable;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -12,7 +13,7 @@ import org.batfish.datamodel.Prefix6;
  * Represents the BGP configuration for a IPv4 unicast or multicast address family at the VRF level.
  */
 public final class BgpVrfIpv6AddressFamilyConfiguration extends BgpVrfIpAddressFamilyConfiguration {
-  public static class Network {
+  public static class Network implements Serializable {
     public Network(Prefix6 network, @Nullable String routeMap) {
       _network = network;
       _routeMap = routeMap;
