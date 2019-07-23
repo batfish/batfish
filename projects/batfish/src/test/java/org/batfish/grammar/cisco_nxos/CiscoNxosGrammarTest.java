@@ -413,6 +413,12 @@ public final class CiscoNxosGrammarTest {
   }
 
   @Test
+  public void testInterfaceStormControlParsing() {
+    // TODO: make into extraction test
+    assertThat(parseVendorConfig("nxos_interface_storm_control"), notNullValue());
+  }
+
+  @Test
   public void testInterfaceSwitchportConversion() throws IOException {
     String hostname = "nxos_interface_switchport";
     Configuration c = parseConfig(hostname);

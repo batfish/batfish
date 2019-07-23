@@ -87,6 +87,11 @@ ACL_UDP
   'acl_udp'
 ;
 
+ACTION
+:
+  'action'
+;
+
 ACTIVE
 :
   'active'
@@ -1306,6 +1311,11 @@ LAST_MEMBER_QUERY_INTERVAL
 LE
 :
   'le'
+;
+
+LEVEL
+:
+  'level'
 ;
 
 LINK_FLAP
@@ -2603,6 +2613,11 @@ TRACK
 TRANSPORT
 :
   'transport'
+;
+
+TRAP
+:
+  'trap'
 ;
 
 TRIGGER_DELAY
