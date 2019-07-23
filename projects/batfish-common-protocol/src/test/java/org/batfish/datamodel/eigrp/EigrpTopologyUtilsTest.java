@@ -164,10 +164,10 @@ public class EigrpTopologyUtilsTest {
     EigrpTopology eigrpTopology =
         EigrpTopologyUtils.initEigrpTopology(configurations, layer3Topology);
 
-    EigrpNeighborConfigId conf1Iface1Id = new EigrpNeighborConfigId("conf1", "iface1", "vrf");
-    EigrpNeighborConfigId conf1Iface2Id = new EigrpNeighborConfigId("conf1", "iface2", "vrf");
-    EigrpNeighborConfigId conf2Iface1Id = new EigrpNeighborConfigId("conf2", "iface1", "vrf");
-    EigrpNeighborConfigId conf2Iface2Id = new EigrpNeighborConfigId("conf2", "iface2", "vrf");
+    EigrpNeighborConfigId conf1Iface1Id = new EigrpNeighborConfigId(1L, "conf1", "iface1", "vrf");
+    EigrpNeighborConfigId conf1Iface2Id = new EigrpNeighborConfigId(1L, "conf1", "iface2", "vrf");
+    EigrpNeighborConfigId conf2Iface1Id = new EigrpNeighborConfigId(1L, "conf2", "iface1", "vrf");
+    EigrpNeighborConfigId conf2Iface2Id = new EigrpNeighborConfigId(1L, "conf2", "iface2", "vrf");
     // assert that all four EIGRP nodes are present
     assertThat(
         eigrpTopology.getNetwork().nodes(),

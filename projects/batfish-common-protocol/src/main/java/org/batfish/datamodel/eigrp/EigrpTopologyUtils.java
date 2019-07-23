@@ -10,7 +10,6 @@ import java.util.Map;
 import java.util.Optional;
 import javax.annotation.Nonnull;
 import org.batfish.datamodel.Configuration;
-import org.batfish.datamodel.Edge;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.NetworkConfigurations;
 import org.batfish.datamodel.Topology;
@@ -56,7 +55,10 @@ public class EigrpTopologyUtils {
 
             network.addNode(
                 new EigrpNeighborConfigId(
-                    neighbor.getHostname(), neighbor.getInterfaceName(), neighbor.getVrfName()));
+                    neighbor.getAsn(),
+                    neighbor.getHostname(),
+                    neighbor.getInterfaceName(),
+                    neighbor.getVrfName()));
           }
         }
       }
@@ -87,13 +89,30 @@ public class EigrpTopologyUtils {
 
         EigrpNeighborConfigId remoteConfigId =
             new EigrpNeighborConfigId(
+                remoteInterface.getEigrp().getAsn(),
                 remoteNodeInterface.getHostname(),
                 remoteNodeInterface.getInterface(),
                 remoteInterface.getVrfName());
-        EigrpEdge.edgeIfAdjacent(
-                new Edge(configId.getNodeInterfacePair(), remoteNodeInterface),
-                networkConfigurations.getMap())
-            .ifPresent(eigrpEdge -> eigrpNetwork.addEdge(configId, remoteConfigId, eigrpEdge));
+
+        if (eigrpNetwork.nodes().contains(remoteConfigId)) {
+          Interface iface =
+              networkConfigurations
+                  .getInterface(configId.getHostname(), configId.getInterfaceName())
+                  .orElse(null);
+          Interface remoteIface =
+              networkConfigurations
+                  .getInterface(remoteConfigId.getHostname(), remoteConfigId.getInterfaceName())
+                  .orElse(null);
+          assert iface != null
+              && remoteIface != null; // since both the neighbor configs are present in the graph
+          if (iface.getEigrp() != null
+              && remoteIface.getEigrp() != null
+              && iface.getEigrp().getAsn() == remoteIface.getEigrp().getAsn()
+              && iface.getEigrp().getMetric().getMode()
+                  == remoteIface.getEigrp().getMetric().getMode()) {
+            eigrpNetwork.addEdge(configId, remoteConfigId, new EigrpEdge(configId, remoteConfigId));
+          }
+        }
       }
     }
   }
