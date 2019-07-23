@@ -156,7 +156,7 @@ public class BatfishJobExecutor {
   }
 
   private ExecutorService createExecutorService() {
-    if (true) {
+    if (_settings.getSequential()) {
       return Executors.newSingleThreadExecutor();
     }
     // if parallel processing is allowed
