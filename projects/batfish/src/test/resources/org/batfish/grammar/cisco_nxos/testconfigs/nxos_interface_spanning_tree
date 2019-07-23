@@ -1,0 +1,22 @@
+!RANCID-CONTENT-TYPE: cisco-nx
+!
+hostname nxos_interface_spanning_tree
+!
+interface Ethernet1/1
+  spanning-tree bpdufilter enable
+  spanning-tree bpduguard disable
+  spanning-tree guard loop
+  spanning-tree port-priority 224
+  spanning-tree port type edge
+
+interface Ethernet1/2
+  switchport mode trunk
+  spanning-tree bpduguard enable
+  spanning-tree port type edge trunk
+  spanning-tree guard root
+
+interface Ethernet1/3
+  spanning-tree port type network
+
+interface Ethernet1/4
+  spanning-tree port type normal
