@@ -18,12 +18,12 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import org.batfish.common.CoordConsts;
 import org.batfish.common.CoordConstsV2;
-import org.batfish.common.Version;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.coordinator.Main;
 import org.batfish.coordinator.WorkMgrServiceV2TestBase;
 import org.batfish.coordinator.WorkMgrTestUtils;
 import org.batfish.datamodel.questions.TestQuestion;
+import org.batfish.version.BatfishVersion;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -42,7 +42,7 @@ public final class QuestionsResourceTest extends WorkMgrServiceV2TestBase {
         .path(question)
         .request()
         .header(CoordConstsV2.HTTP_HEADER_BATFISH_APIKEY, CoordConsts.DEFAULT_API_KEY)
-        .header(CoordConstsV2.HTTP_HEADER_BATFISH_VERSION, Version.getVersion());
+        .header(CoordConstsV2.HTTP_HEADER_BATFISH_VERSION, BatfishVersion.getVersionStatic());
   }
 
   private Builder getQuestionTargetAnalysis(String network, String question, String analysis) {
@@ -55,7 +55,7 @@ public final class QuestionsResourceTest extends WorkMgrServiceV2TestBase {
         .path(question)
         .request()
         .header(CoordConstsV2.HTTP_HEADER_BATFISH_APIKEY, CoordConsts.DEFAULT_API_KEY)
-        .header(CoordConstsV2.HTTP_HEADER_BATFISH_VERSION, Version.getVersion());
+        .header(CoordConstsV2.HTTP_HEADER_BATFISH_VERSION, BatfishVersion.getVersionStatic());
   }
 
   private Builder getTargetAdHoc(String network) {
@@ -65,7 +65,7 @@ public final class QuestionsResourceTest extends WorkMgrServiceV2TestBase {
         .path(CoordConstsV2.RSC_QUESTIONS)
         .request()
         .header(CoordConstsV2.HTTP_HEADER_BATFISH_APIKEY, CoordConsts.DEFAULT_API_KEY)
-        .header(CoordConstsV2.HTTP_HEADER_BATFISH_VERSION, Version.getVersion());
+        .header(CoordConstsV2.HTTP_HEADER_BATFISH_VERSION, BatfishVersion.getVersionStatic());
   }
 
   private Builder getTargetAnalysis(String network, String analysis) {
@@ -77,7 +77,7 @@ public final class QuestionsResourceTest extends WorkMgrServiceV2TestBase {
         .path(CoordConstsV2.RSC_QUESTIONS)
         .request()
         .header(CoordConstsV2.HTTP_HEADER_BATFISH_APIKEY, CoordConsts.DEFAULT_API_KEY)
-        .header(CoordConstsV2.HTTP_HEADER_BATFISH_VERSION, Version.getVersion());
+        .header(CoordConstsV2.HTTP_HEADER_BATFISH_VERSION, BatfishVersion.getVersionStatic());
   }
 
   @Before
