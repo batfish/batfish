@@ -1408,15 +1408,30 @@ public class CiscoConversions {
     }
   }
 
+  /**
+   * Computes the routing policy for the provided {@link DistributeList distributeList} and returns
+   * the name of the computed routing policy. Returns null if the provided {@link DistributeList} is
+   * not supported or if the filter referred by the {@link DistributeList} doesn't exist.
+   *
+   * <p>Also adds the computed routing policy to {@link Configuration}.
+   *
+   * @param c Vendor independent {@link Configuration configuration}
+   * @param vsConfig Vendor specific {@link CiscoConfiguration configuration}
+   * @param distributeList {@link DistributeList} which is to be converted
+   * @param vrfName Name of the VRF in which the {@link DistributeList} is defined
+   * @param asn ASN of the {@link EigrpProcess} in which the {@link DistributeList} is defined
+   * @param ifaceName Name of the interface on which the distributeList operates
+   * @return Name of the computed routing policy or null if it cannot be computed
+   */
   @Nullable
   static String computeEigrpDistributeListRoutingPolicy(
       @Nonnull Configuration c,
-      @Nonnull CiscoConfiguration oldConfig,
+      @Nonnull CiscoConfiguration vsConfig,
       @Nonnull DistributeList distributeList,
       @Nonnull String vrfName,
       @Nonnull Long asn,
       @Nonnull String ifaceName) {
-    if (!sanityCheckEigrpDistributeList(c, distributeList, oldConfig)) {
+    if (!sanityCheckEigrpDistributeList(c, distributeList, vsConfig)) {
       return null;
     }
     String policyName = String.format("~EIGRP_DIST_LIST_%s_%s_%s", vrfName, asn, ifaceName);
@@ -1434,13 +1449,27 @@ public class CiscoConversions {
     return policyName;
   }
 
+  /**
+   * Checks if the {@link DistributeList distributeList} can be converted to a routing policy.
+   * Returns false if it refers to an extended access list, which is not supported and also returns
+   * false if the access-list referred by it does not exist.
+   *
+   * <p>Adds appropriate {@link org.batfish.common.Warning} if the {@link DistributeList
+   * distributeList} is not found to be valid for conversion to routing policy.
+   *
+   * @param c Vendor independent {@link Configuration configuration}
+   * @param distributeList {@link DistributeList distributeList} to be validated
+   * @param vsConfig Vendor specific {@link CiscoConfiguration configuration}
+   * @return false if the {@link DistributeList distributeList} cannot be converted to a routing
+   *     policy
+   */
   static boolean sanityCheckEigrpDistributeList(
       @Nonnull Configuration c,
       @Nonnull DistributeList distributeList,
-      @Nonnull CiscoConfiguration oldConfig) {
+      @Nonnull CiscoConfiguration vsConfig) {
     if (distributeList.getFilterType() == DistributeListFilterType.ACCESS_LIST
-        && oldConfig.getExtendedAcls().containsKey(distributeList.getFilterName())) {
-      oldConfig
+        && vsConfig.getExtendedAcls().containsKey(distributeList.getFilterName())) {
+      vsConfig
           .getWarnings()
           .redFlag(
               String.format(
@@ -1449,7 +1478,7 @@ public class CiscoConversions {
       return false;
     } else if (!c.getRouteFilterLists().containsKey(distributeList.getFilterName())) {
       // if referred access-list is not defined, all prefixes will be allowed
-      oldConfig
+      vsConfig
           .getWarnings()
           .redFlag(
               String.format(
