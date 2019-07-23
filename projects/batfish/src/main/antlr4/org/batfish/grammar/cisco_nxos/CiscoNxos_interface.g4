@@ -38,6 +38,7 @@ s_interface_regular
     | i_ip
     | i_mtu
     | i_no
+    | i_null
     | i_shutdown
     | i_switchport
     | i_vrf_member
@@ -209,6 +210,13 @@ i_no_null
 :
   (
     IP
+  ) null_rest_of_line
+;
+
+i_null
+:
+  (
+    SPANNING_TREE
   ) null_rest_of_line
 ;
 
