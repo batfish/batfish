@@ -11,12 +11,14 @@ import com.google.common.graph.Network;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Queue;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -91,6 +93,8 @@ final class EigrpRoutingProcess implements RoutingProcess<EigrpTopology, EigrpRo
    * round of route redistribution
    */
   @Nonnull private RibDelta<EigrpExternalRoute> _queuedForRedistribution;
+  /** Set of routes to be merged to the main RIB at the end of the iteration */
+  @Nonnull private RibDelta.Builder<EigrpRoute> _changeSet;
 
   EigrpRoutingProcess(final EigrpProcess process, final String vrfName, final Configuration c) {
     _asn = process.getAsn();
@@ -116,6 +120,7 @@ final class EigrpRoutingProcess implements RoutingProcess<EigrpTopology, EigrpRo
     _queuedForRedistribution = RibDelta.empty();
     _incomingInternalRoutes = ImmutableSortedMap.of();
     _incomingExternalRoutes = ImmutableSortedMap.of();
+    _changeSet = RibDelta.builder();
   }
 
   @Override
@@ -127,6 +132,11 @@ final class EigrpRoutingProcess implements RoutingProcess<EigrpTopology, EigrpRo
   public void updateTopology(EigrpTopology topology) {
     _topology = topology;
     updateQueues(topology);
+    /*
+    TODO:
+      1. Send existing routes to new neighbors
+      2. Remove routes received from edges that are now down
+    */
   }
 
   @Override
@@ -149,16 +159,37 @@ final class EigrpRoutingProcess implements RoutingProcess<EigrpTopology, EigrpRo
     // Process new external routes and re-advertise them as necessary
     RibDelta<EigrpExternalRoute> externalDelta = processExternalRoutes();
     sendOutExternalRoutes(externalDelta, allNodes, _topology);
+
+    // Keep track of what what updates will go into the main RIB
+    _changeSet.from(importRibDelta(_rib, internalDelta));
+    _changeSet.from(importRibDelta(_rib, externalDelta));
   }
 
   @Nonnull
   @Override
   public RibDelta<EigrpRoute> getUpdatesForMainRib() {
-    return RibDelta.<EigrpRoute>builder().build();
+    return _changeSet.build();
   }
 
   @Override
-  public void redistribute(RibDelta<? extends AnnotatedRoute<AbstractRoute>> mainRibDelta) {}
+  public void redistribute(RibDelta<? extends AnnotatedRoute<AbstractRoute>> mainRibDelta) {
+    RibDelta.Builder<EigrpExternalRoute> builder = RibDelta.builder();
+    mainRibDelta
+        .getActions()
+        .forEach(
+            ra -> {
+              EigrpExternalRoute outputRoute = computeEigrpExportRoute(ra.getRoute());
+              if (outputRoute == null) {
+                return; // no need to export
+              }
+              if (!ra.isWithdrawn()) {
+                builder.from(_externalRib.mergeRouteGetDelta(outputRoute));
+              } else {
+                builder.from(_externalRib.removeRouteGetDelta(outputRoute));
+              }
+            });
+    _queuedForRedistribution = builder.build();
+  }
 
   @Override
   public boolean isDirty() {
@@ -448,16 +479,22 @@ final class EigrpRoutingProcess implements RoutingProcess<EigrpTopology, EigrpRo
     // Loop over neighbors, enqueue messages
     for (EigrpEdge edge : _incomingExternalRoutes.keySet()) {
       Queue<RouteAdvertisement<EigrpExternalRoute>> queue =
-          requireNonNull(
-                  allNodes
-                      .get(edge.getNode1().getHostname())
-                      .getVirtualRouters()
-                      .get(edge.getNode1().getVrf())
-                      .getEigrpProcess(_asn))
-              ._incomingExternalRoutes
-              .get(edge.reverse());
+          getNeighborEigrpProcess(allNodes, edge, _asn)._incomingExternalRoutes.get(edge.reverse());
       VirtualRouter.queueDelta(queue, delta);
     }
+  }
+
+  @Nonnull
+  private static EigrpRoutingProcess getNeighborEigrpProcess(
+      Map<String, Node> allNodes, EigrpEdge edge, long asn) {
+    return Optional.ofNullable(allNodes.get(edge.getNode1().getHostname()))
+        .map(Node::getVirtualRouters)
+        .map(vrs -> vrs.get(edge.getNode1().getVrf()))
+        .map(vrf -> vrf.getEigrpProcess(asn))
+        .orElseThrow(
+            () ->
+                new IllegalStateException(
+                    String.format("Cannot find EigrpProcess for %s", edge.getNode1())));
   }
 
   /** Re-initialize RIBs (at the start of each iteration). */
@@ -500,5 +537,19 @@ final class EigrpRoutingProcess implements RoutingProcess<EigrpTopology, EigrpRo
   /** Merges staged EIGRP internal routes into the "real" EIGRP-internal RIBs */
   void unstageInternalRoutes() {
     importRib(_internalRib, _internalStagingRib);
+  }
+
+  void enqueueInternalMessages(
+      EigrpEdge edge, Stream<RouteAdvertisement<EigrpInternalRoute>> routes) {
+    Queue<RouteAdvertisement<EigrpInternalRoute>> queue = _incomingInternalRoutes.get(edge);
+    assert queue != null;
+    routes.forEach(queue::add);
+  }
+
+  void enqueueExternalMessages(
+      EigrpEdge edge, Stream<RouteAdvertisement<EigrpExternalRoute>> routes) {
+    Queue<RouteAdvertisement<EigrpExternalRoute>> queue = _incomingExternalRoutes.get(edge);
+    assert queue != null;
+    routes.forEach(queue::add);
   }
 }
