@@ -1546,6 +1546,7 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
     _configuration.referenceStructure(
         ROUTE_MAP, name, BGP_REDISTRIBUTE_OSPF_ROUTE_MAP, ctx.getStart().getLine());
     String sourceTag = ctx.source_tag.getText();
+    // TODO: sourceTag is case-insensitive
     _configuration.referenceStructure(
         ROUTER_OSPF, name, BGP_REDISTRIBUTE_OSPF_SOURCE_TAG, ctx.getStart().getLine());
     _currentBgpVrfIpAddressFamily.setRedistributionPolicy(RoutingProtocol.OSPF, name, sourceTag);
