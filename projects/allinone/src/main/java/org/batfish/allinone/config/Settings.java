@@ -5,9 +5,9 @@ import java.util.stream.Collectors;
 import org.batfish.common.BaseSettings;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.BfConsts;
-import org.batfish.common.Version;
 import org.batfish.main.Driver;
 import org.batfish.main.Driver.RunMode;
+import org.batfish.version.Versioned;
 
 public class Settings extends BaseSettings {
 
@@ -188,7 +188,7 @@ public class Settings extends BaseSettings {
     }
 
     if (getBooleanOptionValue(ARG_VERSION)) {
-      System.out.print(Version.getCompleteVersionString());
+      System.out.print(Versioned.getVersionsString());
       System.exit(0);
     }
 

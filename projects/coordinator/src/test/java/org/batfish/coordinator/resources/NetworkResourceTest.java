@@ -16,10 +16,10 @@ import javax.ws.rs.core.Response;
 import org.batfish.common.Container;
 import org.batfish.common.CoordConsts;
 import org.batfish.common.CoordConstsV2;
-import org.batfish.common.Version;
 import org.batfish.coordinator.Main;
 import org.batfish.coordinator.WorkMgrServiceV2TestBase;
 import org.batfish.coordinator.WorkMgrTestUtils;
+import org.batfish.version.BatfishVersion;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -41,7 +41,7 @@ public final class NetworkResourceTest extends WorkMgrServiceV2TestBase {
         .path(network)
         .request()
         .header(CoordConstsV2.HTTP_HEADER_BATFISH_APIKEY, CoordConsts.DEFAULT_API_KEY)
-        .header(CoordConstsV2.HTTP_HEADER_BATFISH_VERSION, Version.getVersion());
+        .header(CoordConstsV2.HTTP_HEADER_BATFISH_VERSION, BatfishVersion.getVersionStatic());
   }
 
   private Builder getForkSnapshotTarget(String network) {
@@ -50,7 +50,7 @@ public final class NetworkResourceTest extends WorkMgrServiceV2TestBase {
         .path(network)
         .path(CoordConstsV2.RSC_SNAPSHOTS + ":" + CoordConstsV2.RSC_FORK)
         .request()
-        .header(CoordConstsV2.HTTP_HEADER_BATFISH_VERSION, Version.getVersion())
+        .header(CoordConstsV2.HTTP_HEADER_BATFISH_VERSION, BatfishVersion.getVersionStatic())
         .header(CoordConstsV2.HTTP_HEADER_BATFISH_APIKEY, CoordConsts.DEFAULT_API_KEY);
   }
 
