@@ -40,7 +40,6 @@ import org.batfish.common.BatfishException;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.Container;
 import org.batfish.common.CoordConsts;
-import org.batfish.common.Version;
 import org.batfish.common.WorkItem;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.coordinator.AnalysisMetadataMgr.AnalysisType;
