@@ -2752,7 +2752,7 @@ public class Client extends AbstractClient implements IClient {
     if (!isValidArgument(options, parameters, 0, 0, 0, Command.SHOW_VERSION)) {
       return false;
     }
-    _logger.outputf("Client version is %s\n", BatfishVersion.VERSION);
+    _logger.outputf("Client version is %s\n", BatfishVersion.getVersionStatic());
 
     Map<String, String> map = _workHelper.getInfo();
 

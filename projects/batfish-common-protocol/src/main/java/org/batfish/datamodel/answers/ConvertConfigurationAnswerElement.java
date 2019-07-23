@@ -108,7 +108,7 @@ public class ConvertConfigurationAnswerElement extends InitStepAnswerElement
 
     _referencedStructures = firstNonNull(referencedstructures, new TreeMap<>());
     _undefinedReferences = firstNonNull(undefinedReferences, new TreeMap<>());
-    _version = firstNonNull(version, BatfishVersion.VERSION);
+    _version = firstNonNull(version, BatfishVersion.getVersionStatic());
     _warnings = firstNonNull(warnings, new TreeMap<>());
   }
 

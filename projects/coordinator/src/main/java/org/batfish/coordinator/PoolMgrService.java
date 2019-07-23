@@ -34,7 +34,7 @@ public class PoolMgrService {
         Arrays.asList(
             CoordConsts.SVC_KEY_SUCCESS,
             "Batfish coordinator v"
-                + BatfishVersion.VERSION
+                + BatfishVersion.getVersionStatic()
                 + ". Enter ../application.wadl (relative to your URL) to see supported methods"));
   }
 

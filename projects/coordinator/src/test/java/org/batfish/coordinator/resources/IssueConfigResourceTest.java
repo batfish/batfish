@@ -55,7 +55,7 @@ public class IssueConfigResourceTest extends WorkMgrServiceV2TestBase {
         .path(minor)
         .request()
         .header(HTTP_HEADER_BATFISH_APIKEY, DEFAULT_API_KEY)
-        .header(HTTP_HEADER_BATFISH_VERSION, BatfishVersion.VERSION);
+        .header(HTTP_HEADER_BATFISH_VERSION, BatfishVersion.getVersionStatic());
   }
 
   private Builder getIssueSettingsTarget(String network) {
@@ -66,7 +66,7 @@ public class IssueConfigResourceTest extends WorkMgrServiceV2TestBase {
         .path(RSC_ISSUES)
         .request()
         .header(HTTP_HEADER_BATFISH_APIKEY, DEFAULT_API_KEY)
-        .header(HTTP_HEADER_BATFISH_VERSION, BatfishVersion.VERSION);
+        .header(HTTP_HEADER_BATFISH_VERSION, BatfishVersion.getVersionStatic());
   }
 
   @Test

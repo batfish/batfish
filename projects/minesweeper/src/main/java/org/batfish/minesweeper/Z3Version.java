@@ -5,8 +5,8 @@ import org.batfish.version.Versioned;
 
 @AutoService(Versioned.class)
 public class Z3Version implements Versioned {
-  public static final String NAME = "Z3";
-  public static final String VERSION = staticGetVersion();
+  private static final String NAME = "Z3";
+  private static final String VERSION = getVersionStatic();
 
   @Override
   public String getName() {
@@ -18,7 +18,7 @@ public class Z3Version implements Versioned {
     return VERSION;
   }
 
-  private static String staticGetVersion() {
+  private static String getVersionStatic() {
     try {
       return com.microsoft.z3.Version.getString();
     } catch (Throwable e) {

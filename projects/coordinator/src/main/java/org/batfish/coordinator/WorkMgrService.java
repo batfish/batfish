@@ -1263,7 +1263,7 @@ public class WorkMgrService {
     try {
       JSONObject map = new JSONObject();
       map.put("Service name", "Batfish coordinator");
-      map.put(CoordConsts.SVC_KEY_VERSION, BatfishVersion.VERSION);
+      map.put(CoordConsts.SVC_KEY_VERSION, BatfishVersion.getVersionStatic());
       map.put("APIs", "Enter ../application.wadl (relative to your URL) to see supported methods");
 
       return successResponse(map);
@@ -1402,7 +1402,7 @@ public class WorkMgrService {
     try {
       _logger.info("WMS:getStatus\n");
       JSONObject retObject = Main.getWorkMgr().getStatusJson();
-      retObject.put("service-version", BatfishVersion.VERSION);
+      retObject.put("service-version", BatfishVersion.getVersionStatic());
       return successResponse(retObject);
     } catch (Exception e) {
       String stackTrace = Throwables.getStackTraceAsString(e);

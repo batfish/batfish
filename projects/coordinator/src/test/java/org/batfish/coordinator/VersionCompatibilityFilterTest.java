@@ -76,13 +76,16 @@ public class VersionCompatibilityFilterTest extends JerseyTest {
         equalTo(
             String.format(
                 "Client version '1.0.1' is not compatible with server version '%s'",
-                BatfishVersion.VERSION)));
+                BatfishVersion.getVersionStatic())));
   }
 
   @Test
   public void testValidVersion() {
     Response response =
-        target("/test").request().header(HTTP_HEADER_BATFISH_VERSION, BatfishVersion.VERSION).get();
+        target("/test")
+            .request()
+            .header(HTTP_HEADER_BATFISH_VERSION, BatfishVersion.getVersionStatic())
+            .get();
     assertThat(response.getStatus(), equalTo(OK.getStatusCode()));
   }
 }

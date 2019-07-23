@@ -493,7 +493,7 @@ public class Driver {
   private static boolean registerWithCoordinator(String poolRegUrl, int listenPort) {
     Map<String, String> params = new HashMap<>();
     params.put(CoordConsts.SVC_KEY_ADD_WORKER, _mainSettings.getServiceHost() + ":" + listenPort);
-    params.put(CoordConsts.SVC_KEY_VERSION, BatfishVersion.VERSION);
+    params.put(CoordConsts.SVC_KEY_VERSION, BatfishVersion.getVersionStatic());
 
     Object response = talkToCoordinator(poolRegUrl, params, _mainLogger);
     return response != null;

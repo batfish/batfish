@@ -10,11 +10,6 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.ext.Provider;
-<<<<<<< HEAD
-=======
-import org.batfish.common.Version;
-import org.batfish.version.BatfishVersion;
->>>>>>> versioned
 
 /**
  * This filter verifies that the client's version is compatible with the version of Batfish service.

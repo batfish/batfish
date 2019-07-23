@@ -45,7 +45,7 @@ public class IssueSettingsResourceTest extends WorkMgrServiceV2TestBase {
         .path(RSC_ISSUES)
         .request()
         .header(HTTP_HEADER_BATFISH_APIKEY, DEFAULT_API_KEY)
-        .header(HTTP_HEADER_BATFISH_VERSION, BatfishVersion.VERSION);
+        .header(HTTP_HEADER_BATFISH_VERSION, BatfishVersion.getVersionStatic());
   }
 
   @Test

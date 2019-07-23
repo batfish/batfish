@@ -10,8 +10,8 @@ public class BatfishVersion implements Versioned {
   @VisibleForTesting static final String PROPERTIES_PATH = "org/batfish/common/common.properties";
   private static final String VERSION_KEY = "batfish_version";
 
-  public static final String NAME = "Batfish";
-  public static final String VERSION = getPropertiesVersion(PROPERTIES_PATH, VERSION_KEY);
+  private static final String NAME = "Batfish";
+  private static final String VERSION = getPropertiesVersion(PROPERTIES_PATH, VERSION_KEY);
 
   @Override
   public String getName() {
@@ -20,6 +20,10 @@ public class BatfishVersion implements Versioned {
 
   @Override
   public String getVersion() {
+    return VERSION;
+  }
+
+  public static String getVersionStatic() {
     return VERSION;
   }
 }

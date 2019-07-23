@@ -85,7 +85,7 @@ public final class QuestionSettingsResourceTest extends WorkMgrServiceV2TestBase
         .path(questionClass)
         .request()
         .header(HTTP_HEADER_BATFISH_APIKEY, DEFAULT_API_KEY)
-        .header(HTTP_HEADER_BATFISH_VERSION, BatfishVersion.VERSION);
+        .header(HTTP_HEADER_BATFISH_VERSION, BatfishVersion.getVersionStatic());
   }
 
   @Before

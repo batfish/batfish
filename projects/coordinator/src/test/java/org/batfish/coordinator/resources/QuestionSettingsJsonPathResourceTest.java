@@ -95,7 +95,7 @@ public final class QuestionSettingsJsonPathResourceTest extends WorkMgrServiceV2
         .path(jsonPath)
         .request()
         .header(HTTP_HEADER_BATFISH_APIKEY, DEFAULT_API_KEY)
-        .header(HTTP_HEADER_BATFISH_VERSION, BatfishVersion.VERSION);
+        .header(HTTP_HEADER_BATFISH_VERSION, BatfishVersion.getVersionStatic());
   }
 
   @Before
