@@ -82,6 +82,7 @@ s_null
     | ERRDISABLE
     | FEATURE
     | SERVICE
+    | SPANNING_TREE
     | USERNAME
   ) null_rest_of_line
 ;

@@ -1373,6 +1373,11 @@ LOGIN
   'login'
 ;
 
+LONG
+:
+  'long'
+;
+
 LOOP
 :
   'loop'
@@ -1514,6 +1519,11 @@ MESSAGE_DIGEST_KEY
   'message-digest-key' -> pushMode ( M_Password )
 ;
 
+METHOD
+:
+  'method'
+;
+
 METRIC
 :
   'metric'
@@ -1552,6 +1562,11 @@ MODE
 MROUTER
 :
   'mrouter'
+;
+
+MST
+:
+  'mst'
 ;
 
 MTU
@@ -1871,6 +1886,11 @@ PASSIVE_INTERFACE
 PASSWORD
 :
   'password' -> pushMode ( M_Password )
+;
+
+PATHCOST
+:
+  'pathcost'
 ;
 
 PCP

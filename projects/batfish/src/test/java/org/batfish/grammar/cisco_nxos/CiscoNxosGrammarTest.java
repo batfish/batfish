@@ -2588,6 +2588,12 @@ public final class CiscoNxosGrammarTest {
   }
 
   @Test
+  public void testSpanningTreeParsing() {
+    // TODO: make into an extraction test
+    assertThat(parseVendorConfig("nxos_spanning_tree"), notNullValue());
+  }
+
+  @Test
   public void testStaticRouteConversion() throws IOException {
     String hostname = "nxos_static_route";
     Configuration c = parseConfig(hostname);

@@ -1,0 +1,10 @@
+!RANCID-CONTENT-TYPE: cisco-nx
+!
+hostname nxos_spanning_tree
+!
+
+spanning-tree mode mst
+spanning-tree mst configuration
+spanning-tree pathcost method long
+spanning-tree port type edge bpduguard default
+spanning-tree port type edge default
