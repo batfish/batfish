@@ -740,6 +740,12 @@ public final class CiscoNxosGrammarTest {
     }
   }
 
+  @Test
+  public void testInterfacePortChannelParsing() {
+    // TODO: change to extraction test
+    assertThat(parseVendorConfig("nxos_interface_port_channel"), notNullValue());
+  }
+
   /**
    * A generic test that exercised basic interface property extraction and conversion.
    *
