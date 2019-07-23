@@ -16,6 +16,7 @@ public class EigrpNeighborConfigTest {
   public void testEquals() {
     Builder builder =
         EigrpNeighborConfig.builder()
+            .setAsn(2L)
             .setExportPolicy("policy")
             .setHostname("host")
             .setVrfName("vrf")
