@@ -50,6 +50,7 @@ import org.batfish.common.BatfishLogger;
 import org.batfish.common.BfConsts;
 import org.batfish.common.CompletionMetadata;
 import org.batfish.common.NetworkSnapshot;
+import org.batfish.common.Version;
 import org.batfish.common.plugin.PluginConsumer.Format;
 import org.batfish.common.topology.Layer1Topology;
 import org.batfish.common.topology.Layer2Topology;
@@ -488,7 +489,11 @@ public final class FileBasedStorage implements StorageProvider {
     try {
       ConvertConfigurationAnswerElement ccae =
           loadConvertConfigurationAnswerElement(network, snapshot);
-      return ccae != null;
+      return ccae != null
+          && Version.isCompatibleVersion(
+              FileBasedStorage.class.getCanonicalName(),
+              "Old processed configurations",
+              ccae.getVersion());
     } catch (BatfishException e) {
       _logger.warnf(
           "Unexpected exception caught while deserializing configs for snapshot %s: %s",
