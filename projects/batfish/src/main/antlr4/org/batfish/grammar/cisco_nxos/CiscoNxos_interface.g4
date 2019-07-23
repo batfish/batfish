@@ -60,7 +60,7 @@ interface_bandwidth_kbps
 
 i_channel_group
 :
-  CHANNEL_GROUP id = channel_id force = FORCE? NEWLINE
+  CHANNEL_GROUP id = channel_id force = FORCE? (MODE (ACTIVE|ON|PASSIVE))? NEWLINE
 ;
 
 channel_id
