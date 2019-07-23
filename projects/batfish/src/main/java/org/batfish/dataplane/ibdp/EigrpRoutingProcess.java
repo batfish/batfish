@@ -539,13 +539,15 @@ final class EigrpRoutingProcess implements RoutingProcess<EigrpTopology, EigrpRo
     importRib(_internalRib, _internalStagingRib);
   }
 
-  void enqueueInternalMessages(EigrpEdge edge, Stream<RouteAdvertisement<EigrpInternalRoute>> routes) {
+  void enqueueInternalMessages(
+      EigrpEdge edge, Stream<RouteAdvertisement<EigrpInternalRoute>> routes) {
     Queue<RouteAdvertisement<EigrpInternalRoute>> queue = _incomingInternalRoutes.get(edge);
     assert queue != null;
     routes.forEach(queue::add);
   }
 
-  void enqueueExternalMessages(EigrpEdge edge, Stream<RouteAdvertisement<EigrpExternalRoute>> routes) {
+  void enqueueExternalMessages(
+      EigrpEdge edge, Stream<RouteAdvertisement<EigrpExternalRoute>> routes) {
     Queue<RouteAdvertisement<EigrpExternalRoute>> queue = _incomingExternalRoutes.get(edge);
     assert queue != null;
     routes.forEach(queue::add);
