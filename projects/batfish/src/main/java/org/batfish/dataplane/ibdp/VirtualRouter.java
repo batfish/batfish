@@ -326,6 +326,7 @@ public class VirtualRouter implements Serializable {
         _vrf.getEigrpProcesses().values().stream()
             .map(eigrpProcess -> new EigrpRoutingProcess(eigrpProcess, _name, _c))
             .collect(ImmutableMap.toImmutableMap(EigrpRoutingProcess::getAsn, Function.identity()));
+    _eigrpProcesses.values().forEach(p -> p.initialize(_node));
   }
 
   /**
@@ -1632,10 +1633,6 @@ public class VirtualRouter implements Serializable {
      * Re-add independent RIP routes to ripRib for tie-breaking
      */
     importRib(_ripRib, _ripInternalRib);
-    /*
-     * Re-init/re-add routes for all EIGRP processes
-     */
-    _eigrpProcesses.values().forEach(EigrpRoutingProcess::reInitForNewIteration);
   }
 
   /**
@@ -2020,7 +2017,12 @@ public class VirtualRouter implements Serializable {
         || !_crossVrfIncomingRoutes.values().stream().allMatch(Queue::isEmpty)
         // Processes
         || _ospfProcesses.values().stream().anyMatch(OspfRoutingProcess::isDirty)
+        || _eigrpProcesses.values().stream().anyMatch(EigrpRoutingProcess::isDirty)
         || (_bgpRoutingProcess != null && _bgpRoutingProcess.isDirty());
+  }
+
+  void eigrpIteration(Map<String, Node> allNodes) {
+    _eigrpProcesses.values().forEach(p -> p.executeIteration(allNodes));
   }
 
   /** Execute one OSPF iteration, for all processes */
@@ -2071,8 +2073,7 @@ public class VirtualRouter implements Serializable {
 
   void redistribute() {
     // TODO: expand to processes other than OSPF
-    _ospfProcesses
-        .values()
+    Streams.concat(_ospfProcesses.values().stream(), _eigrpProcesses.values().stream())
         .forEach(
             p ->
                 p.redistribute(
@@ -2081,6 +2082,15 @@ public class VirtualRouter implements Serializable {
                     RibDelta.<AnnotatedRoute<AbstractRoute>>builder()
                         .add(_mainRib.getTypedRoutes())
                         .build()));
+  }
+
+  void mergeEigrpRoutesToMainRib() {
+    _eigrpProcesses
+        .values()
+        .forEach(
+            p ->
+                _mainRibRouteDeltaBuilder.from(
+                    importRibDelta(_mainRib, p.getUpdatesForMainRib(), _name)));
   }
 
   void mergeOspfRoutesToMainRib() {

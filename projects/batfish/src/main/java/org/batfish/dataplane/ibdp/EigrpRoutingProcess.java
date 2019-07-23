@@ -113,8 +113,6 @@ final class EigrpRoutingProcess implements RoutingProcess<EigrpTopology, EigrpRo
     _rib = new EigrpRib();
     _vrfName = vrfName;
 
-    initInternalRoutes(vrfName, c);
-
     // get EIGRP export policy name
     String exportPolicyName = process.getExportPolicy();
     _exportPolicy = exportPolicyName != null ? c.getRoutingPolicies().get(exportPolicyName) : null;
