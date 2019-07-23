@@ -97,7 +97,6 @@ import org.batfish.common.CoordConsts;
 import org.batfish.common.CoordConstsV2;
 import org.batfish.common.ErrorDetails;
 import org.batfish.common.NetworkSnapshot;
-import org.batfish.common.Version;
 import org.batfish.common.Warning;
 import org.batfish.common.Warnings;
 import org.batfish.common.bdd.BDDPacket;
@@ -1355,15 +1354,12 @@ public class Batfish extends PluginConsumer implements IBatfish {
       DataPlane dp = _cachedDataPlanes.getIfPresent(snapshot);
       if (dp == null) {
         newBatch("Loading data plane from disk", 0);
-        checkDataPlaneAnswerElement();
         dp = deserializeObject(_testrigSettings.getDataPlanePath(), DataPlane.class);
         _cachedDataPlanes.put(snapshot, dp);
       }
       return dp;
     }
   }
-
-  private void checkDataPlaneAnswerElement() {}
 
   @Override
   public SortedMap<String, BgpAdvertisementsByVrf> loadEnvironmentBgpTables() {
