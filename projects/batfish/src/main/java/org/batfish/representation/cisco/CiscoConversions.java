@@ -1155,12 +1155,25 @@ public class CiscoConversions {
     eigrpExportPolicy
         .getStatements()
         .addAll(
-            proc.getRedistributionPolicies().values().stream()
-                .map(policy -> convertEigrpRedistributionPolicy(policy, proc, oldConfig))
-                .filter(Objects::nonNull)
-                .collect(Collectors.toList()));
+            eigrpRedistributionPoliciesToStatements(
+                proc.getRedistributionPolicies().values(), proc, oldConfig));
 
     return newProcess.build();
+  }
+
+  static BooleanExpr exprToAllowEigrpInternalRoutes(long localAsn) {
+    return new Conjunction(
+        ImmutableList.of(new MatchProtocol(RoutingProtocol.EIGRP), new MatchProcessAsn(localAsn)));
+  }
+
+  static List<If> eigrpRedistributionPoliciesToStatements(
+      Collection<EigrpRedistributionPolicy> eigrpRedistributionPolicies,
+      EigrpProcess vsEigrpProc,
+      CiscoConfiguration vsConfig) {
+    return eigrpRedistributionPolicies.stream()
+        .map(policy -> convertEigrpRedistributionPolicy(policy, vsEigrpProc, vsConfig))
+        .filter(Objects::nonNull)
+        .collect(ImmutableList.toImmutableList());
   }
 
   @Nullable
@@ -1424,25 +1437,32 @@ public class CiscoConversions {
    * @return Name of the computed routing policy or null if it cannot be computed
    */
   @Nullable
-  static String computeEigrpDistributeListRoutingPolicy(
+  static String getUnifedPolicyForEigrpNeighbor(
       @Nonnull Configuration c,
       @Nonnull CiscoConfiguration vsConfig,
-      @Nonnull DistributeList distributeList,
+      @Nonnull BooleanExpr processRedistributePolicy,
+      @Nullable DistributeList distributeList,
       @Nonnull String vrfName,
       @Nonnull Long asn,
       @Nonnull String ifaceName) {
-    if (!sanityCheckEigrpDistributeList(c, distributeList, vsConfig)) {
-      return null;
+    Conjunction conjuntionExpr = new Conjunction();
+    conjuntionExpr.getConjuncts().add(processRedistributePolicy);
+    if (distributeList != null && sanityCheckEigrpDistributeList(c, distributeList, vsConfig)) {
+      conjuntionExpr
+          .getConjuncts()
+          .add(
+              new MatchPrefixSet(
+                  DestinationNetwork.instance(),
+                  new NamedPrefixSet(distributeList.getFilterName())));
     }
     String policyName = String.format("~EIGRP_DIST_LIST_%s_%s_%s", vrfName, asn, ifaceName);
     RoutingPolicy routingPolicy = new RoutingPolicy(policyName, c);
+
     routingPolicy
         .getStatements()
         .add(
             new If(
-                new MatchPrefixSet(
-                    DestinationNetwork.instance(),
-                    new NamedPrefixSet(distributeList.getFilterName())),
+                conjuntionExpr,
                 ImmutableList.of(Statements.ExitAccept.toStaticStatement()),
                 ImmutableList.of(Statements.ExitReject.toStaticStatement())));
     c.getRoutingPolicies().put(policyName, routingPolicy);
