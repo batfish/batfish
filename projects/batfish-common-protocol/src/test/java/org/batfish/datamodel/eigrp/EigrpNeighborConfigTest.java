@@ -23,6 +23,7 @@ public class EigrpNeighborConfigTest {
             .setIp(Ip.parse("1.1.1.1"));
     new EqualsTester()
         .addEqualityGroup(builder.build(), builder.build())
+        .addEqualityGroup(builder.setAsn(1L).build())
         .addEqualityGroup(builder.setExportPolicy("policy_new").build())
         .addEqualityGroup(builder.setInterfaceName("Ethernet11").build())
         .addEqualityGroup(builder.setIp(Ip.parse("2.2.2.2")))
@@ -37,6 +38,7 @@ public class EigrpNeighborConfigTest {
   public void testJavaSerialization() {
     EigrpNeighborConfig c =
         EigrpNeighborConfig.builder()
+            .setAsn(1L)
             .setExportPolicy("policy_new")
             .setHostname("host")
             .setIp(Ip.parse("1.1.1.1"))
@@ -50,6 +52,7 @@ public class EigrpNeighborConfigTest {
   public void testJsonSerialization() throws IOException {
     EigrpNeighborConfig c =
         EigrpNeighborConfig.builder()
+            .setAsn(1L)
             .setExportPolicy("policy_new")
             .setHostname("host")
             .setIp(Ip.parse("1.1.1.1"))

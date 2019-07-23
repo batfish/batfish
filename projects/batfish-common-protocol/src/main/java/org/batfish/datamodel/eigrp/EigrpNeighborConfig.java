@@ -15,6 +15,7 @@ import org.batfish.datamodel.Ip;
 /** Configuration for one end of an EIGRP adjacency */
 @ParametersAreNonnullByDefault
 public final class EigrpNeighborConfig implements Serializable {
+  private static final String PROP_ASN = "asn";
   private static final String PROP_EXPORT_POLICY = "exportPolicy";
   private static final String PROP_HOSTNAME = "hostname";
   private static final String PROP_INTERFACE = "interface";
@@ -22,6 +23,7 @@ public final class EigrpNeighborConfig implements Serializable {
   private static final String PROP_PASSIVE = "passive";
   private static final String PROP_VRF = "vrf";
 
+  @Nonnull private final Long _asn;
   @Nullable private final String _exportPolicy;
   @Nonnull private final String _interfaceName;
   @Nonnull private final Ip _ip;
@@ -30,12 +32,14 @@ public final class EigrpNeighborConfig implements Serializable {
   @Nonnull private final String _vrfName;
 
   private EigrpNeighborConfig(
+      Long asn,
       @Nullable String exportPolicy,
       String interfaceName,
       boolean isPassive,
       String hostname,
       String vrfName,
       Ip ip) {
+    _asn = asn;
     _exportPolicy = exportPolicy;
     _interfaceName = interfaceName;
     _ip = ip;
@@ -46,23 +50,30 @@ public final class EigrpNeighborConfig implements Serializable {
 
   @JsonCreator
   private static EigrpNeighborConfig create(
+      @Nullable @JsonProperty(PROP_ASN) Long asn,
       @Nullable @JsonProperty(PROP_EXPORT_POLICY) String exportPolicy,
       @Nullable @JsonProperty(PROP_HOSTNAME) String hostname,
       @Nullable @JsonProperty(PROP_INTERFACE) String interfaceName,
       @Nullable @JsonProperty(PROP_IP) Ip ip,
       @Nullable @JsonProperty(PROP_PASSIVE) Boolean passive,
       @Nullable @JsonProperty(PROP_VRF) String vrf) {
+    checkArgument(asn != null, "EigrpNeighborConfig missing %s", PROP_ASN);
     checkArgument(hostname != null, "EigrpNeighborConfig missing %s", PROP_HOSTNAME);
     checkArgument(interfaceName != null, "EigrpNeighborConfig missing %s", PROP_INTERFACE);
     checkArgument(ip != null, "EigrpNeighborConfig missing %s", PROP_IP);
     checkArgument(vrf != null, "EigrpNeighborConfig missing %s", PROP_VRF);
     return new EigrpNeighborConfig(
-        exportPolicy, interfaceName, firstNonNull(passive, Boolean.FALSE), hostname, vrf, ip);
+        asn, exportPolicy, interfaceName, firstNonNull(passive, Boolean.FALSE), hostname, vrf, ip);
+  }
+
+  @JsonProperty(PROP_ASN)
+  public Long getAsn() {
+    return _asn;
   }
 
   @Nullable
   @JsonProperty(PROP_EXPORT_POLICY)
-  public String get_exportPolicy() {
+  public String getExportPolicy() {
     return _exportPolicy;
   }
 
@@ -101,6 +112,7 @@ public final class EigrpNeighborConfig implements Serializable {
 
   /** Builder for {@link EigrpNeighborConfig} */
   public static final class Builder {
+    @Nullable private Long _asn;
     @Nullable private String _exportPolicy;
     @Nullable private String _hostname;
     @Nullable private String _interfaceName;
@@ -109,6 +121,11 @@ public final class EigrpNeighborConfig implements Serializable {
     @Nullable private String _vrfName;
 
     private Builder() {}
+
+    public Builder setAsn(@Nonnull Long asn) {
+      _asn = asn;
+      return this;
+    }
 
     public Builder setExportPolicy(@Nullable String exportPolicy) {
       _exportPolicy = exportPolicy;
@@ -141,11 +158,13 @@ public final class EigrpNeighborConfig implements Serializable {
     }
 
     public EigrpNeighborConfig build() {
+      checkArgument(_asn != null, "EigrpNeighborConfig missing %s", PROP_ASN);
       checkArgument(_interfaceName != null, "EigrpNeighborConfig missing %s", PROP_INTERFACE);
       checkArgument(_ip != null, "EigrpNeighborConfig missing %s", PROP_IP);
       checkArgument(_hostname != null, "EigrpNeighborConfig missing %s", PROP_HOSTNAME);
       checkArgument(_vrfName != null, "EigrpNeighborConfig missing %s", PROP_VRF);
       return new EigrpNeighborConfig(
+          _asn,
           _exportPolicy,
           _interfaceName,
           firstNonNull(_isPassive, Boolean.FALSE),
@@ -164,16 +183,17 @@ public final class EigrpNeighborConfig implements Serializable {
       return false;
     }
     EigrpNeighborConfig other = (EigrpNeighborConfig) o;
-    return _isPassive == other._isPassive
+    return Objects.equals(_asn, other._asn)
         && Objects.equals(_exportPolicy, other._exportPolicy)
+        && Objects.equals(_hostname, other._hostname)
         && Objects.equals(_interfaceName, other._interfaceName)
         && Objects.equals(_ip, other._ip)
-        && Objects.equals(_hostname, other._hostname)
+        && _isPassive == other._isPassive
         && Objects.equals(_vrfName, other._vrfName);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(_interfaceName, _ip, _isPassive, _hostname, _vrfName, _exportPolicy);
+    return Objects.hash(_asn, _interfaceName, _ip, _isPassive, _hostname, _vrfName, _exportPolicy);
   }
 }

@@ -259,8 +259,12 @@ public class VIModelQuestionPlugin extends QuestionPlugin {
         String hostname = c.getHostname();
         for (Vrf vrf : c.getVrfs().values()) {
           eigrpEdges.addAll(
-              vrf.getInterfaceNames().stream()
-                  .map(ifaceName -> new EigrpNeighborConfigId(hostname, ifaceName, vrf.getName()))
+              vrf.getInterfaces().values().stream()
+                  .filter(iface -> iface.getEigrp() != null)
+                  .map(
+                      iface ->
+                          new EigrpNeighborConfigId(
+                              iface.getEigrp().getAsn(), hostname, iface.getName(), vrf.getName()))
                   .filter(eigrpTopology.nodes()::contains)
                   .flatMap(n -> eigrpTopology.inEdges(n).stream())
                   .map(edge -> new VerboseEigrpEdge(edge, edge.toIpEdge(nc)))

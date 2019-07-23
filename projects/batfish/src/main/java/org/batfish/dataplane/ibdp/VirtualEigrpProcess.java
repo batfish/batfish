@@ -113,7 +113,8 @@ final class VirtualEigrpProcess {
           && iface.getEigrp() != null
           && iface.getEigrp().getAsn() == _asn
           && iface.getEigrp().getEnabled()) {
-        _interfaces.add(new EigrpNeighborConfigId(c.getHostname(), iface));
+        _interfaces.add(
+            new EigrpNeighborConfigId(iface.getEigrp().getAsn(), c.getHostname(), iface));
         requireNonNull(iface.getEigrp());
         Set<Prefix> allNetworkPrefixes =
             iface.getAllConcreteAddresses().stream()
