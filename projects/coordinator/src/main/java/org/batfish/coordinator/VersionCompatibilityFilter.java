@@ -11,9 +11,7 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.ext.Provider;
 
-/**
- * This filter verifies that the client's version is compatible with the version of Batfish service.
- */
+/** This filter verifies that the client supplied a version. */
 @PreMatching
 @Provider
 public class VersionCompatibilityFilter implements ContainerRequestFilter {

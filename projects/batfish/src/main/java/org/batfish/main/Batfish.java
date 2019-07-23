@@ -2019,7 +2019,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
   }
 
   private void repairConfigurations() {
-    loadParseVendorConfigurationAnswerElement();
     Path inputPath = _testrigSettings.getSerializeVendorPath();
     serializeIndependentConfigs(inputPath);
   }
