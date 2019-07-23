@@ -30,6 +30,7 @@ public enum CiscoNxosStructureUsage implements StructureUsage {
   BGP_NEIGHBOR_ROUTE_MAP_OUT("bgp neighbor address-family route-map out"),
   BGP_NEIGHBOR_UPDATE_SOURCE("bgp neighbor update-source"),
   BGP_NETWORK_ROUTE_MAP("bgp address-family network route-map"),
+  BGP_NETWORK6_ROUTE_MAP("bgp address-family [IPv6] network route-map"),
   BGP_NEXTHOP_ROUTE_MAP("bgp address-family nexthop route-map"),
   BGP_REDISTRIBUTE_DIRECT_ROUTE_MAP("bgp address-family redistribute direct route-map"),
   BGP_REDISTRIBUTE_EIGRP_ROUTE_MAP("bgp address-family redistribute eigrp route-map"),
