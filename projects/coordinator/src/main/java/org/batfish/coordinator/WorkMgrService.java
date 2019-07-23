@@ -158,7 +158,6 @@ public class WorkMgrService {
       checkStringParam(apiKey, "API key");
       checkStringParam(clientVersion, "Client version");
 
-
       boolean valid = Main.getAuthorizer().isValidWorkApiKey(apiKey);
       return successResponse(new JSONObject().put(CoordConsts.SVC_KEY_API_KEY, valid));
     } catch (IllegalArgumentException | AccessControlException e) {
@@ -301,7 +300,6 @@ public class WorkMgrService {
       checkStringParam(questionTemplate, "Question template");
 
       checkApiKeyValidity(apiKey);
-
 
       Question inputQuestion = Question.parseQuestion(questionTemplate);
       Question outputQuestion = inputQuestion.configureTemplate(exceptions, assertion);
@@ -1217,7 +1215,6 @@ public class WorkMgrService {
 
       checkApiKeyValidity(apiKey);
 
-
       if (!Main.getWorkMgr().getIdManager().hasNetworkId(networkName)) {
         return Response.status(Response.Status.NOT_FOUND)
             .entity("Network '" + networkName + "' not found")
@@ -1435,7 +1432,6 @@ public class WorkMgrService {
 
       checkApiKeyValidity(apiKey);
 
-
       QueuedWork work = Main.getWorkMgr().getWork(UUID.fromString(workId));
 
       if (work == null) {
@@ -1497,7 +1493,6 @@ public class WorkMgrService {
 
       checkApiKeyValidity(apiKey);
 
-
       String outputNetworkName = Main.getWorkMgr().initNetwork(networkName, networkPrefix);
       _logger.infof("Initialized network:%s using api-key:%s\n", outputNetworkName, apiKey);
 
@@ -1542,7 +1537,6 @@ public class WorkMgrService {
       checkStringParam(workId, "work id");
 
       checkApiKeyValidity(apiKey);
-
 
       QueuedWork work = Main.getWorkMgr().getWork(UUID.fromString(workId));
 
@@ -1653,7 +1647,6 @@ public class WorkMgrService {
       checkStringParam(clientVersion, "Client version");
 
       checkApiKeyValidity(apiKey);
-
 
       SortedSet<String> networks = Main.getWorkMgr().listNetworks(apiKey);
       return successResponse(
@@ -1911,7 +1904,6 @@ public class WorkMgrService {
       checkStringParam(workItemStr, "Workitem string");
 
       checkApiKeyValidity(apiKey);
-
 
       WorkItem workItem = BatfishObjectMapper.mapper().readValue(workItemStr, WorkItem.class);
 
