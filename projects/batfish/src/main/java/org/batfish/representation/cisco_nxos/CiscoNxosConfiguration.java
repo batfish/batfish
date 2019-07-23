@@ -139,6 +139,8 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
   /** Routing-related constants. */
   private static final int AGGREGATE_ROUTE_ADMIN_COST = 200;
 
+  private static final double SPEED_CONVERSION_FACTOR = 1E6D;
+
   private static WithEnvironmentExpr bgpRedistributeWithEnvironmentExpr(
       BooleanExpr expr, OriginType originType) {
     WithEnvironmentExpr we = new WithEnvironmentExpr();
@@ -748,7 +750,7 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
     Double speed;
     @Nullable Integer speedMbps = iface.getSpeedMbps();
     if (speedMbps != null) {
-      speed = ((double) speedMbps) * 1E6D;
+      speed = speedMbps * SPEED_CONVERSION_FACTOR;
     } else {
       speed = getDefaultSpeed(type);
     }
