@@ -23,7 +23,7 @@ public final class EigrpNeighborConfig implements Serializable {
   private static final String PROP_PASSIVE = "passive";
   private static final String PROP_VRF = "vrf";
 
-  @Nonnull private final Long _asn;
+  private final long _asn;
   @Nullable private final String _exportPolicy;
   @Nonnull private final String _interfaceName;
   @Nonnull private final Ip _ip;
@@ -32,7 +32,7 @@ public final class EigrpNeighborConfig implements Serializable {
   @Nonnull private final String _vrfName;
 
   private EigrpNeighborConfig(
-      Long asn,
+      long asn,
       @Nullable String exportPolicy,
       String interfaceName,
       boolean isPassive,
@@ -67,7 +67,7 @@ public final class EigrpNeighborConfig implements Serializable {
   }
 
   @JsonProperty(PROP_ASN)
-  public Long getAsn() {
+  public long getAsn() {
     return _asn;
   }
 
@@ -183,7 +183,7 @@ public final class EigrpNeighborConfig implements Serializable {
       return false;
     }
     EigrpNeighborConfig other = (EigrpNeighborConfig) o;
-    return Objects.equals(_asn, other._asn)
+    return _asn == other._asn
         && Objects.equals(_exportPolicy, other._exportPolicy)
         && Objects.equals(_hostname, other._hostname)
         && Objects.equals(_interfaceName, other._interfaceName)

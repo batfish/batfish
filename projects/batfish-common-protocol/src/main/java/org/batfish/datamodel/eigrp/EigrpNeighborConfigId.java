@@ -27,12 +27,12 @@ public class EigrpNeighborConfigId implements Serializable, Comparable<EigrpNeig
   private static final String PROP_INTERFACE = "interface";
   private static final String PROP_VRF = "vrf";
 
-  @Nonnull private final Long _asn;
+  private final long _asn;
   @Nonnull private final String _hostname;
   @Nonnull private final String _interfaceName;
   @Nonnull private final String _vrfName;
 
-  public EigrpNeighborConfigId(Long asn, String hostname, String interfaceName, String vrfName) {
+  public EigrpNeighborConfigId(long asn, String hostname, String interfaceName, String vrfName) {
     _asn = asn;
     _hostname = hostname;
     _interfaceName = interfaceName;
@@ -52,7 +52,7 @@ public class EigrpNeighborConfigId implements Serializable, Comparable<EigrpNeig
     return new EigrpNeighborConfigId(asn, hostname, iface, vrf);
   }
 
-  public EigrpNeighborConfigId(Long asn, String hostname, Interface iface) {
+  public EigrpNeighborConfigId(long asn, String hostname, Interface iface) {
     this(asn, hostname, iface.getName(), iface.getVrfName());
   }
 
@@ -74,7 +74,7 @@ public class EigrpNeighborConfigId implements Serializable, Comparable<EigrpNeig
       return false;
     }
     EigrpNeighborConfigId rhs = (EigrpNeighborConfigId) o;
-    return _asn.equals(rhs._asn)
+    return _asn == rhs._asn
         && _hostname.equals(rhs._hostname)
         && _interfaceName.equals(rhs._interfaceName)
         && _vrfName.equals(rhs._vrfName);
@@ -86,7 +86,7 @@ public class EigrpNeighborConfigId implements Serializable, Comparable<EigrpNeig
   }
 
   @JsonProperty(PROP_ASN)
-  public Long getAsn() {
+  public long getAsn() {
     return _asn;
   }
 
