@@ -2,15 +2,18 @@ package org.batfish.dataplane.ibdp;
 
 import static java.util.Objects.requireNonNull;
 import static org.batfish.common.util.CollectionUtil.toImmutableSortedMap;
+import static org.batfish.common.util.CollectionUtil.toOrderedHashCode;
 import static org.batfish.dataplane.rib.AbstractRib.importRib;
 import static org.batfish.dataplane.rib.RibDelta.importRibDelta;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.graph.Network;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.Queue;
 import java.util.Set;
@@ -131,7 +134,7 @@ final class EigrpRoutingProcess implements RoutingProcess<EigrpTopology, EigrpRo
   @Override
   public void updateTopology(EigrpTopology topology) {
     _topology = topology;
-    updateQueues(topology);
+    updateQueues(_topology);
     /*
     TODO:
       1. Send existing routes to new neighbors
@@ -141,24 +144,33 @@ final class EigrpRoutingProcess implements RoutingProcess<EigrpTopology, EigrpRo
 
   @Override
   public void executeIteration(Map<String, Node> allNodes) {
+    _changeSet = RibDelta.builder();
     if (!_initializationDelta.isEmpty()) {
       // If we haven't sent out the first round of updates after initialization, do so now. Then
       // clear the initialization delta
-      sendOutInternalRoutes(_initializationDelta, allNodes, _topology);
+      sendOutInternalRoutes(_initializationDelta, allNodes);
       _initializationDelta = RibDelta.empty();
     }
 
+    // TODO: optimize, don't recreate the map each iteration
+    NetworkConfigurations nc =
+        NetworkConfigurations.of(
+            allNodes.entrySet().stream()
+                .collect(
+                    ImmutableMap.toImmutableMap(
+                        Entry::getKey, e -> e.getValue().getConfiguration())));
+
     // Process internal routes
-    RibDelta<EigrpInternalRoute> internalDelta = processInternalRoutes();
-    sendOutInternalRoutes(internalDelta, allNodes, _topology);
+    RibDelta<EigrpInternalRoute> internalDelta = processInternalRoutes(nc);
+    sendOutInternalRoutes(internalDelta, allNodes);
 
     // Send out anything we had queued for redistribution
-    sendOutExternalRoutes(_queuedForRedistribution, allNodes, _topology);
-    _queuedForRedistribution = RibDelta.<EigrpExternalRoute>builder().build();
+    sendOutExternalRoutes(_queuedForRedistribution, allNodes);
+    _queuedForRedistribution = RibDelta.empty();
 
     // Process new external routes and re-advertise them as necessary
-    RibDelta<EigrpExternalRoute> externalDelta = processExternalRoutes();
-    sendOutExternalRoutes(externalDelta, allNodes, _topology);
+    RibDelta<EigrpExternalRoute> externalDelta = processExternalRoutes(nc);
+    sendOutExternalRoutes(externalDelta, allNodes);
 
     // Keep track of what what updates will go into the main RIB
     _changeSet.from(importRibDelta(_rib, internalDelta));
@@ -193,7 +205,11 @@ final class EigrpRoutingProcess implements RoutingProcess<EigrpTopology, EigrpRo
 
   @Override
   public boolean isDirty() {
-    return false;
+    return !_incomingInternalRoutes.values().stream().allMatch(Queue::isEmpty)
+        || !_incomingExternalRoutes.values().stream().allMatch(Queue::isEmpty)
+        || !_changeSet.isEmpty()
+        || !_queuedForRedistribution.isEmpty()
+        || !_initializationDelta.isEmpty();
   }
 
   /**
@@ -231,28 +247,98 @@ final class EigrpRoutingProcess implements RoutingProcess<EigrpTopology, EigrpRo
     return builder.build();
   }
 
-  private RibDelta<EigrpInternalRoute> processInternalRoutes() {
-    assert _incomingInternalRoutes != null;
-    return RibDelta.<EigrpInternalRoute>builder().build();
+  @Nonnull
+  private RibDelta<EigrpInternalRoute> processInternalRoutes(NetworkConfigurations nc) {
+    // TODO: simplify all this later. Copied from old code
+    Builder<EigrpInternalRoute> builder = RibDelta.builder();
+    _incomingInternalRoutes.forEach(
+        (edge, queue) -> {
+          EigrpMetric connectingInterfaceMetric =
+              edge.getNode2().getInterfaceSettings(nc).getMetric();
+          Interface neighborInterface = edge.getNode1().getInterface(nc);
+          Ip nextHopIp = neighborInterface.getConcreteAddress().getIp();
+          while (!queue.isEmpty()) {
+            RouteAdvertisement<EigrpInternalRoute> ra = queue.remove();
+            EigrpInternalRoute route = ra.getRoute();
+            EigrpMetric newMetric =
+                connectingInterfaceMetric.accumulate(
+                    neighborInterface.getEigrp().getMetric(), route.getEigrpMetric());
+            EigrpInternalRoute transformedRoute =
+                EigrpInternalRoute.builder()
+                    .setAdmin(_defaultInternalAdminCost)
+                    .setEigrpMetric(newMetric)
+                    .setNetwork(route.getNetwork())
+                    .setNextHopIp(nextHopIp)
+                    .setProcessAsn(_asn)
+                    .build();
+            if (ra.isWithdrawn()) {
+              builder.from(_internalRib.removeRouteGetDelta(transformedRoute));
+            } else {
+              builder.from(_internalRib.mergeRouteGetDelta(transformedRoute));
+            }
+          }
+        });
+    return builder.build();
   }
 
-  private RibDelta<EigrpExternalRoute> processExternalRoutes() {
-    return RibDelta.<EigrpExternalRoute>builder().build();
+  @Nonnull
+  private RibDelta<EigrpExternalRoute> processExternalRoutes(NetworkConfigurations nc) {
+    // TODO: simplify all this later. Copied from old code
+    RibDelta.Builder<EigrpExternalRoute> deltaBuilder = RibDelta.builder();
+    EigrpExternalRoute.Builder routeBuilder = EigrpExternalRoute.builder();
+    routeBuilder.setAdmin(_defaultExternalAdminCost).setProcessAsn(_asn);
+
+    _incomingExternalRoutes.forEach(
+        (edge, queue) -> {
+          Interface nextHopIntf = edge.getNode1().getInterface(nc);
+          Interface connectingIntf = edge.getNode2().getInterface(nc);
+
+          // Edge nodes must have EIGRP configuration
+          if (nextHopIntf.getEigrp() == null || connectingIntf.getEigrp() == null) {
+            return;
+          }
+
+          EigrpMetric nextHopIntfMetric = nextHopIntf.getEigrp().getMetric();
+          EigrpMetric connectingIntfMetric = connectingIntf.getEigrp().getMetric();
+
+          routeBuilder.setNextHopIp(nextHopIntf.getConcreteAddress().getIp());
+          while (queue.peek() != null) {
+            RouteAdvertisement<EigrpExternalRoute> routeAdvert = queue.remove();
+            EigrpExternalRoute neighborRoute = routeAdvert.getRoute();
+            EigrpMetric metric =
+                connectingIntfMetric.accumulate(nextHopIntfMetric, neighborRoute.getEigrpMetric());
+            routeBuilder
+                .setDestinationAsn(neighborRoute.getDestinationAsn())
+                .setEigrpMetric(metric)
+                .setNetwork(neighborRoute.getNetwork());
+            EigrpExternalRoute transformedRoute = routeBuilder.build();
+
+            if (routeAdvert.isWithdrawn()) {
+              deltaBuilder.from(_externalRib.removeRouteGetDelta(transformedRoute));
+            } else {
+              deltaBuilder.from(_externalRib.mergeRouteGetDelta(transformedRoute));
+            }
+          }
+        });
+
+    return deltaBuilder.build();
   }
 
   private void sendOutInternalRoutes(
-      @SuppressWarnings("unused") RibDelta<EigrpInternalRoute> initializationDelta,
-      @SuppressWarnings("unused") Map<String, Node> allNodes,
-      @SuppressWarnings("unused") EigrpTopology topology) {
-    // TODO: flesh out route advertisements
+      RibDelta<EigrpInternalRoute> initializationDelta, Map<String, Node> allNodes) {
+    for (EigrpEdge eigrpEdge : _incomingInternalRoutes.keySet()) {
+      EigrpRoutingProcess neighborProc = getNeighborEigrpProcess(allNodes, eigrpEdge, _asn);
+      neighborProc.enqueueInternalMessages(eigrpEdge.reverse(), initializationDelta.getActions());
+    }
   }
 
-  @SuppressWarnings("unsused")
   private void sendOutExternalRoutes(
-      @SuppressWarnings("unused") RibDelta<EigrpExternalRoute> queuedForRedistribution,
-      @SuppressWarnings("unused") Map<String, Node> allNodes,
-      @SuppressWarnings("unused") EigrpTopology topology) {
-    // TODO: flesh out route advertisements
+      RibDelta<EigrpExternalRoute> queuedForRedistribution, Map<String, Node> allNodes) {
+    for (EigrpEdge eigrpEdge : _incomingExternalRoutes.keySet()) {
+      EigrpRoutingProcess neighborProc = getNeighborEigrpProcess(allNodes, eigrpEdge, _asn);
+      neighborProc.enqueueExternalMessages(
+          eigrpEdge.reverse(), queuedForRedistribution.getActions());
+    }
   }
 
   /**
@@ -303,11 +389,11 @@ final class EigrpRoutingProcess implements RoutingProcess<EigrpTopology, EigrpRo
    * @return integer hashcode
    */
   int computeIterationHashCode() {
-    return _externalRib.getTypedRoutes().hashCode()
-        + _incomingExternalRoutes.values().stream()
-            .flatMap(Queue::stream)
-            .mapToInt(RouteAdvertisement::hashCode)
-            .sum();
+    return Stream.of(
+            _rib,
+            _incomingInternalRoutes.values().stream(),
+            _incomingExternalRoutes.values().stream())
+        .collect(toOrderedHashCode());
   }
 
   long getAsn() {
@@ -484,6 +570,11 @@ final class EigrpRoutingProcess implements RoutingProcess<EigrpTopology, EigrpRo
     }
   }
 
+  /**
+   * Get the neighboring EIGRP process correspoding to the tail node of {@code edge}
+   *
+   * @throws IllegalStateException if the EIGRP process cannot be found
+   */
   @Nonnull
   private static EigrpRoutingProcess getNeighborEigrpProcess(
       Map<String, Node> allNodes, EigrpEdge edge, long asn) {
@@ -492,9 +583,7 @@ final class EigrpRoutingProcess implements RoutingProcess<EigrpTopology, EigrpRo
         .map(vrs -> vrs.get(edge.getNode1().getVrf()))
         .map(vrf -> vrf.getEigrpProcess(asn))
         .orElseThrow(
-            () ->
-                new IllegalStateException(
-                    String.format("Cannot find EigrpProcess for %s", edge.getNode1())));
+            () -> new IllegalStateException("Cannot find EigrpProcess for " + edge.getNode1()));
   }
 
   /** Re-initialize RIBs (at the start of each iteration). */
@@ -507,6 +596,11 @@ final class EigrpRoutingProcess implements RoutingProcess<EigrpTopology, EigrpRo
      * Re-add independent EIGRP routes to eigrpRib for tie-breaking
      */
     importRib(_rib, _internalRib);
+  }
+
+  /** Merges staged EIGRP internal routes into the "real" EIGRP-internal RIBs */
+  void unstageInternalRoutes() {
+    importRib(_internalRib, _internalStagingRib);
   }
 
   /**
@@ -534,19 +628,14 @@ final class EigrpRoutingProcess implements RoutingProcess<EigrpTopology, EigrpRo
     return !ribDelta.isEmpty();
   }
 
-  /** Merges staged EIGRP internal routes into the "real" EIGRP-internal RIBs */
-  void unstageInternalRoutes() {
-    importRib(_internalRib, _internalStagingRib);
-  }
-
-  void enqueueInternalMessages(
+  private void enqueueInternalMessages(
       EigrpEdge edge, Stream<RouteAdvertisement<EigrpInternalRoute>> routes) {
     Queue<RouteAdvertisement<EigrpInternalRoute>> queue = _incomingInternalRoutes.get(edge);
     assert queue != null;
     routes.forEach(queue::add);
   }
 
-  void enqueueExternalMessages(
+  private void enqueueExternalMessages(
       EigrpEdge edge, Stream<RouteAdvertisement<EigrpExternalRoute>> routes) {
     Queue<RouteAdvertisement<EigrpExternalRoute>> queue = _incomingExternalRoutes.get(edge);
     assert queue != null;
