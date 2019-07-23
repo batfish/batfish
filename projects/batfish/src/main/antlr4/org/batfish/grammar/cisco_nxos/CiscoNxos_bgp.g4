@@ -106,8 +106,7 @@ rb_af_aggregate_address
 :
   AGGREGATE_ADDRESS
   (
-    network = ip_address MASK subnet = subnet_mask
-    | prefix = ip_prefix
+    network = route_network
     | prefix6 = ipv6_prefix
   ) rb_af_aa_tail* NEWLINE
 ;
@@ -214,8 +213,7 @@ rb_af_network
 :
   NETWORK
   (
-    address = ip_address MASK mask = subnet_mask
-    | prefix = ip_prefix
+    network = route_network
     | prefix6 = ipv6_prefix
   )
   (

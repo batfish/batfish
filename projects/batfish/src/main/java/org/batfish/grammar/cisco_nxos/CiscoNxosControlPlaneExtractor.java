@@ -1476,12 +1476,8 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
 
   @Override
   public void enterRb_af_aggregate_address(Rb_af_aggregate_addressContext ctx) {
-    if (ctx.prefix != null) {
-      Prefix prefix = toPrefix(ctx.prefix);
-      _currentBgpVrfAddressFamilyAggregateNetwork =
-          _currentBgpVrfAddressFamily.getOrCreateAggregateNetwork(prefix);
-    } else if (ctx.network != null && ctx.subnet != null) {
-      Prefix prefix = Prefix.create(toIp(ctx.network), toInteger(ctx.subnet));
+    if (ctx.network != null) {
+      Prefix prefix = toPrefix(ctx.network);
       _currentBgpVrfAddressFamilyAggregateNetwork =
           _currentBgpVrfAddressFamily.getOrCreateAggregateNetwork(prefix);
     } else if (ctx.prefix6 != null) {
@@ -1627,11 +1623,8 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
           ROUTE_MAP, mapname, BGP_NETWORK_ROUTE_MAP, ctx.getStart().getLine());
     }
 
-    if (ctx.prefix != null) {
-      Prefix prefix = toPrefix(ctx.prefix);
-      _currentBgpVrfAddressFamily.addIpNetwork(prefix, mapname);
-    } else if (ctx.address != null && ctx.mask != null) {
-      Prefix prefix = Prefix.create(toIp(ctx.address), toInteger(ctx.mask));
+    if (ctx.network != null) {
+      Prefix prefix = toPrefix(ctx.network);
       _currentBgpVrfAddressFamily.addIpNetwork(prefix, mapname);
     } else if (ctx.prefix6 != null) {
       Prefix6 prefix = toPrefix6(ctx.prefix6);
