@@ -757,64 +757,6 @@ class IncrementalBdpEngine {
   }
 
   /**
-   * Run the IGP EIGRP computation until convergence.
-   *
-   * @param nodes list of nodes for which to initialize the EIGRP routes
-   * @param topologyContext The topology context in which EIGRP adjacencies are stored
-   * @param networkConfigurations All configurations in the network
-   * @return the number of iterations it took for internal EIGRP routes to converge
-   */
-  private static void initEigrpInternalRoutes(
-      Map<String, Node> nodes,
-      TopologyContext topologyContext,
-      NetworkConfigurations networkConfigurations) {
-    AtomicBoolean eigrpInternalChanged = new AtomicBoolean(true);
-    int eigrpInternalIterations = 0;
-    while (eigrpInternalChanged.get()) {
-      eigrpInternalIterations++;
-      eigrpInternalChanged.set(false);
-
-      try (ActiveSpan span =
-          GlobalTracer.get()
-              .buildSpan("Compute EIGRP internal routes: iteration " + eigrpInternalIterations)
-              .startActive()) {
-        assert span != null; // avoid unused warning
-        nodes
-            .values()
-            .parallelStream()
-            .flatMap(n -> n.getVirtualRouters().values().stream())
-            .forEach(
-                vr -> {
-                  if (vr.propagateEigrpInternalRoutes(
-                      nodes, topologyContext, networkConfigurations)) {
-                    eigrpInternalChanged.set(true);
-                  }
-                });
-      }
-      try (ActiveSpan span =
-          GlobalTracer.get()
-              .buildSpan("Unstage EIGRP internal routes: iteration " + eigrpInternalIterations)
-              .startActive()) {
-        assert span != null; // avoid unused warning
-        nodes
-            .values()
-            .parallelStream()
-            .flatMap(n -> n.getVirtualRouters().values().stream())
-            .forEach(VirtualRouter::unstageEigrpInternalRoutes);
-      }
-    }
-    try (ActiveSpan span =
-        GlobalTracer.get().buildSpan("Import EIGRP internal routes").startActive()) {
-      assert span != null; // avoid unused warning
-      nodes
-          .values()
-          .parallelStream()
-          .flatMap(n -> n.getVirtualRouters().values().stream())
-          .forEach(VirtualRouter::importEigrpInternalRoutes);
-    }
-  }
-
-  /**
    * Run the IGP OSPF computation until convergence.
    *
    * @param allNodes list of nodes for which to initialize the OSPF routes
