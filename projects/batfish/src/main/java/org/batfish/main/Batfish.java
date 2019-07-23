@@ -217,6 +217,7 @@ import org.batfish.storage.StorageProvider;
 import org.batfish.symbolic.IngressLocation;
 import org.batfish.topology.TopologyProviderImpl;
 import org.batfish.vendor.VendorConfiguration;
+import org.batfish.version.BatfishVersion;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
 import org.jgrapht.Graph;
@@ -1158,7 +1159,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
             CoordConsts.SVC_CFG_POOL_MGR,
             CoordConsts.SVC_RSC_POOL_GET_QUESTION_TEMPLATES);
     Map<String, String> params = new HashMap<>();
-    params.put(CoordConsts.SVC_KEY_VERSION, Version.getVersion());
+    params.put(CoordConsts.SVC_KEY_VERSION, BatfishVersion.VERSION);
     params.put(CoordConstsV2.QP_VERBOSE, String.valueOf(verbose));
 
     JSONObject response = (JSONObject) Driver.talkToCoordinator(url, params, _logger);
@@ -2281,7 +2282,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
     Answer answer = new Answer();
     ParseEnvironmentBgpTablesAnswerElement answerElement =
         new ParseEnvironmentBgpTablesAnswerElement();
-    answerElement.setVersion(Version.getVersion());
+    answerElement.setVersion(BatfishVersion.VERSION);
     answer.addAnswerElement(answerElement);
     SortedMap<String, BgpAdvertisementsByVrf> bgpTables =
         getEnvironmentBgpTables(inputPath, answerElement);
@@ -2389,7 +2390,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
       assert span != null; // avoid unused warning
       Answer answer = new Answer();
       ConvertConfigurationAnswerElement answerElement = new ConvertConfigurationAnswerElement();
-      answerElement.setVersion(Version.getVersion());
+      answerElement.setVersion(BatfishVersion.VERSION);
       if (_settings.getVerboseParse()) {
         answer.addAnswerElement(answerElement);
       }
@@ -2705,7 +2706,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
     ParseVendorConfigurationAnswerElement answerElement =
         new ParseVendorConfigurationAnswerElement();
-    answerElement.setVersion(Version.getVersion());
+    answerElement.setVersion(BatfishVersion.VERSION);
     if (_settings.getVerboseParse()) {
       answer.addAnswerElement(answerElement);
     }
