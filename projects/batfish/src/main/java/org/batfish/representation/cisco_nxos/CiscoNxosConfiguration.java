@@ -665,10 +665,6 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
         CiscoNxosStructureUsage.IP_ROUTE_NEXT_HOP_INTERFACE,
         CiscoNxosStructureUsage.NVE_SOURCE_INTERFACE);
     markConcreteStructure(
-        CiscoNxosStructureType.IP_ACCESS_LIST,
-        CiscoNxosStructureUsage.BGP_NEIGHBOR_PREFIX_LIST_IN,
-        CiscoNxosStructureUsage.BGP_NEIGHBOR_PREFIX_LIST_OUT);
-    markConcreteStructure(
         CiscoNxosStructureType.IP_AS_PATH_ACCESS_LIST,
         CiscoNxosStructureUsage.BGP_NEIGHBOR_FILTER_LIST_IN,
         CiscoNxosStructureUsage.BGP_NEIGHBOR_FILTER_LIST_OUT,
@@ -676,9 +672,11 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
         CiscoNxosStructureUsage.BGP_NEIGHBOR6_FILTER_LIST_OUT);
     markConcreteStructure(
         CiscoNxosStructureType.IP_PREFIX_LIST,
+        CiscoNxosStructureUsage.BGP_NEIGHBOR_PREFIX_LIST_IN,
+        CiscoNxosStructureUsage.BGP_NEIGHBOR_PREFIX_LIST_OUT,
         CiscoNxosStructureUsage.ROUTE_MAP_MATCH_IP_ADDRESS_PREFIX_LIST);
     markConcreteStructure(
-        CiscoNxosStructureType.IPV6_ACCESS_LIST,
+        CiscoNxosStructureType.IPV6_PREFIX_LIST,
         CiscoNxosStructureUsage.BGP_NEIGHBOR6_PREFIX_LIST_IN,
         CiscoNxosStructureUsage.BGP_NEIGHBOR6_PREFIX_LIST_OUT);
     markConcreteStructure(CiscoNxosStructureType.NVE, CiscoNxosStructureUsage.NVE_SELF_REFERENCE);

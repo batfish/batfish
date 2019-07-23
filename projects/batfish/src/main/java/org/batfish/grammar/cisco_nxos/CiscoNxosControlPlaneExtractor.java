@@ -8,7 +8,7 @@ import static org.batfish.representation.cisco_nxos.CiscoNxosStructureType.BGP_T
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureType.BGP_TEMPLATE_PEER_POLICY;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureType.BGP_TEMPLATE_PEER_SESSION;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureType.INTERFACE;
-import static org.batfish.representation.cisco_nxos.CiscoNxosStructureType.IPV6_ACCESS_LIST;
+import static org.batfish.representation.cisco_nxos.CiscoNxosStructureType.IPV6_PREFIX_LIST;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureType.IP_ACCESS_LIST;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureType.IP_AS_PATH_ACCESS_LIST;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureType.IP_COMMUNITY_LIST_STANDARD;
@@ -2053,7 +2053,7 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
       return;
     }
     todo(ctx);
-    CiscoNxosStructureType type = _inIpv6BgpPeer ? IPV6_ACCESS_LIST : IP_ACCESS_LIST;
+    CiscoNxosStructureType type = _inIpv6BgpPeer ? IPV6_PREFIX_LIST : IP_PREFIX_LIST;
     CiscoNxosStructureUsage usage =
         _inIpv6BgpPeer
             ? ((ctx.IN() != null) ? BGP_NEIGHBOR6_PREFIX_LIST_IN : BGP_NEIGHBOR6_PREFIX_LIST_OUT)
