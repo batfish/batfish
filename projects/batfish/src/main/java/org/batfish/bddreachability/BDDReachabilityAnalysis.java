@@ -147,4 +147,8 @@ public class BDDReachabilityAnalysis {
   Map<StateExpr, Map<StateExpr, Transition>> getForwardEdgeMap() {
     return _forwardEdgeTable.rowMap();
   }
+
+  public Table<StateExpr, StateExpr, Transition> getForwardEdgeTable() {
+    return _forwardEdgeTable;
+  }
 }
