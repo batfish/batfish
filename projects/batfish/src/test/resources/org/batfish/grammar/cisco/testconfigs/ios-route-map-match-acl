@@ -1,0 +1,33 @@
+!
+hostname ios-route-map-match-acl
+!
+! Define bgp process and neighbors that utilize the routemaps
+! so that ACLs are marked "as used for routing"
+router bgp 1
+  neighbor 1.1.1.1 remote-as 2
+  neighbor 1.1.1.1 route-map rm_standard_permit_permit out
+  neighbor 1.1.1.2 remote-as 2
+  neighbor 1.1.1.2 route-map rm_standard_permit_deny out
+!
+ip access-list standard ACL_PERMIT
+  permit 10.0.0.0 0.255.255.255
+!
+ip access-list standard ACL_DENY
+  deny 10.0.0.0 0.255.255.255
+  permit any
+!
+! Permitted (matched) by ACL, permitted by routemap => allowed
+route-map rm_standard_permit_permit permit 10
+  match ip address ACL_PERMIT
+!
+! Permitted (matched) by ACL, denied by routemap => denied
+route-map rm_standard_deny_permit deny 10
+  match ip address ACL_PERMIT
+!
+! Denied (not matched) by ACL, permitted by routemap => denied
+route-map rm_standard_permit_deny permit 10
+  match ip address ACL_DENY
+!
+! Denied (not matched) by ACL, permitted by routemap => denied
+route-map rm_standard_deny_deny deny 10
+  match ip address ACL_DENY
