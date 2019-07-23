@@ -181,32 +181,58 @@ public class ParseVendorConfigurationJob extends BatfishJob<ParseVendorConfigura
         case CISCO_ASA:
         case CISCO_IOS:
         case CISCO_IOS_XR:
-        case CISCO_NX:
         case FORCE10:
         case FOUNDRY:
-          String newFileText = _fileText;
-          String fileText;
-          _logger.info("\tPreprocessing...");
-          do {
-            fileText = newFileText;
-            try {
-              newFileText = preprocessBanner(fileText, format);
-            } catch (BatfishException e) {
-              throw new BatfishException("Error preprocessing banner", e);
-            }
-          } while (!newFileText.equals(fileText));
-          _logger.info("OK\n");
-          if (format == ConfigurationFormat.CISCO_NX && _settings.getUseNewCiscoNxosParser()) {
-            CiscoNxosCombinedParser ciscoNxosParser =
-                new CiscoNxosCombinedParser(newFileText, _settings);
-            combinedParser = ciscoNxosParser;
-            extractor = new CiscoNxosControlPlaneExtractor(newFileText, ciscoNxosParser, _warnings);
+          {
+            String newFileText = _fileText;
+            String fileText;
+            _logger.info("\tPreprocessing...");
+            do {
+              fileText = newFileText;
+              try {
+                newFileText = preprocessBanner(fileText, format);
+              } catch (BatfishException e) {
+                throw new BatfishException("Error preprocessing banner", e);
+              }
+            } while (!newFileText.equals(fileText));
+            _logger.info("OK\n");
+            CiscoCombinedParser ciscoParser =
+                new CiscoCombinedParser(newFileText, _settings, format);
+            combinedParser = ciscoParser;
+            extractor = new CiscoControlPlaneExtractor(newFileText, ciscoParser, format, _warnings);
             break;
           }
-          CiscoCombinedParser ciscoParser = new CiscoCombinedParser(newFileText, _settings, format);
-          combinedParser = ciscoParser;
-          extractor = new CiscoControlPlaneExtractor(newFileText, ciscoParser, format, _warnings);
-          break;
+
+        case CISCO_NX:
+          {
+            if (!_settings.getUseNewCiscoNxosParser()) {
+              // legacy code
+              // preprocess and use old Cisco parser
+              String newFileText = _fileText;
+              String fileText;
+              _logger.info("\tPreprocessing...");
+              do {
+                fileText = newFileText;
+                try {
+                  newFileText = preprocessBanner(fileText, format);
+                } catch (BatfishException e) {
+                  throw new BatfishException("Error preprocessing banner", e);
+                }
+              } while (!newFileText.equals(fileText));
+              _logger.info("OK\n");
+              CiscoCombinedParser ciscoParser =
+                  new CiscoCombinedParser(newFileText, _settings, format);
+              combinedParser = ciscoParser;
+              extractor =
+                  new CiscoControlPlaneExtractor(newFileText, ciscoParser, format, _warnings);
+              break;
+            }
+            CiscoNxosCombinedParser ciscoNxosParser =
+                new CiscoNxosCombinedParser(_fileText, _settings);
+            combinedParser = ciscoNxosParser;
+            extractor = new CiscoNxosControlPlaneExtractor(_fileText, ciscoNxosParser, _warnings);
+            break;
+          }
 
         case CUMULUS_NCLU:
           {
