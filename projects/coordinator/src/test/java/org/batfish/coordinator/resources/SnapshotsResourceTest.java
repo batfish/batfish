@@ -37,7 +37,7 @@ public final class SnapshotsResourceTest extends WorkMgrServiceV2TestBase {
         .queryParam(CoordConstsV2.QP_VERBOSE, verbose)
         .request()
         .header(CoordConstsV2.HTTP_HEADER_BATFISH_APIKEY, CoordConsts.DEFAULT_API_KEY)
-        .header(CoordConstsV2.HTTP_HEADER_BATFISH_VERSION, BatfishVersion.VERSION);
+        .header(CoordConstsV2.HTTP_HEADER_BATFISH_VERSION, BatfishVersion.getVersionStatic());
   }
 
   @Before

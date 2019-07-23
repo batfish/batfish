@@ -39,7 +39,7 @@ public final class NetworkNodeRolesResourceTest extends WorkMgrServiceV2TestBase
         .path(CoordConstsV2.RSC_NODE_ROLES)
         .request()
         .header(CoordConstsV2.HTTP_HEADER_BATFISH_APIKEY, CoordConsts.DEFAULT_API_KEY)
-        .header(CoordConstsV2.HTTP_HEADER_BATFISH_VERSION, BatfishVersion.VERSION);
+        .header(CoordConstsV2.HTTP_HEADER_BATFISH_VERSION, BatfishVersion.getVersionStatic());
   }
 
   @Before

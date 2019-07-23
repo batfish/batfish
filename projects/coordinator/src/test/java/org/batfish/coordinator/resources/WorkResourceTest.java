@@ -37,7 +37,7 @@ public final class WorkResourceTest extends WorkMgrServiceV2TestBase {
         .path(workId)
         .request()
         .header(CoordConstsV2.HTTP_HEADER_BATFISH_APIKEY, CoordConsts.DEFAULT_API_KEY)
-        .header(CoordConstsV2.HTTP_HEADER_BATFISH_VERSION, BatfishVersion.VERSION);
+        .header(CoordConstsV2.HTTP_HEADER_BATFISH_VERSION, BatfishVersion.getVersionStatic());
   }
 
   @Before

@@ -40,7 +40,7 @@ public final class NetworkObjectsResourceTest extends WorkMgrServiceV2TestBase {
         .queryParam(QP_KEY, key)
         .request()
         .header(CoordConstsV2.HTTP_HEADER_BATFISH_APIKEY, CoordConsts.DEFAULT_API_KEY)
-        .header(CoordConstsV2.HTTP_HEADER_BATFISH_VERSION, BatfishVersion.VERSION);
+        .header(CoordConstsV2.HTTP_HEADER_BATFISH_VERSION, BatfishVersion.getVersionStatic());
   }
 
   @Before

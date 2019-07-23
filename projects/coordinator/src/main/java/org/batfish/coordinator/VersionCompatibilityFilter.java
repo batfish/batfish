@@ -38,7 +38,7 @@ public class VersionCompatibilityFilter implements ContainerRequestFilter {
               .entity(
                   String.format(
                       "Client version '%s' is not compatible with server version '%s'",
-                      clientVersion, BatfishVersion.VERSION))
+                      clientVersion, BatfishVersion.getVersionStatic()))
               .type(MediaType.APPLICATION_JSON)
               .build());
     }

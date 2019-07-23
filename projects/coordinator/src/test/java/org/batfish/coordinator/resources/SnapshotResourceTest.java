@@ -41,7 +41,7 @@ public final class SnapshotResourceTest extends WorkMgrServiceV2TestBase {
         .path(CoordConstsV2.RSC_COMPLETED_WORK)
         .request()
         .header(CoordConstsV2.HTTP_HEADER_BATFISH_APIKEY, CoordConsts.DEFAULT_API_KEY)
-        .header(CoordConstsV2.HTTP_HEADER_BATFISH_VERSION, BatfishVersion.VERSION);
+        .header(CoordConstsV2.HTTP_HEADER_BATFISH_VERSION, BatfishVersion.getVersionStatic());
   }
 
   private Builder getPojoTopologyTarget(String network, String snapshot) {
@@ -53,7 +53,7 @@ public final class SnapshotResourceTest extends WorkMgrServiceV2TestBase {
         .path(CoordConstsV2.RSC_POJO_TOPOLOGY)
         .request()
         .header(CoordConstsV2.HTTP_HEADER_BATFISH_APIKEY, CoordConsts.DEFAULT_API_KEY)
-        .header(CoordConstsV2.HTTP_HEADER_BATFISH_VERSION, BatfishVersion.VERSION);
+        .header(CoordConstsV2.HTTP_HEADER_BATFISH_VERSION, BatfishVersion.getVersionStatic());
   }
 
   private Builder getTarget(String network, String snapshot) {
@@ -64,7 +64,7 @@ public final class SnapshotResourceTest extends WorkMgrServiceV2TestBase {
         .path(snapshot)
         .request()
         .header(CoordConstsV2.HTTP_HEADER_BATFISH_APIKEY, CoordConsts.DEFAULT_API_KEY)
-        .header(CoordConstsV2.HTTP_HEADER_BATFISH_VERSION, BatfishVersion.VERSION);
+        .header(CoordConstsV2.HTTP_HEADER_BATFISH_VERSION, BatfishVersion.getVersionStatic());
   }
 
   private Builder getTopologyTarget(String network, String snapshot) {
@@ -76,7 +76,7 @@ public final class SnapshotResourceTest extends WorkMgrServiceV2TestBase {
         .path(CoordConstsV2.RSC_TOPOLOGY)
         .request()
         .header(CoordConstsV2.HTTP_HEADER_BATFISH_APIKEY, CoordConsts.DEFAULT_API_KEY)
-        .header(CoordConstsV2.HTTP_HEADER_BATFISH_VERSION, BatfishVersion.VERSION);
+        .header(CoordConstsV2.HTTP_HEADER_BATFISH_VERSION, BatfishVersion.getVersionStatic());
   }
 
   private Builder getWorkLogTarget(String network, String snapshot, String workId) {
@@ -89,7 +89,7 @@ public final class SnapshotResourceTest extends WorkMgrServiceV2TestBase {
         .path(workId)
         .request()
         .header(CoordConstsV2.HTTP_HEADER_BATFISH_APIKEY, CoordConsts.DEFAULT_API_KEY)
-        .header(CoordConstsV2.HTTP_HEADER_BATFISH_VERSION, BatfishVersion.VERSION);
+        .header(CoordConstsV2.HTTP_HEADER_BATFISH_VERSION, BatfishVersion.getVersionStatic());
   }
 
   @Before

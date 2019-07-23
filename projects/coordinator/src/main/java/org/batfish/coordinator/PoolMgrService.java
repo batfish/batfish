@@ -35,7 +35,7 @@ public class PoolMgrService {
         Arrays.asList(
             CoordConsts.SVC_KEY_SUCCESS,
             "Batfish coordinator v"
-                + BatfishVersion.VERSION
+                + BatfishVersion.getVersionStatic()
                 + ". Enter ../application.wadl (relative to your URL) to see supported methods"));
   }
 
@@ -141,7 +141,7 @@ public class PoolMgrService {
                   "Worker version "
                       + workerVersion
                       + "is incompatible with coordinator version "
-                      + BatfishVersion.VERSION));
+                      + BatfishVersion.getVersionStatic()));
         }
 
         for (String worker : workersToAdd) {

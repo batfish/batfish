@@ -41,7 +41,7 @@ public final class NetworkResourceTest extends WorkMgrServiceV2TestBase {
         .path(network)
         .request()
         .header(CoordConstsV2.HTTP_HEADER_BATFISH_APIKEY, CoordConsts.DEFAULT_API_KEY)
-        .header(CoordConstsV2.HTTP_HEADER_BATFISH_VERSION, BatfishVersion.VERSION);
+        .header(CoordConstsV2.HTTP_HEADER_BATFISH_VERSION, BatfishVersion.getVersionStatic());
   }
 
   private Builder getForkSnapshotTarget(String network) {
@@ -50,7 +50,7 @@ public final class NetworkResourceTest extends WorkMgrServiceV2TestBase {
         .path(network)
         .path(CoordConstsV2.RSC_SNAPSHOTS + ":" + CoordConstsV2.RSC_FORK)
         .request()
-        .header(CoordConstsV2.HTTP_HEADER_BATFISH_VERSION, BatfishVersion.VERSION)
+        .header(CoordConstsV2.HTTP_HEADER_BATFISH_VERSION, BatfishVersion.getVersionStatic())
         .header(CoordConstsV2.HTTP_HEADER_BATFISH_APIKEY, CoordConsts.DEFAULT_API_KEY);
   }
 

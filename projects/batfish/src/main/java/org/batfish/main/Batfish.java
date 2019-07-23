@@ -1156,7 +1156,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
             CoordConsts.SVC_CFG_POOL_MGR,
             CoordConsts.SVC_RSC_POOL_GET_QUESTION_TEMPLATES);
     Map<String, String> params = new HashMap<>();
-    params.put(CoordConsts.SVC_KEY_VERSION, BatfishVersion.VERSION);
+    params.put(CoordConsts.SVC_KEY_VERSION, BatfishVersion.getVersionStatic());
     params.put(CoordConstsV2.QP_VERBOSE, String.valueOf(verbose));
 
     JSONObject response = (JSONObject) Driver.talkToCoordinator(url, params, _logger);
@@ -2279,7 +2279,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
     Answer answer = new Answer();
     ParseEnvironmentBgpTablesAnswerElement answerElement =
         new ParseEnvironmentBgpTablesAnswerElement();
-    answerElement.setVersion(BatfishVersion.VERSION);
+    answerElement.setVersion(BatfishVersion.getVersionStatic());
     answer.addAnswerElement(answerElement);
     SortedMap<String, BgpAdvertisementsByVrf> bgpTables =
         getEnvironmentBgpTables(inputPath, answerElement);
@@ -2387,7 +2387,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
       assert span != null; // avoid unused warning
       Answer answer = new Answer();
       ConvertConfigurationAnswerElement answerElement = new ConvertConfigurationAnswerElement();
-      answerElement.setVersion(BatfishVersion.VERSION);
+      answerElement.setVersion(BatfishVersion.getVersionStatic());
       if (_settings.getVerboseParse()) {
         answer.addAnswerElement(answerElement);
       }
@@ -2703,7 +2703,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
     ParseVendorConfigurationAnswerElement answerElement =
         new ParseVendorConfigurationAnswerElement();
-    answerElement.setVersion(BatfishVersion.VERSION);
+    answerElement.setVersion(BatfishVersion.getVersionStatic());
     if (_settings.getVerboseParse()) {
       answer.addAnswerElement(answerElement);
     }
