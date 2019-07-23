@@ -6209,4 +6209,73 @@ public class CiscoGrammarTest {
         containsInAnyOrder(
             overlayEdge, overlayEdge.reverse(), underlayEdge, underlayEdge.reverse()));
   }
+
+  @Test
+  public void testRouteMapMatchAcl() throws IOException {
+    Configuration c = parseConfig("ios-route-map-match-acl");
+    Bgpv4Route.Builder builder =
+        Bgpv4Route.builder()
+            .setOriginatorIp(Ip.parse("1.1.1.1"))
+            .setOriginType(OriginType.INCOMPLETE)
+            .setProtocol(RoutingProtocol.BGP);
+
+    Prefix prefix10 = Prefix.parse("10.0.0.0/8");
+    Prefix prefix11 = Prefix.parse("11.0.0.0/8");
+    Bgpv4Route route10 = builder.setNetwork(prefix10).build();
+    Bgpv4Route route11 = builder.setNetwork(prefix11).build();
+    Ip peerAddress = Ip.parse("2.2.2.2");
+
+    assertThat(
+        c,
+        hasRouteFilterList(
+            "ACL_PERMIT", allOf(permits(prefix10), RouteFilterListMatchers.rejects(prefix11))));
+    assertThat(
+        c,
+        hasRouteFilterList(
+            "ACL_DENY", allOf(permits(prefix11), RouteFilterListMatchers.rejects(prefix10))));
+
+    assertTrue(
+        "Route 10/8 permitted",
+        c.getRoutingPolicies()
+            .get("rm_standard_permit_permit")
+            .process(route10, Bgpv4Route.builder(), peerAddress, DEFAULT_VRF_NAME, Direction.OUT));
+    assertFalse(
+        "Route 11/8 denied",
+        c.getRoutingPolicies()
+            .get("rm_standard_permit_permit")
+            .process(route11, Bgpv4Route.builder(), peerAddress, DEFAULT_VRF_NAME, Direction.OUT));
+
+    assertFalse(
+        "Route 10/8 denied",
+        c.getRoutingPolicies()
+            .get("rm_standard_deny_permit")
+            .process(route10, Bgpv4Route.builder(), peerAddress, DEFAULT_VRF_NAME, Direction.OUT));
+    assertFalse(
+        "Route 11/8 denied",
+        c.getRoutingPolicies()
+            .get("rm_standard_permit_permit")
+            .process(route11, Bgpv4Route.builder(), peerAddress, DEFAULT_VRF_NAME, Direction.OUT));
+
+    assertFalse(
+        "Route 10/8 denied",
+        c.getRoutingPolicies()
+            .get("rm_standard_permit_deny")
+            .process(route10, Bgpv4Route.builder(), peerAddress, DEFAULT_VRF_NAME, Direction.OUT));
+    assertFalse(
+        "Route 11/8 denied",
+        c.getRoutingPolicies()
+            .get("rm_standard_permit_permit")
+            .process(route11, Bgpv4Route.builder(), peerAddress, DEFAULT_VRF_NAME, Direction.OUT));
+
+    assertFalse(
+        "Route 10/8 denied",
+        c.getRoutingPolicies()
+            .get("rm_standard_deny_deny")
+            .process(route10, Bgpv4Route.builder(), peerAddress, DEFAULT_VRF_NAME, Direction.OUT));
+    assertFalse(
+        "Route 11/8 denied",
+        c.getRoutingPolicies()
+            .get("rm_standard_permit_permit")
+            .process(route11, Bgpv4Route.builder(), peerAddress, DEFAULT_VRF_NAME, Direction.OUT));
+  }
 }
