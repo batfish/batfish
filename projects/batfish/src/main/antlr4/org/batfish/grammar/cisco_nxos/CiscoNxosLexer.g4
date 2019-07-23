@@ -2354,6 +2354,11 @@ SUPPRESS_MAP
   'suppress-map'
 ;
 
+SUSPEND_INDIVIDUAL
+:
+  'suspend-individual'
+;
+
 SWITCHPORT
 :
   'switchport'

@@ -216,7 +216,8 @@ i_no_null
 i_null
 :
   (
-    SPANNING_TREE
+    LACP
+    | SPANNING_TREE
   ) null_rest_of_line
 ;
 
