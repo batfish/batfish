@@ -451,8 +451,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
   private final TopologyProvider _topologyProvider;
 
-  private final Map<String, String> _versions;
-
   public Batfish(
       Settings settings,
       Cache<NetworkSnapshot, SortedMap<String, Configuration>> cachedConfigurations,
@@ -483,7 +481,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
             ? alternateIdResolver
             : new FileBasedIdResolver(_settings.getStorageBase());
     _topologyProvider = new TopologyProviderImpl(this, _storage);
-    _versions = new HashMap<>();
     loadPlugins();
   }
 
