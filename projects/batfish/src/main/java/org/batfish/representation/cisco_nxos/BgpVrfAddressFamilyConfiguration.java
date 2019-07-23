@@ -7,6 +7,9 @@ import java.io.Serializable;
  *
  * <p>Configuration commands entered at the CLI {@code config-router-af} or {@code
  * config-router-vrf-af} levels.
+ *
+ * <p>Currently a parent with little functionality; see child classes such as {@link
+ * BgpVrfIpv4AddressFamilyConfiguration}.
  */
 public abstract class BgpVrfAddressFamilyConfiguration implements Serializable {
   public enum Type {

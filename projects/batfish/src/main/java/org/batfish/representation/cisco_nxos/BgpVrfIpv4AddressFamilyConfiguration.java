@@ -6,10 +6,7 @@ import java.util.Map;
 import org.batfish.datamodel.Prefix;
 
 /**
- * Represents the BGP configuration for a single address family at the VRF level.
- *
- * <p>Configuration commands entered at the CLI {@code config-router-af} or {@code
- * config-router-vrf-af} levels.
+ * Represents the BGP configuration for a IPv4 unicast or multicast address family at the VRF level.
  */
 public final class BgpVrfIpv4AddressFamilyConfiguration extends BgpVrfIpAddressFamilyConfiguration {
 

@@ -6,10 +6,10 @@ import javax.annotation.Nullable;
 import org.batfish.datamodel.RoutingProtocol;
 
 /**
- * Represents the BGP configuration for a single address family at the VRF level.
+ * Represents the BGP configuration for IPv4 or IPv6 address families at the VRF level.
  *
- * <p>Configuration commands entered at the CLI {@code config-router-af} or {@code
- * config-router-vrf-af} levels.
+ * <p>Child classes such as {@link BgpVrfIpv4AddressFamilyConfiguration} contain the v4/v6-specific
+ * code.
  */
 public abstract class BgpVrfIpAddressFamilyConfiguration extends BgpVrfAddressFamilyConfiguration {
 
@@ -26,88 +26,88 @@ public abstract class BgpVrfIpAddressFamilyConfiguration extends BgpVrfAddressFa
     _suppressInactive = false; // inactive routes not suppressed by default
   }
 
-  public boolean getClientToClientReflection() {
+  public final boolean getClientToClientReflection() {
     return _clientToClientReflection;
   }
 
-  public void setClientToClientReflection(boolean clientToClientReflection) {
+  public final void setClientToClientReflection(boolean clientToClientReflection) {
     this._clientToClientReflection = clientToClientReflection;
   }
 
-  public boolean getDefaultInformationOriginate() {
+  public final boolean getDefaultInformationOriginate() {
     return _defaultInformationOriginate;
   }
 
-  public void setDefaultInformationOriginate(boolean defaultInformationOriginate) {
+  public final void setDefaultInformationOriginate(boolean defaultInformationOriginate) {
     this._defaultInformationOriginate = defaultInformationOriginate;
   }
 
   @Nullable
-  public Long getDefaultMetric() {
+  public final Long getDefaultMetric() {
     return _defaultMetric;
   }
 
-  public void setDefaultMetric(@Nullable Long defaultMetric) {
+  public final void setDefaultMetric(@Nullable Long defaultMetric) {
     this._defaultMetric = defaultMetric;
   }
 
-  public int getDistanceEbgp() {
+  public final int getDistanceEbgp() {
     return _distanceEbgp;
   }
 
-  public void setDistanceEbgp(int distanceEbgp) {
+  public final void setDistanceEbgp(int distanceEbgp) {
     this._distanceEbgp = distanceEbgp;
   }
 
-  public int getDistanceIbgp() {
+  public final int getDistanceIbgp() {
     return _distanceIbgp;
   }
 
-  public void setDistanceIbgp(int distanceIbgp) {
+  public final void setDistanceIbgp(int distanceIbgp) {
     this._distanceIbgp = distanceIbgp;
   }
 
-  public int getDistanceLocal() {
+  public final int getDistanceLocal() {
     return _distanceLocal;
   }
 
-  public void setDistanceLocal(int distanceLocal) {
+  public final void setDistanceLocal(int distanceLocal) {
     this._distanceLocal = distanceLocal;
   }
 
-  public int getMaximumPathsEbgp() {
+  public final int getMaximumPathsEbgp() {
     return _maximumPathsEbgp;
   }
 
-  public void setMaximumPathsEbgp(int maximumPathsEbgp) {
+  public final void setMaximumPathsEbgp(int maximumPathsEbgp) {
     this._maximumPathsEbgp = maximumPathsEbgp;
   }
 
-  public int getMaximumPathsIbgp() {
+  public final int getMaximumPathsIbgp() {
     return _maximumPathsIbgp;
   }
 
-  public void setMaximumPathsIbgp(int maximumPathsIbgp) {
+  public final void setMaximumPathsIbgp(int maximumPathsIbgp) {
     this._maximumPathsIbgp = maximumPathsIbgp;
   }
 
   @Nullable
-  public BgpRedistributionPolicy getRedistributionPolicy(RoutingProtocol protocol) {
+  public final BgpRedistributionPolicy getRedistributionPolicy(RoutingProtocol protocol) {
     return _redistributionPolicies.get(protocol);
   }
 
-  public void setRedistributionPolicy(
+  public final void setRedistributionPolicy(
       RoutingProtocol protocol, String routeMap, @Nullable String sourceTag) {
     BgpRedistributionPolicy policy = new BgpRedistributionPolicy(routeMap);
     policy.setSourceTag(sourceTag);
     _redistributionPolicies.put(protocol, policy);
   }
 
-  public boolean getSuppressInactive() {
+  public final boolean getSuppressInactive() {
     return _suppressInactive;
   }
 
-  public void setSuppressInactive(boolean suppressInactive) {
+  public final void setSuppressInactive(boolean suppressInactive) {
     _suppressInactive = suppressInactive;
   }
 
