@@ -522,7 +522,7 @@ public final class CiscoNxosGrammarTest {
       assertThat(iface.getAllowedVlans(), equalTo(IntegerSpace.of(Range.closed(1, 2))));
     }
     {
-      org.batfish.datamodel.Interface iface = c.getAllInterfaces().get("Ethernet1/1");
+      org.batfish.datamodel.Interface iface = c.getAllInterfaces().get("Ethernet1/11");
       assertThat(iface, isActive());
       assertThat(iface.getSwitchportMode(), equalTo(SwitchportMode.ACCESS));
       assertThat(iface.getAccessVlan(), equalTo(1));
@@ -533,7 +533,7 @@ public final class CiscoNxosGrammarTest {
       assertThat(iface, isActive());
       assertThat(iface.getSwitchportMode(), equalTo(SwitchportMode.TRUNK));
       assertThat(iface.getNativeVlan(), equalTo(1));
-      assertThat(iface.getAllowedVlans(), equalTo(IntegerSpace.of(Range.closed(1, 3967))));
+      assertThat(iface.getAllowedVlans(), equalTo(IntegerSpace.of(Range.closed(1, 4094))));
     }
   }
 
