@@ -13,6 +13,7 @@ import static org.batfish.representation.cisco.Interface.getDefaultBandwidth;
 import static org.batfish.representation.cisco.Interface.getDefaultDelay;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSortedMap;
 import java.util.Collections;
 import java.util.List;
@@ -37,6 +38,7 @@ import org.batfish.datamodel.eigrp.EigrpInterfaceSettings;
 import org.batfish.datamodel.eigrp.EigrpMetric;
 import org.batfish.datamodel.eigrp.EigrpProcess;
 import org.batfish.datamodel.eigrp.EigrpProcessMode;
+import org.batfish.datamodel.eigrp.EigrpTopologyUtils;
 import org.batfish.datamodel.ospf.OspfArea;
 import org.batfish.datamodel.ospf.OspfProcess;
 import org.batfish.datamodel.ospf.OspfTopologyUtils;
@@ -153,6 +155,17 @@ public class EigrpTest {
     buildEigrpLoopbackInterface(eib, asn, mode4, R4_L0_ADDR);
     buildEigrpExternalInterface(eib, asn, mode4, R4_E4_3_ADDR, c4E4To3Name, 1.0);
 
+    EigrpTopologyUtils.initNeighborConfigs(
+        NetworkConfigurations.of(
+            ImmutableMap.of(
+                c1.getHostname(),
+                c1,
+                c2.getHostname(),
+                c2,
+                c3.getHostname(),
+                c3,
+                c4.getHostname(),
+                c4)));
     return buildDataPlane(c1, c2, c3, c4);
   }
 
@@ -357,7 +370,17 @@ public class EigrpTest {
       // reset builder
       epb.setAsNumber(asn).setRouterId(Ip.parse("100.100.100.100"));
     }
-
+    EigrpTopologyUtils.initNeighborConfigs(
+        NetworkConfigurations.of(
+            ImmutableMap.of(
+                c1.getHostname(),
+                c1,
+                c2.getHostname(),
+                c2,
+                c3.getHostname(),
+                c3,
+                c4.getHostname(),
+                c4)));
     return buildDataPlane(c1, c2, c3, c4);
   }
 

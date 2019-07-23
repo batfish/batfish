@@ -1,6 +1,7 @@
 package org.batfish.representation.cisco_nxos;
 
 import java.io.Serializable;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import javax.annotation.Nonnull;
@@ -37,6 +38,11 @@ public final class BgpGlobalConfiguration implements Serializable {
 
   public void setLocalAs(long localAs) {
     this._localAs = localAs;
+  }
+
+  /** A read-only map containing the per-VRF BGP configuration. */
+  public Map<String, BgpVrfConfiguration> getVrfs() {
+    return Collections.unmodifiableMap(_vrfs);
   }
 
   public @Nonnull BgpVrfConfiguration getOrCreateVrf(String vrfName) {

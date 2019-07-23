@@ -1,79 +1,205 @@
 package org.batfish.representation.aws;
 
+import static com.google.common.base.Preconditions.checkArgument;
+
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.base.MoreObjects;
+import com.google.common.collect.ImmutableList;
 import java.io.Serializable;
 import java.util.HashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.Ip;
-import org.codehaus.jettison.json.JSONArray;
-import org.codehaus.jettison.json.JSONException;
-import org.codehaus.jettison.json.JSONObject;
 
-public class NetworkInterface implements AwsVpcEntity, Serializable {
+/** Represents a network interface in an AWS VPC */
+@JsonIgnoreProperties(ignoreUnknown = true)
+@ParametersAreNonnullByDefault
+final class NetworkInterface implements AwsVpcEntity, Serializable {
 
-  private final Ip _associationPublicIp;
+  @JsonIgnoreProperties(ignoreUnknown = true)
+  @ParametersAreNonnullByDefault
+  private static final class Association {
 
-  private final String _attachmentInstanceId;
+    @Nonnull private final Ip _publicIp;
 
-  private final List<String> _groups;
-
-  private final Map<Ip, Ip> _ipAddressAssociations;
-
-  private final String _networkInterfaceId;
-
-  private final String _subnetId;
-
-  private final String _vpcId;
-
-  public NetworkInterface(JSONObject jObj) throws JSONException {
-    _groups = new LinkedList<>();
-    _ipAddressAssociations = new HashMap<>();
-
-    _networkInterfaceId = jObj.getString(JSON_KEY_NETWORK_INTERFACE_ID);
-
-    // logger.debugf("doing network interface %s\n", _networkInterfaceId);
-
-    _subnetId = jObj.getString(JSON_KEY_SUBNET_ID);
-    _vpcId = jObj.getString(JSON_KEY_VPC_ID);
-
-    JSONArray groups = jObj.getJSONArray(JSON_KEY_GROUPS);
-    for (int index = 0; index < groups.length(); index++) {
-      JSONObject childObject = groups.getJSONObject(index);
-      _groups.add(childObject.getString(JSON_KEY_GROUP_ID));
+    @JsonCreator
+    private static Association create(@Nullable @JsonProperty(JSON_KEY_PUBLIC_IP) Ip publicIp) {
+      checkArgument(publicIp != null, "Public IP cannot be null in network interface association");
+      return new Association(publicIp);
     }
 
-    JSONArray privateIpAddresses = jObj.getJSONArray(JSON_KEY_PRIVATE_IP_ADDRESSES);
-    initIpAddressAssociations(privateIpAddresses);
-
-    if (jObj.has(JSON_KEY_ASSOCIATION)) {
-      JSONObject assocJson = jObj.getJSONObject(JSON_KEY_ASSOCIATION);
-      _associationPublicIp = Ip.parse(assocJson.getString(JSON_KEY_PUBLIC_IP));
-    } else {
-      _associationPublicIp = null;
+    private Association(Ip publicIp) {
+      _publicIp = publicIp;
     }
 
-    if (jObj.has(JSON_KEY_ATTACHMENT)) {
-      JSONObject attachJson = jObj.getJSONObject(JSON_KEY_ATTACHMENT);
-      if (attachJson.getString(JSON_KEY_STATUS).equals("attached")) {
-        _attachmentInstanceId = Utils.tryGetString(attachJson, JSON_KEY_INSTANCE_ID);
-      } else {
-        _attachmentInstanceId = null;
-      }
-    } else {
-      _attachmentInstanceId = null;
+    @Nonnull
+    Ip getPublicIp() {
+      return _publicIp;
     }
   }
 
-  public Ip getAssociationPublicIp() {
+  @JsonIgnoreProperties(ignoreUnknown = true)
+  @ParametersAreNonnullByDefault
+  private static final class Attachment {
+
+    @Nullable private final String _instanceId;
+
+    @JsonCreator
+    private static Attachment create(
+        @Nullable @JsonProperty(JSON_KEY_STATUS) String status,
+        @Nullable @JsonProperty(JSON_KEY_INSTANCE_ID) String instanceId) {
+      checkArgument(status != null, "Attachment status cannot be null for network interface");
+
+      // pay attention to instance id only we are attached
+      return new Attachment(status.equals("attached") ? instanceId : null);
+    }
+
+    private Attachment(@Nullable String instanceId) {
+      _instanceId = instanceId;
+    }
+
+    @Nullable
+    String getInstanceId() {
+      return _instanceId;
+    }
+  }
+
+  @JsonIgnoreProperties(ignoreUnknown = true)
+  @ParametersAreNonnullByDefault
+  private static final class Group {
+
+    @Nonnull private final String _id;
+
+    @JsonCreator
+    private static Group create(@Nullable @JsonProperty(JSON_KEY_GROUP_ID) String id) {
+      checkArgument(id != null, "Id cannot be null in network interface group");
+      return new Group(id);
+    }
+
+    private Group(String id) {
+      _id = id;
+    }
+
+    @Nonnull
+    String getId() {
+      return _id;
+    }
+  }
+
+  @JsonIgnoreProperties(ignoreUnknown = true)
+  @ParametersAreNonnullByDefault
+  private static final class PrivateIpAddress {
+
+    @Nonnull private final Ip _privateIp;
+
+    @Nullable private final Ip _publicIp;
+
+    @JsonCreator
+    private static PrivateIpAddress create(
+        @Nullable @JsonProperty(JSON_KEY_PRIVATE_IP_ADDRESS) Ip privateIp,
+        @Nullable @JsonProperty(JSON_KEY_ASSOCIATION) Association association) {
+      checkArgument(privateIp != null, "Private IP cannot be null for network interface");
+
+      return new PrivateIpAddress(
+          privateIp, association == null ? null : association.getPublicIp());
+    }
+
+    private PrivateIpAddress(Ip privateIp, @Nullable Ip publicIp) {
+      _privateIp = privateIp;
+      _publicIp = publicIp;
+    }
+
+    @Nonnull
+    Ip getPrivateIp() {
+      return _privateIp;
+    }
+
+    @Nullable
+    Ip getPublicIp() {
+      return _publicIp;
+    }
+  }
+
+  @Nullable private final Ip _associationPublicIp;
+
+  @Nullable private final String _attachmentInstanceId;
+
+  @Nonnull private final List<String> _groups;
+
+  @Nonnull private final Map<Ip, Ip> _ipAddressAssociations;
+
+  @Nonnull private final String _networkInterfaceId;
+
+  @Nonnull private final String _subnetId;
+
+  @Nonnull private final String _vpcId;
+
+  @JsonCreator
+  private static NetworkInterface create(
+      @Nullable @JsonProperty(JSON_KEY_NETWORK_INTERFACE_ID) String networkInterfaceId,
+      @Nullable @JsonProperty(JSON_KEY_SUBNET_ID) String subnetId,
+      @Nullable @JsonProperty(JSON_KEY_VPC_ID) String vpcId,
+      @Nullable @JsonProperty(JSON_KEY_GROUPS) List<Group> groups,
+      @Nullable @JsonProperty(JSON_KEY_PRIVATE_IP_ADDRESSES)
+          List<PrivateIpAddress> privateIpAddresses,
+      @Nullable @JsonProperty(JSON_KEY_ASSOCIATION) Association association,
+      @Nullable @JsonProperty(JSON_KEY_ATTACHMENT) Attachment attachment) {
+    // all top-level keys other than association and attachment are mandatory
+    checkArgument(networkInterfaceId != null, "Network interface id cannot be null");
+    checkArgument(subnetId != null, "Subnet id cannot be null for network interface");
+    checkArgument(vpcId != null, "VPC id cannot be null for network interface");
+    checkArgument(groups != null, "Group list cannot be null for network interface");
+    checkArgument(
+        privateIpAddresses != null, "Private IP address list cannot be null for network interface");
+
+    HashMap<Ip, Ip> addressMap = new HashMap<>();
+    privateIpAddresses.forEach(p -> addressMap.put(p.getPrivateIp(), p.getPublicIp()));
+
+    return new NetworkInterface(
+        networkInterfaceId,
+        subnetId,
+        vpcId,
+        groups.stream().map(Group::getId).collect(ImmutableList.toImmutableList()),
+        addressMap,
+        association == null ? null : association.getPublicIp(),
+        attachment == null ? null : attachment.getInstanceId());
+  }
+
+  NetworkInterface(
+      String networkInterfaceId,
+      String subnetId,
+      String vpcId,
+      List<String> groups,
+      Map<Ip, Ip> ipAddressAssociations,
+      @Nullable Ip associationPublicIp,
+      @Nullable String attachmentInstanceId) {
+    _networkInterfaceId = networkInterfaceId;
+    _subnetId = subnetId;
+    _vpcId = vpcId;
+    _groups = groups;
+    _ipAddressAssociations = ipAddressAssociations;
+    _associationPublicIp = associationPublicIp;
+    _attachmentInstanceId = attachmentInstanceId;
+  }
+
+  @Nullable
+  Ip getAssociationPublicIp() {
     return _associationPublicIp;
   }
 
-  public String getAttachmentInstanceId() {
+  @Nullable
+  String getAttachmentInstanceId() {
     return _attachmentInstanceId;
   }
 
-  public List<String> getGroups() {
+  @Nonnull
+  List<String> getGroups() {
     return _groups;
   }
 
@@ -82,38 +208,66 @@ public class NetworkInterface implements AwsVpcEntity, Serializable {
     return _networkInterfaceId;
   }
 
-  public Map<Ip, Ip> getIpAddressAssociations() {
+  @Nonnull
+  Map<Ip, Ip> getIpAddressAssociations() {
     return _ipAddressAssociations;
   }
 
-  public String getNetworkInterfaceId() {
+  @Nonnull
+  String getNetworkInterfaceId() {
     return _networkInterfaceId;
   }
 
-  public String getSubnetId() {
+  @Nonnull
+  String getSubnetId() {
     return _subnetId;
   }
 
-  public String getVpcId() {
+  @Nonnull
+  String getVpcId() {
     return _vpcId;
   }
 
-  private void initIpAddressAssociations(JSONArray associations) throws JSONException {
-
-    for (int index = 0; index < associations.length(); index++) {
-      JSONObject childObject = associations.getJSONObject(index);
-
-      Ip privateIpAddress = Ip.parse(childObject.getString(JSON_KEY_PRIVATE_IP_ADDRESS));
-
-      Ip publicIpAddress = null;
-
-      if (childObject.has(JSON_KEY_ASSOCIATION)) {
-        JSONObject assocJson = childObject.getJSONObject(JSON_KEY_ASSOCIATION);
-
-        publicIpAddress = Ip.parse(assocJson.getString(JSON_KEY_PUBLIC_IP));
-      }
-
-      _ipAddressAssociations.put(privateIpAddress, publicIpAddress);
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) {
+      return true;
     }
+    if (o == null || getClass() != o.getClass()) {
+      return false;
+    }
+    NetworkInterface that = (NetworkInterface) o;
+    return Objects.equals(_associationPublicIp, that._associationPublicIp)
+        && Objects.equals(_attachmentInstanceId, that._attachmentInstanceId)
+        && Objects.equals(_groups, that._groups)
+        && Objects.equals(_ipAddressAssociations, that._ipAddressAssociations)
+        && Objects.equals(_networkInterfaceId, that._networkInterfaceId)
+        && Objects.equals(_subnetId, that._subnetId)
+        && Objects.equals(_vpcId, that._vpcId);
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(
+        _associationPublicIp,
+        _attachmentInstanceId,
+        _groups,
+        _ipAddressAssociations,
+        _networkInterfaceId,
+        _subnetId,
+        _vpcId);
+  }
+
+  @Override
+  public String toString() {
+    return MoreObjects.toStringHelper(this)
+        .add("_associationPublicIp", _associationPublicIp)
+        .add("_attachmentInstanceId", _attachmentInstanceId)
+        .add("_groups", _groups)
+        .add("_ipAddressAssociations", _ipAddressAssociations)
+        .add("_networkInterfaceId", _networkInterfaceId)
+        .add("_subnetId", _subnetId)
+        .add("_vpcId", _vpcId)
+        .toString();
   }
 }
