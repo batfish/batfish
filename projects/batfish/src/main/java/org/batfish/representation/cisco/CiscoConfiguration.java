@@ -10,6 +10,7 @@ import static org.batfish.datamodel.Interface.isRealInterfaceName;
 import static org.batfish.datamodel.MultipathEquivalentAsPathMatchMode.EXACT_PATH;
 import static org.batfish.datamodel.MultipathEquivalentAsPathMatchMode.PATH_LENGTH;
 import static org.batfish.representation.cisco.CiscoConversions.computeDistributeListPolicies;
+import static org.batfish.representation.cisco.CiscoConversions.computeEigrpDistributeListRoutingPolicy;
 import static org.batfish.representation.cisco.CiscoConversions.convertCryptoMapSet;
 import static org.batfish.representation.cisco.CiscoConversions.generateBgpExportPolicy;
 import static org.batfish.representation.cisco.CiscoConversions.generateBgpImportPolicy;
@@ -2120,10 +2121,23 @@ public final class CiscoConfiguration extends VendorConfiguration {
               .setDelay(iface.getDelay())
               .build();
 
+      DistributeList distributeListForIface =
+          eigrpProcess.getOutboundInterfaceDistributeLists().get(newIface.getName());
+
       newIface.setEigrp(
           EigrpInterfaceSettings.builder()
               .setAsn(eigrpProcess.getAsn())
               .setEnabled(true)
+              .setExportPolicy(
+                  distributeListForIface != null
+                      ? computeEigrpDistributeListRoutingPolicy(
+                          c,
+                          this,
+                          distributeListForIface,
+                          vrfName,
+                          eigrpProcess.getAsn(),
+                          ifaceName)
+                      : null)
               .setMetric(metric)
               .setPassive(passive)
               .build());
