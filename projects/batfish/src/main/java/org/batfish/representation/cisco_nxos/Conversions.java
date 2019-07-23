@@ -226,9 +226,9 @@ final class Conversions {
       Vrf vrf,
       BgpProcess proc,
       BgpGlobalConfiguration bgpConfig,
-      BgpVrfConfiguration BgpVrf,
+      BgpVrfConfiguration bgpVrf,
       Warnings warnings) {
-    return BgpVrf.getPassiveNeighbors().entrySet().stream()
+    return bgpVrf.getPassiveNeighbors().entrySet().stream()
         .peek(e -> e.getValue().doInherit(bgpConfig, warnings))
         .filter(e -> isActive(getTextDesc(e.getKey(), vrf), e.getValue(), warnings))
         .collect(
@@ -242,7 +242,7 @@ final class Conversions {
                             proc,
                             e.getKey(),
                             bgpConfig,
-                            BgpVrf,
+                            bgpVrf,
                             e.getValue(),
                             true,
                             warnings)));
