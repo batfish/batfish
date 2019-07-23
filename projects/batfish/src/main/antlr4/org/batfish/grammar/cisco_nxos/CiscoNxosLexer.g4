@@ -361,6 +361,16 @@ BOTH
   'both'
 ;
 
+BPDUFILTER
+:
+  'bpdufilter'
+;
+
+BPDUGUARD
+:
+  'bpduguard'
+;
+
 BROADCAST
 :
   'broadcast'
@@ -703,6 +713,11 @@ ECHO_REPLY
   'echo-reply'
 ;
 
+EDGE
+:
+  'edge'
+;
+
 EF
 :
   'ef'
@@ -716,6 +731,11 @@ EIGRP
 EIBGP
 :
   'eibgp'
+;
+
+ENABLE
+:
+  'enable'
 ;
 
 ENCAPSULATION
@@ -951,6 +971,11 @@ GROUP_TIMEOUT
 GT
 :
   'gt'
+;
+
+GUARD
+:
+  'guard'
 ;
 
 HEAD
@@ -1284,6 +1309,11 @@ LOG_NEIGHBOR_CHANGES
 LOGIN
 :
   'login'
+;
+
+LOOP
+:
+  'loop'
 ;
 
 LOOPBACK
@@ -1637,6 +1667,11 @@ NONE
   'none'
 ;
 
+NORMAL
+:
+  'normal'
+;
+
 NOS
 :
   'nos'
@@ -1829,9 +1864,19 @@ POP3
   'pop3'
 ;
 
+PORT
+:
+  'port'
+;
+
 PORT_CHANNEL
 :
   [Pp] [Oo] [Rr] [Tt] '-' [Cc] [Hh] [Aa] [Nn] [Nn] [Ee] [Ll]
+;
+
+PORT_PRIORITY
+:
+  'port-priority'
 ;
 
 PORT_UNREACHABLE
@@ -2044,6 +2089,11 @@ ROBUSTNESS_VARIABLE
   'robustness-variable'
 ;
 
+ROOT
+:
+  'root'
+;
+
 ROUTABLE
 :
   'routable'
@@ -2197,6 +2247,11 @@ SOURCE_QUENCH
 SOURCE_ROUTE_FAILED
 :
   'source-route-failed'
+;
+
+SPANNING_TREE
+:
+  'spanning-tree'
 ;
 
 SPF
@@ -2437,6 +2492,11 @@ TTL
 TTL_EXCEEDED
 :
   'ttl-exceeded'
+;
+
+TYPE
+:
+  'type'
 ;
 
 TYPE_1
