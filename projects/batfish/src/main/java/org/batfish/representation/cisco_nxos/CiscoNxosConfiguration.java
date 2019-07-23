@@ -705,6 +705,7 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
         CiscoNxosStructureUsage.BGP_REDISTRIBUTE_ISIS_ROUTE_MAP,
         CiscoNxosStructureUsage.BGP_REDISTRIBUTE_LISP_ROUTE_MAP,
         CiscoNxosStructureUsage.BGP_REDISTRIBUTE_OSPF_ROUTE_MAP,
+        CiscoNxosStructureUsage.BGP_REDISTRIBUTE_OSPFV3_ROUTE_MAP,
         CiscoNxosStructureUsage.BGP_REDISTRIBUTE_RIP_ROUTE_MAP,
         CiscoNxosStructureUsage.BGP_REDISTRIBUTE_STATIC_ROUTE_MAP,
         CiscoNxosStructureUsage.BGP_SUPPRESS_MAP,
