@@ -133,15 +133,6 @@ public class PoolMgrService {
           return new JSONArray(
               Arrays.asList(CoordConsts.SVC_KEY_FAILURE, "Worker version not specified"));
         }
-        if (!Version.isCompatibleVersion("Service", "Worker", workerVersion)) {
-          return new JSONArray(
-              Arrays.asList(
-                  CoordConsts.SVC_KEY_FAILURE,
-                  "Worker version "
-                      + workerVersion
-                      + "is incompatible with coordinator version "
-                      + Version.getVersion()));
-        }
 
         for (String worker : workersToAdd) {
           Main.getPoolMgr().addToPool(worker);

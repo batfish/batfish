@@ -1332,9 +1332,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
     ConvertConfigurationAnswerElement ccae =
         _storage.loadConvertConfigurationAnswerElement(
             _settings.getContainer(), _testrigSettings.getName());
-    if (ccae != null
-        && Version.isCompatibleVersion(
-            "Service", "Old processed configurations", ccae.getVersion())) {
+    if (ccae != null) {
       return ccae;
     }
 
@@ -1342,9 +1340,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
     ccae =
         _storage.loadConvertConfigurationAnswerElement(
             _settings.getContainer(), _testrigSettings.getName());
-    if (ccae != null
-        && Version.isCompatibleVersion(
-            "Service", "Old processed configurations", ccae.getVersion())) {
+    if (ccae != null) {
       return ccae;
     } else {
       throw new BatfishException(
@@ -1368,16 +1364,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
     }
   }
 
-  private void checkDataPlaneAnswerElement() {
-    if (!Version.isCompatibleVersion(
-        "Service",
-        "Old data plane",
-        deserializeObject(_testrigSettings.getDataPlaneAnswerPath(), DataPlaneAnswerElement.class)
-            .getVersion())) {
-      throw new BatfishException(
-          "Version error repairing data plane for data plane answer element");
-    }
-  }
+  private void checkDataPlaneAnswerElement() {}
 
   @Override
   public SortedMap<String, BgpAdvertisementsByVrf> loadEnvironmentBgpTables() {
@@ -1405,12 +1392,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
       repairEnvironmentBgpTables();
     }
     try {
-      ParseEnvironmentBgpTablesAnswerElement ae =
-          deserializeObject(answerPath, ParseEnvironmentBgpTablesAnswerElement.class);
-      if (Version.isCompatibleVersion(
-          "Service", "Old processed environment BGP tables", ae.getVersion())) {
-        return ae;
-      }
+      return deserializeObject(answerPath, ParseEnvironmentBgpTablesAnswerElement.class);
     } catch (Exception e) {
       /* Do nothing, this is expected on serialization or other errors. */
       _logger.warn(
@@ -1438,13 +1420,8 @@ public class Batfish extends PluginConsumer implements IBatfish {
       boolean firstAttempt) {
     if (Files.exists(_testrigSettings.getParseAnswerPath())) {
       try {
-        ParseVendorConfigurationAnswerElement pvcae =
-            deserializeObject(
-                _testrigSettings.getParseAnswerPath(), ParseVendorConfigurationAnswerElement.class);
-        if (Version.isCompatibleVersion(
-            "Service", "Old processed configurations", pvcae.getVersion())) {
-          return pvcae;
-        }
+        return deserializeObject(
+            _testrigSettings.getParseAnswerPath(), ParseVendorConfigurationAnswerElement.class);
       } catch (Exception e) {
         /* Do nothing, this is expected on serialization or other errors. */
         _logger.warn(
@@ -2055,10 +2032,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
   }
 
   private void repairConfigurations() {
-    ParseVendorConfigurationAnswerElement pvcae = loadParseVendorConfigurationAnswerElement();
-    if (!Version.isCompatibleVersion("Service", "Old parsed configurations", pvcae.getVersion())) {
-      repairVendorConfigurations();
-    }
+    loadParseVendorConfigurationAnswerElement();
     Path inputPath = _testrigSettings.getSerializeVendorPath();
     serializeIndependentConfigs(inputPath);
   }
