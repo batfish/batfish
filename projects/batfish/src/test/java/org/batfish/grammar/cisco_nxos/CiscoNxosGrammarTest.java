@@ -420,6 +420,10 @@ public final class CiscoNxosGrammarTest {
             "Ethernet1/8",
             "Ethernet1/9",
             "Ethernet1/10",
+            "Ethernet1/11",
+            "Ethernet1/12",
+            "Ethernet1/13",
+            "Ethernet1/14",
             "loopback0",
             "mgmt0",
             "port-channel1",
@@ -530,6 +534,20 @@ public final class CiscoNxosGrammarTest {
       assertThat(iface.getNativeVlan(), equalTo(1));
       assertThat(iface.getAllowedVlans(), equalTo(IntegerSpace.of(Range.closed(1, 2))));
     }
+    {
+      org.batfish.datamodel.Interface iface = c.getAllInterfaces().get("Ethernet1/11");
+      assertThat(iface, isActive());
+      assertThat(iface.getSwitchportMode(), equalTo(SwitchportMode.ACCESS));
+      assertThat(iface.getAccessVlan(), equalTo(1));
+    }
+    // TODO: something with dot1q-tunnel, fex-fabric
+    {
+      org.batfish.datamodel.Interface iface = c.getAllInterfaces().get("Ethernet1/14");
+      assertThat(iface, isActive());
+      assertThat(iface.getSwitchportMode(), equalTo(SwitchportMode.TRUNK));
+      assertThat(iface.getNativeVlan(), equalTo(1));
+      assertThat(iface.getAllowedVlans(), equalTo(IntegerSpace.of(Range.closed(1, 4094))));
+    }
   }
 
   @Test
@@ -552,6 +570,10 @@ public final class CiscoNxosGrammarTest {
             "Ethernet1/8",
             "Ethernet1/9",
             "Ethernet1/10",
+            "Ethernet1/11",
+            "Ethernet1/12",
+            "Ethernet1/13",
+            "Ethernet1/14",
             "loopback0",
             "mgmt0",
             "port-channel1",
@@ -660,6 +682,20 @@ public final class CiscoNxosGrammarTest {
       assertThat(iface.getSwitchportMode(), equalTo(SwitchportMode.TRUNK));
       assertThat(iface.getNativeVlan(), equalTo(1));
       assertThat(iface.getAllowedVlans(), equalTo(IntegerSpace.of(Range.closed(1, 2))));
+    }
+    {
+      Interface iface = vc.getInterfaces().get("Ethernet1/11");
+      assertFalse(iface.getShutdown());
+      assertThat(iface.getSwitchportMode(), equalTo(SwitchportMode.ACCESS));
+      assertThat(iface.getAccessVlan(), equalTo(1));
+    }
+    // TODO: something with dot1q-tunnel, fex-fabric
+    {
+      Interface iface = vc.getInterfaces().get("Ethernet1/14");
+      assertFalse(iface.getShutdown());
+      assertThat(iface.getSwitchportMode(), equalTo(SwitchportMode.TRUNK));
+      assertThat(iface.getNativeVlan(), equalTo(1));
+      assertThat(iface.getAllowedVlans(), equalTo(IntegerSpace.of(Range.closed(1, 4094))));
     }
   }
 
