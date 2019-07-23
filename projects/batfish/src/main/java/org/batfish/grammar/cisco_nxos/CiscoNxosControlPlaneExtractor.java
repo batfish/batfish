@@ -171,6 +171,10 @@ import org.batfish.grammar.cisco_nxos.CiscoNxosParser.I_no_shutdownContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.I_no_switchportContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.I_shutdownContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.I_switchport_accessContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.I_switchport_mode_accessContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.I_switchport_mode_dot1q_tunnelContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.I_switchport_mode_fex_fabricContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.I_switchport_mode_trunkContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.I_switchport_trunk_allowedContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.I_switchport_trunk_nativeContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.I_vrf_memberContext;
@@ -2946,6 +2950,26 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
           iface.setSwitchportMode(SwitchportMode.ACCESS);
           iface.setAccessVlan(vlanId);
         });
+  }
+
+  @Override
+  public void exitI_switchport_mode_access(I_switchport_mode_accessContext ctx) {
+    _currentInterfaces.forEach(iface -> iface.setSwitchportMode(SwitchportMode.ACCESS));
+  }
+
+  @Override
+  public void exitI_switchport_mode_dot1q_tunnel(I_switchport_mode_dot1q_tunnelContext ctx) {
+    todo(ctx);
+  }
+
+  @Override
+  public void exitI_switchport_mode_fex_fabric(I_switchport_mode_fex_fabricContext ctx) {
+    todo(ctx);
+  }
+
+  @Override
+  public void exitI_switchport_mode_trunk(I_switchport_mode_trunkContext ctx) {
+    _currentInterfaces.forEach(iface -> iface.setSwitchportMode(SwitchportMode.TRUNK));
   }
 
   @Override

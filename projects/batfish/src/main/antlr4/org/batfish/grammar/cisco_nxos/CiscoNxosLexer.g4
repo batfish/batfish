@@ -645,6 +645,11 @@ DOT1Q
   [Dd] [Oo] [Tt] '1' [Qq]
 ;
 
+DOT1Q_TUNNEL
+:
+  'dot1q-tunnel'
+;
+
 DRIP
 :
   'drip'
@@ -813,6 +818,11 @@ FAST_LEAVE
 FEATURE
 :
   'feature'
+;
+
+FEX_FABRIC
+:
+  'fex-fabric'
 ;
 
 FILTER
@@ -1432,6 +1442,11 @@ MOBILE_IP
 MOBILE_REDIRECT
 :
   'mobile-redirect'
+;
+
+MODE
+:
+  'mode'
 ;
 
 MROUTER
