@@ -745,7 +745,13 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
     CiscoNxosInterfaceType type = iface.getType();
     newIfaceBuilder.setType(toInterfaceType(type, parent != null));
 
-    Double speed = getDefaultSpeed(type);
+    Double speed;
+    @Nullable Integer speedMbps = iface.getSpeedMbps();
+    if (speedMbps != null) {
+      speed = ((double) speedMbps) * 1E6D;
+    } else {
+      speed = getDefaultSpeed(type);
+    }
     newIfaceBuilder.setSpeed(speed);
     Integer nxosBandwidth = iface.getBandwidth();
     Double finalBandwidth;

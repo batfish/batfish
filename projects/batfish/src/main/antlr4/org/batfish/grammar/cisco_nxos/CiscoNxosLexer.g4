@@ -723,6 +723,11 @@ DUAL_AS
   'dual-as'
 ;
 
+DUPLEX
+:
+  'duplex'
+;
+
 DVMRP
 :
   'dvmrp'
@@ -956,6 +961,11 @@ FTP_DATA
 FTP
 :
   'ftp'
+;
+
+FULL
+:
+  'full'
 ;
 
 GBPS
@@ -1597,6 +1607,11 @@ NAMESERVER
 NATIVE
 :
   'native'
+;
+
+NEGOTIATE
+:
+  'negotiate'
 ;
 
 NEIGHBOR
@@ -2366,6 +2381,11 @@ SOURCE_ROUTE_FAILED
 SPANNING_TREE
 :
   'spanning-tree'
+;
+
+SPEED
+:
+  'speed'
 ;
 
 SPF

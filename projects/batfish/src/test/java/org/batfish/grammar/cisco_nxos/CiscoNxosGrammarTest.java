@@ -26,6 +26,7 @@ import static org.batfish.datamodel.matchers.InterfaceMatchers.hasDependencies;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasDescription;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasInterfaceType;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasMtu;
+import static org.batfish.datamodel.matchers.InterfaceMatchers.hasSpeed;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasSwitchPortMode;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasVlan;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.isActive;
@@ -410,6 +411,31 @@ public final class CiscoNxosGrammarTest {
   public void testInterfaceSpanningTreeParsing() {
     // TODO: make into extraction test
     assertThat(parseVendorConfig("nxos_interface_spanning_tree"), notNullValue());
+  }
+
+  @Test
+  public void testInterfaceSpeedConversion() throws IOException {
+    String hostname = "nxos_interface_speed";
+    Configuration c = parseConfig(hostname);
+
+    assertThat(c.getAllInterfaces(), hasKeys("Ethernet1/1", "port-channel1"));
+    {
+      org.batfish.datamodel.Interface iface = c.getAllInterfaces().get("Ethernet1/1");
+      assertThat(iface, hasSpeed(100E9D));
+      assertThat(iface, hasBandwidth(100E9D));
+    }
+  }
+
+  @Test
+  public void testInterfaceSpeedExtraction() {
+    String hostname = "nxos_interface_speed";
+    CiscoNxosConfiguration vc = parseVendorConfig(hostname);
+
+    assertThat(vc.getInterfaces(), hasKeys("Ethernet1/1", "port-channel1"));
+    {
+      Interface iface = vc.getInterfaces().get("Ethernet1/1");
+      assertThat(iface.getSpeedMbps(), equalTo(100000));
+    }
   }
 
   @Test
