@@ -34,12 +34,12 @@ import org.batfish.common.Container;
 import org.batfish.common.CoordConsts;
 import org.batfish.common.CoordConsts.WorkStatusCode;
 import org.batfish.common.CoordConstsV2;
-import org.batfish.common.Version;
 import org.batfish.common.WorkItem;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.datamodel.answers.AutocompleteSuggestion.CompletionType;
 import org.batfish.datamodel.pojo.WorkStatus;
+import org.batfish.version.BatfishVersion;
 import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONObject;
 import org.glassfish.jersey.media.multipart.FormDataBodyPart;
@@ -182,7 +182,7 @@ public class BfCoordWorkHelper {
           webTarget
               .request(MediaType.APPLICATION_JSON)
               .header(CoordConstsV2.HTTP_HEADER_BATFISH_APIKEY, _settings.getApiKey())
-              .header(CoordConstsV2.HTTP_HEADER_BATFISH_VERSION, Version.getVersion())
+              .header(CoordConstsV2.HTTP_HEADER_BATFISH_VERSION, BatfishVersion.VERSION)
               .delete();
 
       if (response.getStatusInfo().getFamily() != Status.Family.SUCCESSFUL) {
@@ -352,7 +352,7 @@ public class BfCoordWorkHelper {
       multiPart.setMediaType(MediaType.MULTIPART_FORM_DATA_TYPE);
 
       addTextMultiPart(multiPart, CoordConsts.SVC_KEY_API_KEY, _settings.getApiKey());
-      addTextMultiPart(multiPart, CoordConsts.SVC_KEY_VERSION, Version.getVersion());
+      addTextMultiPart(multiPart, CoordConsts.SVC_KEY_VERSION, BatfishVersion.VERSION);
       addTextMultiPart(multiPart, CoordConsts.SVC_KEY_NETWORK_NAME, networkName);
       addTextMultiPart(multiPart, CoordConsts.SVC_KEY_SNAPSHOT_NAME, snapshotName);
       addTextMultiPart(multiPart, CoordConsts.SVC_KEY_CONFIGURATION_NAME, configName);
@@ -395,7 +395,7 @@ public class BfCoordWorkHelper {
           webTarget
               .request(MediaType.APPLICATION_JSON)
               .header(CoordConstsV2.HTTP_HEADER_BATFISH_APIKEY, _settings.getApiKey())
-              .header(CoordConstsV2.HTTP_HEADER_BATFISH_VERSION, Version.getVersion())
+              .header(CoordConstsV2.HTTP_HEADER_BATFISH_VERSION, BatfishVersion.VERSION)
               .get();
 
       _logger.debug(response.getStatus() + " " + response.getStatusInfo() + " " + response + "\n");
@@ -466,7 +466,7 @@ public class BfCoordWorkHelper {
       multiPart.setMediaType(MediaType.MULTIPART_FORM_DATA_TYPE);
 
       addTextMultiPart(multiPart, CoordConsts.SVC_KEY_API_KEY, _settings.getApiKey());
-      addTextMultiPart(multiPart, CoordConsts.SVC_KEY_VERSION, Version.getVersion());
+      addTextMultiPart(multiPart, CoordConsts.SVC_KEY_VERSION, BatfishVersion.VERSION);
       addTextMultiPart(multiPart, CoordConsts.SVC_KEY_NETWORK_NAME, networkName);
       addTextMultiPart(multiPart, CoordConsts.SVC_KEY_SNAPSHOT_NAME, snapshotName);
       addTextMultiPart(multiPart, CoordConsts.SVC_KEY_OBJECT_NAME, objectName);
@@ -870,7 +870,7 @@ public class BfCoordWorkHelper {
   private JSONObject postData(WebTarget webTarget, MultiPart multiPart) throws Exception {
     try {
 
-      addTextMultiPart(multiPart, CoordConsts.SVC_KEY_VERSION, Version.getVersion());
+      addTextMultiPart(multiPart, CoordConsts.SVC_KEY_VERSION, BatfishVersion.VERSION);
 
       Response response =
           webTarget
@@ -1027,7 +1027,7 @@ public class BfCoordWorkHelper {
         webTarget
             .request(MediaType.APPLICATION_JSON)
             .header(CoordConstsV2.HTTP_HEADER_BATFISH_APIKEY, _settings.getApiKey())
-            .header(CoordConstsV2.HTTP_HEADER_BATFISH_VERSION, Version.getVersion());
+            .header(CoordConstsV2.HTTP_HEADER_BATFISH_VERSION, BatfishVersion.VERSION);
     try (Response response =
         entity != null
             ? builder.method(method, Entity.entity(entity, mediaType))

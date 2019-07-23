@@ -56,6 +56,7 @@ import org.batfish.datamodel.pojo.WorkStatus;
 import org.batfish.datamodel.questions.Question;
 import org.batfish.datamodel.questions.Variable;
 import org.batfish.identifiers.NetworkId;
+import org.batfish.version.BatfishVersion;
 import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONObject;
 import org.glassfish.jersey.media.multipart.FormDataParam;
@@ -1262,7 +1263,7 @@ public class WorkMgrService {
     try {
       JSONObject map = new JSONObject();
       map.put("Service name", "Batfish coordinator");
-      map.put(CoordConsts.SVC_KEY_VERSION, Version.getVersion());
+      map.put(CoordConsts.SVC_KEY_VERSION, BatfishVersion.VERSION);
       map.put("APIs", "Enter ../application.wadl (relative to your URL) to see supported methods");
 
       return successResponse(map);
@@ -1401,7 +1402,7 @@ public class WorkMgrService {
     try {
       _logger.info("WMS:getStatus\n");
       JSONObject retObject = Main.getWorkMgr().getStatusJson();
-      retObject.put("service-version", Version.getVersion());
+      retObject.put("service-version", BatfishVersion.VERSION);
       return successResponse(retObject);
     } catch (Exception e) {
       String stackTrace = Throwables.getStackTraceAsString(e);

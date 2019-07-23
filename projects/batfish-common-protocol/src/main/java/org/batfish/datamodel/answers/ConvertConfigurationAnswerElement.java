@@ -18,9 +18,9 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.common.BatfishException;
 import org.batfish.common.ErrorDetails;
-import org.batfish.common.Version;
 import org.batfish.common.Warnings;
 import org.batfish.datamodel.DefinedStructureInfo;
+import org.batfish.version.BatfishVersion;
 
 /**
  * Stores information extracted while converting vendor-specific configurations to
@@ -108,7 +108,7 @@ public class ConvertConfigurationAnswerElement extends InitStepAnswerElement
 
     _referencedStructures = firstNonNull(referencedstructures, new TreeMap<>());
     _undefinedReferences = firstNonNull(undefinedReferences, new TreeMap<>());
-    _version = firstNonNull(version, Version.getVersion());
+    _version = firstNonNull(version, BatfishVersion.VERSION);
     _warnings = firstNonNull(warnings, new TreeMap<>());
   }
 

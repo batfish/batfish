@@ -29,7 +29,6 @@ import java.util.TreeSet;
 import java.util.concurrent.atomic.AtomicBoolean;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.BdpOscillationException;
-import org.batfish.common.Version;
 import org.batfish.common.plugin.DataPlanePlugin.ComputeDataPlaneResult;
 import org.batfish.common.plugin.TracerouteEngine;
 import org.batfish.common.topology.Layer2Topology;
@@ -56,6 +55,7 @@ import org.batfish.dataplane.ibdp.schedule.IbdpSchedule;
 import org.batfish.dataplane.ibdp.schedule.IbdpSchedule.Schedule;
 import org.batfish.dataplane.rib.Bgpv4Rib;
 import org.batfish.dataplane.rib.RibDelta;
+import org.batfish.version.BatfishVersion;
 
 class IncrementalBdpEngine {
 
@@ -221,7 +221,7 @@ class IncrementalBdpEngine {
       // Generate the answers from the computation, compute final FIBs
       // TODO: Properly finalize topologies, IpOwners, etc.
       computeFibs(nodes);
-      answerElement.setVersion(Version.getVersion());
+      answerElement.setVersion(BatfishVersion.VERSION);
       IncrementalDataPlane finalDataplane =
           IncrementalDataPlane.builder()
               .setNodes(nodes)

@@ -54,7 +54,6 @@ import org.batfish.common.NetworkSnapshot;
 import org.batfish.common.QuestionException;
 import org.batfish.common.Task;
 import org.batfish.common.Task.Batch;
-import org.batfish.common.Version;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.config.ConfigurationLocator;
 import org.batfish.config.Settings;
@@ -65,6 +64,7 @@ import org.batfish.datamodel.answers.AnswerStatus;
 import org.batfish.datamodel.collections.BgpAdvertisementsByVrf;
 import org.batfish.identifiers.NetworkId;
 import org.batfish.identifiers.SnapshotId;
+import org.batfish.version.BatfishVersion;
 import org.codehaus.jettison.json.JSONArray;
 import org.glassfish.grizzly.http.server.HttpServer;
 import org.glassfish.jersey.grizzly2.httpserver.GrizzlyHttpServerFactory;
@@ -493,7 +493,7 @@ public class Driver {
   private static boolean registerWithCoordinator(String poolRegUrl, int listenPort) {
     Map<String, String> params = new HashMap<>();
     params.put(CoordConsts.SVC_KEY_ADD_WORKER, _mainSettings.getServiceHost() + ":" + listenPort);
-    params.put(CoordConsts.SVC_KEY_VERSION, Version.getVersion());
+    params.put(CoordConsts.SVC_KEY_VERSION, BatfishVersion.VERSION);
 
     Object response = talkToCoordinator(poolRegUrl, params, _mainLogger);
     return response != null;
