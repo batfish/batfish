@@ -255,9 +255,9 @@ public class EdgesAnswererTest {
         NetworkBuilder.directed().allowsParallelEdges(false).allowsSelfLoops(false).build();
 
     EigrpNeighborConfigId eigrpNeighborConfigId1 =
-        new EigrpNeighborConfigId("host1", "int1", "vrf1");
+        new EigrpNeighborConfigId(1L, "host1", "int1", "vrf1");
     EigrpNeighborConfigId eigrpNeighborConfigId2 =
-        new EigrpNeighborConfigId("host2", "int2", "vrf2");
+        new EigrpNeighborConfigId(1L, "host2", "int2", "vrf2");
 
     eigrpTopology.addEdge(
         eigrpNeighborConfigId1,
@@ -600,8 +600,8 @@ public class EdgesAnswererTest {
   public void testEigrpToRow() {
     EigrpEdge testEdge =
         new EigrpEdge(
-            new EigrpNeighborConfigId("host1", "int1", "vrf1"),
-            new EigrpNeighborConfigId("host2", "int2", "vrf2"));
+            new EigrpNeighborConfigId(1L, "host1", "int1", "vrf1"),
+            new EigrpNeighborConfigId(1L, "host2", "int2", "vrf2"));
     Row row = eigrpEdgeToRow(testEdge);
 
     assertThat(

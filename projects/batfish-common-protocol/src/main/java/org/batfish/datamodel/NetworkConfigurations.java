@@ -10,6 +10,9 @@ import java.util.Optional;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
+import org.batfish.datamodel.eigrp.EigrpNeighborConfig;
+import org.batfish.datamodel.eigrp.EigrpNeighborConfigId;
+import org.batfish.datamodel.eigrp.EigrpProcess;
 import org.batfish.datamodel.ospf.OspfNeighborConfig;
 import org.batfish.datamodel.ospf.OspfNeighborConfigId;
 import org.batfish.datamodel.ospf.OspfProcess;
@@ -105,6 +108,20 @@ public final class NetworkConfigurations {
         .map(Vrf::getBgpProcess)
         .map(proc -> proc.getInterfaceNeighbors().get(id.getPeerInterface()))
         .orElse(null);
+  }
+
+  /**
+   * Given {@link EigrpNeighborConfigId} returns an {@link Optional} of {@link EigrpNeighborConfig}
+   *
+   * @param eigrpConfigId {@link EigrpNeighborConfigId} for which {@link EigrpNeighborConfig} is
+   *     needed
+   * @return {@link EigrpNeighborConfig}
+   */
+  public Optional<EigrpNeighborConfig> getEigrpNeighborConfig(EigrpNeighborConfigId eigrpConfigId) {
+    return getVrf(eigrpConfigId.getHostname(), eigrpConfigId.getVrf())
+        .map(vrf -> vrf.getEigrpProcesses().get(eigrpConfigId.getAsn()))
+        .map(EigrpProcess::getNeighbors)
+        .map(eigrpNeighbors -> eigrpNeighbors.get(eigrpConfigId.getInterfaceName()));
   }
 
   /** Return an interface identified by hostname and interface name */
