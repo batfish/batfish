@@ -16,6 +16,12 @@ public class VersionTest {
   @Rule public ExpectedException _thrown = ExpectedException.none();
 
   @Test
+  public void versionIsRealAtRuntime() {
+    assertThat(Version.getVersion(), not(containsString("project.version")));
+    assertThat(Version.getVersion(), not(equalTo(UNKNOWN_VERSION)));
+  }
+
+  @Test
   public void versionExtractionFromProperties() {
     String extractedVersion = Version.getPropertiesVersion(PROPERTIES_PATH, "batfish_version");
     String extractedVersionBadKey = Version.getPropertiesVersion(PROPERTIES_PATH, "bogus");

@@ -10,7 +10,7 @@ import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.core.Application;
 import javax.ws.rs.core.Response;
-import org.batfish.version.BatfishVersion;
+import org.batfish.common.Version;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.glassfish.jersey.test.JerseyTest;
 import org.glassfish.jersey.test.TestProperties;
@@ -76,13 +76,13 @@ public class VersionCompatibilityFilterTest extends JerseyTest {
         equalTo(
             String.format(
                 "Client version '1.0.1' is not compatible with server version '%s'",
-                BatfishVersion.VERSION)));
+                Version.getVersion())));
   }
 
   @Test
   public void testValidVersion() {
     Response response =
-        target("/test").request().header(HTTP_HEADER_BATFISH_VERSION, BatfishVersion.VERSION).get();
+        target("/test").request().header(HTTP_HEADER_BATFISH_VERSION, Version.getVersion()).get();
     assertThat(response.getStatus(), equalTo(OK.getStatusCode()));
   }
 }
