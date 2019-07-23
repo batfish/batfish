@@ -22,15 +22,18 @@ import org.batfish.datamodel.NetworkConfigurations;
 @ParametersAreNonnullByDefault
 public class EigrpNeighborConfigId implements Serializable, Comparable<EigrpNeighborConfigId> {
 
+  private static final String PROP_ASN = "asn";
   private static final String PROP_HOSTNAME = "hostname";
   private static final String PROP_INTERFACE = "interface";
   private static final String PROP_VRF = "vrf";
 
+  private final long _asn;
   @Nonnull private final String _hostname;
   @Nonnull private final String _interfaceName;
   @Nonnull private final String _vrfName;
 
-  public EigrpNeighborConfigId(String hostname, String interfaceName, String vrfName) {
+  public EigrpNeighborConfigId(long asn, String hostname, String interfaceName, String vrfName) {
+    _asn = asn;
     _hostname = hostname;
     _interfaceName = interfaceName;
     _vrfName = vrfName;
@@ -38,17 +41,19 @@ public class EigrpNeighborConfigId implements Serializable, Comparable<EigrpNeig
 
   @JsonCreator
   private static EigrpNeighborConfigId create(
+      @Nullable @JsonProperty(PROP_ASN) Long asn,
       @Nullable @JsonProperty(PROP_HOSTNAME) String hostname,
       @Nullable @JsonProperty(PROP_INTERFACE) String iface,
       @Nullable @JsonProperty(PROP_VRF) String vrf) {
+    checkArgument(asn != null, "Missing %s", PROP_ASN);
     checkArgument(hostname != null, "Missing %s", PROP_HOSTNAME);
     checkArgument(iface != null, "Missing %s", PROP_INTERFACE);
     checkArgument(vrf != null, "Missing %s", PROP_VRF);
-    return new EigrpNeighborConfigId(hostname, iface, vrf);
+    return new EigrpNeighborConfigId(asn, hostname, iface, vrf);
   }
 
-  public EigrpNeighborConfigId(String hostname, Interface iface) {
-    this(hostname, iface.getName(), iface.getVrfName());
+  public EigrpNeighborConfigId(long asn, String hostname, Interface iface) {
+    this(asn, hostname, iface.getName(), iface.getVrfName());
   }
 
   @Override
@@ -56,6 +61,7 @@ public class EigrpNeighborConfigId implements Serializable, Comparable<EigrpNeig
     return Comparator.comparing(EigrpNeighborConfigId::getHostname)
         .thenComparing(EigrpNeighborConfigId::getInterfaceName)
         .thenComparing(EigrpNeighborConfigId::getVrf)
+        .thenComparing(EigrpNeighborConfigId::getAsn)
         .compare(this, o);
   }
 
@@ -68,14 +74,20 @@ public class EigrpNeighborConfigId implements Serializable, Comparable<EigrpNeig
       return false;
     }
     EigrpNeighborConfigId rhs = (EigrpNeighborConfigId) o;
-    return _hostname.equals(rhs._hostname)
+    return _asn == rhs._asn
+        && _hostname.equals(rhs._hostname)
         && _interfaceName.equals(rhs._interfaceName)
         && _vrfName.equals(rhs._vrfName);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(_hostname, _interfaceName, _vrfName);
+    return Objects.hash(_asn, _hostname, _interfaceName, _vrfName);
+  }
+
+  @JsonProperty(PROP_ASN)
+  public long getAsn() {
+    return _asn;
   }
 
   @Nonnull
@@ -112,8 +124,9 @@ public class EigrpNeighborConfigId implements Serializable, Comparable<EigrpNeig
   public String toString() {
     return toStringHelper(getClass())
         .add("hostname", _hostname)
-        .add("interfaceName", _interfaceName)
         .add("vrfName", _vrfName)
+        .add("asn", _asn)
+        .add("interfaceName", _interfaceName)
         .toString();
   }
 }

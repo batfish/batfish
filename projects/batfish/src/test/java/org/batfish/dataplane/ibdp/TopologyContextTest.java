@@ -59,7 +59,7 @@ public final class TopologyContextTest {
         IpsecSession.builder().build());
     MutableNetwork<EigrpNeighborConfigId, EigrpEdge> eigrpTopology =
         NetworkBuilder.directed().build();
-    eigrpTopology.addNode(new EigrpNeighborConfigId("a", "b", "c"));
+    eigrpTopology.addNode(new EigrpNeighborConfigId(1L, "a", "b", "c"));
     MutableNetwork<IsisNode, IsisEdge> isisTopology = NetworkBuilder.directed().build();
     isisTopology.addNode(new IsisNode("a", "b"));
     MutableValueGraph<OspfNeighborConfigId, OspfSessionProperties> ospfTopology =
@@ -119,7 +119,7 @@ public final class TopologyContextTest {
     bgpTopology.addNode(new BgpPeerConfigId("a", "b", "c"));
     MutableNetwork<EigrpNeighborConfigId, EigrpEdge> eigrpTopology =
         NetworkBuilder.directed().build();
-    eigrpTopology.addNode(new EigrpNeighborConfigId("a", "b", "c"));
+    eigrpTopology.addNode(new EigrpNeighborConfigId(1L, "a", "b", "c"));
     MutableValueGraph<IpsecPeerConfigId, IpsecSession> ipsecTopology =
         ValueGraphBuilder.directed().allowsSelfLoops(false).build();
     ipsecTopology.putEdgeValue(
