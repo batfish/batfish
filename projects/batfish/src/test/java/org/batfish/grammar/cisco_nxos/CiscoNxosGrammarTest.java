@@ -51,6 +51,7 @@ import static org.hamcrest.Matchers.any;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.empty;
+import static org.hamcrest.Matchers.emptyString;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasEntry;
 import static org.hamcrest.Matchers.hasKey;
@@ -239,6 +240,18 @@ public final class CiscoNxosGrammarTest {
     // crash if not serializable
     SerializationUtils.clone(vendorConfiguration);
     return vendorConfiguration;
+  }
+
+  @Test
+  public void testBannerExtraction() {
+    String bannerHostname = "nxos_banner";
+    String bannerEmptyHostname = "nxos_banner_empty";
+    CiscoNxosConfiguration banner = parseVendorConfig(bannerHostname);
+    CiscoNxosConfiguration bannerEmpty = parseVendorConfig(bannerEmptyHostname);
+
+    assertThat(banner.getBannerExec(), equalTo("multi\nline"));
+    assertThat(banner.getBannerMotd(), equalTo("oneline"));
+    assertThat(bannerEmpty.getBannerExec(), emptyString());
   }
 
   /**
