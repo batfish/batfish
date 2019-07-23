@@ -218,6 +218,7 @@ i_null
   (
     LACP
     | SPANNING_TREE
+    | STORM_CONTROL
   ) null_rest_of_line
 ;
 
