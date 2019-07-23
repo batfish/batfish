@@ -1,0 +1,9 @@
+!RANCID-CONTENT-TYPE: cisco-nx
+!
+hostname nxos_banner
+!
+banner exec *multi
+line*garbage
+!
+banner motd  ^oneline^
+!

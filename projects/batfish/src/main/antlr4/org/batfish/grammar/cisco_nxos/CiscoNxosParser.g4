@@ -15,7 +15,8 @@ cisco_nxos_configuration
 
 statement
 :
-  s_evpn
+  s_banner
+  | s_evpn
   | s_hostname
   | s_interface
   | s_ip
@@ -26,6 +27,25 @@ statement
   | s_version
   | s_vlan
   | s_vrf_context
+;
+
+s_banner
+:
+  BANNER
+  (
+    banner_exec
+    | banner_motd
+  )
+;
+
+banner_exec
+:
+  EXEC BANNER_DELIMITER body=BANNER_BODY? BANNER_DELIMITER NEWLINE
+;
+
+banner_motd
+:
+  MOTD BANNER_DELIMITER body=BANNER_BODY? BANNER_DELIMITER NEWLINE
 ;
 
 s_hostname
