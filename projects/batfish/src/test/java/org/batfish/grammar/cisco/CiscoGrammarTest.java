@@ -2590,17 +2590,16 @@ public class CiscoGrammarTest {
 
     String distListPolicyName = "~EIGRP_DIST_LIST_default_1_GigabitEthernet0/0";
 
-    assertThat(c.getRoutingPolicies(), hasKey(distListPolicyName));
-
     assertThat(
         c.getDefaultVrf()
             .getEigrpProcesses()
             .get(1L)
             .getNeighbors()
             .get("GigabitEthernet0/0")
-            .get_exportPolicy(),
+            .getExportPolicy(),
         equalTo(distListPolicyName));
 
+    assertThat(c.getRoutingPolicies(), hasKey(distListPolicyName));
     assertThat(
         c.getRoutingPolicies().get(distListPolicyName).getStatements(),
         equalTo(

@@ -1434,7 +1434,7 @@ public class CiscoConversions {
     return policyName;
   }
 
-  private static boolean sanityCheckEigrpDistributeList(
+  static boolean sanityCheckEigrpDistributeList(
       @Nonnull Configuration c,
       @Nonnull DistributeList distributeList,
       @Nonnull CiscoConfiguration oldConfig) {
@@ -1453,7 +1453,7 @@ public class CiscoConversions {
           .getWarnings()
           .redFlag(
               String.format(
-                  "distribute-list refers an undefined access-list %s, it will not filter anything",
+                  "distribute-list refers an undefined access-list `%s`, it will not filter anything",
                   distributeList.getFilterName()));
       return false;
     }
