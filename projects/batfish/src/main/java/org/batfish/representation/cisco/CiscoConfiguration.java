@@ -2043,18 +2043,19 @@ public final class CiscoConfiguration extends VendorConfiguration {
               .setDelay(iface.getDelay())
               .build();
 
-      DistributeList distributeListForIface =
-          eigrpProcess.getOutboundInterfaceDistributeLists().get(newIface.getName());
-
       List<If> redistributePolicyStatements =
           eigrpRedistributionPoliciesToStatements(
               eigrpProcess.getRedistributionPolicies().values(), eigrpProcess, this);
-      List<BooleanExpr> booleanExprs =
+
+      List<BooleanExpr> redistributePoliciesToBooleanExprs =
           redistributePolicyStatements.stream().map(If::getGuard).collect(Collectors.toList());
-      booleanExprs.add(exprToAllowEigrpInternalRoutes(eigrpProcess.getAsn()));
+      redistributePoliciesToBooleanExprs.add(exprToAllowEigrpInternalRoutes(eigrpProcess.getAsn()));
 
       Disjunction canRedistributeOrIsInternalEigrp =
-          new Disjunction(ImmutableList.copyOf(booleanExprs));
+          new Disjunction(ImmutableList.copyOf(redistributePoliciesToBooleanExprs));
+
+      DistributeList distributeListForIface =
+          eigrpProcess.getOutboundInterfaceDistributeLists().get(newIface.getName());
       newIface.setEigrp(
           EigrpInterfaceSettings.builder()
               .setAsn(eigrpProcess.getAsn())

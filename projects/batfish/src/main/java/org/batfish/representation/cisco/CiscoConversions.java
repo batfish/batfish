@@ -1422,21 +1422,22 @@ public class CiscoConversions {
   }
 
   /**
-   * Computes the routing policy for the provided {@link DistributeList distributeList} and returns
-   * the name of the computed routing policy. Returns null if the provided {@link DistributeList} is
-   * not supported or if the filter referred by the {@link DistributeList} doesn't exist.
+   * Computes the unified routing policy for the provided {@link DistributeList distributeList} and
+   * the process level redistribute policy and returns the name of the unified computed routing
+   * policy.
    *
    * <p>Also adds the computed routing policy to {@link Configuration}.
    *
    * @param c Vendor independent {@link Configuration configuration}
    * @param vsConfig Vendor specific {@link CiscoConfiguration configuration}
+   * @param processRedistributePolicy process level redistribution policy
    * @param distributeList {@link DistributeList} which is to be converted
    * @param vrfName Name of the VRF in which the {@link DistributeList} is defined
    * @param asn ASN of the {@link EigrpProcess} in which the {@link DistributeList} is defined
    * @param ifaceName Name of the interface on which the distributeList operates
    * @return Name of the computed routing policy or null if it cannot be computed
    */
-  @Nullable
+  @Nonnull
   static String getUnifedPolicyForEigrpNeighbor(
       @Nonnull Configuration c,
       @Nonnull CiscoConfiguration vsConfig,
@@ -1457,7 +1458,6 @@ public class CiscoConversions {
     }
     String policyName = String.format("~EIGRP_DIST_LIST_%s_%s_%s", vrfName, asn, ifaceName);
     RoutingPolicy routingPolicy = new RoutingPolicy(policyName, c);
-
     routingPolicy
         .getStatements()
         .add(
