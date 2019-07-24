@@ -4,6 +4,7 @@ import static org.batfish.datamodel.Interface.INVALID_LOCAL_INTERFACE;
 import static org.batfish.representation.cisco.CiscoConversions.createAclWithSymmetricalLines;
 import static org.batfish.representation.cisco.CiscoConversions.getMatchingPsk;
 import static org.batfish.representation.cisco.CiscoConversions.sanityCheckDistributeList;
+import static org.batfish.representation.cisco.CiscoConversions.sanityCheckEigrpDistributeList;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.nullValue;
@@ -45,6 +46,25 @@ public class CiscoConversionsTest {
   public void before() {
     _warnings = new Warnings(true, true, true);
     _nf = new NetworkFactory();
+  }
+
+  @Test
+  public void testSanityCheckEigrpDistributeListAbsentFilter() {
+    Configuration c =
+        _nf.configurationBuilder()
+            .setHostname("conf")
+            .setConfigurationFormat(ConfigurationFormat.CISCO_IOS)
+            .build();
+    CiscoConfiguration oldConfig = new CiscoConfiguration();
+    oldConfig.setWarnings(_warnings);
+    DistributeList distributeList =
+        new DistributeList("filter", DistributeListFilterType.ACCESS_LIST);
+
+    assertFalse(sanityCheckEigrpDistributeList(c, distributeList, oldConfig));
+    assertThat(
+        oldConfig.getWarnings().getRedFlagWarnings().iterator().next().getText(),
+        equalTo(
+            "distribute-list refers an undefined access-list `filter`, it will not filter anything"));
   }
 
   @Test

@@ -74,7 +74,6 @@ import org.batfish.common.CoordConsts;
 import org.batfish.common.CoordConsts.WorkStatusCode;
 import org.batfish.common.Task;
 import org.batfish.common.Task.Batch;
-import org.batfish.common.Version;
 import org.batfish.common.WorkItem;
 import org.batfish.common.plugin.AbstractClient;
 import org.batfish.common.plugin.IClient;
@@ -114,6 +113,7 @@ import org.batfish.specifier.AllNodesNodeSpecifier;
 import org.batfish.specifier.RoutingProtocolSpecifier;
 import org.batfish.specifier.SpecifierFactories;
 import org.batfish.specifier.parboiled.ParboiledIpSpaceSpecifier;
+import org.batfish.version.BatfishVersion;
 import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
@@ -2752,7 +2752,7 @@ public class Client extends AbstractClient implements IClient {
     if (!isValidArgument(options, parameters, 0, 0, 0, Command.SHOW_VERSION)) {
       return false;
     }
-    _logger.outputf("Client version is %s\n", Version.getVersion());
+    _logger.outputf("Client version is %s\n", BatfishVersion.getVersionStatic());
 
     Map<String, String> map = _workHelper.getInfo();
 

@@ -1155,12 +1155,40 @@ public class CiscoConversions {
     eigrpExportPolicy
         .getStatements()
         .addAll(
-            proc.getRedistributionPolicies().values().stream()
-                .map(policy -> convertEigrpRedistributionPolicy(policy, proc, oldConfig))
-                .filter(Objects::nonNull)
-                .collect(Collectors.toList()));
+            eigrpRedistributionPoliciesToStatements(
+                proc.getRedistributionPolicies().values(), proc, oldConfig));
 
     return newProcess.build();
+  }
+
+  /**
+   * Creates a {@link BooleanExpr} to match internal EIGRP routes of an {@link EigrpProcess}
+   *
+   * @param localAsn ASN of the {@link EigrpProcess} whose internal routes are to be matched
+   * @return {@link BooleanExpr}
+   */
+  static BooleanExpr exprToAllowEigrpInternalRoutes(long localAsn) {
+    return new Conjunction(
+        ImmutableList.of(new MatchProtocol(RoutingProtocol.EIGRP), new MatchProcessAsn(localAsn)));
+  }
+
+  /**
+   * Converts {@link EigrpRedistributionPolicy}s in an {@link EigrpProcess} to equivalent {@link If}
+   * statements
+   *
+   * @param eigrpRedistributionPolicies {@link EigrpRedistributionPolicy}s of the EIGRP process
+   * @param vsEigrpProc Vendor specific {@link EigrpProcess}
+   * @param vsConfig Vendor specific {@link CiscoConfiguration configuration}
+   * @return {@link List} of {@link If} statements
+   */
+  static List<If> eigrpRedistributionPoliciesToStatements(
+      Collection<EigrpRedistributionPolicy> eigrpRedistributionPolicies,
+      EigrpProcess vsEigrpProc,
+      CiscoConfiguration vsConfig) {
+    return eigrpRedistributionPolicies.stream()
+        .map(policy -> convertEigrpRedistributionPolicy(policy, vsEigrpProc, vsConfig))
+        .filter(Objects::nonNull)
+        .collect(ImmutableList.toImmutableList());
   }
 
   @Nullable
@@ -1406,6 +1434,94 @@ public class CiscoConversions {
       c.getRoutingPolicies().put(routingPolicy.getName(), routingPolicy);
       entry.getValue().setOspfInboundDistributeListPolicy(policyName);
     }
+  }
+
+  /**
+   * Computes the unified routing policy for the provided {@link DistributeList distributeList} and
+   * the process level redistribute policy and returns the name of the unified computed routing
+   * policy.
+   *
+   * <p>Also adds the computed routing policy to {@link Configuration}.
+   *
+   * @param c Vendor independent {@link Configuration configuration}
+   * @param vsConfig Vendor specific {@link CiscoConfiguration configuration}
+   * @param processRedistributePolicy process level redistribution policy
+   * @param distributeList {@link DistributeList} which is to be converted
+   * @param vrfName Name of the VRF in which the {@link DistributeList} is defined
+   * @param asn ASN of the {@link EigrpProcess} in which the {@link DistributeList} is defined
+   * @param ifaceName Name of the interface on which the distributeList operates
+   * @return Name of the computed routing policy or null if it cannot be computed
+   */
+  @Nonnull
+  static String getUnifedPolicyForEigrpNeighbor(
+      @Nonnull Configuration c,
+      @Nonnull CiscoConfiguration vsConfig,
+      @Nonnull BooleanExpr processRedistributePolicy,
+      @Nullable DistributeList distributeList,
+      @Nonnull String vrfName,
+      @Nonnull Long asn,
+      @Nonnull String ifaceName) {
+    Conjunction conjuntionExpr = new Conjunction();
+    conjuntionExpr.getConjuncts().add(processRedistributePolicy);
+    if (distributeList != null && sanityCheckEigrpDistributeList(c, distributeList, vsConfig)) {
+      conjuntionExpr
+          .getConjuncts()
+          .add(
+              new MatchPrefixSet(
+                  DestinationNetwork.instance(),
+                  new NamedPrefixSet(distributeList.getFilterName())));
+    }
+    String policyName = String.format("~EIGRP_EXPORT_POLICY_%s_%s_%s", vrfName, asn, ifaceName);
+    RoutingPolicy routingPolicy = new RoutingPolicy(policyName, c);
+    routingPolicy
+        .getStatements()
+        .add(
+            new If(
+                conjuntionExpr,
+                ImmutableList.of(Statements.ExitAccept.toStaticStatement()),
+                ImmutableList.of(Statements.ExitReject.toStaticStatement())));
+    c.getRoutingPolicies().put(policyName, routingPolicy);
+    return policyName;
+  }
+
+  /**
+   * Checks if the {@link DistributeList distributeList} can be converted to a routing policy.
+   * Returns false if it refers to an extended access list, which is not supported and also returns
+   * false if the access-list referred by it does not exist.
+   *
+   * <p>Adds appropriate {@link org.batfish.common.Warning} if the {@link DistributeList
+   * distributeList} is not found to be valid for conversion to routing policy.
+   *
+   * @param c Vendor independent {@link Configuration configuration}
+   * @param distributeList {@link DistributeList distributeList} to be validated
+   * @param vsConfig Vendor specific {@link CiscoConfiguration configuration}
+   * @return false if the {@link DistributeList distributeList} cannot be converted to a routing
+   *     policy
+   */
+  static boolean sanityCheckEigrpDistributeList(
+      @Nonnull Configuration c,
+      @Nonnull DistributeList distributeList,
+      @Nonnull CiscoConfiguration vsConfig) {
+    if (distributeList.getFilterType() == DistributeListFilterType.ACCESS_LIST
+        && vsConfig.getExtendedAcls().containsKey(distributeList.getFilterName())) {
+      vsConfig
+          .getWarnings()
+          .redFlag(
+              String.format(
+                  "Extended access lists are not supported in EIGRP distribute-lists: %s",
+                  distributeList.getFilterName()));
+      return false;
+    } else if (!c.getRouteFilterLists().containsKey(distributeList.getFilterName())) {
+      // if referred access-list is not defined, all prefixes will be allowed
+      vsConfig
+          .getWarnings()
+          .redFlag(
+              String.format(
+                  "distribute-list refers an undefined access-list `%s`, it will not filter anything",
+                  distributeList.getFilterName()));
+      return false;
+    }
+    return true;
   }
 
   static org.batfish.datamodel.StaticRoute toStaticRoute(Configuration c, StaticRoute staticRoute) {

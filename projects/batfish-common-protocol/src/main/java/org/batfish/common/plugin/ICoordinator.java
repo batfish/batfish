@@ -17,6 +17,4 @@ public interface ICoordinator {
   void initSnapshot(String networkName, String snapshotName, Path srcDir, boolean autoAnalyze);
 
   void registerTestrigSyncer(String name, SyncTestrigsPlugin plugin);
-
-  void registerVersion(String name, String version);
 }

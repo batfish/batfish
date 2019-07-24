@@ -18,6 +18,7 @@ import javax.ws.rs.core.UriInfo;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.CoordConsts;
 import org.batfish.common.Version;
+import org.batfish.version.BatfishVersion;
 import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONObject;
 
@@ -34,7 +35,7 @@ public class PoolMgrService {
         Arrays.asList(
             CoordConsts.SVC_KEY_SUCCESS,
             "Batfish coordinator v"
-                + Version.getVersion()
+                + BatfishVersion.getVersionStatic()
                 + ". Enter ../application.wadl (relative to your URL) to see supported methods"));
   }
 
@@ -140,7 +141,7 @@ public class PoolMgrService {
                   "Worker version "
                       + workerVersion
                       + "is incompatible with coordinator version "
-                      + Version.getVersion()));
+                      + BatfishVersion.getVersionStatic()));
         }
 
         for (String worker : workersToAdd) {

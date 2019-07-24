@@ -87,6 +87,16 @@ ACL_UDP
   'acl_udp'
 ;
 
+ACTION
+:
+  'action'
+;
+
+ACTIVE
+:
+  'active'
+;
+
 ADD
 :
   'add'
@@ -207,6 +217,11 @@ AGGREGATE_ADDRESS
 AHP
 :
   'ahp'
+;
+
+ALIAS
+:
+  'alias'
 ;
 
 ALL
@@ -346,6 +361,11 @@ BIFF
   'biff'
 ;
 
+BOOT
+:
+  'boot'
+;
+
 BOOTPC
 :
   'bootpc'
@@ -361,6 +381,16 @@ BOTH
   'both'
 ;
 
+BPDUFILTER
+:
+  'bpdufilter'
+;
+
+BPDUGUARD
+:
+  'bpduguard'
+;
+
 BROADCAST
 :
   'broadcast'
@@ -369,6 +399,11 @@ BROADCAST
 CAPABILITY
 :
   'capability'
+;
+
+CAUSE
+:
+  'cause'
 ;
 
 CHANNEL_GROUP
@@ -389,6 +424,11 @@ CLI
 CLIENT_TO_CLIENT
 :
   'client-to-client'
+;
+
+CLOCK
+:
+  'clock'
 ;
 
 CLUSTER_ID
@@ -643,6 +683,11 @@ DOMAIN
   'domain'
 ;
 
+DOMAIN_LOOKUP
+:
+  'domain-lookup'
+;
+
 DONT_CAPABILITY_NEGOTIATE
 :
   'dont-capability-negotiate'
@@ -651,6 +696,11 @@ DONT_CAPABILITY_NEGOTIATE
 DOT1Q
 :
   [Dd] [Oo] [Tt] '1' [Qq]
+;
+
+DOT1Q_TUNNEL
+:
+  'dot1q-tunnel'
 ;
 
 DRIP
@@ -671,6 +721,11 @@ DSCP
 DUAL_AS
 :
   'dual-as'
+;
+
+DUPLEX
+:
+  'duplex'
 ;
 
 DVMRP
@@ -698,6 +753,11 @@ ECHO_REPLY
   'echo-reply'
 ;
 
+EDGE
+:
+  'edge'
+;
+
 EF
 :
   'ef'
@@ -713,6 +773,11 @@ EIBGP
   'eibgp'
 ;
 
+ENABLE
+:
+  'enable'
+;
+
 ENCAPSULATION
 :
   'encapsulation'
@@ -726,6 +791,11 @@ ENFORCE_FIRST_AS
 EQ
 :
   'eq'
+;
+
+ERRDISABLE
+:
+  'errdisable'
 ;
 
 ERRORS
@@ -823,6 +893,11 @@ FEATURE
   'feature'
 ;
 
+FEX_FABRIC
+:
+  'fex-fabric'
+;
+
 FILTER
 :
   'filter'
@@ -888,6 +963,11 @@ FTP
   'ftp'
 ;
 
+FULL
+:
+  'full'
+;
+
 GBPS
 :
   [Gg] [Bb] [Pp] [Ss]
@@ -941,6 +1021,11 @@ GROUP_TIMEOUT
 GT
 :
   'gt'
+;
+
+GUARD
+:
+  'guard'
 ;
 
 HEAD
@@ -1176,6 +1261,18 @@ ISOLATE
   'isolate'
 ;
 
+KICKSTART
+:
+  'kickstart'
+  // name of image follows if preceded by 'boot'
+  {
+    if (lastTokenType() == BOOT) {
+      pushMode(M_Remark);
+    }
+  }
+
+;
+
 KLOGIN
 :
   'klogin'
@@ -1224,6 +1321,16 @@ LAST_MEMBER_QUERY_INTERVAL
 LE
 :
   'le'
+;
+
+LEVEL
+:
+  'level'
+;
+
+LINK_FLAP
+:
+  'link-flap'
 ;
 
 LINK_LOCAL_GROUPS_SUPPRESSION
@@ -1279,6 +1386,16 @@ LOG_NEIGHBOR_CHANGES
 LOGIN
 :
   'login'
+;
+
+LONG
+:
+  'long'
+;
+
+LOOP
+:
+  'loop'
 ;
 
 LOOPBACK
@@ -1417,6 +1534,11 @@ MESSAGE_DIGEST_KEY
   'message-digest-key' -> pushMode ( M_Password )
 ;
 
+METHOD
+:
+  'method'
+;
+
 METRIC
 :
   'metric'
@@ -1447,9 +1569,19 @@ MOBILE_REDIRECT
   'mobile-redirect'
 ;
 
+MODE
+:
+  'mode'
+;
+
 MROUTER
 :
   'mrouter'
+;
+
+MST
+:
+  'mst'
 ;
 
 MTU
@@ -1474,7 +1606,17 @@ MVPN
 
 NAME
 :
-  'name' -> pushMode ( M_Word )
+  'name'
+  // If preceded by 'alias', name and then arbitrary text definition follow.
+  // Otherwise, just a name follows.
+  {
+    if (lastTokenType() == ALIAS) {
+      pushMode(M_AliasName);
+    } else {
+      pushMode(M_Word);
+    }
+  }
+
 ;
 
 NAMESERVER
@@ -1485,6 +1627,11 @@ NAMESERVER
 NATIVE
 :
   'native'
+;
+
+NEGOTIATE
+:
+  'negotiate'
 ;
 
 NEIGHBOR
@@ -1627,6 +1774,11 @@ NONE
   'none'
 ;
 
+NORMAL
+:
+  'normal'
+;
+
 NOS
 :
   'nos'
@@ -1662,9 +1814,26 @@ NVE
   'nve'
 ;
 
+NXOS
+:
+  'nxos'
+  // name of image follows if preceded by 'boot'
+  {
+    if (lastTokenType() == BOOT) {
+      pushMode(M_Remark);
+    }
+  }
+
+;
+
 OBJSTORE
 :
   'objstore'
+;
+
+ON
+:
+  'on'
 ;
 
 ON_STARTUP
@@ -1739,6 +1908,11 @@ PASSWORD
   'password' -> pushMode ( M_Password )
 ;
 
+PATHCOST
+:
+  'pathcost'
+;
+
 PCP
 :
   'pcp'
@@ -1804,6 +1978,11 @@ PIM6
   'pim6'
 ;
 
+POAP
+:
+  'poap'
+;
+
 POINT_TO_POINT
 :
   'point-to-point'
@@ -1819,9 +1998,19 @@ POP3
   'pop3'
 ;
 
+PORT
+:
+  'port'
+;
+
 PORT_CHANNEL
 :
   [Pp] [Oo] [Rr] [Tt] '-' [Cc] [Hh] [Aa] [Nn] [Nn] [Ee] [Ll]
+;
+
+PORT_PRIORITY
+:
+  'port-priority'
 ;
 
 PORT_UNREACHABLE
@@ -1894,6 +2083,11 @@ PROXY_LEAVE
   'proxy-leave'
 ;
 
+PSECURE_VIOLATION
+:
+  'psecure-violation'
+;
+
 PSH
 :
   'psh'
@@ -1947,6 +2141,11 @@ RECEIVE
 RECONNECT_INTERVAL
 :
   'reconnect-interval'
+;
+
+RECOVERY
+:
+  'recovery'
 ;
 
 REDIRECT
@@ -2039,6 +2238,11 @@ ROBUSTNESS_VARIABLE
   'robustness-variable'
 ;
 
+ROOT
+:
+  'root'
+;
+
 ROUTABLE
 :
   'routable'
@@ -2109,6 +2313,11 @@ SECONDARY
   'secondary'
 ;
 
+SECURITY_VIOLATION
+:
+  'security-violation'
+;
+
 SELECTION
 :
   'selection'
@@ -2127,6 +2336,11 @@ SEND_COMMUNITY
 SEQ
 :
   'seq'
+;
+
+SERVICE
+:
+  'service'
 ;
 
 SET
@@ -2194,6 +2408,16 @@ SOURCE_ROUTE_FAILED
   'source-route-failed'
 ;
 
+SPANNING_TREE
+:
+  'spanning-tree'
+;
+
+SPEED
+:
+  'speed'
+;
+
 SPF
 :
   'spf'
@@ -2242,6 +2466,11 @@ STATIC_GROUP
 STATISTICS
 :
   'statistics'
+;
+
+STORM_CONTROL
+:
+  'storm-control'
 ;
 
 STUB
@@ -2294,6 +2523,11 @@ SUPPRESS_MAP
   'suppress-map'
 ;
 
+SUSPEND_INDIVIDUAL
+:
+  'suspend-individual'
+;
+
 SWITCHPORT
 :
   'switchport'
@@ -2307,6 +2541,18 @@ SYN
 SYSLOG
 :
   'syslog'
+;
+
+SYSTEM
+:
+  'system'
+  // name of image follows if preceded by 'boot'
+  {
+    if (lastTokenType() == BOOT) {
+      pushMode(M_Remark);
+    }
+  }
+
 ;
 
 TABLE_MAP
@@ -2394,6 +2640,11 @@ TIMESTAMP_REQUEST
   'timestamp-request'
 ;
 
+TIMEZONE
+:
+  'timezone' -> pushMode(M_Remark)
+;
+
 TRACEROUTE
 :
   'traceroute'
@@ -2412,6 +2663,11 @@ TRACK
 TRANSPORT
 :
   'transport'
+;
+
+TRAP
+:
+  'trap'
 ;
 
 TRIGGER_DELAY
@@ -2434,6 +2690,11 @@ TTL_EXCEEDED
   'ttl-exceeded'
 ;
 
+TYPE
+:
+  'type'
+;
+
 TYPE_1
 :
   'type-1'
@@ -2442,6 +2703,11 @@ TYPE_1
 TYPE_2
 :
   'type-2'
+;
+
+UDLD
+:
+  'udld'
 ;
 
 UDP
@@ -2477,6 +2743,11 @@ UPDATE_SOURCE
 URG
 :
   'urg'
+;
+
+USERNAME
+:
+  'username' -> pushMode ( M_Remark )
 ;
 
 UUCP
@@ -3001,6 +3272,18 @@ F_WordChar
 :
   [0-9A-Za-z!@#$^*_=+.;:{}]
   | '-'
+;
+
+mode M_AliasName;
+
+M_AliasName_WORD
+:
+  F_Word -> type ( WORD ) , mode ( M_Remark )
+;
+
+M_AliasName_WS
+:
+  F_Whitespace+ -> channel ( HIDDEN )
 ;
 
 mode M_Banner;

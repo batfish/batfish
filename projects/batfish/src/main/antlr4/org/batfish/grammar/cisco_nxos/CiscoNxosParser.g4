@@ -20,6 +20,7 @@ statement
   | s_hostname
   | s_interface
   | s_ip
+  | s_no
   | s_null
   | s_nv
   | s_route_map
@@ -60,16 +61,37 @@ s_ip
     ip_access_list
     | ip_as_path_access_list
     | ip_community_list
+    | ip_null
     | ip_prefix_list
     | ip_route
   )
+;
+
+ip_null
+:
+  DOMAIN_LOOKUP
 ;
 
 s_null
 :
   NO?
   (
-    FEATURE
+    BOOT
+    | CLI
+    | CLOCK
+    | ERRDISABLE
+    | FEATURE
+    | SERVICE
+    | SPANNING_TREE
+    | USERNAME
+  ) null_rest_of_line
+;
+
+s_no
+:
+  NO
+  (
+    IP
   ) null_rest_of_line
 ;
 
