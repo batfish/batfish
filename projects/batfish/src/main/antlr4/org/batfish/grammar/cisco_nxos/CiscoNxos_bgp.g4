@@ -217,7 +217,7 @@ rb_af4_network
 
 rb_af4_redistribute_ospf
 :
-  REDISTRIBUTE OSPF source_tag = WORD ROUTE_MAP mapname = route_map_name
+  REDISTRIBUTE OSPF source_tag = router_ospf_name ROUTE_MAP mapname = route_map_name
   NEWLINE
 ;
 
