@@ -2619,7 +2619,7 @@ public class CiscoGrammarTest {
     BooleanExpr exprForDistributeList =
         new MatchPrefixSet(DestinationNetwork.instance(), new NamedPrefixSet("2"));
 
-    // rule to match the distribute list filter && the policy generated for redistribute static
+    // rule to match the distribute list filter && the policy generated for `redistribute eigrp 2`
     Conjunction unifiedPolicy =
         new Conjunction(
             ImmutableList.of(matchRedistributeOrIsInternalRoute, exprForDistributeList));
@@ -2696,6 +2696,7 @@ public class CiscoGrammarTest {
                     EigrpNeighborConfig.builder()
                         .setAsn(1L)
                         .setInterfaceName("Ethernet0")
+                        .setExportPolicy("~EIGRP_EXPORT_POLICY_default_1_Ethernet0")
                         .setPassive(false)
                         .setHostname("ios-eigrp-classic")
                         .setVrfName("default")
@@ -2705,6 +2706,7 @@ public class CiscoGrammarTest {
                     EigrpNeighborConfig.builder()
                         .setAsn(1L)
                         .setInterfaceName("Ethernet1")
+                        .setExportPolicy("~EIGRP_EXPORT_POLICY_default_1_Ethernet1")
                         .setPassive(false)
                         .setHostname("ios-eigrp-classic")
                         .setVrfName("default")
@@ -2714,6 +2716,7 @@ public class CiscoGrammarTest {
                     EigrpNeighborConfig.builder()
                         .setAsn(1L)
                         .setInterfaceName("Ethernet2")
+                        .setExportPolicy("~EIGRP_EXPORT_POLICY_default_1_Ethernet2")
                         .setPassive(true)
                         .setHostname("ios-eigrp-classic")
                         .setVrfName("default")
