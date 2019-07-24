@@ -1,0 +1,14 @@
+!RANCID-CONTENT-TYPE: cisco-nx
+!
+hostname nxos_ipv6_access_list
+!
+
+ipv6 access-list v6acl1
+  10 permit tcp dead:beef::1 eq www any
+  deny tcp any dead:beef::2 eq www
+  permit udp any eq 123 any
+  permit udp any any eq 456
+  permit icmp any any nd-na
+  permit icmp any any nd-ns
+  permit icmp any any router-advertisement
+  permit icmp any any router-solicitation
