@@ -774,13 +774,6 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
     _w = warnings;
   }
 
-  private boolean checkPortChannelCompatibilitySettings(Interface referenceIface, Interface iface) {
-    return Objects.equals(iface.getAccessVlan(), referenceIface.getAccessVlan())
-        && Objects.equals(iface.getAllowedVlans(), referenceIface.getAllowedVlans())
-        && Objects.equals(iface.getNativeVlan(), referenceIface.getNativeVlan())
-        && iface.getSwitchportMode() == referenceIface.getSwitchportMode();
-  }
-
   /**
    * Clears layer-3 configuration of an interface to enable safe assignment to a new VRF.
    *
@@ -803,11 +796,23 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
     return defaultReturnValue;
   }
 
-  private void copyPortChannelCompatibilitySettings(Interface referenceIface, Interface iface) {
+  /** This function must be kept in sync with {@link #copyPortChannelCompatibilitySettings}. */
+  private static boolean checkPortChannelCompatibilitySettings(
+      Interface referenceIface, Interface iface) {
+    return Objects.equals(iface.getAccessVlan(), referenceIface.getAccessVlan())
+        && Objects.equals(iface.getAllowedVlans(), referenceIface.getAllowedVlans())
+        && Objects.equals(iface.getNativeVlan(), referenceIface.getNativeVlan())
+        && iface.getSwitchportMode() == referenceIface.getSwitchportMode();
+  }
+
+  /** This function must be kept in sync with {@link #checkPortChannelCompatibilitySettings}. */
+  private static void copyPortChannelCompatibilitySettings(
+      Interface referenceIface, Interface iface) {
     iface.setAccessVlan(referenceIface.getAccessVlan());
     iface.setAllowedVlans(referenceIface.getAllowedVlans());
     iface.setNativeVlan(referenceIface.getNativeVlan());
     iface.setSwitchportMode(referenceIface.getSwitchportMode());
+    assert checkPortChannelCompatibilitySettings(referenceIface, iface);
   }
 
   @Override
@@ -889,7 +894,6 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
 
   @Override
   public void enterIcl_standard(Icl_standardContext ctx) {
-    int line = ctx.getStart().getLine();
     Long explicitSeq;
     if (ctx.seq != null) {
       Optional<Long> seqOpt = toLong(ctx, ctx.seq);
@@ -915,7 +919,7 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
             .computeIfAbsent(
                 name,
                 n -> {
-                  _configuration.defineStructure(IP_COMMUNITY_LIST_STANDARD, n, line);
+                  _configuration.defineStructure(IP_COMMUNITY_LIST_STANDARD, n, ctx);
                   return new IpCommunityListStandard(n);
                 });
     if (!(communityList instanceof IpCommunityListStandard)) {
@@ -1008,14 +1012,13 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
             .computeIfAbsent(
                 nameOpt.get(),
                 name -> {
-                  _configuration.defineStructure(IP_ACCESS_LIST, name, ctx.getStart().getLine());
+                  _configuration.defineStructure(IP_ACCESS_LIST, name, ctx);
                   return new IpAccessList(name);
                 });
   }
 
   @Override
   public void enterIp_as_path_access_list(Ip_as_path_access_listContext ctx) {
-    int line = ctx.getStart().getLine();
     Long explicitSeq;
     if (ctx.seq != null) {
       Optional<Long> seqOpt = toLong(ctx, ctx.seq);
@@ -1041,7 +1044,7 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
             .computeIfAbsent(
                 name,
                 n -> {
-                  _configuration.defineStructure(IP_AS_PATH_ACCESS_LIST, n, line);
+                  _configuration.defineStructure(IP_AS_PATH_ACCESS_LIST, n, ctx);
                   return new IpAsPathAccessList(n);
                 });
     SortedMap<Long, IpAsPathAccessListLine> lines = asPathAccessList.getLines();
@@ -1069,8 +1072,7 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
                         .computeIfAbsent(
                             name,
                             n -> {
-                              _configuration.defineStructure(
-                                  IP_PREFIX_LIST, name, ctx.getStart().getLine());
+                              _configuration.defineStructure(IP_PREFIX_LIST, name, ctx);
                               return new IpPrefixList(n);
                             }))
             .orElse(new IpPrefixList("dummy"));
@@ -1103,11 +1105,8 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
             .computeIfAbsent(
                 areaId,
                 id -> {
-                  // TODO: use new defineStructure from batfish/batfish#4281
                   _configuration.defineStructure(
-                      CiscoNxosStructureType.OSPF_AREA,
-                      Long.toString(id),
-                      ctx.getStart().getLine());
+                      CiscoNxosStructureType.OSPF_AREA, Long.toString(id), ctx);
                   return new OspfArea(id);
                 });
   }
@@ -1444,9 +1443,7 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
             .computeIfAbsent(
                 nameOrErr.get(),
                 name -> {
-                  // TODO: use new defineStructure from batfish/batfish#4281
-                  _configuration.defineStructure(
-                      CiscoNxosStructureType.ROUTER_OSPF, name, ctx.getStart().getLine());
+                  _configuration.defineStructure(CiscoNxosStructureType.ROUTER_OSPF, name, ctx);
                   return new DefaultVrfOspfProcess(name);
                 });
     _currentOspfProcess = _currentDefaultVrfOspfProcess;
@@ -2364,7 +2361,7 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
                             i,
                             n -> {
                               String nveName = "nve" + i;
-                              _configuration.defineStructure(NVE, nveName, line);
+                              _configuration.defineStructure(NVE, nveName, ctx);
                               _configuration.referenceStructure(
                                   NVE, nveName, NVE_SELF_REFERENCE, line);
                               return new Nve(i);
@@ -2457,7 +2454,7 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
                       .computeIfAbsent(
                           ifaceName,
                           n -> {
-                            _configuration.defineStructure(INTERFACE, n, line);
+                            _configuration.defineStructure(INTERFACE, n, ctx);
                             _configuration.referenceStructure(
                                 INTERFACE, n, INTERFACE_SELF_REFERENCE, line);
                             if (type == CiscoNxosInterfaceType.VLAN) {
@@ -2466,7 +2463,7 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
                               return newVlanInterface(n, i);
                             } else {
                               if (type == CiscoNxosInterfaceType.PORT_CHANNEL) {
-                                _configuration.defineStructure(PORT_CHANNEL, n, line);
+                                _configuration.defineStructure(PORT_CHANNEL, n, ctx);
                               }
                               return newNonVlanInterface(n, parentInterface, type);
                             }
@@ -2497,21 +2494,20 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
     if (!nameOpt.isPresent()) {
       return;
     }
-    int line = ctx.getStart().getLine();
     _currentRouteMapEntry =
         _configuration
             .getRouteMaps()
             .computeIfAbsent(
                 nameOpt.get(),
                 name -> {
-                  _configuration.defineStructure(ROUTE_MAP, name, line);
+                  _configuration.defineStructure(ROUTE_MAP, name, ctx);
                   return new RouteMap(name);
                 })
             .getEntries()
             .computeIfAbsent(
                 sequence,
                 seq -> {
-                  _configuration.defineStructure(ROUTE_MAP_ENTRY, seq.toString(), line);
+                  _configuration.defineStructure(ROUTE_MAP_ENTRY, seq.toString(), ctx);
                   return new RouteMapEntry(seq);
                 });
     _currentRouteMapEntry.setAction(toLineAction(ctx.action));
@@ -2535,7 +2531,7 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
             .computeIfAbsent(
                 nameOrErr.get(),
                 name -> {
-                  _configuration.defineStructure(VRF, name, ctx.getStart().getLine());
+                  _configuration.defineStructure(VRF, name, ctx);
                   return new Vrf(name);
                 });
   }
@@ -2543,7 +2539,6 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
   @Override
   public void enterVlan_vlan(Vlan_vlanContext ctx) {
     IntegerSpace vlans = toVlanIdRange(ctx, ctx.vlans);
-    int line = ctx.getStart().getLine();
     if (vlans == null) {
       _currentVlans = ImmutableList.of();
       return;
@@ -2557,7 +2552,7 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
                         .computeIfAbsent(
                             vlanId,
                             id -> {
-                              _configuration.defineStructure(VLAN, Integer.toString(id), line);
+                              _configuration.defineStructure(VLAN, Integer.toString(id), ctx);
                               return new Vlan(id);
                             }))
             .collect(ImmutableList.toImmutableList());
@@ -2941,8 +2936,8 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
   @Override
   public void exitI_channel_group(I_channel_groupContext ctx) {
     int line = ctx.getStart().getLine();
-    String channelGroup = toPortChannel(ctx, ctx.id);
-    if (channelGroup == null) {
+    String portChannelInterfaceName = toPortChannel(ctx, ctx.id);
+    if (portChannelInterfaceName == null) {
       return;
     }
     // To be added to a channel-group, all interfaces in range must be:
@@ -2955,19 +2950,23 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
     // - Otherwise, the new port-channel and interfaces beyond the first copy settings
     //   from the first interface in the range.
 
-    boolean channelExists = _configuration.getInterfaces().containsKey(channelGroup);
+    boolean portChannelExists =
+        _configuration.getInterfaces().containsKey(portChannelInterfaceName);
     boolean force = ctx.force != null;
 
-    _configuration.referenceStructure(PORT_CHANNEL, channelGroup, INTERFACE_CHANNEL_GROUP, line);
+    _configuration.referenceStructure(
+        PORT_CHANNEL, portChannelInterfaceName, INTERFACE_CHANNEL_GROUP, line);
 
     if (_currentInterfaces.isEmpty()) {
       // Stop now, since later logic requires non-empty list
       return;
     }
 
+    // Where settings are copied from: the port-channel[ID] if it exists, or the first interface
+    // in the current interface range.
     Interface referenceIface =
-        channelExists
-            ? _configuration.getInterfaces().get(channelGroup)
+        portChannelExists
+            ? _configuration.getInterfaces().get(portChannelInterfaceName)
             : _currentInterfaces.iterator().next();
 
     if (!force) {
@@ -2976,32 +2975,40 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
               .filter(iface -> iface != referenceIface)
               .filter(iface -> !checkPortChannelCompatibilitySettings(referenceIface, iface))
               .findFirst();
+      // If some incompatible interface found, warn, do not set the group,
+      // do not create the port-channel, and do not copy settings.
       if (incompatibleInterface.isPresent()) {
-        _w.redFlag(
+        _w.addWarning(
+            ctx,
+            getFullText(ctx),
+            _parser,
             String.format(
-                "Cannot set channel-group because interface '%s' has settings that do not conform to those of interface '%s' in: %s",
-                incompatibleInterface.get().getName(), referenceIface.getName(), getFullText(ctx)));
+                "Cannot set channel-group because interface '%s' has settings that do not conform to those of interface '%s'",
+                incompatibleInterface.get().getName(), referenceIface.getName()));
         return;
       }
     }
 
-    Interface portChannelIface;
-    if (channelExists) {
-      portChannelIface = referenceIface;
-    } else {
-      portChannelIface =
-          newNonVlanInterface(channelGroup, null, CiscoNxosInterfaceType.PORT_CHANNEL);
+    if (!portChannelExists) {
+      // Make the port-channel[ID] parent interface and copy settings "up" to it.
+      Interface portChannelIface =
+          newNonVlanInterface(portChannelInterfaceName, null, CiscoNxosInterfaceType.PORT_CHANNEL);
       copyPortChannelCompatibilitySettings(referenceIface, portChannelIface);
-      _configuration.getInterfaces().put(channelGroup, portChannelIface);
-      _configuration.defineStructure(INTERFACE, channelGroup, line);
-      _configuration.referenceStructure(INTERFACE, channelGroup, INTERFACE_SELF_REFERENCE, line);
-      _configuration.defineStructure(PORT_CHANNEL, channelGroup, line);
+      _configuration.getInterfaces().put(portChannelInterfaceName, portChannelIface);
+      _configuration.defineStructure(INTERFACE, portChannelInterfaceName, line);
+      _configuration.referenceStructure(
+          INTERFACE, portChannelInterfaceName, INTERFACE_SELF_REFERENCE, line);
+      _configuration.defineStructure(PORT_CHANNEL, portChannelInterfaceName, line);
     }
 
     _currentInterfaces.forEach(
         iface -> {
-          iface.setChannelGroup(channelGroup);
-          copyPortChannelCompatibilitySettings(referenceIface, iface);
+          iface.setChannelGroup(portChannelInterfaceName);
+          if (force) {
+            copyPortChannelCompatibilitySettings(referenceIface, iface);
+          } else {
+            assert checkPortChannelCompatibilitySettings(referenceIface, iface);
+          }
         });
   }
 
