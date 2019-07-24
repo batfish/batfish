@@ -876,7 +876,6 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
 
   @Override
   public void enterIcl_standard(Icl_standardContext ctx) {
-    int line = ctx.getStart().getLine();
     Long explicitSeq;
     if (ctx.seq != null) {
       Optional<Long> seqOpt = toLong(ctx, ctx.seq);
@@ -1002,7 +1001,6 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
 
   @Override
   public void enterIp_as_path_access_list(Ip_as_path_access_listContext ctx) {
-    int line = ctx.getStart().getLine();
     Long explicitSeq;
     if (ctx.seq != null) {
       Optional<Long> seqOpt = toLong(ctx, ctx.seq);
@@ -2478,7 +2476,6 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
     if (!nameOpt.isPresent()) {
       return;
     }
-    int line = ctx.getStart().getLine();
     _currentRouteMapEntry =
         _configuration
             .getRouteMaps()
@@ -2524,7 +2521,6 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
   @Override
   public void enterVlan_vlan(Vlan_vlanContext ctx) {
     IntegerSpace vlans = toVlanIdRange(ctx, ctx.vlans);
-    int line = ctx.getStart().getLine();
     if (vlans == null) {
       _currentVlans = ImmutableList.of();
       return;
