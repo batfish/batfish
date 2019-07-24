@@ -1541,7 +1541,7 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
     assert _currentBgpVrfIpAddressFamily instanceof BgpVrfIpv4AddressFamilyConfiguration;
     BgpVrfIpv4AddressFamilyConfiguration afConfig =
         (BgpVrfIpv4AddressFamilyConfiguration) _currentBgpVrfIpAddressFamily;
-    String mapname = "";
+    String mapname = null;
     if (ctx.mapname != null) {
       Optional<String> nameOrError = toString(ctx, ctx.mapname);
       if (!nameOrError.isPresent()) {
@@ -1553,7 +1553,7 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
     }
 
     Prefix prefix = toPrefix(ctx.network);
-    afConfig.addIpNetwork(prefix, mapname);
+    afConfig.addNetwork(prefix, mapname);
   }
 
   @Override
@@ -1615,7 +1615,7 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
 
   @Override
   public void exitRb_af6_network(Rb_af6_networkContext ctx) {
-    String mapname = "";
+    String mapname = null;
     if (ctx.mapname != null) {
       Optional<String> nameOrError = toString(ctx, ctx.mapname);
       if (!nameOrError.isPresent()) {

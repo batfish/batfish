@@ -46,12 +46,12 @@ public final class BgpVrfIpv4AddressFamilyConfiguration extends BgpVrfIpAddressF
         prefix, p -> new BgpVrfAddressFamilyAggregateNetworkConfiguration());
   }
 
-  public Collection<Network> getNetworks() {
-    return _ipNetworks.values();
+  public void addNetwork(Prefix prefix, @Nullable String routeMap) {
+    _ipNetworks.put(prefix, new Network(prefix, routeMap));
   }
 
-  public void addIpNetwork(Prefix prefix, @Nullable String routeMap) {
-    _ipNetworks.put(prefix, new Network(prefix, routeMap));
+  public Collection<Network> getNetworks() {
+    return _ipNetworks.values();
   }
 
   private final Map<Prefix, BgpVrfAddressFamilyAggregateNetworkConfiguration> _aggregateNetworks;
