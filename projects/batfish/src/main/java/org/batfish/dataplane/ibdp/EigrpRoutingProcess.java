@@ -55,6 +55,8 @@ final class EigrpRoutingProcess implements RoutingProcess<EigrpTopology, EigrpRo
 
   /** Parent process containing configuration */
   @Nonnull private final EigrpProcess _process;
+  /** Configuration containing the process */
+  @Nonnull private final Configuration _configuration;
   /** Name of the VRF in which this process resides */
   @Nonnull private final String _vrfName;
   /** Our AS number */
@@ -80,7 +82,7 @@ final class EigrpRoutingProcess implements RoutingProcess<EigrpTopology, EigrpRo
    * A {@link RibDelta} containing external routes we need to send/withdraw based on most recent
    * round of route redistribution
    */
-  @Nonnull private RibDelta<EigrpExternalRoute> _queuedForRedistribution;
+  @Nonnull private RibDelta<? extends AnnotatedRoute<AbstractRoute>> _queuedForRedistribution;
   /** Set of routes to be merged to the main RIB at the end of the iteration */
   @Nonnull private RibDelta.Builder<EigrpRoute> _changeSet;
 
@@ -108,6 +110,7 @@ final class EigrpRoutingProcess implements RoutingProcess<EigrpTopology, EigrpRo
     _internalRib = new EigrpInternalRib();
     _rib = new EigrpRib();
     _vrfName = vrfName;
+    _configuration = c;
 
     // get EIGRP export policy name
     String exportPolicyName = process.getExportPolicy();
@@ -158,8 +161,9 @@ final class EigrpRoutingProcess implements RoutingProcess<EigrpTopology, EigrpRo
     RibDelta<EigrpInternalRoute> internalDelta = processInternalRoutes(nc);
     sendOutInternalRoutes(internalDelta, allNodes);
 
-    // Send out anything we had queued for redistribution
-    sendOutExternalRoutes(_queuedForRedistribution, allNodes);
+    // Filter and transform redistribution queue according to per neighbor export policy and send
+    // out
+    filterTransformAndSendOutRedistributed(_queuedForRedistribution, allNodes);
     _queuedForRedistribution = RibDelta.empty();
 
     // Process new external routes and re-advertise them as necessary
@@ -171,20 +175,30 @@ final class EigrpRoutingProcess implements RoutingProcess<EigrpTopology, EigrpRo
     _changeSet.from(importRibDelta(_rib, externalDelta));
   }
 
-  @Nonnull
-  @Override
-  public RibDelta<EigrpRoute> getUpdatesForMainRib() {
-    return _changeSet.build();
+  private void filterTransformAndSendOutRedistributed(
+      RibDelta<? extends AnnotatedRoute<AbstractRoute>> queueForRedistribution,
+      Map<String, Node> allNodes) {
+    for (EigrpEdge eigrpEdge : _incomingExternalRoutes.keySet()) {
+      RoutingPolicy exportPolicyForEdge = getOwnExportPolicy(eigrpEdge.getNode2());
+      if (exportPolicyForEdge == null) {
+        // no need to export anything for this edge
+        continue;
+      }
+      RibDelta<EigrpExternalRoute> routesForExport =
+          filterAndTransform(queueForRedistribution, exportPolicyForEdge);
+      sendExternalRoutesOutFromEdge(eigrpEdge, routesForExport, allNodes);
+    }
   }
 
-  @Override
-  public void redistribute(RibDelta<? extends AnnotatedRoute<AbstractRoute>> mainRibDelta) {
+  private RibDelta<EigrpExternalRoute> filterAndTransform(
+      RibDelta<? extends AnnotatedRoute<AbstractRoute>> queueForRedistribution,
+      RoutingPolicy exportPolicy) {
     RibDelta.Builder<EigrpExternalRoute> builder = RibDelta.builder();
-    mainRibDelta
+    queueForRedistribution
         .getActions()
         .forEach(
             ra -> {
-              EigrpExternalRoute outputRoute = computeEigrpExportRoute(ra.getRoute());
+              EigrpExternalRoute outputRoute = computeEigrpExportRoute(exportPolicy, ra.getRoute());
               if (outputRoute == null) {
                 return; // no need to export
               }
@@ -194,7 +208,18 @@ final class EigrpRoutingProcess implements RoutingProcess<EigrpTopology, EigrpRo
                 builder.from(_externalRib.removeRouteGetDelta(outputRoute));
               }
             });
-    _queuedForRedistribution = builder.build();
+    return builder.build();
+  }
+
+  @Nonnull
+  @Override
+  public RibDelta<EigrpRoute> getUpdatesForMainRib() {
+    return _changeSet.build();
+  }
+
+  @Override
+  public void redistribute(RibDelta<? extends AnnotatedRoute<AbstractRoute>> mainRibDelta) {
+    _queuedForRedistribution = mainRibDelta;
   }
 
   @Override
@@ -337,42 +362,74 @@ final class EigrpRoutingProcess implements RoutingProcess<EigrpTopology, EigrpRo
       RibDelta<EigrpInternalRoute> initializationDelta, Map<String, Node> allNodes) {
     for (EigrpEdge eigrpEdge : _incomingInternalRoutes.keySet()) {
       EigrpRoutingProcess neighborProc = getNeighborEigrpProcess(allNodes, eigrpEdge, _asn);
-      neighborProc.enqueueInternalMessages(eigrpEdge.reverse(), initializationDelta.getActions());
+      neighborProc.enqueueInternalMessages(
+          eigrpEdge.reverse(),
+          initializationDelta
+              .getActions()
+              .filter(ra -> allowedByExportPolicy(eigrpEdge.getNode2(), ra.getRoute())));
     }
   }
 
   private void sendOutExternalRoutes(
       RibDelta<EigrpExternalRoute> queuedForRedistribution, Map<String, Node> allNodes) {
     for (EigrpEdge eigrpEdge : _incomingExternalRoutes.keySet()) {
-      EigrpRoutingProcess neighborProc = getNeighborEigrpProcess(allNodes, eigrpEdge, _asn);
-      neighborProc.enqueueExternalMessages(
-          eigrpEdge.reverse(), queuedForRedistribution.getActions());
+      sendExternalRoutesOutFromEdge(eigrpEdge, queuedForRedistribution, allNodes);
     }
   }
 
+  private void sendExternalRoutesOutFromEdge(
+      EigrpEdge eigrpEdge,
+      RibDelta<EigrpExternalRoute> queuedForRedistribution,
+      Map<String, Node> allNodes) {
+    getNeighborEigrpProcess(allNodes, eigrpEdge, _asn)
+        .enqueueExternalMessages(eigrpEdge.reverse(), queuedForRedistribution.getActions());
+  }
+
+  private boolean allowedByExportPolicy(
+      EigrpNeighborConfigId neighborConfigId, EigrpRoute eigrpRoute) {
+    RoutingPolicy exportPolicy = getOwnExportPolicy(neighborConfigId);
+    if (exportPolicy == null) {
+      return true;
+    }
+    return exportPolicy.process(eigrpRoute, eigrpRoute.toBuilder(), null, _vrfName, Direction.OUT);
+  }
+
+  @Nullable
+  private RoutingPolicy getOwnExportPolicy(EigrpNeighborConfigId neighborConfigId) {
+    EigrpNeighborConfig neighborConfig =
+        _process.getNeighbors().get(neighborConfigId.getInterfaceName());
+    assert neighborConfig != null;
+    String exportPolicyName = neighborConfig.getExportPolicy();
+    if (exportPolicyName == null) {
+      return null;
+    }
+    RoutingPolicy exportPolicy =
+        _configuration.getRoutingPolicies().get(neighborConfig.getExportPolicy());
+    assert exportPolicy != null;
+    return exportPolicy;
+  }
+
   /**
-   * Computes an exportable EIGRP route from policy and existing routes
+   * Computes an exportable EIGRP route from export policy and existing potential route for export
    *
    * @param potentialExportRoute Route to consider exporting
-   * @return The computed export route or null if no route will be exported
+   * @return The computed export route or null if the export policy denies the route
    */
   @Nullable
   private EigrpExternalRoute computeEigrpExportRoute(
-      AnnotatedRoute<AbstractRoute> potentialExportRoute) {
+      RoutingPolicy exportPolicy, AnnotatedRoute<AbstractRoute> potentialExportRoute) {
     AbstractRoute unannotatedPotentialRoute = potentialExportRoute.getRoute();
     EigrpExternalRoute.Builder outputRouteBuilder = EigrpExternalRoute.builder();
     // Set the metric to match the route metric by default for EIGRP into EIGRP
     if (unannotatedPotentialRoute instanceof EigrpRoute) {
       outputRouteBuilder.setEigrpMetric(((EigrpRoute) unannotatedPotentialRoute).getEigrpMetric());
     }
-    // Export based on the policy result of processing the potentialExportRoute
-    boolean accept =
-        _exportPolicy != null
-            && _exportPolicy.process(
-                potentialExportRoute, outputRouteBuilder, null, _vrfName, Direction.OUT);
-    if (!accept) {
+
+    if (!exportPolicy.process(
+        potentialExportRoute, outputRouteBuilder, null, _vrfName, Direction.OUT)) {
       return null;
     }
+
     outputRouteBuilder.setAdmin(_defaultExternalAdminCost);
     if (unannotatedPotentialRoute instanceof EigrpExternalRoute) {
       EigrpExternalRoute externalRoute = (EigrpExternalRoute) unannotatedPotentialRoute;
