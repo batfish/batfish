@@ -93,7 +93,7 @@ public final class Interface implements Serializable {
    * type}.
    */
   public static @Nonnull Interface newNonVlanInterface(
-      String name, String parentInterface, CiscoNxosInterfaceType type) {
+      String name, @Nullable String parentInterface, CiscoNxosInterfaceType type) {
     checkArgument(type != CiscoNxosInterfaceType.VLAN, "Expected non-VLAN interface type");
     return new Interface(name, parentInterface, type, null);
   }
