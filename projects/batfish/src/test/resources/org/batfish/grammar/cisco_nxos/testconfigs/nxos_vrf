@@ -3,13 +3,13 @@
 hostname nxos_vrf
 !
 
-! Add interface to vrf1
+! Add interface to Vrf1
 ! - shutdown = false
 ! - active = true
 interface Ethernet1/1
   no switchport
   no shutdown
-  vrf member vrf1
+  vrf member Vrf1
 !
 
 ! Add interface to non-existent vrf2
@@ -56,6 +56,7 @@ interface Ethernet1/5
 !
 
 !!! Keep VRF definitions under default VRF configuration to avoid accidental leakage
+! Note that VI name should be 'Vrf1' since that is how it was first used above.
 vrf context vrf1
   vni 10001
   rd 65001:10
