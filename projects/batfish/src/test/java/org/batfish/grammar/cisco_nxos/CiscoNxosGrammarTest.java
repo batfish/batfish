@@ -268,6 +268,12 @@ public final class CiscoNxosGrammarTest {
   }
 
   @Test
+  public void testClassMapParsing() {
+    // TODO: make into an extraction test
+    assertThat(parseVendorConfig("nxos_class_map"), notNullValue());
+  }
+
+  @Test
   public void testEvpn() {
     CiscoNxosConfiguration vc = parseVendorConfig("nxos_evpn");
     Evpn evpn = vc.getEvpn();
@@ -1991,6 +1997,12 @@ public final class CiscoNxosGrammarTest {
       assertThat(ospf, notNullValue());
       assertThat(ospf.getNetwork(), equalTo(POINT_TO_POINT));
     }
+  }
+
+  @Test
+  public void testPolicyMapParsing() {
+    // TODO: make into an extraction test
+    assertThat(parseVendorConfig("nxos_policy_map"), notNullValue());
   }
 
   @Test
