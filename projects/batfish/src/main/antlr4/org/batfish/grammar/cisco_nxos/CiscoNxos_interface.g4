@@ -40,6 +40,7 @@ s_interface_regular
     | i_no
     | i_null
     | i_shutdown
+    | i_speed
     | i_switchport
     | i_vrf_member
   )*
@@ -210,13 +211,15 @@ i_no_null
 :
   (
     IP
+    | NEGOTIATE
   ) null_rest_of_line
 ;
 
 i_null
 :
   (
-    LACP
+    DUPLEX
+    | LACP
     | SPANNING_TREE
     | STORM_CONTROL
   ) null_rest_of_line
@@ -225,6 +228,17 @@ i_null
 i_shutdown
 :
   SHUTDOWN NEWLINE
+;
+
+i_speed
+:
+  SPEED speed = interface_speed NEWLINE
+;
+
+interface_speed
+:
+// 100; 1,000; 10,000; 25,000; 40,000; 100,000
+  uint32
 ;
 
 i_switchport

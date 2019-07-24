@@ -172,6 +172,7 @@ import org.batfish.grammar.cisco_nxos.CiscoNxosParser.I_no_autostateContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.I_no_shutdownContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.I_no_switchportContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.I_shutdownContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.I_speedContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.I_switchport_accessContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.I_switchport_mode_accessContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.I_switchport_mode_dot1q_tunnelContext;
@@ -472,6 +473,15 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
   private static final IntegerSpace DSCP_RANGE = IntegerSpace.of(Range.closed(0, 63));
   private static final IntegerSpace INTERFACE_DESCRIPTION_LENGTH_RANGE =
       IntegerSpace.of(Range.closed(1, 254));
+  private static final IntegerSpace INTERFACE_SPEED_RANGE_MBPS =
+      IntegerSpace.builder()
+          .including(100)
+          .including(1_000)
+          .including(10_000)
+          .including(25_000)
+          .including(40_000)
+          .including(100_000)
+          .build();
   private static final LongSpace IP_ACCESS_LIST_LINE_NUMBER_RANGE =
       LongSpace.of(Range.closed(1L, 4294967295L));
   private static final IntegerSpace IP_ACCESS_LIST_NAME_LENGTH_RANGE =
@@ -838,6 +848,12 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
   @Override
   public void exitEv_vni(Ev_vniContext ctx) {
     _currentEvpnVni = null;
+  }
+
+  @Override
+  public void exitI_speed(I_speedContext ctx) {
+    toIntegerInSpace(ctx, ctx.speed, INTERFACE_SPEED_RANGE_MBPS, "interface speed")
+        .ifPresent(speed -> _currentInterfaces.forEach(iface -> iface.setSpeed(speed)));
   }
 
   @Override
