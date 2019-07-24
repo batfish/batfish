@@ -3088,7 +3088,7 @@ public final class CiscoNxosGrammarTest {
     String hostname = "nxos_vrf";
     Configuration c = parseConfig(hostname);
 
-    assertThat(c.getVrfs(), hasKeys(DEFAULT_VRF_NAME, NULL_VRF_NAME, "vrf1", "vrf3"));
+    assertThat(c.getVrfs(), hasKeys(DEFAULT_VRF_NAME, NULL_VRF_NAME, "Vrf1", "vrf3"));
     {
       org.batfish.datamodel.Vrf vrf = c.getVrfs().get(DEFAULT_VRF_NAME);
       assertThat(vrf, VrfMatchers.hasInterfaces(empty()));
@@ -3098,7 +3098,7 @@ public final class CiscoNxosGrammarTest {
       assertThat(vrf, VrfMatchers.hasInterfaces(contains("Ethernet1/2")));
     }
     {
-      org.batfish.datamodel.Vrf vrf = c.getVrfs().get("vrf1");
+      org.batfish.datamodel.Vrf vrf = c.getVrfs().get("Vrf1");
       assertThat(
           vrf, VrfMatchers.hasInterfaces(contains("Ethernet1/1", "Ethernet1/3", "Ethernet1/4")));
     }
@@ -3140,13 +3140,13 @@ public final class CiscoNxosGrammarTest {
     String hostname = "nxos_vrf";
     CiscoNxosConfiguration vc = parseVendorConfig(hostname);
 
-    assertThat(vc.getVrfs(), hasKeys("vrf1", "vrf3"));
+    assertThat(vc.getVrfs(), hasKeys("Vrf1", "vrf3"));
     {
       Vrf vrf = vc.getDefaultVrf();
       assertFalse(vrf.getShutdown());
     }
     {
-      Vrf vrf = vc.getVrfs().get("vrf1");
+      Vrf vrf = vc.getVrfs().get("Vrf1");
       assertFalse(vrf.getShutdown());
       assertThat(
           vrf.getRd(), equalTo(RouteDistinguisherOrAuto.of(RouteDistinguisher.from(65001, 10L))));
@@ -3180,7 +3180,7 @@ public final class CiscoNxosGrammarTest {
     {
       Interface iface = vc.getInterfaces().get("Ethernet1/1");
       assertFalse(iface.getShutdown());
-      assertThat(iface.getVrfMember(), equalTo("vrf1"));
+      assertThat(iface.getVrfMember(), equalTo("Vrf1"));
     }
     {
       Interface iface = vc.getInterfaces().get("Ethernet1/2");
@@ -3190,13 +3190,13 @@ public final class CiscoNxosGrammarTest {
     {
       Interface iface = vc.getInterfaces().get("Ethernet1/3");
       assertFalse(iface.getShutdown());
-      assertThat(iface.getVrfMember(), equalTo("vrf1"));
+      assertThat(iface.getVrfMember(), equalTo("Vrf1"));
       assertThat(iface.getAddress(), nullValue());
     }
     {
       Interface iface = vc.getInterfaces().get("Ethernet1/4");
       assertFalse(iface.getShutdown());
-      assertThat(iface.getVrfMember(), equalTo("vrf1"));
+      assertThat(iface.getVrfMember(), equalTo("Vrf1"));
       assertThat(
           iface.getAddress().getAddress(), equalTo(ConcreteInterfaceAddress.parse("10.0.4.1/24")));
     }
