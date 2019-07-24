@@ -1471,7 +1471,7 @@ public class CiscoConversions {
                   DestinationNetwork.instance(),
                   new NamedPrefixSet(distributeList.getFilterName())));
     }
-    String policyName = String.format("~EIGRP_DIST_LIST_%s_%s_%s", vrfName, asn, ifaceName);
+    String policyName = String.format("~EIGRP_EXPORT_POLICY_%s_%s_%s", vrfName, asn, ifaceName);
     RoutingPolicy routingPolicy = new RoutingPolicy(policyName, c);
     routingPolicy
         .getStatements()

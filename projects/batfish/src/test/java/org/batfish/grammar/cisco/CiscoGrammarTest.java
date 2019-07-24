@@ -2592,7 +2592,7 @@ public class CiscoGrammarTest {
   public void testIosEigrpDistributeListConversion() throws IOException {
     Configuration c = parseConfig("ios-eigrp-distribute-list");
 
-    String distListPolicyName = "~EIGRP_DIST_LIST_default_1_GigabitEthernet0/0";
+    String distListPolicyName = "~EIGRP_EXPORT_POLICY_default_1_GigabitEthernet0/0";
 
     assertThat(
         c.getDefaultVrf()
@@ -2602,8 +2602,6 @@ public class CiscoGrammarTest {
             .get("GigabitEthernet0/0")
             .getExportPolicy(),
         equalTo(distListPolicyName));
-
-    assertThat(c.getRoutingPolicies(), hasKey(distListPolicyName));
 
     BooleanExpr matchAsn2 = new MatchProcessAsn(2L);
     BooleanExpr matchAsn1 = new MatchProcessAsn(1L);
@@ -2634,6 +2632,49 @@ public class CiscoGrammarTest {
                     unifiedPolicy,
                     ImmutableList.of(Statements.ExitAccept.toStaticStatement()),
                     ImmutableList.of(Statements.ExitReject.toStaticStatement())))));
+
+    assertThat(c.getRoutingPolicies(), hasKey(distListPolicyName));
+    RoutingPolicy routingPolicy = c.getRoutingPolicies().get(distListPolicyName);
+    EigrpMetric metric =
+        EigrpMetric.builder().setBandwidth(1d).setDelay(1d).setMode(EigrpProcessMode.NAMED).build();
+    // a route redistributed from router EIGRP 2 and allowed by distribute list
+    assertTrue(
+        routingPolicy.process(
+            EigrpExternalRoute.builder()
+                .setNetwork(Prefix.parse("172.21.30.0/24"))
+                .setEigrpMetric(metric)
+                .setProcessAsn(2L)
+                .setDestinationAsn(5L)
+                .build(),
+            EigrpExternalRoute.builder(),
+            null,
+            "default",
+            Direction.OUT));
+    // a route redistributed from router EIGRP 2 and denied by distribute list
+    assertFalse(
+        routingPolicy.process(
+            EigrpExternalRoute.builder()
+                .setNetwork(Prefix.parse("172.21.31.0/24"))
+                .setEigrpMetric(metric)
+                .setProcessAsn(2L)
+                .setDestinationAsn(5L)
+                .build(),
+            EigrpExternalRoute.builder(),
+            null,
+            "default",
+            Direction.OUT));
+    // a route redistributed internally from router EIGRP 1 and allowed by distribute list
+    assertTrue(
+        routingPolicy.process(
+            EigrpInternalRoute.builder()
+                .setNetwork(Prefix.parse("172.21.30.0/24"))
+                .setEigrpMetric(metric)
+                .setProcessAsn(1L)
+                .build(),
+            EigrpExternalRoute.builder(),
+            null,
+            "default",
+            Direction.OUT));
   }
 
   @Test
