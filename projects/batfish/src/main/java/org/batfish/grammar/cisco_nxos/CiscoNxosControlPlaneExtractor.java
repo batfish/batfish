@@ -75,9 +75,11 @@ import static org.batfish.representation.cisco_nxos.Interface.newVlanInterface;
 import static org.batfish.representation.cisco_nxos.StaticRoute.STATIC_ROUTE_PREFERENCE_RANGE;
 import static org.batfish.representation.cisco_nxos.StaticRoute.STATIC_ROUTE_TRACK_RANGE;
 
+import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Range;
+import com.google.common.collect.Table;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -517,7 +519,6 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
       IntegerSpace.of(Range.closed(1, 63));
   private static final IntegerSpace IP_PREFIX_LIST_PREFIX_LENGTH_RANGE =
       IntegerSpace.of(Range.closed(1, 32));
-  private static final int MAX_VRF_NAME_LENGTH = 32;
   private static final IntegerSpace NUM_AS_PATH_PREPENDS_RANGE =
       IntegerSpace.of(Range.closed(1, 10));
   private static final IntegerSpace OSPF_AREA_DEFAULT_COST_RANGE =
@@ -558,6 +559,7 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
   private static final IntegerSpace TCP_PORT_RANGE = IntegerSpace.of(Range.closed(0, 65535));
   private static final IntegerSpace UDP_PORT_RANGE = IntegerSpace.of(Range.closed(0, 65535));
   private static final IntegerSpace VNI_RANGE = IntegerSpace.of(Range.closed(0, 16777214));
+  private static final IntegerSpace VRF_NAME_LENGTH_RANGE = IntegerSpace.of(Range.closed(1, 32));
 
   private static @Nonnull IpAddressSpec toAddressSpec(Acllal3_address_specContext ctx) {
     if (ctx.address != null) {
@@ -745,6 +747,21 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
   private Vrf _currentVrf;
   private boolean _inIpv6BgpPeer;
 
+  /**
+   * On NX-OS, many structure names are case-insensitive but capitalized according to how they were
+   * entered at first use. This table keeps track of the preferred name for each of the structures.
+   *
+   * <p>{@code (Structure Type, LowerCaseName) -> Preferred name}.
+   */
+  private final @Nonnull Table<CiscoNxosStructureType, String, String> _preferredNames;
+
+  /** Returns the preferred name for a structure with the given name and type. */
+  private @Nonnull String getPreferredName(String configName, CiscoNxosStructureType type) {
+    return _preferredNames
+        .row(type)
+        .computeIfAbsent(configName.toLowerCase(), lcName -> configName);
+  }
+
   private @Nonnull final CiscoNxosCombinedParser _parser;
   private @Nonnull final String _text;
   private @Nonnull final Warnings _w;
@@ -753,6 +770,7 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
       String text, CiscoNxosCombinedParser parser, Warnings warnings) {
     _text = text;
     _parser = parser;
+    _preferredNames = HashBasedTable.create();
     _w = warnings;
   }
 
@@ -4285,19 +4303,10 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
   }
 
   private @Nonnull Optional<String> toString(ParserRuleContext messageCtx, Vrf_nameContext ctx) {
-    String name = ctx.getText();
-    if (name.length() > MAX_VRF_NAME_LENGTH) {
-      _w.addWarning(
-          messageCtx,
-          getFullText(messageCtx),
-          _parser,
-          String.format(
-              "VRF name cannot exceed %d chars, but was '%s' in: %s",
-              MAX_VRF_NAME_LENGTH, name, getFullText(messageCtx)));
-      return Optional.empty();
-    }
-    // Case-insensitive, so just canonicalize as lower-case
-    return Optional.of(name.toLowerCase());
+    Optional<String> vrfName =
+        toStringWithLengthInSpace(messageCtx, ctx, VRF_NAME_LENGTH_RANGE, "VRF name");
+    // VRF names are case-insensitive.
+    return vrfName.map(name -> getPreferredName(name, VRF));
   }
 
   /**
