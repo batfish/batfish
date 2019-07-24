@@ -1338,6 +1338,11 @@ LINK_LOCAL_GROUPS_SUPPRESSION
   'link-local-groups-suppression'
 ;
 
+LINK_STATE
+:
+  'link-state'
+;
+
 LISP
 :
   'lisp'
@@ -2218,6 +2223,11 @@ RESTART_TIME
   'restart-time'
 ;
 
+RETAIN
+:
+  'retain'
+;
+
 RIP
 :
   'rip'
@@ -2778,6 +2788,16 @@ VN_SEGMENT_VLAN_BASED
 VNI
 :
   'vni'
+;
+
+VPNV4
+:
+  'vpnv4'
+;
+
+VPNV6
+:
+  'vpnv6'
 ;
 
 VRF
