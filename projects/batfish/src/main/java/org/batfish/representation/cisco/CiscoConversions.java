@@ -1161,11 +1161,26 @@ public class CiscoConversions {
     return newProcess.build();
   }
 
+  /**
+   * Creates a {@link BooleanExpr} to match internal EIGRP routes of an {@link EigrpProcess}
+   *
+   * @param localAsn ASN of the {@link EigrpProcess} whose internal routes are to be matched
+   * @return {@link BooleanExpr}
+   */
   static BooleanExpr exprToAllowEigrpInternalRoutes(long localAsn) {
     return new Conjunction(
         ImmutableList.of(new MatchProtocol(RoutingProtocol.EIGRP), new MatchProcessAsn(localAsn)));
   }
 
+  /**
+   * Converts {@link EigrpRedistributionPolicy}s in an {@link EigrpProcess} to equivalent {@link If}
+   * statements
+   *
+   * @param eigrpRedistributionPolicies {@link EigrpRedistributionPolicy}s of the EIGRP process
+   * @param vsEigrpProc Vendor specific {@link EigrpProcess}
+   * @param vsConfig Vendor specific {@link CiscoConfiguration configuration}
+   * @return {@link List} of {@link If} statements
+   */
   static List<If> eigrpRedistributionPoliciesToStatements(
       Collection<EigrpRedistributionPolicy> eigrpRedistributionPolicies,
       EigrpProcess vsEigrpProc,
