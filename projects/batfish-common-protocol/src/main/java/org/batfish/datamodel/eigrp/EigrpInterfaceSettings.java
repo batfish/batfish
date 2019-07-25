@@ -11,18 +11,25 @@ import javax.annotation.Nullable;
 public class EigrpInterfaceSettings implements Serializable {
   private static final String PROP_ASN = "asn";
   private static final String PROP_ENABLED = "enabled";
+  private static final String PROP_EXPORT_POLICY = "exportPolicy";
   private static final String PROP_METRIC = "metric";
   private static final String PROP_PASSIVE = "passive";
 
   private final long _asn;
   private final boolean _enabled;
+  @Nullable private final String _exportPolicy;
   private @Nonnull final EigrpMetric _metric;
   private final boolean _passive;
 
   private EigrpInterfaceSettings(
-      long asn, boolean enabled, @Nonnull EigrpMetric metric, boolean passive) {
+      long asn,
+      boolean enabled,
+      @Nullable String exportPolicy,
+      @Nonnull EigrpMetric metric,
+      boolean passive) {
     _asn = asn;
     _enabled = enabled;
+    _exportPolicy = exportPolicy;
     _metric = metric;
     _passive = passive;
   }
@@ -31,9 +38,10 @@ public class EigrpInterfaceSettings implements Serializable {
   private static EigrpInterfaceSettings create(
       @JsonProperty(PROP_ASN) Long asn,
       @JsonProperty(PROP_ENABLED) boolean enabled,
+      @Nullable @JsonProperty(PROP_EXPORT_POLICY) String exportPolicy,
       @JsonProperty(PROP_METRIC) EigrpMetric metric,
       @JsonProperty(PROP_PASSIVE) boolean passive) {
-    return new EigrpInterfaceSettings(asn, enabled, metric, passive);
+    return new EigrpInterfaceSettings(asn, enabled, exportPolicy, metric, passive);
   }
 
   public static Builder builder() {
@@ -51,6 +59,7 @@ public class EigrpInterfaceSettings implements Serializable {
     EigrpInterfaceSettings rhs = (EigrpInterfaceSettings) obj;
     return Objects.equals(_asn, rhs._asn)
         && (_enabled == rhs._enabled)
+        && Objects.equals(_exportPolicy, rhs._exportPolicy)
         && Objects.equals(_metric, rhs._metric)
         && _passive == rhs._passive;
   }
@@ -65,6 +74,12 @@ public class EigrpInterfaceSettings implements Serializable {
   @JsonProperty(PROP_ENABLED)
   public boolean getEnabled() {
     return _enabled;
+  }
+
+  /** @return Name of the export policy for this interface if there is any */
+  @Nullable
+  public String getExportPolicy() {
+    return _exportPolicy;
   }
 
   /** @return The interface metric */
@@ -82,7 +97,7 @@ public class EigrpInterfaceSettings implements Serializable {
 
   @Override
   public int hashCode() {
-    return Objects.hash(_asn, _enabled, _metric, _passive);
+    return Objects.hash(_asn, _enabled, _exportPolicy, _metric, _passive);
   }
 
   public static class Builder {
@@ -90,6 +105,8 @@ public class EigrpInterfaceSettings implements Serializable {
     @Nullable private Long _asn;
 
     private boolean _enabled;
+
+    @Nullable private String _exportPolicy;
 
     @Nullable private EigrpMetric _metric;
 
@@ -102,7 +119,7 @@ public class EigrpInterfaceSettings implements Serializable {
       if (_asn == null || _metric == null) {
         return null;
       }
-      return new EigrpInterfaceSettings(_asn, _enabled, _metric, _passive);
+      return new EigrpInterfaceSettings(_asn, _enabled, _exportPolicy, _metric, _passive);
     }
 
     public Builder setAsn(@Nullable Long asn) {
@@ -112,6 +129,11 @@ public class EigrpInterfaceSettings implements Serializable {
 
     public Builder setEnabled(boolean enabled) {
       _enabled = enabled;
+      return this;
+    }
+
+    public Builder setExportPolicy(@Nullable String exportPolicy) {
+      _exportPolicy = exportPolicy;
       return this;
     }
 

@@ -26,6 +26,7 @@ import static org.batfish.datamodel.matchers.InterfaceMatchers.hasDependencies;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasDescription;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasInterfaceType;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasMtu;
+import static org.batfish.datamodel.matchers.InterfaceMatchers.hasSpeed;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasSwitchPortMode;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasVlan;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.isActive;
@@ -101,6 +102,7 @@ import org.batfish.datamodel.NamedPort;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.RouteFilterLine;
 import org.batfish.datamodel.RouteFilterList;
+import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.SwitchportMode;
 import org.batfish.datamodel.TcpFlags;
@@ -115,6 +117,10 @@ import org.batfish.main.BatfishTestUtils;
 import org.batfish.representation.cisco_nxos.ActionIpAccessListLine;
 import org.batfish.representation.cisco_nxos.AddrGroupIpAddressSpec;
 import org.batfish.representation.cisco_nxos.AddressFamily;
+import org.batfish.representation.cisco_nxos.BgpGlobalConfiguration;
+import org.batfish.representation.cisco_nxos.BgpRedistributionPolicy;
+import org.batfish.representation.cisco_nxos.BgpVrfConfiguration;
+import org.batfish.representation.cisco_nxos.BgpVrfIpv4AddressFamilyConfiguration;
 import org.batfish.representation.cisco_nxos.CiscoNxosConfiguration;
 import org.batfish.representation.cisco_nxos.CiscoNxosInterfaceType;
 import org.batfish.representation.cisco_nxos.CiscoNxosStructureType;
@@ -267,7 +273,34 @@ public final class CiscoNxosGrammarTest {
   }
 
   @Test
-  public void testEvpn() {
+  public void testClassMapParsing() {
+    // TODO: make into an extraction test
+    assertThat(parseVendorConfig("nxos_class_map"), notNullValue());
+  }
+
+  @Test
+  public void testBgpExtraction() {
+    CiscoNxosConfiguration vc = parseVendorConfig("nxos_bgp");
+    BgpGlobalConfiguration bgpGlobal = vc.getBgpGlobalConfiguration();
+    assertThat(bgpGlobal, notNullValue());
+
+    assertThat(bgpGlobal.getVrfs(), hasKeys(DEFAULT_VRF_NAME));
+    BgpVrfConfiguration defaultBgp = bgpGlobal.getOrCreateVrf(DEFAULT_VRF_NAME);
+
+    BgpVrfIpv4AddressFamilyConfiguration ipv4u = defaultBgp.getIpv4UnicastAddressFamily();
+    assertThat(ipv4u, notNullValue());
+
+    assertThat(
+        ipv4u.getRedistributionPolicy(RoutingProtocol.CONNECTED),
+        equalTo(new BgpRedistributionPolicy("DIR_MAP", null)));
+
+    assertThat(
+        ipv4u.getRedistributionPolicy(RoutingProtocol.OSPF),
+        equalTo(new BgpRedistributionPolicy("OSPF_MAP", "ospf_proc")));
+  }
+
+  @Test
+  public void testEvpnExtraction() {
     CiscoNxosConfiguration vc = parseVendorConfig("nxos_evpn");
     Evpn evpn = vc.getEvpn();
     assertThat(evpn, not(nullValue()));
@@ -323,6 +356,12 @@ public final class CiscoNxosGrammarTest {
     CiscoNxosConfiguration vc = parseVendorConfig(hostname);
 
     assertThat(vc.getHostname(), equalTo(hostname));
+  }
+
+  @Test
+  public void testIgnore() {
+    // TODO: make into a ref test
+    assertThat(parseVendorConfig("nxos_ignore"), notNullValue());
   }
 
   @Test
@@ -401,6 +440,43 @@ public final class CiscoNxosGrammarTest {
   }
 
   @Test
+  public void testInterfaceSpanningTreeParsing() {
+    // TODO: make into extraction test
+    assertThat(parseVendorConfig("nxos_interface_spanning_tree"), notNullValue());
+  }
+
+  @Test
+  public void testInterfaceSpeedConversion() throws IOException {
+    String hostname = "nxos_interface_speed";
+    Configuration c = parseConfig(hostname);
+
+    assertThat(c.getAllInterfaces(), hasKeys("Ethernet1/1", "port-channel1"));
+    {
+      org.batfish.datamodel.Interface iface = c.getAllInterfaces().get("Ethernet1/1");
+      assertThat(iface, hasSpeed(100E9D));
+      assertThat(iface, hasBandwidth(100E9D));
+    }
+  }
+
+  @Test
+  public void testInterfaceSpeedExtraction() {
+    String hostname = "nxos_interface_speed";
+    CiscoNxosConfiguration vc = parseVendorConfig(hostname);
+
+    assertThat(vc.getInterfaces(), hasKeys("Ethernet1/1", "port-channel1"));
+    {
+      Interface iface = vc.getInterfaces().get("Ethernet1/1");
+      assertThat(iface.getSpeedMbps(), equalTo(100000));
+    }
+  }
+
+  @Test
+  public void testInterfaceStormControlParsing() {
+    // TODO: make into extraction test
+    assertThat(parseVendorConfig("nxos_interface_storm_control"), notNullValue());
+  }
+
+  @Test
   public void testInterfaceSwitchportConversion() throws IOException {
     String hostname = "nxos_interface_switchport";
     Configuration c = parseConfig(hostname);
@@ -420,6 +496,10 @@ public final class CiscoNxosGrammarTest {
             "Ethernet1/8",
             "Ethernet1/9",
             "Ethernet1/10",
+            "Ethernet1/11",
+            "Ethernet1/12",
+            "Ethernet1/13",
+            "Ethernet1/14",
             "loopback0",
             "mgmt0",
             "port-channel1",
@@ -530,6 +610,20 @@ public final class CiscoNxosGrammarTest {
       assertThat(iface.getNativeVlan(), equalTo(1));
       assertThat(iface.getAllowedVlans(), equalTo(IntegerSpace.of(Range.closed(1, 2))));
     }
+    {
+      org.batfish.datamodel.Interface iface = c.getAllInterfaces().get("Ethernet1/11");
+      assertThat(iface, isActive());
+      assertThat(iface.getSwitchportMode(), equalTo(SwitchportMode.ACCESS));
+      assertThat(iface.getAccessVlan(), equalTo(1));
+    }
+    // TODO: something with dot1q-tunnel, fex-fabric
+    {
+      org.batfish.datamodel.Interface iface = c.getAllInterfaces().get("Ethernet1/14");
+      assertThat(iface, isActive());
+      assertThat(iface.getSwitchportMode(), equalTo(SwitchportMode.TRUNK));
+      assertThat(iface.getNativeVlan(), equalTo(1));
+      assertThat(iface.getAllowedVlans(), equalTo(IntegerSpace.of(Range.closed(1, 4094))));
+    }
   }
 
   @Test
@@ -552,6 +646,10 @@ public final class CiscoNxosGrammarTest {
             "Ethernet1/8",
             "Ethernet1/9",
             "Ethernet1/10",
+            "Ethernet1/11",
+            "Ethernet1/12",
+            "Ethernet1/13",
+            "Ethernet1/14",
             "loopback0",
             "mgmt0",
             "port-channel1",
@@ -661,6 +759,20 @@ public final class CiscoNxosGrammarTest {
       assertThat(iface.getNativeVlan(), equalTo(1));
       assertThat(iface.getAllowedVlans(), equalTo(IntegerSpace.of(Range.closed(1, 2))));
     }
+    {
+      Interface iface = vc.getInterfaces().get("Ethernet1/11");
+      assertFalse(iface.getShutdown());
+      assertThat(iface.getSwitchportMode(), equalTo(SwitchportMode.ACCESS));
+      assertThat(iface.getAccessVlan(), equalTo(1));
+    }
+    // TODO: something with dot1q-tunnel, fex-fabric
+    {
+      Interface iface = vc.getInterfaces().get("Ethernet1/14");
+      assertFalse(iface.getShutdown());
+      assertThat(iface.getSwitchportMode(), equalTo(SwitchportMode.TRUNK));
+      assertThat(iface.getNativeVlan(), equalTo(1));
+      assertThat(iface.getAllowedVlans(), equalTo(IntegerSpace.of(Range.closed(1, 4094))));
+    }
   }
 
   @Test
@@ -696,6 +808,12 @@ public final class CiscoNxosGrammarTest {
       assertThat(iface.getSwitchportMode(), equalTo(SwitchportMode.ACCESS));
       assertThat(iface.getAccessVlan(), equalTo(1));
     }
+  }
+
+  @Test
+  public void testInterfacePortChannelParsing() {
+    // TODO: change to extraction test
+    assertThat(parseVendorConfig("nxos_interface_port_channel"), notNullValue());
   }
 
   /**
@@ -1497,6 +1615,12 @@ public final class CiscoNxosGrammarTest {
   }
 
   @Test
+  public void testIpv6AccessListParsing() {
+    // TODO: make into extraction test
+    assertThat(parseVendorConfig("nxos_ipv6_access_list"), notNullValue());
+  }
+
+  @Test
   public void testNveExtraction() {
     CiscoNxosConfiguration vc = parseVendorConfig("nxos_nve");
     Map<Integer, Nve> nves = vc.getNves();
@@ -1908,6 +2032,12 @@ public final class CiscoNxosGrammarTest {
   }
 
   @Test
+  public void testPolicyMapParsing() {
+    // TODO: make into an extraction test
+    assertThat(parseVendorConfig("nxos_policy_map"), notNullValue());
+  }
+
+  @Test
   public void testPortChannelConversion() throws IOException {
     String hostname = "nxos_port_channel";
     Configuration c = parseConfig(hostname);
@@ -1925,12 +2055,16 @@ public final class CiscoNxosGrammarTest {
             "Ethernet1/9",
             "Ethernet1/10",
             "Ethernet1/11",
+            "Ethernet1/12",
+            "Ethernet1/13",
+            "Ethernet1/14",
             "port-channel1",
             "port-channel2",
             "port-channel3",
             "port-channel4",
             "port-channel5",
-            "port-channel6"));
+            "port-channel6",
+            "port-channel7"));
     {
       org.batfish.datamodel.Interface iface = c.getAllInterfaces().get("Ethernet1/2");
       assertThat(iface, isActive(false));
@@ -1991,6 +2125,7 @@ public final class CiscoNxosGrammarTest {
       assertThat(iface, hasChannelGroup("port-channel6"));
       assertThat(iface, hasInterfaceType(InterfaceType.PHYSICAL));
     }
+    // TODO: conversion for channel-group mode for Ethernet1/12-1/14
     {
       org.batfish.datamodel.Interface iface = c.getAllInterfaces().get("port-channel1");
       assertThat(iface, isActive(false));
@@ -2061,6 +2196,7 @@ public final class CiscoNxosGrammarTest {
       assertThat(iface, hasBandwidth(200E6));
       assertThat(iface, hasInterfaceType(InterfaceType.AGGREGATED));
     }
+    // TODO: something with port-channel7 having to do with its constituents' channel-group modes
   }
 
   @Test
@@ -2081,12 +2217,16 @@ public final class CiscoNxosGrammarTest {
             "Ethernet1/9",
             "Ethernet1/10",
             "Ethernet1/11",
+            "Ethernet1/12",
+            "Ethernet1/13",
+            "Ethernet1/14",
             "port-channel1",
             "port-channel2",
             "port-channel3",
             "port-channel4",
             "port-channel5",
-            "port-channel6"));
+            "port-channel6",
+            "port-channel7"));
     {
       Interface iface = vc.getInterfaces().get("Ethernet1/2");
       assertTrue(iface.getShutdown());
@@ -2153,6 +2293,7 @@ public final class CiscoNxosGrammarTest {
       assertThat(iface.getSwitchportMode(), equalTo(SwitchportMode.ACCESS));
       assertThat(iface.getType(), equalTo(CiscoNxosInterfaceType.ETHERNET));
     }
+    // TODO: extract channel-group mode for Ethernet1/12-1/14
     {
       Interface iface = vc.getInterfaces().get("port-channel1");
       assertFalse(iface.getShutdown());
@@ -2186,6 +2327,7 @@ public final class CiscoNxosGrammarTest {
       assertThat(iface.getSwitchportMode(), equalTo(SwitchportMode.ACCESS));
       assertThat(iface.getType(), equalTo(CiscoNxosInterfaceType.PORT_CHANNEL));
     }
+    // TODO: something with port-channel7 having to do with its constituents' channel-group modes
   }
 
   @Test
@@ -2513,6 +2655,12 @@ public final class CiscoNxosGrammarTest {
       assertThat(set.getTag(), equalTo(1L));
     }
     // TODO: route-map 'continue' extraction
+  }
+
+  @Test
+  public void testSpanningTreeParsing() {
+    // TODO: make into an extraction test
+    assertThat(parseVendorConfig("nxos_spanning_tree"), notNullValue());
   }
 
   @Test
@@ -2984,7 +3132,7 @@ public final class CiscoNxosGrammarTest {
     String hostname = "nxos_vrf";
     Configuration c = parseConfig(hostname);
 
-    assertThat(c.getVrfs(), hasKeys(DEFAULT_VRF_NAME, NULL_VRF_NAME, "vrf1", "vrf3"));
+    assertThat(c.getVrfs(), hasKeys(DEFAULT_VRF_NAME, NULL_VRF_NAME, "Vrf1", "vrf3"));
     {
       org.batfish.datamodel.Vrf vrf = c.getVrfs().get(DEFAULT_VRF_NAME);
       assertThat(vrf, VrfMatchers.hasInterfaces(empty()));
@@ -2994,7 +3142,7 @@ public final class CiscoNxosGrammarTest {
       assertThat(vrf, VrfMatchers.hasInterfaces(contains("Ethernet1/2")));
     }
     {
-      org.batfish.datamodel.Vrf vrf = c.getVrfs().get("vrf1");
+      org.batfish.datamodel.Vrf vrf = c.getVrfs().get("Vrf1");
       assertThat(
           vrf, VrfMatchers.hasInterfaces(contains("Ethernet1/1", "Ethernet1/3", "Ethernet1/4")));
     }
@@ -3036,13 +3184,13 @@ public final class CiscoNxosGrammarTest {
     String hostname = "nxos_vrf";
     CiscoNxosConfiguration vc = parseVendorConfig(hostname);
 
-    assertThat(vc.getVrfs(), hasKeys("vrf1", "vrf3"));
+    assertThat(vc.getVrfs(), hasKeys("Vrf1", "vrf3"));
     {
       Vrf vrf = vc.getDefaultVrf();
       assertFalse(vrf.getShutdown());
     }
     {
-      Vrf vrf = vc.getVrfs().get("vrf1");
+      Vrf vrf = vc.getVrfs().get("Vrf1");
       assertFalse(vrf.getShutdown());
       assertThat(
           vrf.getRd(), equalTo(RouteDistinguisherOrAuto.of(RouteDistinguisher.from(65001, 10L))));
@@ -3076,7 +3224,7 @@ public final class CiscoNxosGrammarTest {
     {
       Interface iface = vc.getInterfaces().get("Ethernet1/1");
       assertFalse(iface.getShutdown());
-      assertThat(iface.getVrfMember(), equalTo("vrf1"));
+      assertThat(iface.getVrfMember(), equalTo("Vrf1"));
     }
     {
       Interface iface = vc.getInterfaces().get("Ethernet1/2");
@@ -3086,13 +3234,13 @@ public final class CiscoNxosGrammarTest {
     {
       Interface iface = vc.getInterfaces().get("Ethernet1/3");
       assertFalse(iface.getShutdown());
-      assertThat(iface.getVrfMember(), equalTo("vrf1"));
+      assertThat(iface.getVrfMember(), equalTo("Vrf1"));
       assertThat(iface.getAddress(), nullValue());
     }
     {
       Interface iface = vc.getInterfaces().get("Ethernet1/4");
       assertFalse(iface.getShutdown());
-      assertThat(iface.getVrfMember(), equalTo("vrf1"));
+      assertThat(iface.getVrfMember(), equalTo("Vrf1"));
       assertThat(
           iface.getAddress().getAddress(), equalTo(ConcreteInterfaceAddress.parse("10.0.4.1/24")));
     }

@@ -9,6 +9,7 @@ import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Ip6;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.Prefix6;
+import org.batfish.representation.cisco_nxos.BgpVrfAddressFamilyConfiguration.Type;
 
 /**
  * Represents the top-level configuration of a VRF in a BGP process for Cisco NX-OS.
@@ -31,17 +32,30 @@ public final class BgpVrfConfiguration implements Serializable {
   }
 
   @Nullable
-  public BgpVrfAddressFamilyConfiguration getIpv4UnicastAddressFamily() {
-    return _addressFamilies.get("ipv4-unicast");
+  public BgpVrfIpv4AddressFamilyConfiguration getIpv4UnicastAddressFamily() {
+    return (BgpVrfIpv4AddressFamilyConfiguration) _addressFamilies.get(Type.IPV4_UNICAST);
   }
 
   @Nullable
-  public BgpVrfAddressFamilyConfiguration getIpv6UnicastAddressFamily() {
-    return _addressFamilies.get("ipv6-unicast");
+  public BgpVrfIpv6AddressFamilyConfiguration getIpv6UnicastAddressFamily() {
+    return (BgpVrfIpv6AddressFamilyConfiguration) _addressFamilies.get(Type.IPV6_UNICAST);
   }
 
-  public BgpVrfAddressFamilyConfiguration getOrCreateAddressFamily(String af) {
-    return _addressFamilies.computeIfAbsent(af, a -> new BgpVrfAddressFamilyConfiguration());
+  public BgpVrfAddressFamilyConfiguration getOrCreateAddressFamily(
+      BgpVrfAddressFamilyConfiguration.Type af) {
+    switch (af) {
+      case IPV4_MULTICAST:
+      case IPV4_UNICAST:
+        return _addressFamilies.computeIfAbsent(
+            af, a -> new BgpVrfIpv4AddressFamilyConfiguration());
+      case IPV6_MULTICAST:
+      case IPV6_UNICAST:
+        return _addressFamilies.computeIfAbsent(
+            af, a -> new BgpVrfIpv6AddressFamilyConfiguration());
+      default:
+        // Dummy.
+        return new BgpVrfAddressFamilyConfiguration() {};
+    }
   }
 
   public BgpVrfNeighborConfiguration getOrCreateNeighbor(Ip address) {
@@ -168,7 +182,7 @@ public final class BgpVrfConfiguration implements Serializable {
     _routerId = routerId;
   }
 
-  private final Map<String, BgpVrfAddressFamilyConfiguration> _addressFamilies;
+  private final Map<Type, BgpVrfAddressFamilyConfiguration> _addressFamilies;
   private boolean _bestpathAlwaysCompareMed;
   private boolean _bestpathAsPathMultipathRelax;
   private boolean _bestpathCompareRouterId;

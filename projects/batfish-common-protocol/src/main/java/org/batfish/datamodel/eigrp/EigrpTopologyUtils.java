@@ -137,6 +137,7 @@ public class EigrpTopologyUtils {
             // TODO: check if secondary addresses also participate in EIGRP neighbor relationships
             neighborsBuilder.add(
                 EigrpNeighborConfig.builder()
+                    .setExportPolicy(iface.getEigrp().getExportPolicy())
                     .setHostname(config.getHostname())
                     .setInterfaceName(iface.getName())
                     .setIp(iface.getConcreteAddress().getIp())

@@ -375,14 +375,18 @@ import org.batfish.datamodel.ospf.OspfProcess;
 import org.batfish.datamodel.ospf.StubType;
 import org.batfish.datamodel.routing_policy.Environment.Direction;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
+import org.batfish.datamodel.routing_policy.expr.BooleanExpr;
 import org.batfish.datamodel.routing_policy.expr.CommunityHalvesExpr;
 import org.batfish.datamodel.routing_policy.expr.CommunitySetExpr;
 import org.batfish.datamodel.routing_policy.expr.Conjunction;
 import org.batfish.datamodel.routing_policy.expr.DestinationNetwork;
+import org.batfish.datamodel.routing_policy.expr.Disjunction;
 import org.batfish.datamodel.routing_policy.expr.LiteralCommunity;
 import org.batfish.datamodel.routing_policy.expr.LiteralCommunityConjunction;
 import org.batfish.datamodel.routing_policy.expr.LiteralCommunityHalf;
 import org.batfish.datamodel.routing_policy.expr.MatchPrefixSet;
+import org.batfish.datamodel.routing_policy.expr.MatchProcessAsn;
+import org.batfish.datamodel.routing_policy.expr.MatchProtocol;
 import org.batfish.datamodel.routing_policy.expr.NamedPrefixSet;
 import org.batfish.datamodel.routing_policy.expr.RangeCommunityHalf;
 import org.batfish.datamodel.routing_policy.statement.If;
@@ -2585,6 +2589,95 @@ public class CiscoGrammarTest {
   }
 
   @Test
+  public void testIosEigrpDistributeListConversion() throws IOException {
+    Configuration c = parseConfig("ios-eigrp-distribute-list");
+
+    String distListPolicyName = "~EIGRP_EXPORT_POLICY_default_1_GigabitEthernet0/0";
+
+    assertThat(
+        c.getDefaultVrf()
+            .getEigrpProcesses()
+            .get(1L)
+            .getNeighbors()
+            .get("GigabitEthernet0/0")
+            .getExportPolicy(),
+        equalTo(distListPolicyName));
+
+    BooleanExpr matchAsn2 = new MatchProcessAsn(2L);
+    BooleanExpr matchAsn1 = new MatchProcessAsn(1L);
+    BooleanExpr matchEigrp = new MatchProtocol(RoutingProtocol.EIGRP, RoutingProtocol.EIGRP_EX);
+    BooleanExpr matchEigrpInternal = new MatchProtocol(RoutingProtocol.EIGRP);
+
+    Conjunction matchEigrpAsn2 = new Conjunction(ImmutableList.of(matchAsn2, matchEigrp));
+    Conjunction matchEigrpInternalAsn1 =
+        new Conjunction(ImmutableList.of(matchEigrpInternal, matchAsn1));
+
+    // rule to match routes from EIGRP 2 and routes internal to EIGRP 1
+    Disjunction matchRedistributeOrIsInternalRoute =
+        new Disjunction(ImmutableList.of(matchEigrpAsn2, matchEigrpInternalAsn1));
+
+    BooleanExpr exprForDistributeList =
+        new MatchPrefixSet(DestinationNetwork.instance(), new NamedPrefixSet("2"));
+
+    // rule to match the distribute list filter && the policy generated for `redistribute eigrp 2`
+    Conjunction unifiedPolicy =
+        new Conjunction(
+            ImmutableList.of(matchRedistributeOrIsInternalRoute, exprForDistributeList));
+
+    assertThat(
+        c.getRoutingPolicies().get(distListPolicyName).getStatements(),
+        equalTo(
+            ImmutableList.of(
+                new If(
+                    unifiedPolicy,
+                    ImmutableList.of(Statements.ExitAccept.toStaticStatement()),
+                    ImmutableList.of(Statements.ExitReject.toStaticStatement())))));
+
+    assertThat(c.getRoutingPolicies(), hasKey(distListPolicyName));
+    RoutingPolicy routingPolicy = c.getRoutingPolicies().get(distListPolicyName);
+    EigrpMetric metric =
+        EigrpMetric.builder().setBandwidth(1d).setDelay(1d).setMode(EigrpProcessMode.NAMED).build();
+    // a route redistributed from router EIGRP 2 and allowed by distribute list
+    assertTrue(
+        routingPolicy.process(
+            EigrpExternalRoute.builder()
+                .setNetwork(Prefix.parse("172.21.30.0/24"))
+                .setEigrpMetric(metric)
+                .setProcessAsn(2L)
+                .setDestinationAsn(5L)
+                .build(),
+            EigrpExternalRoute.builder(),
+            null,
+            "default",
+            Direction.OUT));
+    // a route redistributed from router EIGRP 2 and denied by distribute list
+    assertFalse(
+        routingPolicy.process(
+            EigrpExternalRoute.builder()
+                .setNetwork(Prefix.parse("172.21.31.0/24"))
+                .setEigrpMetric(metric)
+                .setProcessAsn(2L)
+                .setDestinationAsn(5L)
+                .build(),
+            EigrpExternalRoute.builder(),
+            null,
+            "default",
+            Direction.OUT));
+    // a route redistributed internally from router EIGRP 1 and allowed by distribute list
+    assertTrue(
+        routingPolicy.process(
+            EigrpInternalRoute.builder()
+                .setNetwork(Prefix.parse("172.21.30.0/24"))
+                .setEigrpMetric(metric)
+                .setProcessAsn(1L)
+                .build(),
+            EigrpExternalRoute.builder(),
+            null,
+            "default",
+            Direction.OUT));
+  }
+
+  @Test
   public void testIosEigrpMarkForRouting() throws IOException {
     Configuration c = parseConfig("ios-eigrp-distribute-list");
 
@@ -2603,6 +2696,7 @@ public class CiscoGrammarTest {
                     EigrpNeighborConfig.builder()
                         .setAsn(1L)
                         .setInterfaceName("Ethernet0")
+                        .setExportPolicy("~EIGRP_EXPORT_POLICY_default_1_Ethernet0")
                         .setPassive(false)
                         .setHostname("ios-eigrp-classic")
                         .setVrfName("default")
@@ -2612,6 +2706,7 @@ public class CiscoGrammarTest {
                     EigrpNeighborConfig.builder()
                         .setAsn(1L)
                         .setInterfaceName("Ethernet1")
+                        .setExportPolicy("~EIGRP_EXPORT_POLICY_default_1_Ethernet1")
                         .setPassive(false)
                         .setHostname("ios-eigrp-classic")
                         .setVrfName("default")
@@ -2621,6 +2716,7 @@ public class CiscoGrammarTest {
                     EigrpNeighborConfig.builder()
                         .setAsn(1L)
                         .setInterfaceName("Ethernet2")
+                        .setExportPolicy("~EIGRP_EXPORT_POLICY_default_1_Ethernet2")
                         .setPassive(true)
                         .setHostname("ios-eigrp-classic")
                         .setVrfName("default")
@@ -6182,5 +6278,74 @@ public class CiscoGrammarTest {
         batfish.getTopologyProvider().getLayer3Topology(batfish.getNetworkSnapshot()).getEdges(),
         containsInAnyOrder(
             overlayEdge, overlayEdge.reverse(), underlayEdge, underlayEdge.reverse()));
+  }
+
+  @Test
+  public void testRouteMapMatchAcl() throws IOException {
+    Configuration c = parseConfig("ios-route-map-match-acl");
+    Bgpv4Route.Builder builder =
+        Bgpv4Route.builder()
+            .setOriginatorIp(Ip.parse("1.1.1.1"))
+            .setOriginType(OriginType.INCOMPLETE)
+            .setProtocol(RoutingProtocol.BGP);
+
+    Prefix prefix10 = Prefix.parse("10.0.0.0/8");
+    Prefix prefix11 = Prefix.parse("11.0.0.0/8");
+    Bgpv4Route route10 = builder.setNetwork(prefix10).build();
+    Bgpv4Route route11 = builder.setNetwork(prefix11).build();
+    Ip peerAddress = Ip.parse("2.2.2.2");
+
+    assertThat(
+        c,
+        hasRouteFilterList(
+            "ACL_PERMIT", allOf(permits(prefix10), RouteFilterListMatchers.rejects(prefix11))));
+    assertThat(
+        c,
+        hasRouteFilterList(
+            "ACL_DENY", allOf(permits(prefix11), RouteFilterListMatchers.rejects(prefix10))));
+
+    assertTrue(
+        "Route 10/8 permitted",
+        c.getRoutingPolicies()
+            .get("rm_standard_permit_permit")
+            .process(route10, Bgpv4Route.builder(), peerAddress, DEFAULT_VRF_NAME, Direction.OUT));
+    assertFalse(
+        "Route 11/8 denied",
+        c.getRoutingPolicies()
+            .get("rm_standard_permit_permit")
+            .process(route11, Bgpv4Route.builder(), peerAddress, DEFAULT_VRF_NAME, Direction.OUT));
+
+    assertFalse(
+        "Route 10/8 denied",
+        c.getRoutingPolicies()
+            .get("rm_standard_deny_permit")
+            .process(route10, Bgpv4Route.builder(), peerAddress, DEFAULT_VRF_NAME, Direction.OUT));
+    assertFalse(
+        "Route 11/8 denied",
+        c.getRoutingPolicies()
+            .get("rm_standard_permit_permit")
+            .process(route11, Bgpv4Route.builder(), peerAddress, DEFAULT_VRF_NAME, Direction.OUT));
+
+    assertFalse(
+        "Route 10/8 denied",
+        c.getRoutingPolicies()
+            .get("rm_standard_permit_deny")
+            .process(route10, Bgpv4Route.builder(), peerAddress, DEFAULT_VRF_NAME, Direction.OUT));
+    assertFalse(
+        "Route 11/8 denied",
+        c.getRoutingPolicies()
+            .get("rm_standard_permit_permit")
+            .process(route11, Bgpv4Route.builder(), peerAddress, DEFAULT_VRF_NAME, Direction.OUT));
+
+    assertFalse(
+        "Route 10/8 denied",
+        c.getRoutingPolicies()
+            .get("rm_standard_deny_deny")
+            .process(route10, Bgpv4Route.builder(), peerAddress, DEFAULT_VRF_NAME, Direction.OUT));
+    assertFalse(
+        "Route 11/8 denied",
+        c.getRoutingPolicies()
+            .get("rm_standard_permit_permit")
+            .process(route11, Bgpv4Route.builder(), peerAddress, DEFAULT_VRF_NAME, Direction.OUT));
   }
 }

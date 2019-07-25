@@ -11,11 +11,14 @@ import static org.batfish.datamodel.MultipathEquivalentAsPathMatchMode.EXACT_PAT
 import static org.batfish.datamodel.MultipathEquivalentAsPathMatchMode.PATH_LENGTH;
 import static org.batfish.representation.cisco.CiscoConversions.computeDistributeListPolicies;
 import static org.batfish.representation.cisco.CiscoConversions.convertCryptoMapSet;
+import static org.batfish.representation.cisco.CiscoConversions.eigrpRedistributionPoliciesToStatements;
+import static org.batfish.representation.cisco.CiscoConversions.exprToAllowEigrpInternalRoutes;
 import static org.batfish.representation.cisco.CiscoConversions.generateBgpExportPolicy;
 import static org.batfish.representation.cisco.CiscoConversions.generateBgpImportPolicy;
 import static org.batfish.representation.cisco.CiscoConversions.generateGenerationPolicy;
 import static org.batfish.representation.cisco.CiscoConversions.getIsakmpKeyGeneratedName;
 import static org.batfish.representation.cisco.CiscoConversions.getRsaPubKeyGeneratedName;
+import static org.batfish.representation.cisco.CiscoConversions.getUnifedPolicyForEigrpNeighbor;
 import static org.batfish.representation.cisco.CiscoConversions.resolveIsakmpProfileIfaceNames;
 import static org.batfish.representation.cisco.CiscoConversions.resolveKeyringIfaceNames;
 import static org.batfish.representation.cisco.CiscoConversions.resolveTunnelIfaceNames;
@@ -696,15 +699,6 @@ public final class CiscoConfiguration extends VendorConfiguration {
             line -> ((RouteMapMatchIpv6AccessListLine) line).getListNames().contains(eaListName));
   }
 
-  private static void convertForPurpose(Set<RouteMap> routingRouteMaps, RouteMap map) {
-    if (routingRouteMaps.contains(map)) {
-      map.getClauses().values().stream()
-          .flatMap(clause -> clause.getMatchList().stream())
-          .filter(line -> line instanceof RouteMapMatchIpAccessListLine)
-          .forEach(line -> ((RouteMapMatchIpAccessListLine) line).setRouting(true));
-    }
-  }
-
   public Map<String, IpAsPathAccessList> getAsPathAccessLists() {
     return _asPathAccessLists;
   }
@@ -926,77 +920,6 @@ public final class CiscoConfiguration extends VendorConfiguration {
 
   public Map<String, RoutePolicy> getRoutePolicies() {
     return _routePolicies;
-  }
-
-  private Set<RouteMap> getRoutingRouteMaps() {
-    Set<RouteMap> maps = new LinkedHashSet<>();
-    String currentMapName;
-    RouteMap currentMap;
-    // check ospf policies
-    for (Vrf vrf : _vrfs.values()) {
-      for (OspfProcess ospfProcess : vrf.getOspfProcesses().values()) {
-        for (OspfRedistributionPolicy rp : ospfProcess.getRedistributionPolicies().values()) {
-          currentMapName = rp.getRouteMap();
-          if (currentMapName != null) {
-            currentMap = _routeMaps.get(currentMapName);
-            if (currentMap != null) {
-              maps.add(currentMap);
-            }
-          }
-        }
-        currentMapName = ospfProcess.getDefaultInformationOriginateMap();
-        if (currentMapName != null) {
-          currentMap = _routeMaps.get(currentMapName);
-          if (currentMap != null) {
-            maps.add(currentMap);
-          }
-        }
-      }
-      // check bgp policies
-      BgpProcess bgpProcess = vrf.getBgpProcess();
-      if (bgpProcess != null) {
-        for (BgpRedistributionPolicy rp : bgpProcess.getRedistributionPolicies().values()) {
-          currentMapName = rp.getRouteMap();
-          if (currentMapName != null) {
-            currentMap = _routeMaps.get(currentMapName);
-            if (currentMap != null) {
-              maps.add(currentMap);
-            }
-          }
-        }
-        for (BgpPeerGroup pg : bgpProcess.getAllPeerGroups()) {
-          currentMapName = pg.getInboundRouteMap();
-          if (currentMapName != null) {
-            currentMap = _routeMaps.get(currentMapName);
-            if (currentMap != null) {
-              maps.add(currentMap);
-            }
-          }
-          currentMapName = pg.getInboundRoute6Map();
-          if (currentMapName != null) {
-            currentMap = _routeMaps.get(currentMapName);
-            if (currentMap != null) {
-              maps.add(currentMap);
-            }
-          }
-          currentMapName = pg.getOutboundRouteMap();
-          if (currentMapName != null) {
-            currentMap = _routeMaps.get(currentMapName);
-            if (currentMap != null) {
-              maps.add(currentMap);
-            }
-          }
-          currentMapName = pg.getOutboundRoute6Map();
-          if (currentMapName != null) {
-            currentMap = _routeMaps.get(currentMapName);
-            if (currentMap != null) {
-              maps.add(currentMap);
-            }
-          }
-        }
-      }
-    }
-    return maps;
   }
 
   @Nullable
@@ -2120,10 +2043,32 @@ public final class CiscoConfiguration extends VendorConfiguration {
               .setDelay(iface.getDelay())
               .build();
 
+      List<If> redistributePolicyStatements =
+          eigrpRedistributionPoliciesToStatements(
+              eigrpProcess.getRedistributionPolicies().values(), eigrpProcess, this);
+
+      List<BooleanExpr> redistributePoliciesToBooleanExprs =
+          redistributePolicyStatements.stream().map(If::getGuard).collect(Collectors.toList());
+      redistributePoliciesToBooleanExprs.add(exprToAllowEigrpInternalRoutes(eigrpProcess.getAsn()));
+
+      Disjunction canRedistributeOrIsInternalEigrp =
+          new Disjunction(ImmutableList.copyOf(redistributePoliciesToBooleanExprs));
+
+      DistributeList distributeListForIface =
+          eigrpProcess.getOutboundInterfaceDistributeLists().get(newIface.getName());
       newIface.setEigrp(
           EigrpInterfaceSettings.builder()
               .setAsn(eigrpProcess.getAsn())
               .setEnabled(true)
+              .setExportPolicy(
+                  getUnifedPolicyForEigrpNeighbor(
+                      c,
+                      this,
+                      canRedistributeOrIsInternalEigrp,
+                      distributeListForIface,
+                      vrfName,
+                      eigrpProcess.getAsn(),
+                      ifaceName))
               .setMetric(metric)
               .setPassive(passive)
               .build());
@@ -3328,10 +3273,9 @@ public final class CiscoConfiguration extends VendorConfiguration {
       c.getIp6AccessLists().put(ipaList.getName(), ipaList);
     }
 
-    // convert route maps to policy maps
-    Set<RouteMap> routingRouteMaps = getRoutingRouteMaps();
+    // TODO: convert route maps that are used for PBR to PacketPolicies
+
     for (RouteMap map : _routeMaps.values()) {
-      convertForPurpose(routingRouteMaps, map);
       // convert route maps to RoutingPolicy objects
       RoutingPolicy newPolicy = toRoutingPolicy(c, map);
       c.getRoutingPolicies().put(newPolicy.getName(), newPolicy);

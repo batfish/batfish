@@ -110,7 +110,7 @@ class IncrementalBdpEngine {
        */
       IncrementalBdpAnswerElement answerElement = new IncrementalBdpAnswerElement();
       // TODO: eventually, IGP needs to be part of fixed-point below, because tunnels.
-      computeIgpDataPlane(nodes, initialTopologyContext, answerElement, networkConfigurations);
+      computeIgpDataPlane(nodes, initialTopologyContext, answerElement);
 
       /*
        * Perform a fixed-point computation.
@@ -294,50 +294,20 @@ class IncrementalBdpEngine {
             .forEach(VirtualRouter::recomputeGeneratedRoutes);
       }
 
-      // EIGRP external routes: recompute exports
+      // EIGRP
       try (ActiveSpan span =
-          GlobalTracer.get()
-              .buildSpan(iterationLabel + ": Recompute EIGRP exports")
-              .startActive()) {
+          GlobalTracer.get().buildSpan(iterationLabel + ": propagate EIGRP routes").startActive()) {
         assert span != null; // avoid unused warning
         nodes
             .values()
             .parallelStream()
             .flatMap(n -> n.getVirtualRouters().values().stream())
-            .forEach(vr -> vr.initEigrpExports(allNodes));
-      }
-
-      // Re-propagate EIGRP exports
-      try (ActiveSpan span =
-          GlobalTracer.get()
-              .buildSpan(iterationLabel + ": Recompute EIGRP external routes")
-              .startActive()) {
-        assert span != null; // avoid unused warning
-        AtomicBoolean eigrpExternalChanged = new AtomicBoolean(true);
-        int eigrpExternalSubIterations = 0;
-        while (eigrpExternalChanged.get()) {
-          eigrpExternalSubIterations++;
-          try (ActiveSpan eigrpSpan =
-              GlobalTracer.get()
-                  .buildSpan(
-                      iterationLabel
-                          + ": Recompute EIGRP external routes: "
-                          + eigrpExternalSubIterations)
-                  .startActive()) {
-            assert eigrpSpan != null; // avoid unused warning
-            eigrpExternalChanged.set(false);
-            nodes
-                .values()
-                .parallelStream()
-                .flatMap(n -> n.getVirtualRouters().values().stream())
-                .forEach(
-                    vr -> {
-                      if (vr.propagateEigrpExternalRoutes(allNodes, networkConfigurations)) {
-                        eigrpExternalChanged.set(true);
-                      }
-                    });
-          }
-        }
+            .forEach(vr -> vr.eigrpIteration(allNodes));
+        nodes
+            .values()
+            .parallelStream()
+            .flatMap(n -> n.getVirtualRouters().values().stream())
+            .forEach(VirtualRouter::mergeEigrpRoutesToMainRib);
       }
 
       // Re-initialize IS-IS exports.
@@ -519,13 +489,11 @@ class IncrementalBdpEngine {
    * @param topologyContext The topology context in which various adjacencies are stored
    * @param ae The output answer element in which to store a report of the computation. Also
    *     contains the current recovery iteration.
-   * @param networkConfigurations All configurations in the network
    */
   private void computeIgpDataPlane(
       SortedMap<String, Node> nodes,
       TopologyContext topologyContext,
-      IncrementalBdpAnswerElement ae,
-      NetworkConfigurations networkConfigurations) {
+      IncrementalBdpAnswerElement ae) {
     try (ActiveSpan span = GlobalTracer.get().buildSpan("Compute IGP").startActive()) {
       assert span != null; // avoid unused warning
 
@@ -544,9 +512,6 @@ class IncrementalBdpEngine {
             .flatMap(n -> n.getVirtualRouters().values().stream())
             .forEach(vr -> vr.initForIgpComputation(topologyContext));
       }
-
-      // EIGRP internal routes
-      initEigrpInternalRoutes(nodes, topologyContext, networkConfigurations);
 
       // OSPF internal routes
       numOspfInternalIterations = initOspfInternalRoutes(nodes, topologyContext.getOspfTopology());
@@ -789,64 +754,6 @@ class IncrementalBdpEngine {
                 nodeEntry.getValue().getVirtualRouters(),
                 Entry::getKey,
                 vrfEntry -> ImmutableSet.copyOf(vrfEntry.getValue().getMainRib().getRoutes())));
-  }
-
-  /**
-   * Run the IGP EIGRP computation until convergence.
-   *
-   * @param nodes list of nodes for which to initialize the EIGRP routes
-   * @param topologyContext The topology context in which EIGRP adjacencies are stored
-   * @param networkConfigurations All configurations in the network
-   * @return the number of iterations it took for internal EIGRP routes to converge
-   */
-  private static void initEigrpInternalRoutes(
-      Map<String, Node> nodes,
-      TopologyContext topologyContext,
-      NetworkConfigurations networkConfigurations) {
-    AtomicBoolean eigrpInternalChanged = new AtomicBoolean(true);
-    int eigrpInternalIterations = 0;
-    while (eigrpInternalChanged.get()) {
-      eigrpInternalIterations++;
-      eigrpInternalChanged.set(false);
-
-      try (ActiveSpan span =
-          GlobalTracer.get()
-              .buildSpan("Compute EIGRP internal routes: iteration " + eigrpInternalIterations)
-              .startActive()) {
-        assert span != null; // avoid unused warning
-        nodes
-            .values()
-            .parallelStream()
-            .flatMap(n -> n.getVirtualRouters().values().stream())
-            .forEach(
-                vr -> {
-                  if (vr.propagateEigrpInternalRoutes(
-                      nodes, topologyContext, networkConfigurations)) {
-                    eigrpInternalChanged.set(true);
-                  }
-                });
-      }
-      try (ActiveSpan span =
-          GlobalTracer.get()
-              .buildSpan("Unstage EIGRP internal routes: iteration " + eigrpInternalIterations)
-              .startActive()) {
-        assert span != null; // avoid unused warning
-        nodes
-            .values()
-            .parallelStream()
-            .flatMap(n -> n.getVirtualRouters().values().stream())
-            .forEach(VirtualRouter::unstageEigrpInternalRoutes);
-      }
-    }
-    try (ActiveSpan span =
-        GlobalTracer.get().buildSpan("Import EIGRP internal routes").startActive()) {
-      assert span != null; // avoid unused warning
-      nodes
-          .values()
-          .parallelStream()
-          .flatMap(n -> n.getVirtualRouters().values().stream())
-          .forEach(VirtualRouter::importEigrpInternalRoutes);
-    }
   }
 
   /**
