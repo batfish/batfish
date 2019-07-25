@@ -143,7 +143,6 @@ public class BDDReachabilityAnalysis {
         reverseReachableStates, _ingressLocationStates, _bddPacket.getFactory().zero());
   }
 
-  @VisibleForTesting
   public Map<StateExpr, Map<StateExpr, Transition>> getForwardEdgeMap() {
     return _forwardEdgeTable.rowMap();
   }
