@@ -25,9 +25,4 @@ public class RouteMapSetAdditiveCommunityLine extends RouteMapSetLine {
   public List<StandardCommunity> getCommunities() {
     return _communities;
   }
-
-  @Override
-  public RouteMapSetType getType() {
-    return RouteMapSetType.ADDITIVE_COMMUNITY;
-  }
 }
