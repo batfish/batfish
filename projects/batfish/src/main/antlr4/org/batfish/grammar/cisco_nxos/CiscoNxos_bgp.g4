@@ -217,12 +217,7 @@ rb_af4_redistribute
   REDISTRIBUTE
   (
     rb_af4_redistribute_ospf        // v4 only
-    | rb_afip_redistribute_direct
-    | rb_afip_redistribute_eigrp
-    | rb_afip_redistribute_isis
-    | rb_afip_redistribute_lisp
-    | rb_afip_redistribute_rip
-    | rb_afip_redistribute_static
+    | rb_afip_redistribute_common
   )
 ;
 
@@ -257,12 +252,7 @@ rb_af6_redistribute
   REDISTRIBUTE
   (
     rb_af6_redistribute_ospfv3  // v6 only
-    | rb_afip_redistribute_direct
-    | rb_afip_redistribute_eigrp
-    | rb_afip_redistribute_isis
-    | rb_afip_redistribute_lisp
-    | rb_afip_redistribute_rip
-    | rb_afip_redistribute_static
+    | rb_afip_redistribute_common
   )
 ;
 
@@ -429,6 +419,16 @@ rb_afip_table_map
 rb_afip_wait_igp_convergence
 :
   WAIT_IGP_CONVERGENCE NEWLINE
+;
+
+rb_afip_redistribute_common
+:
+  rb_afip_redistribute_direct
+  | rb_afip_redistribute_eigrp
+  | rb_afip_redistribute_isis
+  | rb_afip_redistribute_lisp
+  | rb_afip_redistribute_rip
+  | rb_afip_redistribute_static
 ;
 
 rb_bestpath
