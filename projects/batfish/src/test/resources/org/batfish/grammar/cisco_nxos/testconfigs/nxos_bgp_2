@@ -1,0 +1,14 @@
+!RANCID-CONTENT-TYPE: cisco-nx
+!
+! This file is like nxos_bgp, but a second variant that allows testing things that can only be
+! set once per file (e.g., global configuration).
+hostname nxos_bgp_2
+feature bgp
+feature ospf
+!
+router ospf ospf_proc
+!
+router bgp 1
+  address-family l2vpn evpn
+    retain route-target all
+!
