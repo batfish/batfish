@@ -7,6 +7,7 @@ options {
 tokens {
   BANNER_BODY,
   BANNER_DELIMITER,
+  LOCAL,
   MOTD,
   PASSWORD_0,
   PASSWORD_0_TEXT,
@@ -21,6 +22,11 @@ tokens {
   SUBDOMAIN_NAME,
   WORD
 }
+
+AAA
+:
+  'aaa'
+;
 
 ACCESS
 :
@@ -40,6 +46,11 @@ ACCESS_LIST
 ACCESS_MAP
 :
   'access-map'
+;
+
+ACCOUNTING
+:
+  'accounting'
 ;
 
 ACK
@@ -301,6 +312,11 @@ AUTHENTICATION
   'authentication'
 ;
 
+AUTHORIZATION
+:
+  'authorization'
+;
+
 AUTO
 :
   'auto'
@@ -456,6 +472,11 @@ CMD
   'cmd'
 ;
 
+COMMANDS
+:
+  'commands'
+;
+
 COMMUNITY
 :
   'community'
@@ -476,6 +497,11 @@ COMMUNITY_LIST
 COMPARE_ROUTERID
 :
   'compare-routerid'
+;
+
+CONFIG_COMMANDS
+:
+  'config-commands'
 ;
 
 CONFIGURATION
@@ -828,6 +854,11 @@ ERRDISABLE
   'errdisable'
 ;
 
+ERROR_ENABLE
+:
+  'error-enable'
+;
+
 ERRORS
 :
   'errors'
@@ -1056,6 +1087,17 @@ GRACEFUL_RESTART_HELPER
 GRE
 :
   'gre'
+;
+
+GROUP
+:
+  'group'
+  // when preceded by 'default, followed by list of AAA server groups
+  {
+    if (lastTokenType() == DEFAULT) {
+      pushMode(M_AaaGroup);
+    }
+  }
 ;
 
 GROUP_TIMEOUT
@@ -2478,6 +2520,11 @@ SEQ
   'seq'
 ;
 
+SERVER
+:
+  'server'
+;
+
 SERVICE
 :
   'service'
@@ -2718,6 +2765,12 @@ TACACS
 TACACSP
 :
   'tacacs+'
+  // Other instances are followed by tokens in default mode, or occur in non-default mode.
+  {
+    if (lastTokenType() == SERVER) {
+      pushMode(M_Word);
+    }
+  }
 ;
 
 TAG
@@ -2904,6 +2957,11 @@ UPDATE_SOURCE
 URG
 :
   'urg'
+;
+
+USE_VRF
+:
+  'use-vrf' -> pushMode ( M_Word )
 ;
 
 USERNAME
@@ -3434,6 +3492,24 @@ F_WordChar
   [0-9A-Za-z!@#$^*_=+.;:{}]
   | '-'
 ;
+
+mode M_AaaGroup;
+
+M_AaaGroup_LOCAL
+:
+  'local' -> type ( LOCAL ) , popMode
+;
+
+M_AaaGroup_WORD
+:
+  F_Word -> type ( WORD )
+;
+
+M_AaaGroup_WS
+:
+  F_Whitespace+ -> channel ( HIDDEN )
+;
+
 
 mode M_AliasName;
 
