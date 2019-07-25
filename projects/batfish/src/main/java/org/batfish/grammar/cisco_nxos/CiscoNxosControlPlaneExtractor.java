@@ -2367,6 +2367,7 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
   public void enterRouter_bgp(Router_bgpContext ctx) {
     _currentBgpVrfConfiguration =
         _configuration.getBgpGlobalConfiguration().getOrCreateVrf(DEFAULT_VRF_NAME);
+    _configuration.getBgpGlobalConfiguration().setLocalAs(toLong(ctx.bgp_asn()));
   }
 
   @Override

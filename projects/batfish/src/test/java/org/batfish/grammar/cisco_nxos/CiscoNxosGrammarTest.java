@@ -279,8 +279,9 @@ public final class CiscoNxosGrammarTest {
     CiscoNxosConfiguration vc = parseVendorConfig("nxos_bgp");
     BgpGlobalConfiguration bgpGlobal = vc.getBgpGlobalConfiguration();
     assertThat(bgpGlobal, notNullValue());
+    assertThat(bgpGlobal.getLocalAs(), equalTo(1L));
 
-    assertThat(bgpGlobal.getVrfs(), hasKeys(DEFAULT_VRF_NAME, "2", "3"));
+    assertThat(bgpGlobal.getVrfs(), hasKeys(DEFAULT_VRF_NAME));
     {
       BgpVrfConfiguration vrf = bgpGlobal.getOrCreateVrf(DEFAULT_VRF_NAME);
 
@@ -297,6 +298,23 @@ public final class CiscoNxosGrammarTest {
       assertThat(l2vpn, notNullValue());
       assertThat(l2vpn.getRetainMode(), equalTo(RetainRouteType.ROUTE_MAP));
       assertThat(l2vpn.getRetainRouteMap(), equalTo("RETAIN_MAP"));
+    }
+  }
+
+  /** Like {@link #testBgpExtraction()}, but for second variants of global parameters. */
+  @Test
+  public void testBgpExtraction2() {
+    CiscoNxosConfiguration vc = parseVendorConfig("nxos_bgp_2");
+
+    BgpGlobalConfiguration bgpGlobal = vc.getBgpGlobalConfiguration();
+    assertThat(bgpGlobal, notNullValue());
+    assertThat(bgpGlobal.getVrfs(), hasKeys(DEFAULT_VRF_NAME));
+    {
+      BgpVrfConfiguration vrf = bgpGlobal.getOrCreateVrf(DEFAULT_VRF_NAME);
+
+      BgpVrfL2VpnEvpnAddressFamilyConfiguration l2vpn = vrf.getL2VpnEvpnAddressFamily();
+      assertThat(l2vpn, notNullValue());
+      assertThat(l2vpn.getRetainMode(), equalTo(RetainRouteType.ALL));
     }
   }
 
