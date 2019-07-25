@@ -8,13 +8,14 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonValue;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSortedSet;
+import com.google.common.collect.ImmutableSet;
 import java.io.Serializable;
-import java.util.Comparator;
+import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.SortedSet;
+import java.util.Set;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -242,6 +243,10 @@ final class Instance implements AwsVpcEntity, Serializable {
     _status = status;
   }
 
+  static InstanceBuilder builder() {
+    return new InstanceBuilder();
+  }
+
   @Override
   public String getId() {
     return _instanceId;
@@ -292,8 +297,8 @@ final class Instance implements AwsVpcEntity, Serializable {
         continue;
       }
 
-      ImmutableSortedSet.Builder<ConcreteInterfaceAddress> ifaceAddressesBuilder =
-          new ImmutableSortedSet.Builder<>(Comparator.naturalOrder());
+      ImmutableSet.Builder<ConcreteInterfaceAddress> ifaceAddressesBuilder =
+          new ImmutableSet.Builder<>();
 
       Subnet subnet = region.getSubnets().get(netInterface.getSubnetId());
       Prefix ifaceSubnet = subnet.getCidrBlock();
@@ -307,26 +312,42 @@ final class Instance implements AwsVpcEntity, Serializable {
               .build();
       cfgNode.getDefaultVrf().getStaticRoutes().add(defaultRoute);
 
-      for (Ip ip : netInterface.getIpAddressAssociations().keySet()) {
-        if (!ifaceSubnet.containsIp(ip)) {
+      for (PrivateIpAddress privateIp : netInterface.getPrivateIpAddresses()) {
+        if (!ifaceSubnet.containsIp(privateIp.getPrivateIp())) {
           warnings.pedantic(
               String.format(
-                  "Instance subnet \"%s\" does not contain private ip: \"%s\"", ifaceSubnet, ip));
+                  "Instance subnet \"%s\" does not contain private ip: \"%s\"",
+                  ifaceSubnet, privateIp));
           continue;
         }
 
-        if (ip.equals(ifaceSubnet.getEndIp())) {
+        if (privateIp.getPrivateIp().equals(ifaceSubnet.getEndIp())) {
           warnings.pedantic(
-              String.format("Expected end address \"%s\" to be used by generated subnet node", ip));
+              String.format(
+                  "Expected end address \"%s\" to be used by generated subnet node", privateIp));
           continue;
         }
 
         ConcreteInterfaceAddress address =
-            ConcreteInterfaceAddress.create(ip, ifaceSubnet.getPrefixLength());
+            ConcreteInterfaceAddress.create(
+                privateIp.getPrivateIp(), ifaceSubnet.getPrefixLength());
         ifaceAddressesBuilder.add(address);
+
+        if (privateIp.getPublicIp() != null) {
+          ifaceAddressesBuilder.add(ConcreteInterfaceAddress.create(privateIp.getPublicIp(), 32));
+        }
       }
-      SortedSet<ConcreteInterfaceAddress> ifaceAddresses = ifaceAddressesBuilder.build();
-      Interface iface = Utils.newInterface(interfaceId, cfgNode, ifaceAddresses.first());
+      Set<ConcreteInterfaceAddress> ifaceAddresses = ifaceAddressesBuilder.build();
+      ConcreteInterfaceAddress primaryAddress =
+          ifaceAddresses.stream()
+              .filter(
+                  addr -> addr.getIp().equals(netInterface.getPrimaryPrivateIp().getPrivateIp()))
+              .findFirst()
+              .orElseThrow(
+                  () ->
+                      new IllegalArgumentException("None of the interface addresses are primary"));
+      Interface iface =
+          Utils.newInterface(interfaceId, cfgNode, primaryAddress, netInterface.getDescription());
       iface.setAllAddresses(ifaceAddresses);
 
       cfgNode.getVendorFamily().getAws().setVpcId(_vpcId);
@@ -367,5 +388,57 @@ final class Instance implements AwsVpcEntity, Serializable {
         _subnetId,
         _tags,
         _vpcId);
+  }
+
+  static final class InstanceBuilder {
+    private String _instanceId;
+    private List<String> _networkInterfaces = new LinkedList<>();
+    private List<String> _securityGroups = new LinkedList<>();
+    private Status _status;
+    private String _subnetId;
+    private Map<String, String> _tags = new HashMap<>();
+    private String _vpcId;
+
+    private InstanceBuilder() {}
+
+    public InstanceBuilder setInstanceId(String instanceId) {
+      this._instanceId = instanceId;
+      return this;
+    }
+
+    public InstanceBuilder setNetworkInterfaces(List<String> networkInterfaces) {
+      this._networkInterfaces = networkInterfaces;
+      return this;
+    }
+
+    public InstanceBuilder setSecurityGroups(List<String> securityGroups) {
+      this._securityGroups = securityGroups;
+      return this;
+    }
+
+    public InstanceBuilder setStatus(Status status) {
+      this._status = status;
+      return this;
+    }
+
+    public InstanceBuilder setSubnetId(String subnetId) {
+      this._subnetId = subnetId;
+      return this;
+    }
+
+    public InstanceBuilder setTags(Map<String, String> tags) {
+      this._tags = tags;
+      return this;
+    }
+
+    public InstanceBuilder setVpcId(String vpcId) {
+      this._vpcId = vpcId;
+      return this;
+    }
+
+    public Instance build() {
+      return new Instance(
+          _instanceId, _vpcId, _subnetId, _securityGroups, _networkInterfaces, _tags, _status);
+    }
   }
 }

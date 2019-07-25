@@ -13,6 +13,7 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.MoreObjects;
+import com.google.common.collect.ImmutableSet;
 import java.io.Serializable;
 import java.util.LinkedList;
 import java.util.Objects;
@@ -167,7 +168,10 @@ final class Route implements Serializable {
           String networkInterfaceSubnetId = networkInterface.getSubnetId();
           if (networkInterfaceSubnetId.equals(subnet.getId())) {
             Set<Ip> networkInterfaceIps =
-                new TreeSet<>(networkInterface.getIpAddressAssociations().keySet());
+                new TreeSet<>(
+                    networkInterface.getPrivateIpAddresses().stream()
+                        .map(PrivateIpAddress::getPrivateIp)
+                        .collect(ImmutableSet.toImmutableSet()));
             Ip lowestIp = networkInterfaceIps.toArray(new Ip[] {})[0];
             if (!subnet.getCidrBlock().containsIp(lowestIp)) {
               throw new BatfishException(
@@ -188,7 +192,8 @@ final class Route implements Serializable {
             ConcreteInterfaceAddress subnetIfaceAddress =
                 ConcreteInterfaceAddress.create(
                     instanceLink.getStartIp(), instanceLink.getPrefixLength());
-            Utils.newInterface(subnetIfaceName, subnetCfgNode, subnetIfaceAddress);
+            Utils.newInterface(
+                subnetIfaceName, subnetCfgNode, subnetIfaceAddress, "To instance " + _targetType);
 
             // set up instance interface
             String instanceId = networkInterface.getAttachmentInstanceId();
@@ -199,7 +204,11 @@ final class Route implements Serializable {
                 ConcreteInterfaceAddress.create(
                     instanceLink.getEndIp(), instanceLink.getPrefixLength());
             Interface instanceIface =
-                Utils.newInterface(instanceIfaceName, instanceCfgNode, instanceIfaceAddress);
+                Utils.newInterface(
+                    instanceIfaceName,
+                    instanceCfgNode,
+                    instanceIfaceAddress,
+                    "To subnet " + subnet.getId());
             instanceIface.setIncomingFilter(
                 instanceCfgNode
                     .getIpAccessLists()
@@ -249,13 +258,13 @@ final class Route implements Serializable {
           String remoteVpcIfaceName = subnet.getId();
           Ip remoteVpcIfaceIp;
           if (!subnetCfgNode.getDefaultVrf().getInterfaces().containsKey(subnetIfaceName)) {
-            // create prefix on which subnet and remote vpc router will
-            // connect
+            // create prefix on which subnet and remote vpc router will connect
             Prefix peeringLink = awsConfiguration.getNextGeneratedLinkSubnet();
             ConcreteInterfaceAddress subnetIfaceAddress =
                 ConcreteInterfaceAddress.create(
                     peeringLink.getStartIp(), peeringLink.getPrefixLength());
-            Utils.newInterface(subnetIfaceName, subnetCfgNode, subnetIfaceAddress);
+            Utils.newInterface(
+                subnetIfaceName, subnetCfgNode, subnetIfaceAddress, "To remote VPC " + remoteVpcId);
 
             // set up remote vpc router interface
             ConcreteInterfaceAddress remoteVpcIfaceAddress =

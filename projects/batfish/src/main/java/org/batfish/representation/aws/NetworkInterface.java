@@ -1,6 +1,7 @@
 package org.batfish.representation.aws;
 
 import static com.google.common.base.Preconditions.checkArgument;
+import static org.batfish.representation.aws.Utils.checkNonNull;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
@@ -8,41 +9,20 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
 import java.io.Serializable;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.Ip;
 
-/** Represents a network interface in an AWS VPC */
+/**
+ * Represents a network interface in an AWS VPC.
+ * https://docs.aws.amazon.com/cli/latest/reference/ec2/describe-network-interfaces.html
+ */
 @JsonIgnoreProperties(ignoreUnknown = true)
 @ParametersAreNonnullByDefault
 final class NetworkInterface implements AwsVpcEntity, Serializable {
-
-  @JsonIgnoreProperties(ignoreUnknown = true)
-  @ParametersAreNonnullByDefault
-  private static final class Association {
-
-    @Nonnull private final Ip _publicIp;
-
-    @JsonCreator
-    private static Association create(@Nullable @JsonProperty(JSON_KEY_PUBLIC_IP) Ip publicIp) {
-      checkArgument(publicIp != null, "Public IP cannot be null in network interface association");
-      return new Association(publicIp);
-    }
-
-    private Association(Ip publicIp) {
-      _publicIp = publicIp;
-    }
-
-    @Nonnull
-    Ip getPublicIp() {
-      return _publicIp;
-    }
-  }
 
   @JsonIgnoreProperties(ignoreUnknown = true)
   @ParametersAreNonnullByDefault
@@ -92,49 +72,15 @@ final class NetworkInterface implements AwsVpcEntity, Serializable {
     }
   }
 
-  @JsonIgnoreProperties(ignoreUnknown = true)
-  @ParametersAreNonnullByDefault
-  private static final class PrivateIpAddress {
-
-    @Nonnull private final Ip _privateIp;
-
-    @Nullable private final Ip _publicIp;
-
-    @JsonCreator
-    private static PrivateIpAddress create(
-        @Nullable @JsonProperty(JSON_KEY_PRIVATE_IP_ADDRESS) Ip privateIp,
-        @Nullable @JsonProperty(JSON_KEY_ASSOCIATION) Association association) {
-      checkArgument(privateIp != null, "Private IP cannot be null for network interface");
-
-      return new PrivateIpAddress(
-          privateIp, association == null ? null : association.getPublicIp());
-    }
-
-    private PrivateIpAddress(Ip privateIp, @Nullable Ip publicIp) {
-      _privateIp = privateIp;
-      _publicIp = publicIp;
-    }
-
-    @Nonnull
-    Ip getPrivateIp() {
-      return _privateIp;
-    }
-
-    @Nullable
-    Ip getPublicIp() {
-      return _publicIp;
-    }
-  }
-
-  @Nullable private final Ip _associationPublicIp;
-
   @Nullable private final String _attachmentInstanceId;
+
+  @Nonnull private final String _description;
 
   @Nonnull private final List<String> _groups;
 
-  @Nonnull private final Map<Ip, Ip> _ipAddressAssociations;
-
   @Nonnull private final String _networkInterfaceId;
+
+  @Nonnull private final List<PrivateIpAddress> _privateIpAddresses;
 
   @Nonnull private final String _subnetId;
 
@@ -146,28 +92,30 @@ final class NetworkInterface implements AwsVpcEntity, Serializable {
       @Nullable @JsonProperty(JSON_KEY_SUBNET_ID) String subnetId,
       @Nullable @JsonProperty(JSON_KEY_VPC_ID) String vpcId,
       @Nullable @JsonProperty(JSON_KEY_GROUPS) List<Group> groups,
+      @Nullable @JsonProperty(JSON_KEY_PRIVATE_IP_ADDRESS) Ip privateIpAddress,
       @Nullable @JsonProperty(JSON_KEY_PRIVATE_IP_ADDRESSES)
           List<PrivateIpAddress> privateIpAddresses,
-      @Nullable @JsonProperty(JSON_KEY_ASSOCIATION) Association association,
+      @Nullable @JsonProperty(JSON_KEY_DESCRIPTION) String description,
       @Nullable @JsonProperty(JSON_KEY_ATTACHMENT) Attachment attachment) {
-    // all top-level keys other than association and attachment are mandatory
-    checkArgument(networkInterfaceId != null, "Network interface id cannot be null");
-    checkArgument(subnetId != null, "Subnet id cannot be null for network interface");
-    checkArgument(vpcId != null, "VPC id cannot be null for network interface");
-    checkArgument(groups != null, "Group list cannot be null for network interface");
-    checkArgument(
-        privateIpAddresses != null, "Private IP address list cannot be null for network interface");
-
-    HashMap<Ip, Ip> addressMap = new HashMap<>();
-    privateIpAddresses.forEach(p -> addressMap.put(p.getPrivateIp(), p.getPublicIp()));
+    /*
+     We do not parse the top-level privateIpAddress field -- that address shows up in privateIpAddresses list.
+     We do not parse the top-level association field -- that object shows up as a sub-field of privateIpAddresses.
+    */
+    // all top-level keys other than attachment are mandatory
+    checkNonNull(networkInterfaceId, JSON_KEY_NETWORK_INTERFACE_ID, "NetworkInterface");
+    checkNonNull(subnetId, JSON_KEY_SUBNET_ID, "NetworkInterface");
+    checkNonNull(vpcId, JSON_KEY_VPC_ID, "NetworkInterface");
+    checkNonNull(groups, JSON_KEY_GROUPS, "NetworkInterface");
+    checkNonNull(privateIpAddresses, JSON_KEY_PRIVATE_IP_ADDRESSES, "NetworkInterface");
+    checkNonNull(description, JSON_KEY_DESCRIPTION, "NetworkInterface");
 
     return new NetworkInterface(
         networkInterfaceId,
         subnetId,
         vpcId,
         groups.stream().map(Group::getId).collect(ImmutableList.toImmutableList()),
-        addressMap,
-        association == null ? null : association.getPublicIp(),
+        privateIpAddresses,
+        description,
         attachment == null ? null : attachment.getInstanceId());
   }
 
@@ -176,26 +124,37 @@ final class NetworkInterface implements AwsVpcEntity, Serializable {
       String subnetId,
       String vpcId,
       List<String> groups,
-      Map<Ip, Ip> ipAddressAssociations,
-      @Nullable Ip associationPublicIp,
+      List<PrivateIpAddress> privateIpAddresses,
+      String description,
       @Nullable String attachmentInstanceId) {
     _networkInterfaceId = networkInterfaceId;
     _subnetId = subnetId;
     _vpcId = vpcId;
     _groups = groups;
-    _ipAddressAssociations = ipAddressAssociations;
-    _associationPublicIp = associationPublicIp;
+    _privateIpAddresses = privateIpAddresses;
+    _description = description;
     _attachmentInstanceId = attachmentInstanceId;
+
+    // sanity check that we have at least one primary ip
+    getPrimaryPrivateIp();
   }
 
-  @Nullable
-  Ip getAssociationPublicIp() {
-    return _associationPublicIp;
+  @Nonnull
+  PrivateIpAddress getPrimaryPrivateIp() {
+    return _privateIpAddresses.stream()
+        .filter(PrivateIpAddress::isPrimary)
+        .findFirst()
+        .orElseThrow(() -> new IllegalArgumentException("No primary private Ip address found"));
   }
 
   @Nullable
   String getAttachmentInstanceId() {
     return _attachmentInstanceId;
+  }
+
+  @Nonnull
+  String getDescription() {
+    return _description;
   }
 
   @Nonnull
@@ -209,8 +168,8 @@ final class NetworkInterface implements AwsVpcEntity, Serializable {
   }
 
   @Nonnull
-  Map<Ip, Ip> getIpAddressAssociations() {
-    return _ipAddressAssociations;
+  List<PrivateIpAddress> getPrivateIpAddresses() {
+    return _privateIpAddresses;
   }
 
   @Nonnull
@@ -237,10 +196,10 @@ final class NetworkInterface implements AwsVpcEntity, Serializable {
       return false;
     }
     NetworkInterface that = (NetworkInterface) o;
-    return Objects.equals(_associationPublicIp, that._associationPublicIp)
-        && Objects.equals(_attachmentInstanceId, that._attachmentInstanceId)
+    return Objects.equals(_attachmentInstanceId, that._attachmentInstanceId)
+        && Objects.equals(_description, that._description)
         && Objects.equals(_groups, that._groups)
-        && Objects.equals(_ipAddressAssociations, that._ipAddressAssociations)
+        && Objects.equals(_privateIpAddresses, that._privateIpAddresses)
         && Objects.equals(_networkInterfaceId, that._networkInterfaceId)
         && Objects.equals(_subnetId, that._subnetId)
         && Objects.equals(_vpcId, that._vpcId);
@@ -249,10 +208,10 @@ final class NetworkInterface implements AwsVpcEntity, Serializable {
   @Override
   public int hashCode() {
     return Objects.hash(
-        _associationPublicIp,
         _attachmentInstanceId,
+        _description,
         _groups,
-        _ipAddressAssociations,
+        _privateIpAddresses,
         _networkInterfaceId,
         _subnetId,
         _vpcId);
@@ -261,10 +220,10 @@ final class NetworkInterface implements AwsVpcEntity, Serializable {
   @Override
   public String toString() {
     return MoreObjects.toStringHelper(this)
-        .add("_associationPublicIp", _associationPublicIp)
         .add("_attachmentInstanceId", _attachmentInstanceId)
+        .add("_description", _description)
         .add("_groups", _groups)
-        .add("_ipAddressAssociations", _ipAddressAssociations)
+        .add("_ipAddressAssociations", _privateIpAddresses)
         .add("_networkInterfaceId", _networkInterfaceId)
         .add("_subnetId", _subnetId)
         .add("_vpcId", _vpcId)

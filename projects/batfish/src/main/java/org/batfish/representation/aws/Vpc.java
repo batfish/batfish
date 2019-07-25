@@ -1,6 +1,7 @@
 package org.batfish.representation.aws;
 
 import static com.google.common.base.Preconditions.checkArgument;
+import static org.batfish.representation.aws.Utils.checkNonNull;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
@@ -18,7 +19,7 @@ import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.StaticRoute;
 
-/** Represents an AWS VPC */
+/** Represents an AWS VPC https://docs.aws.amazon.com/cli/latest/reference/ec2/describe-vpcs.html */
 @JsonIgnoreProperties(ignoreUnknown = true)
 @ParametersAreNonnullByDefault
 final class Vpc implements AwsVpcEntity, Serializable {
@@ -63,8 +64,6 @@ final class Vpc implements AwsVpcEntity, Serializable {
     }
   }
 
-  @Nonnull private final Prefix _cidrBlock;
-
   @Nonnull private final Set<Prefix> _cidrBlockAssociations;
 
   @Nonnull private final String _vpcId;
@@ -76,30 +75,23 @@ final class Vpc implements AwsVpcEntity, Serializable {
   @JsonCreator
   private static Vpc create(
       @Nullable @JsonProperty(JSON_KEY_VPC_ID) String vpcId,
-      @Nullable @JsonProperty(JSON_KEY_CIDR_BLOCK) Prefix cidrBlock,
       @Nullable @JsonProperty(JSON_KEY_CIDR_BLOCK_ASSOCIATION_SET)
           Set<CidrBlockAssociation> cidrBlockAssociations) {
-    checkArgument(vpcId != null, "VPC id cannot be null");
-    checkArgument(cidrBlock != null, "CIDR block cannot be null for VPC");
-    checkArgument(
-        cidrBlockAssociations != null, "CIDR block association set cannot be null for VPC");
+    /*
+     We do not parse CidrBlock. The information there also shows up CidrBlockAssociationSet
+    */
+    checkNonNull(vpcId, JSON_KEY_VPC_ID, "VPC");
+    checkNonNull(cidrBlockAssociations, JSON_KEY_CIDR_BLOCK_ASSOCIATION_SET, "VPC");
     return new Vpc(
         vpcId,
-        cidrBlock,
         cidrBlockAssociations.stream()
             .map(CidrBlockAssociation::getBlock)
             .collect(ImmutableSet.toImmutableSet()));
   }
 
-  Vpc(String vpcId, Prefix cidrBlock, Set<Prefix> cidrBlockAssociations) {
+  Vpc(String vpcId, Set<Prefix> cidrBlockAssociations) {
     _vpcId = vpcId;
-    _cidrBlock = cidrBlock;
     _cidrBlockAssociations = cidrBlockAssociations;
-  }
-
-  @Nonnull
-  Prefix getCidrBlock() {
-    return _cidrBlock;
   }
 
   @Nonnull
@@ -135,16 +127,18 @@ final class Vpc implements AwsVpcEntity, Serializable {
     Configuration cfgNode = Utils.newAwsConfiguration(_vpcId, "aws");
     cfgNode.getVendorFamily().getAws().setRegion(region.getName());
     cfgNode.getVendorFamily().getAws().setVpcId(_vpcId);
-    cfgNode
-        .getDefaultVrf()
-        .getStaticRoutes()
-        .add(
-            StaticRoute.builder()
-                .setAdministrativeCost(Route.DEFAULT_STATIC_ROUTE_ADMIN)
-                .setMetric(Route.DEFAULT_STATIC_ROUTE_COST)
-                .setNetwork(_cidrBlock)
-                .setNextHopInterface(Interface.NULL_INTERFACE_NAME)
-                .build());
+    _cidrBlockAssociations.forEach(
+        cb ->
+            cfgNode
+                .getDefaultVrf()
+                .getStaticRoutes()
+                .add(
+                    StaticRoute.builder()
+                        .setAdministrativeCost(Route.DEFAULT_STATIC_ROUTE_ADMIN)
+                        .setMetric(Route.DEFAULT_STATIC_ROUTE_COST)
+                        .setNetwork(cb)
+                        .setNextHopInterface(Interface.NULL_INTERFACE_NAME)
+                        .build()));
 
     // we only create a node here
     // interfaces are added to this node as we traverse subnets and
@@ -162,16 +156,15 @@ final class Vpc implements AwsVpcEntity, Serializable {
       return false;
     }
     Vpc vpc = (Vpc) o;
-    return com.google.common.base.Objects.equal(_cidrBlock, vpc._cidrBlock)
-        && com.google.common.base.Objects.equal(_cidrBlockAssociations, vpc._cidrBlockAssociations)
-        && com.google.common.base.Objects.equal(_vpcId, vpc._vpcId)
-        && com.google.common.base.Objects.equal(_vpnGatewayId, vpc._vpnGatewayId)
-        && com.google.common.base.Objects.equal(_internetGatewayId, vpc._internetGatewayId);
+    return Objects.equals(_cidrBlockAssociations, vpc._cidrBlockAssociations)
+        && Objects.equals(_vpcId, vpc._vpcId)
+        && Objects.equals(_vpnGatewayId, vpc._vpnGatewayId)
+        && Objects.equals(_internetGatewayId, vpc._internetGatewayId);
   }
 
   @Override
   public int hashCode() {
     return com.google.common.base.Objects.hashCode(
-        _cidrBlock, _cidrBlockAssociations, _vpcId, _vpnGatewayId, _internetGatewayId);
+        _cidrBlockAssociations, _vpcId, _vpnGatewayId, _internetGatewayId);
   }
 }

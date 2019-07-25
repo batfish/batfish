@@ -295,7 +295,8 @@ public final class RdsInstance implements AwsVpcEntity, Serializable {
       ConcreteInterfaceAddress instancesIfaceAddress =
           ConcreteInterfaceAddress.create(
               instancesIfaceIp, subnet.getCidrBlock().getPrefixLength());
-      Utils.newInterface(instancesIfaceName, cfgNode, instancesIfaceAddress);
+      Utils.newInterface(
+          instancesIfaceName, cfgNode, instancesIfaceAddress, "To subnet " + subnetId);
 
       Ip defaultGatewayAddress = subnet.computeInstancesIfaceIp();
       StaticRoute defaultRoute =

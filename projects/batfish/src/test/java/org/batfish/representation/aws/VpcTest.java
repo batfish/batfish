@@ -37,7 +37,6 @@ public class VpcTest {
             ImmutableList.of(
                 new Vpc(
                     "vpc-CCCCCC",
-                    Prefix.parse("10.100.0.0/16"),
                     ImmutableSet.of(
                         Prefix.parse("10.100.0.0/16"), Prefix.parse("10.200.0.0/16"))))));
   }
