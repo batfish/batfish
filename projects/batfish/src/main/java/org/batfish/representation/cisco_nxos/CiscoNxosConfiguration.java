@@ -698,6 +698,7 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
         CiscoNxosStructureUsage.BGP_DEFAULT_ORIGINATE_ROUTE_MAP,
         CiscoNxosStructureUsage.BGP_EXIST_MAP,
         CiscoNxosStructureUsage.BGP_INJECT_MAP,
+        CiscoNxosStructureUsage.BGP_L2VPN_EVPN_RETAIN_ROUTE_TARGET_ROUTE_MAP,
         CiscoNxosStructureUsage.BGP_NEIGHBOR_ADVERTISE_MAP,
         CiscoNxosStructureUsage.BGP_NEIGHBOR_EXIST_MAP,
         CiscoNxosStructureUsage.BGP_NEIGHBOR_NON_EXIST_MAP,

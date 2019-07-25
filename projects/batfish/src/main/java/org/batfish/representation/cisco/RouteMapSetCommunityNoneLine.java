@@ -13,9 +13,4 @@ public class RouteMapSetCommunityNoneLine extends RouteMapSetLine {
       List<Statement> statements, CiscoConfiguration cc, Configuration c, Warnings w) {
     statements.add(Statements.DeleteAllCommunities.toStaticStatement());
   }
-
-  @Override
-  public RouteMapSetType getType() {
-    return RouteMapSetType.COMMUNITY_NONE;
-  }
 }
