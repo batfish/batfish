@@ -988,6 +988,7 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
   public void enterIh_group(Ih_groupContext ctx) {
     Optional<Integer> groupOrErr = toIntegerInSpace(ctx, ctx.group, HSRP_GROUP_RANGE, "hsrp group");
     if (!groupOrErr.isPresent()) {
+      // dummy
       _currentHsrpGroupGetter = iface -> new HsrpGroup(0);
     } else {
       _currentHsrpGroupGetter =
