@@ -10,8 +10,8 @@ import static org.batfish.representation.aws.Utils.checkNonNull;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.google.common.base.Objects;
 import java.io.Serializable;
+import java.util.Objects;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -92,12 +92,12 @@ final class PrivateIpAddress implements Serializable {
     }
     PrivateIpAddress that = (PrivateIpAddress) o;
     return _primary == that._primary
-        && Objects.equal(_privateIp, that._privateIp)
-        && Objects.equal(_publicIp, that._publicIp);
+        && Objects.equals(_privateIp, that._privateIp)
+        && Objects.equals(_publicIp, that._publicIp);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hashCode(_primary, _privateIp, _publicIp);
+    return Objects.hash(_primary, _privateIp, _publicIp);
   }
 }

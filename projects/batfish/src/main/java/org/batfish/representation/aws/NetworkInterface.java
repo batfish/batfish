@@ -14,7 +14,6 @@ import java.util.Objects;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
-import org.batfish.datamodel.Ip;
 
 /**
  * Represents a network interface in an AWS VPC.
@@ -92,7 +91,6 @@ final class NetworkInterface implements AwsVpcEntity, Serializable {
       @Nullable @JsonProperty(JSON_KEY_SUBNET_ID) String subnetId,
       @Nullable @JsonProperty(JSON_KEY_VPC_ID) String vpcId,
       @Nullable @JsonProperty(JSON_KEY_GROUPS) List<Group> groups,
-      @Nullable @JsonProperty(JSON_KEY_PRIVATE_IP_ADDRESS) Ip privateIpAddress,
       @Nullable @JsonProperty(JSON_KEY_PRIVATE_IP_ADDRESSES)
           List<PrivateIpAddress> privateIpAddresses,
       @Nullable @JsonProperty(JSON_KEY_DESCRIPTION) String description,
