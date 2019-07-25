@@ -2434,6 +2434,12 @@ public final class CiscoNxosGrammarTest {
   }
 
   @Test
+  public void testRoleParsing() {
+    // TODO: make into ref test
+    assertThat(parseVendorConfig("nxos_role"), notNullValue());
+  }
+
+  @Test
   public void testRouteMapExtraction() {
     String hostname = "nxos_route_map";
     CiscoNxosConfiguration vc = parseVendorConfig(hostname);
