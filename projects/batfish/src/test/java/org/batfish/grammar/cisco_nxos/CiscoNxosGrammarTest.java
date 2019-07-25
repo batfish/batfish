@@ -102,6 +102,7 @@ import org.batfish.datamodel.NamedPort;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.RouteFilterLine;
 import org.batfish.datamodel.RouteFilterList;
+import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.SwitchportMode;
 import org.batfish.datamodel.TcpFlags;
@@ -116,6 +117,10 @@ import org.batfish.main.BatfishTestUtils;
 import org.batfish.representation.cisco_nxos.ActionIpAccessListLine;
 import org.batfish.representation.cisco_nxos.AddrGroupIpAddressSpec;
 import org.batfish.representation.cisco_nxos.AddressFamily;
+import org.batfish.representation.cisco_nxos.BgpGlobalConfiguration;
+import org.batfish.representation.cisco_nxos.BgpRedistributionPolicy;
+import org.batfish.representation.cisco_nxos.BgpVrfConfiguration;
+import org.batfish.representation.cisco_nxos.BgpVrfIpv4AddressFamilyConfiguration;
 import org.batfish.representation.cisco_nxos.CiscoNxosConfiguration;
 import org.batfish.representation.cisco_nxos.CiscoNxosInterfaceType;
 import org.batfish.representation.cisco_nxos.CiscoNxosStructureType;
@@ -274,7 +279,28 @@ public final class CiscoNxosGrammarTest {
   }
 
   @Test
-  public void testEvpn() {
+  public void testBgpExtraction() {
+    CiscoNxosConfiguration vc = parseVendorConfig("nxos_bgp");
+    BgpGlobalConfiguration bgpGlobal = vc.getBgpGlobalConfiguration();
+    assertThat(bgpGlobal, notNullValue());
+
+    assertThat(bgpGlobal.getVrfs(), hasKeys(DEFAULT_VRF_NAME));
+    BgpVrfConfiguration defaultBgp = bgpGlobal.getOrCreateVrf(DEFAULT_VRF_NAME);
+
+    BgpVrfIpv4AddressFamilyConfiguration ipv4u = defaultBgp.getIpv4UnicastAddressFamily();
+    assertThat(ipv4u, notNullValue());
+
+    assertThat(
+        ipv4u.getRedistributionPolicy(RoutingProtocol.CONNECTED),
+        equalTo(new BgpRedistributionPolicy("DIR_MAP", null)));
+
+    assertThat(
+        ipv4u.getRedistributionPolicy(RoutingProtocol.OSPF),
+        equalTo(new BgpRedistributionPolicy("OSPF_MAP", "ospf_proc")));
+  }
+
+  @Test
+  public void testEvpnExtraction() {
     CiscoNxosConfiguration vc = parseVendorConfig("nxos_evpn");
     Evpn evpn = vc.getEvpn();
     assertThat(evpn, not(nullValue()));

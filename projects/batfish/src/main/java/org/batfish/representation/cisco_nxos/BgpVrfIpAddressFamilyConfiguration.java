@@ -98,8 +98,7 @@ public abstract class BgpVrfIpAddressFamilyConfiguration extends BgpVrfAddressFa
 
   public final void setRedistributionPolicy(
       RoutingProtocol protocol, String routeMap, @Nullable String sourceTag) {
-    BgpRedistributionPolicy policy = new BgpRedistributionPolicy(routeMap);
-    policy.setSourceTag(sourceTag);
+    BgpRedistributionPolicy policy = new BgpRedistributionPolicy(routeMap, sourceTag);
     _redistributionPolicies.put(protocol, policy);
   }
 
