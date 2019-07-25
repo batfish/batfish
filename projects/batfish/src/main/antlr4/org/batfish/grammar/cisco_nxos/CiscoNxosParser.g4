@@ -21,6 +21,7 @@ statement
   | s_interface
   | s_ip
   | s_ipv6
+  | s_key
   | s_no
   | s_null
   | s_nv
@@ -76,6 +77,38 @@ ip_null
 s_ipv6
 :
   IPV6 ipv6_access_list
+;
+
+s_key
+:
+  KEY key_chain
+;
+
+key_chain
+:
+  CHAIN name = key_chain_name NEWLINE kc_key*
+;
+
+key_chain_name
+:
+// 1-63 characters
+  WORD
+;
+
+kc_key
+:
+  KEY num = uint16 NEWLINE kck_key_string*
+;
+
+kck_key_string
+:
+  KEY_STRING key_text = key_string_text NEWLINE
+;
+
+key_string_text
+:
+// 1-63 characters
+  REMARK_TEXT
 ;
 
 s_null

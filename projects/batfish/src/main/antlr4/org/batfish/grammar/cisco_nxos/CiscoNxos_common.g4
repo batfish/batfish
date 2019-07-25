@@ -210,8 +210,7 @@ template_name
 track_object_number
 :
 // 1-512
-  UINT8
-  | UINT16
+  uint16
 ;
 
 uint8
