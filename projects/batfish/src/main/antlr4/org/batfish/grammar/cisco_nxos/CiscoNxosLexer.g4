@@ -2851,7 +2851,7 @@ TYPE
   // Other instances are followed by tokens in default mode, or occur in non-default mode.
   {
     if (lastTokenType() == SERVICE_POLICY) {
-      pushMode( M_ClassType );
+      pushMode(M_ClassType);
     }
   }
 ;
