@@ -2497,23 +2497,17 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
     if (!nameOpt.isPresent()) {
       return;
     }
+    String name = nameOpt.get();
     _currentRouteMapEntry =
         _configuration
             .getRouteMaps()
-            .computeIfAbsent(
-                nameOpt.get(),
-                name -> {
-                  _configuration.defineStructure(ROUTE_MAP, name, ctx);
-                  return new RouteMap(name);
-                })
+            .computeIfAbsent(name, RouteMap::new)
             .getEntries()
-            .computeIfAbsent(
-                sequence,
-                seq -> {
-                  _configuration.defineStructure(ROUTE_MAP_ENTRY, seq.toString(), ctx);
-                  return new RouteMapEntry(seq);
-                });
+            .computeIfAbsent(sequence, RouteMapEntry::new);
     _currentRouteMapEntry.setAction(toLineAction(ctx.action));
+
+    _configuration.defineStructure(ROUTE_MAP, name, ctx);
+    _configuration.defineStructure(ROUTE_MAP_ENTRY, Integer.toString(sequence), ctx);
   }
 
   @Override
