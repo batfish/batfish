@@ -1589,6 +1589,12 @@ public final class CiscoNxosGrammarTest {
   }
 
   @Test
+  public void testIpv6AccessListParsing() {
+    // TODO: make into extraction test
+    assertThat(parseVendorConfig("nxos_ipv6_access_list"), notNullValue());
+  }
+
+  @Test
   public void testNveExtraction() {
     CiscoNxosConfiguration vc = parseVendorConfig("nxos_nve");
     Map<Integer, Nve> nves = vc.getNves();

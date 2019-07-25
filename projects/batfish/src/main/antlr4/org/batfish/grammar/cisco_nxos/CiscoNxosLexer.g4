@@ -1714,6 +1714,16 @@ NATIVE
   'native'
 ;
 
+ND_NA
+:
+  'nd-na'
+;
+
+ND_NS
+:
+  'nd-ns'
+;
+
 NEGOTIATE
 :
   'negotiate'
