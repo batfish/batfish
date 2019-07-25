@@ -121,6 +121,8 @@ import org.batfish.representation.cisco_nxos.BgpGlobalConfiguration;
 import org.batfish.representation.cisco_nxos.BgpRedistributionPolicy;
 import org.batfish.representation.cisco_nxos.BgpVrfConfiguration;
 import org.batfish.representation.cisco_nxos.BgpVrfIpv4AddressFamilyConfiguration;
+import org.batfish.representation.cisco_nxos.BgpVrfL2VpnEvpnAddressFamilyConfiguration;
+import org.batfish.representation.cisco_nxos.BgpVrfL2VpnEvpnAddressFamilyConfiguration.RetainRouteType;
 import org.batfish.representation.cisco_nxos.CiscoNxosConfiguration;
 import org.batfish.representation.cisco_nxos.CiscoNxosInterfaceType;
 import org.batfish.representation.cisco_nxos.CiscoNxosStructureType;
@@ -278,19 +280,24 @@ public final class CiscoNxosGrammarTest {
     BgpGlobalConfiguration bgpGlobal = vc.getBgpGlobalConfiguration();
     assertThat(bgpGlobal, notNullValue());
 
-    assertThat(bgpGlobal.getVrfs(), hasKeys(DEFAULT_VRF_NAME));
-    BgpVrfConfiguration defaultBgp = bgpGlobal.getOrCreateVrf(DEFAULT_VRF_NAME);
+    assertThat(bgpGlobal.getVrfs(), hasKeys(DEFAULT_VRF_NAME, "2", "3"));
+    {
+      BgpVrfConfiguration vrf = bgpGlobal.getOrCreateVrf(DEFAULT_VRF_NAME);
 
-    BgpVrfIpv4AddressFamilyConfiguration ipv4u = defaultBgp.getIpv4UnicastAddressFamily();
-    assertThat(ipv4u, notNullValue());
+      BgpVrfIpv4AddressFamilyConfiguration ipv4u = vrf.getIpv4UnicastAddressFamily();
+      assertThat(ipv4u, notNullValue());
+      assertThat(
+          ipv4u.getRedistributionPolicy(RoutingProtocol.CONNECTED),
+          equalTo(new BgpRedistributionPolicy("DIR_MAP", null)));
+      assertThat(
+          ipv4u.getRedistributionPolicy(RoutingProtocol.OSPF),
+          equalTo(new BgpRedistributionPolicy("OSPF_MAP", "ospf_proc")));
 
-    assertThat(
-        ipv4u.getRedistributionPolicy(RoutingProtocol.CONNECTED),
-        equalTo(new BgpRedistributionPolicy("DIR_MAP", null)));
-
-    assertThat(
-        ipv4u.getRedistributionPolicy(RoutingProtocol.OSPF),
-        equalTo(new BgpRedistributionPolicy("OSPF_MAP", "ospf_proc")));
+      BgpVrfL2VpnEvpnAddressFamilyConfiguration l2vpn = vrf.getL2VpnEvpnAddressFamily();
+      assertThat(l2vpn, notNullValue());
+      assertThat(l2vpn.getRetainMode(), equalTo(RetainRouteType.ROUTE_MAP));
+      assertThat(l2vpn.getRetainRouteMap(), equalTo("RETAIN_MAP"));
+    }
   }
 
   @Test

@@ -11,6 +11,8 @@ public enum CiscoNxosStructureUsage implements StructureUsage {
   BGP_DEFAULT_ORIGINATE_ROUTE_MAP("bgp address-family default-originate route-map"),
   BGP_EXIST_MAP("bgp address-family exist-map"),
   BGP_INJECT_MAP("bgp address-family inject-map"),
+  BGP_L2VPN_EVPN_RETAIN_ROUTE_TARGET_ROUTE_MAP(
+      "bgp address-family l2vpn evpn retain-target route-map"),
   BGP_NEIGHBOR_ADVERTISE_MAP("bgp neighbor advertise-map"),
   BGP_NEIGHBOR_EXIST_MAP("bgp neighbor exist-map"),
   BGP_NEIGHBOR_FILTER_LIST_IN("bgp neighbor address-family filter-list in"),
