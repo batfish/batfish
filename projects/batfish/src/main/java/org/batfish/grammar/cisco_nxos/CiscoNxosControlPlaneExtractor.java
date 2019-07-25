@@ -1580,11 +1580,14 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
     String name = nameOrError.get();
     _configuration.referenceStructure(
         ROUTE_MAP, name, BGP_REDISTRIBUTE_OSPF_ROUTE_MAP, ctx.getStart().getLine());
-    String sourceTag = ctx.source_tag.getText();
-    // TODO: sourceTag is case-insensitive
+    Optional<String> ospfProcessOrError = toString(ctx, ctx.source_tag);
+    if (!ospfProcessOrError.isPresent()) {
+      return;
+    }
+    String ospfProcess = ospfProcessOrError.get();
     _configuration.referenceStructure(
-        ROUTER_OSPF, name, BGP_REDISTRIBUTE_OSPF_SOURCE_TAG, ctx.getStart().getLine());
-    _currentBgpVrfIpAddressFamily.setRedistributionPolicy(RoutingProtocol.OSPF, name, sourceTag);
+        ROUTER_OSPF, ospfProcess, BGP_REDISTRIBUTE_OSPF_SOURCE_TAG, ctx.getStart().getLine());
+    _currentBgpVrfIpAddressFamily.setRedistributionPolicy(RoutingProtocol.OSPF, name, ospfProcess);
   }
 
   @Override
@@ -4287,8 +4290,11 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
 
   private @Nonnull Optional<String> toString(
       ParserRuleContext messageCtx, Router_ospf_nameContext ctx) {
-    return toStringWithLengthInSpace(
-        messageCtx, ctx, OSPF_PROCESS_NAME_LENGTH_RANGE, "OSPF process name");
+    Optional<String> procName =
+        toStringWithLengthInSpace(
+            messageCtx, ctx, OSPF_PROCESS_NAME_LENGTH_RANGE, "OSPF process name");
+    // OSPF process name is case-insensitive.
+    return procName.map(name -> getPreferredName(name, ROUTER_OSPF));
   }
 
   private @Nullable String toString(ParserRuleContext messageCtx, Static_route_nameContext ctx) {
