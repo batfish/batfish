@@ -163,7 +163,7 @@ final class EigrpRoutingProcess implements RoutingProcess<EigrpTopology, EigrpRo
 
     // Filter and transform redistribution queue according to per neighbor export policy and send
     // out
-    filterTransformAndSendOutRedistributed(_queuedForRedistribution, allNodes);
+    filterTransformExportRedistributed(_queuedForRedistribution, allNodes);
     _queuedForRedistribution = RibDelta.empty();
 
     // Process new external routes and re-advertise them as necessary
@@ -175,7 +175,7 @@ final class EigrpRoutingProcess implements RoutingProcess<EigrpTopology, EigrpRo
     _changeSet.from(importRibDelta(_rib, externalDelta));
   }
 
-  private void filterTransformAndSendOutRedistributed(
+  private void filterTransformExportRedistributed(
       RibDelta<? extends AnnotatedRoute<AbstractRoute>> queueForRedistribution,
       Map<String, Node> allNodes) {
     for (EigrpEdge eigrpEdge : _incomingExternalRoutes.keySet()) {
@@ -389,7 +389,7 @@ final class EigrpRoutingProcess implements RoutingProcess<EigrpTopology, EigrpRo
       EigrpNeighborConfigId neighborConfigId, EigrpRoute eigrpRoute) {
     RoutingPolicy exportPolicy = getOwnExportPolicy(neighborConfigId);
     if (exportPolicy == null) {
-      return true;
+      return false;
     }
     return exportPolicy.process(eigrpRoute, eigrpRoute.toBuilder(), null, _vrfName, Direction.OUT);
   }
@@ -429,7 +429,6 @@ final class EigrpRoutingProcess implements RoutingProcess<EigrpTopology, EigrpRo
         potentialExportRoute, outputRouteBuilder, null, _vrfName, Direction.OUT)) {
       return null;
     }
-
     outputRouteBuilder.setAdmin(_defaultExternalAdminCost);
     if (unannotatedPotentialRoute instanceof EigrpExternalRoute) {
       EigrpExternalRoute externalRoute = (EigrpExternalRoute) unannotatedPotentialRoute;
