@@ -86,6 +86,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.SortedMap;
+import java.util.function.Function;
 import java.util.stream.IntStream;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -189,6 +190,14 @@ import org.batfish.grammar.cisco_nxos.CiscoNxosParser.I_switchport_trunk_allowed
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.I_switchport_trunk_nativeContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.I_vrf_memberContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Icl_standardContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Ih_groupContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Ih_versionContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Ihd_reloadContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Ihg_ipContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Ihg_preemptContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Ihg_priorityContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Ihg_timersContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Ihg_trackContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Iipo_dead_intervalContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Iipo_hello_intervalContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Iipo_networkContext;
@@ -409,6 +418,8 @@ import org.batfish.representation.cisco_nxos.DefaultVrfOspfProcess;
 import org.batfish.representation.cisco_nxos.Evpn;
 import org.batfish.representation.cisco_nxos.EvpnVni;
 import org.batfish.representation.cisco_nxos.FragmentsBehavior;
+import org.batfish.representation.cisco_nxos.HsrpGroup;
+import org.batfish.representation.cisco_nxos.HsrpTrack;
 import org.batfish.representation.cisco_nxos.IcmpOptions;
 import org.batfish.representation.cisco_nxos.Interface;
 import org.batfish.representation.cisco_nxos.InterfaceAddressWithAttributes;
@@ -491,6 +502,21 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
   private static final IntegerSpace BGP_TEMPLATE_NAME_LENGTH_RANGE =
       IntegerSpace.of(Range.closed(1, 63));
   private static final IntegerSpace DSCP_RANGE = IntegerSpace.of(Range.closed(0, 63));
+  private static final IntegerSpace HSRP_DELAY_RELOAD_S_RANGE =
+      IntegerSpace.of(Range.closed(0, 10000));
+  private static final IntegerSpace HSRP_GROUP_RANGE = IntegerSpace.of(Range.closed(0, 4095));
+  private static final IntegerSpace HSRP_HELLO_INTERVAL_MS_RANGE =
+      IntegerSpace.of(Range.closed(250, 999));
+  private static final IntegerSpace HSRP_HELLO_INTERVAL_S_RANGE =
+      IntegerSpace.of(Range.closed(1, 254));
+  private static final IntegerSpace HSRP_HOLD_TIME_MS_RANGE =
+      IntegerSpace.of(Range.closed(750, 3000));
+  private static final IntegerSpace HSRP_HOLD_TIME_S_RANGE = IntegerSpace.of(Range.closed(3, 255));
+  private static final IntegerSpace HSRP_PREEMPT_DELAY_S_RANGE =
+      IntegerSpace.of(Range.closed(0, 3600));
+  private static final IntegerSpace HSRP_TRACK_DECREMENT_RANGE =
+      IntegerSpace.of(Range.closed(1, 255));
+  private static final IntegerSpace HSRP_VERSION_RANGE = IntegerSpace.of(Range.closed(1, 2));
   private static final IntegerSpace INTERFACE_DESCRIPTION_LENGTH_RANGE =
       IntegerSpace.of(Range.closed(1, 254));
   private static final IntegerSpace INTERFACE_SPEED_RANGE_MBPS =
@@ -735,6 +761,7 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
   private BgpVrfNeighborAddressFamilyConfiguration _currentBgpVrfNeighborAddressFamily;
   private DefaultVrfOspfProcess _currentDefaultVrfOspfProcess;
   private EvpnVni _currentEvpnVni;
+  private Function<Interface, HsrpGroup> _currentHsrpGroupGetter;
   private List<Interface> _currentInterfaces;
   private IpAccessList _currentIpAccessList;
   private Optional<Long> _currentIpAccessListLineNum;
@@ -952,6 +979,188 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
         .getLines()
         .put(
             seq, new IpCommunityListStandardLine(toLineAction(ctx.action), seq, communities.get()));
+  }
+
+  @Override
+  public void exitIhd_reload(Ihd_reloadContext ctx) {
+    toIntegerInSpace(ctx, ctx.delay_s, HSRP_DELAY_RELOAD_S_RANGE, "hsrp reload delay seconds")
+        .ifPresent(
+            delay ->
+                _currentInterfaces.forEach(
+                    iface -> iface.getOrCreateHsrp().setDelayReloadSeconds(delay)));
+  }
+
+  @Override
+  public void enterIh_group(Ih_groupContext ctx) {
+    Optional<Integer> groupOrErr = toIntegerInSpace(ctx, ctx.group, HSRP_GROUP_RANGE, "hsrp group");
+    if (!groupOrErr.isPresent()) {
+      // dummy
+      _currentHsrpGroupGetter = iface -> new HsrpGroup(0);
+    } else {
+      _currentHsrpGroupGetter =
+          iface ->
+              iface.getOrCreateHsrp().getGroups().computeIfAbsent(groupOrErr.get(), HsrpGroup::new);
+    }
+  }
+
+  @Override
+  public void exitIh_group(Ih_groupContext ctx) {
+    _currentHsrpGroupGetter = null;
+  }
+
+  @Override
+  public void exitIhg_ip(Ihg_ipContext ctx) {
+    if (ctx.prefix != null) {
+      todo(ctx);
+      return;
+    }
+    assert ctx.ip != null;
+    Ip ip = toIp(ctx.ip);
+    _currentInterfaces.forEach(iface -> _currentHsrpGroupGetter.apply(iface).setIp(ip));
+  }
+
+  @Override
+  public void exitIhg_preempt(Ihg_preemptContext ctx) {
+    @Nullable Integer minimumSeconds = null;
+    if (ctx.minimum_s != null) {
+      Optional<Integer> minimumSecondsOrErr =
+          toIntegerInSpace(
+              ctx, ctx.minimum_s, HSRP_PREEMPT_DELAY_S_RANGE, "hspr preempt delay minimum seconds");
+      if (!minimumSecondsOrErr.isPresent()) {
+        return;
+      }
+      minimumSeconds = minimumSecondsOrErr.get();
+    }
+    @Nullable Integer reloadSeconds = null;
+    if (ctx.reload_s != null) {
+      Optional<Integer> reloadSecondsOrErr =
+          toIntegerInSpace(
+              ctx, ctx.reload_s, HSRP_PREEMPT_DELAY_S_RANGE, "hspr preempt delay reload seconds");
+      if (!reloadSecondsOrErr.isPresent()) {
+        return;
+      }
+      reloadSeconds = reloadSecondsOrErr.get();
+    }
+    @Nullable Integer syncSeconds = null;
+    if (ctx.sync_s != null) {
+      Optional<Integer> syncSecondsOrErr =
+          toIntegerInSpace(
+              ctx, ctx.sync_s, HSRP_PREEMPT_DELAY_S_RANGE, "hspr preempt delay sync seconds");
+      if (!syncSecondsOrErr.isPresent()) {
+        return;
+      }
+      syncSeconds = syncSecondsOrErr.get();
+    }
+    for (Interface iface : _currentInterfaces) {
+      HsrpGroup group = _currentHsrpGroupGetter.apply(iface);
+      if (minimumSeconds != null) {
+        group.setPreemptDelayMinimumSeconds(minimumSeconds);
+      }
+      if (reloadSeconds != null) {
+        group.setPreemptDelayReloadSeconds(reloadSeconds);
+      }
+      if (syncSeconds != null) {
+        group.setPreemptDelaySyncSeconds(syncSeconds);
+      }
+    }
+  }
+
+  @Override
+  public void exitIhg_priority(Ihg_priorityContext ctx) {
+    int priority = toInteger(ctx.priority);
+    _currentInterfaces.forEach(iface -> _currentHsrpGroupGetter.apply(iface).setPriority(priority));
+  }
+
+  @Override
+  public void exitIhg_timers(Ihg_timersContext ctx) {
+    int helloIntervalMs;
+    if (ctx.hello_interval_ms != null) {
+      Optional<Integer> helloIntervalMsOrErr =
+          toIntegerInSpace(
+              ctx,
+              ctx.hello_interval_ms,
+              HSRP_HELLO_INTERVAL_MS_RANGE,
+              "hsrp timers hello-interval ms");
+      if (!helloIntervalMsOrErr.isPresent()) {
+        return;
+      }
+      helloIntervalMs = helloIntervalMsOrErr.get();
+    } else {
+      assert ctx.hello_interval_s != null;
+      Optional<Integer> helloIntervalSecondsOrErr =
+          toIntegerInSpace(
+              ctx,
+              ctx.hello_interval_s,
+              HSRP_HELLO_INTERVAL_S_RANGE,
+              "hsrp timers hello-interval seconds");
+      if (!helloIntervalSecondsOrErr.isPresent()) {
+        return;
+      }
+      helloIntervalMs = helloIntervalSecondsOrErr.get() * 1000;
+    }
+    int holdTimeMs;
+    if (ctx.hold_time_ms != null) {
+      Optional<Integer> holdTimeMsOrErr =
+          toIntegerInSpace(
+              ctx, ctx.hold_time_ms, HSRP_HOLD_TIME_MS_RANGE, "hsrp timers hold-time ms");
+      if (!holdTimeMsOrErr.isPresent()) {
+        return;
+      }
+      holdTimeMs = holdTimeMsOrErr.get();
+    } else {
+      assert ctx.hold_time_s != null;
+      Optional<Integer> holdTimeSecondsOrErr =
+          toIntegerInSpace(
+              ctx, ctx.hold_time_s, HSRP_HOLD_TIME_S_RANGE, "hsrp timers hold-time seconds");
+      if (!holdTimeSecondsOrErr.isPresent()) {
+        return;
+      }
+      holdTimeMs = holdTimeSecondsOrErr.get() * 1000;
+    }
+    // TODO: check constraints on relationship between hello and hold
+    _currentInterfaces.forEach(
+        iface -> {
+          HsrpGroup group = _currentHsrpGroupGetter.apply(iface);
+          group.setHelloIntervalMs(helloIntervalMs);
+          group.setHoldTimeMs(holdTimeMs);
+        });
+  }
+
+  @Override
+  public void exitIhg_track(Ihg_trackContext ctx) {
+    Optional<Integer> trackObjectNumberOrErr =
+        toIntegerInSpace(ctx, ctx.num, STATIC_ROUTE_TRACK_RANGE, "hsrp group track object number");
+    if (!trackObjectNumberOrErr.isPresent()) {
+      return;
+    }
+    int trackObjectNumber = trackObjectNumberOrErr.get();
+    @Nullable Integer decrement;
+    if (ctx.decrement != null) {
+      Optional<Integer> decrementOrErr =
+          toIntegerInSpace(
+              ctx, ctx.decrement, HSRP_TRACK_DECREMENT_RANGE, "hspr group track decrement");
+      if (!decrementOrErr.isPresent()) {
+        return;
+      }
+      decrement = decrementOrErr.get();
+    } else {
+      // disable instead of decrement when tracked object goes down
+      decrement = null;
+    }
+    _currentInterfaces.forEach(
+        iface ->
+            _currentHsrpGroupGetter
+                .apply(iface)
+                .getTracks()
+                .computeIfAbsent(trackObjectNumber, num -> new HsrpTrack(num, decrement)));
+  }
+
+  @Override
+  public void exitIh_version(Ih_versionContext ctx) {
+    toIntegerInSpace(ctx, ctx.version, HSRP_VERSION_RANGE, "hsrp version")
+        .ifPresent(
+            version ->
+                _currentInterfaces.forEach(iface -> iface.getOrCreateHsrp().setVersion(version)));
   }
 
   @Override

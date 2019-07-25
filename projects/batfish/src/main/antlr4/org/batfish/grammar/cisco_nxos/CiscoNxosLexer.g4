@@ -422,6 +422,11 @@ CAUSE
   'cause'
 ;
 
+CHAIN
+:
+  'chain' -> pushMode ( M_Word )
+;
+
 CHANNEL_GROUP
 :
   'channel-group'
@@ -644,6 +649,11 @@ DEAD_INTERVAL
   'dead-interval'
 ;
 
+DECREMENT
+:
+  'decrement'
+;
+
 DEFAULT
 :
   'default'
@@ -667,6 +677,11 @@ DEFAULT_METRIC
 DEFAULT_ORIGINATE
 :
   'default-originate'
+;
+
+DELAY
+:
+  'delay'
 ;
 
 DELETE
@@ -1393,6 +1408,16 @@ ISOLATE
   'isolate'
 ;
 
+KEY
+:
+  'key'
+;
+
+KEY_STRING
+:
+  'key-string' -> pushMode ( M_Remark )
+;
+
 KICKSTART
 :
   'kickstart'
@@ -1696,6 +1721,11 @@ MGMT
   [Mm] [Gg] [Mm] [Tt]
 ;
 
+MINIMUM
+:
+  'minimum'
+;
+
 MISSING_AS_WORST
 :
   'missing-as-worst'
@@ -1719,6 +1749,11 @@ MODE
 MROUTER
 :
   'mrouter'
+;
+
+MSEC
+:
+  'msec'
 ;
 
 MST
@@ -2230,6 +2265,11 @@ PRECEDENCE_UNREACHABLE
   'precedence-unreachable'
 ;
 
+PREEMPT
+:
+  'preempt'
+;
+
 PREFIX_LIST
 :
   'prefix-list' -> pushMode ( M_Word )
@@ -2383,6 +2423,11 @@ REFERENCE_BANDWIDTH
 REFLECTION
 :
   'reflection'
+;
+
+RELOAD
+:
+  'reload'
 ;
 
 REMARK
@@ -2790,6 +2835,11 @@ SYN
   'syn'
 ;
 
+SYNC
+:
+  'sync'
+;
+
 SYSLOG
 :
   'syslog'
@@ -3041,7 +3091,13 @@ V3_REPORT_SUPPRESSION
 
 VERSION
 :
-  'version' -> pushMode ( M_Remark )
+  'version'
+// arbitrary version string follows 'version' at beginning of line
+  {
+    if (lastTokenType() == NEWLINE || lastTokenType() == -1) {
+      pushMode(M_Remark);
+    }
+  }
 ;
 
 VIRTUAL_LINK

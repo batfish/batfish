@@ -35,6 +35,7 @@ s_interface_regular
     | i_channel_group
     | i_description
     | i_encapsulation
+    | i_hsrp
     | i_ip
     | i_mtu
     | i_no
@@ -84,6 +85,142 @@ interface_description
 i_encapsulation
 :
   ENCAPSULATION DOT1Q vlan = vlan_id NEWLINE
+;
+
+i_hsrp
+:
+  HSRP
+  (
+    ih_delay
+    | ih_group
+    | ih_version
+  )
+;
+
+ih_delay
+:
+  DELAY ihd_reload
+;
+
+ihd_reload
+:
+  RELOAD delay_s = hsrp_delay_reload NEWLINE
+;
+
+hsrp_delay_reload
+:
+// 0-10000 (s)
+  uint16
+;
+
+ih_group
+:
+  group = hsrp_group_number NEWLINE
+  (
+    ihg_ip
+    | ihg_preempt
+    | ihg_priority
+    | ihg_timers
+    | ihg_track
+  )*
+;
+
+hsrp_group_number
+:
+// 0-4095
+  uint16
+;
+
+ihg_ip
+:
+  IP
+  (
+    ip = ip_address
+    | prefix = ip_prefix
+  ) NEWLINE
+;
+
+ihg_preempt
+:
+  PREEMPT
+  (
+    DELAY
+    (
+      MINIMUM minimum_s = hsrp_preempt_delay
+      | RELOAD reload_s = hsrp_preempt_delay
+      | SYNC sync_s = hsrp_preempt_delay
+    )*
+  )? NEWLINE
+;
+
+hsrp_preempt_delay
+:
+// 0-3600 (s)
+  uint16
+;
+
+ihg_priority
+:
+  PRIORITY priority = uint8 NEWLINE
+;
+
+ihg_timers
+:
+  TIMERS
+  (
+    hello_interval_s = hsrp_timers_hello_interval_s
+    | MSEC hello_interval_ms = hsrp_timers_hello_interval_ms
+  )
+  (
+    hold_time_s = hsrp_timers_hold_time_s
+    | MSEC hold_time_ms = hsrp_timers_hold_time_ms
+  ) NEWLINE
+;
+
+hsrp_timers_hello_interval_s
+:
+// 1-254 (s)
+  uint8
+;
+
+hsrp_timers_hello_interval_ms
+:
+// 250-999 (ms)
+  uint16
+;
+
+hsrp_timers_hold_time_s
+:
+// 3-255 (s)
+  uint8
+;
+
+hsrp_timers_hold_time_ms
+:
+// 750-3000 (ms)
+  uint16
+;
+
+ihg_track
+:
+  TRACK num = track_object_number (DECREMENT decrement = hsrp_track_decrement)? NEWLINE
+;
+
+hsrp_track_decrement
+:
+// 1-255
+  uint8
+;
+
+ih_version
+:
+  VERSION version = hsrp_version NEWLINE
+;
+
+hsrp_version
+:
+// 1,2
+  uint8  
 ;
 
 i_ip
