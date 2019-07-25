@@ -251,6 +251,12 @@ public final class CiscoNxosGrammarTest {
   }
 
   @Test
+  public void testAaaParsing() {
+    // TODO: make into extraction test
+    assertThat(parseVendorConfig("nxos_aaa"), notNullValue());
+  }
+
+  @Test
   public void testBannerExtraction() {
     String bannerHostname = "nxos_banner";
     String bannerEmptyHostname = "nxos_banner_empty";
