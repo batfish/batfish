@@ -86,8 +86,6 @@ import org.batfish.datamodel.routing_policy.statement.If;
 import org.batfish.datamodel.routing_policy.statement.SetOrigin;
 import org.batfish.datamodel.routing_policy.statement.Statements;
 import org.batfish.datamodel.tracking.DecrementPriority;
-import org.batfish.datamodel.tracking.DisableGroup;
-import org.batfish.datamodel.tracking.TrackAction;
 import org.batfish.datamodel.vendor_family.cisco_nxos.CiscoNxosFamily;
 import org.batfish.representation.cisco_nxos.BgpVrfIpv6AddressFamilyConfiguration.Network;
 import org.batfish.vendor.VendorConfiguration;
@@ -787,7 +785,7 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
                 ImmutableSortedMap.toImmutableSortedMap(
                     Comparator.naturalOrder(),
                     trackEntry -> trackEntry.getKey().toString(),
-                    trackEntry -> toTrackAction(trackEntry.getValue()))));
+                    trackEntry -> new DecrementPriority(trackEntry.getValue().getDecrement()))));
     return builder.build();
   }
 
@@ -964,11 +962,6 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
         .setNextHopIp(firstNonNull(staticRoute.getNextHopIp(), UNSET_ROUTE_NEXT_HOP_IP))
         .setTag(staticRoute.getTag())
         .build();
-  }
-
-  private static @Nonnull TrackAction toTrackAction(HsrpTrack track) {
-    @Nullable Integer decrement = track.getDecrement();
-    return decrement != null ? new DecrementPriority(decrement) : DisableGroup.instance();
   }
 
   private @Nonnull Configuration toVendorIndependentConfiguration() {

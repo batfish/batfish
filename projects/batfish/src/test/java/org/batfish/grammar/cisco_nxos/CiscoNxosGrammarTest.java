@@ -122,7 +122,6 @@ import org.batfish.datamodel.matchers.HsrpGroupMatchers;
 import org.batfish.datamodel.matchers.RouteFilterListMatchers;
 import org.batfish.datamodel.matchers.VrfMatchers;
 import org.batfish.datamodel.tracking.DecrementPriority;
-import org.batfish.datamodel.tracking.DisableGroup;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
 import org.batfish.representation.cisco_nxos.ActionIpAccessListLine;
@@ -447,7 +446,7 @@ public final class CiscoNxosGrammarTest {
                   hasTrackActions(
                       equalTo(
                           ImmutableSortedMap.of(
-                              "1", DisableGroup.instance(), "2", new DecrementPriority(20)))))));
+                              "1", new DecrementPriority(10), "2", new DecrementPriority(20)))))));
     }
   }
 
@@ -474,7 +473,7 @@ public final class CiscoNxosGrammarTest {
       assertThat(group.getHelloIntervalMs(), equalTo(250));
       assertThat(group.getHoldTimeMs(), equalTo(750));
       assertThat(group.getTracks(), hasKeys(1, 2));
-      assertThat(group.getTracks().get(1).getDecrement(), nullValue());
+      assertThat(group.getTracks().get(1).getDecrement(), equalTo(10));
       assertThat(group.getTracks().get(2).getDecrement(), equalTo(20));
     }
   }

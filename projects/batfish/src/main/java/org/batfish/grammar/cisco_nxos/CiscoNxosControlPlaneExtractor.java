@@ -1117,6 +1117,7 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
       }
       holdTimeMs = holdTimeSecondsOrErr.get() * 1000;
     }
+    // TODO: check constraints on relationship between hello and hold
     _currentInterfaces.forEach(
         iface -> {
           HsrpGroup group = _currentHsrpGroupGetter.apply(iface);
