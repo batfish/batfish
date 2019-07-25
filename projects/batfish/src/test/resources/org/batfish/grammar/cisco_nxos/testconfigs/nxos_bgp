@@ -10,4 +10,7 @@ router bgp 1
   address-family ipv4 unicast
     redistribute direct route-map DIR_MAP
     redistribute ospf OSPF_PROC route-map OSPF_MAP
+
+  address-family l2vpn evpn
+    retain route-target route-map RETAIN_MAP
 !

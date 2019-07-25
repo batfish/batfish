@@ -132,6 +132,8 @@ import org.batfish.representation.cisco_nxos.BgpGlobalConfiguration;
 import org.batfish.representation.cisco_nxos.BgpRedistributionPolicy;
 import org.batfish.representation.cisco_nxos.BgpVrfConfiguration;
 import org.batfish.representation.cisco_nxos.BgpVrfIpv4AddressFamilyConfiguration;
+import org.batfish.representation.cisco_nxos.BgpVrfL2VpnEvpnAddressFamilyConfiguration;
+import org.batfish.representation.cisco_nxos.BgpVrfL2VpnEvpnAddressFamilyConfiguration.RetainRouteType;
 import org.batfish.representation.cisco_nxos.CiscoNxosConfiguration;
 import org.batfish.representation.cisco_nxos.CiscoNxosInterfaceType;
 import org.batfish.representation.cisco_nxos.CiscoNxosStructureType;
@@ -286,24 +288,53 @@ public final class CiscoNxosGrammarTest {
   }
 
   @Test
+  public void testClassMapParsing() {
+    // TODO: make into an extraction test
+    assertThat(parseVendorConfig("nxos_class_map"), notNullValue());
+  }
+
+  @Test
   public void testBgpExtraction() {
     CiscoNxosConfiguration vc = parseVendorConfig("nxos_bgp");
     BgpGlobalConfiguration bgpGlobal = vc.getBgpGlobalConfiguration();
     assertThat(bgpGlobal, notNullValue());
+    assertThat(bgpGlobal.getLocalAs(), equalTo(1L));
 
     assertThat(bgpGlobal.getVrfs(), hasKeys(DEFAULT_VRF_NAME));
-    BgpVrfConfiguration defaultBgp = bgpGlobal.getOrCreateVrf(DEFAULT_VRF_NAME);
+    {
+      BgpVrfConfiguration vrf = bgpGlobal.getOrCreateVrf(DEFAULT_VRF_NAME);
 
-    BgpVrfIpv4AddressFamilyConfiguration ipv4u = defaultBgp.getIpv4UnicastAddressFamily();
-    assertThat(ipv4u, notNullValue());
+      BgpVrfIpv4AddressFamilyConfiguration ipv4u = vrf.getIpv4UnicastAddressFamily();
+      assertThat(ipv4u, notNullValue());
+      assertThat(
+          ipv4u.getRedistributionPolicy(RoutingProtocol.CONNECTED),
+          equalTo(new BgpRedistributionPolicy("DIR_MAP", null)));
+      assertThat(
+          ipv4u.getRedistributionPolicy(RoutingProtocol.OSPF),
+          equalTo(new BgpRedistributionPolicy("OSPF_MAP", "ospf_proc")));
 
-    assertThat(
-        ipv4u.getRedistributionPolicy(RoutingProtocol.CONNECTED),
-        equalTo(new BgpRedistributionPolicy("DIR_MAP", null)));
+      BgpVrfL2VpnEvpnAddressFamilyConfiguration l2vpn = vrf.getL2VpnEvpnAddressFamily();
+      assertThat(l2vpn, notNullValue());
+      assertThat(l2vpn.getRetainMode(), equalTo(RetainRouteType.ROUTE_MAP));
+      assertThat(l2vpn.getRetainRouteMap(), equalTo("RETAIN_MAP"));
+    }
+  }
 
-    assertThat(
-        ipv4u.getRedistributionPolicy(RoutingProtocol.OSPF),
-        equalTo(new BgpRedistributionPolicy("OSPF_MAP", "ospf_proc")));
+  /** Like {@link #testBgpExtraction()}, but for second variants of global parameters. */
+  @Test
+  public void testBgpExtraction2() {
+    CiscoNxosConfiguration vc = parseVendorConfig("nxos_bgp_2");
+
+    BgpGlobalConfiguration bgpGlobal = vc.getBgpGlobalConfiguration();
+    assertThat(bgpGlobal, notNullValue());
+    assertThat(bgpGlobal.getVrfs(), hasKeys(DEFAULT_VRF_NAME));
+    {
+      BgpVrfConfiguration vrf = bgpGlobal.getOrCreateVrf(DEFAULT_VRF_NAME);
+
+      BgpVrfL2VpnEvpnAddressFamilyConfiguration l2vpn = vrf.getL2VpnEvpnAddressFamily();
+      assertThat(l2vpn, notNullValue());
+      assertThat(l2vpn.getRetainMode(), equalTo(RetainRouteType.ALL));
+    }
   }
 
   @Test
@@ -2091,6 +2122,12 @@ public final class CiscoNxosGrammarTest {
       assertThat(ospf, notNullValue());
       assertThat(ospf.getNetwork(), equalTo(POINT_TO_POINT));
     }
+  }
+
+  @Test
+  public void testPolicyMapParsing() {
+    // TODO: make into an extraction test
+    assertThat(parseVendorConfig("nxos_policy_map"), notNullValue());
   }
 
   @Test

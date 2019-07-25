@@ -25,11 +25,6 @@ public class RouteMapSetOriginTypeLine extends RouteMapSetLine {
     return _originExpr;
   }
 
-  @Override
-  public RouteMapSetType getType() {
-    return RouteMapSetType.ORIGIN_TYPE;
-  }
-
   public void setOriginExpr(OriginExpr originExpr) {
     _originExpr = originExpr;
   }

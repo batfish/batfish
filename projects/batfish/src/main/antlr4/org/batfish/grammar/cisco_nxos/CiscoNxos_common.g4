@@ -26,6 +26,12 @@ cisco_nxos_password
   )
 ;
 
+class_map_name
+:
+// 1-40 characters
+  WORD
+;
+
 // Shared NX-OS syntax for route-target, redistribution, route leak, etc.
 both_export_import
 :
@@ -142,6 +148,12 @@ ospf_area_id
 :
   num = uint32
   | ip = ip_address
+;
+
+policy_map_name
+:
+// 1-40 characters
+  WORD
 ;
 
 quoted_text

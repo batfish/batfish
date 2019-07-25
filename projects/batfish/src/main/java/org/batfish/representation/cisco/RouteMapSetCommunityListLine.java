@@ -65,9 +65,4 @@ public final class RouteMapSetCommunityListLine extends RouteMapSetLine {
           }
         });
   }
-
-  @Override
-  public RouteMapSetType getType() {
-    return RouteMapSetType.COMMUNITY_LIST;
-  }
 }

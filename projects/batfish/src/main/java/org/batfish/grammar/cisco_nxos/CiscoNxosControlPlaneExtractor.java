@@ -27,6 +27,7 @@ import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.BGP_
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.BGP_DEFAULT_ORIGINATE_ROUTE_MAP;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.BGP_EXIST_MAP;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.BGP_INJECT_MAP;
+import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.BGP_L2VPN_EVPN_RETAIN_ROUTE_TARGET_ROUTE_MAP;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.BGP_NEIGHBOR6_FILTER_LIST_IN;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.BGP_NEIGHBOR6_FILTER_LIST_OUT;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.BGP_NEIGHBOR6_PREFIX_LIST_IN;
@@ -257,6 +258,7 @@ import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Rb_af_ipv4_multicastContex
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Rb_af_ipv4_unicastContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Rb_af_ipv6_multicastContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Rb_af_ipv6_unicastContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Rb_af_l2vpnContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Rb_afip_aa_tailContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Rb_afip_additional_pathsContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Rb_afip_client_to_clientContext;
@@ -275,6 +277,7 @@ import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Rb_afip_redistribute_ripCo
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Rb_afip_redistribute_staticContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Rb_afip_suppress_inactiveContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Rb_afip_table_mapContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Rb_afl2v_retainContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Rb_bestpathContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Rb_cluster_idContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Rb_confederation_identifierContext;
@@ -402,6 +405,8 @@ import org.batfish.representation.cisco_nxos.BgpVrfConfiguration;
 import org.batfish.representation.cisco_nxos.BgpVrfIpAddressFamilyConfiguration;
 import org.batfish.representation.cisco_nxos.BgpVrfIpv4AddressFamilyConfiguration;
 import org.batfish.representation.cisco_nxos.BgpVrfIpv6AddressFamilyConfiguration;
+import org.batfish.representation.cisco_nxos.BgpVrfL2VpnEvpnAddressFamilyConfiguration;
+import org.batfish.representation.cisco_nxos.BgpVrfL2VpnEvpnAddressFamilyConfiguration.RetainRouteType;
 import org.batfish.representation.cisco_nxos.BgpVrfNeighborAddressFamilyConfiguration;
 import org.batfish.representation.cisco_nxos.BgpVrfNeighborConfiguration;
 import org.batfish.representation.cisco_nxos.BgpVrfNeighborConfiguration.RemovePrivateAsMode;
@@ -748,6 +753,7 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
   private ActionIpAccessListLine.Builder _currentActionIpAccessListLineBuilder;
   private Boolean _currentActionIpAccessListLineUnusable;
   private BgpVrfIpAddressFamilyConfiguration _currentBgpVrfIpAddressFamily;
+  private BgpVrfL2VpnEvpnAddressFamilyConfiguration _currentBgpVrfL2VpnEvpnAddressFamily;
   private BgpVrfAddressFamilyAggregateNetworkConfiguration
       _currentBgpVrfAddressFamilyAggregateNetwork;
   private BgpVrfConfiguration _currentBgpVrfConfiguration;
@@ -2092,6 +2098,40 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
   }
 
   @Override
+  public void enterRb_af_l2vpn(Rb_af_l2vpnContext ctx) {
+    BgpVrfAddressFamilyConfiguration af =
+        _currentBgpVrfConfiguration.getOrCreateAddressFamily(Type.L2VPN_EVPN);
+    assert af instanceof BgpVrfL2VpnEvpnAddressFamilyConfiguration;
+    _currentBgpVrfL2VpnEvpnAddressFamily = (BgpVrfL2VpnEvpnAddressFamilyConfiguration) af;
+  }
+
+  @Override
+  public void exitRb_af_l2vpn(Rb_af_l2vpnContext ctx) {
+    _currentBgpVrfL2VpnEvpnAddressFamily = null;
+  }
+
+  @Override
+  public void exitRb_afl2v_retain(Rb_afl2v_retainContext ctx) {
+    if (ctx.ROUTE_MAP() != null) {
+      Optional<String> mapOrError = toString(ctx, ctx.map);
+      if (!mapOrError.isPresent()) {
+        return;
+      }
+      String map = mapOrError.get();
+      _currentBgpVrfL2VpnEvpnAddressFamily.setRetainMode(RetainRouteType.ROUTE_MAP);
+      _currentBgpVrfL2VpnEvpnAddressFamily.setRetainRouteMap(map);
+      _configuration.referenceStructure(
+          ROUTE_MAP,
+          map,
+          BGP_L2VPN_EVPN_RETAIN_ROUTE_TARGET_ROUTE_MAP,
+          ctx.map.getStart().getLine());
+    } else {
+      assert ctx.ALL() != null;
+      _currentBgpVrfL2VpnEvpnAddressFamily.setRetainMode(RetainRouteType.ALL);
+    }
+  }
+
+  @Override
   public void exitRb_bestpath(Rb_bestpathContext ctx) {
     if (ctx.ALWAYS_COMPARE_MED() != null) {
       _currentBgpVrfConfiguration.setBestpathAlwaysCompareMed(true);
@@ -2535,6 +2575,7 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
   public void enterRouter_bgp(Router_bgpContext ctx) {
     _currentBgpVrfConfiguration =
         _configuration.getBgpGlobalConfiguration().getOrCreateVrf(DEFAULT_VRF_NAME);
+    _configuration.getBgpGlobalConfiguration().setLocalAs(toLong(ctx.bgp_asn()));
   }
 
   @Override
@@ -2705,23 +2746,17 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
     if (!nameOpt.isPresent()) {
       return;
     }
+    String name = nameOpt.get();
     _currentRouteMapEntry =
         _configuration
             .getRouteMaps()
-            .computeIfAbsent(
-                nameOpt.get(),
-                name -> {
-                  _configuration.defineStructure(ROUTE_MAP, name, ctx);
-                  return new RouteMap(name);
-                })
+            .computeIfAbsent(name, RouteMap::new)
             .getEntries()
-            .computeIfAbsent(
-                sequence,
-                seq -> {
-                  _configuration.defineStructure(ROUTE_MAP_ENTRY, seq.toString(), ctx);
-                  return new RouteMapEntry(seq);
-                });
+            .computeIfAbsent(sequence, RouteMapEntry::new);
     _currentRouteMapEntry.setAction(toLineAction(ctx.action));
+
+    _configuration.defineStructure(ROUTE_MAP, name, ctx);
+    _configuration.defineStructure(ROUTE_MAP_ENTRY, Integer.toString(sequence), ctx);
   }
 
   @Override

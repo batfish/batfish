@@ -421,6 +421,21 @@ CHARGEN
   'chargen'
 ;
 
+CLASS
+:
+  'class' -> pushMode ( M_Class )
+;
+
+CLASS_DEFAULT
+:
+  'class-default'
+;
+
+CLASS_MAP
+:
+  'class-map' -> pushMode ( M_ClassMap )
+;
+
 CLI
 :
   'cli'
@@ -501,6 +516,11 @@ CONTEXT
 CONTINUE
 :
   'continue'
+;
+
+CONTROL_PLANE
+:
+  'control-plane'
 ;
 
 CONVERSION_ERROR
@@ -638,6 +658,11 @@ DESCRIPTION
   'description' -> pushMode ( M_Remark )
 ;
 
+DEST_MISS
+:
+  'dest-miss'
+;
+
 DETAIL
 :
   'detail'
@@ -651,6 +676,11 @@ DHCP
 DIRECT
 :
   'direct'
+;
+
+DIRECTLY_CONNECTED_SOURCES
+:
+  'directly-connected-sources'
 ;
 
 DISABLE
@@ -853,6 +883,11 @@ EXCEPT
   'except'
 ;
 
+EXCEPTION
+:
+  'exception'
+;
+
 EXEC
 :
   'exec'
@@ -901,6 +936,11 @@ FAST_EXTERNAL_FALLOVER
 FAST_LEAVE
 :
   'fast-leave'
+;
+
+FCOE_FIB_MISS
+:
+  'fcoe-fib-miss'
 ;
 
 FEATURE
@@ -1001,6 +1041,11 @@ GE
 GET
 :
   'get'
+;
+
+GLEAN
+:
+  'glean'
 ;
 
 GLOBAL
@@ -1212,6 +1257,11 @@ INJECT_MAP
   'inject-map'
 ;
 
+INPUT
+:
+  'input' -> pushMode ( M_Word )
+;
+
 INSTALL
 :
   'install'
@@ -1254,6 +1304,21 @@ IPV4
 IPV6
 :
   'ipv6'
+;
+
+IPV6_DEST_MISS
+:
+  'ipv6-dest-miss'
+;
+
+IPV6_RPF_FAILURE
+:
+  'ipv6-rpf-failure'
+;
+
+IPV6_SG_RPF_FAILURE
+:
+  'ipv6-sg-rpf-failure'
 ;
 
 IRC
@@ -1482,6 +1547,16 @@ MATCH
   'match'
 ;
 
+MATCH_ALL
+:
+  'match-all'
+;
+
+MATCH_ANY
+:
+  'match-any'
+;
+
 MAX_METRIC
 :
   'max-metric'
@@ -1624,6 +1699,11 @@ MTU
   'mtu'
 ;
 
+MTU_FAILURE
+:
+  'mtu-failure'
+;
+
 MULTICAST
 :
   'multicast'
@@ -1657,6 +1737,11 @@ NAME
 NAMESERVER
 :
   'nameserver'
+;
+
+NAT_FLOW
+:
+  'nat-flow'
 ;
 
 NATIVE
@@ -1727,6 +1812,11 @@ NET_UNREACHABLE
 NETWORK
 :
   'network'
+;
+
+NETWORK_QOS
+:
+  'network-qos'
 ;
 
 NETWORK_UNKNOWN
@@ -1886,6 +1976,11 @@ ON_STARTUP
   'on-startup'
 ;
 
+OPTION
+:
+  'option'
+;
+
 OPTION_MISSING
 :
   'option-missing'
@@ -2033,6 +2128,16 @@ POINT_TO_POINT
   'point-to-point'
 ;
 
+POLICE
+:
+  'police'
+;
+
+POLICY_MAP
+:
+  'policy-map' -> pushMode ( M_PolicyMap )
+;
+
 POP2
 :
   'pop2'
@@ -2071,6 +2176,11 @@ PORTGROUP
 POST
 :
   'post'
+;
+
+PPS
+:
+  'pps'
 ;
 
 PRECEDENCE
@@ -2148,6 +2258,16 @@ PUT
   'put'
 ;
 
+QOS
+:
+  'qos'
+;
+
+QOS_GROUP
+:
+  'qos-group'
+;
+
 QUERIER
 :
   'querier'
@@ -2166,6 +2286,11 @@ QUERY_INTERVAL
 QUERY_MAX_RESPONSE_TIME
 :
   'query-max-response-time'
+;
+
+QUEUEING
+:
+  'queueing'
 ;
 
 RANGE
@@ -2353,6 +2478,11 @@ ROUTINE
   'routine'
 ;
 
+RPF_FAILURE
+:
+  'rpf-failure'
+;
+
 RST
 :
   'rst'
@@ -2398,6 +2528,11 @@ SERVICE
   'service'
 ;
 
+SERVICE_POLICY
+:
+  'service-policy'
+;
+
 SET
 :
   'set'
@@ -2406,6 +2541,11 @@ SET
 SFLOW
 :
   'sflow'
+;
+
+SG_RPF_FAILURE
+:
+  'sg-rpf-failure'
 ;
 
 SHUTDOWN
@@ -2702,7 +2842,7 @@ TIMESTAMP_REQUEST
 
 TIMEZONE
 :
-  'timezone' -> pushMode(M_Remark)
+  'timezone' -> pushMode ( M_Remark )
 ;
 
 TRACEROUTE
@@ -2750,9 +2890,20 @@ TTL_EXCEEDED
   'ttl-exceeded'
 ;
 
+TTL_FAILURE
+:
+  'ttl-failure'
+;
+
 TYPE
 :
   'type'
+  // Other instances are followed by tokens in default mode, or occur in non-default mode.
+  {
+    if (lastTokenType() == SERVICE_POLICY) {
+      pushMode(M_ClassType);
+    }
+  }
 ;
 
 TYPE_1
@@ -3430,6 +3581,123 @@ M_BannerCleanup_NEWLINE
   F_Newline+ -> type ( NEWLINE ) , popMode
 ;
 
+mode M_Class;
+
+M_Class_TYPE
+:
+  'type' -> type ( TYPE ) , mode ( M_ClassType )
+;
+
+M_Class_WORD
+:
+  F_NonWhitespace+ -> type ( WORD ) , popMode
+;
+
+M_Class_WS
+:
+  F_Whitespace+ -> channel ( HIDDEN )
+;
+
+mode M_ClassType;
+
+// control-plane omitted on purpose
+
+M_ClassType_NETWORK_QOS
+:
+  'network-qos' -> type ( NETWORK_QOS ) , mode ( M_Word )
+;
+
+M_ClassType_QOS
+:
+  'qos' -> type ( QOS ) , mode ( M_Word )
+;
+
+M_ClassType_QUEUEING
+:
+  'queueing' -> type ( QUEUEING ) , mode ( M_Word )
+;
+
+M_ClassType_WS
+:
+  F_Whitespace+ -> channel ( HIDDEN )
+;
+
+mode M_ClassMap;
+
+M_ClassMap_MATCH_ALL
+:
+  'match-all' -> type ( MATCH_ALL ) , mode ( M_Word )
+;
+
+M_ClassMap_MATCH_ANY
+:
+  'match-any' -> type ( MATCH_ANY ) , mode ( M_Word )
+;
+
+M_ClassMap_TYPE
+:
+  'type' -> type ( TYPE ) , mode ( M_ClassMapType )
+;
+
+M_ClassMap_WORD
+:
+  F_NonWhitespace+ -> type ( WORD ) , popMode
+;
+
+M_ClassMap_WS
+:
+  F_Whitespace+ -> channel ( HIDDEN )
+;
+
+mode M_ClassMapType;
+
+M_ClassMapType_CONTROL_PLANE
+:
+  'control-plane' -> type ( CONTROL_PLANE ) , mode ( M_ClassMapType2 )
+;
+
+M_ClassMapType_NETWORK_QOS
+:
+  'network-qos' -> type ( NETWORK_QOS ) , mode ( M_ClassMapType2 )
+;
+
+M_ClassMapType_QOS
+:
+  'qos' -> type ( QOS ) , mode ( M_ClassMapType2 )
+;
+
+M_ClassMapType_QUEUEING
+:
+  'queueing' -> type ( QUEUEING ) , mode ( M_ClassMapType2 )
+;
+
+M_ClassMapType_WS
+:
+  F_Whitespace+ -> channel ( HIDDEN )
+;
+
+mode M_ClassMapType2;
+
+M_ClassMapType2_MATCH_ALL
+:
+  'match-all' -> type ( MATCH_ALL ) , mode ( M_Word )
+;
+
+M_ClassMapType2_MATCH_ANY
+:
+  'match-any' -> type ( MATCH_ANY ) , mode ( M_Word )
+;
+
+M_ClassMapType2_WORD
+:
+  F_NonWhitespace+ -> type ( WORD ) , popMode
+;
+
+M_ClassMapType2_WS
+:
+  F_Whitespace+ -> channel ( HIDDEN )
+;
+
 mode M_DoubleQuote;
 
 M_DoubleQuote_DOUBLE_QUOTE
@@ -3526,6 +3794,50 @@ M_Password7_PASSWORD_7_TEXT
 M_Password7_PASSWORD_7_MALFORMED_TEXT
 :
   F_NonNewline+ -> type ( PASSWORD_7_MALFORMED_TEXT ) , popMode
+;
+
+mode M_PolicyMap;
+
+M_PolicyMap_TYPE
+:
+  'type' -> type ( TYPE ) , mode ( M_PolicyMapType )
+;
+
+M_PolicyMap_WORD
+:
+  F_NonWhitespace+ -> type ( WORD ) , popMode
+;
+
+M_PolicyMap_WS
+:
+  F_Whitespace+ -> channel ( HIDDEN )
+;
+
+mode M_PolicyMapType;
+
+M_PolicyMapType_CONTROL_PLANE
+:
+  'control-plane' -> type ( CONTROL_PLANE ) , mode ( M_Word )
+;
+
+M_PolicyMapType_NETWORK_QOS
+:
+  'network-qos' -> type ( NETWORK_QOS ) , mode ( M_Word )
+;
+
+M_PolicyMapType_QOS
+:
+  'qos' -> type ( QOS ) , mode ( M_Word )
+;
+
+M_PolicyMapType_QUEUEING
+:
+  'queueing' -> type ( QUEUEING ) , mode ( M_Word )
+;
+
+M_PolicyMapType_WS
+:
+  F_Whitespace+ -> channel ( HIDDEN )
 ;
 
 mode M_Remark;

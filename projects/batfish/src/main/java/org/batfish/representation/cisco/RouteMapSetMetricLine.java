@@ -24,9 +24,4 @@ public class RouteMapSetMetricLine extends RouteMapSetLine {
   public LongExpr getMetric() {
     return _metric;
   }
-
-  @Override
-  public RouteMapSetType getType() {
-    return RouteMapSetType.METRIC;
-  }
 }

@@ -10,12 +10,8 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.ext.Provider;
-import org.batfish.common.Version;
-import org.batfish.version.BatfishVersion;
 
-/**
- * This filter verifies that the client's version is compatible with the version of Batfish service.
- */
+/** This filter verifies that the client supplied a version. */
 @PreMatching
 @Provider
 public class VersionCompatibilityFilter implements ContainerRequestFilter {
@@ -30,15 +26,6 @@ public class VersionCompatibilityFilter implements ContainerRequestFilter {
                   String.format(
                       "HTTP header %s should contain a client version",
                       HTTP_HEADER_BATFISH_VERSION))
-              .type(MediaType.APPLICATION_JSON)
-              .build());
-    } else if (!Version.isCompatibleVersion("Service", "Client", clientVersion)) {
-      requestContext.abortWith(
-          Response.status(Status.BAD_REQUEST)
-              .entity(
-                  String.format(
-                      "Client version '%s' is not compatible with server version '%s'",
-                      clientVersion, BatfishVersion.getVersionStatic()))
               .type(MediaType.APPLICATION_JSON)
               .build());
     }

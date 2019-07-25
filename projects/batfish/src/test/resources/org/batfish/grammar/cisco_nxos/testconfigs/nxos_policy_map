@@ -1,0 +1,36 @@
+!RANCID-CONTENT-TYPE: cisco-nx
+!
+hostname nxos_policy_map
+!
+
+class-map type control-plane match-any cm_control_plane
+class-map type network-qos match-any cm_network_qos
+class-map type qos match-any cm_qos
+class-map match-any cm_qos2
+
+policy-map type control-plane pm_control_plane
+  class cm_control_plane
+    police pps 500
+
+policy-map type network-qos pm_network_qos
+  class type network-qos class-default
+    mtu 9216
+
+policy-map type network-qos pm_network_qos
+  class type network-qos cm_network_qos
+    mtu 9216
+
+policy-map type qos pm_qos
+  class cm_qos
+    ! 0-7
+    set qos-group 4
+  class type qos cm_qos2
+
+policy-map pm_qos2
+
+control-plane
+  service-policy input pm_control_plane
+
+system qos
+  service-policy type network-qos pm_network_qos
+  service-policy type qos pm_qos
