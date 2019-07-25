@@ -2563,6 +2563,11 @@ SPANNING_TREE
   'spanning-tree'
 ;
 
+SPARSE_MODE
+:
+  'sparse-mode'
+;
+
 SPEED
 :
   'speed'

@@ -446,6 +446,12 @@ public final class CiscoNxosGrammarTest {
   }
 
   @Test
+  public void testInterfaceMulticastParsing() {
+    // TODO: make into extraction test
+    assertThat(parseVendorConfig("nxos_interface_multicast"), notNullValue());
+  }
+
+  @Test
   public void testInterfaceRangeConversion() throws IOException {
     String hostname = "nxos_interface_range";
     Configuration c = parseConfig(hostname);
