@@ -104,7 +104,11 @@ i_ip_address
 
 i_ip_null
 :
-  REDIRECTS null_rest_of_line
+  (
+    IGMP
+    | PIM
+    | REDIRECTS
+  ) null_rest_of_line
 ;
 
 i_ip_ospf
