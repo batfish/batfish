@@ -1,0 +1,23 @@
+!RANCID-CONTENT-TYPE: cisco-nx
+!
+hostname nxos_aaa
+!
+
+feature tacacs+
+
+aaa group server tacacs+ aaa_server_group1
+    server 192.0.2.1
+    server 192.0.2.2
+    use-vrf management
+aaa group server tacacs+ aaa_server_group2
+
+! aaa groups must be defined before being referenced
+aaa accounting default group aaa_server_group1 aaa_server_group2 local
+
+! aaa groups must be defined before being referenced
+aaa authentication login default group aaa_server_group1 local                                                                                                                                                               
+aaa authentication login error-enable
+
+! aaa groups must be defined before being referenced
+aaa authorization commands default group aaa_server_group1 local
+aaa authorization config-commands default group aaa_server_group1 local

@@ -27,8 +27,9 @@ import org.batfish.symbolic.state.StateExpr;
 /**
  * Utility methods for {@link BDDReachabilityAnalysis} and {@link BDDReachabilityAnalysisFactory}.
  */
-final class BDDReachabilityUtils {
-  static Table<StateExpr, StateExpr, Transition> computeForwardEdgeTable(Iterable<Edge> edges) {
+public final class BDDReachabilityUtils {
+  public static Table<StateExpr, StateExpr, Transition> computeForwardEdgeTable(
+      Iterable<Edge> edges) {
     return computeForwardEdgeTable(Streams.stream(edges));
   }
 
@@ -100,7 +101,7 @@ final class BDDReachabilityUtils {
     }
   }
 
-  static void backwardFixpoint(
+  public static void backwardFixpoint(
       Table<StateExpr, StateExpr, Transition> forwardEdgeTable,
       Map<StateExpr, BDD> reverseReachable) {
     fixpoint(reverseReachable, Tables.transpose(forwardEdgeTable), Transition::transitBackward);
