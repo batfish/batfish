@@ -55,9 +55,4 @@ public final class RouteMapSetAdditiveCommunityListLine extends RouteMapSetLine 
                     new org.batfish.datamodel.routing_policy.expr.NamedCommunitySet(
                         communityListName))));
   }
-
-  @Override
-  public RouteMapSetType getType() {
-    return RouteMapSetType.ADDITIVE_COMMUNITY_LIST;
-  }
 }

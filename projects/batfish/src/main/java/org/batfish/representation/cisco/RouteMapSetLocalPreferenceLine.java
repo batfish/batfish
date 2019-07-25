@@ -24,9 +24,4 @@ public class RouteMapSetLocalPreferenceLine extends RouteMapSetLine {
   public LongExpr getLocalPreference() {
     return _localPreference;
   }
-
-  @Override
-  public RouteMapSetType getType() {
-    return RouteMapSetType.LOCAL_PREFERENCE;
-  }
 }
