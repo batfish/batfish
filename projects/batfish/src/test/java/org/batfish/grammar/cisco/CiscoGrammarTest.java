@@ -6361,4 +6361,23 @@ public class CiscoGrammarTest {
         // TODO: update when convinced eigrp settings have correct values
         hasItem(instanceOf(SetEigrpMetric.class)));
   }
+
+  @Test
+  public void testEigrpOverTunnels() throws IOException {
+    String snapshot = "ios-tunnels-eigrp";
+
+    Batfish batfish =
+        BatfishTestUtils.getBatfishFromTestrigText(
+            TestrigText.builder()
+                .setConfigurationText(
+                    TESTRIGS_PREFIX + snapshot, ImmutableList.of("advertiser", "receiver"))
+                .build(),
+            _folder);
+
+    batfish.computeDataPlane();
+
+    DataPlane dp = batfish.loadDataPlane();
+    Set<AbstractRoute> routes = dp.getRibs().get("receiver").get(DEFAULT_VRF_NAME).getRoutes();
+    assertThat(routes, hasItem(hasPrefix(Prefix.parse("99.99.99.99/32"))));
+  }
 }

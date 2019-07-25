@@ -2,6 +2,7 @@ parser grammar CiscoNxosParser;
 
 import
   CiscoNxos_common,
+  CiscoNxos_aaa,
   CiscoNxos_bgp,
   CiscoNxos_class_map,
   CiscoNxos_evpn,
@@ -30,7 +31,8 @@ cisco_nxos_configuration
 
 statement
 :
-  s_banner
+  s_aaa
+  | s_banner
   | s_class_map
   | s_control_plane
   | s_evpn
