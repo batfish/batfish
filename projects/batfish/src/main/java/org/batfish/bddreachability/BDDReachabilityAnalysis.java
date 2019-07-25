@@ -10,7 +10,6 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Table;
 import io.opentracing.ActiveSpan;
 import io.opentracing.util.GlobalTracer;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -93,21 +92,8 @@ public class BDDReachabilityAnalysis {
    * corresponding headerspace BDDs.
    */
   public Map<StateExpr, BDD> computeReverseReachableStates(Map<StateExpr, BDD> roots) {
-    return computeReverseReachableStates(roots, _forwardEdgeTable);
-  }
-
-  /** Compute the reverse reachability on given edges */
-  public static Map<StateExpr, BDD> computeReverseReachableStates(
-      Map<StateExpr, BDD> roots, Collection<Edge> edges) {
-    Table<StateExpr, StateExpr, Transition> forwardEdgeTable = computeForwardEdgeTable(edges);
-    return computeReverseReachableStates(roots, forwardEdgeTable);
-  }
-
-  private static Map<StateExpr, BDD> computeReverseReachableStates(
-      Map<StateExpr, BDD> roots, Table<StateExpr, StateExpr, Transition> forwardEdgeTable) {
     Map<StateExpr, BDD> reverseReachableStates = new HashMap<>(roots);
-    BDDReachabilityUtils.backwardFixpoint(forwardEdgeTable, reverseReachableStates);
-
+    BDDReachabilityUtils.backwardFixpoint(_forwardEdgeTable, reverseReachableStates);
     return ImmutableMap.copyOf(reverseReachableStates);
   }
 
@@ -162,12 +148,8 @@ public class BDDReachabilityAnalysis {
   }
 
   @VisibleForTesting
-  Map<StateExpr, Map<StateExpr, Transition>> getForwardEdgeMap() {
+  public Map<StateExpr, Map<StateExpr, Transition>> getForwardEdgeMap() {
     return _forwardEdgeTable.rowMap();
-  }
-
-  public Table<StateExpr, StateExpr, Transition> getForwardEdgeTable() {
-    return _forwardEdgeTable;
   }
 
   public List<Edge> getEdges() {
