@@ -44,6 +44,7 @@ statement
   | s_null
   | s_nv
   | s_policy_map
+  | s_role
   | s_route_map
   | s_router
   | s_system
@@ -134,6 +135,25 @@ s_no
 s_nv
 :
   NV OVERLAY EVPN NEWLINE
+;
+
+s_role
+:
+  ROLE NAME name = role_name NEWLINE role_null*
+;
+
+role_name
+:
+// 1-16 characters
+  WORD
+;
+
+role_null
+:
+  (
+    DESCRIPTION
+    | RULE
+  ) null_rest_of_line
 ;
 
 s_router
