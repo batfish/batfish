@@ -109,7 +109,6 @@ s_ipv6
 
 s_null
 :
-  NO?
   (
     BOOT
     | CLI
