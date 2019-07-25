@@ -11,6 +11,7 @@ import com.google.common.collect.Sets;
 import com.google.common.collect.Table;
 import io.opentracing.ActiveSpan;
 import io.opentracing.util.GlobalTracer;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -96,20 +97,10 @@ public class BDDReachabilityAnalysis {
     return computeReverseReachableStates(roots, _forwardEdgeTable);
   }
 
-  /**
-   * Compute the reverse reachability ("X can reach a destination" rather than "a source can reach
-   * X"), starting with the initial roots marked as being able to reach themselves with the
-   * corresponding headerspace BDDs to a set of originate states.
-   *
-   * <p>Use {@link BDDReachabilityGraphOptimizer} to optimize the graph.
-   */
-  public Map<StateExpr, BDD> computeReverseReachableStatesToOrig(
-      Map<StateExpr, BDD> roots, Set<StateExpr> origStates) {
-    Table<StateExpr, StateExpr, Transition> forwardEdgeTable =
-        computeForwardEdgeTable(
-            BDDReachabilityGraphOptimizer.optimize(
-                _edges, Sets.union(origStates, roots.keySet()), false));
-
+  /** Compute the reverse reachability on given edges */
+  public static Map<StateExpr, BDD> computeReverseReachableStates(
+      Map<StateExpr, BDD> roots, Collection<Edge> edges) {
+    Table<StateExpr, StateExpr, Transition> forwardEdgeTable = computeForwardEdgeTable(edges);
     return computeReverseReachableStates(roots, forwardEdgeTable);
   }
 
@@ -178,5 +169,9 @@ public class BDDReachabilityAnalysis {
 
   public Table<StateExpr, StateExpr, Transition> getForwardEdgeTable() {
     return _forwardEdgeTable;
+  }
+
+  public List<Edge> getEdges() {
+    return _edges;
   }
 }
