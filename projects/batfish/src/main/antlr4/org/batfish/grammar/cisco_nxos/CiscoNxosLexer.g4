@@ -1856,7 +1856,7 @@ OSPF
   'ospf'
   // All other instances are followed by keywords or tokens in default mode
   {
-    if (lastTokenType() == ROUTER) {
+    if (lastTokenType() == REDISTRIBUTE || lastTokenType() == ROUTER) {
       pushMode(M_Word);
     }
   }

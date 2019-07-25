@@ -1,6 +1,7 @@
 package org.batfish.representation.cisco_nxos;
 
 import java.io.Serializable;
+import java.util.Objects;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
@@ -12,8 +13,9 @@ import javax.annotation.Nullable;
  */
 public final class BgpRedistributionPolicy implements Serializable {
 
-  public BgpRedistributionPolicy(String routeMap) {
-    this._routeMap = routeMap;
+  public BgpRedistributionPolicy(String routeMap, @Nullable String sourceTag) {
+    _routeMap = routeMap;
+    _sourceTag = sourceTag;
   }
 
   @Nonnull
@@ -26,10 +28,26 @@ public final class BgpRedistributionPolicy implements Serializable {
     return _sourceTag;
   }
 
-  public void setSourceTag(@Nullable String sourceTag) {
-    _sourceTag = sourceTag;
+  //////////////////////////////////////////
+  ///// Private implementation details /////
+  //////////////////////////////////////////
+
+  private final @Nonnull String _routeMap;
+  private final @Nullable String _sourceTag;
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) {
+      return true;
+    } else if (!(o instanceof BgpRedistributionPolicy)) {
+      return false;
+    }
+    BgpRedistributionPolicy that = (BgpRedistributionPolicy) o;
+    return _routeMap.equals(that._routeMap) && Objects.equals(_sourceTag, that._sourceTag);
   }
 
-  private final String _routeMap;
-  @Nullable private String _sourceTag;
+  @Override
+  public int hashCode() {
+    return Objects.hash(_routeMap, _sourceTag);
+  }
 }
