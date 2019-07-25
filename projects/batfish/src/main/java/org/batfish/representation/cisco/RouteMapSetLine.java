@@ -10,6 +10,4 @@ public abstract class RouteMapSetLine implements Serializable {
 
   public abstract void applyTo(
       List<Statement> statements, CiscoConfiguration cc, Configuration c, Warnings w);
-
-  public abstract RouteMapSetType getType();
 }

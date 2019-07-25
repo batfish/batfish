@@ -28,9 +28,4 @@ public class RouteMapSetDeleteCommunityLine extends RouteMapSetLine {
   public String getListName() {
     return _listName;
   }
-
-  @Override
-  public RouteMapSetType getType() {
-    return RouteMapSetType.DELETE_COMMUNITY;
-  }
 }

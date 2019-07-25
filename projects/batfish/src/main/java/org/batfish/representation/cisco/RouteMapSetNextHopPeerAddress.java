@@ -14,9 +14,4 @@ public class RouteMapSetNextHopPeerAddress extends RouteMapSetLine {
       List<Statement> statements, CiscoConfiguration cc, Configuration c, Warnings w) {
     statements.add(new SetNextHop(PeerAddressNextHop.getInstance(), false));
   }
-
-  @Override
-  public RouteMapSetType getType() {
-    return RouteMapSetType.NEXT_HOP_PEER_ADDRESS;
-  }
 }
