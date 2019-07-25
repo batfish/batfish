@@ -13,6 +13,7 @@ public enum CiscoNxosStructureType implements StructureType {
   IP_COMMUNITY_LIST_STANDARD("ip community-list standard"),
   IP_PREFIX_LIST("ip prefix-list"),
   IPV6_ACCESS_LIST("ipv6 access-list"),
+  IPV6_PREFIX_LIST("ipv6 prefix-list"),
   NVE("nve"),
   OSPF_AREA("router ospf area"),
   PORT_CHANNEL("port-channel"),

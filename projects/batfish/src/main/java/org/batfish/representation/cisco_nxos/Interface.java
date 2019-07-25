@@ -93,7 +93,7 @@ public final class Interface implements Serializable {
    * type}.
    */
   public static @Nonnull Interface newNonVlanInterface(
-      String name, String parentInterface, CiscoNxosInterfaceType type) {
+      String name, @Nullable String parentInterface, CiscoNxosInterfaceType type) {
     checkArgument(type != CiscoNxosInterfaceType.VLAN, "Expected non-VLAN interface type");
     return new Interface(name, parentInterface, type, null);
   }
@@ -119,6 +119,7 @@ public final class Interface implements Serializable {
   private final @Nullable String _parentInterface;
   private final @Nonnull Set<InterfaceAddressWithAttributes> _secondaryAddresses;
   private @Nullable Boolean _shutdown;
+  private @Nullable Integer _speedMbps;
   private @Nonnull SwitchportMode _switchportMode;
   private final @Nonnull CiscoNxosInterfaceType _type;
   private final @Nullable Integer _vlan;
@@ -219,6 +220,14 @@ public final class Interface implements Serializable {
     return _shutdown != null
         ? _shutdown
         : defaultShutdown(_switchportMode, _type, _parentInterface != null);
+  }
+
+  public @Nullable Integer getSpeedMbps() {
+    return _speedMbps;
+  }
+
+  public void setSpeed(@Nullable Integer speedMbps) {
+    _speedMbps = speedMbps;
   }
 
   @Nonnull
