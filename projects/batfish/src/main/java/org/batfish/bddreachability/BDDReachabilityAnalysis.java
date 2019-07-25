@@ -93,20 +93,16 @@ public class BDDReachabilityAnalysis {
    * corresponding headerspace BDDs.
    */
   public Map<StateExpr, BDD> computeReverseReachableStates(Map<StateExpr, BDD> roots) {
-    Map<StateExpr, BDD> reverseReachableStates = new HashMap<>(roots);
-    BDDReachabilityUtils.backwardFixpoint(_forwardEdgeTable, reverseReachableStates);
-
-    return ImmutableMap.copyOf(reverseReachableStates);
+    return computeReverseReachableStates(roots, _forwardEdgeTable);
   }
 
-  public Map<StateExpr, BDD> computeReverseReachableStates(
-      Map<StateExpr, BDD> roots, Table<StateExpr, StateExpr, Transition> forwardEdgeTable) {
-    Map<StateExpr, BDD> reverseReachableStates = new HashMap<>(roots);
-    BDDReachabilityUtils.backwardFixpoint(forwardEdgeTable, reverseReachableStates);
-
-    return ImmutableMap.copyOf(reverseReachableStates);
-  }
-
+  /**
+   * Compute the reverse reachability ("X can reach a destination" rather than "a source can reach
+   * X"), starting with the initial roots marked as being able to reach themselves with the
+   * corresponding headerspace BDDs to a set of originate states.
+   *
+   * <p>Use {@link BDDReachabilityGraphOptimizer} to optimize the graph.
+   */
   public Map<StateExpr, BDD> computeReverseReachableStatesToOrig(
       Map<StateExpr, BDD> roots, Set<StateExpr> origStates) {
     Table<StateExpr, StateExpr, Transition> forwardEdgeTable =
@@ -114,6 +110,11 @@ public class BDDReachabilityAnalysis {
             BDDReachabilityGraphOptimizer.optimize(
                 _edges, Sets.union(origStates, roots.keySet()), false));
 
+    return computeReverseReachableStates(roots, forwardEdgeTable);
+  }
+
+  private static Map<StateExpr, BDD> computeReverseReachableStates(
+      Map<StateExpr, BDD> roots, Table<StateExpr, StateExpr, Transition> forwardEdgeTable) {
     Map<StateExpr, BDD> reverseReachableStates = new HashMap<>(roots);
     BDDReachabilityUtils.backwardFixpoint(forwardEdgeTable, reverseReachableStates);
 
@@ -177,9 +178,5 @@ public class BDDReachabilityAnalysis {
 
   public Table<StateExpr, StateExpr, Transition> getForwardEdgeTable() {
     return _forwardEdgeTable;
-  }
-
-  public List<Edge> getEdges() {
-    return _edges;
   }
 }
