@@ -3,7 +3,6 @@ package org.batfish.bddreachability;
 import static org.batfish.bddreachability.BDDReachabilityUtils.computeForwardEdgeTable;
 import static org.batfish.bddreachability.BDDReachabilityUtils.getIngressLocationBdds;
 
-import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Table;

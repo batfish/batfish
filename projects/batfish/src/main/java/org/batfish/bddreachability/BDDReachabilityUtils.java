@@ -28,7 +28,8 @@ import org.batfish.symbolic.state.StateExpr;
  * Utility methods for {@link BDDReachabilityAnalysis} and {@link BDDReachabilityAnalysisFactory}.
  */
 public final class BDDReachabilityUtils {
-  public static Table<StateExpr, StateExpr, Transition> computeForwardEdgeTable(Iterable<Edge> edges) {
+  public static Table<StateExpr, StateExpr, Transition> computeForwardEdgeTable(
+      Iterable<Edge> edges) {
     return computeForwardEdgeTable(Streams.stream(edges));
   }
 
