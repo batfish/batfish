@@ -6,8 +6,11 @@
     <file url="file://$PROJECT_DIR$/projects/batfish" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/projects/batfish-client" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/projects/batfish-common-protocol" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/projects/bdd" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/projects/build-tools" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/projects/coordinator" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/projects/minesweeper" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/projects/question" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/projects/symbolic" charset="UTF-8" />
   </component>
 </project>
