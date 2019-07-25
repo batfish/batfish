@@ -431,6 +431,11 @@ CLASS_MAP
   'class-map' -> pushMode ( M_ClassMap )
 ;
 
+CLEAR
+:
+  'clear'
+;
+
 CLI
 :
   'cli'
@@ -454,6 +459,11 @@ CLUSTER_ID
 CMD
 :
   'cmd'
+;
+
+COMMAND
+:
+  'command'
 ;
 
 COMMUNITY
@@ -523,6 +533,11 @@ CONVERSION_ERROR
   'conversion-error'
 ;
 
+COPY
+:
+  'copy'
+;
+
 COPY_ATTRIBUTES
 :
   'copy-attributes'
@@ -536,6 +551,11 @@ COST
 COST_COMMUNITY
 :
   'cost-community'
+;
+
+COUNTERS
+:
+  'counters'
 ;
 
 CRITICAL
@@ -656,6 +676,11 @@ DETAIL
 DHCP
 :
   'dhcp'
+;
+
+DIR
+:
+  'dir'
 ;
 
 DIRECT
@@ -2083,6 +2108,11 @@ PIM6
   'pim6'
 ;
 
+PING
+:
+  'ping'
+;
+
 POAP
 :
   'poap'
@@ -2263,6 +2293,11 @@ RD
   'rd'
 ;
 
+READ
+:
+  'read'
+;
+
 REASSEMBLY_TIMEOUT
 :
   'reassembly-timeout'
@@ -2373,6 +2408,11 @@ ROBUSTNESS_VARIABLE
   'robustness-variable'
 ;
 
+ROLE
+:
+  'role'
+;
+
 ROOT
 :
   'root'
@@ -2443,6 +2483,11 @@ RST
   'rst'
 ;
 
+RULE
+:
+  'rule'
+;
+
 SCHEDULER
 :
   'scheduler'
@@ -2501,6 +2546,11 @@ SFLOW
 SG_RPF_FAILURE
 :
   'sg-rpf-failure'
+;
+
+SHOW
+:
+  'show'
 ;
 
 SHUTDOWN
@@ -2753,6 +2803,11 @@ TELNET
 TEMPLATE
 :
   'template'
+;
+
+TERMINAL
+:
+  'terminal'
 ;
 
 TFTP
@@ -3017,6 +3072,11 @@ XDMCP
 ;
 
 // Other Tokens
+
+ASTERISK
+:
+  '*'
+;
 
 BLANK_LINE
 :
