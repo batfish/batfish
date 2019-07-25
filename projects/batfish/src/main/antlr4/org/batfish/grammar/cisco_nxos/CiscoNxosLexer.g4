@@ -723,6 +723,11 @@ DUAL_AS
   'dual-as'
 ;
 
+DUPLEX
+:
+  'duplex'
+;
+
 DVMRP
 :
   'dvmrp'
@@ -956,6 +961,11 @@ FTP_DATA
 FTP
 :
   'ftp'
+;
+
+FULL
+:
+  'full'
 ;
 
 GBPS
@@ -1328,6 +1338,11 @@ LINK_LOCAL_GROUPS_SUPPRESSION
   'link-local-groups-suppression'
 ;
 
+LINK_STATE
+:
+  'link-state'
+;
+
 LISP
 :
   'lisp'
@@ -1371,6 +1386,11 @@ LOG_NEIGHBOR_CHANGES
 LOGIN
 :
   'login'
+;
+
+LONG
+:
+  'long'
 ;
 
 LOOP
@@ -1514,6 +1534,11 @@ MESSAGE_DIGEST_KEY
   'message-digest-key' -> pushMode ( M_Password )
 ;
 
+METHOD
+:
+  'method'
+;
+
 METRIC
 :
   'metric'
@@ -1552,6 +1577,11 @@ MODE
 MROUTER
 :
   'mrouter'
+;
+
+MST
+:
+  'mst'
 ;
 
 MTU
@@ -1597,6 +1627,21 @@ NAMESERVER
 NATIVE
 :
   'native'
+;
+
+ND_NA
+:
+  'nd-na'
+;
+
+ND_NS
+:
+  'nd-ns'
+;
+
+NEGOTIATE
+:
+  'negotiate'
 ;
 
 NEIGHBOR
@@ -1871,6 +1916,11 @@ PASSIVE_INTERFACE
 PASSWORD
 :
   'password' -> pushMode ( M_Password )
+;
+
+PATHCOST
+:
+  'pathcost'
 ;
 
 PCP
@@ -2183,6 +2233,11 @@ RESTART_TIME
   'restart-time'
 ;
 
+RETAIN
+:
+  'retain'
+;
+
 RIP
 :
   'rip'
@@ -2366,6 +2421,11 @@ SOURCE_ROUTE_FAILED
 SPANNING_TREE
 :
   'spanning-tree'
+;
+
+SPEED
+:
+  'speed'
 ;
 
 SPF
@@ -2738,6 +2798,16 @@ VN_SEGMENT_VLAN_BASED
 VNI
 :
   'vni'
+;
+
+VPNV4
+:
+  'vpnv4'
+;
+
+VPNV6
+:
+  'vpnv6'
 ;
 
 VRF

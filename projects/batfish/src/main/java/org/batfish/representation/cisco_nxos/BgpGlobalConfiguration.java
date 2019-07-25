@@ -78,9 +78,9 @@ public final class BgpGlobalConfiguration implements Serializable {
   }
 
   public void doInherit(Warnings warnings) {
-    _templatePeers.values().forEach(peer -> peer.doInherit(this, warnings));
-    _templatePeerPolicies.values().forEach(policy -> policy.doInherit(this, warnings));
-    _templatePeerSessions.values().forEach(session -> session.doInherit(this, warnings));
+    _templatePeers.forEach((name, config) -> config.doInherit(this, warnings));
+    _templatePeerPolicies.forEach((name, config) -> config.doInherit(this, warnings));
+    _templatePeerSessions.forEach((name, config) -> config.doInherit(this, warnings));
   }
 
   private boolean _enforceFirstAs;
