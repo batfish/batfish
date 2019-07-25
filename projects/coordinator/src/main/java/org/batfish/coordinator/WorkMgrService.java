@@ -40,7 +40,6 @@ import org.batfish.common.BatfishException;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.Container;
 import org.batfish.common.CoordConsts;
-import org.batfish.common.Version;
 import org.batfish.common.WorkItem;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.coordinator.AnalysisMetadataMgr.AnalysisType;
@@ -97,7 +96,7 @@ public class WorkMgrService {
       checkStringParam(completionType, "Completion type");
 
       checkApiKeyValidity(apiKey);
-      checkClientVersion(clientVersion);
+
       checkNetworkAccessibility(apiKey, networkName);
 
       Variable.Type varType = Variable.Type.fromString(completionType);
@@ -159,7 +158,6 @@ public class WorkMgrService {
       checkStringParam(apiKey, "API key");
       checkStringParam(clientVersion, "Client version");
 
-      checkClientVersion(clientVersion);
       boolean valid = Main.getAuthorizer().isValidWorkApiKey(apiKey);
       return successResponse(new JSONObject().put(CoordConsts.SVC_KEY_API_KEY, valid));
     } catch (IllegalArgumentException | AccessControlException e) {
@@ -176,10 +174,6 @@ public class WorkMgrService {
     if (!Main.getAuthorizer().isValidWorkApiKey(apiKey)) {
       throw new AccessControlException("Invalid API key: " + apiKey);
     }
-  }
-
-  private void checkClientVersion(String clientVersion) {
-    Version.checkCompatibleVersion("Service", "Client", clientVersion);
   }
 
   private void checkNetworkAccessibility(String apiKey, String networkName) {
@@ -232,7 +226,7 @@ public class WorkMgrService {
       checkStringParam(analysisName, "Analysis name");
 
       checkApiKeyValidity(apiKey);
-      checkClientVersion(clientVersion);
+
       checkNetworkAccessibility(apiKey, networkName);
 
       Map<String, String> questionsToAdd = new HashMap<>();
@@ -306,7 +300,6 @@ public class WorkMgrService {
       checkStringParam(questionTemplate, "Question template");
 
       checkApiKeyValidity(apiKey);
-      checkClientVersion(clientVersion);
 
       Question inputQuestion = Question.parseQuestion(questionTemplate);
       Question outputQuestion = inputQuestion.configureTemplate(exceptions, assertion);
@@ -353,7 +346,7 @@ public class WorkMgrService {
       checkStringParam(analysisName, "Analysis name");
 
       checkApiKeyValidity(apiKey);
-      checkClientVersion(clientVersion);
+
       checkNetworkAccessibility(apiKey, networkName);
 
       Main.getWorkMgr().delAnalysis(networkName, analysisName);
@@ -395,7 +388,7 @@ public class WorkMgrService {
       checkStringParam(networkName, "Network name");
 
       checkApiKeyValidity(apiKey);
-      checkClientVersion(clientVersion);
+
       checkNetworkAccessibility(apiKey, networkName);
 
       boolean status = Main.getWorkMgr().delNetwork(networkName);
@@ -441,7 +434,7 @@ public class WorkMgrService {
       checkStringParam(questionName, "Question name");
 
       checkApiKeyValidity(apiKey);
-      checkClientVersion(clientVersion);
+
       checkNetworkAccessibility(apiKey, networkName);
 
       checkArgument(
@@ -491,7 +484,7 @@ public class WorkMgrService {
       checkStringParam(snapshotName, "Snapshot name");
 
       checkApiKeyValidity(apiKey);
-      checkClientVersion(clientVersion);
+
       checkNetworkAccessibility(apiKey, networkName);
 
       if (!Main.getWorkMgr().delSnapshot(networkName, snapshotName)) {
@@ -551,7 +544,7 @@ public class WorkMgrService {
       checkStringParam(questionName, "Question name");
 
       checkApiKeyValidity(apiKey);
-      checkClientVersion(clientVersion);
+
       checkNetworkAccessibility(apiKey, networkName);
 
       JSONObject response = new JSONObject();
@@ -627,7 +620,7 @@ public class WorkMgrService {
       checkStringParam(analysisName, "Analysis name");
 
       checkApiKeyValidity(apiKey);
-      checkClientVersion(clientVersion);
+
       checkNetworkAccessibility(apiKey, networkName);
 
       JSONObject response = new JSONObject();
@@ -712,7 +705,7 @@ public class WorkMgrService {
                   .readValue(analysisQuestionsStr, new TypeReference<Set<String>>() {});
 
       checkApiKeyValidity(apiKey);
-      checkClientVersion(clientVersion);
+
       checkNetworkAccessibility(apiKey, networkName);
 
       JSONObject response = new JSONObject();
@@ -798,7 +791,7 @@ public class WorkMgrService {
                   answersRowsOptionsStr, new TypeReference<Map<String, AnswerRowsOptions>>() {});
 
       checkApiKeyValidity(apiKey);
-      checkClientVersion(clientVersion);
+
       checkNetworkAccessibility(apiKey, networkName);
 
       JSONObject response = new JSONObject();
@@ -880,7 +873,7 @@ public class WorkMgrService {
       checkStringParam(questionName, "Question name");
 
       checkApiKeyValidity(apiKey);
-      checkClientVersion(clientVersion);
+
       checkNetworkAccessibility(apiKey, networkName);
 
       if (!Strings.isNullOrEmpty(workItemStr)) {
@@ -967,7 +960,7 @@ public class WorkMgrService {
               .readValue(answerRowsOptionsStr, new TypeReference<AnswerRowsOptions>() {});
 
       checkApiKeyValidity(apiKey);
-      checkClientVersion(clientVersion);
+
       checkNetworkAccessibility(apiKey, networkName);
 
       JSONObject response = new JSONObject();
@@ -1066,7 +1059,7 @@ public class WorkMgrService {
               .readValue(answerRowsOptionsStr, new TypeReference<AnswerRowsOptions>() {});
 
       checkApiKeyValidity(apiKey);
-      checkClientVersion(clientVersion);
+
       checkNetworkAccessibility(apiKey, networkName);
 
       JSONObject response = new JSONObject();
@@ -1153,7 +1146,7 @@ public class WorkMgrService {
       checkStringParam(snapshotName, "Base snapshot name");
 
       checkApiKeyValidity(apiKey);
-      checkClientVersion(clientVersion);
+
       checkNetworkAccessibility(apiKey, networkName);
 
       JSONObject response = new JSONObject();
@@ -1221,7 +1214,6 @@ public class WorkMgrService {
       checkStringParam(networkName, "Network name");
 
       checkApiKeyValidity(apiKey);
-      checkClientVersion(clientVersion);
 
       if (!Main.getWorkMgr().getIdManager().hasNetworkId(networkName)) {
         return Response.status(Response.Status.NOT_FOUND)
@@ -1306,7 +1298,7 @@ public class WorkMgrService {
       checkStringParam(objectName, "Object name");
 
       checkApiKeyValidity(apiKey);
-      checkClientVersion(clientVersion);
+
       checkNetworkAccessibility(apiKey, networkName);
 
       java.nio.file.Path file =
@@ -1357,7 +1349,7 @@ public class WorkMgrService {
       checkStringParam(snapshotName, "Snapshot name");
 
       checkApiKeyValidity(apiKey);
-      checkClientVersion(clientVersion);
+
       checkNetworkAccessibility(apiKey, networkName);
 
       return successResponse(Main.getWorkMgr().getParsingResults(networkName, snapshotName));
@@ -1439,7 +1431,6 @@ public class WorkMgrService {
       checkStringParam(workId, "work id");
 
       checkApiKeyValidity(apiKey);
-      checkClientVersion(clientVersion);
 
       QueuedWork work = Main.getWorkMgr().getWork(UUID.fromString(workId));
 
@@ -1501,7 +1492,6 @@ public class WorkMgrService {
       }
 
       checkApiKeyValidity(apiKey);
-      checkClientVersion(clientVersion);
 
       String outputNetworkName = Main.getWorkMgr().initNetwork(networkName, networkPrefix);
       _logger.infof("Initialized network:%s using api-key:%s\n", outputNetworkName, apiKey);
@@ -1547,7 +1537,6 @@ public class WorkMgrService {
       checkStringParam(workId, "work id");
 
       checkApiKeyValidity(apiKey);
-      checkClientVersion(clientVersion);
 
       QueuedWork work = Main.getWorkMgr().getWork(UUID.fromString(workId));
 
@@ -1596,7 +1585,7 @@ public class WorkMgrService {
       checkStringParam(networkName, "Network name");
 
       checkApiKeyValidity(apiKey);
-      checkClientVersion(clientVersion);
+
       checkNetworkAccessibility(apiKey, networkName);
 
       JSONObject retObject = new JSONObject();
@@ -1658,7 +1647,6 @@ public class WorkMgrService {
       checkStringParam(clientVersion, "Client version");
 
       checkApiKeyValidity(apiKey);
-      checkClientVersion(clientVersion);
 
       SortedSet<String> networks = Main.getWorkMgr().listNetworks(apiKey);
       return successResponse(
@@ -1705,7 +1693,7 @@ public class WorkMgrService {
       }
 
       checkApiKeyValidity(apiKey);
-      checkClientVersion(clientVersion);
+
       checkNetworkAccessibility(apiKey, networkName);
 
       List<WorkStatus> workList = new LinkedList<>();
@@ -1754,7 +1742,7 @@ public class WorkMgrService {
       checkStringParam(networkName, "Network name");
 
       checkApiKeyValidity(apiKey);
-      checkClientVersion(clientVersion);
+
       checkNetworkAccessibility(apiKey, networkName);
 
       JSONObject retObject = new JSONObject();
@@ -1807,7 +1795,7 @@ public class WorkMgrService {
       checkStringParam(networkName, "Network name");
 
       checkApiKeyValidity(apiKey);
-      checkClientVersion(clientVersion);
+
       checkNetworkAccessibility(apiKey, networkName);
 
       JSONArray retArray = new JSONArray();
@@ -1876,7 +1864,7 @@ public class WorkMgrService {
       checkStringParam(objectName, "Object name");
 
       checkApiKeyValidity(apiKey);
-      checkClientVersion(clientVersion);
+
       checkNetworkAccessibility(apiKey, networkName);
 
       Main.getWorkMgr().putObject(networkName, snapshotName, objectName, fileStream);
@@ -1916,7 +1904,6 @@ public class WorkMgrService {
       checkStringParam(workItemStr, "Workitem string");
 
       checkApiKeyValidity(apiKey);
-      checkClientVersion(clientVersion);
 
       WorkItem workItem = BatfishObjectMapper.mapper().readValue(workItemStr, WorkItem.class);
 
@@ -1970,7 +1957,7 @@ public class WorkMgrService {
       checkStringParam(pluginId, "Plugin Id");
 
       checkApiKeyValidity(apiKey);
-      checkClientVersion(clientVersion);
+
       checkNetworkAccessibility(apiKey, networkName);
 
       boolean force = !Strings.isNullOrEmpty(forceStr) && Boolean.parseBoolean(forceStr);
@@ -2021,7 +2008,7 @@ public class WorkMgrService {
       checkStringParam(settingsStr, "Settings");
 
       checkApiKeyValidity(apiKey);
-      checkClientVersion(clientVersion);
+
       checkNetworkAccessibility(apiKey, networkName);
 
       Map<String, String> settings =
@@ -2100,7 +2087,7 @@ public class WorkMgrService {
       checkStringParam(qName, "Question name");
 
       checkApiKeyValidity(apiKey);
-      checkClientVersion(clientVersion);
+
       checkNetworkAccessibility(apiKey, networkName);
 
       Main.getWorkMgr().uploadQuestion(networkName, qName, questionJson);
@@ -2152,7 +2139,7 @@ public class WorkMgrService {
       checkStringParam(snapshotName, "Snapshot name");
 
       checkApiKeyValidity(apiKey);
-      checkClientVersion(clientVersion);
+
       checkNetworkAccessibility(apiKey, networkName);
 
       boolean autoAnalyze = false;
