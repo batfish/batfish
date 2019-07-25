@@ -126,34 +126,34 @@ public class EigrpTest {
     // Build EIGRP
     EigrpProcess eigrpProcess = epb.setMode(mode1).build();
     c1.getDefaultVrf().addEigrpProcess(eigrpProcess);
-    buildEigrpLoopbackInterface(eib, asn, mode1, R1_L0_ADDR);
-    buildEigrpExternalInterface(eib, asn, mode1, R1_E1_2_ADDR, c1E1To2Name, 1.0);
+    buildEigrpLoopbackInterface(eib, asn, mode1, R1_L0_ADDR, null);
+    buildEigrpExternalInterface(eib, asn, mode1, R1_E1_2_ADDR, c1E1To2Name, 1.0, null);
 
     /* Configuration 2 */
     Configuration c2 = buildConfiguration(R2, eib, epb, null, null, null);
     // Build EIGRP
     eigrpProcess = epb.setMode(mode2).build();
     c2.getDefaultVrf().addEigrpProcess(eigrpProcess);
-    buildEigrpLoopbackInterface(eib, asn, mode2, R2_L0_ADDR);
-    buildEigrpExternalInterface(eib, asn, mode2, R2_E2_1_ADDR, c2E2To1Name, 1.0);
-    buildEigrpExternalInterface(eib, asn, mode2, R2_E2_3_ADDR, c2E2To3Name, 1.0);
+    buildEigrpLoopbackInterface(eib, asn, mode2, R2_L0_ADDR, null);
+    buildEigrpExternalInterface(eib, asn, mode2, R2_E2_1_ADDR, c2E2To1Name, 1.0, null);
+    buildEigrpExternalInterface(eib, asn, mode2, R2_E2_3_ADDR, c2E2To3Name, 1.0, null);
 
     /* Configuration 3 */
     Configuration c3 = buildConfiguration(R3, eib, epb, null, null, null);
     // Build EIGRP
     eigrpProcess = epb.setMode(mode3).build();
     c3.getDefaultVrf().addEigrpProcess(eigrpProcess);
-    buildEigrpLoopbackInterface(eib, asn, mode3, R3_L0_ADDR);
-    buildEigrpExternalInterface(eib, asn, mode3, R3_E3_2_ADDR, c3E3To2Name, 1.0);
-    buildEigrpExternalInterface(eib, asn, mode3, R3_E3_4_ADDR, c3E3To4Name, 1.0);
+    buildEigrpLoopbackInterface(eib, asn, mode3, R3_L0_ADDR, null);
+    buildEigrpExternalInterface(eib, asn, mode3, R3_E3_2_ADDR, c3E3To2Name, 1.0, null);
+    buildEigrpExternalInterface(eib, asn, mode3, R3_E3_4_ADDR, c3E3To4Name, 1.0, null);
 
     /* Configuration 4 */
     Configuration c4 = buildConfiguration(R4, eib, epb, null, null, null);
     // Build EIGRP
     eigrpProcess = epb.setMode(mode4).build();
     c4.getDefaultVrf().addEigrpProcess(eigrpProcess);
-    buildEigrpLoopbackInterface(eib, asn, mode4, R4_L0_ADDR);
-    buildEigrpExternalInterface(eib, asn, mode4, R4_E4_3_ADDR, c4E4To3Name, 1.0);
+    buildEigrpLoopbackInterface(eib, asn, mode4, R4_L0_ADDR, null);
+    buildEigrpExternalInterface(eib, asn, mode4, R4_E4_3_ADDR, c4E4To3Name, 1.0, null);
 
     EigrpTopologyUtils.initNeighborConfigs(
         NetworkConfigurations.of(
@@ -211,8 +211,15 @@ public class EigrpTest {
       exportIfMatchProtocol.setGuard(new MatchProtocol(sourceProtocol));
     }
     exportIfMatchProtocol.setTrueStatements(exportStatements.build());
-    exportIfMatchProtocol.setFalseStatements(
-        ImmutableList.of(Statements.ExitReject.toStaticStatement()));
+    if (eigrpAsn != null) {
+      return ImmutableList.of(
+          exportIfMatchProtocol,
+          new If(
+              new Conjunction(
+                  ImmutableList.of(
+                      new MatchProtocol(RoutingProtocol.EIGRP), new MatchProcessAsn(eigrpAsn))),
+              ImmutableList.of(Statements.ExitAccept.toStaticStatement())));
+    }
     return ImmutableList.of(exportIfMatchProtocol);
   }
 
@@ -262,13 +269,13 @@ public class EigrpTest {
 
     NetworkFactory nf = new NetworkFactory();
     RoutingPolicy.Builder exportConnected =
-        nf.routingPolicyBuilder().setStatements(getExportPolicyStatements(CONNECTED, EIGRP, null));
+        nf.routingPolicyBuilder().setStatements(getExportPolicyStatements(CONNECTED, EIGRP, 1L));
     RoutingPolicy.Builder exportEigrpIntoOtherEigrp =
         nf.routingPolicyBuilder().setStatements(getExportPolicyStatements(EIGRP, EIGRP, 1L));
     RoutingPolicy.Builder exportEigrpIntoOspf =
         nf.routingPolicyBuilder().setStatements(getExportPolicyStatements(EIGRP, OSPF, 1L));
     RoutingPolicy.Builder exportOspf =
-        nf.routingPolicyBuilder().setStatements(getExportPolicyStatements(OSPF, EIGRP, null));
+        nf.routingPolicyBuilder().setStatements(getExportPolicyStatements(OSPF, EIGRP, 1L));
     RoutingPolicy.Builder exportOtherEigrpIntoEigrp =
         nf.routingPolicyBuilder().setStatements(getExportPolicyStatements(EIGRP, EIGRP, 2L));
 
@@ -296,11 +303,11 @@ public class EigrpTest {
       EigrpProcess proc1 =
           epb.setAsNumber(otherAsn).setRouterId(Ip.parse("200.200.200.200")).setMode(mode1).build();
       c1.getDefaultVrf().addEigrpProcess(proc1);
-      buildEigrpLoopbackInterface(eib, otherAsn, mode1, R1_L0_ADDR);
+      buildEigrpLoopbackInterface(eib, otherAsn, mode1, R1_L0_ADDR, null);
       buildEigrpExternalInterface(
-          eib, otherAsn, mode1, R1_E1_2_ADDR, c1E1To2Name, c1E1To2DelayMult);
+          eib, otherAsn, mode1, R1_E1_2_ADDR, c1E1To2Name, c1E1To2DelayMult, null);
       buildEigrpExternalInterface(
-          eib, otherAsn, mode1, R1_E1_4_ADDR, c1E1To4Name, c1E1To4DelayMult);
+          eib, otherAsn, mode1, R1_E1_4_ADDR, c1E1To4Name, c1E1To4DelayMult, null);
       // reset builder
       epb.setAsNumber(asn).setRouterId(Ip.parse("100.100.100.100"));
     }
@@ -308,14 +315,16 @@ public class EigrpTest {
     /* Configuration 2 */
     Configuration c2 = buildConfiguration(R2, eib, epb, oib, opb, nib);
     // Build EIGRP (with redistribute other process)
+    String exportPolicyName = null;
     if (otherProcess == OSPF) {
-      epb.setExportPolicy(exportOspf.setOwner(c2).build().getName());
+      exportPolicyName = exportOspf.setOwner(c2).build().getName();
     } else if (otherProcess == EIGRP) {
-      epb.setExportPolicy(exportEigrpIntoOtherEigrp.setOwner(c2).build().getName());
+      exportPolicyName = exportEigrpIntoOtherEigrp.setOwner(c2).build().getName();
     }
     EigrpProcess proc2 = epb.setMode(mode2).build();
     c2.getDefaultVrf().addEigrpProcess(proc2);
-    buildEigrpExternalInterface(eib, asn, mode2, R2_E2_3_ADDR, c2E2To3Name, c2E2To3DelayMult);
+    buildEigrpExternalInterface(
+        eib, asn, mode2, R2_E2_3_ADDR, c2E2To3Name, c2E2To3DelayMult, exportPolicyName);
     if (otherProcess == OSPF) {
       // Build OSPF (with redistribute EIGRP)
       opb.setExportPolicy(exportEigrpIntoOspf.setOwner(c2).build());
@@ -326,10 +335,10 @@ public class EigrpTest {
       // Build other EIGRP
       proc2 = epb.setAsNumber(otherAsn).setRouterId(Ip.parse("200.200.200.200")).build();
       c2.getDefaultVrf().addEigrpProcess(proc2);
-      epb.setExportPolicy(exportOtherEigrpIntoEigrp.setOwner(c2).build().getName());
-      buildEigrpLoopbackInterface(eib, otherAsn, mode2, R2_L0_ADDR);
+      exportPolicyName = exportOtherEigrpIntoEigrp.setOwner(c2).build().getName();
+      buildEigrpLoopbackInterface(eib, otherAsn, mode2, R2_L0_ADDR, exportPolicyName);
       buildEigrpExternalInterface(
-          eib, otherAsn, mode2, R2_E2_1_ADDR, c2E2To1Name, c2E2To1DelayMult);
+          eib, otherAsn, mode2, R2_E2_1_ADDR, c2E2To1Name, c2E2To1DelayMult, exportPolicyName);
       // reset builder
       epb.setAsNumber(asn).setRouterId(Ip.parse("100.100.100.100"));
     }
@@ -339,24 +348,27 @@ public class EigrpTest {
     // No process
     buildNoneInterface(nib, R3_L0_ADDR);
     // Build EIGRP with redistribute connected
-    EigrpProcess proc3 =
-        epb.setExportPolicy(exportConnected.setOwner(c3).build().getName()).setMode(mode3).build();
+    EigrpProcess proc3 = epb.setMode(mode3).build();
+    exportPolicyName = exportConnected.setOwner(c3).build().getName();
     c3.getDefaultVrf().addEigrpProcess(proc3);
-    buildEigrpExternalInterface(eib, asn, mode3, R3_E3_2_ADDR, c3E3To2Name, c3E3To2DelayMult);
-    buildEigrpExternalInterface(eib, asn, mode3, R3_E3_4_ADDR, c3E3To4Name, c3E3To4DelayMult);
+    buildEigrpExternalInterface(
+        eib, asn, mode3, R3_E3_2_ADDR, c3E3To2Name, c3E3To2DelayMult, exportPolicyName);
+    buildEigrpExternalInterface(
+        eib, asn, mode3, R3_E3_4_ADDR, c3E3To4Name, c3E3To4DelayMult, exportPolicyName);
 
     /* Configuration 4 */
     Configuration c4 = buildConfiguration(R4, eib, epb, oib, opb, nib);
     // Build EIGRP (with redistribute other process)
     if (otherProcess == OSPF) {
-      epb.setExportPolicy(exportOspf.setOwner(c4).build().getName());
+      exportPolicyName = exportOspf.setOwner(c4).build().getName();
     } else if (otherProcess == EIGRP) {
-      epb.setExportPolicy(exportEigrpIntoOtherEigrp.setOwner(c4).build().getName()).build();
+      exportPolicyName = exportEigrpIntoOtherEigrp.setOwner(c4).build().getName();
     }
     EigrpProcess proc4 = epb.setMode(mode4).build();
     c4.getDefaultVrf().addEigrpProcess(proc4);
-    buildEigrpLoopbackInterface(eib, asn, mode4, R4_L0_ADDR);
-    buildEigrpExternalInterface(eib, asn, mode4, R4_E4_3_ADDR, c4E4To3Name, c4E4To3DelayMult);
+    buildEigrpLoopbackInterface(eib, asn, mode4, R4_L0_ADDR, exportPolicyName);
+    buildEigrpExternalInterface(
+        eib, asn, mode4, R4_E4_3_ADDR, c4E4To3Name, c4E4To3DelayMult, exportPolicyName);
     if (otherProcess == OSPF) {
       // Build OSPF
       oib.setOspfArea(oab.setOspfProcess(opb.build()).build());
@@ -366,7 +378,7 @@ public class EigrpTest {
       proc4 = epb.setAsNumber(otherAsn).setRouterId(Ip.parse("200.200.200.200")).build();
       c4.getDefaultVrf().addEigrpProcess(proc4);
       buildEigrpExternalInterface(
-          eib, otherAsn, mode4, R4_E4_1_ADDR, c4E4To1Name, c4E4To1DelayMult);
+          eib, otherAsn, mode4, R4_E4_1_ADDR, c4E4To1Name, c4E4To1DelayMult, exportPolicyName);
       // reset builder
       epb.setAsNumber(asn).setRouterId(Ip.parse("100.100.100.100"));
     }
@@ -476,10 +488,14 @@ public class EigrpTest {
       EigrpProcessMode mode,
       ConcreteInterfaceAddress addr,
       String name,
-      double delayMult) {
+      double delayMult,
+      String exportPolicyName) {
     ConfigurationFormat format = ConfigurationFormat.CISCO_IOS;
     EigrpInterfaceSettings.Builder esb =
-        EigrpInterfaceSettings.builder().setAsn(asn).setEnabled(true);
+        EigrpInterfaceSettings.builder()
+            .setAsn(asn)
+            .setEnabled(true)
+            .setExportPolicy(exportPolicyName);
     EigrpMetric.Builder emb = EigrpMetric.builder();
     emb.setBandwidth(null)
         .setDefaultBandwidth(getDefaultBandwidth(name, format))
@@ -500,10 +516,17 @@ public class EigrpTest {
    * @param addr Address of the {@link Interface}
    */
   private static void buildEigrpLoopbackInterface(
-      Interface.Builder eib, long asn, EigrpProcessMode mode, ConcreteInterfaceAddress addr) {
+      Interface.Builder eib,
+      long asn,
+      EigrpProcessMode mode,
+      ConcreteInterfaceAddress addr,
+      String exportPolicyName) {
     ConfigurationFormat format = ConfigurationFormat.CISCO_IOS;
     EigrpInterfaceSettings.Builder esb =
-        EigrpInterfaceSettings.builder().setAsn(asn).setEnabled(true);
+        EigrpInterfaceSettings.builder()
+            .setAsn(asn)
+            .setEnabled(true)
+            .setExportPolicy(exportPolicyName);
     EigrpMetric.Builder emb = EigrpMetric.builder();
     emb.setBandwidth(null)
         .setDefaultBandwidth(getDefaultBandwidth("Loopback0", format))
