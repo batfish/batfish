@@ -1137,6 +1137,7 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
       }
       decrement = decrementOrErr.get();
     } else {
+      // disable instead of decrement when tracked object goes down
       decrement = null;
     }
     _currentInterfaces.forEach(

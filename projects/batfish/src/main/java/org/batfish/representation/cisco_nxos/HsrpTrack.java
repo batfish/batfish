@@ -15,6 +15,10 @@ public final class HsrpTrack implements Serializable {
     return _trackObjectNumber;
   }
 
+  /**
+   * When tracked object is down, represents value by which priority of {@link HsrpGroup} should be
+   * decremented. If {@code null}, {@link HsrpGroup} should be disabled entirely instead.
+   */
   public @Nullable Integer getDecrement() {
     return _decrement;
   }

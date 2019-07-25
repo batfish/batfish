@@ -33,6 +33,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -84,6 +85,9 @@ import org.batfish.datamodel.routing_policy.expr.WithEnvironmentExpr;
 import org.batfish.datamodel.routing_policy.statement.If;
 import org.batfish.datamodel.routing_policy.statement.SetOrigin;
 import org.batfish.datamodel.routing_policy.statement.Statements;
+import org.batfish.datamodel.tracking.DecrementPriority;
+import org.batfish.datamodel.tracking.DisableGroup;
+import org.batfish.datamodel.tracking.TrackAction;
 import org.batfish.datamodel.vendor_family.cisco_nxos.CiscoNxosFamily;
 import org.batfish.representation.cisco_nxos.BgpVrfIpv6AddressFamilyConfiguration.Network;
 import org.batfish.vendor.VendorConfiguration;
@@ -513,6 +517,18 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
     v.setBgpProcess(newBgpProcess);
   }
 
+  private static void convertHsrp(
+      InterfaceHsrp hsrp, org.batfish.datamodel.Interface.Builder newIfaceBuilder) {
+    Optional.ofNullable(hsrp.getVersion())
+        .map(Object::toString)
+        .ifPresent(newIfaceBuilder::setHsrpVersion);
+    newIfaceBuilder.setHsrpGroups(
+        hsrp.getGroups().entrySet().stream()
+            .collect(
+                ImmutableMap.toImmutableMap(
+                    Entry::getKey, hsrpGroupEntry -> toHsrpGroup(hsrpGroupEntry.getValue()))));
+  }
+
   private void convertInterface(Interface iface) {
     String ifaceName = iface.getName();
     org.batfish.datamodel.Interface newIface = toInterface(iface);
@@ -748,6 +764,32 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
   @Override
   public void setVendor(ConfigurationFormat format) {}
 
+  private static @Nonnull org.batfish.datamodel.hsrp.HsrpGroup toHsrpGroup(HsrpGroup group) {
+    org.batfish.datamodel.hsrp.HsrpGroup.Builder builder =
+        org.batfish.datamodel.hsrp.HsrpGroup.builder()
+            .setGroupNumber(group.getGroup())
+            .setIp(group.getIp())
+            .setPreempt(
+                group.getPreemptDelayMinimumSeconds() != null); // true iff any preempt delay is set
+    if (group.getHelloIntervalMs() != null) {
+      builder.setHelloTime(group.getHelloIntervalMs());
+    }
+    if (group.getHoldTimeMs() != null) {
+      builder.setHoldTime(group.getHoldTimeMs());
+    }
+    if (group.getPriority() != null) {
+      builder.setPriority(group.getPriority());
+    }
+    builder.setTrackActions(
+        group.getTracks().entrySet().stream()
+            .collect(
+                ImmutableSortedMap.toImmutableSortedMap(
+                    Comparator.naturalOrder(),
+                    trackEntry -> trackEntry.getKey().toString(),
+                    trackEntry -> toTrackAction(trackEntry.getValue()))));
+    return builder.build();
+  }
+
   private @Nonnull org.batfish.datamodel.Interface toInterface(Interface iface) {
     String ifaceName = iface.getName();
     org.batfish.datamodel.Interface.Builder newIfaceBuilder =
@@ -843,6 +885,10 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
               .collect(ImmutableSet.toImmutableSet()));
     }
 
+    if (iface.getHsrp() != null) {
+      convertHsrp(iface.getHsrp(), newIfaceBuilder);
+    }
+
     org.batfish.datamodel.Interface newIface = newIfaceBuilder.build();
 
     String vrfName = iface.getVrfMember();
@@ -917,6 +963,11 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
         .setNextHopIp(firstNonNull(staticRoute.getNextHopIp(), UNSET_ROUTE_NEXT_HOP_IP))
         .setTag(staticRoute.getTag())
         .build();
+  }
+
+  private static @Nonnull TrackAction toTrackAction(HsrpTrack track) {
+    @Nullable Integer decrement = track.getDecrement();
+    return decrement != null ? new DecrementPriority(decrement) : DisableGroup.instance();
   }
 
   private @Nonnull Configuration toVendorIndependentConfiguration() {

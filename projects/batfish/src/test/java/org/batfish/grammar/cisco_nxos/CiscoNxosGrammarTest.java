@@ -17,6 +17,11 @@ import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasInterfaces
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasNumReferrers;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasRouteFilterLists;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasUndefinedReference;
+import static org.batfish.datamodel.matchers.HsrpGroupMatchers.hasHelloTime;
+import static org.batfish.datamodel.matchers.HsrpGroupMatchers.hasHoldTime;
+import static org.batfish.datamodel.matchers.HsrpGroupMatchers.hasPreempt;
+import static org.batfish.datamodel.matchers.HsrpGroupMatchers.hasPriority;
+import static org.batfish.datamodel.matchers.HsrpGroupMatchers.hasTrackActions;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasAddress;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasAllAddresses;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasBandwidth;
@@ -24,6 +29,8 @@ import static org.batfish.datamodel.matchers.InterfaceMatchers.hasChannelGroup;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasChannelGroupMembers;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasDependencies;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasDescription;
+import static org.batfish.datamodel.matchers.InterfaceMatchers.hasHsrpGroup;
+import static org.batfish.datamodel.matchers.InterfaceMatchers.hasHsrpVersion;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasInterfaceType;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasMtu;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasSpeed;
@@ -67,6 +74,7 @@ import static org.junit.Assert.assertTrue;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Range;
 import java.io.IOException;
@@ -110,8 +118,11 @@ import org.batfish.datamodel.UniverseIpSpace;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
 import org.batfish.datamodel.bgp.RouteDistinguisher;
 import org.batfish.datamodel.bgp.community.StandardCommunity;
+import org.batfish.datamodel.matchers.HsrpGroupMatchers;
 import org.batfish.datamodel.matchers.RouteFilterListMatchers;
 import org.batfish.datamodel.matchers.VrfMatchers;
+import org.batfish.datamodel.tracking.DecrementPriority;
+import org.batfish.datamodel.tracking.DisableGroup;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
 import org.batfish.representation.cisco_nxos.ActionIpAccessListLine;
@@ -374,6 +385,33 @@ public final class CiscoNxosGrammarTest {
         c,
         hasInterface(
             subName, hasDependencies(contains(new Dependency(ifaceName, DependencyType.BIND)))));
+  }
+
+  @Test
+  public void testInterfaceHsrpConversion() throws IOException {
+    String hostname = "nxos_interface_hsrp";
+    String ifaceName = "Ethernet1/1";
+    Configuration c = parseConfig(hostname);
+
+    assertThat(c.getAllInterfaces(), hasKeys(ifaceName));
+    {
+      org.batfish.datamodel.Interface iface = c.getAllInterfaces().get(ifaceName);
+      assertThat(iface, hasHsrpVersion("2"));
+      assertThat(
+          iface,
+          hasHsrpGroup(
+              2,
+              allOf(
+                  hasHelloTime(250),
+                  hasHoldTime(750),
+                  HsrpGroupMatchers.hasIp(Ip.parse("192.0.2.1")),
+                  hasPreempt(),
+                  hasPriority(105),
+                  hasTrackActions(
+                      equalTo(
+                          ImmutableSortedMap.of(
+                              "1", DisableGroup.instance(), "2", new DecrementPriority(20)))))));
+    }
   }
 
   @Test
