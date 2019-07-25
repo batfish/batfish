@@ -173,7 +173,11 @@ rb_af_l2vpn
 
 rb_afl2v_retain
 :
-  RETAIN ROUTE_TARGET (ALL | map = route_map_name) NEWLINE
+  RETAIN ROUTE_TARGET
+  (
+    ALL
+    | ROUTE_MAP map = route_map_name
+  ) NEWLINE
 ;
 
 rb_af_link_state
