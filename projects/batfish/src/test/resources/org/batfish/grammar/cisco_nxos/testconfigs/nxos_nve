@@ -7,7 +7,7 @@ feature vn-segment-vlan-based
 feature nv overlay
 !
 !
-interface nve1-3
+interface nve1-2
   no shutdown
   host-reachability protocol bgp
   source-interface loopback0
@@ -15,14 +15,28 @@ interface nve1-3
 !
 interface nve1
   member vni 10001
+    ingress-replication protocol bgp
+interface nve2
+  global ingress-replication protocol bgp
+  member vni 20001
+    !! This line will be rejected since we have configured host-reachability protocol bgp
+    ingress-replication protocol static
     suppress-arp disable
+interface nve3
+  !! This line will be rejected since we have not configured host-reachability protocol bgp
+  global ingress-replication protocol bgp
+  member vni 30001
+    ingress-replication protocol static
+    !! This line will be rejected since we have not configured host-reachability protocol bgp
+    ingress-replication protocol bgp
 !
 interface nve4
-  global ingress-replication protocol bgp
   global mcast-group 233.0.0.0 L2
   global mcast-group 234.0.0.0 L3
   source-interface loopback4
   member vni 40001
     ingress-replication protocol static
     mcast-group 235.0.0.0
+  !! This line will be rejected since we have a peer configured with ingress-replication protocol static
+  host-reachability protocol bgp
 !

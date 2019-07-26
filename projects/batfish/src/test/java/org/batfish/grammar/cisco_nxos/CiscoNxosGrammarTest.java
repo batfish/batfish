@@ -158,6 +158,7 @@ import org.batfish.representation.cisco_nxos.Layer3Options;
 import org.batfish.representation.cisco_nxos.LiteralIpAddressSpec;
 import org.batfish.representation.cisco_nxos.LiteralPortSpec;
 import org.batfish.representation.cisco_nxos.Nve;
+import org.batfish.representation.cisco_nxos.Nve.HostReachabilityProtocol;
 import org.batfish.representation.cisco_nxos.Nve.IngressReplicationProtocol;
 import org.batfish.representation.cisco_nxos.NveVni;
 import org.batfish.representation.cisco_nxos.OspfArea;
@@ -1735,36 +1736,60 @@ public final class CiscoNxosGrammarTest {
       assertThat(nve.getSourceInterface(), equalTo("loopback0"));
       assertThat(nve.getGlobalIngressReplicationProtocol(), nullValue());
       assertTrue(nve.isGlobalSuppressArp());
+      assertThat(nve.getHostReachabilityProtocol(), equalTo(HostReachabilityProtocol.BGP));
+      assertThat(nve.getMulticastGroupL2(), nullValue());
+      assertThat(nve.getMulticastGroupL3(), nullValue());
       int vni = 10001;
+      assertThat(nve.getMemberVnis(), hasKeys(vni));
+      NveVni vniConfig = nve.getMemberVni(vni);
+      assertThat(vniConfig.getVni(), equalTo(vni));
+      assertThat(vniConfig.getSuppressArp(), nullValue());
+      assertThat(
+          vniConfig.getIngressReplicationProtocol(), equalTo(IngressReplicationProtocol.BGP));
+      assertThat(vniConfig.getMcastGroup(), nullValue());
+      assertThat(nve.getMulticastGroupL2(), nullValue());
+      assertThat(nve.getMulticastGroupL3(), nullValue());
+    }
+    {
+      Nve nve = nves.get(2);
+      assertFalse(nve.isShutdown());
+      assertThat(nve.getSourceInterface(), equalTo("loopback0"));
+      assertThat(
+          nve.getGlobalIngressReplicationProtocol(), equalTo(IngressReplicationProtocol.BGP));
+      assertTrue(nve.isGlobalSuppressArp());
+      assertThat(nve.getHostReachabilityProtocol(), equalTo(HostReachabilityProtocol.BGP));
+      int vni = 20001;
       assertThat(nve.getMemberVnis(), hasKeys(vni));
       NveVni vniConfig = nve.getMemberVni(vni);
       assertThat(vniConfig.getVni(), equalTo(vni));
       assertThat(vniConfig.getSuppressArp(), equalTo(Boolean.FALSE));
       assertThat(vniConfig.getIngressReplicationProtocol(), nullValue());
       assertThat(vniConfig.getMcastGroup(), nullValue());
-    }
-    {
-      Nve nve = nves.get(2);
-      assertFalse(nve.isShutdown());
-      assertThat(nve.getSourceInterface(), equalTo("loopback0"));
-      assertThat(nve.getGlobalIngressReplicationProtocol(), nullValue());
-      assertTrue(nve.isGlobalSuppressArp());
+      assertThat(nve.getMulticastGroupL2(), nullValue());
+      assertThat(nve.getMulticastGroupL3(), nullValue());
     }
     {
       Nve nve = nves.get(3);
-      assertFalse(nve.isShutdown());
-      assertThat(nve.getSourceInterface(), equalTo("loopback0"));
+      assertTrue(nve.isShutdown());
+      assertThat(nve.getSourceInterface(), nullValue());
       assertThat(nve.getGlobalIngressReplicationProtocol(), nullValue());
-      assertTrue(nve.isGlobalSuppressArp());
+      assertFalse(nve.isGlobalSuppressArp());
+      assertThat(nve.getHostReachabilityProtocol(), nullValue());
       assertThat(nve.getMulticastGroupL2(), nullValue());
       assertThat(nve.getMulticastGroupL3(), nullValue());
+      int vni = 30001;
+      assertThat(nve.getMemberVnis(), hasKeys(vni));
+      NveVni vniConfig = nve.getMemberVni(vni);
+      assertThat(vniConfig.getSuppressArp(), nullValue());
+      assertThat(
+          vniConfig.getIngressReplicationProtocol(), equalTo(IngressReplicationProtocol.STATIC));
+      assertThat(vniConfig.getMcastGroup(), nullValue());
     }
     {
       Nve nve = nves.get(4);
       assertTrue(nve.isShutdown());
       assertThat(nve.getSourceInterface(), equalTo("loopback4"));
-      assertThat(
-          nve.getGlobalIngressReplicationProtocol(), equalTo(IngressReplicationProtocol.BGP));
+      assertThat(nve.getGlobalIngressReplicationProtocol(), nullValue());
       assertFalse(nve.isGlobalSuppressArp());
       assertEquals(nve.getMulticastGroupL2(), Ip.parse("233.0.0.0"));
       assertEquals(nve.getMulticastGroupL3(), Ip.parse("234.0.0.0"));
