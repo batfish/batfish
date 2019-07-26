@@ -233,6 +233,7 @@ import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Line_actionContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Literal_standard_communityContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Maxas_limitContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Maximum_pathsContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Nve_host_reachabilityContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Nve_memberContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Nve_no_shutdownContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Nve_source_interfaceContext;
@@ -437,6 +438,7 @@ import org.batfish.representation.cisco_nxos.Layer3Options;
 import org.batfish.representation.cisco_nxos.LiteralIpAddressSpec;
 import org.batfish.representation.cisco_nxos.LiteralPortSpec;
 import org.batfish.representation.cisco_nxos.Nve;
+import org.batfish.representation.cisco_nxos.Nve.HostReachabilityProtocol;
 import org.batfish.representation.cisco_nxos.Nve.IngressReplicationProtocol;
 import org.batfish.representation.cisco_nxos.NveVni;
 import org.batfish.representation.cisco_nxos.OspfArea;
@@ -1677,11 +1679,31 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
 
   @Override
   public void exitNvm_ingress_replication(Nvm_ingress_replicationContext ctx) {
-    IngressReplicationProtocol protocol =
-        ctx.BGP() != null
-            ? Nve.IngressReplicationProtocol.BGP
-            : Nve.IngressReplicationProtocol.STATIC;
-    _currentNveVnis.forEach(vni -> vni.setIngressReplicationProtocol(protocol));
+    if (ctx.BGP() != null) {
+      if (_currentNves.stream()
+          .anyMatch(nve -> nve.getHostReachabilityProtocol() != HostReachabilityProtocol.BGP)) {
+        _w.addWarning(
+            ctx,
+            getFullText(ctx),
+            _parser,
+            "Cannot enable ingress replication bgp under VNI without host-reachability protocol bgp");
+        return;
+      }
+      _currentNveVnis.forEach(
+          vni -> vni.setIngressReplicationProtocol(IngressReplicationProtocol.BGP));
+    } else {
+      assert ctx.STATIC() != null;
+      if (_currentNves.stream().anyMatch(nve -> nve.getHostReachabilityProtocol() != null)) {
+        _w.addWarning(
+            ctx,
+            getFullText(ctx),
+            _parser,
+            "Cannot enable ingress replication static under VNI without unset host-reachability protocol");
+        return;
+      }
+      _currentNveVnis.forEach(
+          vni -> vni.setIngressReplicationProtocol(IngressReplicationProtocol.STATIC));
+    }
   }
 
   @Override
@@ -1702,6 +1724,15 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
 
   @Override
   public void exitNvg_ingress_replication(Nvg_ingress_replicationContext ctx) {
+    if (_currentNves.stream()
+        .anyMatch(nve -> nve.getHostReachabilityProtocol() != HostReachabilityProtocol.BGP)) {
+      _w.addWarning(
+          ctx,
+          getFullText(ctx),
+          _parser,
+          "Cannot configure Ingress replication protocol BGP for nve without host reachability protocol bgp.");
+      return;
+    }
     _currentNves.forEach(
         vni -> vni.setGlobalIngressReplicationProtocol(IngressReplicationProtocol.BGP));
   }
@@ -3487,6 +3518,22 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
     }
     StaticRoute route = builder.build();
     _currentVrf.getStaticRoutes().put(route.getPrefix(), route);
+  }
+
+  @Override
+  public void exitNve_host_reachability(Nve_host_reachabilityContext ctx) {
+    if (_currentNves.stream()
+        .flatMap(nve -> nve.getMemberVnis().values().stream())
+        .anyMatch(
+            vni -> vni.getIngressReplicationProtocol() == IngressReplicationProtocol.STATIC)) {
+      _w.addWarning(
+          ctx,
+          getFullText(ctx),
+          _parser,
+          "Please remove ingress replication static under VNIs before configuring host reachability bgp.");
+      return;
+    }
+    _currentNves.forEach(nve -> nve.setHostReachabilityProtocol(HostReachabilityProtocol.BGP));
   }
 
   @Override
