@@ -594,7 +594,7 @@ CONNECTION_MODE
 
 CONTACT
 :
-// followed by arbitray contact information
+// followed by arbitrary contact information
   'contact' -> pushMode ( M_Remark )
 ;
 
@@ -3308,7 +3308,7 @@ VERSION
 :
   'version'
   // If preceded by 'traps', snmp version follows.
-  // Otherwise, arbitray version string follows.
+  // Otherwise, arbitrary version string follows.
   {
     switch(lastTokenType()) {
       case TRAPS:
