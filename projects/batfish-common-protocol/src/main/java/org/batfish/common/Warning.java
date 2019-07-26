@@ -4,6 +4,7 @@ import static com.google.common.base.Preconditions.checkArgument;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.base.MoreObjects;
 import java.io.Serializable;
 import java.util.Comparator;
 import java.util.Objects;
@@ -66,5 +67,10 @@ public class Warning implements Serializable, Comparable<Warning> {
       @Nullable @JsonProperty(PROP_TAG) String tag) {
     checkArgument(text != null, "Missing %s", PROP_TEXT);
     return new Warning(text, tag);
+  }
+
+  @Override
+  public String toString() {
+    return MoreObjects.toStringHelper(this).add("_text", _text).add("_tag", _tag).toString();
   }
 }

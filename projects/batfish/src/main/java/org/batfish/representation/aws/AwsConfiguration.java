@@ -1,9 +1,13 @@
 package org.batfish.representation.aws;
 
+import static org.batfish.representation.aws.InternetGateway.BACKBONE_INTERFACE_NAME;
+
 import com.fasterxml.jackson.databind.JsonNode;
+import com.google.common.collect.ImmutableList;
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicLong;
 import javax.annotation.Nonnull;
@@ -15,6 +19,7 @@ import org.batfish.datamodel.GenericConfigObject;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.answers.ParseVendorConfigurationAnswerElement;
+import org.batfish.datamodel.collections.NodeInterfacePair;
 
 /** The top-level class that represent AWS configuration */
 @ParametersAreNonnullByDefault
@@ -68,5 +73,13 @@ public class AwsConfiguration implements Serializable, GenericConfigObject {
     }
 
     return _configurationNodes;
+  }
+
+  @Nonnull
+  public List<NodeInterfacePair> getBackboneFacingInterfaces() {
+    return _regions.values().stream()
+        .flatMap(r -> r.getInternetGateways().values().stream())
+        .map(igw -> new NodeInterfacePair(igw.getId(), BACKBONE_INTERFACE_NAME))
+        .collect(ImmutableList.toImmutableList());
   }
 }

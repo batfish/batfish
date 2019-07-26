@@ -19,6 +19,8 @@ import static org.batfish.common.util.CompletionMetadataUtils.getRoutingPolicyNa
 import static org.batfish.common.util.CompletionMetadataUtils.getStructureNames;
 import static org.batfish.common.util.CompletionMetadataUtils.getVrfs;
 import static org.batfish.common.util.CompletionMetadataUtils.getZones;
+import static org.batfish.common.util.IspModelingUtils.INTERNET_HOST_NAME;
+import static org.batfish.common.util.IspModelingUtils.getInternetAndIspNodes;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.not;
 import static org.batfish.main.ReachabilityParametersResolver.resolveReachabilityParameters;
 
@@ -113,7 +115,6 @@ import org.batfish.common.topology.TopologyContainer;
 import org.batfish.common.topology.TopologyProvider;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.common.util.CommonUtil;
-import org.batfish.common.util.IspModelingUtils;
 import org.batfish.config.Settings;
 import org.batfish.config.TestrigSettings;
 import org.batfish.datamodel.BgpAdvertisement;
@@ -157,7 +158,9 @@ import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.eigrp.EigrpTopologyUtils;
 import org.batfish.datamodel.flow.Trace;
 import org.batfish.datamodel.flow.TraceWrapperAsAnswerElement;
+import org.batfish.datamodel.isp_configuration.BorderInterfaceInfo;
 import org.batfish.datamodel.isp_configuration.IspConfiguration;
+import org.batfish.datamodel.isp_configuration.IspFilter;
 import org.batfish.datamodel.ospf.OspfTopologyUtils;
 import org.batfish.datamodel.pojo.Environment;
 import org.batfish.datamodel.questions.InvalidReachabilityParametersException;
@@ -1000,9 +1003,8 @@ public class Batfish extends PluginConsumer implements IBatfish {
   }
 
   public Map<String, Configuration> getConfigurations(
-      Path serializedVendorConfigPath, ConvertConfigurationAnswerElement answerElement) {
-    Map<String, GenericConfigObject> vendorConfigurations =
-        deserializeVendorConfigurations(serializedVendorConfigPath);
+      Map<String, GenericConfigObject> vendorConfigurations,
+      ConvertConfigurationAnswerElement answerElement) {
     Map<String, Configuration> configurations =
         convertConfigurations(vendorConfigurations, answerElement);
 
@@ -1070,22 +1072,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
     } else {
       throw new BatfishException("Could not determine flow tag");
     }
-  }
-
-  @Nonnull
-  private Map<String, Configuration> getIspConfigurations(
-      Map<String, Configuration> configurations, Map<String, Warnings> warningsByHost) {
-    NetworkSnapshot networkSnapshot = getNetworkSnapshot();
-    IspConfiguration ispConfiguration =
-        _storage.loadIspConfiguration(networkSnapshot.getNetwork(), networkSnapshot.getSnapshot());
-    if (ispConfiguration == null) {
-      return ImmutableMap.of();
-    }
-    Warnings warnings =
-        warningsByHost.computeIfAbsent(
-            IspModelingUtils.INTERNET_HOST_NAME, k -> buildWarnings(_settings));
-    return IspModelingUtils.getInternetAndIspNodes(
-        configurations, ispConfiguration, _logger, warnings);
   }
 
   @Override
@@ -2384,16 +2370,18 @@ public class Batfish extends PluginConsumer implements IBatfish {
       if (_settings.getVerboseParse()) {
         answer.addAnswerElement(answerElement);
       }
+      Map<String, GenericConfigObject> vendorConfigs;
       Map<String, Configuration> configurations;
       try (ActiveSpan convertSpan =
           GlobalTracer.get()
               .buildSpan("Convert vendor-specific configs to vendor-independent configs")
               .startActive()) {
         assert convertSpan != null; // avoid unused warning
-        configurations = getConfigurations(vendorConfigPath, answerElement);
+        vendorConfigs = deserializeVendorConfigurations(vendorConfigPath);
+        configurations = getConfigurations(vendorConfigs, answerElement);
       }
 
-      configurations.putAll(getIspConfigurations(configurations, answerElement.getWarnings()));
+      addInternetAndIspNodes(configurations, vendorConfigs, answerElement.getWarnings());
 
       try (ActiveSpan storeSpan =
           GlobalTracer.get().buildSpan("Store vendor-independent configs").startActive()) {
@@ -2408,6 +2396,44 @@ public class Batfish extends PluginConsumer implements IBatfish {
         postProcessSnapshot(configurations);
       }
       return answer;
+    }
+  }
+
+  private void addInternetAndIspNodes(
+      Map<String, Configuration> configurations,
+      Map<String, GenericConfigObject> vendorConfigs,
+      SortedMap<String, Warnings> warnings) {
+    Warnings internetWarnings = warnings.getOrDefault(INTERNET_HOST_NAME, buildWarnings(_settings));
+    if (configurations.containsKey(INTERNET_HOST_NAME)) {
+      internetWarnings.redFlag(
+          String.format("Node '%s' already exists. Added to it.", INTERNET_HOST_NAME));
+    }
+    NetworkSnapshot networkSnapshot = getNetworkSnapshot();
+    IspConfiguration ispConfiguration =
+        _storage.loadIspConfiguration(networkSnapshot.getNetwork(), networkSnapshot.getSnapshot());
+    if (ispConfiguration != null) {
+      configurations.putAll(
+          getInternetAndIspNodes(configurations, ispConfiguration, _logger, internetWarnings));
+    }
+
+    List<BorderInterfaceInfo> awsBackboneInterfaces =
+        vendorConfigs.values().stream()
+            .filter(vc -> vc instanceof AwsConfiguration)
+            .flatMap(vc -> ((AwsConfiguration) vc).getBackboneFacingInterfaces().stream())
+            .map(BorderInterfaceInfo::new)
+            .collect(ImmutableList.toImmutableList());
+    if (!awsBackboneInterfaces.isEmpty()) {
+      IspConfiguration awsIspConfiguration =
+          new IspConfiguration(
+              awsBackboneInterfaces,
+              new IspFilter(ImmutableList.of(), org.parboiled.common.ImmutableList.of()));
+      configurations.putAll(
+          getInternetAndIspNodes(configurations, awsIspConfiguration, _logger, internetWarnings));
+    }
+    // we are being careful here so that we don't create an unnecessary key in the warnings map when
+    // internet wasn't being modeled at all
+    if (!warnings.containsKey(INTERNET_HOST_NAME) && !internetWarnings.isEmpty()) {
+      warnings.put(INTERNET_HOST_NAME, internetWarnings);
     }
   }
 

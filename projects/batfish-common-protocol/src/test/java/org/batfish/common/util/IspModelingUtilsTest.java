@@ -18,6 +18,7 @@ import static org.batfish.datamodel.matchers.VrfMatchers.hasBgpProcess;
 import static org.batfish.datamodel.matchers.VrfMatchers.hasStaticRoutes;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.anEmptyMap;
+import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasKey;
 import static org.hamcrest.Matchers.hasSize;
@@ -179,7 +180,7 @@ public class IspModelingUtilsTest {
 
     Configuration ispConfiguration =
         IspModelingUtils.getIspConfigurationNode(
-            2L, ispInfo, new NetworkFactory(), new BatfishLogger("output", false));
+            2L, ispInfo, ImmutableMap.of(), new NetworkFactory(), new Warnings());
 
     assertThat(
         ispConfiguration,
@@ -227,15 +228,17 @@ public class IspModelingUtilsTest {
             .build();
     IspInfo ispInfo =
         new IspInfo(ImmutableList.of(interfaceAddress, interfaceAddress2), ImmutableList.of(peer));
-    BatfishLogger logger = new BatfishLogger("debug", false);
+    Warnings warnings = new Warnings(true, true, true);
     Configuration ispConfiguration =
-        IspModelingUtils.getIspConfigurationNode(2L, ispInfo, new NetworkFactory(), logger);
+        IspModelingUtils.getIspConfigurationNode(
+            2L, ispInfo, ImmutableMap.of(), new NetworkFactory(), warnings);
 
     assertThat(ispConfiguration, nullValue());
 
-    assertThat(logger.getHistory(), hasSize(1));
     assertThat(
-        logger.getHistory().toString(300), equalTo("ISP information for ASN '2' is not correct"));
+        warnings.getRedFlagWarnings(),
+        containsInAnyOrder(
+            new Warning("ISP information for ASN '2' is not correct", TAG_RED_FLAG)));
   }
 
   @Test
@@ -507,7 +510,7 @@ public class IspModelingUtilsTest {
   }
 
   @Test
-  public void testGetRoutingPolicyForInternet() {
+  public void testGetRoutingPolicyAdvertizeStatic() {
     NetworkFactory nf = new NetworkFactory();
     Configuration internet =
         nf.configurationBuilder()
@@ -515,7 +518,8 @@ public class IspModelingUtilsTest {
             .setHostname("fakeInternet")
             .build();
     RoutingPolicy internetRoutingPolicy =
-        IspModelingUtils.getRoutingPolicyForInternet(internet, nf);
+        IspModelingUtils.getRoutingPolicyAdvertiseStatic(
+            IspModelingUtils.EXPORT_POLICY_ON_INTERNET, internet, nf);
 
     PrefixSpace prefixSpace = new PrefixSpace();
     prefixSpace.addPrefix(Prefix.ZERO);

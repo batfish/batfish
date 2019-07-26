@@ -157,7 +157,8 @@ public final class IspModelingUtils {
         asnToIspInfos.entrySet().stream()
             .map(
                 asnIspInfo ->
-                    getIspConfigurationNode(asnIspInfo.getKey(), asnIspInfo.getValue(), nf, logger))
+                    getIspConfigurationNode(
+                        asnIspInfo.getKey(), asnIspInfo.getValue(), configurations, nf, warnings))
             .filter(Objects::nonNull)
             .collect(ImmutableMap.toImmutableMap(Configuration::getHostname, Function.identity()));
     // not proceeding if no ISPs were created
@@ -165,7 +166,8 @@ public final class IspModelingUtils {
       return ispConfigurations;
     }
 
-    Configuration internet = createInternetNode(nf);
+    Configuration internet =
+        configurations.getOrDefault(INTERNET_HOST_NAME, createInternetNode(nf));
     connectIspsToInternet(internet, ispConfigurations, nf);
 
     return ImmutableMap.<String, Configuration>builder()
@@ -212,7 +214,8 @@ public final class IspModelingUtils {
 
     internetConfiguration.setRoutingPolicies(
         ImmutableSortedMap.of(
-            EXPORT_POLICY_ON_INTERNET, getRoutingPolicyForInternet(internetConfiguration, nf)));
+            EXPORT_POLICY_ON_INTERNET,
+            getRoutingPolicyAdvertiseStatic(EXPORT_POLICY_ON_INTERNET, internetConfiguration, nf)));
     return internetConfiguration;
   }
 
@@ -350,19 +353,31 @@ public final class IspModelingUtils {
   @VisibleForTesting
   @Nullable
   static Configuration getIspConfigurationNode(
-      Long asn, IspInfo ispInfo, NetworkFactory nf, BatfishLogger logger) {
+      Long asn,
+      IspInfo ispInfo,
+      Map<String, Configuration> configurations,
+      NetworkFactory nf,
+      Warnings warnings) {
     if (ispInfo.getBgpActivePeerConfigs().isEmpty()
         || ispInfo.getInterfaceAddresses().isEmpty()
         || ispInfo.getInterfaceAddresses().size() != ispInfo.getBgpActivePeerConfigs().size()) {
-      logger.warnf("ISP information for ASN '%s' is not correct", asn);
+      warnings.redFlag(String.format("ISP information for ASN '%s' is not correct", asn));
       return null;
     }
 
-    Configuration.Builder cb = nf.configurationBuilder();
+    String ispNodeName = String.format("%s_%s", ISP_HOSTNAME_PREFIX, asn);
+    if (configurations.containsKey(ispNodeName)) {
+      warnings.redFlag(
+          String.format("A node with name '%s' already exists. Added to it.", ispNodeName));
+    }
+
     Configuration ispConfiguration =
-        cb.setHostname(String.format("%s_%s", ISP_HOSTNAME_PREFIX, asn))
-            .setConfigurationFormat(ConfigurationFormat.CISCO_IOS)
-            .build();
+        configurations.getOrDefault(
+            ispNodeName,
+            nf.configurationBuilder()
+                .setHostname(ispNodeName)
+                .setConfigurationFormat(ConfigurationFormat.CISCO_IOS)
+                .build());
     ispConfiguration.setDeviceType(DeviceType.ISP);
     ispConfiguration.setRoutingPolicies(
         ImmutableSortedMap.of(EXPORT_POLICY_ON_ISP, getRoutingPolicyForIsp(ispConfiguration, nf)));
@@ -440,13 +455,13 @@ public final class IspModelingUtils {
   }
 
   /** Creates a routing policy to advertise all static routes configured */
-  @VisibleForTesting
-  static RoutingPolicy getRoutingPolicyForInternet(Configuration internet, NetworkFactory nf) {
+  public static RoutingPolicy getRoutingPolicyAdvertiseStatic(
+      String policyName, Configuration node, NetworkFactory nf) {
     PrefixSpace prefixSpace = new PrefixSpace();
     prefixSpace.addPrefix(Prefix.ZERO);
     return nf.routingPolicyBuilder()
-        .setName(EXPORT_POLICY_ON_INTERNET)
-        .setOwner(internet)
+        .setName(policyName)
+        .setOwner(node)
         .setStatements(
             Collections.singletonList(
                 new If(
