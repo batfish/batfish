@@ -34,6 +34,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -46,6 +47,8 @@ import org.batfish.common.VendorConversionException;
 import org.batfish.datamodel.BgpActivePeerConfig;
 import org.batfish.datamodel.BgpPassivePeerConfig;
 import org.batfish.datamodel.BgpTieBreaker;
+import org.batfish.datamodel.CommunityList;
+import org.batfish.datamodel.CommunityListLine;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.GeneratedRoute;
@@ -66,16 +69,19 @@ import org.batfish.datamodel.RouteFilterLine;
 import org.batfish.datamodel.RouteFilterList;
 import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.SwitchportMode;
+import org.batfish.datamodel.bgp.community.StandardCommunity;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.routing_policy.expr.BooleanExpr;
 import org.batfish.datamodel.routing_policy.expr.BooleanExprs;
 import org.batfish.datamodel.routing_policy.expr.CallExpr;
+import org.batfish.datamodel.routing_policy.expr.CommunitySetExpr;
 import org.batfish.datamodel.routing_policy.expr.Conjunction;
 import org.batfish.datamodel.routing_policy.expr.DestinationNetwork;
 import org.batfish.datamodel.routing_policy.expr.DestinationNetwork6;
 import org.batfish.datamodel.routing_policy.expr.Disjunction;
 import org.batfish.datamodel.routing_policy.expr.ExplicitPrefix6Set;
 import org.batfish.datamodel.routing_policy.expr.ExplicitPrefixSet;
+import org.batfish.datamodel.routing_policy.expr.LiteralCommunityConjunction;
 import org.batfish.datamodel.routing_policy.expr.LiteralOrigin;
 import org.batfish.datamodel.routing_policy.expr.MatchPrefix6Set;
 import org.batfish.datamodel.routing_policy.expr.MatchPrefixSet;
@@ -547,6 +553,39 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
         .forEach(this::convertInterface);
   }
 
+  private void convertIpCommunityLists() {
+    _ipCommunityLists.forEach(
+        (name, list) ->
+            _c.getCommunityLists()
+                .put(
+                    name,
+                    list.accept(
+                        new IpCommunityListVisitor<CommunityList>() {
+                          @Override
+                          public CommunityList visitIpCommunityListStandard(
+                              IpCommunityListStandard ipCommunityListStandard) {
+                            return toCommunityList(ipCommunityListStandard);
+                          }
+                        })));
+  }
+
+  private static @Nonnull CommunityList toCommunityList(IpCommunityListStandard list) {
+    return new CommunityList(
+        list.getName(),
+        list.getLines().values().stream()
+            .map(CiscoNxosConfiguration::toCommunityListLine)
+            .collect(ImmutableList.toImmutableList()),
+        false);
+  }
+
+  private static @Nonnull CommunityListLine toCommunityListLine(IpCommunityListStandardLine line) {
+    return new CommunityListLine(line.getAction(), toCommunitySetExpr(line.getCommunities()));
+  }
+
+  private static @Nonnull CommunitySetExpr toCommunitySetExpr(Set<StandardCommunity> communities) {
+    return new LiteralCommunityConjunction(communities);
+  }
+
   private void convertIpPrefixLists() {
     _ipPrefixLists.forEach(
         (name, ipPrefixList) ->
@@ -975,6 +1014,7 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
     disableUnregisteredVlanInterfaces();
     convertStaticRoutes();
     convertIpPrefixLists();
+    convertIpCommunityLists();
     convertBgp();
 
     markStructures();
