@@ -15,6 +15,7 @@ import
   CiscoNxos_ospf,
   CiscoNxos_policy_map,
   CiscoNxos_route_map,
+  CiscoNxos_snmp,
   CiscoNxos_static,
   CiscoNxos_vlan,
   CiscoNxos_vrf;
@@ -48,6 +49,7 @@ statement
   | s_role
   | s_route_map
   | s_router
+  | s_snmp_server
   | s_system
   | s_version
   | s_vlan
