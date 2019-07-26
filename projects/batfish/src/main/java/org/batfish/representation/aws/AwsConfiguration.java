@@ -34,9 +34,25 @@ public class AwsConfiguration implements Serializable, GenericConfigObject {
   @Nonnull private final Map<String, Region> _regions;
 
   public AwsConfiguration() {
-    _configurationNodes = new HashMap<>();
-    _currentGeneratedIpAsLong = new AtomicLong(INITIAL_GENERATED_IP);
-    _regions = new HashMap<>();
+    this(new HashMap<>());
+  }
+
+  public AwsConfiguration(Map<String, Region> regions) {
+    this(regions, new HashMap<>(), new AtomicLong(INITIAL_GENERATED_IP));
+  }
+
+  public AwsConfiguration(
+      Map<String, Region> regions, Map<String, Configuration> configurationNodes) {
+    this(regions, configurationNodes, new AtomicLong(INITIAL_GENERATED_IP));
+  }
+
+  public AwsConfiguration(
+      Map<String, Region> regions,
+      Map<String, Configuration> configurationNodes,
+      AtomicLong currentGeneratedIpAsLong) {
+    _regions = regions;
+    _configurationNodes = configurationNodes;
+    _currentGeneratedIpAsLong = currentGeneratedIpAsLong;
   }
 
   /** Adds a config subtree */

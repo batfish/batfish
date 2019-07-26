@@ -6,6 +6,7 @@ import static org.batfish.common.util.IspModelingUtils.getRoutingPolicyAdvertise
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSortedMap;
 import java.io.Serializable;
@@ -42,7 +43,7 @@ final class InternetGateway implements AwsVpcEntity, Serializable {
   static final String BACKBONE_INTERFACE_NAME = "backbone";
 
   /** Name of the routing policy on the Internet Gateway that faces the backbone */
-  private static final String BACKBONE_EXPORT_POLICY_NAME = "AwsInternetGatewayExportPolicy";
+  static final String BACKBONE_EXPORT_POLICY_NAME = "AwsInternetGatewayExportPolicy";
 
   @Nonnull private final List<String> _attachmentVpcIds;
 
@@ -143,6 +144,7 @@ final class InternetGateway implements AwsVpcEntity, Serializable {
   /**
    * Creates an interface facing the backbone and run a BGP process that advertises static routes
    */
+  @VisibleForTesting
   static void createBackboneConnection(Configuration cfgNode, Prefix bbInterfaceSubnet) {
     ConcreteInterfaceAddress bbInterfaceAddress =
         ConcreteInterfaceAddress.create(
