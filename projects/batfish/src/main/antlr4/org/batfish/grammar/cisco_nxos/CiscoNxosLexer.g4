@@ -2246,6 +2246,11 @@ PEER
   'peer' -> pushMode ( M_Word )
 ;
 
+PEER_IP
+:
+  'peer-ip'
+;
+
 PEER_POLICY
 :
   'peer-policy'
