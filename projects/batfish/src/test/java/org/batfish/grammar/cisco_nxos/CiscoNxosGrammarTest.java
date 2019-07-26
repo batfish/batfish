@@ -2768,6 +2768,12 @@ public final class CiscoNxosGrammarTest {
   }
 
   @Test
+  public void testSnmpServerParsing() {
+    // TODO: make into extraction test
+    assertThat(parseVendorConfig("nxos_snmp_server"), notNullValue());
+  }
+
+  @Test
   public void testSpanningTreeParsing() {
     // TODO: make into an extraction test
     assertThat(parseVendorConfig("nxos_spanning_tree"), notNullValue());

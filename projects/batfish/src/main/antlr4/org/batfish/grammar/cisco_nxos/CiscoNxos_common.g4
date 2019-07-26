@@ -45,6 +45,12 @@ double_quoted_string
   DOUBLE_QUOTE text = quoted_text? DOUBLE_QUOTE
 ;
 
+group_name
+:
+// 1-32 characters
+  WORD
+;
+
 interface_address
 :
   address = ip_address mask = subnet_mask
@@ -241,6 +247,18 @@ uint32
   UINT8
   | UINT16
   | UINT32
+;
+
+user_name
+:
+// 1-32 characters
+  WORD
+;
+
+user_password
+:
+  WORD
+// 1-127 characters
 ;
 
 vlan_id
