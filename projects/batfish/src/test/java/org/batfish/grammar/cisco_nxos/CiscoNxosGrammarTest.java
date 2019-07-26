@@ -1737,7 +1737,16 @@ public final class CiscoNxosGrammarTest {
       assertThat(nve.getGlobalIngressReplicationProtocol(), nullValue());
       assertTrue(nve.isGlobalSuppressArp());
       assertThat(nve.getHostReachabilityProtocol(), equalTo(HostReachabilityProtocol.BGP));
-      assertThat(nve.getMemberVnis(), anEmptyMap());
+      assertThat(nve.getMulticastGroupL2(), nullValue());
+      assertThat(nve.getMulticastGroupL3(), nullValue());
+      int vni = 10001;
+      assertThat(nve.getMemberVnis(), hasKeys(vni));
+      NveVni vniConfig = nve.getMemberVni(vni);
+      assertThat(vniConfig.getVni(), equalTo(vni));
+      assertThat(vniConfig.getSuppressArp(), nullValue());
+      assertThat(
+          vniConfig.getIngressReplicationProtocol(), equalTo(IngressReplicationProtocol.BGP));
+      assertThat(vniConfig.getMcastGroup(), nullValue());
       assertThat(nve.getMulticastGroupL2(), nullValue());
       assertThat(nve.getMulticastGroupL3(), nullValue());
     }
@@ -1749,7 +1758,7 @@ public final class CiscoNxosGrammarTest {
           nve.getGlobalIngressReplicationProtocol(), equalTo(IngressReplicationProtocol.BGP));
       assertTrue(nve.isGlobalSuppressArp());
       assertThat(nve.getHostReachabilityProtocol(), equalTo(HostReachabilityProtocol.BGP));
-      int vni = 10001;
+      int vni = 20001;
       assertThat(nve.getMemberVnis(), hasKeys(vni));
       NveVni vniConfig = nve.getMemberVni(vni);
       assertThat(vniConfig.getVni(), equalTo(vni));
@@ -1768,7 +1777,13 @@ public final class CiscoNxosGrammarTest {
       assertThat(nve.getHostReachabilityProtocol(), nullValue());
       assertThat(nve.getMulticastGroupL2(), nullValue());
       assertThat(nve.getMulticastGroupL3(), nullValue());
-      assertThat(nve.getMemberVnis(), anEmptyMap());
+      int vni = 30001;
+      assertThat(nve.getMemberVnis(), hasKeys(vni));
+      NveVni vniConfig = nve.getMemberVni(vni);
+      assertThat(vniConfig.getSuppressArp(), nullValue());
+      assertThat(
+          vniConfig.getIngressReplicationProtocol(), equalTo(IngressReplicationProtocol.STATIC));
+      assertThat(vniConfig.getMcastGroup(), nullValue());
     }
     {
       Nve nve = nves.get(4);
