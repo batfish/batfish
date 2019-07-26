@@ -80,33 +80,15 @@ final class EigrpRoutingProcess implements RoutingProcess<EigrpTopology, EigrpRo
   @Nonnull private RibDelta<EigrpInternalRoute> _initializationDelta;
 
   /**
-   * A {@link RibDelta} containing external routes we need to send/withdraw based on most recent
-   * round of route redistribution
+   * A {@link RibDelta} containing delta of the main RIB which will get exported as external routes
+   * and get withdrawn/sent in the next iteration
    */
   @Nonnull private RibDelta<? extends AnnotatedRoute<AbstractRoute>> _queuedForRedistribution;
-  /**
-   * {@link Map} containing redistributed routes {@link RibDelta}s per neighbor at the end of
-   * current iteration
-   */
-  // @Nullable private Map<EigrpEdge, RibDelta<EigrpExternalRoute>> _redistributedRoutesPerEdge;
 
-  /**
-   * {@link Map} containing redistributed routes {@link RibDelta}s per neighbor at the end of
-   * current iteration
-   */
-  //  @Nullable
-  //  private Map<EigrpEdge, RibDelta<EigrpExternalRoute>> _previousRedistributedRoutesPerEdge;
   /** Set of routes to be merged to the main RIB at the end of the iteration */
   @Nonnull private RibDelta.Builder<EigrpRoute> _changeSet;
 
   // Message queues
-  //  @Nonnull
-  //  private SortedMap<EigrpEdge, Queue<RouteAdvertisement<EigrpInternalRoute>>>
-  //      _oldIncomingInternalRoutes;
-  /** Incoming external route messages into this router from each EIGRP adjacency */
-  //  @Nonnull @VisibleForTesting
-  //  SortedMap<EigrpEdge, Queue<RouteAdvertisement<EigrpExternalRoute>>>
-  // _oldIncomingExternalRoutes;
 
   /** Incoming internal route messages into this router from each EIGRP adjacency */
   @Nonnull
@@ -141,8 +123,6 @@ final class EigrpRoutingProcess implements RoutingProcess<EigrpTopology, EigrpRo
     _incomingInternalRoutes = ImmutableSortedMap.of();
     _incomingExternalRoutes = ImmutableSortedMap.of();
     _changeSet = RibDelta.builder();
-    //    _previousRedistributedRoutesPerEdge = null;
-    //    _redistributedRoutesPerEdge = null;
   }
 
   @Override
@@ -163,8 +143,6 @@ final class EigrpRoutingProcess implements RoutingProcess<EigrpTopology, EigrpRo
 
   @Override
   public void executeIteration(Map<String, Node> allNodes) {
-    //    _oldIncomingExternalRoutes = _incomingExternalRoutes;
-    //    _oldIncomingInternalRoutes = _incomingInternalRoutes;
     _changeSet = RibDelta.builder();
     if (!_initializationDelta.isEmpty()) {
       // If we haven't sent out the first round of updates after initialization, do so now. Then
@@ -185,11 +163,9 @@ final class EigrpRoutingProcess implements RoutingProcess<EigrpTopology, EigrpRo
     RibDelta<EigrpInternalRoute> internalDelta = processInternalRoutes(nc);
     sendOutInternalRoutes(internalDelta, allNodes);
 
-    // Filter and transform redistribution queue according to per neighbor export policy and send
-    // out
-    //    _previousRedistributedRoutesPerEdge = _redistributedRoutesPerEdge;
-    //    _redistributedRoutesPerEdge = new HashMap<>();
-    filterTransformExportRedistributed(_queuedForRedistribution, allNodes);
+    // Filter and export redistribution queue according to per neighbor export policy and send
+    // out/withdraw
+    exportRedistributedForAllNeighbors(_queuedForRedistribution, allNodes);
     _queuedForRedistribution = RibDelta.empty();
 
     // Process new external routes and re-advertise them as necessary
@@ -201,24 +177,32 @@ final class EigrpRoutingProcess implements RoutingProcess<EigrpTopology, EigrpRo
     _changeSet.from(importRibDelta(_rib, externalDelta));
   }
 
-  private void filterTransformExportRedistributed(
+  @Nonnull
+  @Override
+  public RibDelta<EigrpRoute> getUpdatesForMainRib() {
+    return _changeSet.build();
+  }
+
+  /**
+   * Export routes in queueForRedistribution {@link RibDelta} to all neighbors using per neighbor
+   * export policy
+   */
+  private void exportRedistributedForAllNeighbors(
       RibDelta<? extends AnnotatedRoute<AbstractRoute>> queueForRedistribution,
       Map<String, Node> allNodes) {
     for (EigrpEdge eigrpEdge : _incomingExternalRoutes.keySet()) {
       RoutingPolicy exportPolicyForEdge = getOwnExportPolicy(eigrpEdge.getNode2());
-      if (exportPolicyForEdge == null) {
-        // no need to export anything for this edge
-        continue;
-      }
       RibDelta<EigrpExternalRoute> routesForExport =
-          filterAndTransform(queueForRedistribution, exportPolicyForEdge);
-      //      assert _redistributedRoutesPerEdge != null;
-      //      _redistributedRoutesPerEdge.put(eigrpEdge, routesForExport);
+          exportRedistriubtionDeltaForNeighbor(queueForRedistribution, exportPolicyForEdge);
       sendExternalRoutesOutFromEdge(eigrpEdge, routesForExport, allNodes);
     }
   }
 
-  private RibDelta<EigrpExternalRoute> filterAndTransform(
+  /**
+   * Return exported routes in queueForRedistribution {@link RibDelta} using the provided
+   * exportPolicy
+   */
+  private RibDelta<EigrpExternalRoute> exportRedistriubtionDeltaForNeighbor(
       RibDelta<? extends AnnotatedRoute<AbstractRoute>> queueForRedistribution,
       RoutingPolicy exportPolicy) {
     RibDelta.Builder<EigrpExternalRoute> builder = RibDelta.builder();
@@ -241,12 +225,6 @@ final class EigrpRoutingProcess implements RoutingProcess<EigrpTopology, EigrpRo
     return builder.build();
   }
 
-  @Nonnull
-  @Override
-  public RibDelta<EigrpRoute> getUpdatesForMainRib() {
-    return _changeSet.build();
-  }
-
   @Override
   public void redistribute(RibDelta<? extends AnnotatedRoute<AbstractRoute>> mainRibDelta) {
     _queuedForRedistribution = mainRibDelta;
@@ -260,11 +238,6 @@ final class EigrpRoutingProcess implements RoutingProcess<EigrpTopology, EigrpRo
         || !_queuedForRedistribution.isEmpty()
         || !_initializationDelta.isEmpty();
   }
-
-  //  private boolean redistributedRoutesPerEdgeConverged() {
-  //    return _previousRedistributedRoutesPerEdge != null
-  //        && _previousRedistributedRoutesPerEdge.equals(_redistributedRoutesPerEdge);
-  //  }
 
   /**
    * Init internal routes from connected routes. For each interface prefix, construct a new internal
@@ -420,24 +393,21 @@ final class EigrpRoutingProcess implements RoutingProcess<EigrpTopology, EigrpRo
         .enqueueExternalMessages(eigrpEdge.reverse(), queuedForRedistribution.getActions());
   }
 
+  /** Checks if a given {@link EigrpRoute} is allowed to be sent out from a given neighbor */
   private boolean allowedByExportPolicy(
       EigrpNeighborConfigId neighborConfigId, EigrpRoute eigrpRoute) {
     RoutingPolicy exportPolicy = getOwnExportPolicy(neighborConfigId);
-    if (exportPolicy == null) {
-      return true;
-    }
     return exportPolicy.process(eigrpRoute, eigrpRoute.toBuilder(), null, _vrfName, Direction.OUT);
   }
 
-  @Nullable
+  /**
+   * Gets the {@link RoutingPolicy} used by a given {@link EigrpNeighborConfigId neighborConfigId}
+   */
+  @Nonnull
   private RoutingPolicy getOwnExportPolicy(EigrpNeighborConfigId neighborConfigId) {
     EigrpNeighborConfig neighborConfig =
         _process.getNeighbors().get(neighborConfigId.getInterfaceName());
     assert neighborConfig != null;
-    String exportPolicyName = neighborConfig.getExportPolicy();
-    if (exportPolicyName == null) {
-      return null;
-    }
     RoutingPolicy exportPolicy =
         _configuration.getRoutingPolicies().get(neighborConfig.getExportPolicy());
     assert exportPolicy != null;

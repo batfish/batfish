@@ -299,7 +299,9 @@ class IncrementalBdpEngine {
       try (ActiveSpan span =
           GlobalTracer.get().buildSpan(iterationLabel + ": propagate EIGRP routes").startActive()) {
         assert span != null; // avoid unused warning
-        nodes.values().stream()
+        nodes
+            .values()
+            .parallelStream()
             .flatMap(n -> n.getVirtualRouters().values().stream())
             .forEach(vr -> vr.eigrpIteration(allNodes));
         nodes

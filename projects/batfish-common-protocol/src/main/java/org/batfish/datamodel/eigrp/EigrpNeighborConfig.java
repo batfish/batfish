@@ -25,7 +25,7 @@ public final class EigrpNeighborConfig implements Serializable {
   private static final String PROP_VRF = "vrf";
 
   private final long _asn;
-  @Nullable private final String _exportPolicy;
+  @Nonnull private final String _exportPolicy;
   @Nonnull private final String _interfaceName;
   @Nonnull private final Ip _ip;
   private final boolean _isPassive;
@@ -34,7 +34,7 @@ public final class EigrpNeighborConfig implements Serializable {
 
   private EigrpNeighborConfig(
       long asn,
-      @Nullable String exportPolicy,
+      String exportPolicy,
       String interfaceName,
       boolean isPassive,
       String hostname,
@@ -59,6 +59,7 @@ public final class EigrpNeighborConfig implements Serializable {
       @Nullable @JsonProperty(PROP_PASSIVE) Boolean passive,
       @Nullable @JsonProperty(PROP_VRF) String vrf) {
     checkArgument(asn != null, "EigrpNeighborConfig missing %s", PROP_ASN);
+    checkArgument(exportPolicy != null, "EigrpNeighborConfig missing %s", PROP_EXPORT_POLICY);
     checkArgument(hostname != null, "EigrpNeighborConfig missing %s", PROP_HOSTNAME);
     checkArgument(interfaceName != null, "EigrpNeighborConfig missing %s", PROP_INTERFACE);
     checkArgument(ip != null, "EigrpNeighborConfig missing %s", PROP_IP);
@@ -72,7 +73,7 @@ public final class EigrpNeighborConfig implements Serializable {
     return _asn;
   }
 
-  @Nullable
+  @Nonnull
   @JsonProperty(PROP_EXPORT_POLICY)
   public String getExportPolicy() {
     return _exportPolicy;
@@ -123,48 +124,49 @@ public final class EigrpNeighborConfig implements Serializable {
     @Nullable private String _hostname;
     @Nullable private String _interfaceName;
     @Nullable private Ip _ip;
-    @Nullable private Boolean _isPassive;
+    private boolean _isPassive;
     @Nullable private String _vrfName;
 
     private Builder() {}
 
-    public Builder setAsn(@Nonnull Long asn) {
+    public Builder setAsn(Long asn) {
       _asn = asn;
       return this;
     }
 
-    public Builder setExportPolicy(@Nullable String exportPolicy) {
+    public Builder setExportPolicy(String exportPolicy) {
       _exportPolicy = exportPolicy;
       return this;
     }
 
-    public Builder setInterfaceName(@Nonnull String interfaceName) {
+    public Builder setInterfaceName(String interfaceName) {
       this._interfaceName = interfaceName;
       return this;
     }
 
-    public Builder setIp(@Nonnull Ip ip) {
+    public Builder setIp(Ip ip) {
       _ip = ip;
       return this;
     }
 
-    public Builder setHostname(@Nonnull String hostname) {
+    public Builder setHostname(String hostname) {
       this._hostname = hostname;
       return this;
     }
 
-    public Builder setVrfName(@Nonnull String vrfName) {
+    public Builder setVrfName(String vrfName) {
       this._vrfName = vrfName;
       return this;
     }
 
-    public Builder setPassive(Boolean passive) {
+    public Builder setPassive(boolean passive) {
       this._isPassive = passive;
       return this;
     }
 
     public EigrpNeighborConfig build() {
       checkArgument(_asn != null, "EigrpNeighborConfig missing %s", PROP_ASN);
+      checkArgument(_exportPolicy != null, "EigrpNeighborConfig missing %s", PROP_EXPORT_POLICY);
       checkArgument(_interfaceName != null, "EigrpNeighborConfig missing %s", PROP_INTERFACE);
       checkArgument(_ip != null, "EigrpNeighborConfig missing %s", PROP_IP);
       checkArgument(_hostname != null, "EigrpNeighborConfig missing %s", PROP_HOSTNAME);

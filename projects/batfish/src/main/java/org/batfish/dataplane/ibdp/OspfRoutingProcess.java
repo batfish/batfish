@@ -22,7 +22,6 @@ import java.util.stream.Stream;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
-import org.batfish.common.BatfishException;
 import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.AbstractRouteBuilder;
 import org.batfish.datamodel.AbstractRouteDecorator;
@@ -1281,10 +1280,6 @@ final class OspfRoutingProcess implements RoutingProcess<OspfTopology, OspfRoute
 
     // Routing policy must always set OSPF metric type, otherwise we don't know which type of route
     // to build
-    if (outputRouteBuilder.getOspfMetricType() == null) {
-      throw new BatfishException(
-          "missing ospf metric, network: " + outputRouteBuilder.getNetwork());
-    }
     assert outputRouteBuilder.getOspfMetricType() != null;
 
     outputRouteBuilder
