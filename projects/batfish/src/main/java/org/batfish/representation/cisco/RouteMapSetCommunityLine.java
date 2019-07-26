@@ -31,9 +31,4 @@ public class RouteMapSetCommunityLine extends RouteMapSetLine {
   public List<Long> getCommunities() {
     return _communities;
   }
-
-  @Override
-  public RouteMapSetType getType() {
-    return RouteMapSetType.COMMUNITY;
-  }
 }

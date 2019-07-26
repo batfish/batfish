@@ -17,6 +17,11 @@ import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasInterfaces
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasNumReferrers;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasRouteFilterLists;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasUndefinedReference;
+import static org.batfish.datamodel.matchers.HsrpGroupMatchers.hasHelloTime;
+import static org.batfish.datamodel.matchers.HsrpGroupMatchers.hasHoldTime;
+import static org.batfish.datamodel.matchers.HsrpGroupMatchers.hasPreempt;
+import static org.batfish.datamodel.matchers.HsrpGroupMatchers.hasPriority;
+import static org.batfish.datamodel.matchers.HsrpGroupMatchers.hasTrackActions;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasAddress;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasAllAddresses;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasBandwidth;
@@ -24,6 +29,8 @@ import static org.batfish.datamodel.matchers.InterfaceMatchers.hasChannelGroup;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasChannelGroupMembers;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasDependencies;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasDescription;
+import static org.batfish.datamodel.matchers.InterfaceMatchers.hasHsrpGroup;
+import static org.batfish.datamodel.matchers.InterfaceMatchers.hasHsrpVersion;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasInterfaceType;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasMtu;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasSpeed;
@@ -60,13 +67,14 @@ import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
-import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Range;
 import java.io.IOException;
@@ -102,6 +110,7 @@ import org.batfish.datamodel.NamedPort;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.RouteFilterLine;
 import org.batfish.datamodel.RouteFilterList;
+import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.SwitchportMode;
 import org.batfish.datamodel.TcpFlags;
@@ -109,13 +118,21 @@ import org.batfish.datamodel.UniverseIpSpace;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
 import org.batfish.datamodel.bgp.RouteDistinguisher;
 import org.batfish.datamodel.bgp.community.StandardCommunity;
+import org.batfish.datamodel.matchers.HsrpGroupMatchers;
 import org.batfish.datamodel.matchers.RouteFilterListMatchers;
 import org.batfish.datamodel.matchers.VrfMatchers;
+import org.batfish.datamodel.tracking.DecrementPriority;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
 import org.batfish.representation.cisco_nxos.ActionIpAccessListLine;
 import org.batfish.representation.cisco_nxos.AddrGroupIpAddressSpec;
 import org.batfish.representation.cisco_nxos.AddressFamily;
+import org.batfish.representation.cisco_nxos.BgpGlobalConfiguration;
+import org.batfish.representation.cisco_nxos.BgpRedistributionPolicy;
+import org.batfish.representation.cisco_nxos.BgpVrfConfiguration;
+import org.batfish.representation.cisco_nxos.BgpVrfIpv4AddressFamilyConfiguration;
+import org.batfish.representation.cisco_nxos.BgpVrfL2VpnEvpnAddressFamilyConfiguration;
+import org.batfish.representation.cisco_nxos.BgpVrfL2VpnEvpnAddressFamilyConfiguration.RetainRouteType;
 import org.batfish.representation.cisco_nxos.CiscoNxosConfiguration;
 import org.batfish.representation.cisco_nxos.CiscoNxosInterfaceType;
 import org.batfish.representation.cisco_nxos.CiscoNxosStructureType;
@@ -123,9 +140,11 @@ import org.batfish.representation.cisco_nxos.DefaultVrfOspfProcess;
 import org.batfish.representation.cisco_nxos.Evpn;
 import org.batfish.representation.cisco_nxos.EvpnVni;
 import org.batfish.representation.cisco_nxos.FragmentsBehavior;
+import org.batfish.representation.cisco_nxos.HsrpGroup;
 import org.batfish.representation.cisco_nxos.IcmpOptions;
 import org.batfish.representation.cisco_nxos.Interface;
 import org.batfish.representation.cisco_nxos.InterfaceAddressWithAttributes;
+import org.batfish.representation.cisco_nxos.InterfaceHsrp;
 import org.batfish.representation.cisco_nxos.IpAccessList;
 import org.batfish.representation.cisco_nxos.IpAccessListLine;
 import org.batfish.representation.cisco_nxos.IpAddressSpec;
@@ -139,6 +158,7 @@ import org.batfish.representation.cisco_nxos.Layer3Options;
 import org.batfish.representation.cisco_nxos.LiteralIpAddressSpec;
 import org.batfish.representation.cisco_nxos.LiteralPortSpec;
 import org.batfish.representation.cisco_nxos.Nve;
+import org.batfish.representation.cisco_nxos.Nve.HostReachabilityProtocol;
 import org.batfish.representation.cisco_nxos.Nve.IngressReplicationProtocol;
 import org.batfish.representation.cisco_nxos.NveVni;
 import org.batfish.representation.cisco_nxos.OspfArea;
@@ -244,6 +264,12 @@ public final class CiscoNxosGrammarTest {
   }
 
   @Test
+  public void testAaaParsing() {
+    // TODO: make into extraction test
+    assertThat(parseVendorConfig("nxos_aaa"), notNullValue());
+  }
+
+  @Test
   public void testBannerExtraction() {
     String bannerHostname = "nxos_banner";
     String bannerEmptyHostname = "nxos_banner_empty";
@@ -268,7 +294,57 @@ public final class CiscoNxosGrammarTest {
   }
 
   @Test
-  public void testEvpn() {
+  public void testClassMapParsing() {
+    // TODO: make into an extraction test
+    assertThat(parseVendorConfig("nxos_class_map"), notNullValue());
+  }
+
+  @Test
+  public void testBgpExtraction() {
+    CiscoNxosConfiguration vc = parseVendorConfig("nxos_bgp");
+    BgpGlobalConfiguration bgpGlobal = vc.getBgpGlobalConfiguration();
+    assertThat(bgpGlobal, notNullValue());
+    assertThat(bgpGlobal.getLocalAs(), equalTo(1L));
+
+    assertThat(bgpGlobal.getVrfs(), hasKeys(DEFAULT_VRF_NAME));
+    {
+      BgpVrfConfiguration vrf = bgpGlobal.getOrCreateVrf(DEFAULT_VRF_NAME);
+
+      BgpVrfIpv4AddressFamilyConfiguration ipv4u = vrf.getIpv4UnicastAddressFamily();
+      assertThat(ipv4u, notNullValue());
+      assertThat(
+          ipv4u.getRedistributionPolicy(RoutingProtocol.CONNECTED),
+          equalTo(new BgpRedistributionPolicy("DIR_MAP", null)));
+      assertThat(
+          ipv4u.getRedistributionPolicy(RoutingProtocol.OSPF),
+          equalTo(new BgpRedistributionPolicy("OSPF_MAP", "ospf_proc")));
+
+      BgpVrfL2VpnEvpnAddressFamilyConfiguration l2vpn = vrf.getL2VpnEvpnAddressFamily();
+      assertThat(l2vpn, notNullValue());
+      assertThat(l2vpn.getRetainMode(), equalTo(RetainRouteType.ROUTE_MAP));
+      assertThat(l2vpn.getRetainRouteMap(), equalTo("RETAIN_MAP"));
+    }
+  }
+
+  /** Like {@link #testBgpExtraction()}, but for second variants of global parameters. */
+  @Test
+  public void testBgpExtraction2() {
+    CiscoNxosConfiguration vc = parseVendorConfig("nxos_bgp_2");
+
+    BgpGlobalConfiguration bgpGlobal = vc.getBgpGlobalConfiguration();
+    assertThat(bgpGlobal, notNullValue());
+    assertThat(bgpGlobal.getVrfs(), hasKeys(DEFAULT_VRF_NAME));
+    {
+      BgpVrfConfiguration vrf = bgpGlobal.getOrCreateVrf(DEFAULT_VRF_NAME);
+
+      BgpVrfL2VpnEvpnAddressFamilyConfiguration l2vpn = vrf.getL2VpnEvpnAddressFamily();
+      assertThat(l2vpn, notNullValue());
+      assertThat(l2vpn.getRetainMode(), equalTo(RetainRouteType.ALL));
+    }
+  }
+
+  @Test
+  public void testEvpnExtraction() {
     CiscoNxosConfiguration vc = parseVendorConfig("nxos_evpn");
     Evpn evpn = vc.getEvpn();
     assertThat(evpn, not(nullValue()));
@@ -349,6 +425,61 @@ public final class CiscoNxosGrammarTest {
   }
 
   @Test
+  public void testInterfaceHsrpConversion() throws IOException {
+    String hostname = "nxos_interface_hsrp";
+    String ifaceName = "Ethernet1/1";
+    Configuration c = parseConfig(hostname);
+
+    assertThat(c.getAllInterfaces(), hasKeys(ifaceName));
+    {
+      org.batfish.datamodel.Interface iface = c.getAllInterfaces().get(ifaceName);
+      assertThat(iface, hasHsrpVersion("2"));
+      assertThat(
+          iface,
+          hasHsrpGroup(
+              2,
+              allOf(
+                  hasHelloTime(250),
+                  hasHoldTime(750),
+                  HsrpGroupMatchers.hasIp(Ip.parse("192.0.2.1")),
+                  hasPreempt(),
+                  hasPriority(105),
+                  hasTrackActions(
+                      equalTo(
+                          ImmutableSortedMap.of(
+                              "1", new DecrementPriority(10), "2", new DecrementPriority(20)))))));
+    }
+  }
+
+  @Test
+  public void testInterfaceHsrpExtraction() {
+    String hostname = "nxos_interface_hsrp";
+    String ifaceName = "Ethernet1/1";
+    CiscoNxosConfiguration vc = parseVendorConfig(hostname);
+
+    assertThat(vc.getInterfaces(), hasKeys(ifaceName));
+    {
+      Interface iface = vc.getInterfaces().get(ifaceName);
+      InterfaceHsrp hsrp = iface.getHsrp();
+      assertThat(hsrp, notNullValue());
+      assertThat(hsrp.getDelayReloadSeconds(), equalTo(60));
+      assertThat(hsrp.getVersion(), equalTo(2));
+      assertThat(hsrp.getGroups(), hasKeys(2));
+      HsrpGroup group = hsrp.getGroups().get(2);
+      assertThat(group.getIp(), equalTo(Ip.parse("192.0.2.1")));
+      assertThat(group.getPreemptDelayMinimumSeconds(), equalTo(30));
+      assertThat(group.getPreemptDelayReloadSeconds(), equalTo(40));
+      assertThat(group.getPreemptDelaySyncSeconds(), equalTo(50));
+      assertThat(group.getPriority(), equalTo(105));
+      assertThat(group.getHelloIntervalMs(), equalTo(250));
+      assertThat(group.getHoldTimeMs(), equalTo(750));
+      assertThat(group.getTracks(), hasKeys(1, 2));
+      assertThat(group.getTracks().get(1).getDecrement(), equalTo(10));
+      assertThat(group.getTracks().get(2).getDecrement(), equalTo(20));
+    }
+  }
+
+  @Test
   public void testInterfaceIpAddressConversion() throws IOException {
     String hostname = "nxos_interface_ip_address";
     String ifaceName = "Ethernet1/1";
@@ -386,6 +517,12 @@ public final class CiscoNxosGrammarTest {
 
     assertThat(iface.getAddress(), equalTo(primary));
     assertThat(iface.getSecondaryAddresses(), containsInAnyOrder(secondary2, secondary3));
+  }
+
+  @Test
+  public void testInterfaceMulticastParsing() {
+    // TODO: make into extraction test
+    assertThat(parseVendorConfig("nxos_interface_multicast"), notNullValue());
   }
 
   @Test
@@ -1599,46 +1736,69 @@ public final class CiscoNxosGrammarTest {
       assertThat(nve.getSourceInterface(), equalTo("loopback0"));
       assertThat(nve.getGlobalIngressReplicationProtocol(), nullValue());
       assertTrue(nve.isGlobalSuppressArp());
+      assertThat(nve.getHostReachabilityProtocol(), equalTo(HostReachabilityProtocol.BGP));
+      assertThat(nve.getMulticastGroupL2(), equalTo(Ip.parse("233.0.0.0")));
+      assertThat(nve.getMulticastGroupL3(), equalTo(Ip.parse("234.0.0.0")));
       int vni = 10001;
+      assertThat(nve.getMemberVnis(), hasKeys(vni));
+      NveVni vniConfig = nve.getMemberVni(vni);
+      assertThat(vniConfig.getVni(), equalTo(vni));
+      assertThat(vniConfig.getSuppressArp(), nullValue());
+      assertThat(
+          vniConfig.getIngressReplicationProtocol(), equalTo(IngressReplicationProtocol.BGP));
+      assertThat(vniConfig.getMcastGroup(), equalTo(Ip.parse("235.0.0.0")));
+    }
+    {
+      Nve nve = nves.get(2);
+      assertFalse(nve.isShutdown());
+      assertThat(nve.getSourceInterface(), equalTo("loopback0"));
+      assertThat(
+          nve.getGlobalIngressReplicationProtocol(), equalTo(IngressReplicationProtocol.BGP));
+      assertTrue(nve.isGlobalSuppressArp());
+      assertThat(nve.getHostReachabilityProtocol(), equalTo(HostReachabilityProtocol.BGP));
+      int vni = 20001;
       assertThat(nve.getMemberVnis(), hasKeys(vni));
       NveVni vniConfig = nve.getMemberVni(vni);
       assertThat(vniConfig.getVni(), equalTo(vni));
       assertThat(vniConfig.getSuppressArp(), equalTo(Boolean.FALSE));
       assertThat(vniConfig.getIngressReplicationProtocol(), nullValue());
       assertThat(vniConfig.getMcastGroup(), nullValue());
-    }
-    {
-      Nve nve = nves.get(2);
-      assertFalse(nve.isShutdown());
-      assertThat(nve.getSourceInterface(), equalTo("loopback0"));
-      assertThat(nve.getGlobalIngressReplicationProtocol(), nullValue());
-      assertTrue(nve.isGlobalSuppressArp());
+      assertThat(nve.getMulticastGroupL2(), nullValue());
+      assertThat(nve.getMulticastGroupL3(), nullValue());
     }
     {
       Nve nve = nves.get(3);
-      assertFalse(nve.isShutdown());
-      assertThat(nve.getSourceInterface(), equalTo("loopback0"));
+      assertTrue(nve.isShutdown());
+      assertThat(nve.getSourceInterface(), nullValue());
       assertThat(nve.getGlobalIngressReplicationProtocol(), nullValue());
-      assertTrue(nve.isGlobalSuppressArp());
+      assertFalse(nve.isGlobalSuppressArp());
+      assertThat(nve.getHostReachabilityProtocol(), nullValue());
       assertThat(nve.getMulticastGroupL2(), nullValue());
       assertThat(nve.getMulticastGroupL3(), nullValue());
+      int vni = 30001;
+      assertThat(nve.getMemberVnis(), hasKeys(vni));
+      NveVni vniConfig = nve.getMemberVni(vni);
+      assertThat(vniConfig.getSuppressArp(), nullValue());
+      assertThat(
+          vniConfig.getIngressReplicationProtocol(), equalTo(IngressReplicationProtocol.STATIC));
+      assertThat(vniConfig.getMcastGroup(), nullValue());
     }
     {
       Nve nve = nves.get(4);
       assertTrue(nve.isShutdown());
       assertThat(nve.getSourceInterface(), equalTo("loopback4"));
-      assertThat(
-          nve.getGlobalIngressReplicationProtocol(), equalTo(IngressReplicationProtocol.BGP));
+      assertThat(nve.getGlobalIngressReplicationProtocol(), nullValue());
       assertFalse(nve.isGlobalSuppressArp());
-      assertEquals(nve.getMulticastGroupL2(), Ip.parse("233.0.0.0"));
-      assertEquals(nve.getMulticastGroupL3(), Ip.parse("234.0.0.0"));
+      assertThat(nve.getMulticastGroupL2(), nullValue());
+      assertThat(nve.getMulticastGroupL3(), nullValue());
       int vni = 40001;
       assertThat(nve.getMemberVnis(), hasKeys(vni));
       NveVni vniConfig = nve.getMemberVni(vni);
       assertThat(vniConfig.getSuppressArp(), nullValue());
       assertThat(
           vniConfig.getIngressReplicationProtocol(), equalTo(IngressReplicationProtocol.STATIC));
-      assertThat(vniConfig.getMcastGroup(), equalTo(Ip.parse("235.0.0.0")));
+      assertThat(vniConfig.getMcastGroup(), nullValue());
+      assertThat(vniConfig.getPeerIps(), equalTo(ImmutableSet.of(Ip.parse("4.0.0.1"))));
     }
   }
 
@@ -1997,6 +2157,12 @@ public final class CiscoNxosGrammarTest {
       assertThat(ospf, notNullValue());
       assertThat(ospf.getNetwork(), equalTo(POINT_TO_POINT));
     }
+  }
+
+  @Test
+  public void testPolicyMapParsing() {
+    // TODO: make into an extraction test
+    assertThat(parseVendorConfig("nxos_policy_map"), notNullValue());
   }
 
   @Test
@@ -2359,6 +2525,12 @@ public final class CiscoNxosGrammarTest {
   }
 
   @Test
+  public void testRoleParsing() {
+    // TODO: make into ref test
+    assertThat(parseVendorConfig("nxos_role"), notNullValue());
+  }
+
+  @Test
   public void testRouteMapExtraction() {
     String hostname = "nxos_route_map";
     CiscoNxosConfiguration vc = parseVendorConfig(hostname);
@@ -2617,6 +2789,12 @@ public final class CiscoNxosGrammarTest {
       assertThat(set.getTag(), equalTo(1L));
     }
     // TODO: route-map 'continue' extraction
+  }
+
+  @Test
+  public void testSnmpServerParsing() {
+    // TODO: make into extraction test
+    assertThat(parseVendorConfig("nxos_snmp_server"), notNullValue());
   }
 
   @Test

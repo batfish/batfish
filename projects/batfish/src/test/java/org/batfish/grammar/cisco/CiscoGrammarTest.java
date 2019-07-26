@@ -240,6 +240,7 @@ import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.hasKey;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.in;
+import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.notNullValue;
@@ -390,6 +391,7 @@ import org.batfish.datamodel.routing_policy.expr.MatchProtocol;
 import org.batfish.datamodel.routing_policy.expr.NamedPrefixSet;
 import org.batfish.datamodel.routing_policy.expr.RangeCommunityHalf;
 import org.batfish.datamodel.routing_policy.statement.If;
+import org.batfish.datamodel.routing_policy.statement.SetEigrpMetric;
 import org.batfish.datamodel.routing_policy.statement.Statements;
 import org.batfish.datamodel.tracking.DecrementPriority;
 import org.batfish.datamodel.tracking.TrackInterface;
@@ -6347,5 +6349,35 @@ public class CiscoGrammarTest {
         c.getRoutingPolicies()
             .get("rm_standard_permit_permit")
             .process(route11, Bgpv4Route.builder(), peerAddress, DEFAULT_VRF_NAME, Direction.OUT));
+  }
+
+  @Test
+  public void testSetMetricEigrp() throws IOException {
+    Configuration c = parseConfig("ios-route-map-set-metric-eigrp");
+
+    assertThat(
+        c.getRoutingPolicies().get("rm_set_metric").getStatements(),
+        // Being intentionally lax here because pretty sure conversion is busted.
+        // TODO: update when convinced eigrp settings have correct values
+        hasItem(instanceOf(SetEigrpMetric.class)));
+  }
+
+  @Test
+  public void testEigrpOverTunnels() throws IOException {
+    String snapshot = "ios-tunnels-eigrp";
+
+    Batfish batfish =
+        BatfishTestUtils.getBatfishFromTestrigText(
+            TestrigText.builder()
+                .setConfigurationText(
+                    TESTRIGS_PREFIX + snapshot, ImmutableList.of("advertiser", "receiver"))
+                .build(),
+            _folder);
+
+    batfish.computeDataPlane();
+
+    DataPlane dp = batfish.loadDataPlane();
+    Set<AbstractRoute> routes = dp.getRibs().get("receiver").get(DEFAULT_VRF_NAME).getRoutes();
+    assertThat(routes, hasItem(hasPrefix(Prefix.parse("99.99.99.99/32"))));
   }
 }

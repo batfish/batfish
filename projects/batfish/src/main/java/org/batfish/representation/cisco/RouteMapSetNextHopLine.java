@@ -26,9 +26,4 @@ public class RouteMapSetNextHopLine extends RouteMapSetLine {
   public List<Ip> getNextHops() {
     return _nextHops;
   }
-
-  @Override
-  public RouteMapSetType getType() {
-    return RouteMapSetType.NEXT_HOP;
-  }
 }

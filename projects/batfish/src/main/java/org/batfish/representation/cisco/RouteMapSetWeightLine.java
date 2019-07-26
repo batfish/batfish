@@ -21,9 +21,4 @@ public class RouteMapSetWeightLine extends RouteMapSetLine {
       List<Statement> statements, CiscoConfiguration cc, Configuration c, Warnings w) {
     statements.add(new SetWeight(new LiteralInt(_weight)));
   }
-
-  @Override
-  public RouteMapSetType getType() {
-    return RouteMapSetType.WEIGHT;
-  }
 }

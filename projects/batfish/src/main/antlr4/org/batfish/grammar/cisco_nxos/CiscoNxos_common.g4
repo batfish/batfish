@@ -26,6 +26,12 @@ cisco_nxos_password
   )
 ;
 
+class_map_name
+:
+// 1-40 characters
+  WORD
+;
+
 // Shared NX-OS syntax for route-target, redistribution, route leak, etc.
 both_export_import
 :
@@ -37,6 +43,12 @@ both_export_import
 double_quoted_string
 :
   DOUBLE_QUOTE text = quoted_text? DOUBLE_QUOTE
+;
+
+group_name
+:
+// 1-32 characters
+  WORD
 ;
 
 interface_address
@@ -144,6 +156,12 @@ ospf_area_id
   | ip = ip_address
 ;
 
+policy_map_name
+:
+// 1-40 characters
+  WORD
+;
+
 quoted_text
 :
   QUOTED_TEXT
@@ -210,8 +228,7 @@ template_name
 track_object_number
 :
 // 1-512
-  UINT8
-  | UINT16
+  uint16
 ;
 
 uint8
@@ -230,6 +247,18 @@ uint32
   UINT8
   | UINT16
   | UINT32
+;
+
+user_name
+:
+// 1-32 characters
+  WORD
+;
+
+user_password
+:
+  WORD
+// 1-127 characters
 ;
 
 vlan_id
