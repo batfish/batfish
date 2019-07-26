@@ -93,7 +93,7 @@ public final class Interface implements Serializable {
    * type}.
    */
   public static @Nonnull Interface newNonVlanInterface(
-      String name, String parentInterface, CiscoNxosInterfaceType type) {
+      String name, @Nullable String parentInterface, CiscoNxosInterfaceType type) {
     checkArgument(type != CiscoNxosInterfaceType.VLAN, "Expected non-VLAN interface type");
     return new Interface(name, parentInterface, type, null);
   }
@@ -112,6 +112,7 @@ public final class Interface implements Serializable {
   private final @Nonnull Set<String> _declaredNames;
   private @Nullable String _description;
   private @Nullable Integer _encapsulationVlan;
+  private @Nullable InterfaceHsrp _hsrp;
   private @Nullable Integer _mtu;
   private final @Nonnull String _name;
   private @Nullable Integer _nativeVlan;
@@ -182,6 +183,17 @@ public final class Interface implements Serializable {
 
   public @Nullable Integer getEncapsulationVlan() {
     return _encapsulationVlan;
+  }
+
+  public @Nullable InterfaceHsrp getHsrp() {
+    return _hsrp;
+  }
+
+  public @Nonnull InterfaceHsrp getOrCreateHsrp() {
+    if (_hsrp == null) {
+      _hsrp = new InterfaceHsrp();
+    }
+    return _hsrp;
   }
 
   public @Nullable Integer getMtu() {

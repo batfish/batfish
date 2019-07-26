@@ -6,128 +6,14 @@ options {
   tokenVocab = CiscoNxosLexer;
 }
 
-router_bgp
-:
-  BGP asn = bgp_asn NEWLINE
-  (
-    rb_enforce_first_as
-    | rb_event_history
-    | rb_fast_external_fallover
-    | rb_flush_routes
-    | rb_isolate
-    | rb_no_enforce_first_as
-    | rb_proc_vrf_common
-    | rb_shutdown
-    | rb_template_peer
-    | rb_template_peer_policy
-    | rb_template_peer_session
-    | rb_vrf
-  )*
-;
+////////////////////////////
+///// VARIOUS SUBTYPES /////
+////////////////////////////
 
-rb_proc_vrf_common
+bgp_distance
 :
-  rb_address_family
-  | rb_bestpath
-  | rb_cluster_id
-  | rb_confederation_identifier
-  | rb_confederation_peers
-  | rb_graceful_restart
-  | rb_graceful_restart_helper
-  | rb_log_neighbor_changes
-  | rb_maxas_limit
-  | rb_neighbor
-  | rb_reconnect_interval
-  | rb_router_id
-  | rb_suppress_fib_pending
-  | rb_timers_bestpath_limit
-  | rb_timers_bgp
-  | rb_timers_prefix_peer_timeout
-  | rb_timers_prefix_peer_wait
-
-;
-
-rb_address_family
-:
-  ADDRESS_FAMILY first =
-  (
-    IPV4
-    | IPV6
-    | L2VPN
-  ) second = (EVPN | MULTICAST | MVPN | UNICAST) NEWLINE rb_af_inner*
-;
-
-rb_af_inner
-:
-  rb_af_additional_paths
-  | rb_af_advertise
-  | rb_af_aggregate_address
-  | rb_af_client_to_client
-  | rb_af_dampen_igp_metric
-  | rb_af_dampening
-  | rb_af_default_information
-  | rb_af_default_metric
-  | rb_af_distance
-  | rb_af_inject_map
-  | rb_af_maximum_paths
-  | rb_af_network
-  | rb_af_nexthop_route_map
-  | rb_af_nexthop_trigger_delay
-  | rb_af_redistribute_direct
-  | rb_af_redistribute_eigrp
-  | rb_af_redistribute_isis
-  | rb_af_redistribute_lisp
-  | rb_af_redistribute_ospf
-  | rb_af_redistribute_ospfv3
-  | rb_af_redistribute_rip
-  | rb_af_redistribute_static
-  | rb_af_suppress_inactive
-  | rb_af_table_map
-  | rb_af_wait_igp_convergence
-;
-
-rb_af_additional_paths
-:
-  ADDITIONAL_PATHS
-  (
-    INSTALL BACKUP
-    | RECEIVE
-    | SELECTION ROUTE_MAP mapname = route_map_name
-    | SEND
-  ) NEWLINE
-;
-
-rb_af_advertise
-:
-  ADVERTISE L2VPN EVPN NEWLINE
-;
-
-rb_af_aggregate_address
-:
-  AGGREGATE_ADDRESS
-  (
-    network = route_network
-    | prefix6 = ipv6_prefix
-  ) rb_af_aa_tail* NEWLINE
-;
-
-rb_af_aa_tail
-:
-  ADVERTISE_MAP mapname = route_map_name
-  | AS_SET
-  | ATTRIBUTE_MAP mapname = route_map_name
-  | SUMMARY_ONLY
-  | SUPPRESS_MAP mapname = route_map_name
-;
-
-rb_af_client_to_client
-:
-  CLIENT_TO_CLIENT REFLECTION NEWLINE
-;
-
-rb_af_dampen_igp_metric
-:
-  DAMPEN_IGP_METRIC interval_secs = dampen_igp_metric_interval NEWLINE
+// 1-255
+  UINT8
 ;
 
 dampen_igp_metric_interval
@@ -137,19 +23,15 @@ dampen_igp_metric_interval
   | UINT16
 ;
 
-rb_af_dampening
-:
-  DAMPENING
-  (
-    half_life = decay_half_life start_reuse = start_reuse_val start_suppress =
-    start_suppress_val max_suppress = uint8
-    | ROUTE_MAP mapname = route_map_name
-  ) NEWLINE
-;
-
 decay_half_life
 :
 // 1-45
+  UINT8
+;
+
+maximum_paths
+:
+// 1-64
   UINT8
 ;
 
@@ -167,34 +49,304 @@ start_suppress_val
   | UINT16
 ;
 
-rb_af_default_information
+/////////////////////////////
+///// Actual BGP config /////
+/////////////////////////////
+
+router_bgp
+:
+  BGP asn = bgp_asn NEWLINE
+  (
+    rb_address_family
+    | rb_enforce_first_as
+    | rb_event_history
+    | rb_fast_external_fallover
+    | rb_flush_routes
+    | rb_isolate
+    | rb_no_enforce_first_as
+    | rb_proc_vrf_common
+    | rb_shutdown
+    | rb_template
+    | rb_vrf
+  )*
+;
+
+rb_proc_vrf_common
+:
+  rb_bestpath
+  | rb_cluster_id
+  | rb_confederation
+  | rb_graceful_restart
+  | rb_graceful_restart_helper
+  | rb_log_neighbor_changes
+  | rb_maxas_limit
+  | rb_neighbor
+  | rb_reconnect_interval
+  | rb_router_id
+  | rb_suppress_fib_pending
+  | rb_timers
+;
+
+rb_address_family
+:
+  ADDRESS_FAMILY
+  (
+    rb_af_ipv4
+    | rb_af_ipv6
+    | rb_af_l2vpn
+    | rb_af_link_state
+    | rb_af_vpnv4
+    | rb_af_vpnv6
+  )
+;
+
+rb_af_ipv4
+:
+  IPV4
+  (
+    rb_af_ipv4_multicast
+    | rb_af_ipv4_mvpn
+    | rb_af_ipv4_unicast
+  )
+;
+
+rb_af_ipv4_multicast
+:
+  MULTICAST NEWLINE
+  rb_af4_inner*
+;
+
+rb_af_ipv4_mvpn
+:
+  MVPN NEWLINE
+  // todo
+;
+
+rb_af_ipv4_unicast
+:
+  UNICAST NEWLINE
+  rb_af4_inner*
+;
+
+rb_af_ipv6
+:
+  IPV6
+  (
+    rb_af_ipv6_multicast
+    | rb_af_ipv6_mvpn
+    | rb_af_ipv6_unicast
+  )
+;
+
+rb_af_ipv6_multicast
+:
+  MULTICAST NEWLINE
+  rb_af6_inner*
+;
+
+rb_af_ipv6_mvpn
+:
+  MVPN NEWLINE
+  // todo
+;
+
+rb_af_ipv6_unicast
+:
+  UNICAST NEWLINE
+  rb_af6_inner*
+;
+
+rb_af_l2vpn
+:
+  L2VPN EVPN NEWLINE
+  (
+    rb_afl2v_retain
+  )*
+;
+
+rb_afl2v_retain
+:
+  RETAIN ROUTE_TARGET
+  (
+    ALL
+    | ROUTE_MAP map = route_map_name
+  ) NEWLINE
+;
+
+rb_af_link_state
+:
+  LINK_STATE NEWLINE
+  // todo
+;
+
+rb_af_vpnv4
+:
+  VPNV4 UNICAST NEWLINE
+  // todo
+;
+
+rb_af_vpnv6
+:
+  VPNV6 UNICAST NEWLINE
+  // todo
+;
+
+// Common to ipv4 unicast and ipv4 multicast
+rb_af4_inner
+:
+  // IPv4 ONLY
+  rb_af4_aggregate_address
+  | rb_af4_network
+  | rb_af4_redistribute
+  // IPv4 or IPv6
+  | rb_afip_common
+;
+
+rb_af4_aggregate_address
+:
+  AGGREGATE_ADDRESS network = route_network rb_afip_aa_tail* NEWLINE
+;
+
+rb_af4_network
+:
+  NETWORK network = route_network (ROUTE_MAP mapname = route_map_name)? NEWLINE
+;
+
+rb_af4_redistribute
+:
+  REDISTRIBUTE
+  (
+    rb_af4_redistribute_ospf        // v4 only
+    | rb_afip_redistribute_common
+  )
+;
+
+rb_af4_redistribute_ospf
+:
+  OSPF source_tag = router_ospf_name ROUTE_MAP mapname = route_map_name NEWLINE
+;
+
+// Common to ipv6 unicast and ipv6 multicast
+rb_af6_inner
+:
+  // IPv6 ONLY
+  rb_af6_aggregate_address
+  | rb_af6_network
+  | rb_af6_redistribute
+  // IPv4 or IPv6
+  | rb_afip_common
+;
+
+rb_af6_aggregate_address
+:
+  AGGREGATE_ADDRESS network = ipv6_prefix rb_afip_aa_tail* NEWLINE
+;
+
+rb_af6_network
+:
+  NETWORK network = ipv6_prefix (ROUTE_MAP mapname = route_map_name)? NEWLINE
+;
+
+rb_af6_redistribute
+:
+  REDISTRIBUTE
+  (
+    rb_af6_redistribute_ospfv3  // v6 only
+    | rb_afip_redistribute_common
+  )
+;
+
+rb_af6_redistribute_ospfv3
+:
+  OSPFV3 source_tag = WORD ROUTE_MAP mapname = route_map_name NEWLINE
+;
+
+// Common to IPv4 or IPv6, unicast or multicast
+rb_afip_common
+:
+  rb_afip_additional_paths
+  | rb_afip_advertise
+  | rb_afip_client_to_client
+  | rb_afip_dampen_igp_metric
+  | rb_afip_dampening
+  | rb_afip_default_information
+  | rb_afip_default_metric
+  | rb_afip_distance
+  | rb_afip_inject_map
+  | rb_afip_maximum_paths
+  | rb_afip_nexthop
+  | rb_afip_suppress_inactive
+  | rb_afip_table_map
+  | rb_afip_wait_igp_convergence
+;
+
+rb_afip_additional_paths
+:
+  ADDITIONAL_PATHS
+  (
+    INSTALL BACKUP
+    | RECEIVE
+    | SELECTION ROUTE_MAP mapname = route_map_name
+    | SEND
+  ) NEWLINE
+;
+
+rb_afip_advertise
+:
+  ADVERTISE L2VPN EVPN NEWLINE
+;
+
+rb_afip_aa_tail
+:
+  ADVERTISE_MAP mapname = route_map_name
+  | AS_SET
+  | ATTRIBUTE_MAP mapname = route_map_name
+  | SUMMARY_ONLY
+  | SUPPRESS_MAP mapname = route_map_name
+;
+
+rb_afip_client_to_client
+:
+  CLIENT_TO_CLIENT REFLECTION NEWLINE
+;
+
+rb_afip_dampen_igp_metric
+:
+  DAMPEN_IGP_METRIC interval_secs = dampen_igp_metric_interval NEWLINE
+;
+
+rb_afip_dampening
+:
+  DAMPENING
+  (
+    half_life = decay_half_life start_reuse = start_reuse_val start_suppress =
+    start_suppress_val max_suppress = uint8
+    | ROUTE_MAP mapname = route_map_name
+  ) NEWLINE
+;
+
+rb_afip_default_information
 :
   DEFAULT_INFORMATION ORIGINATE NEWLINE
 ;
 
-rb_af_default_metric
+rb_afip_default_metric
 :
   DEFAULT_METRIC metric = uint32 NEWLINE
 ;
 
-rb_af_distance
+rb_afip_distance
 :
   DISTANCE ebgp = bgp_distance ibgp = bgp_distance local = bgp_distance NEWLINE
 ;
 
-bgp_distance
-:
-// 1-255
-  UINT8
-;
-
-rb_af_inject_map
+rb_afip_inject_map
 :
   INJECT_MAP injectmap = route_map_name EXIST_MAP existmap = route_map_name
   COPY_ATTRIBUTES? NEWLINE
 ;
 
-rb_af_maximum_paths
+rb_afip_maximum_paths
 :
   MAXIMUM_PATHS
   (
@@ -203,92 +355,80 @@ rb_af_maximum_paths
   )? numpaths = maximum_paths NEWLINE
 ;
 
-maximum_paths
+rb_afip_nexthop
 :
-// 1-64
-  UINT8
-;
-
-rb_af_network
-:
-  NETWORK
+  NEXTHOP
   (
-    network = route_network
-    | prefix6 = ipv6_prefix
+    rb_afip_nexthop_route_map
+    | rb_afip_nexthop_trigger_delay
   )
-  (
-    ROUTE_MAP mapname = route_map_name
-  )? NEWLINE
 ;
 
-rb_af_nexthop_route_map
+rb_afip_nexthop_route_map
 :
-  NEXTHOP ROUTE_MAP mapname = route_map_name NEWLINE
+  ROUTE_MAP mapname = route_map_name NEWLINE
 ;
 
-rb_af_nexthop_trigger_delay
+rb_afip_nexthop_trigger_delay
 :
-  NEXTHOP TRIGGER_DELAY CRITICAL critical = uint32 NON_CRITICAL noncritical =
-  uint32 NEWLINE
+  TRIGGER_DELAY CRITICAL critical = uint32 NON_CRITICAL noncritical = uint32 NEWLINE
 ;
 
-rb_af_redistribute_direct
+rb_afip_redistribute_direct
 :
-  REDISTRIBUTE DIRECT ROUTE_MAP mapname = route_map_name NEWLINE
+   DIRECT ROUTE_MAP mapname = route_map_name NEWLINE
 ;
 
-rb_af_redistribute_eigrp
+rb_afip_redistribute_eigrp
 :
-  REDISTRIBUTE EIGRP source_tag = WORD ROUTE_MAP mapname = route_map_name
+  EIGRP source_tag = WORD ROUTE_MAP mapname = route_map_name
   NEWLINE
 ;
 
-rb_af_redistribute_isis
+rb_afip_redistribute_isis
 :
-  REDISTRIBUTE ISIS source_tag = WORD ROUTE_MAP mapname = route_map_name
+  ISIS source_tag = WORD ROUTE_MAP mapname = route_map_name
   NEWLINE
 ;
 
-rb_af_redistribute_lisp
+rb_afip_redistribute_lisp
 :
-  REDISTRIBUTE LISP ROUTE_MAP mapname = route_map_name NEWLINE
+  LISP ROUTE_MAP mapname = route_map_name NEWLINE
 ;
 
-rb_af_redistribute_ospf
+rb_afip_redistribute_rip
 :
-  REDISTRIBUTE OSPF source_tag = WORD ROUTE_MAP mapname = route_map_name
-  NEWLINE
+  RIP source_tag = WORD ROUTE_MAP mapname = route_map_name NEWLINE
 ;
 
-rb_af_redistribute_ospfv3
+rb_afip_redistribute_static
 :
-  REDISTRIBUTE OSPFV3 source_tag = WORD ROUTE_MAP mapname = route_map_name
-  NEWLINE
+  STATIC ROUTE_MAP mapname = route_map_name NEWLINE
 ;
 
-rb_af_redistribute_rip
-:
-  REDISTRIBUTE RIP source_tag = WORD ROUTE_MAP mapname = route_map_name NEWLINE
-;
-
-rb_af_redistribute_static
-:
-  REDISTRIBUTE STATIC ROUTE_MAP mapname = route_map_name NEWLINE
-;
-
-rb_af_suppress_inactive
+rb_afip_suppress_inactive
 :
   SUPPRESS_INACTIVE NEWLINE
 ;
 
-rb_af_table_map
+rb_afip_table_map
 :
   TABLE_MAP mapname = route_map_name FILTER? NEWLINE
 ;
 
-rb_af_wait_igp_convergence
+rb_afip_wait_igp_convergence
 :
   WAIT_IGP_CONVERGENCE NEWLINE
+;
+
+rb_afip_redistribute_common
+:
+  rb_afip_redistribute_direct
+  | rb_afip_redistribute_eigrp
+  | rb_afip_redistribute_isis
+  | rb_afip_redistribute_lisp
+  | rb_afip_redistribute_rip
+  | rb_afip_redistribute_static
 ;
 
 rb_bestpath
@@ -317,14 +457,23 @@ rb_cluster_id
   ) NEWLINE
 ;
 
+rb_confederation
+:
+  CONFEDERATION
+  (
+    rb_confederation_identifier
+    | rb_confederation_peers
+  )
+;
+
 rb_confederation_identifier
 :
-  CONFEDERATION IDENTIFIER asn = bgp_asn NEWLINE
+  IDENTIFIER asn = bgp_asn NEWLINE
 ;
 
 rb_confederation_peers
 :
-  CONFEDERATION PEERS asns += bgp_asn NEWLINE asns += bgp_asn+ NEWLINE
+  PEERS asns += bgp_asn NEWLINE asns += bgp_asn+ NEWLINE
 ;
 
 rb_enforce_first_as
@@ -878,24 +1027,45 @@ rb_suppress_fib_pending
   SUPPRESS_FIB_PENDING NEWLINE
 ;
 
+rb_template
+:
+  TEMPLATE
+  (
+    rb_template_peer
+    | rb_template_peer_policy
+    | rb_template_peer_session
+  )
+;
+
 rb_template_peer
 :
-  TEMPLATE PEER peer = template_name NEWLINE rb_n_inner*
+  PEER peer = template_name NEWLINE rb_n_inner*
 ;
 
 rb_template_peer_policy
 :
-  TEMPLATE PEER_POLICY policy = template_name NEWLINE rb_n_af_inner*
+  PEER_POLICY policy = template_name NEWLINE rb_n_af_inner*
 ;
 
 rb_template_peer_session
 :
-  TEMPLATE PEER_SESSION session = template_name NEWLINE rb_n_common*
+  PEER_SESSION session = template_name NEWLINE rb_n_common*
+;
+
+rb_timers
+:
+  TIMERS
+  (
+    rb_timers_bestpath_limit
+    | rb_timers_bgp
+    | rb_timers_prefix_peer_timeout
+    | rb_timers_prefix_peer_wait
+  )
 ;
 
 rb_timers_bestpath_limit
 :
-  TIMERS BESTPATH_LIMIT timeout_secs = bestpath_timeout ALWAYS? NEWLINE
+  BESTPATH_LIMIT timeout_secs = bestpath_timeout ALWAYS? NEWLINE
 ;
 
 bestpath_timeout
@@ -907,13 +1077,13 @@ bestpath_timeout
 
 rb_timers_bgp
 :
-  TIMERS BGP keepalive_secs = keepalive_interval holdtime_secs = holdtime
+  BGP keepalive_secs = keepalive_interval holdtime_secs = holdtime
   NEWLINE
 ;
 
 rb_timers_prefix_peer_timeout
 :
-  TIMERS PREFIX_PEER_TIMEOUT timeout_secs = prefix_peer_timeout NEWLINE
+  PREFIX_PEER_TIMEOUT timeout_secs = prefix_peer_timeout NEWLINE
 ;
 
 prefix_peer_timeout
@@ -925,7 +1095,7 @@ prefix_peer_timeout
 
 rb_timers_prefix_peer_wait
 :
-  TIMERS PREFIX_PEER_WAIT wait_secs = prefix_peer_wait_timer NEWLINE
+  PREFIX_PEER_WAIT wait_secs = prefix_peer_wait_timer NEWLINE
 ;
 
 prefix_peer_wait_timer
@@ -940,8 +1110,36 @@ rb_vrf
   VRF name = vrf_name NEWLINE
   (
     rb_proc_vrf_common
+    | rb_v_address_family
     | rb_v_local_as
   )*
+;
+
+rb_v_address_family
+:
+  ADDRESS_FAMILY
+  (
+    rb_vaf_ipv4
+    | rb_vaf_ipv6
+  )
+;
+
+rb_vaf_ipv4
+:
+  IPV4
+  (
+    rb_af_ipv4_multicast
+    | rb_af_ipv4_unicast
+  )
+;
+
+rb_vaf_ipv6
+:
+  IPV6
+  (
+    rb_af_ipv6_multicast
+    | rb_af_ipv6_unicast
+  )
 ;
 
 rb_v_local_as

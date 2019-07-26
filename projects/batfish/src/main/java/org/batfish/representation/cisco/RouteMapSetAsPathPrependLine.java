@@ -25,9 +25,4 @@ public class RouteMapSetAsPathPrependLine extends RouteMapSetLine {
   public List<AsExpr> getAsList() {
     return _asList;
   }
-
-  @Override
-  public RouteMapSetType getType() {
-    return RouteMapSetType.AS_PATH_PREPEND;
-  }
 }

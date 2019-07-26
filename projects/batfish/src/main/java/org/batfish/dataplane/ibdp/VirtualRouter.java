@@ -85,7 +85,6 @@ import org.batfish.datamodel.bgp.BgpTopology.EdgeId;
 import org.batfish.datamodel.bgp.community.Community;
 import org.batfish.datamodel.dataplane.rib.RibGroup;
 import org.batfish.datamodel.dataplane.rib.RibId;
-import org.batfish.datamodel.eigrp.EigrpTopology;
 import org.batfish.datamodel.isis.IsisEdge;
 import org.batfish.datamodel.isis.IsisInterfaceLevelSettings;
 import org.batfish.datamodel.isis.IsisInterfaceMode;
@@ -353,11 +352,13 @@ public class VirtualRouter implements Serializable {
    */
   @VisibleForTesting
   void initQueuesAndDeltaBuilders(TopologyContext topologyContext) {
-    // Initialize message queues for each EIGRP neighbor
-    initEigrpQueues(topologyContext.getEigrpTopology());
+    // Update topology/re-initialize message queues for EIGRP neighbors
+    _eigrpProcesses
+        .values()
+        .forEach(proc -> proc.updateTopology(topologyContext.getEigrpTopology()));
     // Initialize message queues for each IS-IS neighbor
     initIsisQueues(topologyContext.getIsisTopology());
-    // Initalize message queues for all neighboring VRFs/VirtualRouters
+    // Initialize message queues for all neighboring VRFs/VirtualRouters
     initCrossVrfQueues();
   }
 
@@ -378,15 +379,6 @@ public class VirtualRouter implements Serializable {
           exportingVR._mainRib.getTypedRoutes().stream().map(RouteAdvertisement::new),
           _vrf.getCrossVrfImportPolicy());
     }
-  }
-
-  /**
-   * Initialize incoming EIGRP message queues for each adjacency
-   *
-   * @param eigrpTopology The topology representing EIGRP adjacencies
-   */
-  private void initEigrpQueues(EigrpTopology eigrpTopology) {
-    _eigrpProcesses.values().forEach(proc -> proc.updateQueues(eigrpTopology));
   }
 
   private void initIsisQueues(IsisTopology isisTopology) {

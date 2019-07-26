@@ -7,6 +7,9 @@ options {
 tokens {
   BANNER_BODY,
   BANNER_DELIMITER,
+  HSRP_VERSION_1,
+  HSRP_VERSION_2,
+  LOCAL,
   MOTD,
   PASSWORD_0,
   PASSWORD_0_TEXT,
@@ -18,9 +21,17 @@ tokens {
   PASSWORD_7_TEXT,
   QUOTED_TEXT,
   REMARK_TEXT,
+  SNMP_VERSION_1,
+  SNMP_VERSION_2,
+  SNMP_VERSION_2C,
   SUBDOMAIN_NAME,
   WORD
 }
+
+AAA
+:
+  'aaa'
+;
 
 ACCESS
 :
@@ -40,6 +51,11 @@ ACCESS_LIST
 ACCESS_MAP
 :
   'access-map'
+;
+
+ACCOUNTING
+:
+  'accounting'
 ;
 
 ACK
@@ -147,6 +163,11 @@ ADVERTISE
 ADVERTISE_MAP
 :
   'advertise-map'
+;
+
+AES_128
+:
+  'aes-128'
 ;
 
 AF11
@@ -296,9 +317,19 @@ ATTRIBUTE_MAP
   'attribute-map'
 ;
 
+AUTH
+:
+  'auth'
+;
+
 AUTHENTICATION
 :
   'authentication'
+;
+
+AUTHORIZATION
+:
+  'authorization'
 ;
 
 AUTO
@@ -391,9 +422,19 @@ BPDUGUARD
   'bpduguard'
 ;
 
+BRIDGE
+:
+  'bridge'
+;
+
 BROADCAST
 :
   'broadcast'
+;
+
+CALLHOME
+:
+  'callhome'
 ;
 
 CAPABILITY
@@ -406,6 +447,22 @@ CAUSE
   'cause'
 ;
 
+CCMCLIRUNNINGCONFIGCHANGED
+:
+  [Cc] [Cc] [Mm] [Cc] [Ll] [Ii] [Rr] [Uu] [Nn] [Nn] [Ii] [Nn] [Gg] [Cc] [Oo]
+  [Nn] [Ff] [Ii] [Gg] [Cc] [Hh] [Aa] [Nn] [Gg] [Ee] [Dd]
+;
+
+CFS
+:
+  'cfs'
+;
+
+CHAIN
+:
+  'chain' -> pushMode ( M_Word )
+;
+
 CHANNEL_GROUP
 :
   'channel-group'
@@ -414,6 +471,26 @@ CHANNEL_GROUP
 CHARGEN
 :
   'chargen'
+;
+
+CLASS
+:
+  'class' -> pushMode ( M_Class )
+;
+
+CLASS_DEFAULT
+:
+  'class-default'
+;
+
+CLASS_MAP
+:
+  'class-map' -> pushMode ( M_ClassMap )
+;
+
+CLEAR
+:
+  'clear'
 ;
 
 CLI
@@ -441,13 +518,30 @@ CMD
   'cmd'
 ;
 
+COMMAND
+:
+  'command'
+;
+
+COMMANDS
+:
+  'commands'
+;
+
 COMMUNITY
 :
   'community'
   // All other instances are followed by keywords or tokens in default mode
   {
-    if (lastTokenType() == MATCH) {
-      pushMode(M_Words);
+    switch (lastTokenType()) {
+      case MATCH:
+        pushMode(M_Words);
+        break;
+      case SNMP_SERVER:
+        pushMode(M_Word);
+        break;
+      default:
+        break;
     }
   }
 
@@ -461,6 +555,16 @@ COMMUNITY_LIST
 COMPARE_ROUTERID
 :
   'compare-routerid'
+;
+
+CONFIG
+:
+  'config'
+;
+
+CONFIG_COMMANDS
+:
+  'config-commands'
 ;
 
 CONFIGURATION
@@ -488,6 +592,12 @@ CONNECTION_MODE
   'connection-mode'
 ;
 
+CONTACT
+:
+// followed by arbitrary contact information
+  'contact' -> pushMode ( M_Remark )
+;
+
 CONTEXT
 :
   'context' -> pushMode ( M_Word )
@@ -498,9 +608,19 @@ CONTINUE
   'continue'
 ;
 
+CONTROL_PLANE
+:
+  'control-plane'
+;
+
 CONVERSION_ERROR
 :
   'conversion-error'
+;
+
+COPY
+:
+  'copy'
 ;
 
 COPY_ATTRIBUTES
@@ -516,6 +636,11 @@ COST
 COST_COMMUNITY
 :
   'cost-community'
+;
+
+COUNTERS
+:
+  'counters'
 ;
 
 CRITICAL
@@ -578,6 +703,11 @@ DEAD_INTERVAL
   'dead-interval'
 ;
 
+DECREMENT
+:
+  'decrement'
+;
+
 DEFAULT
 :
   'default'
@@ -603,6 +733,11 @@ DEFAULT_ORIGINATE
   'default-originate'
 ;
 
+DELAY
+:
+  'delay'
+;
+
 DELETE
 :
   'delete'
@@ -623,6 +758,11 @@ DESCRIPTION
   'description' -> pushMode ( M_Remark )
 ;
 
+DEST_MISS
+:
+  'dest-miss'
+;
+
 DETAIL
 :
   'detail'
@@ -633,9 +773,19 @@ DHCP
   'dhcp'
 ;
 
+DIR
+:
+  'dir'
+;
+
 DIRECT
 :
   'direct'
+;
+
+DIRECTLY_CONNECTED_SOURCES
+:
+  'directly-connected-sources'
 ;
 
 DISABLE
@@ -798,6 +948,11 @@ ERRDISABLE
   'errdisable'
 ;
 
+ERROR_ENABLE
+:
+  'error-enable'
+;
+
 ERRORS
 :
   'errors'
@@ -823,6 +978,11 @@ EVENT_HISTORY
   'event-history'
 ;
 
+EVENT_NOTIFY
+:
+  'event-notify'
+;
+
 EVENTS
 :
   'events'
@@ -836,6 +996,11 @@ EVPN
 EXCEPT
 :
   'except'
+;
+
+EXCEPTION
+:
+  'exception'
 ;
 
 EXEC
@@ -888,9 +1053,25 @@ FAST_LEAVE
   'fast-leave'
 ;
 
+FCOE_FIB_MISS
+:
+  'fcoe-fib-miss'
+;
+
 FEATURE
 :
   'feature'
+;
+
+FEATURE_CONTROL
+:
+  'feature-control'
+;
+
+FEATUREOPSTATUSCHANGE
+:
+  [Ff] [Ee] [Aa] [Tt] [Uu] [Rr] [Ee] [Oo] [Pp] [Ss] [Tt] [Aa] [Tt] [Uu] [Ss]
+  [Cc] [Hh] [Aa] [Nn] [Gg] [Ee]
 ;
 
 FEX_FABRIC
@@ -988,6 +1169,11 @@ GET
   'get'
 ;
 
+GLEAN
+:
+  'glean'
+;
+
 GLOBAL
 :
   'global'
@@ -1011,6 +1197,21 @@ GRACEFUL_RESTART_HELPER
 GRE
 :
   'gre'
+;
+
+GROUP
+:
+  'group'
+  // When preceded by 'default, followed by list of AAA server groups.
+  // If preceded by 'community' and then a secret, followed by the name of a user group.
+  // Otherwise, stay in default mode.
+  {
+    if (lastTokenType() == DEFAULT) {
+      pushMode(M_AaaGroup);
+    } else if (secondToLastTokenType() == COMMUNITY && lastTokenType() == WORD) {
+      pushMode(M_Word);
+    }
+  }
 ;
 
 GROUP_TIMEOUT
@@ -1172,6 +1373,11 @@ INCLUDE_STUB
   'include-stub'
 ;
 
+INCONSISTENCY
+:
+  'inconsistency'
+;
+
 INFORMATION_REPLY
 :
   'information-reply'
@@ -1195,6 +1401,11 @@ INHERIT
 INJECT_MAP
 :
   'inject-map'
+;
+
+INPUT
+:
+  'input' -> pushMode ( M_Word )
 ;
 
 INSTALL
@@ -1241,6 +1452,21 @@ IPV6
   'ipv6'
 ;
 
+IPV6_DEST_MISS
+:
+  'ipv6-dest-miss'
+;
+
+IPV6_RPF_FAILURE
+:
+  'ipv6-rpf-failure'
+;
+
+IPV6_SG_RPF_FAILURE
+:
+  'ipv6-sg-rpf-failure'
+;
+
 IRC
 :
   'irc'
@@ -1259,6 +1485,16 @@ ISIS
 ISOLATE
 :
   'isolate'
+;
+
+KEY
+:
+  'key'
+;
+
+KEY_STRING
+:
+  'key-string' -> pushMode ( M_Remark )
 ;
 
 KICKSTART
@@ -1338,6 +1574,11 @@ LINK_LOCAL_GROUPS_SUPPRESSION
   'link-local-groups-suppression'
 ;
 
+LINK_STATE
+:
+  'link-state'
+;
+
 LISP
 :
   'lisp'
@@ -1361,6 +1602,17 @@ LOCAL_AS
 LOCAL_PREFERENCE
 :
   'local-preference'
+;
+
+LOCALIZEDKEY
+:
+  'localizedkey'
+;
+
+LOCATION
+:
+// followed by arbitrary location description
+  'location' -> pushMode ( M_Remark )
 ;
 
 LOG
@@ -1391,6 +1643,11 @@ LONG
 LOOP
 :
   'loop'
+;
+
+LOOP_INCONSISTENCY
+:
+  'loop-inconsistency'
 ;
 
 LOOPBACK
@@ -1452,6 +1709,16 @@ MATCH
   'match'
 ;
 
+MATCH_ALL
+:
+  'match-all'
+;
+
+MATCH_ANY
+:
+  'match-any'
+;
+
 MAX_METRIC
 :
   'max-metric'
@@ -1492,6 +1759,17 @@ MCAST_GROUP
   'mcast-group'
 ;
 
+MD5
+:
+  'md5'
+  // if preceded by 'auth', password follows
+  {
+    if (lastTokenType() == AUTH) {
+      pushMode(M_Word);
+    }
+  }
+;
+
 MED
 :
   'med'
@@ -1517,6 +1795,11 @@ MEMBER
     }
   }
 
+;
+
+MERGE_FAILURE
+:
+  'merge-failure'
 ;
 
 MESSAGE_DIGEST
@@ -1549,6 +1832,11 @@ MGMT
   [Mm] [Gg] [Mm] [Tt]
 ;
 
+MINIMUM
+:
+  'minimum'
+;
+
 MISSING_AS_WORST
 :
   'missing-as-worst'
@@ -1574,6 +1862,11 @@ MROUTER
   'mrouter'
 ;
 
+MSEC
+:
+  'msec'
+;
+
 MST
 :
   'mst'
@@ -1582,6 +1875,11 @@ MST
 MTU
 :
   'mtu'
+;
+
+MTU_FAILURE
+:
+  'mtu-failure'
 ;
 
 MULTICAST
@@ -1619,9 +1917,24 @@ NAMESERVER
   'nameserver'
 ;
 
+NAT_FLOW
+:
+  'nat-flow'
+;
+
 NATIVE
 :
   'native'
+;
+
+ND_NA
+:
+  'nd-na'
+;
+
+ND_NS
+:
+  'nd-ns'
 ;
 
 NEGOTIATE
@@ -1679,9 +1992,19 @@ NETWORK
   'network'
 ;
 
+NETWORK_QOS
+:
+  'network-qos'
+;
+
 NETWORK_UNKNOWN
 :
   'network-unknown'
+;
+
+NEWROOT
+:
+  'newroot'
 ;
 
 NEXT_HOP
@@ -1836,6 +2159,11 @@ ON_STARTUP
   'on-startup'
 ;
 
+OPTION
+:
+  'option'
+;
+
 OPTION_MISSING
 :
   'option-missing'
@@ -1851,7 +2179,7 @@ OSPF
   'ospf'
   // All other instances are followed by keywords or tokens in default mode
   {
-    if (lastTokenType() == ROUTER) {
+    if (lastTokenType() == REDISTRIBUTE || lastTokenType() == ROUTER) {
       pushMode(M_Word);
     }
   }
@@ -1918,6 +2246,11 @@ PEER
   'peer' -> pushMode ( M_Word )
 ;
 
+PEER_IP
+:
+  'peer-ip'
+;
+
 PEER_POLICY
 :
   'peer-policy'
@@ -1973,6 +2306,11 @@ PIM6
   'pim6'
 ;
 
+PING
+:
+  'ping'
+;
+
 POAP
 :
   'poap'
@@ -1981,6 +2319,16 @@ POAP
 POINT_TO_POINT
 :
   'point-to-point'
+;
+
+POLICE
+:
+  'police'
+;
+
+POLICY_MAP
+:
+  'policy-map' -> pushMode ( M_PolicyMap )
 ;
 
 POP2
@@ -2023,6 +2371,11 @@ POST
   'post'
 ;
 
+PPS
+:
+  'pps'
+;
+
 PRECEDENCE
 :
   'precedence'
@@ -2031,6 +2384,11 @@ PRECEDENCE
 PRECEDENCE_UNREACHABLE
 :
   'precedence-unreachable'
+;
+
+PREEMPT
+:
+  'preempt'
 ;
 
 PREFIX_LIST
@@ -2056,6 +2414,11 @@ PREPEND
 PRIORITY
 :
   'priority'
+;
+
+PRIV
+:
+  'priv' -> pushMode ( M_Priv )
 ;
 
 PROTOCOL
@@ -2093,6 +2456,16 @@ PUT
   'put'
 ;
 
+QOS
+:
+  'qos'
+;
+
+QOS_GROUP
+:
+  'qos-group'
+;
+
 QUERIER
 :
   'querier'
@@ -2113,6 +2486,11 @@ QUERY_MAX_RESPONSE_TIME
   'query-max-response-time'
 ;
 
+QUEUEING
+:
+  'queueing'
+;
+
 RANGE
 :
   'range'
@@ -2121,6 +2499,11 @@ RANGE
 RD
 :
   'rd'
+;
+
+READ
+:
+  'read'
 ;
 
 REASSEMBLY_TIMEOUT
@@ -2166,6 +2549,11 @@ REFERENCE_BANDWIDTH
 REFLECTION
 :
   'reflection'
+;
+
+RELOAD
+:
+  'reload'
 ;
 
 REMARK
@@ -2218,6 +2606,11 @@ RESTART_TIME
   'restart-time'
 ;
 
+RETAIN
+:
+  'retain'
+;
+
 RIP
 :
   'rip'
@@ -2228,9 +2621,19 @@ ROBUSTNESS_VARIABLE
   'robustness-variable'
 ;
 
+ROLE
+:
+  'role'
+;
+
 ROOT
 :
   'root'
+;
+
+ROOT_INCONSISTENCY
+:
+  'root-inconsistency'
 ;
 
 ROUTABLE
@@ -2288,9 +2691,19 @@ ROUTINE
   'routine'
 ;
 
+RPF_FAILURE
+:
+  'rpf-failure'
+;
+
 RST
 :
   'rst'
+;
+
+RULE
+:
+  'rule'
 ;
 
 SCHEDULER
@@ -2328,9 +2741,24 @@ SEQ
   'seq'
 ;
 
+SERVER
+:
+  'server'
+;
+
+SERVER_STATE_CHANGE
+:
+  'server-state-change'
+;
+
 SERVICE
 :
   'service'
+;
+
+SERVICE_POLICY
+:
+  'service-policy'
 ;
 
 SET
@@ -2341,6 +2769,27 @@ SET
 SFLOW
 :
   'sflow'
+;
+
+SG_RPF_FAILURE
+:
+  'sg-rpf-failure'
+;
+
+SHA
+:
+  'sha'
+  // if preceded by 'auth', password follows
+  {
+    if (lastTokenType() == AUTH) {
+      pushMode(M_Word);
+    }
+  }
+;
+
+SHOW
+:
+  'show'
 ;
 
 SHUTDOWN
@@ -2363,9 +2812,19 @@ SMTP
   'smtp'
 ;
 
+SMTP_SEND_FAIL
+:
+  'smtp-send-fail'
+;
+
 SNMP
 :
   'snmp'
+;
+
+SNMP_SERVER
+:
+  'snmp-server'
 ;
 
 SNMPTRAP
@@ -2401,6 +2860,11 @@ SOURCE_ROUTE_FAILED
 SPANNING_TREE
 :
   'spanning-tree'
+;
+
+SPARSE_MODE
+:
+  'sparse-mode'
 ;
 
 SPEED
@@ -2443,6 +2907,16 @@ STATE
   'state'
 ;
 
+STATE_CHANGE
+:
+  'state-change'
+;
+
+STATE_CHANGE_NOTIF
+:
+  'state-change-notif'
+;
+
 STATIC
 :
   'static'
@@ -2461,6 +2935,11 @@ STATISTICS
 STORM_CONTROL
 :
   'storm-control'
+;
+
+STPX
+:
+  'stpx'
 ;
 
 STUB
@@ -2528,6 +3007,11 @@ SYN
   'syn'
 ;
 
+SYNC
+:
+  'sync'
+;
+
 SYSLOG
 :
   'syslog'
@@ -2558,6 +3042,12 @@ TACACS
 TACACSP
 :
   'tacacs+'
+  // Other instances are followed by tokens in default mode, or occur in non-default mode.
+  {
+    if (lastTokenType() == SERVER) {
+      pushMode(M_Word);
+    }
+  }
 ;
 
 TAG
@@ -2593,6 +3083,11 @@ TELNET
 TEMPLATE
 :
   'template'
+;
+
+TERMINAL
+:
+  'terminal'
 ;
 
 TFTP
@@ -2632,7 +3127,12 @@ TIMESTAMP_REQUEST
 
 TIMEZONE
 :
-  'timezone' -> pushMode(M_Remark)
+  'timezone' -> pushMode ( M_Remark )
+;
+
+TOPOLOGYCHANGE
+:
+  'topologychange'
 ;
 
 TRACEROUTE
@@ -2660,6 +3160,17 @@ TRAP
   'trap'
 ;
 
+TRAPS
+:
+  'traps'
+  // if not preceded by 'enable', followed by 'version' or SNMP community secret
+  {
+    if (lastTokenType() != ENABLE) {
+      pushMode(M_SnmpHostTraps);
+    }
+  }
+;
+
 TRIGGER_DELAY
 :
   'trigger-delay'
@@ -2680,9 +3191,20 @@ TTL_EXCEEDED
   'ttl-exceeded'
 ;
 
+TTL_FAILURE
+:
+  'ttl-failure'
+;
+
 TYPE
 :
   'type'
+  // Other instances are followed by tokens in default mode, or occur in non-default mode.
+  {
+    if (lastTokenType() == SERVICE_POLICY) {
+      pushMode(M_ClassType);
+    }
+  }
 ;
 
 TYPE_1
@@ -2730,9 +3252,46 @@ UPDATE_SOURCE
   'update-source'
 ;
 
+UPGRADE
+:
+  'upgrade'
+;
+
+UPGRADEJOBSTATUSNOTIFY
+:
+  [Uu] [Pp] [Gg] [Rr] [Aa] [Dd] [Ee] [Jj] [Oo] [Bb] [Ss] [Tt] [Aa] [Tt] [Uu]
+  [Ss] [Nn] [Oo] [Tt] [Ii] [Ff] [Yy]
+;
+
+UPGRADEOPNOTIFYONCOMPLETION
+:
+  [Uu] [Pp] [Gg] [Rr] [Aa] [Dd] [Ee] [Oo] [Pp] [Nn] [Oo] [Tt] [Ii] [Ff] [Yy]
+  [Oo] [Nn] [Cc] [Oo] [Mm] [Pp] [Ll] [Ee] [Tt] [Ii] [Oo] [Nn]
+;
+
 URG
 :
   'urg'
+;
+
+USE_ACL
+:
+  'use-acl' -> pushMode ( M_Word )
+;
+
+USE_VRF
+:
+  'use-vrf' -> pushMode ( M_Word )
+;
+
+USER
+:
+  'user'
+  {
+    if (lastTokenType() == SNMP_SERVER) {
+      pushMode(M_SnmpUser);
+    }
+  }
 ;
 
 USERNAME
@@ -2752,7 +3311,22 @@ V3_REPORT_SUPPRESSION
 
 VERSION
 :
-  'version' -> pushMode ( M_Remark )
+  'version'
+  // If preceded by 'traps', snmp version follows.
+  // Otherwise, arbitrary version string follows.
+  {
+    switch(lastTokenType()) {
+      case TRAPS:
+        pushMode(M_SnmpVersion);
+        break;
+      case HSRP:
+        pushMode(M_HsrpVersion);
+        break;
+      default:
+        pushMode(M_Remark);
+        break;
+    }
+  }
 ;
 
 VIRTUAL_LINK
@@ -2778,6 +3352,16 @@ VN_SEGMENT_VLAN_BASED
 VNI
 :
   'vni'
+;
+
+VPNV4
+:
+  'vpnv4'
+;
+
+VPNV6
+:
+  'vpnv6'
 ;
 
 VRF
@@ -2836,6 +3420,11 @@ XDMCP
 ;
 
 // Other Tokens
+
+ASTERISK
+:
+  '*'
+;
 
 BLANK_LINE
 :
@@ -3254,6 +3843,24 @@ F_WordChar
   | '-'
 ;
 
+mode M_AaaGroup;
+
+M_AaaGroup_LOCAL
+:
+  'local' -> type ( LOCAL ) , popMode
+;
+
+M_AaaGroup_WORD
+:
+  F_Word -> type ( WORD )
+;
+
+M_AaaGroup_WS
+:
+  F_Whitespace+ -> channel ( HIDDEN )
+;
+
+
 mode M_AliasName;
 
 M_AliasName_WORD
@@ -3344,6 +3951,123 @@ M_BannerCleanup_NEWLINE
   F_Newline+ -> type ( NEWLINE ) , popMode
 ;
 
+mode M_Class;
+
+M_Class_TYPE
+:
+  'type' -> type ( TYPE ) , mode ( M_ClassType )
+;
+
+M_Class_WORD
+:
+  F_NonWhitespace+ -> type ( WORD ) , popMode
+;
+
+M_Class_WS
+:
+  F_Whitespace+ -> channel ( HIDDEN )
+;
+
+mode M_ClassType;
+
+// control-plane omitted on purpose
+
+M_ClassType_NETWORK_QOS
+:
+  'network-qos' -> type ( NETWORK_QOS ) , mode ( M_Word )
+;
+
+M_ClassType_QOS
+:
+  'qos' -> type ( QOS ) , mode ( M_Word )
+;
+
+M_ClassType_QUEUEING
+:
+  'queueing' -> type ( QUEUEING ) , mode ( M_Word )
+;
+
+M_ClassType_WS
+:
+  F_Whitespace+ -> channel ( HIDDEN )
+;
+
+mode M_ClassMap;
+
+M_ClassMap_MATCH_ALL
+:
+  'match-all' -> type ( MATCH_ALL ) , mode ( M_Word )
+;
+
+M_ClassMap_MATCH_ANY
+:
+  'match-any' -> type ( MATCH_ANY ) , mode ( M_Word )
+;
+
+M_ClassMap_TYPE
+:
+  'type' -> type ( TYPE ) , mode ( M_ClassMapType )
+;
+
+M_ClassMap_WORD
+:
+  F_NonWhitespace+ -> type ( WORD ) , popMode
+;
+
+M_ClassMap_WS
+:
+  F_Whitespace+ -> channel ( HIDDEN )
+;
+
+mode M_ClassMapType;
+
+M_ClassMapType_CONTROL_PLANE
+:
+  'control-plane' -> type ( CONTROL_PLANE ) , mode ( M_ClassMapType2 )
+;
+
+M_ClassMapType_NETWORK_QOS
+:
+  'network-qos' -> type ( NETWORK_QOS ) , mode ( M_ClassMapType2 )
+;
+
+M_ClassMapType_QOS
+:
+  'qos' -> type ( QOS ) , mode ( M_ClassMapType2 )
+;
+
+M_ClassMapType_QUEUEING
+:
+  'queueing' -> type ( QUEUEING ) , mode ( M_ClassMapType2 )
+;
+
+M_ClassMapType_WS
+:
+  F_Whitespace+ -> channel ( HIDDEN )
+;
+
+mode M_ClassMapType2;
+
+M_ClassMapType2_MATCH_ALL
+:
+  'match-all' -> type ( MATCH_ALL ) , mode ( M_Word )
+;
+
+M_ClassMapType2_MATCH_ANY
+:
+  'match-any' -> type ( MATCH_ANY ) , mode ( M_Word )
+;
+
+M_ClassMapType2_WORD
+:
+  F_NonWhitespace+ -> type ( WORD ) , popMode
+;
+
+M_ClassMapType2_WS
+:
+  F_Whitespace+ -> channel ( HIDDEN )
+;
+
 mode M_DoubleQuote;
 
 M_DoubleQuote_DOUBLE_QUOTE
@@ -3373,6 +4097,23 @@ M_Hostname_SUBDOMAIN_NAME
 ;
 
 M_Hostname_WS
+:
+  F_Whitespace+ -> channel ( HIDDEN )
+;
+
+mode M_HsrpVersion;
+
+M_HsrpVersion_VERSION_1
+:
+  '1' -> type ( HSRP_VERSION_1 ) , popMode
+;
+
+M_HsrpVersion_VERSION_2
+:
+  '2' -> type ( HSRP_VERSION_2 ) , popMode
+;
+
+M_HsrpVersion_WS
 :
   F_Whitespace+ -> channel ( HIDDEN )
 ;
@@ -3442,6 +4183,67 @@ M_Password7_PASSWORD_7_MALFORMED_TEXT
   F_NonNewline+ -> type ( PASSWORD_7_MALFORMED_TEXT ) , popMode
 ;
 
+mode M_PolicyMap;
+
+M_PolicyMap_TYPE
+:
+  'type' -> type ( TYPE ) , mode ( M_PolicyMapType )
+;
+
+M_PolicyMap_WORD
+:
+  F_NonWhitespace+ -> type ( WORD ) , popMode
+;
+
+M_PolicyMap_WS
+:
+  F_Whitespace+ -> channel ( HIDDEN )
+;
+
+mode M_PolicyMapType;
+
+M_PolicyMapType_CONTROL_PLANE
+:
+  'control-plane' -> type ( CONTROL_PLANE ) , mode ( M_Word )
+;
+
+M_PolicyMapType_NETWORK_QOS
+:
+  'network-qos' -> type ( NETWORK_QOS ) , mode ( M_Word )
+;
+
+M_PolicyMapType_QOS
+:
+  'qos' -> type ( QOS ) , mode ( M_Word )
+;
+
+M_PolicyMapType_QUEUEING
+:
+  'queueing' -> type ( QUEUEING ) , mode ( M_Word )
+;
+
+M_PolicyMapType_WS
+:
+  F_Whitespace+ -> channel ( HIDDEN )
+;
+
+mode M_Priv;
+
+M_Priv_AES_128
+:
+  'aes-128' -> type ( AES_128 ) , mode ( M_Word )
+;
+
+M_Priv_WORD
+:
+  F_Word -> type ( WORD ) , popMode
+;
+
+M_Priv_WS
+:
+  F_Whitespace+ -> channel ( HIDDEN )
+;
+
 mode M_Remark;
 
 M_Remark_REMARK_TEXT
@@ -3450,6 +4252,74 @@ M_Remark_REMARK_TEXT
 ;
 
 M_Remark_WS
+:
+  F_Whitespace+ -> channel ( HIDDEN )
+;
+
+mode M_SnmpHostTraps;
+
+M_SnmpHostTraps_VERSION
+:
+  'version' -> type ( VERSION ) , mode ( M_SnmpVersion )
+;
+
+M_SnmpHostTraps_WORD
+:
+  F_Word -> type ( WORD ) , popMode
+;
+
+M_SnmpHostTraps_WS
+:
+  F_Whitespace+ -> channel ( HIDDEN )
+;
+
+mode M_SnmpUser;
+
+M_SnmpUser_WORD
+:
+  F_Word -> type ( WORD ) , mode ( M_SnmpUserGroup )
+;
+
+M_SnmpUser_WS
+:
+  F_Whitespace+ -> channel ( HIDDEN )
+;
+
+mode M_SnmpUserGroup;
+
+M_SnmpUserGroup_AUTH
+:
+  'auth' -> type ( AUTH ) , popMode
+;
+
+M_SnmpUserGroup_WORD
+:
+  F_Word -> type ( WORD ) , popMode
+;
+
+M_SnmpUserGroup_WS
+:
+  F_Whitespace+ -> channel ( HIDDEN )
+;
+
+mode M_SnmpVersion;
+
+M_SnmpVersion_SNMP_VERSION_1
+:
+  '1' -> type ( SNMP_VERSION_1 ) , mode ( M_Word )
+;
+
+M_SnmpVersion_SNMP_VERSION_2
+:
+  '2' -> type ( SNMP_VERSION_2 ) , mode ( M_Word )
+;
+
+M_SnmpVersion_SNMP_VERSION_2C
+:
+  '2' [Cc] -> type ( SNMP_VERSION_2C ) , mode ( M_Word )
+;
+
+M_SnmpVersion_WS
 :
   F_Whitespace+ -> channel ( HIDDEN )
 ;

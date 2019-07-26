@@ -1,0 +1,40 @@
+!RANCID-CONTENT-TYPE: cisco-nx
+!
+hostname nxos_snmp_server
+!
+
+snmp-server community SECRETcommunity1 group network-operator
+!
+snmp-server community SECRETcommunity2 group network-operator
+snmp-server community SECRETcommunity2 use-acl snmp_acl1
+
+snmp-server contact Give us a call at 867-5309
+
+snmp-server location  The midnight train going anywhere
+
+snmp-server enable traps aaa server-state-change
+snmp-server enable traps bgp
+snmp-server enable traps bridge newroot
+snmp-server enable traps bridge topologychange
+snmp-server enable traps callhome event-notify
+snmp-server enable traps callhome smtp-send-fail
+snmp-server enable traps cfs state-change-notif
+snmp-server enable traps cfs merge-failure
+snmp-server enable traps config ccmCLIRunningConfigChanged
+snmp-server enable traps feature-control FeatureOpStatusChange
+snmp-server enable traps hsrp state-change
+snmp-server enable traps snmp authentication
+snmp-server enable traps stpx inconsistency
+snmp-server enable traps stpx loop-inconsistency
+snmp-server enable traps stpx root-inconsistency
+snmp-server enable traps upgrade UpgradeJobStatusNotify
+snmp-server enable traps upgrade UpgradeOpNotifyOnCompletion
+
+snmp-server host 192.0.2.1 source-interface loopback 0
+snmp-server host 192.0.2.1 traps version 2c SECRETcommunity1
+!
+snmp-server host 192.0.2.2 source-interface mgmt0
+snmp-server host 192.0.2.2 traps version 2c SECRETcommunity2
+snmp-server host 192.0.2.2 use-vrf management
+
+snmp-server user snmpuser1 network-admin auth md5 authpass1 priv privpass1 localizedkey

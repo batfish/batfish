@@ -8,13 +8,14 @@ import static org.batfish.representation.cisco_nxos.CiscoNxosStructureType.BGP_T
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureType.BGP_TEMPLATE_PEER_POLICY;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureType.BGP_TEMPLATE_PEER_SESSION;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureType.INTERFACE;
-import static org.batfish.representation.cisco_nxos.CiscoNxosStructureType.IPV6_ACCESS_LIST;
+import static org.batfish.representation.cisco_nxos.CiscoNxosStructureType.IPV6_PREFIX_LIST;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureType.IP_ACCESS_LIST;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureType.IP_AS_PATH_ACCESS_LIST;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureType.IP_COMMUNITY_LIST_STANDARD;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureType.IP_PREFIX_LIST;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureType.NVE;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureType.PORT_CHANNEL;
+import static org.batfish.representation.cisco_nxos.CiscoNxosStructureType.ROUTER_OSPF;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureType.ROUTE_MAP;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureType.ROUTE_MAP_ENTRY;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureType.VLAN;
@@ -26,6 +27,7 @@ import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.BGP_
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.BGP_DEFAULT_ORIGINATE_ROUTE_MAP;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.BGP_EXIST_MAP;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.BGP_INJECT_MAP;
+import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.BGP_L2VPN_EVPN_RETAIN_ROUTE_TARGET_ROUTE_MAP;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.BGP_NEIGHBOR6_FILTER_LIST_IN;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.BGP_NEIGHBOR6_FILTER_LIST_OUT;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.BGP_NEIGHBOR6_PREFIX_LIST_IN;
@@ -44,6 +46,7 @@ import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.BGP_
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.BGP_NEIGHBOR_ROUTE_MAP_IN;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.BGP_NEIGHBOR_ROUTE_MAP_OUT;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.BGP_NEIGHBOR_UPDATE_SOURCE;
+import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.BGP_NETWORK6_ROUTE_MAP;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.BGP_NETWORK_ROUTE_MAP;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.BGP_NEXTHOP_ROUTE_MAP;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.BGP_REDISTRIBUTE_DIRECT_ROUTE_MAP;
@@ -52,6 +55,7 @@ import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.BGP_
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.BGP_REDISTRIBUTE_LISP_ROUTE_MAP;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.BGP_REDISTRIBUTE_OSPFV3_ROUTE_MAP;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.BGP_REDISTRIBUTE_OSPF_ROUTE_MAP;
+import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.BGP_REDISTRIBUTE_OSPF_SOURCE_TAG;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.BGP_REDISTRIBUTE_RIP_ROUTE_MAP;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.BGP_REDISTRIBUTE_STATIC_ROUTE_MAP;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.BGP_SUPPRESS_MAP;
@@ -65,20 +69,24 @@ import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.IP_R
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.IP_ROUTE_NEXT_HOP_VRF;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.NVE_SELF_REFERENCE;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.NVE_SOURCE_INTERFACE;
+import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.ROUTE_MAP_MATCH_IP_ADDRESS_PREFIX_LIST;
 import static org.batfish.representation.cisco_nxos.Interface.VLAN_RANGE;
 import static org.batfish.representation.cisco_nxos.Interface.newNonVlanInterface;
 import static org.batfish.representation.cisco_nxos.Interface.newVlanInterface;
 import static org.batfish.representation.cisco_nxos.StaticRoute.STATIC_ROUTE_PREFERENCE_RANGE;
 import static org.batfish.representation.cisco_nxos.StaticRoute.STATIC_ROUTE_TRACK_RANGE;
 
+import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Range;
+import com.google.common.collect.Table;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.SortedMap;
+import java.util.function.Function;
 import java.util.stream.IntStream;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -182,6 +190,14 @@ import org.batfish.grammar.cisco_nxos.CiscoNxosParser.I_switchport_trunk_allowed
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.I_switchport_trunk_nativeContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.I_vrf_memberContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Icl_standardContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Ih_groupContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Ih_versionContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Ihd_reloadContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Ihg_ipContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Ihg_preemptContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Ihg_priorityContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Ihg_timersContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Ihg_trackContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Iipo_dead_intervalContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Iipo_hello_intervalContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Iipo_networkContext;
@@ -217,6 +233,7 @@ import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Line_actionContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Literal_standard_communityContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Maxas_limitContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Maximum_pathsContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Nve_host_reachabilityContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Nve_memberContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Nve_no_shutdownContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Nve_source_interfaceContext;
@@ -225,6 +242,7 @@ import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Nvg_mcast_groupContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Nvg_suppress_arpContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Nvm_ingress_replicationContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Nvm_mcast_groupContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Nvm_peer_ipContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Nvm_suppress_arpContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Ospf_area_default_costContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Ospf_area_idContext;
@@ -232,29 +250,36 @@ import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Ospf_area_range_costContex
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Packet_lengthContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Pl_actionContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Pl_descriptionContext;
-import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Rb_address_familyContext;
-import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Rb_af_aa_tailContext;
-import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Rb_af_additional_pathsContext;
-import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Rb_af_aggregate_addressContext;
-import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Rb_af_client_to_clientContext;
-import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Rb_af_dampeningContext;
-import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Rb_af_default_informationContext;
-import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Rb_af_default_metricContext;
-import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Rb_af_distanceContext;
-import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Rb_af_inject_mapContext;
-import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Rb_af_maximum_pathsContext;
-import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Rb_af_networkContext;
-import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Rb_af_nexthop_route_mapContext;
-import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Rb_af_redistribute_directContext;
-import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Rb_af_redistribute_eigrpContext;
-import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Rb_af_redistribute_isisContext;
-import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Rb_af_redistribute_lispContext;
-import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Rb_af_redistribute_ospfContext;
-import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Rb_af_redistribute_ospfv3Context;
-import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Rb_af_redistribute_ripContext;
-import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Rb_af_redistribute_staticContext;
-import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Rb_af_suppress_inactiveContext;
-import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Rb_af_table_mapContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Rb_af4_aggregate_addressContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Rb_af4_networkContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Rb_af4_redistribute_ospfContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Rb_af6_aggregate_addressContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Rb_af6_networkContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Rb_af6_redistribute_ospfv3Context;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Rb_af_ipv4_multicastContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Rb_af_ipv4_unicastContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Rb_af_ipv6_multicastContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Rb_af_ipv6_unicastContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Rb_af_l2vpnContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Rb_afip_aa_tailContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Rb_afip_additional_pathsContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Rb_afip_client_to_clientContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Rb_afip_dampeningContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Rb_afip_default_informationContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Rb_afip_default_metricContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Rb_afip_distanceContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Rb_afip_inject_mapContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Rb_afip_maximum_pathsContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Rb_afip_nexthop_route_mapContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Rb_afip_redistribute_directContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Rb_afip_redistribute_eigrpContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Rb_afip_redistribute_isisContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Rb_afip_redistribute_lispContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Rb_afip_redistribute_ripContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Rb_afip_redistribute_staticContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Rb_afip_suppress_inactiveContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Rb_afip_table_mapContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Rb_afl2v_retainContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Rb_bestpathContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Rb_cluster_idContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Rb_confederation_identifierContext;
@@ -377,7 +402,13 @@ import org.batfish.representation.cisco_nxos.AddrGroupIpAddressSpec;
 import org.batfish.representation.cisco_nxos.AddressFamily;
 import org.batfish.representation.cisco_nxos.BgpVrfAddressFamilyAggregateNetworkConfiguration;
 import org.batfish.representation.cisco_nxos.BgpVrfAddressFamilyConfiguration;
+import org.batfish.representation.cisco_nxos.BgpVrfAddressFamilyConfiguration.Type;
 import org.batfish.representation.cisco_nxos.BgpVrfConfiguration;
+import org.batfish.representation.cisco_nxos.BgpVrfIpAddressFamilyConfiguration;
+import org.batfish.representation.cisco_nxos.BgpVrfIpv4AddressFamilyConfiguration;
+import org.batfish.representation.cisco_nxos.BgpVrfIpv6AddressFamilyConfiguration;
+import org.batfish.representation.cisco_nxos.BgpVrfL2VpnEvpnAddressFamilyConfiguration;
+import org.batfish.representation.cisco_nxos.BgpVrfL2VpnEvpnAddressFamilyConfiguration.RetainRouteType;
 import org.batfish.representation.cisco_nxos.BgpVrfNeighborAddressFamilyConfiguration;
 import org.batfish.representation.cisco_nxos.BgpVrfNeighborConfiguration;
 import org.batfish.representation.cisco_nxos.BgpVrfNeighborConfiguration.RemovePrivateAsMode;
@@ -389,6 +420,8 @@ import org.batfish.representation.cisco_nxos.DefaultVrfOspfProcess;
 import org.batfish.representation.cisco_nxos.Evpn;
 import org.batfish.representation.cisco_nxos.EvpnVni;
 import org.batfish.representation.cisco_nxos.FragmentsBehavior;
+import org.batfish.representation.cisco_nxos.HsrpGroup;
+import org.batfish.representation.cisco_nxos.HsrpTrack;
 import org.batfish.representation.cisco_nxos.IcmpOptions;
 import org.batfish.representation.cisco_nxos.Interface;
 import org.batfish.representation.cisco_nxos.InterfaceAddressWithAttributes;
@@ -406,6 +439,7 @@ import org.batfish.representation.cisco_nxos.Layer3Options;
 import org.batfish.representation.cisco_nxos.LiteralIpAddressSpec;
 import org.batfish.representation.cisco_nxos.LiteralPortSpec;
 import org.batfish.representation.cisco_nxos.Nve;
+import org.batfish.representation.cisco_nxos.Nve.HostReachabilityProtocol;
 import org.batfish.representation.cisco_nxos.Nve.IngressReplicationProtocol;
 import org.batfish.representation.cisco_nxos.NveVni;
 import org.batfish.representation.cisco_nxos.OspfArea;
@@ -471,6 +505,21 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
   private static final IntegerSpace BGP_TEMPLATE_NAME_LENGTH_RANGE =
       IntegerSpace.of(Range.closed(1, 63));
   private static final IntegerSpace DSCP_RANGE = IntegerSpace.of(Range.closed(0, 63));
+  private static final IntegerSpace HSRP_DELAY_RELOAD_S_RANGE =
+      IntegerSpace.of(Range.closed(0, 10000));
+  private static final IntegerSpace HSRP_GROUP_RANGE = IntegerSpace.of(Range.closed(0, 4095));
+  private static final IntegerSpace HSRP_HELLO_INTERVAL_MS_RANGE =
+      IntegerSpace.of(Range.closed(250, 999));
+  private static final IntegerSpace HSRP_HELLO_INTERVAL_S_RANGE =
+      IntegerSpace.of(Range.closed(1, 254));
+  private static final IntegerSpace HSRP_HOLD_TIME_MS_RANGE =
+      IntegerSpace.of(Range.closed(750, 3000));
+  private static final IntegerSpace HSRP_HOLD_TIME_S_RANGE = IntegerSpace.of(Range.closed(3, 255));
+  private static final IntegerSpace HSRP_PREEMPT_DELAY_S_RANGE =
+      IntegerSpace.of(Range.closed(0, 3600));
+  private static final IntegerSpace HSRP_TRACK_DECREMENT_RANGE =
+      IntegerSpace.of(Range.closed(1, 255));
+  private static final IntegerSpace HSRP_VERSION_RANGE = IntegerSpace.of(Range.closed(1, 2));
   private static final IntegerSpace INTERFACE_DESCRIPTION_LENGTH_RANGE =
       IntegerSpace.of(Range.closed(1, 254));
   private static final IntegerSpace INTERFACE_SPEED_RANGE_MBPS =
@@ -504,7 +553,6 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
       IntegerSpace.of(Range.closed(1, 63));
   private static final IntegerSpace IP_PREFIX_LIST_PREFIX_LENGTH_RANGE =
       IntegerSpace.of(Range.closed(1, 32));
-  private static final int MAX_VRF_NAME_LENGTH = 32;
   private static final IntegerSpace NUM_AS_PATH_PREPENDS_RANGE =
       IntegerSpace.of(Range.closed(1, 10));
   private static final IntegerSpace OSPF_AREA_DEFAULT_COST_RANGE =
@@ -545,6 +593,7 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
   private static final IntegerSpace TCP_PORT_RANGE = IntegerSpace.of(Range.closed(0, 65535));
   private static final IntegerSpace UDP_PORT_RANGE = IntegerSpace.of(Range.closed(0, 65535));
   private static final IntegerSpace VNI_RANGE = IntegerSpace.of(Range.closed(0, 16777214));
+  private static final IntegerSpace VRF_NAME_LENGTH_RANGE = IntegerSpace.of(Range.closed(1, 32));
 
   private static @Nonnull IpAddressSpec toAddressSpec(Acllal3_address_specContext ctx) {
     if (ctx.address != null) {
@@ -706,7 +755,8 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
   private CiscoNxosConfiguration _configuration;
   private ActionIpAccessListLine.Builder _currentActionIpAccessListLineBuilder;
   private Boolean _currentActionIpAccessListLineUnusable;
-  private BgpVrfAddressFamilyConfiguration _currentBgpVrfAddressFamily;
+  private BgpVrfIpAddressFamilyConfiguration _currentBgpVrfIpAddressFamily;
+  private BgpVrfL2VpnEvpnAddressFamilyConfiguration _currentBgpVrfL2VpnEvpnAddressFamily;
   private BgpVrfAddressFamilyAggregateNetworkConfiguration
       _currentBgpVrfAddressFamilyAggregateNetwork;
   private BgpVrfConfiguration _currentBgpVrfConfiguration;
@@ -714,6 +764,7 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
   private BgpVrfNeighborAddressFamilyConfiguration _currentBgpVrfNeighborAddressFamily;
   private DefaultVrfOspfProcess _currentDefaultVrfOspfProcess;
   private EvpnVni _currentEvpnVni;
+  private Function<Interface, HsrpGroup> _currentHsrpGroupGetter;
   private List<Interface> _currentInterfaces;
   private IpAccessList _currentIpAccessList;
   private Optional<Long> _currentIpAccessListLineNum;
@@ -732,6 +783,21 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
   private Vrf _currentVrf;
   private boolean _inIpv6BgpPeer;
 
+  /**
+   * On NX-OS, many structure names are case-insensitive but capitalized according to how they were
+   * entered at first use. This table keeps track of the preferred name for each of the structures.
+   *
+   * <p>{@code (Structure Type, LowerCaseName) -> Preferred name}.
+   */
+  private final @Nonnull Table<CiscoNxosStructureType, String, String> _preferredNames;
+
+  /** Returns the preferred name for a structure with the given name and type. */
+  private @Nonnull String getPreferredName(String configName, CiscoNxosStructureType type) {
+    return _preferredNames
+        .row(type)
+        .computeIfAbsent(configName.toLowerCase(), lcName -> configName);
+  }
+
   private @Nonnull final CiscoNxosCombinedParser _parser;
   private @Nonnull final String _text;
   private @Nonnull final Warnings _w;
@@ -740,14 +806,8 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
       String text, CiscoNxosCombinedParser parser, Warnings warnings) {
     _text = text;
     _parser = parser;
+    _preferredNames = HashBasedTable.create();
     _w = warnings;
-  }
-
-  private boolean checkPortChannelCompatibilitySettings(Interface referenceIface, Interface iface) {
-    return Objects.equals(iface.getAccessVlan(), referenceIface.getAccessVlan())
-        && Objects.equals(iface.getAllowedVlans(), referenceIface.getAllowedVlans())
-        && Objects.equals(iface.getNativeVlan(), referenceIface.getNativeVlan())
-        && iface.getSwitchportMode() == referenceIface.getSwitchportMode();
   }
 
   /**
@@ -772,11 +832,23 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
     return defaultReturnValue;
   }
 
-  private void copyPortChannelCompatibilitySettings(Interface referenceIface, Interface iface) {
+  /** This function must be kept in sync with {@link #copyPortChannelCompatibilitySettings}. */
+  private static boolean checkPortChannelCompatibilitySettings(
+      Interface referenceIface, Interface iface) {
+    return Objects.equals(iface.getAccessVlan(), referenceIface.getAccessVlan())
+        && Objects.equals(iface.getAllowedVlans(), referenceIface.getAllowedVlans())
+        && Objects.equals(iface.getNativeVlan(), referenceIface.getNativeVlan())
+        && iface.getSwitchportMode() == referenceIface.getSwitchportMode();
+  }
+
+  /** This function must be kept in sync with {@link #checkPortChannelCompatibilitySettings}. */
+  private static void copyPortChannelCompatibilitySettings(
+      Interface referenceIface, Interface iface) {
     iface.setAccessVlan(referenceIface.getAccessVlan());
     iface.setAllowedVlans(referenceIface.getAllowedVlans());
     iface.setNativeVlan(referenceIface.getNativeVlan());
     iface.setSwitchportMode(referenceIface.getSwitchportMode());
+    assert checkPortChannelCompatibilitySettings(referenceIface, iface);
   }
 
   @Override
@@ -858,7 +930,6 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
 
   @Override
   public void enterIcl_standard(Icl_standardContext ctx) {
-    int line = ctx.getStart().getLine();
     Long explicitSeq;
     if (ctx.seq != null) {
       Optional<Long> seqOpt = toLong(ctx, ctx.seq);
@@ -884,7 +955,7 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
             .computeIfAbsent(
                 name,
                 n -> {
-                  _configuration.defineStructure(IP_COMMUNITY_LIST_STANDARD, n, line);
+                  _configuration.defineStructure(IP_COMMUNITY_LIST_STANDARD, n, ctx);
                   return new IpCommunityListStandard(n);
                 });
     if (!(communityList instanceof IpCommunityListStandard)) {
@@ -911,6 +982,188 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
         .getLines()
         .put(
             seq, new IpCommunityListStandardLine(toLineAction(ctx.action), seq, communities.get()));
+  }
+
+  @Override
+  public void exitIhd_reload(Ihd_reloadContext ctx) {
+    toIntegerInSpace(ctx, ctx.delay_s, HSRP_DELAY_RELOAD_S_RANGE, "hsrp reload delay seconds")
+        .ifPresent(
+            delay ->
+                _currentInterfaces.forEach(
+                    iface -> iface.getOrCreateHsrp().setDelayReloadSeconds(delay)));
+  }
+
+  @Override
+  public void enterIh_group(Ih_groupContext ctx) {
+    Optional<Integer> groupOrErr = toIntegerInSpace(ctx, ctx.group, HSRP_GROUP_RANGE, "hsrp group");
+    if (!groupOrErr.isPresent()) {
+      // dummy
+      _currentHsrpGroupGetter = iface -> new HsrpGroup(0);
+    } else {
+      _currentHsrpGroupGetter =
+          iface ->
+              iface.getOrCreateHsrp().getGroups().computeIfAbsent(groupOrErr.get(), HsrpGroup::new);
+    }
+  }
+
+  @Override
+  public void exitIh_group(Ih_groupContext ctx) {
+    _currentHsrpGroupGetter = null;
+  }
+
+  @Override
+  public void exitIhg_ip(Ihg_ipContext ctx) {
+    if (ctx.prefix != null) {
+      todo(ctx);
+      return;
+    }
+    assert ctx.ip != null;
+    Ip ip = toIp(ctx.ip);
+    _currentInterfaces.forEach(iface -> _currentHsrpGroupGetter.apply(iface).setIp(ip));
+  }
+
+  @Override
+  public void exitIhg_preempt(Ihg_preemptContext ctx) {
+    @Nullable Integer minimumSeconds = null;
+    if (ctx.minimum_s != null) {
+      Optional<Integer> minimumSecondsOrErr =
+          toIntegerInSpace(
+              ctx, ctx.minimum_s, HSRP_PREEMPT_DELAY_S_RANGE, "hspr preempt delay minimum seconds");
+      if (!minimumSecondsOrErr.isPresent()) {
+        return;
+      }
+      minimumSeconds = minimumSecondsOrErr.get();
+    }
+    @Nullable Integer reloadSeconds = null;
+    if (ctx.reload_s != null) {
+      Optional<Integer> reloadSecondsOrErr =
+          toIntegerInSpace(
+              ctx, ctx.reload_s, HSRP_PREEMPT_DELAY_S_RANGE, "hspr preempt delay reload seconds");
+      if (!reloadSecondsOrErr.isPresent()) {
+        return;
+      }
+      reloadSeconds = reloadSecondsOrErr.get();
+    }
+    @Nullable Integer syncSeconds = null;
+    if (ctx.sync_s != null) {
+      Optional<Integer> syncSecondsOrErr =
+          toIntegerInSpace(
+              ctx, ctx.sync_s, HSRP_PREEMPT_DELAY_S_RANGE, "hspr preempt delay sync seconds");
+      if (!syncSecondsOrErr.isPresent()) {
+        return;
+      }
+      syncSeconds = syncSecondsOrErr.get();
+    }
+    for (Interface iface : _currentInterfaces) {
+      HsrpGroup group = _currentHsrpGroupGetter.apply(iface);
+      if (minimumSeconds != null) {
+        group.setPreemptDelayMinimumSeconds(minimumSeconds);
+      }
+      if (reloadSeconds != null) {
+        group.setPreemptDelayReloadSeconds(reloadSeconds);
+      }
+      if (syncSeconds != null) {
+        group.setPreemptDelaySyncSeconds(syncSeconds);
+      }
+    }
+  }
+
+  @Override
+  public void exitIhg_priority(Ihg_priorityContext ctx) {
+    int priority = toInteger(ctx.priority);
+    _currentInterfaces.forEach(iface -> _currentHsrpGroupGetter.apply(iface).setPriority(priority));
+  }
+
+  @Override
+  public void exitIhg_timers(Ihg_timersContext ctx) {
+    int helloIntervalMs;
+    if (ctx.hello_interval_ms != null) {
+      Optional<Integer> helloIntervalMsOrErr =
+          toIntegerInSpace(
+              ctx,
+              ctx.hello_interval_ms,
+              HSRP_HELLO_INTERVAL_MS_RANGE,
+              "hsrp timers hello-interval ms");
+      if (!helloIntervalMsOrErr.isPresent()) {
+        return;
+      }
+      helloIntervalMs = helloIntervalMsOrErr.get();
+    } else {
+      assert ctx.hello_interval_s != null;
+      Optional<Integer> helloIntervalSecondsOrErr =
+          toIntegerInSpace(
+              ctx,
+              ctx.hello_interval_s,
+              HSRP_HELLO_INTERVAL_S_RANGE,
+              "hsrp timers hello-interval seconds");
+      if (!helloIntervalSecondsOrErr.isPresent()) {
+        return;
+      }
+      helloIntervalMs = helloIntervalSecondsOrErr.get() * 1000;
+    }
+    int holdTimeMs;
+    if (ctx.hold_time_ms != null) {
+      Optional<Integer> holdTimeMsOrErr =
+          toIntegerInSpace(
+              ctx, ctx.hold_time_ms, HSRP_HOLD_TIME_MS_RANGE, "hsrp timers hold-time ms");
+      if (!holdTimeMsOrErr.isPresent()) {
+        return;
+      }
+      holdTimeMs = holdTimeMsOrErr.get();
+    } else {
+      assert ctx.hold_time_s != null;
+      Optional<Integer> holdTimeSecondsOrErr =
+          toIntegerInSpace(
+              ctx, ctx.hold_time_s, HSRP_HOLD_TIME_S_RANGE, "hsrp timers hold-time seconds");
+      if (!holdTimeSecondsOrErr.isPresent()) {
+        return;
+      }
+      holdTimeMs = holdTimeSecondsOrErr.get() * 1000;
+    }
+    // TODO: check constraints on relationship between hello and hold
+    _currentInterfaces.forEach(
+        iface -> {
+          HsrpGroup group = _currentHsrpGroupGetter.apply(iface);
+          group.setHelloIntervalMs(helloIntervalMs);
+          group.setHoldTimeMs(holdTimeMs);
+        });
+  }
+
+  @Override
+  public void exitIhg_track(Ihg_trackContext ctx) {
+    Optional<Integer> trackObjectNumberOrErr =
+        toIntegerInSpace(ctx, ctx.num, STATIC_ROUTE_TRACK_RANGE, "hsrp group track object number");
+    if (!trackObjectNumberOrErr.isPresent()) {
+      return;
+    }
+    int trackObjectNumber = trackObjectNumberOrErr.get();
+    @Nullable Integer decrement;
+    if (ctx.decrement != null) {
+      Optional<Integer> decrementOrErr =
+          toIntegerInSpace(
+              ctx, ctx.decrement, HSRP_TRACK_DECREMENT_RANGE, "hspr group track decrement");
+      if (!decrementOrErr.isPresent()) {
+        return;
+      }
+      decrement = decrementOrErr.get();
+    } else {
+      // disable instead of decrement when tracked object goes down
+      decrement = null;
+    }
+    _currentInterfaces.forEach(
+        iface ->
+            _currentHsrpGroupGetter
+                .apply(iface)
+                .getTracks()
+                .computeIfAbsent(trackObjectNumber, num -> new HsrpTrack(num, decrement)));
+  }
+
+  @Override
+  public void exitIh_version(Ih_versionContext ctx) {
+    toIntegerInSpace(ctx, ctx.version, HSRP_VERSION_RANGE, "hsrp version")
+        .ifPresent(
+            version ->
+                _currentInterfaces.forEach(iface -> iface.getOrCreateHsrp().setVersion(version)));
   }
 
   @Override
@@ -977,14 +1230,13 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
             .computeIfAbsent(
                 nameOpt.get(),
                 name -> {
-                  _configuration.defineStructure(IP_ACCESS_LIST, name, ctx.getStart().getLine());
+                  _configuration.defineStructure(IP_ACCESS_LIST, name, ctx);
                   return new IpAccessList(name);
                 });
   }
 
   @Override
   public void enterIp_as_path_access_list(Ip_as_path_access_listContext ctx) {
-    int line = ctx.getStart().getLine();
     Long explicitSeq;
     if (ctx.seq != null) {
       Optional<Long> seqOpt = toLong(ctx, ctx.seq);
@@ -1010,7 +1262,7 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
             .computeIfAbsent(
                 name,
                 n -> {
-                  _configuration.defineStructure(IP_AS_PATH_ACCESS_LIST, n, line);
+                  _configuration.defineStructure(IP_AS_PATH_ACCESS_LIST, n, ctx);
                   return new IpAsPathAccessList(n);
                 });
     SortedMap<Long, IpAsPathAccessListLine> lines = asPathAccessList.getLines();
@@ -1038,8 +1290,7 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
                         .computeIfAbsent(
                             name,
                             n -> {
-                              _configuration.defineStructure(
-                                  IP_PREFIX_LIST, name, ctx.getStart().getLine());
+                              _configuration.defineStructure(IP_PREFIX_LIST, name, ctx);
                               return new IpPrefixList(n);
                             }))
             .orElse(new IpPrefixList("dummy"));
@@ -1072,11 +1323,8 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
             .computeIfAbsent(
                 areaId,
                 id -> {
-                  // TODO: use new defineStructure from batfish/batfish#4281
                   _configuration.defineStructure(
-                      CiscoNxosStructureType.OSPF_AREA,
-                      Long.toString(id),
-                      ctx.getStart().getLine());
+                      CiscoNxosStructureType.OSPF_AREA, Long.toString(id), ctx);
                   return new OspfArea(id);
                 });
   }
@@ -1413,9 +1661,7 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
             .computeIfAbsent(
                 nameOrErr.get(),
                 name -> {
-                  // TODO: use new defineStructure from batfish/batfish#4281
-                  _configuration.defineStructure(
-                      CiscoNxosStructureType.ROUTER_OSPF, name, ctx.getStart().getLine());
+                  _configuration.defineStructure(CiscoNxosStructureType.ROUTER_OSPF, name, ctx);
                   return new DefaultVrfOspfProcess(name);
                 });
     _currentOspfProcess = _currentDefaultVrfOspfProcess;
@@ -1434,11 +1680,27 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
 
   @Override
   public void exitNvm_ingress_replication(Nvm_ingress_replicationContext ctx) {
-    IngressReplicationProtocol protocol =
-        ctx.BGP() != null
-            ? Nve.IngressReplicationProtocol.BGP
-            : Nve.IngressReplicationProtocol.STATIC;
-    _currentNveVnis.forEach(vni -> vni.setIngressReplicationProtocol(protocol));
+    if (ctx.BGP() != null) {
+      if (_currentNves.stream()
+          .anyMatch(nve -> nve.getHostReachabilityProtocol() != HostReachabilityProtocol.BGP)) {
+        warn(
+            ctx,
+            "Cannot enable ingress replication bgp under VNI without host-reachability protocol bgp");
+        return;
+      }
+      _currentNveVnis.forEach(
+          vni -> vni.setIngressReplicationProtocol(IngressReplicationProtocol.BGP));
+    } else {
+      assert ctx.STATIC() != null;
+      if (_currentNves.stream().anyMatch(nve -> nve.getHostReachabilityProtocol() != null)) {
+        warn(
+            ctx,
+            "Cannot enable ingress replication static under VNI without unset host-reachability protocol");
+        return;
+      }
+      _currentNveVnis.forEach(
+          vni -> vni.setIngressReplicationProtocol(IngressReplicationProtocol.STATIC));
+    }
   }
 
   @Override
@@ -1448,7 +1710,25 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
       warn(ctx, String.format("IPv4 address %s is not a valid multicast IP", mcastIp));
       return;
     }
+    if (_currentNveVnis.stream()
+        .anyMatch(
+            vni -> vni.getIngressReplicationProtocol() == IngressReplicationProtocol.STATIC)) {
+      warn(ctx, "Cannot set multicast group with ingress-replication protocol static");
+      return;
+    }
     _currentNveVnis.forEach(vni -> vni.setMcastGroup(mcastIp));
+  }
+
+  @Override
+  public void exitNvm_peer_ip(Nvm_peer_ipContext ctx) {
+    if (_currentNveVnis.stream()
+        .anyMatch(
+            vni -> vni.getIngressReplicationProtocol() != IngressReplicationProtocol.STATIC)) {
+      warn(ctx, "Cannot set peer-ip unless ingress-replication protocol is static");
+      return;
+    }
+    Ip peerIp = toIp(ctx.ip_address());
+    _currentNveVnis.forEach(vni -> vni.addPeerIp(peerIp));
   }
 
   @Override
@@ -1459,6 +1739,15 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
 
   @Override
   public void exitNvg_ingress_replication(Nvg_ingress_replicationContext ctx) {
+    if (_currentNves.stream()
+        .anyMatch(nve -> nve.getHostReachabilityProtocol() != HostReachabilityProtocol.BGP)) {
+      _w.addWarning(
+          ctx,
+          getFullText(ctx),
+          _parser,
+          "Cannot configure Ingress replication protocol BGP for nve without host reachability protocol bgp.");
+      return;
+    }
     _currentNves.forEach(
         vni -> vni.setGlobalIngressReplicationProtocol(IngressReplicationProtocol.BGP));
   }
@@ -1484,36 +1773,160 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
   }
 
   @Override
-  public void enterRb_address_family(Rb_address_familyContext ctx) {
-    String familyStr = ctx.first.getText() + '-' + ctx.second.getText();
-    _currentBgpVrfAddressFamily = _currentBgpVrfConfiguration.getOrCreateAddressFamily(familyStr);
+  public void enterRb_af_ipv4_multicast(Rb_af_ipv4_multicastContext ctx) {
+    BgpVrfAddressFamilyConfiguration af =
+        _currentBgpVrfConfiguration.getOrCreateAddressFamily(Type.IPV4_MULTICAST);
+    assert af instanceof BgpVrfIpv4AddressFamilyConfiguration;
+    _currentBgpVrfIpAddressFamily = (BgpVrfIpAddressFamilyConfiguration) af;
   }
 
   @Override
-  public void exitRb_address_family(Rb_address_familyContext ctx) {
-    _currentBgpVrfAddressFamily = null;
+  public void exitRb_af_ipv4_multicast(Rb_af_ipv4_multicastContext ctx) {
+    _currentBgpVrfIpAddressFamily = null;
   }
 
   @Override
-  public void enterRb_af_aggregate_address(Rb_af_aggregate_addressContext ctx) {
-    if (ctx.network != null) {
-      Prefix prefix = toPrefix(ctx.network);
-      _currentBgpVrfAddressFamilyAggregateNetwork =
-          _currentBgpVrfAddressFamily.getOrCreateAggregateNetwork(prefix);
-    } else if (ctx.prefix6 != null) {
-      Prefix6 prefix = toPrefix6(ctx.prefix6);
-      _currentBgpVrfAddressFamilyAggregateNetwork =
-          _currentBgpVrfAddressFamily.getOrCreateAggregateNetwork(prefix);
-    }
+  public void enterRb_af_ipv4_unicast(Rb_af_ipv4_unicastContext ctx) {
+    BgpVrfAddressFamilyConfiguration af =
+        _currentBgpVrfConfiguration.getOrCreateAddressFamily(Type.IPV4_UNICAST);
+    assert af instanceof BgpVrfIpv4AddressFamilyConfiguration;
+    _currentBgpVrfIpAddressFamily = (BgpVrfIpAddressFamilyConfiguration) af;
   }
 
   @Override
-  public void exitRb_af_aggregate_address(Rb_af_aggregate_addressContext ctx) {
+  public void exitRb_af_ipv4_unicast(Rb_af_ipv4_unicastContext ctx) {
+    _currentBgpVrfIpAddressFamily = null;
+  }
+
+  @Override
+  public void enterRb_af4_aggregate_address(Rb_af4_aggregate_addressContext ctx) {
+    assert _currentBgpVrfIpAddressFamily instanceof BgpVrfIpv4AddressFamilyConfiguration;
+    BgpVrfIpv4AddressFamilyConfiguration afConfig =
+        (BgpVrfIpv4AddressFamilyConfiguration) _currentBgpVrfIpAddressFamily;
+    Prefix prefix = toPrefix(ctx.network);
+    _currentBgpVrfAddressFamilyAggregateNetwork = afConfig.getOrCreateAggregateNetwork(prefix);
+  }
+
+  @Override
+  public void exitRb_af4_aggregate_address(Rb_af4_aggregate_addressContext ctx) {
     _currentBgpVrfAddressFamilyAggregateNetwork = null;
   }
 
   @Override
-  public void exitRb_af_aa_tail(Rb_af_aa_tailContext ctx) {
+  public void exitRb_af4_network(Rb_af4_networkContext ctx) {
+    assert _currentBgpVrfIpAddressFamily instanceof BgpVrfIpv4AddressFamilyConfiguration;
+    BgpVrfIpv4AddressFamilyConfiguration afConfig =
+        (BgpVrfIpv4AddressFamilyConfiguration) _currentBgpVrfIpAddressFamily;
+    String mapname = null;
+    if (ctx.mapname != null) {
+      Optional<String> nameOrError = toString(ctx, ctx.mapname);
+      if (!nameOrError.isPresent()) {
+        return;
+      }
+      mapname = nameOrError.get();
+      _configuration.referenceStructure(
+          ROUTE_MAP, mapname, BGP_NETWORK_ROUTE_MAP, ctx.getStart().getLine());
+    }
+
+    Prefix prefix = toPrefix(ctx.network);
+    afConfig.addNetwork(prefix, mapname);
+  }
+
+  @Override
+  public void exitRb_af4_redistribute_ospf(Rb_af4_redistribute_ospfContext ctx) {
+    Optional<String> nameOrError = toString(ctx, ctx.mapname);
+    if (!nameOrError.isPresent()) {
+      return;
+    }
+    String name = nameOrError.get();
+    _configuration.referenceStructure(
+        ROUTE_MAP, name, BGP_REDISTRIBUTE_OSPF_ROUTE_MAP, ctx.getStart().getLine());
+    Optional<String> ospfProcessOrError = toString(ctx, ctx.source_tag);
+    if (!ospfProcessOrError.isPresent()) {
+      return;
+    }
+    String ospfProcess = ospfProcessOrError.get();
+    _configuration.referenceStructure(
+        ROUTER_OSPF, ospfProcess, BGP_REDISTRIBUTE_OSPF_SOURCE_TAG, ctx.getStart().getLine());
+    _currentBgpVrfIpAddressFamily.setRedistributionPolicy(RoutingProtocol.OSPF, name, ospfProcess);
+  }
+
+  @Override
+  public void enterRb_af_ipv6_multicast(Rb_af_ipv6_multicastContext ctx) {
+    BgpVrfAddressFamilyConfiguration af =
+        _currentBgpVrfConfiguration.getOrCreateAddressFamily(Type.IPV6_MULTICAST);
+    assert af instanceof BgpVrfIpv6AddressFamilyConfiguration;
+    _currentBgpVrfIpAddressFamily = (BgpVrfIpAddressFamilyConfiguration) af;
+  }
+
+  @Override
+  public void exitRb_af_ipv6_multicast(Rb_af_ipv6_multicastContext ctx) {
+    _currentBgpVrfIpAddressFamily = null;
+  }
+
+  @Override
+  public void enterRb_af_ipv6_unicast(Rb_af_ipv6_unicastContext ctx) {
+    BgpVrfAddressFamilyConfiguration af =
+        _currentBgpVrfConfiguration.getOrCreateAddressFamily(Type.IPV6_UNICAST);
+    assert af instanceof BgpVrfIpv6AddressFamilyConfiguration;
+    _currentBgpVrfIpAddressFamily = (BgpVrfIpAddressFamilyConfiguration) af;
+  }
+
+  @Override
+  public void exitRb_af_ipv6_unicast(Rb_af_ipv6_unicastContext ctx) {
+    _currentBgpVrfIpAddressFamily = null;
+  }
+
+  @Override
+  public void enterRb_af6_aggregate_address(Rb_af6_aggregate_addressContext ctx) {
+    Prefix6 prefix = toPrefix6(ctx.network);
+
+    assert _currentBgpVrfIpAddressFamily instanceof BgpVrfIpv6AddressFamilyConfiguration;
+    BgpVrfIpv6AddressFamilyConfiguration afConfig =
+        (BgpVrfIpv6AddressFamilyConfiguration) _currentBgpVrfIpAddressFamily;
+    _currentBgpVrfAddressFamilyAggregateNetwork = afConfig.getOrCreateAggregateNetwork(prefix);
+  }
+
+  @Override
+  public void exitRb_af6_aggregate_address(Rb_af6_aggregate_addressContext ctx) {
+    _currentBgpVrfAddressFamilyAggregateNetwork = null;
+  }
+
+  @Override
+  public void exitRb_af6_network(Rb_af6_networkContext ctx) {
+    String mapname = null;
+    if (ctx.mapname != null) {
+      Optional<String> nameOrError = toString(ctx, ctx.mapname);
+      if (!nameOrError.isPresent()) {
+        return;
+      }
+      mapname = nameOrError.get();
+      _configuration.referenceStructure(
+          ROUTE_MAP, mapname, BGP_NETWORK6_ROUTE_MAP, ctx.getStart().getLine());
+    }
+
+    Prefix6 prefix = toPrefix6(ctx.network);
+    assert _currentBgpVrfIpAddressFamily instanceof BgpVrfIpv6AddressFamilyConfiguration;
+    BgpVrfIpv6AddressFamilyConfiguration afConfig =
+        (BgpVrfIpv6AddressFamilyConfiguration) _currentBgpVrfIpAddressFamily;
+    afConfig.addNetwork(prefix, mapname);
+  }
+
+  @Override
+  public void exitRb_af6_redistribute_ospfv3(Rb_af6_redistribute_ospfv3Context ctx) {
+    Optional<String> nameOrError = toString(ctx, ctx.mapname);
+    if (!nameOrError.isPresent()) {
+      return;
+    }
+    String name = nameOrError.get();
+    String sourceTag = ctx.source_tag.getText();
+    _configuration.referenceStructure(
+        ROUTE_MAP, name, BGP_REDISTRIBUTE_OSPFV3_ROUTE_MAP, ctx.getStart().getLine());
+    _currentBgpVrfIpAddressFamily.setRedistributionPolicy(RoutingProtocol.OSPF, name, sourceTag);
+  }
+
+  @Override
+  public void exitRb_afip_aa_tail(Rb_afip_aa_tailContext ctx) {
     int line = ctx.getStart().getLine();
     if (ctx.ADVERTISE_MAP() != null) {
       Optional<String> nameOrError = toString(ctx, ctx.mapname);
@@ -1547,7 +1960,7 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
   }
 
   @Override
-  public void exitRb_af_additional_paths(Rb_af_additional_pathsContext ctx) {
+  public void exitRb_afip_additional_paths(Rb_afip_additional_pathsContext ctx) {
     todo(ctx);
     if (ctx.mapname != null) {
       toString(ctx, ctx.mapname)
@@ -1559,12 +1972,12 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
   }
 
   @Override
-  public void exitRb_af_client_to_client(Rb_af_client_to_clientContext ctx) {
-    _currentBgpVrfAddressFamily.setClientToClientReflection(true);
+  public void exitRb_afip_client_to_client(Rb_afip_client_to_clientContext ctx) {
+    _currentBgpVrfIpAddressFamily.setClientToClientReflection(true);
   }
 
   @Override
-  public void exitRb_af_dampening(Rb_af_dampeningContext ctx) {
+  public void exitRb_afip_dampening(Rb_afip_dampeningContext ctx) {
     todo(ctx);
     if (ctx.mapname != null) {
       toString(ctx, ctx.mapname)
@@ -1576,31 +1989,31 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
   }
 
   @Override
-  public void exitRb_af_default_metric(Rb_af_default_metricContext ctx) {
+  public void exitRb_afip_default_metric(Rb_afip_default_metricContext ctx) {
     long metric = toLong(ctx.metric);
-    _currentBgpVrfAddressFamily.setDefaultMetric(metric);
+    _currentBgpVrfIpAddressFamily.setDefaultMetric(metric);
   }
 
   @Override
-  public void exitRb_af_default_information(Rb_af_default_informationContext ctx) {
-    _currentBgpVrfAddressFamily.setDefaultInformationOriginate(true);
+  public void exitRb_afip_default_information(Rb_afip_default_informationContext ctx) {
+    _currentBgpVrfIpAddressFamily.setDefaultInformationOriginate(true);
   }
 
   @Override
-  public void exitRb_af_distance(Rb_af_distanceContext ctx) {
+  public void exitRb_afip_distance(Rb_afip_distanceContext ctx) {
     Optional<Integer> ebgp = toInteger(ctx, ctx.ebgp);
     Optional<Integer> ibgp = toInteger(ctx, ctx.ibgp);
     Optional<Integer> local = toInteger(ctx, ctx.local);
     if (!ebgp.isPresent() || !ibgp.isPresent() || !local.isPresent()) {
       return;
     }
-    _currentBgpVrfAddressFamily.setDistanceEbgp(ebgp.get());
-    _currentBgpVrfAddressFamily.setDistanceIbgp(ibgp.get());
-    _currentBgpVrfAddressFamily.setDistanceLocal(local.get());
+    _currentBgpVrfIpAddressFamily.setDistanceEbgp(ebgp.get());
+    _currentBgpVrfIpAddressFamily.setDistanceIbgp(ibgp.get());
+    _currentBgpVrfIpAddressFamily.setDistanceLocal(local.get());
   }
 
   @Override
-  public void exitRb_af_inject_map(Rb_af_inject_mapContext ctx) {
+  public void exitRb_afip_inject_map(Rb_afip_inject_mapContext ctx) {
     Optional<String> injectMap = toString(ctx, ctx.injectmap);
     Optional<String> existMap = toString(ctx, ctx.existmap);
     if (!injectMap.isPresent() || !existMap.isPresent()) {
@@ -1614,46 +2027,24 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
   }
 
   @Override
-  public void exitRb_af_maximum_paths(Rb_af_maximum_pathsContext ctx) {
+  public void exitRb_afip_maximum_paths(Rb_afip_maximum_pathsContext ctx) {
     Optional<Integer> limitOrError = toInteger(ctx, ctx.numpaths);
     if (!limitOrError.isPresent()) {
       return;
     }
     int limit = limitOrError.get();
     if (ctx.IBGP() != null) {
-      _currentBgpVrfAddressFamily.setMaximumPathsIbgp(limit);
+      _currentBgpVrfIpAddressFamily.setMaximumPathsIbgp(limit);
     } else if (ctx.EIBGP() != null) {
-      _currentBgpVrfAddressFamily.setMaximumPathsEbgp(limit);
-      _currentBgpVrfAddressFamily.setMaximumPathsIbgp(limit);
+      _currentBgpVrfIpAddressFamily.setMaximumPathsEbgp(limit);
+      _currentBgpVrfIpAddressFamily.setMaximumPathsIbgp(limit);
     } else {
-      _currentBgpVrfAddressFamily.setMaximumPathsEbgp(limit);
+      _currentBgpVrfIpAddressFamily.setMaximumPathsEbgp(limit);
     }
   }
 
   @Override
-  public void exitRb_af_network(Rb_af_networkContext ctx) {
-    String mapname = "";
-    if (ctx.mapname != null) {
-      Optional<String> nameOrError = toString(ctx, ctx.mapname);
-      if (!nameOrError.isPresent()) {
-        return;
-      }
-      mapname = nameOrError.get();
-      _configuration.referenceStructure(
-          ROUTE_MAP, mapname, BGP_NETWORK_ROUTE_MAP, ctx.getStart().getLine());
-    }
-
-    if (ctx.network != null) {
-      Prefix prefix = toPrefix(ctx.network);
-      _currentBgpVrfAddressFamily.addIpNetwork(prefix, mapname);
-    } else if (ctx.prefix6 != null) {
-      Prefix6 prefix = toPrefix6(ctx.prefix6);
-      _currentBgpVrfAddressFamily.addIpv6Network(prefix, mapname);
-    }
-  }
-
-  @Override
-  public void exitRb_af_nexthop_route_map(Rb_af_nexthop_route_mapContext ctx) {
+  public void exitRb_afip_nexthop_route_map(Rb_afip_nexthop_route_mapContext ctx) {
     todo(ctx);
     toString(ctx, ctx.mapname)
         .ifPresent(
@@ -1663,7 +2054,7 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
   }
 
   @Override
-  public void exitRb_af_redistribute_direct(Rb_af_redistribute_directContext ctx) {
+  public void exitRb_afip_redistribute_direct(Rb_afip_redistribute_directContext ctx) {
     Optional<String> nameOrError = toString(ctx, ctx.mapname);
     if (!nameOrError.isPresent()) {
       return;
@@ -1671,11 +2062,11 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
     String name = nameOrError.get();
     _configuration.referenceStructure(
         ROUTE_MAP, name, BGP_REDISTRIBUTE_DIRECT_ROUTE_MAP, ctx.getStart().getLine());
-    _currentBgpVrfAddressFamily.setRedistributionPolicy(RoutingProtocol.CONNECTED, name, null);
+    _currentBgpVrfIpAddressFamily.setRedistributionPolicy(RoutingProtocol.CONNECTED, name, null);
   }
 
   @Override
-  public void exitRb_af_redistribute_eigrp(Rb_af_redistribute_eigrpContext ctx) {
+  public void exitRb_afip_redistribute_eigrp(Rb_afip_redistribute_eigrpContext ctx) {
     Optional<String> nameOrError = toString(ctx, ctx.mapname);
     if (!nameOrError.isPresent()) {
       return;
@@ -1684,11 +2075,11 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
     String sourceTag = ctx.source_tag.getText();
     _configuration.referenceStructure(
         ROUTE_MAP, name, BGP_REDISTRIBUTE_EIGRP_ROUTE_MAP, ctx.getStart().getLine());
-    _currentBgpVrfAddressFamily.setRedistributionPolicy(RoutingProtocol.EIGRP, name, sourceTag);
+    _currentBgpVrfIpAddressFamily.setRedistributionPolicy(RoutingProtocol.EIGRP, name, sourceTag);
   }
 
   @Override
-  public void exitRb_af_redistribute_isis(Rb_af_redistribute_isisContext ctx) {
+  public void exitRb_afip_redistribute_isis(Rb_afip_redistribute_isisContext ctx) {
     Optional<String> nameOrError = toString(ctx, ctx.mapname);
     if (!nameOrError.isPresent()) {
       return;
@@ -1697,11 +2088,12 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
     String sourceTag = ctx.source_tag.getText();
     _configuration.referenceStructure(
         ROUTE_MAP, name, BGP_REDISTRIBUTE_ISIS_ROUTE_MAP, ctx.getStart().getLine());
-    _currentBgpVrfAddressFamily.setRedistributionPolicy(RoutingProtocol.ISIS_ANY, name, sourceTag);
+    _currentBgpVrfIpAddressFamily.setRedistributionPolicy(
+        RoutingProtocol.ISIS_ANY, name, sourceTag);
   }
 
   @Override
-  public void exitRb_af_redistribute_lisp(Rb_af_redistribute_lispContext ctx) {
+  public void exitRb_afip_redistribute_lisp(Rb_afip_redistribute_lispContext ctx) {
     Optional<String> nameOrError = toString(ctx, ctx.mapname);
     if (!nameOrError.isPresent()) {
       return;
@@ -1709,37 +2101,11 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
     String name = nameOrError.get();
     _configuration.referenceStructure(
         ROUTE_MAP, name, BGP_REDISTRIBUTE_LISP_ROUTE_MAP, ctx.getStart().getLine());
-    _currentBgpVrfAddressFamily.setRedistributionPolicy(RoutingProtocol.LISP, name, null);
+    _currentBgpVrfIpAddressFamily.setRedistributionPolicy(RoutingProtocol.LISP, name, null);
   }
 
   @Override
-  public void exitRb_af_redistribute_ospf(Rb_af_redistribute_ospfContext ctx) {
-    Optional<String> nameOrError = toString(ctx, ctx.mapname);
-    if (!nameOrError.isPresent()) {
-      return;
-    }
-    String name = nameOrError.get();
-    String sourceTag = ctx.source_tag.getText();
-    _configuration.referenceStructure(
-        ROUTE_MAP, name, BGP_REDISTRIBUTE_OSPF_ROUTE_MAP, ctx.getStart().getLine());
-    _currentBgpVrfAddressFamily.setRedistributionPolicy(RoutingProtocol.OSPF, name, sourceTag);
-  }
-
-  @Override
-  public void exitRb_af_redistribute_ospfv3(Rb_af_redistribute_ospfv3Context ctx) {
-    Optional<String> nameOrError = toString(ctx, ctx.mapname);
-    if (!nameOrError.isPresent()) {
-      return;
-    }
-    String name = nameOrError.get();
-    String sourceTag = ctx.source_tag.getText();
-    _configuration.referenceStructure(
-        ROUTE_MAP, name, BGP_REDISTRIBUTE_OSPFV3_ROUTE_MAP, ctx.getStart().getLine());
-    _currentBgpVrfAddressFamily.setRedistributionPolicy(RoutingProtocol.OSPF3, name, sourceTag);
-  }
-
-  @Override
-  public void exitRb_af_redistribute_rip(Rb_af_redistribute_ripContext ctx) {
+  public void exitRb_afip_redistribute_rip(Rb_afip_redistribute_ripContext ctx) {
     Optional<String> nameOrError = toString(ctx, ctx.mapname);
     if (!nameOrError.isPresent()) {
       return;
@@ -1748,11 +2114,11 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
     String sourceTag = ctx.source_tag.getText();
     _configuration.referenceStructure(
         ROUTE_MAP, name, BGP_REDISTRIBUTE_RIP_ROUTE_MAP, ctx.getStart().getLine());
-    _currentBgpVrfAddressFamily.setRedistributionPolicy(RoutingProtocol.RIP, name, sourceTag);
+    _currentBgpVrfIpAddressFamily.setRedistributionPolicy(RoutingProtocol.RIP, name, sourceTag);
   }
 
   @Override
-  public void exitRb_af_redistribute_static(Rb_af_redistribute_staticContext ctx) {
+  public void exitRb_afip_redistribute_static(Rb_afip_redistribute_staticContext ctx) {
     Optional<String> nameOrError = toString(ctx, ctx.mapname);
     if (!nameOrError.isPresent()) {
       return;
@@ -1760,22 +2126,56 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
     String name = nameOrError.get();
     _configuration.referenceStructure(
         ROUTE_MAP, name, BGP_REDISTRIBUTE_STATIC_ROUTE_MAP, ctx.getStart().getLine());
-    _currentBgpVrfAddressFamily.setRedistributionPolicy(RoutingProtocol.STATIC, name, null);
+    _currentBgpVrfIpAddressFamily.setRedistributionPolicy(RoutingProtocol.STATIC, name, null);
   }
 
   @Override
-  public void exitRb_af_suppress_inactive(Rb_af_suppress_inactiveContext ctx) {
-    _currentBgpVrfAddressFamily.setSuppressInactive(true);
+  public void exitRb_afip_suppress_inactive(Rb_afip_suppress_inactiveContext ctx) {
+    _currentBgpVrfIpAddressFamily.setSuppressInactive(true);
   }
 
   @Override
-  public void exitRb_af_table_map(Rb_af_table_mapContext ctx) {
+  public void exitRb_afip_table_map(Rb_afip_table_mapContext ctx) {
     Optional<String> nameOrError = toString(ctx, ctx.mapname);
     if (!nameOrError.isPresent()) {
       return;
     }
     String name = nameOrError.get();
     _configuration.referenceStructure(ROUTE_MAP, name, BGP_TABLE_MAP, ctx.getStart().getLine());
+  }
+
+  @Override
+  public void enterRb_af_l2vpn(Rb_af_l2vpnContext ctx) {
+    BgpVrfAddressFamilyConfiguration af =
+        _currentBgpVrfConfiguration.getOrCreateAddressFamily(Type.L2VPN_EVPN);
+    assert af instanceof BgpVrfL2VpnEvpnAddressFamilyConfiguration;
+    _currentBgpVrfL2VpnEvpnAddressFamily = (BgpVrfL2VpnEvpnAddressFamilyConfiguration) af;
+  }
+
+  @Override
+  public void exitRb_af_l2vpn(Rb_af_l2vpnContext ctx) {
+    _currentBgpVrfL2VpnEvpnAddressFamily = null;
+  }
+
+  @Override
+  public void exitRb_afl2v_retain(Rb_afl2v_retainContext ctx) {
+    if (ctx.ROUTE_MAP() != null) {
+      Optional<String> mapOrError = toString(ctx, ctx.map);
+      if (!mapOrError.isPresent()) {
+        return;
+      }
+      String map = mapOrError.get();
+      _currentBgpVrfL2VpnEvpnAddressFamily.setRetainMode(RetainRouteType.ROUTE_MAP);
+      _currentBgpVrfL2VpnEvpnAddressFamily.setRetainRouteMap(map);
+      _configuration.referenceStructure(
+          ROUTE_MAP,
+          map,
+          BGP_L2VPN_EVPN_RETAIN_ROUTE_TARGET_ROUTE_MAP,
+          ctx.map.getStart().getLine());
+    } else {
+      assert ctx.ALL() != null;
+      _currentBgpVrfL2VpnEvpnAddressFamily.setRetainMode(RetainRouteType.ALL);
+    }
   }
 
   @Override
@@ -1993,7 +2393,7 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
       return;
     }
     todo(ctx);
-    CiscoNxosStructureType type = _inIpv6BgpPeer ? IPV6_ACCESS_LIST : IP_ACCESS_LIST;
+    CiscoNxosStructureType type = _inIpv6BgpPeer ? IPV6_PREFIX_LIST : IP_PREFIX_LIST;
     CiscoNxosStructureUsage usage =
         _inIpv6BgpPeer
             ? ((ctx.IN() != null) ? BGP_NEIGHBOR6_PREFIX_LIST_IN : BGP_NEIGHBOR6_PREFIX_LIST_OUT)
@@ -2222,6 +2622,7 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
   public void enterRouter_bgp(Router_bgpContext ctx) {
     _currentBgpVrfConfiguration =
         _configuration.getBgpGlobalConfiguration().getOrCreateVrf(DEFAULT_VRF_NAME);
+    _configuration.getBgpGlobalConfiguration().setLocalAs(toLong(ctx.bgp_asn()));
   }
 
   @Override
@@ -2259,7 +2660,7 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
                             i,
                             n -> {
                               String nveName = "nve" + i;
-                              _configuration.defineStructure(NVE, nveName, line);
+                              _configuration.defineStructure(NVE, nveName, ctx);
                               _configuration.referenceStructure(
                                   NVE, nveName, NVE_SELF_REFERENCE, line);
                               return new Nve(i);
@@ -2352,7 +2753,7 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
                       .computeIfAbsent(
                           ifaceName,
                           n -> {
-                            _configuration.defineStructure(INTERFACE, n, line);
+                            _configuration.defineStructure(INTERFACE, n, ctx);
                             _configuration.referenceStructure(
                                 INTERFACE, n, INTERFACE_SELF_REFERENCE, line);
                             if (type == CiscoNxosInterfaceType.VLAN) {
@@ -2361,7 +2762,7 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
                               return newVlanInterface(n, i);
                             } else {
                               if (type == CiscoNxosInterfaceType.PORT_CHANNEL) {
-                                _configuration.defineStructure(PORT_CHANNEL, n, line);
+                                _configuration.defineStructure(PORT_CHANNEL, n, ctx);
                               }
                               return newNonVlanInterface(n, parentInterface, type);
                             }
@@ -2392,24 +2793,17 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
     if (!nameOpt.isPresent()) {
       return;
     }
-    int line = ctx.getStart().getLine();
+    String name = nameOpt.get();
     _currentRouteMapEntry =
         _configuration
             .getRouteMaps()
-            .computeIfAbsent(
-                nameOpt.get(),
-                name -> {
-                  _configuration.defineStructure(ROUTE_MAP, name, line);
-                  return new RouteMap(name);
-                })
+            .computeIfAbsent(name, RouteMap::new)
             .getEntries()
-            .computeIfAbsent(
-                sequence,
-                seq -> {
-                  _configuration.defineStructure(ROUTE_MAP_ENTRY, seq.toString(), line);
-                  return new RouteMapEntry(seq);
-                });
+            .computeIfAbsent(sequence, RouteMapEntry::new);
     _currentRouteMapEntry.setAction(toLineAction(ctx.action));
+
+    _configuration.defineStructure(ROUTE_MAP, name, ctx);
+    _configuration.defineStructure(ROUTE_MAP_ENTRY, Integer.toString(sequence), ctx);
   }
 
   @Override
@@ -2430,7 +2824,7 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
             .computeIfAbsent(
                 nameOrErr.get(),
                 name -> {
-                  _configuration.defineStructure(VRF, name, ctx.getStart().getLine());
+                  _configuration.defineStructure(VRF, name, ctx);
                   return new Vrf(name);
                 });
   }
@@ -2438,7 +2832,6 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
   @Override
   public void enterVlan_vlan(Vlan_vlanContext ctx) {
     IntegerSpace vlans = toVlanIdRange(ctx, ctx.vlans);
-    int line = ctx.getStart().getLine();
     if (vlans == null) {
       _currentVlans = ImmutableList.of();
       return;
@@ -2452,7 +2845,7 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
                         .computeIfAbsent(
                             vlanId,
                             id -> {
-                              _configuration.defineStructure(VLAN, Integer.toString(id), line);
+                              _configuration.defineStructure(VLAN, Integer.toString(id), ctx);
                               return new Vlan(id);
                             }))
             .collect(ImmutableList.toImmutableList());
@@ -2836,8 +3229,8 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
   @Override
   public void exitI_channel_group(I_channel_groupContext ctx) {
     int line = ctx.getStart().getLine();
-    String channelGroup = toPortChannel(ctx, ctx.id);
-    if (channelGroup == null) {
+    String portChannelInterfaceName = toPortChannel(ctx, ctx.id);
+    if (portChannelInterfaceName == null) {
       return;
     }
     // To be added to a channel-group, all interfaces in range must be:
@@ -2850,19 +3243,23 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
     // - Otherwise, the new port-channel and interfaces beyond the first copy settings
     //   from the first interface in the range.
 
-    boolean channelExists = _configuration.getInterfaces().containsKey(channelGroup);
+    boolean portChannelExists =
+        _configuration.getInterfaces().containsKey(portChannelInterfaceName);
     boolean force = ctx.force != null;
 
-    _configuration.referenceStructure(PORT_CHANNEL, channelGroup, INTERFACE_CHANNEL_GROUP, line);
+    _configuration.referenceStructure(
+        PORT_CHANNEL, portChannelInterfaceName, INTERFACE_CHANNEL_GROUP, line);
 
     if (_currentInterfaces.isEmpty()) {
       // Stop now, since later logic requires non-empty list
       return;
     }
 
+    // Where settings are copied from: the port-channel[ID] if it exists, or the first interface
+    // in the current interface range.
     Interface referenceIface =
-        channelExists
-            ? _configuration.getInterfaces().get(channelGroup)
+        portChannelExists
+            ? _configuration.getInterfaces().get(portChannelInterfaceName)
             : _currentInterfaces.iterator().next();
 
     if (!force) {
@@ -2871,32 +3268,40 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
               .filter(iface -> iface != referenceIface)
               .filter(iface -> !checkPortChannelCompatibilitySettings(referenceIface, iface))
               .findFirst();
+      // If some incompatible interface found, warn, do not set the group,
+      // do not create the port-channel, and do not copy settings.
       if (incompatibleInterface.isPresent()) {
-        _w.redFlag(
+        _w.addWarning(
+            ctx,
+            getFullText(ctx),
+            _parser,
             String.format(
-                "Cannot set channel-group because interface '%s' has settings that do not conform to those of interface '%s' in: %s",
-                incompatibleInterface.get().getName(), referenceIface.getName(), getFullText(ctx)));
+                "Cannot set channel-group because interface '%s' has settings that do not conform to those of interface '%s'",
+                incompatibleInterface.get().getName(), referenceIface.getName()));
         return;
       }
     }
 
-    Interface portChannelIface;
-    if (channelExists) {
-      portChannelIface = referenceIface;
-    } else {
-      portChannelIface =
-          newNonVlanInterface(channelGroup, null, CiscoNxosInterfaceType.PORT_CHANNEL);
+    if (!portChannelExists) {
+      // Make the port-channel[ID] parent interface and copy settings "up" to it.
+      Interface portChannelIface =
+          newNonVlanInterface(portChannelInterfaceName, null, CiscoNxosInterfaceType.PORT_CHANNEL);
       copyPortChannelCompatibilitySettings(referenceIface, portChannelIface);
-      _configuration.getInterfaces().put(channelGroup, portChannelIface);
-      _configuration.defineStructure(INTERFACE, channelGroup, line);
-      _configuration.referenceStructure(INTERFACE, channelGroup, INTERFACE_SELF_REFERENCE, line);
-      _configuration.defineStructure(PORT_CHANNEL, channelGroup, line);
+      _configuration.getInterfaces().put(portChannelInterfaceName, portChannelIface);
+      _configuration.defineStructure(INTERFACE, portChannelInterfaceName, line);
+      _configuration.referenceStructure(
+          INTERFACE, portChannelInterfaceName, INTERFACE_SELF_REFERENCE, line);
+      _configuration.defineStructure(PORT_CHANNEL, portChannelInterfaceName, line);
     }
 
     _currentInterfaces.forEach(
         iface -> {
-          iface.setChannelGroup(channelGroup);
-          copyPortChannelCompatibilitySettings(referenceIface, iface);
+          iface.setChannelGroup(portChannelInterfaceName);
+          if (force) {
+            copyPortChannelCompatibilitySettings(referenceIface, iface);
+          } else {
+            assert checkPortChannelCompatibilitySettings(referenceIface, iface);
+          }
         });
   }
 
@@ -3131,6 +3536,22 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
   }
 
   @Override
+  public void exitNve_host_reachability(Nve_host_reachabilityContext ctx) {
+    if (_currentNves.stream()
+        .flatMap(nve -> nve.getMemberVnis().values().stream())
+        .anyMatch(
+            vni -> vni.getIngressReplicationProtocol() == IngressReplicationProtocol.STATIC)) {
+      _w.addWarning(
+          ctx,
+          getFullText(ctx),
+          _parser,
+          "Please remove ingress replication static under VNIs before configuring host reachability bgp.");
+      return;
+    }
+    _currentNves.forEach(nve -> nve.setHostReachabilityProtocol(HostReachabilityProtocol.BGP));
+  }
+
+  @Override
   public void exitNve_no_shutdown(Nve_no_shutdownContext ctx) {
     _currentNves.forEach(n -> n.setShutdown(false));
   }
@@ -3292,11 +3713,17 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
     Optional.ofNullable(_currentRouteMapEntry.getMatchIpAddressPrefixList())
         .ifPresent(old -> names.addAll(old.getNames()));
     for (Ip_prefix_list_nameContext nameCtx : ctx.names) {
-      Optional<String> name = toString(ctx, nameCtx);
-      if (!name.isPresent()) {
+      Optional<String> nameOrError = toString(ctx, nameCtx);
+      if (!nameOrError.isPresent()) {
         return;
       }
-      names.add(name.get());
+      String name = nameOrError.get();
+      _configuration.referenceStructure(
+          IP_PREFIX_LIST,
+          name,
+          ROUTE_MAP_MATCH_IP_ADDRESS_PREFIX_LIST,
+          nameCtx.getStart().getLine());
+      names.add(name);
     }
     _currentRouteMapEntry.setMatchIpAddressPrefixList(
         new RouteMapMatchIpAddressPrefixList(names.build()));
@@ -4169,8 +4596,11 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
 
   private @Nonnull Optional<String> toString(
       ParserRuleContext messageCtx, Router_ospf_nameContext ctx) {
-    return toStringWithLengthInSpace(
-        messageCtx, ctx, OSPF_PROCESS_NAME_LENGTH_RANGE, "OSPF process name");
+    Optional<String> procName =
+        toStringWithLengthInSpace(
+            messageCtx, ctx, OSPF_PROCESS_NAME_LENGTH_RANGE, "OSPF process name");
+    // OSPF process name is case-insensitive.
+    return procName.map(name -> getPreferredName(name, ROUTER_OSPF));
   }
 
   private @Nullable String toString(ParserRuleContext messageCtx, Static_route_nameContext ctx) {
@@ -4192,19 +4622,10 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
   }
 
   private @Nonnull Optional<String> toString(ParserRuleContext messageCtx, Vrf_nameContext ctx) {
-    String name = ctx.getText();
-    if (name.length() > MAX_VRF_NAME_LENGTH) {
-      _w.addWarning(
-          messageCtx,
-          getFullText(messageCtx),
-          _parser,
-          String.format(
-              "VRF name cannot exceed %d chars, but was '%s' in: %s",
-              MAX_VRF_NAME_LENGTH, name, getFullText(messageCtx)));
-      return Optional.empty();
-    }
-    // Case-insensitive, so just canonicalize as lower-case
-    return Optional.of(name.toLowerCase());
+    Optional<String> vrfName =
+        toStringWithLengthInSpace(messageCtx, ctx, VRF_NAME_LENGTH_RANGE, "VRF name");
+    // VRF names are case-insensitive.
+    return vrfName.map(name -> getPreferredName(name, VRF));
   }
 
   /**
