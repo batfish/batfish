@@ -219,8 +219,8 @@ ih_version
 
 hsrp_version
 :
-// 1,2
-  uint8  
+  HSRP_VERSION_1
+  | HSRP_VERSION_2  
 ;
 
 i_ip
