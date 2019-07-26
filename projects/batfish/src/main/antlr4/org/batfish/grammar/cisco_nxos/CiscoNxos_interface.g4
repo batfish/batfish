@@ -514,6 +514,7 @@ nve_member
   (
      nvm_ingress_replication
      | nvm_mcast_group
+     | nvm_peer_ip
      | nvm_peer_vtep
      | nvm_spine_anycast_gateway
      | nvm_suppress_arp
@@ -528,6 +529,11 @@ nvm_ingress_replication
 nvm_mcast_group
 :
    MCAST_GROUP first = ip_address second = ip_address? NEWLINE
+;
+
+nvm_peer_ip
+:
+   PEER_IP ip_address NEWLINE
 ;
 
 nvm_peer_vtep

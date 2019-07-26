@@ -242,6 +242,7 @@ import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Nvg_mcast_groupContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Nvg_suppress_arpContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Nvm_ingress_replicationContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Nvm_mcast_groupContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Nvm_peer_ipContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Nvm_suppress_arpContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Ospf_area_default_costContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Ospf_area_idContext;
@@ -1682,10 +1683,8 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
     if (ctx.BGP() != null) {
       if (_currentNves.stream()
           .anyMatch(nve -> nve.getHostReachabilityProtocol() != HostReachabilityProtocol.BGP)) {
-        _w.addWarning(
+        warn(
             ctx,
-            getFullText(ctx),
-            _parser,
             "Cannot enable ingress replication bgp under VNI without host-reachability protocol bgp");
         return;
       }
@@ -1694,10 +1693,8 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
     } else {
       assert ctx.STATIC() != null;
       if (_currentNves.stream().anyMatch(nve -> nve.getHostReachabilityProtocol() != null)) {
-        _w.addWarning(
+        warn(
             ctx,
-            getFullText(ctx),
-            _parser,
             "Cannot enable ingress replication static under VNI without unset host-reachability protocol");
         return;
       }
@@ -1713,7 +1710,25 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
       warn(ctx, String.format("IPv4 address %s is not a valid multicast IP", mcastIp));
       return;
     }
+    if (_currentNveVnis.stream()
+        .anyMatch(
+            vni -> vni.getIngressReplicationProtocol() == IngressReplicationProtocol.STATIC)) {
+      warn(ctx, "Cannot set multicast group with ingress-replication protocol static");
+      return;
+    }
     _currentNveVnis.forEach(vni -> vni.setMcastGroup(mcastIp));
+  }
+
+  @Override
+  public void exitNvm_peer_ip(Nvm_peer_ipContext ctx) {
+    if (_currentNveVnis.stream()
+        .anyMatch(
+            vni -> vni.getIngressReplicationProtocol() != IngressReplicationProtocol.STATIC)) {
+      warn(ctx, "Cannot set peer-ip unless ingress-replication protocol is static");
+      return;
+    }
+    Ip peerIp = toIp(ctx.ip_address());
+    _currentNveVnis.forEach(vni -> vni.addPeerIp(peerIp));
   }
 
   @Override
