@@ -9,7 +9,6 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.graph.Network;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Optional;
@@ -49,6 +48,7 @@ import org.batfish.dataplane.rib.EigrpRib;
 import org.batfish.dataplane.rib.RibDelta;
 import org.batfish.dataplane.rib.RibDelta.Builder;
 import org.batfish.dataplane.rib.RouteAdvertisement;
+import org.batfish.dataplane.rib.RouteAdvertisement.Reason;
 
 /** An instance of an EigrpProcess as constructed and used by {@link VirtualRouter} */
 @ParametersAreNonnullByDefault
@@ -88,18 +88,25 @@ final class EigrpRoutingProcess implements RoutingProcess<EigrpTopology, EigrpRo
    * {@link Map} containing redistributed routes {@link RibDelta}s per neighbor at the end of
    * current iteration
    */
-  @Nullable private Map<EigrpEdge, RibDelta<EigrpExternalRoute>> _redistributedRoutesPerEdge;
+  // @Nullable private Map<EigrpEdge, RibDelta<EigrpExternalRoute>> _redistributedRoutesPerEdge;
 
   /**
    * {@link Map} containing redistributed routes {@link RibDelta}s per neighbor at the end of
    * current iteration
    */
-  @Nullable
-  private Map<EigrpEdge, RibDelta<EigrpExternalRoute>> _previousRedistributedRoutesPerEdge;
+  //  @Nullable
+  //  private Map<EigrpEdge, RibDelta<EigrpExternalRoute>> _previousRedistributedRoutesPerEdge;
   /** Set of routes to be merged to the main RIB at the end of the iteration */
   @Nonnull private RibDelta.Builder<EigrpRoute> _changeSet;
 
   // Message queues
+  //  @Nonnull
+  //  private SortedMap<EigrpEdge, Queue<RouteAdvertisement<EigrpInternalRoute>>>
+  //      _oldIncomingInternalRoutes;
+  /** Incoming external route messages into this router from each EIGRP adjacency */
+  //  @Nonnull @VisibleForTesting
+  //  SortedMap<EigrpEdge, Queue<RouteAdvertisement<EigrpExternalRoute>>>
+  // _oldIncomingExternalRoutes;
 
   /** Incoming internal route messages into this router from each EIGRP adjacency */
   @Nonnull
@@ -134,8 +141,8 @@ final class EigrpRoutingProcess implements RoutingProcess<EigrpTopology, EigrpRo
     _incomingInternalRoutes = ImmutableSortedMap.of();
     _incomingExternalRoutes = ImmutableSortedMap.of();
     _changeSet = RibDelta.builder();
-    _previousRedistributedRoutesPerEdge = null;
-    _redistributedRoutesPerEdge = null;
+    //    _previousRedistributedRoutesPerEdge = null;
+    //    _redistributedRoutesPerEdge = null;
   }
 
   @Override
@@ -156,6 +163,8 @@ final class EigrpRoutingProcess implements RoutingProcess<EigrpTopology, EigrpRo
 
   @Override
   public void executeIteration(Map<String, Node> allNodes) {
+    //    _oldIncomingExternalRoutes = _incomingExternalRoutes;
+    //    _oldIncomingInternalRoutes = _incomingInternalRoutes;
     _changeSet = RibDelta.builder();
     if (!_initializationDelta.isEmpty()) {
       // If we haven't sent out the first round of updates after initialization, do so now. Then
@@ -178,8 +187,8 @@ final class EigrpRoutingProcess implements RoutingProcess<EigrpTopology, EigrpRo
 
     // Filter and transform redistribution queue according to per neighbor export policy and send
     // out
-    _previousRedistributedRoutesPerEdge = _redistributedRoutesPerEdge;
-    _redistributedRoutesPerEdge = new HashMap<>();
+    //    _previousRedistributedRoutesPerEdge = _redistributedRoutesPerEdge;
+    //    _redistributedRoutesPerEdge = new HashMap<>();
     filterTransformExportRedistributed(_queuedForRedistribution, allNodes);
     _queuedForRedistribution = RibDelta.empty();
 
@@ -203,8 +212,8 @@ final class EigrpRoutingProcess implements RoutingProcess<EigrpTopology, EigrpRo
       }
       RibDelta<EigrpExternalRoute> routesForExport =
           filterAndTransform(queueForRedistribution, exportPolicyForEdge);
-      assert _redistributedRoutesPerEdge != null;
-      _redistributedRoutesPerEdge.put(eigrpEdge, routesForExport);
+      //      assert _redistributedRoutesPerEdge != null;
+      //      _redistributedRoutesPerEdge.put(eigrpEdge, routesForExport);
       sendExternalRoutesOutFromEdge(eigrpEdge, routesForExport, allNodes);
     }
   }
@@ -222,9 +231,11 @@ final class EigrpRoutingProcess implements RoutingProcess<EigrpTopology, EigrpRo
                 return; // no need to export
               }
               if (!ra.isWithdrawn()) {
-                builder.from(_externalRib.mergeRouteGetDelta(outputRoute));
+                builder.add(outputRoute);
+                _externalRib.mergeRouteGetDelta(outputRoute);
               } else {
-                builder.from(_externalRib.removeRouteGetDelta(outputRoute));
+                builder.remove(outputRoute, Reason.WITHDRAW);
+                _externalRib.removeRouteGetDelta(outputRoute);
               }
             });
     return builder.build();
@@ -246,16 +257,14 @@ final class EigrpRoutingProcess implements RoutingProcess<EigrpTopology, EigrpRo
     return !_incomingInternalRoutes.values().stream().allMatch(Queue::isEmpty)
         || !_incomingExternalRoutes.values().stream().allMatch(Queue::isEmpty)
         || !_changeSet.isEmpty()
-        || !redistributedRoutesPerEdgeConverged()
+        || !_queuedForRedistribution.isEmpty()
         || !_initializationDelta.isEmpty();
   }
 
-  private boolean redistributedRoutesPerEdgeConverged() {
-    return _redistributedRoutesPerEdge != null
-        && _redistributedRoutesPerEdge.values().stream().allMatch(RibDelta::isEmpty)
-        && _previousRedistributedRoutesPerEdge != null
-        && _previousRedistributedRoutesPerEdge.values().stream().allMatch(RibDelta::isEmpty);
-  }
+  //  private boolean redistributedRoutesPerEdgeConverged() {
+  //    return _previousRedistributedRoutesPerEdge != null
+  //        && _previousRedistributedRoutesPerEdge.equals(_redistributedRoutesPerEdge);
+  //  }
 
   /**
    * Init internal routes from connected routes. For each interface prefix, construct a new internal

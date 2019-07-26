@@ -174,10 +174,13 @@ public class EigrpTest {
    *
    * @param sourceProtocol Protocol of routes that are being redistributed
    * @param destProtocol Protocol of process that is receiving redistributed routes
+   * @param otherAsn ASN of the other EIGRP process from which we want to import routes using the
+   *     policy
+   * @param myAsn ASN of the EIGRP process which will be using the policy
    * @return {@link List} of {@link Statement}s to create a {@link RoutingPolicy}
    */
   private static List<Statement> getExportPolicyStatements(
-      RoutingProtocol sourceProtocol, RoutingProtocol destProtocol, @Nullable Long eigrpAsn) {
+      RoutingProtocol sourceProtocol, RoutingProtocol destProtocol, Long otherAsn, Long myAsn) {
 
     ImmutableList.Builder<Statement> exportStatements = ImmutableList.builder();
 
@@ -198,7 +201,7 @@ public class EigrpTest {
 
     If exportIfMatchProtocol = new If();
     if (sourceProtocol == EIGRP) {
-      requireNonNull(eigrpAsn);
+      requireNonNull(otherAsn);
       exportIfMatchProtocol.setGuard(
           new Conjunction(
               ImmutableList.of(
@@ -206,18 +209,18 @@ public class EigrpTest {
                       ImmutableList.of(
                           new MatchProtocol(RoutingProtocol.EIGRP),
                           new MatchProtocol(RoutingProtocol.EIGRP_EX))),
-                  new MatchProcessAsn(eigrpAsn))));
+                  new MatchProcessAsn(otherAsn))));
     } else {
       exportIfMatchProtocol.setGuard(new MatchProtocol(sourceProtocol));
     }
     exportIfMatchProtocol.setTrueStatements(exportStatements.build());
-    if (eigrpAsn != null) {
+    if (myAsn != null) {
       return ImmutableList.of(
           exportIfMatchProtocol,
           new If(
               new Conjunction(
                   ImmutableList.of(
-                      new MatchProtocol(RoutingProtocol.EIGRP), new MatchProcessAsn(eigrpAsn))),
+                      new MatchProtocol(RoutingProtocol.EIGRP), new MatchProcessAsn(myAsn))),
               ImmutableList.of(Statements.ExitAccept.toStaticStatement())));
     }
     return ImmutableList.of(exportIfMatchProtocol);
@@ -269,15 +272,16 @@ public class EigrpTest {
 
     NetworkFactory nf = new NetworkFactory();
     RoutingPolicy.Builder exportConnected =
-        nf.routingPolicyBuilder().setStatements(getExportPolicyStatements(CONNECTED, EIGRP, 1L));
+        nf.routingPolicyBuilder()
+            .setStatements(getExportPolicyStatements(CONNECTED, EIGRP, 1L, 1L));
     RoutingPolicy.Builder exportEigrpIntoOtherEigrp =
-        nf.routingPolicyBuilder().setStatements(getExportPolicyStatements(EIGRP, EIGRP, 1L));
+        nf.routingPolicyBuilder().setStatements(getExportPolicyStatements(EIGRP, EIGRP, 1L, 1L));
     RoutingPolicy.Builder exportEigrpIntoOspf =
-        nf.routingPolicyBuilder().setStatements(getExportPolicyStatements(EIGRP, OSPF, 1L));
+        nf.routingPolicyBuilder().setStatements(getExportPolicyStatements(EIGRP, OSPF, 1L, 1L));
     RoutingPolicy.Builder exportOspf =
-        nf.routingPolicyBuilder().setStatements(getExportPolicyStatements(OSPF, EIGRP, 1L));
+        nf.routingPolicyBuilder().setStatements(getExportPolicyStatements(OSPF, EIGRP, 1L, 1L));
     RoutingPolicy.Builder exportOtherEigrpIntoEigrp =
-        nf.routingPolicyBuilder().setStatements(getExportPolicyStatements(EIGRP, EIGRP, 2L));
+        nf.routingPolicyBuilder().setStatements(getExportPolicyStatements(EIGRP, EIGRP, 1L, 2L));
 
     EigrpProcess.Builder epb =
         EigrpProcess.builder().setAsNumber(asn).setRouterId(Ip.parse("100.100.100.100"));
@@ -333,9 +337,9 @@ public class EigrpTest {
       buildOspfExternalInterface(oib, c2E2To1Name, R2_E2_1_ADDR);
     } else if (otherProcess == EIGRP) {
       // Build other EIGRP
+      exportPolicyName = exportOtherEigrpIntoEigrp.setOwner(c2).build().getName();
       proc2 = epb.setAsNumber(otherAsn).setRouterId(Ip.parse("200.200.200.200")).build();
       c2.getDefaultVrf().addEigrpProcess(proc2);
-      exportPolicyName = exportOtherEigrpIntoEigrp.setOwner(c2).build().getName();
       buildEigrpLoopbackInterface(eib, otherAsn, mode2, R2_L0_ADDR, exportPolicyName);
       buildEigrpExternalInterface(
           eib, otherAsn, mode2, R2_E2_1_ADDR, c2E2To1Name, c2E2To1DelayMult, exportPolicyName);
