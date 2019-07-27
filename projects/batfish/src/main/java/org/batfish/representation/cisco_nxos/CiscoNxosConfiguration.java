@@ -1053,7 +1053,7 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
 
     assert action == LineAction.DENY;
     // deny if initial fragment and l4 conditions match. else do nothing (no match).
-    return and(MATCH_INITIAL_FRAGMENT_OFFSET, l4);
+    return and(l3, MATCH_INITIAL_FRAGMENT_OFFSET, l4);
   }
 
   private @Nonnull AclLineMatchExpr matchL3(ActionIpAccessListLine actionIpAccessListLine) {
