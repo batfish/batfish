@@ -65,8 +65,6 @@ final class EigrpRoutingProcess implements RoutingProcess<EigrpTopology, EigrpRo
   @Nonnull private final String _vrfName;
   /** Our AS number */
   private final long _asn;
-  /** Routing policy to determine whether and how to export */
-  @Nullable private final RoutingPolicy _exportPolicy;
 
   private final int _defaultExternalAdminCost;
   private final int _defaultInternalAdminCost;
@@ -121,7 +119,6 @@ final class EigrpRoutingProcess implements RoutingProcess<EigrpTopology, EigrpRo
 
     // get EIGRP export policy name
     String exportPolicyName = process.getExportPolicy();
-    _exportPolicy = exportPolicyName != null ? c.getRoutingPolicies().get(exportPolicyName) : null;
     _topology = EigrpTopology.EMPTY;
     _initializationDelta = RibDelta.empty();
     _queuedForRedistribution = RibDelta.empty();
