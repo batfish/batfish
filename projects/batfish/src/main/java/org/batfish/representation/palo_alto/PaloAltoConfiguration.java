@@ -43,7 +43,6 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import org.apache.commons.collections4.list.TreeList;
 import org.batfish.common.VendorConversionException;
 import org.batfish.common.Warnings;
 import org.batfish.datamodel.AclIpSpace;
@@ -752,7 +751,7 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
     IpAccessListLine.Builder ipAccessListLineBuilder =
         IpAccessListLine.builder().setName(rule.getName()).setAction(rule.getAction());
 
-    List<AclLineMatchExpr> conjuncts = new TreeList<>();
+    List<AclLineMatchExpr> conjuncts = new LinkedList<>();
     // Match SRC IPs if specified.
     IpSpace srcIps = ipSpaceFromRuleEndpoints(rule.getSource(), vsys, _w);
     if (srcIps != null) {
@@ -777,7 +776,7 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
     // Construct source zone (source interface) match expression
     SortedSet<String> ruleFroms = rule.getFrom();
     if (!ruleFroms.isEmpty()) {
-      List<String> srcInterfaces = new TreeList<>();
+      List<String> srcInterfaces = new LinkedList<>();
       for (String zoneName : ruleFroms) {
         if (zoneName.equals(CATCHALL_ZONE_NAME)) {
           for (Zone zone : rule.getVsys().getZones().values()) {
@@ -798,7 +797,7 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
     // Construct service match expression
     SortedSet<ServiceOrServiceGroupReference> ruleServices = rule.getService();
     if (!ruleServices.isEmpty()) {
-      List<AclLineMatchExpr> serviceDisjuncts = new TreeList<>();
+      List<AclLineMatchExpr> serviceDisjuncts = new LinkedList<>();
       for (ServiceOrServiceGroupReference service : ruleServices) {
         String serviceName = service.getName();
 
