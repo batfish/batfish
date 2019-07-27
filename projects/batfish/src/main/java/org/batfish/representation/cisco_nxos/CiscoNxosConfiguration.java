@@ -1151,7 +1151,7 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
               public AclLineMatchExpr visitUdpOptions(UdpOptions udpOptions) {
                 ImmutableList.Builder<AclLineMatchExpr> conjuncts = ImmutableList.builder();
                 if (udpOptions.getDstPortSpec() != null) {
-                  conjuncts.add(
+                  conjuncts.add(AclLineMatchExprs.match
                       toPorts(udpOptions.getDstPortSpec(), HeaderSpace.Builder::setDstPorts));
                 }
                 if (udpOptions.getSrcPortSpec() != null) {
@@ -1170,12 +1170,12 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
     int chooseOnes = ~tcpFlagsMask & 0b111111;
     return TcpFlagsMatchConditions.builder()
         .setTcpFlags(tcpFlags)
-        .setUseFin((chooseOnes & 0x000001) != 0)
-        .setUseSyn((chooseOnes & 0x000010) != 0)
-        .setUseRst((chooseOnes & 0x000100) != 0)
-        .setUsePsh((chooseOnes & 0x001000) != 0)
-        .setUseAck((chooseOnes & 0x010000) != 0)
-        .setUseUrg((chooseOnes & 0x100000) != 0)
+        .setUseFin((chooseOnes & 0b000001) != 0)
+        .setUseSyn((chooseOnes & 0b000010) != 0)
+        .setUseRst((chooseOnes & 0b000100) != 0)
+        .setUsePsh((chooseOnes & 0b001000) != 0)
+        .setUseAck((chooseOnes & 0b010000) != 0)
+        .setUseUrg((chooseOnes & 0b100000) != 0)
         .build();
   }
 
