@@ -15158,7 +15158,7 @@
             "      ROUTER:'router'",
             "      BGP:'bgp'",
             "      procnum = (bgp_asn",
-            "        asn = DEC:'50000')",
+            "        asn = DEC:'1')",
             "      NEWLINE:'\\n'",
             "      (router_bgp_stanza_tail",
             "        (neighbor_flat_rb_stanza",
@@ -15179,7 +15179,7 @@
             "      ROUTER:'router'",
             "      BGP:'bgp'",
             "      procnum = (bgp_asn",
-            "        asn = DEC:'65538')",
+            "        asn = DEC:'1')",
             "      NEWLINE:'\\n'",
             "      (router_bgp_stanza_tail",
             "        (neighbor_flat_rb_stanza",
@@ -15200,7 +15200,7 @@
             "      ROUTER:'router'",
             "      BGP:'bgp'",
             "      procnum = (bgp_asn",
-            "        asn = DEC:'65542')",
+            "        asn = DEC:'1')",
             "      NEWLINE:'\\n'",
             "      (router_bgp_stanza_tail",
             "        (neighbor_flat_rb_stanza",
@@ -28833,7 +28833,7 @@
             "          ROUTER:'router'",
             "          (null_rest_of_line",
             "            BGP:'bgp'",
-            "            DEC:'65601'",
+            "            DEC:'12345'",
             "            NEWLINE:'\\n')",
             "          (configure_maintenance_router_null",
             "            ISOLATE:'isolate'",
@@ -77074,7 +77074,7 @@
         "bgp_route_policy" : "WARNINGS",
         "cadant_acl" : "PASSED",
         "cadant_banner" : "PASSED",
-        "cadant_bgp" : "PASSED",
+        "cadant_bgp" : "WARNINGS",
         "cadant_cable" : "PASSED",
         "cadant_interface" : "PASSED",
         "cadant_ip_route" : "PASSED",
@@ -85382,24 +85382,6 @@
                 35
               ]
             }
-          },
-          "undeclared bgp peer" : {
-            "1.2.3.4" : {
-              "bgp neighbor without remote-as" : [
-                26,
-                27,
-                28,
-                39
-              ]
-            },
-            "dead:beef:0:0:0:0:0:1" : {
-              "bgp neighbor without remote-as" : [
-                33,
-                34,
-                35,
-                40
-              ]
-            }
           }
         },
         "configs/cadant_cable" : {
@@ -89820,24 +89802,6 @@
                 35
               ]
             }
-          },
-          "undeclared bgp peer" : {
-            "1.2.3.4" : {
-              "bgp neighbor without remote-as" : [
-                26,
-                27,
-                28,
-                39
-              ]
-            },
-            "dead:beef:0:0:0:0:0:1" : {
-              "bgp neighbor without remote-as" : [
-                33,
-                34,
-                35,
-                40
-              ]
-            }
           }
         },
         "configs/cadant_interface" : {
@@ -91808,6 +91772,14 @@
             {
               "tag" : "MISCELLANEOUS",
               "text" : "Could not determine update source for BGP neighbor: '64.57.21.1'"
+            }
+          ]
+        },
+        "cadant_bgp" : {
+          "Red flags" : [
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "Could not determine update source for BGP neighbor: '1.2.3.4'"
             }
           ]
         },

@@ -43,6 +43,8 @@ import javax.annotation.Nullable;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.batfish.common.BatfishException;
 import org.batfish.common.VendorConversionException;
+import org.batfish.datamodel.AsPathAccessList;
+import org.batfish.datamodel.AsPathAccessListLine;
 import org.batfish.datamodel.BgpActivePeerConfig;
 import org.batfish.datamodel.BgpPassivePeerConfig;
 import org.batfish.datamodel.BgpTieBreaker;
@@ -157,6 +159,18 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
             Statements.SetReadIntermediateBgpAttributes.toStaticStatement(),
             new SetOrigin(new LiteralOrigin(originType, null))));
     return we;
+  }
+
+  public static @Nonnull String toJavaRegex(String ciscoRegex) {
+    String withoutQuotes;
+    if (ciscoRegex.charAt(0) == '"' && ciscoRegex.charAt(ciscoRegex.length() - 1) == '"') {
+      withoutQuotes = ciscoRegex.substring(1, ciscoRegex.length() - 1);
+    } else {
+      withoutQuotes = ciscoRegex;
+    }
+    String underscoreReplacement = "(,|\\\\{|\\\\}|^|\\$| )";
+    String output = withoutQuotes.replaceAll("_", underscoreReplacement);
+    return output;
   }
 
   private static @Nonnull RouteFilterLine toRouteFilterLine(IpPrefixListLine ipPrefixListLine) {
@@ -547,6 +561,12 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
         .forEach(this::convertInterface);
   }
 
+  private void convertIpAsPathAccessLists() {
+    _ipAsPathAccessLists.forEach(
+        (name, ipAsPathAccessList) ->
+            _c.getAsPathAccessLists().put(name, toAsPathAccessList(ipAsPathAccessList)));
+  }
+
   private void convertIpPrefixLists() {
     _ipPrefixLists.forEach(
         (name, ipPrefixList) ->
@@ -930,6 +950,19 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
     }
   }
 
+  private static @Nonnull AsPathAccessList toAsPathAccessList(
+      IpAsPathAccessList ipAsPathAccessList) {
+    return new AsPathAccessList(
+        ipAsPathAccessList.getName(),
+        ipAsPathAccessList.getLines().values().stream()
+            .map(CiscoNxosConfiguration::toAsPathAccessListLine)
+            .collect(ImmutableList.toImmutableList()));
+  }
+
+  private static @Nonnull AsPathAccessListLine toAsPathAccessListLine(IpAsPathAccessListLine line) {
+    return new AsPathAccessListLine(line.getAction(), toJavaRegex(line.getRegex()));
+  }
+
   /**
    * Converts the supplied {@code staticRoute} to a a vendor-independent {@link
    * org.batfish.datamodel.StaticRoute} if all options are supported and static route contains no
@@ -974,6 +1007,7 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
     convertInterfaces();
     disableUnregisteredVlanInterfaces();
     convertStaticRoutes();
+    convertIpAsPathAccessLists();
     convertIpPrefixLists();
     convertBgp();
 
