@@ -925,7 +925,8 @@ public class EigrpTest {
     SortedMap<String, SortedMap<String, Set<AbstractRoute>>> routes =
         IncrementalBdpEngine.getRoutes(dataplane);
 
-    // routes of each type not matched by the distribute-list's prefix-list are allowed
-    assertRoute(routes, OSPF, "r2", Prefix.parse("2.2.2.0/24"), 11, Ip.parse("192.168.12.1"));
+    // only 1.1.1.0/24 allowed to be exported to r2
+    assertNoRoute(routes, "r2", Prefix.parse("3.3.3.0/24"));
+    assertRoute(routes, EIGRP_EX, "r2", Prefix.parse("1.1.1.0/24"), 2585856L);
   }
 }
