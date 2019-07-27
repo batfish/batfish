@@ -15,6 +15,7 @@ import static org.batfish.representation.cisco.Interface.getDefaultDelay;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSortedMap;
+import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
@@ -56,12 +57,19 @@ import org.batfish.datamodel.routing_policy.statement.SetMetric;
 import org.batfish.datamodel.routing_policy.statement.SetOspfMetricType;
 import org.batfish.datamodel.routing_policy.statement.Statement;
 import org.batfish.datamodel.routing_policy.statement.Statements;
+import org.batfish.main.Batfish;
+import org.batfish.main.BatfishTestUtils;
+import org.batfish.main.TestrigText;
 import org.batfish.representation.cisco.OspfRedistributionPolicy;
 import org.junit.Ignore;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
 
 @ParametersAreNonnullByDefault
 public class EigrpTest {
+
+  @Rule public TemporaryFolder _folder = new TemporaryFolder();
 
   private static final ConcreteInterfaceAddress R1_E1_2_ADDR =
       ConcreteInterfaceAddress.parse("10.12.0.1/24");
@@ -901,5 +909,23 @@ public class EigrpTest {
     assertRoute(routes, EIGRP, R4, R3_L0_ADDR, 0L);
     assertRoute(routes, EIGRP, R4, R1_E1_2_ADDR, 0L);
     assertRoute(routes, EIGRP, R4, R2_E2_3_ADDR, 0L);
+  }
+
+  @Test
+  public void testEigrpDistributeList() throws IOException {
+    Batfish batfish =
+        BatfishTestUtils.getBatfishFromTestrigText(
+            TestrigText.builder()
+                .setConfigurationText(
+                    "org/batfish/dataplane/ibdp/eigrp-distribute-lists", "r1", "r2")
+                .build(),
+            _folder);
+    batfish.computeDataPlane();
+    IncrementalDataPlane dataplane = (IncrementalDataPlane) batfish.loadDataPlane();
+    SortedMap<String, SortedMap<String, Set<AbstractRoute>>> routes =
+        IncrementalBdpEngine.getRoutes(dataplane);
+
+    // routes of each type not matched by the distribute-list's prefix-list are allowed
+    assertRoute(routes, OSPF, "r2", Prefix.parse("2.2.2.0/24"), 11, Ip.parse("192.168.12.1"));
   }
 }
