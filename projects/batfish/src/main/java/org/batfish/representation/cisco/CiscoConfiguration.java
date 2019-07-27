@@ -9,6 +9,7 @@ import static org.batfish.datamodel.Interface.computeInterfaceType;
 import static org.batfish.datamodel.Interface.isRealInterfaceName;
 import static org.batfish.datamodel.MultipathEquivalentAsPathMatchMode.EXACT_PATH;
 import static org.batfish.datamodel.MultipathEquivalentAsPathMatchMode.PATH_LENGTH;
+import static org.batfish.representation.cisco.CiscoConversions.clearFalseStatementsAndAddMatchOwnAsn;
 import static org.batfish.representation.cisco.CiscoConversions.computeDistributeListPolicies;
 import static org.batfish.representation.cisco.CiscoConversions.convertCryptoMapSet;
 import static org.batfish.representation.cisco.CiscoConversions.eigrpRedistributionPoliciesToStatements;
@@ -18,7 +19,6 @@ import static org.batfish.representation.cisco.CiscoConversions.generateGenerati
 import static org.batfish.representation.cisco.CiscoConversions.getIsakmpKeyGeneratedName;
 import static org.batfish.representation.cisco.CiscoConversions.getRsaPubKeyGeneratedName;
 import static org.batfish.representation.cisco.CiscoConversions.insertDistributeListFilterAndGetPolicy;
-import static org.batfish.representation.cisco.CiscoConversions.mergeRedistributionWithAllowEigpToSelfAsn;
 import static org.batfish.representation.cisco.CiscoConversions.resolveIsakmpProfileIfaceNames;
 import static org.batfish.representation.cisco.CiscoConversions.resolveKeyringIfaceNames;
 import static org.batfish.representation.cisco.CiscoConversions.resolveTunnelIfaceNames;
@@ -2047,7 +2047,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
           eigrpRedistributionPoliciesToStatements(
               eigrpProcess.getRedistributionPolicies().values(), eigrpProcess, this);
       List<If> mergedsWithAllowSelfAsn =
-          mergeRedistributionWithAllowEigpToSelfAsn(
+          clearFalseStatementsAndAddMatchOwnAsn(
               redistributePolicyStatements, eigrpProcess.getAsn());
 
       String policyName =

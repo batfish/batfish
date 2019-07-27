@@ -1161,12 +1161,8 @@ public class CiscoConversions {
     return newProcess.build();
   }
 
-  /**
-   * Creates a {@link BooleanExpr} to match internal EIGRP routes of an {@link EigrpProcess}
-   *
-   * @param localAsn ASN of the {@link EigrpProcess} whose internal routes are to be matched
-   * @return {@link BooleanExpr}
-   */
+  /** Creates an {@link If} statement to allow EIGRP routes redistributed from supplied localAsn */
+  @Nonnull
   private static If ifToAllowEigrpToOwnAsn(long localAsn) {
     return new If(
         new Conjunction(
@@ -1441,7 +1437,11 @@ public class CiscoConversions {
     }
   }
 
-  static List<If> mergeRedistributionWithAllowEigpToSelfAsn(List<If> redistributeIfs, long ownAsn) {
+  /**
+   * Given a list of {@link If} statements, sets the false statements of every {@link If} to an
+   * empty list and adds a rule at the end to allow EIGRP from provided ownAsn.
+   */
+  static List<If> clearFalseStatementsAndAddMatchOwnAsn(List<If> redistributeIfs, long ownAsn) {
     List<Statement> emptyFalseStatements = ImmutableList.of();
     List<If> redistributeIfsWithEmptyFalse =
         redistributeIfs.stream()
@@ -1458,6 +1458,10 @@ public class CiscoConversions {
     return ImmutableList.copyOf(redistributeIfsWithEmptyFalse);
   }
 
+  /**
+   * Inserts an {@link If} generated from the provided distributeList to the beginning of
+   * existingStatements and creates a {@link RoutingPolicy} from the result
+   */
   static RoutingPolicy insertDistributeListFilterAndGetPolicy(
       @Nonnull Configuration c,
       @Nonnull CiscoConfiguration vsConfig,
