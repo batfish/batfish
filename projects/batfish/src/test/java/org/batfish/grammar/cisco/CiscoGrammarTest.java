@@ -6283,6 +6283,19 @@ public class CiscoGrammarTest {
   }
 
   @Test
+  public void testRenterBgpStanza() throws IOException {
+    Configuration c = parseConfig("ios-bgp-reenter-process");
+    assertThat(
+        c,
+        hasDefaultVrf(
+            hasBgpProcess(hasActiveNeighbor(Prefix.parse("2.2.2.3/32"), hasRemoteAs(3L)))));
+    assertThat(
+        c,
+        hasDefaultVrf(
+            hasBgpProcess(hasActiveNeighbor(Prefix.parse("2.2.2.4/32"), hasRemoteAs(4L)))));
+  }
+
+  @Test
   public void testRouteMapMatchAcl() throws IOException {
     Configuration c = parseConfig("ios-route-map-match-acl");
     Bgpv4Route.Builder builder =

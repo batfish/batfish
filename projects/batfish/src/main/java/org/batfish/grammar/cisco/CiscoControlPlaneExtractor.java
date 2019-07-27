@@ -4128,9 +4128,16 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       }
       _configuration.getNxBgpGlobalConfiguration().setLocalAs(procNum);
     } else {
-      BgpProcess proc = new BgpProcess(_format, procNum);
-      vrf.setBgpProcess(proc);
-      _dummyPeerGroup = new MasterBgpPeerGroup();
+      if (vrf.getBgpProcess() == null) {
+        BgpProcess proc = new BgpProcess(_format, procNum);
+        vrf.setBgpProcess(proc);
+        _dummyPeerGroup = new MasterBgpPeerGroup();
+      }
+      BgpProcess proc = vrf.getBgpProcess();
+      if (proc.getProcnum() != procNum && procNum != 0) {
+        _w.redFlag("Cannot have multiple BGP processes with different ASNs");
+        return;
+      }
       pushPeer(proc.getMasterBgpPeerGroup());
     }
   }
