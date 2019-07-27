@@ -226,6 +226,10 @@ public final class IntegerSpaceTest {
         equalTo(IntegerSpace.of(Range.closed(3, 4))));
 
     assertThat(
+        IntegerSpace.builder().including(3, 4).build(),
+        equalTo(IntegerSpace.of(Range.closed(3, 4))));
+
+    assertThat(
         IntegerSpace.builder().including(Range.closed(3, 5)).excluding(5).build(),
         equalTo(IntegerSpace.of(Range.closed(3, 4))));
   }
