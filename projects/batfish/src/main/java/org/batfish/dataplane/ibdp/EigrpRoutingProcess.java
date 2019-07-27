@@ -116,9 +116,6 @@ final class EigrpRoutingProcess implements RoutingProcess<EigrpTopology, EigrpRo
     _rib = new EigrpRib();
     _vrfName = vrfName;
     _configuration = c;
-
-    // get EIGRP export policy name
-    String exportPolicyName = process.getExportPolicy();
     _topology = EigrpTopology.EMPTY;
     _initializationDelta = RibDelta.empty();
     _queuedForRedistribution = RibDelta.empty();
