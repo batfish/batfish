@@ -39,7 +39,7 @@ public final class Rule implements Serializable {
   // Service
   @Nonnull private final SortedSet<ServiceOrServiceGroupReference> _service;
 
-  @Nonnull private final SortedSet<String> _applications;
+  @Nonnull private final SortedSet<Application> _applications;
 
   public Rule(String name, Vsys vsys) {
     _action = LineAction.DENY;
@@ -67,7 +67,7 @@ public final class Rule implements Serializable {
   }
 
   @Nonnull
-  public SortedSet<String> getApplications() {
+  public SortedSet<Application> getApplications() {
     return _applications;
   }
 

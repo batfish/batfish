@@ -84,6 +84,7 @@ import org.batfish.datamodel.DiffieHellmanGroup;
 import org.batfish.datamodel.EmptyIpSpace;
 import org.batfish.datamodel.EncryptionAlgorithm;
 import org.batfish.datamodel.Flow;
+import org.batfish.datamodel.IcmpType;
 import org.batfish.datamodel.IkeHashingAlgorithm;
 import org.batfish.datamodel.Interface.Dependency;
 import org.batfish.datamodel.InterfaceType;
@@ -794,6 +795,59 @@ public final class PaloAltoGrammarTest {
                     rejects(service2, if1name, c),
                     accepts(service3, if1name, c),
                     accepts(service4, if1name, c)))));
+  }
+
+
+  @Test
+  public void testRulebaseInApplicationWithPanorama() throws IOException {
+    String hostname = "panorama-rulebase-applications";
+    Configuration c = parseConfig(hostname);
+
+    String if1name = "ethernet1/1";
+    String if2name = "ethernet1/2";
+    Flow.Builder tcpBaseBuilder =
+        Flow.builder()
+            .setIngressNode(c.getHostname())
+            .setSrcIp(Ip.ZERO)
+            .setDstIp(Ip.ZERO)
+            .setIpProtocol(IpProtocol.TCP)
+            .setTag("test")
+            .setSrcPort(1);
+    Flow.Builder udpBaseBuilder =
+        Flow.builder()
+            .setIngressNode(c.getHostname())
+            .setSrcIp(Ip.ZERO)
+            .setDstIp(Ip.ZERO)
+            .setIpProtocol(IpProtocol.UDP)
+            .setTag("test")
+            .setSrcPort(1);
+    // See comments in the config for how this test works.
+    Flow webapplication = tcpBaseBuilder.setDstPort(80).build();
+    Flow sslapplication = tcpBaseBuilder.setDstPort(443).build();
+    Flow snmpapplication = udpBaseBuilder.setDstPort(161).build();
+    Flow pingapplication = Flow.builder()
+                            .setIngressNode(c.getHostname())
+                            .setSrcIp(Ip.ZERO)
+                            .setDstIp(Ip.ZERO)
+                            .setIpProtocol(IpProtocol.ICMP)
+                            .setTag("test")
+                            .setIcmpType(IcmpType.ECHO_REPLY)
+                            .setIcmpCode(0)
+                            .build();
+    assertThat(
+        c,
+        hasInterface(
+            if1name,
+            hasOutgoingFilter(
+                allOf(
+                    rejects(webapplication, if2name, c),
+                    accepts(sslapplication, if2name, c),
+                    accepts(snmpapplication, if2name, c),
+                    accepts(pingapplication, if2name, c)
+                )
+            )
+        )
+    );
   }
 
   @Test
