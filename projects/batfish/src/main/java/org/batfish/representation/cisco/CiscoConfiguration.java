@@ -9,16 +9,16 @@ import static org.batfish.datamodel.Interface.computeInterfaceType;
 import static org.batfish.datamodel.Interface.isRealInterfaceName;
 import static org.batfish.datamodel.MultipathEquivalentAsPathMatchMode.EXACT_PATH;
 import static org.batfish.datamodel.MultipathEquivalentAsPathMatchMode.PATH_LENGTH;
+import static org.batfish.representation.cisco.CiscoConversions.clearFalseStatementsAndAddMatchOwnAsn;
 import static org.batfish.representation.cisco.CiscoConversions.computeDistributeListPolicies;
 import static org.batfish.representation.cisco.CiscoConversions.convertCryptoMapSet;
 import static org.batfish.representation.cisco.CiscoConversions.eigrpRedistributionPoliciesToStatements;
-import static org.batfish.representation.cisco.CiscoConversions.exprToAllowEigrpInternalRoutes;
 import static org.batfish.representation.cisco.CiscoConversions.generateBgpExportPolicy;
 import static org.batfish.representation.cisco.CiscoConversions.generateBgpImportPolicy;
 import static org.batfish.representation.cisco.CiscoConversions.generateGenerationPolicy;
 import static org.batfish.representation.cisco.CiscoConversions.getIsakmpKeyGeneratedName;
 import static org.batfish.representation.cisco.CiscoConversions.getRsaPubKeyGeneratedName;
-import static org.batfish.representation.cisco.CiscoConversions.getUnifedPolicyForEigrpNeighbor;
+import static org.batfish.representation.cisco.CiscoConversions.insertDistributeListFilterAndGetPolicy;
 import static org.batfish.representation.cisco.CiscoConversions.resolveIsakmpProfileIfaceNames;
 import static org.batfish.representation.cisco.CiscoConversions.resolveKeyringIfaceNames;
 import static org.batfish.representation.cisco.CiscoConversions.resolveTunnelIfaceNames;
@@ -2046,29 +2046,27 @@ public final class CiscoConfiguration extends VendorConfiguration {
       List<If> redistributePolicyStatements =
           eigrpRedistributionPoliciesToStatements(
               eigrpProcess.getRedistributionPolicies().values(), eigrpProcess, this);
+      List<If> mergedsWithAllowSelfAsn =
+          clearFalseStatementsAndAddMatchOwnAsn(
+              redistributePolicyStatements, eigrpProcess.getAsn());
 
-      List<BooleanExpr> redistributePoliciesToBooleanExprs =
-          redistributePolicyStatements.stream().map(If::getGuard).collect(Collectors.toList());
-      redistributePoliciesToBooleanExprs.add(exprToAllowEigrpInternalRoutes(eigrpProcess.getAsn()));
+      String policyName =
+          String.format("~EIGRP_EXPORT_POLICY_%s_%s_%s", vrfName, eigrpProcess.getAsn(), ifaceName);
+      RoutingPolicy routingPolicy =
+          insertDistributeListFilterAndGetPolicy(
+              c,
+              this,
+              eigrpProcess.getOutboundInterfaceDistributeLists().get(newIface.getName()),
+              mergedsWithAllowSelfAsn,
+              policyName);
 
-      Disjunction canRedistributeOrIsInternalEigrp =
-          new Disjunction(ImmutableList.copyOf(redistributePoliciesToBooleanExprs));
+      c.getRoutingPolicies().put(policyName, routingPolicy);
 
-      DistributeList distributeListForIface =
-          eigrpProcess.getOutboundInterfaceDistributeLists().get(newIface.getName());
       newIface.setEigrp(
           EigrpInterfaceSettings.builder()
               .setAsn(eigrpProcess.getAsn())
               .setEnabled(true)
-              .setExportPolicy(
-                  getUnifedPolicyForEigrpNeighbor(
-                      c,
-                      this,
-                      canRedistributeOrIsInternalEigrp,
-                      distributeListForIface,
-                      vrfName,
-                      eigrpProcess.getAsn(),
-                      ifaceName))
+              .setExportPolicy(policyName)
               .setMetric(metric)
               .setPassive(passive)
               .build());

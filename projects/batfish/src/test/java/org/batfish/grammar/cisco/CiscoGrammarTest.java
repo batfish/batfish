@@ -381,7 +381,6 @@ import org.batfish.datamodel.routing_policy.expr.CommunityHalvesExpr;
 import org.batfish.datamodel.routing_policy.expr.CommunitySetExpr;
 import org.batfish.datamodel.routing_policy.expr.Conjunction;
 import org.batfish.datamodel.routing_policy.expr.DestinationNetwork;
-import org.batfish.datamodel.routing_policy.expr.Disjunction;
 import org.batfish.datamodel.routing_policy.expr.LiteralCommunity;
 import org.batfish.datamodel.routing_policy.expr.LiteralCommunityConjunction;
 import org.batfish.datamodel.routing_policy.expr.LiteralCommunityHalf;
@@ -392,6 +391,7 @@ import org.batfish.datamodel.routing_policy.expr.NamedPrefixSet;
 import org.batfish.datamodel.routing_policy.expr.RangeCommunityHalf;
 import org.batfish.datamodel.routing_policy.statement.If;
 import org.batfish.datamodel.routing_policy.statement.SetEigrpMetric;
+import org.batfish.datamodel.routing_policy.statement.Statement;
 import org.batfish.datamodel.routing_policy.statement.Statements;
 import org.batfish.datamodel.tracking.DecrementPriority;
 import org.batfish.datamodel.tracking.TrackInterface;
@@ -2608,34 +2608,27 @@ public class CiscoGrammarTest {
     BooleanExpr matchAsn2 = new MatchProcessAsn(2L);
     BooleanExpr matchAsn1 = new MatchProcessAsn(1L);
     BooleanExpr matchEigrp = new MatchProtocol(RoutingProtocol.EIGRP, RoutingProtocol.EIGRP_EX);
-    BooleanExpr matchEigrpInternal = new MatchProtocol(RoutingProtocol.EIGRP);
-
-    Conjunction matchEigrpAsn2 = new Conjunction(ImmutableList.of(matchAsn2, matchEigrp));
-    Conjunction matchEigrpInternalAsn1 =
-        new Conjunction(ImmutableList.of(matchEigrpInternal, matchAsn1));
-
-    // rule to match routes from EIGRP 2 and routes internal to EIGRP 1
-    Disjunction matchRedistributeOrIsInternalRoute =
-        new Disjunction(ImmutableList.of(matchEigrpAsn2, matchEigrpInternalAsn1));
 
     BooleanExpr exprForDistributeList =
         new MatchPrefixSet(DestinationNetwork.instance(), new NamedPrefixSet("2"));
 
-    // rule to match the distribute list filter && the policy generated for `redistribute eigrp 2`
-    Conjunction unifiedPolicy =
-        new Conjunction(
-            ImmutableList.of(matchRedistributeOrIsInternalRoute, exprForDistributeList));
+    List<Statement> statements =
+        ImmutableList.of(
+            new If(
+                exprForDistributeList,
+                ImmutableList.of(),
+                ImmutableList.of(Statements.ExitReject.toStaticStatement())),
+            new If(
+                new Conjunction(ImmutableList.of(matchAsn2, matchEigrp)),
+                ImmutableList.of(Statements.ExitAccept.toStaticStatement()),
+                ImmutableList.of()),
+            new If(
+                new Conjunction(ImmutableList.of(matchEigrp, matchAsn1)),
+                ImmutableList.of(Statements.ExitAccept.toStaticStatement()),
+                ImmutableList.of(Statements.ExitReject.toStaticStatement())));
 
-    assertThat(
-        c.getRoutingPolicies().get(distListPolicyName).getStatements(),
-        equalTo(
-            ImmutableList.of(
-                new If(
-                    unifiedPolicy,
-                    ImmutableList.of(Statements.ExitAccept.toStaticStatement()),
-                    ImmutableList.of(Statements.ExitReject.toStaticStatement())))));
+    assertThat(c.getRoutingPolicies().get(distListPolicyName).getStatements(), equalTo(statements));
 
-    assertThat(c.getRoutingPolicies(), hasKey(distListPolicyName));
     RoutingPolicy routingPolicy = c.getRoutingPolicies().get(distListPolicyName);
     EigrpMetric metric =
         EigrpMetric.builder().setBandwidth(1d).setDelay(1d).setMode(EigrpProcessMode.NAMED).build();
@@ -2672,6 +2665,21 @@ public class CiscoGrammarTest {
                 .setNetwork(Prefix.parse("172.21.30.0/24"))
                 .setEigrpMetric(metric)
                 .setProcessAsn(1L)
+                .build(),
+            EigrpExternalRoute.builder(),
+            null,
+            "default",
+            Direction.OUT));
+    // a route matching distribute list but does not have the correct ASN so falls through till the
+    // end and
+    // gets rejected
+    assertFalse(
+        routingPolicy.process(
+            EigrpExternalRoute.builder()
+                .setNetwork(Prefix.parse("172.21.30.0/24"))
+                .setEigrpMetric(metric)
+                .setProcessAsn(3L)
+                .setDestinationAsn(5L)
                 .build(),
             EigrpExternalRoute.builder(),
             null,
