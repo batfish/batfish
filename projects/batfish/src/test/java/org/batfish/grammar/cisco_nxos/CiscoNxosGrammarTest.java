@@ -5,6 +5,7 @@ import static com.google.common.collect.Maps.immutableEntry;
 import static com.google.common.collect.MoreCollectors.onlyElement;
 import static org.batfish.datamodel.Configuration.DEFAULT_VRF_NAME;
 import static org.batfish.datamodel.Interface.NULL_INTERFACE_NAME;
+import static org.batfish.datamodel.IpProtocol.fromNumber;
 import static org.batfish.datamodel.IpWildcard.ipWithWildcardMask;
 import static org.batfish.datamodel.Route.UNSET_NEXT_HOP_INTERFACE;
 import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasAdministrativeCost;
@@ -84,18 +85,24 @@ import java.util.Map;
 import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 import javax.annotation.ParametersAreNonnullByDefault;
+import net.sf.javabdd.BDD;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.apache.commons.lang3.SerializationUtils;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.Warnings;
 import org.batfish.common.WellKnownCommunity;
 import org.batfish.common.bdd.BDDPacket;
+import org.batfish.common.bdd.BDDSourceManager;
+import org.batfish.common.bdd.HeaderSpaceToBDD;
+import org.batfish.common.bdd.IpAccessListToBdd;
+import org.batfish.common.bdd.IpAccessListToBddImpl;
 import org.batfish.common.bdd.IpSpaceToBDD;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.config.Settings;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.DscpType;
+import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.IcmpCode;
 import org.batfish.datamodel.IcmpType;
 import org.batfish.datamodel.IntegerSpace;
@@ -115,6 +122,7 @@ import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.SwitchportMode;
 import org.batfish.datamodel.TcpFlags;
 import org.batfish.datamodel.UniverseIpSpace;
+import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
 import org.batfish.datamodel.bgp.RouteDistinguisher;
 import org.batfish.datamodel.bgp.community.StandardCommunity;
@@ -208,7 +216,9 @@ import org.junit.rules.TemporaryFolder;
 @ParametersAreNonnullByDefault
 public final class CiscoNxosGrammarTest {
 
+  private static final IpAccessListToBdd ACL_TO_BDD;
   private static final IpSpaceToBDD DST_IP_BDD;
+  private static final HeaderSpaceToBDD HS_TO_BDD;
   private static final BDDPacket PKT;
   private static final IpSpaceToBDD SRC_IP_BDD;
 
@@ -218,9 +228,20 @@ public final class CiscoNxosGrammarTest {
     PKT = new BDDPacket();
     DST_IP_BDD = PKT.getDstIpSpaceToBDD();
     SRC_IP_BDD = PKT.getSrcIpSpaceToBDD();
+    HS_TO_BDD = new HeaderSpaceToBDD(PKT, ImmutableMap.of());
+    ACL_TO_BDD =
+        new IpAccessListToBddImpl(PKT, BDDSourceManager.empty(PKT), HS_TO_BDD, ImmutableMap.of());
   }
 
   @Rule public TemporaryFolder _folder = new TemporaryFolder();
+
+  private static @Nonnull BDD toBDD(AclLineMatchExpr aclLineMatchExpr) {
+    return ACL_TO_BDD.toBdd(aclLineMatchExpr);
+  }
+
+  private static @Nonnull BDD toBDD(HeaderSpace headerSpace) {
+    return HS_TO_BDD.toBDD(headerSpace);
+  }
 
   private @Nonnull Batfish getBatfishForConfigurationNames(String... configurationNames)
       throws IOException {
@@ -939,6 +960,57 @@ public final class CiscoNxosGrammarTest {
             hasDescription(
                 "here is a description with punctuation! and IP address 1.2.3.4/24 etc."),
             hasMtu(9216)));
+  }
+
+  @Test
+  public void testIpAccessListConversion() throws IOException {
+    String hostname = "nxos_ip_access_list";
+    Configuration c = parseConfig(hostname);
+
+    assertThat(
+        c.getIpAccessLists(),
+        hasKeys(
+            "acl_global_options",
+            "acl_indices",
+            "acl_simple_protocols",
+            "acl_common_ip_options_destination_ip",
+            "acl_common_ip_options_source_ip",
+            "acl_common_ip_options_dscp",
+            "acl_common_ip_options_packet_length",
+            "acl_common_ip_options_precedence",
+            "acl_common_ip_options_ttl",
+            "acl_common_ip_options_log",
+            "acl_icmp",
+            "acl_igmp",
+            "acl_tcp_flags",
+            "acl_tcp_flags_mask",
+            "acl_tcp_destination_ports",
+            "acl_tcp_destination_ports_named",
+            "acl_tcp_source_ports",
+            "acl_tcp_http_method",
+            "acl_tcp_option_length",
+            "acl_tcp_established",
+            "acl_udp_destination_ports",
+            "acl_udp_destination_ports_named",
+            "acl_udp_source_ports",
+            "acl_udp_vxlan"));
+    {
+      org.batfish.datamodel.IpAccessList acl = c.getIpAccessLists().get("acl_global_options");
+      assertThat(acl.getLines(), empty());
+    }
+    {
+      org.batfish.datamodel.IpAccessList acl = c.getIpAccessLists().get("acl_indices");
+      Iterator<org.batfish.datamodel.IpAccessListLine> lines = acl.getLines().iterator();
+      org.batfish.datamodel.IpAccessListLine line;
+
+      line = lines.next();
+      assertThat(line.getAction(), equalTo(LineAction.DENY));
+      assertThat(
+          toBDD(line.getMatchCondition()),
+          equalTo(
+              toBDD(
+                  HeaderSpace.builder().setIpProtocols(ImmutableList.of(fromNumber(1))).build())));
+    }
   }
 
   @Test
