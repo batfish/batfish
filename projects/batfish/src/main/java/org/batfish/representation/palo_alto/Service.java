@@ -1,5 +1,6 @@
 package org.batfish.representation.palo_alto;
 
+import static com.google.common.base.MoreObjects.firstNonNull;
 import static org.batfish.representation.palo_alto.PaloAltoConfiguration.computeServiceGroupMemberAclName;
 
 import com.google.common.collect.ImmutableList;
@@ -14,10 +15,81 @@ import org.batfish.datamodel.IpAccessListLine;
 import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.SubRange;
+import org.batfish.datamodel.acl.AclLineMatchExpr;
+import org.batfish.datamodel.acl.FalseExpr;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
 
 @ParametersAreNonnullByDefault
 public final class Service implements ServiceGroupMember {
+
+  public static class Builder {
+    private final @Nonnull String _name;
+    private @Nullable String _description;
+    private @Nullable IpProtocol _ipProtocol;
+    private @Nullable IntegerSpace _ports;
+    private @Nullable IntegerSpace _sourcePorts;
+
+    private Builder(@Nonnull String name) {
+      _name = name;
+    }
+
+    public @Nonnull Builder addPort(int port) {
+      IntegerSpace old = firstNonNull(_ports, IntegerSpace.EMPTY);
+      _ports = IntegerSpace.builder().including(old).including(port).build();
+      return this;
+    }
+
+    public @Nonnull Builder addPorts(int... ports) {
+      IntegerSpace old = firstNonNull(_ports, IntegerSpace.EMPTY);
+      _ports = IntegerSpace.builder().including(old).including(ports).build();
+      return this;
+    }
+
+    public @Nonnull Builder addPorts(SubRange ports) {
+      IntegerSpace old = firstNonNull(_ports, IntegerSpace.EMPTY);
+      _ports = IntegerSpace.builder().including(old).including(ports).build();
+      return this;
+    }
+
+    public @Nonnull Builder addSourcePort(int sourcePort) {
+      IntegerSpace old = firstNonNull(_sourcePorts, IntegerSpace.EMPTY);
+      _sourcePorts = IntegerSpace.builder().including(old).including(sourcePort).build();
+      return this;
+    }
+
+    public @Nonnull Builder addSourcePorts(SubRange sourcePorts) {
+      IntegerSpace old = firstNonNull(_sourcePorts, IntegerSpace.EMPTY);
+      _sourcePorts = IntegerSpace.builder().including(old).including(sourcePorts).build();
+      return this;
+    }
+
+    public @Nonnull Builder setDescription(@Nullable String description) {
+      _description = description;
+      return this;
+    }
+
+    public @Nonnull Builder setIpProtocol(@Nullable IpProtocol ipProtocol) {
+      _ipProtocol = ipProtocol;
+      return this;
+    }
+
+    public @Nonnull Service build() {
+      Service ret = new Service(_name);
+      ret._description = _description;
+      ret._protocol = _ipProtocol;
+      if (_ports != null) {
+        ret._ports = _ports;
+      }
+      if (_sourcePorts != null) {
+        ret._sourcePorts = _sourcePorts;
+      }
+      return ret;
+    }
+  }
+
+  public static Builder builder(@Nonnull String name) {
+    return new Builder(name);
+  }
 
   private final String _name;
   @Nullable private String _description;
@@ -80,27 +152,31 @@ public final class Service implements ServiceGroupMember {
             .setName(computeServiceGroupMemberAclName(vsys.getName(), _name))
             .setSourceName(_name)
             .setSourceType(PaloAltoStructureType.SERVICE.getDescription());
-    if (_protocol == null) {
-      w.redFlag(
-          "Unable to convert "
-              + PaloAltoStructureType.SERVICE.getDescription()
-              + " "
-              + _name
-              + ": missing IP Protocol type");
-      return retAcl.build();
-    }
 
-    HeaderSpace.Builder headerSpaceBuilder = HeaderSpace.builder();
-    headerSpaceBuilder.setSrcPorts(_sourcePorts.getSubRanges());
-    headerSpaceBuilder.setDstPorts(_ports.getSubRanges());
-    headerSpaceBuilder.setIpProtocols(ImmutableList.of(_protocol));
     return retAcl
         .setLines(
             ImmutableList.of(
                 IpAccessListLine.builder()
                     .setAction(action)
-                    .setMatchCondition(new MatchHeaderSpace(headerSpaceBuilder.build()))
+                    .setMatchCondition(toMatchHeaderSpace(w))
                     .build()))
         .build();
+  }
+
+  public @Nonnull AclLineMatchExpr toMatchHeaderSpace(@Nonnull Warnings w) {
+    if (_protocol == null) {
+      w.redFlag(
+          String.format(
+              "Unable to convert %s %s: missing IP Protocol type",
+              PaloAltoStructureType.SERVICE.getDescription(), _name));
+      return FalseExpr.INSTANCE;
+    }
+    HeaderSpace headerSpace =
+        HeaderSpace.builder()
+            .setIpProtocols(ImmutableList.of(_protocol))
+            .setSrcPorts(_sourcePorts.getSubRanges())
+            .setDstPorts(_ports.getSubRanges())
+            .build();
+    return new MatchHeaderSpace(headerSpace);
   }
 }

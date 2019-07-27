@@ -744,15 +744,21 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
             .collect(Collectors.toList()));
   }
 
-  /** Convert specified firewall rule into an IpAccessListLine */
+  /** Convert specified firewall rule into an {@link IpAccessListLine}. */
+  // Most of the conversion is fairly straight-forward: rules have actions, src and dest IP
+  // constraints, and service (aka Protocol + Ports) constraints.
+  // However,
   private IpAccessListLine toIpAccessListLine(Rule rule, Vsys vsys) {
     assert !rule.getDisabled(); // handled by caller.
 
+    //////////////////////////////////////////////////////////////////////////////////////////
+    // 1. Initialize, set name and action
     IpAccessListLine.Builder ipAccessListLineBuilder =
         IpAccessListLine.builder().setName(rule.getName()).setAction(rule.getAction());
-
     List<AclLineMatchExpr> conjuncts = new LinkedList<>();
-    // Match SRC IPs if specified.
+
+    //////////////////////////////////////////////////////////////////////////////////////////
+    // 2. Match SRC IPs if specified.
     IpSpace srcIps = ipSpaceFromRuleEndpoints(rule.getSource(), vsys, _w);
     if (srcIps != null) {
       AclLineMatchExpr match =
@@ -762,7 +768,9 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
       }
       conjuncts.add(match);
     }
-    // Match DST IPs if specified.
+
+    //////////////////////////////////////////////////////////////////////////////////////////
+    // 3. Match DST IPs if specified.
     IpSpace dstIps = ipSpaceFromRuleEndpoints(rule.getDestination(), vsys, _w);
     if (dstIps != null) {
       AclLineMatchExpr match =
@@ -773,71 +781,85 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
       conjuncts.add(match);
     }
 
-    // Construct source zone (source interface) match expression
-    SortedSet<String> ruleFroms = rule.getFrom();
-    if (!ruleFroms.isEmpty()) {
-      List<String> srcInterfaces = new LinkedList<>();
-      for (String zoneName : ruleFroms) {
-        if (zoneName.equals(CATCHALL_ZONE_NAME)) {
-          for (Zone zone : rule.getVsys().getZones().values()) {
-            srcInterfaces.addAll(zone.getInterfaceNames());
-          }
-          break;
-        }
-        srcInterfaces.addAll(rule.getVsys().getZones().get(zoneName).getInterfaceNames());
-      }
-      // TODO: uncomment when we fix inheritance from panorama
-      assert srcInterfaces != null;
-      // conjuncts.add(new MatchSrcInterface(srcInterfaces));
-    }
-
-    // TODO(https://github.com/batfish/batfish/issues/2097): need to handle matching specified
-    // applications
-    SortedSet<Application> ruleApplications = rule.getApplications();
-    if (!ruleApplications.isEmpty()) {
-      List<AclLineMatchExpr> appDisjuncts = new TreeList<>();
-      for (Application application: ruleApplications) {
-        application.getHeaderSpaces().forEach(hs -> {
-          AclLineMatchExpr match = new MatchHeaderSpace(hs);
-          appDisjuncts.add(match);
-        });
-      }
-      conjuncts.add(new OrMatchExpr(appDisjuncts));
-    }
-
-    // Construct service match expression
-    SortedSet<ServiceOrServiceGroupReference> ruleServices = rule.getService();
-    if (!ruleServices.isEmpty()) {
-      List<AclLineMatchExpr> serviceDisjuncts = new LinkedList<>();
-      for (ServiceOrServiceGroupReference service : ruleServices) {
-        String serviceName = service.getName();
-
-        // Check for matching object before using built-ins
-        String vsysName = service.getVsysName(this, vsys);
-        if (vsysName != null) {
-          serviceDisjuncts.add(
-              permittedByAcl(computeServiceGroupMemberAclName(vsysName, serviceName)));
-        } else if (serviceName.equals(ServiceBuiltIn.ANY.getName()) 
-            || (serviceName.equals(ServiceBuiltIn.APPLICATION_DEFAULT.getName()) 
-                  && rule.getApplications().size() > 0)) {
-          serviceDisjuncts.clear();
-          serviceDisjuncts.add(TrueExpr.INSTANCE);
-          break;
-        } else if (serviceName.equals(ServiceBuiltIn.SERVICE_HTTP.getName())) {
-          serviceDisjuncts.add(new MatchHeaderSpace(ServiceBuiltIn.SERVICE_HTTP.getHeaderSpace()));
-        } else if (serviceName.equals(ServiceBuiltIn.SERVICE_HTTPS.getName())) {
-          serviceDisjuncts.add(new MatchHeaderSpace(ServiceBuiltIn.SERVICE_HTTPS.getHeaderSpace()));
-        } else {
-          _w.redFlag(String.format("No matching service group/object found for: %s", serviceName));
-        }
-      }
-      conjuncts.add(new OrMatchExpr(serviceDisjuncts));
-    }
+    //////////////////////////////////////////////////////////////////////////////////////////
+    // 4. Match services.
+    getServiceExpr(rule, vsys).ifPresent(conjuncts::add);
 
     return ipAccessListLineBuilder
         .setName(rule.getName())
         .setMatchCondition(new AndMatchExpr(conjuncts))
         .build();
+  }
+
+  /**
+   * Returns an expression describing the protocol/port combinations permitted by this rule, or
+   * {@link Optional#empty()} if all are allowed.
+   */
+  private Optional<AclLineMatchExpr> getServiceExpr(Rule rule, Vsys vsys) {
+    SortedSet<ServiceOrServiceGroupReference> services = rule.getService();
+    if (services.isEmpty()) {
+      // No filtering.
+      return Optional.empty();
+    }
+
+    List<AclLineMatchExpr> serviceDisjuncts = new LinkedList<>();
+    for (ServiceOrServiceGroupReference service : services) {
+      String serviceName = service.getName();
+
+      // Check for matching object before using built-ins
+      String vsysName = service.getVsysName(this, vsys);
+      if (vsysName != null) {
+        serviceDisjuncts.add(
+            permittedByAcl(computeServiceGroupMemberAclName(vsysName, serviceName)));
+      } else if (serviceName.equals(ServiceBuiltIn.ANY.getName())) {
+        // Anything is allowed.
+        return Optional.empty();
+      } else if (serviceName.equals(ServiceBuiltIn.APPLICATION_DEFAULT.getName())) {
+        if (rule.getAction() == LineAction.PERMIT) {
+          // Since Batfish cannot currently match above L4, we follow Cisco-fragments-like logic:
+          // When permitting an application, optimistically permit all traffic where the L4 rule
+          // matches, assuming it is this application. But when blocking a specific application, do
+          // not block all matching L4 traffic, since we can't know it is this specific application.
+          serviceDisjuncts.addAll(matchApplications(rule, vsys));
+        }
+      } else if (serviceName.equals(ServiceBuiltIn.SERVICE_HTTP.getName())) {
+        serviceDisjuncts.add(new MatchHeaderSpace(ServiceBuiltIn.SERVICE_HTTP.getHeaderSpace()));
+      } else if (serviceName.equals(ServiceBuiltIn.SERVICE_HTTPS.getName())) {
+        serviceDisjuncts.add(new MatchHeaderSpace(ServiceBuiltIn.SERVICE_HTTPS.getHeaderSpace()));
+      } else {
+        _w.redFlag(String.format("No matching service group/object found for: %s", serviceName));
+      }
+    }
+    return Optional.of(new OrMatchExpr(serviceDisjuncts));
+  }
+
+  private List<AclLineMatchExpr> matchApplications(Rule rule, Vsys vsys) {
+    ImmutableList.Builder<AclLineMatchExpr> ret = ImmutableList.builder();
+    for (String name : rule.getApplications()) {
+      ApplicationGroup group = vsys.getApplicationGroups().get(name);
+      if (group != null) {
+        // todo
+        continue;
+      }
+      Application a = vsys.getApplications().get(name);
+      if (a != null) {
+        for (Service s : a.getServices()) {
+          ret.add(s.toMatchHeaderSpace(_w));
+        }
+        continue;
+      }
+      Optional<Application> builtIn = ApplicationBuiltIn.getBuiltInApplication(name);
+      if (builtIn.isPresent()) {
+        builtIn.get().getServices().forEach(s -> ret.add(s.toMatchHeaderSpace(_w)));
+        continue;
+      }
+      // Did not find in the right hierarchy, so stop and warn.
+      _w.redFlag(
+          String.format(
+              "Unable to identify application %s in vsys %s rule %s",
+              name, rule.getName(), vsys.getName()));
+    }
+    return ret.build();
   }
 
   /** Converts {@link RuleEndpoint} to {@code IpSpace} */

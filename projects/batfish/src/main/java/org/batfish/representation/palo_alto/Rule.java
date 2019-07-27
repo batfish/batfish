@@ -36,10 +36,11 @@ public final class Rule implements Serializable {
   private boolean _negateSource;
   private boolean _negateDestination;
 
-  // Service
+  // Services
   @Nonnull private final SortedSet<ServiceOrServiceGroupReference> _service;
 
-  @Nonnull private final SortedSet<Application> _applications;
+  // Applications
+  @Nonnull private final SortedSet<String> _applications;
 
   public Rule(String name, Vsys vsys) {
     _action = LineAction.DENY;
@@ -67,7 +68,7 @@ public final class Rule implements Serializable {
   }
 
   @Nonnull
-  public SortedSet<Application> getApplications() {
+  public SortedSet<String> getApplications() {
     return _applications;
   }
 

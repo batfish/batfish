@@ -1167,7 +1167,8 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
   private void referenceApplicationLike(
       String name, String uniqueName, PaloAltoStructureUsage usage, ParserRuleContext var) {
     PaloAltoStructureType type =
-        name.equals(CATCHALL_APPLICATION_NAME) || ApplicationBuiltIn.FOR_NAME_MAP.containsKey(name)
+        name.equals(CATCHALL_APPLICATION_NAME)
+                || ApplicationBuiltIn.getBuiltInApplication(name).isPresent()
             /*
              * Since the name matches a builtin, we'll add a reference if the user defined
              * over the builtin, but it's okay if they did not.
@@ -1182,9 +1183,7 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
   public void exitSrs_application(Srs_applicationContext ctx) {
     for (Variable_list_itemContext var : variables(ctx.variable_list())) {
       String name = getText(var);
-      if (ApplicationBuiltIn.FOR_NAME_MAP.containsKey(name)) {
-        _currentRule.getApplications().add(ApplicationBuiltIn.FOR_NAME_MAP.get(name));
-      }
+      _currentRule.getApplications().add(name);
       // Use constructed object name so same-named refs across vsys are unique
       String uniqueName = computeObjectName(_currentVsys.getName(), name);
       referenceApplicationLike(name, uniqueName, RULE_APPLICATION, var);

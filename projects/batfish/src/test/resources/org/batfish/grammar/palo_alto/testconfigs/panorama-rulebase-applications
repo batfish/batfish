@@ -2,11 +2,10 @@ set deviceconfig system hostname panorama-rulebase-applications
 
 #
 # Two interfaces in different zones, three interested applications
-# 1. buildin application web-browsing
-# 2. override buildin application ssl
-# 3. customized application 
-# 4. unknown application 
-#
+# 1. built-in application web-browsing
+# 2. override built-in application ssl
+# 3. customized application
+# 4. unknown application
 #
 
 set network interface ethernet ethernet1/1 layer3 ip 1.1.1.1/24
