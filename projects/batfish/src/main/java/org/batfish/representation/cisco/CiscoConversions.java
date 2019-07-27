@@ -1167,9 +1167,14 @@ public class CiscoConversions {
    * @param localAsn ASN of the {@link EigrpProcess} whose internal routes are to be matched
    * @return {@link BooleanExpr}
    */
-  static BooleanExpr exprToAllowEigrpInternalRoutes(long localAsn) {
-    return new Conjunction(
-        ImmutableList.of(new MatchProtocol(RoutingProtocol.EIGRP), new MatchProcessAsn(localAsn)));
+  private static If ifToAllowEigrpToOwnAsn(long localAsn) {
+    return new If(
+        new Conjunction(
+            ImmutableList.of(
+                new MatchProtocol(RoutingProtocol.EIGRP, RoutingProtocol.EIGRP_EX),
+                new MatchProcessAsn(localAsn))),
+        ImmutableList.of(Statements.ExitAccept.toStaticStatement()),
+        ImmutableList.of(Statements.ExitReject.toStaticStatement()));
   }
 
   /**
@@ -1436,52 +1441,45 @@ public class CiscoConversions {
     }
   }
 
-  /**
-   * Computes the unified routing policy for the provided {@link DistributeList distributeList} and
-   * the process level redistribute policy and returns the name of the unified computed routing
-   * policy.
-   *
-   * <p>Also adds the computed routing policy to {@link Configuration}.
-   *
-   * @param c Vendor independent {@link Configuration configuration}
-   * @param vsConfig Vendor specific {@link CiscoConfiguration configuration}
-   * @param processRedistributePolicy process level redistribution policy
-   * @param distributeList {@link DistributeList} which is to be converted
-   * @param vrfName Name of the VRF in which the {@link DistributeList} is defined
-   * @param asn ASN of the {@link EigrpProcess} in which the {@link DistributeList} is defined
-   * @param ifaceName Name of the interface on which the distributeList operates
-   * @return Name of the computed routing policy or null if it cannot be computed
-   */
-  @Nonnull
-  static String getUnifedPolicyForEigrpNeighbor(
+  static List<If> mergeRedistributionWithAllowEigpToSelfAsn(List<If> redistributeIfs, long ownAsn) {
+    List<Statement> emptyFalseStatements = ImmutableList.of();
+    List<If> redistributeIfsWithEmptyFalse =
+        redistributeIfs.stream()
+            .map(
+                redistributionStatement ->
+                    new If(
+                        redistributionStatement.getGuard(),
+                        redistributionStatement.getTrueStatements(),
+                        emptyFalseStatements))
+            .collect(Collectors.toList());
+
+    redistributeIfsWithEmptyFalse.add(ifToAllowEigrpToOwnAsn(ownAsn));
+
+    return ImmutableList.copyOf(redistributeIfsWithEmptyFalse);
+  }
+
+  static RoutingPolicy insertDistributeListFilterAndGetPolicy(
       @Nonnull Configuration c,
       @Nonnull CiscoConfiguration vsConfig,
-      @Nonnull BooleanExpr processRedistributePolicy,
       @Nullable DistributeList distributeList,
-      @Nonnull String vrfName,
-      @Nonnull Long asn,
-      @Nonnull String ifaceName) {
-    Conjunction conjuntionExpr = new Conjunction();
-    conjuntionExpr.getConjuncts().add(processRedistributePolicy);
+      @Nonnull List<If> existingStatements,
+      @Nonnull String name) {
+    ImmutableList.Builder<Statement> combinedStatments = ImmutableList.builder();
     if (distributeList != null && sanityCheckEigrpDistributeList(c, distributeList, vsConfig)) {
-      conjuntionExpr
-          .getConjuncts()
-          .add(
+      combinedStatments.add(
+          new If(
               new MatchPrefixSet(
                   DestinationNetwork.instance(),
-                  new NamedPrefixSet(distributeList.getFilterName())));
+                  new NamedPrefixSet(distributeList.getFilterName())),
+              ImmutableList.of(),
+              ImmutableList.of(Statements.ExitReject.toStaticStatement())));
     }
-    String policyName = String.format("~EIGRP_EXPORT_POLICY_%s_%s_%s", vrfName, asn, ifaceName);
-    RoutingPolicy routingPolicy = new RoutingPolicy(policyName, c);
-    routingPolicy
-        .getStatements()
-        .add(
-            new If(
-                conjuntionExpr,
-                ImmutableList.of(Statements.ExitAccept.toStaticStatement()),
-                ImmutableList.of(Statements.ExitReject.toStaticStatement())));
-    c.getRoutingPolicies().put(policyName, routingPolicy);
-    return policyName;
+    combinedStatments.addAll(existingStatements);
+    return RoutingPolicy.builder()
+        .setOwner(c)
+        .setName(name)
+        .setStatements(combinedStatments.build())
+        .build();
   }
 
   /**
