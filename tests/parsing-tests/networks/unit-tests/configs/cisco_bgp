@@ -6,15 +6,15 @@ ip as-path access-list 10 deny _65535_
 ip as-path access-list 20 permit ^65536$
 ip as-path access-list 30 permit ^4000$
 !
-router bgp 50000
+router bgp 1
  neighbor 10.20.2.2 filter-list 10 out
  end
 !
-router bgp 65538
+router bgp 1
  neighbor 192.168.3.2 filter-list 20 in
  end
 !
-router bgp 65542
+router bgp 1
  neighbor 192.168.4.2 filter-list 40 in
  end
 !
