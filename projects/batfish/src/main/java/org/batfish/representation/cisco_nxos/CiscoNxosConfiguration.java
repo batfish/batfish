@@ -1171,7 +1171,7 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
               public AclLineMatchExpr visitUdpOptions(UdpOptions udpOptions) {
                 ImmutableList.Builder<AclLineMatchExpr> conjuncts = ImmutableList.builder();
                 if (udpOptions.getDstPortSpec() != null) {
-                  conjuncts.add(AclLineMatchExprs.match
+                  conjuncts.add(
                       toPorts(udpOptions.getDstPortSpec(), HeaderSpace.Builder::setDstPorts));
                 }
                 if (udpOptions.getSrcPortSpec() != null) {
