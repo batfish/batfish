@@ -747,14 +747,13 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
   /** Convert specified firewall rule into an {@link IpAccessListLine}. */
   // Most of the conversion is fairly straight-forward: rules have actions, src and dest IP
   // constraints, and service (aka Protocol + Ports) constraints.
-  // However,
+  //   However, services are a bit complicated when `service application-default` is used. In that
+  //   case, we extract service definitions from the application that matches.
   private IpAccessListLine toIpAccessListLine(Rule rule, Vsys vsys) {
     assert !rule.getDisabled(); // handled by caller.
 
     //////////////////////////////////////////////////////////////////////////////////////////
-    // 1. Initialize, set name and action
-    IpAccessListLine.Builder ipAccessListLineBuilder =
-        IpAccessListLine.builder().setName(rule.getName()).setAction(rule.getAction());
+    // 1. Initialize the list of conditions.
     List<AclLineMatchExpr> conjuncts = new LinkedList<>();
 
     //////////////////////////////////////////////////////////////////////////////////////////
@@ -785,8 +784,9 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
     // 4. Match services.
     getServiceExpr(rule, vsys).ifPresent(conjuncts::add);
 
-    return ipAccessListLineBuilder
+    return IpAccessListLine.builder()
         .setName(rule.getName())
+        .setAction(rule.getAction())
         .setMatchCondition(new AndMatchExpr(conjuncts))
         .build();
   }

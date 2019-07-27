@@ -14,6 +14,14 @@ set zone z1 network layer3 [ ethernet1/1 ]
 set network interface ethernet ethernet1/2 layer3 ip 1.1.2.1/24
 set zone z2 network layer3 [ ethernet1/2 ]
 
+set policy panorama post-rulebase security rules DENY-PAN-DB-CLOUD from any
+set policy panorama post-rulebase security rules DENY-PAN-DB-CLOUD to any
+set policy panorama post-rulebase security rules DENY-PAN-DB-CLOUD source any
+set policy panorama post-rulebase security rules DENY-PAN-DB-CLOUD destination any
+set policy panorama post-rulebase security rules DENY-PAN-DB-CLOUD service application-default
+set policy panorama post-rulebase security rules DENY-PAN-DB-CLOUD application pan-db-cloud
+set policy panorama post-rulebase security rules DENY-PAN-DB-CLOUD action deny
+
 set policy panorama post-rulebase security rules ALLOW-APPLICATION-SSL from any
 set policy panorama post-rulebase security rules ALLOW-APPLICATION-SSL to any
 set policy panorama post-rulebase security rules ALLOW-APPLICATION-SSL source any
