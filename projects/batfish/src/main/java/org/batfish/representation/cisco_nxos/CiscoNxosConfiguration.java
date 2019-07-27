@@ -1202,7 +1202,7 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
   private @Nonnull AclLineMatchExpr toPorts(
       PortSpec portSpec,
       BiFunction<HeaderSpace.Builder, Iterable<SubRange>, HeaderSpace.Builder> setter) {
-    // TODO: clean up when ports in headerspace are changed to IntegerSpace from SortedSet<SubRange>
+    // TODO: move off of HeaderSpace
     return portSpec.accept(
         new PortSpecVisitor<AclLineMatchExpr>() {
           @Override
