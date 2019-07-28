@@ -1,0 +1,14 @@
+!
+hostname ios-interface-reenter
+!
+interface FastEthernet0/0
+  mtu 2000
+!
+interface FastEthernet0/0
+  ip address 1.1.1.1 255.255.255.254
+!
+interface Ethernet0
+  mtu 3000
+!
+interface Ethernet0
+  ip address 1.1.1.2 255.255.255.254
