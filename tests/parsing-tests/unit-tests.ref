@@ -74842,18 +74842,6 @@
             },
             {
               "Comment" : "This feature is not currently supported",
-              "Line" : 55,
-              "Parser_Context" : "[ro_distribute_list s_router_ospf stanza cisco_configuration]",
-              "Text" : "distribute-list prefix plin in"
-            },
-            {
-              "Comment" : "This feature is not currently supported",
-              "Line" : 56,
-              "Parser_Context" : "[ro_distribute_list s_router_ospf stanza cisco_configuration]",
-              "Text" : "distribute-list prefix plout out"
-            },
-            {
-              "Comment" : "This feature is not currently supported",
               "Line" : 57,
               "Parser_Context" : "[ro_distribute_list s_router_ospf stanza cisco_configuration]",
               "Text" : "distribute-list route-map rmin in"
