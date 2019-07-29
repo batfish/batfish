@@ -6393,4 +6393,13 @@ public class CiscoGrammarTest {
     Set<AbstractRoute> routes = dp.getRibs().get("receiver").get(DEFAULT_VRF_NAME).getRoutes();
     assertThat(routes, hasItem(hasPrefix(Prefix.parse("99.99.99.99/32"))));
   }
+
+  @Test
+  public void testReenterInterfaceStanza() throws IOException {
+    Configuration c = parseConfig("ios-interface-reenter");
+    assertThat(c, hasInterface("FastEthernet0/0", hasMtu(2000)));
+    assertThat(c, hasInterface("FastEthernet0/0", hasAddress("1.1.1.1/31")));
+    assertThat(c, hasInterface("Ethernet0", hasMtu(3000)));
+    assertThat(c, hasInterface("Ethernet0", hasAddress("1.1.1.2/31")));
+  }
 }
