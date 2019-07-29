@@ -102,6 +102,8 @@ import org.batfish.common.util.CommonUtil;
 import org.batfish.config.Settings;
 import org.batfish.datamodel.AsPathAccessList;
 import org.batfish.datamodel.AsPathAccessListLine;
+import org.batfish.datamodel.CommunityList;
+import org.batfish.datamodel.CommunityListLine;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.DscpType;
@@ -132,6 +134,7 @@ import org.batfish.datamodel.bgp.community.StandardCommunity;
 import org.batfish.datamodel.matchers.HsrpGroupMatchers;
 import org.batfish.datamodel.matchers.RouteFilterListMatchers;
 import org.batfish.datamodel.matchers.VrfMatchers;
+import org.batfish.datamodel.routing_policy.expr.LiteralCommunityConjunction;
 import org.batfish.datamodel.tracking.DecrementPriority;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
@@ -1629,6 +1632,101 @@ public final class CiscoNxosGrammarTest {
       line = lines.next();
       assertThat(line.getAction(), equalTo(LineAction.PERMIT));
       assertThat(line.getRegex(), equalTo("_2_"));
+    }
+  }
+
+  @Test
+  public void testIpCommunityListStandardConversion() throws IOException {
+    String hostname = "nxos_ip_community_list_standard";
+    Configuration c = parseConfig(hostname);
+
+    assertThat(c.getCommunityLists(), hasKeys("cl_seq", "cl_values", "cl_test"));
+    {
+      CommunityList cl = c.getCommunityLists().get("cl_seq");
+      Iterator<CommunityListLine> lines = cl.getLines().iterator();
+      CommunityListLine line;
+
+      line = lines.next();
+      assertThat(line.getAction(), equalTo(LineAction.PERMIT));
+      assertThat(
+          ((LiteralCommunityConjunction) line.getMatchCondition()).getRequiredCommunities(),
+          contains(StandardCommunity.of(1, 1)));
+
+      line = lines.next();
+      assertThat(line.getAction(), equalTo(LineAction.PERMIT));
+      assertThat(
+          ((LiteralCommunityConjunction) line.getMatchCondition()).getRequiredCommunities(),
+          contains(StandardCommunity.of(5, 5)));
+
+      line = lines.next();
+      assertThat(line.getAction(), equalTo(LineAction.PERMIT));
+      assertThat(
+          ((LiteralCommunityConjunction) line.getMatchCondition()).getRequiredCommunities(),
+          contains(StandardCommunity.of(10, 10)));
+
+      line = lines.next();
+      assertThat(line.getAction(), equalTo(LineAction.PERMIT));
+      assertThat(
+          ((LiteralCommunityConjunction) line.getMatchCondition()).getRequiredCommunities(),
+          contains(StandardCommunity.of(11, 11)));
+    }
+    {
+      CommunityList cl = c.getCommunityLists().get("cl_values");
+      Iterator<CommunityListLine> lines = cl.getLines().iterator();
+      CommunityListLine line;
+
+      line = lines.next();
+      assertThat(line.getAction(), equalTo(LineAction.PERMIT));
+      assertThat(
+          ((LiteralCommunityConjunction) line.getMatchCondition()).getRequiredCommunities(),
+          contains(StandardCommunity.of(1, 1)));
+
+      line = lines.next();
+      assertThat(line.getAction(), equalTo(LineAction.PERMIT));
+      assertThat(
+          ((LiteralCommunityConjunction) line.getMatchCondition()).getRequiredCommunities(),
+          contains(StandardCommunity.of(WellKnownCommunity.INTERNET)));
+
+      line = lines.next();
+      assertThat(line.getAction(), equalTo(LineAction.PERMIT));
+      assertThat(
+          ((LiteralCommunityConjunction) line.getMatchCondition()).getRequiredCommunities(),
+          contains(StandardCommunity.of(WellKnownCommunity.NO_EXPORT_SUBCONFED)));
+
+      line = lines.next();
+      assertThat(line.getAction(), equalTo(LineAction.PERMIT));
+      assertThat(
+          ((LiteralCommunityConjunction) line.getMatchCondition()).getRequiredCommunities(),
+          contains(StandardCommunity.of(WellKnownCommunity.NO_ADVERTISE)));
+
+      line = lines.next();
+      assertThat(line.getAction(), equalTo(LineAction.PERMIT));
+      assertThat(
+          ((LiteralCommunityConjunction) line.getMatchCondition()).getRequiredCommunities(),
+          contains(StandardCommunity.of(WellKnownCommunity.NO_EXPORT)));
+    }
+    {
+      CommunityList cl = c.getCommunityLists().get("cl_test");
+      Iterator<CommunityListLine> lines = cl.getLines().iterator();
+      CommunityListLine line;
+
+      line = lines.next();
+      assertThat(line.getAction(), equalTo(LineAction.DENY));
+      assertThat(
+          ((LiteralCommunityConjunction) line.getMatchCondition()).getRequiredCommunities(),
+          containsInAnyOrder(StandardCommunity.of(1, 1), StandardCommunity.of(2, 2)));
+
+      line = lines.next();
+      assertThat(line.getAction(), equalTo(LineAction.PERMIT));
+      assertThat(
+          ((LiteralCommunityConjunction) line.getMatchCondition()).getRequiredCommunities(),
+          containsInAnyOrder(StandardCommunity.of(1, 1)));
+
+      line = lines.next();
+      assertThat(line.getAction(), equalTo(LineAction.PERMIT));
+      assertThat(
+          ((LiteralCommunityConjunction) line.getMatchCondition()).getRequiredCommunities(),
+          containsInAnyOrder(StandardCommunity.of(2, 2)));
     }
   }
 

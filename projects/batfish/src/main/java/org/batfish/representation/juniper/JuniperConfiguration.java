@@ -37,7 +37,6 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import org.apache.commons.collections4.list.TreeList;
 import org.apache.commons.lang3.SerializationUtils;
 import org.batfish.common.VendorConversionException;
 import org.batfish.common.Warnings;
@@ -1752,7 +1751,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
 
   /** Generate IpAccessList from the specified to-zone's security policies. */
   IpAccessList buildSecurityPolicyAcl(String name, Zone zone) {
-    List<IpAccessListLine> zoneAclLines = new TreeList<>();
+    List<IpAccessListLine> zoneAclLines = new LinkedList<>();
 
     /* Default ACL that allows existing connections should be added to all security policies */
     zoneAclLines.add(
