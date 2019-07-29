@@ -8635,7 +8635,7 @@
           },
           "Ethernet0" : {
             "name" : "Ethernet0",
-            "active" : false,
+            "active" : true,
             "additionalArpIps" : {
               "class" : "org.batfish.datamodel.EmptyIpSpace"
             },
