@@ -151,7 +151,8 @@ public class RdsInstanceTest {
                               .setDstIps(
                                   Sets.newHashSet(
                                       IpWildcard.parse("1.2.3.4/32"),
-                                      IpWildcard.parse("10.193.16.105/32")))
+                                      IpWildcard.parse("10.193.16.105/32"),
+                                      IpWildcard.parse("54.191.107.22")))
                               .setSrcPorts(Sets.newHashSet(new SubRange(45, 50)))
                               .setTcpFlags(ImmutableSet.of(TcpFlagsMatchConditions.ACK_TCP_FLAG))
                               .build()),
@@ -175,7 +176,8 @@ public class RdsInstanceTest {
                               .setSrcIps(
                                   Sets.newHashSet(
                                       IpWildcard.parse("1.2.3.4/32"),
-                                      IpWildcard.parse("10.193.16.105/32")))
+                                      IpWildcard.parse("10.193.16.105/32"),
+                                      IpWildcard.parse("54.191.107.22")))
                               .setDstPorts(Sets.newHashSet(new SubRange(45, 50)))
                               .build())))));
     }

@@ -1,7 +1,11 @@
 package org.batfish.representation.aws;
 
+import static com.google.common.base.MoreObjects.firstNonNull;
+import static com.google.common.base.Preconditions.checkArgument;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.google.common.collect.ImmutableMap;
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.HashMap;
@@ -82,24 +86,64 @@ final class Region implements Serializable {
   @Nonnull private final Map<String, VpnGateway> _vpnGateways;
 
   public Region(String name) {
+    this(
+        name,
+        new HashMap<>(),
+        new HashMap<>(),
+        new HashMap<>(),
+        new HashMap<>(),
+        new HashMap<>(),
+        new HashMap<>(),
+        new HashMap<>(),
+        new HashMap<>(),
+        new HashMap<>(),
+        new HashMap<>(),
+        new HashMap<>(),
+        new HashMap<>(),
+        new HashMap<>(),
+        new HashMap<>(),
+        new HashMap<>(),
+        new HashMap<>(),
+        new HashMap<>());
+  }
+
+  private Region(
+      String name,
+      Map<String, Address> addresses,
+      Map<String, Set<SecurityGroup>> configurationSecurityGroups,
+      Map<String, CustomerGateway> customerGateways,
+      Map<String, ElasticsearchDomain> elasticsearchDomains,
+      Map<String, Instance> instances,
+      Map<String, InternetGateway> internetGateways,
+      Map<String, NatGateway> natGateways,
+      Map<String, NetworkAcl> networkAcls,
+      Map<String, NetworkInterface> networkInterfaces,
+      Map<String, RdsInstance> rdsInstances,
+      Map<String, RouteTable> routeTables,
+      Map<String, SecurityGroup> securityGroups,
+      Map<String, Subnet> subnets,
+      Map<String, VpcPeeringConnection> vpcPeerings,
+      Map<String, Vpc> vpcs,
+      Map<String, VpnConnection> vpnConnections,
+      Map<String, VpnGateway> vpnGateways) {
     _name = name;
-    _addresses = new HashMap<>();
-    _configurationSecurityGroups = new HashMap<>();
-    _customerGateways = new HashMap<>();
-    _elasticsearchDomains = new HashMap<>();
-    _instances = new HashMap<>();
-    _internetGateways = new HashMap<>();
-    _natGateways = new HashMap<>();
-    _networkAcls = new HashMap<>();
-    _networkInterfaces = new HashMap<>();
-    _rdsInstances = new HashMap<>();
-    _routeTables = new HashMap<>();
-    _securityGroups = new HashMap<>();
-    _subnets = new HashMap<>();
-    _vpcPeerings = new HashMap<>();
-    _vpcs = new HashMap<>();
-    _vpnConnections = new HashMap<>();
-    _vpnGateways = new HashMap<>();
+    _addresses = addresses;
+    _configurationSecurityGroups = configurationSecurityGroups;
+    _customerGateways = customerGateways;
+    _elasticsearchDomains = elasticsearchDomains;
+    _instances = instances;
+    _internetGateways = internetGateways;
+    _natGateways = natGateways;
+    _networkAcls = networkAcls;
+    _networkInterfaces = networkInterfaces;
+    _rdsInstances = rdsInstances;
+    _routeTables = routeTables;
+    _securityGroups = securityGroups;
+    _subnets = subnets;
+    _vpcPeerings = vpcPeerings;
+    _vpcs = vpcs;
+    _vpnConnections = vpnConnections;
+    _vpnGateways = vpnGateways;
   }
 
   void addConfigElement(
@@ -143,6 +187,10 @@ final class Region implements Serializable {
         integratorFunction.accept(array.get(index));
       }
     }
+  }
+
+  static RegionBuilder builder(String name) {
+    return new RegionBuilder(name);
   }
 
   /**
@@ -502,7 +550,8 @@ final class Region implements Serializable {
                     .get(networkInterface.getSubnetId())
                     .getAllocatedIps()
                     .addAll(
-                        networkInterface.getIpAddressAssociations().keySet().stream()
+                        networkInterface.getPrivateIpAddresses().stream()
+                            .map(PrivateIpAddress::getPrivateIp)
                             .map(Ip::asLong)
                             .collect(Collectors.toSet())));
   }
@@ -511,5 +560,145 @@ final class Region implements Serializable {
     Set<SecurityGroup> securityGroups =
         getConfigurationSecurityGroups().computeIfAbsent(configName, k -> new HashSet<>());
     securityGroups.add(securityGroup);
+  }
+
+  static final class RegionBuilder {
+    private Map<String, Address> _addresses;
+    private Map<String, Set<SecurityGroup>> _configurationSecurityGroups;
+    private Map<String, CustomerGateway> _customerGateways;
+    private Map<String, ElasticsearchDomain> _elasticsearchDomains;
+    private Map<String, Instance> _instances;
+    private Map<String, InternetGateway> _internetGateways;
+    private String _name;
+    private Map<String, NatGateway> _natGateways;
+    private Map<String, NetworkAcl> _networkAcls;
+    private Map<String, NetworkInterface> _networkInterfaces;
+    private Map<String, RdsInstance> _rdsInstances;
+    private Map<String, RouteTable> _routeTables;
+    private Map<String, SecurityGroup> _securityGroups;
+    private Map<String, Subnet> _subnets;
+    private Map<String, VpcPeeringConnection> _vpcPeerings;
+    private Map<String, Vpc> _vpcs;
+    private Map<String, VpnConnection> _vpnConnections;
+    private Map<String, VpnGateway> _vpnGateways;
+
+    private RegionBuilder(String name) {
+      _name = name;
+    }
+
+    public RegionBuilder setAddresses(Map<String, Address> addresses) {
+      this._addresses = addresses;
+      return this;
+    }
+
+    public RegionBuilder setConfigurationSecurityGroups(
+        Map<String, Set<SecurityGroup>> configurationSecurityGroups) {
+      this._configurationSecurityGroups = configurationSecurityGroups;
+      return this;
+    }
+
+    public RegionBuilder setCustomerGateways(Map<String, CustomerGateway> customerGateways) {
+      this._customerGateways = customerGateways;
+      return this;
+    }
+
+    public RegionBuilder setElasticsearchDomains(
+        Map<String, ElasticsearchDomain> elasticsearchDomains) {
+      this._elasticsearchDomains = elasticsearchDomains;
+      return this;
+    }
+
+    public RegionBuilder setInstances(Map<String, Instance> instances) {
+      this._instances = instances;
+      return this;
+    }
+
+    public RegionBuilder setInternetGateways(Map<String, InternetGateway> internetGateways) {
+      this._internetGateways = internetGateways;
+      return this;
+    }
+
+    public RegionBuilder setName(String name) {
+      this._name = name;
+      return this;
+    }
+
+    public RegionBuilder setNatGateways(Map<String, NatGateway> natGateways) {
+      this._natGateways = natGateways;
+      return this;
+    }
+
+    public RegionBuilder setNetworkAcls(Map<String, NetworkAcl> networkAcls) {
+      this._networkAcls = networkAcls;
+      return this;
+    }
+
+    public RegionBuilder setNetworkInterfaces(Map<String, NetworkInterface> networkInterfaces) {
+      this._networkInterfaces = networkInterfaces;
+      return this;
+    }
+
+    public RegionBuilder setRdsInstances(Map<String, RdsInstance> rdsInstances) {
+      this._rdsInstances = rdsInstances;
+      return this;
+    }
+
+    public RegionBuilder setRouteTables(Map<String, RouteTable> routeTables) {
+      this._routeTables = routeTables;
+      return this;
+    }
+
+    public RegionBuilder setSecurityGroups(Map<String, SecurityGroup> securityGroups) {
+      this._securityGroups = securityGroups;
+      return this;
+    }
+
+    public RegionBuilder setSubnets(Map<String, Subnet> subnets) {
+      this._subnets = subnets;
+      return this;
+    }
+
+    public RegionBuilder setVpcPeerings(Map<String, VpcPeeringConnection> vpcPeerings) {
+      this._vpcPeerings = vpcPeerings;
+      return this;
+    }
+
+    public RegionBuilder setVpcs(Map<String, Vpc> vpcs) {
+      this._vpcs = vpcs;
+      return this;
+    }
+
+    public RegionBuilder setVpnConnections(Map<String, VpnConnection> vpnConnections) {
+      this._vpnConnections = vpnConnections;
+      return this;
+    }
+
+    public RegionBuilder setVpnGateways(Map<String, VpnGateway> vpnGateways) {
+      this._vpnGateways = vpnGateways;
+      return this;
+    }
+
+    public Region build() {
+      checkArgument(_name != null, "Region name must be set");
+      return new Region(
+          _name,
+          firstNonNull(_addresses, ImmutableMap.of()),
+          firstNonNull(_configurationSecurityGroups, ImmutableMap.of()),
+          firstNonNull(_customerGateways, ImmutableMap.of()),
+          firstNonNull(_elasticsearchDomains, ImmutableMap.of()),
+          firstNonNull(_instances, ImmutableMap.of()),
+          firstNonNull(_internetGateways, ImmutableMap.of()),
+          firstNonNull(_natGateways, ImmutableMap.of()),
+          firstNonNull(_networkAcls, ImmutableMap.of()),
+          firstNonNull(_networkInterfaces, ImmutableMap.of()),
+          firstNonNull(_rdsInstances, ImmutableMap.of()),
+          firstNonNull(_routeTables, ImmutableMap.of()),
+          firstNonNull(_securityGroups, ImmutableMap.of()),
+          firstNonNull(_subnets, ImmutableMap.of()),
+          firstNonNull(_vpcPeerings, ImmutableMap.of()),
+          firstNonNull(_vpcs, ImmutableMap.of()),
+          firstNonNull(_vpnConnections, ImmutableMap.of()),
+          firstNonNull(_vpnGateways, ImmutableMap.of()));
+    }
   }
 }
