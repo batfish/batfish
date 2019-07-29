@@ -21,7 +21,9 @@ import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.datamodel.BgpActivePeerConfig;
 import org.batfish.datamodel.Configuration;
+import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.bgp.AddressFamily.Type;
 import org.junit.Test;
 
@@ -57,12 +59,25 @@ public class InternetGatewayTest {
     Vpc vpc = new Vpc("vpc", ImmutableSet.of());
     Configuration vpcConfig = Utils.newAwsConfiguration(vpc.getId(), "awstest");
 
+    Ip publicIp = Ip.parse("1.1.1.1");
+
+    NetworkInterface ni =
+        new NetworkInterface(
+            "ni",
+            "subnet",
+            vpc.getId(),
+            ImmutableList.of(),
+            ImmutableList.of(new PrivateIpAddress(true, Ip.parse("10.10.10.10"), publicIp)),
+            "desc",
+            null);
+
     InternetGateway internetGateway = new InternetGateway("igw", ImmutableList.of(vpc.getId()));
 
     Region region =
         Region.builder("region")
             .setInternetGateways(ImmutableMap.of(internetGateway.getId(), internetGateway))
             .setVpcs(ImmutableMap.of(vpc.getId(), vpc))
+            .setNetworkInterfaces(ImmutableMap.of(ni.getId(), ni))
             .build();
 
     AwsConfiguration awsConfiguration =
@@ -72,18 +87,21 @@ public class InternetGatewayTest {
 
     Configuration igwConfig = internetGateway.toConfigurationNode(awsConfiguration, region);
 
+    // gateway should have interfaces to the backbone and vpc
     assertThat(
         igwConfig.getAllInterfaces().values().stream()
             .map(i -> i.getName())
             .collect(ImmutableList.toImmutableList()),
         equalTo(ImmutableList.of(BACKBONE_INTERFACE_NAME, vpc.getId())));
 
+    // vpc should have a pointer to the gateway
     assertThat(
         vpcConfig.getAllInterfaces().values().stream()
             .map(i -> i.getName())
             .collect(ImmutableList.toImmutableList()),
         equalTo(ImmutableList.of(internetGateway.getId())));
 
+    // vpc interface should have the right address
     assertThat(
         igwConfig.getAllInterfaces().get(vpc.getId()).getConcreteAddress().getPrefix(),
         equalTo(
@@ -92,6 +110,22 @@ public class InternetGatewayTest {
                 .get(internetGateway.getId())
                 .getConcreteAddress()
                 .getPrefix()));
+
+    // the gateway should have a static route to the public ip
+    assertThat(
+        igwConfig.getDefaultVrf().getStaticRoutes(),
+        equalTo(
+            ImmutableSet.of(
+                StaticRoute.builder()
+                    .setNetwork(Prefix.create(publicIp, 32))
+                    .setNextHopIp(
+                        vpcConfig
+                            .getAllInterfaces()
+                            .get(internetGateway.getId())
+                            .getConcreteAddress()
+                            .getIp())
+                    .setAdministrativeCost(Route.DEFAULT_STATIC_ROUTE_ADMIN)
+                    .build())));
   }
 
   @Test
