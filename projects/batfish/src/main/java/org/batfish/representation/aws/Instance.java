@@ -448,7 +448,6 @@ final class Instance implements AwsVpcEntity, Serializable {
 
     public Instance build() {
       checkArgument(_instanceId != null, "Instance id must be set");
-      checkArgument(_status != null, "Status must be set");
       return new Instance(
           _instanceId,
           _vpcId,
@@ -456,7 +455,7 @@ final class Instance implements AwsVpcEntity, Serializable {
           firstNonNull(_securityGroups, new LinkedList<>()),
           firstNonNull(_networkInterfaces, new LinkedList<>()),
           firstNonNull(_tags, new HashMap<>()),
-          _status);
+          firstNonNull(_status, Status.RUNNING));
     }
   }
 }
