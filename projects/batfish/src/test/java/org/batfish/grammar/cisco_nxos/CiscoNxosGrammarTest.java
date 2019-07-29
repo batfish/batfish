@@ -1016,6 +1016,22 @@ public final class CiscoNxosGrammarTest {
           equalTo(
               toBDD(
                   HeaderSpace.builder().setIpProtocols(ImmutableList.of(fromNumber(1))).build())));
+
+      line = lines.next();
+      assertThat(line.getAction(), equalTo(LineAction.DENY));
+      assertThat(
+          toBDD(line.getMatchCondition()),
+          equalTo(
+              toBDD(
+                  HeaderSpace.builder().setIpProtocols(ImmutableList.of(fromNumber(4))).build())));
+
+      line = lines.next();
+      assertThat(line.getAction(), equalTo(LineAction.DENY));
+      assertThat(
+          toBDD(line.getMatchCondition()),
+          equalTo(
+              toBDD(
+                  HeaderSpace.builder().setIpProtocols(ImmutableList.of(fromNumber(2))).build())));
     }
   }
 
