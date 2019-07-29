@@ -26,6 +26,7 @@ public interface AwsVpcEntity {
   String JSON_KEY_DB_INSTANCE_STATUS = "DBInstanceStatus";
   String JSON_KEY_DB_SUBNET_GROUP = "DBSubnetGroup";
   String JSON_KEY_DELETED = "Deleted";
+  String JSON_KEY_DESCRIPTION = "Description";
   String JSON_KEY_DESTINATION_CIDR_BLOCK = "DestinationCidrBlock";
   String JSON_KEY_DHCP_OPTIONS = "DhcpOptions";
   String JSON_KEY_DOMAIN_NAME = "DomainName";
@@ -63,6 +64,7 @@ public interface AwsVpcEntity {
   String JSON_KEY_OUTSIDE_IP_ADDRESS = "OutsideIpAddress";
   String JSON_KEY_PLACEMENT_GROUPS = "PlacementGroups";
   String JSON_KEY_PORT_RANGE = "PortRange";
+  String JSON_KEY_PRIMARY = "Primary";
   String JSON_KEY_PRIVATE_IP_ADDRESS = "PrivateIpAddress";
   String JSON_KEY_PRIVATE_IP_ADDRESSES = "PrivateIpAddresses";
   String JSON_KEY_PROTOCOL = "Protocol";

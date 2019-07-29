@@ -1,0 +1,10 @@
+!
+hostname ios_interface_ip_tcp
+!
+interface Ethernet0
+  ip tcp adjust-mss 500
+  ip tcp compression-connections 244
+  ip tcp header-compression
+  ip tcp header-compression passive
+  ip tcp header-compression ietf-format
+!

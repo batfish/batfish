@@ -1,9 +1,11 @@
 package org.batfish.representation.aws;
 
+import static com.google.common.collect.Iterables.getOnlyElement;
 import static org.batfish.representation.aws.AwsVpcEntity.JSON_KEY_INSTANCES;
 import static org.batfish.representation.aws.AwsVpcEntity.JSON_KEY_RESERVATIONS;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
@@ -12,8 +14,13 @@ import com.google.common.collect.ImmutableMap;
 import java.io.IOException;
 import java.util.LinkedList;
 import java.util.List;
+import org.batfish.common.Warnings;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.common.util.CommonUtil;
+import org.batfish.datamodel.Configuration;
+import org.batfish.datamodel.Interface;
+import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.Prefix;
 import org.batfish.representation.aws.Instance.Status;
 import org.junit.Test;
 
@@ -21,7 +28,7 @@ import org.junit.Test;
 public class InstanceTest {
 
   @Test
-  public void reservations() throws IOException {
+  public void testDeserialization() throws IOException {
     String text = CommonUtil.readResource("org/batfish/representation/aws/InstanceTest.json");
 
     JsonNode json = BatfishObjectMapper.mapper().readTree(text);
@@ -65,5 +72,47 @@ public class InstanceTest {
                         "Name",
                         "shutdown"),
                     Status.STOPPED))));
+  }
+
+  @Test
+  public void testToConfigurationNode() {
+    String vpcId = "vpc";
+
+    Subnet subnet = new Subnet(Prefix.parse("10.10.10.10/24"), "subnet", vpcId);
+
+    NetworkInterface networkInterface =
+        new NetworkInterface(
+            "interface",
+            subnet.getId(),
+            vpcId,
+            ImmutableList.of(),
+            ImmutableList.of(new PrivateIpAddress(true, Ip.parse("10.10.10.10"), null)),
+            "desc",
+            null);
+
+    Instance instance =
+        Instance.builder()
+            .setInstanceId("instance")
+            .setNetworkInterfaces(ImmutableList.of(networkInterface.getNetworkInterfaceId()))
+            .build();
+
+    Region region =
+        Region.builder("test")
+            .setInstances(ImmutableMap.of(instance.getId(), instance))
+            .setNetworkInterfaces(
+                ImmutableMap.of(networkInterface.getNetworkInterfaceId(), networkInterface))
+            .setSubnets(ImmutableMap.of(subnet.getId(), subnet))
+            .build();
+
+    Warnings warnings = new Warnings();
+    Configuration configuration = instance.toConfigurationNode(region, warnings);
+
+    Interface configInterface = getOnlyElement(configuration.getAllInterfaces().values());
+
+    assertTrue(warnings.isEmpty());
+    assertThat(configuration.getHostname(), equalTo(instance.getId()));
+    assertThat(configInterface.getDescription(), equalTo("desc"));
+    assertThat(
+        configInterface.getPrimaryNetwork(), equalTo(Prefix.create(Ip.parse("10.10.10.10"), 24)));
   }
 }

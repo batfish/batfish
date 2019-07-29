@@ -2046,7 +2046,8 @@ public final class CiscoConfiguration extends VendorConfiguration {
       List<If> redistributePolicyStatements =
           eigrpRedistributionPoliciesToStatements(
               eigrpProcess.getRedistributionPolicies().values(), eigrpProcess, this);
-      List<If> mergedsWithAllowSelfAsn =
+
+      List<If> redistributeAndAllowEigrpFromSelfAsn =
           clearFalseStatementsAndAddMatchOwnAsn(
               redistributePolicyStatements, eigrpProcess.getAsn());
 
@@ -2057,7 +2058,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
               c,
               this,
               eigrpProcess.getOutboundInterfaceDistributeLists().get(newIface.getName()),
-              mergedsWithAllowSelfAsn,
+              redistributeAndAllowEigrpFromSelfAsn,
               policyName);
 
       c.getRoutingPolicies().put(policyName, routingPolicy);

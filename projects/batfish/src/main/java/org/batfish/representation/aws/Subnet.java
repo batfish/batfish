@@ -189,12 +189,13 @@ public class Subnet implements AwsVpcEntity, Serializable {
       AwsConfiguration awsConfiguration, Region region, Warnings warnings) {
     Configuration cfgNode = Utils.newAwsConfiguration(_subnetId, "aws");
 
-    // add one interface that faces the instances
+    // add one interface that faces all instances (assumes a LAN)
     String instancesIfaceName = _subnetId;
     Ip instancesIfaceIp = computeInstancesIfaceIp();
     ConcreteInterfaceAddress instancesIfaceAddress =
         ConcreteInterfaceAddress.create(instancesIfaceIp, _cidrBlock.getPrefixLength());
-    Utils.newInterface(instancesIfaceName, cfgNode, instancesIfaceAddress);
+    Utils.newInterface(
+        instancesIfaceName, cfgNode, instancesIfaceAddress, "To instances " + _subnetId);
 
     // generate a prefix for the link between the VPC router and the subnet
     Prefix vpcSubnetLinkPrefix = awsConfiguration.getNextGeneratedLinkSubnet();
@@ -207,12 +208,13 @@ public class Subnet implements AwsVpcEntity, Serializable {
 
     // add an interface that faces the VPC router
     String subnetIfaceName = _vpcId;
-    Interface subnetToVpc = Utils.newInterface(subnetIfaceName, cfgNode, subnetIfaceAddress);
+    Interface subnetToVpc =
+        Utils.newInterface(subnetIfaceName, cfgNode, subnetIfaceAddress, "To VPC " + _vpcId);
 
     // add a corresponding interface on the VPC router facing the subnet
     Configuration vpcConfigNode = awsConfiguration.getConfigurationNodes().get(_vpcId);
     String vpcIfaceName = _subnetId;
-    Utils.newInterface(vpcIfaceName, vpcConfigNode, vpcIfaceAddress);
+    Utils.newInterface(vpcIfaceName, vpcConfigNode, vpcIfaceAddress, "To subnet " + _subnetId);
 
     // add a static route on the vpc router for this subnet
     StaticRoute.Builder sb =

@@ -571,6 +571,12 @@
         "ios_interface" : [
           "configs/ios_interface"
         ],
+        "ios_interface_ip_authentication" : [
+          "configs/ios_interface_ip_autentication"
+        ],
+        "ios_interface_ip_tcp" : [
+          "configs/ios_interface_ip_tcp"
+        ],
         "ios_standby" : [
           "configs/ios_standby"
         ],
@@ -1095,6 +1101,8 @@
         "configs/ios_bgp" : "PASSED",
         "configs/ios_bgp_aggregate_address" : "PASSED",
         "configs/ios_interface" : "PASSED",
+        "configs/ios_interface_ip_autentication" : "PASSED",
+        "configs/ios_interface_ip_tcp" : "PASSED",
         "configs/ios_standby" : "PASSED",
         "configs/ios_template" : "PASSED",
         "configs/ios_xr_acl" : "PASSED",
@@ -1971,7 +1979,7 @@
             "        (management_ssh_null",
             "          AUTHENTICATION:'authentication'",
             "          (null_rest_of_line",
-            "            VARIABLE:'mode'  <== mode:M_Authentication",
+            "            MODE:'mode'  <== mode:M_Authentication",
             "            PASSWORD:'password'",
             "            NEWLINE:'\\n'))",
             "        (management_ssh_ip_access_group",
@@ -11786,7 +11794,7 @@
             "          (null_is_stanza",
             "            AUTHENTICATION:'authentication'",
             "            (null_rest_of_line",
-            "              VARIABLE:'key-chain'  <== mode:M_Authentication",
+            "              KEY_CHAIN:'key-chain'  <== mode:M_Authentication",
             "              ISIS:'isis'",
             "              LEVEL_1:'level-1'",
             "              NEWLINE:'\\n'))))",
@@ -11795,7 +11803,7 @@
             "          (null_is_stanza",
             "            AUTHENTICATION:'authentication'",
             "            (null_rest_of_line",
-            "              VARIABLE:'mode'  <== mode:M_Authentication",
+            "              MODE:'mode'  <== mode:M_Authentication",
             "              VARIABLE:'text'",
             "              LEVEL_1:'level-1'",
             "              NEWLINE:'\\n'))))",
@@ -51509,6 +51517,106 @@
             "  EOF:<EOF>)"
           ]
         },
+        "configs/ios_interface_ip_autentication" : {
+          "sentences" : [
+            "(cisco_configuration",
+            "  (stanza",
+            "    (s_hostname",
+            "      HOSTNAME:'hostname'",
+            "      VARIABLE:'ios_interface_ip_authentication'",
+            "      NEWLINE:'\\n'))",
+            "  (stanza",
+            "    (s_interface",
+            "      INTERFACE:'interface'",
+            "      iname = (interface_name",
+            "        name_prefix_alpha = M_Interface_PREFIX:'Ethernet'  <== mode:M_Interface",
+            "        (range",
+            "          (subrange",
+            "            low = DEC:'0'  <== mode:M_Interface)))",
+            "      NEWLINE:'\\n'  <== mode:M_Interface",
+            "      (if_inner",
+            "        (if_ip_authentication",
+            "          IP:'ip'",
+            "          AUTHENTICATION:'authentication'",
+            "          (if_ip_auth_mode",
+            "            MODE:'mode'  <== mode:M_Authentication",
+            "            EIGRP:'eigrp'",
+            "            asn = DEC:'102'",
+            "            MD5:'md5'",
+            "            NEWLINE:'\\n')))",
+            "      (if_inner",
+            "        (if_ip_authentication",
+            "          IP:'ip'",
+            "          AUTHENTICATION:'authentication'",
+            "          (if_ip_auth_key_chain",
+            "            KEY_CHAIN:'key-chain'  <== mode:M_Authentication",
+            "            EIGRP:'eigrp'",
+            "            asn = DEC:'102'",
+            "            name = (variable_permissive",
+            "              VARIABLE:'chain_name')",
+            "            NEWLINE:'\\n')))))",
+            "  EOF:<EOF>)"
+          ]
+        },
+        "configs/ios_interface_ip_tcp" : {
+          "sentences" : [
+            "(cisco_configuration",
+            "  (stanza",
+            "    (s_hostname",
+            "      HOSTNAME:'hostname'",
+            "      VARIABLE:'ios_interface_ip_tcp'",
+            "      NEWLINE:'\\n'))",
+            "  (stanza",
+            "    (s_interface",
+            "      INTERFACE:'interface'",
+            "      iname = (interface_name",
+            "        name_prefix_alpha = M_Interface_PREFIX:'Ethernet'  <== mode:M_Interface",
+            "        (range",
+            "          (subrange",
+            "            low = DEC:'0'  <== mode:M_Interface)))",
+            "      NEWLINE:'\\n'  <== mode:M_Interface",
+            "      (if_inner",
+            "        (if_ip_tcp",
+            "          IP:'ip'",
+            "          TCP:'tcp'",
+            "          (if_ip_tcp_adjust_mss",
+            "            ADJUST_MSS:'adjust-mss'",
+            "            value = DEC:'500'",
+            "            NEWLINE:'\\n')))",
+            "      (if_inner",
+            "        (if_ip_tcp",
+            "          IP:'ip'",
+            "          TCP:'tcp'",
+            "          (if_ip_tcp_compression_connections",
+            "            COMPRESSION_CONNECTIONS:'compression-connections'",
+            "            value = DEC:'244'",
+            "            NEWLINE:'\\n')))",
+            "      (if_inner",
+            "        (if_ip_tcp",
+            "          IP:'ip'",
+            "          TCP:'tcp'",
+            "          (if_ip_tcp_header_compression",
+            "            HEADER_COMPRESSION:'header-compression'",
+            "            NEWLINE:'\\n')))",
+            "      (if_inner",
+            "        (if_ip_tcp",
+            "          IP:'ip'",
+            "          TCP:'tcp'",
+            "          (if_ip_tcp_header_compression",
+            "            HEADER_COMPRESSION:'header-compression'",
+            "            PASSIVE:'passive'",
+            "            NEWLINE:'\\n')))",
+            "      (if_inner",
+            "        (if_ip_tcp",
+            "          IP:'ip'",
+            "          TCP:'tcp'",
+            "          (if_ip_tcp_header_compression",
+            "            HEADER_COMPRESSION:'header-compression'",
+            "            IETF_FORMAT:'ietf-format'",
+            "            NEWLINE:'\\n')))))",
+            "  EOF:<EOF>)"
+          ]
+        },
         "configs/ios_standby" : {
           "sentences" : [
             "(cisco_configuration",
@@ -53718,7 +53826,7 @@
             "        (null_rs_stanza",
             "          KEY_SOURCE:'key-source'",
             "          (null_rest_of_line",
-            "            VARIABLE:'key-chain'",
+            "            KEY_CHAIN:'key-chain'",
             "            VARIABLE:'RSVP'",
             "            NEWLINE:'\\n')))",
             "      (rs_stanza",
@@ -74842,18 +74950,6 @@
             },
             {
               "Comment" : "This feature is not currently supported",
-              "Line" : 55,
-              "Parser_Context" : "[ro_distribute_list s_router_ospf stanza cisco_configuration]",
-              "Text" : "distribute-list prefix plin in"
-            },
-            {
-              "Comment" : "This feature is not currently supported",
-              "Line" : 56,
-              "Parser_Context" : "[ro_distribute_list s_router_ospf stanza cisco_configuration]",
-              "Text" : "distribute-list prefix plout out"
-            },
-            {
-              "Comment" : "This feature is not currently supported",
               "Line" : 57,
               "Parser_Context" : "[ro_distribute_list s_router_ospf stanza cisco_configuration]",
               "Text" : "distribute-list route-map rmin in"
@@ -77208,6 +77304,8 @@
         "ios_bfd" : "PASSED",
         "ios_bgp" : "PASSED",
         "ios_interface" : "PASSED",
+        "ios_interface_ip_authentication" : "PASSED",
+        "ios_interface_ip_tcp" : "PASSED",
         "ios_standby" : "PASSED",
         "ios_template" : "PASSED",
         "ios_xr_acl" : "PASSED",
@@ -81695,6 +81793,33 @@
             }
           }
         },
+        "configs/ios_interface_ip_autentication" : {
+          "interface" : {
+            "Ethernet0" : {
+              "definitionLines" : [
+                4,
+                5,
+                6
+              ],
+              "numReferrers" : 1
+            }
+          }
+        },
+        "configs/ios_interface_ip_tcp" : {
+          "interface" : {
+            "Ethernet0" : {
+              "definitionLines" : [
+                4,
+                5,
+                6,
+                7,
+                8,
+                9
+              ],
+              "numReferrers" : 1
+            }
+          }
+        },
         "configs/ios_standby" : {
           "interface" : {
             "Vlan1000" : {
@@ -84633,6 +84758,12 @@
         ],
         "configs/ios_interface" : [
           "ios_interface"
+        ],
+        "configs/ios_interface_ip_autentication" : [
+          "ios_interface_ip_authentication"
+        ],
+        "configs/ios_interface_ip_tcp" : [
+          "ios_interface_ip_tcp"
         ],
         "configs/ios_standby" : [
           "ios_standby"
@@ -88065,6 +88196,24 @@
             "FOOBAR" : {
               "interface service-policy" : [
                 5
+              ]
+            }
+          }
+        },
+        "configs/ios_interface_ip_autentication" : {
+          "interface" : {
+            "Ethernet0" : {
+              "interface" : [
+                4
+              ]
+            }
+          }
+        },
+        "configs/ios_interface_ip_tcp" : {
+          "interface" : {
+            "Ethernet0" : {
+              "interface" : [
+                4
               ]
             }
           }
@@ -92462,6 +92611,8 @@
         "configs/ios_bgp" : "PASSED",
         "configs/ios_bgp_aggregate_address" : "PASSED",
         "configs/ios_interface" : "PASSED",
+        "configs/ios_interface_ip_autentication" : "PASSED",
+        "configs/ios_interface_ip_tcp" : "PASSED",
         "configs/ios_standby" : "PASSED",
         "configs/ios_template" : "PASSED",
         "configs/ios_xr_acl" : "PASSED",

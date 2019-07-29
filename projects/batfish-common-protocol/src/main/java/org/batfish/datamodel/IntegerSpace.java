@@ -192,6 +192,14 @@ public final class IntegerSpace extends NumberSpace<Integer, IntegerSpace, Integ
       return this;
     }
 
+    /** Include the given numbers. */
+    public @Nonnull Builder including(int... numbers) {
+      for (int n : numbers) {
+        including(n);
+      }
+      return this;
+    }
+
     @JsonCreator
     @VisibleForTesting
     static @Nonnull Builder create(@Nullable String s) {

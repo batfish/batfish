@@ -90,7 +90,7 @@ final class VpnGateway implements AwsVpcEntity, Serializable {
       Prefix vpcLink = awsConfiguration.getNextGeneratedLinkSubnet();
       ConcreteInterfaceAddress vgwIfaceAddress =
           ConcreteInterfaceAddress.create(vpcLink.getStartIp(), vpcLink.getPrefixLength());
-      Utils.newInterface(vgwIfaceName, cfgNode, vgwIfaceAddress);
+      Utils.newInterface(vgwIfaceName, cfgNode, vgwIfaceAddress, "To VPC " + vpcId);
 
       // add the interface to the vpc router
       Configuration vpcConfigNode = awsConfiguration.getConfigurationNodes().get(vpcId);
@@ -100,7 +100,8 @@ final class VpnGateway implements AwsVpcEntity, Serializable {
       ConcreteInterfaceAddress vpcIfaceAddress =
           ConcreteInterfaceAddress.create(vpcLink.getEndIp(), vpcLink.getPrefixLength());
       vpcIface.setAddress(vpcIfaceAddress);
-      Utils.newInterface(vpcIfaceName, vpcConfigNode, vpcIfaceAddress);
+      Utils.newInterface(
+          vpcIfaceName, vpcConfigNode, vpcIfaceAddress, "To VPN gateway " + _vpnGatewayId);
 
       // associate this gateway with the vpc
       region.getVpcs().get(vpcId).setVpnGatewayId(_vpnGatewayId);

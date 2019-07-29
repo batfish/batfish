@@ -131,8 +131,8 @@ public abstract class NumberSpace<
     }
 
     /** Include a number. */
-    public final B including(@Nonnull T range) {
-      return including(Range.singleton(range));
+    public final B including(@Nonnull T number) {
+      return including(Range.singleton(number));
     }
 
     /** Include given {@link RangeSet}. */
