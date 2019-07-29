@@ -1,0 +1,9 @@
+!
+hostname ios-bgp-reenter-process
+!
+router bgp 2
+  neighbor 2.2.2.3 remote-as 3
+!
+router bgp 2
+  neighbor 2.2.2.4 remote-as 4
+!

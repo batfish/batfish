@@ -1,0 +1,15 @@
+!RANCID-CONTENT-TYPE: cisco-nx
+!
+hostname nxos_role
+!
+
+role name myrole                                                                                                                                                                                                      
+  description the best role
+  rule 8 permit command terminal *
+  rule 7 permit command copy *
+  rule 6 permit command dir *
+  rule 5 permit read
+  rule 4 permit command clear counters *
+  rule 3 permit command show *
+  rule 2 permit command traceroute *
+  rule 1 permit command ping *

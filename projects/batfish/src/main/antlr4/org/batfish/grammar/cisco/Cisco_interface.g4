@@ -297,6 +297,25 @@ if_ip_address_secondary
    ) SECONDARY DHCP_GIADDR? NEWLINE
 ;
 
+if_ip_authentication
+:
+   IP AUTHENTICATION
+   (
+     if_ip_auth_key_chain
+     | if_ip_auth_mode
+   )
+;
+
+if_ip_auth_key_chain
+:
+   KEY_CHAIN EIGRP asn = DEC name = variable_permissive NEWLINE
+;
+
+if_ip_auth_mode
+:
+   MODE EIGRP asn = DEC MD5 NEWLINE
+;
+
 if_ip_dhcp
 :
    NO? IP DHCP
@@ -469,6 +488,31 @@ if_ip_summary_address
       addr = IP_ADDRESS netmask = IP_ADDRESS
       | prefix = IP_PREFIX
    ) (LEAK_MAP mapname = variable)? NEWLINE
+;
+
+if_ip_tcp
+:
+   IP TCP
+   (
+      if_ip_tcp_adjust_mss
+      | if_ip_tcp_compression_connections
+      | if_ip_tcp_header_compression
+   )
+;
+
+if_ip_tcp_adjust_mss
+:
+   ADJUST_MSS value = DEC NEWLINE
+;
+
+if_ip_tcp_compression_connections
+:
+   COMPRESSION_CONNECTIONS value = DEC NEWLINE
+;
+
+if_ip_tcp_header_compression
+:
+   HEADER_COMPRESSION ( PASSIVE | IETF_FORMAT )? NEWLINE
 ;
 
 if_ip_verify
@@ -804,7 +848,6 @@ if_null_block
             | RSVP
             | SAP
             | SDR
-            | TCP
             | UNNUMBERED
             | UNREACHABLES
             | VERIFY
@@ -1729,6 +1772,7 @@ if_inner
    | if_ip_address
    | if_ip_address_dhcp
    | if_ip_address_secondary
+   | if_ip_authentication
    | if_ip_dhcp
    | if_ip_flow_monitor
    | if_ip_forward
@@ -1756,6 +1800,7 @@ if_inner
    | if_ip_rtp
    | if_ip_sticky_arp
    | if_ip_summary_address
+   | if_ip_tcp
    | if_ip_virtual_router
    | if_ip_vrf_autoclassify
    | if_ip_vrf_forwarding

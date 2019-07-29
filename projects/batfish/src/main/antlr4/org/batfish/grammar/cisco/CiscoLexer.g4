@@ -369,6 +369,11 @@ ADJMGR
    'adjmgr'
 ;
 
+ADJUST_MSS
+:
+   'adjust-mss'
+;
+
 ADMIN
 :
    'admin'
@@ -2294,6 +2299,11 @@ COMPARE_ROUTERID
 COMPATIBLE
 :
    'compatible'
+;
+
+COMPRESSION_CONNECTIONS
+:
+   'compression-connections'
 ;
 
 CON
@@ -6467,6 +6477,11 @@ KERNEL
 KEY
 :
    'key'
+;
+
+KEY_CHAIN
+:
+   'key-chain'
 ;
 
 KEY_EXCHANGE
@@ -15317,6 +15332,11 @@ M_Authentication_INCLUDE
    'include' -> type ( INCLUDE ) , popMode
 ;
 
+M_Authentication_KEY_CHAIN
+:
+   'key-chain' -> type ( KEY_CHAIN ) , popMode
+;
+
 M_Authentication_KEYED_SHA1
 :
    [kK][eE][yY][eE][dD]'-'[sS][hH][aA]'1' -> type ( KEYED_SHA1 ) , popMode
@@ -15345,6 +15365,11 @@ M_Authentication_MESSAGE_DIGEST
 M_Authentication_MGMT
 :
    'mgmt' -> type ( MGMT ) , popMode
+;
+
+M_Authentication_MODE
+:
+   'mode' -> type ( MODE ) , popMode
 ;
 
 M_Authentication_NEWLINE

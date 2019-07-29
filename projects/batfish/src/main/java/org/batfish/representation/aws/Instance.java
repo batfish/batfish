@@ -1,5 +1,6 @@
 package org.batfish.representation.aws;
 
+import static com.google.common.base.MoreObjects.firstNonNull;
 import static com.google.common.base.Preconditions.checkArgument;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -10,6 +11,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import java.io.Serializable;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -334,7 +336,8 @@ final class Instance implements AwsVpcEntity, Serializable {
         ifaceAddressesBuilder.add(address);
 
         if (privateIp.getPublicIp() != null) {
-          ifaceAddressesBuilder.add(ConcreteInterfaceAddress.create(privateIp.getPublicIp(), 32));
+          ifaceAddressesBuilder.add(
+              ConcreteInterfaceAddress.create(privateIp.getPublicIp(), Prefix.MAX_PREFIX_LENGTH));
         }
       }
       Set<ConcreteInterfaceAddress> ifaceAddresses = ifaceAddressesBuilder.build();
@@ -343,9 +346,16 @@ final class Instance implements AwsVpcEntity, Serializable {
               .filter(
                   addr -> addr.getIp().equals(netInterface.getPrimaryPrivateIp().getPrivateIp()))
               .findFirst()
-              .orElseThrow(
-                  () ->
-                      new IllegalArgumentException("None of the interface addresses are primary"));
+              .orElseGet(
+                  () -> {
+                    warnings.redFlag(
+                        String.format(
+                            "Primary address not found for interface '%s'. Using lowest address as primary",
+                            netInterface.getId()));
+                    // get() is safe here: ifaceAddresses cannot be empty
+                    return ifaceAddresses.stream().min(Comparator.naturalOrder()).get();
+                  });
+
       Interface iface =
           Utils.newInterface(interfaceId, cfgNode, primaryAddress, netInterface.getDescription());
       iface.setAllAddresses(ifaceAddresses);
@@ -392,11 +402,11 @@ final class Instance implements AwsVpcEntity, Serializable {
 
   static final class InstanceBuilder {
     private String _instanceId;
-    private List<String> _networkInterfaces = new LinkedList<>();
-    private List<String> _securityGroups = new LinkedList<>();
+    private List<String> _networkInterfaces;
+    private List<String> _securityGroups;
     private Status _status;
     private String _subnetId;
-    private Map<String, String> _tags = new HashMap<>();
+    private Map<String, String> _tags;
     private String _vpcId;
 
     private InstanceBuilder() {}
@@ -437,8 +447,15 @@ final class Instance implements AwsVpcEntity, Serializable {
     }
 
     public Instance build() {
+      checkArgument(_instanceId != null, "Instance id must be set");
       return new Instance(
-          _instanceId, _vpcId, _subnetId, _securityGroups, _networkInterfaces, _tags, _status);
+          _instanceId,
+          _vpcId,
+          _subnetId,
+          firstNonNull(_securityGroups, new LinkedList<>()),
+          firstNonNull(_networkInterfaces, new LinkedList<>()),
+          firstNonNull(_tags, new HashMap<>()),
+          firstNonNull(_status, Status.RUNNING));
     }
   }
 }

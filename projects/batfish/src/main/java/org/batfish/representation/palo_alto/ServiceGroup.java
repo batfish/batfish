@@ -2,10 +2,10 @@ package org.batfish.representation.palo_alto;
 
 import static org.batfish.representation.palo_alto.PaloAltoConfiguration.computeServiceGroupMemberAclName;
 
+import java.util.LinkedList;
 import java.util.List;
 import java.util.SortedSet;
 import java.util.TreeSet;
-import org.apache.commons.collections4.list.TreeList;
 import org.batfish.common.Warnings;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpAccessListLine;
@@ -37,7 +37,7 @@ public final class ServiceGroup implements ServiceGroupMember {
   @Override
   public IpAccessList toIpAccessList(
       LineAction action, PaloAltoConfiguration pc, Vsys vsys, Warnings w) {
-    List<IpAccessListLine> lines = new TreeList<>();
+    List<IpAccessListLine> lines = new LinkedList<>();
     for (ServiceOrServiceGroupReference memberReference : _references) {
       // Check for matching object before using built-ins
       String vsysName = memberReference.getVsysName(pc, vsys);

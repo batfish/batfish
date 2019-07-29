@@ -13,12 +13,10 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.MoreObjects;
-import com.google.common.collect.ImmutableSet;
 import java.io.Serializable;
+import java.util.Comparator;
 import java.util.LinkedList;
 import java.util.Objects;
-import java.util.Set;
-import java.util.TreeSet;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -167,12 +165,12 @@ final class Route implements Serializable {
           NetworkInterface networkInterface = region.getNetworkInterfaces().get(_target);
           String networkInterfaceSubnetId = networkInterface.getSubnetId();
           if (networkInterfaceSubnetId.equals(subnet.getId())) {
-            Set<Ip> networkInterfaceIps =
-                new TreeSet<>(
-                    networkInterface.getPrivateIpAddresses().stream()
-                        .map(PrivateIpAddress::getPrivateIp)
-                        .collect(ImmutableSet.toImmutableSet()));
-            Ip lowestIp = networkInterfaceIps.toArray(new Ip[] {})[0];
+            Ip lowestIp =
+                networkInterface.getPrivateIpAddresses().stream()
+                    .map(PrivateIpAddress::getPrivateIp)
+                    .min(Comparator.naturalOrder())
+                    // get is safe; there must be at least one private ip
+                    .get();
             if (!subnet.getCidrBlock().containsIp(lowestIp)) {
               throw new BatfishException(
                   "Ip of network interface specified in static route not in containing subnet");

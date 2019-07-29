@@ -1,7 +1,11 @@
 package org.batfish.representation.aws;
 
+import static com.google.common.base.MoreObjects.firstNonNull;
+import static com.google.common.base.Preconditions.checkArgument;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.google.common.collect.ImmutableMap;
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.HashMap;
@@ -675,25 +679,26 @@ final class Region implements Serializable {
     }
 
     public Region build() {
+      checkArgument(_name != null, "Region name must be set");
       return new Region(
           _name,
-          _addresses,
-          _configurationSecurityGroups,
-          _customerGateways,
-          _elasticsearchDomains,
-          _instances,
-          _internetGateways,
-          _natGateways,
-          _networkAcls,
-          _networkInterfaces,
-          _rdsInstances,
-          _routeTables,
-          _securityGroups,
-          _subnets,
-          _vpcPeerings,
-          _vpcs,
-          _vpnConnections,
-          _vpnGateways);
+          firstNonNull(_addresses, ImmutableMap.of()),
+          firstNonNull(_configurationSecurityGroups, ImmutableMap.of()),
+          firstNonNull(_customerGateways, ImmutableMap.of()),
+          firstNonNull(_elasticsearchDomains, ImmutableMap.of()),
+          firstNonNull(_instances, ImmutableMap.of()),
+          firstNonNull(_internetGateways, ImmutableMap.of()),
+          firstNonNull(_natGateways, ImmutableMap.of()),
+          firstNonNull(_networkAcls, ImmutableMap.of()),
+          firstNonNull(_networkInterfaces, ImmutableMap.of()),
+          firstNonNull(_rdsInstances, ImmutableMap.of()),
+          firstNonNull(_routeTables, ImmutableMap.of()),
+          firstNonNull(_securityGroups, ImmutableMap.of()),
+          firstNonNull(_subnets, ImmutableMap.of()),
+          firstNonNull(_vpcPeerings, ImmutableMap.of()),
+          firstNonNull(_vpcs, ImmutableMap.of()),
+          firstNonNull(_vpnConnections, ImmutableMap.of()),
+          firstNonNull(_vpnGateways, ImmutableMap.of()));
     }
   }
 }
