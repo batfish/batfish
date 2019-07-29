@@ -393,14 +393,17 @@ final class VpnConnection implements AwsVpcEntity, Serializable {
       ConcreteInterfaceAddress externalInterfaceAddress =
           ConcreteInterfaceAddress.create(
               ipsecTunnel.getVgwOutsideAddress(), Prefix.MAX_PREFIX_LENGTH);
-
-      Utils.newInterface(externalInterfaceName, vpnGatewayCfgNode, externalInterfaceAddress);
+      Utils.newInterface(
+          externalInterfaceName,
+          vpnGatewayCfgNode,
+          externalInterfaceAddress,
+          "IPSec tunnel " + idNum);
 
       String vpnInterfaceName = "vpn" + idNum;
       ConcreteInterfaceAddress vpnInterfaceAddress =
           ConcreteInterfaceAddress.create(
               ipsecTunnel.getVgwInsideAddress(), ipsecTunnel.getVgwInsidePrefixLength());
-      Utils.newInterface(vpnInterfaceName, vpnGatewayCfgNode, vpnInterfaceAddress);
+      Utils.newInterface(vpnInterfaceName, vpnGatewayCfgNode, vpnInterfaceAddress, "VPN " + idNum);
 
       // IPsec data-model
       ikePhase1ProposalMapBuilder.put(vpnId, toIkePhase1Proposal(vpnId, ipsecTunnel));
