@@ -2010,7 +2010,8 @@ public class VirtualRouter implements Serializable {
         .forEach(
             p ->
                 p.redistribute(
-                    // For the time being use all main RIB routes
+                    // use all main RIB routes in the first iteration and routes from delta main RIB
+                    // from second iteration
                     numIterations == 1
                         ? RibDelta.<AnnotatedRoute<AbstractRoute>>builder()
                             .add(_mainRib.getTypedRoutes())
