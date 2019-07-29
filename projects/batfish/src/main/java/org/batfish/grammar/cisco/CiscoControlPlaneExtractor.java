@@ -6564,10 +6564,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   @Override
   public void exitIf_shutdown(If_shutdownContext ctx) {
-    if (ctx.NO() == null) {
-      for (Interface currentInterface : _currentInterfaces) {
-        currentInterface.setActive(false);
-      }
+    for (Interface currentInterface : _currentInterfaces) {
+      currentInterface.setActive(ctx.NO() != null);
     }
   }
 

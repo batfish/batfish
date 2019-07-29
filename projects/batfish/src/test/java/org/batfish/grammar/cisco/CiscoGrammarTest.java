@@ -6410,4 +6410,11 @@ public class CiscoGrammarTest {
     assertThat(c, hasInterface("Ethernet0", hasMtu(3000)));
     assertThat(c, hasInterface("Ethernet0", hasAddress("1.1.1.2/31")));
   }
+
+  @Test
+  public void testInterfaceUnshut() throws IOException {
+    Configuration c = parseConfig("ios-interface-unshut");
+    assertThat(c, hasInterface("Ethernet0", isActive(true)));
+    assertThat(c, hasInterface("Ethernet1", isActive(false)));
+  }
 }
