@@ -110,7 +110,7 @@ final class InternetGateway implements AwsVpcEntity, Serializable {
                       .getStaticRoutes()
                       .add(
                           StaticRoute.builder()
-                              .setNetwork(Prefix.create(ip, 32))
+                              .setNetwork(Prefix.create(ip, Prefix.MAX_PREFIX_LENGTH))
                               .setNextHopIp(vpcIfaceAddress.getIp())
                               .setAdministrativeCost(Route.DEFAULT_STATIC_ROUTE_ADMIN)
                               .setMetric(Route.DEFAULT_STATIC_ROUTE_COST)
