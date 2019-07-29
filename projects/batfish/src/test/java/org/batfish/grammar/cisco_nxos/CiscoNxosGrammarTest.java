@@ -43,6 +43,7 @@ import static org.batfish.datamodel.matchers.StaticRouteMatchers.hasTag;
 import static org.batfish.grammar.cisco_nxos.CiscoNxosCombinedParser.DEBUG_FLAG_USE_NEW_CISCO_NXOS_PARSER;
 import static org.batfish.main.BatfishTestUtils.configureBatfishTestSettings;
 import static org.batfish.representation.cisco_nxos.CiscoNxosConfiguration.NULL_VRF_NAME;
+import static org.batfish.representation.cisco_nxos.CiscoNxosConfiguration.toJavaRegex;
 import static org.batfish.representation.cisco_nxos.OspfInterface.DEFAULT_DEAD_INTERVAL_S;
 import static org.batfish.representation.cisco_nxos.OspfInterface.DEFAULT_HELLO_INTERVAL_S;
 import static org.batfish.representation.cisco_nxos.OspfNetworkType.BROADCAST;
@@ -93,6 +94,8 @@ import org.batfish.common.bdd.BDDPacket;
 import org.batfish.common.bdd.IpSpaceToBDD;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.config.Settings;
+import org.batfish.datamodel.AsPathAccessList;
+import org.batfish.datamodel.AsPathAccessListLine;
 import org.batfish.datamodel.CommunityList;
 import org.batfish.datamodel.CommunityListLine;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
@@ -1481,6 +1484,52 @@ public final class CiscoNxosGrammarTest {
 
     assertThat(
         ans, hasNumReferrers(filename, CiscoNxosStructureType.IP_ACCESS_LIST, "acl_unused", 0));
+  }
+
+  @Test
+  public void testIpAsPathAccessListConversion() throws IOException {
+    String hostname = "nxos_ip_as_path_access_list";
+    Configuration c = parseConfig(hostname);
+
+    assertThat(c.getAsPathAccessLists(), hasKeys("aspacl_seq", "aspacl_test"));
+    {
+      AsPathAccessList list = c.getAsPathAccessLists().get("aspacl_seq");
+      Iterator<AsPathAccessListLine> lines = list.getLines().iterator();
+      AsPathAccessListLine line;
+
+      line = lines.next();
+      assertThat(line.getAction(), equalTo(LineAction.PERMIT));
+      assertThat(line.getRegex(), equalTo(toJavaRegex("^1$")));
+
+      line = lines.next();
+      assertThat(line.getAction(), equalTo(LineAction.PERMIT));
+      assertThat(line.getRegex(), equalTo(toJavaRegex("^5$")));
+
+      line = lines.next();
+      assertThat(line.getAction(), equalTo(LineAction.PERMIT));
+      assertThat(line.getRegex(), equalTo(toJavaRegex("^10$")));
+
+      line = lines.next();
+      assertThat(line.getAction(), equalTo(LineAction.PERMIT));
+      assertThat(line.getRegex(), equalTo(toJavaRegex("^11$")));
+    }
+    {
+      AsPathAccessList list = c.getAsPathAccessLists().get("aspacl_test");
+      Iterator<AsPathAccessListLine> lines = list.getLines().iterator();
+      AsPathAccessListLine line;
+
+      line = lines.next();
+      assertThat(line.getAction(), equalTo(LineAction.DENY));
+      assertThat(line.getRegex(), equalTo(toJavaRegex("(_1_2_|_2_1_)")));
+
+      line = lines.next();
+      assertThat(line.getAction(), equalTo(LineAction.PERMIT));
+      assertThat(line.getRegex(), equalTo(toJavaRegex("_1_")));
+
+      line = lines.next();
+      assertThat(line.getAction(), equalTo(LineAction.PERMIT));
+      assertThat(line.getRegex(), equalTo(toJavaRegex("_2_")));
+    }
   }
 
   @Test
