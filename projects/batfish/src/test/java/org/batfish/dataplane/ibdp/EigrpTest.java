@@ -1,16 +1,23 @@
 package org.batfish.dataplane.ibdp;
 
 import static java.util.Objects.requireNonNull;
+import static org.batfish.datamodel.Configuration.DEFAULT_VRF_NAME;
 import static org.batfish.datamodel.RoutingProtocol.CONNECTED;
 import static org.batfish.datamodel.RoutingProtocol.EIGRP;
 import static org.batfish.datamodel.RoutingProtocol.EIGRP_EX;
 import static org.batfish.datamodel.RoutingProtocol.OSPF;
 import static org.batfish.datamodel.RoutingProtocol.OSPF_E2;
+import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasPrefix;
+import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasProtocol;
 import static org.batfish.datamodel.ospf.OspfTopologyUtils.computeOspfTopology;
 import static org.batfish.dataplane.ibdp.TestUtils.assertNoRoute;
 import static org.batfish.dataplane.ibdp.TestUtils.assertRoute;
 import static org.batfish.representation.cisco.Interface.getDefaultBandwidth;
 import static org.batfish.representation.cisco.Interface.getDefaultDelay;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.allOf;
+import static org.hamcrest.Matchers.hasItem;
+import static org.hamcrest.Matchers.not;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -913,11 +920,13 @@ public class EigrpTest {
 
   @Test
   public void testEigrpDistributeList() throws IOException {
+    String advertiser = "advertiser";
+    String listener = "listener";
     Batfish batfish =
         BatfishTestUtils.getBatfishFromTestrigText(
             TestrigText.builder()
                 .setConfigurationText(
-                    "org/batfish/dataplane/ibdp/eigrp-distribute-lists", "r1", "r2")
+                    "org/batfish/dataplane/ibdp/eigrp-distribute-lists", advertiser, listener)
                 .build(),
             _folder);
     batfish.computeDataPlane();
@@ -925,8 +934,12 @@ public class EigrpTest {
     SortedMap<String, SortedMap<String, Set<AbstractRoute>>> routes =
         IncrementalBdpEngine.getRoutes(dataplane);
 
-    // only 1.1.1.0/24 allowed to be exported to r2
-    assertNoRoute(routes, "r2", Prefix.parse("3.3.3.0/24"));
-    assertRoute(routes, EIGRP_EX, "r2", Prefix.parse("1.1.1.0/24"), 2585856L);
+    Set<AbstractRoute> listenerRoutes = routes.get(listener).get(DEFAULT_VRF_NAME);
+    // only 1.1.1.0/24 is allowed to be exported to listener and 3.3.3.0/24 is filtered by
+    // distribute list
+    assertThat(listenerRoutes, not(hasItem(hasPrefix(Prefix.parse("3.3.3.0/24")))));
+    assertThat(
+        listenerRoutes,
+        hasItem(allOf(hasPrefix(Prefix.parse("1.1.1.0/24")), hasProtocol(EIGRP_EX))));
   }
 }

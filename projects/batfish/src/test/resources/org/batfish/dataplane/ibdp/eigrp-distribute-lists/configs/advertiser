@@ -1,5 +1,5 @@
 !
-hostname r1
+hostname advertiser
 !
 access-list 2 permit 1.1.1.1 0.0.0.255
 !
@@ -14,6 +14,7 @@ interface GigabitEthernet2/0
 !
 router eigrp 1
   redistribute connected metric 1000 100 100 100 1400
+  ! network statement below is needed to make GigabitEthernet0/0 an EIGRP neighbor
   network 2.2.2.2 0.0.0.255
   passive-interface default
   no passive-interface GigabitEthernet0/0
