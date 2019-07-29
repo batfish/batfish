@@ -41,9 +41,17 @@ public final class BgpVrfConfiguration implements Serializable {
     return (BgpVrfIpv6AddressFamilyConfiguration) _addressFamilies.get(Type.IPV6_UNICAST);
   }
 
+  @Nullable
+  public BgpVrfL2VpnEvpnAddressFamilyConfiguration getL2VpnEvpnAddressFamily() {
+    return (BgpVrfL2VpnEvpnAddressFamilyConfiguration) _addressFamilies.get(Type.L2VPN_EVPN);
+  }
+
   public BgpVrfAddressFamilyConfiguration getOrCreateAddressFamily(
       BgpVrfAddressFamilyConfiguration.Type af) {
     switch (af) {
+      case L2VPN_EVPN:
+        return _addressFamilies.computeIfAbsent(
+            af, a -> new BgpVrfL2VpnEvpnAddressFamilyConfiguration());
       case IPV4_MULTICAST:
       case IPV4_UNICAST:
         return _addressFamilies.computeIfAbsent(

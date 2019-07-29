@@ -85,7 +85,6 @@ vc_no_shutdown
 
 vc_null
 :
-  NO?
   (
     DESCRIPTION
   ) null_rest_of_line

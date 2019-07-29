@@ -7,8 +7,11 @@ import static org.batfish.dataplane.rib.RibDelta.importRibDelta;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
+import com.google.common.collect.Sets;
 import com.google.common.graph.Network;
+import java.util.Collection;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Optional;
@@ -96,6 +99,8 @@ final class EigrpRoutingProcess implements RoutingProcess<EigrpTopology, EigrpRo
 
   /** Current known EIGRP topology */
   @Nonnull private EigrpTopology _topology;
+  /** Set of edges in the topology that are new in the current iteration */
+  private Collection<EigrpEdge> _edgesWentUp = ImmutableSet.of();
 
   EigrpRoutingProcess(final EigrpProcess process, final String vrfName, final Configuration c) {
     _process = process;
@@ -127,13 +132,16 @@ final class EigrpRoutingProcess implements RoutingProcess<EigrpTopology, EigrpRo
 
   @Override
   public void updateTopology(EigrpTopology topology) {
+    EigrpTopology oldTopology = _topology;
     _topology = topology;
     updateQueues(_topology);
-    /*
-    TODO:
-      1. Send existing routes to new neighbors
-      2. Remove routes received from edges that are now down
-    */
+
+    _edgesWentUp =
+        Sets.difference(
+            getIncomingEdgeStream(topology).collect(ImmutableSet.toImmutableSet()),
+            getIncomingEdgeStream(oldTopology).collect(ImmutableSet.toImmutableSet()));
+
+    // TODO: compute edges that went down, remove routes we received from those neighbors
   }
 
   @Override
@@ -145,6 +153,9 @@ final class EigrpRoutingProcess implements RoutingProcess<EigrpTopology, EigrpRo
       sendOutInternalRoutes(_initializationDelta, allNodes);
       _initializationDelta = RibDelta.empty();
     }
+
+    sendOutRoutesToNewEdges(_edgesWentUp, allNodes);
+    _edgesWentUp = ImmutableSet.of();
 
     // TODO: optimize, don't recreate the map each iteration
     NetworkConfigurations nc =
@@ -336,17 +347,44 @@ final class EigrpRoutingProcess implements RoutingProcess<EigrpTopology, EigrpRo
   private void sendOutInternalRoutes(
       RibDelta<EigrpInternalRoute> initializationDelta, Map<String, Node> allNodes) {
     for (EigrpEdge eigrpEdge : _incomingInternalRoutes.keySet()) {
-      EigrpRoutingProcess neighborProc = getNeighborEigrpProcess(allNodes, eigrpEdge, _asn);
-      neighborProc.enqueueInternalMessages(eigrpEdge.reverse(), initializationDelta.getActions());
+      sendOutInternalRoutesPerNeighbor(initializationDelta, allNodes, eigrpEdge);
     }
+  }
+
+  private void sendOutInternalRoutesPerNeighbor(
+      RibDelta<EigrpInternalRoute> initializationDelta,
+      Map<String, Node> allNodes,
+      EigrpEdge eigrpEdge) {
+    EigrpRoutingProcess neighborProc = getNeighborEigrpProcess(allNodes, eigrpEdge, _asn);
+    neighborProc.enqueueInternalMessages(eigrpEdge.reverse(), initializationDelta.getActions());
   }
 
   private void sendOutExternalRoutes(
       RibDelta<EigrpExternalRoute> queuedForRedistribution, Map<String, Node> allNodes) {
     for (EigrpEdge eigrpEdge : _incomingExternalRoutes.keySet()) {
-      EigrpRoutingProcess neighborProc = getNeighborEigrpProcess(allNodes, eigrpEdge, _asn);
-      neighborProc.enqueueExternalMessages(
-          eigrpEdge.reverse(), queuedForRedistribution.getActions());
+      sendOutExternalRoutesPerNeighbor(queuedForRedistribution, allNodes, eigrpEdge);
+    }
+  }
+
+  private void sendOutExternalRoutesPerNeighbor(
+      RibDelta<EigrpExternalRoute> queuedForRedistribution,
+      Map<String, Node> allNodes,
+      EigrpEdge eigrpEdge) {
+    EigrpRoutingProcess neighborProc = getNeighborEigrpProcess(allNodes, eigrpEdge, _asn);
+    neighborProc.enqueueExternalMessages(eigrpEdge.reverse(), queuedForRedistribution.getActions());
+  }
+
+  private void sendOutRoutesToNewEdges(
+      Collection<EigrpEdge> edgesWentUp, Map<String, Node> allNodes) {
+    for (EigrpEdge edge : edgesWentUp) {
+      sendOutInternalRoutesPerNeighbor(
+          RibDelta.<EigrpInternalRoute>builder().add(_internalRib.getTypedRoutes()).build(),
+          allNodes,
+          edge);
+      sendOutExternalRoutesPerNeighbor(
+          RibDelta.<EigrpExternalRoute>builder().add(_externalRib.getTypedRoutes()).build(),
+          allNodes,
+          edge);
     }
   }
 
@@ -415,7 +453,7 @@ final class EigrpRoutingProcess implements RoutingProcess<EigrpTopology, EigrpRo
    *
    * @param eigrpTopology The topology representing EIGRP adjacencies
    */
-  void updateQueues(EigrpTopology eigrpTopology) {
+  private void updateQueues(EigrpTopology eigrpTopology) {
     _incomingExternalRoutes =
         getIncomingEdgeStream(eigrpTopology)
             .collect(toImmutableSortedMap(Function.identity(), e -> new ConcurrentLinkedQueue<>()));

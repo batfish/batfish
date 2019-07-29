@@ -67,19 +67,6 @@ public class VersionCompatibilityFilterTest extends JerseyTest {
   }
 
   @Test
-  public void testBadVersionPreMatch() {
-    Response response =
-        target("/crash").request().header(HTTP_HEADER_BATFISH_VERSION, "1.0.1").get();
-    assertThat(response.getStatus(), equalTo(BAD_REQUEST.getStatusCode()));
-    assertThat(
-        response.readEntity(String.class),
-        equalTo(
-            String.format(
-                "Client version '1.0.1' is not compatible with server version '%s'",
-                BatfishVersion.getVersionStatic())));
-  }
-
-  @Test
   public void testValidVersion() {
     Response response =
         target("/test")

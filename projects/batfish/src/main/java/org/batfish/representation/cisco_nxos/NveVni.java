@@ -1,6 +1,12 @@
 package org.batfish.representation.cisco_nxos;
 
+import static com.google.common.base.MoreObjects.firstNonNull;
+
+import com.google.common.collect.ImmutableSet;
 import java.io.Serializable;
+import java.util.Set;
+import java.util.TreeSet;
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.datamodel.Ip;
 import org.batfish.representation.cisco_nxos.Nve.IngressReplicationProtocol;
@@ -36,6 +42,17 @@ public class NveVni implements Serializable {
     _mcastGroup = mcastGroup;
   }
 
+  public void addPeerIp(Ip ip) {
+    if (_peerIps == null) {
+      _peerIps = new TreeSet<>();
+    }
+    _peerIps.add(ip);
+  }
+
+  public @Nonnull Set<Ip> getPeerIps() {
+    return firstNonNull(_peerIps, ImmutableSet.of());
+  }
+
   public @Nullable Boolean getSuppressArp() {
     return _suppressArp;
   }
@@ -55,6 +72,7 @@ public class NveVni implements Serializable {
   private boolean _associateVrf;
   private @Nullable IngressReplicationProtocol _ingressReplicationProtocol;
   private @Nullable Ip _mcastGroup;
+  private @Nullable Set<Ip> _peerIps;
   private @Nullable Boolean _suppressArp;
   private final int _vni;
 }

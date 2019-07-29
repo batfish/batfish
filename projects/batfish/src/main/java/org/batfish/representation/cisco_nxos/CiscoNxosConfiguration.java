@@ -33,6 +33,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
+import java.util.Optional;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -42,9 +44,13 @@ import javax.annotation.Nullable;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.batfish.common.BatfishException;
 import org.batfish.common.VendorConversionException;
+import org.batfish.datamodel.AsPathAccessList;
+import org.batfish.datamodel.AsPathAccessListLine;
 import org.batfish.datamodel.BgpActivePeerConfig;
 import org.batfish.datamodel.BgpPassivePeerConfig;
 import org.batfish.datamodel.BgpTieBreaker;
+import org.batfish.datamodel.CommunityList;
+import org.batfish.datamodel.CommunityListLine;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.GeneratedRoute;
@@ -65,16 +71,19 @@ import org.batfish.datamodel.RouteFilterLine;
 import org.batfish.datamodel.RouteFilterList;
 import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.SwitchportMode;
+import org.batfish.datamodel.bgp.community.StandardCommunity;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.routing_policy.expr.BooleanExpr;
 import org.batfish.datamodel.routing_policy.expr.BooleanExprs;
 import org.batfish.datamodel.routing_policy.expr.CallExpr;
+import org.batfish.datamodel.routing_policy.expr.CommunitySetExpr;
 import org.batfish.datamodel.routing_policy.expr.Conjunction;
 import org.batfish.datamodel.routing_policy.expr.DestinationNetwork;
 import org.batfish.datamodel.routing_policy.expr.DestinationNetwork6;
 import org.batfish.datamodel.routing_policy.expr.Disjunction;
 import org.batfish.datamodel.routing_policy.expr.ExplicitPrefix6Set;
 import org.batfish.datamodel.routing_policy.expr.ExplicitPrefixSet;
+import org.batfish.datamodel.routing_policy.expr.LiteralCommunityConjunction;
 import org.batfish.datamodel.routing_policy.expr.LiteralOrigin;
 import org.batfish.datamodel.routing_policy.expr.MatchPrefix6Set;
 import org.batfish.datamodel.routing_policy.expr.MatchPrefixSet;
@@ -84,6 +93,7 @@ import org.batfish.datamodel.routing_policy.expr.WithEnvironmentExpr;
 import org.batfish.datamodel.routing_policy.statement.If;
 import org.batfish.datamodel.routing_policy.statement.SetOrigin;
 import org.batfish.datamodel.routing_policy.statement.Statements;
+import org.batfish.datamodel.tracking.DecrementPriority;
 import org.batfish.datamodel.vendor_family.cisco_nxos.CiscoNxosFamily;
 import org.batfish.representation.cisco_nxos.BgpVrfIpv6AddressFamilyConfiguration.Network;
 import org.batfish.vendor.VendorConfiguration;
@@ -155,6 +165,18 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
             Statements.SetReadIntermediateBgpAttributes.toStaticStatement(),
             new SetOrigin(new LiteralOrigin(originType, null))));
     return we;
+  }
+
+  public static @Nonnull String toJavaRegex(String ciscoRegex) {
+    String withoutQuotes;
+    if (ciscoRegex.charAt(0) == '"' && ciscoRegex.charAt(ciscoRegex.length() - 1) == '"') {
+      withoutQuotes = ciscoRegex.substring(1, ciscoRegex.length() - 1);
+    } else {
+      withoutQuotes = ciscoRegex;
+    }
+    String underscoreReplacement = "(,|\\\\{|\\\\}|^|\\$| )";
+    String output = withoutQuotes.replaceAll("_", underscoreReplacement);
+    return output;
   }
 
   private static @Nonnull RouteFilterLine toRouteFilterLine(IpPrefixListLine ipPrefixListLine) {
@@ -513,6 +535,18 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
     v.setBgpProcess(newBgpProcess);
   }
 
+  private static void convertHsrp(
+      InterfaceHsrp hsrp, org.batfish.datamodel.Interface.Builder newIfaceBuilder) {
+    Optional.ofNullable(hsrp.getVersion())
+        .map(Object::toString)
+        .ifPresent(newIfaceBuilder::setHsrpVersion);
+    newIfaceBuilder.setHsrpGroups(
+        hsrp.getGroups().entrySet().stream()
+            .collect(
+                ImmutableMap.toImmutableMap(
+                    Entry::getKey, hsrpGroupEntry -> toHsrpGroup(hsrpGroupEntry.getValue()))));
+  }
+
   private void convertInterface(Interface iface) {
     String ifaceName = iface.getName();
     org.batfish.datamodel.Interface newIface = toInterface(iface);
@@ -531,6 +565,45 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
     _interfaces.values().stream()
         .filter(iface -> iface.getType() == CiscoNxosInterfaceType.PORT_CHANNEL)
         .forEach(this::convertInterface);
+  }
+
+  private void convertIpAsPathAccessLists() {
+    _ipAsPathAccessLists.forEach(
+        (name, ipAsPathAccessList) ->
+            _c.getAsPathAccessLists().put(name, toAsPathAccessList(ipAsPathAccessList)));
+  }
+
+  private void convertIpCommunityLists() {
+    _ipCommunityLists.forEach(
+        (name, list) ->
+            _c.getCommunityLists()
+                .put(
+                    name,
+                    list.accept(
+                        new IpCommunityListVisitor<CommunityList>() {
+                          @Override
+                          public CommunityList visitIpCommunityListStandard(
+                              IpCommunityListStandard ipCommunityListStandard) {
+                            return toCommunityList(ipCommunityListStandard);
+                          }
+                        })));
+  }
+
+  private static @Nonnull CommunityList toCommunityList(IpCommunityListStandard list) {
+    return new CommunityList(
+        list.getName(),
+        list.getLines().values().stream()
+            .map(CiscoNxosConfiguration::toCommunityListLine)
+            .collect(ImmutableList.toImmutableList()),
+        false);
+  }
+
+  private static @Nonnull CommunityListLine toCommunityListLine(IpCommunityListStandardLine line) {
+    return new CommunityListLine(line.getAction(), toCommunitySetExpr(line.getCommunities()));
+  }
+
+  private static @Nonnull CommunitySetExpr toCommunitySetExpr(Set<StandardCommunity> communities) {
+    return new LiteralCommunityConjunction(communities);
   }
 
   private void convertIpPrefixLists() {
@@ -698,6 +771,7 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
         CiscoNxosStructureUsage.BGP_DEFAULT_ORIGINATE_ROUTE_MAP,
         CiscoNxosStructureUsage.BGP_EXIST_MAP,
         CiscoNxosStructureUsage.BGP_INJECT_MAP,
+        CiscoNxosStructureUsage.BGP_L2VPN_EVPN_RETAIN_ROUTE_TARGET_ROUTE_MAP,
         CiscoNxosStructureUsage.BGP_NEIGHBOR_ADVERTISE_MAP,
         CiscoNxosStructureUsage.BGP_NEIGHBOR_EXIST_MAP,
         CiscoNxosStructureUsage.BGP_NEIGHBOR_NON_EXIST_MAP,
@@ -747,6 +821,32 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
 
   @Override
   public void setVendor(ConfigurationFormat format) {}
+
+  private static @Nonnull org.batfish.datamodel.hsrp.HsrpGroup toHsrpGroup(HsrpGroup group) {
+    org.batfish.datamodel.hsrp.HsrpGroup.Builder builder =
+        org.batfish.datamodel.hsrp.HsrpGroup.builder()
+            .setGroupNumber(group.getGroup())
+            .setIp(group.getIp())
+            .setPreempt(
+                group.getPreemptDelayMinimumSeconds() != null); // true iff any preempt delay is set
+    if (group.getHelloIntervalMs() != null) {
+      builder.setHelloTime(group.getHelloIntervalMs());
+    }
+    if (group.getHoldTimeMs() != null) {
+      builder.setHoldTime(group.getHoldTimeMs());
+    }
+    if (group.getPriority() != null) {
+      builder.setPriority(group.getPriority());
+    }
+    builder.setTrackActions(
+        group.getTracks().entrySet().stream()
+            .collect(
+                ImmutableSortedMap.toImmutableSortedMap(
+                    Comparator.naturalOrder(),
+                    trackEntry -> trackEntry.getKey().toString(),
+                    trackEntry -> new DecrementPriority(trackEntry.getValue().getDecrement()))));
+    return builder.build();
+  }
 
   private @Nonnull org.batfish.datamodel.Interface toInterface(Interface iface) {
     String ifaceName = iface.getName();
@@ -843,6 +943,10 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
               .collect(ImmutableSet.toImmutableSet()));
     }
 
+    if (iface.getHsrp() != null) {
+      convertHsrp(iface.getHsrp(), newIfaceBuilder);
+    }
+
     org.batfish.datamodel.Interface newIface = newIfaceBuilder.build();
 
     String vrfName = iface.getVrfMember();
@@ -883,6 +987,19 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
       default:
         return InterfaceType.UNKNOWN;
     }
+  }
+
+  private static @Nonnull AsPathAccessList toAsPathAccessList(
+      IpAsPathAccessList ipAsPathAccessList) {
+    return new AsPathAccessList(
+        ipAsPathAccessList.getName(),
+        ipAsPathAccessList.getLines().values().stream()
+            .map(CiscoNxosConfiguration::toAsPathAccessListLine)
+            .collect(ImmutableList.toImmutableList()));
+  }
+
+  private static @Nonnull AsPathAccessListLine toAsPathAccessListLine(IpAsPathAccessListLine line) {
+    return new AsPathAccessListLine(line.getAction(), toJavaRegex(line.getRegex()));
   }
 
   /**
@@ -929,7 +1046,9 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
     convertInterfaces();
     disableUnregisteredVlanInterfaces();
     convertStaticRoutes();
+    convertIpAsPathAccessLists();
     convertIpPrefixLists();
+    convertIpCommunityLists();
     convertBgp();
 
     markStructures();

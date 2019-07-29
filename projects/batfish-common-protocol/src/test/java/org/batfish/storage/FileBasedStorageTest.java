@@ -1,6 +1,5 @@
 package org.batfish.storage;
 
-import static org.batfish.common.Version.INCOMPATIBLE_VERSION;
 import static org.batfish.storage.FileBasedStorage.mkdirs;
 import static org.batfish.storage.FileBasedStorage.objectKeyToRelativePath;
 import static org.hamcrest.Matchers.containsInAnyOrder;
@@ -40,7 +39,6 @@ import org.batfish.common.BatfishLogger;
 import org.batfish.common.BfConsts;
 import org.batfish.common.CompletionMetadata;
 import org.batfish.common.NetworkSnapshot;
-import org.batfish.common.Version;
 import org.batfish.common.topology.Layer2Topology;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.common.util.CommonUtil;
@@ -106,24 +104,6 @@ public final class FileBasedStorageTest {
     assertThat(
         _storage.loadConfigurations(new NetworkId("nonexistent"), new SnapshotId("nonexistent")),
         nullValue());
-  }
-
-  @Test
-  public void loadOldConfigurationsReturnsNull() {
-    ConvertConfigurationAnswerElement oldConvertAnswer = new ConvertConfigurationAnswerElement();
-    oldConvertAnswer.setVersion(INCOMPATIBLE_VERSION);
-    assertThat(
-        "should not be compatible with current code",
-        Version.isCompatibleVersion("current", "old test", oldConvertAnswer.getVersion()),
-        equalTo(false));
-
-    NetworkId network = new NetworkId("network");
-    SnapshotId snapshot = new SnapshotId("snapshot");
-    Map<String, Configuration> configs = new HashMap<>();
-    configs.put("node1", new Configuration("node1", ConfigurationFormat.CISCO_IOS));
-    _storage.storeConfigurations(configs, oldConvertAnswer, network, snapshot);
-
-    assertThat(_storage.loadConfigurations(network, snapshot), nullValue());
   }
 
   @Test

@@ -1,0 +1,7 @@
+!
+hostname ios_interface_ip_authentication
+!
+interface Ethernet0
+  ip authentication mode eigrp 102 md5
+  ip authentication key-chain eigrp 102 chain_name
+!

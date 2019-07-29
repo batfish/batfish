@@ -32,7 +32,7 @@ public final class LiteralCommunityConjunction extends CommunitySetExpr {
 
   private SortedSet<Community> _requiredCommunities;
 
-  public LiteralCommunityConjunction(@Nonnull Collection<Community> requiredCommunities) {
+  public LiteralCommunityConjunction(@Nonnull Collection<? extends Community> requiredCommunities) {
     _requiredCommunities = ImmutableSortedSet.copyOf(requiredCommunities);
   }
 
