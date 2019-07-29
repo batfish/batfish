@@ -563,24 +563,24 @@ final class Region implements Serializable {
   }
 
   static final class RegionBuilder {
-    private Map<String, Address> _addresses = new HashMap<>();
-    private Map<String, Set<SecurityGroup>> _configurationSecurityGroups = new HashMap<>();
-    private Map<String, CustomerGateway> _customerGateways = new HashMap<>();
-    private Map<String, ElasticsearchDomain> _elasticsearchDomains = new HashMap<>();
-    private Map<String, Instance> _instances = new HashMap<>();
-    private Map<String, InternetGateway> _internetGateways = new HashMap<>();
+    private Map<String, Address> _addresses;
+    private Map<String, Set<SecurityGroup>> _configurationSecurityGroups;
+    private Map<String, CustomerGateway> _customerGateways;
+    private Map<String, ElasticsearchDomain> _elasticsearchDomains;
+    private Map<String, Instance> _instances;
+    private Map<String, InternetGateway> _internetGateways;
     private String _name;
-    private Map<String, NatGateway> _natGateways = new HashMap<>();
-    private Map<String, NetworkAcl> _networkAcls = new HashMap<>();
-    private Map<String, NetworkInterface> _networkInterfaces = new HashMap<>();
-    private Map<String, RdsInstance> _rdsInstances = new HashMap<>();
-    private Map<String, RouteTable> _routeTables = new HashMap<>();
-    private Map<String, SecurityGroup> _securityGroups = new HashMap<>();
-    private Map<String, Subnet> _subnets = new HashMap<>();
-    private Map<String, VpcPeeringConnection> _vpcPeerings = new HashMap<>();
-    private Map<String, Vpc> _vpcs = new HashMap<>();
-    private Map<String, VpnConnection> _vpnConnections = new HashMap<>();
-    private Map<String, VpnGateway> _vpnGateways = new HashMap<>();
+    private Map<String, NatGateway> _natGateways;
+    private Map<String, NetworkAcl> _networkAcls;
+    private Map<String, NetworkInterface> _networkInterfaces;
+    private Map<String, RdsInstance> _rdsInstances;
+    private Map<String, RouteTable> _routeTables;
+    private Map<String, SecurityGroup> _securityGroups;
+    private Map<String, Subnet> _subnets;
+    private Map<String, VpcPeeringConnection> _vpcPeerings;
+    private Map<String, Vpc> _vpcs;
+    private Map<String, VpnConnection> _vpnConnections;
+    private Map<String, VpnGateway> _vpnGateways;
 
     private RegionBuilder(String name) {
       _name = name;
