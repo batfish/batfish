@@ -122,6 +122,12 @@ final class Vpc implements AwsVpcEntity, Serializable {
     _vpnGatewayId = vpnGatewayId;
   }
 
+  /**
+   * Returns {@link Configuration} corresponding to this VPC node.
+   *
+   * <p>We only create the node here. Interfaces are added when we traverse its neighbors such as
+   * subnets and internet gateways
+   */
   Configuration toConfigurationNode(
       AwsConfiguration awsConfiguration, Region region, Warnings warnings) {
     Configuration cfgNode = Utils.newAwsConfiguration(_vpcId, "aws");
@@ -139,10 +145,6 @@ final class Vpc implements AwsVpcEntity, Serializable {
                         .setNetwork(cb)
                         .setNextHopInterface(Interface.NULL_INTERFACE_NAME)
                         .build()));
-
-    // we only create a node here
-    // interfaces are added to this node as we traverse subnets and
-    // internetgateways
 
     return cfgNode;
   }

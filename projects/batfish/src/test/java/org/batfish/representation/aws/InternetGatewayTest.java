@@ -5,8 +5,9 @@ import static org.batfish.representation.aws.AwsVpcEntity.JSON_KEY_INTERNET_GATE
 import static org.batfish.representation.aws.InternetGateway.BACKBONE_EXPORT_POLICY_NAME;
 import static org.batfish.representation.aws.InternetGateway.BACKBONE_INTERFACE_NAME;
 import static org.batfish.representation.aws.InternetGateway.createBackboneConnection;
-import static org.hamcrest.MatcherAssert.assertThat;
+import static org.batfish.representation.aws.Utils.toStaticRoute;
 import static org.hamcrest.Matchers.equalTo;
+import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -23,7 +24,6 @@ import org.batfish.datamodel.BgpActivePeerConfig;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Prefix;
-import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.bgp.AddressFamily.Type;
 import org.junit.Test;
 
@@ -116,16 +116,13 @@ public class InternetGatewayTest {
         igwConfig.getDefaultVrf().getStaticRoutes(),
         equalTo(
             ImmutableSet.of(
-                StaticRoute.builder()
-                    .setNetwork(Prefix.create(publicIp, 32))
-                    .setNextHopIp(
-                        vpcConfig
-                            .getAllInterfaces()
-                            .get(internetGateway.getId())
-                            .getConcreteAddress()
-                            .getIp())
-                    .setAdministrativeCost(Route.DEFAULT_STATIC_ROUTE_ADMIN)
-                    .build())));
+                toStaticRoute(
+                    publicIp,
+                    vpcConfig
+                        .getAllInterfaces()
+                        .get(internetGateway.getId())
+                        .getConcreteAddress()
+                        .getIp()))));
   }
 
   @Test

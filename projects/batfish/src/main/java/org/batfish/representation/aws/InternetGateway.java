@@ -2,6 +2,8 @@ package org.batfish.representation.aws;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static org.batfish.common.util.IspModelingUtils.getRoutingPolicyAdvertiseStatic;
+import static org.batfish.representation.aws.Utils.addStaticRoute;
+import static org.batfish.representation.aws.Utils.toStaticRoute;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
@@ -22,7 +24,6 @@ import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.Prefix;
-import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.bgp.Ipv4UnicastAddressFamily;
 
 /**
@@ -123,18 +124,7 @@ final class InternetGateway implements AwsVpcEntity, Serializable {
           .flatMap(ni -> ni.getPrivateIpAddresses().stream())
           .map(PrivateIpAddress::getPublicIp)
           .filter(Objects::nonNull)
-          .forEach(
-              ip ->
-                  cfgNode
-                      .getDefaultVrf()
-                      .getStaticRoutes()
-                      .add(
-                          StaticRoute.builder()
-                              .setNetwork(Prefix.create(ip, 32))
-                              .setNextHopIp(vpcIfaceAddress.getIp())
-                              .setAdministrativeCost(Route.DEFAULT_STATIC_ROUTE_ADMIN)
-                              .setMetric(Route.DEFAULT_STATIC_ROUTE_COST)
-                              .build()));
+          .forEach(ip -> addStaticRoute(cfgNode, toStaticRoute(ip, vpcIfaceAddress.getIp())));
     }
 
     createBackboneConnection(cfgNode, awsConfiguration.getNextGeneratedLinkSubnet());
