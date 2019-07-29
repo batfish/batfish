@@ -66,9 +66,7 @@ router_bgp
     | rb_no_enforce_first_as
     | rb_proc_vrf_common
     | rb_shutdown
-    | rb_template_peer
-    | rb_template_peer_policy
-    | rb_template_peer_session
+    | rb_template
     | rb_vrf
   )*
 ;
@@ -77,8 +75,7 @@ rb_proc_vrf_common
 :
   rb_bestpath
   | rb_cluster_id
-  | rb_confederation_identifier
-  | rb_confederation_peers
+  | rb_confederation
   | rb_graceful_restart
   | rb_graceful_restart_helper
   | rb_log_neighbor_changes
@@ -87,11 +84,7 @@ rb_proc_vrf_common
   | rb_reconnect_interval
   | rb_router_id
   | rb_suppress_fib_pending
-  | rb_timers_bestpath_limit
-  | rb_timers_bgp
-  | rb_timers_prefix_peer_timeout
-  | rb_timers_prefix_peer_wait
-
+  | rb_timers
 ;
 
 rb_address_family
@@ -173,7 +166,11 @@ rb_af_l2vpn
 
 rb_afl2v_retain
 :
-  RETAIN ROUTE_TARGET (ALL | map = route_map_name) NEWLINE
+  RETAIN ROUTE_TARGET
+  (
+    ALL
+    | ROUTE_MAP map = route_map_name
+  ) NEWLINE
 ;
 
 rb_af_link_state
@@ -200,7 +197,7 @@ rb_af4_inner
   // IPv4 ONLY
   rb_af4_aggregate_address
   | rb_af4_network
-  | rb_af4_redistribute_ospf
+  | rb_af4_redistribute
   // IPv4 or IPv6
   | rb_afip_common
 ;
@@ -215,10 +212,18 @@ rb_af4_network
   NETWORK network = route_network (ROUTE_MAP mapname = route_map_name)? NEWLINE
 ;
 
+rb_af4_redistribute
+:
+  REDISTRIBUTE
+  (
+    rb_af4_redistribute_ospf        // v4 only
+    | rb_afip_redistribute_common
+  )
+;
+
 rb_af4_redistribute_ospf
 :
-  REDISTRIBUTE OSPF source_tag = router_ospf_name ROUTE_MAP mapname = route_map_name
-  NEWLINE
+  OSPF source_tag = router_ospf_name ROUTE_MAP mapname = route_map_name NEWLINE
 ;
 
 // Common to ipv6 unicast and ipv6 multicast
@@ -227,7 +232,7 @@ rb_af6_inner
   // IPv6 ONLY
   rb_af6_aggregate_address
   | rb_af6_network
-  | rb_af6_redistribute_ospfv3
+  | rb_af6_redistribute
   // IPv4 or IPv6
   | rb_afip_common
 ;
@@ -242,10 +247,18 @@ rb_af6_network
   NETWORK network = ipv6_prefix (ROUTE_MAP mapname = route_map_name)? NEWLINE
 ;
 
+rb_af6_redistribute
+:
+  REDISTRIBUTE
+  (
+    rb_af6_redistribute_ospfv3  // v6 only
+    | rb_afip_redistribute_common
+  )
+;
+
 rb_af6_redistribute_ospfv3
 :
-  REDISTRIBUTE OSPFV3 source_tag = WORD ROUTE_MAP mapname = route_map_name
-  NEWLINE
+  OSPFV3 source_tag = WORD ROUTE_MAP mapname = route_map_name NEWLINE
 ;
 
 // Common to IPv4 or IPv6, unicast or multicast
@@ -261,14 +274,7 @@ rb_afip_common
   | rb_afip_distance
   | rb_afip_inject_map
   | rb_afip_maximum_paths
-  | rb_afip_nexthop_route_map
-  | rb_afip_nexthop_trigger_delay
-  | rb_afip_redistribute_direct
-  | rb_afip_redistribute_eigrp
-  | rb_afip_redistribute_isis
-  | rb_afip_redistribute_lisp
-  | rb_afip_redistribute_rip
-  | rb_afip_redistribute_static
+  | rb_afip_nexthop
   | rb_afip_suppress_inactive
   | rb_afip_table_map
   | rb_afip_wait_igp_convergence
@@ -349,47 +355,55 @@ rb_afip_maximum_paths
   )? numpaths = maximum_paths NEWLINE
 ;
 
+rb_afip_nexthop
+:
+  NEXTHOP
+  (
+    rb_afip_nexthop_route_map
+    | rb_afip_nexthop_trigger_delay
+  )
+;
+
 rb_afip_nexthop_route_map
 :
-  NEXTHOP ROUTE_MAP mapname = route_map_name NEWLINE
+  ROUTE_MAP mapname = route_map_name NEWLINE
 ;
 
 rb_afip_nexthop_trigger_delay
 :
-  NEXTHOP TRIGGER_DELAY CRITICAL critical = uint32 NON_CRITICAL noncritical =
-  uint32 NEWLINE
+  TRIGGER_DELAY CRITICAL critical = uint32 NON_CRITICAL noncritical = uint32 NEWLINE
 ;
 
 rb_afip_redistribute_direct
 :
-  REDISTRIBUTE DIRECT ROUTE_MAP mapname = route_map_name NEWLINE
+   DIRECT ROUTE_MAP mapname = route_map_name NEWLINE
 ;
 
 rb_afip_redistribute_eigrp
 :
-  REDISTRIBUTE EIGRP source_tag = WORD ROUTE_MAP mapname = route_map_name
+  EIGRP source_tag = WORD ROUTE_MAP mapname = route_map_name
   NEWLINE
 ;
 
 rb_afip_redistribute_isis
 :
-  REDISTRIBUTE ISIS source_tag = WORD ROUTE_MAP mapname = route_map_name
+  ISIS source_tag = WORD ROUTE_MAP mapname = route_map_name
   NEWLINE
 ;
 
 rb_afip_redistribute_lisp
 :
-  REDISTRIBUTE LISP ROUTE_MAP mapname = route_map_name NEWLINE
+  LISP ROUTE_MAP mapname = route_map_name NEWLINE
 ;
 
 rb_afip_redistribute_rip
 :
-  REDISTRIBUTE RIP source_tag = WORD ROUTE_MAP mapname = route_map_name NEWLINE
+  RIP source_tag = WORD ROUTE_MAP mapname = route_map_name NEWLINE
 ;
 
 rb_afip_redistribute_static
 :
-  REDISTRIBUTE STATIC ROUTE_MAP mapname = route_map_name NEWLINE
+  STATIC ROUTE_MAP mapname = route_map_name NEWLINE
 ;
 
 rb_afip_suppress_inactive
@@ -405,6 +419,16 @@ rb_afip_table_map
 rb_afip_wait_igp_convergence
 :
   WAIT_IGP_CONVERGENCE NEWLINE
+;
+
+rb_afip_redistribute_common
+:
+  rb_afip_redistribute_direct
+  | rb_afip_redistribute_eigrp
+  | rb_afip_redistribute_isis
+  | rb_afip_redistribute_lisp
+  | rb_afip_redistribute_rip
+  | rb_afip_redistribute_static
 ;
 
 rb_bestpath
@@ -433,14 +457,23 @@ rb_cluster_id
   ) NEWLINE
 ;
 
+rb_confederation
+:
+  CONFEDERATION
+  (
+    rb_confederation_identifier
+    | rb_confederation_peers
+  )
+;
+
 rb_confederation_identifier
 :
-  CONFEDERATION IDENTIFIER asn = bgp_asn NEWLINE
+  IDENTIFIER asn = bgp_asn NEWLINE
 ;
 
 rb_confederation_peers
 :
-  CONFEDERATION PEERS asns += bgp_asn NEWLINE asns += bgp_asn+ NEWLINE
+  PEERS asns += bgp_asn NEWLINE asns += bgp_asn+ NEWLINE
 ;
 
 rb_enforce_first_as
@@ -994,24 +1027,45 @@ rb_suppress_fib_pending
   SUPPRESS_FIB_PENDING NEWLINE
 ;
 
+rb_template
+:
+  TEMPLATE
+  (
+    rb_template_peer
+    | rb_template_peer_policy
+    | rb_template_peer_session
+  )
+;
+
 rb_template_peer
 :
-  TEMPLATE PEER peer = template_name NEWLINE rb_n_inner*
+  PEER peer = template_name NEWLINE rb_n_inner*
 ;
 
 rb_template_peer_policy
 :
-  TEMPLATE PEER_POLICY policy = template_name NEWLINE rb_n_af_inner*
+  PEER_POLICY policy = template_name NEWLINE rb_n_af_inner*
 ;
 
 rb_template_peer_session
 :
-  TEMPLATE PEER_SESSION session = template_name NEWLINE rb_n_common*
+  PEER_SESSION session = template_name NEWLINE rb_n_common*
+;
+
+rb_timers
+:
+  TIMERS
+  (
+    rb_timers_bestpath_limit
+    | rb_timers_bgp
+    | rb_timers_prefix_peer_timeout
+    | rb_timers_prefix_peer_wait
+  )
 ;
 
 rb_timers_bestpath_limit
 :
-  TIMERS BESTPATH_LIMIT timeout_secs = bestpath_timeout ALWAYS? NEWLINE
+  BESTPATH_LIMIT timeout_secs = bestpath_timeout ALWAYS? NEWLINE
 ;
 
 bestpath_timeout
@@ -1023,13 +1077,13 @@ bestpath_timeout
 
 rb_timers_bgp
 :
-  TIMERS BGP keepalive_secs = keepalive_interval holdtime_secs = holdtime
+  BGP keepalive_secs = keepalive_interval holdtime_secs = holdtime
   NEWLINE
 ;
 
 rb_timers_prefix_peer_timeout
 :
-  TIMERS PREFIX_PEER_TIMEOUT timeout_secs = prefix_peer_timeout NEWLINE
+  PREFIX_PEER_TIMEOUT timeout_secs = prefix_peer_timeout NEWLINE
 ;
 
 prefix_peer_timeout
@@ -1041,7 +1095,7 @@ prefix_peer_timeout
 
 rb_timers_prefix_peer_wait
 :
-  TIMERS PREFIX_PEER_WAIT wait_secs = prefix_peer_wait_timer NEWLINE
+  PREFIX_PEER_WAIT wait_secs = prefix_peer_wait_timer NEWLINE
 ;
 
 prefix_peer_wait_timer

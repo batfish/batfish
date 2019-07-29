@@ -21,6 +21,11 @@ public final class Nve implements Serializable {
     STATIC,
   }
 
+  /** "host-reachability protocol bgp|[other options we are currently ignoring]" */
+  public enum HostReachabilityProtocol {
+    BGP,
+  }
+
   public Nve(int id) {
     _id = id;
     _memberVnis = new HashMap<>();
@@ -42,6 +47,15 @@ public final class Nve implements Serializable {
 
   public void setGlobalSuppressArp(boolean globalSuppressArp) {
     _globalSuppressArp = globalSuppressArp;
+  }
+
+  public @Nullable HostReachabilityProtocol getHostReachabilityProtocol() {
+    return _hostReachabilityProtocol;
+  }
+
+  public void setHostReachabilityProtocol(
+      @Nullable HostReachabilityProtocol hostReachabilityProtocol) {
+    _hostReachabilityProtocol = hostReachabilityProtocol;
   }
 
   public int getId() {
@@ -92,6 +106,7 @@ public final class Nve implements Serializable {
   ///// Private implementation details /////
   //////////////////////////////////////////
 
+  private @Nullable HostReachabilityProtocol _hostReachabilityProtocol;
   private @Nullable IngressReplicationProtocol _globalIngressReplicationProtocol;
   private boolean _globalSuppressArp;
   private final int _id;

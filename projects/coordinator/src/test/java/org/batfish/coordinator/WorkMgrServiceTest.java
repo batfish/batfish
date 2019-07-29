@@ -134,15 +134,6 @@ public class WorkMgrServiceTest {
   }
 
   @Test
-  public void getNetworkWithBadVersion() {
-    initNetwork();
-    Response response = _service.getNetwork("100", "invalid version", _networkName);
-    String actualMessage = response.getEntity().toString();
-    String expected = "Illegal version 'invalid version' for Client";
-    assertThat(actualMessage, equalTo(expected));
-  }
-
-  @Test
   public void getNonEmptyNetwork() throws Exception {
     initNetwork();
     initSnapshot();
@@ -370,15 +361,6 @@ public class WorkMgrServiceTest {
     Response response = _service.getNetwork("100", "0.0.0", networkName);
     String actualMessage = response.getEntity().toString();
     String expected = "Network '" + networkName + "' not found";
-    assertThat(actualMessage, equalTo(expected));
-  }
-
-  @Test
-  public void getContainerWithBadVersion() {
-    initNetwork();
-    Response response = _service.getNetwork("100", "invalid version", _networkName);
-    String actualMessage = response.getEntity().toString();
-    String expected = "Illegal version 'invalid version' for Client";
     assertThat(actualMessage, equalTo(expected));
   }
 

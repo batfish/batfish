@@ -7,6 +7,9 @@ options {
 tokens {
   BANNER_BODY,
   BANNER_DELIMITER,
+  HSRP_VERSION_1,
+  HSRP_VERSION_2,
+  LOCAL,
   MOTD,
   PASSWORD_0,
   PASSWORD_0_TEXT,
@@ -18,9 +21,17 @@ tokens {
   PASSWORD_7_TEXT,
   QUOTED_TEXT,
   REMARK_TEXT,
+  SNMP_VERSION_1,
+  SNMP_VERSION_2,
+  SNMP_VERSION_2C,
   SUBDOMAIN_NAME,
   WORD
 }
+
+AAA
+:
+  'aaa'
+;
 
 ACCESS
 :
@@ -40,6 +51,11 @@ ACCESS_LIST
 ACCESS_MAP
 :
   'access-map'
+;
+
+ACCOUNTING
+:
+  'accounting'
 ;
 
 ACK
@@ -147,6 +163,11 @@ ADVERTISE
 ADVERTISE_MAP
 :
   'advertise-map'
+;
+
+AES_128
+:
+  'aes-128'
 ;
 
 AF11
@@ -296,9 +317,19 @@ ATTRIBUTE_MAP
   'attribute-map'
 ;
 
+AUTH
+:
+  'auth'
+;
+
 AUTHENTICATION
 :
   'authentication'
+;
+
+AUTHORIZATION
+:
+  'authorization'
 ;
 
 AUTO
@@ -391,9 +422,19 @@ BPDUGUARD
   'bpduguard'
 ;
 
+BRIDGE
+:
+  'bridge'
+;
+
 BROADCAST
 :
   'broadcast'
+;
+
+CALLHOME
+:
+  'callhome'
 ;
 
 CAPABILITY
@@ -404,6 +445,22 @@ CAPABILITY
 CAUSE
 :
   'cause'
+;
+
+CCMCLIRUNNINGCONFIGCHANGED
+:
+  [Cc] [Cc] [Mm] [Cc] [Ll] [Ii] [Rr] [Uu] [Nn] [Nn] [Ii] [Nn] [Gg] [Cc] [Oo]
+  [Nn] [Ff] [Ii] [Gg] [Cc] [Hh] [Aa] [Nn] [Gg] [Ee] [Dd]
+;
+
+CFS
+:
+  'cfs'
+;
+
+CHAIN
+:
+  'chain' -> pushMode ( M_Word )
 ;
 
 CHANNEL_GROUP
@@ -431,6 +488,11 @@ CLASS_MAP
   'class-map' -> pushMode ( M_ClassMap )
 ;
 
+CLEAR
+:
+  'clear'
+;
+
 CLI
 :
   'cli'
@@ -456,13 +518,30 @@ CMD
   'cmd'
 ;
 
+COMMAND
+:
+  'command'
+;
+
+COMMANDS
+:
+  'commands'
+;
+
 COMMUNITY
 :
   'community'
   // All other instances are followed by keywords or tokens in default mode
   {
-    if (lastTokenType() == MATCH) {
-      pushMode(M_Words);
+    switch (lastTokenType()) {
+      case MATCH:
+        pushMode(M_Words);
+        break;
+      case SNMP_SERVER:
+        pushMode(M_Word);
+        break;
+      default:
+        break;
     }
   }
 
@@ -476,6 +555,16 @@ COMMUNITY_LIST
 COMPARE_ROUTERID
 :
   'compare-routerid'
+;
+
+CONFIG
+:
+  'config'
+;
+
+CONFIG_COMMANDS
+:
+  'config-commands'
 ;
 
 CONFIGURATION
@@ -503,6 +592,12 @@ CONNECTION_MODE
   'connection-mode'
 ;
 
+CONTACT
+:
+// followed by arbitrary contact information
+  'contact' -> pushMode ( M_Remark )
+;
+
 CONTEXT
 :
   'context' -> pushMode ( M_Word )
@@ -523,6 +618,11 @@ CONVERSION_ERROR
   'conversion-error'
 ;
 
+COPY
+:
+  'copy'
+;
+
 COPY_ATTRIBUTES
 :
   'copy-attributes'
@@ -536,6 +636,11 @@ COST
 COST_COMMUNITY
 :
   'cost-community'
+;
+
+COUNTERS
+:
+  'counters'
 ;
 
 CRITICAL
@@ -598,6 +703,11 @@ DEAD_INTERVAL
   'dead-interval'
 ;
 
+DECREMENT
+:
+  'decrement'
+;
+
 DEFAULT
 :
   'default'
@@ -621,6 +731,11 @@ DEFAULT_METRIC
 DEFAULT_ORIGINATE
 :
   'default-originate'
+;
+
+DELAY
+:
+  'delay'
 ;
 
 DELETE
@@ -656,6 +771,11 @@ DETAIL
 DHCP
 :
   'dhcp'
+;
+
+DIR
+:
+  'dir'
 ;
 
 DIRECT
@@ -828,6 +948,11 @@ ERRDISABLE
   'errdisable'
 ;
 
+ERROR_ENABLE
+:
+  'error-enable'
+;
+
 ERRORS
 :
   'errors'
@@ -851,6 +976,11 @@ ETHERNET
 EVENT_HISTORY
 :
   'event-history'
+;
+
+EVENT_NOTIFY
+:
+  'event-notify'
 ;
 
 EVENTS
@@ -931,6 +1061,17 @@ FCOE_FIB_MISS
 FEATURE
 :
   'feature'
+;
+
+FEATURE_CONTROL
+:
+  'feature-control'
+;
+
+FEATUREOPSTATUSCHANGE
+:
+  [Ff] [Ee] [Aa] [Tt] [Uu] [Rr] [Ee] [Oo] [Pp] [Ss] [Tt] [Aa] [Tt] [Uu] [Ss]
+  [Cc] [Hh] [Aa] [Nn] [Gg] [Ee]
 ;
 
 FEX_FABRIC
@@ -1056,6 +1197,21 @@ GRACEFUL_RESTART_HELPER
 GRE
 :
   'gre'
+;
+
+GROUP
+:
+  'group'
+  // When preceded by 'default, followed by list of AAA server groups.
+  // If preceded by 'community' and then a secret, followed by the name of a user group.
+  // Otherwise, stay in default mode.
+  {
+    if (lastTokenType() == DEFAULT) {
+      pushMode(M_AaaGroup);
+    } else if (secondToLastTokenType() == COMMUNITY && lastTokenType() == WORD) {
+      pushMode(M_Word);
+    }
+  }
 ;
 
 GROUP_TIMEOUT
@@ -1217,6 +1373,11 @@ INCLUDE_STUB
   'include-stub'
 ;
 
+INCONSISTENCY
+:
+  'inconsistency'
+;
+
 INFORMATION_REPLY
 :
   'information-reply'
@@ -1326,6 +1487,16 @@ ISOLATE
   'isolate'
 ;
 
+KEY
+:
+  'key'
+;
+
+KEY_STRING
+:
+  'key-string' -> pushMode ( M_Remark )
+;
+
 KICKSTART
 :
   'kickstart'
@@ -1433,6 +1604,17 @@ LOCAL_PREFERENCE
   'local-preference'
 ;
 
+LOCALIZEDKEY
+:
+  'localizedkey'
+;
+
+LOCATION
+:
+// followed by arbitrary location description
+  'location' -> pushMode ( M_Remark )
+;
+
 LOG
 :
   'log'
@@ -1461,6 +1643,11 @@ LONG
 LOOP
 :
   'loop'
+;
+
+LOOP_INCONSISTENCY
+:
+  'loop-inconsistency'
 ;
 
 LOOPBACK
@@ -1572,6 +1759,17 @@ MCAST_GROUP
   'mcast-group'
 ;
 
+MD5
+:
+  'md5'
+  // if preceded by 'auth', password follows
+  {
+    if (lastTokenType() == AUTH) {
+      pushMode(M_Word);
+    }
+  }
+;
+
 MED
 :
   'med'
@@ -1597,6 +1795,11 @@ MEMBER
     }
   }
 
+;
+
+MERGE_FAILURE
+:
+  'merge-failure'
 ;
 
 MESSAGE_DIGEST
@@ -1629,6 +1832,11 @@ MGMT
   [Mm] [Gg] [Mm] [Tt]
 ;
 
+MINIMUM
+:
+  'minimum'
+;
+
 MISSING_AS_WORST
 :
   'missing-as-worst'
@@ -1652,6 +1860,11 @@ MODE
 MROUTER
 :
   'mrouter'
+;
+
+MSEC
+:
+  'msec'
 ;
 
 MST
@@ -1787,6 +2000,11 @@ NETWORK_QOS
 NETWORK_UNKNOWN
 :
   'network-unknown'
+;
+
+NEWROOT
+:
+  'newroot'
 ;
 
 NEXT_HOP
@@ -2028,6 +2246,11 @@ PEER
   'peer' -> pushMode ( M_Word )
 ;
 
+PEER_IP
+:
+  'peer-ip'
+;
+
 PEER_POLICY
 :
   'peer-policy'
@@ -2081,6 +2304,11 @@ PIM_AUTO_RP
 PIM6
 :
   'pim6'
+;
+
+PING
+:
+  'ping'
 ;
 
 POAP
@@ -2158,6 +2386,11 @@ PRECEDENCE_UNREACHABLE
   'precedence-unreachable'
 ;
 
+PREEMPT
+:
+  'preempt'
+;
+
 PREFIX_LIST
 :
   'prefix-list' -> pushMode ( M_Word )
@@ -2181,6 +2414,11 @@ PREPEND
 PRIORITY
 :
   'priority'
+;
+
+PRIV
+:
+  'priv' -> pushMode ( M_Priv )
 ;
 
 PROTOCOL
@@ -2263,6 +2501,11 @@ RD
   'rd'
 ;
 
+READ
+:
+  'read'
+;
+
 REASSEMBLY_TIMEOUT
 :
   'reassembly-timeout'
@@ -2306,6 +2549,11 @@ REFERENCE_BANDWIDTH
 REFLECTION
 :
   'reflection'
+;
+
+RELOAD
+:
+  'reload'
 ;
 
 REMARK
@@ -2373,9 +2621,19 @@ ROBUSTNESS_VARIABLE
   'robustness-variable'
 ;
 
+ROLE
+:
+  'role'
+;
+
 ROOT
 :
   'root'
+;
+
+ROOT_INCONSISTENCY
+:
+  'root-inconsistency'
 ;
 
 ROUTABLE
@@ -2443,6 +2701,11 @@ RST
   'rst'
 ;
 
+RULE
+:
+  'rule'
+;
+
 SCHEDULER
 :
   'scheduler'
@@ -2478,6 +2741,16 @@ SEQ
   'seq'
 ;
 
+SERVER
+:
+  'server'
+;
+
+SERVER_STATE_CHANGE
+:
+  'server-state-change'
+;
+
 SERVICE
 :
   'service'
@@ -2503,6 +2776,22 @@ SG_RPF_FAILURE
   'sg-rpf-failure'
 ;
 
+SHA
+:
+  'sha'
+  // if preceded by 'auth', password follows
+  {
+    if (lastTokenType() == AUTH) {
+      pushMode(M_Word);
+    }
+  }
+;
+
+SHOW
+:
+  'show'
+;
+
 SHUTDOWN
 :
   'shutdown'
@@ -2523,9 +2812,19 @@ SMTP
   'smtp'
 ;
 
+SMTP_SEND_FAIL
+:
+  'smtp-send-fail'
+;
+
 SNMP
 :
   'snmp'
+;
+
+SNMP_SERVER
+:
+  'snmp-server'
 ;
 
 SNMPTRAP
@@ -2561,6 +2860,11 @@ SOURCE_ROUTE_FAILED
 SPANNING_TREE
 :
   'spanning-tree'
+;
+
+SPARSE_MODE
+:
+  'sparse-mode'
 ;
 
 SPEED
@@ -2603,6 +2907,16 @@ STATE
   'state'
 ;
 
+STATE_CHANGE
+:
+  'state-change'
+;
+
+STATE_CHANGE_NOTIF
+:
+  'state-change-notif'
+;
+
 STATIC
 :
   'static'
@@ -2621,6 +2935,11 @@ STATISTICS
 STORM_CONTROL
 :
   'storm-control'
+;
+
+STPX
+:
+  'stpx'
 ;
 
 STUB
@@ -2688,6 +3007,11 @@ SYN
   'syn'
 ;
 
+SYNC
+:
+  'sync'
+;
+
 SYSLOG
 :
   'syslog'
@@ -2718,6 +3042,12 @@ TACACS
 TACACSP
 :
   'tacacs+'
+  // Other instances are followed by tokens in default mode, or occur in non-default mode.
+  {
+    if (lastTokenType() == SERVER) {
+      pushMode(M_Word);
+    }
+  }
 ;
 
 TAG
@@ -2753,6 +3083,11 @@ TELNET
 TEMPLATE
 :
   'template'
+;
+
+TERMINAL
+:
+  'terminal'
 ;
 
 TFTP
@@ -2795,6 +3130,11 @@ TIMEZONE
   'timezone' -> pushMode ( M_Remark )
 ;
 
+TOPOLOGYCHANGE
+:
+  'topologychange'
+;
+
 TRACEROUTE
 :
   'traceroute'
@@ -2818,6 +3158,17 @@ TRANSPORT
 TRAP
 :
   'trap'
+;
+
+TRAPS
+:
+  'traps'
+  // if not preceded by 'enable', followed by 'version' or SNMP community secret
+  {
+    if (lastTokenType() != ENABLE) {
+      pushMode(M_SnmpHostTraps);
+    }
+  }
 ;
 
 TRIGGER_DELAY
@@ -2901,9 +3252,46 @@ UPDATE_SOURCE
   'update-source'
 ;
 
+UPGRADE
+:
+  'upgrade'
+;
+
+UPGRADEJOBSTATUSNOTIFY
+:
+  [Uu] [Pp] [Gg] [Rr] [Aa] [Dd] [Ee] [Jj] [Oo] [Bb] [Ss] [Tt] [Aa] [Tt] [Uu]
+  [Ss] [Nn] [Oo] [Tt] [Ii] [Ff] [Yy]
+;
+
+UPGRADEOPNOTIFYONCOMPLETION
+:
+  [Uu] [Pp] [Gg] [Rr] [Aa] [Dd] [Ee] [Oo] [Pp] [Nn] [Oo] [Tt] [Ii] [Ff] [Yy]
+  [Oo] [Nn] [Cc] [Oo] [Mm] [Pp] [Ll] [Ee] [Tt] [Ii] [Oo] [Nn]
+;
+
 URG
 :
   'urg'
+;
+
+USE_ACL
+:
+  'use-acl' -> pushMode ( M_Word )
+;
+
+USE_VRF
+:
+  'use-vrf' -> pushMode ( M_Word )
+;
+
+USER
+:
+  'user'
+  {
+    if (lastTokenType() == SNMP_SERVER) {
+      pushMode(M_SnmpUser);
+    }
+  }
 ;
 
 USERNAME
@@ -2923,7 +3311,22 @@ V3_REPORT_SUPPRESSION
 
 VERSION
 :
-  'version' -> pushMode ( M_Remark )
+  'version'
+  // If preceded by 'traps', snmp version follows.
+  // Otherwise, arbitrary version string follows.
+  {
+    switch(lastTokenType()) {
+      case TRAPS:
+        pushMode(M_SnmpVersion);
+        break;
+      case HSRP:
+        pushMode(M_HsrpVersion);
+        break;
+      default:
+        pushMode(M_Remark);
+        break;
+    }
+  }
 ;
 
 VIRTUAL_LINK
@@ -3017,6 +3420,11 @@ XDMCP
 ;
 
 // Other Tokens
+
+ASTERISK
+:
+  '*'
+;
 
 BLANK_LINE
 :
@@ -3435,6 +3843,24 @@ F_WordChar
   | '-'
 ;
 
+mode M_AaaGroup;
+
+M_AaaGroup_LOCAL
+:
+  'local' -> type ( LOCAL ) , popMode
+;
+
+M_AaaGroup_WORD
+:
+  F_Word -> type ( WORD )
+;
+
+M_AaaGroup_WS
+:
+  F_Whitespace+ -> channel ( HIDDEN )
+;
+
+
 mode M_AliasName;
 
 M_AliasName_WORD
@@ -3675,6 +4101,23 @@ M_Hostname_WS
   F_Whitespace+ -> channel ( HIDDEN )
 ;
 
+mode M_HsrpVersion;
+
+M_HsrpVersion_VERSION_1
+:
+  '1' -> type ( HSRP_VERSION_1 ) , popMode
+;
+
+M_HsrpVersion_VERSION_2
+:
+  '2' -> type ( HSRP_VERSION_2 ) , popMode
+;
+
+M_HsrpVersion_WS
+:
+  F_Whitespace+ -> channel ( HIDDEN )
+;
+
 mode M_MatchIpAddress;
 
 M_MatchIpAddress_PREFIX_LIST
@@ -3784,6 +4227,23 @@ M_PolicyMapType_WS
   F_Whitespace+ -> channel ( HIDDEN )
 ;
 
+mode M_Priv;
+
+M_Priv_AES_128
+:
+  'aes-128' -> type ( AES_128 ) , mode ( M_Word )
+;
+
+M_Priv_WORD
+:
+  F_Word -> type ( WORD ) , popMode
+;
+
+M_Priv_WS
+:
+  F_Whitespace+ -> channel ( HIDDEN )
+;
+
 mode M_Remark;
 
 M_Remark_REMARK_TEXT
@@ -3792,6 +4252,74 @@ M_Remark_REMARK_TEXT
 ;
 
 M_Remark_WS
+:
+  F_Whitespace+ -> channel ( HIDDEN )
+;
+
+mode M_SnmpHostTraps;
+
+M_SnmpHostTraps_VERSION
+:
+  'version' -> type ( VERSION ) , mode ( M_SnmpVersion )
+;
+
+M_SnmpHostTraps_WORD
+:
+  F_Word -> type ( WORD ) , popMode
+;
+
+M_SnmpHostTraps_WS
+:
+  F_Whitespace+ -> channel ( HIDDEN )
+;
+
+mode M_SnmpUser;
+
+M_SnmpUser_WORD
+:
+  F_Word -> type ( WORD ) , mode ( M_SnmpUserGroup )
+;
+
+M_SnmpUser_WS
+:
+  F_Whitespace+ -> channel ( HIDDEN )
+;
+
+mode M_SnmpUserGroup;
+
+M_SnmpUserGroup_AUTH
+:
+  'auth' -> type ( AUTH ) , popMode
+;
+
+M_SnmpUserGroup_WORD
+:
+  F_Word -> type ( WORD ) , popMode
+;
+
+M_SnmpUserGroup_WS
+:
+  F_Whitespace+ -> channel ( HIDDEN )
+;
+
+mode M_SnmpVersion;
+
+M_SnmpVersion_SNMP_VERSION_1
+:
+  '1' -> type ( SNMP_VERSION_1 ) , mode ( M_Word )
+;
+
+M_SnmpVersion_SNMP_VERSION_2
+:
+  '2' -> type ( SNMP_VERSION_2 ) , mode ( M_Word )
+;
+
+M_SnmpVersion_SNMP_VERSION_2C
+:
+  '2' [Cc] -> type ( SNMP_VERSION_2C ) , mode ( M_Word )
+;
+
+M_SnmpVersion_WS
 :
   F_Whitespace+ -> channel ( HIDDEN )
 ;

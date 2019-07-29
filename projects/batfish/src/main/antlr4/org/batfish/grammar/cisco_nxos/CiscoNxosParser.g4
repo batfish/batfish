@@ -2,6 +2,7 @@ parser grammar CiscoNxosParser;
 
 import
   CiscoNxos_common,
+  CiscoNxos_aaa,
   CiscoNxos_bgp,
   CiscoNxos_class_map,
   CiscoNxos_evpn,
@@ -14,6 +15,7 @@ import
   CiscoNxos_ospf,
   CiscoNxos_policy_map,
   CiscoNxos_route_map,
+  CiscoNxos_snmp,
   CiscoNxos_static,
   CiscoNxos_vlan,
   CiscoNxos_vrf;
@@ -30,7 +32,8 @@ cisco_nxos_configuration
 
 statement
 :
-  s_banner
+  s_aaa
+  | s_banner
   | s_class_map
   | s_control_plane
   | s_evpn
@@ -38,12 +41,15 @@ statement
   | s_interface
   | s_ip
   | s_ipv6
+  | s_key
   | s_no
   | s_null
   | s_nv
   | s_policy_map
+  | s_role
   | s_route_map
   | s_router
+  | s_snmp_server
   | s_system
   | s_version
   | s_vlan
@@ -107,9 +113,40 @@ s_ipv6
   IPV6 ipv6_access_list
 ;
 
+s_key
+:
+  KEY key_chain
+;
+
+key_chain
+:
+  CHAIN name = key_chain_name NEWLINE kc_key*
+;
+
+key_chain_name
+:
+// 1-63 characters
+  WORD
+;
+
+kc_key
+:
+  KEY num = uint16 NEWLINE kck_key_string*
+;
+
+kck_key_string
+:
+  KEY_STRING key_text = key_string_text NEWLINE
+;
+
+key_string_text
+:
+// 1-63 characters
+  REMARK_TEXT
+;
+
 s_null
 :
-  NO?
   (
     BOOT
     | CLI
@@ -133,6 +170,25 @@ s_no
 s_nv
 :
   NV OVERLAY EVPN NEWLINE
+;
+
+s_role
+:
+  ROLE NAME name = role_name NEWLINE role_null*
+;
+
+role_name
+:
+// 1-16 characters
+  WORD
+;
+
+role_null
+:
+  (
+    DESCRIPTION
+    | RULE
+  ) null_rest_of_line
 ;
 
 s_router

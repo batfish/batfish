@@ -1,0 +1,16 @@
+!RANCID-CONTENT-TYPE: cisco-nx
+!
+hostname nxos_interface_multicast
+!
+
+feature pim
+
+interface Ethernet1/1
+  no switchport
+  no shutdown
+  no ip redirects
+  ip pim hello-interval 1000
+  ip pim sparse-mode
+  ip igmp query-max-response-time 1
+  ip igmp query-interval 3
+  ip igmp version 3
