@@ -2046,6 +2046,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
       List<If> redistributePolicyStatements =
           eigrpRedistributionPoliciesToStatements(
               eigrpProcess.getRedistributionPolicies().values(), eigrpProcess, this);
+
       List<If> redistributeAndAllowEigrpFromSelfAsn =
           clearFalseStatementsAndAddMatchOwnAsn(
               redistributePolicyStatements, eigrpProcess.getAsn());
