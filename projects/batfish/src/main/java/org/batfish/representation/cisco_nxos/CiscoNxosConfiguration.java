@@ -38,7 +38,6 @@ import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
-import java.util.function.BiFunction;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -1182,7 +1181,9 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
                 }
                 if (tcpOptions.getDstPortSpec() != null) {
                   conjuncts.add(
-                      toPorts(tcpOptions.getDstPortSpec(), HeaderSpace.Builder::setDstPorts));
+                      toPorts(tcpOptions.getDstPortSpec())
+                          .map(AclLineMatchExprs::matchDstPort)
+                          .orElse(AclLineMatchExprs.FALSE));
                 }
                 if (tcpOptions.getHttpMethod() != null) {
                   // TODO: support HTTP METHOD matching
@@ -1190,7 +1191,9 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
                 }
                 if (tcpOptions.getSrcPortSpec() != null) {
                   conjuncts.add(
-                      toPorts(tcpOptions.getSrcPortSpec(), HeaderSpace.Builder::setSrcPorts));
+                      toPorts(tcpOptions.getSrcPortSpec())
+                          .map(AclLineMatchExprs::matchSrcPort)
+                          .orElse(AclLineMatchExprs.FALSE));
                 }
                 if (tcpOptions.getTcpFlags() != null) {
                   // TODO: validate logic
@@ -1211,11 +1214,15 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
                 ImmutableList.Builder<AclLineMatchExpr> conjuncts = ImmutableList.builder();
                 if (udpOptions.getDstPortSpec() != null) {
                   conjuncts.add(
-                      toPorts(udpOptions.getDstPortSpec(), HeaderSpace.Builder::setDstPorts));
+                      toPorts(udpOptions.getDstPortSpec())
+                          .map(AclLineMatchExprs::matchDstPort)
+                          .orElse(AclLineMatchExprs.FALSE));
                 }
                 if (udpOptions.getSrcPortSpec() != null) {
                   conjuncts.add(
-                      toPorts(udpOptions.getSrcPortSpec(), HeaderSpace.Builder::setSrcPorts));
+                      toPorts(udpOptions.getSrcPortSpec())
+                          .map(AclLineMatchExprs::matchSrcPort)
+                          .orElse(AclLineMatchExprs.FALSE));
                 }
                 return and(conjuncts.build());
               }
@@ -1238,24 +1245,24 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
         .build();
   }
 
-  private @Nonnull AclLineMatchExpr toPorts(
-      PortSpec portSpec,
-      BiFunction<HeaderSpace.Builder, Iterable<SubRange>, HeaderSpace.Builder> setter) {
-    // TODO: move off of HeaderSpace
+  /**
+   * Return an {@link IntegerSpace} of allowed ports if {@code portSpec} is supported, or {@link
+   * Optional#empty} if unsupported.
+   */
+  private @Nonnull Optional<IntegerSpace> toPorts(PortSpec portSpec) {
+    // TODO: return an abstract space of integers to allow for named port spaces
     return portSpec.accept(
-        new PortSpecVisitor<AclLineMatchExpr>() {
+        new PortSpecVisitor<Optional<IntegerSpace>>() {
           @Override
-          public AclLineMatchExpr visitLiteralPortSpec(LiteralPortSpec literalPortSpec) {
-            return AclLineMatchExprs.match(
-                setter
-                    .apply(HeaderSpace.builder(), literalPortSpec.getPorts().getSubRanges())
-                    .build());
+          public Optional<IntegerSpace> visitLiteralPortSpec(LiteralPortSpec literalPortSpec) {
+            return Optional.of(literalPortSpec.getPorts());
           }
 
           @Override
-          public AclLineMatchExpr visitPortGroupPortSpec(PortGroupPortSpec portGroupPortSpec) {
+          public Optional<IntegerSpace> visitPortGroupPortSpec(
+              PortGroupPortSpec portGroupPortSpec) {
             // TODO: support port groups
-            return AclLineMatchExprs.FALSE;
+            return Optional.empty();
           }
         });
   }
