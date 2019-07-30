@@ -136,6 +136,7 @@ import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.NamedPort;
 import org.batfish.datamodel.OriginType;
+import org.batfish.datamodel.OspfExternalRoute;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.RouteFilterLine;
 import org.batfish.datamodel.RouteFilterList;
@@ -153,6 +154,7 @@ import org.batfish.datamodel.bgp.community.StandardCommunity;
 import org.batfish.datamodel.matchers.HsrpGroupMatchers;
 import org.batfish.datamodel.matchers.RouteFilterListMatchers;
 import org.batfish.datamodel.matchers.VrfMatchers;
+import org.batfish.datamodel.ospf.OspfMetricType;
 import org.batfish.datamodel.routing_policy.Environment.Direction;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.routing_policy.expr.LiteralCommunityConjunction;
@@ -357,6 +359,25 @@ public final class CiscoNxosGrammarTest {
             Ip.parse("192.0.2.1"),
             DEFAULT_VRF_NAME,
             Direction.OUT));
+  }
+
+  private @Nonnull Bgpv4Route processRouteIn(RoutingPolicy routingPolicy, Bgpv4Route route) {
+    Bgpv4Route.Builder builder = route.toBuilder();
+    routingPolicy.process(route, builder, Ip.parse("192.0.2.1"), DEFAULT_VRF_NAME, Direction.IN);
+    return builder.build();
+  }
+
+  private @Nonnull OspfExternalRoute processRouteRedistributeOspf(
+      RoutingPolicy routingPolicy, Bgpv4Route route) {
+    OspfExternalRoute.Builder builder =
+        OspfExternalRoute.builder()
+            .setNetwork(route.getNetwork())
+            .setLsaMetric(123L)
+            .setArea(456L)
+            .setCostToAdvertiser(789L)
+            .setAdvertiser("n1");
+    routingPolicy.process(route, builder, Ip.parse("192.0.2.1"), DEFAULT_VRF_NAME, Direction.OUT);
+    return builder.build();
   }
 
   @Test
@@ -3329,6 +3350,7 @@ public final class CiscoNxosGrammarTest {
             "set_community",
             "set_community_additive",
             "set_ip_next_hop_literal",
+            "set_ip_next_hop_literal2",
             "set_ip_next_hop_unchanged",
             "set_local_preference",
             "set_metric",
@@ -3346,12 +3368,16 @@ public final class CiscoNxosGrammarTest {
             "continue_from_permit_and_set_to_fall_off",
             "continue_with_set_and_fall_off",
             "continue_from_set_to_match_on_set_field"));
+    Ip origNextHopIp = Ip.parse("192.0.2.254");
     Bgpv4Route base =
         Bgpv4Route.builder()
+            .setAsPath(AsPath.ofSingletonAsSets(2L))
             .setOriginatorIp(Ip.ZERO)
             .setOriginType(OriginType.INCOMPLETE)
             .setProtocol(RoutingProtocol.BGP)
+            .setNextHopIp(origNextHopIp)
             .setNetwork(Prefix.ZERO)
+            .setTag(0L)
             .build();
     {
       RoutingPolicy rp = c.getRoutingPolicies().get("empty_deny");
@@ -3361,6 +3387,8 @@ public final class CiscoNxosGrammarTest {
       RoutingPolicy rp = c.getRoutingPolicies().get("empty_permit");
       assertRoutingPolicyPermitsRoute(rp, base);
     }
+
+    // matches
     {
       RoutingPolicy rp = c.getRoutingPolicies().get("match_as_path");
       assertRoutingPolicyDeniesRoute(rp, base);
@@ -3416,6 +3444,89 @@ public final class CiscoNxosGrammarTest {
       Bgpv4Route route = base.toBuilder().setTag(1L).build();
       assertRoutingPolicyPermitsRoute(rp, route);
     }
+
+    // sets
+    {
+      RoutingPolicy rp = c.getRoutingPolicies().get("set_as_path_prepend_last_as");
+      Bgpv4Route route = processRouteIn(rp, base);
+      assertThat(route.getAsPath(), equalTo(AsPath.ofSingletonAsSets(2L, 2L, 2L, 2L)));
+      // TODO: test out direction. Requires BGP process, environment with neighor.
+    }
+    {
+      RoutingPolicy rp = c.getRoutingPolicies().get("set_as_path_prepend_literal_as");
+      Bgpv4Route route = processRouteIn(rp, base);
+      assertThat(route.getAsPath(), equalTo(AsPath.ofSingletonAsSets(65000L, 65100L, 2L)));
+    }
+    {
+      RoutingPolicy rp = c.getRoutingPolicies().get("set_community");
+      Bgpv4Route inRoute =
+          base.toBuilder().setCommunities(ImmutableSet.of(StandardCommunity.of(3, 3))).build();
+      Bgpv4Route route = processRouteIn(rp, inRoute);
+      assertThat(
+          route.getCommunities(), contains(StandardCommunity.of(1, 1), StandardCommunity.of(1, 2)));
+    }
+    {
+      RoutingPolicy rp = c.getRoutingPolicies().get("set_community_additive");
+      Bgpv4Route inRoute =
+          base.toBuilder().setCommunities(ImmutableSet.of(StandardCommunity.of(3, 3))).build();
+      Bgpv4Route route = processRouteIn(rp, inRoute);
+      assertThat(
+          route.getCommunities(),
+          contains(
+              StandardCommunity.of(1, 1), StandardCommunity.of(1, 2), StandardCommunity.of(3, 3)));
+    }
+    {
+      RoutingPolicy rp = c.getRoutingPolicies().get("set_ip_next_hop_literal");
+      Bgpv4Route route = processRouteIn(rp, base);
+      assertThat(route.getNextHopIp(), equalTo(Ip.parse("192.0.2.50")));
+    }
+    {
+      RoutingPolicy rp = c.getRoutingPolicies().get("set_ip_next_hop_literal2");
+      Bgpv4Route route = processRouteIn(rp, base);
+      // When there are two next-hop-IPs being set, the statement is not applicable to routing. So
+      // the next-hop-IP should not change.
+      assertThat(route.getNextHopIp(), equalTo(origNextHopIp));
+    }
+    // TODO: test set ip next-hop unchanged. Requires BGP process, environment with eBGP neighor.
+    {
+      RoutingPolicy rp = c.getRoutingPolicies().get("set_local_preference");
+      Bgpv4Route route = processRouteIn(rp, base);
+      assertThat(route.getLocalPreference(), equalTo(1L));
+    }
+    {
+      RoutingPolicy rp = c.getRoutingPolicies().get("set_metric");
+      Bgpv4Route route = processRouteIn(rp, base);
+      assertThat(route.getMetric(), equalTo(1L));
+    }
+    // TODO: test set metric-type external
+    // TODO: test set metric-type internal
+    {
+      RoutingPolicy rp = c.getRoutingPolicies().get("set_metric_type_type_1");
+      OspfExternalRoute route = processRouteRedistributeOspf(rp, base);
+      assertThat(route.getOspfMetricType(), equalTo(OspfMetricType.E1));
+    }
+    {
+      RoutingPolicy rp = c.getRoutingPolicies().get("set_metric_type_type_2");
+      OspfExternalRoute route = processRouteRedistributeOspf(rp, base);
+      assertThat(route.getOspfMetricType(), equalTo(OspfMetricType.E2));
+    }
+    {
+      RoutingPolicy rp = c.getRoutingPolicies().get("set_tag");
+      Bgpv4Route route = processRouteIn(rp, base);
+      assertThat(route.getTag(), equalTo(1L));
+    }
+
+    // matches with undefined references
+    // TODO: match ip address (undefined) - relevant to routing?
+    {
+      RoutingPolicy rp = c.getRoutingPolicies().get("match_undefined_community_list");
+      assertRoutingPolicyDeniesRoute(rp, base);
+    }
+    {
+      RoutingPolicy rp = c.getRoutingPolicies().get("match_undefined_prefix_list");
+      assertRoutingPolicyDeniesRoute(rp, base);
+    }
+    // TODO: continue route-maps
   }
 
   @Test
@@ -3440,6 +3551,7 @@ public final class CiscoNxosGrammarTest {
             "set_community",
             "set_community_additive",
             "set_ip_next_hop_literal",
+            "set_ip_next_hop_literal2",
             "set_ip_next_hop_unchanged",
             "set_local_preference",
             "set_metric",
@@ -3595,7 +3707,17 @@ public final class CiscoNxosGrammarTest {
       assertThat(entry.getSequence(), equalTo(10));
       RouteMapSetIpNextHopLiteral set = (RouteMapSetIpNextHopLiteral) entry.getSetIpNextHop();
       assertThat(entry.getSets().collect(onlyElement()), equalTo(set));
-      assertThat(set.getNextHops(), contains(Ip.parse("192.0.2.1"), Ip.parse("192.0.2.2")));
+      assertThat(set.getNextHops(), contains(Ip.parse("192.0.2.50")));
+    }
+    {
+      RouteMap rm = vc.getRouteMaps().get("set_ip_next_hop_literal2");
+      assertThat(rm.getEntries().keySet(), contains(10));
+      RouteMapEntry entry = getOnlyElement(rm.getEntries().values());
+      assertThat(entry.getAction(), equalTo(LineAction.PERMIT));
+      assertThat(entry.getSequence(), equalTo(10));
+      RouteMapSetIpNextHopLiteral set = (RouteMapSetIpNextHopLiteral) entry.getSetIpNextHop();
+      assertThat(entry.getSets().collect(onlyElement()), equalTo(set));
+      assertThat(set.getNextHops(), contains(Ip.parse("192.0.2.50"), Ip.parse("192.0.2.51")));
     }
     {
       RouteMap rm = vc.getRouteMaps().get("set_ip_next_hop_unchanged");
