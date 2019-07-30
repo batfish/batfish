@@ -18,18 +18,18 @@ public final class MatchMetric extends BooleanExpr {
   private static final String PROP_METRIC = "metric";
 
   @Nonnull private final IntComparator _comparator;
-  @Nonnull private final IntExpr _metric;
+  @Nonnull private final LongExpr _metric;
 
   @JsonCreator
   private static MatchMetric jsonCreator(
       @Nullable @JsonProperty(PROP_COMPARATOR) IntComparator comparator,
-      @Nullable @JsonProperty(PROP_METRIC) IntExpr metric) {
+      @Nullable @JsonProperty(PROP_METRIC) LongExpr metric) {
     checkArgument(comparator != null, "%s must be provided", PROP_COMPARATOR);
     checkArgument(metric != null, "%s must be provided", PROP_METRIC);
     return new MatchMetric(comparator, metric);
   }
 
-  public MatchMetric(IntComparator comparator, IntExpr metric) {
+  public MatchMetric(IntComparator comparator, LongExpr metric) {
     _comparator = comparator;
     _metric = metric;
   }
@@ -48,7 +48,7 @@ public final class MatchMetric extends BooleanExpr {
 
   @JsonProperty(PROP_METRIC)
   @Nonnull
-  public IntExpr getMetric() {
+  public LongExpr getMetric() {
     return _metric;
   }
 

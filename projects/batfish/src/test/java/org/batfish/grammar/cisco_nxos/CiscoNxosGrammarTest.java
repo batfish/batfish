@@ -113,8 +113,11 @@ import org.batfish.common.bdd.IpAccessListToBddImpl;
 import org.batfish.common.bdd.IpSpaceToBDD;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.config.Settings;
+import org.batfish.datamodel.AbstractRoute;
+import org.batfish.datamodel.AsPath;
 import org.batfish.datamodel.AsPathAccessList;
 import org.batfish.datamodel.AsPathAccessListLine;
+import org.batfish.datamodel.Bgpv4Route;
 import org.batfish.datamodel.CommunityList;
 import org.batfish.datamodel.CommunityListLine;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
@@ -132,6 +135,7 @@ import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.NamedPort;
+import org.batfish.datamodel.OriginType;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.RouteFilterLine;
 import org.batfish.datamodel.RouteFilterList;
@@ -149,6 +153,8 @@ import org.batfish.datamodel.bgp.community.StandardCommunity;
 import org.batfish.datamodel.matchers.HsrpGroupMatchers;
 import org.batfish.datamodel.matchers.RouteFilterListMatchers;
 import org.batfish.datamodel.matchers.VrfMatchers;
+import org.batfish.datamodel.routing_policy.Environment.Direction;
+import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.routing_policy.expr.LiteralCommunityConjunction;
 import org.batfish.datamodel.tracking.DecrementPriority;
 import org.batfish.main.Batfish;
@@ -331,6 +337,26 @@ public final class CiscoNxosGrammarTest {
     // crash if not serializable
     SerializationUtils.clone(vendorConfiguration);
     return vendorConfiguration;
+  }
+
+  private void assertRoutingPolicyDeniesRoute(RoutingPolicy routingPolicy, AbstractRoute route) {
+    assertFalse(
+        routingPolicy.process(
+            route,
+            Bgpv4Route.builder().setNetwork(route.getNetwork()),
+            Ip.parse("192.0.2.1"),
+            DEFAULT_VRF_NAME,
+            Direction.OUT));
+  }
+
+  private void assertRoutingPolicyPermitsRoute(RoutingPolicy routingPolicy, AbstractRoute route) {
+    assertTrue(
+        routingPolicy.process(
+            route,
+            Bgpv4Route.builder().setNetwork(route.getNetwork()),
+            Ip.parse("192.0.2.1"),
+            DEFAULT_VRF_NAME,
+            Direction.OUT));
   }
 
   @Test
@@ -3279,6 +3305,117 @@ public final class CiscoNxosGrammarTest {
   public void testRoleParsing() {
     // TODO: make into ref test
     assertThat(parseVendorConfig("nxos_role"), notNullValue());
+  }
+
+  @Test
+  public void testRouteMapConversion() throws IOException {
+    String hostname = "nxos_route_map";
+    Configuration c = parseConfig(hostname);
+
+    assertThat(
+        c.getRoutingPolicies(),
+        hasKeys(
+            "empty_deny",
+            "empty_permit",
+            "match_as_path",
+            "match_community",
+            "match_interface",
+            "match_ip_address",
+            "match_ip_address_prefix_list",
+            "match_metric",
+            "match_tag",
+            "set_as_path_prepend_last_as",
+            "set_as_path_prepend_literal_as",
+            "set_community",
+            "set_community_additive",
+            "set_ip_next_hop_literal",
+            "set_ip_next_hop_unchanged",
+            "set_local_preference",
+            "set_metric",
+            "set_metric_type_external",
+            "set_metric_type_internal",
+            "set_metric_type_type_1",
+            "set_metric_type_type_2",
+            "set_tag",
+            "match_undefined_access_list",
+            "match_undefined_community_list",
+            "match_undefined_prefix_list",
+            "continue_skip_deny",
+            "continue_from_deny_to_permit",
+            "continue_from_permit_to_fall_off",
+            "continue_from_permit_and_set_to_fall_off",
+            "continue_with_set_and_fall_off",
+            "continue_from_set_to_match_on_set_field"));
+    Bgpv4Route base =
+        Bgpv4Route.builder()
+            .setOriginatorIp(Ip.ZERO)
+            .setOriginType(OriginType.INCOMPLETE)
+            .setProtocol(RoutingProtocol.BGP)
+            .setNetwork(Prefix.ZERO)
+            .build();
+    {
+      RoutingPolicy rp = c.getRoutingPolicies().get("empty_deny");
+      assertRoutingPolicyDeniesRoute(rp, base);
+    }
+    {
+      RoutingPolicy rp = c.getRoutingPolicies().get("empty_permit");
+      assertRoutingPolicyPermitsRoute(rp, base);
+    }
+    {
+      RoutingPolicy rp = c.getRoutingPolicies().get("match_as_path");
+      assertRoutingPolicyDeniesRoute(rp, base);
+      Bgpv4Route route = base.toBuilder().setAsPath(AsPath.ofSingletonAsSets(1L)).build();
+      assertRoutingPolicyPermitsRoute(rp, route);
+    }
+    {
+      RoutingPolicy rp = c.getRoutingPolicies().get("match_community");
+      assertRoutingPolicyDeniesRoute(rp, base);
+      Bgpv4Route routeOnlyOneCommunity =
+          base.toBuilder().setCommunities(ImmutableSet.of(StandardCommunity.of(1, 1))).build();
+      assertRoutingPolicyDeniesRoute(rp, routeOnlyOneCommunity);
+      Bgpv4Route routeBothCommunities =
+          base.toBuilder()
+              .setCommunities(
+                  ImmutableSet.of(StandardCommunity.of(1, 1), StandardCommunity.of(2, 2)))
+              .build();
+      assertRoutingPolicyPermitsRoute(rp, routeBothCommunities);
+      Bgpv4Route routeBothCommunitiesAndMore =
+          base.toBuilder()
+              .setCommunities(
+                  ImmutableSet.of(
+                      StandardCommunity.of(1, 1),
+                      StandardCommunity.of(2, 2),
+                      StandardCommunity.of(3, 3)))
+              .build();
+      assertRoutingPolicyPermitsRoute(rp, routeBothCommunitiesAndMore);
+    }
+    {
+      RoutingPolicy rp = c.getRoutingPolicies().get("match_interface");
+      assertRoutingPolicyDeniesRoute(rp, base);
+      Bgpv4Route routeConnected = base.toBuilder().setNetwork(Prefix.parse("192.0.2.1/24")).build();
+      assertRoutingPolicyPermitsRoute(rp, routeConnected);
+      Bgpv4Route routeDirect = base.toBuilder().setNetwork(Prefix.parse("192.0.2.1/32")).build();
+      assertRoutingPolicyPermitsRoute(rp, routeDirect);
+    }
+    // TODO: match ip address - relevant to routing?
+    {
+      RoutingPolicy rp = c.getRoutingPolicies().get("match_ip_address_prefix_list");
+      assertRoutingPolicyDeniesRoute(rp, base);
+      Bgpv4Route route = base.toBuilder().setNetwork(Prefix.parse("192.168.1.0/24")).build();
+      assertRoutingPolicyPermitsRoute(rp, route);
+    }
+    {
+      RoutingPolicy rp = c.getRoutingPolicies().get("match_metric");
+      assertRoutingPolicyDeniesRoute(rp, base);
+      Bgpv4Route route = base.toBuilder().setMetric(1L).build();
+      assertRoutingPolicyPermitsRoute(rp, route);
+    }
+    {
+      RoutingPolicy rp = c.getRoutingPolicies().get("match_tag");
+      assertRoutingPolicyDeniesRoute(rp, base);
+      Bgpv4Route route = base.toBuilder().setTag(1L).build();
+      assertRoutingPolicyPermitsRoute(rp, route);
+    }
   }
 
   @Test
