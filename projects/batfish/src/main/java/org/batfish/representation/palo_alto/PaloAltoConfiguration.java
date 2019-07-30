@@ -34,11 +34,13 @@ import java.util.NavigableMap;
 import java.util.NavigableSet;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Queue;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
+import java.util.concurrent.LinkedBlockingQueue;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.annotation.Nonnull;
@@ -835,10 +837,13 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
 
   private List<AclLineMatchExpr> matchApplications(Rule rule, Vsys vsys) {
     ImmutableList.Builder<AclLineMatchExpr> ret = ImmutableList.builder();
-    for (String name : rule.getApplications()) {
+    Queue<String> applications = new LinkedBlockingQueue<>(rule.getApplications());
+    while (!applications.isEmpty()) {
+      String name = applications.remove();
       ApplicationGroup group = vsys.getApplicationGroups().get(name);
       if (group != null) {
-        // todo
+        applications.addAll(
+            group.getDescendantObjects(vsys.getApplications(), vsys.getApplicationGroups()));
         continue;
       }
       Application a = vsys.getApplications().get(name);
