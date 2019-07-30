@@ -14964,6 +14964,199 @@
           }
         }
       },
+      "cumulus_nclu_bgp" : {
+        "configurationFormat" : "CUMULUS_NCLU",
+        "name" : "cumulus_nclu_bgp",
+        "defaultCrossZoneAction" : "PERMIT",
+        "defaultInboundAction" : "PERMIT",
+        "deviceType" : "ROUTER",
+        "interfaces" : {
+          "lo" : {
+            "name" : "lo",
+            "active" : true,
+            "additionalArpIps" : {
+              "class" : "org.batfish.datamodel.EmptyIpSpace"
+            },
+            "allowedVlans" : "",
+            "autostate" : true,
+            "mtu" : 1500,
+            "ospfDeadInterval" : 0,
+            "ospfEnabled" : false,
+            "ospfHelloMultiplier" : 0,
+            "ospfPassive" : false,
+            "ospfPointToPoint" : false,
+            "proxyArp" : false,
+            "ripEnabled" : false,
+            "ripPassive" : false,
+            "spanningTreePortfast" : false,
+            "switchport" : false,
+            "switchportMode" : "NONE",
+            "switchportTrunkEncapsulation" : "DOT1Q",
+            "type" : "LOOPBACK",
+            "vrf" : "default"
+          },
+          "vrf1" : {
+            "name" : "vrf1",
+            "active" : true,
+            "additionalArpIps" : {
+              "class" : "org.batfish.datamodel.EmptyIpSpace"
+            },
+            "allowedVlans" : "",
+            "autostate" : true,
+            "mtu" : 1500,
+            "ospfDeadInterval" : 0,
+            "ospfEnabled" : false,
+            "ospfHelloMultiplier" : 0,
+            "ospfPassive" : false,
+            "ospfPointToPoint" : false,
+            "proxyArp" : false,
+            "ripEnabled" : false,
+            "ripPassive" : false,
+            "spanningTreePortfast" : false,
+            "switchport" : false,
+            "switchportMode" : "NONE",
+            "switchportTrunkEncapsulation" : "DOT1Q",
+            "type" : "LOOPBACK",
+            "vrf" : "vrf1"
+          }
+        },
+        "routingPolicies" : {
+          "~BGP_COMMON_EXPORT_POLICY:default~" : {
+            "name" : "~BGP_COMMON_EXPORT_POLICY:default~",
+            "statements" : [
+              {
+                "class" : "org.batfish.datamodel.routing_policy.statement.If",
+                "falseStatements" : [
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                    "type" : "ReturnFalse"
+                  }
+                ],
+                "guard" : {
+                  "class" : "org.batfish.datamodel.routing_policy.expr.MatchProtocol",
+                  "protocols" : [
+                    "bgp",
+                    "ibgp"
+                  ]
+                },
+                "trueStatements" : [
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                    "type" : "ReturnTrue"
+                  }
+                ]
+              }
+            ]
+          },
+          "~BGP_PEER_EXPORT_POLICY:default:1.1.1.1~" : {
+            "name" : "~BGP_PEER_EXPORT_POLICY:default:1.1.1.1~",
+            "statements" : [
+              {
+                "class" : "org.batfish.datamodel.routing_policy.statement.If",
+                "comment" : "peer-export policy main conditional: exitAccept if true / exitReject if false",
+                "falseStatements" : [
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                    "type" : "ExitReject"
+                  }
+                ],
+                "guard" : {
+                  "class" : "org.batfish.datamodel.routing_policy.expr.CallExpr",
+                  "calledPolicyName" : "~BGP_COMMON_EXPORT_POLICY:default~"
+                },
+                "trueStatements" : [
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                    "type" : "ExitAccept"
+                  }
+                ]
+              }
+            ]
+          },
+          "~BGP_PEER_EXPORT_POLICY:vrf1:1.1.1.2~" : {
+            "name" : "~BGP_PEER_EXPORT_POLICY:vrf1:1.1.1.2~",
+            "statements" : [
+              {
+                "class" : "org.batfish.datamodel.routing_policy.statement.If",
+                "comment" : "peer-export policy main conditional: exitAccept if true / exitReject if false",
+                "falseStatements" : [
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                    "type" : "ExitReject"
+                  }
+                ],
+                "guard" : {
+                  "class" : "org.batfish.datamodel.routing_policy.expr.CallExpr",
+                  "calledPolicyName" : "~BGP_COMMON_EXPORT_POLICY:vrf1~"
+                },
+                "trueStatements" : [
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                    "type" : "ExitAccept"
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        "vendorFamily" : {
+          "cumulus" : {
+            "bridge" : {
+              "pvid" : 1,
+              "vids" : ""
+            }
+          }
+        },
+        "vrfs" : {
+          "default" : {
+            "name" : "default",
+            "bgpProcess" : {
+              "ebgpAdminCost" : 20,
+              "ibgpAdminCost" : 200,
+              "routerId" : "192.0.2.2",
+              "multipathEbgp" : false,
+              "multipathEquivalentAsPathMatchMode" : "EXACT_PATH",
+              "multipathIbgp" : false,
+              "neighbors" : {
+                "1.1.1.1/32" : {
+                  "class" : "org.batfish.datamodel.BgpActivePeerConfig",
+                  "defaultMetric" : 0,
+                  "ebgpMultihop" : false,
+                  "enforceFirstAs" : false,
+                  "ipv4UnicastAddressFamily" : {
+                    "addressFamilyCapabilities" : {
+                      "additionalPathsReceive" : false,
+                      "additionalPathsSelectAll" : false,
+                      "additionalPathsSend" : false,
+                      "advertiseExternal" : false,
+                      "advertiseInactive" : false,
+                      "allowLocalAsIn" : false,
+                      "allowRemoteAsOut" : false,
+                      "sendCommunity" : true,
+                      "sendExtendedCommunity" : true
+                    },
+                    "exportPolicy" : "~BGP_PEER_EXPORT_POLICY:default:1.1.1.1~",
+                    "routeReflectorClient" : false
+                  },
+                  "localAs" : 65500,
+                  "peerAddress" : "1.1.1.1",
+                  "remoteAsns" : "1"
+                }
+              },
+              "tieBreaker" : "ARRIVAL_ORDER"
+            },
+            "interfaces" : [
+              "lo"
+            ]
+          },
+          "vrf1" : {
+            "name" : "vrf1",
+            "interfaces" : [
+              "vrf1"
+            ]
+          }
+        }
+      },
       "cumulus_nclu_bgp_no_address_family" : {
         "configurationFormat" : "CUMULUS_NCLU",
         "name" : "cumulus_nclu_bgp_no_address_family",
@@ -19663,6 +19856,62 @@
         "vrfs" : {
           "default" : {
             "name" : "default"
+          }
+        }
+      },
+      "ios_xe_bgp" : {
+        "configurationFormat" : "CISCO_IOS",
+        "name" : "ios_xe_bgp",
+        "defaultCrossZoneAction" : "PERMIT",
+        "defaultInboundAction" : "PERMIT",
+        "deviceType" : "ROUTER",
+        "routingPolicies" : {
+          "~BGP_COMMON_EXPORT_POLICY:default~" : {
+            "name" : "~BGP_COMMON_EXPORT_POLICY:default~",
+            "statements" : [
+              {
+                "class" : "org.batfish.datamodel.routing_policy.statement.If",
+                "guard" : {
+                  "class" : "org.batfish.datamodel.routing_policy.expr.MatchProtocol",
+                  "protocols" : [
+                    "bgp",
+                    "ibgp"
+                  ]
+                },
+                "trueStatements" : [
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                    "type" : "ReturnTrue"
+                  }
+                ]
+              },
+              {
+                "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                "type" : "ReturnFalse"
+              }
+            ]
+          }
+        },
+        "vendorFamily" : {
+          "cisco" : {
+            "hostname" : "ios_xe_bgp",
+            "logging" : {
+              "on" : true
+            }
+          }
+        },
+        "vrfs" : {
+          "default" : {
+            "name" : "default",
+            "bgpProcess" : {
+              "ebgpAdminCost" : 20,
+              "ibgpAdminCost" : 200,
+              "routerId" : "0.0.0.0",
+              "multipathEbgp" : false,
+              "multipathEquivalentAsPathMatchMode" : "EXACT_PATH",
+              "multipathIbgp" : false,
+              "tieBreaker" : "ARRIVAL_ORDER"
+            }
           }
         }
       },

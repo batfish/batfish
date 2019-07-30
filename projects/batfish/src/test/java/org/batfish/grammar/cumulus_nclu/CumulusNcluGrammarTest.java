@@ -11,6 +11,7 @@ import static org.batfish.datamodel.matchers.BgpNeighborMatchers.hasEvpnAddressF
 import static org.batfish.datamodel.matchers.BgpNeighborMatchers.hasIpv4UnicastAddressFamily;
 import static org.batfish.datamodel.matchers.BgpNeighborMatchers.hasLocalAs;
 import static org.batfish.datamodel.matchers.BgpNeighborMatchers.hasRemoteAs;
+import static org.batfish.datamodel.matchers.BgpProcessMatchers.hasActiveNeighbor;
 import static org.batfish.datamodel.matchers.BgpProcessMatchers.hasInterfaceNeighbors;
 import static org.batfish.datamodel.matchers.BgpProcessMatchers.hasRouterId;
 import static org.batfish.datamodel.matchers.BgpRouteMatchers.isBgpv4RouteThat;
@@ -80,6 +81,7 @@ import org.batfish.common.Warnings;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.config.Settings;
 import org.batfish.datamodel.AbstractRoute;
+import org.batfish.datamodel.BgpActivePeerConfig;
 import org.batfish.datamodel.BgpPeerConfig;
 import org.batfish.datamodel.BgpUnnumberedPeerConfig;
 import org.batfish.datamodel.Bgpv4Route;
@@ -111,6 +113,7 @@ import org.batfish.datamodel.bgp.RouteDistinguisher;
 import org.batfish.datamodel.bgp.VniConfig;
 import org.batfish.datamodel.bgp.community.ExtendedCommunity;
 import org.batfish.datamodel.collections.NodeInterfacePair;
+import org.batfish.datamodel.matchers.BgpNeighborMatchers;
 import org.batfish.datamodel.matchers.VniSettingsMatchers;
 import org.batfish.datamodel.routing_policy.Environment;
 import org.batfish.datamodel.routing_policy.Environment.Direction;
@@ -542,6 +545,21 @@ public final class CumulusNcluGrammarTest {
     assertThat(c, hasDefaultVrf(hasBgpProcess(hasInterfaceNeighbors(hasKey(swp3)))));
     BgpUnnumberedPeerConfig i3 = p.getInterfaceNeighbors().get(swp3);
     assertThat(i3, hasRemoteAs(17L));
+  }
+
+  @Test
+  public void testBgpIpNeighbor() throws IOException {
+    Configuration c = parseConfig("cumulus_nclu_bgp_ip_neighbor");
+    long internalAs = 65500L;
+
+    Prefix prefix = Prefix.parse("1.1.1.1/32");
+    assertThat(
+        c,
+        hasDefaultVrf(
+            hasBgpProcess(hasActiveNeighbor(prefix, BgpNeighborMatchers.hasDescription("spam")))));
+    org.batfish.datamodel.BgpProcess p = c.getDefaultVrf().getBgpProcess();
+    BgpActivePeerConfig i1 = p.getActiveNeighbors().get(prefix);
+    assertThat(i1, hasRemoteAs(equalTo(ALL_AS_NUMBERS.difference(LongSpace.of(internalAs)))));
   }
 
   @Test

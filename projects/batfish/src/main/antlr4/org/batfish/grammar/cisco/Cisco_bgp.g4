@@ -340,12 +340,12 @@ filter_list_bgp_tail
 
 inherit_peer_policy_bgp_tail
 :
-   INHERIT PEER_POLICY name = variable num = DEC? NEWLINE
+   INHERIT PEER_POLICY name = variable_permissive num = DEC? NEWLINE
 ;
 
 inherit_peer_session_bgp_tail
 :
-   INHERIT PEER_SESSION name = variable NEWLINE
+   INHERIT PEER_SESSION name = variable_permissive NEWLINE
 ;
 
 local_as_bgp_tail
@@ -982,7 +982,7 @@ template_peer_address_family
 
 template_peer_policy_rb_stanza
 :
-   TEMPLATE PEER_POLICY name = VARIABLE NEWLINE
+   TEMPLATE PEER_POLICY name = variable_permissive NEWLINE
    (
       bgp_tail
       | inherit_peer_policy_bgp_tail
@@ -994,7 +994,7 @@ template_peer_policy_rb_stanza
 
 template_peer_session_rb_stanza
 :
-   TEMPLATE PEER_SESSION name = VARIABLE NEWLINE
+   TEMPLATE PEER_SESSION name = variable_permissive NEWLINE
    (
       bgp_tail
       | remote_as_bgp_tail
