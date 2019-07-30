@@ -14964,9 +14964,9 @@
           }
         }
       },
-      "cumulus_nclu_bgp_no_address_family__configs__cumulus_nclu_bgp" : {
+      "cumulus_nclu_bgp" : {
         "configurationFormat" : "CUMULUS_NCLU",
-        "name" : "cumulus_nclu_bgp_no_address_family__configs__cumulus_nclu_bgp",
+        "name" : "cumulus_nclu_bgp",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
         "deviceType" : "ROUTER",
@@ -15157,9 +15157,9 @@
           }
         }
       },
-      "cumulus_nclu_bgp_no_address_family__configs__cumulus_nclu_bgp_no_address_family" : {
+      "cumulus_nclu_bgp_no_address_family" : {
         "configurationFormat" : "CUMULUS_NCLU",
-        "name" : "cumulus_nclu_bgp_no_address_family__configs__cumulus_nclu_bgp_no_address_family",
+        "name" : "cumulus_nclu_bgp_no_address_family",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
         "deviceType" : "ROUTER",
