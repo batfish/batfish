@@ -18,20 +18,17 @@ import org.batfish.datamodel.SubRange;
 @ParametersAreNonnullByDefault
 public final class ApplicationBuiltIn {
   public static final Application FTP =
-      Application.builder()
-          .setName("ftp")
+      Application.builder("ftp")
           .setDescription("built-in application ftp")
           .addService(Service.builder("ftp").setIpProtocol(IpProtocol.TCP).addPort(21).build())
           .build();
   public static final Application ICMP =
-      Application.builder()
-          .setName("icmp")
+      Application.builder("icmp")
           .setDescription("built-in application icmp")
           .addService(Service.builder("icmp").setIpProtocol(IpProtocol.ICMP).build())
           .build();
   public static final Application LDAP =
-      Application.builder()
-          .setName("ldap")
+      Application.builder("ldap")
           .setDescription("built-in application ldap")
           .addService(
               Service.builder("ldap tcp")
@@ -42,8 +39,7 @@ public final class ApplicationBuiltIn {
               Service.builder("ldap udp").setIpProtocol(IpProtocol.UDP).addPorts(389, 3268).build())
           .build();
   public static final Application MS_DS_SMB =
-      Application.builder()
-          .setName("ms-ds-smb")
+      Application.builder("ms-ds-smb")
           .setDescription("built-in application ms-ds-smb")
           .addService(
               Service.builder("ms-ds-smb tcp")
@@ -54,8 +50,7 @@ public final class ApplicationBuiltIn {
               Service.builder("ms-ds-smb udp").setIpProtocol(IpProtocol.UDP).addPorts(445).build())
           .build();
   public static final Application MS_NETLOGON =
-      Application.builder()
-          .setName("ms-netlogon")
+      Application.builder("ms-netlogon")
           .setDescription("built-in application ms-netlogon")
           .addService(
               Service.builder("ms-netlogon tcp")
@@ -71,23 +66,20 @@ public final class ApplicationBuiltIn {
                   .build())
           .build();
   public static final Application MS_KMS =
-      Application.builder()
-          .setName("ms-kms")
+      Application.builder("ms-kms")
           .setDescription("built-in application ms-kms")
           .addService(
               Service.builder("ms-kms tcp").setIpProtocol(IpProtocol.TCP).addPorts(1688).build())
           .build();
   //  // MSRPC("msrpc"),
   public static final Application NETBIOS_SS =
-      Application.builder()
-          .setName("netbios-ss")
+      Application.builder("netbios-ss")
           .setDescription("built-in application netbios-ss")
           .addService(
               Service.builder("netbios-ss").setIpProtocol(IpProtocol.TCP).addPorts(139).build())
           .build();
   public static final Application NTP =
-      Application.builder()
-          .setName("ntp")
+      Application.builder("ntp")
           .setDescription("built-in application ntp")
           .addService(
               Service.builder("ntp tcp").setIpProtocol(IpProtocol.TCP).addPorts(123).build())
@@ -95,8 +87,7 @@ public final class ApplicationBuiltIn {
               Service.builder("ntp udp").setIpProtocol(IpProtocol.UDP).addPorts(123).build())
           .build();
   public static final Application PAN_DB_CLOUD =
-      Application.builder()
-          .setName("pan-db-cloud")
+      Application.builder("pan-db-cloud")
           .setDescription("built-in application pan-db-cloud")
           .addService(
               Service.builder("pan-db-cloud tcp")
@@ -105,27 +96,23 @@ public final class ApplicationBuiltIn {
                   .build())
           .build();
   public static final Application PING =
-      Application.builder()
-          .setName("ping")
+      Application.builder("ping")
           .setDescription("built-in application ping")
           .addService(Service.builder("ping").setIpProtocol(IpProtocol.ICMP).build())
           .build();
   public static final Application POP3 =
-      Application.builder()
-          .setName("pop3")
+      Application.builder("pop3")
           .setDescription("built-in application pop3")
           .addService(Service.builder("pop3").setIpProtocol(IpProtocol.TCP).addPort(110).build())
           .build();
   public static final Application SMTP =
-      Application.builder()
-          .setName("smtp")
+      Application.builder("smtp")
           .setDescription("built-in application smtp")
           .addService(
               Service.builder("smtp").setIpProtocol(IpProtocol.TCP).addPorts(25, 587).build())
           .build();
   public static final Application SNMP =
-      Application.builder()
-          .setName("snmp")
+      Application.builder("snmp")
           .setDescription("built-in application snmp")
           .addService(
               Service.builder("snmp tcp").setIpProtocol(IpProtocol.TCP).addPorts(161).build())
@@ -133,27 +120,23 @@ public final class ApplicationBuiltIn {
               Service.builder("snmp udp").setIpProtocol(IpProtocol.UDP).addPorts(161).build())
           .build();
   public static final Application SOAP =
-      Application.builder()
-          .setName("soap")
+      Application.builder("soap")
           .setDescription("built-in application soap")
           .addService(
               Service.builder("soap").setIpProtocol(IpProtocol.TCP).addPorts(80, 443).build())
           .build();
   public static final Application SSH =
-      Application.builder()
-          .setName("ssh")
+      Application.builder("ssh")
           .setDescription("built-in application ssh")
           .addService(Service.builder("ssh").setIpProtocol(IpProtocol.TCP).addPort(22).build())
           .build();
   public static final Application SSL =
-      Application.builder()
-          .setName("ssl")
+      Application.builder("ssl")
           .setDescription("built-in application ssl")
           .addService(Service.builder("ssl").setIpProtocol(IpProtocol.TCP).addPort(443).build())
           .build();
   public static final Application WEB_BROWSING =
-      Application.builder()
-          .setName("web-browsing")
+      Application.builder("web-browsing")
           .setDescription("built-in application web-browsing")
           .addService(
               Service.builder("web-browsing").setIpProtocol(IpProtocol.TCP).addPort(80).build())

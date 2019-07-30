@@ -606,7 +606,7 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
     _currentApplication =
         _currentVsys
             .getApplications()
-            .computeIfAbsent(name, n -> Application.builder().setName(n).build());
+            .computeIfAbsent(name, n -> Application.builder(name).build());
     // Use constructed name so same-named defs across vsys are unique
     String uniqueName = computeObjectName(_currentVsys.getName(), name);
     defineStructure(APPLICATION, uniqueName, ctx);

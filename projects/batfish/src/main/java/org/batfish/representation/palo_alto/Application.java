@@ -1,7 +1,5 @@
 package org.batfish.representation.palo_alto;
 
-import static com.google.common.base.Preconditions.checkArgument;
-
 import com.google.common.collect.ImmutableSet;
 import java.io.Serializable;
 import java.util.HashSet;
@@ -15,26 +13,21 @@ import javax.annotation.ParametersAreNonnullByDefault;
 public final class Application implements Serializable {
 
   public static final class Builder {
-    private @Nullable String _name;
+    private final String _name;
     private @Nullable String _description;
     private @Nonnull Set<Service> _services;
 
-    private Builder() {
+    private Builder(@Nonnull String name) {
+      _name = name;
       _services = new HashSet<>();
     }
 
     public @Nonnull Application build() {
-      checkArgument(_name != null, "Application is missing name");
       return new Application(_name, _description, _services);
     }
 
     public @Nonnull Builder setDescription(@Nullable String description) {
       _description = description;
-      return this;
-    }
-
-    public @Nonnull Builder setName(@Nullable String name) {
-      _name = name;
       return this;
     }
 
@@ -55,8 +48,8 @@ public final class Application implements Serializable {
     _services = ImmutableSet.copyOf(services);
   }
 
-  public static @Nonnull Builder builder() {
-    return new Builder();
+  public static @Nonnull Builder builder(String name) {
+    return new Builder(name);
   }
 
   public @Nullable String getDescription() {

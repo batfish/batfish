@@ -1,5 +1,6 @@
 package org.batfish.representation.palo_alto;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableSet;
 import java.io.Serializable;
 import java.util.HashSet;
@@ -19,7 +20,8 @@ public final class ApplicationGroup implements Serializable {
     _members = new TreeSet<>();
   }
 
-  private Set<String> getDescendantObjects(
+  @VisibleForTesting
+  Set<String> getDescendantObjects(
       Map<String, Application> applications,
       Map<String, ApplicationGroup> applicationGroups,
       Set<String> alreadyTraversedGroups) {
