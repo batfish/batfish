@@ -583,6 +583,9 @@
         "ios_template" : [
           "configs/ios_template"
         ],
+        "ios_xe_bgp" : [
+          "configs/ios_xe_bgp"
+        ],
         "ios_xr_acl" : [
           "configs/ios_xr_acl"
         ],
@@ -1105,6 +1108,7 @@
         "configs/ios_interface_ip_tcp" : "PASSED",
         "configs/ios_standby" : "PASSED",
         "configs/ios_template" : "PASSED",
+        "configs/ios_xe_bgp" : "PASSED",
         "configs/ios_xr_acl" : "PASSED",
         "configs/ios_xr_bgp" : "PASSED",
         "configs/ios_xr_bgp_neighbor_group" : "PASSED",
@@ -15341,20 +15345,21 @@
             "        (template_peer_policy_rb_stanza",
             "          TEMPLATE:'template'",
             "          PEER_POLICY:'peer-policy'",
-            "          name = VARIABLE:'p1'",
+            "          name = (variable_permissive",
+            "            VARIABLE:'p1')",
             "          NEWLINE:'\\n'",
             "          (inherit_peer_policy_bgp_tail",
             "            INHERIT:'inherit'",
             "            PEER_POLICY:'peer-policy'",
-            "            name = (variable",
+            "            name = (variable_permissive",
             "              VARIABLE:'p2')",
             "            NEWLINE:'\\n')",
             "          (inherit_peer_policy_bgp_tail",
             "            INHERIT:'inherit'",
             "            PEER_POLICY:'peer-policy'",
-            "            name = (variable",
-            "              VARIABLE:'p3')",
-            "            num = DEC:'10'",
+            "            name = (variable_permissive",
+            "              VARIABLE:'p3'",
+            "              DEC:'10')",
             "            NEWLINE:'\\n')",
             "          EXIT_PEER_POLICY:'exit-peer-policy'",
             "          NEWLINE:'\\n'))",
@@ -51759,6 +51764,87 @@
             "  EOF:<EOF>)"
           ]
         },
+        "configs/ios_xe_bgp" : {
+          "sentences" : [
+            "(cisco_configuration",
+            "  (stanza",
+            "    (s_hostname",
+            "      HOSTNAME:'hostname'",
+            "      VARIABLE:'ios_xe_bgp'",
+            "      NEWLINE:'\\n'))",
+            "  (stanza",
+            "    (router_bgp_stanza",
+            "      ROUTER:'router'",
+            "      BGP:'bgp'",
+            "      procnum = (bgp_asn",
+            "        asn = DEC:'22222')",
+            "      NEWLINE:'\\n'",
+            "      (router_bgp_stanza_tail",
+            "        (template_peer_policy_rb_stanza",
+            "          TEMPLATE:'template'",
+            "          PEER_POLICY:'peer-policy'",
+            "          name = (variable_permissive",
+            "            VARIABLE:'FOO-BAR'",
+            "            COLON:':'",
+            "            VARIABLE:'BAZ')",
+            "          NEWLINE:'\\n'",
+            "          (bgp_tail",
+            "            (route_map_bgp_tail",
+            "              ROUTE_MAP:'route-map'",
+            "              name = (variable",
+            "                VARIABLE:'MAP'  <== mode:M_RouteMap)",
+            "              IN:'in'",
+            "              NEWLINE:'\\n'))",
+            "          (bgp_tail",
+            "            (send_community_bgp_tail",
+            "              SEND_COMMUNITY:'send-community'",
+            "              BOTH:'both'",
+            "              NEWLINE:'\\n'))",
+            "          EXIT_PEER_POLICY:'exit-peer-policy'",
+            "          NEWLINE:'\\n'))",
+            "      (router_bgp_stanza_tail",
+            "        (template_peer_session_rb_stanza",
+            "          TEMPLATE:'template'",
+            "          PEER_SESSION:'peer-session'",
+            "          name = (variable_permissive",
+            "            VARIABLE:'FOO-BAR_BAZ'",
+            "            COLON:':'",
+            "            VARIABLE:'QUX')",
+            "          NEWLINE:'\\n'",
+            "          (remote_as_bgp_tail",
+            "            REMOTE_AS:'remote-as'",
+            "            remote = (bgp_asn",
+            "              asn = DEC:'65444')",
+            "            NEWLINE:'\\n')",
+            "          EXIT_PEER_SESSION:'exit-peer-session'",
+            "          NEWLINE:'\\n'))",
+            "      (router_bgp_stanza_tail",
+            "        (neighbor_flat_rb_stanza",
+            "          NEIGHBOR:'neighbor'",
+            "          ip = IP_ADDRESS:'1.1.1.1'  <== mode:M_NEIGHBOR",
+            "          (inherit_peer_session_bgp_tail",
+            "            INHERIT:'inherit'",
+            "            PEER_SESSION:'peer-session'",
+            "            name = (variable_permissive",
+            "              VARIABLE:'FOO-BAR'",
+            "              COLON:':'",
+            "              VARIABLE:'BAZ')",
+            "            NEWLINE:'\\n')))",
+            "      (router_bgp_stanza_tail",
+            "        (neighbor_flat_rb_stanza",
+            "          NEIGHBOR:'neighbor'",
+            "          ip = IP_ADDRESS:'1.1.1.1'  <== mode:M_NEIGHBOR",
+            "          (inherit_peer_policy_bgp_tail",
+            "            INHERIT:'inherit'",
+            "            PEER_POLICY:'peer-policy'",
+            "            name = (variable_permissive",
+            "              VARIABLE:'FOO-BAR_BAZ'",
+            "              COLON:':'",
+            "              VARIABLE:'QUX')",
+            "            NEWLINE:'\\n\\n')))))",
+            "  EOF:<EOF>)"
+          ]
+        },
         "configs/ios_xr_acl" : {
           "sentences" : [
             "(cisco_configuration",
@@ -77308,6 +77394,7 @@
         "ios_interface_ip_tcp" : "PASSED",
         "ios_standby" : "PASSED",
         "ios_template" : "PASSED",
+        "ios_xe_bgp" : "WARNINGS",
         "ios_xr_acl" : "PASSED",
         "ios_xr_bgp" : "PASSED",
         "ios_xr_bgp_neighbor_group" : "WARNINGS",
@@ -81838,6 +81925,29 @@
           }
         },
         "configs/ios_template" : { },
+        "configs/ios_xe_bgp" : {
+          "bgp template peer-policy" : {
+            "FOO-BAR:BAZ" : {
+              "definitionLines" : [
+                5,
+                6,
+                7,
+                8
+              ],
+              "numReferrers" : 0
+            }
+          },
+          "bgp template peer-session" : {
+            "FOO-BAR_BAZ:QUX" : {
+              "definitionLines" : [
+                9,
+                10,
+                11
+              ],
+              "numReferrers" : 0
+            }
+          }
+        },
         "configs/ios_xr_acl" : { },
         "configs/ios_xr_bgp" : { },
         "configs/ios_xr_bgp_neighbor_group" : {
@@ -84771,6 +84881,9 @@
         "configs/ios_template" : [
           "ios_template"
         ],
+        "configs/ios_xe_bgp" : [
+          "ios_xe_bgp"
+        ],
         "configs/ios_xr_acl" : [
           "ios_xr_acl"
         ],
@@ -85725,7 +85838,7 @@
                 36
               ]
             },
-            "p3" : {
+            "p310" : {
               "inherited BGP peer-policy" : [
                 37
               ]
@@ -88234,6 +88347,29 @@
             }
           }
         },
+        "configs/ios_xe_bgp" : {
+          "bgp template peer-policy" : {
+            "FOO-BAR_BAZ:QUX" : {
+              "inherited BGP peer-policy" : [
+                13
+              ]
+            }
+          },
+          "bgp template peer-session" : {
+            "FOO-BAR:BAZ" : {
+              "inherited BGP peer-session" : [
+                12
+              ]
+            }
+          },
+          "route-map" : {
+            "MAP" : {
+              "bgp inbound route-map" : [
+                6
+              ]
+            }
+          }
+        },
         "configs/ios_xr_bgp" : {
           "route-policy" : {
             "ADDITIONAL_PATHS_POLICY" : {
@@ -90065,7 +90201,7 @@
                 36
               ]
             },
-            "p3" : {
+            "p310" : {
               "inherited BGP peer-policy" : [
                 37
               ]
@@ -91119,6 +91255,29 @@
             }
           }
         },
+        "configs/ios_xe_bgp" : {
+          "bgp template peer-policy" : {
+            "FOO-BAR_BAZ:QUX" : {
+              "inherited BGP peer-policy" : [
+                13
+              ]
+            }
+          },
+          "bgp template peer-session" : {
+            "FOO-BAR:BAZ" : {
+              "inherited BGP peer-session" : [
+                12
+              ]
+            }
+          },
+          "route-map" : {
+            "MAP" : {
+              "bgp inbound route-map" : [
+                6
+              ]
+            }
+          }
+        },
         "configs/ios_xr_bgp" : {
           "route-policy" : {
             "ADDITIONAL_PATHS_POLICY" : {
@@ -92104,6 +92263,14 @@
             }
           ]
         },
+        "ios_xe_bgp" : {
+          "Red flags" : [
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "No remote-as set for peer: 1.1.1.1"
+            }
+          ]
+        },
         "ios_xr_bgp_neighbor_group" : {
           "Red flags" : [
             {
@@ -92615,6 +92782,7 @@
         "configs/ios_interface_ip_tcp" : "PASSED",
         "configs/ios_standby" : "PASSED",
         "configs/ios_template" : "PASSED",
+        "configs/ios_xe_bgp" : "PASSED",
         "configs/ios_xr_acl" : "PASSED",
         "configs/ios_xr_bgp" : "PASSED",
         "configs/ios_xr_bgp_neighbor_group" : "PASSED",
