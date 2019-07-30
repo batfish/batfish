@@ -1357,6 +1357,9 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
           @Override
           public BooleanExpr visitRouteMapMatchInterface(
               RouteMapMatchInterface routeMapMatchInterface) {
+            // TODO: ignore shutdown interfaces?
+            // TODO: ignore blacklisted interfaces?
+            // TODO: HSRP addresses? Only if elected?
             return new Disjunction(
                 new MatchPrefixSet(
                     DestinationNetwork.instance(),
