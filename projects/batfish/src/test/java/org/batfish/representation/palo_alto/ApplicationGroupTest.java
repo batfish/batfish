@@ -26,6 +26,16 @@ public class ApplicationGroupTest {
   }
 
   @Test
+  public void testGetDescendantObjectsBuiltIn() {
+    ApplicationGroup ag = new ApplicationGroup("group");
+    ag.getMembers().add(ApplicationBuiltIn.FTP.getName());
+
+    assertThat(
+        ag.getDescendantObjects(ImmutableMap.of(), ImmutableMap.of(), new HashSet<>()),
+        equalTo(ImmutableSet.of(ApplicationBuiltIn.FTP.getName())));
+  }
+
+  @Test
   public void testGetDescendantObjectsCircular() {
     Map<String, ApplicationGroup> ApplicationGroups =
         ImmutableMap.of(
