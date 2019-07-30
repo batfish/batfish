@@ -150,6 +150,7 @@ import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.Vxb_learningContext;
 import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.Vxv_idContext;
 import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.Vxv_local_tunnelipContext;
 import org.batfish.representation.cumulus.BgpInterfaceNeighbor;
+import org.batfish.representation.cumulus.BgpIpNeighbor;
 import org.batfish.representation.cumulus.BgpIpv4UnicastAddressFamily;
 import org.batfish.representation.cumulus.BgpL2VpnEvpnIpv4Unicast;
 import org.batfish.representation.cumulus.BgpL2vpnEvpnAddressFamily;
@@ -778,12 +779,22 @@ public class CumulusNcluConfigurationBuilder extends CumulusNcluParserBaseListen
   public void enterBn_peer(Bn_peerContext ctx) {
     assert _currentBgpNeighborName != null;
     assert _currentBgpVrf != null;
-    // TODO: only IP neighbors should be created here.
-    //  Peer group neighbors must have already been declared.
-    _currentBgpNeighbor =
-        _currentBgpVrf
-            .getNeighbors()
-            .computeIfAbsent(_currentBgpNeighborName, BgpPeerGroupNeighbor::new);
+    // Only IP neighbors should be created here.
+    // Peer group neighbors must have already been declared.
+    Ip peerIp;
+    try {
+      peerIp = Ip.parse(_currentBgpNeighborName);
+    } catch (IllegalArgumentException e) {
+      _currentBgpNeighbor = _currentBgpVrf.getNeighbors().get(_currentBgpNeighborName);
+      return;
+    }
+    BgpIpNeighbor ipNeighbor =
+        (BgpIpNeighbor)
+            _currentBgpVrf
+                .getNeighbors()
+                .computeIfAbsent(_currentBgpNeighborName, BgpIpNeighbor::new);
+    ipNeighbor.setPeerIp(peerIp);
+    _currentBgpNeighbor = ipNeighbor;
   }
 
   @Override

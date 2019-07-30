@@ -35,6 +35,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.common.VendorConversionException;
 import org.batfish.common.util.CommonUtil;
+import org.batfish.datamodel.BgpActivePeerConfig;
 import org.batfish.datamodel.BgpPeerConfig;
 import org.batfish.datamodel.BgpUnnumberedPeerConfig;
 import org.batfish.datamodel.BumTransportMethod;
@@ -170,6 +171,72 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
       @Nullable Long localAs,
       BgpVrf bgpVrf,
       org.batfish.datamodel.BgpProcess newProc) {
+    RoutingPolicy routingPolicy = computeBgpNeighborRoutingPolicy(neighbor, bgpVrf);
+    BgpUnnumberedPeerConfig.builder()
+        .setBgpProcess(newProc)
+        .setDescription(neighbor.getDescription())
+        .setGroup(neighbor.getPeerGroup())
+        .setLocalAs(localAs)
+        .setLocalIp(BGP_UNNUMBERED_IP)
+        .setPeerInterface(neighbor.getName())
+        .setRemoteAsns(computeRemoteAsns(neighbor, localAs))
+        // Ipv4 unicast is enabled by default
+        .setIpv4UnicastAddressFamily(
+            Ipv4UnicastAddressFamily.builder()
+                .setAddressFamilyCapabilities(
+                    AddressFamilyCapabilities.builder()
+                        .setSendCommunity(true)
+                        .setSendExtendedCommunity(true)
+                        .build())
+                .setExportPolicy(routingPolicy.getName())
+                .setRouteReflectorClient(
+                    Optional.ofNullable(neighbor.getIpv4UnicastAddressFamily())
+                        .map(BgpNeighborIpv4UnicastAddressFamily::getRouteReflectorClient)
+                        .orElse(false))
+                .build())
+        .setEvpnAddressFamily(
+            toEvpnAddressFamily(neighbor, localAs, bgpVrf, newProc, routingPolicy))
+        .build();
+  }
+
+  private void addIpv4BgpNeighbor(
+      BgpIpNeighbor neighbor,
+      @Nullable Long localAs,
+      BgpVrf bgpVrf,
+      org.batfish.datamodel.BgpProcess newProc) {
+    if (neighbor.getPeerIp() == null) {
+      return;
+    }
+    RoutingPolicy routingPolicy = computeBgpNeighborRoutingPolicy(neighbor, bgpVrf);
+    BgpActivePeerConfig.builder()
+        .setBgpProcess(newProc)
+        .setDescription(neighbor.getDescription())
+        .setGroup(neighbor.getPeerGroup())
+        .setLocalAs(localAs)
+        .setLocalIp(computeLocalIpForBgpNeighbor(neighbor.getPeerIp()))
+        .setPeerAddress(neighbor.getPeerIp())
+        .setRemoteAsns(computeRemoteAsns(neighbor, localAs))
+        // Ipv4 unicast is enabled by default
+        .setIpv4UnicastAddressFamily(
+            Ipv4UnicastAddressFamily.builder()
+                .setAddressFamilyCapabilities(
+                    AddressFamilyCapabilities.builder()
+                        .setSendCommunity(true)
+                        .setSendExtendedCommunity(true)
+                        .build())
+                .setExportPolicy(routingPolicy.getName())
+                .setRouteReflectorClient(
+                    Optional.ofNullable(neighbor.getIpv4UnicastAddressFamily())
+                        .map(BgpNeighborIpv4UnicastAddressFamily::getRouteReflectorClient)
+                        .orElse(false))
+                .build())
+        .setEvpnAddressFamily(
+            toEvpnAddressFamily(neighbor, localAs, bgpVrf, newProc, routingPolicy))
+        .build();
+  }
+
+  @Nonnull
+  private RoutingPolicy computeBgpNeighborRoutingPolicy(BgpNeighbor neighbor, BgpVrf bgpVrf) {
     String vrfName = bgpVrf.getVrfName();
 
     RoutingPolicy.Builder peerExportPolicy =
@@ -191,127 +258,124 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
         .getDisjuncts()
         .add(new CallExpr(computeBgpCommonExportPolicyName(vrfName)));
 
-    RoutingPolicy routingPolicy = peerExportPolicy.build();
-    BgpUnnumberedPeerConfig.Builder builder =
-        BgpUnnumberedPeerConfig.builder()
-            .setBgpProcess(newProc)
-            .setDescription(neighbor.getDescription())
-            .setGroup(neighbor.getPeerGroup())
-            .setLocalAs(localAs)
-            .setLocalIp(BGP_UNNUMBERED_IP)
-            .setPeerInterface(neighbor.getName())
-            .setRemoteAsns(computeRemoteAsns(neighbor, localAs))
-            // Ipv4 unicast is enabled by default
-            .setIpv4UnicastAddressFamily(
-                Ipv4UnicastAddressFamily.builder()
-                    .setAddressFamilyCapabilities(
-                        AddressFamilyCapabilities.builder()
-                            .setSendCommunity(true)
-                            .setSendExtendedCommunity(true)
-                            .build())
-                    .setExportPolicy(routingPolicy.getName())
-                    .setRouteReflectorClient(
-                        Optional.ofNullable(neighbor.getIpv4UnicastAddressFamily())
-                            .map(BgpNeighborIpv4UnicastAddressFamily::getRouteReflectorClient)
-                            .orElse(false))
-                    .build());
+    return peerExportPolicy.build();
+  }
 
+  /** Scan all interfaces, find first that contains given remote IP */
+  @Nullable
+  private Ip computeLocalIpForBgpNeighbor(Ip remoteIp) {
+    // TODO: figure out if the interfaces we look at should be limited to a VRF
+    return _c.getAllInterfaces().values().stream()
+        .flatMap(
+            i ->
+                i.getAllConcreteAddresses().stream()
+                    .filter(addr -> addr.getPrefix().containsIp(remoteIp)))
+        .findFirst()
+        .map(ConcreteInterfaceAddress::getIp)
+        .orElse(null);
+  }
+
+  @Nullable
+  private EvpnAddressFamily toEvpnAddressFamily(
+      BgpNeighbor neighbor,
+      @Nullable Long localAs,
+      BgpVrf bgpVrf,
+      org.batfish.datamodel.BgpProcess newProc,
+      RoutingPolicy routingPolicy) {
     BgpL2vpnEvpnAddressFamily evpnConfig = bgpVrf.getL2VpnEvpn();
-    // sadly, we allow localAs == null in VI datamodel above
-    if (evpnConfig != null
-        && localAs != null
-        && neighbor.getL2vpnEvpnAddressFamily() != null
+    // sadly, we allow localAs == null in VI datamodel
+    if (evpnConfig == null
+        || localAs == null
+        || neighbor.getL2vpnEvpnAddressFamily() == null
         // l2vpn evpn AF must be explicitly activated for neighbor
-        && firstNonNull(neighbor.getL2vpnEvpnAddressFamily().getActivated(), Boolean.FALSE)) {
-      ImmutableSet.Builder<Layer2VniConfig> l2Vnis = ImmutableSet.builder();
-      ImmutableSet.Builder<Layer3VniConfig> l3Vnis = ImmutableSet.builder();
-      ImmutableMap.Builder<Integer, Integer> vniToIndexBuilder = ImmutableMap.builder();
-      CommonUtil.forEachWithIndex(
-          // Keep indices in deterministic order
-          ImmutableList.sortedCopyOf(
-              Comparator.nullsLast(Comparator.comparing(Vxlan::getId)), _vxlans.values()),
-          (index, vxlan) -> {
-            if (vxlan.getId() == null) {
-              return;
-            }
-            vniToIndexBuilder.put(vxlan.getId(), index);
-          });
-      Map<Integer, Integer> vniToIndex = vniToIndexBuilder.build();
-
-      if (evpnConfig.getAdvertiseAllVni()) {
-        for (VniSettings vxlan : _c.getVrfs().get(bgpVrf.getVrfName()).getVniSettings().values()) {
-          RouteDistinguisher rd =
-              RouteDistinguisher.from(newProc.getRouterId(), vniToIndex.get(vxlan.getVni()));
-          ExtendedCommunity rt = toRouteTarget(localAs, vxlan.getVni());
-          // Advertise L2 VNIs
-          l2Vnis.add(
-              Layer2VniConfig.builder()
-                  .setVni(vxlan.getVni())
-                  .setVrf(bgpVrf.getVrfName())
-                  .setRouteDistinguisher(rd)
-                  .setRouteTarget(rt)
-                  .build());
-        }
-      }
-      // Advertise the L3 VNI per vrf if one is configured
-      assert _bgpProcess != null; // Since we are in neighbor conversion, this must be true
-      // Iterate over ALL vrfs, because even if the vrf doesn't appear in bgp process config, we
-      // must be aware of the fact that it has a VNI and advertise it.
-      _vrfs
-          .values()
-          .forEach(
-              innerVrf -> {
-                String innerVrfName = innerVrf.getName();
-                Integer l3Vni = innerVrf.getVni();
-                if (l3Vni == null) {
-                  return;
-                }
-                RouteDistinguisher rd =
-                    RouteDistinguisher.from(
-                        Optional.ofNullable(_c.getVrfs().get(innerVrfName).getBgpProcess())
-                            .map(org.batfish.datamodel.BgpProcess::getRouterId)
-                            .orElse(bgpVrf.getRouterId()),
-                        vniToIndex.get(l3Vni));
-                ExtendedCommunity rt = toRouteTarget(localAs, l3Vni);
-                // Grab the BgpVrf for the innerVrf, if it exists
-                @Nullable
-                BgpVrf innerBgpVrf =
-                    (innerVrfName.equals(Configuration.DEFAULT_VRF_NAME)
-                        ? _bgpProcess.getDefaultVrf()
-                        : _bgpProcess.getVrfs().get(innerVrfName));
-                l3Vnis.add(
-                    Layer3VniConfig.builder()
-                        .setVni(l3Vni)
-                        .setVrf(innerVrfName)
-                        .setRouteDistinguisher(rd)
-                        .setRouteTarget(rt)
-                        .setImportRouteTarget(importRtPatternForAnyAs(l3Vni))
-                        .setAdvertiseV4Unicast(
-                            Optional.ofNullable(innerBgpVrf)
-                                .map(BgpVrf::getL2VpnEvpn)
-                                .map(BgpL2vpnEvpnAddressFamily::getAdvertiseIpv4Unicast)
-                                .isPresent())
-                        .build());
-              });
-
-      builder.setEvpnAddressFamily(
-          EvpnAddressFamily.builder()
-              .setL2Vnis(l2Vnis.build())
-              .setL3Vnis(l3Vnis.build())
-              .setPropagateUnmatched(true)
-              .setAddressFamilyCapabilities(
-                  AddressFamilyCapabilities.builder()
-                      .setSendCommunity(true)
-                      .setSendExtendedCommunity(true)
-                      .build())
-              .setRouteReflectorClient(
-                  firstNonNull(
-                      neighbor.getL2vpnEvpnAddressFamily().getRouteReflectorClient(),
-                      Boolean.FALSE))
-              .setExportPolicy(routingPolicy.getName())
-              .build());
+        || !firstNonNull(neighbor.getL2vpnEvpnAddressFamily().getActivated(), Boolean.FALSE)) {
+      return null;
     }
-    builder.build();
+    ImmutableSet.Builder<Layer2VniConfig> l2Vnis = ImmutableSet.builder();
+    ImmutableSet.Builder<Layer3VniConfig> l3Vnis = ImmutableSet.builder();
+    ImmutableMap.Builder<Integer, Integer> vniToIndexBuilder = ImmutableMap.builder();
+    CommonUtil.forEachWithIndex(
+        // Keep indices in deterministic order
+        ImmutableList.sortedCopyOf(
+            Comparator.nullsLast(Comparator.comparing(Vxlan::getId)), _vxlans.values()),
+        (index, vxlan) -> {
+          if (vxlan.getId() == null) {
+            return;
+          }
+          vniToIndexBuilder.put(vxlan.getId(), index);
+        });
+    Map<Integer, Integer> vniToIndex = vniToIndexBuilder.build();
+
+    if (evpnConfig.getAdvertiseAllVni()) {
+      for (VniSettings vxlan : _c.getVrfs().get(bgpVrf.getVrfName()).getVniSettings().values()) {
+        RouteDistinguisher rd =
+            RouteDistinguisher.from(newProc.getRouterId(), vniToIndex.get(vxlan.getVni()));
+        ExtendedCommunity rt = toRouteTarget(localAs, vxlan.getVni());
+        // Advertise L2 VNIs
+        l2Vnis.add(
+            Layer2VniConfig.builder()
+                .setVni(vxlan.getVni())
+                .setVrf(bgpVrf.getVrfName())
+                .setRouteDistinguisher(rd)
+                .setRouteTarget(rt)
+                .build());
+      }
+    }
+    // Advertise the L3 VNI per vrf if one is configured
+    assert _bgpProcess != null; // Since we are in neighbor conversion, this must be true
+    // Iterate over ALL vrfs, because even if the vrf doesn't appear in bgp process config, we
+    // must be aware of the fact that it has a VNI and advertise it.
+    _vrfs
+        .values()
+        .forEach(
+            innerVrf -> {
+              String innerVrfName = innerVrf.getName();
+              Integer l3Vni = innerVrf.getVni();
+              if (l3Vni == null) {
+                return;
+              }
+              RouteDistinguisher rd =
+                  RouteDistinguisher.from(
+                      Optional.ofNullable(_c.getVrfs().get(innerVrfName).getBgpProcess())
+                          .map(org.batfish.datamodel.BgpProcess::getRouterId)
+                          .orElse(bgpVrf.getRouterId()),
+                      vniToIndex.get(l3Vni));
+              ExtendedCommunity rt = toRouteTarget(localAs, l3Vni);
+              // Grab the BgpVrf for the innerVrf, if it exists
+              @Nullable
+              BgpVrf innerBgpVrf =
+                  (innerVrfName.equals(Configuration.DEFAULT_VRF_NAME)
+                      ? _bgpProcess.getDefaultVrf()
+                      : _bgpProcess.getVrfs().get(innerVrfName));
+              l3Vnis.add(
+                  Layer3VniConfig.builder()
+                      .setVni(l3Vni)
+                      .setVrf(innerVrfName)
+                      .setRouteDistinguisher(rd)
+                      .setRouteTarget(rt)
+                      .setImportRouteTarget(importRtPatternForAnyAs(l3Vni))
+                      .setAdvertiseV4Unicast(
+                          Optional.ofNullable(innerBgpVrf)
+                              .map(BgpVrf::getL2VpnEvpn)
+                              .map(BgpL2vpnEvpnAddressFamily::getAdvertiseIpv4Unicast)
+                              .isPresent())
+                      .build());
+            });
+
+    return EvpnAddressFamily.builder()
+        .setL2Vnis(l2Vnis.build())
+        .setL3Vnis(l3Vnis.build())
+        .setPropagateUnmatched(true)
+        .setAddressFamilyCapabilities(
+            AddressFamilyCapabilities.builder()
+                .setSendCommunity(true)
+                .setSendExtendedCommunity(true)
+                .build())
+        .setRouteReflectorClient(
+            firstNonNull(
+                neighbor.getL2vpnEvpnAddressFamily().getRouteReflectorClient(), Boolean.FALSE))
+        .setExportPolicy(routingPolicy.getName())
+        .build();
   }
 
   private void applyBridgeSettings(
@@ -397,8 +461,7 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
             });
   }
 
-  private @Nonnull LongSpace computeRemoteAsns(
-      BgpInterfaceNeighbor neighbor, @Nullable Long localAs) {
+  private @Nonnull LongSpace computeRemoteAsns(BgpNeighbor neighbor, @Nullable Long localAs) {
     if (neighbor.getRemoteAsType() == RemoteAsType.EXPLICIT) {
       Long remoteAs = neighbor.getRemoteAs();
       return remoteAs == null ? LongSpace.EMPTY : LongSpace.of(remoteAs);
@@ -453,20 +516,26 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
         .forEach(
             bgpVrf -> {
               Long localAs = bgpVrf.getAutonomousSystem();
+              org.batfish.datamodel.BgpProcess viBgpProcess =
+                  _c.getVrfs().get(bgpVrf.getVrfName()).getBgpProcess();
               bgpVrf
                   .getNeighbors()
                   .forEach(
                       (neighborName, neighbor) -> {
-                        if (!(neighbor instanceof BgpInterfaceNeighbor)) {
-                          return;
+                        if (neighbor instanceof BgpInterfaceNeighbor) {
+                          BgpInterfaceNeighbor interfaceNeighbor = (BgpInterfaceNeighbor) neighbor;
+                          interfaceNeighbor.inheritFrom(bgpVrf.getNeighbors());
+
+                          addInterfaceNeighbor(interfaceNeighbor, localAs, bgpVrf, viBgpProcess);
+                        } else if (neighbor instanceof BgpIpNeighbor) {
+                          BgpIpNeighbor ipNeighbor = (BgpIpNeighbor) neighbor;
+                          ipNeighbor.inheritFrom(bgpVrf.getNeighbors());
+                          addIpv4BgpNeighbor(ipNeighbor, localAs, bgpVrf, viBgpProcess);
+                        } else if (!(neighbor instanceof BgpPeerGroupNeighbor)) {
+                          throw new IllegalArgumentException(
+                              "Unsupported BGP neighbor type: "
+                                  + neighbor.getClass().getSimpleName());
                         }
-                        BgpInterfaceNeighbor interfaceNeighbor = (BgpInterfaceNeighbor) neighbor;
-                        interfaceNeighbor.inheritFrom(bgpVrf.getNeighbors());
-                        addInterfaceNeighbor(
-                            interfaceNeighbor,
-                            localAs,
-                            bgpVrf,
-                            _c.getVrfs().get(bgpVrf.getVrfName()).getBgpProcess());
                       });
             });
   }
