@@ -33701,7 +33701,7 @@
                   "class" : "org.batfish.datamodel.routing_policy.expr.MatchMetric",
                   "comparator" : "EQ",
                   "metric" : {
-                    "class" : "org.batfish.datamodel.routing_policy.expr.LiteralInt",
+                    "class" : "org.batfish.datamodel.routing_policy.expr.LiteralLong",
                     "value" : 0
                   }
                 },
