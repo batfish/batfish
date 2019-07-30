@@ -797,7 +797,6 @@ public final class PaloAltoGrammarTest {
                     accepts(service4, if1name, c)))));
   }
 
-
   @Test
   public void testRulebaseInApplicationWithPanorama() throws IOException {
     String hostname = "panorama-rulebase-applications";
@@ -825,15 +824,16 @@ public final class PaloAltoGrammarTest {
     Flow webapplication = tcpBaseBuilder.setDstPort(80).build();
     Flow sslapplication = tcpBaseBuilder.setDstPort(443).build();
     Flow snmpapplication = udpBaseBuilder.setDstPort(161).build();
-    Flow pingapplication = Flow.builder()
-                            .setIngressNode(c.getHostname())
-                            .setSrcIp(Ip.ZERO)
-                            .setDstIp(Ip.ZERO)
-                            .setIpProtocol(IpProtocol.ICMP)
-                            .setTag("test")
-                            .setIcmpType(IcmpType.ECHO_REPLY)
-                            .setIcmpCode(0)
-                            .build();
+    Flow pingapplication =
+        Flow.builder()
+            .setIngressNode(c.getHostname())
+            .setSrcIp(Ip.ZERO)
+            .setDstIp(Ip.ZERO)
+            .setIpProtocol(IpProtocol.ICMP)
+            .setTag("test")
+            .setIcmpType(IcmpType.ECHO_REPLY)
+            .setIcmpCode(0)
+            .build();
     assertThat(
         c,
         hasInterface(
@@ -843,11 +843,7 @@ public final class PaloAltoGrammarTest {
                     rejects(webapplication, if2name, c),
                     accepts(sslapplication, if2name, c),
                     accepts(snmpapplication, if2name, c),
-                    accepts(pingapplication, if2name, c)
-                )
-            )
-        )
-    );
+                    accepts(pingapplication, if2name, c)))));
   }
 
   @Test
