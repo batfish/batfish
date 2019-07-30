@@ -1,0 +1,13 @@
+!
+hostname ios_xe_bgp
+!
+router bgp 22222
+ template peer-policy FOO-BAR:BAZ
+  route-map MAP in
+  send-community both
+ exit-peer-policy
+ template peer-session FOO-BAR_BAZ:QUX
+  remote-as 65444
+ exit-peer-session
+ neighbor 1.1.1.1 inherit peer-session FOO-BAR:BAZ
+ neighbor 1.1.1.1 inherit peer-policy FOO-BAR_BAZ:QUX

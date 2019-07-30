@@ -19666,6 +19666,62 @@
           }
         }
       },
+      "ios_xe_bgp" : {
+        "configurationFormat" : "CISCO_IOS",
+        "name" : "ios_xe_bgp",
+        "defaultCrossZoneAction" : "PERMIT",
+        "defaultInboundAction" : "PERMIT",
+        "deviceType" : "ROUTER",
+        "routingPolicies" : {
+          "~BGP_COMMON_EXPORT_POLICY:default~" : {
+            "name" : "~BGP_COMMON_EXPORT_POLICY:default~",
+            "statements" : [
+              {
+                "class" : "org.batfish.datamodel.routing_policy.statement.If",
+                "guard" : {
+                  "class" : "org.batfish.datamodel.routing_policy.expr.MatchProtocol",
+                  "protocols" : [
+                    "bgp",
+                    "ibgp"
+                  ]
+                },
+                "trueStatements" : [
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                    "type" : "ReturnTrue"
+                  }
+                ]
+              },
+              {
+                "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                "type" : "ReturnFalse"
+              }
+            ]
+          }
+        },
+        "vendorFamily" : {
+          "cisco" : {
+            "hostname" : "ios_xe_bgp",
+            "logging" : {
+              "on" : true
+            }
+          }
+        },
+        "vrfs" : {
+          "default" : {
+            "name" : "default",
+            "bgpProcess" : {
+              "ebgpAdminCost" : 20,
+              "ibgpAdminCost" : 200,
+              "routerId" : "0.0.0.0",
+              "multipathEbgp" : false,
+              "multipathEquivalentAsPathMatchMode" : "EXACT_PATH",
+              "multipathIbgp" : false,
+              "tieBreaker" : "ARRIVAL_ORDER"
+            }
+          }
+        }
+      },
       "ios_xr_acl" : {
         "configurationFormat" : "CISCO_IOS",
         "name" : "ios_xr_acl",
