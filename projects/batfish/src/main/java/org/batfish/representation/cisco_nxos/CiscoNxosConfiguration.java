@@ -2,6 +2,8 @@ package org.batfish.representation.cisco_nxos;
 
 import static com.google.common.base.MoreObjects.firstNonNull;
 import static com.google.common.base.Preconditions.checkNotNull;
+import static org.batfish.datamodel.BumTransportMethod.MULTICAST_GROUP;
+import static org.batfish.datamodel.BumTransportMethod.UNICAST_FLOOD_GROUP;
 import static org.batfish.datamodel.Configuration.DEFAULT_VRF_NAME;
 import static org.batfish.datamodel.Interface.NULL_INTERFACE_NAME;
 import static org.batfish.datamodel.MultipathEquivalentAsPathMatchMode.EXACT_PATH;
@@ -54,6 +56,7 @@ import org.batfish.datamodel.BgpPassivePeerConfig;
 import org.batfish.datamodel.BgpTieBreaker;
 import org.batfish.datamodel.CommunityList;
 import org.batfish.datamodel.CommunityListLine;
+import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.EmptyIpSpace;
@@ -63,6 +66,7 @@ import org.batfish.datamodel.IntegerSpace;
 import org.batfish.datamodel.Interface.Dependency;
 import org.batfish.datamodel.Interface.DependencyType;
 import org.batfish.datamodel.InterfaceType;
+import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.OriginType;
@@ -80,6 +84,7 @@ import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.SwitchportMode;
 import org.batfish.datamodel.TcpFlags;
 import org.batfish.datamodel.TcpFlagsMatchConditions;
+import org.batfish.datamodel.VniSettings;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.acl.AclLineMatchExprs;
 import org.batfish.datamodel.bgp.community.StandardCommunity;
@@ -659,6 +664,52 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
     _c.getVrfs().put(DEFAULT_VRF_NAME, new org.batfish.datamodel.Vrf(DEFAULT_VRF_NAME));
     _c.getVrfs().put(NULL_VRF_NAME, new org.batfish.datamodel.Vrf(NULL_VRF_NAME));
     _vrfs.forEach((name, vrf) -> _c.getVrfs().put(name, toVrf(vrf)));
+  }
+
+  private void convertNves() {
+    _nves
+        .values()
+        .forEach(nve -> nve.getMemberVnis().values().forEach(vni -> convertNveVni(nve, vni)));
+  }
+
+  private void convertNveVni(@Nonnull Nve nve, @Nonnull NveVni nveVni) {
+    VniSettings vniSettings =
+        VniSettings.builder()
+            .setBumTransportIps(ImmutableSortedSet.of())
+            .setBumTransportMethod(
+                nveVni.getMcastGroup() != null ? MULTICAST_GROUP : UNICAST_FLOOD_GROUP)
+            .setSourceAddress(
+                nve.getSourceInterface() != null
+                    ? getInterfaceIp(_c.getAllInterfaces(), nve.getSourceInterface())
+                    : null)
+            .setUdpPort(VniSettings.DEFAULT_UDP_PORT)
+            .setVni(nveVni.getVni())
+            .setVlan(getVlanForVni(nveVni.getVni()))
+            .build();
+    _c.getDefaultVrf().getVniSettings().put(vniSettings.getVni(), vniSettings);
+  }
+
+  @Nullable
+  private Ip getInterfaceIp(
+      @Nonnull Map<String, org.batfish.datamodel.Interface> interfaces, @Nonnull String ifaceName) {
+    org.batfish.datamodel.Interface iface = interfaces.get(ifaceName);
+    if (iface == null) {
+      return null;
+    }
+    ConcreteInterfaceAddress concreteInterfaceAddress = iface.getConcreteAddress();
+    if (concreteInterfaceAddress == null) {
+      return null;
+    }
+    return concreteInterfaceAddress.getIp();
+  }
+
+  @Nullable
+  private Integer getVlanForVni(@Nonnull Integer vni) {
+    return _vlans.values().stream()
+        .filter(vlan -> vni.equals(vlan.getVni()))
+        .findFirst()
+        .map(Vlan::getId)
+        .orElse(null);
   }
 
   private @Nonnull CiscoNxosFamily createCiscoNxosFamily() {
@@ -1329,6 +1380,7 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
     convertIpPrefixLists();
     convertIpCommunityLists();
     convertBgp();
+    convertNves();
 
     markStructures();
     return _c;

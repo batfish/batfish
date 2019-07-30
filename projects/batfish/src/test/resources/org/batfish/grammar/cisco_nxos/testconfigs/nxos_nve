@@ -6,6 +6,16 @@ hostname nxos_nve
 feature vn-segment-vlan-based
 feature nv overlay
 !
+vlan 2
+  name Name-Of-Vlan-2
+  vn-segment 10001
+!
+vlan 3
+  name Name-Of-Vlan-3
+  vn-segment 40001
+!
+interface loopback4
+  ip address 1.1.1.1/32
 !
 interface nve1-2
   no shutdown
