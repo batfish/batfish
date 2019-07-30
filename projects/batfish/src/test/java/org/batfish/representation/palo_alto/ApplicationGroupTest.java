@@ -37,7 +37,7 @@ public class ApplicationGroupTest {
 
   @Test
   public void testGetDescendantObjectsCircular() {
-    Map<String, ApplicationGroup> ApplicationGroups =
+    Map<String, ApplicationGroup> applicationGroups =
         ImmutableMap.of(
             "parentGroup",
             new ApplicationGroup("parentGroup"),
@@ -45,21 +45,23 @@ public class ApplicationGroupTest {
             new ApplicationGroup("childGroup"),
             "grandchildGroup",
             new ApplicationGroup("grandchildGroup"));
-    Map<String, Application> Applications =
+    Map<String, Application> applications =
         ImmutableMap.of(
             "a1", Application.builder("a1").build(), "a2", Application.builder("a2").build());
 
     // parent -> child -> {parent, grandChild}
     // grandChild -> {child, ad1}
-    ApplicationGroups.get("parentGroup").getMembers().add("childGroup");
-    ApplicationGroups.get("childGroup").getMembers().add("grandchildGroup");
-    ApplicationGroups.get("grandchildGroup")
+    applicationGroups.get("parentGroup").getMembers().add("childGroup");
+    applicationGroups.get("childGroup").getMembers().add("grandchildGroup");
+    applicationGroups
+        .get("grandchildGroup")
         .getMembers()
         .addAll(ImmutableSet.of("childGroup", "a1"));
 
     assertThat(
-        ApplicationGroups.get("parentGroup")
-            .getDescendantObjects(Applications, ApplicationGroups, new HashSet<>()),
+        applicationGroups
+            .get("parentGroup")
+            .getDescendantObjects(applications, applicationGroups, new HashSet<>()),
         equalTo(ImmutableSet.of("a1")));
   }
 
@@ -73,22 +75,23 @@ public class ApplicationGroupTest {
 
   @Test
   public void testGetDescendantObjectsIndirect() {
-    Map<String, ApplicationGroup> ApplicationGroups =
+    Map<String, ApplicationGroup> applicationGroups =
         ImmutableMap.of(
             "parentGroup",
             new ApplicationGroup("parentGroup"),
             "childGroup",
             new ApplicationGroup("childGroup"));
-    Map<String, Application> Applications =
+    Map<String, Application> applications =
         ImmutableMap.of(
             "a1", Application.builder("a1").build(), "a2", Application.builder("a2").build());
 
-    ApplicationGroups.get("parentGroup").getMembers().add("childGroup");
-    ApplicationGroups.get("childGroup").getMembers().add("a1");
+    applicationGroups.get("parentGroup").getMembers().add("childGroup");
+    applicationGroups.get("childGroup").getMembers().add("a1");
 
     assertThat(
-        ApplicationGroups.get("parentGroup")
-            .getDescendantObjects(Applications, ApplicationGroups, new HashSet<>()),
+        applicationGroups
+            .get("parentGroup")
+            .getDescendantObjects(applications, applicationGroups, new HashSet<>()),
         equalTo(ImmutableSet.of("a1")));
   }
 }
