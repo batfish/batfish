@@ -112,9 +112,11 @@ ip access-list acl_common_ip_options_ttl
 
 !!! ICMP options
 ip access-list acl_icmp
-  ! match ICMP type 0-255
+  ! match ICMP type 0
+  ! type can be 0-255
   permit icmp any any 0
-  ! match ICMP type and code (each 0-255)
+  ! match ICMP type 1 and and code 2
+  ! code can be 0-255
   permit icmp any any 1 2
   ! remaining matches are for combo of code+type
   permit icmp any any administratively-prohibited
@@ -241,8 +243,8 @@ ip access-list acl_tcp_http_method
 ip access-list acl_tcp_flags
   !!! Match TCP flags
   permit tcp any any ack
-  ! No explicit CWR matching outside of tcp-flags-mask
-  ! No explicit ECE matching outside of tcp-flags-mask
+  ! NX-OS does not support CWR matching
+  ! NX-OS does not support ECE matching
   permit tcp any any fin
   permit tcp any any psh
   permit tcp any any rst
@@ -250,8 +252,9 @@ ip access-list acl_tcp_flags
   permit tcp any any urg
 
 ip access-list acl_tcp_flags_mask
-  ! 0-63
-  permit tcp any any tcp-flags-mask 50
+  ! only care about ack(16), where 47 = 63-16 (zero only in ack bit)
+  ! mask can be 0-63
+  permit tcp any any ack tcp-flags-mask 47
 
 ip access-list acl_tcp_option_length
   !!! Match TCP options
@@ -315,3 +318,12 @@ ip access-list acl_udp_vxlan
   !!! Match VXLAN
   ! 0-16777215
   permit udp any any nve vni 10000
+
+ip access-list acl_l4_fragments_semantics
+  permit icmp host 192.0.2.1 any 0
+  deny icmp host 192.0.2.1 any 1
+  permit 2 host 192.0.2.1 any
+  deny 3 host 192.0.2.1 any
+  permit 4 host 192.0.2.1 any fragments
+  deny 5 host 192.0.2.1 any fragments
+  

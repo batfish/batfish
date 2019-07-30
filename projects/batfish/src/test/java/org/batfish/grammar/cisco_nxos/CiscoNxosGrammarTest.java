@@ -7,6 +7,17 @@ import static org.batfish.datamodel.Configuration.DEFAULT_VRF_NAME;
 import static org.batfish.datamodel.Interface.NULL_INTERFACE_NAME;
 import static org.batfish.datamodel.IpWildcard.ipWithWildcardMask;
 import static org.batfish.datamodel.Route.UNSET_NEXT_HOP_INTERFACE;
+import static org.batfish.datamodel.acl.AclLineMatchExprs.matchDscp;
+import static org.batfish.datamodel.acl.AclLineMatchExprs.matchDst;
+import static org.batfish.datamodel.acl.AclLineMatchExprs.matchDstPort;
+import static org.batfish.datamodel.acl.AclLineMatchExprs.matchFragmentOffset;
+import static org.batfish.datamodel.acl.AclLineMatchExprs.matchIcmp;
+import static org.batfish.datamodel.acl.AclLineMatchExprs.matchIcmpType;
+import static org.batfish.datamodel.acl.AclLineMatchExprs.matchIpProtocol;
+import static org.batfish.datamodel.acl.AclLineMatchExprs.matchPacketLength;
+import static org.batfish.datamodel.acl.AclLineMatchExprs.matchSrc;
+import static org.batfish.datamodel.acl.AclLineMatchExprs.matchSrcPort;
+import static org.batfish.datamodel.acl.AclLineMatchExprs.matchTcpFlags;
 import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasAdministrativeCost;
 import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasNextHopInterface;
 import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasNextHopIp;
@@ -41,6 +52,9 @@ import static org.batfish.datamodel.matchers.InterfaceMatchers.isAutoState;
 import static org.batfish.datamodel.matchers.MapMatchers.hasKeys;
 import static org.batfish.datamodel.matchers.StaticRouteMatchers.hasTag;
 import static org.batfish.grammar.cisco_nxos.CiscoNxosCombinedParser.DEBUG_FLAG_USE_NEW_CISCO_NXOS_PARSER;
+import static org.batfish.grammar.cisco_nxos.CiscoNxosControlPlaneExtractor.PACKET_LENGTH_RANGE;
+import static org.batfish.grammar.cisco_nxos.CiscoNxosControlPlaneExtractor.TCP_PORT_RANGE;
+import static org.batfish.grammar.cisco_nxos.CiscoNxosControlPlaneExtractor.UDP_PORT_RANGE;
 import static org.batfish.main.BatfishTestUtils.configureBatfishTestSettings;
 import static org.batfish.representation.cisco_nxos.CiscoNxosConfiguration.NULL_VRF_NAME;
 import static org.batfish.representation.cisco_nxos.CiscoNxosConfiguration.toJavaRegex;
@@ -85,20 +99,28 @@ import java.util.Map;
 import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 import javax.annotation.ParametersAreNonnullByDefault;
+import net.sf.javabdd.BDD;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.apache.commons.lang3.SerializationUtils;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.Warnings;
 import org.batfish.common.WellKnownCommunity;
 import org.batfish.common.bdd.BDDPacket;
+import org.batfish.common.bdd.BDDSourceManager;
+import org.batfish.common.bdd.HeaderSpaceToBDD;
+import org.batfish.common.bdd.IpAccessListToBdd;
+import org.batfish.common.bdd.IpAccessListToBddImpl;
 import org.batfish.common.bdd.IpSpaceToBDD;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.config.Settings;
 import org.batfish.datamodel.AsPathAccessList;
 import org.batfish.datamodel.AsPathAccessListLine;
+import org.batfish.datamodel.CommunityList;
+import org.batfish.datamodel.CommunityListLine;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.DscpType;
+import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.IcmpCode;
 import org.batfish.datamodel.IcmpType;
 import org.batfish.datamodel.IntegerSpace;
@@ -117,13 +139,17 @@ import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.SwitchportMode;
 import org.batfish.datamodel.TcpFlags;
+import org.batfish.datamodel.TcpFlagsMatchConditions;
 import org.batfish.datamodel.UniverseIpSpace;
+import org.batfish.datamodel.acl.AclLineMatchExpr;
+import org.batfish.datamodel.acl.AclLineMatchExprs;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
 import org.batfish.datamodel.bgp.RouteDistinguisher;
 import org.batfish.datamodel.bgp.community.StandardCommunity;
 import org.batfish.datamodel.matchers.HsrpGroupMatchers;
 import org.batfish.datamodel.matchers.RouteFilterListMatchers;
 import org.batfish.datamodel.matchers.VrfMatchers;
+import org.batfish.datamodel.routing_policy.expr.LiteralCommunityConjunction;
 import org.batfish.datamodel.tracking.DecrementPriority;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
@@ -211,7 +237,9 @@ import org.junit.rules.TemporaryFolder;
 @ParametersAreNonnullByDefault
 public final class CiscoNxosGrammarTest {
 
+  private static final IpAccessListToBdd ACL_TO_BDD;
   private static final IpSpaceToBDD DST_IP_BDD;
+  private static final HeaderSpaceToBDD HS_TO_BDD;
   private static final BDDPacket PKT;
   private static final IpSpaceToBDD SRC_IP_BDD;
 
@@ -221,9 +249,48 @@ public final class CiscoNxosGrammarTest {
     PKT = new BDDPacket();
     DST_IP_BDD = PKT.getDstIpSpaceToBDD();
     SRC_IP_BDD = PKT.getSrcIpSpaceToBDD();
+    HS_TO_BDD = new HeaderSpaceToBDD(PKT, ImmutableMap.of());
+    ACL_TO_BDD =
+        new IpAccessListToBddImpl(PKT, BDDSourceManager.empty(PKT), HS_TO_BDD, ImmutableMap.of());
   }
 
   @Rule public TemporaryFolder _folder = new TemporaryFolder();
+
+  private static @Nonnull BDD toBDD(AclLineMatchExpr aclLineMatchExpr) {
+    return ACL_TO_BDD.toBdd(aclLineMatchExpr);
+  }
+
+  private static @Nonnull BDD toBDD(HeaderSpace headerSpace) {
+    return HS_TO_BDD.toBDD(headerSpace);
+  }
+
+  private static @Nonnull BDD toIcmpIfBDD(AclLineMatchExpr aclLineMatchExpr) {
+    return toIfBDD(
+        AclLineMatchExprs.and(
+            matchFragmentOffset(0), matchIpProtocol(IpProtocol.ICMP), aclLineMatchExpr));
+  }
+
+  private static @Nonnull BDD toIfBDD(AclLineMatchExpr aclLineMatchExpr) {
+    return toBDD(AclLineMatchExprs.and(matchFragmentOffset(0), aclLineMatchExpr));
+  }
+
+  private static @Nonnull BDD toNonIfBDD(AclLineMatchExpr aclLineMatchExpr) {
+    return toBDD(
+        AclLineMatchExprs.and(
+            matchFragmentOffset(IntegerSpace.of(Range.closed(1, 8191))), aclLineMatchExpr));
+  }
+
+  private static @Nonnull BDD toTcpIfBDD(AclLineMatchExpr aclLineMatchExpr) {
+    return toIfBDD(
+        AclLineMatchExprs.and(
+            matchFragmentOffset(0), matchIpProtocol(IpProtocol.TCP), aclLineMatchExpr));
+  }
+
+  private static @Nonnull BDD toUdpIfBDD(AclLineMatchExpr aclLineMatchExpr) {
+    return toIfBDD(
+        AclLineMatchExprs.and(
+            matchFragmentOffset(0), matchIpProtocol(IpProtocol.UDP), aclLineMatchExpr));
+  }
 
   private @Nonnull Batfish getBatfishForConfigurationNames(String... configurationNames)
       throws IOException {
@@ -945,6 +1012,496 @@ public final class CiscoNxosGrammarTest {
   }
 
   @Test
+  public void testIpAccessListConversion() throws IOException {
+    String hostname = "nxos_ip_access_list";
+    Configuration c = parseConfig(hostname);
+
+    assertThat(
+        c.getIpAccessLists(),
+        hasKeys(
+            "acl_global_options",
+            "acl_indices",
+            "acl_simple_protocols",
+            "acl_common_ip_options_destination_ip",
+            "acl_common_ip_options_source_ip",
+            "acl_common_ip_options_dscp",
+            "acl_common_ip_options_packet_length",
+            "acl_common_ip_options_precedence",
+            "acl_common_ip_options_ttl",
+            "acl_common_ip_options_log",
+            "acl_icmp",
+            "acl_igmp",
+            "acl_tcp_flags",
+            "acl_tcp_flags_mask",
+            "acl_tcp_destination_ports",
+            "acl_tcp_destination_ports_named",
+            "acl_tcp_source_ports",
+            "acl_tcp_http_method",
+            "acl_tcp_option_length",
+            "acl_tcp_established",
+            "acl_udp_destination_ports",
+            "acl_udp_destination_ports_named",
+            "acl_udp_source_ports",
+            "acl_udp_vxlan",
+            "acl_l4_fragments_semantics"));
+    {
+      org.batfish.datamodel.IpAccessList acl = c.getIpAccessLists().get("acl_global_options");
+      assertThat(acl.getLines(), empty());
+    }
+    {
+      org.batfish.datamodel.IpAccessList acl = c.getIpAccessLists().get("acl_indices");
+      assertThat(
+          acl.getLines().stream()
+              .map(line -> toBDD(line.getMatchCondition()))
+              .collect(ImmutableList.toImmutableList()),
+          contains(
+              toBDD(matchIpProtocol(1)),
+              toBDD(matchIpProtocol(4)),
+              toBDD(matchIpProtocol(2)),
+              toBDD(matchIpProtocol(3))));
+    }
+    {
+      org.batfish.datamodel.IpAccessList acl = c.getIpAccessLists().get("acl_simple_protocols");
+      assertThat(
+          acl.getLines().stream()
+              .map(line -> toBDD(line.getMatchCondition()))
+              .collect(ImmutableList.toImmutableList()),
+          contains(
+              toBDD(matchIpProtocol(IpProtocol.AHP)),
+              toBDD(matchIpProtocol(IpProtocol.EIGRP)),
+              toBDD(matchIpProtocol(IpProtocol.ESP)),
+              toBDD(matchIpProtocol(IpProtocol.GRE)),
+              toBDD(AclLineMatchExprs.TRUE),
+              toBDD(matchIpProtocol(IpProtocol.IPIP)),
+              toBDD(matchIpProtocol(IpProtocol.OSPF)),
+              toBDD(matchIpProtocol(IpProtocol.IPCOMP)),
+              toBDD(matchIpProtocol(IpProtocol.PIM)),
+              toBDD(matchIpProtocol(1))));
+    }
+    {
+      org.batfish.datamodel.IpAccessList acl =
+          c.getIpAccessLists().get("acl_common_ip_options_destination_ip");
+      assertThat(
+          acl.getLines().stream()
+              .map(line -> toBDD(line.getMatchCondition()))
+              .collect(ImmutableList.toImmutableList()),
+          contains(
+              toBDD(matchDst(ipWithWildcardMask(Ip.parse("10.0.0.0"), Ip.parse("0.0.0.255")))),
+              toBDD(matchDst(Prefix.parse("10.0.1.0/24"))),
+              toBDD(AclLineMatchExprs.FALSE), // TODO: support addr-group
+              toBDD(matchDst(Ip.parse("10.0.2.2"))),
+              toBDD(AclLineMatchExprs.TRUE)));
+    }
+    {
+      org.batfish.datamodel.IpAccessList acl =
+          c.getIpAccessLists().get("acl_common_ip_options_source_ip");
+      assertThat(
+          acl.getLines().stream()
+              .map(line -> toBDD(line.getMatchCondition()))
+              .collect(ImmutableList.toImmutableList()),
+          contains(
+              toBDD(matchSrc(ipWithWildcardMask(Ip.parse("10.0.0.0"), Ip.parse("0.0.0.255")))),
+              toBDD(matchSrc(Prefix.parse("10.0.1.0/24"))),
+              toBDD(AclLineMatchExprs.FALSE), // TODO: support addr-group
+              toBDD(matchSrc(Ip.parse("10.0.2.2"))),
+              toBDD(AclLineMatchExprs.TRUE)));
+    }
+    {
+      org.batfish.datamodel.IpAccessList acl =
+          c.getIpAccessLists().get("acl_common_ip_options_dscp");
+      assertThat(
+          acl.getLines().stream()
+              .map(line -> toBDD(line.getMatchCondition()))
+              .collect(ImmutableList.toImmutableList()),
+          contains(
+              toBDD(matchDscp(1)),
+              toBDD(matchDscp(DscpType.AF11)),
+              toBDD(matchDscp(DscpType.AF12)),
+              toBDD(matchDscp(DscpType.AF13)),
+              toBDD(matchDscp(DscpType.AF21)),
+              toBDD(matchDscp(DscpType.AF22)),
+              toBDD(matchDscp(DscpType.AF23)),
+              toBDD(matchDscp(DscpType.AF31)),
+              toBDD(matchDscp(DscpType.AF32)),
+              toBDD(matchDscp(DscpType.AF33)),
+              toBDD(matchDscp(DscpType.AF41)),
+              toBDD(matchDscp(DscpType.AF42)),
+              toBDD(matchDscp(DscpType.AF43)),
+              toBDD(matchDscp(DscpType.CS1)),
+              toBDD(matchDscp(DscpType.CS2)),
+              toBDD(matchDscp(DscpType.CS3)),
+              toBDD(matchDscp(DscpType.CS4)),
+              toBDD(matchDscp(DscpType.CS5)),
+              toBDD(matchDscp(DscpType.CS6)),
+              toBDD(matchDscp(DscpType.CS7)),
+              toBDD(matchDscp(DscpType.DEFAULT)),
+              toBDD(matchDscp(DscpType.EF))));
+    }
+    // ignore 'log' option
+    {
+      org.batfish.datamodel.IpAccessList acl =
+          c.getIpAccessLists().get("acl_common_ip_options_packet_length");
+      assertThat(
+          acl.getLines().stream()
+              .map(line -> toBDD(line.getMatchCondition()))
+              .collect(ImmutableList.toImmutableList()),
+          contains(
+              toBDD(matchPacketLength(100)),
+              toBDD(matchPacketLength(IntegerSpace.of(Range.closed(0, 199)))),
+              toBDD(
+                  matchPacketLength(
+                      IntegerSpace.of(Range.closed(300, Integer.MAX_VALUE))
+                          .intersection(PACKET_LENGTH_RANGE))),
+              toBDD(matchPacketLength(PACKET_LENGTH_RANGE.difference(IntegerSpace.of(400)))),
+              toBDD(matchPacketLength(IntegerSpace.of(Range.closed(500, 600))))));
+    }
+    // TODO: support precedence matching
+    // TODO: support TTL matching
+    {
+      org.batfish.datamodel.IpAccessList acl = c.getIpAccessLists().get("acl_icmp");
+      // check behavior for initial fragments only
+      assertThat(
+          acl.getLines().stream()
+              .map(line -> toIfBDD(line.getMatchCondition()))
+              .collect(ImmutableList.toImmutableList()),
+          contains(
+              toIcmpIfBDD(matchIcmpType(0)),
+              toIcmpIfBDD(matchIcmp(1, 2)),
+              toIcmpIfBDD(
+                  matchIcmp(
+                      IcmpType.DESTINATION_UNREACHABLE,
+                      IcmpCode.COMMUNICATION_ADMINISTRATIVELY_PROHIBITED)),
+              toIcmpIfBDD(matchIcmpType(IcmpType.ALTERNATE_ADDRESS)),
+              toIcmpIfBDD(matchIcmpType(IcmpType.CONVERSION_ERROR)),
+              toIcmpIfBDD(
+                  matchIcmp(
+                      IcmpType.DESTINATION_UNREACHABLE, IcmpCode.DESTINATION_HOST_PROHIBITED)),
+              toIcmpIfBDD(
+                  matchIcmp(
+                      IcmpType.DESTINATION_UNREACHABLE, IcmpCode.DESTINATION_NETWORK_PROHIBITED)),
+              toIcmpIfBDD(matchIcmpType(IcmpType.ECHO_REQUEST)),
+              toIcmpIfBDD(matchIcmpType(IcmpType.ECHO_REPLY)),
+              toIcmpIfBDD(matchIcmpType(IcmpType.PARAMETER_PROBLEM)),
+              toIcmpIfBDD(
+                  matchIcmp(IcmpType.DESTINATION_UNREACHABLE, IcmpCode.SOURCE_HOST_ISOLATED)),
+              toIcmpIfBDD(
+                  matchIcmp(IcmpType.DESTINATION_UNREACHABLE, IcmpCode.HOST_PRECEDENCE_VIOLATION)),
+              toIcmpIfBDD(matchIcmp(IcmpType.REDIRECT_MESSAGE, IcmpCode.HOST_ERROR)),
+              toIcmpIfBDD(matchIcmp(IcmpType.REDIRECT_MESSAGE, IcmpCode.TOS_AND_HOST_ERROR)),
+              toIcmpIfBDD(
+                  matchIcmp(IcmpType.DESTINATION_UNREACHABLE, IcmpCode.HOST_UNREACHABLE_FOR_TOS)),
+              toIcmpIfBDD(
+                  matchIcmp(IcmpType.DESTINATION_UNREACHABLE, IcmpCode.DESTINATION_HOST_UNKNOWN)),
+              toIcmpIfBDD(matchIcmp(IcmpType.DESTINATION_UNREACHABLE, IcmpCode.HOST_UNREACHABLE)),
+              toIcmpIfBDD(matchIcmpType(IcmpType.INFO_REPLY)),
+              toIcmpIfBDD(matchIcmpType(IcmpType.INFO_REQUEST)),
+              toIcmpIfBDD(matchIcmpType(IcmpType.MASK_REPLY)),
+              toIcmpIfBDD(matchIcmpType(IcmpType.MASK_REQUEST)),
+              toIcmpIfBDD(matchIcmpType(IcmpType.MOBILE_REDIRECT)),
+              toIcmpIfBDD(matchIcmp(IcmpType.REDIRECT_MESSAGE, IcmpCode.NETWORK_ERROR)),
+              toIcmpIfBDD(matchIcmp(IcmpType.REDIRECT_MESSAGE, IcmpCode.TOS_AND_NETWORK_ERROR)),
+              toIcmpIfBDD(
+                  matchIcmp(
+                      IcmpType.DESTINATION_UNREACHABLE, IcmpCode.NETWORK_UNREACHABLE_FOR_TOS)),
+              toIcmpIfBDD(
+                  matchIcmp(IcmpType.DESTINATION_UNREACHABLE, IcmpCode.NETWORK_UNREACHABLE)),
+              toIcmpIfBDD(
+                  matchIcmp(
+                      IcmpType.DESTINATION_UNREACHABLE, IcmpCode.DESTINATION_NETWORK_UNKNOWN)),
+              toIcmpIfBDD(matchIcmp(IcmpType.PARAMETER_PROBLEM, IcmpCode.BAD_LENGTH)),
+              toIcmpIfBDD(matchIcmp(IcmpType.PARAMETER_PROBLEM, IcmpCode.REQUIRED_OPTION_MISSING)),
+              toIcmpIfBDD(
+                  matchIcmp(IcmpType.DESTINATION_UNREACHABLE, IcmpCode.FRAGMENTATION_NEEDED)),
+              toIcmpIfBDD(matchIcmp(IcmpType.PARAMETER_PROBLEM, IcmpCode.INVALID_IP_HEADER)),
+              toIcmpIfBDD(matchIcmp(IcmpType.DESTINATION_UNREACHABLE, IcmpCode.PORT_UNREACHABLE)),
+              toIcmpIfBDD(
+                  matchIcmp(
+                      IcmpType.DESTINATION_UNREACHABLE, IcmpCode.PRECEDENCE_CUTOFF_IN_EFFECT)),
+              toIcmpIfBDD(
+                  matchIcmp(IcmpType.DESTINATION_UNREACHABLE, IcmpCode.PROTOCOL_UNREACHABLE)),
+              toIcmpIfBDD(
+                  matchIcmp(
+                      IcmpType.TIME_EXCEEDED, IcmpCode.TIME_EXCEEDED_DURING_FRAGMENT_REASSEMBLY)),
+              toIcmpIfBDD(matchIcmpType(IcmpType.REDIRECT_MESSAGE)),
+              toIcmpIfBDD(matchIcmpType(IcmpType.ROUTER_ADVERTISEMENT)),
+              toIcmpIfBDD(matchIcmpType(IcmpType.ROUTER_SOLICITATION)),
+              toIcmpIfBDD(matchIcmpType(IcmpType.SOURCE_QUENCH)),
+              toIcmpIfBDD(
+                  matchIcmp(IcmpType.DESTINATION_UNREACHABLE, IcmpCode.SOURCE_ROUTE_FAILED)),
+              toIcmpIfBDD(matchIcmpType(IcmpType.TIME_EXCEEDED)),
+              toIcmpIfBDD(matchIcmpType(IcmpType.TIMESTAMP_REPLY)),
+              toIcmpIfBDD(matchIcmpType(IcmpType.TIMESTAMP_REQUEST)),
+              toIcmpIfBDD(matchIcmpType(IcmpType.TRACEROUTE)),
+              toIcmpIfBDD(matchIcmp(IcmpType.TIME_EXCEEDED, IcmpCode.TTL_EQ_ZERO_DURING_TRANSIT)),
+              toIcmpIfBDD(matchIcmpType(IcmpType.DESTINATION_UNREACHABLE))));
+    }
+    // TODO: support IGMP option matching
+    {
+      org.batfish.datamodel.IpAccessList acl =
+          c.getIpAccessLists().get("acl_tcp_destination_ports");
+      // check behavior for initial fragments only
+      assertThat(
+          acl.getLines().stream()
+              .map(line -> toIfBDD(line.getMatchCondition()))
+              .collect(ImmutableList.toImmutableList()),
+          contains(
+              toTcpIfBDD(matchDstPort(1)),
+              toTcpIfBDD(
+                  matchDstPort(
+                      TCP_PORT_RANGE.intersection(
+                          IntegerSpace.of(Range.closed(6, Integer.MAX_VALUE))))),
+              toTcpIfBDD(matchDstPort(IntegerSpace.of(Range.closed(0, 9)))),
+              toTcpIfBDD(matchDstPort(TCP_PORT_RANGE.difference(IntegerSpace.of(15)))),
+              toTcpIfBDD(AclLineMatchExprs.FALSE), // TODO: support portgroup
+              toTcpIfBDD(matchDstPort(IntegerSpace.of(Range.closed(20, 25))))));
+    }
+    {
+      org.batfish.datamodel.IpAccessList acl =
+          c.getIpAccessLists().get("acl_tcp_destination_ports_named");
+      // check behavior for initial fragments only
+      assertThat(
+          acl.getLines().stream()
+              .map(line -> toIfBDD(line.getMatchCondition()))
+              .collect(ImmutableList.toImmutableList()),
+          contains(
+              toTcpIfBDD(matchDstPort(NamedPort.BGP.number())),
+              toTcpIfBDD(matchDstPort(NamedPort.CHARGEN.number())),
+              toTcpIfBDD(matchDstPort(NamedPort.CMDtcp_OR_SYSLOGudp.number())),
+              toTcpIfBDD(matchDstPort(NamedPort.DAYTIME.number())),
+              toTcpIfBDD(matchDstPort(NamedPort.DISCARD.number())),
+              toTcpIfBDD(matchDstPort(NamedPort.DOMAIN.number())),
+              toTcpIfBDD(matchDstPort(NamedPort.DRIP.number())),
+              toTcpIfBDD(matchDstPort(NamedPort.ECHO.number())),
+              toTcpIfBDD(matchDstPort(NamedPort.BIFFudp_OR_EXECtcp.number())),
+              toTcpIfBDD(matchDstPort(NamedPort.FINGER.number())),
+              toTcpIfBDD(matchDstPort(NamedPort.FTP.number())),
+              toTcpIfBDD(matchDstPort(NamedPort.FTP_DATA.number())),
+              toTcpIfBDD(matchDstPort(NamedPort.GOPHER.number())),
+              toTcpIfBDD(matchDstPort(NamedPort.HOSTNAME.number())),
+              toTcpIfBDD(matchDstPort(NamedPort.IDENT.number())),
+              toTcpIfBDD(matchDstPort(NamedPort.IRC.number())),
+              toTcpIfBDD(matchDstPort(NamedPort.KLOGIN.number())),
+              toTcpIfBDD(matchDstPort(NamedPort.KSHELL.number())),
+              toTcpIfBDD(matchDstPort(NamedPort.LOGINtcp_OR_WHOudp.number())),
+              toTcpIfBDD(matchDstPort(NamedPort.LPD.number())),
+              toTcpIfBDD(matchDstPort(NamedPort.NNTP.number())),
+              toTcpIfBDD(matchDstPort(NamedPort.PIM_AUTO_RP.number())),
+              toTcpIfBDD(matchDstPort(NamedPort.POP2.number())),
+              toTcpIfBDD(matchDstPort(NamedPort.POP3.number())),
+              toTcpIfBDD(matchDstPort(NamedPort.SMTP.number())),
+              toTcpIfBDD(matchDstPort(NamedPort.SUNRPC.number())),
+              toTcpIfBDD(matchDstPort(NamedPort.TACACS.number())),
+              toTcpIfBDD(matchDstPort(NamedPort.TALK.number())),
+              toTcpIfBDD(matchDstPort(NamedPort.TELNET.number())),
+              toTcpIfBDD(matchDstPort(NamedPort.TIME.number())),
+              toTcpIfBDD(matchDstPort(NamedPort.UUCP.number())),
+              toTcpIfBDD(matchDstPort(NamedPort.WHOIS.number())),
+              toTcpIfBDD(matchDstPort(NamedPort.HTTP.number()))));
+    }
+    {
+      org.batfish.datamodel.IpAccessList acl = c.getIpAccessLists().get("acl_tcp_source_ports");
+      // check behavior for initial fragments only
+      assertThat(
+          acl.getLines().stream()
+              .map(line -> toIfBDD(line.getMatchCondition()))
+              .collect(ImmutableList.toImmutableList()),
+          contains(
+              toTcpIfBDD(matchSrcPort(1)),
+              toTcpIfBDD(
+                  matchSrcPort(
+                      TCP_PORT_RANGE.intersection(
+                          IntegerSpace.of(Range.closed(6, Integer.MAX_VALUE))))),
+              toTcpIfBDD(matchSrcPort(IntegerSpace.of(Range.closed(0, 9)))),
+              toTcpIfBDD(matchSrcPort(TCP_PORT_RANGE.difference(IntegerSpace.of(15)))),
+              toTcpIfBDD(AclLineMatchExprs.FALSE), // TODO: support portgroup
+              toTcpIfBDD(matchSrcPort(IntegerSpace.of(Range.closed(20, 25))))));
+    }
+    // TODO: support HTTP method matching
+    {
+      org.batfish.datamodel.IpAccessList acl = c.getIpAccessLists().get("acl_tcp_flags");
+      TcpFlagsMatchConditions.Builder conditions =
+          TcpFlagsMatchConditions.builder()
+              .setUseAck(true)
+              .setUseCwr(false)
+              .setUseEce(false)
+              .setUseFin(true)
+              .setUsePsh(true)
+              .setUseRst(true)
+              .setUseSyn(true)
+              .setUseUrg(true);
+      // check behavior for initial fragments only
+      assertThat(
+          acl.getLines().stream()
+              .map(line -> toIfBDD(line.getMatchCondition()))
+              .collect(ImmutableList.toImmutableList()),
+          contains(
+              toTcpIfBDD(
+                  matchTcpFlags(
+                      conditions.setTcpFlags(TcpFlags.builder().setAck(true).build()).build())),
+              toTcpIfBDD(
+                  matchTcpFlags(
+                      conditions.setTcpFlags(TcpFlags.builder().setFin(true).build()).build())),
+              toTcpIfBDD(
+                  matchTcpFlags(
+                      conditions.setTcpFlags(TcpFlags.builder().setPsh(true).build()).build())),
+              toTcpIfBDD(
+                  matchTcpFlags(
+                      conditions.setTcpFlags(TcpFlags.builder().setRst(true).build()).build())),
+              toTcpIfBDD(
+                  matchTcpFlags(
+                      conditions.setTcpFlags(TcpFlags.builder().setSyn(true).build()).build())),
+              toTcpIfBDD(
+                  matchTcpFlags(
+                      conditions.setTcpFlags(TcpFlags.builder().setUrg(true).build()).build()))));
+    }
+    {
+      org.batfish.datamodel.IpAccessList acl = c.getIpAccessLists().get("acl_tcp_flags_mask");
+      // check behavior for initial fragments only
+      assertThat(
+          acl.getLines().stream()
+              .map(line -> toIfBDD(line.getMatchCondition()))
+              .collect(ImmutableList.toImmutableList()),
+          contains(
+              toTcpIfBDD(
+                  matchTcpFlags(
+                      TcpFlagsMatchConditions.builder()
+                          .setUseAck(true)
+                          .setTcpFlags(TcpFlags.builder().setAck(true).build())
+                          .build()))));
+    }
+    // TODO: support tcp option length
+    {
+      org.batfish.datamodel.IpAccessList acl = c.getIpAccessLists().get("acl_tcp_established");
+      // check behavior for initial fragments only
+      assertThat(
+          acl.getLines().stream()
+              .map(line -> toIfBDD(line.getMatchCondition()))
+              .collect(ImmutableList.toImmutableList()),
+          contains(
+              toTcpIfBDD(
+                  matchTcpFlags(
+                      TcpFlagsMatchConditions.builder()
+                          .setUseAck(true)
+                          .setTcpFlags(TcpFlags.builder().setAck(true).build())
+                          .build(),
+                      TcpFlagsMatchConditions.builder()
+                          .setUseRst(true)
+                          .setTcpFlags(TcpFlags.builder().setRst(true).build())
+                          .build()))));
+    }
+    {
+      org.batfish.datamodel.IpAccessList acl =
+          c.getIpAccessLists().get("acl_udp_destination_ports");
+      // check behavior for initial fragments only
+      assertThat(
+          acl.getLines().stream()
+              .map(line -> toIfBDD(line.getMatchCondition()))
+              .collect(ImmutableList.toImmutableList()),
+          contains(
+              toUdpIfBDD(matchDstPort(1)),
+              toUdpIfBDD(
+                  matchDstPort(
+                      UDP_PORT_RANGE.intersection(
+                          IntegerSpace.of(Range.closed(6, Integer.MAX_VALUE))))),
+              toUdpIfBDD(matchDstPort(IntegerSpace.of(Range.closed(0, 9)))),
+              toUdpIfBDD(matchDstPort(UDP_PORT_RANGE.difference(IntegerSpace.of(15)))),
+              toUdpIfBDD(AclLineMatchExprs.FALSE), // TODO: support portgroup
+              toUdpIfBDD(matchDstPort(IntegerSpace.of(Range.closed(20, 25))))));
+    }
+    {
+      org.batfish.datamodel.IpAccessList acl =
+          c.getIpAccessLists().get("acl_udp_destination_ports_named");
+      // check behavior for initial fragments only
+      assertThat(
+          acl.getLines().stream()
+              .map(line -> toIfBDD(line.getMatchCondition()))
+              .collect(ImmutableList.toImmutableList()),
+          contains(
+              toUdpIfBDD(matchDstPort(NamedPort.BIFFudp_OR_EXECtcp.number())),
+              toUdpIfBDD(matchDstPort(NamedPort.BOOTPC.number())),
+              toUdpIfBDD(matchDstPort(NamedPort.BOOTPS_OR_DHCP.number())),
+              toUdpIfBDD(matchDstPort(NamedPort.DISCARD.number())),
+              toUdpIfBDD(matchDstPort(NamedPort.DNSIX.number())),
+              toUdpIfBDD(matchDstPort(NamedPort.DOMAIN.number())),
+              toUdpIfBDD(matchDstPort(NamedPort.ECHO.number())),
+              toUdpIfBDD(matchDstPort(NamedPort.ISAKMP.number())),
+              toUdpIfBDD(matchDstPort(NamedPort.MOBILE_IP_AGENT.number())),
+              toUdpIfBDD(matchDstPort(NamedPort.NAMESERVER.number())),
+              toUdpIfBDD(matchDstPort(NamedPort.NETBIOS_DGM.number())),
+              toUdpIfBDD(matchDstPort(NamedPort.NETBIOS_NS.number())),
+              toUdpIfBDD(matchDstPort(NamedPort.NETBIOS_SSN.number())),
+              toUdpIfBDD(matchDstPort(NamedPort.NON500_ISAKMP.number())),
+              toUdpIfBDD(matchDstPort(NamedPort.NTP.number())),
+              toUdpIfBDD(matchDstPort(NamedPort.PIM_AUTO_RP.number())),
+              toUdpIfBDD(matchDstPort(NamedPort.EFStcp_OR_RIPudp.number())),
+              toUdpIfBDD(matchDstPort(NamedPort.SNMP.number())),
+              toUdpIfBDD(matchDstPort(NamedPort.SNMPTRAP.number())),
+              toUdpIfBDD(matchDstPort(NamedPort.SUNRPC.number())),
+              toUdpIfBDD(matchDstPort(NamedPort.CMDtcp_OR_SYSLOGudp.number())),
+              toUdpIfBDD(matchDstPort(NamedPort.TACACS.number())),
+              toUdpIfBDD(matchDstPort(NamedPort.TALK.number())),
+              toUdpIfBDD(matchDstPort(NamedPort.TFTP.number())),
+              toUdpIfBDD(matchDstPort(NamedPort.TIME.number())),
+              toUdpIfBDD(matchDstPort(NamedPort.LOGINtcp_OR_WHOudp.number())),
+              toUdpIfBDD(matchDstPort(NamedPort.XDMCP.number()))));
+    }
+    {
+      org.batfish.datamodel.IpAccessList acl = c.getIpAccessLists().get("acl_udp_source_ports");
+      // check behavior for initial fragments only
+      assertThat(
+          acl.getLines().stream()
+              .map(line -> toIfBDD(line.getMatchCondition()))
+              .collect(ImmutableList.toImmutableList()),
+          contains(
+              toUdpIfBDD(matchSrcPort(1)),
+              toUdpIfBDD(
+                  matchSrcPort(
+                      UDP_PORT_RANGE.intersection(
+                          IntegerSpace.of(Range.closed(6, Integer.MAX_VALUE))))),
+              toUdpIfBDD(matchSrcPort(IntegerSpace.of(Range.closed(0, 9)))),
+              toUdpIfBDD(matchSrcPort(UDP_PORT_RANGE.difference(IntegerSpace.of(15)))),
+              toUdpIfBDD(AclLineMatchExprs.FALSE), // TODO: support portgroup
+              toUdpIfBDD(matchSrcPort(IntegerSpace.of(Range.closed(20, 25))))));
+    }
+    // TODO: support UDP VXLAN matching
+    {
+      org.batfish.datamodel.IpAccessList acl =
+          c.getIpAccessLists().get("acl_l4_fragments_semantics");
+      // check behavior for initial fragments
+      assertThat(
+          acl.getLines().stream()
+              .map(line -> toIfBDD(line.getMatchCondition()))
+              .collect(ImmutableList.toImmutableList()),
+          contains(
+              toIcmpIfBDD(AclLineMatchExprs.and(matchSrc(Ip.parse("192.0.2.1")), matchIcmpType(0))),
+              toIcmpIfBDD(AclLineMatchExprs.and(matchSrc(Ip.parse("192.0.2.1")), matchIcmpType(1))),
+              toIfBDD(AclLineMatchExprs.and(matchSrc(Ip.parse("192.0.2.1")), matchIpProtocol(2))),
+              toIfBDD(AclLineMatchExprs.and(matchSrc(Ip.parse("192.0.2.1")), matchIpProtocol(3))),
+              toBDD(AclLineMatchExprs.FALSE),
+              toBDD(AclLineMatchExprs.FALSE)));
+
+      // check behavior for non-initial fragments
+      assertThat(
+          acl.getLines().stream()
+              .map(line -> toNonIfBDD(line.getMatchCondition()))
+              .collect(ImmutableList.toImmutableList()),
+          contains(
+              toNonIfBDD(
+                  AclLineMatchExprs.and(
+                      matchSrc(Ip.parse("192.0.2.1")), matchIpProtocol(IpProtocol.ICMP))),
+              toBDD(AclLineMatchExprs.FALSE),
+              toNonIfBDD(
+                  AclLineMatchExprs.and(matchSrc(Ip.parse("192.0.2.1")), matchIpProtocol(2))),
+              toNonIfBDD(
+                  AclLineMatchExprs.and(matchSrc(Ip.parse("192.0.2.1")), matchIpProtocol(3))),
+              toNonIfBDD(
+                  AclLineMatchExprs.and(matchSrc(Ip.parse("192.0.2.1")), matchIpProtocol(4))),
+              toNonIfBDD(
+                  AclLineMatchExprs.and(matchSrc(Ip.parse("192.0.2.1")), matchIpProtocol(5)))));
+    }
+  }
+
+  @Test
   public void testIpAccessListExtraction() {
     String hostname = "nxos_ip_access_list";
     CiscoNxosConfiguration vc = parseVendorConfig(hostname);
@@ -975,7 +1532,8 @@ public final class CiscoNxosGrammarTest {
             "acl_udp_destination_ports",
             "acl_udp_destination_ports_named",
             "acl_udp_source_ports",
-            "acl_udp_vxlan"));
+            "acl_udp_vxlan",
+            "acl_l4_fragments_semantics"));
     {
       IpAccessList acl = vc.getIpAccessLists().get("acl_global_options");
       assertThat(acl.getFragmentsBehavior(), equalTo(FragmentsBehavior.PERMIT_ALL));
@@ -1349,7 +1907,7 @@ public final class CiscoNxosGrammarTest {
                   ((ActionIpAccessListLine) acl.getLines().values().iterator().next())
                       .getL4Options())
               .getTcpFlagsMask(),
-          equalTo(50));
+          equalTo(47));
     }
     // TODO: extract and test tcp-option-length match
     {
@@ -1470,6 +2028,55 @@ public final class CiscoNxosGrammarTest {
           ((LiteralPortSpec) spec).getPorts(), equalTo(IntegerSpace.of(Range.closed(20, 25))));
     }
     // TODO: extract and test UDP nve vni match
+    {
+      IpAccessList acl = vc.getIpAccessLists().get("acl_l4_fragments_semantics");
+      Iterator<IpAccessListLine> lines = acl.getLines().values().iterator();
+      ActionIpAccessListLine line;
+
+      line = (ActionIpAccessListLine) lines.next();
+      assertThat(line.getAction(), equalTo(LineAction.PERMIT));
+      assertThat(
+          ((LiteralIpAddressSpec) line.getSrcAddressSpec()).getIpSpace().accept(SRC_IP_BDD),
+          equalTo(SRC_IP_BDD.toBDD(Ip.parse("192.0.2.1"))));
+      assertThat(line.getProtocol(), equalTo(IpProtocol.ICMP));
+
+      line = (ActionIpAccessListLine) lines.next();
+      assertThat(line.getAction(), equalTo(LineAction.DENY));
+      assertThat(
+          ((LiteralIpAddressSpec) line.getSrcAddressSpec()).getIpSpace().accept(SRC_IP_BDD),
+          equalTo(SRC_IP_BDD.toBDD(Ip.parse("192.0.2.1"))));
+      assertThat(line.getProtocol(), equalTo(IpProtocol.ICMP));
+
+      line = (ActionIpAccessListLine) lines.next();
+      assertThat(line.getAction(), equalTo(LineAction.PERMIT));
+      assertThat(
+          ((LiteralIpAddressSpec) line.getSrcAddressSpec()).getIpSpace().accept(SRC_IP_BDD),
+          equalTo(SRC_IP_BDD.toBDD(Ip.parse("192.0.2.1"))));
+      assertThat(line.getProtocol(), equalTo(IpProtocol.fromNumber(2)));
+
+      line = (ActionIpAccessListLine) lines.next();
+      assertThat(line.getAction(), equalTo(LineAction.DENY));
+      assertThat(
+          ((LiteralIpAddressSpec) line.getSrcAddressSpec()).getIpSpace().accept(SRC_IP_BDD),
+          equalTo(SRC_IP_BDD.toBDD(Ip.parse("192.0.2.1"))));
+      assertThat(line.getProtocol(), equalTo(IpProtocol.fromNumber(3)));
+
+      line = (ActionIpAccessListLine) lines.next();
+      assertThat(line.getAction(), equalTo(LineAction.PERMIT));
+      assertThat(
+          ((LiteralIpAddressSpec) line.getSrcAddressSpec()).getIpSpace().accept(SRC_IP_BDD),
+          equalTo(SRC_IP_BDD.toBDD(Ip.parse("192.0.2.1"))));
+      assertThat(line.getProtocol(), equalTo(IpProtocol.fromNumber(4)));
+      assertTrue(line.getFragments());
+
+      line = (ActionIpAccessListLine) lines.next();
+      assertThat(line.getAction(), equalTo(LineAction.DENY));
+      assertThat(
+          ((LiteralIpAddressSpec) line.getSrcAddressSpec()).getIpSpace().accept(SRC_IP_BDD),
+          equalTo(SRC_IP_BDD.toBDD(Ip.parse("192.0.2.1"))));
+      assertThat(line.getProtocol(), equalTo(IpProtocol.fromNumber(5)));
+      assertTrue(line.getFragments());
+    }
   }
 
   @Test
@@ -1557,6 +2164,101 @@ public final class CiscoNxosGrammarTest {
       line = lines.next();
       assertThat(line.getAction(), equalTo(LineAction.PERMIT));
       assertThat(line.getRegex(), equalTo("_2_"));
+    }
+  }
+
+  @Test
+  public void testIpCommunityListStandardConversion() throws IOException {
+    String hostname = "nxos_ip_community_list_standard";
+    Configuration c = parseConfig(hostname);
+
+    assertThat(c.getCommunityLists(), hasKeys("cl_seq", "cl_values", "cl_test"));
+    {
+      CommunityList cl = c.getCommunityLists().get("cl_seq");
+      Iterator<CommunityListLine> lines = cl.getLines().iterator();
+      CommunityListLine line;
+
+      line = lines.next();
+      assertThat(line.getAction(), equalTo(LineAction.PERMIT));
+      assertThat(
+          ((LiteralCommunityConjunction) line.getMatchCondition()).getRequiredCommunities(),
+          contains(StandardCommunity.of(1, 1)));
+
+      line = lines.next();
+      assertThat(line.getAction(), equalTo(LineAction.PERMIT));
+      assertThat(
+          ((LiteralCommunityConjunction) line.getMatchCondition()).getRequiredCommunities(),
+          contains(StandardCommunity.of(5, 5)));
+
+      line = lines.next();
+      assertThat(line.getAction(), equalTo(LineAction.PERMIT));
+      assertThat(
+          ((LiteralCommunityConjunction) line.getMatchCondition()).getRequiredCommunities(),
+          contains(StandardCommunity.of(10, 10)));
+
+      line = lines.next();
+      assertThat(line.getAction(), equalTo(LineAction.PERMIT));
+      assertThat(
+          ((LiteralCommunityConjunction) line.getMatchCondition()).getRequiredCommunities(),
+          contains(StandardCommunity.of(11, 11)));
+    }
+    {
+      CommunityList cl = c.getCommunityLists().get("cl_values");
+      Iterator<CommunityListLine> lines = cl.getLines().iterator();
+      CommunityListLine line;
+
+      line = lines.next();
+      assertThat(line.getAction(), equalTo(LineAction.PERMIT));
+      assertThat(
+          ((LiteralCommunityConjunction) line.getMatchCondition()).getRequiredCommunities(),
+          contains(StandardCommunity.of(1, 1)));
+
+      line = lines.next();
+      assertThat(line.getAction(), equalTo(LineAction.PERMIT));
+      assertThat(
+          ((LiteralCommunityConjunction) line.getMatchCondition()).getRequiredCommunities(),
+          contains(StandardCommunity.of(WellKnownCommunity.INTERNET)));
+
+      line = lines.next();
+      assertThat(line.getAction(), equalTo(LineAction.PERMIT));
+      assertThat(
+          ((LiteralCommunityConjunction) line.getMatchCondition()).getRequiredCommunities(),
+          contains(StandardCommunity.of(WellKnownCommunity.NO_EXPORT_SUBCONFED)));
+
+      line = lines.next();
+      assertThat(line.getAction(), equalTo(LineAction.PERMIT));
+      assertThat(
+          ((LiteralCommunityConjunction) line.getMatchCondition()).getRequiredCommunities(),
+          contains(StandardCommunity.of(WellKnownCommunity.NO_ADVERTISE)));
+
+      line = lines.next();
+      assertThat(line.getAction(), equalTo(LineAction.PERMIT));
+      assertThat(
+          ((LiteralCommunityConjunction) line.getMatchCondition()).getRequiredCommunities(),
+          contains(StandardCommunity.of(WellKnownCommunity.NO_EXPORT)));
+    }
+    {
+      CommunityList cl = c.getCommunityLists().get("cl_test");
+      Iterator<CommunityListLine> lines = cl.getLines().iterator();
+      CommunityListLine line;
+
+      line = lines.next();
+      assertThat(line.getAction(), equalTo(LineAction.DENY));
+      assertThat(
+          ((LiteralCommunityConjunction) line.getMatchCondition()).getRequiredCommunities(),
+          containsInAnyOrder(StandardCommunity.of(1, 1), StandardCommunity.of(2, 2)));
+
+      line = lines.next();
+      assertThat(line.getAction(), equalTo(LineAction.PERMIT));
+      assertThat(
+          ((LiteralCommunityConjunction) line.getMatchCondition()).getRequiredCommunities(),
+          containsInAnyOrder(StandardCommunity.of(1, 1)));
+
+      line = lines.next();
+      assertThat(line.getAction(), equalTo(LineAction.PERMIT));
+      assertThat(
+          ((LiteralCommunityConjunction) line.getMatchCondition()).getRequiredCommunities(),
+          containsInAnyOrder(StandardCommunity.of(2, 2)));
     }
   }
 

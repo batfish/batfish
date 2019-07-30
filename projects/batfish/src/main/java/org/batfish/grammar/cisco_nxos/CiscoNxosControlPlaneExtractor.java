@@ -76,6 +76,7 @@ import static org.batfish.representation.cisco_nxos.Interface.newVlanInterface;
 import static org.batfish.representation.cisco_nxos.StaticRoute.STATIC_ROUTE_PREFERENCE_RANGE;
 import static org.batfish.representation.cisco_nxos.StaticRoute.STATIC_ROUTE_TRACK_RANGE;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
@@ -130,6 +131,7 @@ import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Acll_actionContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Acll_remarkContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Acllal3_address_specContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Acllal3_dst_addressContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Acllal3_fragmentsContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Acllal3_protocol_specContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Acllal3_src_addressContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Acllal3o_dscpContext;
@@ -583,15 +585,23 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
       IntegerSpace.of(Range.closed(50, 30000));
   private static final IntegerSpace OSPF_TIMERS_LSA_START_INTERVAL_MS_RANGE =
       IntegerSpace.of(Range.closed(0, 5000));
-  private static final IntegerSpace PACKET_LENGTH_RANGE = IntegerSpace.of(Range.closed(20, 9210));
+
+  @VisibleForTesting
+  public static final IntegerSpace PACKET_LENGTH_RANGE = IntegerSpace.of(Range.closed(20, 9210));
+
   private static final IntegerSpace PORT_CHANNEL_RANGE = IntegerSpace.of(Range.closed(1, 4096));
   private static final IntegerSpace ROUTE_MAP_ENTRY_SEQUENCE_RANGE =
       IntegerSpace.of(Range.closed(0, 65535));
   private static final IntegerSpace ROUTE_MAP_NAME_LENGTH_RANGE =
       IntegerSpace.of(Range.closed(1, 63));
   private static final IntegerSpace TCP_FLAGS_MASK_RANGE = IntegerSpace.of(Range.closed(0, 63));
-  private static final IntegerSpace TCP_PORT_RANGE = IntegerSpace.of(Range.closed(0, 65535));
-  private static final IntegerSpace UDP_PORT_RANGE = IntegerSpace.of(Range.closed(0, 65535));
+
+  @VisibleForTesting
+  public static final IntegerSpace TCP_PORT_RANGE = IntegerSpace.of(Range.closed(0, 65535));
+
+  @VisibleForTesting
+  public static final IntegerSpace UDP_PORT_RANGE = IntegerSpace.of(Range.closed(0, 65535));
+
   private static final IntegerSpace VNI_RANGE = IntegerSpace.of(Range.closed(0, 16777214));
   private static final IntegerSpace VRF_NAME_LENGTH_RANGE = IntegerSpace.of(Range.closed(1, 32));
 
@@ -2899,6 +2909,11 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
   @Override
   public void exitAcllal3_dst_address(Acllal3_dst_addressContext ctx) {
     _currentActionIpAccessListLineBuilder.setDstAddressSpec(toAddressSpec(ctx.addr));
+  }
+
+  @Override
+  public void exitAcllal3_fragments(Acllal3_fragmentsContext ctx) {
+    _currentActionIpAccessListLineBuilder.setFragments(true);
   }
 
   @Override

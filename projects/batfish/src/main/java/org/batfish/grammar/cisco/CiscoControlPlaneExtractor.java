@@ -6564,10 +6564,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   @Override
   public void exitIf_shutdown(If_shutdownContext ctx) {
-    if (ctx.NO() == null) {
-      for (Interface currentInterface : _currentInterfaces) {
-        currentInterface.setActive(false);
-      }
+    for (Interface currentInterface : _currentInterfaces) {
+      currentInterface.setActive(ctx.NO() != null);
     }
   }
 
@@ -8964,10 +8962,12 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       filterType = DistributeListFilterType.ROUTE_MAP;
       type = ROUTE_MAP;
       usage = in ? OSPF_DISTRIBUTE_LIST_ROUTE_MAP_IN : OSPF_DISTRIBUTE_LIST_ROUTE_MAP_OUT;
+      todo(ctx);
     } else {
       filterType = DistributeListFilterType.ACCESS_LIST;
       type = IP_ACCESS_LIST;
       usage = in ? OSPF_DISTRIBUTE_LIST_ACCESS_LIST_IN : OSPF_DISTRIBUTE_LIST_ACCESS_LIST_OUT;
+      todo(ctx);
     }
     _configuration.referenceStructure(type, name, usage, line);
 
@@ -8987,7 +8987,6 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
         _currentOspfProcess.setOutboundGlobalDistributeList(distributeList);
       }
     }
-    todo(ctx);
   }
 
   @Override

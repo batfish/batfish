@@ -8,7 +8,6 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.google.common.collect.ImmutableList;
 import java.io.IOException;
-import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import org.batfish.common.util.BatfishObjectMapper;
@@ -33,12 +32,6 @@ public class NetworkInterfaceTest {
           BatfishObjectMapper.mapper().convertValue(array.get(index), NetworkInterface.class));
     }
 
-    HashMap<Ip, Ip> map1 = new HashMap<>();
-    map1.put(Ip.parse("10.100.1.71"), null);
-
-    HashMap<Ip, Ip> map2 = new HashMap<>();
-    map2.put(Ip.parse("10.100.1.20"), null);
-
     assertThat(
         interfaces,
         equalTo(
@@ -48,16 +41,16 @@ public class NetworkInterfaceTest {
                     "subnet-9a0c48fc",
                     "vpc-815775e7",
                     ImmutableList.of("sg-adcd87d0"),
-                    map1,
-                    null,
+                    ImmutableList.of(new PrivateIpAddress(true, Ip.parse("10.100.1.71"), null)),
+                    "Primary network interface",
                     "i-05f467abe21e9b883"),
                 new NetworkInterface(
                     "eni-a9d44c8a",
                     "subnet-9a0c48fc",
                     "vpc-815775e7",
                     ImmutableList.of("sg-adcd87d0"),
-                    map2,
-                    null,
+                    ImmutableList.of(new PrivateIpAddress(true, Ip.parse("10.100.1.20"), null)),
+                    "Primary network interface",
                     null))));
   }
 }

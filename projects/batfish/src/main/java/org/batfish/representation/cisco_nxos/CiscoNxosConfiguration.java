@@ -8,6 +8,9 @@ import static org.batfish.datamodel.MultipathEquivalentAsPathMatchMode.EXACT_PAT
 import static org.batfish.datamodel.MultipathEquivalentAsPathMatchMode.PATH_LENGTH;
 import static org.batfish.datamodel.Route.UNSET_NEXT_HOP_INTERFACE;
 import static org.batfish.datamodel.Route.UNSET_ROUTE_NEXT_HOP_IP;
+import static org.batfish.datamodel.acl.AclLineMatchExprs.and;
+import static org.batfish.datamodel.acl.AclLineMatchExprs.match;
+import static org.batfish.datamodel.acl.AclLineMatchExprs.or;
 import static org.batfish.representation.cisco.CiscoConfiguration.computeBgpCommonExportPolicyName;
 import static org.batfish.representation.cisco.CiscoConfiguration.computeBgpGenerationPolicyName;
 import static org.batfish.representation.cisco.CiscoConversions.generateGenerationPolicy;
@@ -34,6 +37,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -48,13 +52,18 @@ import org.batfish.datamodel.AsPathAccessListLine;
 import org.batfish.datamodel.BgpActivePeerConfig;
 import org.batfish.datamodel.BgpPassivePeerConfig;
 import org.batfish.datamodel.BgpTieBreaker;
+import org.batfish.datamodel.CommunityList;
+import org.batfish.datamodel.CommunityListLine;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
+import org.batfish.datamodel.EmptyIpSpace;
 import org.batfish.datamodel.GeneratedRoute;
+import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.IntegerSpace;
 import org.batfish.datamodel.Interface.Dependency;
 import org.batfish.datamodel.Interface.DependencyType;
 import org.batfish.datamodel.InterfaceType;
+import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.OriginType;
 import org.batfish.datamodel.Prefix;
@@ -67,17 +76,25 @@ import org.batfish.datamodel.Route6FilterList;
 import org.batfish.datamodel.RouteFilterLine;
 import org.batfish.datamodel.RouteFilterList;
 import org.batfish.datamodel.RoutingProtocol;
+import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.SwitchportMode;
+import org.batfish.datamodel.TcpFlags;
+import org.batfish.datamodel.TcpFlagsMatchConditions;
+import org.batfish.datamodel.acl.AclLineMatchExpr;
+import org.batfish.datamodel.acl.AclLineMatchExprs;
+import org.batfish.datamodel.bgp.community.StandardCommunity;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.routing_policy.expr.BooleanExpr;
 import org.batfish.datamodel.routing_policy.expr.BooleanExprs;
 import org.batfish.datamodel.routing_policy.expr.CallExpr;
+import org.batfish.datamodel.routing_policy.expr.CommunitySetExpr;
 import org.batfish.datamodel.routing_policy.expr.Conjunction;
 import org.batfish.datamodel.routing_policy.expr.DestinationNetwork;
 import org.batfish.datamodel.routing_policy.expr.DestinationNetwork6;
 import org.batfish.datamodel.routing_policy.expr.Disjunction;
 import org.batfish.datamodel.routing_policy.expr.ExplicitPrefix6Set;
 import org.batfish.datamodel.routing_policy.expr.ExplicitPrefixSet;
+import org.batfish.datamodel.routing_policy.expr.LiteralCommunityConjunction;
 import org.batfish.datamodel.routing_policy.expr.LiteralOrigin;
 import org.batfish.datamodel.routing_policy.expr.MatchPrefix6Set;
 import org.batfish.datamodel.routing_policy.expr.MatchPrefixSet;
@@ -138,6 +155,18 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
 
   private static final IntegerSpace DEFAULT_RESERVED_VLAN_RANGE =
       IntegerSpace.of(Range.closed(3968, 4094));
+
+  private static final int MAX_FRAGMENT_OFFSET = (1 << 13) - 1;
+  private static final AclLineMatchExpr MATCH_INITIAL_FRAGMENT_OFFSET =
+      match(
+          HeaderSpace.builder()
+              .setFragmentOffsets(ImmutableList.of(SubRange.singleton(0)))
+              .build());
+  private static final AclLineMatchExpr MATCH_NON_INITIAL_FRAGMENT_OFFSET =
+      match(
+          HeaderSpace.builder()
+              .setFragmentOffsets(ImmutableList.of(new SubRange(1, MAX_FRAGMENT_OFFSET)))
+              .build());
 
   public static final String NULL_VRF_NAME = "~NULL_VRF~";
 
@@ -561,10 +590,48 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
         .forEach(this::convertInterface);
   }
 
+  private void convertIpAccessLists() {
+    _ipAccessLists.forEach(
+        (name, ipAccessList) -> _c.getIpAccessLists().put(name, toIpAccessList(ipAccessList)));
+  }
+
   private void convertIpAsPathAccessLists() {
     _ipAsPathAccessLists.forEach(
         (name, ipAsPathAccessList) ->
             _c.getAsPathAccessLists().put(name, toAsPathAccessList(ipAsPathAccessList)));
+  }
+
+  private void convertIpCommunityLists() {
+    _ipCommunityLists.forEach(
+        (name, list) ->
+            _c.getCommunityLists()
+                .put(
+                    name,
+                    list.accept(
+                        new IpCommunityListVisitor<CommunityList>() {
+                          @Override
+                          public CommunityList visitIpCommunityListStandard(
+                              IpCommunityListStandard ipCommunityListStandard) {
+                            return toCommunityList(ipCommunityListStandard);
+                          }
+                        })));
+  }
+
+  private static @Nonnull CommunityList toCommunityList(IpCommunityListStandard list) {
+    return new CommunityList(
+        list.getName(),
+        list.getLines().values().stream()
+            .map(CiscoNxosConfiguration::toCommunityListLine)
+            .collect(ImmutableList.toImmutableList()),
+        false);
+  }
+
+  private static @Nonnull CommunityListLine toCommunityListLine(IpCommunityListStandardLine line) {
+    return new CommunityListLine(line.getAction(), toCommunitySetExpr(line.getCommunities()));
+  }
+
+  private static @Nonnull CommunitySetExpr toCommunitySetExpr(Set<StandardCommunity> communities) {
+    return new LiteralCommunityConjunction(communities);
   }
 
   private void convertIpPrefixLists() {
@@ -950,6 +1017,256 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
     }
   }
 
+  private @Nonnull org.batfish.datamodel.IpAccessList toIpAccessList(IpAccessList list) {
+    // TODO: handle and test top-level fragments behavior
+    return org.batfish.datamodel.IpAccessList.builder()
+        .setName(list.getName())
+        .setSourceName(list.getName())
+        .setSourceType(CiscoNxosStructureType.IP_ACCESS_LIST.getDescription())
+        .setLines(
+            list.getLines().values().stream()
+                .flatMap(this::toIpAccessListLine)
+                .collect(ImmutableList.toImmutableList()))
+        .build();
+  }
+
+  /**
+   * Converts the supplied {@code line} to zero or more vendor-independent {@link
+   * org.batfish.datamodel.IpAccessListLine}s depending on semantics.
+   */
+  private @Nonnull Stream<org.batfish.datamodel.IpAccessListLine> toIpAccessListLine(
+      IpAccessListLine line) {
+    return line.accept(
+        new IpAccessListLineVisitor<Stream<org.batfish.datamodel.IpAccessListLine>>() {
+          @Override
+          public Stream<org.batfish.datamodel.IpAccessListLine> visitActionIpAccessListLine(
+              ActionIpAccessListLine actionIpAccessListLine) {
+            LineAction action = actionIpAccessListLine.getAction();
+            return Stream.of(
+                org.batfish.datamodel.IpAccessListLine.builder()
+                    .setAction(action)
+                    .setMatchCondition(toAclLineMatchExpr(actionIpAccessListLine, action))
+                    .setName(Long.toString(actionIpAccessListLine.getLine()))
+                    .build());
+          }
+
+          @Override
+          public Stream<org.batfish.datamodel.IpAccessListLine> visitRemarkIpAccessListLine(
+              RemarkIpAccessListLine remarkIpAccessListLine) {
+            return Stream.empty();
+          }
+        });
+  }
+
+  private @Nonnull AclLineMatchExpr toAclLineMatchExpr(
+      ActionIpAccessListLine line, LineAction action) {
+    /*
+     * All rules:
+     * - if 'fragments' present in rule
+     *   - match only non-initial fragment
+     * Also, for L3+L4 rules:
+     * - permit rules
+     *   - if L3-match and is non-initial-fragment
+     *     - permit
+     *   - if L3+L4 match and is initial fragment (or fragments not applicable to protocol)
+     *     - permit
+     * - deny rules
+     *   - if L3+L4 match and is initial fragment (or fragments not applicable to protocol)
+     *     - deny
+     */
+    // L3 match condition
+    AclLineMatchExpr l3 = matchL3(line);
+
+    // If L3 only, no special handling needed
+    if (line.getL4Options() == null) {
+      return l3;
+    }
+
+    // L4 handling
+    AclLineMatchExpr l4 = matchL4(line);
+    if (action == LineAction.PERMIT) {
+      // permit if either non-initial fragment or l4 conditions match
+      return and(l3, or(MATCH_NON_INITIAL_FRAGMENT_OFFSET, l4));
+    }
+
+    assert action == LineAction.DENY;
+    // deny if initial fragment and l4 conditions match. else do nothing (no match).
+    return and(l3, MATCH_INITIAL_FRAGMENT_OFFSET, l4);
+  }
+
+  private @Nonnull AclLineMatchExpr matchL3(ActionIpAccessListLine actionIpAccessListLine) {
+    HeaderSpace.Builder hs = HeaderSpace.builder();
+    if (actionIpAccessListLine.getProtocol() != null) {
+      hs.setIpProtocols(ImmutableList.of(actionIpAccessListLine.getProtocol()));
+    }
+    hs.setSrcIps(toIpSpace(actionIpAccessListLine.getSrcAddressSpec()));
+    hs.setDstIps(toIpSpace(actionIpAccessListLine.getDstAddressSpec()));
+    Layer3Options l3Options = actionIpAccessListLine.getL3Options();
+    if (l3Options.getDscp() != null) {
+      hs.setDscps(ImmutableList.of(l3Options.getDscp()));
+    }
+    if (l3Options.getPacketLength() != null) {
+      hs.setPacketLengths(l3Options.getPacketLength().getSubRanges());
+    }
+    if (l3Options.getPrecedence() != null) {
+      // TODO: support precedence matching
+      return AclLineMatchExprs.FALSE;
+    }
+    if (l3Options.getTtl() != null) {
+      // TODO: support ttl matching
+      return AclLineMatchExprs.FALSE;
+    }
+    AclLineMatchExpr matchL3ExceptFragmentOffset = match(hs.build());
+    return actionIpAccessListLine.getFragments()
+        ? and(MATCH_NON_INITIAL_FRAGMENT_OFFSET, matchL3ExceptFragmentOffset)
+        : matchL3ExceptFragmentOffset;
+  }
+
+  private @Nonnull IpSpace toIpSpace(IpAddressSpec ipAddressSpec) {
+    return ipAddressSpec.accept(
+        new IpAddressSpecVisitor<IpSpace>() {
+
+          @Override
+          public IpSpace visitAddrGroupIpAddressSpec(
+              AddrGroupIpAddressSpec addrGroupIpAddressSpec) {
+            // TODO: support addr-group
+            return EmptyIpSpace.INSTANCE;
+          }
+
+          @Override
+          public IpSpace visitLiteralIpAddressSpec(LiteralIpAddressSpec literalIpAddressSpec) {
+            return literalIpAddressSpec.getIpSpace();
+          }
+        });
+  }
+
+  private @Nonnull AclLineMatchExpr matchL4(ActionIpAccessListLine actionIpAccessListLine) {
+    return actionIpAccessListLine
+        .getL4Options()
+        .accept(
+            new Layer4OptionsVisitor<AclLineMatchExpr>() {
+              @Override
+              public AclLineMatchExpr visitIcmpOptions(IcmpOptions icmpOptions) {
+                HeaderSpace.Builder hs =
+                    HeaderSpace.builder()
+                        .setIcmpTypes(ImmutableList.of(SubRange.singleton(icmpOptions.getType())));
+                @Nullable Integer code = icmpOptions.getCode();
+                if (code != null) {
+                  hs.setIcmpCodes(ImmutableList.of(SubRange.singleton(code)));
+                }
+                return match(hs.build());
+              }
+
+              @Override
+              public AclLineMatchExpr visitIgmpOptions(IgmpOptions igmpOptions) {
+                // TODO: IGMP header field handling
+                return AclLineMatchExprs.FALSE;
+              }
+
+              @Override
+              public AclLineMatchExpr visitTcpOptions(TcpOptions tcpOptions) {
+                ImmutableList.Builder<AclLineMatchExpr> conjuncts = ImmutableList.builder();
+                HeaderSpace.Builder hs = HeaderSpace.builder();
+                if (tcpOptions.getEstablished()) {
+                  hs.setTcpFlags(
+                      ImmutableList.of(
+                          TcpFlagsMatchConditions.builder()
+                              .setUseAck(true)
+                              .setTcpFlags(TcpFlags.builder().setAck(true).build())
+                              .build(),
+                          TcpFlagsMatchConditions.builder()
+                              .setUseRst(true)
+                              .setTcpFlags(TcpFlags.builder().setRst(true).build())
+                              .build()));
+                }
+                if (tcpOptions.getDstPortSpec() != null) {
+                  conjuncts.add(
+                      toPorts(tcpOptions.getDstPortSpec())
+                          .map(AclLineMatchExprs::matchDstPort)
+                          .orElse(AclLineMatchExprs.FALSE));
+                }
+                if (tcpOptions.getHttpMethod() != null) {
+                  // TODO: support HTTP METHOD matching
+                  return AclLineMatchExprs.FALSE;
+                }
+                if (tcpOptions.getSrcPortSpec() != null) {
+                  conjuncts.add(
+                      toPorts(tcpOptions.getSrcPortSpec())
+                          .map(AclLineMatchExprs::matchSrcPort)
+                          .orElse(AclLineMatchExprs.FALSE));
+                }
+                if (tcpOptions.getTcpFlags() != null) {
+                  // TODO: validate logic
+                  int tcpFlagsMask = firstNonNull(tcpOptions.getTcpFlagsMask(), 0);
+                  hs.setTcpFlags(
+                      ImmutableList.of(
+                          toTcpFlagsMatchConditions(tcpOptions.getTcpFlags(), tcpFlagsMask)));
+                }
+                if (tcpOptions.getTcpOptionLength() != null) {
+                  // TODO: support TCP option length matching
+                  return AclLineMatchExprs.FALSE;
+                }
+                return and(conjuncts.add(match(hs.build())).build());
+              }
+
+              @Override
+              public AclLineMatchExpr visitUdpOptions(UdpOptions udpOptions) {
+                ImmutableList.Builder<AclLineMatchExpr> conjuncts = ImmutableList.builder();
+                if (udpOptions.getDstPortSpec() != null) {
+                  conjuncts.add(
+                      toPorts(udpOptions.getDstPortSpec())
+                          .map(AclLineMatchExprs::matchDstPort)
+                          .orElse(AclLineMatchExprs.FALSE));
+                }
+                if (udpOptions.getSrcPortSpec() != null) {
+                  conjuncts.add(
+                      toPorts(udpOptions.getSrcPortSpec())
+                          .map(AclLineMatchExprs::matchSrcPort)
+                          .orElse(AclLineMatchExprs.FALSE));
+                }
+                return and(conjuncts.build());
+              }
+            });
+  }
+
+  private static @Nonnull TcpFlagsMatchConditions toTcpFlagsMatchConditions(
+      TcpFlags tcpFlags, int tcpFlagsMask) {
+    // NX-OS only supports lower 6 control bits
+    // 0 in mask means use
+    int chooseOnes = ~tcpFlagsMask & 0b111111;
+    return TcpFlagsMatchConditions.builder()
+        .setTcpFlags(tcpFlags)
+        .setUseFin((chooseOnes & 0b000001) != 0)
+        .setUseSyn((chooseOnes & 0b000010) != 0)
+        .setUseRst((chooseOnes & 0b000100) != 0)
+        .setUsePsh((chooseOnes & 0b001000) != 0)
+        .setUseAck((chooseOnes & 0b010000) != 0)
+        .setUseUrg((chooseOnes & 0b100000) != 0)
+        .build();
+  }
+
+  /**
+   * Return an {@link IntegerSpace} of allowed ports if {@code portSpec} is supported, or {@link
+   * Optional#empty} if unsupported.
+   */
+  private @Nonnull Optional<IntegerSpace> toPorts(PortSpec portSpec) {
+    // TODO: return an abstract space of integers to allow for named port spaces
+    return portSpec.accept(
+        new PortSpecVisitor<Optional<IntegerSpace>>() {
+          @Override
+          public Optional<IntegerSpace> visitLiteralPortSpec(LiteralPortSpec literalPortSpec) {
+            return Optional.of(literalPortSpec.getPorts());
+          }
+
+          @Override
+          public Optional<IntegerSpace> visitPortGroupPortSpec(
+              PortGroupPortSpec portGroupPortSpec) {
+            // TODO: support port groups
+            return Optional.empty();
+          }
+        });
+  }
+
   private static @Nonnull AsPathAccessList toAsPathAccessList(
       IpAsPathAccessList ipAsPathAccessList) {
     return new AsPathAccessList(
@@ -1007,8 +1324,10 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
     convertInterfaces();
     disableUnregisteredVlanInterfaces();
     convertStaticRoutes();
+    convertIpAccessLists();
     convertIpAsPathAccessLists();
     convertIpPrefixLists();
+    convertIpCommunityLists();
     convertBgp();
 
     markStructures();

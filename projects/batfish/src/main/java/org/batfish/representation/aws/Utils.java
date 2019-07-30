@@ -2,6 +2,7 @@ package org.batfish.representation.aws;
 
 import java.util.List;
 import javax.annotation.Nullable;
+import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.common.BatfishException;
 import org.batfish.common.Warnings;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
@@ -14,9 +15,17 @@ import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.vendor_family.AwsFamily;
 
 /** A collection for utilities for AWS vendor model */
+@ParametersAreNonnullByDefault
 final class Utils {
 
   private static final NetworkFactory FACTORY = new NetworkFactory();
+
+  static void checkNonNull(@Nullable Object value, String fieldName, String objectType) {
+    if (value == null) {
+      throw new IllegalArgumentException(
+          String.format("Field '%s' must exist for '%s", fieldName, objectType));
+    }
+  }
 
   static Configuration newAwsConfiguration(String name, String domainName) {
     Configuration c =
@@ -34,13 +43,14 @@ final class Utils {
   }
 
   static Interface newInterface(
-      String name, Configuration c, ConcreteInterfaceAddress primaryAddress) {
+      String name, Configuration c, ConcreteInterfaceAddress primaryAddress, String description) {
     return FACTORY
         .interfaceBuilder()
         .setName(name)
         .setOwner(c)
         .setVrf(c.getDefaultVrf())
         .setAddress(primaryAddress)
+        .setDescription(description)
         .build();
   }
 
