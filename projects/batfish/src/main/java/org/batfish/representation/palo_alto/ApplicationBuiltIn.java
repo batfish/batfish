@@ -71,7 +71,6 @@ public final class ApplicationBuiltIn {
           .addService(
               Service.builder("ms-kms tcp").setIpProtocol(IpProtocol.TCP).addPorts(1688).build())
           .build();
-  //  // MSRPC("msrpc"),
   public static final Application NETBIOS_SS =
       Application.builder("netbios-ss")
           .setDescription("built-in application netbios-ss")
