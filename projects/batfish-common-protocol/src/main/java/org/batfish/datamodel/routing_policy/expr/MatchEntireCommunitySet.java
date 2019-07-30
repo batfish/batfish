@@ -5,7 +5,9 @@ import static com.google.common.base.Preconditions.checkArgument;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.Objects;
-import org.batfish.common.BatfishException;
+import java.util.SortedSet;
+import org.batfish.datamodel.BgpRoute;
+import org.batfish.datamodel.bgp.community.Community;
 import org.batfish.datamodel.routing_policy.Environment;
 import org.batfish.datamodel.routing_policy.Result;
 
@@ -27,7 +29,21 @@ public final class MatchEntireCommunitySet extends BooleanExpr {
 
   @Override
   public Result evaluate(Environment environment) {
-    throw new BatfishException("No implementation for MatchEntireCommunitySet.evaluate()");
+    SortedSet<Community> inputCommunities = null;
+    if (environment.getUseOutputAttributes()
+        && environment.getOutputRoute() instanceof BgpRoute.Builder<?, ?>) {
+      BgpRoute.Builder<?, ?> bgpRouteBuilder =
+          (BgpRoute.Builder<?, ?>) environment.getOutputRoute();
+      inputCommunities = bgpRouteBuilder.getCommunities();
+    } else if (environment.getReadFromIntermediateBgpAttributes()) {
+      inputCommunities = environment.getIntermediateBgpAttributes().getCommunities();
+    } else if (environment.getOriginalRoute() instanceof BgpRoute) {
+      BgpRoute<?, ?> bgpRoute = (BgpRoute<?, ?>) environment.getOriginalRoute();
+      inputCommunities = bgpRoute.getCommunities();
+    }
+    return inputCommunities == null
+        ? new Result(false)
+        : new Result(_expr.matchCommunities(environment, inputCommunities));
   }
 
   @JsonProperty(PROP_EXPR)
