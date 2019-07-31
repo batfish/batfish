@@ -92440,6 +92440,14 @@
             {
               "tag" : "MISCELLANEOUS",
               "text" : "Cannot configure BGP session for vrf 'vrf1' because router-id is missing"
+            },
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "Skipping invalidly configured BGP peer 1.1.1.1"
+            },
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "Skipping invalidly configured BGP peer 1.1.1.2"
             }
           ]
         },

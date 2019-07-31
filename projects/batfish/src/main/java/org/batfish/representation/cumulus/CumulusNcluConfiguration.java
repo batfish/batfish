@@ -172,6 +172,7 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
       BgpVrf bgpVrf,
       org.batfish.datamodel.BgpProcess newProc) {
     if (neighbor.getRemoteAs() == null && neighbor.getRemoteAsType() == null) {
+      getWarnings().redFlag("Skipping invalidly configured BGP peer " + neighbor.getName());
       return;
     }
     RoutingPolicy routingPolicy = computeBgpNeighborRoutingPolicy(neighbor, bgpVrf);
@@ -209,6 +210,7 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
       org.batfish.datamodel.BgpProcess newProc) {
     if (neighbor.getPeerIp() == null
         || (neighbor.getRemoteAs() == null && neighbor.getRemoteAsType() == null)) {
+      getWarnings().redFlag("Skipping invalidly configured BGP peer " + neighbor.getName());
       return;
     }
     RoutingPolicy routingPolicy = computeBgpNeighborRoutingPolicy(neighbor, bgpVrf);
