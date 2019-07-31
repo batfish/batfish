@@ -7,6 +7,7 @@ import static org.batfish.datamodel.Configuration.DEFAULT_VRF_NAME;
 import static org.batfish.datamodel.Interface.NULL_INTERFACE_NAME;
 import static org.batfish.datamodel.IpWildcard.ipWithWildcardMask;
 import static org.batfish.datamodel.Route.UNSET_NEXT_HOP_INTERFACE;
+import static org.batfish.datamodel.VniSettings.DEFAULT_UDP_PORT;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.matchDscp;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.matchDst;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.matchDstPort;
@@ -22,6 +23,7 @@ import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasA
 import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasNextHopInterface;
 import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasNextHopIp;
 import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasPrefix;
+import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasDefaultVrf;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasHostname;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasInterface;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasInterfaces;
@@ -51,6 +53,12 @@ import static org.batfish.datamodel.matchers.InterfaceMatchers.isActive;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.isAutoState;
 import static org.batfish.datamodel.matchers.MapMatchers.hasKeys;
 import static org.batfish.datamodel.matchers.StaticRouteMatchers.hasTag;
+import static org.batfish.datamodel.matchers.VniSettingsMatchers.hasBumTransportIps;
+import static org.batfish.datamodel.matchers.VniSettingsMatchers.hasBumTransportMethod;
+import static org.batfish.datamodel.matchers.VniSettingsMatchers.hasSourceAddress;
+import static org.batfish.datamodel.matchers.VniSettingsMatchers.hasUdpPort;
+import static org.batfish.datamodel.matchers.VniSettingsMatchers.hasVni;
+import static org.batfish.datamodel.matchers.VrfMatchers.hasVniSettings;
 import static org.batfish.grammar.cisco_nxos.CiscoNxosCombinedParser.DEBUG_FLAG_USE_NEW_CISCO_NXOS_PARSER;
 import static org.batfish.grammar.cisco_nxos.CiscoNxosControlPlaneExtractor.PACKET_LENGTH_RANGE;
 import static org.batfish.grammar.cisco_nxos.CiscoNxosControlPlaneExtractor.TCP_PORT_RANGE;
@@ -90,6 +98,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
+import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Range;
 import java.io.IOException;
@@ -118,6 +127,7 @@ import org.batfish.datamodel.AsPath;
 import org.batfish.datamodel.AsPathAccessList;
 import org.batfish.datamodel.AsPathAccessListLine;
 import org.batfish.datamodel.Bgpv4Route;
+import org.batfish.datamodel.BumTransportMethod;
 import org.batfish.datamodel.CommunityList;
 import org.batfish.datamodel.CommunityListLine;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
@@ -153,6 +163,7 @@ import org.batfish.datamodel.bgp.RouteDistinguisher;
 import org.batfish.datamodel.bgp.community.StandardCommunity;
 import org.batfish.datamodel.matchers.HsrpGroupMatchers;
 import org.batfish.datamodel.matchers.RouteFilterListMatchers;
+import org.batfish.datamodel.matchers.VniSettingsMatchers;
 import org.batfish.datamodel.matchers.VrfMatchers;
 import org.batfish.datamodel.ospf.OspfMetricType;
 import org.batfish.datamodel.routing_policy.Environment.Direction;
@@ -2598,6 +2609,60 @@ public final class CiscoNxosGrammarTest {
       assertThat(vniConfig.getMcastGroup(), nullValue());
       assertThat(vniConfig.getPeerIps(), equalTo(ImmutableSet.of(Ip.parse("4.0.0.1"))));
     }
+  }
+
+  @Test
+  public void testNveVnisConversion() throws IOException {
+    Configuration c = parseConfig("nxos_nve_vnis");
+
+    assertThat(c, hasDefaultVrf(hasVniSettings(hasKey(10001))));
+    assertThat(
+        c.getDefaultVrf().getVniSettings().get(10001),
+        allOf(
+            hasBumTransportIps(equalTo(ImmutableSortedSet.of(Ip.parse("235.0.0.0")))),
+            hasBumTransportMethod(equalTo(BumTransportMethod.MULTICAST_GROUP)),
+            hasSourceAddress(nullValue()),
+            hasUdpPort(equalTo(DEFAULT_UDP_PORT)),
+            VniSettingsMatchers.hasVlan(equalTo(2)),
+            hasVni(10001)));
+
+    assertThat(c, hasDefaultVrf(hasVniSettings(hasKey(20001))));
+    assertThat(
+        c.getDefaultVrf().getVniSettings().get(20001),
+        allOf(
+            // L3 mcast IP
+            hasBumTransportIps(equalTo(ImmutableSortedSet.of(Ip.parse("234.0.0.0")))),
+            hasBumTransportMethod(equalTo(BumTransportMethod.MULTICAST_GROUP)),
+            hasSourceAddress(nullValue()),
+            hasUdpPort(equalTo(DEFAULT_UDP_PORT)),
+            VniSettingsMatchers.hasVlan(equalTo(3)),
+            hasVni(20001)));
+
+    assertThat(c, hasDefaultVrf(hasVniSettings(hasKey(30001))));
+    assertThat(
+        c.getDefaultVrf().getVniSettings().get(30001),
+        allOf(
+            // L2 mcast IP
+            hasBumTransportIps(equalTo(ImmutableSortedSet.of(Ip.parse("233.0.0.0")))),
+            hasBumTransportMethod(equalTo(BumTransportMethod.MULTICAST_GROUP)),
+            hasSourceAddress(nullValue()),
+            hasUdpPort(equalTo(DEFAULT_UDP_PORT)),
+            VniSettingsMatchers.hasVlan(equalTo(4)),
+            hasVni(30001)));
+
+    assertThat(c, hasDefaultVrf(hasVniSettings(hasKey(40001))));
+    assertThat(
+        c.getDefaultVrf().getVniSettings().get(40001),
+        allOf(
+            hasBumTransportIps(equalTo(ImmutableSortedSet.of(Ip.parse("4.0.0.1")))),
+            hasBumTransportMethod(equalTo(BumTransportMethod.UNICAST_FLOOD_GROUP)),
+            hasSourceAddress(equalTo(Ip.parse("1.1.1.1"))),
+            hasUdpPort(equalTo(DEFAULT_UDP_PORT)),
+            VniSettingsMatchers.hasVlan(equalTo(5)),
+            hasVni(40001)));
+
+    // VLAN for VNI 500001 is shutdown
+    assertThat(c, not(hasDefaultVrf(hasVniSettings(hasKey(50001)))));
   }
 
   @Test
