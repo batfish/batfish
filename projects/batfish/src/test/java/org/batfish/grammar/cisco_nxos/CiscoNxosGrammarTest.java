@@ -2579,17 +2579,6 @@ public final class CiscoNxosGrammarTest {
             VniSettingsMatchers.hasVlan(equalTo(2)),
             hasVni(10001)));
 
-    assertThat(c, hasDefaultVrf(hasVniSettings(hasKey(20001))));
-    assertThat(
-        c.getDefaultVrf().getVniSettings().get(20001),
-        allOf(
-            hasBumTransportIps(equalTo(ImmutableSortedSet.of())),
-            hasBumTransportMethod(equalTo(BumTransportMethod.UNICAST_FLOOD_GROUP)),
-            hasSourceAddress(nullValue()),
-            hasUdpPort(equalTo(DEFAULT_UDP_PORT)),
-            VniSettingsMatchers.hasVlan(nullValue()),
-            hasVni(20001)));
-
     assertThat(c, hasDefaultVrf(hasVniSettings(hasKey(30001))));
     assertThat(
         c.getDefaultVrf().getVniSettings().get(30001),
@@ -2598,18 +2587,18 @@ public final class CiscoNxosGrammarTest {
             hasBumTransportMethod(equalTo(BumTransportMethod.UNICAST_FLOOD_GROUP)),
             hasSourceAddress(nullValue()),
             hasUdpPort(equalTo(DEFAULT_UDP_PORT)),
-            VniSettingsMatchers.hasVlan(nullValue()),
+            VniSettingsMatchers.hasVlan(equalTo(4)),
             hasVni(30001)));
 
     assertThat(c, hasDefaultVrf(hasVniSettings(hasKey(40001))));
     assertThat(
         c.getDefaultVrf().getVniSettings().get(40001),
         allOf(
-            hasBumTransportIps(equalTo(ImmutableSortedSet.of())),
+            hasBumTransportIps(equalTo(ImmutableSortedSet.of(Ip.parse("4.0.0.1")))),
             hasBumTransportMethod(equalTo(BumTransportMethod.UNICAST_FLOOD_GROUP)),
             hasSourceAddress(equalTo(Ip.parse("1.1.1.1"))),
             hasUdpPort(equalTo(DEFAULT_UDP_PORT)),
-            VniSettingsMatchers.hasVlan(equalTo(3)),
+            VniSettingsMatchers.hasVlan(equalTo(5)),
             hasVni(40001)));
   }
 

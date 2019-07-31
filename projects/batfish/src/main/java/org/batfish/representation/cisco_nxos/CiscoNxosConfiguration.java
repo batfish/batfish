@@ -40,6 +40,7 @@ import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.SortedSet;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -54,6 +55,7 @@ import org.batfish.datamodel.AsPathAccessListLine;
 import org.batfish.datamodel.BgpActivePeerConfig;
 import org.batfish.datamodel.BgpPassivePeerConfig;
 import org.batfish.datamodel.BgpTieBreaker;
+import org.batfish.datamodel.BumTransportMethod;
 import org.batfish.datamodel.CommunityList;
 import org.batfish.datamodel.CommunityListLine;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
@@ -112,6 +114,7 @@ import org.batfish.datamodel.routing_policy.statement.Statements;
 import org.batfish.datamodel.tracking.DecrementPriority;
 import org.batfish.datamodel.vendor_family.cisco_nxos.CiscoNxosFamily;
 import org.batfish.representation.cisco_nxos.BgpVrfIpv6AddressFamilyConfiguration.Network;
+import org.batfish.representation.cisco_nxos.Nve.IngressReplicationProtocol;
 import org.batfish.vendor.VendorConfiguration;
 
 /** Vendor-specific representation of a Cisco NX-OS network configuration */
@@ -673,18 +676,35 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
   }
 
   private void convertNveVni(@Nonnull Nve nve, @Nonnull NveVni nveVni) {
+    SortedSet<Ip> bumTransportIps = ImmutableSortedSet.of();
+    if (nveVni.getIngressReplicationProtocol() == IngressReplicationProtocol.STATIC) {
+      bumTransportIps = ImmutableSortedSet.copyOf(nveVni.getPeerIps());
+    }
+    BumTransportMethod bumTransportMethod =
+        nveVni.getMcastGroup() != null
+                || nve.getMulticastGroupL2() != null
+                || nve.getMulticastGroupL3() != null
+            ? MULTICAST_GROUP
+            : UNICAST_FLOOD_GROUP;
+    Integer vlan = getVlanForVni(nveVni.getVni());
+    if (vlan == null) {
+      return;
+    }
+    if (_c.getAllInterfaces().values().stream()
+        .noneMatch(iface -> vlan.equals(iface.getVlan()) && iface.getActive())) {
+      return;
+    }
     VniSettings vniSettings =
         VniSettings.builder()
-            .setBumTransportIps(ImmutableSortedSet.of())
-            .setBumTransportMethod(
-                nveVni.getMcastGroup() != null ? MULTICAST_GROUP : UNICAST_FLOOD_GROUP)
+            .setBumTransportIps(bumTransportIps)
+            .setBumTransportMethod(bumTransportMethod)
             .setSourceAddress(
                 nve.getSourceInterface() != null
                     ? getInterfaceIp(_c.getAllInterfaces(), nve.getSourceInterface())
                     : null)
             .setUdpPort(VniSettings.DEFAULT_UDP_PORT)
             .setVni(nveVni.getVni())
-            .setVlan(getVlanForVni(nveVni.getVni()))
+            .setVlan(vlan)
             .build();
     _c.getDefaultVrf().getVniSettings().put(vniSettings.getVni(), vniSettings);
   }
