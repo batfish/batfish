@@ -10634,7 +10634,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       int as = toInteger(ctx.DEC());
       return new ExplicitAs(as);
     } else if (ctx.AUTO() != null) {
-      return new AutoAs();
+      return AutoAs.instance();
     } else if (ctx.RP_VARIABLE() != null) {
       return new VarAs(ctx.RP_VARIABLE().getText());
     } else {
