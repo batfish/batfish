@@ -171,6 +171,9 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
       @Nullable Long localAs,
       BgpVrf bgpVrf,
       org.batfish.datamodel.BgpProcess newProc) {
+    if (neighbor.getRemoteAs() == null && neighbor.getRemoteAsType() == null) {
+      return;
+    }
     RoutingPolicy routingPolicy = computeBgpNeighborRoutingPolicy(neighbor, bgpVrf);
     BgpUnnumberedPeerConfig.builder()
         .setBgpProcess(newProc)
@@ -204,7 +207,8 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
       @Nullable Long localAs,
       BgpVrf bgpVrf,
       org.batfish.datamodel.BgpProcess newProc) {
-    if (neighbor.getPeerIp() == null) {
+    if (neighbor.getPeerIp() == null
+        || (neighbor.getRemoteAs() == null && neighbor.getRemoteAsType() == null)) {
       return;
     }
     RoutingPolicy routingPolicy = computeBgpNeighborRoutingPolicy(neighbor, bgpVrf);
@@ -525,7 +529,6 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
                         if (neighbor instanceof BgpInterfaceNeighbor) {
                           BgpInterfaceNeighbor interfaceNeighbor = (BgpInterfaceNeighbor) neighbor;
                           interfaceNeighbor.inheritFrom(bgpVrf.getNeighbors());
-
                           addInterfaceNeighbor(interfaceNeighbor, localAs, bgpVrf, viBgpProcess);
                         } else if (neighbor instanceof BgpIpNeighbor) {
                           BgpIpNeighbor ipNeighbor = (BgpIpNeighbor) neighbor;
