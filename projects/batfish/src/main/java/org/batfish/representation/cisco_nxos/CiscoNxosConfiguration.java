@@ -101,15 +101,25 @@ import org.batfish.datamodel.routing_policy.expr.DestinationNetwork6;
 import org.batfish.datamodel.routing_policy.expr.Disjunction;
 import org.batfish.datamodel.routing_policy.expr.ExplicitPrefix6Set;
 import org.batfish.datamodel.routing_policy.expr.ExplicitPrefixSet;
+import org.batfish.datamodel.routing_policy.expr.IntComparator;
 import org.batfish.datamodel.routing_policy.expr.LiteralCommunityConjunction;
+import org.batfish.datamodel.routing_policy.expr.LiteralLong;
 import org.batfish.datamodel.routing_policy.expr.LiteralOrigin;
+import org.batfish.datamodel.routing_policy.expr.MatchAsPath;
+import org.batfish.datamodel.routing_policy.expr.MatchEntireCommunitySet;
+import org.batfish.datamodel.routing_policy.expr.MatchMetric;
 import org.batfish.datamodel.routing_policy.expr.MatchPrefix6Set;
 import org.batfish.datamodel.routing_policy.expr.MatchPrefixSet;
 import org.batfish.datamodel.routing_policy.expr.MatchProtocol;
+import org.batfish.datamodel.routing_policy.expr.MatchTag;
+import org.batfish.datamodel.routing_policy.expr.NamedAsPathSet;
+import org.batfish.datamodel.routing_policy.expr.NamedCommunitySet;
+import org.batfish.datamodel.routing_policy.expr.NamedPrefixSet;
 import org.batfish.datamodel.routing_policy.expr.Not;
 import org.batfish.datamodel.routing_policy.expr.WithEnvironmentExpr;
 import org.batfish.datamodel.routing_policy.statement.If;
 import org.batfish.datamodel.routing_policy.statement.SetOrigin;
+import org.batfish.datamodel.routing_policy.statement.Statement;
 import org.batfish.datamodel.routing_policy.statement.Statements;
 import org.batfish.datamodel.tracking.DecrementPriority;
 import org.batfish.datamodel.vendor_family.cisco_nxos.CiscoNxosFamily;
@@ -646,6 +656,11 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
     _ipPrefixLists.forEach(
         (name, ipPrefixList) ->
             _c.getRouteFilterLists().put(name, toRouteFilterList(ipPrefixList)));
+  }
+
+  private void convertRouteMaps() {
+    _routeMaps.forEach(
+        (name, routeMap) -> _c.getRoutingPolicies().put(name, toRoutingPolicy(routeMap)));
   }
 
   private void convertStaticRoutes() {
@@ -1351,6 +1366,132 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
     return new AsPathAccessListLine(line.getAction(), toJavaRegex(line.getRegex()));
   }
 
+  private @Nonnull RoutingPolicy toRoutingPolicy(RouteMap routeMap) {
+    // TODO: support continue entries
+    ImmutableList.Builder<Statement> statements = ImmutableList.builder();
+    routeMap.getEntries().values().stream().map(this::toStatement).forEach(statements::add);
+    statements.add(Statements.ReturnFalse.toStaticStatement());
+    // TODO: clean up setting of owner
+    return RoutingPolicy.builder()
+        .setName(routeMap.getName())
+        .setOwner(_c)
+        .setStatements(statements.build())
+        .build();
+  }
+
+  private @Nonnull Statement toStatement(RouteMapEntry entry) {
+    ImmutableList.Builder<Statement> trueStatements = ImmutableList.builder();
+    ImmutableList.Builder<BooleanExpr> conjuncts = ImmutableList.builder();
+
+    // matches
+    entry.getMatches().map(this::toBooleanExpr).forEach(conjuncts::add);
+
+    // sets
+
+    // final action if matched
+    LineAction action = entry.getAction();
+    if (action == LineAction.PERMIT) {
+      trueStatements.add(Statements.ReturnTrue.toStaticStatement());
+    } else {
+      assert action == LineAction.DENY;
+      trueStatements.add(Statements.ReturnFalse.toStaticStatement());
+    }
+    return new If(new Conjunction(conjuncts.build()), trueStatements.build(), ImmutableList.of());
+  }
+
+  private @Nonnull BooleanExpr toBooleanExpr(RouteMapMatch match) {
+    return match.accept(
+        new RouteMapMatchVisitor<BooleanExpr>() {
+
+          @Override
+          public BooleanExpr visitRouteMapMatchAsPath(RouteMapMatchAsPath routeMapMatchAsPath) {
+            // TODO: test behavior for undefined reference
+            return new Disjunction(
+                routeMapMatchAsPath.getNames().stream()
+                    .filter(_ipAsPathAccessLists::containsKey)
+                    .map(name -> new MatchAsPath(new NamedAsPathSet(name)))
+                    .collect(ImmutableList.toImmutableList()));
+          }
+
+          @Override
+          public BooleanExpr visitRouteMapMatchCommunity(
+              RouteMapMatchCommunity routeMapMatchCommunity) {
+            // TODO: test behavior for undefined reference
+            return new Disjunction(
+                routeMapMatchCommunity.getNames().stream()
+                    .filter(_ipCommunityLists::containsKey)
+                    .map(name -> new MatchEntireCommunitySet(new NamedCommunitySet(name)))
+                    .collect(ImmutableList.toImmutableList()));
+          }
+
+          @Override
+          public BooleanExpr visitRouteMapMatchInterface(
+              RouteMapMatchInterface routeMapMatchInterface) {
+            // TODO: ignore shutdown interfaces?
+            // TODO: ignore blacklisted interfaces?
+            // TODO: HSRP addresses? Only if elected?
+            return new Disjunction(
+                new MatchPrefixSet(
+                    DestinationNetwork.instance(),
+                    new ExplicitPrefixSet(
+                        new PrefixSpace(
+                            routeMapMatchInterface.getNames().stream()
+                                .filter(_interfaces::containsKey)
+                                .map(_interfaces::get)
+                                .flatMap(
+                                    iface ->
+                                        Stream.concat(
+                                            Stream.of(iface.getAddress()),
+                                            iface.getSecondaryAddresses().stream()))
+                                .map(InterfaceAddressWithAttributes::getAddress)
+                                .filter(ConcreteInterfaceAddress.class::isInstance)
+                                .map(ConcreteInterfaceAddress.class::cast)
+                                .flatMap(
+                                    address ->
+                                        address.getPrefix().getPrefixLength() <= 30
+                                            ? Stream.of(
+                                                address.getPrefix(),
+                                                Prefix.create(
+                                                    address.getIp(), Prefix.MAX_PREFIX_LENGTH))
+                                            : Stream.of(address.getPrefix()))
+                                .map(PrefixRange::fromPrefix)
+                                .collect(ImmutableList.toImmutableList())))));
+          }
+
+          @Override
+          public BooleanExpr visitRouteMapMatchIpAddress(
+              RouteMapMatchIpAddress routeMapMatchIpAddress) {
+            // TODO: implement - PBR only?
+            // Ignore
+            return BooleanExprs.TRUE;
+          }
+
+          @Override
+          public BooleanExpr visitRouteMapMatchIpAddressPrefixList(
+              RouteMapMatchIpAddressPrefixList routeMapMatchIpAddressPrefixList) {
+            return new Disjunction(
+                routeMapMatchIpAddressPrefixList.getNames().stream()
+                    .filter(_ipPrefixLists::containsKey)
+                    .map(
+                        name ->
+                            new MatchPrefixSet(
+                                DestinationNetwork.instance(), new NamedPrefixSet(name)))
+                    .collect(ImmutableList.toImmutableList()));
+          }
+
+          @Override
+          public BooleanExpr visitRouteMapMatchMetric(RouteMapMatchMetric routeMapMatchMetric) {
+            return new MatchMetric(
+                IntComparator.EQ, new LiteralLong(routeMapMatchMetric.getMetric()));
+          }
+
+          @Override
+          public BooleanExpr visitRouteMapMatchTag(RouteMapMatchTag routeMapMatchTag) {
+            return new MatchTag(IntComparator.EQ, new LiteralLong(routeMapMatchTag.getTag()));
+          }
+        });
+  }
+
   /**
    * Converts the supplied {@code staticRoute} to a a vendor-independent {@link
    * org.batfish.datamodel.StaticRoute} if all options are supported and static route contains no
@@ -1399,6 +1540,7 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
     convertIpAsPathAccessLists();
     convertIpPrefixLists();
     convertIpCommunityLists();
+    convertRouteMaps();
     convertBgp();
     convertNves();
 

@@ -6,10 +6,13 @@ hostname nxos_route_map
 !!! Referenced structures
 ip access-list access_list1
   10 permit ip any any
-ip as-path access-list as_path_access_list1 seq 1 permit "^$"
-ip community-list standard community_list1 seq 1 permit 1:1
-ip prefix-list prefix_list1 seq 10 permit 0.0.0.0/0
-
+ip as-path access-list as_path_access_list1 seq 1 permit "_1_"
+ip community-list standard community_list1 seq 1 permit 1:1 2:2
+ip prefix-list prefix_list1 seq 10 permit 192.168.1.0/24
+interface loopback0
+  no switchport
+  no shutdown
+  ip address 192.0.2.1/24
 
 !!! Empty route-maps
 route-map empty_deny deny 10
