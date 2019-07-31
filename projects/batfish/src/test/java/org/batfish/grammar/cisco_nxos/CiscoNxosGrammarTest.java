@@ -2605,6 +2605,8 @@ public final class CiscoNxosGrammarTest {
             VniSettingsMatchers.hasVlan(equalTo(2)),
             hasVni(10001)));
 
+    assertThat(c, not(hasDefaultVrf(hasVniSettings(hasKey(20001)))));
+
     assertThat(c, hasDefaultVrf(hasVniSettings(hasKey(30001))));
     assertThat(
         c.getDefaultVrf().getVniSettings().get(30001),
