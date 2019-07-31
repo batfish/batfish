@@ -6,24 +6,6 @@ hostname nxos_nve
 feature vn-segment-vlan-based
 feature nv overlay
 !
-vlan 2
-  name Name-Of-Vlan-2
-  vn-segment 10001
-!
-vlan 3
-  name Name-Of-Vlan-3
-  vn-segment 20001
-!
-vlan 4
-  name Name-Of-Vlan-4
-  vn-segment 30001
-!
-vlan 5
-  name Name-Of-Vlan-5
-  vn-segment 40001
-!
-interface loopback4
-  ip address 1.1.1.1/32
 !
 interface nve1-2
   no shutdown
@@ -60,16 +42,4 @@ interface nve4
     peer-ip 4.0.0.1
   !! This line will be rejected since we have a peer configured with ingress-replication protocol static
   host-reachability protocol bgp
-!
-interface Vlan2
-  no shutdown
-!
-!! Shutting down VLAN 3 (NVE 2)
-interface Vlan3
-!
-interface Vlan4
-  no shutdown
-!
-interface Vlan5
-  no shutdown
 !

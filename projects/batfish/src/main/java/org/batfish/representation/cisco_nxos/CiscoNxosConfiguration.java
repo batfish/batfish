@@ -691,16 +691,17 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
   }
 
   private void convertNveVni(@Nonnull Nve nve, @Nonnull NveVni nveVni) {
-    SortedSet<Ip> bumTransportIps = ImmutableSortedSet.of();
-    if (nveVni.getIngressReplicationProtocol() == IngressReplicationProtocol.STATIC) {
+    if (nve.isShutdown()) {
+      return;
+    }
+    BumTransportMethod bumTransportMethod = getBumTransportMethod(nveVni, nve);
+    SortedSet<Ip> bumTransportIps;
+    if (nveVni.getIngressReplicationProtocol() != IngressReplicationProtocol.STATIC
+        && bumTransportMethod == MULTICAST_GROUP) {
+      bumTransportIps = ImmutableSortedSet.of(getMultiCastGroupIp(nveVni, nve));
+    } else {
       bumTransportIps = ImmutableSortedSet.copyOf(nveVni.getPeerIps());
     }
-    BumTransportMethod bumTransportMethod =
-        nveVni.getMcastGroup() != null
-                || nve.getMulticastGroupL2() != null
-                || nve.getMulticastGroupL3() != null
-            ? MULTICAST_GROUP
-            : UNICAST_FLOOD_GROUP;
     Integer vlan = getVlanForVni(nveVni.getVni());
     if (vlan == null) {
       return;
@@ -722,6 +723,33 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
             .setVlan(vlan)
             .build();
     _c.getDefaultVrf().getVniSettings().put(vniSettings.getVni(), vniSettings);
+  }
+
+  @Nonnull
+  private static BumTransportMethod getBumTransportMethod(
+      @Nonnull NveVni nveVni, @Nonnull Nve nve) {
+    if (nveVni.getIngressReplicationProtocol() == IngressReplicationProtocol.STATIC) {
+      // since all multicast group commands are ignored in this case
+      return UNICAST_FLOOD_GROUP;
+    }
+    return nveVni.getMcastGroup() != null
+            || !nveVni.isAssociateVrf() && nve.getMulticastGroupL2() != null
+            || nveVni.isAssociateVrf() && nve.getMulticastGroupL3() != null
+        ? MULTICAST_GROUP
+        : UNICAST_FLOOD_GROUP;
+  }
+
+  @Nonnull
+  private static Ip getMultiCastGroupIp(@Nonnull NveVni nveVni, @Nonnull Nve nve) {
+    if (nveVni.getMcastGroup() != null) {
+      return nveVni.getMcastGroup();
+    }
+    if (nveVni.isAssociateVrf()) {
+      assert nve.getMulticastGroupL3() != null;
+      return nve.getMulticastGroupL3();
+    }
+    assert nve.getMulticastGroupL2() != null;
+    return nve.getMulticastGroupL2();
   }
 
   @Nullable

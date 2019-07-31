@@ -2591,28 +2591,39 @@ public final class CiscoNxosGrammarTest {
   }
 
   @Test
-  public void testNveConversion() throws IOException {
-    Configuration c = parseConfig("nxos_nve");
+  public void testNveVnisConversion() throws IOException {
+    Configuration c = parseConfig("nxos_nve_vnis");
 
     assertThat(c, hasDefaultVrf(hasVniSettings(hasKey(10001))));
     assertThat(
         c.getDefaultVrf().getVniSettings().get(10001),
         allOf(
-            hasBumTransportIps(equalTo(ImmutableSortedSet.of())),
+            hasBumTransportIps(equalTo(ImmutableSortedSet.of(Ip.parse("235.0.0.0")))),
             hasBumTransportMethod(equalTo(BumTransportMethod.MULTICAST_GROUP)),
             hasSourceAddress(nullValue()),
             hasUdpPort(equalTo(DEFAULT_UDP_PORT)),
             VniSettingsMatchers.hasVlan(equalTo(2)),
             hasVni(10001)));
 
-    assertThat(c, not(hasDefaultVrf(hasVniSettings(hasKey(20001)))));
+    assertThat(c, hasDefaultVrf(hasVniSettings(hasKey(20001))));
+    assertThat(
+        c.getDefaultVrf().getVniSettings().get(20001),
+        allOf(
+            // L3 mcast IP
+            hasBumTransportIps(equalTo(ImmutableSortedSet.of(Ip.parse("234.0.0.0")))),
+            hasBumTransportMethod(equalTo(BumTransportMethod.MULTICAST_GROUP)),
+            hasSourceAddress(nullValue()),
+            hasUdpPort(equalTo(DEFAULT_UDP_PORT)),
+            VniSettingsMatchers.hasVlan(equalTo(3)),
+            hasVni(20001)));
 
     assertThat(c, hasDefaultVrf(hasVniSettings(hasKey(30001))));
     assertThat(
         c.getDefaultVrf().getVniSettings().get(30001),
         allOf(
-            hasBumTransportIps(equalTo(ImmutableSortedSet.of())),
-            hasBumTransportMethod(equalTo(BumTransportMethod.UNICAST_FLOOD_GROUP)),
+            // L2 mcast IP
+            hasBumTransportIps(equalTo(ImmutableSortedSet.of(Ip.parse("233.0.0.0")))),
+            hasBumTransportMethod(equalTo(BumTransportMethod.MULTICAST_GROUP)),
             hasSourceAddress(nullValue()),
             hasUdpPort(equalTo(DEFAULT_UDP_PORT)),
             VniSettingsMatchers.hasVlan(equalTo(4)),
@@ -2628,6 +2639,9 @@ public final class CiscoNxosGrammarTest {
             hasUdpPort(equalTo(DEFAULT_UDP_PORT)),
             VniSettingsMatchers.hasVlan(equalTo(5)),
             hasVni(40001)));
+
+    // VLAN for VNI 500001 is shutdown
+    assertThat(c, not(hasDefaultVrf(hasVniSettings(hasKey(50001)))));
   }
 
   @Test
