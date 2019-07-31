@@ -64,6 +64,7 @@ import org.batfish.datamodel.IntegerSpace;
 import org.batfish.datamodel.Interface.Dependency;
 import org.batfish.datamodel.Interface.DependencyType;
 import org.batfish.datamodel.InterfaceType;
+import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.OriginType;
@@ -84,7 +85,10 @@ import org.batfish.datamodel.TcpFlagsMatchConditions;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.acl.AclLineMatchExprs;
 import org.batfish.datamodel.bgp.community.StandardCommunity;
+import org.batfish.datamodel.isis.IsisMetricType;
+import org.batfish.datamodel.ospf.OspfMetricType;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
+import org.batfish.datamodel.routing_policy.expr.AutoAs;
 import org.batfish.datamodel.routing_policy.expr.BooleanExpr;
 import org.batfish.datamodel.routing_policy.expr.BooleanExprs;
 import org.batfish.datamodel.routing_policy.expr.CallExpr;
@@ -93,10 +97,15 @@ import org.batfish.datamodel.routing_policy.expr.Conjunction;
 import org.batfish.datamodel.routing_policy.expr.DestinationNetwork;
 import org.batfish.datamodel.routing_policy.expr.DestinationNetwork6;
 import org.batfish.datamodel.routing_policy.expr.Disjunction;
+import org.batfish.datamodel.routing_policy.expr.ExplicitAs;
 import org.batfish.datamodel.routing_policy.expr.ExplicitPrefix6Set;
 import org.batfish.datamodel.routing_policy.expr.ExplicitPrefixSet;
 import org.batfish.datamodel.routing_policy.expr.IntComparator;
+import org.batfish.datamodel.routing_policy.expr.IpNextHop;
+import org.batfish.datamodel.routing_policy.expr.LiteralAsList;
 import org.batfish.datamodel.routing_policy.expr.LiteralCommunityConjunction;
+import org.batfish.datamodel.routing_policy.expr.LiteralCommunitySet;
+import org.batfish.datamodel.routing_policy.expr.LiteralInt;
 import org.batfish.datamodel.routing_policy.expr.LiteralLong;
 import org.batfish.datamodel.routing_policy.expr.LiteralOrigin;
 import org.batfish.datamodel.routing_policy.expr.MatchAsPath;
@@ -106,13 +115,23 @@ import org.batfish.datamodel.routing_policy.expr.MatchPrefix6Set;
 import org.batfish.datamodel.routing_policy.expr.MatchPrefixSet;
 import org.batfish.datamodel.routing_policy.expr.MatchProtocol;
 import org.batfish.datamodel.routing_policy.expr.MatchTag;
+import org.batfish.datamodel.routing_policy.expr.MultipliedAs;
 import org.batfish.datamodel.routing_policy.expr.NamedAsPathSet;
 import org.batfish.datamodel.routing_policy.expr.NamedCommunitySet;
 import org.batfish.datamodel.routing_policy.expr.NamedPrefixSet;
 import org.batfish.datamodel.routing_policy.expr.Not;
 import org.batfish.datamodel.routing_policy.expr.WithEnvironmentExpr;
+import org.batfish.datamodel.routing_policy.statement.AddCommunity;
 import org.batfish.datamodel.routing_policy.statement.If;
+import org.batfish.datamodel.routing_policy.statement.PrependAsPath;
+import org.batfish.datamodel.routing_policy.statement.SetCommunity;
+import org.batfish.datamodel.routing_policy.statement.SetIsisMetricType;
+import org.batfish.datamodel.routing_policy.statement.SetLocalPreference;
+import org.batfish.datamodel.routing_policy.statement.SetMetric;
+import org.batfish.datamodel.routing_policy.statement.SetNextHop;
 import org.batfish.datamodel.routing_policy.statement.SetOrigin;
+import org.batfish.datamodel.routing_policy.statement.SetOspfMetricType;
+import org.batfish.datamodel.routing_policy.statement.SetTag;
 import org.batfish.datamodel.routing_policy.statement.Statement;
 import org.batfish.datamodel.routing_policy.statement.Statements;
 import org.batfish.datamodel.tracking.DecrementPriority;
@@ -1317,6 +1336,7 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
     entry.getMatches().map(this::toBooleanExpr).forEach(conjuncts::add);
 
     // sets
+    entry.getSets().flatMap(this::toStatements).forEach(trueStatements::add);
 
     // final action if matched
     LineAction action = entry.getAction();
@@ -1418,6 +1438,102 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
           @Override
           public BooleanExpr visitRouteMapMatchTag(RouteMapMatchTag routeMapMatchTag) {
             return new MatchTag(IntComparator.EQ, new LiteralLong(routeMapMatchTag.getTag()));
+          }
+        });
+  }
+
+  private @Nonnull Stream<Statement> toStatements(RouteMapSet routeMapSet) {
+    return routeMapSet.accept(
+        new RouteMapSetVisitor<Stream<Statement>>() {
+          @Override
+          public Stream<Statement> visitRouteMapSetAsPathPrependLastAs(
+              RouteMapSetAsPathPrependLastAs routeMapSetAsPathPrependLastAs) {
+            return Stream.of(
+                new PrependAsPath(
+                    new MultipliedAs(
+                        AutoAs.instance(),
+                        new LiteralInt(routeMapSetAsPathPrependLastAs.getNumPrepends()))));
+          }
+
+          @Override
+          public Stream<Statement> visitRouteMapSetAsPathPrependLiteralAs(
+              RouteMapSetAsPathPrependLiteralAs routeMapSetAsPathPrependLiteralAs) {
+            return Stream.of(
+                new PrependAsPath(
+                    new LiteralAsList(
+                        routeMapSetAsPathPrependLiteralAs.getAsNumbers().stream()
+                            .map(ExplicitAs::new)
+                            .collect(ImmutableList.toImmutableList()))));
+          }
+
+          @Override
+          public Stream<Statement> visitRouteMapSetCommunity(
+              RouteMapSetCommunity routeMapSetCommunity) {
+            CommunitySetExpr communities =
+                new LiteralCommunitySet(routeMapSetCommunity.getCommunities());
+            return Stream.of(
+                routeMapSetCommunity.getAdditive()
+                    ? new AddCommunity(communities)
+                    : new SetCommunity(communities));
+          }
+
+          @Override
+          public Stream<Statement> visitRouteMapSetIpNextHopLiteral(
+              RouteMapSetIpNextHopLiteral routeMapSetIpNextHopLiteral) {
+            List<Ip> nextHopIps = routeMapSetIpNextHopLiteral.getNextHops();
+            if (nextHopIps.size() > 1) {
+              // Applicable to PBR only (not routing)
+              return Stream.empty();
+            }
+            assert !nextHopIps.isEmpty();
+            return Stream.of(new SetNextHop(new IpNextHop(nextHopIps), false));
+          }
+
+          @Override
+          public Stream<Statement> visitRouteMapSetIpNextHopUnchanged(
+              RouteMapSetIpNextHopUnchanged routeMapSetIpNextHopUnchanged) {
+            // TODO: implement
+            return Stream.empty();
+          }
+
+          @Override
+          public Stream<Statement> visitRouteMapSetLocalPreference(
+              RouteMapSetLocalPreference routeMapSetLocalPreference) {
+            return Stream.of(
+                new SetLocalPreference(
+                    new LiteralLong(routeMapSetLocalPreference.getLocalPreference())));
+          }
+
+          @Override
+          public Stream<Statement> visitRouteMapSetMetric(RouteMapSetMetric routeMapSetMetric) {
+            return Stream.of(new SetMetric(new LiteralLong(routeMapSetMetric.getMetric())));
+          }
+
+          @Override
+          public Stream<Statement> visitRouteMapSetMetricType(
+              RouteMapSetMetricType routeMapSetMetricType) {
+            switch (routeMapSetMetricType.getMetricType()) {
+              case EXTERNAL:
+                return Stream.of(new SetIsisMetricType(IsisMetricType.EXTERNAL));
+
+              case INTERNAL:
+                return Stream.of(new SetIsisMetricType(IsisMetricType.INTERNAL));
+
+              case TYPE_1:
+                return Stream.of(new SetOspfMetricType(OspfMetricType.E1));
+
+              case TYPE_2:
+                return Stream.of(new SetOspfMetricType(OspfMetricType.E2));
+
+              default:
+                // should not happen
+                return Stream.empty();
+            }
+          }
+
+          @Override
+          public Stream<Statement> visitRouteMapSetTag(RouteMapSetTag routeMapSetTag) {
+            return Stream.of(new SetTag(new LiteralLong(routeMapSetTag.getTag())));
           }
         });
   }

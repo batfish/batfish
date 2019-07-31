@@ -55,7 +55,10 @@ route-map set_community_additive permit 10
   set community 1:1 1:2 additive
 
 route-map set_ip_next_hop_literal permit 10
-  set ip next-hop 192.0.2.1 192.0.2.2
+  set ip next-hop 192.0.2.50
+
+route-map set_ip_next_hop_literal2 permit 10
+  set ip next-hop 192.0.2.50 192.0.2.51
 
 route-map set_ip_next_hop_unchanged permit 10
   set ip next-hop unchanged
