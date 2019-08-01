@@ -332,9 +332,15 @@ public class CumulusNcluConfigurationBuilder extends CumulusNcluParserBaseListen
             ? Long.parseLong(ctx.first_interval_end.getText(), 10)
             : firstIntervalStart;
     checkArgument(firstIntervalStart <= maxValue && firstIntervalEnd <= maxValue);
-    // add first interval
-    ImmutableRangeSet.Builder<Long> builder =
-        ImmutableRangeSet.<Long>builder().add(Range.closed(firstIntervalStart, firstIntervalEnd));
+    // attempt to add first interval
+    ImmutableRangeSet.Builder<Long> builder = ImmutableRangeSet.builder();
+    try {
+      // TODO have better parsing for globs: https://github.com/batfish/batfish/issues/4386
+      builder.add(Range.closed(firstIntervalStart, firstIntervalEnd));
+    } catch (IllegalArgumentException e) {
+      return ImmutableSet.of();
+    }
+    // All good, proceed to numeric ranges
     if (ctx.other_numeric_ranges != null) {
       // add other intervals
       RangeSet<Long> rangeSet = toRangeSet(ctx.other_numeric_ranges);
@@ -1082,7 +1088,8 @@ public class CumulusNcluConfigurationBuilder extends CumulusNcluParserBaseListen
       return;
     }
     if (_currentBonds.size() > 1) {
-      throw new WillNotCommitException("Cannot assign slaves to more than one bond");
+      // High likelihood we messed up the globs: https://github.com/batfish/batfish/issues/4386
+      return;
     }
     Set<String> slaves = toStrings(ctx.slaves);
     List<Interface> interfaces =

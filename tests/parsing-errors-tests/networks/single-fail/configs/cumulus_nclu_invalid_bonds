@@ -1,5 +1,0 @@
-net del all
-#
-net add hostname cumulus_nclu_invalid_bonds
-# Slaves assigned to multiple bonds
-net add bond B1,B2 bond slaves swp1-10
