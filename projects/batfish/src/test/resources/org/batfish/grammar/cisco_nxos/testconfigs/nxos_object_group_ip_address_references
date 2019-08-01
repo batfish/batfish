@@ -1,0 +1,11 @@
+!RANCID-CONTENT-TYPE: cisco-nx
+!
+hostname nxos_object_group_ip_address_references
+!
+
+object-group ip address og_unused
+object-group ip address og_used
+
+ip access-list acl
+  permit ip addrgroup og_used addrgroup og_used
+  permit ip any addrgroup og_undefined

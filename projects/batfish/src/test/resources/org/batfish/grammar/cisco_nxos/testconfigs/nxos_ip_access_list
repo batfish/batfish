@@ -3,6 +3,12 @@
 hostname nxos_ip_access_list
 !
 
+object-group ip address mydstaddrgroup
+  host 10.0.5.5
+object-group ip address mysrcaddrgroup
+  host 10.0.5.6
+  
+
 ip access-list acl_global_options
   fragments deny-all
   fragments permit-all
@@ -41,7 +47,7 @@ ip access-list acl_common_ip_options_destination_ip
   !!! Match destination IP
   permit ip any 10.0.0.0 0.0.0.255
   permit ip any 10.0.1.0/24
-  permit ip any addrgroup mysrcaddrgroup
+  permit ip any addrgroup mydstaddrgroup
   permit ip any host 10.0.2.2
   permit ip any any
 

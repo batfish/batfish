@@ -135,6 +135,8 @@ ADDRESS
   {
     if (secondToLastTokenType() == MATCH && lastTokenType() == IP) {
       pushMode(M_MatchIpAddress);
+    } else if (secondToLastTokenType() == OBJECT_GROUP) {
+      pushMode(M_Word);
     }
   }
 
@@ -2142,6 +2144,11 @@ NXOS
     }
   }
 
+;
+
+OBJECT_GROUP
+:
+  'object-group'
 ;
 
 OBJSTORE

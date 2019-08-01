@@ -14,6 +14,7 @@ import static org.batfish.representation.cisco_nxos.CiscoNxosStructureType.IP_AS
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureType.IP_COMMUNITY_LIST_STANDARD;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureType.IP_PREFIX_LIST;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureType.NVE;
+import static org.batfish.representation.cisco_nxos.CiscoNxosStructureType.OBJECT_GROUP_IP_ADDRESS;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureType.PORT_CHANNEL;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureType.ROUTER_OSPF;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureType.ROUTE_MAP;
@@ -65,6 +66,8 @@ import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.INTE
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.INTERFACE_SELF_REFERENCE;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.INTERFACE_VLAN;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.INTERFACE_VRF_MEMBER;
+import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.IP_ACCESS_LIST_DESTINATION_ADDRGROUP;
+import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.IP_ACCESS_LIST_SOURCE_ADDRGROUP;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.IP_ROUTE_NEXT_HOP_INTERFACE;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.IP_ROUTE_NEXT_HOP_VRF;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.NVE_SELF_REFERENCE;
@@ -246,6 +249,9 @@ import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Nvm_ingress_replicationCon
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Nvm_mcast_groupContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Nvm_peer_ipContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Nvm_suppress_arpContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Object_group_nameContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Ogip_addressContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Ogipa_lineContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Ospf_area_default_costContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Ospf_area_idContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Ospf_area_range_costContext;
@@ -444,6 +450,9 @@ import org.batfish.representation.cisco_nxos.Nve;
 import org.batfish.representation.cisco_nxos.Nve.HostReachabilityProtocol;
 import org.batfish.representation.cisco_nxos.Nve.IngressReplicationProtocol;
 import org.batfish.representation.cisco_nxos.NveVni;
+import org.batfish.representation.cisco_nxos.ObjectGroup;
+import org.batfish.representation.cisco_nxos.ObjectGroupIpAddress;
+import org.batfish.representation.cisco_nxos.ObjectGroupIpAddressLine;
 import org.batfish.representation.cisco_nxos.OspfArea;
 import org.batfish.representation.cisco_nxos.OspfAreaAuthentication;
 import org.batfish.representation.cisco_nxos.OspfAreaNssa;
@@ -557,6 +566,10 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
       IntegerSpace.of(Range.closed(1, 32));
   private static final IntegerSpace NUM_AS_PATH_PREPENDS_RANGE =
       IntegerSpace.of(Range.closed(1, 10));
+  private static final IntegerSpace OBJECT_GROUP_NAME_LENGTH_RANGE =
+      IntegerSpace.of(Range.closed(1, 64));
+  private static final LongSpace OBJECT_GROUP_SEQUENCE_RANGE =
+      LongSpace.of(Range.closed(1L, 4294967295L));
   private static final IntegerSpace OSPF_AREA_DEFAULT_COST_RANGE =
       IntegerSpace.of(Range.closed(0, 16777215));
   private static final IntegerSpace OSPF_AREA_RANGE_COST_RANGE =
@@ -782,6 +795,7 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
   private Layer3Options.Builder _currentLayer3OptionsBuilder;
   private List<Nve> _currentNves;
   private List<NveVni> _currentNveVnis;
+  private ObjectGroupIpAddress _currentObjectGroupIpAddress;
   private OspfArea _currentOspfArea;
   private OspfProcess _currentOspfProcess;
   private RouteMapEntry _currentRouteMapEntry;
@@ -1780,6 +1794,69 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
   @Override
   public void exitNvg_suppress_arp(Nvg_suppress_arpContext ctx) {
     _currentNves.forEach(vni -> vni.setGlobalSuppressArp(true));
+  }
+
+  @Override
+  public void enterOgip_address(Ogip_addressContext ctx) {
+    Optional<String> nameOrErr = toString(ctx, ctx.name);
+    if (!nameOrErr.isPresent()) {
+      _currentObjectGroupIpAddress = new ObjectGroupIpAddress("dummy");
+      return;
+    }
+    String name = nameOrErr.get();
+    ObjectGroup existing = _configuration.getObjectGroups().get(name);
+    if (existing != null) {
+      if (!(existing instanceof ObjectGroupIpAddress)) {
+        warn(
+            ctx,
+            String.format(
+                "Cannot create object-group '%s' of type ip address because an object-group of a different type already exists with that name.",
+                name));
+        _currentObjectGroupIpAddress = new ObjectGroupIpAddress("dummy");
+        return;
+      }
+      _currentObjectGroupIpAddress = (ObjectGroupIpAddress) existing;
+    } else {
+      _currentObjectGroupIpAddress = new ObjectGroupIpAddress(name);
+      _configuration.defineStructure(OBJECT_GROUP_IP_ADDRESS, name, ctx);
+      _configuration.getObjectGroups().put(name, _currentObjectGroupIpAddress);
+    }
+  }
+
+  @Override
+  public void exitOgip_address(Ogip_addressContext ctx) {
+    _currentObjectGroupIpAddress = null;
+  }
+
+  @Override
+  public void exitOgipa_line(Ogipa_lineContext ctx) {
+    long seq;
+    if (ctx.seq != null) {
+      Optional<Long> seqOrErr =
+          toLongInSpace(ctx, ctx.seq, OBJECT_GROUP_SEQUENCE_RANGE, "object-group sequence number");
+      if (!seqOrErr.isPresent()) {
+        return;
+      }
+      seq = seqOrErr.get();
+    } else if (_currentObjectGroupIpAddress.getLines().isEmpty()) {
+      seq = 10L;
+    } else {
+      seq = _currentObjectGroupIpAddress.getLines().lastKey() + 10L;
+    }
+    IpWildcard ipWildcard;
+    if (ctx.address != null) {
+      Ip address = toIp(ctx.address);
+      if (ctx.wildcard != null) {
+        ipWildcard = IpWildcard.ipWithWildcardMask(address, toIp(ctx.wildcard));
+      } else {
+        // host
+        ipWildcard = IpWildcard.create(address);
+      }
+    } else {
+      assert ctx.prefix != null;
+      ipWildcard = IpWildcard.create(toPrefix(ctx.prefix));
+    }
+    _currentObjectGroupIpAddress.getLines().put(seq, new ObjectGroupIpAddressLine(seq, ipWildcard));
   }
 
   @Override
@@ -2909,6 +2986,15 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
   @Override
   public void exitAcllal3_dst_address(Acllal3_dst_addressContext ctx) {
     _currentActionIpAccessListLineBuilder.setDstAddressSpec(toAddressSpec(ctx.addr));
+    if (ctx.addr.group != null) {
+      // TODO: name validation
+      String name = ctx.addr.group.getText();
+      _configuration.referenceStructure(
+          OBJECT_GROUP_IP_ADDRESS,
+          name,
+          IP_ACCESS_LIST_DESTINATION_ADDRGROUP,
+          ctx.getStart().getLine());
+    }
   }
 
   @Override
@@ -2926,6 +3012,12 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
   @Override
   public void exitAcllal3_src_address(Acllal3_src_addressContext ctx) {
     _currentActionIpAccessListLineBuilder.setSrcAddressSpec(toAddressSpec(ctx.addr));
+    if (ctx.addr.group != null) {
+      // TODO: name validation
+      String name = ctx.addr.group.getText();
+      _configuration.referenceStructure(
+          OBJECT_GROUP_IP_ADDRESS, name, IP_ACCESS_LIST_SOURCE_ADDRGROUP, ctx.getStart().getLine());
+    }
   }
 
   @Override
@@ -4601,6 +4693,12 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
       ParserRuleContext messageCtx, Ip_prefix_list_nameContext ctx) {
     return toStringWithLengthInSpace(
         messageCtx, ctx, IP_PREFIX_LIST_NAME_LENGTH_RANGE, "ip prefix-list name");
+  }
+
+  private @Nonnull Optional<String> toString(
+      ParserRuleContext messageCtx, Object_group_nameContext ctx) {
+    return toStringWithLengthInSpace(
+        messageCtx, ctx, OBJECT_GROUP_NAME_LENGTH_RANGE, "object-group name");
   }
 
   private @Nonnull Optional<String> toString(

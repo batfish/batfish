@@ -12,6 +12,7 @@ import
   CiscoNxos_ip_community_list,
   CiscoNxos_ip_prefix_list,
   CiscoNxos_ipv6_access_list,
+  CiscoNxos_object_group,
   CiscoNxos_ospf,
   CiscoNxos_policy_map,
   CiscoNxos_route_map,
@@ -45,6 +46,7 @@ statement
   | s_no
   | s_null
   | s_nv
+  | s_object_group
   | s_policy_map
   | s_role
   | s_route_map
