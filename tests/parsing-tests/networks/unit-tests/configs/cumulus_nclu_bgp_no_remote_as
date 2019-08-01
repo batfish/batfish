@@ -1,0 +1,9 @@
+net del all
+#
+net add hostname cumulus_nclu_bgp_no_remote_as
+#
+net add bgp autonomous-system 65500
+net add bgp router-id 192.0.2.2
+net add bgp neighbor 1.1.1.1 description spam
+net add bgp vrf vrf1 neighbor 1.1.1.2 description eggs
+net commit

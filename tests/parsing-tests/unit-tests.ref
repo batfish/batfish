@@ -456,8 +456,14 @@
         "cumulus_nclu" : [
           "configs/cumulus_nclu"
         ],
+        "cumulus_nclu_bgp" : [
+          "configs/cumulus_nclu_bgp"
+        ],
         "cumulus_nclu_bgp_no_address_family" : [
           "configs/cumulus_nclu_bgp_no_address_family"
+        ],
+        "cumulus_nclu_bgp_no_remote_as" : [
+          "configs/cumulus_nclu_bgp_no_remote_as"
         ],
         "cumulus_nclu_bgp_no_router_id" : [
           "configs/cumulus_nclu_bgp_no_router_id"
@@ -582,6 +588,9 @@
         ],
         "ios_template" : [
           "configs/ios_template"
+        ],
+        "ios_xe_bgp" : [
+          "configs/ios_xe_bgp"
         ],
         "ios_xr_acl" : [
           "configs/ios_xr_acl"
@@ -1063,7 +1072,9 @@
         "configs/community_name_numbers_dos" : "PASSED",
         "configs/community_set" : "PASSED",
         "configs/cumulus_nclu" : "PASSED",
+        "configs/cumulus_nclu_bgp" : "PASSED",
         "configs/cumulus_nclu_bgp_no_address_family" : "PASSED",
+        "configs/cumulus_nclu_bgp_no_remote_as" : "PASSED",
         "configs/cumulus_nclu_bgp_no_router_id" : "PASSED",
         "configs/cumulus_nclu_bgp_no_router_id_or_loopback_ip" : "PASSED",
         "configs/cumulus_nclu_bond" : "PASSED",
@@ -1105,6 +1116,7 @@
         "configs/ios_interface_ip_tcp" : "PASSED",
         "configs/ios_standby" : "PASSED",
         "configs/ios_template" : "PASSED",
+        "configs/ios_xe_bgp" : "PASSED",
         "configs/ios_xr_acl" : "PASSED",
         "configs/ios_xr_bgp" : "PASSED",
         "configs/ios_xr_bgp_neighbor_group" : "PASSED",
@@ -15341,20 +15353,21 @@
             "        (template_peer_policy_rb_stanza",
             "          TEMPLATE:'template'",
             "          PEER_POLICY:'peer-policy'",
-            "          name = VARIABLE:'p1'",
+            "          name = (variable_permissive",
+            "            VARIABLE:'p1')",
             "          NEWLINE:'\\n'",
             "          (inherit_peer_policy_bgp_tail",
             "            INHERIT:'inherit'",
             "            PEER_POLICY:'peer-policy'",
-            "            name = (variable",
+            "            name = (variable_permissive",
             "              VARIABLE:'p2')",
             "            NEWLINE:'\\n')",
             "          (inherit_peer_policy_bgp_tail",
             "            INHERIT:'inherit'",
             "            PEER_POLICY:'peer-policy'",
-            "            name = (variable",
-            "              VARIABLE:'p3')",
-            "            num = DEC:'10'",
+            "            name = (variable_permissive",
+            "              VARIABLE:'p3'",
+            "              DEC:'10')",
             "            NEWLINE:'\\n')",
             "          EXIT_PEER_POLICY:'exit-peer-policy'",
             "          NEWLINE:'\\n'))",
@@ -41779,6 +41792,96 @@
             "  EOF:<EOF>)"
           ]
         },
+        "configs/cumulus_nclu_bgp" : {
+          "sentences" : [
+            "(cumulus_nclu_configuration",
+            "  (statement",
+            "    (s_null",
+            "      NET:'net'",
+            "      (null_rest_of_line",
+            "        DEL:'del'",
+            "        WORD:'all'",
+            "        NEWLINE:'\\n')))",
+            "  (statement",
+            "    (s_net_add",
+            "      NET:'net'",
+            "      ADD:'add'",
+            "      (a_hostname",
+            "        HOSTNAME:'hostname'",
+            "        hostname = (word",
+            "          WORD:'cumulus_nclu_bgp')",
+            "        NEWLINE:'\\n')))",
+            "  (statement",
+            "    (s_net_add",
+            "      NET:'net'",
+            "      ADD:'add'",
+            "      (a_bgp",
+            "        BGP:'bgp'",
+            "        (b_common",
+            "          (b_autonomous_system",
+            "            AUTONOMOUS_SYSTEM:'autonomous-system'",
+            "            as = (uint32",
+            "              d = DEC:'65500')",
+            "            NEWLINE:'\\n')))))",
+            "  (statement",
+            "    (s_net_add",
+            "      NET:'net'",
+            "      ADD:'add'",
+            "      (a_bgp",
+            "        BGP:'bgp'",
+            "        (b_common",
+            "          (b_router_id",
+            "            ROUTER_ID:'router-id'",
+            "            id = (ip_address",
+            "              IP_ADDRESS:'192.0.2.2')",
+            "            NEWLINE:'\\n')))))",
+            "  (statement",
+            "    (s_net_add",
+            "      NET:'net'",
+            "      ADD:'add'",
+            "      (a_bgp",
+            "        BGP:'bgp'",
+            "        (b_common",
+            "          (b_neighbor",
+            "            NEIGHBOR:'neighbor'",
+            "            name = (word",
+            "              IP_ADDRESS:'1.1.1.1')",
+            "            (bn_peer",
+            "              (bnp_remote_as",
+            "                REMOTE_AS:'remote-as'",
+            "                as = (uint32",
+            "                  d = DEC:'1')",
+            "                NEWLINE:'\\n')))))))",
+            "  (statement",
+            "    (s_net_add",
+            "      NET:'net'",
+            "      ADD:'add'",
+            "      (a_bgp",
+            "        BGP:'bgp'",
+            "        (b_vrf",
+            "          VRF:'vrf'",
+            "          name = (word",
+            "            NUMBERED_WORD:'vrf1')",
+            "          (b_common",
+            "            (b_neighbor",
+            "              NEIGHBOR:'neighbor'",
+            "              name = (word",
+            "                IP_ADDRESS:'1.1.1.2')",
+            "              (bn_peer",
+            "                (bnp_remote_as",
+            "                  REMOTE_AS:'remote-as'",
+            "                  as = (uint32",
+            "                    d = DEC:'2')",
+            "                  NEWLINE:'\\n'))))))))",
+            "  (statement",
+            "    (s_null",
+            "      NET:'net'",
+            "      (null_rest_of_line",
+            "        COMMIT:'commit'",
+            "        NEWLINE:'\\n\\n')))",
+            "  EOF:<EOF>)"
+          ]
+        },
         "configs/cumulus_nclu_bgp_no_address_family" : {
           "sentences" : [
             "(cumulus_nclu_configuration",
@@ -41822,6 +41925,94 @@
             "            id = (ip_address",
             "              IP_ADDRESS:'192.0.2.2')",
             "            NEWLINE:'\\n')))))",
+            "  (statement",
+            "    (s_null",
+            "      NET:'net'",
+            "      (null_rest_of_line",
+            "        COMMIT:'commit'",
+            "        NEWLINE:'\\n\\n')))",
+            "  EOF:<EOF>)"
+          ]
+        },
+        "configs/cumulus_nclu_bgp_no_remote_as" : {
+          "sentences" : [
+            "(cumulus_nclu_configuration",
+            "  (statement",
+            "    (s_null",
+            "      NET:'net'",
+            "      (null_rest_of_line",
+            "        DEL:'del'",
+            "        WORD:'all'",
+            "        NEWLINE:'\\n')))",
+            "  (statement",
+            "    (s_net_add",
+            "      NET:'net'",
+            "      ADD:'add'",
+            "      (a_hostname",
+            "        HOSTNAME:'hostname'",
+            "        hostname = (word",
+            "          WORD:'cumulus_nclu_bgp_no_remote_as')",
+            "        NEWLINE:'\\n')))",
+            "  (statement",
+            "    (s_net_add",
+            "      NET:'net'",
+            "      ADD:'add'",
+            "      (a_bgp",
+            "        BGP:'bgp'",
+            "        (b_common",
+            "          (b_autonomous_system",
+            "            AUTONOMOUS_SYSTEM:'autonomous-system'",
+            "            as = (uint32",
+            "              d = DEC:'65500')",
+            "            NEWLINE:'\\n')))))",
+            "  (statement",
+            "    (s_net_add",
+            "      NET:'net'",
+            "      ADD:'add'",
+            "      (a_bgp",
+            "        BGP:'bgp'",
+            "        (b_common",
+            "          (b_router_id",
+            "            ROUTER_ID:'router-id'",
+            "            id = (ip_address",
+            "              IP_ADDRESS:'192.0.2.2')",
+            "            NEWLINE:'\\n')))))",
+            "  (statement",
+            "    (s_net_add",
+            "      NET:'net'",
+            "      ADD:'add'",
+            "      (a_bgp",
+            "        BGP:'bgp'",
+            "        (b_common",
+            "          (b_neighbor",
+            "            NEIGHBOR:'neighbor'",
+            "            name = (word",
+            "              IP_ADDRESS:'1.1.1.1')",
+            "            (bn_peer",
+            "              (bnp_description",
+            "                DESCRIPTION:'description'",
+            "                text = WORD:'spam'",
+            "                NEWLINE:'\\n')))))))",
+            "  (statement",
+            "    (s_net_add",
+            "      NET:'net'",
+            "      ADD:'add'",
+            "      (a_bgp",
+            "        BGP:'bgp'",
+            "        (b_vrf",
+            "          VRF:'vrf'",
+            "          name = (word",
+            "            NUMBERED_WORD:'vrf1')",
+            "          (b_common",
+            "            (b_neighbor",
+            "              NEIGHBOR:'neighbor'",
+            "              name = (word",
+            "                IP_ADDRESS:'1.1.1.2')",
+            "              (bn_peer",
+            "                (bnp_description",
+            "                  DESCRIPTION:'description'",
+            "                  text = WORD:'eggs'",
+            "                  NEWLINE:'\\n'))))))))",
             "  (statement",
             "    (s_null",
             "      NET:'net'",
@@ -51756,6 +51947,87 @@
             "          VARIABLE:'tries'",
             "          DEC:'3'",
             "          NEWLINE:'\\n'))))",
+            "  EOF:<EOF>)"
+          ]
+        },
+        "configs/ios_xe_bgp" : {
+          "sentences" : [
+            "(cisco_configuration",
+            "  (stanza",
+            "    (s_hostname",
+            "      HOSTNAME:'hostname'",
+            "      VARIABLE:'ios_xe_bgp'",
+            "      NEWLINE:'\\n'))",
+            "  (stanza",
+            "    (router_bgp_stanza",
+            "      ROUTER:'router'",
+            "      BGP:'bgp'",
+            "      procnum = (bgp_asn",
+            "        asn = DEC:'22222')",
+            "      NEWLINE:'\\n'",
+            "      (router_bgp_stanza_tail",
+            "        (template_peer_policy_rb_stanza",
+            "          TEMPLATE:'template'",
+            "          PEER_POLICY:'peer-policy'",
+            "          name = (variable_permissive",
+            "            VARIABLE:'FOO-BAR'",
+            "            COLON:':'",
+            "            VARIABLE:'BAZ')",
+            "          NEWLINE:'\\n'",
+            "          (bgp_tail",
+            "            (route_map_bgp_tail",
+            "              ROUTE_MAP:'route-map'",
+            "              name = (variable",
+            "                VARIABLE:'MAP'  <== mode:M_RouteMap)",
+            "              IN:'in'",
+            "              NEWLINE:'\\n'))",
+            "          (bgp_tail",
+            "            (send_community_bgp_tail",
+            "              SEND_COMMUNITY:'send-community'",
+            "              BOTH:'both'",
+            "              NEWLINE:'\\n'))",
+            "          EXIT_PEER_POLICY:'exit-peer-policy'",
+            "          NEWLINE:'\\n'))",
+            "      (router_bgp_stanza_tail",
+            "        (template_peer_session_rb_stanza",
+            "          TEMPLATE:'template'",
+            "          PEER_SESSION:'peer-session'",
+            "          name = (variable_permissive",
+            "            VARIABLE:'FOO-BAR_BAZ'",
+            "            COLON:':'",
+            "            VARIABLE:'QUX')",
+            "          NEWLINE:'\\n'",
+            "          (remote_as_bgp_tail",
+            "            REMOTE_AS:'remote-as'",
+            "            remote = (bgp_asn",
+            "              asn = DEC:'65444')",
+            "            NEWLINE:'\\n')",
+            "          EXIT_PEER_SESSION:'exit-peer-session'",
+            "          NEWLINE:'\\n'))",
+            "      (router_bgp_stanza_tail",
+            "        (neighbor_flat_rb_stanza",
+            "          NEIGHBOR:'neighbor'",
+            "          ip = IP_ADDRESS:'1.1.1.1'  <== mode:M_NEIGHBOR",
+            "          (inherit_peer_session_bgp_tail",
+            "            INHERIT:'inherit'",
+            "            PEER_SESSION:'peer-session'",
+            "            name = (variable_permissive",
+            "              VARIABLE:'FOO-BAR'",
+            "              COLON:':'",
+            "              VARIABLE:'BAZ')",
+            "            NEWLINE:'\\n')))",
+            "      (router_bgp_stanza_tail",
+            "        (neighbor_flat_rb_stanza",
+            "          NEIGHBOR:'neighbor'",
+            "          ip = IP_ADDRESS:'1.1.1.1'  <== mode:M_NEIGHBOR",
+            "          (inherit_peer_policy_bgp_tail",
+            "            INHERIT:'inherit'",
+            "            PEER_POLICY:'peer-policy'",
+            "            name = (variable_permissive",
+            "              VARIABLE:'FOO-BAR_BAZ'",
+            "              COLON:':'",
+            "              VARIABLE:'QUX')",
+            "            NEWLINE:'\\n\\n')))))",
             "  EOF:<EOF>)"
           ]
         },
@@ -77266,7 +77538,9 @@
         "community_list_named" : "PASSED",
         "community_set" : "PASSED",
         "cumulus_nclu" : "WARNINGS",
+        "cumulus_nclu_bgp" : "WARNINGS",
         "cumulus_nclu_bgp_no_address_family" : "PASSED",
+        "cumulus_nclu_bgp_no_remote_as" : "WARNINGS",
         "cumulus_nclu_bgp_no_router_id" : "PASSED",
         "cumulus_nclu_bgp_no_router_id_or_loopback_ip" : "WARNINGS",
         "cumulus_nclu_bond" : "PASSED",
@@ -77308,6 +77582,7 @@
         "ios_interface_ip_tcp" : "PASSED",
         "ios_standby" : "PASSED",
         "ios_template" : "PASSED",
+        "ios_xe_bgp" : "WARNINGS",
         "ios_xr_acl" : "PASSED",
         "ios_xr_bgp" : "PASSED",
         "ios_xr_bgp_neighbor_group" : "WARNINGS",
@@ -80106,7 +80381,27 @@
             }
           }
         },
+        "configs/cumulus_nclu_bgp" : {
+          "vrf" : {
+            "vrf1" : {
+              "definitionLines" : [
+                8
+              ],
+              "numReferrers" : 1
+            }
+          }
+        },
         "configs/cumulus_nclu_bgp_no_address_family" : { },
+        "configs/cumulus_nclu_bgp_no_remote_as" : {
+          "vrf" : {
+            "vrf1" : {
+              "definitionLines" : [
+                8
+              ],
+              "numReferrers" : 1
+            }
+          }
+        },
         "configs/cumulus_nclu_bgp_no_router_id" : {
           "loopback" : {
             "lo" : {
@@ -81838,6 +82133,29 @@
           }
         },
         "configs/ios_template" : { },
+        "configs/ios_xe_bgp" : {
+          "bgp template peer-policy" : {
+            "FOO-BAR:BAZ" : {
+              "definitionLines" : [
+                5,
+                6,
+                7,
+                8
+              ],
+              "numReferrers" : 0
+            }
+          },
+          "bgp template peer-session" : {
+            "FOO-BAR_BAZ:QUX" : {
+              "definitionLines" : [
+                9,
+                10,
+                11
+              ],
+              "numReferrers" : 0
+            }
+          }
+        },
         "configs/ios_xr_acl" : { },
         "configs/ios_xr_bgp" : { },
         "configs/ios_xr_bgp_neighbor_group" : {
@@ -84648,8 +84966,14 @@
         "configs/cumulus_nclu" : [
           "cumulus_nclu"
         ],
+        "configs/cumulus_nclu_bgp" : [
+          "cumulus_nclu_bgp"
+        ],
         "configs/cumulus_nclu_bgp_no_address_family" : [
           "cumulus_nclu_bgp_no_address_family"
+        ],
+        "configs/cumulus_nclu_bgp_no_remote_as" : [
+          "cumulus_nclu_bgp_no_remote_as"
         ],
         "configs/cumulus_nclu_bgp_no_router_id" : [
           "cumulus_nclu_bgp_no_router_id"
@@ -84770,6 +85094,9 @@
         ],
         "configs/ios_template" : [
           "ios_template"
+        ],
+        "configs/ios_xe_bgp" : [
+          "ios_xe_bgp"
         ],
         "configs/ios_xr_acl" : [
           "ios_xr_acl"
@@ -85725,7 +86052,7 @@
                 36
               ]
             },
-            "p3" : {
+            "p310" : {
               "inherited BGP peer-policy" : [
                 37
               ]
@@ -87293,6 +87620,24 @@
             }
           }
         },
+        "configs/cumulus_nclu_bgp" : {
+          "vrf" : {
+            "vrf1" : {
+              "bgp vrf" : [
+                8
+              ]
+            }
+          }
+        },
+        "configs/cumulus_nclu_bgp_no_remote_as" : {
+          "vrf" : {
+            "vrf1" : {
+              "bgp vrf" : [
+                8
+              ]
+            }
+          }
+        },
         "configs/cumulus_nclu_bgp_no_router_id" : {
           "loopback" : {
             "lo" : {
@@ -88230,6 +88575,29 @@
             "1" : {
               "interface standby track" : [
                 12
+              ]
+            }
+          }
+        },
+        "configs/ios_xe_bgp" : {
+          "bgp template peer-policy" : {
+            "FOO-BAR_BAZ:QUX" : {
+              "inherited BGP peer-policy" : [
+                13
+              ]
+            }
+          },
+          "bgp template peer-session" : {
+            "FOO-BAR:BAZ" : {
+              "inherited BGP peer-session" : [
+                12
+              ]
+            }
+          },
+          "route-map" : {
+            "MAP" : {
+              "bgp inbound route-map" : [
+                6
               ]
             }
           }
@@ -90065,7 +90433,7 @@
                 36
               ]
             },
-            "p3" : {
+            "p310" : {
               "inherited BGP peer-policy" : [
                 37
               ]
@@ -91119,6 +91487,29 @@
             }
           }
         },
+        "configs/ios_xe_bgp" : {
+          "bgp template peer-policy" : {
+            "FOO-BAR_BAZ:QUX" : {
+              "inherited BGP peer-policy" : [
+                13
+              ]
+            }
+          },
+          "bgp template peer-session" : {
+            "FOO-BAR:BAZ" : {
+              "inherited BGP peer-session" : [
+                12
+              ]
+            }
+          },
+          "route-map" : {
+            "MAP" : {
+              "bgp inbound route-map" : [
+                6
+              ]
+            }
+          }
+        },
         "configs/ios_xr_bgp" : {
           "route-policy" : {
             "ADDITIONAL_PATHS_POLICY" : {
@@ -92036,6 +92427,30 @@
             }
           ]
         },
+        "cumulus_nclu_bgp" : {
+          "Red flags" : [
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "Cannot configure BGP session for vrf 'vrf1' because router-id is missing"
+            }
+          ]
+        },
+        "cumulus_nclu_bgp_no_remote_as" : {
+          "Red flags" : [
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "Cannot configure BGP session for vrf 'vrf1' because router-id is missing"
+            },
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "Skipping invalidly configured BGP peer 1.1.1.1"
+            },
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "Skipping invalidly configured BGP peer 1.1.1.2"
+            }
+          ]
+        },
         "cumulus_nclu_bgp_no_router_id_or_loopback_ip" : {
           "Red flags" : [
             {
@@ -92101,6 +92516,14 @@
             {
               "tag" : "MISCELLANEOUS",
               "text" : "Could not determine update source for BGP neighbor: '10.0.0.1'"
+            }
+          ]
+        },
+        "ios_xe_bgp" : {
+          "Red flags" : [
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "No remote-as set for peer: 1.1.1.1"
             }
           ]
         },
@@ -92573,7 +92996,9 @@
         "configs/community_name_numbers_dos" : "PASSED",
         "configs/community_set" : "PASSED",
         "configs/cumulus_nclu" : "PASSED",
+        "configs/cumulus_nclu_bgp" : "PASSED",
         "configs/cumulus_nclu_bgp_no_address_family" : "PASSED",
+        "configs/cumulus_nclu_bgp_no_remote_as" : "PASSED",
         "configs/cumulus_nclu_bgp_no_router_id" : "PASSED",
         "configs/cumulus_nclu_bgp_no_router_id_or_loopback_ip" : "PASSED",
         "configs/cumulus_nclu_bond" : "PASSED",
@@ -92615,6 +93040,7 @@
         "configs/ios_interface_ip_tcp" : "PASSED",
         "configs/ios_standby" : "PASSED",
         "configs/ios_template" : "PASSED",
+        "configs/ios_xe_bgp" : "PASSED",
         "configs/ios_xr_acl" : "PASSED",
         "configs/ios_xr_bgp" : "PASSED",
         "configs/ios_xr_bgp_neighbor_group" : "PASSED",

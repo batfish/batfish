@@ -1,0 +1,85 @@
+!RANCID-CONTENT-TYPE: cisco-nx
+!
+hostname nxos_nve_vnis
+!
+! Required to enable NVE devices
+feature vn-segment-vlan-based
+feature nv overlay
+!
+!! Although Cisco limits one NVE interface per switch, for testing purposes we declare multiple NVEs in this config
+vlan 2
+  name Name-Of-Vlan-2
+  vn-segment 10001
+!
+vlan 3
+  name Name-Of-Vlan-3
+  vn-segment 20001
+!
+vlan 4
+  name Name-Of-Vlan-4
+  vn-segment 30001
+!
+vlan 5
+  name Name-Of-Vlan-5
+  vn-segment 40001
+!
+vlan 6
+  name Name-Of-Vlan-6
+  vn-segment 50001
+!
+interface loopback0
+  ip address 1.1.1.1/32
+!
+interface nve1
+  no shutdown
+  global mcast-group 233.0.0.0 L2
+  global mcast-group 234.0.0.0 L3
+  member vni 10001
+    mcast-group 235.0.0.0
+    ingress-replication protocol bgp
+interface nve2
+  no shutdown
+  !! mcast L3 will be inherited because of associate-vrf
+  global mcast-group 233.0.0.0 L2
+  global mcast-group 234.0.0.0 L3
+  member vni 20001 associate-vrf
+    ingress-replication protocol bgp
+interface nve3
+  no shutdown
+  !! mcast L2 will be inherited because of no associate-vrf
+  global mcast-group 233.0.0.0 L2
+  global mcast-group 234.0.0.0 L3
+  member vni 30001
+    ingress-replication protocol bgp
+interface nve4
+  no shutdown
+  global mcast-group 233.0.0.0 L2
+  global mcast-group 234.0.0.0 L3
+  source-interface loopback0
+  member vni 40001
+     !! mcast will be ignored because of static ingress-replication protocol, peer IP will be used
+     ingress-replication protocol static
+     peer-ip 4.0.0.1
+!
+interface nve5
+  no shutdown
+  global mcast-group 233.0.0.0 L2
+  global mcast-group 234.0.0.0 L3
+  !! VLAN for VNI=50001 is shutdown
+  member vni 50001
+    mcast-group 235.0.0.0
+    ingress-replication protocol bgp
+interface Vlan2
+  no shutdown
+!
+interface Vlan3
+  no shutdown
+!
+interface Vlan4
+  no shutdown
+!
+interface Vlan5
+  no shutdown
+!
+interface Vlan6
+!

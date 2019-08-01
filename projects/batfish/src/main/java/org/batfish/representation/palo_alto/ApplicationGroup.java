@@ -20,12 +20,7 @@ public final class ApplicationGroup implements Serializable {
     _members = new TreeSet<>();
   }
 
-  /**
-   * Returns all {@link Application applications} that are directly or indirectly contained in this
-   * group. Accounts for circular group references.
-   */
   @VisibleForTesting
-  @SuppressWarnings("unused") // todo
   Set<String> getDescendantObjects(
       Map<String, Application> applications,
       Map<String, ApplicationGroup> applicationGroups,
@@ -43,9 +38,20 @@ public final class ApplicationGroup implements Serializable {
             applicationGroups
                 .get(member)
                 .getDescendantObjects(applications, applicationGroups, alreadyTraversedGroups));
+      } else if (ApplicationBuiltIn.getBuiltInApplication(member).isPresent()) {
+        descendantObjects.add(member);
       }
     }
     return descendantObjects;
+  }
+
+  /**
+   * Returns all {@link Application applications} that are directly or indirectly contained in this
+   * group. Accounts for circular group references.
+   */
+  public Set<String> getDescendantObjects(
+      Map<String, Application> applications, Map<String, ApplicationGroup> applicationGroups) {
+    return getDescendantObjects(applications, applicationGroups, new HashSet<>());
   }
 
   public Set<String> getMembers() {

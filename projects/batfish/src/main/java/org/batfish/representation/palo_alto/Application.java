@@ -1,8 +1,9 @@
 package org.batfish.representation.palo_alto;
 
-import static com.google.common.base.Preconditions.checkArgument;
-
+import com.google.common.collect.ImmutableSet;
 import java.io.Serializable;
+import java.util.HashSet;
+import java.util.Set;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -12,54 +13,62 @@ import javax.annotation.ParametersAreNonnullByDefault;
 public final class Application implements Serializable {
 
   public static final class Builder {
-    private String _name;
-    private String _description;
+    private final String _name;
+    private @Nullable String _description;
+    private @Nonnull Set<Service> _services;
 
-    private Builder() {}
-
-    public @Nonnull Application build() {
-      checkArgument(_name != null, "Application is missing name");
-      Application app = new Application(_name);
-      if (_description != null) {
-        app.setDescription(_description);
-      }
-      return app;
+    private Builder(@Nonnull String name) {
+      _name = name;
+      _services = new HashSet<>();
     }
 
-    public Builder setDescription(String description) {
+    public @Nonnull Application build() {
+      return new Application(_name, _description, _services);
+    }
+
+    public @Nonnull Builder setDescription(@Nullable String description) {
       _description = description;
       return this;
     }
 
-    public Builder setName(String name) {
-      _name = name;
+    public @Nonnull Builder addService(@Nonnull Service service) {
+      _services.add(service);
       return this;
     }
   }
 
-  @Nullable private String _description;
+  private @Nullable String _description;
+  private final @Nonnull String _name;
+  private @Nonnull Set<Service> _services;
 
-  @Nonnull private final String _name;
-
-  private Application(String name) {
+  private Application(
+      @Nonnull String name, @Nullable String description, @Nonnull Set<Service> services) {
     _name = name;
+    _description = description;
+    _services = ImmutableSet.copyOf(services);
   }
 
-  public static Builder builder() {
-    return new Builder();
+  public static @Nonnull Builder builder(String name) {
+    return new Builder(name);
   }
 
-  @Nullable
-  public String getDescription() {
+  public @Nullable String getDescription() {
     return _description;
-  }
-
-  @Nonnull
-  public String getName() {
-    return _name;
   }
 
   public void setDescription(String description) {
     _description = description;
+  }
+
+  public @Nonnull String getName() {
+    return _name;
+  }
+
+  public @Nonnull Set<Service> getServices() {
+    return _services;
+  }
+
+  public void setServices(@Nonnull Iterable<Service> services) {
+    _services = ImmutableSet.copyOf(services);
   }
 }

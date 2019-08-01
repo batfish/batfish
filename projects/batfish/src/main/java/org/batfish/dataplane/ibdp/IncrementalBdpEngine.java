@@ -255,6 +255,7 @@ class IncrementalBdpEngine {
    */
   private static void computeDependentRoutesIteration(
       Map<String, Node> nodes,
+      int numIterations,
       String iterationLabel,
       Map<String, Node> allNodes,
       TopologyContext topologyContext,
@@ -383,7 +384,7 @@ class IncrementalBdpEngine {
         assert span != null; // avoid unused warning
         nodes.values().stream()
             .flatMap(n -> n.getVirtualRouters().values().stream())
-            .forEach(VirtualRouter::redistribute);
+            .forEach(virtualRouter -> virtualRouter.redistribute(numIterations));
       }
 
       queueRoutesForCrossVrfLeaking(nodes, iterationLabel);
@@ -642,7 +643,12 @@ class IncrementalBdpEngine {
             String iterationlabel =
                 String.format("Iteration %d Schedule %d", _numIterations, nodeSet);
             computeDependentRoutesIteration(
-                iterationNodes, iterationlabel, nodes, topologyContext, networkConfigurations);
+                iterationNodes,
+                _numIterations,
+                iterationlabel,
+                nodes,
+                topologyContext,
+                networkConfigurations);
             ++nodeSet;
           }
 

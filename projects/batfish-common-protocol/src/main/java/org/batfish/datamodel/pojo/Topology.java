@@ -48,6 +48,10 @@ public class Topology extends BfObject {
           configuration.getAllInterfaces();
       // add interfaces and links
       for (Edge edge : topology.getNodeEdges().get(nodeName)) {
+        if (!edge.getNode1().equals(nodeName)) {
+          // only consider edges where node1 is the source
+          continue;
+        }
         String interface1 = edge.getInt1();
         String interface2 = edge.getInt2();
 

@@ -1,0 +1,10 @@
+!
+hostname ios-interface-unshut
+!
+interface Ethernet0
+ shutdown
+ no shutdown
+!
+interface Ethernet1
+ no shutdown
+ shutdown

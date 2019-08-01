@@ -36,9 +36,10 @@ public final class Rule implements Serializable {
   private boolean _negateSource;
   private boolean _negateDestination;
 
-  // Service
+  // Services
   @Nonnull private final SortedSet<ServiceOrServiceGroupReference> _service;
 
+  // Applications
   @Nonnull private final SortedSet<String> _applications;
 
   public Rule(String name, Vsys vsys) {

@@ -6564,10 +6564,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   @Override
   public void exitIf_shutdown(If_shutdownContext ctx) {
-    if (ctx.NO() == null) {
-      for (Interface currentInterface : _currentInterfaces) {
-        currentInterface.setActive(false);
-      }
+    for (Interface currentInterface : _currentInterfaces) {
+      currentInterface.setActive(ctx.NO() != null);
     }
   }
 
@@ -10636,7 +10634,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       int as = toInteger(ctx.DEC());
       return new ExplicitAs(as);
     } else if (ctx.AUTO() != null) {
-      return new AutoAs();
+      return AutoAs.instance();
     } else if (ctx.RP_VARIABLE() != null) {
       return new VarAs(ctx.RP_VARIABLE().getText());
     } else {
@@ -11917,7 +11915,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   private RoutePolicyBoolean toRoutePolicyBoolean(Boolean_med_rp_stanzaContext ctx) {
     IntComparator cmp = toIntComparator(ctx.int_comp());
-    IntExpr rhs = toCommonIntExpr(ctx.rhs);
+    LongExpr rhs = toCommonLongExpr(ctx.rhs);
     return new RoutePolicyBooleanMed(cmp, rhs);
   }
 
