@@ -116,6 +116,19 @@
             </configuration>
           </execution>
           <execution>
+            <id>antlr4-cumulus-ports</id>
+            <goals>
+              <goal>antlr4</goal>
+            </goals>
+            <configuration>
+              <includes>**/CumulusPortsLexer.g4,**/CumulusPortsParser.g4</includes>
+              <libDirectory>${basedir}/src/main/antlr4/org/batfish/grammar/cumulus_ports
+              </libDirectory>
+              <statusDirectory>${project.build.directory}/maven-status/cumulus-ports
+              </statusDirectory>
+            </configuration>
+          </execution>
+          <execution>
             <id>antlr4-f5-bigip-imish</id>
             <goals>
               <goal>antlr4</goal>
