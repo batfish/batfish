@@ -40,4 +40,12 @@ set firewall family inet6 filter blah6 term blorp6 from icmp-type neighbor-solic
 #
 # Currently ignored
 set firewall family ethernet-switching filter ISP-INBOUND-L2 term ALLOW-ARP from ether-type arp
+set firewall family inet filter ip_options term t1 from ip-options any
+set firewall family inet filter ip_options term t1 from ip-options loose-source-route
+set firewall family inet filter ip_options term t1 from ip-options route-record
+set firewall family inet filter ip_options term t1 from ip-options router-alert
+set firewall family inet filter ip_options term t1 from ip-options security
+set firewall family inet filter ip_options term t1 from ip-options stream-id
+set firewall family inet filter ip_options term t1 from ip-options strict-source-route
+set firewall family inet filter ip_options term t1 from ip-options timestamp
 #

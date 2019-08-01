@@ -214,6 +214,7 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Fftf_fragment_offsetCon
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Fftf_fragment_offset_exceptContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Fftf_icmp_codeContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Fftf_icmp_typeContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Fftf_ip_optionsContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Fftf_ip_protocolContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Fftf_is_fragmentContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Fftf_packet_lengthContext;
@@ -3862,6 +3863,13 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
     } else {
       todo(ctx);
     }
+  }
+
+  @Override
+  public void exitFftf_ip_options(Fftf_ip_optionsContext ctx) {
+    todo(ctx);
+    // assume no action is taken
+    _currentFwTerm.getThens().add(FwThenNextTerm.INSTANCE);
   }
 
   @Override
