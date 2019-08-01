@@ -2080,9 +2080,7 @@
                       },
                       "prefixSet" : {
                         "class" : "org.batfish.datamodel.routing_policy.expr.ExplicitPrefixSet",
-                        "prefixSpace" : [
-                          "0.0.0.0/0"
-                        ]
+                        "prefixSpace" : [ ]
                       }
                     }
                   ]
@@ -2245,9 +2243,7 @@
                       },
                       "prefixSet" : {
                         "class" : "org.batfish.datamodel.routing_policy.expr.ExplicitPrefixSet",
-                        "prefixSpace" : [
-                          "0.0.0.0/0"
-                        ]
+                        "prefixSpace" : [ ]
                       }
                     }
                   ]
@@ -2410,9 +2406,7 @@
                       },
                       "prefixSet" : {
                         "class" : "org.batfish.datamodel.routing_policy.expr.ExplicitPrefixSet",
-                        "prefixSpace" : [
-                          "0.0.0.0/0"
-                        ]
+                        "prefixSpace" : [ ]
                       }
                     }
                   ]

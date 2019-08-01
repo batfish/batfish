@@ -157,7 +157,6 @@ import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.eigrp.EigrpTopologyUtils;
 import org.batfish.datamodel.flow.Trace;
 import org.batfish.datamodel.flow.TraceWrapperAsAnswerElement;
-import org.batfish.datamodel.isp_configuration.BorderInterfaceInfo;
 import org.batfish.datamodel.isp_configuration.IspConfiguration;
 import org.batfish.datamodel.isp_configuration.IspFilter;
 import org.batfish.datamodel.ospf.OspfTopologyUtils;
@@ -2374,33 +2373,48 @@ public class Batfish extends PluginConsumer implements IBatfish {
       Map<String, Configuration> configurations,
       Map<String, GenericConfigObject> vendorConfigs,
       SortedMap<String, Warnings> warnings) {
-    Warnings internetWarnings = warnings.getOrDefault(INTERNET_HOST_NAME, buildWarnings(_settings));
     if (configurations.containsKey(INTERNET_HOST_NAME)) {
-      internetWarnings.redFlag(
-          String.format("Node '%s' already exists. Added to it.", INTERNET_HOST_NAME));
+      warnings
+          .getOrDefault(INTERNET_HOST_NAME, buildWarnings(_settings))
+          .redFlag("Cannot add internet because a node with the name 'internet' already exists");
+      return;
     }
+
+    Warnings internetWarnings = warnings.getOrDefault(INTERNET_HOST_NAME, buildWarnings(_settings));
+    ImmutableList.Builder<IspConfiguration> ispConfigurations = new ImmutableList.Builder<>();
+
     NetworkSnapshot networkSnapshot = getNetworkSnapshot();
     IspConfiguration ispConfiguration =
         _storage.loadIspConfiguration(networkSnapshot.getNetwork(), networkSnapshot.getSnapshot());
     if (ispConfiguration != null) {
-      configurations.putAll(
-          getInternetAndIspNodes(configurations, ispConfiguration, _logger, internetWarnings));
+      ispConfigurations.add(ispConfiguration);
     }
 
-    List<BorderInterfaceInfo> awsBackboneInterfaces =
-        vendorConfigs.values().stream()
-            .filter(vc -> vc instanceof AwsConfiguration)
-            .flatMap(vc -> ((AwsConfiguration) vc).getBackboneFacingInterfaces().stream())
-            .map(BorderInterfaceInfo::new)
-            .collect(ImmutableList.toImmutableList());
-    if (!awsBackboneInterfaces.isEmpty()) {
-      IspConfiguration awsIspConfiguration =
-          new IspConfiguration(
-              awsBackboneInterfaces,
-              new IspFilter(ImmutableList.of(), org.parboiled.common.ImmutableList.of()));
-      configurations.putAll(
-          getInternetAndIspNodes(configurations, awsIspConfiguration, _logger, internetWarnings));
+    vendorConfigs.values().stream()
+        .map(GenericConfigObject::getBorderInterfaces)
+        .filter(Objects::nonNull)
+        .filter(l -> !l.isEmpty())
+        .forEach(
+            ifaces ->
+                ispConfigurations.add(
+                    new IspConfiguration(
+                        ifaces, new IspFilter(ImmutableList.of(), ImmutableList.of()))));
+
+    Map<String, Configuration> additionalConfigs =
+        getInternetAndIspNodes(
+            configurations, ispConfigurations.build(), _logger, internetWarnings);
+
+    Set<String> commonNodes =
+        Sets.intersection(configurations.keySet(), additionalConfigs.keySet());
+    if (!commonNodes.isEmpty()) {
+      internetWarnings.redFlag(
+          String.format(
+              "Cannot add internet and ISP nodes because nodes with the following names already exist in the snapshot: %s",
+              commonNodes));
+    } else {
+      configurations.putAll(additionalConfigs);
     }
+
     // we are being careful here so that we don't create an unnecessary key in the warnings map when
     // internet wasn't being modeled at all
     if (!warnings.containsKey(INTERNET_HOST_NAME) && !internetWarnings.isEmpty()) {

@@ -24,6 +24,7 @@ import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.DefinedStructureInfo;
 import org.batfish.datamodel.GenericConfigObject;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
+import org.batfish.datamodel.isp_configuration.BorderInterfaceInfo;
 
 public abstract class VendorConfiguration implements Serializable, GenericConfigObject {
 
@@ -222,5 +223,14 @@ public abstract class VendorConfiguration implements Serializable, GenericConfig
     } else {
       info.setNumReferrers(info.getNumReferrers() + numReferrers);
     }
+  }
+
+  /**
+   * For vendor configurations, we return null because the user-supplied ISP config identifies
+   * border interfaces of interest.
+   */
+  @Override
+  public List<BorderInterfaceInfo> getBorderInterfaces() {
+    return null;
   }
 }

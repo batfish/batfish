@@ -20,6 +20,7 @@ import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.answers.ParseVendorConfigurationAnswerElement;
 import org.batfish.datamodel.collections.NodeInterfacePair;
+import org.batfish.datamodel.isp_configuration.BorderInterfaceInfo;
 
 /** The top-level class that represent AWS configuration */
 @ParametersAreNonnullByDefault
@@ -91,11 +92,12 @@ public class AwsConfiguration implements Serializable, GenericConfigObject {
     return _configurationNodes;
   }
 
-  @Nonnull
-  public List<NodeInterfacePair> getBackboneFacingInterfaces() {
+  @Override
+  public List<BorderInterfaceInfo> getBorderInterfaces() {
     return _regions.values().stream()
         .flatMap(r -> r.getInternetGateways().values().stream())
         .map(igw -> new NodeInterfacePair(igw.getId(), BACKBONE_INTERFACE_NAME))
+        .map(BorderInterfaceInfo::new)
         .collect(ImmutableList.toImmutableList());
   }
 }

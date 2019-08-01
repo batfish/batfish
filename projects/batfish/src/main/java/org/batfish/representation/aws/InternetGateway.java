@@ -22,6 +22,7 @@ import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.PrefixSpace;
 import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.bgp.Ipv4UnicastAddressFamily;
 
@@ -96,6 +97,7 @@ final class InternetGateway implements AwsVpcEntity, Serializable {
   Configuration toConfigurationNode(AwsConfiguration awsConfiguration, Region region) {
     Configuration cfgNode = Utils.newAwsConfiguration(_internetGatewayId, "aws");
     cfgNode.getVendorFamily().getAws().setRegion(region.getName());
+    PrefixSpace publicPrefixSpace = new PrefixSpace();
 
     for (String vpcId : _attachmentVpcIds) {
 
@@ -124,20 +126,24 @@ final class InternetGateway implements AwsVpcEntity, Serializable {
           .map(PrivateIpAddress::getPublicIp)
           .filter(Objects::nonNull)
           .forEach(
-              ip ->
-                  cfgNode
-                      .getDefaultVrf()
-                      .getStaticRoutes()
-                      .add(
-                          StaticRoute.builder()
-                              .setNetwork(Prefix.create(ip, Prefix.MAX_PREFIX_LENGTH))
-                              .setNextHopIp(vpcIfaceAddress.getIp())
-                              .setAdministrativeCost(Route.DEFAULT_STATIC_ROUTE_ADMIN)
-                              .setMetric(Route.DEFAULT_STATIC_ROUTE_COST)
-                              .build()));
+              ip -> {
+                Prefix publicPrefix = Prefix.create(ip, Prefix.MAX_PREFIX_LENGTH);
+                publicPrefixSpace.addPrefix(publicPrefix);
+                cfgNode
+                    .getDefaultVrf()
+                    .getStaticRoutes()
+                    .add(
+                        StaticRoute.builder()
+                            .setNetwork(publicPrefix)
+                            .setNextHopIp(vpcIfaceAddress.getIp())
+                            .setAdministrativeCost(Route.DEFAULT_STATIC_ROUTE_ADMIN)
+                            .setMetric(Route.DEFAULT_STATIC_ROUTE_COST)
+                            .build());
+              });
     }
 
-    createBackboneConnection(cfgNode, awsConfiguration.getNextGeneratedLinkSubnet());
+    createBackboneConnection(
+        cfgNode, awsConfiguration.getNextGeneratedLinkSubnet(), publicPrefixSpace);
     return cfgNode;
   }
 
@@ -145,7 +151,8 @@ final class InternetGateway implements AwsVpcEntity, Serializable {
    * Creates an interface facing the backbone and run a BGP process that advertises static routes
    */
   @VisibleForTesting
-  static void createBackboneConnection(Configuration cfgNode, Prefix bbInterfaceSubnet) {
+  static void createBackboneConnection(
+      Configuration cfgNode, Prefix bbInterfaceSubnet, PrefixSpace publicPrefixSpace) {
     ConcreteInterfaceAddress bbInterfaceAddress =
         ConcreteInterfaceAddress.create(
             bbInterfaceSubnet.getStartIp(), bbInterfaceSubnet.getPrefixLength());
@@ -162,7 +169,7 @@ final class InternetGateway implements AwsVpcEntity, Serializable {
         ImmutableSortedMap.of(
             BACKBONE_EXPORT_POLICY_NAME,
             getRoutingPolicyAdvertiseStatic(
-                BACKBONE_EXPORT_POLICY_NAME, cfgNode, new NetworkFactory())));
+                BACKBONE_EXPORT_POLICY_NAME, cfgNode, publicPrefixSpace, new NetworkFactory())));
 
     BgpActivePeerConfig.builder()
         .setPeerAddress(bbInterfaceSubnet.getEndIp())
