@@ -23156,6 +23156,11 @@
             ],
             "sourceName" : "blah",
             "sourceType" : "firewall filter"
+          },
+          "ip_options" : {
+            "name" : "ip_options",
+            "sourceName" : "ip_options",
+            "sourceType" : "firewall filter"
           }
         },
         "packetPolicies" : {
