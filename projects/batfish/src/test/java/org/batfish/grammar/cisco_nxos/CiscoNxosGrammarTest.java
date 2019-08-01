@@ -66,6 +66,7 @@ import static org.batfish.grammar.cisco_nxos.CiscoNxosControlPlaneExtractor.UDP_
 import static org.batfish.main.BatfishTestUtils.configureBatfishTestSettings;
 import static org.batfish.representation.cisco_nxos.CiscoNxosConfiguration.NULL_VRF_NAME;
 import static org.batfish.representation.cisco_nxos.CiscoNxosConfiguration.toJavaRegex;
+import static org.batfish.representation.cisco_nxos.CiscoNxosStructureType.OBJECT_GROUP_IP_ADDRESS;
 import static org.batfish.representation.cisco_nxos.OspfInterface.DEFAULT_DEAD_INTERVAL_S;
 import static org.batfish.representation.cisco_nxos.OspfInterface.DEFAULT_HELLO_INTERVAL_S;
 import static org.batfish.representation.cisco_nxos.OspfNetworkType.BROADCAST;
@@ -115,17 +116,17 @@ import org.batfish.common.BatfishLogger;
 import org.batfish.common.Warnings;
 import org.batfish.common.WellKnownCommunity;
 import org.batfish.common.bdd.BDDPacket;
-import org.batfish.common.bdd.BDDSourceManager;
 import org.batfish.common.bdd.HeaderSpaceToBDD;
 import org.batfish.common.bdd.IpAccessListToBdd;
-import org.batfish.common.bdd.IpAccessListToBddImpl;
 import org.batfish.common.bdd.IpSpaceToBDD;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.config.Settings;
 import org.batfish.datamodel.AbstractRoute;
+import org.batfish.datamodel.AclIpSpace;
 import org.batfish.datamodel.AsPath;
 import org.batfish.datamodel.AsPathAccessList;
 import org.batfish.datamodel.AsPathAccessListLine;
+import org.batfish.datamodel.BddTestbed;
 import org.batfish.datamodel.Bgpv4Route;
 import org.batfish.datamodel.BumTransportMethod;
 import org.batfish.datamodel.CommunityList;
@@ -142,6 +143,7 @@ import org.batfish.datamodel.Interface.DependencyType;
 import org.batfish.datamodel.InterfaceType;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpProtocol;
+import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.NamedPort;
@@ -209,6 +211,8 @@ import org.batfish.representation.cisco_nxos.Nve;
 import org.batfish.representation.cisco_nxos.Nve.HostReachabilityProtocol;
 import org.batfish.representation.cisco_nxos.Nve.IngressReplicationProtocol;
 import org.batfish.representation.cisco_nxos.NveVni;
+import org.batfish.representation.cisco_nxos.ObjectGroupIpAddress;
+import org.batfish.representation.cisco_nxos.ObjectGroupIpAddressLine;
 import org.batfish.representation.cisco_nxos.OspfArea;
 import org.batfish.representation.cisco_nxos.OspfAreaAuthentication;
 import org.batfish.representation.cisco_nxos.OspfAreaNssa;
@@ -256,21 +260,22 @@ import org.junit.rules.TemporaryFolder;
 @ParametersAreNonnullByDefault
 public final class CiscoNxosGrammarTest {
 
+  private static final BddTestbed BDD_TESTBED =
+      new BddTestbed(ImmutableMap.of(), ImmutableMap.of());
   private static final IpAccessListToBdd ACL_TO_BDD;
   private static final IpSpaceToBDD DST_IP_BDD;
   private static final HeaderSpaceToBDD HS_TO_BDD;
-  private static final BDDPacket PKT;
+  static final BDDPacket PKT;
   private static final IpSpaceToBDD SRC_IP_BDD;
 
   private static final String TESTCONFIGS_PREFIX = "org/batfish/grammar/cisco_nxos/testconfigs/";
 
   static {
-    PKT = new BDDPacket();
-    DST_IP_BDD = PKT.getDstIpSpaceToBDD();
-    SRC_IP_BDD = PKT.getSrcIpSpaceToBDD();
-    HS_TO_BDD = new HeaderSpaceToBDD(PKT, ImmutableMap.of());
-    ACL_TO_BDD =
-        new IpAccessListToBddImpl(PKT, BDDSourceManager.empty(PKT), HS_TO_BDD, ImmutableMap.of());
+    PKT = BDD_TESTBED.getPkt();
+    DST_IP_BDD = BDD_TESTBED.getDstIpBdd();
+    SRC_IP_BDD = BDD_TESTBED.getSrcIpBdd();
+    HS_TO_BDD = BDD_TESTBED.getHsToBdd();
+    ACL_TO_BDD = BDD_TESTBED.getAclToBdd();
   }
 
   @Rule public TemporaryFolder _folder = new TemporaryFolder();
@@ -1073,6 +1078,7 @@ public final class CiscoNxosGrammarTest {
   public void testIpAccessListConversion() throws IOException {
     String hostname = "nxos_ip_access_list";
     Configuration c = parseConfig(hostname);
+    BddTestbed tb = new BddTestbed(c.getIpAccessLists(), c.getIpSpaces());
 
     assertThat(
         c.getIpAccessLists(),
@@ -1141,28 +1147,28 @@ public final class CiscoNxosGrammarTest {
           c.getIpAccessLists().get("acl_common_ip_options_destination_ip");
       assertThat(
           acl.getLines().stream()
-              .map(line -> toBDD(line.getMatchCondition()))
+              .map(line -> tb.toBDD(line.getMatchCondition()))
               .collect(ImmutableList.toImmutableList()),
           contains(
-              toBDD(matchDst(ipWithWildcardMask(Ip.parse("10.0.0.0"), Ip.parse("0.0.0.255")))),
-              toBDD(matchDst(Prefix.parse("10.0.1.0/24"))),
-              toBDD(AclLineMatchExprs.FALSE), // TODO: support addr-group
-              toBDD(matchDst(Ip.parse("10.0.2.2"))),
-              toBDD(AclLineMatchExprs.TRUE)));
+              tb.toBDD(matchDst(ipWithWildcardMask(Ip.parse("10.0.0.0"), Ip.parse("0.0.0.255")))),
+              tb.toBDD(matchDst(Prefix.parse("10.0.1.0/24"))),
+              tb.toBDD(matchDst(Ip.parse("10.0.5.5"))),
+              tb.toBDD(matchDst(Ip.parse("10.0.2.2"))),
+              tb.toBDD(AclLineMatchExprs.TRUE)));
     }
     {
       org.batfish.datamodel.IpAccessList acl =
           c.getIpAccessLists().get("acl_common_ip_options_source_ip");
       assertThat(
           acl.getLines().stream()
-              .map(line -> toBDD(line.getMatchCondition()))
+              .map(line -> tb.toBDD(line.getMatchCondition()))
               .collect(ImmutableList.toImmutableList()),
           contains(
-              toBDD(matchSrc(ipWithWildcardMask(Ip.parse("10.0.0.0"), Ip.parse("0.0.0.255")))),
-              toBDD(matchSrc(Prefix.parse("10.0.1.0/24"))),
-              toBDD(AclLineMatchExprs.FALSE), // TODO: support addr-group
-              toBDD(matchSrc(Ip.parse("10.0.2.2"))),
-              toBDD(AclLineMatchExprs.TRUE)));
+              tb.toBDD(matchSrc(ipWithWildcardMask(Ip.parse("10.0.0.0"), Ip.parse("0.0.0.255")))),
+              tb.toBDD(matchSrc(Prefix.parse("10.0.1.0/24"))),
+              tb.toBDD(matchSrc(Ip.parse("10.0.5.6"))),
+              tb.toBDD(matchSrc(Ip.parse("10.0.2.2"))),
+              tb.toBDD(AclLineMatchExprs.TRUE)));
     }
     {
       org.batfish.datamodel.IpAccessList acl =
@@ -1647,7 +1653,7 @@ public final class CiscoNxosGrammarTest {
           equalTo(Prefix.parse("10.0.1.0/24").toIpSpace().accept(DST_IP_BDD)));
 
       spec = specs.next();
-      assertThat(((AddrGroupIpAddressSpec) spec).getName(), equalTo("mysrcaddrgroup"));
+      assertThat(((AddrGroupIpAddressSpec) spec).getName(), equalTo("mydstaddrgroup"));
 
       spec = specs.next();
       assertThat(
@@ -2663,6 +2669,70 @@ public final class CiscoNxosGrammarTest {
 
     // VLAN for VNI 500001 is shutdown
     assertThat(c, not(hasDefaultVrf(hasVniSettings(hasKey(50001)))));
+  }
+
+  @Test
+  public void testObjectGroupIpAddressExtraction() {
+    String hostname = "nxos_object_group_ip_address";
+    CiscoNxosConfiguration vc = parseVendorConfig(hostname);
+
+    assertThat(vc.getObjectGroups(), hasKeys("og_indices", "og_syntax"));
+    {
+      ObjectGroupIpAddress group = (ObjectGroupIpAddress) vc.getObjectGroups().get("og_indices");
+      assertThat(group.getLines(), hasKeys(10L, 13L, 15L, 25L));
+      assertThat(
+          group.getLines().values().stream()
+              .map(ObjectGroupIpAddressLine::getLine)
+              .collect(ImmutableList.toImmutableList()),
+          contains(10L, 13L, 15L, 25L));
+    }
+    {
+      ObjectGroupIpAddress group = (ObjectGroupIpAddress) vc.getObjectGroups().get("og_syntax");
+      Iterator<ObjectGroupIpAddressLine> lines = group.getLines().values().iterator();
+      ObjectGroupIpAddressLine line;
+
+      line = lines.next();
+      assertThat(line.getIpWildcard(), equalTo(IpWildcard.create(Ip.parse("10.0.0.1"))));
+
+      line = lines.next();
+      assertThat(
+          line.getIpWildcard(),
+          equalTo(ipWithWildcardMask(Ip.parse("10.0.0.0"), Ip.parse("0.255.0.255"))));
+
+      line = lines.next();
+      assertThat(line.getIpWildcard(), equalTo(IpWildcard.create(Prefix.parse("10.0.0.0/24"))));
+    }
+  }
+
+  @Test
+  public void testObjectGroupIpAddressReferences() throws IOException {
+    String hostname = "nxos_object_group_ip_address_references";
+    String filename = String.format("configs/%s", hostname);
+    ConvertConfigurationAnswerElement ans =
+        getBatfishForConfigurationNames(hostname).loadConvertConfigurationAnswerElementOrReparse();
+
+    assertThat(ans, hasNumReferrers(filename, OBJECT_GROUP_IP_ADDRESS, "og_used", 2));
+    assertThat(ans, hasNumReferrers(filename, OBJECT_GROUP_IP_ADDRESS, "og_unused", 0));
+    assertThat(ans, hasUndefinedReference(filename, OBJECT_GROUP_IP_ADDRESS, "og_undefined"));
+  }
+
+  @Test
+  public void testObjectGroupIpAddressConversion() throws IOException {
+    String hostname = "nxos_object_group_ip_address";
+    Configuration c = parseConfig(hostname);
+
+    assertThat(c.getIpSpaces(), hasKeys("og_indices", "og_syntax"));
+    {
+      IpSpace ipSpace = c.getIpSpaces().get("og_syntax");
+      assertThat(
+          ipSpace.accept(SRC_IP_BDD),
+          equalTo(
+              AclIpSpace.union(
+                      Ip.parse("10.0.0.1").toIpSpace(),
+                      ipWithWildcardMask(Ip.parse("10.0.0.0"), Ip.parse("0.255.0.255")).toIpSpace(),
+                      Prefix.parse("10.0.0.0/24").toIpSpace())
+                  .accept(SRC_IP_BDD)));
+    }
   }
 
   @Test

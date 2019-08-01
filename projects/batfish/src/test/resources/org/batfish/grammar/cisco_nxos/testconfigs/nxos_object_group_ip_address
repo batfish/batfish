@@ -1,0 +1,18 @@
+!RANCID-CONTENT-TYPE: cisco-nx
+!
+hostname nxos_object_group_ip_address
+!
+
+object-group ip address og_indices
+  ! index should start at 10 if no existing rules
+  host 192.0.2.10
+  15 host 192.0.2.15
+  ! index should be 25, i.e. 10 plus highest index when not specified
+  host 192.0.2.25
+  ! should occur between rules 10 and 15 in iteration order
+  13 host 192.0.2.13
+
+object-group ip address og_syntax
+  host 10.0.0.1
+  10.0.0.0 0.255.0.255
+  10.0.0.0/24

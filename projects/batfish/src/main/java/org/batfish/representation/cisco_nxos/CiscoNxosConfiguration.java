@@ -50,6 +50,7 @@ import javax.annotation.Nullable;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.batfish.common.BatfishException;
 import org.batfish.common.VendorConversionException;
+import org.batfish.datamodel.AclIpSpace;
 import org.batfish.datamodel.AsPathAccessList;
 import org.batfish.datamodel.AsPathAccessListLine;
 import org.batfish.datamodel.BgpActivePeerConfig;
@@ -70,6 +71,8 @@ import org.batfish.datamodel.Interface.DependencyType;
 import org.batfish.datamodel.InterfaceType;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpSpace;
+import org.batfish.datamodel.IpSpaceReference;
+import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.OriginType;
 import org.batfish.datamodel.Prefix;
@@ -269,6 +272,7 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
   private final @Nonnull Map<String, IpCommunityList> _ipCommunityLists;
   private final @Nonnull Map<String, IpPrefixList> _ipPrefixLists;
   private final @Nonnull Map<Integer, Nve> _nves;
+  private final @Nonnull Map<String, ObjectGroup> _objectGroups;
   private final @Nonnull Map<String, DefaultVrfOspfProcess> _ospfProcesses;
   private transient Multimap<String, String> _portChannelMembers;
   private @Nonnull IntegerSpace _reservedVlanRange;
@@ -286,6 +290,7 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
     _ipCommunityLists = new HashMap<>();
     _ipPrefixLists = new HashMap<>();
     _nves = new HashMap<>();
+    _objectGroups = new HashMap<>();
     _ospfProcesses = new HashMap<>();
     _reservedVlanRange = DEFAULT_RESERVED_VLAN_RANGE;
     _routeMaps = new HashMap<>();
@@ -626,6 +631,30 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
         .forEach(this::convertInterface);
   }
 
+  private void convertObjectGroups() {
+    _objectGroups.values().stream()
+        .forEach(
+            objectGroup ->
+                objectGroup.accept(
+                    new ObjectGroupVisitor<Void>() {
+                      @Override
+                      public Void visitObjectGroupIpAddress(
+                          ObjectGroupIpAddress objectGroupIpAddress) {
+                        _c.getIpSpaces()
+                            .put(objectGroupIpAddress.getName(), toIpSpace(objectGroupIpAddress));
+                        return null;
+                      }
+                    }));
+  }
+
+  private @Nonnull IpSpace toIpSpace(ObjectGroupIpAddress objectGroupIpAddress) {
+    return AclIpSpace.permitting(
+            objectGroupIpAddress.getLines().values().stream()
+                .map(ObjectGroupIpAddressLine::getIpWildcard)
+                .map(IpWildcard::toIpSpace))
+        .build();
+  }
+
   private void convertIpAccessLists() {
     _ipAccessLists.forEach(
         (name, ipAccessList) -> _c.getIpAccessLists().put(name, toIpAccessList(ipAccessList)));
@@ -868,6 +897,10 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
     return _nves;
   }
 
+  public @Nonnull Map<String, ObjectGroup> getObjectGroups() {
+    return _objectGroups;
+  }
+
   public @Nonnull Map<String, DefaultVrfOspfProcess> getOspfProcesses() {
     return _ospfProcesses;
   }
@@ -920,6 +953,10 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
         CiscoNxosStructureUsage.BGP_NEIGHBOR6_PREFIX_LIST_IN,
         CiscoNxosStructureUsage.BGP_NEIGHBOR6_PREFIX_LIST_OUT);
     markConcreteStructure(CiscoNxosStructureType.NVE, CiscoNxosStructureUsage.NVE_SELF_REFERENCE);
+    markConcreteStructure(
+        CiscoNxosStructureType.OBJECT_GROUP_IP_ADDRESS,
+        CiscoNxosStructureUsage.IP_ACCESS_LIST_DESTINATION_ADDRGROUP,
+        CiscoNxosStructureUsage.IP_ACCESS_LIST_SOURCE_ADDRGROUP);
     markConcreteStructure(
         CiscoNxosStructureType.PORT_CHANNEL, CiscoNxosStructureUsage.INTERFACE_CHANNEL_GROUP);
     markConcreteStructure(
@@ -1261,8 +1298,10 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
           @Override
           public IpSpace visitAddrGroupIpAddressSpec(
               AddrGroupIpAddressSpec addrGroupIpAddressSpec) {
-            // TODO: support addr-group
-            return EmptyIpSpace.INSTANCE;
+            String name = addrGroupIpAddressSpec.getName();
+            return _objectGroups.get(name) instanceof ObjectGroupIpAddress
+                ? new IpSpaceReference(name)
+                : EmptyIpSpace.INSTANCE;
           }
 
           @Override
@@ -1679,6 +1718,7 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
     convertInterfaces();
     disableUnregisteredVlanInterfaces();
     convertStaticRoutes();
+    convertObjectGroups();
     convertIpAccessLists();
     convertIpAsPathAccessLists();
     convertIpPrefixLists();

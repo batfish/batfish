@@ -50,6 +50,8 @@ public enum CiscoNxosStructureUsage implements StructureUsage {
   INTERFACE_SELF_REFERENCE("interface self-reference"),
   INTERFACE_VLAN("interface vlan"),
   INTERFACE_VRF_MEMBER("interface vrf member"),
+  IP_ACCESS_LIST_DESTINATION_ADDRGROUP("ip access-list destination addrgroup"),
+  IP_ACCESS_LIST_SOURCE_ADDRGROUP("ip access-list source addrgroup"),
   IP_ROUTE_NEXT_HOP_INTERFACE("ip route next-hop-interface"),
   IP_ROUTE_NEXT_HOP_VRF("ip route vrf"),
   NVE_SELF_REFERENCE("interface nve"),
