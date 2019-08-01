@@ -3,6 +3,7 @@ package org.batfish.representation.cisco_nxos;
 import java.io.Serializable;
 import javax.annotation.Nonnull;
 
+/** A named group of IPv4/IPv6 addresses or TCP/UDP ports. */
 public abstract class ObjectGroup implements Serializable {
 
   protected ObjectGroup(String name) {
