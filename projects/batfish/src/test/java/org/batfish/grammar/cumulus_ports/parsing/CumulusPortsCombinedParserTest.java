@@ -4,6 +4,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 
 import org.batfish.grammar.MockGrammarSettings;
+import org.batfish.grammar.cumulus_ports.CumulusPortsCombinedParser;
 import org.batfish.grammar.cumulus_ports.CumulusPortsParser.Cumulus_ports_configurationContext;
 import org.junit.Test;
 
