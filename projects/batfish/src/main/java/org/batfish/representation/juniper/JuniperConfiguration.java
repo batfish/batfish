@@ -1855,6 +1855,11 @@ public final class JuniperConfiguration extends VendorConfiguration {
           term.getFromApplicationSetMembers()) {
         fromApplicationSetMember.applyTo(this, matchCondition, action, lines, _w);
       }
+      if (term.getFromIpOptions() != null) {
+        // TODO: implement
+        // For now, assume line is unmatchable.
+        continue;
+      }
       if (addLine) {
         IpAccessListLine line =
             IpAccessListLine.builder()
