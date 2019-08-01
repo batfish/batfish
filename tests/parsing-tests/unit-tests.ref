@@ -60225,7 +60225,7 @@
             "                      FROM:'from'",
             "                      (fftf_ip_options",
             "                        IP_OPTIONS:'ip-options'",
-            "                        (ip_option",
+            "                        option = (ip_option",
             "                          ANY:'any')))))))))))",
             "    NEWLINE:'\\n')",
             "  (set_line",
@@ -60251,7 +60251,7 @@
             "                      FROM:'from'",
             "                      (fftf_ip_options",
             "                        IP_OPTIONS:'ip-options'",
-            "                        (ip_option",
+            "                        option = (ip_option",
             "                          LOOSE_SOURCE_ROUTE:'loose-source-route')))))))))))",
             "    NEWLINE:'\\n')",
             "  (set_line",
@@ -60277,7 +60277,7 @@
             "                      FROM:'from'",
             "                      (fftf_ip_options",
             "                        IP_OPTIONS:'ip-options'",
-            "                        (ip_option",
+            "                        option = (ip_option",
             "                          ROUTE_RECORD:'route-record')))))))))))",
             "    NEWLINE:'\\n')",
             "  (set_line",
@@ -60303,7 +60303,7 @@
             "                      FROM:'from'",
             "                      (fftf_ip_options",
             "                        IP_OPTIONS:'ip-options'",
-            "                        (ip_option",
+            "                        option = (ip_option",
             "                          ROUTER_ALERT:'router-alert')))))))))))",
             "    NEWLINE:'\\n')",
             "  (set_line",
@@ -60329,7 +60329,7 @@
             "                      FROM:'from'",
             "                      (fftf_ip_options",
             "                        IP_OPTIONS:'ip-options'",
-            "                        (ip_option",
+            "                        option = (ip_option",
             "                          SECURITY:'security')))))))))))",
             "    NEWLINE:'\\n')",
             "  (set_line",
@@ -60355,7 +60355,7 @@
             "                      FROM:'from'",
             "                      (fftf_ip_options",
             "                        IP_OPTIONS:'ip-options'",
-            "                        (ip_option",
+            "                        option = (ip_option",
             "                          STREAM_ID:'stream-id')))))))))))",
             "    NEWLINE:'\\n')",
             "  (set_line",
@@ -60381,7 +60381,7 @@
             "                      FROM:'from'",
             "                      (fftf_ip_options",
             "                        IP_OPTIONS:'ip-options'",
-            "                        (ip_option",
+            "                        option = (ip_option",
             "                          STRICT_SOURCE_ROUTE:'strict-source-route')))))))))))",
             "    NEWLINE:'\\n')",
             "  (set_line",
@@ -60407,7 +60407,7 @@
             "                      FROM:'from'",
             "                      (fftf_ip_options",
             "                        IP_OPTIONS:'ip-options'",
-            "                        (ip_option",
+            "                        option = (ip_option",
             "                          TIMESTAMP:'timestamp')))))))))))",
             "    NEWLINE:'\\n')",
             "  EOF:<EOF>)"
@@ -92893,6 +92893,10 @@
             {
               "tag" : "MISCELLANEOUS",
               "text" : "missing action in firewall filter: 'blah', term: 'blorp'"
+            },
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "missing action in firewall filter: 'ip_options', term: 't1'"
             }
           ]
         },

@@ -3,6 +3,7 @@ package org.batfish.representation.juniper;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
+import javax.annotation.Nullable;
 
 public final class FwTerm implements Serializable {
 
@@ -13,6 +14,8 @@ public final class FwTerm implements Serializable {
   private final List<FwFromHostService> _fromHostServices;
 
   private final List<FwFrom> _froms;
+
+  private @Nullable FwFromIpOptions _fromIpOptions;
 
   private boolean _ipv6;
 
@@ -39,6 +42,17 @@ public final class FwTerm implements Serializable {
 
   public List<FwFromHostService> getFromHostServices() {
     return _fromHostServices;
+  }
+
+  public @Nullable FwFromIpOptions getFromIpOptions() {
+    return _fromIpOptions;
+  }
+
+  public @Nullable FwFromIpOptions getOrCreateFromIpOptions() {
+    if (_fromIpOptions == null) {
+      _fromIpOptions = new FwFromIpOptions();
+    }
+    return _fromIpOptions;
   }
 
   public List<FwFrom> getFroms() {

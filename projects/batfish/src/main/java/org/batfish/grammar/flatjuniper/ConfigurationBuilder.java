@@ -90,6 +90,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedSet;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
@@ -276,6 +277,7 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Int_namedContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Interface_idContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Intir_memberContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Intir_member_rangeContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ip_optionContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ip_protocolContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ipsec_authentication_algorithmContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ipsec_protocolContext;
@@ -608,6 +610,7 @@ import org.batfish.representation.juniper.FwFromHostProtocol;
 import org.batfish.representation.juniper.FwFromHostService;
 import org.batfish.representation.juniper.FwFromIcmpCode;
 import org.batfish.representation.juniper.FwFromIcmpType;
+import org.batfish.representation.juniper.FwFromIpOptions;
 import org.batfish.representation.juniper.FwFromJunosApplication;
 import org.batfish.representation.juniper.FwFromJunosApplicationSet;
 import org.batfish.representation.juniper.FwFromPacketLength;
@@ -641,6 +644,7 @@ import org.batfish.representation.juniper.InterfaceRange;
 import org.batfish.representation.juniper.InterfaceRangeMember;
 import org.batfish.representation.juniper.InterfaceRangeMemberRange;
 import org.batfish.representation.juniper.IpBgpGroup;
+import org.batfish.representation.juniper.IpOptions;
 import org.batfish.representation.juniper.IpUnknownProtocol;
 import org.batfish.representation.juniper.IpsecPolicy;
 import org.batfish.representation.juniper.IpsecProposal;
@@ -1696,6 +1700,25 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
 
   private static int toInt(Token token) {
     return Integer.parseInt(token.getText());
+  }
+
+  private static @Nonnull IpOptions toIpOptions(Ip_optionContext ctx) {
+    if (ctx.LOOSE_SOURCE_ROUTE() != null) {
+      return IpOptions.LOOSE_SOURCE_ROUTE;
+    } else if (ctx.ROUTE_RECORD() != null) {
+      return IpOptions.ROUTE_RECORD;
+    } else if (ctx.ROUTER_ALERT() != null) {
+      return IpOptions.ROUTER_ALERT;
+    } else if (ctx.SECURITY() != null) {
+      return IpOptions.SECURITY;
+    } else if (ctx.STREAM_ID() != null) {
+      return IpOptions.STREAM_ID;
+    } else if (ctx.STRICT_SOURCE_ROUTE() != null) {
+      return IpOptions.STRICT_SOURCE_ROUTE;
+    } else if (ctx.TIMESTAMP() != null) {
+      return IpOptions.TIMESTAMP;
+    }
+    throw new IllegalArgumentException("unsupported");
   }
 
   private static long toLong(Token token) {
@@ -3868,8 +3891,12 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
   @Override
   public void exitFftf_ip_options(Fftf_ip_optionsContext ctx) {
     todo(ctx);
-    // assume no action is taken
-    _currentFwTerm.getThens().add(FwThenNextTerm.INSTANCE);
+    FwFromIpOptions from = _currentFwTerm.getOrCreateFromIpOptions();
+    if (ctx.option.ANY() != null) {
+      from.getOptions().addAll(Arrays.asList(IpOptions.values()));
+    } else {
+      from.getOptions().add(toIpOptions(ctx.option));
+    }
   }
 
   @Override
