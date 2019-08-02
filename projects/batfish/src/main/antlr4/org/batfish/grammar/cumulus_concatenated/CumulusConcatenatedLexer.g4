@@ -4,6 +4,11 @@ options {
   superClass = 'org.batfish.grammar.BatfishLexer';
 }
 
+ANYTHING
+:
+  . | EOF
+;
+
 NEWLINE
 :
   F_Newline+

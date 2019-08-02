@@ -13,6 +13,7 @@ import org.batfish.common.Warnings;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.config.Settings;
 import org.batfish.datamodel.Configuration;
+import org.batfish.grammar.GrammarSettings;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
 import org.batfish.representation.cumulus.CumulusNcluConfiguration;
@@ -30,9 +31,14 @@ public class CumulusConcatenatedGrammarTest {
   @Rule public ExpectedException _thrown = ExpectedException.none();
 
   private static CumulusNcluConfiguration parseVendorConfig(String filename) {
-    String src = CommonUtil.readResource(TESTCONFIGS_PREFIX + filename);
     Settings settings = new Settings();
     configureBatfishTestSettings(settings);
+    return parseVendorConfig(filename, settings);
+  }
+
+  private static CumulusNcluConfiguration parseVendorConfig(
+      String filename, GrammarSettings settings) {
+    String src = CommonUtil.readResource(TESTCONFIGS_PREFIX + filename);
     CumulusConcatenatedCombinedParser parser = new CumulusConcatenatedCombinedParser(src, settings);
     CumulusConcatenatedControlPlaneExtractor extractor =
         new CumulusConcatenatedControlPlaneExtractor(
@@ -65,7 +71,11 @@ public class CumulusConcatenatedGrammarTest {
 
   @Test
   public void testPortsUnrecognized() {
-    CumulusNcluConfiguration cfg = parseVendorConfig("ports_unrecognized");
+    Settings settings = new Settings();
+    configureBatfishTestSettings(settings);
+    settings.setThrowOnLexerError(false);
+    settings.setThrowOnParserError(false);
+    CumulusNcluConfiguration cfg = parseVendorConfig("ports_unrecognized", settings);
     assertThat(cfg.getHostname(), equalTo("hostname"));
   }
 }

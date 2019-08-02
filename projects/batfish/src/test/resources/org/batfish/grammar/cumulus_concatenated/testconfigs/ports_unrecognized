@@ -1,8 +1,8 @@
 hostname
 # ports.conf --
 # We're in ports.conf
-here are some
-unrecognized lines
+unrecognized line 1
+unrecognized line 2
 # This file describes the network interfaces
 # Now we're in /etc/interfaces
 

@@ -9,9 +9,7 @@ import org.batfish.common.BatfishException;
 import org.batfish.common.ParseTreeSentences;
 import org.batfish.common.Warnings;
 import org.batfish.grammar.BatfishCombinedParser;
-import org.batfish.grammar.BatfishLexer;
 import org.batfish.grammar.BatfishParseTreeWalker;
-import org.batfish.grammar.BatfishParser;
 import org.batfish.grammar.ControlPlaneExtractor;
 import org.batfish.grammar.GrammarSettings;
 import org.batfish.grammar.ParseTreePrettyPrinter;
@@ -77,9 +75,9 @@ public class CumulusConcatenatedControlPlaneExtractor implements ControlPlaneExt
     CumulusPortsCombinedParser parser =
         new CumulusPortsCombinedParser(text, _grammarSettings, _line, _offset);
     Cumulus_ports_configurationContext ctxt = parser.parse();
-    checkErrors(parser);
+    // checkErrors(parser);
     ParseTreeWalker walker = new BatfishParseTreeWalker(parser);
-    CumulusPortsConfigurationBuilder cb = new CumulusPortsConfigurationBuilder(_configuration);
+    CumulusPortsConfigurationBuilder cb = new CumulusPortsConfigurationBuilder(_configuration, _w);
     walker.walk(cb, ctxt);
     mergeParseTree(ctxt, parser);
 
@@ -97,8 +95,7 @@ public class CumulusConcatenatedControlPlaneExtractor implements ControlPlaneExt
   }
 
   /** merge in parse tree if desired */
-  private <P extends BatfishParser, L extends BatfishLexer> void mergeParseTree(
-      ParserRuleContext ctxt, BatfishCombinedParser<P, L> parser) {
+  private void mergeParseTree(ParserRuleContext ctxt, BatfishCombinedParser<?, ?> parser) {
     if (_ptSentences != null) {
       _ptSentences
           .get()
@@ -109,8 +106,7 @@ public class CumulusConcatenatedControlPlaneExtractor implements ControlPlaneExt
     }
   }
 
-  private <P extends BatfishParser, L extends BatfishLexer> void checkErrors(
-      BatfishCombinedParser<P, L> parser) {
+  private void checkErrors(BatfishCombinedParser<?, ?> parser) {
     if (!parser.getErrors().isEmpty()) {
       throw new BatfishException(
           String.format(
