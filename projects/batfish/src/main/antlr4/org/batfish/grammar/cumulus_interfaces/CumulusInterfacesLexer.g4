@@ -1,7 +1,7 @@
-lexer grammar CumulusPortsLexer;
+lexer grammar CumulusInterfacesLexer;
 
 options {
-  superClass = 'org.batfish.grammar.cumulus_ports.parsing.CumulusPortsBaseLexer';
+  superClass = 'org.batfish.grammar.cumulus_interfaces.parsing.CumulusInterfacesBaseLexer';
 }
 
 COMMENT_LINE

@@ -13,6 +13,9 @@ import org.batfish.grammar.BatfishParseTreeWalker;
 import org.batfish.grammar.ControlPlaneExtractor;
 import org.batfish.grammar.GrammarSettings;
 import org.batfish.grammar.ParseTreePrettyPrinter;
+import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesCombinedParser;
+import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesConfigurationBuilder;
+import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.Cumulus_interfaces_configurationContext;
 import org.batfish.grammar.cumulus_ports.CumulusPortsCombinedParser;
 import org.batfish.grammar.cumulus_ports.CumulusPortsConfigurationBuilder;
 import org.batfish.grammar.cumulus_ports.CumulusPortsParser.Cumulus_ports_configurationContext;
@@ -20,7 +23,8 @@ import org.batfish.representation.cumulus.CumulusNcluConfiguration;
 import org.batfish.vendor.VendorConfiguration;
 
 public class CumulusConcatenatedControlPlaneExtractor implements ControlPlaneExtractor {
-  private static final String START_OF_CUMULUS_INTERFACES_FILE =
+  private static final String START_OF_FRR_FILE = "frr version";
+  private static final String START_OF_INTERFACES_FILE =
       "# This file describes the network interfaces";
 
   private final String _text;
@@ -66,11 +70,28 @@ public class CumulusConcatenatedControlPlaneExtractor implements ControlPlaneExt
 
   private void parseFrrFile() {}
 
-  private void parseInterfacesFile() {}
+  private void parseInterfacesFile() {
+    int end = _text.indexOf(START_OF_FRR_FILE);
+    String text = end > 0 ? _text.substring(0, end) : _text;
+
+    CumulusInterfacesCombinedParser parser =
+        new CumulusInterfacesCombinedParser(text, _grammarSettings, _line, _offset);
+    Cumulus_interfaces_configurationContext ctxt = parser.parse();
+    checkErrors(parser);
+    ParseTreeWalker walker = new BatfishParseTreeWalker(parser);
+    CumulusInterfacesConfigurationBuilder cb =
+        new CumulusInterfacesConfigurationBuilder(_configuration, _w);
+    walker.walk(cb, ctxt);
+    mergeParseTree(ctxt, parser);
+
+    Token startOfFrrFile = ctxt.getStop();
+    _line = startOfFrrFile.getLine();
+    _offset = startOfFrrFile.getStartIndex();
+  }
 
   private void parsePortsFile() {
-    int len = _text.indexOf(START_OF_CUMULUS_INTERFACES_FILE);
-    String text = len > 0 ? _text.substring(0, len) : _text;
+    int end = _text.indexOf(START_OF_INTERFACES_FILE);
+    String text = end > 0 ? _text.substring(0, end) : _text;
 
     CumulusPortsCombinedParser parser =
         new CumulusPortsCombinedParser(text, _grammarSettings, _line, _offset);
@@ -81,9 +102,9 @@ public class CumulusConcatenatedControlPlaneExtractor implements ControlPlaneExt
     walker.walk(cb, ctxt);
     mergeParseTree(ctxt, parser);
 
-    Token startOfCumulusInterfacesFile = ctxt.getStop();
-    _line = startOfCumulusInterfacesFile.getLine();
-    _offset = startOfCumulusInterfacesFile.getStartIndex();
+    Token startOfInterfacesFile = ctxt.getStop();
+    _line = startOfInterfacesFile.getLine();
+    _offset = startOfInterfacesFile.getStartIndex();
   }
 
   private void parseHostname() {
