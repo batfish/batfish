@@ -10,7 +10,6 @@ import org.batfish.grammar.BatfishLexer;
  */
 public abstract class CumulusInterfacesBaseLexer extends BatfishLexer {
   private int _lastTokenType = -1;
-  private int _secondToLastTokenType = -1;
 
   public CumulusInterfacesBaseLexer(CharStream input) {
     super(input);
@@ -20,7 +19,6 @@ public abstract class CumulusInterfacesBaseLexer extends BatfishLexer {
   public final void emit(Token token) {
     super.emit(token);
     if (token.getChannel() != HIDDEN) {
-      _secondToLastTokenType = _lastTokenType;
       _lastTokenType = token.getType();
     }
   }
