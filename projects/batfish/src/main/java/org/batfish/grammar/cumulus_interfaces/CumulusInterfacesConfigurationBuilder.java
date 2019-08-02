@@ -39,4 +39,3 @@ public class CumulusInterfacesConfigurationBuilder extends CumulusInterfacesPars
     }
   }
 }
-

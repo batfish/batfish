@@ -1,4 +1,3 @@
 package org.batfish.grammar.cumulus_frr;
 
-public class CumulusFrrConfigurationBuilder {
-}
+public class CumulusFrrConfigurationBuilder {}
