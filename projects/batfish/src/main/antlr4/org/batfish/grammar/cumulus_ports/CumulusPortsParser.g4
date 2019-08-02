@@ -8,12 +8,7 @@ options {
 
 cumulus_ports_configuration
 :
-  // TODO other lines
-  start_of_cumulus_interfaces_file
+  EOF
 ;
 
-start_of_cumulus_interfaces_file
-:
-    START_OF_CUMULUS_INTERFACES_FILE
-;
 

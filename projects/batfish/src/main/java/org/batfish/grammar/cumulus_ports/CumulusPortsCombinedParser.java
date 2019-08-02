@@ -14,7 +14,7 @@ public class CumulusPortsCombinedParser
       new BatfishANTLRErrorStrategy.BatfishANTLRErrorStrategyFactory(
           CumulusPortsLexer.NEWLINE, "\n");
 
-  public CumulusPortsCombinedParser(String input, GrammarSettings settings) {
+  public CumulusPortsCombinedParser(String input, GrammarSettings settings, int line, int offset) {
     super(
         CumulusPortsParser.class,
         CumulusPortsLexer.class,
@@ -22,18 +22,12 @@ public class CumulusPortsCombinedParser
         settings,
         NEWLINE_BASED_RECOVERY,
         BatfishLexerRecoveryStrategy.WHITESPACE_AND_NEWLINES);
+    _lexer.getInterpreter().setLine(line);
+    _lexer.getInputStream().seek(offset);
   }
 
   @Override
   public Cumulus_ports_configurationContext parse() {
     return _parser.cumulus_ports_configuration();
-  }
-
-  void setOffset(int offset) {
-    _lexer.getInputStream().seek(offset);
-  }
-
-  void setLine(int line) {
-    _lexer.getInterpreter().setLine(line);
   }
 }

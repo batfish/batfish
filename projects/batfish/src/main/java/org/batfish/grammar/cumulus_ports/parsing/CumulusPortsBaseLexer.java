@@ -1,6 +1,7 @@
 package org.batfish.grammar.cumulus_ports.parsing;
 
 import org.antlr.v4.runtime.CharStream;
+import org.antlr.v4.runtime.Token;
 import org.batfish.grammar.BatfishLexer;
 
 /**
@@ -8,7 +9,23 @@ import org.batfish.grammar.BatfishLexer;
  * BatfishLexer}.
  */
 public abstract class CumulusPortsBaseLexer extends BatfishLexer {
+  private int _lastTokenType = -1;
+  private int _secondToLastTokenType = -1;
+
   public CumulusPortsBaseLexer(CharStream input) {
     super(input);
+  }
+
+  @Override
+  public final void emit(Token token) {
+    super.emit(token);
+    if (token.getChannel() != HIDDEN) {
+      _secondToLastTokenType = _lastTokenType;
+      _lastTokenType = token.getType();
+    }
+  }
+
+  protected final int lastTokenType() {
+    return _lastTokenType;
   }
 }

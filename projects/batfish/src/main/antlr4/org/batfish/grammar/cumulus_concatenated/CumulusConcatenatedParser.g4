@@ -5,5 +5,5 @@ options {
   tokenVocab = CumulusConcatenatedLexer;
 }
 
-noop : ;
+noop : .;
 

@@ -4,14 +4,24 @@ options {
   superClass = 'org.batfish.grammar.cumulus_ports.parsing.CumulusPortsBaseLexer';
 }
 
+COMMENT_LINE
+:
+  (
+    F_Whitespace
+  )* [!#]
+  {lastTokenType() == NEWLINE || lastTokenType() == -1}?
+
+  F_NonNewline*
+  (
+    F_Newline+
+    | EOF
+  ) -> channel ( HIDDEN )
+;
+
+
 NEWLINE
 :
   F_Newline+
-;
-
-START_OF_CUMULUS_INTERFACES_FILE
-:
-  '# This file describes the network interfaces'
 ;
 
 // Fragments
@@ -21,3 +31,20 @@ F_Newline
 :
   [\n\r]
 ;
+
+fragment
+F_NonNewline
+:
+  ~[\n\r]
+;
+
+
+fragment
+F_Whitespace
+:
+  ' '
+  | '\t'
+  | '\u000C'
+  | '\u00A0'
+;
+

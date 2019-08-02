@@ -22,6 +22,9 @@ import org.batfish.representation.cumulus.CumulusNcluConfiguration;
 import org.batfish.vendor.VendorConfiguration;
 
 public class CumulusConcatenatedControlPlaneExtractor implements ControlPlaneExtractor {
+  private static final String START_OF_CUMULUS_INTERFACES_FILE =
+      "# This file describes the network interfaces";
+
   private final String _text;
   private final String _filename;
   private final GrammarSettings _grammarSettings;
@@ -68,7 +71,11 @@ public class CumulusConcatenatedControlPlaneExtractor implements ControlPlaneExt
   private void parseInterfacesFile() {}
 
   private void parsePortsFile() {
-    CumulusPortsCombinedParser parser = new CumulusPortsCombinedParser(_text, _grammarSettings);
+    int len = _text.indexOf(START_OF_CUMULUS_INTERFACES_FILE);
+    String text = len > 0 ? _text.substring(0, len) : _text;
+
+    CumulusPortsCombinedParser parser =
+        new CumulusPortsCombinedParser(text, _grammarSettings, _line, _offset);
     Cumulus_ports_configurationContext ctxt = parser.parse();
     checkErrors(parser);
     ParseTreeWalker walker = new BatfishParseTreeWalker(parser);
@@ -76,7 +83,7 @@ public class CumulusConcatenatedControlPlaneExtractor implements ControlPlaneExt
     walker.walk(cb, ctxt);
     mergeParseTree(ctxt, parser);
 
-    Token startOfCumulusInterfacesFile = ctxt.start_of_cumulus_interfaces_file().getStart();
+    Token startOfCumulusInterfacesFile = ctxt.getStop();
     _line = startOfCumulusInterfacesFile.getLine();
     _offset = startOfCumulusInterfacesFile.getStartIndex();
   }
