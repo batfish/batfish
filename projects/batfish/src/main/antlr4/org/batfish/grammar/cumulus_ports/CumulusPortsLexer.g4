@@ -8,7 +8,7 @@ COMMENT_LINE
 :
   (
     F_Whitespace
-  )* [!#]
+  )* [#]
   {lastTokenType() == NEWLINE || lastTokenType() == -1}?
 
   F_NonNewline*
