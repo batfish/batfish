@@ -73,6 +73,7 @@ public class CumulusConcatenatedGrammarTest {
   public void testPortsUnrecognized() {
     Settings settings = new Settings();
     configureBatfishTestSettings(settings);
+    settings.setDisableUnrecognized(false);
     settings.setThrowOnLexerError(false);
     settings.setThrowOnParserError(false);
     CumulusNcluConfiguration cfg = parseVendorConfig("ports_unrecognized", settings);
