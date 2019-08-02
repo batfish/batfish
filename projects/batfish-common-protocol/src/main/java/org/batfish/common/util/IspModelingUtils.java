@@ -117,6 +117,25 @@ public final class IspModelingUtils {
           .add("_bgpActivePeerConfigs", _bgpActivePeerConfigs)
           .toString();
     }
+
+    @Override
+    public boolean equals(Object o) {
+      if (this == o) {
+        return true;
+      }
+      if (!(o instanceof IspInfo)) {
+        return false;
+      }
+      IspInfo ispInfo = (IspInfo) o;
+      return com.google.common.base.Objects.equal(_interfaceAddresses, ispInfo._interfaceAddresses)
+          && com.google.common.base.Objects.equal(
+              _bgpActivePeerConfigs, ispInfo._bgpActivePeerConfigs);
+    }
+
+    @Override
+    public int hashCode() {
+      return com.google.common.base.Objects.hashCode(_interfaceAddresses, _bgpActivePeerConfigs);
+    }
   }
 
   /**
@@ -401,17 +420,11 @@ public final class IspModelingUtils {
     }
 
     String ispNodeName = String.format("%s_%s", ISP_HOSTNAME_PREFIX, asn);
-    if (configurations.containsKey(ispNodeName)) {
-      logger.warnf("A node with name '%s' already exists. Added to it.", ispNodeName);
-    }
-
     Configuration ispConfiguration =
-        configurations.getOrDefault(
-            ispNodeName,
-            nf.configurationBuilder()
-                .setHostname(ispNodeName)
-                .setConfigurationFormat(ConfigurationFormat.CISCO_IOS)
-                .build());
+        nf.configurationBuilder()
+            .setHostname(ispNodeName)
+            .setConfigurationFormat(ConfigurationFormat.CISCO_IOS)
+            .build();
     ispConfiguration.setDeviceType(DeviceType.ISP);
     ispConfiguration.setRoutingPolicies(
         ImmutableSortedMap.of(EXPORT_POLICY_ON_ISP, getRoutingPolicyForIsp(ispConfiguration, nf)));

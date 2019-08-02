@@ -93,6 +93,7 @@ public class AwsConfiguration implements Serializable, GenericConfigObject {
   }
 
   @Override
+  @Nonnull
   public List<BorderInterfaceInfo> getBorderInterfaces() {
     return _regions.values().stream()
         .flatMap(r -> r.getInternetGateways().values().stream())

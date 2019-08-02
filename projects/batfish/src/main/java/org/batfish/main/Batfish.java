@@ -2414,12 +2414,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
     } else {
       configurations.putAll(additionalConfigs);
     }
-
-    // we are being careful here so that we don't create an unnecessary key in the warnings map when
-    // internet wasn't being modeled at all
-    if (!warnings.containsKey(INTERNET_HOST_NAME) && !internetWarnings.isEmpty()) {
-      warnings.put(INTERNET_HOST_NAME, internetWarnings);
-    }
   }
 
   private void updateSnapshotNodeRoles() {

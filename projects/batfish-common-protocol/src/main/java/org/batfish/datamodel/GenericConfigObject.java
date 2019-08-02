@@ -16,6 +16,6 @@ public interface GenericConfigObject extends Serializable {
    */
   @Nullable
   default List<BorderInterfaceInfo> getBorderInterfaces() {
-    throw new UnsupportedOperationException("Get border interfaces method has not been overriden");
+    return null;
   }
 }

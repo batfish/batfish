@@ -1,7 +1,7 @@
 package org.batfish.common.util;
 
-import static com.google.common.collect.Iterables.getOnlyElement;
 import static org.batfish.common.Warnings.TAG_RED_FLAG;
+import static org.batfish.common.util.IspModelingUtils.EXPORT_POLICY_ON_ISP;
 import static org.batfish.datamodel.BgpPeerConfig.ALL_AS_NUMBERS;
 import static org.batfish.datamodel.Configuration.DEFAULT_VRF_NAME;
 import static org.batfish.datamodel.matchers.BgpNeighborMatchers.hasLocalAs;
@@ -213,8 +213,7 @@ public class IspModelingUtilsTest {
             .iterator()
             .next(),
         equalTo(peer));
-    assertThat(
-        ispConfiguration.getRoutingPolicies(), hasKey(IspModelingUtils.EXPORT_POLICY_ON_ISP));
+    assertThat(ispConfiguration.getRoutingPolicies(), hasKey(EXPORT_POLICY_ON_ISP));
   }
 
   @Test
@@ -290,9 +289,7 @@ public class IspModelingUtilsTest {
             .setPeerAddress(Ip.parse("2.2.2.2"))
             .setRemoteAs(2L)
             .setIpv4UnicastAddressFamily(
-                Ipv4UnicastAddressFamily.builder()
-                    .setExportPolicy(IspModelingUtils.EXPORT_POLICY_ON_ISP)
-                    .build())
+                Ipv4UnicastAddressFamily.builder().setExportPolicy(EXPORT_POLICY_ON_ISP).build())
             .build();
     assertThat(ispInfo.getBgpActivePeerConfigs(), equalTo(ImmutableList.of(reversedPeer)));
     assertThat(
@@ -499,7 +496,7 @@ public class IspModelingUtilsTest {
                                 .setLocalAs(1L)
                                 .setIpv4UnicastAddressFamily(
                                     Ipv4UnicastAddressFamily.builder()
-                                        .setExportPolicy(IspModelingUtils.EXPORT_POLICY_ON_ISP)
+                                        .setExportPolicy(EXPORT_POLICY_ON_ISP)
                                         .build())
                                 .build(),
                             Prefix.parse("240.1.1.2/32"),
@@ -510,7 +507,7 @@ public class IspModelingUtilsTest {
                                 .setLocalAs(1L)
                                 .setIpv4UnicastAddressFamily(
                                     Ipv4UnicastAddressFamily.builder()
-                                        .setExportPolicy(IspModelingUtils.EXPORT_POLICY_ON_ISP)
+                                        .setExportPolicy(EXPORT_POLICY_ON_ISP)
                                         .build())
                                 .build()))))));
   }
@@ -564,7 +561,7 @@ public class IspModelingUtilsTest {
 
     RoutingPolicy expectedRoutingPolicy =
         nf.routingPolicyBuilder()
-            .setName(IspModelingUtils.EXPORT_POLICY_ON_ISP)
+            .setName(EXPORT_POLICY_ON_ISP)
             .setOwner(isp)
             .setStatements(
                 Collections.singletonList(
@@ -760,12 +757,35 @@ public class IspModelingUtilsTest {
                     IspFilter.ALLOW_ALL)),
             new Warnings());
 
-    assertThat(combinedMap.keySet(), equalTo(ImmutableSet.of(remoteAsn)));
     assertThat(
-        getOnlyElement(combinedMap.values()).getInterfaceAddresses(),
+        combinedMap,
         equalTo(
-            ImmutableList.of(
-                ConcreteInterfaceAddress.create(remoteBgpIp1, 24),
-                ConcreteInterfaceAddress.create(remoteBgpIp2, 24))));
+            ImmutableMap.of(
+                remoteAsn,
+                new IspInfo(
+                    ImmutableList.of(
+                        ConcreteInterfaceAddress.create(remoteBgpIp1, 24),
+                        ConcreteInterfaceAddress.create(remoteBgpIp2, 24)),
+                    ImmutableList.of(
+                        BgpActivePeerConfig.builder()
+                            .setLocalAs(remoteAsn)
+                            .setLocalIp(remoteBgpIp1)
+                            .setPeerAddress(localBgpIp1)
+                            .setRemoteAs(1L)
+                            .setIpv4UnicastAddressFamily(
+                                Ipv4UnicastAddressFamily.builder()
+                                    .setExportPolicy(EXPORT_POLICY_ON_ISP)
+                                    .build())
+                            .build(),
+                        BgpActivePeerConfig.builder()
+                            .setLocalAs(remoteAsn)
+                            .setLocalIp(remoteBgpIp2)
+                            .setPeerAddress(localBgpIp2)
+                            .setRemoteAs(1L)
+                            .setIpv4UnicastAddressFamily(
+                                Ipv4UnicastAddressFamily.builder()
+                                    .setExportPolicy(EXPORT_POLICY_ON_ISP)
+                                    .build())
+                            .build())))));
   }
 }
