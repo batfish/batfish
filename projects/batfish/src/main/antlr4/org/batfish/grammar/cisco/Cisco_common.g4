@@ -120,6 +120,11 @@ ec_literal
    DEC COLON DEC
 ;
 
+eigrp_metric
+:
+   bw_kbps = DEC delay_10us = DEC reliability = DEC eff_bw = DEC mtu = DEC
+;
+
 exit_line
 :
    EXIT NEWLINE
