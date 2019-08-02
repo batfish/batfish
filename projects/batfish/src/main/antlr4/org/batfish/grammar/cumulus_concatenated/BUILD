@@ -10,7 +10,6 @@ java_library(
     ],
     deps = [
         "//projects/batfish-common-protocol:parser_common",
-        "//projects/batfish/src/main/java/org/batfish/grammar/cumulus_concatenated/parsing:cumulus_concatenated_base",
         "@antlr4_runtime//:compile",
     ],
 )
