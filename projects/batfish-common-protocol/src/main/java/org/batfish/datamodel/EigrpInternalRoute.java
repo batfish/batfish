@@ -48,10 +48,7 @@ public class EigrpInternalRoute extends EigrpRoute {
     return RoutingProtocol.EIGRP;
   }
 
-  public static class Builder extends AbstractRouteBuilder<Builder, EigrpInternalRoute> {
-
-    @Nullable private EigrpMetric _eigrpMetric;
-    @Nullable Long _processAsn;
+  public static class Builder extends EigrpRoute.Builder<Builder, EigrpInternalRoute> {
 
     private Builder() {}
 
@@ -77,16 +74,6 @@ public class EigrpInternalRoute extends EigrpRoute {
     @Nonnull
     @Override
     protected Builder getThis() {
-      return this;
-    }
-
-    public Builder setEigrpMetric(@Nonnull EigrpMetric metric) {
-      _eigrpMetric = metric;
-      return this;
-    }
-
-    public Builder setProcessAsn(@Nonnull Long processAsn) {
-      _processAsn = processAsn;
       return this;
     }
   }

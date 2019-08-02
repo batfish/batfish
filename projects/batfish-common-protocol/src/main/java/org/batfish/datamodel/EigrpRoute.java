@@ -76,4 +76,26 @@ public abstract class EigrpRoute extends AbstractRoute {
 
   @Override
   public abstract RoutingProtocol getProtocol();
+
+  public abstract static class Builder<B extends Builder<B, R>, R extends EigrpRoute>
+      extends AbstractRouteBuilder<B, R> {
+    @Nullable protected Long _destinationAsn;
+    @Nullable protected EigrpMetric _eigrpMetric;
+    @Nullable protected Long _processAsn;
+
+    public B setDestinationAsn(@Nonnull Long destinationAsn) {
+      _destinationAsn = destinationAsn;
+      return getThis();
+    }
+
+    public B setEigrpMetric(@Nonnull EigrpMetric metric) {
+      _eigrpMetric = metric;
+      return getThis();
+    }
+
+    public B setProcessAsn(@Nullable Long processAsn) {
+      _processAsn = processAsn;
+      return getThis();
+    }
+  }
 }
