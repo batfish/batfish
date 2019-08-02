@@ -68,11 +68,7 @@ public class EigrpExternalRoute extends EigrpRoute {
     return new Builder();
   }
 
-  public static class Builder extends AbstractRouteBuilder<Builder, EigrpExternalRoute> {
-
-    @Nullable private Long _destinationAsn;
-    @Nullable private EigrpMetric _eigrpMetric;
-    @Nullable Long _processAsn;
+  public static class Builder extends EigrpRoute.Builder<Builder, EigrpExternalRoute> {
 
     private Builder() {}
 
@@ -98,21 +94,6 @@ public class EigrpExternalRoute extends EigrpRoute {
     @Nonnull
     @Override
     protected Builder getThis() {
-      return this;
-    }
-
-    public Builder setDestinationAsn(@Nonnull Long destinationAsn) {
-      _destinationAsn = destinationAsn;
-      return this;
-    }
-
-    public Builder setEigrpMetric(@Nonnull EigrpMetric metric) {
-      _eigrpMetric = metric;
-      return this;
-    }
-
-    public Builder setProcessAsn(@Nullable Long processAsn) {
-      _processAsn = processAsn;
       return this;
     }
   }
