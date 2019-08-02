@@ -13,6 +13,8 @@ import org.batfish.grammar.BatfishParseTreeWalker;
 import org.batfish.grammar.ControlPlaneExtractor;
 import org.batfish.grammar.GrammarSettings;
 import org.batfish.grammar.ParseTreePrettyPrinter;
+import org.batfish.grammar.cumulus_frr.CumulusFrrCombinedParser;
+import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Cumulus_frr_configurationContext;
 import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesCombinedParser;
 import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesConfigurationBuilder;
 import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.Cumulus_interfaces_configurationContext;
@@ -68,7 +70,17 @@ public class CumulusConcatenatedControlPlaneExtractor implements ControlPlaneExt
     parseFrrFile();
   }
 
-  private void parseFrrFile() {}
+  private void parseFrrFile() {
+    CumulusFrrCombinedParser parser =
+        new CumulusFrrCombinedParser(_text, _grammarSettings, _line, _offset);
+    Cumulus_frr_configurationContext ctxt = parser.parse();
+    checkErrors(parser);
+    ParseTreeWalker walker = new BatfishParseTreeWalker(parser);
+    CumulusInterfacesConfigurationBuilder cb =
+        new CumulusInterfacesConfigurationBuilder(_configuration, _w);
+    walker.walk(cb, ctxt);
+    mergeParseTree(ctxt, parser);
+  }
 
   private void parseInterfacesFile() {
     int end = _text.indexOf(START_OF_FRR_FILE);
