@@ -217,8 +217,7 @@ public final class IspModelingUtils {
       return ispConfigurations;
     }
 
-    Configuration internet =
-        configurations.getOrDefault(INTERNET_HOST_NAME, createInternetNode(nf));
+    Configuration internet = createInternetNode(nf);
     connectIspsToInternet(internet, ispConfigurations, nf);
 
     return ImmutableMap.<String, Configuration>builder()
@@ -416,7 +415,7 @@ public final class IspModelingUtils {
     if (ispInfo.getBgpActivePeerConfigs().isEmpty()
         || ispInfo.getInterfaceAddresses().isEmpty()
         || ispInfo.getInterfaceAddresses().size() != ispInfo.getBgpActivePeerConfigs().size()) {
-      logger.warnf(String.format("ISP information for ASN '%s' is not correct", asn));
+      logger.warnf("ISP information for ASN '%s' is not correct", asn);
       return null;
     }
 
