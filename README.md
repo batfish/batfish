@@ -93,20 +93,20 @@ When you transition to running Batfish on your own network, we recommend a serve
 Batfish supports configurations for a large and growing set of (physical and virtual) devices, including:
 
 * Arista
-* Aruba
 * AWS (VPCs, Network ACLs, VPN GW, NAT GW, Internet GW, Security Groups, etc…)
 * Cisco (All Cisco NX-OS, IOS, IOS-XE, IOS-XR and ASA devices)
 * [Cumulus](https://github.com/batfish/batfish/wiki/Packaging-snapshots-for-analysis#format-for-cumulus-configuration-files)
-* Dell Force10
 * [F5 BIG-IP](https://github.com/batfish/batfish/wiki/Packaging-snapshots-for-analysis#format-for-f5-big-ip-configuration-files)
-* Foundry
 * [iptables (on hosts)](https://github.com/batfish/batfish/wiki/Packaging-snapshots-for-analysis#format-for-host-json-files)
 * Juniper (All JunOS platforms: MX, EX, QFX, SRX, T-series, PTX)
-* MRV
 * Palo Alto Networks
-* Quagga / FRR
-* Quanta
-* VyOS
+* Free-Range Routing (FRR)
+
+Batfish has limited support for the following platforms:
+
+* Aruba
+* Dell Force10
+* Foundry
 
 If you'd like support for additional vendors or currently-unsupported configuration features, let us know via [Slack](https://join.slack.com/t/batfish-org/shared_invite/enQtMzA0Nzg2OTAzNzQ1LTUxOTJlY2YyNTVlNGQ3MTJkOTIwZTU2YjY3YzRjZWFiYzE4ODE5ODZiNjA4NGI5NTJhZmU2ZTllOTMwZDhjMzA) or [GitHub](https://github.com/batfish/batfish/issues/new). We'll try to add support. Or, you can &mdash; we welcome pull requests! :)
 

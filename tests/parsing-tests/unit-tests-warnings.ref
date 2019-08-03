@@ -492,20 +492,6 @@
       },
       {
         "Filename" : "configs/cisco_ospf",
-        "Line" : 55,
-        "Text" : "distribute-list prefix plin in",
-        "Parser_Context" : "[ro_distribute_list s_router_ospf stanza cisco_configuration]",
-        "Comment" : "This feature is not currently supported"
-      },
-      {
-        "Filename" : "configs/cisco_ospf",
-        "Line" : 56,
-        "Text" : "distribute-list prefix plout out",
-        "Parser_Context" : "[ro_distribute_list s_router_ospf stanza cisco_configuration]",
-        "Comment" : "This feature is not currently supported"
-      },
-      {
-        "Filename" : "configs/cisco_ospf",
         "Line" : 57,
         "Text" : "distribute-list route-map rmin in",
         "Parser_Context" : "[ro_distribute_list s_router_ospf stanza cisco_configuration]",
@@ -2318,6 +2304,62 @@
         "Comment" : "Filter-based forwarding with next-hop-ip is not currently supported"
       },
       {
+        "Filename" : "configs/juniper_firewall",
+        "Line" : 43,
+        "Text" : "ip-options any",
+        "Parser_Context" : "[fftf_ip_options fft_from ff_term f_filter f_common f_family s_firewall s_common statement set_line_tail set_line flat_juniper_configuration]",
+        "Comment" : "This feature is not currently supported"
+      },
+      {
+        "Filename" : "configs/juniper_firewall",
+        "Line" : 44,
+        "Text" : "ip-options loose-source-route",
+        "Parser_Context" : "[fftf_ip_options fft_from ff_term f_filter f_common f_family s_firewall s_common statement set_line_tail set_line flat_juniper_configuration]",
+        "Comment" : "This feature is not currently supported"
+      },
+      {
+        "Filename" : "configs/juniper_firewall",
+        "Line" : 45,
+        "Text" : "ip-options route-record",
+        "Parser_Context" : "[fftf_ip_options fft_from ff_term f_filter f_common f_family s_firewall s_common statement set_line_tail set_line flat_juniper_configuration]",
+        "Comment" : "This feature is not currently supported"
+      },
+      {
+        "Filename" : "configs/juniper_firewall",
+        "Line" : 46,
+        "Text" : "ip-options router-alert",
+        "Parser_Context" : "[fftf_ip_options fft_from ff_term f_filter f_common f_family s_firewall s_common statement set_line_tail set_line flat_juniper_configuration]",
+        "Comment" : "This feature is not currently supported"
+      },
+      {
+        "Filename" : "configs/juniper_firewall",
+        "Line" : 47,
+        "Text" : "ip-options security",
+        "Parser_Context" : "[fftf_ip_options fft_from ff_term f_filter f_common f_family s_firewall s_common statement set_line_tail set_line flat_juniper_configuration]",
+        "Comment" : "This feature is not currently supported"
+      },
+      {
+        "Filename" : "configs/juniper_firewall",
+        "Line" : 48,
+        "Text" : "ip-options stream-id",
+        "Parser_Context" : "[fftf_ip_options fft_from ff_term f_filter f_common f_family s_firewall s_common statement set_line_tail set_line flat_juniper_configuration]",
+        "Comment" : "This feature is not currently supported"
+      },
+      {
+        "Filename" : "configs/juniper_firewall",
+        "Line" : 49,
+        "Text" : "ip-options strict-source-route",
+        "Parser_Context" : "[fftf_ip_options fft_from ff_term f_filter f_common f_family s_firewall s_common statement set_line_tail set_line flat_juniper_configuration]",
+        "Comment" : "This feature is not currently supported"
+      },
+      {
+        "Filename" : "configs/juniper_firewall",
+        "Line" : 50,
+        "Text" : "ip-options timestamp",
+        "Parser_Context" : "[fftf_ip_options fft_from ff_term f_filter f_common f_family s_firewall s_common statement set_line_tail set_line flat_juniper_configuration]",
+        "Comment" : "This feature is not currently supported"
+      },
+      {
         "Filename" : "configs/juniper_interfaces",
         "Line" : 19,
         "Text" : "tcp-mss 1400",
@@ -2452,10 +2494,10 @@
       }
     ],
     "summary" : {
-      "notes" : "Found 344 results",
+      "notes" : "Found 350 results",
       "numFailed" : 0,
       "numPassed" : 0,
-      "numResults" : 344
+      "numResults" : 350
     }
   }
 ]

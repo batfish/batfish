@@ -4,6 +4,7 @@ import static com.google.common.base.MoreObjects.firstNonNull;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.base.MoreObjects;
 import java.util.Objects;
 import java.util.Set;
 import javax.annotation.Nonnull;
@@ -112,6 +113,16 @@ public final class BgpActivePeerConfig extends BgpPeerConfig {
   @Override
   public int hashCode() {
     return Objects.hash(super.hashCode(), _peerAddress);
+  }
+
+  @Override
+  public String toString() {
+    return MoreObjects.toStringHelper(this)
+        .add("_peerAddress", _peerAddress)
+        .add("_description", _description)
+        .add("_remoteAsns", _remoteAsns)
+        .add("peerconfig", super.toString())
+        .toString();
   }
 
   public static class Builder extends BgpPeerConfig.Builder<Builder, BgpActivePeerConfig> {

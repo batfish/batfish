@@ -1,7 +1,11 @@
 package org.batfish.representation.aws;
 
+import static com.google.common.base.MoreObjects.firstNonNull;
+import static com.google.common.base.Preconditions.checkArgument;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.google.common.collect.ImmutableMap;
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.HashMap;
@@ -559,24 +563,24 @@ final class Region implements Serializable {
   }
 
   static final class RegionBuilder {
-    private Map<String, Address> _addresses = new HashMap<>();
-    private Map<String, Set<SecurityGroup>> _configurationSecurityGroups = new HashMap<>();
-    private Map<String, CustomerGateway> _customerGateways = new HashMap<>();
-    private Map<String, ElasticsearchDomain> _elasticsearchDomains = new HashMap<>();
-    private Map<String, Instance> _instances = new HashMap<>();
-    private Map<String, InternetGateway> _internetGateways = new HashMap<>();
+    private Map<String, Address> _addresses;
+    private Map<String, Set<SecurityGroup>> _configurationSecurityGroups;
+    private Map<String, CustomerGateway> _customerGateways;
+    private Map<String, ElasticsearchDomain> _elasticsearchDomains;
+    private Map<String, Instance> _instances;
+    private Map<String, InternetGateway> _internetGateways;
     private String _name;
-    private Map<String, NatGateway> _natGateways = new HashMap<>();
-    private Map<String, NetworkAcl> _networkAcls = new HashMap<>();
-    private Map<String, NetworkInterface> _networkInterfaces = new HashMap<>();
-    private Map<String, RdsInstance> _rdsInstances = new HashMap<>();
-    private Map<String, RouteTable> _routeTables = new HashMap<>();
-    private Map<String, SecurityGroup> _securityGroups = new HashMap<>();
-    private Map<String, Subnet> _subnets = new HashMap<>();
-    private Map<String, VpcPeeringConnection> _vpcPeerings = new HashMap<>();
-    private Map<String, Vpc> _vpcs = new HashMap<>();
-    private Map<String, VpnConnection> _vpnConnections = new HashMap<>();
-    private Map<String, VpnGateway> _vpnGateways = new HashMap<>();
+    private Map<String, NatGateway> _natGateways;
+    private Map<String, NetworkAcl> _networkAcls;
+    private Map<String, NetworkInterface> _networkInterfaces;
+    private Map<String, RdsInstance> _rdsInstances;
+    private Map<String, RouteTable> _routeTables;
+    private Map<String, SecurityGroup> _securityGroups;
+    private Map<String, Subnet> _subnets;
+    private Map<String, VpcPeeringConnection> _vpcPeerings;
+    private Map<String, Vpc> _vpcs;
+    private Map<String, VpnConnection> _vpnConnections;
+    private Map<String, VpnGateway> _vpnGateways;
 
     private RegionBuilder(String name) {
       _name = name;
@@ -675,25 +679,26 @@ final class Region implements Serializable {
     }
 
     public Region build() {
+      checkArgument(_name != null, "Region name must be set");
       return new Region(
           _name,
-          _addresses,
-          _configurationSecurityGroups,
-          _customerGateways,
-          _elasticsearchDomains,
-          _instances,
-          _internetGateways,
-          _natGateways,
-          _networkAcls,
-          _networkInterfaces,
-          _rdsInstances,
-          _routeTables,
-          _securityGroups,
-          _subnets,
-          _vpcPeerings,
-          _vpcs,
-          _vpnConnections,
-          _vpnGateways);
+          firstNonNull(_addresses, ImmutableMap.of()),
+          firstNonNull(_configurationSecurityGroups, ImmutableMap.of()),
+          firstNonNull(_customerGateways, ImmutableMap.of()),
+          firstNonNull(_elasticsearchDomains, ImmutableMap.of()),
+          firstNonNull(_instances, ImmutableMap.of()),
+          firstNonNull(_internetGateways, ImmutableMap.of()),
+          firstNonNull(_natGateways, ImmutableMap.of()),
+          firstNonNull(_networkAcls, ImmutableMap.of()),
+          firstNonNull(_networkInterfaces, ImmutableMap.of()),
+          firstNonNull(_rdsInstances, ImmutableMap.of()),
+          firstNonNull(_routeTables, ImmutableMap.of()),
+          firstNonNull(_securityGroups, ImmutableMap.of()),
+          firstNonNull(_subnets, ImmutableMap.of()),
+          firstNonNull(_vpcPeerings, ImmutableMap.of()),
+          firstNonNull(_vpcs, ImmutableMap.of()),
+          firstNonNull(_vpnConnections, ImmutableMap.of()),
+          firstNonNull(_vpnGateways, ImmutableMap.of()));
     }
   }
 }

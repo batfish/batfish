@@ -2,12 +2,17 @@ package org.batfish.representation.cisco_nxos;
 
 import static com.google.common.base.MoreObjects.firstNonNull;
 import static com.google.common.base.Preconditions.checkNotNull;
+import static org.batfish.datamodel.BumTransportMethod.MULTICAST_GROUP;
+import static org.batfish.datamodel.BumTransportMethod.UNICAST_FLOOD_GROUP;
 import static org.batfish.datamodel.Configuration.DEFAULT_VRF_NAME;
 import static org.batfish.datamodel.Interface.NULL_INTERFACE_NAME;
 import static org.batfish.datamodel.MultipathEquivalentAsPathMatchMode.EXACT_PATH;
 import static org.batfish.datamodel.MultipathEquivalentAsPathMatchMode.PATH_LENGTH;
 import static org.batfish.datamodel.Route.UNSET_NEXT_HOP_INTERFACE;
 import static org.batfish.datamodel.Route.UNSET_ROUTE_NEXT_HOP_IP;
+import static org.batfish.datamodel.acl.AclLineMatchExprs.and;
+import static org.batfish.datamodel.acl.AclLineMatchExprs.match;
+import static org.batfish.datamodel.acl.AclLineMatchExprs.or;
 import static org.batfish.representation.cisco.CiscoConfiguration.computeBgpCommonExportPolicyName;
 import static org.batfish.representation.cisco.CiscoConfiguration.computeBgpGenerationPolicyName;
 import static org.batfish.representation.cisco.CiscoConversions.generateGenerationPolicy;
@@ -35,6 +40,7 @@ import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.SortedSet;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -44,20 +50,29 @@ import javax.annotation.Nullable;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.batfish.common.BatfishException;
 import org.batfish.common.VendorConversionException;
+import org.batfish.datamodel.AclIpSpace;
 import org.batfish.datamodel.AsPathAccessList;
 import org.batfish.datamodel.AsPathAccessListLine;
 import org.batfish.datamodel.BgpActivePeerConfig;
 import org.batfish.datamodel.BgpPassivePeerConfig;
 import org.batfish.datamodel.BgpTieBreaker;
+import org.batfish.datamodel.BumTransportMethod;
 import org.batfish.datamodel.CommunityList;
 import org.batfish.datamodel.CommunityListLine;
+import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
+import org.batfish.datamodel.EmptyIpSpace;
 import org.batfish.datamodel.GeneratedRoute;
+import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.IntegerSpace;
 import org.batfish.datamodel.Interface.Dependency;
 import org.batfish.datamodel.Interface.DependencyType;
 import org.batfish.datamodel.InterfaceType;
+import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.IpSpace;
+import org.batfish.datamodel.IpSpaceReference;
+import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.OriginType;
 import org.batfish.datamodel.Prefix;
@@ -70,9 +85,18 @@ import org.batfish.datamodel.Route6FilterList;
 import org.batfish.datamodel.RouteFilterLine;
 import org.batfish.datamodel.RouteFilterList;
 import org.batfish.datamodel.RoutingProtocol;
+import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.SwitchportMode;
+import org.batfish.datamodel.TcpFlags;
+import org.batfish.datamodel.TcpFlagsMatchConditions;
+import org.batfish.datamodel.VniSettings;
+import org.batfish.datamodel.acl.AclLineMatchExpr;
+import org.batfish.datamodel.acl.AclLineMatchExprs;
 import org.batfish.datamodel.bgp.community.StandardCommunity;
+import org.batfish.datamodel.isis.IsisMetricType;
+import org.batfish.datamodel.ospf.OspfMetricType;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
+import org.batfish.datamodel.routing_policy.expr.AutoAs;
 import org.batfish.datamodel.routing_policy.expr.BooleanExpr;
 import org.batfish.datamodel.routing_policy.expr.BooleanExprs;
 import org.batfish.datamodel.routing_policy.expr.CallExpr;
@@ -81,21 +105,47 @@ import org.batfish.datamodel.routing_policy.expr.Conjunction;
 import org.batfish.datamodel.routing_policy.expr.DestinationNetwork;
 import org.batfish.datamodel.routing_policy.expr.DestinationNetwork6;
 import org.batfish.datamodel.routing_policy.expr.Disjunction;
+import org.batfish.datamodel.routing_policy.expr.ExplicitAs;
 import org.batfish.datamodel.routing_policy.expr.ExplicitPrefix6Set;
 import org.batfish.datamodel.routing_policy.expr.ExplicitPrefixSet;
+import org.batfish.datamodel.routing_policy.expr.IntComparator;
+import org.batfish.datamodel.routing_policy.expr.IpNextHop;
+import org.batfish.datamodel.routing_policy.expr.LiteralAsList;
 import org.batfish.datamodel.routing_policy.expr.LiteralCommunityConjunction;
+import org.batfish.datamodel.routing_policy.expr.LiteralCommunitySet;
+import org.batfish.datamodel.routing_policy.expr.LiteralInt;
+import org.batfish.datamodel.routing_policy.expr.LiteralLong;
 import org.batfish.datamodel.routing_policy.expr.LiteralOrigin;
+import org.batfish.datamodel.routing_policy.expr.MatchAsPath;
+import org.batfish.datamodel.routing_policy.expr.MatchEntireCommunitySet;
+import org.batfish.datamodel.routing_policy.expr.MatchMetric;
 import org.batfish.datamodel.routing_policy.expr.MatchPrefix6Set;
 import org.batfish.datamodel.routing_policy.expr.MatchPrefixSet;
 import org.batfish.datamodel.routing_policy.expr.MatchProtocol;
+import org.batfish.datamodel.routing_policy.expr.MatchTag;
+import org.batfish.datamodel.routing_policy.expr.MultipliedAs;
+import org.batfish.datamodel.routing_policy.expr.NamedAsPathSet;
+import org.batfish.datamodel.routing_policy.expr.NamedCommunitySet;
+import org.batfish.datamodel.routing_policy.expr.NamedPrefixSet;
 import org.batfish.datamodel.routing_policy.expr.Not;
 import org.batfish.datamodel.routing_policy.expr.WithEnvironmentExpr;
+import org.batfish.datamodel.routing_policy.statement.AddCommunity;
 import org.batfish.datamodel.routing_policy.statement.If;
+import org.batfish.datamodel.routing_policy.statement.PrependAsPath;
+import org.batfish.datamodel.routing_policy.statement.SetCommunity;
+import org.batfish.datamodel.routing_policy.statement.SetIsisMetricType;
+import org.batfish.datamodel.routing_policy.statement.SetLocalPreference;
+import org.batfish.datamodel.routing_policy.statement.SetMetric;
+import org.batfish.datamodel.routing_policy.statement.SetNextHop;
 import org.batfish.datamodel.routing_policy.statement.SetOrigin;
+import org.batfish.datamodel.routing_policy.statement.SetOspfMetricType;
+import org.batfish.datamodel.routing_policy.statement.SetTag;
+import org.batfish.datamodel.routing_policy.statement.Statement;
 import org.batfish.datamodel.routing_policy.statement.Statements;
 import org.batfish.datamodel.tracking.DecrementPriority;
 import org.batfish.datamodel.vendor_family.cisco_nxos.CiscoNxosFamily;
 import org.batfish.representation.cisco_nxos.BgpVrfIpv6AddressFamilyConfiguration.Network;
+import org.batfish.representation.cisco_nxos.Nve.IngressReplicationProtocol;
 import org.batfish.vendor.VendorConfiguration;
 
 /** Vendor-specific representation of a Cisco NX-OS network configuration */
@@ -144,6 +194,18 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
 
   private static final IntegerSpace DEFAULT_RESERVED_VLAN_RANGE =
       IntegerSpace.of(Range.closed(3968, 4094));
+
+  private static final int MAX_FRAGMENT_OFFSET = (1 << 13) - 1;
+  private static final AclLineMatchExpr MATCH_INITIAL_FRAGMENT_OFFSET =
+      match(
+          HeaderSpace.builder()
+              .setFragmentOffsets(ImmutableList.of(SubRange.singleton(0)))
+              .build());
+  private static final AclLineMatchExpr MATCH_NON_INITIAL_FRAGMENT_OFFSET =
+      match(
+          HeaderSpace.builder()
+              .setFragmentOffsets(ImmutableList.of(new SubRange(1, MAX_FRAGMENT_OFFSET)))
+              .build());
 
   public static final String NULL_VRF_NAME = "~NULL_VRF~";
 
@@ -210,6 +272,7 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
   private final @Nonnull Map<String, IpCommunityList> _ipCommunityLists;
   private final @Nonnull Map<String, IpPrefixList> _ipPrefixLists;
   private final @Nonnull Map<Integer, Nve> _nves;
+  private final @Nonnull Map<String, ObjectGroup> _objectGroups;
   private final @Nonnull Map<String, DefaultVrfOspfProcess> _ospfProcesses;
   private transient Multimap<String, String> _portChannelMembers;
   private @Nonnull IntegerSpace _reservedVlanRange;
@@ -227,6 +290,7 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
     _ipCommunityLists = new HashMap<>();
     _ipPrefixLists = new HashMap<>();
     _nves = new HashMap<>();
+    _objectGroups = new HashMap<>();
     _ospfProcesses = new HashMap<>();
     _reservedVlanRange = DEFAULT_RESERVED_VLAN_RANGE;
     _routeMaps = new HashMap<>();
@@ -567,6 +631,35 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
         .forEach(this::convertInterface);
   }
 
+  private void convertObjectGroups() {
+    _objectGroups.values().stream()
+        .forEach(
+            objectGroup ->
+                objectGroup.accept(
+                    new ObjectGroupVisitor<Void>() {
+                      @Override
+                      public Void visitObjectGroupIpAddress(
+                          ObjectGroupIpAddress objectGroupIpAddress) {
+                        _c.getIpSpaces()
+                            .put(objectGroupIpAddress.getName(), toIpSpace(objectGroupIpAddress));
+                        return null;
+                      }
+                    }));
+  }
+
+  private @Nonnull IpSpace toIpSpace(ObjectGroupIpAddress objectGroupIpAddress) {
+    return AclIpSpace.permitting(
+            objectGroupIpAddress.getLines().values().stream()
+                .map(ObjectGroupIpAddressLine::getIpWildcard)
+                .map(IpWildcard::toIpSpace))
+        .build();
+  }
+
+  private void convertIpAccessLists() {
+    _ipAccessLists.forEach(
+        (name, ipAccessList) -> _c.getIpAccessLists().put(name, toIpAccessList(ipAccessList)));
+  }
+
   private void convertIpAsPathAccessLists() {
     _ipAsPathAccessLists.forEach(
         (name, ipAsPathAccessList) ->
@@ -612,6 +705,11 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
             _c.getRouteFilterLists().put(name, toRouteFilterList(ipPrefixList)));
   }
 
+  private void convertRouteMaps() {
+    _routeMaps.forEach(
+        (name, routeMap) -> _c.getRoutingPolicies().put(name, toRoutingPolicy(routeMap)));
+  }
+
   private void convertStaticRoutes() {
     Stream.concat(Stream.of(_defaultVrf), _vrfs.values().stream())
         .forEach(this::convertStaticRoutes);
@@ -631,6 +729,97 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
     _c.getVrfs().put(DEFAULT_VRF_NAME, new org.batfish.datamodel.Vrf(DEFAULT_VRF_NAME));
     _c.getVrfs().put(NULL_VRF_NAME, new org.batfish.datamodel.Vrf(NULL_VRF_NAME));
     _vrfs.forEach((name, vrf) -> _c.getVrfs().put(name, toVrf(vrf)));
+  }
+
+  private void convertNves() {
+    _nves
+        .values()
+        .forEach(nve -> nve.getMemberVnis().values().forEach(vni -> convertNveVni(nve, vni)));
+  }
+
+  private void convertNveVni(@Nonnull Nve nve, @Nonnull NveVni nveVni) {
+    if (nve.isShutdown()) {
+      return;
+    }
+    BumTransportMethod bumTransportMethod = getBumTransportMethod(nveVni, nve);
+    SortedSet<Ip> bumTransportIps;
+    if (nveVni.getIngressReplicationProtocol() != IngressReplicationProtocol.STATIC
+        && bumTransportMethod == MULTICAST_GROUP) {
+      bumTransportIps = ImmutableSortedSet.of(getMultiCastGroupIp(nveVni, nve));
+    } else {
+      bumTransportIps = ImmutableSortedSet.copyOf(nveVni.getPeerIps());
+    }
+    Integer vlan = getVlanForVni(nveVni.getVni());
+    if (vlan == null) {
+      return;
+    }
+    if (_c.getAllInterfaces().values().stream()
+        .noneMatch(iface -> vlan.equals(iface.getVlan()) && iface.getActive())) {
+      return;
+    }
+    VniSettings vniSettings =
+        VniSettings.builder()
+            .setBumTransportIps(bumTransportIps)
+            .setBumTransportMethod(bumTransportMethod)
+            .setSourceAddress(
+                nve.getSourceInterface() != null
+                    ? getInterfaceIp(_c.getAllInterfaces(), nve.getSourceInterface())
+                    : null)
+            .setUdpPort(VniSettings.DEFAULT_UDP_PORT)
+            .setVni(nveVni.getVni())
+            .setVlan(vlan)
+            .build();
+    _c.getDefaultVrf().getVniSettings().put(vniSettings.getVni(), vniSettings);
+  }
+
+  @Nonnull
+  private static BumTransportMethod getBumTransportMethod(
+      @Nonnull NveVni nveVni, @Nonnull Nve nve) {
+    if (nveVni.getIngressReplicationProtocol() == IngressReplicationProtocol.STATIC) {
+      // since all multicast group commands are ignored in this case
+      return UNICAST_FLOOD_GROUP;
+    }
+    return nveVni.getMcastGroup() != null
+            || !nveVni.isAssociateVrf() && nve.getMulticastGroupL2() != null
+            || nveVni.isAssociateVrf() && nve.getMulticastGroupL3() != null
+        ? MULTICAST_GROUP
+        : UNICAST_FLOOD_GROUP;
+  }
+
+  @Nonnull
+  private static Ip getMultiCastGroupIp(@Nonnull NveVni nveVni, @Nonnull Nve nve) {
+    if (nveVni.getMcastGroup() != null) {
+      return nveVni.getMcastGroup();
+    }
+    if (nveVni.isAssociateVrf()) {
+      assert nve.getMulticastGroupL3() != null;
+      return nve.getMulticastGroupL3();
+    }
+    assert nve.getMulticastGroupL2() != null;
+    return nve.getMulticastGroupL2();
+  }
+
+  @Nullable
+  private Ip getInterfaceIp(
+      @Nonnull Map<String, org.batfish.datamodel.Interface> interfaces, @Nonnull String ifaceName) {
+    org.batfish.datamodel.Interface iface = interfaces.get(ifaceName);
+    if (iface == null) {
+      return null;
+    }
+    ConcreteInterfaceAddress concreteInterfaceAddress = iface.getConcreteAddress();
+    if (concreteInterfaceAddress == null) {
+      return null;
+    }
+    return concreteInterfaceAddress.getIp();
+  }
+
+  @Nullable
+  private Integer getVlanForVni(@Nonnull Integer vni) {
+    return _vlans.values().stream()
+        .filter(vlan -> vni.equals(vlan.getVni()))
+        .findFirst()
+        .map(Vlan::getId)
+        .orElse(null);
   }
 
   private @Nonnull CiscoNxosFamily createCiscoNxosFamily() {
@@ -708,6 +897,10 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
     return _nves;
   }
 
+  public @Nonnull Map<String, ObjectGroup> getObjectGroups() {
+    return _objectGroups;
+  }
+
   public @Nonnull Map<String, DefaultVrfOspfProcess> getOspfProcesses() {
     return _ospfProcesses;
   }
@@ -760,6 +953,10 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
         CiscoNxosStructureUsage.BGP_NEIGHBOR6_PREFIX_LIST_IN,
         CiscoNxosStructureUsage.BGP_NEIGHBOR6_PREFIX_LIST_OUT);
     markConcreteStructure(CiscoNxosStructureType.NVE, CiscoNxosStructureUsage.NVE_SELF_REFERENCE);
+    markConcreteStructure(
+        CiscoNxosStructureType.OBJECT_GROUP_IP_ADDRESS,
+        CiscoNxosStructureUsage.IP_ACCESS_LIST_DESTINATION_ADDRGROUP,
+        CiscoNxosStructureUsage.IP_ACCESS_LIST_SOURCE_ADDRGROUP);
     markConcreteStructure(
         CiscoNxosStructureType.PORT_CHANNEL, CiscoNxosStructureUsage.INTERFACE_CHANNEL_GROUP);
     markConcreteStructure(
@@ -989,6 +1186,258 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
     }
   }
 
+  private @Nonnull org.batfish.datamodel.IpAccessList toIpAccessList(IpAccessList list) {
+    // TODO: handle and test top-level fragments behavior
+    return org.batfish.datamodel.IpAccessList.builder()
+        .setName(list.getName())
+        .setSourceName(list.getName())
+        .setSourceType(CiscoNxosStructureType.IP_ACCESS_LIST.getDescription())
+        .setLines(
+            list.getLines().values().stream()
+                .flatMap(this::toIpAccessListLine)
+                .collect(ImmutableList.toImmutableList()))
+        .build();
+  }
+
+  /**
+   * Converts the supplied {@code line} to zero or more vendor-independent {@link
+   * org.batfish.datamodel.IpAccessListLine}s depending on semantics.
+   */
+  private @Nonnull Stream<org.batfish.datamodel.IpAccessListLine> toIpAccessListLine(
+      IpAccessListLine line) {
+    return line.accept(
+        new IpAccessListLineVisitor<Stream<org.batfish.datamodel.IpAccessListLine>>() {
+          @Override
+          public Stream<org.batfish.datamodel.IpAccessListLine> visitActionIpAccessListLine(
+              ActionIpAccessListLine actionIpAccessListLine) {
+            LineAction action = actionIpAccessListLine.getAction();
+            return Stream.of(
+                org.batfish.datamodel.IpAccessListLine.builder()
+                    .setAction(action)
+                    .setMatchCondition(toAclLineMatchExpr(actionIpAccessListLine, action))
+                    .setName(Long.toString(actionIpAccessListLine.getLine()))
+                    .build());
+          }
+
+          @Override
+          public Stream<org.batfish.datamodel.IpAccessListLine> visitRemarkIpAccessListLine(
+              RemarkIpAccessListLine remarkIpAccessListLine) {
+            return Stream.empty();
+          }
+        });
+  }
+
+  private @Nonnull AclLineMatchExpr toAclLineMatchExpr(
+      ActionIpAccessListLine line, LineAction action) {
+    /*
+     * All rules:
+     * - if 'fragments' present in rule
+     *   - match only non-initial fragment
+     * Also, for L3+L4 rules:
+     * - permit rules
+     *   - if L3-match and is non-initial-fragment
+     *     - permit
+     *   - if L3+L4 match and is initial fragment (or fragments not applicable to protocol)
+     *     - permit
+     * - deny rules
+     *   - if L3+L4 match and is initial fragment (or fragments not applicable to protocol)
+     *     - deny
+     */
+    // L3 match condition
+    AclLineMatchExpr l3 = matchL3(line);
+
+    // If L3 only, no special handling needed
+    if (line.getL4Options() == null) {
+      return l3;
+    }
+
+    // L4 handling
+    AclLineMatchExpr l4 = matchL4(line);
+    if (action == LineAction.PERMIT) {
+      // permit if either non-initial fragment or l4 conditions match
+      return and(l3, or(MATCH_NON_INITIAL_FRAGMENT_OFFSET, l4));
+    }
+
+    assert action == LineAction.DENY;
+    // deny if initial fragment and l4 conditions match. else do nothing (no match).
+    return and(l3, MATCH_INITIAL_FRAGMENT_OFFSET, l4);
+  }
+
+  private @Nonnull AclLineMatchExpr matchL3(ActionIpAccessListLine actionIpAccessListLine) {
+    HeaderSpace.Builder hs = HeaderSpace.builder();
+    if (actionIpAccessListLine.getProtocol() != null) {
+      hs.setIpProtocols(ImmutableList.of(actionIpAccessListLine.getProtocol()));
+    }
+    hs.setSrcIps(toIpSpace(actionIpAccessListLine.getSrcAddressSpec()));
+    hs.setDstIps(toIpSpace(actionIpAccessListLine.getDstAddressSpec()));
+    Layer3Options l3Options = actionIpAccessListLine.getL3Options();
+    if (l3Options.getDscp() != null) {
+      hs.setDscps(ImmutableList.of(l3Options.getDscp()));
+    }
+    if (l3Options.getPacketLength() != null) {
+      hs.setPacketLengths(l3Options.getPacketLength().getSubRanges());
+    }
+    if (l3Options.getPrecedence() != null) {
+      // TODO: support precedence matching
+      return AclLineMatchExprs.FALSE;
+    }
+    if (l3Options.getTtl() != null) {
+      // TODO: support ttl matching
+      return AclLineMatchExprs.FALSE;
+    }
+    AclLineMatchExpr matchL3ExceptFragmentOffset = match(hs.build());
+    return actionIpAccessListLine.getFragments()
+        ? and(MATCH_NON_INITIAL_FRAGMENT_OFFSET, matchL3ExceptFragmentOffset)
+        : matchL3ExceptFragmentOffset;
+  }
+
+  private @Nonnull IpSpace toIpSpace(IpAddressSpec ipAddressSpec) {
+    return ipAddressSpec.accept(
+        new IpAddressSpecVisitor<IpSpace>() {
+
+          @Override
+          public IpSpace visitAddrGroupIpAddressSpec(
+              AddrGroupIpAddressSpec addrGroupIpAddressSpec) {
+            String name = addrGroupIpAddressSpec.getName();
+            return _objectGroups.get(name) instanceof ObjectGroupIpAddress
+                ? new IpSpaceReference(name)
+                : EmptyIpSpace.INSTANCE;
+          }
+
+          @Override
+          public IpSpace visitLiteralIpAddressSpec(LiteralIpAddressSpec literalIpAddressSpec) {
+            return literalIpAddressSpec.getIpSpace();
+          }
+        });
+  }
+
+  private @Nonnull AclLineMatchExpr matchL4(ActionIpAccessListLine actionIpAccessListLine) {
+    return actionIpAccessListLine
+        .getL4Options()
+        .accept(
+            new Layer4OptionsVisitor<AclLineMatchExpr>() {
+              @Override
+              public AclLineMatchExpr visitIcmpOptions(IcmpOptions icmpOptions) {
+                HeaderSpace.Builder hs =
+                    HeaderSpace.builder()
+                        .setIcmpTypes(ImmutableList.of(SubRange.singleton(icmpOptions.getType())));
+                @Nullable Integer code = icmpOptions.getCode();
+                if (code != null) {
+                  hs.setIcmpCodes(ImmutableList.of(SubRange.singleton(code)));
+                }
+                return match(hs.build());
+              }
+
+              @Override
+              public AclLineMatchExpr visitIgmpOptions(IgmpOptions igmpOptions) {
+                // TODO: IGMP header field handling
+                return AclLineMatchExprs.FALSE;
+              }
+
+              @Override
+              public AclLineMatchExpr visitTcpOptions(TcpOptions tcpOptions) {
+                ImmutableList.Builder<AclLineMatchExpr> conjuncts = ImmutableList.builder();
+                HeaderSpace.Builder hs = HeaderSpace.builder();
+                if (tcpOptions.getEstablished()) {
+                  hs.setTcpFlags(
+                      ImmutableList.of(
+                          TcpFlagsMatchConditions.builder()
+                              .setUseAck(true)
+                              .setTcpFlags(TcpFlags.builder().setAck(true).build())
+                              .build(),
+                          TcpFlagsMatchConditions.builder()
+                              .setUseRst(true)
+                              .setTcpFlags(TcpFlags.builder().setRst(true).build())
+                              .build()));
+                }
+                if (tcpOptions.getDstPortSpec() != null) {
+                  conjuncts.add(
+                      toPorts(tcpOptions.getDstPortSpec())
+                          .map(AclLineMatchExprs::matchDstPort)
+                          .orElse(AclLineMatchExprs.FALSE));
+                }
+                if (tcpOptions.getHttpMethod() != null) {
+                  // TODO: support HTTP METHOD matching
+                  return AclLineMatchExprs.FALSE;
+                }
+                if (tcpOptions.getSrcPortSpec() != null) {
+                  conjuncts.add(
+                      toPorts(tcpOptions.getSrcPortSpec())
+                          .map(AclLineMatchExprs::matchSrcPort)
+                          .orElse(AclLineMatchExprs.FALSE));
+                }
+                if (tcpOptions.getTcpFlags() != null) {
+                  // TODO: validate logic
+                  int tcpFlagsMask = firstNonNull(tcpOptions.getTcpFlagsMask(), 0);
+                  hs.setTcpFlags(
+                      ImmutableList.of(
+                          toTcpFlagsMatchConditions(tcpOptions.getTcpFlags(), tcpFlagsMask)));
+                }
+                if (tcpOptions.getTcpOptionLength() != null) {
+                  // TODO: support TCP option length matching
+                  return AclLineMatchExprs.FALSE;
+                }
+                return and(conjuncts.add(match(hs.build())).build());
+              }
+
+              @Override
+              public AclLineMatchExpr visitUdpOptions(UdpOptions udpOptions) {
+                ImmutableList.Builder<AclLineMatchExpr> conjuncts = ImmutableList.builder();
+                if (udpOptions.getDstPortSpec() != null) {
+                  conjuncts.add(
+                      toPorts(udpOptions.getDstPortSpec())
+                          .map(AclLineMatchExprs::matchDstPort)
+                          .orElse(AclLineMatchExprs.FALSE));
+                }
+                if (udpOptions.getSrcPortSpec() != null) {
+                  conjuncts.add(
+                      toPorts(udpOptions.getSrcPortSpec())
+                          .map(AclLineMatchExprs::matchSrcPort)
+                          .orElse(AclLineMatchExprs.FALSE));
+                }
+                return and(conjuncts.build());
+              }
+            });
+  }
+
+  private static @Nonnull TcpFlagsMatchConditions toTcpFlagsMatchConditions(
+      TcpFlags tcpFlags, int tcpFlagsMask) {
+    // NX-OS only supports lower 6 control bits
+    // 0 in mask means use
+    int chooseOnes = ~tcpFlagsMask & 0b111111;
+    return TcpFlagsMatchConditions.builder()
+        .setTcpFlags(tcpFlags)
+        .setUseFin((chooseOnes & 0b000001) != 0)
+        .setUseSyn((chooseOnes & 0b000010) != 0)
+        .setUseRst((chooseOnes & 0b000100) != 0)
+        .setUsePsh((chooseOnes & 0b001000) != 0)
+        .setUseAck((chooseOnes & 0b010000) != 0)
+        .setUseUrg((chooseOnes & 0b100000) != 0)
+        .build();
+  }
+
+  /**
+   * Return an {@link IntegerSpace} of allowed ports if {@code portSpec} is supported, or {@link
+   * Optional#empty} if unsupported.
+   */
+  private @Nonnull Optional<IntegerSpace> toPorts(PortSpec portSpec) {
+    // TODO: return an abstract space of integers to allow for named port spaces
+    return portSpec.accept(
+        new PortSpecVisitor<Optional<IntegerSpace>>() {
+          @Override
+          public Optional<IntegerSpace> visitLiteralPortSpec(LiteralPortSpec literalPortSpec) {
+            return Optional.of(literalPortSpec.getPorts());
+          }
+
+          @Override
+          public Optional<IntegerSpace> visitPortGroupPortSpec(
+              PortGroupPortSpec portGroupPortSpec) {
+            // TODO: support port groups
+            return Optional.empty();
+          }
+        });
+  }
+
   private static @Nonnull AsPathAccessList toAsPathAccessList(
       IpAsPathAccessList ipAsPathAccessList) {
     return new AsPathAccessList(
@@ -1000,6 +1449,229 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
 
   private static @Nonnull AsPathAccessListLine toAsPathAccessListLine(IpAsPathAccessListLine line) {
     return new AsPathAccessListLine(line.getAction(), toJavaRegex(line.getRegex()));
+  }
+
+  private @Nonnull RoutingPolicy toRoutingPolicy(RouteMap routeMap) {
+    // TODO: support continue entries
+    ImmutableList.Builder<Statement> statements = ImmutableList.builder();
+    routeMap.getEntries().values().stream().map(this::toStatement).forEach(statements::add);
+    statements.add(Statements.ReturnFalse.toStaticStatement());
+    // TODO: clean up setting of owner
+    return RoutingPolicy.builder()
+        .setName(routeMap.getName())
+        .setOwner(_c)
+        .setStatements(statements.build())
+        .build();
+  }
+
+  private @Nonnull Statement toStatement(RouteMapEntry entry) {
+    ImmutableList.Builder<Statement> trueStatements = ImmutableList.builder();
+    ImmutableList.Builder<BooleanExpr> conjuncts = ImmutableList.builder();
+
+    // matches
+    entry.getMatches().map(this::toBooleanExpr).forEach(conjuncts::add);
+
+    // sets
+    entry.getSets().flatMap(this::toStatements).forEach(trueStatements::add);
+
+    // final action if matched
+    LineAction action = entry.getAction();
+    if (action == LineAction.PERMIT) {
+      trueStatements.add(Statements.ReturnTrue.toStaticStatement());
+    } else {
+      assert action == LineAction.DENY;
+      trueStatements.add(Statements.ReturnFalse.toStaticStatement());
+    }
+    return new If(new Conjunction(conjuncts.build()), trueStatements.build(), ImmutableList.of());
+  }
+
+  private @Nonnull BooleanExpr toBooleanExpr(RouteMapMatch match) {
+    return match.accept(
+        new RouteMapMatchVisitor<BooleanExpr>() {
+
+          @Override
+          public BooleanExpr visitRouteMapMatchAsPath(RouteMapMatchAsPath routeMapMatchAsPath) {
+            // TODO: test behavior for undefined reference
+            return new Disjunction(
+                routeMapMatchAsPath.getNames().stream()
+                    .filter(_ipAsPathAccessLists::containsKey)
+                    .map(name -> new MatchAsPath(new NamedAsPathSet(name)))
+                    .collect(ImmutableList.toImmutableList()));
+          }
+
+          @Override
+          public BooleanExpr visitRouteMapMatchCommunity(
+              RouteMapMatchCommunity routeMapMatchCommunity) {
+            // TODO: test behavior for undefined reference
+            return new Disjunction(
+                routeMapMatchCommunity.getNames().stream()
+                    .filter(_ipCommunityLists::containsKey)
+                    .map(name -> new MatchEntireCommunitySet(new NamedCommunitySet(name)))
+                    .collect(ImmutableList.toImmutableList()));
+          }
+
+          @Override
+          public BooleanExpr visitRouteMapMatchInterface(
+              RouteMapMatchInterface routeMapMatchInterface) {
+            // TODO: ignore shutdown interfaces?
+            // TODO: ignore blacklisted interfaces?
+            // TODO: HSRP addresses? Only if elected?
+            return new Disjunction(
+                new MatchPrefixSet(
+                    DestinationNetwork.instance(),
+                    new ExplicitPrefixSet(
+                        new PrefixSpace(
+                            routeMapMatchInterface.getNames().stream()
+                                .filter(_interfaces::containsKey)
+                                .map(_interfaces::get)
+                                .flatMap(
+                                    iface ->
+                                        Stream.concat(
+                                            Stream.of(iface.getAddress()),
+                                            iface.getSecondaryAddresses().stream()))
+                                .map(InterfaceAddressWithAttributes::getAddress)
+                                .filter(ConcreteInterfaceAddress.class::isInstance)
+                                .map(ConcreteInterfaceAddress.class::cast)
+                                .flatMap(
+                                    address ->
+                                        address.getPrefix().getPrefixLength() <= 30
+                                            ? Stream.of(
+                                                address.getPrefix(),
+                                                Prefix.create(
+                                                    address.getIp(), Prefix.MAX_PREFIX_LENGTH))
+                                            : Stream.of(address.getPrefix()))
+                                .map(PrefixRange::fromPrefix)
+                                .collect(ImmutableList.toImmutableList())))));
+          }
+
+          @Override
+          public BooleanExpr visitRouteMapMatchIpAddress(
+              RouteMapMatchIpAddress routeMapMatchIpAddress) {
+            // TODO: implement - PBR only?
+            // Ignore
+            return BooleanExprs.TRUE;
+          }
+
+          @Override
+          public BooleanExpr visitRouteMapMatchIpAddressPrefixList(
+              RouteMapMatchIpAddressPrefixList routeMapMatchIpAddressPrefixList) {
+            return new Disjunction(
+                routeMapMatchIpAddressPrefixList.getNames().stream()
+                    .filter(_ipPrefixLists::containsKey)
+                    .map(
+                        name ->
+                            new MatchPrefixSet(
+                                DestinationNetwork.instance(), new NamedPrefixSet(name)))
+                    .collect(ImmutableList.toImmutableList()));
+          }
+
+          @Override
+          public BooleanExpr visitRouteMapMatchMetric(RouteMapMatchMetric routeMapMatchMetric) {
+            return new MatchMetric(
+                IntComparator.EQ, new LiteralLong(routeMapMatchMetric.getMetric()));
+          }
+
+          @Override
+          public BooleanExpr visitRouteMapMatchTag(RouteMapMatchTag routeMapMatchTag) {
+            return new MatchTag(IntComparator.EQ, new LiteralLong(routeMapMatchTag.getTag()));
+          }
+        });
+  }
+
+  private @Nonnull Stream<Statement> toStatements(RouteMapSet routeMapSet) {
+    return routeMapSet.accept(
+        new RouteMapSetVisitor<Stream<Statement>>() {
+          @Override
+          public Stream<Statement> visitRouteMapSetAsPathPrependLastAs(
+              RouteMapSetAsPathPrependLastAs routeMapSetAsPathPrependLastAs) {
+            return Stream.of(
+                new PrependAsPath(
+                    new MultipliedAs(
+                        AutoAs.instance(),
+                        new LiteralInt(routeMapSetAsPathPrependLastAs.getNumPrepends()))));
+          }
+
+          @Override
+          public Stream<Statement> visitRouteMapSetAsPathPrependLiteralAs(
+              RouteMapSetAsPathPrependLiteralAs routeMapSetAsPathPrependLiteralAs) {
+            return Stream.of(
+                new PrependAsPath(
+                    new LiteralAsList(
+                        routeMapSetAsPathPrependLiteralAs.getAsNumbers().stream()
+                            .map(ExplicitAs::new)
+                            .collect(ImmutableList.toImmutableList()))));
+          }
+
+          @Override
+          public Stream<Statement> visitRouteMapSetCommunity(
+              RouteMapSetCommunity routeMapSetCommunity) {
+            CommunitySetExpr communities =
+                new LiteralCommunitySet(routeMapSetCommunity.getCommunities());
+            return Stream.of(
+                routeMapSetCommunity.getAdditive()
+                    ? new AddCommunity(communities)
+                    : new SetCommunity(communities));
+          }
+
+          @Override
+          public Stream<Statement> visitRouteMapSetIpNextHopLiteral(
+              RouteMapSetIpNextHopLiteral routeMapSetIpNextHopLiteral) {
+            List<Ip> nextHopIps = routeMapSetIpNextHopLiteral.getNextHops();
+            if (nextHopIps.size() > 1) {
+              // Applicable to PBR only (not routing)
+              return Stream.empty();
+            }
+            assert !nextHopIps.isEmpty();
+            return Stream.of(new SetNextHop(new IpNextHop(nextHopIps), false));
+          }
+
+          @Override
+          public Stream<Statement> visitRouteMapSetIpNextHopUnchanged(
+              RouteMapSetIpNextHopUnchanged routeMapSetIpNextHopUnchanged) {
+            // TODO: implement
+            return Stream.empty();
+          }
+
+          @Override
+          public Stream<Statement> visitRouteMapSetLocalPreference(
+              RouteMapSetLocalPreference routeMapSetLocalPreference) {
+            return Stream.of(
+                new SetLocalPreference(
+                    new LiteralLong(routeMapSetLocalPreference.getLocalPreference())));
+          }
+
+          @Override
+          public Stream<Statement> visitRouteMapSetMetric(RouteMapSetMetric routeMapSetMetric) {
+            return Stream.of(new SetMetric(new LiteralLong(routeMapSetMetric.getMetric())));
+          }
+
+          @Override
+          public Stream<Statement> visitRouteMapSetMetricType(
+              RouteMapSetMetricType routeMapSetMetricType) {
+            switch (routeMapSetMetricType.getMetricType()) {
+              case EXTERNAL:
+                return Stream.of(new SetIsisMetricType(IsisMetricType.EXTERNAL));
+
+              case INTERNAL:
+                return Stream.of(new SetIsisMetricType(IsisMetricType.INTERNAL));
+
+              case TYPE_1:
+                return Stream.of(new SetOspfMetricType(OspfMetricType.E1));
+
+              case TYPE_2:
+                return Stream.of(new SetOspfMetricType(OspfMetricType.E2));
+
+              default:
+                // should not happen
+                return Stream.empty();
+            }
+          }
+
+          @Override
+          public Stream<Statement> visitRouteMapSetTag(RouteMapSetTag routeMapSetTag) {
+            return Stream.of(new SetTag(new LiteralLong(routeMapSetTag.getTag())));
+          }
+        });
   }
 
   /**
@@ -1046,10 +1718,14 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
     convertInterfaces();
     disableUnregisteredVlanInterfaces();
     convertStaticRoutes();
+    convertObjectGroups();
+    convertIpAccessLists();
     convertIpAsPathAccessLists();
     convertIpPrefixLists();
     convertIpCommunityLists();
+    convertRouteMaps();
     convertBgp();
+    convertNves();
 
     markStructures();
     return _c;

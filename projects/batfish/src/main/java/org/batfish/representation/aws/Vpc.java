@@ -145,7 +145,6 @@ final class Vpc implements AwsVpcEntity, Serializable {
                         .setNetwork(cb)
                         .setNextHopInterface(Interface.NULL_INTERFACE_NAME)
                         .build()));
-
     return cfgNode;
   }
 

@@ -1,5 +1,7 @@
 package org.batfish.datamodel.acl;
 
+import static com.google.common.base.Preconditions.checkArgument;
+
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Ordering;
@@ -7,13 +9,16 @@ import java.util.Arrays;
 import java.util.Comparator;
 import java.util.Iterator;
 import javax.annotation.Nonnull;
+import org.batfish.datamodel.DscpType;
 import org.batfish.datamodel.HeaderSpace;
+import org.batfish.datamodel.IntegerSpace;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.SubRange;
+import org.batfish.datamodel.TcpFlagsMatchConditions;
 
 public final class AclLineMatchExprs {
 
@@ -57,6 +62,15 @@ public final class AclLineMatchExprs {
     return new MatchHeaderSpace(headerSpace);
   }
 
+  public static @Nonnull AclLineMatchExpr matchDscp(DscpType dscp) {
+    return matchDscp(dscp.number());
+  }
+
+  public static @Nonnull AclLineMatchExpr matchDscp(int dscp) {
+    checkArgument(0 <= dscp && dscp <= 63, "Invalid DSCP: %s", dscp);
+    return new MatchHeaderSpace(HeaderSpace.builder().setDscps(ImmutableList.of(dscp)).build());
+  }
+
   public static MatchHeaderSpace matchDst(IpSpace ipSpace) {
     return new MatchHeaderSpace(HeaderSpace.builder().setDstIps(ipSpace).build());
   }
@@ -77,6 +91,20 @@ public final class AclLineMatchExprs {
     return matchDst(Ip.parse(ip).toIpSpace());
   }
 
+  public static @Nonnull AclLineMatchExpr matchDstPort(int port) {
+    checkArgument(0 <= port && port <= 0xFFFF, "Invalid port: %s", port);
+    return match(
+        HeaderSpace.builder().setDstPorts(ImmutableList.of(SubRange.singleton(port))).build());
+  }
+
+  public static @Nonnull AclLineMatchExpr matchDstPort(IntegerSpace portSpace) {
+    checkArgument(
+        0 <= portSpace.least() && portSpace.greatest() <= 0xFFFF,
+        "Invalid port space: %s",
+        portSpace);
+    return match(HeaderSpace.builder().setDstPorts(portSpace.getSubRanges()).build());
+  }
+
   public static AclLineMatchExpr matchDstPrefix(String prefix) {
     return matchDst(Prefix.parse(prefix));
   }
@@ -85,8 +113,82 @@ public final class AclLineMatchExprs {
     return new MatchHeaderSpace(HeaderSpace.builder().setSrcIps(ipSpace).build());
   }
 
+  public static @Nonnull AclLineMatchExpr matchFragmentOffset(int fragmentOffset) {
+    checkArgument(
+        0 <= fragmentOffset && fragmentOffset <= 8191,
+        "Invalid fragment offset: %s",
+        fragmentOffset);
+    return new MatchHeaderSpace(
+        HeaderSpace.builder()
+            .setFragmentOffsets(ImmutableList.of(SubRange.singleton(fragmentOffset)))
+            .build());
+  }
+
+  public static @Nonnull AclLineMatchExpr matchFragmentOffset(IntegerSpace fragmentOffsetSpace) {
+    checkArgument(
+        0 <= fragmentOffsetSpace.least() && fragmentOffsetSpace.greatest() <= 8191,
+        "Invalid fragmentOffsetSpace: %s",
+        fragmentOffsetSpace);
+    return new MatchHeaderSpace(
+        HeaderSpace.builder().setFragmentOffsets(fragmentOffsetSpace.getSubRanges()).build());
+  }
+
+  public static @Nonnull AclLineMatchExpr matchIcmp(int icmpType, int icmpCode) {
+    checkArgument(0 <= icmpCode && icmpCode <= 255, "Invalid ICMP code: %s", icmpCode);
+    return and(
+        matchIcmpType(icmpType),
+        new MatchHeaderSpace(
+            HeaderSpace.builder()
+                .setIcmpCodes(ImmutableList.of(SubRange.singleton(icmpCode)))
+                .build()));
+  }
+
+  public static @Nonnull AclLineMatchExpr matchIcmpType(int icmpType) {
+    checkArgument(0 <= icmpType && icmpType <= 255, "Invalid ICMP type: %s", icmpType);
+    return new MatchHeaderSpace(
+        HeaderSpace.builder().setIcmpTypes(ImmutableList.of(SubRange.singleton(icmpType))).build());
+  }
+
+  public static @Nonnull AclLineMatchExpr matchIpProtocol(int ipProtocolNumber) {
+    checkArgument(
+        0 <= ipProtocolNumber && ipProtocolNumber <= 255,
+        "Invalid IP protocol number: %s",
+        ipProtocolNumber);
+    return new MatchHeaderSpace(
+        HeaderSpace.builder()
+            .setIpProtocols(ImmutableList.of(IpProtocol.fromNumber(ipProtocolNumber)))
+            .build());
+  }
+
+  public static @Nonnull AclLineMatchExpr matchIpProtocol(IpProtocol ipProtocol) {
+    return new MatchHeaderSpace(
+        HeaderSpace.builder().setIpProtocols(ImmutableList.of(ipProtocol)).build());
+  }
+
+  public static @Nonnull AclLineMatchExpr matchPacketLength(IntegerSpace packetLengthSpace) {
+    checkArgument(
+        0 <= packetLengthSpace.least() && packetLengthSpace.greatest() <= 0xFFFF,
+        "Invalid packetLengthSpace: %s",
+        packetLengthSpace);
+    return new MatchHeaderSpace(
+        HeaderSpace.builder().setPacketLengths(packetLengthSpace.getSubRanges()).build());
+  }
+
+  public static @Nonnull AclLineMatchExpr matchPacketLength(int packetLength) {
+    checkArgument(
+        0 <= packetLength && packetLength <= 0xFFFF, "Invalid packetLength: %s", packetLength);
+    return new MatchHeaderSpace(
+        HeaderSpace.builder()
+            .setPacketLengths(ImmutableList.of(SubRange.singleton(packetLength)))
+            .build());
+  }
+
   public static MatchHeaderSpace matchSrc(Ip ip) {
     return matchSrc(ip.toIpSpace());
+  }
+
+  public static @Nonnull AclLineMatchExpr matchSrc(IpWildcard wc) {
+    return matchSrc(wc.toIpSpace());
   }
 
   public static MatchHeaderSpace matchSrc(Prefix prefix) {
@@ -102,8 +204,17 @@ public final class AclLineMatchExprs {
   }
 
   public static MatchHeaderSpace matchSrcPort(int port) {
+    checkArgument(0 <= port && port <= 0xFFFF, "Invalid port: %s", port);
     return match(
-        HeaderSpace.builder().setSrcPorts(ImmutableList.of(new SubRange(port, port))).build());
+        HeaderSpace.builder().setSrcPorts(ImmutableList.of(SubRange.singleton(port))).build());
+  }
+
+  public static @Nonnull AclLineMatchExpr matchSrcPort(IntegerSpace portSpace) {
+    checkArgument(
+        0 <= portSpace.least() && portSpace.greatest() <= 0xFFFF,
+        "Invalid port space: %s",
+        portSpace);
+    return match(HeaderSpace.builder().setSrcPorts(portSpace.getSubRanges()).build());
   }
 
   public static @Nonnull MatchSrcInterface matchSrcInterface(Iterable<String> ifaces) {
@@ -112,6 +223,12 @@ public final class AclLineMatchExprs {
 
   public static @Nonnull MatchSrcInterface matchSrcInterface(String... ifaces) {
     return matchSrcInterface(ImmutableList.copyOf(ifaces));
+  }
+
+  public static @Nonnull AclLineMatchExpr matchTcpFlags(
+      TcpFlagsMatchConditions... tcpFlagsMatchConditions) {
+    return new MatchHeaderSpace(
+        HeaderSpace.builder().setTcpFlags(ImmutableList.copyOf(tcpFlagsMatchConditions)).build());
   }
 
   /**

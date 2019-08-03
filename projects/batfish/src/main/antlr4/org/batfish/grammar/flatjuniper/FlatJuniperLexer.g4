@@ -3563,6 +3563,11 @@ LOOPS
    'loops'
 ;
 
+LOOSE_SOURCE_ROUTE
+:
+   'loose-source-route'
+;
+
 LOOSE_SOURCE_ROUTE_OPTION
 :
    'loose-source-route-option'
@@ -5003,6 +5008,11 @@ ROUTE_FILTER
    'route-filter'
 ;
 
+ROUTE_RECORD
+:
+  'route-record'
+;
+
 ROUTE_TARGET
 :
    'route-target'
@@ -5016,6 +5026,11 @@ ROUTE_TYPE
 ROUTER_ADVERTISEMENT
 :
    'router-advertisement'
+;
+
+ROUTER_ALERT
+:
+   'router-alert'
 ;
 
 ROUTER_ALERT_OPTION
@@ -5518,9 +5533,19 @@ STP
    'stp'
 ;
 
+STREAM_ID
+:
+  'stream-id'
+;
+
 STREAM_OPTION
 :
    'stream-option'
+;
+
+STRICT_SOURCE_ROUTE
+:
+   'strict-source-route'
 ;
 
 STRICT_SOURCE_ROUTE_OPTION

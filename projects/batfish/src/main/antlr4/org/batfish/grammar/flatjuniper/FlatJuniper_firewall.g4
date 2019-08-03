@@ -218,7 +218,7 @@ fftf_icmp_type
 
 fftf_ip_options
 :
-   IP_OPTIONS ip_option
+  IP_OPTIONS option = ip_option
 ;
 
 fftf_ip_protocol

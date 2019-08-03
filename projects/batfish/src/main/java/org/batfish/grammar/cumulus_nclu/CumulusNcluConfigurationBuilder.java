@@ -150,6 +150,7 @@ import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.Vxb_learningContext;
 import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.Vxv_idContext;
 import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.Vxv_local_tunnelipContext;
 import org.batfish.representation.cumulus.BgpInterfaceNeighbor;
+import org.batfish.representation.cumulus.BgpIpNeighbor;
 import org.batfish.representation.cumulus.BgpIpv4UnicastAddressFamily;
 import org.batfish.representation.cumulus.BgpL2VpnEvpnIpv4Unicast;
 import org.batfish.representation.cumulus.BgpL2vpnEvpnAddressFamily;
@@ -331,9 +332,15 @@ public class CumulusNcluConfigurationBuilder extends CumulusNcluParserBaseListen
             ? Long.parseLong(ctx.first_interval_end.getText(), 10)
             : firstIntervalStart;
     checkArgument(firstIntervalStart <= maxValue && firstIntervalEnd <= maxValue);
-    // add first interval
-    ImmutableRangeSet.Builder<Long> builder =
-        ImmutableRangeSet.<Long>builder().add(Range.closed(firstIntervalStart, firstIntervalEnd));
+    // attempt to add first interval
+    ImmutableRangeSet.Builder<Long> builder = ImmutableRangeSet.builder();
+    try {
+      // TODO have better parsing for globs: https://github.com/batfish/batfish/issues/4386
+      builder.add(Range.closed(firstIntervalStart, firstIntervalEnd));
+    } catch (IllegalArgumentException e) {
+      return ImmutableSet.of();
+    }
+    // All good, proceed to numeric ranges
     if (ctx.other_numeric_ranges != null) {
       // add other intervals
       RangeSet<Long> rangeSet = toRangeSet(ctx.other_numeric_ranges);
@@ -778,12 +785,22 @@ public class CumulusNcluConfigurationBuilder extends CumulusNcluParserBaseListen
   public void enterBn_peer(Bn_peerContext ctx) {
     assert _currentBgpNeighborName != null;
     assert _currentBgpVrf != null;
-    // TODO: only IP neighbors should be created here.
-    //  Peer group neighbors must have already been declared.
-    _currentBgpNeighbor =
-        _currentBgpVrf
-            .getNeighbors()
-            .computeIfAbsent(_currentBgpNeighborName, BgpPeerGroupNeighbor::new);
+    // Only IP neighbors should be created here.
+    // Peer group neighbors must have already been declared.
+    Ip peerIp;
+    try {
+      peerIp = Ip.parse(_currentBgpNeighborName);
+    } catch (IllegalArgumentException e) {
+      _currentBgpNeighbor = _currentBgpVrf.getNeighbors().get(_currentBgpNeighborName);
+      return;
+    }
+    BgpIpNeighbor ipNeighbor =
+        (BgpIpNeighbor)
+            _currentBgpVrf
+                .getNeighbors()
+                .computeIfAbsent(_currentBgpNeighborName, BgpIpNeighbor::new);
+    ipNeighbor.setPeerIp(peerIp);
+    _currentBgpNeighbor = ipNeighbor;
   }
 
   @Override
@@ -1071,7 +1088,8 @@ public class CumulusNcluConfigurationBuilder extends CumulusNcluParserBaseListen
       return;
     }
     if (_currentBonds.size() > 1) {
-      throw new WillNotCommitException("Cannot assign slaves to more than one bond");
+      // High likelihood we messed up the globs: https://github.com/batfish/batfish/issues/4386
+      return;
     }
     Set<String> slaves = toStrings(ctx.slaves);
     List<Interface> interfaces =

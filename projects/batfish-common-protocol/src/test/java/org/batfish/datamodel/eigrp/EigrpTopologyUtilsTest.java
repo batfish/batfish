@@ -41,6 +41,7 @@ public class EigrpTopologyUtilsTest {
         .setEigrp(
             EigrpInterfaceSettings.builder()
                 .setAsn(1L)
+                .setExportPolicy("ep")
                 .setEnabled(true)
                 .setPassive(true)
                 .setMetric(metric)
@@ -54,6 +55,7 @@ public class EigrpTopologyUtilsTest {
         .setEigrp(
             EigrpInterfaceSettings.builder()
                 .setAsn(2L)
+                .setExportPolicy("ep")
                 .setEnabled(true)
                 .setPassive(true)
                 .setMetric(metric)
@@ -62,6 +64,7 @@ public class EigrpTopologyUtilsTest {
     vrf.addEigrpProcess(
         EigrpProcess.builder()
             .setAsNumber(1L)
+            .setExportPolicy("ep")
             .setMode(EigrpProcessMode.NAMED)
             .setRouterId(Ip.parse("1.1.1.1"))
             .setExportPolicy("policy")
@@ -80,6 +83,7 @@ public class EigrpTopologyUtilsTest {
                     .setAsn(1L)
                     .setInterfaceName("iface1")
                     .setPassive(true)
+                    .setExportPolicy("ep")
                     .setHostname("conf")
                     .setVrfName("vrf")
                     .setIp(Ip.parse("1.1.1.1"))
@@ -90,7 +94,12 @@ public class EigrpTopologyUtilsTest {
     EigrpMetric metric =
         EigrpMetric.builder().setBandwidth(1d).setDelay(1d).setMode(EigrpProcessMode.NAMED).build();
     EigrpInterfaceSettings eigrpInterfaceSettings =
-        EigrpInterfaceSettings.builder().setAsn(1L).setEnabled(true).setMetric(metric).build();
+        EigrpInterfaceSettings.builder()
+            .setAsn(1L)
+            .setEnabled(true)
+            .setMetric(metric)
+            .setExportPolicy("ep")
+            .build();
 
     NetworkFactory nf = new NetworkFactory();
 

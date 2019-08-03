@@ -1,0 +1,49 @@
+set deviceconfig system hostname panorama-rulebase-applications
+
+#
+# Two interfaces in different zones, three interested applications
+# 1. built-in application web-browsing
+# 2. override built-in application ssl
+# 3. customized application
+# 4. unknown application
+#
+
+set network interface ethernet ethernet1/1 layer3 ip 1.1.1.1/24
+set zone z1 network layer3 [ ethernet1/1 ]
+
+set network interface ethernet ethernet1/2 layer3 ip 1.1.2.1/24
+set zone z2 network layer3 [ ethernet1/2 ]
+
+set policy panorama application-group SSL_GROUP members ssl
+
+set policy panorama post-rulebase security rules DENY-PAN-DB-CLOUD from any
+set policy panorama post-rulebase security rules DENY-PAN-DB-CLOUD to any
+set policy panorama post-rulebase security rules DENY-PAN-DB-CLOUD source any
+set policy panorama post-rulebase security rules DENY-PAN-DB-CLOUD destination any
+set policy panorama post-rulebase security rules DENY-PAN-DB-CLOUD service application-default
+set policy panorama post-rulebase security rules DENY-PAN-DB-CLOUD application pan-db-cloud
+set policy panorama post-rulebase security rules DENY-PAN-DB-CLOUD action deny
+
+set policy panorama post-rulebase security rules ALLOW-APPLICATION-SSL from any
+set policy panorama post-rulebase security rules ALLOW-APPLICATION-SSL to any
+set policy panorama post-rulebase security rules ALLOW-APPLICATION-SSL source any
+set policy panorama post-rulebase security rules ALLOW-APPLICATION-SSL destination any
+set policy panorama post-rulebase security rules ALLOW-APPLICATION-SSL service application-default
+set policy panorama post-rulebase security rules ALLOW-APPLICATION-SSL application SSL_GROUP
+set policy panorama post-rulebase security rules ALLOW-APPLICATION-SSL action allow
+
+set policy panorama post-rulebase security rules ALLOW-APPLICATION-SNMP from any
+set policy panorama post-rulebase security rules ALLOW-APPLICATION-SNMP to any
+set policy panorama post-rulebase security rules ALLOW-APPLICATION-SNMP source any
+set policy panorama post-rulebase security rules ALLOW-APPLICATION-SNMP destination any
+set policy panorama post-rulebase security rules ALLOW-APPLICATION-SNMP service application-default
+set policy panorama post-rulebase security rules ALLOW-APPLICATION-SNMP application snmp
+set policy panorama post-rulebase security rules ALLOW-APPLICATION-SNMP action allow
+
+set policy panorama post-rulebase security rules ALLOW-APPLICATION-ICMP from any
+set policy panorama post-rulebase security rules ALLOW-APPLICATION-ICMP to any
+set policy panorama post-rulebase security rules ALLOW-APPLICATION-ICMP source any
+set policy panorama post-rulebase security rules ALLOW-APPLICATION-ICMP destination any
+set policy panorama post-rulebase security rules ALLOW-APPLICATION-ICMP service application-default
+set policy panorama post-rulebase security rules ALLOW-APPLICATION-ICMP application ping
+set policy panorama post-rulebase security rules ALLOW-APPLICATION-ICMP action allow

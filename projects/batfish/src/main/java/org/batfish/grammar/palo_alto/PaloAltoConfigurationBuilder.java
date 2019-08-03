@@ -606,7 +606,7 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
     _currentApplication =
         _currentVsys
             .getApplications()
-            .computeIfAbsent(name, n -> Application.builder().setName(n).build());
+            .computeIfAbsent(name, n -> Application.builder(name).build());
     // Use constructed name so same-named defs across vsys are unique
     String uniqueName = computeObjectName(_currentVsys.getName(), name);
     defineStructure(APPLICATION, uniqueName, ctx);
@@ -1167,7 +1167,8 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
   private void referenceApplicationLike(
       String name, String uniqueName, PaloAltoStructureUsage usage, ParserRuleContext var) {
     PaloAltoStructureType type =
-        name.equals(CATCHALL_APPLICATION_NAME) || ApplicationBuiltIn.FOR_NAME_MAP.containsKey(name)
+        name.equals(CATCHALL_APPLICATION_NAME)
+                || ApplicationBuiltIn.getBuiltInApplication(name).isPresent()
             /*
              * Since the name matches a builtin, we'll add a reference if the user defined
              * over the builtin, but it's okay if they did not.

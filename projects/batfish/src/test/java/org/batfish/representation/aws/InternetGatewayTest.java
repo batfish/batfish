@@ -24,6 +24,8 @@ import org.batfish.datamodel.BgpActivePeerConfig;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.PrefixRange;
+import org.batfish.datamodel.PrefixSpace;
 import org.batfish.datamodel.bgp.AddressFamily.Type;
 import org.junit.Test;
 
@@ -130,7 +132,9 @@ public class InternetGatewayTest {
     Configuration cfgNode = Utils.newAwsConfiguration("igw", "awstest");
     Prefix prefix = Prefix.parse("10.10.10.10/24");
 
-    createBackboneConnection(cfgNode, prefix);
+    // dummy value for prefix space
+    createBackboneConnection(
+        cfgNode, prefix, new PrefixSpace(PrefixRange.fromPrefix(Prefix.MULTICAST)));
 
     assertTrue(cfgNode.getAllInterfaces().containsKey(BACKBONE_INTERFACE_NAME));
     assertThat(cfgNode.getDefaultVrf().getBgpProcess().getRouterId(), equalTo(prefix.getStartIp()));
@@ -140,5 +144,7 @@ public class InternetGatewayTest {
     assertThat(
         nbr.getAddressFamily(Type.IPV4_UNICAST).getExportPolicy(),
         equalTo(BACKBONE_EXPORT_POLICY_NAME));
+
+    // TODO: test that the policy created is correct
   }
 }

@@ -1950,6 +1950,31 @@
         }
       },
       {
+        "Structure_Type" : "bgp template peer-policy",
+        "Structure_Name" : "FOO-BAR:BAZ",
+        "Source_Lines" : {
+          "filename" : "configs/ios_xe_bgp",
+          "lines" : [
+            5,
+            6,
+            7,
+            8
+          ]
+        }
+      },
+      {
+        "Structure_Type" : "bgp template peer-session",
+        "Structure_Name" : "FOO-BAR_BAZ:QUX",
+        "Source_Lines" : {
+          "filename" : "configs/ios_xe_bgp",
+          "lines" : [
+            9,
+            10,
+            11
+          ]
+        }
+      },
+      {
         "Structure_Type" : "bgp af-group",
         "Structure_Name" : "blabbety",
         "Source_Lines" : {
@@ -2727,6 +2752,23 @@
           "filename" : "configs/juniper_firewall",
           "lines" : [
             4
+          ]
+        }
+      },
+      {
+        "Structure_Type" : "firewall filter",
+        "Structure_Name" : "ip_options",
+        "Source_Lines" : {
+          "filename" : "configs/juniper_firewall",
+          "lines" : [
+            43,
+            44,
+            45,
+            46,
+            47,
+            48,
+            49,
+            50
           ]
         }
       },
@@ -3710,10 +3752,10 @@
       }
     ],
     "summary" : {
-      "notes" : "Found 251 results",
+      "notes" : "Found 254 results",
       "numFailed" : 0,
       "numPassed" : 0,
-      "numResults" : 251
+      "numResults" : 254
     }
   }
 ]

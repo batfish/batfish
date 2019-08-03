@@ -135,9 +135,11 @@ public class EigrpTopologyUtils {
               continue;
             }
             // TODO: check if secondary addresses also participate in EIGRP neighbor relationships
+            String exportPolicyName = iface.getEigrp().getExportPolicy();
+            assert exportPolicyName != null; // VI conversion should ensure this
             neighborsBuilder.add(
                 EigrpNeighborConfig.builder()
-                    .setExportPolicy(iface.getEigrp().getExportPolicy())
+                    .setExportPolicy(exportPolicyName)
                     .setHostname(config.getHostname())
                     .setInterfaceName(iface.getName())
                     .setIp(iface.getConcreteAddress().getIp())
