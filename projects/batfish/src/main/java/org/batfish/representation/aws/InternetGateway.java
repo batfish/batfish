@@ -1,21 +1,30 @@
 package org.batfish.representation.aws;
 
 import static com.google.common.base.Preconditions.checkArgument;
+import static org.batfish.common.util.IspModelingUtils.getRoutingPolicyAdvertiseStatic;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSortedMap;
 import java.io.Serializable;
 import java.util.List;
 import java.util.Objects;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
+import org.batfish.datamodel.BgpActivePeerConfig;
+import org.batfish.datamodel.BgpProcess;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
+import org.batfish.datamodel.ConfigurationFormat;
+import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.PrefixSpace;
 import org.batfish.datamodel.StaticRoute;
+import org.batfish.datamodel.bgp.Ipv4UnicastAddressFamily;
 
 /**
  * Represents an AWS Internet Gateway
@@ -24,6 +33,18 @@ import org.batfish.datamodel.StaticRoute;
 @JsonIgnoreProperties(ignoreUnknown = true)
 @ParametersAreNonnullByDefault
 final class InternetGateway implements AwsVpcEntity, Serializable {
+
+  /** ASN to use for AWS backbone */
+  static final long AWS_BACKBONE_AS = 16509L;
+
+  /** ASN to use for AWS internet gateways */
+  static final long AWS_INTERNET_GATEWAY_AS = 65534L;
+
+  /** Name of the interface on the Internet Gateway that faces the backbone */
+  static final String BACKBONE_INTERFACE_NAME = "backbone";
+
+  /** Name of the routing policy on the Internet Gateway that faces the backbone */
+  static final String BACKBONE_EXPORT_POLICY_NAME = "AwsInternetGatewayExportPolicy";
 
   @Nonnull private final List<String> _attachmentVpcIds;
 
@@ -76,6 +97,7 @@ final class InternetGateway implements AwsVpcEntity, Serializable {
   Configuration toConfigurationNode(AwsConfiguration awsConfiguration, Region region) {
     Configuration cfgNode = Utils.newAwsConfiguration(_internetGatewayId, "aws");
     cfgNode.getVendorFamily().getAws().setRegion(region.getName());
+    PrefixSpace publicPrefixSpace = new PrefixSpace();
 
     for (String vpcId : _attachmentVpcIds) {
 
@@ -104,20 +126,60 @@ final class InternetGateway implements AwsVpcEntity, Serializable {
           .map(PrivateIpAddress::getPublicIp)
           .filter(Objects::nonNull)
           .forEach(
-              ip ->
-                  cfgNode
-                      .getDefaultVrf()
-                      .getStaticRoutes()
-                      .add(
-                          StaticRoute.builder()
-                              .setNetwork(Prefix.create(ip, Prefix.MAX_PREFIX_LENGTH))
-                              .setNextHopIp(vpcIfaceAddress.getIp())
-                              .setAdministrativeCost(Route.DEFAULT_STATIC_ROUTE_ADMIN)
-                              .setMetric(Route.DEFAULT_STATIC_ROUTE_COST)
-                              .build()));
+              ip -> {
+                Prefix publicPrefix = Prefix.create(ip, Prefix.MAX_PREFIX_LENGTH);
+                publicPrefixSpace.addPrefix(publicPrefix);
+                cfgNode
+                    .getDefaultVrf()
+                    .getStaticRoutes()
+                    .add(
+                        StaticRoute.builder()
+                            .setNetwork(publicPrefix)
+                            .setNextHopIp(vpcIfaceAddress.getIp())
+                            .setAdministrativeCost(Route.DEFAULT_STATIC_ROUTE_ADMIN)
+                            .setMetric(Route.DEFAULT_STATIC_ROUTE_COST)
+                            .build());
+              });
     }
 
+    createBackboneConnection(
+        cfgNode, awsConfiguration.getNextGeneratedLinkSubnet(), publicPrefixSpace);
     return cfgNode;
+  }
+
+  /**
+   * Creates an interface facing the backbone and run a BGP process that advertises static routes
+   */
+  @VisibleForTesting
+  static void createBackboneConnection(
+      Configuration cfgNode, Prefix bbInterfaceSubnet, PrefixSpace publicPrefixSpace) {
+    ConcreteInterfaceAddress bbInterfaceAddress =
+        ConcreteInterfaceAddress.create(
+            bbInterfaceSubnet.getStartIp(), bbInterfaceSubnet.getPrefixLength());
+    Utils.newInterface(BACKBONE_INTERFACE_NAME, cfgNode, bbInterfaceAddress, "To AWS backbone");
+
+    BgpProcess bgpProcess =
+        BgpProcess.builder()
+            .setRouterId(bbInterfaceAddress.getIp())
+            .setVrf(cfgNode.getDefaultVrf())
+            .setAdminCostsToVendorDefaults(ConfigurationFormat.CISCO_IOS)
+            .build();
+
+    cfgNode.setRoutingPolicies(
+        ImmutableSortedMap.of(
+            BACKBONE_EXPORT_POLICY_NAME,
+            getRoutingPolicyAdvertiseStatic(
+                BACKBONE_EXPORT_POLICY_NAME, cfgNode, publicPrefixSpace, new NetworkFactory())));
+
+    BgpActivePeerConfig.builder()
+        .setPeerAddress(bbInterfaceSubnet.getEndIp())
+        .setRemoteAs(AWS_BACKBONE_AS)
+        .setLocalIp(bbInterfaceAddress.getIp())
+        .setLocalAs(AWS_INTERNET_GATEWAY_AS)
+        .setBgpProcess(bgpProcess)
+        .setIpv4UnicastAddressFamily(
+            Ipv4UnicastAddressFamily.builder().setExportPolicy(BACKBONE_EXPORT_POLICY_NAME).build())
+        .build();
   }
 
   @Override

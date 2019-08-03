@@ -4,6 +4,7 @@ import static com.google.common.base.MoreObjects.firstNonNull;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.base.MoreObjects;
 import javax.annotation.Nonnull;
 import org.batfish.datamodel.InterfaceType;
 
@@ -66,5 +67,14 @@ public class Interface extends BfObject {
   @JsonProperty(PROP_TYPE)
   public void setType(InterfaceType type) {
     _type = type;
+  }
+
+  @Override
+  public String toString() {
+    return MoreObjects.toStringHelper(this)
+        .add("_name", _name)
+        .add("_nodeId", _nodeId)
+        .add("_type", _type)
+        .toString();
   }
 }

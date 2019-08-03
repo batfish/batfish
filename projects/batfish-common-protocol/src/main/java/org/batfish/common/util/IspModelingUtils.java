@@ -5,6 +5,7 @@ import static org.batfish.datamodel.BgpPeerConfig.ALL_AS_NUMBERS;
 import static org.batfish.datamodel.Configuration.DEFAULT_VRF_NAME;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
@@ -37,6 +38,7 @@ import org.batfish.datamodel.LongSpace;
 import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.OriginType;
 import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.PrefixRange;
 import org.batfish.datamodel.PrefixSpace;
 import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.StaticRoute;
@@ -107,57 +109,107 @@ public final class IspModelingUtils {
     List<BgpActivePeerConfig> getBgpActivePeerConfigs() {
       return _bgpActivePeerConfigs;
     }
+
+    @Override
+    public String toString() {
+      return MoreObjects.toStringHelper(this)
+          .add("_interfaceAddresses", _interfaceAddresses)
+          .add("_bgpActivePeerConfigs", _bgpActivePeerConfigs)
+          .toString();
+    }
+
+    @Override
+    public boolean equals(Object o) {
+      if (this == o) {
+        return true;
+      }
+      if (!(o instanceof IspInfo)) {
+        return false;
+      }
+      IspInfo ispInfo = (IspInfo) o;
+      return com.google.common.base.Objects.equal(_interfaceAddresses, ispInfo._interfaceAddresses)
+          && com.google.common.base.Objects.equal(
+              _bgpActivePeerConfigs, ispInfo._bgpActivePeerConfigs);
+    }
+
+    @Override
+    public int hashCode() {
+      return com.google.common.base.Objects.hashCode(_interfaceAddresses, _bgpActivePeerConfigs);
+    }
   }
 
   /**
    * Creates and returns internet and ISP nodes for a {@link Map} of {@link Configuration}s
    *
    * @param configurations {@link Configuration}s for the given network
-   * @param ispConfiguration {@link IspConfiguration} required to initialize the ISPs
+   * @param ispConfigurations A list of {@link IspConfiguration} objects to initialize the ISPs
    * @param logger {@link BatfishLogger} to log warnings and errors
    * @param warnings {@link Warnings} containing all the warnings logged during the ISP modeling
    * @return {@link Map} of {@link Configuration}s for the ISPs and Internet
    */
   public static Map<String, Configuration> getInternetAndIspNodes(
       @Nonnull Map<String, Configuration> configurations,
-      @Nonnull IspConfiguration ispConfiguration,
+      @Nonnull List<IspConfiguration> ispConfigurations,
       @Nonnull BatfishLogger logger,
       @Nonnull Warnings warnings) {
 
     NetworkFactory nf = new NetworkFactory();
-    Map<String, Set<String>> interfaceSetByNodes =
-        ispConfiguration.getBorderInterfaces().stream()
-            .map(BorderInterfaceInfo::getBorderInterface)
-            .collect(
-                Collectors.groupingBy(
-                    nodeInterfacePair -> nodeInterfacePair.getHostname().toLowerCase(),
-                    Collectors.mapping(NodeInterfacePair::getInterface, Collectors.toSet())));
 
+    Map<Long, IspInfo> asnToIspInfos =
+        combineIspConfigurations(configurations, ispConfigurations, warnings);
+
+    return createInternetAndIspNodes(asnToIspInfos, configurations, nf, logger);
+  }
+
+  @VisibleForTesting
+  static Map<Long, IspInfo> combineIspConfigurations(
+      Map<String, Configuration> configurations,
+      List<IspConfiguration> ispConfigurations,
+      Warnings warnings) {
     Map<Long, IspInfo> asnToIspInfos = new HashMap<>();
 
-    for (Entry<String, Set<String>> nodeAndInterfaces : interfaceSetByNodes.entrySet()) {
-      Configuration configuration = configurations.get(nodeAndInterfaces.getKey());
-      if (configuration == null) {
-        warnings.redFlag(
-            String.format(
-                "ISP Modeling: Non-existent border node %s specified in ISP configuration",
-                nodeAndInterfaces.getKey()));
-        continue;
+    for (IspConfiguration ispConfiguration : ispConfigurations) {
+      Map<String, Set<String>> interfaceSetByNodes =
+          ispConfiguration.getBorderInterfaces().stream()
+              .map(BorderInterfaceInfo::getBorderInterface)
+              .collect(
+                  Collectors.groupingBy(
+                      nodeInterfacePair -> nodeInterfacePair.getHostname().toLowerCase(),
+                      Collectors.mapping(NodeInterfacePair::getInterface, Collectors.toSet())));
+
+      for (Entry<String, Set<String>> nodeAndInterfaces : interfaceSetByNodes.entrySet()) {
+        Configuration configuration = configurations.get(nodeAndInterfaces.getKey());
+        if (configuration == null) {
+          warnings.redFlag(
+              String.format(
+                  "ISP Modeling: Non-existent border node %s specified in ISP configuration",
+                  nodeAndInterfaces.getKey()));
+          continue;
+        }
+        populateIspInfos(
+            configuration,
+            nodeAndInterfaces.getValue(),
+            ispConfiguration.getfilter().getOnlyRemoteIps(),
+            ispConfiguration.getfilter().getOnlyRemoteAsns(),
+            asnToIspInfos,
+            warnings);
       }
-      populateIspInfos(
-          configuration,
-          nodeAndInterfaces.getValue(),
-          ispConfiguration.getfilter().getOnlyRemoteIps(),
-          ispConfiguration.getfilter().getOnlyRemoteAsns(),
-          asnToIspInfos,
-          warnings);
     }
 
+    return asnToIspInfos;
+  }
+
+  private static Map<String, Configuration> createInternetAndIspNodes(
+      Map<Long, IspInfo> asnToIspInfos,
+      Map<String, Configuration> configurations,
+      NetworkFactory nf,
+      BatfishLogger logger) {
     Map<String, Configuration> ispConfigurations =
         asnToIspInfos.entrySet().stream()
             .map(
                 asnIspInfo ->
-                    getIspConfigurationNode(asnIspInfo.getKey(), asnIspInfo.getValue(), nf, logger))
+                    getIspConfigurationNode(
+                        asnIspInfo.getKey(), asnIspInfo.getValue(), configurations, nf, logger))
             .filter(Objects::nonNull)
             .collect(ImmutableMap.toImmutableMap(Configuration::getHostname, Function.identity()));
     // not proceeding if no ISPs were created
@@ -212,7 +264,12 @@ public final class IspModelingUtils {
 
     internetConfiguration.setRoutingPolicies(
         ImmutableSortedMap.of(
-            EXPORT_POLICY_ON_INTERNET, getRoutingPolicyForInternet(internetConfiguration, nf)));
+            EXPORT_POLICY_ON_INTERNET,
+            getRoutingPolicyAdvertiseStatic(
+                EXPORT_POLICY_ON_INTERNET,
+                internetConfiguration,
+                new PrefixSpace(PrefixRange.fromPrefix(Prefix.ZERO)),
+                nf)));
     return internetConfiguration;
   }
 
@@ -350,7 +407,11 @@ public final class IspModelingUtils {
   @VisibleForTesting
   @Nullable
   static Configuration getIspConfigurationNode(
-      Long asn, IspInfo ispInfo, NetworkFactory nf, BatfishLogger logger) {
+      Long asn,
+      IspInfo ispInfo,
+      Map<String, Configuration> configurations,
+      NetworkFactory nf,
+      BatfishLogger logger) {
     if (ispInfo.getBgpActivePeerConfigs().isEmpty()
         || ispInfo.getInterfaceAddresses().isEmpty()
         || ispInfo.getInterfaceAddresses().size() != ispInfo.getBgpActivePeerConfigs().size()) {
@@ -358,9 +419,10 @@ public final class IspModelingUtils {
       return null;
     }
 
-    Configuration.Builder cb = nf.configurationBuilder();
+    String ispNodeName = String.format("%s_%s", ISP_HOSTNAME_PREFIX, asn);
     Configuration ispConfiguration =
-        cb.setHostname(String.format("%s_%s", ISP_HOSTNAME_PREFIX, asn))
+        nf.configurationBuilder()
+            .setHostname(ispNodeName)
             .setConfigurationFormat(ConfigurationFormat.CISCO_IOS)
             .build();
     ispConfiguration.setDeviceType(DeviceType.ISP);
@@ -440,13 +502,11 @@ public final class IspModelingUtils {
   }
 
   /** Creates a routing policy to advertise all static routes configured */
-  @VisibleForTesting
-  static RoutingPolicy getRoutingPolicyForInternet(Configuration internet, NetworkFactory nf) {
-    PrefixSpace prefixSpace = new PrefixSpace();
-    prefixSpace.addPrefix(Prefix.ZERO);
+  public static RoutingPolicy getRoutingPolicyAdvertiseStatic(
+      String policyName, Configuration node, PrefixSpace prefixSpace, NetworkFactory nf) {
     return nf.routingPolicyBuilder()
-        .setName(EXPORT_POLICY_ON_INTERNET)
-        .setOwner(internet)
+        .setName(policyName)
+        .setOwner(node)
         .setStatements(
             Collections.singletonList(
                 new If(

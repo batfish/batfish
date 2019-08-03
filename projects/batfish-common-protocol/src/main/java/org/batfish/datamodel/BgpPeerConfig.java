@@ -6,6 +6,7 @@ import static com.google.common.base.Preconditions.checkArgument;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Range;
 import java.io.Serializable;
@@ -289,6 +290,26 @@ public abstract class BgpPeerConfig implements Serializable {
         _remoteAsns,
         _ipv4UnicastAddressFamily,
         _evpnAddressFamily);
+  }
+
+  @Override
+  public String toString() {
+    return MoreObjects.toStringHelper(this)
+        .add("_appliedRibGroup", _appliedRibGroup)
+        .add("_authenticationSettings", _authenticationSettings)
+        .add("_clusterId", _clusterId)
+        .add("_defaultMetric", _defaultMetric)
+        .add("_description", _description)
+        .add("_ebgpMultihop", _ebgpMultihop)
+        .add("_enforceFirstAs", _enforceFirstAs)
+        .add("_generatedRoutes", _generatedRoutes)
+        .add("_group", _group)
+        .add("_localAs", _localAs)
+        .add("_localIp", _localIp)
+        .add("_remoteAsns", _remoteAsns)
+        .add("_ipv4UnicastAddressFamily", _ipv4UnicastAddressFamily)
+        .add("_evpnAddressFamily", _evpnAddressFamily)
+        .toString();
   }
 
   public abstract static class Builder<S extends Builder<S, T>, T extends BgpPeerConfig> {

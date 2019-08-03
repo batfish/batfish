@@ -19,6 +19,8 @@ import static org.batfish.common.util.CompletionMetadataUtils.getRoutingPolicyNa
 import static org.batfish.common.util.CompletionMetadataUtils.getStructureNames;
 import static org.batfish.common.util.CompletionMetadataUtils.getVrfs;
 import static org.batfish.common.util.CompletionMetadataUtils.getZones;
+import static org.batfish.common.util.IspModelingUtils.INTERNET_HOST_NAME;
+import static org.batfish.common.util.IspModelingUtils.getInternetAndIspNodes;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.not;
 import static org.batfish.main.ReachabilityParametersResolver.resolveReachabilityParameters;
 
@@ -112,7 +114,6 @@ import org.batfish.common.topology.TopologyContainer;
 import org.batfish.common.topology.TopologyProvider;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.common.util.CommonUtil;
-import org.batfish.common.util.IspModelingUtils;
 import org.batfish.config.Settings;
 import org.batfish.config.TestrigSettings;
 import org.batfish.datamodel.BgpAdvertisement;
@@ -157,6 +158,7 @@ import org.batfish.datamodel.eigrp.EigrpTopologyUtils;
 import org.batfish.datamodel.flow.Trace;
 import org.batfish.datamodel.flow.TraceWrapperAsAnswerElement;
 import org.batfish.datamodel.isp_configuration.IspConfiguration;
+import org.batfish.datamodel.isp_configuration.IspFilter;
 import org.batfish.datamodel.ospf.OspfTopologyUtils;
 import org.batfish.datamodel.pojo.Environment;
 import org.batfish.datamodel.questions.InvalidReachabilityParametersException;
@@ -999,9 +1001,8 @@ public class Batfish extends PluginConsumer implements IBatfish {
   }
 
   public Map<String, Configuration> getConfigurations(
-      Path serializedVendorConfigPath, ConvertConfigurationAnswerElement answerElement) {
-    Map<String, GenericConfigObject> vendorConfigurations =
-        deserializeVendorConfigurations(serializedVendorConfigPath);
+      Map<String, GenericConfigObject> vendorConfigurations,
+      ConvertConfigurationAnswerElement answerElement) {
     Map<String, Configuration> configurations =
         convertConfigurations(vendorConfigurations, answerElement);
 
@@ -1069,22 +1070,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
     } else {
       throw new BatfishException("Could not determine flow tag");
     }
-  }
-
-  @Nonnull
-  private Map<String, Configuration> getIspConfigurations(
-      Map<String, Configuration> configurations, Map<String, Warnings> warningsByHost) {
-    NetworkSnapshot networkSnapshot = getNetworkSnapshot();
-    IspConfiguration ispConfiguration =
-        _storage.loadIspConfiguration(networkSnapshot.getNetwork(), networkSnapshot.getSnapshot());
-    if (ispConfiguration == null) {
-      return ImmutableMap.of();
-    }
-    Warnings warnings =
-        warningsByHost.computeIfAbsent(
-            IspModelingUtils.INTERNET_HOST_NAME, k -> buildWarnings(_settings));
-    return IspModelingUtils.getInternetAndIspNodes(
-        configurations, ispConfiguration, _logger, warnings);
   }
 
   @Override
@@ -2355,16 +2340,18 @@ public class Batfish extends PluginConsumer implements IBatfish {
       if (_settings.getVerboseParse()) {
         answer.addAnswerElement(answerElement);
       }
+      Map<String, GenericConfigObject> vendorConfigs;
       Map<String, Configuration> configurations;
       try (ActiveSpan convertSpan =
           GlobalTracer.get()
               .buildSpan("Convert vendor-specific configs to vendor-independent configs")
               .startActive()) {
         assert convertSpan != null; // avoid unused warning
-        configurations = getConfigurations(vendorConfigPath, answerElement);
+        vendorConfigs = deserializeVendorConfigurations(vendorConfigPath);
+        configurations = getConfigurations(vendorConfigs, answerElement);
       }
 
-      configurations.putAll(getIspConfigurations(configurations, answerElement.getWarnings()));
+      addInternetAndIspNodes(configurations, vendorConfigs, answerElement.getWarnings());
 
       try (ActiveSpan storeSpan =
           GlobalTracer.get().buildSpan("Store vendor-independent configs").startActive()) {
@@ -2379,6 +2366,53 @@ public class Batfish extends PluginConsumer implements IBatfish {
         postProcessSnapshot(configurations);
       }
       return answer;
+    }
+  }
+
+  private void addInternetAndIspNodes(
+      Map<String, Configuration> configurations,
+      Map<String, GenericConfigObject> vendorConfigs,
+      SortedMap<String, Warnings> warnings) {
+    if (configurations.containsKey(INTERNET_HOST_NAME)) {
+      warnings
+          .getOrDefault(INTERNET_HOST_NAME, buildWarnings(_settings))
+          .redFlag("Cannot add internet because a node with the name 'internet' already exists");
+      return;
+    }
+
+    Warnings internetWarnings = warnings.getOrDefault(INTERNET_HOST_NAME, buildWarnings(_settings));
+    ImmutableList.Builder<IspConfiguration> ispConfigurations = new ImmutableList.Builder<>();
+
+    NetworkSnapshot networkSnapshot = getNetworkSnapshot();
+    IspConfiguration ispConfiguration =
+        _storage.loadIspConfiguration(networkSnapshot.getNetwork(), networkSnapshot.getSnapshot());
+    if (ispConfiguration != null) {
+      ispConfigurations.add(ispConfiguration);
+    }
+
+    vendorConfigs.values().stream()
+        .map(GenericConfigObject::getBorderInterfaces)
+        .filter(Objects::nonNull)
+        .filter(l -> !l.isEmpty())
+        .forEach(
+            ifaces ->
+                ispConfigurations.add(
+                    new IspConfiguration(
+                        ifaces, new IspFilter(ImmutableList.of(), ImmutableList.of()))));
+
+    Map<String, Configuration> additionalConfigs =
+        getInternetAndIspNodes(
+            configurations, ispConfigurations.build(), _logger, internetWarnings);
+
+    Set<String> commonNodes =
+        Sets.intersection(configurations.keySet(), additionalConfigs.keySet());
+    if (!commonNodes.isEmpty()) {
+      internetWarnings.redFlag(
+          String.format(
+              "Cannot add internet and ISP nodes because nodes with the following names already exist in the snapshot: %s",
+              commonNodes));
+    } else {
+      configurations.putAll(additionalConfigs);
     }
   }
 
