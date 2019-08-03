@@ -2,6 +2,7 @@ package org.batfish.datamodel.bgp;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableSortedSet;
 import java.io.Serializable;
 import java.util.SortedSet;
@@ -96,6 +97,18 @@ public abstract class AddressFamily implements Serializable {
 
   @Override
   public abstract boolean equals(@Nullable Object obj);
+
+  @Override
+  public String toString() {
+    return MoreObjects.toStringHelper(this)
+        .add("_addressFamilyCapabilities", _addressFamilyCapabilities)
+        .add("_exportPolicy", _exportPolicy)
+        .add("_importPolicy", _importPolicy)
+        .add("_importPolicySources", _importPolicySources)
+        .add("_exportPolicySources", _exportPolicySources)
+        .add("_routeReflectorClient", _routeReflectorClient)
+        .toString();
+  }
 
   @JsonIgnore
   public abstract Type getType();

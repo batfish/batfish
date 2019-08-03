@@ -1,9 +1,13 @@
 package org.batfish.representation.aws;
 
+import static org.batfish.representation.aws.InternetGateway.BACKBONE_INTERFACE_NAME;
+
 import com.fasterxml.jackson.databind.JsonNode;
+import com.google.common.collect.ImmutableList;
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicLong;
 import javax.annotation.Nonnull;
@@ -15,6 +19,8 @@ import org.batfish.datamodel.GenericConfigObject;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.answers.ParseVendorConfigurationAnswerElement;
+import org.batfish.datamodel.collections.NodeInterfacePair;
+import org.batfish.datamodel.isp_configuration.BorderInterfaceInfo;
 
 /** The top-level class that represent AWS configuration */
 @ParametersAreNonnullByDefault
@@ -29,9 +35,25 @@ public class AwsConfiguration implements Serializable, GenericConfigObject {
   @Nonnull private final Map<String, Region> _regions;
 
   public AwsConfiguration() {
-    _configurationNodes = new HashMap<>();
-    _currentGeneratedIpAsLong = new AtomicLong(INITIAL_GENERATED_IP);
-    _regions = new HashMap<>();
+    this(new HashMap<>());
+  }
+
+  public AwsConfiguration(Map<String, Region> regions) {
+    this(regions, new HashMap<>(), new AtomicLong(INITIAL_GENERATED_IP));
+  }
+
+  public AwsConfiguration(
+      Map<String, Region> regions, Map<String, Configuration> configurationNodes) {
+    this(regions, configurationNodes, new AtomicLong(INITIAL_GENERATED_IP));
+  }
+
+  public AwsConfiguration(
+      Map<String, Region> regions,
+      Map<String, Configuration> configurationNodes,
+      AtomicLong currentGeneratedIpAsLong) {
+    _regions = regions;
+    _configurationNodes = configurationNodes;
+    _currentGeneratedIpAsLong = currentGeneratedIpAsLong;
   }
 
   /** Adds a config subtree */
@@ -68,5 +90,15 @@ public class AwsConfiguration implements Serializable, GenericConfigObject {
     }
 
     return _configurationNodes;
+  }
+
+  @Override
+  @Nonnull
+  public List<BorderInterfaceInfo> getBorderInterfaces() {
+    return _regions.values().stream()
+        .flatMap(r -> r.getInternetGateways().values().stream())
+        .map(igw -> new NodeInterfacePair(igw.getId(), BACKBONE_INTERFACE_NAME))
+        .map(BorderInterfaceInfo::new)
+        .collect(ImmutableList.toImmutableList());
   }
 }
