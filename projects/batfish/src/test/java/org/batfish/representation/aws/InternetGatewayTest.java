@@ -2,6 +2,8 @@ package org.batfish.representation.aws;
 
 import static com.google.common.collect.Iterables.getOnlyElement;
 import static org.batfish.representation.aws.AwsVpcEntity.JSON_KEY_INTERNET_GATEWAYS;
+import static org.batfish.representation.aws.InternetGateway.AWS_BACKBONE_AS;
+import static org.batfish.representation.aws.InternetGateway.AWS_INTERNET_GATEWAY_AS;
 import static org.batfish.representation.aws.InternetGateway.BACKBONE_EXPORT_POLICY_NAME;
 import static org.batfish.representation.aws.InternetGateway.BACKBONE_INTERFACE_NAME;
 import static org.batfish.representation.aws.InternetGateway.createBackboneConnection;
@@ -26,7 +28,7 @@ import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.PrefixRange;
 import org.batfish.datamodel.PrefixSpace;
-import org.batfish.datamodel.bgp.AddressFamily.Type;
+import org.batfish.datamodel.bgp.Ipv4UnicastAddressFamily;
 import org.junit.Test;
 
 /** Tests for {@link InternetGateway} */
@@ -142,9 +144,17 @@ public class InternetGatewayTest {
     BgpActivePeerConfig nbr =
         getOnlyElement(cfgNode.getDefaultVrf().getBgpProcess().getActiveNeighbors().values());
     assertThat(
-        nbr.getAddressFamily(Type.IPV4_UNICAST).getExportPolicy(),
-        equalTo(BACKBONE_EXPORT_POLICY_NAME));
-
-    // TODO: test that the policy created is correct
+        nbr,
+        equalTo(
+            BgpActivePeerConfig.builder()
+                .setLocalIp(prefix.getStartIp())
+                .setLocalAs(AWS_INTERNET_GATEWAY_AS)
+                .setRemoteAs(AWS_BACKBONE_AS)
+                .setPeerAddress(prefix.getEndIp())
+                .setIpv4UnicastAddressFamily(
+                    Ipv4UnicastAddressFamily.builder()
+                        .setExportPolicy(BACKBONE_EXPORT_POLICY_NAME)
+                        .build())
+                .build()));
   }
 }
