@@ -12,6 +12,7 @@ public enum ConfigurationFormat {
   CISCO_IOS("cisco"),
   CISCO_IOS_XR("cisco"),
   CISCO_NX("cisco"),
+  CUMULUS_CONCATENATED("cumulus_concatenated"),
   CUMULUS_NCLU("cumulus_nclu"),
   EMPTY("empty"),
   F5("f5"),

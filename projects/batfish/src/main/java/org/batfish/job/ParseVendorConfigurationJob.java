@@ -30,6 +30,8 @@ import org.batfish.grammar.cisco.CiscoCombinedParser;
 import org.batfish.grammar.cisco.CiscoControlPlaneExtractor;
 import org.batfish.grammar.cisco_nxos.CiscoNxosCombinedParser;
 import org.batfish.grammar.cisco_nxos.CiscoNxosControlPlaneExtractor;
+import org.batfish.grammar.cumulus_concatenated.CumulusConcatenatedCombinedParser;
+import org.batfish.grammar.cumulus_concatenated.CumulusConcatenatedControlPlaneExtractor;
 import org.batfish.grammar.cumulus_nclu.CumulusNcluCombinedParser;
 import org.batfish.grammar.cumulus_nclu.CumulusNcluControlPlaneExtractor;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredCombinedParser;
@@ -231,6 +233,22 @@ public class ParseVendorConfigurationJob extends BatfishJob<ParseVendorConfigura
                 new CiscoNxosCombinedParser(_fileText, _settings);
             combinedParser = ciscoNxosParser;
             extractor = new CiscoNxosControlPlaneExtractor(_fileText, ciscoNxosParser, _warnings);
+            break;
+          }
+
+        case CUMULUS_CONCATENATED:
+          {
+            CumulusConcatenatedCombinedParser parser =
+                new CumulusConcatenatedCombinedParser(_fileText, _settings);
+            combinedParser = parser;
+            extractor =
+                new CumulusConcatenatedControlPlaneExtractor(
+                    _fileText,
+                    _warnings,
+                    _filename,
+                    parser.getSettings(),
+                    _settings.getPrintParseTree() ? () -> _ptSentences : null,
+                    _settings.getPrintParseTreeLineNums());
             break;
           }
 
