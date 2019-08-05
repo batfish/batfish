@@ -103,6 +103,19 @@
             </configuration>
           </execution>
           <execution>
+            <id>antlr4-cumulus-frr</id>
+            <goals>
+              <goal>antlr4</goal>
+            </goals>
+            <configuration>
+              <includes>**/CumulusFrrLexer.g4,**/CumulusFrrParser.g4</includes>
+              <libDirectory>${basedir}/src/main/antlr4/org/batfish/grammar/cumulus_frr
+              </libDirectory>
+              <statusDirectory>${project.build.directory}/maven-status/antlr4-cumulus-frr
+              </statusDirectory>
+            </configuration>
+          </execution>
+          <execution>
             <id>antlr4-flatjuniper</id>
             <goals>
               <goal>antlr4</goal>
