@@ -1,7 +1,7 @@
 package org.batfish.representation.aws;
 
 import static com.google.common.base.Preconditions.checkArgument;
-import static org.batfish.common.util.IspModelingUtils.getRoutingPolicyAdvertiseStatic;
+import static org.batfish.common.util.IspModelingUtils.installRoutingPolicyAdvertiseStatic;
 import static org.batfish.representation.aws.Utils.addStaticRoute;
 import static org.batfish.representation.aws.Utils.toStaticRoute;
 
@@ -160,7 +160,7 @@ final class InternetGateway implements AwsVpcEntity, Serializable {
     cfgNode.setRoutingPolicies(
         ImmutableSortedMap.of(
             BACKBONE_EXPORT_POLICY_NAME,
-            getRoutingPolicyAdvertiseStatic(
+            installRoutingPolicyAdvertiseStatic(
                 BACKBONE_EXPORT_POLICY_NAME, cfgNode, publicPrefixSpace, new NetworkFactory())));
 
     BgpActivePeerConfig.builder()

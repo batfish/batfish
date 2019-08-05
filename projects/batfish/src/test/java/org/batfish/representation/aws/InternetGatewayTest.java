@@ -18,10 +18,12 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import java.io.IOException;
+import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.common.util.CommonUtil;
+import org.batfish.common.util.IspModelingUtils;
 import org.batfish.datamodel.BgpActivePeerConfig;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Ip;
@@ -135,11 +137,16 @@ public class InternetGatewayTest {
     Prefix prefix = Prefix.parse("10.10.10.10/24");
 
     // dummy value for prefix space
-    createBackboneConnection(
-        cfgNode, prefix, new PrefixSpace(PrefixRange.fromPrefix(Prefix.MULTICAST)));
+    PrefixSpace dummySpace = new PrefixSpace(PrefixRange.fromPrefix(Prefix.MULTICAST));
+    createBackboneConnection(cfgNode, prefix, dummySpace);
 
     assertTrue(cfgNode.getAllInterfaces().containsKey(BACKBONE_INTERFACE_NAME));
     assertThat(cfgNode.getDefaultVrf().getBgpProcess().getRouterId(), equalTo(prefix.getStartIp()));
+
+    assertThat(
+        cfgNode.getRoutingPolicies().get(BACKBONE_EXPORT_POLICY_NAME).getStatements(),
+        equalTo(
+            Collections.singletonList(IspModelingUtils.getAdvertiseStaticStatement(dummySpace))));
 
     BgpActivePeerConfig nbr =
         getOnlyElement(cfgNode.getDefaultVrf().getBgpProcess().getActiveNeighbors().values());

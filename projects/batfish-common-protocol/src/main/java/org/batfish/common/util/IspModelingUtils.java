@@ -56,6 +56,7 @@ import org.batfish.datamodel.routing_policy.expr.MatchPrefixSet;
 import org.batfish.datamodel.routing_policy.expr.MatchProtocol;
 import org.batfish.datamodel.routing_policy.statement.If;
 import org.batfish.datamodel.routing_policy.statement.SetOrigin;
+import org.batfish.datamodel.routing_policy.statement.Statement;
 import org.batfish.datamodel.routing_policy.statement.Statements;
 
 /** Util classes and functions to model ISPs and Internet for a given network */
@@ -265,7 +266,7 @@ public final class IspModelingUtils {
     internetConfiguration.setRoutingPolicies(
         ImmutableSortedMap.of(
             EXPORT_POLICY_ON_INTERNET,
-            getRoutingPolicyAdvertiseStatic(
+            installRoutingPolicyAdvertiseStatic(
                 EXPORT_POLICY_ON_INTERNET,
                 internetConfiguration,
                 new PrefixSpace(PrefixRange.fromPrefix(Prefix.ZERO)),
@@ -501,25 +502,30 @@ public final class IspModelingUtils {
     return localAs;
   }
 
-  /** Creates a routing policy to advertise all static routes configured */
-  public static RoutingPolicy getRoutingPolicyAdvertiseStatic(
+  /**
+   * Installs a routing policy named {@code policyName} on {@code node} that advertises all static
+   * routes to {@code prefixSpace}
+   */
+  public static RoutingPolicy installRoutingPolicyAdvertiseStatic(
       String policyName, Configuration node, PrefixSpace prefixSpace, NetworkFactory nf) {
     return nf.routingPolicyBuilder()
         .setName(policyName)
         .setOwner(node)
-        .setStatements(
-            Collections.singletonList(
-                new If(
-                    new Conjunction(
-                        ImmutableList.of(
-                            new MatchProtocol(RoutingProtocol.STATIC),
-                            new MatchPrefixSet(
-                                DestinationNetwork.instance(),
-                                new ExplicitPrefixSet(prefixSpace)))),
-                    ImmutableList.of(
-                        new SetOrigin(new LiteralOrigin(OriginType.INCOMPLETE, null)),
-                        Statements.ExitAccept.toStaticStatement()))))
+        .setStatements(Collections.singletonList(getAdvertiseStaticStatement(prefixSpace)))
         .build();
+  }
+
+  /** Returns a routing policy statement that advertises static routes to {@code prefixSpace} */
+  public static Statement getAdvertiseStaticStatement(PrefixSpace prefixSpace) {
+    return new If(
+        new Conjunction(
+            ImmutableList.of(
+                new MatchProtocol(RoutingProtocol.STATIC),
+                new MatchPrefixSet(
+                    DestinationNetwork.instance(), new ExplicitPrefixSet(prefixSpace)))),
+        ImmutableList.of(
+            new SetOrigin(new LiteralOrigin(OriginType.INCOMPLETE, null)),
+            Statements.ExitAccept.toStaticStatement()));
   }
 
   /** Creates a routing policy to export all BGP routes */
