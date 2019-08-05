@@ -2,11 +2,14 @@ package org.batfish.representation.aws;
 
 import static com.google.common.collect.Iterables.getOnlyElement;
 import static org.batfish.representation.aws.AwsVpcEntity.JSON_KEY_INTERNET_GATEWAYS;
+import static org.batfish.representation.aws.InternetGateway.AWS_BACKBONE_AS;
+import static org.batfish.representation.aws.InternetGateway.AWS_INTERNET_GATEWAY_AS;
 import static org.batfish.representation.aws.InternetGateway.BACKBONE_EXPORT_POLICY_NAME;
 import static org.batfish.representation.aws.InternetGateway.BACKBONE_INTERFACE_NAME;
 import static org.batfish.representation.aws.InternetGateway.createBackboneConnection;
-import static org.hamcrest.MatcherAssert.assertThat;
+import static org.batfish.representation.aws.Utils.toStaticRoute;
 import static org.hamcrest.Matchers.equalTo;
+import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -15,18 +18,19 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import java.io.IOException;
+import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.common.util.CommonUtil;
+import org.batfish.common.util.IspModelingUtils;
 import org.batfish.datamodel.BgpActivePeerConfig;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.PrefixRange;
 import org.batfish.datamodel.PrefixSpace;
-import org.batfish.datamodel.StaticRoute;
-import org.batfish.datamodel.bgp.AddressFamily.Type;
+import org.batfish.datamodel.bgp.Ipv4UnicastAddressFamily;
 import org.junit.Test;
 
 /** Tests for {@link InternetGateway} */
@@ -118,18 +122,13 @@ public class InternetGatewayTest {
         igwConfig.getDefaultVrf().getStaticRoutes(),
         equalTo(
             ImmutableSet.of(
-                StaticRoute.builder()
-                    .setNetwork(Prefix.create(publicIp, 32))
-                    .setNextHopIp(
-                        vpcConfig
-                            .getAllInterfaces()
-                            .get(internetGateway.getId())
-                            .getConcreteAddress()
-                            .getIp())
-                    .setAdministrativeCost(Route.DEFAULT_STATIC_ROUTE_ADMIN)
-                    .build())));
-
-    // TODO: test that the correct public prefix space is computed
+                toStaticRoute(
+                    publicIp,
+                    vpcConfig
+                        .getAllInterfaces()
+                        .get(internetGateway.getId())
+                        .getConcreteAddress()
+                        .getIp()))));
   }
 
   @Test
@@ -138,18 +137,31 @@ public class InternetGatewayTest {
     Prefix prefix = Prefix.parse("10.10.10.10/24");
 
     // dummy value for prefix space
-    createBackboneConnection(
-        cfgNode, prefix, new PrefixSpace(PrefixRange.fromPrefix(Prefix.MULTICAST)));
+    PrefixSpace dummySpace = new PrefixSpace(PrefixRange.fromPrefix(Prefix.MULTICAST));
+    createBackboneConnection(cfgNode, prefix, dummySpace);
 
     assertTrue(cfgNode.getAllInterfaces().containsKey(BACKBONE_INTERFACE_NAME));
     assertThat(cfgNode.getDefaultVrf().getBgpProcess().getRouterId(), equalTo(prefix.getStartIp()));
 
+    assertThat(
+        cfgNode.getRoutingPolicies().get(BACKBONE_EXPORT_POLICY_NAME).getStatements(),
+        equalTo(
+            Collections.singletonList(IspModelingUtils.getAdvertiseStaticStatement(dummySpace))));
+
     BgpActivePeerConfig nbr =
         getOnlyElement(cfgNode.getDefaultVrf().getBgpProcess().getActiveNeighbors().values());
     assertThat(
-        nbr.getAddressFamily(Type.IPV4_UNICAST).getExportPolicy(),
-        equalTo(BACKBONE_EXPORT_POLICY_NAME));
-
-    // TODO: test that the policy created is correct
+        nbr,
+        equalTo(
+            BgpActivePeerConfig.builder()
+                .setLocalIp(prefix.getStartIp())
+                .setLocalAs(AWS_INTERNET_GATEWAY_AS)
+                .setRemoteAs(AWS_BACKBONE_AS)
+                .setPeerAddress(prefix.getEndIp())
+                .setIpv4UnicastAddressFamily(
+                    Ipv4UnicastAddressFamily.builder()
+                        .setExportPolicy(BACKBONE_EXPORT_POLICY_NAME)
+                        .build())
+                .build()));
   }
 }
