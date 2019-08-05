@@ -504,7 +504,7 @@ public final class IspModelingUtils {
 
   /**
    * Installs a routing policy named {@code policyName} on {@code node} that advertises all static
-   * routes to {@code prefixSpace}
+   * routes to {@code prefixSpace}. Returns the created policy.
    */
   public static RoutingPolicy installRoutingPolicyAdvertiseStatic(
       String policyName, Configuration node, PrefixSpace prefixSpace, NetworkFactory nf) {
