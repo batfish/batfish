@@ -12,7 +12,10 @@ import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.Ip;
 
-/** Represents an EC2 address */
+/**
+ * Represents an EC2 address
+ * https://docs.aws.amazon.com/cli/latest/reference/ec2/describe-addresses.html
+ */
 @JsonIgnoreProperties(ignoreUnknown = true)
 @ParametersAreNonnullByDefault
 final class Address implements AwsVpcEntity, Serializable {

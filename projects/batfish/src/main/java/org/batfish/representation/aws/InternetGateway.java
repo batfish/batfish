@@ -1,7 +1,9 @@
 package org.batfish.representation.aws;
 
 import static com.google.common.base.Preconditions.checkArgument;
-import static org.batfish.common.util.IspModelingUtils.getRoutingPolicyAdvertiseStatic;
+import static org.batfish.common.util.IspModelingUtils.installRoutingPolicyAdvertiseStatic;
+import static org.batfish.representation.aws.Utils.addStaticRoute;
+import static org.batfish.representation.aws.Utils.toStaticRoute;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
@@ -23,7 +25,6 @@ import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.PrefixSpace;
-import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.bgp.Ipv4UnicastAddressFamily;
 
 /**
@@ -129,16 +130,7 @@ final class InternetGateway implements AwsVpcEntity, Serializable {
               ip -> {
                 Prefix publicPrefix = Prefix.create(ip, Prefix.MAX_PREFIX_LENGTH);
                 publicPrefixSpace.addPrefix(publicPrefix);
-                cfgNode
-                    .getDefaultVrf()
-                    .getStaticRoutes()
-                    .add(
-                        StaticRoute.builder()
-                            .setNetwork(publicPrefix)
-                            .setNextHopIp(vpcIfaceAddress.getIp())
-                            .setAdministrativeCost(Route.DEFAULT_STATIC_ROUTE_ADMIN)
-                            .setMetric(Route.DEFAULT_STATIC_ROUTE_COST)
-                            .build());
+                addStaticRoute(cfgNode, toStaticRoute(publicPrefix, vpcIfaceAddress.getIp()));
               });
     }
 
@@ -168,7 +160,7 @@ final class InternetGateway implements AwsVpcEntity, Serializable {
     cfgNode.setRoutingPolicies(
         ImmutableSortedMap.of(
             BACKBONE_EXPORT_POLICY_NAME,
-            getRoutingPolicyAdvertiseStatic(
+            installRoutingPolicyAdvertiseStatic(
                 BACKBONE_EXPORT_POLICY_NAME, cfgNode, publicPrefixSpace, new NetworkFactory())));
 
     BgpActivePeerConfig.builder()
