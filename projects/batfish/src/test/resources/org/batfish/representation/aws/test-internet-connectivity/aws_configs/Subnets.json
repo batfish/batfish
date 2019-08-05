@@ -1,0 +1,16 @@
+{
+  "Subnets": [
+    {
+      "AssignIpv6AddressOnCreation": false,
+      "AvailabilityZone": "us-west-2a",
+      "AvailableIpAddressCount": 9,
+      "CidrBlock": "192.168.2.16/28",
+      "DefaultForAz": false,
+      "Ipv6CidrBlockAssociationSet": [],
+      "MapPublicIpOnLaunch": false,
+      "State": "available",
+      "SubnetId": "subnet-073b8061",
+      "VpcId": "vpc-b390fad5"
+    }
+  ]
+}
