@@ -90,6 +90,45 @@
             </configuration>
           </execution>
           <execution>
+            <id>antlr4-cumulus-concatenated</id>
+            <goals>
+              <goal>antlr4</goal>
+            </goals>
+            <configuration>
+              <includes>**/CumulusConcatenatedLexer.g4,**/CumulusConcatenatedParser.g4</includes>
+              <libDirectory>${basedir}/src/main/antlr4/org/batfish/grammar/cumulus_concatenated
+              </libDirectory>
+              <statusDirectory>${project.build.directory}/maven-status/cumulus-concatenated
+              </statusDirectory>
+            </configuration>
+          </execution>
+          <execution>
+            <id>antlr4-cumulus-frr</id>
+            <goals>
+              <goal>antlr4</goal>
+            </goals>
+            <configuration>
+              <includes>**/CumulusFrrLexer.g4,**/CumulusFrrParser.g4</includes>
+              <libDirectory>${basedir}/src/main/antlr4/org/batfish/grammar/cumulus_frr
+              </libDirectory>
+              <statusDirectory>${project.build.directory}/maven-status/cumulus-frr
+              </statusDirectory>
+            </configuration>
+          </execution>
+          <execution>
+            <id>antlr4-cumulus-interfaces</id>
+            <goals>
+              <goal>antlr4</goal>
+            </goals>
+            <configuration>
+              <includes>**/CumulusInterfacesLexer.g4,**/CumulusInterfacesParser.g4</includes>
+              <libDirectory>${basedir}/src/main/antlr4/org/batfish/grammar/cumulus_interfaces
+              </libDirectory>
+              <statusDirectory>${project.build.directory}/maven-status/cumulus-interfaces
+              </statusDirectory>
+            </configuration>
+          </execution>
+          <execution>
             <id>antlr4-cumulus-nclu</id>
             <goals>
               <goal>antlr4</goal>
@@ -112,6 +151,19 @@
               <libDirectory>${basedir}/src/main/antlr4/org/batfish/grammar/flatjuniper
               </libDirectory>
               <statusDirectory>${project.build.directory}/maven-status/antlr4-flatjuniper
+              </statusDirectory>
+            </configuration>
+          </execution>
+          <execution>
+            <id>antlr4-cumulus-ports</id>
+            <goals>
+              <goal>antlr4</goal>
+            </goals>
+            <configuration>
+              <includes>**/CumulusPortsLexer.g4,**/CumulusPortsParser.g4</includes>
+              <libDirectory>${basedir}/src/main/antlr4/org/batfish/grammar/cumulus_ports
+              </libDirectory>
+              <statusDirectory>${project.build.directory}/maven-status/cumulus-ports
               </statusDirectory>
             </configuration>
           </execution>
@@ -188,7 +240,7 @@
             <configuration>
               <includes>**/*.g4</includes>
               <excludes>
-                **/cisco/*.g4,**/cisco_nxos/*.g4,**/cumulus_nclu/*.g4,**/flatjuniper/*.g4,**/f5_bigip_imish/*.g4,**/f5_bigip_structured/*.g4,**/flatvyos/*.g4,**/mrv/*.g4,**/palo_alto/*.g4
+                **/cisco/*.g4,**/cisco_nxos/*.g4,**/cumulus_concatenated/*.g4,**/cumulus_frr/*.g4,**/cumulus_interfaces/*.g4,**/cumulus_nclu/*.g4,**/cumulus_ports/*.g4,**/flatjuniper/*.g4,**/f5_bigip_imish/*.g4,**/f5_bigip_structured/*.g4,**/flatvyos/*.g4,**/mrv/*.g4,**/palo_alto/*.g4
               </excludes>
             </configuration>
           </execution>

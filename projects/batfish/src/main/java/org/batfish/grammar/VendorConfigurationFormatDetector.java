@@ -25,6 +25,8 @@ public final class VendorConfigurationFormatDetector {
   private static final Pattern ARUBAOS_PATTERN = Pattern.compile("(?m)^netservice.*$");
   private static final Pattern BLADE_NETWORK_PATTERN = Pattern.compile("(?m)^switch-type");
   private static final Pattern CADANT_NETWORK_PATTERN = Pattern.compile("(?m)^shelfname");
+  private static final Pattern CUMULUS_CONCATENATED_PATTERN =
+      Pattern.compile("(?m)^# This file describes the network interfaces");
   private static final Pattern CUMULUS_NCLU_PATTERN = Pattern.compile("(?m)^net del all$");
   private static final Pattern F5_HOSTNAME_PATTERN = Pattern.compile("(?m)^tmsh .*$");
   private static final Pattern F5_BIGIP_STRUCTURED_HEADER_PATTERN =
@@ -171,6 +173,14 @@ public final class VendorConfigurationFormatDetector {
   private ConfigurationFormat checkCiscoXr() {
     if (_fileText.contains("IOS XR")) {
       return ConfigurationFormat.CISCO_IOS_XR;
+    }
+    return null;
+  }
+
+  @Nullable
+  private ConfigurationFormat checkCumulusConcatenated() {
+    if (fileTextMatches(CUMULUS_CONCATENATED_PATTERN)) {
+      return ConfigurationFormat.CUMULUS_CONCATENATED;
     }
     return null;
   }
@@ -362,6 +372,10 @@ public final class VendorConfigurationFormatDetector {
     configureHeuristicBlacklist();
 
     format = checkCadant();
+    if (format != null) {
+      return format;
+    }
+    format = checkCumulusConcatenated();
     if (format != null) {
       return format;
     }

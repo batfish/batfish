@@ -521,7 +521,7 @@ public class IspModelingUtilsTest {
             .setHostname("fakeInternet")
             .build();
     RoutingPolicy internetRoutingPolicy =
-        IspModelingUtils.getRoutingPolicyAdvertiseStatic(
+        IspModelingUtils.installRoutingPolicyAdvertiseStatic(
             IspModelingUtils.EXPORT_POLICY_ON_INTERNET,
             internet,
             new PrefixSpace(PrefixRange.fromPrefix(Prefix.ZERO)),

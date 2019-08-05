@@ -120,7 +120,7 @@ final class Utils {
 
   @Nonnull
   static StaticRoute toStaticRoute(Ip targetIp, Ip nextHopIp) {
-    return toStaticRoute(Prefix.create(targetIp, 32), nextHopIp);
+    return toStaticRoute(Prefix.create(targetIp, Prefix.MAX_PREFIX_LENGTH), nextHopIp);
   }
 
   @Nonnull
@@ -136,7 +136,7 @@ final class Utils {
   @Nonnull
   static StaticRoute toStaticRoute(Ip targetIp, Interface nextHopInterface) {
     return StaticRoute.builder()
-        .setNetwork(Prefix.create(targetIp, 32))
+        .setNetwork(Prefix.create(targetIp, Prefix.MAX_PREFIX_LENGTH))
         .setNextHopInterface(nextHopInterface.getName())
         .setAdministrativeCost(Route.DEFAULT_STATIC_ROUTE_ADMIN)
         .setMetric(Route.DEFAULT_STATIC_ROUTE_COST)
