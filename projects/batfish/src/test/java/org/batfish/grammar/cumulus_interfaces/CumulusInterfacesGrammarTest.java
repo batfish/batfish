@@ -1,5 +1,6 @@
 package org.batfish.grammar.cumulus_interfaces;
 
+import static org.batfish.datamodel.matchers.MapMatchers.hasKeys;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
 
@@ -40,6 +41,6 @@ public class CumulusInterfacesGrammarTest {
   public void testIface() {
     String input = "iface swp1\n";
     Interfaces interfaces = parse(input, new CumulusNcluConfiguration());
-    assertThat(interfaces.getInterfaces().keySet(), contains("swp1"));
+    assertThat(interfaces.getInterfaces(), hasKeys("swp1"));
   }
 }

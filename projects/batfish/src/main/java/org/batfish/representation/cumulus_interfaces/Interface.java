@@ -3,7 +3,7 @@ package org.batfish.representation.cumulus_interfaces;
 import javax.annotation.Nonnull;
 
 /** Model of an iface block in a cumulus /etc/network/interfaces file. */
-public class Interface {
+public final class Interface {
   private final @Nonnull String _name;
 
   public Interface(@Nonnull String name) {

@@ -11,15 +11,14 @@ import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.S_autoCont
 import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.S_ifaceContext;
 import org.batfish.representation.cumulus.CumulusNcluConfiguration;
 import org.batfish.representation.cumulus.CumulusStructureType;
-import org.batfish.representation.cumulus.CumulusStructureUsage;
 import org.batfish.representation.cumulus_interfaces.Interfaces;
 
 /**
- * Populates a {@link Interfaces} from the data in a {@link
- * org.batfish.grammar.cumulus_interfaces.CumulusInterfacesCombinedParser cumulus interfaces file
- * parse tree}.
+ * Populates an {@link Interfaces} from a parse tree from {@link
+ * org.batfish.grammar.cumulus_interfaces.CumulusInterfacesCombinedParser}.
  */
-public class CumulusInterfacesConfigurationBuilder extends CumulusInterfacesParserBaseListener {
+public final class CumulusInterfacesConfigurationBuilder
+    extends CumulusInterfacesParserBaseListener {
   private final CumulusNcluConfiguration _config;
   private final Interfaces _interfaces = new Interfaces();
   private final Warnings _w;
@@ -62,11 +61,6 @@ public class CumulusInterfacesConfigurationBuilder extends CumulusInterfacesPars
   public void enterS_auto(S_autoContext ctx) {
     String name = ctx.interface_name().getText();
     _interfaces.setAuto(name);
-    _config.referenceStructure(
-        CumulusStructureType.INTERFACE,
-        name,
-        CumulusStructureUsage.AUTO_INTERFACE,
-        ctx.getStart().getLine());
   }
 
   @Override

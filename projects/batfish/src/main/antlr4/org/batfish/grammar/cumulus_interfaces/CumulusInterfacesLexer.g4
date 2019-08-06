@@ -7,6 +7,8 @@ tokens {
   WORD
 }
 
+// Keyword tokens
+
 AUTO
 :
   'auto' -> pushMode (M_Word)
@@ -16,6 +18,8 @@ IFACE
 :
   'iface' -> pushMode(M_Word)
 ;
+
+// Complex tokens
 
 COMMENT_LINE
 :
