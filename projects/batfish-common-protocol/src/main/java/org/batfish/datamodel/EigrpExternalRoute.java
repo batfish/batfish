@@ -6,6 +6,7 @@ import static java.util.Objects.requireNonNull;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.base.MoreObjects;
 import java.util.Objects;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -149,5 +150,14 @@ public class EigrpExternalRoute extends EigrpRoute {
         _destinationAsn,
         _metric,
         _processAsn);
+  }
+
+  @Override
+  public String toString() {
+    return MoreObjects.toStringHelper(this)
+        .add(PROP_NETWORK, _network)
+        .add(PROP_NEXT_HOP_IP, _nextHopIp)
+        .add(PROP_PROCESS_ASN, _processAsn)
+        .toString();
   }
 }
