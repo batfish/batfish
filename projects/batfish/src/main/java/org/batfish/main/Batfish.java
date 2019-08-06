@@ -2094,6 +2094,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
   }
 
   @Override
+  @SuppressWarnings("MustBeClosedChecker")
   public String getSnapshotInputObject(String key) throws FileNotFoundException, IOException {
     InputStream inputObject =
         _storage.loadSnapshotInputObject(_settings.getContainer(), _testrigSettings.getName(), key);
