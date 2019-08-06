@@ -34,6 +34,11 @@ VRF
   'vrf' -> pushMode(M_Word)
 ;
 
+VRF_TABLE
+:
+  'vrf-table' -> pushMode(M_Word)
+;
+
 // Complex tokens
 COMMENT_LINE
 :

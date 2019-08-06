@@ -31,6 +31,7 @@ s_iface
     i_address
   | i_bond_slaves
   | i_vrf
+  | i_vrf_table
   )*
 ;
 
@@ -47,4 +48,9 @@ i_bond_slaves
 i_vrf
 :
   VRF vrf_name NEWLINE
+;
+
+i_vrf_table
+:
+  VRF_TABLE vrf_table_name NEWLINE
 ;

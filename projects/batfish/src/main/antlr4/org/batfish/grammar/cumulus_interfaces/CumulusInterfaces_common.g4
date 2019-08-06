@@ -14,3 +14,7 @@ vrf_name
   WORD
 ;
 
+vrf_table_name
+:
+  WORD
+;

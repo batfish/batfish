@@ -4,6 +4,7 @@ import static org.batfish.datamodel.matchers.MapMatchers.hasKeys;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.equalTo;
+import static org.junit.Assert.assertTrue;
 
 import org.batfish.common.Warnings;
 import org.batfish.config.Settings;
@@ -69,5 +70,13 @@ public class CumulusInterfacesGrammarTest {
     Interfaces interfaces = parse(input, new CumulusNcluConfiguration());
     Interface iface = interfaces.getInterfaces().get("i1");
     assertThat(iface.getVrf(), equalTo("v1"));
+  }
+
+  @Test
+  public void testIfaceVrfTable() {
+    String input = "iface vrf1\n vrf-table auto\n";
+    Interfaces interfaces = parse(input, new CumulusNcluConfiguration());
+    Interface iface = interfaces.getInterfaces().get("vrf1");
+    assertTrue(iface.getIsVrf());
   }
 }

@@ -13,6 +13,7 @@ public final class Interface {
   private final @Nonnull String _name;
   private @Nullable String _vrf;
   private @Nullable List<String> _bondSlaves;
+  private boolean _isVrf = false;
 
   public Interface(@Nonnull String name) {
     _name = name;
@@ -31,6 +32,10 @@ public final class Interface {
     return _bondSlaves;
   }
 
+  public boolean getIsVrf() {
+    return _isVrf;
+  }
+
   @Nonnull
   public String getName() {
     return _name;
@@ -43,6 +48,10 @@ public final class Interface {
 
   public void setBondSlaves(List<String> bondSlaves) {
     _bondSlaves = ImmutableList.copyOf(bondSlaves);
+  }
+
+  public void setIsVrf() {
+    _isVrf = true;
   }
 
   public void setVrf(String vrf) {

@@ -14,6 +14,7 @@ import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.Cumulus_in
 import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.I_addressContext;
 import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.I_bond_slavesContext;
 import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.I_vrfContext;
+import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.I_vrf_tableContext;
 import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.Interface_nameContext;
 import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.S_autoContext;
 import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.S_ifaceContext;
@@ -67,6 +68,16 @@ public final class CumulusInterfacesConfigurationBuilder
   @Override
   public void enterI_address(I_addressContext ctx) {
     _currentIface.addAddress(ConcreteInterfaceAddress.parse(ctx.IP_PREFIX().getText()));
+  }
+
+  @Override
+  public void enterI_vrf_table(I_vrf_tableContext ctx) {
+    String tblName = ctx.vrf_table_name().getText();
+    if (tblName.equals("auto")) {
+      _currentIface.setIsVrf();
+    } else {
+      _w.unimplemented("Only `vrf-table auto` is supported");
+    }
   }
 
   @Override
