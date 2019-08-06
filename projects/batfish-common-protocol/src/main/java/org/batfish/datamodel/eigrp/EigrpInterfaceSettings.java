@@ -1,13 +1,17 @@
 package org.batfish.datamodel.eigrp;
 
+import static com.google.common.base.Preconditions.checkArgument;
+
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.io.Serializable;
 import java.util.Objects;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import javax.annotation.ParametersAreNonnullByDefault;
 
 /** Settings for a {@link org.batfish.datamodel.Interface} with an {@link EigrpProcess}. */
+@ParametersAreNonnullByDefault
 public class EigrpInterfaceSettings implements Serializable {
   private static final String PROP_ASN = "asn";
   private static final String PROP_ENABLED = "enabled";
@@ -18,7 +22,7 @@ public class EigrpInterfaceSettings implements Serializable {
   private final long _asn;
   private final boolean _enabled;
   @Nullable private final String _exportPolicy;
-  private @Nonnull final EigrpMetric _metric;
+  @Nonnull private final EigrpMetric _metric;
   private final boolean _passive;
 
   private EigrpInterfaceSettings(
@@ -36,11 +40,13 @@ public class EigrpInterfaceSettings implements Serializable {
 
   @JsonCreator
   private static EigrpInterfaceSettings create(
-      @JsonProperty(PROP_ASN) Long asn,
+      @Nullable @JsonProperty(PROP_ASN) Long asn,
       @JsonProperty(PROP_ENABLED) boolean enabled,
       @Nullable @JsonProperty(PROP_EXPORT_POLICY) String exportPolicy,
-      @JsonProperty(PROP_METRIC) EigrpMetric metric,
+      @Nullable @JsonProperty(PROP_METRIC) EigrpMetric metric,
       @JsonProperty(PROP_PASSIVE) boolean passive) {
+    checkArgument(asn != null, "Missing %s", PROP_ASN);
+    checkArgument(metric != null, "Missing %s", PROP_METRIC);
     return new EigrpInterfaceSettings(asn, enabled, exportPolicy, metric, passive);
   }
 
@@ -60,7 +66,7 @@ public class EigrpInterfaceSettings implements Serializable {
     return Objects.equals(_asn, rhs._asn)
         && (_enabled == rhs._enabled)
         && Objects.equals(_exportPolicy, rhs._exportPolicy)
-        && Objects.equals(_metric, rhs._metric)
+        && _metric.equals(rhs._metric)
         && _passive == rhs._passive;
   }
 
@@ -103,22 +109,17 @@ public class EigrpInterfaceSettings implements Serializable {
   public static class Builder {
 
     @Nullable private Long _asn;
-
     private boolean _enabled;
-
     @Nullable private String _exportPolicy;
-
     @Nullable private EigrpMetric _metric;
-
     private boolean _passive;
 
     private Builder() {}
 
-    @Nullable
+    @Nonnull
     public EigrpInterfaceSettings build() {
-      if (_asn == null || _metric == null) {
-        return null;
-      }
+      checkArgument(_asn != null, "Missing %s", PROP_ASN);
+      checkArgument(_metric != null, "Missing %s", PROP_METRIC);
       return new EigrpInterfaceSettings(_asn, _enabled, _exportPolicy, _metric, _passive);
     }
 
@@ -137,7 +138,7 @@ public class EigrpInterfaceSettings implements Serializable {
       return this;
     }
 
-    public Builder setMetric(@Nullable EigrpMetric metric) {
+    public Builder setMetric(@Nonnull EigrpMetric metric) {
       _metric = metric;
       return this;
     }
