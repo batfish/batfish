@@ -1,6 +1,7 @@
 package org.batfish.dataplane.rib;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.Ordering;
@@ -324,5 +325,10 @@ public final class RibDelta<R> {
   @Override
   public int hashCode() {
     return Objects.hash(_actions);
+  }
+
+  @Override
+  public String toString() {
+    return MoreObjects.toStringHelper(this).add("actions", _actions).toString();
   }
 }

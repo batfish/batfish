@@ -4,6 +4,7 @@ import static com.google.common.base.Preconditions.checkArgument;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.base.MoreObjects;
 import java.util.Objects;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -127,5 +128,14 @@ public class EigrpInternalRoute extends EigrpRoute {
         _metric,
         getNonForwarding(),
         getNonRouting());
+  }
+
+  @Override
+  public String toString() {
+    return MoreObjects.toStringHelper(this)
+        .add(PROP_NETWORK, _network)
+        .add(PROP_NEXT_HOP_IP, _nextHopIp)
+        .add(PROP_PROCESS_ASN, _processAsn)
+        .toString();
   }
 }
