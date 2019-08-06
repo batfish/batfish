@@ -41,6 +41,14 @@ public class CumulusInterfacesGrammarTest {
   }
 
   @Test
+  public void testBondSlaves() {
+    String input = "iface i1\n bond-slaves i2 i3 i4\n";
+    Interfaces interfaces = parse(input, new CumulusNcluConfiguration());
+    Interface iface = interfaces.getInterfaces().get("i1");
+    assertThat(iface.getBondSlaves(), contains("i2", "i3", "i4"));
+  }
+
+  @Test
   public void testIface() {
     String input = "iface swp1\n";
     Interfaces interfaces = parse(input, new CumulusNcluConfiguration());

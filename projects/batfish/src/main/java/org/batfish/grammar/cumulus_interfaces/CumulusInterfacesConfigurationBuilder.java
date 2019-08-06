@@ -1,6 +1,9 @@
 package org.batfish.grammar.cumulus_interfaces;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.ImmutableList;
+import java.util.List;
+import org.antlr.v4.runtime.RuleContext;
 import org.antlr.v4.runtime.Token;
 import org.antlr.v4.runtime.tree.ErrorNode;
 import org.batfish.common.Warnings;
@@ -9,7 +12,9 @@ import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.grammar.UnrecognizedLineToken;
 import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.Cumulus_interfaces_configurationContext;
 import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.I_addressContext;
+import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.I_bond_slavesContext;
 import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.I_vrfContext;
+import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.Interface_nameContext;
 import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.S_autoContext;
 import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.S_ifaceContext;
 import org.batfish.representation.cumulus.CumulusNcluConfiguration;
@@ -62,6 +67,16 @@ public final class CumulusInterfacesConfigurationBuilder
   @Override
   public void enterI_address(I_addressContext ctx) {
     _currentIface.addAddress(ConcreteInterfaceAddress.parse(ctx.IP_PREFIX().getText()));
+  }
+
+  @Override
+  public void enterI_bond_slaves(I_bond_slavesContext ctx) {
+    List<Interface_nameContext> interfaceNameCtxs = ctx.interface_name();
+    interfaceNameCtxs.forEach(ifaceNameCtx -> _config.referenceStructure(CumulusStructureType.INTERFACE,ifaceNameCtx.getText(),CumulusStructureUsage.BOND_SLAVE,ifaceNameCtx.getStart().getLine()));
+    _currentIface.setBondSlaves(
+        interfaceNameCtxs.stream()
+            .map(RuleContext::getText)
+            .collect(ImmutableList.toImmutableList()));
   }
 
   @Override

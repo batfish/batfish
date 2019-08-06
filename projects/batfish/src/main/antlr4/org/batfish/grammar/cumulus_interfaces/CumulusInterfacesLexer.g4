@@ -19,6 +19,11 @@ AUTO
   'auto' -> pushMode (M_Word)
 ;
 
+BOND_SLAVES
+:
+  'bond-slaves' -> pushMode(M_Words)
+;
+
 IFACE
 :
   'iface' -> pushMode(M_Word)

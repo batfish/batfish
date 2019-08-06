@@ -29,6 +29,7 @@ s_iface
   IFACE interface_name NEWLINE
   (
     i_address
+  | i_bond_slaves
   | i_vrf
   )*
 ;
@@ -36,6 +37,11 @@ s_iface
 i_address
 :
   ADDRESS IP_PREFIX NEWLINE
+;
+
+i_bond_slaves
+:
+  BOND_SLAVES interface_name+ NEWLINE
 ;
 
 i_vrf
