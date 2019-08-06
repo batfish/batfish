@@ -9,4 +9,9 @@ public class Interface {
   public Interface(@Nonnull String name) {
     _name = name;
   }
+
+  @Nonnull
+  public String getName() {
+    return _name;
+  }
 }
