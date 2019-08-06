@@ -1699,8 +1699,9 @@ public class CiscoGrammarTest {
     long asn = 1L;
 
     assertThat(c, hasDefaultVrf(hasEigrpProcesses(hasKey(asn))));
-    String exportPolicyName =
-        c.getVrfs().get(DEFAULT_VRF_NAME).getEigrpProcesses().get(asn).getExportPolicy();
+    org.batfish.datamodel.eigrp.EigrpProcess eigrpProcess =
+        c.getVrfs().get(DEFAULT_VRF_NAME).getEigrpProcesses().get(asn);
+    String exportPolicyName = eigrpProcess.getExportPolicy();
     assertThat(exportPolicyName, notNullValue());
     RoutingPolicy routingPolicy = c.getRoutingPolicies().get(exportPolicyName);
     assertThat(routingPolicy, notNullValue());
@@ -1717,12 +1718,12 @@ public class CiscoGrammarTest {
         routingPolicy.process(
             new ConnectedRoute(Prefix.parse("1.1.1.1/32"), "Loopback0"),
             outputRouteBuilder,
-            null,
             DEFAULT_VRF_NAME,
+            eigrpProcess,
             Direction.OUT));
     assertThat(
         outputRouteBuilder.build(),
-        hasEigrpMetric(requireNonNull(metricBuilder.setBandwidth(1E5).setDelay(1E8).build())));
+        hasEigrpMetric(requireNonNull(metricBuilder.setBandwidth(100).setDelay(100_000_000).build())));
 
     // Check if routingPolicy rejects RIP route
     assertFalse(
@@ -1730,8 +1731,8 @@ public class CiscoGrammarTest {
             new RipInternalRoute(
                 Prefix.parse("2.2.2.2/32"), Ip.parse("3.3.3.3"), 1, 1, Route.UNSET_ROUTE_TAG),
             outputRouteBuilder,
-            null,
             DEFAULT_VRF_NAME,
+            eigrpProcess,
             Direction.OUT));
 
     // Check if routingPolicy accepts OSPF route and sets correct default metric
@@ -1744,12 +1745,12 @@ public class CiscoGrammarTest {
                 .setArea(1L)
                 .build(),
             outputRouteBuilder,
-            null,
             DEFAULT_VRF_NAME,
+            eigrpProcess,
             Direction.OUT));
     assertThat(
         outputRouteBuilder.build(),
-        hasEigrpMetric(requireNonNull(metricBuilder.setBandwidth(2E5).setDelay(2E8).build())));
+        hasEigrpMetric(requireNonNull(metricBuilder.setBandwidth(200).setDelay(200_000_000L).build())));
   }
 
   @Test
@@ -1845,29 +1846,33 @@ public class CiscoGrammarTest {
   public void testIosInterfaceDelay() throws IOException {
     Configuration c = parseConfig("ios-interface-delay");
 
+    // All delays in picoseconds. For table of values based on bandwidths see
+    // https://tools.ietf.org/html/rfc7868#section-5.6.1.2
     assertThat(
         c,
         hasInterface(
             "GigabitEthernet0/0",
-            hasEigrp(EigrpInterfaceSettingsMatchers.hasEigrpMetric(hasDelay(1L)))));
+            hasEigrp(EigrpInterfaceSettingsMatchers.hasEigrpMetric(hasDelay(10_000_000L)))));
     assertThat(
         c,
         hasInterface(
             "GigabitEthernet0/1",
-            hasEigrp(EigrpInterfaceSettingsMatchers.hasEigrpMetric(hasDelay(1000L)))));
+            hasEigrp(EigrpInterfaceSettingsMatchers.hasEigrpMetric(hasDelay(10_000_000_000L)))));
     assertThat(
         c,
         hasInterface(
             "FastEthernet0/1",
-            hasEigrp(EigrpInterfaceSettingsMatchers.hasEigrpMetric(hasDelay(10L)))));
+            hasEigrp(EigrpInterfaceSettingsMatchers.hasEigrpMetric(hasDelay(100_000_000L)))));
     assertThat(
         c,
         hasInterface(
-            "Loopback0", hasEigrp(EigrpInterfaceSettingsMatchers.hasEigrpMetric(hasDelay(500L)))));
+            "Loopback0",
+            hasEigrp(EigrpInterfaceSettingsMatchers.hasEigrpMetric(hasDelay(5_000_000_000L)))));
     assertThat(
         c,
         hasInterface(
-            "Tunnel0", hasEigrp(EigrpInterfaceSettingsMatchers.hasEigrpMetric(hasDelay(5000L)))));
+            "Tunnel0",
+            hasEigrp(EigrpInterfaceSettingsMatchers.hasEigrpMetric(hasDelay(50_000_000_000L)))));
   }
 
   @Test
