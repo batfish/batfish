@@ -24,6 +24,7 @@ import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.Route6FilterList;
 import org.batfish.datamodel.RouteFilterList;
+import org.batfish.datamodel.eigrp.EigrpProcess;
 
 public class Environment {
   /**
@@ -78,6 +79,8 @@ public class Environment {
 
   private final Direction _direction;
 
+  @Nullable private final EigrpProcess _eigrpProcess;
+
   private boolean _error;
 
   private BgpRoute.Builder<?, ?> _intermediateBgpAttributes;
@@ -124,6 +127,7 @@ public class Environment {
       boolean defaultAction,
       String defaultPolicy,
       Direction direction,
+      @Nullable EigrpProcess eigrpProcess,
       boolean error,
       BgpRoute.Builder<?, ?> intermediateBgpAttributes,
       Map<String, IpAccessList> ipAccessLists,
@@ -149,6 +153,7 @@ public class Environment {
     _defaultAction = defaultAction;
     _defaultPolicy = defaultPolicy;
     _direction = direction;
+    _eigrpProcess = eigrpProcess;
     _error = error;
     _intermediateBgpAttributes = intermediateBgpAttributes;
     _ipAccessLists = ipAccessLists;
@@ -205,6 +210,11 @@ public class Environment {
 
   public Direction getDirection() {
     return _direction;
+  }
+
+  @Nullable
+  public EigrpProcess getEigrpProcess() {
+    return _eigrpProcess;
   }
 
   public boolean getError() {
@@ -328,6 +338,7 @@ public class Environment {
     private boolean _defaultAction;
     private String _defaultPolicy;
     private Direction _direction;
+    @Nullable private EigrpProcess _eigrpProcess;
     private boolean _error;
     private BgpRoute.Builder<?, ?> _intermediateBgpAttributes;
     private Map<String, Ip6AccessList> _ip6AccessLists;
@@ -389,6 +400,11 @@ public class Environment {
 
     public Builder setDirection(Direction direction) {
       _direction = direction;
+      return this;
+    }
+
+    public Builder setEigrpProcess(@Nullable EigrpProcess eigrpProcess) {
+      _eigrpProcess = eigrpProcess;
       return this;
     }
 
@@ -468,6 +484,7 @@ public class Environment {
           _defaultAction,
           _defaultPolicy,
           _direction,
+          _eigrpProcess,
           _error,
           _intermediateBgpAttributes,
           firstNonNull(_ipAccessLists, ImmutableMap.of()),
