@@ -26,6 +26,7 @@ import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.NetworkFactory.NetworkFactoryBuilder;
 import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.eigrp.EigrpProcess;
 import org.batfish.datamodel.routing_policy.Environment.Direction;
 import org.batfish.datamodel.routing_policy.statement.Statement;
 
@@ -208,6 +209,26 @@ public class RoutingPolicy implements Serializable {
       @Nullable Prefix peerPrefix,
       String vrf,
       Direction direction) {
+    return process(inputRoute, outputRoute, peerAddress, peerPrefix, null, vrf, direction);
+  }
+
+  public boolean process(
+      @Nonnull AbstractRouteDecorator inputRoute,
+      @Nonnull AbstractRouteBuilder<?, ?> outputRoute,
+      @Nonnull String vrf,
+      @Nonnull EigrpProcess eigrpProcess,
+      Direction direction) {
+    return process(inputRoute, outputRoute, null, null, eigrpProcess, vrf, direction);
+  }
+
+  private boolean process(
+      AbstractRouteDecorator inputRoute,
+      AbstractRouteBuilder<?, ?> outputRoute,
+      @Nullable Ip peerAddress,
+      @Nullable Prefix peerPrefix,
+      @Nullable EigrpProcess eigrpProcess,
+      String vrf,
+      Direction direction) {
     checkState(_owner != null, "Cannot evaluate routing policy without a Configuration");
     Environment environment =
         Environment.builder(_owner, vrf)
@@ -216,6 +237,7 @@ public class RoutingPolicy implements Serializable {
             .setPeerAddress(peerAddress)
             .setDirection(direction)
             .setPeerPrefix(peerPrefix)
+            .setEigrpProcess(eigrpProcess)
             .build();
     Result result = call(environment);
     return result.getBooleanValue() && !(Boolean.TRUE.equals(environment.getSuppressed()));
