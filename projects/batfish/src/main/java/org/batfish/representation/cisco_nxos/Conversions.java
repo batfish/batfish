@@ -404,7 +404,7 @@ final class Conversions {
   /** Set address family capabilities for IPv4 and L2VPN address families */
   private static <B extends AddressFamily.Builder<?, ?>> void setAddressFamilyCapabilities(
       B addressFamilyBuilder,
-      @Nonnull BgpVrfNeighborAddressFamilyConfiguration naf,
+      BgpVrfNeighborAddressFamilyConfiguration naf,
       @Nullable BgpVrfIpv4AddressFamilyConfiguration af4) {
     addressFamilyBuilder.setAddressFamilyCapabilities(
         AddressFamilyCapabilities.builder()
