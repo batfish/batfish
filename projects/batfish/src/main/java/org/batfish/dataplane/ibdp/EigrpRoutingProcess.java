@@ -1,5 +1,6 @@
 package org.batfish.dataplane.ibdp;
 
+import static com.google.common.base.Preconditions.checkState;
 import static java.util.Objects.requireNonNull;
 import static org.batfish.common.util.CollectionUtil.toImmutableSortedMap;
 import static org.batfish.common.util.CollectionUtil.toOrderedHashCode;
@@ -51,7 +52,6 @@ import org.batfish.dataplane.rib.EigrpRib;
 import org.batfish.dataplane.rib.RibDelta;
 import org.batfish.dataplane.rib.RibDelta.Builder;
 import org.batfish.dataplane.rib.RouteAdvertisement;
-import org.batfish.dataplane.rib.RouteAdvertisement.Reason;
 
 /** An instance of an EigrpProcess as constructed and used by {@link VirtualRouter} */
 @ParametersAreNonnullByDefault
@@ -220,11 +220,9 @@ final class EigrpRoutingProcess implements RoutingProcess<EigrpTopology, EigrpRo
                 return; // no need to export
               }
               if (!ra.isWithdrawn()) {
-                builder.add(outputRoute);
-                _externalRib.mergeRouteGetDelta(outputRoute);
+                builder.from(_externalRib.mergeRouteGetDelta(outputRoute));
               } else {
-                builder.remove(outputRoute, Reason.WITHDRAW);
-                _externalRib.removeRouteGetDelta(outputRoute);
+                builder.from(_externalRib.removeRouteGetDelta(outputRoute));
               }
             });
     return builder.build();
@@ -300,9 +298,7 @@ final class EigrpRoutingProcess implements RoutingProcess<EigrpTopology, EigrpRo
     while (!queue.isEmpty()) {
       RouteAdvertisement<EigrpInternalRoute> ra = queue.remove();
       EigrpInternalRoute route = ra.getRoute();
-      EigrpMetric newMetric =
-          connectingInterfaceMetric.accumulate(
-              neighborInterface.getEigrp().getMetric(), route.getEigrpMetric());
+      EigrpMetric newMetric = connectingInterfaceMetric.add(route.getEigrpMetric());
       EigrpInternalRoute transformedRoute =
           EigrpInternalRoute.builder()
               .setAdmin(_defaultInternalAdminCost)
@@ -311,10 +307,10 @@ final class EigrpRoutingProcess implements RoutingProcess<EigrpTopology, EigrpRo
               .setNextHopIp(nextHopIp)
               .setProcessAsn(_asn)
               .build();
-      if (ra.isWithdrawn()) {
-        builder.from(_internalRib.removeRouteGetDelta(transformedRoute));
-      } else {
+      if (!ra.isWithdrawn()) {
         builder.from(_internalRib.mergeRouteGetDelta(transformedRoute));
+      } else {
+        builder.from(_internalRib.removeRouteGetDelta(transformedRoute));
       }
     }
   }
@@ -344,11 +340,8 @@ final class EigrpRoutingProcess implements RoutingProcess<EigrpTopology, EigrpRo
     Interface connectingIntf = edge.getNode2().getInterface(nc);
 
     // Edge nodes must have EIGRP configuration
-    if (nextHopIntf.getEigrp() == null || connectingIntf.getEigrp() == null) {
-      return;
-    }
+    checkState(connectingIntf.getEigrp() != null);
 
-    EigrpMetric nextHopIntfMetric = nextHopIntf.getEigrp().getMetric();
     EigrpMetric connectingIntfMetric = connectingIntf.getEigrp().getMetric();
 
     routeBuilder.setNextHopIp(nextHopIntf.getConcreteAddress().getIp());
@@ -356,17 +349,17 @@ final class EigrpRoutingProcess implements RoutingProcess<EigrpTopology, EigrpRo
       RouteAdvertisement<EigrpExternalRoute> routeAdvert = queue.remove();
       EigrpExternalRoute neighborRoute = routeAdvert.getRoute();
       EigrpMetric metric =
-          connectingIntfMetric.accumulate(nextHopIntfMetric, neighborRoute.getEigrpMetric());
+          connectingIntfMetric.add(connectingIntfMetric).add(neighborRoute.getEigrpMetric());
       routeBuilder
           .setDestinationAsn(neighborRoute.getDestinationAsn())
           .setEigrpMetric(metric)
           .setNetwork(neighborRoute.getNetwork());
       EigrpExternalRoute transformedRoute = routeBuilder.build();
 
-      if (routeAdvert.isWithdrawn()) {
-        deltaBuilder.from(_externalRib.removeRouteGetDelta(transformedRoute));
-      } else {
+      if (!routeAdvert.isWithdrawn()) {
         deltaBuilder.from(_externalRib.mergeRouteGetDelta(transformedRoute));
+      } else {
+        deltaBuilder.from(_externalRib.removeRouteGetDelta(transformedRoute));
       }
     }
   }
