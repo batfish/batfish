@@ -5,6 +5,7 @@ import static org.batfish.datamodel.ConfigurationFormat.CADANT;
 import static org.batfish.datamodel.ConfigurationFormat.CISCO_IOS;
 import static org.batfish.datamodel.ConfigurationFormat.CISCO_IOS_XR;
 import static org.batfish.datamodel.ConfigurationFormat.CISCO_NX;
+import static org.batfish.datamodel.ConfigurationFormat.CUMULUS_CONCATENATED;
 import static org.batfish.datamodel.ConfigurationFormat.F5_BIGIP_STRUCTURED;
 import static org.batfish.datamodel.ConfigurationFormat.FLAT_JUNIPER;
 import static org.batfish.datamodel.ConfigurationFormat.JUNIPER;
@@ -32,6 +33,16 @@ public class VendorConfigurationFormatDetectorTest {
     for (String fileText : ImmutableList.of(eosFlash, aristaRancid)) {
       assertThat(identifyConfigurationFormat(fileText), equalTo(ARISTA));
     }
+  }
+
+  @Test
+  public void testCumulusConcatenated() {
+    String fileText =
+        "hostname\n"
+            + "# ports.conf --\n" //
+            + "# This file describes the network interfaces\n" //
+            + "frr version 4.0+cl3u8";
+    assertThat(identifyConfigurationFormat(fileText), equalTo(CUMULUS_CONCATENATED));
   }
 
   @Test

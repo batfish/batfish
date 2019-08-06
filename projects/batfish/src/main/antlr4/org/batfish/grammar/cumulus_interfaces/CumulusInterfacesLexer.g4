@@ -1,16 +1,14 @@
-lexer grammar CumulusFrrLexer;
+lexer grammar CumulusInterfacesLexer;
 
 options {
-
-  superClass = 'org.batfish.grammar.cumulus_frr.parsing.CumulusFrrBaseLexer';
+  superClass = 'org.batfish.grammar.cumulus_interfaces.parsing.CumulusInterfacesBaseLexer';
 }
 
-// Keywords
 COMMENT_LINE
 :
   (
     F_Whitespace
-  )* [!]
+  )* [#]
   {lastTokenType() == NEWLINE || lastTokenType() == -1}?
 
   F_NonNewline*
@@ -20,31 +18,18 @@ COMMENT_LINE
   ) -> channel ( HIDDEN )
 ;
 
-EXIT_VRF
-:
-  'exit-vrf'
-;
-
-FRR_VERSION_LINE
-:
-  'frr version' F_NonNewline*
-;
 
 NEWLINE
 :
   F_Newline+
 ;
 
-VRF
-:
-  'vrf'
-;
-
 // Fragments
+
 fragment
 F_Newline
 :
-  [\r\n] // carriage return or line feed
+  [\n\r]
 ;
 
 fragment
@@ -61,3 +46,4 @@ F_Whitespace
   | '\u000C'
   | '\u00A0'
 ;
+

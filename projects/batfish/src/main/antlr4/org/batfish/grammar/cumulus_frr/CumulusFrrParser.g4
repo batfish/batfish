@@ -9,7 +9,6 @@ options {
 }
 
 // goal rule
-
 cumulus_frr_configuration
 :
   NEWLINE* statement+ NEWLINE* EOF
@@ -19,5 +18,6 @@ cumulus_frr_configuration
 
 statement
 :
-  s_vrf
+  FRR_VERSION_LINE NEWLINE
+  | s_vrf
 ;

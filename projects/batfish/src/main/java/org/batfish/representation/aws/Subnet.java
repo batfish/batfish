@@ -1,6 +1,8 @@
 package org.batfish.representation.aws;
 
 import static com.google.common.base.Preconditions.checkArgument;
+import static org.batfish.representation.aws.Utils.addStaticRoute;
+import static org.batfish.representation.aws.Utils.toStaticRoute;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
@@ -23,9 +25,11 @@ import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.Prefix;
-import org.batfish.datamodel.StaticRoute;
 
-/** Representation of an AWS subnet */
+/**
+ * Representation of an AWS subnet
+ * https://docs.aws.amazon.com/cli/latest/reference/ec2/describe-subnets.html
+ */
 @JsonIgnoreProperties(ignoreUnknown = true)
 @ParametersAreNonnullByDefault
 public class Subnet implements AwsVpcEntity, Serializable {
@@ -185,6 +189,12 @@ public class Subnet implements AwsVpcEntity, Serializable {
     return _vpnGatewayId;
   }
 
+  /**
+   * Returns the {@link Configuration} node for this subnet.
+   *
+   * <p>We also do the work needed to connect to the VPC router here: Add an interface on the VPC
+   * router and create the necessary static routes.
+   */
   Configuration toConfigurationNode(
       AwsConfiguration awsConfiguration, Region region, Warnings warnings) {
     Configuration cfgNode = Utils.newAwsConfiguration(_subnetId, "aws");
@@ -194,8 +204,9 @@ public class Subnet implements AwsVpcEntity, Serializable {
     Ip instancesIfaceIp = computeInstancesIfaceIp();
     ConcreteInterfaceAddress instancesIfaceAddress =
         ConcreteInterfaceAddress.create(instancesIfaceIp, _cidrBlock.getPrefixLength());
-    Utils.newInterface(
-        instancesIfaceName, cfgNode, instancesIfaceAddress, "To instances " + _subnetId);
+    Interface subnetToInstances =
+        Utils.newInterface(
+            instancesIfaceName, cfgNode, instancesIfaceAddress, "To instances " + _subnetId);
 
     // generate a prefix for the link between the VPC router and the subnet
     Prefix vpcSubnetLinkPrefix = awsConfiguration.getNextGeneratedLinkSubnet();
@@ -217,18 +228,22 @@ public class Subnet implements AwsVpcEntity, Serializable {
     Utils.newInterface(vpcIfaceName, vpcConfigNode, vpcIfaceAddress, "To subnet " + _subnetId);
 
     // add a static route on the vpc router for this subnet
-    StaticRoute.Builder sb =
-        StaticRoute.builder()
-            .setAdministrativeCost(Route.DEFAULT_STATIC_ROUTE_ADMIN)
-            .setMetric(Route.DEFAULT_STATIC_ROUTE_COST);
-    StaticRoute vpcToSubnetRoute =
-        sb.setNetwork(_cidrBlock).setNextHopIp(subnetIfaceAddress.getIp()).build();
-    vpcConfigNode.getDefaultVrf().getStaticRoutes().add(vpcToSubnetRoute);
+    addStaticRoute(vpcConfigNode, toStaticRoute(_cidrBlock, subnetIfaceAddress.getIp()));
 
     // Install a default static route towards the VPC router.
-    StaticRoute defaultRoute =
-        sb.setNetwork(Prefix.ZERO).setNextHopIp(vpcIfaceAddress.getIp()).build();
-    cfgNode.getDefaultVrf().getStaticRoutes().add(defaultRoute);
+    addStaticRoute(cfgNode, toStaticRoute(Prefix.ZERO, vpcIfaceAddress.getIp()));
+
+    // for public IPs in the subnet, add static routes on the VPC and Subnet nodes
+    region.getNetworkInterfaces().values().stream()
+        .filter(ni -> ni.getSubnetId().equals(_subnetId))
+        .flatMap(ni -> ni.getPrivateIpAddresses().stream())
+        .map(PrivateIpAddress::getPublicIp)
+        .filter(Objects::nonNull)
+        .forEach(
+            pip -> {
+              addStaticRoute(vpcConfigNode, toStaticRoute(pip, subnetIfaceAddress.getIp()));
+              addStaticRoute(cfgNode, toStaticRoute(pip, subnetToInstances));
+            });
 
     NetworkAcl myNetworkAcl = findMyNetworkAcl(region.getNetworkAcls());
 
