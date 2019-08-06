@@ -21,13 +21,13 @@ class EigrpMetricMatchersImpl {
 
   static final class HasCost extends FeatureMatcher<EigrpMetric, Long> {
     HasCost(@Nonnull Matcher<? super Long> subMatcher) {
-      super(subMatcher, "An EigrpMetric with delay:", "delay");
+      super(subMatcher, "An EigrpMetric with composite cost:", "composite cost");
     }
 
     @Override
     @Nonnull
     protected Long featureValueOf(EigrpMetric actual) {
-      return actual.cost();
+      return actual.cost().longValue();
     }
   }
 
