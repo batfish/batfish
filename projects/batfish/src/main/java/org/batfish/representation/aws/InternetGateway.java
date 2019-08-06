@@ -132,6 +132,9 @@ final class InternetGateway implements AwsVpcEntity, Serializable {
                 publicPrefixSpace.addPrefix(publicPrefix);
                 addStaticRoute(cfgNode, toStaticRoute(publicPrefix, vpcIfaceAddress.getIp()));
               });
+
+      // add a static route on the vpc that points to this gateway
+      addStaticRoute(vpcConfigNode, toStaticRoute(Prefix.ZERO, igwIfaceAddress.getIp()));
     }
 
     createBackboneConnection(

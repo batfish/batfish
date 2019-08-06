@@ -129,6 +129,15 @@ public class InternetGatewayTest {
                         .get(internetGateway.getId())
                         .getConcreteAddress()
                         .getIp()))));
+
+    // the vpc should have a static route to this gateway
+    assertThat(
+        vpcConfig.getDefaultVrf().getStaticRoutes(),
+        equalTo(
+            ImmutableSet.of(
+                toStaticRoute(
+                    Prefix.ZERO,
+                    igwConfig.getAllInterfaces().get(vpc.getId()).getConcreteAddress().getIp()))));
   }
 
   @Test

@@ -20,7 +20,7 @@
       "Groups": [
         {
           "GroupId": "sg-331ad04e",
-          "GroupName": "Arista Demo"
+          "GroupName": "Demo"
         }
       ],
       "InterfaceType": "interface",
