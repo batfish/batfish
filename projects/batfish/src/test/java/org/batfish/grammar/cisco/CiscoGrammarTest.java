@@ -1723,7 +1723,8 @@ public class CiscoGrammarTest {
         outputRouteBuilder.build(),
         hasEigrpMetric(
             metricBuilder
-                .setValues(EigrpMetricValues.builder().setBandwidth(100).setDelay(100_000_000).build())
+                .setValues(
+                    EigrpMetricValues.builder().setBandwidth(100).setDelay(100_000_000).build())
                 .build()));
 
     // Check if routingPolicy rejects RIP route
@@ -1753,7 +1754,8 @@ public class CiscoGrammarTest {
         outputRouteBuilder.build(),
         hasEigrpMetric(
             metricBuilder
-                .setValues(EigrpMetricValues.builder().setBandwidth(200).setDelay(200_000_000L).build())
+                .setValues(
+                    EigrpMetricValues.builder().setBandwidth(200).setDelay(200_000_000L).build())
                 .build()));
   }
 
