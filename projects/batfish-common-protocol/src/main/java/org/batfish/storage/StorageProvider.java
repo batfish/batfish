@@ -414,6 +414,7 @@ public interface StorageProvider {
    * @throws IOException if there is an error reading the object
    */
   @Nonnull
+  @MustBeClosed
   InputStream loadSnapshotInputObject(NetworkId networkId, SnapshotId snapshotId, String key)
       throws FileNotFoundException, IOException;
 
