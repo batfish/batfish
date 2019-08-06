@@ -348,8 +348,7 @@ final class EigrpRoutingProcess implements RoutingProcess<EigrpTopology, EigrpRo
     while (queue.peek() != null) {
       RouteAdvertisement<EigrpExternalRoute> routeAdvert = queue.remove();
       EigrpExternalRoute neighborRoute = routeAdvert.getRoute();
-      EigrpMetric metric =
-          connectingIntfMetric.add(connectingIntfMetric).add(neighborRoute.getEigrpMetric());
+      EigrpMetric metric = connectingIntfMetric.add(neighborRoute.getEigrpMetric());
       routeBuilder
           .setDestinationAsn(neighborRoute.getDestinationAsn())
           .setEigrpMetric(metric)
