@@ -2562,12 +2562,6 @@ public final class CiscoNxosGrammarTest {
   }
 
   @Test
-  public void testEvpnConversion() throws IOException {
-    Configuration c = parseConfig("ios_evpn");
-    System.out.print("aga");
-  }
-
-  @Test
   public void testIpv6AccessListParsing() {
     // TODO: make into extraction test
     assertThat(parseVendorConfig("nxos_ipv6_access_list"), notNullValue());
