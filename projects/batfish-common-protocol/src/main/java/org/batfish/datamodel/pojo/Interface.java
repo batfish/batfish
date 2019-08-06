@@ -93,6 +93,6 @@ public class Interface extends BfObject {
 
   @Override
   public int hashCode() {
-    return Objects.hash(super.hashCode(), _name, _nodeId, _type);
+    return Objects.hash(_name, _nodeId, _type.ordinal());
   }
 }
