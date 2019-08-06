@@ -15,7 +15,6 @@ cumulus_frr_configuration
 ;
 
 // other rules
-
 statement
 :
   FRR_VERSION_LINE NEWLINE
