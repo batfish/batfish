@@ -23,6 +23,10 @@ import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasA
 import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasNextHopInterface;
 import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasNextHopIp;
 import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasPrefix;
+import static org.batfish.datamodel.matchers.AddressFamilyCapabilitiesMatchers.hasAllowLocalAsIn;
+import static org.batfish.datamodel.matchers.AddressFamilyCapabilitiesMatchers.hasSendCommunity;
+import static org.batfish.datamodel.matchers.AddressFamilyMatchers.hasAddressFamilyCapabilites;
+import static org.batfish.datamodel.matchers.AddressFamilyMatchers.hasExportPolicy;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasDefaultVrf;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasHostname;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasInterface;
@@ -127,6 +131,7 @@ import org.batfish.datamodel.AsPath;
 import org.batfish.datamodel.AsPathAccessList;
 import org.batfish.datamodel.AsPathAccessListLine;
 import org.batfish.datamodel.BddTestbed;
+import org.batfish.datamodel.BgpActivePeerConfig;
 import org.batfish.datamodel.Bgpv4Route;
 import org.batfish.datamodel.BumTransportMethod;
 import org.batfish.datamodel.CommunityList;
@@ -134,6 +139,7 @@ import org.batfish.datamodel.CommunityListLine;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.DscpType;
+import org.batfish.datamodel.GeneratedRoute;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.IcmpCode;
 import org.batfish.datamodel.IcmpType;
@@ -161,6 +167,7 @@ import org.batfish.datamodel.UniverseIpSpace;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.acl.AclLineMatchExprs;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
+import org.batfish.datamodel.bgp.Ipv4UnicastAddressFamily;
 import org.batfish.datamodel.bgp.RouteDistinguisher;
 import org.batfish.datamodel.bgp.community.StandardCommunity;
 import org.batfish.datamodel.matchers.HsrpGroupMatchers;
@@ -474,6 +481,26 @@ public final class CiscoNxosGrammarTest {
       assertThat(l2vpn, notNullValue());
       assertThat(l2vpn.getRetainMode(), equalTo(RetainRouteType.ALL));
     }
+  }
+
+  @Test
+  public void testBgpAddressFamilyConversion() throws IOException {
+    Configuration c = parseConfig("nxos_bgp_af");
+
+    BgpActivePeerConfig peer =
+        Iterables.getOnlyElement(c.getDefaultVrf().getBgpProcess().getActiveNeighbors().values());
+    assertThat(
+        peer.getGeneratedRoutes(),
+        equalTo(
+            ImmutableSet.of(
+                GeneratedRoute.builder().setNetwork(Prefix.ZERO).setAdmin(32767).build())));
+
+    Ipv4UnicastAddressFamily ipv4Af = peer.getIpv4UnicastAddressFamily();
+    assertThat(ipv4Af, notNullValue());
+    assertThat(
+        ipv4Af,
+        hasAddressFamilyCapabilites(allOf(hasSendCommunity(true), hasAllowLocalAsIn(true))));
+    assertThat(ipv4Af, hasExportPolicy("~BGP_PEER_EXPORT_POLICY:default:1.1.1.1~"));
   }
 
   @Test
@@ -2532,6 +2559,12 @@ public final class CiscoNxosGrammarTest {
       assertThat(line.getLine(), equalTo(25L));
       assertThat(line.getPrefix(), equalTo(Prefix.parse("10.10.0.0/16")));
     }
+  }
+
+  @Test
+  public void testEvpnConversion() throws IOException {
+    Configuration c = parseConfig("ios_evpn");
+    System.out.print("aga");
   }
 
   @Test
