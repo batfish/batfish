@@ -5,12 +5,15 @@ import org.antlr.v4.runtime.Token;
 import org.antlr.v4.runtime.tree.ErrorNode;
 import org.batfish.common.Warnings;
 import org.batfish.common.Warnings.ParseWarning;
+import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.grammar.UnrecognizedLineToken;
 import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.Cumulus_interfaces_configurationContext;
+import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.I_addressContext;
 import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.S_autoContext;
 import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.S_ifaceContext;
 import org.batfish.representation.cumulus.CumulusNcluConfiguration;
 import org.batfish.representation.cumulus.CumulusStructureType;
+import org.batfish.representation.cumulus_interfaces.Interface;
 import org.batfish.representation.cumulus_interfaces.Interfaces;
 
 /**
@@ -22,6 +25,7 @@ public final class CumulusInterfacesConfigurationBuilder
   private final CumulusNcluConfiguration _config;
   private final Interfaces _interfaces = new Interfaces();
   private final Warnings _w;
+  private Interface _currentIface;
 
   public CumulusInterfacesConfigurationBuilder(CumulusNcluConfiguration config, Warnings w) {
     _config = config;
@@ -52,9 +56,10 @@ public final class CumulusInterfacesConfigurationBuilder
     }
   }
 
+  // Listener methods
   @Override
-  public void exitCumulus_interfaces_configuration(Cumulus_interfaces_configurationContext ctxt) {
-    // TODO migrate _interfaces into _config
+  public void enterI_address(I_addressContext ctx) {
+    _currentIface.addAddress(ConcreteInterfaceAddress.parse(ctx.IP_PREFIX().getText()));
   }
 
   @Override
@@ -66,7 +71,17 @@ public final class CumulusInterfacesConfigurationBuilder
   @Override
   public void enterS_iface(S_ifaceContext ctx) {
     String name = ctx.interface_name().getText();
-    _interfaces.createOrGetInterface(name);
+    _currentIface = _interfaces.createOrGetInterface(name);
     _config.defineStructure(CumulusStructureType.INTERFACE, name, ctx.getStart().getLine());
+  }
+
+  @Override
+  public void exitCumulus_interfaces_configuration(Cumulus_interfaces_configurationContext ctxt) {
+    // TODO migrate _interfaces into _config
+  }
+
+  @Override
+  public void exitS_iface(S_ifaceContext ctx) {
+    _currentIface = null;
   }
 }

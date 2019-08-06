@@ -9,6 +9,11 @@ tokens {
 
 // Keyword tokens
 
+ADDRESS
+:
+  'address'
+;
+
 AUTO
 :
   'auto' -> pushMode (M_Word)
@@ -20,7 +25,6 @@ IFACE
 ;
 
 // Complex tokens
-
 COMMENT_LINE
 :
   (
@@ -35,6 +39,11 @@ COMMENT_LINE
   ) -> channel ( HIDDEN )
 ;
 
+IP_PREFIX
+:
+  F_IpPrefix
+;
+
 NEWLINE
 :
   F_Newline+
@@ -46,6 +55,31 @@ WS
 ;
 
 // Fragments
+fragment
+F_Digit
+:
+  [0-9]
+;
+
+fragment
+F_IpAddress
+:
+  F_Uint8 '.' F_Uint8 '.' F_Uint8 '.' F_Uint8
+;
+
+fragment
+F_IpPrefix
+:
+  F_IpAddress '/' F_IpPrefixLength
+;
+
+fragment
+F_IpPrefixLength
+:
+  F_Digit
+  | [12] F_Digit
+  | [3] [012]
+;
 
 fragment
 F_Newline
@@ -57,6 +91,22 @@ fragment
 F_NonNewline
 :
   ~[\n\r]
+;
+
+fragment
+F_PositiveDigit
+:
+  [1-9]
+;
+
+fragment
+F_Uint8
+:
+  F_Digit
+  | F_PositiveDigit F_Digit
+  | '1' F_Digit F_Digit
+  | '2' [0-4] F_Digit
+  | '25' [0-5]
 ;
 
 fragment

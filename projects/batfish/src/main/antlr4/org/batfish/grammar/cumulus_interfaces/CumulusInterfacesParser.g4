@@ -27,4 +27,12 @@ s_auto
 s_iface
 :
   IFACE interface_name NEWLINE
+  (
+    i_address
+  )*
+;
+
+i_address
+:
+  ADDRESS IP_PREFIX NEWLINE
 ;
