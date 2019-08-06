@@ -6,9 +6,25 @@ options {
   tokenVocab = CumulusInterfacesLexer;
 }
 
+import CumulusInterfaces_common;
+
 cumulus_interfaces_configuration
 :
-  EOF
+  statement* EOF
 ;
 
+statement
+:
+  s_auto
+  | s_iface
+;
 
+s_auto
+:
+  AUTO interface_name NEWLINE
+;
+
+s_iface
+:
+  IFACE interface_name NEWLINE
+;
