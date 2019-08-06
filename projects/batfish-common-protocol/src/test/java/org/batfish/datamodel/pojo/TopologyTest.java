@@ -97,4 +97,33 @@ public class TopologyTest {
                 new Link(c23Interface.getId(), c32Interface.getId()),
                 new Link(c32Interface.getId(), c23Interface.getId()))));
   }
+
+  @Test
+  public void testCreateInterfaceType() {
+    NetworkFactory nf = new NetworkFactory();
+
+    Configuration c1 = nf.configurationBuilder().setHostname("c1").build();
+    Configuration c2 = nf.configurationBuilder().setHostname("c2").build();
+
+    // create line topology: c1 <-> c2
+    org.batfish.datamodel.Interface c12 =
+        nf.interfaceBuilder().setOwner(c1).setName("to-c2").setType(InterfaceType.VPN).build();
+    org.batfish.datamodel.Interface c21 =
+        nf.interfaceBuilder().setOwner(c2).setName("to-c1").setType(InterfaceType.TUNNEL).build();
+
+    org.batfish.datamodel.Topology rawL3Topology =
+        new org.batfish.datamodel.Topology(
+            ImmutableSortedSet.of(new Edge(c12, c21), new Edge(c21, c12)));
+
+    Topology pojoTopology =
+        Topology.create(
+            "test", ImmutableMap.of(c1.getHostname(), c1, c2.getHostname(), c2), rawL3Topology);
+
+    assertThat(
+        pojoTopology.getInterfaces(),
+        equalTo(
+            ImmutableSet.of(
+                new Interface("node-c1", "to-c2", InterfaceType.VPN),
+                new Interface("node-c2", "to-c1", InterfaceType.TUNNEL))));
+  }
 }

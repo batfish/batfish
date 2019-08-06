@@ -152,129 +152,9 @@
   ],
   "interfaces" : [
     {
-      "id" : "interface-node-subnet-62f14104-vpc-925131f4",
-      "name" : "vpc-925131f4",
-      "nodeId" : "node-subnet-62f14104",
-      "type" : "PHYSICAL"
-    },
-    {
-      "id" : "interface-node-vpc-925131f4-subnet-62f14104",
-      "name" : "subnet-62f14104",
+      "id" : "interface-node-vpc-925131f4-igw-fac5839d",
+      "name" : "igw-fac5839d",
       "nodeId" : "node-vpc-925131f4",
-      "type" : "PHYSICAL"
-    },
-    {
-      "id" : "interface-node-vpc-b390fad5-subnet-f73a8191",
-      "name" : "subnet-f73a8191",
-      "nodeId" : "node-vpc-b390fad5",
-      "type" : "PHYSICAL"
-    },
-    {
-      "id" : "interface-node-isp_16509-~Interface_1~",
-      "name" : "~Interface_1~",
-      "nodeId" : "node-isp_16509",
-      "type" : "UNKNOWN"
-    },
-    {
-      "id" : "interface-node-vpc-b390fad5-subnet-30398256",
-      "name" : "subnet-30398256",
-      "nodeId" : "node-vpc-b390fad5",
-      "type" : "PHYSICAL"
-    },
-    {
-      "id" : "interface-node-vpc-f8fad69d-subnet-1f315846",
-      "name" : "subnet-1f315846",
-      "nodeId" : "node-vpc-f8fad69d",
-      "type" : "PHYSICAL"
-    },
-    {
-      "id" : "interface-node-vpc-b390fad5-igw-9b93ddfc",
-      "name" : "igw-9b93ddfc",
-      "nodeId" : "node-vpc-b390fad5",
-      "type" : "PHYSICAL"
-    },
-    {
-      "id" : "interface-node-vpc-b390fad5-subnet-073b8061",
-      "name" : "subnet-073b8061",
-      "nodeId" : "node-vpc-b390fad5",
-      "type" : "PHYSICAL"
-    },
-    {
-      "id" : "interface-node-internet-~Interface_3~",
-      "name" : "~Interface_3~",
-      "nodeId" : "node-internet",
-      "type" : "UNKNOWN"
-    },
-    {
-      "id" : "interface-node-subnet-1641fa70-vpc-b390fad5",
-      "name" : "vpc-b390fad5",
-      "nodeId" : "node-subnet-1641fa70",
-      "type" : "PHYSICAL"
-    },
-    {
-      "id" : "interface-node-subnet-7044ff16-vpc-b390fad5",
-      "name" : "vpc-b390fad5",
-      "nodeId" : "node-subnet-7044ff16",
-      "type" : "PHYSICAL"
-    },
-    {
-      "id" : "interface-node-vpc-925131f4-subnet-8d0cbdeb",
-      "name" : "subnet-8d0cbdeb",
-      "nodeId" : "node-vpc-925131f4",
-      "type" : "PHYSICAL"
-    },
-    {
-      "id" : "interface-node-igw-fac5839d-backbone",
-      "name" : "backbone",
-      "nodeId" : "node-igw-fac5839d",
-      "type" : "PHYSICAL"
-    },
-    {
-      "id" : "interface-node-subnet-073b8061-vpc-b390fad5",
-      "name" : "vpc-b390fad5",
-      "nodeId" : "node-subnet-073b8061",
-      "type" : "PHYSICAL"
-    },
-    {
-      "id" : "interface-node-subnet-7044ff16-subnet-7044ff16",
-      "name" : "subnet-7044ff16",
-      "nodeId" : "node-subnet-7044ff16",
-      "type" : "PHYSICAL"
-    },
-    {
-      "id" : "interface-node-subnet-f73a8191-vpc-b390fad5",
-      "name" : "vpc-b390fad5",
-      "nodeId" : "node-subnet-f73a8191",
-      "type" : "PHYSICAL"
-    },
-    {
-      "id" : "interface-node-igw-9b93ddfc-vpc-b390fad5",
-      "name" : "vpc-b390fad5",
-      "nodeId" : "node-igw-9b93ddfc",
-      "type" : "PHYSICAL"
-    },
-    {
-      "id" : "interface-node-subnet-8d0cbdeb-vpc-925131f4",
-      "name" : "vpc-925131f4",
-      "nodeId" : "node-subnet-8d0cbdeb",
-      "type" : "PHYSICAL"
-    },
-    {
-      "id" : "interface-node-subnet-d9cafabc-vpc-f8fad69d",
-      "name" : "vpc-f8fad69d",
-      "nodeId" : "node-subnet-d9cafabc",
-      "type" : "PHYSICAL"
-    },
-    {
-      "id" : "interface-node-isp_16509-~Interface_4~",
-      "name" : "~Interface_4~",
-      "nodeId" : "node-isp_16509",
-      "type" : "UNKNOWN"
-    },
-    {
-      "id" : "interface-node-vpc-f8fad69d-igw-068fee63",
-      "name" : "igw-068fee63",
-      "nodeId" : "node-vpc-f8fad69d",
       "type" : "PHYSICAL"
     },
     {
@@ -284,10 +164,124 @@
       "type" : "PHYSICAL"
     },
     {
-      "id" : "interface-node-isp_16509-~Interface_2~",
-      "name" : "~Interface_2~",
+      "id" : "interface-node-subnet-073b8061-vpc-b390fad5",
+      "name" : "vpc-b390fad5",
+      "nodeId" : "node-subnet-073b8061",
+      "type" : "PHYSICAL"
+    },
+    {
+      "id" : "interface-node-subnet-8d0cbdeb-vpc-925131f4",
+      "name" : "vpc-925131f4",
+      "nodeId" : "node-subnet-8d0cbdeb",
+      "type" : "PHYSICAL"
+    },
+    {
+      "id" : "interface-node-test-rds-test-rds-subnet-1641fa70",
+      "name" : "test-rds-subnet-1641fa70",
+      "nodeId" : "node-test-rds",
+      "type" : "PHYSICAL"
+    },
+    {
+      "id" : "interface-node-subnet-d9cafabc-vpc-f8fad69d",
+      "name" : "vpc-f8fad69d",
+      "nodeId" : "node-subnet-d9cafabc",
+      "type" : "PHYSICAL"
+    },
+    {
+      "id" : "interface-node-vpc-b390fad5-subnet-7044ff16",
+      "name" : "subnet-7044ff16",
+      "nodeId" : "node-vpc-b390fad5",
+      "type" : "PHYSICAL"
+    },
+    {
+      "id" : "interface-node-igw-fac5839d-backbone",
+      "name" : "backbone",
+      "nodeId" : "node-igw-fac5839d",
+      "type" : "PHYSICAL"
+    },
+    {
+      "id" : "interface-node-subnet-f73a8191-vpc-b390fad5",
+      "name" : "vpc-b390fad5",
+      "nodeId" : "node-subnet-f73a8191",
+      "type" : "PHYSICAL"
+    },
+    {
+      "id" : "interface-node-vpc-b390fad5-subnet-30398256",
+      "name" : "subnet-30398256",
+      "nodeId" : "node-vpc-b390fad5",
+      "type" : "PHYSICAL"
+    },
+    {
+      "id" : "interface-node-es-domain-es-domain-subnet-7044ff16",
+      "name" : "es-domain-subnet-7044ff16",
+      "nodeId" : "node-es-domain",
+      "type" : "PHYSICAL"
+    },
+    {
+      "id" : "interface-node-isp_16509-~Interface_1~",
+      "name" : "~Interface_1~",
       "nodeId" : "node-isp_16509",
       "type" : "UNKNOWN"
+    },
+    {
+      "id" : "interface-node-subnet-7044ff16-subnet-7044ff16",
+      "name" : "subnet-7044ff16",
+      "nodeId" : "node-subnet-7044ff16",
+      "type" : "PHYSICAL"
+    },
+    {
+      "id" : "interface-node-vpc-b390fad5-subnet-f73a8191",
+      "name" : "subnet-f73a8191",
+      "nodeId" : "node-vpc-b390fad5",
+      "type" : "PHYSICAL"
+    },
+    {
+      "id" : "interface-node-igw-9b93ddfc-vpc-b390fad5",
+      "name" : "vpc-b390fad5",
+      "nodeId" : "node-igw-9b93ddfc",
+      "type" : "PHYSICAL"
+    },
+    {
+      "id" : "interface-node-igw-fac5839d-vpc-925131f4",
+      "name" : "vpc-925131f4",
+      "nodeId" : "node-igw-fac5839d",
+      "type" : "PHYSICAL"
+    },
+    {
+      "id" : "interface-node-subnet-1641fa70-vpc-b390fad5",
+      "name" : "vpc-b390fad5",
+      "nodeId" : "node-subnet-1641fa70",
+      "type" : "PHYSICAL"
+    },
+    {
+      "id" : "interface-node-vpc-f8fad69d-subnet-d9cafabc",
+      "name" : "subnet-d9cafabc",
+      "nodeId" : "node-vpc-f8fad69d",
+      "type" : "PHYSICAL"
+    },
+    {
+      "id" : "interface-node-subnet-62f14104-vpc-925131f4",
+      "name" : "vpc-925131f4",
+      "nodeId" : "node-subnet-62f14104",
+      "type" : "PHYSICAL"
+    },
+    {
+      "id" : "interface-node-vpc-b390fad5-igw-9b93ddfc",
+      "name" : "igw-9b93ddfc",
+      "nodeId" : "node-vpc-b390fad5",
+      "type" : "PHYSICAL"
+    },
+    {
+      "id" : "interface-node-vpc-925131f4-subnet-62f14104",
+      "name" : "subnet-62f14104",
+      "nodeId" : "node-vpc-925131f4",
+      "type" : "PHYSICAL"
+    },
+    {
+      "id" : "interface-node-subnet-30398256-vpc-b390fad5",
+      "name" : "vpc-b390fad5",
+      "nodeId" : "node-subnet-30398256",
+      "type" : "PHYSICAL"
     },
     {
       "id" : "interface-node-vpc-b390fad5-subnet-1641fa70",
@@ -302,75 +296,27 @@
       "type" : "UNKNOWN"
     },
     {
-      "id" : "interface-node-es-domain-es-domain-subnet-7044ff16",
-      "name" : "es-domain-subnet-7044ff16",
-      "nodeId" : "node-es-domain",
-      "type" : "PHYSICAL"
-    },
-    {
-      "id" : "interface-node-test-rds-test-rds-subnet-1641fa70",
-      "name" : "test-rds-subnet-1641fa70",
-      "nodeId" : "node-test-rds",
-      "type" : "PHYSICAL"
-    },
-    {
-      "id" : "interface-node-vpc-f8fad69d-subnet-9c8adceb",
-      "name" : "subnet-9c8adceb",
-      "nodeId" : "node-vpc-f8fad69d",
-      "type" : "PHYSICAL"
-    },
-    {
-      "id" : "interface-node-vpc-815775e7-vgw-81fd279f",
-      "name" : "vgw-81fd279f",
-      "nodeId" : "node-vpc-815775e7",
-      "type" : "PHYSICAL"
-    },
-    {
-      "id" : "interface-node-vpc-f8fad69d-subnet-d9cafabc",
-      "name" : "subnet-d9cafabc",
-      "nodeId" : "node-vpc-f8fad69d",
-      "type" : "PHYSICAL"
-    },
-    {
-      "id" : "interface-node-vgw-81fd279f-vpc-815775e7",
-      "name" : "vpc-815775e7",
-      "nodeId" : "node-vgw-81fd279f",
-      "type" : "PHYSICAL"
-    },
-    {
-      "id" : "interface-node-subnet-1641fa70-subnet-1641fa70",
-      "name" : "subnet-1641fa70",
-      "nodeId" : "node-subnet-1641fa70",
-      "type" : "PHYSICAL"
-    },
-    {
-      "id" : "interface-node-igw-fac5839d-vpc-925131f4",
-      "name" : "vpc-925131f4",
-      "nodeId" : "node-igw-fac5839d",
-      "type" : "PHYSICAL"
-    },
-    {
-      "id" : "interface-node-subnet-1f315846-vpc-f8fad69d",
+      "id" : "interface-node-igw-068fee63-vpc-f8fad69d",
       "name" : "vpc-f8fad69d",
-      "nodeId" : "node-subnet-1f315846",
-      "type" : "PHYSICAL"
-    },
-    {
-      "id" : "interface-node-subnet-9c8adceb-vpc-f8fad69d",
-      "name" : "vpc-f8fad69d",
-      "nodeId" : "node-subnet-9c8adceb",
-      "type" : "PHYSICAL"
-    },
-    {
-      "id" : "interface-node-igw-068fee63-backbone",
-      "name" : "backbone",
       "nodeId" : "node-igw-068fee63",
       "type" : "PHYSICAL"
     },
     {
-      "id" : "interface-node-vpc-925131f4-igw-fac5839d",
-      "name" : "igw-fac5839d",
-      "nodeId" : "node-vpc-925131f4",
+      "id" : "interface-node-internet-~Interface_3~",
+      "name" : "~Interface_3~",
+      "nodeId" : "node-internet",
+      "type" : "UNKNOWN"
+    },
+    {
+      "id" : "interface-node-isp_16509-~Interface_2~",
+      "name" : "~Interface_2~",
+      "nodeId" : "node-isp_16509",
+      "type" : "UNKNOWN"
+    },
+    {
+      "id" : "interface-node-vpc-f8fad69d-subnet-1f315846",
+      "name" : "subnet-1f315846",
+      "nodeId" : "node-vpc-f8fad69d",
       "type" : "PHYSICAL"
     },
     {
@@ -380,21 +326,75 @@
       "type" : "PHYSICAL"
     },
     {
-      "id" : "interface-node-vpc-b390fad5-subnet-7044ff16",
-      "name" : "subnet-7044ff16",
-      "nodeId" : "node-vpc-b390fad5",
-      "type" : "PHYSICAL"
-    },
-    {
-      "id" : "interface-node-igw-068fee63-vpc-f8fad69d",
-      "name" : "vpc-f8fad69d",
+      "id" : "interface-node-igw-068fee63-backbone",
+      "name" : "backbone",
       "nodeId" : "node-igw-068fee63",
       "type" : "PHYSICAL"
     },
     {
-      "id" : "interface-node-subnet-30398256-vpc-b390fad5",
+      "id" : "interface-node-isp_16509-~Interface_4~",
+      "name" : "~Interface_4~",
+      "nodeId" : "node-isp_16509",
+      "type" : "UNKNOWN"
+    },
+    {
+      "id" : "interface-node-vgw-81fd279f-vpc-815775e7",
+      "name" : "vpc-815775e7",
+      "nodeId" : "node-vgw-81fd279f",
+      "type" : "PHYSICAL"
+    },
+    {
+      "id" : "interface-node-vpc-b390fad5-subnet-073b8061",
+      "name" : "subnet-073b8061",
+      "nodeId" : "node-vpc-b390fad5",
+      "type" : "PHYSICAL"
+    },
+    {
+      "id" : "interface-node-vpc-f8fad69d-igw-068fee63",
+      "name" : "igw-068fee63",
+      "nodeId" : "node-vpc-f8fad69d",
+      "type" : "PHYSICAL"
+    },
+    {
+      "id" : "interface-node-subnet-1641fa70-subnet-1641fa70",
+      "name" : "subnet-1641fa70",
+      "nodeId" : "node-subnet-1641fa70",
+      "type" : "PHYSICAL"
+    },
+    {
+      "id" : "interface-node-subnet-7044ff16-vpc-b390fad5",
       "name" : "vpc-b390fad5",
-      "nodeId" : "node-subnet-30398256",
+      "nodeId" : "node-subnet-7044ff16",
+      "type" : "PHYSICAL"
+    },
+    {
+      "id" : "interface-node-vpc-815775e7-vgw-81fd279f",
+      "name" : "vgw-81fd279f",
+      "nodeId" : "node-vpc-815775e7",
+      "type" : "PHYSICAL"
+    },
+    {
+      "id" : "interface-node-subnet-1f315846-vpc-f8fad69d",
+      "name" : "vpc-f8fad69d",
+      "nodeId" : "node-subnet-1f315846",
+      "type" : "PHYSICAL"
+    },
+    {
+      "id" : "interface-node-vpc-f8fad69d-subnet-9c8adceb",
+      "name" : "subnet-9c8adceb",
+      "nodeId" : "node-vpc-f8fad69d",
+      "type" : "PHYSICAL"
+    },
+    {
+      "id" : "interface-node-subnet-9c8adceb-vpc-f8fad69d",
+      "name" : "vpc-f8fad69d",
+      "nodeId" : "node-subnet-9c8adceb",
+      "type" : "PHYSICAL"
+    },
+    {
+      "id" : "interface-node-vpc-925131f4-subnet-8d0cbdeb",
+      "name" : "subnet-8d0cbdeb",
+      "nodeId" : "node-vpc-925131f4",
       "type" : "PHYSICAL"
     }
   ],
@@ -409,7 +409,7 @@
       "dstId" : "interface-node-subnet-1641fa70-vpc-b390fad5",
       "id" : "link-interface-node-vpc-b390fad5-subnet-1641fa70-interface-node-subnet-1641fa70-vpc-b390fad5",
       "srcId" : "interface-node-vpc-b390fad5-subnet-1641fa70",
-      "type" : "UNKNOWN"
+      "type" : "PHYSICAL"
     },
     {
       "dstId" : "interface-node-isp_16509-~Interface_4~",
@@ -427,31 +427,31 @@
       "dstId" : "interface-node-vgw-81fd279f-vpc-815775e7",
       "id" : "link-interface-node-vpc-815775e7-vgw-81fd279f-interface-node-vgw-81fd279f-vpc-815775e7",
       "srcId" : "interface-node-vpc-815775e7-vgw-81fd279f",
-      "type" : "UNKNOWN"
+      "type" : "PHYSICAL"
     },
     {
       "dstId" : "interface-node-igw-fac5839d-vpc-925131f4",
       "id" : "link-interface-node-vpc-925131f4-igw-fac5839d-interface-node-igw-fac5839d-vpc-925131f4",
       "srcId" : "interface-node-vpc-925131f4-igw-fac5839d",
-      "type" : "UNKNOWN"
+      "type" : "PHYSICAL"
     },
     {
       "dstId" : "interface-node-subnet-f73a8191-vpc-b390fad5",
       "id" : "link-interface-node-vpc-b390fad5-subnet-f73a8191-interface-node-subnet-f73a8191-vpc-b390fad5",
       "srcId" : "interface-node-vpc-b390fad5-subnet-f73a8191",
-      "type" : "UNKNOWN"
+      "type" : "PHYSICAL"
     },
     {
       "dstId" : "interface-node-vpc-b390fad5-igw-9b93ddfc",
       "id" : "link-interface-node-igw-9b93ddfc-vpc-b390fad5-interface-node-vpc-b390fad5-igw-9b93ddfc",
       "srcId" : "interface-node-igw-9b93ddfc-vpc-b390fad5",
-      "type" : "UNKNOWN"
+      "type" : "PHYSICAL"
     },
     {
       "dstId" : "interface-node-test-rds-test-rds-subnet-1641fa70",
       "id" : "link-interface-node-subnet-1641fa70-subnet-1641fa70-interface-node-test-rds-test-rds-subnet-1641fa70",
       "srcId" : "interface-node-subnet-1641fa70-subnet-1641fa70",
-      "type" : "UNKNOWN"
+      "type" : "PHYSICAL"
     },
     {
       "dstId" : "interface-node-vpc-b390fad5-subnet-f73a8191",
@@ -463,31 +463,31 @@
       "dstId" : "interface-node-subnet-073b8061-vpc-b390fad5",
       "id" : "link-interface-node-vpc-b390fad5-subnet-073b8061-interface-node-subnet-073b8061-vpc-b390fad5",
       "srcId" : "interface-node-vpc-b390fad5-subnet-073b8061",
-      "type" : "UNKNOWN"
+      "type" : "PHYSICAL"
     },
     {
       "dstId" : "interface-node-test-rds-test-rds-subnet-1641fa70",
       "id" : "link-interface-node-es-domain-es-domain-subnet-1641fa70-interface-node-test-rds-test-rds-subnet-1641fa70",
       "srcId" : "interface-node-es-domain-es-domain-subnet-1641fa70",
-      "type" : "UNKNOWN"
+      "type" : "PHYSICAL"
     },
     {
       "dstId" : "interface-node-es-domain-es-domain-subnet-1641fa70",
       "id" : "link-interface-node-subnet-1641fa70-subnet-1641fa70-interface-node-es-domain-es-domain-subnet-1641fa70",
       "srcId" : "interface-node-subnet-1641fa70-subnet-1641fa70",
-      "type" : "UNKNOWN"
+      "type" : "PHYSICAL"
     },
     {
       "dstId" : "interface-node-subnet-1641fa70-subnet-1641fa70",
       "id" : "link-interface-node-test-rds-test-rds-subnet-1641fa70-interface-node-subnet-1641fa70-subnet-1641fa70",
       "srcId" : "interface-node-test-rds-test-rds-subnet-1641fa70",
-      "type" : "UNKNOWN"
+      "type" : "PHYSICAL"
     },
     {
       "dstId" : "interface-node-subnet-7044ff16-vpc-b390fad5",
       "id" : "link-interface-node-vpc-b390fad5-subnet-7044ff16-interface-node-subnet-7044ff16-vpc-b390fad5",
       "srcId" : "interface-node-vpc-b390fad5-subnet-7044ff16",
-      "type" : "UNKNOWN"
+      "type" : "PHYSICAL"
     },
     {
       "dstId" : "interface-node-vpc-b390fad5-subnet-1641fa70",
@@ -499,13 +499,13 @@
       "dstId" : "interface-node-subnet-8d0cbdeb-vpc-925131f4",
       "id" : "link-interface-node-vpc-925131f4-subnet-8d0cbdeb-interface-node-subnet-8d0cbdeb-vpc-925131f4",
       "srcId" : "interface-node-vpc-925131f4-subnet-8d0cbdeb",
-      "type" : "UNKNOWN"
+      "type" : "PHYSICAL"
     },
     {
       "dstId" : "interface-node-subnet-d9cafabc-vpc-f8fad69d",
       "id" : "link-interface-node-vpc-f8fad69d-subnet-d9cafabc-interface-node-subnet-d9cafabc-vpc-f8fad69d",
       "srcId" : "interface-node-vpc-f8fad69d-subnet-d9cafabc",
-      "type" : "UNKNOWN"
+      "type" : "PHYSICAL"
     },
     {
       "dstId" : "interface-node-isp_16509-~Interface_1~",
@@ -517,7 +517,7 @@
       "dstId" : "interface-node-subnet-1641fa70-subnet-1641fa70",
       "id" : "link-interface-node-es-domain-es-domain-subnet-1641fa70-interface-node-subnet-1641fa70-subnet-1641fa70",
       "srcId" : "interface-node-es-domain-es-domain-subnet-1641fa70",
-      "type" : "UNKNOWN"
+      "type" : "PHYSICAL"
     },
     {
       "dstId" : "interface-node-vpc-f8fad69d-subnet-d9cafabc",
@@ -529,7 +529,7 @@
       "dstId" : "interface-node-vpc-f8fad69d-igw-068fee63",
       "id" : "link-interface-node-igw-068fee63-vpc-f8fad69d-interface-node-vpc-f8fad69d-igw-068fee63",
       "srcId" : "interface-node-igw-068fee63-vpc-f8fad69d",
-      "type" : "UNKNOWN"
+      "type" : "PHYSICAL"
     },
     {
       "dstId" : "interface-node-vpc-925131f4-subnet-62f14104",
@@ -541,7 +541,7 @@
       "dstId" : "interface-node-igw-9b93ddfc-vpc-b390fad5",
       "id" : "link-interface-node-vpc-b390fad5-igw-9b93ddfc-interface-node-igw-9b93ddfc-vpc-b390fad5",
       "srcId" : "interface-node-vpc-b390fad5-igw-9b93ddfc",
-      "type" : "UNKNOWN"
+      "type" : "PHYSICAL"
     },
     {
       "dstId" : "interface-node-isp_16509-~Interface_2~",
@@ -559,7 +559,7 @@
       "dstId" : "interface-node-subnet-62f14104-vpc-925131f4",
       "id" : "link-interface-node-vpc-925131f4-subnet-62f14104-interface-node-subnet-62f14104-vpc-925131f4",
       "srcId" : "interface-node-vpc-925131f4-subnet-62f14104",
-      "type" : "UNKNOWN"
+      "type" : "PHYSICAL"
     },
     {
       "dstId" : "interface-node-vpc-b390fad5-subnet-073b8061",
@@ -577,7 +577,7 @@
       "dstId" : "interface-node-igw-068fee63-vpc-f8fad69d",
       "id" : "link-interface-node-vpc-f8fad69d-igw-068fee63-interface-node-igw-068fee63-vpc-f8fad69d",
       "srcId" : "interface-node-vpc-f8fad69d-igw-068fee63",
-      "type" : "UNKNOWN"
+      "type" : "PHYSICAL"
     },
     {
       "dstId" : "interface-node-vpc-f8fad69d-subnet-9c8adceb",
@@ -589,13 +589,13 @@
       "dstId" : "interface-node-subnet-7044ff16-subnet-7044ff16",
       "id" : "link-interface-node-es-domain-es-domain-subnet-7044ff16-interface-node-subnet-7044ff16-subnet-7044ff16",
       "srcId" : "interface-node-es-domain-es-domain-subnet-7044ff16",
-      "type" : "UNKNOWN"
+      "type" : "PHYSICAL"
     },
     {
       "dstId" : "interface-node-vpc-815775e7-vgw-81fd279f",
       "id" : "link-interface-node-vgw-81fd279f-vpc-815775e7-interface-node-vpc-815775e7-vgw-81fd279f",
       "srcId" : "interface-node-vgw-81fd279f-vpc-815775e7",
-      "type" : "UNKNOWN"
+      "type" : "PHYSICAL"
     },
     {
       "dstId" : "interface-node-vpc-925131f4-subnet-8d0cbdeb",
@@ -607,7 +607,7 @@
       "dstId" : "interface-node-subnet-1f315846-vpc-f8fad69d",
       "id" : "link-interface-node-vpc-f8fad69d-subnet-1f315846-interface-node-subnet-1f315846-vpc-f8fad69d",
       "srcId" : "interface-node-vpc-f8fad69d-subnet-1f315846",
-      "type" : "UNKNOWN"
+      "type" : "PHYSICAL"
     },
     {
       "dstId" : "interface-node-igw-9b93ddfc-backbone",
@@ -619,13 +619,13 @@
       "dstId" : "interface-node-subnet-30398256-vpc-b390fad5",
       "id" : "link-interface-node-vpc-b390fad5-subnet-30398256-interface-node-subnet-30398256-vpc-b390fad5",
       "srcId" : "interface-node-vpc-b390fad5-subnet-30398256",
-      "type" : "UNKNOWN"
+      "type" : "PHYSICAL"
     },
     {
       "dstId" : "interface-node-vpc-925131f4-igw-fac5839d",
       "id" : "link-interface-node-igw-fac5839d-vpc-925131f4-interface-node-vpc-925131f4-igw-fac5839d",
       "srcId" : "interface-node-igw-fac5839d-vpc-925131f4",
-      "type" : "UNKNOWN"
+      "type" : "PHYSICAL"
     },
     {
       "dstId" : "interface-node-igw-068fee63-backbone",
@@ -643,7 +643,7 @@
       "dstId" : "interface-node-es-domain-es-domain-subnet-7044ff16",
       "id" : "link-interface-node-subnet-7044ff16-subnet-7044ff16-interface-node-es-domain-es-domain-subnet-7044ff16",
       "srcId" : "interface-node-subnet-7044ff16-subnet-7044ff16",
-      "type" : "UNKNOWN"
+      "type" : "PHYSICAL"
     },
     {
       "dstId" : "interface-node-isp_16509-~Interface_0~",
@@ -655,13 +655,13 @@
       "dstId" : "interface-node-subnet-9c8adceb-vpc-f8fad69d",
       "id" : "link-interface-node-vpc-f8fad69d-subnet-9c8adceb-interface-node-subnet-9c8adceb-vpc-f8fad69d",
       "srcId" : "interface-node-vpc-f8fad69d-subnet-9c8adceb",
-      "type" : "UNKNOWN"
+      "type" : "PHYSICAL"
     },
     {
       "dstId" : "interface-node-es-domain-es-domain-subnet-1641fa70",
       "id" : "link-interface-node-test-rds-test-rds-subnet-1641fa70-interface-node-es-domain-es-domain-subnet-1641fa70",
       "srcId" : "interface-node-test-rds-test-rds-subnet-1641fa70",
-      "type" : "UNKNOWN"
+      "type" : "PHYSICAL"
     }
   ],
   "nodes" : [
