@@ -4,6 +4,7 @@ import javax.annotation.Nonnull;
 import org.batfish.vendor.StructureUsage;
 
 public enum CumulusStructureUsage implements StructureUsage {
+  AUTO_INTERFACE("auto interface"),
   BGP_IPV4_UNICAST_REDISTRIBUTE_CONNECTED_ROUTE_MAP(
       "bgp ipv4 unicast redistribute connected route-map"),
   BGP_IPV4_UNICAST_REDISTRIBUTE_STATIC_ROUTE_MAP("bgp ipv4 unicast redistribute static route-map"),
