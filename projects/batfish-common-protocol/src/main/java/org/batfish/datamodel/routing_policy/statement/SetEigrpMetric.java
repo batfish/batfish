@@ -1,14 +1,20 @@
 package org.batfish.datamodel.routing_policy.statement;
 
 import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.base.Preconditions.checkState;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
-import org.batfish.datamodel.EigrpExternalRoute;
+import org.batfish.datamodel.EigrpRoute.Builder;
+import org.batfish.datamodel.eigrp.ClassicMetric;
 import org.batfish.datamodel.eigrp.EigrpMetric;
+import org.batfish.datamodel.eigrp.EigrpMetricValues;
+import org.batfish.datamodel.eigrp.EigrpProcess;
+import org.batfish.datamodel.eigrp.EigrpProcessMode;
+import org.batfish.datamodel.eigrp.WideMetric;
 import org.batfish.datamodel.routing_policy.Environment;
 import org.batfish.datamodel.routing_policy.Result;
 import org.batfish.datamodel.routing_policy.expr.EigrpMetricExpr;
@@ -49,8 +55,15 @@ public final class SetEigrpMetric extends Statement {
   @Override
   public Result execute(Environment environment) {
     Result result = new Result();
-    EigrpMetric metric = _metric.evaluate(environment);
-    ((EigrpExternalRoute.Builder) environment.getOutputRoute()).setEigrpMetric(metric);
+    EigrpMetricValues metricValues = _metric.evaluate(environment);
+    EigrpProcess eigrpProcess = environment.getEigrpProcess();
+    checkState(eigrpProcess != null);
+    Builder<?, ?> outputRoute = (Builder<?, ?>) environment.getOutputRoute();
+    EigrpMetric newMetric =
+        eigrpProcess.getMode() == EigrpProcessMode.NAMED
+            ? WideMetric.builder().setValues(metricValues).build()
+            : ClassicMetric.builder().setValues(metricValues).build();
+    outputRoute.setEigrpMetric(newMetric);
     return result;
   }
 
