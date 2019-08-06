@@ -8,3 +8,9 @@ interface_name
 :
   WORD
 ;
+
+vrf_name
+:
+  WORD
+;
+

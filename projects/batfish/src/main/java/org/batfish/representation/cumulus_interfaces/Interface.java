@@ -7,16 +7,12 @@ import org.batfish.datamodel.ConcreteInterfaceAddress;
 
 /** Model of an iface block in a cumulus /etc/network/interfaces file. */
 public final class Interface {
-  private final @Nonnull String _name;
   private final @Nonnull List<ConcreteInterfaceAddress> _addresses = new LinkedList<>();
+  private final @Nonnull String _name;
+  private String _vrf;
 
   public Interface(@Nonnull String name) {
     _name = name;
-  }
-
-  @Nonnull
-  public String getName() {
-    return _name;
   }
 
   public void addAddress(ConcreteInterfaceAddress address) {
@@ -25,5 +21,18 @@ public final class Interface {
 
   public List<ConcreteInterfaceAddress> getAddresses() {
     return _addresses;
+  }
+
+  @Nonnull
+  public String getName() {
+    return _name;
+  }
+
+  public String getVrf() {
+    return _vrf;
+  }
+
+  public void setVrf(String vrf) {
+    _vrf = vrf;
   }
 }

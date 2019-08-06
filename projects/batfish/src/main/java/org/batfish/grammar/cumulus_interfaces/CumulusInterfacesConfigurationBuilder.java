@@ -9,10 +9,12 @@ import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.grammar.UnrecognizedLineToken;
 import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.Cumulus_interfaces_configurationContext;
 import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.I_addressContext;
+import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.I_vrfContext;
 import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.S_autoContext;
 import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.S_ifaceContext;
 import org.batfish.representation.cumulus.CumulusNcluConfiguration;
 import org.batfish.representation.cumulus.CumulusStructureType;
+import org.batfish.representation.cumulus.CumulusStructureUsage;
 import org.batfish.representation.cumulus_interfaces.Interface;
 import org.batfish.representation.cumulus_interfaces.Interfaces;
 
@@ -60,6 +62,17 @@ public final class CumulusInterfacesConfigurationBuilder
   @Override
   public void enterI_address(I_addressContext ctx) {
     _currentIface.addAddress(ConcreteInterfaceAddress.parse(ctx.IP_PREFIX().getText()));
+  }
+
+  @Override
+  public void enterI_vrf(I_vrfContext ctx) {
+    String vrf = ctx.vrf_name().getText();
+    _currentIface.setVrf(vrf);
+    _config.referenceStructure(
+        CumulusStructureType.VRF,
+        vrf,
+        CumulusStructureUsage.INTERFACE_VRF,
+        ctx.vrf_name().getStart().getLine());
   }
 
   @Override

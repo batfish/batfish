@@ -29,10 +29,16 @@ s_iface
   IFACE interface_name NEWLINE
   (
     i_address
+  | i_vrf
   )*
 ;
 
 i_address
 :
   ADDRESS IP_PREFIX NEWLINE
+;
+
+i_vrf
+:
+  VRF vrf_name NEWLINE
 ;

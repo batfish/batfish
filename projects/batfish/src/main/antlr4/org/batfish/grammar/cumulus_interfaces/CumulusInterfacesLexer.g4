@@ -24,6 +24,11 @@ IFACE
   'iface' -> pushMode(M_Word)
 ;
 
+VRF
+:
+  'vrf' -> pushMode(M_Word)
+;
+
 // Complex tokens
 COMMENT_LINE
 :

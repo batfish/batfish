@@ -3,6 +3,7 @@ package org.batfish.grammar.cumulus_interfaces;
 import static org.batfish.datamodel.matchers.MapMatchers.hasKeys;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
+import static org.hamcrest.Matchers.equalTo;
 
 import org.batfish.common.Warnings;
 import org.batfish.config.Settings;
@@ -52,5 +53,13 @@ public class CumulusInterfacesGrammarTest {
     Interfaces interfaces = parse(input, new CumulusNcluConfiguration());
     Interface iface = interfaces.getInterfaces().get("i1");
     assertThat(iface.getAddresses(), contains(ConcreteInterfaceAddress.parse("10.12.13.14/24")));
+  }
+
+  @Test
+  public void testIfaceVrf() {
+    String input = "iface i1\n vrf v1\n";
+    Interfaces interfaces = parse(input, new CumulusNcluConfiguration());
+    Interface iface = interfaces.getInterfaces().get("i1");
+    assertThat(iface.getVrf(), equalTo("v1"));
   }
 }
