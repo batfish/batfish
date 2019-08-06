@@ -59,9 +59,12 @@ public class Topology extends BfObject {
             nodeInterfaces.containsKey(interface1)
                 ? nodeInterfaces.get(interface1).getInterfaceType()
                 : InterfaceType.UNKNOWN;
+
+        Configuration configuration2 = configurations.get(edge.getNode2());
+        assert configuration2 != null; // assuming topology is valid
         InterfaceType iface2type =
-            nodeInterfaces.containsKey(interface2)
-                ? nodeInterfaces.get(interface2).getInterfaceType()
+            configuration2.getAllInterfaces().containsKey(interface2)
+                ? configuration2.getAllInterfaces().get(interface2).getInterfaceType()
                 : InterfaceType.UNKNOWN;
 
         Interface pojoInterface = new Interface(pojoNode.getId(), interface1, iface1type);
