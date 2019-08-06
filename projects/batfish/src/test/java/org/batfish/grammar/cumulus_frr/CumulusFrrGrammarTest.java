@@ -1,13 +1,31 @@
 package org.batfish.grammar.cumulus_frr;
 
-import static org.junit.Assert.*;
+import static org.batfish.main.BatfishTestUtils.configureBatfishTestSettings;
+import static org.hamcrest.Matchers.equalTo;
+import static org.junit.Assert.assertThat;
 
+import com.google.common.collect.ImmutableMap;
+import java.io.IOException;
+import java.util.Arrays;
+import java.util.SortedMap;
+import org.antlr.v4.runtime.tree.ParseTreeWalker;
+import org.batfish.common.Warnings;
+import org.batfish.common.util.CommonUtil;
+import org.batfish.config.Settings;
+import org.batfish.datamodel.Configuration;
+import org.batfish.grammar.BatfishParseTreeWalker;
+import org.batfish.grammar.GrammarSettings;
+import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Cumulus_frr_configurationContext;
+import org.batfish.main.BatfishTestUtils;
+import org.batfish.representation.cumulus.CumulusNcluConfiguration;
+import org.batfish.representation.cumulus.Vrf;
 import org.junit.Rule;
+import org.junit.Test;
+import org.junit.rules.ExpectedException;
 import org.junit.rules.TemporaryFolder;
 
 public class CumulusFrrGrammarTest {
-  private static final String TESTCONFIGS_PREFIX =
-      "org/batfish/grammar/cumulus_frr/testconfigs/";
+  private static final String TESTCONFIGS_PREFIX = "org/batfish/grammar/cumulus_frr/testconfigs/";
 
   @Rule public TemporaryFolder _folder = new TemporaryFolder();
 
@@ -22,24 +40,19 @@ public class CumulusFrrGrammarTest {
   private static CumulusNcluConfiguration parseVendorConfig(
       String filename, GrammarSettings settings) {
     String src = CommonUtil.readResource(TESTCONFIGS_PREFIX + filename);
-    CumulusConcatenatedCombinedParser parser = new CumulusConcatenatedCombinedParser(src, settings);
-    CumulusConcatenatedControlPlaneExtractor extractor =
-        new CumulusConcatenatedControlPlaneExtractor(
-            src, new Warnings(), filename, parser.getSettings(), null, false);
-    ParserRuleContext tree =
-        Batfish.parse(parser, new BatfishLogger(BatfishLogger.LEVELSTR_FATAL, false), settings);
-    extractor.processParseTree(tree);
-    CumulusNcluConfiguration vendorConfiguration =
-        (CumulusNcluConfiguration) extractor.getVendorConfiguration();
-    vendorConfiguration.setFilename(TESTCONFIGS_PREFIX + filename);
-    return vendorConfiguration;
+    CumulusNcluConfiguration configuration = new CumulusNcluConfiguration();
+    CumulusFrrCombinedParser parser = new CumulusFrrCombinedParser(src, settings, 1, 0);
+    Cumulus_frr_configurationContext ctxt = parser.parse();
+    ParseTreeWalker walker = new BatfishParseTreeWalker(parser);
+    Warnings w = new Warnings();
+    CumulusFrrConfigurationBuilder cb = new CumulusFrrConfigurationBuilder(configuration, w);
+    walker.walk(cb, ctxt);
+    return cb.getVendorConfiguration();
   }
 
-  private SortedMap<String, Configuration> parseTextConfigs(String... configurationNames)
-      throws IOException {
-    String[] names =
-        Arrays.stream(configurationNames).map(s -> TESTCONFIGS_PREFIX + s).toArray(String[]::new);
-    return BatfishTestUtils.parseTextConfigs(_folder, names);
+  @Test
+  public void testCumulusFrrVrf() {
+    CumulusNcluConfiguration config = parseVendorConfig("cumulus_frr_vrf");
+    assertThat(config.getVrfs(), equalTo(ImmutableMap.of("VRF", new Vrf("VRF"))));
   }
-
 }

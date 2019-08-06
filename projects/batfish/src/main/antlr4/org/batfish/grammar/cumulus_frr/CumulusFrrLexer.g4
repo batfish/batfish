@@ -43,7 +43,8 @@ VRF
 fragment
 F_Newline
 :
-  [\r\n] // carriage return or line feed
+  [\n\r] // carriage return or line feed
+
 ;
 
 fragment

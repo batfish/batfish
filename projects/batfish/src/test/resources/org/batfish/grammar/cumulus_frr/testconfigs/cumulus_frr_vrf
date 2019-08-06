@@ -1,0 +1,4 @@
+vrf NAME
+ ip route 0.0.0.0/0 10.0.0.1
+ vni 170000
+ exit-vrf

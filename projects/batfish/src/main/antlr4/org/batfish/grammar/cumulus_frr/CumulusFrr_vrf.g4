@@ -1,5 +1,7 @@
 parser grammar CumulusFrr_vrf;
 
+import CumulusFrr_common;
+
 options {
   tokenVocab = CumulusFrrLexer;
 }
@@ -11,12 +13,3 @@ s_vrf
   EXIT_VRF
 ;
 
-word
-:
-  ~NEWLINE
-;
-
-null_rest_of_line
-:
-  ~NEWLINE* NEWLINE
-;

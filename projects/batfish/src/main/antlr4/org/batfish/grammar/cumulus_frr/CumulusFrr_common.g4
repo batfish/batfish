@@ -6,5 +6,10 @@ options {
 
 word
 :
-  ~NEWLINE
+  (~NEWLINE)*
+;
+
+null_rest_of_line
+:
+  ~NEWLINE* NEWLINE
 ;
