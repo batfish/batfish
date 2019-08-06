@@ -5,8 +5,8 @@ import static org.junit.Assert.assertThat;
 
 import java.io.IOException;
 import org.batfish.common.util.BatfishObjectMapper;
-import org.batfish.datamodel.eigrp.EigrpMetric;
-import org.batfish.datamodel.eigrp.EigrpProcessMode;
+import org.batfish.datamodel.eigrp.EigrpMetricValues;
+import org.batfish.datamodel.eigrp.WideMetric;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
@@ -21,10 +21,8 @@ public class EigrpRouteTest {
         EigrpInternalRoute.builder()
             .setNetwork(Prefix.parse("1.1.1.1/32"))
             .setEigrpMetric(
-                EigrpMetric.builder()
-                    .setBandwidth(1000.0)
-                    .setDelay(2.0)
-                    .setMode(EigrpProcessMode.NAMED)
+                WideMetric.builder()
+                    .setValues(EigrpMetricValues.builder().setBandwidth(1000).setDelay(2).build())
                     .build())
             .setProcessAsn(1L)
             .build();
@@ -38,10 +36,8 @@ public class EigrpRouteTest {
         EigrpExternalRoute.builder()
             .setNetwork(Prefix.parse("1.1.1.1/32"))
             .setEigrpMetric(
-                EigrpMetric.builder()
-                    .setBandwidth(1000.0)
-                    .setDelay(2.0)
-                    .setMode(EigrpProcessMode.NAMED)
+                WideMetric.builder()
+                    .setValues(EigrpMetricValues.builder().setBandwidth(1000).setDelay(2).build())
                     .build())
             .setProcessAsn(1L)
             .setDestinationAsn(2L)

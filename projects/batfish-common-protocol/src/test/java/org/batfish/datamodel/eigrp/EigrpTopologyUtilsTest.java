@@ -32,7 +32,9 @@ public class EigrpTopologyUtilsTest {
             .build();
     Vrf vrf = nf.vrfBuilder().setName("vrf").setOwner(configuration).build();
     EigrpMetric metric =
-        EigrpMetric.builder().setBandwidth(1d).setDelay(1d).setMode(EigrpProcessMode.NAMED).build();
+        WideMetric.builder()
+            .setValues(EigrpMetricValues.builder().setBandwidth(1d).setDelay(1d).build())
+            .build();
     nf.interfaceBuilder()
         .setName("iface1")
         .setOwner(configuration)
@@ -92,7 +94,9 @@ public class EigrpTopologyUtilsTest {
 
   private static Map<String, Configuration> configurationsForEigrpTopology() {
     EigrpMetric metric =
-        EigrpMetric.builder().setBandwidth(1d).setDelay(1d).setMode(EigrpProcessMode.NAMED).build();
+        WideMetric.builder()
+            .setValues(EigrpMetricValues.builder().setBandwidth(1d).setDelay(1d).build())
+            .build();
     EigrpInterfaceSettings eigrpInterfaceSettings =
         EigrpInterfaceSettings.builder()
             .setAsn(1L)

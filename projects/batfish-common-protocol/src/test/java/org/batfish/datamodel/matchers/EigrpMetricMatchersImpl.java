@@ -15,7 +15,7 @@ class EigrpMetricMatchersImpl {
     @Override
     @Nonnull
     protected Long featureValueOf(EigrpMetric actual) {
-      return actual.getClassicBandwidth();
+      return actual.getValues().getBandwidth();
     }
   }
 
@@ -27,7 +27,7 @@ class EigrpMetricMatchersImpl {
     @Override
     @Nonnull
     protected Long featureValueOf(EigrpMetric actual) {
-      return actual.getCost();
+      return actual.cost();
     }
   }
 
@@ -39,7 +39,7 @@ class EigrpMetricMatchersImpl {
     @Override
     @Nonnull
     protected Long featureValueOf(EigrpMetric actual) {
-      return actual.getClassicDelay();
+      return actual.getValues().getDelay();
     }
   }
 }
