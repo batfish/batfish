@@ -353,10 +353,20 @@ final class Conversions {
     @Nullable BgpVrfIpv4AddressFamilyConfiguration af4 = vrfConfig.getIpv4UnicastAddressFamily();
     Ipv4UnicastAddressFamily.Builder ipv4FamilyBuilder = Ipv4UnicastAddressFamily.builder();
 
-    // Export policy
+    // Statements for export policy
     List<Statement> exportStatements = new LinkedList<>();
     if (naf4 != null) {
-      setCommonAddressFamilyProperties(ipv4FamilyBuilder, naf4, af4, c);
+      setAddressFamilyCapabilities(ipv4FamilyBuilder, naf4, af4);
+
+      // set import policy
+      String inboundMap = naf4.getInboundRouteMap();
+      ipv4FamilyBuilder
+          .setImportPolicy(
+              inboundMap != null && c.getRoutingPolicies().containsKey(inboundMap)
+                  ? inboundMap
+                  : null)
+          .setRouteReflectorClient(firstNonNull(naf4.getRouteReflectorClient(), Boolean.FALSE));
+
       populateExportStatementsForIpv4Af(exportStatements, c, naf4, neighbor, newNeighborBuilder);
       populateCommonExportStatements(exportStatements, naf4, c, vrf.getName());
     } else if (neighbor.getRemovePrivateAs() != null) {
@@ -364,25 +374,38 @@ final class Conversions {
       exportStatements.add(RemovePrivateAs.toStaticStatement());
     }
 
+    // Export policy
     RoutingPolicy exportPolicy =
-        new RoutingPolicy(
-            computeBgpPeerExportPolicyName(
-                vrf.getName(), dynamic ? prefix.toString() : prefix.getStartIp().toString()),
-            c);
-    exportPolicy.setStatements(exportStatements);
+        createExportPolicyFromStatements(exportStatements, dynamic, prefix, vrf.getName(), c);
     c.getRoutingPolicies().put(exportPolicy.getName(), exportPolicy);
     ipv4FamilyBuilder.setExportPolicy(exportPolicy.getName());
+
     newNeighborBuilder.setIpv4UnicastAddressFamily(ipv4FamilyBuilder.build());
 
     return newNeighborBuilder.build();
   }
 
-  /** Set common properties with respect to all (IPv4 and L2VPN) address families */
-  private static <B extends AddressFamily.Builder<?, ?>> void setCommonAddressFamilyProperties(
+  /** Create and return an export policy from a list of statements */
+  private static RoutingPolicy createExportPolicyFromStatements(
+      List<Statement> statements,
+      boolean dynamic,
+      Prefix prefix,
+      String vrfName,
+      Configuration configuration) {
+    RoutingPolicy exportPolicy =
+        new RoutingPolicy(
+            computeBgpPeerExportPolicyName(
+                vrfName, dynamic ? prefix.toString() : prefix.getStartIp().toString()),
+            configuration);
+    exportPolicy.setStatements(statements);
+    return exportPolicy;
+  }
+
+  /** Set address family capabilities for IPv4 and L2VPN address families */
+  private static <B extends AddressFamily.Builder<?, ?>> void setAddressFamilyCapabilities(
       B addressFamilyBuilder,
       @Nonnull BgpVrfNeighborAddressFamilyConfiguration naf,
-      @Nullable BgpVrfIpv4AddressFamilyConfiguration af4,
-      @Nonnull Configuration configuration) {
+      @Nullable BgpVrfIpv4AddressFamilyConfiguration af4) {
     addressFamilyBuilder.setAddressFamilyCapabilities(
         AddressFamilyCapabilities.builder()
             .setAdvertiseInactive(
@@ -393,14 +416,6 @@ final class Conversions {
             .setAllowRemoteAsOut(firstNonNull(naf.getDisablePeerAsCheck(), Boolean.FALSE))
             .setSendCommunity(firstNonNull(naf.getSendCommunityStandard(), Boolean.FALSE))
             .build());
-    String inboundMap = naf.getInboundRouteMap();
-
-    addressFamilyBuilder
-        .setImportPolicy(
-            inboundMap != null && configuration.getRoutingPolicies().containsKey(inboundMap)
-                ? inboundMap
-                : null)
-        .setRouteReflectorClient(firstNonNull(naf.getRouteReflectorClient(), Boolean.FALSE));
   }
 
   /** Populate export statements specific to IPv4 address family */
@@ -440,7 +455,7 @@ final class Conversions {
     }
   }
 
-  /** Populate export statements common to IPv4 and L2VPN address family */
+  /** Populate export statements common to IPv4 and L2VPN address families */
   private static void populateCommonExportStatements(
       List<Statement> statements,
       BgpVrfNeighborAddressFamilyConfiguration naf,
