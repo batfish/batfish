@@ -2098,6 +2098,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
     InputStream inputObject =
         _storage.loadSnapshotInputObject(_settings.getContainer(), _testrigSettings.getName(), key);
     byte[] bytes = IOUtils.toByteArray(inputObject);
+    inputObject.close();
     return new String(bytes, detectCharset(bytes));
   }
 
