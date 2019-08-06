@@ -29,6 +29,11 @@ IFACE
   'iface' -> pushMode(M_Word)
 ;
 
+LINK_SPEED
+:
+  'link-speed'
+;
+
 VRF
 :
   'vrf' -> pushMode(M_Word)
@@ -62,6 +67,11 @@ IP_PREFIX
 NEWLINE
 :
   F_Newline+
+;
+
+NUMBER
+:
+  F_Digit+
 ;
 
 WS

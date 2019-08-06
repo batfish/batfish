@@ -14,6 +14,7 @@ public final class Interface {
   private @Nullable String _vrf;
   private @Nullable List<String> _bondSlaves;
   private boolean _isVrf = false;
+  private @Nullable Integer _linkSpeed;
 
   public Interface(@Nonnull String name) {
     _name = name;
@@ -36,6 +37,11 @@ public final class Interface {
     return _isVrf;
   }
 
+  @Nullable
+  public Integer getLinkSpeed() {
+    return _linkSpeed;
+  }
+
   @Nonnull
   public String getName() {
     return _name;
@@ -52,6 +58,10 @@ public final class Interface {
 
   public void setIsVrf() {
     _isVrf = true;
+  }
+
+  public void setLinkSpeed(int linkSpeed) {
+    _linkSpeed = linkSpeed;
   }
 
   public void setVrf(String vrf) {

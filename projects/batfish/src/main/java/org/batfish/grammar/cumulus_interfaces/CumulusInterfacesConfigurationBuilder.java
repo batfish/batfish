@@ -13,6 +13,7 @@ import org.batfish.grammar.UnrecognizedLineToken;
 import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.Cumulus_interfaces_configurationContext;
 import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.I_addressContext;
 import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.I_bond_slavesContext;
+import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.I_link_speedContext;
 import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.I_vrfContext;
 import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.I_vrf_tableContext;
 import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.Interface_nameContext;
@@ -88,6 +89,10 @@ public final class CumulusInterfacesConfigurationBuilder
         interfaceNameCtxs.stream()
             .map(RuleContext::getText)
             .collect(ImmutableList.toImmutableList()));
+  }
+
+  @Override public void enterI_link_speed(I_link_speedContext ctx) {
+    _currentIface.setLinkSpeed(Integer.parseInt(ctx.NUMBER().getText()));
   }
 
   @Override

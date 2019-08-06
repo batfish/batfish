@@ -30,6 +30,7 @@ s_iface
   (
     i_address
   | i_bond_slaves
+  | i_link_speed
   | i_vrf
   | i_vrf_table
   )*
@@ -43,6 +44,11 @@ i_address
 i_bond_slaves
 :
   BOND_SLAVES interface_name+ NEWLINE
+;
+
+i_link_speed
+:
+  LINK_SPEED NUMBER NEWLINE
 ;
 
 i_vrf

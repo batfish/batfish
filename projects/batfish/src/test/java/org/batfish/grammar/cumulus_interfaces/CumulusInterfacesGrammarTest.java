@@ -4,6 +4,8 @@ import static org.batfish.datamodel.matchers.MapMatchers.hasKeys;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.equalTo;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import org.batfish.common.Warnings;
@@ -62,6 +64,22 @@ public class CumulusInterfacesGrammarTest {
     Interfaces interfaces = parse(input, new CumulusNcluConfiguration());
     Interface iface = interfaces.getInterfaces().get("i1");
     assertThat(iface.getAddresses(), contains(ConcreteInterfaceAddress.parse("10.12.13.14/24")));
+  }
+
+  @Test
+  public void testIfaceLinkSpeed() {
+    String input = "iface i1\n link-speed 10000\n";
+    Interfaces interfaces = parse(input, new CumulusNcluConfiguration());
+    Interface iface = interfaces.getInterfaces().get("i1");
+    assertEquals(iface.getLinkSpeed(), (Integer) 10000);
+  }
+
+  @Test
+  public void testIfaceLinkSpeed_null() {
+    String input = "iface i1\n";
+    Interfaces interfaces = parse(input, new CumulusNcluConfiguration());
+    Interface iface = interfaces.getInterfaces().get("i1");
+    assertNull(iface.getLinkSpeed());
   }
 
   @Test
