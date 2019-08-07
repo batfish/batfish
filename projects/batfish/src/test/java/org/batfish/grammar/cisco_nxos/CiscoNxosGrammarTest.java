@@ -489,7 +489,7 @@ public final class CiscoNxosGrammarTest {
 
   @Test
   public void testTemplatePeerBgpAddressFamilyConversion() throws IOException {
-    Configuration c = parseConfig("nxos_bgp_peer_template_af");
+    Configuration c = parseConfig("nxos_bgp_peer_template_af_inheritance");
 
     BgpActivePeerConfig peer =
         Iterables.getOnlyElement(c.getDefaultVrf().getBgpProcess().getActiveNeighbors().values());
