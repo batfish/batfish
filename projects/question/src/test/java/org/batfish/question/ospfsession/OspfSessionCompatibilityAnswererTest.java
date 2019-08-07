@@ -96,6 +96,7 @@ public class OspfSessionCompatibilityAnswererTest {
                     .setVrfName("vrf_u")
                     .setIp(Ip.parse("1.1.1.2"))
                     .build()))
+        .setRouterId(Ip.ZERO)
         .build();
     nf.ospfProcessBuilder()
         .setVrf(vrfV)
@@ -110,6 +111,7 @@ public class OspfSessionCompatibilityAnswererTest {
                     .setVrfName("vrf_v")
                     .setIp(Ip.parse("1.1.1.3"))
                     .build()))
+        .setRouterId(Ip.MAX)
         .build();
     _configurations =
         ImmutableMap.of("configuration_u", configurationU, "configuration_v", configurationV);
