@@ -119,10 +119,26 @@ public final class CumulusInterfacesConfigurationBuilder
                 ifaceNameCtx.getText(),
                 CumulusStructureUsage.BOND_SLAVE,
                 ifaceNameCtx.getStart().getLine()));
-    _currentIface.setBondSlaves(
-        interfaceNameCtxs.stream()
-            .map(RuleContext::getText)
-            .collect(ImmutableList.toImmutableList()));
+
+    interfaceNameCtxs.forEach(
+        slaveCtx -> {
+          String slave = slaveCtx.getText();
+          String parent = _currentIface.getName();
+          String oldParent = _interfaces.getBondSlaveParents().put(slave, parent);
+          if (oldParent != null) {
+            _w.getParseWarnings()
+                .add(
+                    new ParseWarning(
+                        slaveCtx.getStart().getLine(),
+                        slaveCtx.getText(),
+                        ctx.getText(),
+                        String.format(
+                            "Interface %s cannot be the bond-slave of both %s and %s",
+                            slave, parent, oldParent)));
+            // keep the oldParent
+            _interfaces.getBondSlaveParents().put(slave, oldParent);
+          }
+        });
   }
 
   @Override

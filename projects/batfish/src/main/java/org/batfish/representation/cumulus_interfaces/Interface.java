@@ -21,7 +21,6 @@ import org.batfish.datamodel.MacAddress;
 public final class Interface {
   private @Nullable List<ConcreteInterfaceAddress> _addresses;
   private @Nullable Map<MacAddress, Set<InterfaceAddress>> _addressVirtuals;
-  private @Nullable List<String> _bondSlaves;
   private @Nullable Integer _bridgeAccess;
   private @Nullable List<String> _bridgePorts;
   private @Nullable IntegerSpace _bridgeVids;
@@ -60,11 +59,6 @@ public final class Interface {
   @Nullable
   public Integer getBridgeAccess() {
     return _bridgeAccess;
-  }
-
-  @Nullable
-  public List<String> getBondSlaves() {
-    return _bondSlaves;
   }
 
   @Nullable
@@ -124,10 +118,6 @@ public final class Interface {
   @Nullable
   public Ip getVxlanLocalTunnelIp() {
     return _vxlanLocalTunnelIp;
-  }
-
-  public void setBondSlaves(List<String> bondSlaves) {
-    _bondSlaves = ImmutableList.copyOf(bondSlaves);
   }
 
   public void setBridgeAccess(int vlanId) {
