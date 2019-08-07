@@ -8,7 +8,6 @@ import org.antlr.v4.runtime.RuleContext;
 import org.antlr.v4.runtime.Token;
 import org.antlr.v4.runtime.tree.ErrorNode;
 import org.antlr.v4.runtime.tree.ParseTree;
-import org.antlr.v4.runtime.tree.TerminalNode;
 import org.batfish.common.Warnings;
 import org.batfish.common.Warnings.ParseWarning;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
@@ -33,6 +32,7 @@ import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.I_vrf_tabl
 import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.I_vxlan_idContext;
 import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.I_vxlan_local_tunnel_ipContext;
 import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.Interface_nameContext;
+import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.NumberContext;
 import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.S_autoContext;
 import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.S_ifaceContext;
 import org.batfish.representation.cumulus.CumulusNcluConfiguration;
@@ -146,7 +146,7 @@ public final class CumulusInterfacesConfigurationBuilder
 
   @Override
   public void exitI_bridge_access(I_bridge_accessContext ctx) {
-    _currentIface.setBridgeAccess(Integer.parseInt(ctx.NUMBER().getText()));
+    _currentIface.setBridgeAccess(Integer.parseInt(ctx.number().getText()));
   }
 
   @Override
@@ -167,7 +167,7 @@ public final class CumulusInterfacesConfigurationBuilder
 
   @Override
   public void exitI_bridge_vids(I_bridge_vidsContext ctx) {
-    List<TerminalNode> vidCtxs = ctx.NUMBER();
+    List<NumberContext> vidCtxs = ctx.number();
     _currentIface.setBridgeVids(
         IntegerSpace.unionOf(
             vidCtxs.stream()
@@ -179,17 +179,17 @@ public final class CumulusInterfacesConfigurationBuilder
 
   @Override
   public void exitI_clag_id(I_clag_idContext ctx) {
-    _currentIface.setClagId(Integer.parseInt(ctx.NUMBER().getText()));
+    _currentIface.setClagId(Integer.parseInt(ctx.number().getText()));
   }
 
   @Override
   public void exitI_link_speed(I_link_speedContext ctx) {
-    _currentIface.setLinkSpeed(Integer.parseInt(ctx.NUMBER().getText()));
+    _currentIface.setLinkSpeed(Integer.parseInt(ctx.number().getText()));
   }
 
   @Override
   public void exitI_vlan_id(I_vlan_idContext ctx) {
-    String vlanId = ctx.NUMBER().getText();
+    String vlanId = ctx.number().getText();
     _config.defineStructure(CumulusStructureType.VLAN, vlanId, ctx.getStart().getLine());
     _currentIface.setVlanId(Integer.parseInt(vlanId));
   }
@@ -213,7 +213,7 @@ public final class CumulusInterfacesConfigurationBuilder
 
   @Override
   public void exitI_vxlan_id(I_vxlan_idContext ctx) {
-    _currentIface.setVxlanId(Integer.parseInt(ctx.NUMBER().getText()));
+    _currentIface.setVxlanId(Integer.parseInt(ctx.number().getText()));
   }
 
   @Override
