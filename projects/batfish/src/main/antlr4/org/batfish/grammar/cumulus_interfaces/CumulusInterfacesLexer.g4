@@ -24,6 +24,11 @@ BOND_SLAVES
   'bond-slaves' -> pushMode(M_Words)
 ;
 
+BRIDGE_PORTS
+:
+  'bridge-ports' -> pushMode(M_Words)
+;
+
 IFACE
 :
   'iface' -> pushMode(M_Word)

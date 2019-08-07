@@ -13,6 +13,7 @@ public final class Interface {
   private final @Nonnull String _name;
   private @Nullable String _vrf;
   private @Nullable List<String> _bondSlaves;
+  private @Nullable List<String> _bridgePorts;
   private boolean _isVrf = false;
   private @Nullable Integer _linkSpeed;
 
@@ -31,6 +32,11 @@ public final class Interface {
   @Nullable
   public List<String> getBondSlaves() {
     return _bondSlaves;
+  }
+
+  @Nullable
+  public List<String> getBridgePorts() {
+    return _bridgePorts;
   }
 
   public boolean getIsVrf() {
@@ -54,6 +60,10 @@ public final class Interface {
 
   public void setBondSlaves(List<String> bondSlaves) {
     _bondSlaves = ImmutableList.copyOf(bondSlaves);
+  }
+
+  public void setBridgePorts(List<String> bridgePorts) {
+    _bridgePorts = ImmutableList.copyOf(bridgePorts);
   }
 
   public void setIsVrf() {

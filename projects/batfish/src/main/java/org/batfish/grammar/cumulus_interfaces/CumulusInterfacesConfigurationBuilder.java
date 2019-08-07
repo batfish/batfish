@@ -13,6 +13,7 @@ import org.batfish.grammar.UnrecognizedLineToken;
 import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.Cumulus_interfaces_configurationContext;
 import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.I_addressContext;
 import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.I_bond_slavesContext;
+import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.I_bridge_portsContext;
 import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.I_link_speedContext;
 import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.I_vrfContext;
 import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.I_vrf_tableContext;
@@ -90,6 +91,16 @@ public final class CumulusInterfacesConfigurationBuilder
             .map(RuleContext::getText)
             .collect(ImmutableList.toImmutableList()));
   }
+
+  @Override public void enterI_bridge_ports(I_bridge_portsContext ctx) {
+    List<Interface_nameContext> interfaceNameCtxs = ctx.interface_name();
+    interfaceNameCtxs.forEach(ifaceNameCtx -> _config.referenceStructure(CumulusStructureType.INTERFACE,ifaceNameCtx.getText(),CumulusStructureUsage.BRIDGE_PORT,ifaceNameCtx.getStart().getLine()));
+    _currentIface.setBridgePorts(
+        interfaceNameCtxs.stream()
+            .map(RuleContext::getText)
+            .collect(ImmutableList.toImmutableList()));
+  }
+
 
   @Override public void enterI_link_speed(I_link_speedContext ctx) {
     _currentIface.setLinkSpeed(Integer.parseInt(ctx.NUMBER().getText()));
