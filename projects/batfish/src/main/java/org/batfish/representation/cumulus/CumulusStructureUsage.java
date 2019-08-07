@@ -13,7 +13,6 @@ public enum CumulusStructureUsage implements StructureUsage {
   BOND_SLAVE("bond slave"),
   BOND_VRF("bond vrf"),
   BRIDGE_PORT("bridge ports"),
-  BRIDGE_VID("bridge vids"),
   INTERFACE_CLAG_BACKUP_IP_VRF("interface clag backup-ip vrf"),
   INTERFACE_SELF_REFERENCE("interface self-reference"),
   INTERFACE_VRF("interface vrf"),

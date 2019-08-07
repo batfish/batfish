@@ -4,7 +4,7 @@ options {
   superClass = 'org.batfish.grammar.cumulus_interfaces.parsing.CumulusInterfacesBaseLexer';
 }
 tokens {
-  WORD
+  TEXT, WORD
 }
 
 // Keyword tokens
@@ -12,6 +12,16 @@ tokens {
 ADDRESS
 :
   'address'
+;
+
+ADDRESS_VIRTUAL
+:
+  'address-virtual'
+;
+
+ALIAS
+:
+  'alias' -> pushMode(M_LineText)
 ;
 
 AUTO
@@ -59,6 +69,11 @@ VLAN_ID
   'vlan-id'
 ;
 
+VLAN_RAW_DEVICE
+:
+  'vlan-raw-device' -> pushMode(M_Word)
+;
+
 VRF
 :
   'vrf' -> pushMode(M_Word)
@@ -69,7 +84,27 @@ VRF_TABLE
   'vrf-table' -> pushMode(M_Word)
 ;
 
+VXLAN_ID
+:
+  'vxlan-id'
+;
+
+VXLAN_LOCAL_TUNNEL_IP
+:
+  'vxlan-local-tunnelip'
+;
+
 // Complex tokens
+BLANK_LINE
+:
+  (
+    F_Whitespace
+  )* F_Newline
+  {lastTokenType() == NEWLINE|| lastTokenType() == -1}?
+
+  F_Newline* -> channel ( HIDDEN )
+;
+
 COMMENT_LINE
 :
   (
@@ -84,9 +119,19 @@ COMMENT_LINE
   ) -> channel ( HIDDEN )
 ;
 
+IP_ADDRESS
+:
+  F_IpAddress
+;
+
 IP_PREFIX
 :
   F_IpPrefix
+;
+
+MAC_ADDRESS
+:
+  F_MacAddress
 ;
 
 NEWLINE
@@ -112,6 +157,12 @@ F_Digit
 ;
 
 fragment
+F_HexDigit
+:
+  [0-9A-Fa-f]
+;
+
+fragment
 F_IpAddress
 :
   F_Uint8 '.' F_Uint8 '.' F_Uint8 '.' F_Uint8
@@ -132,6 +183,14 @@ F_IpPrefixLength
 ;
 
 fragment
+F_MacAddress
+:
+  F_HexDigit F_HexDigit ':' F_HexDigit F_HexDigit ':' F_HexDigit F_HexDigit ':'
+  F_HexDigit F_HexDigit ':' F_HexDigit F_HexDigit ':' F_HexDigit F_HexDigit
+;
+
+
+fragment
 F_Newline
 :
   [\n\r]
@@ -142,6 +201,13 @@ F_NonNewline
 :
   ~[\n\r]
 ;
+
+fragment
+F_NonWhitespace
+:
+  ~[ \t\u000C\u00A0\n\r]
+;
+
 
 fragment
 F_PositiveDigit
@@ -178,6 +244,18 @@ fragment
 F_WordChar
 :
   [0-9A-Za-z_.:] | '-'
+;
+
+mode M_LineText;
+
+M_LineText_TEXT
+:
+  F_NonWhitespace F_NonNewline* -> type (TEXT), popMode
+;
+
+M_LineText_WS
+:
+  F_Whitespace+ -> channel ( HIDDEN )
 ;
 
 mode M_Word;
