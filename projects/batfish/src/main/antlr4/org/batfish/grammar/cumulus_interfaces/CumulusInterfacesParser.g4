@@ -32,6 +32,7 @@ s_iface
   | i_bond_slaves
   | i_bridge_ports
   | i_bridge_vids
+  | i_clag_id
   | i_link_speed
   | i_vlan_id
   | i_vrf
@@ -57,6 +58,11 @@ i_bridge_ports
 i_bridge_vids
 :
   BRIDGE_VIDS NUMBER+ NEWLINE
+;
+
+i_clag_id
+:
+  CLAG_ID NUMBER NEWLINE
 ;
 
 i_link_speed

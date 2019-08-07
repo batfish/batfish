@@ -19,6 +19,7 @@ import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.I_addressC
 import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.I_bond_slavesContext;
 import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.I_bridge_portsContext;
 import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.I_bridge_vidsContext;
+import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.I_clag_idContext;
 import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.I_link_speedContext;
 import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.I_vlan_idContext;
 import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.I_vrfContext;
@@ -137,6 +138,11 @@ public final class CumulusInterfacesConfigurationBuilder
                 .map(Integer::parseInt)
                 .map(Range::singleton)
                 .collect(ImmutableList.toImmutableList())));
+  }
+
+  @Override
+  public void exitI_clag_id(I_clag_idContext ctx) {
+    _currentIface.setClagId(Integer.parseInt(ctx.NUMBER().getText()));
   }
 
   @Override

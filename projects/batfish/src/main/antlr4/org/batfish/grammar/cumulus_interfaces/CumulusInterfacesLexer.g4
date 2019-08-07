@@ -34,6 +34,11 @@ BRIDGE_VIDS
   'bridge-vids'
 ;
 
+CLAG_ID
+:
+  'clag-id'
+;
+
 IFACE
 :
   'iface' -> pushMode(M_Word)

@@ -21,6 +21,7 @@ public final class Interface {
   private final @Nonnull String _name;
   private @Nullable Integer _vlanId;
   private @Nullable String _vrf;
+  private @Nullable Integer _clagId;
 
   public Interface(@Nonnull String name) {
     _name = name;
@@ -47,6 +48,11 @@ public final class Interface {
   @Nullable
   public IntegerSpace getBridgeVids() {
     return _bridgeVids;
+  }
+
+  @Nullable
+  public Integer getClagId() {
+    return _clagId;
   }
 
   public boolean getIsVrf() {
@@ -83,6 +89,10 @@ public final class Interface {
 
   public void setBridgeVids(IntegerSpace bridgeVids) {
     _bridgeVids = bridgeVids;
+  }
+
+  public void setClagId(int clagId) {
+    _clagId = clagId;
   }
 
   public void setIsVrf() {

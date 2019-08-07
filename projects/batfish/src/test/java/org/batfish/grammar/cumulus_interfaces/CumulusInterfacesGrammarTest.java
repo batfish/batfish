@@ -90,6 +90,14 @@ public class CumulusInterfacesGrammarTest {
   }
 
   @Test
+  public void testIfaceClagId() {
+    String input = "iface i1\n clag-id 123\n";
+    Interfaces interfaces = parse(input);
+    Interface iface = interfaces.getInterfaces().get("i1");
+    assertThat(iface.getClagId(), equalTo(123));
+  }
+
+  @Test
   public void testIfaceLinkSpeed() {
     String input = "iface i1\n link-speed 10000\n";
     Interfaces interfaces = parse(input);
