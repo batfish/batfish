@@ -1,3 +1,2 @@
 vrf NAME
- vni 170000
  exit-vrf
