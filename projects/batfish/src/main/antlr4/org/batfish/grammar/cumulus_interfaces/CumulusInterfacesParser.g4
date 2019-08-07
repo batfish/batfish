@@ -68,7 +68,7 @@ i_bond_slaves
 
 i_bridge_access
 :
-  BRIDGE_ACCESS NUMBER NEWLINE
+  BRIDGE_ACCESS number NEWLINE
 ;
 
 i_bridge_ports
@@ -78,22 +78,22 @@ i_bridge_ports
 
 i_bridge_vids
 :
-  BRIDGE_VIDS NUMBER+ NEWLINE
+  BRIDGE_VIDS number+ NEWLINE
 ;
 
 i_clag_id
 :
-  CLAG_ID NUMBER NEWLINE
+  CLAG_ID number NEWLINE
 ;
 
 i_link_speed
 :
-  LINK_SPEED NUMBER NEWLINE
+  LINK_SPEED number NEWLINE
 ;
 
 i_vlan_id
 :
-  VLAN_ID NUMBER NEWLINE
+  VLAN_ID number NEWLINE
 ;
 
 i_vlan_raw_device
@@ -113,7 +113,7 @@ i_vrf_table
 
 i_vxlan_id
 :
-  VXLAN_ID NUMBER NEWLINE
+  VXLAN_ID number NEWLINE
 ;
 
 i_vxlan_local_tunnel_ip
