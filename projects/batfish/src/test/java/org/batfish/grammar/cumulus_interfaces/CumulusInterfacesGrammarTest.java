@@ -200,7 +200,7 @@ public class CumulusInterfacesGrammarTest {
     String input = "iface i1\n link-speed 10000\n";
     Interfaces interfaces = parse(input);
     Interface iface = interfaces.getInterfaces().get("i1");
-    assertEquals(iface.getLinkSpeed(), (Integer) 10000);
+    assertThat(iface.getLinkSpeed(), equalTo(10000));
   }
 
   @Test
