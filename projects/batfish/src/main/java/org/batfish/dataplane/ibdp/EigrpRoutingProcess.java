@@ -146,16 +146,6 @@ final class EigrpRoutingProcess implements RoutingProcess<EigrpTopology, EigrpRo
   @Override
   public void executeIteration(Map<String, Node> allNodes) {
     _changeSet = RibDelta.builder();
-    if (!_initializationDelta.isEmpty()) {
-      // If we haven't sent out the first round of updates after initialization, do so now. Then
-      // clear the initialization delta
-      sendOutInternalRoutes(_initializationDelta, allNodes);
-      _initializationDelta = RibDelta.empty();
-    }
-
-    sendOutRoutesToNewEdges(_edgesWentUp, allNodes);
-    _edgesWentUp = ImmutableSet.of();
-
     // TODO: optimize, don't recreate the map each iteration
     NetworkConfigurations nc =
         NetworkConfigurations.of(
@@ -164,18 +154,28 @@ final class EigrpRoutingProcess implements RoutingProcess<EigrpTopology, EigrpRo
                     ImmutableMap.toImmutableMap(
                         Entry::getKey, e -> e.getValue().getConfiguration())));
 
+    if (!_initializationDelta.isEmpty()) {
+      // If we haven't sent out the first round of updates after initialization, do so now. Then
+      // clear the initialization delta
+      sendOutInternalRoutes(_initializationDelta, allNodes, nc);
+      _initializationDelta = RibDelta.empty();
+    }
+
+    sendOutRoutesToNewEdges(_edgesWentUp, allNodes, nc);
+    _edgesWentUp = ImmutableSet.of();
+
     // Process internal routes
     RibDelta<EigrpInternalRoute> internalDelta = processInternalRoutes(nc);
-    sendOutInternalRoutes(internalDelta, allNodes);
+    sendOutInternalRoutes(internalDelta, allNodes, nc);
 
     // Filter and export redistribution queue according to per neighbor export policy and send
     // out/withdraw
-    exportRedistributed(_queuedForRedistribution, allNodes);
+    exportRedistributed(_queuedForRedistribution, allNodes, nc);
     _queuedForRedistribution = RibDelta.empty();
 
     // Process new external routes and re-advertise them as necessary
     RibDelta<EigrpExternalRoute> externalDelta = processExternalRoutes(nc);
-    sendOutExternalRoutes(externalDelta, allNodes);
+    sendOutExternalRoutes(externalDelta, allNodes, nc);
 
     // Keep track of what what updates will go into the main RIB
     _changeSet.from(importRibDelta(_rib, internalDelta));
@@ -194,12 +194,13 @@ final class EigrpRoutingProcess implements RoutingProcess<EigrpTopology, EigrpRo
    */
   private void exportRedistributed(
       RibDelta<? extends AnnotatedRoute<AbstractRoute>> queueForRedistribution,
-      Map<String, Node> allNodes) {
+      Map<String, Node> allNodes,
+      NetworkConfigurations nc) {
     for (EigrpEdge eigrpEdge : _incomingExternalRoutes.keySet()) {
       RoutingPolicy exportPolicyForEdge = getOwnExportPolicy(eigrpEdge.getNode2());
       RibDelta<EigrpExternalRoute> routesForExport =
           exportRedistributedPerNeighbor(queueForRedistribution, exportPolicyForEdge);
-      sendOutExternalRoutesPerNeighbor(routesForExport, allNodes, eigrpEdge);
+      sendOutExternalRoutesPerNeighbor(routesForExport, allNodes, eigrpEdge, nc);
     }
   }
 
@@ -364,50 +365,71 @@ final class EigrpRoutingProcess implements RoutingProcess<EigrpTopology, EigrpRo
   }
 
   private void sendOutInternalRoutes(
-      RibDelta<EigrpInternalRoute> initializationDelta, Map<String, Node> allNodes) {
+      RibDelta<EigrpInternalRoute> initializationDelta,
+      Map<String, Node> allNodes,
+      NetworkConfigurations nc) {
     for (EigrpEdge eigrpEdge : _incomingInternalRoutes.keySet()) {
-      sendOutInternalRoutesPerNeighbor(initializationDelta, allNodes, eigrpEdge);
+      sendOutInternalRoutesPerNeighbor(initializationDelta, allNodes, eigrpEdge, nc);
     }
   }
 
   private void sendOutInternalRoutesPerNeighbor(
       RibDelta<EigrpInternalRoute> initializationDelta,
       Map<String, Node> allNodes,
-      EigrpEdge eigrpEdge) {
+      EigrpEdge eigrpEdge,
+      NetworkConfigurations nc) {
     EigrpRoutingProcess neighborProc = getNeighborEigrpProcess(allNodes, eigrpEdge, _asn);
+    // TODO: cleanup, this logic is ugly
+    Ip neighborIp = eigrpEdge.getNode1().getInterface(nc).getConcreteAddress().getIp();
     neighborProc.enqueueInternalMessages(
         eigrpEdge.reverse(),
         initializationDelta
             .getActions()
-            .filter(ra -> allowedByExportPolicy(eigrpEdge.getNode2(), ra.getRoute())));
+            .filter(ra -> allowedByExportPolicy(eigrpEdge.getNode2(), ra.getRoute()))
+            // Approximate split horizon: don't send the route to a neighbor if the neighbor is the
+            // next hop IP for the route.
+            .filter(ra -> !ra.getRoute().getNextHopIp().equals(neighborIp)));
   }
 
   private void sendOutExternalRoutes(
-      RibDelta<EigrpExternalRoute> queuedForRedistribution, Map<String, Node> allNodes) {
+      RibDelta<EigrpExternalRoute> queuedForRedistribution,
+      Map<String, Node> allNodes,
+      NetworkConfigurations nc) {
     for (EigrpEdge eigrpEdge : _incomingExternalRoutes.keySet()) {
-      sendOutExternalRoutesPerNeighbor(queuedForRedistribution, allNodes, eigrpEdge);
+      sendOutExternalRoutesPerNeighbor(queuedForRedistribution, allNodes, eigrpEdge, nc);
     }
   }
 
   private void sendOutExternalRoutesPerNeighbor(
       RibDelta<EigrpExternalRoute> queuedForRedistribution,
       Map<String, Node> allNodes,
-      EigrpEdge eigrpEdge) {
+      EigrpEdge eigrpEdge,
+      NetworkConfigurations nc) {
     EigrpRoutingProcess neighborProc = getNeighborEigrpProcess(allNodes, eigrpEdge, _asn);
-    neighborProc.enqueueExternalMessages(eigrpEdge.reverse(), queuedForRedistribution.getActions());
+    // TODO: cleanup, this logic is ugly
+    Ip neighborIp = eigrpEdge.getNode1().getInterface(nc).getConcreteAddress().getIp();
+    neighborProc.enqueueExternalMessages(
+        eigrpEdge.reverse(),
+        queuedForRedistribution
+            .getActions()
+            // Approximate split horizon: don't send the route to a neighbor if the neighbor is the
+            // next hop IP for the route.
+            .filter(ra -> !ra.getRoute().getNextHopIp().equals(neighborIp)));
   }
 
   private void sendOutRoutesToNewEdges(
-      Collection<EigrpEdge> edgesWentUp, Map<String, Node> allNodes) {
+      Collection<EigrpEdge> edgesWentUp, Map<String, Node> allNodes, NetworkConfigurations nc) {
     for (EigrpEdge edge : edgesWentUp) {
       sendOutInternalRoutesPerNeighbor(
           RibDelta.<EigrpInternalRoute>builder().add(_internalRib.getTypedRoutes()).build(),
           allNodes,
-          edge);
+          edge,
+          nc);
       sendOutExternalRoutesPerNeighbor(
           RibDelta.<EigrpExternalRoute>builder().add(_externalRib.getTypedRoutes()).build(),
           allNodes,
-          edge);
+          edge,
+          nc);
     }
   }
 

@@ -22,7 +22,7 @@ public final class WideMetric implements EigrpMetric {
   private static final String PROP_K6 = "k6";
   private static final String PROP_RIB_SCALE = "ribScale";
 
-  private static final int WIDE_FACTOR = 1 << 16;
+  private static final UnsignedLong WIDE_FACTOR = UnsignedLong.valueOf(1 << 16);
   private static final int BANDWIDTH_FACTOR = 10_000_000;
 
   @Nonnull private final EigrpMetricValues _values;
@@ -102,16 +102,23 @@ public final class WideMetric implements EigrpMetric {
   public UnsignedLong cost() {
     UnsignedLong scaledBw =
         UnsignedLong.valueOf(BANDWIDTH_FACTOR)
-            .times(UnsignedLong.valueOf(WIDE_FACTOR))
+            .times(WIDE_FACTOR)
             .dividedBy(UnsignedLong.valueOf(_values.getBandwidth()));
+
     // Delay (i.e., "total latency") is computed differently based on whether bandwidth is under 1
-    // Gb/s
+    // Gb/s. Since we keep bandwidth in kilobits, 10e6 is the magic constant
     UnsignedLong scaledDelay =
-        _values.getBandwidth() < 1_000_000_000
-            ? UnsignedLong.valueOf(_values.getDelay()).times(UnsignedLong.valueOf(WIDE_FACTOR / 10))
-            : UnsignedLong.valueOf(BANDWIDTH_FACTOR / 10)
-                .times(UnsignedLong.valueOf(WIDE_FACTOR))
-                .plus(UnsignedLong.valueOf(_values.getBandwidth()));
+        _values.getBandwidth() < 1_000_000
+            ? UnsignedLong.valueOf(_values.getDelay())
+                .times(WIDE_FACTOR)
+                .dividedBy(UnsignedLong.valueOf(10))
+            // WARNING: do not trust formulas in CISCO docs or random internet posts
+            // Use the RFC formula: https://tools.ietf.org/html/rfc7868#section-5.6.2.4
+            // 10^6 * WIDE_FACTOR / bandwidth does not give correct results (does not match up with
+            // GNS3)
+            : UnsignedLong.valueOf(_values.getDelay())
+                .times(WIDE_FACTOR)
+                .dividedBy(UnsignedLong.valueOf(BANDWIDTH_FACTOR / 10));
     UnsignedLong metric =
         scaledBw
             .times(UnsignedLong.valueOf(_k1))
