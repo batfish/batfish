@@ -400,7 +400,7 @@ final class Conversions {
     return exportPolicy;
   }
 
-  /** Set address family capabilities for IPv4 and L2VPN address families */
+  /** Get address family capabilities for IPv4 and L2VPN address families */
   private static AddressFamilyCapabilities getAddressFamilyCapabilities(
       BgpVrfNeighborAddressFamilyConfiguration naf, Boolean inheritedSupressInactive) {
     return AddressFamilyCapabilities.builder()
