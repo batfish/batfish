@@ -41,5 +41,20 @@ final class AddressFamilyCapabilitiesMatchersImpl {
     }
   }
 
+  static final class HasSendExtendedCommunity
+      extends FeatureMatcher<AddressFamilyCapabilities, Boolean> {
+    HasSendExtendedCommunity(@Nonnull Matcher<? super Boolean> subMatcher) {
+      super(
+          subMatcher,
+          "An AddressFamilyCapabilities with sendExtendedCommunity:",
+          "sendExtendedCommunity");
+    }
+
+    @Override
+    protected Boolean featureValueOf(AddressFamilyCapabilities actual) {
+      return actual.getSendExtendedCommunity();
+    }
+  }
+
   private AddressFamilyCapabilitiesMatchersImpl() {}
 }

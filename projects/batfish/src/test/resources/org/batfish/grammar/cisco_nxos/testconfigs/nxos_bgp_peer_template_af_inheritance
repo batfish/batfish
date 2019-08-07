@@ -1,0 +1,26 @@
+!RANCID-CONTENT-TYPE: cisco-nx
+!
+hostname nxos_bgp_peer_template_af_inheritance
+feature bgp
+!
+route-map match_metric permit 10
+  match metric 1
+!
+router bgp 1
+  address-family l2vpn evpn
+    retain route-target all
+  template peer SPINE
+    address-family ipv4 unicast
+      allowas-in 1
+      send-community
+      default-originate
+      route-map match_metric out
+    address-family l2vpn evpn
+      allowas-in 1
+      send-community
+      send-community extended
+      route-map match_metric out
+  neighbor 1.1.1.1
+      inherit peer SPINE
+      remote-as 12121
+!

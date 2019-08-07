@@ -15,6 +15,13 @@ prefix
   IP_PREFIX
 ;
 
+vni_number
+:
+  v = DEC
+  {isVniNumber($v)}?
+
+;
+
 word
 :
   WORD

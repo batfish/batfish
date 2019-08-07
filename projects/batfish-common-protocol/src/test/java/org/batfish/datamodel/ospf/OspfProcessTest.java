@@ -8,6 +8,7 @@ import com.google.common.collect.ImmutableSortedMap;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.Interface;
+import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.NetworkFactory;
 import org.junit.Rule;
 import org.junit.Test;
@@ -69,6 +70,7 @@ public class OspfProcessTest {
 
     OspfProcess proc =
         opb.setReferenceBandwidth(1e8)
+            .setRouterId(Ip.ZERO)
             .setAreas(ImmutableSortedMap.of(0L, area0, 1L, area1))
             .build();
 
@@ -87,7 +89,11 @@ public class OspfProcessTest {
   public void setAreasMismatchedNumbers() {
     final NetworkFactory networkFactory = new NetworkFactory();
     OspfProcess proc =
-        OspfProcess.builder(networkFactory).setProcessId("1").setReferenceBandwidth(10e8).build();
+        OspfProcess.builder(networkFactory)
+            .setProcessId("1")
+            .setRouterId(Ip.ZERO)
+            .setReferenceBandwidth(10e8)
+            .build();
     _thrown.expect(IllegalArgumentException.class);
     proc.setAreas(
         ImmutableSortedMap.of(1L, OspfArea.builder(networkFactory).setNumber(2L).build()));

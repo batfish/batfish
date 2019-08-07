@@ -5,22 +5,25 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableSet;
+import javax.annotation.Nonnull;
+import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
-import org.batfish.common.Warnings;
+import org.batfish.common.BatfishLogger;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.config.Settings;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Prefix;
 import org.batfish.grammar.BatfishParseTreeWalker;
-import org.batfish.grammar.GrammarSettings;
-import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Cumulus_frr_configurationContext;
+import org.batfish.main.Batfish;
 import org.batfish.representation.cumulus.CumulusNcluConfiguration;
 import org.batfish.representation.cumulus.StaticRoute;
+import org.batfish.representation.cumulus.Vrf;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.rules.TemporaryFolder;
 
+/** Tests for {@link CumulusFrrParser}. */
 public class CumulusFrrGrammarTest {
   private static final String TESTCONFIGS_PREFIX = "org/batfish/grammar/cumulus_frr/testconfigs/";
 
@@ -34,17 +37,9 @@ public class CumulusFrrGrammarTest {
     return parseVendorConfig(filename, settings);
   }
 
-  private static CumulusNcluConfiguration parseVendorConfig(
-      String filename, GrammarSettings settings) {
+  private static CumulusNcluConfiguration parseVendorConfig(String filename, Settings settings) {
     String src = CommonUtil.readResource(TESTCONFIGS_PREFIX + filename);
-    CumulusNcluConfiguration configuration = new CumulusNcluConfiguration();
-    CumulusFrrCombinedParser parser = new CumulusFrrCombinedParser(src, settings, 1, 0);
-    Cumulus_frr_configurationContext ctxt = parser.parse();
-    ParseTreeWalker walker = new BatfishParseTreeWalker(parser);
-    Warnings w = new Warnings();
-    CumulusFrrConfigurationBuilder cb = new CumulusFrrConfigurationBuilder(configuration, w);
-    walker.walk(cb, ctxt);
-    return cb.getVendorConfiguration();
+    return parseFromTextWithSettings(src, settings);
   }
 
   private static CumulusNcluConfiguration parse(String src) {
@@ -53,13 +48,18 @@ public class CumulusFrrGrammarTest {
     settings.setThrowOnLexerError(true);
     settings.setThrowOnParserError(true);
 
+    return parseFromTextWithSettings(src, settings);
+  }
+
+  @Nonnull
+  private static CumulusNcluConfiguration parseFromTextWithSettings(String src, Settings settings) {
     CumulusNcluConfiguration configuration = new CumulusNcluConfiguration();
     CumulusFrrCombinedParser parser = new CumulusFrrCombinedParser(src, settings, 1, 0);
-    Cumulus_frr_configurationContext ctxt = parser.parse();
+    ParserRuleContext tree =
+        Batfish.parse(parser, new BatfishLogger(BatfishLogger.LEVELSTR_FATAL, false), settings);
     ParseTreeWalker walker = new BatfishParseTreeWalker(parser);
-    Warnings w = new Warnings();
-    CumulusFrrConfigurationBuilder cb = new CumulusFrrConfigurationBuilder(configuration, w);
-    walker.walk(cb, ctxt);
+    CumulusFrrConfigurationBuilder cb = new CumulusFrrConfigurationBuilder(configuration);
+    walker.walk(cb, tree);
     return cb.getVendorConfiguration();
   }
 
@@ -70,6 +70,13 @@ public class CumulusFrrGrammarTest {
   }
 
   @Test
+  public void testCumulusFrrVrfVni() {
+    CumulusNcluConfiguration config = parse("vrf NAME\n vni 170000\n exit-vrf");
+    Vrf vrf = config.getVrfs().get("NAME");
+    assertThat(vrf.getVni(), equalTo(170000));
+    }
+
+    @Test
   public void testCumulusFrrVrfIpRoutes() {
     CumulusNcluConfiguration config =
         parse("vrf NAME\n ip route 1.0.0.0/8 10.0.2.1\n ip route 0.0.0.0/0 10.0.0.1\n exit-vrf");

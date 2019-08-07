@@ -22,6 +22,11 @@ COMMENT_LINE
   ) -> channel ( HIDDEN )
 ;
 
+DEC
+:
+  F_Digit+
+;
+
 EXIT_VRF
 :
   'exit-vrf'
@@ -57,9 +62,9 @@ NEWLINE
   F_Newline+
 ;
 
-ROUTE
+VNI
 :
-  'route'
+  'vni'
 ;
 
 VRF
@@ -78,6 +83,11 @@ BLANK_LINE
   F_Whitespace* F_Newline+
   {lastTokenType() == NEWLINE|| lastTokenType() == -1}?
     -> channel ( HIDDEN )
+;
+
+ROUTE
+:
+  'route'
 ;
 
 // Fragments

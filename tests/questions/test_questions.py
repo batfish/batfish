@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 import re
+import string
 from glob import glob
 from json import load
 from os import pardir, path
@@ -79,6 +80,9 @@ def test_description(question):
     assert not description.endswith("..")
     # the last letter of the first word should be 's'
     assert words[0][-1] == "s"
+    # enforce set of allowed characters. Must be ascii printable, no pipes (|)
+    assert '|' not in description
+    assert set(description).issubset(set(string.printable))
 
 
 def test_name_and_filename_match(question_path, question):

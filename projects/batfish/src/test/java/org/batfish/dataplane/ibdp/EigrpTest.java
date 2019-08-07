@@ -334,7 +334,8 @@ public class EigrpTest {
 
     Interface.Builder nib = nf.interfaceBuilder().setOspfCost(1);
 
-    OspfProcess.Builder opb = nf.ospfProcessBuilder().setProcessId("1");
+    OspfProcess.Builder opb =
+        nf.ospfProcessBuilder().setProcessId("1").setRouterId(R1_L0_ADDR.getIp());
     OspfArea.Builder oab = nf.ospfAreaBuilder().setNumber(area);
     Interface.Builder oib =
         nf.interfaceBuilder().setOspfCost(1).setOspfProcess("1").setOspfEnabled(true);
@@ -394,7 +395,7 @@ public class EigrpTest {
         eib, asn, mode2, R2_E2_3_ADDR, c2E2To3Name, c2E2To3DelayMult, exportPolicyName);
     if (otherProcess == OSPF) {
       // Build OSPF (with redistribute EIGRP)
-      opb.setExportPolicy(exportEigrpIntoOspf.setOwner(c2).build());
+      opb.setRouterId(R2_L0_ADDR.getIp()).setExportPolicy(exportEigrpIntoOspf.setOwner(c2).build());
       oib.setOspfArea(oab.setOspfProcess(opb.build()).build());
       buildOspfLoopbackInterface(oib, R2_L0_ADDR);
       buildOspfExternalInterface(oib, c2E2To1Name, R2_E2_1_ADDR);
@@ -438,7 +439,7 @@ public class EigrpTest {
         eib, asn, mode4, R4_E4_3_ADDR, c4E4To3Name, c4E4To3DelayMult, exportPolicyName);
     if (otherProcess == OSPF) {
       // Build OSPF
-      oib.setOspfArea(oab.setOspfProcess(opb.build()).build());
+      oib.setOspfArea(oab.setOspfProcess(opb.setRouterId(R4_L0_ADDR.getIp()).build()).build());
       buildOspfExternalInterface(oib, c4E4To1Name, R4_E4_1_ADDR);
     } else if (otherProcess == EIGRP) {
       // Build other EIGRP
