@@ -2448,6 +2448,14 @@ public final class CiscoConfiguration extends VendorConfiguration {
 
   private org.batfish.datamodel.ospf.OspfProcess toOspfProcess(
       OspfProcess proc, String vrfName, Configuration c, CiscoConfiguration oldConfig) {
+    Ip routerId = proc.getRouterId();
+    if (routerId == null) {
+      routerId = CiscoConversions.getHighestIp(oldConfig.getInterfaces());
+      if (routerId == Ip.ZERO) {
+        _w.redFlag("No candidates for OSPF router-id");
+        return null;
+      }
+    }
     org.batfish.datamodel.ospf.OspfProcess newProcess =
         org.batfish.datamodel.ospf.OspfProcess.builder()
             .setProcessId(proc.getName())
@@ -2457,6 +2465,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
                     c.getConfigurationFormat()))
             .setSummaryAdminCost(
                 RoutingProtocol.OSPF_IA.getSummaryAdministrativeCost(c.getConfigurationFormat()))
+            .setRouterId(routerId)
             .build();
     org.batfish.datamodel.Vrf vrf = c.getVrfs().get(vrfName);
 
@@ -2665,16 +2674,6 @@ public final class CiscoConfiguration extends VendorConfiguration {
     }
 
     computeDistributeListPolicies(proc, c, vrfName, proc.getName(), oldConfig);
-
-    Ip routerId = proc.getRouterId();
-    if (routerId == null) {
-      routerId = CiscoConversions.getHighestIp(oldConfig.getInterfaces());
-      if (routerId == Ip.ZERO) {
-        _w.redFlag("No candidates for OSPF router-id");
-        return null;
-      }
-    }
-    newProcess.setRouterId(routerId);
 
     // policies for redistributing routes
     ospfExportStatements.addAll(

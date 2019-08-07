@@ -1492,11 +1492,6 @@
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
         "deviceType" : "SWITCH",
-        "routingPolicies" : {
-          "~OSPF_EXPORT_POLICY:default~" : {
-            "name" : "~OSPF_EXPORT_POLICY:default~"
-          }
-        },
         "vendorFamily" : {
           "cisco" : {
             "hostname" : "arista_ospf",
@@ -21724,6 +21719,7 @@
                 "exportPolicy" : "~OSPF_EXPORT_POLICY:default~",
                 "processId" : "default",
                 "referenceBandwidth" : 1.0E9,
+                "routerId" : "1.1.1.1",
                 "summaryAdminCost" : 10
               }
             },
@@ -24811,6 +24807,7 @@
                 "exportPolicy" : "~OSPF_EXPORT_POLICY:default~",
                 "processId" : "default",
                 "referenceBandwidth" : 1.0E9,
+                "routerId" : "1.1.1.1",
                 "summaryAdminCost" : 10
               }
             }
