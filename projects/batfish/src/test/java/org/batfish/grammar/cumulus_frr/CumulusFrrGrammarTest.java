@@ -4,7 +4,7 @@ import static org.batfish.main.BatfishTestUtils.configureBatfishTestSettings;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 
-import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
 import org.batfish.common.Warnings;
 import org.batfish.common.util.CommonUtil;
@@ -13,7 +13,6 @@ import org.batfish.grammar.BatfishParseTreeWalker;
 import org.batfish.grammar.GrammarSettings;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Cumulus_frr_configurationContext;
 import org.batfish.representation.cumulus.CumulusNcluConfiguration;
-import org.batfish.representation.cumulus.Vrf;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -48,6 +47,6 @@ public class CumulusFrrGrammarTest {
   @Test
   public void testCumulusFrrVrf() {
     CumulusNcluConfiguration config = parseVendorConfig("cumulus_frr_vrf");
-    assertThat(config.getVrfs(), equalTo(ImmutableMap.of("VRF", new Vrf("VRF"))));
+    assertThat(config.getVrfs().keySet(), equalTo(ImmutableSet.of("NAME")));
   }
 }

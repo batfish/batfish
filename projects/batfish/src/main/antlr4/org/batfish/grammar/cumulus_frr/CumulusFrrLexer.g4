@@ -4,7 +4,6 @@ options {
   superClass = 'org.batfish.grammar.cumulus_frr.parsing.CumulusFrrBaseLexer';
 }
 
-// Keywords
 COMMENT_LINE
 :
   (
@@ -17,6 +16,11 @@ COMMENT_LINE
     F_Newline+
     | EOF
   ) -> channel ( HIDDEN )
+;
+
+DEC
+:
+  F_Digit+
 ;
 
 EXIT_VRF
@@ -32,6 +36,11 @@ FRR_VERSION_LINE
 NEWLINE
 :
   F_Newline+
+;
+
+VNI
+:
+  'vni'
 ;
 
 VRF
@@ -51,6 +60,12 @@ WORD
 ;
 
 // Fragments
+fragment
+F_Digit
+:
+  [0-9]
+;
+
 fragment
 F_Word
 :
