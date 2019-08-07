@@ -62,7 +62,7 @@ public class CumulusFrrGrammarTest {
 
   @Test
   public void testCumulusFrrVrf() {
-    CumulusNcluConfiguration config = parse("vrf NAME\n exits-vrf");
+    CumulusNcluConfiguration config = parse("vrf NAME\n exit-vrf");
     assertThat(config.getVrfs().keySet(), equalTo(ImmutableSet.of("NAME")));
   }
 }
