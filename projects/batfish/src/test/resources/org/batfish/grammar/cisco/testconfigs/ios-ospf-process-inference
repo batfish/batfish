@@ -16,12 +16,10 @@ interface Ethernet3
 router ospf 1
  router-id 1.2.3.4
  network 10.0.1.0 0.0.0.255 area 1
- passive-interface Ethernet1
 !
 router ospf 2
  router-id 1.2.3.4
  network 10.0.2.0 0.0.0.255 area 2
- passive-interface Ethernet2
 !
 router ospf 3
 !
