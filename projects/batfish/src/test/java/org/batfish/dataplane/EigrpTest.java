@@ -60,63 +60,133 @@ public class EigrpTest {
     // All assertions based on GNS3 and output of "show ip route"
     ////////////////////////
 
+    // TODO: figure out why some external routes are missing
+
+    ////////////////////////
+    // Node: dc1lan
+    ////////////////////////
+    {
+      String node = "dc1lan";
+      // 172.16.1.1 is connected.
+      assertRoute(
+          routes,
+          node,
+          Prefix.parse("172.16.2.1/32"),
+          RoutingProtocol.EIGRP,
+          130816,
+          Ip.parse("11.11.11.2"));
+      assertRoute(
+          routes,
+          node,
+          Prefix.parse("172.16.3.1/32"),
+          RoutingProtocol.EIGRP,
+          131072,
+          Ip.parse("11.11.11.2"));
+      //      assertRoute(
+      //          routes,
+      //          node,
+      //          Prefix.parse("172.16.4.1/32"),
+      //          RoutingProtocol.EIGRP_EX,
+      //          5632,
+      //          Ip.parse("11.11.11.2"));
+      assertRoute(
+          routes,
+          node,
+          Prefix.parse("172.16.5.1/32"),
+          RoutingProtocol.EIGRP_EX,
+          5632,
+          Ip.parse("11.11.11.2"));
+      assertRoute(
+          routes,
+          node,
+          Prefix.parse("172.16.6.1/32"),
+          RoutingProtocol.EIGRP_EX,
+          5632,
+          Ip.parse("11.11.11.2"));
+      //      assertRoute(
+      //          routes,
+      //          node,
+      //          Prefix.parse("33.33.33.0/24"),
+      //          RoutingProtocol.EIGRP_EX,
+      //          5632,
+      //          Ip.parse("11.11.11.2"));
+      //      assertRoute(
+      //          routes,
+      //          node,
+      //          Prefix.parse("44.44.44.0/24"),
+      //          RoutingProtocol.EIGRP_EX,
+      //          5632,
+      //          Ip.parse("11.11.11.2"));
+      assertRoute(
+          routes,
+          node,
+          Prefix.parse("55.55.55.0/24"),
+          RoutingProtocol.EIGRP_EX,
+          5632,
+          Ip.parse("11.11.11.2"));
+    }
+
     ////////////////////////
     // Node: dc1
     ////////////////////////
     {
-      String dc1 = "dc1";
+      String node = "dc1";
       assertRoute(
           routes,
-          dc1,
+          node,
           Prefix.parse("172.16.1.1/32"),
           RoutingProtocol.EIGRP,
           130816,
           Ip.parse("11.11.11.1"));
+      // 172.16.1.2 is connected.
       assertRoute(
           routes,
-          dc1,
+          node,
           Prefix.parse("172.16.3.1/32"),
           RoutingProtocol.EIGRP,
           130816,
           Ip.parse("22.22.22.2"));
+      // missing
       //      assertRoute(
       //          routes,
-      //          dc1,
+      //          node,
       //          Prefix.parse("172.16.4.1/32"),
       //          RoutingProtocol.EIGRP_EX,
       //          5376,
       //          Ip.parse("22.22.22.2"));
       assertRoute(
           routes,
-          dc1,
+          node,
           Prefix.parse("172.16.5.1/32"),
           RoutingProtocol.EIGRP_EX,
           5376,
           Ip.parse("22.22.22.2"));
       assertRoute(
           routes,
-          dc1,
-          Prefix.parse("172.16.5.1/32"),
+          node,
+          Prefix.parse("172.16.6.1/32"),
           RoutingProtocol.EIGRP_EX,
           5376,
           Ip.parse("22.22.22.2"));
+      // missing
       //      assertRoute(
       //          routes,
-      //          dc1,
+      //          node,
       //          Prefix.parse("33.33.33.0/24"),
       //          RoutingProtocol.EIGRP_EX,
       //          5376,
       //          Ip.parse("22.22.22.2"));
+      // missing
       //      assertRoute(
       //          routes,
-      //          dc1,
+      //          node,
       //          Prefix.parse("44.44.44.0/24"),
       //          RoutingProtocol.EIGRP_EX,
       //          5376,
       //          Ip.parse("22.22.22.2"));
       assertRoute(
           routes,
-          dc1,
+          node,
           Prefix.parse("55.55.55.0/24"),
           RoutingProtocol.EIGRP_EX,
           5376,
@@ -124,66 +194,275 @@ public class EigrpTest {
     }
 
     ////////////////////////
-    // Node: dc1lan
+    // Node: dc1border
     ////////////////////////
     {
-      String dc1 = "dc1lan";
+      String node = "dc1border";
       assertRoute(
           routes,
-          dc1,
+          node,
+          Prefix.parse("172.16.1.1/32"),
+          RoutingProtocol.EIGRP,
+          131072,
+          Ip.parse("22.22.22.1"));
+      assertRoute(
+          routes,
+          node,
           Prefix.parse("172.16.2.1/32"),
           RoutingProtocol.EIGRP,
           130816,
-          Ip.parse("11.11.11.2"));
-      assertRoute(
-          routes,
-          dc1,
-          Prefix.parse("172.16.3.1/32"),
-          RoutingProtocol.EIGRP,
-          131072,
-          Ip.parse("11.11.11.2"));
+          Ip.parse("22.22.22.1"));
+      // 172.16.3.1 is connected.
+      // missing
       //      assertRoute(
       //          routes,
-      //          dc1,
+      //          node,
       //          Prefix.parse("172.16.4.1/32"),
       //          RoutingProtocol.EIGRP_EX,
-      //          5632,
-      //          Ip.parse("11.11.11.2"));
+      //          61440,
+      //          Ip.parse("33.33.33.2"));
       assertRoute(
           routes,
-          dc1,
+          node,
           Prefix.parse("172.16.5.1/32"),
           RoutingProtocol.EIGRP_EX,
-          5632,
-          Ip.parse("11.11.11.2"));
+          61440,
+          Ip.parse("33.33.33.2"));
       assertRoute(
           routes,
-          dc1,
-          Prefix.parse("172.16.5.1/32"),
+          node,
+          Prefix.parse("172.16.6.1/32"),
           RoutingProtocol.EIGRP_EX,
-          5632,
-          Ip.parse("11.11.11.2"));
+          61440,
+          Ip.parse("33.33.33.2"));
+
+      assertRoute(
+          routes,
+          node,
+          Prefix.parse("11.11.11.0/24"),
+          RoutingProtocol.EIGRP,
+          3072,
+          Ip.parse("22.22.22.1"));
+      // missing
       //      assertRoute(
       //          routes,
-      //          dc1,
+      //          node,
+      //          Prefix.parse("44.44.44.0/24"),
+      //          RoutingProtocol.EIGRP_EX,
+      //          61440,
+      //          Ip.parse("33.33.33.2"));
+      assertRoute(
+          routes,
+          node,
+          Prefix.parse("55.55.55.0/24"),
+          RoutingProtocol.EIGRP_EX,
+          61440,
+          Ip.parse("33.33.33.2"));
+    }
+
+    ////////////////////////
+    // Node: dc2border
+    ////////////////////////
+    {
+      String node = "dc2border";
+      assertRoute(
+          routes,
+          node,
+          Prefix.parse("172.16.1.1/32"),
+          RoutingProtocol.EIGRP_EX,
+          61440,
+          Ip.parse("33.33.33.1"));
+      assertRoute(
+          routes,
+          node,
+          Prefix.parse("172.16.2.1/32"),
+          RoutingProtocol.EIGRP_EX,
+          61440,
+          Ip.parse("33.33.33.1"));
+      // missing
+      //      assertRoute(
+      //          routes,
+      //          node,
+      //          Prefix.parse("172.16.3.1/32"),
+      //          RoutingProtocol.EIGRP_EX,
+      //          61440,
+      //          Ip.parse("33.33.33.1"));
+      // 172.16.4.1 is connected.
+      assertRoute(
+          routes,
+          node,
+          Prefix.parse("172.16.5.1/32"),
+          RoutingProtocol.EIGRP,
+          130816,
+          Ip.parse("44.44.44.2"));
+      assertRoute(
+          routes,
+          node,
+          Prefix.parse("172.16.6.1/32"),
+          RoutingProtocol.EIGRP,
+          131072,
+          Ip.parse("44.44.44.2"));
+
+      assertRoute(
+          routes,
+          node,
+          Prefix.parse("11.11.11.0/24"),
+          RoutingProtocol.EIGRP_EX,
+          61440,
+          Ip.parse("33.33.33.1"));
+      // missing
+      //      assertRoute(
+      //          routes,
+      //          node,
+      //          Prefix.parse("22.22.22.0/24"),
+      //          RoutingProtocol.EIGRP_EX,
+      //          61440,
+      //          Ip.parse("33.33.33.1"));
+    }
+
+    ////////////////////////
+    // Node: dc2
+    ////////////////////////
+    {
+      String node = "dc2";
+      assertRoute(
+          routes,
+          node,
+          Prefix.parse("172.16.1.1/32"),
+          RoutingProtocol.EIGRP_EX,
+          5376,
+          Ip.parse("44.44.44.1"));
+      assertRoute(
+          routes,
+          node,
+          Prefix.parse("172.16.2.1/32"),
+          RoutingProtocol.EIGRP_EX,
+          5376,
+          Ip.parse("44.44.44.1"));
+      // missing
+      //      assertRoute(
+      //          routes,
+      //          node,
+      //          Prefix.parse("172.16.3.1/32"),
+      //          RoutingProtocol.EIGRP_EX,
+      //          5376,
+      //          Ip.parse("44.44.44.1"));
+
+      assertRoute(
+          routes,
+          node,
+          Prefix.parse("172.16.4.1/32"),
+          RoutingProtocol.EIGRP,
+          130816,
+          Ip.parse("44.44.44.1"));
+      // 172.16.5.1 is connected.
+      assertRoute(
+          routes,
+          node,
+          Prefix.parse("172.16.6.1/32"),
+          RoutingProtocol.EIGRP,
+          130816,
+          Ip.parse("55.55.55.1"));
+
+      assertRoute(
+          routes,
+          node,
+          Prefix.parse("11.11.11.0/24"),
+          RoutingProtocol.EIGRP_EX,
+          5376,
+          Ip.parse("44.44.44.1"));
+      // missing
+      //      assertRoute(
+      //          routes,
+      //          node,
+      //          Prefix.parse("22.22.22.0/24"),
+      //          RoutingProtocol.EIGRP_EX,
+      //          5376,
+      //          Ip.parse("44.44.44.1"));
+      // missing
+      //      assertRoute(
+      //          routes,
+      //          node,
+      //          Prefix.parse("33.33.33.0/24"),
+      //          RoutingProtocol.EIGRP_EX,
+      //          5376,
+      //          Ip.parse("44.44.44.1"));
+    }
+
+    ////////////////////////
+    // Node: dc2lan
+    ////////////////////////
+    {
+      String node = "dc2lan";
+      assertRoute(
+          routes,
+          node,
+          Prefix.parse("172.16.1.1/32"),
+          RoutingProtocol.EIGRP_EX,
+          5632,
+          Ip.parse("55.55.55.2"));
+      assertRoute(
+          routes,
+          node,
+          Prefix.parse("172.16.2.1/32"),
+          RoutingProtocol.EIGRP_EX,
+          5632,
+          Ip.parse("55.55.55.2"));
+      // missing
+      //      assertRoute(
+      //          routes,
+      //          node,
+      //          Prefix.parse("172.16.3.1/32"),
+      //          RoutingProtocol.EIGRP_EX,
+      //          5632,
+      //          Ip.parse("55.55.55.2"));
+
+      assertRoute(
+          routes,
+          node,
+          Prefix.parse("172.16.4.1/32"),
+          RoutingProtocol.EIGRP,
+          131072,
+          Ip.parse("55.55.55.2"));
+      assertRoute(
+          routes,
+          node,
+          Prefix.parse("172.16.5.1/32"),
+          RoutingProtocol.EIGRP,
+          130816,
+          Ip.parse("55.55.55.2"));
+      // 172.16.6.1 is connected.
+
+      assertRoute(
+          routes,
+          node,
+          Prefix.parse("11.11.11.0/24"),
+          RoutingProtocol.EIGRP_EX,
+          5632,
+          Ip.parse("55.55.55.2"));
+      // missing
+      //      assertRoute(
+      //          routes,
+      //          node,
+      //          Prefix.parse("22.22.22.0/24"),
+      //          RoutingProtocol.EIGRP_EX,
+      //          5632,
+      //          Ip.parse("55.55.55.2"));
+      // missing
+      //      assertRoute(
+      //          routes,
+      //          node,
       //          Prefix.parse("33.33.33.0/24"),
       //          RoutingProtocol.EIGRP_EX,
       //          5632,
-      //          Ip.parse("11.11.11.2"));
-      //      assertRoute(
-      //          routes,
-      //          dc1,
-      //          Prefix.parse("44.44.44.0/24"),
-      //          RoutingProtocol.EIGRP_EX,
-      //          5632,
-      //          Ip.parse("11.11.11.2"));
+      //          Ip.parse("55.55.55.2"));
       assertRoute(
           routes,
-          dc1,
-          Prefix.parse("55.55.55.0/24"),
-          RoutingProtocol.EIGRP_EX,
-          5632,
-          Ip.parse("11.11.11.2"));
+          node,
+          Prefix.parse("44.44.44.0/24"),
+          RoutingProtocol.EIGRP,
+          3072,
+          Ip.parse("55.55.55.2"));
     }
   }
 
