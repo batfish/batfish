@@ -68,7 +68,7 @@ public class CumulusFrrGrammarTest {
 
   @Test
   public void testCumulusFrrVrfVni() {
-    CumulusNcluConfiguration config = parse("vrf NAME\n vni 17000\n exit-vrf");
+    CumulusNcluConfiguration config = parse("vrf NAME\n vni 170000\n exit-vrf");
     Vrf vrf = config.getVrfs().get("NAME");
     assertThat(vrf.getVni(), equalTo(170000));
   }
