@@ -49,11 +49,14 @@ public final class CumulusInterfacesConfigurationBuilder
     extends CumulusInterfacesParserBaseListener {
   private final CumulusNcluConfiguration _config;
   private final Interfaces _interfaces = new Interfaces();
+  private final CumulusInterfacesCombinedParser _parser;
   private final Warnings _w;
   private Interface _currentIface;
 
-  public CumulusInterfacesConfigurationBuilder(CumulusNcluConfiguration config, Warnings w) {
+  public CumulusInterfacesConfigurationBuilder(
+      CumulusNcluConfiguration config, CumulusInterfacesCombinedParser parser, Warnings w) {
     _config = config;
+    _parser = parser;
     _w = w;
   }
 
@@ -105,7 +108,7 @@ public final class CumulusInterfacesConfigurationBuilder
     if (tblName.equals("auto")) {
       _currentIface.setIsVrf();
     } else {
-      _w.unimplemented("Only `vrf-table auto` is supported");
+      _w.todo(ctx, ctx.vrf_table_name().getStart().getText(), _parser);
     }
   }
 
