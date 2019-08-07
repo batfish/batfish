@@ -144,9 +144,14 @@ public final class NetworkConfigurations {
     return get(hostname).map(Configuration::getMlags).map(m -> m.get(id));
   }
 
-  public Optional<OspfNeighborConfig> getOspfNeighborConfig(OspfNeighborConfigId ospfConfigId) {
+  public Optional<OspfProcess> getOspfProcess(OspfNeighborConfigId ospfConfigId) {
     return getVrf(ospfConfigId.getHostname(), ospfConfigId.getVrfName())
-        .map(vrf -> vrf.getOspfProcesses().get(ospfConfigId.getProcName()))
+        .map(vrf -> vrf.getOspfProcesses().get(ospfConfigId.getProcName()));
+  }
+
+  public Optional<OspfNeighborConfig> getOspfNeighborConfig(OspfNeighborConfigId ospfConfigId) {
+
+    return getOspfProcess(ospfConfigId)
         .map(OspfProcess::getOspfNeighborConfigs)
         .map(oc -> oc.get(ospfConfigId.getInterfaceName()));
   }
