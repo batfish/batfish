@@ -4,6 +4,10 @@ options {
   superClass = 'org.batfish.grammar.cumulus_frr.parsing.CumulusFrrBaseLexer';
 }
 
+tokens {
+  WORD
+}
+
 COMMENT_LINE
 :
   (
@@ -44,9 +48,11 @@ WS
 
 ;
 
-WORD
+BLANK_LINE
 :
-  F_Word
+  F_Whitespace* F_Newline+
+  {lastTokenType() == NEWLINE|| lastTokenType() == -1}?
+    -> channel ( HIDDEN )
 ;
 
 // Fragments

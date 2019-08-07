@@ -11,7 +11,7 @@ options {
 // goal rule
 cumulus_frr_configuration
 :
-  NEWLINE* statement+ NEWLINE* EOF
+  statement+ EOF
 ;
 
 // other rules

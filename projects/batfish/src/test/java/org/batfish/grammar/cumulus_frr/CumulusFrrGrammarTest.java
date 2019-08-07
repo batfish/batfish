@@ -44,9 +44,25 @@ public class CumulusFrrGrammarTest {
     return cb.getVendorConfiguration();
   }
 
+  private static CumulusNcluConfiguration parse(String src) {
+    Settings settings = new Settings();
+    settings.setDisableUnrecognized(true);
+    settings.setThrowOnLexerError(true);
+    settings.setThrowOnParserError(true);
+
+    CumulusNcluConfiguration configuration = new CumulusNcluConfiguration();
+    CumulusFrrCombinedParser parser = new CumulusFrrCombinedParser(src, settings, 1, 0);
+    Cumulus_frr_configurationContext ctxt = parser.parse();
+    ParseTreeWalker walker = new BatfishParseTreeWalker(parser);
+    Warnings w = new Warnings();
+    CumulusFrrConfigurationBuilder cb = new CumulusFrrConfigurationBuilder(configuration, w);
+    walker.walk(cb, ctxt);
+    return cb.getVendorConfiguration();
+  }
+
   @Test
   public void testCumulusFrrVrf() {
-    CumulusNcluConfiguration config = parseVendorConfig("cumulus_frr_vrf");
+    CumulusNcluConfiguration config = parse("vrf NAME\n exits-vrf");
     assertThat(config.getVrfs().keySet(), equalTo(ImmutableSet.of("NAME")));
   }
 }
