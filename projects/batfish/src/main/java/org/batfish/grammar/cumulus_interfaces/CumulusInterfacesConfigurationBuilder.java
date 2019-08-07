@@ -26,6 +26,7 @@ import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.I_bridge_v
 import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.I_clag_idContext;
 import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.I_link_speedContext;
 import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.I_vlan_idContext;
+import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.I_vlan_raw_deviceContext;
 import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.I_vrfContext;
 import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.I_vrf_tableContext;
 import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.I_vxlan_idContext;
@@ -173,6 +174,12 @@ public final class CumulusInterfacesConfigurationBuilder
     String vlanId = ctx.NUMBER().getText();
     _config.defineStructure(CumulusStructureType.VLAN, vlanId, ctx.getStart().getLine());
     _currentIface.setVlanId(Integer.parseInt(vlanId));
+  }
+
+  @Override
+  public void exitI_vlan_raw_device(I_vlan_raw_deviceContext ctx) {
+    // intentionally not adding a reference to the raw device
+    _currentIface.setVlanRawDevice(ctx.interface_name().getText());
   }
 
   @Override

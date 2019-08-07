@@ -37,6 +37,7 @@ s_iface
   | i_clag_id
   | i_link_speed
   | i_vlan_id
+  | i_vlan_raw_device
   | i_vrf
   | i_vrf_table
   | i_vxlan_id
@@ -87,6 +88,11 @@ i_link_speed
 i_vlan_id
 :
   VLAN_ID NUMBER NEWLINE
+;
+
+i_vlan_raw_device
+:
+  VLAN_RAW_DEVICE interface_name NEWLINE
 ;
 
 i_vrf

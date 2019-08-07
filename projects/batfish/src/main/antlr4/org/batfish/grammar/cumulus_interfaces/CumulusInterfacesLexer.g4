@@ -64,6 +64,11 @@ VLAN_ID
   'vlan-id'
 ;
 
+VLAN_RAW_DEVICE
+:
+  'vlan-raw-device' -> pushMode(M_Word)
+;
+
 VRF
 :
   'vrf' -> pushMode(M_Word)

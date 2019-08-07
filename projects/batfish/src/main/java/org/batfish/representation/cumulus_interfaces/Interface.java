@@ -31,6 +31,7 @@ public final class Interface {
   private @Nullable String _vrf;
   private @Nullable Integer _clagId;
   private @Nullable Integer _bridgeAccess;
+  private @Nullable String _vlanRawDevice;
   private @Nullable Ip _vxlanLocalTunnelIp;
   private @Nullable Integer _vxlanId;
 
@@ -97,6 +98,11 @@ public final class Interface {
   }
 
   @Nullable
+  public String getVlanRawDevice() {
+    return _vlanRawDevice;
+  }
+
+  @Nullable
   public String getVrf() {
     return _vrf;
   }
@@ -141,6 +147,10 @@ public final class Interface {
 
   public void setVlanId(int vlanId) {
     _vlanId = vlanId;
+  }
+
+  public void setVlanRawDevice(String vlanRawDevice) {
+    _vlanRawDevice = vlanRawDevice;
   }
 
   public void setVrf(String vrf) {

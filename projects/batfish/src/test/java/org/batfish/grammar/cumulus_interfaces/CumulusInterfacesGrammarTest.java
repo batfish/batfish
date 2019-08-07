@@ -184,6 +184,14 @@ public class CumulusInterfacesGrammarTest {
   }
 
   @Test
+  public void testIfaceVlanRawDevice() {
+    String input = "iface vlan1\n vlan-raw-device bridge\n";
+    Interfaces interfaces = parse(input);
+    Interface iface = interfaces.getInterfaces().get("vlan1");
+    assertThat(iface.getVlanRawDevice(), equalTo("bridge"));
+  }
+
+  @Test
   public void testIfaceVrf() {
     String input = "iface i1\n vrf v1\n";
     Interfaces interfaces = parse(input);
