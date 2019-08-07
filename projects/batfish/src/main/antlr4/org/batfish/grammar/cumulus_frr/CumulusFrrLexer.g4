@@ -22,6 +22,11 @@ COMMENT_LINE
   ) -> channel ( HIDDEN )
 ;
 
+DEC
+:
+  F_Digit+
+;
+
 EXIT_VRF
 :
   'exit-vrf'
@@ -35,6 +40,11 @@ FRR_VERSION_LINE
 NEWLINE
 :
   F_Newline+
+;
+
+VNI
+:
+  'vni'
 ;
 
 VRF
@@ -56,6 +66,12 @@ BLANK_LINE
 ;
 
 // Fragments
+fragment
+F_Digit
+:
+  [0-9]
+;
+
 fragment
 F_Word
 :

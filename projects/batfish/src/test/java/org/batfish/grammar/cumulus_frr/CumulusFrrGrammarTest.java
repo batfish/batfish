@@ -14,11 +14,13 @@ import org.batfish.config.Settings;
 import org.batfish.grammar.BatfishParseTreeWalker;
 import org.batfish.main.Batfish;
 import org.batfish.representation.cumulus.CumulusNcluConfiguration;
+import org.batfish.representation.cumulus.Vrf;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.rules.TemporaryFolder;
 
+/** Tests for {@link CumulusFrrParser}. */
 public class CumulusFrrGrammarTest {
   private static final String TESTCONFIGS_PREFIX = "org/batfish/grammar/cumulus_frr/testconfigs/";
 
@@ -62,5 +64,12 @@ public class CumulusFrrGrammarTest {
   public void testCumulusFrrVrf() {
     CumulusNcluConfiguration config = parse("vrf NAME\n exit-vrf");
     assertThat(config.getVrfs().keySet(), equalTo(ImmutableSet.of("NAME")));
+  }
+
+  @Test
+  public void testCumulusFrrVrfVni() {
+    CumulusNcluConfiguration config = parse("vrf NAME\n vni 170000\n exit-vrf");
+    Vrf vrf = config.getVrfs().get("NAME");
+    assertThat(vrf.getVni(), equalTo(170000));
   }
 }
