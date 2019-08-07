@@ -78,7 +78,7 @@ public class OspfTopologyTest {
     // R1
     Configuration c1 = cb.setHostname("r1").build();
     Vrf vrf1 = vb.setOwner(c1).build();
-    OspfProcess proc1 = opb.setVrf(vrf1).build();
+    OspfProcess proc1 = opb.setVrf(vrf1).setRouterId(Ip.parse("1.1.1.2")).build();
     Interface i12 =
         ib.setAddress(ConcreteInterfaceAddress.parse("1.1.1.0/31"))
             .setVrf(vrf1)
@@ -118,7 +118,7 @@ public class OspfTopologyTest {
     // R2
     Configuration c2 = cb.setHostname("r2").build();
     Vrf vrf2 = vb.setOwner(c2).build();
-    OspfProcess proc2 = opb.setVrf(vrf2).build();
+    OspfProcess proc2 = opb.setVrf(vrf2).setRouterId(Ip.parse("1.1.1.1")).build();
     Interface i21 =
         ib.setAddress(ConcreteInterfaceAddress.parse("1.1.1.1/31"))
             .setVrf(vrf2)
@@ -133,7 +133,7 @@ public class OspfTopologyTest {
     // R3
     Configuration c3 = cb.setHostname("r3").build();
     Vrf vrf3 = vb.setOwner(c3).build();
-    OspfProcess proc3 = opb.setVrf(vrf3).build();
+    OspfProcess proc3 = opb.setVrf(vrf3).setRouterId(Ip.parse("1.1.1.3")).build();
     Interface i31 =
         ib.setAddress(ConcreteInterfaceAddress.parse("1.1.1.3/31"))
             .setVrf(vrf3)
@@ -148,7 +148,7 @@ public class OspfTopologyTest {
     // R4
     Configuration c4 = cb.setHostname("r4").build();
     Vrf vrf4 = vb.setOwner(c4).build();
-    OspfProcess proc4 = opb.setVrf(vrf4).build();
+    OspfProcess proc4 = opb.setVrf(vrf4).setRouterId(Ip.parse("1.1.1.4")).build();
     Interface i41 =
         ib.setAddress(ConcreteInterfaceAddress.parse("1.1.1.4/31"))
             .setVrf(vrf4)
@@ -249,6 +249,7 @@ public class OspfTopologyTest {
                     .setNumber(1L)
                     .setInterfaces(ImmutableList.of("iface1", "iface2"))
                     .build()))
+        .setRouterId(Ip.ZERO)
         .build();
 
     initNeighborConfigs(

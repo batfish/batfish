@@ -182,6 +182,7 @@ public class OspfRoutingProcessTest {
     OspfProcess ospfProcess =
         nf.ospfProcessBuilder()
             .setProcessId("1")
+            .setRouterId(ACTIVE_ADDR_1.getIp())
             .setReferenceBandwidth(10e9)
             .setVrf(vrf)
             .setAreas(ImmutableSortedMap.of(0L, AREA0_CONFIG, 1L, area1Config))
@@ -334,6 +335,7 @@ public class OspfRoutingProcessTest {
     Builder ospfProcess =
         OspfProcess.builder()
             .setProcessId("1")
+            .setRouterId(Ip.ZERO)
             .setReferenceBandwidth(10e9)
             .setAreas(ImmutableSortedMap.of(0L, AREA0_CONFIG))
             .setMaxMetricTransitLinks(overrideMetric);
@@ -904,6 +906,7 @@ public class OspfRoutingProcessTest {
     final long overrideMetric = 8888L;
     Builder ospfProcess =
         OspfProcess.builder()
+            .setRouterId(Ip.ZERO)
             .setProcessId("1")
             .setReferenceBandwidth(10e9)
             .setAreas(ImmutableSortedMap.of(0L, AREA0_CONFIG))
