@@ -73,12 +73,12 @@ public final class CumulusInterfacesConfigurationBuilder
 
   // Listener methods
   @Override
-  public void enterI_address(I_addressContext ctx) {
+  public void exitI_address(I_addressContext ctx) {
     _currentIface.addAddress(ConcreteInterfaceAddress.parse(ctx.IP_PREFIX().getText()));
   }
 
   @Override
-  public void enterI_vrf_table(I_vrf_tableContext ctx) {
+  public void exitI_vrf_table(I_vrf_tableContext ctx) {
     String tblName = ctx.vrf_table_name().getText();
     if (tblName.equals("auto")) {
       _currentIface.setIsVrf();
@@ -88,7 +88,7 @@ public final class CumulusInterfacesConfigurationBuilder
   }
 
   @Override
-  public void enterI_bond_slaves(I_bond_slavesContext ctx) {
+  public void exitI_bond_slaves(I_bond_slavesContext ctx) {
     List<Interface_nameContext> interfaceNameCtxs = ctx.interface_name();
     interfaceNameCtxs.forEach(
         ifaceNameCtx ->
@@ -104,7 +104,7 @@ public final class CumulusInterfacesConfigurationBuilder
   }
 
   @Override
-  public void enterI_bridge_ports(I_bridge_portsContext ctx) {
+  public void exitI_bridge_ports(I_bridge_portsContext ctx) {
     List<Interface_nameContext> interfaceNameCtxs = ctx.interface_name();
     interfaceNameCtxs.forEach(
         ifaceNameCtx ->
@@ -120,7 +120,7 @@ public final class CumulusInterfacesConfigurationBuilder
   }
 
   @Override
-  public void enterI_bridge_vids(I_bridge_vidsContext ctx) {
+  public void exitI_bridge_vids(I_bridge_vidsContext ctx) {
     List<TerminalNode> vidCtxs = ctx.NUMBER();
     vidCtxs.forEach(
         vidCtx ->
@@ -139,12 +139,12 @@ public final class CumulusInterfacesConfigurationBuilder
   }
 
   @Override
-  public void enterI_link_speed(I_link_speedContext ctx) {
+  public void exitI_link_speed(I_link_speedContext ctx) {
     _currentIface.setLinkSpeed(Integer.parseInt(ctx.NUMBER().getText()));
   }
 
   @Override
-  public void enterI_vrf(I_vrfContext ctx) {
+  public void exitI_vrf(I_vrfContext ctx) {
     String vrf = ctx.vrf_name().getText();
     _currentIface.setVrf(vrf);
     _config.referenceStructure(
@@ -155,7 +155,7 @@ public final class CumulusInterfacesConfigurationBuilder
   }
 
   @Override
-  public void enterS_auto(S_autoContext ctx) {
+  public void exitS_auto(S_autoContext ctx) {
     String name = ctx.interface_name().getText();
     _interfaces.setAuto(name);
   }
@@ -168,12 +168,12 @@ public final class CumulusInterfacesConfigurationBuilder
   }
 
   @Override
-  public void exitCumulus_interfaces_configuration(Cumulus_interfaces_configurationContext ctxt) {
-    // TODO migrate _interfaces into _config
+  public void exitS_iface(S_ifaceContext ctx) {
+    _currentIface = null;
   }
 
   @Override
-  public void exitS_iface(S_ifaceContext ctx) {
-    _currentIface = null;
+  public void exitCumulus_interfaces_configuration(Cumulus_interfaces_configurationContext ctxt) {
+    // TODO migrate _interfaces into _config
   }
 }
