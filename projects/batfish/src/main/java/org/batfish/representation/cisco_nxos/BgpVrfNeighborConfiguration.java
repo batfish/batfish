@@ -43,6 +43,11 @@ public class BgpVrfNeighborConfiguration implements Serializable {
   }
 
   @Nullable
+  public BgpVrfNeighborAddressFamilyConfiguration getL2VpnEvpnAddressFamily() {
+    return _addressFamilies.get("l2vpn-evpn");
+  }
+
+  @Nullable
   public String getDescription() {
     return _description;
   }

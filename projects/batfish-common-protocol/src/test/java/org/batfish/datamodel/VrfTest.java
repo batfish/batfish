@@ -24,7 +24,12 @@ public class VrfTest {
     Vrf vrf = new Vrf("vrf");
     vrf.setOspfProcesses(
         ImmutableSortedMap.of(
-            "ospf", OspfProcess.builder().setProcessId("ospf").setReferenceBandwidth(1d).build()));
+            "ospf",
+            OspfProcess.builder()
+                .setProcessId("ospf")
+                .setRouterId(Ip.ZERO)
+                .setReferenceBandwidth(1d)
+                .build()));
     vrf.setBgpProcess(new BgpProcess(Ip.ZERO, ConfigurationFormat.CISCO_IOS));
     IsoAddress isoAddress = new IsoAddress("49.0001.0100.0500.5005.00");
     vrf.setIsisProcess(IsisProcess.builder().setNetAddress(isoAddress).build());
