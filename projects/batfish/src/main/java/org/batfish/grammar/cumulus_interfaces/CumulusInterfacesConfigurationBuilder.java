@@ -13,6 +13,7 @@ import org.batfish.common.Warnings;
 import org.batfish.common.Warnings.ParseWarning;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.IntegerSpace;
+import org.batfish.datamodel.Ip;
 import org.batfish.grammar.UnrecognizedLineToken;
 import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.Cumulus_interfaces_configurationContext;
 import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.I_addressContext;
@@ -25,6 +26,7 @@ import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.I_link_spe
 import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.I_vlan_idContext;
 import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.I_vrfContext;
 import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.I_vrf_tableContext;
+import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.I_vxlan_local_tunnel_ipContext;
 import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.Interface_nameContext;
 import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.S_autoContext;
 import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.S_ifaceContext;
@@ -172,6 +174,11 @@ public final class CumulusInterfacesConfigurationBuilder
         vrf,
         CumulusStructureUsage.INTERFACE_VRF,
         ctx.vrf_name().getStart().getLine());
+  }
+
+  @Override
+  public void exitI_vxlan_local_tunnel_ip(I_vxlan_local_tunnel_ipContext ctx) {
+    _currentIface.setVxlanLocalTunnelIp(Ip.parse(ctx.IP_ADDRESS().getText()));
   }
 
   @Override

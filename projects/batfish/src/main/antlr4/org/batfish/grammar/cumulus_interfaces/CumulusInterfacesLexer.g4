@@ -69,6 +69,11 @@ VRF_TABLE
   'vrf-table' -> pushMode(M_Word)
 ;
 
+VXLAN_LOCAL_TUNNEL_IP
+:
+  'vxlan-local-tunnelip'
+;
+
 // Complex tokens
 COMMENT_LINE
 :
@@ -82,6 +87,11 @@ COMMENT_LINE
     F_Newline+
     | EOF
   ) -> channel ( HIDDEN )
+;
+
+IP_ADDRESS
+:
+  F_IpAddress
 ;
 
 IP_PREFIX

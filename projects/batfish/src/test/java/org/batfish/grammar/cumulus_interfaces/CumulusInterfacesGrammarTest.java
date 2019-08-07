@@ -11,6 +11,7 @@ import static org.junit.Assert.assertTrue;
 import org.batfish.common.Warnings;
 import org.batfish.config.Settings;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
+import org.batfish.datamodel.Ip;
 import org.batfish.grammar.BatfishParseTreeWalker;
 import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.Cumulus_interfaces_configurationContext;
 import org.batfish.representation.cumulus.CumulusNcluConfiguration;
@@ -143,5 +144,13 @@ public class CumulusInterfacesGrammarTest {
     Interfaces interfaces = parse(input);
     Interface iface = interfaces.getInterfaces().get("vrf1");
     assertTrue(iface.getIsVrf());
+  }
+
+  @Test
+  public void testVxlanLocalTunnelIp() {
+    String input = "iface vni1\n vxlan-local-tunnelip 1.2.3.4\n";
+    Interfaces interfaces = parse(input);
+    Interface iface = interfaces.getInterfaces().get("vni1");
+    assertEquals(iface.getVxlanLocalTunnelIp(), Ip.parse("1.2.3.4"));
   }
 }

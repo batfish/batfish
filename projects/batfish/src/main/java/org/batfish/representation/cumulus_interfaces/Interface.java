@@ -8,6 +8,7 @@ import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.IntegerSpace;
+import org.batfish.datamodel.Ip;
 
 /** Model of an iface block in a cumulus /etc/network/interfaces file. */
 @ParametersAreNonnullByDefault
@@ -23,6 +24,7 @@ public final class Interface {
   private @Nullable String _vrf;
   private @Nullable Integer _clagId;
   private @Nullable Integer _bridgeAccess;
+  private @Nullable Ip _vxlanLocalTunnelIp;
 
   public Interface(@Nonnull String name) {
     _name = name;
@@ -85,6 +87,11 @@ public final class Interface {
     return _vrf;
   }
 
+  @Nullable
+  public Ip getVxlanLocalTunnelIp() {
+    return _vxlanLocalTunnelIp;
+  }
+
   public void setBondSlaves(List<String> bondSlaves) {
     _bondSlaves = ImmutableList.copyOf(bondSlaves);
   }
@@ -119,5 +126,9 @@ public final class Interface {
 
   public void setVrf(String vrf) {
     _vrf = vrf;
+  }
+
+  public void setVxlanLocalTunnelIp(Ip vxlanLocalTunnelIp) {
+    _vxlanLocalTunnelIp = vxlanLocalTunnelIp;
   }
 }
