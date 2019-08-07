@@ -165,13 +165,6 @@ public final class CumulusInterfacesConfigurationBuilder
   @Override
   public void exitI_bridge_vids(I_bridge_vidsContext ctx) {
     List<TerminalNode> vidCtxs = ctx.NUMBER();
-    vidCtxs.forEach(
-        vidCtx ->
-            _config.referenceStructure(
-                CumulusStructureType.VLAN,
-                vidCtx.getText(),
-                CumulusStructureUsage.BRIDGE_VID,
-                ctx.getStart().getLine()));
     _currentIface.setBridgeVids(
         IntegerSpace.unionOf(
             vidCtxs.stream()
