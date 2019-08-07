@@ -4,7 +4,7 @@ options {
   superClass = 'org.batfish.grammar.cumulus_interfaces.parsing.CumulusInterfacesBaseLexer';
 }
 tokens {
-  WORD
+  TEXT, WORD
 }
 
 // Keyword tokens
@@ -17,6 +17,11 @@ ADDRESS
 ADDRESS_VIRTUAL
 :
   'address-virtual'
+;
+
+ALIAS
+:
+  'alias' -> pushMode(M_LineText)
 ;
 
 AUTO
@@ -198,6 +203,13 @@ F_NonNewline
 ;
 
 fragment
+F_NonWhitespace
+:
+  ~[ \t\u000C\u00A0\n\r]
+;
+
+
+fragment
 F_PositiveDigit
 :
   [1-9]
@@ -232,6 +244,18 @@ fragment
 F_WordChar
 :
   [0-9A-Za-z_.:] | '-'
+;
+
+mode M_LineText;
+
+M_LineText_TEXT
+:
+  F_NonWhitespace F_NonNewline* -> type (TEXT), popMode
+;
+
+M_LineText_WS
+:
+  F_Whitespace+ -> channel ( HIDDEN )
 ;
 
 mode M_Word;

@@ -30,6 +30,7 @@ s_iface
   (
     i_address
   | i_address_virtual
+  | i_alias
   | i_bond_slaves
   | i_bridge_access
   | i_bridge_ports
@@ -53,6 +54,11 @@ i_address
 i_address_virtual
 :
   ADDRESS_VIRTUAL MAC_ADDRESS IP_PREFIX NEWLINE
+;
+
+i_alias
+:
+  ALIAS TEXT NEWLINE
 ;
 
 i_bond_slaves

@@ -104,13 +104,21 @@ public class CumulusInterfacesGrammarTest {
   }
 
   @Test
+  public void testIfaceDescription() {
+    String description = "foo hey 123!#?<>";
+    String input = "iface i1\n alias " + description + "\n";
+    Interfaces interfaces = parse(input);
+    Interface iface = interfaces.getInterfaces().get("i1");
+    assertEquals(iface.getDescription(), description);
+  }
+
+  @Test
   public void testIfaceBondSlaves() {
     String input = "iface i1\n bond-slaves i2 i3 i4\n";
     Interfaces interfaces = parse(input);
     Interface iface = interfaces.getInterfaces().get("i1");
     assertThat(iface.getBondSlaves(), contains("i2", "i3", "i4"));
   }
-
 
   @Test
   public void testIfaceAddress() {

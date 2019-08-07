@@ -26,6 +26,7 @@ public final class Interface {
   private @Nullable List<String> _bridgePorts;
   private @Nullable IntegerSpace _bridgeVids;
   private @Nullable Integer _clagId;
+  private @Nullable String _description;
   private boolean _isVrf = false;
   private @Nullable Integer _linkSpeed;
   private final @Nonnull String _name;
@@ -79,6 +80,11 @@ public final class Interface {
   @Nullable
   public Integer getClagId() {
     return _clagId;
+  }
+
+  @Nullable
+  public String getDescription() {
+    return _description;
   }
 
   public boolean getIsVrf() {
@@ -138,6 +144,10 @@ public final class Interface {
 
   public void setClagId(int clagId) {
     _clagId = clagId;
+  }
+
+  public void setDescription(String description) {
+    _description = description;
   }
 
   public void setIsVrf() {
