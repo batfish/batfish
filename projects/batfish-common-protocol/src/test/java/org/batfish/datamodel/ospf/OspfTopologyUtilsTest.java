@@ -176,4 +176,16 @@ public class OspfTopologyUtilsTest {
         getSessionIfCompatible(LOCAL_CONFIG_ID, REMOTE_CONFIG_ID, configs);
     assertThat(val, equalTo(Optional.empty()));
   }
+
+  @Test
+  public void testGetSessionIfCompatibleDuplicateRouterId() {
+    Ip routerId = Ip.parse("1.1.1.1");
+    NetworkConfigurations configs =
+        buildNetworkConfigurations(Ip.parse("1.1.1.1"), routerId, Ip.parse("1.1.1.2"), routerId);
+
+    // Confirm we mark a session as incompatible when routerId is the same for both neighbors
+    Optional<OspfSessionProperties> val =
+        getSessionIfCompatible(LOCAL_CONFIG_ID, REMOTE_CONFIG_ID, configs);
+    assertThat(val, equalTo(Optional.empty()));
+  }
 }
