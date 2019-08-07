@@ -85,24 +85,37 @@ public final class CumulusInterfacesConfigurationBuilder
   @Override
   public void enterI_bond_slaves(I_bond_slavesContext ctx) {
     List<Interface_nameContext> interfaceNameCtxs = ctx.interface_name();
-    interfaceNameCtxs.forEach(ifaceNameCtx -> _config.referenceStructure(CumulusStructureType.INTERFACE,ifaceNameCtx.getText(),CumulusStructureUsage.BOND_SLAVE,ifaceNameCtx.getStart().getLine()));
+    interfaceNameCtxs.forEach(
+        ifaceNameCtx ->
+            _config.referenceStructure(
+                CumulusStructureType.INTERFACE,
+                ifaceNameCtx.getText(),
+                CumulusStructureUsage.BOND_SLAVE,
+                ifaceNameCtx.getStart().getLine()));
     _currentIface.setBondSlaves(
         interfaceNameCtxs.stream()
             .map(RuleContext::getText)
             .collect(ImmutableList.toImmutableList()));
   }
 
-  @Override public void enterI_bridge_ports(I_bridge_portsContext ctx) {
+  @Override
+  public void enterI_bridge_ports(I_bridge_portsContext ctx) {
     List<Interface_nameContext> interfaceNameCtxs = ctx.interface_name();
-    interfaceNameCtxs.forEach(ifaceNameCtx -> _config.referenceStructure(CumulusStructureType.INTERFACE,ifaceNameCtx.getText(),CumulusStructureUsage.BRIDGE_PORT,ifaceNameCtx.getStart().getLine()));
+    interfaceNameCtxs.forEach(
+        ifaceNameCtx ->
+            _config.referenceStructure(
+                CumulusStructureType.INTERFACE,
+                ifaceNameCtx.getText(),
+                CumulusStructureUsage.BRIDGE_PORT,
+                ifaceNameCtx.getStart().getLine()));
     _currentIface.setBridgePorts(
         interfaceNameCtxs.stream()
             .map(RuleContext::getText)
             .collect(ImmutableList.toImmutableList()));
   }
 
-
-  @Override public void enterI_link_speed(I_link_speedContext ctx) {
+  @Override
+  public void enterI_link_speed(I_link_speedContext ctx) {
     _currentIface.setLinkSpeed(Integer.parseInt(ctx.NUMBER().getText()));
   }
 
