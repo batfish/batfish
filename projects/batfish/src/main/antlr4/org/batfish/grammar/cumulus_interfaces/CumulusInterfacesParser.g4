@@ -29,6 +29,7 @@ s_iface
   IFACE interface_name NEWLINE
   (
     i_address
+  | i_address_virtual
   | i_bond_slaves
   | i_bridge_access
   | i_bridge_ports
@@ -46,6 +47,11 @@ s_iface
 i_address
 :
   ADDRESS IP_PREFIX NEWLINE
+;
+
+i_address_virtual
+:
+  ADDRESS_VIRTUAL MAC_ADDRESS IP_PREFIX NEWLINE
 ;
 
 i_bond_slaves

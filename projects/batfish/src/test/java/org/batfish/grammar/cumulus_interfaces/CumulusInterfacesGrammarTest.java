@@ -8,10 +8,13 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 import org.batfish.common.Warnings;
 import org.batfish.config.Settings;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.MacAddress;
 import org.batfish.grammar.BatfishParseTreeWalker;
 import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.Cumulus_interfaces_configurationContext;
 import org.batfish.representation.cumulus.CumulusNcluConfiguration;
@@ -72,6 +75,19 @@ public class CumulusInterfacesGrammarTest {
     Interfaces interfaces = parse(input);
     Interface iface = interfaces.getInterfaces().get("i1");
     assertThat(iface.getAddresses(), contains(ConcreteInterfaceAddress.parse("10.12.13.14/24")));
+  }
+
+  @Test
+  public void testIfaceAddressVirtual() {
+    String input = "iface vlan1\n address-virtual 00:00:00:00:00:00 1.2.3.4/24\n";
+    Interfaces interfaces = parse(input);
+    Interface iface = interfaces.getInterfaces().get("vlan1");
+    assertThat(
+        iface.getAddressVirtuals(),
+        equalTo(
+            ImmutableMap.of(
+                MacAddress.parse("00:00:00:00:00:00"),
+                ImmutableSet.of(ConcreteInterfaceAddress.parse("1.2.3.4/24")))));
   }
 
   @Test

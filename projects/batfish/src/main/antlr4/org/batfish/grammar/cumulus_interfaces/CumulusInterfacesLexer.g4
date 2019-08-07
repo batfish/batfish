@@ -14,6 +14,11 @@ ADDRESS
   'address'
 ;
 
+ADDRESS_VIRTUAL
+:
+  'address-virtual'
+;
+
 AUTO
 :
   'auto' -> pushMode (M_Word)
@@ -104,6 +109,11 @@ IP_PREFIX
   F_IpPrefix
 ;
 
+MAC_ADDRESS
+:
+  F_MacAddress
+;
+
 NEWLINE
 :
   F_Newline+
@@ -127,6 +137,12 @@ F_Digit
 ;
 
 fragment
+F_HexDigit
+:
+  [0-9A-Fa-f]
+;
+
+fragment
 F_IpAddress
 :
   F_Uint8 '.' F_Uint8 '.' F_Uint8 '.' F_Uint8
@@ -145,6 +161,14 @@ F_IpPrefixLength
   | [12] F_Digit
   | [3] [012]
 ;
+
+fragment
+F_MacAddress
+:
+  F_HexDigit F_HexDigit ':' F_HexDigit F_HexDigit ':' F_HexDigit F_HexDigit ':'
+  F_HexDigit F_HexDigit ':' F_HexDigit F_HexDigit ':' F_HexDigit F_HexDigit
+;
+
 
 fragment
 F_Newline

@@ -1,19 +1,26 @@
 package org.batfish.representation.cumulus_interfaces;
 
 import com.google.common.collect.ImmutableList;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.IntegerSpace;
+import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.MacAddress;
 
 /** Model of an iface block in a cumulus /etc/network/interfaces file. */
 @ParametersAreNonnullByDefault
 public final class Interface {
   private final @Nonnull List<ConcreteInterfaceAddress> _addresses = new LinkedList<>();
+  private @Nullable Map<MacAddress, Set<InterfaceAddress>> _addressVirtuals;
   private @Nullable List<String> _bondSlaves;
   private @Nullable List<String> _bridgePorts;
   private @Nullable IntegerSpace _bridgeVids;
@@ -35,8 +42,14 @@ public final class Interface {
     _addresses.add(address);
   }
 
+  @Nonnull
   public List<ConcreteInterfaceAddress> getAddresses() {
     return _addresses;
+  }
+
+  @Nullable
+  public Map<MacAddress, Set<InterfaceAddress>> getAddressVirtuals() {
+    return _addressVirtuals;
   }
 
   @Nullable
@@ -140,5 +153,12 @@ public final class Interface {
 
   public void setVxlanLocalTunnelIp(Ip vxlanLocalTunnelIp) {
     _vxlanLocalTunnelIp = vxlanLocalTunnelIp;
+  }
+
+  public void setAddressVirtual(MacAddress macAddress, ConcreteInterfaceAddress address) {
+    if (_addressVirtuals == null) {
+      _addressVirtuals = new HashMap<>();
+    }
+    _addressVirtuals.computeIfAbsent(macAddress, k -> new HashSet<>()).add(address);
   }
 }

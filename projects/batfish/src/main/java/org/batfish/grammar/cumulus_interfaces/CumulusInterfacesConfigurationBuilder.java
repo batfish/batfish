@@ -14,9 +14,11 @@ import org.batfish.common.Warnings.ParseWarning;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.IntegerSpace;
 import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.MacAddress;
 import org.batfish.grammar.UnrecognizedLineToken;
 import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.Cumulus_interfaces_configurationContext;
 import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.I_addressContext;
+import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.I_address_virtualContext;
 import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.I_bond_slavesContext;
 import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.I_bridge_accessContext;
 import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.I_bridge_portsContext;
@@ -81,6 +83,13 @@ public final class CumulusInterfacesConfigurationBuilder
   @Override
   public void exitI_address(I_addressContext ctx) {
     _currentIface.addAddress(ConcreteInterfaceAddress.parse(ctx.IP_PREFIX().getText()));
+  }
+
+  @Override
+  public void exitI_address_virtual(I_address_virtualContext ctx) {
+    _currentIface.setAddressVirtual(
+        MacAddress.parse(ctx.MAC_ADDRESS().getText()),
+        ConcreteInterfaceAddress.parse(ctx.IP_PREFIX().getText()));
   }
 
   @Override
