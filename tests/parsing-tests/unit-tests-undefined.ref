@@ -3547,12 +3547,12 @@
         "Lines" : {
           "filename" : "configs/juniper_ospf",
           "lines" : [
-            17,
             18,
             19,
             20,
-            22,
-            23
+            21,
+            23,
+            24
           ]
         }
       },
@@ -3564,7 +3564,7 @@
         "Lines" : {
           "filename" : "configs/juniper_ospf",
           "lines" : [
-            15
+            16
           ]
         }
       },
@@ -3576,10 +3576,10 @@
         "Lines" : {
           "filename" : "configs/juniper_ospf",
           "lines" : [
-            3,
             4,
             5,
-            6
+            6,
+            7
           ]
         }
       },
@@ -3591,7 +3591,7 @@
         "Lines" : {
           "filename" : "configs/juniper_ospf",
           "lines" : [
-            7
+            8
           ]
         }
       },
