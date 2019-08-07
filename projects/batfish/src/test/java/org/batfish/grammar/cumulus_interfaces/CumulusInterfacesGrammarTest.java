@@ -116,9 +116,18 @@ public class CumulusInterfacesGrammarTest {
   public void testIfaceBondSlaves() {
     String input = "iface i1\n bond-slaves i2 i3 i4\n";
     Interfaces interfaces = parse(input);
-    assertThat(getStructureReferences(CumulusStructureType.INTERFACE,"i2",CumulusStructureUsage.BOND_SLAVE), contains(2));
-    assertThat(getStructureReferences(CumulusStructureType.INTERFACE,"i3",CumulusStructureUsage.BOND_SLAVE), contains(2));
-    assertThat(getStructureReferences(CumulusStructureType.INTERFACE,"i4",CumulusStructureUsage.BOND_SLAVE), contains(2));
+    assertThat(
+        getStructureReferences(
+            CumulusStructureType.INTERFACE, "i2", CumulusStructureUsage.BOND_SLAVE),
+        contains(2));
+    assertThat(
+        getStructureReferences(
+            CumulusStructureType.INTERFACE, "i3", CumulusStructureUsage.BOND_SLAVE),
+        contains(2));
+    assertThat(
+        getStructureReferences(
+            CumulusStructureType.INTERFACE, "i4", CumulusStructureUsage.BOND_SLAVE),
+        contains(2));
     assertThat(
         interfaces.getBondSlaveParents(),
         equalTo(
@@ -132,8 +141,14 @@ public class CumulusInterfacesGrammarTest {
   public void testIfaceBondSlaves2() {
     String input = "iface p1\n bond-slaves s1\n iface p2\n bond-slaves s2\n";
     Interfaces interfaces = parse(input);
-    assertThat(getStructureReferences(CumulusStructureType.INTERFACE,"s1",CumulusStructureUsage.BOND_SLAVE), contains(2));
-    assertThat(getStructureReferences(CumulusStructureType.INTERFACE,"s2",CumulusStructureUsage.BOND_SLAVE), contains(4));
+    assertThat(
+        getStructureReferences(
+            CumulusStructureType.INTERFACE, "s1", CumulusStructureUsage.BOND_SLAVE),
+        contains(2));
+    assertThat(
+        getStructureReferences(
+            CumulusStructureType.INTERFACE, "s2", CumulusStructureUsage.BOND_SLAVE),
+        contains(4));
     assertThat(
         interfaces.getBondSlaveParents(),
         equalTo(
