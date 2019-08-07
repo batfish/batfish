@@ -23,7 +23,7 @@
     ],
     "variables" : {
       "action" : {
-        "description" : "The behavior that you want evaluated. Options are: permit|deny|matchLine <line number>. Only one option should be selected",
+        "description" : "The behavior that you want evaluated. Options are: 'permit' or 'deny' or 'matchLine <line number>'. Only one option should be selected",
         "displayName" : "Action",
         "optional" : true,
         "type" : "string",

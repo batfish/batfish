@@ -4504,6 +4504,21 @@ public class CiscoGrammarTest {
   }
 
   @Test
+  public void testOspfProcessInference() throws IOException {
+    Configuration c = parseConfig("ios-ospf-process-inference");
+    String iface1Name = "Ethernet1";
+    String iface2Name = "Ethernet2";
+    String iface3Name = "Ethernet3";
+    Map<String, Interface> ifaces = c.getAllInterfaces();
+    assertThat(ifaces.keySet(), containsInAnyOrder(iface1Name, iface2Name, iface3Name));
+
+    // Confirm the correct OSPF process was inferred for each interface
+    assertThat(ifaces.get(iface1Name).getOspfProcess(), equalTo("1"));
+    assertThat(ifaces.get(iface2Name).getOspfProcess(), equalTo("2"));
+    assertThat(ifaces.get(iface3Name).getOspfProcess(), equalTo("2"));
+  }
+
+  @Test
   public void testTransformsetToIpsecphase2Proposal() throws IOException {
     Configuration c = parseConfig("ios-crypto-transform-set");
     assertThat(

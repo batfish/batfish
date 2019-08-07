@@ -1,5 +1,6 @@
 #
 set system host-name juniper-ospf
+set routing-options router-id 1.1.1.1
 set protocols ospf area 0.1.2.3 interface xe-0/0/20:0.0
 set protocols ospf area 0.1.2.3 interface xe-0/0/20:0.0 ldp-synchronization
 set protocols ospf area 0.1.2.3 interface xe-0/0/20:0.0 ldp-synchronization disable

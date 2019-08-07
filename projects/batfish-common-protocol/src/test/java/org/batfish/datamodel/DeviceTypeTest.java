@@ -85,7 +85,7 @@ public class DeviceTypeTest {
   public void configWithOspfIsRouter() {
     Configuration c = _cb.build();
     Vrf vrf = _vb.setOwner(c).build();
-    _nf.ospfProcessBuilder().setVrf(vrf).build();
+    _nf.ospfProcessBuilder().setRouterId(Ip.ZERO).setVrf(vrf).build();
     postProcessConfiguration(c);
     assertThat(c.getDeviceType(), is(DeviceType.ROUTER));
   }
@@ -94,7 +94,7 @@ public class DeviceTypeTest {
   public void configWithRipIsRouter() {
     Configuration c = _cb.build();
     Vrf vrf = _vb.setOwner(c).build();
-    _nf.ospfProcessBuilder().setVrf(vrf).build();
+    _nf.ospfProcessBuilder().setRouterId(Ip.ZERO).setVrf(vrf).build();
     postProcessConfiguration(c);
     assertThat(c.getDeviceType(), is(DeviceType.ROUTER));
   }
