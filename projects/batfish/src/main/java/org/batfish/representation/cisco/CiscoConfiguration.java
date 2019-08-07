@@ -342,6 +342,10 @@ public final class CiscoConfiguration extends VendorConfiguration {
     return String.format("~BGP_PEER_EXPORT_POLICY:%s:%s~", vrf, peer);
   }
 
+  public static String computeBgpPeerEvpnExportPolicyName(String vrf, String peer) {
+    return String.format("~BGP_PEER_EXPORT_POLICY_EVPN:%s:%s~", vrf, peer);
+  }
+
   public static String computeIcmpObjectGroupAclName(String name) {
     return String.format("~ICMP_OBJECT_GROUP~%s~", name);
   }
