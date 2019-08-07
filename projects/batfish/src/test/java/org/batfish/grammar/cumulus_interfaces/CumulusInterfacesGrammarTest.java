@@ -16,12 +16,19 @@ import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.Cumulus_in
 import org.batfish.representation.cumulus.CumulusNcluConfiguration;
 import org.batfish.representation.cumulus_interfaces.Interface;
 import org.batfish.representation.cumulus_interfaces.Interfaces;
+import org.junit.Before;
 import org.junit.Test;
 
 /** Test of {@link CumulusInterfacesParser}. */
 public class CumulusInterfacesGrammarTest {
+  private static CumulusNcluConfiguration CONFIG;
 
-  private static Interfaces parse(String input, CumulusNcluConfiguration config) {
+  @Before
+  public void setup() {
+    CONFIG = new CumulusNcluConfiguration();
+  }
+
+  private static Interfaces parse(String input) {
     Settings settings = new Settings();
     settings.setDisableUnrecognized(true);
     settings.setThrowOnLexerError(true);
@@ -31,7 +38,7 @@ public class CumulusInterfacesGrammarTest {
     Cumulus_interfaces_configurationContext ctxt = parser.parse();
     Warnings w = new Warnings();
     CumulusInterfacesConfigurationBuilder configurationBuilder =
-        new CumulusInterfacesConfigurationBuilder(config, w);
+        new CumulusInterfacesConfigurationBuilder(CONFIG, w);
     new BatfishParseTreeWalker(parser).walk(configurationBuilder, ctxt);
     return configurationBuilder.getInterfaces();
   }
@@ -39,14 +46,14 @@ public class CumulusInterfacesGrammarTest {
   @Test
   public void testAuto() {
     String input = "auto swp1\n";
-    Interfaces interfaces = parse(input, new CumulusNcluConfiguration());
+    Interfaces interfaces = parse(input);
     assertThat(interfaces.getAutoIfaces(), contains("swp1"));
   }
 
   @Test
   public void testBondSlaves() {
     String input = "iface i1\n bond-slaves i2 i3 i4\n";
-    Interfaces interfaces = parse(input, new CumulusNcluConfiguration());
+    Interfaces interfaces = parse(input);
     Interface iface = interfaces.getInterfaces().get("i1");
     assertThat(iface.getBondSlaves(), contains("i2", "i3", "i4"));
   }
@@ -54,14 +61,14 @@ public class CumulusInterfacesGrammarTest {
   @Test
   public void testIface() {
     String input = "iface swp1\n";
-    Interfaces interfaces = parse(input, new CumulusNcluConfiguration());
+    Interfaces interfaces = parse(input);
     assertThat(interfaces.getInterfaces(), hasKeys("swp1"));
   }
 
   @Test
   public void testIfaceAddress() {
     String input = "iface i1\n address 10.12.13.14/24\n";
-    Interfaces interfaces = parse(input, new CumulusNcluConfiguration());
+    Interfaces interfaces = parse(input);
     Interface iface = interfaces.getInterfaces().get("i1");
     assertThat(iface.getAddresses(), contains(ConcreteInterfaceAddress.parse("10.12.13.14/24")));
   }
@@ -69,7 +76,7 @@ public class CumulusInterfacesGrammarTest {
   @Test
   public void testIfaceBridgePorts() {
     String input = "iface i1\n bridge-ports i2 i3 i4\n";
-    Interfaces interfaces = parse(input, new CumulusNcluConfiguration());
+    Interfaces interfaces = parse(input);
     Interface iface = interfaces.getInterfaces().get("i1");
     assertThat(iface.getBridgePorts(), contains("i2", "i3", "i4"));
   }
@@ -77,7 +84,7 @@ public class CumulusInterfacesGrammarTest {
   @Test
   public void testIfaceBridgeVids() {
     String input = "iface i1\n bridge-vids 1 2 3 4\n";
-    Interfaces interfaces = parse(input, new CumulusNcluConfiguration());
+    Interfaces interfaces = parse(input);
     Interface iface = interfaces.getInterfaces().get("i1");
     assertThat(iface.getBridgeVids().enumerate(), contains(1, 2, 3, 4));
   }
@@ -85,7 +92,7 @@ public class CumulusInterfacesGrammarTest {
   @Test
   public void testIfaceLinkSpeed() {
     String input = "iface i1\n link-speed 10000\n";
-    Interfaces interfaces = parse(input, new CumulusNcluConfiguration());
+    Interfaces interfaces = parse(input);
     Interface iface = interfaces.getInterfaces().get("i1");
     assertEquals(iface.getLinkSpeed(), (Integer) 10000);
   }
@@ -93,7 +100,7 @@ public class CumulusInterfacesGrammarTest {
   @Test
   public void testIfaceLinkSpeed_null() {
     String input = "iface i1\n";
-    Interfaces interfaces = parse(input, new CumulusNcluConfiguration());
+    Interfaces interfaces = parse(input);
     Interface iface = interfaces.getInterfaces().get("i1");
     assertNull(iface.getLinkSpeed());
   }
@@ -101,7 +108,7 @@ public class CumulusInterfacesGrammarTest {
   @Test
   public void testIfaceVrf() {
     String input = "iface i1\n vrf v1\n";
-    Interfaces interfaces = parse(input, new CumulusNcluConfiguration());
+    Interfaces interfaces = parse(input);
     Interface iface = interfaces.getInterfaces().get("i1");
     assertThat(iface.getVrf(), equalTo("v1"));
   }
@@ -109,7 +116,7 @@ public class CumulusInterfacesGrammarTest {
   @Test
   public void testIfaceVrfTable() {
     String input = "iface vrf1\n vrf-table auto\n";
-    Interfaces interfaces = parse(input, new CumulusNcluConfiguration());
+    Interfaces interfaces = parse(input);
     Interface iface = interfaces.getInterfaces().get("vrf1");
     assertTrue(iface.getIsVrf());
   }
