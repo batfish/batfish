@@ -13,6 +13,7 @@ import org.batfish.grammar.BatfishParseTreeWalker;
 import org.batfish.grammar.GrammarSettings;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Cumulus_frr_configurationContext;
 import org.batfish.representation.cumulus.CumulusNcluConfiguration;
+import org.batfish.representation.cumulus.Vrf;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -49,5 +50,8 @@ public class CumulusFrrGrammarTest {
   public void testCumulusFrrVrf() {
     CumulusNcluConfiguration config = parseVendorConfig("cumulus_frr_vrf");
     assertThat(config.getVrfs().keySet(), equalTo(ImmutableSet.of("NAME")));
+
+    Vrf vrf = config.getVrfs().get("NAME");
+    assertThat(vrf.getVni(), equalTo(170000));
   }
 }
