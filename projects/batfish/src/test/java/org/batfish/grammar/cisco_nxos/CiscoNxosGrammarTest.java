@@ -25,6 +25,7 @@ import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasN
 import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasPrefix;
 import static org.batfish.datamodel.matchers.AddressFamilyCapabilitiesMatchers.hasAllowLocalAsIn;
 import static org.batfish.datamodel.matchers.AddressFamilyCapabilitiesMatchers.hasSendCommunity;
+import static org.batfish.datamodel.matchers.AddressFamilyCapabilitiesMatchers.hasSendExtendedCommunity;
 import static org.batfish.datamodel.matchers.AddressFamilyMatchers.hasAddressFamilyCapabilites;
 import static org.batfish.datamodel.matchers.AddressFamilyMatchers.hasExportPolicy;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasDefaultVrf;
@@ -167,6 +168,7 @@ import org.batfish.datamodel.UniverseIpSpace;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.acl.AclLineMatchExprs;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
+import org.batfish.datamodel.bgp.EvpnAddressFamily;
 import org.batfish.datamodel.bgp.Ipv4UnicastAddressFamily;
 import org.batfish.datamodel.bgp.RouteDistinguisher;
 import org.batfish.datamodel.bgp.community.StandardCommunity;
@@ -180,6 +182,7 @@ import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.routing_policy.expr.CallExpr;
 import org.batfish.datamodel.routing_policy.expr.Conjunction;
 import org.batfish.datamodel.routing_policy.expr.LiteralCommunityConjunction;
+import org.batfish.datamodel.routing_policy.expr.MatchProtocol;
 import org.batfish.datamodel.routing_policy.statement.If;
 import org.batfish.datamodel.routing_policy.statement.Statements;
 import org.batfish.datamodel.tracking.DecrementPriority;
@@ -521,6 +524,37 @@ public final class CiscoNxosGrammarTest {
                     new Conjunction(
                         ImmutableList.of(
                             new CallExpr(commonBgpExportPolicy), new CallExpr("match_metric"))),
+                    ImmutableList.of(Statements.ExitAccept.toStaticStatement()),
+                    ImmutableList.of(Statements.ExitReject.toStaticStatement())))));
+  }
+
+  @Test
+  public void testTemplatePeerEvpnAddressFamilyConversion() throws IOException {
+    Configuration c = parseConfig("nxos_bgp_peer_template_af_inheritance");
+
+    BgpActivePeerConfig peer =
+        Iterables.getOnlyElement(c.getDefaultVrf().getBgpProcess().getActiveNeighbors().values());
+
+    EvpnAddressFamily evpnAf = peer.getEvpnAddressFamily();
+    assertThat(evpnAf, notNullValue());
+    assertThat(
+        evpnAf,
+        hasAddressFamilyCapabilites(
+            allOf(
+                hasSendCommunity(true), hasSendExtendedCommunity(true), hasAllowLocalAsIn(true))));
+    assertTrue(evpnAf.getPropagateUnmatched());
+
+    String peerEvpnExportPolicyName = "~BGP_PEER_EXPORT_POLICY_EVPN:default:1.1.1.1~";
+    assertThat(evpnAf, hasExportPolicy(peerEvpnExportPolicyName));
+    assertThat(
+        c.getRoutingPolicies().get(peerEvpnExportPolicyName).getStatements(),
+        equalTo(
+            ImmutableList.of(
+                new If(
+                    new Conjunction(
+                        ImmutableList.of(
+                            new MatchProtocol(RoutingProtocol.BGP, RoutingProtocol.IBGP),
+                            new CallExpr("match_metric"))),
                     ImmutableList.of(Statements.ExitAccept.toStaticStatement()),
                     ImmutableList.of(Statements.ExitReject.toStaticStatement())))));
   }
