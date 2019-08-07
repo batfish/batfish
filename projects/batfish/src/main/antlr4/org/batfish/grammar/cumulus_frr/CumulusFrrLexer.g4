@@ -32,6 +32,11 @@ FRR_VERSION_LINE
   'frr version' F_NonNewline*
 ;
 
+IP
+:
+  'ip'
+;
+
 IP_ADDRESS
 :
   F_IpAddress
@@ -50,6 +55,11 @@ SUBNET_MASK
 NEWLINE
 :
   F_Newline+
+;
+
+ROUTE
+:
+  'route'
 ;
 
 VRF
