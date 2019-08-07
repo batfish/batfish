@@ -14,6 +14,7 @@ import org.batfish.grammar.ControlPlaneExtractor;
 import org.batfish.grammar.GrammarSettings;
 import org.batfish.grammar.ParseTreePrettyPrinter;
 import org.batfish.grammar.cumulus_frr.CumulusFrrCombinedParser;
+import org.batfish.grammar.cumulus_frr.CumulusFrrConfigurationBuilder;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Cumulus_frr_configurationContext;
 import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesCombinedParser;
 import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesConfigurationBuilder;
@@ -76,8 +77,7 @@ public class CumulusConcatenatedControlPlaneExtractor implements ControlPlaneExt
     Cumulus_frr_configurationContext ctxt = parser.parse();
     checkErrors(parser);
     ParseTreeWalker walker = new BatfishParseTreeWalker(parser);
-    CumulusInterfacesConfigurationBuilder cb =
-        new CumulusInterfacesConfigurationBuilder(_configuration, _w);
+    CumulusFrrConfigurationBuilder cb = new CumulusFrrConfigurationBuilder();
     walker.walk(cb, ctxt);
     mergeParseTree(ctxt, parser);
   }
