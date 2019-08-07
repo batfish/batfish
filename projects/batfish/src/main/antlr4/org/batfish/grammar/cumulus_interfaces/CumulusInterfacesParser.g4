@@ -31,6 +31,7 @@ s_iface
     i_address
   | i_bond_slaves
   | i_bridge_ports
+  | i_bridge_vids
   | i_link_speed
   | i_vrf
   | i_vrf_table
@@ -50,6 +51,11 @@ i_bond_slaves
 i_bridge_ports
 :
   BRIDGE_PORTS interface_name+ NEWLINE
+;
+
+i_bridge_vids
+:
+  BRIDGE_VIDS NUMBER+ NEWLINE
 ;
 
 i_link_speed

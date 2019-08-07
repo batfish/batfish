@@ -75,6 +75,14 @@ public class CumulusInterfacesGrammarTest {
   }
 
   @Test
+  public void testIfaceBridgeVids() {
+    String input = "iface i1\n bridge-vids 1 2 3 4\n";
+    Interfaces interfaces = parse(input, new CumulusNcluConfiguration());
+    Interface iface = interfaces.getInterfaces().get("i1");
+    assertThat(iface.getBridgeVids().enumerate(), contains(1, 2, 3, 4));
+  }
+
+  @Test
   public void testIfaceLinkSpeed() {
     String input = "iface i1\n link-speed 10000\n";
     Interfaces interfaces = parse(input, new CumulusNcluConfiguration());

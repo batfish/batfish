@@ -2,18 +2,23 @@ package org.batfish.grammar.cumulus_interfaces;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Range;
 import java.util.List;
 import org.antlr.v4.runtime.RuleContext;
 import org.antlr.v4.runtime.Token;
 import org.antlr.v4.runtime.tree.ErrorNode;
+import org.antlr.v4.runtime.tree.ParseTree;
+import org.antlr.v4.runtime.tree.TerminalNode;
 import org.batfish.common.Warnings;
 import org.batfish.common.Warnings.ParseWarning;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
+import org.batfish.datamodel.IntegerSpace;
 import org.batfish.grammar.UnrecognizedLineToken;
 import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.Cumulus_interfaces_configurationContext;
 import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.I_addressContext;
 import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.I_bond_slavesContext;
 import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.I_bridge_portsContext;
+import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.I_bridge_vidsContext;
 import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.I_link_speedContext;
 import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.I_vrfContext;
 import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.I_vrf_tableContext;
@@ -112,6 +117,25 @@ public final class CumulusInterfacesConfigurationBuilder
         interfaceNameCtxs.stream()
             .map(RuleContext::getText)
             .collect(ImmutableList.toImmutableList()));
+  }
+
+  @Override
+  public void enterI_bridge_vids(I_bridge_vidsContext ctx) {
+    List<TerminalNode> vidCtxs = ctx.NUMBER();
+    vidCtxs.forEach(
+        vidCtx ->
+            _config.referenceStructure(
+                CumulusStructureType.VLAN,
+                vidCtx.getText(),
+                CumulusStructureUsage.BRIDGE_VID,
+                ctx.getStart().getLine()));
+    _currentIface.setBridgeVids(
+        IntegerSpace.unionOf(
+            vidCtxs.stream()
+                .map(ParseTree::getText)
+                .map(Integer::parseInt)
+                .map(Range::singleton)
+                .collect(ImmutableList.toImmutableList())));
   }
 
   @Override

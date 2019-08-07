@@ -29,6 +29,11 @@ BRIDGE_PORTS
   'bridge-ports' -> pushMode(M_Words)
 ;
 
+BRIDGE_VIDS
+:
+  'bridge-vids'
+;
+
 IFACE
 :
   'iface' -> pushMode(M_Word)

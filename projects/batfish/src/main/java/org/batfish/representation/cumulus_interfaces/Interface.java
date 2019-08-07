@@ -5,15 +5,19 @@ import java.util.LinkedList;
 import java.util.List;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
+import org.batfish.datamodel.IntegerSpace;
 
 /** Model of an iface block in a cumulus /etc/network/interfaces file. */
+@ParametersAreNonnullByDefault
 public final class Interface {
   private final @Nonnull List<ConcreteInterfaceAddress> _addresses = new LinkedList<>();
   private final @Nonnull String _name;
   private @Nullable String _vrf;
   private @Nullable List<String> _bondSlaves;
   private @Nullable List<String> _bridgePorts;
+  private @Nullable IntegerSpace _bridgeVids;
   private boolean _isVrf = false;
   private @Nullable Integer _linkSpeed;
 
@@ -37,6 +41,11 @@ public final class Interface {
   @Nullable
   public List<String> getBridgePorts() {
     return _bridgePorts;
+  }
+
+  @Nullable
+  public IntegerSpace getBridgeVids() {
+    return _bridgeVids;
   }
 
   public boolean getIsVrf() {
@@ -64,6 +73,10 @@ public final class Interface {
 
   public void setBridgePorts(List<String> bridgePorts) {
     _bridgePorts = ImmutableList.copyOf(bridgePorts);
+  }
+
+  public void setBridgeVids(IntegerSpace bridgeVids) {
+    _bridgeVids = bridgeVids;
   }
 
   public void setIsVrf() {
