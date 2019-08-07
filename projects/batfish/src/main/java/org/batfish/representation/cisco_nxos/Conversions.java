@@ -13,7 +13,6 @@ import com.google.common.collect.ImmutableSet;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -45,7 +44,6 @@ import org.batfish.datamodel.PrefixSpace;
 import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.Vrf;
-import org.batfish.datamodel.bgp.AddressFamily;
 import org.batfish.datamodel.bgp.AddressFamilyCapabilities;
 import org.batfish.datamodel.bgp.Ipv4UnicastAddressFamily;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
@@ -354,9 +352,10 @@ final class Conversions {
     Ipv4UnicastAddressFamily.Builder ipv4FamilyBuilder = Ipv4UnicastAddressFamily.builder();
 
     // Statements for export policy
-    List<Statement> exportStatements = new LinkedList<>();
+    List<Statement> exportStatements = ImmutableList.of();
     if (naf4 != null) {
-      setAddressFamilyCapabilities(ipv4FamilyBuilder, naf4, af4);
+      ipv4FamilyBuilder.setAddressFamilyCapabilities(
+          getAddressFamilyCapabilities(naf4, af4 != null && af4.getSuppressInactive()));
 
       // set import policy
       String inboundMap = naf4.getInboundRouteMap();
@@ -367,11 +366,11 @@ final class Conversions {
                   : null)
           .setRouteReflectorClient(firstNonNull(naf4.getRouteReflectorClient(), Boolean.FALSE));
 
-      populateExportStatementsForIpv4Af(exportStatements, c, naf4, neighbor, newNeighborBuilder);
-      populateCommonExportStatements(exportStatements, naf4, c, vrf.getName());
+      exportStatements =
+          getExportStatementsForIpv4(c, naf4, neighbor, newNeighborBuilder, vrf.getName());
     } else if (neighbor.getRemovePrivateAs() != null) {
       // TODO(handle different types of RemovePrivateAs)
-      exportStatements.add(RemovePrivateAs.toStaticStatement());
+      exportStatements = ImmutableList.of(RemovePrivateAs.toStaticStatement());
     }
 
     // Export policy
@@ -402,43 +401,41 @@ final class Conversions {
   }
 
   /** Set address family capabilities for IPv4 and L2VPN address families */
-  private static <B extends AddressFamily.Builder<?, ?>> void setAddressFamilyCapabilities(
-      B addressFamilyBuilder,
-      BgpVrfNeighborAddressFamilyConfiguration naf,
-      @Nullable BgpVrfIpv4AddressFamilyConfiguration af4) {
-    addressFamilyBuilder.setAddressFamilyCapabilities(
-        AddressFamilyCapabilities.builder()
-            .setAdvertiseInactive(
-                !firstNonNull(
-                    naf.getSuppressInactive(),
-                    af4 != null ? af4.getSuppressInactive() : Boolean.FALSE))
-            .setAllowLocalAsIn(firstNonNull(naf.getAllowAsIn(), Boolean.FALSE))
-            .setAllowRemoteAsOut(firstNonNull(naf.getDisablePeerAsCheck(), Boolean.FALSE))
-            .setSendCommunity(firstNonNull(naf.getSendCommunityStandard(), Boolean.FALSE))
-            .build());
+  private static AddressFamilyCapabilities getAddressFamilyCapabilities(
+      BgpVrfNeighborAddressFamilyConfiguration naf, Boolean inheritedSupressInactive) {
+    return AddressFamilyCapabilities.builder()
+        .setAdvertiseInactive(!firstNonNull(naf.getSuppressInactive(), inheritedSupressInactive))
+        .setAllowLocalAsIn(firstNonNull(naf.getAllowAsIn(), Boolean.FALSE))
+        .setAllowRemoteAsOut(firstNonNull(naf.getDisablePeerAsCheck(), Boolean.FALSE))
+        .setSendCommunity(firstNonNull(naf.getSendCommunityStandard(), Boolean.FALSE))
+        .setSendExtendedCommunity(firstNonNull(naf.getSendCommunityExtended(), Boolean.FALSE))
+        .build();
   }
 
-  /** Populate export statements specific to IPv4 address family */
-  private static void populateExportStatementsForIpv4Af(
-      List<Statement> statements,
+  /** Get export statements for IPv4 address family */
+  private static List<Statement> getExportStatementsForIpv4(
       Configuration configuration,
       BgpVrfNeighborAddressFamilyConfiguration naf,
       BgpVrfNeighborConfiguration neighbor,
-      BgpPeerConfig.Builder<?, ?> newNeighborBuilder) {
-    // Export policy
+      BgpPeerConfig.Builder<?, ?> newNeighborBuilder,
+      String vrfName) {
+    ImmutableList.Builder<Statement> statementsBuilder = ImmutableList.builder();
+
+    // Next Hop Self
     if (firstNonNull(naf.getNextHopSelf(), Boolean.FALSE)) {
-      statements.add(new SetNextHop(SelfNextHop.getInstance(), false));
+      statementsBuilder.add(new SetNextHop(SelfNextHop.getInstance(), false));
     }
     if (neighbor.getRemovePrivateAs() != null) {
       // TODO(handle different types of RemovePrivateAs)
-      statements.add(RemovePrivateAs.toStaticStatement());
+      statementsBuilder.add(RemovePrivateAs.toStaticStatement());
     }
+
     // If defaultOriginate is set, generate route and default route export policy. Default route
     // will match this policy and get exported without going through the rest of the export policy.
     // TODO Verify that nextHopSelf and removePrivateAs settings apply to default-originate route.
     if (firstNonNull(naf.getDefaultOriginate(), Boolean.FALSE)) {
       initBgpDefaultRouteExportPolicy(configuration);
-      statements.add(
+      statementsBuilder.add(
           new If(
               "Export default route from peer with default-originate configured",
               new CallExpr(computeNxosBgpDefaultRouteExportPolicyName(true)),
@@ -453,30 +450,27 @@ final class Conversions {
               .build();
       newNeighborBuilder.setGeneratedRoutes(ImmutableSet.of(defaultRoute));
     }
-  }
 
-  /** Populate export statements common to IPv4 and L2VPN address families */
-  private static void populateCommonExportStatements(
-      List<Statement> statements,
-      BgpVrfNeighborAddressFamilyConfiguration naf,
-      Configuration configuration,
-      String vrfName) {
     // Peer-specific export policy, after matching default-originate route.
     Conjunction peerExportGuard = new Conjunction();
-    statements.add(
+    statementsBuilder.add(
         new If(
             "peer-export policy main conditional: exitAccept if true / exitReject if false",
             peerExportGuard,
             ImmutableList.of(Statements.ExitAccept.toStaticStatement()),
             ImmutableList.of(Statements.ExitReject.toStaticStatement())));
 
+    // Common BGP export policy
     List<BooleanExpr> peerExportConditions = peerExportGuard.getConjuncts();
     peerExportConditions.add(new CallExpr(computeBgpCommonExportPolicyName(vrfName)));
 
+    // Export policy generated for route-map (if any)
     String outboundMap = naf.getOutboundRouteMap();
     if (outboundMap != null && configuration.getRoutingPolicies().containsKey(outboundMap)) {
       peerExportConditions.add(new CallExpr(outboundMap));
     }
+
+    return statementsBuilder.build();
   }
 
   /**

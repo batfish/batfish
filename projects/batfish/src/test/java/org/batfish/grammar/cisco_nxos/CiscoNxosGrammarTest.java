@@ -177,7 +177,11 @@ import org.batfish.datamodel.matchers.VrfMatchers;
 import org.batfish.datamodel.ospf.OspfMetricType;
 import org.batfish.datamodel.routing_policy.Environment.Direction;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
+import org.batfish.datamodel.routing_policy.expr.CallExpr;
+import org.batfish.datamodel.routing_policy.expr.Conjunction;
 import org.batfish.datamodel.routing_policy.expr.LiteralCommunityConjunction;
+import org.batfish.datamodel.routing_policy.statement.If;
+import org.batfish.datamodel.routing_policy.statement.Statements;
 import org.batfish.datamodel.tracking.DecrementPriority;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
@@ -484,8 +488,8 @@ public final class CiscoNxosGrammarTest {
   }
 
   @Test
-  public void testBgpAddressFamilyConversion() throws IOException {
-    Configuration c = parseConfig("nxos_bgp_af");
+  public void testTemplatePeerBgpAddressFamilyConversion() throws IOException {
+    Configuration c = parseConfig("nxos_bgp_peer_template_af");
 
     BgpActivePeerConfig peer =
         Iterables.getOnlyElement(c.getDefaultVrf().getBgpProcess().getActiveNeighbors().values());
@@ -500,7 +504,25 @@ public final class CiscoNxosGrammarTest {
     assertThat(
         ipv4Af,
         hasAddressFamilyCapabilites(allOf(hasSendCommunity(true), hasAllowLocalAsIn(true))));
-    assertThat(ipv4Af, hasExportPolicy("~BGP_PEER_EXPORT_POLICY:default:1.1.1.1~"));
+
+    String commonBgpExportPolicy = "~BGP_COMMON_EXPORT_POLICY:default~";
+    String defaultRouteOriginatePolicy = "~BGP_DEFAULT_ROUTE_PEER_EXPORT_POLICY:IPv4~";
+    String peerExportPolicyName = "~BGP_PEER_EXPORT_POLICY:default:1.1.1.1~";
+
+    assertThat(ipv4Af, hasExportPolicy(peerExportPolicyName));
+    assertThat(
+        c.getRoutingPolicies().get(peerExportPolicyName).getStatements(),
+        equalTo(
+            ImmutableList.of(
+                new If(
+                    new CallExpr(defaultRouteOriginatePolicy),
+                    ImmutableList.of(Statements.ReturnTrue.toStaticStatement())),
+                new If(
+                    new Conjunction(
+                        ImmutableList.of(
+                            new CallExpr(commonBgpExportPolicy), new CallExpr("match_metric"))),
+                    ImmutableList.of(Statements.ExitAccept.toStaticStatement()),
+                    ImmutableList.of(Statements.ExitReject.toStaticStatement())))));
   }
 
   @Test
