@@ -50,7 +50,7 @@ public final class Interface {
 
   @Nonnull
   public InterfaceClagSettings createOrGetClagSettings() {
-    if(_clagSettings == null) {
+    if (_clagSettings == null) {
       _clagSettings = new InterfaceClagSettings();
     }
     return _clagSettings;
