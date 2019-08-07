@@ -19,18 +19,18 @@ import org.batfish.datamodel.MacAddress;
 /** Model of an iface block in a cumulus /etc/network/interfaces file. */
 @ParametersAreNonnullByDefault
 public final class Interface {
-  private final @Nonnull List<ConcreteInterfaceAddress> _addresses = new LinkedList<>();
+  private @Nullable List<ConcreteInterfaceAddress> _addresses;
   private @Nullable Map<MacAddress, Set<InterfaceAddress>> _addressVirtuals;
   private @Nullable List<String> _bondSlaves;
+  private @Nullable Integer _bridgeAccess;
   private @Nullable List<String> _bridgePorts;
   private @Nullable IntegerSpace _bridgeVids;
+  private @Nullable Integer _clagId;
   private boolean _isVrf = false;
   private @Nullable Integer _linkSpeed;
   private final @Nonnull String _name;
   private @Nullable Integer _vlanId;
   private @Nullable String _vrf;
-  private @Nullable Integer _clagId;
-  private @Nullable Integer _bridgeAccess;
   private @Nullable String _vlanRawDevice;
   private @Nullable Ip _vxlanLocalTunnelIp;
   private @Nullable Integer _vxlanId;
@@ -40,10 +40,13 @@ public final class Interface {
   }
 
   public void addAddress(ConcreteInterfaceAddress address) {
+    if (_addresses == null) {
+      _addresses = new LinkedList<>();
+    }
     _addresses.add(address);
   }
 
-  @Nonnull
+  @Nullable
   public List<ConcreteInterfaceAddress> getAddresses() {
     return _addresses;
   }
