@@ -69,6 +69,11 @@ VRF_TABLE
   'vrf-table' -> pushMode(M_Word)
 ;
 
+VXLAN_ID
+:
+  'vxlan-id'
+;
+
 VXLAN_LOCAL_TUNNEL_IP
 :
   'vxlan-local-tunnelip'

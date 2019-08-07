@@ -38,6 +38,7 @@ s_iface
   | i_vlan_id
   | i_vrf
   | i_vrf_table
+  | i_vxlan_id
   | i_vxlan_local_tunnel_ip
   )*
 ;
@@ -90,6 +91,11 @@ i_vrf
 i_vrf_table
 :
   VRF_TABLE vrf_table_name NEWLINE
+;
+
+i_vxlan_id
+:
+  VXLAN_ID NUMBER NEWLINE
 ;
 
 i_vxlan_local_tunnel_ip

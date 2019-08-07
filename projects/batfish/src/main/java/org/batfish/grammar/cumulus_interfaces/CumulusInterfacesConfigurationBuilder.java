@@ -26,6 +26,7 @@ import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.I_link_spe
 import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.I_vlan_idContext;
 import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.I_vrfContext;
 import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.I_vrf_tableContext;
+import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.I_vxlan_idContext;
 import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.I_vxlan_local_tunnel_ipContext;
 import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.Interface_nameContext;
 import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.S_autoContext;
@@ -174,6 +175,11 @@ public final class CumulusInterfacesConfigurationBuilder
         vrf,
         CumulusStructureUsage.INTERFACE_VRF,
         ctx.vrf_name().getStart().getLine());
+  }
+
+  @Override
+  public void exitI_vxlan_id(I_vxlan_idContext ctx) {
+    _currentIface.setVxlanId(Integer.parseInt(ctx.NUMBER().getText()));
   }
 
   @Override

@@ -25,6 +25,7 @@ public final class Interface {
   private @Nullable Integer _clagId;
   private @Nullable Integer _bridgeAccess;
   private @Nullable Ip _vxlanLocalTunnelIp;
+  private @Nullable Integer _vxlanId;
 
   public Interface(@Nonnull String name) {
     _name = name;
@@ -88,6 +89,11 @@ public final class Interface {
   }
 
   @Nullable
+  public Integer getVxlanId() {
+    return _vxlanId;
+  }
+
+  @Nullable
   public Ip getVxlanLocalTunnelIp() {
     return _vxlanLocalTunnelIp;
   }
@@ -126,6 +132,10 @@ public final class Interface {
 
   public void setVrf(String vrf) {
     _vrf = vrf;
+  }
+
+  public void setVxlanId(int vxlanId) {
+    _vxlanId = vxlanId;
   }
 
   public void setVxlanLocalTunnelIp(Ip vxlanLocalTunnelIp) {
