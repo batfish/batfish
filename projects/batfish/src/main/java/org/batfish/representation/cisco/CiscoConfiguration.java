@@ -39,7 +39,6 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.ImmutableSortedSet;
-import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.MultimapBuilder;
@@ -1930,6 +1929,55 @@ public final class CiscoConfiguration extends VendorConfiguration {
     return iface.getMtu();
   }
 
+  /**
+   * Get the OspfNetwork in the specified OspfProcess containing the specified interface's address
+   */
+  private static @Nullable OspfNetwork getOspfNetworkForInterface(
+      Interface iface, OspfProcess process) {
+    ConcreteInterfaceAddress interfaceAddress = iface.getAddress();
+    if (interfaceAddress == null) {
+      // This interface has no IP address configured, so it is not associated with a network in this
+      // OSPF process
+      return null;
+    }
+
+    // Sort networks with longer prefixes first, then lower start IPs and areas.
+    SortedSet<OspfNetwork> networks =
+        ImmutableSortedSet.copyOf(
+            Comparator.<OspfNetwork>comparingInt(n -> n.getPrefix().getPrefixLength())
+                .reversed()
+                .thenComparing(n -> n.getPrefix().getStartIp())
+                .thenComparingLong(OspfNetwork::getArea),
+            process.getNetworks());
+
+    for (OspfNetwork network : networks) {
+      Prefix networkPrefix = network.getPrefix();
+      Ip networkAddress = networkPrefix.getStartIp();
+      Ip maskedInterfaceAddress =
+          interfaceAddress.getIp().getNetworkAddress(networkPrefix.getPrefixLength());
+      if (maskedInterfaceAddress.equals(networkAddress)) {
+        // Found a longest prefix match, so found the network in this OSPF process for the iface
+        return network;
+      }
+    }
+    return null;
+  }
+
+  /** Get the OspfProcess corresponding to the specified interface */
+  private static @Nullable OspfProcess getOspfProcessForInterface(Vrf vrf, Interface iface) {
+    if (iface.getOspfProcess() != null) {
+      return vrf.getOspfProcesses().get(iface.getOspfProcess());
+    }
+    for (OspfProcess process : vrf.getOspfProcesses().values()) {
+      if (getOspfNetworkForInterface(iface, process) != null) {
+        return process;
+      }
+    }
+    // Interface does not match any OSPF network prefix, so don't know which process it is
+    // associated with
+    return null;
+  }
+
   private org.batfish.datamodel.Interface toInterface(
       String ifaceName, Interface iface, Map<String, IpAccessList> ipAccessLists, Configuration c) {
     org.batfish.datamodel.Interface newIface =
@@ -1985,10 +2033,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
     newIface.setAllAddresses(allPrefixes.build());
 
     if (!iface.getOspfShutdown()) {
-      OspfProcess proc =
-          iface.getOspfProcess() != null
-              ? vrf.getOspfProcesses().get(iface.getOspfProcess())
-              : Iterables.getLast(vrf.getOspfProcesses().values(), null);
+      OspfProcess proc = getOspfProcessForInterface(vrf, iface);
       if (proc != null) {
         if (firstNonNull(
             iface.getOspfPassive(),
@@ -2468,14 +2513,6 @@ public final class CiscoConfiguration extends VendorConfiguration {
     // establish areas and associated interfaces
     Map<Long, OspfArea.Builder> areas = new HashMap<>();
     Map<Long, ImmutableSortedSet.Builder<String>> areaInterfacesBuilders = new HashMap<>();
-    // Sort networks with longer prefixes first, then lower start IPs and areas.
-    SortedSet<OspfNetwork> networks =
-        ImmutableSortedSet.copyOf(
-            Comparator.<OspfNetwork>comparingInt(n -> n.getPrefix().getPrefixLength())
-                .reversed()
-                .thenComparing(n -> n.getPrefix().getStartIp())
-                .thenComparingLong(OspfNetwork::getArea),
-            proc.getNetworks());
 
     // Set RFC 1583 compatibility
     newProcess.setRfc1583Compatible(proc.getRfc1583Compatible());
@@ -2498,28 +2535,16 @@ public final class CiscoConfiguration extends VendorConfiguration {
       if (vsIface.getOspfProcess() != null && !vsIface.getOspfProcess().equals(proc.getName())) {
         continue;
       }
-      ConcreteInterfaceAddress interfaceAddress = iface.getConcreteAddress();
-      Long areaNum = iface.getOspfAreaName();
-      // OSPF area number was not configured on the interface itself, so infer from IP address.
-      if (areaNum == null) {
-        if (interfaceAddress == null) {
-          // This interface has no IP address configured, cannot be in an OSPF area.
-          continue;
-        }
-        for (OspfNetwork network : networks) {
-          Prefix networkPrefix = network.getPrefix();
-          Ip networkAddress = networkPrefix.getStartIp();
-          Ip maskedInterfaceAddress =
-              interfaceAddress.getIp().getNetworkAddress(networkPrefix.getPrefixLength());
-          if (maskedInterfaceAddress.equals(networkAddress)) {
-            // we have a longest prefix match
-            areaNum = network.getArea();
-            break;
-          }
-        }
-      }
-      if (areaNum == null) {
+      OspfNetwork network = getOspfNetworkForInterface(vsIface, proc);
+      if (vsIface.getOspfProcess() == null && network == null) {
+        // Interface is not on an OspfNetwork on this process
         continue;
+      }
+
+      Long areaNum = iface.getOspfAreaName();
+      // OSPF area number was not configured on the interface itself, so get from OspfNetwork
+      if (areaNum == null) {
+        areaNum = network.getArea();
       }
       String ifaceName = e.getKey();
       areas.computeIfAbsent(areaNum, areaNumber -> OspfArea.builder().setNumber(areaNumber));
