@@ -39,6 +39,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.ImmutableSortedSet;
+import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.MultimapBuilder;
@@ -1969,7 +1970,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
     return vrf.getOspfProcesses().values().stream()
         .filter(p -> getOspfNetworkForInterface(iface, p) != null)
         .findFirst()
-        .orElse(null);
+        .orElse(Iterables.getLast(vrf.getOspfProcesses().values(), null));
   }
 
   private org.batfish.datamodel.Interface toInterface(
