@@ -74,6 +74,14 @@ public class CumulusInterfacesGrammarTest {
   }
 
   @Test
+  public void testIfaceBridgeAccess() {
+    String input = "iface vni1\n bridge-access 1234\n";
+    Interfaces interfaces = parse(input);
+    Interface iface = interfaces.getInterfaces().get("vni1");
+    assertThat(iface.getBridgeAccess(), equalTo(1234));
+  }
+
+  @Test
   public void testIfaceBridgePorts() {
     String input = "iface i1\n bridge-ports i2 i3 i4\n";
     Interfaces interfaces = parse(input);

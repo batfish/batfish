@@ -17,6 +17,7 @@ import org.batfish.grammar.UnrecognizedLineToken;
 import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.Cumulus_interfaces_configurationContext;
 import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.I_addressContext;
 import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.I_bond_slavesContext;
+import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.I_bridge_accessContext;
 import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.I_bridge_portsContext;
 import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.I_bridge_vidsContext;
 import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.I_clag_idContext;
@@ -103,6 +104,11 @@ public final class CumulusInterfacesConfigurationBuilder
         interfaceNameCtxs.stream()
             .map(RuleContext::getText)
             .collect(ImmutableList.toImmutableList()));
+  }
+
+  @Override
+  public void exitI_bridge_access(I_bridge_accessContext ctx) {
+    _currentIface.setBridgeAccess(Integer.parseInt(ctx.NUMBER().getText()));
   }
 
   @Override

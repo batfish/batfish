@@ -30,6 +30,7 @@ s_iface
   (
     i_address
   | i_bond_slaves
+  | i_bridge_access
   | i_bridge_ports
   | i_bridge_vids
   | i_clag_id
@@ -48,6 +49,11 @@ i_address
 i_bond_slaves
 :
   BOND_SLAVES interface_name+ NEWLINE
+;
+
+i_bridge_access
+:
+  BRIDGE_ACCESS NUMBER NEWLINE
 ;
 
 i_bridge_ports

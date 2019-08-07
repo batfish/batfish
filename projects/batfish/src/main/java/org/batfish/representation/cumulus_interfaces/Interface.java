@@ -22,6 +22,7 @@ public final class Interface {
   private @Nullable Integer _vlanId;
   private @Nullable String _vrf;
   private @Nullable Integer _clagId;
+  private @Nullable Integer _bridgeAccess;
 
   public Interface(@Nonnull String name) {
     _name = name;
@@ -33,6 +34,11 @@ public final class Interface {
 
   public List<ConcreteInterfaceAddress> getAddresses() {
     return _addresses;
+  }
+
+  @Nullable
+  public Integer getBridgeAccess() {
+    return _bridgeAccess;
   }
 
   @Nullable
@@ -81,6 +87,10 @@ public final class Interface {
 
   public void setBondSlaves(List<String> bondSlaves) {
     _bondSlaves = ImmutableList.copyOf(bondSlaves);
+  }
+
+  public void setBridgeAccess(int vlanId) {
+    _bridgeAccess = vlanId;
   }
 
   public void setBridgePorts(List<String> bridgePorts) {

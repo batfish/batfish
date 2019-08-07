@@ -29,6 +29,11 @@ BRIDGE_PORTS
   'bridge-ports' -> pushMode(M_Words)
 ;
 
+BRIDGE_ACCESS
+:
+  'bridge-access'
+;
+
 BRIDGE_VIDS
 :
   'bridge-vids'
