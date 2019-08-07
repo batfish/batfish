@@ -2538,6 +2538,9 @@ public final class CiscoConfiguration extends VendorConfiguration {
       Long areaNum = iface.getOspfAreaName();
       // OSPF area number was not configured on the interface itself, so get from OspfNetwork
       if (areaNum == null) {
+        if (network == null) {
+          continue;
+        }
         areaNum = network.getArea();
       }
       String ifaceName = e.getKey();
