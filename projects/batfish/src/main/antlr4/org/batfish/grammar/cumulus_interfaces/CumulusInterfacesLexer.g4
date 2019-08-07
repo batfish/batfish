@@ -90,6 +90,16 @@ VXLAN_LOCAL_TUNNEL_IP
 ;
 
 // Complex tokens
+BLANK_LINE
+:
+  (
+    F_Whitespace
+  )* F_Newline
+  {lastTokenType() == NEWLINE|| lastTokenType() == -1}?
+
+  F_Newline* -> channel ( HIDDEN )
+;
+
 COMMENT_LINE
 :
   (

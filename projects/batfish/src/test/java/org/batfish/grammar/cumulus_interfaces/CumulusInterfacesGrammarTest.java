@@ -88,6 +88,12 @@ public class CumulusInterfacesGrammarTest {
   }
 
   @Test
+  public void testBlankLines() {
+    String input = "\n\n\n";
+    parse(input);
+  }
+
+  @Test
   public void testIface() {
     String input = "iface swp1\n";
     Interfaces interfaces = parse(input);
