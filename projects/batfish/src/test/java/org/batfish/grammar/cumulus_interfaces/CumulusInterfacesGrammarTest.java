@@ -212,6 +212,18 @@ public class CumulusInterfacesGrammarTest {
   }
 
   @Test
+  public void testIfaceClagBackupIpAndVrf() {
+    String input = "iface i1\n clagd-backup-ip 1.2.3.4 vrf v1\n";
+    InterfaceClagSettings clag = parse(input).getInterfaces().get("i1").getClagSettings();
+    assertThat(clag.getBackupIp(), equalTo(Ip.parse("1.2.3.4")));
+    assertThat(clag.getBackupIpVrf(), equalTo("v1"));
+    assertThat(
+        getStructureReferences(
+            CumulusStructureType.VRF, "v1", CumulusStructureUsage.INTERFACE_CLAG_BACKUP_IP_VRF),
+        contains(2));
+  }
+
+  @Test
   public void testIfaceClagdPeerIp() {
     String input = "iface i1\n clagd-peer-ip 1.2.3.4\n";
     InterfaceClagSettings clag = parse(input).getInterfaces().get("i1").getClagSettings();

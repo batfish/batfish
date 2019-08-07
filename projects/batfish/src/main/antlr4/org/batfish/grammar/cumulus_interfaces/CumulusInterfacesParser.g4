@@ -36,6 +36,7 @@ s_iface
   | i_bridge_ports
   | i_bridge_vids
   | i_clag_id
+  | i_clagd_backup_ip
   | i_clagd_peer_ip
   | i_link_speed
   | i_vlan_id
@@ -85,6 +86,11 @@ i_bridge_vids
 i_clag_id
 :
   CLAG_ID number NEWLINE
+;
+
+i_clagd_backup_ip
+:
+  CLAGD_BACKUP_IP IP_ADDRESS VRF vrf_name NEWLINE
 ;
 
 i_clagd_peer_ip

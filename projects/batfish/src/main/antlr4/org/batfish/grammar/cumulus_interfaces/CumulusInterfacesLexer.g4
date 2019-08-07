@@ -54,6 +54,11 @@ CLAG_ID
   'clag-id'
 ;
 
+CLAGD_BACKUP_IP
+:
+  'clagd-backup-ip'
+;
+
 CLAGD_PEER_IP
 :
   'clagd-peer-ip'

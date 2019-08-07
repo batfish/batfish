@@ -24,6 +24,7 @@ import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.I_bridge_a
 import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.I_bridge_portsContext;
 import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.I_bridge_vidsContext;
 import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.I_clag_idContext;
+import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.I_clagd_backup_ipContext;
 import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.I_clagd_peer_ipContext;
 import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.I_link_speedContext;
 import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.I_vlan_idContext;
@@ -182,6 +183,19 @@ public final class CumulusInterfacesConfigurationBuilder
   @Override
   public void exitI_clag_id(I_clag_idContext ctx) {
     _currentIface.setClagId(Integer.parseInt(ctx.number().getText()));
+  }
+
+  @Override
+  public void exitI_clagd_backup_ip(I_clagd_backup_ipContext ctx) {
+    InterfaceClagSettings clag = _currentIface.createOrGetClagSettings();
+    clag.setBackupIp(Ip.parse(ctx.IP_ADDRESS().getText()));
+    String vrf = ctx.vrf_name().getText();
+    clag.setBackupIpVrf(vrf);
+    _config.referenceStructure(
+        CumulusStructureType.VRF,
+        vrf,
+        CumulusStructureUsage.INTERFACE_CLAG_BACKUP_IP_VRF,
+        ctx.getStart().getLine());
   }
 
   @Override
