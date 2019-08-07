@@ -6,7 +6,6 @@ import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableSet;
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
-import org.batfish.common.Warnings;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.config.Settings;
 import org.batfish.grammar.BatfishParseTreeWalker;
@@ -38,8 +37,7 @@ public class CumulusFrrGrammarTest {
     CumulusFrrCombinedParser parser = new CumulusFrrCombinedParser(src, settings, 1, 0);
     Cumulus_frr_configurationContext ctxt = parser.parse();
     ParseTreeWalker walker = new BatfishParseTreeWalker(parser);
-    Warnings w = new Warnings();
-    CumulusFrrConfigurationBuilder cb = new CumulusFrrConfigurationBuilder(configuration, w);
+    CumulusFrrConfigurationBuilder cb = new CumulusFrrConfigurationBuilder(configuration);
     walker.walk(cb, ctxt);
     return cb.getVendorConfiguration();
   }
@@ -54,8 +52,7 @@ public class CumulusFrrGrammarTest {
     CumulusFrrCombinedParser parser = new CumulusFrrCombinedParser(src, settings, 1, 0);
     Cumulus_frr_configurationContext ctxt = parser.parse();
     ParseTreeWalker walker = new BatfishParseTreeWalker(parser);
-    Warnings w = new Warnings();
-    CumulusFrrConfigurationBuilder cb = new CumulusFrrConfigurationBuilder(configuration, w);
+    CumulusFrrConfigurationBuilder cb = new CumulusFrrConfigurationBuilder(configuration);
     walker.walk(cb, ctxt);
     return cb.getVendorConfiguration();
   }

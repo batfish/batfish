@@ -1,7 +1,6 @@
 package org.batfish.grammar.cumulus_frr;
 
 import javax.annotation.Nullable;
-import org.batfish.common.Warnings;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.S_vrfContext;
 import org.batfish.representation.cumulus.CumulusNcluConfiguration;
 import org.batfish.representation.cumulus.CumulusStructureType;
@@ -11,7 +10,7 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
   private CumulusNcluConfiguration _c;
   private @Nullable Vrf _currentVrf;
 
-  CumulusFrrConfigurationBuilder(CumulusNcluConfiguration configuration, Warnings w) {
+  CumulusFrrConfigurationBuilder(CumulusNcluConfiguration configuration) {
     _c = configuration;
   }
 
