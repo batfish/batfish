@@ -33,6 +33,7 @@ s_iface
   | i_bridge_ports
   | i_bridge_vids
   | i_link_speed
+  | i_vlan_id
   | i_vrf
   | i_vrf_table
   )*
@@ -61,6 +62,11 @@ i_bridge_vids
 i_link_speed
 :
   LINK_SPEED NUMBER NEWLINE
+;
+
+i_vlan_id
+:
+  VLAN_ID NUMBER NEWLINE
 ;
 
 i_vrf

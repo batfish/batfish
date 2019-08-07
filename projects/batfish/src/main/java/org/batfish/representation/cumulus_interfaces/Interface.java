@@ -13,13 +13,14 @@ import org.batfish.datamodel.IntegerSpace;
 @ParametersAreNonnullByDefault
 public final class Interface {
   private final @Nonnull List<ConcreteInterfaceAddress> _addresses = new LinkedList<>();
-  private final @Nonnull String _name;
-  private @Nullable String _vrf;
   private @Nullable List<String> _bondSlaves;
   private @Nullable List<String> _bridgePorts;
   private @Nullable IntegerSpace _bridgeVids;
   private boolean _isVrf = false;
   private @Nullable Integer _linkSpeed;
+  private final @Nonnull String _name;
+  private @Nullable Integer _vlanId;
+  private @Nullable String _vrf;
 
   public Interface(@Nonnull String name) {
     _name = name;
@@ -63,6 +64,11 @@ public final class Interface {
   }
 
   @Nullable
+  public Integer getVlanId() {
+    return _vlanId;
+  }
+
+  @Nullable
   public String getVrf() {
     return _vrf;
   }
@@ -85,6 +91,10 @@ public final class Interface {
 
   public void setLinkSpeed(int linkSpeed) {
     _linkSpeed = linkSpeed;
+  }
+
+  public void setVlanId(int vlanId) {
+    _vlanId = vlanId;
   }
 
   public void setVrf(String vrf) {

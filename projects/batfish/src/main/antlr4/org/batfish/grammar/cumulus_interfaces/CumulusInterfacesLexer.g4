@@ -44,6 +44,11 @@ LINK_SPEED
   'link-speed'
 ;
 
+VLAN_ID
+:
+  'vlan-id'
+;
+
 VRF
 :
   'vrf' -> pushMode(M_Word)

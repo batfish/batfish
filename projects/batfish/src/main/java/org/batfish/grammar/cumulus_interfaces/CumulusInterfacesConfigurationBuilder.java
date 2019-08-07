@@ -20,6 +20,7 @@ import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.I_bond_sla
 import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.I_bridge_portsContext;
 import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.I_bridge_vidsContext;
 import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.I_link_speedContext;
+import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.I_vlan_idContext;
 import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.I_vrfContext;
 import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.I_vrf_tableContext;
 import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.Interface_nameContext;
@@ -141,6 +142,13 @@ public final class CumulusInterfacesConfigurationBuilder
   @Override
   public void exitI_link_speed(I_link_speedContext ctx) {
     _currentIface.setLinkSpeed(Integer.parseInt(ctx.NUMBER().getText()));
+  }
+
+  @Override
+  public void exitI_vlan_id(I_vlan_idContext ctx) {
+    String vlanId = ctx.NUMBER().getText();
+    _config.defineStructure(CumulusStructureType.VLAN, vlanId, ctx.getStart().getLine());
+    _currentIface.setVlanId(Integer.parseInt(vlanId));
   }
 
   @Override
