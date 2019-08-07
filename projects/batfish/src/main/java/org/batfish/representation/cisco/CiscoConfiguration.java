@@ -1936,12 +1936,11 @@ public final class CiscoConfiguration extends VendorConfiguration {
       Interface iface, OspfProcess process) {
     ConcreteInterfaceAddress interfaceAddress = iface.getAddress();
     if (interfaceAddress == null) {
-      // This interface has no IP address configured, so it is not associated with a network in this
-      // OSPF process
+      // Iface has no IP address / isn't associated with a network in this OSPF process
       return null;
     }
 
-    // Sort networks with longer prefixes first, then lower start IPs and areas.
+    // Sort networks with longer prefixes first, then lower start IPs and areas
     SortedSet<OspfNetwork> networks =
         ImmutableSortedSet.copyOf(
             Comparator.<OspfNetwork>comparingInt(n -> n.getPrefix().getPrefixLength())
@@ -1949,7 +1948,6 @@ public final class CiscoConfiguration extends VendorConfiguration {
                 .thenComparing(n -> n.getPrefix().getStartIp())
                 .thenComparingLong(OspfNetwork::getArea),
             process.getNetworks());
-
     for (OspfNetwork network : networks) {
       Prefix networkPrefix = network.getPrefix();
       Ip networkAddress = networkPrefix.getStartIp();
@@ -1968,14 +1966,10 @@ public final class CiscoConfiguration extends VendorConfiguration {
     if (iface.getOspfProcess() != null) {
       return vrf.getOspfProcesses().get(iface.getOspfProcess());
     }
-    for (OspfProcess process : vrf.getOspfProcesses().values()) {
-      if (getOspfNetworkForInterface(iface, process) != null) {
-        return process;
-      }
-    }
-    // Interface does not match any OSPF network prefix, so don't know which process it is
-    // associated with
-    return null;
+    return vrf.getOspfProcesses().values().stream()
+        .filter(p -> getOspfNetworkForInterface(iface, p) != null)
+        .findFirst()
+        .orElse(null);
   }
 
   private org.batfish.datamodel.Interface toInterface(
