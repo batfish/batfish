@@ -6,7 +6,7 @@ options {
 
 word
 :
-  (~NEWLINE)*
+  WORD
 ;
 
 null_rest_of_line
