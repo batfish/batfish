@@ -11,7 +11,6 @@
           "as2border2",
           "as2core1",
           "as2core2",
-          "as2dept1",
           "as2dist1",
           "as2dist2",
           "as3border1",
@@ -20,6 +19,9 @@
         ],
         "hypothesis" : "sameDefinition",
         "name" : "Ethernet0/0",
+        "outliers" : [
+          "as2dept1"
+        ],
         "structDefinition" : {
           "name" : "Ethernet0/0",
           "active" : false,
@@ -38,6 +40,7 @@
           "ospfHelloMultiplier" : 0,
           "ospfPassive" : false,
           "ospfPointToPoint" : false,
+          "ospfProcess" : "1",
           "proxyArp" : true,
           "ripEnabled" : false,
           "ripPassive" : false,
@@ -2144,6 +2147,7 @@
           "ospfHelloMultiplier" : 0,
           "ospfPassive" : false,
           "ospfPointToPoint" : false,
+          "ospfProcess" : "1",
           "prefix" : "10.14.22.1/24",
           "proxyArp" : true,
           "ripEnabled" : false,
@@ -2257,6 +2261,7 @@
           "ospfHelloMultiplier" : 0,
           "ospfPassive" : false,
           "ospfPointToPoint" : false,
+          "ospfProcess" : "1",
           "prefix" : "10.12.11.1/24",
           "proxyArp" : true,
           "ripEnabled" : false,

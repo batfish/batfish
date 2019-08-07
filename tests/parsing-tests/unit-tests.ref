@@ -77848,7 +77848,7 @@
         "ios_xr_misc" : "PASSED",
         "ios_xr_multipart" : "PASSED",
         "ios_xr_ntp" : "PASSED",
-        "ios_xr_ospf" : "WARNINGS",
+        "ios_xr_ospf" : "PASSED",
         "ios_xr_router_static" : "PASSED",
         "ios_xr_ssh" : "PASSED",
         "ios_xr_taskgroup" : "PASSED",
@@ -92817,14 +92817,6 @@
             {
               "tag" : "MISCELLANEOUS",
               "text" : "Cannot create IS-IS process without specifying net-address"
-            }
-          ]
-        },
-        "ios_xr_ospf" : {
-          "Red flags" : [
-            {
-              "tag" : "MISCELLANEOUS",
-              "text" : "Interface: 'Bundle-Ethernet201' contains OSPF settings, but there is no OSPF process"
             }
           ]
         },
