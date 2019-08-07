@@ -1931,7 +1931,11 @@ public final class CiscoConfiguration extends VendorConfiguration {
   }
 
   /**
-   * Get the OspfNetwork in the specified OspfProcess containing the specified interface's address
+   * Get the {@link OspfNetwork} in the specified {@link OspfProcess} containing the specified
+   * {@link Interface}'s address
+   *
+   * <p>Returns {@code null} if the interface address is {@code null} or the interface address does
+   * not overlap with any {@link OspfNetwork} in the specified {@link OspfProcess}
    */
   private static @Nullable OspfNetwork getOspfNetworkForInterface(
       Interface iface, OspfProcess process) {
@@ -1962,7 +1966,13 @@ public final class CiscoConfiguration extends VendorConfiguration {
     return null;
   }
 
-  /** Get the OspfProcess corresponding to the specified interface */
+  /**
+   * Get the {@link OspfProcess} corresponding to the specified {@link Interface}
+   *
+   * <p>Returns {@code null} if the {@link Interface} does not have an {@link OspfProcess}
+   * explicitly associated with it and does not overlap with an {@link OspfNetwork} in any {@link
+   * OspfProcess} in the specified {@link Vrf}
+   */
   private static @Nullable OspfProcess getOspfProcessForInterface(Vrf vrf, Interface iface) {
     if (iface.getOspfProcess() != null) {
       return vrf.getOspfProcesses().get(iface.getOspfProcess());
@@ -2532,7 +2542,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
       }
       OspfNetwork network = getOspfNetworkForInterface(vsIface, proc);
       if (vsIface.getOspfProcess() == null && network == null) {
-        // Interface is not on an OspfNetwork on this process
+        // Interface is not in an OspfNetwork on this process
         continue;
       }
 
