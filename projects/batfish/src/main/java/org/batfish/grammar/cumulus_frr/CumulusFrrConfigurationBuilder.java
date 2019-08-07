@@ -10,7 +10,7 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
   private CumulusNcluConfiguration _c;
   private @Nullable Vrf _currentVrf;
 
-  CumulusFrrConfigurationBuilder(CumulusNcluConfiguration configuration) {
+  public CumulusFrrConfigurationBuilder(CumulusNcluConfiguration configuration) {
     _c = configuration;
   }
 
