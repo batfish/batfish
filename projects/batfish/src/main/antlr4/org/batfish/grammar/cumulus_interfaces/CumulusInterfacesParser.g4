@@ -29,6 +29,8 @@ s_iface
   IFACE interface_name NEWLINE
   (
     i_address
+  | i_address_virtual
+  | i_alias
   | i_bond_slaves
   | i_bridge_access
   | i_bridge_ports
@@ -36,14 +38,27 @@ s_iface
   | i_clag_id
   | i_link_speed
   | i_vlan_id
+  | i_vlan_raw_device
   | i_vrf
   | i_vrf_table
+  | i_vxlan_id
+  | i_vxlan_local_tunnel_ip
   )*
 ;
 
 i_address
 :
   ADDRESS IP_PREFIX NEWLINE
+;
+
+i_address_virtual
+:
+  ADDRESS_VIRTUAL MAC_ADDRESS IP_PREFIX NEWLINE
+;
+
+i_alias
+:
+  ALIAS TEXT NEWLINE
 ;
 
 i_bond_slaves
@@ -53,7 +68,7 @@ i_bond_slaves
 
 i_bridge_access
 :
-  BRIDGE_ACCESS NUMBER NEWLINE
+  BRIDGE_ACCESS number NEWLINE
 ;
 
 i_bridge_ports
@@ -63,22 +78,27 @@ i_bridge_ports
 
 i_bridge_vids
 :
-  BRIDGE_VIDS NUMBER+ NEWLINE
+  BRIDGE_VIDS number+ NEWLINE
 ;
 
 i_clag_id
 :
-  CLAG_ID NUMBER NEWLINE
+  CLAG_ID number NEWLINE
 ;
 
 i_link_speed
 :
-  LINK_SPEED NUMBER NEWLINE
+  LINK_SPEED number NEWLINE
 ;
 
 i_vlan_id
 :
-  VLAN_ID NUMBER NEWLINE
+  VLAN_ID number NEWLINE
+;
+
+i_vlan_raw_device
+:
+  VLAN_RAW_DEVICE interface_name NEWLINE
 ;
 
 i_vrf
@@ -89,4 +109,14 @@ i_vrf
 i_vrf_table
 :
   VRF_TABLE vrf_table_name NEWLINE
+;
+
+i_vxlan_id
+:
+  VXLAN_ID number NEWLINE
+;
+
+i_vxlan_local_tunnel_ip
+:
+  VXLAN_LOCAL_TUNNEL_IP IP_ADDRESS NEWLINE
 ;
