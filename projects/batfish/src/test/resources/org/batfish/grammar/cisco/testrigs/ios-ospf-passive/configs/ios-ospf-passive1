@@ -17,5 +17,4 @@ router ospf 1
  no passive-interface default
  passive-interface Ethernet1
 !
-router ospf 2
 !
