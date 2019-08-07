@@ -9,9 +9,39 @@ tokens {
 
 // Keyword tokens
 
+ADDRESS
+:
+  'address'
+;
+
 AUTO
 :
   'auto' -> pushMode (M_Word)
+;
+
+BOND_SLAVES
+:
+  'bond-slaves' -> pushMode(M_Words)
+;
+
+BRIDGE_PORTS
+:
+  'bridge-ports' -> pushMode(M_Words)
+;
+
+BRIDGE_ACCESS
+:
+  'bridge-access'
+;
+
+BRIDGE_VIDS
+:
+  'bridge-vids'
+;
+
+CLAG_ID
+:
+  'clag-id'
 ;
 
 IFACE
@@ -19,8 +49,27 @@ IFACE
   'iface' -> pushMode(M_Word)
 ;
 
-// Complex tokens
+LINK_SPEED
+:
+  'link-speed'
+;
 
+VLAN_ID
+:
+  'vlan-id'
+;
+
+VRF
+:
+  'vrf' -> pushMode(M_Word)
+;
+
+VRF_TABLE
+:
+  'vrf-table' -> pushMode(M_Word)
+;
+
+// Complex tokens
 COMMENT_LINE
 :
   (
@@ -35,9 +84,19 @@ COMMENT_LINE
   ) -> channel ( HIDDEN )
 ;
 
+IP_PREFIX
+:
+  F_IpPrefix
+;
+
 NEWLINE
 :
   F_Newline+
+;
+
+NUMBER
+:
+  F_Digit+
 ;
 
 WS
@@ -46,6 +105,31 @@ WS
 ;
 
 // Fragments
+fragment
+F_Digit
+:
+  [0-9]
+;
+
+fragment
+F_IpAddress
+:
+  F_Uint8 '.' F_Uint8 '.' F_Uint8 '.' F_Uint8
+;
+
+fragment
+F_IpPrefix
+:
+  F_IpAddress '/' F_IpPrefixLength
+;
+
+fragment
+F_IpPrefixLength
+:
+  F_Digit
+  | [12] F_Digit
+  | [3] [012]
+;
 
 fragment
 F_Newline
@@ -57,6 +141,22 @@ fragment
 F_NonNewline
 :
   ~[\n\r]
+;
+
+fragment
+F_PositiveDigit
+:
+  [1-9]
+;
+
+fragment
+F_Uint8
+:
+  F_Digit
+  | F_PositiveDigit F_Digit
+  | '1' F_Digit F_Digit
+  | '2' [0-4] F_Digit
+  | '25' [0-5]
 ;
 
 fragment
