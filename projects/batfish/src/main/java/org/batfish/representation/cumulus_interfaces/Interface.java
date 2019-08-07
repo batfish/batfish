@@ -15,6 +15,7 @@ import org.batfish.datamodel.IntegerSpace;
 import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.MacAddress;
+import org.batfish.representation.cumulus.InterfaceClagSettings;
 
 /** Model of an iface block in a cumulus /etc/network/interfaces file. */
 @ParametersAreNonnullByDefault
@@ -22,6 +23,7 @@ public final class Interface {
   private @Nullable List<ConcreteInterfaceAddress> _addresses;
   private @Nullable Map<MacAddress, Set<InterfaceAddress>> _addressVirtuals;
   private @Nullable Integer _bridgeAccess;
+  private @Nullable InterfaceClagSettings _clagSettings;
   private @Nullable List<String> _bridgePorts;
   private @Nullable IntegerSpace _bridgeVids;
   private @Nullable Integer _clagId;
@@ -44,6 +46,14 @@ public final class Interface {
       _addresses = new LinkedList<>();
     }
     _addresses.add(address);
+  }
+
+  @Nonnull
+  public InterfaceClagSettings createOrGetClagSettings() {
+    if(_clagSettings == null) {
+      _clagSettings = new InterfaceClagSettings();
+    }
+    return _clagSettings;
   }
 
   @Nullable
@@ -74,6 +84,11 @@ public final class Interface {
   @Nullable
   public Integer getClagId() {
     return _clagId;
+  }
+
+  @Nullable
+  public InterfaceClagSettings getClagSettings() {
+    return _clagSettings;
   }
 
   @Nullable

@@ -54,9 +54,19 @@ CLAG_ID
   'clag-id'
 ;
 
+CLAGD_PEER_IP
+:
+  'clagd-peer-ip'
+;
+
 IFACE
 :
   'iface' -> pushMode(M_Word)
+;
+
+LINK_LOCAL
+:
+  'linklocal'
 ;
 
 LINK_SPEED

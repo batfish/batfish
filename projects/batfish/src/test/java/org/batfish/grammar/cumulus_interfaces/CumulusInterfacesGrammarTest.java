@@ -24,6 +24,7 @@ import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.Cumulus_in
 import org.batfish.representation.cumulus.CumulusNcluConfiguration;
 import org.batfish.representation.cumulus.CumulusStructureType;
 import org.batfish.representation.cumulus.CumulusStructureUsage;
+import org.batfish.representation.cumulus.InterfaceClagSettings;
 import org.batfish.representation.cumulus_interfaces.Interface;
 import org.batfish.representation.cumulus_interfaces.Interfaces;
 import org.junit.Before;
@@ -208,6 +209,20 @@ public class CumulusInterfacesGrammarTest {
     Interfaces interfaces = parse(input);
     Interface iface = interfaces.getInterfaces().get("i1");
     assertThat(iface.getClagId(), equalTo(123));
+  }
+
+  @Test
+  public void testIfaceClagdPeerIp() {
+    String input = "iface i1\n clagd-peer-ip 1.2.3.4\n";
+    InterfaceClagSettings clag = parse(input).getInterfaces().get("i1").getClagSettings();
+    assertThat(clag.getPeerIp(), equalTo(Ip.parse("1.2.3.4")));
+  }
+
+  @Test
+  public void testIfaceClagdPeerIpLinkLocal() {
+    String input = "iface i1\n clagd-peer-ip linklocal\n";
+    InterfaceClagSettings clag = parse(input).getInterfaces().get("i1").getClagSettings();
+    assertTrue(clag.isPeerIpLinkLocal());
   }
 
   @Test

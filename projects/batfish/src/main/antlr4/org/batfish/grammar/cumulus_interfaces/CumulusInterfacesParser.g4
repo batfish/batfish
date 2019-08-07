@@ -36,6 +36,7 @@ s_iface
   | i_bridge_ports
   | i_bridge_vids
   | i_clag_id
+  | i_clagd_peer_ip
   | i_link_speed
   | i_vlan_id
   | i_vlan_raw_device
@@ -84,6 +85,11 @@ i_bridge_vids
 i_clag_id
 :
   CLAG_ID number NEWLINE
+;
+
+i_clagd_peer_ip
+:
+ CLAGD_PEER_IP (IP_ADDRESS | LINK_LOCAL) NEWLINE
 ;
 
 i_link_speed
