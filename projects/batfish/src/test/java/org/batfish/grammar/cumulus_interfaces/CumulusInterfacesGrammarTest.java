@@ -10,14 +10,20 @@ import static org.junit.Assert.assertTrue;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.ImmutableSortedMap;
+import java.util.Set;
 import org.batfish.common.Warnings;
 import org.batfish.config.Settings;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
+import org.batfish.datamodel.DefinedStructureInfo;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.MacAddress;
+import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
 import org.batfish.grammar.BatfishParseTreeWalker;
 import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.Cumulus_interfaces_configurationContext;
 import org.batfish.representation.cumulus.CumulusNcluConfiguration;
+import org.batfish.representation.cumulus.CumulusStructureType;
+import org.batfish.representation.cumulus.CumulusStructureUsage;
 import org.batfish.representation.cumulus_interfaces.Interface;
 import org.batfish.representation.cumulus_interfaces.Interfaces;
 import org.junit.Before;
@@ -25,11 +31,38 @@ import org.junit.Test;
 
 /** Test of {@link CumulusInterfacesParser}. */
 public class CumulusInterfacesGrammarTest {
+  private static final String FILENAME = "";
   private static CumulusNcluConfiguration CONFIG;
 
   @Before
   public void setup() {
     CONFIG = new CumulusNcluConfiguration();
+    CONFIG.setFilename(FILENAME);
+    CONFIG.setAnswerElement(new ConvertConfigurationAnswerElement());
+  }
+
+  private static DefinedStructureInfo getDefinedStructureInfo(
+      CumulusStructureType type, String name) {
+    return CONFIG
+        .getAnswerElement()
+        .getDefinedStructures()
+        .get(FILENAME)
+        .getOrDefault(type.getDescription(), ImmutableSortedMap.of())
+        .get(name);
+  }
+
+  private static Set<Integer> getStructureReferences(
+      CumulusStructureType type, String name, CumulusStructureUsage usage) {
+    // The config keeps reference data in a private variable, and only copies into the answer
+    // element when you set it.
+    CONFIG.setAnswerElement(new ConvertConfigurationAnswerElement());
+    return CONFIG
+        .getAnswerElement()
+        .getReferencedStructures()
+        .get(FILENAME)
+        .get(type.getDescription())
+        .get(name)
+        .get(usage.getDescription());
   }
 
   private static Interfaces parse(String input) {
@@ -67,6 +100,9 @@ public class CumulusInterfacesGrammarTest {
     String input = "iface swp1\n";
     Interfaces interfaces = parse(input);
     assertThat(interfaces.getInterfaces(), hasKeys("swp1"));
+    assertThat(
+        getDefinedStructureInfo(CumulusStructureType.INTERFACE, "swp1").getDefinitionLines(),
+        contains(1));
   }
 
   @Test
@@ -152,6 +188,9 @@ public class CumulusInterfacesGrammarTest {
     Interfaces interfaces = parse(input);
     Interface iface = interfaces.getInterfaces().get("i1");
     assertThat(iface.getVrf(), equalTo("v1"));
+    assertThat(
+        getStructureReferences(CumulusStructureType.VRF, "v1", CumulusStructureUsage.INTERFACE_VRF),
+        contains(2));
   }
 
   @Test
@@ -160,6 +199,11 @@ public class CumulusInterfacesGrammarTest {
     Interfaces interfaces = parse(input);
     Interface iface = interfaces.getInterfaces().get("vrf1");
     assertTrue(iface.getIsVrf());
+    // not marked as an interface definition
+    assertNull(getDefinedStructureInfo(CumulusStructureType.INTERFACE, "vrf1"));
+    assertThat(
+        getDefinedStructureInfo(CumulusStructureType.VRF, "vrf1").getDefinitionLines(),
+        contains(1));
   }
 
   @Test

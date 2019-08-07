@@ -206,11 +206,13 @@ public final class CumulusInterfacesConfigurationBuilder
   public void enterS_iface(S_ifaceContext ctx) {
     String name = ctx.interface_name().getText();
     _currentIface = _interfaces.createOrGetInterface(name);
-    _config.defineStructure(CumulusStructureType.INTERFACE, name, ctx.getStart().getLine());
   }
 
   @Override
   public void exitS_iface(S_ifaceContext ctx) {
+    CumulusStructureType type =
+        _currentIface.getIsVrf() ? CumulusStructureType.VRF : CumulusStructureType.INTERFACE;
+    _config.defineStructure(type, _currentIface.getName(), ctx.getStart().getLine());
     _currentIface = null;
   }
 
