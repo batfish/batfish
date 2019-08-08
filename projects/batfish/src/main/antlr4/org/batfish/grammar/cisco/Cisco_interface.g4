@@ -494,10 +494,12 @@ if_ip_sticky_arp
 
 if_ip_summary_address
 :
-   IP SUMMARY_ADDRESS EIGRP asn = DEC (
+   IP SUMMARY_ADDRESS EIGRP asn = DEC
+   (
       addr = IP_ADDRESS netmask = IP_ADDRESS
       | prefix = IP_PREFIX
-   ) (LEAK_MAP mapname = variable)? NEWLINE
+   )
+   (LEAK_MAP mapname = variable)? NEWLINE
 ;
 
 if_ip_tcp
