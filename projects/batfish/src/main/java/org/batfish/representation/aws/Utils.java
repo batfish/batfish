@@ -1,5 +1,7 @@
 package org.batfish.representation.aws;
 
+import static com.google.common.base.Preconditions.checkArgument;
+
 import java.util.List;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -135,12 +137,49 @@ final class Utils {
 
   @Nonnull
   static StaticRoute toStaticRoute(Ip targetIp, Interface nextHopInterface) {
+    return toStaticRoute(Prefix.create(targetIp, Prefix.MAX_PREFIX_LENGTH), nextHopInterface);
+  }
+
+  @Nonnull
+  static StaticRoute toStaticRoute(Prefix targetPrefix, Interface nextHopInterface) {
     return StaticRoute.builder()
-        .setNetwork(Prefix.create(targetIp, Prefix.MAX_PREFIX_LENGTH))
+        .setNetwork(targetPrefix)
         .setNextHopInterface(nextHopInterface.getName())
         .setAdministrativeCost(Route.DEFAULT_STATIC_ROUTE_ADMIN)
         .setMetric(Route.DEFAULT_STATIC_ROUTE_COST)
         .build();
+  }
+
+  static void connect(
+      AwsConfiguration awsConfiguration, Configuration cfgNode1, Configuration cfgNode2) {
+    Prefix linkPrefix = awsConfiguration.getNextGeneratedLinkSubnet();
+    ConcreteInterfaceAddress ifaceAddress1 =
+        ConcreteInterfaceAddress.create(linkPrefix.getStartIp(), linkPrefix.getPrefixLength());
+    ConcreteInterfaceAddress ifaceAddress2 =
+        ConcreteInterfaceAddress.create(linkPrefix.getEndIp(), linkPrefix.getPrefixLength());
+
+    String ifaceName1 = cfgNode2.getHostname();
+    Utils.newInterface(ifaceName1, cfgNode1, ifaceAddress1, "To " + ifaceName1);
+
+    String ifaceName2 = cfgNode1.getHostname();
+    Utils.newInterface(ifaceName2, cfgNode2, ifaceAddress2, "To " + ifaceName2);
+  }
+
+  @Nonnull
+  static Ip getInterfaceIp(Configuration configuration, String ifaceName) {
+    Interface iface = configuration.getAllInterfaces().get(ifaceName);
+    checkArgument(
+        iface != null,
+        "Interface name '%s' not found on node %s",
+        ifaceName,
+        configuration.getHostname());
+    checkArgument(
+        iface.getConcreteAddress() != null,
+        "Concrete address for interface name '%s' on node %s is null",
+        ifaceName,
+        configuration);
+
+    return iface.getConcreteAddress().getIp();
   }
 
   private Utils() {}

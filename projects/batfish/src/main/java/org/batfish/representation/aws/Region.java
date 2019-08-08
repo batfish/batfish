@@ -5,6 +5,7 @@ import static com.google.common.base.Preconditions.checkArgument;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import java.io.IOException;
 import java.io.Serializable;
@@ -16,6 +17,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
@@ -560,6 +562,45 @@ final class Region implements Serializable {
     Set<SecurityGroup> securityGroups =
         getConfigurationSecurityGroups().computeIfAbsent(configName, k -> new HashSet<>());
     securityGroups.add(securityGroup);
+  }
+
+  Optional<InternetGateway> findInternetGateway(String vpcId) {
+    // AWS does not allow multiple internet gateways to be attached to a VPC
+    return _internetGateways.values().stream()
+        .filter(igw -> igw.getAttachmentVpcIds().contains(vpcId))
+        .findFirst();
+  }
+
+  Optional<VpnGateway> findVpnGateway(String vpcId) {
+    // AWS does not allow multiple vpc gateways to be attached to a VPC
+    return _vpnGateways.values().stream()
+        .filter(igw -> igw.getAttachmentVpcIds().contains(vpcId))
+        .findFirst();
+  }
+
+  Optional<RouteTable> findRouteTable(String vpcId, String subnetId) {
+    List<RouteTable> vpcTables =
+        _routeTables.values().stream()
+            .filter(rt -> rt.getVpcId().equals(vpcId))
+            .collect(ImmutableList.toImmutableList());
+
+    // First we look for the custom route table associated to the subnet.
+    Optional<RouteTable> customSubnetTable =
+        vpcTables.stream()
+            .filter(
+                rt ->
+                    rt.getAssociations().stream()
+                        .anyMatch(assoc -> Objects.equals(assoc.getSubnetId(), subnetId)))
+            .findFirst();
+
+    if (customSubnetTable.isPresent()) {
+      return customSubnetTable;
+    }
+
+    // Return the main table for the vpc
+    return vpcTables.stream()
+        .filter(rt -> rt.getAssociations().stream().anyMatch(RouteTable.Association::isMain))
+        .findFirst();
   }
 
   static final class RegionBuilder {

@@ -29,15 +29,26 @@ import org.junit.ClassRule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
-/** E2e tests that connectivity to and from the internet works as expected */
-public class AwsConfigurationInternetConnectivityTest {
+/**
+ * E2e tests that connectivity to and from the internet works as expected. The configs have a single
+ * public subnet. They were pulled after creating this scenario:
+ * https://docs.aws.amazon.com/vpc/latest/userguide/VPC_Scenario1.html
+ */
+public class AwsConfigurationPublicSubnetTest {
 
   private static final String TESTCONFIGS_DIR =
-      "org/batfish/representation/aws/test-internet-connectivity/";
+      "org/batfish/representation/aws/test-public-subnet/";
 
   @ClassRule public static TemporaryFolder _folder = new TemporaryFolder();
 
   private static IBatfish _batfish;
+
+  // various entities in the configs
+  private static String _instance = "i-06669a407b2ef3ae5";
+  private static String _subnet = "subnet-0bb82ae8b3ea5dc78";
+  private static String _igw = "igw-0a409e562d251f766";
+  private static Ip _publicIp = Ip.parse("18.216.80.133");
+  private static Ip _privateIp = Ip.parse("10.0.0.91");
 
   @BeforeClass
   public static void setup() throws IOException {
@@ -89,17 +100,16 @@ public class AwsConfigurationInternetConnectivityTest {
     // to a valid public IP
     testTrace(
         IspModelingUtils.INTERNET_HOST_NAME,
-        Ip.parse("54.191.107.22"),
-        FlowDisposition.ACCEPTED,
+        _publicIp,
+        FlowDisposition.DENIED_IN, // by the default security settings
         ImmutableList.of(
             IspModelingUtils.INTERNET_HOST_NAME,
             IspModelingUtils.getIspNodeName(AWS_BACKBONE_AS),
-            "igw-fac5839d",
-            "vpc-b390fad5",
-            "subnet-073b8061",
-            "i-075dc46a9bc347264"));
+            _igw,
+            _subnet,
+            _instance));
 
-    // to an invalid public IP
+    // to a public IP outside of our space
     testTrace(
         IspModelingUtils.INTERNET_HOST_NAME,
         Ip.parse("54.191.107.23"),
@@ -112,7 +122,7 @@ public class AwsConfigurationInternetConnectivityTest {
     // we get insufficient info for private IPs that exist somewhere in the network
     testTrace(
         IspModelingUtils.INTERNET_HOST_NAME,
-        Ip.parse("192.168.2.18"),
+        _privateIp,
         FlowDisposition.INSUFFICIENT_INFO,
         ImmutableList.of(IspModelingUtils.INTERNET_HOST_NAME));
 
@@ -127,14 +137,13 @@ public class AwsConfigurationInternetConnectivityTest {
   @Test
   public void testToInternet() {
     testTrace(
-        "i-075dc46a9bc347264",
+        _instance,
         Ip.parse("8.8.8.8"),
         FlowDisposition.EXITS_NETWORK,
         ImmutableList.of(
-            "i-075dc46a9bc347264",
-            "subnet-073b8061",
-            "vpc-b390fad5",
-            "igw-fac5839d",
+            _instance,
+            _subnet,
+            _igw,
             IspModelingUtils.getIspNodeName(AWS_BACKBONE_AS),
             IspModelingUtils.INTERNET_HOST_NAME));
   }
