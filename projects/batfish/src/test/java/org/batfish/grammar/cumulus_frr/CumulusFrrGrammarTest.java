@@ -74,9 +74,9 @@ public class CumulusFrrGrammarTest {
     CumulusNcluConfiguration config = parse("vrf NAME\n vni 170000\n exit-vrf");
     Vrf vrf = config.getVrfs().get("NAME");
     assertThat(vrf.getVni(), equalTo(170000));
-    }
+  }
 
-    @Test
+  @Test
   public void testCumulusFrrVrfIpRoutes() {
     CumulusNcluConfiguration config =
         parse("vrf NAME\n ip route 1.0.0.0/8 10.0.2.1\n ip route 0.0.0.0/0 10.0.0.1\n exit-vrf");
