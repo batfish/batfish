@@ -108,15 +108,14 @@ public class CumulusInterfacesGrammarTest {
   @Test
   public void testIfaceDescription() {
     String description = "foo hey 123!#?<>";
-    String input = "iface i1\n alias " + description + "\n";
-    Interfaces interfaces = parse(input);
-    Interface iface = interfaces.getInterfaces().get("i1");
+    String input = "iface swp1\n alias " + description + "\n";
+    Interface iface = parse(input).getInterfaces().get("swp1");
     assertEquals(iface.getDescription(), description);
   }
 
   @Test
   public void testIfaceBondSlaves() {
-    String input = "iface i1\n bond-slaves i2 i3 i4\n";
+    String input = "iface swp1\n bond-slaves i2 i3 i4\n";
     Interfaces interfaces = parse(input);
     assertThat(
         getStructureReferences(
@@ -134,14 +133,14 @@ public class CumulusInterfacesGrammarTest {
         interfaces.getBondSlaveParents(),
         equalTo(
             ImmutableMap.of(
-                "i2", "i1", //
-                "i3", "i1", //
-                "i4", "i1")));
+                "i2", "swp1", //
+                "i3", "swp1", //
+                "i4", "swp1")));
   }
 
   @Test
   public void testIfaceBondSlaves2() {
-    String input = "iface p1\n bond-slaves s1\n iface p2\n bond-slaves s2\n";
+    String input = "iface swp1\n bond-slaves s1\n iface swp2\n bond-slaves s2\n";
     Interfaces interfaces = parse(input);
     assertThat(
         getStructureReferences(
@@ -155,23 +154,21 @@ public class CumulusInterfacesGrammarTest {
         interfaces.getBondSlaveParents(),
         equalTo(
             ImmutableMap.of(
-                "s1", "p1", //
-                "s2", "p2")));
+                "s1", "swp1", //
+                "s2", "swp2")));
   }
 
   @Test
   public void testIfaceAddress() {
-    String input = "iface i1\n address 10.12.13.14/24\n";
-    Interfaces interfaces = parse(input);
-    Interface iface = interfaces.getInterfaces().get("i1");
+    String input = "iface swp1\n address 10.12.13.14/24\n";
+    Interface iface = parse(input).getInterfaces().get("swp1");
     assertThat(iface.getAddresses(), contains(ConcreteInterfaceAddress.parse("10.12.13.14/24")));
   }
 
   @Test
   public void testIfaceAddressVirtual() {
     String input = "iface vlan1\n address-virtual 00:00:00:00:00:00 1.2.3.4/24\n";
-    Interfaces interfaces = parse(input);
-    Interface iface = interfaces.getInterfaces().get("vlan1");
+    Interface iface = parse(input).getInterfaces().get("vlan1");
     assertThat(
         iface.getAddressVirtuals(),
         equalTo(
@@ -182,10 +179,10 @@ public class CumulusInterfacesGrammarTest {
 
   @Test
   public void testIfaceBridgeAccess() {
-    String input = "iface vni1\n bridge-access 1234\n";
+    String input = "iface swp1\n bridge-access 1234\n";
     Interfaces interfaces = parse(input);
     InterfaceBridgeSettings bridgeSettings =
-        interfaces.getInterfaces().get("vni1").getBridgeSettings();
+        interfaces.getInterfaces().get("swp1").getBridgeSettings();
     assertThat(bridgeSettings.getAccess(), equalTo(1234));
   }
 
@@ -206,24 +203,23 @@ public class CumulusInterfacesGrammarTest {
 
   @Test
   public void testIfaceBridgeVids() {
-    String input = "iface i1\n bridge-vids 1 2 3 4\n";
+    String input = "iface swp1\n bridge-vids 1 2 3 4\n";
     InterfaceBridgeSettings bridgeSettings =
-        parse(input).getInterfaces().get("i1").getBridgeSettings();
+        parse(input).getInterfaces().get("swp1").getBridgeSettings();
     assertThat(bridgeSettings.getVids().enumerate(), contains(1, 2, 3, 4));
   }
 
   @Test
   public void testIfaceClagId() {
-    String input = "iface i1\n clag-id 123\n";
-    Interfaces interfaces = parse(input);
-    Interface iface = interfaces.getInterfaces().get("i1");
+    String input = "iface swp1\n clag-id 123\n";
+    Interface iface = parse(input).getInterfaces().get("swp1");
     assertThat(iface.getClagId(), equalTo(123));
   }
 
   @Test
   public void testIfaceClagBackupIpAndVrf() {
-    String input = "iface i1\n clagd-backup-ip 1.2.3.4 vrf v1\n";
-    InterfaceClagSettings clag = parse(input).getInterfaces().get("i1").getClagSettings();
+    String input = "iface swp1\n clagd-backup-ip 1.2.3.4 vrf v1\n";
+    InterfaceClagSettings clag = parse(input).getInterfaces().get("swp1").getClagSettings();
     assertThat(clag.getBackupIp(), equalTo(Ip.parse("1.2.3.4")));
     assertThat(clag.getBackupIpVrf(), equalTo("v1"));
     assertThat(
@@ -234,38 +230,38 @@ public class CumulusInterfacesGrammarTest {
 
   @Test
   public void testIfaceClagdPeerIp() {
-    String input = "iface i1\n clagd-peer-ip 1.2.3.4\n";
-    InterfaceClagSettings clag = parse(input).getInterfaces().get("i1").getClagSettings();
+    String input = "iface swp1\n clagd-peer-ip 1.2.3.4\n";
+    InterfaceClagSettings clag = parse(input).getInterfaces().get("swp1").getClagSettings();
     assertThat(clag.getPeerIp(), equalTo(Ip.parse("1.2.3.4")));
   }
 
   @Test
   public void testIfaceClagdPeerIpLinkLocal() {
-    String input = "iface i1\n clagd-peer-ip linklocal\n";
-    InterfaceClagSettings clag = parse(input).getInterfaces().get("i1").getClagSettings();
+    String input = "iface swp1\n clagd-peer-ip linklocal\n";
+    InterfaceClagSettings clag = parse(input).getInterfaces().get("swp1").getClagSettings();
     assertTrue(clag.isPeerIpLinkLocal());
   }
 
   @Test
   public void testClagdSysMac() {
-    String input = "iface i1\n clagd-sys-mac 00:00:00:00:00:00\n";
-    InterfaceClagSettings clag = parse(input).getInterfaces().get("i1").getClagSettings();
+    String input = "iface swp1\n clagd-sys-mac 00:00:00:00:00:00\n";
+    InterfaceClagSettings clag = parse(input).getInterfaces().get("swp1").getClagSettings();
     assertThat(clag.getSysMac(), equalTo(MacAddress.parse("00:00:00:00:00:00")));
   }
 
   @Test
   public void testIfaceLinkSpeed() {
-    String input = "iface i1\n link-speed 10000\n";
+    String input = "iface swp1\n link-speed 10000\n";
     Interfaces interfaces = parse(input);
-    Interface iface = interfaces.getInterfaces().get("i1");
+    Interface iface = interfaces.getInterfaces().get("swp1");
     assertThat(iface.getLinkSpeed(), equalTo(10000));
   }
 
   @Test
   public void testIfaceLinkSpeed_null() {
-    String input = "iface i1\n";
+    String input = "iface swp1\n";
     Interfaces interfaces = parse(input);
-    Interface iface = interfaces.getInterfaces().get("i1");
+    Interface iface = interfaces.getInterfaces().get("swp1");
     assertNull(iface.getLinkSpeed());
   }
 
@@ -287,9 +283,9 @@ public class CumulusInterfacesGrammarTest {
 
   @Test
   public void testIfaceVrf() {
-    String input = "iface i1\n vrf v1\n";
+    String input = "iface swp1\n vrf v1\n";
     Interfaces interfaces = parse(input);
-    Interface iface = interfaces.getInterfaces().get("i1");
+    Interface iface = interfaces.getInterfaces().get("swp1");
     assertThat(iface.getVrf(), equalTo("v1"));
     assertThat(
         getStructureReferences(CumulusStructureType.VRF, "v1", CumulusStructureUsage.INTERFACE_VRF),
@@ -311,17 +307,17 @@ public class CumulusInterfacesGrammarTest {
 
   @Test
   public void testVxlanId() {
-    String input = "iface vni1\n vxlan-id 123\n";
+    String input = "iface swp1\n vxlan-id 123\n";
     Interfaces interfaces = parse(input);
-    Interface iface = interfaces.getInterfaces().get("vni1");
+    Interface iface = interfaces.getInterfaces().get("swp1");
     assertThat(iface.getVxlanId(), equalTo(123));
   }
 
   @Test
   public void testVxlanLocalTunnelIp() {
-    String input = "iface vni1\n vxlan-local-tunnelip 1.2.3.4\n";
+    String input = "iface swp1\n vxlan-local-tunnelip 1.2.3.4\n";
     Interfaces interfaces = parse(input);
-    Interface iface = interfaces.getInterfaces().get("vni1");
+    Interface iface = interfaces.getInterfaces().get("swp1");
     assertEquals(iface.getVxlanLocalTunnelIp(), Ip.parse("1.2.3.4"));
   }
 }
