@@ -3598,6 +3598,18 @@ public class CiscoGrammarTest {
   }
 
   @Test
+  public void testIosXrOspfInterface() throws IOException {
+    Configuration c = parseConfig("ios-xr-ospf-interface");
+    String ifaceName = "Bundle-Ethernet201";
+    Map<String, Interface> ifaces = c.getAllInterfaces();
+    assertThat(ifaces.keySet(), contains(ifaceName));
+
+    // Confirm the correct OSPF process was inferred for each interface
+    assertThat(ifaces.get(ifaceName).getOspfProcess(), equalTo("2"));
+    assertThat(ifaces.get(ifaceName).getOspfAreaName(), equalTo(0L));
+  }
+
+  @Test
   public void testIosXrOspfReferenceBandwidth() throws IOException {
     Configuration manual = parseConfig("iosxrOspfCost");
     assertThat(
