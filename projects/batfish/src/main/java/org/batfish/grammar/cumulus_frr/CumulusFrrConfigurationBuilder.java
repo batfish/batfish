@@ -1,20 +1,25 @@
 package org.batfish.grammar.cumulus_frr;
 
 import com.google.common.collect.ImmutableList;
+import java.util.Optional;
 import javax.annotation.Nullable;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.Prefix;
+import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Ip_prefix_list_nameContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Rmm_communityContext;
+import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Rmmipa_prefix_listContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.S_routemapContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.S_vrfContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sv_routeContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sv_vniContext;
 import org.batfish.representation.cumulus.CumulusNcluConfiguration;
 import org.batfish.representation.cumulus.CumulusStructureType;
+import org.batfish.representation.cumulus.CumulusStructureUsage;
 import org.batfish.representation.cumulus.RouteMap;
 import org.batfish.representation.cumulus.RouteMapEntry;
 import org.batfish.representation.cumulus.RouteMapMatchCommunity;
+import org.batfish.representation.cumulus.RouteMapMatchIpAddressPrefixList;
 import org.batfish.representation.cumulus.StaticRoute;
 import org.batfish.representation.cumulus.Vrf;
 
@@ -87,8 +92,28 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
   @Override
   public void exitRmm_community(Rmm_communityContext ctx) {
     ImmutableList.Builder<String> names = ImmutableList.builder();
+    Optional.ofNullable(_currentRouteMapEntry.getMatchCommunity())
+        .ifPresent(old -> names.addAll(old.getNames()));
     // TODO: check the length of each community name has length in [1, 63]
     ctx.names.stream().map(nameCtx -> nameCtx.getText()).forEach(names::add);
     _currentRouteMapEntry.setMatchCommunity(new RouteMapMatchCommunity(names.build()));
+  }
+
+  @Override
+  public void exitRmmipa_prefix_list(Rmmipa_prefix_listContext ctx) {
+    ImmutableList.Builder<String> names = ImmutableList.builder();
+    Optional.ofNullable(_currentRouteMapEntry.getMatchIpAddressPrefixList())
+        .ifPresent(old -> names.addAll(old.getNames()));
+    for (Ip_prefix_list_nameContext nameCtx : ctx.names) {
+      String name = nameCtx.getText();
+      _c.referenceStructure(
+          CumulusStructureType.IP_PREFIX_LIST,
+          name,
+          CumulusStructureUsage.ROUTE_MAP_MATCH_IP_ADDRESS_PREFIX_LIST,
+          nameCtx.getStart().getLine());
+      names.add(name);
+    }
+    _currentRouteMapEntry.setMatchIpAddressPrefixList(
+        new RouteMapMatchIpAddressPrefixList(names.build()));
   }
 }

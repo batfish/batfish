@@ -9,6 +9,17 @@ tokens {
   WORD
 }
 
+ADDRESS
+:
+  'address'
+  {
+    if (secondToLastTokenType() == MATCH && lastTokenType() == IP) {
+      pushMode(M_MatchIpAddress);
+    }
+  }
+
+;
+
 COMMENT_LINE
 :
   (
@@ -78,6 +89,11 @@ IP_PREFIX
 PERMIT
 :
   'permit'
+;
+
+PREFIX_LIST
+:
+  'prefix-list' -> pushMode ( M_Word )
 ;
 
 ROUTE_MAP
@@ -325,6 +341,23 @@ M_Remark_REMARK_TEXT
 ;
 
 M_Remark_WS
+:
+  F_Whitespace+ -> channel ( HIDDEN )
+;
+
+mode M_MatchIpAddress;
+
+M_MatchIpAddress_PREFIX_LIST
+:
+  'prefix-list' -> type ( PREFIX_LIST ) , mode ( M_Words )
+;
+
+M_MatchIpAddress_WORD
+:
+  F_Word -> type ( WORD ) , mode ( M_Words )
+;
+
+M_MatchIpAddress_WS
 :
   F_Whitespace+ -> channel ( HIDDEN )
 ;

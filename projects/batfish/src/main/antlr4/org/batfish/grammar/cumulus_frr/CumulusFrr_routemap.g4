@@ -32,6 +32,7 @@ rm_match
   MATCH
   (
     rmm_community
+    | rmm_ip
   )
 ;
 
@@ -46,3 +47,17 @@ rmm_community
   COMMUNITY names += ip_community_list_name+ NEWLINE
 ;
 
+rmm_ip
+:
+  IP rmmip_address
+;
+
+rmmip_address
+:
+  ADDRESS rmmipa_prefix_list
+;
+
+rmmipa_prefix_list
+:
+  PREFIX_LIST names += ip_prefix_list_name+ NEWLINE
+;

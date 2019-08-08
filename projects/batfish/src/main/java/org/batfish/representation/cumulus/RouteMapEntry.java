@@ -15,6 +15,7 @@ public final class RouteMapEntry implements Serializable {
   private final @Nonnull LineAction _action;
   private @Nullable RouteMapMatchCommunity _matchCommunity;
   private @Nullable RouteMapMatchInterface _matchInterface;
+  private @Nullable RouteMapMatchIpAddressPrefixList _matchIpAddressPrefixList;
   private final int _number;
 
   public RouteMapEntry(int number, LineAction action) {
@@ -35,8 +36,12 @@ public final class RouteMapEntry implements Serializable {
     return _matchInterface;
   }
 
-  public @Nonnull RouteMapMatchCommunity getMatchCommunity() {
+  public @Nullable RouteMapMatchCommunity getMatchCommunity() {
     return _matchCommunity;
+  }
+
+  public @Nullable RouteMapMatchIpAddressPrefixList getMatchIpAddressPrefixList() {
+    return _matchIpAddressPrefixList;
   }
 
   public int getNumber() {
@@ -54,5 +59,10 @@ public final class RouteMapEntry implements Serializable {
 
   public void setMatchCommunity(@Nullable RouteMapMatchCommunity matchCommunity) {
     _matchCommunity = matchCommunity;
+  }
+
+  public void setMatchIpAddressPrefixList(
+      @Nullable RouteMapMatchIpAddressPrefixList matchIpAddressPrefixList) {
+    _matchIpAddressPrefixList = matchIpAddressPrefixList;
   }
 }
