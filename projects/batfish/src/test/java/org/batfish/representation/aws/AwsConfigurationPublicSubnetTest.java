@@ -1,18 +1,13 @@
 package org.batfish.representation.aws;
 
 import static com.google.common.collect.Iterators.getOnlyElement;
-import static org.batfish.common.BfConsts.RELPATH_AWS_CONFIGS_DIR;
 import static org.batfish.representation.aws.InternetGateway.AWS_BACKBONE_AS;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
-import java.io.File;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.List;
 import java.util.SortedMap;
 import org.batfish.common.plugin.IBatfish;
@@ -21,7 +16,6 @@ import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.FlowDisposition;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.flow.Trace;
-import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
 import org.batfish.main.TestrigText;
 import org.junit.BeforeClass;
@@ -36,8 +30,25 @@ import org.junit.rules.TemporaryFolder;
  */
 public class AwsConfigurationPublicSubnetTest {
 
-  private static final String TESTCONFIGS_DIR =
-      "org/batfish/representation/aws/test-public-subnet/";
+  private static final String TESTCONFIGS_DIR = "org/batfish/representation/aws/test-public-subnet";
+
+  private static final List<String> fileNames =
+      ImmutableList.of(
+          "Addresses.json",
+          "AvailabilityZones.json",
+          "CustomerGateways.json",
+          "InternetGateways.json",
+          "NatGateways.json",
+          "NetworkAcls.json",
+          "NetworkInterfaces.json",
+          "Reservations.json",
+          "RouteTables.json",
+          "SecurityGroups.json",
+          "Subnets.json",
+          "VpcEndpoints.json",
+          "Vpcs.json",
+          "VpnConnections.json",
+          "VpnGateways.json");
 
   @ClassRule public static TemporaryFolder _folder = new TemporaryFolder();
 
@@ -52,23 +63,10 @@ public class AwsConfigurationPublicSubnetTest {
 
   @BeforeClass
   public static void setup() throws IOException {
-    _batfish = loadAwsConfigurations(TESTCONFIGS_DIR);
+    _batfish =
+        BatfishTestUtils.getBatfishFromTestrigText(
+            TestrigText.builder().setAwsText(TESTCONFIGS_DIR, fileNames).build(), _folder);
     _batfish.computeDataPlane();
-  }
-
-  private static Batfish loadAwsConfigurations(String resourceFolder) throws IOException {
-    Path path =
-        Paths.get(
-            Thread.currentThread().getContextClassLoader().getResource(resourceFolder).getPath());
-    String pathPrefixToRemove =
-        path.resolve(RELPATH_AWS_CONFIGS_DIR).toAbsolutePath().toString() + File.separator;
-    List<String> fileNames =
-        Files.walk(path.toAbsolutePath())
-            .filter(f -> Files.isRegularFile(f))
-            .map(f -> f.toAbsolutePath().toString().split(pathPrefixToRemove)[1])
-            .collect(ImmutableList.toImmutableList());
-    return BatfishTestUtils.getBatfishFromTestrigText(
-        TestrigText.builder().setAwsText(resourceFolder, fileNames).build(), _folder);
   }
 
   private static void testTrace(

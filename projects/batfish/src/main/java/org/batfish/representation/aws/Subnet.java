@@ -167,11 +167,26 @@ public class Subnet implements AwsVpcEntity, Serializable {
     vpcIfaceOnSubnet.setIncomingFilter(inAcl);
     vpcIfaceOnSubnet.setOutgoingFilter(outAcl);
 
+    // connect the vpn gateway to the subnet if one exists
+    Optional<VpnGateway> optVpnGateway = region.findVpnGateway(_vpcId);
+    if (optVpnGateway.isPresent()) {
+      Configuration vgwConfig =
+          awsConfiguration.getConfigurationNodes().get(optVpnGateway.get().getId());
+      Utils.connect(awsConfiguration, cfgNode, vgwConfig);
+    }
+
+    // connect the internet gateway if one exists
+    Optional<InternetGateway> optInternetGateway = region.findInternetGateway(_vpcId);
+    if (optInternetGateway.isPresent()) {
+      Configuration igwConfig =
+          awsConfiguration.getConfigurationNodes().get(optInternetGateway.get().getId());
+      Utils.connect(awsConfiguration, cfgNode, igwConfig);
+    }
+
     // for public IPs in the subnet, add static routes to enable inbound traffic
     //  - on internet gateway toward the subnet
     //  - on the subnet toward instances
     List<Ip> publicIps = findMyPublicIps(region);
-    Optional<InternetGateway> optInternetGateway = region.findInternetGateway(_vpcId);
     if (!publicIps.isEmpty()) {
       if (!optInternetGateway.isPresent()) {
         warnings.redFlag(
@@ -181,7 +196,6 @@ public class Subnet implements AwsVpcEntity, Serializable {
       } else {
         Configuration igwConfig =
             awsConfiguration.getConfigurationNodes().get(optInternetGateway.get().getId());
-        Utils.connect(awsConfiguration, cfgNode, igwConfig);
         Ip nhipOnIgw = Utils.getInterfaceIp(cfgNode, igwConfig.getHostname());
         publicIps.forEach(
             pip -> {
@@ -189,14 +203,6 @@ public class Subnet implements AwsVpcEntity, Serializable {
               addStaticRoute(cfgNode, toStaticRoute(pip, subnetToInstances));
             });
       }
-    }
-
-    // connect the vpn gateway to the subnet if one exists
-    Optional<VpnGateway> optVpnGateway = region.findVpnGateway(_vpcId);
-    if (optVpnGateway.isPresent()) {
-      Configuration vgwConfig =
-          awsConfiguration.getConfigurationNodes().get(optVpnGateway.get().getId());
-      Utils.connect(awsConfiguration, cfgNode, vgwConfig);
     }
 
     // process route tables to get outbound traffic going
