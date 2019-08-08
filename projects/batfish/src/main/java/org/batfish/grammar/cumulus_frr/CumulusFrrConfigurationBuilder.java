@@ -4,7 +4,6 @@ import javax.annotation.Nullable;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.LineAction;
-import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Rm_descriptionContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.S_routemapContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.S_vrfContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sv_routeContext;
