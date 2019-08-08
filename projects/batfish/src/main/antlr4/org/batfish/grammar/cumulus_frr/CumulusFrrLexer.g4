@@ -8,13 +8,6 @@ tokens {
   WORD
 }
 
-BLANK_LINE
-:
-  F_Whitespace* F_Newline+
-  {lastTokenType() == NEWLINE|| lastTokenType() == -1}?
-    -> channel ( HIDDEN )
-;
-
 COMMENT_LINE
 :
   (
@@ -118,6 +111,13 @@ WS
 :
   F_Whitespace+ -> channel ( HIDDEN ) // parser never sees tokens on hidden channel
 
+;
+
+BLANK_LINE
+:
+  F_Whitespace* F_Newline+
+  {lastTokenType() == NEWLINE|| lastTokenType() == -1}?
+    -> channel ( HIDDEN )
 ;
 
 // Fragments

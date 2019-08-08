@@ -17,5 +17,3 @@ route_map_sequence
 // 0-65535
   uint32
 ;
-
-

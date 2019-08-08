@@ -4,7 +4,6 @@ import static org.batfish.main.BatfishTestUtils.configureBatfishTestSettings;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 
-import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import javax.annotation.Nonnull;
 import org.antlr.v4.runtime.ParserRuleContext;

@@ -2,17 +2,17 @@ package org.batfish.grammar.cumulus_frr;
 
 import javax.annotation.Nullable;
 import org.batfish.datamodel.Ip;
-import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.LineAction;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.S_routemapContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.S_vrfContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sv_routeContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sv_vniContext;
 import org.batfish.representation.cumulus.CumulusNcluConfiguration;
 import org.batfish.representation.cumulus.CumulusStructureType;
+import org.batfish.representation.cumulus.StaticRoute;
 import org.batfish.representation.cumulus.RouteMap;
 import org.batfish.representation.cumulus.RouteMapEntry;
-import org.batfish.representation.cumulus.StaticRoute;
 import org.batfish.representation.cumulus.Vrf;
 
 public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener {
