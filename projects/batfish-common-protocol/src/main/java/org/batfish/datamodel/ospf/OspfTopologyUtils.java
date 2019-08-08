@@ -162,14 +162,34 @@ public final class OspfTopologyUtils {
         configurations.getOspfNeighborConfig(localConfigId).orElse(null);
     OspfNeighborConfig remoteConfig =
         configurations.getOspfNeighborConfig(remoteConfigId).orElse(null);
+    OspfProcess localProcess = configurations.getOspfProcess(localConfigId).orElse(null);
+    OspfProcess remoteProcess = configurations.getOspfProcess(remoteConfigId).orElse(null);
 
-    if (localConfig == null || remoteConfig == null) {
+    if (localConfig == null
+        || remoteConfig == null
+        || localProcess == null
+        || remoteProcess == null) {
       return Optional.empty();
     }
+
+    long localAreaNum = localConfig.getArea();
+    long remoteAreaNum = remoteConfig.getArea();
+    OspfArea localArea = localProcess.getAreas().get(localAreaNum);
+    OspfArea remoteArea = remoteProcess.getAreas().get(remoteAreaNum);
+    if (localArea == null || remoteArea == null) {
+      return Optional.empty();
+    }
+
     if (localConfig.isPassive() || remoteConfig.isPassive()) {
       return Optional.empty();
     }
-    if (localConfig.getArea() != remoteConfig.getArea()) {
+    if (localAreaNum != remoteAreaNum) {
+      return Optional.empty();
+    }
+    if (localProcess.getRouterId() == remoteProcess.getRouterId()) {
+      return Optional.empty();
+    }
+    if (localArea.getStubType() != remoteArea.getStubType()) {
       return Optional.empty();
     }
     /*
