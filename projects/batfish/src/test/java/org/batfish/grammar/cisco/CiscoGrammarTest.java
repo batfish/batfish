@@ -4509,13 +4509,16 @@ public class CiscoGrammarTest {
     String iface1Name = "Ethernet1";
     String iface2Name = "Ethernet2";
     String iface3Name = "Ethernet3";
+    String iface4Name = "Ethernet4";
     Map<String, Interface> ifaces = c.getAllInterfaces();
-    assertThat(ifaces.keySet(), containsInAnyOrder(iface1Name, iface2Name, iface3Name));
+    assertThat(ifaces.keySet(), containsInAnyOrder(iface1Name, iface2Name, iface3Name, iface4Name));
 
     // Confirm the correct OSPF process was inferred for each interface
     assertThat(ifaces.get(iface1Name).getOspfProcess(), equalTo("1"));
     assertThat(ifaces.get(iface2Name).getOspfProcess(), equalTo("2"));
     assertThat(ifaces.get(iface3Name).getOspfProcess(), equalTo("2"));
+    // Should not infer an OSPF process for the interface not overlapping with an OSPF network
+    assertThat(ifaces.get(iface4Name).getOspfProcess(), nullValue());
   }
 
   @Test
