@@ -44,6 +44,7 @@ import org.batfish.representation.cumulus.CumulusNcluConfiguration;
 import org.batfish.representation.cumulus.CumulusStructureType;
 import org.batfish.representation.cumulus.CumulusStructureUsage;
 import org.batfish.representation.cumulus.InterfaceClagSettings;
+import org.batfish.representation.cumulus_interfaces.Converter;
 import org.batfish.representation.cumulus_interfaces.Interface;
 import org.batfish.representation.cumulus_interfaces.Interfaces;
 
@@ -286,6 +287,10 @@ public final class CumulusInterfacesConfigurationBuilder
 
   @Override
   public void exitCumulus_interfaces_configuration(Cumulus_interfaces_configurationContext ctxt) {
-    // TODO migrate _interfaces into _config
+    Converter converter = new Converter(_interfaces);
+    _config.setBridge(converter.convertBridge());
+    _config.setInterfaces(converter.convertInterfaces());
+    _config.setVlans(converter.convertVlans());
+    _config.setVrfs(converter.convertVrfs());
   }
 }

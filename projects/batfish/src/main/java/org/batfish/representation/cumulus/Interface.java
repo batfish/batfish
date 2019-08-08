@@ -13,7 +13,7 @@ public class Interface implements Serializable {
   static final String NULL_INTERFACE_NAME = "null0";
 
   private @Nullable String _alias;
-  private final @Nonnull InterfaceBridgeSettings _bridge;
+  private @Nullable InterfaceBridgeSettings _bridge;
   private @Nullable InterfaceClagSettings _clag;
   private final @Nullable Integer _encapsulationVlan;
   private final @Nonnull List<ConcreteInterfaceAddress> _ipAddresses;
@@ -39,7 +39,6 @@ public class Interface implements Serializable {
       @Nullable String superInterfaceName,
       @Nullable Integer encapsulationVlan) {
     _name = name;
-    _bridge = new InterfaceBridgeSettings();
     _ipAddresses = new LinkedList<>();
     _type = type;
     _superInterfaceName = superInterfaceName;
@@ -53,6 +52,9 @@ public class Interface implements Serializable {
   }
 
   public @Nonnull InterfaceBridgeSettings getBridge() {
+    if (_bridge == null) {
+      _bridge = new InterfaceBridgeSettings();
+    }
     return _bridge;
   }
 
@@ -104,6 +106,14 @@ public class Interface implements Serializable {
 
   public @Nullable String getVrf() {
     return _vrf;
+  }
+
+  public void setBridgeSettings(@Nullable InterfaceBridgeSettings bridgeSettings) {
+    _bridge = bridgeSettings;
+  }
+
+  public void setClagSettings(@Nullable InterfaceClagSettings clagSettings) {
+    _clag = clagSettings;
   }
 
   public void setVrf(@Nullable String vrf) {
