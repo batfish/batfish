@@ -211,7 +211,7 @@ public final class WideMetric implements EigrpMetric {
       @JsonProperty(PROP_K4) short k4,
       @JsonProperty(PROP_K5) short k5,
       @JsonProperty(PROP_K6) short k6,
-      @JsonProperty(PROP_RIB_SCALE) short ribScale) {
+      @JsonProperty(PROP_RIB_SCALE) long ribScale) {
     checkArgument(values != null, "Missing %s", PROP_VALUES);
     return new WideMetric(values, k1, k2, k3, k4, k5, k6, ribScale);
   }
@@ -236,6 +236,7 @@ public final class WideMetric implements EigrpMetric {
 
     @Nonnull
     public Builder setK1(short k1) {
+      checkArgument(k1 <= 255);
       _k1 = k1;
       return this;
     }
@@ -249,6 +250,7 @@ public final class WideMetric implements EigrpMetric {
 
     @Nonnull
     public Builder setK3(short k3) {
+      checkArgument(k3 <= 255);
       _k3 = k3;
       return this;
     }

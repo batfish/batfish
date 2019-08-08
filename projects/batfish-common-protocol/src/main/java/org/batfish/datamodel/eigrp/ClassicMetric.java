@@ -184,6 +184,7 @@ public final class ClassicMetric implements EigrpMetric {
 
     @Nonnull
     public Builder setK1(short k1) {
+      checkArgument(k1 <= 255);
       _k1 = k1;
       return this;
     }
@@ -197,6 +198,7 @@ public final class ClassicMetric implements EigrpMetric {
 
     @Nonnull
     public Builder setK3(short k3) {
+      checkArgument(k3 <= 255);
       _k3 = k3;
       return this;
     }

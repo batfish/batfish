@@ -52,6 +52,7 @@ import org.batfish.dataplane.rib.EigrpRib;
 import org.batfish.dataplane.rib.RibDelta;
 import org.batfish.dataplane.rib.RibDelta.Builder;
 import org.batfish.dataplane.rib.RouteAdvertisement;
+import org.batfish.dataplane.rib.RouteAdvertisement.Reason;
 
 /** An instance of an EigrpProcess as constructed and used by {@link VirtualRouter} */
 @ParametersAreNonnullByDefault
@@ -220,10 +221,15 @@ final class EigrpRoutingProcess implements RoutingProcess<EigrpTopology, EigrpRo
               if (outputRoute == null) {
                 return; // no need to export
               }
+              // Do not use builder.from(_externalRib.merge/remove) here
+              // The goal is to send out redistributed routes regardless
+              // of whether they are new to our RIB as long as export policy allows them
               if (!ra.isWithdrawn()) {
-                builder.from(_externalRib.mergeRouteGetDelta(outputRoute));
+                builder.add(outputRoute);
+                _externalRib.mergeRouteGetDelta(outputRoute);
               } else {
-                builder.from(_externalRib.removeRouteGetDelta(outputRoute));
+                builder.remove(outputRoute, Reason.WITHDRAW);
+                _externalRib.removeRouteGetDelta(outputRoute);
               }
             });
     return builder.build();

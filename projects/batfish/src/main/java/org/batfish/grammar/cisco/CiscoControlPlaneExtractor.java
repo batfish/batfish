@@ -7912,7 +7912,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     r.getSpecialAttributes().put(EigrpRedistributionPolicy.BGP_AS, as);
 
     if (!ctx.METRIC().isEmpty()) {
-      r.setMetric(toEigrpMetric(ctx.metric));
+      r.setMetric(toEigrpMetricValues(ctx.metric));
     }
 
     if (ctx.map != null) {
@@ -7936,7 +7936,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     _currentEigrpProcess.getRedistributionPolicies().put(sourceProtocol, r);
 
     if (!ctx.METRIC().isEmpty()) {
-      r.setMetric(toEigrpMetric(ctx.metric));
+      r.setMetric(toEigrpMetricValues(ctx.metric));
     }
 
     if (ctx.map != null) {
@@ -7963,7 +7963,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     r.getSpecialAttributes().put(EigrpRedistributionPolicy.EIGRP_AS_NUMBER, asn);
 
     if (!ctx.METRIC().isEmpty()) {
-      r.setMetric(toEigrpMetric(ctx.metric));
+      r.setMetric(toEigrpMetricValues(ctx.metric));
     }
 
     if (ctx.map != null) {
@@ -8004,7 +8004,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     }
 
     if (!ctx.METRIC().isEmpty()) {
-      r.setMetric(toEigrpMetric(ctx.metric));
+      r.setMetric(toEigrpMetricValues(ctx.metric));
     }
 
     if (ctx.map != null) {
@@ -8028,7 +8028,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     _currentEigrpProcess.getRedistributionPolicies().put(sourceProtocol, r);
 
     if (!ctx.METRIC().isEmpty()) {
-      r.setMetric(toEigrpMetric(ctx.metric));
+      r.setMetric(toEigrpMetricValues(ctx.metric));
     }
 
     if (ctx.map != null) {
@@ -8052,7 +8052,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     _currentEigrpProcess.getRedistributionPolicies().put(sourceProtocol, r);
 
     if (!ctx.METRIC().isEmpty()) {
-      r.setMetric(toEigrpMetric(ctx.metric));
+      r.setMetric(toEigrpMetricValues(ctx.metric));
     }
 
     if (ctx.map != null) {
@@ -9933,7 +9933,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   @Override
   public void enterSet_metric_eigrp_rm_stanza(Set_metric_eigrp_rm_stanzaContext ctx) {
-    EigrpMetricValues metric = toEigrpMetric(ctx.metric);
+    EigrpMetricValues metric = toEigrpMetricValues(ctx.metric);
     _currentRouteMapClause.addSetLine(new RouteMapSetMetricEigrpLine(metric));
   }
 
@@ -10598,7 +10598,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     return new ExplicitAsPathSet(elems);
   }
 
-  private EigrpMetricValues toEigrpMetric(Eigrp_metricContext ctx) {
+  private EigrpMetricValues toEigrpMetricValues(Eigrp_metricContext ctx) {
     return EigrpMetricValues.builder()
         .setBandwidth(toLong(ctx.bw_kbps))
         // Scale to picoseconds
@@ -10614,9 +10614,9 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
      * See https://github.com/batfish/batfish/issues/1946
      */
     if (mode == EigrpProcessMode.CLASSIC) {
-      return ClassicMetric.builder().setValues(toEigrpMetric(ctx)).build();
+      return ClassicMetric.builder().setValues(toEigrpMetricValues(ctx)).build();
     } else if (mode == EigrpProcessMode.NAMED) {
-      return WideMetric.builder().setValues(toEigrpMetric(ctx)).build();
+      return WideMetric.builder().setValues(toEigrpMetricValues(ctx)).build();
     } else {
       throw new IllegalArgumentException("Invalid EIGRP process mode: " + mode);
     }

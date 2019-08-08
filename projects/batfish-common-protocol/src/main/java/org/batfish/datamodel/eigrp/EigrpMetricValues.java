@@ -28,14 +28,14 @@ public final class EigrpMetricValues implements Serializable {
   private EigrpMetricValues(
       long bandwidth, long delay, int effectiveBandwidth, int reliability, long mtu) {
     checkArgument(
-        bandwidth >= 0, "Invalid %s value for EIGRP metric %d", PROP_BANDWIDTH, bandwidth);
-    checkArgument(delay >= 0, "Invalid %s value for EIGRP metric %d", PROP_DELAY, delay);
+        bandwidth >= 0, "Invalid %s value for EIGRP metric: %d", PROP_BANDWIDTH, bandwidth);
+    checkArgument(delay >= 0, "Invalid %s value for EIGRP metric: %d", PROP_DELAY, delay);
     checkArgument(
         effectiveBandwidth >= 0 && effectiveBandwidth <= 255,
-        "Invalid %s value for EIGRP metric %d",
+        "Invalid %s value for EIGRP metric: %d",
         PROP_EFFECTIVE_BANDWIDTH,
         effectiveBandwidth);
-    checkArgument(mtu >= 0, "Invalid %s value for EIGRP metric", PROP_MTU, mtu);
+    checkArgument(mtu >= 0, "Invalid %s value for EIGRP metric: %d", PROP_MTU, mtu);
     _bandwidth = bandwidth;
     _delay = delay;
     _effectiveBandwidth = effectiveBandwidth;
@@ -82,11 +82,11 @@ public final class EigrpMetricValues implements Serializable {
       return false;
     }
     EigrpMetricValues that = (EigrpMetricValues) o;
-    return Double.compare(that._bandwidth, _bandwidth) == 0
-        && Double.compare(that._delay, _delay) == 0
-        && Double.compare(that._effectiveBandwidth, _effectiveBandwidth) == 0
-        && Double.compare(that._reliability, _reliability) == 0
-        && Double.compare(that._mtu, _mtu) == 0;
+    return _bandwidth == that._bandwidth
+        && _delay == that._delay
+        && _effectiveBandwidth == that._effectiveBandwidth
+        && _reliability == that._reliability
+        && _mtu == that._mtu;
   }
 
   @Override
