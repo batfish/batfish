@@ -49,7 +49,8 @@ banner
 
 banner_type
 :
-   CONFIG_SAVE
+   ASDM
+   | CONFIG_SAVE
    | EXEC
    | INCOMING
    | LOGIN
