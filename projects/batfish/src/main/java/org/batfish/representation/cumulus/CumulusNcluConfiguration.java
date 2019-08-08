@@ -1019,19 +1019,19 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
     return exportConditions;
   }
 
-  public void setBridge(Bridge bridge) {
+  public void setBridge(@Nonnull Bridge bridge) {
     _bridge = bridge;
   }
 
-  public void setInterfaces(Map<String, Interface> interfaces) {
+  public void setInterfaces(@Nonnull Map<String, Interface> interfaces) {
     _interfaces = ImmutableMap.copyOf(interfaces);
   }
 
-  public void setVlans(Map<String, Vlan> vlans) {
+  public void setVlans(@Nonnull Map<String, Vlan> vlans) {
     _vlans = ImmutableMap.copyOf(vlans);
   }
 
-  public void setVrfs(Map<String, Vrf> vrfs) {
+  public void setVrfs(@Nonnull Map<String, Vrf> vrfs) {
     _vrfs = ImmutableMap.copyOf(vrfs);
   }
 

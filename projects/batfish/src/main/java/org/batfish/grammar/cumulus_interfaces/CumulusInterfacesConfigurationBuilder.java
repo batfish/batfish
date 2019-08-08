@@ -40,6 +40,7 @@ import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.Interface_
 import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.NumberContext;
 import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.S_autoContext;
 import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.S_ifaceContext;
+import org.batfish.representation.cumulus.Bridge;
 import org.batfish.representation.cumulus.CumulusNcluConfiguration;
 import org.batfish.representation.cumulus.CumulusStructureType;
 import org.batfish.representation.cumulus.CumulusStructureUsage;
@@ -288,7 +289,8 @@ public final class CumulusInterfacesConfigurationBuilder
   @Override
   public void exitCumulus_interfaces_configuration(Cumulus_interfaces_configurationContext ctxt) {
     Converter converter = new Converter(_interfaces);
-    _config.setBridge(converter.convertBridge());
+    Bridge bridge = converter.convertBridge();
+    _config.setBridge(bridge != null ? bridge : new Bridge());
     _config.setInterfaces(converter.convertInterfaces());
     _config.setVlans(converter.convertVlans());
     _config.setVrfs(converter.convertVrfs());
