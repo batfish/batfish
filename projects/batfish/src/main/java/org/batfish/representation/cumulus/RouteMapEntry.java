@@ -13,6 +13,7 @@ import org.batfish.datamodel.LineAction;
 public final class RouteMapEntry implements Serializable {
 
   private final @Nonnull LineAction _action;
+  private @Nullable RouteMapMatchCommunity _matchCommunity;
   private @Nullable RouteMapMatchInterface _matchInterface;
   private final int _number;
 
@@ -34,6 +35,10 @@ public final class RouteMapEntry implements Serializable {
     return _matchInterface;
   }
 
+  public @Nonnull RouteMapMatchCommunity getMatchCommunity() {
+    return _matchCommunity;
+  }
+
   public int getNumber() {
     return _number;
   }
@@ -45,5 +50,9 @@ public final class RouteMapEntry implements Serializable {
 
   public void setMatchInterface(@Nullable RouteMapMatchInterface matchInterface) {
     _matchInterface = matchInterface;
+  }
+
+  public void setMatchCommunity(@Nullable RouteMapMatchCommunity matchCommunity) {
+    _matchCommunity = matchCommunity;
   }
 }

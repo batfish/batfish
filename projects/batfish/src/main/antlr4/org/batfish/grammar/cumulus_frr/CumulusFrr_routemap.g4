@@ -12,6 +12,7 @@ s_routemap
   route_map_sequence NEWLINE
   (
     rm_description
+    | rm_match
   )*
 ;
 
@@ -26,8 +27,22 @@ route_map_description
   REMARK_TEXT
 ;
 
+rm_match
+:
+  MATCH
+  (
+    rmm_community
+  )
+;
+
 route_map_sequence
 :
 // 0-65535
   uint32
 ;
+
+rmm_community
+:
+  COMMUNITY names += ip_community_list_name+ NEWLINE
+;
+

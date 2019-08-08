@@ -4,6 +4,7 @@ import static org.batfish.main.BatfishTestUtils.configureBatfishTestSettings;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import javax.annotation.Nonnull;
 import org.antlr.v4.runtime.ParserRuleContext;
@@ -115,5 +116,17 @@ public class CumulusFrrGrammarTest {
 
     CumulusNcluConfiguration config =
         parse(String.format("route-map %s permit 10\ndescription %s\n", name, description));
+  }
+
+  @Test
+  public void testCumulusFrrVrfRouteMapMatchCommunity() {
+    String name = "ROUTE-MAP-NAME";
+
+    CumulusNcluConfiguration config =
+        parse(String.format("route-map %s permit 10\nmatch community 10000:1 20000:2\n", name));
+
+    RouteMapEntry entry = config.getRouteMaps().get(name).getEntries().get(10);
+    assertThat(
+        entry.getMatchCommunity().getNames(), equalTo(ImmutableList.of("10000:1", "20000:2")));
   }
 }
