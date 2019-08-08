@@ -4078,6 +4078,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       OspfNetwork network = new OspfNetwork(prefix, _currentOspfArea);
       _currentOspfProcess.getNetworks().add(network);
     }
+    iface.setOspfArea(_currentOspfArea);
+    iface.setOspfProcess(_currentOspfProcess.getName());
     _currentOspfInterface = iface.getName();
   }
 
