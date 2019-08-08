@@ -37,6 +37,26 @@ FRR_VERSION_LINE
   'frr version' F_NonNewline*
 ;
 
+IP
+:
+  'ip'
+;
+
+IP_ADDRESS
+:
+  F_IpAddress
+;
+
+IP_PREFIX
+:
+  F_IpPrefix
+;
+
+SUBNET_MASK
+:
+  F_SubnetMask
+;
+
 NEWLINE
 :
   F_Newline+
@@ -65,11 +85,75 @@ BLANK_LINE
     -> channel ( HIDDEN )
 ;
 
+ROUTE
+:
+  'route'
+;
+
 // Fragments
 fragment
 F_Digit
 :
   [0-9]
+;
+
+fragment
+F_IpAddress
+:
+  F_Uint8 '.' F_Uint8 '.' F_Uint8 '.' F_Uint8
+;
+
+fragment
+F_IpPrefix
+:
+  F_IpAddress '/' F_IpPrefixLength
+;
+
+fragment
+F_IpPrefixLength
+:
+  F_Digit
+  | [12] F_Digit
+  | [3] [012]
+;
+
+fragment
+F_SubnetMask
+:
+  F_SubnetMaskOctet '.0.0.0'
+  | '255.' F_SubnetMaskOctet . '.0.0'
+  | '255.255.' F_SubnetMaskOctet . '.0'
+  | '255.255.255.' F_SubnetMaskOctet
+;
+
+fragment
+F_SubnetMaskOctet
+:
+  '0'
+  | '128'
+  | '192'
+  | '224'
+  | '240'
+  | '248'
+  | '252'
+  | '254'
+  | '255'
+;
+
+fragment
+F_PositiveDigit
+:
+  [1-9]
+;
+
+fragment
+F_Uint8
+:
+  F_Digit
+  | F_PositiveDigit F_Digit
+  | '1' F_Digit F_Digit
+  | '2' [0-4] F_Digit
+  | '25' [0-5]
 ;
 
 fragment
