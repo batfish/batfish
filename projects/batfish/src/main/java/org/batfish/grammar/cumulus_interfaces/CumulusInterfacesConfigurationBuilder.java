@@ -53,8 +53,6 @@ import org.batfish.representation.cumulus_interfaces.Interfaces;
  */
 public final class CumulusInterfacesConfigurationBuilder
     extends CumulusInterfacesParserBaseListener {
-  private static final String BRIDGE_INTERFACE_NAME = "bridge";
-
   private final CumulusNcluConfiguration _config;
   private final Interfaces _interfaces = new Interfaces();
   private final CumulusInterfacesCombinedParser _parser;
@@ -159,11 +157,6 @@ public final class CumulusInterfacesConfigurationBuilder
 
   @Override
   public void exitI_bridge_ports(I_bridge_portsContext ctx) {
-    if (!_currentIface.getName().equals(BRIDGE_INTERFACE_NAME)) {
-      _w.addWarning(ctx, ctx.getText(), _parser, "traditional bridges not yet supported");
-      return;
-    }
-
     List<Interface_nameContext> interfaceNameCtxs = ctx.interface_name();
     interfaceNameCtxs.forEach(
         ifaceNameCtx ->
@@ -172,21 +165,15 @@ public final class CumulusInterfacesConfigurationBuilder
                 ifaceNameCtx.getText(),
                 CumulusStructureUsage.BRIDGE_PORT,
                 ifaceNameCtx.getStart().getLine()));
-    _interfaces
-        .getBridge()
-        .setPorts(
-            interfaceNameCtxs.stream()
-                .map(RuleContext::getText)
-                .collect(ImmutableSet.toImmutableSet()));
+    _currentIface.setBridgePorts(
+        interfaceNameCtxs.stream()
+            .map(RuleContext::getText)
+            .collect(ImmutableSet.toImmutableSet()));
   }
 
   @Override
   public void exitI_bridge_pvid(I_bridge_pvidContext ctx) {
-    if (!_currentIface.getName().equals(BRIDGE_INTERFACE_NAME)) {
-      _w.addWarning(ctx, ctx.getText(), _parser, "traditional bridges not yet supported");
-      return;
-    }
-    _interfaces.getBridge().setPvid(Integer.parseInt(ctx.vlan_id().getText()));
+    _currentIface.createOrGetBridgeSettings().setPvid(Integer.parseInt(ctx.vlan_id().getText()));
   }
 
   @Override
@@ -199,11 +186,7 @@ public final class CumulusInterfacesConfigurationBuilder
                 .map(Integer::parseInt)
                 .map(Range::singleton)
                 .collect(ImmutableList.toImmutableList()));
-    if (_currentIface.getName().equals(BRIDGE_INTERFACE_NAME)) {
-      _interfaces.getBridge().setVids(vids);
-    } else {
-      _currentIface.createOrGetBridgeSettings().setVids(vids);
-    }
+    _currentIface.createOrGetBridgeSettings().setVids(vids);
   }
 
   @Override

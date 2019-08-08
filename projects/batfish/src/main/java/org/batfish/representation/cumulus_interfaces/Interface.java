@@ -1,5 +1,6 @@
 package org.batfish.representation.cumulus_interfaces;
 
+import com.google.common.collect.ImmutableSet;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -33,6 +34,7 @@ public final class Interface {
   private @Nullable String _vlanRawDevice;
   private @Nullable Ip _vxlanLocalTunnelIp;
   private @Nullable Integer _vxlanId;
+  private @Nullable Set<String> _bridgePorts;
 
   public Interface(@Nonnull String name) {
     _name = name;
@@ -69,6 +71,10 @@ public final class Interface {
   @Nullable
   public Map<MacAddress, Set<InterfaceAddress>> getAddressVirtuals() {
     return _addressVirtuals;
+  }
+
+  public @Nullable Set<String> getBridgePorts() {
+    return _bridgePorts;
   }
 
   @Nullable
@@ -128,6 +134,10 @@ public final class Interface {
   @Nullable
   public Ip getVxlanLocalTunnelIp() {
     return _vxlanLocalTunnelIp;
+  }
+
+  public void setBridgePorts(Set<String> bridgePorts) {
+    _bridgePorts = ImmutableSet.copyOf(bridgePorts);
   }
 
   public void setClagId(int clagId) {
