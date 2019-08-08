@@ -199,6 +199,13 @@ public class CumulusInterfacesGrammarTest {
   }
 
   @Test
+  public void testIfaceBridgePvid() {
+    String input = "iface bridge\n bridge-pvid 1\n";
+    Bridge bridge = parse(input).getBridge();
+    assertThat(bridge.getPvid(), equalTo(1));
+  }
+
+  @Test
   public void testIfaceBridgeVids() {
     String input = "iface i1\n bridge-vids 1 2 3 4\n";
     InterfaceBridgeSettings bridgeSettings =

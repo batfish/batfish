@@ -44,6 +44,11 @@ BRIDGE_ACCESS
   'bridge-access'
 ;
 
+BRIDGE_PVID
+:
+  'bridge-pvid'
+;
+
 BRIDGE_VIDS
 :
   'bridge-vids'

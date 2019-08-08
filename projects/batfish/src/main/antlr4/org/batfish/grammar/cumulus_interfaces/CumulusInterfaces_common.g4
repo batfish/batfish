@@ -14,6 +14,12 @@ number
   NUMBER
 ;
 
+vlan_id
+:
+  v = NUMBER
+  {isVlanId($v)}?
+;
+
 vrf_name
 :
   WORD

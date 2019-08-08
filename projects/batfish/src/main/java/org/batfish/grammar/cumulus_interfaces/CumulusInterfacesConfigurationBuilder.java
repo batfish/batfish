@@ -23,6 +23,7 @@ import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.I_aliasCon
 import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.I_bond_slavesContext;
 import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.I_bridge_accessContext;
 import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.I_bridge_portsContext;
+import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.I_bridge_pvidContext;
 import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.I_bridge_vidsContext;
 import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.I_clag_idContext;
 import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.I_clagd_backup_ipContext;
@@ -175,6 +176,15 @@ public final class CumulusInterfacesConfigurationBuilder
             interfaceNameCtxs.stream()
                 .map(RuleContext::getText)
                 .collect(ImmutableSet.toImmutableSet()));
+  }
+
+  @Override
+  public void exitI_bridge_pvid(I_bridge_pvidContext ctx) {
+    if (!_currentIface.getName().equals("bridge")) {
+      _w.addWarning(ctx, ctx.getText(), _parser, "traditional bridges not yet supported");
+      return;
+    }
+    _interfaces.getBridge().setPvid(Integer.parseInt(ctx.vlan_id().getText()));
   }
 
   @Override
