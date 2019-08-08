@@ -21,6 +21,7 @@ import org.batfish.datamodel.MacAddress;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
 import org.batfish.grammar.BatfishParseTreeWalker;
 import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.Cumulus_interfaces_configurationContext;
+import org.batfish.representation.cumulus.Bridge;
 import org.batfish.representation.cumulus.CumulusNcluConfiguration;
 import org.batfish.representation.cumulus.CumulusStructureType;
 import org.batfish.representation.cumulus.CumulusStructureUsage;
@@ -191,10 +192,10 @@ public class CumulusInterfacesGrammarTest {
 
   @Test
   public void testIfaceBridgePorts() {
-    String input = "iface i1\n bridge-ports i2 i3 i4\n";
+    String input = "iface bridge\n bridge-ports i2 i3 i4\n";
     Interfaces interfaces = parse(input);
-    Interface iface = interfaces.getInterfaces().get("i1");
-    assertThat(iface.getBridgePorts(), contains("i2", "i3", "i4"));
+    Bridge bridge = interfaces.getBridge();
+    assertThat(bridge.getPorts(), contains("i2", "i3", "i4"));
   }
 
   @Test

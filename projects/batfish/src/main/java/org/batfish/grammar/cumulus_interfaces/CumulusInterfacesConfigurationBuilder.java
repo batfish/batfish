@@ -2,6 +2,7 @@ package org.batfish.grammar.cumulus_interfaces;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Range;
 import java.util.List;
 import org.antlr.v4.runtime.RuleContext;
@@ -155,6 +156,11 @@ public final class CumulusInterfacesConfigurationBuilder
 
   @Override
   public void exitI_bridge_ports(I_bridge_portsContext ctx) {
+    if (!_currentIface.getName().equals("bridge")) {
+      _w.addWarning(ctx, ctx.getText(), _parser, "traditional bridges not yet supported");
+      return;
+    }
+
     List<Interface_nameContext> interfaceNameCtxs = ctx.interface_name();
     interfaceNameCtxs.forEach(
         ifaceNameCtx ->
@@ -163,10 +169,12 @@ public final class CumulusInterfacesConfigurationBuilder
                 ifaceNameCtx.getText(),
                 CumulusStructureUsage.BRIDGE_PORT,
                 ifaceNameCtx.getStart().getLine()));
-    _currentIface.setBridgePorts(
-        interfaceNameCtxs.stream()
-            .map(RuleContext::getText)
-            .collect(ImmutableList.toImmutableList()));
+    _interfaces
+        .getBridge()
+        .setPorts(
+            interfaceNameCtxs.stream()
+                .map(RuleContext::getText)
+                .collect(ImmutableSet.toImmutableSet()));
   }
 
   @Override
