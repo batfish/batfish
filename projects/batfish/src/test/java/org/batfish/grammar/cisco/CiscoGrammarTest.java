@@ -3604,7 +3604,7 @@ public class CiscoGrammarTest {
     Map<String, Interface> ifaces = c.getAllInterfaces();
     assertThat(ifaces.keySet(), contains(ifaceName));
 
-    // Confirm the correct OSPF process was inferred for each interface
+    // Confirm the interface has the correct OSPF process and area
     assertThat(ifaces.get(ifaceName).getOspfProcess(), equalTo("2"));
     assertThat(ifaces.get(ifaceName).getOspfAreaName(), equalTo(0L));
   }
