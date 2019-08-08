@@ -294,5 +294,6 @@ public final class CumulusInterfacesConfigurationBuilder
     _config.setInterfaces(converter.convertInterfaces());
     _config.setVlans(converter.convertVlans());
     _config.setVrfs(converter.convertVrfs());
+    _config.setVxlans(converter.convertVxlans());
   }
 }

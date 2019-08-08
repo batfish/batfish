@@ -147,7 +147,7 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
   private final @Nonnull Set<StaticRoute> _staticRoutes;
   private @Nonnull Map<String, Vlan> _vlans;
   private @Nonnull Map<String, Vrf> _vrfs;
-  private final @Nonnull Map<String, Vxlan> _vxlans;
+  private @Nonnull Map<String, Vxlan> _vxlans;
 
   @Nonnull
   private static final LinkLocalAddress LINK_LOCAL_ADDRESS = LinkLocalAddress.of(BGP_UNNUMBERED_IP);
@@ -1033,6 +1033,10 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
 
   public void setVrfs(@Nonnull Map<String, Vrf> vrfs) {
     _vrfs = ImmutableMap.copyOf(vrfs);
+  }
+
+  public void setVxlans(Map<String, Vxlan> vxlans) {
+    _vxlans = ImmutableMap.copyOf(vxlans);
   }
 
   private @Nonnull BooleanExpr toGuard(RouteMapEntry entry) {

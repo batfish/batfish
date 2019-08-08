@@ -6,6 +6,7 @@ import static org.batfish.representation.cumulus.CumulusInterfaceType.PHYSICAL_S
 import static org.batfish.representation.cumulus_interfaces.Converter.BRIDGE_NAME;
 import static org.batfish.representation.cumulus_interfaces.Converter.convertVlan;
 import static org.batfish.representation.cumulus_interfaces.Converter.convertVrf;
+import static org.batfish.representation.cumulus_interfaces.Converter.convertVxlan;
 import static org.batfish.representation.cumulus_interfaces.Converter.getEncapsulationVlan;
 import static org.batfish.representation.cumulus_interfaces.Converter.isBridge;
 import static org.batfish.representation.cumulus_interfaces.Converter.isInterface;
@@ -23,11 +24,13 @@ import com.google.common.collect.ImmutableSet;
 import java.util.Map;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.IntegerSpace;
+import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.MacAddress;
 import org.batfish.representation.cumulus.Bridge;
 import org.batfish.representation.cumulus.InterfaceBridgeSettings;
 import org.batfish.representation.cumulus.Vlan;
 import org.batfish.representation.cumulus.Vrf;
+import org.batfish.representation.cumulus.Vxlan;
 import org.junit.Test;
 
 /** Test for Cumulus {@link Interfaces} {@link Converter}. */
@@ -42,12 +45,14 @@ public class ConverterTest {
   private static final Interface PHYSICAL_IFACE = new Interface("swp1.1");
   private static final Interface VLAN_IFACE = new Interface("vlan123");
   private static final Interface VRF_IFACE = new Interface("vrf1");
+  private static final Interface VXLAN_IFACE = new Interface("vni1");
 
   private static final Map<String, Interface> INTERFACE_MAP =
       ImmutableMap.<String, Interface>builder()
           .put(PHYSICAL_IFACE.getName(), PHYSICAL_IFACE)
           .put(VLAN_IFACE.getName(), VLAN_IFACE)
           .put(VRF_IFACE.getName(), VRF_IFACE)
+          .put(VXLAN_IFACE.getName(), VXLAN_IFACE)
           .build();
 
   static {
@@ -71,6 +76,10 @@ public class ConverterTest {
 
     VRF_IFACE.setIsVrf();
     VRF_IFACE.addAddress(ADDR1);
+
+    VXLAN_IFACE.setVxlanId(1);
+    VXLAN_IFACE.setVxlanLocalTunnelIp(Ip.parse("1.2.3.4"));
+    VXLAN_IFACE.createOrGetBridgeSettings().setAccess(2);
   }
 
   @Test
@@ -90,14 +99,22 @@ public class ConverterTest {
   @Test
   public void testIsInterface() {
     assertTrue(isInterface(new Interface("swp1")));
-    assertTrue(isInterface(new Interface("vni123")));
     assertFalse(isInterface(new Interface(BRIDGE_NAME)));
     assertFalse(isInterface(new Interface("vlan123")));
 
     // vrf
-    Interface swp1 = new Interface("swp1");
-    swp1.setIsVrf();
-    assertFalse(isInterface(swp1));
+    {
+      Interface swp1 = new Interface("swp1");
+      swp1.setIsVrf();
+      assertFalse(isInterface(swp1));
+    }
+
+    // vxlan
+    {
+      Interface vxlan1 = new Interface("vni1");
+      vxlan1.setVxlanId(1);
+      assertFalse(isInterface(vxlan1));
+    }
   }
 
   @Test
@@ -222,5 +239,24 @@ public class ConverterTest {
 
     // non-vrfs filtered out
     assertThat(vrfs.keySet(), containsInAnyOrder(VRF_IFACE.getName()));
+  }
+
+  @Test
+  public void testConvertVxlan() {
+    Vxlan vxlan = convertVxlan(VXLAN_IFACE);
+    assertThat(vxlan.getName(), equalTo(VXLAN_IFACE.getName()));
+    assertThat(vxlan.getId(), equalTo(VXLAN_IFACE.getVxlanId()));
+    assertThat(vxlan.getBridgeAccessVlan(), equalTo(VXLAN_IFACE.getBridgeSettings().getAccess()));
+    assertThat(vxlan.getLocalTunnelip(), equalTo(VXLAN_IFACE.getVxlanLocalTunnelIp()));
+  }
+
+  @Test
+  public void testConvertVxlans() {
+    Interfaces ifaces = new Interfaces();
+    ifaces.getInterfaces().putAll(INTERFACE_MAP);
+    Map<String, Vxlan> vxlans = new Converter(ifaces).convertVxlans();
+
+    // non-vxlans filtered out
+    assertThat(vxlans.keySet(), containsInAnyOrder(VXLAN_IFACE.getName()));
   }
 }

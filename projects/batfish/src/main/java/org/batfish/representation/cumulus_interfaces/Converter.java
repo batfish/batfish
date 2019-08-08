@@ -20,6 +20,7 @@ import org.batfish.representation.cumulus.CumulusInterfaceType;
 import org.batfish.representation.cumulus.InterfaceBridgeSettings;
 import org.batfish.representation.cumulus.Vlan;
 import org.batfish.representation.cumulus.Vrf;
+import org.batfish.representation.cumulus.Vxlan;
 
 /** Converter from cumulus interfaces file model to Cumulus VS model. */
 public final class Converter {
@@ -80,6 +81,14 @@ public final class Converter {
         .filter(Interface::getIsVrf)
         .map(Converter::convertVrf)
         .collect(toImmutableMap(Vrf::getName, Function.identity()));
+  }
+
+  /** Get Cumulus VS model {@link Vxlan Vxlans}. */
+  public Map<String, Vxlan> convertVxlans() {
+    return _interfaces.getInterfaces().values().stream()
+        .filter(Converter::isVxlan)
+        .map(Converter::convertVxlan)
+        .collect(toImmutableMap(Vxlan::getName, Function.identity()));
   }
 
   @VisibleForTesting
@@ -160,6 +169,16 @@ public final class Converter {
   }
 
   @VisibleForTesting
+  static Vxlan convertVxlan(Interface iface) {
+    checkArgument(isVxlan(iface), "not a vxlan");
+    Vxlan vxlan = new Vxlan(iface.getName());
+    vxlan.setId(iface.getVxlanId());
+    vxlan.setLocalTunnelip(iface.getVxlanLocalTunnelIp());
+    vxlan.setBridgeAccessVlan(iface.getBridgeSettings().getAccess());
+    return vxlan;
+  }
+
+  @VisibleForTesting
   static boolean isBridge(Interface iface) {
     return iface.getName().equals(BRIDGE_NAME);
   }
@@ -170,7 +189,12 @@ public final class Converter {
   }
 
   @VisibleForTesting
+  static boolean isVxlan(Interface iface) {
+    return iface.getVxlanId() != null;
+  }
+
+  @VisibleForTesting
   static boolean isInterface(Interface iface) {
-    return !isBridge(iface) && !isVlan(iface) && !iface.getIsVrf();
+    return !isBridge(iface) && !isVlan(iface) && !iface.getIsVrf() && !isVxlan(iface);
   }
 }
