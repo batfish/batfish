@@ -5,6 +5,7 @@ options {
 }
 
 tokens {
+  REMARK_TEXT,
   WORD
 }
 
@@ -25,6 +26,11 @@ COMMENT_LINE
 DENY
 :
   'deny'
+;
+
+DESCRIPTION
+:
+  'description' -> pushMode ( M_Remark )
 ;
 
 EXIT_VRF
@@ -245,6 +251,12 @@ F_NonNewline
 ;
 
 fragment
+F_NonWhitespace
+:
+  ~[ \t\u000C\u00A0\n\r]
+;
+
+fragment
 F_Whitespace
 :
   ' '
@@ -282,3 +294,16 @@ M_Words_WS
 :
   F_Whitespace+ -> channel ( HIDDEN )
 ;
+
+mode M_Remark;
+
+M_Remark_REMARK_TEXT
+:
+  F_NonWhitespace F_NonNewline* -> type ( REMARK_TEXT ) , popMode
+;
+
+M_Remark_WS
+:
+  F_Whitespace+ -> channel ( HIDDEN )
+;
+

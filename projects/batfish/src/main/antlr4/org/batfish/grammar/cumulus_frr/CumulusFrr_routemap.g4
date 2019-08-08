@@ -10,6 +10,20 @@ s_routemap
 :
   ROUTE_MAP name = word action = line_action sequence =
   route_map_sequence NEWLINE
+  (
+    rm_description
+  )*
+;
+
+rm_description
+:
+  DESCRIPTION text = route_map_description NEWLINE
+;
+
+route_map_description
+:
+// 1-90 characters
+  REMARK_TEXT
 ;
 
 route_map_sequence

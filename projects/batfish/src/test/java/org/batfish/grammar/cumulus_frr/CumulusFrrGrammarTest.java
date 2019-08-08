@@ -107,4 +107,13 @@ public class CumulusFrrGrammarTest {
     RouteMapEntry entry2 = rm.getEntries().get(20);
     assertThat(entry2.getAction(), equalTo(LineAction.DENY));
   }
+
+  @Test
+  public void testCumulusFrrVrfRouteMapDescription() {
+    String name = "ROUTE-MAP-NAME";
+    String description = "PERmit Xxx Yy_+!@#$%^&*()";
+
+    CumulusNcluConfiguration config =
+        parse(String.format("route-map %s permit 10\ndescription %s\n", name, description));
+  }
 }
