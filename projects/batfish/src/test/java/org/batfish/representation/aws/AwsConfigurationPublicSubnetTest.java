@@ -63,7 +63,7 @@ public class AwsConfigurationPublicSubnetTest {
     String pathPrefixToRemove =
         path.resolve(RELPATH_AWS_CONFIGS_DIR).toAbsolutePath().toString() + File.separator;
     List<String> fileNames =
-        Files.walk(path)
+        Files.walk(path.toAbsolutePath())
             .filter(f -> Files.isRegularFile(f))
             .map(f -> f.toAbsolutePath().toString().split(pathPrefixToRemove)[1])
             .collect(ImmutableList.toImmutableList());
@@ -96,7 +96,7 @@ public class AwsConfigurationPublicSubnetTest {
   }
 
   @Test
-  public void testFromInternetToPublicIp() {
+  public void testFromInternetToPublicIp() throws IOException {
     // to a valid public IP
     testTrace(
         IspModelingUtils.INTERNET_HOST_NAME,
