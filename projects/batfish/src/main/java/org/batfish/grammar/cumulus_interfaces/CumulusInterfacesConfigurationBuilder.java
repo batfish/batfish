@@ -190,11 +190,13 @@ public final class CumulusInterfacesConfigurationBuilder
   @Override
   public void exitI_bridge_vids(I_bridge_vidsContext ctx) {
     List<NumberContext> vidCtxs = ctx.number();
-    IntegerSpace vids = IntegerSpace.unionOf(vidCtxs.stream()
-        .map(ParseTree::getText)
-        .map(Integer::parseInt)
-        .map(Range::singleton)
-        .collect(ImmutableList.toImmutableList()));
+    IntegerSpace vids =
+        IntegerSpace.unionOf(
+            vidCtxs.stream()
+                .map(ParseTree::getText)
+                .map(Integer::parseInt)
+                .map(Range::singleton)
+                .collect(ImmutableList.toImmutableList()));
     if (_currentIface.getName().equals("bridge")) {
       _interfaces.getBridge().setVids(vids);
     } else {
