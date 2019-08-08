@@ -15,6 +15,7 @@ import com.google.common.graph.ValueGraphBuilder;
 import java.util.Optional;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
+import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpLink;
 import org.batfish.datamodel.NetworkConfigurations;
@@ -30,25 +31,32 @@ public class OspfTopologyUtilsTest {
       new OspfNeighborConfigId("r2", "vrf2", "proc2", "iface2");
 
   private static NetworkConfigurations buildNetworkConfigurations(Ip localIp, Ip remoteIp) {
-    return buildNetworkConfigurations(localIp, false, localIp, 0L, remoteIp, false, remoteIp, 0L);
+    return buildNetworkConfigurations(
+        localIp, false, localIp, 0L, 1500, remoteIp, false, remoteIp, 0L, 1500);
   }
 
   private static NetworkConfigurations buildNetworkConfigurations(
       Ip localIp, boolean localPassive, Ip remoteIp, boolean remotePassive) {
     return buildNetworkConfigurations(
-        localIp, localPassive, localIp, 0L, remoteIp, remotePassive, remoteIp, 0L);
+        localIp, localPassive, localIp, 0L, 1500, remoteIp, remotePassive, remoteIp, 0L, 1500);
+  }
+
+  private static NetworkConfigurations buildNetworkConfigurations(
+      Ip localIp, int localMtu, Ip remoteIp, int remoteMtu) {
+    return buildNetworkConfigurations(
+        localIp, false, localIp, 0L, localMtu, remoteIp, false, remoteIp, 0L, remoteMtu);
   }
 
   private static NetworkConfigurations buildNetworkConfigurations(
       Ip localIp, long localArea, Ip remoteIp, long remoteArea) {
     return buildNetworkConfigurations(
-        localIp, false, localIp, localArea, remoteIp, false, remoteIp, remoteArea);
+        localIp, false, localIp, localArea, 1500, remoteIp, false, remoteIp, remoteArea, 1500);
   }
 
   private static NetworkConfigurations buildNetworkConfigurations(
       Ip localIp, Ip localRouterId, Ip remoteIp, Ip remoteRouterId) {
     return buildNetworkConfigurations(
-        localIp, false, localRouterId, 0L, remoteIp, false, remoteRouterId, 0L);
+        localIp, false, localRouterId, 0L, 1500, remoteIp, false, remoteRouterId, 0L, 1500);
   }
 
   private static NetworkConfigurations buildNetworkConfigurations(
@@ -56,21 +64,29 @@ public class OspfTopologyUtilsTest {
       boolean localPassive,
       Ip localRouterId,
       long localArea,
+      int localMtu,
       Ip remoteIp,
       boolean remotePassive,
       Ip remoteRouterId,
-      long remoteArea) {
+      long remoteArea,
+      int remoteMtu) {
     return NetworkConfigurations.of(
         ImmutableMap.of(
             LOCAL_CONFIG_ID.getHostname(),
-            buildConfiguration(LOCAL_CONFIG_ID, localIp, localPassive, localRouterId, localArea),
+            buildConfiguration(
+                LOCAL_CONFIG_ID, localIp, localPassive, localRouterId, localArea, localMtu),
             REMOTE_CONFIG_ID.getHostname(),
             buildConfiguration(
-                REMOTE_CONFIG_ID, remoteIp, remotePassive, remoteRouterId, remoteArea)));
+                REMOTE_CONFIG_ID, remoteIp, remotePassive, remoteRouterId, remoteArea, remoteMtu)));
   }
 
   private static Configuration buildConfiguration(
-      OspfNeighborConfigId configId, Ip ospfNeighborIp, boolean passive, Ip routerId, long area) {
+      OspfNeighborConfigId configId,
+      Ip ospfNeighborIp,
+      boolean passive,
+      Ip routerId,
+      long area,
+      int mtu) {
     String hostname = configId.getHostname();
     String vrfName = configId.getVrfName();
     String procName = configId.getProcName();
@@ -99,6 +115,7 @@ public class OspfTopologyUtilsTest {
                             .build()))
                 .setRouterId(routerId)
                 .build()));
+    c.getAllInterfaces().put(ifaceName, Interface.builder().setName(ifaceName).setMtu(mtu).build());
     c.getVrfs().put(vrfName, vrf);
     return c;
   }
@@ -163,6 +180,17 @@ public class OspfTopologyUtilsTest {
     // Confirm we correctly mark a session as incompatible when a neighbor config does not exist
     Optional<OspfSessionProperties> val =
         getSessionIfCompatible(LOCAL_CONFIG_ID, nonExistentConfigId, configs);
+    assertThat(val, equalTo(Optional.empty()));
+  }
+
+  @Test
+  public void testGetSessionIfCompatibleMtuMismatch() {
+    NetworkConfigurations configs =
+        buildNetworkConfigurations(Ip.parse("1.1.1.1"), 1234, Ip.parse("1.1.1.2"), 1500);
+
+    // Confirm we correctly mark a session as incompatible when interfaces has mismatched MTU
+    Optional<OspfSessionProperties> val =
+        getSessionIfCompatible(LOCAL_CONFIG_ID, REMOTE_CONFIG_ID, configs);
     assertThat(val, equalTo(Optional.empty()));
   }
 
