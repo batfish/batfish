@@ -206,11 +206,18 @@ public class CumulusInterfacesGrammarTest {
   }
 
   @Test
-  public void testIfaceBridgeVids() {
+  public void testIfaceBridgeVids1() {
     String input = "iface i1\n bridge-vids 1 2 3 4\n";
     InterfaceBridgeSettings bridgeSettings =
         parse(input).getInterfaces().get("i1").getBridgeSettings();
     assertThat(bridgeSettings.getVids().enumerate(), contains(1, 2, 3, 4));
+  }
+
+  @Test
+  public void testIfaceBridgeVids2() {
+    String input = "iface bridge\n bridge-vids 1 2 3 4\n";
+    Bridge bridge = parse(input).getBridge();
+    assertThat(bridge.getVids().enumerate(), contains(1, 2, 3, 4));
   }
 
   @Test
