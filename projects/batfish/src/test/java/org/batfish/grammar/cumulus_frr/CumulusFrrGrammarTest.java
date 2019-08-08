@@ -115,5 +115,9 @@ public class CumulusFrrGrammarTest {
 
     CumulusNcluConfiguration config =
         parse(String.format("route-map %s permit 10\ndescription %s\n", name, description));
+
+    RouteMap rm = config.getRouteMaps().get(name);
+    RouteMapEntry entry1 = rm.getEntries().get(10);
+    assertThat(entry1.getDescription(), equalTo(description));
   }
 }

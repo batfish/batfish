@@ -4,6 +4,7 @@ import javax.annotation.Nullable;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.Prefix;
+import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Rm_descriptionContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.S_routemapContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.S_vrfContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sv_routeContext;
@@ -18,7 +19,7 @@ import org.batfish.representation.cumulus.Vrf;
 public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener {
   private CumulusNcluConfiguration _c;
   private @Nullable Vrf _currentVrf;
-  //  private RouteMapEntry _currentRouteMapEntry;
+  private RouteMapEntry _currentRouteMapEntry;
 
   public CumulusFrrConfigurationBuilder(CumulusNcluConfiguration configuration) {
     _c = configuration;
@@ -66,18 +67,24 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
     } else {
       throw new IllegalStateException("only support permit and deny in route map");
     }
-    //    _currentRouteMapEntry =
-    _c.getRouteMaps()
-        .computeIfAbsent(name, RouteMap::new)
-        .getEntries()
-        .computeIfAbsent(
-            sequence, k -> new RouteMapEntry(Integer.parseInt(ctx.sequence.getText()), action));
+    _currentRouteMapEntry =
+        _c.getRouteMaps()
+            .computeIfAbsent(name, RouteMap::new)
+            .getEntries()
+            .computeIfAbsent(
+                sequence, k -> new RouteMapEntry(Integer.parseInt(ctx.sequence.getText()), action));
     _c.defineStructure(CumulusStructureType.VRF, name, ctx.getStart().getLine());
     _c.defineStructure(CumulusStructureType.ROUTE_MAP, name, ctx.getStart().getLine());
   }
 
   @Override
+  public void exitRm_description(Rm_descriptionContext ctx) {
+    _currentRouteMapEntry.setDescription(ctx.route_map_description().getText());
+    super.exitRm_description(ctx);
+  }
+
+  @Override
   public void exitS_routemap(S_routemapContext ctx) {
-    //    _currentRouteMapEntry = null;
+    _currentRouteMapEntry = null;
   }
 }
