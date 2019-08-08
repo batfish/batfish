@@ -18,7 +18,7 @@ import org.batfish.representation.cumulus.Vrf;
 public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener {
   private CumulusNcluConfiguration _c;
   private @Nullable Vrf _currentVrf;
-  private RouteMapEntry _currentRouteMapEntry;
+  //  private RouteMapEntry _currentRouteMapEntry;
 
   public CumulusFrrConfigurationBuilder(CumulusNcluConfiguration configuration) {
     _c = configuration;
@@ -66,18 +66,18 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
     } else {
       throw new IllegalStateException("only support permit and deny in route map");
     }
-    _currentRouteMapEntry =
-        _c.getRouteMaps()
-            .computeIfAbsent(name, RouteMap::new)
-            .getEntries()
-            .computeIfAbsent(
-                sequence, k -> new RouteMapEntry(Integer.parseInt(ctx.sequence.getText()), action));
+    //    _currentRouteMapEntry =
+    _c.getRouteMaps()
+        .computeIfAbsent(name, RouteMap::new)
+        .getEntries()
+        .computeIfAbsent(
+            sequence, k -> new RouteMapEntry(Integer.parseInt(ctx.sequence.getText()), action));
     _c.defineStructure(CumulusStructureType.VRF, name, ctx.getStart().getLine());
     _c.defineStructure(CumulusStructureType.ROUTE_MAP, name, ctx.getStart().getLine());
   }
 
   @Override
   public void exitS_routemap(S_routemapContext ctx) {
-    _currentRouteMapEntry = null;
+    //    _currentRouteMapEntry = null;
   }
 }
