@@ -53,6 +53,8 @@ import org.batfish.representation.cumulus_interfaces.Interfaces;
  */
 public final class CumulusInterfacesConfigurationBuilder
     extends CumulusInterfacesParserBaseListener {
+  private static final String BRIDGE_INTERFACE_NAME = "bridge";
+
   private final CumulusNcluConfiguration _config;
   private final Interfaces _interfaces = new Interfaces();
   private final CumulusInterfacesCombinedParser _parser;
@@ -157,7 +159,7 @@ public final class CumulusInterfacesConfigurationBuilder
 
   @Override
   public void exitI_bridge_ports(I_bridge_portsContext ctx) {
-    if (!_currentIface.getName().equals("bridge")) {
+    if (!_currentIface.getName().equals(BRIDGE_INTERFACE_NAME)) {
       _w.addWarning(ctx, ctx.getText(), _parser, "traditional bridges not yet supported");
       return;
     }
@@ -180,7 +182,7 @@ public final class CumulusInterfacesConfigurationBuilder
 
   @Override
   public void exitI_bridge_pvid(I_bridge_pvidContext ctx) {
-    if (!_currentIface.getName().equals("bridge")) {
+    if (!_currentIface.getName().equals(BRIDGE_INTERFACE_NAME)) {
       _w.addWarning(ctx, ctx.getText(), _parser, "traditional bridges not yet supported");
       return;
     }
@@ -197,7 +199,7 @@ public final class CumulusInterfacesConfigurationBuilder
                 .map(Integer::parseInt)
                 .map(Range::singleton)
                 .collect(ImmutableList.toImmutableList()));
-    if (_currentIface.getName().equals("bridge")) {
+    if (_currentIface.getName().equals(BRIDGE_INTERFACE_NAME)) {
       _interfaces.getBridge().setVids(vids);
     } else {
       _currentIface.createOrGetBridgeSettings().setVids(vids);
