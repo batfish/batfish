@@ -8,6 +8,13 @@ tokens {
   WORD
 }
 
+BLANK_LINE
+:
+  F_Whitespace* F_Newline+
+  {lastTokenType() == NEWLINE|| lastTokenType() == -1}?
+    -> channel ( HIDDEN )
+;
+
 COMMENT_LINE
 :
   (
@@ -22,9 +29,9 @@ COMMENT_LINE
   ) -> channel ( HIDDEN )
 ;
 
-DEC
+DENY
 :
-  F_Digit+
+  'deny'
 ;
 
 EXIT_VRF
@@ -52,6 +59,21 @@ IP_PREFIX
   F_IpPrefix
 ;
 
+PERMIT
+:
+  'permit'
+;
+
+ROUTE_MAP
+:
+  'route-map' -> pushMode(M_Word)
+;
+
+ROUTE
+:
+  'route'
+;
+
 SUBNET_MASK
 :
   F_SubnetMask
@@ -60,6 +82,26 @@ SUBNET_MASK
 NEWLINE
 :
   F_Newline+
+;
+
+UINT8
+:
+  F_Uint8
+;
+
+UINT16
+:
+  F_Uint16
+;
+
+UINT32
+:
+  F_Uint32
+;
+
+DEC
+:
+  F_Digit+
 ;
 
 VNI
@@ -76,18 +118,6 @@ WS
 :
   F_Whitespace+ -> channel ( HIDDEN ) // parser never sees tokens on hidden channel
 
-;
-
-BLANK_LINE
-:
-  F_Whitespace* F_Newline+
-  {lastTokenType() == NEWLINE|| lastTokenType() == -1}?
-    -> channel ( HIDDEN )
-;
-
-ROUTE
-:
-  'route'
 ;
 
 // Fragments
@@ -154,6 +184,38 @@ F_Uint8
   | '1' F_Digit F_Digit
   | '2' [0-4] F_Digit
   | '25' [0-5]
+;
+
+fragment
+F_Uint16
+:
+  F_Digit
+  | F_PositiveDigit F_Digit F_Digit? F_Digit?
+  | [1-5] F_Digit F_Digit F_Digit F_Digit
+  | '6' [0-4] F_Digit F_Digit F_Digit
+  | '65' [0-4] F_Digit F_Digit
+  | '655' [0-2] F_Digit
+  | '6553' [0-5]
+;
+
+fragment
+F_Uint32
+:
+// 0-4294967295
+  F_Digit
+  | F_PositiveDigit F_Digit F_Digit? F_Digit? F_Digit? F_Digit? F_Digit?
+  F_Digit? F_Digit?
+  | [1-3] F_Digit F_Digit F_Digit F_Digit F_Digit F_Digit F_Digit F_Digit
+  F_Digit
+  | '4' [0-1] F_Digit F_Digit F_Digit F_Digit F_Digit F_Digit F_Digit F_Digit
+  | '42' [0-8] F_Digit F_Digit F_Digit F_Digit F_Digit F_Digit F_Digit
+  | '429' [0-3] F_Digit F_Digit F_Digit F_Digit F_Digit F_Digit
+  | '4294' [0-8] F_Digit F_Digit F_Digit F_Digit F_Digit
+  | '42949' [0-5] F_Digit F_Digit F_Digit F_Digit
+  | '429496' [0-6] F_Digit F_Digit F_Digit
+  | '4294967' [0-1] F_Digit F_Digit
+  | '42949672' [0-8] F_Digit
+  | '429496729' [0-5]
 ;
 
 fragment
