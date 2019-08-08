@@ -1492,11 +1492,6 @@
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
         "deviceType" : "SWITCH",
-        "routingPolicies" : {
-          "~OSPF_EXPORT_POLICY:default~" : {
-            "name" : "~OSPF_EXPORT_POLICY:default~"
-          }
-        },
         "vendorFamily" : {
           "cisco" : {
             "hostname" : "arista_ospf",
@@ -11383,7 +11378,6 @@
             "ospfHelloMultiplier" : 0,
             "ospfPassive" : false,
             "ospfPointToPoint" : false,
-            "ospfProcess" : "1",
             "prefix" : "1.1.1.1/32",
             "proxyArp" : true,
             "ripEnabled" : false,
@@ -11802,7 +11796,6 @@
             "ospfHelloMultiplier" : 0,
             "ospfPassive" : false,
             "ospfPointToPoint" : false,
-            "ospfProcess" : "abcdefg",
             "prefix" : "1.1.1.1/32",
             "proxyArp" : true,
             "ripEnabled" : false,
@@ -20686,7 +20679,6 @@
             "ospfHelloMultiplier" : 0,
             "ospfPassive" : false,
             "ospfPointToPoint" : false,
-            "ospfProcess" : "2",
             "proxyArp" : true,
             "ripEnabled" : false,
             "ripPassive" : false,
@@ -20715,7 +20707,6 @@
             "ospfHelloMultiplier" : 0,
             "ospfPassive" : false,
             "ospfPointToPoint" : false,
-            "ospfProcess" : "2",
             "proxyArp" : true,
             "ripEnabled" : false,
             "ripPassive" : false,
@@ -20739,13 +20730,11 @@
               "Bundle-Ether201"
             ],
             "mtu" : 1500,
-            "ospfCost" : 1,
             "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
             "ospfPassive" : false,
             "ospfPointToPoint" : false,
-            "ospfProcess" : "2",
             "proxyArp" : true,
             "ripEnabled" : false,
             "ripPassive" : false,
@@ -20774,7 +20763,6 @@
             "ospfHelloMultiplier" : 0,
             "ospfPassive" : false,
             "ospfPointToPoint" : false,
-            "ospfProcess" : "2",
             "proxyArp" : true,
             "ripEnabled" : false,
             "ripPassive" : false,
@@ -20803,7 +20791,6 @@
             "ospfHelloMultiplier" : 0,
             "ospfPassive" : false,
             "ospfPointToPoint" : false,
-            "ospfProcess" : "2",
             "proxyArp" : true,
             "ripEnabled" : false,
             "ripPassive" : false,
@@ -20832,7 +20819,6 @@
             "ospfHelloMultiplier" : 0,
             "ospfPassive" : false,
             "ospfPointToPoint" : false,
-            "ospfProcess" : "2",
             "proxyArp" : true,
             "ripEnabled" : false,
             "ripPassive" : false,
@@ -20861,7 +20847,6 @@
             "ospfHelloMultiplier" : 0,
             "ospfPassive" : false,
             "ospfPointToPoint" : false,
-            "ospfProcess" : "2",
             "proxyArp" : true,
             "ripEnabled" : false,
             "ripPassive" : false,
@@ -20891,7 +20876,6 @@
             "ospfHelloMultiplier" : 0,
             "ospfPassive" : false,
             "ospfPointToPoint" : false,
-            "ospfProcess" : "2",
             "proxyArp" : true,
             "ripEnabled" : false,
             "ripPassive" : false,
@@ -20921,7 +20905,6 @@
             "ospfHelloMultiplier" : 0,
             "ospfPassive" : false,
             "ospfPointToPoint" : false,
-            "ospfProcess" : "2",
             "proxyArp" : true,
             "ripEnabled" : false,
             "ripPassive" : false,
@@ -21724,6 +21707,7 @@
                 "exportPolicy" : "~OSPF_EXPORT_POLICY:default~",
                 "processId" : "default",
                 "referenceBandwidth" : 1.0E9,
+                "routerId" : "1.1.1.1",
                 "summaryAdminCost" : 10
               }
             },
@@ -24811,6 +24795,7 @@
                 "exportPolicy" : "~OSPF_EXPORT_POLICY:default~",
                 "processId" : "default",
                 "referenceBandwidth" : 1.0E9,
+                "routerId" : "1.1.1.1",
                 "summaryAdminCost" : 10
               }
             }

@@ -166,7 +166,7 @@ public final class OspfProcess implements Serializable {
       return this;
     }
 
-    public Builder setRouterId(Ip routerId) {
+    public Builder setRouterId(@Nonnull Ip routerId) {
       _routerId = routerId;
       return this;
     }
@@ -228,7 +228,7 @@ public final class OspfProcess implements Serializable {
   @Nonnull private final String _processId;
   @Nonnull private Double _referenceBandwidth;
   @Nullable private Boolean _rfc1583Compatible;
-  @Nullable private Ip _routerId;
+  @Nonnull private Ip _routerId;
   private int _summaryAdminCost;
 
   @JsonCreator
@@ -250,6 +250,7 @@ public final class OspfProcess implements Serializable {
       @Nullable @JsonProperty(PROP_SUMMARY_ADMIN) Integer summaryAdminCost) {
     checkArgument(processId != null, "Missing %s", PROP_PROCESS_ID);
     checkArgument(referenceBandwidth != null, "Missing %s", PROP_REFERENCE_BANDWIDTH);
+    checkArgument(routerId != null, "Missing %s", PROP_ROUTER_ID);
     _adminCosts =
         ImmutableSortedMap.copyOf(
             firstNonNull(
@@ -422,7 +423,7 @@ public final class OspfProcess implements Serializable {
   }
 
   /** The router-id of this OSPF process */
-  @Nullable
+  @Nonnull
   @JsonProperty(PROP_ROUTER_ID)
   public Ip getRouterId() {
     return _routerId;
@@ -527,7 +528,7 @@ public final class OspfProcess implements Serializable {
     _rfc1583Compatible = rfc1583Compatible;
   }
 
-  public void setRouterId(Ip id) {
+  public void setRouterId(@Nonnull Ip id) {
     _routerId = id;
   }
 }

@@ -2095,10 +2095,12 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
   @Override
   public String getSnapshotInputObject(String key) throws FileNotFoundException, IOException {
-    InputStream inputObject =
-        _storage.loadSnapshotInputObject(_settings.getContainer(), _testrigSettings.getName(), key);
-    byte[] bytes = IOUtils.toByteArray(inputObject);
-    return new String(bytes, detectCharset(bytes));
+    try (InputStream inputObject =
+        _storage.loadSnapshotInputObject(
+            _settings.getContainer(), _testrigSettings.getName(), key)) {
+      byte[] bytes = IOUtils.toByteArray(inputObject);
+      return new String(bytes, detectCharset(bytes));
+    }
   }
 
   private void repairEnvironmentBgpTables() {

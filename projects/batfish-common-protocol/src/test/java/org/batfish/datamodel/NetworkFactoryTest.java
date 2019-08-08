@@ -82,7 +82,7 @@ public class NetworkFactoryTest {
     NetworkFactory nf = new NetworkFactory();
     Configuration c = nf.configurationBuilder().setConfigurationFormat(CONFIG_FORMAT).build();
     Vrf vrf = nf.vrfBuilder().setOwner(c).build();
-    OspfProcess.Builder ob = nf.ospfProcessBuilder();
+    OspfProcess.Builder ob = nf.ospfProcessBuilder().setRouterId(Ip.ZERO);
     OspfProcess o1 = ob.build();
     OspfProcess o2 = ob.setVrf(vrf).build();
     assertThat(o1, not(sameInstance(o2)));
@@ -95,7 +95,7 @@ public class NetworkFactoryTest {
     Configuration c = nf.configurationBuilder().setConfigurationFormat(CONFIG_FORMAT).build();
     Vrf vrf = nf.vrfBuilder().setOwner(c).build();
     OspfProcess.Builder ob = nf.ospfProcessBuilder();
-    OspfProcess ospfProcess = ob.setVrf(vrf).build();
+    OspfProcess ospfProcess = ob.setVrf(vrf).setRouterId(Ip.ZERO).build();
     OspfArea.Builder oab = nf.ospfAreaBuilder();
     OspfArea oa1 = oab.build();
     OspfArea oa2 = oab.setOspfProcess(ospfProcess).build();

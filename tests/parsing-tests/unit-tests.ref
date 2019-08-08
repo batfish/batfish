@@ -63365,6 +63365,17 @@
             "    (set_line_tail",
             "      (statement",
             "        (s_common",
+            "          (s_routing_options",
+            "            ROUTING_OPTIONS:'routing-options'",
+            "            (ro_router_id",
+            "              ROUTER_ID:'router-id'",
+            "              id = IP_ADDRESS:'1.1.1.1')))))",
+            "    NEWLINE:'\\n')",
+            "  (set_line",
+            "    SET:'set'",
+            "    (set_line_tail",
+            "      (statement",
+            "        (s_common",
             "          (s_protocols",
             "            PROTOCOLS:'protocols'",
             "            (p_ospf",
@@ -63881,6 +63892,17 @@
             "              HOST_NAME:'host-name'",
             "              (variable",
             "                text = VARIABLE:'juniper_ospf_stub_areas'))))))",
+            "    NEWLINE:'\\n')",
+            "  (set_line",
+            "    SET:'set'",
+            "    (set_line_tail",
+            "      (statement",
+            "        (s_common",
+            "          (s_routing_options",
+            "            ROUTING_OPTIONS:'routing-options'",
+            "            (ro_router_id",
+            "              ROUTER_ID:'router-id'",
+            "              id = IP_ADDRESS:'1.1.1.1')))))",
             "    NEWLINE:'\\n')",
             "  (set_line",
             "    SET:'set'",
@@ -77452,13 +77474,13 @@
           "Parse warnings" : [
             {
               "Comment" : "This feature is not currently supported",
-              "Line" : 14,
+              "Line" : 15,
               "Parser_Context" : "[oa_area_range o_area o_common p_ospf3 s_protocols s_common statement set_line_tail set_line flat_juniper_configuration]",
               "Text" : "area-range dead:beef::/56 override-metric 100"
             },
             {
               "Comment" : "This feature is not currently supported",
-              "Line" : 14,
+              "Line" : 15,
               "Parser_Context" : "[oa_area_range o_area o_common p_ospf3 s_protocols s_common statement set_line_tail set_line flat_juniper_configuration]",
               "Text" : "area-range dead:beef::/56 override-metric 100"
             }
@@ -77850,7 +77872,7 @@
         "ios_xr_misc" : "PASSED",
         "ios_xr_multipart" : "PASSED",
         "ios_xr_ntp" : "PASSED",
-        "ios_xr_ospf" : "PASSED",
+        "ios_xr_ospf" : "WARNINGS",
         "ios_xr_router_static" : "PASSED",
         "ios_xr_ssh" : "PASSED",
         "ios_xr_taskgroup" : "PASSED",
@@ -77875,7 +77897,7 @@
         "juniper_misc" : "PASSED",
         "juniper_nat" : "PASSED",
         "juniper_ntp" : "PASSED",
-        "juniper_ospf_stub_areas" : "WARNINGS",
+        "juniper_ospf_stub_areas" : "PASSED",
         "juniper_passwords" : "PASSED",
         "juniper_policy_statement" : "PASSED",
         "juniper_relay" : "PASSED",
@@ -89609,30 +89631,30 @@
           "interface" : {
             "ae16.0" : {
               "ospf area interface" : [
-                17,
                 18,
                 19,
                 20,
-                22,
-                23
+                21,
+                23,
+                24
               ]
             },
             "xe-0/0/1.0" : {
               "ospf area interface" : [
-                15
+                16
               ]
             },
             "xe-0/0/20:0.0" : {
               "ospf area interface" : [
-                3,
                 4,
                 5,
-                6
+                6,
+                7
               ]
             },
             "xe-0/0/21:0.0" : {
               "ospf area interface" : [
-                7
+                8
               ]
             }
           }
@@ -92211,30 +92233,30 @@
           "interface" : {
             "ae16.0" : {
               "ospf area interface" : [
-                17,
                 18,
                 19,
                 20,
-                22,
-                23
+                21,
+                23,
+                24
               ]
             },
             "xe-0/0/1.0" : {
               "ospf area interface" : [
-                15
+                16
               ]
             },
             "xe-0/0/20:0.0" : {
               "ospf area interface" : [
-                3,
                 4,
                 5,
-                6
+                6,
+                7
               ]
             },
             "xe-0/0/21:0.0" : {
               "ospf area interface" : [
-                7
+                8
               ]
             }
           }
@@ -92822,6 +92844,14 @@
             }
           ]
         },
+        "ios_xr_ospf" : {
+          "Red flags" : [
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "Interface: 'Bundle-Ethernet201' contains OSPF settings, but there is no OSPF process"
+            }
+          ]
+        },
         "juniper-ospf" : {
           "Red flags" : [
             {
@@ -92839,10 +92869,6 @@
             {
               "tag" : "MISCELLANEOUS",
               "text" : "Cannot assign interface xe-0/0/21:0.0 to area 0.1.2.3 because it has no IP address."
-            },
-            {
-              "tag" : "MISCELLANEOUS",
-              "text" : "No candidates for OSPF router-id"
             }
           ]
         },
@@ -92899,14 +92925,6 @@
             {
               "tag" : "MISCELLANEOUS",
               "text" : "missing action in firewall filter: 'ip_options', term: 't1'"
-            }
-          ]
-        },
-        "juniper_ospf_stub_areas" : {
-          "Red flags" : [
-            {
-              "tag" : "MISCELLANEOUS",
-              "text" : "No candidates for OSPF router-id"
             }
           ]
         },
