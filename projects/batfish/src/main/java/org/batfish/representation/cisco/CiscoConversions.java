@@ -33,6 +33,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.stream.Collectors;
@@ -92,6 +93,7 @@ import org.batfish.datamodel.acl.AndMatchExpr;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
 import org.batfish.datamodel.bgp.community.StandardCommunity;
 import org.batfish.datamodel.eigrp.EigrpMetric;
+import org.batfish.datamodel.eigrp.EigrpMetricValues;
 import org.batfish.datamodel.isis.IsisLevelSettings;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.routing_policy.expr.AsPathSetElem;
@@ -1228,7 +1230,10 @@ public class CiscoConversions {
     // Set the metric
     // TODO prefer metric from route map
     // https://github.com/batfish/batfish/issues/2070
-    EigrpMetric metric = policy.getMetric() != null ? policy.getMetric() : proc.getDefaultMetric();
+    EigrpMetricValues metric =
+        policy.getMetric() != null
+            ? policy.getMetric()
+            : Optional.ofNullable(proc.getDefaultMetric()).map(EigrpMetric::getValues).orElse(null);
     if (metric != null) {
       eigrpExportStatements.add(new SetEigrpMetric(new LiteralEigrpMetric(metric)));
     } else if (protocol != RoutingProtocol.EIGRP) {

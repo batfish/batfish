@@ -675,7 +675,7 @@ set_med_rp_stanza
 
 set_metric_eigrp_rm_stanza
 :
-   SET METRIC bw = DEC load = DEC delay = DEC reliability = DEC mtu = DEC NEWLINE
+   SET METRIC metric = eigrp_metric NEWLINE
 ;
 
 set_metric_rm_stanza
