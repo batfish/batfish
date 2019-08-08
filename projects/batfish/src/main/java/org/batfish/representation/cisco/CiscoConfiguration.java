@@ -39,7 +39,6 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.ImmutableSortedSet;
-import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.MultimapBuilder;
@@ -138,8 +137,12 @@ import org.batfish.datamodel.acl.PermittedByAcl;
 import org.batfish.datamodel.acl.TrueExpr;
 import org.batfish.datamodel.bgp.AddressFamilyCapabilities;
 import org.batfish.datamodel.bgp.Ipv4UnicastAddressFamily;
+import org.batfish.datamodel.eigrp.ClassicMetric;
 import org.batfish.datamodel.eigrp.EigrpInterfaceSettings;
 import org.batfish.datamodel.eigrp.EigrpMetric;
+import org.batfish.datamodel.eigrp.EigrpMetricValues;
+import org.batfish.datamodel.eigrp.EigrpProcessMode;
+import org.batfish.datamodel.eigrp.WideMetric;
 import org.batfish.datamodel.isis.IsisInterfaceLevelSettings;
 import org.batfish.datamodel.isis.IsisInterfaceMode;
 import org.batfish.datamodel.isis.IsisInterfaceSettings;
@@ -1984,7 +1987,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
     return vrf.getOspfProcesses().values().stream()
         .filter(p -> getOspfNetworkForInterface(iface, p) != null)
         .findFirst()
-        .orElse(Iterables.getLast(vrf.getOspfProcesses().values(), null));
+        .orElse(null);
   }
 
   private org.batfish.datamodel.Interface toInterface(
@@ -2085,18 +2088,6 @@ public final class CiscoConfiguration extends VendorConfiguration {
               .getInterfacePassiveStatus()
               .getOrDefault(getNewInterfaceName(iface), eigrpProcess.getPassiveInterfaceDefault());
 
-      // For bandwidth/delay, defaults are separate from actuals to inform metric calculations
-      EigrpMetric metric =
-          EigrpMetric.builder()
-              .setBandwidth(iface.getBandwidth())
-              .setMode(eigrpProcess.getMode())
-              .setDefaultBandwidth(
-                  Interface.getDefaultBandwidth(iface.getName(), c.getConfigurationFormat()))
-              .setDefaultDelay(
-                  Interface.getDefaultDelay(iface.getName(), c.getConfigurationFormat()))
-              .setDelay(iface.getDelay())
-              .build();
-
       List<If> redistributePolicyStatements =
           eigrpRedistributionPoliciesToStatements(
               eigrpProcess.getRedistributionPolicies().values(), eigrpProcess, this);
@@ -2122,7 +2113,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
               .setAsn(eigrpProcess.getAsn())
               .setEnabled(true)
               .setExportPolicy(policyName)
-              .setMetric(metric)
+              .setMetric(computeEigrpMetricForInterface(iface, eigrpProcess.getMode()))
               .setPassive(passive)
               .build());
       if (newIface.getEigrp() == null) {
@@ -2251,6 +2242,28 @@ public final class CiscoConfiguration extends VendorConfiguration {
       newIface.setOutgoingFilter((IpAccessList) null);
     }
     return newIface;
+  }
+
+  @Nonnull
+  private EigrpMetric computeEigrpMetricForInterface(Interface iface, EigrpProcessMode mode) {
+    EigrpMetricValues values =
+        EigrpMetricValues.builder()
+            .setDelay(
+                firstNonNull(iface.getDelay(), Interface.getDefaultDelay(iface.getName(), _vendor)))
+            .setBandwidth(
+                // Scale to kbps
+                firstNonNull(
+                        iface.getBandwidth(),
+                        Interface.getDefaultBandwidth(iface.getName(), _vendor))
+                    / 1000)
+            .build();
+    if (mode == EigrpProcessMode.CLASSIC) {
+      return ClassicMetric.builder().setValues(values).build();
+    } else if (mode == EigrpProcessMode.NAMED) {
+      return WideMetric.builder().setValues(values).build();
+    } else {
+      throw new IllegalArgumentException("Invalid EIGRP process mode: " + mode);
+    }
   }
 
   private void generateAristaDynamicSourceNats(

@@ -34,8 +34,12 @@ s_iface
   | i_bond_slaves
   | i_bridge_access
   | i_bridge_ports
+  | i_bridge_pvid
   | i_bridge_vids
   | i_clag_id
+  | i_clagd_backup_ip
+  | i_clagd_peer_ip
+  | i_clagd_sys_mac
   | i_link_speed
   | i_vlan_id
   | i_vlan_raw_device
@@ -76,6 +80,11 @@ i_bridge_ports
   BRIDGE_PORTS interface_name+ NEWLINE
 ;
 
+i_bridge_pvid
+:
+  BRIDGE_PVID vlan_id NEWLINE
+;
+
 i_bridge_vids
 :
   BRIDGE_VIDS number+ NEWLINE
@@ -84,6 +93,21 @@ i_bridge_vids
 i_clag_id
 :
   CLAG_ID number NEWLINE
+;
+
+i_clagd_backup_ip
+:
+  CLAGD_BACKUP_IP IP_ADDRESS VRF vrf_name NEWLINE
+;
+
+i_clagd_peer_ip
+:
+  CLAGD_PEER_IP (IP_ADDRESS | LINK_LOCAL) NEWLINE
+;
+
+i_clagd_sys_mac
+:
+  CLAGD_SYS_MAC MAC_ADDRESS NEWLINE
 ;
 
 i_link_speed

@@ -11,14 +11,19 @@ import org.antlr.v4.runtime.tree.ParseTreeWalker;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.config.Settings;
+import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.Prefix;
 import org.batfish.grammar.BatfishParseTreeWalker;
 import org.batfish.main.Batfish;
 import org.batfish.representation.cumulus.CumulusNcluConfiguration;
+import org.batfish.representation.cumulus.StaticRoute;
+import org.batfish.representation.cumulus.Vrf;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.rules.TemporaryFolder;
 
+/** Tests for {@link CumulusFrrParser}. */
 public class CumulusFrrGrammarTest {
   private static final String TESTCONFIGS_PREFIX = "org/batfish/grammar/cumulus_frr/testconfigs/";
 
@@ -62,5 +67,24 @@ public class CumulusFrrGrammarTest {
   public void testCumulusFrrVrf() {
     CumulusNcluConfiguration config = parse("vrf NAME\n exit-vrf");
     assertThat(config.getVrfs().keySet(), equalTo(ImmutableSet.of("NAME")));
+  }
+
+  @Test
+  public void testCumulusFrrVrfVni() {
+    CumulusNcluConfiguration config = parse("vrf NAME\n vni 170000\n exit-vrf");
+    Vrf vrf = config.getVrfs().get("NAME");
+    assertThat(vrf.getVni(), equalTo(170000));
+  }
+
+  @Test
+  public void testCumulusFrrVrfIpRoutes() {
+    CumulusNcluConfiguration config =
+        parse("vrf NAME\n ip route 1.0.0.0/8 10.0.2.1\n ip route 0.0.0.0/0 10.0.0.1\n exit-vrf");
+    assertThat(
+        config.getVrfs().get("NAME").getStaticRoutes(),
+        equalTo(
+            ImmutableSet.of(
+                new StaticRoute(Prefix.parse("1.0.0.0/8"), Ip.parse("10.0.2.1"), null),
+                new StaticRoute(Prefix.parse("0.0.0.0/0"), Ip.parse("10.0.0.1"), null))));
   }
 }

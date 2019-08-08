@@ -8,8 +8,6 @@ import java.io.Serializable;
 import java.util.Comparator;
 import java.util.Objects;
 import javax.annotation.Nonnull;
-import org.batfish.datamodel.NetworkConfigurations;
-import org.batfish.datamodel.collections.IpEdge;
 
 public final class EigrpEdge implements Serializable, Comparable<EigrpEdge> {
   private static final String PROP_NODE1 = "node1";
@@ -43,15 +41,6 @@ public final class EigrpEdge implements Serializable, Comparable<EigrpEdge> {
     }
     EigrpEdge rhs = (EigrpEdge) o;
     return _node1.equals(rhs._node1) && _node2.equals(rhs._node2);
-  }
-
-  @Nonnull
-  public IpEdge toIpEdge(NetworkConfigurations nc) {
-    return new IpEdge(
-        _node1.getHostname(),
-        _node1.getInterface(nc).getConcreteAddress().getIp(),
-        _node2.getHostname(),
-        _node2.getInterface(nc).getConcreteAddress().getIp());
   }
 
   @Nonnull

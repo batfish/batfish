@@ -339,9 +339,19 @@ if_ip_forward
    NO? IP FORWARD NEWLINE
 ;
 
+if_ip_hello_interval
+:
+   IP HELLO_INTERVAL EIGRP asn = DEC interval = DEC NEWLINE
+;
+
 if_ip_helper_address
 :
    IP HELPER_ADDRESS address = IP_ADDRESS NEWLINE
+;
+
+if_ip_hold_time
+:
+   IP HOLD_TIME EIGRP asn = DEC interval = DEC NEWLINE
 ;
 
 if_ip_inband_access_group
@@ -484,10 +494,12 @@ if_ip_sticky_arp
 
 if_ip_summary_address
 :
-   IP SUMMARY_ADDRESS EIGRP asn = DEC (
+   IP SUMMARY_ADDRESS EIGRP asn = DEC
+   (
       addr = IP_ADDRESS netmask = IP_ADDRESS
       | prefix = IP_PREFIX
-   ) (LEAK_MAP mapname = variable)? NEWLINE
+   )
+   (LEAK_MAP mapname = variable)? NEWLINE
 ;
 
 if_ip_tcp
@@ -1776,7 +1788,9 @@ if_inner
    | if_ip_dhcp
    | if_ip_flow_monitor
    | if_ip_forward
+   | if_ip_hello_interval
    | if_ip_helper_address
+   | if_ip_hold_time
    | if_ip_inband_access_group
    | if_ip_igmp
    | if_ip_nat_destination
