@@ -17,6 +17,7 @@ public final class RouteMapEntry implements Serializable {
   private @Nullable RouteMapMatchInterface _matchInterface;
   private @Nullable RouteMapMatchIpAddressPrefixList _matchIpAddressPrefixList;
   private final int _number;
+  private @Nullable String _description;
 
   public RouteMapEntry(int number, LineAction action) {
     _number = number;
@@ -48,6 +49,10 @@ public final class RouteMapEntry implements Serializable {
     return _number;
   }
 
+  public @Nullable String getDescription() {
+    return _description;
+  }
+
   /** Return stream of set statements for this entry. */
   public @Nonnull Stream<RouteMapSet> getSets() {
     return Stream.<RouteMapSet>of().filter(Objects::nonNull);
@@ -64,5 +69,9 @@ public final class RouteMapEntry implements Serializable {
   public void setMatchIpAddressPrefixList(
       @Nullable RouteMapMatchIpAddressPrefixList matchIpAddressPrefixList) {
     _matchIpAddressPrefixList = matchIpAddressPrefixList;
+  }
+
+  public void setDescription(@Nullable String description) {
+    _description = description;
   }
 }

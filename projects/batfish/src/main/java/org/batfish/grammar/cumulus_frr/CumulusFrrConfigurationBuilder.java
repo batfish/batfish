@@ -7,6 +7,7 @@ import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.Prefix;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Ip_prefix_list_nameContext;
+import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Rm_descriptionContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Rmm_communityContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Rmmipa_prefix_listContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.S_routemapContext;
@@ -82,6 +83,12 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
                 sequence, k -> new RouteMapEntry(Integer.parseInt(ctx.sequence.getText()), action));
     _c.defineStructure(CumulusStructureType.VRF, name, ctx.getStart().getLine());
     _c.defineStructure(CumulusStructureType.ROUTE_MAP, name, ctx.getStart().getLine());
+  }
+
+  @Override
+  public void exitRm_description(Rm_descriptionContext ctx) {
+    _currentRouteMapEntry.setDescription(ctx.route_map_description().getText());
+    super.exitRm_description(ctx);
   }
 
   @Override

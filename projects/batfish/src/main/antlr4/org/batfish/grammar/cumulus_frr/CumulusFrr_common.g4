@@ -35,8 +35,8 @@ prefix
 
 vni_number
 :
-  v = DEC
-  {isVniNumber($v)}?
+  v = uint32
+  {isVniNumber($v.ctx)}?
 
 ;
 
