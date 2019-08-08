@@ -162,35 +162,34 @@ public final class OspfTopologyUtils {
         configurations.getOspfNeighborConfig(localConfigId).orElse(null);
     OspfNeighborConfig remoteConfig =
         configurations.getOspfNeighborConfig(remoteConfigId).orElse(null);
-    Interface localIface =
-        configurations
-            .getInterface(localConfigId.getHostname(), localConfigId.getInterfaceName())
-            .orElse(null);
-    Interface remoteIface =
-        configurations
-            .getInterface(remoteConfigId.getHostname(), remoteConfigId.getInterfaceName())
-            .orElse(null);
     OspfProcess localProcess = configurations.getOspfProcess(localConfigId).orElse(null);
     OspfProcess remoteProcess = configurations.getOspfProcess(remoteConfigId).orElse(null);
 
     if (localConfig == null
         || remoteConfig == null
         || localProcess == null
-        || remoteProcess == null
-        || localIface == null
-        || remoteIface == null) {
+        || remoteProcess == null) {
       return Optional.empty();
     }
+
+    long localAreaNum = localConfig.getArea();
+    long remoteAreaNum = remoteConfig.getArea();
+    OspfArea localArea = localProcess.getAreas().get(localAreaNum);
+    OspfArea remoteArea = remoteProcess.getAreas().get(remoteAreaNum);
+    if (localArea == null || remoteArea == null) {
+      return Optional.empty();
+    }
+
     if (localConfig.isPassive() || remoteConfig.isPassive()) {
       return Optional.empty();
     }
-    if (localConfig.getArea() != remoteConfig.getArea()) {
+    if (localAreaNum != remoteAreaNum) {
       return Optional.empty();
     }
     if (localProcess.getRouterId() == remoteProcess.getRouterId()) {
       return Optional.empty();
     }
-    if (localIface.getMtu() != remoteIface.getMtu()) {
+    if (localArea.getStubType() != remoteArea.getStubType()) {
       return Optional.empty();
     }
     /*

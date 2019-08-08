@@ -20,6 +20,7 @@ import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpLink;
 import org.batfish.datamodel.NetworkConfigurations;
 import org.batfish.datamodel.Vrf;
+import org.junit.Ignore;
 import org.junit.Test;
 
 /** Test of {@link org.batfish.datamodel.ospf.OspfTopologyUtils} */
@@ -32,31 +33,103 @@ public class OspfTopologyUtilsTest {
 
   private static NetworkConfigurations buildNetworkConfigurations(Ip localIp, Ip remoteIp) {
     return buildNetworkConfigurations(
-        localIp, false, localIp, 0L, 1500, remoteIp, false, remoteIp, 0L, 1500);
+        localIp,
+        false,
+        localIp,
+        0L,
+        1500,
+        StubType.NONE,
+        remoteIp,
+        false,
+        remoteIp,
+        0L,
+        1500,
+        StubType.NONE);
   }
 
   private static NetworkConfigurations buildNetworkConfigurations(
       Ip localIp, boolean localPassive, Ip remoteIp, boolean remotePassive) {
     return buildNetworkConfigurations(
-        localIp, localPassive, localIp, 0L, 1500, remoteIp, remotePassive, remoteIp, 0L, 1500);
+        localIp,
+        localPassive,
+        localIp,
+        0L,
+        1500,
+        StubType.NONE,
+        remoteIp,
+        remotePassive,
+        remoteIp,
+        0L,
+        1500,
+        StubType.NONE);
   }
 
   private static NetworkConfigurations buildNetworkConfigurations(
       Ip localIp, int localMtu, Ip remoteIp, int remoteMtu) {
     return buildNetworkConfigurations(
-        localIp, false, localIp, 0L, localMtu, remoteIp, false, remoteIp, 0L, remoteMtu);
+        localIp,
+        false,
+        localIp,
+        0L,
+        localMtu,
+        StubType.NONE,
+        remoteIp,
+        false,
+        remoteIp,
+        0L,
+        remoteMtu,
+        StubType.NONE);
   }
 
   private static NetworkConfigurations buildNetworkConfigurations(
       Ip localIp, long localArea, Ip remoteIp, long remoteArea) {
     return buildNetworkConfigurations(
-        localIp, false, localIp, localArea, 1500, remoteIp, false, remoteIp, remoteArea, 1500);
+        localIp,
+        false,
+        localIp,
+        localArea,
+        1500,
+        StubType.NONE,
+        remoteIp,
+        false,
+        remoteIp,
+        remoteArea,
+        1500,
+        StubType.NONE);
+  }
+
+  private static NetworkConfigurations buildNetworkConfigurations(
+      Ip localIp, StubType localAreaType, Ip remoteIp, StubType remoteAreaType) {
+    return buildNetworkConfigurations(
+        localIp,
+        false,
+        localIp,
+        0L,
+        1500,
+        localAreaType,
+        remoteIp,
+        false,
+        remoteIp,
+        0L,
+        1500,
+        remoteAreaType);
   }
 
   private static NetworkConfigurations buildNetworkConfigurations(
       Ip localIp, Ip localRouterId, Ip remoteIp, Ip remoteRouterId) {
     return buildNetworkConfigurations(
-        localIp, false, localRouterId, 0L, 1500, remoteIp, false, remoteRouterId, 0L, 1500);
+        localIp,
+        false,
+        localRouterId,
+        0L,
+        1500,
+        StubType.NONE,
+        remoteIp,
+        false,
+        remoteRouterId,
+        0L,
+        1500,
+        StubType.NONE);
   }
 
   private static NetworkConfigurations buildNetworkConfigurations(
@@ -65,19 +138,33 @@ public class OspfTopologyUtilsTest {
       Ip localRouterId,
       long localArea,
       int localMtu,
+      StubType localAreaType,
       Ip remoteIp,
       boolean remotePassive,
       Ip remoteRouterId,
       long remoteArea,
-      int remoteMtu) {
+      int remoteMtu,
+      StubType remoteAreaType) {
     return NetworkConfigurations.of(
         ImmutableMap.of(
             LOCAL_CONFIG_ID.getHostname(),
             buildConfiguration(
-                LOCAL_CONFIG_ID, localIp, localPassive, localRouterId, localArea, localMtu),
+                LOCAL_CONFIG_ID,
+                localIp,
+                localPassive,
+                localRouterId,
+                localArea,
+                localMtu,
+                localAreaType),
             REMOTE_CONFIG_ID.getHostname(),
             buildConfiguration(
-                REMOTE_CONFIG_ID, remoteIp, remotePassive, remoteRouterId, remoteArea, remoteMtu)));
+                REMOTE_CONFIG_ID,
+                remoteIp,
+                remotePassive,
+                remoteRouterId,
+                remoteArea,
+                remoteMtu,
+                remoteAreaType)));
   }
 
   private static Configuration buildConfiguration(
@@ -86,7 +173,8 @@ public class OspfTopologyUtilsTest {
       boolean passive,
       Ip routerId,
       long area,
-      int mtu) {
+      int mtu,
+      StubType areaType) {
     String hostname = configId.getHostname();
     String vrfName = configId.getVrfName();
     String procName = configId.getProcName();
@@ -99,7 +187,12 @@ public class OspfTopologyUtilsTest {
             OspfProcess.builder()
                 .setAreas(
                     ImmutableSortedMap.of(
-                        area, OspfArea.builder().addInterface(ifaceName).setNumber(area).build()))
+                        area,
+                        OspfArea.builder()
+                            .addInterface(ifaceName)
+                            .setNumber(area)
+                            .setStubType(areaType)
+                            .build()))
                 .setProcessId(procName)
                 .setReferenceBandwidth(7.0)
                 .setNeighbors(
@@ -171,6 +264,18 @@ public class OspfTopologyUtilsTest {
   }
 
   @Test
+  public void testGetSessionIfCompatibleMismatchAreaType() {
+    NetworkConfigurations configs =
+        buildNetworkConfigurations(
+            Ip.parse("1.1.1.1"), StubType.STUB, Ip.parse("1.1.1.2"), StubType.NONE);
+
+    // Confirm we correctly mark a session as incompatible when neighbor area types do not match
+    Optional<OspfSessionProperties> val =
+        getSessionIfCompatible(LOCAL_CONFIG_ID, REMOTE_CONFIG_ID, configs);
+    assertThat(val, equalTo(Optional.empty()));
+  }
+
+  @Test
   public void testGetSessionIfCompatibleMissingConfig() {
     NetworkConfigurations configs =
         buildNetworkConfigurations(Ip.parse("1.1.1.1"), Ip.parse("1.1.1.2"));
@@ -183,6 +288,8 @@ public class OspfTopologyUtilsTest {
     assertThat(val, equalTo(Optional.empty()));
   }
 
+  @Ignore(
+      "Frame/packet MTU support not fully there, currently we optimistically leave OSPF sessions up")
   @Test
   public void testGetSessionIfCompatibleMtuMismatch() {
     NetworkConfigurations configs =
