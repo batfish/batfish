@@ -580,6 +580,9 @@
         "ios_interface_ip_authentication" : [
           "configs/ios_interface_ip_autentication"
         ],
+        "ios_interface_ip_eigrp_settings" : [
+          "configs/ios_interface_eigrp_settings"
+        ],
         "ios_interface_ip_tcp" : [
           "configs/ios_interface_ip_tcp"
         ],
@@ -1112,6 +1115,7 @@
         "configs/ios_bgp" : "PASSED",
         "configs/ios_bgp_aggregate_address" : "PASSED",
         "configs/ios_interface" : "PASSED",
+        "configs/ios_interface_eigrp_settings" : "PASSED",
         "configs/ios_interface_ip_autentication" : "PASSED",
         "configs/ios_interface_ip_tcp" : "PASSED",
         "configs/ios_standby" : "PASSED",
@@ -51708,6 +51712,42 @@
             "  EOF:<EOF>)"
           ]
         },
+        "configs/ios_interface_eigrp_settings" : {
+          "sentences" : [
+            "(cisco_configuration",
+            "  (stanza",
+            "    (s_hostname",
+            "      HOSTNAME:'hostname'",
+            "      VARIABLE:'ios_interface_ip_eigrp_settings'",
+            "      NEWLINE:'\\n'))",
+            "  (stanza",
+            "    (s_interface",
+            "      INTERFACE:'interface'",
+            "      iname = (interface_name",
+            "        name_prefix_alpha = M_Interface_PREFIX:'Ethernet'  <== mode:M_Interface",
+            "        (range",
+            "          (subrange",
+            "            low = DEC:'0'  <== mode:M_Interface)))",
+            "      NEWLINE:'\\n'  <== mode:M_Interface",
+            "      (if_inner",
+            "        (if_ip_hello_interval",
+            "          IP:'ip'",
+            "          HELLO_INTERVAL:'hello-interval'",
+            "          EIGRP:'eigrp'",
+            "          asn = DEC:'1'",
+            "          interval = DEC:'2'",
+            "          NEWLINE:'\\n'))",
+            "      (if_inner",
+            "        (if_ip_hold_time",
+            "          IP:'ip'",
+            "          HOLD_TIME:'hold-time'",
+            "          EIGRP:'eigrp'",
+            "          asn = DEC:'3'",
+            "          interval = DEC:'4'",
+            "          NEWLINE:'\\n'))))",
+            "  EOF:<EOF>)"
+          ]
+        },
         "configs/ios_interface_ip_autentication" : {
           "sentences" : [
             "(cisco_configuration",
@@ -77857,6 +77897,7 @@
         "ios_bgp" : "PASSED",
         "ios_interface" : "PASSED",
         "ios_interface_ip_authentication" : "PASSED",
+        "ios_interface_ip_eigrp_settings" : "PASSED",
         "ios_interface_ip_tcp" : "PASSED",
         "ios_standby" : "PASSED",
         "ios_template" : "PASSED",
@@ -82366,6 +82407,18 @@
             }
           }
         },
+        "configs/ios_interface_eigrp_settings" : {
+          "interface" : {
+            "Ethernet0" : {
+              "definitionLines" : [
+                4,
+                5,
+                6
+              ],
+              "numReferrers" : 1
+            }
+          }
+        },
         "configs/ios_interface_ip_autentication" : {
           "interface" : {
             "Ethernet0" : {
@@ -85373,6 +85426,9 @@
         ],
         "configs/ios_interface" : [
           "ios_interface"
+        ],
+        "configs/ios_interface_eigrp_settings" : [
+          "ios_interface_ip_eigrp_settings"
         ],
         "configs/ios_interface_ip_autentication" : [
           "ios_interface_ip_authentication"
@@ -88832,6 +88888,15 @@
             "FOOBAR" : {
               "interface service-policy" : [
                 5
+              ]
+            }
+          }
+        },
+        "configs/ios_interface_eigrp_settings" : {
+          "interface" : {
+            "Ethernet0" : {
+              "interface" : [
+                4
               ]
             }
           }
@@ -93327,6 +93392,7 @@
         "configs/ios_bgp" : "PASSED",
         "configs/ios_bgp_aggregate_address" : "PASSED",
         "configs/ios_interface" : "PASSED",
+        "configs/ios_interface_eigrp_settings" : "PASSED",
         "configs/ios_interface_ip_autentication" : "PASSED",
         "configs/ios_interface_ip_tcp" : "PASSED",
         "configs/ios_standby" : "PASSED",
