@@ -1,6 +1,5 @@
 package org.batfish.representation.cumulus_interfaces;
 
-import com.google.common.collect.ImmutableList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -11,10 +10,10 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
-import org.batfish.datamodel.IntegerSpace;
 import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.MacAddress;
+import org.batfish.representation.cumulus.InterfaceBridgeSettings;
 import org.batfish.representation.cumulus.InterfaceClagSettings;
 
 /** Model of an iface block in a cumulus /etc/network/interfaces file. */
@@ -22,10 +21,8 @@ import org.batfish.representation.cumulus.InterfaceClagSettings;
 public final class Interface {
   private @Nullable List<ConcreteInterfaceAddress> _addresses;
   private @Nullable Map<MacAddress, Set<InterfaceAddress>> _addressVirtuals;
-  private @Nullable Integer _bridgeAccess;
+  private @Nullable InterfaceBridgeSettings _bridgeSettings;
   private @Nullable InterfaceClagSettings _clagSettings;
-  private @Nullable List<String> _bridgePorts;
-  private @Nullable IntegerSpace _bridgeVids;
   private @Nullable Integer _clagId;
   private @Nullable String _description;
   private boolean _isVrf = false;
@@ -49,6 +46,14 @@ public final class Interface {
   }
 
   @Nonnull
+  public InterfaceBridgeSettings createOrGetBridgeSettings() {
+    if (_bridgeSettings == null) {
+      _bridgeSettings = new InterfaceBridgeSettings();
+    }
+    return _bridgeSettings;
+  }
+
+  @Nonnull
   public InterfaceClagSettings createOrGetClagSettings() {
     if (_clagSettings == null) {
       _clagSettings = new InterfaceClagSettings();
@@ -67,18 +72,8 @@ public final class Interface {
   }
 
   @Nullable
-  public Integer getBridgeAccess() {
-    return _bridgeAccess;
-  }
-
-  @Nullable
-  public List<String> getBridgePorts() {
-    return _bridgePorts;
-  }
-
-  @Nullable
-  public IntegerSpace getBridgeVids() {
-    return _bridgeVids;
+  public InterfaceBridgeSettings getBridgeSettings() {
+    return _bridgeSettings;
   }
 
   @Nullable
@@ -133,18 +128,6 @@ public final class Interface {
   @Nullable
   public Ip getVxlanLocalTunnelIp() {
     return _vxlanLocalTunnelIp;
-  }
-
-  public void setBridgeAccess(int vlanId) {
-    _bridgeAccess = vlanId;
-  }
-
-  public void setBridgePorts(List<String> bridgePorts) {
-    _bridgePorts = ImmutableList.copyOf(bridgePorts);
-  }
-
-  public void setBridgeVids(IntegerSpace bridgeVids) {
-    _bridgeVids = bridgeVids;
   }
 
   public void setClagId(int clagId) {

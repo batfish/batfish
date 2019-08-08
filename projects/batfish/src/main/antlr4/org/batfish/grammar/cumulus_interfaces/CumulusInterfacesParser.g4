@@ -34,6 +34,7 @@ s_iface
   | i_bond_slaves
   | i_bridge_access
   | i_bridge_ports
+  | i_bridge_pvid
   | i_bridge_vids
   | i_clag_id
   | i_clagd_backup_ip
@@ -77,6 +78,11 @@ i_bridge_access
 i_bridge_ports
 :
   BRIDGE_PORTS interface_name+ NEWLINE
+;
+
+i_bridge_pvid
+:
+  BRIDGE_PVID vlan_id NEWLINE
 ;
 
 i_bridge_vids

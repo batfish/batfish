@@ -2,6 +2,7 @@ package org.batfish.grammar.cumulus_interfaces;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Range;
 import java.util.List;
 import org.antlr.v4.runtime.RuleContext;
@@ -22,6 +23,7 @@ import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.I_aliasCon
 import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.I_bond_slavesContext;
 import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.I_bridge_accessContext;
 import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.I_bridge_portsContext;
+import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.I_bridge_pvidContext;
 import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.I_bridge_vidsContext;
 import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.I_clag_idContext;
 import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.I_clagd_backup_ipContext;
@@ -51,6 +53,8 @@ import org.batfish.representation.cumulus_interfaces.Interfaces;
  */
 public final class CumulusInterfacesConfigurationBuilder
     extends CumulusInterfacesParserBaseListener {
+  private static final String BRIDGE_INTERFACE_NAME = "bridge";
+
   private final CumulusNcluConfiguration _config;
   private final Interfaces _interfaces = new Interfaces();
   private final CumulusInterfacesCombinedParser _parser;
@@ -150,11 +154,16 @@ public final class CumulusInterfacesConfigurationBuilder
 
   @Override
   public void exitI_bridge_access(I_bridge_accessContext ctx) {
-    _currentIface.setBridgeAccess(Integer.parseInt(ctx.number().getText()));
+    _currentIface.createOrGetBridgeSettings().setAccess(Integer.parseInt(ctx.number().getText()));
   }
 
   @Override
   public void exitI_bridge_ports(I_bridge_portsContext ctx) {
+    if (!_currentIface.getName().equals(BRIDGE_INTERFACE_NAME)) {
+      _w.addWarning(ctx, ctx.getText(), _parser, "traditional bridges not yet supported");
+      return;
+    }
+
     List<Interface_nameContext> interfaceNameCtxs = ctx.interface_name();
     interfaceNameCtxs.forEach(
         ifaceNameCtx ->
@@ -163,22 +172,38 @@ public final class CumulusInterfacesConfigurationBuilder
                 ifaceNameCtx.getText(),
                 CumulusStructureUsage.BRIDGE_PORT,
                 ifaceNameCtx.getStart().getLine()));
-    _currentIface.setBridgePorts(
-        interfaceNameCtxs.stream()
-            .map(RuleContext::getText)
-            .collect(ImmutableList.toImmutableList()));
+    _interfaces
+        .getBridge()
+        .setPorts(
+            interfaceNameCtxs.stream()
+                .map(RuleContext::getText)
+                .collect(ImmutableSet.toImmutableSet()));
+  }
+
+  @Override
+  public void exitI_bridge_pvid(I_bridge_pvidContext ctx) {
+    if (!_currentIface.getName().equals(BRIDGE_INTERFACE_NAME)) {
+      _w.addWarning(ctx, ctx.getText(), _parser, "traditional bridges not yet supported");
+      return;
+    }
+    _interfaces.getBridge().setPvid(Integer.parseInt(ctx.vlan_id().getText()));
   }
 
   @Override
   public void exitI_bridge_vids(I_bridge_vidsContext ctx) {
     List<NumberContext> vidCtxs = ctx.number();
-    _currentIface.setBridgeVids(
+    IntegerSpace vids =
         IntegerSpace.unionOf(
             vidCtxs.stream()
                 .map(ParseTree::getText)
                 .map(Integer::parseInt)
                 .map(Range::singleton)
-                .collect(ImmutableList.toImmutableList())));
+                .collect(ImmutableList.toImmutableList()));
+    if (_currentIface.getName().equals(BRIDGE_INTERFACE_NAME)) {
+      _interfaces.getBridge().setVids(vids);
+    } else {
+      _currentIface.createOrGetBridgeSettings().setVids(vids);
+    }
   }
 
   @Override
