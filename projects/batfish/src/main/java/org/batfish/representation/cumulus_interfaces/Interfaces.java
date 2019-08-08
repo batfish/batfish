@@ -6,13 +6,11 @@ import java.util.Map;
 import java.util.Set;
 import javax.annotation.Nonnull;
 import javax.annotation.ParametersAreNonnullByDefault;
-import org.batfish.representation.cumulus.Bridge;
 
 /** Model of a Cumulus /etc/network/interfaces file. */
 @ParametersAreNonnullByDefault
 public final class Interfaces {
   private final Set<String> _autoIfaces = new HashSet<>();
-  private final Bridge _bridge = new Bridge();
   private final Map<String, String> _bondSlaveParents = new HashMap<>();
   private final Map<String, Interface> _interfaces = new HashMap<>();
 
@@ -40,11 +38,6 @@ public final class Interfaces {
   @Nonnull
   public Map<String, String> getBondSlaveParents() {
     return _bondSlaveParents;
-  }
-
-  @Nonnull
-  public Bridge getBridge() {
-    return _bridge;
   }
 
   @Nonnull

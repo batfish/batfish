@@ -21,7 +21,6 @@ import org.batfish.datamodel.MacAddress;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
 import org.batfish.grammar.BatfishParseTreeWalker;
 import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.Cumulus_interfaces_configurationContext;
-import org.batfish.representation.cumulus.Bridge;
 import org.batfish.representation.cumulus.CumulusNcluConfiguration;
 import org.batfish.representation.cumulus.CumulusStructureType;
 import org.batfish.representation.cumulus.CumulusStructureUsage;
@@ -193,31 +192,24 @@ public class CumulusInterfacesGrammarTest {
   @Test
   public void testIfaceBridgePorts() {
     String input = "iface bridge\n bridge-ports i2 i3 i4\n";
-    Interfaces interfaces = parse(input);
-    Bridge bridge = interfaces.getBridge();
-    assertThat(bridge.getPorts(), contains("i2", "i3", "i4"));
+    Interface iface = parse(input).getInterfaces().get("bridge");
+    assertThat(iface.getBridgePorts(), contains("i2", "i3", "i4"));
   }
 
   @Test
   public void testIfaceBridgePvid() {
     String input = "iface bridge\n bridge-pvid 1\n";
-    Bridge bridge = parse(input).getBridge();
-    assertThat(bridge.getPvid(), equalTo(1));
+    InterfaceBridgeSettings bridgeSettings =
+        parse(input).getInterfaces().get("bridge").getBridgeSettings();
+    assertThat(bridgeSettings.getPvid(), equalTo(1));
   }
 
   @Test
-  public void testIfaceBridgeVids1() {
+  public void testIfaceBridgeVids() {
     String input = "iface i1\n bridge-vids 1 2 3 4\n";
     InterfaceBridgeSettings bridgeSettings =
         parse(input).getInterfaces().get("i1").getBridgeSettings();
     assertThat(bridgeSettings.getVids().enumerate(), contains(1, 2, 3, 4));
-  }
-
-  @Test
-  public void testIfaceBridgeVids2() {
-    String input = "iface bridge\n bridge-vids 1 2 3 4\n";
-    Bridge bridge = parse(input).getBridge();
-    assertThat(bridge.getVids().enumerate(), contains(1, 2, 3, 4));
   }
 
   @Test
