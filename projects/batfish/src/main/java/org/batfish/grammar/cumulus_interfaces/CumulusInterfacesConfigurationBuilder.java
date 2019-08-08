@@ -150,7 +150,7 @@ public final class CumulusInterfacesConfigurationBuilder
 
   @Override
   public void exitI_bridge_access(I_bridge_accessContext ctx) {
-    _currentIface.setBridgeAccess(Integer.parseInt(ctx.number().getText()));
+    _currentIface.createOrGetBridgeSettings().setAccess(Integer.parseInt(ctx.number().getText()));
   }
 
   @Override
@@ -172,13 +172,15 @@ public final class CumulusInterfacesConfigurationBuilder
   @Override
   public void exitI_bridge_vids(I_bridge_vidsContext ctx) {
     List<NumberContext> vidCtxs = ctx.number();
-    _currentIface.setBridgeVids(
-        IntegerSpace.unionOf(
-            vidCtxs.stream()
-                .map(ParseTree::getText)
-                .map(Integer::parseInt)
-                .map(Range::singleton)
-                .collect(ImmutableList.toImmutableList())));
+    _currentIface
+        .createOrGetBridgeSettings()
+        .setVids(
+            IntegerSpace.unionOf(
+                vidCtxs.stream()
+                    .map(ParseTree::getText)
+                    .map(Integer::parseInt)
+                    .map(Range::singleton)
+                    .collect(ImmutableList.toImmutableList())));
   }
 
   @Override
