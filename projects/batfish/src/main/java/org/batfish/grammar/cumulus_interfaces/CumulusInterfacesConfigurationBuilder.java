@@ -26,6 +26,7 @@ import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.I_bridge_v
 import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.I_clag_idContext;
 import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.I_clagd_backup_ipContext;
 import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.I_clagd_peer_ipContext;
+import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.I_clagd_sys_macContext;
 import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.I_link_speedContext;
 import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.I_vlan_idContext;
 import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.I_vlan_raw_deviceContext;
@@ -208,6 +209,12 @@ public final class CumulusInterfacesConfigurationBuilder
     } else {
       throw new IllegalStateException("clagd-peer-ip without an IP or linklocal");
     }
+  }
+
+  @Override
+  public void exitI_clagd_sys_mac(I_clagd_sys_macContext ctx) {
+    InterfaceClagSettings clag = _currentIface.createOrGetClagSettings();
+    clag.setSysMac(MacAddress.parse(ctx.MAC_ADDRESS().getText()));
   }
 
   @Override

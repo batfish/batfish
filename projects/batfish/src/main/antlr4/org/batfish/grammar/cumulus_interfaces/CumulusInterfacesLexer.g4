@@ -64,6 +64,11 @@ CLAGD_PEER_IP
   'clagd-peer-ip'
 ;
 
+CLAGD_SYS_MAC
+:
+  'clagd-sys-mac'
+;
+
 IFACE
 :
   'iface' -> pushMode(M_Word)

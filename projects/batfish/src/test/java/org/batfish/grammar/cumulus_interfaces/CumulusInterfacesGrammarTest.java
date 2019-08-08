@@ -238,6 +238,13 @@ public class CumulusInterfacesGrammarTest {
   }
 
   @Test
+  public void testClagdSysMac() {
+    String input = "iface i1\n clagd-sys-mac 00:00:00:00:00:00\n";
+    InterfaceClagSettings clag = parse(input).getInterfaces().get("i1").getClagSettings();
+    assertThat(clag.getSysMac(), equalTo(MacAddress.parse("00:00:00:00:00:00")));
+  }
+
+  @Test
   public void testIfaceLinkSpeed() {
     String input = "iface i1\n link-speed 10000\n";
     Interfaces interfaces = parse(input);

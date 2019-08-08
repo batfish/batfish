@@ -38,6 +38,7 @@ s_iface
   | i_clag_id
   | i_clagd_backup_ip
   | i_clagd_peer_ip
+  | i_clagd_sys_mac
   | i_link_speed
   | i_vlan_id
   | i_vlan_raw_device
@@ -95,7 +96,12 @@ i_clagd_backup_ip
 
 i_clagd_peer_ip
 :
- CLAGD_PEER_IP (IP_ADDRESS | LINK_LOCAL) NEWLINE
+  CLAGD_PEER_IP (IP_ADDRESS | LINK_LOCAL) NEWLINE
+;
+
+i_clagd_sys_mac
+:
+  CLAGD_SYS_MAC MAC_ADDRESS NEWLINE
 ;
 
 i_link_speed
