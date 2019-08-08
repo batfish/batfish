@@ -1,0 +1,7 @@
+!
+hostname ios_interface_ip_eigrp_settings
+!
+interface Ethernet0
+  ip hello-interval eigrp 1 2
+  ip hold-time eigrp 3 4
+!
