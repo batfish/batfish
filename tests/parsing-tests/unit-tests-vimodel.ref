@@ -8161,11 +8161,11 @@
                     "metric" : {
                       "class" : "org.batfish.datamodel.routing_policy.expr.LiteralEigrpMetric",
                       "metric" : {
-                        "classic-bandwidth" : 10000000,
-                        "classic-delay" : 2,
-                        "mode" : "CLASSIC",
-                        "named-bandwidth" : 0,
-                        "named-delay" : 0
+                        "bandwidth" : 1,
+                        "delay" : 20000000,
+                        "effectiveBandwidth" : 0,
+                        "mtu" : 0,
+                        "reliability" : 0
                       }
                     }
                   },
@@ -8190,11 +8190,11 @@
                     "metric" : {
                       "class" : "org.batfish.datamodel.routing_policy.expr.LiteralEigrpMetric",
                       "metric" : {
-                        "classic-bandwidth" : 10000000,
-                        "classic-delay" : 2,
-                        "mode" : "CLASSIC",
-                        "named-bandwidth" : 0,
-                        "named-delay" : 0
+                        "bandwidth" : 1,
+                        "delay" : 20000000,
+                        "effectiveBandwidth" : 0,
+                        "mtu" : 0,
+                        "reliability" : 0
                       }
                     }
                   },
@@ -8228,11 +8228,11 @@
                     "metric" : {
                       "class" : "org.batfish.datamodel.routing_policy.expr.LiteralEigrpMetric",
                       "metric" : {
-                        "classic-bandwidth" : 10000000,
-                        "classic-delay" : 2,
-                        "mode" : "CLASSIC",
-                        "named-bandwidth" : 0,
-                        "named-delay" : 0
+                        "bandwidth" : 1,
+                        "delay" : 20000000,
+                        "effectiveBandwidth" : 0,
+                        "mtu" : 0,
+                        "reliability" : 0
                       }
                     }
                   },
@@ -8257,11 +8257,11 @@
                     "metric" : {
                       "class" : "org.batfish.datamodel.routing_policy.expr.LiteralEigrpMetric",
                       "metric" : {
-                        "classic-bandwidth" : 10000000,
-                        "classic-delay" : 2,
-                        "mode" : "CLASSIC",
-                        "named-bandwidth" : 0,
-                        "named-delay" : 0
+                        "bandwidth" : 1,
+                        "delay" : 20000000,
+                        "effectiveBandwidth" : 0,
+                        "mtu" : 0,
+                        "reliability" : 0
                       }
                     }
                   },
@@ -8286,11 +8286,11 @@
                     "metric" : {
                       "class" : "org.batfish.datamodel.routing_policy.expr.LiteralEigrpMetric",
                       "metric" : {
-                        "classic-bandwidth" : 10000000,
-                        "classic-delay" : 2,
-                        "mode" : "CLASSIC",
-                        "named-bandwidth" : 0,
-                        "named-delay" : 0
+                        "bandwidth" : 1,
+                        "delay" : 20000000,
+                        "effectiveBandwidth" : 0,
+                        "mtu" : 0,
+                        "reliability" : 0
                       }
                     }
                   },
@@ -8315,11 +8315,11 @@
                     "metric" : {
                       "class" : "org.batfish.datamodel.routing_policy.expr.LiteralEigrpMetric",
                       "metric" : {
-                        "classic-bandwidth" : 1000,
-                        "classic-delay" : 10,
-                        "mode" : "CLASSIC",
-                        "named-bandwidth" : 0,
-                        "named-delay" : 0
+                        "bandwidth" : 10000,
+                        "delay" : 100000000,
+                        "effectiveBandwidth" : 0,
+                        "mtu" : 0,
+                        "reliability" : 0
                       }
                     }
                   },

@@ -5,6 +5,7 @@ import static com.google.common.base.Preconditions.checkArgument;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.primitives.UnsignedLong;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.datamodel.eigrp.EigrpMetric;
@@ -40,8 +41,8 @@ public abstract class EigrpRoute extends AbstractRoute {
   }
 
   @JsonIgnore
-  public final long getCompositeCost() {
-    return _metric.getCost();
+  public final UnsignedLong getCompositeCost() {
+    return _metric.cost();
   }
 
   @JsonProperty(PROP_EIGRP_METRIC)
@@ -52,7 +53,7 @@ public abstract class EigrpRoute extends AbstractRoute {
 
   @Override
   public final Long getMetric() {
-    return _metric.getRibMetric();
+    return _metric.ribMetric();
   }
 
   @Nonnull

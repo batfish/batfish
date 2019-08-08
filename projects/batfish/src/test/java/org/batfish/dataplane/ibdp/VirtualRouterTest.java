@@ -61,9 +61,10 @@ import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.Topology;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.bgp.BgpTopology;
-import org.batfish.datamodel.eigrp.EigrpMetric;
-import org.batfish.datamodel.eigrp.EigrpProcessMode;
+import org.batfish.datamodel.eigrp.ClassicMetric;
+import org.batfish.datamodel.eigrp.EigrpMetricValues;
 import org.batfish.datamodel.eigrp.EigrpTopology;
+import org.batfish.datamodel.eigrp.WideMetric;
 import org.batfish.datamodel.isis.IsisEdge;
 import org.batfish.datamodel.isis.IsisInterfaceLevelSettings;
 import org.batfish.datamodel.isis.IsisInterfaceMode;
@@ -133,20 +134,16 @@ public class VirtualRouterTest {
             .setNetwork(Prefix.parse("1.0.2.0/24"))
             .setDestinationAsn(1L)
             .setEigrpMetric(
-                EigrpMetric.builder()
-                    .setBandwidth(1E8)
-                    .setDelay(1D)
-                    .setMode(EigrpProcessMode.CLASSIC)
+                WideMetric.builder()
+                    .setValues(EigrpMetricValues.builder().setBandwidth(1E8).setDelay(1D).build())
                     .build())
             .setProcessAsn(2L)
             .build(),
         EigrpInternalRoute.builder()
             .setNetwork(Prefix.parse("1.0.3.0/24"))
             .setEigrpMetric(
-                EigrpMetric.builder()
-                    .setBandwidth(1E8)
-                    .setDelay(1D)
-                    .setMode(EigrpProcessMode.CLASSIC)
+                ClassicMetric.builder()
+                    .setValues(EigrpMetricValues.builder().setBandwidth(1E8).setDelay(1D).build())
                     .build())
             .setProcessAsn(2L)
             .build(),

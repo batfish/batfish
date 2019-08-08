@@ -108,8 +108,7 @@ public class EigrpTopologyUtils {
           if (iface.getEigrp() != null
               && remoteIface.getEigrp() != null
               && iface.getEigrp().getAsn() == remoteIface.getEigrp().getAsn()
-              && iface.getEigrp().getMetric().getMode()
-                  == remoteIface.getEigrp().getMetric().getMode()) {
+              && iface.getEigrp().getMetric().isCompatible(remoteIface.getEigrp().getMetric())) {
             eigrpNetwork.addEdge(configId, remoteConfigId, new EigrpEdge(configId, remoteConfigId));
           }
         }
