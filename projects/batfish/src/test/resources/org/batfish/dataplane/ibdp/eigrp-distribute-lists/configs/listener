@@ -2,9 +2,18 @@
 hostname listener
 !
 interface GigabitEthernet0/0
+ description to advertiser
  ip address 2.2.2.3 255.255.255.0
+!
+interface GigabitEthernet0/1
+ description to farlistener
+ ip address 2.3.3.2 255.255.255.254
 !
 router eigrp 1
   ! network statement below is needed to make GigabitEthernet0/0 an EIGRP neighbor
   network 2.2.2.3 0.0.0.255
+  network 2.3.3.2 0.0.0.1
+  distribute-list 10 out GigabitEthernet0/1
 !
+access-list 10 deny 4.4.4.0 0.0.0.255
+access-list 10 permit 1.1.1.0 0.0.0.255
