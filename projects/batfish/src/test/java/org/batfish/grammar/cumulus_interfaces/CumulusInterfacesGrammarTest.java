@@ -271,6 +271,11 @@ public class CumulusInterfacesGrammarTest {
     Interfaces interfaces = parse(input);
     Interface iface = interfaces.getInterfaces().get("vlan1");
     assertThat(iface.getVlanId(), equalTo(1));
+    // not marked as an interface definition
+    assertNull(getDefinedStructureInfo(CumulusStructureType.INTERFACE, "vlan1"));
+    assertThat(
+        getDefinedStructureInfo(CumulusStructureType.VLAN, "vlan1").getDefinitionLines(),
+        contains(1));
   }
 
   @Test
@@ -311,6 +316,11 @@ public class CumulusInterfacesGrammarTest {
     Interfaces interfaces = parse(input);
     Interface iface = interfaces.getInterfaces().get("swp1");
     assertThat(iface.getVxlanId(), equalTo(123));
+    // not marked as an interface definition
+    assertNull(getDefinedStructureInfo(CumulusStructureType.INTERFACE, "swp1"));
+    assertThat(
+        getDefinedStructureInfo(CumulusStructureType.VXLAN, "swp1").getDefinitionLines(),
+        contains(1));
   }
 
   @Test
