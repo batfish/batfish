@@ -186,7 +186,7 @@ public final class OspfTopologyUtils {
     if (localAreaNum != remoteAreaNum) {
       return Optional.empty();
     }
-    if (localProcess.getRouterId() == remoteProcess.getRouterId()) {
+    if (localProcess.getRouterId().equals(remoteProcess.getRouterId())) {
       return Optional.empty();
     }
     if (localArea.getStubType() != remoteArea.getStubType()) {
