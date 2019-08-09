@@ -47,6 +47,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import org.antlr.v4.runtime.ParserRuleContext;
 import org.batfish.common.BatfishException;
 import org.batfish.common.VendorConversionException;
 import org.batfish.datamodel.AclIpSpace;
@@ -295,6 +296,12 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
     _routeMaps = new HashMap<>();
     _vlans = new HashMap<>();
     _vrfs = new HashMap<>();
+  }
+
+  public void defineStructure(CiscoNxosStructureType type, String name, ParserRuleContext ctx) {
+    for (int i = ctx.getStart().getLine(); i <= ctx.getStop().getLine(); ++i) {
+      defineStructure(type, name, i);
+    }
   }
 
   @Override
