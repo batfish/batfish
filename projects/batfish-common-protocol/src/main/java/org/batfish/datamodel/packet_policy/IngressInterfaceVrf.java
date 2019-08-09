@@ -22,7 +22,7 @@ public final class IngressInterfaceVrf implements VrfExpr {
 
   @Override
   public int hashCode() {
-    return super.hashCode();
+    return 0x3e0583f8; // randomly generated
   }
 
   @Override
