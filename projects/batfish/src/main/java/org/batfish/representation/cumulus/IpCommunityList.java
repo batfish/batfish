@@ -3,7 +3,7 @@ package org.batfish.representation.cumulus;
 import java.io.Serializable;
 import javax.annotation.Nonnull;
 
-/** An access-list matches a route's standard communities attribute against some criteria. */
+/** An ip community list that matches a route's communities. */
 public class IpCommunityList implements Serializable {
 
   private final @Nonnull String _name;

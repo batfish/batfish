@@ -27,7 +27,9 @@ public final class RouteMapMatchCommunity implements RouteMapMatch {
   public BooleanExpr toBooleanExpr(Configuration c, CumulusNcluConfiguration vc, Warnings w) {
     return new Disjunction(
         _names.stream()
-            .filter(vc.getIpCommunityLists()::containsKey)
+            .filter(
+                vc.getIpCommunityLists()
+                    ::containsKey) // only handle ip community lists in the config
             .map(name -> new MatchEntireCommunitySet(new NamedCommunitySet(name)))
             .collect(ImmutableList.toImmutableList()));
   }
