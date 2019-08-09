@@ -77,7 +77,7 @@ public class CumulusInterfacesGrammarTest {
     Cumulus_interfaces_configurationContext ctxt = parser.parse();
     Warnings w = new Warnings();
     CumulusInterfacesConfigurationBuilder configurationBuilder =
-        new CumulusInterfacesConfigurationBuilder(CONFIG, w);
+        new CumulusInterfacesConfigurationBuilder(CONFIG, parser, w);
     new BatfishParseTreeWalker(parser).walk(configurationBuilder, ctxt);
     return configurationBuilder.getInterfaces();
   }
