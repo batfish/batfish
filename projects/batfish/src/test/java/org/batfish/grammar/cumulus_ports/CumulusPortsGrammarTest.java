@@ -1,5 +1,7 @@
 package org.batfish.grammar.cumulus_ports;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
@@ -46,5 +48,13 @@ public final class CumulusPortsGrammarTest {
     assertFalse(iface.isDisabled());
     parse("1=disabled\n");
     assertTrue(iface.isDisabled());
+  }
+
+  @Test
+  public void testSpeed() {
+    Interface iface = addInterface("swp1", CumulusInterfaceType.PHYSICAL);
+    iface.setSpeed(null);
+    parse("1=100G\n");
+    assertThat(iface.getSpeed(), equalTo(100000)); // speed is in Mbps
   }
 }

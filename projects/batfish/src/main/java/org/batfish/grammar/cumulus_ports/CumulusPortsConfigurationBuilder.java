@@ -3,6 +3,8 @@ package org.batfish.grammar.cumulus_ports;
 import static com.google.common.base.Preconditions.checkState;
 import static java.lang.Integer.parseInt;
 
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import javax.annotation.Nullable;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.Token;
@@ -12,6 +14,7 @@ import org.batfish.common.Warnings.ParseWarning;
 import org.batfish.grammar.UnrecognizedLineToken;
 import org.batfish.grammar.cumulus_ports.CumulusPortsParser.DisabledContext;
 import org.batfish.grammar.cumulus_ports.CumulusPortsParser.Port_definitionContext;
+import org.batfish.grammar.cumulus_ports.CumulusPortsParser.SpeedContext;
 import org.batfish.representation.cumulus.CumulusNcluConfiguration;
 import org.batfish.representation.cumulus.Interface;
 
@@ -20,6 +23,8 @@ import org.batfish.representation.cumulus.Interface;
  * org.batfish.grammar.cumulus_ports.CumulusPortsCombinedParser cumulus ports file parse tree}.
  */
 public class CumulusPortsConfigurationBuilder extends CumulusPortsParserBaseListener {
+  private static final Pattern SPEED_PATTERN = Pattern.compile("^(\\d+)G$");
+
   private final CumulusNcluConfiguration _config;
   private final CumulusPortsCombinedParser _parser;
   private final Warnings _w;
@@ -81,6 +86,20 @@ public class CumulusPortsConfigurationBuilder extends CumulusPortsParserBaseList
     Interface iface = tryGetInterface(ifaceName, ctx);
     if (iface != null) {
       iface.setDisabled(true);
+    }
+  }
+
+  @Override
+  public void exitSpeed(SpeedContext ctx) {
+    checkState(_currentPort != null);
+    String ifaceName = String.format("swp%d", _currentPort);
+    Interface iface = tryGetInterface(ifaceName, ctx);
+    if (iface != null) {
+      Matcher matcher = SPEED_PATTERN.matcher(ctx.getText());
+      checkState(matcher.matches());
+      int speedGbps = parseInt(matcher.group(1));
+      // setSpeed expects Mbps
+      iface.setSpeed(speedGbps * 1000);
     }
   }
 }

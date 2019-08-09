@@ -13,7 +13,7 @@ cumulus_ports_configuration
 
 port_definition
 :
-  PORT EQUALSIGN disabled NEWLINE
+  PORT EQUALSIGN (disabled|speed) NEWLINE
 ;
 
 disabled
@@ -21,3 +21,7 @@ disabled
   DISABLED
 ;
 
+speed
+:
+  SPEED
+;

@@ -22,6 +22,11 @@ PORT
   F_Digit+
 ;
 
+SPEED
+:
+  F_Digit+ 'G'
+;
+
 COMMENT_LINE
 :
   (
