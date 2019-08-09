@@ -57,6 +57,10 @@ import static org.batfish.datamodel.matchers.InterfaceMatchers.hasVlan;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.isActive;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.isAutoState;
 import static org.batfish.datamodel.matchers.MapMatchers.hasKeys;
+import static org.batfish.datamodel.matchers.NssaSettingsMatchers.hasSuppressType7;
+import static org.batfish.datamodel.matchers.OspfAreaMatchers.hasNssa;
+import static org.batfish.datamodel.matchers.OspfAreaMatchers.hasStub;
+import static org.batfish.datamodel.matchers.OspfProcessMatchers.hasArea;
 import static org.batfish.datamodel.matchers.StaticRouteMatchers.hasTag;
 import static org.batfish.datamodel.matchers.VniSettingsMatchers.hasBumTransportIps;
 import static org.batfish.datamodel.matchers.VniSettingsMatchers.hasBumTransportMethod;
@@ -74,6 +78,7 @@ import static org.batfish.representation.cisco_nxos.CiscoNxosConfiguration.toJav
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureType.OBJECT_GROUP_IP_ADDRESS;
 import static org.batfish.representation.cisco_nxos.OspfInterface.DEFAULT_DEAD_INTERVAL_S;
 import static org.batfish.representation.cisco_nxos.OspfInterface.DEFAULT_HELLO_INTERVAL_S;
+import static org.batfish.representation.cisco_nxos.OspfMaxMetricRouterLsa.DEFAULT_OSPF_MAX_METRIC;
 import static org.batfish.representation.cisco_nxos.OspfNetworkType.BROADCAST;
 import static org.batfish.representation.cisco_nxos.OspfNetworkType.POINT_TO_POINT;
 import static org.batfish.representation.cisco_nxos.OspfProcess.DEFAULT_AUTO_COST_REFERENCE_BANDWIDTH_MBPS;
@@ -92,7 +97,6 @@ import static org.hamcrest.Matchers.emptyString;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasEntry;
 import static org.hamcrest.Matchers.hasKey;
-import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
@@ -120,7 +124,6 @@ import org.apache.commons.lang3.SerializationUtils;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.Warnings;
 import org.batfish.common.WellKnownCommunity;
-import org.batfish.common.bdd.BDDPacket;
 import org.batfish.common.bdd.HeaderSpaceToBDD;
 import org.batfish.common.bdd.IpAccessListToBdd;
 import org.batfish.common.bdd.IpSpaceToBDD;
@@ -139,6 +142,7 @@ import org.batfish.datamodel.CommunityList;
 import org.batfish.datamodel.CommunityListLine;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
+import org.batfish.datamodel.ConnectedRoute;
 import org.batfish.datamodel.DscpType;
 import org.batfish.datamodel.GeneratedRoute;
 import org.batfish.datamodel.HeaderSpace;
@@ -173,9 +177,13 @@ import org.batfish.datamodel.bgp.Ipv4UnicastAddressFamily;
 import org.batfish.datamodel.bgp.RouteDistinguisher;
 import org.batfish.datamodel.bgp.community.StandardCommunity;
 import org.batfish.datamodel.matchers.HsrpGroupMatchers;
+import org.batfish.datamodel.matchers.NssaSettingsMatchers;
+import org.batfish.datamodel.matchers.OspfAreaMatchers;
 import org.batfish.datamodel.matchers.RouteFilterListMatchers;
+import org.batfish.datamodel.matchers.StubSettingsMatchers;
 import org.batfish.datamodel.matchers.VniSettingsMatchers;
 import org.batfish.datamodel.matchers.VrfMatchers;
+import org.batfish.datamodel.ospf.OspfAreaSummary;
 import org.batfish.datamodel.ospf.OspfMetricType;
 import org.batfish.datamodel.routing_policy.Environment.Direction;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
@@ -235,8 +243,6 @@ import org.batfish.representation.cisco_nxos.OspfAreaStub;
 import org.batfish.representation.cisco_nxos.OspfDefaultOriginate;
 import org.batfish.representation.cisco_nxos.OspfInterface;
 import org.batfish.representation.cisco_nxos.OspfMaxMetricRouterLsa;
-import org.batfish.representation.cisco_nxos.OspfMetricAuto;
-import org.batfish.representation.cisco_nxos.OspfMetricManual;
 import org.batfish.representation.cisco_nxos.OspfProcess;
 import org.batfish.representation.cisco_nxos.OspfSummaryAddress;
 import org.batfish.representation.cisco_nxos.PortGroupPortSpec;
@@ -279,13 +285,11 @@ public final class CiscoNxosGrammarTest {
   private static final IpAccessListToBdd ACL_TO_BDD;
   private static final IpSpaceToBDD DST_IP_BDD;
   private static final HeaderSpaceToBDD HS_TO_BDD;
-  static final BDDPacket PKT;
   private static final IpSpaceToBDD SRC_IP_BDD;
 
   private static final String TESTCONFIGS_PREFIX = "org/batfish/grammar/cisco_nxos/testconfigs/";
 
   static {
-    PKT = BDD_TESTBED.getPkt();
     DST_IP_BDD = BDD_TESTBED.getDstIpBdd();
     SRC_IP_BDD = BDD_TESTBED.getSrcIpBdd();
     HS_TO_BDD = BDD_TESTBED.getHsToBdd();
@@ -293,6 +297,14 @@ public final class CiscoNxosGrammarTest {
   }
 
   @Rule public TemporaryFolder _folder = new TemporaryFolder();
+
+  private static @Nonnull OspfExternalRoute.Builder ospfExternalRouteBuilder() {
+    return OspfExternalRoute.builder()
+        .setAdvertiser("dummy")
+        .setArea(0L)
+        .setCostToAdvertiser(0L)
+        .setLsaMetric(0L);
+  }
 
   private static @Nonnull BDD toBDD(AclLineMatchExpr aclLineMatchExpr) {
     return ACL_TO_BDD.toBdd(aclLineMatchExpr);
@@ -2819,6 +2831,358 @@ public final class CiscoNxosGrammarTest {
   }
 
   @Test
+  public void testOspfConversion() throws IOException {
+    String hostname = "nxos_ospf";
+    Configuration c = parseConfig(hostname);
+    org.batfish.datamodel.Vrf defaultVrf = c.getDefaultVrf();
+
+    assertThat(
+        defaultVrf.getOspfProcesses(),
+        hasKeys(
+            "a_auth",
+            "a_auth_m",
+            "a_default_cost",
+            "a_filter_list",
+            "a_nssa",
+            "a_nssa_no_r",
+            "a_nssa_no_s",
+            "a_nssa_rm",
+            "a_r",
+            "a_r_cost",
+            "a_r_not_advertise",
+            "a_stub",
+            "a_stub_no_summary",
+            "a_virtual_link",
+            "auto_cost",
+            "auto_cost_m",
+            "auto_cost_g",
+            "bfd",
+            "dio",
+            "dio_always",
+            "dio_route_map",
+            "dio_always_route_map",
+            "lac",
+            "lac_detail",
+            "mm",
+            "mm_external_lsa",
+            "mm_external_lsa_m",
+            "mm_include_stub",
+            "mm_on_startup",
+            "mm_on_startup_t",
+            "mm_on_startup_w",
+            "mm_on_startup_tw",
+            "mm_summary_lsa",
+            "mm_summary_lsa_m",
+            "network",
+            "pi_d",
+            "r_direct",
+            "r_mp",
+            "r_mp_t",
+            "r_mp_warn",
+            "r_mp_withdraw",
+            "r_mp_withdraw_n",
+            "r_static",
+            "router_id",
+            "sa",
+            "timers",
+            "with_vrf"));
+    // TODO: convert and test "a_auth" - OSPF area authentication
+    // TODO: convert and test "a_auth_m" - OSPF area authentication using message-digest
+    // TODO: convert and test "a_default_cost" - OSPF area default-cost
+    // TODO: convert and test "a_filter_list" - OSPF area input/output filter-list (route-map)
+    {
+      org.batfish.datamodel.ospf.OspfProcess proc = defaultVrf.getOspfProcesses().get("a_nssa");
+      assertThat(proc, hasArea(1L, hasNssa(notNullValue())));
+    }
+    {
+      org.batfish.datamodel.ospf.OspfProcess proc =
+          defaultVrf.getOspfProcesses().get("a_nssa_no_r");
+      assertThat(proc, hasArea(1L, hasNssa(hasSuppressType7(true))));
+    }
+    {
+      org.batfish.datamodel.ospf.OspfProcess proc =
+          defaultVrf.getOspfProcesses().get("a_nssa_no_s");
+      assertThat(proc, hasArea(1L, hasNssa(NssaSettingsMatchers.hasSuppressType3())));
+    }
+    // TODO: convert and test "a_nssa_rm" - OSPF NSSA with route-map
+    // TODO: convert and test "a_r" - OSPF area range
+    // TODO: convert and test "a_r_cost" - OSPF area range-specific cost
+    // TODO: convert and test "a_r_not_advertise" - OSPF area range advertisement suppression
+    {
+      org.batfish.datamodel.ospf.OspfProcess proc = defaultVrf.getOspfProcesses().get("a_stub");
+      assertThat(proc, hasArea(1L, hasStub(notNullValue())));
+    }
+    {
+      org.batfish.datamodel.ospf.OspfProcess proc =
+          defaultVrf.getOspfProcesses().get("a_stub_no_summary");
+      assertThat(proc, hasArea(1L, hasStub(StubSettingsMatchers.hasSuppressType3())));
+    }
+    // TODO: convert and test "a_virtual_link" - OSPF area virtual-link
+    {
+      org.batfish.datamodel.ospf.OspfProcess proc = defaultVrf.getOspfProcesses().get("auto_cost");
+      assertThat(proc.getReferenceBandwidth(), equalTo(1E9D));
+    }
+    {
+      org.batfish.datamodel.ospf.OspfProcess proc =
+          defaultVrf.getOspfProcesses().get("auto_cost_m");
+      assertThat(proc.getReferenceBandwidth(), equalTo(2E9D));
+    }
+    {
+      org.batfish.datamodel.ospf.OspfProcess proc =
+          defaultVrf.getOspfProcesses().get("auto_cost_g");
+      assertThat(proc.getReferenceBandwidth(), equalTo(3E12D));
+    }
+    // TODO: convert and test "bfd" - OSPF bfd
+    {
+      // common routes for default-originate tests
+      org.batfish.datamodel.StaticRoute staticInputRoute =
+          org.batfish.datamodel.StaticRoute.builder()
+              .setAdmin(1)
+              .setNetwork(Prefix.ZERO)
+              .setNextHopInterface(org.batfish.datamodel.Interface.NULL_INTERFACE_NAME)
+              .build();
+      org.batfish.datamodel.GeneratedRoute generatedInputRoute =
+          org.batfish.datamodel.GeneratedRoute.builder()
+              .setNetwork(Prefix.ZERO)
+              .setNextHopInterface(org.batfish.datamodel.Interface.NULL_INTERFACE_NAME)
+              .build();
+      {
+        org.batfish.datamodel.ospf.OspfProcess proc = defaultVrf.getOspfProcesses().get("dio");
+        // should not generate route
+        assertThat(proc.getGeneratedRoutes(), empty());
+        OspfExternalRoute.Builder outputRoute = ospfExternalRouteBuilder().setNetwork(Prefix.ZERO);
+        // accept main-RIB route
+        assertTrue(
+            c.getRoutingPolicies()
+                .get(proc.getExportPolicy())
+                .process(
+                    staticInputRoute,
+                    outputRoute,
+                    Ip.ZERO,
+                    Configuration.DEFAULT_VRF_NAME,
+                    Direction.OUT));
+        assertThat(outputRoute.build().getOspfMetricType(), equalTo(OspfMetricType.E1));
+      }
+      {
+        org.batfish.datamodel.ospf.OspfProcess proc =
+            defaultVrf.getOspfProcesses().get("dio_always");
+        // should have generated route
+        assertThat(proc.getGeneratedRoutes(), contains(allOf(hasPrefix(Prefix.ZERO))));
+        OspfExternalRoute.Builder outputRoute = ospfExternalRouteBuilder().setNetwork(Prefix.ZERO);
+        // reject main-RIB route
+        assertFalse(
+            c.getRoutingPolicies()
+                .get(proc.getExportPolicy())
+                .process(
+                    staticInputRoute,
+                    OspfExternalRoute.builder(),
+                    Ip.ZERO,
+                    Configuration.DEFAULT_VRF_NAME,
+                    Direction.OUT));
+        // accept generated route
+        assertTrue(
+            c.getRoutingPolicies()
+                .get(proc.getExportPolicy())
+                .process(
+                    generatedInputRoute,
+                    outputRoute,
+                    Ip.ZERO,
+                    Configuration.DEFAULT_VRF_NAME,
+                    Direction.OUT));
+        assertThat(outputRoute.build().getOspfMetricType(), equalTo(OspfMetricType.E1));
+      }
+      {
+        org.batfish.datamodel.ospf.OspfProcess proc =
+            defaultVrf.getOspfProcesses().get("dio_route_map");
+        // should not generate route
+        assertThat(proc.getGeneratedRoutes(), empty());
+        OspfExternalRoute.Builder outputRoute = ospfExternalRouteBuilder().setNetwork(Prefix.ZERO);
+        // accept main-RIB route
+        assertTrue(
+            c.getRoutingPolicies()
+                .get(proc.getExportPolicy())
+                .process(
+                    staticInputRoute,
+                    outputRoute,
+                    Ip.ZERO,
+                    Configuration.DEFAULT_VRF_NAME,
+                    Direction.OUT));
+        // assign E2 metric-type from route-map
+        assertThat(outputRoute.build().getOspfMetricType(), equalTo(OspfMetricType.E2));
+      }
+      {
+        org.batfish.datamodel.ospf.OspfProcess proc =
+            defaultVrf.getOspfProcesses().get("dio_always_route_map");
+        // should have generated route
+        assertThat(proc.getGeneratedRoutes(), contains(allOf(hasPrefix(Prefix.ZERO))));
+        OspfExternalRoute.Builder outputRoute = ospfExternalRouteBuilder().setNetwork(Prefix.ZERO);
+        // reject main-RIB route
+        assertFalse(
+            c.getRoutingPolicies()
+                .get(proc.getExportPolicy())
+                .process(
+                    staticInputRoute,
+                    OspfExternalRoute.builder(),
+                    Ip.ZERO,
+                    Configuration.DEFAULT_VRF_NAME,
+                    Direction.OUT));
+        // accept generated route
+        assertTrue(
+            c.getRoutingPolicies()
+                .get(proc.getExportPolicy())
+                .process(
+                    generatedInputRoute,
+                    outputRoute,
+                    Ip.ZERO,
+                    Configuration.DEFAULT_VRF_NAME,
+                    Direction.OUT));
+        // assign E2 metric-type from route-map
+        assertThat(outputRoute.build().getOspfMetricType(), equalTo(OspfMetricType.E2));
+      }
+    }
+    // TODO: convert and test "lac" - OSPF log-adjacency-changes
+    // TODO: convert and test "lac_detail" - OSPF log-adjacency-changes detail
+    {
+      org.batfish.datamodel.ospf.OspfProcess proc = defaultVrf.getOspfProcesses().get("mm");
+      assertThat(proc.getMaxMetricTransitLinks(), equalTo((long) DEFAULT_OSPF_MAX_METRIC));
+    }
+    {
+      org.batfish.datamodel.ospf.OspfProcess proc =
+          defaultVrf.getOspfProcesses().get("mm_external_lsa");
+      assertThat(proc.getMaxMetricTransitLinks(), equalTo((long) DEFAULT_OSPF_MAX_METRIC));
+      assertThat(proc.getMaxMetricExternalNetworks(), equalTo((long) DEFAULT_OSPF_MAX_METRIC));
+    }
+    {
+      org.batfish.datamodel.ospf.OspfProcess proc =
+          defaultVrf.getOspfProcesses().get("mm_external_lsa_m");
+      assertThat(proc.getMaxMetricTransitLinks(), equalTo((long) DEFAULT_OSPF_MAX_METRIC));
+      assertThat(proc.getMaxMetricExternalNetworks(), equalTo(123L));
+    }
+    {
+      org.batfish.datamodel.ospf.OspfProcess proc =
+          defaultVrf.getOspfProcesses().get("mm_include_stub");
+      assertThat(proc.getMaxMetricTransitLinks(), equalTo((long) DEFAULT_OSPF_MAX_METRIC));
+      assertThat(proc.getMaxMetricStubNetworks(), equalTo((long) DEFAULT_OSPF_MAX_METRIC));
+    }
+    {
+      org.batfish.datamodel.ospf.OspfProcess proc =
+          defaultVrf.getOspfProcesses().get("mm_include_stub");
+      assertThat(proc.getMaxMetricTransitLinks(), equalTo((long) DEFAULT_OSPF_MAX_METRIC));
+      assertThat(proc.getMaxMetricStubNetworks(), equalTo((long) DEFAULT_OSPF_MAX_METRIC));
+    }
+    // ignore on-startup settings
+    {
+      org.batfish.datamodel.ospf.OspfProcess proc =
+          defaultVrf.getOspfProcesses().get("mm_summary_lsa");
+      assertThat(proc.getMaxMetricTransitLinks(), equalTo((long) DEFAULT_OSPF_MAX_METRIC));
+      assertThat(proc.getMaxMetricSummaryNetworks(), equalTo((long) DEFAULT_OSPF_MAX_METRIC));
+    }
+    {
+      org.batfish.datamodel.ospf.OspfProcess proc =
+          defaultVrf.getOspfProcesses().get("mm_summary_lsa_m");
+      assertThat(proc.getMaxMetricTransitLinks(), equalTo((long) DEFAULT_OSPF_MAX_METRIC));
+      assertThat(proc.getMaxMetricSummaryNetworks(), equalTo(456L));
+    }
+    {
+      org.batfish.datamodel.ospf.OspfProcess proc = defaultVrf.getOspfProcesses().get("network");
+      assertThat(
+          proc,
+          hasArea(
+              0, OspfAreaMatchers.hasInterfaces(containsInAnyOrder("Ethernet1/2", "Ethernet1/3"))));
+    }
+    {
+      org.batfish.datamodel.ospf.OspfProcess proc = defaultVrf.getOspfProcesses().get("pi_d");
+      assertThat(
+          proc, hasArea(0, OspfAreaMatchers.hasInterfaces(containsInAnyOrder("Ethernet1/1"))));
+      // passivity tested in interfaces section
+    }
+    {
+      org.batfish.datamodel.ospf.OspfProcess proc = defaultVrf.getOspfProcesses().get("r_direct");
+      ConnectedRoute inputRoute = new ConnectedRoute(Prefix.parse("1.2.3.4/32"), "dummy2");
+      OspfExternalRoute.Builder outputRoute =
+          ospfExternalRouteBuilder().setNetwork(Prefix.parse("1.2.3.4/32"));
+      assertTrue(
+          c.getRoutingPolicies()
+              .get(proc.getExportPolicy())
+              .process(
+                  inputRoute, outputRoute, Ip.ZERO, Configuration.DEFAULT_VRF_NAME, Direction.OUT));
+      assertThat(outputRoute.build().getOspfMetricType(), equalTo(OspfMetricType.E1));
+    }
+    // TODO: convert and test OSPF redistribute maximum-prefix
+    {
+      org.batfish.datamodel.ospf.OspfProcess proc = defaultVrf.getOspfProcesses().get("r_static");
+      // can redistribute static default route on NX-OS
+      org.batfish.datamodel.StaticRoute inputRoute =
+          org.batfish.datamodel.StaticRoute.builder()
+              .setAdmin(1)
+              .setNetwork(Prefix.ZERO)
+              .setNextHopInterface("dummy")
+              .build();
+      OspfExternalRoute.Builder outputRoute = ospfExternalRouteBuilder().setNetwork(Prefix.ZERO);
+      assertTrue(
+          c.getRoutingPolicies()
+              .get(proc.getExportPolicy())
+              .process(
+                  inputRoute, outputRoute, Ip.ZERO, Configuration.DEFAULT_VRF_NAME, Direction.OUT));
+      assertThat(outputRoute.build().getOspfMetricType(), equalTo(OspfMetricType.E1));
+    }
+    {
+      org.batfish.datamodel.ospf.OspfProcess proc = defaultVrf.getOspfProcesses().get("sa");
+      Prefix p0 = Prefix.parse("192.168.0.0/24");
+      Prefix p1 = Prefix.create(Ip.parse("192.168.1.0"), Ip.parse("255.255.255.0"));
+      Prefix p2 = Prefix.create(Ip.parse("192.168.2.0"), Ip.parse("255.255.255.0"));
+      Map<Prefix, OspfAreaSummary> summaries = proc.getAreas().get(0L).getSummaries();
+
+      assertThat(summaries, hasKeys(p0, p1, p2));
+      assertTrue(summaries.get(p0).getAdvertised());
+      assertFalse(summaries.get(p1).getAdvertised());
+      assertTrue(summaries.get(p2).getAdvertised());
+      // TODO: convert and test tags
+    }
+    // TODO: convert and test OSPF timers
+    {
+      org.batfish.datamodel.ospf.OspfProcess proc = defaultVrf.getOspfProcesses().get("with_vrf");
+      assertThat(proc.getAreas(), hasKeys(0L));
+      assertThat(c.getVrfs().get("v1").getOspfProcesses(), hasKeys("with_vrf"));
+      org.batfish.datamodel.ospf.OspfProcess vrfProc =
+          c.getVrfs().get("v1").getOspfProcesses().get("with_vrf");
+      assertThat(vrfProc.getAreas(), hasKeys(1L));
+    }
+
+    assertThat(c.getAllInterfaces(), hasKeys("Ethernet1/1", "Ethernet1/2", "Ethernet1/3"));
+    {
+      org.batfish.datamodel.Interface iface = c.getAllInterfaces().get("Ethernet1/1");
+      assertTrue(iface.getOspfEnabled());
+      assertThat(
+          iface.getOspfArea(),
+          equalTo(c.getDefaultVrf().getOspfProcesses().get("pi_d").getAreas().get(0L)));
+      assertThat(iface.getOspfAreaName(), equalTo(0L));
+      assertTrue(iface.getOspfPassive());
+      assertFalse(iface.getOspfPointToPoint());
+    }
+    {
+      org.batfish.datamodel.Interface iface = c.getAllInterfaces().get("Ethernet1/2");
+      assertTrue(iface.getOspfEnabled());
+      assertThat(
+          iface.getOspfArea(),
+          equalTo(c.getDefaultVrf().getOspfProcesses().get("network").getAreas().get(0L)));
+      assertThat(iface.getOspfAreaName(), equalTo(0L));
+      assertFalse(iface.getOspfPassive());
+      assertFalse(iface.getOspfPointToPoint());
+    }
+    {
+      org.batfish.datamodel.Interface iface = c.getAllInterfaces().get("Ethernet1/3");
+      assertTrue(iface.getOspfEnabled());
+      assertThat(
+          iface.getOspfArea(),
+          equalTo(c.getDefaultVrf().getOspfProcesses().get("network").getAreas().get(0L)));
+      assertThat(iface.getOspfAreaName(), equalTo(0L));
+      assertFalse(iface.getOspfPassive());
+      assertTrue(iface.getOspfPointToPoint());
+    }
+  }
+
+  @Test
   public void testOspfExtraction() {
     String hostname = "nxos_ospf";
     CiscoNxosConfiguration vc = parseVendorConfig(hostname);
@@ -2869,6 +3233,7 @@ public final class CiscoNxosGrammarTest {
             "r_mp_withdraw",
             "r_mp_withdraw_n",
             "r_static",
+            "router_id",
             "sa",
             "timers",
             "with_vrf"));
@@ -3020,13 +3385,13 @@ public final class CiscoNxosGrammarTest {
       OspfProcess proc = vc.getOspfProcesses().get("dio_route_map");
       OspfDefaultOriginate defaultOriginate = proc.getDefaultOriginate();
       assertFalse(defaultOriginate.getAlways());
-      assertThat(defaultOriginate.getRouteMap(), equalTo("rm1"));
+      assertThat(defaultOriginate.getRouteMap(), equalTo("rm_e2"));
     }
     {
       OspfProcess proc = vc.getOspfProcesses().get("dio_always_route_map");
       OspfDefaultOriginate defaultOriginate = proc.getDefaultOriginate();
       assertTrue(defaultOriginate.getAlways());
-      assertThat(defaultOriginate.getRouteMap(), equalTo("rm1"));
+      assertThat(defaultOriginate.getRouteMap(), equalTo("rm_e2"));
       assertThat(proc.getMaxMetricRouterLsa(), nullValue());
     }
     // TODO: extract and test log-adjacency-changes
@@ -3040,14 +3405,14 @@ public final class CiscoNxosGrammarTest {
     {
       OspfProcess proc = vc.getOspfProcesses().get("mm_external_lsa");
       OspfMaxMetricRouterLsa mm = proc.getMaxMetricRouterLsa();
-      assertThat(mm.getExternalLsa(), instanceOf(OspfMetricAuto.class));
+      assertThat(mm.getExternalLsa(), equalTo(OspfMaxMetricRouterLsa.DEFAULT_OSPF_MAX_METRIC));
       assertFalse(mm.getIncludeStub());
       assertThat(mm.getSummaryLsa(), nullValue());
     }
     {
       OspfProcess proc = vc.getOspfProcesses().get("mm_external_lsa_m");
       OspfMaxMetricRouterLsa mm = proc.getMaxMetricRouterLsa();
-      assertThat(((OspfMetricManual) mm.getExternalLsa()).getMetric(), equalTo(123));
+      assertThat(mm.getExternalLsa(), equalTo(123));
       assertFalse(mm.getIncludeStub());
       assertThat(mm.getSummaryLsa(), nullValue());
     }
@@ -3064,14 +3429,14 @@ public final class CiscoNxosGrammarTest {
       OspfMaxMetricRouterLsa mm = proc.getMaxMetricRouterLsa();
       assertThat(mm.getExternalLsa(), nullValue());
       assertFalse(mm.getIncludeStub());
-      assertThat(mm.getSummaryLsa(), instanceOf(OspfMetricAuto.class));
+      assertThat(mm.getSummaryLsa(), equalTo(OspfMaxMetricRouterLsa.DEFAULT_OSPF_MAX_METRIC));
     }
     {
       OspfProcess proc = vc.getOspfProcesses().get("mm_summary_lsa_m");
       OspfMaxMetricRouterLsa mm = proc.getMaxMetricRouterLsa();
       assertThat(mm.getExternalLsa(), nullValue());
       assertFalse(mm.getIncludeStub());
-      assertThat(((OspfMetricManual) mm.getSummaryLsa()).getMetric(), equalTo(456));
+      assertThat(mm.getSummaryLsa(), equalTo(456));
     }
     {
       OspfProcess proc = vc.getOspfProcesses().get("network");
@@ -3081,7 +3446,7 @@ public final class CiscoNxosGrammarTest {
               ImmutableMap.of(
                   IpWildcard.ipWithWildcardMask(Ip.parse("192.168.0.0"), Ip.parse("0.0.255.255")),
                   0L,
-                  IpWildcard.create(Prefix.strict("192.168.1.0/24")),
+                  IpWildcard.create(Prefix.strict("172.16.0.0/24")),
                   0L)));
       assertFalse(proc.getPassiveInterfaceDefault());
     }
@@ -3097,6 +3462,11 @@ public final class CiscoNxosGrammarTest {
     {
       OspfProcess proc = vc.getOspfProcesses().get("r_static");
       assertThat(proc.getRedistributeStaticRouteMap(), equalTo("rm1"));
+      assertThat(proc.getRouterId(), nullValue());
+    }
+    {
+      OspfProcess proc = vc.getOspfProcesses().get("router_id");
+      assertThat(proc.getRouterId(), equalTo(Ip.parse("192.0.2.1")));
     }
     {
       OspfProcess proc = vc.getOspfProcesses().get("sa");
@@ -3153,7 +3523,7 @@ public final class CiscoNxosGrammarTest {
       // TODO: extract and test message-digest-key
       assertThat(ospf.getDeadIntervalS(), equalTo(10));
       assertThat(ospf.getHelloIntervalS(), equalTo(20));
-      assertThat(ospf.getProcess(), equalTo("a_auth"));
+      assertThat(ospf.getProcess(), equalTo("pi_d"));
       assertThat(ospf.getArea(), equalTo(0L));
       assertThat(ospf.getNetwork(), nullValue());
     }

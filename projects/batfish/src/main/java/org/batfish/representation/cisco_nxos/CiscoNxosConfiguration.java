@@ -21,15 +21,20 @@ import static org.batfish.representation.cisco_nxos.CiscoNxosInterfaceType.PORT_
 import static org.batfish.representation.cisco_nxos.Interface.BANDWIDTH_CONVERSION_FACTOR;
 import static org.batfish.representation.cisco_nxos.Interface.getDefaultBandwidth;
 import static org.batfish.representation.cisco_nxos.Interface.getDefaultSpeed;
+import static org.batfish.representation.cisco_nxos.OspfMaxMetricRouterLsa.DEFAULT_OSPF_MAX_METRIC;
 
+import com.google.common.base.Predicates;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.ImmutableSortedSet;
+import com.google.common.collect.Maps;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Range;
+import com.google.common.collect.Streams;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
@@ -94,7 +99,10 @@ import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.acl.AclLineMatchExprs;
 import org.batfish.datamodel.bgp.community.StandardCommunity;
 import org.batfish.datamodel.isis.IsisMetricType;
+import org.batfish.datamodel.ospf.NssaSettings;
+import org.batfish.datamodel.ospf.OspfAreaSummary;
 import org.batfish.datamodel.ospf.OspfMetricType;
+import org.batfish.datamodel.ospf.StubSettings;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.routing_policy.expr.AutoAs;
 import org.batfish.datamodel.routing_policy.expr.BooleanExpr;
@@ -130,6 +138,7 @@ import org.batfish.datamodel.routing_policy.expr.NamedPrefixSet;
 import org.batfish.datamodel.routing_policy.expr.Not;
 import org.batfish.datamodel.routing_policy.expr.WithEnvironmentExpr;
 import org.batfish.datamodel.routing_policy.statement.AddCommunity;
+import org.batfish.datamodel.routing_policy.statement.CallStatement;
 import org.batfish.datamodel.routing_policy.statement.If;
 import org.batfish.datamodel.routing_policy.statement.PrependAsPath;
 import org.batfish.datamodel.routing_policy.statement.SetCommunity;
@@ -208,11 +217,22 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
               .build());
 
   public static final String NULL_VRF_NAME = "~NULL_VRF~";
+  private static final double OSPF_REFERENCE_BANDWIDTH_CONVERSION_FACTOR = 1E6D; // bps per Mbps
 
   /** Routing-related constants. */
   private static final int AGGREGATE_ROUTE_ADMIN_COST = 200;
 
   private static final double SPEED_CONVERSION_FACTOR = 1E6D;
+  private static final Statement ROUTE_MAP_PERMIT_STATEMENT =
+      new If(
+          BooleanExprs.CALL_EXPR_CONTEXT,
+          ImmutableList.of(Statements.ReturnTrue.toStaticStatement()),
+          ImmutableList.of(Statements.ExitAccept.toStaticStatement()));
+  private static final Statement ROUTE_MAP_DENY_STATEMENT =
+      new If(
+          BooleanExprs.CALL_EXPR_CONTEXT,
+          ImmutableList.of(Statements.ReturnFalse.toStaticStatement()),
+          ImmutableList.of(Statements.ExitReject.toStaticStatement()));
 
   private static WithEnvironmentExpr bgpRedistributeWithEnvironmentExpr(
       BooleanExpr expr, OriginType originType) {
@@ -259,6 +279,7 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
   }
 
   private transient Configuration _c;
+  private transient Multimap<Entry<String, String>, Long> _implicitOspfAreas;
 
   private @Nullable String _bannerExec;
   private @Nullable String _bannerMotd;
@@ -317,6 +338,37 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
     }
     String suffix = ifaceName.substring(ifacePrefix.length());
     return canonicalPrefix + suffix;
+  }
+
+  private static @Nonnull Ip computeDefaultRouterId(final Configuration c) {
+    Optional<Ip> address =
+        Optional.ofNullable(c.getAllInterfaces().get("loopback0"))
+            .map(org.batfish.datamodel.Interface::getConcreteAddress)
+            .map(ConcreteInterfaceAddress::getIp);
+    if (address.isPresent()) {
+      return address.get();
+    }
+    address =
+        c.getAllInterfaces().keySet().stream()
+            .filter(name -> name.startsWith("loopback"))
+            .sorted()
+            .map(c.getAllInterfaces()::get)
+            .map(org.batfish.datamodel.Interface::getConcreteAddress)
+            .filter(Objects::nonNull)
+            .map(ConcreteInterfaceAddress::getIp)
+            .findFirst();
+    if (address.isPresent()) {
+      return address.get();
+    }
+    address =
+        c.getAllInterfaces().keySet().stream()
+            .sorted()
+            .map(c.getAllInterfaces()::get)
+            .map(org.batfish.datamodel.Interface::getConcreteAddress)
+            .filter(Objects::nonNull)
+            .map(ConcreteInterfaceAddress::getIp)
+            .findFirst();
+    return address.orElse(Ip.ZERO);
   }
 
   private void convertBgp() {
@@ -703,6 +755,22 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
     _ipPrefixLists.forEach(
         (name, ipPrefixList) ->
             _c.getRouteFilterLists().put(name, toRouteFilterList(ipPrefixList)));
+  }
+
+  private void convertOspfProcesses() {
+    _ospfProcesses.forEach(
+        (name, proc) -> {
+          _c.getDefaultVrf().addOspfProcess(name, toOspfProcess(proc));
+          proc.getVrfs()
+              .forEach(
+                  (vrfName, ospfVrf) -> {
+                    org.batfish.datamodel.Vrf vrf = _c.getVrfs().get(vrfName);
+                    if (vrf == null) {
+                      return;
+                    }
+                    vrf.addOspfProcess(name, toOspfProcess(proc, ospfVrf));
+                  });
+        });
   }
 
   private void convertRouteMaps() {
@@ -1144,6 +1212,13 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
       convertHsrp(iface.getHsrp(), newIfaceBuilder);
     }
 
+    // OSPF properties
+    OspfInterface ospf = iface.getOspf();
+    if (ospf != null) {
+      newIfaceBuilder.setOspfPointToPoint(ospf.getNetwork() == OspfNetworkType.POINT_TO_POINT);
+      // TODO: update data model to support explicit hello and dead intervals
+    }
+
     org.batfish.datamodel.Interface newIface = newIfaceBuilder.build();
 
     String vrfName = iface.getVrfMember();
@@ -1417,6 +1492,308 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
   }
 
   /**
+   * Convert a VS {@link DefaultVrfOspfProcess} to a VI {@link
+   * org.batfish.datamodel.ospf.OspfProcess} in the default VRF.
+   */
+  private @Nonnull org.batfish.datamodel.ospf.OspfProcess toOspfProcess(
+      DefaultVrfOspfProcess proc) {
+    Ip routerId = proc.getRouterId() != null ? proc.getRouterId() : computeDefaultRouterId(_c);
+    return toOspfProcessBuilder(proc, proc.getName(), Configuration.DEFAULT_VRF_NAME)
+        .setProcessId(proc.getName())
+        .setRouterId(routerId)
+        .build();
+  }
+
+  /**
+   * Convert a VS {@link OspfVrf} to a VI {@link org.batfish.datamodel.ospf.OspfProcess} in a
+   * non-default VRF using parent information from the containing VS {@link DefaultVrfOspfProcess}.
+   */
+  private @Nonnull org.batfish.datamodel.ospf.OspfProcess toOspfProcess(
+      DefaultVrfOspfProcess proc, OspfVrf ospfVrf) {
+    String processName = proc.getName();
+    Ip routerId =
+        ospfVrf.getRouterId() != null
+            ? ospfVrf.getRouterId()
+            : proc.getRouterId() != null ? proc.getRouterId() : computeDefaultRouterId(_c);
+    return toOspfProcessBuilder(ospfVrf, processName, ospfVrf.getVrf())
+        .setProcessId(processName)
+        .setRouterId(routerId)
+        .build();
+  }
+
+  private @Nonnull org.batfish.datamodel.ospf.OspfProcess.Builder toOspfProcessBuilder(
+      OspfProcess proc, String processName, String vrfName) {
+    org.batfish.datamodel.ospf.OspfProcess.Builder builder =
+        org.batfish.datamodel.ospf.OspfProcess.builder();
+
+    // compute summaries to be used by all VI areas
+    Map<Prefix, OspfAreaSummary> summaries =
+        proc.getSummaryAddresses().entrySet().stream()
+            .collect(
+                ImmutableMap.toImmutableMap(
+                    Entry::getKey,
+                    summaryByPrefix -> toOspfAreaSummary(summaryByPrefix.getValue())));
+
+    // convert areas
+    Multimap<Long, IpWildcard> wildcardsByAreaId =
+        ImmutableMultimap.copyOf(
+            proc.getNetworks().entrySet().stream()
+                .map(e -> Maps.immutableEntry(e.getValue(), e.getKey()))
+                .collect(ImmutableList.toImmutableList()));
+    Stream<OspfArea> implicitAreas =
+        _implicitOspfAreas.get(Maps.immutableEntry(processName, vrfName)).stream()
+            .filter(Predicates.not(proc.getAreas()::containsKey))
+            .map(OspfArea::new);
+    builder
+        .setAreas(
+            Streams.concat(proc.getAreas().values().stream(), implicitAreas)
+                .collect(
+                    ImmutableSortedMap.toImmutableSortedMap(
+                        Comparator.naturalOrder(),
+                        OspfArea::getId,
+                        area ->
+                            toOspfArea(
+                                processName,
+                                vrfName,
+                                proc,
+                                area,
+                                wildcardsByAreaId.get(area.getId()),
+                                summaries))))
+        .setReferenceBandwidth(
+            OSPF_REFERENCE_BANDWIDTH_CONVERSION_FACTOR * proc.getAutoCostReferenceBandwidthMbps());
+
+    // max-metric settings
+    OspfMaxMetricRouterLsa maxMetricSettings = proc.getMaxMetricRouterLsa();
+    if (maxMetricSettings != null) {
+      builder.setMaxMetricTransitLinks((long) DEFAULT_OSPF_MAX_METRIC);
+      Optional.ofNullable(maxMetricSettings.getExternalLsa())
+          .map(Integer::longValue)
+          .ifPresent(builder::setMaxMetricExternalNetworks);
+      builder.setMaxMetricStubNetworks(
+          maxMetricSettings.getIncludeStub() ? (long) DEFAULT_OSPF_MAX_METRIC : null);
+      Optional.ofNullable(maxMetricSettings.getSummaryLsa())
+          .map(Integer::longValue)
+          .ifPresent(builder::setMaxMetricSummaryNetworks);
+    }
+
+    // export policy
+    createOspfExportPolicy(proc, processName, vrfName, builder);
+
+    return builder;
+  }
+
+  private @Nonnull OspfAreaSummary toOspfAreaSummary(OspfSummaryAddress ospfSummaryAddress) {
+    return new OspfAreaSummary(!ospfSummaryAddress.getNotAdvertise(), null);
+  }
+
+  private void createOspfExportPolicy(
+      OspfProcess proc,
+      String processName,
+      String vrfName,
+      org.batfish.datamodel.ospf.OspfProcess.Builder builder) {
+    ImmutableList.Builder<Statement> exportStatementsBuilder = ImmutableList.builder();
+    ImmutableSortedSet.Builder<String> exportPolicySourcesBuilder =
+        ImmutableSortedSet.naturalOrder();
+    OspfDefaultOriginate defaultOriginate = proc.getDefaultOriginate();
+
+    // First try redistributing static routes, which may include default route
+    Optional.ofNullable(proc.getRedistributeStaticRouteMap())
+        .filter(_c.getRoutingPolicies()::containsKey)
+        .ifPresent(
+            routeMapName -> {
+              exportPolicySourcesBuilder.add(routeMapName);
+              exportStatementsBuilder.add(
+                  new If(
+                      new MatchProtocol(RoutingProtocol.STATIC),
+                      ImmutableList.of(new CallStatement(routeMapName))));
+            });
+
+    // Then try orginating default route (either always or from RIB route not covered above)
+    if (defaultOriginate != null) {
+      BooleanExpr matchDefaultNetwork =
+          new MatchPrefixSet(
+              DestinationNetwork.instance(),
+              new ExplicitPrefixSet(new PrefixSpace(PrefixRange.fromPrefix(Prefix.ZERO))));
+      BooleanExpr guard;
+      if (defaultOriginate.getAlways()) {
+        builder.setGeneratedRoutes(
+            ImmutableSortedSet.of(GeneratedRoute.builder().setNetwork(Prefix.ZERO).build()));
+        guard =
+            new Conjunction(
+                ImmutableList.<BooleanExpr>builder()
+                    .add(matchDefaultNetwork)
+                    .add(new MatchProtocol(RoutingProtocol.AGGREGATE))
+                    .build());
+      } else {
+        guard = matchDefaultNetwork;
+      }
+      ImmutableList.Builder<Statement> defaultOriginateStatements = ImmutableList.builder();
+      Optional.ofNullable(defaultOriginate.getRouteMap())
+          .filter(_c.getRoutingPolicies()::containsKey)
+          .ifPresent(
+              defaultOriginateRouteMapName -> {
+                exportPolicySourcesBuilder.add(defaultOriginateRouteMapName);
+                defaultOriginateStatements.add(new CallStatement(defaultOriginateRouteMapName));
+              });
+      defaultOriginateStatements.add(Statements.ExitAccept.toStaticStatement());
+      exportStatementsBuilder.add(new If(guard, defaultOriginateStatements.build()));
+    }
+    // Then try remaining redistribution policies
+    Optional.ofNullable(proc.getRedistributeDirectRouteMap())
+        .filter(_c.getRoutingPolicies()::containsKey)
+        .ifPresent(
+            routeMapName -> {
+              exportPolicySourcesBuilder.add(routeMapName);
+              exportStatementsBuilder.add(
+                  new If(
+                      new MatchProtocol(RoutingProtocol.CONNECTED),
+                      ImmutableList.of(new CallStatement(routeMapName))));
+            });
+    List<Statement> exportInnerStatements = exportStatementsBuilder.build();
+    int defaultRedistributionMetric =
+        proc.getAreas().isEmpty()
+            ? OspfArea.DEFAULT_DEFAULT_COST
+            : proc.getAreas().values().iterator().next().getDefaultCost();
+    if (!proc.getAreas().values().stream()
+        .map(OspfArea::getDefaultCost)
+        .allMatch(Predicates.equalTo(defaultRedistributionMetric))) {
+      _w.unimplemented(
+          String.format(
+              "Unimplemented: OSPF process '%s': non-uniform default-cost across areas",
+              processName));
+      return;
+    }
+    if (exportInnerStatements.isEmpty()) {
+      // nothing to export
+      return;
+    }
+    String exportPolicyName = computeOspfExportPolicyName(processName, vrfName);
+    RoutingPolicy exportPolicy =
+        RoutingPolicy.builder()
+            .setName(exportPolicyName)
+            .setOwner(_c)
+            .setStatements(
+                ImmutableList.<Statement>builder()
+                    .add(new SetOspfMetricType(OspfMetricType.E1))
+                    .add(new SetMetric(new LiteralLong(defaultRedistributionMetric)))
+                    .addAll(exportStatementsBuilder.build())
+                    .add(Statements.ExitReject.toStaticStatement())
+                    .build())
+            .build();
+    builder.setExportPolicy(exportPolicy);
+    builder.setExportPolicySources(exportPolicySourcesBuilder.build());
+    return;
+  }
+
+  private static @Nonnull String computeOspfExportPolicyName(String processName, String vrfName) {
+    return String.format("~OSPF_EXPORT_POLICY~%s~%s~", processName, vrfName);
+  }
+
+  private @Nonnull org.batfish.datamodel.ospf.OspfArea toOspfArea(
+      String processName,
+      String vrfName,
+      OspfProcess proc,
+      OspfArea area,
+      Collection<IpWildcard> wildcards,
+      Map<Prefix, OspfAreaSummary> summaries) {
+    org.batfish.datamodel.ospf.OspfArea.Builder builder =
+        org.batfish.datamodel.ospf.OspfArea.builder().setNumber(area.getId());
+    if (area.getTypeSettings() != null) {
+      area.getTypeSettings()
+          .accept(
+              new OspfAreaTypeSettingsVisitor<Void>() {
+                @Override
+                public Void visitOspfAreaNssa(OspfAreaNssa ospfAreaNssa) {
+                  builder.setNssa(toNssaSettings(ospfAreaNssa));
+                  return null;
+                }
+
+                @Override
+                public Void visitOspfAreaStub(OspfAreaStub ospfAreaStub) {
+                  builder.setStub(toStubSettings(ospfAreaStub));
+                  return null;
+                }
+              });
+    }
+    builder.setInterfaces(computeAreaInterfaces(processName, vrfName, proc, area, wildcards));
+    builder.setSummaries(summaries);
+    return builder.build();
+  }
+
+  private @Nonnull Set<String> computeAreaInterfaces(
+      String processName,
+      String vrfName,
+      OspfProcess proc,
+      OspfArea area,
+      Collection<IpWildcard> wildcards) {
+    if (processName.equals("network")) {
+      assert Boolean.TRUE;
+    }
+    org.batfish.datamodel.Vrf vrf = _c.getVrfs().get(vrfName);
+    if (vrf == null) {
+      return ImmutableSet.of();
+    }
+    ImmutableSet.Builder<String> interfaces = ImmutableSet.builder();
+    long areaId = area.getId();
+    vrf.getInterfaces()
+        .keySet()
+        .forEach(
+            ifaceName -> {
+              Interface iface = _interfaces.get(ifaceName);
+              OspfInterface ospf = iface.getOspf();
+              if (ospf != null && ospf.getArea() != null) {
+                // add to this area if interface is explictly configured to be in it.
+                if (ospf.getArea().equals(areaId) && ospf.getProcess().equals(processName)) {
+                  interfaces.add(ifaceName);
+                  finalizeInterfaceOspfSettings(
+                      ifaceName, areaId, processName, proc.getPassiveInterfaceDefault());
+                }
+              } else {
+                // Otherwise if OSPF area not explicitly configured on interface, add to this area
+                // if interface IP is matched by wildcard.
+                Optional<Ip> ipOpt =
+                    Optional.ofNullable(iface.getAddress())
+                        .map(InterfaceAddressWithAttributes::getAddress)
+                        .filter(ConcreteInterfaceAddress.class::isInstance)
+                        .map(ConcreteInterfaceAddress.class::cast)
+                        .map(ConcreteInterfaceAddress::getIp);
+                if (!ipOpt.isPresent()) {
+                  return;
+                }
+                Ip ip = ipOpt.get();
+                if (wildcards.stream().noneMatch(wildcard -> wildcard.containsIp(ip))) {
+                  return;
+                }
+                interfaces.add(ifaceName);
+                finalizeInterfaceOspfSettings(
+                    ifaceName, areaId, processName, proc.getPassiveInterfaceDefault());
+              }
+            });
+    return interfaces.build();
+  }
+
+  private void finalizeInterfaceOspfSettings(
+      String ifaceName, long areaId, String processName, boolean passiveInterfaceDefault) {
+    org.batfish.datamodel.Interface newIface = _c.getAllInterfaces().get(ifaceName);
+    newIface.setOspfEnabled(true);
+    newIface.setOspfAreaName(areaId);
+    newIface.setOspfProcess(processName);
+    // TODO: support exceptions to passive-interface default
+    newIface.setOspfPassive(passiveInterfaceDefault || newIface.getName().startsWith("loopback"));
+  }
+
+  private @Nonnull NssaSettings toNssaSettings(OspfAreaNssa ospfAreaNssa) {
+    return NssaSettings.builder()
+        .setSuppressType3(ospfAreaNssa.getNoSummary())
+        .setSuppressType7(ospfAreaNssa.getNoRedistribution())
+        .build();
+  }
+
+  private @Nonnull StubSettings toStubSettings(OspfAreaStub ospfAreaStub) {
+    return StubSettings.builder().setSuppressType3(ospfAreaStub.getNoSummary()).build();
+  }
+
+  /**
    * Return an {@link IntegerSpace} of allowed ports if {@code portSpec} is supported, or {@link
    * Optional#empty} if unsupported.
    */
@@ -1455,7 +1832,7 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
     // TODO: support continue entries
     ImmutableList.Builder<Statement> statements = ImmutableList.builder();
     routeMap.getEntries().values().stream().map(this::toStatement).forEach(statements::add);
-    statements.add(Statements.ReturnFalse.toStaticStatement());
+    statements.add(ROUTE_MAP_DENY_STATEMENT);
     // TODO: clean up setting of owner
     return RoutingPolicy.builder()
         .setName(routeMap.getName())
@@ -1477,10 +1854,10 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
     // final action if matched
     LineAction action = entry.getAction();
     if (action == LineAction.PERMIT) {
-      trueStatements.add(Statements.ReturnTrue.toStaticStatement());
+      trueStatements.add(ROUTE_MAP_PERMIT_STATEMENT);
     } else {
       assert action == LineAction.DENY;
-      trueStatements.add(Statements.ReturnFalse.toStaticStatement());
+      trueStatements.add(ROUTE_MAP_DENY_STATEMENT);
     }
     return new If(new Conjunction(conjuncts.build()), trueStatements.build(), ImmutableList.of());
   }
@@ -1724,11 +2101,33 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
     convertIpPrefixLists();
     convertIpCommunityLists();
     convertRouteMaps();
+    computeImplicitOspfAreas();
+    convertOspfProcesses();
     convertBgp();
     convertNves();
 
     markStructures();
     return _c;
+  }
+
+  private void computeImplicitOspfAreas() {
+    ImmutableMultimap.Builder<Entry<String, String>, Long> builder = ImmutableMultimap.builder();
+    _interfaces
+        .values()
+        .forEach(
+            iface -> {
+              String vrf = firstNonNull(iface.getVrfMember(), Configuration.DEFAULT_VRF_NAME);
+              OspfInterface ospf = iface.getOspf();
+              if (ospf == null) {
+                return;
+              }
+              String process = ospf.getProcess();
+              if (process == null) {
+                return;
+              }
+              builder.put(Maps.immutableEntry(process, vrf), ospf.getArea());
+            });
+    _implicitOspfAreas = builder.build();
   }
 
   @Override
