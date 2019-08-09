@@ -1,10 +1,13 @@
 package org.batfish.grammar.cumulus_frr;
 
+import com.google.common.collect.ImmutableList;
+import java.util.Optional;
 import javax.annotation.Nullable;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.Prefix;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Rm_descriptionContext;
+import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Rmm_communityContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.S_routemapContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.S_vrfContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sv_routeContext;
@@ -13,6 +16,7 @@ import org.batfish.representation.cumulus.CumulusNcluConfiguration;
 import org.batfish.representation.cumulus.CumulusStructureType;
 import org.batfish.representation.cumulus.RouteMap;
 import org.batfish.representation.cumulus.RouteMapEntry;
+import org.batfish.representation.cumulus.RouteMapMatchCommunity;
 import org.batfish.representation.cumulus.StaticRoute;
 import org.batfish.representation.cumulus.Vrf;
 
@@ -80,11 +84,20 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
   @Override
   public void exitRm_description(Rm_descriptionContext ctx) {
     _currentRouteMapEntry.setDescription(ctx.route_map_description().getText());
-    super.exitRm_description(ctx);
   }
 
   @Override
   public void exitS_routemap(S_routemapContext ctx) {
     _currentRouteMapEntry = null;
+  }
+
+  @Override
+  public void exitRmm_community(Rmm_communityContext ctx) {
+    ImmutableList.Builder<String> names = ImmutableList.builder();
+    Optional.ofNullable(_currentRouteMapEntry.getMatchCommunity())
+        .ifPresent(old -> names.addAll(old.getNames()));
+    // TODO: check the length of each community name has length in [1, 63]
+    ctx.names.stream().map(nameCtx -> nameCtx.getText()).forEach(names::add);
+    _currentRouteMapEntry.setMatchCommunity(new RouteMapMatchCommunity(names.build()));
   }
 }
