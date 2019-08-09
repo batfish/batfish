@@ -101,8 +101,10 @@ import java.util.SortedSet;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.antlr.v4.runtime.ParserRuleContext;
+import org.antlr.v4.runtime.RuleContext;
 import org.antlr.v4.runtime.Token;
 import org.antlr.v4.runtime.tree.ErrorNode;
+import org.antlr.v4.runtime.tree.ParseTree;
 import org.antlr.v4.runtime.tree.TerminalNode;
 import org.batfish.common.BatfishException;
 import org.batfish.common.Warnings;
@@ -751,6 +753,7 @@ import org.batfish.representation.juniper.TcpNoFlag;
 import org.batfish.representation.juniper.TcpSynFin;
 import org.batfish.representation.juniper.Vlan;
 import org.batfish.representation.juniper.Zone;
+import org.batfish.vendor.StructureType;
 
 public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
 
@@ -772,6 +775,19 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
       Class<T> returnType, ParserRuleContext ctx, U defaultReturnValue) {
     _w.redFlag(convErrorMessage(returnType, ctx));
     return defaultReturnValue;
+  }
+
+  /** Mark the specified structure as defined on each line in the supplied context */
+  private void defineStructure(StructureType type, String name, RuleContext ctx) {
+    /* Recursively process children to find all relevant definition lines for the specified context */
+    for (int i = 0; i < ctx.getChildCount(); i++) {
+      ParseTree child = ctx.getChild(i);
+      if (child instanceof TerminalNode) {
+        _configuration.defineStructure(type, name, getLine(((TerminalNode) child).getSymbol()));
+      } else if (child instanceof RuleContext) {
+        defineStructure(type, name, (RuleContext) child);
+      }
+    }
   }
 
   /** Return original line number for the specified token */
@@ -2069,7 +2085,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
     _currentApplication =
         _currentLogicalSystem.getApplications().computeIfAbsent(name, n -> new BaseApplication());
     _currentApplicationTerm = _currentApplication.getMainTerm();
-    _configuration.defineStructure(APPLICATION, name, ctx);
+    defineStructure(APPLICATION, name, ctx);
   }
 
   @Override
@@ -2077,7 +2093,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
     String name = ctx.name.getText();
     _currentApplicationSet =
         _currentLogicalSystem.getApplicationSets().computeIfAbsent(name, n -> new ApplicationSet());
-    _configuration.defineStructure(APPLICATION_SET, name, ctx);
+    defineStructure(APPLICATION_SET, name, ctx);
   }
 
   @Override
@@ -2189,7 +2205,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
       namedBgpGroups.put(name, namedBgpGroup);
     }
     _currentBgpGroup = namedBgpGroup;
-    _configuration.defineStructure(BGP_GROUP, name, ctx);
+    defineStructure(BGP_GROUP, name, ctx);
   }
 
   @Override
@@ -2235,7 +2251,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
       _currentFilter = new FirewallFilter(name, _currentFirewallFamily);
       filters.put(name, _currentFilter);
     }
-    _configuration.defineStructure(FIREWALL_FILTER, name, ctx);
+    defineStructure(FIREWALL_FILTER, name, ctx);
   }
 
   @Override
@@ -2272,7 +2288,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
             .computeIfAbsent(name, n -> new DhcpRelayServerGroup());
     Ip ip = Ip.parse(ctx.address.getText());
     serverGroup.getServers().add(ip);
-    _configuration.defineStructure(DHCP_RELAY_SERVER_GROUP, name, ctx);
+    defineStructure(DHCP_RELAY_SERVER_GROUP, name, ctx);
   }
 
   @Override
@@ -2288,7 +2304,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
       _currentInterfaceOrRange.setParent(_currentMasterInterface);
       units.put(unitFullName, _currentInterfaceOrRange);
     }
-    _configuration.defineStructure(INTERFACE, unitFullName, ctx);
+    defineStructure(INTERFACE, unitFullName, ctx);
     _configuration.referenceStructure(
         INTERFACE, unitFullName, INTERFACE_SELF_REFERENCE, getLine(ctx.num));
   }
@@ -2376,7 +2392,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
         currentInterface.setParent(_currentLogicalSystem.getGlobalMasterInterface());
         interfaces.put(fullIfaceName, currentInterface);
       }
-      _configuration.defineStructure(INTERFACE, currentInterface.getName(), ctx);
+      defineStructure(INTERFACE, currentInterface.getName(), ctx);
       _configuration.referenceStructure(
           INTERFACE, currentInterface.getName(), INTERFACE_SELF_REFERENCE, getLine(ctx.getStart()));
     }
@@ -2431,7 +2447,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
   public void enterNat_pool(Nat_poolContext ctx) {
     String poolName = ctx.name.getText();
     _currentNatPool = _currentNat.getPools().computeIfAbsent(poolName, p -> new NatPool());
-    _configuration.defineStructure(NAT_POOL, poolName, ctx);
+    defineStructure(NAT_POOL, poolName, ctx);
   }
 
   @Override
@@ -2444,7 +2460,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
     String rulesetName = ctx.name.getText();
     _currentNatRuleSet =
         _currentNat.getRuleSets().computeIfAbsent(rulesetName, k -> new NatRuleSet(rulesetName));
-    _configuration.defineStructure(NAT_RULE_SET, rulesetName, ctx);
+    defineStructure(NAT_RULE_SET, rulesetName, ctx);
   }
 
   @Override
@@ -2597,7 +2613,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
   @Override
   public void exitPo_as_path(Po_as_pathContext ctx) {
     String name = unquote(ctx.name.getText());
-    _configuration.defineStructure(AS_PATH, name, ctx);
+    defineStructure(AS_PATH, name, ctx);
     _currentLogicalSystem
         .getAsPaths()
         .put(name, new org.batfish.representation.juniper.AsPath(unquote(ctx.regex.getText())));
@@ -2606,7 +2622,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
   @Override
   public void enterPo_as_path_group(Po_as_path_groupContext ctx) {
     String name = unquote(ctx.name.getText());
-    _configuration.defineStructure(AS_PATH_GROUP, name, ctx);
+    defineStructure(AS_PATH_GROUP, name, ctx);
     _currentAsPathGroup =
         _currentLogicalSystem.getAsPathGroups().computeIfAbsent(name, AsPathGroup::new);
   }
@@ -2619,7 +2635,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
   @Override
   public void exitPoapg_as_path(Poapg_as_pathContext ctx) {
     String name = unquote(ctx.name.getText());
-    _configuration.defineStructure(AS_PATH_GROUP_AS_PATH, name, ctx);
+    defineStructure(AS_PATH_GROUP_AS_PATH, name, ctx);
     _configuration.referenceStructure(
         AS_PATH_GROUP_AS_PATH,
         name,
@@ -2644,7 +2660,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
     _currentPolicyStatement = policyStatements.computeIfAbsent(name, PolicyStatement::new);
     _currentPsTerm = _currentPolicyStatement.getDefaultTerm();
     _currentPsThens = _currentPsTerm.getThens();
-    _configuration.defineStructure(POLICY_STATEMENT, name, ctx);
+    defineStructure(POLICY_STATEMENT, name, ctx);
   }
 
   @Override
@@ -2652,7 +2668,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
     String name = ctx.name.getText();
     Map<String, PrefixList> prefixLists = _currentLogicalSystem.getPrefixLists();
     _currentPrefixList = prefixLists.computeIfAbsent(name, PrefixList::new);
-    _configuration.defineStructure(PREFIX_LIST, name, ctx);
+    defineStructure(PREFIX_LIST, name, ctx);
   }
 
   @Override
@@ -2805,7 +2821,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
     name = ctx.name.getText();
     _currentRoutingInstance =
         _currentLogicalSystem.getRoutingInstances().computeIfAbsent(name, RoutingInstance::new);
-    _configuration.defineStructure(ROUTING_INSTANCE, name, ctx);
+    defineStructure(ROUTING_INSTANCE, name, ctx);
   }
 
   @Override
@@ -2888,7 +2904,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
   public void enterRo_rib_groups(Ro_rib_groupsContext ctx) {
     String name = unquote(ctx.name.getText());
     _currentRibGroup = _currentLogicalSystem.getRibGroups().computeIfAbsent(name, RibGroup::new);
-    _configuration.defineStructure(RIB_GROUP, name, ctx);
+    defineStructure(RIB_GROUP, name, ctx);
   }
 
   @Override
@@ -2932,7 +2948,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
       _currentNatRule = new NatRule(name);
       currentNatRules.add(_currentNatRule);
     }
-    _configuration.defineStructure(NAT_RULE, name, ctx);
+    defineStructure(NAT_RULE, name, ctx);
   }
 
   @Override
@@ -2948,7 +2964,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
   @Override
   public void enterS_logical_systems(S_logical_systemsContext ctx) {
     String name = unquote(ctx.name.getText());
-    _configuration.defineStructure(JuniperStructureType.LOGICAL_SYSTEM, name, ctx);
+    defineStructure(JuniperStructureType.LOGICAL_SYSTEM, name, ctx);
     setLogicalSystem(_configuration.getLogicalSystems().computeIfAbsent(name, LogicalSystem::new));
   }
 
@@ -2982,8 +2998,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
             .computeIfAbsent(
                 name, n -> new AddressBook(n, _currentLogicalSystem.getGlobalAddressBook()));
     if (!_currentAddressBook.getName().equals(LogicalSystem.GLOBAL_ADDRESS_BOOK_NAME)) {
-      _configuration.defineStructure(
-          JuniperStructureType.ADDRESS_BOOK, _currentAddressBook.getName(), ctx);
+      defineStructure(JuniperStructureType.ADDRESS_BOOK, _currentAddressBook.getName(), ctx);
     }
   }
 
@@ -3187,7 +3202,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
             .getAuthenticationKeyChains()
             .computeIfAbsent(name, n -> new JuniperAuthenticationKeyChain(n, line));
     _currentAuthenticationKeyChain = authenticationkeyChain;
-    _configuration.defineStructure(AUTHENTICATION_KEY_CHAIN, name, ctx);
+    defineStructure(AUTHENTICATION_KEY_CHAIN, name, ctx);
   }
 
   @Override
@@ -3205,7 +3220,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
     String name = ctx.name.getText();
     _currentIkeGateway =
         _currentLogicalSystem.getIkeGateways().computeIfAbsent(name, IkeGateway::new);
-    _configuration.defineStructure(IKE_GATEWAY, name, ctx);
+    defineStructure(IKE_GATEWAY, name, ctx);
   }
 
   @Override
@@ -3213,7 +3228,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
     String name = ctx.name.getText();
     _currentIkePolicy =
         _currentLogicalSystem.getIkePolicies().computeIfAbsent(name, IkePolicy::new);
-    _configuration.defineStructure(IKE_POLICY, name, ctx);
+    defineStructure(IKE_POLICY, name, ctx);
   }
 
   @Override
@@ -3221,7 +3236,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
     String name = ctx.name.getText();
     _currentIkeProposal =
         _currentLogicalSystem.getIkeProposals().computeIfAbsent(name, IkeProposal::new);
-    _configuration.defineStructure(IKE_PROPOSAL, name, ctx);
+    defineStructure(IKE_PROPOSAL, name, ctx);
   }
 
   @Override
@@ -3229,7 +3244,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
     String name = ctx.name.getText();
     _currentIpsecPolicy =
         _currentLogicalSystem.getIpsecPolicies().computeIfAbsent(name, IpsecPolicy::new);
-    _configuration.defineStructure(IPSEC_POLICY, name, ctx);
+    defineStructure(IPSEC_POLICY, name, ctx);
   }
 
   @Override
@@ -3237,7 +3252,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
     String name = ctx.name.getText();
     _currentIpsecProposal =
         _currentLogicalSystem.getIpsecProposals().computeIfAbsent(name, IpsecProposal::new);
-    _configuration.defineStructure(IPSEC_PROPOSAL, name, ctx);
+    defineStructure(IPSEC_PROPOSAL, name, ctx);
   }
 
   @Override
@@ -3477,7 +3492,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
 
   @Override
   public void enterSy_security_profile(Sy_security_profileContext ctx) {
-    _configuration.defineStructure(SECURITY_PROFILE, ctx.name.getText(), ctx);
+    defineStructure(SECURITY_PROFILE, ctx.name.getText(), ctx);
   }
 
   @Override
@@ -3529,7 +3544,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
   public void enterS_vlans_named(S_vlans_namedContext ctx) {
     String name = unquote(ctx.name.getText());
     _currentNamedVlan = _currentLogicalSystem.getNamedVlans().computeIfAbsent(name, Vlan::new);
-    _configuration.defineStructure(VLAN, name, ctx);
+    defineStructure(VLAN, name, ctx);
   }
 
   @Override
