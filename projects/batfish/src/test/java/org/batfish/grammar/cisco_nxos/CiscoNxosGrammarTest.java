@@ -742,6 +742,12 @@ public final class CiscoNxosGrammarTest {
   }
 
   @Test
+  public void testInterfacePbrExtraction() {
+    CiscoNxosConfiguration c = parseVendorConfig("nxos_interface_ip_policy");
+    assertThat(c.getInterfaces().get("Ethernet1/1").getPbrPolicy(), equalTo("PBR_POLICY"));
+  }
+
+  @Test
   public void testInterfaceRangeConversion() throws IOException {
     String hostname = "nxos_interface_range";
     Configuration c = parseConfig(hostname);
