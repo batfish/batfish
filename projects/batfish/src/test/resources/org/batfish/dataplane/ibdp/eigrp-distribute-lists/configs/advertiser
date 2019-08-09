@@ -2,15 +2,20 @@
 hostname advertiser
 !
 access-list 2 permit 1.1.1.1 0.0.0.255
+access-list 2 permit 4.4.4.4 0.0.0.255
 !
 interface GigabitEthernet0/0
+ description to listener
  ip address 2.2.2.2 255.255.255.0
 !
 interface GigabitEthernet1/0
  ip address 1.1.1.1 255.255.255.0
 !
-interface GigabitEthernet2/0
+interface GigabitEthernet3/0
  ip address 3.3.3.3 255.255.255.0
+!
+interface GigabitEthernet4/0
+ ip address 4.4.4.4 255.255.255.0
 !
 router eigrp 1
   redistribute connected metric 1000 100 100 100 1400

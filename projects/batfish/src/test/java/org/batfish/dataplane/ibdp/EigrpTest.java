@@ -31,11 +31,15 @@ public class EigrpTest {
   public void testEigrpDistributeList() throws IOException {
     String advertiser = "advertiser";
     String listener = "listener";
+    String farlistener = "farlistener";
     Batfish batfish =
         BatfishTestUtils.getBatfishFromTestrigText(
             TestrigText.builder()
                 .setConfigurationText(
-                    "org/batfish/dataplane/ibdp/eigrp-distribute-lists", advertiser, listener)
+                    "org/batfish/dataplane/ibdp/eigrp-distribute-lists",
+                    advertiser,
+                    listener,
+                    farlistener)
                 .build(),
             _folder);
     batfish.computeDataPlane();
@@ -43,12 +47,26 @@ public class EigrpTest {
     SortedMap<String, SortedMap<String, Set<AbstractRoute>>> routes =
         IncrementalBdpEngine.getRoutes(dataplane);
 
-    Set<AbstractRoute> listenerRoutes = routes.get(listener).get(DEFAULT_VRF_NAME);
-    // only 1.1.1.0/24 is allowed to be exported to listener and 3.3.3.0/24 is filtered by
-    // distribute list
-    assertThat(listenerRoutes, not(hasItem(hasPrefix(Prefix.parse("3.3.3.0/24")))));
-    assertThat(
-        listenerRoutes,
-        hasItem(allOf(hasPrefix(Prefix.parse("1.1.1.0/24")), hasProtocol(EIGRP_EX))));
+    {
+      Set<AbstractRoute> listenerRoutes = routes.get(listener).get(DEFAULT_VRF_NAME);
+      // 1.1.1.0/24 and 4.4.4.0/24 is allowed to be exported to listener and 3.3.3.0/24 is filtered
+      // by
+      // distribute list
+      assertThat(listenerRoutes, not(hasItem(hasPrefix(Prefix.parse("3.3.3.0/24")))));
+      assertThat(
+          listenerRoutes,
+          hasItem(allOf(hasPrefix(Prefix.parse("1.1.1.0/24")), hasProtocol(EIGRP_EX))));
+      assertThat(
+          listenerRoutes,
+          hasItem(allOf(hasPrefix(Prefix.parse("4.4.4.0/24")), hasProtocol(EIGRP_EX))));
+    }
+    {
+      Set<AbstractRoute> farListenerRoutes = routes.get(farlistener).get(DEFAULT_VRF_NAME);
+      assertThat(farListenerRoutes, not(hasItem(hasPrefix(Prefix.parse("3.3.3.0/24")))));
+      assertThat(farListenerRoutes, not(hasItem(hasPrefix(Prefix.parse("4.4.4.0/24")))));
+      assertThat(
+          farListenerRoutes,
+          hasItem(allOf(hasPrefix(Prefix.parse("1.1.1.0/24")), hasProtocol(EIGRP_EX))));
+    }
   }
 }
