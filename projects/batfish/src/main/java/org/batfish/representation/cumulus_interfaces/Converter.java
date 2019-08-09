@@ -204,6 +204,5 @@ public final class Converter {
   @VisibleForTesting
   static boolean isInterface(Interface iface) {
     return iface.getType() == INTERFACE;
-
   }
 }
