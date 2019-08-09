@@ -77,13 +77,10 @@ public class CumulusPortsConfigurationBuilder extends CumulusPortsParserBaseList
   @Override
   public void exitDisabled(DisabledContext ctx) {
     checkState(_currentPort != null);
-
-    if (ctx.DISABLED() != null) {
-      String ifaceName = String.format("swp%d", _currentPort);
-      Interface iface = tryGetInterface(ifaceName, ctx);
-      if (iface != null) {
-        iface.setDisabled(true);
-      }
+    String ifaceName = String.format("swp%d", _currentPort);
+    Interface iface = tryGetInterface(ifaceName, ctx);
+    if (iface != null) {
+      iface.setDisabled(true);
     }
   }
 }
