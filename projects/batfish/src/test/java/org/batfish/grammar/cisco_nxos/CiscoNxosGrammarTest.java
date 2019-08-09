@@ -145,6 +145,8 @@ import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConnectedRoute;
 import org.batfish.datamodel.DscpType;
+import org.batfish.datamodel.Flow;
+import org.batfish.datamodel.Flow.Builder;
 import org.batfish.datamodel.GeneratedRoute;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.IcmpCode;
@@ -189,6 +191,11 @@ import org.batfish.datamodel.matchers.VniSettingsMatchers;
 import org.batfish.datamodel.matchers.VrfMatchers;
 import org.batfish.datamodel.ospf.OspfAreaSummary;
 import org.batfish.datamodel.ospf.OspfMetricType;
+import org.batfish.datamodel.packet_policy.FibLookup;
+import org.batfish.datamodel.packet_policy.FibLookupOverrideLookupIp;
+import org.batfish.datamodel.packet_policy.FlowEvaluator;
+import org.batfish.datamodel.packet_policy.IngressInterfaceVrf;
+import org.batfish.datamodel.packet_policy.PacketPolicy;
 import org.batfish.datamodel.routing_policy.Environment.Direction;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.routing_policy.expr.CallExpr;
@@ -821,6 +828,46 @@ public final class CiscoNxosGrammarTest {
   public void testInterfacePbrExtraction() {
     CiscoNxosConfiguration c = parseVendorConfig("nxos_interface_ip_policy");
     assertThat(c.getInterfaces().get("Ethernet1/1").getPbrPolicy(), equalTo("PBR_POLICY"));
+  }
+
+  @Test
+  public void testInterfacePbrConversion() throws IOException {
+    String hostname = "nxos_interface_ip_policy";
+    Configuration c = parseConfig(hostname);
+    String policyName = "PBR_POLICY";
+    PacketPolicy policy = c.getPacketPolicies().get(policyName);
+    assertThat(policy, notNullValue());
+    assertThat(c.getAllInterfaces().get("Ethernet1/1").getRoutingPolicyName(), equalTo(policyName));
+    Builder builder =
+        Flow.builder()
+            .setIngressNode(hostname)
+            .setTag("test")
+            .setIngressInterface("eth0")
+            .setSrcIp(Ip.parse("8.8.8.8"))
+            .setSrcPort(22222)
+            .setDstPort(22);
+    Flow acceptedFlow = builder.setDstIp(Ip.parse("1.1.1.100")).build();
+    Flow rejectedFlow = builder.setDstIp(Ip.parse("3.3.3.3")).build();
+    FibLookup regularFibLookup = new FibLookup(IngressInterfaceVrf.instance());
+    // Accepted flow sent to 2.2.2.2
+    assertThat(
+        FlowEvaluator.evaluate(
+                acceptedFlow, "eth0", policy, c.getIpAccessLists(), ImmutableMap.of())
+            .getAction(),
+        equalTo(
+            FibLookupOverrideLookupIp.builder()
+                .setIps(ImmutableList.of(Ip.parse("2.2.2.2")))
+                .setVrfExpr(IngressInterfaceVrf.instance())
+                .setDefaultAction(regularFibLookup)
+                .setRequireConnected(true)
+                .build()));
+
+    // Rejected flow delegated to regular FIB lookup
+    assertThat(
+        FlowEvaluator.evaluate(
+                rejectedFlow, "eth0", policy, c.getIpAccessLists(), ImmutableMap.of())
+            .getAction(),
+        equalTo(regularFibLookup));
   }
 
   @Test
