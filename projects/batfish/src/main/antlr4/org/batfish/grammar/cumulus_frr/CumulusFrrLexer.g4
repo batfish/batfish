@@ -23,6 +23,20 @@ COMMENT_LINE
   ) -> channel ( HIDDEN )
 ;
 
+COMMUNITY
+:
+  'community'
+  // All other instances are followed by keywords or tokens in default mode
+  {
+    switch (lastTokenType()) {
+      case MATCH:
+        pushMode(M_Words);
+        break;
+      default:
+        break;
+    }
+  }
+
 DENY
 :
   'deny'
@@ -76,6 +90,11 @@ ROUTE
 SUBNET_MASK
 :
   F_SubnetMask
+;
+
+MATCH
+:
+  'match'
 ;
 
 NEWLINE
