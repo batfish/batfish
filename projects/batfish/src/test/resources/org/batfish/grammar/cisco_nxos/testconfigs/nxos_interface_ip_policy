@@ -1,0 +1,8 @@
+!RANCID-CONTENT-TYPE: cisco-nx
+!
+hostname nxos_interface_ip_policy
+!
+interface Ethernet1/1
+  ip policy PBR_POLICY
+!
+!
