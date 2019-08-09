@@ -36,6 +36,7 @@ public class VpnConnectionTest {
         equalTo(
             ImmutableList.of(
                 new VpnConnection(
+                    true,
                     "vpn-ba2e34a8",
                     "cgw-fb76ace5",
                     "vgw-81fd279f",
@@ -60,8 +61,7 @@ public class VpnConnectionTest {
                             65401L,
                             Ip.parse("169.254.15.193"),
                             30,
-                            Ip.parse("52.27.166.152"),
-                            null),
+                            Ip.parse("52.27.166.152")),
                         new IpsecTunnel(
                             65301L,
                             Ip.parse("169.254.13.238"),
@@ -82,8 +82,7 @@ public class VpnConnectionTest {
                             65401L,
                             Ip.parse("169.254.13.237"),
                             30,
-                            Ip.parse("52.39.121.126"),
-                            null)),
+                            Ip.parse("52.39.121.126"))),
                     ImmutableList.of(),
                     ImmutableList.of(
                         new VgwTelemetry(5, Ip.parse("52.27.166.152"), "UP", "5 BGP ROUTES"),

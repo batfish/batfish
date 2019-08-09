@@ -1,28 +1,51 @@
 package org.batfish.representation.aws;
 
 import static com.google.common.base.Preconditions.checkArgument;
+import static org.batfish.common.util.IspModelingUtils.installRoutingPolicyAdvertiseStatic;
+import static org.batfish.datamodel.Interface.NULL_INTERFACE_NAME;
+import static org.batfish.representation.aws.Utils.addStaticRoute;
+import static org.batfish.representation.aws.Utils.toStaticRoute;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.ImmutableList;
 import java.io.Serializable;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.common.Warnings;
+import org.batfish.datamodel.BgpProcess;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
-import org.batfish.datamodel.Interface;
+import org.batfish.datamodel.ConfigurationFormat;
+import org.batfish.datamodel.MultipathEquivalentAsPathMatchMode;
+import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.Prefix;
-import org.batfish.datamodel.StaticRoute;
+import org.batfish.datamodel.PrefixSpace;
+import org.batfish.datamodel.RoutingProtocol;
+import org.batfish.datamodel.routing_policy.RoutingPolicy;
+import org.batfish.datamodel.routing_policy.expr.MatchProtocol;
+import org.batfish.datamodel.routing_policy.statement.If;
+import org.batfish.datamodel.routing_policy.statement.Statement;
+import org.batfish.datamodel.routing_policy.statement.Statements;
 
 /** Represents an AWS VPN gateway */
 @JsonIgnoreProperties(ignoreUnknown = true)
 @ParametersAreNonnullByDefault
 final class VpnGateway implements AwsVpcEntity, Serializable {
+
+  static final String VGW_EXPORT_POLICY_NAME = "~vgw~export-policy~";
+  static final String VGW_IMPORT_POLICY_NAME = "~vgw~import-policy~";
+
+  static final Statement ACCEPT_ALL_BGP =
+      new If(
+          new MatchProtocol(RoutingProtocol.BGP),
+          ImmutableList.of(Statements.ExitAccept.toStaticStatement()),
+          ImmutableList.of(Statements.ExitReject.toStaticStatement()));
 
   @JsonIgnoreProperties(ignoreUnknown = true)
   @ParametersAreNonnullByDefault
@@ -79,47 +102,55 @@ final class VpnGateway implements AwsVpcEntity, Serializable {
     return _vpnGatewayId;
   }
 
+  /**
+   * Creates a node for the VPN gateway. Other essential elements of this node are created
+   * elsewhere. During subnet processing, we create links to the subnet and also add static routes
+   * to the subnet. During VPN connection processing, we create BGP processes on the node with the
+   * right policy.
+   */
   Configuration toConfigurationNode(
       AwsConfiguration awsConfiguration, Region region, Warnings warnings) {
     Configuration cfgNode = Utils.newAwsConfiguration(_vpnGatewayId, "aws");
     cfgNode.getVendorFamily().getAws().setRegion(region.getName());
 
-    for (String vpcId : _attachmentVpcIds) {
+    // if this VGW has any BGP-based VPN connections, configure BGP on it
+    boolean doBgp =
+        region.getVpnConnections().values().stream()
+            .filter(conn -> _vpnGatewayId.equals(conn.getVpnGatewayId()))
+            .anyMatch(VpnConnection::isBgpConnection);
 
-      String vgwIfaceName = vpcId;
-      Prefix vpcLink = awsConfiguration.getNextGeneratedLinkSubnet();
-      ConcreteInterfaceAddress vgwIfaceAddress =
-          ConcreteInterfaceAddress.create(vpcLink.getStartIp(), vpcLink.getPrefixLength());
-      Utils.newInterface(vgwIfaceName, cfgNode, vgwIfaceAddress, "To VPC " + vpcId);
+    if (doBgp) {
+      String loopbackBgp = "loopbackBgp";
+      ConcreteInterfaceAddress loopbackBgpAddress =
+          ConcreteInterfaceAddress.create(
+              awsConfiguration.getNextGeneratedLinkSubnet().getStartIp(), Prefix.MAX_PREFIX_LENGTH);
+      Utils.newInterface(loopbackBgp, cfgNode, loopbackBgpAddress, "BGP loopback");
 
-      // add the interface to the vpc router
-      Configuration vpcConfigNode = awsConfiguration.getConfigurationNodes().get(vpcId);
-      String vpcIfaceName = _vpnGatewayId;
-      Interface vpcIface =
-          Interface.builder().setName(vpcIfaceName).setOwner(vpcConfigNode).build();
-      ConcreteInterfaceAddress vpcIfaceAddress =
-          ConcreteInterfaceAddress.create(vpcLink.getEndIp(), vpcLink.getPrefixLength());
-      vpcIface.setAddress(vpcIfaceAddress);
-      Utils.newInterface(
-          vpcIfaceName, vpcConfigNode, vpcIfaceAddress, "To VPN gateway " + _vpnGatewayId);
+      BgpProcess proc =
+          BgpProcess.builder()
+              .setRouterId(loopbackBgpAddress.getIp())
+              .setVrf(cfgNode.getDefaultVrf())
+              .setAdminCostsToVendorDefaults(ConfigurationFormat.AWS)
+              .build();
+      proc.setMultipathEquivalentAsPathMatchMode(MultipathEquivalentAsPathMatchMode.EXACT_PATH);
 
-      // associate this gateway with the vpc
-      region.getVpcs().get(vpcId).setVpnGatewayId(_vpnGatewayId);
-
-      // add a route on the gateway to the vpc
-      Vpc vpc = region.getVpcs().get(vpcId);
-      vpc.getCidrBlockAssociations()
+      PrefixSpace originationSpace = new PrefixSpace();
+      _attachmentVpcIds.stream()
+          .flatMap(vpcId -> region.getVpcs().get(vpcId).getCidrBlockAssociations().stream())
           .forEach(
-              prefix -> {
-                StaticRoute vgwVpcRoute =
-                    StaticRoute.builder()
-                        .setNetwork(prefix)
-                        .setNextHopIp(vpcIfaceAddress.getIp())
-                        .setAdministrativeCost(Route.DEFAULT_STATIC_ROUTE_ADMIN)
-                        .setMetric(Route.DEFAULT_STATIC_ROUTE_COST)
-                        .build();
-                cfgNode.getDefaultVrf().getStaticRoutes().add(vgwVpcRoute);
+              pfx -> {
+                originationSpace.addPrefix(pfx);
+                addStaticRoute(cfgNode, toStaticRoute(pfx, NULL_INTERFACE_NAME));
               });
+
+      installRoutingPolicyAdvertiseStatic(
+          VGW_EXPORT_POLICY_NAME, cfgNode, originationSpace, new NetworkFactory());
+
+      RoutingPolicy.builder()
+          .setName(VGW_IMPORT_POLICY_NAME)
+          .setOwner(cfgNode)
+          .setStatements(Collections.singletonList(ACCEPT_ALL_BGP))
+          .build();
     }
 
     return cfgNode;

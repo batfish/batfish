@@ -112,6 +112,7 @@ public interface AwsVpcEntity {
   String JSON_KEY_VPN_GATEWAY_ID = "VpnGatewayId";
   String JSON_KEY_VPN_GATEWAYS = "VpnGateways";
 
+  String STATE_DELETED = "deleted";
   String STATUS_DELETED = "deleted";
 
   String XML_KEY_ASN = "asn";
