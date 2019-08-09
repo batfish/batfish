@@ -390,8 +390,11 @@ import org.batfish.datamodel.TcpFlagsMatchConditions;
 import org.batfish.datamodel.bgp.RouteDistinguisher;
 import org.batfish.datamodel.bgp.community.ExtendedCommunity;
 import org.batfish.datamodel.bgp.community.StandardCommunity;
+import org.batfish.datamodel.eigrp.ClassicMetric;
 import org.batfish.datamodel.eigrp.EigrpMetric;
+import org.batfish.datamodel.eigrp.EigrpMetricValues;
 import org.batfish.datamodel.eigrp.EigrpProcessMode;
+import org.batfish.datamodel.eigrp.WideMetric;
 import org.batfish.datamodel.isis.IsisInterfaceMode;
 import org.batfish.datamodel.isis.IsisLevel;
 import org.batfish.datamodel.isis.IsisMetricType;
@@ -610,6 +613,7 @@ import org.batfish.grammar.cisco.CiscoParser.Dt_depi_classContext;
 import org.batfish.grammar.cisco.CiscoParser.Dt_l2tp_classContext;
 import org.batfish.grammar.cisco.CiscoParser.Dt_protect_tunnelContext;
 import org.batfish.grammar.cisco.CiscoParser.Ebgp_multihop_bgp_tailContext;
+import org.batfish.grammar.cisco.CiscoParser.Eigrp_metricContext;
 import org.batfish.grammar.cisco.CiscoParser.Else_rp_stanzaContext;
 import org.batfish.grammar.cisco.CiscoParser.Elseif_rp_stanzaContext;
 import org.batfish.grammar.cisco.CiscoParser.Empty_neighbor_block_address_familyContext;
@@ -4078,6 +4082,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       OspfNetwork network = new OspfNetwork(prefix, _currentOspfArea);
       _currentOspfProcess.getNetworks().add(network);
     }
+    iface.setOspfArea(_currentOspfArea);
+    iface.setOspfProcess(_currentOspfProcess.getName());
     _currentOspfInterface = iface.getName();
   }
 
@@ -6115,11 +6121,11 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   @Override
   public void exitIf_delay(If_delayContext ctx) {
-    Double newDelayPs;
+    Long newDelayPs;
     if (ctx.NO() != null) {
       newDelayPs = null;
     } else {
-      newDelayPs = toLong(ctx.DEC()) * 1E7;
+      newDelayPs = toLong(ctx.DEC()) * 10_000_000;
     }
     _currentInterfaces.forEach(i -> i.setDelay(newDelayPs));
   }
@@ -6428,6 +6434,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
           INTERFACE_SUMMARY_ADDRESS_EIGRP_LEAK_MAP,
           ctx.mapname.getStart().getLine());
     }
+    todo(ctx);
   }
 
   @Override
@@ -7829,15 +7836,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       return;
     }
     if (ctx.NO() == null) {
-      EigrpMetric metric =
-          toEigrpMetric(
-              ctx,
-              ctx.bw_kbps,
-              ctx.delay_10us,
-              ctx.reliability,
-              ctx.eff_bw,
-              ctx.mtu,
-              _currentEigrpProcess.getMode());
+      EigrpMetric metric = toEigrpMetric(ctx.metric, _currentEigrpProcess.getMode());
       _currentEigrpProcess.setDefaultMetric(metric);
     } else {
       _currentEigrpProcess.setDefaultMetric(null);
@@ -7916,16 +7915,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     r.getSpecialAttributes().put(EigrpRedistributionPolicy.BGP_AS, as);
 
     if (!ctx.METRIC().isEmpty()) {
-      EigrpMetric metric =
-          toEigrpMetric(
-              ctx,
-              ctx.bw_kbps,
-              ctx.delay_10us,
-              ctx.reliability,
-              ctx.eff_bw,
-              ctx.mtu,
-              _currentEigrpProcess.getMode());
-      r.setMetric(metric);
+      r.setMetric(toEigrpMetricValues(ctx.metric));
     }
 
     if (ctx.map != null) {
@@ -7949,16 +7939,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     _currentEigrpProcess.getRedistributionPolicies().put(sourceProtocol, r);
 
     if (!ctx.METRIC().isEmpty()) {
-      EigrpMetric metric =
-          toEigrpMetric(
-              ctx,
-              ctx.bw_kbps,
-              ctx.delay_10us,
-              ctx.reliability,
-              ctx.eff_bw,
-              ctx.mtu,
-              _currentEigrpProcess.getMode());
-      r.setMetric(metric);
+      r.setMetric(toEigrpMetricValues(ctx.metric));
     }
 
     if (ctx.map != null) {
@@ -7985,16 +7966,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     r.getSpecialAttributes().put(EigrpRedistributionPolicy.EIGRP_AS_NUMBER, asn);
 
     if (!ctx.METRIC().isEmpty()) {
-      EigrpMetric metric =
-          toEigrpMetric(
-              ctx,
-              ctx.bw_kbps,
-              ctx.delay_10us,
-              ctx.reliability,
-              ctx.eff_bw,
-              ctx.mtu,
-              _currentEigrpProcess.getMode());
-      r.setMetric(metric);
+      r.setMetric(toEigrpMetricValues(ctx.metric));
     }
 
     if (ctx.map != null) {
@@ -8035,16 +8007,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     }
 
     if (!ctx.METRIC().isEmpty()) {
-      EigrpMetric metric =
-          toEigrpMetric(
-              ctx,
-              ctx.bw_kbps,
-              ctx.delay_10us,
-              ctx.reliability,
-              ctx.eff_bw,
-              ctx.mtu,
-              _currentEigrpProcess.getMode());
-      r.setMetric(metric);
+      r.setMetric(toEigrpMetricValues(ctx.metric));
     }
 
     if (ctx.map != null) {
@@ -8068,16 +8031,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     _currentEigrpProcess.getRedistributionPolicies().put(sourceProtocol, r);
 
     if (!ctx.METRIC().isEmpty()) {
-      EigrpMetric metric =
-          toEigrpMetric(
-              ctx,
-              ctx.bw_kbps,
-              ctx.delay_10us,
-              ctx.reliability,
-              ctx.eff_bw,
-              ctx.mtu,
-              _currentEigrpProcess.getMode());
-      r.setMetric(metric);
+      r.setMetric(toEigrpMetricValues(ctx.metric));
     }
 
     if (ctx.map != null) {
@@ -8101,16 +8055,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     _currentEigrpProcess.getRedistributionPolicies().put(sourceProtocol, r);
 
     if (!ctx.METRIC().isEmpty()) {
-      EigrpMetric metric =
-          toEigrpMetric(
-              ctx,
-              ctx.bw_kbps,
-              ctx.delay_10us,
-              ctx.reliability,
-              ctx.eff_bw,
-              ctx.mtu,
-              _currentEigrpProcess.getMode());
-      r.setMetric(metric);
+      r.setMetric(toEigrpMetricValues(ctx.metric));
     }
 
     if (ctx.map != null) {
@@ -9991,10 +9936,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   @Override
   public void enterSet_metric_eigrp_rm_stanza(Set_metric_eigrp_rm_stanzaContext ctx) {
-    EigrpMetric metric =
-        toEigrpMetric(
-            // TODO: remove mode from here
-            ctx, ctx.bw, ctx.delay, ctx.reliability, ctx.load, ctx.mtu, EigrpProcessMode.CLASSIC);
+    EigrpMetricValues metric = toEigrpMetricValues(ctx.metric);
     _currentRouteMapClause.addSetLine(new RouteMapSetMetricEigrpLine(metric));
   }
 
@@ -10659,41 +10601,28 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     return new ExplicitAsPathSet(elems);
   }
 
-  @Nullable
-  @SuppressWarnings("unused")
-  private EigrpMetric toEigrpMetric(
-      ParserRuleContext ctx,
-      Token ctxBw,
-      Token ctxDelay,
-      Token ctxReliability,
-      Token ctxEffBw,
-      Token ctxMtu,
-      EigrpProcessMode mode) {
-    EigrpMetric.Builder builder = EigrpMetric.builder();
+  private EigrpMetricValues toEigrpMetricValues(Eigrp_metricContext ctx) {
+    return EigrpMetricValues.builder()
+        .setBandwidth(toLong(ctx.bw_kbps))
+        // Scale to picoseconds
+        .setDelay(toLong(ctx.delay_10us) * 10_000_000)
+        .build();
+  }
 
-    long bandwidthLong = toLong(ctxBw);
-    if (bandwidthLong < 1 || bandwidthLong >= (1L << 32)) {
-      _w.redFlag("EIGRP metric has invalid bandwidth");
-      return null;
-    }
-    double bandwidth = bandwidthLong * 1000.0D;
-    builder.setBandwidth(bandwidth);
-
-    long delayLong = toLong(ctxDelay);
-    if (delayLong < 1 || delayLong >= (1L << 32)) {
-      _w.redFlag("EIGRP metric has invalid delay");
-      return null;
-    }
-    double delay = delayLong * 1E7;
-    builder.setDelay(delay);
-
+  @Nonnull
+  private EigrpMetric toEigrpMetric(Eigrp_metricContext ctx, EigrpProcessMode mode) {
     /*
      * The other three metrics (reliability, load, and MTU) may be non-zero but are only used if
      * the K constants are configured.
      * See https://github.com/batfish/batfish/issues/1946
      */
-    builder.setMode(mode);
-    return builder.build();
+    if (mode == EigrpProcessMode.CLASSIC) {
+      return ClassicMetric.builder().setValues(toEigrpMetricValues(ctx)).build();
+    } else if (mode == EigrpProcessMode.NAMED) {
+      return WideMetric.builder().setValues(toEigrpMetricValues(ctx)).build();
+    } else {
+      throw new IllegalArgumentException("Invalid EIGRP process mode: " + mode);
+    }
   }
 
   private IpsecAuthenticationAlgorithm toIpsecAuthenticationAlgorithm(
