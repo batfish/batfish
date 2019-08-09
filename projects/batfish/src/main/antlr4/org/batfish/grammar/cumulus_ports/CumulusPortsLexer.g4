@@ -17,6 +17,11 @@ EQUALSIGN
 ;
 
 // Other tokens
+BREAKOUT
+:
+  F_Digit+ 'x' F_Digit+ 'G'
+;
+
 PORT
 :
   F_Digit+

@@ -43,6 +43,27 @@ public final class CumulusPortsGrammarTest {
   }
 
   @Test
+  public void testBreakout() {
+    Interface s0 = addInterface("swp1s0", CumulusInterfaceType.PHYSICAL_SUBINTERFACE);
+    Interface s1 = addInterface("swp1s1", CumulusInterfaceType.PHYSICAL_SUBINTERFACE);
+    Interface s2 = addInterface("swp1s2", CumulusInterfaceType.PHYSICAL_SUBINTERFACE);
+    Interface s3 = addInterface("swp1s3", CumulusInterfaceType.PHYSICAL_SUBINTERFACE);
+
+    s0.setSpeed(null);
+    s1.setSpeed(null);
+    s2.setSpeed(null);
+    s3.setSpeed(null);
+
+    parse("1=4x25G\n");
+
+    int speedMbps = 25000;
+    assertThat(s0.getSpeed(), equalTo(speedMbps));
+    assertThat(s1.getSpeed(), equalTo(speedMbps));
+    assertThat(s2.getSpeed(), equalTo(speedMbps));
+    assertThat(s3.getSpeed(), equalTo(speedMbps));
+  }
+
+  @Test
   public void testDisabled() {
     Interface iface = addInterface("swp1", CumulusInterfaceType.PHYSICAL);
     assertFalse(iface.isDisabled());
