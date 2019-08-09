@@ -341,6 +341,7 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
   }
 
   private static @Nonnull Ip computeDefaultRouterId(final Configuration c) {
+    // Algorithm: https://www.cisco.com/c/en/us/td/docs/switches/datacenter/sw/nx-os/tech_note/cisco_nxos_ios_ospf_comparison.html
     Optional<Ip> address =
         Optional.ofNullable(c.getAllInterfaces().get("loopback0"))
             .map(org.batfish.datamodel.Interface::getConcreteAddress)
@@ -1726,9 +1727,6 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
       OspfProcess proc,
       OspfArea area,
       Collection<IpWildcard> wildcards) {
-    if (processName.equals("network")) {
-      assert Boolean.TRUE;
-    }
     org.batfish.datamodel.Vrf vrf = _c.getVrfs().get(vrfName);
     if (vrf == null) {
       return ImmutableSet.of();
