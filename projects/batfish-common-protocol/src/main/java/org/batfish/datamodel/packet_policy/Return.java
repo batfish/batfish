@@ -7,10 +7,8 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.MoreObjects;
 import java.util.Objects;
 import javax.annotation.Nullable;
-import javax.annotation.ParametersAreNonnullByDefault;
 
 /** Return a particular {@link Action} and stop policy evaluation */
-@ParametersAreNonnullByDefault
 public class Return implements Statement {
   private static final String PROP_ACTION = "action";
 
