@@ -43,6 +43,16 @@ public final class CumulusPortsGrammarTest {
   }
 
   @Test
+  public void testComment() {
+    parse("# a \n # b");
+  }
+
+  @Test
+  public void testBlankLine() {
+    parse(" \n \n\n");
+  }
+
+  @Test
   public void testBreakout() {
     Interface s0 = addInterface("swp1s0", CumulusInterfaceType.PHYSICAL_SUBINTERFACE);
     Interface s1 = addInterface("swp1s1", CumulusInterfaceType.PHYSICAL_SUBINTERFACE);

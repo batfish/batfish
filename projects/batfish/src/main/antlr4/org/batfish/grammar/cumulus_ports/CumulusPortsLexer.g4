@@ -17,6 +17,16 @@ EQUALSIGN
 ;
 
 // Other tokens
+BLANK_LINE
+:
+  (
+    F_Whitespace
+  )* F_Newline
+  {lastTokenType() == NEWLINE|| lastTokenType() == -1}?
+
+  F_Newline* -> channel ( HIDDEN )
+;
+
 BREAKOUT
 :
   F_Digit+ 'x' F_Digit+ 'G'
