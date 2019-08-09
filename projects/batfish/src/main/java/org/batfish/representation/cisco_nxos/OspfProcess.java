@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.Map;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.Prefix;
 
@@ -83,6 +84,14 @@ public abstract class OspfProcess implements Serializable {
     _redistributeStaticRouteMap = redistributeStaticRouteMap;
   }
 
+  public @Nullable Ip getRouterId() {
+    return _routerId;
+  }
+
+  public void setRouterId(@Nullable Ip routerId) {
+    _routerId = routerId;
+  }
+
   public @Nonnull Map<Prefix, OspfSummaryAddress> getSummaryAddresses() {
     return _summaryAddresses;
   }
@@ -140,6 +149,7 @@ public abstract class OspfProcess implements Serializable {
   private boolean _passiveInterfaceDefault;
   private @Nullable String _redistributeDirectRouteMap;
   private @Nullable String _redistributeStaticRouteMap;
+  private @Nullable Ip _routerId;
   private final @Nonnull Map<Prefix, OspfSummaryAddress> _summaryAddresses;
   private int _timersLsaArrivalMbps;
   private int _timersLsaGroupPacingS;

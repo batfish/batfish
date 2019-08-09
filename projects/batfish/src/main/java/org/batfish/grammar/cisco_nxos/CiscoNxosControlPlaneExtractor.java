@@ -353,6 +353,7 @@ import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Ro_default_informationCont
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Ro_max_metricContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Ro_networkContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Ro_passive_interfaceContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Ro_router_idContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Ro_summary_addressContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Ro_vrfContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Roa_authenticationContext;
@@ -463,9 +464,6 @@ import org.batfish.representation.cisco_nxos.OspfAreaStub;
 import org.batfish.representation.cisco_nxos.OspfDefaultOriginate;
 import org.batfish.representation.cisco_nxos.OspfInterface;
 import org.batfish.representation.cisco_nxos.OspfMaxMetricRouterLsa;
-import org.batfish.representation.cisco_nxos.OspfMetric;
-import org.batfish.representation.cisco_nxos.OspfMetricAuto;
-import org.batfish.representation.cisco_nxos.OspfMetricManual;
 import org.batfish.representation.cisco_nxos.OspfNetworkType;
 import org.batfish.representation.cisco_nxos.OspfProcess;
 import org.batfish.representation.cisco_nxos.OspfSummaryAddress;
@@ -1410,7 +1408,7 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
 
   @Override
   public void exitRo_max_metric(Ro_max_metricContext ctx) {
-    @Nullable OspfMetric externalLsa = null;
+    @Nullable Integer externalLsa = null;
     if (ctx.external_lsa != null) {
       if (ctx.manual_external_lsa != null) {
         Optional<Integer> externalLsaOrErr =
@@ -1422,12 +1420,12 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
         if (!externalLsaOrErr.isPresent()) {
           return;
         }
-        externalLsa = new OspfMetricManual(externalLsaOrErr.get());
+        externalLsa = externalLsaOrErr.get();
       } else {
-        externalLsa = OspfMetricAuto.instance();
+        externalLsa = OspfMaxMetricRouterLsa.DEFAULT_OSPF_MAX_METRIC;
       }
     }
-    @Nullable OspfMetric summaryLsa = null;
+    @Nullable Integer summaryLsa = null;
     if (ctx.summary_lsa != null) {
       if (ctx.manual_summary_lsa != null) {
         Optional<Integer> summaryLsaOrErr =
@@ -1439,9 +1437,9 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
         if (!summaryLsaOrErr.isPresent()) {
           return;
         }
-        summaryLsa = new OspfMetricManual(summaryLsaOrErr.get());
+        summaryLsa = summaryLsaOrErr.get();
       } else {
-        summaryLsa = OspfMetricAuto.instance();
+        summaryLsa = OspfMaxMetricRouterLsa.DEFAULT_OSPF_MAX_METRIC;
       }
     }
 
@@ -1470,6 +1468,8 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
       assert ctx.prefix != null;
       wildcard = IpWildcard.create(toPrefix(ctx.prefix));
     }
+    long areaId = toLong(ctx.id);
+    _currentOspfProcess.getAreas().computeIfAbsent(areaId, OspfArea::new);
     _currentOspfProcess.getNetworks().put(wildcard, toLong(ctx.id));
   }
 
@@ -1486,6 +1486,11 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
   @Override
   public void exitRor_static(Ror_staticContext ctx) {
     toString(ctx, ctx.rm).ifPresent(_currentOspfProcess::setRedistributeStaticRouteMap);
+  }
+
+  @Override
+  public void exitRo_router_id(Ro_router_idContext ctx) {
+    _currentOspfProcess.setRouterId(toIp(ctx.id));
   }
 
   @Override

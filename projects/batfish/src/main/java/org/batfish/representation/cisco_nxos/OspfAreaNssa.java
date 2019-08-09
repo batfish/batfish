@@ -4,6 +4,11 @@ import javax.annotation.Nullable;
 
 public class OspfAreaNssa implements OspfAreaTypeSettings {
 
+  @Override
+  public <T> T accept(OspfAreaTypeSettingsVisitor<T> visitor) {
+    return visitor.visitOspfAreaNssa(this);
+  }
+
   public boolean getNoRedistribution() {
     return _noRedistribution;
   }

@@ -2,6 +2,11 @@ package org.batfish.representation.cisco_nxos;
 
 public final class OspfAreaStub implements OspfAreaTypeSettings {
 
+  @Override
+  public <T> T accept(OspfAreaTypeSettingsVisitor<T> visitor) {
+    return visitor.visitOspfAreaStub(this);
+  }
+
   public boolean getNoSummary() {
     return _noSummary;
   }
