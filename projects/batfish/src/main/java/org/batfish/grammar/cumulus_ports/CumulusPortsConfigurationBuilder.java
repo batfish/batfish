@@ -10,7 +10,7 @@ import org.antlr.v4.runtime.tree.ErrorNode;
 import org.batfish.common.Warnings;
 import org.batfish.common.Warnings.ParseWarning;
 import org.batfish.grammar.UnrecognizedLineToken;
-import org.batfish.grammar.cumulus_ports.CumulusPortsParser.Port_configContext;
+import org.batfish.grammar.cumulus_ports.CumulusPortsParser.DisabledContext;
 import org.batfish.grammar.cumulus_ports.CumulusPortsParser.Port_definitionContext;
 import org.batfish.representation.cumulus.CumulusNcluConfiguration;
 import org.batfish.representation.cumulus.Interface;
@@ -33,6 +33,16 @@ public class CumulusPortsConfigurationBuilder extends CumulusPortsParserBaseList
     _w = w;
   }
 
+  @Nullable
+  private Interface tryGetInterface(String ifaceName, ParserRuleContext ctx) {
+    Interface iface = _config.getInterfaces().get(ifaceName);
+    if (iface == null) {
+      _w.addWarning(
+          ctx, ctx.getText(), _parser, String.format("interface %s not found", ifaceName));
+    }
+    return iface;
+  }
+
   @Override
   public void visitErrorNode(ErrorNode errorNode) {
     Token token = errorNode.getSymbol();
@@ -52,6 +62,8 @@ public class CumulusPortsConfigurationBuilder extends CumulusPortsParserBaseList
     }
   }
 
+  // Listener methods
+
   @Override
   public void enterPort_definition(Port_definitionContext ctx) {
     _currentPort = parseInt(ctx.PORT().getText());
@@ -63,7 +75,7 @@ public class CumulusPortsConfigurationBuilder extends CumulusPortsParserBaseList
   }
 
   @Override
-  public void exitPort_config(Port_configContext ctx) {
+  public void exitDisabled(DisabledContext ctx) {
     checkState(_currentPort != null);
 
     if (ctx.DISABLED() != null) {
@@ -73,15 +85,5 @@ public class CumulusPortsConfigurationBuilder extends CumulusPortsParserBaseList
         iface.setDisabled(true);
       }
     }
-  }
-
-  @Nullable
-  private Interface tryGetInterface(String ifaceName, ParserRuleContext ctx) {
-    Interface iface = _config.getInterfaces().get(ifaceName);
-    if (iface == null) {
-      _w.addWarning(
-          ctx, ctx.getText(), _parser, String.format("interface %s not found", ifaceName));
-    }
-    return iface;
   }
 }

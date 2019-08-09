@@ -13,10 +13,10 @@ cumulus_ports_configuration
 
 port_definition
 :
-  PORT EQUALSIGN port_config NEWLINE
+  PORT EQUALSIGN disabled NEWLINE
 ;
 
-port_config
+disabled
 :
   DISABLED
 ;
