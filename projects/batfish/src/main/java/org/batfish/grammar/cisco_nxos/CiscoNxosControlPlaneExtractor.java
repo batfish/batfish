@@ -3449,10 +3449,13 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
 
   @Override
   public void exitI_ip_policy(I_ip_policyContext ctx) {
-    String pbrPolicyName = ctx.name.getText();
-    _currentInterfaces.forEach(iface -> iface.setPbrPolicy(pbrPolicyName));
-    _configuration.referenceStructure(
-        ROUTE_MAP, pbrPolicyName, INTERFACE_IP_POLICY, ctx.getStart().getLine());
+    toString(ctx, ctx.name)
+        .ifPresent(
+            pbrPolicyName -> {
+              _currentInterfaces.forEach(iface -> iface.setPbrPolicy(pbrPolicyName));
+              _configuration.referenceStructure(
+                  ROUTE_MAP, pbrPolicyName, INTERFACE_IP_POLICY, ctx.getStart().getLine());
+            });
   }
 
   @Override
