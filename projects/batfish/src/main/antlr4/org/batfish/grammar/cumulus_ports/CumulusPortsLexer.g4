@@ -4,6 +4,24 @@ options {
   superClass = 'org.batfish.grammar.cumulus_ports.parsing.CumulusPortsBaseLexer';
 }
 
+// Keywords
+
+DISABLED
+:
+  'disabled'
+;
+
+EQUALSIGN
+:
+  '='
+;
+
+// Other tokens
+PORT
+:
+  F_Digit+
+;
+
 COMMENT_LINE
 :
   (
@@ -24,7 +42,17 @@ NEWLINE
   F_Newline+
 ;
 
+WS
+:
+  F_Whitespace+ -> channel ( HIDDEN ) // parser never sees tokens on hidden channel
+;
+
 // Fragments
+fragment
+F_Digit
+:
+  [0-9]
+;
 
 fragment
 F_Newline

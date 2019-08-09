@@ -8,7 +8,16 @@ options {
 
 cumulus_ports_configuration
 :
-  EOF
+  port_definition* EOF
 ;
 
+port_definition
+:
+  PORT EQUALSIGN port_config NEWLINE
+;
+
+port_config
+:
+  DISABLED
+;
 
