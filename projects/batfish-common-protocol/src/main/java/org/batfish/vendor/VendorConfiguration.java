@@ -18,6 +18,9 @@ import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
 import org.antlr.v4.runtime.ParserRuleContext;
+import org.antlr.v4.runtime.RuleContext;
+import org.antlr.v4.runtime.tree.ParseTree;
+import org.antlr.v4.runtime.tree.TerminalNode;
 import org.batfish.common.VendorConversionException;
 import org.batfish.common.Warnings;
 import org.batfish.datamodel.Configuration;
@@ -209,14 +212,16 @@ public abstract class VendorConfiguration implements Serializable, GenericConfig
     recordStructure(structureType, name, 0, line);
   }
 
-  /**
-   * Updates structure definitions to include the specified structure {@code name} and {@code
-   * structureType} and initializes the number of referrers. Marks each line of the input
-   * {@link ParserRuleContext} as part of the definition.
-   */
-  public final void defineStructure(StructureType type, String name, ParserRuleContext ctx) {
-    for (int i = ctx.getStart().getLine(); i <= ctx.getStop().getLine(); ++i) {
-      defineStructure(type, name, i);
+  /** Mark the specified structure as defined on each line in the supplied context */
+  public void defineStructure(StructureType type, String name, RuleContext ctx) {
+    /* Recursively process children to find all relevant definition lines for the specified context */
+    for (int i = 0; i < ctx.getChildCount(); i++) {
+      ParseTree child = ctx.getChild(i);
+      if (child instanceof TerminalNode) {
+        defineStructure(type, name, ((TerminalNode) child).getSymbol().getLine());
+      } else if (child instanceof RuleContext) {
+        defineStructure(type, name, (RuleContext) child);
+      }
     }
   }
 

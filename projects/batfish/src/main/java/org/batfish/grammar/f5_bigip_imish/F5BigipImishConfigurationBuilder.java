@@ -5,11 +5,8 @@ import java.util.Objects;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.antlr.v4.runtime.ParserRuleContext;
-import org.antlr.v4.runtime.RuleContext;
 import org.antlr.v4.runtime.Token;
 import org.antlr.v4.runtime.tree.ErrorNode;
-import org.antlr.v4.runtime.tree.ParseTree;
-import org.antlr.v4.runtime.tree.TerminalNode;
 import org.batfish.common.Warnings;
 import org.batfish.common.Warnings.ParseWarning;
 import org.batfish.datamodel.Ip;
@@ -70,7 +67,6 @@ import org.batfish.representation.f5_bigip.RouteMapMatchPrefixList;
 import org.batfish.representation.f5_bigip.RouteMapSetCommunity;
 import org.batfish.representation.f5_bigip.RouteMapSetMetric;
 import org.batfish.representation.f5_bigip.RouteMapSetOrigin;
-import org.batfish.vendor.StructureType;
 
 public class F5BigipImishConfigurationBuilder extends F5BigipImishParserBaseListener {
 
@@ -146,19 +142,6 @@ public class F5BigipImishConfigurationBuilder extends F5BigipImishParserBaseList
     return defaultReturnValue;
   }
 
-  /** Mark the specified structure as defined on each line in the supplied context */
-  private void defineStructure(StructureType type, String name, RuleContext ctx) {
-    /* Recursively process children to find all relevant definition lines for the specified context */
-    for (int i = 0; i < ctx.getChildCount(); i++) {
-      ParseTree child = ctx.getChild(i);
-      if (child instanceof TerminalNode) {
-        _c.defineStructure(type, name, ((TerminalNode) child).getSymbol().getLine());
-      } else if (child instanceof RuleContext) {
-        defineStructure(type, name, (RuleContext) child);
-      }
-    }
-  }
-
   @Override
   public void enterF5_bigip_imish_configuration(F5_bigip_imish_configurationContext ctx) {
     _c.setImish(true);
@@ -191,7 +174,7 @@ public class F5BigipImishConfigurationBuilder extends F5BigipImishParserBaseList
   @Override
   public void enterS_route_map(S_route_mapContext ctx) {
     String name = ctx.name.getText();
-    defineStructure(F5BigipStructureType.ROUTE_MAP, name, ctx);
+    _c.defineStructure(F5BigipStructureType.ROUTE_MAP, name, ctx);
     _currentRouteMapEntry =
         _c.getRouteMaps()
             .computeIfAbsent(name, RouteMap::new)
@@ -205,7 +188,7 @@ public class F5BigipImishConfigurationBuilder extends F5BigipImishParserBaseList
     String name = ctx.localas.getText();
     _currentBgpProcess = _c.getBgpProcesses().computeIfAbsent(name, BgpProcess::new);
     _currentBgpProcess.setLocalAs(toLong(ctx.localas));
-    defineStructure(F5BigipStructureType.BGP_PROCESS, name, ctx);
+    _c.defineStructure(F5BigipStructureType.BGP_PROCESS, name, ctx);
     _c.referenceStructure(
         F5BigipStructureType.BGP_PROCESS,
         name,
@@ -298,7 +281,7 @@ public class F5BigipImishConfigurationBuilder extends F5BigipImishParserBaseList
   public void exitRbn_peer_group(Rbn_peer_groupContext ctx) {
     BgpPeerGroup pg =
         _currentBgpProcess.getPeerGroups().computeIfAbsent(_currentNeighborName, BgpPeerGroup::new);
-    defineStructure(F5BigipStructureType.PEER_GROUP, _currentNeighborName, ctx.parent);
+    _c.defineStructure(F5BigipStructureType.PEER_GROUP, _currentNeighborName, ctx.parent);
     pg.getIpv4AddressFamily().setActivate(true);
     pg.getIpv6AddressFamily().setActivate(true);
   }
@@ -335,7 +318,7 @@ public class F5BigipImishConfigurationBuilder extends F5BigipImishParserBaseList
     if (_currentNeighbor == null) {
       _currentNeighbor =
           _currentBgpProcess.getNeighbors().computeIfAbsent(_currentNeighborName, BgpNeighbor::new);
-      defineStructure(F5BigipStructureType.BGP_NEIGHBOR, _currentNeighborName, ctx.parent);
+      _c.defineStructure(F5BigipStructureType.BGP_NEIGHBOR, _currentNeighborName, ctx.parent);
       _c.referenceStructure(
           F5BigipStructureType.BGP_NEIGHBOR,
           _currentNeighborName,
@@ -365,7 +348,7 @@ public class F5BigipImishConfigurationBuilder extends F5BigipImishParserBaseList
     if (_currentAbstractNeighbor == null) {
       _currentAbstractNeighbor =
           _currentBgpProcess.getNeighbors().computeIfAbsent(_currentNeighborName, BgpNeighbor::new);
-      defineStructure(F5BigipStructureType.BGP_NEIGHBOR, _currentNeighborName, ctx.parent);
+      _c.defineStructure(F5BigipStructureType.BGP_NEIGHBOR, _currentNeighborName, ctx.parent);
       _c.referenceStructure(
           F5BigipStructureType.BGP_NEIGHBOR,
           _currentNeighborName,
@@ -469,7 +452,7 @@ public class F5BigipImishConfigurationBuilder extends F5BigipImishParserBaseList
   public void exitS_access_list(S_access_listContext ctx) {
     String name = ctx.name.getText();
     Prefix prefix = toPrefix(ctx.ip_spec());
-    defineStructure(F5BigipStructureType.ACCESS_LIST, name, ctx);
+    _c.defineStructure(F5BigipStructureType.ACCESS_LIST, name, ctx);
     if (prefix == null) {
       _w.redFlag(
           String.format(
@@ -522,7 +505,7 @@ public class F5BigipImishConfigurationBuilder extends F5BigipImishParserBaseList
         high = le;
       }
     }
-    defineStructure(F5BigipStructureType.PREFIX_LIST, name, ctx);
+    _c.defineStructure(F5BigipStructureType.PREFIX_LIST, name, ctx);
     PrefixListEntry entry = new PrefixListEntry(num);
     entry.setAction(toLineAction(ctx.action));
     entry.setPrefix(prefix);
