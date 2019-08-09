@@ -2,7 +2,7 @@ package org.batfish.grammar.cumulus_frr.parsing;
 
 import static com.google.common.base.Preconditions.checkArgument;
 
-import org.antlr.v4.runtime.Token;
+import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.TokenStream;
 import org.batfish.grammar.BatfishParser;
 
@@ -19,9 +19,9 @@ public abstract class CumulusFrrBaseParser extends BatfishParser {
    * Returns {@code true} iff {@code t}'s text represents a valid vlan VNI number (1-16777215) in
    * base 10.
    */
-  protected static boolean isVniNumber(Token t) {
+  protected static boolean isVniNumber(ParserRuleContext v) {
     try {
-      Integer val = Integer.parseInt(t.getText(), 10);
+      Integer val = Integer.parseInt(v.getText(), 10);
       checkArgument(1 <= val && val <= 0xFFFFFF);
     } catch (IllegalArgumentException e) {
       return false;
