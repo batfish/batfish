@@ -15,6 +15,7 @@ import com.google.common.graph.Network;
 import java.util.Collection;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Queue;
 import java.util.Set;
@@ -370,26 +371,36 @@ final class EigrpRoutingProcess implements RoutingProcess<EigrpTopology, EigrpRo
     }
   }
 
+  /**
+   * Send out internal routes to all neighbors.
+   *
+   * <p>Note: {@code routes} do not have to be filtered, this function filters them based on
+   * per-neighbor export policy
+   */
   private void sendOutInternalRoutes(
-      RibDelta<EigrpInternalRoute> initializationDelta,
-      Map<String, Node> allNodes,
-      NetworkConfigurations nc) {
+      RibDelta<EigrpInternalRoute> routes, Map<String, Node> allNodes, NetworkConfigurations nc) {
     for (EigrpEdge eigrpEdge : _incomingInternalRoutes.keySet()) {
-      sendOutInternalRoutesPerNeighbor(initializationDelta, allNodes, eigrpEdge, nc);
+      sendOutInternalRoutesPerNeighbor(routes, allNodes, eigrpEdge, nc);
     }
   }
 
+  /**
+   * Send out internal routes to a given neighbor.
+   *
+   * <p>Note: {@code routes} do not have to be filtered, this function filters them based on
+   * per-neighbor export policy
+   */
   private void sendOutInternalRoutesPerNeighbor(
-      RibDelta<EigrpInternalRoute> initializationDelta,
+      RibDelta<EigrpInternalRoute> routes,
       Map<String, Node> allNodes,
       EigrpEdge eigrpEdge,
       NetworkConfigurations nc) {
-    EigrpRoutingProcess neighborProc = getNeighborEigrpProcess(allNodes, eigrpEdge, _asn);
-    // TODO: cleanup, this logic is ugly
+    EigrpRoutingProcess neighborProc =
+        getNeighborEigrpProcess(allNodes, eigrpEdge, _asn); // TODO: cleanup, this logic is ugly
     Ip neighborIp = eigrpEdge.getNode1().getInterface(nc).getConcreteAddress().getIp();
     neighborProc.enqueueInternalMessages(
         eigrpEdge.reverse(),
-        initializationDelta
+        routes
             .getActions()
             .filter(ra -> allowedByExportPolicy(eigrpEdge.getNode2(), ra.getRoute()))
             // Approximate split horizon: don't send the route to a neighbor if the neighbor is the
@@ -397,17 +408,28 @@ final class EigrpRoutingProcess implements RoutingProcess<EigrpTopology, EigrpRo
             .filter(ra -> !ra.getRoute().getNextHopIp().equals(neighborIp)));
   }
 
+  /**
+   * Send out internal routes to all neighbors.
+   *
+   * <p>Note: {@code routes} do not have to be filtered, this function filters them based on
+   * per-neighbor export policy
+   */
   private void sendOutExternalRoutes(
-      RibDelta<EigrpExternalRoute> queuedForRedistribution,
-      Map<String, Node> allNodes,
-      NetworkConfigurations nc) {
+      RibDelta<EigrpExternalRoute> routes, Map<String, Node> allNodes, NetworkConfigurations nc) {
     for (EigrpEdge eigrpEdge : _incomingExternalRoutes.keySet()) {
-      sendOutExternalRoutesPerNeighbor(queuedForRedistribution, allNodes, eigrpEdge, nc);
+      sendOutExternalRoutesPerNeighbor(
+          filterExternalRoutes(routes, eigrpEdge), allNodes, eigrpEdge, nc);
     }
   }
 
+  /**
+   * Send out external route advertisements to a single neighbor.
+   *
+   * <p><em>Note</em>: {@code routes} must already be properly transformed and must have gone
+   * through routing policy.
+   */
   private void sendOutExternalRoutesPerNeighbor(
-      RibDelta<EigrpExternalRoute> queuedForRedistribution,
+      RibDelta<EigrpExternalRoute> routes,
       Map<String, Node> allNodes,
       EigrpEdge eigrpEdge,
       NetworkConfigurations nc) {
@@ -416,11 +438,34 @@ final class EigrpRoutingProcess implements RoutingProcess<EigrpTopology, EigrpRo
     Ip neighborIp = eigrpEdge.getNode1().getInterface(nc).getConcreteAddress().getIp();
     neighborProc.enqueueExternalMessages(
         eigrpEdge.reverse(),
-        queuedForRedistribution
+        routes
             .getActions()
             // Approximate split horizon: don't send the route to a neighbor if the neighbor is the
             // next hop IP for the route.
             .filter(ra -> !ra.getRoute().getNextHopIp().equals(neighborIp)));
+  }
+
+  /** Filter (and transform) a RibDelta of external routes to ones allowed by export policy */
+  @Nonnull
+  private RibDelta<EigrpExternalRoute> filterExternalRoutes(
+      RibDelta<EigrpExternalRoute> routes, EigrpEdge eigrpEdge) {
+    // TODO: this is likely inefficient. optimize
+    return RibDelta.<EigrpExternalRoute>builder()
+        .from(
+            routes
+                .getActions()
+                .map(
+                    ra -> {
+                      Optional<EigrpExternalRoute> transformExternalRoute =
+                          filterAndTransformExternalRoute(eigrpEdge.getNode2(), ra.getRoute());
+                      return transformExternalRoute
+                          .map(
+                              eigrpExternalRoute ->
+                                  ra.toBuilder().setRoute(eigrpExternalRoute).build())
+                          .orElse(null);
+                    })
+                .filter(Objects::nonNull))
+        .build();
   }
 
   private void sendOutRoutesToNewEdges(
@@ -432,7 +477,9 @@ final class EigrpRoutingProcess implements RoutingProcess<EigrpTopology, EigrpRo
           edge,
           nc);
       sendOutExternalRoutesPerNeighbor(
-          RibDelta.<EigrpExternalRoute>builder().add(_externalRib.getTypedRoutes()).build(),
+          filterExternalRoutes(
+              RibDelta.<EigrpExternalRoute>builder().add(_externalRib.getTypedRoutes()).build(),
+              edge),
           allNodes,
           edge,
           nc);
@@ -445,6 +492,15 @@ final class EigrpRoutingProcess implements RoutingProcess<EigrpTopology, EigrpRo
     RoutingPolicy exportPolicy = getOwnExportPolicy(neighborConfigId);
     return exportPolicy.process(
         eigrpRoute, eigrpRoute.toBuilder(), _vrfName, _process, Direction.OUT);
+  }
+
+  /** External */
+  private Optional<EigrpExternalRoute> filterAndTransformExternalRoute(
+      EigrpNeighborConfigId neighborConfigId, EigrpRoute route) {
+    RoutingPolicy exportPolicy = getOwnExportPolicy(neighborConfigId);
+    EigrpExternalRoute.Builder builder = (EigrpExternalRoute.Builder) route.toBuilder();
+    boolean allowed = exportPolicy.process(route, builder, null, _vrfName, Direction.OUT);
+    return allowed ? Optional.of(builder.build()) : Optional.empty();
   }
 
   /**
