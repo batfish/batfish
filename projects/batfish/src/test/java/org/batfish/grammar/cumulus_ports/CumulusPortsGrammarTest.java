@@ -1,7 +1,9 @@
 package org.batfish.grammar.cumulus_ports;
 
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.not;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
@@ -17,10 +19,12 @@ import org.junit.Test;
 
 public final class CumulusPortsGrammarTest {
   CumulusNcluConfiguration _config;
+  Warnings _warnings;
 
   @Before
   public void setup() {
     _config = new CumulusNcluConfiguration();
+    _warnings = new Warnings();
   }
 
   private Interface addInterface(String ifaceName, CumulusInterfaceType type) {
@@ -36,9 +40,8 @@ public final class CumulusPortsGrammarTest {
     settings.setThrowOnParserError(true);
     CumulusPortsCombinedParser parser = new CumulusPortsCombinedParser(input, settings, 1, 0);
     Cumulus_ports_configurationContext ctxt = parser.parse();
-    Warnings w = new Warnings();
     CumulusPortsConfigurationBuilder configurationBuilder =
-        new CumulusPortsConfigurationBuilder(_config, parser, w);
+        new CumulusPortsConfigurationBuilder(_config, parser, _warnings);
     new BatfishParseTreeWalker(parser).walk(configurationBuilder, ctxt);
   }
 
@@ -87,5 +90,11 @@ public final class CumulusPortsGrammarTest {
     iface.setSpeed(null);
     parse("1=100G\n");
     assertThat(iface.getSpeed(), equalTo(100000)); // speed is in Mbps
+  }
+
+  @Test
+  public void testMissingInterface() {
+    parse("1=100G\n");
+    assertThat(_warnings.getParseWarnings(), not(empty()));
   }
 }
