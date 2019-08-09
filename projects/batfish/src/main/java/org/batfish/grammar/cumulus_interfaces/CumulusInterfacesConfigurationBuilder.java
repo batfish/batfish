@@ -57,14 +57,11 @@ public final class CumulusInterfacesConfigurationBuilder
     extends CumulusInterfacesParserBaseListener {
   private final CumulusNcluConfiguration _config;
   private final Interfaces _interfaces = new Interfaces();
-  private final CumulusInterfacesCombinedParser _parser;
   private final Warnings _w;
   private Interface _currentIface;
 
-  public CumulusInterfacesConfigurationBuilder(
-      CumulusNcluConfiguration config, CumulusInterfacesCombinedParser parser, Warnings w) {
+  public CumulusInterfacesConfigurationBuilder(CumulusNcluConfiguration config, Warnings w) {
     _config = config;
-    _parser = parser;
     _w = w;
   }
 
