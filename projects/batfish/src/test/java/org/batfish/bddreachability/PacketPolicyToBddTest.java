@@ -26,6 +26,7 @@ import org.batfish.datamodel.acl.MatchHeaderSpace;
 import org.batfish.datamodel.packet_policy.Drop;
 import org.batfish.datamodel.packet_policy.FibLookup;
 import org.batfish.datamodel.packet_policy.If;
+import org.batfish.datamodel.packet_policy.LiteralVrfName;
 import org.batfish.datamodel.packet_policy.PacketMatchExpr;
 import org.batfish.datamodel.packet_policy.PacketPolicy;
 import org.batfish.datamodel.packet_policy.Return;
@@ -71,13 +72,14 @@ public final class PacketPolicyToBddTest {
         PacketPolicyToBdd.evaluate(
             new PacketPolicy(
                 "name",
-                ImmutableList.of(new Return(new FibLookup("vrf"))),
+                ImmutableList.of(new Return(new FibLookup(new LiteralVrfName("vrf")))),
                 new Return(Drop.instance())),
             _ipAccessListToBdd);
     // Everything is looked up in "vrf"
     assertEquals(ZERO, evaluator.getToDrop());
     assertThat(evaluator.getFibLookups(), aMapWithSize(1));
-    assertThat(evaluator.getFibLookups(), hasEntry(new FibLookup("vrf"), IDENTITY));
+    assertThat(
+        evaluator.getFibLookups(), hasEntry(new FibLookup(new LiteralVrfName("vrf")), IDENTITY));
   }
 
   @Test
@@ -91,18 +93,18 @@ public final class PacketPolicyToBddTest {
         new If(
             new PacketMatchExpr(
                 new MatchHeaderSpace(HeaderSpace.builder().setDstIps(dstIps.toIpSpace()).build())),
-            ImmutableList.of(new Return(new FibLookup(vrf1))));
+            ImmutableList.of(new Return(new FibLookup(new LiteralVrfName(vrf1)))));
     If outerIf =
         new If(
             new PacketMatchExpr(
                 new MatchHeaderSpace(
                     HeaderSpace.builder().setDstIps(UniverseIpSpace.INSTANCE).build())),
-            ImmutableList.of(innerIf, new Return(new FibLookup(vrf2))));
+            ImmutableList.of(innerIf, new Return(new FibLookup(new LiteralVrfName(vrf2)))));
     PacketPolicyToBdd evaluator =
         PacketPolicyToBdd.evaluate(
             new PacketPolicy(
                 "name",
-                ImmutableList.of(outerIf, new Return(new FibLookup(vrf3))),
+                ImmutableList.of(outerIf, new Return(new FibLookup(new LiteralVrfName(vrf3)))),
                 new Return(Drop.instance())),
             _ipAccessListToBdd);
 
@@ -113,11 +115,15 @@ public final class PacketPolicyToBddTest {
     assertThat(evaluator.getFibLookups(), aMapWithSize(3));
     // Inner if captures 10.0.0.0/8, vrf 1
     assertThat(
-        evaluator.getFibLookups(), hasEntry(equalTo(new FibLookup(vrf1)), mapsOne(dstIpBdd)));
+        evaluator.getFibLookups(),
+        hasEntry(equalTo(new FibLookup(new LiteralVrfName(vrf1))), mapsOne(dstIpBdd)));
     // Outer if captures everything else, vrf 2
     assertThat(
-        evaluator.getFibLookups(), hasEntry(equalTo(new FibLookup(vrf2)), mapsOne(dstIpBdd.not())));
+        evaluator.getFibLookups(),
+        hasEntry(equalTo(new FibLookup(new LiteralVrfName(vrf2))), mapsOne(dstIpBdd.not())));
     // Last statement captures no packets, but is visited in the evaluation
-    assertThat(evaluator.getFibLookups(), hasEntry(equalTo(new FibLookup(vrf3)), mapsOne(_zero)));
+    assertThat(
+        evaluator.getFibLookups(),
+        hasEntry(equalTo(new FibLookup(new LiteralVrfName(vrf3))), mapsOne(_zero)));
   }
 }
