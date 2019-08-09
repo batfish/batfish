@@ -174,7 +174,10 @@ public final class Converter {
     Vxlan vxlan = new Vxlan(iface.getName());
     vxlan.setId(iface.getVxlanId());
     vxlan.setLocalTunnelip(iface.getVxlanLocalTunnelIp());
-    vxlan.setBridgeAccessVlan(iface.getBridgeSettings().getAccess());
+    InterfaceBridgeSettings bridgeSettings = iface.getBridgeSettings();
+    if (bridgeSettings != null) {
+      vxlan.setBridgeAccessVlan(bridgeSettings.getAccess());
+    }
     return vxlan;
   }
 
