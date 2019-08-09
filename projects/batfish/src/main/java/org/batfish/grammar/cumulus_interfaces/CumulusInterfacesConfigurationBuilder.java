@@ -112,12 +112,7 @@ public final class CumulusInterfacesConfigurationBuilder
 
   @Override
   public void exitI_vrf_table(I_vrf_tableContext ctx) {
-    String tblName = ctx.vrf_table_name().getText();
-    if (tblName.equals("auto")) {
-      _currentIface.setIsVrf();
-    } else {
-      _w.todo(ctx, ctx.vrf_table_name().getStart().getText(), _parser);
-    }
+    _currentIface.setVrfTable(ctx.vrf_table_name().getText());
   }
 
   @Override
@@ -280,9 +275,8 @@ public final class CumulusInterfacesConfigurationBuilder
 
   @Override
   public void exitS_iface(S_ifaceContext ctx) {
-    CumulusStructureType type =
-        _currentIface.getIsVrf() ? CumulusStructureType.VRF : CumulusStructureType.INTERFACE;
-    _config.defineStructure(type, _currentIface.getName(), ctx.getStart().getLine());
+    _config.defineStructure(
+        _currentIface.getType(), _currentIface.getName(), ctx.getStart().getLine());
     _currentIface = null;
   }
 

@@ -297,7 +297,7 @@ public class CumulusInterfacesGrammarTest {
     String input = "iface vrf1\n vrf-table auto\n";
     Interfaces interfaces = parse(input);
     Interface iface = interfaces.getInterfaces().get("vrf1");
-    assertTrue(iface.getIsVrf());
+    assertThat(iface.getVrfTable(), equalTo("auto"));
     // not marked as an interface definition
     assertNull(getDefinedStructureInfo(CumulusStructureType.INTERFACE, "vrf1"));
     assertThat(

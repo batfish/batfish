@@ -8,7 +8,6 @@ import static org.batfish.representation.cumulus_interfaces.Converter.convertVla
 import static org.batfish.representation.cumulus_interfaces.Converter.convertVrf;
 import static org.batfish.representation.cumulus_interfaces.Converter.convertVxlan;
 import static org.batfish.representation.cumulus_interfaces.Converter.getEncapsulationVlan;
-import static org.batfish.representation.cumulus_interfaces.Converter.isBridge;
 import static org.batfish.representation.cumulus_interfaces.Converter.isInterface;
 import static org.batfish.representation.cumulus_interfaces.Converter.isVlan;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -74,19 +73,12 @@ public class ConverterTest {
     VLAN_IFACE.setVlanId(123);
     VLAN_IFACE.setVrf("vrfName");
 
-    VRF_IFACE.setIsVrf();
+    VRF_IFACE.setVrfTable("auto");
     VRF_IFACE.addAddress(ADDR1);
 
     VXLAN_IFACE.setVxlanId(1);
     VXLAN_IFACE.setVxlanLocalTunnelIp(Ip.parse("1.2.3.4"));
     VXLAN_IFACE.createOrGetBridgeSettings().setAccess(2);
-  }
-
-  @Test
-  public void testIsBridge() {
-    assertTrue(isBridge(new Interface(BRIDGE_NAME)));
-    assertFalse(isBridge(new Interface("vni123")));
-    assertFalse(isBridge(new Interface("swp123")));
   }
 
   @Test
@@ -99,13 +91,12 @@ public class ConverterTest {
   @Test
   public void testIsInterface() {
     assertTrue(isInterface(new Interface("swp1")));
-    assertFalse(isInterface(new Interface(BRIDGE_NAME)));
     assertFalse(isInterface(new Interface("vlan123")));
 
     // vrf
     {
       Interface swp1 = new Interface("swp1");
-      swp1.setIsVrf();
+      swp1.setVrfTable("auto");
       assertFalse(isInterface(swp1));
     }
 

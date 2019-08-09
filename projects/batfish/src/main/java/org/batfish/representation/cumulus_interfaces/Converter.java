@@ -3,11 +3,10 @@ package org.batfish.representation.cumulus_interfaces;
 import static com.google.common.base.MoreObjects.firstNonNull;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.collect.ImmutableMap.toImmutableMap;
-import static org.batfish.representation.cumulus_interfaces.Converter.VsModelType.BRIDGE;
-import static org.batfish.representation.cumulus_interfaces.Converter.VsModelType.INTERFACE;
-import static org.batfish.representation.cumulus_interfaces.Converter.VsModelType.VLAN;
-import static org.batfish.representation.cumulus_interfaces.Converter.VsModelType.VRF;
-import static org.batfish.representation.cumulus_interfaces.Converter.VsModelType.VXLAN;
+import static org.batfish.representation.cumulus.CumulusStructureType.INTERFACE;
+import static org.batfish.representation.cumulus.CumulusStructureType.VLAN;
+import static org.batfish.representation.cumulus.CumulusStructureType.VRF;
+import static org.batfish.representation.cumulus.CumulusStructureType.VXLAN;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
@@ -29,15 +28,6 @@ import org.batfish.representation.cumulus.Vxlan;
 
 /** Converter from cumulus interfaces file model to Cumulus VS model. */
 public final class Converter {
-  /** The VS model type of an interfaces file interface. */
-  enum VsModelType {
-    BRIDGE,
-    INTERFACE,
-    VRF,
-    VLAN,
-    VXLAN
-  }
-
   @VisibleForTesting static final String BRIDGE_NAME = "bridge";
 
   private static final Pattern ENCAPSULATION_VLAN_PATTERN = Pattern.compile("^.*\\.([0-9]+)$");
@@ -75,6 +65,8 @@ public final class Converter {
   public Map<String, org.batfish.representation.cumulus.Interface> convertInterfaces() {
     return _interfaces.getInterfaces().values().stream()
         .filter(Converter::isInterface)
+        // interface bridge is handled by convertBridge
+        .filter(iface -> !iface.getName().equals(BRIDGE_NAME))
         .map(this::convertInterface)
         .collect(
             toImmutableMap(
@@ -92,7 +84,7 @@ public final class Converter {
   /** Get Cumulus VS model {@link Vrf Vrfs}. */
   public Map<String, Vrf> convertVrfs() {
     return _interfaces.getInterfaces().values().stream()
-        .filter(Interface::getIsVrf)
+        .filter(Converter::isVrf)
         .map(Converter::convertVrf)
         .collect(toImmutableMap(Vrf::getName, Function.identity()));
   }
@@ -144,6 +136,7 @@ public final class Converter {
   @VisibleForTesting
   org.batfish.representation.cumulus.Interface convertInterface(Interface iface) {
     checkArgument(isInterface(iface), "input is not an interface");
+    checkArgument(!iface.getName().equals(BRIDGE_NAME), "interface bridge is handled separately");
     String name = iface.getName();
     org.batfish.representation.cumulus.Interface vsIface =
         new org.batfish.representation.cumulus.Interface(
@@ -174,7 +167,7 @@ public final class Converter {
 
   @VisibleForTesting
   static Vrf convertVrf(Interface iface) {
-    checkArgument(iface.getIsVrf(), "not a vrf");
+    checkArgument(isVrf(iface), "not a vrf");
     Vrf vrf = new Vrf(iface.getName());
     vrf.getAddresses().addAll(firstNonNull(iface.getAddresses(), ImmutableList.of()));
     return vrf;
@@ -194,37 +187,23 @@ public final class Converter {
   }
 
   @VisibleForTesting
-  static VsModelType getVsModelType(Interface iface) {
-    if (iface.getName().equals(BRIDGE_NAME)) {
-      return BRIDGE;
-    } else if (VLAN_INTERFACE_PATTERN.matcher(iface.getName()).matches()) {
-      return VLAN;
-    } else if (iface.getVxlanId() != null) {
-      return VXLAN;
-    } else if (iface.getIsVrf()) {
-      return VRF;
-    } else {
-      return INTERFACE;
-    }
-  }
-
-  @VisibleForTesting
-  static boolean isBridge(Interface iface) {
-    return getVsModelType(iface) == BRIDGE;
-  }
-
-  @VisibleForTesting
   static boolean isVlan(Interface iface) {
-    return getVsModelType(iface) == VLAN;
+    return iface.getType() == VLAN;
   }
 
   @VisibleForTesting
   static boolean isVxlan(Interface iface) {
-    return getVsModelType(iface) == VXLAN;
+    return iface.getType() == VXLAN;
+  }
+
+  @VisibleForTesting
+  static boolean isVrf(Interface iface) {
+    return iface.getType() == VRF;
   }
 
   @VisibleForTesting
   static boolean isInterface(Interface iface) {
-    return getVsModelType(iface) == INTERFACE;
+    return iface.getType() == INTERFACE;
+
   }
 }
