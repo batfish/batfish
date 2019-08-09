@@ -760,19 +760,21 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
   }
 
   private void convertOspfProcesses() {
-    _ospfProcesses.forEach(
-        (name, proc) -> {
-          _c.getDefaultVrf().addOspfProcess(name, toOspfProcess(proc));
-          proc.getVrfs()
-              .forEach(
-                  (vrfName, ospfVrf) -> {
-                    org.batfish.datamodel.Vrf vrf = _c.getVrfs().get(vrfName);
-                    if (vrf == null) {
-                      return;
-                    }
-                    vrf.addOspfProcess(name, toOspfProcess(proc, ospfVrf));
-                  });
-        });
+    _ospfProcesses
+        .values()
+        .forEach(
+            proc -> {
+              _c.getDefaultVrf().addOspfProcess(toOspfProcess(proc));
+              proc.getVrfs()
+                  .forEach(
+                      (vrfName, ospfVrf) -> {
+                        org.batfish.datamodel.Vrf vrf = _c.getVrfs().get(vrfName);
+                        if (vrf == null) {
+                          return;
+                        }
+                        vrf.addOspfProcess(toOspfProcess(proc, ospfVrf));
+                      });
+            });
   }
 
   private void convertRouteMaps() {
