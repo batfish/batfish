@@ -5,7 +5,6 @@ import static com.google.common.base.Preconditions.checkArgument;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.MoreObjects;
-import java.util.Objects;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
@@ -15,24 +14,24 @@ import javax.annotation.Nullable;
  */
 public final class FibLookup implements Action {
 
-  private static final String PROP_VRF_NAME = "vrfName";
+  private static final String PROP_VRF_EXPR = "vrfExpr";
 
-  @Nonnull private final String _vrfName;
+  @Nonnull private final VrfExpr _vrfExpr;
 
-  public FibLookup(String vrfName) {
-    _vrfName = vrfName;
+  public FibLookup(VrfExpr vrfExpr) {
+    _vrfExpr = vrfExpr;
   }
 
   @JsonCreator
-  private static FibLookup jsonCreator(@Nullable @JsonProperty(PROP_VRF_NAME) String vrfName) {
-    checkArgument(vrfName != null, "Missing %s", PROP_VRF_NAME);
+  private static FibLookup jsonCreator(@Nullable @JsonProperty(PROP_VRF_EXPR) VrfExpr vrfName) {
+    checkArgument(vrfName != null, "Missing %s", PROP_VRF_EXPR);
     return new FibLookup(vrfName);
   }
 
-  @JsonProperty(PROP_VRF_NAME)
+  @JsonProperty(PROP_VRF_EXPR)
   @Nonnull
-  public String getVrfName() {
-    return _vrfName;
+  public VrfExpr getVrfExpr() {
+    return _vrfExpr;
   }
 
   @Override
@@ -41,24 +40,24 @@ public final class FibLookup implements Action {
   }
 
   @Override
-  public boolean equals(@Nullable Object o) {
+  public boolean equals(Object o) {
     if (this == o) {
       return true;
     }
-    if (o == null || getClass() != o.getClass()) {
+    if (!(o instanceof FibLookup)) {
       return false;
     }
     FibLookup fibLookup = (FibLookup) o;
-    return Objects.equals(getVrfName(), fibLookup.getVrfName());
+    return _vrfExpr.equals(fibLookup._vrfExpr);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(getVrfName());
+    return _vrfExpr.hashCode();
   }
 
   @Override
   public String toString() {
-    return MoreObjects.toStringHelper(this).add("vrfName", _vrfName).toString();
+    return MoreObjects.toStringHelper(FibLookup.class).add(PROP_VRF_EXPR, _vrfExpr).toString();
   }
 }
