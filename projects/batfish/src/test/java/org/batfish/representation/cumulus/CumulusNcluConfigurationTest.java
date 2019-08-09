@@ -25,7 +25,8 @@ public class CumulusNcluConfigurationTest {
   @Test
   public void testToInterface_sub_active() {
     Interface vsIface = new Interface("swp1s1", CumulusInterfaceType.PHYSICAL, null, 1);
-    org.batfish.datamodel.Interface viIface = new CumulusNcluConfiguration().toInterface(vsIface, "swp1");
+    org.batfish.datamodel.Interface viIface =
+        new CumulusNcluConfiguration().toInterface(vsIface, "swp1");
     assertTrue(viIface.getActive());
   }
 
@@ -33,7 +34,8 @@ public class CumulusNcluConfigurationTest {
   public void testToInterface_sub_inactive() {
     Interface vsIface = new Interface("swp1s1", CumulusInterfaceType.PHYSICAL, null, 1);
     vsIface.setDisabled(true);
-    org.batfish.datamodel.Interface viIface = new CumulusNcluConfiguration().toInterface(vsIface, "swp1");
+    org.batfish.datamodel.Interface viIface =
+        new CumulusNcluConfiguration().toInterface(vsIface, "swp1");
     assertFalse(viIface.getActive());
   }
 }
