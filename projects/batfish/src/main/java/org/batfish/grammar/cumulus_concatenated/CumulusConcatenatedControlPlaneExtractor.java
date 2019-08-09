@@ -109,7 +109,8 @@ public class CumulusConcatenatedControlPlaneExtractor implements ControlPlaneExt
     Cumulus_ports_configurationContext ctxt = parser.parse();
     checkErrors(parser);
     ParseTreeWalker walker = new BatfishParseTreeWalker(parser);
-    CumulusPortsConfigurationBuilder cb = new CumulusPortsConfigurationBuilder(_configuration, _w);
+    CumulusPortsConfigurationBuilder cb =
+        new CumulusPortsConfigurationBuilder(_configuration, parser, _w);
     walker.walk(cb, ctxt);
     mergeParseTree(ctxt, parser);
 
