@@ -108,6 +108,7 @@ public final class Interface {
     return _description;
   }
 
+  @Nullable
   public String getVrfTable() {
     return _vrfTable;
   }
