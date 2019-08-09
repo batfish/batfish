@@ -36,6 +36,7 @@ COMMUNITY
         break;
     }
   }
+;
 
 DENY
 :
