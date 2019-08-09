@@ -35,7 +35,6 @@ public final class Converter {
       Pattern.compile("^(swp[0-9]+(s[0-9])?)|(eth[0-9]+)$");
   private static final Pattern PHYSICAL_SUBINTERFACE_PATTERN =
       Pattern.compile("^((swp[0-9]+(s[0-9])?)|(eth[0-9]+))\\.([0-9]+)$");
-  private static final Pattern VLAN_INTERFACE_PATTERN = Pattern.compile("^vlan([0-9]+)$");
   private final Interfaces _interfaces;
 
   private static final Set<String> DEFAULT_BRIDGE_PORTS = ImmutableSet.of();
