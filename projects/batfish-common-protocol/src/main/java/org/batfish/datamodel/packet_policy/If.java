@@ -11,13 +11,11 @@ import java.util.List;
 import java.util.Objects;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import javax.annotation.ParametersAreNonnullByDefault;
 
 /**
  * A {@link PacketPolicy} If statement. Executes inner statements only if the {@link
  * #getMatchCondition()} is true.
  */
-@ParametersAreNonnullByDefault
 public final class If implements Statement {
   private static final String PROP_ACTIONS = "actions";
   private static final String PROP_TRUE_STATEMENTS = "trueStatements";

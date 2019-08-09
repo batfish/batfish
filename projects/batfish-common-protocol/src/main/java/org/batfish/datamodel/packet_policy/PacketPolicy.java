@@ -12,10 +12,8 @@ import java.util.List;
 import java.util.Objects;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import javax.annotation.ParametersAreNonnullByDefault;
 
 /** A policy used to perform policy-based routing */
-@ParametersAreNonnullByDefault
 public final class PacketPolicy implements Serializable {
   private static final String PROP_DEFAULT_ACTION = "defaultAction";
   private static final String PROP_NAME = "name";
