@@ -130,7 +130,6 @@ public class CumulusFrrGrammarTest {
         parse(String.format("route-map %s permit 10\nmatch community CN1 CN2\n", name));
 
     RouteMapEntry entry = config.getRouteMaps().get(name).getEntries().get(10);
-    assertThat(
-        entry.getMatchCommunity().getNames(), equalTo(ImmutableList.of("CN1", "CN2")));
+    assertThat(entry.getMatchCommunity().getNames(), equalTo(ImmutableList.of("CN1", "CN2")));
   }
 }
