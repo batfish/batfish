@@ -15,7 +15,7 @@ public class LiteralVrfNameTest {
   public void testEquals() {
     LiteralVrfName lv = new LiteralVrfName("vrf");
     new EqualsTester()
-        .addEqualityGroup(lv, lv)
+        .addEqualityGroup(lv, lv, new LiteralVrfName("vrf"))
         .addEqualityGroup(new LiteralVrfName("vrf2"))
         .addEqualityGroup(new Object())
         .testEquals();
