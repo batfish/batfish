@@ -233,7 +233,7 @@ public final class CumulusInterfacesConfigurationBuilder
   @Override
   public void exitI_vlan_id(I_vlan_idContext ctx) {
     String vlanId = ctx.number().getText();
-    _config.defineStructure(CumulusStructureType.VLAN, vlanId, ctx.getStart().getLine());
+    _config.defineStructure(CumulusStructureType.VLAN, vlanId, ctx);
     _currentIface.setVlanId(Integer.parseInt(vlanId));
   }
 
@@ -278,8 +278,7 @@ public final class CumulusInterfacesConfigurationBuilder
 
   @Override
   public void exitS_iface(S_ifaceContext ctx) {
-    _config.defineStructure(
-        _currentIface.getType(), _currentIface.getName(), ctx.getStart().getLine());
+    _config.defineStructure(_currentIface.getType(), _currentIface.getName(), ctx);
     _currentIface = null;
   }
 

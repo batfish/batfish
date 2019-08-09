@@ -17,6 +17,7 @@ import java.util.SortedMap;
 import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
+import org.antlr.v4.runtime.ParserRuleContext;
 import org.batfish.common.VendorConversionException;
 import org.batfish.common.Warnings;
 import org.batfish.datamodel.Configuration;
@@ -206,6 +207,17 @@ public abstract class VendorConfiguration implements Serializable, GenericConfig
    */
   public void defineStructure(StructureType structureType, String name, int line) {
     recordStructure(structureType, name, 0, line);
+  }
+
+  /**
+   * Updates structure definitions to include the specified structure {@code name} and {@code
+   * structureType} and initializes the number of referrers. Marks each line of the input
+   * {@link ParserRuleContext} as part of the definition.
+   */
+  public final void defineStructure(StructureType type, String name, ParserRuleContext ctx) {
+    for (int i = ctx.getStart().getLine(); i <= ctx.getStop().getLine(); ++i) {
+      defineStructure(type, name, i);
+    }
   }
 
   public void recordStructure(

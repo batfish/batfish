@@ -5,6 +5,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
@@ -273,9 +274,7 @@ public class CumulusInterfacesGrammarTest {
     assertThat(iface.getVlanId(), equalTo(1));
     // not marked as an interface definition
     assertNull(getDefinedStructureInfo(CumulusStructureType.INTERFACE, "vlan1"));
-    assertThat(
-        getDefinedStructureInfo(CumulusStructureType.VLAN, "vlan1").getDefinitionLines(),
-        contains(1));
+    assertNotNull(getDefinedStructureInfo(CumulusStructureType.VLAN, "vlan1"));
   }
 
   @Test
@@ -305,9 +304,7 @@ public class CumulusInterfacesGrammarTest {
     assertThat(iface.getVrfTable(), equalTo("auto"));
     // not marked as an interface definition
     assertNull(getDefinedStructureInfo(CumulusStructureType.INTERFACE, "vrf1"));
-    assertThat(
-        getDefinedStructureInfo(CumulusStructureType.VRF, "vrf1").getDefinitionLines(),
-        contains(1));
+    assertNotNull(getDefinedStructureInfo(CumulusStructureType.VRF, "vrf1"));
   }
 
   @Test
@@ -318,9 +315,7 @@ public class CumulusInterfacesGrammarTest {
     assertThat(iface.getVxlanId(), equalTo(123));
     // not marked as an interface definition
     assertNull(getDefinedStructureInfo(CumulusStructureType.INTERFACE, "swp1"));
-    assertThat(
-        getDefinedStructureInfo(CumulusStructureType.VXLAN, "swp1").getDefinitionLines(),
-        contains(1));
+    assertNotNull(getDefinedStructureInfo(CumulusStructureType.VXLAN, "swp1"));
   }
 
   @Test
