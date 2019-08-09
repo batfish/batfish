@@ -8,13 +8,11 @@ import com.google.common.base.MoreObjects;
 import java.util.Objects;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import javax.annotation.ParametersAreNonnullByDefault;
 
 /**
  * Switch to a regular destination-based forwarding pipeline. That is, perform a FIB lookup in a
  * given VRF, use the results to forward packet.
  */
-@ParametersAreNonnullByDefault
 public final class FibLookup implements Action {
 
   private static final String PROP_VRF_NAME = "vrfName";
