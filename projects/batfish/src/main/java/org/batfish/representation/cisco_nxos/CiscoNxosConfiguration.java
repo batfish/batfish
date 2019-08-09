@@ -341,7 +341,8 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
   }
 
   private static @Nonnull Ip computeDefaultRouterId(final Configuration c) {
-    // Algorithm: https://www.cisco.com/c/en/us/td/docs/switches/datacenter/sw/nx-os/tech_note/cisco_nxos_ios_ospf_comparison.html
+    // Algorithm:
+    // https://www.cisco.com/c/en/us/td/docs/switches/datacenter/sw/nx-os/tech_note/cisco_nxos_ios_ospf_comparison.html
     Optional<Ip> address =
         Optional.ofNullable(c.getAllInterfaces().get("loopback0"))
             .map(org.batfish.datamodel.Interface::getConcreteAddress)
