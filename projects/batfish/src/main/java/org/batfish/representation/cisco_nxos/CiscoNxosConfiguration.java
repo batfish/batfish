@@ -1547,8 +1547,7 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
           @Override
           public BooleanExpr visitRouteMapMatchIpAddress(
               RouteMapMatchIpAddress routeMapMatchIpAddress) {
-            // TODO: implement - PBR only?
-            // Ignore
+            // Ignore, as it only applies to PBR and has no effect on route filtering/redistribution
             return BooleanExprs.TRUE;
           }
 
