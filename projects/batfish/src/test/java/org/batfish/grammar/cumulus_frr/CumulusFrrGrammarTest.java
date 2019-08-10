@@ -15,9 +15,11 @@ import org.batfish.config.Settings;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.bgp.community.StandardCommunity;
 import org.batfish.grammar.BatfishParseTreeWalker;
 import org.batfish.main.Batfish;
 import org.batfish.representation.cumulus.CumulusNcluConfiguration;
+import org.batfish.representation.cumulus.IpCommunityListExpanded;
 import org.batfish.representation.cumulus.RouteMap;
 import org.batfish.representation.cumulus.RouteMapEntry;
 import org.batfish.representation.cumulus.StaticRoute;
@@ -131,5 +133,22 @@ public class CumulusFrrGrammarTest {
 
     RouteMapEntry entry = config.getRouteMaps().get(name).getEntries().get(10);
     assertThat(entry.getMatchCommunity().getNames(), equalTo(ImmutableList.of("CN1", "CN2")));
+  }
+
+  @Test
+  public void testCumulusFrrIpCommunityListExpanded() {
+    String name = "NAME";
+
+    CumulusNcluConfiguration config =
+        parse(String.format("ip community-list expanded %s permit 10000:10 20000:20\n", name));
+
+    IpCommunityListExpanded communityList =
+        (IpCommunityListExpanded) config.getIpCommunityLists().get(name);
+
+    assertThat(
+        communityList.getCommunities(),
+        equalTo(
+            ImmutableList.of(
+                StandardCommunity.parse("10000:10"), StandardCommunity.parse("20000:20"))));
   }
 }

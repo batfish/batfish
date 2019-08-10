@@ -1,11 +1,15 @@
 package org.batfish.grammar.cumulus_frr;
 
 import com.google.common.collect.ImmutableList;
+import java.util.List;
 import java.util.Optional;
 import javax.annotation.Nullable;
+import org.antlr.v4.runtime.RuleContext;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.bgp.community.StandardCommunity;
+import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Icl_expandedContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Rm_descriptionContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Rmm_communityContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.S_routemapContext;
@@ -14,6 +18,7 @@ import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sv_routeContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sv_vniContext;
 import org.batfish.representation.cumulus.CumulusNcluConfiguration;
 import org.batfish.representation.cumulus.CumulusStructureType;
+import org.batfish.representation.cumulus.IpCommunityListExpanded;
 import org.batfish.representation.cumulus.RouteMap;
 import org.batfish.representation.cumulus.RouteMapEntry;
 import org.batfish.representation.cumulus.RouteMapMatchCommunity;
@@ -98,5 +103,29 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
         .ifPresent(old -> names.addAll(old.getNames()));
     ctx.names.stream().map(nameCtx -> nameCtx.getText()).forEach(names::add);
     _currentRouteMapEntry.setMatchCommunity(new RouteMapMatchCommunity(names.build()));
+  }
+
+  @Override
+  public void exitIcl_expanded(Icl_expandedContext ctx) {
+    String name = ctx.name.getText();
+
+    LineAction action;
+    if (ctx.action.permit != null) {
+      action = LineAction.PERMIT;
+    } else if (ctx.action.deny != null) {
+      action = LineAction.DENY;
+    } else {
+      throw new IllegalStateException("only support permit and deny in route map");
+    }
+
+    List<StandardCommunity> communityList =
+        ctx.communities.stream()
+            .map(RuleContext::getText)
+            .map(StandardCommunity::parse)
+            .collect(ImmutableList.toImmutableList());
+
+    _c.defineStructure(
+        CumulusStructureType.IP_COMMUNITY_LIST_EXPANDED, name, ctx.getStart().getLine());
+    _c.getIpCommunityLists().put(name, new IpCommunityListExpanded(name, communityList));
   }
 }
