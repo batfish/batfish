@@ -4962,6 +4962,11 @@ FQDN
    'fqdn'
 ;
 
+FRAGMENTATION
+:
+   'fragmentation'
+;
+
 FRAGMENTS
 :
    'fragments'
