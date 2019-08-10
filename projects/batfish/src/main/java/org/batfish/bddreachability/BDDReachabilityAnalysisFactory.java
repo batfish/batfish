@@ -66,6 +66,9 @@ import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.UniverseIpSpace;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.packet_policy.FibLookup;
+import org.batfish.datamodel.packet_policy.IngressInterfaceVrf;
+import org.batfish.datamodel.packet_policy.LiteralVrfName;
+import org.batfish.datamodel.packet_policy.VrfExprVisitor;
 import org.batfish.datamodel.transformation.ApplyAll;
 import org.batfish.datamodel.transformation.ApplyAny;
 import org.batfish.datamodel.transformation.AssignIpAddressFromPool;
@@ -849,7 +852,23 @@ public final class BDDReachabilityAnalysisFactory {
                           new Edge(
                               preState,
                               new PostInVrf(
-                                  nodeName, transitionByFibLookupEntry.getKey().getVrfName()),
+                                  nodeName,
+                                  transitionByFibLookupEntry
+                                      .getKey()
+                                      .getVrfExpr()
+                                      .accept(
+                                          new VrfExprVisitor<String>() {
+                                            @Override
+                                            public String visitLiteralVrfName(LiteralVrfName expr) {
+                                              return expr.getVrfName();
+                                            }
+
+                                            @Override
+                                            public String visitIngressInterfaceVrf(
+                                                IngressInterfaceVrf expr) {
+                                              return iface.getVrfName();
+                                            }
+                                          })),
                               transitionByFibLookupEntry.getValue()));
             });
   }

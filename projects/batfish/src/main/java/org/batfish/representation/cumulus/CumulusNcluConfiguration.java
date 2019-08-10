@@ -149,6 +149,7 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
   private final @Nonnull Map<String, Vrf> _vrfs;
   private final @Nonnull Map<String, Vxlan> _vxlans;
   private final @Nonnull Map<String, IpPrefixList> _ipPrefixLists;
+  private final @Nonnull Map<String, IpCommunityList> _ipCommunityLists;
 
   @Nonnull
   private static final LinkLocalAddress LINK_LOCAL_ADDRESS = LinkLocalAddress.of(BGP_UNNUMBERED_IP);
@@ -158,6 +159,7 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
     _bridge = new Bridge();
     _interfaces = new HashMap<>();
     _ipPrefixLists = new HashMap<>();
+    _ipCommunityLists = new HashMap<>();
     _ipv4Nameservers = new LinkedList<>();
     _ipv6Nameservers = new LinkedList<>();
     _loopback = new Loopback();
@@ -814,6 +816,10 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
 
   public @Nonnull Map<String, IpPrefixList> getIpPrefixLists() {
     return _ipPrefixLists;
+  }
+
+  public @Nonnull Map<String, IpCommunityList> getIpCommunityLists() {
+    return _ipCommunityLists;
   }
 
   private void initVendorFamily() {

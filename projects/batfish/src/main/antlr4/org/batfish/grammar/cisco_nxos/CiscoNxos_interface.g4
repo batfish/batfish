@@ -230,6 +230,7 @@ i_ip
     i_ip_address
     | i_ip_null
     | i_ip_ospf
+    | i_ip_policy
     | i_ip_router
   )
 ;
@@ -257,6 +258,11 @@ i_ip_ospf
     | iipo_message_digest_key
     | iipo_network
   )
+;
+
+i_ip_policy
+:
+  POLICY name = route_map_name NEWLINE
 ;
 
 iipo_dead_interval

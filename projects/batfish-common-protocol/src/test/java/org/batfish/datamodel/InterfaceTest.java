@@ -51,4 +51,11 @@ public class InterfaceTest {
     assertThat(isRealInterfaceName("invalid_local_interface"), equalTo(false));
     assertThat(isRealInterfaceName("dynamic"), equalTo(false));
   }
+
+  @Test
+  public void testRoutingPolicySettingInBuilder() {
+    String policy = "some_policy";
+    Interface i = Interface.builder().setName("iface").setRoutingPolicy(policy).build();
+    assertThat(i.getRoutingPolicyName(), equalTo(policy));
+  }
 }
