@@ -1,6 +1,6 @@
 parser grammar CumulusFrrParser;
 
-import CumulusFrr_common, CumulusFrr_routemap, CumulusFrr_vrf;
+import CumulusFrr_common, CumulusFrr_routemap, CumulusFrr_vrf, CumulusFrr_ip_community_list;
 
 options {
   superClass =
@@ -20,5 +20,10 @@ statement
   FRR_VERSION_LINE NEWLINE
   | s_vrf
   | s_routemap
+  | s_ip
 ;
 
+s_ip
+:
+  IP ip_community_list
+;

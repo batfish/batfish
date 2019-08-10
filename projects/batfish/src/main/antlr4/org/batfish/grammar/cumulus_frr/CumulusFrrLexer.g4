@@ -23,6 +23,11 @@ COMMENT_LINE
   ) -> channel ( HIDDEN )
 ;
 
+COLON
+:
+  ':'
+;
+
 COMMUNITY
 :
   'community'
@@ -38,6 +43,11 @@ COMMUNITY
   }
 ;
 
+COMMUNITY_LIST
+:
+  'community-list'
+;
+
 DENY
 :
   'deny'
@@ -51,6 +61,11 @@ DESCRIPTION
 EXIT_VRF
 :
   'exit-vrf'
+;
+
+EXPANDED
+:
+  'expanded' -> pushMode(M_Word)
 ;
 
 FRR_VERSION_LINE

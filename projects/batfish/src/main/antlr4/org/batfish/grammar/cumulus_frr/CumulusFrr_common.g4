@@ -22,6 +22,11 @@ line_action
   | permit = PERMIT
 ;
 
+literal_standard_community
+:
+  high = uint16 COLON low = uint16
+;
+
 prefix
 :
   IP_PREFIX
@@ -32,6 +37,12 @@ vni_number
   v = uint32
   {isVniNumber($v.ctx)}?
 
+;
+
+uint16
+:
+  UINT8
+  | UINT16
 ;
 
 uint32
