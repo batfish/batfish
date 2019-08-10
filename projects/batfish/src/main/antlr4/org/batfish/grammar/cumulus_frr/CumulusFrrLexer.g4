@@ -23,6 +23,11 @@ COMMENT_LINE
   ) -> channel ( HIDDEN )
 ;
 
+BGP
+:
+  'bgp'
+;
+
 DENY
 :
   'deny'
@@ -71,6 +76,11 @@ ROUTE_MAP
 ROUTE
 :
   'route'
+;
+
+ROUTER
+:
+  'router'
 ;
 
 SUBNET_MASK

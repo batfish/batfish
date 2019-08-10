@@ -1,16 +1,22 @@
 package org.batfish.grammar.cumulus_frr;
 
+import static java.lang.Long.parseLong;
+
 import javax.annotation.Nullable;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.Prefix;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Rm_descriptionContext;
+import org.batfish.grammar.cumulus_frr.CumulusFrrParser.S_bgpContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.S_routemapContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.S_vrfContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sv_routeContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sv_vniContext;
+import org.batfish.representation.cumulus.BgpProcess;
+import org.batfish.representation.cumulus.BgpVrf;
 import org.batfish.representation.cumulus.CumulusNcluConfiguration;
 import org.batfish.representation.cumulus.CumulusStructureType;
+import org.batfish.representation.cumulus.CumulusStructureUsage;
 import org.batfish.representation.cumulus.RouteMap;
 import org.batfish.representation.cumulus.RouteMapEntry;
 import org.batfish.representation.cumulus.StaticRoute;
@@ -20,6 +26,7 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
   private CumulusNcluConfiguration _c;
   private @Nullable Vrf _currentVrf;
   private RouteMapEntry _currentRouteMapEntry;
+  private @Nullable BgpVrf _currentBgpVrf;
 
   public CumulusFrrConfigurationBuilder(CumulusNcluConfiguration configuration) {
     _c = configuration;
@@ -27,6 +34,32 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
 
   CumulusNcluConfiguration getVendorConfiguration() {
     return _c;
+  }
+
+  @Override
+  public void enterS_bgp(S_bgpContext ctx) {
+    if (_c.getBgpProcess() == null) {
+      _c.setBgpProcess(new BgpProcess());
+    }
+
+    if (ctx.vrfName == null) {
+      _currentBgpVrf = _c.getBgpProcess().getDefaultVrf();
+    } else {
+      String vrfName = ctx.vrfName.getText();
+      _currentBgpVrf = new BgpVrf(vrfName);
+      _c.getBgpProcess().getVrfs().put(vrfName, _currentBgpVrf);
+      _c.referenceStructure(
+          CumulusStructureType.VRF,
+          vrfName,
+          CumulusStructureUsage.BGP_VRF,
+          ctx.vrfName.getStart().getLine());
+    }
+    _currentBgpVrf.setAutonomousSystem(parseLong(ctx.autonomousSystem.getText()));
+  }
+
+  @Override
+  public void exitS_bgp(S_bgpContext ctx) {
+    _currentBgpVrf = null;
   }
 
   @Override
