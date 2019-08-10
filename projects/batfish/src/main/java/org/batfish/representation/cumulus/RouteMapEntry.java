@@ -14,7 +14,6 @@ public final class RouteMapEntry implements Serializable {
 
   private final @Nonnull LineAction _action;
   private @Nullable RouteMapMatchInterface _matchInterface;
-  private @Nullable RouteMapMatchIpAddressPrefixList _matchIpAddressPrefixList;
   private final int _number;
   private @Nullable String _description;
 
