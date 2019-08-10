@@ -83,6 +83,11 @@ ROUTER
   'router'
 ;
 
+ROUTER_ID
+:
+  'router-id'
+;
+
 SUBNET_MASK
 :
   F_SubnetMask

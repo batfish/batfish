@@ -10,6 +10,7 @@ import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Rm_descriptionContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.S_bgpContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.S_routemapContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.S_vrfContext;
+import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sb_router_idContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sv_routeContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sv_vniContext;
 import org.batfish.representation.cumulus.BgpProcess;
@@ -60,6 +61,11 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
   @Override
   public void exitS_bgp(S_bgpContext ctx) {
     _currentBgpVrf = null;
+  }
+
+  @Override
+  public void exitSb_router_id(Sb_router_idContext ctx) {
+    _currentBgpVrf.setRouterId(Ip.parse(ctx.IP_ADDRESS().getText()));
   }
 
   @Override

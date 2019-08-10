@@ -110,6 +110,12 @@ public class CumulusFrrGrammarTest {
   }
 
   @Test
+  public void testBgpRouterId() {
+    parse("router bgp 1\n bgp router-id 1.2.3.4\n");
+    assertThat(CONFIG.getBgpProcess().getDefaultVrf().getRouterId(), equalTo(Ip.parse("1.2.3.4")));
+  }
+
+  @Test
   public void testCumulusFrrVrf() {
     parse("vrf NAME\n exit-vrf");
     assertThat(CONFIG.getVrfs().keySet(), equalTo(ImmutableSet.of("NAME")));
