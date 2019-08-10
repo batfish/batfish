@@ -151,6 +151,7 @@ crypto ikev2 proposal VPN_PROPOSAL1
  integrity sha512 sha384 sha256
 crypto ikev2 remote-access trustpoint blahblah
 crypto ipsec df-bit clear
+crypto ipsec fragmentation before-encryption
 crypto ipsec ikev1 transform-set ESP-AES-256-MD5 esp-aes-256 esp-md5-hmac
 crypto ipsec ikev2 ipsec-proposal ffffffffff
  protocol esp encryption aes-256
@@ -179,7 +180,9 @@ crypto isakmp key ~99a9aaa_aaaa9aa|||aaaaaaa address 1.2.3.4
 crypto isakmp nat keepalive 30
 crypto isakmp policy 1
   authentication pre-share
+! both 'encr' and 'encryption' are valid
   encr 3des
+  encryption 3des
   group 2
   hash md5
   lifetime 28800
@@ -187,6 +190,8 @@ crypto isakmp policy 1
 crypto isakmp profile myprofile
    keyring VRF:MMS:RMT:UPM:1143
    match identity address 1.2.3.4 255.255.255.255
+! mask is optional   
+   match identity address 1.2.3.4
    reverse-route
    self-identity 2.3.4.6
    vrf VRF:MMS:RMT:UPM:1143
