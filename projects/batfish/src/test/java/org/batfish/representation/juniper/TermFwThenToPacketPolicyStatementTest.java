@@ -8,6 +8,7 @@ import com.google.common.collect.ImmutableList;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.packet_policy.Drop;
 import org.batfish.datamodel.packet_policy.FibLookup;
+import org.batfish.datamodel.packet_policy.LiteralVrfName;
 import org.batfish.datamodel.packet_policy.Return;
 import org.junit.Before;
 import org.junit.Test;
@@ -26,7 +27,7 @@ public class TermFwThenToPacketPolicyStatementTest {
     _fwTerm.getThens().add(FwThenAccept.INSTANCE);
     assertThat(
         TermFwThenToPacketPolicyStatement.convert(_fwTerm, "someVRF"),
-        equalTo(ImmutableList.of(new Return(new FibLookup("someVRF")))));
+        equalTo(ImmutableList.of(new Return(new FibLookup(new LiteralVrfName("someVRF"))))));
   }
 
   @Test
@@ -41,7 +42,7 @@ public class TermFwThenToPacketPolicyStatementTest {
     _fwTerm.getThens().addAll(ImmutableList.of(FwThenAccept.INSTANCE, FwThenNextTerm.INSTANCE));
     assertThat(
         TermFwThenToPacketPolicyStatement.convert(_fwTerm, "someVRF"),
-        equalTo(ImmutableList.of(new Return(new FibLookup("someVRF")))));
+        equalTo(ImmutableList.of(new Return(new FibLookup(new LiteralVrfName("someVRF"))))));
   }
 
   @Test
@@ -77,7 +78,7 @@ public class TermFwThenToPacketPolicyStatementTest {
     _fwTerm.getThens().add(new FwThenRoutingInstance("otherVRF"));
     assertThat(
         TermFwThenToPacketPolicyStatement.convert(_fwTerm, "someVRF"),
-        equalTo(ImmutableList.of(new Return(new FibLookup("otherVRF")))));
+        equalTo(ImmutableList.of(new Return(new FibLookup(new LiteralVrfName("otherVRF"))))));
   }
 
   @Test

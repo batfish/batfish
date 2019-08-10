@@ -3,10 +3,12 @@ package org.batfish.representation.cumulus;
 import com.google.common.collect.ImmutableList;
 import java.util.List;
 import javax.annotation.Nonnull;
-import org.batfish.common.BatfishException;
 import org.batfish.common.Warnings;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.routing_policy.expr.BooleanExpr;
+import org.batfish.datamodel.routing_policy.expr.Disjunction;
+import org.batfish.datamodel.routing_policy.expr.MatchEntireCommunitySet;
+import org.batfish.datamodel.routing_policy.expr.NamedCommunitySet;
 
 /** A {@link RouteMapMatch} that matches routes based on the route's community attribute. */
 public final class RouteMapMatchCommunity implements RouteMapMatch {
@@ -23,7 +25,12 @@ public final class RouteMapMatchCommunity implements RouteMapMatch {
 
   @Override
   public BooleanExpr toBooleanExpr(Configuration c, CumulusNcluConfiguration vc, Warnings w) {
-    // TODO
-    throw new BatfishException("to be implemented");
+    return new Disjunction(
+        _names.stream()
+            .filter(
+                vc.getIpCommunityLists()
+                    ::containsKey) // only handle ip community lists in the config
+            .map(name -> new MatchEntireCommunitySet(new NamedCommunitySet(name)))
+            .collect(ImmutableList.toImmutableList()));
   }
 }

@@ -7,13 +7,11 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.MoreObjects;
 import java.util.Objects;
 import javax.annotation.Nullable;
-import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
 
 /**
  * A boolean expression that returns true if a packet/flow matches a given {@link AclLineMatchExpr}
  */
-@ParametersAreNonnullByDefault
 public final class PacketMatchExpr implements BoolExpr {
 
   private static final String PROP_EXPR = "expression";

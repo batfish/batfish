@@ -23005,7 +23005,10 @@
                     "class" : "org.batfish.datamodel.packet_policy.Return",
                     "action" : {
                       "class" : "org.batfish.datamodel.packet_policy.FibLookup",
-                      "vrfName" : "OTHER_INSTANCE"
+                      "vrfExpr" : {
+                        "class" : "org.batfish.datamodel.packet_policy.LiteralVrfName",
+                        "vrfName" : "OTHER_INSTANCE"
+                      }
                     }
                   }
                 ],
@@ -23027,7 +23030,10 @@
                     "class" : "org.batfish.datamodel.packet_policy.Return",
                     "action" : {
                       "class" : "org.batfish.datamodel.packet_policy.FibLookup",
-                      "vrfName" : "default"
+                      "vrfExpr" : {
+                        "class" : "org.batfish.datamodel.packet_policy.LiteralVrfName",
+                        "vrfName" : "default"
+                      }
                     }
                   }
                 ],
