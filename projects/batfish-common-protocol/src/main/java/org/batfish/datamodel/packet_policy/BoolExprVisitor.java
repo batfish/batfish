@@ -8,4 +8,8 @@ public interface BoolExprVisitor<T> {
   }
 
   T visitPacketMatchExpr(PacketMatchExpr expr);
+
+  T visitTrueExpr(TrueExpr expr);
+
+  T visitFalseExpr(FalseExpr expr);
 }
