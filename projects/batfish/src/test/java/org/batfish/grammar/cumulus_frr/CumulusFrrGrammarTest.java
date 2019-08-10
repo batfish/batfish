@@ -127,11 +127,10 @@ public class CumulusFrrGrammarTest {
     String name = "ROUTE-MAP-NAME";
 
     CumulusNcluConfiguration config =
-        parse(String.format("route-map %s permit 10\nmatch community 10000:1 20000:2\n", name));
+        parse(String.format("route-map %s permit 10\nmatch community CN1 CN2\n", name));
 
     RouteMapEntry entry = config.getRouteMaps().get(name).getEntries().get(10);
-    assertThat(
-        entry.getMatchCommunity().getNames(), equalTo(ImmutableList.of("10000:1", "20000:2")));
+    assertThat(entry.getMatchCommunity().getNames(), equalTo(ImmutableList.of("CN1", "CN2")));
   }
 
   @Test

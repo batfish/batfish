@@ -47,9 +47,7 @@ COMMUNITY
         break;
     }
   }
-
 ;
-
 
 DENY
 :

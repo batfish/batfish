@@ -17,7 +17,7 @@ public class ReturnTest {
     Return r = new Return(Drop.instance());
     new EqualsTester()
         .addEqualityGroup(r, r, new Return(Drop.instance()))
-        .addEqualityGroup(new Return(new FibLookup("vrf")))
+        .addEqualityGroup(new Return(new FibLookup(new LiteralVrfName("vrf"))))
         .addEqualityGroup(new Object())
         .testEquals();
   }

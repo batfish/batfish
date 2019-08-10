@@ -30,7 +30,7 @@ public final class RouteMapEntry implements Serializable {
 
   /** Return stream of match statements for this entry. */
   public @Nonnull Stream<RouteMapMatch> getMatches() {
-    return Stream.<RouteMapMatch>of(_matchInterface).filter(Objects::nonNull);
+    return Stream.of(_matchInterface, _matchCommunity).filter(Objects::nonNull);
   }
 
   public @Nullable RouteMapMatchInterface getMatchInterface() {

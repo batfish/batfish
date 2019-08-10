@@ -16,29 +16,30 @@ public class FibLookupTest {
   @Test
   public void testEquals() {
     new EqualsTester()
-        .addEqualityGroup(new FibLookup("name"), new FibLookup("name"))
-        .addEqualityGroup(new FibLookup("otherName"))
+        .addEqualityGroup(
+            new FibLookup(new LiteralVrfName("name")), new FibLookup(new LiteralVrfName("name")))
+        .addEqualityGroup(new FibLookup(new LiteralVrfName("otherName")))
         .addEqualityGroup(new Object())
         .testEquals();
   }
 
   @Test
   public void testJavaSerialization() {
-    FibLookup fl = new FibLookup("name");
+    FibLookup fl = new FibLookup(new LiteralVrfName("name"));
     assertThat(SerializationUtils.clone(fl), equalTo(fl));
   }
 
   @Test
   public void testJsonSerialization() throws IOException {
-    FibLookup fl = new FibLookup("name");
+    FibLookup fl = new FibLookup(new LiteralVrfName("name"));
     assertThat(BatfishObjectMapper.clone(fl, FibLookup.class), equalTo(fl));
   }
 
   @Test
   public void testToString() {
-    FibLookup fl = new FibLookup("xxxxxx");
+    FibLookup fl = new FibLookup(new LiteralVrfName("xxxxxx"));
     assertTrue(fl.toString().contains(fl.getClass().getSimpleName()));
     assertTrue(fl.toString().contains("vrfName"));
-    assertTrue(fl.toString().contains(fl.getVrfName()));
+    assertTrue(fl.toString().contains("xxxxxx"));
   }
 }
