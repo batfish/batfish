@@ -26,6 +26,7 @@ ro_common
   | ro_network
   | ro_passive_interface
   | ro_redistribute
+  | ro_router_id
   | ro_summary_address
   | ro_timers
 ;
@@ -220,6 +221,11 @@ ror_null
 ror_static
 :
   STATIC ROUTE_MAP rm = route_map_name NEWLINE
+;
+
+ro_router_id
+:
+  ROUTER_ID id = ip_address NEWLINE
 ;
 
 ro_summary_address

@@ -69,8 +69,7 @@ public class NodeColoredScheduleTest {
     BgpProcess.Builder pb =
         nf.bgpProcessBuilder().setAdminCostsToVendorDefaults(ConfigurationFormat.CISCO_IOS);
     BgpActivePeerConfig.Builder nb = nf.bgpNeighborBuilder();
-    OspfProcess.Builder ob =
-        nf.ospfProcessBuilder().setProcessId("1").setReferenceBandwidth(1e8).setRouterId(Ip.ZERO);
+    OspfProcess.Builder ob = nf.ospfProcessBuilder().setProcessId("1").setReferenceBandwidth(1e8);
     OspfArea.Builder ospfArea = nf.ospfAreaBuilder().setNumber(0);
 
     Configuration r1 = cb.setHostname("r1").build();
@@ -86,7 +85,10 @@ public class NodeColoredScheduleTest {
             .build();
     // Make OSPF process and areas
     OspfArea r1ospfArea = ospfArea.setInterfaces(ImmutableSet.of(i1.getName())).build();
-    ob.setVrf(vrf1).setAreas(ImmutableSortedMap.of(0L, r1ospfArea)).build();
+    ob.setVrf(vrf1)
+        .setAreas(ImmutableSortedMap.of(0L, r1ospfArea))
+        .setRouterId(Ip.parse("0.0.0.1"))
+        .build();
     i1.setOspfArea(r1ospfArea);
     // BGP process and neighbor
     BgpProcess r1Proc = pb.setRouterId(R1_IP).setVrf(vrf1).build();
@@ -107,7 +109,10 @@ public class NodeColoredScheduleTest {
             .build();
     // Make OSPF process and areas
     OspfArea r2ospfArea = ospfArea.setInterfaces(ImmutableSet.of(i2.getName())).build();
-    ob.setVrf(vrf2).setAreas(ImmutableSortedMap.of(0L, r2ospfArea)).build();
+    ob.setVrf(vrf2)
+        .setAreas(ImmutableSortedMap.of(0L, r2ospfArea))
+        .setRouterId(Ip.parse("0.0.0.2"))
+        .build();
     // BGP process and neighbor
     BgpProcess r2Proc = pb.setRouterId(R2_IP).setVrf(vrf2).build();
     nb.setRemoteAs(1L)

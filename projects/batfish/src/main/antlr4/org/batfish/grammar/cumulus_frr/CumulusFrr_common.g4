@@ -10,6 +10,12 @@ ip_address
   | SUBNET_MASK
 ;
 
+line_action
+:
+  deny = DENY
+  | permit = PERMIT
+;
+
 prefix
 :
   IP_PREFIX
@@ -17,9 +23,16 @@ prefix
 
 vni_number
 :
-  v = DEC
-  {isVniNumber($v)}?
+  v = uint32
+  {isVniNumber($v.ctx)}?
 
+;
+
+uint32
+:
+  UINT8
+  | UINT16
+  | UINT32
 ;
 
 word
@@ -31,4 +44,3 @@ null_rest_of_line
 :
   ~NEWLINE* NEWLINE
 ;
-

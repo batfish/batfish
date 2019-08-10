@@ -12,10 +12,13 @@ import org.batfish.common.BatfishLogger;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.config.Settings;
 import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.Prefix;
 import org.batfish.grammar.BatfishParseTreeWalker;
 import org.batfish.main.Batfish;
 import org.batfish.representation.cumulus.CumulusNcluConfiguration;
+import org.batfish.representation.cumulus.RouteMap;
+import org.batfish.representation.cumulus.RouteMapEntry;
 import org.batfish.representation.cumulus.StaticRoute;
 import org.batfish.representation.cumulus.Vrf;
 import org.junit.Rule;
@@ -86,5 +89,35 @@ public class CumulusFrrGrammarTest {
             ImmutableSet.of(
                 new StaticRoute(Prefix.parse("1.0.0.0/8"), Ip.parse("10.0.2.1"), null),
                 new StaticRoute(Prefix.parse("0.0.0.0/0"), Ip.parse("10.0.0.1"), null))));
+  }
+
+  @Test
+  public void testCumulusFrrVrfRouteMap() {
+    String name = "ROUTE-MAP-NAME";
+    CumulusNcluConfiguration config =
+        parse(String.format("route-map %s permit 10\nroute-map %s deny 20\n", name, name));
+    assertThat(config.getRouteMaps().keySet(), equalTo(ImmutableSet.of(name)));
+
+    RouteMap rm = config.getRouteMaps().get(name);
+    assertThat(rm.getEntries().keySet(), equalTo(ImmutableSet.of(10, 20)));
+
+    RouteMapEntry entry1 = rm.getEntries().get(10);
+    assertThat(entry1.getAction(), equalTo(LineAction.PERMIT));
+
+    RouteMapEntry entry2 = rm.getEntries().get(20);
+    assertThat(entry2.getAction(), equalTo(LineAction.DENY));
+  }
+
+  @Test
+  public void testCumulusFrrVrfRouteMapDescription() {
+    String name = "ROUTE-MAP-NAME";
+    String description = "PERmit Xxx Yy_+!@#$%^&*()";
+
+    CumulusNcluConfiguration config =
+        parse(String.format("route-map %s permit 10\ndescription %s\n", name, description));
+
+    RouteMap rm = config.getRouteMaps().get(name);
+    RouteMapEntry entry1 = rm.getEntries().get(10);
+    assertThat(entry1.getDescription(), equalTo(description));
   }
 }

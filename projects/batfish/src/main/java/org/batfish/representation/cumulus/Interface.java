@@ -15,6 +15,7 @@ public class Interface implements Serializable {
   private @Nullable String _alias;
   private @Nullable InterfaceBridgeSettings _bridge;
   private @Nullable InterfaceClagSettings _clag;
+  private boolean _disabled;
   private final @Nullable Integer _encapsulationVlan;
   private final @Nonnull List<ConcreteInterfaceAddress> _ipAddresses;
   private final @Nonnull String _name;
@@ -60,6 +61,14 @@ public class Interface implements Serializable {
 
   public @Nullable InterfaceClagSettings getClag() {
     return _clag;
+  }
+
+  public boolean isDisabled() {
+    return _disabled;
+  }
+
+  public void setDisabled(boolean disabled) {
+    _disabled = disabled;
   }
 
   public @Nullable Integer getEncapsulationVlan() {

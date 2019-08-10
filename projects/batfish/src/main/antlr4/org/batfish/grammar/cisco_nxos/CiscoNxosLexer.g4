@@ -2333,6 +2333,11 @@ POLICE
   'police'
 ;
 
+POLICY
+:
+  'policy' -> pushMode ( M_Word )
+;
+
 POLICY_MAP
 :
   'policy-map' -> pushMode ( M_PolicyMap )
