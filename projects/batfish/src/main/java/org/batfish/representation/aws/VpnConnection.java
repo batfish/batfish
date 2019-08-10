@@ -2,13 +2,16 @@ package org.batfish.representation.aws;
 
 import static com.google.common.base.MoreObjects.firstNonNull;
 import static com.google.common.base.Preconditions.checkArgument;
+import static org.batfish.representation.aws.Utils.addStaticRoute;
 import static org.batfish.representation.aws.Utils.getTextXml;
+import static org.batfish.representation.aws.Utils.toStaticRoute;
 import static org.batfish.representation.aws.VpnGateway.VGW_EXPORT_POLICY_NAME;
 import static org.batfish.representation.aws.VpnGateway.VGW_IMPORT_POLICY_NAME;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSortedMap;
@@ -27,7 +30,6 @@ import javax.xml.parsers.ParserConfigurationException;
 import org.batfish.common.BatfishException;
 import org.batfish.common.Warnings;
 import org.batfish.datamodel.BgpActivePeerConfig;
-import org.batfish.datamodel.BgpProcess;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.DiffieHellmanGroup;
@@ -47,7 +49,6 @@ import org.batfish.datamodel.IpsecPhase2Proposal;
 import org.batfish.datamodel.IpsecProtocol;
 import org.batfish.datamodel.IpsecStaticPeerConfig;
 import org.batfish.datamodel.Prefix;
-import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.bgp.Ipv4UnicastAddressFamily;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -374,28 +375,22 @@ final class VpnConnection implements AwsVpcEntity, Serializable {
       int idNum = i + 1;
       String vpnId = _vpnConnectionId + "-" + idNum;
       IpsecTunnel ipsecTunnel = _ipsecTunnels.get(i);
-      if (_isBgpConnection && (_staticRoutesOnly || !_routes.isEmpty())) {
-        warnings.redFlag(
-            String.format(
-                "Unexpected combination of BGP and static routes for VPN connection '%s'. Skipped processing.",
-                _vpnConnectionId));
-        continue;
-      }
+
       // create representation structures and add to configuration node
-      String externalInterfaceName = "external" + idNum;
+      String externalInterfaceName = getExternalInterfaceName(idNum);
       ConcreteInterfaceAddress externalInterfaceAddress =
           ConcreteInterfaceAddress.create(
               ipsecTunnel.getVgwOutsideAddress(), Prefix.MAX_PREFIX_LENGTH);
       Utils.newInterface(
           externalInterfaceName, vgwCfgNode, externalInterfaceAddress, "IPSec tunnel " + idNum);
 
-      String vpnInterfaceName = "vpn" + idNum;
+      String vpnInterfaceName = getVpnInterfaceName(idNum);
       ConcreteInterfaceAddress vpnInterfaceAddress =
           ConcreteInterfaceAddress.create(
               ipsecTunnel.getVgwInsideAddress(), ipsecTunnel.getVgwInsidePrefixLength());
       Utils.newInterface(vpnInterfaceName, vgwCfgNode, vpnInterfaceAddress, "VPN " + idNum);
 
-      // IPsec data-model
+      // configure Ipsec
       ikePhase1ProposalMapBuilder.put(vpnId, toIkePhase1Proposal(vpnId, ipsecTunnel));
       IkePhase1Key ikePhase1Key =
           toIkePhase1PreSharedKey(
@@ -422,12 +417,12 @@ final class VpnConnection implements AwsVpcEntity, Serializable {
               .setDestinationAddress(ipsecTunnel.getCgwOutsideAddress())
               .build());
 
+      // configure BGP peering
       if (_isBgpConnection) {
-        BgpProcess proc = vgwCfgNode.getDefaultVrf().getBgpProcess();
         BgpActivePeerConfig.builder()
             .setPeerAddress(ipsecTunnel.getCgwInsideAddress())
             .setRemoteAs(ipsecTunnel.getCgwBgpAsn())
-            .setBgpProcess(proc)
+            .setBgpProcess(vgwCfgNode.getDefaultVrf().getBgpProcess())
             .setLocalAs(ipsecTunnel.getVgwBgpAsn())
             .setLocalIp(ipsecTunnel.getVgwInsideAddress())
             .setIpv4UnicastAddressFamily(
@@ -438,25 +433,27 @@ final class VpnConnection implements AwsVpcEntity, Serializable {
             .build();
       }
 
-      // static routes (if configured)
-      for (Prefix staticRoutePrefix : _routes) {
-        StaticRoute staticRoute =
-            StaticRoute.builder()
-                .setNetwork(staticRoutePrefix)
-                .setNextHopIp(ipsecTunnel.getCgwInsideAddress())
-                .setAdministrativeCost(Route.DEFAULT_STATIC_ROUTE_ADMIN)
-                .setMetric(Route.DEFAULT_STATIC_ROUTE_COST)
-                .build();
-
-        vgwCfgNode.getDefaultVrf().getStaticRoutes().add(staticRoute);
-      }
+      // configure IPsec
+      _routes.forEach(
+          pfx -> addStaticRoute(vgwCfgNode, toStaticRoute(pfx, ipsecTunnel.getCgwInsideAddress())));
     }
+
     vgwCfgNode.setIkePhase1Proposals(ikePhase1ProposalMapBuilder.build());
     vgwCfgNode.setIkePhase1Keys(ikePhase1KeyMapBuilder.build());
     vgwCfgNode.setIkePhase1Policies(ikePhase1PolicyMapBuilder.build());
     vgwCfgNode.setIpsecPhase2Proposals(ipsecPhase2ProposalMapBuilder.build());
     vgwCfgNode.setIpsecPhase2Policies(ipsecPhase2PolicyMapBuilder.build());
     vgwCfgNode.setIpsecPeerConfigs(ipsecPeerConfigMapBuilder.build());
+  }
+
+  @VisibleForTesting
+  static String getExternalInterfaceName(int idNum) {
+    return "external" + idNum;
+  }
+
+  @VisibleForTesting
+  static String getVpnInterfaceName(int idNum) {
+    return "vpn" + idNum;
   }
 
   @Nonnull
