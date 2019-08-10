@@ -17,7 +17,6 @@ import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.eigrp.EigrpInterfaceSettings;
 import org.batfish.datamodel.hsrp.HsrpGroup;
 import org.batfish.datamodel.isis.IsisInterfaceSettings;
-import org.batfish.datamodel.ospf.OspfArea;
 import org.hamcrest.FeatureMatcher;
 import org.hamcrest.Matcher;
 
@@ -251,17 +250,6 @@ final class InterfaceMatchersImpl {
     @Nullable
     protected Integer featureValueOf(Interface actual) {
       return actual.getNativeVlan();
-    }
-  }
-
-  static final class HasOspfArea extends FeatureMatcher<Interface, OspfArea> {
-    HasOspfArea(@Nonnull Matcher<? super OspfArea> subMatcher) {
-      super(subMatcher, "an Interface with ospfArea:", "ospfArea");
-    }
-
-    @Override
-    protected OspfArea featureValueOf(Interface actual) {
-      return actual.getOspfArea();
     }
   }
 
