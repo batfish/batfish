@@ -3,9 +3,11 @@ package org.batfish.grammar.cumulus_frr;
 import static org.batfish.main.BatfishTestUtils.configureBatfishTestSettings;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.isA;
 import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableSet;
+import java.util.Map;
 import java.util.Set;
 import javax.annotation.Nonnull;
 import org.antlr.v4.runtime.ParserRuleContext;
@@ -19,6 +21,9 @@ import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
 import org.batfish.grammar.BatfishParseTreeWalker;
 import org.batfish.main.Batfish;
+import org.batfish.representation.cumulus.BgpInterfaceNeighbor;
+import org.batfish.representation.cumulus.BgpNeighbor;
+import org.batfish.representation.cumulus.BgpPeerGroupNeighbor;
 import org.batfish.representation.cumulus.CumulusNcluConfiguration;
 import org.batfish.representation.cumulus.CumulusStructureType;
 import org.batfish.representation.cumulus.CumulusStructureUsage;
@@ -90,7 +95,8 @@ public class CumulusFrrGrammarTest {
     ParserRuleContext tree =
         Batfish.parse(parser, new BatfishLogger(BatfishLogger.LEVELSTR_FATAL, false), settings);
     ParseTreeWalker walker = new BatfishParseTreeWalker(parser);
-    CumulusFrrConfigurationBuilder cb = new CumulusFrrConfigurationBuilder(CONFIG);
+    CumulusFrrConfigurationBuilder cb =
+        new CumulusFrrConfigurationBuilder(CONFIG, parser, CONFIG.getWarnings());
     walker.walk(cb, tree);
   }
 
@@ -107,6 +113,22 @@ public class CumulusFrrGrammarTest {
     assertThat(
         getStructureReferences(CumulusStructureType.VRF, "foo", CumulusStructureUsage.BGP_VRF),
         contains(1));
+  }
+
+  @Test
+  public void testBgpNeighbor_peerGroup() {
+    parse("router bgp 1\n neighbor foo peer-group\n");
+    Map<String, BgpNeighbor> neighbors = CONFIG.getBgpProcess().getDefaultVrf().getNeighbors();
+    assertThat(neighbors.keySet(), contains("foo"));
+    assertThat(neighbors.get("foo"), isA(BgpPeerGroupNeighbor.class));
+  }
+
+  @Test
+  public void testBgpNeighbor_interface() {
+    parse("router bgp 1\n neighbor foo interface\n");
+    Map<String, BgpNeighbor> neighbors = CONFIG.getBgpProcess().getDefaultVrf().getNeighbors();
+    assertThat(neighbors.keySet(), contains("foo"));
+    assertThat(neighbors.get("foo"), isA(BgpInterfaceNeighbor.class));
   }
 
   @Test

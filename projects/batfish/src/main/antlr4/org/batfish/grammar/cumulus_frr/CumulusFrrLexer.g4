@@ -48,6 +48,11 @@ FRR_VERSION_LINE
   'frr version' F_NonNewline*
 ;
 
+INTERFACE
+:
+  'interface'
+;
+
 IP
 :
   'ip'
@@ -61,6 +66,16 @@ IP_ADDRESS
 IP_PREFIX
 :
   F_IpPrefix
+;
+
+NEIGHBOR
+:
+  'neighbor' -> pushMode(M_Word)
+;
+
+PEER_GROUP
+:
+  'peer-group'
 ;
 
 PERMIT
