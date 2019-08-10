@@ -96,7 +96,6 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
     ImmutableList.Builder<String> names = ImmutableList.builder();
     Optional.ofNullable(_currentRouteMapEntry.getMatchCommunity())
         .ifPresent(old -> names.addAll(old.getNames()));
-    // TODO: check the length of each community name has length in [1, 63]
     ctx.names.stream().map(nameCtx -> nameCtx.getText()).forEach(names::add);
     _currentRouteMapEntry.setMatchCommunity(new RouteMapMatchCommunity(names.build()));
   }
