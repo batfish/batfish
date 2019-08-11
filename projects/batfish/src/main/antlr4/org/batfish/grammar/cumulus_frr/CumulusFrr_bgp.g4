@@ -35,7 +35,7 @@ sbn_name
   name = word
     (
       sbn_interface
-    | sbn_peer_group
+    | sbn_peer_group_decl
     )
 ;
 
@@ -44,7 +44,7 @@ sbn_interface
   INTERFACE
 ;
 
-sbn_peer_group
+sbn_peer_group_decl
 :
   PEER_GROUP
 ;

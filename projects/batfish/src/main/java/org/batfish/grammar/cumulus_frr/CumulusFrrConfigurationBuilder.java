@@ -17,7 +17,7 @@ import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sb_router_idContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbn_interfaceContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbn_ipContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbn_nameContext;
-import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbn_peer_groupContext;
+import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbn_peer_group_declContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sv_routeContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sv_vniContext;
 import org.batfish.representation.cumulus.BgpInterfaceNeighbor;
@@ -137,7 +137,7 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
   }
 
   @Override
-  public void exitSbn_peer_group(Sbn_peer_groupContext ctx) {
+  public void exitSbn_peer_group_decl(Sbn_peer_group_declContext ctx) {
     if (_currentBgpNeighbor != null) {
       String line = ctx.getParent().getText() + ctx.getText();
       _w.addWarning(
