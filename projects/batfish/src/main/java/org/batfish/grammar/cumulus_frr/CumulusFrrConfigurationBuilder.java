@@ -18,6 +18,7 @@ import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbn_interfaceContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbn_ipContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbn_nameContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbn_peer_group_declContext;
+import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbnp_remote_asContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sv_routeContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sv_vniContext;
 import org.batfish.representation.cumulus.BgpInterfaceNeighbor;
@@ -61,19 +62,19 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
       _c.setBgpProcess(new BgpProcess());
     }
 
-    if (ctx.vrfName == null) {
+    if (ctx.vrf_name() == null) {
       _currentBgpVrf = _c.getBgpProcess().getDefaultVrf();
     } else {
-      String vrfName = ctx.vrfName.getText();
+      String vrfName = ctx.vrf_name().getText();
       _currentBgpVrf = new BgpVrf(vrfName);
       _c.getBgpProcess().getVrfs().put(vrfName, _currentBgpVrf);
       _c.referenceStructure(
           CumulusStructureType.VRF,
           vrfName,
           CumulusStructureUsage.BGP_VRF,
-          ctx.vrfName.getStart().getLine());
+          ctx.vrf_name().getStart().getLine());
     }
-    _currentBgpVrf.setAutonomousSystem(parseLong(ctx.autonomousSystem.getText()));
+    _currentBgpVrf.setAutonomousSystem(parseLong(ctx.autonomous_system().getText()));
   }
 
   @Override
@@ -153,6 +154,11 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
         _currentBgpVrf.getNeighbors().put(peerGroupName, new BgpPeerGroupNeighbor(peerGroupName))
             == null,
         "neighbor should not already exist since _currentBgpNeighbor was null");
+  }
+
+  @Override
+  public void exitSbnp_remote_as(Sbnp_remote_asContext ctx) {
+    _currentBgpNeighbor.setRemoteAs(parseLong(ctx.autonomous_system().getText()));
   }
 
   @Override

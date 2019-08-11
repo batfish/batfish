@@ -125,20 +125,33 @@ public class CumulusFrrGrammarTest {
   }
 
   @Test
-  public void testBgpNeighbor_interface() {
-    parse("router bgp 1\n neighbor foo interface\n");
+  public void testBgpNeighbor_peerGroup_property() {
+    parse("router bgp 1\n neighbor foo peer-group\n neighbor foo remote-as 2\n");
     Map<String, BgpNeighbor> neighbors = CONFIG.getBgpProcess().getDefaultVrf().getNeighbors();
     assertThat(neighbors.keySet(), contains("foo"));
-    assertThat(neighbors.get("foo"), isA(BgpInterfaceNeighbor.class));
+    BgpNeighbor foo = neighbors.get("foo");
+    assertThat(foo, isA(BgpPeerGroupNeighbor.class));
+    assertThat(foo.getRemoteAs(), equalTo(2L));
+  }
+
+  @Test
+  public void testBgpNeighbor_interface() {
+    parse("router bgp 1\n neighbor foo interface remote-as 2\n");
+    Map<String, BgpNeighbor> neighbors = CONFIG.getBgpProcess().getDefaultVrf().getNeighbors();
+    assertThat(neighbors.keySet(), contains("foo"));
+    BgpNeighbor foo = neighbors.get("foo");
+    assertThat(foo, isA(BgpInterfaceNeighbor.class));
+    assertThat(foo.getRemoteAs(), equalTo(2L));
   }
 
   @Test
   public void testBgpNeighbor_ip() {
-    parse("router bgp 1\n neighbor 1.2.3.4\n");
+    parse("router bgp 1\n neighbor 1.2.3.4 remote-as 2\n");
     Map<String, BgpNeighbor> neighbors = CONFIG.getBgpProcess().getDefaultVrf().getNeighbors();
     assertThat(neighbors.keySet(), contains("1.2.3.4"));
     BgpNeighbor neighbor = neighbors.get("1.2.3.4");
     assertThat(neighbor, isA(BgpIpNeighbor.class));
+    assertThat(neighbor.getRemoteAs(), equalTo(2L));
   }
 
   @Test

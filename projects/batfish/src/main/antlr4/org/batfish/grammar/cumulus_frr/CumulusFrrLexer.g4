@@ -83,6 +83,11 @@ PERMIT
   'permit'
 ;
 
+REMOTE_AS
+:
+  'remote-as'
+;
+
 ROUTE_MAP
 :
   'route-map' -> pushMode(M_Word)

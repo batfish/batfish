@@ -8,7 +8,7 @@ options {
 
 s_bgp
 :
-  ROUTER BGP autonomousSystem = uint32 (VRF vrfName = word)? NEWLINE
+  ROUTER BGP autonomous_system (VRF vrf_name)? NEWLINE
   (
     sb_router_id
   | sb_neighbor
@@ -27,24 +27,35 @@ sb_neighbor
 
 sbn_ip
 :
-  ip = IP_ADDRESS
+  ip = IP_ADDRESS sbn_property
 ;
 
 sbn_name
 :
   name = word
     (
-      sbn_interface
-    | sbn_peer_group_decl
+      sbn_interface       // set an interface neighbor property
+    | sbn_peer_group_decl // declare a new peer group
+    | sbn_property        // set a peer-group property
     )
 ;
 
 sbn_interface
 :
-  INTERFACE
+  INTERFACE sbn_property
 ;
 
 sbn_peer_group_decl
 :
   PEER_GROUP
+;
+
+sbn_property
+:
+  sbnp_remote_as
+;
+
+sbnp_remote_as
+:
+  REMOTE_AS autonomous_system
 ;
