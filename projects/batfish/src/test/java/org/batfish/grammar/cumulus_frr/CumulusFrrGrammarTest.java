@@ -125,7 +125,7 @@ public class CumulusFrrGrammarTest {
   }
 
   @Test
-  public void testBgpNeighbor_peerGroup_property() {
+  public void testBgpNeighbor_peerGroup_remote_as() {
     parse("router bgp 1\n neighbor foo peer-group\n neighbor foo remote-as 2\n");
     Map<String, BgpNeighbor> neighbors = CONFIG.getBgpProcess().getDefaultVrf().getNeighbors();
     assertThat(neighbors.keySet(), contains("foo"));
@@ -142,6 +142,15 @@ public class CumulusFrrGrammarTest {
     BgpNeighbor foo = neighbors.get("foo");
     assertThat(foo, isA(BgpInterfaceNeighbor.class));
     assertThat(foo.getRemoteAs(), equalTo(2L));
+  }
+
+  @Test
+  public void testBgpNeighborProperty_peerGroup() {
+    parse("router bgp 1\n neighbor foo interface peer-group pg\n");
+    Map<String, BgpNeighbor> neighbors = CONFIG.getBgpProcess().getDefaultVrf().getNeighbors();
+    assertThat(neighbors.keySet(), contains("foo"));
+    BgpNeighbor foo = neighbors.get("foo");
+    assertThat(foo.getPeerGroup(), equalTo("pg"));
   }
 
   @Test

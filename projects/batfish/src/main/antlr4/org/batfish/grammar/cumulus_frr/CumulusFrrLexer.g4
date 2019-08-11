@@ -75,7 +75,7 @@ NEIGHBOR
 
 PEER_GROUP
 :
-  'peer-group'
+  'peer-group' -> pushMode(M_PeerGroup)
 ;
 
 PERMIT
@@ -317,6 +317,24 @@ M_Neighbor_WS
 :
   F_Whitespace+ -> channel ( HIDDEN )
 ;
+
+mode M_PeerGroup;
+
+M_Newline
+:
+  F_Newline -> type(NEWLINE), popMode
+;
+
+M_PeerGroup_Word
+:
+  F_Word -> type(WORD) , popMode
+;
+
+M_PeerGroup_WS
+:
+  F_Whitespace+ -> channel ( HIDDEN )
+;
+
 
 mode M_Word;
 

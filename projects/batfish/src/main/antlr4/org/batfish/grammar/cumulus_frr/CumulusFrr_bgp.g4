@@ -53,9 +53,15 @@ sbn_peer_group_decl
 sbn_property
 :
   sbnp_remote_as
+| sbnp_peer_group
 ;
 
 sbnp_remote_as
 :
   REMOTE_AS autonomous_system
+;
+
+sbnp_peer_group
+:
+  PEER_GROUP name = word
 ;
