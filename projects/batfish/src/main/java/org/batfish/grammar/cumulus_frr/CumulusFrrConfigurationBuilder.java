@@ -15,10 +15,13 @@ import org.batfish.grammar.cumulus_frr.CumulusFrrParser.S_vrfContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sb_neighborContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sb_router_idContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbn_interfaceContext;
+import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbn_ipContext;
+import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbn_nameContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbn_peer_groupContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sv_routeContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sv_vniContext;
 import org.batfish.representation.cumulus.BgpInterfaceNeighbor;
+import org.batfish.representation.cumulus.BgpIpNeighbor;
 import org.batfish.representation.cumulus.BgpNeighbor;
 import org.batfish.representation.cumulus.BgpPeerGroupNeighbor;
 import org.batfish.representation.cumulus.BgpProcess;
@@ -84,7 +87,22 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
   }
 
   @Override
-  public void enterSb_neighbor(Sb_neighborContext ctx) {
+  public void enterSbn_ip(Sbn_ipContext ctx) {
+    String name = ctx.ip.getText();
+    _currentBgpNeighbor =
+        _currentBgpVrf
+            .getNeighbors()
+            .computeIfAbsent(
+                name,
+                (ipStr) -> {
+                  BgpIpNeighbor neighbor = new BgpIpNeighbor(ipStr);
+                  neighbor.setPeerIp(Ip.parse(ipStr));
+                  return neighbor;
+                });
+  }
+
+  @Override
+  public void enterSbn_name(Sbn_nameContext ctx) {
     // if neighbor does not already exist, get will return null. That's ok -- the listener for
     // child parse node will create it.
     _currentBgpNeighbor = _currentBgpVrf.getNeighbors().get(ctx.name.getText());
@@ -109,7 +127,7 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
                 "neighbor %s not declared to be an interface", _currentBgpNeighbor.getName()));
       }
     } else {
-      Sb_neighborContext parentCtx = (Sb_neighborContext) ctx.getParent();
+      Sbn_nameContext parentCtx = (Sbn_nameContext) ctx.getParent();
       String ifaceName = parentCtx.name.getText();
       _currentBgpNeighbor = new BgpInterfaceNeighbor(ifaceName);
       checkState(
@@ -129,7 +147,7 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
           String.format("neighbor %s already defined", _currentBgpNeighbor.getName()));
     }
 
-    Sb_neighborContext parentCtx = (Sb_neighborContext) ctx.getParent();
+    Sbn_nameContext parentCtx = (Sbn_nameContext) ctx.getParent();
     String peerGroupName = parentCtx.name.getText();
     checkState(
         _currentBgpVrf.getNeighbors().put(peerGroupName, new BgpPeerGroupNeighbor(peerGroupName))

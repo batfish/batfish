@@ -22,12 +22,21 @@ sb_router_id
 
 sb_neighbor
 :
-  NEIGHBOR name = word
+  NEIGHBOR (sbn_ip | sbn_name) NEWLINE
+;
+
+sbn_ip
+:
+  ip = IP_ADDRESS
+;
+
+sbn_name
+:
+  name = word
     (
       sbn_interface
     | sbn_peer_group
     )
-    NEWLINE
 ;
 
 sbn_interface

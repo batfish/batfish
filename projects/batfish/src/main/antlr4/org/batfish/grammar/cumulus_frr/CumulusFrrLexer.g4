@@ -70,7 +70,7 @@ IP_PREFIX
 
 NEIGHBOR
 :
-  'neighbor' -> pushMode(M_Word)
+  'neighbor' -> pushMode(M_Neighbor)
 ;
 
 PEER_GROUP
@@ -296,6 +296,23 @@ F_Whitespace
 ;
 
 // modes
+mode M_Neighbor;
+
+M_Neighbor_IP_Address
+:
+  F_IpAddress -> type(IP_ADDRESS) , popMode
+;
+
+M_Neighbor_Word
+:
+  F_Word -> type(WORD) , popMode
+;
+
+M_Neighbor_WS
+:
+  F_Whitespace+ -> channel ( HIDDEN )
+;
+
 mode M_Word;
 
 M_Word_WORD

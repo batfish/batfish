@@ -22,6 +22,7 @@ import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
 import org.batfish.grammar.BatfishParseTreeWalker;
 import org.batfish.main.Batfish;
 import org.batfish.representation.cumulus.BgpInterfaceNeighbor;
+import org.batfish.representation.cumulus.BgpIpNeighbor;
 import org.batfish.representation.cumulus.BgpNeighbor;
 import org.batfish.representation.cumulus.BgpPeerGroupNeighbor;
 import org.batfish.representation.cumulus.CumulusNcluConfiguration;
@@ -129,6 +130,15 @@ public class CumulusFrrGrammarTest {
     Map<String, BgpNeighbor> neighbors = CONFIG.getBgpProcess().getDefaultVrf().getNeighbors();
     assertThat(neighbors.keySet(), contains("foo"));
     assertThat(neighbors.get("foo"), isA(BgpInterfaceNeighbor.class));
+  }
+
+  @Test
+  public void testBgpNeighbor_ip() {
+    parse("router bgp 1\n neighbor 1.2.3.4\n");
+    Map<String, BgpNeighbor> neighbors = CONFIG.getBgpProcess().getDefaultVrf().getNeighbors();
+    assertThat(neighbors.keySet(), contains("1.2.3.4"));
+    BgpNeighbor neighbor = neighbors.get("1.2.3.4");
+    assertThat(neighbor, isA(BgpIpNeighbor.class));
   }
 
   @Test
