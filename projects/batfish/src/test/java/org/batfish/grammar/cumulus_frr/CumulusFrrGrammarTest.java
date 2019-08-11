@@ -1,6 +1,7 @@
 package org.batfish.grammar.cumulus_frr;
 
 import static org.batfish.main.BatfishTestUtils.configureBatfishTestSettings;
+import static org.batfish.representation.cumulus.RemoteAsType.EXPLICIT;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.isA;
@@ -139,17 +140,25 @@ public class CumulusFrrGrammarTest {
     parse("router bgp 1\n neighbor foo interface remote-as 2\n");
     Map<String, BgpNeighbor> neighbors = CONFIG.getBgpProcess().getDefaultVrf().getNeighbors();
     assertThat(neighbors.keySet(), contains("foo"));
-    BgpNeighbor foo = neighbors.get("foo");
-    assertThat(foo, isA(BgpInterfaceNeighbor.class));
+    assertThat(neighbors.get("foo"), isA(BgpInterfaceNeighbor.class));
+  }
+
+  @Test
+  public void testBgpNeighborProperty_remoteAs() {
+    parse("router bgp 1\n neighbor n interface remote-as 2\n");
+    Map<String, BgpNeighbor> neighbors = CONFIG.getBgpProcess().getDefaultVrf().getNeighbors();
+    assertThat(neighbors.keySet(), contains("n"));
+    BgpNeighbor foo = neighbors.get("n");
+    assertThat(foo.getRemoteAsType(), equalTo(EXPLICIT));
     assertThat(foo.getRemoteAs(), equalTo(2L));
   }
 
   @Test
   public void testBgpNeighborProperty_peerGroup() {
-    parse("router bgp 1\n neighbor foo interface peer-group pg\n");
+    parse("router bgp 1\n neighbor n interface peer-group pg\n");
     Map<String, BgpNeighbor> neighbors = CONFIG.getBgpProcess().getDefaultVrf().getNeighbors();
-    assertThat(neighbors.keySet(), contains("foo"));
-    BgpNeighbor foo = neighbors.get("foo");
+    assertThat(neighbors.keySet(), contains("n"));
+    BgpNeighbor foo = neighbors.get("n");
     assertThat(foo.getPeerGroup(), equalTo("pg"));
   }
 
