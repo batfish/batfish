@@ -20,16 +20,24 @@ import org.batfish.grammar.cumulus_frr.CumulusFrrParser.S_routemapContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.S_vrfContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sb_neighborContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sb_router_idContext;
+import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbaf_ipv4_unicastContext;
+import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbaf_l2vpn_evpnContext;
+import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbafls_advertise_all_vniContext;
+import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbafls_advertise_ipv4_unicastContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbn_interfaceContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbn_ipContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbn_nameContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbn_peer_group_declContext;
+import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbnp_descriptionContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbnp_peer_groupContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbnp_remote_asContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sv_routeContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sv_vniContext;
 import org.batfish.representation.cumulus.BgpInterfaceNeighbor;
 import org.batfish.representation.cumulus.BgpIpNeighbor;
+import org.batfish.representation.cumulus.BgpIpv4UnicastAddressFamily;
+import org.batfish.representation.cumulus.BgpL2VpnEvpnIpv4Unicast;
+import org.batfish.representation.cumulus.BgpL2vpnEvpnAddressFamily;
 import org.batfish.representation.cumulus.BgpNeighbor;
 import org.batfish.representation.cumulus.BgpPeerGroupNeighbor;
 import org.batfish.representation.cumulus.BgpProcess;
@@ -88,6 +96,33 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
   @Override
   public void exitS_bgp(S_bgpContext ctx) {
     _currentBgpVrf = null;
+  }
+
+  @Override
+  public void enterSbaf_ipv4_unicast(Sbaf_ipv4_unicastContext ctx) {
+    if (_currentBgpVrf.getIpv4Unicast() != null) {
+      _w.addWarning(ctx, ctx.getText(), _parser, "duplicate 'address-family ipv4 unicast'");
+    }
+    _currentBgpVrf.setIpv4Unicast(new BgpIpv4UnicastAddressFamily());
+  }
+
+  @Override
+  public void enterSbaf_l2vpn_evpn(Sbaf_l2vpn_evpnContext ctx) {
+    if (_currentBgpVrf.getL2VpnEvpn() != null) {
+      _w.addWarning(ctx, ctx.getText(), _parser, "duplicate 'address-family l2vpn evpn'");
+    }
+    _currentBgpVrf.setL2VpnEvpn(new BgpL2vpnEvpnAddressFamily());
+  }
+
+  @Override
+  public void exitSbafls_advertise_all_vni(Sbafls_advertise_all_vniContext ctx) {
+    _currentBgpVrf.getL2VpnEvpn().setAdvertiseAllVni(true);
+  }
+
+  @Override
+  public void enterSbafls_advertise_ipv4_unicast(Sbafls_advertise_ipv4_unicastContext ctx) {
+    // setting in enter instead of exit since in future we can attach a routemap
+    _currentBgpVrf.getL2VpnEvpn().setAdvertiseIpv4Unicast(new BgpL2VpnEvpnIpv4Unicast());
   }
 
   @Override
@@ -162,6 +197,11 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
         _currentBgpVrf.getNeighbors().put(peerGroupName, new BgpPeerGroupNeighbor(peerGroupName))
             == null,
         "neighbor should not already exist since _currentBgpNeighbor was null");
+  }
+
+  @Override
+  public void exitSbnp_description(Sbnp_descriptionContext ctx) {
+    _currentBgpNeighbor.setDescription(ctx.REMARK_TEXT().getText());
   }
 
   @Override
