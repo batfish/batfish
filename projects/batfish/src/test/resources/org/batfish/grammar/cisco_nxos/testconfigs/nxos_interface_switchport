@@ -192,6 +192,7 @@ interface Ethernet1/12
 ! TODO: semantics
 interface Ethernet1/13
   switchport mode fex-fabric
+  fex associate 100
 !
 
 ! Ethernet interface with trunk mode set
