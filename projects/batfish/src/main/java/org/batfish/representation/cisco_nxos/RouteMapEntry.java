@@ -25,6 +25,7 @@ public final class RouteMapEntry implements Serializable {
   private @Nullable RouteMapSetLocalPreference _setLocalPreference;
   private @Nullable RouteMapSetMetric _setMetric;
   private @Nullable RouteMapSetMetricType _setMetricType;
+  private @Nullable RouteMapSetOrigin _setOrigin;
   private @Nullable RouteMapSetTag _setTag;
 
   public RouteMapEntry(int sequence) {
@@ -103,6 +104,10 @@ public final class RouteMapEntry implements Serializable {
     return _setMetricType;
   }
 
+  public @Nullable RouteMapSetOrigin getSetOrigin() {
+    return _setOrigin;
+  }
+
   public @Nonnull Stream<RouteMapSet> getSets() {
     return Stream.of(
             _setAsPathPrepend,
@@ -111,6 +116,7 @@ public final class RouteMapEntry implements Serializable {
             _setLocalPreference,
             _setMetric,
             _setMetricType,
+            _setOrigin,
             _setTag)
         .filter(Objects::nonNull);
   }
@@ -174,6 +180,10 @@ public final class RouteMapEntry implements Serializable {
 
   public void setSetMetricType(@Nullable RouteMapSetMetricType setMetricType) {
     _setMetricType = setMetricType;
+  }
+
+  public void setSetOrigin(@Nullable RouteMapSetOrigin setOrigin) {
+    _setOrigin = setOrigin;
   }
 
   public void setSetTag(@Nullable RouteMapSetTag setTag) {

@@ -117,6 +117,7 @@ import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.LongSpace;
 import org.batfish.datamodel.NamedPort;
+import org.batfish.datamodel.OriginType;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.Prefix6;
 import org.batfish.datamodel.RoutingProtocol;
@@ -343,6 +344,7 @@ import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Rms_communityContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Rms_local_preferenceContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Rms_metricContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Rms_metric_typeContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Rms_originContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Rms_tagContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Rmsapp_last_asContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Rmsapp_literalContext;
@@ -494,6 +496,7 @@ import org.batfish.representation.cisco_nxos.RouteMapSetIpNextHopUnchanged;
 import org.batfish.representation.cisco_nxos.RouteMapSetLocalPreference;
 import org.batfish.representation.cisco_nxos.RouteMapSetMetric;
 import org.batfish.representation.cisco_nxos.RouteMapSetMetricType;
+import org.batfish.representation.cisco_nxos.RouteMapSetOrigin;
 import org.batfish.representation.cisco_nxos.RouteMapSetTag;
 import org.batfish.representation.cisco_nxos.StaticRoute;
 import org.batfish.representation.cisco_nxos.TcpOptions;
@@ -3991,6 +3994,22 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
       return;
     }
     _currentRouteMapEntry.setSetMetricType(new RouteMapSetMetricType(type));
+  }
+
+  @Override
+  public void exitRms_origin(Rms_originContext ctx) {
+    OriginType type;
+    if (ctx.EGP() != null) {
+      type = OriginType.EGP;
+    } else if (ctx.IGP() != null) {
+      type = OriginType.IGP;
+    } else if (ctx.INCOMPLETE() != null) {
+      type = OriginType.INCOMPLETE;
+    } else {
+      // Realllly should not get here
+      throw new IllegalArgumentException(String.format("Invalid origin type: %s", ctx.getText()));
+    }
+    _currentRouteMapEntry.setSetOrigin(new RouteMapSetOrigin(type));
   }
 
   @Override

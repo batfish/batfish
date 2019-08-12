@@ -112,6 +112,7 @@ rm_set
     | rms_local_preference
     | rms_metric
     | rms_metric_type
+    | rms_origin
     | rms_tag
   )
 ;
@@ -198,6 +199,16 @@ rms_metric_type
     | INTERNAL
     | TYPE_1
     | TYPE_2
+  ) NEWLINE
+;
+
+rms_origin
+:
+  ORIGIN
+  (
+    EGP
+    | IGP
+    | INCOMPLETE
   ) NEWLINE
 ;
 

@@ -925,6 +925,11 @@ EF
   'ef'
 ;
 
+EGP
+:
+  'egp'
+;
+
 EIGRP
 :
   'eigrp'
@@ -1375,6 +1380,11 @@ IGNORE
   'ignore'
 ;
 
+IGP
+:
+  'igp'
+;
+
 IMMEDIATE
 :
   'immediate'
@@ -1398,6 +1408,11 @@ INBOUND
 INCLUDE_STUB
 :
   'include-stub'
+;
+
+INCOMPLETE
+:
+  'incomplete'
 ;
 
 INCONSISTENCY
@@ -2229,6 +2244,11 @@ OPTION
 OPTION_MISSING
 :
   'option-missing'
+;
+
+ORIGIN
+:
+  'origin'
 ;
 
 ORIGINATE
