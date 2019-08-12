@@ -32,6 +32,7 @@ import org.batfish.datamodel.eigrp.EigrpInterfaceSettings;
 import org.batfish.datamodel.hsrp.HsrpGroup;
 import org.batfish.datamodel.isis.IsisInterfaceSettings;
 import org.batfish.datamodel.ospf.OspfArea;
+import org.batfish.datamodel.ospf.OspfNetworkType;
 import org.batfish.datamodel.transformation.Transformation;
 
 public final class Interface extends ComparableStructure<String> {
@@ -66,6 +67,7 @@ public final class Interface extends ComparableStructure<String> {
     private OspfArea _ospfArea;
     private Integer _ospfCost;
     private boolean _ospfEnabled;
+    @Nullable private OspfNetworkType _ospfNetworkType;
     private boolean _ospfPassive;
     private boolean _ospfPointToPoint;
     private String _ospfProcess;
@@ -151,6 +153,7 @@ public final class Interface extends ComparableStructure<String> {
       iface.setOspfCost(_ospfCost);
       iface.setOspfEnabled(_ospfEnabled);
       iface.setOspfInboundDistributeListPolicy(_ospfInboundDistributeListPolicy);
+      iface.setOspfNetworkType(_ospfNetworkType);
       iface.setOspfPassive(_ospfPassive);
       iface.setOspfPointToPoint(_ospfPointToPoint);
       iface.setOspfProcess(_ospfProcess);
@@ -380,6 +383,11 @@ public final class Interface extends ComparableStructure<String> {
       return this;
     }
 
+    public Builder setOspfNetworkType(OspfNetworkType ospfNetworkType) {
+      _ospfNetworkType = ospfNetworkType;
+      return this;
+    }
+
     public Builder setOspfPassive(boolean ospfPassive) {
       _ospfPassive = ospfPassive;
       return this;
@@ -587,6 +595,7 @@ public final class Interface extends ComparableStructure<String> {
   private static final String PROP_OSPF_HELLO_MULTIPLIER = "ospfHelloMultiplier";
   private static final String PROP_OSPF_INBOUND_DISTRIBUTE_LIST_POLICY =
       "ospfInboundDistributeListPolicy";
+  private static final String PROP_OSPF_NETWORK_TYPE = "ospfNetworkType";
   private static final String PROP_OSPF_PASSIVE = "ospfPassive";
   private static final String PROP_OSPF_POINT_TO_POINT = "ospfPointToPoint";
   private static final String PROP_OSPF_PROCESS = "ospfProcess";
@@ -845,6 +854,7 @@ public final class Interface extends ComparableStructure<String> {
   private boolean _ospfEnabled;
   private int _ospfHelloMultiplier;
   @Nullable private String _ospfInboundDistributeListPolicy;
+  @Nullable private OspfNetworkType _ospfNetworkType;
   private boolean _ospfPassive;
   private boolean _ospfPointToPoint;
   @Nullable private String _ospfProcess;
@@ -970,6 +980,9 @@ public final class Interface extends ComparableStructure<String> {
       return false;
     }
     if (!Objects.equals(_nativeVlan, other._nativeVlan)) {
+      return false;
+    }
+    if (!Objects.equals(_ospfNetworkType, other._ospfNetworkType)) {
       return false;
     }
     // TODO: check OSPF settings for equality.
@@ -1253,6 +1266,13 @@ public final class Interface extends ComparableStructure<String> {
   @Nullable
   public String getOspfInboundDistributeListPolicy() {
     return _ospfInboundDistributeListPolicy;
+  }
+
+  /** Returns the OSPF network type for this interface. */
+  @JsonProperty(PROP_OSPF_NETWORK_TYPE)
+  @Nullable
+  public OspfNetworkType getOspfNetworkType() {
+    return _ospfNetworkType;
   }
 
   /**
@@ -1652,6 +1672,11 @@ public final class Interface extends ComparableStructure<String> {
   @JsonProperty(PROP_OSPF_INBOUND_DISTRIBUTE_LIST_POLICY)
   public void setOspfInboundDistributeListPolicy(@Nullable String ospfInboundDistributeListPolicy) {
     _ospfInboundDistributeListPolicy = ospfInboundDistributeListPolicy;
+  }
+
+  @JsonProperty(PROP_OSPF_NETWORK_TYPE)
+  public void setOspfNetworkType(@Nullable OspfNetworkType ospfNetworkType) {
+    _ospfNetworkType = ospfNetworkType;
   }
 
   @JsonProperty(PROP_OSPF_PASSIVE)
