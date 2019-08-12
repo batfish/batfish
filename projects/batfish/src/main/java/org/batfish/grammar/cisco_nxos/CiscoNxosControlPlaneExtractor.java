@@ -371,7 +371,9 @@ import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Rot_lsa_group_pacingContex
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Rott_lsaContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Route_distinguisherContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Route_distinguisher_or_autoContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Route_map_entryContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Route_map_nameContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Route_map_pbr_statisticsContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Route_map_sequenceContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Route_networkContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Router_bgpContext;
@@ -802,6 +804,7 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
   private OspfArea _currentOspfArea;
   private OspfProcess _currentOspfProcess;
   private RouteMapEntry _currentRouteMapEntry;
+  private Optional<String> _currentRouteMapName;
   private TcpFlags.Builder _currentTcpFlagsBuilder;
   private TcpOptions.Builder _currentTcpOptionsBuilder;
   private UdpOptions.Builder _currentUdpOptionsBuilder;
@@ -2893,6 +2896,21 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
 
   @Override
   public void enterS_route_map(S_route_mapContext ctx) {
+    _currentRouteMapName = toString(ctx, ctx.name);
+  }
+
+  @Override
+  public void exitS_route_map(S_route_mapContext ctx) {
+    _currentRouteMapName = null;
+  }
+
+  @Override
+  public void enterRoute_map_entry(Route_map_entryContext ctx) {
+    if (!_currentRouteMapName.isPresent()) {
+      _currentRouteMapEntry = new RouteMapEntry(1); // dummy
+      return;
+    }
+    String name = _currentRouteMapName.get();
     int sequence;
     if (ctx.sequence != null) {
       Optional<Integer> seqOpt = toInteger(ctx, ctx.sequence);
@@ -2903,11 +2921,6 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
     } else {
       sequence = 10;
     }
-    Optional<String> nameOpt = toString(ctx, ctx.name);
-    if (!nameOpt.isPresent()) {
-      return;
-    }
-    String name = nameOpt.get();
     _currentRouteMapEntry =
         _configuration
             .getRouteMaps()
@@ -2916,8 +2929,29 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
             .computeIfAbsent(sequence, RouteMapEntry::new);
     _currentRouteMapEntry.setAction(toLineAction(ctx.action));
 
-    _configuration.defineStructure(ROUTE_MAP, name, ctx);
-    _configuration.defineStructure(ROUTE_MAP_ENTRY, Integer.toString(sequence), ctx);
+    _configuration.defineStructure(ROUTE_MAP, name, ctx.parent);
+    _configuration.defineStructure(ROUTE_MAP_ENTRY, Integer.toString(sequence), ctx.parent);
+  }
+
+  @Override
+  public void exitRoute_map_entry(Route_map_entryContext ctx) {
+    _currentRouteMapEntry = null;
+  }
+
+  @Override
+  public void exitRoute_map_pbr_statistics(Route_map_pbr_statisticsContext ctx) {
+    if (!_currentRouteMapName.isPresent()) {
+      return;
+    }
+    _configuration
+        .getRouteMaps()
+        .computeIfAbsent(
+            _currentRouteMapName.get(),
+            name -> {
+              _configuration.defineStructure(ROUTE_MAP, name, ctx.parent);
+              return new RouteMap(name);
+            })
+        .setPbrStatistics(true);
   }
 
   @Override
@@ -4004,11 +4038,6 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
   }
 
   @Override
-  public void exitS_route_map(S_route_mapContext ctx) {
-    _currentRouteMapEntry = null;
-  }
-
-  @Override
   public void exitS_vrf_context(S_vrf_contextContext ctx) {
     _currentVrf = _configuration.getDefaultVrf();
   }
@@ -4409,7 +4438,7 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
   }
 
   private @Nonnull Optional<Integer> toInteger(
-      S_route_mapContext messageCtx, Route_map_sequenceContext ctx) {
+      ParserRuleContext messageCtx, Route_map_sequenceContext ctx) {
     return toIntegerInSpace(
         messageCtx, ctx, ROUTE_MAP_ENTRY_SEQUENCE_RANGE, "route-map entry sequence");
   }

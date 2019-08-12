@@ -3959,6 +3959,7 @@ public final class CiscoNxosGrammarTest {
         hasKeys(
             "empty_deny",
             "empty_permit",
+            "empty_pbr_statistics",
             "match_as_path",
             "match_community",
             "match_interface",
@@ -4007,6 +4008,10 @@ public final class CiscoNxosGrammarTest {
     {
       RoutingPolicy rp = c.getRoutingPolicies().get("empty_permit");
       assertRoutingPolicyPermitsRoute(rp, base);
+    }
+    {
+      RoutingPolicy rp = c.getRoutingPolicies().get("empty_pbr_statistics");
+      assertRoutingPolicyDeniesRoute(rp, base);
     }
 
     // matches
@@ -4160,6 +4165,7 @@ public final class CiscoNxosGrammarTest {
         hasKeys(
             "empty_deny",
             "empty_permit",
+            "empty_pbr_statistics",
             "match_as_path",
             "match_community",
             "match_interface",
@@ -4203,6 +4209,11 @@ public final class CiscoNxosGrammarTest {
       RouteMapEntry entry = getOnlyElement(rm.getEntries().values());
       assertThat(entry.getAction(), equalTo(LineAction.PERMIT));
       assertThat(entry.getSequence(), equalTo(10));
+    }
+    {
+      RouteMap rm = vc.getRouteMaps().get("empty_pbr_statistics");
+      assertThat(rm.getEntries(), anEmptyMap());
+      assertTrue(rm.getPbrStatistics());
     }
     {
       RouteMap rm = vc.getRouteMaps().get("match_as_path");
