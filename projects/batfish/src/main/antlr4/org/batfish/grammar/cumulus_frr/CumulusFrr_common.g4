@@ -15,6 +15,12 @@ ip_address
   | SUBNET_MASK
 ;
 
+ip_community_list_name
+:
+// 1-63 characters
+  WORD
+;
+
 line_action
 :
   deny = DENY

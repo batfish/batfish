@@ -854,7 +854,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
                         ifaceName -> {
                           org.batfish.datamodel.Interface iface =
                               _c.getVrfs().get(vrfName).getInterfaces().get(ifaceName);
-                          iface.setOspfArea(area);
+                          iface.setOspfAreaName(area.getAreaNumber());
                           iface.setOspfProcess(newProc.getProcessId());
                         }));
     return newProc;

@@ -545,8 +545,8 @@ import org.batfish.grammar.cisco.CiscoParser.Cis_policyContext;
 import org.batfish.grammar.cisco.CiscoParser.Cis_profileContext;
 import org.batfish.grammar.cisco.CiscoParser.Cisco_configurationContext;
 import org.batfish.grammar.cisco.CiscoParser.Cispol_authenticationContext;
-import org.batfish.grammar.cisco.CiscoParser.Cispol_encrContext;
 import org.batfish.grammar.cisco.CiscoParser.Cispol_encryptionContext;
+import org.batfish.grammar.cisco.CiscoParser.Cispol_encryption_arubaContext;
 import org.batfish.grammar.cisco.CiscoParser.Cispol_groupContext;
 import org.batfish.grammar.cisco.CiscoParser.Cispol_hashContext;
 import org.batfish.grammar.cisco.CiscoParser.Cispol_lifetimeContext;
@@ -2153,12 +2153,12 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   }
 
   @Override
-  public void exitCispol_encr(Cispol_encrContext ctx) {
+  public void exitCispol_encryption(Cispol_encryptionContext ctx) {
     _currentIsakmpPolicy.setEncryptionAlgorithm(toEncryptionAlgorithm(ctx.ike_encryption()));
   }
 
   @Override
-  public void exitCispol_encryption(Cispol_encryptionContext ctx) {
+  public void exitCispol_encryption_aruba(Cispol_encryption_arubaContext ctx) {
     _currentIsakmpPolicy.setEncryptionAlgorithm(toEncryptionAlgorithm(ctx.ike_encryption_aruba()));
   }
 
@@ -2196,8 +2196,9 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   @Override
   public void exitCisprf_match(Cisprf_matchContext ctx) {
+    Ip mask = (ctx.mask == null) ? Ip.parse("255.255.255.255") : toIp(ctx.mask);
     _currentIsakmpProfile.setMatchIdentity(
-        IpWildcard.ipWithWildcardMask(toIp(ctx.address), toIp(ctx.mask).inverted()));
+        IpWildcard.ipWithWildcardMask(toIp(ctx.address), mask.inverted()));
   }
 
   @Override

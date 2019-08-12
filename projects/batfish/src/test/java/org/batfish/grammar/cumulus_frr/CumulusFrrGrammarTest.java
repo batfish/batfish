@@ -10,6 +10,7 @@ import static org.hamcrest.Matchers.isA;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThat;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import java.util.Map;
 import java.util.Set;
@@ -251,5 +252,16 @@ public class CumulusFrrGrammarTest {
     RouteMap rm = CONFIG.getRouteMaps().get(name);
     RouteMapEntry entry1 = rm.getEntries().get(10);
     assertThat(entry1.getDescription(), equalTo(description));
+  }
+
+  @Test
+  public void testCumulusFrrVrfRouteMapMatchCommunity() {
+    String name = "ROUTE-MAP-NAME";
+
+    CumulusNcluConfiguration config =
+        parse(String.format("route-map %s permit 10\nmatch community CN1 CN2\n", name));
+
+    RouteMapEntry entry = config.getRouteMaps().get(name).getEntries().get(10);
+    assertThat(entry.getMatchCommunity().getNames(), equalTo(ImmutableList.of("CN1", "CN2")));
   }
 }
