@@ -49,7 +49,11 @@ s_interface_regular
 
 i_bandwidth
 :
-  BANDWIDTH (INHERIT bw = interface_bandwidth_kbps? | INHERIT? bw = interface_bandwidth_kbps) NEWLINE
+  BANDWIDTH
+  (
+    inherit = INHERIT bw = interface_bandwidth_kbps?
+    | inherit = INHERIT? bw = interface_bandwidth_kbps
+  ) NEWLINE
 ;
 
 interface_bandwidth_kbps

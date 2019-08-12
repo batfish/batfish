@@ -3348,7 +3348,7 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
       }
       _currentInterfaces.forEach(iface -> iface.setBandwidth(bandwidth));
     }
-    if (ctx.INHERIT() != null) {
+    if (ctx.inherit != null) {
       // TODO: support bandwidth inherit
       todo(ctx);
     }
