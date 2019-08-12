@@ -1111,6 +1111,10 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
   public void exitIhg_priority(Ihg_priorityContext ctx) {
     int priority = toInteger(ctx.priority);
     _currentInterfaces.forEach(iface -> _currentHsrpGroupGetter.apply(iface).setPriority(priority));
+    if (ctx.FORWARDING_THRESHOLD() != null) {
+      // TODO: forwarding-threshold for HSRP priority
+      todo(ctx);
+    }
   }
 
   @Override
