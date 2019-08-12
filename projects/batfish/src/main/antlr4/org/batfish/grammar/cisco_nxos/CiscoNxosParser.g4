@@ -89,7 +89,7 @@ cp_service_policy
 
 s_hostname
 :
-  HOSTNAME hostname = subdomain_name NEWLINE
+  (HOSTNAME | SWITCHNAME) hostname = subdomain_name NEWLINE
 ;
 
 s_ip

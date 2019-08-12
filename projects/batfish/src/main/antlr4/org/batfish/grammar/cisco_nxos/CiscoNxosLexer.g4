@@ -3054,6 +3054,16 @@ SUSPEND_INDIVIDUAL
   'suspend-individual'
 ;
 
+SWITCHNAME
+:
+  'switchname'
+  {
+    if (lastTokenType() == NEWLINE || lastTokenType() == -1) {
+      pushMode(M_Hostname);
+    }
+  }
+;
+
 SWITCHPORT
 :
   'switchport'
