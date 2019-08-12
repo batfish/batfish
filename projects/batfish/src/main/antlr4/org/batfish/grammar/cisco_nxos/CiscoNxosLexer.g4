@@ -1494,6 +1494,11 @@ KEY
   'key'
 ;
 
+KEY_CHAIN
+:
+  'key-chain' -> pushMode ( M_Word )
+;
+
 KEY_STRING
 :
   'key-string' -> pushMode ( M_Remark )

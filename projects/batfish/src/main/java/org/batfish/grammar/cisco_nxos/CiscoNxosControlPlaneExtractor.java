@@ -205,6 +205,7 @@ import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Ihg_preemptContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Ihg_priorityContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Ihg_timersContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Ihg_trackContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Ihgam_key_chainContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Iipo_dead_intervalContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Iipo_hello_intervalContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Iipo_networkContext;
@@ -1028,6 +1029,12 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
           iface ->
               iface.getOrCreateHsrp().getGroups().computeIfAbsent(groupOrErr.get(), HsrpGroup::new);
     }
+  }
+
+  @Override
+  public void exitIhgam_key_chain(Ihgam_key_chainContext ctx) {
+    // TODO: support HSRP md5 authentication key-chain
+    todo(ctx);
   }
 
   @Override

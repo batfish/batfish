@@ -117,7 +117,8 @@ ih_group
 :
   group = hsrp_group_number NEWLINE
   (
-    ihg_ip
+    ihg_authentication
+    | ihg_ip
     | ihg_preempt
     | ihg_priority
     | ihg_timers
@@ -129,6 +130,21 @@ hsrp_group_number
 :
 // 0-4095
   uint16
+;
+
+ihg_authentication
+:
+  AUTHENTICATION ihga_md5
+;
+
+ihga_md5
+:
+  MD5 ihgam_key_chain
+;
+
+ihgam_key_chain
+:
+  KEY_CHAIN name = key_chain_name NEWLINE
 ;
 
 ihg_ip
