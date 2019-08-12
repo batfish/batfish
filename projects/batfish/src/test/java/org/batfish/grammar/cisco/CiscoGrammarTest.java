@@ -4678,6 +4678,7 @@ public class CiscoGrammarTest {
     assertThat(c, hasDefaultVrf(hasOspfProcess("1", hasAreas(hasKey(areaNum)))));
     OspfArea area = c.getDefaultVrf().getOspfProcesses().get("1").getAreas().get(areaNum);
     assertThat(area, OspfAreaMatchers.hasInterfaces(hasItem(ifaceName)));
+    assertThat(c, hasInterface(ifaceName, hasOspfAreaName(areaNum)));
     assertThat(c, hasInterface(ifaceName, isOspfPassive(equalTo(false))));
     assertThat(c, hasInterface(ifaceName, isOspfPointToPoint()));
   }
@@ -4708,6 +4709,7 @@ public class CiscoGrammarTest {
     OspfArea area = vrf.getOspfProcesses().get("1").getAreas().get(areaNum);
     assertThat(area, OspfAreaMatchers.hasInterfaces(hasItem(ifaceName)));
     assertThat(c, hasInterface(ifaceName, hasVrf(sameInstance(vrf))));
+    assertThat(c, hasInterface(ifaceName, hasOspfAreaName(areaNum)));
     assertThat(c, hasInterface(ifaceName, isOspfPassive(equalTo(false))));
     assertThat(c, hasInterface(ifaceName, isOspfPointToPoint()));
   }
