@@ -382,6 +382,7 @@ import org.batfish.grammar.cisco_nxos.CiscoNxosParser.S_hostnameContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.S_interface_nveContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.S_interface_regularContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.S_route_mapContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.S_trackContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.S_versionContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.S_vrf_contextContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Standard_communityContext;
@@ -2917,6 +2918,12 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
 
     _configuration.defineStructure(ROUTE_MAP, name, ctx);
     _configuration.defineStructure(ROUTE_MAP_ENTRY, Integer.toString(sequence), ctx);
+  }
+
+  @Override
+  public void exitS_track(S_trackContext ctx) {
+    // TODO: support object tracking
+    todo(ctx);
   }
 
   @Override

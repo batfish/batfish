@@ -588,6 +588,12 @@ public final class CiscoNxosGrammarTest {
   }
 
   @Test
+  public void testTrackExtraction() {
+    // TODO: make into extraction test
+    assertThat(parseVendorConfig("nxos_track"), notNullValue());
+  }
+
+  @Test
   public void testEvpnExtraction() {
     CiscoNxosConfiguration vc = parseVendorConfig("nxos_evpn");
     Evpn evpn = vc.getEvpn();
