@@ -7,6 +7,7 @@ import static org.batfish.representation.cumulus.RemoteAsType.INTERNAL;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.isA;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThat;
 
@@ -119,6 +120,18 @@ public class CumulusFrrGrammarTest {
     assertThat(
         getStructureReferences(CumulusStructureType.VRF, "foo", CumulusStructureUsage.BGP_VRF),
         contains(1));
+  }
+
+  @Test
+  public void testBgpAddressFamily_ipv4Unicast() {
+    parse("router bgp 1\n address-family ipv4 unicast\n exit-address-family\n");
+    assertNotNull(CONFIG.getBgpProcess().getDefaultVrf().getIpv4Unicast());
+  }
+
+  @Test
+  public void testBgpAddressFamily_l2vpn_evpn() {
+    parse("router bgp 1\n address-family l2vpn evpn\n exit-address-family\n");
+    assertNotNull(CONFIG.getBgpProcess().getDefaultVrf().getL2VpnEvpn());
   }
 
   @Test
