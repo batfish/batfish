@@ -7,6 +7,7 @@ import static org.batfish.representation.cumulus.RemoteAsType.EXTERNAL;
 import static org.batfish.representation.cumulus.RemoteAsType.INTERNAL;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import java.util.Optional;
 import javax.annotation.Nullable;
 import org.batfish.common.Warnings;
@@ -15,6 +16,7 @@ import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.Prefix;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Rm_descriptionContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Rmm_communityContext;
+import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Rmmi_nameContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.S_bgpContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.S_routemapContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.S_vrfContext;
@@ -40,6 +42,7 @@ import org.batfish.representation.cumulus.CumulusStructureUsage;
 import org.batfish.representation.cumulus.RouteMap;
 import org.batfish.representation.cumulus.RouteMapEntry;
 import org.batfish.representation.cumulus.RouteMapMatchCommunity;
+import org.batfish.representation.cumulus.RouteMapMatchInterface;
 import org.batfish.representation.cumulus.StaticRoute;
 import org.batfish.representation.cumulus.Vrf;
 
@@ -239,6 +242,12 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
   @Override
   public void exitS_routemap(S_routemapContext ctx) {
     _currentRouteMapEntry = null;
+  }
+
+  @Override
+  public void exitRmmi_name(Rmmi_nameContext ctx) {
+    _currentRouteMapEntry.setMatchInterface(
+        new RouteMapMatchInterface(ImmutableSet.of(ctx.getText())));
   }
 
   @Override
