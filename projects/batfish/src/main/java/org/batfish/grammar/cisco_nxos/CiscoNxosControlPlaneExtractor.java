@@ -193,6 +193,7 @@ import org.batfish.grammar.cisco_nxos.CiscoNxosParser.I_switchport_mode_accessCo
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.I_switchport_mode_dot1q_tunnelContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.I_switchport_mode_fex_fabricContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.I_switchport_mode_trunkContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.I_switchport_switchportContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.I_switchport_trunk_allowedContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.I_switchport_trunk_nativeContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.I_vrf_memberContext;
@@ -1028,6 +1029,13 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
           iface ->
               iface.getOrCreateHsrp().getGroups().computeIfAbsent(groupOrErr.get(), HsrpGroup::new);
     }
+  }
+
+  @Override
+  public void exitI_switchport_switchport(I_switchport_switchportContext ctx) {
+    _currentInterfaces.stream()
+        .filter(iface -> iface.getSwitchportMode() == SwitchportMode.NONE)
+        .forEach(iface -> iface.setSwitchportMode(SwitchportMode.ACCESS));
   }
 
   @Override
