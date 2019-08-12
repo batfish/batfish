@@ -22,7 +22,7 @@ public class OspfInterfacePropertySpecifier extends PropertySpecifier {
   public static final String OSPF_AREA_NAME = InterfacePropertySpecifier.OSPF_AREA_NAME;
   public static final String OSPF_PASSIVE = InterfacePropertySpecifier.OSPF_PASSIVE;
   public static final String OSPF_COST = InterfacePropertySpecifier.OSPF_COST;
-  public static final String OSPF_POINT_TO_POINT = InterfacePropertySpecifier.OSPF_POINT_TO_POINT;
+  public static final String OSPF_POINT_TO_POINT = InterfacePropertySpecifier.OSPF_NETWORK_TYPE;
 
   // create an ordered list
   private static final List<String> PROPERTIES =

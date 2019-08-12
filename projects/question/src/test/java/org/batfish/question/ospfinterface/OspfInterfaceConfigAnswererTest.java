@@ -3,8 +3,8 @@ package org.batfish.question.ospfinterface;
 import static org.batfish.datamodel.matchers.RowMatchers.hasColumn;
 import static org.batfish.datamodel.questions.InterfacePropertySpecifier.OSPF_AREA_NAME;
 import static org.batfish.datamodel.questions.InterfacePropertySpecifier.OSPF_COST;
+import static org.batfish.datamodel.questions.InterfacePropertySpecifier.OSPF_NETWORK_TYPE;
 import static org.batfish.datamodel.questions.InterfacePropertySpecifier.OSPF_PASSIVE;
-import static org.batfish.datamodel.questions.InterfacePropertySpecifier.OSPF_POINT_TO_POINT;
 import static org.batfish.question.ospfinterface.OspfInterfaceConfigurationAnswerer.COL_INTERFACE;
 import static org.batfish.question.ospfinterface.OspfInterfaceConfigurationAnswerer.COL_PROCESS_ID;
 import static org.batfish.question.ospfinterface.OspfInterfaceConfigurationAnswerer.COL_VRF;
@@ -27,6 +27,7 @@ import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.answers.Schema;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.ospf.OspfArea;
+import org.batfish.datamodel.ospf.OspfNetworkType;
 import org.batfish.datamodel.questions.OspfInterfacePropertySpecifier;
 import org.batfish.datamodel.table.ColumnMetadata;
 import org.batfish.datamodel.table.Row;
@@ -52,7 +53,7 @@ public class OspfInterfaceConfigAnswererTest {
             .setOspfArea(ospfArea)
             .setOspfPassive(true)
             .setOspfCost(2)
-            .setOspfPointToPoint(true)
+            .setOspfNetworkType(OspfNetworkType.POINT_TO_POINT)
             .setOwner(configuration)
             .setVrf(vrf)
             .build();
@@ -87,7 +88,10 @@ public class OspfInterfaceConfigAnswererTest {
         allOf(
             hasColumn(OSPF_PASSIVE, equalTo(true), Schema.BOOLEAN),
             hasColumn(OSPF_COST, equalTo(2), Schema.INTEGER),
-            hasColumn(OSPF_POINT_TO_POINT, equalTo(true), Schema.BOOLEAN)));
+            hasColumn(
+                OSPF_NETWORK_TYPE,
+                equalTo(OspfNetworkType.POINT_TO_POINT.toString()),
+                Schema.STRING)));
   }
 
   @Test
@@ -106,7 +110,7 @@ public class OspfInterfaceConfigAnswererTest {
                 .add(OSPF_AREA_NAME)
                 .add(OSPF_PASSIVE)
                 .add(OSPF_COST)
-                .add(OSPF_POINT_TO_POINT)
+                .add(OSPF_NETWORK_TYPE)
                 .build()));
   }
 }
