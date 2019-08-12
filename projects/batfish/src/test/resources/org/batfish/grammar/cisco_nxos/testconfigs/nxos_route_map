@@ -86,6 +86,15 @@ route-map set_metric_type_type_1 permit 10
 route-map set_metric_type_type_2 permit 10
   set metric-type type-2
 
+route-map set_origin_egp permit 10
+  set origin egp
+
+route-map set_origin_igp permit 10
+  set origin igp
+
+route-map set_origin_incomplete permit 10
+  set origin incomplete
+
 route-map set_tag permit 10
   set tag 1
 
