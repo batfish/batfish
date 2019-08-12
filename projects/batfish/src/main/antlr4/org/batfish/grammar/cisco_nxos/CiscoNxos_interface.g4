@@ -381,10 +381,13 @@ i_no_null
 i_null
 :
   (
-    DUPLEX
+    BFD
+    | DUPLEX
+    | FEX
     | LACP
     | SPANNING_TREE
     | STORM_CONTROL
+    | UDLD
   ) null_rest_of_line
 ;
 
@@ -410,6 +413,7 @@ i_switchport
   (
     i_switchport_access
     | i_switchport_mode
+    | i_switchport_switchport
     | i_switchport_trunk_allowed
     | i_switchport_trunk
   )
@@ -449,6 +453,11 @@ i_switchport_mode_fex_fabric
 i_switchport_mode_trunk
 :
   TRUNK NEWLINE
+;
+
+i_switchport_switchport
+:
+  NEWLINE
 ;
 
 i_switchport_trunk

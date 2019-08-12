@@ -237,6 +237,11 @@ AGGREGATE_ADDRESS
   'aggregate-address'
 ;
 
+AGGRESSIVE
+:
+  'aggressive'
+;
+
 AHP
 :
   'ahp'
@@ -307,6 +312,11 @@ AS_PATH
 AS_SET
 :
   'as-set'
+;
+
+ASSOCIATE
+:
+  'associate'
 ;
 
 ASSOCIATE_VRF
@@ -1076,6 +1086,11 @@ FEATUREOPSTATUSCHANGE
   [Cc] [Hh] [Aa] [Nn] [Gg] [Ee]
 ;
 
+FEX
+:
+  'fex'
+;
+
 FEX_FABRIC
 :
   'fex-fabric'
@@ -1437,6 +1452,11 @@ INTERNAL
 INTERNET
 :
   'internet'
+;
+
+INTERVAL
+:
+  'interval'
 ;
 
 IP
@@ -1839,6 +1859,11 @@ MGMT
   [Mm] [Gg] [Mm] [Tt]
 ;
 
+MIN_RX
+:
+  'min_rx'
+;
+
 MINIMUM
 :
   'minimum'
@@ -1897,6 +1922,11 @@ MULTICAST
 MULTIPATH_RELAX
 :
   'multipath-relax'
+;
+
+MULTIPLIER
+:
+  'multiplier'
 ;
 
 MVPN
