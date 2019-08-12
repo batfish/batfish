@@ -45,6 +45,7 @@ import org.batfish.datamodel.ospf.OspfAreaSummary;
 import org.batfish.datamodel.ospf.OspfDefaultOriginateType;
 import org.batfish.datamodel.ospf.OspfMetricType;
 import org.batfish.datamodel.ospf.OspfNeighborConfigId;
+import org.batfish.datamodel.ospf.OspfNetworkType;
 import org.batfish.datamodel.ospf.OspfProcess;
 import org.batfish.datamodel.ospf.OspfSessionProperties;
 import org.batfish.datamodel.ospf.OspfTopology;
@@ -458,7 +459,8 @@ final class OspfRoutingProcess implements RoutingProcess<OspfTopology, OspfRoute
    */
   private long getIncrementalCost(Interface iface, boolean considerP2PasStub) {
     long cost = iface.getOspfCost();
-    if (iface.getOspfPassive() || (considerP2PasStub && iface.getOspfPointToPoint())) {
+    if (iface.getOspfPassive()
+        || (considerP2PasStub && (iface.getOspfNetworkType() == OspfNetworkType.POINT_TO_POINT))) {
       return firstNonNull(_process.getMaxMetricStubNetworks(), cost);
     } else {
       return firstNonNull(_process.getMaxMetricTransitLinks(), cost);
