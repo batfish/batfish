@@ -148,6 +148,7 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
   private @Nonnull Map<String, Vlan> _vlans;
   private @Nonnull Map<String, Vrf> _vrfs;
   private @Nonnull Map<String, Vxlan> _vxlans;
+  private final @Nonnull Map<String, IpPrefixList> _ipPrefixLists;
   private final @Nonnull Map<String, IpCommunityList> _ipCommunityLists;
 
   @Nonnull
@@ -157,6 +158,7 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
     _bonds = new HashMap<>();
     _bridge = new Bridge();
     _interfaces = new HashMap<>();
+    _ipPrefixLists = new HashMap<>();
     _ipCommunityLists = new HashMap<>();
     _ipv4Nameservers = new LinkedList<>();
     _ipv6Nameservers = new LinkedList<>();
@@ -810,6 +812,10 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
 
   public @Nonnull Map<String, Vxlan> getVxlans() {
     return _vxlans;
+  }
+
+  public @Nonnull Map<String, IpPrefixList> getIpPrefixLists() {
+    return _ipPrefixLists;
   }
 
   public @Nonnull Map<String, IpCommunityList> getIpCommunityLists() {
