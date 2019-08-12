@@ -1,0 +1,63 @@
+!RANCID-CONTENT-TYPE: cisco-nx
+!
+hostname nxos_l2_l3_vnis
+!
+!
+vlan 1
+  name Name-Of-Vlan-1
+  vn-segment 1111
+!
+vlan 3
+  name Name-Of-Vlan-3
+  vn-segment 3333
+!
+vrf context tenant1
+  vni 3333
+  rd auto
+  address-family ipv4 unicast
+    route-target both auto evpn
+  address-family ipv6 unicast
+    route-target both auto evpn
+interface nve1
+  no shutdown
+  host-reachability protocol bgp
+  source-interface loopback0
+  member vni 1111
+    suppress-arp
+    ingress-replication protocol bgp
+  member vni 3333 associate-vrf
+!
+router bgp 1
+  router-id 10.1.1.1
+  address-family l2vpn evpn
+    retain route-target all
+  template peer SPINE
+    address-family ipv4 unicast
+      allowas-in 1
+      send-community
+      default-originate
+      route-map match_metric out
+    address-family l2vpn evpn
+      allowas-in 1
+      send-community
+      send-community extended
+      route-map match_metric out
+  neighbor 1.1.1.1
+      inherit peer SPINE
+      remote-as 12121
+!
+interface Vlan1
+  no shutdown
+!
+interface Vlan3
+  no shutdown
+!
+interface loopback0
+  ip address 1.1.1.1/32
+!
+evpn
+  vni 1111 l2
+    rd auto
+    route-target import auto
+    route-target export auto
+!

@@ -19,6 +19,7 @@ import static org.batfish.datamodel.acl.AclLineMatchExprs.matchPacketLength;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.matchSrc;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.matchSrcPort;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.matchTcpFlags;
+import static org.batfish.datamodel.bgp.VniConfig.importRtPatternForAnyAs;
 import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasAdministrativeCost;
 import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasNextHopInterface;
 import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasNextHopIp;
@@ -133,6 +134,7 @@ import org.batfish.datamodel.AsPathAccessList;
 import org.batfish.datamodel.AsPathAccessListLine;
 import org.batfish.datamodel.BddTestbed;
 import org.batfish.datamodel.BgpActivePeerConfig;
+import org.batfish.datamodel.BgpPeerConfig;
 import org.batfish.datamodel.Bgpv4Route;
 import org.batfish.datamodel.BumTransportMethod;
 import org.batfish.datamodel.CommunityList;
@@ -170,7 +172,10 @@ import org.batfish.datamodel.acl.AclLineMatchExprs;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
 import org.batfish.datamodel.bgp.EvpnAddressFamily;
 import org.batfish.datamodel.bgp.Ipv4UnicastAddressFamily;
+import org.batfish.datamodel.bgp.Layer2VniConfig;
+import org.batfish.datamodel.bgp.Layer3VniConfig;
 import org.batfish.datamodel.bgp.RouteDistinguisher;
+import org.batfish.datamodel.bgp.community.ExtendedCommunity;
 import org.batfish.datamodel.bgp.community.StandardCommunity;
 import org.batfish.datamodel.matchers.HsrpGroupMatchers;
 import org.batfish.datamodel.matchers.RouteFilterListMatchers;
@@ -557,6 +562,37 @@ public final class CiscoNxosGrammarTest {
                             new CallExpr("match_metric"))),
                     ImmutableList.of(Statements.ExitAccept.toStaticStatement()),
                     ImmutableList.of(Statements.ExitReject.toStaticStatement())))));
+  }
+
+  @Test
+  public void testEvpnL2L3Vni() throws IOException {
+    Configuration c = parseConfig("nxos_l2_l3_vnis");
+
+    Ip routerId = Ip.parse("10.1.1.1");
+    // All defined VXLAN Vnis
+    ImmutableSortedSet<Layer2VniConfig> expectedL2Vnis =
+        ImmutableSortedSet.of(
+            Layer2VniConfig.builder()
+                .setVni(1111)
+                .setVrf(DEFAULT_VRF_NAME)
+                .setRouteDistinguisher(RouteDistinguisher.from(routerId, 1111))
+                .setRouteTarget(ExtendedCommunity.target(1, 1111))
+                .build());
+    ImmutableSortedSet<Layer3VniConfig> expectedL3Vnis =
+        ImmutableSortedSet.of(
+            Layer3VniConfig.builder()
+                .setVni(3333)
+                .setVrf(DEFAULT_VRF_NAME)
+                .setRouteDistinguisher(RouteDistinguisher.from(routerId, 3333))
+                .setRouteTarget(ExtendedCommunity.target(1, 3333))
+                .setImportRouteTarget(importRtPatternForAnyAs(3333))
+                .setAdvertiseV4Unicast(false)
+                .build());
+    BgpPeerConfig peer =
+        c.getDefaultVrf().getBgpProcess().getActiveNeighbors().get(Prefix.parse("1.1.1.1/32"));
+    assertThat(peer.getEvpnAddressFamily(), notNullValue());
+    assertThat(peer.getEvpnAddressFamily().getL2VNIs(), equalTo(expectedL2Vnis));
+    assertThat(peer.getEvpnAddressFamily().getL3VNIs(), equalTo(expectedL3Vnis));
   }
 
   @Test
