@@ -41,6 +41,7 @@ import org.batfish.representation.cumulus.CumulusStructureUsage;
 import org.batfish.representation.cumulus.RouteMap;
 import org.batfish.representation.cumulus.RouteMapEntry;
 import org.batfish.representation.cumulus.RouteMapMatchCommunity;
+import org.batfish.representation.cumulus.RouteMapSetMetric;
 import org.batfish.representation.cumulus.StaticRoute;
 import org.batfish.representation.cumulus.Vrf;
 
