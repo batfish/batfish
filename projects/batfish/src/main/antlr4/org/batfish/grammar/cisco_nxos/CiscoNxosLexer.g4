@@ -1261,6 +1261,11 @@ HELLO_INTERVAL
   'hello-interval'
 ;
 
+HMM
+:
+  'hmm'
+;
+
 HOST
 :
   'host'
@@ -1594,6 +1599,11 @@ LE
 LEVEL
 :
   'level'
+;
+
+LINE_PROTOCOL
+:
+  'line-protocol'
 ;
 
 LINK_FLAP
@@ -2558,6 +2568,11 @@ RD
   'rd'
 ;
 
+REACHABILITY
+:
+  'reachability'
+;
+
 READ
 :
   'read'
@@ -2857,6 +2872,11 @@ SHUTDOWN
 SIZE
 :
   'size'
+;
+
+SLA
+:
+  'sla'
 ;
 
 SMALL
