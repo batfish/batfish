@@ -209,8 +209,6 @@ public class Interface implements Serializable {
 
   @Nullable private Boolean _ospfPassive;
 
-  private boolean _ospfPointToPoint;
-
   @Nullable private String _ospfProcess;
 
   private boolean _ospfShutdown;
