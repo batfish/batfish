@@ -205,6 +205,8 @@ public class Interface implements Serializable {
 
   private int _ospfHelloMultiplier;
 
+  @Nullable private OspfNetworkType _ospfNetworkType;
+
   @Nullable private Boolean _ospfPassive;
 
   private boolean _ospfPointToPoint;
@@ -473,6 +475,10 @@ public class Interface implements Serializable {
     return _ospfHelloMultiplier;
   }
 
+  public OspfNetworkType getOspfNetworkType() {
+    return _ospfNetworkType;
+  }
+
   @Nullable
   public Boolean getOspfPassive() {
     return _ospfPassive;
@@ -659,6 +665,10 @@ public class Interface implements Serializable {
 
   public void setOspfHelloMultiplier(int multiplier) {
     _ospfHelloMultiplier = multiplier;
+  }
+
+  public void setOspfNetworkType(OspfNetworkType ospfNetworkType) {
+    _ospfNetworkType = ospfNetworkType;
   }
 
   public void setOspfPassive(@Nullable Boolean ospfPassive) {
