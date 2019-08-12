@@ -52,8 +52,14 @@ sbn_peer_group_decl
 
 sbn_property
 :
-  sbnp_remote_as
+  sbnp_description
+| sbnp_remote_as
 | sbnp_peer_group
+;
+
+sbnp_description
+:
+  DESCRIPTION REMARK_TEXT
 ;
 
 sbnp_remote_as

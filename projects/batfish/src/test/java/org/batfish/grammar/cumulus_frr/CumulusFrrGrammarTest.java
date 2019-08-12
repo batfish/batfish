@@ -148,6 +148,13 @@ public class CumulusFrrGrammarTest {
   }
 
   @Test
+  public void testBgpNeighborProperty_descrption() {
+    parse("router bgp 1\n neighbor n interface description a b c! d\n");
+    BgpNeighbor neighbor = CONFIG.getBgpProcess().getDefaultVrf().getNeighbors().get("n");
+    assertThat(neighbor.getDescription(), equalTo("a b c! d"));
+  }
+
+  @Test
   public void testBgpNeighborProperty_remoteAs_explicit() {
     parse("router bgp 1\n neighbor n interface remote-as 2\n");
     Map<String, BgpNeighbor> neighbors = CONFIG.getBgpProcess().getDefaultVrf().getNeighbors();
