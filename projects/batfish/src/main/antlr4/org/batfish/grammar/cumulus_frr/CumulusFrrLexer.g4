@@ -133,6 +133,11 @@ ROUTER_ID
   'router-id'
 ;
 
+SET
+:
+  'set'
+;
+
 SUBNET_MASK
 :
   F_SubnetMask
@@ -141,6 +146,11 @@ SUBNET_MASK
 MATCH
 :
   'match'
+;
+
+METRIC
+:
+  'metric'
 ;
 
 NEWLINE
