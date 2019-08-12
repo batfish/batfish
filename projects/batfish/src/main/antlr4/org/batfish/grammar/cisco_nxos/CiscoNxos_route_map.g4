@@ -8,8 +8,12 @@ options {
 
 s_route_map
 :
-  ROUTE_MAP name = route_map_name action = line_action sequence =
-  route_map_sequence NEWLINE
+  ROUTE_MAP name = route_map_name (route_map_entry | route_map_pbr_statistics)
+;
+
+route_map_entry
+:
+  action = line_action sequence = route_map_sequence NEWLINE
   (
     rm_continue
     | rm_description
@@ -204,4 +208,9 @@ rms_metric_type
 rms_tag
 :
   TAG tag = uint32 NEWLINE
+;
+
+route_map_pbr_statistics
+:
+  PBR_STATISTICS NEWLINE
 ;
