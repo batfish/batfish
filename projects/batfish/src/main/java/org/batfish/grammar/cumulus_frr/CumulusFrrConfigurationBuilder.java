@@ -15,6 +15,7 @@ import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.Prefix;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Rm_descriptionContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Rmm_communityContext;
+import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Rms_metricContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.S_bgpContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.S_routemapContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.S_vrfContext;
@@ -248,5 +249,10 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
         .ifPresent(old -> names.addAll(old.getNames()));
     ctx.names.stream().map(nameCtx -> nameCtx.getText()).forEach(names::add);
     _currentRouteMapEntry.setMatchCommunity(new RouteMapMatchCommunity(names.build()));
+  }
+
+  @Override
+  public void exitRms_metric(Rms_metricContext ctx) {
+    _currentRouteMapEntry.setSetMetric(new RouteMapSetMetric(parseLong(ctx.metric.getText())));
   }
 }
