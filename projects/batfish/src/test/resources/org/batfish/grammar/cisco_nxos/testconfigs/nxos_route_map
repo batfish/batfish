@@ -3,6 +3,8 @@
 hostname nxos_route_map
 !
 
+feature pbr
+
 !!! Referenced structures
 ip access-list access_list1
   10 permit ip any any
@@ -18,6 +20,9 @@ interface loopback0
 route-map empty_deny deny 10
 
 route-map empty_permit permit 10
+
+! reallly empty
+route-map empty_pbr_statistics pbr-statistics
 
 !!! Simple matches
 route-map match_as_path permit 10

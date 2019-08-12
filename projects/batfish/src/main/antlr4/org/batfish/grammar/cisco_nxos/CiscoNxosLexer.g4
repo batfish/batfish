@@ -2298,6 +2298,16 @@ PATHCOST
   'pathcost'
 ;
 
+PBR
+:
+  'pbr'
+;
+
+PBR_STATISTICS
+:
+  'pbr-statistics'
+;
+
 PCP
 :
   'pcp'
