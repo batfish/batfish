@@ -5,6 +5,7 @@ import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.routing_policy.expr.BooleanExpr;
 import org.batfish.datamodel.routing_policy.expr.Disjunction;
 import org.batfish.datamodel.routing_policy.expr.MatchEntireCommunitySet;
@@ -28,8 +29,8 @@ public class RouteMapMatchCommunityTest {
         .getIpCommunityLists()
         .putAll(
             ImmutableMap.of(
-                "M1", new IpCommunityListExpanded("M1", ImmutableList.of()),
-                "M2", new IpCommunityListExpanded("M2", ImmutableList.of())));
+                "M1", new IpCommunityListExpanded("M1", LineAction.PERMIT, ImmutableList.of()),
+                "M2", new IpCommunityListExpanded("M2", LineAction.PERMIT, ImmutableList.of())));
     BooleanExpr result = match.toBooleanExpr(null, cumulusNcluConfiguration, null);
 
     assertThat(
