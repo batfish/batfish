@@ -96,7 +96,6 @@ public class CumulusFrrGrammarTest {
     parseFromTextWithSettings(src, settings);
   }
 
-  @Nonnull
   private static void parseFromTextWithSettings(String src, Settings settings) {
     CumulusFrrCombinedParser parser = new CumulusFrrCombinedParser(src, settings, 1, 0);
     ParserRuleContext tree =
