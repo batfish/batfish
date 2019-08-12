@@ -129,6 +129,12 @@ ipv6_prefix
   IPV6_PREFIX
 ;
 
+key_chain_name
+:
+// 1-63 characters
+  WORD
+;
+
 line_action
 :
   deny = DENY
