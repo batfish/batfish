@@ -23,6 +23,11 @@ COMMENT_LINE
   ) -> channel ( HIDDEN )
 ;
 
+BGP
+:
+  'bgp'
+;
+
 COLON
 :
   ':'
@@ -68,9 +73,24 @@ EXPANDED
   'expanded' -> pushMode(M_Word)
 ;
 
+EXTERNAL
+:
+  'external'
+;
+
 FRR_VERSION_LINE
 :
   'frr version' F_NonNewline*
+;
+
+INTERFACE
+:
+  'interface'
+;
+
+INTERNAL
+:
+  'internal'
 ;
 
 IP
@@ -88,9 +108,24 @@ IP_PREFIX
   F_IpPrefix
 ;
 
+NEIGHBOR
+:
+  'neighbor' -> pushMode(M_Neighbor)
+;
+
+PEER_GROUP
+:
+  'peer-group' -> pushMode(M_PeerGroup)
+;
+
 PERMIT
 :
   'permit'
+;
+
+REMOTE_AS
+:
+  'remote-as'
 ;
 
 ROUTE_MAP
@@ -101,6 +136,16 @@ ROUTE_MAP
 ROUTE
 :
   'route'
+;
+
+ROUTER
+:
+  'router'
+;
+
+ROUTER_ID
+:
+  'router-id'
 ;
 
 SUBNET_MASK
@@ -301,6 +346,41 @@ F_Whitespace
 ;
 
 // modes
+mode M_Neighbor;
+
+M_Neighbor_IP_Address
+:
+  F_IpAddress -> type(IP_ADDRESS) , popMode
+;
+
+M_Neighbor_Word
+:
+  F_Word -> type(WORD) , popMode
+;
+
+M_Neighbor_WS
+:
+  F_Whitespace+ -> channel ( HIDDEN )
+;
+
+mode M_PeerGroup;
+
+M_Newline
+:
+  F_Newline -> type(NEWLINE), popMode
+;
+
+M_PeerGroup_Word
+:
+  F_Word -> type(WORD) , popMode
+;
+
+M_PeerGroup_WS
+:
+  F_Whitespace+ -> channel ( HIDDEN )
+;
+
+
 mode M_Word;
 
 M_Word_WORD

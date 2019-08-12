@@ -4,6 +4,11 @@ options {
   tokenVocab = CumulusFrrLexer;
 }
 
+autonomous_system
+:
+  uint32
+;
+
 ip_address
 :
   IP_ADDRESS
@@ -43,6 +48,11 @@ uint16
 :
   UINT8
   | UINT16
+;
+
+vrf_name
+:
+  word
 ;
 
 uint32

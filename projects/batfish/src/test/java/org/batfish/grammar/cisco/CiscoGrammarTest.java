@@ -99,7 +99,6 @@ import static org.batfish.datamodel.matchers.InterfaceMatchers.hasIsis;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasMlagId;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasMtu;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasNativeVlan;
-import static org.batfish.datamodel.matchers.InterfaceMatchers.hasOspfArea;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasOspfAreaName;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasSpeed;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasSwitchPortEncapsulation;
@@ -4679,7 +4678,7 @@ public class CiscoGrammarTest {
     assertThat(c, hasDefaultVrf(hasOspfProcess("1", hasAreas(hasKey(areaNum)))));
     OspfArea area = c.getDefaultVrf().getOspfProcesses().get("1").getAreas().get(areaNum);
     assertThat(area, OspfAreaMatchers.hasInterfaces(hasItem(ifaceName)));
-    assertThat(c, hasInterface(ifaceName, hasOspfArea(sameInstance(area))));
+    assertThat(c, hasInterface(ifaceName, hasOspfAreaName(areaNum)));
     assertThat(c, hasInterface(ifaceName, isOspfPassive(equalTo(false))));
     assertThat(c, hasInterface(ifaceName, isOspfPointToPoint()));
   }
@@ -4710,7 +4709,7 @@ public class CiscoGrammarTest {
     OspfArea area = vrf.getOspfProcesses().get("1").getAreas().get(areaNum);
     assertThat(area, OspfAreaMatchers.hasInterfaces(hasItem(ifaceName)));
     assertThat(c, hasInterface(ifaceName, hasVrf(sameInstance(vrf))));
-    assertThat(c, hasInterface(ifaceName, hasOspfArea(sameInstance(area))));
+    assertThat(c, hasInterface(ifaceName, hasOspfAreaName(areaNum)));
     assertThat(c, hasInterface(ifaceName, isOspfPassive(equalTo(false))));
     assertThat(c, hasInterface(ifaceName, isOspfPointToPoint()));
   }
@@ -4792,8 +4791,10 @@ public class CiscoGrammarTest {
     Configuration abr = configurations.get(abrName);
 
     // Sanity check: ensure the ABR does not have suppressType7 set for area 1
+    Long areaNum =
+        abr.getVrfs().get(DEFAULT_VRF_NAME).getInterfaces().get("Ethernet1").getOspfAreaName();
     OspfArea abrToArea1 =
-        abr.getVrfs().get(DEFAULT_VRF_NAME).getInterfaces().get("Ethernet1").getOspfArea();
+        abr.getVrfs().get(DEFAULT_VRF_NAME).getOspfProcesses().get("1").getAreas().get(areaNum);
     assertThat(abrToArea1.getNssa(), hasSuppressType7(false));
 
     batfish.computeDataPlane();
@@ -4825,7 +4826,10 @@ public class CiscoGrammarTest {
     abr = configurations.get(abrName);
 
     // This time the ABR should have suppressType7 set for area 1
-    abrToArea1 = abr.getVrfs().get(DEFAULT_VRF_NAME).getInterfaces().get("Ethernet1").getOspfArea();
+    areaNum =
+        abr.getVrfs().get(DEFAULT_VRF_NAME).getInterfaces().get("Ethernet1").getOspfAreaName();
+    abrToArea1 =
+        abr.getVrfs().get(DEFAULT_VRF_NAME).getOspfProcesses().get("1").getAreas().get(areaNum);
     assertThat(abrToArea1.getNssa(), hasSuppressType7(true));
 
     batfish.computeDataPlane();
