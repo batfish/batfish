@@ -7,6 +7,8 @@ import static org.batfish.representation.cumulus.RemoteAsType.EXTERNAL;
 import static org.batfish.representation.cumulus.RemoteAsType.INTERNAL;
 
 import com.google.common.collect.ImmutableList;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 import javax.annotation.Nullable;
 import org.batfish.common.Warnings;
@@ -246,7 +248,7 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
 
   @Override
   public void exitRmmipa_prefix_list(Rmmipa_prefix_listContext ctx) {
-    ImmutableList.Builder<String> names = ImmutableList.builder();
+    List<String> names = new ArrayList<>();
     Optional.ofNullable(_currentRouteMapEntry.getMatchIpAddressPrefixList())
         .ifPresent(old -> names.addAll(old.getNames()));
     for (Ip_prefix_list_nameContext nameCtx : ctx.names) {
@@ -258,8 +260,7 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
           nameCtx.getStart().getLine());
       names.add(name);
     }
-    _currentRouteMapEntry.setMatchIpAddressPrefixList(
-        new RouteMapMatchIpAddressPrefixList(names.build()));
+    _currentRouteMapEntry.setMatchIpAddressPrefixList(new RouteMapMatchIpAddressPrefixList(names));
   }
 
   @Override
