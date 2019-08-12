@@ -365,10 +365,13 @@ i_no_null
 i_null
 :
   (
-    DUPLEX
+    BFD
+    | DUPLEX
+    | FEX
     | LACP
     | SPANNING_TREE
     | STORM_CONTROL
+    | UDLD
   ) null_rest_of_line
 ;
 
