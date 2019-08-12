@@ -23,6 +23,7 @@ import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sb_router_idContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbaf_ipv4_unicastContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbaf_l2vpn_evpnContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbafls_advertise_all_vniContext;
+import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbafls_advertise_ipv4_unicastContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbn_interfaceContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbn_ipContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbn_nameContext;
@@ -35,6 +36,7 @@ import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sv_vniContext;
 import org.batfish.representation.cumulus.BgpInterfaceNeighbor;
 import org.batfish.representation.cumulus.BgpIpNeighbor;
 import org.batfish.representation.cumulus.BgpIpv4UnicastAddressFamily;
+import org.batfish.representation.cumulus.BgpL2VpnEvpnIpv4Unicast;
 import org.batfish.representation.cumulus.BgpL2vpnEvpnAddressFamily;
 import org.batfish.representation.cumulus.BgpNeighbor;
 import org.batfish.representation.cumulus.BgpPeerGroupNeighbor;
@@ -115,6 +117,12 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
   @Override
   public void exitSbafls_advertise_all_vni(Sbafls_advertise_all_vniContext ctx) {
     _currentBgpVrf.getL2VpnEvpn().setAdvertiseAllVni(true);
+  }
+
+  @Override
+  public void enterSbafls_advertise_ipv4_unicast(Sbafls_advertise_ipv4_unicastContext ctx) {
+    // setting in enter instead of exit since in future we can attach a routemap
+    _currentBgpVrf.getL2VpnEvpn().setAdvertiseIpv4Unicast(new BgpL2VpnEvpnIpv4Unicast());
   }
 
   @Override

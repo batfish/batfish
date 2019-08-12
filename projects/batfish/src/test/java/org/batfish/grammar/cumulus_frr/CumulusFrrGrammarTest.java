@@ -145,6 +145,16 @@ public class CumulusFrrGrammarTest {
   }
 
   @Test
+  public void testBgpAdressFamilyL2vpnEvpnAdvertiseIpv4Unicast() {
+    parseLines(
+        "router bgp 1",
+        "address-family l2vpn evpn",
+        "advertise ipv4 unicast",
+        "exit-address-family");
+    assertNotNull(CONFIG.getBgpProcess().getDefaultVrf().getL2VpnEvpn().getAdvertiseIpv4Unicast());
+  }
+
+  @Test
   public void testBgpNeighbor_peerGroup() {
     parse("router bgp 1\n neighbor foo peer-group\n");
     Map<String, BgpNeighbor> neighbors = CONFIG.getBgpProcess().getDefaultVrf().getNeighbors();

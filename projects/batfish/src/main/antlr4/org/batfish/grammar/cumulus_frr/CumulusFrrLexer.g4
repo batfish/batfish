@@ -28,6 +28,11 @@ ADDRESS_FAMILY
   'address-family'
 ;
 
+ADVERTISE
+:
+  'advertise'
+;
+
 ADVERTISE_ALL_VNI
 :
   'advertise-all-vni'

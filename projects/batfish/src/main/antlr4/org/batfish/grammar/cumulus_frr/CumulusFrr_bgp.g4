@@ -53,11 +53,17 @@ sbaf_l2vpn_evpn
 sbafl_statement
 :
   sbafls_advertise_all_vni
+| sbafls_advertise_ipv4_unicast
 ;
 
 sbafls_advertise_all_vni
 :
   ADVERTISE_ALL_VNI NEWLINE
+;
+
+sbafls_advertise_ipv4_unicast
+:
+  ADVERTISE IPV4 UNICAST NEWLINE
 ;
 
 sbn_ip
