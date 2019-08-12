@@ -44,6 +44,11 @@ BRIDGE_ACCESS
   'bridge-access'
 ;
 
+BRIDGE_PVID
+:
+  'bridge-pvid'
+;
+
 BRIDGE_VIDS
 :
   'bridge-vids'
@@ -54,9 +59,29 @@ CLAG_ID
   'clag-id'
 ;
 
+CLAGD_BACKUP_IP
+:
+  'clagd-backup-ip'
+;
+
+CLAGD_PEER_IP
+:
+  'clagd-peer-ip'
+;
+
+CLAGD_SYS_MAC
+:
+  'clagd-sys-mac'
+;
+
 IFACE
 :
   'iface' -> pushMode(M_Word)
+;
+
+LINK_LOCAL
+:
+  'linklocal'
 ;
 
 LINK_SPEED

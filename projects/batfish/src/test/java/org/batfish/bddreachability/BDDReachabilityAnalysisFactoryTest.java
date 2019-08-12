@@ -79,6 +79,7 @@ import org.batfish.datamodel.flow.TraceWrapperAsAnswerElement;
 import org.batfish.datamodel.packet_policy.Drop;
 import org.batfish.datamodel.packet_policy.FibLookup;
 import org.batfish.datamodel.packet_policy.If;
+import org.batfish.datamodel.packet_policy.LiteralVrfName;
 import org.batfish.datamodel.packet_policy.PacketMatchExpr;
 import org.batfish.datamodel.packet_policy.PacketPolicy;
 import org.batfish.datamodel.packet_policy.Return;
@@ -1314,7 +1315,8 @@ public final class BDDReachabilityAnalysisFactoryTest {
                                 HeaderSpace.builder()
                                     .setDstIps(Prefix.parse("8.8.8.0/24").toIpSpace())
                                     .build())),
-                        ImmutableList.of(new Return(new FibLookup(vrf2.getName()))))),
+                        ImmutableList.of(
+                            new Return(new FibLookup(new LiteralVrfName(vrf2.getName())))))),
                 new Return(Drop.instance()))));
 
     Interface.Builder ib = nf.interfaceBuilder().setOwner(config).setVrf(vrf).setActive(true);

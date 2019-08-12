@@ -1,347 +1,6 @@
 [
   {
     "class" : "org.batfish.question.VIModelQuestionPlugin$VIModelAnswerElement",
-    "edges" : {
-      "layer3" : [
-        {
-          "interfaceAddresses1" : [
-            "2.2.2.0/25",
-            "3.3.3.0/26",
-            "4.4.4.0/28",
-            "5.5.0.0/23"
-          ],
-          "interfaceAddresses2" : [
-            "1.1.1.1/24",
-            "2.2.2.2/24"
-          ],
-          "nodeInterface1" : {
-            "hostname" : "cadant_interface",
-            "interface" : "cable-mac1.2"
-          },
-          "nodeInterface2" : {
-            "hostname" : "juniper_routing_policy",
-            "interface" : "ge-0/0/0.0"
-          }
-        },
-        {
-          "interfaceAddresses1" : [
-            "2.2.2.0/24"
-          ],
-          "interfaceAddresses2" : [
-            "1.1.1.1/24",
-            "2.2.2.2/24"
-          ],
-          "nodeInterface1" : {
-            "hostname" : "cisco_ospf_ipv6",
-            "interface" : "Ethernet0/0"
-          },
-          "nodeInterface2" : {
-            "hostname" : "juniper_routing_policy",
-            "interface" : "ge-0/0/0.0"
-          }
-        },
-        {
-          "interfaceAddresses1" : [
-            "2.2.2.0/24"
-          ],
-          "interfaceAddresses2" : [
-            "1.1.1.1/24",
-            "2.2.2.2/24"
-          ],
-          "nodeInterface1" : {
-            "hostname" : "cisco_ospf_multi_process",
-            "interface" : "Ethernet0/0"
-          },
-          "nodeInterface2" : {
-            "hostname" : "juniper_routing_policy",
-            "interface" : "ge-0/0/0.0"
-          }
-        },
-        {
-          "interfaceAddresses1" : [
-            "2.2.2.0/24"
-          ],
-          "interfaceAddresses2" : [
-            "1.1.1.1/24",
-            "2.2.2.2/24"
-          ],
-          "nodeInterface1" : {
-            "hostname" : "cisco_ospfv3",
-            "interface" : "Ethernet0/0"
-          },
-          "nodeInterface2" : {
-            "hostname" : "juniper_routing_policy",
-            "interface" : "ge-0/0/0.0"
-          }
-        },
-        {
-          "interfaceAddresses1" : [
-            "1.0.0.0/24"
-          ],
-          "interfaceAddresses2" : [
-            "1.0.0.1/31"
-          ],
-          "nodeInterface1" : {
-            "hostname" : "cisco_vrrp",
-            "interface" : "Ethernet0"
-          },
-          "nodeInterface2" : {
-            "hostname" : "interface-reth",
-            "interface" : "ge-0/0/1.0"
-          }
-        },
-        {
-          "interfaceAddresses1" : [
-            "1.0.0.0/24"
-          ],
-          "interfaceAddresses2" : [
-            "1.0.0.1/24"
-          ],
-          "nodeInterface1" : {
-            "hostname" : "cisco_vrrp",
-            "interface" : "Ethernet0"
-          },
-          "nodeInterface2" : {
-            "hostname" : "juniper_nat",
-            "interface" : "ge-0/0/0.0"
-          }
-        },
-        {
-          "interfaceAddresses1" : [
-            "10.0.0.1/24"
-          ],
-          "interfaceAddresses2" : [
-            "10.0.0.0/31"
-          ],
-          "nodeInterface1" : {
-            "hostname" : "f5_bigip_structured_net",
-            "interface" : "/Common/MYVLAN"
-          },
-          "nodeInterface2" : {
-            "hostname" : "ospf-disable",
-            "interface" : "ge-0/0/0.0"
-          }
-        },
-        {
-          "interfaceAddresses1" : [
-            "1.0.0.0/31"
-          ],
-          "interfaceAddresses2" : [
-            "1.0.0.1/24"
-          ],
-          "nodeInterface1" : {
-            "hostname" : "interface-reth",
-            "interface" : "ge-0/0/0.0"
-          },
-          "nodeInterface2" : {
-            "hostname" : "juniper_nat",
-            "interface" : "ge-0/0/0.0"
-          }
-        },
-        {
-          "interfaceAddresses1" : [
-            "1.0.0.1/31"
-          ],
-          "interfaceAddresses2" : [
-            "1.0.0.0/24"
-          ],
-          "nodeInterface1" : {
-            "hostname" : "interface-reth",
-            "interface" : "ge-0/0/1.0"
-          },
-          "nodeInterface2" : {
-            "hostname" : "cisco_vrrp",
-            "interface" : "Ethernet0"
-          }
-        },
-        {
-          "interfaceAddresses1" : [
-            "1.2.3.0/24",
-            "1.2.3.1/24"
-          ],
-          "interfaceAddresses2" : [
-            "1.2.3.4/5"
-          ],
-          "nodeInterface1" : {
-            "hostname" : "juniper_interfaces",
-            "interface" : "irb.5"
-          },
-          "nodeInterface2" : {
-            "hostname" : "aruba_interface",
-            "interface" : "GigabitEthernet0/0/0"
-          }
-        },
-        {
-          "interfaceAddresses1" : [
-            "1.2.3.0/24",
-            "1.2.3.1/24"
-          ],
-          "interfaceAddresses2" : [
-            "1.2.3.4/24"
-          ],
-          "nodeInterface1" : {
-            "hostname" : "juniper_interfaces",
-            "interface" : "irb.5"
-          },
-          "nodeInterface2" : {
-            "hostname" : "nxos_interface",
-            "interface" : "Ethernet0/0"
-          }
-        },
-        {
-          "interfaceAddresses1" : [
-            "1.0.0.1/24"
-          ],
-          "interfaceAddresses2" : [
-            "1.0.0.0/24"
-          ],
-          "nodeInterface1" : {
-            "hostname" : "juniper_nat",
-            "interface" : "ge-0/0/0.0"
-          },
-          "nodeInterface2" : {
-            "hostname" : "cisco_vrrp",
-            "interface" : "Ethernet0"
-          }
-        },
-        {
-          "interfaceAddresses1" : [
-            "1.0.0.1/24"
-          ],
-          "interfaceAddresses2" : [
-            "1.0.0.0/31"
-          ],
-          "nodeInterface1" : {
-            "hostname" : "juniper_nat",
-            "interface" : "ge-0/0/0.0"
-          },
-          "nodeInterface2" : {
-            "hostname" : "interface-reth",
-            "interface" : "ge-0/0/0.0"
-          }
-        },
-        {
-          "interfaceAddresses1" : [
-            "1.1.1.1/24",
-            "2.2.2.2/24"
-          ],
-          "interfaceAddresses2" : [
-            "2.2.2.0/25",
-            "3.3.3.0/26",
-            "4.4.4.0/28",
-            "5.5.0.0/23"
-          ],
-          "nodeInterface1" : {
-            "hostname" : "juniper_routing_policy",
-            "interface" : "ge-0/0/0.0"
-          },
-          "nodeInterface2" : {
-            "hostname" : "cadant_interface",
-            "interface" : "cable-mac1.2"
-          }
-        },
-        {
-          "interfaceAddresses1" : [
-            "1.1.1.1/24",
-            "2.2.2.2/24"
-          ],
-          "interfaceAddresses2" : [
-            "2.2.2.0/24"
-          ],
-          "nodeInterface1" : {
-            "hostname" : "juniper_routing_policy",
-            "interface" : "ge-0/0/0.0"
-          },
-          "nodeInterface2" : {
-            "hostname" : "cisco_ospf_ipv6",
-            "interface" : "Ethernet0/0"
-          }
-        },
-        {
-          "interfaceAddresses1" : [
-            "1.1.1.1/24",
-            "2.2.2.2/24"
-          ],
-          "interfaceAddresses2" : [
-            "2.2.2.0/24"
-          ],
-          "nodeInterface1" : {
-            "hostname" : "juniper_routing_policy",
-            "interface" : "ge-0/0/0.0"
-          },
-          "nodeInterface2" : {
-            "hostname" : "cisco_ospf_multi_process",
-            "interface" : "Ethernet0/0"
-          }
-        },
-        {
-          "interfaceAddresses1" : [
-            "1.1.1.1/24",
-            "2.2.2.2/24"
-          ],
-          "interfaceAddresses2" : [
-            "2.2.2.0/24"
-          ],
-          "nodeInterface1" : {
-            "hostname" : "juniper_routing_policy",
-            "interface" : "ge-0/0/0.0"
-          },
-          "nodeInterface2" : {
-            "hostname" : "cisco_ospfv3",
-            "interface" : "Ethernet0/0"
-          }
-        },
-        {
-          "interfaceAddresses1" : [
-            "1.2.3.4/24"
-          ],
-          "interfaceAddresses2" : [
-            "1.2.3.0/30"
-          ],
-          "nodeInterface1" : {
-            "hostname" : "nxos_interface",
-            "interface" : "Ethernet0/0"
-          },
-          "nodeInterface2" : {
-            "hostname" : "cadant_interface",
-            "interface" : "cable-mac1.1"
-          }
-        },
-        {
-          "interfaceAddresses1" : [
-            "1.2.3.4/24"
-          ],
-          "interfaceAddresses2" : [
-            "1.2.3.0/24",
-            "1.2.3.1/24"
-          ],
-          "nodeInterface1" : {
-            "hostname" : "nxos_interface",
-            "interface" : "Ethernet0/0"
-          },
-          "nodeInterface2" : {
-            "hostname" : "juniper_interfaces",
-            "interface" : "irb.5"
-          }
-        },
-        {
-          "interfaceAddresses1" : [
-            "10.0.0.0/31"
-          ],
-          "interfaceAddresses2" : [
-            "10.0.0.1/24"
-          ],
-          "nodeInterface1" : {
-            "hostname" : "ospf-disable",
-            "interface" : "ge-0/0/0.0"
-          },
-          "nodeInterface2" : {
-            "hostname" : "f5_bigip_structured_net",
-            "interface" : "/Common/MYVLAN"
-          }
-        }
-      ]
-    },
     "nodes" : {
       "aaa_accounting" : {
         "configurationFormat" : "CISCO_IOS",
@@ -3057,8 +2716,9 @@
         "vendorFamily" : {
           "cisco" : {
             "banners" : {
+              "asdm" : "********************************************************************************\n\n*THIS IS A PRIVATE COMPUTER SYSTEM. SUPER SECRET SAUCE    *\n\n********************************************************************************\n\n",
               "login" : "\nTHIS IS AN ARISTA STYLE BANNER\n\nNOTICE NOTICE NOTICE NOTICE NOTICE NOTICE NOTICE NOTICE NOTICE\nUnauthorized access and/or use prohibited. All access and/or use subject to monitoring.\nNOTICE NOTICE NOTICE NOTICE NOTICE NOTICE NOTICE NOTICE NOTICE\n\nEOF\n\n^C\n***************************************************************************\n*                                                                         *\n*  This banner was seen in IOS XR                                         *\n*  It ends with a caret                                                   *\n*                                                                         *\n***************************************************************************\n^C\n\n",
-              "motd" : "^C\nTHIS BANNER IS DELIMITED BY HASHES (nexus)\n\nNOTICE   NOTICE   NOTICE   NOTICE   NOTICE   NOTICE   NOTICE   NOTICE   NOTICE\n\nUnauthorized access and/or use prohibited.\nAll access and/or use subject to monitoring.\n\nNOTICE   NOTICE   NOTICE   NOTICE   NOTICE   NOTICE   NOTICE   NOTICE   NOTICE\n^C\n\n^C\nTHIS BANNER's ESCAPE_C DOES NOT START ON A NEWLINE\nIt has a has (#) character in it\nNOTICE NOTICE NOTICE NOTICE NOTICE NOTICE NOTICE NOTICE NOTICE\nUnauthorized a^C\n\n^C\nNOTICE NOTICE NOTICE NOTICE NOTICE NOTICE NOTICE NOTICE NOTICE\nTHIS BANNER CONTAINS A UNICODE '0003' character (CTRL-C)\nNOTICE NOTICE NOTICE NOTICE NOTICE NOTICE NOTICE NOTICE NOTICE\n^C\n\n^=================================================================================                                             \n                       BLAH BLAH\n\n                             BOOP\n=================================================================================^\n\n\n\n"
+              "motd" : "^C\nTHIS BANNER IS DELIMITED BY HASHES (nexus)\n\nNOTICE   NOTICE   NOTICE   NOTICE   NOTICE   NOTICE   NOTICE   NOTICE   NOTICE\n\nUnauthorized access and/or use prohibited.\nAll access and/or use subject to monitoring.\n\nNOTICE   NOTICE   NOTICE   NOTICE   NOTICE   NOTICE   NOTICE   NOTICE   NOTICE\n^C\n\n^C\nTHIS BANNER's ESCAPE_C DOES NOT START ON A NEWLINE\nIt has a has (#) character in it\nNOTICE NOTICE NOTICE NOTICE NOTICE NOTICE NOTICE NOTICE NOTICE\nUnauthorized a^C\n\n^C\nNOTICE NOTICE NOTICE NOTICE NOTICE NOTICE NOTICE NOTICE NOTICE\nTHIS BANNER CONTAINS A UNICODE '0003' character (CTRL-C)\nNOTICE NOTICE NOTICE NOTICE NOTICE NOTICE NOTICE NOTICE NOTICE\n^C\n\n^=================================================================================                                             \n                       BLAH BLAH\n\n                             BOOP\n=================================================================================^\n\n"
             },
             "hostname" : "banner",
             "logging" : {
@@ -8161,11 +7821,11 @@
                     "metric" : {
                       "class" : "org.batfish.datamodel.routing_policy.expr.LiteralEigrpMetric",
                       "metric" : {
-                        "classic-bandwidth" : 10000000,
-                        "classic-delay" : 2,
-                        "mode" : "CLASSIC",
-                        "named-bandwidth" : 0,
-                        "named-delay" : 0
+                        "bandwidth" : 1,
+                        "delay" : 20000000,
+                        "effectiveBandwidth" : 0,
+                        "mtu" : 0,
+                        "reliability" : 0
                       }
                     }
                   },
@@ -8190,11 +7850,11 @@
                     "metric" : {
                       "class" : "org.batfish.datamodel.routing_policy.expr.LiteralEigrpMetric",
                       "metric" : {
-                        "classic-bandwidth" : 10000000,
-                        "classic-delay" : 2,
-                        "mode" : "CLASSIC",
-                        "named-bandwidth" : 0,
-                        "named-delay" : 0
+                        "bandwidth" : 1,
+                        "delay" : 20000000,
+                        "effectiveBandwidth" : 0,
+                        "mtu" : 0,
+                        "reliability" : 0
                       }
                     }
                   },
@@ -8228,11 +7888,11 @@
                     "metric" : {
                       "class" : "org.batfish.datamodel.routing_policy.expr.LiteralEigrpMetric",
                       "metric" : {
-                        "classic-bandwidth" : 10000000,
-                        "classic-delay" : 2,
-                        "mode" : "CLASSIC",
-                        "named-bandwidth" : 0,
-                        "named-delay" : 0
+                        "bandwidth" : 1,
+                        "delay" : 20000000,
+                        "effectiveBandwidth" : 0,
+                        "mtu" : 0,
+                        "reliability" : 0
                       }
                     }
                   },
@@ -8257,11 +7917,11 @@
                     "metric" : {
                       "class" : "org.batfish.datamodel.routing_policy.expr.LiteralEigrpMetric",
                       "metric" : {
-                        "classic-bandwidth" : 10000000,
-                        "classic-delay" : 2,
-                        "mode" : "CLASSIC",
-                        "named-bandwidth" : 0,
-                        "named-delay" : 0
+                        "bandwidth" : 1,
+                        "delay" : 20000000,
+                        "effectiveBandwidth" : 0,
+                        "mtu" : 0,
+                        "reliability" : 0
                       }
                     }
                   },
@@ -8286,11 +7946,11 @@
                     "metric" : {
                       "class" : "org.batfish.datamodel.routing_policy.expr.LiteralEigrpMetric",
                       "metric" : {
-                        "classic-bandwidth" : 10000000,
-                        "classic-delay" : 2,
-                        "mode" : "CLASSIC",
-                        "named-bandwidth" : 0,
-                        "named-delay" : 0
+                        "bandwidth" : 1,
+                        "delay" : 20000000,
+                        "effectiveBandwidth" : 0,
+                        "mtu" : 0,
+                        "reliability" : 0
                       }
                     }
                   },
@@ -8315,11 +7975,11 @@
                     "metric" : {
                       "class" : "org.batfish.datamodel.routing_policy.expr.LiteralEigrpMetric",
                       "metric" : {
-                        "classic-bandwidth" : 1000,
-                        "classic-delay" : 10,
-                        "mode" : "CLASSIC",
-                        "named-bandwidth" : 0,
-                        "named-delay" : 0
+                        "bandwidth" : 10000,
+                        "delay" : 100000000,
+                        "effectiveBandwidth" : 0,
+                        "mtu" : 0,
+                        "reliability" : 0
                       }
                     }
                   },
@@ -11378,7 +11038,6 @@
             "ospfHelloMultiplier" : 0,
             "ospfPassive" : false,
             "ospfPointToPoint" : false,
-            "ospfProcess" : "1",
             "prefix" : "1.1.1.1/32",
             "proxyArp" : true,
             "ripEnabled" : false,
@@ -11797,7 +11456,6 @@
             "ospfHelloMultiplier" : 0,
             "ospfPassive" : false,
             "ospfPointToPoint" : false,
-            "ospfProcess" : "abcdefg",
             "prefix" : "1.1.1.1/32",
             "proxyArp" : true,
             "ripEnabled" : false,
@@ -19825,6 +19483,60 @@
           }
         }
       },
+      "ios_interface_ip_eigrp_settings" : {
+        "configurationFormat" : "CISCO_IOS",
+        "name" : "ios_interface_ip_eigrp_settings",
+        "defaultCrossZoneAction" : "PERMIT",
+        "defaultInboundAction" : "PERMIT",
+        "deviceType" : "SWITCH",
+        "interfaces" : {
+          "Ethernet0" : {
+            "name" : "Ethernet0",
+            "active" : true,
+            "additionalArpIps" : {
+              "class" : "org.batfish.datamodel.EmptyIpSpace"
+            },
+            "allowedVlans" : "",
+            "autostate" : true,
+            "bandwidth" : 1.0E7,
+            "declaredNames" : [
+              "Ethernet0"
+            ],
+            "mtu" : 1500,
+            "ospfDeadInterval" : 0,
+            "ospfEnabled" : false,
+            "ospfHelloMultiplier" : 0,
+            "ospfPassive" : false,
+            "ospfPointToPoint" : false,
+            "proxyArp" : true,
+            "ripEnabled" : false,
+            "ripPassive" : false,
+            "spanningTreePortfast" : false,
+            "speed" : 1.0E7,
+            "switchport" : false,
+            "switchportMode" : "NONE",
+            "switchportTrunkEncapsulation" : "DOT1Q",
+            "type" : "PHYSICAL",
+            "vrf" : "default"
+          }
+        },
+        "vendorFamily" : {
+          "cisco" : {
+            "hostname" : "ios_interface_ip_eigrp_settings",
+            "logging" : {
+              "on" : true
+            }
+          }
+        },
+        "vrfs" : {
+          "default" : {
+            "name" : "default",
+            "interfaces" : [
+              "Ethernet0"
+            ]
+          }
+        }
+      },
       "ios_interface_ip_tcp" : {
         "configurationFormat" : "CISCO_IOS",
         "name" : "ios_interface_ip_tcp",
@@ -20676,8 +20388,9 @@
               "Bundle-Ether101"
             ],
             "mtu" : 1500,
+            "ospfArea" : 0,
             "ospfDeadInterval" : 0,
-            "ospfEnabled" : false,
+            "ospfEnabled" : true,
             "ospfHelloMultiplier" : 0,
             "ospfPassive" : false,
             "ospfPointToPoint" : false,
@@ -20705,8 +20418,9 @@
               "Bundle-Ether103"
             ],
             "mtu" : 1500,
+            "ospfArea" : 0,
             "ospfDeadInterval" : 0,
-            "ospfEnabled" : false,
+            "ospfEnabled" : true,
             "ospfHelloMultiplier" : 0,
             "ospfPassive" : false,
             "ospfPointToPoint" : false,
@@ -20734,11 +20448,12 @@
               "Bundle-Ether201"
             ],
             "mtu" : 1500,
+            "ospfArea" : 0,
             "ospfCost" : 1,
             "ospfDeadInterval" : 0,
-            "ospfEnabled" : false,
+            "ospfEnabled" : true,
             "ospfHelloMultiplier" : 0,
-            "ospfPassive" : false,
+            "ospfPassive" : true,
             "ospfPointToPoint" : false,
             "ospfProcess" : "2",
             "proxyArp" : true,
@@ -20764,8 +20479,10 @@
               "HundredGigE0/2/0/0.292"
             ],
             "mtu" : 1500,
+            "ospfArea" : 0,
+            "ospfCost" : 1,
             "ospfDeadInterval" : 0,
-            "ospfEnabled" : false,
+            "ospfEnabled" : true,
             "ospfHelloMultiplier" : 0,
             "ospfPassive" : false,
             "ospfPointToPoint" : false,
@@ -20793,8 +20510,10 @@
               "HundredGigE0/2/0/3"
             ],
             "mtu" : 1500,
+            "ospfArea" : 0,
+            "ospfCost" : 1,
             "ospfDeadInterval" : 0,
-            "ospfEnabled" : false,
+            "ospfEnabled" : true,
             "ospfHelloMultiplier" : 0,
             "ospfPassive" : false,
             "ospfPointToPoint" : false,
@@ -20822,10 +20541,12 @@
               "Loopback0"
             ],
             "mtu" : 1500,
+            "ospfArea" : 0,
+            "ospfCost" : 1,
             "ospfDeadInterval" : 0,
-            "ospfEnabled" : false,
+            "ospfEnabled" : true,
             "ospfHelloMultiplier" : 0,
-            "ospfPassive" : false,
+            "ospfPassive" : true,
             "ospfPointToPoint" : false,
             "ospfProcess" : "2",
             "proxyArp" : true,
@@ -20851,8 +20572,10 @@
               "TenGigE0/0/0/2"
             ],
             "mtu" : 1500,
+            "ospfArea" : 60,
+            "ospfCost" : 1,
             "ospfDeadInterval" : 0,
-            "ospfEnabled" : false,
+            "ospfEnabled" : true,
             "ospfHelloMultiplier" : 0,
             "ospfPassive" : false,
             "ospfPointToPoint" : false,
@@ -20881,10 +20604,12 @@
               "TenGigE0/0/0/4"
             ],
             "mtu" : 1500,
+            "ospfArea" : 0,
+            "ospfCost" : 1,
             "ospfDeadInterval" : 0,
-            "ospfEnabled" : false,
+            "ospfEnabled" : true,
             "ospfHelloMultiplier" : 0,
-            "ospfPassive" : false,
+            "ospfPassive" : true,
             "ospfPointToPoint" : false,
             "ospfProcess" : "2",
             "proxyArp" : true,
@@ -20911,10 +20636,12 @@
               "TenGigE0/0/0/5"
             ],
             "mtu" : 1500,
+            "ospfArea" : 0,
+            "ospfCost" : 1,
             "ospfDeadInterval" : 0,
-            "ospfEnabled" : false,
+            "ospfEnabled" : true,
             "ospfHelloMultiplier" : 0,
-            "ospfPassive" : false,
+            "ospfPassive" : true,
             "ospfPointToPoint" : false,
             "ospfProcess" : "2",
             "proxyArp" : true,
@@ -21047,6 +20774,16 @@
                 "areas" : {
                   "0" : {
                     "injectDefaultRoute" : true,
+                    "interfaces" : [
+                      "Bundle-Ethernet101",
+                      "Bundle-Ethernet103",
+                      "Bundle-Ethernet201",
+                      "HundredGigabitEthernet0/2/0/0.292",
+                      "HundredGigabitEthernet0/2/0/3",
+                      "Loopback0",
+                      "TenGigabitEthernet0/0/0/4",
+                      "TenGigabitEthernet0/0/0/5"
+                    ],
                     "metricOfDefaultRoute" : 0,
                     "name" : 0,
                     "stubType" : "NONE",
@@ -21056,6 +20793,15 @@
                       }
                     },
                     "summaryFilter" : "~OSPF_SUMMARY_FILTER:default:0~"
+                  },
+                  "60" : {
+                    "injectDefaultRoute" : true,
+                    "interfaces" : [
+                      "TenGigabitEthernet0/0/0/2"
+                    ],
+                    "metricOfDefaultRoute" : 0,
+                    "name" : 60,
+                    "stubType" : "NONE"
                   }
                 },
                 "exportPolicy" : "~OSPF_EXPORT_POLICY:default~",
@@ -23259,7 +23005,10 @@
                     "class" : "org.batfish.datamodel.packet_policy.Return",
                     "action" : {
                       "class" : "org.batfish.datamodel.packet_policy.FibLookup",
-                      "vrfName" : "OTHER_INSTANCE"
+                      "vrfExpr" : {
+                        "class" : "org.batfish.datamodel.packet_policy.LiteralVrfName",
+                        "vrfName" : "OTHER_INSTANCE"
+                      }
                     }
                   }
                 ],
@@ -23281,7 +23030,10 @@
                     "class" : "org.batfish.datamodel.packet_policy.Return",
                     "action" : {
                       "class" : "org.batfish.datamodel.packet_policy.FibLookup",
-                      "vrfName" : "default"
+                      "vrfExpr" : {
+                        "class" : "org.batfish.datamodel.packet_policy.LiteralVrfName",
+                        "vrfName" : "default"
+                      }
                     }
                   }
                 ],

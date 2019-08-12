@@ -4,6 +4,43 @@ options {
   tokenVocab = CumulusFrrLexer;
 }
 
+ip_address
+:
+  IP_ADDRESS
+  | SUBNET_MASK
+;
+
+ip_community_list_name
+:
+// 1-63 characters
+  WORD
+;
+
+line_action
+:
+  deny = DENY
+  | permit = PERMIT
+;
+
+prefix
+:
+  IP_PREFIX
+;
+
+vni_number
+:
+  v = uint32
+  {isVniNumber($v.ctx)}?
+
+;
+
+uint32
+:
+  UINT8
+  | UINT16
+  | UINT32
+;
+
 word
 :
   WORD

@@ -4962,6 +4962,11 @@ FQDN
    'fqdn'
 ;
 
+FRAGMENTATION
+:
+   'fragmentation'
+;
+
 FRAGMENTS
 :
    'fragments'
@@ -15518,6 +15523,11 @@ M_AuthenticationUsernamePromptText_DOUBLE_QUOTE
 ;
 
 mode M_Banner;
+
+M_Banner_ASDM
+:
+   'asdm' -> type ( ASDM ), mode ( M_BannerText )
+;
 
 M_Banner_CONFIG_SAVE
 :

@@ -148,6 +148,7 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
   private final @Nonnull Map<String, Vlan> _vlans;
   private final @Nonnull Map<String, Vrf> _vrfs;
   private final @Nonnull Map<String, Vxlan> _vxlans;
+  private final @Nonnull Map<String, IpCommunityList> _ipCommunityLists;
 
   @Nonnull
   private static final LinkLocalAddress LINK_LOCAL_ADDRESS = LinkLocalAddress.of(BGP_UNNUMBERED_IP);
@@ -156,6 +157,7 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
     _bonds = new HashMap<>();
     _bridge = new Bridge();
     _interfaces = new HashMap<>();
+    _ipCommunityLists = new HashMap<>();
     _ipv4Nameservers = new LinkedList<>();
     _ipv6Nameservers = new LinkedList<>();
     _loopback = new Loopback();
@@ -415,7 +417,6 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
 
   private void applyCommonInterfaceSettings(
       Interface iface, org.batfish.datamodel.Interface newIface) {
-    newIface.setActive(true);
     if (!iface.getIpAddresses().isEmpty()) {
       newIface.setAddress(iface.getIpAddresses().get(0));
     }
@@ -811,6 +812,10 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
     return _vxlans;
   }
 
+  public @Nonnull Map<String, IpCommunityList> getIpCommunityLists() {
+    return _ipCommunityLists;
+  }
+
   private void initVendorFamily() {
     _c.getVendorFamily()
         .setCumulus(
@@ -1056,13 +1061,16 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
     return newIface;
   }
 
-  private @Nonnull org.batfish.datamodel.Interface toInterface(Interface iface) {
+  @VisibleForTesting
+  @Nonnull
+  org.batfish.datamodel.Interface toInterface(Interface iface) {
     String name = iface.getName();
     org.batfish.datamodel.Interface newIface =
         org.batfish.datamodel.Interface.builder()
             .setName(name)
             .setOwner(_c)
             .setType(InterfaceType.PHYSICAL)
+            .setActive(!iface.isDisabled())
             .build();
     applyCommonInterfaceSettings(iface, newIface);
 
@@ -1080,8 +1088,9 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
     return newIface;
   }
 
-  private @Nonnull org.batfish.datamodel.Interface toInterface(
-      Interface iface, String superInterfaceName) {
+  @VisibleForTesting
+  @Nonnull
+  org.batfish.datamodel.Interface toInterface(Interface iface, String superInterfaceName) {
     String name = iface.getName();
     org.batfish.datamodel.Interface newIface =
         org.batfish.datamodel.Interface.builder()
@@ -1091,6 +1100,7 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
                 iface.getType() == CumulusInterfaceType.BOND_SUBINTERFACE
                     ? InterfaceType.AGGREGATE_CHILD
                     : InterfaceType.LOGICAL)
+            .setActive(!iface.isDisabled())
             .build();
     newIface.setDependencies(
         ImmutableSet.of(new Dependency(superInterfaceName, DependencyType.BIND)));

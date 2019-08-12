@@ -2,6 +2,7 @@ package org.batfish.grammar.cumulus_interfaces;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Range;
 import java.util.List;
 import org.antlr.v4.runtime.RuleContext;
@@ -22,8 +23,12 @@ import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.I_aliasCon
 import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.I_bond_slavesContext;
 import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.I_bridge_accessContext;
 import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.I_bridge_portsContext;
+import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.I_bridge_pvidContext;
 import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.I_bridge_vidsContext;
 import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.I_clag_idContext;
+import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.I_clagd_backup_ipContext;
+import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.I_clagd_peer_ipContext;
+import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.I_clagd_sys_macContext;
 import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.I_link_speedContext;
 import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.I_vlan_idContext;
 import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.I_vlan_raw_deviceContext;
@@ -38,6 +43,7 @@ import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.S_ifaceCon
 import org.batfish.representation.cumulus.CumulusNcluConfiguration;
 import org.batfish.representation.cumulus.CumulusStructureType;
 import org.batfish.representation.cumulus.CumulusStructureUsage;
+import org.batfish.representation.cumulus.InterfaceClagSettings;
 import org.batfish.representation.cumulus_interfaces.Interface;
 import org.batfish.representation.cumulus_interfaces.Interfaces;
 
@@ -146,7 +152,7 @@ public final class CumulusInterfacesConfigurationBuilder
 
   @Override
   public void exitI_bridge_access(I_bridge_accessContext ctx) {
-    _currentIface.setBridgeAccess(Integer.parseInt(ctx.number().getText()));
+    _currentIface.createOrGetBridgeSettings().setAccess(Integer.parseInt(ctx.number().getText()));
   }
 
   @Override
@@ -162,24 +168,61 @@ public final class CumulusInterfacesConfigurationBuilder
     _currentIface.setBridgePorts(
         interfaceNameCtxs.stream()
             .map(RuleContext::getText)
-            .collect(ImmutableList.toImmutableList()));
+            .collect(ImmutableSet.toImmutableSet()));
+  }
+
+  @Override
+  public void exitI_bridge_pvid(I_bridge_pvidContext ctx) {
+    _currentIface.createOrGetBridgeSettings().setPvid(Integer.parseInt(ctx.vlan_id().getText()));
   }
 
   @Override
   public void exitI_bridge_vids(I_bridge_vidsContext ctx) {
     List<NumberContext> vidCtxs = ctx.number();
-    _currentIface.setBridgeVids(
+    IntegerSpace vids =
         IntegerSpace.unionOf(
             vidCtxs.stream()
                 .map(ParseTree::getText)
                 .map(Integer::parseInt)
                 .map(Range::singleton)
-                .collect(ImmutableList.toImmutableList())));
+                .collect(ImmutableList.toImmutableList()));
+    _currentIface.createOrGetBridgeSettings().setVids(vids);
   }
 
   @Override
   public void exitI_clag_id(I_clag_idContext ctx) {
     _currentIface.setClagId(Integer.parseInt(ctx.number().getText()));
+  }
+
+  @Override
+  public void exitI_clagd_backup_ip(I_clagd_backup_ipContext ctx) {
+    InterfaceClagSettings clag = _currentIface.createOrGetClagSettings();
+    clag.setBackupIp(Ip.parse(ctx.IP_ADDRESS().getText()));
+    String vrf = ctx.vrf_name().getText();
+    clag.setBackupIpVrf(vrf);
+    _config.referenceStructure(
+        CumulusStructureType.VRF,
+        vrf,
+        CumulusStructureUsage.INTERFACE_CLAG_BACKUP_IP_VRF,
+        ctx.getStart().getLine());
+  }
+
+  @Override
+  public void exitI_clagd_peer_ip(I_clagd_peer_ipContext ctx) {
+    InterfaceClagSettings clag = _currentIface.createOrGetClagSettings();
+    if (ctx.IP_ADDRESS() != null) {
+      clag.setPeerIp(Ip.parse(ctx.IP_ADDRESS().getText()));
+    } else if (ctx.LINK_LOCAL() != null) {
+      clag.setPeerIpLinkLocal(true);
+    } else {
+      throw new IllegalStateException("clagd-peer-ip without an IP or linklocal");
+    }
+  }
+
+  @Override
+  public void exitI_clagd_sys_mac(I_clagd_sys_macContext ctx) {
+    InterfaceClagSettings clag = _currentIface.createOrGetClagSettings();
+    clag.setSysMac(MacAddress.parse(ctx.MAC_ADDRESS().getText()));
   }
 
   @Override

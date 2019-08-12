@@ -8,23 +8,23 @@ import java.util.Objects;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
-import org.batfish.datamodel.eigrp.EigrpMetric;
+import org.batfish.datamodel.eigrp.EigrpMetricValues;
 import org.batfish.datamodel.routing_policy.Environment;
 
 @ParametersAreNonnullByDefault
 public final class LiteralEigrpMetric extends EigrpMetricExpr {
   private static final String PROP_METRIC = "metric";
 
-  @Nonnull private final EigrpMetric _metric;
+  @Nonnull private final EigrpMetricValues _metric;
 
   @JsonCreator
   private static LiteralEigrpMetric jsonCreator(
-      @Nullable @JsonProperty(PROP_METRIC) EigrpMetric metric) {
+      @Nullable @JsonProperty(PROP_METRIC) EigrpMetricValues metric) {
     checkArgument(metric != null, "%s must be provided", PROP_METRIC);
     return new LiteralEigrpMetric(metric);
   }
 
-  public LiteralEigrpMetric(EigrpMetric metric) {
+  public LiteralEigrpMetric(EigrpMetricValues metric) {
     _metric = metric;
   }
 
@@ -45,13 +45,13 @@ public final class LiteralEigrpMetric extends EigrpMetricExpr {
   }
 
   @Override
-  public EigrpMetric evaluate(Environment env) {
+  public EigrpMetricValues evaluate(Environment env) {
     return _metric;
   }
 
   @JsonProperty(PROP_METRIC)
   @Nonnull
-  public EigrpMetric getMetric() {
+  public EigrpMetricValues getMetric() {
     return _metric;
   }
 }

@@ -27,8 +27,7 @@ import org.batfish.vendor.VendorConfiguration;
 
 public class CumulusConcatenatedControlPlaneExtractor implements ControlPlaneExtractor {
   private static final String START_OF_FRR_FILE = "frr version";
-  private static final String START_OF_INTERFACES_FILE =
-      "# This file describes the network interfaces";
+  private static final String START_OF_PORTS_FILE = "# ports.conf --";
 
   private final String _text;
   private final String _filename;
@@ -66,8 +65,8 @@ public class CumulusConcatenatedControlPlaneExtractor implements ControlPlaneExt
     _configuration = new CumulusNcluConfiguration();
 
     parseHostname();
-    parsePortsFile();
     parseInterfacesFile();
+    parsePortsFile();
     parseFrrFile();
   }
 
@@ -83,7 +82,7 @@ public class CumulusConcatenatedControlPlaneExtractor implements ControlPlaneExt
   }
 
   private void parseInterfacesFile() {
-    int end = _text.indexOf(START_OF_FRR_FILE);
+    int end = _text.indexOf(START_OF_PORTS_FILE);
     String text = end > 0 ? _text.substring(0, end) : _text;
 
     CumulusInterfacesCombinedParser parser =
@@ -102,7 +101,7 @@ public class CumulusConcatenatedControlPlaneExtractor implements ControlPlaneExt
   }
 
   private void parsePortsFile() {
-    int end = _text.indexOf(START_OF_INTERFACES_FILE);
+    int end = _text.indexOf(START_OF_FRR_FILE);
     String text = end > 0 ? _text.substring(0, end) : _text;
 
     CumulusPortsCombinedParser parser =
@@ -110,7 +109,8 @@ public class CumulusConcatenatedControlPlaneExtractor implements ControlPlaneExt
     Cumulus_ports_configurationContext ctxt = parser.parse();
     checkErrors(parser);
     ParseTreeWalker walker = new BatfishParseTreeWalker(parser);
-    CumulusPortsConfigurationBuilder cb = new CumulusPortsConfigurationBuilder(_configuration, _w);
+    CumulusPortsConfigurationBuilder cb =
+        new CumulusPortsConfigurationBuilder(_configuration, parser, _w);
     walker.walk(cb, ctxt);
     mergeParseTree(ctxt, parser);
 

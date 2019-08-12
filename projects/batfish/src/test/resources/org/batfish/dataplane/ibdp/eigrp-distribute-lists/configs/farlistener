@@ -1,0 +1,11 @@
+!
+hostname farlistener
+!
+interface GigabitEthernet0/0
+ description to listener
+ ip address 2.3.3.3 255.255.255.254
+!
+router eigrp 1
+  ! network statement below is needed to make GigabitEthernet0/0 an EIGRP neighbor
+  network 2.3.3.3 0.0.0.1
+!

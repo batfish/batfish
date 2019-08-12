@@ -339,6 +339,14 @@ public class Vrf extends ComparableStructure<String> {
                 Comparator.naturalOrder(), OspfProcess::getProcessId, Functions.identity())));
   }
 
+  public void addOspfProcess(@Nonnull OspfProcess ospfProcess) {
+    _ospfProcesses =
+        ImmutableSortedMap.<String, OspfProcess>naturalOrder()
+            .putAll(_ospfProcesses)
+            .put(ospfProcess.getProcessId(), ospfProcess)
+            .build();
+  }
+
   @JsonProperty(PROP_RIP_PROCESS)
   public void setRipProcess(RipProcess ripProcess) {
     _ripProcess = ripProcess;

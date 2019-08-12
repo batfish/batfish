@@ -5,6 +5,7 @@ options {
 }
 
 tokens {
+  REMARK_TEXT,
   WORD
 }
 
@@ -22,6 +23,31 @@ COMMENT_LINE
   ) -> channel ( HIDDEN )
 ;
 
+COMMUNITY
+:
+  'community'
+  // All other instances are followed by keywords or tokens in default mode
+  {
+    switch (lastTokenType()) {
+      case MATCH:
+        pushMode(M_Words);
+        break;
+      default:
+        break;
+    }
+  }
+;
+
+DENY
+:
+  'deny'
+;
+
+DESCRIPTION
+:
+  'description' -> pushMode ( M_Remark )
+;
+
 EXIT_VRF
 :
   'exit-vrf'
@@ -32,9 +58,74 @@ FRR_VERSION_LINE
   'frr version' F_NonNewline*
 ;
 
+IP
+:
+  'ip'
+;
+
+IP_ADDRESS
+:
+  F_IpAddress
+;
+
+IP_PREFIX
+:
+  F_IpPrefix
+;
+
+PERMIT
+:
+  'permit'
+;
+
+ROUTE_MAP
+:
+  'route-map' -> pushMode(M_Word)
+;
+
+ROUTE
+:
+  'route'
+;
+
+SUBNET_MASK
+:
+  F_SubnetMask
+;
+
+MATCH
+:
+  'match'
+;
+
 NEWLINE
 :
   F_Newline+
+;
+
+UINT8
+:
+  F_Uint8
+;
+
+UINT16
+:
+  F_Uint16
+;
+
+UINT32
+:
+  F_Uint32
+;
+
+DEC
+:
+  F_Digit+
+;
+
+VNI
+:
+  'vni'
 ;
 
 VRF
@@ -56,6 +147,103 @@ BLANK_LINE
 ;
 
 // Fragments
+fragment
+F_Digit
+:
+  [0-9]
+;
+
+fragment
+F_IpAddress
+:
+  F_Uint8 '.' F_Uint8 '.' F_Uint8 '.' F_Uint8
+;
+
+fragment
+F_IpPrefix
+:
+  F_IpAddress '/' F_IpPrefixLength
+;
+
+fragment
+F_IpPrefixLength
+:
+  F_Digit
+  | [12] F_Digit
+  | [3] [012]
+;
+
+fragment
+F_SubnetMask
+:
+  F_SubnetMaskOctet '.0.0.0'
+  | '255.' F_SubnetMaskOctet . '.0.0'
+  | '255.255.' F_SubnetMaskOctet . '.0'
+  | '255.255.255.' F_SubnetMaskOctet
+;
+
+fragment
+F_SubnetMaskOctet
+:
+  '0'
+  | '128'
+  | '192'
+  | '224'
+  | '240'
+  | '248'
+  | '252'
+  | '254'
+  | '255'
+;
+
+fragment
+F_PositiveDigit
+:
+  [1-9]
+;
+
+fragment
+F_Uint8
+:
+  F_Digit
+  | F_PositiveDigit F_Digit
+  | '1' F_Digit F_Digit
+  | '2' [0-4] F_Digit
+  | '25' [0-5]
+;
+
+fragment
+F_Uint16
+:
+  F_Digit
+  | F_PositiveDigit F_Digit F_Digit? F_Digit?
+  | [1-5] F_Digit F_Digit F_Digit F_Digit
+  | '6' [0-4] F_Digit F_Digit F_Digit
+  | '65' [0-4] F_Digit F_Digit
+  | '655' [0-2] F_Digit
+  | '6553' [0-5]
+;
+
+fragment
+F_Uint32
+:
+// 0-4294967295
+  F_Digit
+  | F_PositiveDigit F_Digit F_Digit? F_Digit? F_Digit? F_Digit? F_Digit?
+  F_Digit? F_Digit?
+  | [1-3] F_Digit F_Digit F_Digit F_Digit F_Digit F_Digit F_Digit F_Digit
+  F_Digit
+  | '4' [0-1] F_Digit F_Digit F_Digit F_Digit F_Digit F_Digit F_Digit F_Digit
+  | '42' [0-8] F_Digit F_Digit F_Digit F_Digit F_Digit F_Digit F_Digit
+  | '429' [0-3] F_Digit F_Digit F_Digit F_Digit F_Digit F_Digit
+  | '4294' [0-8] F_Digit F_Digit F_Digit F_Digit F_Digit
+  | '42949' [0-5] F_Digit F_Digit F_Digit F_Digit
+  | '429496' [0-6] F_Digit F_Digit F_Digit
+  | '4294967' [0-1] F_Digit F_Digit
+  | '42949672' [0-8] F_Digit
+  | '429496729' [0-5]
+;
+
 fragment
 F_Word
 :
@@ -80,6 +268,12 @@ fragment
 F_NonNewline
 :
   ~[\n\r]
+;
+
+fragment
+F_NonWhitespace
+:
+  ~[ \t\u000C\u00A0\n\r]
 ;
 
 fragment
@@ -120,3 +314,16 @@ M_Words_WS
 :
   F_Whitespace+ -> channel ( HIDDEN )
 ;
+
+mode M_Remark;
+
+M_Remark_REMARK_TEXT
+:
+  F_NonWhitespace F_NonNewline* -> type ( REMARK_TEXT ) , popMode
+;
+
+M_Remark_WS
+:
+  F_Whitespace+ -> channel ( HIDDEN )
+;
+

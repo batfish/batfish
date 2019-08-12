@@ -31,7 +31,7 @@ re_default_metric
 :
    NO? DEFAULT_METRIC
    (
-      bw_kbps = DEC delay_10us = DEC reliability = DEC eff_bw = DEC mtu = DEC
+      metric = eigrp_metric
    )? NEWLINE
 ;
 
@@ -103,7 +103,7 @@ re_redistribute_bgp
 :
    REDISTRIBUTE BGP asn = bgp_asn
    (
-      METRIC bw_kbps = DEC delay_10us = DEC reliability = DEC eff_bw = DEC mtu = DEC
+      METRIC metric = eigrp_metric
       | ROUTE_MAP map = variable
    )* NEWLINE
 ;
@@ -112,7 +112,7 @@ re_redistribute_connected
 :
    REDISTRIBUTE CONNECTED
    (
-      METRIC bw_kbps = DEC delay_10us = DEC reliability = DEC eff_bw = DEC mtu = DEC
+      METRIC metric = eigrp_metric
       | ROUTE_MAP map = variable
    )* NEWLINE
 ;
@@ -121,7 +121,7 @@ re_redistribute_eigrp
 :
    REDISTRIBUTE EIGRP asn = DEC
    (
-      METRIC bw_kbps = DEC delay_10us = DEC reliability = DEC eff_bw = DEC mtu = DEC
+      METRIC metric = eigrp_metric
       | ROUTE_MAP map = variable
    )* NEWLINE
 ;
@@ -133,7 +133,7 @@ re_redistribute_isis
       LEVEL_1
       | LEVEL_1_2
       | LEVEL_2
-      | METRIC bw_kbps = DEC delay_10us = DEC reliability = DEC eff_bw = DEC mtu = DEC
+      | METRIC metric = eigrp_metric
       | ROUTE_MAP map = variable
    )* NEWLINE
 ;
@@ -143,7 +143,7 @@ re_redistribute_ospf
    REDISTRIBUTE OSPF proc = DEC
    (
       MATCH ospf_route_type+
-      | METRIC bw_kbps = DEC delay_10us = DEC reliability = DEC eff_bw = DEC mtu = DEC
+      | METRIC metric = eigrp_metric
       | ROUTE_MAP map = variable
    )* NEWLINE
 ;
@@ -152,7 +152,7 @@ re_redistribute_rip
 :
    REDISTRIBUTE RIP
    (
-      METRIC bw_kbps = DEC delay_10us = DEC reliability = DEC eff_bw = DEC mtu = DEC
+      METRIC metric = eigrp_metric
       | ROUTE_MAP map = variable
    )* NEWLINE
 ;
@@ -161,7 +161,7 @@ re_redistribute_static
 :
    REDISTRIBUTE STATIC
    (
-      METRIC bw_kbps = DEC delay_10us = DEC reliability = DEC eff_bw = DEC mtu = DEC
+      METRIC metric = eigrp_metric
       | ROUTE_MAP map = variable
    )* NEWLINE
 ;

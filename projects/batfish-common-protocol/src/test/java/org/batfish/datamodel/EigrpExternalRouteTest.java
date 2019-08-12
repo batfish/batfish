@@ -2,8 +2,8 @@ package org.batfish.datamodel;
 
 import static org.junit.Assert.assertThat;
 
-import org.batfish.datamodel.eigrp.EigrpMetric;
-import org.batfish.datamodel.eigrp.EigrpProcessMode;
+import org.batfish.datamodel.eigrp.ClassicMetric;
+import org.batfish.datamodel.eigrp.EigrpMetricValues;
 import org.hamcrest.Matchers;
 import org.junit.Test;
 
@@ -17,10 +17,12 @@ public class EigrpExternalRouteTest {
             .setMetric(1L)
             .setDestinationAsn(1L)
             .setEigrpMetric(
-                EigrpMetric.builder()
-                    .setBandwidth(1E8)
-                    .setDelay(1D)
-                    .setMode(EigrpProcessMode.CLASSIC)
+                ClassicMetric.builder()
+                    .setValues(
+                        EigrpMetricValues.builder()
+                            .setBandwidth((long) 1E8)
+                            .setDelay((long) 1D)
+                            .build())
                     .build())
             .setProcessAsn(2L)
             .build();

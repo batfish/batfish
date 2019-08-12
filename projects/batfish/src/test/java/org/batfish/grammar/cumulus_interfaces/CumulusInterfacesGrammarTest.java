@@ -24,6 +24,8 @@ import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.Cumulus_in
 import org.batfish.representation.cumulus.CumulusNcluConfiguration;
 import org.batfish.representation.cumulus.CumulusStructureType;
 import org.batfish.representation.cumulus.CumulusStructureUsage;
+import org.batfish.representation.cumulus.InterfaceBridgeSettings;
+import org.batfish.representation.cumulus.InterfaceClagSettings;
 import org.batfish.representation.cumulus_interfaces.Interface;
 import org.batfish.representation.cumulus_interfaces.Interfaces;
 import org.junit.Before;
@@ -182,24 +184,32 @@ public class CumulusInterfacesGrammarTest {
   public void testIfaceBridgeAccess() {
     String input = "iface vni1\n bridge-access 1234\n";
     Interfaces interfaces = parse(input);
-    Interface iface = interfaces.getInterfaces().get("vni1");
-    assertThat(iface.getBridgeAccess(), equalTo(1234));
+    InterfaceBridgeSettings bridgeSettings =
+        interfaces.getInterfaces().get("vni1").getBridgeSettings();
+    assertThat(bridgeSettings.getAccess(), equalTo(1234));
   }
 
   @Test
   public void testIfaceBridgePorts() {
-    String input = "iface i1\n bridge-ports i2 i3 i4\n";
-    Interfaces interfaces = parse(input);
-    Interface iface = interfaces.getInterfaces().get("i1");
+    String input = "iface bridge\n bridge-ports i2 i3 i4\n";
+    Interface iface = parse(input).getInterfaces().get("bridge");
     assertThat(iface.getBridgePorts(), contains("i2", "i3", "i4"));
+  }
+
+  @Test
+  public void testIfaceBridgePvid() {
+    String input = "iface bridge\n bridge-pvid 1\n";
+    InterfaceBridgeSettings bridgeSettings =
+        parse(input).getInterfaces().get("bridge").getBridgeSettings();
+    assertThat(bridgeSettings.getPvid(), equalTo(1));
   }
 
   @Test
   public void testIfaceBridgeVids() {
     String input = "iface i1\n bridge-vids 1 2 3 4\n";
-    Interfaces interfaces = parse(input);
-    Interface iface = interfaces.getInterfaces().get("i1");
-    assertThat(iface.getBridgeVids().enumerate(), contains(1, 2, 3, 4));
+    InterfaceBridgeSettings bridgeSettings =
+        parse(input).getInterfaces().get("i1").getBridgeSettings();
+    assertThat(bridgeSettings.getVids().enumerate(), contains(1, 2, 3, 4));
   }
 
   @Test
@@ -208,6 +218,39 @@ public class CumulusInterfacesGrammarTest {
     Interfaces interfaces = parse(input);
     Interface iface = interfaces.getInterfaces().get("i1");
     assertThat(iface.getClagId(), equalTo(123));
+  }
+
+  @Test
+  public void testIfaceClagBackupIpAndVrf() {
+    String input = "iface i1\n clagd-backup-ip 1.2.3.4 vrf v1\n";
+    InterfaceClagSettings clag = parse(input).getInterfaces().get("i1").getClagSettings();
+    assertThat(clag.getBackupIp(), equalTo(Ip.parse("1.2.3.4")));
+    assertThat(clag.getBackupIpVrf(), equalTo("v1"));
+    assertThat(
+        getStructureReferences(
+            CumulusStructureType.VRF, "v1", CumulusStructureUsage.INTERFACE_CLAG_BACKUP_IP_VRF),
+        contains(2));
+  }
+
+  @Test
+  public void testIfaceClagdPeerIp() {
+    String input = "iface i1\n clagd-peer-ip 1.2.3.4\n";
+    InterfaceClagSettings clag = parse(input).getInterfaces().get("i1").getClagSettings();
+    assertThat(clag.getPeerIp(), equalTo(Ip.parse("1.2.3.4")));
+  }
+
+  @Test
+  public void testIfaceClagdPeerIpLinkLocal() {
+    String input = "iface i1\n clagd-peer-ip linklocal\n";
+    InterfaceClagSettings clag = parse(input).getInterfaces().get("i1").getClagSettings();
+    assertTrue(clag.isPeerIpLinkLocal());
+  }
+
+  @Test
+  public void testClagdSysMac() {
+    String input = "iface i1\n clagd-sys-mac 00:00:00:00:00:00\n";
+    InterfaceClagSettings clag = parse(input).getInterfaces().get("i1").getClagSettings();
+    assertThat(clag.getSysMac(), equalTo(MacAddress.parse("00:00:00:00:00:00")));
   }
 
   @Test

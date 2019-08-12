@@ -31,6 +31,7 @@ import org.batfish.datamodel.answers.Schema;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.packet_policy.FibLookup;
 import org.batfish.datamodel.packet_policy.If;
+import org.batfish.datamodel.packet_policy.LiteralVrfName;
 import org.batfish.datamodel.packet_policy.PacketMatchExpr;
 import org.batfish.datamodel.packet_policy.PacketPolicy;
 import org.batfish.datamodel.packet_policy.Return;
@@ -89,8 +90,9 @@ public class TraceroutePolicyBasedRoutingTest {
                                   HeaderSpace.builder()
                                       .setDstIps(Ip.parse("9.9.9.9").toIpSpace())
                                       .build())),
-                          ImmutableList.of(new Return(new FibLookup(v2.getName()))))),
-                  new Return(new FibLookup(v1.getName())))));
+                          ImmutableList.of(
+                              new Return(new FibLookup(new LiteralVrfName(v2.getName())))))),
+                  new Return(new FibLookup(new LiteralVrfName(v1.getName()))))));
       ingressIface.setRoutingPolicy(ROUTING_POLICY_NAME);
     }
 
