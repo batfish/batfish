@@ -640,6 +640,11 @@ COPY_ATTRIBUTES
   'copy-attributes'
 ;
 
+COS
+:
+  'cos'
+;
+
 COST
 :
   'cost'
