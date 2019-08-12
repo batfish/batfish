@@ -49,10 +49,5 @@ rmm_community
 
 rmm_interface
 :
-  INTERFACE name = rmmi_name NEWLINE
-;
-
-rmmi_name
-:
-  WORD
+  INTERFACE name = WORD NEWLINE
 ;

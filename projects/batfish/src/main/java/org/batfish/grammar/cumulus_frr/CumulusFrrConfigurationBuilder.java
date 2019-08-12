@@ -16,7 +16,7 @@ import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.Prefix;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Rm_descriptionContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Rmm_communityContext;
-import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Rmmi_nameContext;
+import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Rmm_interfaceContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.S_bgpContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.S_routemapContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.S_vrfContext;
@@ -245,9 +245,9 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
   }
 
   @Override
-  public void exitRmmi_name(Rmmi_nameContext ctx) {
+  public void exitRmm_interface(Rmm_interfaceContext ctx) {
     _currentRouteMapEntry.setMatchInterface(
-        new RouteMapMatchInterface(ImmutableSet.of(ctx.getText())));
+        new RouteMapMatchInterface(ImmutableSet.of(ctx.name.getText())));
   }
 
   @Override
