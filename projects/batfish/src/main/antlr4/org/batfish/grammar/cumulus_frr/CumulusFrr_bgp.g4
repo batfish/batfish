@@ -10,8 +10,9 @@ s_bgp
 :
   ROUTER BGP autonomous_system (VRF vrf_name)? NEWLINE
   (
-    sb_router_id
+    sb_address_family
   | sb_neighbor
+  | sb_router_id
   )*
 ;
 
@@ -23,6 +24,46 @@ sb_router_id
 sb_neighbor
 :
   NEIGHBOR (sbn_ip | sbn_name) NEWLINE
+;
+
+sb_address_family
+:
+  ADDRESS_FAMILY sbaf
+  EXIT_ADDRESS_FAMILY NEWLINE
+;
+
+sbaf
+:
+    sbaf_ipv4_unicast
+  | sbaf_l2vpn_evpn
+;
+
+sbaf_ipv4_unicast
+:
+  IPV4 UNICAST NEWLINE
+  // todo: unbounded number of statement lines
+;
+
+sbaf_l2vpn_evpn
+:
+  L2VPN EVPN NEWLINE
+  sbafl_statement*
+;
+
+sbafl_statement
+:
+  sbafls_advertise_all_vni
+| sbafls_advertise_ipv4_unicast
+;
+
+sbafls_advertise_all_vni
+:
+  ADVERTISE_ALL_VNI NEWLINE
+;
+
+sbafls_advertise_ipv4_unicast
+:
+  ADVERTISE IPV4 UNICAST NEWLINE
 ;
 
 sbn_ip
@@ -52,8 +93,14 @@ sbn_peer_group_decl
 
 sbn_property
 :
-  sbnp_remote_as
+  sbnp_description
+| sbnp_remote_as
 | sbnp_peer_group
+;
+
+sbnp_description
+:
+  DESCRIPTION REMARK_TEXT
 ;
 
 sbnp_remote_as
