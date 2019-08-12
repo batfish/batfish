@@ -125,12 +125,6 @@ key_chain
   CHAIN name = key_chain_name NEWLINE kc_key*
 ;
 
-key_chain_name
-:
-// 1-63 characters
-  WORD
-;
-
 kc_key
 :
   KEY num = uint16 NEWLINE kck_key_string*

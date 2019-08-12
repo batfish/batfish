@@ -16,6 +16,7 @@ interface Ethernet1/1
   hsrp version 2
   hsrp delay reload 60
   hsrp 2
+    authentication md5 key-chain hsrp-keys
     ip 192.0.2.1
     preempt delay minimum 30 reload 40 sync 50
     priority 105
