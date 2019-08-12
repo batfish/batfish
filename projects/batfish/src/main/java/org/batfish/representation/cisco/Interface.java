@@ -488,10 +488,6 @@ public class Interface implements Serializable {
     return _ospfProcess;
   }
 
-  public boolean getOspfPointToPoint() {
-    return _ospfPointToPoint;
-  }
-
   public boolean getOspfShutdown() {
     return _ospfShutdown;
   }
@@ -677,10 +673,6 @@ public class Interface implements Serializable {
 
   public void setOspfProcess(@Nullable String processName) {
     _ospfProcess = processName;
-  }
-
-  public void setOspfPointToPoint(boolean ospfPointToPoint) {
-    _ospfPointToPoint = ospfPointToPoint;
   }
 
   public void setOspfShutdown(boolean ospfShutdown) {
