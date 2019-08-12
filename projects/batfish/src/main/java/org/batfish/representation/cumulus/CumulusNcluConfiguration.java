@@ -145,9 +145,9 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
   private final @Nonnull Loopback _loopback;
   private final @Nonnull Map<String, RouteMap> _routeMaps;
   private final @Nonnull Set<StaticRoute> _staticRoutes;
-  private final @Nonnull Map<String, Vlan> _vlans;
-  private final @Nonnull Map<String, Vrf> _vrfs;
-  private final @Nonnull Map<String, Vxlan> _vxlans;
+  private @Nonnull Map<String, Vlan> _vlans;
+  private @Nonnull Map<String, Vrf> _vrfs;
+  private @Nonnull Map<String, Vxlan> _vxlans;
   private final @Nonnull Map<String, IpPrefixList> _ipPrefixLists;
   private final @Nonnull Map<String, IpCommunityList> _ipCommunityLists;
 
