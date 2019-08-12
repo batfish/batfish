@@ -503,6 +503,22 @@ public final class CiscoNxosGrammarTest {
   }
 
   @Test
+  public void testSwitchnameConversion() throws IOException {
+    String hostname = "nxos_switchname";
+    Configuration c = parseConfig(hostname);
+
+    assertThat(c, hasHostname(hostname));
+  }
+
+  @Test
+  public void testSwitchnameExtraction() {
+    String hostname = "nxos_switchname";
+    CiscoNxosConfiguration vc = parseVendorConfig(hostname);
+
+    assertThat(vc.getHostname(), equalTo(hostname));
+  }
+
+  @Test
   public void testTemplatePeerBgpAddressFamilyConversion() throws IOException {
     Configuration c = parseConfig("nxos_bgp_peer_template_af_inheritance");
 
