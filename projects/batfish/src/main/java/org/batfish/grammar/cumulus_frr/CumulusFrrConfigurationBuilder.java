@@ -126,6 +126,6 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
 
     _c.defineStructure(
         CumulusStructureType.IP_COMMUNITY_LIST_EXPANDED, name, ctx.getStart().getLine());
-    _c.getIpCommunityLists().put(name, new IpCommunityListExpanded(name, communityList));
+    _c.getIpCommunityLists().put(name, new IpCommunityListExpanded(name, action, communityList));
   }
 }
