@@ -1,6 +1,6 @@
 parser grammar CumulusFrrParser;
 
-import CumulusFrr_bgp, CumulusFrr_common, CumulusFrr_ip_community_lis, CumulusFrr_routemap, CumulusFrr_vrf;
+import CumulusFrr_bgp, CumulusFrr_common, CumulusFrr_ip_community_list, CumulusFrr_routemap, CumulusFrr_vrf;
 
 options {
   superClass =
