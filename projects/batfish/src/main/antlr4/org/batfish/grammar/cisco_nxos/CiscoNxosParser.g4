@@ -53,6 +53,7 @@ statement
   | s_router
   | s_snmp_server
   | s_system
+  | s_track
   | s_version
   | s_vlan
   | s_vrf_context
@@ -220,6 +221,44 @@ sysqos_service_policy
     | QOS
     | QUEUEING
   ) name = policy_map_name NEWLINE
+;
+
+s_track
+:
+  TRACK num = track_object_number
+  (
+    track_interface
+    | track_ip
+  )
+;
+
+track_interface
+:
+  INTERFACE null_rest_of_line
+;
+
+track_ip
+:
+  IP
+  (
+    track_ip_route
+    | track_ip_sla
+  )
+;
+
+track_ip_route
+:
+  ROUTE null_rest_of_line tir_vrf*
+;
+
+tir_vrf
+:
+  VRF MEMBER name = vrf_name NEWLINE
+;
+
+track_ip_sla
+:
+  SLA null_rest_of_line
 ;
 
 s_version
