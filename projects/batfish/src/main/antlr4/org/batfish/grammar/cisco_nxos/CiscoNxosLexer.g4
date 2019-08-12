@@ -1136,6 +1136,11 @@ FORCE_ORDER
   'force-order'
 ;
 
+FORWARDING_THRESHOLD
+:
+  'forwarding-threshold'
+;
+
 FLUSH_ROUTES
 :
   'flush-routes'
@@ -1689,6 +1694,11 @@ LOOPBACK
 LOW_MEMORY
 :
   'low-memory'
+;
+
+LOWER
+:
+  'lower'
 ;
 
 LPD
@@ -3314,6 +3324,11 @@ UPGRADEOPNOTIFYONCOMPLETION
 :
   [Uu] [Pp] [Gg] [Rr] [Aa] [Dd] [Ee] [Oo] [Pp] [Nn] [Oo] [Tt] [Ii] [Ff] [Yy]
   [Oo] [Nn] [Cc] [Oo] [Mm] [Pp] [Ll] [Ee] [Tt] [Ii] [Oo] [Nn]
+;
+
+UPPER
+:
+  'upper'
 ;
 
 URG
