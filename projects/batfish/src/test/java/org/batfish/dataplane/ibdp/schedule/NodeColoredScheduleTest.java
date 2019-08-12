@@ -89,7 +89,7 @@ public class NodeColoredScheduleTest {
         .setAreas(ImmutableSortedMap.of(0L, r1ospfArea))
         .setRouterId(Ip.parse("0.0.0.1"))
         .build();
-    i1.setOspfArea(r1ospfArea);
+    i1.setOspfAreaName(r1ospfArea.getAreaNumber());
     // BGP process and neighbor
     BgpProcess r1Proc = pb.setRouterId(R1_IP).setVrf(vrf1).build();
     nb.setRemoteAs(2L)

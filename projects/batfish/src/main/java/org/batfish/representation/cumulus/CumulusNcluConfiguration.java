@@ -136,10 +136,10 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
 
   private @Nullable BgpProcess _bgpProcess;
   private final @Nonnull Map<String, Bond> _bonds;
-  private final @Nonnull Bridge _bridge;
+  private @Nonnull Bridge _bridge;
   private transient Configuration _c;
   private @Nullable String _hostname;
-  private final @Nonnull Map<String, Interface> _interfaces;
+  private @Nonnull Map<String, Interface> _interfaces;
   private final @Nonnull List<Ip> _ipv4Nameservers;
   private final @Nonnull List<Ip6> _ipv6Nameservers;
   private final @Nonnull Loopback _loopback;
@@ -1028,6 +1028,26 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
               exportConditions.add(exportNetworkConditions);
             });
     return exportConditions;
+  }
+
+  public void setBridge(@Nonnull Bridge bridge) {
+    _bridge = bridge;
+  }
+
+  public void setInterfaces(@Nonnull Map<String, Interface> interfaces) {
+    _interfaces = ImmutableMap.copyOf(interfaces);
+  }
+
+  public void setVlans(@Nonnull Map<String, Vlan> vlans) {
+    _vlans = ImmutableMap.copyOf(vlans);
+  }
+
+  public void setVrfs(@Nonnull Map<String, Vrf> vrfs) {
+    _vrfs = ImmutableMap.copyOf(vrfs);
+  }
+
+  public void setVxlans(Map<String, Vxlan> vxlans) {
+    _vxlans = ImmutableMap.copyOf(vxlans);
   }
 
   private @Nonnull BooleanExpr toGuard(RouteMapEntry entry) {

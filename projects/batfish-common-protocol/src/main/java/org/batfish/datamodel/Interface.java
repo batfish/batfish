@@ -144,7 +144,6 @@ public final class Interface extends ComparableStructure<String> {
       if (_nativeVlan != null) {
         iface.setNativeVlan(_nativeVlan);
       }
-      iface.setOspfArea(_ospfArea);
       if (_ospfArea != null) {
         _ospfArea.addInterface(name);
         iface.setOspfAreaName(_ospfArea.getAreaNumber());
@@ -1215,18 +1214,8 @@ public final class Interface extends ComparableStructure<String> {
     return _nativeVlan;
   }
 
-  @JsonIgnore
-  @Nullable
-  public OspfArea getOspfArea() {
-    if (_ospfProcess == null
-        || _ospfAreaName == null
-        || !_vrf.getOspfProcesses().containsKey(_ospfProcess)) {
-      return null;
-    }
-    return _vrf.getOspfProcesses().get(_ospfProcess).getAreas().get(_ospfAreaName);
-  }
-
   /** The OSPF area to which this interface belongs. */
+  @Nullable
   @JsonProperty(PROP_OSPF_AREA)
   public Long getOspfAreaName() {
     return _ospfAreaName;
@@ -1633,15 +1622,6 @@ public final class Interface extends ComparableStructure<String> {
   @JsonProperty(PROP_NATIVE_VLAN)
   public void setNativeVlan(@Nullable Integer vlan) {
     _nativeVlan = vlan;
-  }
-
-  @JsonIgnore
-  public void setOspfArea(@Nullable OspfArea ospfArea) {
-    if (ospfArea == null) {
-      _ospfAreaName = null;
-    } else {
-      _ospfAreaName = ospfArea.getAreaNumber();
-    }
   }
 
   @JsonProperty(PROP_OSPF_AREA)
