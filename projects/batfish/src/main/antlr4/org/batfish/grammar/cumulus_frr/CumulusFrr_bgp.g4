@@ -58,7 +58,7 @@ sbn_property
 
 sbnp_remote_as
 :
-  REMOTE_AS autonomous_system
+  REMOTE_AS (autonomous_system | EXTERNAL | INTERNAL)
 ;
 
 sbnp_peer_group

@@ -43,6 +43,11 @@ EXIT_VRF
   'exit-vrf'
 ;
 
+EXTERNAL
+:
+  'external'
+;
+
 FRR_VERSION_LINE
 :
   'frr version' F_NonNewline*
@@ -51,6 +56,11 @@ FRR_VERSION_LINE
 INTERFACE
 :
   'interface'
+;
+
+INTERNAL
+:
+  'internal'
 ;
 
 IP

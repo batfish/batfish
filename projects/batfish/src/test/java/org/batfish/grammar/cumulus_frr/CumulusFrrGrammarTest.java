@@ -2,9 +2,12 @@ package org.batfish.grammar.cumulus_frr;
 
 import static org.batfish.main.BatfishTestUtils.configureBatfishTestSettings;
 import static org.batfish.representation.cumulus.RemoteAsType.EXPLICIT;
+import static org.batfish.representation.cumulus.RemoteAsType.EXTERNAL;
+import static org.batfish.representation.cumulus.RemoteAsType.INTERNAL;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.isA;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableSet;
@@ -144,13 +147,33 @@ public class CumulusFrrGrammarTest {
   }
 
   @Test
-  public void testBgpNeighborProperty_remoteAs() {
+  public void testBgpNeighborProperty_remoteAs_explicit() {
     parse("router bgp 1\n neighbor n interface remote-as 2\n");
     Map<String, BgpNeighbor> neighbors = CONFIG.getBgpProcess().getDefaultVrf().getNeighbors();
     assertThat(neighbors.keySet(), contains("n"));
     BgpNeighbor foo = neighbors.get("n");
     assertThat(foo.getRemoteAsType(), equalTo(EXPLICIT));
     assertThat(foo.getRemoteAs(), equalTo(2L));
+  }
+
+  @Test
+  public void testBgpNeighborProperty_remoteAs_external() {
+    parse("router bgp 1\n neighbor n interface remote-as external\n");
+    Map<String, BgpNeighbor> neighbors = CONFIG.getBgpProcess().getDefaultVrf().getNeighbors();
+    assertThat(neighbors.keySet(), contains("n"));
+    BgpNeighbor foo = neighbors.get("n");
+    assertThat(foo.getRemoteAsType(), equalTo(EXTERNAL));
+    assertNull(foo.getRemoteAs());
+  }
+
+  @Test
+  public void testBgpNeighborProperty_remoteAs_internal() {
+    parse("router bgp 1\n neighbor n interface remote-as internal\n");
+    Map<String, BgpNeighbor> neighbors = CONFIG.getBgpProcess().getDefaultVrf().getNeighbors();
+    assertThat(neighbors.keySet(), contains("n"));
+    BgpNeighbor foo = neighbors.get("n");
+    assertThat(foo.getRemoteAsType(), equalTo(INTERNAL));
+    assertNull(foo.getRemoteAs());
   }
 
   @Test

@@ -3,6 +3,8 @@ package org.batfish.grammar.cumulus_frr;
 import static com.google.common.base.Preconditions.checkState;
 import static java.lang.Long.parseLong;
 import static org.batfish.representation.cumulus.RemoteAsType.EXPLICIT;
+import static org.batfish.representation.cumulus.RemoteAsType.EXTERNAL;
+import static org.batfish.representation.cumulus.RemoteAsType.INTERNAL;
 
 import javax.annotation.Nullable;
 import org.batfish.common.Warnings;
@@ -165,8 +167,16 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
 
   @Override
   public void exitSbnp_remote_as(Sbnp_remote_asContext ctx) {
-    _currentBgpNeighbor.setRemoteAsType(EXPLICIT);
-    _currentBgpNeighbor.setRemoteAs(parseLong(ctx.autonomous_system().getText()));
+    if (ctx.autonomous_system() != null) {
+      _currentBgpNeighbor.setRemoteAsType(EXPLICIT);
+      _currentBgpNeighbor.setRemoteAs(parseLong(ctx.autonomous_system().getText()));
+    } else if (ctx.EXTERNAL() != null) {
+      _currentBgpNeighbor.setRemoteAsType(EXTERNAL);
+      _currentBgpNeighbor.setRemoteAs(null);
+    } else if (ctx.INTERNAL() != null) {
+      _currentBgpNeighbor.setRemoteAsType(INTERNAL);
+      _currentBgpNeighbor.setRemoteAs(null);
+    }
   }
 
   @Override
