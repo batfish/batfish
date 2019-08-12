@@ -193,6 +193,7 @@ import org.batfish.grammar.cisco_nxos.CiscoNxosParser.I_switchport_mode_accessCo
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.I_switchport_mode_dot1q_tunnelContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.I_switchport_mode_fex_fabricContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.I_switchport_mode_trunkContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.I_switchport_switchportContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.I_switchport_trunk_allowedContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.I_switchport_trunk_nativeContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.I_vrf_memberContext;
@@ -205,6 +206,7 @@ import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Ihg_preemptContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Ihg_priorityContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Ihg_timersContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Ihg_trackContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Ihgam_key_chainContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Iipo_dead_intervalContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Iipo_hello_intervalContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Iipo_networkContext;
@@ -1031,6 +1033,19 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
   }
 
   @Override
+  public void exitIhgam_key_chain(Ihgam_key_chainContext ctx) {
+    // TODO: support HSRP md5 authentication key-chain
+    todo(ctx);
+  }
+
+  @Override
+  public void exitI_switchport_switchport(I_switchport_switchportContext ctx) {
+    _currentInterfaces.stream()
+        .filter(iface -> iface.getSwitchportMode() == SwitchportMode.NONE)
+        .forEach(iface -> iface.setSwitchportMode(SwitchportMode.ACCESS));
+  }
+
+  @Override
   public void exitIh_group(Ih_groupContext ctx) {
     _currentHsrpGroupGetter = null;
   }
@@ -1096,6 +1111,10 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
   public void exitIhg_priority(Ihg_priorityContext ctx) {
     int priority = toInteger(ctx.priority);
     _currentInterfaces.forEach(iface -> _currentHsrpGroupGetter.apply(iface).setPriority(priority));
+    if (ctx.FORWARDING_THRESHOLD() != null) {
+      // TODO: forwarding-threshold for HSRP priority
+      todo(ctx);
+    }
   }
 
   @Override

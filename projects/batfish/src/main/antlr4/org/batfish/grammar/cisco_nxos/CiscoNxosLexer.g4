@@ -237,6 +237,11 @@ AGGREGATE_ADDRESS
   'aggregate-address'
 ;
 
+AGGRESSIVE
+:
+  'aggressive'
+;
+
 AHP
 :
   'ahp'
@@ -307,6 +312,11 @@ AS_PATH
 AS_SET
 :
   'as-set'
+;
+
+ASSOCIATE
+:
+  'associate'
 ;
 
 ASSOCIATE_VRF
@@ -1076,6 +1086,11 @@ FEATUREOPSTATUSCHANGE
   [Cc] [Hh] [Aa] [Nn] [Gg] [Ee]
 ;
 
+FEX
+:
+  'fex'
+;
+
 FEX_FABRIC
 :
   'fex-fabric'
@@ -1119,6 +1134,11 @@ FORCE
 FORCE_ORDER
 :
   'force-order'
+;
+
+FORWARDING_THRESHOLD
+:
+  'forwarding-threshold'
 ;
 
 FLUSH_ROUTES
@@ -1439,6 +1459,11 @@ INTERNET
   'internet'
 ;
 
+INTERVAL
+:
+  'interval'
+;
+
 IP
 :
   'ip'
@@ -1492,6 +1517,11 @@ ISOLATE
 KEY
 :
   'key'
+;
+
+KEY_CHAIN
+:
+  'key-chain' -> pushMode ( M_Word )
 ;
 
 KEY_STRING
@@ -1666,6 +1696,11 @@ LOW_MEMORY
   'low-memory'
 ;
 
+LOWER
+:
+  'lower'
+;
+
 LPD
 :
   'lpd'
@@ -1834,6 +1869,11 @@ MGMT
   [Mm] [Gg] [Mm] [Tt]
 ;
 
+MIN_RX
+:
+  'min_rx'
+;
+
 MINIMUM
 :
   'minimum'
@@ -1892,6 +1932,11 @@ MULTICAST
 MULTIPATH_RELAX
 :
   'multipath-relax'
+;
+
+MULTIPLIER
+:
+  'multiplier'
 ;
 
 MVPN
@@ -3279,6 +3324,11 @@ UPGRADEOPNOTIFYONCOMPLETION
 :
   [Uu] [Pp] [Gg] [Rr] [Aa] [Dd] [Ee] [Oo] [Pp] [Nn] [Oo] [Tt] [Ii] [Ff] [Yy]
   [Oo] [Nn] [Cc] [Oo] [Mm] [Pp] [Ll] [Ee] [Tt] [Ii] [Oo] [Nn]
+;
+
+UPPER
+:
+  'upper'
 ;
 
 URG

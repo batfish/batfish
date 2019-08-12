@@ -40,10 +40,12 @@ import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.Interface_
 import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.NumberContext;
 import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.S_autoContext;
 import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.S_ifaceContext;
+import org.batfish.representation.cumulus.Bridge;
 import org.batfish.representation.cumulus.CumulusNcluConfiguration;
 import org.batfish.representation.cumulus.CumulusStructureType;
 import org.batfish.representation.cumulus.CumulusStructureUsage;
 import org.batfish.representation.cumulus.InterfaceClagSettings;
+import org.batfish.representation.cumulus_interfaces.Converter;
 import org.batfish.representation.cumulus_interfaces.Interface;
 import org.batfish.representation.cumulus_interfaces.Interfaces;
 
@@ -55,7 +57,10 @@ public final class CumulusInterfacesConfigurationBuilder
     extends CumulusInterfacesParserBaseListener {
   private final CumulusNcluConfiguration _config;
   private final Interfaces _interfaces = new Interfaces();
+
+  @SuppressWarnings("unused")
   private final CumulusInterfacesCombinedParser _parser;
+
   private final Warnings _w;
   private Interface _currentIface;
 
@@ -110,12 +115,7 @@ public final class CumulusInterfacesConfigurationBuilder
 
   @Override
   public void exitI_vrf_table(I_vrf_tableContext ctx) {
-    String tblName = ctx.vrf_table_name().getText();
-    if (tblName.equals("auto")) {
-      _currentIface.setIsVrf();
-    } else {
-      _w.todo(ctx, ctx.vrf_table_name().getStart().getText(), _parser);
-    }
+    _currentIface.setVrfTable(ctx.vrf_table_name().getText());
   }
 
   @Override
@@ -233,7 +233,7 @@ public final class CumulusInterfacesConfigurationBuilder
   @Override
   public void exitI_vlan_id(I_vlan_idContext ctx) {
     String vlanId = ctx.number().getText();
-    _config.defineStructure(CumulusStructureType.VLAN, vlanId, ctx.getStart().getLine());
+    _config.defineStructure(CumulusStructureType.VLAN, vlanId, ctx);
     _currentIface.setVlanId(Integer.parseInt(vlanId));
   }
 
@@ -278,14 +278,18 @@ public final class CumulusInterfacesConfigurationBuilder
 
   @Override
   public void exitS_iface(S_ifaceContext ctx) {
-    CumulusStructureType type =
-        _currentIface.getIsVrf() ? CumulusStructureType.VRF : CumulusStructureType.INTERFACE;
-    _config.defineStructure(type, _currentIface.getName(), ctx.getStart().getLine());
+    _config.defineStructure(_currentIface.getType(), _currentIface.getName(), ctx);
     _currentIface = null;
   }
 
   @Override
   public void exitCumulus_interfaces_configuration(Cumulus_interfaces_configurationContext ctxt) {
-    // TODO migrate _interfaces into _config
+    Converter converter = new Converter(_interfaces);
+    Bridge bridge = converter.convertBridge();
+    _config.setBridge(bridge != null ? bridge : new Bridge());
+    _config.setInterfaces(converter.convertInterfaces());
+    _config.setVlans(converter.convertVlans());
+    _config.setVrfs(converter.convertVrfs());
+    _config.setVxlans(converter.convertVxlans());
   }
 }

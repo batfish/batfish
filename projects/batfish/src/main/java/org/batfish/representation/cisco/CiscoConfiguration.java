@@ -2661,7 +2661,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
                                 .get(vrfName)
                                 .getInterfaces()
                                 .get(ifaceName)
-                                .setOspfArea(area)));
+                                .setOspfAreaName(area.getAreaNumber())));
 
     String ospfExportPolicyName = "~OSPF_EXPORT_POLICY:" + vrfName + "~";
     RoutingPolicy ospfExportPolicy = new RoutingPolicy(ospfExportPolicyName, c);

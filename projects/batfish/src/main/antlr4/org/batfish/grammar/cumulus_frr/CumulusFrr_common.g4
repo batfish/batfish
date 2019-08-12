@@ -4,6 +4,11 @@ options {
   tokenVocab = CumulusFrrLexer;
 }
 
+autonomous_system
+:
+  uint32
+;
+
 ip_address
 :
   IP_ADDRESS
@@ -38,6 +43,11 @@ vni_number
   v = uint32
   {isVniNumber($v.ctx)}?
 
+;
+
+vrf_name
+:
+  word
 ;
 
 uint32

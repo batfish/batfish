@@ -1,6 +1,6 @@
 parser grammar CumulusFrrParser;
 
-import CumulusFrr_common, CumulusFrr_routemap, CumulusFrr_vrf;
+import CumulusFrr_bgp, CumulusFrr_common, CumulusFrr_routemap, CumulusFrr_vrf;
 
 options {
   superClass =
@@ -18,6 +18,7 @@ cumulus_frr_configuration
 statement
 :
   FRR_VERSION_LINE NEWLINE
+  | s_bgp
   | s_vrf
   | s_routemap
 ;

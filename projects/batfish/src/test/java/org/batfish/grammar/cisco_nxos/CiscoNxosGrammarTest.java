@@ -839,6 +839,7 @@ public final class CiscoNxosGrammarTest {
             "Ethernet1/12",
             "Ethernet1/13",
             "Ethernet1/14",
+            "Ethernet1/15",
             "loopback0",
             "mgmt0",
             "port-channel1",
@@ -963,6 +964,12 @@ public final class CiscoNxosGrammarTest {
       assertThat(iface.getNativeVlan(), equalTo(1));
       assertThat(iface.getAllowedVlans(), equalTo(IntegerSpace.of(Range.closed(1, 4094))));
     }
+    {
+      org.batfish.datamodel.Interface iface = c.getAllInterfaces().get("Ethernet1/15");
+      assertThat(iface, isActive());
+      assertThat(iface.getSwitchportMode(), equalTo(SwitchportMode.ACCESS));
+      assertThat(iface.getAccessVlan(), equalTo(1));
+    }
   }
 
   @Test
@@ -989,6 +996,7 @@ public final class CiscoNxosGrammarTest {
             "Ethernet1/12",
             "Ethernet1/13",
             "Ethernet1/14",
+            "Ethernet1/15",
             "loopback0",
             "mgmt0",
             "port-channel1",
@@ -1111,6 +1119,12 @@ public final class CiscoNxosGrammarTest {
       assertThat(iface.getSwitchportMode(), equalTo(SwitchportMode.TRUNK));
       assertThat(iface.getNativeVlan(), equalTo(1));
       assertThat(iface.getAllowedVlans(), equalTo(IntegerSpace.of(Range.closed(1, 4094))));
+    }
+    {
+      Interface iface = vc.getInterfaces().get("Ethernet1/15");
+      assertFalse(iface.getShutdown());
+      assertThat(iface.getSwitchportMode(), equalTo(SwitchportMode.ACCESS));
+      assertThat(iface.getAccessVlan(), equalTo(1));
     }
   }
 
@@ -3159,9 +3173,6 @@ public final class CiscoNxosGrammarTest {
     {
       org.batfish.datamodel.Interface iface = c.getAllInterfaces().get("Ethernet1/1");
       assertTrue(iface.getOspfEnabled());
-      assertThat(
-          iface.getOspfArea(),
-          equalTo(c.getDefaultVrf().getOspfProcesses().get("pi_d").getAreas().get(0L)));
       assertThat(iface.getOspfAreaName(), equalTo(0L));
       assertTrue(iface.getOspfPassive());
       assertFalse(iface.getOspfPointToPoint());
@@ -3169,9 +3180,6 @@ public final class CiscoNxosGrammarTest {
     {
       org.batfish.datamodel.Interface iface = c.getAllInterfaces().get("Ethernet1/2");
       assertTrue(iface.getOspfEnabled());
-      assertThat(
-          iface.getOspfArea(),
-          equalTo(c.getDefaultVrf().getOspfProcesses().get("network").getAreas().get(0L)));
       assertThat(iface.getOspfAreaName(), equalTo(0L));
       assertFalse(iface.getOspfPassive());
       assertFalse(iface.getOspfPointToPoint());
@@ -3179,9 +3187,6 @@ public final class CiscoNxosGrammarTest {
     {
       org.batfish.datamodel.Interface iface = c.getAllInterfaces().get("Ethernet1/3");
       assertTrue(iface.getOspfEnabled());
-      assertThat(
-          iface.getOspfArea(),
-          equalTo(c.getDefaultVrf().getOspfProcesses().get("network").getAreas().get(0L)));
       assertThat(iface.getOspfAreaName(), equalTo(0L));
       assertFalse(iface.getOspfPassive());
       assertTrue(iface.getOspfPointToPoint());
