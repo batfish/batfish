@@ -161,7 +161,10 @@ hsrp_preempt_delay
 
 ihg_priority
 :
-  PRIORITY priority = uint8 NEWLINE
+  PRIORITY priority = uint8
+  (
+    FORWARDING_THRESHOLD LOWER lower = uint8 UPPER upper = uint8
+  )? NEWLINE
 ;
 
 ihg_timers
