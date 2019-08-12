@@ -22,6 +22,7 @@ import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sb_neighborContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sb_router_idContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbaf_ipv4_unicastContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbaf_l2vpn_evpnContext;
+import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbafls_advertise_all_vniContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbn_interfaceContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbn_ipContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbn_nameContext;
@@ -109,6 +110,11 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
       _w.addWarning(ctx, ctx.getText(), _parser, "duplicate 'address-family l2vpn evpn'");
     }
     _currentBgpVrf.setL2VpnEvpn(new BgpL2vpnEvpnAddressFamily());
+  }
+
+  @Override
+  public void exitSbafls_advertise_all_vni(Sbafls_advertise_all_vniContext ctx) {
+    _currentBgpVrf.getL2VpnEvpn().setAdvertiseAllVni(true);
   }
 
   @Override

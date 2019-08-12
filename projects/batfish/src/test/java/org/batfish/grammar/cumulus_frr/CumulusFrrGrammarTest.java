@@ -10,12 +10,12 @@ import static org.hamcrest.Matchers.isA;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import java.util.Map;
 import java.util.Set;
-import javax.annotation.Nonnull;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
 import org.batfish.common.BatfishLogger;
@@ -96,6 +96,10 @@ public class CumulusFrrGrammarTest {
     parseFromTextWithSettings(src, settings);
   }
 
+  private static void parseLines(String... lines) {
+    parse(String.join("\n", lines) + "\n");
+  }
+
   private static void parseFromTextWithSettings(String src, Settings settings) {
     CumulusFrrCombinedParser parser = new CumulusFrrCombinedParser(src, settings, 1, 0);
     ParserRuleContext tree =
@@ -131,6 +135,13 @@ public class CumulusFrrGrammarTest {
   public void testBgpAddressFamily_l2vpn_evpn() {
     parse("router bgp 1\n address-family l2vpn evpn\n exit-address-family\n");
     assertNotNull(CONFIG.getBgpProcess().getDefaultVrf().getL2VpnEvpn());
+  }
+
+  @Test
+  public void testBgpAdressFamilyL2vpnEvpnAdvertiseAllVni() {
+    parseLines(
+        "router bgp 1", "address-family l2vpn evpn", "advertise-all-vni", "exit-address-family");
+    assertTrue(CONFIG.getBgpProcess().getDefaultVrf().getL2VpnEvpn().getAdvertiseAllVni());
   }
 
   @Test

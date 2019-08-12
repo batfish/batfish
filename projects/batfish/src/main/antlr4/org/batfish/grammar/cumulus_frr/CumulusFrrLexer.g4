@@ -28,6 +28,11 @@ ADDRESS_FAMILY
   'address-family'
 ;
 
+ADVERTISE_ALL_VNI
+:
+  'advertise-all-vni'
+;
+
 BGP
 :
   'bgp'

@@ -47,7 +47,17 @@ sbaf_ipv4_unicast
 sbaf_l2vpn_evpn
 :
   L2VPN EVPN NEWLINE
-  // todo: unbounded number of statement lines
+  sbafl_statement*
+;
+
+sbafl_statement
+:
+  sbafls_advertise_all_vni
+;
+
+sbafls_advertise_all_vni
+:
+  ADVERTISE_ALL_VNI NEWLINE
 ;
 
 sbn_ip
