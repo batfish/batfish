@@ -12,12 +12,6 @@ tokens {
 ADDRESS
 :
   'address'
-  {
-    if (secondToLastTokenType() == MATCH && lastTokenType() == IP) {
-      pushMode(M_MatchIpAddress);
-    }
-  }
-
 ;
 
 COMMENT_LINE
@@ -422,21 +416,3 @@ M_Remark_WS
 :
   F_Whitespace+ -> channel ( HIDDEN )
 ;
-
-mode M_MatchIpAddress;
-
-M_MatchIpAddress_PREFIX_LIST
-:
-  'prefix-list' -> type ( PREFIX_LIST ) , mode ( M_Words )
-;
-
-M_MatchIpAddress_WORD
-:
-  F_Word -> type ( WORD ) , mode ( M_Words )
-;
-
-M_MatchIpAddress_WS
-:
-  F_Whitespace+ -> channel ( HIDDEN )
-;
-

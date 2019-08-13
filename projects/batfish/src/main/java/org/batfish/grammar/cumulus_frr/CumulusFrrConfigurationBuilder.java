@@ -15,7 +15,6 @@ import org.batfish.common.Warnings;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.Prefix;
-import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Ip_prefix_list_nameContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Rm_descriptionContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Rmm_communityContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Rmmipa_prefix_listContext;
@@ -248,19 +247,21 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
 
   @Override
   public void exitRmmipa_prefix_list(Rmmipa_prefix_listContext ctx) {
-    List<String> names = new ArrayList<>();
-    Optional.ofNullable(_currentRouteMapEntry.getMatchIpAddressPrefixList())
-        .ifPresent(old -> names.addAll(old.getNames()));
-    for (Ip_prefix_list_nameContext nameCtx : ctx.names) {
-      String name = nameCtx.getText();
-      _c.referenceStructure(
-          CumulusStructureType.IP_PREFIX_LIST,
-          name,
-          CumulusStructureUsage.ROUTE_MAP_MATCH_IP_ADDRESS_PREFIX_LIST,
-          nameCtx.getStart().getLine());
-      names.add(name);
-    }
-    _currentRouteMapEntry.setMatchIpAddressPrefixList(new RouteMapMatchIpAddressPrefixList(names));
+    String name = ctx.name.getText();
+    RouteMapMatchIpAddressPrefixList matchPrefixList =
+        _currentRouteMapEntry.getMatchIpAddressPrefixList();
+    List<String> prefixNameList =
+        matchPrefixList == null ? new ArrayList<>() : new ArrayList<>(matchPrefixList.getNames());
+    prefixNameList.add(name);
+
+    _currentRouteMapEntry.setMatchIpAddressPrefixList(
+        new RouteMapMatchIpAddressPrefixList(prefixNameList));
+
+    _c.referenceStructure(
+        CumulusStructureType.IP_PREFIX_LIST,
+        name,
+        CumulusStructureUsage.ROUTE_MAP_MATCH_IP_ADDRESS_PREFIX_LIST,
+        ctx.getStart().getLine());
   }
 
   @Override

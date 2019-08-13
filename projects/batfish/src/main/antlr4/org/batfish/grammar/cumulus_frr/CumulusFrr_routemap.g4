@@ -59,5 +59,5 @@ rmmip_address
 
 rmmipa_prefix_list
 :
-  PREFIX_LIST names += ip_prefix_list_name+ NEWLINE
+  PREFIX_LIST name = ip_prefix_list_name NEWLINE
 ;
