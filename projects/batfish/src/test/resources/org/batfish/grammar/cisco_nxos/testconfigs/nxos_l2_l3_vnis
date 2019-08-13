@@ -16,8 +16,6 @@ vrf context tenant1
   rd auto
   address-family ipv4 unicast
     route-target both auto evpn
-  address-family ipv6 unicast
-    route-target both auto evpn
 interface nve1
   no shutdown
   host-reachability protocol bgp

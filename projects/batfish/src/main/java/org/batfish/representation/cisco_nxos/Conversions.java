@@ -472,7 +472,7 @@ final class Conversions {
         continue;
       }
 
-      RouteDistinguisherOrAuto exportRtOrAuto = evpnVni.getExportRt();
+      ExtendedCommunityOrAuto exportRtOrAuto = evpnVni.getExportRt();
       if (exportRtOrAuto == null) {
         // export route target is not present as auto and neither is user-defined, no L2 routes
         // (MAC-routes)
@@ -484,7 +484,7 @@ final class Conversions {
                 vniSettings.getVni()));
         continue;
       }
-      RouteDistinguisherOrAuto importRtOrAuto = evpnVni.getImportRt();
+      ExtendedCommunityOrAuto importRtOrAuto = evpnVni.getImportRt();
       if (importRtOrAuto == null) {
         // import route target is not present as auto and neither is user-defined, no L2 routes
         // (MAC-routes)
@@ -513,12 +513,11 @@ final class Conversions {
               .setImportRouteTarget(
                   importRtOrAuto.isAuto()
                       ? toRouteTarget(localAs, vniSettings.getVni(), warnings).matchString()
-                      : toRouteTarget(importRtOrAuto.getRouteDistinguisher(), warnings)
-                          .matchString())
+                      : importRtOrAuto.getExtendedCommunity().matchString())
               .setRouteTarget(
                   exportRtOrAuto.isAuto()
                       ? toRouteTarget(localAs, vniSettings.getVni(), warnings)
-                      : toRouteTarget(exportRtOrAuto.getRouteDistinguisher(), warnings))
+                      : exportRtOrAuto.getExtendedCommunity())
               .build());
     }
     return layer2Vnis.build();
@@ -552,7 +551,7 @@ final class Conversions {
               .map(RouteDistinguisherOrAuto::getRouteDistinguisher)
               .orElse(null);
 
-      RouteDistinguisherOrAuto exportRtOrAuto =
+      ExtendedCommunityOrAuto exportRtOrAuto =
           tenantVrfForL3Vni.getAddressFamilies().get(AddressFamily.IPV4_UNICAST).getExportRtEvpn();
       if (exportRtOrAuto == null) {
         // export route target is not present as auto and neither is user-defined, no L3 routes
@@ -565,7 +564,7 @@ final class Conversions {
                 vniSettings.getVni()));
         continue;
       }
-      RouteDistinguisherOrAuto importRtOrAuto =
+      ExtendedCommunityOrAuto importRtOrAuto =
           tenantVrfForL3Vni.getAddressFamilies().get(AddressFamily.IPV4_UNICAST).getImportRtEvpn();
       if (importRtOrAuto == null) {
         // import route target is not present as auto and neither is user-defined, no L3 routes
@@ -585,8 +584,7 @@ final class Conversions {
               .setImportRouteTarget(
                   importRtOrAuto.isAuto()
                       ? toRouteTarget(localAs, vniSettings.getVni(), warnings).matchString()
-                      : toRouteTarget(importRtOrAuto.getRouteDistinguisher(), warnings)
-                          .matchString())
+                      : importRtOrAuto.getExtendedCommunity().matchString())
               .setRouteDistinguisher(
                   firstNonNull(
                       rd,
@@ -594,7 +592,7 @@ final class Conversions {
               .setRouteTarget(
                   exportRtOrAuto.isAuto()
                       ? toRouteTarget(localAs, vniSettings.getVni(), warnings)
-                      : toRouteTarget(exportRtOrAuto.getRouteDistinguisher(), warnings))
+                      : exportRtOrAuto.getExtendedCommunity())
               .build());
     }
     return layer3Vnis.build();
@@ -628,21 +626,6 @@ final class Conversions {
         .filter(vrf -> vrf.getVni() != null && vrf.getVni() == vni)
         .findFirst()
         .orElse(null);
-  }
-
-  /**
-   * Convert a type-0 route distinguisher to an extended community representing the route target
-   *
-   * <p>This is a work around to handle the fact that we are storing route-targets as {@link
-   * RouteDistinguisher} in some of the Cisco NX OS vendor configurations, for example in {@link
-   * VrfAddressFamily}
-   */
-  static ExtendedCommunity toRouteTarget(RouteDistinguisher rd, Warnings warnings) {
-    long value = rd.getValue();
-    long asn = value >> 32;
-
-    // rd is type 0: two bytes administrative field and 4 bytes value
-    return ExtendedCommunity.target(asn & 0xFFFFL, value & 0xFFFFFFFFL);
   }
 
   /**

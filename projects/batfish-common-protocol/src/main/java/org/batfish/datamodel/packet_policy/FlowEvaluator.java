@@ -37,6 +37,16 @@ public final class FlowEvaluator {
       return Evaluator.matches(
           expr.getExpr(), _currentFlow.build(), _srcInterface, _availableAcls, _namedIpSpaces);
     }
+
+    @Override
+    public Boolean visitTrueExpr(TrueExpr expr) {
+      return true;
+    }
+
+    @Override
+    public Boolean visitFalseExpr(FalseExpr expr) {
+      return false;
+    }
   }
 
   /**

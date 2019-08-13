@@ -13,6 +13,7 @@ public final class RouteMap implements Serializable {
 
   private final @Nonnull SortedMap<Integer, RouteMapEntry> _entries;
   private final @Nonnull String _name;
+  private boolean _pbrStatistics;
 
   public RouteMap(String name) {
     _name = name;
@@ -25,5 +26,13 @@ public final class RouteMap implements Serializable {
 
   public @Nonnull String getName() {
     return _name;
+  }
+
+  public boolean getPbrStatistics() {
+    return _pbrStatistics;
+  }
+
+  public void setPbrStatistics(boolean pbrStatistics) {
+    _pbrStatistics = pbrStatistics;
   }
 }

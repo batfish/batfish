@@ -2045,6 +2045,11 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
           }
 
           @Override
+          public Stream<Statement> visitRouteMapSetOrigin(RouteMapSetOrigin routeMapSetOrigin) {
+            return Stream.of(new SetOrigin(new LiteralOrigin(routeMapSetOrigin.getOrigin(), null)));
+          }
+
+          @Override
           public Stream<Statement> visitRouteMapSetTag(RouteMapSetTag routeMapSetTag) {
             return Stream.of(new SetTag(new LiteralLong(routeMapSetTag.getTag())));
           }

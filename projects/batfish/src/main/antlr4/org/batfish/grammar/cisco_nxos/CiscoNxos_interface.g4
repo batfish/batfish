@@ -49,7 +49,11 @@ s_interface_regular
 
 i_bandwidth
 :
-  BANDWIDTH bw = interface_bandwidth_kbps NEWLINE
+  BANDWIDTH
+  (
+    inherit = INHERIT bw = interface_bandwidth_kbps?
+    | inherit = INHERIT? bw = interface_bandwidth_kbps
+  ) NEWLINE
 ;
 
 interface_bandwidth_kbps
@@ -117,7 +121,8 @@ ih_group
 :
   group = hsrp_group_number NEWLINE
   (
-    ihg_ip
+    ihg_authentication
+    | ihg_ip
     | ihg_preempt
     | ihg_priority
     | ihg_timers
@@ -129,6 +134,36 @@ hsrp_group_number
 :
 // 0-4095
   uint16
+;
+
+ihg_authentication
+:
+  AUTHENTICATION
+  (
+    ihga_md5
+    | ihga_text
+  )
+;
+
+ihga_md5
+:
+  MD5 ihgam_key_chain
+;
+
+ihga_text
+:
+  TEXT text = hsrp_authentication_string NEWLINE
+;
+
+hsrp_authentication_string
+:
+// 1-8 characters
+  WORD
+;
+
+ihgam_key_chain
+:
+  KEY_CHAIN name = key_chain_name NEWLINE
 ;
 
 ihg_ip
@@ -161,7 +196,10 @@ hsrp_preempt_delay
 
 ihg_priority
 :
-  PRIORITY priority = uint8 NEWLINE
+  PRIORITY priority = uint8
+  (
+    FORWARDING_THRESHOLD LOWER lower = uint8 UPPER upper = uint8
+  )? NEWLINE
 ;
 
 ihg_timers
@@ -358,6 +396,7 @@ i_no_null
 :
   (
     IP
+    | IPV6
     | NEGOTIATE
   ) null_rest_of_line
 ;
@@ -365,10 +404,13 @@ i_no_null
 i_null
 :
   (
-    DUPLEX
+    BFD
+    | DUPLEX
+    | FEX
     | LACP
     | SPANNING_TREE
     | STORM_CONTROL
+    | UDLD
   ) null_rest_of_line
 ;
 
@@ -394,6 +436,7 @@ i_switchport
   (
     i_switchport_access
     | i_switchport_mode
+    | i_switchport_switchport
     | i_switchport_trunk_allowed
     | i_switchport_trunk
   )
@@ -433,6 +476,11 @@ i_switchport_mode_fex_fabric
 i_switchport_mode_trunk
 :
   TRUNK NEWLINE
+;
+
+i_switchport_switchport
+:
+  NEWLINE
 ;
 
 i_switchport_trunk
