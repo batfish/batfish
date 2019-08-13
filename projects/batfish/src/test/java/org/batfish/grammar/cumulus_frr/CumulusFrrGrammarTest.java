@@ -25,6 +25,7 @@ import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
+import org.batfish.datamodel.bgp.community.StandardCommunity;
 import org.batfish.grammar.BatfishParseTreeWalker;
 import org.batfish.main.Batfish;
 import org.batfish.representation.cumulus.BgpInterfaceNeighbor;
@@ -34,6 +35,7 @@ import org.batfish.representation.cumulus.BgpPeerGroupNeighbor;
 import org.batfish.representation.cumulus.CumulusNcluConfiguration;
 import org.batfish.representation.cumulus.CumulusStructureType;
 import org.batfish.representation.cumulus.CumulusStructureUsage;
+import org.batfish.representation.cumulus.IpCommunityListExpanded;
 import org.batfish.representation.cumulus.RouteMap;
 import org.batfish.representation.cumulus.RouteMapEntry;
 import org.batfish.representation.cumulus.StaticRoute;
@@ -312,6 +314,22 @@ public class CumulusFrrGrammarTest {
 
     RouteMapEntry entry = CONFIG.getRouteMaps().get(name).getEntries().get(10);
     assertThat(entry.getSetMetric().getMetric(), equalTo(30L));
+  }
+
+  @Test
+  public void testCumulusFrrIpCommunityListExpanded() {
+    String name = "NAME";
+
+    parse(String.format("ip community-list expanded %s permit 10000:10 20000:20\n", name));
+
+    IpCommunityListExpanded communityList =
+        (IpCommunityListExpanded) CONFIG.getIpCommunityLists().get(name);
+
+    assertThat(
+        communityList.getCommunities(),
+        equalTo(
+            ImmutableList.of(
+                StandardCommunity.parse("10000:10"), StandardCommunity.parse("20000:20"))));
   }
 
   @Test

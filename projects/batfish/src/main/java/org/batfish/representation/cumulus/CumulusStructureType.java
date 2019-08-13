@@ -6,6 +6,7 @@ import org.batfish.vendor.StructureType;
 public enum CumulusStructureType implements StructureType {
   ABSTRACT_INTERFACE("abstract interface"),
   BOND("bond"),
+  IP_COMMUNITY_LIST("ip community-list"),
   INTERFACE("interface"),
   LOOPBACK("loopback"),
   ROUTE_MAP("route-map"),
