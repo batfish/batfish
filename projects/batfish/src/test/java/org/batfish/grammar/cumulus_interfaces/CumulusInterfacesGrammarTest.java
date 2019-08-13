@@ -42,6 +42,7 @@ public class CumulusInterfacesGrammarTest {
     CONFIG = new CumulusNcluConfiguration();
     CONFIG.setFilename(FILENAME);
     CONFIG.setAnswerElement(new ConvertConfigurationAnswerElement());
+    CONFIG.setWarnings(new Warnings());
   }
 
   private static DefinedStructureInfo getDefinedStructureInfo(
@@ -76,7 +77,6 @@ public class CumulusInterfacesGrammarTest {
     CumulusInterfacesCombinedParser parser =
         new CumulusInterfacesCombinedParser(input, settings, 1, 0);
     Cumulus_interfaces_configurationContext ctxt = parser.parse();
-    Warnings w = new Warnings();
     CumulusInterfacesConfigurationBuilder configurationBuilder =
         new CumulusInterfacesConfigurationBuilder(CONFIG, parser, input, CONFIG.getWarnings());
     new BatfishParseTreeWalker(parser).walk(configurationBuilder, ctxt);
