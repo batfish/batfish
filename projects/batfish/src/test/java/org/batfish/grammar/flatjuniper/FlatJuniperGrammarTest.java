@@ -2293,6 +2293,14 @@ public final class FlatJuniperGrammarTest {
     // Confirm explicitly specified point-to-point interface shows up as such in the VI model
     assertThat(
         c, hasInterface("ge-0/0/0.0", hasOspfNetworkType(equalTo(OspfNetworkType.POINT_TO_POINT))));
+    assertThat(
+        c,
+        hasInterface(
+            "ge-0/0/2.0", hasOspfNetworkType(equalTo(OspfNetworkType.NON_BROADCAST_MULTI_ACCESS))));
+    assertThat(
+        c,
+        hasInterface(
+            "ge-0/0/3.0", hasOspfNetworkType(equalTo(OspfNetworkType.POINT_TO_MULTIPOINT))));
   }
 
   @Test
