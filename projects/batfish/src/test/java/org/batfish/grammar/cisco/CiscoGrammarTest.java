@@ -4868,7 +4868,7 @@ public class CiscoGrammarTest {
     String eth4 = "Ethernet0/4";
     Configuration config = configurations.get(iosOspfPointToPoint);
     Map<String, Interface> ifaces = config.getAllInterfaces();
-    assertThat(ifaces.keySet(), containsInAnyOrder(eth0, eth1, eth2, eth3, eth4, eth5));
+    assertThat(ifaces.keySet(), containsInAnyOrder(eth0, eth1, eth2, eth3, eth4));
 
     assertThat(ifaces.get(eth0).getOspfNetworkType(), nullValue());
     assertThat(
