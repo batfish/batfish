@@ -34,6 +34,11 @@ BOND_SLAVES
   'bond-slaves' -> pushMode(M_Words)
 ;
 
+BOND_LACP_BYPASS_ALLOW
+:
+  'bond-lacp-bypass-allow' -> pushMode(M_DropUntilNewline)
+;
+
 BRIDGE_PORTS
 :
   'bridge-ports' -> pushMode(M_Words)
@@ -42,6 +47,16 @@ BRIDGE_PORTS
 BRIDGE_ACCESS
 :
   'bridge-access'
+;
+
+BRIDGE_ARP_ND_SUPPRESS
+:
+  'bridge-arp-nd-suppress' -> pushMode(M_DropUntilNewline)
+;
+
+BRIDGE_LEARNING
+:
+  'bridge-learning' -> pushMode(M_DropUntilNewline)
 ;
 
 BRIDGE_PVID
@@ -74,6 +89,11 @@ CLAGD_SYS_MAC
   'clagd-sys-mac'
 ;
 
+HWADDRESS
+:
+  'hwaddress'
+;
+
 IFACE
 :
   'iface' -> pushMode(M_Word)
@@ -88,6 +108,22 @@ LINK_SPEED
 :
   'link-speed'
 ;
+
+MSTPCTL_BPDUGUARD
+:
+  'mstpctl-bpduguard' -> pushMode(M_DropUntilNewline)
+;
+
+MSTPCTL_PORTADMINEDGE
+:
+  'mstpctl-portadminedge' -> pushMode(M_DropUntilNewline)
+;
+
+MSTPCTL_PORTBPDUFILTER
+:
+  'mstpctl-portbpdufilter' -> pushMode(M_DropUntilNewline)
+;
+
 
 VLAN_ID
 :
@@ -269,6 +305,18 @@ fragment
 F_WordChar
 :
   [0-9A-Za-z_.:] | '-'
+;
+
+mode M_DropUntilNewline;
+
+M_DropUntilNewline_NonNewline
+:
+  F_NonNewline+ -> channel(HIDDEN)
+;
+
+M_DropUntilNewline_Newline
+:
+  F_Newline+ -> type(NEWLINE), popMode
 ;
 
 mode M_LineText;
