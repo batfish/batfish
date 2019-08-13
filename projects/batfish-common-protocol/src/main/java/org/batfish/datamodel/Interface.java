@@ -1001,6 +1001,13 @@ public final class Interface extends ComparableStructure<String> {
     if (!Objects.equals(_ospfNetworkType, other._ospfNetworkType)) {
       return false;
     }
+    if (!Objects.equals(_ospfDeadInterval, other._ospfDeadInterval)) {
+      return false;
+    }
+    if (!Objects.equals(_ospfHelloInterval, other._ospfHelloInterval)) {
+      return false;
+    }
+
     // TODO: check OSPF settings for equality.
     if (!IpAccessList.bothNullOrSameName(this._outgoingFilter, other._outgoingFilter)) {
       return false;
@@ -1257,8 +1264,9 @@ public final class Interface extends ComparableStructure<String> {
   }
 
   /** Dead-interval in seconds for OSPF updates. */
+  @Nullable
   @JsonProperty(PROP_OSPF_DEAD_INTERVAL)
-  public int getOspfDeadInterval() {
+  public Integer getOspfDeadInterval() {
     return _ospfDeadInterval;
   }
 
@@ -1269,6 +1277,7 @@ public final class Interface extends ComparableStructure<String> {
   }
 
   /** Time in seconds, between sending OSPF hello messages. */
+  @Nullable
   @JsonProperty(PROP_OSPF_HELLO_INTERVAL)
   public Integer getOspfHelloInterval() {
     return _ospfHelloInterval;

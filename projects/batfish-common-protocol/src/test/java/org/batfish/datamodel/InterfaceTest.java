@@ -87,4 +87,16 @@ public class InterfaceTest {
         .addEqualityGroup(i.setOspfNetworkType(OspfNetworkType.POINT_TO_POINT).build())
         .testEquals();
   }
+
+  @Test
+  public void testOspfIntervalEquals() {
+    Interface.Builder i = Interface.builder().setName("iface");
+    new EqualsTester()
+        .addEqualityGroup(i.build(), Interface.builder().setName("iface").build())
+        .addEqualityGroup(i.setOspfDeadInterval(0).build())
+        .addEqualityGroup(i.setOspfDeadInterval(40).build())
+        .addEqualityGroup(i.setOspfHelloInterval(0).build())
+        .addEqualityGroup(i.setOspfHelloInterval(10).build())
+        .testEquals();
+  }
 }
