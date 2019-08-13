@@ -19,6 +19,8 @@ public final class RouteMapEntry implements Serializable {
   private final int _number;
   private @Nullable String _description;
 
+  private @Nullable RouteMapSetMetric _setMetric;
+
   public RouteMapEntry(int number, LineAction action) {
     _number = number;
     _action = action;
@@ -55,7 +57,11 @@ public final class RouteMapEntry implements Serializable {
 
   /** Return stream of set statements for this entry. */
   public @Nonnull Stream<RouteMapSet> getSets() {
-    return Stream.<RouteMapSet>of().filter(Objects::nonNull);
+    return Stream.<RouteMapSet>of(_setMetric).filter(Objects::nonNull);
+  }
+
+  public @Nullable RouteMapSetMetric getSetMetric() {
+    return _setMetric;
   }
 
   public void setMatchInterface(@Nullable RouteMapMatchInterface matchInterface) {
@@ -73,5 +79,9 @@ public final class RouteMapEntry implements Serializable {
 
   public void setDescription(@Nullable String description) {
     _description = description;
+  }
+
+  public void setSetMetric(@Nullable RouteMapSetMetric setMetric) {
+    _setMetric = setMetric;
   }
 }

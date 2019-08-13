@@ -13,6 +13,7 @@ s_routemap
   (
     rm_description
     | rm_match
+    | rm_set
   )*
 ;
 
@@ -46,6 +47,19 @@ route_map_sequence
 rmm_community
 :
   COMMUNITY names += ip_community_list_name+ NEWLINE
+;
+
+rm_set
+:
+  SET
+  (
+    rms_metric
+  )
+;
+
+rms_metric
+:
+  METRIC metric = uint32 NEWLINE
 ;
 
 rmm_ip
