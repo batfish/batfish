@@ -298,6 +298,17 @@ final class InterfaceMatchersImpl {
     }
   }
 
+  static final class HasOspfNetworkType extends FeatureMatcher<Interface, OspfNetworkType> {
+    HasOspfNetworkType(@Nonnull Matcher<? super OspfNetworkType> subMatcher) {
+      super(subMatcher, "an Interface with ospfNetworkType:", "ospfNetworkType");
+    }
+
+    @Override
+    protected OspfNetworkType featureValueOf(Interface actual) {
+      return actual.getOspfNetworkType();
+    }
+  }
+
   static final class HasIncomingFilter extends FeatureMatcher<Interface, IpAccessList> {
     HasIncomingFilter(@Nonnull Matcher<? super IpAccessList> subMatcher) {
       super(subMatcher, "an Interface with incomingFilter:", "incomingFilter");
