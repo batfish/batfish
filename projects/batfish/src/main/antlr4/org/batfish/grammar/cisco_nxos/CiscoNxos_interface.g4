@@ -425,7 +425,6 @@ i_null
   (
     BFD
     | CDP
-    | DELAY
     | DUPLEX
     | FEX
     | LACP
