@@ -282,9 +282,11 @@ i_ip_address
 i_ip_null
 :
   (
-    IGMP
+    FLOW
+    | IGMP
     | PIM
     | REDIRECTS
+    | UNREACHABLES
   ) null_rest_of_line
 ;
 
@@ -414,6 +416,7 @@ i_no_null
     | IP
     | IPV6
     | NEGOTIATE
+    | SNMP
   ) null_rest_of_line
 ;
 
@@ -422,9 +425,11 @@ i_null
   (
     BFD
     | CDP
+    | DELAY
     | DUPLEX
     | FEX
     | LACP
+    | SNMP
     | SPANNING_TREE
     | STORM_CONTROL
     | UDLD
