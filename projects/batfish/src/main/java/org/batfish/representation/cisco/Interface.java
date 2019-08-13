@@ -204,7 +204,9 @@ public class Interface implements Serializable {
 
   private Integer _ospfCost;
 
-  private int _ospfDeadInterval;
+  @Nullable private Integer _ospfDeadInterval;
+
+  @Nullable private Integer _ospfHelloInterval;
 
   private int _ospfHelloMultiplier;
 
@@ -468,8 +470,14 @@ public class Interface implements Serializable {
     return _ospfCost;
   }
 
-  public int getOspfDeadInterval() {
+  @Nullable
+  public Integer getOspfDeadInterval() {
     return _ospfDeadInterval;
+  }
+
+  @Nullable
+  public Integer getOspfHelloInterval() {
+    return _ospfHelloInterval;
   }
 
   public int getOspfHelloMultiplier() {
@@ -658,6 +666,10 @@ public class Interface implements Serializable {
 
   public void setOspfDeadInterval(int seconds) {
     _ospfDeadInterval = seconds;
+  }
+
+  public void setOspfHelloInterval(int seconds) {
+    _ospfHelloInterval = seconds;
   }
 
   public void setOspfHelloMultiplier(int multiplier) {
