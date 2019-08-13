@@ -66,7 +66,9 @@ public final class Interface extends ComparableStructure<String> {
     private @Nullable Integer _nativeVlan;
     private OspfArea _ospfArea;
     private Integer _ospfCost;
+    @Nullable private Integer _ospfDeadInterval;
     private boolean _ospfEnabled;
+    @Nullable private Integer _ospfHelloInterval;
     @Nullable private OspfNetworkType _ospfNetworkType;
     private boolean _ospfPassive;
     private boolean _ospfPointToPoint;
@@ -151,7 +153,9 @@ public final class Interface extends ComparableStructure<String> {
         iface.setOspfAreaName(_ospfArea.getAreaNumber());
       }
       iface.setOspfCost(_ospfCost);
+      iface.setOspfDeadInterval(_ospfDeadInterval);
       iface.setOspfEnabled(_ospfEnabled);
+      iface.setOspfHelloInterval(_ospfHelloInterval);
       iface.setOspfInboundDistributeListPolicy(_ospfInboundDistributeListPolicy);
       iface.setOspfNetworkType(_ospfNetworkType);
       iface.setOspfPassive(_ospfPassive);
@@ -378,8 +382,18 @@ public final class Interface extends ComparableStructure<String> {
       return this;
     }
 
+    public Builder setOspfDeadInterval(Integer deadInterval) {
+      _ospfDeadInterval = deadInterval;
+      return this;
+    }
+
     public Builder setOspfEnabled(boolean ospfEnabled) {
       _ospfEnabled = ospfEnabled;
+      return this;
+    }
+
+    public Builder setOspfHelloInterval(Integer helloInterval) {
+      _ospfHelloInterval = helloInterval;
       return this;
     }
 
@@ -592,6 +606,7 @@ public final class Interface extends ComparableStructure<String> {
   private static final String PROP_OSPF_COST = "ospfCost";
   private static final String PROP_OSPF_DEAD_INTERVAL = "ospfDeadInterval";
   private static final String PROP_OSPF_ENABLED = "ospfEnabled";
+  private static final String PROP_OSPF_HELLO_INTERVAL = "ospfHelloInterval";
   private static final String PROP_OSPF_HELLO_MULTIPLIER = "ospfHelloMultiplier";
   private static final String PROP_OSPF_INBOUND_DISTRIBUTE_LIST_POLICY =
       "ospfInboundDistributeListPolicy";
@@ -850,8 +865,9 @@ public final class Interface extends ComparableStructure<String> {
   @Nullable private Integer _nativeVlan;
   @Nullable private Long _ospfAreaName;
   private Integer _ospfCost;
-  private int _ospfDeadInterval;
+  @Nullable private Integer _ospfDeadInterval;
   private boolean _ospfEnabled;
+  @Nullable private Integer _ospfHelloInterval;
   private int _ospfHelloMultiplier;
   @Nullable private String _ospfInboundDistributeListPolicy;
   @Nullable private OspfNetworkType _ospfNetworkType;
@@ -1250,6 +1266,12 @@ public final class Interface extends ComparableStructure<String> {
   @JsonProperty(PROP_OSPF_ENABLED)
   public boolean getOspfEnabled() {
     return _ospfEnabled;
+  }
+
+  /** Time in seconds, between sending OSPF hello messages. */
+  @JsonProperty(PROP_OSPF_HELLO_INTERVAL)
+  public Integer getOspfHelloInterval() {
+    return _ospfHelloInterval;
   }
 
   /** Number of OSPF packets to send out during dead-interval period for fast OSPF updates. */
@@ -1655,13 +1677,18 @@ public final class Interface extends ComparableStructure<String> {
   }
 
   @JsonProperty(PROP_OSPF_DEAD_INTERVAL)
-  public void setOspfDeadInterval(int seconds) {
+  public void setOspfDeadInterval(@Nullable Integer seconds) {
     _ospfDeadInterval = seconds;
   }
 
   @JsonProperty(PROP_OSPF_ENABLED)
   public void setOspfEnabled(boolean b) {
     _ospfEnabled = b;
+  }
+
+  @JsonProperty(PROP_OSPF_HELLO_INTERVAL)
+  public void setOspfHelloInterval(@Nullable Integer seconds) {
+    _ospfHelloInterval = seconds;
   }
 
   @JsonProperty(PROP_OSPF_HELLO_MULTIPLIER)
