@@ -23,6 +23,11 @@ COMMENT_LINE
   ) -> channel ( HIDDEN )
 ;
 
+ACTIVATE
+:
+  'activate'
+;
+
 ADDRESS_FAMILY
 :
   'address-family'

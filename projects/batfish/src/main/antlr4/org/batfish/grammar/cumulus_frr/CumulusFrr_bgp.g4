@@ -54,6 +54,7 @@ sbafl_statement
 :
   sbafls_advertise_all_vni
 | sbafls_advertise_ipv4_unicast
+| sbafls_neighbor_activate
 ;
 
 sbafi_network
@@ -69,6 +70,11 @@ sbafls_advertise_all_vni
 sbafls_advertise_ipv4_unicast
 :
   ADVERTISE IPV4 UNICAST NEWLINE
+;
+
+sbafls_neighbor_activate
+:
+  NEIGHBOR neighbor = (IP_ADDRESS | WORD) ACTIVATE NEWLINE
 ;
 
 sbn_ip

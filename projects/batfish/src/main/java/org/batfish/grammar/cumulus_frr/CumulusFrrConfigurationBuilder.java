@@ -31,6 +31,7 @@ import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbaf_l2vpn_evpnContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbafi_networkContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbafls_advertise_all_vniContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbafls_advertise_ipv4_unicastContext;
+import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbafls_neighbor_activateContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbn_interfaceContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbn_ipContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbn_nameContext;
@@ -46,6 +47,7 @@ import org.batfish.representation.cumulus.BgpIpv4UnicastAddressFamily;
 import org.batfish.representation.cumulus.BgpL2VpnEvpnIpv4Unicast;
 import org.batfish.representation.cumulus.BgpL2vpnEvpnAddressFamily;
 import org.batfish.representation.cumulus.BgpNeighbor;
+import org.batfish.representation.cumulus.BgpNeighborL2vpnEvpnAddressFamily;
 import org.batfish.representation.cumulus.BgpNetwork;
 import org.batfish.representation.cumulus.BgpPeerGroupNeighbor;
 import org.batfish.representation.cumulus.BgpProcess;
@@ -141,6 +143,23 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
   public void enterSbafls_advertise_ipv4_unicast(Sbafls_advertise_ipv4_unicastContext ctx) {
     // setting in enter instead of exit since in future we can attach a routemap
     _currentBgpVrf.getL2VpnEvpn().setAdvertiseIpv4Unicast(new BgpL2VpnEvpnIpv4Unicast());
+  }
+
+  @Override
+  public void exitSbafls_neighbor_activate(Sbafls_neighbor_activateContext ctx) {
+    String neighborName = ctx.neighbor.getText();
+    BgpNeighbor neighbor = _currentBgpVrf.getNeighbors().get(neighborName);
+    if (neighbor == null) {
+      _w.addWarning(
+          ctx, ctx.getText(), _parser, String.format("neighbor %s does not exist", neighborName));
+    } else {
+      BgpNeighborL2vpnEvpnAddressFamily addressFamily = neighbor.getL2vpnEvpnAddressFamily();
+      if (addressFamily == null) {
+        addressFamily = new BgpNeighborL2vpnEvpnAddressFamily();
+        neighbor.setL2vpnEvpnAddressFamily(addressFamily);
+      }
+      addressFamily.setActivated(true);
+    }
   }
 
   @Override

@@ -19,6 +19,7 @@ import java.util.Set;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
 import org.batfish.common.BatfishLogger;
+import org.batfish.common.Warnings;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.config.Settings;
 import org.batfish.datamodel.Ip;
@@ -62,6 +63,7 @@ public class CumulusFrrGrammarTest {
     CONFIG = new CumulusNcluConfiguration();
     CONFIG.setFilename(FILENAME);
     CONFIG.setAnswerElement(new ConvertConfigurationAnswerElement());
+    CONFIG.setWarnings(new Warnings());
   }
 
   private Set<Integer> getStructureReferences(
@@ -163,6 +165,21 @@ public class CumulusFrrGrammarTest {
         "advertise ipv4 unicast",
         "exit-address-family");
     assertNotNull(CONFIG.getBgpProcess().getDefaultVrf().getL2VpnEvpn().getAdvertiseIpv4Unicast());
+  }
+
+  @Test
+  public void testBgpAdressFamilyL2vpnEvpnNeighbor() {
+    parseLines(
+        "router bgp 1",
+        "neighbor n interface description a",
+        "neighbor 1.2.3.4 description a",
+        "address-family l2vpn evpn",
+        "neighbor n activate",
+        "neighbor 1.2.3.4 activate",
+        "exit-address-family");
+    Map<String, BgpNeighbor> neighbors = CONFIG.getBgpProcess().getDefaultVrf().getNeighbors();
+    assertTrue(neighbors.get("n").getL2vpnEvpnAddressFamily().getActivated());
+    assertTrue(neighbors.get("1.2.3.4").getL2vpnEvpnAddressFamily().getActivated());
   }
 
   @Test
