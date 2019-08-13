@@ -33,6 +33,7 @@ s_interface_regular
   (
     i_bandwidth
     | i_channel_group
+    | i_delay
     | i_description
     | i_encapsulation
     | i_hsrp
@@ -75,6 +76,17 @@ channel_id
 // 1-4096
   UINT8
   | UINT16
+;
+
+i_delay
+:
+  DELAY delay = interface_delay_10us NEWLINE
+;
+
+interface_delay_10us
+:
+// 1-16777215 tens of microseconds
+  uint32
 ;
 
 i_description

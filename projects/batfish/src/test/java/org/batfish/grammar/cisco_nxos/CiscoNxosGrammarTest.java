@@ -1239,7 +1239,7 @@ public final class CiscoNxosGrammarTest {
    * cases deserves its own unit test. (See, e.g., {@link #testInterfaceSwitchportExtraction()}.
    */
   @Test
-  public void testInterfaceProperties() throws Exception {
+  public void testInterfacePropertiesConversion() throws IOException {
     Configuration c = parseConfig("nxos_interface_properties");
     assertThat(c, hasInterface("Ethernet1/1", any(org.batfish.datamodel.Interface.class)));
 
@@ -1250,6 +1250,17 @@ public final class CiscoNxosGrammarTest {
             hasDescription(
                 "here is a description with punctuation! and IP address 1.2.3.4/24 etc."),
             hasMtu(9216)));
+    // TODO: convert and test delay
+  }
+
+  @Test
+  public void testInterfacePropertiesExtraction() {
+    CiscoNxosConfiguration vc = parseVendorConfig("nxos_interface_properties");
+    assertThat(vc.getInterfaces(), hasKeys("Ethernet1/1", "Ethernet1/2", "Ethernet1/3"));
+    {
+      Interface iface = vc.getInterfaces().get("Ethernet1/1");
+      assertThat(iface.getDelayTensOfMicroseconds(), equalTo(10));
+    }
   }
 
   @Test
