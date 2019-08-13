@@ -35,10 +35,19 @@ route_map_sequence
 
 rm_match
 :
-  MATCH rmm_community
+  MATCH
+  (
+    rmm_community
+    | rmm_interface
+  )
 ;
 
 rmm_community
 :
   COMMUNITY names += ip_community_list_name+ NEWLINE
+;
+
+rmm_interface
+:
+  INTERFACE name = WORD NEWLINE
 ;
