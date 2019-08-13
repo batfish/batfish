@@ -49,6 +49,11 @@ BRIDGE_ACCESS
   'bridge-access'
 ;
 
+BRIDGE_ARP_ND_SUPPRESS
+:
+  'bridge-arp-nd-suppress' -> pushMode(M_DropUntilNewline)
+;
+
 BRIDGE_PVID
 :
   'bridge-pvid'

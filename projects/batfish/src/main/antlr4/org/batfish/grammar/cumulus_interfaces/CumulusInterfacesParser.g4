@@ -34,6 +34,7 @@ s_iface
   | i_bond_lacp_bypass_allow
   | i_bond_slaves
   | i_bridge_access
+  | i_bridge_arp_nd_suppress
   | i_bridge_ports
   | i_bridge_pvid
   | i_bridge_vids
@@ -83,6 +84,11 @@ i_bond_slaves
 i_bridge_access
 :
   BRIDGE_ACCESS number NEWLINE
+;
+
+i_bridge_arp_nd_suppress
+:
+  BRIDGE_ARP_ND_SUPPRESS NEWLINE
 ;
 
 i_bridge_ports

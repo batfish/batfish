@@ -193,6 +193,11 @@ public class CumulusInterfacesGrammarTest {
   }
 
   @Test
+  public void testIfaceBridgeArpNdSuppress() {
+    parse("iface vni1\n bridge-arp-nd-suppress on\n");
+  }
+
+  @Test
   public void testIfaceBridgePorts() {
     String input = "iface bridge\n bridge-ports i2 i3 i4\n";
     Interface iface = parse(input).getInterfaces().get("bridge");
@@ -256,7 +261,7 @@ public class CumulusInterfacesGrammarTest {
   }
 
   @Test
-  public void testIfaceHwaddress(){
+  public void testIfaceHwaddress() {
     parse("iface vlan1\n hwaddress 00:00:00:00:00:00\n");
   }
 
