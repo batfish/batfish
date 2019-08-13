@@ -35,4 +35,7 @@ router bgp 1
   neighbor 1.1.1.1
     bfd
     inherit peer PEER_BLLF
+  neighbor 1.1.1.2
+    no bfd
+    inherit peer PEER_BLLF
 !
