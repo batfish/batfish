@@ -25008,6 +25008,24 @@
             "    (s_interface",
             "      INTERFACE:'interface'",
             "      iname = (interface_name",
+            "        name_prefix_alpha = M_Interface_PREFIX:'Wlan-ap'  <== mode:M_Interface",
+            "        (range",
+            "          (subrange",
+            "            low = DEC:'0'  <== mode:M_Interface)))",
+            "      NEWLINE:'\\n'  <== mode:M_Interface))",
+            "  (stanza",
+            "    (s_interface",
+            "      INTERFACE:'interface'",
+            "      iname = (interface_name",
+            "        name_prefix_alpha = M_Interface_PREFIX:'Wlan-GigabitEthernet'  <== mode:M_Interface",
+            "        (range",
+            "          (subrange",
+            "            low = DEC:'0'  <== mode:M_Interface)))",
+            "      NEWLINE:'\\n'  <== mode:M_Interface))",
+            "  (stanza",
+            "    (s_interface",
+            "      INTERFACE:'interface'",
+            "      iname = (interface_name",
             "        name_prefix_alpha = M_Interface_PREFIX:'ethernet'  <== mode:M_Interface",
             "        DEC:'1'  <== mode:M_Interface",
             "        FORWARD_SLASH:'/'  <== mode:M_Interface",
@@ -79663,8 +79681,8 @@
             },
             "Ethernet1/12" : {
               "definitionLines" : [
-                348,
-                349
+                352,
+                353
               ],
               "numReferrers" : 1
             },
@@ -79767,6 +79785,18 @@
             "Wideband-Cable1/2/3:4" : {
               "definitionLines" : [
                 346
+              ],
+              "numReferrers" : 1
+            },
+            "Wlan-GigabitEthernet0" : {
+              "definitionLines" : [
+                350
+              ],
+              "numReferrers" : 1
+            },
+            "Wlan-ap0" : {
+              "definitionLines" : [
+                348
               ],
               "numReferrers" : 1
             },
@@ -86898,7 +86928,7 @@
             },
             "Ethernet1/12" : {
               "interface" : [
-                348
+                352
               ]
             },
             "GigabitEthernet0/0" : {
@@ -86974,6 +87004,16 @@
             "Wideband-Cable1/2/3:4" : {
               "interface" : [
                 346
+              ]
+            },
+            "Wlan-GigabitEthernet0" : {
+              "interface" : [
+                350
+              ]
+            },
+            "Wlan-ap0" : {
+              "interface" : [
+                348
               ]
             },
             "inside" : {
