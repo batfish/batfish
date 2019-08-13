@@ -637,7 +637,7 @@ final class Conversions {
    *
    * <p>See <a
    * href="https://www.cisco.com/c/en/us/td/docs/switches/datacenter/nexus9000/sw/7-x/vxlan/configuration/guide/b_Cisco_Nexus_9000_Series_NX-OS_VXLAN_Configuration_Guide_7x/b_Cisco_Nexus_9000_Series_NX-OS_VXLAN_Configuration_Guide_7x_chapter_0100.html">
-   * cumulus documentation</a> for detailed explanation.
+   * Cisco NX-OS documentation</a> for detailed explanation.
    */
   @Nonnull
   private static ExtendedCommunity toRouteTarget(long asn, long vni) {
