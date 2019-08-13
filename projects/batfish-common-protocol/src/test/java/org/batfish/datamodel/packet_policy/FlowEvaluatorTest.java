@@ -167,4 +167,38 @@ public final class FlowEvaluatorTest {
     assertThat(r.getAction(), equalTo(fl));
     assertThat(r.getFinalFlow(), equalTo(_flow));
   }
+
+  @Test
+  public void testTrue() {
+    FibLookup fl = new FibLookup(new LiteralVrfName("vrf"));
+    FlowResult r =
+        FlowEvaluator.evaluate(
+            _flow,
+            "Eth0",
+            singletonPolicy(
+                new If(
+                    org.batfish.datamodel.packet_policy.TrueExpr.instance(),
+                    ImmutableList.of(new Return(fl)))),
+            ImmutableMap.of(),
+            ImmutableMap.of());
+    assertThat(r.getAction(), equalTo(fl));
+    assertThat(r.getFinalFlow(), equalTo(_flow));
+  }
+
+  @Test
+  public void testFalse() {
+    FibLookup fl = new FibLookup(new LiteralVrfName("vrf"));
+    FlowResult r =
+        FlowEvaluator.evaluate(
+            _flow,
+            "Eth0",
+            singletonPolicy(
+                new If(
+                    org.batfish.datamodel.packet_policy.FalseExpr.instance(),
+                    ImmutableList.of(new Return(fl)))),
+            ImmutableMap.of(),
+            ImmutableMap.of());
+    assertThat(r.getAction(), equalTo(_defaultAction.getAction()));
+    assertThat(r.getFinalFlow(), equalTo(_flow));
+  }
 }

@@ -205,9 +205,9 @@ public class Interface implements Serializable {
 
   private int _ospfHelloMultiplier;
 
-  @Nullable private Boolean _ospfPassive;
+  @Nullable private OspfNetworkType _ospfNetworkType;
 
-  private boolean _ospfPointToPoint;
+  @Nullable private Boolean _ospfPassive;
 
   @Nullable private String _ospfProcess;
 
@@ -473,6 +473,10 @@ public class Interface implements Serializable {
     return _ospfHelloMultiplier;
   }
 
+  public OspfNetworkType getOspfNetworkType() {
+    return _ospfNetworkType;
+  }
+
   @Nullable
   public Boolean getOspfPassive() {
     return _ospfPassive;
@@ -480,10 +484,6 @@ public class Interface implements Serializable {
 
   public String getOspfProcess() {
     return _ospfProcess;
-  }
-
-  public boolean getOspfPointToPoint() {
-    return _ospfPointToPoint;
   }
 
   public boolean getOspfShutdown() {
@@ -661,16 +661,16 @@ public class Interface implements Serializable {
     _ospfHelloMultiplier = multiplier;
   }
 
+  public void setOspfNetworkType(OspfNetworkType ospfNetworkType) {
+    _ospfNetworkType = ospfNetworkType;
+  }
+
   public void setOspfPassive(@Nullable Boolean ospfPassive) {
     _ospfPassive = ospfPassive;
   }
 
   public void setOspfProcess(@Nullable String processName) {
     _ospfProcess = processName;
-  }
-
-  public void setOspfPointToPoint(boolean ospfPointToPoint) {
-    _ospfPointToPoint = ospfPointToPoint;
   }
 
   public void setOspfShutdown(boolean ospfShutdown) {

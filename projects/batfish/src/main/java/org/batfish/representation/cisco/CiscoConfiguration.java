@@ -2030,7 +2030,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
     newIface.setMlagId(iface.getMlagId());
     newIface.setMtu(getInterfaceMtu(iface));
     // TODO SVF - merge Cisco VS model changes and apply here
-    newIface.setOspfPointToPoint(iface.getOspfPointToPoint());
+    newIface.setOspfPointToPoint(iface.getOspfNetworkType() == OspfNetworkType.POINT_TO_POINT);
     newIface.setProxyArp(iface.getProxyArp());
     newIface.setSpanningTreePortfast(iface.getSpanningTreePortfast());
     newIface.setSwitchport(iface.getSwitchport());

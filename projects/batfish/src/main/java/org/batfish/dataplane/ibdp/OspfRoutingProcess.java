@@ -151,11 +151,10 @@ final class OspfRoutingProcess implements RoutingProcess<OspfTopology, OspfRoute
     String exportPolicy = _process.getExportPolicy();
     if (exportPolicy == null || !_c.getRoutingPolicies().containsKey(exportPolicy)) {
       _exportPolicy =
-          RoutingPolicy.builder()
-              .setName(String.format("~Drop_All_OSPF_External_%s~", _process.getProcessId()))
-              .setOwner(_c)
-              .setStatements(ImmutableList.of(Statements.ExitReject.toStaticStatement()))
-              .build();
+          // Can't use the builder, because that attempts to modify configuration. grrr.
+          new RoutingPolicy(
+              String.format("~Drop_All_OSPF_External_%s~", _process.getProcessId()), _c);
+      _exportPolicy.setStatements(ImmutableList.of(Statements.ExitReject.toStaticStatement()));
     } else {
       _exportPolicy = _c.getRoutingPolicies().get(exportPolicy);
     }

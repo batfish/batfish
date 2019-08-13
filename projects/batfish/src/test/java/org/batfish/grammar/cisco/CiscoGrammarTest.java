@@ -411,6 +411,7 @@ import org.batfish.representation.cisco.EigrpProcess;
 import org.batfish.representation.cisco.NetworkObject;
 import org.batfish.representation.cisco.NetworkObjectAddressSpecifier;
 import org.batfish.representation.cisco.NetworkObjectGroupAddressSpecifier;
+import org.batfish.representation.cisco.OspfNetworkType;
 import org.batfish.representation.cisco.Tunnel.TunnelMode;
 import org.batfish.representation.cisco.WildcardAddressSpecifier;
 import org.batfish.representation.cisco.eos.AristaEosVxlan;
@@ -4867,6 +4868,32 @@ public class CiscoGrammarTest {
 
     assertThat(e0Sub0.getOspfNetworkType(), equalTo(OspfNetworkType.POINT_TO_POINT));
     assertThat(e0Sub1.getOspfNetworkType(), equalTo(OspfNetworkType.BROADCAST));
+  }
+
+  @Test
+  public void testOspfNetworkTypes() {
+    CiscoConfiguration config =
+        parseCiscoConfig("ospf-network-types", ConfigurationFormat.CISCO_IOS);
+
+    String eth0 = "Ethernet0/0";
+    String eth1 = "Ethernet0/1";
+    String eth2 = "Ethernet0/2";
+    String eth3 = "Ethernet0/3";
+    String eth4 = "Ethernet0/4";
+    String eth5 = "Ethernet0/5";
+
+    Map<String, org.batfish.representation.cisco.Interface> ifaces = config.getInterfaces();
+    assertThat(ifaces.keySet(), containsInAnyOrder(eth0, eth1, eth2, eth3, eth4, eth5));
+    // No network set should result in a null network type
+    assertThat(ifaces.get(eth0).getOspfNetworkType(), nullValue());
+    // Confirm explicitly set network types show up as expected in the VS model
+    assertThat(ifaces.get(eth1).getOspfNetworkType(), equalTo(OspfNetworkType.POINT_TO_POINT));
+    assertThat(ifaces.get(eth2).getOspfNetworkType(), equalTo(OspfNetworkType.BROADCAST));
+    assertThat(ifaces.get(eth3).getOspfNetworkType(), equalTo(OspfNetworkType.NON_BROADCAST));
+    assertThat(ifaces.get(eth4).getOspfNetworkType(), equalTo(OspfNetworkType.POINT_TO_MULTIPOINT));
+    assertThat(
+        ifaces.get(eth5).getOspfNetworkType(),
+        equalTo(OspfNetworkType.POINT_TO_MULTIPOINT_NON_BROADCAST));
   }
 
   @Test

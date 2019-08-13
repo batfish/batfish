@@ -23,6 +23,26 @@ COMMENT_LINE
   ) -> channel ( HIDDEN )
 ;
 
+ADDRESS_FAMILY
+:
+  'address-family'
+;
+
+ADVERTISE
+:
+  'advertise'
+;
+
+ADVERTISE_ALL_VNI
+:
+  'advertise-all-vni'
+;
+
+BGP
+:
+  'bgp'
+;
+
 COMMUNITY
 :
   'community'
@@ -48,9 +68,24 @@ DESCRIPTION
   'description' -> pushMode ( M_Remark )
 ;
 
+EVPN
+:
+  'evpn'
+;
+
+EXIT_ADDRESS_FAMILY
+:
+  'exit-address-family'
+;
+
 EXIT_VRF
 :
   'exit-vrf'
+;
+
+EXTERNAL
+:
+  'external'
 ;
 
 FRR_VERSION_LINE
@@ -58,9 +93,33 @@ FRR_VERSION_LINE
   'frr version' F_NonNewline*
 ;
 
+INTERFACE
+:
+  'interface'
+  {
+    switch (lastTokenType()) {
+      case MATCH:
+        pushMode(M_Word);
+        break;
+      default:
+        break;
+    }
+  }
+;
+
+INTERNAL
+:
+  'internal'
+;
+
 IP
 :
   'ip'
+;
+
+IPV4
+:
+  'ipv4'
 ;
 
 IP_ADDRESS
@@ -73,9 +132,29 @@ IP_PREFIX
   F_IpPrefix
 ;
 
+L2VPN
+:
+  'l2vpn'
+;
+
+NEIGHBOR
+:
+  'neighbor' -> pushMode(M_Neighbor)
+;
+
+PEER_GROUP
+:
+  'peer-group' -> pushMode(M_PeerGroup)
+;
+
 PERMIT
 :
   'permit'
+;
+
+REMOTE_AS
+:
+  'remote-as'
 ;
 
 ROUTE_MAP
@@ -86,6 +165,16 @@ ROUTE_MAP
 ROUTE
 :
   'route'
+;
+
+ROUTER
+:
+  'router'
+;
+
+ROUTER_ID
+:
+  'router-id'
 ;
 
 SUBNET_MASK
@@ -116,6 +205,11 @@ UINT16
 UINT32
 :
   F_Uint32
+;
+
+UNICAST
+:
+  'unicast'
 ;
 
 DEC
@@ -286,6 +380,41 @@ F_Whitespace
 ;
 
 // modes
+mode M_Neighbor;
+
+M_Neighbor_IP_Address
+:
+  F_IpAddress -> type(IP_ADDRESS) , popMode
+;
+
+M_Neighbor_Word
+:
+  F_Word -> type(WORD) , popMode
+;
+
+M_Neighbor_WS
+:
+  F_Whitespace+ -> channel ( HIDDEN )
+;
+
+mode M_PeerGroup;
+
+M_Newline
+:
+  F_Newline -> type(NEWLINE), popMode
+;
+
+M_PeerGroup_Word
+:
+  F_Word -> type(WORD) , popMode
+;
+
+M_PeerGroup_WS
+:
+  F_Whitespace+ -> channel ( HIDDEN )
+;
+
+
 mode M_Word;
 
 M_Word_WORD
