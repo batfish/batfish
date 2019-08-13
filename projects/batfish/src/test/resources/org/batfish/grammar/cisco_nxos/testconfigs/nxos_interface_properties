@@ -3,6 +3,7 @@
 hostname nxos_interface_properties
 !
 interface Ethernet1/1
+  no cdp enable
   no shutdown
   no switchport
   no ip redirects
