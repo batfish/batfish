@@ -321,6 +321,16 @@ public class CumulusFrrGrammarTest {
   }
 
   @Test
+  public void testCumulusFrrVrfRouteMapSetMetric() {
+    String name = "ROUTE-MAP-NAME";
+
+    parse(String.format("route-map %s permit 10\nset metric 30\n", name));
+
+    RouteMapEntry entry = CONFIG.getRouteMaps().get(name).getEntries().get(10);
+    assertThat(entry.getSetMetric().getMetric(), equalTo(30L));
+  }
+
+  @Test
   public void testCumulusFrrIpCommunityListExpanded() {
     String name = "NAME";
 
