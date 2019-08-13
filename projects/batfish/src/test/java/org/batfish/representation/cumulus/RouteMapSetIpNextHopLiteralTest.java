@@ -12,7 +12,7 @@ import org.junit.Test;
 
 public class RouteMapSetIpNextHopLiteralTest {
 
-  private static ImmutableList<Ip> IPS;
+  private static ImmutableList<Ip> IPS = ImmutableList.of(Ip.parse("10.0.0.1"));
 
   @Test
   public void testGetNextHops() {
@@ -22,11 +22,20 @@ public class RouteMapSetIpNextHopLiteralTest {
 
   @Test
   public void testToStatements() {
-    IPS = ImmutableList.of(Ip.parse("10.0.0.1"), Ip.parse("10.0.0.2"));
     RouteMapSetIpNextHopLiteral set = new RouteMapSetIpNextHopLiteral(IPS);
 
     ImmutableList<Statement> result =
         set.toStatements(null, null, null).collect(ImmutableList.toImmutableList());
     assertThat(result, equalTo(ImmutableList.of(new SetNextHop(new IpNextHop(IPS), false))));
+  }
+
+  @Test
+  public void testToStatements_MultipleIps() {
+    ImmutableList<Ip> ips = ImmutableList.of(Ip.parse("10.0.0.1"), Ip.parse("10.0.0.2"));
+    RouteMapSetIpNextHopLiteral set = new RouteMapSetIpNextHopLiteral(ips);
+
+    ImmutableList<Statement> result =
+        set.toStatements(null, null, null).collect(ImmutableList.toImmutableList());
+    assertThat(result, equalTo(ImmutableList.of()));
   }
 }
