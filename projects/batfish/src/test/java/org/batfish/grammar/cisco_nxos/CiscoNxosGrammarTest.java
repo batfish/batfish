@@ -4979,22 +4979,22 @@ public final class CiscoNxosGrammarTest {
       assertThat(
           vrf.getRd(), equalTo(RouteDistinguisherOrAuto.of(RouteDistinguisher.from(65001, 10L))));
       VrfAddressFamily af4 = vrf.getAddressFamily(AddressFamily.IPV4_UNICAST);
-      assertThat(af4.getImportRtEvpn(), equalTo(RouteDistinguisherOrAuto.auto()));
-      assertThat(af4.getExportRtEvpn(), equalTo(RouteDistinguisherOrAuto.auto()));
+      assertThat(af4.getImportRtEvpn(), equalTo(ExtendedCommunityOrAuto.auto()));
+      assertThat(af4.getExportRtEvpn(), equalTo(ExtendedCommunityOrAuto.auto()));
       assertThat(
           af4.getImportRt(),
-          equalTo(RouteDistinguisherOrAuto.of(RouteDistinguisher.from(11, 65536L))));
+          equalTo(ExtendedCommunityOrAuto.of(ExtendedCommunity.target(11L, 65536L))));
       assertThat(af4.getExportRt(), nullValue());
 
       VrfAddressFamily af6 = vrf.getAddressFamily(AddressFamily.IPV6_UNICAST);
       assertThat(
           af6.getImportRtEvpn(),
-          equalTo(RouteDistinguisherOrAuto.of(RouteDistinguisher.from(65001, 11L))));
+          equalTo(ExtendedCommunityOrAuto.of(ExtendedCommunity.target(65001L, 11L))));
       assertThat(
           af6.getExportRtEvpn(),
-          equalTo(RouteDistinguisherOrAuto.of(RouteDistinguisher.from(65001, 11L))));
-      assertThat(af6.getImportRt(), equalTo(RouteDistinguisherOrAuto.auto()));
-      assertThat(af6.getExportRt(), equalTo(RouteDistinguisherOrAuto.auto()));
+          equalTo(ExtendedCommunityOrAuto.of(ExtendedCommunity.target(65001L, 11L))));
+      assertThat(af6.getImportRt(), equalTo(ExtendedCommunityOrAuto.auto()));
+      assertThat(af6.getExportRt(), equalTo(ExtendedCommunityOrAuto.auto()));
     }
     {
       Vrf vrf = vc.getVrfs().get("vrf3");
