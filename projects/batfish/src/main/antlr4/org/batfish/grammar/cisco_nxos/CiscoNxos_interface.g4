@@ -49,7 +49,11 @@ s_interface_regular
 
 i_bandwidth
 :
-  BANDWIDTH bw = interface_bandwidth_kbps NEWLINE
+  BANDWIDTH
+  (
+    inherit = INHERIT bw = interface_bandwidth_kbps?
+    | inherit = INHERIT? bw = interface_bandwidth_kbps
+  ) NEWLINE
 ;
 
 interface_bandwidth_kbps
@@ -134,12 +138,27 @@ hsrp_group_number
 
 ihg_authentication
 :
-  AUTHENTICATION ihga_md5
+  AUTHENTICATION
+  (
+    ihga_md5
+    | ihga_text
+  )
 ;
 
 ihga_md5
 :
   MD5 ihgam_key_chain
+;
+
+ihga_text
+:
+  TEXT text = hsrp_authentication_string NEWLINE
+;
+
+hsrp_authentication_string
+:
+// 1-8 characters
+  WORD
 ;
 
 ihgam_key_chain
@@ -377,6 +396,7 @@ i_no_null
 :
   (
     IP
+    | IPV6
     | NEGOTIATE
   ) null_rest_of_line
 ;

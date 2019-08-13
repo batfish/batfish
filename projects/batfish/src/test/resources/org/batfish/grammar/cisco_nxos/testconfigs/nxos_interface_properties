@@ -5,6 +5,9 @@ hostname nxos_interface_properties
 interface Ethernet1/1
   no shutdown
   no switchport
+  no ip redirects
+  no ipv6 redirects
+  bandwidth 10000
   bfd interval 250 min_rx 250 multiplier 3
   description here is a description with punctuation! and IP address 1.2.3.4/24 etc.
   mtu 9216
@@ -12,7 +15,9 @@ interface Ethernet1/1
 !
 
 interface Ethernet1/2
+  bandwidth inherit
   udld disable
 
 interface Ethernet1/3
+  bandwidth inherit 10000
   udld enable

@@ -36,7 +36,11 @@ route_map_sequence
 
 rm_match
 :
-  MATCH rmm_community
+  MATCH
+  (
+    rmm_community
+    | rmm_interface
+  )
 ;
 
 rmm_community
@@ -55,4 +59,9 @@ rm_set
 rms_metric
 :
   METRIC metric = uint32 NEWLINE
+;
+
+rmm_interface
+:
+  INTERFACE name = WORD NEWLINE
 ;

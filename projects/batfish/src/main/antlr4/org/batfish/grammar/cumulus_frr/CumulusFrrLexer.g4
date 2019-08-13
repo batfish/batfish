@@ -23,6 +23,21 @@ COMMENT_LINE
   ) -> channel ( HIDDEN )
 ;
 
+ADDRESS_FAMILY
+:
+  'address-family'
+;
+
+ADVERTISE
+:
+  'advertise'
+;
+
+ADVERTISE_ALL_VNI
+:
+  'advertise-all-vni'
+;
+
 BGP
 :
   'bgp'
@@ -53,6 +68,16 @@ DESCRIPTION
   'description' -> pushMode ( M_Remark )
 ;
 
+EVPN
+:
+  'evpn'
+;
+
+EXIT_ADDRESS_FAMILY
+:
+  'exit-address-family'
+;
+
 EXIT_VRF
 :
   'exit-vrf'
@@ -71,6 +96,15 @@ FRR_VERSION_LINE
 INTERFACE
 :
   'interface'
+  {
+    switch (lastTokenType()) {
+      case MATCH:
+        pushMode(M_Word);
+        break;
+      default:
+        break;
+    }
+  }
 ;
 
 INTERNAL
@@ -83,6 +117,11 @@ IP
   'ip'
 ;
 
+IPV4
+:
+  'ipv4'
+;
+
 IP_ADDRESS
 :
   F_IpAddress
@@ -91,6 +130,11 @@ IP_ADDRESS
 IP_PREFIX
 :
   F_IpPrefix
+;
+
+L2VPN
+:
+  'l2vpn'
 ;
 
 NEIGHBOR
@@ -171,6 +215,11 @@ UINT16
 UINT32
 :
   F_Uint32
+;
+
+UNICAST
+:
+  'unicast'
 ;
 
 DEC

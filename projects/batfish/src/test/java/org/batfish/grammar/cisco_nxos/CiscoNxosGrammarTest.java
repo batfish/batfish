@@ -266,6 +266,7 @@ import org.batfish.representation.cisco_nxos.RouteMapSetIpNextHopUnchanged;
 import org.batfish.representation.cisco_nxos.RouteMapSetLocalPreference;
 import org.batfish.representation.cisco_nxos.RouteMapSetMetric;
 import org.batfish.representation.cisco_nxos.RouteMapSetMetricType;
+import org.batfish.representation.cisco_nxos.RouteMapSetOrigin;
 import org.batfish.representation.cisco_nxos.RouteMapSetTag;
 import org.batfish.representation.cisco_nxos.StaticRoute;
 import org.batfish.representation.cisco_nxos.TcpOptions;
@@ -503,6 +504,22 @@ public final class CiscoNxosGrammarTest {
   }
 
   @Test
+  public void testSwitchnameConversion() throws IOException {
+    String hostname = "nxos_switchname";
+    Configuration c = parseConfig(hostname);
+
+    assertThat(c, hasHostname(hostname));
+  }
+
+  @Test
+  public void testSwitchnameExtraction() {
+    String hostname = "nxos_switchname";
+    CiscoNxosConfiguration vc = parseVendorConfig(hostname);
+
+    assertThat(vc.getHostname(), equalTo(hostname));
+  }
+
+  @Test
   public void testTemplatePeerBgpAddressFamilyConversion() throws IOException {
     Configuration c = parseConfig("nxos_bgp_peer_template_af_inheritance");
 
@@ -569,6 +586,12 @@ public final class CiscoNxosGrammarTest {
                             new CallExpr("match_metric"))),
                     ImmutableList.of(Statements.ExitAccept.toStaticStatement()),
                     ImmutableList.of(Statements.ExitReject.toStaticStatement())))));
+  }
+
+  @Test
+  public void testTrackExtraction() {
+    // TODO: make into extraction test
+    assertThat(parseVendorConfig("nxos_track"), notNullValue());
   }
 
   @Test
@@ -3937,6 +3960,7 @@ public final class CiscoNxosGrammarTest {
         hasKeys(
             "empty_deny",
             "empty_permit",
+            "empty_pbr_statistics",
             "match_as_path",
             "match_community",
             "match_interface",
@@ -3957,6 +3981,9 @@ public final class CiscoNxosGrammarTest {
             "set_metric_type_internal",
             "set_metric_type_type_1",
             "set_metric_type_type_2",
+            "set_origin_egp",
+            "set_origin_igp",
+            "set_origin_incomplete",
             "set_tag",
             "match_undefined_access_list",
             "match_undefined_community_list",
@@ -3985,6 +4012,10 @@ public final class CiscoNxosGrammarTest {
     {
       RoutingPolicy rp = c.getRoutingPolicies().get("empty_permit");
       assertRoutingPolicyPermitsRoute(rp, base);
+    }
+    {
+      RoutingPolicy rp = c.getRoutingPolicies().get("empty_pbr_statistics");
+      assertRoutingPolicyDeniesRoute(rp, base);
     }
 
     // matches
@@ -4110,6 +4141,21 @@ public final class CiscoNxosGrammarTest {
       assertThat(route.getOspfMetricType(), equalTo(OspfMetricType.E2));
     }
     {
+      RoutingPolicy rp = c.getRoutingPolicies().get("set_origin_egp");
+      Bgpv4Route route = processRouteIn(rp, base);
+      assertThat(route.getOriginType(), equalTo(OriginType.EGP));
+    }
+    {
+      RoutingPolicy rp = c.getRoutingPolicies().get("set_origin_igp");
+      Bgpv4Route route = processRouteIn(rp, base);
+      assertThat(route.getOriginType(), equalTo(OriginType.IGP));
+    }
+    {
+      RoutingPolicy rp = c.getRoutingPolicies().get("set_origin_incomplete");
+      Bgpv4Route route = processRouteIn(rp, base);
+      assertThat(route.getOriginType(), equalTo(OriginType.INCOMPLETE));
+    }
+    {
       RoutingPolicy rp = c.getRoutingPolicies().get("set_tag");
       Bgpv4Route route = processRouteIn(rp, base);
       assertThat(route.getTag(), equalTo(1L));
@@ -4138,6 +4184,7 @@ public final class CiscoNxosGrammarTest {
         hasKeys(
             "empty_deny",
             "empty_permit",
+            "empty_pbr_statistics",
             "match_as_path",
             "match_community",
             "match_interface",
@@ -4158,6 +4205,9 @@ public final class CiscoNxosGrammarTest {
             "set_metric_type_internal",
             "set_metric_type_type_1",
             "set_metric_type_type_2",
+            "set_origin_egp",
+            "set_origin_igp",
+            "set_origin_incomplete",
             "set_tag",
             "match_undefined_access_list",
             "match_undefined_community_list",
@@ -4181,6 +4231,11 @@ public final class CiscoNxosGrammarTest {
       RouteMapEntry entry = getOnlyElement(rm.getEntries().values());
       assertThat(entry.getAction(), equalTo(LineAction.PERMIT));
       assertThat(entry.getSequence(), equalTo(10));
+    }
+    {
+      RouteMap rm = vc.getRouteMaps().get("empty_pbr_statistics");
+      assertThat(rm.getEntries(), anEmptyMap());
+      assertTrue(rm.getPbrStatistics());
     }
     {
       RouteMap rm = vc.getRouteMaps().get("match_as_path");
@@ -4386,6 +4441,36 @@ public final class CiscoNxosGrammarTest {
       RouteMapSetMetricType set = entry.getSetMetricType();
       assertThat(entry.getSets().collect(onlyElement()), equalTo(set));
       assertThat(set.getMetricType(), equalTo(RouteMapMetricType.TYPE_2));
+    }
+    {
+      RouteMap rm = vc.getRouteMaps().get("set_origin_egp");
+      assertThat(rm.getEntries().keySet(), contains(10));
+      RouteMapEntry entry = getOnlyElement(rm.getEntries().values());
+      assertThat(entry.getAction(), equalTo(LineAction.PERMIT));
+      assertThat(entry.getSequence(), equalTo(10));
+      RouteMapSetOrigin set = entry.getSetOrigin();
+      assertThat(entry.getSets().collect(onlyElement()), equalTo(set));
+      assertThat(set.getOrigin(), equalTo(OriginType.EGP));
+    }
+    {
+      RouteMap rm = vc.getRouteMaps().get("set_origin_igp");
+      assertThat(rm.getEntries().keySet(), contains(10));
+      RouteMapEntry entry = getOnlyElement(rm.getEntries().values());
+      assertThat(entry.getAction(), equalTo(LineAction.PERMIT));
+      assertThat(entry.getSequence(), equalTo(10));
+      RouteMapSetOrigin set = entry.getSetOrigin();
+      assertThat(entry.getSets().collect(onlyElement()), equalTo(set));
+      assertThat(set.getOrigin(), equalTo(OriginType.IGP));
+    }
+    {
+      RouteMap rm = vc.getRouteMaps().get("set_origin_incomplete");
+      assertThat(rm.getEntries().keySet(), contains(10));
+      RouteMapEntry entry = getOnlyElement(rm.getEntries().values());
+      assertThat(entry.getAction(), equalTo(LineAction.PERMIT));
+      assertThat(entry.getSequence(), equalTo(10));
+      RouteMapSetOrigin set = entry.getSetOrigin();
+      assertThat(entry.getSets().collect(onlyElement()), equalTo(set));
+      assertThat(set.getOrigin(), equalTo(OriginType.INCOMPLETE));
     }
     {
       RouteMap rm = vc.getRouteMaps().get("set_tag");
