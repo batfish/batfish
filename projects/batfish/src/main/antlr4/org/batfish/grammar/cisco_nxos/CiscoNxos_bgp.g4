@@ -621,7 +621,7 @@ rb_n_common
   | rb_n_local_as
   | rb_n_low_memory
   | rb_n_maximum_peers
-  | rb_n_no_shutdown
+  | rb_n_no
   | rb_n_password
   | rb_n_remote_as
   | rb_n_remove_private_as
@@ -938,9 +938,23 @@ maximum_peers
   | UINT16
 ;
 
+rb_n_no
+:
+  NO
+  (
+    rb_n_no_bfd
+    | rb_n_no_shutdown
+  )
+;
+
+rb_n_no_bfd
+:
+  BFD NEWLINE
+;
+
 rb_n_no_shutdown
 :
-  NO SHUTDOWN NEWLINE
+  SHUTDOWN NEWLINE
 ;
 
 rb_n_password
