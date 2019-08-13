@@ -34,6 +34,11 @@ BOND_SLAVES
   'bond-slaves' -> pushMode(M_Words)
 ;
 
+BOND_LACP_BYPASS_ALLOW
+:
+  'bond-lacp-bypass-allow' -> pushMode(M_DropUntilNewline)
+;
+
 BRIDGE_PORTS
 :
   'bridge-ports' -> pushMode(M_Words)
@@ -269,6 +274,18 @@ fragment
 F_WordChar
 :
   [0-9A-Za-z_.:] | '-'
+;
+
+mode M_DropUntilNewline;
+
+M_DropUntilNewline_NonNewline
+:
+  F_NonNewline+ -> channel(HIDDEN)
+;
+
+M_DropUntilNewline_Newline
+:
+  F_Newline+ -> type(NEWLINE), popMode
 ;
 
 mode M_LineText;

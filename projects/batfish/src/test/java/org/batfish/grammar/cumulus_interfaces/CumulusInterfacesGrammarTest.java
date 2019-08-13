@@ -115,6 +115,11 @@ public class CumulusInterfacesGrammarTest {
   }
 
   @Test
+  public void testBondLacpBypassAllow() {
+    parse("iface swp1\n bond-lacp-bypass-allow yes\n");
+  }
+
+  @Test
   public void testIfaceBondSlaves() {
     String input = "iface swp1\n bond-slaves i2 i3 i4\n";
     Interfaces interfaces = parse(input);

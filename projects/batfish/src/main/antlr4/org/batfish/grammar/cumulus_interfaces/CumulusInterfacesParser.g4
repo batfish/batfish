@@ -31,6 +31,7 @@ s_iface
     i_address
   | i_address_virtual
   | i_alias
+  | i_bond_lacp_bypass_allow
   | i_bond_slaves
   | i_bridge_access
   | i_bridge_ports
@@ -64,6 +65,12 @@ i_alias
 :
   ALIAS TEXT NEWLINE
 ;
+
+i_bond_lacp_bypass_allow
+:
+  BOND_LACP_BYPASS_ALLOW NEWLINE
+;
+
 
 i_bond_slaves
 :
