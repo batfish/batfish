@@ -43,6 +43,11 @@ BGP
   'bgp'
 ;
 
+COLON
+:
+  ':'
+;
+
 COMMUNITY
 :
   'community'
@@ -56,6 +61,11 @@ COMMUNITY
         break;
     }
   }
+;
+
+COMMUNITY_LIST
+:
+  'community-list'
 ;
 
 DENY
@@ -81,6 +91,11 @@ EXIT_ADDRESS_FAMILY
 EXIT_VRF
 :
   'exit-vrf'
+;
+
+EXPANDED
+:
+  'expanded' -> pushMode(M_Word)
 ;
 
 EXTERNAL
