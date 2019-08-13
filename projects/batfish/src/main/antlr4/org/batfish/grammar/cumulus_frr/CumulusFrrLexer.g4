@@ -96,6 +96,15 @@ FRR_VERSION_LINE
 INTERFACE
 :
   'interface'
+  {
+    switch (lastTokenType()) {
+      case MATCH:
+        pushMode(M_Word);
+        break;
+      default:
+        break;
+    }
+  }
 ;
 
 INTERNAL
