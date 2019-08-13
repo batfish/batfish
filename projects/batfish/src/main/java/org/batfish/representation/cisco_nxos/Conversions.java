@@ -112,6 +112,7 @@ final class Conversions {
   }
 
   private static final int MAX_ADMINISTRATIVE_COST = 32767;
+  private static final int DEFAULT_VRF_ID = 1;
 
   /** Computes the router ID on Cisco NX-OS. */
   // See CiscoNxosTest#testRouterId for a test that is verifiable using GNS3.
@@ -509,6 +510,7 @@ final class Conversions {
               .setRouteDistinguisher(
                   firstNonNull(
                       rd,
+                      // TODO: replace VNI with tenant VRF ID
                       RouteDistinguisher.from(viBgpProcess.getRouterId(), vniSettings.getVni())))
               .setImportRouteTarget(
                   importRtOrAuto.isAuto()
@@ -585,6 +587,7 @@ final class Conversions {
                   importRtOrAuto.isAuto()
                       ? toRouteTarget(localAs, vniSettings.getVni(), warnings).matchString()
                       : importRtOrAuto.getExtendedCommunity().matchString())
+              // TODO: replace VNI with tenant VRF ID
               .setRouteDistinguisher(
                   firstNonNull(
                       rd,

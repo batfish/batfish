@@ -19,7 +19,6 @@ import static org.batfish.datamodel.acl.AclLineMatchExprs.matchPacketLength;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.matchSrc;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.matchSrcPort;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.matchTcpFlags;
-import static org.batfish.datamodel.bgp.VniConfig.importRtPatternForAnyAs;
 import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasAdministrativeCost;
 import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasNextHopInterface;
 import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasNextHopIp;
@@ -607,6 +606,7 @@ public final class CiscoNxosGrammarTest {
                 .setVrf(DEFAULT_VRF_NAME)
                 .setRouteDistinguisher(RouteDistinguisher.from(routerId, 1111))
                 .setRouteTarget(ExtendedCommunity.target(1, 1111))
+                .setImportRouteTarget(ExtendedCommunity.target(1, 1111).matchString())
                 .build());
     ImmutableSortedSet<Layer3VniConfig> expectedL3Vnis =
         ImmutableSortedSet.of(
@@ -615,7 +615,7 @@ public final class CiscoNxosGrammarTest {
                 .setVrf(DEFAULT_VRF_NAME)
                 .setRouteDistinguisher(RouteDistinguisher.from(routerId, 3333))
                 .setRouteTarget(ExtendedCommunity.target(1, 3333))
-                .setImportRouteTarget(importRtPatternForAnyAs(3333))
+                .setImportRouteTarget(ExtendedCommunity.target(1, 3333).matchString())
                 .setAdvertiseV4Unicast(false)
                 .build());
     BgpPeerConfig peer =
