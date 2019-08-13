@@ -296,6 +296,7 @@ i_ip_ospf
     | iipo_hello_interval
     | iipo_message_digest_key
     | iipo_network
+    | iipo_passive_interface
   )
 ;
 
@@ -338,6 +339,11 @@ iipo_network
     BROADCAST
     | POINT_TO_POINT
   ) NEWLINE
+;
+
+iipo_passive_interface
+:
+  PASSIVE_INTERFACE NEWLINE
 ;
 
 i_ip_router

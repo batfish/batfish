@@ -212,6 +212,7 @@ import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Ihgam_key_chainContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Iipo_dead_intervalContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Iipo_hello_intervalContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Iipo_networkContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Iipo_passive_interfaceContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Iipr_ospfContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Inherit_sequence_numberContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Interface_addressContext;
@@ -1273,6 +1274,11 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
       return;
     }
     _currentInterfaces.forEach(iface -> iface.getOrCreateOspf().setNetwork(type));
+  }
+
+  @Override
+  public void exitIipo_passive_interface(Iipo_passive_interfaceContext ctx) {
+    _currentInterfaces.forEach(iface -> iface.getOrCreateOspf().setPassive(true));
   }
 
   @Override
