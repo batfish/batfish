@@ -206,6 +206,18 @@ router_ospf_name
   WORD
 ;
 
+route_target
+:
+  hi0 = uint16 COLON lo0 = uint32
+  | hi2 = uint32 COLON lo2 = uint16
+;
+
+route_target_or_auto
+:
+  AUTO
+  | route_target
+;
+
 standard_community
 :
   literal = literal_standard_community
