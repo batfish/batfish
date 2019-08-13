@@ -379,6 +379,11 @@ BASH_SHELL
   'bash-shell'
 ;
 
+BC
+:
+  'bc'
+;
+
 BGP
 :
   'bgp'
@@ -434,6 +439,11 @@ BPDUGUARD
   'bpduguard'
 ;
 
+BPS
+:
+  'bps'
+;
+
 BRIDGE
 :
   'bridge'
@@ -442,6 +452,11 @@ BRIDGE
 BROADCAST
 :
   'broadcast'
+;
+
+BYTES
+:
+  'bytes'
 ;
 
 CALLHOME
@@ -465,6 +480,11 @@ CCMCLIRUNNINGCONFIGCHANGED
   [Nn] [Ff] [Ii] [Gg] [Cc] [Hh] [Aa] [Nn] [Gg] [Ee] [Dd]
 ;
 
+CDP
+:
+  'cdp'
+;
+
 CFS
 :
   'cfs'
@@ -483,6 +503,11 @@ CHANNEL_GROUP
 CHARGEN
 :
   'chargen'
+;
+
+CIR
+:
+  'cir'
 ;
 
 CLASS
@@ -594,6 +619,11 @@ CONFEDERATION
   'confederation'
 ;
 
+CONFORM
+:
+  'conform'
+;
+
 CONNECT
 :
   'connect'
@@ -638,6 +668,11 @@ COPY
 COPY_ATTRIBUTES
 :
   'copy-attributes'
+;
+
+COS
+:
+  'cos'
 ;
 
 COST
@@ -770,6 +805,11 @@ DESCRIPTION
   'description' -> pushMode ( M_Remark )
 ;
 
+DEST_IP
+:
+  'dest-ip'
+;
+
 DEST_MISS
 :
   'dest-miss'
@@ -868,6 +908,11 @@ DOT1Q_TUNNEL
 DRIP
 :
   'drip'
+;
+
+DROP
+:
+  'drop'
 ;
 
 DROP_ON_FAIL
@@ -1532,6 +1577,11 @@ ISIS
 ISOLATE
 :
   'isolate'
+;
+
+KBPS
+:
+  'kbps'
 ;
 
 KEY
@@ -2368,6 +2418,11 @@ PER_ENTRY
   'per-entry'
 ;
 
+PER_LINK
+:
+  'per-link'
+;
+
 PERIODIC
 :
   'periodic'
@@ -2989,6 +3044,11 @@ SPINE_ANYCAST_GATEWAY
   'spine-anycast-gateway'
 ;
 
+SRC_IP
+:
+  'src-ip'
+;
+
 STALEPATH_TIME
 :
   'stalepath-time'
@@ -3207,6 +3267,11 @@ TERMINAL
   'terminal'
 ;
 
+TEXT
+:
+  'text' -> pushMode ( M_Word )
+;
+
 TFTP
 :
   'tftp'
@@ -3265,6 +3330,16 @@ TRACE
 TRACK
 :
   'track'
+;
+
+TRAFFIC_FILTER
+:
+  'traffic-filter' -> pushMode ( M_Word )
+;
+
+TRANSMIT
+:
+  'transmit'
 ;
 
 TRANSPORT
@@ -3449,6 +3524,11 @@ VERSION
         break;
     }
   }
+;
+
+VIOLATE
+:
+  'violate'
 ;
 
 VIRTUAL_LINK

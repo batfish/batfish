@@ -8,15 +8,21 @@ import static org.batfish.representation.cumulus.RemoteAsType.INTERNAL;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 import javax.annotation.Nullable;
+import org.antlr.v4.runtime.RuleContext;
 import org.batfish.common.Warnings;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.bgp.community.StandardCommunity;
+import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Icl_expandedContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Rm_descriptionContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Rmm_communityContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Rmm_interfaceContext;
+import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Rmmipa_prefix_listContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.S_bgpContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.S_routemapContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.S_vrfContext;
@@ -47,10 +53,12 @@ import org.batfish.representation.cumulus.BgpVrf;
 import org.batfish.representation.cumulus.CumulusNcluConfiguration;
 import org.batfish.representation.cumulus.CumulusStructureType;
 import org.batfish.representation.cumulus.CumulusStructureUsage;
+import org.batfish.representation.cumulus.IpCommunityListExpanded;
 import org.batfish.representation.cumulus.RouteMap;
 import org.batfish.representation.cumulus.RouteMapEntry;
 import org.batfish.representation.cumulus.RouteMapMatchCommunity;
 import org.batfish.representation.cumulus.RouteMapMatchInterface;
+import org.batfish.representation.cumulus.RouteMapMatchIpAddressPrefixList;
 import org.batfish.representation.cumulus.StaticRoute;
 import org.batfish.representation.cumulus.Vrf;
 
@@ -285,6 +293,25 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
   }
 
   @Override
+  public void exitRmmipa_prefix_list(Rmmipa_prefix_listContext ctx) {
+    String name = ctx.name.getText();
+    RouteMapMatchIpAddressPrefixList matchPrefixList =
+        _currentRouteMapEntry.getMatchIpAddressPrefixList();
+    List<String> prefixNameList =
+        matchPrefixList == null ? new ArrayList<>() : new ArrayList<>(matchPrefixList.getNames());
+    prefixNameList.add(name);
+
+    _currentRouteMapEntry.setMatchIpAddressPrefixList(
+        new RouteMapMatchIpAddressPrefixList(prefixNameList));
+
+    _c.referenceStructure(
+        CumulusStructureType.IP_PREFIX_LIST,
+        name,
+        CumulusStructureUsage.ROUTE_MAP_MATCH_IP_ADDRESS_PREFIX_LIST,
+        ctx.getStart().getLine());
+  }
+
+  @Override
   public void exitRmm_interface(Rmm_interfaceContext ctx) {
     _currentRouteMapEntry.setMatchInterface(
         new RouteMapMatchInterface(ImmutableSet.of(ctx.name.getText())));
@@ -297,5 +324,28 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
         .ifPresent(old -> names.addAll(old.getNames()));
     ctx.names.stream().map(nameCtx -> nameCtx.getText()).forEach(names::add);
     _currentRouteMapEntry.setMatchCommunity(new RouteMapMatchCommunity(names.build()));
+  }
+
+  @Override
+  public void exitIcl_expanded(Icl_expandedContext ctx) {
+    String name = ctx.name.getText();
+
+    LineAction action;
+    if (ctx.action.permit != null) {
+      action = LineAction.PERMIT;
+    } else if (ctx.action.deny != null) {
+      action = LineAction.DENY;
+    } else {
+      throw new IllegalStateException("only support permit and deny in route map");
+    }
+
+    List<StandardCommunity> communityList =
+        ctx.communities.stream()
+            .map(RuleContext::getText)
+            .map(StandardCommunity::parse)
+            .collect(ImmutableList.toImmutableList());
+
+    _c.defineStructure(CumulusStructureType.IP_COMMUNITY_LIST, name, ctx.getStart().getLine());
+    _c.getIpCommunityLists().put(name, new IpCommunityListExpanded(name, action, communityList));
   }
 }

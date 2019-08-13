@@ -115,6 +115,11 @@ public class CumulusInterfacesGrammarTest {
   }
 
   @Test
+  public void testBondLacpBypassAllow() {
+    parse("iface swp1\n bond-lacp-bypass-allow yes\n");
+  }
+
+  @Test
   public void testIfaceBondSlaves() {
     String input = "iface swp1\n bond-slaves i2 i3 i4\n";
     Interfaces interfaces = parse(input);
@@ -188,6 +193,16 @@ public class CumulusInterfacesGrammarTest {
   }
 
   @Test
+  public void testIfaceBridgeArpNdSuppress() {
+    parse("iface vni1\n bridge-arp-nd-suppress on\n");
+  }
+
+  @Test
+  public void testIfaceBridgeLearning() {
+    parse("iface vni1\n bridge-learning on\n");
+  }
+
+  @Test
   public void testIfaceBridgePorts() {
     String input = "iface bridge\n bridge-ports i2 i3 i4\n";
     Interface iface = parse(input).getInterfaces().get("bridge");
@@ -251,6 +266,11 @@ public class CumulusInterfacesGrammarTest {
   }
 
   @Test
+  public void testIfaceHwaddress() {
+    parse("iface vlan1\n hwaddress 00:00:00:00:00:00\n");
+  }
+
+  @Test
   public void testIfaceLinkSpeed() {
     String input = "iface swp1\n link-speed 10000\n";
     Interfaces interfaces = parse(input);
@@ -264,6 +284,21 @@ public class CumulusInterfacesGrammarTest {
     Interfaces interfaces = parse(input);
     Interface iface = interfaces.getInterfaces().get("swp1");
     assertNull(iface.getLinkSpeed());
+  }
+
+  @Test
+  public void testMstpctlBpduguard() {
+    parse("iface vni1\n mstpctl-bpduguard yes\n");
+  }
+
+  @Test
+  public void testMstpctlPortadminedge() {
+    parse("iface vni1\n mstpctl-portadminedge yes\n");
+  }
+
+  @Test
+  public void testMstpctlPortpdufilter() {
+    parse("iface vni1\n mstpctl-portbpdufilter yes\n");
   }
 
   @Test

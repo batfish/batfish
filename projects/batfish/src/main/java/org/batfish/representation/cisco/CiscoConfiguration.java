@@ -301,6 +301,8 @@ public final class CiscoConfiguration extends VendorConfiguration {
           .put("Vlan", "Vlan")
           .put("Vxlan", "Vxlan")
           .put("Wideband-Cable", "Wideband-Cable")
+          .put("Wlan-ap", "Wlan-ap")
+          .put("Wlan-GigabitEthernet", "Wlan-GigabitEthernet")
           .build();
 
   static final boolean DEFAULT_VRRP_PREEMPT = true;
@@ -2029,7 +2031,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
     }
     newIface.setMlagId(iface.getMlagId());
     newIface.setMtu(getInterfaceMtu(iface));
-    newIface.setOspfPointToPoint(iface.getOspfPointToPoint());
+    newIface.setOspfPointToPoint(iface.getOspfNetworkType() == OspfNetworkType.POINT_TO_POINT);
     newIface.setProxyArp(iface.getProxyArp());
     newIface.setSpanningTreePortfast(iface.getSpanningTreePortfast());
     newIface.setSwitchport(iface.getSwitchport());
