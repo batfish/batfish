@@ -4848,9 +4848,9 @@ public class CiscoGrammarTest {
   }
 
   @Test
-  public void testOspfPointToPoint() throws IOException {
-    String testrigName = "ospf-point-to-point";
-    String iosOspfPointToPoint = "ios-ospf-point-to-point";
+  public void testOspfNetworkTypes() throws IOException {
+    String testrigName = "ospf-network-types";
+    String iosOspfPointToPoint = "ios-ospf-network-types";
     List<String> configurationNames = ImmutableList.of(iosOspfPointToPoint);
 
     Batfish batfish =
@@ -4861,19 +4861,32 @@ public class CiscoGrammarTest {
             _folder);
     Map<String, Configuration> configurations = batfish.loadConfigurations();
 
-    Configuration iosMaxMetric = configurations.get(iosOspfPointToPoint);
-    Interface e0Sub0 = iosMaxMetric.getAllInterfaces().get("Ethernet0/0");
-    Interface e0Sub1 = iosMaxMetric.getAllInterfaces().get("Ethernet0/1");
+    String eth0 = "Ethernet0/0";
+    String eth1 = "Ethernet0/1";
+    String eth2 = "Ethernet0/2";
+    String eth3 = "Ethernet0/3";
+    String eth4 = "Ethernet0/4";
+    Configuration config = configurations.get(iosOspfPointToPoint);
+    Map<String, Interface> ifaces = config.getAllInterfaces();
+    assertThat(ifaces.keySet(), containsInAnyOrder(eth0, eth1, eth2, eth3, eth4, eth5));
 
+    assertThat(ifaces.get(eth0).getOspfNetworkType(), nullValue());
     assertThat(
-        e0Sub0.getOspfNetworkType(),
+        ifaces.get(eth1).getOspfNetworkType(),
         equalTo(org.batfish.datamodel.ospf.OspfNetworkType.POINT_TO_POINT));
     assertThat(
-        e0Sub1.getOspfNetworkType(), equalTo(org.batfish.datamodel.ospf.OspfNetworkType.BROADCAST));
+        ifaces.get(eth2).getOspfNetworkType(),
+        equalTo(org.batfish.datamodel.ospf.OspfNetworkType.BROADCAST));
+    assertThat(
+        ifaces.get(eth3).getOspfNetworkType(),
+        equalTo(org.batfish.datamodel.ospf.OspfNetworkType.NON_BROADCAST_MULTI_ACCESS));
+    assertThat(
+        ifaces.get(eth4).getOspfNetworkType(),
+        equalTo(org.batfish.datamodel.ospf.OspfNetworkType.POINT_TO_MULTIPOINT));
   }
 
   @Test
-  public void testOspfNetworkTypes() {
+  public void testCiscoOspfNetworkTypes() {
     CiscoConfiguration config =
         parseCiscoConfig("ospf-network-types", ConfigurationFormat.CISCO_IOS);
 
