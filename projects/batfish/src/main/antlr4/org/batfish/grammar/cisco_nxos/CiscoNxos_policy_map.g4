@@ -24,13 +24,22 @@ pm_control_plane
 
 pmcp_class
 :
-  CLASS name = class_map_name NEWLINE pmcpc_police*
+  CLASS name = class_map_name NEWLINE
+  (
+    pmcpc_police
+    | pmcpc_set
+  )*
 ;
 
 pmcpc_police
 :
 // semantics valid completions differ heavily with NX-OS version
   POLICE null_rest_of_line
+;
+
+pmcpc_set
+:
+  SET null_rest_of_line
 ;
 
 pm_network_qos
