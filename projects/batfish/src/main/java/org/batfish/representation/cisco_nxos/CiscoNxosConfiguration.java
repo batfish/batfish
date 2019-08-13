@@ -1219,7 +1219,15 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
     // OSPF properties
     OspfInterface ospf = iface.getOspf();
     if (ospf != null) {
-      newIfaceBuilder.setOspfPointToPoint(ospf.getNetwork() == OspfNetworkType.POINT_TO_POINT);
+      switch (ospf.getNetwork()) {
+        case POINT_TO_POINT:
+          newIfaceBuilder.setOspfNetworkType(
+              org.batfish.datamodel.ospf.OspfNetworkType.POINT_TO_POINT);
+          break;
+        case BROADCAST:
+          newIfaceBuilder.setOspfNetworkType(org.batfish.datamodel.ospf.OspfNetworkType.BROADCAST);
+          break;
+      }
       // TODO: update data model to support explicit hello and dead intervals
     }
 
