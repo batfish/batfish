@@ -47,6 +47,7 @@ s_iface
   | i_link_speed
   | i_mstpctl_bpduguard
   | i_mstpctl_portadminedge
+  | i_mstpctl_portbpdufilter
   | i_vlan_id
   | i_vlan_raw_device
   | i_vrf
@@ -150,6 +151,11 @@ i_mstpctl_bpduguard
 i_mstpctl_portadminedge
 :
   MSTPCTL_PORTADMINEDGE NEWLINE
+;
+
+i_mstpctl_portbpdufilter
+:
+  MSTPCTL_PORTBPDUFILTER NEWLINE
 ;
 
 i_vlan_id

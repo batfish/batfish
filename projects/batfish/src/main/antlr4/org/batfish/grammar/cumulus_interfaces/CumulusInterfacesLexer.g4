@@ -119,6 +119,12 @@ MSTPCTL_PORTADMINEDGE
   'mstpctl-portadminedge' -> pushMode(M_DropUntilNewline)
 ;
 
+MSTPCTL_PORTBPDUFILTER
+:
+  'mstpctl-portbpdufilter' -> pushMode(M_DropUntilNewline)
+;
+
+
 VLAN_ID
 :
   'vlan-id'

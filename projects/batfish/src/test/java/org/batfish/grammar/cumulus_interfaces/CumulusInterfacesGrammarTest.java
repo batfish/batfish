@@ -297,6 +297,11 @@ public class CumulusInterfacesGrammarTest {
   }
 
   @Test
+  public void testMstpctlPortpdufilter() {
+    parse("iface vni1\n mstpctl-portbpdufilter yes\n");
+  }
+
+  @Test
   public void testIfaceVlanId() {
     String input = "iface vlan1\n vlan-id 1\n";
     Interfaces interfaces = parse(input);
