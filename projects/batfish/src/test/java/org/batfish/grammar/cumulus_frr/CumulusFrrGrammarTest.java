@@ -307,15 +307,15 @@ public class CumulusFrrGrammarTest {
   @Test
   public void testCumulusFrrVrfRouteMapMatchPrefixList() {
     String name = "ROUTE-MAP-NAME";
-    String match1 = "match ip address prefix-list PREFIX_LIST1 PREFIX_LIST2";
-    String match2 = "match ip address prefix-list PREFIX_LIST3";
+    String match1 = "match ip address prefix-list PREFIX_LIST1";
+    String match2 = "match ip address prefix-list PREFIX_LIST2";
 
     parse(String.format("route-map %s permit 10\n%s\n%s\n", name, match1, match2));
 
     RouteMapEntry entry = CONFIG.getRouteMaps().get(name).getEntries().get(10);
     assertThat(
         entry.getMatchIpAddressPrefixList().getNames(),
-        equalTo(ImmutableList.of("PREFIX_LIST1", "PREFIX_LIST2", "PREFIX_LIST3")));
+        equalTo(ImmutableList.of("PREFIX_LIST1", "PREFIX_LIST2")));
   }
 
   @Test
