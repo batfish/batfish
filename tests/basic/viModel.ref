@@ -67,7 +67,6 @@
               "Ethernet0/0"
             ],
             "mtu" : 1500,
-            "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
             "ospfPassive" : false,
@@ -135,7 +134,6 @@
               "GigabitEthernet1/0"
             ],
             "mtu" : 1500,
-            "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
             "ospfPassive" : false,
@@ -1331,7 +1329,6 @@
               "Ethernet0/0"
             ],
             "mtu" : 1500,
-            "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
             "ospfPassive" : false,
@@ -1363,7 +1360,6 @@
               "GigabitEthernet0/0"
             ],
             "mtu" : 1500,
-            "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
             "ospfPassive" : false,
@@ -1432,7 +1428,6 @@
               "GigabitEthernet2/0"
             ],
             "mtu" : 1500,
-            "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
             "ospfPassive" : false,
@@ -2565,7 +2560,6 @@
               "Ethernet0/0"
             ],
             "mtu" : 1500,
-            "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
             "ospfPassive" : false,
@@ -3065,7 +3059,6 @@
               "Ethernet0/0"
             ],
             "mtu" : 1500,
-            "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
             "ospfPassive" : false,
@@ -3098,7 +3091,6 @@
             ],
             "incomingFilter" : "OUTSIDE_TO_INSIDE",
             "mtu" : 1500,
-            "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
             "ospfPassive" : false,
@@ -4410,7 +4402,6 @@
               "Ethernet0/0"
             ],
             "mtu" : 1500,
-            "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
             "ospfPassive" : false,
@@ -4443,7 +4434,6 @@
             ],
             "incomingFilter" : "OUTSIDE_TO_INSIDE",
             "mtu" : 1500,
-            "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
             "ospfPassive" : false,
@@ -5654,7 +5644,6 @@
               "Ethernet0/0"
             ],
             "mtu" : 1500,
-            "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
             "ospfPassive" : false,
@@ -6359,7 +6348,6 @@
               "Ethernet0/0"
             ],
             "mtu" : 1500,
-            "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
             "ospfPassive" : false,
@@ -7027,7 +7015,6 @@
               "Ethernet0/0"
             ],
             "mtu" : 1500,
-            "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
             "ospfPassive" : false,
@@ -7059,7 +7046,6 @@
               "GigabitEthernet0/0"
             ],
             "mtu" : 1500,
-            "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
             "ospfPassive" : false,
@@ -7092,7 +7078,6 @@
               "GigabitEthernet1/0"
             ],
             "mtu" : 1500,
-            "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
             "ospfPassive" : false,
@@ -7126,7 +7111,6 @@
             ],
             "incomingFilter" : "RESTRICT_HOST_TRAFFIC_IN",
             "mtu" : 1500,
-            "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
             "ospfPassive" : false,
@@ -7160,7 +7144,6 @@
             ],
             "incomingFilter" : "RESTRICT_HOST_TRAFFIC_IN",
             "mtu" : 1500,
-            "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
             "ospfPassive" : false,
@@ -7193,7 +7176,6 @@
               "Loopback0"
             ],
             "mtu" : 1500,
-            "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
             "ospfPassive" : false,
@@ -7996,7 +7978,6 @@
               "Ethernet0/0"
             ],
             "mtu" : 1500,
-            "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
             "ospfPassive" : false,
@@ -8100,7 +8081,6 @@
               "GigabitEthernet2/0"
             ],
             "mtu" : 1500,
-            "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
             "ospfPassive" : false,
@@ -8823,7 +8803,6 @@
               "Ethernet0/0"
             ],
             "mtu" : 1500,
-            "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
             "ospfPassive" : false,
@@ -8927,7 +8906,6 @@
               "GigabitEthernet2/0"
             ],
             "mtu" : 1500,
-            "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
             "ospfPassive" : false,
@@ -9678,7 +9656,6 @@
               "Ethernet0/0"
             ],
             "mtu" : 1500,
-            "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
             "ospfPassive" : false,
@@ -9746,7 +9723,6 @@
               "GigabitEthernet1/0"
             ],
             "mtu" : 1500,
-            "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
             "ospfPassive" : false,
@@ -10840,7 +10816,6 @@
               "Ethernet0/0"
             ],
             "mtu" : 1500,
-            "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
             "ospfPassive" : false,
@@ -10872,7 +10847,6 @@
               "GigabitEthernet0/0"
             ],
             "mtu" : 1500,
-            "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
             "ospfPassive" : false,
@@ -11910,7 +11884,6 @@
               "Ethernet0/0"
             ],
             "mtu" : 1500,
-            "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
             "ospfPassive" : false,
@@ -12014,7 +11987,6 @@
               "GigabitEthernet2/0"
             ],
             "mtu" : 1500,
-            "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
             "ospfPassive" : false,
@@ -12047,7 +12019,6 @@
               "GigabitEthernet3/0"
             ],
             "mtu" : 1500,
-            "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
             "ospfPassive" : false,
@@ -12562,7 +12533,6 @@
             ],
             "incomingFilter" : "filter::INPUT",
             "mtu" : 1500,
-            "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
             "ospfPassive" : false,
@@ -12791,7 +12761,6 @@
             ],
             "incomingFilter" : "filter::INPUT",
             "mtu" : 1500,
-            "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
             "ospfPassive" : false,

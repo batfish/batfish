@@ -796,7 +796,6 @@
               "2.3.4.5"
             ],
             "mtu" : 1500,
-            "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
             "ospfPassive" : false,
@@ -825,7 +824,6 @@
               "Ethernet1"
             ],
             "mtu" : 1500,
-            "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
             "ospfPassive" : false,
@@ -887,7 +885,6 @@
               "5.5.5.5"
             ],
             "mtu" : 1500,
-            "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
             "ospfPassive" : false,
@@ -1064,7 +1061,6 @@
               "Ethernet1"
             ],
             "mtu" : 1500,
-            "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
             "ospfPassive" : false,
@@ -1388,7 +1384,6 @@
             ],
             "mtu" : 1500,
             "nativeVlan" : 123,
-            "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
             "ospfPassive" : false,
@@ -2317,7 +2312,6 @@
               "ifname"
             ],
             "mtu" : 1500,
-            "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
             "ospfPassive" : false,
@@ -4599,7 +4593,6 @@
             ],
             "description" : "\"squeee\"",
             "mtu" : 1500,
-            "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
             "ospfPassive" : false,
@@ -4632,7 +4625,6 @@
               "ethernet6/0.48"
             ],
             "mtu" : 1500,
-            "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
             "ospfPassive" : false,
@@ -4662,7 +4654,6 @@
               "ethernet6/1"
             ],
             "mtu" : 1500,
-            "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
             "ospfPassive" : false,
@@ -4691,7 +4682,6 @@
               "cable-downstream1/2"
             ],
             "mtu" : 1500,
-            "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
             "ospfPassive" : false,
@@ -4720,7 +4710,6 @@
             ],
             "description" : "\"blah\"",
             "mtu" : 1500,
-            "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
             "ospfPassive" : false,
@@ -4748,7 +4737,6 @@
               "cable-downstream5/0/0"
             ],
             "mtu" : 1500,
-            "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
             "ospfPassive" : false,
@@ -4777,7 +4765,6 @@
             ],
             "description" : "\"cable-mac 1\"",
             "mtu" : 1500,
-            "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
             "ospfPassive" : false,
@@ -4809,7 +4796,6 @@
             ],
             "description" : "\"foobar\"",
             "mtu" : 1500,
-            "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
             "ospfPassive" : false,
@@ -4845,7 +4831,6 @@
             ],
             "description" : "\"bleep\"",
             "mtu" : 1500,
-            "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
             "ospfPassive" : false,
@@ -4874,7 +4859,6 @@
               "cable-mac2"
             ],
             "mtu" : 1500,
-            "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
             "ospfPassive" : false,
@@ -4902,7 +4886,6 @@
               "cable-mac3"
             ],
             "mtu" : 1500,
-            "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
             "ospfPassive" : false,
@@ -4931,7 +4914,6 @@
             ],
             "description" : "\"bleh\"",
             "mtu" : 1500,
-            "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
             "ospfPassive" : false,
@@ -4960,7 +4942,6 @@
             ],
             "description" : "\"blarp\"",
             "mtu" : 1500,
-            "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
             "ospfPassive" : false,
@@ -4988,7 +4969,6 @@
               "cable-upstream1/0/10"
             ],
             "mtu" : 1500,
-            "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
             "ospfPassive" : false,
@@ -5016,7 +4996,6 @@
               "mgmt6/0"
             ],
             "mtu" : 1500,
-            "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
             "ospfPassive" : false,
@@ -7168,7 +7147,6 @@
               "Cable1/2/3"
             ],
             "mtu" : 1500,
-            "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
             "ospfPassive" : false,
@@ -7625,7 +7603,6 @@
               "Ethernet0"
             ],
             "mtu" : 1500,
-            "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
             "ospfPassive" : false,
@@ -8061,7 +8038,6 @@
               "GigabitEthernet0/1"
             ],
             "mtu" : 1500,
-            "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
             "ospfPassive" : false,
@@ -8135,7 +8111,6 @@
               "TenGigE0/0/2/2"
             ],
             "mtu" : 1500,
-            "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
             "ospfPassive" : false,
@@ -8189,7 +8164,6 @@
               "Async1"
             ],
             "mtu" : 1500,
-            "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
             "ospfPassive" : false,
@@ -8217,7 +8191,6 @@
               "Cable1/2/3:4"
             ],
             "mtu" : 1500,
-            "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
             "ospfPassive" : false,
@@ -8245,7 +8218,6 @@
               "Crypto-Engine1/2/3"
             ],
             "mtu" : 1500,
-            "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
             "ospfPassive" : false,
@@ -8273,7 +8245,6 @@
               "Dot11Radio0"
             ],
             "mtu" : 1500,
-            "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
             "ospfPassive" : false,
@@ -8313,7 +8284,6 @@
             ],
             "mtu" : 1500,
             "nativeVlan" : 6,
-            "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
             "ospfPassive" : false,
@@ -8365,7 +8335,6 @@
               "ethernet1/11"
             ],
             "mtu" : 1500,
-            "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
             "ospfPassive" : false,
@@ -8395,7 +8364,6 @@
               "ethernet1/12"
             ],
             "mtu" : 1500,
-            "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
             "ospfPassive" : false,
@@ -8424,7 +8392,6 @@
               "Loopback0"
             ],
             "mtu" : 1500,
-            "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
             "ospfPassive" : false,
@@ -8452,7 +8419,6 @@
               "Modular-Cable1/2/3:4"
             ],
             "mtu" : 1500,
-            "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
             "ospfPassive" : false,
@@ -8480,7 +8446,6 @@
               "Null0"
             ],
             "mtu" : 1500,
-            "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
             "ospfPassive" : false,
@@ -8508,7 +8473,6 @@
               "tunnel0"
             ],
             "mtu" : 1500,
-            "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
             "ospfPassive" : false,
@@ -8536,7 +8500,6 @@
               "vlan1"
             ],
             "mtu" : 1500,
-            "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
             "ospfPassive" : false,
@@ -8565,7 +8528,6 @@
               "vlan1005"
             ],
             "mtu" : 1500,
-            "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
             "ospfPassive" : false,
@@ -8594,7 +8556,6 @@
               "vlan1006"
             ],
             "mtu" : 1500,
-            "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
             "ospfPassive" : false,
@@ -8623,7 +8584,6 @@
               "Vlan111"
             ],
             "mtu" : 1500,
-            "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
             "ospfPassive" : false,
@@ -8652,7 +8612,6 @@
               "vlan1234"
             ],
             "mtu" : 1500,
-            "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
             "ospfPassive" : false,
@@ -8681,7 +8640,6 @@
               "vlan2"
             ],
             "mtu" : 1500,
-            "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
             "ospfPassive" : false,
@@ -8710,7 +8668,6 @@
               "vlan3"
             ],
             "mtu" : 1500,
-            "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
             "ospfPassive" : false,
@@ -8739,7 +8696,6 @@
               "vlan4094"
             ],
             "mtu" : 1500,
-            "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
             "ospfPassive" : false,
@@ -8768,7 +8724,6 @@
               "Wideband-Cable1/2/3:4"
             ],
             "mtu" : 1500,
-            "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
             "ospfPassive" : false,
@@ -8800,7 +8755,6 @@
               "inside"
             ],
             "mtu" : 1500,
-            "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
             "ospfPassive" : false,
@@ -8831,7 +8785,6 @@
               "tunnel-ip6"
             ],
             "mtu" : 1500,
-            "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
             "ospfPassive" : false,
@@ -9601,7 +9554,6 @@
               "pointToPoint" : false
             },
             "mtu" : 1500,
-            "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
             "ospfPassive" : false,
@@ -9644,7 +9596,6 @@
               "pointToPoint" : false
             },
             "mtu" : 1500,
-            "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
             "ospfPassive" : false,
@@ -9683,7 +9634,6 @@
               "pointToPoint" : false
             },
             "mtu" : 1500,
-            "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
             "ospfPassive" : false,
@@ -9721,7 +9671,6 @@
               "pointToPoint" : false
             },
             "mtu" : 1500,
-            "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
             "ospfPassive" : false,
@@ -9758,7 +9707,6 @@
               "pointToPoint" : false
             },
             "mtu" : 1500,
-            "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
             "ospfPassive" : false,
@@ -9795,7 +9743,6 @@
               "pointToPoint" : false
             },
             "mtu" : 1500,
-            "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
             "ospfPassive" : false,
@@ -10685,7 +10632,6 @@
               "ethernet2/1"
             ],
             "mtu" : 1500,
-            "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
             "ospfPassive" : false,
@@ -10967,7 +10913,6 @@
               "ethernet0/0"
             ],
             "mtu" : 1500,
-            "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
             "ospfPassive" : false,
@@ -11000,7 +10945,6 @@
               "ethernet1/0"
             ],
             "mtu" : 1500,
-            "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
             "ospfPassive" : false,
@@ -11033,7 +10977,6 @@
               "loopback0"
             ],
             "mtu" : 1500,
-            "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
             "ospfPassive" : false,
@@ -11321,7 +11264,6 @@
               "ethernet0/0"
             ],
             "mtu" : 1500,
-            "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
             "ospfPassive" : false,
@@ -11451,7 +11393,6 @@
               "loopback0"
             ],
             "mtu" : 1500,
-            "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
             "ospfPassive" : false,
@@ -11681,7 +11622,6 @@
               "ethernet0/0"
             ],
             "mtu" : 1500,
-            "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
             "ospfPassive" : false,
@@ -12833,7 +12773,6 @@
               "Ethernet0"
             ],
             "mtu" : 1500,
-            "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
             "ospfPassive" : false,
@@ -13563,7 +13502,6 @@
             ],
             "mlagId" : 1,
             "mtu" : 1500,
-            "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
             "ospfPassive" : false,
@@ -13592,7 +13530,6 @@
             "bandwidth" : 8.0E10,
             "encapsulationVlan" : 4094,
             "mtu" : 1500,
-            "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
             "ospfPassive" : false,
@@ -13618,7 +13555,6 @@
             "autostate" : true,
             "bandwidth" : 0.0,
             "mtu" : 1500,
-            "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
             "ospfPassive" : false,
@@ -13643,7 +13579,6 @@
             "autostate" : true,
             "bandwidth" : 1.0E10,
             "mtu" : 1500,
-            "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
             "ospfPassive" : false,
@@ -13671,7 +13606,6 @@
             "allowedVlans" : "",
             "autostate" : true,
             "mtu" : 1500,
-            "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
             "ospfPassive" : false,
@@ -13699,7 +13633,6 @@
             "allowedVlans" : "",
             "autostate" : true,
             "mtu" : 1500,
-            "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
             "ospfPassive" : false,
@@ -13726,7 +13659,6 @@
             "bandwidth" : 1.0E10,
             "channelGroup" : "bond1",
             "mtu" : 1500,
-            "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
             "ospfPassive" : false,
@@ -13753,7 +13685,6 @@
             "bandwidth" : 1.0E10,
             "channelGroup" : "bond1",
             "mtu" : 1500,
-            "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
             "ospfPassive" : false,
@@ -13780,7 +13711,6 @@
             "bandwidth" : 1.0E10,
             "channelGroup" : "bond1",
             "mtu" : 1500,
-            "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
             "ospfPassive" : false,
@@ -13807,7 +13737,6 @@
             "bandwidth" : 1.0E10,
             "channelGroup" : "bond1",
             "mtu" : 1500,
-            "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
             "ospfPassive" : false,
@@ -13833,7 +13762,6 @@
             "bandwidth" : 1.0E10,
             "channelGroup" : "bond1",
             "mtu" : 1500,
-            "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
             "ospfPassive" : false,
@@ -13859,7 +13787,6 @@
             "bandwidth" : 1.0E10,
             "channelGroup" : "bond1",
             "mtu" : 1500,
-            "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
             "ospfPassive" : false,
@@ -13885,7 +13812,6 @@
             "bandwidth" : 1.0E10,
             "channelGroup" : "bond1",
             "mtu" : 1500,
-            "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
             "ospfPassive" : false,
@@ -13911,7 +13837,6 @@
             "bandwidth" : 1.0E10,
             "channelGroup" : "bond1",
             "mtu" : 1500,
-            "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
             "ospfPassive" : false,
@@ -13939,7 +13864,6 @@
             "allowedVlans" : "",
             "autostate" : true,
             "mtu" : 1500,
-            "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
             "ospfPassive" : false,
@@ -13965,7 +13889,6 @@
             "allowedVlans" : "",
             "autostate" : true,
             "mtu" : 1500,
-            "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
             "ospfPassive" : false,
@@ -14633,7 +14556,6 @@
             "allowedVlans" : "",
             "autostate" : true,
             "mtu" : 1500,
-            "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
             "ospfPassive" : false,
@@ -14657,7 +14579,6 @@
             "allowedVlans" : "",
             "autostate" : true,
             "mtu" : 1500,
-            "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
             "ospfPassive" : false,
@@ -14826,7 +14747,6 @@
             "allowedVlans" : "",
             "autostate" : true,
             "mtu" : 1500,
-            "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
             "ospfPassive" : false,
@@ -14913,7 +14833,6 @@
             "allowedVlans" : "",
             "autostate" : true,
             "mtu" : 1500,
-            "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
             "ospfPassive" : false,
@@ -14937,7 +14856,6 @@
             "allowedVlans" : "",
             "autostate" : true,
             "mtu" : 1500,
-            "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
             "ospfPassive" : false,
@@ -15033,7 +14951,6 @@
             "allowedVlans" : "",
             "autostate" : true,
             "mtu" : 1500,
-            "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
             "ospfPassive" : false,
@@ -15121,7 +15038,6 @@
             "allowedVlans" : "",
             "autostate" : true,
             "mtu" : 1500,
-            "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
             "ospfPassive" : false,
@@ -15183,7 +15099,6 @@
               "swp9"
             ],
             "mtu" : 1500,
-            "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
             "ospfPassive" : false,
@@ -15207,7 +15122,6 @@
             "allowedVlans" : "",
             "autostate" : true,
             "mtu" : 1500,
-            "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
             "ospfPassive" : false,
@@ -15235,7 +15149,6 @@
               "swp3s0"
             ],
             "mtu" : 1500,
-            "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
             "ospfPassive" : false,
@@ -15261,7 +15174,6 @@
             "bandwidth" : 1.0E10,
             "channelGroup" : "AGG",
             "mtu" : 1500,
-            "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
             "ospfPassive" : false,
@@ -15287,7 +15199,6 @@
             "bandwidth" : 1.0E10,
             "channelGroup" : "AGG",
             "mtu" : 1500,
-            "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
             "ospfPassive" : false,
@@ -15313,7 +15224,6 @@
             "bandwidth" : 1.0E10,
             "channelGroup" : "AGG",
             "mtu" : 1500,
-            "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
             "ospfPassive" : false,
@@ -15339,7 +15249,6 @@
             "bandwidth" : 1.0E10,
             "channelGroup" : "AGG",
             "mtu" : 1500,
-            "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
             "ospfPassive" : false,
@@ -15365,7 +15274,6 @@
             "bandwidth" : 1.0E10,
             "channelGroup" : "otherbond",
             "mtu" : 1500,
-            "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
             "ospfPassive" : false,
@@ -15391,7 +15299,6 @@
             "bandwidth" : 1.0E10,
             "channelGroup" : "AGG",
             "mtu" : 1500,
-            "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
             "ospfPassive" : false,
@@ -15417,7 +15324,6 @@
             "bandwidth" : 1.0E10,
             "channelGroup" : "AGG",
             "mtu" : 1500,
-            "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
             "ospfPassive" : false,
@@ -15443,7 +15349,6 @@
             "bandwidth" : 1.0E10,
             "channelGroup" : "AGG",
             "mtu" : 1500,
-            "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
             "ospfPassive" : false,
@@ -15469,7 +15374,6 @@
             "bandwidth" : 1.0E10,
             "channelGroup" : "AGG",
             "mtu" : 1500,
-            "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
             "ospfPassive" : false,
@@ -15495,7 +15399,6 @@
             "bandwidth" : 1.0E10,
             "channelGroup" : "AGG",
             "mtu" : 1500,
-            "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
             "ospfPassive" : false,
@@ -15521,7 +15424,6 @@
             "bandwidth" : 1.0E10,
             "channelGroup" : "AGG",
             "mtu" : 1500,
-            "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
             "ospfPassive" : false,
@@ -15583,7 +15485,6 @@
             "allowedVlans" : "",
             "autostate" : true,
             "mtu" : 1500,
-            "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
             "ospfPassive" : false,
@@ -15608,7 +15509,6 @@
             "autostate" : true,
             "bandwidth" : 1.0E10,
             "mtu" : 1500,
-            "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
             "ospfPassive" : false,
@@ -15633,7 +15533,6 @@
             "autostate" : true,
             "bandwidth" : 1.0E10,
             "mtu" : 1500,
-            "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
             "ospfPassive" : false,
@@ -15684,7 +15583,6 @@
             "allowedVlans" : "",
             "autostate" : true,
             "mtu" : 1500,
-            "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
             "ospfPassive" : false,
@@ -15708,7 +15606,6 @@
             "allowedVlans" : "",
             "autostate" : true,
             "mtu" : 1500,
-            "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
             "ospfPassive" : false,
@@ -15764,7 +15661,6 @@
             "autostate" : true,
             "bandwidth" : 0.0,
             "mtu" : 1500,
-            "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
             "ospfPassive" : false,
@@ -15788,7 +15684,6 @@
             "allowedVlans" : "",
             "autostate" : true,
             "mtu" : 1500,
-            "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
             "ospfPassive" : false,
@@ -15812,7 +15707,6 @@
             "allowedVlans" : "",
             "autostate" : true,
             "mtu" : 1500,
-            "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
             "ospfPassive" : false,
@@ -15872,7 +15766,6 @@
               "swp1"
             ],
             "mtu" : 1500,
-            "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
             "ospfPassive" : false,
@@ -15896,7 +15789,6 @@
             "allowedVlans" : "",
             "autostate" : true,
             "mtu" : 1500,
-            "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
             "ospfPassive" : false,
@@ -15922,7 +15814,6 @@
             "bandwidth" : 1.0E10,
             "channelGroup" : "bond1",
             "mtu" : 1500,
-            "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
             "ospfPassive" : false,
@@ -15977,7 +15868,6 @@
               "swp0"
             ],
             "mtu" : 1500,
-            "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
             "ospfPassive" : false,
@@ -16001,7 +15891,6 @@
             "allowedVlans" : "",
             "autostate" : true,
             "mtu" : 1500,
-            "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
             "ospfPassive" : false,
@@ -16027,7 +15916,6 @@
             "bandwidth" : 1.0E10,
             "channelGroup" : "bond1",
             "mtu" : 1500,
-            "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
             "ospfPassive" : false,
@@ -16051,7 +15939,6 @@
             "allowedVlans" : "",
             "autostate" : true,
             "mtu" : 1500,
-            "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
             "ospfPassive" : false,
@@ -16108,7 +15995,6 @@
             "allowedVlans" : "",
             "autostate" : true,
             "mtu" : 1500,
-            "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
             "ospfPassive" : false,
@@ -16161,7 +16047,6 @@
               "swp1"
             ],
             "mtu" : 1500,
-            "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
             "ospfPassive" : false,
@@ -16185,7 +16070,6 @@
             "allowedVlans" : "",
             "autostate" : true,
             "mtu" : 1500,
-            "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
             "ospfPassive" : false,
@@ -16211,7 +16095,6 @@
             "bandwidth" : 1.0E10,
             "channelGroup" : "bond1",
             "mtu" : 1500,
-            "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
             "ospfPassive" : false,
@@ -16268,7 +16151,6 @@
             "description" : "to MLAG PEER",
             "mtu" : 1500,
             "nativeVlan" : 1,
-            "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
             "ospfPassive" : false,
@@ -16300,7 +16182,6 @@
             ],
             "mlagId" : 2,
             "mtu" : 1500,
-            "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
             "ospfPassive" : false,
@@ -16361,7 +16242,6 @@
             ],
             "mtu" : 1500,
             "nativeVlan" : 1,
-            "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
             "ospfPassive" : false,
@@ -16684,7 +16564,6 @@
             },
             "incomingFilter" : "~incoming_filter:/Common/MYVLAN~",
             "mtu" : 1500,
-            "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
             "ospfPassive" : false,
@@ -16711,7 +16590,6 @@
             "autostate" : true,
             "bandwidth" : 4.0E10,
             "mtu" : 1500,
-            "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
             "ospfPassive" : false,
@@ -16737,7 +16615,6 @@
             "autostate" : true,
             "bandwidth" : 1.0E12,
             "mtu" : 1500,
-            "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
             "ospfPassive" : false,
@@ -16762,7 +16639,6 @@
             "autostate" : true,
             "bandwidth" : 1.0E12,
             "mtu" : 1500,
-            "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
             "ospfPassive" : false,
@@ -16787,7 +16663,6 @@
             "autostate" : true,
             "bandwidth" : 2.0E12,
             "mtu" : 1500,
-            "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
             "ospfPassive" : false,
@@ -17661,7 +17536,6 @@
               "ethernet1/15"
             ],
             "mtu" : 1500,
-            "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
             "ospfPassive" : false,
@@ -17767,7 +17641,6 @@
             ],
             "incomingFilter" : "filter::INPUT",
             "mtu" : 1500,
-            "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
             "ospfPassive" : false,
@@ -18564,7 +18437,6 @@
               "ge-0/0/0"
             ],
             "mtu" : 1500,
-            "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
             "ospfPassive" : false,
@@ -18595,7 +18467,6 @@
               "ge-0/0/0.0"
             ],
             "mtu" : 1500,
-            "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
             "ospfPassive" : false,
@@ -18625,7 +18496,6 @@
               "ge-0/0/1"
             ],
             "mtu" : 1500,
-            "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
             "ospfPassive" : false,
@@ -18656,7 +18526,6 @@
               "ge-0/0/1.0"
             ],
             "mtu" : 1500,
-            "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
             "ospfPassive" : false,
@@ -18689,7 +18558,6 @@
               "reth0"
             ],
             "mtu" : 1500,
-            "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
             "ospfPassive" : false,
@@ -18720,7 +18588,6 @@
               "reth0.3"
             ],
             "mtu" : 1500,
-            "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
             "ospfPassive" : false,
@@ -18807,7 +18674,6 @@
               "Vlan303"
             ],
             "mtu" : 9100,
-            "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
             "ospfPassive" : false,
@@ -18844,7 +18710,6 @@
               "10.22.33.112"
             ],
             "mtu" : 9100,
-            "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
             "ospfPassive" : false,
@@ -18900,7 +18765,6 @@
               "FastEthernet12/13"
             ],
             "mtu" : 1500,
-            "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
             "ospfPassive" : false,
@@ -18929,7 +18793,6 @@
               "HundredGigE0/6/0/8"
             ],
             "mtu" : 1500,
-            "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
             "ospfPassive" : false,
@@ -18957,7 +18820,6 @@
               "Port-channel1"
             ],
             "mtu" : 1500,
-            "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
             "ospfPassive" : false,
@@ -18985,7 +18847,6 @@
               "Vlan100"
             ],
             "mtu" : 1500,
-            "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
             "ospfPassive" : false,
@@ -19043,7 +18904,6 @@
             ],
             "description" : "SLO-AGG1 lo0 (Loopback0 Address)",
             "mtu" : 1500,
-            "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
             "ospfPassive" : false,
@@ -19097,7 +18957,6 @@
               "xe-0/0/0"
             ],
             "mtu" : 9300,
-            "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
             "ospfPassive" : false,
@@ -19125,7 +18984,6 @@
               "xe-0/0/0:0"
             ],
             "mtu" : 9300,
-            "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
             "ospfPassive" : false,
@@ -19158,7 +19016,6 @@
             "mtu" : 9000,
             "ospfArea" : 0,
             "ospfCost" : 1,
-            "ospfDeadInterval" : 0,
             "ospfEnabled" : true,
             "ospfHelloMultiplier" : 0,
             "ospfPassive" : false,
@@ -19395,7 +19252,6 @@
               "GigabitEthernet1/0/1"
             ],
             "mtu" : 1500,
-            "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
             "ospfPassive" : false,
@@ -19449,7 +19305,6 @@
               "Ethernet0"
             ],
             "mtu" : 1500,
-            "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
             "ospfPassive" : false,
@@ -19503,7 +19358,6 @@
               "Ethernet0"
             ],
             "mtu" : 1500,
-            "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
             "ospfPassive" : false,
@@ -19557,7 +19411,6 @@
               "Ethernet0"
             ],
             "mtu" : 1500,
-            "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
             "ospfPassive" : false,
@@ -19629,7 +19482,6 @@
             },
             "hsrpVersion" : "2",
             "mtu" : 1500,
-            "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
             "ospfPassive" : false,
@@ -20247,7 +20099,6 @@
               "pointToPoint" : false
             },
             "mtu" : 1500,
-            "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
             "ospfPassive" : false,
@@ -21099,7 +20950,6 @@
               "ae16"
             ],
             "mtu" : 1500,
-            "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
             "ospfPassive" : false,
@@ -21127,7 +20977,6 @@
               "ae16.0"
             ],
             "mtu" : 1500,
-            "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
             "ospfPassive" : false,
@@ -21155,7 +21004,6 @@
               "xe-0/0/1"
             ],
             "mtu" : 1500,
-            "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
             "ospfPassive" : false,
@@ -21183,7 +21031,6 @@
               "xe-0/0/1.0"
             ],
             "mtu" : 1500,
-            "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
             "ospfPassive" : false,
@@ -21211,7 +21058,6 @@
               "xe-0/0/20:0"
             ],
             "mtu" : 1500,
-            "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
             "ospfPassive" : false,
@@ -21239,7 +21085,6 @@
               "xe-0/0/20:0.0"
             ],
             "mtu" : 1500,
-            "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
             "ospfPassive" : false,
@@ -21267,7 +21112,6 @@
               "xe-0/0/21:0"
             ],
             "mtu" : 1500,
-            "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
             "ospfPassive" : false,
@@ -21295,7 +21139,6 @@
               "xe-0/0/21:0.0"
             ],
             "mtu" : 1500,
-            "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
             "ospfPassive" : false,
@@ -23158,7 +23001,6 @@
               "ae0"
             ],
             "mtu" : 1500,
-            "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
             "ospfPassive" : false,
@@ -23186,7 +23028,6 @@
               "ae0.0"
             ],
             "mtu" : 1500,
-            "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
             "ospfPassive" : false,
@@ -23215,7 +23056,6 @@
             ],
             "description" : "Fabric interface 0",
             "mtu" : 1500,
-            "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
             "ospfPassive" : false,
@@ -23243,7 +23083,6 @@
               "ge-0/0/0"
             ],
             "mtu" : 1500,
-            "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
             "ospfPassive" : false,
@@ -23271,7 +23110,6 @@
               "ge-0/0/1"
             ],
             "mtu" : 1500,
-            "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
             "ospfPassive" : false,
@@ -23300,7 +23138,6 @@
               "ge-1/0/0"
             ],
             "mtu" : 1500,
-            "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
             "ospfPassive" : false,
@@ -23328,7 +23165,6 @@
               "ge-2/0/0"
             ],
             "mtu" : 1500,
-            "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
             "ospfPassive" : false,
@@ -23356,7 +23192,6 @@
               "ge-2/0/0.0"
             ],
             "mtu" : 1500,
-            "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
             "ospfPassive" : false,
@@ -23384,7 +23219,6 @@
               "ge-2/0/0.1"
             ],
             "mtu" : 1500,
-            "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
             "ospfPassive" : false,
@@ -23412,7 +23246,6 @@
               "ge-3/0/0"
             ],
             "mtu" : 1500,
-            "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
             "ospfPassive" : false,
@@ -23440,7 +23273,6 @@
               "ge-3/0/0.0"
             ],
             "mtu" : 1500,
-            "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
             "ospfPassive" : false,
@@ -23468,7 +23300,6 @@
               "ge-4/0/0"
             ],
             "mtu" : 1500,
-            "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
             "ospfPassive" : false,
@@ -23496,7 +23327,6 @@
               "ge-4/0/0.0"
             ],
             "mtu" : 1500,
-            "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
             "ospfPassive" : false,
@@ -23524,7 +23354,6 @@
               "ge-5/0/0"
             ],
             "mtu" : 1500,
-            "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
             "ospfPassive" : false,
@@ -23552,7 +23381,6 @@
               "ge-5/0/0.0"
             ],
             "mtu" : 1500,
-            "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
             "ospfPassive" : false,
@@ -23584,7 +23412,6 @@
               "irb.5"
             ],
             "mtu" : 1500,
-            "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
             "ospfPassive" : false,
@@ -23620,7 +23447,6 @@
               "vme"
             ],
             "mtu" : 1500,
-            "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
             "ospfPassive" : false,
@@ -23651,7 +23477,6 @@
               "vme.0"
             ],
             "mtu" : 1500,
-            "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
             "ospfPassive" : false,
@@ -23680,7 +23505,6 @@
               "xe-0/0/0:0"
             ],
             "mtu" : 1500,
-            "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
             "ospfPassive" : false,
@@ -23708,7 +23532,6 @@
               "xe-0/0/0:0.0"
             ],
             "mtu" : 1500,
-            "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
             "ospfPassive" : false,
@@ -23736,7 +23559,6 @@
               "xe-0/0/5:0"
             ],
             "mtu" : 1500,
-            "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
             "ospfPassive" : false,
@@ -23764,7 +23586,6 @@
               "xe-0/0/5:0.0"
             ],
             "mtu" : 1500,
-            "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
             "ospfPassive" : false,
@@ -23793,7 +23614,6 @@
             ],
             "mtu" : 1500,
             "nativeVlan" : 11,
-            "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
             "ospfPassive" : false,
@@ -23898,7 +23718,6 @@
               "ge-0/0/0"
             ],
             "mtu" : 1500,
-            "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
             "ospfPassive" : false,
@@ -23926,7 +23745,6 @@
               "ge-0/0/0.0"
             ],
             "mtu" : 1500,
-            "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
             "ospfPassive" : false,
@@ -24099,7 +23917,6 @@
               "ge-0/0/0"
             ],
             "mtu" : 1500,
-            "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
             "ospfPassive" : false,
@@ -24167,7 +23984,6 @@
               ]
             },
             "mtu" : 1500,
-            "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
             "ospfPassive" : false,
@@ -26151,7 +25967,6 @@
               "ge-0/0/0"
             ],
             "mtu" : 1500,
-            "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
             "ospfPassive" : false,
@@ -26183,7 +25998,6 @@
               "ge-0/0/0.0"
             ],
             "mtu" : 1500,
-            "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
             "ospfPassive" : false,
@@ -27373,7 +27187,6 @@
               "xe-0/0/0"
             ],
             "mtu" : 1500,
-            "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
             "ospfPassive" : false,
@@ -27402,7 +27215,6 @@
             ],
             "mtu" : 1500,
             "nativeVlan" : 666,
-            "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
             "ospfPassive" : false,
@@ -27597,7 +27409,6 @@
               "et1"
             ],
             "mtu" : 1500,
-            "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
             "ospfPassive" : false,
@@ -27626,7 +27437,6 @@
               "et2"
             ],
             "mtu" : 1500,
-            "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
             "ospfPassive" : false,
@@ -27655,7 +27465,6 @@
               "ma1"
             ],
             "mtu" : 1500,
-            "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
             "ospfPassive" : false,
@@ -27683,7 +27492,6 @@
               "ap1"
             ],
             "mtu" : 1500,
-            "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
             "ospfPassive" : false,
@@ -28330,7 +28138,6 @@
               "GigabitEthernet1"
             ],
             "mtu" : 1500,
-            "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
             "ospfPassive" : false,
@@ -28944,7 +28751,6 @@
               "Ethernet0/0"
             ],
             "mtu" : 1500,
-            "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
             "ospfPassive" : false,
@@ -28974,7 +28780,6 @@
               "Ethernet0/1"
             ],
             "mtu" : 2000,
-            "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
             "ospfPassive" : false,
@@ -29003,7 +28808,6 @@
               "nve1"
             ],
             "mtu" : 1500,
-            "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
             "ospfPassive" : false,
@@ -30649,7 +30453,6 @@
               "ge-0/0/0"
             ],
             "mtu" : 1500,
-            "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
             "ospfPassive" : false,
@@ -30680,7 +30483,6 @@
               "ge-0/0/0.0"
             ],
             "mtu" : 1500,
-            "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
             "ospfPassive" : false,
@@ -30792,7 +30594,6 @@
             "allowedVlans" : "",
             "autostate" : true,
             "mtu" : 1500,
-            "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
             "ospfPassive" : false,
@@ -30818,7 +30619,6 @@
             "autostate" : true,
             "description" : "layer2 subif comment",
             "mtu" : 1500,
-            "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
             "ospfPassive" : false,
@@ -30845,7 +30645,6 @@
             "autostate" : true,
             "description" : "subif comment",
             "mtu" : 1500,
-            "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
             "ospfPassive" : false,
@@ -30872,7 +30671,6 @@
             "autostate" : true,
             "description" : "loopback comment",
             "mtu" : 1500,
-            "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
             "ospfPassive" : false,
@@ -30897,7 +30695,6 @@
             "allowedVlans" : "",
             "autostate" : true,
             "mtu" : 1500,
-            "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
             "ospfPassive" : false,
@@ -30922,7 +30719,6 @@
             "allowedVlans" : "",
             "autostate" : true,
             "mtu" : 1500,
-            "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
             "ospfPassive" : false,
@@ -30948,7 +30744,6 @@
             "autostate" : true,
             "description" : "tunnel.3 comment",
             "mtu" : 1500,
-            "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
             "ospfPassive" : false,
@@ -30974,7 +30769,6 @@
             "autostate" : true,
             "description" : "vlan comment",
             "mtu" : 1500,
-            "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
             "ospfPassive" : false,
@@ -30999,7 +30793,6 @@
             "allowedVlans" : "",
             "autostate" : true,
             "mtu" : 1500,
-            "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
             "ospfPassive" : false,
@@ -31180,7 +30973,6 @@
             "allowedVlans" : "",
             "autostate" : true,
             "mtu" : 1500,
-            "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
             "ospfPassive" : false,
@@ -31211,7 +31003,6 @@
               ]
             },
             "mtu" : 1500,
-            "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
             "ospfPassive" : false,
@@ -31237,7 +31028,6 @@
             "allowedVlans" : "",
             "autostate" : true,
             "mtu" : 1500,
-            "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
             "ospfPassive" : false,
@@ -31262,7 +31052,6 @@
             "allowedVlans" : "",
             "autostate" : true,
             "mtu" : 1500,
-            "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
             "ospfPassive" : false,
@@ -31819,7 +31608,6 @@
               "loopback1"
             ],
             "mtu" : 1500,
-            "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
             "ospfPassive" : false,
@@ -36422,7 +36210,6 @@
             ],
             "mtu" : 1500,
             "nativeVlan" : 1,
-            "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
             "ospfPassive" : false,
@@ -36971,7 +36758,6 @@
               "FastEthernet0/0"
             ],
             "mtu" : 1500,
-            "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
             "ospfPassive" : false,
@@ -37025,7 +36811,6 @@
               "FastEthernet0/0"
             ],
             "mtu" : 1500,
-            "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
             "ospfPassive" : false,
@@ -37275,7 +37060,6 @@
               "fxp0"
             ],
             "mtu" : 1500,
-            "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
             "ospfPassive" : false,
@@ -37306,7 +37090,6 @@
               "fxp0.0"
             ],
             "mtu" : 1500,
-            "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
             "ospfPassive" : false,
@@ -37338,7 +37121,6 @@
               "irb.100"
             ],
             "mtu" : 1500,
-            "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
             "ospfPassive" : false,
@@ -37367,7 +37149,6 @@
               "lo0"
             ],
             "mtu" : 1500,
-            "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
             "ospfPassive" : false,
@@ -37398,7 +37179,6 @@
               "lo0.0"
             ],
             "mtu" : 1500,
-            "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
             "ospfPassive" : false,
@@ -37430,7 +37210,6 @@
               "lo0.1"
             ],
             "mtu" : 1500,
-            "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
             "ospfPassive" : false,
@@ -37459,7 +37238,6 @@
               "xe-0/0/2"
             ],
             "mtu" : 1500,
-            "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
             "ospfPassive" : false,
@@ -37490,7 +37268,6 @@
               "xe-0/0/2.0"
             ],
             "mtu" : 1500,
-            "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
             "ospfPassive" : false,
@@ -37519,7 +37296,6 @@
               "xe-0/0/3"
             ],
             "mtu" : 1500,
-            "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
             "ospfPassive" : false,
@@ -37550,7 +37326,6 @@
               "xe-0/0/3.0"
             ],
             "mtu" : 1500,
-            "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
             "ospfPassive" : false,
@@ -37579,7 +37354,6 @@
               "xe-0/0/4"
             ],
             "mtu" : 1500,
-            "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
             "ospfPassive" : false,
@@ -37610,7 +37384,6 @@
               "xe-0/0/4.0"
             ],
             "mtu" : 1500,
-            "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
             "ospfPassive" : false,

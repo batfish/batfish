@@ -37,7 +37,6 @@
             "Ethernet0/0"
           ],
           "mtu" : 1500,
-          "ospfDeadInterval" : 0,
           "ospfEnabled" : false,
           "ospfHelloMultiplier" : 0,
           "ospfPassive" : false,
@@ -153,7 +152,6 @@
             "GigabitEthernet1/0"
           ],
           "mtu" : 1500,
-          "ospfDeadInterval" : 0,
           "ospfEnabled" : false,
           "ospfHelloMultiplier" : 0,
           "ospfPassive" : false,
