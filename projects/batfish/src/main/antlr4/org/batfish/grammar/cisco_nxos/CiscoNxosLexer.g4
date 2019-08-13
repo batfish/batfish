@@ -805,6 +805,11 @@ DESCRIPTION
   'description' -> pushMode ( M_Remark )
 ;
 
+DEST_IP
+:
+  'dest-ip'
+;
+
 DEST_MISS
 :
   'dest-miss'
@@ -2413,6 +2418,11 @@ PER_ENTRY
   'per-entry'
 ;
 
+PER_LINK
+:
+  'per-link'
+;
+
 PERIODIC
 :
   'periodic'
@@ -3032,6 +3042,11 @@ SPF
 SPINE_ANYCAST_GATEWAY
 :
   'spine-anycast-gateway'
+;
+
+SRC_IP
+:
+  'src-ip'
 ;
 
 STALEPATH_TIME
