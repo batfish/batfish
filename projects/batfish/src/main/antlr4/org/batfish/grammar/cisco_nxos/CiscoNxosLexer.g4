@@ -237,6 +237,11 @@ AGGREGATE_ADDRESS
   'aggregate-address'
 ;
 
+AGGRESSIVE
+:
+  'aggressive'
+;
+
 AHP
 :
   'ahp'
@@ -307,6 +312,11 @@ AS_PATH
 AS_SET
 :
   'as-set'
+;
+
+ASSOCIATE
+:
+  'associate'
 ;
 
 ASSOCIATE_VRF
@@ -915,6 +925,11 @@ EF
   'ef'
 ;
 
+EGP
+:
+  'egp'
+;
+
 EIGRP
 :
   'eigrp'
@@ -1076,6 +1091,11 @@ FEATUREOPSTATUSCHANGE
   [Cc] [Hh] [Aa] [Nn] [Gg] [Ee]
 ;
 
+FEX
+:
+  'fex'
+;
+
 FEX_FABRIC
 :
   'fex-fabric'
@@ -1119,6 +1139,11 @@ FORCE
 FORCE_ORDER
 :
   'force-order'
+;
+
+FORWARDING_THRESHOLD
+:
+  'forwarding-threshold'
 ;
 
 FLUSH_ROUTES
@@ -1241,6 +1266,11 @@ HELLO_INTERVAL
   'hello-interval'
 ;
 
+HMM
+:
+  'hmm'
+;
+
 HOST
 :
   'host'
@@ -1350,6 +1380,11 @@ IGNORE
   'ignore'
 ;
 
+IGP
+:
+  'igp'
+;
+
 IMMEDIATE
 :
   'immediate'
@@ -1373,6 +1408,11 @@ INBOUND
 INCLUDE_STUB
 :
   'include-stub'
+;
+
+INCOMPLETE
+:
+  'incomplete'
 ;
 
 INCONSISTENCY
@@ -1439,6 +1479,11 @@ INTERNET
   'internet'
 ;
 
+INTERVAL
+:
+  'interval'
+;
+
 IP
 :
   'ip'
@@ -1492,6 +1537,11 @@ ISOLATE
 KEY
 :
   'key'
+;
+
+KEY_CHAIN
+:
+  'key-chain' -> pushMode ( M_Word )
 ;
 
 KEY_STRING
@@ -1564,6 +1614,11 @@ LE
 LEVEL
 :
   'level'
+;
+
+LINE_PROTOCOL
+:
+  'line-protocol'
 ;
 
 LINK_FLAP
@@ -1664,6 +1719,11 @@ LOOPBACK
 LOW_MEMORY
 :
   'low-memory'
+;
+
+LOWER
+:
+  'lower'
 ;
 
 LPD
@@ -1834,6 +1894,11 @@ MGMT
   [Mm] [Gg] [Mm] [Tt]
 ;
 
+MIN_RX
+:
+  'min_rx'
+;
+
 MINIMUM
 :
   'minimum'
@@ -1892,6 +1957,11 @@ MULTICAST
 MULTIPATH_RELAX
 :
   'multipath-relax'
+;
+
+MULTIPLIER
+:
+  'multiplier'
 ;
 
 MVPN
@@ -2176,6 +2246,11 @@ OPTION_MISSING
   'option-missing'
 ;
 
+ORIGIN
+:
+  'origin'
+;
+
 ORIGINATE
 :
   'originate'
@@ -2241,6 +2316,16 @@ PASSWORD
 PATHCOST
 :
   'pathcost'
+;
+
+PBR
+:
+  'pbr'
+;
+
+PBR_STATISTICS
+:
+  'pbr-statistics'
 ;
 
 PCP
@@ -2511,6 +2596,11 @@ RANGE
 RD
 :
   'rd'
+;
+
+REACHABILITY
+:
+  'reachability'
 ;
 
 READ
@@ -2814,6 +2904,11 @@ SIZE
   'size'
 ;
 
+SLA
+:
+  'sla'
+;
+
 SMALL
 :
   'small'
@@ -3007,6 +3102,16 @@ SUPPRESS_MAP
 SUSPEND_INDIVIDUAL
 :
   'suspend-individual'
+;
+
+SWITCHNAME
+:
+  'switchname'
+  {
+    if (lastTokenType() == NEWLINE || lastTokenType() == -1) {
+      pushMode(M_Hostname);
+    }
+  }
 ;
 
 SWITCHPORT
@@ -3279,6 +3384,11 @@ UPGRADEOPNOTIFYONCOMPLETION
 :
   [Uu] [Pp] [Gg] [Rr] [Aa] [Dd] [Ee] [Oo] [Pp] [Nn] [Oo] [Tt] [Ii] [Ff] [Yy]
   [Oo] [Nn] [Cc] [Oo] [Mm] [Pp] [Ll] [Ee] [Tt] [Ii] [Oo] [Nn]
+;
+
+UPPER
+:
+  'upper'
 ;
 
 URG
