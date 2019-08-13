@@ -5,6 +5,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Range;
 import java.util.List;
+import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.RuleContext;
 import org.antlr.v4.runtime.Token;
 import org.antlr.v4.runtime.tree.ErrorNode;
@@ -59,17 +60,26 @@ public final class CumulusInterfacesConfigurationBuilder
   private final CumulusNcluConfiguration _config;
   private final Interfaces _interfaces = new Interfaces();
 
-  @SuppressWarnings("unused")
   private final CumulusInterfacesCombinedParser _parser;
-
+  private final String _text;
   private final Warnings _w;
   private Interface _currentIface;
 
   public CumulusInterfacesConfigurationBuilder(
-      CumulusNcluConfiguration config, CumulusInterfacesCombinedParser parser, Warnings w) {
+      CumulusNcluConfiguration config,
+      CumulusInterfacesCombinedParser parser,
+      String text,
+      Warnings w) {
     _config = config;
     _parser = parser;
+    _text = text;
     _w = w;
+  }
+
+  private String getFullText(ParserRuleContext ctx) {
+    int start = ctx.getStart().getStartIndex();
+    int end = ctx.getStop().getStopIndex();
+    return _text.substring(start, end + 1);
   }
 
   @VisibleForTesting
