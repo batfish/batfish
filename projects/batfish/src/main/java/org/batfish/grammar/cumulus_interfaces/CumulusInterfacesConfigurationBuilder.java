@@ -9,6 +9,7 @@ import org.antlr.v4.runtime.RuleContext;
 import org.antlr.v4.runtime.Token;
 import org.antlr.v4.runtime.tree.ErrorNode;
 import org.antlr.v4.runtime.tree.ParseTree;
+import org.batfish.common.BatfishException;
 import org.batfish.common.Warnings;
 import org.batfish.common.Warnings.ParseWarning;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
@@ -287,9 +288,29 @@ public final class CumulusInterfacesConfigurationBuilder
     Converter converter = new Converter(_interfaces);
     Bridge bridge = converter.convertBridge();
     _config.setBridge(bridge != null ? bridge : new Bridge());
-    _config.setInterfaces(converter.convertInterfaces());
-    _config.setVlans(converter.convertVlans());
-    _config.setVrfs(converter.convertVrfs());
-    _config.setVxlans(converter.convertVxlans());
+
+    try {
+      _config.setInterfaces(converter.convertInterfaces());
+    } catch (BatfishException e) {
+      _w.redFlag("Error converting interfaces to vendor-specific model");
+    }
+
+    try {
+      _config.setVlans(converter.convertVlans());
+    } catch (BatfishException e) {
+      _w.redFlag("Error converting vlans to vendor-specific model");
+    }
+
+    try {
+      _config.setVrfs(converter.convertVrfs());
+    } catch (BatfishException e) {
+      _w.redFlag("Error converting vrfs to vendor-specific model");
+    }
+
+    try {
+      _config.setVxlans(converter.convertVxlans());
+    } catch (BatfishException e) {
+      _w.redFlag("Error converting vxlans to vendor-specific model");
+    }
   }
 }
