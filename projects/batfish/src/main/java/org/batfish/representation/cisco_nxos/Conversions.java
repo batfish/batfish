@@ -3,7 +3,6 @@ package org.batfish.representation.cisco_nxos;
 import static com.google.common.base.MoreObjects.firstNonNull;
 import static java.util.Collections.singletonList;
 import static org.batfish.datamodel.Configuration.DEFAULT_VRF_NAME;
-import static org.batfish.datamodel.bgp.VniConfig.importRtPatternForAnyAs;
 import static org.batfish.datamodel.routing_policy.statement.Statements.RemovePrivateAs;
 import static org.batfish.representation.cisco.CiscoConfiguration.computeBgpCommonExportPolicyName;
 import static org.batfish.representation.cisco.CiscoConfiguration.computeBgpPeerEvpnExportPolicyName;
@@ -430,8 +429,8 @@ final class Conversions {
         evpnFamilyBuilder.setPropagateUnmatched(vrfL2VpnAf.getRetainMode() == RetainRouteType.ALL);
       }
     }
-    evpnFamilyBuilder.setL2Vnis(getL2VniConfigs(vrf, proc, localAs, vsConfig));
-    evpnFamilyBuilder.setL3Vnis(getL3VniConfigs(vrf, proc, localAs, vsConfig));
+    evpnFamilyBuilder.setL2Vnis(getL2VniConfigs(vrf, proc, localAs, vsConfig, warnings));
+    evpnFamilyBuilder.setL3Vnis(getL3VniConfigs(vrf, proc, localAs, vsConfig, warnings));
 
     if (neighborL2VpnAf != null || vrfL2VpnAf != null) {
       exportStatements = getExportStatementsForEvpn(c, neighborL2VpnAf, neighbor);
@@ -449,7 +448,11 @@ final class Conversions {
   }
 
   private static SortedSet<Layer2VniConfig> getL2VniConfigs(
-      Vrf vrf, BgpProcess viBgpProcess, long localAs, CiscoNxosConfiguration vsConfig) {
+      Vrf vrf,
+      BgpProcess viBgpProcess,
+      long localAs,
+      CiscoNxosConfiguration vsConfig,
+      Warnings warnings) {
     if (!vrf.getName().equals(DEFAULT_VRF_NAME)) {
       // TODO: figure out what to do with tenant VRFs
       return ImmutableSortedSet.of();
@@ -468,11 +471,32 @@ final class Conversions {
       if (evpnVni == null) {
         continue;
       }
-      RouteDistinguisherOrAuto rtOrAuto = evpnVni.getExportRt();
-      if (rtOrAuto == null) {
-        // not a valid EVPN VNI, since nothing will be exported
+
+      RouteDistinguisherOrAuto exportRtOrAuto = evpnVni.getExportRt();
+      if (exportRtOrAuto == null) {
+        // export route target is not present as auto and neither is user-defined, no L2 routes
+        // (MAC-routes)
+        // will be exported for hosts in this VNI. Assuming this to be an invalid EVPN configuration
+        // for lack of explicit doc from Cisco
+        warnings.redFlag(
+            String.format(
+                "No export route-target defined for L2 VNI '%s', no L2 routes will be exported",
+                vniSettings.getVni()));
         continue;
       }
+      RouteDistinguisherOrAuto importRtOrAuto = evpnVni.getImportRt();
+      if (importRtOrAuto == null) {
+        // import route target is not present as auto and neither is user-defined, no L2 routes
+        // (MAC-routes)
+        // will be imported for this VNI. Assuming this to be an invalid EVPN configuration for lack
+        // of explicit doc from Cisco
+        warnings.redFlag(
+            String.format(
+                "No import route-target defined for L2 VNI '%s', no L2 routes will be imported",
+                vniSettings.getVni()));
+        continue;
+      }
+
       RouteDistinguisher rd =
           Optional.ofNullable(evpnVni.getRd())
               .map(RouteDistinguisherOrAuto::getRouteDistinguisher)
@@ -486,17 +510,26 @@ final class Conversions {
                   firstNonNull(
                       rd,
                       RouteDistinguisher.from(viBgpProcess.getRouterId(), vniSettings.getVni())))
+              .setImportRouteTarget(
+                  importRtOrAuto.isAuto()
+                      ? toRouteTarget(localAs, vniSettings.getVni(), warnings).matchString()
+                      : toRouteTarget(importRtOrAuto.getRouteDistinguisher(), warnings)
+                          .matchString())
               .setRouteTarget(
-                  rtOrAuto.isAuto()
-                      ? toRouteTarget(localAs, vniSettings.getVni())
-                      : toRouteTarget(rtOrAuto.getRouteDistinguisher()))
+                  exportRtOrAuto.isAuto()
+                      ? toRouteTarget(localAs, vniSettings.getVni(), warnings)
+                      : toRouteTarget(exportRtOrAuto.getRouteDistinguisher(), warnings))
               .build());
     }
     return layer2Vnis.build();
   }
 
   private static SortedSet<Layer3VniConfig> getL3VniConfigs(
-      Vrf vrf, BgpProcess viBgpProcess, long localAs, CiscoNxosConfiguration vsConfig) {
+      Vrf vrf,
+      BgpProcess viBgpProcess,
+      long localAs,
+      CiscoNxosConfiguration vsConfig,
+      Warnings warnings) {
     if (!vrf.getName().equals(DEFAULT_VRF_NAME)) {
       // TODO: figure out what to do with tenant VRFs
       return ImmutableSortedSet.of();
@@ -508,52 +541,86 @@ final class Conversions {
         continue;
       }
 
-      org.batfish.representation.cisco_nxos.Vrf vrfVs =
+      org.batfish.representation.cisco_nxos.Vrf tenantVrfForL3Vni =
           getVrfForL3Vni(vsConfig.getVrfs(), vniSettings.getVni());
-      if (vrfVs == null || !vrfVs.getAddressFamilies().containsKey(AddressFamily.IPV4_UNICAST)) {
+      if (tenantVrfForL3Vni == null
+          || !tenantVrfForL3Vni.getAddressFamilies().containsKey(AddressFamily.IPV4_UNICAST)) {
         continue;
       }
       RouteDistinguisher rd =
-          Optional.ofNullable(vrfVs.getRd())
+          Optional.ofNullable(tenantVrfForL3Vni.getRd())
               .map(RouteDistinguisherOrAuto::getRouteDistinguisher)
               .orElse(null);
-      RouteDistinguisherOrAuto rtOrAuto =
-          vrfVs.getAddressFamilies().get(AddressFamily.IPV4_UNICAST).getExportRtEvpn();
-      if (rtOrAuto == null) {
+
+      RouteDistinguisherOrAuto exportRtOrAuto =
+          tenantVrfForL3Vni.getAddressFamilies().get(AddressFamily.IPV4_UNICAST).getExportRtEvpn();
+      if (exportRtOrAuto == null) {
+        // export route target is not present as auto and neither is user-defined, no L3 routes
+        // (IP-routes)
+        // will be exported from this VRF. Assuming this to be an invalid L3 VNI configuration
+        // for lack of explicit doc from Cisco. (Cisco auto-generates it in common cases)
+        warnings.redFlag(
+            String.format(
+                "No export route-target defined for L3 VNI '%s', no L3 routes will be exported",
+                vniSettings.getVni()));
         continue;
       }
-
+      RouteDistinguisherOrAuto importRtOrAuto =
+          tenantVrfForL3Vni.getAddressFamilies().get(AddressFamily.IPV4_UNICAST).getImportRtEvpn();
+      if (importRtOrAuto == null) {
+        // import route target is not present as auto and neither is user-defined, no L3 routes
+        // (IP-routes)
+        // will be imported into this VRF. Assuming this to be an invalid L3 VNI configuration
+        // for lack of explicit doc from Cisco. (Cisco auto-generates it in common cases)
+        warnings.redFlag(
+            String.format(
+                "No import route-target defined for L3 VNI '%s', no L3 routes will be imported",
+                vniSettings.getVni()));
+        continue;
+      }
       layer3Vnis.add(
           Layer3VniConfig.builder()
               .setVni(vniSettings.getVni())
               .setVrf(vrf.getName())
-              .setImportRouteTarget(importRtPatternForAnyAs(vniSettings.getVni()))
+              .setImportRouteTarget(
+                  importRtOrAuto.isAuto()
+                      ? toRouteTarget(localAs, vniSettings.getVni(), warnings).matchString()
+                      : toRouteTarget(importRtOrAuto.getRouteDistinguisher(), warnings)
+                          .matchString())
               .setRouteDistinguisher(
                   firstNonNull(
                       rd,
                       RouteDistinguisher.from(viBgpProcess.getRouterId(), vniSettings.getVni())))
               .setRouteTarget(
-                  rtOrAuto.isAuto()
-                      ? toRouteTarget(localAs, vniSettings.getVni())
-                      : toRouteTarget(rtOrAuto.getRouteDistinguisher()))
+                  exportRtOrAuto.isAuto()
+                      ? toRouteTarget(localAs, vniSettings.getVni(), warnings)
+                      : toRouteTarget(exportRtOrAuto.getRouteDistinguisher(), warnings))
               .build());
     }
     return layer3Vnis.build();
   }
 
+  /**
+   * Returns true if the provided vni is a Layer 2 VNI. Checks by seeing if the VNI is not declared
+   * with key-word "associate-vrf" under NVE interface.
+   */
   private static boolean isLayer2Vni(Map<Integer, Nve> nves, int vni) {
     return nves.values().stream()
         .anyMatch(
             nve -> nve.getMemberVnis().get(vni) != null && !nve.getMemberVni(vni).isAssociateVrf());
   }
 
+  /**
+   * Returns true if the provided vni is a Layer 3 VNI. Checks by seeing if the VNI is declared with
+   * key-word "associate-vrf" under NVE interface.
+   */
   private static boolean isLayer3Vni(Map<Integer, Nve> nves, int vni) {
     return nves.values().stream()
         .anyMatch(
             nve -> nve.getMemberVnis().get(vni) != null && nve.getMemberVni(vni).isAssociateVrf());
   }
 
-  /** Get the context VRF for a L3 VNI */
+  /** Get the tenant VRF associated with a L3 VNI */
   @Nullable
   private static org.batfish.representation.cisco_nxos.Vrf getVrfForL3Vni(
       Map<String, org.batfish.representation.cisco_nxos.Vrf> vrfs, int vni) {
@@ -563,11 +630,19 @@ final class Conversions {
         .orElse(null);
   }
 
-  /** Convert a type-0 route distinguisher to extended community for route targets */
-  static ExtendedCommunity toRouteTarget(RouteDistinguisher rd) {
+  /**
+   * Convert a type-0 route distinguisher to an extended community representing the route target
+   *
+   * <p>This is a work around to handle the fact that we are storing route-targets as {@link
+   * RouteDistinguisher} in some of the Cisco NX OS vendor configurations, for example in {@link
+   * VrfAddressFamily}
+   */
+  static ExtendedCommunity toRouteTarget(RouteDistinguisher rd, Warnings warnings) {
     long value = rd.getValue();
+    long asn = value >> 32;
+
     // rd is type 0: two bytes administrative field and 4 bytes value
-    return ExtendedCommunity.target((value >> 32) & 0xFFFFL, value & 0xFFFFFFFFL);
+    return ExtendedCommunity.target(asn & 0xFFFFL, value & 0xFFFFFFFFL);
   }
 
   /**
@@ -580,7 +655,11 @@ final class Conversions {
    * cumulus documentation</a> for detailed explanation.
    */
   @Nonnull
-  private static ExtendedCommunity toRouteTarget(long asn, long vni) {
+  private static ExtendedCommunity toRouteTarget(long asn, long vni, Warnings warnings) {
+    if (asn > 0xFFFFL) {
+      warnings.redFlag(
+          "ASN greater than two bytes is not supported in route-targets, lower two bytes will be used instead");
+    }
     return ExtendedCommunity.target(asn & 0xFFFFL, vni);
   }
 
