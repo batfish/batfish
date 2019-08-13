@@ -79,6 +79,11 @@ CLAGD_SYS_MAC
   'clagd-sys-mac'
 ;
 
+HWADDRESS
+:
+  'hwaddress'
+;
+
 IFACE
 :
   'iface' -> pushMode(M_Word)

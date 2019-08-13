@@ -256,6 +256,11 @@ public class CumulusInterfacesGrammarTest {
   }
 
   @Test
+  public void testIfaceHwaddress(){
+    parse("iface vlan1\n hwaddress 00:00:00:00:00:00\n");
+  }
+
+  @Test
   public void testIfaceLinkSpeed() {
     String input = "iface swp1\n link-speed 10000\n";
     Interfaces interfaces = parse(input);
