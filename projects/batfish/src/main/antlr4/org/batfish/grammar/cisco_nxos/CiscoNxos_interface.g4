@@ -395,7 +395,8 @@ i_no_switchport
 i_no_null
 :
   (
-    IP
+    CDP
+    | IP
     | IPV6
     | NEGOTIATE
   ) null_rest_of_line
@@ -405,6 +406,7 @@ i_null
 :
   (
     BFD
+    | CDP
     | DUPLEX
     | FEX
     | LACP
