@@ -27,6 +27,7 @@ import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.I_bridge_a
 import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.I_bridge_portsContext;
 import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.I_bridge_pvidContext;
 import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.I_bridge_vidsContext;
+import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.I_bridge_vlan_awareContext;
 import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.I_clag_idContext;
 import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.I_clagd_backup_ipContext;
 import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.I_clagd_peer_ipContext;
@@ -198,6 +199,13 @@ public final class CumulusInterfacesConfigurationBuilder
                 .map(Range::singleton)
                 .collect(ImmutableList.toImmutableList()));
     _currentIface.createOrGetBridgeSettings().setVids(vids);
+  }
+
+  @Override
+  public void exitI_bridge_vlan_aware(I_bridge_vlan_awareContext ctx) {
+    if (ctx.NO() != null) {
+      _w.todo(ctx, getFullText(ctx), _parser);
+    }
   }
 
   @Override

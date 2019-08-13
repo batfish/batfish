@@ -3,6 +3,7 @@ package org.batfish.grammar.cumulus_interfaces;
 import static org.batfish.datamodel.matchers.MapMatchers.hasKeys;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
+import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -230,6 +231,18 @@ public class CumulusInterfacesGrammarTest {
     InterfaceBridgeSettings bridgeSettings =
         parse(input).getInterfaces().get("swp1").getBridgeSettings();
     assertThat(bridgeSettings.getVids().enumerate(), contains(1, 2, 3, 4));
+  }
+
+  @Test
+  public void testIfaceBridgeVlanAware_no() {
+    parse("iface bridge\n bridge-vlan-aware no\n");
+    assertThat(CONFIG.getWarnings().getParseWarnings().size(), equalTo(1));
+  }
+
+  @Test
+  public void testIfaceBridgeVlanAware_yes() {
+    parse("iface bridge\n bridge-vlan-aware yes\n");
+    assertThat(CONFIG.getWarnings().getParseWarnings(), empty());
   }
 
   @Test
