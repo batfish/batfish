@@ -301,6 +301,8 @@ public final class CiscoConfiguration extends VendorConfiguration {
           .put("Vlan", "Vlan")
           .put("Vxlan", "Vxlan")
           .put("Wideband-Cable", "Wideband-Cable")
+          .put("Wlan-ap", "Wlan-ap")
+          .put("Wlan-GigabitEthernet", "Wlan-GigabitEthernet")
           .build();
 
   static final boolean DEFAULT_VRRP_PREEMPT = true;
