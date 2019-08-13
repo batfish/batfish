@@ -1937,6 +1937,30 @@ public final class CiscoConfiguration extends VendorConfiguration {
     return iface.getMtu();
   }
 
+  /** Helper to convert Cisco VS OSPF network type to VI model type. */
+  @Nullable
+  private org.batfish.datamodel.ospf.OspfNetworkType toOspfNetworkType(
+      @Nullable OspfNetworkType type) {
+    if (type == null) {
+      return null;
+    }
+    switch (type) {
+      case BROADCAST:
+        return org.batfish.datamodel.ospf.OspfNetworkType.BROADCAST;
+      case POINT_TO_POINT:
+        return org.batfish.datamodel.ospf.OspfNetworkType.POINT_TO_POINT;
+      case NON_BROADCAST:
+        return org.batfish.datamodel.ospf.OspfNetworkType.NON_BROADCAST_MULTI_ACCESS;
+      case POINT_TO_MULTIPOINT:
+        return org.batfish.datamodel.ospf.OspfNetworkType.POINT_TO_MULTIPOINT;
+      default:
+        _w.redFlag(
+            String.format(
+                "Conversion of Cisco OSPF network type '%s' is not handled.", type.toString()));
+        return null;
+    }
+  }
+
   /**
    * Get the {@link OspfNetwork} in the specified {@link OspfProcess} containing the specified
    * {@link Interface}'s address
@@ -2031,6 +2055,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
     newIface.setMtu(getInterfaceMtu(iface));
     // TODO SVF - merge Cisco VS model changes and apply here
     newIface.setOspfPointToPoint(iface.getOspfNetworkType() == OspfNetworkType.POINT_TO_POINT);
+    newIface.setOspfNetworkType(toOspfNetworkType(iface.getOspfNetworkType()));
     newIface.setProxyArp(iface.getProxyArp());
     newIface.setSpanningTreePortfast(iface.getSpanningTreePortfast());
     newIface.setSwitchport(iface.getSwitchport());

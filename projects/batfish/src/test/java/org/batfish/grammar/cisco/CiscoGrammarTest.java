@@ -372,7 +372,6 @@ import org.batfish.datamodel.matchers.RouteFilterListMatchers;
 import org.batfish.datamodel.matchers.StubSettingsMatchers;
 import org.batfish.datamodel.ospf.OspfArea;
 import org.batfish.datamodel.ospf.OspfDefaultOriginateType;
-import org.batfish.datamodel.ospf.OspfNetworkType;
 import org.batfish.datamodel.ospf.OspfProcess;
 import org.batfish.datamodel.ospf.StubType;
 import org.batfish.datamodel.routing_policy.Environment.Direction;
@@ -4866,8 +4865,11 @@ public class CiscoGrammarTest {
     Interface e0Sub0 = iosMaxMetric.getAllInterfaces().get("Ethernet0/0");
     Interface e0Sub1 = iosMaxMetric.getAllInterfaces().get("Ethernet0/1");
 
-    assertThat(e0Sub0.getOspfNetworkType(), equalTo(OspfNetworkType.POINT_TO_POINT));
-    assertThat(e0Sub1.getOspfNetworkType(), equalTo(OspfNetworkType.BROADCAST));
+    assertThat(
+        e0Sub0.getOspfNetworkType(),
+        equalTo(org.batfish.datamodel.ospf.OspfNetworkType.POINT_TO_POINT));
+    assertThat(
+        e0Sub1.getOspfNetworkType(), equalTo(org.batfish.datamodel.ospf.OspfNetworkType.BROADCAST));
   }
 
   @Test
