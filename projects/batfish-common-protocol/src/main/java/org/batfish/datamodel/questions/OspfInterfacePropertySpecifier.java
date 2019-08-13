@@ -22,11 +22,11 @@ public class OspfInterfacePropertySpecifier extends PropertySpecifier {
   public static final String OSPF_AREA_NAME = InterfacePropertySpecifier.OSPF_AREA_NAME;
   public static final String OSPF_PASSIVE = InterfacePropertySpecifier.OSPF_PASSIVE;
   public static final String OSPF_COST = InterfacePropertySpecifier.OSPF_COST;
-  public static final String OSPF_POINT_TO_POINT = InterfacePropertySpecifier.OSPF_NETWORK_TYPE;
+  public static final String OSPF_NETWORK_TYPE = InterfacePropertySpecifier.OSPF_NETWORK_TYPE;
 
   // create an ordered list
   private static final List<String> PROPERTIES =
-      ImmutableList.of(OSPF_AREA_NAME, OSPF_PASSIVE, OSPF_COST, OSPF_POINT_TO_POINT);
+      ImmutableList.of(OSPF_AREA_NAME, OSPF_PASSIVE, OSPF_COST, OSPF_NETWORK_TYPE);
 
   /** Holds all properties */
   public static final OspfInterfacePropertySpecifier ALL =
