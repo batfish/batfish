@@ -379,6 +379,11 @@ BASH_SHELL
   'bash-shell'
 ;
 
+BC
+:
+  'bc'
+;
+
 BGP
 :
   'bgp'
@@ -434,6 +439,11 @@ BPDUGUARD
   'bpduguard'
 ;
 
+BPS
+:
+  'bps'
+;
+
 BRIDGE
 :
   'bridge'
@@ -442,6 +452,11 @@ BRIDGE
 BROADCAST
 :
   'broadcast'
+;
+
+BYTES
+:
+  'bytes'
 ;
 
 CALLHOME
@@ -483,6 +498,11 @@ CHANNEL_GROUP
 CHARGEN
 :
   'chargen'
+;
+
+CIR
+:
+  'cir'
 ;
 
 CLASS
@@ -592,6 +612,11 @@ CONFED
 CONFEDERATION
 :
   'confederation'
+;
+
+CONFORM
+:
+  'conform'
 ;
 
 CONNECT
@@ -868,6 +893,11 @@ DOT1Q_TUNNEL
 DRIP
 :
   'drip'
+;
+
+DROP
+:
+  'drop'
 ;
 
 DROP_ON_FAIL
@@ -1532,6 +1562,11 @@ ISIS
 ISOLATE
 :
   'isolate'
+;
+
+KBPS
+:
+  'kbps'
 ;
 
 KEY
@@ -3207,6 +3242,11 @@ TERMINAL
   'terminal'
 ;
 
+TEXT
+:
+  'text' -> pushMode ( M_Word )
+;
+
 TFTP
 :
   'tftp'
@@ -3265,6 +3305,11 @@ TRACE
 TRACK
 :
   'track'
+;
+
+TRANSMIT
+:
+  'transmit'
 ;
 
 TRANSPORT
@@ -3449,6 +3494,11 @@ VERSION
         break;
     }
   }
+;
+
+VIOLATE
+:
+  'violate'
 ;
 
 VIRTUAL_LINK
