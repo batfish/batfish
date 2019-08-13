@@ -41,7 +41,7 @@ sbaf
 sbaf_ipv4_unicast
 :
   IPV4 UNICAST NEWLINE
-  // todo: unbounded number of statement lines
+  (sbafi_network)*
 ;
 
 sbaf_l2vpn_evpn
@@ -54,6 +54,11 @@ sbafl_statement
 :
   sbafls_advertise_all_vni
 | sbafls_advertise_ipv4_unicast
+;
+
+sbafi_network
+:
+  NETWORK IP_PREFIX NEWLINE
 ;
 
 sbafls_advertise_all_vni

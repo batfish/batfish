@@ -157,6 +157,11 @@ NEIGHBOR
   'neighbor' -> pushMode(M_Neighbor)
 ;
 
+NETWORK
+:
+  'network'
+;
+
 PEER_GROUP
 :
   'peer-group' -> pushMode(M_PeerGroup)

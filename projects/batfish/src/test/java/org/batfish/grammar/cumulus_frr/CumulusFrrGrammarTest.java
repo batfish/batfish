@@ -134,6 +134,15 @@ public class CumulusFrrGrammarTest {
   }
 
   @Test
+  public void testBgpAddressFamilyIpv4UnicastNetwork() {
+    parseLines(
+        "router bgp 1", "address-family ipv4 unicast", "network 1.2.3.4/24", "exit-address-family");
+    assertThat(
+        CONFIG.getBgpProcess().getDefaultVrf().getIpv4Unicast().getNetworks().keySet(),
+        contains(Prefix.parse("1.2.3.4/24")));
+  }
+
+  @Test
   public void testBgpAddressFamily_l2vpn_evpn() {
     parse("router bgp 1\n address-family l2vpn evpn\n exit-address-family\n");
     assertNotNull(CONFIG.getBgpProcess().getDefaultVrf().getL2VpnEvpn());
