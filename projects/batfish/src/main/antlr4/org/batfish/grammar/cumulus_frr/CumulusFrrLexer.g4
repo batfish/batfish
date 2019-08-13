@@ -217,6 +217,11 @@ MATCH
   'match'
 ;
 
+METRIC
+:
+  'metric'
+;
+
 NEWLINE
 :
   F_Newline+

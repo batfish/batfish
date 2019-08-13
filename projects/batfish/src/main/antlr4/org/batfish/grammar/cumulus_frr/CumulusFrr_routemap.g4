@@ -38,14 +38,6 @@ rm_match
   )
 ;
 
-rm_set
-:
-  SET
-  (
-    rms_ip
-  )
-;
-
 route_map_sequence
 :
 // 0-65535
@@ -55,6 +47,20 @@ route_map_sequence
 rmm_community
 :
   COMMUNITY names += ip_community_list_name+ NEWLINE
+;
+
+rm_set
+:
+  SET
+  (
+    rms_metric
+    | rms_ip
+  )
+;
+
+rms_metric
+:
+  METRIC metric = uint32 NEWLINE
 ;
 
 rmm_ip
