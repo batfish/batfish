@@ -35,6 +35,7 @@ s_iface
   | i_bond_slaves
   | i_bridge_access
   | i_bridge_arp_nd_suppress
+  | i_bridge_learning
   | i_bridge_ports
   | i_bridge_pvid
   | i_bridge_vids
@@ -89,6 +90,11 @@ i_bridge_access
 i_bridge_arp_nd_suppress
 :
   BRIDGE_ARP_ND_SUPPRESS NEWLINE
+;
+
+i_bridge_learning
+:
+  BRIDGE_LEARNING NEWLINE
 ;
 
 i_bridge_ports

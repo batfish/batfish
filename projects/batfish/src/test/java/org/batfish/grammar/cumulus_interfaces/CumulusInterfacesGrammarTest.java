@@ -198,6 +198,11 @@ public class CumulusInterfacesGrammarTest {
   }
 
   @Test
+  public void testIfaceBridgeLearning() {
+    parse("iface vni1\n bridge-learning on\n");
+  }
+
+  @Test
   public void testIfaceBridgePorts() {
     String input = "iface bridge\n bridge-ports i2 i3 i4\n";
     Interface iface = parse(input).getInterfaces().get("bridge");
