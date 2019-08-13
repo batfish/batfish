@@ -94,6 +94,11 @@ LINK_SPEED
   'link-speed'
 ;
 
+MSTPCTL_BPDUGUARD
+:
+  'mstpctl-bpduguard' -> pushMode(M_DropUntilNewline)
+;
+
 VLAN_ID
 :
   'vlan-id'

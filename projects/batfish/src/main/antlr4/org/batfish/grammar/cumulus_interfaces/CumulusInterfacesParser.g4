@@ -42,6 +42,7 @@ s_iface
   | i_clagd_peer_ip
   | i_clagd_sys_mac
   | i_link_speed
+  | i_mstpctl_bpduguard
   | i_vlan_id
   | i_vlan_raw_device
   | i_vrf
@@ -120,6 +121,11 @@ i_clagd_sys_mac
 i_link_speed
 :
   LINK_SPEED number NEWLINE
+;
+
+i_mstpctl_bpduguard
+:
+  MSTPCTL_BPDUGUARD NEWLINE
 ;
 
 i_vlan_id
