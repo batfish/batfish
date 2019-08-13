@@ -43,6 +43,7 @@ s_iface
   | i_clagd_sys_mac
   | i_link_speed
   | i_mstpctl_bpduguard
+  | i_mstpctl_portadminedge
   | i_vlan_id
   | i_vlan_raw_device
   | i_vrf
@@ -126,6 +127,11 @@ i_link_speed
 i_mstpctl_bpduguard
 :
   MSTPCTL_BPDUGUARD NEWLINE
+;
+
+i_mstpctl_portadminedge
+:
+  MSTPCTL_PORTADMINEDGE NEWLINE
 ;
 
 i_vlan_id
