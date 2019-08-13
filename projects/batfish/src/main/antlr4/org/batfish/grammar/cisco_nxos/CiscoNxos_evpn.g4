@@ -30,5 +30,5 @@ evv_rd
 
 evv_route_target
 :
-  ROUTE_TARGET dir = both_export_import rd = route_distinguisher_or_auto NEWLINE
+  ROUTE_TARGET dir = both_export_import rt = route_target_or_auto NEWLINE
 ;

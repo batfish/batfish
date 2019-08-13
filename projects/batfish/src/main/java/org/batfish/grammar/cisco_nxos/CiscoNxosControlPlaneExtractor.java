@@ -125,6 +125,7 @@ import org.batfish.datamodel.SwitchportMode;
 import org.batfish.datamodel.TcpFlags;
 import org.batfish.datamodel.UniverseIpSpace;
 import org.batfish.datamodel.bgp.RouteDistinguisher;
+import org.batfish.datamodel.bgp.community.ExtendedCommunity;
 import org.batfish.datamodel.bgp.community.StandardCommunity;
 import org.batfish.grammar.BatfishParseTreeWalker;
 import org.batfish.grammar.ControlPlaneExtractor;
@@ -376,6 +377,8 @@ import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Route_map_nameContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Route_map_pbr_statisticsContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Route_map_sequenceContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Route_networkContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Route_targetContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Route_target_or_autoContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Router_bgpContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Router_ospfContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Router_ospf_nameContext;
@@ -435,6 +438,7 @@ import org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage;
 import org.batfish.representation.cisco_nxos.DefaultVrfOspfProcess;
 import org.batfish.representation.cisco_nxos.Evpn;
 import org.batfish.representation.cisco_nxos.EvpnVni;
+import org.batfish.representation.cisco_nxos.ExtendedCommunityOrAuto;
 import org.batfish.representation.cisco_nxos.FragmentsBehavior;
 import org.batfish.representation.cisco_nxos.HsrpGroup;
 import org.batfish.representation.cisco_nxos.HsrpTrack;
@@ -778,6 +782,26 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
     }
     assert ctx.route_distinguisher() != null;
     return RouteDistinguisherOrAuto.of(toRouteDistinguisher(ctx.route_distinguisher()));
+  }
+
+  private static @Nonnull ExtendedCommunity toExtendedCommunity(Route_targetContext ctx) {
+    if (ctx.hi0 != null) {
+      assert ctx.lo0 != null;
+      return ExtendedCommunity.target((long) toInteger(ctx.hi0), toLong(ctx.lo0));
+    } else {
+      assert ctx.hi2 != null;
+      assert ctx.lo2 != null;
+      return ExtendedCommunity.target(toLong(ctx.hi2), (long) toInteger(ctx.lo2));
+    }
+  }
+
+  private static @Nonnull ExtendedCommunityOrAuto toExtendedCommunityOrAuto(
+      Route_target_or_autoContext ctx) {
+    if (ctx.AUTO() != null) {
+      return ExtendedCommunityOrAuto.auto();
+    }
+    assert ctx.route_target() != null;
+    return ExtendedCommunityOrAuto.of(toExtendedCommunity(ctx.route_target()));
   }
 
   private CiscoNxosConfiguration _configuration;
@@ -3382,12 +3406,12 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
     boolean setImport = ctx.dir.BOTH() != null || ctx.dir.IMPORT() != null;
     boolean setExport = ctx.dir.BOTH() != null || ctx.dir.EXPORT() != null;
     assert setImport || setExport;
-    RouteDistinguisherOrAuto rd = toRouteDistinguisher(ctx.rd);
+    ExtendedCommunityOrAuto ecOrAuto = toExtendedCommunityOrAuto(ctx.rt);
     if (setExport) {
-      _currentEvpnVni.setExportRt(rd);
+      _currentEvpnVni.setExportRt(ecOrAuto);
     }
     if (setImport) {
-      _currentEvpnVni.setImportRt(rd);
+      _currentEvpnVni.setImportRt(ecOrAuto);
     }
   }
 
@@ -4068,38 +4092,38 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
   }
 
   private static void setRouteTarget(
-      Route_distinguisher_or_autoContext rdOrAuto,
+      Route_target_or_autoContext rtAutoCtx,
       Both_export_importContext direction,
       @Nullable TerminalNode evpn,
       VrfAddressFamily af) {
-    RouteDistinguisherOrAuto rd = toRouteDistinguisher(rdOrAuto);
+    ExtendedCommunityOrAuto ecOrAuto = toExtendedCommunityOrAuto(rtAutoCtx);
     boolean setExport = direction.BOTH() != null || direction.EXPORT() != null;
     boolean setImport = direction.BOTH() != null || direction.IMPORT() != null;
     boolean isEvpn = evpn != null;
     if (!isEvpn && setExport) {
-      af.setExportRt(rd);
+      af.setExportRt(ecOrAuto);
     }
     if (isEvpn && setExport) {
-      af.setExportRtEvpn(rd);
+      af.setExportRtEvpn(ecOrAuto);
     }
     if (!isEvpn && setImport) {
-      af.setImportRt(rd);
+      af.setImportRt(ecOrAuto);
     }
     if (isEvpn && setImport) {
-      af.setImportRtEvpn(rd);
+      af.setImportRtEvpn(ecOrAuto);
     }
   }
 
   @Override
   public void exitVcaf4u_route_target(Vcaf4u_route_targetContext ctx) {
     VrfAddressFamily af = _currentVrf.getAddressFamily(AddressFamily.IPV4_UNICAST);
-    setRouteTarget(ctx.rd, ctx.both_export_import(), ctx.EVPN(), af);
+    setRouteTarget(ctx.rt, ctx.both_export_import(), ctx.EVPN(), af);
   }
 
   @Override
   public void exitVcaf6u_route_target(Vcaf6u_route_targetContext ctx) {
     VrfAddressFamily af = _currentVrf.getAddressFamily(AddressFamily.IPV6_UNICAST);
-    setRouteTarget(ctx.rd, ctx.both_export_import(), ctx.EVPN(), af);
+    setRouteTarget(ctx.rt, ctx.both_export_import(), ctx.EVPN(), af);
   }
 
   @Override

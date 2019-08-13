@@ -175,6 +175,7 @@ import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
 import org.batfish.datamodel.bgp.EvpnAddressFamily;
 import org.batfish.datamodel.bgp.Ipv4UnicastAddressFamily;
 import org.batfish.datamodel.bgp.RouteDistinguisher;
+import org.batfish.datamodel.bgp.community.ExtendedCommunity;
 import org.batfish.datamodel.bgp.community.StandardCommunity;
 import org.batfish.datamodel.matchers.HsrpGroupMatchers;
 import org.batfish.datamodel.matchers.NssaSettingsMatchers;
@@ -211,6 +212,7 @@ import org.batfish.representation.cisco_nxos.CiscoNxosStructureType;
 import org.batfish.representation.cisco_nxos.DefaultVrfOspfProcess;
 import org.batfish.representation.cisco_nxos.Evpn;
 import org.batfish.representation.cisco_nxos.EvpnVni;
+import org.batfish.representation.cisco_nxos.ExtendedCommunityOrAuto;
 import org.batfish.representation.cisco_nxos.FragmentsBehavior;
 import org.batfish.representation.cisco_nxos.HsrpGroup;
 import org.batfish.representation.cisco_nxos.IcmpOptions;
@@ -603,18 +605,18 @@ public final class CiscoNxosGrammarTest {
     {
       EvpnVni vni = evpn.getVni(1);
       assertThat(vni.getRd(), equalTo(RouteDistinguisherOrAuto.auto()));
-      assertThat(vni.getExportRt(), equalTo(RouteDistinguisherOrAuto.auto()));
-      assertThat(vni.getImportRt(), equalTo(RouteDistinguisherOrAuto.auto()));
+      assertThat(vni.getExportRt(), equalTo(ExtendedCommunityOrAuto.auto()));
+      assertThat(vni.getImportRt(), equalTo(ExtendedCommunityOrAuto.auto()));
     }
     {
       EvpnVni vni = evpn.getVni(2);
       assertThat(vni.getRd(), nullValue());
       assertThat(
           vni.getExportRt(),
-          equalTo(RouteDistinguisherOrAuto.of(RouteDistinguisher.from(65002, 1L))));
+          equalTo(ExtendedCommunityOrAuto.of(ExtendedCommunity.target(65002L, 1L))));
       assertThat(
           vni.getImportRt(),
-          equalTo(RouteDistinguisherOrAuto.of(RouteDistinguisher.from(65002, 2L))));
+          equalTo(ExtendedCommunityOrAuto.of(ExtendedCommunity.target(65002L, 2L))));
     }
     {
       EvpnVni vni = evpn.getVni(3);
@@ -623,10 +625,10 @@ public final class CiscoNxosGrammarTest {
           equalTo(RouteDistinguisherOrAuto.of(RouteDistinguisher.from(Ip.parse("3.3.3.3"), 0))));
       assertThat(
           vni.getExportRt(),
-          equalTo(RouteDistinguisherOrAuto.of(RouteDistinguisher.from(65003, 2L))));
+          equalTo(ExtendedCommunityOrAuto.of(ExtendedCommunity.target(65003L, 2L))));
       assertThat(
           vni.getImportRt(),
-          equalTo(RouteDistinguisherOrAuto.of(RouteDistinguisher.from(65003, 1L))));
+          equalTo(ExtendedCommunityOrAuto.of(ExtendedCommunity.target(65003L, 1L))));
     }
   }
 
