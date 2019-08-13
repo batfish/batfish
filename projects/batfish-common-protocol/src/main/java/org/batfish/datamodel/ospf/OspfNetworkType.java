@@ -8,12 +8,13 @@ public enum OspfNetworkType {
   /** A network that joins a single pair of routers */
   POINT_TO_POINT,
   /**
-   * A network supporting >2 routers w/ capability to simultaneously address all attached routers
+   * A network supporting more than 2 routers w/ capability to simultaneously address all attached
+   * routers
    */
   BROADCAST,
 
-  // The following are non-broadcast network modes, which support >2 routers, but have no broadcast
-  // capability
+  // The following are non-broadcast network modes, which support more than 2 routers, but have no
+  // broadcast capability
   /** A non-broadcast network mode that simulates the operation of a broadcast network */
   NON_BROADCAST_MULTI_ACCESS,
   /**
