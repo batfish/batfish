@@ -21,10 +21,21 @@ ip_community_list_name
   WORD
 ;
 
+ip_prefix_list_name
+:
+// 1-63 chars
+  WORD
+;
+
 line_action
 :
   deny = DENY
   | permit = PERMIT
+;
+
+literal_standard_community
+:
+  high = uint16 COLON low = uint16
 ;
 
 prefix
@@ -37,6 +48,12 @@ vni_number
   v = uint32
   {isVniNumber($v.ctx)}?
 
+;
+
+uint16
+:
+  UINT8
+  | UINT16
 ;
 
 vrf_name

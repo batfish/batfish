@@ -9,6 +9,11 @@ tokens {
   WORD
 }
 
+ADDRESS
+:
+  'address'
+;
+
 COMMENT_LINE
 :
   (
@@ -43,6 +48,11 @@ BGP
   'bgp'
 ;
 
+COLON
+:
+  ':'
+;
+
 COMMUNITY
 :
   'community'
@@ -56,6 +66,11 @@ COMMUNITY
         break;
     }
   }
+;
+
+COMMUNITY_LIST
+:
+  'community-list'
 ;
 
 DENY
@@ -81,6 +96,11 @@ EXIT_ADDRESS_FAMILY
 EXIT_VRF
 :
   'exit-vrf'
+;
+
+EXPANDED
+:
+  'expanded' -> pushMode(M_Word)
 ;
 
 EXTERNAL
@@ -150,6 +170,11 @@ PEER_GROUP
 PERMIT
 :
   'permit'
+;
+
+PREFIX_LIST
+:
+  'prefix-list' -> pushMode ( M_Word )
 ;
 
 REMOTE_AS
@@ -455,4 +480,3 @@ M_Remark_WS
 :
   F_Whitespace+ -> channel ( HIDDEN )
 ;
-

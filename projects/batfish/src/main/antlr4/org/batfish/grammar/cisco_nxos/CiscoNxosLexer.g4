@@ -805,6 +805,11 @@ DESCRIPTION
   'description' -> pushMode ( M_Remark )
 ;
 
+DEST_IP
+:
+  'dest-ip'
+;
+
 DEST_MISS
 :
   'dest-miss'
@@ -2413,6 +2418,11 @@ PER_ENTRY
   'per-entry'
 ;
 
+PER_LINK
+:
+  'per-link'
+;
+
 PERIODIC
 :
   'periodic'
@@ -3034,6 +3044,11 @@ SPINE_ANYCAST_GATEWAY
   'spine-anycast-gateway'
 ;
 
+SRC_IP
+:
+  'src-ip'
+;
+
 STALEPATH_TIME
 :
   'stalepath-time'
@@ -3315,6 +3330,11 @@ TRACE
 TRACK
 :
   'track'
+;
+
+TRAFFIC_FILTER
+:
+  'traffic-filter' -> pushMode ( M_Word )
 ;
 
 TRANSMIT

@@ -642,12 +642,12 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
 
     // Process active neighbors first.
     Map<Prefix, BgpActivePeerConfig> activeNeighbors =
-        Conversions.getNeighbors(c, v, newBgpProcess, nxBgpGlobal, nxBgpVrf, _w);
+        Conversions.getNeighbors(c, this, v, newBgpProcess, nxBgpGlobal, nxBgpVrf, _w);
     newBgpProcess.setNeighbors(ImmutableSortedMap.copyOf(activeNeighbors));
 
     // Process passive neighbors next
     Map<Prefix, BgpPassivePeerConfig> passiveNeighbors =
-        Conversions.getPassiveNeighbors(c, v, newBgpProcess, nxBgpGlobal, nxBgpVrf, _w);
+        Conversions.getPassiveNeighbors(c, this, v, newBgpProcess, nxBgpGlobal, nxBgpVrf, _w);
     newBgpProcess.setPassiveNeighbors(ImmutableSortedMap.copyOf(passiveNeighbors));
 
     v.setBgpProcess(newBgpProcess);
@@ -2128,8 +2128,8 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
     convertRouteMaps();
     computeImplicitOspfAreas();
     convertOspfProcesses();
-    convertBgp();
     convertNves();
+    convertBgp();
 
     markStructures();
     return _c;
