@@ -480,6 +480,11 @@ CCMCLIRUNNINGCONFIGCHANGED
   [Nn] [Ff] [Ii] [Gg] [Cc] [Hh] [Aa] [Nn] [Gg] [Ee] [Dd]
 ;
 
+CDP
+:
+  'cdp'
+;
+
 CFS
 :
   'cfs'
