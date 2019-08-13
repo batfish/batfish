@@ -3312,6 +3312,11 @@ TRACK
   'track'
 ;
 
+TRAFFIC_FILTER
+:
+  'traffic-filter' -> pushMode ( M_Word )
+;
+
 TRANSMIT
 :
   'transmit'

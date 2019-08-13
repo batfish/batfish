@@ -10,6 +10,7 @@ interface Ethernet1/1
   bandwidth 10000
   bfd interval 250 min_rx 250 multiplier 3
   description here is a description with punctuation! and IP address 1.2.3.4/24 etc.
+  ipv6 traffic-filter FOO in
   mtu 9216
   udld aggressive
 !
