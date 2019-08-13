@@ -1253,6 +1253,7 @@ import org.batfish.representation.cisco.NetworkObjectGroupAddressSpecifier;
 import org.batfish.representation.cisco.NetworkObjectInfo;
 import org.batfish.representation.cisco.NssaSettings;
 import org.batfish.representation.cisco.OspfNetwork;
+import org.batfish.representation.cisco.OspfNetworkType;
 import org.batfish.representation.cisco.OspfProcess;
 import org.batfish.representation.cisco.OspfRedistributionPolicy;
 import org.batfish.representation.cisco.OspfWildcardNetwork;
@@ -1406,7 +1407,21 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   @Override
   public void exitIf_ip_ospf_network(If_ip_ospf_networkContext ctx) {
     for (Interface iface : _currentInterfaces) {
-      iface.setOspfPointToPoint(ctx.POINT_TO_POINT() != null);
+      if (ctx.POINT_TO_POINT() != null) {
+        iface.setOspfNetworkType(OspfNetworkType.POINT_TO_POINT);
+      } else if (ctx.BROADCAST() != null) {
+        iface.setOspfNetworkType(OspfNetworkType.BROADCAST);
+      } else if (ctx.POINT_TO_MULTIPOINT() != null) {
+        if (ctx.NON_BROADCAST() != null) {
+          iface.setOspfNetworkType(OspfNetworkType.POINT_TO_MULTIPOINT_NON_BROADCAST);
+        } else {
+          iface.setOspfNetworkType(OspfNetworkType.POINT_TO_MULTIPOINT);
+        }
+      } else if (ctx.NON_BROADCAST() != null) {
+        iface.setOspfNetworkType(OspfNetworkType.NON_BROADCAST);
+      } else {
+        _w.redFlag(String.format("Cannot determine OSPF network type for %s", ctx.getText()));
+      }
     }
   }
 

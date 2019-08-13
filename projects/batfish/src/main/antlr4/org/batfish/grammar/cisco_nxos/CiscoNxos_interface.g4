@@ -37,6 +37,7 @@ s_interface_regular
     | i_encapsulation
     | i_hsrp
     | i_ip
+    | i_ipv6
     | i_mtu
     | i_no
     | i_null
@@ -349,6 +350,20 @@ iipr_ospf
   OSPF name = router_ospf_name AREA area = ospf_area_id NEWLINE
 ;
 
+i_ipv6
+:
+  IPV6 iip6_traffic_filter
+;
+
+iip6_traffic_filter
+:
+  TRAFFIC_FILTER name = ip_access_list_name
+  (
+    IN
+    | OUT
+  ) NEWLINE
+;
+
 i_mtu
 :
   MTU interface_mtu NEWLINE
@@ -395,7 +410,8 @@ i_no_switchport
 i_no_null
 :
   (
-    IP
+    CDP
+    | IP
     | IPV6
     | NEGOTIATE
   ) null_rest_of_line
@@ -405,6 +421,7 @@ i_null
 :
   (
     BFD
+    | CDP
     | DUPLEX
     | FEX
     | LACP
