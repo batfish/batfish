@@ -7,8 +7,8 @@ import static org.batfish.representation.cumulus.RemoteAsType.EXTERNAL;
 import static org.batfish.representation.cumulus.RemoteAsType.INTERNAL;
 
 import com.google.common.collect.ImmutableList;
-import java.util.List;
 import com.google.common.collect.ImmutableSet;
+import java.util.List;
 import java.util.Optional;
 import javax.annotation.Nullable;
 import org.antlr.v4.runtime.RuleContext;
