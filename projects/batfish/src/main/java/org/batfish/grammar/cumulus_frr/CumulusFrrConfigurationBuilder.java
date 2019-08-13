@@ -323,8 +323,7 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
             .map(StandardCommunity::parse)
             .collect(ImmutableList.toImmutableList());
 
-    _c.defineStructure(
-        CumulusStructureType.IP_COMMUNITY_LIST, name, ctx.getStart().getLine());
+    _c.defineStructure(CumulusStructureType.IP_COMMUNITY_LIST, name, ctx.getStart().getLine());
     _c.getIpCommunityLists().put(name, new IpCommunityListExpanded(name, action, communityList));
   }
 }
