@@ -175,6 +175,7 @@ import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
 import org.batfish.datamodel.bgp.EvpnAddressFamily;
 import org.batfish.datamodel.bgp.Ipv4UnicastAddressFamily;
 import org.batfish.datamodel.bgp.RouteDistinguisher;
+import org.batfish.datamodel.bgp.community.ExtendedCommunity;
 import org.batfish.datamodel.bgp.community.StandardCommunity;
 import org.batfish.datamodel.matchers.HsrpGroupMatchers;
 import org.batfish.datamodel.matchers.NssaSettingsMatchers;
@@ -211,6 +212,7 @@ import org.batfish.representation.cisco_nxos.CiscoNxosStructureType;
 import org.batfish.representation.cisco_nxos.DefaultVrfOspfProcess;
 import org.batfish.representation.cisco_nxos.Evpn;
 import org.batfish.representation.cisco_nxos.EvpnVni;
+import org.batfish.representation.cisco_nxos.ExtendedCommunityOrAuto;
 import org.batfish.representation.cisco_nxos.FragmentsBehavior;
 import org.batfish.representation.cisco_nxos.HsrpGroup;
 import org.batfish.representation.cisco_nxos.IcmpOptions;
@@ -604,18 +606,18 @@ public final class CiscoNxosGrammarTest {
     {
       EvpnVni vni = evpn.getVni(1);
       assertThat(vni.getRd(), equalTo(RouteDistinguisherOrAuto.auto()));
-      assertThat(vni.getExportRt(), equalTo(RouteDistinguisherOrAuto.auto()));
-      assertThat(vni.getImportRt(), equalTo(RouteDistinguisherOrAuto.auto()));
+      assertThat(vni.getExportRt(), equalTo(ExtendedCommunityOrAuto.auto()));
+      assertThat(vni.getImportRt(), equalTo(ExtendedCommunityOrAuto.auto()));
     }
     {
       EvpnVni vni = evpn.getVni(2);
       assertThat(vni.getRd(), nullValue());
       assertThat(
           vni.getExportRt(),
-          equalTo(RouteDistinguisherOrAuto.of(RouteDistinguisher.from(65002, 1L))));
+          equalTo(ExtendedCommunityOrAuto.of(ExtendedCommunity.target(65002L, 1L))));
       assertThat(
           vni.getImportRt(),
-          equalTo(RouteDistinguisherOrAuto.of(RouteDistinguisher.from(65002, 2L))));
+          equalTo(ExtendedCommunityOrAuto.of(ExtendedCommunity.target(65002L, 2L))));
     }
     {
       EvpnVni vni = evpn.getVni(3);
@@ -624,10 +626,10 @@ public final class CiscoNxosGrammarTest {
           equalTo(RouteDistinguisherOrAuto.of(RouteDistinguisher.from(Ip.parse("3.3.3.3"), 0))));
       assertThat(
           vni.getExportRt(),
-          equalTo(RouteDistinguisherOrAuto.of(RouteDistinguisher.from(65003, 2L))));
+          equalTo(ExtendedCommunityOrAuto.of(ExtendedCommunity.target(65003L, 2L))));
       assertThat(
           vni.getImportRt(),
-          equalTo(RouteDistinguisherOrAuto.of(RouteDistinguisher.from(65003, 1L))));
+          equalTo(ExtendedCommunityOrAuto.of(ExtendedCommunity.target(65003L, 1L))));
     }
   }
 
@@ -5029,22 +5031,22 @@ public final class CiscoNxosGrammarTest {
       assertThat(
           vrf.getRd(), equalTo(RouteDistinguisherOrAuto.of(RouteDistinguisher.from(65001, 10L))));
       VrfAddressFamily af4 = vrf.getAddressFamily(AddressFamily.IPV4_UNICAST);
-      assertThat(af4.getImportRtEvpn(), equalTo(RouteDistinguisherOrAuto.auto()));
-      assertThat(af4.getExportRtEvpn(), equalTo(RouteDistinguisherOrAuto.auto()));
+      assertThat(af4.getImportRtEvpn(), equalTo(ExtendedCommunityOrAuto.auto()));
+      assertThat(af4.getExportRtEvpn(), equalTo(ExtendedCommunityOrAuto.auto()));
       assertThat(
           af4.getImportRt(),
-          equalTo(RouteDistinguisherOrAuto.of(RouteDistinguisher.from(11, 65536L))));
+          equalTo(ExtendedCommunityOrAuto.of(ExtendedCommunity.target(11L, 65536L))));
       assertThat(af4.getExportRt(), nullValue());
 
       VrfAddressFamily af6 = vrf.getAddressFamily(AddressFamily.IPV6_UNICAST);
       assertThat(
           af6.getImportRtEvpn(),
-          equalTo(RouteDistinguisherOrAuto.of(RouteDistinguisher.from(65001, 11L))));
+          equalTo(ExtendedCommunityOrAuto.of(ExtendedCommunity.target(65001L, 11L))));
       assertThat(
           af6.getExportRtEvpn(),
-          equalTo(RouteDistinguisherOrAuto.of(RouteDistinguisher.from(65001, 11L))));
-      assertThat(af6.getImportRt(), equalTo(RouteDistinguisherOrAuto.auto()));
-      assertThat(af6.getExportRt(), equalTo(RouteDistinguisherOrAuto.auto()));
+          equalTo(ExtendedCommunityOrAuto.of(ExtendedCommunity.target(65001L, 11L))));
+      assertThat(af6.getImportRt(), equalTo(ExtendedCommunityOrAuto.auto()));
+      assertThat(af6.getExportRt(), equalTo(ExtendedCommunityOrAuto.auto()));
     }
     {
       Vrf vrf = vc.getVrfs().get("vrf3");
