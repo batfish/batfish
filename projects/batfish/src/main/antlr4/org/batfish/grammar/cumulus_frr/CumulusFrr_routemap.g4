@@ -32,6 +32,7 @@ rm_match
   MATCH
   (
     rmm_community
+    | rmm_interface
     | rmm_ip
   )
 ;
@@ -60,4 +61,9 @@ rmmip_address
 rmmipa_prefix_list
 :
   PREFIX_LIST name = ip_prefix_list_name NEWLINE
+;
+
+rmm_interface
+:
+  INTERFACE name = WORD NEWLINE
 ;

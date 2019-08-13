@@ -925,6 +925,11 @@ EF
   'ef'
 ;
 
+EGP
+:
+  'egp'
+;
+
 EIGRP
 :
   'eigrp'
@@ -1261,6 +1266,11 @@ HELLO_INTERVAL
   'hello-interval'
 ;
 
+HMM
+:
+  'hmm'
+;
+
 HOST
 :
   'host'
@@ -1370,6 +1380,11 @@ IGNORE
   'ignore'
 ;
 
+IGP
+:
+  'igp'
+;
+
 IMMEDIATE
 :
   'immediate'
@@ -1393,6 +1408,11 @@ INBOUND
 INCLUDE_STUB
 :
   'include-stub'
+;
+
+INCOMPLETE
+:
+  'incomplete'
 ;
 
 INCONSISTENCY
@@ -1594,6 +1614,11 @@ LE
 LEVEL
 :
   'level'
+;
+
+LINE_PROTOCOL
+:
+  'line-protocol'
 ;
 
 LINK_FLAP
@@ -2221,6 +2246,11 @@ OPTION_MISSING
   'option-missing'
 ;
 
+ORIGIN
+:
+  'origin'
+;
+
 ORIGINATE
 :
   'originate'
@@ -2286,6 +2316,16 @@ PASSWORD
 PATHCOST
 :
   'pathcost'
+;
+
+PBR
+:
+  'pbr'
+;
+
+PBR_STATISTICS
+:
+  'pbr-statistics'
 ;
 
 PCP
@@ -2556,6 +2596,11 @@ RANGE
 RD
 :
   'rd'
+;
+
+REACHABILITY
+:
+  'reachability'
 ;
 
 READ
@@ -2859,6 +2904,11 @@ SIZE
   'size'
 ;
 
+SLA
+:
+  'sla'
+;
+
 SMALL
 :
   'small'
@@ -3052,6 +3102,16 @@ SUPPRESS_MAP
 SUSPEND_INDIVIDUAL
 :
   'suspend-individual'
+;
+
+SWITCHNAME
+:
+  'switchname'
+  {
+    if (lastTokenType() == NEWLINE || lastTokenType() == -1) {
+      pushMode(M_Hostname);
+    }
+  }
 ;
 
 SWITCHPORT

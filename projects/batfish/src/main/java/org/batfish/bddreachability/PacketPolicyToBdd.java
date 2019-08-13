@@ -18,12 +18,14 @@ import org.batfish.datamodel.packet_policy.Action;
 import org.batfish.datamodel.packet_policy.ActionVisitor;
 import org.batfish.datamodel.packet_policy.BoolExprVisitor;
 import org.batfish.datamodel.packet_policy.Drop;
+import org.batfish.datamodel.packet_policy.FalseExpr;
 import org.batfish.datamodel.packet_policy.FibLookup;
 import org.batfish.datamodel.packet_policy.If;
 import org.batfish.datamodel.packet_policy.PacketMatchExpr;
 import org.batfish.datamodel.packet_policy.PacketPolicy;
 import org.batfish.datamodel.packet_policy.Return;
 import org.batfish.datamodel.packet_policy.StatementVisitor;
+import org.batfish.datamodel.packet_policy.TrueExpr;
 
 /**
  * Provides the ability to convert a {@link PacketPolicy} into sets of BDDs corresponding to a
@@ -135,6 +137,16 @@ class PacketPolicyToBdd {
     @Override
     public BDD visitPacketMatchExpr(PacketMatchExpr expr) {
       return _ipAccessListToBdd.toBdd(expr.getExpr());
+    }
+
+    @Override
+    public BDD visitTrueExpr(TrueExpr expr) {
+      return _ipAccessListToBdd.getBDDPacket().getFactory().one();
+    }
+
+    @Override
+    public BDD visitFalseExpr(FalseExpr expr) {
+      return _ipAccessListToBdd.getBDDPacket().getFactory().zero();
     }
   }
 

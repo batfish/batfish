@@ -7,14 +7,15 @@ import static org.batfish.representation.cumulus.RemoteAsType.INTERNAL;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.isA;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import java.util.Map;
 import java.util.Set;
-import javax.annotation.Nonnull;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
 import org.batfish.common.BatfishLogger;
@@ -95,7 +96,10 @@ public class CumulusFrrGrammarTest {
     parseFromTextWithSettings(src, settings);
   }
 
-  @Nonnull
+  private static void parseLines(String... lines) {
+    parse(String.join("\n", lines) + "\n");
+  }
+
   private static void parseFromTextWithSettings(String src, Settings settings) {
     CumulusFrrCombinedParser parser = new CumulusFrrCombinedParser(src, settings, 1, 0);
     ParserRuleContext tree =
@@ -122,6 +126,35 @@ public class CumulusFrrGrammarTest {
   }
 
   @Test
+  public void testBgpAddressFamily_ipv4Unicast() {
+    parse("router bgp 1\n address-family ipv4 unicast\n exit-address-family\n");
+    assertNotNull(CONFIG.getBgpProcess().getDefaultVrf().getIpv4Unicast());
+  }
+
+  @Test
+  public void testBgpAddressFamily_l2vpn_evpn() {
+    parse("router bgp 1\n address-family l2vpn evpn\n exit-address-family\n");
+    assertNotNull(CONFIG.getBgpProcess().getDefaultVrf().getL2VpnEvpn());
+  }
+
+  @Test
+  public void testBgpAdressFamilyL2vpnEvpnAdvertiseAllVni() {
+    parseLines(
+        "router bgp 1", "address-family l2vpn evpn", "advertise-all-vni", "exit-address-family");
+    assertTrue(CONFIG.getBgpProcess().getDefaultVrf().getL2VpnEvpn().getAdvertiseAllVni());
+  }
+
+  @Test
+  public void testBgpAdressFamilyL2vpnEvpnAdvertiseIpv4Unicast() {
+    parseLines(
+        "router bgp 1",
+        "address-family l2vpn evpn",
+        "advertise ipv4 unicast",
+        "exit-address-family");
+    assertNotNull(CONFIG.getBgpProcess().getDefaultVrf().getL2VpnEvpn().getAdvertiseIpv4Unicast());
+  }
+
+  @Test
   public void testBgpNeighbor_peerGroup() {
     parse("router bgp 1\n neighbor foo peer-group\n");
     Map<String, BgpNeighbor> neighbors = CONFIG.getBgpProcess().getDefaultVrf().getNeighbors();
@@ -145,6 +178,13 @@ public class CumulusFrrGrammarTest {
     Map<String, BgpNeighbor> neighbors = CONFIG.getBgpProcess().getDefaultVrf().getNeighbors();
     assertThat(neighbors.keySet(), contains("foo"));
     assertThat(neighbors.get("foo"), isA(BgpInterfaceNeighbor.class));
+  }
+
+  @Test
+  public void testBgpNeighborProperty_descrption() {
+    parse("router bgp 1\n neighbor n interface description a b c! d\n");
+    BgpNeighbor neighbor = CONFIG.getBgpProcess().getDefaultVrf().getNeighbors().get("n");
+    assertThat(neighbor.getDescription(), equalTo("a b c! d"));
   }
 
   @Test
@@ -276,5 +316,15 @@ public class CumulusFrrGrammarTest {
     assertThat(
         entry.getMatchIpAddressPrefixList().getNames(),
         equalTo(ImmutableList.of("PREFIX_LIST1", "PREFIX_LIST2", "PREFIX_LIST3")));
+  }
+
+  @Test
+  public void testCumulusFrrVrfRouteMapMatchInterface() {
+    String name = "ROUTE-MAP-NAME";
+
+    parse(String.format("route-map %s permit 10\nmatch interface lo\n", name));
+
+    RouteMapEntry entry = CONFIG.getRouteMaps().get(name).getEntries().get(10);
+    assertThat(entry.getMatchInterface().getInterfaces(), equalTo(ImmutableSet.of("lo")));
   }
 }
