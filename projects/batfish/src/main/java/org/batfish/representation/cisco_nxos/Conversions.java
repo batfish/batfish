@@ -513,11 +513,11 @@ final class Conversions {
                       RouteDistinguisher.from(viBgpProcess.getRouterId(), vniSettings.getVni())))
               .setImportRouteTarget(
                   importRtOrAuto.isAuto()
-                      ? toRouteTarget(localAs, vniSettings.getVni(), warnings).matchString()
+                      ? toRouteTarget(localAs, vniSettings.getVni()).matchString()
                       : importRtOrAuto.getExtendedCommunity().matchString())
               .setRouteTarget(
                   exportRtOrAuto.isAuto()
-                      ? toRouteTarget(localAs, vniSettings.getVni(), warnings)
+                      ? toRouteTarget(localAs, vniSettings.getVni())
                       : exportRtOrAuto.getExtendedCommunity())
               .build());
     }
@@ -584,7 +584,7 @@ final class Conversions {
               .setVrf(vrf.getName())
               .setImportRouteTarget(
                   importRtOrAuto.isAuto()
-                      ? toRouteTarget(localAs, vniSettings.getVni(), warnings).matchString()
+                      ? toRouteTarget(localAs, vniSettings.getVni()).matchString()
                       : importRtOrAuto.getExtendedCommunity().matchString())
               // TODO: replace VNI with tenant VRF ID
               .setRouteDistinguisher(
@@ -593,7 +593,7 @@ final class Conversions {
                       RouteDistinguisher.from(viBgpProcess.getRouterId(), vniSettings.getVni())))
               .setRouteTarget(
                   exportRtOrAuto.isAuto()
-                      ? toRouteTarget(localAs, vniSettings.getVni(), warnings)
+                      ? toRouteTarget(localAs, vniSettings.getVni())
                       : exportRtOrAuto.getExtendedCommunity())
               .build());
     }
@@ -640,11 +640,7 @@ final class Conversions {
    * cumulus documentation</a> for detailed explanation.
    */
   @Nonnull
-  private static ExtendedCommunity toRouteTarget(long asn, long vni, Warnings warnings) {
-    if (asn > 0xFFFFL) {
-      warnings.redFlag(
-          "ASN greater than two bytes is not supported in route-targets, lower two bytes will be used instead");
-    }
+  private static ExtendedCommunity toRouteTarget(long asn, long vni) {
     return ExtendedCommunity.target(asn & 0xFFFFL, vni);
   }
 
