@@ -4277,9 +4277,15 @@ M_DoubleQuote_DOUBLE_QUOTE
   '"' -> type ( DOUBLE_QUOTE ) , popMode
 ;
 
+M_DoubleQuote_NEWLINE
+:
+// Break out if termination does not occur on same line
+  F_Newline+ -> type ( NEWLINE ) , popMode
+;
+
 M_DoubleQuote_QUOTED_TEXT
 :
-  ~'"'+ -> type ( QUOTED_TEXT )
+  ~["\r\n]+ -> type ( QUOTED_TEXT )
 ;
 
 mode M_Hostname;
