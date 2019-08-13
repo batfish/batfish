@@ -13,7 +13,7 @@ public class CumulusFrrCombinedParser
 
   private static final BatfishANTLRErrorStrategyFactory NEWLINE_BASED_RECOVERY =
       new BatfishANTLRErrorStrategy.BatfishANTLRErrorStrategyFactory(
-          CumulusPortsLexer.NEWLINE, "\n");
+          CumulusFrrLexer.NEWLINE, "\n");
 
   public CumulusFrrCombinedParser(String input, GrammarSettings settings, int line, int offset) {
     super(
