@@ -14,6 +14,7 @@ policy-map type control-plane pm_control_plane
     police cir 12345 kbps bc 1234567 bytes conform transmit violate drop
     police cir 12 mbps bc 1234567 bytes conform transmit violate drop
     police pps 500
+    set cos 1
 
 policy-map type network-qos pm_network_qos
   class type network-qos class-default
