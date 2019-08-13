@@ -9,6 +9,11 @@ tokens {
   WORD
 }
 
+ADDRESS
+:
+  'address'
+;
+
 COMMENT_LINE
 :
   (
@@ -165,6 +170,11 @@ PEER_GROUP
 PERMIT
 :
   'permit'
+;
+
+PREFIX_LIST
+:
+  'prefix-list' -> pushMode ( M_Word )
 ;
 
 REMOTE_AS
@@ -470,4 +480,3 @@ M_Remark_WS
 :
   F_Whitespace+ -> channel ( HIDDEN )
 ;
-
