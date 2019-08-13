@@ -200,6 +200,7 @@ import org.batfish.datamodel.routing_policy.statement.Statements;
 import org.batfish.datamodel.tracking.DecrementPriority;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
+import org.batfish.main.ParserBatfishException;
 import org.batfish.representation.cisco_nxos.ActionIpAccessListLine;
 import org.batfish.representation.cisco_nxos.AddrGroupIpAddressSpec;
 import org.batfish.representation.cisco_nxos.AddressFamily;
@@ -281,6 +282,7 @@ import org.batfish.representation.cisco_nxos.Vrf;
 import org.batfish.representation.cisco_nxos.VrfAddressFamily;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 import org.junit.rules.TemporaryFolder;
 
 @ParametersAreNonnullByDefault
@@ -303,6 +305,7 @@ public final class CiscoNxosGrammarTest {
   }
 
   @Rule public TemporaryFolder _folder = new TemporaryFolder();
+  @Rule public ExpectedException _thrown = ExpectedException.none();
 
   private static @Nonnull OspfExternalRoute.Builder ospfExternalRouteBuilder() {
     return OspfExternalRoute.builder()
@@ -2404,6 +2407,12 @@ public final class CiscoNxosGrammarTest {
       assertThat(line.getAction(), equalTo(LineAction.PERMIT));
       assertThat(line.getRegex(), equalTo("_2_"));
     }
+  }
+
+  @Test
+  public void testIpAsPathAccessListInvalid() {
+    _thrown.expect(ParserBatfishException.class);
+    parseVendorConfig("nxos_ip_as_path_access_list_invalid");
   }
 
   @Test

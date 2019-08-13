@@ -136,11 +136,14 @@ public class Interface implements Serializable {
       return DEFAULT_LONG_REACH_ETHERNET_SPEED;
     } else if (name.startsWith("TenGigabitEthernet")) {
       return DEFAULT_TEN_GIGABIT_ETHERNET_SPEED;
+    } else if (name.startsWith("Wlan-GigabitEthernet")) {
+      return DEFAULT_GIGABIT_ETHERNET_SPEED;
     } else {
       // Bundle-Ethernet
       // Loopback
       // Port-Channel
       // Vlan
+      // Wlan-ap0 (a management interface)
       // ... others
       return null;
     }
