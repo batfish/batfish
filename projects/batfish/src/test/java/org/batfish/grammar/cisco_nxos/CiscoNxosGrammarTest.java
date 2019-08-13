@@ -3201,7 +3201,7 @@ public final class CiscoNxosGrammarTest {
       assertTrue(iface.getOspfEnabled());
       assertThat(iface.getOspfAreaName(), equalTo(0L));
       assertTrue(iface.getOspfPassive());
-      assertThat(iface.getOspfNetworkType(), equalTo(OspfNetworkType.BROADCAST));
+      assertThat(iface.getOspfNetworkType(), nullValue());
     }
     {
       org.batfish.datamodel.Interface iface = c.getAllInterfaces().get("Ethernet1/2");
