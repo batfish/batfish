@@ -112,7 +112,6 @@ final class Conversions {
   }
 
   private static final int MAX_ADMINISTRATIVE_COST = 32767;
-  private static final int DEFAULT_VRF_ID = 1;
 
   /** Computes the router ID on Cisco NX-OS. */
   // See CiscoNxosTest#testRouterId for a test that is verifiable using GNS3.
