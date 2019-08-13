@@ -293,6 +293,7 @@ F_Whitespace
   | '\t'
   | '\u000C'
   | '\u00A0'
+  | '\\\n'  // continue on next line
 ;
 
 fragment

@@ -203,6 +203,13 @@ public class CumulusInterfacesGrammarTest {
   }
 
   @Test
+  public void testIfaceBridgePorts_multiline() {
+    String input = "iface bridge\n bridge-ports i2 \\\n i3 i4\n";
+    Interface iface = parse(input).getInterfaces().get("bridge");
+    assertThat(iface.getBridgePorts(), contains("i2", "i3", "i4"));
+  }
+
+  @Test
   public void testIfaceBridgePorts() {
     String input = "iface bridge\n bridge-ports i2 i3 i4\n";
     Interface iface = parse(input).getInterfaces().get("bridge");
