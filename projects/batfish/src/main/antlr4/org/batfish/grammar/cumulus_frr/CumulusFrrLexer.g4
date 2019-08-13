@@ -202,6 +202,11 @@ ROUTER_ID
   'router-id'
 ;
 
+SET
+:
+  'set'
+;
+
 SUBNET_MASK
 :
   F_SubnetMask
@@ -215,6 +220,11 @@ MATCH
 NEWLINE
 :
   F_Newline+
+;
+
+NEXT_HOP
+:
+  'next-hop'
 ;
 
 UINT8

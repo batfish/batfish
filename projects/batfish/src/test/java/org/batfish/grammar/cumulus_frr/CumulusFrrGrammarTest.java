@@ -345,4 +345,18 @@ public class CumulusFrrGrammarTest {
     RouteMapEntry entry = CONFIG.getRouteMaps().get(name).getEntries().get(10);
     assertThat(entry.getMatchInterface().getInterfaces(), equalTo(ImmutableSet.of("lo")));
   }
+
+  @Test
+  public void testCumulusFrrVrfRouteMapSetIpNextHop() {
+    String name = "ROUTE-MAP-NAME";
+    String clause1 = "set ip next-hop 10.0.0.1";
+    String clause2 = "set ip next-hop 10.0.0.3";
+
+    parse(String.format("route-map %s permit 10\n%s\n%s\n", name, clause1, clause2));
+
+    RouteMapEntry entry = CONFIG.getRouteMaps().get(name).getEntries().get(10);
+    assertThat(
+        entry.getSetIpNextHop().getNextHops(),
+        equalTo(ImmutableList.of(Ip.parse("10.0.0.1"), Ip.parse("10.0.0.3"))));
+  }
 }
