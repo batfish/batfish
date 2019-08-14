@@ -114,6 +114,7 @@ public final class Interface implements Serializable {
   private @Nullable String _description;
   private @Nullable Integer _encapsulationVlan;
   private @Nullable InterfaceHsrp _hsrp;
+  private @Nullable Lacp _lacp;
   private @Nullable Integer _mtu;
   private final @Nonnull String _name;
   private @Nullable Integer _nativeVlan;
@@ -200,6 +201,17 @@ public final class Interface implements Serializable {
       _hsrp = new InterfaceHsrp();
     }
     return _hsrp;
+  }
+
+  public @Nullable Lacp getLacp() {
+    return _lacp;
+  }
+
+  public @Nonnull Lacp getOrCreateLacp() {
+    if (_lacp == null) {
+      _lacp = new Lacp();
+    }
+    return _lacp;
   }
 
   public @Nullable Integer getMtu() {

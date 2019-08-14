@@ -232,6 +232,7 @@ import org.batfish.representation.cisco_nxos.IpCommunityListStandard;
 import org.batfish.representation.cisco_nxos.IpCommunityListStandardLine;
 import org.batfish.representation.cisco_nxos.IpPrefixList;
 import org.batfish.representation.cisco_nxos.IpPrefixListLine;
+import org.batfish.representation.cisco_nxos.Lacp;
 import org.batfish.representation.cisco_nxos.Layer3Options;
 import org.batfish.representation.cisco_nxos.LiteralIpAddressSpec;
 import org.batfish.representation.cisco_nxos.LiteralPortSpec;
@@ -3765,6 +3766,7 @@ public final class CiscoNxosGrammarTest {
       assertThat(iface, hasInterfaceType(InterfaceType.PHYSICAL));
     }
     // TODO: conversion for channel-group mode for Ethernet1/12-1/14
+    // TOOD: convert and test lacp settings
     {
       org.batfish.datamodel.Interface iface = c.getAllInterfaces().get("port-channel1");
       assertThat(iface, isActive(false));
@@ -3937,6 +3939,9 @@ public final class CiscoNxosGrammarTest {
       Interface iface = vc.getInterfaces().get("port-channel1");
       assertFalse(iface.getShutdown());
       assertThat(iface.getType(), equalTo(CiscoNxosInterfaceType.PORT_CHANNEL));
+      Lacp lacp = iface.getLacp();
+      assertThat(lacp, notNullValue());
+      assertThat(lacp.getMinLinks(), equalTo(2));
     }
     {
       Interface iface = vc.getInterfaces().get("port-channel2");
