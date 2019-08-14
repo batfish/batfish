@@ -1788,6 +1788,7 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
       boolean passiveInterfaceDefault,
       OspfInterface ospf) {
     org.batfish.datamodel.Interface newIface = _c.getAllInterfaces().get(ifaceName);
+    newIface.setOspfCost(ospf.getCost());
     newIface.setOspfEnabled(true);
     newIface.setOspfAreaName(areaId);
     newIface.setOspfProcess(processName);

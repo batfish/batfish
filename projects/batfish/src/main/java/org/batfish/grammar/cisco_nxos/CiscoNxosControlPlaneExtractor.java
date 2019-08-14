@@ -209,6 +209,7 @@ import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Ihg_priorityContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Ihg_timersContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Ihg_trackContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Ihgam_key_chainContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Iipo_costContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Iipo_dead_intervalContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Iipo_hello_intervalContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Iipo_networkContext;
@@ -546,6 +547,8 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
   private static final IntegerSpace HSRP_VERSION_RANGE = IntegerSpace.of(Range.closed(1, 2));
   private static final IntegerSpace INTERFACE_DESCRIPTION_LENGTH_RANGE =
       IntegerSpace.of(Range.closed(1, 254));
+  private static final IntegerSpace INTERFACE_OSPF_COST_RANGE =
+      IntegerSpace.of(Range.closed(1, 65535));
   private static final IntegerSpace INTERFACE_SPEED_RANGE_MBPS =
       IntegerSpace.builder()
           .including(100)
@@ -1239,6 +1242,13 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
         .ifPresent(
             version ->
                 _currentInterfaces.forEach(iface -> iface.getOrCreateHsrp().setVersion(version)));
+  }
+
+  @Override
+  public void exitIipo_cost(Iipo_costContext ctx) {
+    toIntegerInSpace(ctx, ctx.cost, INTERFACE_OSPF_COST_RANGE, "OSPF cost")
+        .ifPresent(
+            cost -> _currentInterfaces.forEach(iface -> iface.getOrCreateOspf().setCost(cost)));
   }
 
   @Override
