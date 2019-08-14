@@ -133,15 +133,38 @@ hsrp_delay_reload
 
 ih_group
 :
-  group = hsrp_group_number NEWLINE
+  group = hsrp_group_number
   (
-    ihg_authentication
-    | ihg_ip
-    | ihg_preempt
-    | ihg_priority
-    | ihg_timers
-    | ihg_track
+    ihg_ipv4
+    | ihg_ipv6
+  )
+;
+
+ihg_ipv4
+:
+  NEWLINE
+  (
+    ihg_common
+    | ihg_ip_ipv4
   )*
+;
+
+ihg_ipv6
+:
+  IPV6 NEWLINE
+  (
+    ihg_common
+    | ihg_ip_ipv6
+  )*
+;
+
+ihg_common
+:
+  ihg_authentication
+  | ihg_preempt
+  | ihg_priority
+  | ihg_timers
+  | ihg_track
 ;
 
 hsrp_group_number
@@ -178,15 +201,6 @@ hsrp_authentication_string
 ihgam_key_chain
 :
   KEY_CHAIN name = key_chain_name NEWLINE
-;
-
-ihg_ip
-:
-  IP
-  (
-    ip = ip_address
-    | prefix = ip_prefix
-  ) SECONDARY? NEWLINE
 ;
 
 ihg_preempt
@@ -262,6 +276,24 @@ hsrp_track_decrement
 :
 // 1-255
   uint8
+;
+
+ihg_ip_ipv4
+:
+  IP
+  (
+    ip = ip_address
+    | prefix = ip_prefix
+  ) SECONDARY? NEWLINE
+;
+
+ihg_ip_ipv6
+:
+  IP
+  (
+    ip6 = ipv6_address
+    | prefix6 = ipv6_prefix
+  ) SECONDARY? NEWLINE
 ;
 
 ih_version
