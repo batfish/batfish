@@ -317,7 +317,8 @@ i_ip_ospf
 :
   OSPF
   (
-    iipo_bfd
+    iipo_authentication
+    | iipo_bfd
     | iipo_cost
     | iipo_dead_interval
     | iipo_hello_interval
@@ -330,6 +331,37 @@ i_ip_ospf
 i_ip_policy
 :
   POLICY ROUTE_MAP name = route_map_name NEWLINE
+;
+
+iipo_authentication
+:
+  AUTHENTICATION
+  (
+    iipoa_authentication
+    | iipoa_key_chain
+    | iipoa_message_digest
+    | iipoa_null
+  )
+;
+
+iipoa_authentication
+:
+  NEWLINE
+;
+
+iipoa_key_chain
+:
+  KEY_CHAIN name = key_chain_name NEWLINE
+;
+
+iipoa_message_digest
+:
+  MESSAGE_DIGEST NEWLINE
+;
+
+iipoa_null
+:
+  NULL NEWLINE
 ;
 
 iipo_bfd

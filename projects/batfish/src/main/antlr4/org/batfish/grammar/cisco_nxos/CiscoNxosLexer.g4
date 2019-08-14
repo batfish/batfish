@@ -2275,6 +2275,11 @@ NTP
   'ntp'
 ;
 
+NULL
+:
+  'null'
+;
+
 NULL0
 :
   [Nn] [Uu] [Ll] [Ll] ' '* '0'
