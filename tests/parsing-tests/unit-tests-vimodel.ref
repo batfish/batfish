@@ -8751,7 +8751,6 @@
               "Wlan-GigabitEthernet0"
             ],
             "mtu" : 1500,
-            "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
             "ospfPassive" : false,
@@ -8780,7 +8779,6 @@
               "Wlan-ap0"
             ],
             "mtu" : 1500,
-            "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
             "ospfPassive" : false,
