@@ -323,8 +323,10 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.O_reference_bandwidthCo
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Oa_interfaceContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Oa_nssaContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Oa_stubContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Oai_dead_intervalContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Oai_disableContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Oai_enableContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Oai_hello_intervalContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Oai_interface_typeContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Oai_passiveContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Oan_default_lsaContext;
@@ -4617,6 +4619,30 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
     if (type != null) {
       _currentOspfInterface.setOspfInterfaceType(toOspfInterfaceType(ctx.type));
     }
+  }
+
+  @Override
+  public void exitOai_dead_interval(Oai_dead_intervalContext ctx) {
+    int seconds = toInt(ctx.DEC());
+    // Must be between 1 and 65535:
+    // https://www.juniper.net/documentation/en_US/junos/topics/reference/configuration-statement/dead-interval-edit-protocols-ospf.html
+    if (seconds < 1 || seconds > 65535) {
+      _w.redFlag("Invalid OSPF dead interval, must be 1-65535");
+      return;
+    }
+    _currentOspfInterface.setOspfDeadInterval(seconds);
+  }
+
+  @Override
+  public void exitOai_hello_interval(Oai_hello_intervalContext ctx) {
+    int seconds = toInt(ctx.DEC());
+    // Must be between 1 and 255:
+    // https://www.juniper.net/documentation/en_US/junos/topics/reference/configuration-statement/hello-interval-edit-protocols-ospf.html
+    if (seconds < 1 || seconds > 255) {
+      _w.redFlag("Invalid OSPF hello interval, must be 1-255");
+      return;
+    }
+    _currentOspfInterface.setOspfHelloInterval(seconds);
   }
 
   @Override
