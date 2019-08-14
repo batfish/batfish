@@ -87,6 +87,7 @@ import static org.batfish.representation.cisco_nxos.OspfProcess.DEFAULT_TIMERS_L
 import static org.batfish.representation.cisco_nxos.OspfProcess.DEFAULT_TIMERS_THROTTLE_LSA_HOLD_INTERVAL_MS;
 import static org.batfish.representation.cisco_nxos.OspfProcess.DEFAULT_TIMERS_THROTTLE_LSA_MAX_INTERVAL_MS;
 import static org.batfish.representation.cisco_nxos.OspfProcess.DEFAULT_TIMERS_THROTTLE_LSA_START_INTERVAL_MS;
+import static org.batfish.representation.cisco_nxos.Vrf.DEFAULT_VRF_ID;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.anEmptyMap;
 import static org.hamcrest.Matchers.any;
@@ -610,7 +611,7 @@ public final class CiscoNxosGrammarTest {
             Layer2VniConfig.builder()
                 .setVni(1111)
                 .setVrf(DEFAULT_VRF_NAME)
-                .setRouteDistinguisher(RouteDistinguisher.from(routerId, 1111))
+                .setRouteDistinguisher(RouteDistinguisher.from(routerId, 3))
                 .setRouteTarget(ExtendedCommunity.target(1, 1111))
                 .setImportRouteTarget(ExtendedCommunity.target(1, 1111).matchString())
                 .build());
@@ -619,7 +620,7 @@ public final class CiscoNxosGrammarTest {
             Layer3VniConfig.builder()
                 .setVni(3333)
                 .setVrf(DEFAULT_VRF_NAME)
-                .setRouteDistinguisher(RouteDistinguisher.from(routerId, 3333))
+                .setRouteDistinguisher(RouteDistinguisher.from(routerId, 3))
                 .setRouteTarget(ExtendedCommunity.target(1, 3333))
                 .setImportRouteTarget(ExtendedCommunity.target(1, 3333).matchString())
                 .setAdvertiseV4Unicast(false)
@@ -5243,6 +5244,8 @@ public final class CiscoNxosGrammarTest {
     String hostname = "nxos_vrf";
     CiscoNxosConfiguration vc = parseVendorConfig(hostname);
 
+    assertThat(vc.getDefaultVrf(), not(nullValue()));
+    assertThat(vc.getDefaultVrf().getId(), equalTo(DEFAULT_VRF_ID));
     assertThat(vc.getVrfs(), hasKeys("Vrf1", "vrf3"));
     {
       Vrf vrf = vc.getDefaultVrf();
@@ -5251,6 +5254,7 @@ public final class CiscoNxosGrammarTest {
     {
       Vrf vrf = vc.getVrfs().get("Vrf1");
       assertFalse(vrf.getShutdown());
+      assertThat(vrf.getId(), equalTo(3));
       assertThat(
           vrf.getRd(), equalTo(RouteDistinguisherOrAuto.of(RouteDistinguisher.from(65001, 10L))));
       VrfAddressFamily af4 = vrf.getAddressFamily(AddressFamily.IPV4_UNICAST);
@@ -5273,6 +5277,7 @@ public final class CiscoNxosGrammarTest {
     }
     {
       Vrf vrf = vc.getVrfs().get("vrf3");
+      assertThat(vrf.getId(), equalTo(4));
       assertTrue(vrf.getShutdown());
       assertThat(vrf.getRd(), equalTo(RouteDistinguisherOrAuto.auto()));
     }

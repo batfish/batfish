@@ -1,5 +1,7 @@
 package org.batfish.representation.cisco_nxos;
 
+import static org.batfish.datamodel.Configuration.DEFAULT_VRF_NAME;
+
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
 import java.io.Serializable;
@@ -12,8 +14,19 @@ import org.batfish.datamodel.Prefix;
 /** A virtual routing and forwarding instance. */
 public final class Vrf implements Serializable {
 
+  // https://www.cisco.com/c/en/us/td/docs/switches/datacenter/nexus9000/sw/7-x/vxlan/configuration/guide/b_Cisco_Nexus_9000_Series_NX-OS_VXLAN_Configuration_Guide_7x/b_Cisco_Nexus_9000_Series_NX-OS_VXLAN_Configuration_Guide_7x_chapter_0100.html#ariaid-title14
+  public static final int DEFAULT_VRF_ID = 1;
+  public static final int MANAGEMENT_VRF_ID = 2;
+
+  // constructor for default VRF and management VRF
   public Vrf(String name) {
+    this(name, name.equals(DEFAULT_VRF_NAME) ? DEFAULT_VRF_ID : MANAGEMENT_VRF_ID);
+  }
+
+  // constructor for other VRFs
+  public Vrf(String name, int id) {
     _name = name;
+    _id = id;
     _addressFamilies = new HashMap<>();
     _staticRoutes = HashMultimap.create();
   }
@@ -28,6 +41,14 @@ public final class Vrf implements Serializable {
 
   public @Nonnull String getName() {
     return _name;
+  }
+
+  /**
+   * @return Numerical ID which represents order in which VRFs are defined. It is used in auto
+   *     derived Route Distinguishers, etc.
+   */
+  public int getId() {
+    return _id;
   }
 
   public @Nullable RouteDistinguisherOrAuto getRd() {
@@ -64,6 +85,7 @@ public final class Vrf implements Serializable {
 
   private final Map<AddressFamily, VrfAddressFamily> _addressFamilies;
   private final @Nonnull String _name;
+  private final int _id;
   private @Nullable RouteDistinguisherOrAuto _rd;
   private boolean _shutdown;
   private final Multimap<Prefix, StaticRoute> _staticRoutes;

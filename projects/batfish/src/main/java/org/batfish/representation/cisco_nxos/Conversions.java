@@ -8,6 +8,7 @@ import static org.batfish.representation.cisco.CiscoConfiguration.computeBgpComm
 import static org.batfish.representation.cisco.CiscoConfiguration.computeBgpPeerEvpnExportPolicyName;
 import static org.batfish.representation.cisco.CiscoConfiguration.computeBgpPeerExportPolicyName;
 import static org.batfish.representation.cisco.CiscoConfiguration.computeNxosBgpDefaultRouteExportPolicyName;
+import static org.batfish.representation.cisco_nxos.Vrf.DEFAULT_VRF_ID;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -464,6 +465,11 @@ final class Conversions {
         continue;
       }
 
+      Integer vrfIdForVni = getVrfIdForL2Vni(vsConfig, vniSettings.getVni());
+      if (vrfIdForVni == null) {
+        continue;
+      }
+
       EvpnVni evpnVni =
           Optional.ofNullable(vsConfig.getEvpn())
               .map(evpn -> evpn.getVni(vniSettings.getVni()))
@@ -508,9 +514,7 @@ final class Conversions {
               .setVrf(vrf.getName())
               .setRouteDistinguisher(
                   firstNonNull(
-                      rd,
-                      // TODO: replace VNI with tenant VRF ID
-                      RouteDistinguisher.from(viBgpProcess.getRouterId(), vniSettings.getVni())))
+                      rd, RouteDistinguisher.from(viBgpProcess.getRouterId(), vrfIdForVni)))
               .setImportRouteTarget(
                   importRtOrAuto.isAuto()
                       ? toRouteTarget(localAs, vniSettings.getVni()).matchString()
@@ -586,11 +590,11 @@ final class Conversions {
                   importRtOrAuto.isAuto()
                       ? toRouteTarget(localAs, vniSettings.getVni()).matchString()
                       : importRtOrAuto.getExtendedCommunity().matchString())
-              // TODO: replace VNI with tenant VRF ID
               .setRouteDistinguisher(
                   firstNonNull(
                       rd,
-                      RouteDistinguisher.from(viBgpProcess.getRouterId(), vniSettings.getVni())))
+                      RouteDistinguisher.from(
+                          viBgpProcess.getRouterId(), tenantVrfForL3Vni.getId())))
               .setRouteTarget(
                   exportRtOrAuto.isAuto()
                       ? toRouteTarget(localAs, vniSettings.getVni())
@@ -598,6 +602,36 @@ final class Conversions {
               .build());
     }
     return layer3Vnis.build();
+  }
+
+  /**
+   * Gets the VRF-ID for the supplied l2 VNI, if one can be found. If there is no VLAN mapped to the
+   * VNI returns null. If the Vlan interface has VRF member defined, returns its ID otherwise
+   * returns default VRF ID (1)
+   */
+  @Nullable
+  private static Integer getVrfIdForL2Vni(CiscoNxosConfiguration vsConfig, Integer l2Vni) {
+    Integer vlanNumber =
+        vsConfig.getVlans().values().stream()
+            .filter(vlan -> l2Vni.equals(vlan.getVni()))
+            .findFirst()
+            .map(Vlan::getId)
+            .orElse(null);
+
+    if (vlanNumber == null) {
+      return null;
+    }
+
+    String vrfMemberForVlanIface =
+        Optional.ofNullable(vsConfig.getInterfaces().get(String.format("Vlan%d", vlanNumber)))
+            .map(org.batfish.representation.cisco_nxos.Interface::getVrfMember)
+            .orElse(null);
+    if (vrfMemberForVlanIface == null) {
+      return DEFAULT_VRF_ID;
+    }
+    return Optional.ofNullable(vsConfig.getVrfs().get(vrfMemberForVlanIface))
+        .map(org.batfish.representation.cisco_nxos.Vrf::getId)
+        .orElse(DEFAULT_VRF_ID);
   }
 
   /**
