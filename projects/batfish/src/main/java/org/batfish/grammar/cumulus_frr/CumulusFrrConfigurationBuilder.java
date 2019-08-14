@@ -2,6 +2,10 @@ package org.batfish.grammar.cumulus_frr;
 
 import static com.google.common.base.Preconditions.checkState;
 import static java.lang.Long.parseLong;
+import static org.batfish.representation.cumulus.CumulusRoutingProtocol.CONNECTED;
+import static org.batfish.representation.cumulus.CumulusRoutingProtocol.STATIC;
+import static org.batfish.representation.cumulus.CumulusStructureUsage.BGP_IPV4_UNICAST_REDISTRIBUTE_CONNECTED_ROUTE_MAP;
+import static org.batfish.representation.cumulus.CumulusStructureUsage.BGP_IPV4_UNICAST_REDISTRIBUTE_STATIC_ROUTE_MAP;
 import static org.batfish.representation.cumulus.RemoteAsType.EXPLICIT;
 import static org.batfish.representation.cumulus.RemoteAsType.EXTERNAL;
 import static org.batfish.representation.cumulus.RemoteAsType.INTERNAL;
@@ -16,6 +20,7 @@ import javax.annotation.Nullable;
 import org.antlr.v4.runtime.RuleContext;
 import org.antlr.v4.runtime.Token;
 import org.antlr.v4.runtime.tree.ErrorNode;
+import org.batfish.common.BatfishException;
 import org.batfish.common.Warnings;
 import org.batfish.common.Warnings.ParseWarning;
 import org.batfish.datamodel.Ip;
@@ -39,8 +44,11 @@ import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sb_neighborContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sb_router_idContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbaf_ipv4_unicastContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbaf_l2vpn_evpnContext;
+import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbafi_networkContext;
+import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbafi_redistributeContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbafls_advertise_all_vniContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbafls_advertise_ipv4_unicastContext;
+import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbafls_neighbor_activateContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbn_interfaceContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbn_ipContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbn_nameContext;
@@ -56,10 +64,14 @@ import org.batfish.representation.cumulus.BgpIpv4UnicastAddressFamily;
 import org.batfish.representation.cumulus.BgpL2VpnEvpnIpv4Unicast;
 import org.batfish.representation.cumulus.BgpL2vpnEvpnAddressFamily;
 import org.batfish.representation.cumulus.BgpNeighbor;
+import org.batfish.representation.cumulus.BgpNeighborL2vpnEvpnAddressFamily;
+import org.batfish.representation.cumulus.BgpNetwork;
 import org.batfish.representation.cumulus.BgpPeerGroupNeighbor;
 import org.batfish.representation.cumulus.BgpProcess;
+import org.batfish.representation.cumulus.BgpRedistributionPolicy;
 import org.batfish.representation.cumulus.BgpVrf;
 import org.batfish.representation.cumulus.CumulusNcluConfiguration;
+import org.batfish.representation.cumulus.CumulusRoutingProtocol;
 import org.batfish.representation.cumulus.CumulusStructureType;
 import org.batfish.representation.cumulus.CumulusStructureUsage;
 import org.batfish.representation.cumulus.IpCommunityListExpanded;
@@ -162,6 +174,54 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
   }
 
   @Override
+  public void exitSbafi_redistribute(Sbafi_redistributeContext ctx) {
+    CumulusRoutingProtocol protocol;
+    CumulusStructureUsage usage;
+    if (ctx.STATIC() != null) {
+      protocol = STATIC;
+      usage = BGP_IPV4_UNICAST_REDISTRIBUTE_STATIC_ROUTE_MAP;
+    } else if (ctx.CONNECTED() != null) {
+      protocol = CONNECTED;
+      usage = BGP_IPV4_UNICAST_REDISTRIBUTE_CONNECTED_ROUTE_MAP;
+    } else {
+      throw new BatfishException("Unexpected redistribution protocol");
+    }
+
+    String routeMap;
+    if (ctx.route_map_name() != null) {
+      routeMap = ctx.route_map_name().getText();
+      _c.referenceStructure(
+          CumulusStructureType.ROUTE_MAP, routeMap, usage, ctx.getStart().getLine());
+    } else {
+      routeMap = null;
+    }
+
+    BgpRedistributionPolicy oldRedistributionPolicy =
+        _currentBgpVrf
+            .getIpv4Unicast()
+            .getRedistributionPolicies()
+            .put(protocol, new BgpRedistributionPolicy(protocol, routeMap));
+
+    if (oldRedistributionPolicy != null) {
+      _w.addWarning(
+          ctx,
+          ctx.getStart().getText(),
+          _parser,
+          String.format(
+              "overwriting BgpRedistributionPolicy for vrf %s, protocol %s",
+              _currentBgpVrf.getVrfName(), protocol));
+    }
+  }
+
+  @Override
+  public void exitSbafi_network(Sbafi_networkContext ctx) {
+    _currentBgpVrf
+        .getIpv4Unicast()
+        .getNetworks()
+        .computeIfAbsent(Prefix.parse(ctx.IP_PREFIX().getText()), BgpNetwork::new);
+  }
+
+  @Override
   public void exitSbafls_advertise_all_vni(Sbafls_advertise_all_vniContext ctx) {
     _currentBgpVrf.getL2VpnEvpn().setAdvertiseAllVni(true);
   }
@@ -170,6 +230,23 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
   public void enterSbafls_advertise_ipv4_unicast(Sbafls_advertise_ipv4_unicastContext ctx) {
     // setting in enter instead of exit since in future we can attach a routemap
     _currentBgpVrf.getL2VpnEvpn().setAdvertiseIpv4Unicast(new BgpL2VpnEvpnIpv4Unicast());
+  }
+
+  @Override
+  public void exitSbafls_neighbor_activate(Sbafls_neighbor_activateContext ctx) {
+    String neighborName = ctx.neighbor.getText();
+    BgpNeighbor neighbor = _currentBgpVrf.getNeighbors().get(neighborName);
+    if (neighbor == null) {
+      _w.addWarning(
+          ctx, ctx.getText(), _parser, String.format("neighbor %s does not exist", neighborName));
+    } else {
+      BgpNeighborL2vpnEvpnAddressFamily addressFamily = neighbor.getL2vpnEvpnAddressFamily();
+      if (addressFamily == null) {
+        addressFamily = new BgpNeighborL2vpnEvpnAddressFamily();
+        neighbor.setL2vpnEvpnAddressFamily(addressFamily);
+      }
+      addressFamily.setActivated(true);
+    }
   }
 
   @Override

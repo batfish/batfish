@@ -28,6 +28,11 @@ COMMENT_LINE
   ) -> channel ( HIDDEN )
 ;
 
+ACTIVATE
+:
+  'activate'
+;
+
 ADDRESS_FAMILY
 :
   'address-family'
@@ -71,6 +76,11 @@ COMMUNITY
 COMMUNITY_LIST
 :
   'community-list'
+;
+
+CONNECTED
+:
+  'connected'
 ;
 
 DENY
@@ -162,6 +172,11 @@ NEIGHBOR
   'neighbor' -> pushMode(M_Neighbor)
 ;
 
+NETWORK
+:
+  'network'
+;
+
 PEER_GROUP
 :
   'peer-group' -> pushMode(M_PeerGroup)
@@ -175,6 +190,11 @@ PERMIT
 PREFIX_LIST
 :
   'prefix-list' -> pushMode ( M_Word )
+;
+
+REDISTRIBUTE
+:
+  'redistribute'
 ;
 
 REMOTE_AS
@@ -205,6 +225,11 @@ ROUTER_ID
 SET
 :
   'set'
+;
+
+STATIC
+:
+  'static'
 ;
 
 SUBNET_MASK
