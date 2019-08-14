@@ -1188,6 +1188,7 @@ public final class CiscoNxosGrammarTest {
       Interface iface = vc.getInterfaces().get("Ethernet1/15");
       assertFalse(iface.getShutdown());
       assertThat(iface.getSwitchportMode(), equalTo(SwitchportMode.ACCESS));
+      assertTrue(iface.getSwitchportMonitor());
       assertThat(iface.getAccessVlan(), equalTo(1));
     }
   }
