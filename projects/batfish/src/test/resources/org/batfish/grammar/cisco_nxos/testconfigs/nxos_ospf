@@ -220,6 +220,7 @@ interface Ethernet1/1
   no switchport
   no shutdown
   ip address 10.0.0.1/24
+  ip ospf bfd
   ! can use type 0,3,7 password
   ip ospf message-digest-key 0 foobar
   ! 1-65535 (default is 40) (s)
