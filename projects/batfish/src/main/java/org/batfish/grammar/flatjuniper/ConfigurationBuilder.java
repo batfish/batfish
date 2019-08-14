@@ -323,8 +323,10 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.O_reference_bandwidthCo
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Oa_interfaceContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Oa_nssaContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Oa_stubContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Oai_dead_intervalContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Oai_disableContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Oai_enableContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Oai_hello_intervalContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Oai_interface_typeContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Oai_passiveContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Oan_default_lsaContext;
@@ -4617,6 +4619,16 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
     if (type != null) {
       _currentOspfInterface.setOspfInterfaceType(toOspfInterfaceType(ctx.type));
     }
+  }
+
+  @Override
+  public void exitOai_dead_interval(Oai_dead_intervalContext ctx) {
+    _currentOspfInterface.setOspfDeadInterval(toInt(ctx.DEC()));
+  }
+
+  @Override
+  public void exitOai_hello_interval(Oai_hello_intervalContext ctx) {
+    _currentOspfInterface.setOspfHelloInterval(toInt(ctx.DEC()));
   }
 
   @Override

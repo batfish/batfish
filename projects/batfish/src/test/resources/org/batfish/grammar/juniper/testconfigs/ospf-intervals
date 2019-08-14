@@ -1,0 +1,15 @@
+#
+set system host-name ospf-intervals
+#
+set interfaces ge-0/0/0 unit 0
+set interfaces ge-0/0/1 unit 0
+set interfaces ge-0/0/2 unit 0
+set interfaces ge-0/0/3 unit 0
+#
+set protocols ospf area 0.0.0.0 interface ge-0/0/0 hello-interval 11
+#
+set protocols ospf area 0.0.0.1 interface ge-0/0/1 hello-interval 2
+set protocols ospf area 0.0.0.1 interface ge-0/0/1 dead-interval 22
+#
+set protocols ospf area 0.0.0.2 interface ge-0/0/2 dead-interval 44
+#
