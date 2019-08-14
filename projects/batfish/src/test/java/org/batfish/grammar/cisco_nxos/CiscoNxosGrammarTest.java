@@ -5213,4 +5213,9 @@ public final class CiscoNxosGrammarTest {
     assertThat(ans, hasNumReferrers(filename, CiscoNxosStructureType.VRF, "vrf_unused", 0));
     assertThat(ans, hasUndefinedReference(filename, CiscoNxosStructureType.VRF, "vrf_undefined"));
   }
+
+  @Test
+  public void testWordLexing() {
+    assertThat(parseVendorConfig("nxos_word"), notNullValue());
+  }
 }
