@@ -87,6 +87,6 @@ public final class LinkLocalAddress extends InterfaceAddress {
     if (o instanceof LinkLocalAddress) {
       return _ip.compareTo(((LinkLocalAddress) o).getIp());
     }
-    return -1;
+    return getClass().getCanonicalName().compareTo(o.getClass().getCanonicalName());
   }
 }

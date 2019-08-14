@@ -3598,6 +3598,7 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
   @Override
   public void exitI_ip_address_concrete(I_ip_address_concreteContext ctx) {
     InterfaceAddressWithAttributes address = toInterfaceAddress(ctx.addr);
+    _currentInterfaces.forEach(iface -> iface.setIpAddressDhcp(false));
     if (ctx.SECONDARY() != null) {
       // secondary addresses are appended
       _currentInterfaces.forEach(iface -> iface.getSecondaryAddresses().add(address));

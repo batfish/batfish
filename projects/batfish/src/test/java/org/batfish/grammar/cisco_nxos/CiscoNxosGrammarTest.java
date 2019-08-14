@@ -144,6 +144,7 @@ import org.batfish.datamodel.CommunityListLine;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConnectedRoute;
+import org.batfish.datamodel.DhcpInterfaceAddress;
 import org.batfish.datamodel.DscpType;
 import org.batfish.datamodel.GeneratedRoute;
 import org.batfish.datamodel.HeaderSpace;
@@ -788,7 +789,14 @@ public final class CiscoNxosGrammarTest {
                       ConcreteInterfaceAddress.parse("10.0.0.1/24"),
                       ConcreteInterfaceAddress.parse("10.0.0.2/24"),
                       ConcreteInterfaceAddress.parse("10.0.0.3/24")))));
-      // TODO: convert and test ip address dhcp
+    }
+    {
+      org.batfish.datamodel.Interface iface = c.getAllInterfaces().get("Ethernet1/2");
+      assertThat(
+          iface,
+          allOf(
+              hasAddress(DhcpInterfaceAddress.instance()),
+              hasAllAddresses(contains(DhcpInterfaceAddress.instance()))));
     }
   }
 
@@ -813,6 +821,8 @@ public final class CiscoNxosGrammarTest {
     }
     {
       Interface iface = vc.getInterfaces().get("Ethernet1/2");
+      assertThat(iface.getAddress(), nullValue());
+      assertThat(iface.getSecondaryAddresses(), empty());
       assertTrue(iface.getIpAddressDhcp());
     }
   }

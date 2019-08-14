@@ -67,6 +67,7 @@ import org.batfish.datamodel.CommunityListLine;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
+import org.batfish.datamodel.DhcpInterfaceAddress;
 import org.batfish.datamodel.EmptyIpSpace;
 import org.batfish.datamodel.GeneratedRoute;
 import org.batfish.datamodel.HeaderSpace;
@@ -1135,13 +1136,17 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
 
     newIfaceBuilder.setActive(!iface.getShutdown());
 
-    if (iface.getAddress() != null) {
-      newIfaceBuilder.setAddress(iface.getAddress().getAddress());
+    if (iface.getIpAddressDhcp()) {
+      newIfaceBuilder.setAddresses(DhcpInterfaceAddress.instance());
+    } else {
+      if (iface.getAddress() != null) {
+        newIfaceBuilder.setAddress(iface.getAddress().getAddress());
+      }
+      newIfaceBuilder.setSecondaryAddresses(
+          iface.getSecondaryAddresses().stream()
+              .map(InterfaceAddressWithAttributes::getAddress)
+              .collect(ImmutableSet.toImmutableSet()));
     }
-    newIfaceBuilder.setSecondaryAddresses(
-        iface.getSecondaryAddresses().stream()
-            .map(InterfaceAddressWithAttributes::getAddress)
-            .collect(ImmutableSet.toImmutableSet()));
 
     newIfaceBuilder.setDescription(iface.getDescription());
 
