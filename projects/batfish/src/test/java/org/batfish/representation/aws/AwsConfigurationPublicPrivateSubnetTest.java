@@ -158,7 +158,7 @@ public class AwsConfigurationPublicPrivateSubnetTest {
     testTrace(
         IspModelingUtils.INTERNET_HOST_NAME,
         _publicInstancePrivateIp,
-        FlowDisposition.INSUFFICIENT_INFO, // be the default security setting
+        FlowDisposition.INSUFFICIENT_INFO,
         ImmutableList.of(IspModelingUtils.INTERNET_HOST_NAME));
   }
 

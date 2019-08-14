@@ -150,6 +150,11 @@ final class Utils {
         .build();
   }
 
+  /**
+   * Creates a subnet link between the two nodes represented by {@code cfgNode1} and {@code
+   * cfgNode2}. Create a new interface on each node for this purpose and assigns it a name that
+   * corresponds to the name of the other node
+   */
   static void connect(
       AwsConfiguration awsConfiguration, Configuration cfgNode1, Configuration cfgNode2) {
     Prefix linkPrefix = awsConfiguration.getNextGeneratedLinkSubnet();
@@ -165,6 +170,10 @@ final class Utils {
     Utils.newInterface(ifaceName2, cfgNode2, ifaceAddress2, "To " + ifaceName2);
   }
 
+  /**
+   * Returns the IP address of the interface with name {@code ifaceName} in {@code configuration}.
+   * Throws an exception if the interface is not present or does not have an assigned address
+   */
   @Nonnull
   static Ip getInterfaceIp(Configuration configuration, String ifaceName) {
     Interface iface = configuration.getAllInterfaces().get(ifaceName);

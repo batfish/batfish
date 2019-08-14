@@ -219,7 +219,6 @@ public class Subnet implements AwsVpcEntity, Serializable {
                 StaticRoute sr =
                     getStaticRoute(
                         route,
-                        cfgNode,
                         optInternetGateway.orElse(null),
                         optVpnGateway.orElse(null),
                         awsConfiguration,
@@ -246,10 +245,13 @@ public class Subnet implements AwsVpcEntity, Serializable {
         .collect(ImmutableList.toImmutableList());
   }
 
+  /**
+   * Returns a static route corresponding to {@link Route}. Assumes that the node to which the route
+   * is pointed is already connected to subnet node.
+   */
   @Nullable
   StaticRoute getStaticRoute(
       Route route,
-      Configuration subnetCfgNode,
       @Nullable InternetGateway igw,
       @Nullable VpnGateway vgw,
       AwsConfiguration awsConfiguration,
