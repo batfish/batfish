@@ -382,10 +382,14 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
   @Override
   public void exitRms_community(Rms_communityContext ctx) {
     RouteMapSetCommunity old = _currentRouteMapEntry.getSetCommunity();
-    List<StandardCommunity> communityList =
-        old == null ? new ArrayList<>() : new ArrayList<>(old.getCommunities());
-    ctx.communities.stream().map(this::toStandardCommunity).forEach(communityList::add);
-    _currentRouteMapEntry.setSetCommunity(new RouteMapSetCommunity(communityList));
+    if (old != null) {
+      _w.addWarning(ctx, ctx.getText(), _parser, "overwriting set community");
+    }
+    _currentRouteMapEntry.setSetCommunity(
+        new RouteMapSetCommunity(
+            ctx.communities.stream()
+                .map(this::toStandardCommunity)
+                .collect(ImmutableList.toImmutableList())));
   }
 
   @Override
