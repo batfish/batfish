@@ -12,7 +12,7 @@ interface Ethernet1/1
   no ip redirects
   no ipv6 redirects
   bandwidth 10000
-  no bfd echo
+  no bfd
   bfd interval 250 min_rx 250 multiplier 3
   bfd neighbor src-ip 192.0.2.1 dest-ip 192.0.2.2
   delay 10
@@ -31,6 +31,7 @@ interface Ethernet1/1
 
 interface Ethernet1/2
   bandwidth inherit
+  no bfd echo
   no snmp trap link-status
   udld disable
 

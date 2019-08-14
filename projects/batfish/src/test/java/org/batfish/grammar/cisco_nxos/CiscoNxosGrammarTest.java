@@ -740,6 +740,7 @@ public final class CiscoNxosGrammarTest {
                       equalTo(
                           ImmutableSortedMap.of(
                               "1", new DecrementPriority(10), "2", new DecrementPriority(20)))))));
+      // TODO: convert and test ip secondary
     }
   }
 
@@ -759,6 +760,9 @@ public final class CiscoNxosGrammarTest {
       assertThat(hsrp.getGroups(), hasKeys(2));
       HsrpGroup group = hsrp.getGroups().get(2);
       assertThat(group.getIp(), equalTo(Ip.parse("192.0.2.1")));
+      assertThat(
+          group.getIpSecondaries(),
+          containsInAnyOrder(Ip.parse("192.168.0.1"), Ip.parse("192.168.1.1")));
       assertThat(group.getPreemptDelayMinimumSeconds(), equalTo(30));
       assertThat(group.getPreemptDelayReloadSeconds(), equalTo(40));
       assertThat(group.getPreemptDelaySyncSeconds(), equalTo(50));
@@ -840,6 +844,58 @@ public final class CiscoNxosGrammarTest {
     assertThat(
         vc.getInterfaces(),
         hasKeys("Ethernet1/1", "Ethernet1/2", "Ethernet1/1.1", "Ethernet1/1.2"));
+  }
+
+  @Test
+  public void testInterfaceShutdownConversion() throws IOException {
+    String hostname = "nxos_interface_shutdown";
+    Configuration c = parseConfig(hostname);
+
+    assertThat(
+        c.getAllInterfaces(), hasKeys("Ethernet1/1", "Ethernet1/2", "Ethernet1/3", "Ethernet1/4"));
+    {
+      org.batfish.datamodel.Interface iface = c.getAllInterfaces().get("Ethernet1/1");
+      assertThat(iface, isActive());
+    }
+    {
+      org.batfish.datamodel.Interface iface = c.getAllInterfaces().get("Ethernet1/2");
+      assertThat(iface, isActive(false));
+    }
+    {
+      org.batfish.datamodel.Interface iface = c.getAllInterfaces().get("Ethernet1/3");
+      // TODO: more interesting test of regular shutdown vs force shutdown
+      assertThat(iface, isActive(false));
+    }
+    {
+      org.batfish.datamodel.Interface iface = c.getAllInterfaces().get("Ethernet1/4");
+      assertThat(iface, isActive());
+    }
+  }
+
+  @Test
+  public void testInterfaceShutdownExtraction() {
+    String hostname = "nxos_interface_shutdown";
+    CiscoNxosConfiguration vc = parseVendorConfig(hostname);
+
+    assertThat(
+        vc.getInterfaces(), hasKeys("Ethernet1/1", "Ethernet1/2", "Ethernet1/3", "Ethernet1/4"));
+    {
+      Interface iface = vc.getInterfaces().get("Ethernet1/1");
+      assertFalse(iface.getShutdown());
+    }
+    {
+      Interface iface = vc.getInterfaces().get("Ethernet1/2");
+      assertTrue(iface.getShutdown());
+    }
+    {
+      Interface iface = vc.getInterfaces().get("Ethernet1/3");
+      // TODO: more interesting test of regular shutdown vs force shutdown
+      assertTrue(iface.getShutdown());
+    }
+    {
+      Interface iface = vc.getInterfaces().get("Ethernet1/4");
+      assertFalse(iface.getShutdown());
+    }
   }
 
   @Test

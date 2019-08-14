@@ -9,7 +9,7 @@ import java.util.Objects;
 import javax.annotation.Nullable;
 
 /** Return a particular {@link Action} and stop policy evaluation */
-public class Return implements Statement {
+public final class Return implements Statement {
   private static final String PROP_ACTION = "action";
 
   private final Action _action;

@@ -186,7 +186,7 @@ ihg_ip
   (
     ip = ip_address
     | prefix = ip_prefix
-  ) NEWLINE
+  ) SECONDARY? NEWLINE
 ;
 
 ihg_preempt
@@ -500,7 +500,7 @@ i_no_autostate
 
 i_no_bfd
 :
-  BFD ECHO NEWLINE
+  BFD null_rest_of_line
 ;
 
 i_no_shutdown
@@ -540,7 +540,7 @@ i_null
 
 i_shutdown
 :
-  SHUTDOWN NEWLINE
+  SHUTDOWN FORCE? NEWLINE
 ;
 
 i_speed
