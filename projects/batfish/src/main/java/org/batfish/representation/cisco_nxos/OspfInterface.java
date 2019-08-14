@@ -27,6 +27,14 @@ public final class OspfInterface implements Serializable {
     _bfd = bfd;
   }
 
+  public @Nullable Integer getCost() {
+    return _cost;
+  }
+
+  public void setCost(@Nullable Integer cost) {
+    _cost = cost;
+  }
+
   public int getDeadIntervalS() {
     return firstNonNull(_deadIntervalS, DEFAULT_DEAD_INTERVAL_S);
   }
@@ -73,6 +81,7 @@ public final class OspfInterface implements Serializable {
 
   private @Nullable Long _area;
   private boolean _bfd;
+  private @Nullable Integer _cost;
   private @Nullable Integer _deadIntervalS;
   private @Nullable Integer _helloIntervalS;
   private @Nullable OspfNetworkType _network;

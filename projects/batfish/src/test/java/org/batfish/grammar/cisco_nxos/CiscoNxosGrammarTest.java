@@ -3247,6 +3247,7 @@ public final class CiscoNxosGrammarTest {
         c.getAllInterfaces(), hasKeys("Ethernet1/1", "Ethernet1/2", "Ethernet1/3", "Ethernet1/4"));
     {
       org.batfish.datamodel.Interface iface = c.getAllInterfaces().get("Ethernet1/1");
+      assertThat(iface.getOspfCost(), equalTo(12));
       assertTrue(iface.getOspfEnabled());
       assertThat(iface.getOspfAreaName(), equalTo(0L));
       // TODO: convert and test bfd
@@ -3617,6 +3618,7 @@ public final class CiscoNxosGrammarTest {
       assertThat(ospf, notNullValue());
       // TODO: extract and test message-digest-key
       assertTrue(ospf.getBfd());
+      assertThat(ospf.getCost(), equalTo(12));
       assertThat(ospf.getDeadIntervalS(), equalTo(10));
       assertThat(ospf.getHelloIntervalS(), equalTo(20));
       assertThat(ospf.getPassive(), nullValue());
@@ -3629,6 +3631,7 @@ public final class CiscoNxosGrammarTest {
       OspfInterface ospf = iface.getOspf();
       assertThat(ospf, notNullValue());
       assertFalse(ospf.getBfd());
+      assertThat(ospf.getCost(), nullValue());
       assertThat(ospf.getDeadIntervalS(), equalTo(DEFAULT_DEAD_INTERVAL_S));
       assertThat(ospf.getHelloIntervalS(), equalTo(DEFAULT_HELLO_INTERVAL_S));
       assertThat(ospf.getPassive(), nullValue());

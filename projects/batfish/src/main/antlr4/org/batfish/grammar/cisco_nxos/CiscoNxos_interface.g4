@@ -295,6 +295,7 @@ i_ip_ospf
   OSPF
   (
     iipo_bfd
+    | iipo_cost
     | iipo_dead_interval
     | iipo_hello_interval
     | iipo_message_digest_key
@@ -311,6 +312,17 @@ i_ip_policy
 iipo_bfd
 :
   BFD NEWLINE
+;
+
+iipo_cost
+:
+  COST cost = interface_ospf_cost NEWLINE
+;
+
+interface_ospf_cost
+:
+// 1-65535
+  uint16
 ;
 
 iipo_dead_interval
