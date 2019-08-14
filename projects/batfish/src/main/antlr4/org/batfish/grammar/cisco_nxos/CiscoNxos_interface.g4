@@ -636,6 +636,7 @@ i_switchport_mode
     i_switchport_mode_access
     | i_switchport_mode_dot1q_tunnel
     | i_switchport_mode_fex_fabric
+    | i_switchport_mode_monitor
     | i_switchport_mode_trunk
   )
 ;
@@ -653,6 +654,11 @@ i_switchport_mode_dot1q_tunnel
 i_switchport_mode_fex_fabric
 :
   FEX_FABRIC NEWLINE
+;
+
+i_switchport_mode_monitor
+:
+  MONITOR null_rest_of_line
 ;
 
 i_switchport_mode_trunk
