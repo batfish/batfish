@@ -1111,7 +1111,12 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
     }
     assert ctx.ip != null;
     Ip ip = toIp(ctx.ip);
-    _currentInterfaces.forEach(iface -> _currentHsrpGroupGetter.apply(iface).setIp(ip));
+    if (ctx.SECONDARY() != null) {
+      _currentInterfaces.forEach(
+          iface -> _currentHsrpGroupGetter.apply(iface).getIpSecondaries().add(ip));
+    } else {
+      _currentInterfaces.forEach(iface -> _currentHsrpGroupGetter.apply(iface).setIp(ip));
+    }
   }
 
   @Override
