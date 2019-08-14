@@ -61,8 +61,6 @@ import org.xml.sax.SAXException;
 @ParametersAreNonnullByDefault
 final class VpnConnection implements AwsVpcEntity, Serializable {
 
-  private static final int BGP_NEIGHBOR_DEFAULT_METRIC = 0;
-
   private static DiffieHellmanGroup toDiffieHellmanGroup(String perfectForwardSecrecy) {
     switch (perfectForwardSecrecy) {
       case "group2":
@@ -187,7 +185,7 @@ final class VpnConnection implements AwsVpcEntity, Serializable {
 
   @Nonnull private final List<Prefix> _routes;
 
-  @Nonnull private final boolean _staticRoutesOnly;
+  private final boolean _staticRoutesOnly;
 
   @Nonnull private final List<VgwTelemetry> _vgwTelemetrys;
 
