@@ -85,6 +85,7 @@ import static org.batfish.datamodel.matchers.IsisProcessMatchers.hasOverload;
 import static org.batfish.datamodel.matchers.LineMatchers.hasAuthenticationLoginList;
 import static org.batfish.datamodel.matchers.LiteralIntMatcher.hasVal;
 import static org.batfish.datamodel.matchers.LiteralIntMatcher.isLiteralIntThat;
+import static org.batfish.datamodel.matchers.MapMatchers.hasKeys;
 import static org.batfish.datamodel.matchers.NssaSettingsMatchers.hasDefaultOriginateType;
 import static org.batfish.datamodel.matchers.NssaSettingsMatchers.hasSuppressType3;
 import static org.batfish.datamodel.matchers.OspfAreaMatchers.hasInjectDefaultRoute;
@@ -2287,6 +2288,33 @@ public final class FlatJuniperGrammarTest {
     String hostname = "ospf-interface-point-to-point";
     Configuration c = parseConfig(hostname);
     assertThat(c, hasInterface("ge-0/0/0.0", hasOspfPointToPoint(equalTo(true))));
+  }
+
+  @Test
+  public void testJuniperOspfIntervals() {
+    JuniperConfiguration config = parseJuniperConfig("ospf-intervals");
+    Map<String, org.batfish.representation.juniper.Interface> ifaces =
+        config.getMasterLogicalSystem().getInterfaces();
+
+    String iface0 = "ge-0/0/0";
+    String iface1 = "ge-0/0/1";
+    String iface2 = "ge-0/0/2";
+    String iface3 = "ge-0/0/3";
+    assertThat(ifaces, hasKeys(iface0, iface1, iface2, iface3));
+
+    // Confirm explicitly set hello and dead intervals show up in the VS model
+    // Also confirm intervals that are not set show up as nulls in the VS model
+    assertThat(ifaces.get(iface0).getOspfDeadInterval(), nullValue());
+    assertThat(ifaces.get(iface0).getOspfHelloInterval(), equalTo(11));
+
+    assertThat(ifaces.get(iface1).getOspfDeadInterval(), equalTo(22));
+    assertThat(ifaces.get(iface1).getOspfHelloInterval(), equalTo(2));
+
+    assertThat(ifaces.get(iface2).getOspfDeadInterval(), equalTo(44));
+    assertThat(ifaces.get(iface2).getOspfHelloInterval(), nullValue());
+
+    assertThat(ifaces.get(iface3).getOspfDeadInterval(), nullValue());
+    assertThat(ifaces.get(iface3).getOspfHelloInterval(), nullValue());
   }
 
   @Test

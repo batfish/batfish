@@ -72,8 +72,9 @@ public class Interface implements Serializable {
   @Nullable private Integer _nativeVlan;
   private Ip _ospfArea;
   private Integer _ospfCost;
-  private int _ospfDeadInterval;
+  @Nullable private Integer _ospfDeadInterval;
   @Nullable private Boolean _ospfDisable;
+  @Nullable private Integer _ospfHelloInterval;
   private int _ospfHelloMultiplier;
   private boolean _ospfPassive;
   private OspfInterfaceType _ospfInterfaceType;
@@ -186,13 +187,21 @@ public class Interface implements Serializable {
     return _ospfCost;
   }
 
-  public int getOspfDeadInterval() {
+  /** Get the time (in seconds) to wait before neighbors are declared dead */
+  @Nullable
+  public Integer getOspfDeadInterval() {
     return _ospfDeadInterval;
   }
 
   @Nullable
   public Boolean getOspfDisable() {
     return _ospfDisable;
+  }
+
+  /** Get the time (in seconds) between sending hello messages to neighbors */
+  @Nullable
+  public Integer getOspfHelloInterval() {
+    return _ospfHelloInterval;
   }
 
   public int getOspfHelloMultiplier() {
@@ -347,6 +356,10 @@ public class Interface implements Serializable {
 
   public void setOspfDisable(boolean disable) {
     _ospfDisable = disable;
+  }
+
+  public void setOspfHelloInterval(int seconds) {
+    _ospfHelloInterval = seconds;
   }
 
   public void setOspfHelloMultiplier(int multiplier) {
