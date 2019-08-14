@@ -43,6 +43,14 @@ public final class OspfInterface implements Serializable {
     _network = network;
   }
 
+  public @Nullable Boolean getPassive() {
+    return _passive;
+  }
+
+  public void setPassive(@Nullable Boolean passive) {
+    _passive = passive;
+  }
+
   public @Nullable String getProcess() {
     return _process;
   }
@@ -59,5 +67,6 @@ public final class OspfInterface implements Serializable {
   private @Nullable Integer _deadIntervalS;
   private @Nullable Integer _helloIntervalS;
   private @Nullable OspfNetworkType _network;
+  private @Nullable Boolean _passive;
   private @Nullable String _process;
 }
