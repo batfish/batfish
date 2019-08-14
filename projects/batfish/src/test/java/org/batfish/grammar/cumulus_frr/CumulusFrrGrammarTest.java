@@ -1,6 +1,8 @@
 package org.batfish.grammar.cumulus_frr;
 
 import static org.batfish.main.BatfishTestUtils.configureBatfishTestSettings;
+import static org.batfish.representation.cumulus.CumulusRoutingProtocol.CONNECTED;
+import static org.batfish.representation.cumulus.CumulusRoutingProtocol.STATIC;
 import static org.batfish.representation.cumulus.RemoteAsType.EXPLICIT;
 import static org.batfish.representation.cumulus.RemoteAsType.EXTERNAL;
 import static org.batfish.representation.cumulus.RemoteAsType.INTERNAL;
@@ -19,6 +21,7 @@ import java.util.Set;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
 import org.batfish.common.BatfishLogger;
+import org.batfish.common.Warnings;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.config.Settings;
 import org.batfish.datamodel.Ip;
@@ -32,6 +35,7 @@ import org.batfish.representation.cumulus.BgpInterfaceNeighbor;
 import org.batfish.representation.cumulus.BgpIpNeighbor;
 import org.batfish.representation.cumulus.BgpNeighbor;
 import org.batfish.representation.cumulus.BgpPeerGroupNeighbor;
+import org.batfish.representation.cumulus.BgpRedistributionPolicy;
 import org.batfish.representation.cumulus.CumulusNcluConfiguration;
 import org.batfish.representation.cumulus.CumulusStructureType;
 import org.batfish.representation.cumulus.CumulusStructureUsage;
@@ -62,6 +66,7 @@ public class CumulusFrrGrammarTest {
     CONFIG = new CumulusNcluConfiguration();
     CONFIG.setFilename(FILENAME);
     CONFIG.setAnswerElement(new ConvertConfigurationAnswerElement());
+    CONFIG.setWarnings(new Warnings());
   }
 
   private Set<Integer> getStructureReferences(
@@ -134,6 +139,69 @@ public class CumulusFrrGrammarTest {
   }
 
   @Test
+  public void testBgpAddressFamilyIpv4UnicastNetwork() {
+    parseLines(
+        "router bgp 1", "address-family ipv4 unicast", "network 1.2.3.4/24", "exit-address-family");
+    assertThat(
+        CONFIG.getBgpProcess().getDefaultVrf().getIpv4Unicast().getNetworks().keySet(),
+        contains(Prefix.parse("1.2.3.4/24")));
+  }
+
+  @Test
+  public void testBgpAddressFamilyIpv4UnicastRedistributeConnected() {
+    parseLines(
+        "router bgp 1",
+        "address-family ipv4 unicast",
+        "redistribute connected",
+        "exit-address-family");
+    BgpRedistributionPolicy policy =
+        CONFIG
+            .getBgpProcess()
+            .getDefaultVrf()
+            .getIpv4Unicast()
+            .getRedistributionPolicies()
+            .get(CONNECTED);
+    assertNotNull(policy);
+    assertNull(policy.getRouteMap());
+  }
+
+  @Test
+  public void testBgpAddressFamilyIpv4UnicastRedistributeRouteMap() {
+    parseLines(
+        "router bgp 1",
+        "address-family ipv4 unicast",
+        "redistribute connected route-map foo",
+        "exit-address-family");
+    BgpRedistributionPolicy policy =
+        CONFIG
+            .getBgpProcess()
+            .getDefaultVrf()
+            .getIpv4Unicast()
+            .getRedistributionPolicies()
+            .get(CONNECTED);
+    assertNotNull(policy);
+    assertThat(policy.getRouteMap(), equalTo("foo"));
+  }
+
+  @Test
+  public void testBgpAddressFamilyIpv4UnicastRedistributeStatic() {
+    parseLines(
+        "router bgp 1",
+        "address-family ipv4 unicast",
+        "redistribute static",
+        "exit-address-family");
+    BgpRedistributionPolicy policy =
+        CONFIG
+            .getBgpProcess()
+            .getDefaultVrf()
+            .getIpv4Unicast()
+            .getRedistributionPolicies()
+            .get(STATIC);
+    assertNotNull(policy);
+    assertNull(policy.getRouteMap());
+  }
+
+  @Test
   public void testBgpAddressFamily_l2vpn_evpn() {
     parse("router bgp 1\n address-family l2vpn evpn\n exit-address-family\n");
     assertNotNull(CONFIG.getBgpProcess().getDefaultVrf().getL2VpnEvpn());
@@ -154,6 +222,21 @@ public class CumulusFrrGrammarTest {
         "advertise ipv4 unicast",
         "exit-address-family");
     assertNotNull(CONFIG.getBgpProcess().getDefaultVrf().getL2VpnEvpn().getAdvertiseIpv4Unicast());
+  }
+
+  @Test
+  public void testBgpAdressFamilyL2vpnEvpnNeighbor() {
+    parseLines(
+        "router bgp 1",
+        "neighbor n interface description a",
+        "neighbor 1.2.3.4 description a",
+        "address-family l2vpn evpn",
+        "neighbor n activate",
+        "neighbor 1.2.3.4 activate",
+        "exit-address-family");
+    Map<String, BgpNeighbor> neighbors = CONFIG.getBgpProcess().getDefaultVrf().getNeighbors();
+    assertTrue(neighbors.get("n").getL2vpnEvpnAddressFamily().getActivated());
+    assertTrue(neighbors.get("1.2.3.4").getL2vpnEvpnAddressFamily().getActivated());
   }
 
   @Test
