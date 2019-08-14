@@ -154,6 +154,7 @@ import org.batfish.datamodel.Interface.Dependency;
 import org.batfish.datamodel.Interface.DependencyType;
 import org.batfish.datamodel.InterfaceType;
 import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.Ip6;
 import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.IpWildcard;
@@ -222,6 +223,7 @@ import org.batfish.representation.cisco_nxos.IcmpOptions;
 import org.batfish.representation.cisco_nxos.Interface;
 import org.batfish.representation.cisco_nxos.InterfaceAddressWithAttributes;
 import org.batfish.representation.cisco_nxos.InterfaceHsrp;
+import org.batfish.representation.cisco_nxos.InterfaceIpv6AddressWithAttributes;
 import org.batfish.representation.cisco_nxos.IpAccessList;
 import org.batfish.representation.cisco_nxos.IpAccessListLine;
 import org.batfish.representation.cisco_nxos.IpAddressSpec;
@@ -824,6 +826,33 @@ public final class CiscoNxosGrammarTest {
       assertThat(iface.getAddress(), nullValue());
       assertThat(iface.getSecondaryAddresses(), empty());
       assertTrue(iface.getIpAddressDhcp());
+    }
+  }
+
+  @Test
+  public void testInterfaceIpv6AddressExtraction() {
+    String hostname = "nxos_interface_ipv6_address";
+    CiscoNxosConfiguration vc = parseVendorConfig(hostname);
+
+    assertThat(vc.getInterfaces(), hasKeys("Ethernet1/1", "Ethernet1/2"));
+    {
+      Interface iface = vc.getInterfaces().get("Ethernet1/1");
+      InterfaceIpv6AddressWithAttributes primary =
+          new InterfaceIpv6AddressWithAttributes(Ip6.parse("10::1"), 120);
+      InterfaceIpv6AddressWithAttributes secondary2 =
+          new InterfaceIpv6AddressWithAttributes(Ip6.parse("10::2"), 120);
+      InterfaceIpv6AddressWithAttributes secondary3 =
+          new InterfaceIpv6AddressWithAttributes(Ip6.parse("10::3"), 120);
+      secondary3.setTag(3L);
+      assertThat(iface.getIpv6Address(), equalTo(primary));
+      assertThat(iface.getIpv6AddressSecondaries(), containsInAnyOrder(secondary2, secondary3));
+      assertFalse(iface.getIpv6AddressDhcp());
+    }
+    {
+      Interface iface = vc.getInterfaces().get("Ethernet1/2");
+      assertThat(iface.getIpv6Address(), nullValue());
+      assertThat(iface.getIpv6AddressSecondaries(), empty());
+      assertTrue(iface.getIpv6AddressDhcp());
     }
   }
 
