@@ -2505,7 +2505,7 @@ POLICE
 
 POLICY
 :
-  'policy' -> pushMode ( M_Word )
+  'policy'
 ;
 
 POLICY_MAP
