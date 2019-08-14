@@ -276,6 +276,7 @@ import org.batfish.representation.cisco_nxos.RouteMapSetMetricType;
 import org.batfish.representation.cisco_nxos.RouteMapSetOrigin;
 import org.batfish.representation.cisco_nxos.RouteMapSetTag;
 import org.batfish.representation.cisco_nxos.StaticRoute;
+import org.batfish.representation.cisco_nxos.SwitchportMode;
 import org.batfish.representation.cisco_nxos.TcpOptions;
 import org.batfish.representation.cisco_nxos.UdpOptions;
 import org.batfish.representation.cisco_nxos.Vlan;
@@ -740,6 +741,7 @@ public final class CiscoNxosGrammarTest {
                       equalTo(
                           ImmutableSortedMap.of(
                               "1", new DecrementPriority(10), "2", new DecrementPriority(20)))))));
+      // TODO: convert and test ip secondary
     }
   }
 
@@ -759,6 +761,9 @@ public final class CiscoNxosGrammarTest {
       assertThat(hsrp.getGroups(), hasKeys(2));
       HsrpGroup group = hsrp.getGroups().get(2);
       assertThat(group.getIp(), equalTo(Ip.parse("192.0.2.1")));
+      assertThat(
+          group.getIpSecondaries(),
+          containsInAnyOrder(Ip.parse("192.168.0.1"), Ip.parse("192.168.1.1")));
       assertThat(group.getPreemptDelayMinimumSeconds(), equalTo(30));
       assertThat(group.getPreemptDelayReloadSeconds(), equalTo(40));
       assertThat(group.getPreemptDelaySyncSeconds(), equalTo(50));
