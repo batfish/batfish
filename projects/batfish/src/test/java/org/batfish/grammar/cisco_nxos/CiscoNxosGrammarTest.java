@@ -865,6 +865,18 @@ public final class CiscoNxosGrammarTest {
   }
 
   @Test
+  public void testInterfaceIpv6DhcpRelayExtraction() {
+    // TODO: make into extraction test
+    assertThat(parseVendorConfig("nxos_interface_ipv6_dhcp_relay"), notNullValue());
+  }
+
+  @Test
+  public void testInterfaceIpv6NdExtraction() {
+    // TODO: make into extraction test
+    assertThat(parseVendorConfig("nxos_interface_ipv6_nd"), notNullValue());
+  }
+
+  @Test
   public void testInterfaceMulticastParsing() {
     // TODO: make into extraction test
     assertThat(parseVendorConfig("nxos_interface_multicast"), notNullValue());
