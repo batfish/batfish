@@ -220,6 +220,7 @@ interface Ethernet1/1
   no switchport
   no shutdown
   ip address 10.0.0.1/24
+  ip ospf bfd
   ! 1-65535
   ip ospf cost 12
   ! can use type 0,3,7 password

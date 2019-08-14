@@ -294,7 +294,8 @@ i_ip_ospf
 :
   OSPF
   (
-    iipo_cost
+    iipo_bfd
+    | iipo_cost
     | iipo_dead_interval
     | iipo_hello_interval
     | iipo_message_digest_key
@@ -306,6 +307,11 @@ i_ip_ospf
 i_ip_policy
 :
   POLICY name = route_map_name NEWLINE
+;
+
+iipo_bfd
+:
+  BFD NEWLINE
 ;
 
 iipo_cost
