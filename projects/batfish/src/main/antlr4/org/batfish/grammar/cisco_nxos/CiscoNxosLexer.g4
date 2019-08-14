@@ -1959,6 +1959,11 @@ MGMT
   [Mm] [Gg] [Mm] [Tt]
 ;
 
+MIN_LINKS
+:
+  'min-links'
+;
+
 MIN_RX
 :
   'min_rx'
