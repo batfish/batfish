@@ -124,7 +124,6 @@ import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.Prefix6;
 import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.SubRange;
-import org.batfish.datamodel.SwitchportMode;
 import org.batfish.datamodel.TcpFlags;
 import org.batfish.datamodel.UniverseIpSpace;
 import org.batfish.datamodel.bgp.RouteDistinguisher;
@@ -199,6 +198,7 @@ import org.batfish.grammar.cisco_nxos.CiscoNxosParser.I_switchport_accessContext
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.I_switchport_mode_accessContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.I_switchport_mode_dot1q_tunnelContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.I_switchport_mode_fex_fabricContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.I_switchport_mode_monitorContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.I_switchport_mode_trunkContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.I_switchport_monitorContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.I_switchport_switchportContext;
@@ -515,6 +515,7 @@ import org.batfish.representation.cisco_nxos.RouteMapSetMetricType;
 import org.batfish.representation.cisco_nxos.RouteMapSetOrigin;
 import org.batfish.representation.cisco_nxos.RouteMapSetTag;
 import org.batfish.representation.cisco_nxos.StaticRoute;
+import org.batfish.representation.cisco_nxos.SwitchportMode;
 import org.batfish.representation.cisco_nxos.TcpOptions;
 import org.batfish.representation.cisco_nxos.UdpOptions;
 import org.batfish.representation.cisco_nxos.Vlan;
@@ -3687,12 +3688,17 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
 
   @Override
   public void exitI_switchport_mode_dot1q_tunnel(I_switchport_mode_dot1q_tunnelContext ctx) {
-    todo(ctx);
+    _currentInterfaces.forEach(iface -> iface.setSwitchportMode(SwitchportMode.DOT1Q_TUNNEL));
   }
 
   @Override
   public void exitI_switchport_mode_fex_fabric(I_switchport_mode_fex_fabricContext ctx) {
-    todo(ctx);
+    _currentInterfaces.forEach(iface -> iface.setSwitchportMode(SwitchportMode.FEX_FABRIC));
+  }
+
+  @Override
+  public void exitI_switchport_mode_monitor(I_switchport_mode_monitorContext ctx) {
+    _currentInterfaces.forEach(iface -> iface.setSwitchportMode(SwitchportMode.MONITOR));
   }
 
   @Override

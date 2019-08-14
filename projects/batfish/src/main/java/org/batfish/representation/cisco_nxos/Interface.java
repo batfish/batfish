@@ -9,7 +9,6 @@ import java.util.Set;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.datamodel.IntegerSpace;
-import org.batfish.datamodel.SwitchportMode;
 
 /** A layer-2- or layer-3-capable network interface */
 public final class Interface implements Serializable {
