@@ -1135,13 +1135,16 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
 
     newIfaceBuilder.setActive(!iface.getShutdown());
 
-    if (iface.getAddress() != null) {
-      newIfaceBuilder.setAddress(iface.getAddress().getAddress());
+    if (!iface.getIpAddressDhcp()) {
+      if (iface.getAddress() != null) {
+        newIfaceBuilder.setAddress(iface.getAddress().getAddress());
+      }
+      newIfaceBuilder.setSecondaryAddresses(
+          iface.getSecondaryAddresses().stream()
+              .map(InterfaceAddressWithAttributes::getAddress)
+              .collect(ImmutableSet.toImmutableSet()));
     }
-    newIfaceBuilder.setSecondaryAddresses(
-        iface.getSecondaryAddresses().stream()
-            .map(InterfaceAddressWithAttributes::getAddress)
-            .collect(ImmutableSet.toImmutableSet()));
+    // TODO: handle DHCP
 
     newIfaceBuilder.setDescription(iface.getDescription());
 

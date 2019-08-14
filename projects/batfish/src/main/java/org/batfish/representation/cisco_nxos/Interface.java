@@ -116,6 +116,7 @@ public final class Interface implements Serializable {
   private @Nullable InterfaceHsrp _hsrp;
   private @Nullable String _ipAccessGroupIn;
   private @Nullable String _ipAccessGroupOut;
+  private boolean _ipAddressDhcp;
   private @Nullable Lacp _lacp;
   private @Nullable Integer _mtu;
   private final @Nonnull String _name;
@@ -212,6 +213,10 @@ public final class Interface implements Serializable {
 
   public @Nullable String getIpAccessGroupOut() {
     return _ipAccessGroupOut;
+  }
+
+  public boolean getIpAddressDhcp() {
+    return _ipAddressDhcp;
   }
 
   public @Nullable Lacp getLacp() {
@@ -363,6 +368,10 @@ public final class Interface implements Serializable {
 
   public void setIpAccessGroupOut(@Nullable String ipAcessGroupOut) {
     _ipAccessGroupOut = ipAcessGroupOut;
+  }
+
+  public void setIpAddressDhcp(boolean ipAddressDhcp) {
+    _ipAddressDhcp = ipAddressDhcp;
   }
 
   public void setMtu(@Nullable Integer mtu) {
