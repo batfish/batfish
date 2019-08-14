@@ -3638,6 +3638,7 @@ public final class CiscoNxosGrammarTest {
       Interface iface = vc.getInterfaces().get("Ethernet1/1");
       OspfInterface ospf = iface.getOspf();
       assertThat(ospf, notNullValue());
+      // TODO: extract and test authentication message-digest
       // TODO: extract and test message-digest-key
       assertTrue(ospf.getBfd());
       assertThat(ospf.getCost(), equalTo(12));
@@ -3652,6 +3653,7 @@ public final class CiscoNxosGrammarTest {
       Interface iface = vc.getInterfaces().get("Ethernet1/2");
       OspfInterface ospf = iface.getOspf();
       assertThat(ospf, notNullValue());
+      // TODO: extract and test authentication key-chain
       assertFalse(ospf.getBfd());
       assertThat(ospf.getCost(), nullValue());
       assertThat(ospf.getDeadIntervalS(), equalTo(DEFAULT_DEAD_INTERVAL_S));
@@ -3664,6 +3666,7 @@ public final class CiscoNxosGrammarTest {
     {
       Interface iface = vc.getInterfaces().get("Ethernet1/3");
       OspfInterface ospf = iface.getOspf();
+      // TODO: extract and test authentication null (disabled)
       assertThat(ospf, notNullValue());
       assertThat(ospf.getPassive(), nullValue());
       assertThat(ospf.getNetwork(), equalTo(POINT_TO_POINT));
@@ -3672,6 +3675,7 @@ public final class CiscoNxosGrammarTest {
       Interface iface = vc.getInterfaces().get("Ethernet1/4");
       OspfInterface ospf = iface.getOspf();
       assertThat(ospf, notNullValue());
+      // TODO: discover semantics, extract and test 'authentication' with no params
       assertThat(ospf.getPassive(), equalTo(true));
       assertThat(ospf.getNetwork(), nullValue());
     }
