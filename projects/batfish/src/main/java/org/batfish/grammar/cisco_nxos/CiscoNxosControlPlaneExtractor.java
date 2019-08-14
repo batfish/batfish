@@ -189,6 +189,8 @@ import org.batfish.grammar.cisco_nxos.CiscoNxosParser.I_ip_access_groupContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.I_ip_address_concreteContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.I_ip_address_dhcpContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.I_ip_policyContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.I_ipv6_address_concreteContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.I_ipv6_address_dhcpContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.I_mtuContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.I_no_autostateContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.I_no_shutdownContext;
@@ -227,6 +229,7 @@ import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Inherit_sequence_numberCon
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Interface_addressContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Interface_bandwidth_kbpsContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Interface_descriptionContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Interface_ipv6_addressContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Interface_mtuContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Interface_nameContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Interface_prefixContext;
@@ -457,6 +460,7 @@ import org.batfish.representation.cisco_nxos.HsrpTrack;
 import org.batfish.representation.cisco_nxos.IcmpOptions;
 import org.batfish.representation.cisco_nxos.Interface;
 import org.batfish.representation.cisco_nxos.InterfaceAddressWithAttributes;
+import org.batfish.representation.cisco_nxos.InterfaceIpv6AddressWithAttributes;
 import org.batfish.representation.cisco_nxos.IpAccessList;
 import org.batfish.representation.cisco_nxos.IpAccessListLine;
 import org.batfish.representation.cisco_nxos.IpAddressSpec;
@@ -683,6 +687,14 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
         ? new InterfaceAddressWithAttributes(ConcreteInterfaceAddress.parse(ctx.getText()))
         : new InterfaceAddressWithAttributes(
             ConcreteInterfaceAddress.create(toIp(ctx.address), toInteger(ctx.mask)));
+  }
+
+  private static @Nonnull InterfaceIpv6AddressWithAttributes toInterfaceIpv6Address(
+      Interface_ipv6_addressContext ctx) {
+    // TODO: support exotic address types
+    // TODO: implement and use datamodel Ipv6InterfaceAddress instead of Prefix6
+    Prefix6 prefix6 = toPrefix6(ctx.address6_with_length);
+    return new InterfaceIpv6AddressWithAttributes(prefix6.getAddress(), prefix6.getPrefixLength());
   }
 
   private static @Nonnull Ip toIp(Ip_addressContext ctx) {
@@ -3624,6 +3636,33 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
           iface.setAddress(null);
           iface.setIpAddressDhcp(true);
           iface.getSecondaryAddresses().clear();
+        });
+  }
+
+  @Override
+  public void exitI_ipv6_address_concrete(I_ipv6_address_concreteContext ctx) {
+    InterfaceIpv6AddressWithAttributes address6 = toInterfaceIpv6Address(ctx.addr);
+    _currentInterfaces.forEach(iface -> iface.setIpv6AddressDhcp(false));
+    if (ctx.SECONDARY() != null) {
+      // secondary addresses are appended
+      _currentInterfaces.forEach(iface -> iface.getIpv6AddressSecondaries().add(address6));
+    } else {
+      // primary address is replaced
+      _currentInterfaces.forEach(iface -> iface.setIpv6Address(address6));
+    }
+    if (ctx.tag != null) {
+      warn(ctx, "Unsupported: tag on interface ipv6 address");
+      address6.setTag(toLong(ctx.tag));
+    }
+  }
+
+  @Override
+  public void exitI_ipv6_address_dhcp(I_ipv6_address_dhcpContext ctx) {
+    _currentInterfaces.forEach(
+        iface -> {
+          iface.setIpv6Address(null);
+          iface.setIpv6AddressDhcp(true);
+          iface.getIpv6AddressSecondaries().clear();
         });
   }
 

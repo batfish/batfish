@@ -450,7 +450,33 @@ iipr_ospf
 
 i_ipv6
 :
-  IPV6 iip6_traffic_filter
+  IPV6
+  (
+    iip6_address
+    | iip6_traffic_filter
+  )
+;
+
+iip6_address
+:
+  ADDRESS
+  (
+    i_ipv6_address_concrete
+    | i_ipv6_address_dhcp
+  )
+;
+
+i_ipv6_address_concrete
+:
+  addr = interface_ipv6_address SECONDARY?
+  (
+    TAG tag = uint32
+  )? NEWLINE
+;
+
+i_ipv6_address_dhcp
+:
+  DHCP NEWLINE
 ;
 
 iip6_traffic_filter
