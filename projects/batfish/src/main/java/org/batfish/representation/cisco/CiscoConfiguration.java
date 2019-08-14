@@ -2061,7 +2061,6 @@ public final class CiscoConfiguration extends VendorConfiguration {
         if (deadInterval != null) {
           newIface.setOspfDeadInterval(deadInterval);
         }
-        Integer helloInterval = iface.getOspfHelloInterval();
         newIface.setOspfHelloMultiplier(iface.getOspfHelloMultiplier());
         newIface.setOspfProcess(proc.getName());
       } else if (iface.getOspfArea() != null
