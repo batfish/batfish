@@ -1260,6 +1260,10 @@ public final class CiscoNxosGrammarTest {
     {
       Interface iface = vc.getInterfaces().get("Ethernet1/1");
       assertThat(iface.getDelayTensOfMicroseconds(), equalTo(10));
+      assertThat(
+          iface.getDescription(),
+          equalTo("here is a description with punctuation! and IP address 1.2.3.4/24 etc."));
+      assertThat(iface.getMtu(), equalTo(9216));
     }
   }
 
