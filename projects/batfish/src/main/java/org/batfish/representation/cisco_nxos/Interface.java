@@ -110,6 +110,7 @@ public final class Interface implements Serializable {
   private @Nullable Integer _bandwidth;
   private @Nullable String _channelGroup;
   private final @Nonnull Set<String> _declaredNames;
+  private @Nullable Integer _delayTensOfMicroseconds;
   private @Nullable String _description;
   private @Nullable Integer _encapsulationVlan;
   private @Nullable InterfaceHsrp _hsrp;
@@ -176,6 +177,10 @@ public final class Interface implements Serializable {
 
   public @Nonnull Set<String> getDeclaredNames() {
     return _declaredNames;
+  }
+
+  public @Nullable Integer getDelayTensOfMicroseconds() {
+    return _delayTensOfMicroseconds;
   }
 
   public @Nullable String getDescription() {
@@ -311,6 +316,10 @@ public final class Interface implements Serializable {
 
   public void setChannelGroup(@Nullable String channelGroup) {
     _channelGroup = channelGroup;
+  }
+
+  public void setDelayTensOfMicroseconds(@Nullable Integer delayTensOfMicroseconds) {
+    _delayTensOfMicroseconds = delayTensOfMicroseconds;
   }
 
   public void setDescription(@Nullable String description) {
