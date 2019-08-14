@@ -658,7 +658,7 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
         .map(Object::toString)
         .ifPresent(newIfaceBuilder::setHsrpVersion);
     newIfaceBuilder.setHsrpGroups(
-        hsrp.getGroups().entrySet().stream()
+        hsrp.getIpv4Groups().entrySet().stream()
             .collect(
                 ImmutableMap.toImmutableMap(
                     Entry::getKey, hsrpGroupEntry -> toHsrpGroup(hsrpGroupEntry.getValue()))));
@@ -1096,7 +1096,7 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
   @Override
   public void setVendor(ConfigurationFormat format) {}
 
-  private static @Nonnull org.batfish.datamodel.hsrp.HsrpGroup toHsrpGroup(HsrpGroup group) {
+  private static @Nonnull org.batfish.datamodel.hsrp.HsrpGroup toHsrpGroup(HsrpGroupIpv4 group) {
     org.batfish.datamodel.hsrp.HsrpGroup.Builder builder =
         org.batfish.datamodel.hsrp.HsrpGroup.builder()
             .setGroupNumber(group.getGroup())

@@ -218,7 +218,7 @@ import org.batfish.representation.cisco_nxos.Evpn;
 import org.batfish.representation.cisco_nxos.EvpnVni;
 import org.batfish.representation.cisco_nxos.ExtendedCommunityOrAuto;
 import org.batfish.representation.cisco_nxos.FragmentsBehavior;
-import org.batfish.representation.cisco_nxos.HsrpGroup;
+import org.batfish.representation.cisco_nxos.HsrpGroupIpv4;
 import org.batfish.representation.cisco_nxos.IcmpOptions;
 import org.batfish.representation.cisco_nxos.Interface;
 import org.batfish.representation.cisco_nxos.InterfaceAddressWithAttributes;
@@ -759,8 +759,8 @@ public final class CiscoNxosGrammarTest {
       assertThat(hsrp, notNullValue());
       assertThat(hsrp.getDelayReloadSeconds(), equalTo(60));
       assertThat(hsrp.getVersion(), equalTo(2));
-      assertThat(hsrp.getGroups(), hasKeys(2));
-      HsrpGroup group = hsrp.getGroups().get(2);
+      assertThat(hsrp.getIpv4Groups(), hasKeys(2));
+      HsrpGroupIpv4 group = hsrp.getIpv4Groups().get(2);
       assertThat(group.getIp(), equalTo(Ip.parse("192.0.2.1")));
       assertThat(
           group.getIpSecondaries(),
@@ -775,6 +775,12 @@ public final class CiscoNxosGrammarTest {
       assertThat(group.getTracks().get(1).getDecrement(), equalTo(10));
       assertThat(group.getTracks().get(2).getDecrement(), equalTo(20));
     }
+  }
+
+  @Test
+  public void testInterfaceHsrpIpv6Extraction() {
+    // TODO: turn into extraction test
+    assertThat(parseVendorConfig("nxos_interface_hsrp_ipv6"), notNullValue());
   }
 
   @Test
