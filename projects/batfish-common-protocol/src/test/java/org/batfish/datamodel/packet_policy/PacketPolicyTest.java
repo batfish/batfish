@@ -14,7 +14,7 @@ import org.junit.Test;
 /** Tests of {@link PacketPolicy} */
 public class PacketPolicyTest {
 
-  private final Return _defaultAction = new Return(new FibLookup("default"));
+  private final Return _defaultAction = new Return(new FibLookup(new LiteralVrfName("default")));
 
   @Test
   public void testEquals() {

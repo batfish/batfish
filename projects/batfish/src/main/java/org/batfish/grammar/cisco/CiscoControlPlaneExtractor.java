@@ -545,8 +545,8 @@ import org.batfish.grammar.cisco.CiscoParser.Cis_policyContext;
 import org.batfish.grammar.cisco.CiscoParser.Cis_profileContext;
 import org.batfish.grammar.cisco.CiscoParser.Cisco_configurationContext;
 import org.batfish.grammar.cisco.CiscoParser.Cispol_authenticationContext;
-import org.batfish.grammar.cisco.CiscoParser.Cispol_encrContext;
 import org.batfish.grammar.cisco.CiscoParser.Cispol_encryptionContext;
+import org.batfish.grammar.cisco.CiscoParser.Cispol_encryption_arubaContext;
 import org.batfish.grammar.cisco.CiscoParser.Cispol_groupContext;
 import org.batfish.grammar.cisco.CiscoParser.Cispol_hashContext;
 import org.batfish.grammar.cisco.CiscoParser.Cispol_lifetimeContext;
@@ -1253,6 +1253,7 @@ import org.batfish.representation.cisco.NetworkObjectGroupAddressSpecifier;
 import org.batfish.representation.cisco.NetworkObjectInfo;
 import org.batfish.representation.cisco.NssaSettings;
 import org.batfish.representation.cisco.OspfNetwork;
+import org.batfish.representation.cisco.OspfNetworkType;
 import org.batfish.representation.cisco.OspfProcess;
 import org.batfish.representation.cisco.OspfRedistributionPolicy;
 import org.batfish.representation.cisco.OspfWildcardNetwork;
@@ -1406,7 +1407,21 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   @Override
   public void exitIf_ip_ospf_network(If_ip_ospf_networkContext ctx) {
     for (Interface iface : _currentInterfaces) {
-      iface.setOspfPointToPoint(ctx.POINT_TO_POINT() != null);
+      if (ctx.POINT_TO_POINT() != null) {
+        iface.setOspfNetworkType(OspfNetworkType.POINT_TO_POINT);
+      } else if (ctx.BROADCAST() != null) {
+        iface.setOspfNetworkType(OspfNetworkType.BROADCAST);
+      } else if (ctx.POINT_TO_MULTIPOINT() != null) {
+        if (ctx.NON_BROADCAST() != null) {
+          iface.setOspfNetworkType(OspfNetworkType.POINT_TO_MULTIPOINT_NON_BROADCAST);
+        } else {
+          iface.setOspfNetworkType(OspfNetworkType.POINT_TO_MULTIPOINT);
+        }
+      } else if (ctx.NON_BROADCAST() != null) {
+        iface.setOspfNetworkType(OspfNetworkType.NON_BROADCAST);
+      } else {
+        _w.redFlag(String.format("Cannot determine OSPF network type for %s", ctx.getText()));
+      }
     }
   }
 
@@ -2153,12 +2168,12 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   }
 
   @Override
-  public void exitCispol_encr(Cispol_encrContext ctx) {
+  public void exitCispol_encryption(Cispol_encryptionContext ctx) {
     _currentIsakmpPolicy.setEncryptionAlgorithm(toEncryptionAlgorithm(ctx.ike_encryption()));
   }
 
   @Override
-  public void exitCispol_encryption(Cispol_encryptionContext ctx) {
+  public void exitCispol_encryption_aruba(Cispol_encryption_arubaContext ctx) {
     _currentIsakmpPolicy.setEncryptionAlgorithm(toEncryptionAlgorithm(ctx.ike_encryption_aruba()));
   }
 
@@ -2196,8 +2211,9 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   @Override
   public void exitCisprf_match(Cisprf_matchContext ctx) {
+    Ip mask = (ctx.mask == null) ? Ip.parse("255.255.255.255") : toIp(ctx.mask);
     _currentIsakmpProfile.setMatchIdentity(
-        IpWildcard.ipWithWildcardMask(toIp(ctx.address), toIp(ctx.mask).inverted()));
+        IpWildcard.ipWithWildcardMask(toIp(ctx.address), mask.inverted()));
   }
 
   @Override

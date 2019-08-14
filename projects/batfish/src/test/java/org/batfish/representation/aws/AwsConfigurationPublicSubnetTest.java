@@ -94,7 +94,7 @@ public class AwsConfigurationPublicSubnetTest {
   }
 
   @Test
-  public void testFromInternetToPublicIp() throws IOException {
+  public void testFromInternetToPublicIp() {
     // to a valid public IP
     testTrace(
         IspModelingUtils.INTERNET_HOST_NAME,

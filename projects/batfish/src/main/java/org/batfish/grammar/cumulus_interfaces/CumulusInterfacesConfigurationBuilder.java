@@ -5,10 +5,12 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Range;
 import java.util.List;
+import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.RuleContext;
 import org.antlr.v4.runtime.Token;
 import org.antlr.v4.runtime.tree.ErrorNode;
 import org.antlr.v4.runtime.tree.ParseTree;
+import org.batfish.common.BatfishException;
 import org.batfish.common.Warnings;
 import org.batfish.common.Warnings.ParseWarning;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
@@ -25,6 +27,7 @@ import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.I_bridge_a
 import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.I_bridge_portsContext;
 import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.I_bridge_pvidContext;
 import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.I_bridge_vidsContext;
+import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.I_bridge_vlan_awareContext;
 import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.I_clag_idContext;
 import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.I_clagd_backup_ipContext;
 import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.I_clagd_peer_ipContext;
@@ -40,10 +43,12 @@ import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.Interface_
 import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.NumberContext;
 import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.S_autoContext;
 import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.S_ifaceContext;
+import org.batfish.representation.cumulus.Bridge;
 import org.batfish.representation.cumulus.CumulusNcluConfiguration;
 import org.batfish.representation.cumulus.CumulusStructureType;
 import org.batfish.representation.cumulus.CumulusStructureUsage;
 import org.batfish.representation.cumulus.InterfaceClagSettings;
+import org.batfish.representation.cumulus_interfaces.Converter;
 import org.batfish.representation.cumulus_interfaces.Interface;
 import org.batfish.representation.cumulus_interfaces.Interfaces;
 
@@ -55,15 +60,27 @@ public final class CumulusInterfacesConfigurationBuilder
     extends CumulusInterfacesParserBaseListener {
   private final CumulusNcluConfiguration _config;
   private final Interfaces _interfaces = new Interfaces();
+
   private final CumulusInterfacesCombinedParser _parser;
+  private final String _text;
   private final Warnings _w;
   private Interface _currentIface;
 
   public CumulusInterfacesConfigurationBuilder(
-      CumulusNcluConfiguration config, CumulusInterfacesCombinedParser parser, Warnings w) {
+      CumulusNcluConfiguration config,
+      CumulusInterfacesCombinedParser parser,
+      String text,
+      Warnings w) {
     _config = config;
     _parser = parser;
+    _text = text;
     _w = w;
+  }
+
+  private String getFullText(ParserRuleContext ctx) {
+    int start = ctx.getStart().getStartIndex();
+    int end = ctx.getStop().getStopIndex();
+    return _text.substring(start, end + 1);
   }
 
   @VisibleForTesting
@@ -110,12 +127,7 @@ public final class CumulusInterfacesConfigurationBuilder
 
   @Override
   public void exitI_vrf_table(I_vrf_tableContext ctx) {
-    String tblName = ctx.vrf_table_name().getText();
-    if (tblName.equals("auto")) {
-      _currentIface.setIsVrf();
-    } else {
-      _w.todo(ctx, ctx.vrf_table_name().getStart().getText(), _parser);
-    }
+    _currentIface.setVrfTable(ctx.vrf_table_name().getText());
   }
 
   @Override
@@ -190,6 +202,13 @@ public final class CumulusInterfacesConfigurationBuilder
   }
 
   @Override
+  public void exitI_bridge_vlan_aware(I_bridge_vlan_awareContext ctx) {
+    if (ctx.NO() != null) {
+      _w.todo(ctx, getFullText(ctx), _parser);
+    }
+  }
+
+  @Override
   public void exitI_clag_id(I_clag_idContext ctx) {
     _currentIface.setClagId(Integer.parseInt(ctx.number().getText()));
   }
@@ -233,7 +252,7 @@ public final class CumulusInterfacesConfigurationBuilder
   @Override
   public void exitI_vlan_id(I_vlan_idContext ctx) {
     String vlanId = ctx.number().getText();
-    _config.defineStructure(CumulusStructureType.VLAN, vlanId, ctx.getStart().getLine());
+    _config.defineStructure(CumulusStructureType.VLAN, vlanId, ctx);
     _currentIface.setVlanId(Integer.parseInt(vlanId));
   }
 
@@ -278,14 +297,38 @@ public final class CumulusInterfacesConfigurationBuilder
 
   @Override
   public void exitS_iface(S_ifaceContext ctx) {
-    CumulusStructureType type =
-        _currentIface.getIsVrf() ? CumulusStructureType.VRF : CumulusStructureType.INTERFACE;
-    _config.defineStructure(type, _currentIface.getName(), ctx.getStart().getLine());
+    _config.defineStructure(_currentIface.getType(), _currentIface.getName(), ctx);
     _currentIface = null;
   }
 
   @Override
   public void exitCumulus_interfaces_configuration(Cumulus_interfaces_configurationContext ctxt) {
-    // TODO migrate _interfaces into _config
+    Converter converter = new Converter(_interfaces);
+    Bridge bridge = converter.convertBridge();
+    _config.setBridge(bridge != null ? bridge : new Bridge());
+
+    try {
+      _config.setInterfaces(converter.convertInterfaces());
+    } catch (BatfishException e) {
+      _w.redFlag("Error converting interfaces to vendor-specific model");
+    }
+
+    try {
+      _config.setVlans(converter.convertVlans());
+    } catch (BatfishException e) {
+      _w.redFlag("Error converting vlans to vendor-specific model");
+    }
+
+    try {
+      _config.setVrfs(converter.convertVrfs());
+    } catch (BatfishException e) {
+      _w.redFlag("Error converting vrfs to vendor-specific model");
+    }
+
+    try {
+      _config.setVxlans(converter.convertVxlans());
+    } catch (BatfishException e) {
+      _w.redFlag("Error converting vxlans to vendor-specific model");
+    }
   }
 }

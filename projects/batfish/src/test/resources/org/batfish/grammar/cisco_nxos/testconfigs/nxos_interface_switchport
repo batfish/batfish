@@ -192,6 +192,7 @@ interface Ethernet1/12
 ! TODO: semantics
 interface Ethernet1/13
   switchport mode fex-fabric
+  fex associate 100
 !
 
 ! Ethernet interface with trunk mode set
@@ -203,4 +204,16 @@ interface Ethernet1/13
 ! - switchport allowed vlans = 1-3967
 interface Ethernet1/14
   switchport mode trunk
+!
+
+! Ethernet interface with explicit switchport
+! - shutdown = false
+! - active = true
+! - switchport = true
+! - switchport mode = ACCESS
+! - switchport access vlan = 1
+interface Ethernet1/15
+  no switchport
+  switchport
+  switchport monitor
 !

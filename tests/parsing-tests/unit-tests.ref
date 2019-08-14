@@ -3425,12 +3425,12 @@
             "            AUTHENTICATION:'authentication'",
             "            RSA_SIG:'rsa-sig'  <== mode:M_Authentication",
             "            NEWLINE:'\\n')",
-            "          (cispol_encryption",
+            "          (cispol_encryption_aruba",
             "            ENCRYPTION:'encryption'",
             "            (ike_encryption_aruba",
             "              AES128:'aes128')",
             "            NEWLINE:'\\n')",
-            "          (cispol_encryption",
+            "          (cispol_encryption_aruba",
             "            ENCRYPTION:'encryption'",
             "            (ike_encryption_aruba",
             "              AES256:'aes256')",
@@ -18925,6 +18925,16 @@
             "      (crypto_ipsec",
             "        IPSEC:'ipsec'",
             "        (cip_null",
+            "          FRAGMENTATION:'fragmentation'",
+            "          (null_rest_of_line",
+            "            VARIABLE:'before-encryption'",
+            "            NEWLINE:'\\n')))))",
+            "  (stanza",
+            "    (s_crypto",
+            "      CRYPTO:'crypto'",
+            "      (crypto_ipsec",
+            "        IPSEC:'ipsec'",
+            "        (cip_null",
             "          IKEV1:'ikev1'",
             "          (null_rest_of_line",
             "            TRANSFORM_SET:'transform-set'",
@@ -19175,8 +19185,13 @@
             "            AUTHENTICATION:'authentication'",
             "            PRE_SHARE:'pre-share'  <== mode:M_Authentication",
             "            NEWLINE:'\\n')",
-            "          (cispol_encr",
+            "          (cispol_encryption",
             "            ENCR:'encr'",
+            "            (ike_encryption",
+            "              THREE_DES:'3des')",
+            "            NEWLINE:'\\n')",
+            "          (cispol_encryption",
+            "            ENCRYPTION:'encryption'",
             "            (ike_encryption",
             "              THREE_DES:'3des')",
             "            NEWLINE:'\\n')",
@@ -19221,6 +19236,12 @@
             "            ADDRESS:'address'",
             "            address = IP_ADDRESS:'1.2.3.4'",
             "            mask = IP_ADDRESS:'255.255.255.255'",
+            "            NEWLINE:'\\n')",
+            "          (cisprf_match",
+            "            MATCH:'match'",
+            "            IDENTITY:'identity'",
+            "            ADDRESS:'address'",
+            "            address = IP_ADDRESS:'1.2.3.4'",
             "            NEWLINE:'\\n')",
             "          (cisprf_null",
             "            REVERSE_ROUTE:'reverse-route'",
@@ -24982,6 +25003,24 @@
             "        (range",
             "          (subrange",
             "            low = DEC:'4'  <== mode:M_Interface)))",
+            "      NEWLINE:'\\n'  <== mode:M_Interface))",
+            "  (stanza",
+            "    (s_interface",
+            "      INTERFACE:'interface'",
+            "      iname = (interface_name",
+            "        name_prefix_alpha = M_Interface_PREFIX:'Wlan-ap'  <== mode:M_Interface",
+            "        (range",
+            "          (subrange",
+            "            low = DEC:'0'  <== mode:M_Interface)))",
+            "      NEWLINE:'\\n'  <== mode:M_Interface))",
+            "  (stanza",
+            "    (s_interface",
+            "      INTERFACE:'interface'",
+            "      iname = (interface_name",
+            "        name_prefix_alpha = M_Interface_PREFIX:'Wlan-GigabitEthernet'  <== mode:M_Interface",
+            "        (range",
+            "          (subrange",
+            "            low = DEC:'0'  <== mode:M_Interface)))",
             "      NEWLINE:'\\n'  <== mode:M_Interface))",
             "  (stanza",
             "    (s_interface",
@@ -79084,11 +79123,11 @@
           "crypto ipsec profile" : {
             "abcdefg" : {
               "definitionLines" : [
-                158,
                 159,
                 160,
                 161,
-                162
+                162,
+                163
               ],
               "numReferrers" : 0
             }
@@ -79096,33 +79135,33 @@
           "crypto ipsec transform-set" : {
             "ESP-3DES-MD5" : {
               "definitionLines" : [
-                167,
                 168,
-                169
+                169,
+                170
               ],
               "numReferrers" : 0
             },
             "IPSEC_AES_256" : {
               "definitionLines" : [
-                170
+                171
               ],
               "numReferrers" : 0
             },
             "cipts1" : {
               "definitionLines" : [
-                171
+                172
               ],
               "numReferrers" : 0
             },
             "cipts2" : {
               "definitionLines" : [
-                172
+                173
               ],
               "numReferrers" : 0
             },
             "noAuthHeader" : {
               "definitionLines" : [
-                173
+                174
               ],
               "numReferrers" : 0
             }
@@ -79130,12 +79169,14 @@
           "crypto isakmp policy" : {
             "1" : {
               "definitionLines" : [
-                180,
                 181,
                 182,
                 183,
                 184,
-                185
+                185,
+                186,
+                187,
+                188
               ],
               "numReferrers" : 1
             }
@@ -79143,13 +79184,15 @@
           "crypto isakmp profile" : {
             "myprofile" : {
               "definitionLines" : [
-                187,
-                188,
-                189,
                 190,
                 191,
                 192,
-                193
+                193,
+                194,
+                195,
+                196,
+                197,
+                198
               ],
               "numReferrers" : 1
             }
@@ -79157,8 +79200,8 @@
           "crypto keyring" : {
             "VRF:ABC:DEF:GHI:1234" : {
               "definitionLines" : [
-                212,
-                213
+                217,
+                218
               ],
               "numReferrers" : 0
             }
@@ -79166,11 +79209,6 @@
           "crypto named rsa pubkey" : {
             "a.example.com" : {
               "definitionLines" : [
-                198,
-                199,
-                200,
-                201,
-                202,
                 203,
                 204,
                 205,
@@ -79179,7 +79217,12 @@
                 208,
                 209,
                 210,
-                211
+                211,
+                212,
+                213,
+                214,
+                215,
+                216
               ],
               "numReferrers" : 1
             }
@@ -79209,32 +79252,32 @@
           "crypto-map-set" : {
             "VPN" : {
               "definitionLines" : [
-                218,
-                219,
-                220,
-                221,
-                222,
-                223
+                223,
+                224,
+                225,
+                226,
+                227,
+                228
               ],
               "numReferrers" : 0
             },
             "VPNMAP" : {
               "definitionLines" : [
-                233,
-                234,
-                235,
-                236,
-                237,
                 238,
                 239,
                 240,
-                241
+                241,
+                242,
+                243,
+                244,
+                245,
+                246
               ],
               "numReferrers" : 0
             },
             "myothermap" : {
               "definitionLines" : [
-                215
+                220
               ],
               "numReferrers" : 0
             }
@@ -79638,8 +79681,8 @@
             },
             "Ethernet1/12" : {
               "definitionLines" : [
-                348,
-                349
+                352,
+                353
               ],
               "numReferrers" : 1
             },
@@ -79742,6 +79785,18 @@
             "Wideband-Cable1/2/3:4" : {
               "definitionLines" : [
                 346
+              ],
+              "numReferrers" : 1
+            },
+            "Wlan-GigabitEthernet0" : {
+              "definitionLines" : [
+                350
+              ],
+              "numReferrers" : 1
+            },
+            "Wlan-ap0" : {
+              "definitionLines" : [
+                348
               ],
               "numReferrers" : 1
             },
@@ -86653,79 +86708,79 @@
             },
             "bleep" : {
               "crypto map ipsec-isakmp transform-set" : [
-                222
+                227
               ]
             },
             "hijklmnop" : {
               "ipsec profile set transform-set" : [
-                159
+                160
               ]
             },
             "mytransformset" : {
               "crypto map ipsec-isakmp transform-set" : [
-                241
+                246
               ]
             }
           },
           "crypto isakmp policy" : {
             "1" : {
               "isakmp policy" : [
-                180
+                181
               ]
             }
           },
           "crypto isakmp profile" : {
             "myisakmpprofile" : {
               "crypto map ipsec-isakmp isakmp-profile" : [
-                237
+                242
               ]
             },
             "myprofile" : {
               "isakmp profile" : [
-                187
+                190
               ]
             },
             "someOtherprofile" : {
               "ipsec profile set isakmp-profile" : [
-                162
+                163
               ]
             }
           },
           "crypto keyring" : {
             "VRF:MMS:RMT:UPM:1143" : {
               "isakmp profile keyring" : [
-                188
+                191
               ]
             }
           },
           "crypto named rsa pubkey" : {
             "a.example.com" : {
               "named rsa pubkey" : [
-                198
+                203
               ]
             }
           },
           "crypto-dynamic-map-set" : {
             "bippety" : {
               "crypto map ipsec-isakmp crypto-dynamic-map-set" : [
-                224
+                229
               ]
             },
             "mydefaultcryptomap" : {
               "crypto map ipsec-isakmp crypto-dynamic-map-set" : [
-                215
+                220
               ]
             }
           },
           "ipv4/6 acl" : {
             "myvpnacl" : {
               "crypto map ipsec-isakmp acl" : [
-                235
+                240
               ]
             },
             "someacl" : {
               "crypto map ipsec-isakmp acl" : [
-                219
+                224
               ]
             }
           }
@@ -86873,7 +86928,7 @@
             },
             "Ethernet1/12" : {
               "interface" : [
-                348
+                352
               ]
             },
             "GigabitEthernet0/0" : {
@@ -86949,6 +87004,16 @@
             "Wideband-Cable1/2/3:4" : {
               "interface" : [
                 346
+              ]
+            },
+            "Wlan-GigabitEthernet0" : {
+              "interface" : [
+                350
+              ]
+            },
+            "Wlan-ap0" : {
+              "interface" : [
+                348
               ]
             },
             "inside" : {
@@ -90916,55 +90981,55 @@
           "crypto ipsec transform-set" : {
             "bleep" : {
               "crypto map ipsec-isakmp transform-set" : [
-                222
+                227
               ]
             },
             "hijklmnop" : {
               "ipsec profile set transform-set" : [
-                159
+                160
               ]
             },
             "mytransformset" : {
               "crypto map ipsec-isakmp transform-set" : [
-                241
+                246
               ]
             }
           },
           "crypto isakmp profile" : {
             "myisakmpprofile" : {
               "crypto map ipsec-isakmp isakmp-profile" : [
-                237
+                242
               ]
             },
             "someOtherprofile" : {
               "ipsec profile set isakmp-profile" : [
-                162
+                163
               ]
             }
           },
           "crypto keyring" : {
             "VRF:MMS:RMT:UPM:1143" : {
               "isakmp profile keyring" : [
-                188
+                191
               ]
             }
           },
           "crypto-dynamic-map-set" : {
             "bippety" : {
               "crypto map ipsec-isakmp crypto-dynamic-map-set" : [
-                224
+                229
               ]
             }
           },
           "ipv4/6 acl" : {
             "myvpnacl" : {
               "crypto map ipsec-isakmp acl" : [
-                235
+                240
               ]
             },
             "someacl" : {
               "crypto map ipsec-isakmp acl" : [
-                219
+                224
               ]
             }
           }

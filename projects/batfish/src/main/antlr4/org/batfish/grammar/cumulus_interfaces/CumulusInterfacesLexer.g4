@@ -34,6 +34,11 @@ BOND_SLAVES
   'bond-slaves' -> pushMode(M_Words)
 ;
 
+BOND_LACP_BYPASS_ALLOW
+:
+  'bond-lacp-bypass-allow' -> pushMode(M_DropUntilNewline)
+;
+
 BRIDGE_PORTS
 :
   'bridge-ports' -> pushMode(M_Words)
@@ -44,6 +49,16 @@ BRIDGE_ACCESS
   'bridge-access'
 ;
 
+BRIDGE_ARP_ND_SUPPRESS
+:
+  'bridge-arp-nd-suppress' -> pushMode(M_DropUntilNewline)
+;
+
+BRIDGE_LEARNING
+:
+  'bridge-learning' -> pushMode(M_DropUntilNewline)
+;
+
 BRIDGE_PVID
 :
   'bridge-pvid'
@@ -52,6 +67,11 @@ BRIDGE_PVID
 BRIDGE_VIDS
 :
   'bridge-vids'
+;
+
+BRIDGE_VLAN_AWARE
+:
+  'bridge-vlan-aware'
 ;
 
 CLAG_ID
@@ -74,6 +94,11 @@ CLAGD_SYS_MAC
   'clagd-sys-mac'
 ;
 
+HWADDRESS
+:
+  'hwaddress'
+;
+
 IFACE
 :
   'iface' -> pushMode(M_Word)
@@ -87,6 +112,26 @@ LINK_LOCAL
 LINK_SPEED
 :
   'link-speed'
+;
+
+MSTPCTL_BPDUGUARD
+:
+  'mstpctl-bpduguard' -> pushMode(M_DropUntilNewline)
+;
+
+MSTPCTL_PORTADMINEDGE
+:
+  'mstpctl-portadminedge' -> pushMode(M_DropUntilNewline)
+;
+
+MSTPCTL_PORTBPDUFILTER
+:
+  'mstpctl-portbpdufilter' -> pushMode(M_DropUntilNewline)
+;
+
+NO
+:
+  'no'
 ;
 
 VLAN_ID
@@ -117,6 +162,11 @@ VXLAN_ID
 VXLAN_LOCAL_TUNNEL_IP
 :
   'vxlan-local-tunnelip'
+;
+
+YES
+:
+  'yes'
 ;
 
 // Complex tokens
@@ -257,6 +307,7 @@ F_Whitespace
   | '\t'
   | '\u000C'
   | '\u00A0'
+  | '\\\n'  // continue on next line
 ;
 
 fragment
@@ -269,6 +320,18 @@ fragment
 F_WordChar
 :
   [0-9A-Za-z_.:] | '-'
+;
+
+mode M_DropUntilNewline;
+
+M_DropUntilNewline_NonNewline
+:
+  F_NonNewline+ -> channel(HIDDEN)
+;
+
+M_DropUntilNewline_Newline
+:
+  F_Newline+ -> type(NEWLINE), popMode
 ;
 
 mode M_LineText;

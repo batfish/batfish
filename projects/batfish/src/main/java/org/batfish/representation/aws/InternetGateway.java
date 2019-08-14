@@ -128,7 +128,6 @@ final class InternetGateway implements AwsVpcEntity, Serializable {
           .filter(Objects::nonNull)
           .forEach(ip -> publicPrefixSpace.addPrefix(Prefix.create(ip, Prefix.MAX_PREFIX_LENGTH)));
     }
-
     installRoutingPolicyAdvertiseStatic(
         BACKBONE_EXPORT_POLICY_NAME, cfgNode, publicPrefixSpace, new NetworkFactory());
 

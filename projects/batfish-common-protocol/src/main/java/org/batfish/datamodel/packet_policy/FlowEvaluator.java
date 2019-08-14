@@ -4,7 +4,6 @@ import java.util.Map;
 import java.util.Objects;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpSpace;
@@ -16,7 +15,6 @@ import org.batfish.datamodel.acl.Evaluator;
  * <p>To evaluate an entire policy, see {@link #evaluate(Flow, String, PacketPolicy, Map, Map)}
  * which will return a {@link FlowResult}.
  */
-@ParametersAreNonnullByDefault
 public final class FlowEvaluator {
 
   private final @Nonnull Map<String, IpAccessList> _availableAcls;
@@ -38,6 +36,16 @@ public final class FlowEvaluator {
     public Boolean visitPacketMatchExpr(PacketMatchExpr expr) {
       return Evaluator.matches(
           expr.getExpr(), _currentFlow.build(), _srcInterface, _availableAcls, _namedIpSpaces);
+    }
+
+    @Override
+    public Boolean visitTrueExpr(TrueExpr expr) {
+      return true;
+    }
+
+    @Override
+    public Boolean visitFalseExpr(FalseExpr expr) {
+      return false;
     }
   }
 

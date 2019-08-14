@@ -45,7 +45,7 @@ public final class FlowEvaluatorTest {
 
   @Test
   public void evaluateReturn() {
-    FibLookup fl = new FibLookup("vrf");
+    FibLookup fl = new FibLookup(new LiteralVrfName("vrf"));
     FlowResult r =
         FlowEvaluator.evaluate(
             _flow, "Eth0", singletonPolicy(new Return(fl)), ImmutableMap.of(), ImmutableMap.of());
@@ -56,7 +56,7 @@ public final class FlowEvaluatorTest {
 
   @Test
   public void evaluateIfWithMatch() {
-    FibLookup fl = new FibLookup("vrf");
+    FibLookup fl = new FibLookup(new LiteralVrfName("vrf"));
     FlowResult r =
         FlowEvaluator.evaluate(
             _flow,
@@ -72,7 +72,7 @@ public final class FlowEvaluatorTest {
 
   @Test
   public void evaluateIfNoMatch() {
-    FibLookup fl = new FibLookup("vrf");
+    FibLookup fl = new FibLookup(new LiteralVrfName("vrf"));
     FlowResult r =
         FlowEvaluator.evaluate(
             _flow,
@@ -95,7 +95,7 @@ public final class FlowEvaluatorTest {
         .addEqualityGroup(
             new FlowResult(
                 _flow.toBuilder().setIngressNode("differentNode").build(), Drop.instance()))
-        .addEqualityGroup(new FlowResult(_flow, new FibLookup("aVRF")))
+        .addEqualityGroup(new FlowResult(_flow, new FibLookup(new LiteralVrfName("avrf"))))
         .addEqualityGroup(new Object())
         .testEquals();
   }
@@ -103,17 +103,17 @@ public final class FlowEvaluatorTest {
   @Test
   public void testEvaluateFindsFirstReachableTerminalAction() {
     // Setup policy
-    FibLookup action = new FibLookup("Matched");
+    FibLookup action = new FibLookup(new LiteralVrfName("Matched"));
     PacketPolicy policy =
         new PacketPolicy(
             "policyName",
             ImmutableList.of(
                 new If(
                     new PacketMatchExpr(FalseExpr.INSTANCE),
-                    ImmutableList.of(new Return(new FibLookup("Unreachable")))),
+                    ImmutableList.of(new Return(new FibLookup(new LiteralVrfName("Unreachable"))))),
                 new If(
                     new PacketMatchExpr(TrueExpr.INSTANCE), ImmutableList.of(new Return(action))),
-                new Return(new FibLookup("lastVRF"))),
+                new Return(new FibLookup(new LiteralVrfName("LastVrf")))),
             _defaultAction);
 
     // Test:
@@ -142,7 +142,7 @@ public final class FlowEvaluatorTest {
   public void testIndirection() {
     String aclName = "acl1";
     String ipSpaceName = "ipSpace1";
-    FibLookup fl = new FibLookup("vrf");
+    FibLookup fl = new FibLookup(new LiteralVrfName("vrf"));
     FlowResult r =
         FlowEvaluator.evaluate(
             _flow,
@@ -165,6 +165,40 @@ public final class FlowEvaluatorTest {
             ImmutableMap.of(ipSpaceName, UniverseIpSpace.INSTANCE));
 
     assertThat(r.getAction(), equalTo(fl));
+    assertThat(r.getFinalFlow(), equalTo(_flow));
+  }
+
+  @Test
+  public void testTrue() {
+    FibLookup fl = new FibLookup(new LiteralVrfName("vrf"));
+    FlowResult r =
+        FlowEvaluator.evaluate(
+            _flow,
+            "Eth0",
+            singletonPolicy(
+                new If(
+                    org.batfish.datamodel.packet_policy.TrueExpr.instance(),
+                    ImmutableList.of(new Return(fl)))),
+            ImmutableMap.of(),
+            ImmutableMap.of());
+    assertThat(r.getAction(), equalTo(fl));
+    assertThat(r.getFinalFlow(), equalTo(_flow));
+  }
+
+  @Test
+  public void testFalse() {
+    FibLookup fl = new FibLookup(new LiteralVrfName("vrf"));
+    FlowResult r =
+        FlowEvaluator.evaluate(
+            _flow,
+            "Eth0",
+            singletonPolicy(
+                new If(
+                    org.batfish.datamodel.packet_policy.FalseExpr.instance(),
+                    ImmutableList.of(new Return(fl)))),
+            ImmutableMap.of(),
+            ImmutableMap.of());
+    assertThat(r.getAction(), equalTo(_defaultAction.getAction()));
     assertThat(r.getFinalFlow(), equalTo(_flow));
   }
 }

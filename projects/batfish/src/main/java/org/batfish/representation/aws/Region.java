@@ -567,13 +567,22 @@ final class Region implements Serializable {
     securityGroups.add(securityGroup);
   }
 
+  /**
+   * Returns the Internet gateway associated with the VPC with provided id, if one exists.
+   *
+   * <p>AWS limits VPCs to one gateway. If more are present, return the first one found.
+   */
   Optional<InternetGateway> findInternetGateway(String vpcId) {
-    // AWS does not allow multiple internet gateways to be attached to a VPC
     return _internetGateways.values().stream()
         .filter(igw -> igw.getAttachmentVpcIds().contains(vpcId))
         .findFirst();
   }
 
+  /**
+   * Returns the VPN gateway associated with the VPC with provided id, if one exists.
+   *
+   * <p>AWS limits VPCs to one gateway. If more are present, return the first one found.
+   */
   Optional<VpnGateway> findVpnGateway(String vpcId) {
     // AWS does not allow multiple vpc gateways to be attached to a VPC
     return _vpnGateways.values().stream()
@@ -581,6 +590,13 @@ final class Region implements Serializable {
         .findFirst();
   }
 
+  /**
+   * Returns the route table gateway associated with the subnet with provided id, if one exists.
+   *
+   * <p>AWS limits subnets to one route table. If more are present, return the first one found. If
+   * none is found, returns the main route table associated with the VPC (and AWS limits VPCs to one
+   * main route table).
+   */
   Optional<RouteTable> findRouteTable(String vpcId, String subnetId) {
     List<RouteTable> vpcTables =
         _routeTables.values().stream()

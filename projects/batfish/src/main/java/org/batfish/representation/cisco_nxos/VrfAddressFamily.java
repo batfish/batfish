@@ -10,37 +10,37 @@ public final class VrfAddressFamily implements Serializable {
     _type = type;
   }
 
-  public @Nullable RouteDistinguisherOrAuto getExportRt() {
+  public @Nullable ExtendedCommunityOrAuto getExportRt() {
     return _exportRt;
   }
 
-  public void setExportRt(@Nullable RouteDistinguisherOrAuto exportRt) {
+  public void setExportRt(@Nullable ExtendedCommunityOrAuto exportRt) {
     _exportRt = exportRt;
   }
 
-  public @Nullable RouteDistinguisherOrAuto getExportRtEvpn() {
+  public @Nullable ExtendedCommunityOrAuto getExportRtEvpn() {
     return _exportRtEvpn;
   }
 
-  public void setExportRtEvpn(@Nullable RouteDistinguisherOrAuto exportRtEvpn) {
+  public void setExportRtEvpn(@Nullable ExtendedCommunityOrAuto exportRtEvpn) {
     _exportRtEvpn = exportRtEvpn;
   }
 
   @Nullable
-  public RouteDistinguisherOrAuto getImportRt() {
+  public ExtendedCommunityOrAuto getImportRt() {
     return _importRt;
   }
 
-  public void setImportRt(@Nullable RouteDistinguisherOrAuto importRt) {
+  public void setImportRt(@Nullable ExtendedCommunityOrAuto importRt) {
     _importRt = importRt;
   }
 
   @Nullable
-  public RouteDistinguisherOrAuto getImportRtEvpn() {
+  public ExtendedCommunityOrAuto getImportRtEvpn() {
     return _importRtEvpn;
   }
 
-  public void setImportRtEvpn(@Nullable RouteDistinguisherOrAuto importRtEvpn) {
+  public void setImportRtEvpn(@Nullable ExtendedCommunityOrAuto importRtEvpn) {
     _importRtEvpn = importRtEvpn;
   }
 
@@ -53,8 +53,8 @@ public final class VrfAddressFamily implements Serializable {
   //////////////////////////////////////////
 
   private final AddressFamily _type;
-  private @Nullable RouteDistinguisherOrAuto _exportRt;
-  private @Nullable RouteDistinguisherOrAuto _exportRtEvpn;
-  private @Nullable RouteDistinguisherOrAuto _importRt;
-  private @Nullable RouteDistinguisherOrAuto _importRtEvpn;
+  private @Nullable ExtendedCommunityOrAuto _exportRt;
+  private @Nullable ExtendedCommunityOrAuto _exportRtEvpn;
+  private @Nullable ExtendedCommunityOrAuto _importRt;
+  private @Nullable ExtendedCommunityOrAuto _importRtEvpn;
 }

@@ -9,6 +9,11 @@ tokens {
   WORD
 }
 
+ADDRESS
+:
+  'address'
+;
+
 COMMENT_LINE
 :
   (
@@ -23,6 +28,51 @@ COMMENT_LINE
   ) -> channel ( HIDDEN )
 ;
 
+ADDRESS_FAMILY
+:
+  'address-family'
+;
+
+ADVERTISE
+:
+  'advertise'
+;
+
+ADVERTISE_ALL_VNI
+:
+  'advertise-all-vni'
+;
+
+BGP
+:
+  'bgp'
+;
+
+COLON
+:
+  ':'
+;
+
+COMMUNITY
+:
+  'community'
+  // All other instances are followed by keywords or tokens in default mode
+  {
+    switch (lastTokenType()) {
+      case MATCH:
+        pushMode(M_Words);
+        break;
+      default:
+        break;
+    }
+  }
+;
+
+COMMUNITY_LIST
+:
+  'community-list'
+;
+
 DENY
 :
   'deny'
@@ -33,9 +83,29 @@ DESCRIPTION
   'description' -> pushMode ( M_Remark )
 ;
 
+EVPN
+:
+  'evpn'
+;
+
+EXIT_ADDRESS_FAMILY
+:
+  'exit-address-family'
+;
+
 EXIT_VRF
 :
   'exit-vrf'
+;
+
+EXPANDED
+:
+  'expanded' -> pushMode(M_Word)
+;
+
+EXTERNAL
+:
+  'external'
 ;
 
 FRR_VERSION_LINE
@@ -43,9 +113,33 @@ FRR_VERSION_LINE
   'frr version' F_NonNewline*
 ;
 
+INTERFACE
+:
+  'interface'
+  {
+    switch (lastTokenType()) {
+      case MATCH:
+        pushMode(M_Word);
+        break;
+      default:
+        break;
+    }
+  }
+;
+
+INTERNAL
+:
+  'internal'
+;
+
 IP
 :
   'ip'
+;
+
+IPV4
+:
+  'ipv4'
 ;
 
 IP_ADDRESS
@@ -58,9 +152,34 @@ IP_PREFIX
   F_IpPrefix
 ;
 
+L2VPN
+:
+  'l2vpn'
+;
+
+NEIGHBOR
+:
+  'neighbor' -> pushMode(M_Neighbor)
+;
+
+PEER_GROUP
+:
+  'peer-group' -> pushMode(M_PeerGroup)
+;
+
 PERMIT
 :
   'permit'
+;
+
+PREFIX_LIST
+:
+  'prefix-list' -> pushMode ( M_Word )
+;
+
+REMOTE_AS
+:
+  'remote-as'
 ;
 
 ROUTE_MAP
@@ -73,9 +192,34 @@ ROUTE
   'route'
 ;
 
+ROUTER
+:
+  'router'
+;
+
+ROUTER_ID
+:
+  'router-id'
+;
+
+SET
+:
+  'set'
+;
+
 SUBNET_MASK
 :
   F_SubnetMask
+;
+
+MATCH
+:
+  'match'
+;
+
+METRIC
+:
+  'metric'
 ;
 
 NEWLINE
@@ -96,6 +240,11 @@ UINT16
 UINT32
 :
   F_Uint32
+;
+
+UNICAST
+:
+  'unicast'
 ;
 
 DEC
@@ -266,6 +415,41 @@ F_Whitespace
 ;
 
 // modes
+mode M_Neighbor;
+
+M_Neighbor_IP_Address
+:
+  F_IpAddress -> type(IP_ADDRESS) , popMode
+;
+
+M_Neighbor_Word
+:
+  F_Word -> type(WORD) , popMode
+;
+
+M_Neighbor_WS
+:
+  F_Whitespace+ -> channel ( HIDDEN )
+;
+
+mode M_PeerGroup;
+
+M_Newline
+:
+  F_Newline -> type(NEWLINE), popMode
+;
+
+M_PeerGroup_Word
+:
+  F_Word -> type(WORD) , popMode
+;
+
+M_PeerGroup_WS
+:
+  F_Whitespace+ -> channel ( HIDDEN )
+;
+
+
 mode M_Word;
 
 M_Word_WORD
@@ -306,4 +490,3 @@ M_Remark_WS
 :
   F_Whitespace+ -> channel ( HIDDEN )
 ;
-

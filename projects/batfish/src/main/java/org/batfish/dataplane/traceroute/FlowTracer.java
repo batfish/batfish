@@ -89,7 +89,10 @@ import org.batfish.datamodel.packet_policy.Drop;
 import org.batfish.datamodel.packet_policy.FibLookup;
 import org.batfish.datamodel.packet_policy.FlowEvaluator;
 import org.batfish.datamodel.packet_policy.FlowEvaluator.FlowResult;
+import org.batfish.datamodel.packet_policy.IngressInterfaceVrf;
+import org.batfish.datamodel.packet_policy.LiteralVrfName;
 import org.batfish.datamodel.packet_policy.PacketPolicy;
+import org.batfish.datamodel.packet_policy.VrfExprVisitor;
 import org.batfish.datamodel.pojo.Node;
 import org.batfish.datamodel.transformation.Transformation;
 import org.batfish.datamodel.transformation.TransformationEvaluator;
@@ -484,7 +487,21 @@ class FlowTracer {
       public Boolean visitFibLookup(FibLookup fibLookup) {
         _steps.add(
             new FilterStep(new FilterStepDetail(policy.getName(), INGRESS_FILTER), PERMITTED));
-        String lookupVrfName = fibLookup.getVrfName();
+        String lookupVrfName =
+            fibLookup
+                .getVrfExpr()
+                .accept(
+                    new VrfExprVisitor<String>() {
+                      @Override
+                      public String visitLiteralVrfName(@Nonnull LiteralVrfName expr) {
+                        return expr.getVrfName();
+                      }
+
+                      @Override
+                      public String visitIngressInterfaceVrf(@Nonnull IngressInterfaceVrf expr) {
+                        return incomingInterface.getVrfName();
+                      }
+                    });
         Ip dstIp = result.getFinalFlow().getDstIp();
 
         // Accept if the flow is destined for this vrf on this host.

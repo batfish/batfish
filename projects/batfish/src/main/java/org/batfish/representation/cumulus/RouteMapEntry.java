@@ -13,9 +13,13 @@ import org.batfish.datamodel.LineAction;
 public final class RouteMapEntry implements Serializable {
 
   private final @Nonnull LineAction _action;
+  private @Nullable RouteMapMatchCommunity _matchCommunity;
   private @Nullable RouteMapMatchInterface _matchInterface;
+  private @Nullable RouteMapMatchIpAddressPrefixList _matchIpAddressPrefixList;
   private final int _number;
   private @Nullable String _description;
+
+  private @Nullable RouteMapSetMetric _setMetric;
 
   public RouteMapEntry(int number, LineAction action) {
     _number = number;
@@ -28,11 +32,19 @@ public final class RouteMapEntry implements Serializable {
 
   /** Return stream of match statements for this entry. */
   public @Nonnull Stream<RouteMapMatch> getMatches() {
-    return Stream.<RouteMapMatch>of(_matchInterface).filter(Objects::nonNull);
+    return Stream.of(_matchInterface, _matchCommunity).filter(Objects::nonNull);
   }
 
   public @Nullable RouteMapMatchInterface getMatchInterface() {
     return _matchInterface;
+  }
+
+  public @Nullable RouteMapMatchCommunity getMatchCommunity() {
+    return _matchCommunity;
+  }
+
+  public @Nullable RouteMapMatchIpAddressPrefixList getMatchIpAddressPrefixList() {
+    return _matchIpAddressPrefixList;
   }
 
   public int getNumber() {
@@ -45,14 +57,31 @@ public final class RouteMapEntry implements Serializable {
 
   /** Return stream of set statements for this entry. */
   public @Nonnull Stream<RouteMapSet> getSets() {
-    return Stream.<RouteMapSet>of().filter(Objects::nonNull);
+    return Stream.<RouteMapSet>of(_setMetric).filter(Objects::nonNull);
+  }
+
+  public @Nullable RouteMapSetMetric getSetMetric() {
+    return _setMetric;
   }
 
   public void setMatchInterface(@Nullable RouteMapMatchInterface matchInterface) {
     _matchInterface = matchInterface;
   }
 
+  public void setMatchCommunity(@Nullable RouteMapMatchCommunity matchCommunity) {
+    _matchCommunity = matchCommunity;
+  }
+
+  public void setMatchIpAddressPrefixList(
+      @Nullable RouteMapMatchIpAddressPrefixList matchIpAddressPrefixList) {
+    _matchIpAddressPrefixList = matchIpAddressPrefixList;
+  }
+
   public void setDescription(@Nullable String description) {
     _description = description;
+  }
+
+  public void setSetMetric(@Nullable RouteMapSetMetric setMetric) {
+    _setMetric = setMetric;
   }
 }

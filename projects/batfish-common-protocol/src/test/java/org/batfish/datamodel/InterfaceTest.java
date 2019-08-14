@@ -9,8 +9,11 @@ import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
 import com.google.common.testing.EqualsTester;
+import java.io.IOException;
+import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.datamodel.Interface.Dependency;
 import org.batfish.datamodel.Interface.DependencyType;
+import org.batfish.datamodel.ospf.OspfNetworkType;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
@@ -50,5 +53,38 @@ public class InterfaceTest {
     assertThat(isRealInterfaceName("unset_local_interface"), equalTo(false));
     assertThat(isRealInterfaceName("invalid_local_interface"), equalTo(false));
     assertThat(isRealInterfaceName("dynamic"), equalTo(false));
+  }
+
+  @Test
+  public void testRoutingPolicySettingInBuilder() {
+    String policy = "some_policy";
+    Interface i = Interface.builder().setName("iface").setRoutingPolicy(policy).build();
+    assertThat(i.getRoutingPolicyName(), equalTo(policy));
+  }
+
+  @Test
+  public void testSerialization() throws IOException {
+    Interface i =
+        Interface.builder()
+            .setMtu(7)
+            .setName("ifaceName")
+            .setOspfNetworkType(OspfNetworkType.BROADCAST)
+            .build();
+
+    // test (de)serialization
+    Interface iDeserial = BatfishObjectMapper.clone(i, Interface.class);
+    assertThat(i, equalTo(iDeserial));
+  }
+
+  @Test
+  public void testOspfNetworkTypeEquals() {
+    Interface.Builder i = Interface.builder().setName("iface");
+    new EqualsTester()
+        .addEqualityGroup(i.build(), Interface.builder().setName("iface").build())
+        .addEqualityGroup(i.setOspfNetworkType(OspfNetworkType.BROADCAST).build())
+        .addEqualityGroup(i.setOspfNetworkType(OspfNetworkType.NON_BROADCAST_MULTI_ACCESS).build())
+        .addEqualityGroup(i.setOspfNetworkType(OspfNetworkType.POINT_TO_MULTIPOINT).build())
+        .addEqualityGroup(i.setOspfNetworkType(OspfNetworkType.POINT_TO_POINT).build())
+        .testEquals();
   }
 }

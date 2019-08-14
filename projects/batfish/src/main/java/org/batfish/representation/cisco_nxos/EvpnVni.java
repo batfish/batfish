@@ -11,20 +11,20 @@ public final class EvpnVni implements Serializable {
     _vni = vni;
   }
 
-  public @Nullable RouteDistinguisherOrAuto getExportRt() {
+  public @Nullable ExtendedCommunityOrAuto getExportRt() {
     return _exportRt;
   }
 
-  public void setExportRt(@Nullable RouteDistinguisherOrAuto exportRt) {
+  public void setExportRt(@Nullable ExtendedCommunityOrAuto exportRt) {
     _exportRt = exportRt;
   }
 
   @Nullable
-  public RouteDistinguisherOrAuto getImportRt() {
+  public ExtendedCommunityOrAuto getImportRt() {
     return _importRt;
   }
 
-  public void setImportRt(@Nullable RouteDistinguisherOrAuto importRt) {
+  public void setImportRt(@Nullable ExtendedCommunityOrAuto importRt) {
     _importRt = importRt;
   }
 
@@ -46,6 +46,6 @@ public final class EvpnVni implements Serializable {
 
   private final int _vni;
   private @Nullable RouteDistinguisherOrAuto _rd;
-  private @Nullable RouteDistinguisherOrAuto _exportRt;
-  private @Nullable RouteDistinguisherOrAuto _importRt;
+  private @Nullable ExtendedCommunityOrAuto _exportRt;
+  private @Nullable ExtendedCommunityOrAuto _importRt;
 }

@@ -99,7 +99,6 @@ import static org.batfish.datamodel.matchers.InterfaceMatchers.hasIsis;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasMlagId;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasMtu;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasNativeVlan;
-import static org.batfish.datamodel.matchers.InterfaceMatchers.hasOspfArea;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasOspfAreaName;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasSpeed;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasSwitchPortEncapsulation;
@@ -411,6 +410,7 @@ import org.batfish.representation.cisco.EigrpProcess;
 import org.batfish.representation.cisco.NetworkObject;
 import org.batfish.representation.cisco.NetworkObjectAddressSpecifier;
 import org.batfish.representation.cisco.NetworkObjectGroupAddressSpecifier;
+import org.batfish.representation.cisco.OspfNetworkType;
 import org.batfish.representation.cisco.Tunnel.TunnelMode;
 import org.batfish.representation.cisco.WildcardAddressSpecifier;
 import org.batfish.representation.cisco.eos.AristaEosVxlan;
@@ -4679,7 +4679,7 @@ public class CiscoGrammarTest {
     assertThat(c, hasDefaultVrf(hasOspfProcess("1", hasAreas(hasKey(areaNum)))));
     OspfArea area = c.getDefaultVrf().getOspfProcesses().get("1").getAreas().get(areaNum);
     assertThat(area, OspfAreaMatchers.hasInterfaces(hasItem(ifaceName)));
-    assertThat(c, hasInterface(ifaceName, hasOspfArea(sameInstance(area))));
+    assertThat(c, hasInterface(ifaceName, hasOspfAreaName(areaNum)));
     assertThat(c, hasInterface(ifaceName, isOspfPassive(equalTo(false))));
     assertThat(c, hasInterface(ifaceName, isOspfPointToPoint()));
   }
@@ -4710,7 +4710,7 @@ public class CiscoGrammarTest {
     OspfArea area = vrf.getOspfProcesses().get("1").getAreas().get(areaNum);
     assertThat(area, OspfAreaMatchers.hasInterfaces(hasItem(ifaceName)));
     assertThat(c, hasInterface(ifaceName, hasVrf(sameInstance(vrf))));
-    assertThat(c, hasInterface(ifaceName, hasOspfArea(sameInstance(area))));
+    assertThat(c, hasInterface(ifaceName, hasOspfAreaName(areaNum)));
     assertThat(c, hasInterface(ifaceName, isOspfPassive(equalTo(false))));
     assertThat(c, hasInterface(ifaceName, isOspfPointToPoint()));
   }
@@ -4792,8 +4792,10 @@ public class CiscoGrammarTest {
     Configuration abr = configurations.get(abrName);
 
     // Sanity check: ensure the ABR does not have suppressType7 set for area 1
+    Long areaNum =
+        abr.getVrfs().get(DEFAULT_VRF_NAME).getInterfaces().get("Ethernet1").getOspfAreaName();
     OspfArea abrToArea1 =
-        abr.getVrfs().get(DEFAULT_VRF_NAME).getInterfaces().get("Ethernet1").getOspfArea();
+        abr.getVrfs().get(DEFAULT_VRF_NAME).getOspfProcesses().get("1").getAreas().get(areaNum);
     assertThat(abrToArea1.getNssa(), hasSuppressType7(false));
 
     batfish.computeDataPlane();
@@ -4825,7 +4827,10 @@ public class CiscoGrammarTest {
     abr = configurations.get(abrName);
 
     // This time the ABR should have suppressType7 set for area 1
-    abrToArea1 = abr.getVrfs().get(DEFAULT_VRF_NAME).getInterfaces().get("Ethernet1").getOspfArea();
+    areaNum =
+        abr.getVrfs().get(DEFAULT_VRF_NAME).getInterfaces().get("Ethernet1").getOspfAreaName();
+    abrToArea1 =
+        abr.getVrfs().get(DEFAULT_VRF_NAME).getOspfProcesses().get("1").getAreas().get(areaNum);
     assertThat(abrToArea1.getNssa(), hasSuppressType7(true));
 
     batfish.computeDataPlane();
@@ -4862,6 +4867,32 @@ public class CiscoGrammarTest {
 
     assertTrue(e0Sub0.getOspfPointToPoint());
     assertFalse(e0Sub1.getOspfPointToPoint());
+  }
+
+  @Test
+  public void testOspfNetworkTypes() {
+    CiscoConfiguration config =
+        parseCiscoConfig("ospf-network-types", ConfigurationFormat.CISCO_IOS);
+
+    String eth0 = "Ethernet0/0";
+    String eth1 = "Ethernet0/1";
+    String eth2 = "Ethernet0/2";
+    String eth3 = "Ethernet0/3";
+    String eth4 = "Ethernet0/4";
+    String eth5 = "Ethernet0/5";
+
+    Map<String, org.batfish.representation.cisco.Interface> ifaces = config.getInterfaces();
+    assertThat(ifaces.keySet(), containsInAnyOrder(eth0, eth1, eth2, eth3, eth4, eth5));
+    // No network set should result in a null network type
+    assertThat(ifaces.get(eth0).getOspfNetworkType(), nullValue());
+    // Confirm explicitly set network types show up as expected in the VS model
+    assertThat(ifaces.get(eth1).getOspfNetworkType(), equalTo(OspfNetworkType.POINT_TO_POINT));
+    assertThat(ifaces.get(eth2).getOspfNetworkType(), equalTo(OspfNetworkType.BROADCAST));
+    assertThat(ifaces.get(eth3).getOspfNetworkType(), equalTo(OspfNetworkType.NON_BROADCAST));
+    assertThat(ifaces.get(eth4).getOspfNetworkType(), equalTo(OspfNetworkType.POINT_TO_MULTIPOINT));
+    assertThat(
+        ifaces.get(eth5).getOspfNetworkType(),
+        equalTo(OspfNetworkType.POINT_TO_MULTIPOINT_NON_BROADCAST));
   }
 
   @Test
