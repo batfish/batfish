@@ -166,7 +166,6 @@ import org.batfish.datamodel.RouteFilterLine;
 import org.batfish.datamodel.RouteFilterList;
 import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.SubRange;
-import org.batfish.datamodel.SwitchportMode;
 import org.batfish.datamodel.TcpFlags;
 import org.batfish.datamodel.TcpFlagsMatchConditions;
 import org.batfish.datamodel.UniverseIpSpace;
@@ -276,6 +275,7 @@ import org.batfish.representation.cisco_nxos.RouteMapSetMetricType;
 import org.batfish.representation.cisco_nxos.RouteMapSetOrigin;
 import org.batfish.representation.cisco_nxos.RouteMapSetTag;
 import org.batfish.representation.cisco_nxos.StaticRoute;
+import org.batfish.representation.cisco_nxos.SwitchportMode;
 import org.batfish.representation.cisco_nxos.TcpOptions;
 import org.batfish.representation.cisco_nxos.UdpOptions;
 import org.batfish.representation.cisco_nxos.Vlan;
@@ -986,126 +986,136 @@ public final class CiscoNxosGrammarTest {
     {
       org.batfish.datamodel.Interface iface = c.getAllInterfaces().get("Ethernet1/1");
       assertThat(iface, isActive());
-      assertThat(iface.getSwitchportMode(), equalTo(SwitchportMode.ACCESS));
+      assertThat(iface.getSwitchportMode(), equalTo(org.batfish.datamodel.SwitchportMode.ACCESS));
       assertThat(iface.getAccessVlan(), equalTo(1));
     }
     {
       org.batfish.datamodel.Interface iface = c.getAllInterfaces().get("loopback0");
       assertThat(iface, isActive());
-      assertThat(iface.getSwitchportMode(), equalTo(SwitchportMode.NONE));
+      assertThat(iface.getSwitchportMode(), equalTo(org.batfish.datamodel.SwitchportMode.NONE));
     }
     {
       org.batfish.datamodel.Interface iface = c.getAllInterfaces().get("mgmt0");
       // Management interfaces are blacklisted in post-processing
       assertThat(iface, isActive(false));
-      assertThat(iface.getSwitchportMode(), equalTo(SwitchportMode.NONE));
+      assertThat(iface.getSwitchportMode(), equalTo(org.batfish.datamodel.SwitchportMode.NONE));
     }
     {
       org.batfish.datamodel.Interface iface = c.getAllInterfaces().get("port-channel1");
       assertThat(iface, isActive(false));
-      assertThat(iface.getSwitchportMode(), equalTo(SwitchportMode.ACCESS));
+      assertThat(iface.getSwitchportMode(), equalTo(org.batfish.datamodel.SwitchportMode.ACCESS));
       assertThat(iface.getAccessVlan(), equalTo(1));
     }
     {
       org.batfish.datamodel.Interface iface = c.getAllInterfaces().get("Ethernet1/2");
       assertThat(iface, isActive());
-      assertThat(iface.getSwitchportMode(), equalTo(SwitchportMode.NONE));
+      assertThat(iface.getSwitchportMode(), equalTo(org.batfish.datamodel.SwitchportMode.NONE));
     }
     {
       org.batfish.datamodel.Interface iface = c.getAllInterfaces().get("Ethernet1/2.1");
       assertThat(iface, isActive(false));
-      assertThat(iface.getSwitchportMode(), equalTo(SwitchportMode.NONE));
+      assertThat(iface.getSwitchportMode(), equalTo(org.batfish.datamodel.SwitchportMode.NONE));
       assertThat(iface.getEncapsulationVlan(), nullValue());
     }
     {
       org.batfish.datamodel.Interface iface = c.getAllInterfaces().get("Ethernet1/2.2");
       assertThat(iface, isActive(false));
-      assertThat(iface.getSwitchportMode(), equalTo(SwitchportMode.NONE));
+      assertThat(iface.getSwitchportMode(), equalTo(org.batfish.datamodel.SwitchportMode.NONE));
       assertThat(iface.getEncapsulationVlan(), equalTo(2));
     }
     {
       org.batfish.datamodel.Interface iface = c.getAllInterfaces().get("port-channel2");
       assertThat(iface, isActive(false));
-      assertThat(iface.getSwitchportMode(), equalTo(SwitchportMode.NONE));
+      assertThat(iface.getSwitchportMode(), equalTo(org.batfish.datamodel.SwitchportMode.NONE));
     }
     {
       org.batfish.datamodel.Interface iface = c.getAllInterfaces().get("port-channel2.1");
       assertThat(iface, isActive(false));
-      assertThat(iface.getSwitchportMode(), equalTo(SwitchportMode.NONE));
+      assertThat(iface.getSwitchportMode(), equalTo(org.batfish.datamodel.SwitchportMode.NONE));
       assertThat(iface.getEncapsulationVlan(), nullValue());
     }
     {
       org.batfish.datamodel.Interface iface = c.getAllInterfaces().get("Ethernet1/3");
       assertThat(iface, isActive());
-      assertThat(iface.getSwitchportMode(), equalTo(SwitchportMode.NONE));
+      assertThat(iface.getSwitchportMode(), equalTo(org.batfish.datamodel.SwitchportMode.NONE));
     }
     {
       org.batfish.datamodel.Interface iface = c.getAllInterfaces().get("Ethernet1/4");
       assertThat(iface, isActive());
-      assertThat(iface.getSwitchportMode(), equalTo(SwitchportMode.ACCESS));
+      assertThat(iface.getSwitchportMode(), equalTo(org.batfish.datamodel.SwitchportMode.ACCESS));
       assertThat(iface.getAccessVlan(), equalTo(2));
     }
     {
       org.batfish.datamodel.Interface iface = c.getAllInterfaces().get("Ethernet1/5");
       assertThat(iface, isActive());
-      assertThat(iface.getSwitchportMode(), equalTo(SwitchportMode.TRUNK));
+      assertThat(iface.getSwitchportMode(), equalTo(org.batfish.datamodel.SwitchportMode.TRUNK));
       assertThat(iface.getNativeVlan(), equalTo(2));
       assertThat(iface.getAllowedVlans(), equalTo(IntegerSpace.of(Range.closed(1, 4094))));
     }
     {
       org.batfish.datamodel.Interface iface = c.getAllInterfaces().get("Ethernet1/6");
       assertThat(iface, isActive());
-      assertThat(iface.getSwitchportMode(), equalTo(SwitchportMode.TRUNK));
+      assertThat(iface.getSwitchportMode(), equalTo(org.batfish.datamodel.SwitchportMode.TRUNK));
       assertThat(iface.getNativeVlan(), equalTo(1));
       assertThat(iface.getAllowedVlans(), equalTo(IntegerSpace.of(Range.closed(1, 3))));
     }
     {
       org.batfish.datamodel.Interface iface = c.getAllInterfaces().get("Ethernet1/7");
       assertThat(iface, isActive());
-      assertThat(iface.getSwitchportMode(), equalTo(SwitchportMode.TRUNK));
+      assertThat(iface.getSwitchportMode(), equalTo(org.batfish.datamodel.SwitchportMode.TRUNK));
       assertThat(iface.getNativeVlan(), equalTo(1));
       assertThat(iface.getAllowedVlans(), equalTo(IntegerSpace.of(Range.closed(1, 4))));
     }
     {
       org.batfish.datamodel.Interface iface = c.getAllInterfaces().get("Ethernet1/8");
       assertThat(iface, isActive());
-      assertThat(iface.getSwitchportMode(), equalTo(SwitchportMode.TRUNK));
+      assertThat(iface.getSwitchportMode(), equalTo(org.batfish.datamodel.SwitchportMode.TRUNK));
       assertThat(iface.getNativeVlan(), equalTo(1));
       assertThat(iface.getAllowedVlans(), equalTo(IntegerSpace.of(Range.closed(1, 3966))));
     }
     {
       org.batfish.datamodel.Interface iface = c.getAllInterfaces().get("Ethernet1/9");
       assertThat(iface, isActive());
-      assertThat(iface.getSwitchportMode(), equalTo(SwitchportMode.TRUNK));
+      assertThat(iface.getSwitchportMode(), equalTo(org.batfish.datamodel.SwitchportMode.TRUNK));
       assertThat(iface.getNativeVlan(), equalTo(1));
       assertThat(iface.getAllowedVlans(), equalTo(IntegerSpace.EMPTY));
     }
     {
       org.batfish.datamodel.Interface iface = c.getAllInterfaces().get("Ethernet1/10");
       assertThat(iface, isActive());
-      assertThat(iface.getSwitchportMode(), equalTo(SwitchportMode.TRUNK));
+      assertThat(iface.getSwitchportMode(), equalTo(org.batfish.datamodel.SwitchportMode.TRUNK));
       assertThat(iface.getNativeVlan(), equalTo(1));
       assertThat(iface.getAllowedVlans(), equalTo(IntegerSpace.of(Range.closed(1, 2))));
     }
     {
       org.batfish.datamodel.Interface iface = c.getAllInterfaces().get("Ethernet1/11");
       assertThat(iface, isActive());
-      assertThat(iface.getSwitchportMode(), equalTo(SwitchportMode.ACCESS));
+      assertThat(iface.getSwitchportMode(), equalTo(org.batfish.datamodel.SwitchportMode.ACCESS));
       assertThat(iface.getAccessVlan(), equalTo(1));
     }
-    // TODO: something with dot1q-tunnel, fex-fabric
+    {
+      org.batfish.datamodel.Interface iface = c.getAllInterfaces().get("Ethernet1/12");
+      assertThat(iface, isActive());
+      assertThat(
+          iface.getSwitchportMode(), equalTo(org.batfish.datamodel.SwitchportMode.DOT1Q_TUNNEL));
+    }
+    {
+      org.batfish.datamodel.Interface iface = c.getAllInterfaces().get("Ethernet1/13");
+      assertThat(iface, isActive());
+      assertThat(
+          iface.getSwitchportMode(), equalTo(org.batfish.datamodel.SwitchportMode.FEX_FABRIC));
+    }
     {
       org.batfish.datamodel.Interface iface = c.getAllInterfaces().get("Ethernet1/14");
       assertThat(iface, isActive());
-      assertThat(iface.getSwitchportMode(), equalTo(SwitchportMode.TRUNK));
+      assertThat(iface.getSwitchportMode(), equalTo(org.batfish.datamodel.SwitchportMode.TRUNK));
       assertThat(iface.getNativeVlan(), equalTo(1));
       assertThat(iface.getAllowedVlans(), equalTo(IntegerSpace.of(Range.closed(1, 4094))));
     }
     {
       org.batfish.datamodel.Interface iface = c.getAllInterfaces().get("Ethernet1/15");
       assertThat(iface, isActive());
-      assertThat(iface.getSwitchportMode(), equalTo(SwitchportMode.ACCESS));
-      assertThat(iface.getAccessVlan(), equalTo(1));
+      assertThat(iface.getSwitchportMode(), equalTo(org.batfish.datamodel.SwitchportMode.MONITOR));
     }
   }
 
@@ -1249,7 +1259,16 @@ public final class CiscoNxosGrammarTest {
       assertThat(iface.getSwitchportMode(), equalTo(SwitchportMode.ACCESS));
       assertThat(iface.getAccessVlan(), equalTo(1));
     }
-    // TODO: something with dot1q-tunnel, fex-fabric
+    {
+      Interface iface = vc.getInterfaces().get("Ethernet1/12");
+      assertFalse(iface.getShutdown());
+      assertThat(iface.getSwitchportMode(), equalTo(SwitchportMode.DOT1Q_TUNNEL));
+    }
+    {
+      Interface iface = vc.getInterfaces().get("Ethernet1/13");
+      assertFalse(iface.getShutdown());
+      assertThat(iface.getSwitchportMode(), equalTo(SwitchportMode.FEX_FABRIC));
+    }
     {
       Interface iface = vc.getInterfaces().get("Ethernet1/14");
       assertFalse(iface.getShutdown());
@@ -1260,9 +1279,8 @@ public final class CiscoNxosGrammarTest {
     {
       Interface iface = vc.getInterfaces().get("Ethernet1/15");
       assertFalse(iface.getShutdown());
-      assertThat(iface.getSwitchportMode(), equalTo(SwitchportMode.ACCESS));
+      assertThat(iface.getSwitchportMode(), equalTo(SwitchportMode.MONITOR));
       assertTrue(iface.getSwitchportMonitor());
-      assertThat(iface.getAccessVlan(), equalTo(1));
     }
   }
 
@@ -5005,7 +5023,7 @@ public final class CiscoNxosGrammarTest {
       assertThat(iface, isActive(false));
       assertThat(iface, isAutoState());
       assertThat(iface, hasVlan(1));
-      assertThat(iface, hasSwitchPortMode(SwitchportMode.NONE));
+      assertThat(iface, hasSwitchPortMode(org.batfish.datamodel.SwitchportMode.NONE));
       assertThat(iface, hasInterfaceType(InterfaceType.VLAN));
     }
     {
@@ -5013,7 +5031,7 @@ public final class CiscoNxosGrammarTest {
       assertThat(iface, isActive(false));
       assertThat(iface, isAutoState());
       assertThat(iface, hasVlan(2));
-      assertThat(iface, hasSwitchPortMode(SwitchportMode.NONE));
+      assertThat(iface, hasSwitchPortMode(org.batfish.datamodel.SwitchportMode.NONE));
       assertThat(iface, hasInterfaceType(InterfaceType.VLAN));
     }
     {
@@ -5021,7 +5039,7 @@ public final class CiscoNxosGrammarTest {
       assertThat(iface, isActive(false));
       assertThat(iface, isAutoState(false));
       assertThat(iface, hasVlan(3));
-      assertThat(iface, hasSwitchPortMode(SwitchportMode.NONE));
+      assertThat(iface, hasSwitchPortMode(org.batfish.datamodel.SwitchportMode.NONE));
       assertThat(iface, hasInterfaceType(InterfaceType.VLAN));
     }
     {
@@ -5029,7 +5047,7 @@ public final class CiscoNxosGrammarTest {
       assertThat(iface, isActive(false));
       assertThat(iface, isAutoState());
       assertThat(iface, hasVlan(4));
-      assertThat(iface, hasSwitchPortMode(SwitchportMode.NONE));
+      assertThat(iface, hasSwitchPortMode(org.batfish.datamodel.SwitchportMode.NONE));
       assertThat(iface, hasInterfaceType(InterfaceType.VLAN));
     }
     {
@@ -5037,7 +5055,7 @@ public final class CiscoNxosGrammarTest {
       assertThat(iface, isActive());
       assertThat(iface, isAutoState(false));
       assertThat(iface, hasVlan(6));
-      assertThat(iface, hasSwitchPortMode(SwitchportMode.NONE));
+      assertThat(iface, hasSwitchPortMode(org.batfish.datamodel.SwitchportMode.NONE));
       assertThat(iface, hasInterfaceType(InterfaceType.VLAN));
     }
     {
@@ -5045,7 +5063,7 @@ public final class CiscoNxosGrammarTest {
       assertThat(iface, isActive());
       assertThat(iface, isAutoState());
       assertThat(iface, hasVlan(7));
-      assertThat(iface, hasSwitchPortMode(SwitchportMode.NONE));
+      assertThat(iface, hasSwitchPortMode(org.batfish.datamodel.SwitchportMode.NONE));
       assertThat(iface, hasInterfaceType(InterfaceType.VLAN));
     }
   }
