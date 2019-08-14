@@ -16,6 +16,7 @@ import static org.junit.Assert.assertTrue;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.ImmutableSortedMap;
 import java.util.Map;
 import java.util.Set;
 import org.antlr.v4.runtime.ParserRuleContext;
@@ -24,6 +25,7 @@ import org.batfish.common.BatfishLogger;
 import org.batfish.common.Warnings;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.config.Settings;
+import org.batfish.datamodel.DefinedStructureInfo;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.Prefix;
@@ -67,6 +69,16 @@ public class CumulusFrrGrammarTest {
     CONFIG.setFilename(FILENAME);
     CONFIG.setAnswerElement(new ConvertConfigurationAnswerElement());
     CONFIG.setWarnings(new Warnings());
+  }
+
+  private static DefinedStructureInfo getDefinedStructureInfo(
+      CumulusStructureType type, String name) {
+    return CONFIG
+        .getAnswerElement()
+        .getDefinedStructures()
+        .get(CONFIG.getFilename())
+        .getOrDefault(type.getDescription(), ImmutableSortedMap.of())
+        .get(name);
   }
 
   private Set<Integer> getStructureReferences(
@@ -331,6 +343,9 @@ public class CumulusFrrGrammarTest {
   public void testCumulusFrrVrf() {
     parse("vrf NAME\n exit-vrf");
     assertThat(CONFIG.getVrfs().keySet(), equalTo(ImmutableSet.of("NAME")));
+    assertThat(
+        getDefinedStructureInfo(CumulusStructureType.VRF, "NAME").getDefinitionLines(),
+        contains(1));
   }
 
   @Test
@@ -352,7 +367,7 @@ public class CumulusFrrGrammarTest {
   }
 
   @Test
-  public void testCumulusFrrVrfRouteMap() {
+  public void testCumulusFrrRouteMap() {
     String name = "ROUTE-MAP-NAME";
     parse(String.format("route-map %s permit 10\nroute-map %s deny 20\n", name, name));
     assertThat(CONFIG.getRouteMaps().keySet(), equalTo(ImmutableSet.of(name)));
@@ -365,6 +380,10 @@ public class CumulusFrrGrammarTest {
 
     RouteMapEntry entry2 = rm.getEntries().get(20);
     assertThat(entry2.getAction(), equalTo(LineAction.DENY));
+
+    assertThat(
+        getDefinedStructureInfo(CumulusStructureType.ROUTE_MAP, name).getDefinitionLines(),
+        equalTo(ImmutableSet.of(1, 2)));
   }
 
   @Test
@@ -401,6 +420,20 @@ public class CumulusFrrGrammarTest {
     assertThat(
         entry.getMatchIpAddressPrefixList().getNames(),
         equalTo(ImmutableList.of("PREFIX_LIST1", "PREFIX_LIST2")));
+
+    Set<Integer> reference =
+        getStructureReferences(
+            CumulusStructureType.IP_PREFIX_LIST,
+            "PREFIX_LIST1",
+            CumulusStructureUsage.ROUTE_MAP_MATCH_IP_ADDRESS_PREFIX_LIST);
+    assertThat(reference, equalTo(ImmutableSet.of(2)));
+
+    reference =
+        getStructureReferences(
+            CumulusStructureType.IP_PREFIX_LIST,
+            "PREFIX_LIST2",
+            CumulusStructureUsage.ROUTE_MAP_MATCH_IP_ADDRESS_PREFIX_LIST);
+    assertThat(reference, equalTo(ImmutableSet.of(3)));
   }
 
   @Test
@@ -427,6 +460,10 @@ public class CumulusFrrGrammarTest {
         equalTo(
             ImmutableList.of(
                 StandardCommunity.parse("10000:10"), StandardCommunity.parse("20000:20"))));
+
+    assertThat(
+        getDefinedStructureInfo(CumulusStructureType.IP_COMMUNITY_LIST, name).getDefinitionLines(),
+        equalTo(ImmutableSet.of(1)));
   }
 
   @Test
@@ -437,6 +474,11 @@ public class CumulusFrrGrammarTest {
 
     RouteMapEntry entry = CONFIG.getRouteMaps().get(name).getEntries().get(10);
     assertThat(entry.getMatchInterface().getInterfaces(), equalTo(ImmutableSet.of("lo")));
+
+    assertThat(
+        getStructureReferences(
+            CumulusStructureType.INTERFACE, "lo", CumulusStructureUsage.ROUTE_MAP_MATCH_INTERFACE),
+        equalTo(ImmutableSet.of(2)));
   }
 
   @Test
