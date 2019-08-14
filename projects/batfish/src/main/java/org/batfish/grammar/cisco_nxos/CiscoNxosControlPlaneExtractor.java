@@ -180,6 +180,7 @@ import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Evv_rdContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Evv_route_targetContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.I_bandwidthContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.I_channel_groupContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.I_delayContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.I_descriptionContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.I_encapsulationContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.I_ip_addressContext;
@@ -546,6 +547,8 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
   private static final IntegerSpace HSRP_TRACK_DECREMENT_RANGE =
       IntegerSpace.of(Range.closed(1, 255));
   private static final IntegerSpace HSRP_VERSION_RANGE = IntegerSpace.of(Range.closed(1, 2));
+  private static final IntegerSpace INTERFACE_DELAY_10US_RANGE =
+      IntegerSpace.of(Range.closed(1, 16777215));
   private static final IntegerSpace INTERFACE_DESCRIPTION_LENGTH_RANGE =
       IntegerSpace.of(Range.closed(1, 254));
   private static final IntegerSpace INTERFACE_OSPF_COST_RANGE =
@@ -1072,6 +1075,14 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
   public void exitIhgam_key_chain(Ihgam_key_chainContext ctx) {
     // TODO: support HSRP md5 authentication key-chain
     todo(ctx);
+  }
+
+  @Override
+  public void exitI_delay(I_delayContext ctx) {
+    toIntegerInSpace(
+            ctx, ctx.delay, INTERFACE_DELAY_10US_RANGE, "Interface delay (tens of microseconds)")
+        .ifPresent(
+            delay -> _currentInterfaces.forEach(iface -> iface.setDelayTensOfMicroseconds(delay)));
   }
 
   @Override
