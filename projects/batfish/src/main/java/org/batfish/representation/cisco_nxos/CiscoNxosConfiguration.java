@@ -91,7 +91,6 @@ import org.batfish.datamodel.RouteFilterLine;
 import org.batfish.datamodel.RouteFilterList;
 import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.SubRange;
-import org.batfish.datamodel.SwitchportMode;
 import org.batfish.datamodel.TcpFlags;
 import org.batfish.datamodel.TcpFlagsMatchConditions;
 import org.batfish.datamodel.VniSettings;
@@ -1158,8 +1157,8 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
     }
 
     // switchport+vlan settings
-    NxosSwitchportMode switchportMode = iface.getSwitchportMode();
-    newIfaceBuilder.setSwitchportMode(toSwitchportMode(switchportMode));
+    SwitchportMode switchportMode = iface.getSwitchportMode();
+    newIfaceBuilder.setSwitchportMode(switchportMode.toSwitchportMode());
     switch (iface.getSwitchportMode()) {
       case ACCESS:
         newIfaceBuilder.setSwitchport(true);
@@ -1257,27 +1256,6 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
 
     newIface.setOwner(_c);
     return newIface;
-  }
-
-  private static @Nonnull SwitchportMode toSwitchportMode(NxosSwitchportMode nxosSwitchportMode) {
-    switch (nxosSwitchportMode) {
-      case ACCESS:
-        return SwitchportMode.ACCESS;
-      case DOT1Q_TUNNEL:
-        return SwitchportMode.DOT1Q_TUNNEL;
-      case FEX_FABRIC:
-        return SwitchportMode.FEX_FABRIC;
-      case MONITOR:
-        return SwitchportMode.MONITOR;
-      case NONE:
-        return SwitchportMode.NONE;
-      case TRUNK:
-        return SwitchportMode.TRUNK;
-      default:
-        // should never happen
-        throw new IllegalArgumentException(
-            String.format("Unsupported switchport mode: %s", nxosSwitchportMode));
-    }
   }
 
   private @Nonnull InterfaceType toInterfaceType(

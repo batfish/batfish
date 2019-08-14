@@ -39,10 +39,10 @@ public final class Interface implements Serializable {
    * </ul>
    */
   private static boolean defaultShutdown(
-      NxosSwitchportMode switchportMode, CiscoNxosInterfaceType type, boolean subinterface) {
+      SwitchportMode switchportMode, CiscoNxosInterfaceType type, boolean subinterface) {
     switch (type) {
       case ETHERNET:
-        return switchportMode == NxosSwitchportMode.NONE;
+        return switchportMode == SwitchportMode.NONE;
 
       case PORT_CHANNEL:
         return subinterface;
@@ -125,7 +125,7 @@ public final class Interface implements Serializable {
   private final @Nonnull Set<InterfaceAddressWithAttributes> _secondaryAddresses;
   private @Nullable Boolean _shutdown;
   private @Nullable Integer _speedMbps;
-  private @Nonnull NxosSwitchportMode _switchportMode;
+  private @Nonnull SwitchportMode _switchportMode;
   private boolean _switchportMonitor;
   private final @Nonnull CiscoNxosInterfaceType _type;
   private final @Nullable Integer _vlan;
@@ -280,7 +280,7 @@ public final class Interface implements Serializable {
   }
 
   @Nonnull
-  public NxosSwitchportMode getSwitchportMode() {
+  public SwitchportMode getSwitchportMode() {
     return _switchportMode;
   }
 
@@ -300,23 +300,23 @@ public final class Interface implements Serializable {
     return _vrfMember;
   }
 
-  private static @Nonnull NxosSwitchportMode getDefaultSwitchportSettings(
+  private static @Nonnull SwitchportMode getDefaultSwitchportSettings(
       boolean isSubinterface, CiscoNxosInterfaceType type) {
     switch (type) {
       case ETHERNET:
       case PORT_CHANNEL:
         if (isSubinterface) {
           // this is a subinterface
-          return NxosSwitchportMode.NONE;
+          return SwitchportMode.NONE;
         } else {
           // this is a parent interface
-          return NxosSwitchportMode.ACCESS;
+          return SwitchportMode.ACCESS;
         }
 
       case LOOPBACK:
       case MGMT:
       default:
-        return NxosSwitchportMode.NONE;
+        return SwitchportMode.NONE;
     }
   }
 
@@ -380,7 +380,7 @@ public final class Interface implements Serializable {
     _shutdown = shutdown;
   }
 
-  public void setSwitchportMode(NxosSwitchportMode switchportMode) {
+  public void setSwitchportMode(SwitchportMode switchportMode) {
     _switchportMode = switchportMode;
   }
 
