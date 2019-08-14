@@ -3296,7 +3296,6 @@ public final class CiscoNxosGrammarTest {
       assertTrue(iface.getOspfEnabled());
       assertThat(iface.getOspfAreaName(), equalTo(0L));
       assertTrue(iface.getOspfPassive());
-      assertFalse(iface.getOspfNetworkType() == OspfNetworkType.POINT_TO_POINT);
     }
   }
 
