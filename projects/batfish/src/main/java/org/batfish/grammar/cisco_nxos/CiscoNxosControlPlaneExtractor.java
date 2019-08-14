@@ -196,6 +196,7 @@ import org.batfish.grammar.cisco_nxos.CiscoNxosParser.I_switchport_mode_accessCo
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.I_switchport_mode_dot1q_tunnelContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.I_switchport_mode_fex_fabricContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.I_switchport_mode_trunkContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.I_switchport_monitorContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.I_switchport_switchportContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.I_switchport_trunk_allowedContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.I_switchport_trunk_nativeContext;
@@ -3649,6 +3650,11 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
   @Override
   public void exitI_switchport_mode_trunk(I_switchport_mode_trunkContext ctx) {
     _currentInterfaces.forEach(iface -> iface.setSwitchportMode(SwitchportMode.TRUNK));
+  }
+
+  @Override
+  public void exitI_switchport_monitor(I_switchport_monitorContext ctx) {
+    _currentInterfaces.forEach(iface -> iface.setSwitchportMonitor(true));
   }
 
   @Override

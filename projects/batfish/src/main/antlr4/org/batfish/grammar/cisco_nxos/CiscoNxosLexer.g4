@@ -1991,7 +1991,12 @@ MODE
 
 MONITOR
 :
-  'monitor' -> pushMode(M_Word)
+  'monitor'
+  {
+    if (lastTokenType() == FLOW) {
+      pushMode(M_Word);
+    }
+  }
 ;
 
 MROUTER

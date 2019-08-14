@@ -124,6 +124,7 @@ public final class Interface implements Serializable {
   private @Nullable Boolean _shutdown;
   private @Nullable Integer _speedMbps;
   private @Nonnull SwitchportMode _switchportMode;
+  private boolean _switchportMonitor;
   private final @Nonnull CiscoNxosInterfaceType _type;
   private final @Nullable Integer _vlan;
   private @Nullable String _vrfMember;
@@ -262,6 +263,10 @@ public final class Interface implements Serializable {
     return _switchportMode;
   }
 
+  public boolean getSwitchportMonitor() {
+    return _switchportMonitor;
+  }
+
   public @Nonnull CiscoNxosInterfaceType getType() {
     return _type;
   }
@@ -348,6 +353,10 @@ public final class Interface implements Serializable {
 
   public void setSwitchportMode(SwitchportMode switchportMode) {
     _switchportMode = switchportMode;
+  }
+
+  public void setSwitchportMonitor(boolean switchportMonitor) {
+    _switchportMonitor = switchportMonitor;
   }
 
   public void setVrfMember(String vrfMember) {

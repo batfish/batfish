@@ -493,6 +493,7 @@ i_switchport
   (
     i_switchport_access
     | i_switchport_mode
+    | i_switchport_monitor
     | i_switchport_switchport
     | i_switchport_trunk_allowed
     | i_switchport_trunk
@@ -533,6 +534,11 @@ i_switchport_mode_fex_fabric
 i_switchport_mode_trunk
 :
   TRUNK NEWLINE
+;
+
+i_switchport_monitor
+:
+  MONITOR NEWLINE
 ;
 
 i_switchport_switchport
