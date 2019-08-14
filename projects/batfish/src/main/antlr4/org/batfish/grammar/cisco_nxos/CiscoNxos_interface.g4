@@ -540,7 +540,7 @@ i_null
 
 i_shutdown
 :
-  SHUTDOWN NEWLINE
+  SHUTDOWN FORCE? NEWLINE
 ;
 
 i_speed

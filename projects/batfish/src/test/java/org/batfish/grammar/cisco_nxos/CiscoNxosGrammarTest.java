@@ -843,6 +843,58 @@ public final class CiscoNxosGrammarTest {
   }
 
   @Test
+  public void testInterfaceShutdownConversion() throws IOException {
+    String hostname = "nxos_interface_shutdown";
+    Configuration c = parseConfig(hostname);
+
+    assertThat(
+        c.getAllInterfaces(), hasKeys("Ethernet1/1", "Ethernet1/2", "Ethernet1/3", "Ethernet1/4"));
+    {
+      org.batfish.datamodel.Interface iface = c.getAllInterfaces().get("Ethernet1/1");
+      assertThat(iface, isActive());
+    }
+    {
+      org.batfish.datamodel.Interface iface = c.getAllInterfaces().get("Ethernet1/2");
+      assertThat(iface, isActive(false));
+    }
+    {
+      org.batfish.datamodel.Interface iface = c.getAllInterfaces().get("Ethernet1/3");
+      // TODO: more interesting test of regular shutdown vs force shutdown
+      assertThat(iface, isActive(false));
+    }
+    {
+      org.batfish.datamodel.Interface iface = c.getAllInterfaces().get("Ethernet1/4");
+      assertThat(iface, isActive());
+    }
+  }
+
+  @Test
+  public void testInterfaceShutdownExtraction() {
+    String hostname = "nxos_interface_shutdown";
+    CiscoNxosConfiguration vc = parseVendorConfig(hostname);
+
+    assertThat(
+        vc.getInterfaces(), hasKeys("Ethernet1/1", "Ethernet1/2", "Ethernet1/3", "Ethernet1/4"));
+    {
+      Interface iface = vc.getInterfaces().get("Ethernet1/1");
+      assertFalse(iface.getShutdown());
+    }
+    {
+      Interface iface = vc.getInterfaces().get("Ethernet1/2");
+      assertTrue(iface.getShutdown());
+    }
+    {
+      Interface iface = vc.getInterfaces().get("Ethernet1/3");
+      // TODO: more interesting test of regular shutdown vs force shutdown
+      assertTrue(iface.getShutdown());
+    }
+    {
+      Interface iface = vc.getInterfaces().get("Ethernet1/4");
+      assertFalse(iface.getShutdown());
+    }
+  }
+
+  @Test
   public void testInterfaceSpanningTreeParsing() {
     // TODO: make into extraction test
     assertThat(parseVendorConfig("nxos_interface_spanning_tree"), notNullValue());
