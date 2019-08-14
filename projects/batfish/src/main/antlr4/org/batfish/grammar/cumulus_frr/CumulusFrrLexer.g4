@@ -113,6 +113,11 @@ FRR_VERSION_LINE
   'frr version' F_NonNewline*
 ;
 
+GE
+:
+  'ge'
+;
+
 INTERFACE
 :
   'interface'
@@ -155,6 +160,11 @@ IP_PREFIX
 L2VPN
 :
   'l2vpn'
+;
+
+LE
+:
+  'le'
 ;
 
 NEIGHBOR
@@ -205,6 +215,11 @@ ROUTER_ID
 SET
 :
   'set'
+;
+
+SEQ
+:
+  'seq'
 ;
 
 SUBNET_MASK

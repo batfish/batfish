@@ -1,6 +1,6 @@
 parser grammar CumulusFrrParser;
 
-import CumulusFrr_bgp, CumulusFrr_common, CumulusFrr_ip_community_list, CumulusFrr_routemap, CumulusFrr_vrf;
+import CumulusFrr_bgp, CumulusFrr_common, CumulusFrr_ip_community_list, CumulusFrr_ip_prefix_list, CumulusFrr_routemap, CumulusFrr_vrf;
 
 options {
   superClass =
@@ -26,5 +26,9 @@ statement
 
 s_ip
 :
-  IP ip_community_list
+  IP
+  (
+    ip_community_list
+    | ip_prefix_list
+  )
 ;
