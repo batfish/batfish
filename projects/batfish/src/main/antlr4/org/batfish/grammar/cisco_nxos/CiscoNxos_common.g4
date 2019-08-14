@@ -57,6 +57,11 @@ interface_address
   | iaddress = ip_prefix
 ;
 
+interface_ipv6_address
+:
+  address6_with_length = ipv6_prefix
+;
+
 interface_name
 :
   prefix = interface_prefix middle = interface_middle? parent_suffix =

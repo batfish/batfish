@@ -125,7 +125,6 @@ import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.Prefix6;
 import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.SubRange;
-import org.batfish.datamodel.SwitchportMode;
 import org.batfish.datamodel.TcpFlags;
 import org.batfish.datamodel.UniverseIpSpace;
 import org.batfish.datamodel.bgp.RouteDistinguisher;
@@ -187,8 +186,11 @@ import org.batfish.grammar.cisco_nxos.CiscoNxosParser.I_delayContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.I_descriptionContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.I_encapsulationContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.I_ip_access_groupContext;
-import org.batfish.grammar.cisco_nxos.CiscoNxosParser.I_ip_addressContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.I_ip_address_concreteContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.I_ip_address_dhcpContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.I_ip_policyContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.I_ipv6_address_concreteContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.I_ipv6_address_dhcpContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.I_mtuContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.I_no_autostateContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.I_no_shutdownContext;
@@ -199,6 +201,7 @@ import org.batfish.grammar.cisco_nxos.CiscoNxosParser.I_switchport_accessContext
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.I_switchport_mode_accessContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.I_switchport_mode_dot1q_tunnelContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.I_switchport_mode_fex_fabricContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.I_switchport_mode_monitorContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.I_switchport_mode_trunkContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.I_switchport_monitorContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.I_switchport_switchportContext;
@@ -227,6 +230,7 @@ import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Inherit_sequence_numberCon
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Interface_addressContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Interface_bandwidth_kbpsContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Interface_descriptionContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Interface_ipv6_addressContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Interface_mtuContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Interface_nameContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Interface_prefixContext;
@@ -457,6 +461,7 @@ import org.batfish.representation.cisco_nxos.HsrpTrack;
 import org.batfish.representation.cisco_nxos.IcmpOptions;
 import org.batfish.representation.cisco_nxos.Interface;
 import org.batfish.representation.cisco_nxos.InterfaceAddressWithAttributes;
+import org.batfish.representation.cisco_nxos.InterfaceIpv6AddressWithAttributes;
 import org.batfish.representation.cisco_nxos.IpAccessList;
 import org.batfish.representation.cisco_nxos.IpAccessListLine;
 import org.batfish.representation.cisco_nxos.IpAddressSpec;
@@ -515,6 +520,7 @@ import org.batfish.representation.cisco_nxos.RouteMapSetMetricType;
 import org.batfish.representation.cisco_nxos.RouteMapSetOrigin;
 import org.batfish.representation.cisco_nxos.RouteMapSetTag;
 import org.batfish.representation.cisco_nxos.StaticRoute;
+import org.batfish.representation.cisco_nxos.SwitchportMode;
 import org.batfish.representation.cisco_nxos.TcpOptions;
 import org.batfish.representation.cisco_nxos.UdpOptions;
 import org.batfish.representation.cisco_nxos.Vlan;
@@ -683,6 +689,14 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
         ? new InterfaceAddressWithAttributes(ConcreteInterfaceAddress.parse(ctx.getText()))
         : new InterfaceAddressWithAttributes(
             ConcreteInterfaceAddress.create(toIp(ctx.address), toInteger(ctx.mask)));
+  }
+
+  private static @Nonnull InterfaceIpv6AddressWithAttributes toInterfaceIpv6Address(
+      Interface_ipv6_addressContext ctx) {
+    // TODO: support exotic address types
+    // TODO: implement and use datamodel Ipv6InterfaceAddress instead of Prefix6
+    Prefix6 prefix6 = toPrefix6(ctx.address6_with_length);
+    return new InterfaceIpv6AddressWithAttributes(prefix6.getAddress(), prefix6.getPrefixLength());
   }
 
   private static @Nonnull Ip toIp(Ip_addressContext ctx) {
@@ -1113,7 +1127,12 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
     }
     assert ctx.ip != null;
     Ip ip = toIp(ctx.ip);
-    _currentInterfaces.forEach(iface -> _currentHsrpGroupGetter.apply(iface).setIp(ip));
+    if (ctx.SECONDARY() != null) {
+      _currentInterfaces.forEach(
+          iface -> _currentHsrpGroupGetter.apply(iface).getIpSecondaries().add(ip));
+    } else {
+      _currentInterfaces.forEach(iface -> _currentHsrpGroupGetter.apply(iface).setIp(ip));
+    }
   }
 
   @Override
@@ -3063,7 +3082,7 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
   public void enterS_vrf_context(S_vrf_contextContext ctx) {
     Optional<String> nameOrErr = toString(ctx, ctx.name);
     if (!nameOrErr.isPresent()) {
-      _currentVrf = new Vrf("dummy", _currentContextVrfId++);
+      _currentVrf = new Vrf("dummy", _currentContextVrfId);
       return;
     }
     _currentVrf =
@@ -3597,8 +3616,9 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
   }
 
   @Override
-  public void exitI_ip_address(I_ip_addressContext ctx) {
+  public void exitI_ip_address_concrete(I_ip_address_concreteContext ctx) {
     InterfaceAddressWithAttributes address = toInterfaceAddress(ctx.addr);
+    _currentInterfaces.forEach(iface -> iface.setIpAddressDhcp(false));
     if (ctx.SECONDARY() != null) {
       // secondary addresses are appended
       _currentInterfaces.forEach(iface -> iface.getSecondaryAddresses().add(address));
@@ -3610,6 +3630,43 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
       warn(ctx, "Unsupported: tag on interface ip address");
       address.setTag(toLong(ctx.tag));
     }
+  }
+
+  @Override
+  public void exitI_ip_address_dhcp(I_ip_address_dhcpContext ctx) {
+    _currentInterfaces.forEach(
+        iface -> {
+          iface.setAddress(null);
+          iface.setIpAddressDhcp(true);
+          iface.getSecondaryAddresses().clear();
+        });
+  }
+
+  @Override
+  public void exitI_ipv6_address_concrete(I_ipv6_address_concreteContext ctx) {
+    InterfaceIpv6AddressWithAttributes address6 = toInterfaceIpv6Address(ctx.addr);
+    _currentInterfaces.forEach(iface -> iface.setIpv6AddressDhcp(false));
+    if (ctx.SECONDARY() != null) {
+      // secondary addresses are appended
+      _currentInterfaces.forEach(iface -> iface.getIpv6AddressSecondaries().add(address6));
+    } else {
+      // primary address is replaced
+      _currentInterfaces.forEach(iface -> iface.setIpv6Address(address6));
+    }
+    if (ctx.tag != null) {
+      warn(ctx, "Unsupported: tag on interface ipv6 address");
+      address6.setTag(toLong(ctx.tag));
+    }
+  }
+
+  @Override
+  public void exitI_ipv6_address_dhcp(I_ipv6_address_dhcpContext ctx) {
+    _currentInterfaces.forEach(
+        iface -> {
+          iface.setIpv6Address(null);
+          iface.setIpv6AddressDhcp(true);
+          iface.getIpv6AddressSecondaries().clear();
+        });
   }
 
   @Override
@@ -3672,12 +3729,17 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
 
   @Override
   public void exitI_switchport_mode_dot1q_tunnel(I_switchport_mode_dot1q_tunnelContext ctx) {
-    todo(ctx);
+    _currentInterfaces.forEach(iface -> iface.setSwitchportMode(SwitchportMode.DOT1Q_TUNNEL));
   }
 
   @Override
   public void exitI_switchport_mode_fex_fabric(I_switchport_mode_fex_fabricContext ctx) {
-    todo(ctx);
+    _currentInterfaces.forEach(iface -> iface.setSwitchportMode(SwitchportMode.FEX_FABRIC));
+  }
+
+  @Override
+  public void exitI_switchport_mode_monitor(I_switchport_mode_monitorContext ctx) {
+    _currentInterfaces.forEach(iface -> iface.setSwitchportMode(SwitchportMode.MONITOR));
   }
 
   @Override

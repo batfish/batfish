@@ -41,7 +41,10 @@ sbaf
 sbaf_ipv4_unicast
 :
   IPV4 UNICAST NEWLINE
-  // todo: unbounded number of statement lines
+  (
+    sbafi_network
+  | sbafi_redistribute
+  )*
 ;
 
 sbaf_l2vpn_evpn
@@ -54,7 +57,19 @@ sbafl_statement
 :
   sbafls_advertise_all_vni
 | sbafls_advertise_ipv4_unicast
+| sbafls_neighbor_activate
 ;
+
+sbafi_network
+:
+  NETWORK IP_PREFIX NEWLINE
+;
+
+sbafi_redistribute
+:
+  REDISTRIBUTE (STATIC | CONNECTED) (ROUTE_MAP route_map_name)? NEWLINE
+;
+
 
 sbafls_advertise_all_vni
 :
@@ -64,6 +79,11 @@ sbafls_advertise_all_vni
 sbafls_advertise_ipv4_unicast
 :
   ADVERTISE IPV4 UNICAST NEWLINE
+;
+
+sbafls_neighbor_activate
+:
+  NEIGHBOR neighbor = (IP_ADDRESS | WORD) ACTIVATE NEWLINE
 ;
 
 sbn_ip

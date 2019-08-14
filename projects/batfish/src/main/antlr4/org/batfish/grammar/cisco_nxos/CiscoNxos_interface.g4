@@ -186,7 +186,7 @@ ihg_ip
   (
     ip = ip_address
     | prefix = ip_prefix
-  ) NEWLINE
+  ) SECONDARY? NEWLINE
 ;
 
 ihg_preempt
@@ -299,7 +299,24 @@ i_ip_access_group
 
 i_ip_address
 :
-  ADDRESS addr = interface_address SECONDARY? (TAG tag = uint32)? NEWLINE
+  ADDRESS
+  (
+    i_ip_address_concrete
+    | i_ip_address_dhcp
+  )
+;
+
+i_ip_address_concrete
+:
+  addr = interface_address SECONDARY?
+  (
+    TAG tag = uint32
+  )? NEWLINE
+;
+
+i_ip_address_dhcp
+:
+  DHCP NEWLINE
 ;
 
 i_ip_null
@@ -433,7 +450,33 @@ iipr_ospf
 
 i_ipv6
 :
-  IPV6 iip6_traffic_filter
+  IPV6
+  (
+    iip6_address
+    | iip6_traffic_filter
+  )
+;
+
+iip6_address
+:
+  ADDRESS
+  (
+    i_ipv6_address_concrete
+    | i_ipv6_address_dhcp
+  )
+;
+
+i_ipv6_address_concrete
+:
+  addr = interface_ipv6_address SECONDARY?
+  (
+    TAG tag = uint32
+  )? NEWLINE
+;
+
+i_ipv6_address_dhcp
+:
+  DHCP NEWLINE
 ;
 
 iip6_traffic_filter
@@ -593,6 +636,7 @@ i_switchport_mode
     i_switchport_mode_access
     | i_switchport_mode_dot1q_tunnel
     | i_switchport_mode_fex_fabric
+    | i_switchport_mode_monitor
     | i_switchport_mode_trunk
   )
 ;
@@ -610,6 +654,11 @@ i_switchport_mode_dot1q_tunnel
 i_switchport_mode_fex_fabric
 :
   FEX_FABRIC NEWLINE
+;
+
+i_switchport_mode_monitor
+:
+  MONITOR null_rest_of_line
 ;
 
 i_switchport_mode_trunk
