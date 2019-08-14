@@ -279,12 +279,22 @@ i_ip
 :
   IP
   (
-    i_ip_address
+    i_ip_access_group
+    | i_ip_address
     | i_ip_null
     | i_ip_ospf
     | i_ip_policy
     | i_ip_router
   )
+;
+
+i_ip_access_group
+:
+  ACCESS_GROUP name = ip_access_list_name
+  (
+    IN
+    | OUT
+  ) NEWLINE
 ;
 
 i_ip_address
@@ -307,7 +317,8 @@ i_ip_ospf
 :
   OSPF
   (
-    iipo_bfd
+    iipo_authentication
+    | iipo_bfd
     | iipo_cost
     | iipo_dead_interval
     | iipo_hello_interval
@@ -319,7 +330,38 @@ i_ip_ospf
 
 i_ip_policy
 :
-  POLICY name = route_map_name NEWLINE
+  POLICY ROUTE_MAP name = route_map_name NEWLINE
+;
+
+iipo_authentication
+:
+  AUTHENTICATION
+  (
+    iipoa_authentication
+    | iipoa_key_chain
+    | iipoa_message_digest
+    | iipoa_null
+  )
+;
+
+iipoa_authentication
+:
+  NEWLINE
+;
+
+iipoa_key_chain
+:
+  KEY_CHAIN name = key_chain_name NEWLINE
+;
+
+iipoa_message_digest
+:
+  MESSAGE_DIGEST NEWLINE
+;
+
+iipoa_null
+:
+  NULL NEWLINE
 ;
 
 iipo_bfd
@@ -458,7 +500,7 @@ i_no_autostate
 
 i_no_bfd
 :
-  BFD ECHO NEWLINE
+  BFD null_rest_of_line
 ;
 
 i_no_shutdown
@@ -498,7 +540,7 @@ i_null
 
 i_shutdown
 :
-  SHUTDOWN NEWLINE
+  SHUTDOWN FORCE? NEWLINE
 ;
 
 i_speed

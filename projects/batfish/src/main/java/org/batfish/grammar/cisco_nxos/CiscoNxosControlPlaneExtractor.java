@@ -63,6 +63,8 @@ import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.BGP_
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.BGP_TABLE_MAP;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.BGP_UNSUPPRESS_MAP;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.INTERFACE_CHANNEL_GROUP;
+import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.INTERFACE_IP_ACCESS_GROUP_IN;
+import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.INTERFACE_IP_ACCESS_GROUP_OUT;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.INTERFACE_IP_POLICY;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.INTERFACE_SELF_REFERENCE;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.INTERFACE_VLAN;
@@ -183,6 +185,7 @@ import org.batfish.grammar.cisco_nxos.CiscoNxosParser.I_channel_groupContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.I_delayContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.I_descriptionContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.I_encapsulationContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.I_ip_access_groupContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.I_ip_addressContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.I_ip_policyContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.I_mtuContext;
@@ -1265,6 +1268,24 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
         .ifPresent(
             minLinks ->
                 _currentInterfaces.forEach(iface -> iface.getOrCreateLacp().setMinLinks(minLinks)));
+  }
+
+  @Override
+  public void exitI_ip_access_group(I_ip_access_groupContext ctx) {
+    Optional<String> nameOrErr = toString(ctx, ctx.name);
+    if (!nameOrErr.isPresent()) {
+      return;
+    }
+    String name = nameOrErr.get();
+    int line = ctx.getStart().getLine();
+    if (ctx.IN() != null) {
+      _configuration.referenceStructure(IP_ACCESS_LIST, name, INTERFACE_IP_ACCESS_GROUP_IN, line);
+      _currentInterfaces.forEach(iface -> iface.setIpAccessGroupIn(name));
+    } else {
+      assert ctx.OUT() != null;
+      _configuration.referenceStructure(IP_ACCESS_LIST, name, INTERFACE_IP_ACCESS_GROUP_OUT, line);
+      _currentInterfaces.forEach(iface -> iface.setIpAccessGroupOut(name));
+    }
   }
 
   @Override

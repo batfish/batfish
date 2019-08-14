@@ -41,6 +41,12 @@ ACCESS
 ACCESS_GROUP
 :
   'access-group'
+  {
+    if (lastTokenType() == IP) {
+      pushMode(M_Word);
+    }
+  }
+  
 ;
 
 ACCESS_LIST
@@ -2269,6 +2275,11 @@ NTP
   'ntp'
 ;
 
+NULL
+:
+  'null'
+;
+
 NULL0
 :
   [Nn] [Uu] [Ll] [Ll] ' '* '0'
@@ -2505,7 +2516,7 @@ POLICE
 
 POLICY
 :
-  'policy' -> pushMode ( M_Word )
+  'policy'
 ;
 
 POLICY_MAP
@@ -4081,7 +4092,7 @@ F_Word
 fragment
 F_WordChar
 :
-  [0-9A-Za-z!@#$^*_=+.;:{}]
+  [0-9A-Za-z!@#$^*_=+.;:{}/]
   | '-'
 ;
 
