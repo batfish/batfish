@@ -21,6 +21,8 @@ public final class RouteMapEntry implements Serializable {
 
   private @Nullable RouteMapSetMetric _setMetric;
 
+  private @Nullable RouteMapSetIpNextHopLiteral _setIpNextHop;
+
   public RouteMapEntry(int number, LineAction action) {
     _number = number;
     _action = action;
@@ -57,7 +59,7 @@ public final class RouteMapEntry implements Serializable {
 
   /** Return stream of set statements for this entry. */
   public @Nonnull Stream<RouteMapSet> getSets() {
-    return Stream.<RouteMapSet>of(_setMetric).filter(Objects::nonNull);
+    return Stream.of(_setMetric, _setIpNextHop).filter(Objects::nonNull);
   }
 
   public @Nullable RouteMapSetMetric getSetMetric() {
@@ -79,6 +81,14 @@ public final class RouteMapEntry implements Serializable {
 
   public void setDescription(@Nullable String description) {
     _description = description;
+  }
+
+  public @Nullable RouteMapSetIpNextHopLiteral getSetIpNextHop() {
+    return _setIpNextHop;
+  }
+
+  public void setSetIpNextHop(@Nullable RouteMapSetIpNextHopLiteral setIpNextHop) {
+    _setIpNextHop = setIpNextHop;
   }
 
   public void setSetMetric(@Nullable RouteMapSetMetric setMetric) {

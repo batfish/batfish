@@ -227,6 +227,11 @@ NEWLINE
   F_Newline+
 ;
 
+NEXT_HOP
+:
+  'next-hop'
+;
+
 UINT8
 :
   F_Uint8
