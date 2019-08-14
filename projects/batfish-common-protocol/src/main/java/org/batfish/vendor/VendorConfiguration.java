@@ -8,7 +8,6 @@ import com.google.common.collect.Multiset;
 import com.google.common.collect.SortedMultiset;
 import com.google.common.collect.TreeMultiset;
 import java.io.Serializable;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -78,19 +77,6 @@ public abstract class VendorConfiguration implements Serializable, GenericConfig
   @JsonIgnore
   public final Warnings getWarnings() {
     return _w;
-  }
-
-  /**
-   * Updates referrers and/or warns for undefined structures based on references to an abstract
-   * {@link StructureType}: a reference type that may refer to one of a number of defined structure
-   * types passed in {@code structureTypesToCheck}.
-   *
-   * <p>For example using Cisco devices, see {@code CiscoStructureType.ACCESS_LIST} and how it
-   * expands to a list containing many types of IPv4 and IPv6 access lists.
-   */
-  protected void markAbstractStructure(
-      StructureType type, StructureUsage usage, StructureType... structureTypesToCheck) {
-    markAbstractStructure(type, usage, Arrays.asList(structureTypesToCheck));
   }
 
   /**
