@@ -81,6 +81,7 @@ import static org.batfish.representation.cisco_nxos.Interface.newNonVlanInterfac
 import static org.batfish.representation.cisco_nxos.Interface.newVlanInterface;
 import static org.batfish.representation.cisco_nxos.StaticRoute.STATIC_ROUTE_PREFERENCE_RANGE;
 import static org.batfish.representation.cisco_nxos.StaticRoute.STATIC_ROUTE_TRACK_RANGE;
+import static org.batfish.representation.cisco_nxos.Vrf.MANAGEMENT_VRF_ID;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.HashBasedTable;
@@ -845,6 +846,7 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
   private BgpVrfConfiguration _currentBgpVrfConfiguration;
   private BgpVrfNeighborConfiguration _currentBgpVrfNeighbor;
   private BgpVrfNeighborAddressFamilyConfiguration _currentBgpVrfNeighborAddressFamily;
+  private int _currentContextVrfId = MANAGEMENT_VRF_ID + 1;
   private DefaultVrfOspfProcess _currentDefaultVrfOspfProcess;
   private EvpnVni _currentEvpnVni;
   private Function<Interface, HsrpGroup> _currentHsrpGroupGetter;
@@ -3080,7 +3082,7 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
   public void enterS_vrf_context(S_vrf_contextContext ctx) {
     Optional<String> nameOrErr = toString(ctx, ctx.name);
     if (!nameOrErr.isPresent()) {
-      _currentVrf = new Vrf("dummy");
+      _currentVrf = new Vrf("dummy", _currentContextVrfId);
       return;
     }
     _currentVrf =
@@ -3090,7 +3092,7 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
                 nameOrErr.get(),
                 name -> {
                   _configuration.defineStructure(VRF, name, ctx);
-                  return new Vrf(name);
+                  return new Vrf(name, _currentContextVrfId++);
                 });
   }
 
