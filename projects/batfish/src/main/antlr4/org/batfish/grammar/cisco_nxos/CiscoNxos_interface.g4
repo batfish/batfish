@@ -39,6 +39,7 @@ s_interface_regular
     | i_hsrp
     | i_ip
     | i_ipv6
+    | i_lacp
     | i_mtu
     | i_no
     | i_null
@@ -402,6 +403,31 @@ iip6_traffic_filter
   ) NEWLINE
 ;
 
+i_lacp
+:
+  LACP
+  (
+    il_min_links
+    | il_null
+  )
+;
+
+il_min_links
+:
+  MIN_LINKS num = min_links_number NEWLINE
+;
+
+min_links_number
+:
+// 1-32
+  uint8
+;
+
+il_null
+:
+  SUSPEND_INDIVIDUAL null_rest_of_line
+;
+
 i_mtu
 :
   MTU interface_mtu NEWLINE
@@ -463,7 +489,6 @@ i_null
     | CDP
     | DUPLEX
     | FEX
-    | LACP
     | SNMP
     | SPANNING_TREE
     | STORM_CONTROL
