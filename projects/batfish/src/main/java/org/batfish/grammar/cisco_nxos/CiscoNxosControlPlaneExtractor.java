@@ -124,7 +124,6 @@ import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.Prefix6;
 import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.SubRange;
-import org.batfish.datamodel.SwitchportMode;
 import org.batfish.datamodel.TcpFlags;
 import org.batfish.datamodel.UniverseIpSpace;
 import org.batfish.datamodel.bgp.RouteDistinguisher;
@@ -198,6 +197,7 @@ import org.batfish.grammar.cisco_nxos.CiscoNxosParser.I_switchport_accessContext
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.I_switchport_mode_accessContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.I_switchport_mode_dot1q_tunnelContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.I_switchport_mode_fex_fabricContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.I_switchport_mode_monitorContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.I_switchport_mode_trunkContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.I_switchport_monitorContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.I_switchport_switchportContext;
@@ -473,6 +473,7 @@ import org.batfish.representation.cisco_nxos.Nve;
 import org.batfish.representation.cisco_nxos.Nve.HostReachabilityProtocol;
 import org.batfish.representation.cisco_nxos.Nve.IngressReplicationProtocol;
 import org.batfish.representation.cisco_nxos.NveVni;
+import org.batfish.representation.cisco_nxos.NxosSwitchportMode;
 import org.batfish.representation.cisco_nxos.ObjectGroup;
 import org.batfish.representation.cisco_nxos.ObjectGroupIpAddress;
 import org.batfish.representation.cisco_nxos.ObjectGroupIpAddressLine;
@@ -1094,8 +1095,8 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
   @Override
   public void exitI_switchport_switchport(I_switchport_switchportContext ctx) {
     _currentInterfaces.stream()
-        .filter(iface -> iface.getSwitchportMode() == SwitchportMode.NONE)
-        .forEach(iface -> iface.setSwitchportMode(SwitchportMode.ACCESS));
+        .filter(iface -> iface.getSwitchportMode() == NxosSwitchportMode.NONE)
+        .forEach(iface -> iface.setSwitchportMode(NxosSwitchportMode.ACCESS));
   }
 
   @Override
@@ -3642,7 +3643,7 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
 
   @Override
   public void exitI_no_switchport(I_no_switchportContext ctx) {
-    _currentInterfaces.forEach(iface -> iface.setSwitchportMode(SwitchportMode.NONE));
+    _currentInterfaces.forEach(iface -> iface.setSwitchportMode(NxosSwitchportMode.NONE));
   }
 
   @Override
@@ -3658,29 +3659,34 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
     }
     _currentInterfaces.forEach(
         iface -> {
-          iface.setSwitchportMode(SwitchportMode.ACCESS);
+          iface.setSwitchportMode(NxosSwitchportMode.ACCESS);
           iface.setAccessVlan(vlanId);
         });
   }
 
   @Override
   public void exitI_switchport_mode_access(I_switchport_mode_accessContext ctx) {
-    _currentInterfaces.forEach(iface -> iface.setSwitchportMode(SwitchportMode.ACCESS));
+    _currentInterfaces.forEach(iface -> iface.setSwitchportMode(NxosSwitchportMode.ACCESS));
   }
 
   @Override
   public void exitI_switchport_mode_dot1q_tunnel(I_switchport_mode_dot1q_tunnelContext ctx) {
-    todo(ctx);
+    _currentInterfaces.forEach(iface -> iface.setSwitchportMode(NxosSwitchportMode.DOT1Q_TUNNEL));
   }
 
   @Override
   public void exitI_switchport_mode_fex_fabric(I_switchport_mode_fex_fabricContext ctx) {
-    todo(ctx);
+    _currentInterfaces.forEach(iface -> iface.setSwitchportMode(NxosSwitchportMode.FEX_FABRIC));
+  }
+
+  @Override
+  public void exitI_switchport_mode_monitor(I_switchport_mode_monitorContext ctx) {
+    _currentInterfaces.forEach(iface -> iface.setSwitchportMode(NxosSwitchportMode.MONITOR));
   }
 
   @Override
   public void exitI_switchport_mode_trunk(I_switchport_mode_trunkContext ctx) {
-    _currentInterfaces.forEach(iface -> iface.setSwitchportMode(SwitchportMode.TRUNK));
+    _currentInterfaces.forEach(iface -> iface.setSwitchportMode(NxosSwitchportMode.TRUNK));
   }
 
   @Override
@@ -3712,7 +3718,7 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
     }
     _currentInterfaces.forEach(
         iface -> {
-          iface.setSwitchportMode(SwitchportMode.TRUNK);
+          iface.setSwitchportMode(NxosSwitchportMode.TRUNK);
           if (ctx.ADD() != null) {
             iface.setAllowedVlans(iface.getAllowedVlans().union(vlans));
           } else if (ctx.REMOVE() != null) {
@@ -3731,7 +3737,7 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
     }
     _currentInterfaces.forEach(
         iface -> {
-          iface.setSwitchportMode(SwitchportMode.TRUNK);
+          iface.setSwitchportMode(NxosSwitchportMode.TRUNK);
           iface.setNativeVlan(vlanId);
         });
   }
@@ -3743,7 +3749,7 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
       return;
     }
     if (_currentInterfaces.stream()
-        .anyMatch(iface -> iface.getSwitchportMode() != SwitchportMode.NONE)) {
+        .anyMatch(iface -> iface.getSwitchportMode() != NxosSwitchportMode.NONE)) {
       _w.addWarning(ctx, getFullText(ctx), _parser, "Cannot assign VRF to switchport interface(s)");
       return;
     }

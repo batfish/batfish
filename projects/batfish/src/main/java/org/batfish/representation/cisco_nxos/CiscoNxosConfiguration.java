@@ -1158,8 +1158,8 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
     }
 
     // switchport+vlan settings
-    SwitchportMode switchportMode = iface.getSwitchportMode();
-    newIfaceBuilder.setSwitchportMode(switchportMode);
+    NxosSwitchportMode switchportMode = iface.getSwitchportMode();
+    newIfaceBuilder.setSwitchportMode(toSwitchportMode(switchportMode));
     switch (iface.getSwitchportMode()) {
       case ACCESS:
         newIfaceBuilder.setSwitchport(true);
@@ -1177,11 +1177,7 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
         break;
 
       case DOT1Q_TUNNEL:
-      case DYNAMIC_AUTO:
-      case DYNAMIC_DESIRABLE:
       case FEX_FABRIC:
-      case TAP:
-      case TOOL:
       default:
         // unsupported
         break;
@@ -1261,6 +1257,27 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
 
     newIface.setOwner(_c);
     return newIface;
+  }
+
+  private static @Nonnull SwitchportMode toSwitchportMode(NxosSwitchportMode nxosSwitchportMode) {
+    switch (nxosSwitchportMode) {
+      case ACCESS:
+        return SwitchportMode.ACCESS;
+      case DOT1Q_TUNNEL:
+        return SwitchportMode.DOT1Q_TUNNEL;
+      case FEX_FABRIC:
+        return SwitchportMode.FEX_FABRIC;
+      case MONITOR:
+        return SwitchportMode.MONITOR;
+      case NONE:
+        return SwitchportMode.NONE;
+      case TRUNK:
+        return SwitchportMode.TRUNK;
+      default:
+        // should never happen
+        throw new IllegalArgumentException(
+            String.format("Unsupported switchport mode: %s", nxosSwitchportMode));
+    }
   }
 
   private @Nonnull InterfaceType toInterfaceType(

@@ -460,6 +460,11 @@ BROADCAST
   'broadcast'
 ;
 
+BUFFER_LIMIT
+:
+  'buffer-limit'
+;
+
 BYTES
 :
   'bytes'
@@ -2382,6 +2387,11 @@ PACKET_LENGTH
 PACKET_TOO_BIG
 :
   'packet-too-big'
+;
+
+PACKETS
+:
+  'packets'
 ;
 
 PARAMETER_PROBLEM

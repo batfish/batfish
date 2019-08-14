@@ -206,14 +206,14 @@ interface Ethernet1/14
   switchport mode trunk
 !
 
-! Ethernet interface with explicit switchport
+! Ethernet interface with explicit switchport and in monitor mode
 ! - shutdown = false
 ! - active = true
 ! - switchport = true
-! - switchport mode = ACCESS
-! - switchport access vlan = 1
+! - switchport mode = MONITOR
 interface Ethernet1/15
   no switchport
   switchport
+  switchport mode monitor buffer-limit 36000 packets
   switchport monitor
 !
