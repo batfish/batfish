@@ -41,7 +41,10 @@ sbaf
 sbaf_ipv4_unicast
 :
   IPV4 UNICAST NEWLINE
-  (sbafi_network)*
+  (
+    sbafi_network
+  | sbafi_redistribute
+  )*
 ;
 
 sbaf_l2vpn_evpn
@@ -61,6 +64,12 @@ sbafi_network
 :
   NETWORK IP_PREFIX NEWLINE
 ;
+
+sbafi_redistribute
+:
+  REDISTRIBUTE (STATIC | CONNECTED) (ROUTE_MAP route_map_name)? NEWLINE
+;
+
 
 sbafls_advertise_all_vni
 :

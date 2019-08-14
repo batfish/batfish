@@ -1,6 +1,8 @@
 package org.batfish.grammar.cumulus_frr;
 
 import static org.batfish.main.BatfishTestUtils.configureBatfishTestSettings;
+import static org.batfish.representation.cumulus.CumulusRoutingProtocol.CONNECTED;
+import static org.batfish.representation.cumulus.CumulusRoutingProtocol.STATIC;
 import static org.batfish.representation.cumulus.RemoteAsType.EXPLICIT;
 import static org.batfish.representation.cumulus.RemoteAsType.EXTERNAL;
 import static org.batfish.representation.cumulus.RemoteAsType.INTERNAL;
@@ -33,6 +35,7 @@ import org.batfish.representation.cumulus.BgpInterfaceNeighbor;
 import org.batfish.representation.cumulus.BgpIpNeighbor;
 import org.batfish.representation.cumulus.BgpNeighbor;
 import org.batfish.representation.cumulus.BgpPeerGroupNeighbor;
+import org.batfish.representation.cumulus.BgpRedistributionPolicy;
 import org.batfish.representation.cumulus.CumulusNcluConfiguration;
 import org.batfish.representation.cumulus.CumulusStructureType;
 import org.batfish.representation.cumulus.CumulusStructureUsage;
@@ -142,6 +145,60 @@ public class CumulusFrrGrammarTest {
     assertThat(
         CONFIG.getBgpProcess().getDefaultVrf().getIpv4Unicast().getNetworks().keySet(),
         contains(Prefix.parse("1.2.3.4/24")));
+  }
+
+  @Test
+  public void testBgpAddressFamilyIpv4UnicastRedistributeConnected() {
+    parseLines(
+        "router bgp 1",
+        "address-family ipv4 unicast",
+        "redistribute connected",
+        "exit-address-family");
+    BgpRedistributionPolicy policy =
+        CONFIG
+            .getBgpProcess()
+            .getDefaultVrf()
+            .getIpv4Unicast()
+            .getRedistributionPolicies()
+            .get(CONNECTED);
+    assertNotNull(policy);
+    assertNull(policy.getRouteMap());
+  }
+
+  @Test
+  public void testBgpAddressFamilyIpv4UnicastRedistributeRouteMap() {
+    parseLines(
+        "router bgp 1",
+        "address-family ipv4 unicast",
+        "redistribute connected route-map foo",
+        "exit-address-family");
+    BgpRedistributionPolicy policy =
+        CONFIG
+            .getBgpProcess()
+            .getDefaultVrf()
+            .getIpv4Unicast()
+            .getRedistributionPolicies()
+            .get(CONNECTED);
+    assertNotNull(policy);
+    assertThat(policy.getRouteMap(), equalTo("foo"));
+  }
+
+  @Test
+  public void testBgpAddressFamilyIpv4UnicastRedistributeStatic() {
+    parseLines(
+        "router bgp 1",
+        "address-family ipv4 unicast",
+        "redistribute static",
+        "exit-address-family");
+    BgpRedistributionPolicy policy =
+        CONFIG
+            .getBgpProcess()
+            .getDefaultVrf()
+            .getIpv4Unicast()
+            .getRedistributionPolicies()
+            .get(STATIC);
+    assertNotNull(policy);
+    assertNull(policy.getRouteMap());
   }
 
   @Test

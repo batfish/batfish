@@ -2,6 +2,10 @@ package org.batfish.grammar.cumulus_frr;
 
 import static com.google.common.base.Preconditions.checkState;
 import static java.lang.Long.parseLong;
+import static org.batfish.representation.cumulus.CumulusRoutingProtocol.CONNECTED;
+import static org.batfish.representation.cumulus.CumulusRoutingProtocol.STATIC;
+import static org.batfish.representation.cumulus.CumulusStructureUsage.BGP_IPV4_UNICAST_REDISTRIBUTE_CONNECTED_ROUTE_MAP;
+import static org.batfish.representation.cumulus.CumulusStructureUsage.BGP_IPV4_UNICAST_REDISTRIBUTE_STATIC_ROUTE_MAP;
 import static org.batfish.representation.cumulus.RemoteAsType.EXPLICIT;
 import static org.batfish.representation.cumulus.RemoteAsType.EXTERNAL;
 import static org.batfish.representation.cumulus.RemoteAsType.INTERNAL;
@@ -12,6 +16,7 @@ import java.util.List;
 import java.util.Optional;
 import javax.annotation.Nullable;
 import org.antlr.v4.runtime.RuleContext;
+import org.batfish.common.BatfishException;
 import org.batfish.common.Warnings;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.LineAction;
@@ -29,6 +34,7 @@ import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sb_router_idContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbaf_ipv4_unicastContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbaf_l2vpn_evpnContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbafi_networkContext;
+import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbafi_redistributeContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbafls_advertise_all_vniContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbafls_advertise_ipv4_unicastContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbafls_neighbor_activateContext;
@@ -51,8 +57,10 @@ import org.batfish.representation.cumulus.BgpNeighborL2vpnEvpnAddressFamily;
 import org.batfish.representation.cumulus.BgpNetwork;
 import org.batfish.representation.cumulus.BgpPeerGroupNeighbor;
 import org.batfish.representation.cumulus.BgpProcess;
+import org.batfish.representation.cumulus.BgpRedistributionPolicy;
 import org.batfish.representation.cumulus.BgpVrf;
 import org.batfish.representation.cumulus.CumulusNcluConfiguration;
+import org.batfish.representation.cumulus.CumulusRoutingProtocol;
 import org.batfish.representation.cumulus.CumulusStructureType;
 import org.batfish.representation.cumulus.CumulusStructureUsage;
 import org.batfish.representation.cumulus.IpCommunityListExpanded;
@@ -124,6 +132,46 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
       _w.addWarning(ctx, ctx.getText(), _parser, "duplicate 'address-family l2vpn evpn'");
     }
     _currentBgpVrf.setL2VpnEvpn(new BgpL2vpnEvpnAddressFamily());
+  }
+
+  @Override
+  public void exitSbafi_redistribute(Sbafi_redistributeContext ctx) {
+    CumulusRoutingProtocol protocol;
+    CumulusStructureUsage usage;
+    if (ctx.STATIC() != null) {
+      protocol = STATIC;
+      usage = BGP_IPV4_UNICAST_REDISTRIBUTE_STATIC_ROUTE_MAP;
+    } else if (ctx.CONNECTED() != null) {
+      protocol = CONNECTED;
+      usage = BGP_IPV4_UNICAST_REDISTRIBUTE_CONNECTED_ROUTE_MAP;
+    } else {
+      throw new BatfishException("Unexpected redistribution protocol");
+    }
+
+    String routeMap;
+    if (ctx.route_map_name() != null) {
+      routeMap = ctx.route_map_name().getText();
+      _c.referenceStructure(
+          CumulusStructureType.ROUTE_MAP, routeMap, usage, ctx.getStart().getLine());
+    } else {
+      routeMap = null;
+    }
+
+    BgpRedistributionPolicy oldRedistributionPolicy =
+        _currentBgpVrf
+            .getIpv4Unicast()
+            .getRedistributionPolicies()
+            .put(protocol, new BgpRedistributionPolicy(protocol, routeMap));
+
+    if (oldRedistributionPolicy != null) {
+      _w.addWarning(
+          ctx,
+          ctx.getStart().getText(),
+          _parser,
+          String.format(
+              "overwriting BgpRedistributionPolicy for vrf %s, protocol %s",
+              _currentBgpVrf.getVrfName(), protocol));
+    }
   }
 
   @Override

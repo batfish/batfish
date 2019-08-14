@@ -73,6 +73,11 @@ COMMUNITY_LIST
   'community-list'
 ;
 
+CONNECTED
+:
+  'connected'
+;
+
 DENY
 :
   'deny'
@@ -177,6 +182,11 @@ PERMIT
   'permit'
 ;
 
+REDISTRIBUTE
+:
+  'redistribute'
+;
+
 REMOTE_AS
 :
   'remote-as'
@@ -200,6 +210,11 @@ ROUTER
 ROUTER_ID
 :
   'router-id'
+;
+
+STATIC
+:
+  'static'
 ;
 
 SUBNET_MASK

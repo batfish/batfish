@@ -37,6 +37,11 @@ prefix
   IP_PREFIX
 ;
 
+route_map_name
+:
+  WORD
+;
+
 vni_number
 :
   v = uint32
