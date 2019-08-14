@@ -114,6 +114,8 @@ public final class Interface implements Serializable {
   private @Nullable String _description;
   private @Nullable Integer _encapsulationVlan;
   private @Nullable InterfaceHsrp _hsrp;
+  private @Nullable String _ipAccessGroupIn;
+  private @Nullable String _ipAccessGroupOut;
   private @Nullable Lacp _lacp;
   private @Nullable Integer _mtu;
   private final @Nonnull String _name;
@@ -202,6 +204,14 @@ public final class Interface implements Serializable {
       _hsrp = new InterfaceHsrp();
     }
     return _hsrp;
+  }
+
+  public @Nullable String getIpAccessGroupIn() {
+    return _ipAccessGroupIn;
+  }
+
+  public @Nullable String getIpAccessGroupOut() {
+    return _ipAccessGroupOut;
   }
 
   public @Nullable Lacp getLacp() {
@@ -345,6 +355,14 @@ public final class Interface implements Serializable {
 
   public void setEncapsulationVlan(@Nullable Integer encapsulationVlan) {
     _encapsulationVlan = encapsulationVlan;
+  }
+
+  public void setIpAccessGroupIn(@Nullable String ipAcessGroupIn) {
+    _ipAccessGroupIn = ipAcessGroupIn;
+  }
+
+  public void setIpAccessGroupOut(@Nullable String ipAcessGroupOut) {
+    _ipAccessGroupOut = ipAcessGroupOut;
   }
 
   public void setMtu(@Nullable Integer mtu) {

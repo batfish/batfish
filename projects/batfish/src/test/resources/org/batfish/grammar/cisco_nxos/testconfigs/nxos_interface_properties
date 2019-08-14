@@ -2,6 +2,9 @@
 !
 hostname nxos_interface_properties
 !
+ip access-list acl_in
+ip access-list acl_out
+
 interface Ethernet1/1
   no cdp enable
   no shutdown
@@ -15,9 +18,12 @@ interface Ethernet1/1
   delay 10
   description here is a description with punctuation! and IP address 1.2.3.4/24 etc.
   bfd per-link
+  ip access-group acl_in in
+  ip access-group acl_out out
   ip flow monitor FOO input sampler BAR
   ip unreachables
   ipv6 traffic-filter FOO in
+  ipv6 traffic-filter BAR out
   mtu 9216
   snmp trap link-status
   udld aggressive

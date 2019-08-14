@@ -41,6 +41,12 @@ ACCESS
 ACCESS_GROUP
 :
   'access-group'
+  {
+    if (lastTokenType() == IP) {
+      pushMode(M_Word);
+    }
+  }
+  
 ;
 
 ACCESS_LIST
