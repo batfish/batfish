@@ -144,7 +144,6 @@ import org.batfish.datamodel.CommunityListLine;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConnectedRoute;
-import org.batfish.datamodel.DhcpInterfaceAddress;
 import org.batfish.datamodel.DscpType;
 import org.batfish.datamodel.GeneratedRoute;
 import org.batfish.datamodel.HeaderSpace;
@@ -792,11 +791,8 @@ public final class CiscoNxosGrammarTest {
     }
     {
       org.batfish.datamodel.Interface iface = c.getAllInterfaces().get("Ethernet1/2");
-      assertThat(
-          iface,
-          allOf(
-              hasAddress(DhcpInterfaceAddress.instance()),
-              hasAllAddresses(contains(DhcpInterfaceAddress.instance()))));
+      // TODO: Instead, expect something like DhcpInterfaceAddress as sole address
+      assertThat(iface, allOf(hasAddress(nullValue()), hasAllAddresses(empty())));
     }
   }
 

@@ -61,7 +61,7 @@ public final class ConcreteInterfaceAddress extends InterfaceAddress {
     if (rhs instanceof ConcreteInterfaceAddress) {
       return COMPARATOR.compare(this, (ConcreteInterfaceAddress) rhs);
     }
-    return getClass().getCanonicalName().compareTo(rhs.getClass().getCanonicalName());
+    return 1;
   }
 
   @Override
