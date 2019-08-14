@@ -187,6 +187,7 @@ public class Interface implements Serializable {
     return _ospfCost;
   }
 
+  /** Get the time (in seconds) to wait before neighbors are declared dead */
   @Nullable
   public Integer getOspfDeadInterval() {
     return _ospfDeadInterval;
@@ -197,6 +198,7 @@ public class Interface implements Serializable {
     return _ospfDisable;
   }
 
+  /** Get the time (in seconds) between sending hello messages to neighbors */
   @Nullable
   public Integer getOspfHelloInterval() {
     return _ospfHelloInterval;
