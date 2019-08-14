@@ -1,7 +1,6 @@
 package org.batfish.representation.cumulus;
 
 import com.google.common.collect.ImmutableList;
-import java.util.List;
 import java.util.stream.Stream;
 import javax.annotation.Nonnull;
 import org.batfish.common.Warnings;
@@ -13,24 +12,19 @@ import org.batfish.datamodel.routing_policy.statement.Statement;
 
 public final class RouteMapSetIpNextHopLiteral implements RouteMapSet {
 
-  private final @Nonnull List<Ip> _nextHops;
+  private final @Nonnull Ip _nextHop;
 
-  public RouteMapSetIpNextHopLiteral(Iterable<Ip> nextHops) {
-    _nextHops = ImmutableList.copyOf(nextHops);
+  public RouteMapSetIpNextHopLiteral(Ip nextHop) {
+    _nextHop = Ip.create(nextHop.asLong());
   }
 
-  public @Nonnull List<Ip> getNextHops() {
-    return _nextHops;
+  public @Nonnull Ip getNextHop() {
+    return _nextHop;
   }
 
   @Nonnull
   @Override
   public Stream<Statement> toStatements(Configuration c, CumulusNcluConfiguration vc, Warnings w) {
-    if (_nextHops.size() > 1) {
-      // Applicable to PBR only (not routing)
-      return Stream.empty();
-    }
-    assert !_nextHops.isEmpty();
-    return Stream.of(new SetNextHop(new IpNextHop(_nextHops), false));
+    return Stream.of(new SetNextHop(new IpNextHop(ImmutableList.of(_nextHop)), false));
   }
 }

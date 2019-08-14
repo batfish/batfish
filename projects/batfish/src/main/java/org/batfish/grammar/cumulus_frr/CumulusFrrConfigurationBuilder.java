@@ -339,11 +339,12 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
   public void exitRmsipnh_literal(Rmsipnh_literalContext ctx) {
     Ip ip = Ip.parse(ctx.next_hop.getText());
     RouteMapSetIpNextHopLiteral setNextHop = _currentRouteMapEntry.getSetIpNextHop();
-    List<Ip> nextHops =
-        setNextHop == null ? new ArrayList<>() : new ArrayList<>(setNextHop.getNextHops());
-    nextHops.add(ip);
+    if (setNextHop != null) {
+      _w.addWarning(
+          ctx, ctx.getText(), _parser, "next-hop already exists will be replaced by this one");
+    }
 
-    _currentRouteMapEntry.setSetIpNextHop(new RouteMapSetIpNextHopLiteral(nextHops));
+    _currentRouteMapEntry.setSetIpNextHop(new RouteMapSetIpNextHopLiteral(ip));
   }
 
   @Override

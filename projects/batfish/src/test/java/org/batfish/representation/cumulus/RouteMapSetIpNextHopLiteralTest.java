@@ -12,30 +12,22 @@ import org.junit.Test;
 
 public class RouteMapSetIpNextHopLiteralTest {
 
-  private static ImmutableList<Ip> IPS = ImmutableList.of(Ip.parse("10.0.0.1"));
+  private static final Ip IP = Ip.parse("10.0.0.1");
 
   @Test
   public void testGetNextHops() {
-    RouteMapSetIpNextHopLiteral set = new RouteMapSetIpNextHopLiteral(IPS);
-    assertThat(set.getNextHops(), equalTo(IPS));
+    RouteMapSetIpNextHopLiteral set = new RouteMapSetIpNextHopLiteral(IP);
+    assertThat(set.getNextHop(), equalTo(IP));
   }
 
   @Test
   public void testToStatements() {
-    RouteMapSetIpNextHopLiteral set = new RouteMapSetIpNextHopLiteral(IPS);
+    RouteMapSetIpNextHopLiteral set = new RouteMapSetIpNextHopLiteral(IP);
 
     ImmutableList<Statement> result =
         set.toStatements(null, null, null).collect(ImmutableList.toImmutableList());
-    assertThat(result, equalTo(ImmutableList.of(new SetNextHop(new IpNextHop(IPS), false))));
-  }
-
-  @Test
-  public void testToStatements_MultipleIps() {
-    ImmutableList<Ip> ips = ImmutableList.of(Ip.parse("10.0.0.1"), Ip.parse("10.0.0.2"));
-    RouteMapSetIpNextHopLiteral set = new RouteMapSetIpNextHopLiteral(ips);
-
-    ImmutableList<Statement> result =
-        set.toStatements(null, null, null).collect(ImmutableList.toImmutableList());
-    assertThat(result, equalTo(ImmutableList.of()));
+    assertThat(
+        result,
+        equalTo(ImmutableList.of(new SetNextHop(new IpNextHop(ImmutableList.of(IP)), false))));
   }
 }
