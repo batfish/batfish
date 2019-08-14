@@ -91,7 +91,6 @@ import org.batfish.datamodel.RouteFilterLine;
 import org.batfish.datamodel.RouteFilterList;
 import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.SubRange;
-import org.batfish.datamodel.SwitchportMode;
 import org.batfish.datamodel.TcpFlags;
 import org.batfish.datamodel.TcpFlagsMatchConditions;
 import org.batfish.datamodel.VniSettings;
@@ -1135,13 +1134,16 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
 
     newIfaceBuilder.setActive(!iface.getShutdown());
 
-    if (iface.getAddress() != null) {
-      newIfaceBuilder.setAddress(iface.getAddress().getAddress());
+    if (!iface.getIpAddressDhcp()) {
+      if (iface.getAddress() != null) {
+        newIfaceBuilder.setAddress(iface.getAddress().getAddress());
+      }
+      newIfaceBuilder.setSecondaryAddresses(
+          iface.getSecondaryAddresses().stream()
+              .map(InterfaceAddressWithAttributes::getAddress)
+              .collect(ImmutableSet.toImmutableSet()));
     }
-    newIfaceBuilder.setSecondaryAddresses(
-        iface.getSecondaryAddresses().stream()
-            .map(InterfaceAddressWithAttributes::getAddress)
-            .collect(ImmutableSet.toImmutableSet()));
+    // TODO: handle DHCP
 
     newIfaceBuilder.setDescription(iface.getDescription());
 
@@ -1159,7 +1161,7 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
 
     // switchport+vlan settings
     SwitchportMode switchportMode = iface.getSwitchportMode();
-    newIfaceBuilder.setSwitchportMode(switchportMode);
+    newIfaceBuilder.setSwitchportMode(switchportMode.toSwitchportMode());
     switch (iface.getSwitchportMode()) {
       case ACCESS:
         newIfaceBuilder.setSwitchport(true);
@@ -1177,11 +1179,7 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
         break;
 
       case DOT1Q_TUNNEL:
-      case DYNAMIC_AUTO:
-      case DYNAMIC_DESIRABLE:
       case FEX_FABRIC:
-      case TAP:
-      case TOOL:
       default:
         // unsupported
         break;

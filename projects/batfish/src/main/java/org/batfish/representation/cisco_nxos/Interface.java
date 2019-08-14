@@ -9,7 +9,6 @@ import java.util.Set;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.datamodel.IntegerSpace;
-import org.batfish.datamodel.SwitchportMode;
 
 /** A layer-2- or layer-3-capable network interface */
 public final class Interface implements Serializable {
@@ -116,6 +115,10 @@ public final class Interface implements Serializable {
   private @Nullable InterfaceHsrp _hsrp;
   private @Nullable String _ipAccessGroupIn;
   private @Nullable String _ipAccessGroupOut;
+  private boolean _ipAddressDhcp;
+  private @Nullable InterfaceIpv6AddressWithAttributes _ipv6Address;
+  private boolean _ipv6AddressDhcp;
+  private final @Nonnull Set<InterfaceIpv6AddressWithAttributes> _ipv6AddressSecondaries;
   private @Nullable Lacp _lacp;
   private @Nullable Integer _mtu;
   private final @Nonnull String _name;
@@ -141,6 +144,7 @@ public final class Interface implements Serializable {
     _parentInterface = parentInterface;
     _declaredNames = new HashSet<>();
     _secondaryAddresses = new HashSet<>();
+    _ipv6AddressSecondaries = new HashSet<>();
     _type = type;
     _vlan = vlan;
     _autostate = true;
@@ -212,6 +216,22 @@ public final class Interface implements Serializable {
 
   public @Nullable String getIpAccessGroupOut() {
     return _ipAccessGroupOut;
+  }
+
+  public boolean getIpAddressDhcp() {
+    return _ipAddressDhcp;
+  }
+
+  public @Nullable InterfaceIpv6AddressWithAttributes getIpv6Address() {
+    return _ipv6Address;
+  }
+
+  public boolean getIpv6AddressDhcp() {
+    return _ipv6AddressDhcp;
+  }
+
+  public @Nonnull Set<InterfaceIpv6AddressWithAttributes> getIpv6AddressSecondaries() {
+    return _ipv6AddressSecondaries;
   }
 
   public @Nullable Lacp getLacp() {
@@ -363,6 +383,18 @@ public final class Interface implements Serializable {
 
   public void setIpAccessGroupOut(@Nullable String ipAcessGroupOut) {
     _ipAccessGroupOut = ipAcessGroupOut;
+  }
+
+  public void setIpAddressDhcp(boolean ipAddressDhcp) {
+    _ipAddressDhcp = ipAddressDhcp;
+  }
+
+  public void setIpv6Address(@Nullable InterfaceIpv6AddressWithAttributes ipv6Address) {
+    _ipv6Address = ipv6Address;
+  }
+
+  public void setIpv6AddressDhcp(boolean ipv6AddressDhcp) {
+    _ipv6AddressDhcp = ipv6AddressDhcp;
   }
 
   public void setMtu(@Nullable Integer mtu) {

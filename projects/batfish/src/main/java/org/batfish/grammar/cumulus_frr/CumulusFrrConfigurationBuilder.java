@@ -432,8 +432,13 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
 
   @Override
   public void exitRmm_interface(Rmm_interfaceContext ctx) {
-    _currentRouteMapEntry.setMatchInterface(
-        new RouteMapMatchInterface(ImmutableSet.of(ctx.name.getText())));
+    String name = ctx.name.getText();
+    _currentRouteMapEntry.setMatchInterface(new RouteMapMatchInterface(ImmutableSet.of(name)));
+    _c.referenceStructure(
+        CumulusStructureType.INTERFACE,
+        name,
+        CumulusStructureUsage.ROUTE_MAP_MATCH_INTERFACE,
+        ctx.getStart().getLine());
   }
 
   @Override
