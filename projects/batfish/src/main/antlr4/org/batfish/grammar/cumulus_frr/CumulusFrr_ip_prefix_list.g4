@@ -8,10 +8,10 @@ options {
 
 ip_prefix_list
 :
-  PREFIX_LIST name = ip_prefix_list_name pl_action
+  PREFIX_LIST name = ip_prefix_list_name pl_line
 ;
 
-pl_action
+pl_line
 :
   SEQ num = ip_prefix_list_line_number
   action = line_action ip_prefix = prefix

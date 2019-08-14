@@ -32,7 +32,7 @@ import org.batfish.grammar.UnrecognizedLineToken;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Icl_expandedContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Ip_prefix_listContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Literal_standard_communityContext;
-import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Pl_actionContext;
+import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Pl_lineContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Rm_descriptionContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Rmm_communityContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Rmm_interfaceContext;
@@ -523,7 +523,7 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
   }
 
   @Override
-  public void exitPl_action(Pl_actionContext ctx) {
+  public void exitPl_line(Pl_lineContext ctx) {
     long num = parseLong(ctx.num.getText());
     Prefix prefix = Prefix.parse(ctx.ip_prefix.getText());
     int prefixLength = prefix.getPrefixLength();
