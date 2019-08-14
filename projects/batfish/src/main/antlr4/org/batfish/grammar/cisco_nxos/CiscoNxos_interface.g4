@@ -319,7 +319,7 @@ i_ip_ospf
 
 i_ip_policy
 :
-  POLICY name = route_map_name NEWLINE
+  POLICY ROUTE_MAP name = route_map_name NEWLINE
 ;
 
 iipo_bfd
