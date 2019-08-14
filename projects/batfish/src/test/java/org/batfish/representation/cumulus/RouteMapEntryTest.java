@@ -1,6 +1,6 @@
 package org.batfish.representation.cumulus;
 
-import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.isA;
 import static org.junit.Assert.assertThat;
 
@@ -12,56 +12,68 @@ import org.batfish.datamodel.bgp.community.StandardCommunity;
 import org.junit.Test;
 
 public class RouteMapEntryTest {
-
   @Test
-  public void testGetMatches() {
+  public void testGetMatches_Interface() {
     RouteMapEntry entry = new RouteMapEntry(10, LineAction.DENY);
     entry.setMatchInterface(new RouteMapMatchInterface(ImmutableSet.of("interface")));
+
+    ImmutableList<RouteMapMatch> matches =
+        entry.getMatches().collect(ImmutableList.toImmutableList());
+
+    assertThat(matches, contains(isA(RouteMapMatchInterface.class)));
+  }
+
+  @Test
+  public void testGetMatches_Community() {
+    RouteMapEntry entry = new RouteMapEntry(10, LineAction.DENY);
     entry.setMatchCommunity(new RouteMapMatchCommunity(ImmutableSet.of("community")));
+
+    ImmutableList<RouteMapMatch> matches =
+        entry.getMatches().collect(ImmutableList.toImmutableList());
+
+    assertThat(matches, contains(isA(RouteMapMatchCommunity.class)));
+  }
+
+  @Test
+  public void testGetMatches_PrefixList() {
+    RouteMapEntry entry = new RouteMapEntry(10, LineAction.DENY);
     entry.setMatchIpAddressPrefixList(
         new RouteMapMatchIpAddressPrefixList(ImmutableSet.of("prefix-list")));
 
     ImmutableList<RouteMapMatch> matches =
         entry.getMatches().collect(ImmutableList.toImmutableList());
-    assertThat(matches.size(), equalTo(3));
 
-    assertThat(matches.get(0), isA(RouteMapMatchInterface.class));
-    assertThat(
-        ((RouteMapMatchInterface) matches.get(0)).getInterfaces(),
-        equalTo(ImmutableSet.of("interface")));
-
-    assertThat(matches.get(1), isA(RouteMapMatchCommunity.class));
-    assertThat(
-        ((RouteMapMatchCommunity) matches.get(1)).getNames(),
-        equalTo(ImmutableList.of("community")));
-
-    assertThat(matches.get(2), isA(RouteMapMatchIpAddressPrefixList.class));
-    assertThat(
-        ((RouteMapMatchIpAddressPrefixList) matches.get(2)).getNames(),
-        equalTo(ImmutableList.of("prefix-list")));
+    assertThat(matches, contains(isA(RouteMapMatchIpAddressPrefixList.class)));
   }
 
   @Test
-  public void testGetSets() {
+  public void testGetSets_Metric() {
     RouteMapEntry entry = new RouteMapEntry(10, LineAction.DENY);
     entry.setSetMetric(new RouteMapSetMetric(100));
+
+    ImmutableList<RouteMapSet> sets = entry.getSets().collect(ImmutableList.toImmutableList());
+
+    assertThat(sets, contains(isA(RouteMapSetMetric.class)));
+  }
+
+  @Test
+  public void testGetSets_NextHop() {
+    RouteMapEntry entry = new RouteMapEntry(10, LineAction.DENY);
     entry.setSetIpNextHop(new RouteMapSetIpNextHopLiteral(Ip.parse("10.0.0.1")));
+
+    ImmutableList<RouteMapSet> sets = entry.getSets().collect(ImmutableList.toImmutableList());
+
+    assertThat(sets, contains(isA(RouteMapSetIpNextHopLiteral.class)));
+  }
+
+  @Test
+  public void testGetSets_Community() {
+    RouteMapEntry entry = new RouteMapEntry(10, LineAction.DENY);
     entry.setSetCommunity(
         new RouteMapSetCommunity(ImmutableSet.of(StandardCommunity.of(60000, 10))));
 
     ImmutableList<RouteMapSet> sets = entry.getSets().collect(ImmutableList.toImmutableList());
-    assertThat(sets.size(), equalTo(3));
 
-    assertThat(sets.get(0), isA(RouteMapSetMetric.class));
-    assertThat(((RouteMapSetMetric) sets.get(0)).getMetric(), equalTo(100L));
-
-    assertThat(sets.get(1), isA(RouteMapSetIpNextHopLiteral.class));
-    assertThat(
-        ((RouteMapSetIpNextHopLiteral) sets.get(1)).getNextHop(), equalTo(Ip.parse("10.0.0.1")));
-
-    assertThat(sets.get(2), isA(RouteMapSetCommunity.class));
-    assertThat(
-        ((RouteMapSetCommunity) sets.get(2)).getCommunities(),
-        equalTo(ImmutableList.of(StandardCommunity.of(60000, 10))));
+    assertThat(sets, contains(isA(RouteMapSetCommunity.class)));
   }
 }
