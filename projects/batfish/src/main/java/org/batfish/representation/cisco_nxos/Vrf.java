@@ -20,13 +20,10 @@ public final class Vrf implements Serializable {
 
   // constructor for default VRF and management VRF
   public Vrf(String name) {
-    _name = name;
-    _id = name.equals(DEFAULT_VRF_NAME) ? DEFAULT_VRF_ID : MANAGEMENT_VRF_ID;
-    _addressFamilies = new HashMap<>();
-    _staticRoutes = HashMultimap.create();
+    this(name, name.equals(DEFAULT_VRF_NAME) ? DEFAULT_VRF_ID : MANAGEMENT_VRF_ID);
   }
 
-  // constructor for tenant (context) VRFs
+  // constructor for other VRFs
   public Vrf(String name, int id) {
     _name = name;
     _id = id;
@@ -46,6 +43,10 @@ public final class Vrf implements Serializable {
     return _name;
   }
 
+  /**
+   * @return Numerical ID which represents order in which VRFs are defined. It is used in auto
+   *     derived Route Distinguishers, etc.
+   */
   public int getId() {
     return _id;
   }

@@ -3063,7 +3063,7 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
   public void enterS_vrf_context(S_vrf_contextContext ctx) {
     Optional<String> nameOrErr = toString(ctx, ctx.name);
     if (!nameOrErr.isPresent()) {
-      _currentVrf = new Vrf("dummy", _currentContextVrfId++);
+      _currentVrf = new Vrf("dummy", _currentContextVrfId);
       return;
     }
     _currentVrf =
