@@ -37,6 +37,7 @@ s_interface_regular
     | i_encapsulation
     | i_hsrp
     | i_ip
+    | i_ipv6
     | i_mtu
     | i_no
     | i_null
@@ -49,7 +50,11 @@ s_interface_regular
 
 i_bandwidth
 :
-  BANDWIDTH bw = interface_bandwidth_kbps NEWLINE
+  BANDWIDTH
+  (
+    inherit = INHERIT bw = interface_bandwidth_kbps?
+    | inherit = INHERIT? bw = interface_bandwidth_kbps
+  ) NEWLINE
 ;
 
 interface_bandwidth_kbps
@@ -117,7 +122,8 @@ ih_group
 :
   group = hsrp_group_number NEWLINE
   (
-    ihg_ip
+    ihg_authentication
+    | ihg_ip
     | ihg_preempt
     | ihg_priority
     | ihg_timers
@@ -129,6 +135,36 @@ hsrp_group_number
 :
 // 0-4095
   uint16
+;
+
+ihg_authentication
+:
+  AUTHENTICATION
+  (
+    ihga_md5
+    | ihga_text
+  )
+;
+
+ihga_md5
+:
+  MD5 ihgam_key_chain
+;
+
+ihga_text
+:
+  TEXT text = hsrp_authentication_string NEWLINE
+;
+
+hsrp_authentication_string
+:
+// 1-8 characters
+  WORD
+;
+
+ihgam_key_chain
+:
+  KEY_CHAIN name = key_chain_name NEWLINE
 ;
 
 ihg_ip
@@ -161,7 +197,10 @@ hsrp_preempt_delay
 
 ihg_priority
 :
-  PRIORITY priority = uint8 NEWLINE
+  PRIORITY priority = uint8
+  (
+    FORWARDING_THRESHOLD LOWER lower = uint8 UPPER upper = uint8
+  )? NEWLINE
 ;
 
 ihg_timers
@@ -230,6 +269,7 @@ i_ip
     i_ip_address
     | i_ip_null
     | i_ip_ospf
+    | i_ip_policy
     | i_ip_router
   )
 ;
@@ -242,9 +282,11 @@ i_ip_address
 i_ip_null
 :
   (
-    IGMP
+    FLOW
+    | IGMP
     | PIM
     | REDIRECTS
+    | UNREACHABLES
   ) null_rest_of_line
 ;
 
@@ -252,11 +294,29 @@ i_ip_ospf
 :
   OSPF
   (
-    iipo_dead_interval
+    iipo_cost
+    | iipo_dead_interval
     | iipo_hello_interval
     | iipo_message_digest_key
     | iipo_network
+    | iipo_passive_interface
   )
+;
+
+i_ip_policy
+:
+  POLICY name = route_map_name NEWLINE
+;
+
+iipo_cost
+:
+  COST cost = interface_ospf_cost NEWLINE
+;
+
+interface_ospf_cost
+:
+// 1-65535
+  uint16
 ;
 
 iipo_dead_interval
@@ -295,6 +355,11 @@ iipo_network
   ) NEWLINE
 ;
 
+iipo_passive_interface
+:
+  PASSIVE_INTERFACE NEWLINE
+;
+
 i_ip_router
 :
   ROUTER iipr_ospf
@@ -303,6 +368,20 @@ i_ip_router
 iipr_ospf
 :
   OSPF name = router_ospf_name AREA area = ospf_area_id NEWLINE
+;
+
+i_ipv6
+:
+  IPV6 iip6_traffic_filter
+;
+
+iip6_traffic_filter
+:
+  TRAFFIC_FILTER name = ip_access_list_name
+  (
+    IN
+    | OUT
+  ) NEWLINE
 ;
 
 i_mtu
@@ -351,18 +430,26 @@ i_no_switchport
 i_no_null
 :
   (
-    IP
+    CDP
+    | IP
+    | IPV6
     | NEGOTIATE
+    | SNMP
   ) null_rest_of_line
 ;
 
 i_null
 :
   (
-    DUPLEX
+    BFD
+    | CDP
+    | DUPLEX
+    | FEX
     | LACP
+    | SNMP
     | SPANNING_TREE
     | STORM_CONTROL
+    | UDLD
   ) null_rest_of_line
 ;
 
@@ -388,6 +475,7 @@ i_switchport
   (
     i_switchport_access
     | i_switchport_mode
+    | i_switchport_switchport
     | i_switchport_trunk_allowed
     | i_switchport_trunk
   )
@@ -427,6 +515,11 @@ i_switchport_mode_fex_fabric
 i_switchport_mode_trunk
 :
   TRUNK NEWLINE
+;
+
+i_switchport_switchport
+:
+  NEWLINE
 ;
 
 i_switchport_trunk

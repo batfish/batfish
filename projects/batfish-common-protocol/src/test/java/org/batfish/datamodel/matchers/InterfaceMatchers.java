@@ -42,7 +42,6 @@ import org.batfish.datamodel.matchers.InterfaceMatchersImpl.HasMlagId;
 import org.batfish.datamodel.matchers.InterfaceMatchersImpl.HasMtu;
 import org.batfish.datamodel.matchers.InterfaceMatchersImpl.HasName;
 import org.batfish.datamodel.matchers.InterfaceMatchersImpl.HasNativeVlan;
-import org.batfish.datamodel.matchers.InterfaceMatchersImpl.HasOspfArea;
 import org.batfish.datamodel.matchers.InterfaceMatchersImpl.HasOspfAreaName;
 import org.batfish.datamodel.matchers.InterfaceMatchersImpl.HasOspfCost;
 import org.batfish.datamodel.matchers.InterfaceMatchersImpl.HasOspfEnabled;
@@ -60,7 +59,6 @@ import org.batfish.datamodel.matchers.InterfaceMatchersImpl.IsOspfPassive;
 import org.batfish.datamodel.matchers.InterfaceMatchersImpl.IsOspfPointToPoint;
 import org.batfish.datamodel.matchers.InterfaceMatchersImpl.IsProxyArp;
 import org.batfish.datamodel.matchers.InterfaceMatchersImpl.IsSwitchport;
-import org.batfish.datamodel.ospf.OspfArea;
 import org.hamcrest.Matcher;
 
 public final class InterfaceMatchers {
@@ -315,14 +313,6 @@ public final class InterfaceMatchers {
    */
   public static HasNativeVlan hasNativeVlan(Matcher<? super Integer> subMatcher) {
     return new HasNativeVlan(subMatcher);
-  }
-
-  /**
-   * Provides a matcher that matches if the provided {@code subMatcher} matches the interface's OSPF
-   * area.
-   */
-  public static HasOspfArea hasOspfArea(Matcher<OspfArea> subMatcher) {
-    return new HasOspfArea(subMatcher);
   }
 
   /**

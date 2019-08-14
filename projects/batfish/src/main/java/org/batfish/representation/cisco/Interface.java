@@ -49,7 +49,7 @@ public class Interface implements Serializable {
   private static final double DEFAULT_TEN_GIGABIT_ETHERNET_SPEED = 10E9D;
 
   /** Loopback delay in picoseconds for IOS */
-  private static final double LOOPBACK_IOS_DELAY = 5E9D;
+  private static final long LOOPBACK_IOS_DELAY = (long) 5e9;
 
   /**
    * Tunnel bandwidth in bps for IOS (checked in IOS 16.4)
@@ -63,7 +63,7 @@ public class Interface implements Serializable {
    *
    * <p>See https://bst.cloudapps.cisco.com/bugsearch/bug/CSCse69736
    */
-  private static final double TUNNEL_IOS_DELAY = 50E9D;
+  private static final long TUNNEL_IOS_DELAY = (long) 5e10;
 
   public static @Nullable Double getDefaultBandwidth(
       @Nonnull String name, @Nonnull ConfigurationFormat format) {
@@ -136,11 +136,14 @@ public class Interface implements Serializable {
       return DEFAULT_LONG_REACH_ETHERNET_SPEED;
     } else if (name.startsWith("TenGigabitEthernet")) {
       return DEFAULT_TEN_GIGABIT_ETHERNET_SPEED;
+    } else if (name.startsWith("Wlan-GigabitEthernet")) {
+      return DEFAULT_GIGABIT_ETHERNET_SPEED;
     } else {
       // Bundle-Ethernet
       // Loopback
       // Port-Channel
       // Vlan
+      // Wlan-ap0 (a management interface)
       // ... others
       return null;
     }
@@ -168,7 +171,8 @@ public class Interface implements Serializable {
 
   private String _cryptoMap;
 
-  @Nullable private Double _delay;
+  /** Delay value for this interface, if set. In picoseconds */
+  @Nullable private Long _delay;
 
   private String _description;
 
@@ -204,9 +208,9 @@ public class Interface implements Serializable {
 
   private int _ospfHelloMultiplier;
 
-  @Nullable private Boolean _ospfPassive;
+  @Nullable private OspfNetworkType _ospfNetworkType;
 
-  private boolean _ospfPointToPoint;
+  @Nullable private Boolean _ospfPassive;
 
   @Nullable private String _ospfProcess;
 
@@ -249,8 +253,7 @@ public class Interface implements Serializable {
   private @Nullable Double _speed;
 
   /** Returns the default interface delay in picoseconds for the given {@code format}. */
-  @Nullable
-  public static Double getDefaultDelay(String name, ConfigurationFormat format) {
+  public static long getDefaultDelay(String name, ConfigurationFormat format) {
     if (format == ConfigurationFormat.CISCO_IOS && name.startsWith("Loopback")) {
       // TODO Cisco NX whitepaper says to use the formula, not this value. Confirm?
       // Enhanced Interior Gateway Routing Protocol (EIGRP) Wide Metrics White Paper
@@ -262,7 +265,7 @@ public class Interface implements Serializable {
 
     Double bandwidth = getDefaultBandwidth(name, format);
     if (bandwidth == null || bandwidth == 0D) {
-      return null;
+      return 0xFFFFFFFFL;
     }
 
     /*
@@ -272,7 +275,7 @@ public class Interface implements Serializable {
      * For bandwidths < 1Gb, the delay may be interface type-specific.
      * See https://tools.ietf.org/html/rfc7868#section-5.6.1.2
      */
-    return 1E16 / bandwidth;
+    return (long) (1E16 / bandwidth);
   }
 
   public static final IntegerSpace ALL_VLANS = IntegerSpace.of(new SubRange(1, 4094));
@@ -473,6 +476,10 @@ public class Interface implements Serializable {
     return _ospfHelloMultiplier;
   }
 
+  public OspfNetworkType getOspfNetworkType() {
+    return _ospfNetworkType;
+  }
+
   @Nullable
   public Boolean getOspfPassive() {
     return _ospfPassive;
@@ -480,10 +487,6 @@ public class Interface implements Serializable {
 
   public String getOspfProcess() {
     return _ospfProcess;
-  }
-
-  public boolean getOspfPointToPoint() {
-    return _ospfPointToPoint;
   }
 
   public boolean getOspfShutdown() {
@@ -498,8 +501,9 @@ public class Interface implements Serializable {
     return _address;
   }
 
+  /** Return the delay value for this interface, in picoseconds */
   @Nullable
-  public Double getDelay() {
+  public Long getDelay() {
     return _delay;
   }
 
@@ -660,16 +664,16 @@ public class Interface implements Serializable {
     _ospfHelloMultiplier = multiplier;
   }
 
+  public void setOspfNetworkType(OspfNetworkType ospfNetworkType) {
+    _ospfNetworkType = ospfNetworkType;
+  }
+
   public void setOspfPassive(@Nullable Boolean ospfPassive) {
     _ospfPassive = ospfPassive;
   }
 
   public void setOspfProcess(@Nullable String processName) {
     _ospfProcess = processName;
-  }
-
-  public void setOspfPointToPoint(boolean ospfPointToPoint) {
-    _ospfPointToPoint = ospfPointToPoint;
   }
 
   public void setOspfShutdown(boolean ospfShutdown) {
@@ -684,7 +688,8 @@ public class Interface implements Serializable {
     _address = address;
   }
 
-  public void setDelay(@Nullable Double delayPs) {
+  /** Set delay for this interface, in picoseconds */
+  public void setDelay(@Nullable Long delayPs) {
     _delay = delayPs;
   }
 

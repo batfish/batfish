@@ -1,0 +1,29 @@
+!
+hostname ios-ospf-process-inference
+!
+interface Ethernet1
+ ip address 10.0.1.0 255.255.255.0
+ no shutdown
+!
+interface Ethernet2
+ ip address 10.0.2.0 255.255.255.128
+ no shutdown
+!
+interface Ethernet3
+ ip address 10.0.2.128 255.255.255.128
+ no shutdown
+!
+interface Ethernet4
+ ip address 10.0.4.0 255.255.255.0
+ no shutdown
+!
+router ospf 1
+ router-id 1.2.3.4
+ network 10.0.1.0 0.0.0.255 area 1
+!
+router ospf 2
+ router-id 1.2.3.4
+ network 10.0.2.0 0.0.0.255 area 2
+!
+router ospf 3
+!

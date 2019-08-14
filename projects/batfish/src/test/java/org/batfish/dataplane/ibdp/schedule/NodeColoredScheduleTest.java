@@ -85,8 +85,11 @@ public class NodeColoredScheduleTest {
             .build();
     // Make OSPF process and areas
     OspfArea r1ospfArea = ospfArea.setInterfaces(ImmutableSet.of(i1.getName())).build();
-    ob.setVrf(vrf1).setAreas(ImmutableSortedMap.of(0L, r1ospfArea)).build();
-    i1.setOspfArea(r1ospfArea);
+    ob.setVrf(vrf1)
+        .setAreas(ImmutableSortedMap.of(0L, r1ospfArea))
+        .setRouterId(Ip.parse("0.0.0.1"))
+        .build();
+    i1.setOspfAreaName(r1ospfArea.getAreaNumber());
     // BGP process and neighbor
     BgpProcess r1Proc = pb.setRouterId(R1_IP).setVrf(vrf1).build();
     nb.setRemoteAs(2L)
@@ -106,7 +109,10 @@ public class NodeColoredScheduleTest {
             .build();
     // Make OSPF process and areas
     OspfArea r2ospfArea = ospfArea.setInterfaces(ImmutableSet.of(i2.getName())).build();
-    ob.setVrf(vrf2).setAreas(ImmutableSortedMap.of(0L, r2ospfArea)).build();
+    ob.setVrf(vrf2)
+        .setAreas(ImmutableSortedMap.of(0L, r2ospfArea))
+        .setRouterId(Ip.parse("0.0.0.2"))
+        .build();
     // BGP process and neighbor
     BgpProcess r2Proc = pb.setRouterId(R2_IP).setVrf(vrf2).build();
     nb.setRemoteAs(1L)

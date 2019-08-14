@@ -23,6 +23,11 @@ import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasA
 import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasNextHopInterface;
 import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasNextHopIp;
 import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasPrefix;
+import static org.batfish.datamodel.matchers.AddressFamilyCapabilitiesMatchers.hasAllowLocalAsIn;
+import static org.batfish.datamodel.matchers.AddressFamilyCapabilitiesMatchers.hasSendCommunity;
+import static org.batfish.datamodel.matchers.AddressFamilyCapabilitiesMatchers.hasSendExtendedCommunity;
+import static org.batfish.datamodel.matchers.AddressFamilyMatchers.hasAddressFamilyCapabilites;
+import static org.batfish.datamodel.matchers.AddressFamilyMatchers.hasExportPolicy;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasDefaultVrf;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasHostname;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasInterface;
@@ -52,6 +57,10 @@ import static org.batfish.datamodel.matchers.InterfaceMatchers.hasVlan;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.isActive;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.isAutoState;
 import static org.batfish.datamodel.matchers.MapMatchers.hasKeys;
+import static org.batfish.datamodel.matchers.NssaSettingsMatchers.hasSuppressType7;
+import static org.batfish.datamodel.matchers.OspfAreaMatchers.hasNssa;
+import static org.batfish.datamodel.matchers.OspfAreaMatchers.hasStub;
+import static org.batfish.datamodel.matchers.OspfProcessMatchers.hasArea;
 import static org.batfish.datamodel.matchers.StaticRouteMatchers.hasTag;
 import static org.batfish.datamodel.matchers.VniSettingsMatchers.hasBumTransportIps;
 import static org.batfish.datamodel.matchers.VniSettingsMatchers.hasBumTransportMethod;
@@ -69,6 +78,7 @@ import static org.batfish.representation.cisco_nxos.CiscoNxosConfiguration.toJav
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureType.OBJECT_GROUP_IP_ADDRESS;
 import static org.batfish.representation.cisco_nxos.OspfInterface.DEFAULT_DEAD_INTERVAL_S;
 import static org.batfish.representation.cisco_nxos.OspfInterface.DEFAULT_HELLO_INTERVAL_S;
+import static org.batfish.representation.cisco_nxos.OspfMaxMetricRouterLsa.DEFAULT_OSPF_MAX_METRIC;
 import static org.batfish.representation.cisco_nxos.OspfNetworkType.BROADCAST;
 import static org.batfish.representation.cisco_nxos.OspfNetworkType.POINT_TO_POINT;
 import static org.batfish.representation.cisco_nxos.OspfProcess.DEFAULT_AUTO_COST_REFERENCE_BANDWIDTH_MBPS;
@@ -87,7 +97,6 @@ import static org.hamcrest.Matchers.emptyString;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasEntry;
 import static org.hamcrest.Matchers.hasKey;
-import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
@@ -115,7 +124,6 @@ import org.apache.commons.lang3.SerializationUtils;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.Warnings;
 import org.batfish.common.WellKnownCommunity;
-import org.batfish.common.bdd.BDDPacket;
 import org.batfish.common.bdd.HeaderSpaceToBDD;
 import org.batfish.common.bdd.IpAccessListToBdd;
 import org.batfish.common.bdd.IpSpaceToBDD;
@@ -127,13 +135,17 @@ import org.batfish.datamodel.AsPath;
 import org.batfish.datamodel.AsPathAccessList;
 import org.batfish.datamodel.AsPathAccessListLine;
 import org.batfish.datamodel.BddTestbed;
+import org.batfish.datamodel.BgpActivePeerConfig;
+import org.batfish.datamodel.BgpPeerConfig;
 import org.batfish.datamodel.Bgpv4Route;
 import org.batfish.datamodel.BumTransportMethod;
 import org.batfish.datamodel.CommunityList;
 import org.batfish.datamodel.CommunityListLine;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
+import org.batfish.datamodel.ConnectedRoute;
 import org.batfish.datamodel.DscpType;
+import org.batfish.datamodel.GeneratedRoute;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.IcmpCode;
 import org.batfish.datamodel.IcmpType;
@@ -161,19 +173,34 @@ import org.batfish.datamodel.UniverseIpSpace;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.acl.AclLineMatchExprs;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
+import org.batfish.datamodel.bgp.EvpnAddressFamily;
+import org.batfish.datamodel.bgp.Ipv4UnicastAddressFamily;
+import org.batfish.datamodel.bgp.Layer2VniConfig;
+import org.batfish.datamodel.bgp.Layer3VniConfig;
 import org.batfish.datamodel.bgp.RouteDistinguisher;
+import org.batfish.datamodel.bgp.community.ExtendedCommunity;
 import org.batfish.datamodel.bgp.community.StandardCommunity;
 import org.batfish.datamodel.matchers.HsrpGroupMatchers;
+import org.batfish.datamodel.matchers.NssaSettingsMatchers;
+import org.batfish.datamodel.matchers.OspfAreaMatchers;
 import org.batfish.datamodel.matchers.RouteFilterListMatchers;
+import org.batfish.datamodel.matchers.StubSettingsMatchers;
 import org.batfish.datamodel.matchers.VniSettingsMatchers;
 import org.batfish.datamodel.matchers.VrfMatchers;
+import org.batfish.datamodel.ospf.OspfAreaSummary;
 import org.batfish.datamodel.ospf.OspfMetricType;
 import org.batfish.datamodel.routing_policy.Environment.Direction;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
+import org.batfish.datamodel.routing_policy.expr.CallExpr;
+import org.batfish.datamodel.routing_policy.expr.Conjunction;
 import org.batfish.datamodel.routing_policy.expr.LiteralCommunityConjunction;
+import org.batfish.datamodel.routing_policy.expr.MatchProtocol;
+import org.batfish.datamodel.routing_policy.statement.If;
+import org.batfish.datamodel.routing_policy.statement.Statements;
 import org.batfish.datamodel.tracking.DecrementPriority;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
+import org.batfish.main.ParserBatfishException;
 import org.batfish.representation.cisco_nxos.ActionIpAccessListLine;
 import org.batfish.representation.cisco_nxos.AddrGroupIpAddressSpec;
 import org.batfish.representation.cisco_nxos.AddressFamily;
@@ -189,6 +216,7 @@ import org.batfish.representation.cisco_nxos.CiscoNxosStructureType;
 import org.batfish.representation.cisco_nxos.DefaultVrfOspfProcess;
 import org.batfish.representation.cisco_nxos.Evpn;
 import org.batfish.representation.cisco_nxos.EvpnVni;
+import org.batfish.representation.cisco_nxos.ExtendedCommunityOrAuto;
 import org.batfish.representation.cisco_nxos.FragmentsBehavior;
 import org.batfish.representation.cisco_nxos.HsrpGroup;
 import org.batfish.representation.cisco_nxos.IcmpOptions;
@@ -221,8 +249,6 @@ import org.batfish.representation.cisco_nxos.OspfAreaStub;
 import org.batfish.representation.cisco_nxos.OspfDefaultOriginate;
 import org.batfish.representation.cisco_nxos.OspfInterface;
 import org.batfish.representation.cisco_nxos.OspfMaxMetricRouterLsa;
-import org.batfish.representation.cisco_nxos.OspfMetricAuto;
-import org.batfish.representation.cisco_nxos.OspfMetricManual;
 import org.batfish.representation.cisco_nxos.OspfProcess;
 import org.batfish.representation.cisco_nxos.OspfSummaryAddress;
 import org.batfish.representation.cisco_nxos.PortGroupPortSpec;
@@ -246,6 +272,7 @@ import org.batfish.representation.cisco_nxos.RouteMapSetIpNextHopUnchanged;
 import org.batfish.representation.cisco_nxos.RouteMapSetLocalPreference;
 import org.batfish.representation.cisco_nxos.RouteMapSetMetric;
 import org.batfish.representation.cisco_nxos.RouteMapSetMetricType;
+import org.batfish.representation.cisco_nxos.RouteMapSetOrigin;
 import org.batfish.representation.cisco_nxos.RouteMapSetTag;
 import org.batfish.representation.cisco_nxos.StaticRoute;
 import org.batfish.representation.cisco_nxos.TcpOptions;
@@ -255,6 +282,7 @@ import org.batfish.representation.cisco_nxos.Vrf;
 import org.batfish.representation.cisco_nxos.VrfAddressFamily;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 import org.junit.rules.TemporaryFolder;
 
 @ParametersAreNonnullByDefault
@@ -265,13 +293,11 @@ public final class CiscoNxosGrammarTest {
   private static final IpAccessListToBdd ACL_TO_BDD;
   private static final IpSpaceToBDD DST_IP_BDD;
   private static final HeaderSpaceToBDD HS_TO_BDD;
-  static final BDDPacket PKT;
   private static final IpSpaceToBDD SRC_IP_BDD;
 
   private static final String TESTCONFIGS_PREFIX = "org/batfish/grammar/cisco_nxos/testconfigs/";
 
   static {
-    PKT = BDD_TESTBED.getPkt();
     DST_IP_BDD = BDD_TESTBED.getDstIpBdd();
     SRC_IP_BDD = BDD_TESTBED.getSrcIpBdd();
     HS_TO_BDD = BDD_TESTBED.getHsToBdd();
@@ -279,6 +305,15 @@ public final class CiscoNxosGrammarTest {
   }
 
   @Rule public TemporaryFolder _folder = new TemporaryFolder();
+  @Rule public ExpectedException _thrown = ExpectedException.none();
+
+  private static @Nonnull OspfExternalRoute.Builder ospfExternalRouteBuilder() {
+    return OspfExternalRoute.builder()
+        .setAdvertiser("dummy")
+        .setArea(0L)
+        .setCostToAdvertiser(0L)
+        .setLsaMetric(0L);
+  }
 
   private static @Nonnull BDD toBDD(AclLineMatchExpr aclLineMatchExpr) {
     return ACL_TO_BDD.toBdd(aclLineMatchExpr);
@@ -477,6 +512,129 @@ public final class CiscoNxosGrammarTest {
   }
 
   @Test
+  public void testSwitchnameConversion() throws IOException {
+    String hostname = "nxos_switchname";
+    Configuration c = parseConfig(hostname);
+
+    assertThat(c, hasHostname(hostname));
+  }
+
+  @Test
+  public void testSwitchnameExtraction() {
+    String hostname = "nxos_switchname";
+    CiscoNxosConfiguration vc = parseVendorConfig(hostname);
+
+    assertThat(vc.getHostname(), equalTo(hostname));
+  }
+
+  @Test
+  public void testTemplatePeerBgpAddressFamilyConversion() throws IOException {
+    Configuration c = parseConfig("nxos_bgp_peer_template_af_inheritance");
+
+    BgpActivePeerConfig peer =
+        Iterables.getOnlyElement(c.getDefaultVrf().getBgpProcess().getActiveNeighbors().values());
+    assertThat(
+        peer.getGeneratedRoutes(),
+        equalTo(
+            ImmutableSet.of(
+                GeneratedRoute.builder().setNetwork(Prefix.ZERO).setAdmin(32767).build())));
+
+    Ipv4UnicastAddressFamily ipv4Af = peer.getIpv4UnicastAddressFamily();
+    assertThat(ipv4Af, notNullValue());
+    assertThat(
+        ipv4Af,
+        hasAddressFamilyCapabilites(allOf(hasSendCommunity(true), hasAllowLocalAsIn(true))));
+
+    String commonBgpExportPolicy = "~BGP_COMMON_EXPORT_POLICY:default~";
+    String defaultRouteOriginatePolicy = "~BGP_DEFAULT_ROUTE_PEER_EXPORT_POLICY:IPv4~";
+    String peerExportPolicyName = "~BGP_PEER_EXPORT_POLICY:default:1.1.1.1~";
+
+    assertThat(ipv4Af, hasExportPolicy(peerExportPolicyName));
+    assertThat(
+        c.getRoutingPolicies().get(peerExportPolicyName).getStatements(),
+        equalTo(
+            ImmutableList.of(
+                new If(
+                    new CallExpr(defaultRouteOriginatePolicy),
+                    ImmutableList.of(Statements.ReturnTrue.toStaticStatement())),
+                new If(
+                    new Conjunction(
+                        ImmutableList.of(
+                            new CallExpr(commonBgpExportPolicy), new CallExpr("match_metric"))),
+                    ImmutableList.of(Statements.ExitAccept.toStaticStatement()),
+                    ImmutableList.of(Statements.ExitReject.toStaticStatement())))));
+  }
+
+  @Test
+  public void testTemplatePeerEvpnAddressFamilyConversion() throws IOException {
+    Configuration c = parseConfig("nxos_bgp_peer_template_af_inheritance");
+
+    BgpActivePeerConfig peer =
+        Iterables.getOnlyElement(c.getDefaultVrf().getBgpProcess().getActiveNeighbors().values());
+
+    EvpnAddressFamily evpnAf = peer.getEvpnAddressFamily();
+    assertThat(evpnAf, notNullValue());
+    assertThat(
+        evpnAf,
+        hasAddressFamilyCapabilites(
+            allOf(
+                hasSendCommunity(true), hasSendExtendedCommunity(true), hasAllowLocalAsIn(true))));
+    assertTrue(evpnAf.getPropagateUnmatched());
+
+    String peerEvpnExportPolicyName = "~BGP_PEER_EXPORT_POLICY_EVPN:default:1.1.1.1~";
+    assertThat(evpnAf, hasExportPolicy(peerEvpnExportPolicyName));
+    assertThat(
+        c.getRoutingPolicies().get(peerEvpnExportPolicyName).getStatements(),
+        equalTo(
+            ImmutableList.of(
+                new If(
+                    new Conjunction(
+                        ImmutableList.of(
+                            new MatchProtocol(RoutingProtocol.BGP, RoutingProtocol.IBGP),
+                            new CallExpr("match_metric"))),
+                    ImmutableList.of(Statements.ExitAccept.toStaticStatement()),
+                    ImmutableList.of(Statements.ExitReject.toStaticStatement())))));
+  }
+
+  @Test
+  public void testEvpnL2L3Vni() throws IOException {
+    Configuration c = parseConfig("nxos_l2_l3_vnis");
+
+    Ip routerId = Ip.parse("10.1.1.1");
+    // All defined VXLAN Vnis
+    ImmutableSortedSet<Layer2VniConfig> expectedL2Vnis =
+        ImmutableSortedSet.of(
+            Layer2VniConfig.builder()
+                .setVni(1111)
+                .setVrf(DEFAULT_VRF_NAME)
+                .setRouteDistinguisher(RouteDistinguisher.from(routerId, 1111))
+                .setRouteTarget(ExtendedCommunity.target(1, 1111))
+                .setImportRouteTarget(ExtendedCommunity.target(1, 1111).matchString())
+                .build());
+    ImmutableSortedSet<Layer3VniConfig> expectedL3Vnis =
+        ImmutableSortedSet.of(
+            Layer3VniConfig.builder()
+                .setVni(3333)
+                .setVrf(DEFAULT_VRF_NAME)
+                .setRouteDistinguisher(RouteDistinguisher.from(routerId, 3333))
+                .setRouteTarget(ExtendedCommunity.target(1, 3333))
+                .setImportRouteTarget(ExtendedCommunity.target(1, 3333).matchString())
+                .setAdvertiseV4Unicast(false)
+                .build());
+    BgpPeerConfig peer =
+        c.getDefaultVrf().getBgpProcess().getActiveNeighbors().get(Prefix.parse("1.1.1.1/32"));
+    assertThat(peer.getEvpnAddressFamily(), notNullValue());
+    assertThat(peer.getEvpnAddressFamily().getL2VNIs(), equalTo(expectedL2Vnis));
+    assertThat(peer.getEvpnAddressFamily().getL3VNIs(), equalTo(expectedL3Vnis));
+  }
+
+  @Test
+  public void testTrackExtraction() {
+    // TODO: make into extraction test
+    assertThat(parseVendorConfig("nxos_track"), notNullValue());
+  }
+
+  @Test
   public void testEvpnExtraction() {
     CiscoNxosConfiguration vc = parseVendorConfig("nxos_evpn");
     Evpn evpn = vc.getEvpn();
@@ -486,18 +644,18 @@ public final class CiscoNxosGrammarTest {
     {
       EvpnVni vni = evpn.getVni(1);
       assertThat(vni.getRd(), equalTo(RouteDistinguisherOrAuto.auto()));
-      assertThat(vni.getExportRt(), equalTo(RouteDistinguisherOrAuto.auto()));
-      assertThat(vni.getImportRt(), equalTo(RouteDistinguisherOrAuto.auto()));
+      assertThat(vni.getExportRt(), equalTo(ExtendedCommunityOrAuto.auto()));
+      assertThat(vni.getImportRt(), equalTo(ExtendedCommunityOrAuto.auto()));
     }
     {
       EvpnVni vni = evpn.getVni(2);
       assertThat(vni.getRd(), nullValue());
       assertThat(
           vni.getExportRt(),
-          equalTo(RouteDistinguisherOrAuto.of(RouteDistinguisher.from(65002, 1L))));
+          equalTo(ExtendedCommunityOrAuto.of(ExtendedCommunity.target(65002L, 1L))));
       assertThat(
           vni.getImportRt(),
-          equalTo(RouteDistinguisherOrAuto.of(RouteDistinguisher.from(65002, 2L))));
+          equalTo(ExtendedCommunityOrAuto.of(ExtendedCommunity.target(65002L, 2L))));
     }
     {
       EvpnVni vni = evpn.getVni(3);
@@ -506,10 +664,10 @@ public final class CiscoNxosGrammarTest {
           equalTo(RouteDistinguisherOrAuto.of(RouteDistinguisher.from(Ip.parse("3.3.3.3"), 0))));
       assertThat(
           vni.getExportRt(),
-          equalTo(RouteDistinguisherOrAuto.of(RouteDistinguisher.from(65003, 2L))));
+          equalTo(ExtendedCommunityOrAuto.of(ExtendedCommunity.target(65003L, 2L))));
       assertThat(
           vni.getImportRt(),
-          equalTo(RouteDistinguisherOrAuto.of(RouteDistinguisher.from(65003, 1L))));
+          equalTo(ExtendedCommunityOrAuto.of(ExtendedCommunity.target(65003L, 1L))));
     }
   }
 
@@ -659,6 +817,12 @@ public final class CiscoNxosGrammarTest {
   }
 
   @Test
+  public void testInterfacePbrExtraction() {
+    CiscoNxosConfiguration c = parseVendorConfig("nxos_interface_ip_policy");
+    assertThat(c.getInterfaces().get("Ethernet1/1").getPbrPolicy(), equalTo("PBR_POLICY"));
+  }
+
+  @Test
   public void testInterfaceRangeConversion() throws IOException {
     String hostname = "nxos_interface_range";
     Configuration c = parseConfig(hostname);
@@ -738,6 +902,7 @@ public final class CiscoNxosGrammarTest {
             "Ethernet1/12",
             "Ethernet1/13",
             "Ethernet1/14",
+            "Ethernet1/15",
             "loopback0",
             "mgmt0",
             "port-channel1",
@@ -862,6 +1027,12 @@ public final class CiscoNxosGrammarTest {
       assertThat(iface.getNativeVlan(), equalTo(1));
       assertThat(iface.getAllowedVlans(), equalTo(IntegerSpace.of(Range.closed(1, 4094))));
     }
+    {
+      org.batfish.datamodel.Interface iface = c.getAllInterfaces().get("Ethernet1/15");
+      assertThat(iface, isActive());
+      assertThat(iface.getSwitchportMode(), equalTo(SwitchportMode.ACCESS));
+      assertThat(iface.getAccessVlan(), equalTo(1));
+    }
   }
 
   @Test
@@ -888,6 +1059,7 @@ public final class CiscoNxosGrammarTest {
             "Ethernet1/12",
             "Ethernet1/13",
             "Ethernet1/14",
+            "Ethernet1/15",
             "loopback0",
             "mgmt0",
             "port-channel1",
@@ -1010,6 +1182,12 @@ public final class CiscoNxosGrammarTest {
       assertThat(iface.getSwitchportMode(), equalTo(SwitchportMode.TRUNK));
       assertThat(iface.getNativeVlan(), equalTo(1));
       assertThat(iface.getAllowedVlans(), equalTo(IntegerSpace.of(Range.closed(1, 4094))));
+    }
+    {
+      Interface iface = vc.getInterfaces().get("Ethernet1/15");
+      assertFalse(iface.getShutdown());
+      assertThat(iface.getSwitchportMode(), equalTo(SwitchportMode.ACCESS));
+      assertThat(iface.getAccessVlan(), equalTo(1));
     }
   }
 
@@ -2232,6 +2410,12 @@ public final class CiscoNxosGrammarTest {
   }
 
   @Test
+  public void testIpAsPathAccessListInvalid() {
+    _thrown.expect(ParserBatfishException.class);
+    parseVendorConfig("nxos_ip_as_path_access_list_invalid");
+  }
+
+  @Test
   public void testIpCommunityListStandardConversion() throws IOException {
     String hostname = "nxos_ip_community_list_standard";
     Configuration c = parseConfig(hostname);
@@ -2736,6 +2920,363 @@ public final class CiscoNxosGrammarTest {
   }
 
   @Test
+  public void testOspfConversion() throws IOException {
+    String hostname = "nxos_ospf";
+    Configuration c = parseConfig(hostname);
+    org.batfish.datamodel.Vrf defaultVrf = c.getDefaultVrf();
+
+    assertThat(
+        defaultVrf.getOspfProcesses(),
+        hasKeys(
+            "a_auth",
+            "a_auth_m",
+            "a_default_cost",
+            "a_filter_list",
+            "a_nssa",
+            "a_nssa_no_r",
+            "a_nssa_no_s",
+            "a_nssa_rm",
+            "a_r",
+            "a_r_cost",
+            "a_r_not_advertise",
+            "a_stub",
+            "a_stub_no_summary",
+            "a_virtual_link",
+            "auto_cost",
+            "auto_cost_m",
+            "auto_cost_g",
+            "bfd",
+            "dio",
+            "dio_always",
+            "dio_route_map",
+            "dio_always_route_map",
+            "lac",
+            "lac_detail",
+            "mm",
+            "mm_external_lsa",
+            "mm_external_lsa_m",
+            "mm_include_stub",
+            "mm_on_startup",
+            "mm_on_startup_t",
+            "mm_on_startup_w",
+            "mm_on_startup_tw",
+            "mm_summary_lsa",
+            "mm_summary_lsa_m",
+            "network",
+            "pi_d",
+            "r_direct",
+            "r_mp",
+            "r_mp_t",
+            "r_mp_warn",
+            "r_mp_withdraw",
+            "r_mp_withdraw_n",
+            "r_static",
+            "router_id",
+            "sa",
+            "timers",
+            "with_vrf"));
+    // TODO: convert and test "a_auth" - OSPF area authentication
+    // TODO: convert and test "a_auth_m" - OSPF area authentication using message-digest
+    // TODO: convert and test "a_default_cost" - OSPF area default-cost
+    // TODO: convert and test "a_filter_list" - OSPF area input/output filter-list (route-map)
+    {
+      org.batfish.datamodel.ospf.OspfProcess proc = defaultVrf.getOspfProcesses().get("a_nssa");
+      assertThat(proc, hasArea(1L, hasNssa(notNullValue())));
+    }
+    {
+      org.batfish.datamodel.ospf.OspfProcess proc =
+          defaultVrf.getOspfProcesses().get("a_nssa_no_r");
+      assertThat(proc, hasArea(1L, hasNssa(hasSuppressType7(true))));
+    }
+    {
+      org.batfish.datamodel.ospf.OspfProcess proc =
+          defaultVrf.getOspfProcesses().get("a_nssa_no_s");
+      assertThat(proc, hasArea(1L, hasNssa(NssaSettingsMatchers.hasSuppressType3())));
+    }
+    // TODO: convert and test "a_nssa_rm" - OSPF NSSA with route-map
+    // TODO: convert and test "a_r" - OSPF area range
+    // TODO: convert and test "a_r_cost" - OSPF area range-specific cost
+    // TODO: convert and test "a_r_not_advertise" - OSPF area range advertisement suppression
+    {
+      org.batfish.datamodel.ospf.OspfProcess proc = defaultVrf.getOspfProcesses().get("a_stub");
+      assertThat(proc, hasArea(1L, hasStub(notNullValue())));
+    }
+    {
+      org.batfish.datamodel.ospf.OspfProcess proc =
+          defaultVrf.getOspfProcesses().get("a_stub_no_summary");
+      assertThat(proc, hasArea(1L, hasStub(StubSettingsMatchers.hasSuppressType3())));
+    }
+    // TODO: convert and test "a_virtual_link" - OSPF area virtual-link
+    {
+      org.batfish.datamodel.ospf.OspfProcess proc = defaultVrf.getOspfProcesses().get("auto_cost");
+      assertThat(proc.getReferenceBandwidth(), equalTo(1E9D));
+    }
+    {
+      org.batfish.datamodel.ospf.OspfProcess proc =
+          defaultVrf.getOspfProcesses().get("auto_cost_m");
+      assertThat(proc.getReferenceBandwidth(), equalTo(2E9D));
+    }
+    {
+      org.batfish.datamodel.ospf.OspfProcess proc =
+          defaultVrf.getOspfProcesses().get("auto_cost_g");
+      assertThat(proc.getReferenceBandwidth(), equalTo(3E12D));
+    }
+    // TODO: convert and test "bfd" - OSPF bfd
+    {
+      // common routes for default-originate tests
+      org.batfish.datamodel.StaticRoute staticInputRoute =
+          org.batfish.datamodel.StaticRoute.builder()
+              .setAdmin(1)
+              .setNetwork(Prefix.ZERO)
+              .setNextHopInterface(org.batfish.datamodel.Interface.NULL_INTERFACE_NAME)
+              .build();
+      org.batfish.datamodel.GeneratedRoute generatedInputRoute =
+          org.batfish.datamodel.GeneratedRoute.builder()
+              .setNetwork(Prefix.ZERO)
+              .setNextHopInterface(org.batfish.datamodel.Interface.NULL_INTERFACE_NAME)
+              .build();
+      {
+        org.batfish.datamodel.ospf.OspfProcess proc = defaultVrf.getOspfProcesses().get("dio");
+        // should not generate route
+        assertThat(proc.getGeneratedRoutes(), empty());
+        OspfExternalRoute.Builder outputRoute = ospfExternalRouteBuilder().setNetwork(Prefix.ZERO);
+        // accept main-RIB route
+        assertTrue(
+            c.getRoutingPolicies()
+                .get(proc.getExportPolicy())
+                .process(
+                    staticInputRoute,
+                    outputRoute,
+                    Ip.ZERO,
+                    Configuration.DEFAULT_VRF_NAME,
+                    Direction.OUT));
+        assertThat(outputRoute.build().getOspfMetricType(), equalTo(OspfMetricType.E1));
+      }
+      {
+        org.batfish.datamodel.ospf.OspfProcess proc =
+            defaultVrf.getOspfProcesses().get("dio_always");
+        // should have generated route
+        assertThat(proc.getGeneratedRoutes(), contains(allOf(hasPrefix(Prefix.ZERO))));
+        OspfExternalRoute.Builder outputRoute = ospfExternalRouteBuilder().setNetwork(Prefix.ZERO);
+        // reject main-RIB route
+        assertFalse(
+            c.getRoutingPolicies()
+                .get(proc.getExportPolicy())
+                .process(
+                    staticInputRoute,
+                    OspfExternalRoute.builder(),
+                    Ip.ZERO,
+                    Configuration.DEFAULT_VRF_NAME,
+                    Direction.OUT));
+        // accept generated route
+        assertTrue(
+            c.getRoutingPolicies()
+                .get(proc.getExportPolicy())
+                .process(
+                    generatedInputRoute,
+                    outputRoute,
+                    Ip.ZERO,
+                    Configuration.DEFAULT_VRF_NAME,
+                    Direction.OUT));
+        assertThat(outputRoute.build().getOspfMetricType(), equalTo(OspfMetricType.E1));
+      }
+      {
+        org.batfish.datamodel.ospf.OspfProcess proc =
+            defaultVrf.getOspfProcesses().get("dio_route_map");
+        // should not generate route
+        assertThat(proc.getGeneratedRoutes(), empty());
+        OspfExternalRoute.Builder outputRoute = ospfExternalRouteBuilder().setNetwork(Prefix.ZERO);
+        // accept main-RIB route
+        assertTrue(
+            c.getRoutingPolicies()
+                .get(proc.getExportPolicy())
+                .process(
+                    staticInputRoute,
+                    outputRoute,
+                    Ip.ZERO,
+                    Configuration.DEFAULT_VRF_NAME,
+                    Direction.OUT));
+        // assign E2 metric-type from route-map
+        assertThat(outputRoute.build().getOspfMetricType(), equalTo(OspfMetricType.E2));
+      }
+      {
+        org.batfish.datamodel.ospf.OspfProcess proc =
+            defaultVrf.getOspfProcesses().get("dio_always_route_map");
+        // should have generated route
+        assertThat(proc.getGeneratedRoutes(), contains(allOf(hasPrefix(Prefix.ZERO))));
+        OspfExternalRoute.Builder outputRoute = ospfExternalRouteBuilder().setNetwork(Prefix.ZERO);
+        // reject main-RIB route
+        assertFalse(
+            c.getRoutingPolicies()
+                .get(proc.getExportPolicy())
+                .process(
+                    staticInputRoute,
+                    OspfExternalRoute.builder(),
+                    Ip.ZERO,
+                    Configuration.DEFAULT_VRF_NAME,
+                    Direction.OUT));
+        // accept generated route
+        assertTrue(
+            c.getRoutingPolicies()
+                .get(proc.getExportPolicy())
+                .process(
+                    generatedInputRoute,
+                    outputRoute,
+                    Ip.ZERO,
+                    Configuration.DEFAULT_VRF_NAME,
+                    Direction.OUT));
+        // assign E2 metric-type from route-map
+        assertThat(outputRoute.build().getOspfMetricType(), equalTo(OspfMetricType.E2));
+      }
+    }
+    // TODO: convert and test "lac" - OSPF log-adjacency-changes
+    // TODO: convert and test "lac_detail" - OSPF log-adjacency-changes detail
+    {
+      org.batfish.datamodel.ospf.OspfProcess proc = defaultVrf.getOspfProcesses().get("mm");
+      assertThat(proc.getMaxMetricTransitLinks(), equalTo((long) DEFAULT_OSPF_MAX_METRIC));
+    }
+    {
+      org.batfish.datamodel.ospf.OspfProcess proc =
+          defaultVrf.getOspfProcesses().get("mm_external_lsa");
+      assertThat(proc.getMaxMetricTransitLinks(), equalTo((long) DEFAULT_OSPF_MAX_METRIC));
+      assertThat(proc.getMaxMetricExternalNetworks(), equalTo((long) DEFAULT_OSPF_MAX_METRIC));
+    }
+    {
+      org.batfish.datamodel.ospf.OspfProcess proc =
+          defaultVrf.getOspfProcesses().get("mm_external_lsa_m");
+      assertThat(proc.getMaxMetricTransitLinks(), equalTo((long) DEFAULT_OSPF_MAX_METRIC));
+      assertThat(proc.getMaxMetricExternalNetworks(), equalTo(123L));
+    }
+    {
+      org.batfish.datamodel.ospf.OspfProcess proc =
+          defaultVrf.getOspfProcesses().get("mm_include_stub");
+      assertThat(proc.getMaxMetricTransitLinks(), equalTo((long) DEFAULT_OSPF_MAX_METRIC));
+      assertThat(proc.getMaxMetricStubNetworks(), equalTo((long) DEFAULT_OSPF_MAX_METRIC));
+    }
+    {
+      org.batfish.datamodel.ospf.OspfProcess proc =
+          defaultVrf.getOspfProcesses().get("mm_include_stub");
+      assertThat(proc.getMaxMetricTransitLinks(), equalTo((long) DEFAULT_OSPF_MAX_METRIC));
+      assertThat(proc.getMaxMetricStubNetworks(), equalTo((long) DEFAULT_OSPF_MAX_METRIC));
+    }
+    // ignore on-startup settings
+    {
+      org.batfish.datamodel.ospf.OspfProcess proc =
+          defaultVrf.getOspfProcesses().get("mm_summary_lsa");
+      assertThat(proc.getMaxMetricTransitLinks(), equalTo((long) DEFAULT_OSPF_MAX_METRIC));
+      assertThat(proc.getMaxMetricSummaryNetworks(), equalTo((long) DEFAULT_OSPF_MAX_METRIC));
+    }
+    {
+      org.batfish.datamodel.ospf.OspfProcess proc =
+          defaultVrf.getOspfProcesses().get("mm_summary_lsa_m");
+      assertThat(proc.getMaxMetricTransitLinks(), equalTo((long) DEFAULT_OSPF_MAX_METRIC));
+      assertThat(proc.getMaxMetricSummaryNetworks(), equalTo(456L));
+    }
+    {
+      org.batfish.datamodel.ospf.OspfProcess proc = defaultVrf.getOspfProcesses().get("network");
+      assertThat(
+          proc,
+          hasArea(
+              0, OspfAreaMatchers.hasInterfaces(containsInAnyOrder("Ethernet1/2", "Ethernet1/3"))));
+    }
+    {
+      org.batfish.datamodel.ospf.OspfProcess proc = defaultVrf.getOspfProcesses().get("pi_d");
+      assertThat(
+          proc, hasArea(0, OspfAreaMatchers.hasInterfaces(containsInAnyOrder("Ethernet1/1"))));
+      // passivity tested in interfaces section
+    }
+    {
+      org.batfish.datamodel.ospf.OspfProcess proc = defaultVrf.getOspfProcesses().get("r_direct");
+      ConnectedRoute inputRoute = new ConnectedRoute(Prefix.parse("1.2.3.4/32"), "dummy2");
+      OspfExternalRoute.Builder outputRoute =
+          ospfExternalRouteBuilder().setNetwork(Prefix.parse("1.2.3.4/32"));
+      assertTrue(
+          c.getRoutingPolicies()
+              .get(proc.getExportPolicy())
+              .process(
+                  inputRoute, outputRoute, Ip.ZERO, Configuration.DEFAULT_VRF_NAME, Direction.OUT));
+      assertThat(outputRoute.build().getOspfMetricType(), equalTo(OspfMetricType.E1));
+    }
+    // TODO: convert and test OSPF redistribute maximum-prefix
+    {
+      org.batfish.datamodel.ospf.OspfProcess proc = defaultVrf.getOspfProcesses().get("r_static");
+      // can redistribute static default route on NX-OS
+      org.batfish.datamodel.StaticRoute inputRoute =
+          org.batfish.datamodel.StaticRoute.builder()
+              .setAdmin(1)
+              .setNetwork(Prefix.ZERO)
+              .setNextHopInterface("dummy")
+              .build();
+      OspfExternalRoute.Builder outputRoute = ospfExternalRouteBuilder().setNetwork(Prefix.ZERO);
+      assertTrue(
+          c.getRoutingPolicies()
+              .get(proc.getExportPolicy())
+              .process(
+                  inputRoute, outputRoute, Ip.ZERO, Configuration.DEFAULT_VRF_NAME, Direction.OUT));
+      assertThat(outputRoute.build().getOspfMetricType(), equalTo(OspfMetricType.E1));
+    }
+    {
+      org.batfish.datamodel.ospf.OspfProcess proc = defaultVrf.getOspfProcesses().get("router_id");
+      assertThat(proc.getRouterId(), equalTo(Ip.parse("192.0.2.1")));
+      assertThat(proc, hasArea(0L, OspfAreaMatchers.hasInterfaces(contains("Ethernet1/4"))));
+    }
+    {
+      org.batfish.datamodel.ospf.OspfProcess proc = defaultVrf.getOspfProcesses().get("sa");
+      Prefix p0 = Prefix.parse("192.168.0.0/24");
+      Prefix p1 = Prefix.create(Ip.parse("192.168.1.0"), Ip.parse("255.255.255.0"));
+      Prefix p2 = Prefix.create(Ip.parse("192.168.2.0"), Ip.parse("255.255.255.0"));
+      Map<Prefix, OspfAreaSummary> summaries = proc.getAreas().get(0L).getSummaries();
+
+      assertThat(summaries, hasKeys(p0, p1, p2));
+      assertTrue(summaries.get(p0).getAdvertised());
+      assertFalse(summaries.get(p1).getAdvertised());
+      assertTrue(summaries.get(p2).getAdvertised());
+      // TODO: convert and test tags
+    }
+    // TODO: convert and test OSPF timers
+    {
+      org.batfish.datamodel.ospf.OspfProcess proc = defaultVrf.getOspfProcesses().get("with_vrf");
+      assertThat(proc.getAreas(), hasKeys(0L));
+      assertThat(c.getVrfs().get("v1").getOspfProcesses(), hasKeys("with_vrf"));
+      org.batfish.datamodel.ospf.OspfProcess vrfProc =
+          c.getVrfs().get("v1").getOspfProcesses().get("with_vrf");
+      assertThat(vrfProc.getAreas(), hasKeys(1L));
+    }
+
+    assertThat(
+        c.getAllInterfaces(), hasKeys("Ethernet1/1", "Ethernet1/2", "Ethernet1/3", "Ethernet1/4"));
+    {
+      org.batfish.datamodel.Interface iface = c.getAllInterfaces().get("Ethernet1/1");
+      assertThat(iface.getOspfCost(), equalTo(12));
+      assertTrue(iface.getOspfEnabled());
+      assertThat(iface.getOspfAreaName(), equalTo(0L));
+      assertTrue(iface.getOspfPassive());
+      assertFalse(iface.getOspfPointToPoint());
+    }
+    {
+      org.batfish.datamodel.Interface iface = c.getAllInterfaces().get("Ethernet1/2");
+      assertTrue(iface.getOspfEnabled());
+      assertThat(iface.getOspfAreaName(), equalTo(0L));
+      assertFalse(iface.getOspfPassive());
+      assertFalse(iface.getOspfPointToPoint());
+    }
+    {
+      org.batfish.datamodel.Interface iface = c.getAllInterfaces().get("Ethernet1/3");
+      assertTrue(iface.getOspfEnabled());
+      assertThat(iface.getOspfAreaName(), equalTo(0L));
+      assertFalse(iface.getOspfPassive());
+      assertTrue(iface.getOspfPointToPoint());
+    }
+    {
+      org.batfish.datamodel.Interface iface = c.getAllInterfaces().get("Ethernet1/4");
+      assertTrue(iface.getOspfEnabled());
+      assertThat(iface.getOspfAreaName(), equalTo(0L));
+      assertTrue(iface.getOspfPassive());
+      assertFalse(iface.getOspfPointToPoint());
+    }
+  }
+
+  @Test
   public void testOspfExtraction() {
     String hostname = "nxos_ospf";
     CiscoNxosConfiguration vc = parseVendorConfig(hostname);
@@ -2786,6 +3327,7 @@ public final class CiscoNxosGrammarTest {
             "r_mp_withdraw",
             "r_mp_withdraw_n",
             "r_static",
+            "router_id",
             "sa",
             "timers",
             "with_vrf"));
@@ -2937,13 +3479,13 @@ public final class CiscoNxosGrammarTest {
       OspfProcess proc = vc.getOspfProcesses().get("dio_route_map");
       OspfDefaultOriginate defaultOriginate = proc.getDefaultOriginate();
       assertFalse(defaultOriginate.getAlways());
-      assertThat(defaultOriginate.getRouteMap(), equalTo("rm1"));
+      assertThat(defaultOriginate.getRouteMap(), equalTo("rm_e2"));
     }
     {
       OspfProcess proc = vc.getOspfProcesses().get("dio_always_route_map");
       OspfDefaultOriginate defaultOriginate = proc.getDefaultOriginate();
       assertTrue(defaultOriginate.getAlways());
-      assertThat(defaultOriginate.getRouteMap(), equalTo("rm1"));
+      assertThat(defaultOriginate.getRouteMap(), equalTo("rm_e2"));
       assertThat(proc.getMaxMetricRouterLsa(), nullValue());
     }
     // TODO: extract and test log-adjacency-changes
@@ -2957,14 +3499,14 @@ public final class CiscoNxosGrammarTest {
     {
       OspfProcess proc = vc.getOspfProcesses().get("mm_external_lsa");
       OspfMaxMetricRouterLsa mm = proc.getMaxMetricRouterLsa();
-      assertThat(mm.getExternalLsa(), instanceOf(OspfMetricAuto.class));
+      assertThat(mm.getExternalLsa(), equalTo(OspfMaxMetricRouterLsa.DEFAULT_OSPF_MAX_METRIC));
       assertFalse(mm.getIncludeStub());
       assertThat(mm.getSummaryLsa(), nullValue());
     }
     {
       OspfProcess proc = vc.getOspfProcesses().get("mm_external_lsa_m");
       OspfMaxMetricRouterLsa mm = proc.getMaxMetricRouterLsa();
-      assertThat(((OspfMetricManual) mm.getExternalLsa()).getMetric(), equalTo(123));
+      assertThat(mm.getExternalLsa(), equalTo(123));
       assertFalse(mm.getIncludeStub());
       assertThat(mm.getSummaryLsa(), nullValue());
     }
@@ -2981,14 +3523,14 @@ public final class CiscoNxosGrammarTest {
       OspfMaxMetricRouterLsa mm = proc.getMaxMetricRouterLsa();
       assertThat(mm.getExternalLsa(), nullValue());
       assertFalse(mm.getIncludeStub());
-      assertThat(mm.getSummaryLsa(), instanceOf(OspfMetricAuto.class));
+      assertThat(mm.getSummaryLsa(), equalTo(OspfMaxMetricRouterLsa.DEFAULT_OSPF_MAX_METRIC));
     }
     {
       OspfProcess proc = vc.getOspfProcesses().get("mm_summary_lsa_m");
       OspfMaxMetricRouterLsa mm = proc.getMaxMetricRouterLsa();
       assertThat(mm.getExternalLsa(), nullValue());
       assertFalse(mm.getIncludeStub());
-      assertThat(((OspfMetricManual) mm.getSummaryLsa()).getMetric(), equalTo(456));
+      assertThat(mm.getSummaryLsa(), equalTo(456));
     }
     {
       OspfProcess proc = vc.getOspfProcesses().get("network");
@@ -2998,7 +3540,7 @@ public final class CiscoNxosGrammarTest {
               ImmutableMap.of(
                   IpWildcard.ipWithWildcardMask(Ip.parse("192.168.0.0"), Ip.parse("0.0.255.255")),
                   0L,
-                  IpWildcard.create(Prefix.strict("192.168.1.0/24")),
+                  IpWildcard.create(Prefix.strict("172.16.0.0/24")),
                   0L)));
       assertFalse(proc.getPassiveInterfaceDefault());
     }
@@ -3014,6 +3556,11 @@ public final class CiscoNxosGrammarTest {
     {
       OspfProcess proc = vc.getOspfProcesses().get("r_static");
       assertThat(proc.getRedistributeStaticRouteMap(), equalTo("rm1"));
+      assertThat(proc.getRouterId(), nullValue());
+    }
+    {
+      OspfProcess proc = vc.getOspfProcesses().get("router_id");
+      assertThat(proc.getRouterId(), equalTo(Ip.parse("192.0.2.1")));
     }
     {
       OspfProcess proc = vc.getOspfProcesses().get("sa");
@@ -3062,15 +3609,18 @@ public final class CiscoNxosGrammarTest {
       assertThat(proc.getVrfs().get("v1").getAreas(), hasKeys(1L));
     }
 
-    assertThat(vc.getInterfaces(), hasKeys("Ethernet1/1", "Ethernet1/2", "Ethernet1/3"));
+    assertThat(
+        vc.getInterfaces(), hasKeys("Ethernet1/1", "Ethernet1/2", "Ethernet1/3", "Ethernet1/4"));
     {
       Interface iface = vc.getInterfaces().get("Ethernet1/1");
       OspfInterface ospf = iface.getOspf();
       assertThat(ospf, notNullValue());
       // TODO: extract and test message-digest-key
+      assertThat(ospf.getCost(), equalTo(12));
       assertThat(ospf.getDeadIntervalS(), equalTo(10));
       assertThat(ospf.getHelloIntervalS(), equalTo(20));
-      assertThat(ospf.getProcess(), equalTo("a_auth"));
+      assertThat(ospf.getPassive(), nullValue());
+      assertThat(ospf.getProcess(), equalTo("pi_d"));
       assertThat(ospf.getArea(), equalTo(0L));
       assertThat(ospf.getNetwork(), nullValue());
     }
@@ -3078,8 +3628,10 @@ public final class CiscoNxosGrammarTest {
       Interface iface = vc.getInterfaces().get("Ethernet1/2");
       OspfInterface ospf = iface.getOspf();
       assertThat(ospf, notNullValue());
+      assertThat(ospf.getCost(), nullValue());
       assertThat(ospf.getDeadIntervalS(), equalTo(DEFAULT_DEAD_INTERVAL_S));
       assertThat(ospf.getHelloIntervalS(), equalTo(DEFAULT_HELLO_INTERVAL_S));
+      assertThat(ospf.getPassive(), nullValue());
       assertThat(ospf.getProcess(), nullValue());
       assertThat(ospf.getArea(), nullValue());
       assertThat(ospf.getNetwork(), equalTo(BROADCAST));
@@ -3088,7 +3640,15 @@ public final class CiscoNxosGrammarTest {
       Interface iface = vc.getInterfaces().get("Ethernet1/3");
       OspfInterface ospf = iface.getOspf();
       assertThat(ospf, notNullValue());
+      assertThat(ospf.getPassive(), nullValue());
       assertThat(ospf.getNetwork(), equalTo(POINT_TO_POINT));
+    }
+    {
+      Interface iface = vc.getInterfaces().get("Ethernet1/4");
+      OspfInterface ospf = iface.getOspf();
+      assertThat(ospf, notNullValue());
+      assertThat(ospf.getPassive(), equalTo(true));
+      assertThat(ospf.getNetwork(), nullValue());
     }
   }
 
@@ -3473,6 +4033,7 @@ public final class CiscoNxosGrammarTest {
         hasKeys(
             "empty_deny",
             "empty_permit",
+            "empty_pbr_statistics",
             "match_as_path",
             "match_community",
             "match_interface",
@@ -3493,6 +4054,9 @@ public final class CiscoNxosGrammarTest {
             "set_metric_type_internal",
             "set_metric_type_type_1",
             "set_metric_type_type_2",
+            "set_origin_egp",
+            "set_origin_igp",
+            "set_origin_incomplete",
             "set_tag",
             "match_undefined_access_list",
             "match_undefined_community_list",
@@ -3521,6 +4085,10 @@ public final class CiscoNxosGrammarTest {
     {
       RoutingPolicy rp = c.getRoutingPolicies().get("empty_permit");
       assertRoutingPolicyPermitsRoute(rp, base);
+    }
+    {
+      RoutingPolicy rp = c.getRoutingPolicies().get("empty_pbr_statistics");
+      assertRoutingPolicyDeniesRoute(rp, base);
     }
 
     // matches
@@ -3560,7 +4128,7 @@ public final class CiscoNxosGrammarTest {
       Bgpv4Route routeDirect = base.toBuilder().setNetwork(Prefix.parse("192.0.2.1/32")).build();
       assertRoutingPolicyPermitsRoute(rp, routeDirect);
     }
-    // TODO: match ip address - relevant to routing?
+    // Skip match ip address - not relevant to routing
     {
       RoutingPolicy rp = c.getRoutingPolicies().get("match_ip_address_prefix_list");
       assertRoutingPolicyDeniesRoute(rp, base);
@@ -3646,6 +4214,21 @@ public final class CiscoNxosGrammarTest {
       assertThat(route.getOspfMetricType(), equalTo(OspfMetricType.E2));
     }
     {
+      RoutingPolicy rp = c.getRoutingPolicies().get("set_origin_egp");
+      Bgpv4Route route = processRouteIn(rp, base);
+      assertThat(route.getOriginType(), equalTo(OriginType.EGP));
+    }
+    {
+      RoutingPolicy rp = c.getRoutingPolicies().get("set_origin_igp");
+      Bgpv4Route route = processRouteIn(rp, base);
+      assertThat(route.getOriginType(), equalTo(OriginType.IGP));
+    }
+    {
+      RoutingPolicy rp = c.getRoutingPolicies().get("set_origin_incomplete");
+      Bgpv4Route route = processRouteIn(rp, base);
+      assertThat(route.getOriginType(), equalTo(OriginType.INCOMPLETE));
+    }
+    {
       RoutingPolicy rp = c.getRoutingPolicies().get("set_tag");
       Bgpv4Route route = processRouteIn(rp, base);
       assertThat(route.getTag(), equalTo(1L));
@@ -3674,6 +4257,7 @@ public final class CiscoNxosGrammarTest {
         hasKeys(
             "empty_deny",
             "empty_permit",
+            "empty_pbr_statistics",
             "match_as_path",
             "match_community",
             "match_interface",
@@ -3694,6 +4278,9 @@ public final class CiscoNxosGrammarTest {
             "set_metric_type_internal",
             "set_metric_type_type_1",
             "set_metric_type_type_2",
+            "set_origin_egp",
+            "set_origin_igp",
+            "set_origin_incomplete",
             "set_tag",
             "match_undefined_access_list",
             "match_undefined_community_list",
@@ -3717,6 +4304,11 @@ public final class CiscoNxosGrammarTest {
       RouteMapEntry entry = getOnlyElement(rm.getEntries().values());
       assertThat(entry.getAction(), equalTo(LineAction.PERMIT));
       assertThat(entry.getSequence(), equalTo(10));
+    }
+    {
+      RouteMap rm = vc.getRouteMaps().get("empty_pbr_statistics");
+      assertThat(rm.getEntries(), anEmptyMap());
+      assertTrue(rm.getPbrStatistics());
     }
     {
       RouteMap rm = vc.getRouteMaps().get("match_as_path");
@@ -3922,6 +4514,36 @@ public final class CiscoNxosGrammarTest {
       RouteMapSetMetricType set = entry.getSetMetricType();
       assertThat(entry.getSets().collect(onlyElement()), equalTo(set));
       assertThat(set.getMetricType(), equalTo(RouteMapMetricType.TYPE_2));
+    }
+    {
+      RouteMap rm = vc.getRouteMaps().get("set_origin_egp");
+      assertThat(rm.getEntries().keySet(), contains(10));
+      RouteMapEntry entry = getOnlyElement(rm.getEntries().values());
+      assertThat(entry.getAction(), equalTo(LineAction.PERMIT));
+      assertThat(entry.getSequence(), equalTo(10));
+      RouteMapSetOrigin set = entry.getSetOrigin();
+      assertThat(entry.getSets().collect(onlyElement()), equalTo(set));
+      assertThat(set.getOrigin(), equalTo(OriginType.EGP));
+    }
+    {
+      RouteMap rm = vc.getRouteMaps().get("set_origin_igp");
+      assertThat(rm.getEntries().keySet(), contains(10));
+      RouteMapEntry entry = getOnlyElement(rm.getEntries().values());
+      assertThat(entry.getAction(), equalTo(LineAction.PERMIT));
+      assertThat(entry.getSequence(), equalTo(10));
+      RouteMapSetOrigin set = entry.getSetOrigin();
+      assertThat(entry.getSets().collect(onlyElement()), equalTo(set));
+      assertThat(set.getOrigin(), equalTo(OriginType.IGP));
+    }
+    {
+      RouteMap rm = vc.getRouteMaps().get("set_origin_incomplete");
+      assertThat(rm.getEntries().keySet(), contains(10));
+      RouteMapEntry entry = getOnlyElement(rm.getEntries().values());
+      assertThat(entry.getAction(), equalTo(LineAction.PERMIT));
+      assertThat(entry.getSequence(), equalTo(10));
+      RouteMapSetOrigin set = entry.getSetOrigin();
+      assertThat(entry.getSets().collect(onlyElement()), equalTo(set));
+      assertThat(set.getOrigin(), equalTo(OriginType.INCOMPLETE));
     }
     {
       RouteMap rm = vc.getRouteMaps().get("set_tag");
@@ -4480,22 +5102,22 @@ public final class CiscoNxosGrammarTest {
       assertThat(
           vrf.getRd(), equalTo(RouteDistinguisherOrAuto.of(RouteDistinguisher.from(65001, 10L))));
       VrfAddressFamily af4 = vrf.getAddressFamily(AddressFamily.IPV4_UNICAST);
-      assertThat(af4.getImportRtEvpn(), equalTo(RouteDistinguisherOrAuto.auto()));
-      assertThat(af4.getExportRtEvpn(), equalTo(RouteDistinguisherOrAuto.auto()));
+      assertThat(af4.getImportRtEvpn(), equalTo(ExtendedCommunityOrAuto.auto()));
+      assertThat(af4.getExportRtEvpn(), equalTo(ExtendedCommunityOrAuto.auto()));
       assertThat(
           af4.getImportRt(),
-          equalTo(RouteDistinguisherOrAuto.of(RouteDistinguisher.from(11, 65536L))));
+          equalTo(ExtendedCommunityOrAuto.of(ExtendedCommunity.target(11L, 65536L))));
       assertThat(af4.getExportRt(), nullValue());
 
       VrfAddressFamily af6 = vrf.getAddressFamily(AddressFamily.IPV6_UNICAST);
       assertThat(
           af6.getImportRtEvpn(),
-          equalTo(RouteDistinguisherOrAuto.of(RouteDistinguisher.from(65001, 11L))));
+          equalTo(ExtendedCommunityOrAuto.of(ExtendedCommunity.target(65001L, 11L))));
       assertThat(
           af6.getExportRtEvpn(),
-          equalTo(RouteDistinguisherOrAuto.of(RouteDistinguisher.from(65001, 11L))));
-      assertThat(af6.getImportRt(), equalTo(RouteDistinguisherOrAuto.auto()));
-      assertThat(af6.getExportRt(), equalTo(RouteDistinguisherOrAuto.auto()));
+          equalTo(ExtendedCommunityOrAuto.of(ExtendedCommunity.target(65001L, 11L))));
+      assertThat(af6.getImportRt(), equalTo(ExtendedCommunityOrAuto.auto()));
+      assertThat(af6.getExportRt(), equalTo(ExtendedCommunityOrAuto.auto()));
     }
     {
       Vrf vrf = vc.getVrfs().get("vrf3");

@@ -277,6 +277,7 @@ cip_null
 :
    (
       DF_BIT
+      | FRAGMENTATION
       | IKEV1
       | NAT_TRANSPARENCY
       | SECURITY_ASSOCIATION
@@ -389,8 +390,8 @@ cis_policy
    POLICY priority = DEC NEWLINE
    (
       cispol_authentication
-      | cispol_encr        //cisco
-      | cispol_encryption  //aruba
+      | cispol_encryption        //cisco
+      | cispol_encryption_aruba  //aruba
       | cispol_group
       | cispol_hash
       | cispol_lifetime
@@ -420,12 +421,15 @@ cispol_authentication
    ) NEWLINE
 ;
 
-cispol_encr
+cispol_encryption
 :
-   ENCR ike_encryption NEWLINE
+   (
+      ENCR
+      | ENCRYPTION
+    ) ike_encryption NEWLINE
 ;
 
-cispol_encryption
+cispol_encryption_aruba
 :
    ENCRYPTION ike_encryption_aruba NEWLINE
 ;
@@ -475,7 +479,7 @@ cisprf_local_address
 
 cisprf_match
 :
-   MATCH IDENTITY ADDRESS address = IP_ADDRESS mask = IP_ADDRESS NEWLINE
+   MATCH IDENTITY ADDRESS address = IP_ADDRESS mask = IP_ADDRESS? NEWLINE
 ;
 
 cisprf_null

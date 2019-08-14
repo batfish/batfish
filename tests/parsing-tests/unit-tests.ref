@@ -580,6 +580,9 @@
         "ios_interface_ip_authentication" : [
           "configs/ios_interface_ip_autentication"
         ],
+        "ios_interface_ip_eigrp_settings" : [
+          "configs/ios_interface_eigrp_settings"
+        ],
         "ios_interface_ip_tcp" : [
           "configs/ios_interface_ip_tcp"
         ],
@@ -1112,6 +1115,7 @@
         "configs/ios_bgp" : "PASSED",
         "configs/ios_bgp_aggregate_address" : "PASSED",
         "configs/ios_interface" : "PASSED",
+        "configs/ios_interface_eigrp_settings" : "PASSED",
         "configs/ios_interface_ip_autentication" : "PASSED",
         "configs/ios_interface_ip_tcp" : "PASSED",
         "configs/ios_standby" : "PASSED",
@@ -3421,12 +3425,12 @@
             "            AUTHENTICATION:'authentication'",
             "            RSA_SIG:'rsa-sig'  <== mode:M_Authentication",
             "            NEWLINE:'\\n')",
-            "          (cispol_encryption",
+            "          (cispol_encryption_aruba",
             "            ENCRYPTION:'encryption'",
             "            (ike_encryption_aruba",
             "              AES128:'aes128')",
             "            NEWLINE:'\\n')",
-            "          (cispol_encryption",
+            "          (cispol_encryption_aruba",
             "            ENCRYPTION:'encryption'",
             "            (ike_encryption_aruba",
             "              AES256:'aes256')",
@@ -8460,7 +8464,31 @@
             "        ESCAPE_C:'^'  <== mode:M_BannerText",
             "        M_MOTD_C_MOTD:'=================================================================================                                             \\n                       BLAH BLAH\\n\\n                             BOOP\\n================================================================================='  <== mode:M_MOTD_C",
             "        ESCAPE_C:'^\\n'  <== mode:M_MOTD_C",
-            "        NEWLINE:'\\n\\n\\n')))",
+            "        NEWLINE:'\\n')))",
+            "  (stanza",
+            "    (banner_stanza",
+            "      BANNER:'banner'",
+            "      (banner_type",
+            "        ASDM:'asdm'  <== mode:M_Banner)",
+            "      (banner",
+            "        ASA_BANNER_LINE:'********************************************************************************'  <== mode:M_BannerText",
+            "        NEWLINE:'\\n')))",
+            "  (stanza",
+            "    (banner_stanza",
+            "      BANNER:'banner'",
+            "      (banner_type",
+            "        ASDM:'asdm'  <== mode:M_Banner)",
+            "      (banner",
+            "        ASA_BANNER_LINE:'*THIS IS A PRIVATE COMPUTER SYSTEM. SUPER SECRET SAUCE    *'  <== mode:M_BannerText",
+            "        NEWLINE:'\\n')))",
+            "  (stanza",
+            "    (banner_stanza",
+            "      BANNER:'banner'",
+            "      (banner_type",
+            "        ASDM:'asdm'  <== mode:M_Banner)",
+            "      (banner",
+            "        ASA_BANNER_LINE:'********************************************************************************'  <== mode:M_BannerText",
+            "        NEWLINE:'\\n\\n')))",
             "  (stanza",
             "    (s_logging",
             "      LOGGING:'logging'",
@@ -18897,6 +18925,16 @@
             "      (crypto_ipsec",
             "        IPSEC:'ipsec'",
             "        (cip_null",
+            "          FRAGMENTATION:'fragmentation'",
+            "          (null_rest_of_line",
+            "            VARIABLE:'before-encryption'",
+            "            NEWLINE:'\\n')))))",
+            "  (stanza",
+            "    (s_crypto",
+            "      CRYPTO:'crypto'",
+            "      (crypto_ipsec",
+            "        IPSEC:'ipsec'",
+            "        (cip_null",
             "          IKEV1:'ikev1'",
             "          (null_rest_of_line",
             "            TRANSFORM_SET:'transform-set'",
@@ -19147,8 +19185,13 @@
             "            AUTHENTICATION:'authentication'",
             "            PRE_SHARE:'pre-share'  <== mode:M_Authentication",
             "            NEWLINE:'\\n')",
-            "          (cispol_encr",
+            "          (cispol_encryption",
             "            ENCR:'encr'",
+            "            (ike_encryption",
+            "              THREE_DES:'3des')",
+            "            NEWLINE:'\\n')",
+            "          (cispol_encryption",
+            "            ENCRYPTION:'encryption'",
             "            (ike_encryption",
             "              THREE_DES:'3des')",
             "            NEWLINE:'\\n')",
@@ -19193,6 +19236,12 @@
             "            ADDRESS:'address'",
             "            address = IP_ADDRESS:'1.2.3.4'",
             "            mask = IP_ADDRESS:'255.255.255.255'",
+            "            NEWLINE:'\\n')",
+            "          (cisprf_match",
+            "            MATCH:'match'",
+            "            IDENTITY:'identity'",
+            "            ADDRESS:'address'",
+            "            address = IP_ADDRESS:'1.2.3.4'",
             "            NEWLINE:'\\n')",
             "          (cisprf_null",
             "            REVERSE_ROUTE:'reverse-route'",
@@ -20828,11 +20877,12 @@
             "        (re_classic_tail",
             "          (re_default_metric",
             "            DEFAULT_METRIC:'default-metric'",
-            "            bw_kbps = DEC:'1'",
-            "            delay_10us = DEC:'2'",
-            "            reliability = DEC:'3'",
-            "            eff_bw = DEC:'4'",
-            "            mtu = DEC:'5'",
+            "            metric = (eigrp_metric",
+            "              bw_kbps = DEC:'1'",
+            "              delay_10us = DEC:'2'",
+            "              reliability = DEC:'3'",
+            "              eff_bw = DEC:'4'",
+            "              mtu = DEC:'5')",
             "            NEWLINE:'\\n'))",
             "        (re_classic_tail",
             "          (re_eigrp_null",
@@ -21032,11 +21082,12 @@
             "              REDISTRIBUTE:'redistribute'",
             "              STATIC:'static'",
             "              METRIC:'metric'",
-            "              bw_kbps = DEC:'10000'",
-            "              delay_10us = DEC:'10'",
-            "              reliability = DEC:'255'",
-            "              eff_bw = DEC:'1'",
-            "              mtu = DEC:'1500'",
+            "              metric = (eigrp_metric",
+            "                bw_kbps = DEC:'10000'",
+            "                delay_10us = DEC:'10'",
+            "                reliability = DEC:'255'",
+            "                eff_bw = DEC:'1'",
+            "                mtu = DEC:'1500')",
             "              ROUTE_MAP:'route-map'",
             "              map = (variable",
             "                VARIABLE:'STATIC_TO_EIGRP'  <== mode:M_RouteMap)",
@@ -24952,6 +25003,24 @@
             "        (range",
             "          (subrange",
             "            low = DEC:'4'  <== mode:M_Interface)))",
+            "      NEWLINE:'\\n'  <== mode:M_Interface))",
+            "  (stanza",
+            "    (s_interface",
+            "      INTERFACE:'interface'",
+            "      iname = (interface_name",
+            "        name_prefix_alpha = M_Interface_PREFIX:'Wlan-ap'  <== mode:M_Interface",
+            "        (range",
+            "          (subrange",
+            "            low = DEC:'0'  <== mode:M_Interface)))",
+            "      NEWLINE:'\\n'  <== mode:M_Interface))",
+            "  (stanza",
+            "    (s_interface",
+            "      INTERFACE:'interface'",
+            "      iname = (interface_name",
+            "        name_prefix_alpha = M_Interface_PREFIX:'Wlan-GigabitEthernet'  <== mode:M_Interface",
+            "        (range",
+            "          (subrange",
+            "            low = DEC:'0'  <== mode:M_Interface)))",
             "      NEWLINE:'\\n'  <== mode:M_Interface))",
             "  (stanza",
             "    (s_interface",
@@ -51708,6 +51777,42 @@
             "  EOF:<EOF>)"
           ]
         },
+        "configs/ios_interface_eigrp_settings" : {
+          "sentences" : [
+            "(cisco_configuration",
+            "  (stanza",
+            "    (s_hostname",
+            "      HOSTNAME:'hostname'",
+            "      VARIABLE:'ios_interface_ip_eigrp_settings'",
+            "      NEWLINE:'\\n'))",
+            "  (stanza",
+            "    (s_interface",
+            "      INTERFACE:'interface'",
+            "      iname = (interface_name",
+            "        name_prefix_alpha = M_Interface_PREFIX:'Ethernet'  <== mode:M_Interface",
+            "        (range",
+            "          (subrange",
+            "            low = DEC:'0'  <== mode:M_Interface)))",
+            "      NEWLINE:'\\n'  <== mode:M_Interface",
+            "      (if_inner",
+            "        (if_ip_hello_interval",
+            "          IP:'ip'",
+            "          HELLO_INTERVAL:'hello-interval'",
+            "          EIGRP:'eigrp'",
+            "          asn = DEC:'1'",
+            "          interval = DEC:'2'",
+            "          NEWLINE:'\\n'))",
+            "      (if_inner",
+            "        (if_ip_hold_time",
+            "          IP:'ip'",
+            "          HOLD_TIME:'hold-time'",
+            "          EIGRP:'eigrp'",
+            "          asn = DEC:'3'",
+            "          interval = DEC:'4'",
+            "          NEWLINE:'\\n'))))",
+            "  EOF:<EOF>)"
+          ]
+        },
         "configs/ios_interface_ip_autentication" : {
           "sentences" : [
             "(cisco_configuration",
@@ -63363,6 +63468,17 @@
             "    (set_line_tail",
             "      (statement",
             "        (s_common",
+            "          (s_routing_options",
+            "            ROUTING_OPTIONS:'routing-options'",
+            "            (ro_router_id",
+            "              ROUTER_ID:'router-id'",
+            "              id = IP_ADDRESS:'1.1.1.1')))))",
+            "    NEWLINE:'\\n')",
+            "  (set_line",
+            "    SET:'set'",
+            "    (set_line_tail",
+            "      (statement",
+            "        (s_common",
             "          (s_protocols",
             "            PROTOCOLS:'protocols'",
             "            (p_ospf",
@@ -63879,6 +63995,17 @@
             "              HOST_NAME:'host-name'",
             "              (variable",
             "                text = VARIABLE:'juniper_ospf_stub_areas'))))))",
+            "    NEWLINE:'\\n')",
+            "  (set_line",
+            "    SET:'set'",
+            "    (set_line_tail",
+            "      (statement",
+            "        (s_common",
+            "          (s_routing_options",
+            "            ROUTING_OPTIONS:'routing-options'",
+            "            (ro_router_id",
+            "              ROUTER_ID:'router-id'",
+            "              id = IP_ADDRESS:'1.1.1.1')))))",
             "    NEWLINE:'\\n')",
             "  (set_line",
             "    SET:'set'",
@@ -75292,6 +75419,12 @@
             },
             {
               "Comment" : "This feature is not currently supported",
+              "Line" : 128,
+              "Parser_Context" : "[if_ip_summary_address if_inner s_interface stanza cisco_configuration]",
+              "Text" : "ip summary-address eigrp 11 10.1.2.3 255.255.255.255 leak-map eigrp-leak-map"
+            },
+            {
+              "Comment" : "This feature is not currently supported",
               "Line" : 281,
               "Parser_Context" : "[if_zone_member if_inner s_interface stanza cisco_configuration]",
               "Text" : "zone-member t1"
@@ -77450,13 +77583,13 @@
           "Parse warnings" : [
             {
               "Comment" : "This feature is not currently supported",
-              "Line" : 14,
+              "Line" : 15,
               "Parser_Context" : "[oa_area_range o_area o_common p_ospf3 s_protocols s_common statement set_line_tail set_line flat_juniper_configuration]",
               "Text" : "area-range dead:beef::/56 override-metric 100"
             },
             {
               "Comment" : "This feature is not currently supported",
-              "Line" : 14,
+              "Line" : 15,
               "Parser_Context" : "[oa_area_range o_area o_common p_ospf3 s_protocols s_common statement set_line_tail set_line flat_juniper_configuration]",
               "Text" : "area-range dead:beef::/56 override-metric 100"
             }
@@ -77835,6 +77968,7 @@
         "ios_bgp" : "PASSED",
         "ios_interface" : "PASSED",
         "ios_interface_ip_authentication" : "PASSED",
+        "ios_interface_ip_eigrp_settings" : "PASSED",
         "ios_interface_ip_tcp" : "PASSED",
         "ios_standby" : "PASSED",
         "ios_template" : "PASSED",
@@ -77873,7 +78007,7 @@
         "juniper_misc" : "PASSED",
         "juniper_nat" : "PASSED",
         "juniper_ntp" : "PASSED",
-        "juniper_ospf_stub_areas" : "WARNINGS",
+        "juniper_ospf_stub_areas" : "PASSED",
         "juniper_passwords" : "PASSED",
         "juniper_policy_statement" : "PASSED",
         "juniper_relay" : "PASSED",
@@ -78989,11 +79123,11 @@
           "crypto ipsec profile" : {
             "abcdefg" : {
               "definitionLines" : [
-                158,
                 159,
                 160,
                 161,
-                162
+                162,
+                163
               ],
               "numReferrers" : 0
             }
@@ -79001,33 +79135,33 @@
           "crypto ipsec transform-set" : {
             "ESP-3DES-MD5" : {
               "definitionLines" : [
-                167,
                 168,
-                169
+                169,
+                170
               ],
               "numReferrers" : 0
             },
             "IPSEC_AES_256" : {
               "definitionLines" : [
-                170
+                171
               ],
               "numReferrers" : 0
             },
             "cipts1" : {
               "definitionLines" : [
-                171
+                172
               ],
               "numReferrers" : 0
             },
             "cipts2" : {
               "definitionLines" : [
-                172
+                173
               ],
               "numReferrers" : 0
             },
             "noAuthHeader" : {
               "definitionLines" : [
-                173
+                174
               ],
               "numReferrers" : 0
             }
@@ -79035,12 +79169,14 @@
           "crypto isakmp policy" : {
             "1" : {
               "definitionLines" : [
-                180,
                 181,
                 182,
                 183,
                 184,
-                185
+                185,
+                186,
+                187,
+                188
               ],
               "numReferrers" : 1
             }
@@ -79048,13 +79184,15 @@
           "crypto isakmp profile" : {
             "myprofile" : {
               "definitionLines" : [
-                187,
-                188,
-                189,
                 190,
                 191,
                 192,
-                193
+                193,
+                194,
+                195,
+                196,
+                197,
+                198
               ],
               "numReferrers" : 1
             }
@@ -79062,8 +79200,8 @@
           "crypto keyring" : {
             "VRF:ABC:DEF:GHI:1234" : {
               "definitionLines" : [
-                212,
-                213
+                217,
+                218
               ],
               "numReferrers" : 0
             }
@@ -79071,11 +79209,6 @@
           "crypto named rsa pubkey" : {
             "a.example.com" : {
               "definitionLines" : [
-                198,
-                199,
-                200,
-                201,
-                202,
                 203,
                 204,
                 205,
@@ -79084,7 +79217,12 @@
                 208,
                 209,
                 210,
-                211
+                211,
+                212,
+                213,
+                214,
+                215,
+                216
               ],
               "numReferrers" : 1
             }
@@ -79114,32 +79252,32 @@
           "crypto-map-set" : {
             "VPN" : {
               "definitionLines" : [
-                218,
-                219,
-                220,
-                221,
-                222,
-                223
+                223,
+                224,
+                225,
+                226,
+                227,
+                228
               ],
               "numReferrers" : 0
             },
             "VPNMAP" : {
               "definitionLines" : [
-                233,
-                234,
-                235,
-                236,
-                237,
                 238,
                 239,
                 240,
-                241
+                241,
+                242,
+                243,
+                244,
+                245,
+                246
               ],
               "numReferrers" : 0
             },
             "myothermap" : {
               "definitionLines" : [
-                215
+                220
               ],
               "numReferrers" : 0
             }
@@ -79543,8 +79681,8 @@
             },
             "Ethernet1/12" : {
               "definitionLines" : [
-                348,
-                349
+                352,
+                353
               ],
               "numReferrers" : 1
             },
@@ -79647,6 +79785,18 @@
             "Wideband-Cable1/2/3:4" : {
               "definitionLines" : [
                 346
+              ],
+              "numReferrers" : 1
+            },
+            "Wlan-GigabitEthernet0" : {
+              "definitionLines" : [
+                350
+              ],
+              "numReferrers" : 1
+            },
+            "Wlan-ap0" : {
+              "definitionLines" : [
+                348
               ],
               "numReferrers" : 1
             },
@@ -82335,6 +82485,18 @@
         "configs/ios_interface" : {
           "interface" : {
             "GigabitEthernet1/0/1" : {
+              "definitionLines" : [
+                4,
+                5,
+                6
+              ],
+              "numReferrers" : 1
+            }
+          }
+        },
+        "configs/ios_interface_eigrp_settings" : {
+          "interface" : {
+            "Ethernet0" : {
               "definitionLines" : [
                 4,
                 5,
@@ -85352,6 +85514,9 @@
         "configs/ios_interface" : [
           "ios_interface"
         ],
+        "configs/ios_interface_eigrp_settings" : [
+          "ios_interface_ip_eigrp_settings"
+        ],
         "configs/ios_interface_ip_autentication" : [
           "ios_interface_ip_authentication"
         ],
@@ -86543,79 +86708,79 @@
             },
             "bleep" : {
               "crypto map ipsec-isakmp transform-set" : [
-                222
+                227
               ]
             },
             "hijklmnop" : {
               "ipsec profile set transform-set" : [
-                159
+                160
               ]
             },
             "mytransformset" : {
               "crypto map ipsec-isakmp transform-set" : [
-                241
+                246
               ]
             }
           },
           "crypto isakmp policy" : {
             "1" : {
               "isakmp policy" : [
-                180
+                181
               ]
             }
           },
           "crypto isakmp profile" : {
             "myisakmpprofile" : {
               "crypto map ipsec-isakmp isakmp-profile" : [
-                237
+                242
               ]
             },
             "myprofile" : {
               "isakmp profile" : [
-                187
+                190
               ]
             },
             "someOtherprofile" : {
               "ipsec profile set isakmp-profile" : [
-                162
+                163
               ]
             }
           },
           "crypto keyring" : {
             "VRF:MMS:RMT:UPM:1143" : {
               "isakmp profile keyring" : [
-                188
+                191
               ]
             }
           },
           "crypto named rsa pubkey" : {
             "a.example.com" : {
               "named rsa pubkey" : [
-                198
+                203
               ]
             }
           },
           "crypto-dynamic-map-set" : {
             "bippety" : {
               "crypto map ipsec-isakmp crypto-dynamic-map-set" : [
-                224
+                229
               ]
             },
             "mydefaultcryptomap" : {
               "crypto map ipsec-isakmp crypto-dynamic-map-set" : [
-                215
+                220
               ]
             }
           },
           "ipv4/6 acl" : {
             "myvpnacl" : {
               "crypto map ipsec-isakmp acl" : [
-                235
+                240
               ]
             },
             "someacl" : {
               "crypto map ipsec-isakmp acl" : [
-                219
+                224
               ]
             }
           }
@@ -86763,7 +86928,7 @@
             },
             "Ethernet1/12" : {
               "interface" : [
-                348
+                352
               ]
             },
             "GigabitEthernet0/0" : {
@@ -86839,6 +87004,16 @@
             "Wideband-Cable1/2/3:4" : {
               "interface" : [
                 346
+              ]
+            },
+            "Wlan-GigabitEthernet0" : {
+              "interface" : [
+                350
+              ]
+            },
+            "Wlan-ap0" : {
+              "interface" : [
+                348
               ]
             },
             "inside" : {
@@ -88814,6 +88989,15 @@
             }
           }
         },
+        "configs/ios_interface_eigrp_settings" : {
+          "interface" : {
+            "Ethernet0" : {
+              "interface" : [
+                4
+              ]
+            }
+          }
+        },
         "configs/ios_interface_ip_autentication" : {
           "interface" : {
             "Ethernet0" : {
@@ -89607,30 +89791,30 @@
           "interface" : {
             "ae16.0" : {
               "ospf area interface" : [
-                17,
                 18,
                 19,
                 20,
-                22,
-                23
+                21,
+                23,
+                24
               ]
             },
             "xe-0/0/1.0" : {
               "ospf area interface" : [
-                15
+                16
               ]
             },
             "xe-0/0/20:0.0" : {
               "ospf area interface" : [
-                3,
                 4,
                 5,
-                6
+                6,
+                7
               ]
             },
             "xe-0/0/21:0.0" : {
               "ospf area interface" : [
-                7
+                8
               ]
             }
           }
@@ -90797,55 +90981,55 @@
           "crypto ipsec transform-set" : {
             "bleep" : {
               "crypto map ipsec-isakmp transform-set" : [
-                222
+                227
               ]
             },
             "hijklmnop" : {
               "ipsec profile set transform-set" : [
-                159
+                160
               ]
             },
             "mytransformset" : {
               "crypto map ipsec-isakmp transform-set" : [
-                241
+                246
               ]
             }
           },
           "crypto isakmp profile" : {
             "myisakmpprofile" : {
               "crypto map ipsec-isakmp isakmp-profile" : [
-                237
+                242
               ]
             },
             "someOtherprofile" : {
               "ipsec profile set isakmp-profile" : [
-                162
+                163
               ]
             }
           },
           "crypto keyring" : {
             "VRF:MMS:RMT:UPM:1143" : {
               "isakmp profile keyring" : [
-                188
+                191
               ]
             }
           },
           "crypto-dynamic-map-set" : {
             "bippety" : {
               "crypto map ipsec-isakmp crypto-dynamic-map-set" : [
-                224
+                229
               ]
             }
           },
           "ipv4/6 acl" : {
             "myvpnacl" : {
               "crypto map ipsec-isakmp acl" : [
-                235
+                240
               ]
             },
             "someacl" : {
               "crypto map ipsec-isakmp acl" : [
-                219
+                224
               ]
             }
           }
@@ -92209,30 +92393,30 @@
           "interface" : {
             "ae16.0" : {
               "ospf area interface" : [
-                17,
                 18,
                 19,
                 20,
-                22,
-                23
+                21,
+                23,
+                24
               ]
             },
             "xe-0/0/1.0" : {
               "ospf area interface" : [
-                15
+                16
               ]
             },
             "xe-0/0/20:0.0" : {
               "ospf area interface" : [
-                3,
                 4,
                 5,
-                6
+                6,
+                7
               ]
             },
             "xe-0/0/21:0.0" : {
               "ospf area interface" : [
-                7
+                8
               ]
             }
           }
@@ -92837,10 +93021,6 @@
             {
               "tag" : "MISCELLANEOUS",
               "text" : "Cannot assign interface xe-0/0/21:0.0 to area 0.1.2.3 because it has no IP address."
-            },
-            {
-              "tag" : "MISCELLANEOUS",
-              "text" : "No candidates for OSPF router-id"
             }
           ]
         },
@@ -92897,14 +93077,6 @@
             {
               "tag" : "MISCELLANEOUS",
               "text" : "missing action in firewall filter: 'ip_options', term: 't1'"
-            }
-          ]
-        },
-        "juniper_ospf_stub_areas" : {
-          "Red flags" : [
-            {
-              "tag" : "MISCELLANEOUS",
-              "text" : "No candidates for OSPF router-id"
             }
           ]
         },
@@ -93309,6 +93481,7 @@
         "configs/ios_bgp" : "PASSED",
         "configs/ios_bgp_aggregate_address" : "PASSED",
         "configs/ios_interface" : "PASSED",
+        "configs/ios_interface_eigrp_settings" : "PASSED",
         "configs/ios_interface_ip_autentication" : "PASSED",
         "configs/ios_interface_ip_tcp" : "PASSED",
         "configs/ios_standby" : "PASSED",

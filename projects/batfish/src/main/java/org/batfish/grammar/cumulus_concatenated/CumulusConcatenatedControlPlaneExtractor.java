@@ -1,5 +1,7 @@
 package org.batfish.grammar.cumulus_concatenated;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.function.Supplier;
 import javax.annotation.Nullable;
 import org.antlr.v4.runtime.ParserRuleContext;
@@ -14,6 +16,7 @@ import org.batfish.grammar.ControlPlaneExtractor;
 import org.batfish.grammar.GrammarSettings;
 import org.batfish.grammar.ParseTreePrettyPrinter;
 import org.batfish.grammar.cumulus_frr.CumulusFrrCombinedParser;
+import org.batfish.grammar.cumulus_frr.CumulusFrrConfigurationBuilder;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Cumulus_frr_configurationContext;
 import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesCombinedParser;
 import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesConfigurationBuilder;
@@ -26,8 +29,7 @@ import org.batfish.vendor.VendorConfiguration;
 
 public class CumulusConcatenatedControlPlaneExtractor implements ControlPlaneExtractor {
   private static final String START_OF_FRR_FILE = "frr version";
-  private static final String START_OF_INTERFACES_FILE =
-      "# This file describes the network interfaces";
+  private static final String START_OF_PORTS_FILE = "# ports.conf --";
 
   private final String _text;
   private final String _filename;
@@ -39,6 +41,7 @@ public class CumulusConcatenatedControlPlaneExtractor implements ControlPlaneExt
   private CumulusNcluConfiguration _configuration;
   private int _line = -1;
   private int _offset = -1;
+  private List<String> _errors = new ArrayList<>();
 
   public CumulusConcatenatedControlPlaneExtractor(
       String fileText,
@@ -65,9 +68,10 @@ public class CumulusConcatenatedControlPlaneExtractor implements ControlPlaneExt
     _configuration = new CumulusNcluConfiguration();
 
     parseHostname();
-    parsePortsFile();
     parseInterfacesFile();
+    parsePortsFile();
     parseFrrFile();
+    checkErrors();
   }
 
   private void parseFrrFile() {
@@ -76,14 +80,14 @@ public class CumulusConcatenatedControlPlaneExtractor implements ControlPlaneExt
     Cumulus_frr_configurationContext ctxt = parser.parse();
     checkErrors(parser);
     ParseTreeWalker walker = new BatfishParseTreeWalker(parser);
-    CumulusInterfacesConfigurationBuilder cb =
-        new CumulusInterfacesConfigurationBuilder(_configuration, _w);
+    CumulusFrrConfigurationBuilder cb =
+        new CumulusFrrConfigurationBuilder(_configuration, parser, _w);
     walker.walk(cb, ctxt);
     mergeParseTree(ctxt, parser);
   }
 
   private void parseInterfacesFile() {
-    int end = _text.indexOf(START_OF_FRR_FILE);
+    int end = _text.indexOf(START_OF_PORTS_FILE);
     String text = end > 0 ? _text.substring(0, end) : _text;
 
     CumulusInterfacesCombinedParser parser =
@@ -92,7 +96,7 @@ public class CumulusConcatenatedControlPlaneExtractor implements ControlPlaneExt
     checkErrors(parser);
     ParseTreeWalker walker = new BatfishParseTreeWalker(parser);
     CumulusInterfacesConfigurationBuilder cb =
-        new CumulusInterfacesConfigurationBuilder(_configuration, _w);
+        new CumulusInterfacesConfigurationBuilder(_configuration, parser, _text, _w);
     walker.walk(cb, ctxt);
     mergeParseTree(ctxt, parser);
 
@@ -102,7 +106,7 @@ public class CumulusConcatenatedControlPlaneExtractor implements ControlPlaneExt
   }
 
   private void parsePortsFile() {
-    int end = _text.indexOf(START_OF_INTERFACES_FILE);
+    int end = _text.indexOf(START_OF_FRR_FILE);
     String text = end > 0 ? _text.substring(0, end) : _text;
 
     CumulusPortsCombinedParser parser =
@@ -110,7 +114,8 @@ public class CumulusConcatenatedControlPlaneExtractor implements ControlPlaneExt
     Cumulus_ports_configurationContext ctxt = parser.parse();
     checkErrors(parser);
     ParseTreeWalker walker = new BatfishParseTreeWalker(parser);
-    CumulusPortsConfigurationBuilder cb = new CumulusPortsConfigurationBuilder(_configuration, _w);
+    CumulusPortsConfigurationBuilder cb =
+        new CumulusPortsConfigurationBuilder(_configuration, parser, _w);
     walker.walk(cb, ctxt);
     mergeParseTree(ctxt, parser);
 
@@ -141,10 +146,16 @@ public class CumulusConcatenatedControlPlaneExtractor implements ControlPlaneExt
 
   private void checkErrors(BatfishCombinedParser<?, ?> parser) {
     if (!parser.getErrors().isEmpty()) {
+      _errors.addAll(parser.getErrors());
+    }
+  }
+
+  private void checkErrors() {
+    if (!_errors.isEmpty()) {
       throw new BatfishException(
           String.format(
               "Configuration file: '%s' contains unrecognized lines:\n%s",
-              _filename, String.join("\n", parser.getErrors())));
+              _filename, String.join("\n", _errors)));
     }
   }
 }

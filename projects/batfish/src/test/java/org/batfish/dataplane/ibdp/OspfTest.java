@@ -177,7 +177,12 @@ public class OspfTest {
     Vrf v1 = vb.setOwner(c1).build();
     RoutingPolicy c1ExportPolicy =
         rpb.setOwner(c1).setStatements(getExportPolicyStatements(C1_L1_ADDRESS)).build();
-    OspfProcess op1 = opb.setVrf(v1).setProcessId("1").setExportPolicy(c1ExportPolicy).build();
+    OspfProcess op1 =
+        opb.setVrf(v1)
+            .setRouterId(C1_L1_ADDRESS.getIp())
+            .setProcessId("1")
+            .setExportPolicy(c1ExportPolicy)
+            .build();
     OspfArea oa1a = oaba.setOspfProcess(op1).build();
     OspfArea oa1b = areaA == areaB ? oa1a : oabb.setOspfProcess(op1).build();
     ib.setOwner(c1).setVrf(v1).setOspfArea(oa1a).setOspfProcess("1");
@@ -197,6 +202,7 @@ public class OspfTest {
         rpb.setOwner(c2).setStatements(getExportPolicyStatements(C2_L1_ADDRESS)).build();
     OspfProcess op2 =
         opb.setVrf(v2)
+            .setRouterId(C2_L1_ADDRESS.getIp())
             .setMaxMetricExternalNetworks(maxMetricExternalNetworks)
             .setMaxMetricStubNetworks(maxMetricStubNetworks)
             .setMaxMetricSummaryNetworks(maxMetricSummaryNetworks)
@@ -228,7 +234,8 @@ public class OspfTest {
     Vrf v3 = vb.setOwner(c3).build();
     RoutingPolicy c3ExportPolicy =
         rpb.setOwner(c3).setStatements(getExportPolicyStatements(C3_L1_ADDRESS)).build();
-    OspfProcess op3 = opb.setVrf(v3).setExportPolicy(c3ExportPolicy).build();
+    OspfProcess op3 =
+        opb.setVrf(v3).setRouterId(C3_L1_ADDRESS.getIp()).setExportPolicy(c3ExportPolicy).build();
     OspfArea oa3d = oabd.setOspfProcess(op3).build();
     OspfArea oa3e = areaD == areaE ? oa3d : oabe.setOspfProcess(op3).build();
     OspfArea oa3f =
@@ -249,7 +256,8 @@ public class OspfTest {
     Vrf v4 = vb.setOwner(c4).build();
     RoutingPolicy c4ExportPolicy =
         rpb.setOwner(c4).setStatements(getExportPolicyStatements(C4_L1_ADDRESS)).build();
-    OspfProcess op4 = opb.setVrf(v4).setExportPolicy(c4ExportPolicy).build();
+    OspfProcess op4 =
+        opb.setVrf(v4).setExportPolicy(c4ExportPolicy).setRouterId(C4_L1_ADDRESS.getIp()).build();
     OspfArea oa4f = oabf.setOspfProcess(op4).build();
     OspfArea oa4g = areaF == areaG ? oa4f : oabg.setOspfProcess(op4).build();
     ib.setOwner(c4).setVrf(v4).setOspfArea(oa4g);
@@ -343,7 +351,7 @@ public class OspfTest {
     // R0
     Configuration r0 = cb.setHostname(r0Name).build();
     Vrf v0 = vb.setOwner(r0).build();
-    OspfProcess op0 = opb.setVrf(v0).build();
+    OspfProcess op0 = opb.setVrf(v0).setRouterId(Ip.parse("10.0.0.0")).build();
     oab.setOspfProcess(op0);
     OspfArea oaR0A0 = oab.setNumber(0L).setNonStub().build();
     OspfArea oaR0A1 =
@@ -384,7 +392,7 @@ public class OspfTest {
     // R1
     Configuration r1 = cb.setHostname(r1Name).build();
     Vrf v1 = vb.setOwner(r1).build();
-    OspfProcess op1 = opb.setVrf(v1).build();
+    OspfProcess op1 = opb.setVrf(v1).setRouterId(Ip.parse("10.0.1.1")).build();
     oab.setOspfProcess(op1);
     OspfArea oaR1A0 = oab.setNumber(0L).setNonStub().build();
     ib.setOwner(r1).setVrf(v1);
@@ -397,7 +405,7 @@ public class OspfTest {
     // R2
     Configuration r2 = cb.setHostname(r2Name).build();
     Vrf v2 = vb.setOwner(r2).build();
-    OspfProcess op2 = opb.setVrf(v2).build();
+    OspfProcess op2 = opb.setVrf(v2).setRouterId(Ip.parse("10.0.2.2")).build();
     oab.setOspfProcess(op2);
     OspfArea oaR2A1 = oab.setNumber(1L).setStub(StubSettings.builder().build()).build();
     ib.setOwner(r2).setVrf(v2);
@@ -415,7 +423,7 @@ public class OspfTest {
     // R3
     Configuration r3 = cb.setHostname(r3Name).build();
     Vrf v3 = vb.setOwner(r3).build();
-    OspfProcess op3 = opb.setVrf(v3).build();
+    OspfProcess op3 = opb.setVrf(v3).setRouterId(Ip.parse("10.0.3.3")).build();
     oab.setOspfProcess(op3);
     OspfArea oaR3A1 = oab.setNumber(1L).setStub(StubSettings.builder().build()).build();
     ib.setOwner(r3).setVrf(v3);
@@ -428,7 +436,7 @@ public class OspfTest {
     // R4
     Configuration r4 = cb.setHostname(r4Name).build();
     Vrf v4 = vb.setOwner(r4).build();
-    OspfProcess op4 = opb.setVrf(v4).build();
+    OspfProcess op4 = opb.setVrf(v4).setRouterId(Ip.parse("10.0.4.4")).build();
     oab.setOspfProcess(op4);
     OspfArea oaR4A2 = oab.setNumber(2L).setNssa(NssaSettings.builder().build()).build();
     ib.setOwner(r4).setVrf(v4);
@@ -446,7 +454,7 @@ public class OspfTest {
     // R5
     Configuration r5 = cb.setHostname(r5Name).build();
     Vrf v5 = vb.setOwner(r5).build();
-    OspfProcess op5 = opb.setVrf(v5).build();
+    OspfProcess op5 = opb.setVrf(v5).setRouterId(Ip.parse("10.0.5.5")).build();
     oab.setOspfProcess(op5);
     OspfArea oaR5A2 = oab.setNumber(2L).setNssa(NssaSettings.builder().build()).build();
     ib.setOwner(r5).setVrf(v5);
@@ -482,7 +490,8 @@ public class OspfTest {
                             Statements.ExitAccept.toStaticStatement()),
                         ImmutableList.of(Statements.ExitReject.toStaticStatement()))))
             .build();
-    OspfProcess op6 = opb.setVrf(v6).setExportPolicy(exportStatic).build();
+    OspfProcess op6 =
+        opb.setVrf(v6).setRouterId(Ip.parse("10.0.6.6")).setExportPolicy(exportStatic).build();
     oab.setOspfProcess(op6);
     OspfArea oaR6A03 = oab.setNumber(3L).setNonStub().build();
     ib.setOwner(r6).setVrf(v6);

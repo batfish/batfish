@@ -15,19 +15,19 @@ class EigrpMetricMatchersImpl {
     @Override
     @Nonnull
     protected Long featureValueOf(EigrpMetric actual) {
-      return actual.getClassicBandwidth();
+      return actual.getValues().getBandwidth();
     }
   }
 
   static final class HasCost extends FeatureMatcher<EigrpMetric, Long> {
     HasCost(@Nonnull Matcher<? super Long> subMatcher) {
-      super(subMatcher, "An EigrpMetric with delay:", "delay");
+      super(subMatcher, "An EigrpMetric with composite cost:", "composite cost");
     }
 
     @Override
     @Nonnull
     protected Long featureValueOf(EigrpMetric actual) {
-      return actual.getCost();
+      return actual.cost().longValue();
     }
   }
 
@@ -39,7 +39,7 @@ class EigrpMetricMatchersImpl {
     @Override
     @Nonnull
     protected Long featureValueOf(EigrpMetric actual) {
-      return actual.getClassicDelay();
+      return actual.getValues().getDelay();
     }
   }
 }

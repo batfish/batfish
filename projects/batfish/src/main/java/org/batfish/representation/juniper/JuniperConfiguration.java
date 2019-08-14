@@ -773,6 +773,10 @@ public final class JuniperConfiguration extends VendorConfiguration {
     if (firstNonNull(routingInstance.getOspfDisable(), Boolean.FALSE)) {
       return null;
     }
+    Ip ospfRouterId = getOspfRouterId(routingInstance);
+    if (ospfRouterId == null) {
+      return null;
+    }
     OspfProcess newProc =
         OspfProcess.builder()
             // Use routing instance name since OSPF processes are not named
@@ -783,6 +787,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
                     _c.getConfigurationFormat()))
             .setSummaryAdminCost(
                 RoutingProtocol.OSPF_IA.getSummaryAdministrativeCost(_c.getConfigurationFormat()))
+            .setRouterId(ospfRouterId)
             .build();
     String vrfName = routingInstance.getName();
     // export policies
@@ -849,11 +854,9 @@ public final class JuniperConfiguration extends VendorConfiguration {
                         ifaceName -> {
                           org.batfish.datamodel.Interface iface =
                               _c.getVrfs().get(vrfName).getInterfaces().get(ifaceName);
-                          iface.setOspfArea(area);
+                          iface.setOspfAreaName(area.getAreaNumber());
                           iface.setOspfProcess(newProc.getProcessId());
                         }));
-
-    newProc.setRouterId(getOspfRouterId(routingInstance));
     return newProc;
   }
 
@@ -3205,6 +3208,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
     }
   }
 
+  @Nullable
   private Ip getOspfRouterId(RoutingInstance routingInstance) {
     Ip routerId = routingInstance.getRouterId();
     if (routerId == null) {

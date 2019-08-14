@@ -1,6 +1,5 @@
 package org.batfish.grammar.cisco;
 
-import static java.util.Objects.requireNonNull;
 import static org.batfish.common.matchers.ParseWarningMatchers.hasComment;
 import static org.batfish.common.matchers.ParseWarningMatchers.hasText;
 import static org.batfish.common.util.CommonUtil.sha256Digest;
@@ -100,7 +99,6 @@ import static org.batfish.datamodel.matchers.InterfaceMatchers.hasIsis;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasMlagId;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasMtu;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasNativeVlan;
-import static org.batfish.datamodel.matchers.InterfaceMatchers.hasOspfArea;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasOspfAreaName;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasSpeed;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasSwitchPortEncapsulation;
@@ -352,9 +350,11 @@ import org.batfish.datamodel.answers.ParseVendorConfigurationAnswerElement;
 import org.batfish.datamodel.bgp.BgpTopologyUtils;
 import org.batfish.datamodel.bgp.community.Community;
 import org.batfish.datamodel.bgp.community.StandardCommunity;
+import org.batfish.datamodel.eigrp.ClassicMetric;
 import org.batfish.datamodel.eigrp.EigrpMetric;
+import org.batfish.datamodel.eigrp.EigrpMetricValues;
 import org.batfish.datamodel.eigrp.EigrpNeighborConfig;
-import org.batfish.datamodel.eigrp.EigrpProcessMode;
+import org.batfish.datamodel.eigrp.WideMetric;
 import org.batfish.datamodel.matchers.CommunityListLineMatchers;
 import org.batfish.datamodel.matchers.CommunityListMatchers;
 import org.batfish.datamodel.matchers.ConfigurationMatchers;
@@ -410,6 +410,7 @@ import org.batfish.representation.cisco.EigrpProcess;
 import org.batfish.representation.cisco.NetworkObject;
 import org.batfish.representation.cisco.NetworkObjectAddressSpecifier;
 import org.batfish.representation.cisco.NetworkObjectGroupAddressSpecifier;
+import org.batfish.representation.cisco.OspfNetworkType;
 import org.batfish.representation.cisco.Tunnel.TunnelMode;
 import org.batfish.representation.cisco.WildcardAddressSpecifier;
 import org.batfish.representation.cisco.eos.AristaEosVxlan;
@@ -1663,12 +1664,9 @@ public class CiscoGrammarTest {
         .setProcessAsn(2L);
 
     EigrpMetric originalMetric =
-        EigrpMetric.builder()
-            .setBandwidth(2e9)
-            .setDelay(4e5)
-            .setMode(EigrpProcessMode.CLASSIC)
+        ClassicMetric.builder()
+            .setValues(EigrpMetricValues.builder().setBandwidth(2e9).setDelay(4e5).build())
             .build();
-    assertNotNull(originalMetric);
 
     // VirtualEigrpProcess sets metric to route metric by default
     outputRouteBuilder.setEigrpMetric(originalMetric);
@@ -1699,8 +1697,9 @@ public class CiscoGrammarTest {
     long asn = 1L;
 
     assertThat(c, hasDefaultVrf(hasEigrpProcesses(hasKey(asn))));
-    String exportPolicyName =
-        c.getVrfs().get(DEFAULT_VRF_NAME).getEigrpProcesses().get(asn).getExportPolicy();
+    org.batfish.datamodel.eigrp.EigrpProcess eigrpProcess =
+        c.getVrfs().get(DEFAULT_VRF_NAME).getEigrpProcesses().get(asn);
+    String exportPolicyName = eigrpProcess.getExportPolicy();
     assertThat(exportPolicyName, notNullValue());
     RoutingPolicy routingPolicy = c.getRoutingPolicies().get(exportPolicyName);
     assertThat(routingPolicy, notNullValue());
@@ -1710,19 +1709,23 @@ public class CiscoGrammarTest {
         .setDestinationAsn(asn)
         .setNetwork(Prefix.parse("1.0.0.0/32"))
         .setProcessAsn(asn);
-    EigrpMetric.Builder metricBuilder = EigrpMetric.builder().setMode(EigrpProcessMode.CLASSIC);
+    ClassicMetric.Builder metricBuilder = ClassicMetric.builder();
 
     // Check if routingPolicy accepts connected route and sets correct metric
     assertTrue(
         routingPolicy.process(
             new ConnectedRoute(Prefix.parse("1.1.1.1/32"), "Loopback0"),
             outputRouteBuilder,
-            null,
             DEFAULT_VRF_NAME,
+            eigrpProcess,
             Direction.OUT));
     assertThat(
         outputRouteBuilder.build(),
-        hasEigrpMetric(requireNonNull(metricBuilder.setBandwidth(1E5).setDelay(1E8).build())));
+        hasEigrpMetric(
+            metricBuilder
+                .setValues(
+                    EigrpMetricValues.builder().setBandwidth(100).setDelay(100_000_000).build())
+                .build()));
 
     // Check if routingPolicy rejects RIP route
     assertFalse(
@@ -1730,8 +1733,8 @@ public class CiscoGrammarTest {
             new RipInternalRoute(
                 Prefix.parse("2.2.2.2/32"), Ip.parse("3.3.3.3"), 1, 1, Route.UNSET_ROUTE_TAG),
             outputRouteBuilder,
-            null,
             DEFAULT_VRF_NAME,
+            eigrpProcess,
             Direction.OUT));
 
     // Check if routingPolicy accepts OSPF route and sets correct default metric
@@ -1744,12 +1747,16 @@ public class CiscoGrammarTest {
                 .setArea(1L)
                 .build(),
             outputRouteBuilder,
-            null,
             DEFAULT_VRF_NAME,
+            eigrpProcess,
             Direction.OUT));
     assertThat(
         outputRouteBuilder.build(),
-        hasEigrpMetric(requireNonNull(metricBuilder.setBandwidth(2E5).setDelay(2E8).build())));
+        hasEigrpMetric(
+            metricBuilder
+                .setValues(
+                    EigrpMetricValues.builder().setBandwidth(200).setDelay(200_000_000L).build())
+                .build()));
   }
 
   @Test
@@ -1845,29 +1852,33 @@ public class CiscoGrammarTest {
   public void testIosInterfaceDelay() throws IOException {
     Configuration c = parseConfig("ios-interface-delay");
 
+    // All delays in picoseconds. For table of values based on bandwidths see
+    // https://tools.ietf.org/html/rfc7868#section-5.6.1.2
     assertThat(
         c,
         hasInterface(
             "GigabitEthernet0/0",
-            hasEigrp(EigrpInterfaceSettingsMatchers.hasEigrpMetric(hasDelay(1L)))));
+            hasEigrp(EigrpInterfaceSettingsMatchers.hasEigrpMetric(hasDelay(10_000_000L)))));
     assertThat(
         c,
         hasInterface(
             "GigabitEthernet0/1",
-            hasEigrp(EigrpInterfaceSettingsMatchers.hasEigrpMetric(hasDelay(1000L)))));
+            hasEigrp(EigrpInterfaceSettingsMatchers.hasEigrpMetric(hasDelay(10_000_000_000L)))));
     assertThat(
         c,
         hasInterface(
             "FastEthernet0/1",
-            hasEigrp(EigrpInterfaceSettingsMatchers.hasEigrpMetric(hasDelay(10L)))));
+            hasEigrp(EigrpInterfaceSettingsMatchers.hasEigrpMetric(hasDelay(100_000_000L)))));
     assertThat(
         c,
         hasInterface(
-            "Loopback0", hasEigrp(EigrpInterfaceSettingsMatchers.hasEigrpMetric(hasDelay(500L)))));
+            "Loopback0",
+            hasEigrp(EigrpInterfaceSettingsMatchers.hasEigrpMetric(hasDelay(5_000_000_000L)))));
     assertThat(
         c,
         hasInterface(
-            "Tunnel0", hasEigrp(EigrpInterfaceSettingsMatchers.hasEigrpMetric(hasDelay(5000L)))));
+            "Tunnel0",
+            hasEigrp(EigrpInterfaceSettingsMatchers.hasEigrpMetric(hasDelay(50_000_000_000L)))));
   }
 
   @Test
@@ -2631,7 +2642,9 @@ public class CiscoGrammarTest {
 
     RoutingPolicy routingPolicy = c.getRoutingPolicies().get(distListPolicyName);
     EigrpMetric metric =
-        EigrpMetric.builder().setBandwidth(1d).setDelay(1d).setMode(EigrpProcessMode.NAMED).build();
+        WideMetric.builder()
+            .setValues(EigrpMetricValues.builder().setBandwidth(1d).setDelay(1d).build())
+            .build();
     // a route redistributed from router EIGRP 2 and allowed by distribute list
     assertTrue(
         routingPolicy.process(
@@ -3598,6 +3611,18 @@ public class CiscoGrammarTest {
   }
 
   @Test
+  public void testIosXrOspfInterface() throws IOException {
+    Configuration c = parseConfig("ios-xr-ospf-interface");
+    String ifaceName = "Bundle-Ethernet201";
+    Map<String, Interface> ifaces = c.getAllInterfaces();
+    assertThat(ifaces.keySet(), contains(ifaceName));
+
+    // Confirm the interface has the correct OSPF process and area
+    assertThat(ifaces.get(ifaceName).getOspfProcess(), equalTo("2"));
+    assertThat(ifaces.get(ifaceName).getOspfAreaName(), equalTo(0L));
+  }
+
+  @Test
   public void testIosXrOspfReferenceBandwidth() throws IOException {
     Configuration manual = parseConfig("iosxrOspfCost");
     assertThat(
@@ -4504,6 +4529,24 @@ public class CiscoGrammarTest {
   }
 
   @Test
+  public void testOspfProcessInference() throws IOException {
+    Configuration c = parseConfig("ios-ospf-process-inference");
+    String iface1Name = "Ethernet1";
+    String iface2Name = "Ethernet2";
+    String iface3Name = "Ethernet3";
+    String iface4Name = "Ethernet4";
+    Map<String, Interface> ifaces = c.getAllInterfaces();
+    assertThat(ifaces.keySet(), containsInAnyOrder(iface1Name, iface2Name, iface3Name, iface4Name));
+
+    // Confirm the correct OSPF process was inferred for each interface
+    assertThat(ifaces.get(iface1Name).getOspfProcess(), equalTo("1"));
+    assertThat(ifaces.get(iface2Name).getOspfProcess(), equalTo("2"));
+    assertThat(ifaces.get(iface3Name).getOspfProcess(), equalTo("2"));
+    // Should not infer an OSPF process for the interface not overlapping with an OSPF network
+    assertThat(ifaces.get(iface4Name).getOspfProcess(), nullValue());
+  }
+
+  @Test
   public void testTransformsetToIpsecphase2Proposal() throws IOException {
     Configuration c = parseConfig("ios-crypto-transform-set");
     assertThat(
@@ -4636,7 +4679,7 @@ public class CiscoGrammarTest {
     assertThat(c, hasDefaultVrf(hasOspfProcess("1", hasAreas(hasKey(areaNum)))));
     OspfArea area = c.getDefaultVrf().getOspfProcesses().get("1").getAreas().get(areaNum);
     assertThat(area, OspfAreaMatchers.hasInterfaces(hasItem(ifaceName)));
-    assertThat(c, hasInterface(ifaceName, hasOspfArea(sameInstance(area))));
+    assertThat(c, hasInterface(ifaceName, hasOspfAreaName(areaNum)));
     assertThat(c, hasInterface(ifaceName, isOspfPassive(equalTo(false))));
     assertThat(c, hasInterface(ifaceName, isOspfPointToPoint()));
   }
@@ -4667,7 +4710,7 @@ public class CiscoGrammarTest {
     OspfArea area = vrf.getOspfProcesses().get("1").getAreas().get(areaNum);
     assertThat(area, OspfAreaMatchers.hasInterfaces(hasItem(ifaceName)));
     assertThat(c, hasInterface(ifaceName, hasVrf(sameInstance(vrf))));
-    assertThat(c, hasInterface(ifaceName, hasOspfArea(sameInstance(area))));
+    assertThat(c, hasInterface(ifaceName, hasOspfAreaName(areaNum)));
     assertThat(c, hasInterface(ifaceName, isOspfPassive(equalTo(false))));
     assertThat(c, hasInterface(ifaceName, isOspfPointToPoint()));
   }
@@ -4749,8 +4792,10 @@ public class CiscoGrammarTest {
     Configuration abr = configurations.get(abrName);
 
     // Sanity check: ensure the ABR does not have suppressType7 set for area 1
+    Long areaNum =
+        abr.getVrfs().get(DEFAULT_VRF_NAME).getInterfaces().get("Ethernet1").getOspfAreaName();
     OspfArea abrToArea1 =
-        abr.getVrfs().get(DEFAULT_VRF_NAME).getInterfaces().get("Ethernet1").getOspfArea();
+        abr.getVrfs().get(DEFAULT_VRF_NAME).getOspfProcesses().get("1").getAreas().get(areaNum);
     assertThat(abrToArea1.getNssa(), hasSuppressType7(false));
 
     batfish.computeDataPlane();
@@ -4782,7 +4827,10 @@ public class CiscoGrammarTest {
     abr = configurations.get(abrName);
 
     // This time the ABR should have suppressType7 set for area 1
-    abrToArea1 = abr.getVrfs().get(DEFAULT_VRF_NAME).getInterfaces().get("Ethernet1").getOspfArea();
+    areaNum =
+        abr.getVrfs().get(DEFAULT_VRF_NAME).getInterfaces().get("Ethernet1").getOspfAreaName();
+    abrToArea1 =
+        abr.getVrfs().get(DEFAULT_VRF_NAME).getOspfProcesses().get("1").getAreas().get(areaNum);
     assertThat(abrToArea1.getNssa(), hasSuppressType7(true));
 
     batfish.computeDataPlane();
@@ -4819,6 +4867,32 @@ public class CiscoGrammarTest {
 
     assertTrue(e0Sub0.getOspfPointToPoint());
     assertFalse(e0Sub1.getOspfPointToPoint());
+  }
+
+  @Test
+  public void testOspfNetworkTypes() {
+    CiscoConfiguration config =
+        parseCiscoConfig("ospf-network-types", ConfigurationFormat.CISCO_IOS);
+
+    String eth0 = "Ethernet0/0";
+    String eth1 = "Ethernet0/1";
+    String eth2 = "Ethernet0/2";
+    String eth3 = "Ethernet0/3";
+    String eth4 = "Ethernet0/4";
+    String eth5 = "Ethernet0/5";
+
+    Map<String, org.batfish.representation.cisco.Interface> ifaces = config.getInterfaces();
+    assertThat(ifaces.keySet(), containsInAnyOrder(eth0, eth1, eth2, eth3, eth4, eth5));
+    // No network set should result in a null network type
+    assertThat(ifaces.get(eth0).getOspfNetworkType(), nullValue());
+    // Confirm explicitly set network types show up as expected in the VS model
+    assertThat(ifaces.get(eth1).getOspfNetworkType(), equalTo(OspfNetworkType.POINT_TO_POINT));
+    assertThat(ifaces.get(eth2).getOspfNetworkType(), equalTo(OspfNetworkType.BROADCAST));
+    assertThat(ifaces.get(eth3).getOspfNetworkType(), equalTo(OspfNetworkType.NON_BROADCAST));
+    assertThat(ifaces.get(eth4).getOspfNetworkType(), equalTo(OspfNetworkType.POINT_TO_MULTIPOINT));
+    assertThat(
+        ifaces.get(eth5).getOspfNetworkType(),
+        equalTo(OspfNetworkType.POINT_TO_MULTIPOINT_NON_BROADCAST));
   }
 
   @Test

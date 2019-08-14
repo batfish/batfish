@@ -6,9 +6,13 @@ hostname nxos_ospf
 feature ospf
 feature bfd
 
+vrf context v1
+
 !!! referenced structures
 route-map rm1 permit 10
 route-map rm2 permit 10
+route-map rm_e2 permit 10
+  set metric-type type-2
 
 !!!!! AREA
 !!! area authentication
@@ -92,10 +96,10 @@ router ospf dio_always
   default-information originate always
 
 router ospf dio_route_map
-  default-information originate route-map rm1
+  default-information originate route-map rm_e2
 
 router ospf dio_always_route_map
-  default-information originate always route-map rm1
+  default-information originate always route-map rm_e2
 
 !!! log-adjacency-changes
 router ospf lac
@@ -144,7 +148,7 @@ router ospf mm_summary_lsa_m
 router ospf network
   ! TODO: confirm second IP is a wildcard
   network 192.168.0.0 0.0.255.255 area 0
-  network 192.168.1.0/24 area 0
+  network 172.16.0.1/24 area 0
 
 !!! passive-interface
 router ospf pi_d
@@ -175,8 +179,14 @@ router ospf r_mp_withdraw_n
 router ospf r_static
   redistribute static route-map rm1
 
+!!! router-id
+router ospf router_id
+  router-id 192.0.2.1
+
 !!! summary-address
 router ospf sa
+  ! force creation of area
+  area 0 authentication
   summary-address 192.168.0.0/24
   summary-address 192.168.1.0 255.255.255.0 not-advertise
   ! tag is any uint32 (default is 0)
@@ -207,17 +217,35 @@ router ospf with_vrf
 !!!!! interface settings
 !!! general settings
 interface Ethernet1/1
+  no switchport
+  no shutdown
+  ip address 10.0.0.1/24
+  ! 1-65535
+  ip ospf cost 12
   ! can use type 0,3,7 password
   ip ospf message-digest-key 0 foobar
   ! 1-65535 (default is 40) (s)
   ip ospf dead-interval 10
   ! 1-65535 (default is 10) (s)
   ip ospf hello-interval 20
-  ! area ID can be uint32 or IP, a_auth used arbitrarily
-  ip router ospf a_auth area 0
+  ! area ID can be uint32 or IP, pi_d used to test passive-interface default
+  ip router ospf pi_d area 0
 
 !!! network
 interface Ethernet1/2
+  no switchport
+  no shutdown
+  ip address 192.168.0.1/24
   ip ospf network broadcast
 interface Ethernet1/3
+  no switchport
+  no shutdown
+  ip address 172.16.0.1/24
   ip ospf network point-to-point
+interface Ethernet1/4
+  no switchport
+  no shutdown
+  ip address 172.16.1.1/24
+  ip ospf passive-interface
+  ! use arbitrary process with active default
+  ip router ospf router_id area 0

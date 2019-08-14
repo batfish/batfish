@@ -118,6 +118,7 @@ public final class Interface implements Serializable {
   private @Nullable Integer _nativeVlan;
   private @Nullable OspfInterface _ospf;
   private final @Nullable String _parentInterface;
+  private @Nullable String _pbrPolicy;
   private final @Nonnull Set<InterfaceAddressWithAttributes> _secondaryAddresses;
   private @Nullable Boolean _shutdown;
   private @Nullable Integer _speedMbps;
@@ -221,6 +222,15 @@ public final class Interface implements Serializable {
 
   public @Nullable String getParentInterface() {
     return _parentInterface;
+  }
+
+  @Nullable
+  public String getPbrPolicy() {
+    return _pbrPolicy;
+  }
+
+  public void setPbrPolicy(@Nullable String pbrPolicy) {
+    _pbrPolicy = pbrPolicy;
   }
 
   /** The set of secondary IPv4 addresses of the interface. */

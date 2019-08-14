@@ -345,6 +345,10 @@ interface vlan4094
 !
 interface Wideband-Cable1/2/3:4
 !
+interface Wlan-ap0
+!
+interface Wlan-GigabitEthernet0
+!
 interface ethernet 1/12
 switchport access vlan 3
 !

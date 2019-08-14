@@ -237,6 +237,11 @@ AGGREGATE_ADDRESS
   'aggregate-address'
 ;
 
+AGGRESSIVE
+:
+  'aggressive'
+;
+
 AHP
 :
   'ahp'
@@ -309,6 +314,11 @@ AS_SET
   'as-set'
 ;
 
+ASSOCIATE
+:
+  'associate'
+;
+
 ASSOCIATE_VRF
 :
   'associate-vrf'
@@ -369,6 +379,11 @@ BASH_SHELL
   'bash-shell'
 ;
 
+BC
+:
+  'bc'
+;
+
 BGP
 :
   'bgp'
@@ -424,6 +439,11 @@ BPDUGUARD
   'bpduguard'
 ;
 
+BPS
+:
+  'bps'
+;
+
 BRIDGE
 :
   'bridge'
@@ -432,6 +452,11 @@ BRIDGE
 BROADCAST
 :
   'broadcast'
+;
+
+BYTES
+:
+  'bytes'
 ;
 
 CALLHOME
@@ -455,6 +480,11 @@ CCMCLIRUNNINGCONFIGCHANGED
   [Nn] [Ff] [Ii] [Gg] [Cc] [Hh] [Aa] [Nn] [Gg] [Ee] [Dd]
 ;
 
+CDP
+:
+  'cdp'
+;
+
 CFS
 :
   'cfs'
@@ -473,6 +503,11 @@ CHANNEL_GROUP
 CHARGEN
 :
   'chargen'
+;
+
+CIR
+:
+  'cir'
 ;
 
 CLASS
@@ -584,6 +619,11 @@ CONFEDERATION
   'confederation'
 ;
 
+CONFORM
+:
+  'conform'
+;
+
 CONNECT
 :
   'connect'
@@ -628,6 +668,11 @@ COPY
 COPY_ATTRIBUTES
 :
   'copy-attributes'
+;
+
+COS
+:
+  'cos'
 ;
 
 COST
@@ -760,6 +805,11 @@ DESCRIPTION
   'description' -> pushMode ( M_Remark )
 ;
 
+DEST_IP
+:
+  'dest-ip'
+;
+
 DEST_MISS
 :
   'dest-miss'
@@ -860,6 +910,11 @@ DRIP
   'drip'
 ;
 
+DROP
+:
+  'drop'
+;
+
 DROP_ON_FAIL
 :
   'drop-on-fail'
@@ -913,6 +968,11 @@ EDGE
 EF
 :
   'ef'
+;
+
+EGP
+:
+  'egp'
 ;
 
 EIGRP
@@ -1076,6 +1136,11 @@ FEATUREOPSTATUSCHANGE
   [Cc] [Hh] [Aa] [Nn] [Gg] [Ee]
 ;
 
+FEX
+:
+  'fex'
+;
+
 FEX_FABRIC
 :
   'fex-fabric'
@@ -1111,6 +1176,11 @@ FLASH_OVERRIDE
   'flash-override'
 ;
 
+FLOW
+:
+  'flow'
+;
+
 FORCE
 :
   'force'
@@ -1119,6 +1189,11 @@ FORCE
 FORCE_ORDER
 :
   'force-order'
+;
+
+FORWARDING_THRESHOLD
+:
+  'forwarding-threshold'
 ;
 
 FLUSH_ROUTES
@@ -1241,6 +1316,11 @@ HELLO_INTERVAL
   'hello-interval'
 ;
 
+HMM
+:
+  'hmm'
+;
+
 HOST
 :
   'host'
@@ -1350,6 +1430,11 @@ IGNORE
   'ignore'
 ;
 
+IGP
+:
+  'igp'
+;
+
 IMMEDIATE
 :
   'immediate'
@@ -1373,6 +1458,11 @@ INBOUND
 INCLUDE_STUB
 :
   'include-stub'
+;
+
+INCOMPLETE
+:
+  'incomplete'
 ;
 
 INCONSISTENCY
@@ -1407,7 +1497,12 @@ INJECT_MAP
 
 INPUT
 :
-  'input' -> pushMode ( M_Word )
+  'input'
+  {
+    if (lastTokenType() == SERVICE_POLICY) {
+      pushMode(M_Word);
+    }
+  }
 ;
 
 INSTALL
@@ -1437,6 +1532,11 @@ INTERNAL
 INTERNET
 :
   'internet'
+;
+
+INTERVAL
+:
+  'interval'
 ;
 
 IP
@@ -1489,9 +1589,19 @@ ISOLATE
   'isolate'
 ;
 
+KBPS
+:
+  'kbps'
+;
+
 KEY
 :
   'key'
+;
+
+KEY_CHAIN
+:
+  'key-chain' -> pushMode ( M_Word )
 ;
 
 KEY_STRING
@@ -1566,6 +1676,11 @@ LEVEL
   'level'
 ;
 
+LINE_PROTOCOL
+:
+  'line-protocol'
+;
+
 LINK_FLAP
 :
   'link-flap'
@@ -1579,6 +1694,11 @@ LINK_LOCAL_GROUPS_SUPPRESSION
 LINK_STATE
 :
   'link-state'
+;
+
+LINK_STATUS
+:
+  'link-status'
 ;
 
 LISP
@@ -1664,6 +1784,11 @@ LOOPBACK
 LOW_MEMORY
 :
   'low-memory'
+;
+
+LOWER
+:
+  'lower'
 ;
 
 LPD
@@ -1834,6 +1959,11 @@ MGMT
   [Mm] [Gg] [Mm] [Tt]
 ;
 
+MIN_RX
+:
+  'min_rx'
+;
+
 MINIMUM
 :
   'minimum'
@@ -1857,6 +1987,11 @@ MOBILE_REDIRECT
 MODE
 :
   'mode'
+;
+
+MONITOR
+:
+  'monitor' -> pushMode(M_Word)
 ;
 
 MROUTER
@@ -1892,6 +2027,11 @@ MULTICAST
 MULTIPATH_RELAX
 :
   'multipath-relax'
+;
+
+MULTIPLIER
+:
+  'multiplier'
 ;
 
 MVPN
@@ -2176,6 +2316,11 @@ OPTION_MISSING
   'option-missing'
 ;
 
+ORIGIN
+:
+  'origin'
+;
+
 ORIGINATE
 :
   'originate'
@@ -2243,6 +2388,16 @@ PATHCOST
   'pathcost'
 ;
 
+PBR
+:
+  'pbr'
+;
+
+PBR_STATISTICS
+:
+  'pbr-statistics'
+;
+
 PCP
 :
   'pcp'
@@ -2281,6 +2436,11 @@ PEERS
 PER_ENTRY
 :
   'per-entry'
+;
+
+PER_LINK
+:
+  'per-link'
 ;
 
 PERIODIC
@@ -2331,6 +2491,11 @@ POINT_TO_POINT
 POLICE
 :
   'police'
+;
+
+POLICY
+:
+  'policy' -> pushMode ( M_Word )
 ;
 
 POLICY_MAP
@@ -2506,6 +2671,11 @@ RANGE
 RD
 :
   'rd'
+;
+
+REACHABILITY
+:
+  'reachability'
 ;
 
 READ
@@ -2713,6 +2883,11 @@ RULE
   'rule'
 ;
 
+SAMPLER
+:
+  'sampler' -> pushMode(M_Word)
+;
+
 SCHEDULER
 :
   'scheduler'
@@ -2809,6 +2984,11 @@ SIZE
   'size'
 ;
 
+SLA
+:
+  'sla'
+;
+
 SMALL
 :
   'small'
@@ -2887,6 +3067,11 @@ SPF
 SPINE_ANYCAST_GATEWAY
 :
   'spine-anycast-gateway'
+;
+
+SRC_IP
+:
+  'src-ip'
 ;
 
 STALEPATH_TIME
@@ -3004,6 +3189,16 @@ SUSPEND_INDIVIDUAL
   'suspend-individual'
 ;
 
+SWITCHNAME
+:
+  'switchname'
+  {
+    if (lastTokenType() == NEWLINE || lastTokenType() == -1) {
+      pushMode(M_Hostname);
+    }
+  }
+;
+
 SWITCHPORT
 :
   'switchport'
@@ -3097,6 +3292,11 @@ TERMINAL
   'terminal'
 ;
 
+TEXT
+:
+  'text' -> pushMode ( M_Word )
+;
+
 TFTP
 :
   'tftp'
@@ -3155,6 +3355,16 @@ TRACE
 TRACK
 :
   'track'
+;
+
+TRAFFIC_FILTER
+:
+  'traffic-filter' -> pushMode ( M_Word )
+;
+
+TRANSMIT
+:
+  'transmit'
 ;
 
 TRANSPORT
@@ -3249,6 +3459,11 @@ UNREACHABLE
   'unreachable'
 ;
 
+UNREACHABLES
+:
+  'unreachables'
+;
+
 UNSUPPRESS_MAP
 :
   'unsuppress-map'
@@ -3274,6 +3489,11 @@ UPGRADEOPNOTIFYONCOMPLETION
 :
   [Uu] [Pp] [Gg] [Rr] [Aa] [Dd] [Ee] [Oo] [Pp] [Nn] [Oo] [Tt] [Ii] [Ff] [Yy]
   [Oo] [Nn] [Cc] [Oo] [Mm] [Pp] [Ll] [Ee] [Tt] [Ii] [Oo] [Nn]
+;
+
+UPPER
+:
+  'upper'
 ;
 
 URG
@@ -3334,6 +3554,11 @@ VERSION
         break;
     }
   }
+;
+
+VIOLATE
+:
+  'violate'
 ;
 
 VIRTUAL_LINK
@@ -4082,9 +4307,15 @@ M_DoubleQuote_DOUBLE_QUOTE
   '"' -> type ( DOUBLE_QUOTE ) , popMode
 ;
 
+M_DoubleQuote_NEWLINE
+:
+// Break out if termination does not occur on same line
+  F_Newline+ -> type ( NEWLINE ) , popMode
+;
+
 M_DoubleQuote_QUOTED_TEXT
 :
-  ~'"'+ -> type ( QUOTED_TEXT )
+  ~["\r\n]+ -> type ( QUOTED_TEXT )
 ;
 
 mode M_Hostname;
