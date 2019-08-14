@@ -500,7 +500,7 @@ i_no_autostate
 
 i_no_bfd
 :
-  BFD ECHO NEWLINE
+  BFD null_rest_of_line
 ;
 
 i_no_shutdown
