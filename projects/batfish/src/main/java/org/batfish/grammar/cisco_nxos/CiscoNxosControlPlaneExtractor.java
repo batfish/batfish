@@ -190,7 +190,7 @@ import org.batfish.grammar.cisco_nxos.CiscoNxosParser.I_no_autostateContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.I_no_shutdownContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.I_no_switchportContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.I_shutdownContext;
-import org.batfish.grammar.cisco_nxos.CiscoNxosParser.I_speedContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.I_speed_numberContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.I_switchport_accessContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.I_switchport_mode_accessContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.I_switchport_mode_dot1q_tunnelContext;
@@ -991,7 +991,7 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
   }
 
   @Override
-  public void exitI_speed(I_speedContext ctx) {
+  public void exitI_speed_number(I_speed_numberContext ctx) {
     toIntegerInSpace(ctx, ctx.speed, INTERFACE_SPEED_RANGE_MBPS, "interface speed")
         .ifPresent(speed -> _currentInterfaces.forEach(iface -> iface.setSpeed(speed)));
   }
