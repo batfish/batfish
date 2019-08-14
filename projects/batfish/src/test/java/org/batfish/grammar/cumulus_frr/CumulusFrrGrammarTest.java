@@ -366,4 +366,17 @@ public class CumulusFrrGrammarTest {
     RouteMapEntry entry = CONFIG.getRouteMaps().get(name).getEntries().get(10);
     assertThat(entry.getSetIpNextHop().getNextHop(), equalTo(Ip.parse("10.0.0.1")));
   }
+
+  @Test
+  public void testCumulusFrrIpPrefixList() {
+    String name = "ROUTE-MAP-NAME";
+    String prefix1 = "10.0.0.1/24";
+    String prefix2 = "10.0.1.2/24";
+    parse(
+        String.format(
+            "ip prefix-list %s seq 10 permit %s\nip prefix-list %s seq 20 deny %s\n",
+            name, prefix1, name, prefix2));
+
+    assertThat(CONFIG.getIpPrefixLists().keySet(), equalTo(ImmutableSet.of(name)));
+  }
 }
