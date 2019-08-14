@@ -792,16 +792,14 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
         (name, routeMap) -> _c.getRoutingPolicies().put(name, toRoutingPolicy(routeMap)));
 
     // Find which route maps are used for PBR
-    ImmutableSet<String> pbrPolicies =
-        _c.getAllInterfaces().values().stream()
-            .map(org.batfish.datamodel.Interface::getRoutingPolicyName)
-            .filter(Objects::nonNull)
-            .collect(ImmutableSet.toImmutableSet());
-
-    // Convert PBR route maps to packet policies
-    pbrPolicies.stream()
+    _c.getAllInterfaces().values().stream()
+        .map(org.batfish.datamodel.Interface::getRoutingPolicyName)
+        .filter(Objects::nonNull)
+        .distinct()
+        // Extract route map objects
         .map(_routeMaps::get)
         .filter(Objects::nonNull)
+        // Convert PBR route maps to packet policies
         .map(this::toPacketPolicy)
         .forEach(packetPolicy -> _c.getPacketPolicies().put(packetPolicy.getName(), packetPolicy));
   }
