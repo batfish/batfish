@@ -279,12 +279,22 @@ i_ip
 :
   IP
   (
-    i_ip_address
+    i_ip_access_group
+    | i_ip_address
     | i_ip_null
     | i_ip_ospf
     | i_ip_policy
     | i_ip_router
   )
+;
+
+i_ip_access_group
+:
+  ACCESS_GROUP name = ip_access_list_name
+  (
+    IN
+    | OUT
+  ) NEWLINE
 ;
 
 i_ip_address

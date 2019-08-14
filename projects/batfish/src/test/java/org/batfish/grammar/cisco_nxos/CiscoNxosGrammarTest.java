@@ -1257,6 +1257,8 @@ public final class CiscoNxosGrammarTest {
             hasDescription(
                 "here is a description with punctuation! and IP address 1.2.3.4/24 etc."),
             hasMtu(9216)));
+    assertThat(eth11.getIncomingFilterName(), equalTo("acl_in"));
+    assertThat(eth11.getOutgoingFilterName(), equalTo("acl_out"));
     // TODO: convert and test delay
   }
 
@@ -1270,6 +1272,8 @@ public final class CiscoNxosGrammarTest {
       assertThat(
           iface.getDescription(),
           equalTo("here is a description with punctuation! and IP address 1.2.3.4/24 etc."));
+      assertThat(iface.getIpAccessGroupIn(), equalTo("acl_in"));
+      assertThat(iface.getIpAccessGroupOut(), equalTo("acl_out"));
       assertThat(iface.getMtu(), equalTo(9216));
     }
   }
