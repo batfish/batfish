@@ -1,0 +1,11 @@
+{
+	"hostname" : "pc21",
+	"iptablesFile" : "iptables/pc21.iptables",
+	"hostInterfaces" : {
+		"eth0" : {
+			"name": "eth0",
+      "prefix" : "192.168.20.21/24",
+      "gateway": "192.168.20.1"
+		}
+	}
+}

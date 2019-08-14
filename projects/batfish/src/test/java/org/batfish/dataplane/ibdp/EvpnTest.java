@@ -4,12 +4,14 @@ import static org.batfish.datamodel.Configuration.DEFAULT_VRF_NAME;
 import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasPrefix;
 import static org.batfish.datamodel.matchers.BgpRouteMatchers.isEvpnType3RouteThat;
 import static org.batfish.datamodel.matchers.VniSettingsMatchers.hasBumTransportIps;
+import static org.batfish.grammar.cisco_nxos.CiscoNxosCombinedParser.DEBUG_FLAG_USE_NEW_CISCO_NXOS_PARSER;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasEntry;
 import static org.hamcrest.Matchers.hasItem;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
 import java.io.IOException;
@@ -40,6 +42,7 @@ import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.routing_policy.statement.Statements;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
+import org.batfish.main.TestrigText;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
@@ -200,5 +203,39 @@ public class EvpnTest {
     assertThat(
         dp.getVniSettings().column(DEFAULT_VRF_NAME),
         hasEntry(equalTo("n2"), contains(hasBumTransportIps(contains(Ip.parse("1.111.111.111"))))));
+  }
+
+  @Test
+  public void testEvpnSymmetricSingleSpine() throws IOException {
+    String testRigResourcePrefix = "org/batfish/dataplane/ibdp/evpn-nxos";
+    String exitGw = "exitgw";
+    String leaf1 = "leaf1";
+    String spine = "spine";
+
+    String pc10 = "pc10.json";
+    String pc11 = "pc11.json";
+    String pc21 = "pc21.json";
+
+    String pc10Iptable = "pc10.iptables";
+    String pc11Iptable = "pc11.iptables";
+    String pc21Iptable = "pc21.iptables";
+
+    Batfish batfish =
+        BatfishTestUtils.getBatfishFromTestrigText(
+            TestrigText.builder()
+                .setConfigurationText(testRigResourcePrefix, exitGw, leaf1, spine)
+                .setHostsText(testRigResourcePrefix, pc10, pc11, pc21)
+                .setIptablesFilesText(
+                    testRigResourcePrefix, ImmutableList.of(pc10Iptable, pc11Iptable, pc21Iptable))
+                .setLayer1TopologyText(testRigResourcePrefix)
+                .build(),
+            _folder);
+    batfish.getSettings().setDebugFlags(ImmutableList.of(DEBUG_FLAG_USE_NEW_CISCO_NXOS_PARSER));
+    batfish.computeDataPlane();
+    IncrementalDataPlane dataplane = (IncrementalDataPlane) batfish.loadDataPlane();
+    SortedMap<String, SortedMap<String, Set<AbstractRoute>>> routes =
+        IncrementalBdpEngine.getRoutes(dataplane);
+
+    System.out.print("debugging");
   }
 }

@@ -1,0 +1,54 @@
+{
+  "edges": [
+    {
+      "node1": {
+        "hostname": "spine",
+        "interfaceName": "eth1/1"
+      },
+      "node2": {
+        "hostname": "leaf1",
+        "interfaceName": "eth1/1"
+      }
+    },
+    {
+      "node1": {
+        "hostname": "spine",
+        "interfaceName": "eth1/5"
+      },
+      "node2": {
+        "hostname": "exitgw",
+        "interfaceName": "eth1/1"
+      }
+    },
+    {
+      "node1": {
+        "hostname": "leaf1",
+        "interfaceName": "eth1/11"
+      },
+      "node2": {
+        "hostname": "pc10",
+        "interfaceName": "eth0"
+      }
+    },
+    {
+      "node1": {
+        "hostname": "exitgw",
+        "interfaceName": "eth1/11"
+      },
+      "node2": {
+        "hostname": "pc11",
+        "interfaceName": "eth0"
+      }
+    },
+    {
+      "node1": {
+        "hostname": "exitgw",
+        "interfaceName": "eth1/12"
+      },
+      "node2": {
+        "hostname": "pc21",
+        "interfaceName": "eth0"
+      }
+    }
+  ]
+}
