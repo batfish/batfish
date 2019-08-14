@@ -2302,6 +2302,8 @@ public final class FlatJuniperGrammarTest {
     String iface3 = "ge-0/0/3";
     assertThat(ifaces, hasKeys(iface0, iface1, iface2, iface3));
 
+    // Confirm explicitly set hello and dead intervals show up in the VS model
+    // Also confirm intervals that are not set show up as nulls in the VS model
     assertThat(ifaces.get(iface0).getOspfDeadInterval(), nullValue());
     assertThat(ifaces.get(iface0).getOspfHelloInterval(), equalTo(11));
 
