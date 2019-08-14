@@ -503,7 +503,21 @@ i_shutdown
 
 i_speed
 :
-  SPEED speed = interface_speed NEWLINE
+  SPEED
+  (
+    i_speed_auto
+    | i_speed_number
+  )
+;
+
+i_speed_auto
+:
+  AUTO NEWLINE
+;
+
+i_speed_number
+:
+  speed = interface_speed NEWLINE
 ;
 
 interface_speed

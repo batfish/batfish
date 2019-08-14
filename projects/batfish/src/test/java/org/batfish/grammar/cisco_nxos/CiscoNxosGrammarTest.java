@@ -853,12 +853,13 @@ public final class CiscoNxosGrammarTest {
     String hostname = "nxos_interface_speed";
     Configuration c = parseConfig(hostname);
 
-    assertThat(c.getAllInterfaces(), hasKeys("Ethernet1/1", "port-channel1"));
+    assertThat(c.getAllInterfaces(), hasKeys("Ethernet1/1", "Ethernet1/2", "port-channel1"));
     {
       org.batfish.datamodel.Interface iface = c.getAllInterfaces().get("Ethernet1/1");
       assertThat(iface, hasSpeed(100E9D));
       assertThat(iface, hasBandwidth(100E9D));
     }
+    // TODO: assert inferred speed for Ethernet1/2 maybe
   }
 
   @Test
@@ -866,10 +867,14 @@ public final class CiscoNxosGrammarTest {
     String hostname = "nxos_interface_speed";
     CiscoNxosConfiguration vc = parseVendorConfig(hostname);
 
-    assertThat(vc.getInterfaces(), hasKeys("Ethernet1/1", "port-channel1"));
+    assertThat(vc.getInterfaces(), hasKeys("Ethernet1/1", "Ethernet1/2", "port-channel1"));
     {
       Interface iface = vc.getInterfaces().get("Ethernet1/1");
       assertThat(iface.getSpeedMbps(), equalTo(100000));
+    }
+    {
+      Interface iface = vc.getInterfaces().get("Ethernet1/2");
+      assertThat(iface.getSpeedMbps(), nullValue());
     }
   }
 
