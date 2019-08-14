@@ -8783,6 +8783,63 @@
             "type" : "UNKNOWN",
             "vrf" : "default"
           },
+          "Wlan-GigabitEthernet0" : {
+            "name" : "Wlan-GigabitEthernet0",
+            "active" : true,
+            "additionalArpIps" : {
+              "class" : "org.batfish.datamodel.EmptyIpSpace"
+            },
+            "allowedVlans" : "",
+            "autostate" : true,
+            "bandwidth" : 1.0E9,
+            "declaredNames" : [
+              "Wlan-GigabitEthernet0"
+            ],
+            "mtu" : 1500,
+            "ospfDeadInterval" : 0,
+            "ospfEnabled" : false,
+            "ospfHelloMultiplier" : 0,
+            "ospfPassive" : false,
+            "ospfPointToPoint" : false,
+            "proxyArp" : true,
+            "ripEnabled" : false,
+            "ripPassive" : false,
+            "spanningTreePortfast" : false,
+            "speed" : 1.0E9,
+            "switchport" : false,
+            "switchportMode" : "NONE",
+            "switchportTrunkEncapsulation" : "DOT1Q",
+            "type" : "UNKNOWN",
+            "vrf" : "default"
+          },
+          "Wlan-ap0" : {
+            "name" : "Wlan-ap0",
+            "active" : false,
+            "additionalArpIps" : {
+              "class" : "org.batfish.datamodel.EmptyIpSpace"
+            },
+            "allowedVlans" : "",
+            "autostate" : true,
+            "bandwidth" : 1.0E12,
+            "declaredNames" : [
+              "Wlan-ap0"
+            ],
+            "mtu" : 1500,
+            "ospfDeadInterval" : 0,
+            "ospfEnabled" : false,
+            "ospfHelloMultiplier" : 0,
+            "ospfPassive" : false,
+            "ospfPointToPoint" : false,
+            "proxyArp" : true,
+            "ripEnabled" : false,
+            "ripPassive" : false,
+            "spanningTreePortfast" : false,
+            "switchport" : false,
+            "switchportMode" : "NONE",
+            "switchportTrunkEncapsulation" : "DOT1Q",
+            "type" : "UNKNOWN",
+            "vrf" : "default"
+          },
           "inside" : {
             "name" : "inside",
             "active" : true,
@@ -8961,6 +9018,8 @@
               "Vlan3",
               "Vlan4094",
               "Wideband-Cable1/2/3:4",
+              "Wlan-GigabitEthernet0",
+              "Wlan-ap0",
               "inside",
               "tunnel-ip6"
             ],

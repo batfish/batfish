@@ -19,6 +19,14 @@ public final class OspfInterface implements Serializable {
     _area = area;
   }
 
+  public @Nullable Integer getCost() {
+    return _cost;
+  }
+
+  public void setCost(@Nullable Integer cost) {
+    _cost = cost;
+  }
+
   public int getDeadIntervalS() {
     return firstNonNull(_deadIntervalS, DEFAULT_DEAD_INTERVAL_S);
   }
@@ -43,6 +51,14 @@ public final class OspfInterface implements Serializable {
     _network = network;
   }
 
+  public @Nullable Boolean getPassive() {
+    return _passive;
+  }
+
+  public void setPassive(@Nullable Boolean passive) {
+    _passive = passive;
+  }
+
   public @Nullable String getProcess() {
     return _process;
   }
@@ -56,8 +72,10 @@ public final class OspfInterface implements Serializable {
   //////////////////////////////////////////
 
   private @Nullable Long _area;
+  private @Nullable Integer _cost;
   private @Nullable Integer _deadIntervalS;
   private @Nullable Integer _helloIntervalS;
   private @Nullable OspfNetworkType _network;
+  private @Nullable Boolean _passive;
   private @Nullable String _process;
 }

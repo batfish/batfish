@@ -282,9 +282,11 @@ i_ip_address
 i_ip_null
 :
   (
-    IGMP
+    FLOW
+    | IGMP
     | PIM
     | REDIRECTS
+    | UNREACHABLES
   ) null_rest_of_line
 ;
 
@@ -292,16 +294,29 @@ i_ip_ospf
 :
   OSPF
   (
-    iipo_dead_interval
+    iipo_cost
+    | iipo_dead_interval
     | iipo_hello_interval
     | iipo_message_digest_key
     | iipo_network
+    | iipo_passive_interface
   )
 ;
 
 i_ip_policy
 :
   POLICY name = route_map_name NEWLINE
+;
+
+iipo_cost
+:
+  COST cost = interface_ospf_cost NEWLINE
+;
+
+interface_ospf_cost
+:
+// 1-65535
+  uint16
 ;
 
 iipo_dead_interval
@@ -338,6 +353,11 @@ iipo_network
     BROADCAST
     | POINT_TO_POINT
   ) NEWLINE
+;
+
+iipo_passive_interface
+:
+  PASSIVE_INTERFACE NEWLINE
 ;
 
 i_ip_router
@@ -414,6 +434,7 @@ i_no_null
     | IP
     | IPV6
     | NEGOTIATE
+    | SNMP
   ) null_rest_of_line
 ;
 
@@ -425,6 +446,7 @@ i_null
     | DUPLEX
     | FEX
     | LACP
+    | SNMP
     | SPANNING_TREE
     | STORM_CONTROL
     | UDLD

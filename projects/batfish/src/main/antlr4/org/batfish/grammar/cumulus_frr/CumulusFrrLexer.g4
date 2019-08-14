@@ -9,6 +9,11 @@ tokens {
   WORD
 }
 
+ADDRESS
+:
+  'address'
+;
+
 COMMENT_LINE
 :
   (
@@ -182,6 +187,11 @@ PERMIT
   'permit'
 ;
 
+PREFIX_LIST
+:
+  'prefix-list' -> pushMode ( M_Word )
+;
+
 REDISTRIBUTE
 :
   'redistribute'
@@ -212,6 +222,11 @@ ROUTER_ID
   'router-id'
 ;
 
+SET
+:
+  'set'
+;
+
 STATIC
 :
   'static'
@@ -225,6 +240,11 @@ SUBNET_MASK
 MATCH
 :
   'match'
+;
+
+METRIC
+:
+  'metric'
 ;
 
 NEWLINE
@@ -495,4 +515,3 @@ M_Remark_WS
 :
   F_Whitespace+ -> channel ( HIDDEN )
 ;
-
