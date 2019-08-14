@@ -87,6 +87,7 @@ import static org.batfish.representation.cisco_nxos.OspfProcess.DEFAULT_TIMERS_L
 import static org.batfish.representation.cisco_nxos.OspfProcess.DEFAULT_TIMERS_THROTTLE_LSA_HOLD_INTERVAL_MS;
 import static org.batfish.representation.cisco_nxos.OspfProcess.DEFAULT_TIMERS_THROTTLE_LSA_MAX_INTERVAL_MS;
 import static org.batfish.representation.cisco_nxos.OspfProcess.DEFAULT_TIMERS_THROTTLE_LSA_START_INTERVAL_MS;
+import static org.batfish.representation.cisco_nxos.Vrf.DEFAULT_VRF_ID;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.anEmptyMap;
 import static org.hamcrest.Matchers.any;
@@ -232,6 +233,7 @@ import org.batfish.representation.cisco_nxos.IpCommunityListStandard;
 import org.batfish.representation.cisco_nxos.IpCommunityListStandardLine;
 import org.batfish.representation.cisco_nxos.IpPrefixList;
 import org.batfish.representation.cisco_nxos.IpPrefixListLine;
+import org.batfish.representation.cisco_nxos.Lacp;
 import org.batfish.representation.cisco_nxos.Layer3Options;
 import org.batfish.representation.cisco_nxos.LiteralIpAddressSpec;
 import org.batfish.representation.cisco_nxos.LiteralPortSpec;
@@ -607,7 +609,7 @@ public final class CiscoNxosGrammarTest {
             Layer2VniConfig.builder()
                 .setVni(1111)
                 .setVrf(DEFAULT_VRF_NAME)
-                .setRouteDistinguisher(RouteDistinguisher.from(routerId, 1111))
+                .setRouteDistinguisher(RouteDistinguisher.from(routerId, 3))
                 .setRouteTarget(ExtendedCommunity.target(1, 1111))
                 .setImportRouteTarget(ExtendedCommunity.target(1, 1111).matchString())
                 .build());
@@ -616,7 +618,7 @@ public final class CiscoNxosGrammarTest {
             Layer3VniConfig.builder()
                 .setVni(3333)
                 .setVrf(DEFAULT_VRF_NAME)
-                .setRouteDistinguisher(RouteDistinguisher.from(routerId, 3333))
+                .setRouteDistinguisher(RouteDistinguisher.from(routerId, 3))
                 .setRouteTarget(ExtendedCommunity.target(1, 3333))
                 .setImportRouteTarget(ExtendedCommunity.target(1, 3333).matchString())
                 .setAdvertiseV4Unicast(false)
@@ -842,6 +844,58 @@ public final class CiscoNxosGrammarTest {
   }
 
   @Test
+  public void testInterfaceShutdownConversion() throws IOException {
+    String hostname = "nxos_interface_shutdown";
+    Configuration c = parseConfig(hostname);
+
+    assertThat(
+        c.getAllInterfaces(), hasKeys("Ethernet1/1", "Ethernet1/2", "Ethernet1/3", "Ethernet1/4"));
+    {
+      org.batfish.datamodel.Interface iface = c.getAllInterfaces().get("Ethernet1/1");
+      assertThat(iface, isActive());
+    }
+    {
+      org.batfish.datamodel.Interface iface = c.getAllInterfaces().get("Ethernet1/2");
+      assertThat(iface, isActive(false));
+    }
+    {
+      org.batfish.datamodel.Interface iface = c.getAllInterfaces().get("Ethernet1/3");
+      // TODO: more interesting test of regular shutdown vs force shutdown
+      assertThat(iface, isActive(false));
+    }
+    {
+      org.batfish.datamodel.Interface iface = c.getAllInterfaces().get("Ethernet1/4");
+      assertThat(iface, isActive());
+    }
+  }
+
+  @Test
+  public void testInterfaceShutdownExtraction() {
+    String hostname = "nxos_interface_shutdown";
+    CiscoNxosConfiguration vc = parseVendorConfig(hostname);
+
+    assertThat(
+        vc.getInterfaces(), hasKeys("Ethernet1/1", "Ethernet1/2", "Ethernet1/3", "Ethernet1/4"));
+    {
+      Interface iface = vc.getInterfaces().get("Ethernet1/1");
+      assertFalse(iface.getShutdown());
+    }
+    {
+      Interface iface = vc.getInterfaces().get("Ethernet1/2");
+      assertTrue(iface.getShutdown());
+    }
+    {
+      Interface iface = vc.getInterfaces().get("Ethernet1/3");
+      // TODO: more interesting test of regular shutdown vs force shutdown
+      assertTrue(iface.getShutdown());
+    }
+    {
+      Interface iface = vc.getInterfaces().get("Ethernet1/4");
+      assertFalse(iface.getShutdown());
+    }
+  }
+
+  @Test
   public void testInterfaceSpanningTreeParsing() {
     // TODO: make into extraction test
     assertThat(parseVendorConfig("nxos_interface_spanning_tree"), notNullValue());
@@ -852,12 +906,13 @@ public final class CiscoNxosGrammarTest {
     String hostname = "nxos_interface_speed";
     Configuration c = parseConfig(hostname);
 
-    assertThat(c.getAllInterfaces(), hasKeys("Ethernet1/1", "port-channel1"));
+    assertThat(c.getAllInterfaces(), hasKeys("Ethernet1/1", "Ethernet1/2", "port-channel1"));
     {
       org.batfish.datamodel.Interface iface = c.getAllInterfaces().get("Ethernet1/1");
       assertThat(iface, hasSpeed(100E9D));
       assertThat(iface, hasBandwidth(100E9D));
     }
+    // TODO: assert inferred speed for Ethernet1/2 maybe
   }
 
   @Test
@@ -865,10 +920,14 @@ public final class CiscoNxosGrammarTest {
     String hostname = "nxos_interface_speed";
     CiscoNxosConfiguration vc = parseVendorConfig(hostname);
 
-    assertThat(vc.getInterfaces(), hasKeys("Ethernet1/1", "port-channel1"));
+    assertThat(vc.getInterfaces(), hasKeys("Ethernet1/1", "Ethernet1/2", "port-channel1"));
     {
       Interface iface = vc.getInterfaces().get("Ethernet1/1");
       assertThat(iface.getSpeedMbps(), equalTo(100000));
+    }
+    {
+      Interface iface = vc.getInterfaces().get("Ethernet1/2");
+      assertThat(iface.getSpeedMbps(), nullValue());
     }
   }
 
@@ -1187,6 +1246,7 @@ public final class CiscoNxosGrammarTest {
       Interface iface = vc.getInterfaces().get("Ethernet1/15");
       assertFalse(iface.getShutdown());
       assertThat(iface.getSwitchportMode(), equalTo(SwitchportMode.ACCESS));
+      assertTrue(iface.getSwitchportMonitor());
       assertThat(iface.getAccessVlan(), equalTo(1));
     }
   }
@@ -1239,7 +1299,7 @@ public final class CiscoNxosGrammarTest {
    * cases deserves its own unit test. (See, e.g., {@link #testInterfaceSwitchportExtraction()}.
    */
   @Test
-  public void testInterfaceProperties() throws Exception {
+  public void testInterfacePropertiesConversion() throws IOException {
     Configuration c = parseConfig("nxos_interface_properties");
     assertThat(c, hasInterface("Ethernet1/1", any(org.batfish.datamodel.Interface.class)));
 
@@ -1250,6 +1310,25 @@ public final class CiscoNxosGrammarTest {
             hasDescription(
                 "here is a description with punctuation! and IP address 1.2.3.4/24 etc."),
             hasMtu(9216)));
+    assertThat(eth11.getIncomingFilterName(), equalTo("acl_in"));
+    assertThat(eth11.getOutgoingFilterName(), equalTo("acl_out"));
+    // TODO: convert and test delay
+  }
+
+  @Test
+  public void testInterfacePropertiesExtraction() {
+    CiscoNxosConfiguration vc = parseVendorConfig("nxos_interface_properties");
+    assertThat(vc.getInterfaces(), hasKeys("Ethernet1/1", "Ethernet1/2", "Ethernet1/3"));
+    {
+      Interface iface = vc.getInterfaces().get("Ethernet1/1");
+      assertThat(iface.getDelayTensOfMicroseconds(), equalTo(10));
+      assertThat(
+          iface.getDescription(),
+          equalTo("here is a description with punctuation! and IP address 1.2.3.4/24 etc."));
+      assertThat(iface.getIpAccessGroupIn(), equalTo("acl_in"));
+      assertThat(iface.getIpAccessGroupOut(), equalTo("acl_out"));
+      assertThat(iface.getMtu(), equalTo(9216));
+    }
   }
 
   @Test
@@ -3216,6 +3295,11 @@ public final class CiscoNxosGrammarTest {
       assertThat(outputRoute.build().getOspfMetricType(), equalTo(OspfMetricType.E1));
     }
     {
+      org.batfish.datamodel.ospf.OspfProcess proc = defaultVrf.getOspfProcesses().get("router_id");
+      assertThat(proc.getRouterId(), equalTo(Ip.parse("192.0.2.1")));
+      assertThat(proc, hasArea(0L, OspfAreaMatchers.hasInterfaces(contains("Ethernet1/4"))));
+    }
+    {
       org.batfish.datamodel.ospf.OspfProcess proc = defaultVrf.getOspfProcesses().get("sa");
       Prefix p0 = Prefix.parse("192.168.0.0/24");
       Prefix p1 = Prefix.create(Ip.parse("192.168.1.0"), Ip.parse("255.255.255.0"));
@@ -3238,11 +3322,14 @@ public final class CiscoNxosGrammarTest {
       assertThat(vrfProc.getAreas(), hasKeys(1L));
     }
 
-    assertThat(c.getAllInterfaces(), hasKeys("Ethernet1/1", "Ethernet1/2", "Ethernet1/3"));
+    assertThat(
+        c.getAllInterfaces(), hasKeys("Ethernet1/1", "Ethernet1/2", "Ethernet1/3", "Ethernet1/4"));
     {
       org.batfish.datamodel.Interface iface = c.getAllInterfaces().get("Ethernet1/1");
+      assertThat(iface.getOspfCost(), equalTo(12));
       assertTrue(iface.getOspfEnabled());
       assertThat(iface.getOspfAreaName(), equalTo(0L));
+      // TODO: convert and test bfd
       assertTrue(iface.getOspfPassive());
       assertFalse(iface.getOspfPointToPoint());
     }
@@ -3259,6 +3346,13 @@ public final class CiscoNxosGrammarTest {
       assertThat(iface.getOspfAreaName(), equalTo(0L));
       assertFalse(iface.getOspfPassive());
       assertTrue(iface.getOspfPointToPoint());
+    }
+    {
+      org.batfish.datamodel.Interface iface = c.getAllInterfaces().get("Ethernet1/4");
+      assertTrue(iface.getOspfEnabled());
+      assertThat(iface.getOspfAreaName(), equalTo(0L));
+      assertTrue(iface.getOspfPassive());
+      assertFalse(iface.getOspfPointToPoint());
     }
   }
 
@@ -3595,14 +3689,19 @@ public final class CiscoNxosGrammarTest {
       assertThat(proc.getVrfs().get("v1").getAreas(), hasKeys(1L));
     }
 
-    assertThat(vc.getInterfaces(), hasKeys("Ethernet1/1", "Ethernet1/2", "Ethernet1/3"));
+    assertThat(
+        vc.getInterfaces(), hasKeys("Ethernet1/1", "Ethernet1/2", "Ethernet1/3", "Ethernet1/4"));
     {
       Interface iface = vc.getInterfaces().get("Ethernet1/1");
       OspfInterface ospf = iface.getOspf();
       assertThat(ospf, notNullValue());
+      // TODO: extract and test authentication message-digest
       // TODO: extract and test message-digest-key
+      assertTrue(ospf.getBfd());
+      assertThat(ospf.getCost(), equalTo(12));
       assertThat(ospf.getDeadIntervalS(), equalTo(10));
       assertThat(ospf.getHelloIntervalS(), equalTo(20));
+      assertThat(ospf.getPassive(), nullValue());
       assertThat(ospf.getProcess(), equalTo("pi_d"));
       assertThat(ospf.getArea(), equalTo(0L));
       assertThat(ospf.getNetwork(), nullValue());
@@ -3611,8 +3710,12 @@ public final class CiscoNxosGrammarTest {
       Interface iface = vc.getInterfaces().get("Ethernet1/2");
       OspfInterface ospf = iface.getOspf();
       assertThat(ospf, notNullValue());
+      // TODO: extract and test authentication key-chain
+      assertFalse(ospf.getBfd());
+      assertThat(ospf.getCost(), nullValue());
       assertThat(ospf.getDeadIntervalS(), equalTo(DEFAULT_DEAD_INTERVAL_S));
       assertThat(ospf.getHelloIntervalS(), equalTo(DEFAULT_HELLO_INTERVAL_S));
+      assertThat(ospf.getPassive(), nullValue());
       assertThat(ospf.getProcess(), nullValue());
       assertThat(ospf.getArea(), nullValue());
       assertThat(ospf.getNetwork(), equalTo(BROADCAST));
@@ -3620,8 +3723,18 @@ public final class CiscoNxosGrammarTest {
     {
       Interface iface = vc.getInterfaces().get("Ethernet1/3");
       OspfInterface ospf = iface.getOspf();
+      // TODO: extract and test authentication null (disabled)
       assertThat(ospf, notNullValue());
+      assertThat(ospf.getPassive(), nullValue());
       assertThat(ospf.getNetwork(), equalTo(POINT_TO_POINT));
+    }
+    {
+      Interface iface = vc.getInterfaces().get("Ethernet1/4");
+      OspfInterface ospf = iface.getOspf();
+      assertThat(ospf, notNullValue());
+      // TODO: discover semantics, extract and test 'authentication' with no params
+      assertThat(ospf.getPassive(), equalTo(true));
+      assertThat(ospf.getNetwork(), nullValue());
     }
   }
 
@@ -3720,6 +3833,7 @@ public final class CiscoNxosGrammarTest {
       assertThat(iface, hasInterfaceType(InterfaceType.PHYSICAL));
     }
     // TODO: conversion for channel-group mode for Ethernet1/12-1/14
+    // TOOD: convert and test lacp settings
     {
       org.batfish.datamodel.Interface iface = c.getAllInterfaces().get("port-channel1");
       assertThat(iface, isActive(false));
@@ -3892,6 +4006,9 @@ public final class CiscoNxosGrammarTest {
       Interface iface = vc.getInterfaces().get("port-channel1");
       assertFalse(iface.getShutdown());
       assertThat(iface.getType(), equalTo(CiscoNxosInterfaceType.PORT_CHANNEL));
+      Lacp lacp = iface.getLacp();
+      assertThat(lacp, notNullValue());
+      assertThat(lacp.getMinLinks(), equalTo(2));
     }
     {
       Interface iface = vc.getInterfaces().get("port-channel2");
@@ -5064,6 +5181,8 @@ public final class CiscoNxosGrammarTest {
     String hostname = "nxos_vrf";
     CiscoNxosConfiguration vc = parseVendorConfig(hostname);
 
+    assertThat(vc.getDefaultVrf(), not(nullValue()));
+    assertThat(vc.getDefaultVrf().getId(), equalTo(DEFAULT_VRF_ID));
     assertThat(vc.getVrfs(), hasKeys("Vrf1", "vrf3"));
     {
       Vrf vrf = vc.getDefaultVrf();
@@ -5072,6 +5191,7 @@ public final class CiscoNxosGrammarTest {
     {
       Vrf vrf = vc.getVrfs().get("Vrf1");
       assertFalse(vrf.getShutdown());
+      assertThat(vrf.getId(), equalTo(3));
       assertThat(
           vrf.getRd(), equalTo(RouteDistinguisherOrAuto.of(RouteDistinguisher.from(65001, 10L))));
       VrfAddressFamily af4 = vrf.getAddressFamily(AddressFamily.IPV4_UNICAST);
@@ -5094,6 +5214,7 @@ public final class CiscoNxosGrammarTest {
     }
     {
       Vrf vrf = vc.getVrfs().get("vrf3");
+      assertThat(vrf.getId(), equalTo(4));
       assertTrue(vrf.getShutdown());
       assertThat(vrf.getRd(), equalTo(RouteDistinguisherOrAuto.auto()));
     }
@@ -5156,5 +5277,10 @@ public final class CiscoNxosGrammarTest {
     assertThat(ans, hasNumReferrers(filename, CiscoNxosStructureType.VRF, "vrf_used", 1));
     assertThat(ans, hasNumReferrers(filename, CiscoNxosStructureType.VRF, "vrf_unused", 0));
     assertThat(ans, hasUndefinedReference(filename, CiscoNxosStructureType.VRF, "vrf_undefined"));
+  }
+
+  @Test
+  public void testWordLexing() {
+    assertThat(parseVendorConfig("nxos_word"), notNullValue());
   }
 }

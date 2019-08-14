@@ -127,6 +127,7 @@ import static org.batfish.datamodel.matchers.IpsecSessionMatchers.hasNegotiatedI
 import static org.batfish.datamodel.matchers.IsisInterfaceSettingsMatchers.hasLevel2;
 import static org.batfish.datamodel.matchers.LineMatchers.hasAuthenticationLoginList;
 import static org.batfish.datamodel.matchers.LineMatchers.requiresAuthentication;
+import static org.batfish.datamodel.matchers.MapMatchers.hasKeys;
 import static org.batfish.datamodel.matchers.MatchHeaderSpaceMatchers.hasHeaderSpace;
 import static org.batfish.datamodel.matchers.MatchHeaderSpaceMatchers.isMatchHeaderSpaceThat;
 import static org.batfish.datamodel.matchers.MlagMatchers.hasId;
@@ -4893,6 +4894,33 @@ public class CiscoGrammarTest {
     assertThat(
         ifaces.get(eth5).getOspfNetworkType(),
         equalTo(OspfNetworkType.POINT_TO_MULTIPOINT_NON_BROADCAST));
+  }
+
+  @Test
+  public void testCiscoOspfIntervals() {
+    CiscoConfiguration config = parseCiscoConfig("ospf-intervals", ConfigurationFormat.CISCO_IOS);
+
+    String eth0 = "Ethernet0/0";
+    String eth1 = "Ethernet0/1";
+    String eth2 = "Ethernet0/2";
+    String eth3 = "Ethernet0/3";
+
+    Map<String, org.batfish.representation.cisco.Interface> ifaces = config.getInterfaces();
+    assertThat(ifaces, hasKeys(eth0, eth1, eth2, eth3));
+
+    // Confirm explicitly set hello and dead intervals show up in the VS model
+    // Also confirm intervals that are not set show up as nulls in the VS model
+    assertThat(ifaces.get(eth0).getOspfDeadInterval(), nullValue());
+    assertThat(ifaces.get(eth0).getOspfHelloInterval(), nullValue());
+
+    assertThat(ifaces.get(eth1).getOspfDeadInterval(), nullValue());
+    assertThat(ifaces.get(eth1).getOspfHelloInterval(), equalTo(11));
+
+    assertThat(ifaces.get(eth2).getOspfDeadInterval(), equalTo(36));
+    assertThat(ifaces.get(eth2).getOspfHelloInterval(), equalTo(12));
+
+    assertThat(ifaces.get(eth3).getOspfDeadInterval(), equalTo(42));
+    assertThat(ifaces.get(eth3).getOspfHelloInterval(), nullValue());
   }
 
   @Test

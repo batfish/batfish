@@ -41,6 +41,12 @@ ACCESS
 ACCESS_GROUP
 :
   'access-group'
+  {
+    if (lastTokenType() == IP) {
+      pushMode(M_Word);
+    }
+  }
+  
 ;
 
 ACCESS_LIST
@@ -1176,6 +1182,11 @@ FLASH_OVERRIDE
   'flash-override'
 ;
 
+FLOW
+:
+  'flow'
+;
+
 FORCE
 :
   'force'
@@ -1492,7 +1503,12 @@ INJECT_MAP
 
 INPUT
 :
-  'input' -> pushMode ( M_Word )
+  'input'
+  {
+    if (lastTokenType() == SERVICE_POLICY) {
+      pushMode(M_Word);
+    }
+  }
 ;
 
 INSTALL
@@ -1684,6 +1700,11 @@ LINK_LOCAL_GROUPS_SUPPRESSION
 LINK_STATE
 :
   'link-state'
+;
+
+LINK_STATUS
+:
+  'link-status'
 ;
 
 LISP
@@ -1944,6 +1965,11 @@ MGMT
   [Mm] [Gg] [Mm] [Tt]
 ;
 
+MIN_LINKS
+:
+  'min-links'
+;
+
 MIN_RX
 :
   'min_rx'
@@ -1972,6 +1998,16 @@ MOBILE_REDIRECT
 MODE
 :
   'mode'
+;
+
+MONITOR
+:
+  'monitor'
+  {
+    if (lastTokenType() == FLOW) {
+      pushMode(M_Word);
+    }
+  }
 ;
 
 MROUTER
@@ -2239,6 +2275,11 @@ NTP
   'ntp'
 ;
 
+NULL
+:
+  'null'
+;
+
 NULL0
 :
   [Nn] [Uu] [Ll] [Ll] ' '* '0'
@@ -2475,7 +2516,7 @@ POLICE
 
 POLICY
 :
-  'policy' -> pushMode ( M_Word )
+  'policy'
 ;
 
 POLICY_MAP
@@ -2861,6 +2902,11 @@ RST
 RULE
 :
   'rule'
+;
+
+SAMPLER
+:
+  'sampler' -> pushMode(M_Word)
 ;
 
 SCHEDULER
@@ -3432,6 +3478,11 @@ UNICAST
 UNREACHABLE
 :
   'unreachable'
+;
+
+UNREACHABLES
+:
+  'unreachables'
 ;
 
 UNSUPPRESS_MAP
@@ -4041,7 +4092,7 @@ F_Word
 fragment
 F_WordChar
 :
-  [0-9A-Za-z!@#$^*_=+.;:{}]
+  [0-9A-Za-z!@#$^*_=+.;:{}/]
   | '-'
 ;
 

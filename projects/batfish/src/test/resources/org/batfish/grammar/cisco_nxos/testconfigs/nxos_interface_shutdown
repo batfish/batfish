@@ -1,0 +1,15 @@
+!RANCID-CONTENT-TYPE: cisco-nx
+!
+hostname nxos_interface_shutdown
+!
+
+interface Ethernet1/1
+
+interface Ethernet1/2
+  shutdown
+
+interface Ethernet1/3
+  shutdown force
+
+interface Ethernet1/4
+  no shutdown

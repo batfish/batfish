@@ -33,11 +33,13 @@ s_interface_regular
   (
     i_bandwidth
     | i_channel_group
+    | i_delay
     | i_description
     | i_encapsulation
     | i_hsrp
     | i_ip
     | i_ipv6
+    | i_lacp
     | i_mtu
     | i_no
     | i_null
@@ -75,6 +77,17 @@ channel_id
 // 1-4096
   UINT8
   | UINT16
+;
+
+i_delay
+:
+  DELAY delay = interface_delay_10us NEWLINE
+;
+
+interface_delay_10us
+:
+// 1-16777215 tens of microseconds
+  uint32
 ;
 
 i_description
@@ -266,12 +279,22 @@ i_ip
 :
   IP
   (
-    i_ip_address
+    i_ip_access_group
+    | i_ip_address
     | i_ip_null
     | i_ip_ospf
     | i_ip_policy
     | i_ip_router
   )
+;
+
+i_ip_access_group
+:
+  ACCESS_GROUP name = ip_access_list_name
+  (
+    IN
+    | OUT
+  ) NEWLINE
 ;
 
 i_ip_address
@@ -282,9 +305,11 @@ i_ip_address
 i_ip_null
 :
   (
-    IGMP
+    FLOW
+    | IGMP
     | PIM
     | REDIRECTS
+    | UNREACHABLES
   ) null_rest_of_line
 ;
 
@@ -292,16 +317,67 @@ i_ip_ospf
 :
   OSPF
   (
-    iipo_dead_interval
+    iipo_authentication
+    | iipo_bfd
+    | iipo_cost
+    | iipo_dead_interval
     | iipo_hello_interval
     | iipo_message_digest_key
     | iipo_network
+    | iipo_passive_interface
   )
 ;
 
 i_ip_policy
 :
-  POLICY name = route_map_name NEWLINE
+  POLICY ROUTE_MAP name = route_map_name NEWLINE
+;
+
+iipo_authentication
+:
+  AUTHENTICATION
+  (
+    iipoa_authentication
+    | iipoa_key_chain
+    | iipoa_message_digest
+    | iipoa_null
+  )
+;
+
+iipoa_authentication
+:
+  NEWLINE
+;
+
+iipoa_key_chain
+:
+  KEY_CHAIN name = key_chain_name NEWLINE
+;
+
+iipoa_message_digest
+:
+  MESSAGE_DIGEST NEWLINE
+;
+
+iipoa_null
+:
+  NULL NEWLINE
+;
+
+iipo_bfd
+:
+  BFD NEWLINE
+;
+
+iipo_cost
+:
+  COST cost = interface_ospf_cost NEWLINE
+;
+
+interface_ospf_cost
+:
+// 1-65535
+  uint16
 ;
 
 iipo_dead_interval
@@ -340,6 +416,11 @@ iipo_network
   ) NEWLINE
 ;
 
+iipo_passive_interface
+:
+  PASSIVE_INTERFACE NEWLINE
+;
+
 i_ip_router
 :
   ROUTER iipr_ospf
@@ -362,6 +443,31 @@ iip6_traffic_filter
     IN
     | OUT
   ) NEWLINE
+;
+
+i_lacp
+:
+  LACP
+  (
+    il_min_links
+    | il_null
+  )
+;
+
+il_min_links
+:
+  MIN_LINKS num = min_links_number NEWLINE
+;
+
+min_links_number
+:
+// 1-32
+  uint8
+;
+
+il_null
+:
+  SUSPEND_INDIVIDUAL null_rest_of_line
 ;
 
 i_mtu
@@ -394,7 +500,7 @@ i_no_autostate
 
 i_no_bfd
 :
-  BFD ECHO NEWLINE
+  BFD null_rest_of_line
 ;
 
 i_no_shutdown
@@ -414,6 +520,7 @@ i_no_null
     | IP
     | IPV6
     | NEGOTIATE
+    | SNMP
   ) null_rest_of_line
 ;
 
@@ -424,7 +531,7 @@ i_null
     | CDP
     | DUPLEX
     | FEX
-    | LACP
+    | SNMP
     | SPANNING_TREE
     | STORM_CONTROL
     | UDLD
@@ -433,12 +540,26 @@ i_null
 
 i_shutdown
 :
-  SHUTDOWN NEWLINE
+  SHUTDOWN FORCE? NEWLINE
 ;
 
 i_speed
 :
-  SPEED speed = interface_speed NEWLINE
+  SPEED
+  (
+    i_speed_auto
+    | i_speed_number
+  )
+;
+
+i_speed_auto
+:
+  AUTO NEWLINE
+;
+
+i_speed_number
+:
+  speed = interface_speed NEWLINE
 ;
 
 interface_speed
@@ -453,6 +574,7 @@ i_switchport
   (
     i_switchport_access
     | i_switchport_mode
+    | i_switchport_monitor
     | i_switchport_switchport
     | i_switchport_trunk_allowed
     | i_switchport_trunk
@@ -493,6 +615,11 @@ i_switchport_mode_fex_fabric
 i_switchport_mode_trunk
 :
   TRUNK NEWLINE
+;
+
+i_switchport_monitor
+:
+  MONITOR NEWLINE
 ;
 
 i_switchport_switchport

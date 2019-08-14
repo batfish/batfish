@@ -1010,6 +1010,12 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
         CiscoNxosStructureUsage.IP_ROUTE_NEXT_HOP_INTERFACE,
         CiscoNxosStructureUsage.NVE_SOURCE_INTERFACE);
     markConcreteStructure(
+        CiscoNxosStructureType.IP_ACCESS_LIST,
+        CiscoNxosStructureUsage.INTERFACE_IP_ACCESS_GROUP_IN);
+    markConcreteStructure(
+        CiscoNxosStructureType.IP_ACCESS_LIST,
+        CiscoNxosStructureUsage.INTERFACE_IP_ACCESS_GROUP_OUT);
+    markConcreteStructure(
         CiscoNxosStructureType.IP_AS_PATH_ACCESS_LIST,
         CiscoNxosStructureUsage.BGP_NEIGHBOR_FILTER_LIST_IN,
         CiscoNxosStructureUsage.BGP_NEIGHBOR_FILTER_LIST_OUT,
@@ -1140,6 +1146,16 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
     newIfaceBuilder.setDescription(iface.getDescription());
 
     newIfaceBuilder.setMtu(iface.getMtu());
+
+    // filters
+    String ipAccessGroupIn = iface.getIpAccessGroupIn();
+    if (ipAccessGroupIn != null) {
+      newIfaceBuilder.setIncomingFilter(_c.getIpAccessLists().get(ipAccessGroupIn));
+    }
+    String ipAccessGroupOut = iface.getIpAccessGroupOut();
+    if (ipAccessGroupOut != null) {
+      newIfaceBuilder.setOutgoingFilter(_c.getIpAccessLists().get(ipAccessGroupOut));
+    }
 
     // switchport+vlan settings
     SwitchportMode switchportMode = iface.getSwitchportMode();
@@ -1747,7 +1763,11 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
                 if (ospf.getArea().equals(areaId) && ospf.getProcess().equals(processName)) {
                   interfaces.add(ifaceName);
                   finalizeInterfaceOspfSettings(
-                      ifaceName, areaId, processName, proc.getPassiveInterfaceDefault());
+                      ifaceName,
+                      areaId,
+                      processName,
+                      proc.getPassiveInterfaceDefault(),
+                      iface.getOspf());
                 }
               } else {
                 // Otherwise if OSPF area not explicitly configured on interface, add to this area
@@ -1767,20 +1787,31 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
                 }
                 interfaces.add(ifaceName);
                 finalizeInterfaceOspfSettings(
-                    ifaceName, areaId, processName, proc.getPassiveInterfaceDefault());
+                    ifaceName,
+                    areaId,
+                    processName,
+                    proc.getPassiveInterfaceDefault(),
+                    iface.getOspf());
               }
             });
     return interfaces.build();
   }
 
   private void finalizeInterfaceOspfSettings(
-      String ifaceName, long areaId, String processName, boolean passiveInterfaceDefault) {
+      String ifaceName,
+      long areaId,
+      String processName,
+      boolean passiveInterfaceDefault,
+      OspfInterface ospf) {
     org.batfish.datamodel.Interface newIface = _c.getAllInterfaces().get(ifaceName);
+    newIface.setOspfCost(ospf.getCost());
     newIface.setOspfEnabled(true);
     newIface.setOspfAreaName(areaId);
     newIface.setOspfProcess(processName);
-    // TODO: support exceptions to passive-interface default
-    newIface.setOspfPassive(passiveInterfaceDefault || newIface.getName().startsWith("loopback"));
+    newIface.setOspfPassive(
+        ospf.getPassive() != null
+            ? ospf.getPassive()
+            : passiveInterfaceDefault || newIface.getName().startsWith("loopback"));
   }
 
   private @Nonnull NssaSettings toNssaSettings(OspfAreaNssa ospfAreaNssa) {
@@ -2096,16 +2127,16 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
     _c.setDefaultInboundAction(LineAction.PERMIT);
     _c.setDefaultCrossZoneAction(LineAction.PERMIT);
 
-    convertVrfs();
-    convertInterfaces();
-    disableUnregisteredVlanInterfaces();
-    convertStaticRoutes();
     convertObjectGroups();
     convertIpAccessLists();
     convertIpAsPathAccessLists();
     convertIpPrefixLists();
     convertIpCommunityLists();
+    convertVrfs();
+    convertInterfaces();
+    disableUnregisteredVlanInterfaces();
     convertRouteMaps();
+    convertStaticRoutes();
     computeImplicitOspfAreas();
     convertOspfProcesses();
     convertNves();
