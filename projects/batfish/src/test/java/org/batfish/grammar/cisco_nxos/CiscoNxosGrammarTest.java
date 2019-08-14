@@ -774,41 +774,47 @@ public final class CiscoNxosGrammarTest {
   @Test
   public void testInterfaceIpAddressConversion() throws IOException {
     String hostname = "nxos_interface_ip_address";
-    String ifaceName = "Ethernet1/1";
     Configuration c = parseConfig(hostname);
 
-    assertThat(
-        c,
-        hasInterface(
-            ifaceName,
-            allOf(
-                hasAddress(ConcreteInterfaceAddress.parse("10.0.0.1/24")),
-                hasAllAddresses(
-                    containsInAnyOrder(
-                        ConcreteInterfaceAddress.parse("10.0.0.1/24"),
-                        ConcreteInterfaceAddress.parse("10.0.0.2/24"),
-                        ConcreteInterfaceAddress.parse("10.0.0.3/24"))))));
+    assertThat(c.getAllInterfaces(), hasKeys("Ethernet1/1", "Ethernet1/2"));
+    {
+      org.batfish.datamodel.Interface iface = c.getAllInterfaces().get("Ethernet1/1");
+      assertThat(
+          iface,
+          allOf(
+              hasAddress(ConcreteInterfaceAddress.parse("10.0.0.1/24")),
+              hasAllAddresses(
+                  containsInAnyOrder(
+                      ConcreteInterfaceAddress.parse("10.0.0.1/24"),
+                      ConcreteInterfaceAddress.parse("10.0.0.2/24"),
+                      ConcreteInterfaceAddress.parse("10.0.0.3/24")))));
+      // TODO: convert and test ip address dhcp
+    }
   }
 
   @Test
   public void testInterfaceIpAddressExtraction() {
     String hostname = "nxos_interface_ip_address";
-    String ifaceName = "Ethernet1/1";
     CiscoNxosConfiguration vc = parseVendorConfig(hostname);
 
-    assertThat(vc.getInterfaces(), hasKey(ifaceName));
-
-    Interface iface = vc.getInterfaces().get(ifaceName);
-    InterfaceAddressWithAttributes primary =
-        new InterfaceAddressWithAttributes(ConcreteInterfaceAddress.parse("10.0.0.1/24"));
-    InterfaceAddressWithAttributes secondary2 =
-        new InterfaceAddressWithAttributes(ConcreteInterfaceAddress.parse("10.0.0.2/24"));
-    InterfaceAddressWithAttributes secondary3 =
-        new InterfaceAddressWithAttributes(ConcreteInterfaceAddress.parse("10.0.0.3/24"));
-    secondary3.setTag(3L);
-
-    assertThat(iface.getAddress(), equalTo(primary));
-    assertThat(iface.getSecondaryAddresses(), containsInAnyOrder(secondary2, secondary3));
+    assertThat(vc.getInterfaces(), hasKeys("Ethernet1/1", "Ethernet1/2"));
+    {
+      Interface iface = vc.getInterfaces().get("Ethernet1/1");
+      InterfaceAddressWithAttributes primary =
+          new InterfaceAddressWithAttributes(ConcreteInterfaceAddress.parse("10.0.0.1/24"));
+      InterfaceAddressWithAttributes secondary2 =
+          new InterfaceAddressWithAttributes(ConcreteInterfaceAddress.parse("10.0.0.2/24"));
+      InterfaceAddressWithAttributes secondary3 =
+          new InterfaceAddressWithAttributes(ConcreteInterfaceAddress.parse("10.0.0.3/24"));
+      secondary3.setTag(3L);
+      assertThat(iface.getAddress(), equalTo(primary));
+      assertThat(iface.getSecondaryAddresses(), containsInAnyOrder(secondary2, secondary3));
+      assertFalse(iface.getIpAddressDhcp());
+    }
+    {
+      Interface iface = vc.getInterfaces().get("Ethernet1/2");
+      assertTrue(iface.getIpAddressDhcp());
+    }
   }
 
   @Test

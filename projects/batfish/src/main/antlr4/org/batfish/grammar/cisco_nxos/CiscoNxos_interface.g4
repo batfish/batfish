@@ -299,7 +299,24 @@ i_ip_access_group
 
 i_ip_address
 :
-  ADDRESS addr = interface_address SECONDARY? (TAG tag = uint32)? NEWLINE
+  ADDRESS
+  (
+    i_ip_address_concrete
+    | i_ip_address_dhcp
+  )
+;
+
+i_ip_address_concrete
+:
+  addr = interface_address SECONDARY?
+  (
+    TAG tag = uint32
+  )? NEWLINE
+;
+
+i_ip_address_dhcp
+:
+  DHCP NEWLINE
 ;
 
 i_ip_null

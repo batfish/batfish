@@ -186,7 +186,8 @@ import org.batfish.grammar.cisco_nxos.CiscoNxosParser.I_delayContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.I_descriptionContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.I_encapsulationContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.I_ip_access_groupContext;
-import org.batfish.grammar.cisco_nxos.CiscoNxosParser.I_ip_addressContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.I_ip_address_concreteContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.I_ip_address_dhcpContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.I_ip_policyContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.I_mtuContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.I_no_autostateContext;
@@ -3595,7 +3596,7 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
   }
 
   @Override
-  public void exitI_ip_address(I_ip_addressContext ctx) {
+  public void exitI_ip_address_concrete(I_ip_address_concreteContext ctx) {
     InterfaceAddressWithAttributes address = toInterfaceAddress(ctx.addr);
     if (ctx.SECONDARY() != null) {
       // secondary addresses are appended
@@ -3608,6 +3609,16 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
       warn(ctx, "Unsupported: tag on interface ip address");
       address.setTag(toLong(ctx.tag));
     }
+  }
+
+  @Override
+  public void exitI_ip_address_dhcp(I_ip_address_dhcpContext ctx) {
+    _currentInterfaces.forEach(
+        iface -> {
+          iface.setAddress(null);
+          iface.setIpAddressDhcp(true);
+          iface.getSecondaryAddresses().clear();
+        });
   }
 
   @Override
