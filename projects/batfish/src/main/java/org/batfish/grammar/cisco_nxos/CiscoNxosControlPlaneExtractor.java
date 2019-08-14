@@ -209,6 +209,7 @@ import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Ihg_priorityContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Ihg_timersContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Ihg_trackContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Ihgam_key_chainContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Iipo_bfdContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Iipo_costContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Iipo_dead_intervalContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Iipo_hello_intervalContext;
@@ -1242,6 +1243,11 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
         .ifPresent(
             version ->
                 _currentInterfaces.forEach(iface -> iface.getOrCreateHsrp().setVersion(version)));
+  }
+
+  @Override
+  public void exitIipo_bfd(Iipo_bfdContext ctx) {
+    _currentInterfaces.forEach(iface -> iface.getOrCreateOspf().setBfd(true));
   }
 
   @Override
