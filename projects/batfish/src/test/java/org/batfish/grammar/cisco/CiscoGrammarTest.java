@@ -127,6 +127,7 @@ import static org.batfish.datamodel.matchers.IpsecSessionMatchers.hasNegotiatedI
 import static org.batfish.datamodel.matchers.IsisInterfaceSettingsMatchers.hasLevel2;
 import static org.batfish.datamodel.matchers.LineMatchers.hasAuthenticationLoginList;
 import static org.batfish.datamodel.matchers.LineMatchers.requiresAuthentication;
+import static org.batfish.datamodel.matchers.MapMatchers.hasKeys;
 import static org.batfish.datamodel.matchers.MatchHeaderSpaceMatchers.hasHeaderSpace;
 import static org.batfish.datamodel.matchers.MatchHeaderSpaceMatchers.isMatchHeaderSpaceThat;
 import static org.batfish.datamodel.matchers.MlagMatchers.hasId;
@@ -4905,7 +4906,7 @@ public class CiscoGrammarTest {
     String eth3 = "Ethernet0/3";
 
     Map<String, org.batfish.representation.cisco.Interface> ifaces = config.getInterfaces();
-    assertThat(ifaces.keySet(), containsInAnyOrder(eth0, eth1, eth2, eth3));
+    assertThat(ifaces, hasKeys(eth0, eth1, eth2, eth3));
 
     // Confirm explicitly set hello and dead intervals show up in the VS model
     // Also confirm intervals that are not set show up as nulls in the VS model
