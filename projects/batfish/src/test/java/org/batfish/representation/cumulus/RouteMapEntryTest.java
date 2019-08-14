@@ -28,7 +28,7 @@ public class RouteMapEntryTest {
     assertThat(matches.get(0), isA(RouteMapMatchInterface.class));
     assertThat(
         ((RouteMapMatchInterface) matches.get(0)).getInterfaces(),
-        equalTo(ImmutableList.of("interface")));
+        equalTo(ImmutableSet.of("interface")));
 
     assertThat(matches.get(1), isA(RouteMapMatchCommunity.class));
     assertThat(
@@ -44,7 +44,7 @@ public class RouteMapEntryTest {
   @Test
   public void testGetSets() {
     RouteMapEntry entry = new RouteMapEntry(10, LineAction.DENY);
-    entry.setSetMetric(new RouteMapSetMetric(10));
+    entry.setSetMetric(new RouteMapSetMetric(100));
     entry.setSetIpNextHop(new RouteMapSetIpNextHopLiteral(Ip.parse("10.0.0.1")));
     entry.setSetCommunity(
         new RouteMapSetCommunity(ImmutableSet.of(StandardCommunity.of(60000, 10))));
@@ -53,7 +53,7 @@ public class RouteMapEntryTest {
     assertThat(sets.size(), equalTo(3));
 
     assertThat(sets.get(0), isA(RouteMapSetMetric.class));
-    assertThat(((RouteMapSetMetric) sets.get(0)).getMetric(), equalTo(10L));
+    assertThat(((RouteMapSetMetric) sets.get(0)).getMetric(), equalTo(100L));
 
     assertThat(sets.get(1), isA(RouteMapSetIpNextHopLiteral.class));
     assertThat(
