@@ -5,4 +5,17 @@ hostname nxos_interface_ip_policy
 interface Ethernet1/1
   ip policy route-map PBR_POLICY
 !
+interface Ethernet1/2
+  ip address 2.2.2.1/24
+!
+ip access-list ACL
+  permit ip any 1.1.1.0/24
+!
+route-map PBR_POLICY permit 10
+  match ip address ACL
+  ! skip for PBR, no effect
+  match metric 10
+  set ip next-hop 2.2.2.2
+  ! also skip for PBR, no effect
+  set tag 50000
 !
