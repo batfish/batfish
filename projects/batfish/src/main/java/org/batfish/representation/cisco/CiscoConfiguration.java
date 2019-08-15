@@ -2607,8 +2607,6 @@ public final class CiscoConfiguration extends VendorConfiguration {
           areaInterfacesBuilders.computeIfAbsent(areaNum, n -> ImmutableSortedSet.naturalOrder());
       newAreaInterfacesBuilder.add(ifaceName);
       iface.setOspfEnabled(!vsIface.getOspfShutdown());
-      boolean passive = proc.getPassiveInterfaces().contains(iface.getName());
-      iface.setOspfPassive(passive);
       iface.setOspfNetworkType(toOspfNetworkType(vsIface.getOspfNetworkType()));
     }
     areaInterfacesBuilders.forEach(
