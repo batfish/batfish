@@ -1,0 +1,10 @@
+!RANCID-CONTENT-TYPE: cisco-nx
+!
+hostname nxos_interface_ipv6_nd
+!
+
+interface Ethernet1/1
+  no switchport
+  no ip redirects
+  ipv6 nd managed-config-flag
+  ipv6 nd other-config-flag

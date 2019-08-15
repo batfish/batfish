@@ -1827,6 +1827,11 @@ LT
   'lt'
 ;
 
+MANAGED_CONFIG_FLAG
+:
+  'managed-config-flag'
+;
+
 MASK
 :
   'mask'
@@ -2088,6 +2093,11 @@ NAT_FLOW
 NATIVE
 :
   'native'
+;
+
+ND
+:
+  'nd'
 ;
 
 ND_NA
@@ -2367,6 +2377,11 @@ OSPF
 OSPFV3
 :
   'ospfv3'
+;
+
+OTHER_CONFIG_FLAG
+:
+  'other-config-flag'
 ;
 
 OUT
@@ -2757,6 +2772,11 @@ REFERENCE_BANDWIDTH
 REFLECTION
 :
   'reflection'
+;
+
+RELAY
+:
+  'relay'
 ;
 
 RELOAD
