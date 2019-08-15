@@ -855,26 +855,37 @@ public final class JuniperConfiguration extends VendorConfiguration {
                           org.batfish.datamodel.Interface iface =
                               _c.getVrfs().get(vrfName).getInterfaces().get(ifaceName);
                           Interface vsIface = routingInstance.getInterfaces().get(ifaceName);
-
-                          iface.setOspfEnabled(
-                              !firstNonNull(vsIface.getOspfDisable(), Boolean.FALSE));
-                          iface.setOspfPassive(vsIface.getOspfPassive());
-                          Integer ospfCost = vsIface.getOspfCost();
-                          if (ospfCost == null
-                              && iface.isLoopback(ConfigurationFormat.FLAT_JUNIPER)) {
-                            ospfCost = 0;
-                          }
-                          iface.setOspfCost(ospfCost);
-                          iface.setOspfAreaName(area.getAreaNumber());
-                          iface.setOspfProcess(newProc.getProcessId());
-                          // TODO infer interface type based on physical interface: "the software
-                          // chooses the correct
-                          // interface type...you should never have to set the interface type" (see
-                          // https://www.juniper.net/documentation/en_US/junos/topics/reference/configuration-statement/interface-type-edit-protocols-ospf.html)
-                          iface.setOspfNetworkType(
-                              toOspfNetworkType(vsIface.getOspfInterfaceType()));
+                          finalizeOspfInterfaceSettings(
+                              iface, vsIface, newProc, area.getAreaNumber());
                         }));
     return newProc;
+  }
+
+  /**
+   * Update VI interface OSPF properties based on the specified VS interface, optional OSPF process,
+   * and optional OSPF area number
+   */
+  private void finalizeOspfInterfaceSettings(
+      org.batfish.datamodel.Interface iface,
+      Interface vsIface,
+      @Nullable OspfProcess proc,
+      @Nullable Long areaNum) {
+    iface.setOspfEnabled(!firstNonNull(vsIface.getOspfDisable(), Boolean.FALSE));
+    iface.setOspfPassive(vsIface.getOspfPassive());
+    Integer ospfCost = vsIface.getOspfCost();
+    if (ospfCost == null && iface.isLoopback(ConfigurationFormat.FLAT_JUNIPER)) {
+      ospfCost = 0;
+    }
+    iface.setOspfCost(ospfCost);
+    iface.setOspfAreaName(areaNum);
+    if (proc != null) {
+      iface.setOspfProcess(proc.getProcessId());
+    }
+    // TODO infer interface type based on physical interface: "the software
+    // chooses the correct
+    // interface type...you should never have to set the interface type" (see
+    // https://www.juniper.net/documentation/en_US/junos/topics/reference/configuration-statement/interface-type-edit-protocols-ospf.html)
+    iface.setOspfNetworkType(toOspfNetworkType(vsIface.getOspfInterfaceType()));
   }
 
   private org.batfish.datamodel.ospf.OspfArea.Builder toOspfAreaBuilder(
