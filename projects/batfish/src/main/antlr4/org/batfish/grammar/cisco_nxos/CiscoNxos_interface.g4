@@ -485,6 +485,7 @@ i_ipv6
   IPV6
   (
     iip6_address
+    | iip6_null
     | iip6_traffic_filter
   )
 ;
@@ -509,6 +510,14 @@ i_ipv6_address_concrete
 i_ipv6_address_dhcp
 :
   DHCP NEWLINE
+;
+
+iip6_null
+:
+  (
+    DHCP
+    | ND
+  ) null_rest_of_line
 ;
 
 iip6_traffic_filter
