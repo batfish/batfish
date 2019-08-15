@@ -77867,7 +77867,7 @@
         "cisco_flow" : "PASSED",
         "cisco_hardware" : "PASSED",
         "cisco_hsrp" : "PASSED",
-        "cisco_interface" : "WARNINGS",
+        "cisco_interface" : "PASSED",
         "cisco_ios_neighbor" : "PASSED",
         "cisco_ip" : "PASSED",
         "cisco_ip_nat" : "PASSED",
@@ -92808,18 +92808,6 @@
             }
           ]
         },
-        "cisco_interface" : {
-          "Red flags" : [
-            {
-              "tag" : "MISCELLANEOUS",
-              "text" : "Interface: 'Ethernet0' contains OSPF settings, but there is no OSPF process"
-            },
-            {
-              "tag" : "MISCELLANEOUS",
-              "text" : "Interface: 'inside' contains OSPF settings, but there is no OSPF process"
-            }
-          ]
-        },
         "cisco_nxos_bgp" : {
           "Red flags" : [
             {
@@ -92846,10 +92834,6 @@
         },
         "cisco_ospf" : {
           "Red flags" : [
-            {
-              "tag" : "MISCELLANEOUS",
-              "text" : "Interface: 'Ethernet1/0' contains OSPF settings, but there is no OSPF process"
-            },
             {
               "tag" : "MISCELLANEOUS",
               "text" : "OSPF process default:1 in cisco_ospf uses distribute-list of type ROUTE_MAP, only prefix-lists are supported in dist-lists by Batfish"

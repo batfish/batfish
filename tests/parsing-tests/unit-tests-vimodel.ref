@@ -11026,11 +11026,14 @@
               "ethernet0/0"
             ],
             "mtu" : 1500,
+            "ospfArea" : 0,
+            "ospfCost" : 4000,
             "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
             "ospfPassive" : false,
             "ospfPointToPoint" : false,
+            "ospfProcess" : "1",
             "prefix" : "3.3.3.0/24",
             "proxyArp" : true,
             "ripEnabled" : false,
@@ -11318,9 +11321,17 @@
                 "areas" : {
                   "0" : {
                     "injectDefaultRoute" : true,
+                    "interfaces" : [
+                      "Ethernet0/0"
+                    ],
                     "metricOfDefaultRoute" : 0,
                     "name" : 0,
-                    "stubType" : "NONE",
+                    "nssa" : {
+                      "defaultOriginateType" : "INTER_AREA",
+                      "suppressType3" : true,
+                      "suppressType7" : true
+                    },
+                    "stubType" : "NSSA",
                     "summaries" : {
                       "1.2.3.0/24" : {
                         "advertise" : true,
@@ -11343,6 +11354,16 @@
                   }
                 },
                 "exportPolicy" : "~OSPF_EXPORT_POLICY:default~",
+                "neighbors" : {
+                  "Ethernet0/0" : {
+                    "area" : 0,
+                    "hostname" : "cisco_ospf",
+                    "interface" : "Ethernet0/0",
+                    "ip" : "3.3.3.0",
+                    "passive" : false,
+                    "vrf" : "default"
+                  }
+                },
                 "processId" : "1",
                 "referenceBandwidth" : 4.0E10,
                 "routerId" : "1.2.3.4",
@@ -21190,7 +21211,7 @@
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
             "ospfPassive" : false,
-            "ospfPointToPoint" : true,
+            "ospfPointToPoint" : false,
             "proxyArp" : false,
             "ripEnabled" : false,
             "ripPassive" : false,
