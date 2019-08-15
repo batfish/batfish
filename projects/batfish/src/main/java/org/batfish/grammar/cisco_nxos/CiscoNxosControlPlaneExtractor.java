@@ -212,7 +212,7 @@ import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Icl_standardContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Ih_groupContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Ih_versionContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Ihd_reloadContext;
-import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Ihg_ip_ipv4Context;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Ihg4_ipContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Ihg_ipv4Context;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Ihg_ipv6Context;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Ihg_preemptContext;
@@ -1149,7 +1149,7 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
   }
 
   @Override
-  public void exitIhg_ip_ipv4(Ihg_ip_ipv4Context ctx) {
+  public void exitIhg4_ip(Ihg4_ipContext ctx) {
     if (ctx.prefix != null) {
       todo(ctx);
       return;
