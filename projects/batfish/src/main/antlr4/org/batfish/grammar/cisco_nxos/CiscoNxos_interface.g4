@@ -46,6 +46,7 @@ s_interface_regular
     | i_ip
     | i_ipv6
     | i_lacp
+    | i_mac_address
     | i_mtu
     | i_no
     | i_null
@@ -573,6 +574,11 @@ min_links_number
 il_null
 :
   SUSPEND_INDIVIDUAL null_rest_of_line
+;
+
+i_mac_address
+:
+  MAC_ADDRESS mac = mac_address_literal NEWLINE
 ;
 
 i_mtu

@@ -10,6 +10,7 @@ tokens {
   HSRP_VERSION_1,
   HSRP_VERSION_2,
   LOCAL,
+  MAC_ADDRESS_LITERAL,
   MOTD,
   PASSWORD_0,
   PASSWORD_0_TEXT,
@@ -1835,6 +1836,11 @@ LSA_GROUP_PACING
 LT
 :
   'lt'
+;
+
+MAC_ADDRESS
+:
+  'mac-address' -> pushMode(M_MacAddress)
 ;
 
 MANAGED_CONFIG_FLAG
@@ -4072,6 +4078,14 @@ F_Ipv6PrefixLength
 ;
 
 fragment
+F_MacAddress
+:
+  F_HexDigit F_HexDigit F_HexDigit F_HexDigit '.'
+  F_HexDigit F_HexDigit F_HexDigit F_HexDigit '.'
+  F_HexDigit F_HexDigit F_HexDigit F_HexDigit
+;
+
+fragment
 F_Newline
 :
   [\n\r]
@@ -4465,6 +4479,18 @@ M_HsrpVersion_VERSION_2
 ;
 
 M_HsrpVersion_WS
+:
+  F_Whitespace+ -> channel ( HIDDEN )
+;
+
+mode M_MacAddress;
+
+M_MacAddress_MAC_ADDRESS_LITERAL
+:
+  F_MacAddress -> type(MAC_ADDRESS_LITERAL), popMode
+;
+
+M_MacAddress_WS
 :
   F_Whitespace+ -> channel ( HIDDEN )
 ;

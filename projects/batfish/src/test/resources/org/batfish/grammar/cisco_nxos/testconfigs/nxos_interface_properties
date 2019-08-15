@@ -30,6 +30,7 @@ interface Ethernet1/1
   ip unreachables
   ipv6 traffic-filter FOO in
   ipv6 traffic-filter BAR out
+  mac-address 1234.5678.9abc
   no lldp receive
   mtu 9216
   service-policy type qos input pm_qos_in
