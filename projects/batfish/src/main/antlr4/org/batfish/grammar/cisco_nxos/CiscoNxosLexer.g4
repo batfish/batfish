@@ -299,6 +299,11 @@ AREA
   'area'
 ;
 
+ARP
+:
+  'arp'
+;
+
 AS_OVERRIDE
 :
   'as-override'
@@ -396,9 +401,9 @@ BC
   'bc'
 ;
 
-BGP
+BEACON
 :
-  'bgp'
+  'beacon'
 ;
 
 BESTPATH
@@ -414,6 +419,11 @@ BESTPATH_LIMIT
 BFD
 :
   'bfd'
+;
+
+BGP
+:
+  'bgp'
 ;
 
 BIFF
@@ -489,6 +499,11 @@ CALLHOME
 CAPABILITY
 :
   'capability'
+;
+
+CARRIER_DELAY
+:
+  'carrier-delay'
 ;
 
 CAUSE
@@ -707,6 +722,11 @@ COST_COMMUNITY
   'cost-community'
 ;
 
+COUNTER
+:
+  'counter'
+;
+
 COUNTERS
 :
   'counters'
@@ -772,6 +792,11 @@ DEAD_INTERVAL
   'dead-interval'
 ;
 
+DEBOUNCE
+:
+  'debounce'
+;
+
 DECREMENT
 :
   'decrement'
@@ -805,6 +830,11 @@ DEFAULT_ORIGINATE
 DELAY
 :
   'delay'
+;
+
+DELAYED_LINK_STATE_CHANGE
+:
+  'delayed-link-state-change'
 ;
 
 DELETE
@@ -845,6 +875,11 @@ DETAIL
 DHCP
 :
   'dhcp'
+;
+
+DHCP_SNOOPING_VLAN
+:
+  'dhcp-snooping-vlan'
 ;
 
 DIR
@@ -1057,6 +1092,11 @@ ETHERNET
   [Ee] [Tt] [Hh] [Ee] [Rr] [Nn] [Ee] [Tt]
 ;
 
+EVENT
+:
+  'event'
+;
+
 EVENT_HISTORY
 :
   'event-history'
@@ -1203,6 +1243,11 @@ FLOW
   'flow'
 ;
 
+FLOWCONTROL
+:
+  'flowcontrol'
+;
+
 FORCE
 :
   'force'
@@ -1326,6 +1371,11 @@ GT
 GUARD
 :
   'guard'
+;
+
+HARDWARE
+:
+  'hardware'
 ;
 
 HEAD
@@ -1527,6 +1577,11 @@ INPUT
   }
 ;
 
+INSPECTION
+:
+  'inspection'
+;
+
 INSTALL
 :
   'install'
@@ -1703,6 +1758,11 @@ LINE_PROTOCOL
   'line-protocol'
 ;
 
+LINK
+:
+  'link'
+;
+
 LINK_FLAP
 :
   'link-flap'
@@ -1723,6 +1783,11 @@ LINK_STATUS
   'link-status'
 ;
 
+LINK_TYPE
+:
+  'link-type'
+;
+
 LISP
 :
   'lisp'
@@ -1731,6 +1796,11 @@ LISP
 LLDP
 :
   'lldp'
+;
+
+LOAD_INTERVAL
+:
+  'load-interval'
 ;
 
 LOAD_SHARE
@@ -1772,6 +1842,11 @@ LOG_ADJACENCY_CHANGES
 LOG_NEIGHBOR_CHANGES
 :
   'log-neighbor-changes'
+;
+
+LOGGING
+:
+  'logging'
 ;
 
 LOGIN
@@ -1846,6 +1921,16 @@ MAC_ADDRESS
 MANAGED_CONFIG_FLAG
 :
   'managed-config-flag'
+;
+
+MANAGEMENT
+:
+  'management'
+;
+
+MANAGEMENT_ADDRESS
+:
+  'management-address'
 ;
 
 MAP
@@ -1932,6 +2017,11 @@ MD5
       pushMode(M_Word);
     }
   }
+;
+
+MDIX
+:
+  'mdix'
 ;
 
 MED
@@ -2306,6 +2396,16 @@ NOT_ADVERTISE
   'not-advertise'
 ;
 
+NOTIFY_LICENSEFILE_EXPIRY
+:
+  'notify-licensefile-expiry'
+;
+
+NOTIFY_LICENSEFILE_MISSING
+:
+  'notify-licensefile-missing'
+;
+
 NSSA
 :
   'nssa'
@@ -2356,6 +2456,11 @@ OBJECT_GROUP
 OBJSTORE
 :
   'objstore'
+;
+
+OFF
+:
+  'off'
 ;
 
 ON
@@ -2673,6 +2778,11 @@ PREPEND
 PRIORITY
 :
   'priority'
+;
+
+PRIORITY_FLOW_CONTROL
+:
+   'priority-flow-control'
 ;
 
 PRIV
@@ -3126,6 +3236,11 @@ SNMPTRAP
   'snmptrap'
 ;
 
+SNOOPING
+:
+  'snooping'
+;
+
 SOFT_RECONFIGURATION
 :
   'soft-reconfiguration'
@@ -3134,6 +3249,11 @@ SOFT_RECONFIGURATION
 SOO
 :
   'soo'
+;
+
+SOURCE
+:
+  'source'
 ;
 
 SOURCE_INTERFACE
@@ -3246,6 +3366,11 @@ STUB
   'stub'
 ;
 
+SUB_OPTION
+:
+  'sub-option'
+;
+
 SUMMARY_ADDRESS
 :
   'summary-address'
@@ -3259,6 +3384,11 @@ SUMMARY_LSA
 SUMMARY_ONLY
 :
   'summary-only'
+;
+
+SUMMER_TIME
+:
+  'summer-time'
 ;
 
 SUNRPC
@@ -3449,6 +3579,11 @@ TIMEZONE
   'timezone' -> pushMode ( M_Remark )
 ;
 
+TLV_SET
+:
+  'tlv-set'
+;
+
 TOPOLOGYCHANGE
 :
   'topologychange'
@@ -3508,6 +3643,11 @@ TRIGGER_DELAY
 TRUNK
 :
   'trunk'
+;
+
+TRUST
+:
+  'trust'
 ;
 
 TTL
@@ -3648,6 +3788,11 @@ UUCP
 V3_REPORT_SUPPRESSION
 :
   'v3-report-suppression'
+;
+
+VERIFY
+:
+  'verify'
 ;
 
 VERSION

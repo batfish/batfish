@@ -180,6 +180,7 @@ import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Ebgp_multihop_ttlContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Ev_vniContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Evv_rdContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Evv_route_targetContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.I_autostateContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.I_bandwidthContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.I_channel_groupContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.I_delayContext;
@@ -188,11 +189,13 @@ import org.batfish.grammar.cisco_nxos.CiscoNxosParser.I_encapsulationContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.I_ip_access_groupContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.I_ip_address_concreteContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.I_ip_address_dhcpContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.I_ip_dhcp_relayContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.I_ip_policyContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.I_ipv6_address_concreteContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.I_ipv6_address_dhcpContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.I_mtuContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.I_no_autostateContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.I_no_descriptionContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.I_no_shutdownContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.I_no_switchportContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.I_shutdownContext;
@@ -3547,6 +3550,11 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
   }
 
   @Override
+  public void exitI_autostate(I_autostateContext ctx) {
+    _currentInterfaces.forEach(iface -> iface.setAutostate(true));
+  }
+
+  @Override
   public void exitI_bandwidth(I_bandwidthContext ctx) {
     if (ctx.bw != null) {
       Integer bandwidth = toBandwidth(ctx, ctx.bw);
@@ -3685,6 +3693,12 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
   }
 
   @Override
+  public void exitI_ip_dhcp_relay(I_ip_dhcp_relayContext ctx) {
+    Ip address = toIp(ctx.ip_address());
+    _currentInterfaces.forEach(i -> i.getDhcpRelayAddresses().add(address));
+  }
+
+  @Override
   public void exitI_ipv6_address_concrete(I_ipv6_address_concreteContext ctx) {
     InterfaceIpv6AddressWithAttributes address6 = toInterfaceIpv6Address(ctx.addr);
     _currentInterfaces.forEach(iface -> iface.setIpv6AddressDhcp(false));
@@ -3734,6 +3748,11 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
   @Override
   public void exitI_no_autostate(I_no_autostateContext ctx) {
     _currentInterfaces.forEach(iface -> iface.setAutostate(false));
+  }
+
+  @Override
+  public void exitI_no_description(I_no_descriptionContext ctx) {
+    _currentInterfaces.forEach(iface -> iface.setDescription(null));
   }
 
   @Override
