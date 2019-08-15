@@ -21,6 +21,7 @@ ip_route_network
   (
     null0 = NULL0
     | nhint = interface_name? nhip = ip_address
+    | nhint = interface_name nhip = ip_address?
   )
   (
     VRF nhvrf = vrf_name
