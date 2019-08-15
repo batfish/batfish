@@ -13,6 +13,7 @@ s_policy_map
     pm_control_plane
     | pm_network_qos
     | pm_qos
+    | pm_queuing
   )
 ;
 
@@ -90,4 +91,25 @@ qos_group
 :
 // 0-7
   uint8
+;
+
+pm_queuing
+:
+  TYPE QUEUING name = policy_map_name NEWLINE pmqu_class*
+;
+
+pmqu_class
+:
+  CLASS TYPE QUEUING name = class_map_name NEWLINE pmquc_null*
+;
+
+pmquc_null
+:
+  (
+    PAUSE
+    | PRIORITY
+    | QUEUE_LIMIT
+    | RANDOM_DETECT
+    | SHAPE
+  ) null_rest_of_line
 ;
