@@ -1520,7 +1520,7 @@ INPUT
 :
   'input'
   {
-    if (lastTokenType() == QOS || lastTokenType() == QUEUEING || lastTokenType() == SERVICE_POLICY) {
+    if (lastTokenType() == QOS || lastTokenType() == QUEUING || lastTokenType() == SERVICE_POLICY) {
       pushMode(M_Word);
     }
   }
@@ -2413,7 +2413,7 @@ OUTPUT
 :
   'output'
   {
-    if (lastTokenType() == QOS || lastTokenType() == QUEUEING || lastTokenType() == SERVICE_POLICY) {
+    if (lastTokenType() == QOS || lastTokenType() == QUEUING || lastTokenType() == SERVICE_POLICY) {
       pushMode(M_Word);
     }
   }
@@ -2462,6 +2462,11 @@ PASSWORD
 PATHCOST
 :
   'pathcost'
+;
+
+PAUSE
+:
+  'pause'
 ;
 
 PBR
@@ -2734,9 +2739,19 @@ QUERY_MAX_RESPONSE_TIME
   'query-max-response-time'
 ;
 
-QUEUEING
+QUEUE_LIMIT
 :
-  'queueing'
+  'queue-limit'
+;
+
+QUEUING
+:
+  'queuing'
+;
+
+RANDOM_DETECT
+:
+  'random-detect'
 ;
 
 RANGE
@@ -3048,6 +3063,11 @@ SHA
       pushMode(M_Word);
     }
   }
+;
+
+SHAPE
+:
+  'shape'
 ;
 
 SHOW
@@ -4307,9 +4327,9 @@ M_ClassType_QOS
   'qos' -> type ( QOS ) , mode ( M_Word )
 ;
 
-M_ClassType_QUEUEING
+M_ClassType_QUEUING
 :
-  'queueing' -> type ( QUEUEING ) , mode ( M_Word )
+  'queuing' -> type ( QUEUING ) , mode ( M_Word )
 ;
 
 M_ClassType_WS
@@ -4361,9 +4381,9 @@ M_ClassMapType_QOS
   'qos' -> type ( QOS ) , mode ( M_ClassMapType2 )
 ;
 
-M_ClassMapType_QUEUEING
+M_ClassMapType_QUEUING
 :
-  'queueing' -> type ( QUEUEING ) , mode ( M_ClassMapType2 )
+  'queuing' -> type ( QUEUING ) , mode ( M_ClassMapType2 )
 ;
 
 M_ClassMapType_WS
@@ -4548,9 +4568,9 @@ M_PolicyMapType_QOS
   'qos' -> type ( QOS ) , mode ( M_Word )
 ;
 
-M_PolicyMapType_QUEUEING
+M_PolicyMapType_QUEUING
 :
-  'queueing' -> type ( QUEUEING ) , mode ( M_Word )
+  'queuing' -> type ( QUEUING ) , mode ( M_Word )
 ;
 
 M_PolicyMapType_WS
@@ -4601,9 +4621,9 @@ M_ServicePolicyType_QOS
   'qos' -> type ( QOS ) , popMode
 ;
 
-M_ServicePolicyType_QUEUEING
+M_ServicePolicyType_QUEUING
 :
-  'queueing' -> type ( QUEUEING ) , popMode
+  'queuing' -> type ( QUEUING ) , popMode
 ;
 
 M_ServicePolicyType_WS

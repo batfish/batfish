@@ -229,7 +229,7 @@ sysqosspt_qos
 
 sysqosspt_queueing
 :
-  QUEUEING (INPUT | OUTPUT) name = policy_map_name NEWLINE
+  QUEUING (INPUT | OUTPUT) name = policy_map_name NEWLINE
 ;
 
 s_track
