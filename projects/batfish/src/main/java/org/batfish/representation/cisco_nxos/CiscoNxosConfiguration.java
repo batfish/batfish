@@ -1814,7 +1814,8 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
                     areaId,
                     processName,
                     proc.getPassiveInterfaceDefault(),
-                    iface.getOrCreateOspf());
+                    // If interface being added has no explicit OSPF configuration, use defaults
+                    ospf != null ? ospf : new OspfInterface());
               }
             });
     return interfaces.build();

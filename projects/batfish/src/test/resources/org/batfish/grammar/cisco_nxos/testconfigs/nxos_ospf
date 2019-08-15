@@ -148,7 +148,8 @@ router ospf mm_summary_lsa_m
 router ospf network
   ! TODO: confirm second IP is a wildcard
   network 192.168.0.0 0.0.255.255 area 0
-  network 172.16.0.1/24 area 0
+  network 172.16.0.0/24 area 0
+  network 172.16.2.0/24 area 0
 
 !!! passive-interface
 router ospf pi_d
@@ -254,3 +255,5 @@ interface Ethernet1/4
   ip ospf passive-interface
   ! use arbitrary process with active default
   ip router ospf router_id area 0
+interface Ethernet1/5
+  ip address 172.16.2.1/24
