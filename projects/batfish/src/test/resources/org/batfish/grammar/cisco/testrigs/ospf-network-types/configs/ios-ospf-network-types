@@ -2,27 +2,17 @@
 hostname ios-ospf-network-types
 !
 interface Ethernet0/0
- ip address 10.0.0.0 255.255.255.0
 !
 interface Ethernet0/1
- ip address 10.0.1.0 255.255.255.0
  ip ospf network point-to-point
 !
 interface Ethernet0/2
- ip address 10.0.2.0 255.255.255.0
  ip ospf network broadcast
 !
 interface Ethernet0/3
- ip address 10.0.3.0 255.255.255.0
  ip ospf network non-broadcast
 !
 interface Ethernet0/4
- ip address 10.0.4.0 255.255.255.0
  ip ospf network point-to-multipoint
 !
 router ospf 1
- network 10.0.0.0 0.0.0.255 area 0
- network 10.0.1.0 0.0.0.255 area 1
- network 10.0.2.0 0.0.0.255 area 2
- network 10.0.3.0 0.0.0.255 area 3
- network 10.0.4.0 0.0.0.255 area 4

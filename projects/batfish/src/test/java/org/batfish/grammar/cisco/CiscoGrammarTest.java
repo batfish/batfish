@@ -100,6 +100,7 @@ import static org.batfish.datamodel.matchers.InterfaceMatchers.hasMlagId;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasMtu;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasNativeVlan;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasOspfAreaName;
+import static org.batfish.datamodel.matchers.InterfaceMatchers.hasOspfNetworkType;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasSpeed;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasSwitchPortEncapsulation;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasSwitchPortMode;
@@ -2974,6 +2975,26 @@ public class CiscoGrammarTest {
 
     /* Confirm the point-to-point interface shows up as such */
     assertThat(c, hasInterface("Ethernet0/1", isOspfPointToPoint()));
+  }
+
+  @Test
+  public void testIosOrphanInterfaceOspfSettings() throws IOException {
+    Configuration c = parseConfig("ios-orphan-interface-ospf-settings");
+
+    // Confirm interface associated with an OSPF area has expected OSPF properties
+    assertThat(
+        c,
+        hasInterface(
+            "Ethernet0/0",
+            hasOspfNetworkType(
+                equalTo(org.batfish.datamodel.ospf.OspfNetworkType.POINT_TO_POINT))));
+
+    // Confirm interface NOT associated with an OSPF area still has expected OSPF properties
+    assertThat(
+        c,
+        hasInterface(
+            "Ethernet0/1",
+            hasOspfNetworkType(equalTo(org.batfish.datamodel.ospf.OspfNetworkType.BROADCAST))));
   }
 
   @Test

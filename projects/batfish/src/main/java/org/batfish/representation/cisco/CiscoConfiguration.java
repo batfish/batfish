@@ -2586,28 +2586,11 @@ public final class CiscoConfiguration extends VendorConfiguration {
         }
         areaNum = network.getArea();
       }
-
-      iface.setOspfPassive(false);
-      if (firstNonNull(
-          vsIface.getOspfPassive(),
-          proc.getPassiveInterfaceDefault() ^ proc.getNonDefaultInterfaces().contains(ifaceName))) {
-        proc.getPassiveInterfaces().add(ifaceName);
-        iface.setOspfPassive(true);
-      }
-      iface.setOspfCost(vsIface.getOspfCost());
-      Integer deadInterval = vsIface.getOspfDeadInterval();
-      if (deadInterval != null) {
-        iface.setOspfDeadInterval(deadInterval);
-      }
-      iface.setOspfHelloMultiplier(vsIface.getOspfHelloMultiplier());
-      iface.setOspfProcess(proc.getName());
       areas.computeIfAbsent(areaNum, areaNumber -> OspfArea.builder().setNumber(areaNumber));
-      iface.setOspfAreaName(areaNum);
       ImmutableSortedSet.Builder<String> newAreaInterfacesBuilder =
           areaInterfacesBuilders.computeIfAbsent(areaNum, n -> ImmutableSortedSet.naturalOrder());
       newAreaInterfacesBuilder.add(ifaceName);
-      iface.setOspfEnabled(!vsIface.getOspfShutdown());
-      iface.setOspfNetworkType(toOspfNetworkType(vsIface.getOspfNetworkType()));
+      finalizeInterfaceOspfSettings(iface, vsIface, proc, areaNum);
     }
     areaInterfacesBuilders.forEach(
         (areaNum, interfacesBuilder) ->
@@ -2733,6 +2716,35 @@ public final class CiscoConfiguration extends VendorConfiguration {
             .collect(Collectors.toList()));
 
     return newProcess;
+  }
+
+  /** Setup OSPF settings on specified VI interface. */
+  private void finalizeInterfaceOspfSettings(
+      org.batfish.datamodel.Interface iface,
+      Interface vsIface,
+      @Nullable OspfProcess proc,
+      @Nullable Long areaNum) {
+    String ifaceName = vsIface.getName();
+    iface.setOspfPassive(false);
+    if (proc != null) {
+      iface.setOspfProcess(proc.getName());
+      if (firstNonNull(
+          vsIface.getOspfPassive(),
+          proc.getPassiveInterfaceDefault() ^ proc.getNonDefaultInterfaces().contains(ifaceName))) {
+        proc.getPassiveInterfaces().add(ifaceName);
+        iface.setOspfPassive(true);
+      }
+    }
+    iface.setOspfCost(vsIface.getOspfCost());
+    Integer deadInterval = vsIface.getOspfDeadInterval();
+    if (deadInterval != null) {
+      iface.setOspfDeadInterval(deadInterval);
+    }
+    iface.setOspfHelloMultiplier(vsIface.getOspfHelloMultiplier());
+
+    iface.setOspfAreaName(areaNum);
+    iface.setOspfEnabled(!vsIface.getOspfShutdown());
+    iface.setOspfNetworkType(toOspfNetworkType(vsIface.getOspfNetworkType()));
   }
 
   @Nullable
@@ -3631,6 +3643,36 @@ public final class CiscoConfiguration extends VendorConfiguration {
             org.batfish.datamodel.BgpProcess newBgpProcess =
                 toNxBgpProcess(c, getNxBgpGlobalConfiguration(), nxBgp, vrfName);
             newVrf.setBgpProcess(newBgpProcess);
+          }
+        });
+
+    /*
+     * Another pass over interfaces to push final settings to VI interfaces and issue final warnings
+     * (e.g. has OSPF settings but no associated OSPF process)
+     */
+    _interfaces.forEach(
+        (ifaceName, vsIface) -> {
+          org.batfish.datamodel.Interface iface = c.getAllInterfaces().get(ifaceName);
+          if (iface == null) {
+            // Should never get here
+          } else {
+            // Conversion of interface OSPF settings usually occurs per area
+            // If the iface does not have an area, then need warn and convert settings here instead
+            if (iface.getOspfAreaName() == null) {
+              // Not part of an OSPF area
+              if (vsIface.getOspfArea() != null
+                  || vsIface.getOspfCost() != null
+                  || vsIface.getOspfPassive() != null
+                  || vsIface.getOspfNetworkType() != null
+                  || vsIface.getOspfDeadInterval() != null
+                  || vsIface.getOspfHelloInterval() != null) {
+                _w.redFlag(
+                    "Interface: '"
+                        + ifaceName
+                        + "' contains OSPF settings, but there is no OSPF process");
+                finalizeInterfaceOspfSettings(iface, vsIface, null, null);
+              }
+            }
           }
         });
 
