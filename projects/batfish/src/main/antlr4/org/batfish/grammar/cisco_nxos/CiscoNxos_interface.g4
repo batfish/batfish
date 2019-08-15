@@ -656,7 +656,7 @@ isp_type
   TYPE
   (
     ispt_qos
-    | ispt_queueing
+    | ispt_queuing
   )
 ;
 
@@ -665,9 +665,9 @@ ispt_qos
   QOS (INPUT | OUTPUT) name = policy_map_name NEWLINE
 ;
 
-ispt_queueing
+ispt_queuing
 :
-  QUEUEING (INPUT | OUTPUT) name = policy_map_name NEWLINE
+  QUEUING (INPUT | OUTPUT) name = policy_map_name NEWLINE
 ;
 
 i_shutdown

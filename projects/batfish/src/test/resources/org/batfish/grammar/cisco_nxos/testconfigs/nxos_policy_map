@@ -32,9 +32,17 @@ policy-map type qos pm_qos
 
 policy-map pm_qos2
 
+policy-map type queuing pm_queuing_in
+  ! c-in-q1 is a built-in class. custom queuing classes may not be defined.
+  class type queuing c-in-q1
+
+policy-map type queuing pm_queuing_out
+
 control-plane
   service-policy input pm_control_plane
 
 system qos
   service-policy type network-qos pm_network_qos
   service-policy type qos input pm_qos
+  service-policy type queuing input pm_queuing_in
+  service-policy type queuing output pm_queuing_out
