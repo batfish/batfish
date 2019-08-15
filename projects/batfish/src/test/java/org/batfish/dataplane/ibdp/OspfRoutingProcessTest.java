@@ -67,6 +67,7 @@ import org.batfish.datamodel.ospf.OspfDefaultOriginateType;
 import org.batfish.datamodel.ospf.OspfMetricType;
 import org.batfish.datamodel.ospf.OspfNeighborConfig;
 import org.batfish.datamodel.ospf.OspfNeighborConfigId;
+import org.batfish.datamodel.ospf.OspfNetworkType;
 import org.batfish.datamodel.ospf.OspfProcess;
 import org.batfish.datamodel.ospf.OspfProcess.Builder;
 import org.batfish.datamodel.ospf.OspfSessionProperties;
@@ -136,7 +137,7 @@ public class OspfRoutingProcessTest {
             .setVrf(vrf)
             .setOwner(_c)
             .setOspfProcess("1")
-            .setOspfPointToPoint(true)
+            .setOspfNetworkType(OspfNetworkType.POINT_TO_POINT)
             .setOspfEnabled(true)
             .setType(InterfaceType.PHYSICAL)
             .setBandwidth(1e8);
@@ -150,19 +151,19 @@ public class OspfRoutingProcessTest {
     Interface activeIface =
         ib.setName(ACTIVE_IFACE_NAME)
             .setAddresses(ACTIVE_ADDR_1, ACTIVE_ADDR_2)
-            .setOspfPointToPoint(true)
+            .setOspfNetworkType(OspfNetworkType.POINT_TO_POINT)
             .build();
     Interface passiveIface =
         ib.setName(PASSIVE_IFACE_NAME)
             .setAddress(PASSIVE_ADDR)
             .setOspfPassive(true)
-            .setOspfPointToPoint(false)
+            .setOspfNetworkType(OspfNetworkType.BROADCAST)
             .build();
     Interface ospfDisabled =
         ib.setName(OSPF_DISABLED_IFACE_NAME)
             .setAddress(OSPF_DISABLED_ADDR)
             .setOspfPassive(false)
-            .setOspfPointToPoint(false)
+            .setOspfNetworkType(OspfNetworkType.BROADCAST)
             .setOspfEnabled(false)
             .build();
     AREA0_CONFIG =

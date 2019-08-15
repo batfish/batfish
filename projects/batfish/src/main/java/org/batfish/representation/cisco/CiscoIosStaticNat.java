@@ -20,7 +20,7 @@ public class CiscoIosStaticNat extends CiscoIosNat {
   private Prefix _globalNetwork;
 
   @Override
-  public int natCompare(CiscoIosNat o) {
+  protected int natCompare(CiscoIosNat o) {
     if (!(o instanceof CiscoIosStaticNat)) {
       return 0;
     }
@@ -94,7 +94,8 @@ public class CiscoIosStaticNat extends CiscoIosNat {
   }
 
   @Override
-  public Optional<Transformation.Builder> toIncomingTransformation(Map<String, NatPool> natPools) {
+  public Optional<Transformation.Builder> toIncomingTransformation(
+      Map<String, IpAccessList> ipAccessLists, Map<String, NatPool> natPools) {
     /*
      * No named ACL in rule, but need to match src/dest to global/local according
      * to direction and rule type

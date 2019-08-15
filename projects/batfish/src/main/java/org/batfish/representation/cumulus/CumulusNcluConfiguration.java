@@ -58,6 +58,8 @@ import org.batfish.datamodel.OriginType;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.PrefixRange;
 import org.batfish.datamodel.PrefixSpace;
+import org.batfish.datamodel.RouteFilterLine;
+import org.batfish.datamodel.RouteFilterList;
 import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.SwitchportMode;
 import org.batfish.datamodel.VniSettings;
@@ -1162,7 +1164,7 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
     RoutingPolicy.Builder builder =
         RoutingPolicy.builder().setName(routeMap.getName()).setOwner(_c);
     routeMap.getEntries().values().stream()
-        .map(entry -> toRoutingPolicyStatement(entry))
+        .map(this::toRoutingPolicyStatement)
         .forEach(builder::addStatement);
     return builder.addStatement(Statements.ReturnFalse.toStaticStatement()).build();
   }
@@ -1208,6 +1210,7 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
     convertVrfLoopbackInterfaces();
     convertVrfs();
     convertDefaultVrf();
+    convertIpPrefixLists();
     convertRouteMaps();
     convertDnsServers();
     convertClags();
@@ -1221,6 +1224,31 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
     warnDuplicateClagIds();
 
     return _c;
+  }
+
+  private void convertIpPrefixLists() {
+    _ipPrefixLists.forEach(
+        (name, ipPrefixList) ->
+            _c.getRouteFilterLists().put(name, toRouteFilterList(ipPrefixList)));
+  }
+
+  @VisibleForTesting
+  static @Nonnull RouteFilterList toRouteFilterList(IpPrefixList ipPrefixList) {
+    String name = ipPrefixList.getName();
+    RouteFilterList rfl = new RouteFilterList(name);
+    rfl.setLines(
+        ipPrefixList.getLines().values().stream()
+            .map(CumulusNcluConfiguration::toRouteFilterLine)
+            .collect(ImmutableList.toImmutableList()));
+    return rfl;
+  }
+
+  @VisibleForTesting
+  static @Nonnull RouteFilterLine toRouteFilterLine(IpPrefixListLine ipPrefixListLine) {
+    return new RouteFilterLine(
+        ipPrefixListLine.getAction(),
+        ipPrefixListLine.getPrefix(),
+        ipPrefixListLine.getLengthRange());
   }
 
   @Override

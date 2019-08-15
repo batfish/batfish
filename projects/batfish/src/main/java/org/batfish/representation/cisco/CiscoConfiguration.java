@@ -493,13 +493,13 @@ public final class CiscoConfiguration extends VendorConfiguration {
 
   private final Map<String, MacAccessList> _macAccessLists;
 
-  private final Map<String, NatPool> _natPools;
+  private final @Nonnull Map<String, NatPool> _natPools;
 
   private final Map<String, IcmpTypeObjectGroup> _icmpTypeObjectGroups;
 
   private final Map<String, IntegerSpace> _namedVlans;
 
-  private final Set<String> _natInside;
+  private final @Nonnull Set<String> _natInside;
 
   private final Set<String> _natOutside;
 
@@ -879,7 +879,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
     return _macAccessLists;
   }
 
-  public Map<String, NatPool> getNatPools() {
+  public @Nonnull Map<String, NatPool> getNatPools() {
     return _natPools;
   }
 
@@ -887,7 +887,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
     return _namedVlans;
   }
 
-  public Set<String> getNatInside() {
+  public @Nonnull Set<String> getNatInside() {
     return _natInside;
   }
 
@@ -1939,6 +1939,30 @@ public final class CiscoConfiguration extends VendorConfiguration {
     return iface.getMtu();
   }
 
+  /** Helper to convert Cisco VS OSPF network type to VI model type. */
+  @Nullable
+  private org.batfish.datamodel.ospf.OspfNetworkType toOspfNetworkType(
+      @Nullable OspfNetworkType type) {
+    if (type == null) {
+      return null;
+    }
+    switch (type) {
+      case BROADCAST:
+        return org.batfish.datamodel.ospf.OspfNetworkType.BROADCAST;
+      case POINT_TO_POINT:
+        return org.batfish.datamodel.ospf.OspfNetworkType.POINT_TO_POINT;
+      case NON_BROADCAST:
+        return org.batfish.datamodel.ospf.OspfNetworkType.NON_BROADCAST_MULTI_ACCESS;
+      case POINT_TO_MULTIPOINT:
+        return org.batfish.datamodel.ospf.OspfNetworkType.POINT_TO_MULTIPOINT;
+      default:
+        _w.redFlag(
+            String.format(
+                "Conversion of Cisco OSPF network type '%s' is not handled.", type.toString()));
+        return null;
+    }
+  }
+
   /**
    * Get the {@link OspfNetwork} in the specified {@link OspfProcess} containing the specified
    * {@link Interface}'s address
@@ -2309,7 +2333,9 @@ public final class CiscoConfiguration extends VendorConfiguration {
 
     Map<CiscoIosNat, Transformation.Builder> convertedIncomingNats =
         incomingNats.stream()
-            .map(nat -> new SimpleEntry<>(nat, nat.toIncomingTransformation(_natPools)))
+            .map(
+                nat ->
+                    new SimpleEntry<>(nat, nat.toIncomingTransformation(ipAccessLists, _natPools)))
             .filter(entry -> entry.getValue().isPresent())
             .collect(Collectors.toMap(SimpleEntry::getKey, entry -> entry.getValue().get()));
     if (!convertedIncomingNats.isEmpty()) {
@@ -2583,7 +2609,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
       iface.setOspfEnabled(!vsIface.getOspfShutdown());
       boolean passive = proc.getPassiveInterfaces().contains(iface.getName());
       iface.setOspfPassive(passive);
-      iface.setOspfPointToPoint(vsIface.getOspfNetworkType() == OspfNetworkType.POINT_TO_POINT);
+      iface.setOspfNetworkType(toOspfNetworkType(vsIface.getOspfNetworkType()));
     }
     areaInterfacesBuilders.forEach(
         (areaNum, interfacesBuilder) ->

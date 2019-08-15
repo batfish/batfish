@@ -1,5 +1,6 @@
 package org.batfish.dataplane.traceroute;
 
+import static com.google.common.base.MoreObjects.firstNonNull;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
@@ -23,6 +24,7 @@ import static org.batfish.dataplane.traceroute.TracerouteUtils.sessionTransforma
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Ordering;
@@ -42,6 +44,7 @@ import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.datamodel.Configuration;
+import org.batfish.datamodel.ConnectedRoute;
 import org.batfish.datamodel.Fib;
 import org.batfish.datamodel.FibAction;
 import org.batfish.datamodel.FibEntry;
@@ -87,6 +90,7 @@ import org.batfish.datamodel.flow.TraceAndReverseFlow;
 import org.batfish.datamodel.packet_policy.ActionVisitor;
 import org.batfish.datamodel.packet_policy.Drop;
 import org.batfish.datamodel.packet_policy.FibLookup;
+import org.batfish.datamodel.packet_policy.FibLookupOverrideLookupIp;
 import org.batfish.datamodel.packet_policy.FlowEvaluator;
 import org.batfish.datamodel.packet_policy.FlowEvaluator.FlowResult;
 import org.batfish.datamodel.packet_policy.IngressInterfaceVrf;
@@ -477,43 +481,110 @@ class FlowTracer {
             owner.getIpSpaces());
     return new ActionVisitor<Boolean>() {
 
+      /** Helper visitor to figure out in which VRF we need to do the FIB lookup */
+      private VrfExprVisitor<String> _vrfExprVisitor =
+          new VrfExprVisitor<String>() {
+            @Override
+            public String visitLiteralVrfName(@Nonnull LiteralVrfName expr) {
+              return expr.getVrfName();
+            }
+
+            @Override
+            public String visitIngressInterfaceVrf(@Nonnull IngressInterfaceVrf expr) {
+              return incomingInterface.getVrfName();
+            }
+          };
+
       @Override
-      public Boolean visitDrop(Drop drop) {
+      public Boolean visitDrop(@Nonnull Drop drop) {
         _steps.add(new FilterStep(new FilterStepDetail(policy.getName(), INGRESS_FILTER), DENIED));
         return true;
       }
 
       @Override
-      public Boolean visitFibLookup(FibLookup fibLookup) {
-        _steps.add(
-            new FilterStep(new FilterStepDetail(policy.getName(), INGRESS_FILTER), PERMITTED));
-        String lookupVrfName =
-            fibLookup
-                .getVrfExpr()
-                .accept(
-                    new VrfExprVisitor<String>() {
-                      @Override
-                      public String visitLiteralVrfName(@Nonnull LiteralVrfName expr) {
-                        return expr.getVrfName();
-                      }
-
-                      @Override
-                      public String visitIngressInterfaceVrf(@Nonnull IngressInterfaceVrf expr) {
-                        return incomingInterface.getVrfName();
-                      }
-                    });
+      public Boolean visitFibLookup(@Nonnull FibLookup fibLookup) {
+        makePermittedStep();
         Ip dstIp = result.getFinalFlow().getDstIp();
 
         // Accept if the flow is destined for this vrf on this host.
+        if (isAcceptedAtCurrentVrf()) {
+          return true;
+        }
+
         String currentNodeName = _currentNode.getName();
+        String lookupVrfName = fibLookup.getVrfExpr().accept(_vrfExprVisitor);
+        Fib fib = _tracerouteContext.getFib(currentNodeName, lookupVrfName).get();
+        fibLookup(dstIp, currentNodeName, fib);
+        return true;
+      }
+
+      @Override
+      public Boolean visitFibLookupOverrideLookupIp(
+          @Nonnull FibLookupOverrideLookupIp fibLookupAction) {
+        makePermittedStep();
+
+        // Accept if the flow is destined for this vrf on this host.
+        if (isAcceptedAtCurrentVrf()) {
+          return true;
+        }
+
+        String currentNodeName = _currentNode.getName();
+        String lookupVrfName = fibLookupAction.getVrfExpr().accept(_vrfExprVisitor);
+        List<Ip> ips = fibLookupAction.getIps();
+        // Determine the override next hop ip. This IP will be re-resolved in the FIB (and, if
+        // applicable, used as ARP IP)
+        Ip lookupIp =
+            ips.stream()
+                .filter(
+                    ip -> {
+                      // Intentionally forcing crashes with .get() here
+                      Fib fib = _tracerouteContext.getFib(currentNodeName, lookupVrfName).get();
+                      Set<FibEntry> entries =
+                          fibLookupAction.requireConnected()
+                              ? fib.get(ip).stream()
+                                  // Filter entries if a directly connected hext hop is required
+                                  .filter(
+                                      entry -> entry.getTopLevelRoute() instanceof ConnectedRoute)
+                                  .collect(ImmutableSet.toImmutableSet())
+                              : fib.get(ip);
+                      return !entries.isEmpty();
+                    })
+                .findFirst()
+                .orElse(null);
+
+        if (lookupIp == null) {
+          // Nothing matched, execute default action
+          return this.visit(fibLookupAction.getDefaultAction());
+        }
+
+        // Just a sanity check, can't be Ip.AUTO
+        assert lookupIp.valid();
+
+        Fib fib = _tracerouteContext.getFib(currentNodeName, incomingInterface.getVrfName()).get();
+        // Re-resolve and send out using FIB lookup part of the pipeline.
+        // Call the version of fibLookup that keeps track of overriden nextHopIp
+        Ip dstIp = result.getFinalFlow().getDstIp();
+        fibLookup(dstIp, lookupIp, currentNodeName, fib);
+        return true;
+      }
+
+      /**
+       * Check if the packet should be accepted in current VRF. If yes, build accept trace, returns
+       * true. If no, returns false.
+       */
+      private boolean isAcceptedAtCurrentVrf() {
+        String currentNodeName = _currentNode.getName();
+        Ip dstIp = result.getFinalFlow().getDstIp();
         if (_tracerouteContext.acceptsIp(currentNodeName, _vrfName, dstIp)) {
           buildAcceptTrace();
           return true;
         }
+        return false;
+      }
 
-        Fib fib = _tracerouteContext.getFib(currentNodeName, lookupVrfName).get();
-        fibLookup(dstIp, currentNodeName, fib);
-        return true;
+      private void makePermittedStep() {
+        _steps.add(
+            new FilterStep(new FilterStepDetail(policy.getName(), INGRESS_FILTER), PERMITTED));
       }
     }.visit(result.getAction());
   }
@@ -524,15 +595,28 @@ class FlowTracer {
    */
   @VisibleForTesting
   void fibLookup(Ip dstIp, String currentNodeName, Fib fib) {
+    fibLookup(dstIp, null, currentNodeName, fib);
+  }
+
+  /**
+   * Perform a FIB lookup for the {@code overrideNextHopIp} next hop IP and take corresponding
+   * actions. Note that {@code dstIp} can still be used as ARP IP in the scenario that both {@code
+   * overrideNextHopIp} and the FIB entry's ARP IP is missing.
+   */
+  private void fibLookup(
+      Ip dstIp, @Nullable Ip overrideNextHopIp, String currentNodeName, Fib fib) {
     fibLookup(
-        dstIp,
+        // Intentionally looking up the overriden NH
+        firstNonNull(overrideNextHopIp, dstIp),
         currentNodeName,
         fib,
-        fibForward ->
-            forkTracerSameNode()
-                .forwardOutInterface(
-                    _currentConfig.getAllInterfaces().get(fibForward.getInterfaceName()),
-                    fibForward.getArpIp()),
+        fibForward -> {
+          forkTracerSameNode()
+              .forwardOutInterface(
+                  _currentConfig.getAllInterfaces().get(fibForward.getInterfaceName()),
+                  fibForward.getArpIp(),
+                  overrideNextHopIp);
+        },
         new Stack<>());
   }
 
@@ -847,7 +931,17 @@ class FlowTracer {
     _flowTraces.accept(new TraceAndReverseFlow(trace, null, _newSessions));
   }
 
-  private void forwardOutInterface(Interface outgoingInterface, Ip nextHopIp) {
+  /**
+   * Perform actions associated with forwarding a packet out an interface: apply outgoing filters,
+   * setup sessions if necessary, figure out L3 edge to follow.
+   *
+   * @param outgoingInterface the interface out of which the packet is being sent
+   * @param nextHopIp the next hop IP (a.k.a ARP IP) <emph>as far as the FIB is concerned</emph>
+   * @param overridenNextHopIp not {@code null} if the next hop was overriden outside of the FIB
+   *     (e.g., in PBR)
+   */
+  private void forwardOutInterface(
+      Interface outgoingInterface, Ip nextHopIp, @Nullable Ip overridenNextHopIp) {
     // Apply preSourceNatOutgoingFilter
     if (applyFilter(
             outgoingInterface.getPreTransformationOutgoingFilter(),
@@ -881,14 +975,26 @@ class FlowTracer {
     String outgoingIfaceName = outgoingInterface.getName();
     SortedSet<NodeInterfacePair> neighborIfaces =
         _tracerouteContext.getInterfaceNeighbors(currentNodeName, outgoingIfaceName);
+    /*
+    Special handling is necessary if ARP IP was overriden.
+    Consider the following: dst IP: 2.2.2.2, NH was overriden to 1.1.1.1 and matched a connected route 1.1.1.0/24, for "iface0"
+    Since the FIB entry has no ARP IP (because connected route) we'd normally compute disposition for the dest IP (2.2.2.2)
+    However, nothing in forwarding analysis says 2.2.2.2 has a valid disposition for "iface0":
+      - there is no route for 2.2.2.2 there,
+      - it's not in the subnet of "iface0",
+      - nobody will ARP reply for it as far as we know.
+    To simplify our life, just compute disposition for 1.1.1.1, at least that's guaranteed to give us a disposition
+    */
     if (neighborIfaces.isEmpty()) {
       FlowDisposition disposition =
           _tracerouteContext.computeDisposition(
-              currentNodeName, outgoingIfaceName, _currentFlow.getDstIp());
-
+              currentNodeName,
+              outgoingIfaceName,
+              firstNonNull(overridenNextHopIp, _currentFlow.getDstIp()));
       buildArpFailureTrace(outgoingIfaceName, disposition);
     } else {
-      processOutgoingInterfaceEdges(outgoingIfaceName, nextHopIp, neighborIfaces);
+      processOutgoingInterfaceEdges(
+          outgoingIfaceName, firstNonNull(overridenNextHopIp, nextHopIp), neighborIfaces);
     }
   }
 

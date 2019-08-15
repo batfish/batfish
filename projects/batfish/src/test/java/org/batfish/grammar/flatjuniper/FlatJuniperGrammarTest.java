@@ -62,7 +62,7 @@ import static org.batfish.datamodel.matchers.InterfaceMatchers.hasNativeVlan;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasOspfAreaName;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasOspfCost;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasOspfEnabled;
-import static org.batfish.datamodel.matchers.InterfaceMatchers.hasOspfPointToPoint;
+import static org.batfish.datamodel.matchers.InterfaceMatchers.hasOspfNetworkType;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasSwitchPortMode;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasZoneName;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.isOspfPassive;
@@ -263,6 +263,7 @@ import org.batfish.datamodel.matchers.StubSettingsMatchers;
 import org.batfish.datamodel.ospf.OspfArea;
 import org.batfish.datamodel.ospf.OspfAreaSummary;
 import org.batfish.datamodel.ospf.OspfDefaultOriginateType;
+import org.batfish.datamodel.ospf.OspfNetworkType;
 import org.batfish.datamodel.ospf.OspfProcess;
 import org.batfish.datamodel.ospf.StubType;
 import org.batfish.datamodel.routing_policy.Environment;
@@ -2284,10 +2285,23 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testInterfaceOspfPointToPoint() throws IOException {
-    String hostname = "ospf-interface-point-to-point";
+  public void testInterfaceOspfNetworkType() throws IOException {
+    String hostname = "ospf-interface-network-type";
     Configuration c = parseConfig(hostname);
-    assertThat(c, hasInterface("ge-0/0/0.0", hasOspfPointToPoint(equalTo(true))));
+    // Interface is assumed broadcast by default
+    assertThat(
+        c, hasInterface("ge-0/0/1.0", hasOspfNetworkType(equalTo(OspfNetworkType.BROADCAST))));
+    // Confirm explicitly specified point-to-point interface shows up as such in the VI model
+    assertThat(
+        c, hasInterface("ge-0/0/0.0", hasOspfNetworkType(equalTo(OspfNetworkType.POINT_TO_POINT))));
+    assertThat(
+        c,
+        hasInterface(
+            "ge-0/0/2.0", hasOspfNetworkType(equalTo(OspfNetworkType.NON_BROADCAST_MULTI_ACCESS))));
+    assertThat(
+        c,
+        hasInterface(
+            "ge-0/0/3.0", hasOspfNetworkType(equalTo(OspfNetworkType.POINT_TO_MULTIPOINT))));
   }
 
   @Test

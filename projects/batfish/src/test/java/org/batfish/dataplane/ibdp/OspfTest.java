@@ -37,6 +37,7 @@ import org.batfish.datamodel.ospf.NssaSettings;
 import org.batfish.datamodel.ospf.OspfArea;
 import org.batfish.datamodel.ospf.OspfDefaultOriginateType;
 import org.batfish.datamodel.ospf.OspfMetricType;
+import org.batfish.datamodel.ospf.OspfNetworkType;
 import org.batfish.datamodel.ospf.OspfProcess;
 import org.batfish.datamodel.ospf.OspfTopologyUtils;
 import org.batfish.datamodel.ospf.StubSettings;
@@ -226,8 +227,11 @@ public class OspfTest {
         .setAddress(C2_L1_ADDRESS)
         .build();
     ib.setOspfEnabled(true).setOspfArea(oa2b);
-    ib.setName(c2E2To1Name).setAddress(C2_E2_1_ADDRESS).setOspfPointToPoint(true).build();
-    ib.setOspfPointToPoint(false).setOspfArea(oa2d);
+    ib.setName(c2E2To1Name)
+        .setAddress(C2_E2_1_ADDRESS)
+        .setOspfNetworkType(OspfNetworkType.POINT_TO_POINT)
+        .build();
+    ib.setOspfNetworkType(OspfNetworkType.BROADCAST).setOspfArea(oa2d);
     ib.setName(c2E2To3Name).setAddress(C2_E2_3_ADDRESS).build();
 
     Configuration c3 = cb.setHostname(C3_NAME).build();
@@ -342,7 +346,7 @@ public class OspfTest {
         nf.interfaceBuilder()
             .setOspfCost(10)
             .setOspfEnabled(true)
-            .setOspfPointToPoint(true)
+            .setOspfNetworkType(OspfNetworkType.POINT_TO_POINT)
             .setOspfProcess("1")
             .setBandwidth(100E6);
     OspfProcess.Builder opb = nf.ospfProcessBuilder().setProcessId("1");

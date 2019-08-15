@@ -252,7 +252,7 @@ import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Ip_prefix_list_line_number
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Ip_prefix_list_line_prefix_lengthContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Ip_prefix_list_nameContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Ip_protocolContext;
-import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Ip_routeContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Ip_route_networkContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Ipv6_addressContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Ipv6_prefixContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Last_as_num_prependsContext;
@@ -3869,7 +3869,7 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
   }
 
   @Override
-  public void exitIp_route(Ip_routeContext ctx) {
+  public void exitIp_route_network(Ip_route_networkContext ctx) {
     int line = ctx.getStart().getLine();
     StaticRoute.Builder builder = StaticRoute.builder().setPrefix(toPrefix(ctx.network));
     if (ctx.name != null) {
@@ -3880,6 +3880,8 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
       builder.setName(name);
     }
     if (ctx.nhint != null) {
+      // TODO: if ctx.nhip is null and this version of NX-OS does not allow next-hop-int-only static
+      // route, do something smart
       String nhint = _configuration.canonicalizeInterfaceName(ctx.nhint.getText());
       builder.setNextHopInterface(nhint);
       _configuration.referenceStructure(INTERFACE, nhint, IP_ROUTE_NEXT_HOP_INTERFACE, line);

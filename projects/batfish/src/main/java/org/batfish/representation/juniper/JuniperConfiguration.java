@@ -109,6 +109,7 @@ import org.batfish.datamodel.isis.IsisInterfaceMode;
 import org.batfish.datamodel.isis.IsisProcess;
 import org.batfish.datamodel.ospf.OspfAreaSummary;
 import org.batfish.datamodel.ospf.OspfMetricType;
+import org.batfish.datamodel.ospf.OspfNetworkType;
 import org.batfish.datamodel.ospf.OspfProcess;
 import org.batfish.datamodel.packet_policy.Drop;
 import org.batfish.datamodel.packet_policy.PacketMatchExpr;
@@ -143,7 +144,6 @@ import org.batfish.datamodel.routing_policy.statement.Statement;
 import org.batfish.datamodel.routing_policy.statement.Statements;
 import org.batfish.datamodel.transformation.Transformation;
 import org.batfish.representation.juniper.BgpGroup.BgpGroupType;
-import org.batfish.representation.juniper.Interface.OspfInterfaceType;
 import org.batfish.representation.juniper.Zone.AddressBookType;
 import org.batfish.vendor.VendorConfiguration;
 
@@ -867,9 +867,12 @@ public final class JuniperConfiguration extends VendorConfiguration {
                           iface.setOspfCost(ospfCost);
                           iface.setOspfAreaName(area.getAreaNumber());
                           iface.setOspfProcess(newProc.getProcessId());
-                          // treat all non-broadcast interfaces as point to point
-                          iface.setOspfPointToPoint(
-                              vsIface.getOspfInterfaceType() != OspfInterfaceType.BROADCAST);
+                          // TODO infer interface type based on physical interface: "the software
+                          // chooses the correct
+                          // interface type...you should never have to set the interface type" (see
+                          // https://www.juniper.net/documentation/en_US/junos/topics/reference/configuration-statement/interface-type-edit-protocols-ospf.html)
+                          iface.setOspfNetworkType(
+                              toOspfNetworkType(vsIface.getOspfInterfaceType()));
                         }));
     return newProc;
   }
@@ -1476,8 +1479,26 @@ public final class JuniperConfiguration extends VendorConfiguration {
     }
     newIface.setSwitchportTrunkEncapsulation(swe);
     newIface.setBandwidth(iface.getBandwidth());
-
     return newIface;
+  }
+
+  @Nullable
+  private OspfNetworkType toOspfNetworkType(Interface.OspfInterfaceType type) {
+    switch (type) {
+      case BROADCAST:
+        return OspfNetworkType.BROADCAST;
+      case P2P:
+        return OspfNetworkType.POINT_TO_POINT;
+      case NBMA:
+        return OspfNetworkType.NON_BROADCAST_MULTI_ACCESS;
+      case P2MP:
+        return OspfNetworkType.POINT_TO_MULTIPOINT;
+      default:
+        _w.redFlag(
+            String.format(
+                "Conversion of Juniper OSPF network type '%s' is not handled.", type.toString()));
+        return null;
+    }
   }
 
   @Nullable

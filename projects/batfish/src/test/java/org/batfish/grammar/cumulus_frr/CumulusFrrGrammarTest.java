@@ -29,6 +29,7 @@ import org.batfish.datamodel.DefinedStructureInfo;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
 import org.batfish.datamodel.bgp.community.StandardCommunity;
 import org.batfish.grammar.BatfishParseTreeWalker;
@@ -42,6 +43,8 @@ import org.batfish.representation.cumulus.CumulusNcluConfiguration;
 import org.batfish.representation.cumulus.CumulusStructureType;
 import org.batfish.representation.cumulus.CumulusStructureUsage;
 import org.batfish.representation.cumulus.IpCommunityListExpanded;
+import org.batfish.representation.cumulus.IpPrefixList;
+import org.batfish.representation.cumulus.IpPrefixListLine;
 import org.batfish.representation.cumulus.RouteMap;
 import org.batfish.representation.cumulus.RouteMapEntry;
 import org.batfish.representation.cumulus.StaticRoute;
@@ -502,5 +505,34 @@ public class CumulusFrrGrammarTest {
     assertThat(
         entry.getSetCommunity().getCommunities(),
         equalTo(ImmutableList.of(StandardCommunity.of(10000, 1), StandardCommunity.of(20000, 2))));
+  }
+
+  @Test
+  public void testCumulusFrrIpPrefixList() {
+    String name = "NAME";
+    String prefix1 = "10.0.0.1/24";
+    String prefix2 = "10.0.1.2/24";
+    parse(
+        String.format(
+            "ip prefix-list %s seq 10 permit %s\n"
+                + "ip prefix-list %s seq 20 deny %s ge 27 le 30 \n",
+            name, prefix1, name, prefix2));
+
+    assertThat(CONFIG.getIpPrefixLists().keySet(), equalTo(ImmutableSet.of(name)));
+    IpPrefixList prefixList = CONFIG.getIpPrefixLists().get(name);
+    assertThat(prefixList.getName(), equalTo(name));
+    assertThat(prefixList.getLines().keySet(), equalTo(ImmutableSet.of(10L, 20L)));
+
+    IpPrefixListLine line1 = prefixList.getLines().get(10L);
+    assertThat(line1.getLine(), equalTo(10L));
+    assertThat(line1.getAction(), equalTo(LineAction.PERMIT));
+    assertThat(line1.getLengthRange(), equalTo(new SubRange(24, 32)));
+    assertThat(line1.getPrefix(), equalTo(Prefix.parse("10.0.0.1/24")));
+
+    IpPrefixListLine line2 = prefixList.getLines().get(20L);
+    assertThat(line2.getLine(), equalTo(20L));
+    assertThat(line2.getAction(), equalTo(LineAction.DENY));
+    assertThat(line2.getLengthRange(), equalTo(new SubRange(27, 30)));
+    assertThat(line2.getPrefix(), equalTo(Prefix.parse("10.0.1.2/24")));
   }
 }

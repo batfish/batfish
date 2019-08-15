@@ -69,7 +69,6 @@ public final class Interface extends ComparableStructure<String> {
     private boolean _ospfEnabled;
     @Nullable private OspfNetworkType _ospfNetworkType;
     private boolean _ospfPassive;
-    private boolean _ospfPointToPoint;
     private String _ospfProcess;
     private IpAccessList _outgoingFilter;
     private Transformation _outgoingTransformation;
@@ -155,7 +154,6 @@ public final class Interface extends ComparableStructure<String> {
       iface.setOspfInboundDistributeListPolicy(_ospfInboundDistributeListPolicy);
       iface.setOspfNetworkType(_ospfNetworkType);
       iface.setOspfPassive(_ospfPassive);
-      iface.setOspfPointToPoint(_ospfPointToPoint);
       iface.setOspfProcess(_ospfProcess);
       iface.setOutgoingFilter(_outgoingFilter);
       iface.setOutgoingTransformation(_outgoingTransformation);
@@ -393,11 +391,6 @@ public final class Interface extends ComparableStructure<String> {
       return this;
     }
 
-    public Builder setOspfPointToPoint(boolean ospfPointToPoint) {
-      _ospfPointToPoint = ospfPointToPoint;
-      return this;
-    }
-
     public Builder setOspfProcess(String process) {
       _ospfProcess = process;
       return this;
@@ -597,7 +590,6 @@ public final class Interface extends ComparableStructure<String> {
       "ospfInboundDistributeListPolicy";
   private static final String PROP_OSPF_NETWORK_TYPE = "ospfNetworkType";
   private static final String PROP_OSPF_PASSIVE = "ospfPassive";
-  private static final String PROP_OSPF_POINT_TO_POINT = "ospfPointToPoint";
   private static final String PROP_OSPF_PROCESS = "ospfProcess";
   private static final String PROP_OUTGOING_FILTER = "outgoingFilter";
   private static final String PROP_OUTGOING_TRANSFORMATION = "outgoingTransformation";
@@ -856,7 +848,6 @@ public final class Interface extends ComparableStructure<String> {
   @Nullable private String _ospfInboundDistributeListPolicy;
   @Nullable private OspfNetworkType _ospfNetworkType;
   private boolean _ospfPassive;
-  private boolean _ospfPointToPoint;
   @Nullable private String _ospfProcess;
   private IpAccessList _outgoingFilter;
   private transient String _outgoingFilterName;
@@ -1284,11 +1275,6 @@ public final class Interface extends ComparableStructure<String> {
     return _ospfPassive;
   }
 
-  @JsonProperty(PROP_OSPF_POINT_TO_POINT)
-  public boolean getOspfPointToPoint() {
-    return _ospfPointToPoint;
-  }
-
   @JsonProperty(PROP_OSPF_PROCESS)
   @Nullable
   public String getOspfProcess() {
@@ -1682,11 +1668,6 @@ public final class Interface extends ComparableStructure<String> {
   @JsonProperty(PROP_OSPF_PASSIVE)
   public void setOspfPassive(boolean passive) {
     _ospfPassive = passive;
-  }
-
-  @JsonProperty(PROP_OSPF_POINT_TO_POINT)
-  public void setOspfPointToPoint(boolean ospfPointToPoint) {
-    _ospfPointToPoint = ospfPointToPoint;
   }
 
   public void setOspfProcess(@Nullable String ospfProcess) {
