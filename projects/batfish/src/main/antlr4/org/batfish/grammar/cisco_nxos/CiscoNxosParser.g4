@@ -209,12 +209,27 @@ sys_qos
 
 sysqos_service_policy
 :
-  SERVICE_POLICY TYPE
+  SERVICE_POLICY TYPE 
   (
-    NETWORK_QOS
-    | QOS
-    | QUEUEING
-  ) name = policy_map_name NEWLINE
+    sysqosspt_network_qos
+    | sysqosspt_qos
+    | sysqosspt_queueing
+  )
+;
+
+sysqosspt_network_qos
+:
+  NETWORK_QOS name = policy_map_name NEWLINE
+;
+
+sysqosspt_qos
+:
+  QOS INPUT name = policy_map_name NEWLINE
+;
+
+sysqosspt_queueing
+:
+  QUEUEING (INPUT | OUTPUT) name = policy_map_name NEWLINE
 ;
 
 s_track
