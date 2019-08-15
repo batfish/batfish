@@ -257,3 +257,4 @@ interface Ethernet1/4
   ip router ospf router_id area 0
 interface Ethernet1/5
   ip address 172.16.2.1/24
+  ! No explicit OSPF configuration
