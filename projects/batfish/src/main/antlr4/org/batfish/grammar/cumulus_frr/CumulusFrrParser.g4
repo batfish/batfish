@@ -18,10 +18,16 @@ cumulus_frr_configuration
 statement
 :
   FRR_VERSION_LINE NEWLINE
+  | s_agentx
   | s_bgp
   | s_vrf
   | s_routemap
   | s_ip
+;
+
+s_agentx
+:
+  AGENTX
 ;
 
 s_ip
