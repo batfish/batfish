@@ -39,6 +39,8 @@ import org.batfish.datamodel.BgpActivePeerConfig;
 import org.batfish.datamodel.BgpPeerConfig;
 import org.batfish.datamodel.BgpUnnumberedPeerConfig;
 import org.batfish.datamodel.BumTransportMethod;
+import org.batfish.datamodel.CommunityList;
+import org.batfish.datamodel.CommunityListLine;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
@@ -78,6 +80,7 @@ import org.batfish.datamodel.routing_policy.expr.Conjunction;
 import org.batfish.datamodel.routing_policy.expr.DestinationNetwork;
 import org.batfish.datamodel.routing_policy.expr.Disjunction;
 import org.batfish.datamodel.routing_policy.expr.ExplicitPrefixSet;
+import org.batfish.datamodel.routing_policy.expr.LiteralCommunity;
 import org.batfish.datamodel.routing_policy.expr.LiteralOrigin;
 import org.batfish.datamodel.routing_policy.expr.MatchPrefixSet;
 import org.batfish.datamodel.routing_policy.expr.MatchProtocol;
@@ -1211,6 +1214,7 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
     convertVrfs();
     convertDefaultVrf();
     convertIpPrefixLists();
+    convertIpCommunityLists();
     convertRouteMaps();
     convertDnsServers();
     convertClags();
@@ -1224,6 +1228,24 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
     warnDuplicateClagIds();
 
     return _c;
+  }
+
+  private void convertIpCommunityLists() {
+    _ipCommunityLists.forEach(
+        (name, list) -> _c.getCommunityLists().put(name, toCommunityList(list)));
+  }
+
+  @VisibleForTesting
+  static CommunityList toCommunityList(IpCommunityList list) {
+    return list.accept(
+        ipCommunityList ->
+            new CommunityList(
+                ipCommunityList.getName(),
+                ipCommunityList.getCommunities().stream()
+                    .map(LiteralCommunity::new)
+                    .map(k -> new CommunityListLine(ipCommunityList.getAction(), k))
+                    .collect(ImmutableList.toImmutableList()),
+                false));
   }
 
   private void convertIpPrefixLists() {
