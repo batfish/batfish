@@ -1515,7 +1515,7 @@ INPUT
 :
   'input'
   {
-    if (lastTokenType() == SERVICE_POLICY) {
+    if (lastTokenType() == QOS || lastTokenType() == QUEUEING || lastTokenType() == SERVICE_POLICY) {
       pushMode(M_Word);
     }
   }
@@ -2402,6 +2402,16 @@ OTHER_CONFIG_FLAG
 OUT
 :
   'out'
+;
+
+OUTPUT
+:
+  'output'
+  {
+    if (lastTokenType() == QOS || lastTokenType() == QUEUEING || lastTokenType() == SERVICE_POLICY) {
+      pushMode(M_Word);
+    }
+  }
 ;
 
 OVERLAY
@@ -3489,8 +3499,10 @@ TYPE
   'type'
   // Other instances are followed by tokens in default mode, or occur in non-default mode.
   {
-    if (lastTokenType() == SERVICE_POLICY) {
+    if (lastTokenType() == CLASS) {
       pushMode(M_ClassType);
+    } else if (lastTokenType() == SERVICE_POLICY) {
+      pushMode(M_ServicePolicyType);
     }
   }
 ;
@@ -4561,6 +4573,30 @@ M_Remark_REMARK_TEXT
 ;
 
 M_Remark_WS
+:
+  F_Whitespace+ -> channel ( HIDDEN )
+;
+
+mode M_ServicePolicyType;
+
+// control-plane omitted on purpose
+
+M_ServicePolicyType_NETWORK_QOS
+:
+  'network-qos' -> type ( NETWORK_QOS ) , mode ( M_Word )
+;
+
+M_ServicePolicyType_QOS
+:
+  'qos' -> type ( QOS ) , popMode
+;
+
+M_ServicePolicyType_QUEUEING
+:
+  'queueing' -> type ( QUEUEING ) , popMode
+;
+
+M_ServicePolicyType_WS
 :
   F_Whitespace+ -> channel ( HIDDEN )
 ;
