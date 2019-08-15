@@ -151,6 +151,11 @@ literal_standard_community
   high = uint16 COLON low = uint16
 ;
 
+mac_address_literal
+:
+  MAC_ADDRESS_LITERAL
+;
+
 null_rest_of_line
 :
   ~NEWLINE* NEWLINE
