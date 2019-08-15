@@ -493,13 +493,13 @@ public final class CiscoConfiguration extends VendorConfiguration {
 
   private final Map<String, MacAccessList> _macAccessLists;
 
-  private final Map<String, NatPool> _natPools;
+  private final @Nonnull Map<String, NatPool> _natPools;
 
   private final Map<String, IcmpTypeObjectGroup> _icmpTypeObjectGroups;
 
   private final Map<String, IntegerSpace> _namedVlans;
 
-  private final Set<String> _natInside;
+  private final @Nonnull Set<String> _natInside;
 
   private final Set<String> _natOutside;
 
@@ -879,7 +879,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
     return _macAccessLists;
   }
 
-  public Map<String, NatPool> getNatPools() {
+  public @Nonnull Map<String, NatPool> getNatPools() {
     return _natPools;
   }
 
@@ -887,7 +887,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
     return _namedVlans;
   }
 
-  public Set<String> getNatInside() {
+  public @Nonnull Set<String> getNatInside() {
     return _natInside;
   }
 
@@ -2335,7 +2335,9 @@ public final class CiscoConfiguration extends VendorConfiguration {
 
     Map<CiscoIosNat, Transformation.Builder> convertedIncomingNats =
         incomingNats.stream()
-            .map(nat -> new SimpleEntry<>(nat, nat.toIncomingTransformation(_natPools)))
+            .map(
+                nat ->
+                    new SimpleEntry<>(nat, nat.toIncomingTransformation(ipAccessLists, _natPools)))
             .filter(entry -> entry.getValue().isPresent())
             .collect(Collectors.toMap(SimpleEntry::getKey, entry -> entry.getValue().get()));
     if (!convertedIncomingNats.isEmpty()) {
