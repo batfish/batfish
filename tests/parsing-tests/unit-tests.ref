@@ -77867,7 +77867,7 @@
         "cisco_flow" : "PASSED",
         "cisco_hardware" : "PASSED",
         "cisco_hsrp" : "PASSED",
-        "cisco_interface" : "PASSED",
+        "cisco_interface" : "WARNINGS",
         "cisco_ios_neighbor" : "PASSED",
         "cisco_ip" : "PASSED",
         "cisco_ip_nat" : "PASSED",
@@ -77888,9 +77888,9 @@
         "cisco_nxos" : "PASSED",
         "cisco_nxos_bgp" : "WARNINGS",
         "cisco_ospf" : "WARNINGS",
-        "cisco_ospf_ipv6" : "PASSED",
+        "cisco_ospf_ipv6" : "WARNINGS",
         "cisco_ospf_multi_process" : "PASSED",
-        "cisco_ospfv3" : "PASSED",
+        "cisco_ospfv3" : "WARNINGS",
         "cisco_pim" : "PASSED",
         "cisco_platform" : "PASSED",
         "cisco_privilege" : "PASSED",
@@ -92808,6 +92808,14 @@
             }
           ]
         },
+        "cisco_interface" : {
+          "Red flags" : [
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "Interface: 'Ethernet0' contains OSPF settings, but there is no OSPF process"
+            }
+          ]
+        },
         "cisco_nxos_bgp" : {
           "Red flags" : [
             {
@@ -92841,6 +92849,26 @@
             {
               "tag" : "MISCELLANEOUS",
               "text" : "OSPF process default:1 in cisco_ospf uses distribute-list of type ACCESS_LIST, only prefix-lists are supported in dist-lists by Batfish"
+            },
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "Interface: 'Ethernet1/0' contains OSPF settings, but there is no OSPF process"
+            }
+          ]
+        },
+        "cisco_ospf_ipv6" : {
+          "Red flags" : [
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "Interface: 'Ethernet0/0' contains OSPF settings, but there is no OSPF process"
+            }
+          ]
+        },
+        "cisco_ospfv3" : {
+          "Red flags" : [
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "Interface: 'Ethernet0/0' contains OSPF settings, but there is no OSPF process"
             }
           ]
         },
