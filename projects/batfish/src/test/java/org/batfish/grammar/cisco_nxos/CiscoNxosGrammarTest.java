@@ -3867,6 +3867,12 @@ public final class CiscoNxosGrammarTest {
   }
 
   @Test
+  public void testOspfv3Extraction() {
+    // TODO: make into extraction test
+    assertThat(parseVendorConfig("nxos_ospfv3"), notNullValue());
+  }
+
+  @Test
   public void testPolicyMapParsing() {
     // TODO: make into an extraction test
     assertThat(parseVendorConfig("nxos_policy_map"), notNullValue());
