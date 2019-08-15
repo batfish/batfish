@@ -78,8 +78,7 @@ public final class FibLookupOverrideLookupIp implements Action {
 
   @Override
   public <T> T accept(ActionVisitor<T> visitor) {
-    // TODO: plug into visitors
-    return null;
+    return visitor.visitFibLookupOverrideLookupIp(this);
   }
 
   public static Builder builder() {

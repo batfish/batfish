@@ -10,4 +10,6 @@ public interface ActionVisitor<T> {
   T visitDrop(Drop drop);
 
   T visitFibLookup(FibLookup fibLookup);
+
+  T visitFibLookupOverrideLookupIp(FibLookupOverrideLookupIp fibLookup);
 }
