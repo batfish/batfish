@@ -152,7 +152,7 @@ ihg_ipv4
   NEWLINE
   (
     ihg_common
-    | ihg_ip_ipv4
+    | ihg4_ip
   )*
 ;
 
@@ -161,7 +161,7 @@ ihg_ipv6
   IPV6 NEWLINE
   (
     ihg_common
-    | ihg_ip_ipv6
+    | ihg6_ip
   )*
 ;
 
@@ -285,7 +285,7 @@ hsrp_track_decrement
   uint8
 ;
 
-ihg_ip_ipv4
+ihg4_ip
 :
   IP
   (
@@ -294,13 +294,26 @@ ihg_ip_ipv4
   ) SECONDARY? NEWLINE
 ;
 
-ihg_ip_ipv6
+ihg6_ip
 :
   IP
+  (
+    ihg6_ip_address
+    | ihg6_ip_autoconfig
+  )
+;
+
+ihg6_ip_address
+:
   (
     ip6 = ipv6_address
     | prefix6 = ipv6_prefix
   ) SECONDARY? NEWLINE
+;
+
+ihg6_ip_autoconfig
+:
+  AUTOCONFIG NEWLINE
 ;
 
 ih_version
@@ -611,8 +624,10 @@ i_no_null
     CDP
     | IP
     | IPV6
+    | LLDP
     | NEGOTIATE
     | SNMP
+    | VTP
   ) null_rest_of_line
 ;
 

@@ -360,6 +360,11 @@ AUTO_COST
   'auto-cost'
 ;
 
+AUTOCONFIG
+:
+  'autoconfig'
+;
+
 AUTOSTATE
 :
   'autostate'
@@ -3682,6 +3687,11 @@ VPNV6
 VRF
 :
   'vrf' -> pushMode ( M_Vrf )
+;
+
+VTP
+:
+  'vtp'
 ;
 
 WAIT_FOR
