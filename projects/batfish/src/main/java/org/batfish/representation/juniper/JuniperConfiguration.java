@@ -843,7 +843,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
                 ImmutableSortedMap.toImmutableSortedMap(
                     Comparator.naturalOrder(), Entry::getKey, entry -> entry.getValue().build())));
 
-    // set pointers from interfaces to their parent areas (and process)
+    // update interface OSPF properties (including pointers to their parent areas and process)
     newProc
         .getAreas()
         .values()
