@@ -87,6 +87,7 @@ import static org.batfish.representation.cisco_nxos.OspfProcess.DEFAULT_TIMERS_L
 import static org.batfish.representation.cisco_nxos.OspfProcess.DEFAULT_TIMERS_THROTTLE_LSA_HOLD_INTERVAL_MS;
 import static org.batfish.representation.cisco_nxos.OspfProcess.DEFAULT_TIMERS_THROTTLE_LSA_MAX_INTERVAL_MS;
 import static org.batfish.representation.cisco_nxos.OspfProcess.DEFAULT_TIMERS_THROTTLE_LSA_START_INTERVAL_MS;
+import static org.batfish.representation.cisco_nxos.Vrf.DEFAULT_VRF_ID;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.anEmptyMap;
 import static org.hamcrest.Matchers.any;
@@ -145,6 +146,8 @@ import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConnectedRoute;
 import org.batfish.datamodel.DscpType;
+import org.batfish.datamodel.Flow;
+import org.batfish.datamodel.Flow.Builder;
 import org.batfish.datamodel.GeneratedRoute;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.IcmpCode;
@@ -189,6 +192,11 @@ import org.batfish.datamodel.matchers.VniSettingsMatchers;
 import org.batfish.datamodel.matchers.VrfMatchers;
 import org.batfish.datamodel.ospf.OspfAreaSummary;
 import org.batfish.datamodel.ospf.OspfMetricType;
+import org.batfish.datamodel.packet_policy.FibLookup;
+import org.batfish.datamodel.packet_policy.FibLookupOverrideLookupIp;
+import org.batfish.datamodel.packet_policy.FlowEvaluator;
+import org.batfish.datamodel.packet_policy.IngressInterfaceVrf;
+import org.batfish.datamodel.packet_policy.PacketPolicy;
 import org.batfish.datamodel.routing_policy.Environment.Direction;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.routing_policy.expr.CallExpr;
@@ -218,7 +226,7 @@ import org.batfish.representation.cisco_nxos.Evpn;
 import org.batfish.representation.cisco_nxos.EvpnVni;
 import org.batfish.representation.cisco_nxos.ExtendedCommunityOrAuto;
 import org.batfish.representation.cisco_nxos.FragmentsBehavior;
-import org.batfish.representation.cisco_nxos.HsrpGroup;
+import org.batfish.representation.cisco_nxos.HsrpGroupIpv4;
 import org.batfish.representation.cisco_nxos.IcmpOptions;
 import org.batfish.representation.cisco_nxos.Interface;
 import org.batfish.representation.cisco_nxos.InterfaceAddressWithAttributes;
@@ -610,7 +618,7 @@ public final class CiscoNxosGrammarTest {
             Layer2VniConfig.builder()
                 .setVni(1111)
                 .setVrf(DEFAULT_VRF_NAME)
-                .setRouteDistinguisher(RouteDistinguisher.from(routerId, 1111))
+                .setRouteDistinguisher(RouteDistinguisher.from(routerId, 3))
                 .setRouteTarget(ExtendedCommunity.target(1, 1111))
                 .setImportRouteTarget(ExtendedCommunity.target(1, 1111).matchString())
                 .build());
@@ -619,7 +627,7 @@ public final class CiscoNxosGrammarTest {
             Layer3VniConfig.builder()
                 .setVni(3333)
                 .setVrf(DEFAULT_VRF_NAME)
-                .setRouteDistinguisher(RouteDistinguisher.from(routerId, 3333))
+                .setRouteDistinguisher(RouteDistinguisher.from(routerId, 3))
                 .setRouteTarget(ExtendedCommunity.target(1, 3333))
                 .setImportRouteTarget(ExtendedCommunity.target(1, 3333).matchString())
                 .setAdvertiseV4Unicast(false)
@@ -759,8 +767,8 @@ public final class CiscoNxosGrammarTest {
       assertThat(hsrp, notNullValue());
       assertThat(hsrp.getDelayReloadSeconds(), equalTo(60));
       assertThat(hsrp.getVersion(), equalTo(2));
-      assertThat(hsrp.getGroups(), hasKeys(2));
-      HsrpGroup group = hsrp.getGroups().get(2);
+      assertThat(hsrp.getIpv4Groups(), hasKeys(2));
+      HsrpGroupIpv4 group = hsrp.getIpv4Groups().get(2);
       assertThat(group.getIp(), equalTo(Ip.parse("192.0.2.1")));
       assertThat(
           group.getIpSecondaries(),
@@ -775,6 +783,12 @@ public final class CiscoNxosGrammarTest {
       assertThat(group.getTracks().get(1).getDecrement(), equalTo(10));
       assertThat(group.getTracks().get(2).getDecrement(), equalTo(20));
     }
+  }
+
+  @Test
+  public void testInterfaceHsrpIpv6Extraction() {
+    // TODO: turn into extraction test
+    assertThat(parseVendorConfig("nxos_interface_hsrp_ipv6"), notNullValue());
   }
 
   @Test
@@ -857,6 +871,18 @@ public final class CiscoNxosGrammarTest {
   }
 
   @Test
+  public void testInterfaceIpv6DhcpRelayExtraction() {
+    // TODO: make into extraction test
+    assertThat(parseVendorConfig("nxos_interface_ipv6_dhcp_relay"), notNullValue());
+  }
+
+  @Test
+  public void testInterfaceIpv6NdExtraction() {
+    // TODO: make into extraction test
+    assertThat(parseVendorConfig("nxos_interface_ipv6_nd"), notNullValue());
+  }
+
+  @Test
   public void testInterfaceMulticastParsing() {
     // TODO: make into extraction test
     assertThat(parseVendorConfig("nxos_interface_multicast"), notNullValue());
@@ -866,6 +892,46 @@ public final class CiscoNxosGrammarTest {
   public void testInterfacePbrExtraction() {
     CiscoNxosConfiguration c = parseVendorConfig("nxos_interface_ip_policy");
     assertThat(c.getInterfaces().get("Ethernet1/1").getPbrPolicy(), equalTo("PBR_POLICY"));
+  }
+
+  @Test
+  public void testInterfacePbrConversion() throws IOException {
+    String hostname = "nxos_interface_ip_policy";
+    Configuration c = parseConfig(hostname);
+    String policyName = "PBR_POLICY";
+    PacketPolicy policy = c.getPacketPolicies().get(policyName);
+    assertThat(policy, notNullValue());
+    assertThat(c.getAllInterfaces().get("Ethernet1/1").getRoutingPolicyName(), equalTo(policyName));
+    Builder builder =
+        Flow.builder()
+            .setIngressNode(hostname)
+            .setTag("test")
+            .setIngressInterface("eth0")
+            .setSrcIp(Ip.parse("8.8.8.8"))
+            .setSrcPort(22222)
+            .setDstPort(22);
+    Flow acceptedFlow = builder.setDstIp(Ip.parse("1.1.1.100")).build();
+    Flow rejectedFlow = builder.setDstIp(Ip.parse("3.3.3.3")).build();
+    FibLookup regularFibLookup = new FibLookup(IngressInterfaceVrf.instance());
+    // Accepted flow sent to 2.2.2.2
+    assertThat(
+        FlowEvaluator.evaluate(
+                acceptedFlow, "eth0", policy, c.getIpAccessLists(), ImmutableMap.of())
+            .getAction(),
+        equalTo(
+            FibLookupOverrideLookupIp.builder()
+                .setIps(ImmutableList.of(Ip.parse("2.2.2.2")))
+                .setVrfExpr(IngressInterfaceVrf.instance())
+                .setDefaultAction(regularFibLookup)
+                .setRequireConnected(true)
+                .build()));
+
+    // Rejected flow delegated to regular FIB lookup
+    assertThat(
+        FlowEvaluator.evaluate(
+                rejectedFlow, "eth0", policy, c.getIpAccessLists(), ImmutableMap.of())
+            .getAction(),
+        equalTo(regularFibLookup));
   }
 
   @Test
@@ -5249,6 +5315,8 @@ public final class CiscoNxosGrammarTest {
     String hostname = "nxos_vrf";
     CiscoNxosConfiguration vc = parseVendorConfig(hostname);
 
+    assertThat(vc.getDefaultVrf(), not(nullValue()));
+    assertThat(vc.getDefaultVrf().getId(), equalTo(DEFAULT_VRF_ID));
     assertThat(vc.getVrfs(), hasKeys("Vrf1", "vrf3"));
     {
       Vrf vrf = vc.getDefaultVrf();
@@ -5257,6 +5325,7 @@ public final class CiscoNxosGrammarTest {
     {
       Vrf vrf = vc.getVrfs().get("Vrf1");
       assertFalse(vrf.getShutdown());
+      assertThat(vrf.getId(), equalTo(3));
       assertThat(
           vrf.getRd(), equalTo(RouteDistinguisherOrAuto.of(RouteDistinguisher.from(65001, 10L))));
       VrfAddressFamily af4 = vrf.getAddressFamily(AddressFamily.IPV4_UNICAST);
@@ -5279,6 +5348,7 @@ public final class CiscoNxosGrammarTest {
     }
     {
       Vrf vrf = vc.getVrfs().get("vrf3");
+      assertThat(vrf.getId(), equalTo(4));
       assertTrue(vrf.getShutdown());
       assertThat(vrf.getRd(), equalTo(RouteDistinguisherOrAuto.auto()));
     }

@@ -81,6 +81,7 @@ import static org.batfish.representation.cisco_nxos.Interface.newNonVlanInterfac
 import static org.batfish.representation.cisco_nxos.Interface.newVlanInterface;
 import static org.batfish.representation.cisco_nxos.StaticRoute.STATIC_ROUTE_PREFERENCE_RANGE;
 import static org.batfish.representation.cisco_nxos.StaticRoute.STATIC_ROUTE_TRACK_RANGE;
+import static org.batfish.representation.cisco_nxos.Vrf.MANAGEMENT_VRF_ID;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.HashBasedTable;
@@ -211,7 +212,9 @@ import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Icl_standardContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Ih_groupContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Ih_versionContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Ihd_reloadContext;
-import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Ihg_ipContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Ihg_ip_ipv4Context;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Ihg_ipv4Context;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Ihg_ipv6Context;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Ihg_preemptContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Ihg_priorityContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Ihg_timersContext;
@@ -456,6 +459,8 @@ import org.batfish.representation.cisco_nxos.EvpnVni;
 import org.batfish.representation.cisco_nxos.ExtendedCommunityOrAuto;
 import org.batfish.representation.cisco_nxos.FragmentsBehavior;
 import org.batfish.representation.cisco_nxos.HsrpGroup;
+import org.batfish.representation.cisco_nxos.HsrpGroupIpv4;
+import org.batfish.representation.cisco_nxos.HsrpGroupIpv6;
 import org.batfish.representation.cisco_nxos.HsrpTrack;
 import org.batfish.representation.cisco_nxos.IcmpOptions;
 import org.batfish.representation.cisco_nxos.Interface;
@@ -845,9 +850,11 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
   private BgpVrfConfiguration _currentBgpVrfConfiguration;
   private BgpVrfNeighborConfiguration _currentBgpVrfNeighbor;
   private BgpVrfNeighborAddressFamilyConfiguration _currentBgpVrfNeighborAddressFamily;
+  private int _currentContextVrfId = MANAGEMENT_VRF_ID + 1;
   private DefaultVrfOspfProcess _currentDefaultVrfOspfProcess;
   private EvpnVni _currentEvpnVni;
   private Function<Interface, HsrpGroup> _currentHsrpGroupGetter;
+  private Optional<Integer> _currentHsrpGroupNumber;
   private List<Interface> _currentInterfaces;
   private IpAccessList _currentIpAccessList;
   private Optional<Long> _currentIpAccessListLineNum;
@@ -1080,15 +1087,44 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
 
   @Override
   public void enterIh_group(Ih_groupContext ctx) {
-    Optional<Integer> groupOrErr = toIntegerInSpace(ctx, ctx.group, HSRP_GROUP_RANGE, "hsrp group");
-    if (!groupOrErr.isPresent()) {
+    _currentHsrpGroupNumber = toIntegerInSpace(ctx, ctx.group, HSRP_GROUP_RANGE, "hsrp group");
+  }
+
+  @Override
+  public void exitIh_group(Ih_groupContext ctx) {
+    _currentHsrpGroupNumber = null;
+  }
+
+  @Override
+  public void enterIhg_ipv4(Ihg_ipv4Context ctx) {
+    if (!_currentHsrpGroupNumber.isPresent()) {
       // dummy
-      _currentHsrpGroupGetter = iface -> new HsrpGroup(0);
+      _currentHsrpGroupGetter = iface -> new HsrpGroupIpv4(0);
     } else {
       _currentHsrpGroupGetter =
           iface ->
-              iface.getOrCreateHsrp().getGroups().computeIfAbsent(groupOrErr.get(), HsrpGroup::new);
+              iface
+                  .getOrCreateHsrp()
+                  .getIpv4Groups()
+                  .computeIfAbsent(_currentHsrpGroupNumber.get(), HsrpGroupIpv4::new);
     }
+  }
+
+  @Override
+  public void exitIhg_ipv4(Ihg_ipv4Context ctx) {
+    _currentHsrpGroupGetter = null;
+  }
+
+  @Override
+  public void enterIhg_ipv6(Ihg_ipv6Context ctx) {
+    // TODO: implement HSRP for IPv6
+    // dummy
+    _currentHsrpGroupGetter = iface -> new HsrpGroupIpv6(0);
+  }
+
+  @Override
+  public void exitIhg_ipv6(Ihg_ipv6Context ctx) {
+    _currentHsrpGroupGetter = null;
   }
 
   @Override
@@ -1113,12 +1149,7 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
   }
 
   @Override
-  public void exitIh_group(Ih_groupContext ctx) {
-    _currentHsrpGroupGetter = null;
-  }
-
-  @Override
-  public void exitIhg_ip(Ihg_ipContext ctx) {
+  public void exitIhg_ip_ipv4(Ihg_ip_ipv4Context ctx) {
     if (ctx.prefix != null) {
       todo(ctx);
       return;
@@ -1127,9 +1158,18 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
     Ip ip = toIp(ctx.ip);
     if (ctx.SECONDARY() != null) {
       _currentInterfaces.forEach(
-          iface -> _currentHsrpGroupGetter.apply(iface).getIpSecondaries().add(ip));
+          iface -> {
+            HsrpGroup group = _currentHsrpGroupGetter.apply(iface);
+            assert group instanceof HsrpGroupIpv4;
+            ((HsrpGroupIpv4) group).getIpSecondaries().add(ip);
+          });
     } else {
-      _currentInterfaces.forEach(iface -> _currentHsrpGroupGetter.apply(iface).setIp(ip));
+      _currentInterfaces.forEach(
+          iface -> {
+            HsrpGroup group = _currentHsrpGroupGetter.apply(iface);
+            assert group instanceof HsrpGroupIpv4;
+            ((HsrpGroupIpv4) group).setIp(ip);
+          });
     }
   }
 
@@ -3080,7 +3120,7 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
   public void enterS_vrf_context(S_vrf_contextContext ctx) {
     Optional<String> nameOrErr = toString(ctx, ctx.name);
     if (!nameOrErr.isPresent()) {
-      _currentVrf = new Vrf("dummy");
+      _currentVrf = new Vrf("dummy", _currentContextVrfId);
       return;
     }
     _currentVrf =
@@ -3090,7 +3130,7 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
                 nameOrErr.get(),
                 name -> {
                   _configuration.defineStructure(VRF, name, ctx);
-                  return new Vrf(name);
+                  return new Vrf(name, _currentContextVrfId++);
                 });
   }
 
