@@ -2031,7 +2031,6 @@ public final class CiscoConfiguration extends VendorConfiguration {
     }
     newIface.setMlagId(iface.getMlagId());
     newIface.setMtu(getInterfaceMtu(iface));
-    newIface.setOspfPointToPoint(iface.getOspfNetworkType() == OspfNetworkType.POINT_TO_POINT);
     newIface.setProxyArp(iface.getProxyArp());
     newIface.setSpanningTreePortfast(iface.getSpanningTreePortfast());
     newIface.setSwitchport(iface.getSwitchport());
@@ -2045,31 +2044,6 @@ public final class CiscoConfiguration extends VendorConfiguration {
     }
     allPrefixes.addAll(iface.getSecondaryAddresses());
     newIface.setAllAddresses(allPrefixes.build());
-
-    if (!iface.getOspfShutdown()) {
-      OspfProcess proc = getOspfProcessForInterface(vrf, iface);
-      if (proc != null) {
-        if (firstNonNull(
-            iface.getOspfPassive(),
-            proc.getPassiveInterfaceDefault()
-                ^ proc.getNonDefaultInterfaces().contains(ifaceName))) {
-          proc.getPassiveInterfaces().add(ifaceName);
-        }
-        newIface.setOspfAreaName(iface.getOspfArea());
-        newIface.setOspfCost(iface.getOspfCost());
-        Integer deadInterval = iface.getOspfDeadInterval();
-        if (deadInterval != null) {
-          newIface.setOspfDeadInterval(deadInterval);
-        }
-        newIface.setOspfHelloMultiplier(iface.getOspfHelloMultiplier());
-        newIface.setOspfProcess(proc.getName());
-      } else if (iface.getOspfArea() != null
-          || iface.getOspfCost() != null
-          || iface.getOspfPassive() != null) {
-        _w.redFlag(
-            "Interface: '" + ifaceName + "' contains OSPF settings, but there is no OSPF process");
-      }
-    }
 
     EigrpProcess eigrpProcess = null;
     if (iface.getAddress() != null) {
@@ -2577,22 +2551,41 @@ public final class CiscoConfiguration extends VendorConfiguration {
         continue;
       }
 
-      Long areaNum = iface.getOspfAreaName();
-      // OSPF area number was not configured on the interface itself, so get from OspfNetwork
+      String ifaceName = e.getKey();
+      iface.setOspfPassive(false);
+      if (firstNonNull(
+          vsIface.getOspfPassive(),
+          proc.getPassiveInterfaceDefault() ^ proc.getNonDefaultInterfaces().contains(ifaceName))) {
+        proc.getPassiveInterfaces().add(ifaceName);
+        iface.setOspfPassive(true);
+      }
+      iface.setOspfCost(vsIface.getOspfCost());
+      Integer deadInterval = vsIface.getOspfDeadInterval();
+      if (deadInterval != null) {
+        iface.setOspfDeadInterval(deadInterval);
+      }
+      iface.setOspfHelloMultiplier(vsIface.getOspfHelloMultiplier());
+      iface.setOspfProcess(proc.getName());
+
+      Long areaNum =
+          vsIface
+              .getOspfArea(); // OSPF area number was not configured on the interface itself, so get
+      // from OspfNetwork
       if (areaNum == null) {
         if (network == null) {
           continue;
         }
         areaNum = network.getArea();
       }
-      String ifaceName = e.getKey();
       areas.computeIfAbsent(areaNum, areaNumber -> OspfArea.builder().setNumber(areaNumber));
+      iface.setOspfAreaName(areaNum);
       ImmutableSortedSet.Builder<String> newAreaInterfacesBuilder =
           areaInterfacesBuilders.computeIfAbsent(areaNum, n -> ImmutableSortedSet.naturalOrder());
       newAreaInterfacesBuilder.add(ifaceName);
       iface.setOspfEnabled(true);
       boolean passive = proc.getPassiveInterfaces().contains(iface.getName());
       iface.setOspfPassive(passive);
+      iface.setOspfPointToPoint(vsIface.getOspfNetworkType() == OspfNetworkType.POINT_TO_POINT);
     }
     areaInterfacesBuilders.forEach(
         (areaNum, interfacesBuilder) ->
@@ -2652,21 +2645,6 @@ public final class CiscoConfiguration extends VendorConfiguration {
               new SubRange(0, Prefix.MAX_PREFIX_LENGTH)));
     }
     newProcess.setAreas(toImmutableSortedMap(areas, Entry::getKey, e -> e.getValue().build()));
-
-    // set pointers from interfaces to their parent areas
-    newProcess
-        .getAreas()
-        .values()
-        .forEach(
-            area ->
-                area.getInterfaces()
-                    .forEach(
-                        ifaceName ->
-                            c.getVrfs()
-                                .get(vrfName)
-                                .getInterfaces()
-                                .get(ifaceName)
-                                .setOspfAreaName(area.getAreaNumber())));
 
     String ospfExportPolicyName = "~OSPF_EXPORT_POLICY:" + vrfName + "~";
     RoutingPolicy ospfExportPolicy = new RoutingPolicy(ospfExportPolicyName, c);
@@ -2787,7 +2765,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
             proc.getPassiveInterfaceList().contains(i.getName())
                 || (proc.getPassiveInterfaceDefault()
                     && !proc.getActiveInterfaceList().contains(ifaceName));
-        i.setOspfPassive(passive);
+        i.setRipPassive(passive);
       }
     }
 

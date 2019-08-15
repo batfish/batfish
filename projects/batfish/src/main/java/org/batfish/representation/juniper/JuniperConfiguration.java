@@ -854,8 +854,22 @@ public final class JuniperConfiguration extends VendorConfiguration {
                         ifaceName -> {
                           org.batfish.datamodel.Interface iface =
                               _c.getVrfs().get(vrfName).getInterfaces().get(ifaceName);
+                          Interface vsIface = routingInstance.getInterfaces().get(ifaceName);
+
+                          iface.setOspfEnabled(
+                              !firstNonNull(vsIface.getOspfDisable(), Boolean.FALSE));
+                          iface.setOspfPassive(vsIface.getOspfPassive());
+                          Integer ospfCost = vsIface.getOspfCost();
+                          if (ospfCost == null
+                              && iface.isLoopback(ConfigurationFormat.FLAT_JUNIPER)) {
+                            ospfCost = 0;
+                          }
+                          iface.setOspfCost(ospfCost);
                           iface.setOspfAreaName(area.getAreaNumber());
                           iface.setOspfProcess(newProc.getProcessId());
+                          // treat all non-broadcast interfaces as point to point
+                          iface.setOspfPointToPoint(
+                              vsIface.getOspfInterfaceType() != OspfInterfaceType.BROADCAST);
                         }));
     return newProc;
   }
@@ -1057,13 +1071,6 @@ public final class JuniperConfiguration extends VendorConfiguration {
     long ospfAreaLong = ospfArea.asLong();
     org.batfish.datamodel.ospf.OspfArea.Builder newArea = newAreas.get(ospfAreaLong);
     newArea.addInterface(interfaceName);
-    newIface.setOspfEnabled(!firstNonNull(iface.getOspfDisable(), Boolean.FALSE));
-    newIface.setOspfPassive(iface.getOspfPassive());
-    Integer ospfCost = iface.getOspfCost();
-    if (ospfCost == null && newIface.isLoopback(ConfigurationFormat.FLAT_JUNIPER)) {
-      ospfCost = 0;
-    }
-    newIface.setOspfCost(ospfCost);
   }
 
   private void setPolicyStatementReferent(String policyName) {
@@ -1469,8 +1476,6 @@ public final class JuniperConfiguration extends VendorConfiguration {
     }
     newIface.setSwitchportTrunkEncapsulation(swe);
     newIface.setBandwidth(iface.getBandwidth());
-    // treat all non-broadcast interfaces as point to point
-    newIface.setOspfPointToPoint(iface.getOspfInterfaceType() != OspfInterfaceType.BROADCAST);
 
     return newIface;
   }

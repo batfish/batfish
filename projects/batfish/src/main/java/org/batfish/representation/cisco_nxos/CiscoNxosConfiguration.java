@@ -1259,13 +1259,6 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
       newIfaceBuilder.setRoutingPolicy(pbrPolicy);
     }
 
-    // OSPF properties
-    OspfInterface ospf = iface.getOspf();
-    if (ospf != null) {
-      newIfaceBuilder.setOspfPointToPoint(ospf.getNetwork() == OspfNetworkType.POINT_TO_POINT);
-      // TODO: update data model to support explicit hello and dead intervals
-    }
-
     org.batfish.datamodel.Interface newIface = newIfaceBuilder.build();
 
     String vrfName = iface.getVrfMember();
@@ -1836,6 +1829,8 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
         ospf.getPassive() != null
             ? ospf.getPassive()
             : passiveInterfaceDefault || newIface.getName().startsWith("loopback"));
+    newIface.setOspfPointToPoint(ospf.getNetwork() == OspfNetworkType.POINT_TO_POINT);
+    // TODO: update data model to support explicit hello and dead intervals
   }
 
   private @Nonnull NssaSettings toNssaSettings(OspfAreaNssa ospfAreaNssa) {
