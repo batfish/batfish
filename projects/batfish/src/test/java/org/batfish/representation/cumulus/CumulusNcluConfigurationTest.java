@@ -1,6 +1,6 @@
 package org.batfish.representation.cumulus;
 
-import static org.batfish.representation.cumulus.CumulusNcluConfiguration.toIpCommunityList;
+import static org.batfish.representation.cumulus.CumulusNcluConfiguration.toCommunityList;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
@@ -104,7 +104,7 @@ public class CumulusNcluConfigurationTest {
             name,
             LineAction.PERMIT,
             ImmutableList.of(StandardCommunity.of(10000, 1), StandardCommunity.of(20000, 2)));
-    CommunityList result = toIpCommunityList(ipCommunityList);
+    CommunityList result = toCommunityList(ipCommunityList);
     assertThat(
         result,
         equalTo(

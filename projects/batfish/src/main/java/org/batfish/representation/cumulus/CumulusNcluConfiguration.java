@@ -1232,11 +1232,11 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
 
   private void convertIpCommunityLists() {
     _ipCommunityLists.forEach(
-        (name, list) -> _c.getCommunityLists().put(name, toIpCommunityList(list)));
+        (name, list) -> _c.getCommunityLists().put(name, toCommunityList(list)));
   }
 
   @VisibleForTesting
-  static CommunityList toIpCommunityList(IpCommunityList list) {
+  static CommunityList toCommunityList(IpCommunityList list) {
     return list.accept(
         ipCommunityList ->
             new CommunityList(
