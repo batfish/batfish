@@ -26,10 +26,13 @@ import org.batfish.common.Warnings.ParseWarning;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.bgp.community.StandardCommunity;
 import org.batfish.grammar.UnrecognizedLineToken;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Icl_expandedContext;
+import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Ip_prefix_listContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Literal_standard_communityContext;
+import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Pl_lineContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Rm_descriptionContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Rmm_communityContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Rmm_interfaceContext;
@@ -75,6 +78,8 @@ import org.batfish.representation.cumulus.CumulusRoutingProtocol;
 import org.batfish.representation.cumulus.CumulusStructureType;
 import org.batfish.representation.cumulus.CumulusStructureUsage;
 import org.batfish.representation.cumulus.IpCommunityListExpanded;
+import org.batfish.representation.cumulus.IpPrefixList;
+import org.batfish.representation.cumulus.IpPrefixListLine;
 import org.batfish.representation.cumulus.RouteMap;
 import org.batfish.representation.cumulus.RouteMapEntry;
 import org.batfish.representation.cumulus.RouteMapMatchCommunity;
@@ -95,6 +100,7 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
   private @Nullable RouteMapEntry _currentRouteMapEntry;
   private @Nullable BgpVrf _currentBgpVrf;
   private @Nullable BgpNeighbor _currentBgpNeighbor;
+  private @Nullable IpPrefixList _currentIpPrefixList;
 
   public CumulusFrrConfigurationBuilder(
       CumulusNcluConfiguration configuration, CumulusFrrCombinedParser parser, Warnings w) {
@@ -495,5 +501,36 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
 
     _c.defineStructure(CumulusStructureType.IP_COMMUNITY_LIST, name, ctx.getStart().getLine());
     _c.getIpCommunityLists().put(name, new IpCommunityListExpanded(name, action, communityList));
+  }
+
+  @Override
+  public void enterIp_prefix_list(Ip_prefix_listContext ctx) {
+    String name = ctx.name.getText();
+    _currentIpPrefixList =
+        _c.getIpPrefixLists()
+            .computeIfAbsent(
+                name,
+                n -> {
+                  _c.defineStructure(
+                      CumulusStructureType.IP_PREFIX_LIST, name, ctx.getStart().getLine());
+                  return new IpPrefixList(n);
+                });
+  }
+
+  @Override
+  public void exitIp_prefix_list(Ip_prefix_listContext ctx) {
+    _currentIpPrefixList = null;
+  }
+
+  @Override
+  public void exitPl_line(Pl_lineContext ctx) {
+    long num = parseLong(ctx.num.getText());
+    Prefix prefix = Prefix.parse(ctx.ip_prefix.getText());
+    int prefixLength = prefix.getPrefixLength();
+    int low = ctx.ge != null ? Integer.parseInt(ctx.ge.getText()) : prefixLength;
+    int high = ctx.le != null ? Integer.parseInt(ctx.le.getText()) : Prefix.MAX_PREFIX_LENGTH;
+    LineAction action = ctx.action.permit != null ? LineAction.PERMIT : LineAction.DENY;
+    IpPrefixListLine pll = new IpPrefixListLine(action, num, prefix, new SubRange(low, high));
+    _currentIpPrefixList.getLines().put(num, pll);
   }
 }
