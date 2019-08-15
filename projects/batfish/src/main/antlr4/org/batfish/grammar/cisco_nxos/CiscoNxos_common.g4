@@ -272,6 +272,22 @@ uint32
   | UINT32
 ;
 
+uint8_range_set
+:
+  ranges += uint8_range
+  (
+    COMMA ranges += uint8_range
+  )*
+;
+
+uint8_range
+:
+  low = uint8
+  (
+    DASH high = uint8
+  )?
+;
+
 user_name
 :
 // 1-32 characters

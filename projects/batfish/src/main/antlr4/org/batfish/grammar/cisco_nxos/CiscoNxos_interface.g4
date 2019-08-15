@@ -10,9 +10,15 @@ s_interface
 :
   INTERFACE
   (
-      s_interface_nve
-      | s_interface_regular
+    s_interface_breakout
+    | s_interface_nve
+    | s_interface_regular
   )
+;
+
+s_interface_breakout
+:
+  BREAKOUT MODULE module = uint8 PORT ranges = uint8_range_set MAP TENG_4X NEWLINE
 ;
 
 s_interface_nve
