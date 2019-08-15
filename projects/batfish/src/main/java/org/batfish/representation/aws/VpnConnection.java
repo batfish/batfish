@@ -3,7 +3,6 @@ package org.batfish.representation.aws;
 import static com.google.common.base.MoreObjects.firstNonNull;
 import static com.google.common.base.Preconditions.checkArgument;
 import static org.batfish.representation.aws.Utils.addStaticRoute;
-import static org.batfish.representation.aws.Utils.getTextXml;
 import static org.batfish.representation.aws.Utils.toStaticRoute;
 import static org.batfish.representation.aws.VpnGateway.VGW_EXPORT_POLICY_NAME;
 import static org.batfish.representation.aws.VpnGateway.VGW_IMPORT_POLICY_NAME;
@@ -237,7 +236,8 @@ final class VpnConnection implements AwsVpcEntity, Serializable {
                     .getElementsByTagName(AwsVpcEntity.XML_KEY_VPN_CONNECTION_ATTRIBUTES)
                     .getLength()
                 == 0
-            || !getTextXml(vpnConnection, AwsVpcEntity.XML_KEY_VPN_CONNECTION_ATTRIBUTES)
+            || !Utils.textOfFirstXmlElementWithTag(
+                    vpnConnection, AwsVpcEntity.XML_KEY_VPN_CONNECTION_ATTRIBUTES)
                 .contains("NoBGP");
 
     NodeList nodeList = document.getElementsByTagName(XML_KEY_IPSEC_TUNNEL);

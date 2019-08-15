@@ -20,6 +20,7 @@ import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.vendor_family.AwsFamily;
 import org.w3c.dom.Element;
+import org.w3c.dom.NodeList;
 
 /** A collection for utilities for AWS vendor model */
 @ParametersAreNonnullByDefault
@@ -197,17 +198,22 @@ final class Utils {
     return iface.getConcreteAddress().getIp();
   }
 
-  /** Extracts the text content of {@code tag} from XML Element {@code element} */
-  static String getTextXml(Element element, String tag) {
-    return element.getElementsByTagName(tag).item(0).getTextContent();
+  /** Extracts the text content of the first element with {@code tag} within {@code element}. */
+  static String textOfFirstXmlElementWithTag(Element element, String tag) {
+    NodeList nodes = element.getElementsByTagName(tag);
+    checkArgument(nodes.getLength() > 0, "Tag '%s' not found", tag);
+    return nodes.item(0).getTextContent();
   }
 
   /**
-   * Extracts the text content of {@code innerTag} within {@code outerTag}from XML Element {@code
-   * element}
+   * Extracts the text content of the first element with {@code innerTag} within the first element
+   * with {@code outerTag} within {@code element}.
    */
-  static String getTextXml(Element element, String outerTag, String innerTag) {
-    return getTextXml((Element) element.getElementsByTagName(outerTag).item(0), innerTag);
+  static String textOfFirstXmlElementWithInnerTag(
+      Element element, String outerTag, String innerTag) {
+    NodeList outerNodes = element.getElementsByTagName(outerTag);
+    checkArgument(outerNodes.getLength() > 0, "OuterTag '%s' not found", outerTag);
+    return textOfFirstXmlElementWithTag((Element) outerNodes.item(0), innerTag);
   }
 
   private Utils() {}

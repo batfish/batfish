@@ -79,12 +79,7 @@ public class AwsConfigurationPrivateSubnetTest {
       Ip dstIp,
       FlowDisposition expectedDisposition,
       List<String> expectedNodes) {
-    Flow flow =
-        Flow.builder()
-            .setTag("test")
-            .setIngressNode(ingressNode)
-            .setDstIp(dstIp) // this public IP does not exists in the network
-            .build();
+    Flow flow = Flow.builder().setTag("test").setIngressNode(ingressNode).setDstIp(dstIp).build();
     SortedMap<Flow, List<Trace>> traces =
         _batfish.getTracerouteEngine().computeTraces(ImmutableSet.of(flow), false);
 

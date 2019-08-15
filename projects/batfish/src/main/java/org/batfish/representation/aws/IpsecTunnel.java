@@ -1,7 +1,5 @@
 package org.batfish.representation.aws;
 
-import static org.batfish.representation.aws.Utils.getTextXml;
-
 import com.google.common.base.MoreObjects;
 import java.io.Serializable;
 import java.util.Objects;
@@ -65,21 +63,21 @@ final class IpsecTunnel implements Serializable {
 
     builder.setcgwOutsideAddress(
         Ip.parse(
-            Utils.getTextXml(
+            Utils.textOfFirstXmlElementWithInnerTag(
                 cgwElement,
                 AwsVpcEntity.XML_KEY_TUNNEL_OUTSIDE_ADDRESS,
                 AwsVpcEntity.XML_KEY_IP_ADDRESS)));
 
     builder.setcgwInsideAddress(
         Ip.parse(
-            Utils.getTextXml(
+            Utils.textOfFirstXmlElementWithInnerTag(
                 cgwElement,
                 AwsVpcEntity.XML_KEY_TUNNEL_INSIDE_ADDRESS,
                 AwsVpcEntity.XML_KEY_IP_ADDRESS)));
 
     builder.setCgwInsidePrefixLength(
         Integer.parseInt(
-            Utils.getTextXml(
+            Utils.textOfFirstXmlElementWithInnerTag(
                 cgwElement,
                 AwsVpcEntity.XML_KEY_TUNNEL_INSIDE_ADDRESS,
                 AwsVpcEntity.XML_KEY_NETWORK_CIDR)));
@@ -88,28 +86,29 @@ final class IpsecTunnel implements Serializable {
     if (isBgpConnection) {
       builder.setCgwBgpAsn(
           Long.parseLong(
-              Utils.getTextXml(cgwElement, AwsVpcEntity.XML_KEY_BGP, AwsVpcEntity.XML_KEY_ASN)));
+              Utils.textOfFirstXmlElementWithInnerTag(
+                  cgwElement, AwsVpcEntity.XML_KEY_BGP, AwsVpcEntity.XML_KEY_ASN)));
     }
     Element vgwElement =
         (Element) ipsecTunnel.getElementsByTagName(AwsVpcEntity.XML_KEY_VPN_GATEWAY).item(0);
 
     builder.setVgwOutsideAddress(
         Ip.parse(
-            Utils.getTextXml(
+            Utils.textOfFirstXmlElementWithInnerTag(
                 vgwElement,
                 AwsVpcEntity.XML_KEY_TUNNEL_OUTSIDE_ADDRESS,
                 AwsVpcEntity.XML_KEY_IP_ADDRESS)));
 
     builder.setVgwInsideAddress(
         Ip.parse(
-            Utils.getTextXml(
+            Utils.textOfFirstXmlElementWithInnerTag(
                 vgwElement,
                 AwsVpcEntity.XML_KEY_TUNNEL_INSIDE_ADDRESS,
                 AwsVpcEntity.XML_KEY_IP_ADDRESS)));
 
     builder.setVgwInsidePrefixLength(
         Integer.parseInt(
-            Utils.getTextXml(
+            Utils.textOfFirstXmlElementWithInnerTag(
                 vgwElement,
                 AwsVpcEntity.XML_KEY_TUNNEL_INSIDE_ADDRESS,
                 AwsVpcEntity.XML_KEY_NETWORK_CIDR)));
@@ -118,36 +117,47 @@ final class IpsecTunnel implements Serializable {
     if (isBgpConnection) {
       builder.setVgwBgpAsn(
           Long.parseLong(
-              Utils.getTextXml(vgwElement, AwsVpcEntity.XML_KEY_BGP, AwsVpcEntity.XML_KEY_ASN)));
+              Utils.textOfFirstXmlElementWithInnerTag(
+                  vgwElement, AwsVpcEntity.XML_KEY_BGP, AwsVpcEntity.XML_KEY_ASN)));
     }
     Element ikeElement =
         (Element) ipsecTunnel.getElementsByTagName(AwsVpcEntity.XML_KEY_IKE).item(0);
 
     builder.setIkeAuthProtocol(
-        getTextXml(ikeElement, AwsVpcEntity.XML_KEY_AUTHENTICATION_PROTOCOL));
+        Utils.textOfFirstXmlElementWithTag(
+            ikeElement, AwsVpcEntity.XML_KEY_AUTHENTICATION_PROTOCOL));
     builder.setIkeEncryptionProtocol(
-        getTextXml(ikeElement, AwsVpcEntity.XML_KEY_ENCRYPTION_PROTOCOL));
-    builder.setIkeLifetime(Integer.parseInt(getTextXml(ikeElement, AwsVpcEntity.XML_KEY_LIFETIME)));
+        Utils.textOfFirstXmlElementWithTag(ikeElement, AwsVpcEntity.XML_KEY_ENCRYPTION_PROTOCOL));
+    builder.setIkeLifetime(
+        Integer.parseInt(
+            Utils.textOfFirstXmlElementWithTag(ikeElement, AwsVpcEntity.XML_KEY_LIFETIME)));
     builder.setIkePerfectForwardSecrecy(
-        getTextXml(ikeElement, AwsVpcEntity.XML_KEY_PERFECT_FORWARD_SECRECY));
-    builder.setIkeMode(getTextXml(ikeElement, AwsVpcEntity.XML_KEY_MODE));
+        Utils.textOfFirstXmlElementWithTag(
+            ikeElement, AwsVpcEntity.XML_KEY_PERFECT_FORWARD_SECRECY));
+    builder.setIkeMode(Utils.textOfFirstXmlElementWithTag(ikeElement, AwsVpcEntity.XML_KEY_MODE));
     builder.setIkePreSharedKeyHash(
         CommonUtil.sha256Digest(
-            getTextXml(ikeElement, AwsVpcEntity.XML_KEY_PRE_SHARED_KEY) + CommonUtil.salt()));
+            Utils.textOfFirstXmlElementWithTag(ikeElement, AwsVpcEntity.XML_KEY_PRE_SHARED_KEY)
+                + CommonUtil.salt()));
 
     Element ipsecElement =
         (Element) ipsecTunnel.getElementsByTagName(AwsVpcEntity.XML_KEY_IPSEC).item(0);
 
-    builder.setIpsecProtocol(getTextXml(ipsecElement, AwsVpcEntity.XML_KEY_PROTOCOL));
+    builder.setIpsecProtocol(
+        Utils.textOfFirstXmlElementWithTag(ipsecElement, AwsVpcEntity.XML_KEY_PROTOCOL));
     builder.setIpsecAuthProtocol(
-        getTextXml(ipsecElement, AwsVpcEntity.XML_KEY_AUTHENTICATION_PROTOCOL));
+        Utils.textOfFirstXmlElementWithTag(
+            ipsecElement, AwsVpcEntity.XML_KEY_AUTHENTICATION_PROTOCOL));
     builder.setIpsecEncryptionProtocol(
-        getTextXml(ipsecElement, AwsVpcEntity.XML_KEY_ENCRYPTION_PROTOCOL));
+        Utils.textOfFirstXmlElementWithTag(ipsecElement, AwsVpcEntity.XML_KEY_ENCRYPTION_PROTOCOL));
     builder.setIpsecLifetime(
-        Integer.parseInt(getTextXml(ipsecElement, AwsVpcEntity.XML_KEY_LIFETIME)));
+        Integer.parseInt(
+            Utils.textOfFirstXmlElementWithTag(ipsecElement, AwsVpcEntity.XML_KEY_LIFETIME)));
     builder.setIpsecPerfectForwardSecrecy(
-        getTextXml(ipsecElement, AwsVpcEntity.XML_KEY_PERFECT_FORWARD_SECRECY));
-    builder.setIpsecMode(getTextXml(ipsecElement, AwsVpcEntity.XML_KEY_MODE));
+        Utils.textOfFirstXmlElementWithTag(
+            ipsecElement, AwsVpcEntity.XML_KEY_PERFECT_FORWARD_SECRECY));
+    builder.setIpsecMode(
+        Utils.textOfFirstXmlElementWithTag(ipsecElement, AwsVpcEntity.XML_KEY_MODE));
 
     return builder.build();
   }
