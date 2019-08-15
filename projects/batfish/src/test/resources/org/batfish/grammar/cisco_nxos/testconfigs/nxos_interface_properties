@@ -27,11 +27,13 @@ interface Ethernet1/1
   ip unreachables
   ipv6 traffic-filter FOO in
   ipv6 traffic-filter BAR out
+  no lldp receive
   mtu 9216
   service-policy type qos input pm_qos_in
   service-policy type qos output pm_qos_out
   snmp trap link-status
   udld aggressive
+  no vtp
 !
 
 interface Ethernet1/2
