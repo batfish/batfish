@@ -6,6 +6,7 @@ import static org.batfish.datamodel.acl.AclLineMatchExprs.TRUE;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
 import java.io.Serializable;
 import java.util.List;
@@ -155,5 +156,15 @@ public final class Transformation implements Serializable {
   @Override
   public int hashCode() {
     return Objects.hash(_guard, _transformationSteps, _andThen, _orElse);
+  }
+
+  @Override
+  public String toString() {
+    return MoreObjects.toStringHelper(this)
+        .add("guard", _guard)
+        .add("transformationSteps", _transformationSteps)
+        .add("andThen", _andThen)
+        .add("orElse", _orElse)
+        .toString();
   }
 }
