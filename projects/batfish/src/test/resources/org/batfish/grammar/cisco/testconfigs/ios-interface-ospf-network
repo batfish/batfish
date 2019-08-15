@@ -28,3 +28,4 @@ router ospf 1
  network 10.0.2.0 0.0.0.255 area 2
  network 10.0.3.0 0.0.0.255 area 3
  network 10.0.4.0 0.0.0.255 area 4
+
