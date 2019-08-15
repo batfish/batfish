@@ -7,7 +7,6 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSortedMap;
 import java.io.Serializable;
 import java.util.List;
 import java.util.Objects;
@@ -112,7 +111,7 @@ final class InternetGateway implements AwsVpcEntity, Serializable {
         BgpProcess.builder()
             .setRouterId(bbInterfaceAddress.getIp())
             .setVrf(cfgNode.getDefaultVrf())
-            .setAdminCostsToVendorDefaults(ConfigurationFormat.CISCO_IOS)
+            .setAdminCostsToVendorDefaults(ConfigurationFormat.AWS)
             .build();
 
     /*
@@ -129,11 +128,8 @@ final class InternetGateway implements AwsVpcEntity, Serializable {
           .filter(Objects::nonNull)
           .forEach(ip -> publicPrefixSpace.addPrefix(Prefix.create(ip, Prefix.MAX_PREFIX_LENGTH)));
     }
-    cfgNode.setRoutingPolicies(
-        ImmutableSortedMap.of(
-            BACKBONE_EXPORT_POLICY_NAME,
-            installRoutingPolicyAdvertiseStatic(
-                BACKBONE_EXPORT_POLICY_NAME, cfgNode, publicPrefixSpace, new NetworkFactory())));
+    installRoutingPolicyAdvertiseStatic(
+        BACKBONE_EXPORT_POLICY_NAME, cfgNode, publicPrefixSpace, new NetworkFactory());
 
     BgpActivePeerConfig.builder()
         .setPeerAddress(bbInterfaceSubnet.getEndIp())

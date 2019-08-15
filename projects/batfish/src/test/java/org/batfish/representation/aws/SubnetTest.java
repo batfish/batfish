@@ -55,7 +55,7 @@ public class SubnetTest {
     assertThat(subnet.getNextIp(), equalTo(Ip.parse("172.31.0.4")));
   }
 
-  /** Test the simplest case of subnet with only a private prefix */
+  /** Test the simplest case of subnet with only a private prefix and not even a vpn gateway */
   @Test
   public void testToConfigurationNodePrivateOnly() {
     Vpc vpc = new Vpc("vpc", ImmutableSet.of());
@@ -141,6 +141,89 @@ public class SubnetTest {
         equalTo(
             ImmutableSet.of(
                 toStaticRoute(privatePrefix, Utils.getInterfaceIp(vpcConfig, subnet.getId())))));
+  }
+
+  @Test
+  public void testToConfigurationNodePrivateVgw() {
+    Vpc vpc = new Vpc("vpc", ImmutableSet.of());
+    Configuration vpcConfig = Utils.newAwsConfiguration(vpc.getId(), "awstest");
+
+    VpnGateway vgw = new VpnGateway("igw", ImmutableList.of(vpc.getId()));
+    Configuration vgwConfig = Utils.newAwsConfiguration(vgw.getId(), "awstest");
+
+    Ip privateIp = Ip.parse("10.10.10.10");
+    Prefix privatePrefix = Prefix.create(privateIp, 24);
+
+    NetworkInterface ni =
+        new NetworkInterface(
+            "ni",
+            "subnet",
+            vpc.getId(),
+            ImmutableList.of(),
+            ImmutableList.of(new PrivateIpAddress(true, privateIp, null)),
+            "desc",
+            null);
+
+    Subnet subnet = new Subnet(privatePrefix, "subnet", vpc.getId());
+
+    Region region =
+        Region.builder("region")
+            .setSubnets(ImmutableMap.of(subnet.getId(), subnet))
+            .setVpcs(ImmutableMap.of(vpc.getId(), vpc))
+            .setVpnGateways(ImmutableMap.of(vgw.getId(), vgw))
+            .setNetworkInterfaces(ImmutableMap.of(ni.getId(), ni))
+            .setNetworkAcls(
+                ImmutableMap.of(
+                    "acl",
+                    new NetworkAcl(
+                        "acl",
+                        vpc.getId(),
+                        ImmutableList.of(new NetworkAclAssociation(subnet.getId())),
+                        ImmutableList.of())))
+            .setRouteTables(
+                ImmutableMap.of(
+                    "rt1",
+                    new RouteTable(
+                        "rt1",
+                        vpc.getId(),
+                        ImmutableList.of(new Association(false, subnet.getId())),
+                        ImmutableList.of(
+                            new Route(privatePrefix, State.ACTIVE, "local", TargetType.Gateway),
+                            new Route(
+                                Prefix.parse("0.0.0.0/0"),
+                                State.ACTIVE,
+                                vgw.getId(),
+                                TargetType.Gateway)))))
+            .build();
+
+    AwsConfiguration awsConfiguration =
+        new AwsConfiguration(
+            ImmutableMap.of(region.getName(), region),
+            ImmutableMap.of(
+                vpcConfig.getHostname(), vpcConfig, vgwConfig.getHostname(), vgwConfig));
+
+    Configuration subnetCfg = subnet.toConfigurationNode(awsConfiguration, region, new Warnings());
+
+    // subnet should have interfaces to the instances, vpc, and vgw
+    assertThat(
+        subnetCfg.getAllInterfaces().values().stream()
+            .map(i -> i.getName())
+            .collect(ImmutableSet.toImmutableSet()),
+        equalTo(ImmutableSet.of(subnet.getId(), vpc.getId(), vgw.getId())));
+
+    // the vgw should have gotten an interface pointed to the subnet
+    assertThat(
+        vgwConfig.getAllInterfaces().values().stream()
+            .map(i -> i.getName())
+            .collect(ImmutableList.toImmutableList()),
+        equalTo(ImmutableList.of(subnet.getId())));
+
+    // the vgw router should have a static route to the private prefix
+    assertThat(
+        vgwConfig.getDefaultVrf().getStaticRoutes(),
+        equalTo(
+            ImmutableSet.of(
+                toStaticRoute(privatePrefix, Utils.getInterfaceIp(subnetCfg, vgw.getId())))));
   }
 
   @Test
