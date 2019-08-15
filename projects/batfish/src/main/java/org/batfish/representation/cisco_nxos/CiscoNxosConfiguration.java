@@ -1993,6 +1993,20 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
           }
 
           @Override
+          public BoolExpr visitRouteMapMatchIpv6Address(
+              RouteMapMatchIpv6Address routeMapMatchIpv6Address) {
+            // incompatible with IPv4 forwarding, so fail-closed, match nothing
+            return FalseExpr.instance();
+          }
+
+          @Override
+          public BoolExpr visitRouteMapMatchIpv6AddressPrefixList(
+              RouteMapMatchIpv6AddressPrefixList routeMapMatchIpv6AddressPrefixList) {
+            // Not applicable to PBR
+            return null;
+          }
+
+          @Override
           public BoolExpr visitRouteMapMatchMetric(RouteMapMatchMetric routeMapMatchMetric) {
             // Not applicable to PBR
             return null;
@@ -2191,6 +2205,20 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
                             new MatchPrefixSet(
                                 DestinationNetwork.instance(), new NamedPrefixSet(name)))
                     .collect(ImmutableList.toImmutableList()));
+          }
+
+          @Override
+          public BooleanExpr visitRouteMapMatchIpv6Address(
+              RouteMapMatchIpv6Address routeMapMatchIpv6Address) {
+            // Ignore, as it only applies to PBR and has no effect on route filtering/redistribution
+            return BooleanExprs.TRUE;
+          }
+
+          @Override
+          public BooleanExpr visitRouteMapMatchIpv6AddressPrefixList(
+              RouteMapMatchIpv6AddressPrefixList routeMapMatchIpv6AddressPrefixList) {
+            // incompatible with IPv4 routing, so fail closed, match nothing.
+            return BooleanExprs.FALSE;
           }
 
           @Override

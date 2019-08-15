@@ -113,7 +113,17 @@ ip_null
 
 s_ipv6
 :
-  IPV6 ipv6_access_list
+  IPV6
+  (
+    ipv6_access_list
+    | ipv6_prefix_list
+  )
+;
+
+ipv6_prefix_list
+:
+// TODO: something much less lazy
+  PREFIX_LIST null_rest_of_line
 ;
 
 s_key

@@ -16,6 +16,8 @@ public final class RouteMapEntry implements Serializable {
   private @Nullable RouteMapMatchInterface _matchInterface;
   private @Nullable RouteMapMatchIpAddress _matchIpAddress;
   private @Nullable RouteMapMatchIpAddressPrefixList _matchIpAddressPrefixList;
+  private @Nullable RouteMapMatchIpv6Address _matchIpv6Address;
+  private @Nullable RouteMapMatchIpv6AddressPrefixList _matchIpv6AddressPrefixList;
   private @Nullable RouteMapMatchMetric _matchMetric;
   private @Nullable RouteMapMatchTag _matchTag;
   private final int _sequence;
@@ -51,6 +53,8 @@ public final class RouteMapEntry implements Serializable {
             _matchInterface,
             _matchIpAddress,
             _matchIpAddressPrefixList,
+            _matchIpv6Address,
+            _matchIpv6AddressPrefixList,
             _matchMetric,
             _matchTag)
         .filter(Objects::nonNull);
@@ -66,6 +70,14 @@ public final class RouteMapEntry implements Serializable {
 
   public @Nullable RouteMapMatchIpAddressPrefixList getMatchIpAddressPrefixList() {
     return _matchIpAddressPrefixList;
+  }
+
+  public @Nullable RouteMapMatchIpv6Address getMatchIpv6Address() {
+    return _matchIpv6Address;
+  }
+
+  public @Nullable RouteMapMatchIpv6AddressPrefixList getMatchIpv6AddressPrefixList() {
+    return _matchIpv6AddressPrefixList;
   }
 
   public @Nullable RouteMapMatchMetric getMatchMetric() {
@@ -148,6 +160,15 @@ public final class RouteMapEntry implements Serializable {
   public void setMatchIpAddressPrefixList(
       @Nullable RouteMapMatchIpAddressPrefixList matchIpAddressPrefixList) {
     _matchIpAddressPrefixList = matchIpAddressPrefixList;
+  }
+
+  public void setMatchIpv6Address(@Nullable RouteMapMatchIpv6Address matchIpv6Address) {
+    _matchIpv6Address = matchIpv6Address;
+  }
+
+  public void setMatchIpv6AddressPrefixList(
+      @Nullable RouteMapMatchIpv6AddressPrefixList matchIpv6AddressPrefixList) {
+    _matchIpv6AddressPrefixList = matchIpv6AddressPrefixList;
   }
 
   public void setMatchMetric(@Nullable RouteMapMatchMetric matchMetric) {
