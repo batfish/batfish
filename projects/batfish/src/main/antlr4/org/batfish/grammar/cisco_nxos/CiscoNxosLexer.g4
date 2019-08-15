@@ -140,7 +140,7 @@ ADDRESS
   'address'
   // All other instances are followed by tokens in default mode
   {
-    if (secondToLastTokenType() == MATCH && lastTokenType() == IP) {
+    if (secondToLastTokenType() == MATCH && (lastTokenType() == IP || lastTokenType() == IPV6)) {
       pushMode(M_MatchIpAddress);
     } else if (secondToLastTokenType() == OBJECT_GROUP) {
       pushMode(M_Word);

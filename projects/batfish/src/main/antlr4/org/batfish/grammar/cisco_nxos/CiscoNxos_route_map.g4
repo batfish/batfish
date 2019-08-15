@@ -52,6 +52,7 @@ rm_match
     | rmm_community
     | rmm_interface
     | rmm_ip
+    | rmm_ipv6
     | rmm_metric
     | rmm_tag
   )
@@ -96,6 +97,30 @@ rmmipa_prefix_list
   PREFIX_LIST names += ip_prefix_list_name+ NEWLINE
 ;
 
+rmm_ipv6
+:
+  IPV6 rmmip6_address
+;
+
+rmmip6_address
+:
+  ADDRESS 
+  (
+    rmmip6a_pbr
+    | rmmip6a_prefix_list
+  )
+;
+
+rmmip6a_pbr
+:
+  name = ip_access_list_name NEWLINE
+;
+
+rmmip6a_prefix_list
+:
+  PREFIX_LIST names += ip_prefix_list_name+ NEWLINE
+;
+
 rmm_metric
 :
   METRIC metric = uint32 NEWLINE
@@ -113,6 +138,7 @@ rm_set
     rms_as_path_prepend
     | rms_community
     | rms_ip
+    | rms_ipv6
     | rms_local_preference
     | rms_metric
     | rms_metric_type
@@ -183,6 +209,11 @@ rmsipnh_literal
 rmsipnh_unchanged
 :
   UNCHANGED NEWLINE
+;
+
+rms_ipv6
+:
+  IPV6 null_rest_of_line
 ;
 
 rms_local_preference
