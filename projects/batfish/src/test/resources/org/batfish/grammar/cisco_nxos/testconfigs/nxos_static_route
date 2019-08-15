@@ -24,6 +24,9 @@ ip route 10.0.1.0/24 10.255.1.254
 ! ..and next-hop interface
 ip route 10.0.2.0/24 Ethernet1/1 10.255.1.254
 
+! ..ONLY next-hop interface
+ip route 10.0.13.0/24 Ethernet1/1
+
 ! ..and track
 ip route 10.0.3.0/24 Ethernet1/1 10.255.1.254 track 500
 
