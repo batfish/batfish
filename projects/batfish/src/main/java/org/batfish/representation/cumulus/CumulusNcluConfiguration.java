@@ -1164,7 +1164,7 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
     RoutingPolicy.Builder builder =
         RoutingPolicy.builder().setName(routeMap.getName()).setOwner(_c);
     routeMap.getEntries().values().stream()
-        .map(entry -> toRoutingPolicyStatement(entry))
+        .map(this::toRoutingPolicyStatement)
         .forEach(builder::addStatement);
     return builder.addStatement(Statements.ReturnFalse.toStaticStatement()).build();
   }
