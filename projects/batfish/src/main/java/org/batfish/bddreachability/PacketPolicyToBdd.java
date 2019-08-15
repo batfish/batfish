@@ -20,6 +20,7 @@ import org.batfish.datamodel.packet_policy.BoolExprVisitor;
 import org.batfish.datamodel.packet_policy.Drop;
 import org.batfish.datamodel.packet_policy.FalseExpr;
 import org.batfish.datamodel.packet_policy.FibLookup;
+import org.batfish.datamodel.packet_policy.FibLookupOverrideLookupIp;
 import org.batfish.datamodel.packet_policy.If;
 import org.batfish.datamodel.packet_policy.PacketMatchExpr;
 import org.batfish.datamodel.packet_policy.PacketPolicy;
@@ -173,6 +174,12 @@ class PacketPolicyToBdd {
           fibLookup,
           (k, oldTransition) ->
               oldTransition == null ? _transition : or(oldTransition, _transition));
+      return null;
+    }
+
+    @Override
+    public Void visitFibLookupOverrideLookupIp(FibLookupOverrideLookupIp fibLookup) {
+      // TODO: support for FibLookupOverrideLookupIp
       return null;
     }
   }
