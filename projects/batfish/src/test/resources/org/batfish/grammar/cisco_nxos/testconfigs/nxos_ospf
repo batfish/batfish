@@ -148,7 +148,8 @@ router ospf mm_summary_lsa_m
 router ospf network
   ! TODO: confirm second IP is a wildcard
   network 192.168.0.0 0.0.255.255 area 0
-  network 172.16.0.1/24 area 0
+  network 172.16.0.0/24 area 0
+  network 172.16.2.0/24 area 0
 
 !!! passive-interface
 router ospf pi_d
@@ -220,6 +221,7 @@ interface Ethernet1/1
   no switchport
   no shutdown
   ip address 10.0.0.1/24
+  ip ospf authentication message-digest
   ip ospf bfd
   ! 1-65535
   ip ospf cost 12
@@ -237,16 +239,22 @@ interface Ethernet1/2
   no switchport
   no shutdown
   ip address 192.168.0.1/24
+  ip ospf authentication key-chain kc1
   ip ospf network broadcast
 interface Ethernet1/3
   no switchport
   no shutdown
   ip address 172.16.0.1/24
+  ip ospf authentication null
   ip ospf network point-to-point
 interface Ethernet1/4
   no switchport
   no shutdown
   ip address 172.16.1.1/24
+  ip ospf authentication
   ip ospf passive-interface
   ! use arbitrary process with active default
   ip router ospf router_id area 0
+interface Ethernet1/5
+  ip address 172.16.2.1/24
+  ! No explicit OSPF configuration

@@ -671,6 +671,7 @@ import org.batfish.grammar.cisco.CiscoParser.If_ip_ospf_areaContext;
 import org.batfish.grammar.cisco.CiscoParser.If_ip_ospf_costContext;
 import org.batfish.grammar.cisco.CiscoParser.If_ip_ospf_dead_intervalContext;
 import org.batfish.grammar.cisco.CiscoParser.If_ip_ospf_dead_interval_minimalContext;
+import org.batfish.grammar.cisco.CiscoParser.If_ip_ospf_hello_intervalContext;
 import org.batfish.grammar.cisco.CiscoParser.If_ip_ospf_networkContext;
 import org.batfish.grammar.cisco.CiscoParser.If_ip_ospf_passive_interfaceContext;
 import org.batfish.grammar.cisco.CiscoParser.If_ip_ospf_shutdownContext;
@@ -6380,6 +6381,14 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     for (Interface currentInterface : _currentInterfaces) {
       currentInterface.setOspfDeadInterval(1);
       currentInterface.setOspfHelloMultiplier(multiplier);
+    }
+  }
+
+  @Override
+  public void exitIf_ip_ospf_hello_interval(If_ip_ospf_hello_intervalContext ctx) {
+    int seconds = toInteger(ctx.seconds);
+    for (Interface currentInterface : _currentInterfaces) {
+      currentInterface.setOspfHelloInterval(seconds);
     }
   }
 

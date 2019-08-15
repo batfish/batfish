@@ -5,10 +5,9 @@ import java.util.HashMap;
 import java.util.Map;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import org.batfish.datamodel.Ip;
 
 /** HSRP group within {@link InterfaceHsrp} settings for an {@link Interface}. */
-public final class HsrpGroup implements Serializable {
+public abstract class HsrpGroup implements Serializable {
 
   public HsrpGroup(int group) {
     _group = group;
@@ -29,14 +28,6 @@ public final class HsrpGroup implements Serializable {
 
   public void setHoldTimeMs(@Nullable Integer holdTimeMs) {
     _holdTimeMs = holdTimeMs;
-  }
-
-  public @Nullable Ip getIp() {
-    return _ip;
-  }
-
-  public void setIp(@Nullable Ip ip) {
-    _ip = ip;
   }
 
   public @Nullable Integer getPreemptDelayMinimumSeconds() {
@@ -86,7 +77,6 @@ public final class HsrpGroup implements Serializable {
   private final int _group;
   private @Nullable Integer _helloIntervalMs;
   private @Nullable Integer _holdTimeMs;
-  private @Nullable Ip _ip;
   private @Nullable Integer _preemptDelayMinimumSeconds;
   private @Nullable Integer _preemptDelayReloadSeconds;
   private @Nullable Integer _preemptDelaySyncSeconds;

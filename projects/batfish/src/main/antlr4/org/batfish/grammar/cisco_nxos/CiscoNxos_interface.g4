@@ -39,6 +39,7 @@ s_interface_regular
     | i_hsrp
     | i_ip
     | i_ipv6
+    | i_lacp
     | i_mtu
     | i_no
     | i_null
@@ -132,15 +133,38 @@ hsrp_delay_reload
 
 ih_group
 :
-  group = hsrp_group_number NEWLINE
+  group = hsrp_group_number
   (
-    ihg_authentication
-    | ihg_ip
-    | ihg_preempt
-    | ihg_priority
-    | ihg_timers
-    | ihg_track
+    ihg_ipv4
+    | ihg_ipv6
+  )
+;
+
+ihg_ipv4
+:
+  NEWLINE
+  (
+    ihg_common
+    | ihg_ip_ipv4
   )*
+;
+
+ihg_ipv6
+:
+  IPV6 NEWLINE
+  (
+    ihg_common
+    | ihg_ip_ipv6
+  )*
+;
+
+ihg_common
+:
+  ihg_authentication
+  | ihg_preempt
+  | ihg_priority
+  | ihg_timers
+  | ihg_track
 ;
 
 hsrp_group_number
@@ -177,15 +201,6 @@ hsrp_authentication_string
 ihgam_key_chain
 :
   KEY_CHAIN name = key_chain_name NEWLINE
-;
-
-ihg_ip
-:
-  IP
-  (
-    ip = ip_address
-    | prefix = ip_prefix
-  ) NEWLINE
 ;
 
 ihg_preempt
@@ -263,6 +278,24 @@ hsrp_track_decrement
   uint8
 ;
 
+ihg_ip_ipv4
+:
+  IP
+  (
+    ip = ip_address
+    | prefix = ip_prefix
+  ) SECONDARY? NEWLINE
+;
+
+ihg_ip_ipv6
+:
+  IP
+  (
+    ip6 = ipv6_address
+    | prefix6 = ipv6_prefix
+  ) SECONDARY? NEWLINE
+;
+
 ih_version
 :
   VERSION version = hsrp_version NEWLINE
@@ -278,7 +311,8 @@ i_ip
 :
   IP
   (
-    i_ip_address
+    i_ip_access_group
+    | i_ip_address
     | i_ip_null
     | i_ip_ospf
     | i_ip_policy
@@ -286,9 +320,35 @@ i_ip
   )
 ;
 
+i_ip_access_group
+:
+  ACCESS_GROUP name = ip_access_list_name
+  (
+    IN
+    | OUT
+  ) NEWLINE
+;
+
 i_ip_address
 :
-  ADDRESS addr = interface_address SECONDARY? (TAG tag = uint32)? NEWLINE
+  ADDRESS
+  (
+    i_ip_address_concrete
+    | i_ip_address_dhcp
+  )
+;
+
+i_ip_address_concrete
+:
+  addr = interface_address SECONDARY?
+  (
+    TAG tag = uint32
+  )? NEWLINE
+;
+
+i_ip_address_dhcp
+:
+  DHCP NEWLINE
 ;
 
 i_ip_null
@@ -306,7 +366,8 @@ i_ip_ospf
 :
   OSPF
   (
-    iipo_bfd
+    iipo_authentication
+    | iipo_bfd
     | iipo_cost
     | iipo_dead_interval
     | iipo_hello_interval
@@ -318,7 +379,38 @@ i_ip_ospf
 
 i_ip_policy
 :
-  POLICY name = route_map_name NEWLINE
+  POLICY ROUTE_MAP name = route_map_name NEWLINE
+;
+
+iipo_authentication
+:
+  AUTHENTICATION
+  (
+    iipoa_authentication
+    | iipoa_key_chain
+    | iipoa_message_digest
+    | iipoa_null
+  )
+;
+
+iipoa_authentication
+:
+  NEWLINE
+;
+
+iipoa_key_chain
+:
+  KEY_CHAIN name = key_chain_name NEWLINE
+;
+
+iipoa_message_digest
+:
+  MESSAGE_DIGEST NEWLINE
+;
+
+iipoa_null
+:
+  NULL NEWLINE
 ;
 
 iipo_bfd
@@ -390,7 +482,43 @@ iipr_ospf
 
 i_ipv6
 :
-  IPV6 iip6_traffic_filter
+  IPV6
+  (
+    iip6_address
+    | iip6_null
+    | iip6_traffic_filter
+  )
+;
+
+iip6_address
+:
+  ADDRESS
+  (
+    i_ipv6_address_concrete
+    | i_ipv6_address_dhcp
+  )
+;
+
+i_ipv6_address_concrete
+:
+  addr = interface_ipv6_address SECONDARY?
+  (
+    TAG tag = uint32
+  )? NEWLINE
+;
+
+i_ipv6_address_dhcp
+:
+  DHCP NEWLINE
+;
+
+iip6_null
+:
+  (
+    DHCP
+    | ND
+    | ROUTER
+  ) null_rest_of_line
 ;
 
 iip6_traffic_filter
@@ -400,6 +528,31 @@ iip6_traffic_filter
     IN
     | OUT
   ) NEWLINE
+;
+
+i_lacp
+:
+  LACP
+  (
+    il_min_links
+    | il_null
+  )
+;
+
+il_min_links
+:
+  MIN_LINKS num = min_links_number NEWLINE
+;
+
+min_links_number
+:
+// 1-32
+  uint8
+;
+
+il_null
+:
+  SUSPEND_INDIVIDUAL null_rest_of_line
 ;
 
 i_mtu
@@ -432,7 +585,7 @@ i_no_autostate
 
 i_no_bfd
 :
-  BFD ECHO NEWLINE
+  BFD null_rest_of_line
 ;
 
 i_no_shutdown
@@ -463,7 +616,7 @@ i_null
     | CDP
     | DUPLEX
     | FEX
-    | LACP
+    | OSPFV3
     | SNMP
     | SPANNING_TREE
     | STORM_CONTROL
@@ -473,12 +626,26 @@ i_null
 
 i_shutdown
 :
-  SHUTDOWN NEWLINE
+  SHUTDOWN FORCE? NEWLINE
 ;
 
 i_speed
 :
-  SPEED speed = interface_speed NEWLINE
+  SPEED
+  (
+    i_speed_auto
+    | i_speed_number
+  )
+;
+
+i_speed_auto
+:
+  AUTO NEWLINE
+;
+
+i_speed_number
+:
+  speed = interface_speed NEWLINE
 ;
 
 interface_speed
@@ -512,6 +679,7 @@ i_switchport_mode
     i_switchport_mode_access
     | i_switchport_mode_dot1q_tunnel
     | i_switchport_mode_fex_fabric
+    | i_switchport_mode_monitor
     | i_switchport_mode_trunk
   )
 ;
@@ -529,6 +697,11 @@ i_switchport_mode_dot1q_tunnel
 i_switchport_mode_fex_fabric
 :
   FEX_FABRIC NEWLINE
+;
+
+i_switchport_mode_monitor
+:
+  MONITOR null_rest_of_line
 ;
 
 i_switchport_mode_trunk

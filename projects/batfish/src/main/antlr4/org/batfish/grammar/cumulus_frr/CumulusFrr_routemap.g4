@@ -54,6 +54,8 @@ rm_set
   SET
   (
     rms_metric
+    | rms_community
+    | rms_ip
   )
 ;
 
@@ -80,4 +82,27 @@ rmmipa_prefix_list
 rmm_interface
 :
   INTERFACE name = WORD NEWLINE
+;
+
+rms_ip
+:
+  IP rmsip_next_hop
+;
+
+rmsip_next_hop
+:
+  NEXT_HOP
+  (
+    rmsipnh_literal
+  )
+;
+
+rmsipnh_literal
+:
+  next_hop = ip_address NEWLINE
+;
+
+rms_community
+:
+  COMMUNITY communities += literal_standard_community+ NEWLINE
 ;

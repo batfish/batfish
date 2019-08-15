@@ -6,6 +6,7 @@ public enum SwitchportMode {
   DYNAMIC_AUTO,
   DYNAMIC_DESIRABLE,
   FEX_FABRIC,
+  MONITOR,
   NONE,
   TAP,
   TOOL,

@@ -41,6 +41,12 @@ ACCESS
 ACCESS_GROUP
 :
   'access-group'
+  {
+    if (lastTokenType() == IP) {
+      pushMode(M_Word);
+    }
+  }
+  
 ;
 
 ACCESS_LIST
@@ -452,6 +458,11 @@ BRIDGE
 BROADCAST
 :
   'broadcast'
+;
+
+BUFFER_LIMIT
+:
+  'buffer-limit'
 ;
 
 BYTES
@@ -1816,6 +1827,11 @@ LT
   'lt'
 ;
 
+MANAGED_CONFIG_FLAG
+:
+  'managed-config-flag'
+;
+
 MASK
 :
   'mask'
@@ -1959,6 +1975,11 @@ MGMT
   [Mm] [Gg] [Mm] [Tt]
 ;
 
+MIN_LINKS
+:
+  'min-links'
+;
+
 MIN_RX
 :
   'min_rx'
@@ -2072,6 +2093,11 @@ NAT_FLOW
 NATIVE
 :
   'native'
+;
+
+ND
+:
+  'nd'
 ;
 
 ND_NA
@@ -2264,6 +2290,11 @@ NTP
   'ntp'
 ;
 
+NULL
+:
+  'null'
+;
+
 NULL0
 :
   [Nn] [Uu] [Ll] [Ll] ' '* '0'
@@ -2348,6 +2379,11 @@ OSPFV3
   'ospfv3'
 ;
 
+OTHER_CONFIG_FLAG
+:
+  'other-config-flag'
+;
+
 OUT
 :
   'out'
@@ -2366,6 +2402,11 @@ PACKET_LENGTH
 PACKET_TOO_BIG
 :
   'packet-too-big'
+;
+
+PACKETS
+:
+  'packets'
 ;
 
 PARAMETER_PROBLEM
@@ -2500,7 +2541,7 @@ POLICE
 
 POLICY
 :
-  'policy' -> pushMode ( M_Word )
+  'policy'
 ;
 
 POLICY_MAP
@@ -2731,6 +2772,11 @@ REFERENCE_BANDWIDTH
 REFLECTION
 :
   'reflection'
+;
+
+RELAY
+:
+  'relay'
 ;
 
 RELOAD
@@ -4076,7 +4122,7 @@ F_Word
 fragment
 F_WordChar
 :
-  [0-9A-Za-z!@#$^*_=+.;:{}]
+  [0-9A-Za-z!@#$^*_=+.;:{}/]
   | '-'
 ;
 

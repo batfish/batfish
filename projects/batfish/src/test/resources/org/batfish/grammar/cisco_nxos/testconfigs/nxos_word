@@ -1,0 +1,12 @@
+!RANCID-CONTENT-TYPE: cisco-nx
+!
+hostname nxos_word
+!
+
+ip access-list a_b-c
+ip access-list 1
+ip access-list 2/3
+ip access-list 1.2.3.4
+ip access-list 3.4.5.6/7
+ip access-list 5::6
+ip access-list 7::8/9
