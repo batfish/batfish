@@ -728,6 +728,12 @@ public final class CiscoNxosGrammarTest {
   }
 
   @Test
+  public void testInterfaceBreakoutExtraction() {
+    // TODO: make into an extraction test
+    assertThat(parseVendorConfig("nxos_interface_breakout"), notNullValue());
+  }
+
+  @Test
   public void testInterfaceHsrpConversion() throws IOException {
     String hostname = "nxos_interface_hsrp";
     String ifaceName = "Ethernet1/1";
