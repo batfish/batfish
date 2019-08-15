@@ -3673,7 +3673,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
                 _w.redFlag(
                     "Interface: '"
                         + ifaceName
-                        + "' contains OSPF settings, but there is no OSPF process");
+                        + "' contains OSPF settings, but there is no corresponding OSPF area (or process)");
                 finalizeInterfaceOspfSettings(iface, vsIface, null, null);
               }
             }
