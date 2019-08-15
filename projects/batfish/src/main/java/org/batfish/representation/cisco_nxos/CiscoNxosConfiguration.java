@@ -1790,11 +1790,7 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
                 if (ospf.getArea().equals(areaId) && ospf.getProcess().equals(processName)) {
                   interfaces.add(ifaceName);
                   finalizeInterfaceOspfSettings(
-                      ifaceName,
-                      areaId,
-                      processName,
-                      proc.getPassiveInterfaceDefault(),
-                      iface.getOspf());
+                      ifaceName, areaId, processName, proc.getPassiveInterfaceDefault(), ospf);
                 }
               } else {
                 // Otherwise if OSPF area not explicitly configured on interface, add to this area
@@ -1818,7 +1814,8 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
                     areaId,
                     processName,
                     proc.getPassiveInterfaceDefault(),
-                    iface.getOspf());
+                    // If interface being added has no explicit OSPF configuration, use defaults
+                    ospf != null ? ospf : new OspfInterface());
               }
             });
     return interfaces.build();

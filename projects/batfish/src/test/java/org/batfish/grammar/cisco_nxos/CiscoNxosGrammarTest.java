@@ -3384,7 +3384,9 @@ public final class CiscoNxosGrammarTest {
       assertThat(
           proc,
           hasArea(
-              0, OspfAreaMatchers.hasInterfaces(containsInAnyOrder("Ethernet1/2", "Ethernet1/3"))));
+              0,
+              OspfAreaMatchers.hasInterfaces(
+                  containsInAnyOrder("Ethernet1/2", "Ethernet1/3", "Ethernet1/5"))));
     }
     {
       org.batfish.datamodel.ospf.OspfProcess proc = defaultVrf.getOspfProcesses().get("pi_d");
@@ -3451,7 +3453,8 @@ public final class CiscoNxosGrammarTest {
     }
 
     assertThat(
-        c.getAllInterfaces(), hasKeys("Ethernet1/1", "Ethernet1/2", "Ethernet1/3", "Ethernet1/4"));
+        c.getAllInterfaces(),
+        hasKeys("Ethernet1/1", "Ethernet1/2", "Ethernet1/3", "Ethernet1/4", "Ethernet1/5"));
     {
       org.batfish.datamodel.Interface iface = c.getAllInterfaces().get("Ethernet1/1");
       assertThat(iface.getOspfCost(), equalTo(12));
@@ -3749,6 +3752,8 @@ public final class CiscoNxosGrammarTest {
                   IpWildcard.ipWithWildcardMask(Ip.parse("192.168.0.0"), Ip.parse("0.0.255.255")),
                   0L,
                   IpWildcard.create(Prefix.strict("172.16.0.0/24")),
+                  0L,
+                  IpWildcard.create(Prefix.strict("172.16.2.0/24")),
                   0L)));
       assertFalse(proc.getPassiveInterfaceDefault());
     }
@@ -3818,7 +3823,8 @@ public final class CiscoNxosGrammarTest {
     }
 
     assertThat(
-        vc.getInterfaces(), hasKeys("Ethernet1/1", "Ethernet1/2", "Ethernet1/3", "Ethernet1/4"));
+        vc.getInterfaces(),
+        hasKeys("Ethernet1/1", "Ethernet1/2", "Ethernet1/3", "Ethernet1/4", "Ethernet1/5"));
     {
       Interface iface = vc.getInterfaces().get("Ethernet1/1");
       OspfInterface ospf = iface.getOspf();
