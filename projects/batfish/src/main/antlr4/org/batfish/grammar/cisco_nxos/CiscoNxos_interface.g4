@@ -517,6 +517,7 @@ iip6_null
   (
     DHCP
     | ND
+    | ROUTER
   ) null_rest_of_line
 ;
 
@@ -615,6 +616,7 @@ i_null
     | CDP
     | DUPLEX
     | FEX
+    | OSPFV3
     | SNMP
     | SPANNING_TREE
     | STORM_CONTROL
