@@ -1,0 +1,17 @@
+#
+set system host-name ospf-interface-network-type
+#
+set interfaces ge-0/0/0 unit 0 family inet address 10.0.0.0/31
+set interfaces ge-0/0/1 unit 0 family inet address 10.0.1.0/31
+set interfaces ge-0/0/2 unit 0 family inet address 10.0.2.0/31
+set interfaces ge-0/0/3 unit 0 family inet address 10.0.3.0/31
+#
+set protocols ospf area 0.0.0.0 interface ge-0/0/0.0
+set protocols ospf area 0.0.0.0 interface ge-0/0/0.0 interface-type p2p
+#
+set protocols ospf area 0.0.0.1 interface ge-0/0/1.0
+#
+set protocols ospf area 0.0.0.2 interface ge-0/0/2.0 interface-type nbma
+#
+set protocols ospf area 0.0.0.3 interface ge-0/0/3.0 interface-type p2mp
+#

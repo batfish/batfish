@@ -192,6 +192,7 @@ import org.batfish.datamodel.matchers.VniSettingsMatchers;
 import org.batfish.datamodel.matchers.VrfMatchers;
 import org.batfish.datamodel.ospf.OspfAreaSummary;
 import org.batfish.datamodel.ospf.OspfMetricType;
+import org.batfish.datamodel.ospf.OspfNetworkType;
 import org.batfish.datamodel.packet_policy.FibLookup;
 import org.batfish.datamodel.packet_policy.FibLookupOverrideLookupIp;
 import org.batfish.datamodel.packet_policy.FlowEvaluator;
@@ -3462,28 +3463,28 @@ public final class CiscoNxosGrammarTest {
       assertThat(iface.getOspfAreaName(), equalTo(0L));
       // TODO: convert and test bfd
       assertTrue(iface.getOspfPassive());
-      assertFalse(iface.getOspfPointToPoint());
+      assertThat(iface.getOspfNetworkType(), nullValue());
     }
     {
       org.batfish.datamodel.Interface iface = c.getAllInterfaces().get("Ethernet1/2");
       assertTrue(iface.getOspfEnabled());
       assertThat(iface.getOspfAreaName(), equalTo(0L));
       assertFalse(iface.getOspfPassive());
-      assertFalse(iface.getOspfPointToPoint());
+      assertThat(iface.getOspfNetworkType(), equalTo(OspfNetworkType.BROADCAST));
     }
     {
       org.batfish.datamodel.Interface iface = c.getAllInterfaces().get("Ethernet1/3");
       assertTrue(iface.getOspfEnabled());
       assertThat(iface.getOspfAreaName(), equalTo(0L));
       assertFalse(iface.getOspfPassive());
-      assertTrue(iface.getOspfPointToPoint());
+      assertThat(iface.getOspfNetworkType(), equalTo(OspfNetworkType.POINT_TO_POINT));
     }
     {
       org.batfish.datamodel.Interface iface = c.getAllInterfaces().get("Ethernet1/4");
       assertTrue(iface.getOspfEnabled());
       assertThat(iface.getOspfAreaName(), equalTo(0L));
       assertTrue(iface.getOspfPassive());
-      assertFalse(iface.getOspfPointToPoint());
+      assertThat(iface.getOspfNetworkType(), nullValue());
     }
   }
 
