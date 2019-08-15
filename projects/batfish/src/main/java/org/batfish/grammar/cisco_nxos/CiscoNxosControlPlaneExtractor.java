@@ -3880,6 +3880,8 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
       builder.setName(name);
     }
     if (ctx.nhint != null) {
+      // TODO: if ctx.nhip is null and this version of NX-OS does not allow next-hop-int-only static
+      // route, do something smart
       String nhint = _configuration.canonicalizeInterfaceName(ctx.nhint.getText());
       builder.setNextHopInterface(nhint);
       _configuration.referenceStructure(INTERFACE, nhint, IP_ROUTE_NEXT_HOP_INTERFACE, line);
