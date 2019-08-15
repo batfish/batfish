@@ -57,3 +57,6 @@ vrf context vrf1
 
   ! undefined reference to next hop interface Ethernet1/100
   ip route 10.0.12.0/24 Ethernet1/100 10.255.2.254
+
+!!! static route bfd detection
+ip route static bfd Ethernet1/1 10.255.1.50
