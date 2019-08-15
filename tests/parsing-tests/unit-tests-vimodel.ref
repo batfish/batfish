@@ -8810,8 +8810,9 @@
               "inside"
             ],
             "mtu" : 1500,
+            "ospfCost" : 60,
             "ospfDeadInterval" : 0,
-            "ospfEnabled" : false,
+            "ospfEnabled" : true,
             "ospfHelloMultiplier" : 0,
             "ospfPassive" : false,
             "outgoingFilter" : "~COMBINED_OUTGOING_ACL~inside~",

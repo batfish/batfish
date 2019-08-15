@@ -3653,7 +3653,9 @@ public final class CiscoConfiguration extends VendorConfiguration {
      * (e.g. has OSPF settings but no associated OSPF process)
      */
     _interfaces.forEach(
-        (ifaceName, vsIface) -> {
+        (key, vsIface) -> {
+          // Check alias first to handle ASA using alias as VI interface name
+          String ifaceName = firstNonNull(vsIface.getAlias(), key);
           org.batfish.datamodel.Interface iface = c.getAllInterfaces().get(ifaceName);
           if (iface == null) {
             // Should never get here
