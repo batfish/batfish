@@ -273,6 +273,8 @@ import org.batfish.representation.cisco_nxos.RouteMapMatchCommunity;
 import org.batfish.representation.cisco_nxos.RouteMapMatchInterface;
 import org.batfish.representation.cisco_nxos.RouteMapMatchIpAddress;
 import org.batfish.representation.cisco_nxos.RouteMapMatchIpAddressPrefixList;
+import org.batfish.representation.cisco_nxos.RouteMapMatchIpv6Address;
+import org.batfish.representation.cisco_nxos.RouteMapMatchIpv6AddressPrefixList;
 import org.batfish.representation.cisco_nxos.RouteMapMatchMetric;
 import org.batfish.representation.cisco_nxos.RouteMapMatchTag;
 import org.batfish.representation.cisco_nxos.RouteMapMetricType;
@@ -4277,6 +4279,8 @@ public final class CiscoNxosGrammarTest {
             "match_interface",
             "match_ip_address",
             "match_ip_address_prefix_list",
+            "match_ipv6_address",
+            "match_ipv6_address_prefix_list",
             "match_metric",
             "match_tag",
             "set_as_path_prepend_last_as",
@@ -4286,6 +4290,7 @@ public final class CiscoNxosGrammarTest {
             "set_ip_next_hop_literal",
             "set_ip_next_hop_literal2",
             "set_ip_next_hop_unchanged",
+            "set_ipv6_next_hop_unchanged",
             "set_local_preference",
             "set_metric",
             "set_metric_type_external",
@@ -4501,6 +4506,8 @@ public final class CiscoNxosGrammarTest {
             "match_interface",
             "match_ip_address",
             "match_ip_address_prefix_list",
+            "match_ipv6_address",
+            "match_ipv6_address_prefix_list",
             "match_metric",
             "match_tag",
             "set_as_path_prepend_last_as",
@@ -4510,6 +4517,7 @@ public final class CiscoNxosGrammarTest {
             "set_ip_next_hop_literal",
             "set_ip_next_hop_literal2",
             "set_ip_next_hop_unchanged",
+            "set_ipv6_next_hop_unchanged",
             "set_local_preference",
             "set_metric",
             "set_metric_type_external",
@@ -4597,6 +4605,26 @@ public final class CiscoNxosGrammarTest {
       RouteMapMatchIpAddressPrefixList match = entry.getMatchIpAddressPrefixList();
       assertThat(entry.getMatches().collect(onlyElement()), equalTo(match));
       assertThat(match.getNames(), contains("prefix_list1"));
+    }
+    {
+      RouteMap rm = vc.getRouteMaps().get("match_ipv6_address");
+      assertThat(rm.getEntries().keySet(), contains(10));
+      RouteMapEntry entry = getOnlyElement(rm.getEntries().values());
+      assertThat(entry.getAction(), equalTo(LineAction.PERMIT));
+      assertThat(entry.getSequence(), equalTo(10));
+      RouteMapMatchIpv6Address match = entry.getMatchIpv6Address();
+      assertThat(entry.getMatches().collect(onlyElement()), equalTo(match));
+      assertThat(match.getName(), equalTo("ipv6_access_list1"));
+    }
+    {
+      RouteMap rm = vc.getRouteMaps().get("match_ipv6_address_prefix_list");
+      assertThat(rm.getEntries().keySet(), contains(10));
+      RouteMapEntry entry = getOnlyElement(rm.getEntries().values());
+      assertThat(entry.getAction(), equalTo(LineAction.PERMIT));
+      assertThat(entry.getSequence(), equalTo(10));
+      RouteMapMatchIpv6AddressPrefixList match = entry.getMatchIpv6AddressPrefixList();
+      assertThat(entry.getMatches().collect(onlyElement()), equalTo(match));
+      assertThat(match.getNames(), contains("ipv6_prefix_list1"));
     }
     {
       RouteMap rm = vc.getRouteMaps().get("match_metric");

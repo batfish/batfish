@@ -355,6 +355,8 @@ import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Rmm_communityContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Rmm_interfaceContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Rmm_metricContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Rmm_tagContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Rmmip6a_pbrContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Rmmip6a_prefix_listContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Rmmipa_pbrContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Rmmipa_prefix_listContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Rms_communityContext;
@@ -509,6 +511,8 @@ import org.batfish.representation.cisco_nxos.RouteMapMatchCommunity;
 import org.batfish.representation.cisco_nxos.RouteMapMatchInterface;
 import org.batfish.representation.cisco_nxos.RouteMapMatchIpAddress;
 import org.batfish.representation.cisco_nxos.RouteMapMatchIpAddressPrefixList;
+import org.batfish.representation.cisco_nxos.RouteMapMatchIpv6Address;
+import org.batfish.representation.cisco_nxos.RouteMapMatchIpv6AddressPrefixList;
 import org.batfish.representation.cisco_nxos.RouteMapMatchMetric;
 import org.batfish.representation.cisco_nxos.RouteMapMatchTag;
 import org.batfish.representation.cisco_nxos.RouteMapMetricType;
@@ -4119,6 +4123,43 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
     }
     _currentRouteMapEntry.setMatchIpAddressPrefixList(
         new RouteMapMatchIpAddressPrefixList(names.build()));
+  }
+
+  @Override
+  public void exitRmmip6a_pbr(Rmmip6a_pbrContext ctx) {
+    Optional<String> nameOpt = toString(ctx, ctx.name);
+    if (!nameOpt.isPresent()) {
+      return;
+    }
+    if (_currentRouteMapEntry.getMatchIpAddress() != null) {
+      _w.addWarning(
+          ctx,
+          getFullText(ctx),
+          _parser,
+          "route-map entry cannot match more than one ipv6 access-list");
+      return;
+    }
+    String name = nameOpt.get();
+    // TODO: reference structure
+    _currentRouteMapEntry.setMatchIpv6Address(new RouteMapMatchIpv6Address(name));
+  }
+
+  @Override
+  public void exitRmmip6a_prefix_list(Rmmip6a_prefix_listContext ctx) {
+    ImmutableList.Builder<String> names = ImmutableList.builder();
+    Optional.ofNullable(_currentRouteMapEntry.getMatchIpv6AddressPrefixList())
+        .ifPresent(old -> names.addAll(old.getNames()));
+    for (Ip_prefix_list_nameContext nameCtx : ctx.names) {
+      Optional<String> nameOrError = toString(ctx, nameCtx);
+      if (!nameOrError.isPresent()) {
+        return;
+      }
+      String name = nameOrError.get();
+      // TODO: reference structure
+      names.add(name);
+    }
+    _currentRouteMapEntry.setMatchIpv6AddressPrefixList(
+        new RouteMapMatchIpv6AddressPrefixList(names.build()));
   }
 
   @Override

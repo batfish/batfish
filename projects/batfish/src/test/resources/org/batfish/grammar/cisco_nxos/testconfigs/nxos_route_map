@@ -8,9 +8,11 @@ feature pbr
 !!! Referenced structures
 ip access-list access_list1
   10 permit ip any any
+ipv6 access-list ipv6_access_list1
 ip as-path access-list as_path_access_list1 seq 1 permit "_1_"
 ip community-list standard community_list1 seq 1 permit 1:1 2:2
 ip prefix-list prefix_list1 seq 10 permit 192.168.1.0/24
+ipv6 prefix-list ipv6_prefix_list1 seq 10 permit dead:beef::1/128
 interface loopback0
   no switchport
   no shutdown
@@ -40,6 +42,12 @@ route-map match_ip_address permit 10
 route-map match_ip_address_prefix_list permit 10
   match ip address prefix-list prefix_list1
 
+route-map match_ipv6_address permit 10
+  match ipv6 address ipv6_access_list1
+
+route-map match_ipv6_address_prefix_list permit 10
+  match ipv6 address prefix-list ipv6_prefix_list1
+
 route-map match_metric permit 10
   match metric 1
 
@@ -67,6 +75,9 @@ route-map set_ip_next_hop_literal2 permit 10
 
 route-map set_ip_next_hop_unchanged permit 10
   set ip next-hop unchanged
+
+route-map set_ipv6_next_hop_unchanged permit 10
+  set ipv6 next-hop unchanged
 
 route-map set_local_preference permit 10
   set local-preference 1
