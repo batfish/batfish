@@ -5,8 +5,8 @@ import java.util.List;
 import javax.annotation.Nonnull;
 
 /**
- * A {@link RouteMapMatch} that matches routes based on whether the route's network is matched by
- * named ipv6 prefix-list.
+ * A {@link RouteMapMatch} that matches routes based on whether the route's network is matched by at
+ * least one of a set of named ipv6 prefix-lists.
  */
 public final class RouteMapMatchIpv6AddressPrefixList implements RouteMapMatch {
 

@@ -5,8 +5,8 @@ import java.util.List;
 import javax.annotation.Nonnull;
 
 /**
- * A {@link RouteMapMatch} that matches routes based on whether the route's network is matched by
- * named {@link IpPrefixList}s.
+ * A {@link RouteMapMatch} that matches routes based on whether the route's network is matched by at
+ * least one of a set of named {@link IpPrefixList}s.
  */
 public final class RouteMapMatchIpAddressPrefixList implements RouteMapMatch {
 
