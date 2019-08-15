@@ -7,6 +7,7 @@ import static org.batfish.datamodel.Configuration.DEFAULT_VRF_NAME;
 import static org.batfish.datamodel.Interface.NULL_INTERFACE_NAME;
 import static org.batfish.datamodel.IpWildcard.ipWithWildcardMask;
 import static org.batfish.datamodel.Route.UNSET_NEXT_HOP_INTERFACE;
+import static org.batfish.datamodel.Route.UNSET_ROUTE_NEXT_HOP_IP;
 import static org.batfish.datamodel.VniSettings.DEFAULT_UDP_PORT;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.matchDscp;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.matchDst;
@@ -4819,6 +4820,7 @@ public final class CiscoNxosGrammarTest {
             hasPrefix(Prefix.strict("10.0.0.0/24")),
             hasPrefix(Prefix.strict("10.0.1.0/24")),
             hasPrefix(Prefix.strict("10.0.2.0/24")),
+            hasPrefix(Prefix.strict("10.0.13.0/24")),
             hasPrefix(Prefix.strict("10.0.3.0/24")),
             hasPrefix(Prefix.strict("10.0.4.0/24")),
             hasPrefix(Prefix.strict("10.0.5.0/24")),
@@ -4859,6 +4861,17 @@ public final class CiscoNxosGrammarTest {
       assertThat(route, hasAdministrativeCost(1));
       assertThat(route, hasTag(0L));
       assertThat(route, hasNextHopIp(Ip.parse("10.255.1.254")));
+    }
+    {
+      org.batfish.datamodel.StaticRoute route =
+          c.getDefaultVrf().getStaticRoutes().stream()
+              .filter(r -> r.getNetwork().equals(Prefix.strict("10.0.13.0/24")))
+              .findFirst()
+              .get();
+      assertThat(route, hasNextHopInterface("Ethernet1/1"));
+      assertThat(route, hasAdministrativeCost(1));
+      assertThat(route, hasTag(0L));
+      assertThat(route, hasNextHopIp(UNSET_ROUTE_NEXT_HOP_IP));
     }
     {
       org.batfish.datamodel.StaticRoute route =
@@ -4951,6 +4964,7 @@ public final class CiscoNxosGrammarTest {
             Prefix.strict("10.0.0.0/24"),
             Prefix.strict("10.0.1.0/24"),
             Prefix.strict("10.0.2.0/24"),
+            Prefix.strict("10.0.13.0/24"),
             Prefix.strict("10.0.3.0/24"),
             Prefix.strict("10.0.4.0/24"),
             Prefix.strict("10.0.5.0/24"),
@@ -4984,6 +4998,15 @@ public final class CiscoNxosGrammarTest {
       assertThat(route.getPreference(), equalTo((short) 1));
       assertThat(route.getTag(), equalTo(0L));
       assertThat(route.getNextHopIp(), equalTo(Ip.parse("10.255.1.254")));
+      assertThat(route.getNextHopInterface(), equalTo("Ethernet1/1"));
+    }
+    {
+      StaticRoute route =
+          vc.getDefaultVrf().getStaticRoutes().get(Prefix.strict("10.0.13.0/24")).iterator().next();
+      assertFalse(route.getDiscard());
+      assertThat(route.getPreference(), equalTo((short) 1));
+      assertThat(route.getTag(), equalTo(0L));
+      assertThat(route.getNextHopIp(), nullValue());
       assertThat(route.getNextHopInterface(), equalTo("Ethernet1/1"));
     }
     {
