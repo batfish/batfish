@@ -2730,7 +2730,9 @@ public final class CiscoConfiguration extends VendorConfiguration {
       iface.setOspfProcess(proc.getName());
       if (firstNonNull(
           vsIface.getOspfPassive(),
-          proc.getPassiveInterfaceDefault() ^ proc.getNonDefaultInterfaces().contains(ifaceName))) {
+          proc.getPassiveInterfaces().contains(ifaceName)
+              || (proc.getPassiveInterfaceDefault()
+                  ^ proc.getNonDefaultInterfaces().contains(ifaceName)))) {
         proc.getPassiveInterfaces().add(ifaceName);
         iface.setOspfPassive(true);
       }
