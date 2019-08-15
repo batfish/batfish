@@ -535,4 +535,9 @@ public class CumulusFrrGrammarTest {
     assertThat(line2.getLengthRange(), equalTo(new SubRange(27, 30)));
     assertThat(line2.getPrefix(), equalTo(Prefix.parse("10.0.1.2/24")));
   }
+
+  @Test
+  public void testCumulusFrrAgentx() {
+    parse("agentx");
+  }
 }

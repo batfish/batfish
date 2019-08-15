@@ -14,6 +14,11 @@ ADDRESS
   'address'
 ;
 
+AGENTX
+:
+  'agentx'
+;
+
 COMMENT_LINE
 :
   (
