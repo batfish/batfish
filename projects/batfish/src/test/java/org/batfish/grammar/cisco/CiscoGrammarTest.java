@@ -4980,6 +4980,22 @@ public class CiscoGrammarTest {
   }
 
   @Test
+  public void testShutdownOspfInterface() throws IOException {
+    Configuration c = parseConfig("ios-shutdown-ospf-interface");
+
+    String eth0 = "Ethernet0/0";
+    Map<String, Interface> ifaces = c.getAllInterfaces();
+    assertThat(ifaces.keySet(), contains(eth0));
+    Interface iface = ifaces.get(eth0);
+
+    // Confirm OSPF settings are associated with interface even though it is shutdown
+    assertThat(iface.getOspfEnabled(), equalTo(false));
+    assertThat(iface.getOspfAreaName(), equalTo(0L));
+    assertThat(iface.getOspfProcess(), equalTo("1"));
+    assertThat(iface.getOspfPassive(), equalTo(true));
+  }
+
+  @Test
   public void testParsingRecoveryNoInfiniteLoopDuringAdaptivePredictionAtEof() throws IOException {
     String testrigName = "parsing-recovery";
     String hostname = "ios-blankish-file";
