@@ -221,12 +221,12 @@ public class AwsConfigurationPublicPrivateSubnetTest {
         _vgw,
         _publicInstancePrivateIp,
         FlowDisposition.DENIED_IN,
-        ImmutableList.of(_vgw, _vpc, _publicSubnet, _publicInstance));
+        ImmutableList.of(_vgw, _publicSubnet, _publicInstance));
 
     testTrace(
         _vgw,
         _privateInstancePrivateIp,
         FlowDisposition.DENIED_IN,
-        ImmutableList.of(_vgw, _vpc, _privateSubnet, _privateInstance));
+        ImmutableList.of(_vgw, _privateSubnet, _privateInstance));
   }
 }

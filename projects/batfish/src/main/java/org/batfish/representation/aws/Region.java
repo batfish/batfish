@@ -304,9 +304,12 @@ final class Region implements Serializable {
         };
       case AwsVpcEntity.JSON_KEY_VPN_CONNECTIONS:
         return json -> {
-          VpnConnection vpnConnection =
-              BatfishObjectMapper.mapper().convertValue(json, VpnConnection.class);
-          _vpnConnections.put(vpnConnection.getId(), vpnConnection);
+          String state = json.get(AwsVpcEntity.JSON_KEY_STATE).textValue();
+          if (!state.equals(AwsVpcEntity.STATUS_DELETED)) {
+            VpnConnection vpnConnection =
+                BatfishObjectMapper.mapper().convertValue(json, VpnConnection.class);
+            _vpnConnections.put(vpnConnection.getId(), vpnConnection);
+          }
         };
       case AwsVpcEntity.JSON_KEY_VPN_GATEWAYS:
         return json -> {

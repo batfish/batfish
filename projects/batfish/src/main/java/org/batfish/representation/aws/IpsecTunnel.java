@@ -14,14 +14,6 @@ import org.w3c.dom.Element;
 @ParametersAreNonnullByDefault
 final class IpsecTunnel implements Serializable {
 
-  private static String getText(Element element, String tag) {
-    return element.getElementsByTagName(tag).item(0).getTextContent();
-  }
-
-  private static String getText(Element element, String outerTag, String innerTag) {
-    return getText((Element) element.getElementsByTagName(outerTag).item(0), innerTag);
-  }
-
   @Nullable private Long _cgwBgpAsn;
 
   @Nonnull private final Ip _cgwInsideAddress;
@@ -62,106 +54,110 @@ final class IpsecTunnel implements Serializable {
 
   @Nonnull private final Ip _vgwOutsideAddress;
 
-  @Nullable private final String _vpnConnectionAttributes;
-
-  static IpsecTunnel create(Element ipsecTunnel, Element vpnConnection) {
+  static IpsecTunnel create(Element ipsecTunnel, boolean isBgpConnection) {
 
     Builder builder = new Builder();
 
-    // this is an optional field
-    if (vpnConnection
-            .getElementsByTagName(AwsVpcEntity.XML_KEY_VPN_CONNECTION_ATTRIBUTES)
-            .getLength()
-        > 0) {
-      builder.setVpnConnectionAttributes(
-          getText(vpnConnection, AwsVpcEntity.XML_KEY_VPN_CONNECTION_ATTRIBUTES));
-    }
     Element cgwElement =
         (Element) ipsecTunnel.getElementsByTagName(AwsVpcEntity.XML_KEY_CUSTOMER_GATEWAY).item(0);
 
     builder.setcgwOutsideAddress(
         Ip.parse(
-            getText(
+            Utils.textOfFirstXmlElementWithInnerTag(
                 cgwElement,
                 AwsVpcEntity.XML_KEY_TUNNEL_OUTSIDE_ADDRESS,
                 AwsVpcEntity.XML_KEY_IP_ADDRESS)));
 
     builder.setcgwInsideAddress(
         Ip.parse(
-            getText(
+            Utils.textOfFirstXmlElementWithInnerTag(
                 cgwElement,
                 AwsVpcEntity.XML_KEY_TUNNEL_INSIDE_ADDRESS,
                 AwsVpcEntity.XML_KEY_IP_ADDRESS)));
 
     builder.setCgwInsidePrefixLength(
         Integer.parseInt(
-            getText(
+            Utils.textOfFirstXmlElementWithInnerTag(
                 cgwElement,
                 AwsVpcEntity.XML_KEY_TUNNEL_INSIDE_ADDRESS,
                 AwsVpcEntity.XML_KEY_NETWORK_CIDR)));
 
-    // when vpnconnection attribute is 'NoBGPVPNConnection' we see no asn configured
-    if (builder._vpnConnectionAttributes == null
-        || !builder._vpnConnectionAttributes.contains("NoBGP")) {
+    // we see asn configured only for BGP connections
+    if (isBgpConnection) {
       builder.setCgwBgpAsn(
-          Long.parseLong(getText(cgwElement, AwsVpcEntity.XML_KEY_BGP, AwsVpcEntity.XML_KEY_ASN)));
+          Long.parseLong(
+              Utils.textOfFirstXmlElementWithInnerTag(
+                  cgwElement, AwsVpcEntity.XML_KEY_BGP, AwsVpcEntity.XML_KEY_ASN)));
     }
     Element vgwElement =
         (Element) ipsecTunnel.getElementsByTagName(AwsVpcEntity.XML_KEY_VPN_GATEWAY).item(0);
 
     builder.setVgwOutsideAddress(
         Ip.parse(
-            getText(
+            Utils.textOfFirstXmlElementWithInnerTag(
                 vgwElement,
                 AwsVpcEntity.XML_KEY_TUNNEL_OUTSIDE_ADDRESS,
                 AwsVpcEntity.XML_KEY_IP_ADDRESS)));
 
     builder.setVgwInsideAddress(
         Ip.parse(
-            getText(
+            Utils.textOfFirstXmlElementWithInnerTag(
                 vgwElement,
                 AwsVpcEntity.XML_KEY_TUNNEL_INSIDE_ADDRESS,
                 AwsVpcEntity.XML_KEY_IP_ADDRESS)));
 
     builder.setVgwInsidePrefixLength(
         Integer.parseInt(
-            getText(
+            Utils.textOfFirstXmlElementWithInnerTag(
                 vgwElement,
                 AwsVpcEntity.XML_KEY_TUNNEL_INSIDE_ADDRESS,
                 AwsVpcEntity.XML_KEY_NETWORK_CIDR)));
 
-    // when vpnconnection attribute is 'NoBGPVPNConnection' we see no asn configured
-    if (builder._vpnConnectionAttributes == null
-        || !builder._vpnConnectionAttributes.contains("NoBGP")) {
+    // we see asn configured only for BGP connections
+    if (isBgpConnection) {
       builder.setVgwBgpAsn(
-          Long.parseLong(getText(vgwElement, AwsVpcEntity.XML_KEY_BGP, AwsVpcEntity.XML_KEY_ASN)));
+          Long.parseLong(
+              Utils.textOfFirstXmlElementWithInnerTag(
+                  vgwElement, AwsVpcEntity.XML_KEY_BGP, AwsVpcEntity.XML_KEY_ASN)));
     }
     Element ikeElement =
         (Element) ipsecTunnel.getElementsByTagName(AwsVpcEntity.XML_KEY_IKE).item(0);
 
-    builder.setIkeAuthProtocol(getText(ikeElement, AwsVpcEntity.XML_KEY_AUTHENTICATION_PROTOCOL));
-    builder.setIkeEncryptionProtocol(getText(ikeElement, AwsVpcEntity.XML_KEY_ENCRYPTION_PROTOCOL));
-    builder.setIkeLifetime(Integer.parseInt(getText(ikeElement, AwsVpcEntity.XML_KEY_LIFETIME)));
+    builder.setIkeAuthProtocol(
+        Utils.textOfFirstXmlElementWithTag(
+            ikeElement, AwsVpcEntity.XML_KEY_AUTHENTICATION_PROTOCOL));
+    builder.setIkeEncryptionProtocol(
+        Utils.textOfFirstXmlElementWithTag(ikeElement, AwsVpcEntity.XML_KEY_ENCRYPTION_PROTOCOL));
+    builder.setIkeLifetime(
+        Integer.parseInt(
+            Utils.textOfFirstXmlElementWithTag(ikeElement, AwsVpcEntity.XML_KEY_LIFETIME)));
     builder.setIkePerfectForwardSecrecy(
-        getText(ikeElement, AwsVpcEntity.XML_KEY_PERFECT_FORWARD_SECRECY));
-    builder.setIkeMode(getText(ikeElement, AwsVpcEntity.XML_KEY_MODE));
+        Utils.textOfFirstXmlElementWithTag(
+            ikeElement, AwsVpcEntity.XML_KEY_PERFECT_FORWARD_SECRECY));
+    builder.setIkeMode(Utils.textOfFirstXmlElementWithTag(ikeElement, AwsVpcEntity.XML_KEY_MODE));
     builder.setIkePreSharedKeyHash(
         CommonUtil.sha256Digest(
-            getText(ikeElement, AwsVpcEntity.XML_KEY_PRE_SHARED_KEY) + CommonUtil.salt()));
+            Utils.textOfFirstXmlElementWithTag(ikeElement, AwsVpcEntity.XML_KEY_PRE_SHARED_KEY)
+                + CommonUtil.salt()));
 
     Element ipsecElement =
         (Element) ipsecTunnel.getElementsByTagName(AwsVpcEntity.XML_KEY_IPSEC).item(0);
 
-    builder.setIpsecProtocol(getText(ipsecElement, AwsVpcEntity.XML_KEY_PROTOCOL));
+    builder.setIpsecProtocol(
+        Utils.textOfFirstXmlElementWithTag(ipsecElement, AwsVpcEntity.XML_KEY_PROTOCOL));
     builder.setIpsecAuthProtocol(
-        getText(ipsecElement, AwsVpcEntity.XML_KEY_AUTHENTICATION_PROTOCOL));
+        Utils.textOfFirstXmlElementWithTag(
+            ipsecElement, AwsVpcEntity.XML_KEY_AUTHENTICATION_PROTOCOL));
     builder.setIpsecEncryptionProtocol(
-        getText(ipsecElement, AwsVpcEntity.XML_KEY_ENCRYPTION_PROTOCOL));
+        Utils.textOfFirstXmlElementWithTag(ipsecElement, AwsVpcEntity.XML_KEY_ENCRYPTION_PROTOCOL));
     builder.setIpsecLifetime(
-        Integer.parseInt(getText(ipsecElement, AwsVpcEntity.XML_KEY_LIFETIME)));
+        Integer.parseInt(
+            Utils.textOfFirstXmlElementWithTag(ipsecElement, AwsVpcEntity.XML_KEY_LIFETIME)));
     builder.setIpsecPerfectForwardSecrecy(
-        getText(ipsecElement, AwsVpcEntity.XML_KEY_PERFECT_FORWARD_SECRECY));
-    builder.setIpsecMode(getText(ipsecElement, AwsVpcEntity.XML_KEY_MODE));
+        Utils.textOfFirstXmlElementWithTag(
+            ipsecElement, AwsVpcEntity.XML_KEY_PERFECT_FORWARD_SECRECY));
+    builder.setIpsecMode(
+        Utils.textOfFirstXmlElementWithTag(ipsecElement, AwsVpcEntity.XML_KEY_MODE));
 
     return builder.build();
   }
@@ -186,8 +182,7 @@ final class IpsecTunnel implements Serializable {
       @Nullable Long vgwBgpAsn,
       Ip vgwInsideAddress,
       int vgwInsidePrefixLength,
-      Ip vgwOutsideAddress,
-      @Nullable String vpnConnectionAttributes) {
+      Ip vgwOutsideAddress) {
     _cgwBgpAsn = cgwBgpAsn;
     _cgwInsideAddress = cgwInsideAddress;
     _cgwInsidePrefixLength = cgwInsidePrefixLength;
@@ -211,8 +206,6 @@ final class IpsecTunnel implements Serializable {
     _vgwInsidePrefixLength = vgwInsidePrefixLength;
     _vgwInsideAddress = vgwInsideAddress;
     _vgwOutsideAddress = vgwOutsideAddress;
-
-    _vpnConnectionAttributes = vpnConnectionAttributes;
   }
 
   @Nullable
@@ -311,11 +304,6 @@ final class IpsecTunnel implements Serializable {
     return _vgwOutsideAddress;
   }
 
-  @Nullable
-  String getVpnConnectionAttributes() {
-    return _vpnConnectionAttributes;
-  }
-
   @Override
   public boolean equals(Object o) {
     if (this == o) {
@@ -344,8 +332,7 @@ final class IpsecTunnel implements Serializable {
         && Objects.equals(_ipsecPerfectForwardSecrecy, that._ipsecPerfectForwardSecrecy)
         && Objects.equals(_ipsecProtocol, that._ipsecProtocol)
         && Objects.equals(_vgwInsideAddress, that._vgwInsideAddress)
-        && Objects.equals(_vgwOutsideAddress, that._vgwOutsideAddress)
-        && Objects.equals(_vpnConnectionAttributes, that._vpnConnectionAttributes);
+        && Objects.equals(_vgwOutsideAddress, that._vgwOutsideAddress);
   }
 
   @Override
@@ -370,8 +357,7 @@ final class IpsecTunnel implements Serializable {
         _vgwBgpAsn,
         _vgwInsideAddress,
         _vgwInsidePrefixLength,
-        _vgwOutsideAddress,
-        _vpnConnectionAttributes);
+        _vgwOutsideAddress);
   }
 
   @Override
@@ -397,7 +383,6 @@ final class IpsecTunnel implements Serializable {
         .add("_vgwInsideAddress", _vgwInsideAddress)
         .add("_vgwInsidePrefixLength", _vgwInsidePrefixLength)
         .add("_vgwOutsideAddress", _vgwOutsideAddress)
-        .add("_vpnConnectionAttributes", _vpnConnectionAttributes)
         .toString();
   }
 
@@ -422,7 +407,6 @@ final class IpsecTunnel implements Serializable {
     private Ip _vgwInsideAddress;
     private int _vgwInsidePrefixLength;
     private Ip _vgwOutsideAddress;
-    private String _vpnConnectionAttributes;
 
     private Builder() {}
 
@@ -526,11 +510,6 @@ final class IpsecTunnel implements Serializable {
       return this;
     }
 
-    Builder setVpnConnectionAttributes(@Nullable String vpnConnectionAttributes) {
-      this._vpnConnectionAttributes = vpnConnectionAttributes;
-      return this;
-    }
-
     IpsecTunnel build() {
       return new IpsecTunnel(
           _cgwBgpAsn,
@@ -552,8 +531,7 @@ final class IpsecTunnel implements Serializable {
           _vgwBgpAsn,
           _vgwInsideAddress,
           _vgwInsidePrefixLength,
-          _vgwOutsideAddress,
-          _vpnConnectionAttributes);
+          _vgwOutsideAddress);
     }
   }
 }
