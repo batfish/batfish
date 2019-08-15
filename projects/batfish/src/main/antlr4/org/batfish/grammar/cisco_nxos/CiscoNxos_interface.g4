@@ -49,6 +49,7 @@ s_interface_regular
     | i_mtu
     | i_no
     | i_null
+    | i_service_policy
     | i_shutdown
     | i_speed
     | i_switchport
@@ -628,6 +629,30 @@ i_null
     | STORM_CONTROL
     | UDLD
   ) null_rest_of_line
+;
+
+i_service_policy
+:
+  SERVICE_POLICY isp_type
+;
+
+isp_type
+:
+  TYPE
+  (
+    ispt_qos
+    | ispt_queueing
+  )
+;
+
+ispt_qos
+:
+  QOS (INPUT | OUTPUT) name = policy_map_name NEWLINE
+;
+
+ispt_queueing
+:
+  QUEUEING (INPUT | OUTPUT) name = policy_map_name NEWLINE
 ;
 
 i_shutdown

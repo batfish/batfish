@@ -37,4 +37,4 @@ control-plane
 
 system qos
   service-policy type network-qos pm_network_qos
-  service-policy type qos pm_qos
+  service-policy type qos input pm_qos
