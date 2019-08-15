@@ -450,6 +450,11 @@ BPS
   'bps'
 ;
 
+BREAKOUT
+:
+  'breakout'
+;
+
 BRIDGE
 :
   'bridge'
@@ -1832,6 +1837,11 @@ MANAGED_CONFIG_FLAG
   'managed-config-flag'
 ;
 
+MAP
+:
+  'map'
+;
+
 MASK
 :
   'mask'
@@ -2008,6 +2018,11 @@ MOBILE_REDIRECT
 MODE
 :
   'mode'
+;
+
+MODULE
+:
+  'module'
 ;
 
 MONITOR
@@ -3336,6 +3351,11 @@ TELNET
 TEMPLATE
 :
   'template'
+;
+
+TENG_4X
+:
+  '10g-4x'
 ;
 
 TERMINAL

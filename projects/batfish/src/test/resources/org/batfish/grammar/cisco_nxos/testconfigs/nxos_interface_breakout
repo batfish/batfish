@@ -1,0 +1,9 @@
+!RANCID-CONTENT-TYPE: cisco-nx
+!
+hostname nxos_interface_breakout
+!
+
+interface breakout module 1 port 1 map 10g-4x
+interface breakout module 1 port 3-5 map 10g-4x
+interface breakout module 1 port 7,9 map 10g-4x
+interface breakout module 1 port 10-12,14,16-9 map 10g-4x
