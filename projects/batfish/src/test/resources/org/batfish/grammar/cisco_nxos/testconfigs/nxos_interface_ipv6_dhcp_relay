@@ -1,0 +1,9 @@
+!RANCID-CONTENT-TYPE: cisco-nx
+!
+hostname nxos_interface_ipv6_dhcp_relay
+!
+
+interface Ethernet1/1
+  no switchport
+  ipv6 dhcp relay address dead:beef::1
+  ipv6 dhcp relay address dead:beef::2

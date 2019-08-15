@@ -5263,25 +5263,25 @@
             "type" : "PHYSICAL",
             "vrf" : "default"
           },
-          "vpc-815775e7" : {
-            "name" : "vpc-815775e7",
+          "loopbackBgp" : {
+            "name" : "loopbackBgp",
             "active" : true,
             "additionalArpIps" : {
               "class" : "org.batfish.datamodel.EmptyIpSpace"
             },
             "allPrefixes" : [
-              "240.0.0.6/31"
+              "240.0.0.6/32"
             ],
             "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E12,
-            "description" : "To VPC vpc-815775e7",
+            "description" : "BGP loopback",
             "mtu" : 1500,
             "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
             "ospfPassive" : false,
-            "prefix" : "240.0.0.6/31",
+            "prefix" : "240.0.0.6/32",
             "proxyArp" : false,
             "ripEnabled" : false,
             "ripPassive" : false,
@@ -5403,31 +5403,9 @@
             ]
           }
         },
-        "routeFilterLists" : {
-          "vpn-ba2e34a8-1_origination" : {
-            "lines" : [
-              {
-                "action" : "PERMIT",
-                "ipWildcard" : "10.100.0.0/16",
-                "lengthRange" : "16-16"
-              }
-            ],
-            "name" : "vpn-ba2e34a8-1_origination"
-          },
-          "vpn-ba2e34a8-2_origination" : {
-            "lines" : [
-              {
-                "action" : "PERMIT",
-                "ipWildcard" : "10.100.0.0/16",
-                "lengthRange" : "16-16"
-              }
-            ],
-            "name" : "vpn-ba2e34a8-2_origination"
-          }
-        },
         "routingPolicies" : {
-          "vpn-ba2e34a8-1_origination" : {
-            "name" : "vpn-ba2e34a8-1_origination",
+          "~vgw~export-policy~" : {
+            "name" : "~vgw~export-policy~",
             "statements" : [
               {
                 "class" : "org.batfish.datamodel.routing_policy.statement.If",
@@ -5446,8 +5424,10 @@
                         "class" : "org.batfish.datamodel.routing_policy.expr.DestinationNetwork"
                       },
                       "prefixSet" : {
-                        "class" : "org.batfish.datamodel.routing_policy.expr.NamedPrefixSet",
-                        "name" : "vpn-ba2e34a8-1_origination"
+                        "class" : "org.batfish.datamodel.routing_policy.expr.ExplicitPrefixSet",
+                        "prefixSpace" : [
+                          "10.100.0.0/16"
+                        ]
                       }
                     }
                   ]
@@ -5457,7 +5437,7 @@
                     "class" : "org.batfish.datamodel.routing_policy.statement.SetOrigin",
                     "originType" : {
                       "class" : "org.batfish.datamodel.routing_policy.expr.LiteralOrigin",
-                      "originType" : "igp"
+                      "originType" : "incomplete"
                     }
                   },
                   {
@@ -5465,69 +5445,12 @@
                     "type" : "ExitAccept"
                   }
                 ]
-              },
-              {
-                "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
-                "type" : "ExitReject"
               }
             ]
           },
-          "vpn-ba2e34a8-2_origination" : {
-            "name" : "vpn-ba2e34a8-2_origination",
+          "~vgw~import-policy~" : {
+            "name" : "~vgw~import-policy~",
             "statements" : [
-              {
-                "class" : "org.batfish.datamodel.routing_policy.statement.If",
-                "guard" : {
-                  "class" : "org.batfish.datamodel.routing_policy.expr.Conjunction",
-                  "conjuncts" : [
-                    {
-                      "class" : "org.batfish.datamodel.routing_policy.expr.MatchProtocol",
-                      "protocols" : [
-                        "static"
-                      ]
-                    },
-                    {
-                      "class" : "org.batfish.datamodel.routing_policy.expr.MatchPrefixSet",
-                      "prefix" : {
-                        "class" : "org.batfish.datamodel.routing_policy.expr.DestinationNetwork"
-                      },
-                      "prefixSet" : {
-                        "class" : "org.batfish.datamodel.routing_policy.expr.NamedPrefixSet",
-                        "name" : "vpn-ba2e34a8-2_origination"
-                      }
-                    }
-                  ]
-                },
-                "trueStatements" : [
-                  {
-                    "class" : "org.batfish.datamodel.routing_policy.statement.SetOrigin",
-                    "originType" : {
-                      "class" : "org.batfish.datamodel.routing_policy.expr.LiteralOrigin",
-                      "originType" : "igp"
-                    }
-                  },
-                  {
-                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
-                    "type" : "ExitAccept"
-                  }
-                ]
-              },
-              {
-                "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
-                "type" : "ExitReject"
-              }
-            ]
-          },
-          "~ACCEPT_ALL_EBGP_AND_SET_NEXT_HOP_SELF~" : {
-            "name" : "~ACCEPT_ALL_EBGP_AND_SET_NEXT_HOP_SELF~",
-            "statements" : [
-              {
-                "class" : "org.batfish.datamodel.routing_policy.statement.SetNextHop",
-                "destinationVrf" : false,
-                "expr" : {
-                  "class" : "org.batfish.datamodel.routing_policy.expr.SelfNextHop"
-                }
-              },
               {
                 "class" : "org.batfish.datamodel.routing_policy.statement.If",
                 "falseStatements" : [
@@ -5550,9 +5473,6 @@
                 ]
               }
             ]
-          },
-          "~REJECT_ALL~" : {
-            "name" : "~REJECT_ALL~"
           }
         },
         "vendorFamily" : {
@@ -5566,7 +5486,7 @@
             "bgpProcess" : {
               "ebgpAdminCost" : 20,
               "ibgpAdminCost" : 200,
-              "routerId" : "169.254.15.193",
+              "routerId" : "240.0.0.6",
               "multipathEbgp" : false,
               "multipathEquivalentAsPathMatchMode" : "EXACT_PATH",
               "multipathIbgp" : false,
@@ -5588,7 +5508,8 @@
                       "sendCommunity" : false,
                       "sendExtendedCommunity" : false
                     },
-                    "exportPolicy" : "vpn-ba2e34a8-2_origination",
+                    "exportPolicy" : "~vgw~export-policy~",
+                    "importPolicy" : "~vgw~import-policy~",
                     "routeReflectorClient" : false
                   },
                   "localAs" : 65401,
@@ -5613,39 +5534,14 @@
                       "sendCommunity" : false,
                       "sendExtendedCommunity" : false
                     },
-                    "exportPolicy" : "vpn-ba2e34a8-1_origination",
+                    "exportPolicy" : "~vgw~export-policy~",
+                    "importPolicy" : "~vgw~import-policy~",
                     "routeReflectorClient" : false
                   },
                   "localAs" : 65401,
                   "localIp" : "169.254.15.193",
                   "peerAddress" : "169.254.15.194",
                   "remoteAsns" : "65301"
-                },
-                "240.0.0.7/32" : {
-                  "class" : "org.batfish.datamodel.BgpActivePeerConfig",
-                  "defaultMetric" : 0,
-                  "ebgpMultihop" : false,
-                  "enforceFirstAs" : false,
-                  "ipv4UnicastAddressFamily" : {
-                    "addressFamilyCapabilities" : {
-                      "additionalPathsReceive" : false,
-                      "additionalPathsSelectAll" : false,
-                      "additionalPathsSend" : false,
-                      "advertiseExternal" : false,
-                      "advertiseInactive" : false,
-                      "allowLocalAsIn" : false,
-                      "allowRemoteAsOut" : false,
-                      "sendCommunity" : true,
-                      "sendExtendedCommunity" : false
-                    },
-                    "exportPolicy" : "~ACCEPT_ALL_EBGP_AND_SET_NEXT_HOP_SELF~",
-                    "importPolicy" : "~REJECT_ALL~",
-                    "routeReflectorClient" : false
-                  },
-                  "localAs" : 65401,
-                  "localIp" : "240.0.0.6",
-                  "peerAddress" : "240.0.0.7",
-                  "remoteAsns" : "65401"
                 }
               },
               "tieBreaker" : "ARRIVAL_ORDER"
@@ -5653,7 +5549,7 @@
             "interfaces" : [
               "external1",
               "external2",
-              "vpc-815775e7",
+              "loopbackBgp",
               "vpn1",
               "vpn2"
             ],
@@ -5663,8 +5559,8 @@
                 "administrativeCost" : 1,
                 "metric" : 0,
                 "network" : "10.100.0.0/16",
-                "nextHopInterface" : "dynamic",
-                "nextHopIp" : "240.0.0.7",
+                "nextHopInterface" : "null_interface",
+                "nextHopIp" : "AUTO/NONE(-1l)",
                 "tag" : -1
               }
             ]
@@ -5676,53 +5572,8 @@
         "name" : "vpc-815775e7",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
-        "deviceType" : "ROUTER",
+        "deviceType" : "SWITCH",
         "domainName" : "aws",
-        "interfaces" : {
-          "vgw-81fd279f" : {
-            "name" : "vgw-81fd279f",
-            "active" : true,
-            "additionalArpIps" : {
-              "class" : "org.batfish.datamodel.EmptyIpSpace"
-            },
-            "allPrefixes" : [
-              "240.0.0.7/31"
-            ],
-            "allowedVlans" : "",
-            "autostate" : true,
-            "bandwidth" : 1.0E12,
-            "description" : "To VPN gateway vgw-81fd279f",
-            "mtu" : 1500,
-            "ospfDeadInterval" : 0,
-            "ospfEnabled" : false,
-            "ospfHelloMultiplier" : 0,
-            "ospfPassive" : false,
-            "prefix" : "240.0.0.7/31",
-            "proxyArp" : false,
-            "ripEnabled" : false,
-            "ripPassive" : false,
-            "spanningTreePortfast" : false,
-            "switchport" : false,
-            "switchportMode" : "NONE",
-            "switchportTrunkEncapsulation" : "DOT1Q",
-            "type" : "PHYSICAL",
-            "vrf" : "default"
-          }
-        },
-        "routingPolicies" : {
-          "~ACCEPT_ALL~" : {
-            "name" : "~ACCEPT_ALL~",
-            "statements" : [
-              {
-                "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
-                "type" : "ExitAccept"
-              }
-            ]
-          },
-          "~REJECT_ALL~" : {
-            "name" : "~REJECT_ALL~"
-          }
-        },
         "vendorFamily" : {
           "aws" : {
             "region" : "us-west-2",
@@ -5732,46 +5583,6 @@
         "vrfs" : {
           "default" : {
             "name" : "default",
-            "bgpProcess" : {
-              "ebgpAdminCost" : 20,
-              "ibgpAdminCost" : 200,
-              "routerId" : "240.0.0.7",
-              "multipathEbgp" : false,
-              "multipathEquivalentAsPathMatchMode" : "EXACT_PATH",
-              "multipathIbgp" : false,
-              "neighbors" : {
-                "240.0.0.6/32" : {
-                  "class" : "org.batfish.datamodel.BgpActivePeerConfig",
-                  "defaultMetric" : 0,
-                  "ebgpMultihop" : false,
-                  "enforceFirstAs" : false,
-                  "ipv4UnicastAddressFamily" : {
-                    "addressFamilyCapabilities" : {
-                      "additionalPathsReceive" : false,
-                      "additionalPathsSelectAll" : false,
-                      "additionalPathsSend" : false,
-                      "advertiseExternal" : false,
-                      "advertiseInactive" : false,
-                      "allowLocalAsIn" : false,
-                      "allowRemoteAsOut" : false,
-                      "sendCommunity" : true,
-                      "sendExtendedCommunity" : false
-                    },
-                    "exportPolicy" : "~REJECT_ALL~",
-                    "importPolicy" : "~ACCEPT_ALL~",
-                    "routeReflectorClient" : false
-                  },
-                  "localAs" : 65401,
-                  "localIp" : "240.0.0.7",
-                  "peerAddress" : "240.0.0.6",
-                  "remoteAsns" : "65401"
-                }
-              },
-              "tieBreaker" : "ARRIVAL_ORDER"
-            },
-            "interfaces" : [
-              "vgw-81fd279f"
-            ],
             "staticRoutes" : [
               {
                 "class" : "org.batfish.datamodel.StaticRoute",

@@ -12,14 +12,6 @@
     },
     {
       "contents" : [
-        "node-vpc-815775e7"
-      ],
-      "id" : "aggregate-vpc-815775e7",
-      "name" : "vpc-815775e7",
-      "type" : "VNET"
-    },
-    {
-      "contents" : [
         "node-subnet-f73a8191"
       ],
       "id" : "aggregate-subnet-f73a8191",
@@ -99,12 +91,10 @@
       "contents" : [
         "node-igw-9b93ddfc",
         "aggregate-vpc-f8fad69d",
-        "aggregate-vpc-815775e7",
         "node-igw-068fee63",
         "aggregate-vpc-925131f4",
         "aggregate-vpc-b390fad5",
-        "node-igw-fac5839d",
-        "node-vgw-81fd279f"
+        "node-igw-fac5839d"
       ],
       "id" : "aggregate-us-west-2",
       "name" : "us-west-2",
@@ -290,12 +280,6 @@
       "type" : "UNKNOWN"
     },
     {
-      "id" : "interface-node-vgw-81fd279f-vpc-815775e7",
-      "name" : "vpc-815775e7",
-      "nodeId" : "node-vgw-81fd279f",
-      "type" : "PHYSICAL"
-    },
-    {
       "id" : "interface-node-vpc-b390fad5-subnet-073b8061",
       "name" : "subnet-073b8061",
       "nodeId" : "node-vpc-b390fad5",
@@ -455,12 +439,6 @@
       "id" : "interface-node-subnet-7044ff16-vpc-b390fad5",
       "name" : "vpc-b390fad5",
       "nodeId" : "node-subnet-7044ff16",
-      "type" : "PHYSICAL"
-    },
-    {
-      "id" : "interface-node-vpc-815775e7-vgw-81fd279f",
-      "name" : "vgw-81fd279f",
-      "nodeId" : "node-vpc-815775e7",
       "type" : "PHYSICAL"
     },
     {
@@ -670,12 +648,6 @@
       "type" : "PHYSICAL"
     },
     {
-      "dstId" : "interface-node-vgw-81fd279f-vpc-815775e7",
-      "id" : "link-interface-node-vpc-815775e7-vgw-81fd279f-interface-node-vgw-81fd279f-vpc-815775e7",
-      "srcId" : "interface-node-vpc-815775e7-vgw-81fd279f",
-      "type" : "PHYSICAL"
-    },
-    {
       "dstId" : "interface-node-subnet-d9cafabc-igw-068fee63",
       "id" : "link-interface-node-igw-068fee63-subnet-d9cafabc-interface-node-subnet-d9cafabc-igw-068fee63",
       "srcId" : "interface-node-igw-068fee63-subnet-d9cafabc",
@@ -790,12 +762,6 @@
       "type" : "PHYSICAL"
     },
     {
-      "dstId" : "interface-node-vpc-815775e7-vgw-81fd279f",
-      "id" : "link-interface-node-vgw-81fd279f-vpc-815775e7-interface-node-vpc-815775e7-vgw-81fd279f",
-      "srcId" : "interface-node-vgw-81fd279f-vpc-815775e7",
-      "type" : "PHYSICAL"
-    },
-    {
       "dstId" : "interface-node-subnet-1f315846-vpc-f8fad69d",
       "id" : "link-interface-node-vpc-f8fad69d-subnet-1f315846-interface-node-subnet-1f315846-vpc-f8fad69d",
       "srcId" : "interface-node-vpc-f8fad69d-subnet-1f315846",
@@ -866,7 +832,7 @@
     {
       "id" : "node-vpc-815775e7",
       "name" : "vpc-815775e7",
-      "type" : "ROUTER"
+      "type" : "SWITCH"
     },
     {
       "id" : "node-isp_16509",

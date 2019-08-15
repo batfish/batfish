@@ -91,18 +91,27 @@ import org.batfish.datamodel.RouteFilterLine;
 import org.batfish.datamodel.RouteFilterList;
 import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.SubRange;
-import org.batfish.datamodel.SwitchportMode;
 import org.batfish.datamodel.TcpFlags;
 import org.batfish.datamodel.TcpFlagsMatchConditions;
 import org.batfish.datamodel.VniSettings;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.acl.AclLineMatchExprs;
+import org.batfish.datamodel.acl.PermittedByAcl;
 import org.batfish.datamodel.bgp.community.StandardCommunity;
 import org.batfish.datamodel.isis.IsisMetricType;
 import org.batfish.datamodel.ospf.NssaSettings;
 import org.batfish.datamodel.ospf.OspfAreaSummary;
 import org.batfish.datamodel.ospf.OspfMetricType;
 import org.batfish.datamodel.ospf.StubSettings;
+import org.batfish.datamodel.packet_policy.BoolExpr;
+import org.batfish.datamodel.packet_policy.FalseExpr;
+import org.batfish.datamodel.packet_policy.FibLookup;
+import org.batfish.datamodel.packet_policy.FibLookupOverrideLookupIp;
+import org.batfish.datamodel.packet_policy.IngressInterfaceVrf;
+import org.batfish.datamodel.packet_policy.PacketMatchExpr;
+import org.batfish.datamodel.packet_policy.PacketPolicy;
+import org.batfish.datamodel.packet_policy.Return;
+import org.batfish.datamodel.packet_policy.TrueExpr;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.routing_policy.expr.AutoAs;
 import org.batfish.datamodel.routing_policy.expr.BooleanExpr;
@@ -659,7 +668,7 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
         .map(Object::toString)
         .ifPresent(newIfaceBuilder::setHsrpVersion);
     newIfaceBuilder.setHsrpGroups(
-        hsrp.getGroups().entrySet().stream()
+        hsrp.getIpv4Groups().entrySet().stream()
             .collect(
                 ImmutableMap.toImmutableMap(
                     Entry::getKey, hsrpGroupEntry -> toHsrpGroup(hsrpGroupEntry.getValue()))));
@@ -780,6 +789,18 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
   private void convertRouteMaps() {
     _routeMaps.forEach(
         (name, routeMap) -> _c.getRoutingPolicies().put(name, toRoutingPolicy(routeMap)));
+
+    // Find which route maps are used for PBR
+    _c.getAllInterfaces().values().stream()
+        .map(org.batfish.datamodel.Interface::getRoutingPolicyName)
+        .filter(Objects::nonNull)
+        .distinct()
+        // Extract route map objects
+        .map(_routeMaps::get)
+        .filter(Objects::nonNull)
+        // Convert PBR route maps to packet policies
+        .map(this::toPacketPolicy)
+        .forEach(packetPolicy -> _c.getPacketPolicies().put(packetPolicy.getName(), packetPolicy));
   }
 
   private void convertStaticRoutes() {
@@ -1097,7 +1118,7 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
   @Override
   public void setVendor(ConfigurationFormat format) {}
 
-  private static @Nonnull org.batfish.datamodel.hsrp.HsrpGroup toHsrpGroup(HsrpGroup group) {
+  private static @Nonnull org.batfish.datamodel.hsrp.HsrpGroup toHsrpGroup(HsrpGroupIpv4 group) {
     org.batfish.datamodel.hsrp.HsrpGroup.Builder builder =
         org.batfish.datamodel.hsrp.HsrpGroup.builder()
             .setGroupNumber(group.getGroup())
@@ -1155,13 +1176,16 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
 
     newIfaceBuilder.setActive(!iface.getShutdown());
 
-    if (iface.getAddress() != null) {
-      newIfaceBuilder.setAddress(iface.getAddress().getAddress());
+    if (!iface.getIpAddressDhcp()) {
+      if (iface.getAddress() != null) {
+        newIfaceBuilder.setAddress(iface.getAddress().getAddress());
+      }
+      newIfaceBuilder.setSecondaryAddresses(
+          iface.getSecondaryAddresses().stream()
+              .map(InterfaceAddressWithAttributes::getAddress)
+              .collect(ImmutableSet.toImmutableSet()));
     }
-    newIfaceBuilder.setSecondaryAddresses(
-        iface.getSecondaryAddresses().stream()
-            .map(InterfaceAddressWithAttributes::getAddress)
-            .collect(ImmutableSet.toImmutableSet()));
+    // TODO: handle DHCP
 
     newIfaceBuilder.setDescription(iface.getDescription());
 
@@ -1179,7 +1203,7 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
 
     // switchport+vlan settings
     SwitchportMode switchportMode = iface.getSwitchportMode();
-    newIfaceBuilder.setSwitchportMode(switchportMode);
+    newIfaceBuilder.setSwitchportMode(switchportMode.toSwitchportMode());
     switch (iface.getSwitchportMode()) {
       case ACCESS:
         newIfaceBuilder.setSwitchport(true);
@@ -1197,11 +1221,7 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
         break;
 
       case DOT1Q_TUNNEL:
-      case DYNAMIC_AUTO:
-      case DYNAMIC_DESIRABLE:
       case FEX_FABRIC:
-      case TAP:
-      case TOOL:
       default:
         // unsupported
         break;
@@ -1250,6 +1270,13 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
 
     if (iface.getHsrp() != null) {
       convertHsrp(iface.getHsrp(), newIfaceBuilder);
+    }
+
+    // PBR policy
+    String pbrPolicy = iface.getPbrPolicy();
+    // Do not convert undefined references
+    if (pbrPolicy != null && _routeMaps.get(pbrPolicy) != null) {
+      newIfaceBuilder.setRoutingPolicy(pbrPolicy);
     }
 
     // OSPF properties
@@ -1783,11 +1810,7 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
                 if (ospf.getArea().equals(areaId) && ospf.getProcess().equals(processName)) {
                   interfaces.add(ifaceName);
                   finalizeInterfaceOspfSettings(
-                      ifaceName,
-                      areaId,
-                      processName,
-                      proc.getPassiveInterfaceDefault(),
-                      iface.getOspf());
+                      ifaceName, areaId, processName, proc.getPassiveInterfaceDefault(), ospf);
                 }
               } else {
                 // Otherwise if OSPF area not explicitly configured on interface, add to this area
@@ -1811,7 +1834,8 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
                     areaId,
                     processName,
                     proc.getPassiveInterfaceDefault(),
-                    iface.getOspf());
+                    // If interface being added has no explicit OSPF configuration, use defaults
+                    ospf != null ? ospf : new OspfInterface());
               }
             });
     return interfaces.build();
@@ -1893,6 +1917,17 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
         .build();
   }
 
+  @Nonnull
+  private PacketPolicy toPacketPolicy(RouteMap routeMap) {
+    return new PacketPolicy(
+        routeMap.getName(),
+        routeMap.getEntries().values().stream()
+            .map(this::toPacketPolicyStatement)
+            .collect(ImmutableList.toImmutableList()),
+        // Default action is to fall through to the destination-based forwarding pipeline
+        new Return(new FibLookup(IngressInterfaceVrf.instance())));
+  }
+
   private @Nonnull Statement toStatement(RouteMapEntry entry) {
     ImmutableList.Builder<Statement> trueStatements = ImmutableList.builder();
     ImmutableList.Builder<BooleanExpr> conjuncts = ImmutableList.builder();
@@ -1912,6 +1947,171 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
       trueStatements.add(ROUTE_MAP_DENY_STATEMENT);
     }
     return new If(new Conjunction(conjuncts.build()), trueStatements.build(), ImmutableList.of());
+  }
+
+  @Nonnull
+  private org.batfish.datamodel.packet_policy.Statement toPacketPolicyStatement(
+      RouteMapEntry entry) {
+    RouteMapMatchVisitor<BoolExpr> matchToBoolExpr =
+        new RouteMapMatchVisitor<BoolExpr>() {
+
+          @Override
+          public BoolExpr visitRouteMapMatchAsPath(RouteMapMatchAsPath routeMapMatchAsPath) {
+            // Not applicable to PBR
+            return null;
+          }
+
+          @Override
+          public BoolExpr visitRouteMapMatchCommunity(
+              RouteMapMatchCommunity routeMapMatchCommunity) {
+            // Not applicable to PBR
+            return null;
+          }
+
+          @Override
+          public BoolExpr visitRouteMapMatchInterface(
+              RouteMapMatchInterface routeMapMatchInterface) {
+            // Not applicable to PBR
+            return null;
+          }
+
+          @Override
+          public BoolExpr visitRouteMapMatchIpAddress(
+              RouteMapMatchIpAddress routeMapMatchIpAddress) {
+            if (_ipAccessLists.containsKey(routeMapMatchIpAddress.getName())) {
+              return new PacketMatchExpr(new PermittedByAcl(routeMapMatchIpAddress.getName()));
+            } else {
+              return FalseExpr.instance(); // fail-closed, match nothing
+            }
+          }
+
+          @Override
+          public BoolExpr visitRouteMapMatchIpAddressPrefixList(
+              RouteMapMatchIpAddressPrefixList routeMapMatchIpAddressPrefixList) {
+            // Not applicable to PBR
+            return null;
+          }
+
+          @Override
+          public BoolExpr visitRouteMapMatchMetric(RouteMapMatchMetric routeMapMatchMetric) {
+            // Not applicable to PBR
+            return null;
+          }
+
+          @Override
+          public BoolExpr visitRouteMapMatchTag(RouteMapMatchTag routeMapMatchTag) {
+            // TODO: somehow applicable to PBR? Documentation and semantics unclear
+            _w.redFlag("'match tag' not supported in PBR policies");
+            return null;
+          }
+        };
+    List<BoolExpr> guardBoolExprs =
+        entry
+            .getMatches()
+            .map(m -> m.accept(matchToBoolExpr))
+            .filter(Objects::nonNull)
+            .collect(ImmutableList.toImmutableList());
+
+    if (guardBoolExprs.isEmpty()) {
+      guardBoolExprs = ImmutableList.of(TrueExpr.instance()); // match anything
+    }
+    RouteMapSetVisitor<org.batfish.datamodel.packet_policy.Statement> setToStatement =
+        new RouteMapSetVisitor<org.batfish.datamodel.packet_policy.Statement>() {
+          @Override
+          public org.batfish.datamodel.packet_policy.Statement visitRouteMapSetAsPathPrependLastAs(
+              RouteMapSetAsPathPrependLastAs routeMapSetAsPathPrependLastAs) {
+            // Not applicable to PBR
+            return null;
+          }
+
+          @Override
+          public org.batfish.datamodel.packet_policy.Statement
+              visitRouteMapSetAsPathPrependLiteralAs(
+                  RouteMapSetAsPathPrependLiteralAs routeMapSetAsPathPrependLiteralAs) {
+            // Not applicable to PBR
+            return null;
+          }
+
+          @Override
+          public org.batfish.datamodel.packet_policy.Statement visitRouteMapSetCommunity(
+              RouteMapSetCommunity routeMapSetCommunity) {
+            // Not applicable to PBR
+            return null;
+          }
+
+          @Override
+          public org.batfish.datamodel.packet_policy.Statement visitRouteMapSetIpNextHopLiteral(
+              RouteMapSetIpNextHopLiteral routeMapSetIpNextHopLiteral) {
+            // TODO: handle "load-share" modifier
+            return new Return(
+                FibLookupOverrideLookupIp.builder()
+                    .setIps(routeMapSetIpNextHopLiteral.getNextHops())
+                    // VRF to lookup in
+                    .setVrfExpr(IngressInterfaceVrf.instance())
+                    // Default action in case none of the next hops can be resolved
+                    .setDefaultAction(new FibLookup(IngressInterfaceVrf.instance()))
+                    .setRequireConnected(true)
+                    .build());
+          }
+
+          @Override
+          public org.batfish.datamodel.packet_policy.Statement visitRouteMapSetIpNextHopUnchanged(
+              RouteMapSetIpNextHopUnchanged routeMapSetIpNextHopUnchanged) {
+            // Not applicable to PBR
+            return null;
+          }
+
+          @Override
+          public org.batfish.datamodel.packet_policy.Statement visitRouteMapSetLocalPreference(
+              RouteMapSetLocalPreference routeMapSetLocalPreference) {
+            // Not applicable to PBR
+            return null;
+          }
+
+          @Override
+          public org.batfish.datamodel.packet_policy.Statement visitRouteMapSetMetric(
+              RouteMapSetMetric routeMapSetMetric) {
+            // Not applicable to PBR
+            return null;
+          }
+
+          @Override
+          public org.batfish.datamodel.packet_policy.Statement visitRouteMapSetMetricType(
+              RouteMapSetMetricType routeMapSetMetricType) {
+            // Not applicable to PBR
+            return null;
+          }
+
+          @Override
+          public org.batfish.datamodel.packet_policy.Statement visitRouteMapSetOrigin(
+              RouteMapSetOrigin routeMapSetOrigin) {
+            // Not applicable to PBR
+            return null;
+          }
+
+          @Override
+          public org.batfish.datamodel.packet_policy.Statement visitRouteMapSetTag(
+              RouteMapSetTag routeMapSetTag) {
+            // Not applicable to PBR
+            return null;
+          }
+        };
+    List<org.batfish.datamodel.packet_policy.Statement> trueStatements =
+        entry
+            .getSets()
+            .map(s -> s.accept(setToStatement))
+            .filter(Objects::nonNull)
+            .collect(ImmutableList.toImmutableList());
+    if (trueStatements.size() > 1) {
+      _w.redFlag(
+          "Multiple set statements are not allowed in a single route map statement. Choosing the first one");
+      trueStatements = ImmutableList.of(trueStatements.get(0));
+    }
+    if (guardBoolExprs.size() > 1) {
+      _w.redFlag(
+          "Multiple match conditions are not allowed in a single route map statement. Choosing the first one");
+    }
+    return new org.batfish.datamodel.packet_policy.If(guardBoolExprs.get(0), trueStatements);
   }
 
   private @Nonnull BooleanExpr toBooleanExpr(RouteMapMatch match) {

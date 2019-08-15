@@ -460,6 +460,11 @@ BROADCAST
   'broadcast'
 ;
 
+BUFFER_LIMIT
+:
+  'buffer-limit'
+;
+
 BYTES
 :
   'bytes'
@@ -1822,6 +1827,11 @@ LT
   'lt'
 ;
 
+MANAGED_CONFIG_FLAG
+:
+  'managed-config-flag'
+;
+
 MASK
 :
   'mask'
@@ -2083,6 +2093,11 @@ NAT_FLOW
 NATIVE
 :
   'native'
+;
+
+ND
+:
+  'nd'
 ;
 
 ND_NA
@@ -2364,6 +2379,11 @@ OSPFV3
   'ospfv3'
 ;
 
+OTHER_CONFIG_FLAG
+:
+  'other-config-flag'
+;
+
 OUT
 :
   'out'
@@ -2382,6 +2402,11 @@ PACKET_LENGTH
 PACKET_TOO_BIG
 :
   'packet-too-big'
+;
+
+PACKETS
+:
+  'packets'
 ;
 
 PARAMETER_PROBLEM
@@ -2747,6 +2772,11 @@ REFERENCE_BANDWIDTH
 REFLECTION
 :
   'reflection'
+;
+
+RELAY
+:
+  'relay'
 ;
 
 RELOAD

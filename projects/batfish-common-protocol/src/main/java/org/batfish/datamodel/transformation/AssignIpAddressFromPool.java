@@ -5,6 +5,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableRangeSet;
 import com.google.common.collect.Range;
 import com.google.common.collect.RangeSet;
@@ -86,5 +87,14 @@ public final class AssignIpAddressFromPool implements TransformationStep, Serial
   @Override
   public int hashCode() {
     return Objects.hash(_type, _ipField, _ipRanges);
+  }
+
+  @Override
+  public String toString() {
+    return MoreObjects.toStringHelper(this)
+        .add("type", _type)
+        .add("ipField", _ipField)
+        .add("ipRanges", _ipRanges)
+        .toString();
   }
 }

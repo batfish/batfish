@@ -1,0 +1,25 @@
+!RANCID-CONTENT-TYPE: cisco-nx
+!
+hostname nxos_interface_ipv6_address
+!
+interface Ethernet1/1
+  no switchport
+  no ipv6 redirects
+  ipv6 address dhcp
+  ! clears dhcp
+  ipv6 address 10::4/120
+  ! below assignment should replace above assignment
+  ipv6 address 10::1/120 
+  ipv6 address 10::3/120 secondary tag 3
+  ! below assignment should append to secondary addresses
+  ipv6 address 10::2/120 secondary
+!
+
+interface Ethernet1/2
+  no switchport
+  no shutdown
+  ipv6 address 10::1:1/120
+  ipv6 address 10::2:1/120 secondary
+  ! clears primary and secondary addresses
+  ipv6 address dhcp
+!

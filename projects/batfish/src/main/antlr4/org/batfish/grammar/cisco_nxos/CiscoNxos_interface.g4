@@ -133,15 +133,38 @@ hsrp_delay_reload
 
 ih_group
 :
-  group = hsrp_group_number NEWLINE
+  group = hsrp_group_number
   (
-    ihg_authentication
-    | ihg_ip
-    | ihg_preempt
-    | ihg_priority
-    | ihg_timers
-    | ihg_track
+    ihg_ipv4
+    | ihg_ipv6
+  )
+;
+
+ihg_ipv4
+:
+  NEWLINE
+  (
+    ihg_common
+    | ihg_ip_ipv4
   )*
+;
+
+ihg_ipv6
+:
+  IPV6 NEWLINE
+  (
+    ihg_common
+    | ihg_ip_ipv6
+  )*
+;
+
+ihg_common
+:
+  ihg_authentication
+  | ihg_preempt
+  | ihg_priority
+  | ihg_timers
+  | ihg_track
 ;
 
 hsrp_group_number
@@ -178,15 +201,6 @@ hsrp_authentication_string
 ihgam_key_chain
 :
   KEY_CHAIN name = key_chain_name NEWLINE
-;
-
-ihg_ip
-:
-  IP
-  (
-    ip = ip_address
-    | prefix = ip_prefix
-  ) NEWLINE
 ;
 
 ihg_preempt
@@ -264,6 +278,24 @@ hsrp_track_decrement
   uint8
 ;
 
+ihg_ip_ipv4
+:
+  IP
+  (
+    ip = ip_address
+    | prefix = ip_prefix
+  ) SECONDARY? NEWLINE
+;
+
+ihg_ip_ipv6
+:
+  IP
+  (
+    ip6 = ipv6_address
+    | prefix6 = ipv6_prefix
+  ) SECONDARY? NEWLINE
+;
+
 ih_version
 :
   VERSION version = hsrp_version NEWLINE
@@ -299,7 +331,24 @@ i_ip_access_group
 
 i_ip_address
 :
-  ADDRESS addr = interface_address SECONDARY? (TAG tag = uint32)? NEWLINE
+  ADDRESS
+  (
+    i_ip_address_concrete
+    | i_ip_address_dhcp
+  )
+;
+
+i_ip_address_concrete
+:
+  addr = interface_address SECONDARY?
+  (
+    TAG tag = uint32
+  )? NEWLINE
+;
+
+i_ip_address_dhcp
+:
+  DHCP NEWLINE
 ;
 
 i_ip_null
@@ -433,7 +482,43 @@ iipr_ospf
 
 i_ipv6
 :
-  IPV6 iip6_traffic_filter
+  IPV6
+  (
+    iip6_address
+    | iip6_null
+    | iip6_traffic_filter
+  )
+;
+
+iip6_address
+:
+  ADDRESS
+  (
+    i_ipv6_address_concrete
+    | i_ipv6_address_dhcp
+  )
+;
+
+i_ipv6_address_concrete
+:
+  addr = interface_ipv6_address SECONDARY?
+  (
+    TAG tag = uint32
+  )? NEWLINE
+;
+
+i_ipv6_address_dhcp
+:
+  DHCP NEWLINE
+;
+
+iip6_null
+:
+  (
+    DHCP
+    | ND
+    | ROUTER
+  ) null_rest_of_line
 ;
 
 iip6_traffic_filter
@@ -531,6 +616,7 @@ i_null
     | CDP
     | DUPLEX
     | FEX
+    | OSPFV3
     | SNMP
     | SPANNING_TREE
     | STORM_CONTROL
@@ -593,6 +679,7 @@ i_switchport_mode
     i_switchport_mode_access
     | i_switchport_mode_dot1q_tunnel
     | i_switchport_mode_fex_fabric
+    | i_switchport_mode_monitor
     | i_switchport_mode_trunk
   )
 ;
@@ -610,6 +697,11 @@ i_switchport_mode_dot1q_tunnel
 i_switchport_mode_fex_fabric
 :
   FEX_FABRIC NEWLINE
+;
+
+i_switchport_mode_monitor
+:
+  MONITOR null_rest_of_line
 ;
 
 i_switchport_mode_trunk

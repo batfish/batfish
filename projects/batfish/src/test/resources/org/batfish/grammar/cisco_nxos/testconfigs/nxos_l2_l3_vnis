@@ -45,9 +45,11 @@ router bgp 1
       remote-as 12121
 !
 interface Vlan1
+  vrf member tenant1
   no shutdown
 !
 interface Vlan3
+  vrf member tenant1
   no shutdown
 !
 interface loopback0

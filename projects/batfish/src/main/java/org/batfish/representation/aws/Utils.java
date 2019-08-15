@@ -19,6 +19,8 @@ import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.vendor_family.AwsFamily;
+import org.w3c.dom.Element;
+import org.w3c.dom.NodeList;
 
 /** A collection for utilities for AWS vendor model */
 @ParametersAreNonnullByDefault
@@ -142,9 +144,14 @@ final class Utils {
 
   @Nonnull
   static StaticRoute toStaticRoute(Prefix targetPrefix, Interface nextHopInterface) {
+    return toStaticRoute(targetPrefix, nextHopInterface.getName());
+  }
+
+  @Nonnull
+  static StaticRoute toStaticRoute(Prefix targetPrefix, String nextHopInterfaceName) {
     return StaticRoute.builder()
         .setNetwork(targetPrefix)
-        .setNextHopInterface(nextHopInterface.getName())
+        .setNextHopInterface(nextHopInterfaceName)
         .setAdministrativeCost(Route.DEFAULT_STATIC_ROUTE_ADMIN)
         .setMetric(Route.DEFAULT_STATIC_ROUTE_COST)
         .build();
@@ -189,6 +196,24 @@ final class Utils {
         configuration);
 
     return iface.getConcreteAddress().getIp();
+  }
+
+  /** Extracts the text content of the first element with {@code tag} within {@code element}. */
+  static String textOfFirstXmlElementWithTag(Element element, String tag) {
+    NodeList nodes = element.getElementsByTagName(tag);
+    checkArgument(nodes.getLength() > 0, "Tag '%s' not found", tag);
+    return nodes.item(0).getTextContent();
+  }
+
+  /**
+   * Extracts the text content of the first element with {@code innerTag} within the first element
+   * with {@code outerTag} within {@code element}.
+   */
+  static String textOfFirstXmlElementWithInnerTag(
+      Element element, String outerTag, String innerTag) {
+    NodeList outerNodes = element.getElementsByTagName(outerTag);
+    checkArgument(outerNodes.getLength() > 0, "OuterTag '%s' not found", outerTag);
+    return textOfFirstXmlElementWithTag((Element) outerNodes.item(0), innerTag);
   }
 
   private Utils() {}

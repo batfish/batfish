@@ -167,42 +167,38 @@ public class Subnet implements AwsVpcEntity, Serializable {
     vpcIfaceOnSubnet.setIncomingFilter(inAcl);
     vpcIfaceOnSubnet.setOutgoingFilter(outAcl);
 
-    // connect the vpn gateway to the subnet if one exists
+    // 1. connect the vpn gateway to the subnet if one exists
+    // 2. create appropriate static routes
     Optional<VpnGateway> optVpnGateway = region.findVpnGateway(_vpcId);
     if (optVpnGateway.isPresent()) {
       Configuration vgwConfig =
           awsConfiguration.getConfigurationNodes().get(optVpnGateway.get().getId());
       Utils.connect(awsConfiguration, cfgNode, vgwConfig);
+      Ip nhipOnVgw = Utils.getInterfaceIp(cfgNode, vgwConfig.getHostname());
+      addStaticRoute(vgwConfig, toStaticRoute(_cidrBlock, nhipOnVgw));
     }
 
-    // connect the internet gateway if one exists
+    // 1. connect the internet gateway if one exists
+    // 2. for public IPs in the subnet, add static routes to enable inbound traffic
+    //  - on internet gateway toward the subnet
+    //  - on the subnet toward instances
+    List<Ip> publicIps = findMyPublicIps(region);
     Optional<InternetGateway> optInternetGateway = region.findInternetGateway(_vpcId);
     if (optInternetGateway.isPresent()) {
       Configuration igwConfig =
           awsConfiguration.getConfigurationNodes().get(optInternetGateway.get().getId());
       Utils.connect(awsConfiguration, cfgNode, igwConfig);
-    }
-
-    // for public IPs in the subnet, add static routes to enable inbound traffic
-    //  - on internet gateway toward the subnet
-    //  - on the subnet toward instances
-    List<Ip> publicIps = findMyPublicIps(region);
-    if (!publicIps.isEmpty()) {
-      if (!optInternetGateway.isPresent()) {
-        warnings.redFlag(
-            String.format(
-                "Internet gateway not found for subnet %s in vpc %s with public IPs %s",
-                _subnetId, _vpcId, publicIps));
-      } else {
-        Configuration igwConfig =
-            awsConfiguration.getConfigurationNodes().get(optInternetGateway.get().getId());
-        Ip nhipOnIgw = Utils.getInterfaceIp(cfgNode, igwConfig.getHostname());
-        publicIps.forEach(
-            pip -> {
-              addStaticRoute(igwConfig, toStaticRoute(pip, nhipOnIgw));
-              addStaticRoute(cfgNode, toStaticRoute(pip, subnetToInstances));
-            });
-      }
+      Ip nhipOnIgw = Utils.getInterfaceIp(cfgNode, igwConfig.getHostname());
+      publicIps.forEach(
+          pip -> {
+            addStaticRoute(igwConfig, toStaticRoute(pip, nhipOnIgw));
+            addStaticRoute(cfgNode, toStaticRoute(pip, subnetToInstances));
+          });
+    } else if (!publicIps.isEmpty()) {
+      warnings.redFlag(
+          String.format(
+              "Internet gateway not found for subnet %s in vpc %s with public IPs %s",
+              _subnetId, _vpcId, publicIps));
     }
 
     // process route tables to get outbound traffic going

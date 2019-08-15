@@ -1,6 +1,8 @@
 package org.batfish.grammar.cumulus_frr;
 
 import static org.batfish.main.BatfishTestUtils.configureBatfishTestSettings;
+import static org.batfish.representation.cumulus.CumulusRoutingProtocol.CONNECTED;
+import static org.batfish.representation.cumulus.CumulusRoutingProtocol.STATIC;
 import static org.batfish.representation.cumulus.RemoteAsType.EXPLICIT;
 import static org.batfish.representation.cumulus.RemoteAsType.EXTERNAL;
 import static org.batfish.representation.cumulus.RemoteAsType.INTERNAL;
@@ -14,13 +16,16 @@ import static org.junit.Assert.assertTrue;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.ImmutableSortedMap;
 import java.util.Map;
 import java.util.Set;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
 import org.batfish.common.BatfishLogger;
+import org.batfish.common.Warnings;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.config.Settings;
+import org.batfish.datamodel.DefinedStructureInfo;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.Prefix;
@@ -32,6 +37,7 @@ import org.batfish.representation.cumulus.BgpInterfaceNeighbor;
 import org.batfish.representation.cumulus.BgpIpNeighbor;
 import org.batfish.representation.cumulus.BgpNeighbor;
 import org.batfish.representation.cumulus.BgpPeerGroupNeighbor;
+import org.batfish.representation.cumulus.BgpRedistributionPolicy;
 import org.batfish.representation.cumulus.CumulusNcluConfiguration;
 import org.batfish.representation.cumulus.CumulusStructureType;
 import org.batfish.representation.cumulus.CumulusStructureUsage;
@@ -62,6 +68,17 @@ public class CumulusFrrGrammarTest {
     CONFIG = new CumulusNcluConfiguration();
     CONFIG.setFilename(FILENAME);
     CONFIG.setAnswerElement(new ConvertConfigurationAnswerElement());
+    CONFIG.setWarnings(new Warnings());
+  }
+
+  private static DefinedStructureInfo getDefinedStructureInfo(
+      CumulusStructureType type, String name) {
+    return CONFIG
+        .getAnswerElement()
+        .getDefinedStructures()
+        .get(CONFIG.getFilename())
+        .getOrDefault(type.getDescription(), ImmutableSortedMap.of())
+        .get(name);
   }
 
   private Set<Integer> getStructureReferences(
@@ -134,6 +151,69 @@ public class CumulusFrrGrammarTest {
   }
 
   @Test
+  public void testBgpAddressFamilyIpv4UnicastNetwork() {
+    parseLines(
+        "router bgp 1", "address-family ipv4 unicast", "network 1.2.3.4/24", "exit-address-family");
+    assertThat(
+        CONFIG.getBgpProcess().getDefaultVrf().getIpv4Unicast().getNetworks().keySet(),
+        contains(Prefix.parse("1.2.3.4/24")));
+  }
+
+  @Test
+  public void testBgpAddressFamilyIpv4UnicastRedistributeConnected() {
+    parseLines(
+        "router bgp 1",
+        "address-family ipv4 unicast",
+        "redistribute connected",
+        "exit-address-family");
+    BgpRedistributionPolicy policy =
+        CONFIG
+            .getBgpProcess()
+            .getDefaultVrf()
+            .getIpv4Unicast()
+            .getRedistributionPolicies()
+            .get(CONNECTED);
+    assertNotNull(policy);
+    assertNull(policy.getRouteMap());
+  }
+
+  @Test
+  public void testBgpAddressFamilyIpv4UnicastRedistributeRouteMap() {
+    parseLines(
+        "router bgp 1",
+        "address-family ipv4 unicast",
+        "redistribute connected route-map foo",
+        "exit-address-family");
+    BgpRedistributionPolicy policy =
+        CONFIG
+            .getBgpProcess()
+            .getDefaultVrf()
+            .getIpv4Unicast()
+            .getRedistributionPolicies()
+            .get(CONNECTED);
+    assertNotNull(policy);
+    assertThat(policy.getRouteMap(), equalTo("foo"));
+  }
+
+  @Test
+  public void testBgpAddressFamilyIpv4UnicastRedistributeStatic() {
+    parseLines(
+        "router bgp 1",
+        "address-family ipv4 unicast",
+        "redistribute static",
+        "exit-address-family");
+    BgpRedistributionPolicy policy =
+        CONFIG
+            .getBgpProcess()
+            .getDefaultVrf()
+            .getIpv4Unicast()
+            .getRedistributionPolicies()
+            .get(STATIC);
+    assertNotNull(policy);
+    assertNull(policy.getRouteMap());
+  }
+
+  @Test
   public void testBgpAddressFamily_l2vpn_evpn() {
     parse("router bgp 1\n address-family l2vpn evpn\n exit-address-family\n");
     assertNotNull(CONFIG.getBgpProcess().getDefaultVrf().getL2VpnEvpn());
@@ -154,6 +234,21 @@ public class CumulusFrrGrammarTest {
         "advertise ipv4 unicast",
         "exit-address-family");
     assertNotNull(CONFIG.getBgpProcess().getDefaultVrf().getL2VpnEvpn().getAdvertiseIpv4Unicast());
+  }
+
+  @Test
+  public void testBgpAdressFamilyL2vpnEvpnNeighbor() {
+    parseLines(
+        "router bgp 1",
+        "neighbor n interface description a",
+        "neighbor 1.2.3.4 description a",
+        "address-family l2vpn evpn",
+        "neighbor n activate",
+        "neighbor 1.2.3.4 activate",
+        "exit-address-family");
+    Map<String, BgpNeighbor> neighbors = CONFIG.getBgpProcess().getDefaultVrf().getNeighbors();
+    assertTrue(neighbors.get("n").getL2vpnEvpnAddressFamily().getActivated());
+    assertTrue(neighbors.get("1.2.3.4").getL2vpnEvpnAddressFamily().getActivated());
   }
 
   @Test
@@ -248,6 +343,9 @@ public class CumulusFrrGrammarTest {
   public void testCumulusFrrVrf() {
     parse("vrf NAME\n exit-vrf");
     assertThat(CONFIG.getVrfs().keySet(), equalTo(ImmutableSet.of("NAME")));
+    assertThat(
+        getDefinedStructureInfo(CumulusStructureType.VRF, "NAME").getDefinitionLines(),
+        contains(1));
   }
 
   @Test
@@ -269,7 +367,7 @@ public class CumulusFrrGrammarTest {
   }
 
   @Test
-  public void testCumulusFrrVrfRouteMap() {
+  public void testCumulusFrrRouteMap() {
     String name = "ROUTE-MAP-NAME";
     parse(String.format("route-map %s permit 10\nroute-map %s deny 20\n", name, name));
     assertThat(CONFIG.getRouteMaps().keySet(), equalTo(ImmutableSet.of(name)));
@@ -282,6 +380,10 @@ public class CumulusFrrGrammarTest {
 
     RouteMapEntry entry2 = rm.getEntries().get(20);
     assertThat(entry2.getAction(), equalTo(LineAction.DENY));
+
+    assertThat(
+        getDefinedStructureInfo(CumulusStructureType.ROUTE_MAP, name).getDefinitionLines(),
+        equalTo(ImmutableSet.of(1, 2)));
   }
 
   @Test
@@ -318,6 +420,20 @@ public class CumulusFrrGrammarTest {
     assertThat(
         entry.getMatchIpAddressPrefixList().getNames(),
         equalTo(ImmutableList.of("PREFIX_LIST1", "PREFIX_LIST2")));
+
+    Set<Integer> reference =
+        getStructureReferences(
+            CumulusStructureType.IP_PREFIX_LIST,
+            "PREFIX_LIST1",
+            CumulusStructureUsage.ROUTE_MAP_MATCH_IP_ADDRESS_PREFIX_LIST);
+    assertThat(reference, equalTo(ImmutableSet.of(2)));
+
+    reference =
+        getStructureReferences(
+            CumulusStructureType.IP_PREFIX_LIST,
+            "PREFIX_LIST2",
+            CumulusStructureUsage.ROUTE_MAP_MATCH_IP_ADDRESS_PREFIX_LIST);
+    assertThat(reference, equalTo(ImmutableSet.of(3)));
   }
 
   @Test
@@ -344,6 +460,10 @@ public class CumulusFrrGrammarTest {
         equalTo(
             ImmutableList.of(
                 StandardCommunity.parse("10000:10"), StandardCommunity.parse("20000:20"))));
+
+    assertThat(
+        getDefinedStructureInfo(CumulusStructureType.IP_COMMUNITY_LIST, name).getDefinitionLines(),
+        equalTo(ImmutableSet.of(1)));
   }
 
   @Test
@@ -354,6 +474,11 @@ public class CumulusFrrGrammarTest {
 
     RouteMapEntry entry = CONFIG.getRouteMaps().get(name).getEntries().get(10);
     assertThat(entry.getMatchInterface().getInterfaces(), equalTo(ImmutableSet.of("lo")));
+
+    assertThat(
+        getStructureReferences(
+            CumulusStructureType.INTERFACE, "lo", CumulusStructureUsage.ROUTE_MAP_MATCH_INTERFACE),
+        equalTo(ImmutableSet.of(2)));
   }
 
   @Test
@@ -365,5 +490,17 @@ public class CumulusFrrGrammarTest {
 
     RouteMapEntry entry = CONFIG.getRouteMaps().get(name).getEntries().get(10);
     assertThat(entry.getSetIpNextHop().getNextHop(), equalTo(Ip.parse("10.0.0.1")));
+  }
+
+  @Test
+  public void testCumulusFrrVrfRouteMapSetCommunity() {
+    String name = "ROUTE-MAP-NAME";
+
+    parse(String.format("route-map %s permit 10\nset community 10000:1 20000:2\n", name));
+
+    RouteMapEntry entry = CONFIG.getRouteMaps().get(name).getEntries().get(10);
+    assertThat(
+        entry.getSetCommunity().getCommunities(),
+        equalTo(ImmutableList.of(StandardCommunity.of(10000, 1), StandardCommunity.of(20000, 2))));
   }
 }
