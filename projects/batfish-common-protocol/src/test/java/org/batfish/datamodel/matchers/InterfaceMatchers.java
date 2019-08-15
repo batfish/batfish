@@ -45,6 +45,7 @@ import org.batfish.datamodel.matchers.InterfaceMatchersImpl.HasNativeVlan;
 import org.batfish.datamodel.matchers.InterfaceMatchersImpl.HasOspfAreaName;
 import org.batfish.datamodel.matchers.InterfaceMatchersImpl.HasOspfCost;
 import org.batfish.datamodel.matchers.InterfaceMatchersImpl.HasOspfEnabled;
+import org.batfish.datamodel.matchers.InterfaceMatchersImpl.HasOspfNetworkType;
 import org.batfish.datamodel.matchers.InterfaceMatchersImpl.HasOspfPointToPoint;
 import org.batfish.datamodel.matchers.InterfaceMatchersImpl.HasSpeed;
 import org.batfish.datamodel.matchers.InterfaceMatchersImpl.HasSwitchPortEncapsulation;
@@ -59,6 +60,7 @@ import org.batfish.datamodel.matchers.InterfaceMatchersImpl.IsOspfPassive;
 import org.batfish.datamodel.matchers.InterfaceMatchersImpl.IsOspfPointToPoint;
 import org.batfish.datamodel.matchers.InterfaceMatchersImpl.IsProxyArp;
 import org.batfish.datamodel.matchers.InterfaceMatchersImpl.IsSwitchport;
+import org.batfish.datamodel.ospf.OspfNetworkType;
 import org.hamcrest.Matcher;
 
 public final class InterfaceMatchers {
@@ -351,6 +353,15 @@ public final class InterfaceMatchers {
   public static @Nonnull Matcher<Interface> hasOspfPointToPoint(
       @Nonnull Matcher<? super Boolean> subMatcher) {
     return new HasOspfPointToPoint(subMatcher);
+  }
+
+  /**
+   * Provides a matcher that matches if the provided {@code subMatcher} matches the interface's OSPF
+   * network type.
+   */
+  public static @Nonnull Matcher<Interface> hasOspfNetworkType(
+      @Nonnull Matcher<? super OspfNetworkType> subMatcher) {
+    return new HasOspfNetworkType(subMatcher);
   }
 
   /** Provides a matcher that matches if the interface's speed is {@code expectedSpeed}. */

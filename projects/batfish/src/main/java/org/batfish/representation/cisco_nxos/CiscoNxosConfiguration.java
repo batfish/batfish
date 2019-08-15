@@ -1144,6 +1144,26 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
     return builder.build();
   }
 
+  /** Helper to convert NXOS VS OSPF network type to VI model type. */
+  private @Nullable org.batfish.datamodel.ospf.OspfNetworkType toOspfNetworkType(
+      @Nullable OspfNetworkType type) {
+    if (type == null) {
+      return null;
+    }
+    switch (type) {
+      case BROADCAST:
+        return org.batfish.datamodel.ospf.OspfNetworkType.BROADCAST;
+      case POINT_TO_POINT:
+        return org.batfish.datamodel.ospf.OspfNetworkType.POINT_TO_POINT;
+      default:
+        _w.redFlag(
+            String.format(
+                "Conversion of Cisco NXOS OSPF network type '%s' is not handled.",
+                type.toString()));
+        return null;
+    }
+  }
+
   private @Nonnull org.batfish.datamodel.Interface toInterface(Interface iface) {
     String ifaceName = iface.getName();
     org.batfish.datamodel.Interface.Builder newIfaceBuilder =
@@ -1262,7 +1282,7 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
     // OSPF properties
     OspfInterface ospf = iface.getOspf();
     if (ospf != null) {
-      newIfaceBuilder.setOspfPointToPoint(ospf.getNetwork() == OspfNetworkType.POINT_TO_POINT);
+      newIfaceBuilder.setOspfNetworkType(toOspfNetworkType(ospf.getNetwork()));
       // TODO: update data model to support explicit hello and dead intervals
     }
 
