@@ -5104,6 +5104,7 @@ public final class CiscoNxosGrammarTest {
       assertThat(route.getNextHopInterface(), equalTo("Ethernet1/100"));
       assertThat(route.getNextHopVrf(), nullValue());
     }
+    // TODO: extract and test bfd settings for static routes
   }
 
   @Test
