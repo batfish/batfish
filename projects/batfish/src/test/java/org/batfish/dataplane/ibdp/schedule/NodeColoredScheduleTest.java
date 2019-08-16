@@ -31,6 +31,7 @@ import org.batfish.datamodel.bgp.BgpTopology;
 import org.batfish.datamodel.bgp.Ipv4UnicastAddressFamily;
 import org.batfish.datamodel.ospf.OspfArea;
 import org.batfish.datamodel.ospf.OspfInterfaceSettings;
+import org.batfish.datamodel.ospf.OspfNetworkType;
 import org.batfish.datamodel.ospf.OspfProcess;
 import org.batfish.datamodel.ospf.OspfTopology;
 import org.batfish.datamodel.ospf.OspfTopologyUtils;
@@ -88,6 +89,8 @@ public class NodeColoredScheduleTest {
                     .setEnabled(true)
                     .setProcess("1")
                     .setAreaName(0L)
+                    .setCost(1)
+                    .setNetworkType(OspfNetworkType.POINT_TO_POINT)
                     .build())
             .build();
     // Make OSPF process and areas
@@ -112,7 +115,12 @@ public class NodeColoredScheduleTest {
         ib.setOwner(r2)
             .setVrf(vrf2)
             .setOspfSettings(
-                OspfInterfaceSettings.builder().setProcess("1").setEnabled(true).build())
+                OspfInterfaceSettings.builder()
+                    .setProcess("1")
+                    .setEnabled(true)
+                    .setCost(1)
+                    .setNetworkType(OspfNetworkType.POINT_TO_POINT)
+                    .build())
             .setAddress(ConcreteInterfaceAddress.create(R2_IP, networkBits))
             .build();
     // Make OSPF process and areas

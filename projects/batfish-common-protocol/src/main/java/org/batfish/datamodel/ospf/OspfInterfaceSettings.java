@@ -1,5 +1,6 @@
 package org.batfish.datamodel.ospf;
 
+import static com.google.common.base.MoreObjects.firstNonNull;
 import static com.google.common.base.Preconditions.checkArgument;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -79,7 +80,7 @@ public class OspfInterfaceSettings implements Serializable {
     }
 
     public OspfInterfaceSettings build() {
-      return new OspfInterfaceSettings(
+      return create(
           _ospfAreaName,
           _ospfCost,
           _ospfDeadInterval,
@@ -125,15 +126,16 @@ public class OspfInterfaceSettings implements Serializable {
       @Nullable @JsonProperty(PROP_PASSIVE) Boolean passive,
       @Nullable @JsonProperty(PROP_PROCESS) String process) {
     checkArgument(cost != null, "OSPF cost must be specified");
+    checkArgument(networkType != null, "Network type must be specified");
     return new OspfInterfaceSettings(
         area,
         cost,
-        deadInterval,
-        enabled,
+        firstNonNull(deadInterval, 0),
+        firstNonNull(enabled, true),
         helloMultiplier,
         inboundDistributeListPolicy,
         networkType,
-        passive,
+        firstNonNull(passive, false),
         process);
   }
 
@@ -142,8 +144,8 @@ public class OspfInterfaceSettings implements Serializable {
       int cost,
       Integer deadInterval,
       boolean enabled,
-      Integer helloMultiplier,
-      String inboundDistributeListPolicy,
+      @Nullable Integer helloMultiplier,
+      @Nullable String inboundDistributeListPolicy,
       OspfNetworkType networkType,
       Boolean passive,
       @Nullable String process) {

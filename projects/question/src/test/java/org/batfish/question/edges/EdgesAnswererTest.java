@@ -97,6 +97,7 @@ import org.batfish.datamodel.isis.IsisNode;
 import org.batfish.datamodel.isis.IsisTopology;
 import org.batfish.datamodel.ospf.OspfArea;
 import org.batfish.datamodel.ospf.OspfInterfaceSettings;
+import org.batfish.datamodel.ospf.OspfNetworkType;
 import org.batfish.datamodel.ospf.OspfProcess;
 import org.batfish.datamodel.ospf.OspfTopologyUtils;
 import org.batfish.datamodel.pojo.Node;
@@ -400,11 +401,21 @@ public class EdgesAnswererTest {
     Interface i1 = _host1.getAllInterfaces().get("int1");
     i1.setVrf(vrf1);
     i1.setOspfSettings(
-        OspfInterfaceSettings.builder().setPassive(false).setProcess(ospf1.getProcessId()).build());
+        OspfInterfaceSettings.builder()
+            .setCost(1)
+            .setPassive(false)
+            .setNetworkType(OspfNetworkType.POINT_TO_POINT)
+            .setProcess(ospf1.getProcessId())
+            .build());
     Interface i2 = _host2.getAllInterfaces().get("int2");
     i2.setVrf(vrf2);
     i2.setOspfSettings(
-        OspfInterfaceSettings.builder().setPassive(false).setProcess(ospf2.getProcessId()).build());
+        OspfInterfaceSettings.builder()
+            .setCost(1)
+            .setPassive(false)
+            .setNetworkType(OspfNetworkType.POINT_TO_POINT)
+            .setProcess(ospf2.getProcessId())
+            .build());
 
     OspfTopologyUtils.initNeighborConfigs(NetworkConfigurations.of(_configurations));
     // Need edges to be bi-directional
