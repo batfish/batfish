@@ -133,6 +133,11 @@ GE
   'ge'
 ;
 
+INTEGRATED_VTYSH_CONFIG
+:
+  'integrated-vtysh-config'
+;
+
 INTERFACE
 :
   'interface'
@@ -245,6 +250,11 @@ SET
 SEQ
 :
   'seq'
+;
+
+SERVICE
+:
+  'service'
 ;
 
 STATIC

@@ -540,4 +540,9 @@ public class CumulusFrrGrammarTest {
   public void testCumulusFrrAgentx() {
     parse("agentx");
   }
+
+  @Test
+  public void testCumulusService() {
+    parse("service integrated-vtysh-config\n");
+  }
 }
