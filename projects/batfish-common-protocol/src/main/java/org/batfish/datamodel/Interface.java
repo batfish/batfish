@@ -32,6 +32,7 @@ import org.batfish.datamodel.eigrp.EigrpInterfaceSettings;
 import org.batfish.datamodel.hsrp.HsrpGroup;
 import org.batfish.datamodel.isis.IsisInterfaceSettings;
 import org.batfish.datamodel.ospf.OspfArea;
+import org.batfish.datamodel.ospf.OspfInterfaceSettings;
 import org.batfish.datamodel.ospf.OspfNetworkType;
 import org.batfish.datamodel.transformation.Transformation;
 
@@ -64,6 +65,7 @@ public final class Interface extends ComparableStructure<String> {
     private @Nullable Integer _mtu;
     private String _name;
     private @Nullable Integer _nativeVlan;
+    private OspfInterfaceSettings _ospfSettings;
     private OspfArea _ospfArea;
     private Integer _ospfCost;
     private boolean _ospfEnabled;
@@ -366,6 +368,11 @@ public final class Interface extends ComparableStructure<String> {
       return this;
     }
 
+    public Builder setOspfSettings(OspfInterfaceSettings ospfSettings) {
+      _ospfSettings = ospfSettings;
+      return this;
+    }
+
     public Builder setOspfArea(OspfArea ospfArea) {
       _ospfArea = ospfArea;
       return this;
@@ -591,6 +598,7 @@ public final class Interface extends ComparableStructure<String> {
   private static final String PROP_OSPF_NETWORK_TYPE = "ospfNetworkType";
   private static final String PROP_OSPF_PASSIVE = "ospfPassive";
   private static final String PROP_OSPF_PROCESS = "ospfProcess";
+  private static final String PROP_OSPF_SETTINGS = "ospfSettings";
   private static final String PROP_OUTGOING_FILTER = "outgoingFilter";
   private static final String PROP_OUTGOING_TRANSFORMATION = "outgoingTransformation";
   private static final String PROP_POST_TRANSFORMATION_INCOMING_FILTER =
@@ -840,6 +848,7 @@ public final class Interface extends ComparableStructure<String> {
   @Nullable private Integer _mlagId;
   private int _mtu;
   @Nullable private Integer _nativeVlan;
+  @Nullable private OspfInterfaceSettings _ospfSettings;
   @Nullable private Long _ospfAreaName;
   private Integer _ospfCost;
   private int _ospfDeadInterval;
@@ -1216,6 +1225,13 @@ public final class Interface extends ComparableStructure<String> {
   @Nullable
   public Integer getNativeVlan() {
     return _nativeVlan;
+  }
+
+  /** {@link OspfInterfaceSettings} associated with this interface. */
+  @Nullable
+  @JsonProperty(PROP_OSPF_SETTINGS)
+  public OspfInterfaceSettings getOspfSettings() {
+    return _ospfSettings;
   }
 
   /** The OSPF area to which this interface belongs. */
@@ -1672,6 +1688,11 @@ public final class Interface extends ComparableStructure<String> {
 
   public void setOspfProcess(@Nullable String ospfProcess) {
     _ospfProcess = ospfProcess;
+  }
+
+  @JsonProperty(PROP_OSPF_SETTINGS)
+  public void setOspfSettings(@Nullable OspfInterfaceSettings ospfSettings) {
+    _ospfSettings = ospfSettings;
   }
 
   @JsonIgnore
