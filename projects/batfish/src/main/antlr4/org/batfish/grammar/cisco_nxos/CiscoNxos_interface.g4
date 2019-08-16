@@ -631,7 +631,12 @@ i_no_autostate
 
 i_no_bandwidth
 :
-  BANDWIDTH INHERIT NEWLINE
+  BANDWIDTH i_no_bandwidth_inherit
+;
+
+i_no_bandwidth_inherit
+:
+  INHERIT NEWLINE
 ;
 
 i_no_bfd
@@ -641,7 +646,7 @@ i_no_bfd
 
 i_no_description
 :
-  DESCRIPTION null_rest_of_line
+  DESCRIPTION NEWLINE
 ;
 
 i_no_mac_address
