@@ -45,11 +45,17 @@ interface Ethernet1/1
 !
 
 interface Ethernet1/2
+  no autostate
+  autostate
   bandwidth inherit
   no bfd echo
+  description this desc should be lost.
+  no description
   no snmp trap link-status
   udld disable
 
 interface Ethernet1/3
+  autostate
+  no autostate
   bandwidth inherit 10000
   udld enable

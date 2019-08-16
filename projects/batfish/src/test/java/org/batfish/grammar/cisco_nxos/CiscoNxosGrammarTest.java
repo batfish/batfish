@@ -1448,6 +1448,7 @@ public final class CiscoNxosGrammarTest {
             hasDescription(
                 "here is a description with punctuation! and IP address 1.2.3.4/24 etc."),
             hasMtu(9216)));
+    assertTrue(eth11.getAutoState());
     assertThat(eth11.getDhcpRelayAddresses(), contains(Ip.parse("1.2.3.4"), Ip.parse("1.2.3.5")));
     assertThat(eth11.getIncomingFilterName(), equalTo("acl_in"));
     assertThat(eth11.getOutgoingFilterName(), equalTo("acl_out"));
@@ -1468,6 +1469,15 @@ public final class CiscoNxosGrammarTest {
       assertThat(iface.getIpAccessGroupIn(), equalTo("acl_in"));
       assertThat(iface.getIpAccessGroupOut(), equalTo("acl_out"));
       assertThat(iface.getMtu(), equalTo(9216));
+    }
+    {
+      Interface iface = vc.getInterfaces().get("Ethernet1/2");
+      assertTrue(iface.getAutostate());
+      assertThat(iface.getDescription(), nullValue());
+    }
+    {
+      Interface iface = vc.getInterfaces().get("Ethernet1/3");
+      assertFalse(iface.getAutostate());
     }
   }
 
