@@ -23,6 +23,7 @@ statement
   | s_vrf
   | s_routemap
   | s_ip
+  | LOG SYSLOG INFORMATIONAL NEWLINE
 ;
 
 s_agentx

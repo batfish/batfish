@@ -133,6 +133,11 @@ GE
   'ge'
 ;
 
+INFORMATIONAL
+:
+  'informational'
+;
+
 INTERFACE
 :
   'interface'
@@ -180,6 +185,11 @@ L2VPN
 LE
 :
   'le'
+;
+
+LOG
+:
+  'log'
 ;
 
 NEIGHBOR
@@ -255,6 +265,11 @@ STATIC
 SUBNET_MASK
 :
   F_SubnetMask
+;
+
+SYSLOG
+:
+  'syslog'
 ;
 
 MATCH

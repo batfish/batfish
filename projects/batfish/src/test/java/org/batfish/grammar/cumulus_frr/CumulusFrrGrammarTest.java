@@ -540,4 +540,9 @@ public class CumulusFrrGrammarTest {
   public void testCumulusFrrAgentx() {
     parse("agentx");
   }
+
+  @Test
+  public void testCumulusFrrSyslog() {
+    parse("log syslog informational\n");
+  }
 }
