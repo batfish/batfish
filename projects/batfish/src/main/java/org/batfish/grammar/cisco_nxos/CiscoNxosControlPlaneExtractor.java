@@ -89,6 +89,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Range;
 import com.google.common.collect.Table;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -109,6 +110,7 @@ import org.batfish.common.Warnings;
 import org.batfish.common.Warnings.ParseWarning;
 import org.batfish.common.WellKnownCommunity;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
+import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.DscpType;
 import org.batfish.datamodel.IcmpCode;
 import org.batfish.datamodel.IcmpType;
@@ -248,6 +250,7 @@ import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Ip_as_path_access_list_nam
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Ip_as_path_access_list_seqContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Ip_community_list_nameContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Ip_community_list_seqContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Ip_name_serverContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Ip_prefixContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Ip_prefix_listContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Ip_prefix_list_descriptionContext;
@@ -1357,6 +1360,23 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
       _configuration.referenceStructure(IP_ACCESS_LIST, name, INTERFACE_IP_ACCESS_GROUP_OUT, line);
       _currentInterfaces.forEach(iface -> iface.setIpAccessGroupOut(name));
     }
+  }
+
+  @Override
+  public void exitIp_name_server(Ip_name_serverContext ctx) {
+    String vrf;
+    if (ctx.vrf != null) {
+      Optional<String> vrfOrErr = toString(ctx, ctx.vrf);
+      if (!vrfOrErr.isPresent()) {
+        return;
+      }
+      vrf = vrfOrErr.get();
+    } else {
+      vrf = Configuration.DEFAULT_VRF_NAME;
+    }
+    List<String> existingServers =
+        _configuration.getIpNameServersByUseVrf().computeIfAbsent(vrf, v -> new LinkedList<>());
+    ctx.servers.stream().map(ParserRuleContext::getText).forEach(existingServers::add);
   }
 
   @Override

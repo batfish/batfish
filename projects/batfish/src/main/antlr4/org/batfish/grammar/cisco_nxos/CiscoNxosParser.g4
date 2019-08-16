@@ -100,10 +100,22 @@ s_ip
     ip_access_list
     | ip_as_path_access_list
     | ip_community_list
+    | ip_name_server
     | ip_null
     | ip_prefix_list
     | ip_route
   )
+;
+
+ip_name_server
+:
+  NAME_SERVER servers += name_server+ (USE_VRF vrf = vrf_name)? NEWLINE
+;
+
+name_server
+:
+  ip_address
+  | ipv6_address
 ;
 
 ip_null

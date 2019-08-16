@@ -300,6 +300,7 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
   private final @Nonnull Map<String, IpAccessList> _ipAccessLists;
   private final @Nonnull Map<String, IpAsPathAccessList> _ipAsPathAccessLists;
   private final @Nonnull Map<String, IpCommunityList> _ipCommunityLists;
+  private Map<String, List<String>> _ipNameServersByUseVrf;
   private final @Nonnull Map<String, IpPrefixList> _ipPrefixLists;
   private final @Nonnull Map<Integer, Nve> _nves;
   private final @Nonnull Map<String, ObjectGroup> _objectGroups;
@@ -319,6 +320,7 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
     _ipAccessLists = new HashMap<>();
     _ipAsPathAccessLists = new HashMap<>();
     _ipCommunityLists = new HashMap<>();
+    _ipNameServersByUseVrf = new HashMap<>();
     _ipPrefixLists = new HashMap<>();
     _nves = new HashMap<>();
     _objectGroups = new HashMap<>();
@@ -763,6 +765,13 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
     return new LiteralCommunityConjunction(communities);
   }
 
+  private void convertIpNameServers() {
+    _c.setDnsServers(
+        _ipNameServersByUseVrf.values().stream()
+            .flatMap(Collection::stream)
+            .collect(ImmutableSortedSet.toImmutableSortedSet(Comparator.naturalOrder())));
+  }
+
   private void convertIpPrefixLists() {
     _ipPrefixLists.forEach(
         (name, ipPrefixList) ->
@@ -981,6 +990,10 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
 
   public @Nonnull Map<String, IpCommunityList> getIpCommunityLists() {
     return _ipCommunityLists;
+  }
+
+  public @Nonnull Map<String, List<String>> getIpNameServersByUseVrf() {
+    return _ipNameServersByUseVrf;
   }
 
   public @Nonnull Map<String, IpPrefixList> getIpPrefixLists() {
@@ -2407,6 +2420,7 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
     convertVrfs();
     convertInterfaces();
     disableUnregisteredVlanInterfaces();
+    convertIpNameServers();
     convertRouteMaps();
     convertStaticRoutes();
     computeImplicitOspfAreas();
