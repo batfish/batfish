@@ -418,6 +418,7 @@ import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Standard_communityContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Static_route_nameContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Static_route_prefContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Subnet_maskContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Sysds_shutdownContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Tcp_flags_maskContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Tcp_portContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Tcp_port_numberContext;
@@ -1863,6 +1864,11 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
     if (ctx.no_summary != null) {
       stub.setNoSummary(true);
     }
+  }
+
+  @Override
+  public void exitSysds_shutdown(Sysds_shutdownContext ctx) {
+    _configuration.setSystemDefaultSwitchportShutdown(true);
   }
 
   @Override
