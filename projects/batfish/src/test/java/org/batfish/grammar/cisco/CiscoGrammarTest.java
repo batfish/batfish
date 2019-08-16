@@ -100,6 +100,7 @@ import static org.batfish.datamodel.matchers.InterfaceMatchers.hasMlagId;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasMtu;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasNativeVlan;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasOspfAreaName;
+import static org.batfish.datamodel.matchers.InterfaceMatchers.hasOspfNetworkType;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasSpeed;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasSwitchPortEncapsulation;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasSwitchPortMode;
@@ -2977,6 +2978,26 @@ public class CiscoGrammarTest {
   }
 
   @Test
+  public void testIosOrphanInterfaceOspfSettings() throws IOException {
+    Configuration c = parseConfig("ios-orphan-interface-ospf-settings");
+
+    // Confirm interface associated with an OSPF area has expected OSPF properties
+    assertThat(
+        c,
+        hasInterface(
+            "Ethernet0/0",
+            hasOspfNetworkType(
+                equalTo(org.batfish.datamodel.ospf.OspfNetworkType.POINT_TO_POINT))));
+
+    // Confirm interface NOT associated with an OSPF area still has expected OSPF properties
+    assertThat(
+        c,
+        hasInterface(
+            "Ethernet0/1",
+            hasOspfNetworkType(equalTo(org.batfish.datamodel.ospf.OspfNetworkType.BROADCAST))));
+  }
+
+  @Test
   public void testIosOspfReferenceBandwidth() throws IOException {
     Configuration manual = parseConfig("iosOspfCost");
     assertThat(
@@ -4993,6 +5014,22 @@ public class CiscoGrammarTest {
 
     Configuration iosRecovery = configurations.get(hostname);
     assertThat(iosRecovery, allOf(Matchers.notNullValue(), hasInterface("Loopback0", anything())));
+  }
+
+  @Test
+  public void testShutdownOspfInterface() throws IOException {
+    Configuration c = parseConfig("ios-shutdown-ospf-interface");
+
+    String eth0 = "Ethernet0/0";
+    Map<String, Interface> ifaces = c.getAllInterfaces();
+    assertThat(ifaces.keySet(), contains(eth0));
+    Interface iface = ifaces.get(eth0);
+
+    // Confirm OSPF settings are associated with interface even though it is shutdown
+    assertThat(iface.getOspfEnabled(), equalTo(false));
+    assertThat(iface.getOspfAreaName(), equalTo(0L));
+    assertThat(iface.getOspfProcess(), equalTo("1"));
+    assertThat(iface.getOspfPassive(), equalTo(true));
   }
 
   @Test
