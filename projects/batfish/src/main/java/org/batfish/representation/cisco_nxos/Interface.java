@@ -6,9 +6,12 @@ import com.google.common.collect.Range;
 import java.io.Serializable;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.SortedSet;
+import java.util.TreeSet;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.datamodel.IntegerSpace;
+import org.batfish.datamodel.Ip;
 
 /** A layer-2- or layer-3-capable network interface */
 public final class Interface implements Serializable {
@@ -111,6 +114,7 @@ public final class Interface implements Serializable {
   private final @Nonnull Set<String> _declaredNames;
   private @Nullable Integer _delayTensOfMicroseconds;
   private @Nullable String _description;
+  private final @Nonnull SortedSet<Ip> _dhcpRelayAddresses;
   private @Nullable Integer _encapsulationVlan;
   private @Nullable InterfaceHsrp _hsrp;
   private @Nullable String _ipAccessGroupIn;
@@ -143,6 +147,7 @@ public final class Interface implements Serializable {
     _name = name;
     _parentInterface = parentInterface;
     _declaredNames = new HashSet<>();
+    _dhcpRelayAddresses = new TreeSet<>();
     _secondaryAddresses = new HashSet<>();
     _ipv6AddressSecondaries = new HashSet<>();
     _type = type;
@@ -193,6 +198,10 @@ public final class Interface implements Serializable {
 
   public @Nullable String getDescription() {
     return _description;
+  }
+
+  public @Nonnull SortedSet<Ip> getDhcpRelayAddresses() {
+    return _dhcpRelayAddresses;
   }
 
   public @Nullable Integer getEncapsulationVlan() {

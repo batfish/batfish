@@ -1167,7 +1167,9 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
   private @Nonnull org.batfish.datamodel.Interface toInterface(Interface iface) {
     String ifaceName = iface.getName();
     org.batfish.datamodel.Interface.Builder newIfaceBuilder =
-        org.batfish.datamodel.Interface.builder().setName(ifaceName);
+        org.batfish.datamodel.Interface.builder()
+            .setName(ifaceName)
+            .setDeclaredNames(iface.getDeclaredNames());
 
     String parent = iface.getParentInterface();
     if (parent != null) {
@@ -1188,6 +1190,8 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
     // TODO: handle DHCP
 
     newIfaceBuilder.setDescription(iface.getDescription());
+
+    newIfaceBuilder.setDhcpRelayAddresses(iface.getDhcpRelayAddresses());
 
     newIfaceBuilder.setMtu(iface.getMtu());
 
