@@ -2707,7 +2707,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
               ImmutableList.of(MATCH_DEFAULT_ROUTE, new MatchProtocol(RoutingProtocol.AGGREGATE))));
     }
 
-    computeDistributeListPolicies(proc, c, vrfName, proc.getName(), oldConfig);
+    computeDistributeListPolicies(proc, newProcess, c, vrfName, proc.getName(), oldConfig);
 
     // policies for redistributing routes
     ospfExportStatements.addAll(
@@ -2801,7 +2801,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
             proc.getPassiveInterfaceList().contains(i.getName())
                 || (proc.getPassiveInterfaceDefault()
                     && !proc.getActiveInterfaceList().contains(ifaceName));
-        i.setOspfPassive(passive);
+        i.setRipPassive(passive);
       }
     }
 

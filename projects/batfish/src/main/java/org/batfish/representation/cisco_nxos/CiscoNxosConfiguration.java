@@ -307,6 +307,7 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
   private transient Multimap<String, String> _portChannelMembers;
   private @Nonnull IntegerSpace _reservedVlanRange;
   private final @Nonnull Map<String, RouteMap> _routeMaps;
+  private boolean _systemDefaultSwitchportShutdown;
   private @Nullable String _version;
   private final @Nonnull Map<Integer, Vlan> _vlans;
   private final @Nonnull Map<String, Vrf> _vrfs;
@@ -1007,6 +1008,10 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
     return _routeMaps;
   }
 
+  public boolean getSystemDefaultSwitchportShutdown() {
+    return _systemDefaultSwitchportShutdown;
+  }
+
   public @Nullable String getVersion() {
     return _version;
   }
@@ -1115,6 +1120,10 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
     _hostname = hostname.toLowerCase();
   }
 
+  public void setSystemDefaultSwitchportShutdown(boolean systemDefaultSwitchportShutdown) {
+    _systemDefaultSwitchportShutdown = systemDefaultSwitchportShutdown;
+  }
+
   @Override
   public void setVendor(ConfigurationFormat format) {}
 
@@ -1176,7 +1185,7 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
       newIfaceBuilder.setDependencies(ImmutableSet.of(new Dependency(parent, DependencyType.BIND)));
     }
 
-    newIfaceBuilder.setActive(!iface.getShutdown());
+    newIfaceBuilder.setActive(!iface.getShutdownEffective(_systemDefaultSwitchportShutdown));
 
     if (!iface.getIpAddressDhcp()) {
       if (iface.getAddress() != null) {

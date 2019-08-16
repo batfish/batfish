@@ -538,7 +538,12 @@ public class CumulusFrrGrammarTest {
 
   @Test
   public void testCumulusFrrAgentx() {
-    parse("agentx");
+    parse("agentx\n");
+  }
+
+  @Test
+  public void testCumulusService() {
+    parse("service integrated-vtysh-config\n");
   }
 
   @Test
