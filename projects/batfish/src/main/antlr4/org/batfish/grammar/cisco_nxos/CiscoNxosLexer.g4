@@ -3135,6 +3135,11 @@ SOURCE_INTERFACE
   'source-interface'
 ;
 
+SOURCE_PROTOCOL
+:
+  'source-protocol' -> pushMode(M_Words)
+;
+
 SOURCE_QUENCH
 :
   'source-quench'

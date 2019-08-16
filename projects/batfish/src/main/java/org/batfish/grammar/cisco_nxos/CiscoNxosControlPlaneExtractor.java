@@ -354,6 +354,7 @@ import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Rmm_as_pathContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Rmm_communityContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Rmm_interfaceContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Rmm_metricContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Rmm_source_protocolContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Rmm_tagContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Rmmipa_pbrContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Rmmipa_prefix_listContext;
@@ -510,6 +511,7 @@ import org.batfish.representation.cisco_nxos.RouteMapMatchInterface;
 import org.batfish.representation.cisco_nxos.RouteMapMatchIpAddress;
 import org.batfish.representation.cisco_nxos.RouteMapMatchIpAddressPrefixList;
 import org.batfish.representation.cisco_nxos.RouteMapMatchMetric;
+import org.batfish.representation.cisco_nxos.RouteMapMatchSourceProtocol;
 import org.batfish.representation.cisco_nxos.RouteMapMatchTag;
 import org.batfish.representation.cisco_nxos.RouteMapMetricType;
 import org.batfish.representation.cisco_nxos.RouteMapSetAsPathPrependLastAs;
@@ -640,6 +642,8 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
   public static final IntegerSpace PACKET_LENGTH_RANGE = IntegerSpace.of(Range.closed(20, 9210));
 
   private static final IntegerSpace PORT_CHANNEL_RANGE = IntegerSpace.of(Range.closed(1, 4096));
+  private static final IntegerSpace PROTOCOL_INSTANCE_NAME_LENGTH_RANGE =
+      IntegerSpace.of(Range.closed(1, 32));
   private static final IntegerSpace ROUTE_MAP_ENTRY_SEQUENCE_RANGE =
       IntegerSpace.of(Range.closed(0, 65535));
   private static final IntegerSpace ROUTE_MAP_NAME_LENGTH_RANGE =
@@ -4075,6 +4079,14 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
   @Override
   public void exitRmm_metric(Rmm_metricContext ctx) {
     _currentRouteMapEntry.setMatchMetric(new RouteMapMatchMetric(toLong(ctx.metric)));
+  }
+
+  @Override
+  public void exitRmm_source_protocol(Rmm_source_protocolContext ctx) {
+    toStringWithLengthInSpace(
+            ctx, ctx.name, PROTOCOL_INSTANCE_NAME_LENGTH_RANGE, "protocol instance name")
+        .map(RouteMapMatchSourceProtocol::new)
+        .ifPresent(_currentRouteMapEntry::setMatchSourceProtocol);
   }
 
   @Override

@@ -1999,6 +1999,13 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
           }
 
           @Override
+          public BoolExpr visitRouteMapMatchSourceProtocol(
+              RouteMapMatchSourceProtocol routeMapMatchSourceProtocol) {
+            // Not applicable to PBR
+            return null;
+          }
+
+          @Override
           public BoolExpr visitRouteMapMatchTag(RouteMapMatchTag routeMapMatchTag) {
             // TODO: somehow applicable to PBR? Documentation and semantics unclear
             _w.redFlag("'match tag' not supported in PBR policies");
@@ -2197,6 +2204,15 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
           public BooleanExpr visitRouteMapMatchMetric(RouteMapMatchMetric routeMapMatchMetric) {
             return new MatchMetric(
                 IntComparator.EQ, new LiteralLong(routeMapMatchMetric.getMetric()));
+          }
+
+          @Override
+          public BooleanExpr visitRouteMapMatchSourceProtocol(
+              RouteMapMatchSourceProtocol routeMapMatchSourceProtocol) {
+            return routeMapMatchSourceProtocol
+                .toRoutingProtocols()
+                .<BooleanExpr>map(MatchProtocol::new)
+                .orElse(BooleanExprs.FALSE);
           }
 
           @Override

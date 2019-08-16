@@ -274,6 +274,7 @@ import org.batfish.representation.cisco_nxos.RouteMapMatchInterface;
 import org.batfish.representation.cisco_nxos.RouteMapMatchIpAddress;
 import org.batfish.representation.cisco_nxos.RouteMapMatchIpAddressPrefixList;
 import org.batfish.representation.cisco_nxos.RouteMapMatchMetric;
+import org.batfish.representation.cisco_nxos.RouteMapMatchSourceProtocol;
 import org.batfish.representation.cisco_nxos.RouteMapMatchTag;
 import org.batfish.representation.cisco_nxos.RouteMapMetricType;
 import org.batfish.representation.cisco_nxos.RouteMapSetAsPathPrependLastAs;
@@ -4278,6 +4279,8 @@ public final class CiscoNxosGrammarTest {
             "match_ip_address",
             "match_ip_address_prefix_list",
             "match_metric",
+            "match_source_protocol_connected",
+            "match_source_protocol_static",
             "match_tag",
             "set_as_path_prepend_last_as",
             "set_as_path_prepend_literal_as",
@@ -4378,6 +4381,28 @@ public final class CiscoNxosGrammarTest {
       assertRoutingPolicyDeniesRoute(rp, base);
       Bgpv4Route route = base.toBuilder().setMetric(1L).build();
       assertRoutingPolicyPermitsRoute(rp, route);
+    }
+    {
+      RoutingPolicy rp = c.getRoutingPolicies().get("match_source_protocol_connected");
+      assertRoutingPolicyDeniesRoute(
+          rp,
+          org.batfish.datamodel.StaticRoute.builder()
+              .setAdmin(1)
+              .setNetwork(Prefix.ZERO)
+              .setNextHopIp(Ip.ZERO)
+              .build());
+      assertRoutingPolicyPermitsRoute(rp, new ConnectedRoute(Prefix.ZERO, "dummy"));
+    }
+    {
+      RoutingPolicy rp = c.getRoutingPolicies().get("match_source_protocol_static");
+      assertRoutingPolicyDeniesRoute(rp, new ConnectedRoute(Prefix.ZERO, "dummy"));
+      assertRoutingPolicyPermitsRoute(
+          rp,
+          org.batfish.datamodel.StaticRoute.builder()
+              .setAdmin(1)
+              .setNetwork(Prefix.ZERO)
+              .setNextHopIp(Ip.ZERO)
+              .build());
     }
     {
       RoutingPolicy rp = c.getRoutingPolicies().get("match_tag");
@@ -4502,6 +4527,8 @@ public final class CiscoNxosGrammarTest {
             "match_ip_address",
             "match_ip_address_prefix_list",
             "match_metric",
+            "match_source_protocol_connected",
+            "match_source_protocol_static",
             "match_tag",
             "set_as_path_prepend_last_as",
             "set_as_path_prepend_literal_as",
@@ -4607,6 +4634,26 @@ public final class CiscoNxosGrammarTest {
       RouteMapMatchMetric match = entry.getMatchMetric();
       assertThat(entry.getMatches().collect(onlyElement()), equalTo(match));
       assertThat(match.getMetric(), equalTo(1L));
+    }
+    {
+      RouteMap rm = vc.getRouteMaps().get("match_source_protocol_connected");
+      assertThat(rm.getEntries().keySet(), contains(10));
+      RouteMapEntry entry = getOnlyElement(rm.getEntries().values());
+      assertThat(entry.getAction(), equalTo(LineAction.PERMIT));
+      assertThat(entry.getSequence(), equalTo(10));
+      RouteMapMatchSourceProtocol match = entry.getMatchSourceProtocol();
+      assertThat(entry.getMatches().collect(onlyElement()), equalTo(match));
+      assertThat(match.getSourceProtocol(), equalTo("connected"));
+    }
+    {
+      RouteMap rm = vc.getRouteMaps().get("match_source_protocol_static");
+      assertThat(rm.getEntries().keySet(), contains(10));
+      RouteMapEntry entry = getOnlyElement(rm.getEntries().values());
+      assertThat(entry.getAction(), equalTo(LineAction.PERMIT));
+      assertThat(entry.getSequence(), equalTo(10));
+      RouteMapMatchSourceProtocol match = entry.getMatchSourceProtocol();
+      assertThat(entry.getMatches().collect(onlyElement()), equalTo(match));
+      assertThat(match.getSourceProtocol(), equalTo("static"));
     }
     {
       RouteMap rm = vc.getRouteMaps().get("match_tag");
