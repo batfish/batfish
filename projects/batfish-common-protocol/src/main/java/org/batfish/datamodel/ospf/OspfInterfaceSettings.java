@@ -10,8 +10,8 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 
-@ParametersAreNonnullByDefault
 /** Contains OSPF settings for an OSPF interface. */
+@ParametersAreNonnullByDefault
 public class OspfInterfaceSettings implements Serializable {
 
   public static @Nonnull Builder builder() {
