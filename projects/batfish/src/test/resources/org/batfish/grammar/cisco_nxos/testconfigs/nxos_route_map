@@ -51,6 +51,12 @@ route-map match_ipv6_address_prefix_list permit 10
 route-map match_metric permit 10
   match metric 1
 
+route-map match_source_protocol_connected permit 10
+  match source-protocol connected
+
+route-map match_source_protocol_static permit 10
+  match source-protocol static
+
 route-map match_tag permit 10
   match tag 1
 
