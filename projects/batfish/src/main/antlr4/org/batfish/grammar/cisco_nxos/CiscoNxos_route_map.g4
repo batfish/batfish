@@ -54,6 +54,7 @@ rm_match
     | rmm_ip
     | rmm_ipv6
     | rmm_metric
+    | rmm_source_protocol
     | rmm_tag
   )
 ;
@@ -124,6 +125,17 @@ rmmip6a_prefix_list
 rmm_metric
 :
   METRIC metric = uint32 NEWLINE
+;
+
+rmm_source_protocol
+:
+  SOURCE_PROTOCOL name = protocol_instance_name NEWLINE
+;
+
+protocol_instance_name
+:
+// 1-32 characters
+  WORD
 ;
 
 rmm_tag
