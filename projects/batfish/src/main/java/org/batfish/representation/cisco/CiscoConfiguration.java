@@ -4456,11 +4456,19 @@ public final class CiscoConfiguration extends VendorConfiguration {
           }
         }
       }
-      // check EIGRP distribute lists
+      // check EIGRP policies
+      // distribute lists
       if (vrf.getEigrpProcesses().values().stream()
           .flatMap(
               eigrpProcess -> eigrpProcess.getOutboundInterfaceDistributeLists().values().stream())
           .anyMatch(distributeList -> distributeList.getFilterName().equals(aclName))) {
+        return true;
+      }
+      // EIGRP redistribution policy
+      if (vrf.getEigrpProcesses().values().stream()
+          .map(EigrpProcess::getRedistributionPolicies)
+          .flatMap(redisrPolicies -> redisrPolicies.values().stream())
+          .anyMatch(rm -> containsIpAccessList(aclName, rm.getRouteMap()))) {
         return true;
       }
     }
