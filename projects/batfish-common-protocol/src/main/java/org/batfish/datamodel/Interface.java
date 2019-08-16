@@ -1238,27 +1238,32 @@ public final class Interface extends ComparableStructure<String> {
   }
 
   /** The OSPF area to which this interface belongs. */
+  @JsonIgnore
   @Nullable
   public Long getOspfAreaName() {
     return (_ospfSettings != null) ? _ospfSettings.getAreaName() : null;
   }
 
   /** The explicit OSPF cost of this interface. If unset, the cost is automatically calculated. */
+  @JsonIgnore
   public Integer getOspfCost() {
     return (_ospfSettings != null) ? _ospfSettings.getCost() : null;
   }
 
   /** Dead-interval in seconds for OSPF updates. */
+  @JsonIgnore
   public int getOspfDeadInterval() {
     return (_ospfSettings != null) ? _ospfSettings.getDeadInterval() : 0;
   }
 
   /** Whether or not OSPF is enabled at all on this interface (either actively or passively). */
+  @JsonIgnore
   public boolean getOspfEnabled() {
     return (_ospfSettings != null) ? firstNonNull(_ospfSettings.getEnabled(), false) : false;
   }
 
   /** Number of OSPF packets to send out during dead-interval period for fast OSPF updates. */
+  @JsonIgnore
   public int getOspfHelloMultiplier() {
     return (_ospfSettings != null) ? firstNonNull(_ospfSettings.getHelloMultiplier(), 0) : 0;
   }
@@ -1268,12 +1273,14 @@ public final class Interface extends ComparableStructure<String> {
    * inbound distribute-lists for OSPF"
    */
   @Nullable
+  @JsonIgnore
   public String getOspfInboundDistributeListPolicy() {
     return (_ospfSettings != null) ? _ospfSettings.getInboundDistributeListPolicy() : null;
   }
 
   /** Returns the OSPF network type for this interface. */
   @Nullable
+  @JsonIgnore
   public OspfNetworkType getOspfNetworkType() {
     return (_ospfSettings != null) ? _ospfSettings.getNetworkType() : null;
   }
@@ -1282,11 +1289,13 @@ public final class Interface extends ComparableStructure<String> {
    * Whether or not OSPF is enabled passively on this interface. If passive, this interface is
    * included in the OSPF RIB, but no OSPF packets are sent from it.
    */
+  @JsonIgnore
   public boolean getOspfPassive() {
     return (_ospfSettings != null) ? firstNonNull(_ospfSettings.getPassive(), false) : false;
   }
 
   @Nullable
+  @JsonIgnore
   public String getOspfProcess() {
     return (_ospfSettings != null) ? _ospfSettings.getProcess() : null;
   }
