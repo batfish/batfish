@@ -92,15 +92,15 @@ public class OspfInterfaceSettings implements Serializable {
     }
   }
 
-  private Long _ospfAreaName;
-  private Integer _ospfCost;
-  private Integer _ospfDeadInterval;
-  private Boolean _ospfEnabled;
-  private Integer _ospfHelloMultiplier;
+  @Nullable private Long _ospfAreaName;
+  private int _ospfCost;
+  private int _ospfDeadInterval;
+  private boolean _ospfEnabled;
+  @Nullable private Integer _ospfHelloMultiplier;
   @Nullable private String _ospfInboundDistributeListPolicy;
   @Nonnull private OspfNetworkType _ospfNetworkType;
-  private Boolean _ospfPassive;
-  @Nonnull private String _ospfProcess;
+  private boolean _ospfPassive;
+  @Nullable private String _ospfProcess;
 
   private static final String PROP_AREA = "area";
   private static final String PROP_COST = "cost";
@@ -261,7 +261,7 @@ public class OspfInterfaceSettings implements Serializable {
    * included in the OSPF RIB, but no OSPF packets are sent from it.
    */
   @JsonProperty(PROP_PASSIVE)
-  public Boolean getPassive() {
+  public boolean getPassive() {
     return _ospfPassive;
   }
 
