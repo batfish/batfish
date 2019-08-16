@@ -1,6 +1,5 @@
 package org.batfish.datamodel.ospf;
 
-import static com.google.common.base.MoreObjects.firstNonNull;
 import static com.google.common.base.Preconditions.checkArgument;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -99,8 +98,8 @@ public class OspfInterfaceSettings implements Serializable {
   private boolean _ospfEnabled;
   @Nullable private Integer _ospfHelloMultiplier;
   @Nullable private String _ospfInboundDistributeListPolicy;
-  @Nonnull private OspfNetworkType _ospfNetworkType;
-  private boolean _ospfPassive;
+  @Nullable private OspfNetworkType _ospfNetworkType;
+  @Nullable private Boolean _ospfPassive;
   @Nullable private String _ospfProcess;
 
   private static final String PROP_AREA = "area";
@@ -125,17 +124,16 @@ public class OspfInterfaceSettings implements Serializable {
       @Nullable @JsonProperty(PROP_NETWORK_TYPE) OspfNetworkType networkType,
       @Nullable @JsonProperty(PROP_PASSIVE) Boolean passive,
       @Nullable @JsonProperty(PROP_PROCESS) String process) {
-    checkArgument(cost != null, "OSPF cost must be specified");
-    checkArgument(networkType != null, "Network type must be specified");
+    checkArgument(enabled != null, "OSPF enabled must be specified");
     return new OspfInterfaceSettings(
         area,
         cost,
-        firstNonNull(deadInterval, 0),
-        firstNonNull(enabled, true),
+        deadInterval,
+        enabled,
         helloMultiplier,
         inboundDistributeListPolicy,
         networkType,
-        firstNonNull(passive, false),
+        passive,
         process);
   }
 
@@ -146,8 +144,8 @@ public class OspfInterfaceSettings implements Serializable {
       boolean enabled,
       @Nullable Integer helloMultiplier,
       @Nullable String inboundDistributeListPolicy,
-      OspfNetworkType networkType,
-      Boolean passive,
+      @Nullable OspfNetworkType networkType,
+      @Nullable Boolean passive,
       @Nullable String process) {
     _ospfAreaName = area;
     _ospfCost = cost;
@@ -258,6 +256,7 @@ public class OspfInterfaceSettings implements Serializable {
 
   /** OSPF network type for this interface. */
   @JsonProperty(PROP_NETWORK_TYPE)
+  @Nullable
   public OspfNetworkType getNetworkType() {
     return _ospfNetworkType;
   }
@@ -267,6 +266,7 @@ public class OspfInterfaceSettings implements Serializable {
    * included in the OSPF RIB, but no OSPF packets are sent from it.
    */
   @JsonProperty(PROP_PASSIVE)
+  @Nullable
   public boolean getPassive() {
     return _ospfPassive;
   }
