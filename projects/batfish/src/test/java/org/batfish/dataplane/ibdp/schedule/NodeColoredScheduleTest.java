@@ -66,7 +66,7 @@ public class NodeColoredScheduleTest {
     Configuration.Builder cb =
         nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS);
     Vrf.Builder vb = nf.vrfBuilder();
-    Interface.Builder ib = nf.interfaceBuilder().setOspfEnabled(true).setOspfProcess("1");
+    Interface.Builder ib = nf.interfaceBuilder();
     BgpProcess.Builder pb =
         nf.bgpProcessBuilder().setAdminCostsToVendorDefaults(ConfigurationFormat.CISCO_IOS);
     BgpActivePeerConfig.Builder nb = nf.bgpNeighborBuilder();
@@ -83,7 +83,12 @@ public class NodeColoredScheduleTest {
         ib.setOwner(r1)
             .setVrf(vrf1)
             .setAddress(ConcreteInterfaceAddress.create(R1_IP, networkBits))
-            .setOspfSettings(OspfInterfaceSettings.builder().setAreaName(0L).build())
+            .setOspfSettings(
+                OspfInterfaceSettings.builder()
+                    .setEnabled(true)
+                    .setProcess("1")
+                    .setAreaName(0L)
+                    .build())
             .build();
     // Make OSPF process and areas
     OspfArea r1ospfArea = ospfArea.setInterfaces(ImmutableSet.of(i1.getName())).build();
@@ -106,6 +111,8 @@ public class NodeColoredScheduleTest {
     Interface i2 =
         ib.setOwner(r2)
             .setVrf(vrf2)
+            .setOspfSettings(
+                OspfInterfaceSettings.builder().setProcess("1").setEnabled(true).build())
             .setAddress(ConcreteInterfaceAddress.create(R2_IP, networkBits))
             .build();
     // Make OSPF process and areas

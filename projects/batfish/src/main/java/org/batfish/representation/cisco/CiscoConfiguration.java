@@ -2804,8 +2804,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
             proc.getPassiveInterfaceList().contains(i.getName())
                 || (proc.getPassiveInterfaceDefault()
                     && !proc.getActiveInterfaceList().contains(ifaceName));
-        // TODO figure out if this is a bug
-        // i.setOspfPassive(passive);
+        i.setRipPassive(passive);
       }
     }
 

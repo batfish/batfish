@@ -54,7 +54,12 @@ public final class Interface extends ComparableStructure<String> {
     @Nullable private String _description;
     @Nullable private EigrpInterfaceSettings _eigrp;
     @Nullable private Integer _encapsulationVlan;
-    private boolean _hasOspfSettings;
+    /**
+     * Indicates individual OSPF settings have been set in this builder (as opposed to adding an
+     * {@link OspfInterfaceSettings} object)
+     */
+    private boolean _hasIndividualOspfSettings;
+
     private Map<Integer, HsrpGroup> _hsrpGroups;
     private String _hsrpVersion;
     private FirewallSessionInterfaceInfo _firewallSessionInterfaceInfo;
@@ -101,7 +106,7 @@ public final class Interface extends ComparableStructure<String> {
       _hsrpGroups = ImmutableMap.of();
       _secondaryAddresses = ImmutableSet.of();
       _vrrpGroups = ImmutableSortedMap.of();
-      _hasOspfSettings = false;
+      _hasIndividualOspfSettings = false;
     }
 
     @Override
@@ -109,8 +114,6 @@ public final class Interface extends ComparableStructure<String> {
       String name = _name != null ? _name : generateName();
       Interface iface =
           _type == null ? new Interface(name, _owner) : new Interface(name, _owner, _type);
-
-      OspfInterfaceSettings.Builder ospfSettings = OspfInterfaceSettings.builder();
 
       if (_accessVlan != null) {
         iface.setAccessVlan(_accessVlan);
@@ -152,11 +155,13 @@ public final class Interface extends ComparableStructure<String> {
       if (_nativeVlan != null) {
         iface.setNativeVlan(_nativeVlan);
       }
+
+      OspfInterfaceSettings.Builder ospfSettings = OspfInterfaceSettings.builder();
       if (_ospfArea != null) {
         _ospfArea.addInterface(name);
         ospfSettings.setAreaName(_ospfArea.getAreaNumber());
       }
-      if (_hasOspfSettings) {
+      if (_hasIndividualOspfSettings) {
         ospfSettings.setCost(_ospfCost);
         ospfSettings.setEnabled(_ospfEnabled);
         ospfSettings.setInboundDistributeListPolicy(_ospfInboundDistributeListPolicy);
@@ -187,19 +192,30 @@ public final class Interface extends ComparableStructure<String> {
         iface.setInterfaceType(_type);
       }
       iface.setVlan(_vlan);
+
+      // OSPF settings can either be set individually for the interface (supporting legacy tests)
+      // or with an OspfInterfaceSettings object
+      // These settings must be applied before computing interface OSPF cost below
+      if (_hasIndividualOspfSettings) {
+        iface.setOspfSettings(ospfSettings.build());
+      } else {
+        iface.setOspfSettings(_ospfSettings);
+      }
+
       iface.setVrf(_vrf);
       if (_vrf != null) {
         _vrf.getInterfaces().put(name, iface);
         if (_active && _ospfProcess != null && _vrf.getOspfProcesses().containsKey(_ospfProcess)) {
-          ospfSettings.setCost(
-              _vrf.getOspfProcesses().get(_ospfProcess).computeInterfaceCost(iface));
+          int updatedCost = _vrf.getOspfProcesses().get(_ospfProcess).computeInterfaceCost(iface);
+          if (_hasIndividualOspfSettings) {
+            iface.setOspfSettings(ospfSettings.setCost(updatedCost).build());
+          } else {
+            _ospfSettings.setCost(updatedCost);
+          }
         }
       }
       iface.setVrrpGroups(_vrrpGroups);
 
-      if (_hasOspfSettings) {
-        iface.setOspfSettings(ospfSettings.build());
-      }
       return iface;
     }
 
@@ -316,6 +332,7 @@ public final class Interface extends ComparableStructure<String> {
      */
     public Builder setOspfInboundDistributeListPolicy(
         @Nonnull String ospfInboundDistributeListPolicy) {
+      _hasIndividualOspfSettings = true;
       _ospfInboundDistributeListPolicy = ospfInboundDistributeListPolicy;
       return this;
     }
@@ -382,36 +399,46 @@ public final class Interface extends ComparableStructure<String> {
     }
 
     public Builder setOspfSettings(OspfInterfaceSettings ospfSettings) {
+      if (_hasIndividualOspfSettings) {
+        throw new BatfishException(
+            "Cannot set individual OSPF settings and supply an OspfInterfaceSettings object.");
+      }
       _ospfSettings = ospfSettings;
       return this;
     }
 
     public Builder setOspfArea(OspfArea ospfArea) {
+      _hasIndividualOspfSettings = true;
       _ospfArea = ospfArea;
       return this;
     }
 
     public Builder setOspfCost(Integer ospfCost) {
+      _hasIndividualOspfSettings = true;
       _ospfCost = ospfCost;
       return this;
     }
 
     public Builder setOspfEnabled(boolean ospfEnabled) {
+      _hasIndividualOspfSettings = true;
       _ospfEnabled = ospfEnabled;
       return this;
     }
 
     public Builder setOspfNetworkType(OspfNetworkType ospfNetworkType) {
+      _hasIndividualOspfSettings = true;
       _ospfNetworkType = ospfNetworkType;
       return this;
     }
 
     public Builder setOspfPassive(boolean ospfPassive) {
+      _hasIndividualOspfSettings = true;
       _ospfPassive = ospfPassive;
       return this;
     }
 
     public Builder setOspfProcess(String process) {
+      _hasIndividualOspfSettings = true;
       _ospfProcess = process;
       return this;
     }
@@ -852,15 +879,6 @@ public final class Interface extends ComparableStructure<String> {
   private int _mtu;
   @Nullable private Integer _nativeVlan;
   @Nullable private OspfInterfaceSettings _ospfSettings;
-  @Nullable private Long _ospfAreaName;
-  private Integer _ospfCost;
-  private int _ospfDeadInterval;
-  private boolean _ospfEnabled;
-  private int _ospfHelloMultiplier;
-  @Nullable private String _ospfInboundDistributeListPolicy;
-  @Nullable private OspfNetworkType _ospfNetworkType;
-  private boolean _ospfPassive;
-  @Nullable private String _ospfProcess;
   private IpAccessList _outgoingFilter;
   private transient String _outgoingFilterName;
   private Transformation _outgoingTransformation;
@@ -985,7 +1003,7 @@ public final class Interface extends ComparableStructure<String> {
     if (!Objects.equals(_nativeVlan, other._nativeVlan)) {
       return false;
     }
-    if (!Objects.equals(_ospfNetworkType, other._ospfNetworkType)) {
+    if (!Objects.equals(_ospfSettings, other._ospfSettings)) {
       return false;
     }
     // TODO: check OSPF settings for equality.
