@@ -74,6 +74,7 @@ import org.batfish.representation.cumulus.BgpPeerGroupNeighbor;
 import org.batfish.representation.cumulus.BgpProcess;
 import org.batfish.representation.cumulus.BgpRedistributionPolicy;
 import org.batfish.representation.cumulus.BgpVrf;
+import org.batfish.representation.cumulus.BgpVrfNeighborAddressFamilyConfiguration;
 import org.batfish.representation.cumulus.CumulusNcluConfiguration;
 import org.batfish.representation.cumulus.CumulusRoutingProtocol;
 import org.batfish.representation.cumulus.CumulusStructureType;
@@ -245,7 +246,7 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
     _currentBgpVrf
         .getIpv4Unicast()
         .getNeighborAddressFamilyConfigurations()
-        .get(ipStr)
+        .computeIfAbsent(ipStr, k -> new BgpVrfNeighborAddressFamilyConfiguration())
         .setNextHopSelf(true);
   }
 

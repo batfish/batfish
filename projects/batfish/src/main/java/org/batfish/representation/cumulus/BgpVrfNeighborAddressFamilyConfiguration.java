@@ -4,7 +4,7 @@ import java.io.Serializable;
 
 public class BgpVrfNeighborAddressFamilyConfiguration implements Serializable {
 
-  private Boolean _nextHopSelf;
+  private boolean _nextHopSelf;
 
   public BgpVrfNeighborAddressFamilyConfiguration() {
     _nextHopSelf = false;
@@ -14,7 +14,7 @@ public class BgpVrfNeighborAddressFamilyConfiguration implements Serializable {
     return _nextHopSelf;
   }
 
-  public void setNextHopSelf(Boolean nextHopSelf) {
+  public void setNextHopSelf(boolean nextHopSelf) {
     _nextHopSelf = nextHopSelf;
   }
 }
