@@ -51,6 +51,7 @@ public final class Interface extends ComparableStructure<String> {
     private SortedSet<String> _declaredNames;
     @Nonnull private Set<Dependency> _dependencies = ImmutableSet.of();
     @Nullable private String _description;
+    private @Nonnull SortedSet<Ip> _dhcpRelayAddresses;
     @Nullable private EigrpInterfaceSettings _eigrp;
     @Nullable private Integer _encapsulationVlan;
     private Map<Integer, HsrpGroup> _hsrpGroups;
@@ -95,6 +96,7 @@ public final class Interface extends ComparableStructure<String> {
       _autoState = true;
       _channelGroupMembers = ImmutableSortedSet.of();
       _declaredNames = ImmutableSortedSet.of();
+      _dhcpRelayAddresses = ImmutableSortedSet.of();
       _hsrpGroups = ImmutableMap.of();
       _secondaryAddresses = ImmutableSet.of();
       _vrrpGroups = ImmutableSortedMap.of();
@@ -128,8 +130,9 @@ public final class Interface extends ComparableStructure<String> {
       iface.setChannelGroup(_channelGroup);
       iface.setChannelGroupMembers(_channelGroupMembers);
       iface.setDeclaredNames(_declaredNames);
-      iface.setDependencies(_dependencies);
       iface.setDescription(_description);
+      iface.setDependencies(_dependencies);
+      iface.setDhcpRelayAddresses(ImmutableList.copyOf(_dhcpRelayAddresses));
       iface.setEigrp(_eigrp);
       iface.setEncapsulationVlan(_encapsulationVlan);
       iface.setHsrpGroups(_hsrpGroups);
@@ -292,6 +295,11 @@ public final class Interface extends ComparableStructure<String> {
 
     public Builder setDescription(@Nullable String description) {
       _description = description;
+      return this;
+    }
+
+    public Builder setDhcpRelayAddresses(@Nonnull Iterable<Ip> addresses) {
+      _dhcpRelayAddresses = ImmutableSortedSet.copyOf(addresses);
       return this;
     }
 
