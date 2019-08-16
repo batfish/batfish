@@ -1390,6 +1390,7 @@ public class CiscoConversions {
    */
   static void computeDistributeListPolicies(
       @Nonnull OspfProcess ospfProcess,
+      @Nonnull org.batfish.datamodel.ospf.OspfProcess newOspfProcess,
       @Nonnull Configuration c,
       @Nonnull String vrf,
       @Nonnull String ospfProcessId,
@@ -1409,9 +1410,12 @@ public class CiscoConversions {
     Map<String, DistributeList> interfaceDistributeLists =
         ospfProcess.getInboundInterfaceDistributeLists();
 
-    for (Entry<String, org.batfish.datamodel.Interface> entry :
-        c.getVrfs().get(vrf).getInterfaces().entrySet()) {
-      DistributeList ifaceDistributeList = interfaceDistributeLists.get(entry.getKey());
+    for (String ifaceName :
+        newOspfProcess.getAreas().values().stream()
+            .flatMap(a -> a.getInterfaces().stream())
+            .collect(Collectors.toList())) {
+      org.batfish.datamodel.Interface iface = c.getVrfs().get(vrf).getInterfaces().get(ifaceName);
+      DistributeList ifaceDistributeList = interfaceDistributeLists.get(ifaceName);
       BooleanExpr ifaceCondition = null;
       if (ifaceDistributeList != null
           && sanityCheckDistributeList(ifaceDistributeList, c, oldConfig, vrf, ospfProcessId)) {
@@ -1426,8 +1430,7 @@ public class CiscoConversions {
         continue;
       }
 
-      String policyName =
-          String.format("~OSPF_DIST_LIST_%s_%s_%s~", vrf, ospfProcessId, entry.getKey());
+      String policyName = String.format("~OSPF_DIST_LIST_%s_%s_%s~", vrf, ospfProcessId, ifaceName);
       RoutingPolicy routingPolicy = new RoutingPolicy(policyName, c);
       routingPolicy
           .getStatements()
@@ -1440,13 +1443,12 @@ public class CiscoConversions {
                   ImmutableList.of(Statements.ExitAccept.toStaticStatement()),
                   ImmutableList.of(Statements.ExitReject.toStaticStatement())));
       c.getRoutingPolicies().put(routingPolicy.getName(), routingPolicy);
-
-      OspfInterfaceSettings ospfSettings = entry.getValue().getOspfSettings();
+      OspfInterfaceSettings ospfSettings = iface.getOspfSettings();
       if (ospfSettings == null) {
         w.redFlag(
             String.format(
                 "Cannot attach inbound distribute list policy '%s' to interface '%s' not configured for OSPF.",
-                entry.getKey(), entry.getValue().getName()));
+                ifaceName, iface.getName()));
       } else {
         ospfSettings.setInboundDistributeListPolicy(policyName);
       }
