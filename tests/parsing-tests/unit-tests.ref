@@ -92812,11 +92812,11 @@
           "Red flags" : [
             {
               "tag" : "MISCELLANEOUS",
-              "text" : "Interface: 'Ethernet0' contains OSPF settings, but there is no OSPF process"
+              "text" : "Interface: 'Ethernet0' contains OSPF settings, but there is no corresponding OSPF area (or process)"
             },
             {
               "tag" : "MISCELLANEOUS",
-              "text" : "Interface: 'inside' contains OSPF settings, but there is no OSPF process"
+              "text" : "Interface: 'inside' contains OSPF settings, but there is no corresponding OSPF area (or process)"
             }
           ]
         },
@@ -92856,7 +92856,7 @@
             },
             {
               "tag" : "MISCELLANEOUS",
-              "text" : "Interface: 'Ethernet1/0' contains OSPF settings, but there is no OSPF process"
+              "text" : "Interface: 'Ethernet1/0' contains OSPF settings, but there is no corresponding OSPF area (or process)"
             }
           ]
         },
@@ -92864,7 +92864,7 @@
           "Red flags" : [
             {
               "tag" : "MISCELLANEOUS",
-              "text" : "Interface: 'Ethernet0/0' contains OSPF settings, but there is no OSPF process"
+              "text" : "Interface: 'Ethernet0/0' contains OSPF settings, but there is no corresponding OSPF area (or process)"
             }
           ]
         },
@@ -92872,7 +92872,7 @@
           "Red flags" : [
             {
               "tag" : "MISCELLANEOUS",
-              "text" : "Interface: 'Ethernet0/0' contains OSPF settings, but there is no OSPF process"
+              "text" : "Interface: 'Ethernet0/0' contains OSPF settings, but there is no corresponding OSPF area (or process)"
             }
           ]
         },

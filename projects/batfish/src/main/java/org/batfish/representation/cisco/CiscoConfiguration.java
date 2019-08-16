@@ -2745,7 +2745,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
     iface.setOspfHelloMultiplier(vsIface.getOspfHelloMultiplier());
 
     iface.setOspfAreaName(areaNum);
-    iface.setOspfEnabled(!vsIface.getOspfShutdown());
+    iface.setOspfEnabled(proc != null && areaNum != null && !vsIface.getOspfShutdown());
     iface.setOspfNetworkType(toOspfNetworkType(vsIface.getOspfNetworkType()));
   }
 
