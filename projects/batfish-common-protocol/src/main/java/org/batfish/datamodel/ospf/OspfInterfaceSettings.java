@@ -1,5 +1,7 @@
 package org.batfish.datamodel.ospf;
 
+import static com.google.common.base.Preconditions.checkArgument;
+
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.io.Serializable;
@@ -9,6 +11,7 @@ import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 
 @ParametersAreNonnullByDefault
+/** Contains OSPF settings for an OSPF interface. */
 public class OspfInterfaceSettings implements Serializable {
 
   public static @Nonnull Builder builder() {
@@ -24,7 +27,6 @@ public class OspfInterfaceSettings implements Serializable {
     private String _ospfInboundDistributeListPolicy;
     private OspfNetworkType _ospfNetworkType;
     private Boolean _ospfPassive;
-    private Boolean _ospfPointToPoint;
     private String _ospfProcess;
 
     public Builder() {
@@ -71,11 +73,6 @@ public class OspfInterfaceSettings implements Serializable {
       return this;
     }
 
-    public Builder setPointToPoint(Boolean ospfPointToPoint) {
-      _ospfPointToPoint = ospfPointToPoint;
-      return this;
-    }
-
     public Builder setProcess(String ospfProcess) {
       _ospfProcess = ospfProcess;
       return this;
@@ -91,7 +88,6 @@ public class OspfInterfaceSettings implements Serializable {
           _ospfInboundDistributeListPolicy,
           _ospfNetworkType,
           _ospfPassive,
-          _ospfPointToPoint,
           _ospfProcess);
     }
   }
@@ -104,7 +100,6 @@ public class OspfInterfaceSettings implements Serializable {
   @Nullable private String _ospfInboundDistributeListPolicy;
   @Nonnull private OspfNetworkType _ospfNetworkType;
   private Boolean _ospfPassive;
-  private Boolean _ospfPointToPoint;
   @Nonnull private String _ospfProcess;
 
   private static final String PROP_AREA = "area";
@@ -115,21 +110,21 @@ public class OspfInterfaceSettings implements Serializable {
   private static final String PROP_INBOUND_DISTRIBUTE_LIST_POLICY = "inboundDistributeListPolicy";
   private static final String PROP_NETWORK_TYPE = "networkType";
   private static final String PROP_PASSIVE = "passive";
-  private static final String PROP_POINT_TO_POINT = "pointToPoint";
   private static final String PROP_PROCESS = "process";
 
   @JsonCreator
   private static OspfInterfaceSettings create(
-      @JsonProperty(PROP_AREA) Long area,
-      @JsonProperty(PROP_COST) Integer cost,
-      @JsonProperty(PROP_DEAD_INTERVAL) Integer deadInterval,
-      @JsonProperty(PROP_ENABLED) Boolean enabled,
-      @JsonProperty(PROP_HELLO_MULTIPLIER) Integer helloMultiplier,
-      @JsonProperty(PROP_INBOUND_DISTRIBUTE_LIST_POLICY) String inboundDistributeListPolicy,
-      @JsonProperty(PROP_NETWORK_TYPE) OspfNetworkType networkType,
-      @JsonProperty(PROP_PASSIVE) Boolean passive,
-      @JsonProperty(PROP_POINT_TO_POINT) Boolean pointToPoint,
-      @JsonProperty(PROP_PROCESS) String process) {
+      @Nullable @JsonProperty(PROP_AREA) Long area,
+      @Nullable @JsonProperty(PROP_COST) Integer cost,
+      @Nullable @JsonProperty(PROP_DEAD_INTERVAL) Integer deadInterval,
+      @Nullable @JsonProperty(PROP_ENABLED) Boolean enabled,
+      @Nullable @JsonProperty(PROP_HELLO_MULTIPLIER) Integer helloMultiplier,
+      @Nullable @JsonProperty(PROP_INBOUND_DISTRIBUTE_LIST_POLICY)
+          String inboundDistributeListPolicy,
+      @Nullable @JsonProperty(PROP_NETWORK_TYPE) OspfNetworkType networkType,
+      @Nullable @JsonProperty(PROP_PASSIVE) Boolean passive,
+      @Nullable @JsonProperty(PROP_PROCESS) String process) {
+    checkArgument(cost != null, "OSPF cost must be specified");
     return new OspfInterfaceSettings(
         area,
         cost,
@@ -139,21 +134,19 @@ public class OspfInterfaceSettings implements Serializable {
         inboundDistributeListPolicy,
         networkType,
         passive,
-        pointToPoint,
         process);
   }
 
   private OspfInterfaceSettings(
-      Long area,
-      Integer cost,
+      @Nullable Long area,
+      int cost,
       Integer deadInterval,
       boolean enabled,
       Integer helloMultiplier,
       String inboundDistributeListPolicy,
       OspfNetworkType networkType,
       Boolean passive,
-      Boolean pointToPoint,
-      String process) {
+      @Nullable String process) {
     _ospfAreaName = area;
     _ospfCost = cost;
     _ospfDeadInterval = deadInterval;
@@ -162,7 +155,6 @@ public class OspfInterfaceSettings implements Serializable {
     _ospfInboundDistributeListPolicy = inboundDistributeListPolicy;
     _ospfNetworkType = networkType;
     _ospfPassive = passive;
-    _ospfPointToPoint = pointToPoint;
     _ospfProcess = process;
   }
 
@@ -177,7 +169,6 @@ public class OspfInterfaceSettings implements Serializable {
         _ospfInboundDistributeListPolicy,
         _ospfNetworkType,
         _ospfPassive,
-        _ospfPointToPoint,
         _ospfProcess);
   }
 
@@ -213,61 +204,68 @@ public class OspfInterfaceSettings implements Serializable {
     if (!Objects.equals(_ospfPassive, other._ospfPassive)) {
       return false;
     }
-    if (!Objects.equals(_ospfPointToPoint, other._ospfPointToPoint)) {
-      return false;
-    }
     if (!Objects.equals(_ospfProcess, other._ospfProcess)) {
       return false;
     }
     return true;
   }
 
+  /** The OSPF area to which this interface belongs. */
   @JsonProperty(PROP_AREA)
   public Long getAreaName() {
     return _ospfAreaName;
   }
 
+  /** The OSPF cost of this interface. */
   @JsonProperty(PROP_COST)
   public Integer getCost() {
     return _ospfCost;
   }
 
+  /** Dead-interval in seconds for OSPF updates. */
   @JsonProperty(PROP_DEAD_INTERVAL)
   public Integer getDeadInterval() {
     return _ospfDeadInterval;
   }
 
+  /** Whether or not OSPF is enabled at all on this interface (either actively or passively). */
   @JsonProperty(PROP_ENABLED)
   public boolean getEnabled() {
     return _ospfEnabled;
   }
 
+  /** Number of OSPF packets to send out during dead-interval period for fast OSPF updates. */
   @JsonProperty(PROP_HELLO_MULTIPLIER)
   public Integer getHelloMultiplier() {
     return _ospfHelloMultiplier;
   }
 
+  /**
+   * Returns name of the routing policy which is generated from the Global and Interface level
+   * inbound distribute-lists for OSPF
+   */
   @JsonProperty(PROP_INBOUND_DISTRIBUTE_LIST_POLICY)
   @Nullable
   public String getInboundDistributeListPolicy() {
     return _ospfInboundDistributeListPolicy;
   }
 
+  /** OSPF network type for this interface. */
   @JsonProperty(PROP_NETWORK_TYPE)
   public OspfNetworkType getNetworkType() {
     return _ospfNetworkType;
   }
 
+  /**
+   * Whether or not OSPF is enabled passively on this interface. If passive, this interface is
+   * included in the OSPF RIB, but no OSPF packets are sent from it.
+   */
   @JsonProperty(PROP_PASSIVE)
   public Boolean getPassive() {
     return _ospfPassive;
   }
 
-  @JsonProperty(PROP_POINT_TO_POINT)
-  public Boolean getPointToPoint() {
-    return _ospfPointToPoint;
-  }
-
+  /** The OSPF process this interface is associated with. */
   @JsonProperty(PROP_PROCESS)
   public String getProcess() {
     return _ospfProcess;

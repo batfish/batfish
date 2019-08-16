@@ -196,28 +196,30 @@ public final class Interface extends ComparableStructure<String> {
       }
       iface.setVlan(_vlan);
 
+      iface.setVrf(_vrf);
+      if (_vrf != null) {
+        _vrf.getInterfaces().put(name, iface);
+        if (_active && _ospfProcess != null && _vrf.getOspfProcesses().containsKey(_ospfProcess)) {
+          // OSPF cost is used to recompute interface cost below
+          // So go ahead and apply it if one was provided
+          if (_ospfCost != null) {
+            iface.setOspfSettings(ospfSettings.build());
+          } else if (_ospfSettings != null && _ospfSettings.getCost() != null) {
+            iface.setOspfSettings(_ospfSettings);
+          }
+          int updatedCost = _vrf.getOspfProcesses().get(_ospfProcess).computeInterfaceCost(iface);
+          ospfSettings.setCost(updatedCost);
+        }
+      }
+      iface.setVrrpGroups(_vrrpGroups);
+
       // OSPF settings can either be set individually for the interface (supporting legacy tests)
       // or with an OspfInterfaceSettings object
-      // These settings must be applied before computing interface OSPF cost below
       if (_hasIndividualOspfSettings) {
         iface.setOspfSettings(ospfSettings.build());
       } else {
         iface.setOspfSettings(_ospfSettings);
       }
-
-      iface.setVrf(_vrf);
-      if (_vrf != null) {
-        _vrf.getInterfaces().put(name, iface);
-        if (_active && _ospfProcess != null && _vrf.getOspfProcesses().containsKey(_ospfProcess)) {
-          int updatedCost = _vrf.getOspfProcesses().get(_ospfProcess).computeInterfaceCost(iface);
-          if (_hasIndividualOspfSettings) {
-            iface.setOspfSettings(ospfSettings.setCost(updatedCost).build());
-          } else {
-            _ospfSettings.setCost(updatedCost);
-          }
-        }
-      }
-      iface.setVrrpGroups(_vrrpGroups);
 
       return iface;
     }
