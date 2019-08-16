@@ -94,8 +94,8 @@ public class OspfInterfaceSettings implements Serializable {
   }
 
   @Nullable private Long _ospfAreaName;
-  private int _ospfCost;
-  private int _ospfDeadInterval;
+  @Nullable private Integer _ospfCost;
+  @Nullable private Integer _ospfDeadInterval;
   private boolean _ospfEnabled;
   @Nullable private Integer _ospfHelloMultiplier;
   @Nullable private String _ospfInboundDistributeListPolicy;
@@ -141,8 +141,8 @@ public class OspfInterfaceSettings implements Serializable {
 
   private OspfInterfaceSettings(
       @Nullable Long area,
-      int cost,
-      Integer deadInterval,
+      @Nullable Integer cost,
+      @Nullable Integer deadInterval,
       boolean enabled,
       @Nullable Integer helloMultiplier,
       @Nullable String inboundDistributeListPolicy,
@@ -214,18 +214,21 @@ public class OspfInterfaceSettings implements Serializable {
 
   /** The OSPF area to which this interface belongs. */
   @JsonProperty(PROP_AREA)
+  @Nullable
   public Long getAreaName() {
     return _ospfAreaName;
   }
 
   /** The OSPF cost of this interface. */
   @JsonProperty(PROP_COST)
+  @Nullable
   public Integer getCost() {
     return _ospfCost;
   }
 
   /** Dead-interval in seconds for OSPF updates. */
   @JsonProperty(PROP_DEAD_INTERVAL)
+  @Nullable
   public Integer getDeadInterval() {
     return _ospfDeadInterval;
   }
@@ -238,6 +241,7 @@ public class OspfInterfaceSettings implements Serializable {
 
   /** Number of OSPF packets to send out during dead-interval period for fast OSPF updates. */
   @JsonProperty(PROP_HELLO_MULTIPLIER)
+  @Nullable
   public Integer getHelloMultiplier() {
     return _ospfHelloMultiplier;
   }
@@ -269,6 +273,7 @@ public class OspfInterfaceSettings implements Serializable {
 
   /** The OSPF process this interface is associated with. */
   @JsonProperty(PROP_PROCESS)
+  @Nullable
   public String getProcess() {
     return _ospfProcess;
   }
