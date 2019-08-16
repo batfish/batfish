@@ -16,4 +16,3 @@ interface Ethernet0/3
 !
 interface Ethernet0/4
  ip ospf network point-to-multipoint non-broadcast
-!
