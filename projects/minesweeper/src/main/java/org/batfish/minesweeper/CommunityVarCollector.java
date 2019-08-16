@@ -5,6 +5,7 @@ import static org.batfish.minesweeper.bdd.CommunityVarConverter.toCommunityVar;
 import com.google.common.collect.ImmutableSet;
 import java.util.Set;
 import javax.annotation.Nonnull;
+import org.batfish.datamodel.CommunityAttributeRegexCommunitySet;
 import org.batfish.datamodel.CommunityList;
 import org.batfish.datamodel.CommunityListLine;
 import org.batfish.datamodel.Configuration;
@@ -35,6 +36,13 @@ public class CommunityVarCollector implements VoidCommunitySetExprVisitor {
   private CommunityVarCollector(@Nonnull Configuration configuration) {
     _builder = ImmutableSet.builder();
     _configuration = configuration;
+  }
+
+  @Override
+  public void visitCommunityAttributeRegexCommunitySet(
+      CommunityAttributeRegexCommunitySet communityAttributeRegexCommunitySet) {
+    // TODO: verify behavior is correct
+    _builder.add(toCommunityVar(communityAttributeRegexCommunitySet));
   }
 
   @Override

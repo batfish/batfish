@@ -1,5 +1,6 @@
 package org.batfish.datamodel.visitors;
 
+import org.batfish.datamodel.CommunityAttributeRegexCommunitySet;
 import org.batfish.datamodel.CommunityList;
 import org.batfish.datamodel.RegexCommunitySet;
 import org.batfish.datamodel.routing_policy.expr.CommunityHalvesExpr;
@@ -12,6 +13,9 @@ import org.batfish.datamodel.routing_policy.expr.NamedCommunitySet;
 public interface CommunitySetExprVisitor<T> {
 
   //  T castToGenericCommunitySetExprVisitorReturnType(Object o);
+
+  T visitCommunityAttributeRegexCommunitySet(
+      CommunityAttributeRegexCommunitySet communityAttributeRegexCommunitySet);
 
   T visitCommunityHalvesExpr(CommunityHalvesExpr communityHalvesExpr);
 

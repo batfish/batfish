@@ -62,6 +62,7 @@ import org.batfish.datamodel.BgpActivePeerConfig;
 import org.batfish.datamodel.BgpPassivePeerConfig;
 import org.batfish.datamodel.BgpTieBreaker;
 import org.batfish.datamodel.BumTransportMethod;
+import org.batfish.datamodel.CommunityAttributeRegexCommunitySet;
 import org.batfish.datamodel.CommunityList;
 import org.batfish.datamodel.CommunityListLine;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
@@ -739,11 +740,34 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
                     list.accept(
                         new IpCommunityListVisitor<CommunityList>() {
                           @Override
+                          public CommunityList visitIpCommunityListExpanded(
+                              IpCommunityListExpanded ipCommunityListExpanded) {
+                            return toCommunityList(ipCommunityListExpanded);
+                          }
+
+                          @Override
                           public CommunityList visitIpCommunityListStandard(
                               IpCommunityListStandard ipCommunityListStandard) {
                             return toCommunityList(ipCommunityListStandard);
                           }
                         })));
+  }
+
+  private static @Nonnull CommunityList toCommunityList(IpCommunityListExpanded list) {
+    return new CommunityList(
+        list.getName(),
+        list.getLines().values().stream()
+            .map(CiscoNxosConfiguration::toCommunityListLine)
+            .collect(ImmutableList.toImmutableList()),
+        false);
+  }
+
+  private static @Nonnull CommunityListLine toCommunityListLine(IpCommunityListExpandedLine line) {
+    return new CommunityListLine(line.getAction(), toCommunitySetExpr(line.getRegex()));
+  }
+
+  private static @Nonnull CommunitySetExpr toCommunitySetExpr(String regex) {
+    return new CommunityAttributeRegexCommunitySet(toJavaRegex(regex));
   }
 
   private static @Nonnull CommunityList toCommunityList(IpCommunityListStandard list) {
