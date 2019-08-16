@@ -26,6 +26,8 @@ interface Ethernet1/1
   bfd per-link
   ip access-group acl_in in
   ip access-group acl_out out
+  ip dhcp relay address 1.2.3.4
+  ip dhcp relay address 1.2.3.5
   ip flow monitor FOO input sampler BAR
   ip unreachables
   ipv6 traffic-filter FOO in
