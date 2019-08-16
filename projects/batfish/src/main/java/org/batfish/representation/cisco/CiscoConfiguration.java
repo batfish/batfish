@@ -2707,7 +2707,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
               ImmutableList.of(MATCH_DEFAULT_ROUTE, new MatchProtocol(RoutingProtocol.AGGREGATE))));
     }
 
-    computeDistributeListPolicies(proc, c, vrfName, proc.getName(), oldConfig);
+    computeDistributeListPolicies(proc, newProcess, c, vrfName, proc.getName(), oldConfig);
 
     // policies for redistributing routes
     ospfExportStatements.addAll(
