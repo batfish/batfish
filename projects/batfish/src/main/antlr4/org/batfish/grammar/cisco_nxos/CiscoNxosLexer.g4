@@ -1218,6 +1218,11 @@ FILTER_LIST
   'filter-list'
 ;
 
+FILTERING
+:
+  'filtering'
+;
+
 FIN
 :
   'fin'
@@ -1470,6 +1475,11 @@ HSRP
 HTTP_METHOD
 :
   'http-method'
+;
+
+HW_HASH
+:
+  'hw-hash'
 ;
 
 IBGP
@@ -1911,6 +1921,11 @@ LSA_GROUP_PACING
 LT
 :
   'lt'
+;
+
+MAC
+:
+  'mac'
 ;
 
 MAC_ADDRESS
@@ -2633,6 +2648,11 @@ PER_ENTRY
 PER_LINK
 :
   'per-link'
+;
+
+PER_VLAN
+:
+  'per-vlan'
 ;
 
 PERIODIC
@@ -3645,6 +3665,11 @@ TRUNK
   'trunk'
 ;
 
+TRUNK_STATUS
+:
+  'trunk-status'
+;
+
 TRUST
 :
   'trust'
@@ -3813,6 +3838,11 @@ VERSION
         break;
     }
   }
+;
+
+VETHERNET
+:
+  'vethernet'
 ;
 
 VIOLATE
@@ -4632,7 +4662,12 @@ mode M_MacAddress;
 
 M_MacAddress_MAC_ADDRESS_LITERAL
 :
-  F_MacAddress -> type(MAC_ADDRESS_LITERAL), popMode
+  F_MacAddress -> type ( MAC_ADDRESS_LITERAL ) , popMode
+;
+
+M_MacAddress_NEWLINE
+:
+  F_Newline+ -> type ( NEWLINE ) , popMode
 ;
 
 M_MacAddress_WS

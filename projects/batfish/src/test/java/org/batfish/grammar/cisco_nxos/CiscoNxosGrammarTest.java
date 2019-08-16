@@ -1458,7 +1458,9 @@ public final class CiscoNxosGrammarTest {
   @Test
   public void testInterfacePropertiesExtraction() {
     CiscoNxosConfiguration vc = parseVendorConfig("nxos_interface_properties");
-    assertThat(vc.getInterfaces(), hasKeys("Ethernet1/1", "Ethernet1/2", "Ethernet1/3"));
+    assertThat(
+        vc.getInterfaces(),
+        hasKeys("Ethernet1/1", "Ethernet1/2", "Ethernet1/3", "Ethernet100/100"));
     {
       Interface iface = vc.getInterfaces().get("Ethernet1/1");
       assertThat(iface.getDelayTensOfMicroseconds(), equalTo(10));
