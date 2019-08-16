@@ -2967,6 +2967,31 @@ public final class CiscoNxosGrammarTest {
   }
 
   @Test
+  public void testIpNameServerConversion() throws IOException {
+    String hostname = "nxos_ip_name_server";
+    Configuration c = parseConfig(hostname);
+
+    assertThat(
+        c.getDnsServers(),
+        containsInAnyOrder("192.0.2.1", "192.0.2.2", "192.0.2.3", "dead:beef::1"));
+  }
+
+  @Test
+  public void testIpNameServerExtraction() {
+    String hostname = "nxos_ip_name_server";
+    CiscoNxosConfiguration vc = parseVendorConfig(hostname);
+
+    assertThat(
+        vc.getIpNameServersByUseVrf(),
+        equalTo(
+            ImmutableMap.of(
+                Configuration.DEFAULT_VRF_NAME,
+                ImmutableList.of("192.0.2.2", "192.0.2.1", "dead:beef::1"),
+                "management",
+                ImmutableList.of("192.0.2.3"))));
+  }
+
+  @Test
   public void testIpPrefixListConversion() throws IOException {
     String hostname = "nxos_ip_prefix_list";
     Configuration c = parseConfig(hostname);
