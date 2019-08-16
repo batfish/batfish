@@ -538,6 +538,6 @@ public class CumulusFrrGrammarTest {
 
   @Test
   public void testCumulusFrrAgentx() {
-    parse("agentx");
+    parse("agentx\n");
   }
 }

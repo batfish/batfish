@@ -27,7 +27,7 @@ statement
 
 s_agentx
 :
-  AGENTX
+  AGENTX NEWLINE
 ;
 
 s_ip
