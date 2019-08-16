@@ -1274,26 +1274,15 @@ public final class Interface extends ComparableStructure<String> {
 
   /** The explicit OSPF cost of this interface. If unset, the cost is automatically calculated. */
   @JsonIgnore
+  @Nullable
   public Integer getOspfCost() {
     return (_ospfSettings != null) ? _ospfSettings.getCost() : null;
-  }
-
-  /** Dead-interval in seconds for OSPF updates. */
-  @JsonIgnore
-  public int getOspfDeadInterval() {
-    return (_ospfSettings != null) ? _ospfSettings.getDeadInterval() : 0;
   }
 
   /** Whether or not OSPF is enabled at all on this interface (either actively or passively). */
   @JsonIgnore
   public boolean getOspfEnabled() {
     return (_ospfSettings != null) ? firstNonNull(_ospfSettings.getEnabled(), false) : false;
-  }
-
-  /** Number of OSPF packets to send out during dead-interval period for fast OSPF updates. */
-  @JsonIgnore
-  public int getOspfHelloMultiplier() {
-    return (_ospfSettings != null) ? firstNonNull(_ospfSettings.getHelloMultiplier(), 0) : 0;
   }
 
   /**
