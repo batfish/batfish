@@ -30,6 +30,7 @@ import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.bgp.BgpTopology;
 import org.batfish.datamodel.bgp.Ipv4UnicastAddressFamily;
 import org.batfish.datamodel.ospf.OspfArea;
+import org.batfish.datamodel.ospf.OspfInterfaceSettings;
 import org.batfish.datamodel.ospf.OspfProcess;
 import org.batfish.datamodel.ospf.OspfTopology;
 import org.batfish.datamodel.ospf.OspfTopologyUtils;
@@ -82,6 +83,7 @@ public class NodeColoredScheduleTest {
         ib.setOwner(r1)
             .setVrf(vrf1)
             .setAddress(ConcreteInterfaceAddress.create(R1_IP, networkBits))
+            .setOspfSettings(OspfInterfaceSettings.builder().setAreaName(0L).build())
             .build();
     // Make OSPF process and areas
     OspfArea r1ospfArea = ospfArea.setInterfaces(ImmutableSet.of(i1.getName())).build();
@@ -89,7 +91,6 @@ public class NodeColoredScheduleTest {
         .setAreas(ImmutableSortedMap.of(0L, r1ospfArea))
         .setRouterId(Ip.parse("0.0.0.1"))
         .build();
-    i1.setOspfAreaName(r1ospfArea.getAreaNumber());
     // BGP process and neighbor
     BgpProcess r1Proc = pb.setRouterId(R1_IP).setVrf(vrf1).build();
     nb.setRemoteAs(2L)

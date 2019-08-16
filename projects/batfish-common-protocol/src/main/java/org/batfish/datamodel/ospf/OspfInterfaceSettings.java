@@ -36,7 +36,7 @@ public class OspfInterfaceSettings implements Serializable {
       return this;
     }
 
-    public Builder setCost(Integer ospfCost) {
+    public Builder setCost(@Nullable Integer ospfCost) {
       _ospfCost = ospfCost;
       return this;
     }
@@ -61,7 +61,7 @@ public class OspfInterfaceSettings implements Serializable {
       return this;
     }
 
-    public Builder setNetworkType(OspfNetworkType ospfNetworkType) {
+    public Builder setNetworkType(@Nullable OspfNetworkType ospfNetworkType) {
       _ospfNetworkType = ospfNetworkType;
       return this;
     }
@@ -279,5 +279,9 @@ public class OspfInterfaceSettings implements Serializable {
 
   public void setInboundDistributeListPolicy(String inboundDistributeListPolicy) {
     _ospfInboundDistributeListPolicy = inboundDistributeListPolicy;
+  }
+
+  public void setHelloMultiplier(Integer helloMultiplier) {
+    _ospfHelloMultiplier = helloMultiplier;
   }
 }

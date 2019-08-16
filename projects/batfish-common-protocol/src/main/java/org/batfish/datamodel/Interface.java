@@ -54,6 +54,7 @@ public final class Interface extends ComparableStructure<String> {
     @Nullable private String _description;
     @Nullable private EigrpInterfaceSettings _eigrp;
     @Nullable private Integer _encapsulationVlan;
+    private boolean _hasOspfSettings;
     private Map<Integer, HsrpGroup> _hsrpGroups;
     private String _hsrpVersion;
     private FirewallSessionInterfaceInfo _firewallSessionInterfaceInfo;
@@ -100,6 +101,7 @@ public final class Interface extends ComparableStructure<String> {
       _hsrpGroups = ImmutableMap.of();
       _secondaryAddresses = ImmutableSet.of();
       _vrrpGroups = ImmutableSortedMap.of();
+      _hasOspfSettings = false;
     }
 
     @Override
@@ -107,6 +109,9 @@ public final class Interface extends ComparableStructure<String> {
       String name = _name != null ? _name : generateName();
       Interface iface =
           _type == null ? new Interface(name, _owner) : new Interface(name, _owner, _type);
+
+      OspfInterfaceSettings.Builder ospfSettings = OspfInterfaceSettings.builder();
+
       if (_accessVlan != null) {
         iface.setAccessVlan(_accessVlan);
       }
@@ -149,14 +154,17 @@ public final class Interface extends ComparableStructure<String> {
       }
       if (_ospfArea != null) {
         _ospfArea.addInterface(name);
-        iface.setOspfAreaName(_ospfArea.getAreaNumber());
+        ospfSettings.setAreaName(_ospfArea.getAreaNumber());
       }
-      iface.setOspfCost(_ospfCost);
-      iface.setOspfEnabled(_ospfEnabled);
-      iface.setOspfInboundDistributeListPolicy(_ospfInboundDistributeListPolicy);
-      iface.setOspfNetworkType(_ospfNetworkType);
-      iface.setOspfPassive(_ospfPassive);
-      iface.setOspfProcess(_ospfProcess);
+      if (_hasOspfSettings) {
+        ospfSettings.setCost(_ospfCost);
+        ospfSettings.setEnabled(_ospfEnabled);
+        ospfSettings.setInboundDistributeListPolicy(_ospfInboundDistributeListPolicy);
+        ospfSettings.setNetworkType(_ospfNetworkType);
+        ospfSettings.setPassive(_ospfPassive);
+        ospfSettings.setProcess(_ospfProcess);
+      }
+
       iface.setOutgoingFilter(_outgoingFilter);
       iface.setOutgoingTransformation(_outgoingTransformation);
       iface.setOwner(_owner);
@@ -183,10 +191,15 @@ public final class Interface extends ComparableStructure<String> {
       if (_vrf != null) {
         _vrf.getInterfaces().put(name, iface);
         if (_active && _ospfProcess != null && _vrf.getOspfProcesses().containsKey(_ospfProcess)) {
-          iface.setOspfCost(_vrf.getOspfProcesses().get(_ospfProcess).computeInterfaceCost(iface));
+          ospfSettings.setCost(
+              _vrf.getOspfProcesses().get(_ospfProcess).computeInterfaceCost(iface));
         }
       }
       iface.setVrrpGroups(_vrrpGroups);
+
+      if (_hasOspfSettings) {
+        iface.setOspfSettings(ospfSettings.build());
+      }
       return iface;
     }
 
@@ -588,16 +601,6 @@ public final class Interface extends ComparableStructure<String> {
   private static final String PROP_MLAG_ID = "mlagId";
   private static final String PROP_MTU = "mtu";
   private static final String PROP_NATIVE_VLAN = "nativeVlan";
-  private static final String PROP_OSPF_AREA = "ospfArea";
-  private static final String PROP_OSPF_COST = "ospfCost";
-  private static final String PROP_OSPF_DEAD_INTERVAL = "ospfDeadInterval";
-  private static final String PROP_OSPF_ENABLED = "ospfEnabled";
-  private static final String PROP_OSPF_HELLO_MULTIPLIER = "ospfHelloMultiplier";
-  private static final String PROP_OSPF_INBOUND_DISTRIBUTE_LIST_POLICY =
-      "ospfInboundDistributeListPolicy";
-  private static final String PROP_OSPF_NETWORK_TYPE = "ospfNetworkType";
-  private static final String PROP_OSPF_PASSIVE = "ospfPassive";
-  private static final String PROP_OSPF_PROCESS = "ospfProcess";
   private static final String PROP_OSPF_SETTINGS = "ospfSettings";
   private static final String PROP_OUTGOING_FILTER = "outgoingFilter";
   private static final String PROP_OUTGOING_TRANSFORMATION = "outgoingTransformation";
@@ -1236,65 +1239,56 @@ public final class Interface extends ComparableStructure<String> {
 
   /** The OSPF area to which this interface belongs. */
   @Nullable
-  @JsonProperty(PROP_OSPF_AREA)
   public Long getOspfAreaName() {
-    return _ospfAreaName;
+    return (_ospfSettings != null) ? _ospfSettings.getAreaName() : null;
   }
 
   /** The explicit OSPF cost of this interface. If unset, the cost is automatically calculated. */
-  @JsonProperty(PROP_OSPF_COST)
   public Integer getOspfCost() {
-    return _ospfCost;
+    return (_ospfSettings != null) ? _ospfSettings.getCost() : null;
   }
 
   /** Dead-interval in seconds for OSPF updates. */
-  @JsonProperty(PROP_OSPF_DEAD_INTERVAL)
   public int getOspfDeadInterval() {
-    return _ospfDeadInterval;
+    return (_ospfSettings != null) ? _ospfSettings.getDeadInterval() : 0;
   }
 
   /** Whether or not OSPF is enabled at all on this interface (either actively or passively). */
-  @JsonProperty(PROP_OSPF_ENABLED)
   public boolean getOspfEnabled() {
-    return _ospfEnabled;
+    return (_ospfSettings != null) ? firstNonNull(_ospfSettings.getEnabled(), false) : false;
   }
 
   /** Number of OSPF packets to send out during dead-interval period for fast OSPF updates. */
-  @JsonProperty(PROP_OSPF_HELLO_MULTIPLIER)
   public int getOspfHelloMultiplier() {
-    return _ospfHelloMultiplier;
+    return (_ospfSettings != null) ? firstNonNull(_ospfSettings.getHelloMultiplier(), 0) : 0;
   }
 
   /**
    * "Returns name of the routing policy which is generated from the Global and Interface level
    * inbound distribute-lists for OSPF"
    */
-  @JsonProperty(PROP_OSPF_INBOUND_DISTRIBUTE_LIST_POLICY)
   @Nullable
   public String getOspfInboundDistributeListPolicy() {
-    return _ospfInboundDistributeListPolicy;
+    return (_ospfSettings != null) ? _ospfSettings.getInboundDistributeListPolicy() : null;
   }
 
   /** Returns the OSPF network type for this interface. */
-  @JsonProperty(PROP_OSPF_NETWORK_TYPE)
   @Nullable
   public OspfNetworkType getOspfNetworkType() {
-    return _ospfNetworkType;
+    return (_ospfSettings != null) ? _ospfSettings.getNetworkType() : null;
   }
 
   /**
    * Whether or not OSPF is enabled passively on this interface. If passive, this interface is
    * included in the OSPF RIB, but no OSPF packets are sent from it.
    */
-  @JsonProperty(PROP_OSPF_PASSIVE)
   public boolean getOspfPassive() {
-    return _ospfPassive;
+    return (_ospfSettings != null) ? firstNonNull(_ospfSettings.getPassive(), false) : false;
   }
 
-  @JsonProperty(PROP_OSPF_PROCESS)
   @Nullable
   public String getOspfProcess() {
-    return _ospfProcess;
+    return (_ospfSettings != null) ? _ospfSettings.getProcess() : null;
   }
 
   @JsonIgnore
@@ -1644,50 +1638,6 @@ public final class Interface extends ComparableStructure<String> {
   @JsonProperty(PROP_NATIVE_VLAN)
   public void setNativeVlan(@Nullable Integer vlan) {
     _nativeVlan = vlan;
-  }
-
-  @JsonProperty(PROP_OSPF_AREA)
-  public void setOspfAreaName(Long ospfAreaName) {
-    _ospfAreaName = ospfAreaName;
-  }
-
-  @JsonProperty(PROP_OSPF_COST)
-  public void setOspfCost(Integer ospfCost) {
-    _ospfCost = ospfCost;
-  }
-
-  @JsonProperty(PROP_OSPF_DEAD_INTERVAL)
-  public void setOspfDeadInterval(int seconds) {
-    _ospfDeadInterval = seconds;
-  }
-
-  @JsonProperty(PROP_OSPF_ENABLED)
-  public void setOspfEnabled(boolean b) {
-    _ospfEnabled = b;
-  }
-
-  @JsonProperty(PROP_OSPF_HELLO_MULTIPLIER)
-  public void setOspfHelloMultiplier(int multiplier) {
-    _ospfHelloMultiplier = multiplier;
-  }
-
-  @JsonProperty(PROP_OSPF_INBOUND_DISTRIBUTE_LIST_POLICY)
-  public void setOspfInboundDistributeListPolicy(@Nullable String ospfInboundDistributeListPolicy) {
-    _ospfInboundDistributeListPolicy = ospfInboundDistributeListPolicy;
-  }
-
-  @JsonProperty(PROP_OSPF_NETWORK_TYPE)
-  public void setOspfNetworkType(@Nullable OspfNetworkType ospfNetworkType) {
-    _ospfNetworkType = ospfNetworkType;
-  }
-
-  @JsonProperty(PROP_OSPF_PASSIVE)
-  public void setOspfPassive(boolean passive) {
-    _ospfPassive = passive;
-  }
-
-  public void setOspfProcess(@Nullable String ospfProcess) {
-    _ospfProcess = ospfProcess;
   }
 
   @JsonProperty(PROP_OSPF_SETTINGS)

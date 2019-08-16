@@ -236,8 +236,8 @@ public class OspfRoutingProcessTest {
             .setOwner(c)
             .setVrf(vrf)
             .setAddress(ConcreteInterfaceAddress.create(Ip.parse("1.1.1.1"), 24))
+            .setOspfInboundDistributeListPolicy("policy")
             .build();
-    i1.setOspfInboundDistributeListPolicy("policy");
 
     RouteFilterList prefixList =
         new RouteFilterList(
