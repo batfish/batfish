@@ -267,7 +267,7 @@ public class OspfInterfaceSettings implements Serializable {
    */
   @JsonProperty(PROP_PASSIVE)
   @Nullable
-  public boolean getPassive() {
+  public Boolean getPassive() {
     return _ospfPassive;
   }
 
