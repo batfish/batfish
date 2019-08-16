@@ -209,7 +209,35 @@ s_router
 
 s_system
 :
-  SYSTEM sys_qos
+  SYSTEM
+  (
+    sys_default
+    | sys_qos
+  )
+;
+
+sys_default
+:
+  DEFAULT sysd_switchport
+;
+
+sysd_switchport
+:
+  SWITCHPORT
+  (
+    sysds_shutdown
+    | sysds_switchport
+  )
+;
+
+sysds_shutdown
+:
+  SHUTDOWN NEWLINE
+;
+
+sysds_switchport
+:
+  NEWLINE
 ;
 
 sys_qos

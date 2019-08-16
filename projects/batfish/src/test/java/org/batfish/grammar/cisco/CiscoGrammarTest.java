@@ -1372,6 +1372,19 @@ public class CiscoGrammarTest {
   }
 
   @Test
+  public void testIosRipPassive() throws IOException {
+    Configuration c = parseConfig("ios-rip-passive");
+
+    String iface1 = "Ethernet0";
+    String iface2 = "Ethernet1";
+    Map<String, Interface> ifaces = c.getAllInterfaces();
+    assertThat(ifaces, hasKeys(iface1, iface2));
+
+    assertThat(ifaces.get(iface1).getRipPassive(), equalTo(true));
+    assertThat(ifaces.get(iface2).getRipPassive(), equalTo(false));
+  }
+
+  @Test
   public void testIosAclObjectGroup() throws IOException {
     String hostname = "ios-acl-object-group";
     String filename = "configs/" + hostname;

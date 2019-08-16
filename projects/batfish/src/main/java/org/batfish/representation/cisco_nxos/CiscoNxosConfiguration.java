@@ -308,6 +308,7 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
   private transient Multimap<String, String> _portChannelMembers;
   private @Nonnull IntegerSpace _reservedVlanRange;
   private final @Nonnull Map<String, RouteMap> _routeMaps;
+  private boolean _systemDefaultSwitchportShutdown;
   private @Nullable String _version;
   private final @Nonnull Map<Integer, Vlan> _vlans;
   private final @Nonnull Map<String, Vrf> _vrfs;
@@ -1008,6 +1009,10 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
     return _routeMaps;
   }
 
+  public boolean getSystemDefaultSwitchportShutdown() {
+    return _systemDefaultSwitchportShutdown;
+  }
+
   public @Nullable String getVersion() {
     return _version;
   }
@@ -1116,6 +1121,10 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
     _hostname = hostname.toLowerCase();
   }
 
+  public void setSystemDefaultSwitchportShutdown(boolean systemDefaultSwitchportShutdown) {
+    _systemDefaultSwitchportShutdown = systemDefaultSwitchportShutdown;
+  }
+
   @Override
   public void setVendor(ConfigurationFormat format) {}
 
@@ -1168,14 +1177,16 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
   private @Nonnull org.batfish.datamodel.Interface toInterface(Interface iface) {
     String ifaceName = iface.getName();
     org.batfish.datamodel.Interface.Builder newIfaceBuilder =
-        org.batfish.datamodel.Interface.builder().setName(ifaceName);
+        org.batfish.datamodel.Interface.builder()
+            .setName(ifaceName)
+            .setDeclaredNames(iface.getDeclaredNames());
 
     String parent = iface.getParentInterface();
     if (parent != null) {
       newIfaceBuilder.setDependencies(ImmutableSet.of(new Dependency(parent, DependencyType.BIND)));
     }
 
-    newIfaceBuilder.setActive(!iface.getShutdown());
+    newIfaceBuilder.setActive(!iface.getShutdownEffective(_systemDefaultSwitchportShutdown));
 
     if (!iface.getIpAddressDhcp()) {
       if (iface.getAddress() != null) {
@@ -1189,6 +1200,8 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
     // TODO: handle DHCP
 
     newIfaceBuilder.setDescription(iface.getDescription());
+
+    newIfaceBuilder.setDhcpRelayAddresses(iface.getDhcpRelayAddresses());
 
     newIfaceBuilder.setMtu(iface.getMtu());
 
@@ -2012,6 +2025,13 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
           }
 
           @Override
+          public BoolExpr visitRouteMapMatchSourceProtocol(
+              RouteMapMatchSourceProtocol routeMapMatchSourceProtocol) {
+            // Not applicable to PBR
+            return null;
+          }
+
+          @Override
           public BoolExpr visitRouteMapMatchTag(RouteMapMatchTag routeMapMatchTag) {
             // TODO: somehow applicable to PBR? Documentation and semantics unclear
             _w.redFlag("'match tag' not supported in PBR policies");
@@ -2224,6 +2244,15 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
           public BooleanExpr visitRouteMapMatchMetric(RouteMapMatchMetric routeMapMatchMetric) {
             return new MatchMetric(
                 IntComparator.EQ, new LiteralLong(routeMapMatchMetric.getMetric()));
+          }
+
+          @Override
+          public BooleanExpr visitRouteMapMatchSourceProtocol(
+              RouteMapMatchSourceProtocol routeMapMatchSourceProtocol) {
+            return routeMapMatchSourceProtocol
+                .toRoutingProtocols()
+                .<BooleanExpr>map(MatchProtocol::new)
+                .orElse(BooleanExprs.FALSE);
           }
 
           @Override
