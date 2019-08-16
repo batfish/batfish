@@ -2211,6 +2211,11 @@ NAME
 
 ;
 
+NAME_SERVER
+:
+  'name-server'
+;
+
 NAMESERVER
 :
   'nameserver'

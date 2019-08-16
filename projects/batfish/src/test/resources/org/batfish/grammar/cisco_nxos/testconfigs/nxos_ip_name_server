@@ -1,0 +1,9 @@
+!RANCID-CONTENT-TYPE: cisco-nx
+!
+hostname nxos_ip_name_server
+!
+
+ip name-server 192.0.2.2
+ip name-server 192.0.2.1 dead:beef::1
+
+ip name-server 192.0.2.3 use-vrf management
