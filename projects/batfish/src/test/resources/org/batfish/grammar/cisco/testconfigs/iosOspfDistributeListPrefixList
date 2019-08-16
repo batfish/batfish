@@ -8,6 +8,7 @@ interface GigabitEthernet1/0
  ip address 10.1.1.1 255.255.255.0
 !
 router ospf 1
+  network 10.1.1.0 0.0.0.255 area 1
   distribute-list prefix filter_1 in GigabitEthernet0/0
   distribute-list prefix filter_1 in GigabitEthernet1/0
   distribute-list prefix filter_2 in
