@@ -947,6 +947,11 @@ DOMAIN_LOOKUP
   'domain-lookup'
 ;
 
+DOMAIN_NAME
+:
+  'domain-name' -> pushMode(M_Word)
+;
+
 DONT_CAPABILITY_NEGOTIATE
 :
   'dont-capability-negotiate'
