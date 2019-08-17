@@ -123,6 +123,11 @@ EXTERNAL
   'external'
 ;
 
+FRR_DEFAULTS_DATACENTER
+:
+  'frr defaults datacenter'
+;
+
 FRR_VERSION_LINE
 :
   'frr version' F_NonNewline*
