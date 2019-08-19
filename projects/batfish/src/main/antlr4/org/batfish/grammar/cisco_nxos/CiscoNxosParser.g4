@@ -18,6 +18,7 @@ import
   CiscoNxos_route_map,
   CiscoNxos_snmp,
   CiscoNxos_static,
+  CiscoNxos_tacacs_server,
   CiscoNxos_vlan,
   CiscoNxos_vrf;
 
@@ -53,6 +54,7 @@ statement
   | s_router
   | s_snmp_server
   | s_system
+  | s_tacacs_server
   | s_track
   | s_version
   | s_vlan
