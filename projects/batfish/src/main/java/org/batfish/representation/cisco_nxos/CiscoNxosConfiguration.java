@@ -300,6 +300,7 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
   private final @Nonnull Map<String, IpAccessList> _ipAccessLists;
   private final @Nonnull Map<String, IpAsPathAccessList> _ipAsPathAccessLists;
   private final @Nonnull Map<String, IpCommunityList> _ipCommunityLists;
+  private @Nullable String _ipDomainName;
   private Map<String, List<String>> _ipNameServersByUseVrf;
   private final @Nonnull Map<String, IpPrefixList> _ipPrefixLists;
   private final @Nonnull Map<Integer, Nve> _nves;
@@ -677,6 +678,10 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
                     Entry::getKey, hsrpGroupEntry -> toHsrpGroup(hsrpGroupEntry.getValue()))));
   }
 
+  private void convertDomainName() {
+    _c.setDomainName(_ipDomainName);
+  }
+
   private void convertInterface(Interface iface) {
     String ifaceName = iface.getName();
     org.batfish.datamodel.Interface newIface = toInterface(iface);
@@ -992,6 +997,10 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
     return _ipCommunityLists;
   }
 
+  public @Nullable String getIpDomainName() {
+    return _ipDomainName;
+  }
+
   public @Nonnull Map<String, List<String>> getIpNameServersByUseVrf() {
     return _ipNameServersByUseVrf;
   }
@@ -1131,6 +1140,10 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
   public void setHostname(String hostname) {
     checkNotNull(hostname, "hostname cannot be null");
     _hostname = hostname.toLowerCase();
+  }
+
+  public void setIpDomainName(@Nullable String ipDomainName) {
+    _ipDomainName = ipDomainName;
   }
 
   public void setSystemDefaultSwitchportShutdown(boolean systemDefaultSwitchportShutdown) {
@@ -2412,6 +2425,7 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
     _c.setDefaultInboundAction(LineAction.PERMIT);
     _c.setDefaultCrossZoneAction(LineAction.PERMIT);
 
+    convertDomainName();
     convertObjectGroups();
     convertIpAccessLists();
     convertIpAsPathAccessLists();

@@ -255,6 +255,23 @@ public class CumulusFrrGrammarTest {
   }
 
   @Test
+  public void testBgpAddressFamilyNeighborNextHopSelf() {
+    parseLines(
+        "router bgp 1",
+        "address-family ipv4 unicast",
+        "neighbor 10.0.0.1 next-hop-self",
+        "exit-address-family");
+    assertTrue(
+        CONFIG
+            .getBgpProcess()
+            .getDefaultVrf()
+            .getIpv4Unicast()
+            .getNeighborAddressFamilyConfigurations()
+            .get("10.0.0.1")
+            .getNextHopSelf());
+  }
+
+  @Test
   public void testBgpNeighbor_peerGroup() {
     parse("router bgp 1\n neighbor foo peer-group\n");
     Map<String, BgpNeighbor> neighbors = CONFIG.getBgpProcess().getDefaultVrf().getNeighbors();
@@ -544,6 +561,16 @@ public class CumulusFrrGrammarTest {
   @Test
   public void testCumulusService() {
     parse("service integrated-vtysh-config\n");
+  }
+
+  @Test
+  public void testCumulusFrrSyslog() {
+    parse("log syslog informational\n");
+  }
+
+  @Test
+  public void testLineVty() {
+    parse("line vty\n");
   }
 
   @Test

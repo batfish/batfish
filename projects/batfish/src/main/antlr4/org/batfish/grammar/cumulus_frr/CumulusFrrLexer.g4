@@ -143,6 +143,11 @@ GE
   'ge'
 ;
 
+INFORMATIONAL
+:
+  'informational'
+;
+
 INTEGRATED_VTYSH_CONFIG
 :
   'integrated-vtysh-config'
@@ -197,6 +202,16 @@ LE
   'le'
 ;
 
+LOG
+:
+  'log'
+;
+
+LINE
+:
+  'line'
+;
+
 NEIGHBOR
 :
   'neighbor' -> pushMode(M_Neighbor)
@@ -205,6 +220,11 @@ NEIGHBOR
 NETWORK
 :
   'network'
+;
+
+NEXT_HOP_SELF
+:
+  'next-hop-self'
 ;
 
 PEER_GROUP
@@ -277,6 +297,11 @@ SUBNET_MASK
   F_SubnetMask
 ;
 
+SYSLOG
+:
+  'syslog'
+;
+
 MATCH
 :
   'match'
@@ -335,6 +360,11 @@ VNI
 VRF
 :
   'vrf' -> pushMode(M_Word)
+;
+
+VTY
+:
+  'vty'
 ;
 
 WS

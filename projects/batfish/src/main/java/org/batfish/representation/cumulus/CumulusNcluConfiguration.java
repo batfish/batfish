@@ -85,8 +85,10 @@ import org.batfish.datamodel.routing_policy.expr.LiteralOrigin;
 import org.batfish.datamodel.routing_policy.expr.MatchPrefixSet;
 import org.batfish.datamodel.routing_policy.expr.MatchProtocol;
 import org.batfish.datamodel.routing_policy.expr.Not;
+import org.batfish.datamodel.routing_policy.expr.SelfNextHop;
 import org.batfish.datamodel.routing_policy.expr.WithEnvironmentExpr;
 import org.batfish.datamodel.routing_policy.statement.If;
+import org.batfish.datamodel.routing_policy.statement.SetNextHop;
 import org.batfish.datamodel.routing_policy.statement.SetOrigin;
 import org.batfish.datamodel.routing_policy.statement.Statement;
 import org.batfish.datamodel.routing_policy.statement.Statements;
@@ -259,12 +261,14 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
             .setOwner(_c)
             .setName(computeBgpPeerExportPolicyName(vrfName, neighbor.getName()));
 
+    List<Statement> acceptStmts = getAcceptStatements(neighbor, bgpVrf);
+
     Conjunction peerExportConditions = new Conjunction();
     If peerExportConditional =
         new If(
             "peer-export policy main conditional: exitAccept if true / exitReject if false",
             peerExportConditions,
-            ImmutableList.of(Statements.ExitAccept.toStaticStatement()),
+            acceptStmts,
             ImmutableList.of(Statements.ExitReject.toStaticStatement()));
     peerExportPolicy.addStatement(peerExportConditional);
     Disjunction localOrCommonOrigination = new Disjunction();
@@ -274,6 +278,36 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
         .add(new CallExpr(computeBgpCommonExportPolicyName(vrfName)));
 
     return peerExportPolicy.build();
+  }
+
+  private static List<Statement> getAcceptStatements(BgpNeighbor neighbor, BgpVrf bgpVrf) {
+    SetNextHop setNextHop = getSetNextHop(neighbor, bgpVrf);
+    return setNextHop == null
+        ? ImmutableList.of(Statements.ExitAccept.toStaticStatement())
+        : ImmutableList.of(setNextHop, Statements.ExitAccept.toStaticStatement());
+  }
+
+  @VisibleForTesting
+  static @Nullable SetNextHop getSetNextHop(BgpNeighbor neighbor, BgpVrf bgpVrf) {
+    if (neighbor.getRemoteAs() == null
+        || bgpVrf.getAutonomousSystem() == null
+        || !neighbor.getRemoteAs().equals(bgpVrf.getAutonomousSystem())) {
+      return null;
+    }
+
+    BgpIpv4UnicastAddressFamily ipv4Unicast = bgpVrf.getIpv4Unicast();
+    if (ipv4Unicast == null) {
+      return null;
+    }
+
+    BgpVrfNeighborAddressFamilyConfiguration neighborConf =
+        ipv4Unicast.getNeighborAddressFamilyConfigurations().get(neighbor.getName());
+
+    if (neighborConf == null || !neighborConf.getNextHopSelf()) {
+      return null;
+    }
+
+    return new SetNextHop(SelfNextHop.getInstance(), false);
   }
 
   /** Scan all interfaces, find first that contains given remote IP */

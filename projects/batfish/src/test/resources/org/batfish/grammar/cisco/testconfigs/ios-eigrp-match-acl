@@ -1,0 +1,15 @@
+!
+hostname ios-eigrp-match-acl
+!
+ip access-list extended ACL
+  permit ip any any
+!
+route-map REDISTRIBUTE_MAP permit 10
+ match ip address ACL
+!
+interface GigabitEthernet0/0
+ ip address 2.2.2.2 255.255.255.0
+!
+router eigrp 1
+  redistribute connected route-map REDISTRIBUTE_MAP
+  network 2.2.2.2 0.0.0.255
