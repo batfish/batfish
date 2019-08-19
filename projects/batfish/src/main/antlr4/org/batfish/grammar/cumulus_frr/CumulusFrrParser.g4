@@ -19,6 +19,7 @@ statement
 :
   FRR_VERSION_LINE NEWLINE
   | USERNAME word word NEWLINE
+  | HOSTNAME word NEWLINE
   | s_agentx
   | s_bgp
   | s_vrf

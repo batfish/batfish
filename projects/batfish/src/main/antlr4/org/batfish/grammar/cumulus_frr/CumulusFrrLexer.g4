@@ -133,6 +133,11 @@ GE
   'ge'
 ;
 
+HOSTNAME
+:
+  'hostname' -> pushMode(M_Word)
+;
+
 INFORMATIONAL
 :
   'informational'
