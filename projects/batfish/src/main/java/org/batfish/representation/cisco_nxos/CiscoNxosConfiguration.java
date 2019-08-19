@@ -62,7 +62,6 @@ import org.batfish.datamodel.BgpActivePeerConfig;
 import org.batfish.datamodel.BgpPassivePeerConfig;
 import org.batfish.datamodel.BgpTieBreaker;
 import org.batfish.datamodel.BumTransportMethod;
-import org.batfish.datamodel.CommunityAttributeRegexCommunitySet;
 import org.batfish.datamodel.CommunityList;
 import org.batfish.datamodel.CommunityListLine;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
@@ -86,6 +85,7 @@ import org.batfish.datamodel.Prefix6Range;
 import org.batfish.datamodel.Prefix6Space;
 import org.batfish.datamodel.PrefixRange;
 import org.batfish.datamodel.PrefixSpace;
+import org.batfish.datamodel.RegexCommunitySet;
 import org.batfish.datamodel.Route6FilterLine;
 import org.batfish.datamodel.Route6FilterList;
 import org.batfish.datamodel.RouteFilterLine;
@@ -767,7 +767,7 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
   }
 
   private static @Nonnull CommunitySetExpr toCommunitySetExpr(String regex) {
-    return new CommunityAttributeRegexCommunitySet(toJavaRegex(regex));
+    return new RegexCommunitySet(toJavaRegex(regex));
   }
 
   private static @Nonnull CommunityList toCommunityList(IpCommunityListStandard list) {

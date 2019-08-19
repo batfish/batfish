@@ -141,7 +141,6 @@ import org.batfish.datamodel.BgpActivePeerConfig;
 import org.batfish.datamodel.BgpPeerConfig;
 import org.batfish.datamodel.Bgpv4Route;
 import org.batfish.datamodel.BumTransportMethod;
-import org.batfish.datamodel.CommunityAttributeRegexCommunitySet;
 import org.batfish.datamodel.CommunityList;
 import org.batfish.datamodel.CommunityListLine;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
@@ -168,6 +167,7 @@ import org.batfish.datamodel.NamedPort;
 import org.batfish.datamodel.OriginType;
 import org.batfish.datamodel.OspfExternalRoute;
 import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.RegexCommunitySet;
 import org.batfish.datamodel.RouteFilterLine;
 import org.batfish.datamodel.RouteFilterList;
 import org.batfish.datamodel.RoutingProtocol;
@@ -2821,26 +2821,22 @@ public final class CiscoNxosGrammarTest {
       line = lines.next();
       assertThat(line.getAction(), equalTo(LineAction.PERMIT));
       assertThat(
-          ((CommunityAttributeRegexCommunitySet) line.getMatchCondition()).getRegex(),
-          equalTo(toJavaRegex("1:1")));
+          ((RegexCommunitySet) line.getMatchCondition()).getRegex(), equalTo(toJavaRegex("1:1")));
 
       line = lines.next();
       assertThat(line.getAction(), equalTo(LineAction.PERMIT));
       assertThat(
-          ((CommunityAttributeRegexCommunitySet) line.getMatchCondition()).getRegex(),
-          equalTo(toJavaRegex("5:5")));
+          ((RegexCommunitySet) line.getMatchCondition()).getRegex(), equalTo(toJavaRegex("5:5")));
 
       line = lines.next();
       assertThat(line.getAction(), equalTo(LineAction.PERMIT));
       assertThat(
-          ((CommunityAttributeRegexCommunitySet) line.getMatchCondition()).getRegex(),
-          equalTo(toJavaRegex("10:10")));
+          ((RegexCommunitySet) line.getMatchCondition()).getRegex(), equalTo(toJavaRegex("10:10")));
 
       line = lines.next();
       assertThat(line.getAction(), equalTo(LineAction.PERMIT));
       assertThat(
-          ((CommunityAttributeRegexCommunitySet) line.getMatchCondition()).getRegex(),
-          equalTo(toJavaRegex("11:11")));
+          ((RegexCommunitySet) line.getMatchCondition()).getRegex(), equalTo(toJavaRegex("11:11")));
     }
     {
       CommunityList cl = c.getCommunityLists().get("cl_test");
@@ -2850,20 +2846,18 @@ public final class CiscoNxosGrammarTest {
       line = lines.next();
       assertThat(line.getAction(), equalTo(LineAction.DENY));
       assertThat(
-          ((CommunityAttributeRegexCommunitySet) line.getMatchCondition()).getRegex(),
+          ((RegexCommunitySet) line.getMatchCondition()).getRegex(),
           equalTo(toJavaRegex("_1:1.*2:2_")));
 
       line = lines.next();
       assertThat(line.getAction(), equalTo(LineAction.PERMIT));
       assertThat(
-          ((CommunityAttributeRegexCommunitySet) line.getMatchCondition()).getRegex(),
-          equalTo(toJavaRegex("_1:1_")));
+          ((RegexCommunitySet) line.getMatchCondition()).getRegex(), equalTo(toJavaRegex("_1:1_")));
 
       line = lines.next();
       assertThat(line.getAction(), equalTo(LineAction.PERMIT));
       assertThat(
-          ((CommunityAttributeRegexCommunitySet) line.getMatchCondition()).getRegex(),
-          equalTo(toJavaRegex("_2:2_")));
+          ((RegexCommunitySet) line.getMatchCondition()).getRegex(), equalTo(toJavaRegex("_2:2_")));
     }
   }
 
