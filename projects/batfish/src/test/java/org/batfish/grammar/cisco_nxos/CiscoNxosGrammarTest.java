@@ -250,6 +250,7 @@ import org.batfish.representation.cisco_nxos.Lacp;
 import org.batfish.representation.cisco_nxos.Layer3Options;
 import org.batfish.representation.cisco_nxos.LiteralIpAddressSpec;
 import org.batfish.representation.cisco_nxos.LiteralPortSpec;
+import org.batfish.representation.cisco_nxos.NtpServer;
 import org.batfish.representation.cisco_nxos.Nve;
 import org.batfish.representation.cisco_nxos.Nve.HostReachabilityProtocol;
 import org.batfish.representation.cisco_nxos.Nve.IngressReplicationProtocol;
@@ -3276,6 +3277,26 @@ public final class CiscoNxosGrammarTest {
   public void testIpv6AccessListParsing() {
     // TODO: make into extraction test
     assertThat(parseVendorConfig("nxos_ipv6_access_list"), notNullValue());
+  }
+
+  public void testNtpConversion() throws IOException {
+    Configuration c = parseConfig("nxos_ntp");
+
+    assertThat(c.getNtpServers(), containsInAnyOrder("192.0.2.1", "192.0.2.2"));
+  }
+
+  public void testNtpExtraction() {
+    CiscoNxosConfiguration vc = parseVendorConfig("nxos_ntp");
+
+    assertThat(vc.getNtpServers(), hasKeys("192.0.2.1", "192.0.2.2"));
+    {
+      NtpServer ntpServer = vc.getNtpServers().get("192.0.2.1");
+      assertThat(ntpServer.getUseVrf(), nullValue());
+    }
+    {
+      NtpServer ntpServer = vc.getNtpServers().get("192.0.2.2");
+      assertThat(ntpServer.getUseVrf(), equalTo("management"));
+    }
   }
 
   @Test

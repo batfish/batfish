@@ -602,6 +602,11 @@ COMMANDS
   'commands'
 ;
 
+COMMIT
+:
+  'commit'
+;
+
 COMMUNITY
 :
   'community'
@@ -930,6 +935,11 @@ DISCARD
 DISTANCE
 :
   'distance'
+;
+
+DISTRIBUTE
+:
+  'distribute'
 ;
 
 DNSIX
@@ -2918,6 +2928,11 @@ QUERY_MAX_RESPONSE_TIME
   'query-max-response-time'
 ;
 
+QUERY_ONLY
+:
+  'query-only' -> pushMode(M_Word)
+;
+
 QUEUE_LIMIT
 :
   'queue-limit'
@@ -3196,6 +3211,16 @@ SEND_COMMUNITY
 SEQ
 :
   'seq'
+;
+
+SERVE
+:
+  'serve' -> pushMode(M_Word)
+;
+
+SERVE_ONLY
+:
+  'serve-only' -> pushMode(M_Word)
 ;
 
 SERVER
