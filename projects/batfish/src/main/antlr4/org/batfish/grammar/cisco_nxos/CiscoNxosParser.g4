@@ -100,10 +100,34 @@ s_ip
     ip_access_list
     | ip_as_path_access_list
     | ip_community_list
+    | ip_domain_name
+    | ip_name_server
     | ip_null
     | ip_prefix_list
     | ip_route
   )
+;
+
+ip_domain_name
+:
+  DOMAIN_NAME domain = domain_name NEWLINE
+;
+
+domain_name
+:
+// 1-64 characters
+  WORD
+;
+
+ip_name_server
+:
+  NAME_SERVER servers += name_server+ (USE_VRF vrf = vrf_name)? NEWLINE
+;
+
+name_server
+:
+  ip_address
+  | ipv6_address
 ;
 
 ip_null
@@ -113,7 +137,17 @@ ip_null
 
 s_ipv6
 :
-  IPV6 ipv6_access_list
+  IPV6
+  (
+    ipv6_access_list
+    | ipv6_prefix_list
+  )
+;
+
+ipv6_prefix_list
+:
+// TODO: something much less lazy
+  PREFIX_LIST null_rest_of_line
 ;
 
 s_key
@@ -199,7 +233,35 @@ s_router
 
 s_system
 :
-  SYSTEM sys_qos
+  SYSTEM
+  (
+    sys_default
+    | sys_qos
+  )
+;
+
+sys_default
+:
+  DEFAULT sysd_switchport
+;
+
+sysd_switchport
+:
+  SWITCHPORT
+  (
+    sysds_shutdown
+    | sysds_switchport
+  )
+;
+
+sysds_shutdown
+:
+  SHUTDOWN NEWLINE
+;
+
+sysds_switchport
+:
+  NEWLINE
 ;
 
 sys_qos
@@ -229,7 +291,7 @@ sysqosspt_qos
 
 sysqosspt_queueing
 :
-  QUEUEING (INPUT | OUTPUT) name = policy_map_name NEWLINE
+  QUEUING (INPUT | OUTPUT) name = policy_map_name NEWLINE
 ;
 
 s_track

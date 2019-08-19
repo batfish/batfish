@@ -100,6 +100,7 @@ import static org.batfish.datamodel.matchers.InterfaceMatchers.hasMlagId;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasMtu;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasNativeVlan;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasOspfAreaName;
+import static org.batfish.datamodel.matchers.InterfaceMatchers.hasOspfNetworkType;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasSpeed;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasSwitchPortEncapsulation;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasSwitchPortMode;
@@ -355,6 +356,7 @@ import org.batfish.datamodel.eigrp.ClassicMetric;
 import org.batfish.datamodel.eigrp.EigrpMetric;
 import org.batfish.datamodel.eigrp.EigrpMetricValues;
 import org.batfish.datamodel.eigrp.EigrpNeighborConfig;
+import org.batfish.datamodel.eigrp.EigrpProcessMode;
 import org.batfish.datamodel.eigrp.WideMetric;
 import org.batfish.datamodel.matchers.CommunityListLineMatchers;
 import org.batfish.datamodel.matchers.CommunityListMatchers;
@@ -1368,6 +1370,19 @@ public class CiscoGrammarTest {
         c,
         hasRoute6FilterList(
             "v6list", Route6FilterListMatchers.rejects(new Prefix6("::FFFF:10.0.0.0/103"))));
+  }
+
+  @Test
+  public void testIosRipPassive() throws IOException {
+    Configuration c = parseConfig("ios-rip-passive");
+
+    String iface1 = "Ethernet0";
+    String iface2 = "Ethernet1";
+    Map<String, Interface> ifaces = c.getAllInterfaces();
+    assertThat(ifaces, hasKeys(iface1, iface2));
+
+    assertThat(ifaces.get(iface1).getRipPassive(), equalTo(true));
+    assertThat(ifaces.get(iface2).getRipPassive(), equalTo(false));
   }
 
   @Test
@@ -2974,6 +2989,26 @@ public class CiscoGrammarTest {
 
     /* Confirm the point-to-point interface shows up as such */
     assertThat(c, hasInterface("Ethernet0/1", isOspfPointToPoint()));
+  }
+
+  @Test
+  public void testIosOrphanInterfaceOspfSettings() throws IOException {
+    Configuration c = parseConfig("ios-orphan-interface-ospf-settings");
+
+    // Confirm interface associated with an OSPF area has expected OSPF properties
+    assertThat(
+        c,
+        hasInterface(
+            "Ethernet0/0",
+            hasOspfNetworkType(
+                equalTo(org.batfish.datamodel.ospf.OspfNetworkType.POINT_TO_POINT))));
+
+    // Confirm interface NOT associated with an OSPF area still has expected OSPF properties
+    assertThat(
+        c,
+        hasInterface(
+            "Ethernet0/1",
+            hasOspfNetworkType(equalTo(org.batfish.datamodel.ospf.OspfNetworkType.BROADCAST))));
   }
 
   @Test
@@ -4996,6 +5031,22 @@ public class CiscoGrammarTest {
   }
 
   @Test
+  public void testShutdownOspfInterface() throws IOException {
+    Configuration c = parseConfig("ios-shutdown-ospf-interface");
+
+    String eth0 = "Ethernet0/0";
+    Map<String, Interface> ifaces = c.getAllInterfaces();
+    assertThat(ifaces.keySet(), contains(eth0));
+    Interface iface = ifaces.get(eth0);
+
+    // Confirm OSPF settings are associated with interface even though it is shutdown
+    assertThat(iface.getOspfEnabled(), equalTo(false));
+    assertThat(iface.getOspfAreaName(), equalTo(0L));
+    assertThat(iface.getOspfProcess(), equalTo("1"));
+    assertThat(iface.getOspfPassive(), equalTo(true));
+  }
+
+  @Test
   public void testParsingRecoveryNoInfiniteLoopDuringAdaptivePredictionAtEof() throws IOException {
     String testrigName = "parsing-recovery";
     String hostname = "ios-blankish-file";
@@ -6534,5 +6585,24 @@ public class CiscoGrammarTest {
     Configuration c = parseConfig("ios-interface-unshut");
     assertThat(c, hasInterface("Ethernet0", isActive(true)));
     assertThat(c, hasInterface("Ethernet1", isActive(false)));
+  }
+
+  @Test
+  public void testIosEigrpAclUsedForRouting() throws IOException {
+    Configuration c = parseConfig("ios-eigrp-match-acl");
+    assertThat(c, hasRouteFilterList("ACL", anything()));
+    assertTrue(
+        c.getRoutingPolicies()
+            .get("REDISTRIBUTE_MAP")
+            .process(
+                new ConnectedRoute(Prefix.ZERO, "dummy", 0),
+                EigrpExternalRoute.builder(),
+                DEFAULT_VRF_NAME,
+                org.batfish.datamodel.eigrp.EigrpProcess.builder()
+                    .setAsNumber(1)
+                    .setMode(EigrpProcessMode.CLASSIC)
+                    .setRouterId(Ip.ZERO)
+                    .build(),
+                Direction.OUT));
   }
 }

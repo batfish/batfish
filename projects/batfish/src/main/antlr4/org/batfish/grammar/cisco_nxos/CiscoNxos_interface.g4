@@ -37,7 +37,8 @@ s_interface_regular
 :
   irange = interface_range NEWLINE
   (
-    i_bandwidth
+    i_autostate
+    | i_bandwidth
     | i_channel_group
     | i_delay
     | i_description
@@ -46,6 +47,7 @@ s_interface_regular
     | i_ip
     | i_ipv6
     | i_lacp
+    | i_mac_address
     | i_mtu
     | i_no
     | i_null
@@ -55,6 +57,11 @@ s_interface_regular
     | i_switchport
     | i_vrf_member
   )*
+;
+
+i_autostate
+:
+  AUTOSTATE NEWLINE
 ;
 
 i_bandwidth
@@ -152,7 +159,7 @@ ihg_ipv4
   NEWLINE
   (
     ihg_common
-    | ihg_ip_ipv4
+    | ihg4_ip
   )*
 ;
 
@@ -161,7 +168,7 @@ ihg_ipv6
   IPV6 NEWLINE
   (
     ihg_common
-    | ihg_ip_ipv6
+    | ihg6_ip
   )*
 ;
 
@@ -285,7 +292,7 @@ hsrp_track_decrement
   uint8
 ;
 
-ihg_ip_ipv4
+ihg4_ip
 :
   IP
   (
@@ -294,13 +301,26 @@ ihg_ip_ipv4
   ) SECONDARY? NEWLINE
 ;
 
-ihg_ip_ipv6
+ihg6_ip
 :
   IP
+  (
+    ihg6_ip_address
+    | ihg6_ip_autoconfig
+  )
+;
+
+ihg6_ip_address
+:
   (
     ip6 = ipv6_address
     | prefix6 = ipv6_prefix
   ) SECONDARY? NEWLINE
+;
+
+ihg6_ip_autoconfig
+:
+  AUTOCONFIG NEWLINE
 ;
 
 ih_version
@@ -320,6 +340,7 @@ i_ip
   (
     i_ip_access_group
     | i_ip_address
+    | i_ip_dhcp
     | i_ip_null
     | i_ip_ospf
     | i_ip_policy
@@ -356,6 +377,16 @@ i_ip_address_concrete
 i_ip_address_dhcp
 :
   DHCP NEWLINE
+;
+
+i_ip_dhcp
+:
+  DHCP i_ip_dhcp_relay
+;
+
+i_ip_dhcp_relay
+:
+  RELAY ADDRESS ip_address NEWLINE
 ;
 
 i_ip_null
@@ -562,6 +593,11 @@ il_null
   SUSPEND_INDIVIDUAL null_rest_of_line
 ;
 
+i_mac_address
+:
+  MAC_ADDRESS mac = mac_address_literal NEWLINE
+;
+
 i_mtu
 :
   MTU interface_mtu NEWLINE
@@ -578,7 +614,10 @@ i_no
   NO
   (
     i_no_autostate
+    | i_no_bandwidth
     | i_no_bfd
+    | i_no_description
+    | i_no_mac_address
     | i_no_null
     | i_no_shutdown
     | i_no_switchport
@@ -590,9 +629,49 @@ i_no_autostate
   AUTOSTATE NEWLINE
 ;
 
+i_no_bandwidth
+:
+  BANDWIDTH i_no_bandwidth_inherit
+;
+
+i_no_bandwidth_inherit
+:
+  INHERIT NEWLINE
+;
+
 i_no_bfd
 :
   BFD null_rest_of_line
+;
+
+i_no_description
+:
+  DESCRIPTION NEWLINE
+;
+
+i_no_mac_address
+:
+  MAC_ADDRESS NEWLINE
+;
+
+i_no_null
+:
+  (
+    BEACON
+    | CDP
+    | HARDWARE
+    | IP
+    | IPV6
+    | LLDP
+    | LOAD_INTERVAL
+    | MANAGEMENT
+    | NEGOTIATE
+    | SNMP
+    | SPANNING_TREE
+    | STORM_CONTROL
+    | UDLD
+    | VTP
+  ) null_rest_of_line
 ;
 
 i_no_shutdown
@@ -605,25 +684,24 @@ i_no_switchport
   SWITCHPORT NEWLINE
 ;
 
-i_no_null
-:
-  (
-    CDP
-    | IP
-    | IPV6
-    | NEGOTIATE
-    | SNMP
-  ) null_rest_of_line
-;
-
 i_null
 :
   (
     BFD
+    | CARRIER_DELAY
     | CDP
     | DUPLEX
     | FEX
+    | FLOWCONTROL
+    | LINK
+    | LLDP
+    | LOAD_INTERVAL
+    | LOGGING
+    | MDIX
+    | MEDIUM
+    | NEGOTIATE
     | OSPFV3
+    | PRIORITY_FLOW_CONTROL
     | SNMP
     | SPANNING_TREE
     | STORM_CONTROL
@@ -641,7 +719,7 @@ isp_type
   TYPE
   (
     ispt_qos
-    | ispt_queueing
+    | ispt_queuing
   )
 ;
 
@@ -650,9 +728,9 @@ ispt_qos
   QOS (INPUT | OUTPUT) name = policy_map_name NEWLINE
 ;
 
-ispt_queueing
+ispt_queuing
 :
-  QUEUEING (INPUT | OUTPUT) name = policy_map_name NEWLINE
+  QUEUING (INPUT | OUTPUT) name = policy_map_name NEWLINE
 ;
 
 i_shutdown

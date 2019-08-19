@@ -18,11 +18,19 @@ cumulus_frr_configuration
 statement
 :
   FRR_VERSION_LINE NEWLINE
+  | s_agentx
   | s_bgp
   | s_vrf
   | s_routemap
   | s_ip
+  | SERVICE INTEGRATED_VTYSH_CONFIG NEWLINE
   | LINE VTY NEWLINE
+  | LOG SYSLOG INFORMATIONAL NEWLINE
+;
+
+s_agentx
+:
+  AGENTX NEWLINE
 ;
 
 s_ip

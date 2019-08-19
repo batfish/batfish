@@ -2055,7 +2055,6 @@ public final class CiscoConfiguration extends VendorConfiguration {
     }
     newIface.setMlagId(iface.getMlagId());
     newIface.setMtu(getInterfaceMtu(iface));
-    newIface.setOspfNetworkType(toOspfNetworkType(iface.getOspfNetworkType()));
     newIface.setProxyArp(iface.getProxyArp());
     newIface.setSpanningTreePortfast(iface.getSpanningTreePortfast());
     newIface.setSwitchport(iface.getSwitchport());
@@ -2069,31 +2068,6 @@ public final class CiscoConfiguration extends VendorConfiguration {
     }
     allPrefixes.addAll(iface.getSecondaryAddresses());
     newIface.setAllAddresses(allPrefixes.build());
-
-    if (!iface.getOspfShutdown()) {
-      OspfProcess proc = getOspfProcessForInterface(vrf, iface);
-      if (proc != null) {
-        if (firstNonNull(
-            iface.getOspfPassive(),
-            proc.getPassiveInterfaceDefault()
-                ^ proc.getNonDefaultInterfaces().contains(ifaceName))) {
-          proc.getPassiveInterfaces().add(ifaceName);
-        }
-        newIface.setOspfAreaName(iface.getOspfArea());
-        newIface.setOspfCost(iface.getOspfCost());
-        Integer deadInterval = iface.getOspfDeadInterval();
-        if (deadInterval != null) {
-          newIface.setOspfDeadInterval(deadInterval);
-        }
-        newIface.setOspfHelloMultiplier(iface.getOspfHelloMultiplier());
-        newIface.setOspfProcess(proc.getName());
-      } else if (iface.getOspfArea() != null
-          || iface.getOspfCost() != null
-          || iface.getOspfPassive() != null) {
-        _w.redFlag(
-            "Interface: '" + ifaceName + "' contains OSPF settings, but there is no OSPF process");
-      }
-    }
 
     EigrpProcess eigrpProcess = null;
     if (iface.getAddress() != null) {
@@ -2603,7 +2577,8 @@ public final class CiscoConfiguration extends VendorConfiguration {
         continue;
       }
 
-      Long areaNum = iface.getOspfAreaName();
+      String ifaceName = e.getKey();
+      Long areaNum = vsIface.getOspfArea();
       // OSPF area number was not configured on the interface itself, so get from OspfNetwork
       if (areaNum == null) {
         if (network == null) {
@@ -2611,14 +2586,11 @@ public final class CiscoConfiguration extends VendorConfiguration {
         }
         areaNum = network.getArea();
       }
-      String ifaceName = e.getKey();
       areas.computeIfAbsent(areaNum, areaNumber -> OspfArea.builder().setNumber(areaNumber));
       ImmutableSortedSet.Builder<String> newAreaInterfacesBuilder =
           areaInterfacesBuilders.computeIfAbsent(areaNum, n -> ImmutableSortedSet.naturalOrder());
       newAreaInterfacesBuilder.add(ifaceName);
-      iface.setOspfEnabled(true);
-      boolean passive = proc.getPassiveInterfaces().contains(iface.getName());
-      iface.setOspfPassive(passive);
+      finalizeInterfaceOspfSettings(iface, vsIface, proc, areaNum);
     }
     areaInterfacesBuilders.forEach(
         (areaNum, interfacesBuilder) ->
@@ -2679,21 +2651,6 @@ public final class CiscoConfiguration extends VendorConfiguration {
     }
     newProcess.setAreas(toImmutableSortedMap(areas, Entry::getKey, e -> e.getValue().build()));
 
-    // set pointers from interfaces to their parent areas
-    newProcess
-        .getAreas()
-        .values()
-        .forEach(
-            area ->
-                area.getInterfaces()
-                    .forEach(
-                        ifaceName ->
-                            c.getVrfs()
-                                .get(vrfName)
-                                .getInterfaces()
-                                .get(ifaceName)
-                                .setOspfAreaName(area.getAreaNumber())));
-
     String ospfExportPolicyName = "~OSPF_EXPORT_POLICY:" + vrfName + "~";
     RoutingPolicy ospfExportPolicy = new RoutingPolicy(ospfExportPolicyName, c);
     c.getRoutingPolicies().put(ospfExportPolicyName, ospfExportPolicy);
@@ -2750,7 +2707,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
               ImmutableList.of(MATCH_DEFAULT_ROUTE, new MatchProtocol(RoutingProtocol.AGGREGATE))));
     }
 
-    computeDistributeListPolicies(proc, c, vrfName, proc.getName(), oldConfig);
+    computeDistributeListPolicies(proc, newProcess, c, vrfName, proc.getName(), oldConfig);
 
     // policies for redistributing routes
     ospfExportStatements.addAll(
@@ -2759,6 +2716,37 @@ public final class CiscoConfiguration extends VendorConfiguration {
             .collect(Collectors.toList()));
 
     return newProcess;
+  }
+
+  /** Setup OSPF settings on specified VI interface. */
+  private void finalizeInterfaceOspfSettings(
+      org.batfish.datamodel.Interface iface,
+      Interface vsIface,
+      @Nullable OspfProcess proc,
+      @Nullable Long areaNum) {
+    String ifaceName = vsIface.getName();
+    iface.setOspfPassive(false);
+    if (proc != null) {
+      iface.setOspfProcess(proc.getName());
+      if (firstNonNull(
+          vsIface.getOspfPassive(),
+          proc.getPassiveInterfaces().contains(ifaceName)
+              || (proc.getPassiveInterfaceDefault()
+                  ^ proc.getNonDefaultInterfaces().contains(ifaceName)))) {
+        proc.getPassiveInterfaces().add(ifaceName);
+        iface.setOspfPassive(true);
+      }
+    }
+    iface.setOspfCost(vsIface.getOspfCost());
+    Integer deadInterval = vsIface.getOspfDeadInterval();
+    if (deadInterval != null) {
+      iface.setOspfDeadInterval(deadInterval);
+    }
+    iface.setOspfHelloMultiplier(vsIface.getOspfHelloMultiplier());
+
+    iface.setOspfAreaName(areaNum);
+    iface.setOspfEnabled(proc != null && areaNum != null && !vsIface.getOspfShutdown());
+    iface.setOspfNetworkType(toOspfNetworkType(vsIface.getOspfNetworkType()));
   }
 
   @Nullable
@@ -2813,7 +2801,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
             proc.getPassiveInterfaceList().contains(i.getName())
                 || (proc.getPassiveInterfaceDefault()
                     && !proc.getActiveInterfaceList().contains(ifaceName));
-        i.setOspfPassive(passive);
+        i.setRipPassive(passive);
       }
     }
 
@@ -3660,6 +3648,38 @@ public final class CiscoConfiguration extends VendorConfiguration {
           }
         });
 
+    /*
+     * Another pass over interfaces to push final settings to VI interfaces and issue final warnings
+     * (e.g. has OSPF settings but no associated OSPF process)
+     */
+    _interfaces.forEach(
+        (key, vsIface) -> {
+          // Check alias first to handle ASA using alias as VI interface name
+          String ifaceName = firstNonNull(vsIface.getAlias(), key);
+          org.batfish.datamodel.Interface iface = c.getAllInterfaces().get(ifaceName);
+          if (iface == null) {
+            // Should never get here
+          } else {
+            // Conversion of interface OSPF settings usually occurs per area
+            // If the iface does not have an area, then need warn and convert settings here instead
+            if (iface.getOspfAreaName() == null) {
+              // Not part of an OSPF area
+              if (vsIface.getOspfArea() != null
+                  || vsIface.getOspfCost() != null
+                  || vsIface.getOspfPassive() != null
+                  || vsIface.getOspfNetworkType() != null
+                  || vsIface.getOspfDeadInterval() != null
+                  || vsIface.getOspfHelloInterval() != null) {
+                _w.redFlag(
+                    "Interface: '"
+                        + ifaceName
+                        + "' contains OSPF settings, but there is no corresponding OSPF area (or process)");
+                finalizeInterfaceOspfSettings(iface, vsIface, null, null);
+              }
+            }
+          }
+        });
+
     // convert Arista EOS VXLAN
     if (_eosVxlan != null) {
       String sourceIfaceName = _eosVxlan.getSourceInterface();
@@ -4436,11 +4456,19 @@ public final class CiscoConfiguration extends VendorConfiguration {
           }
         }
       }
-      // check EIGRP distribute lists
+      // check EIGRP policies
+      // distribute lists
       if (vrf.getEigrpProcesses().values().stream()
           .flatMap(
               eigrpProcess -> eigrpProcess.getOutboundInterfaceDistributeLists().values().stream())
           .anyMatch(distributeList -> distributeList.getFilterName().equals(aclName))) {
+        return true;
+      }
+      // EIGRP redistribution policy
+      if (vrf.getEigrpProcesses().values().stream()
+          .map(EigrpProcess::getRedistributionPolicies)
+          .flatMap(redisrPolicies -> redisrPolicies.values().stream())
+          .anyMatch(rm -> containsIpAccessList(aclName, rm.getRouteMap()))) {
         return true;
       }
     }

@@ -554,6 +554,21 @@ public class CumulusFrrGrammarTest {
   }
 
   @Test
+  public void testCumulusFrrAgentx() {
+    parse("agentx\n");
+  }
+
+  @Test
+  public void testCumulusService() {
+    parse("service integrated-vtysh-config\n");
+  }
+
+  @Test
+  public void testCumulusFrrSyslog() {
+    parse("log syslog informational\n");
+  }
+
+  @Test
   public void testLineVty() {
     parse("line vty\n");
   }

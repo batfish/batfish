@@ -14,6 +14,11 @@ ADDRESS
   'address'
 ;
 
+AGENTX
+:
+  'agentx'
+;
+
 COMMENT_LINE
 :
   (
@@ -128,6 +133,16 @@ GE
   'ge'
 ;
 
+INFORMATIONAL
+:
+  'informational'
+;
+
+INTEGRATED_VTYSH_CONFIG
+:
+  'integrated-vtysh-config'
+;
+
 INTERFACE
 :
   'interface'
@@ -175,6 +190,11 @@ L2VPN
 LE
 :
   'le'
+;
+
+LOG
+:
+  'log'
 ;
 
 LINE
@@ -252,6 +272,11 @@ SEQ
   'seq'
 ;
 
+SERVICE
+:
+  'service'
+;
+
 STATIC
 :
   'static'
@@ -260,6 +285,11 @@ STATIC
 SUBNET_MASK
 :
   F_SubnetMask
+;
+
+SYSLOG
+:
+  'syslog'
 ;
 
 MATCH
