@@ -85,6 +85,7 @@ import org.batfish.datamodel.Prefix6Range;
 import org.batfish.datamodel.Prefix6Space;
 import org.batfish.datamodel.PrefixRange;
 import org.batfish.datamodel.PrefixSpace;
+import org.batfish.datamodel.RegexCommunitySet;
 import org.batfish.datamodel.Route6FilterLine;
 import org.batfish.datamodel.Route6FilterList;
 import org.batfish.datamodel.RouteFilterLine;
@@ -746,11 +747,34 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
                     list.accept(
                         new IpCommunityListVisitor<CommunityList>() {
                           @Override
+                          public CommunityList visitIpCommunityListExpanded(
+                              IpCommunityListExpanded ipCommunityListExpanded) {
+                            return toCommunityList(ipCommunityListExpanded);
+                          }
+
+                          @Override
                           public CommunityList visitIpCommunityListStandard(
                               IpCommunityListStandard ipCommunityListStandard) {
                             return toCommunityList(ipCommunityListStandard);
                           }
                         })));
+  }
+
+  private static @Nonnull CommunityList toCommunityList(IpCommunityListExpanded list) {
+    return new CommunityList(
+        list.getName(),
+        list.getLines().values().stream()
+            .map(CiscoNxosConfiguration::toCommunityListLine)
+            .collect(ImmutableList.toImmutableList()),
+        false);
+  }
+
+  private static @Nonnull CommunityListLine toCommunityListLine(IpCommunityListExpandedLine line) {
+    return new CommunityListLine(line.getAction(), toCommunitySetExpr(line.getRegex()));
+  }
+
+  private static @Nonnull CommunitySetExpr toCommunitySetExpr(String regex) {
+    return new RegexCommunitySet(toJavaRegex(regex));
   }
 
   private static @Nonnull CommunityList toCommunityList(IpCommunityListStandard list) {
