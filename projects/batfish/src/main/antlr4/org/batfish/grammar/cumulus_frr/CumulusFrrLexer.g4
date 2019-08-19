@@ -197,6 +197,11 @@ LOG
   'log'
 ;
 
+LINE
+:
+  'line'
+;
+
 NEIGHBOR
 :
   'neighbor' -> pushMode(M_Neighbor)
@@ -345,6 +350,11 @@ VNI
 VRF
 :
   'vrf' -> pushMode(M_Word)
+;
+
+VTY
+:
+  'vty'
 ;
 
 WS

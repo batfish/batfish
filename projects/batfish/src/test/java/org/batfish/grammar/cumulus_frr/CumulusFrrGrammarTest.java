@@ -569,6 +569,11 @@ public class CumulusFrrGrammarTest {
   }
 
   @Test
+  public void testLineVty() {
+    parse("line vty\n");
+  }
+
+  @Test
   public void testCumulusFrrUsername() {
     parse("username cumulus nopassword\n");
   }
