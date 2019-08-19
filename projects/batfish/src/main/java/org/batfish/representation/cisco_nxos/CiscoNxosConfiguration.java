@@ -310,6 +310,7 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
   private transient Multimap<String, String> _portChannelMembers;
   private @Nonnull IntegerSpace _reservedVlanRange;
   private final @Nonnull Map<String, RouteMap> _routeMaps;
+  private final @Nonnull Map<String, SnmpServer> _snmpServers;
   private boolean _systemDefaultSwitchportShutdown;
   private final @Nonnull Map<String, TacacsServer> _tacacsServers;
   private @Nullable String _version;
@@ -330,6 +331,7 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
     _ospfProcesses = new HashMap<>();
     _reservedVlanRange = DEFAULT_RESERVED_VLAN_RANGE;
     _routeMaps = new HashMap<>();
+    _snmpServers = new HashMap<>();
     _tacacsServers = new HashMap<>();
     _vlans = new HashMap<>();
     _vrfs = new HashMap<>();
@@ -848,6 +850,10 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
         .forEach(packetPolicy -> _c.getPacketPolicies().put(packetPolicy.getName(), packetPolicy));
   }
 
+  private void convertSnmpServers() {
+    _c.setSnmpTrapServers(ImmutableSortedSet.copyOf(_snmpServers.keySet()));
+  }
+
   private void convertStaticRoutes() {
     Stream.concat(Stream.of(_defaultVrf), _vrfs.values().stream())
         .forEach(this::convertStaticRoutes);
@@ -1058,6 +1064,10 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
 
   public @Nonnull Map<String, RouteMap> getRouteMaps() {
     return _routeMaps;
+  }
+
+  public @Nonnull Map<String, SnmpServer> getSnmpServers() {
+    return _snmpServers;
   }
 
   public boolean getSystemDefaultSwitchportShutdown() {
@@ -2469,6 +2479,7 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
     convertInterfaces();
     disableUnregisteredVlanInterfaces();
     convertIpNameServers();
+    convertSnmpServers();
     convertTacacsServers();
     convertRouteMaps();
     convertStaticRoutes();

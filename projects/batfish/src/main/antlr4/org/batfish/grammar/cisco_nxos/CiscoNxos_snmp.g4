@@ -61,17 +61,19 @@ snmps_enable
 
 snmps_host
 :
-  HOST
-  (
-    dns = WORD
-    | ip = ip_address
-    | ip6 = ipv6_address
-  )
+  HOST host = snmp_server_host
   (
     snmpsh_source_interface
     | snmpsh_traps
     | snmpsh_use_vrf
   )
+;
+
+snmp_server_host
+:
+  dns = WORD
+  | ip = ip_address
+  | ip6 = ipv6_address
 ;
 
 snmpsh_source_interface

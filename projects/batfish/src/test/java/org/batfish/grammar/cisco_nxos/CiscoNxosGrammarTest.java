@@ -5208,9 +5208,19 @@ public final class CiscoNxosGrammarTest {
   }
 
   @Test
-  public void testSnmpServerParsing() {
-    // TODO: make into extraction test
-    assertThat(parseVendorConfig("nxos_snmp_server"), notNullValue());
+  public void testSnmpServerConversion() throws IOException {
+    String hostname = "nxos_snmp_server";
+    Configuration c = parseConfig(hostname);
+
+    assertThat(c.getSnmpTrapServers(), containsInAnyOrder("192.0.2.1", "192.0.2.2"));
+  }
+
+  @Test
+  public void testSnmpServerExtraction() {
+    String hostname = "nxos_snmp_server";
+    CiscoNxosConfiguration vc = parseVendorConfig(hostname);
+
+    assertThat(vc.getSnmpServers(), hasKeys("192.0.2.1", "192.0.2.2"));
   }
 
   @Test
