@@ -1712,6 +1712,7 @@ KEY
       case TACACS_SERVER:
       case WORD:
         pushMode(M_Password);
+        break;
       default:
         break;
     }
