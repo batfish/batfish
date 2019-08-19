@@ -17,6 +17,7 @@ public abstract class BgpNeighbor implements Serializable {
   private @Nullable RemoteAsType _remoteAsType;
   private @Nullable BgpNeighborIpv4UnicastAddressFamily _ipv4UnicastAddressFamily;
   private @Nullable BgpNeighborL2vpnEvpnAddressFamily _l2vpnEvpnAddressFamily;
+  private @Nullable Long _ebgpMultihop;
 
   // Whether this configuration has inherited from its parent.
   private boolean _inherited = false;
@@ -79,6 +80,14 @@ public abstract class BgpNeighbor implements Serializable {
 
   public @Nullable RemoteAsType getRemoteAsType() {
     return _remoteAsType;
+  }
+
+  public @Nullable Long getEbgpMultihop() {
+    return _ebgpMultihop;
+  }
+
+  public void setEbgpMultihop(@Nullable Long ebgpMultihop) {
+    _ebgpMultihop = ebgpMultihop;
   }
 
   public void setRemoteAs(@Nullable Long remoteAs) {

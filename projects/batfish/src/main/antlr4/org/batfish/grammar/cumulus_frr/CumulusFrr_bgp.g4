@@ -122,6 +122,7 @@ sbn_peer_group_decl
 sbn_property
 :
   sbnp_description
+| sbnp_ebgp_multihop
 | sbnp_remote_as
 | sbnp_peer_group
 ;
@@ -129,6 +130,11 @@ sbn_property
 sbnp_description
 :
   DESCRIPTION REMARK_TEXT
+;
+
+sbnp_ebgp_multihop
+:
+  EBGP_MULTIHOP num = uint32
 ;
 
 sbnp_remote_as

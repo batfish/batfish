@@ -598,4 +598,20 @@ public class CumulusFrrGrammarTest {
     parse("router bgp 10000 vrf VRF\nneighbor N bfd 1 10 20\n");
     parse("router bgp 10000 vrf VRF\nneighbor N bfd\n");
   }
+
+  @Test
+  public void testBgpNeighborEbgpMultihopPeerGroup() {
+    parseLines("router bgp 10000", "neighbor N peer-group", "neighbor N ebgp-multihop 3");
+    assertThat(
+        CONFIG.getBgpProcess().getDefaultVrf().getNeighbors().get("N").getEbgpMultihop(),
+        equalTo(3L));
+  }
+
+  @Test
+  public void testBgpNeighborEbgpMultihopPeer() {
+    parseLines("router bgp 10000", "neighbor 10.0.0.1 ebgp-multihop 3");
+    assertThat(
+        CONFIG.getBgpProcess().getDefaultVrf().getNeighbors().get("10.0.0.1").getEbgpMultihop(),
+        equalTo(3L));
+  }
 }

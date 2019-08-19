@@ -58,6 +58,7 @@ import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbn_ipContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbn_nameContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbn_peer_group_declContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbnp_descriptionContext;
+import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbnp_ebgp_multihopContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbnp_peer_groupContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbnp_remote_asContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sv_routeContext;
@@ -363,6 +364,12 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
       _currentBgpNeighbor.setRemoteAsType(INTERNAL);
       _currentBgpNeighbor.setRemoteAs(null);
     }
+  }
+
+  @Override
+  public void exitSbnp_ebgp_multihop(Sbnp_ebgp_multihopContext ctx) {
+    long num = parseLong(ctx.num.getText());
+    _currentBgpNeighbor.setEbgpMultihop(num);
   }
 
   @Override
