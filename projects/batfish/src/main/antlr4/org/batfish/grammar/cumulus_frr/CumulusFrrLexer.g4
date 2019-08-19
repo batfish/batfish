@@ -19,6 +19,11 @@ AGENTX
   'agentx'
 ;
 
+BFD
+:
+  'bfd' -> pushMode(M_Words)
+;
+
 COMMENT_LINE
 :
   (
@@ -51,6 +56,11 @@ ADVERTISE
 ADVERTISE_ALL_VNI
 :
   'advertise-all-vni'
+;
+
+ALWAYS_COMPARE_MED
+:
+  'always-compare-med'
 ;
 
 BGP
@@ -143,6 +153,11 @@ GE
   'ge'
 ;
 
+HOSTNAME
+:
+  'hostname' -> pushMode(M_Word)
+;
+
 INFORMATIONAL
 :
   'informational'
@@ -165,6 +180,11 @@ INTERFACE
         break;
     }
   }
+;
+
+INBOUND
+:
+  'inbound'
 ;
 
 INTERNAL
@@ -227,6 +247,11 @@ NEXT_HOP_SELF
   'next-hop-self'
 ;
 
+PASSWORD
+:
+  'password' -> pushMode(M_Remark)
+;
+
 PEER_GROUP
 :
   'peer-group' -> pushMode(M_PeerGroup)
@@ -285,6 +310,11 @@ SEQ
 SERVICE
 :
   'service'
+;
+
+SOFT_RECONFIGURATION
+:
+  'soft-reconfiguration'
 ;
 
 STATIC

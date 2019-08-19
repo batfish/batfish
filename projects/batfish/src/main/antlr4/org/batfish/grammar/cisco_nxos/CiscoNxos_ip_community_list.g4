@@ -8,7 +8,23 @@ options {
 
 ip_community_list
 :
-  COMMUNITY_LIST icl_standard
+  COMMUNITY_LIST
+  (
+    icl_expanded
+    | icl_standard
+  )
+;
+
+icl_expanded
+:
+  EXPANDED name = ip_community_list_name
+  (
+    SEQ seq = ip_community_list_seq
+  )? action = line_action
+  (
+    quoted = double_quoted_string
+    | regex = REMARK_TEXT
+  ) NEWLINE
 ;
 
 icl_standard

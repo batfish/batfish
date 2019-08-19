@@ -167,6 +167,7 @@ import org.batfish.datamodel.NamedPort;
 import org.batfish.datamodel.OriginType;
 import org.batfish.datamodel.OspfExternalRoute;
 import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.RegexCommunitySet;
 import org.batfish.datamodel.RouteFilterLine;
 import org.batfish.datamodel.RouteFilterList;
 import org.batfish.datamodel.RoutingProtocol;
@@ -239,6 +240,8 @@ import org.batfish.representation.cisco_nxos.IpAccessListLine;
 import org.batfish.representation.cisco_nxos.IpAddressSpec;
 import org.batfish.representation.cisco_nxos.IpAsPathAccessList;
 import org.batfish.representation.cisco_nxos.IpAsPathAccessListLine;
+import org.batfish.representation.cisco_nxos.IpCommunityListExpanded;
+import org.batfish.representation.cisco_nxos.IpCommunityListExpandedLine;
 import org.batfish.representation.cisco_nxos.IpCommunityListStandard;
 import org.batfish.representation.cisco_nxos.IpCommunityListStandardLine;
 import org.batfish.representation.cisco_nxos.IpPrefixList;
@@ -646,6 +649,22 @@ public final class CiscoNxosGrammarTest {
       Interface iface = vc.getInterfaces().get("Ethernet1/8");
       assertThat(iface.getShutdown(), equalTo(false));
     }
+  }
+
+  @Test
+  public void testTacacsServerConversion() throws IOException {
+    String hostname = "nxos_tacacs_server";
+    Configuration c = parseConfig(hostname);
+
+    assertThat(c.getTacacsServers(), containsInAnyOrder("192.0.2.1", "192.0.2.2"));
+  }
+
+  @Test
+  public void testTacacsServerExtraction() {
+    String hostname = "nxos_tacacs_server";
+    CiscoNxosConfiguration vc = parseVendorConfig(hostname);
+
+    assertThat(vc.getTacacsServers(), hasKeys("192.0.2.1", "192.0.2.2"));
   }
 
   @Test
@@ -2802,6 +2821,111 @@ public final class CiscoNxosGrammarTest {
   public void testIpAsPathAccessListInvalid() {
     _thrown.expect(ParserBatfishException.class);
     parseVendorConfig("nxos_ip_as_path_access_list_invalid");
+  }
+
+  @Test
+  public void testIpCommunityListExpandedConversion() throws IOException {
+    String hostname = "nxos_ip_community_list_expanded";
+    Configuration c = parseConfig(hostname);
+
+    assertThat(c.getCommunityLists(), hasKeys("cl_seq", "cl_test"));
+    {
+      CommunityList cl = c.getCommunityLists().get("cl_seq");
+      Iterator<CommunityListLine> lines = cl.getLines().iterator();
+      CommunityListLine line;
+
+      line = lines.next();
+      assertThat(line.getAction(), equalTo(LineAction.PERMIT));
+      assertThat(
+          ((RegexCommunitySet) line.getMatchCondition()).getRegex(), equalTo(toJavaRegex("1:1")));
+
+      line = lines.next();
+      assertThat(line.getAction(), equalTo(LineAction.PERMIT));
+      assertThat(
+          ((RegexCommunitySet) line.getMatchCondition()).getRegex(), equalTo(toJavaRegex("5:5")));
+
+      line = lines.next();
+      assertThat(line.getAction(), equalTo(LineAction.PERMIT));
+      assertThat(
+          ((RegexCommunitySet) line.getMatchCondition()).getRegex(), equalTo(toJavaRegex("10:10")));
+
+      line = lines.next();
+      assertThat(line.getAction(), equalTo(LineAction.PERMIT));
+      assertThat(
+          ((RegexCommunitySet) line.getMatchCondition()).getRegex(), equalTo(toJavaRegex("11:11")));
+    }
+    {
+      CommunityList cl = c.getCommunityLists().get("cl_test");
+      Iterator<CommunityListLine> lines = cl.getLines().iterator();
+      CommunityListLine line;
+
+      line = lines.next();
+      assertThat(line.getAction(), equalTo(LineAction.DENY));
+      assertThat(
+          ((RegexCommunitySet) line.getMatchCondition()).getRegex(),
+          equalTo(toJavaRegex("_1:1.*2:2_")));
+
+      line = lines.next();
+      assertThat(line.getAction(), equalTo(LineAction.PERMIT));
+      assertThat(
+          ((RegexCommunitySet) line.getMatchCondition()).getRegex(), equalTo(toJavaRegex("_1:1_")));
+
+      line = lines.next();
+      assertThat(line.getAction(), equalTo(LineAction.PERMIT));
+      assertThat(
+          ((RegexCommunitySet) line.getMatchCondition()).getRegex(), equalTo(toJavaRegex("_2:2_")));
+    }
+  }
+
+  @Test
+  public void testIpCommunityListExpandedExtraction() {
+    String hostname = "nxos_ip_community_list_expanded";
+    CiscoNxosConfiguration vc = parseVendorConfig(hostname);
+
+    assertThat(vc.getIpCommunityLists(), hasKeys("cl_seq", "cl_test"));
+    {
+      IpCommunityListExpanded cl = (IpCommunityListExpanded) vc.getIpCommunityLists().get("cl_seq");
+      Iterator<IpCommunityListExpandedLine> lines = cl.getLines().values().iterator();
+      IpCommunityListExpandedLine line;
+
+      line = lines.next();
+      assertThat(line.getLine(), equalTo(1L));
+      assertThat(line.getRegex(), equalTo("1:1"));
+
+      line = lines.next();
+      assertThat(line.getLine(), equalTo(5L));
+      assertThat(line.getRegex(), equalTo("5:5"));
+
+      line = lines.next();
+      assertThat(line.getLine(), equalTo(10L));
+      assertThat(line.getRegex(), equalTo("10:10"));
+
+      line = lines.next();
+      assertThat(line.getLine(), equalTo(11L));
+      assertThat(line.getRegex(), equalTo("11:11"));
+
+      assertFalse(lines.hasNext());
+    }
+    {
+      IpCommunityListExpanded cl =
+          (IpCommunityListExpanded) vc.getIpCommunityLists().get("cl_test");
+      Iterator<IpCommunityListExpandedLine> lines = cl.getLines().values().iterator();
+      IpCommunityListExpandedLine line;
+
+      line = lines.next();
+      assertThat(line.getAction(), equalTo(LineAction.DENY));
+      assertThat(line.getRegex(), equalTo("_1:1.*2:2_"));
+
+      line = lines.next();
+      assertThat(line.getAction(), equalTo(LineAction.PERMIT));
+      assertThat(line.getRegex(), equalTo("_1:1_"));
+
+      line = lines.next();
+      assertThat(line.getAction(), equalTo(LineAction.PERMIT));
+      assertThat(line.getRegex(), equalTo("_2:2_"));
+
+      assertFalse(lines.hasNext());
+    }
   }
 
   @Test

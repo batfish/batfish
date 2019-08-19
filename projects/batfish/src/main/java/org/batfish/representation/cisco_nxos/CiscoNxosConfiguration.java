@@ -85,6 +85,7 @@ import org.batfish.datamodel.Prefix6Range;
 import org.batfish.datamodel.Prefix6Space;
 import org.batfish.datamodel.PrefixRange;
 import org.batfish.datamodel.PrefixSpace;
+import org.batfish.datamodel.RegexCommunitySet;
 import org.batfish.datamodel.Route6FilterLine;
 import org.batfish.datamodel.Route6FilterList;
 import org.batfish.datamodel.RouteFilterLine;
@@ -311,6 +312,7 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
   private final @Nonnull Map<String, RouteMap> _routeMaps;
   private final @Nonnull Map<String, SnmpServer> _snmpServers;
   private boolean _systemDefaultSwitchportShutdown;
+  private final @Nonnull Map<String, TacacsServer> _tacacsServers;
   private @Nullable String _version;
   private final @Nonnull Map<Integer, Vlan> _vlans;
   private final @Nonnull Map<String, Vrf> _vrfs;
@@ -330,6 +332,7 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
     _reservedVlanRange = DEFAULT_RESERVED_VLAN_RANGE;
     _routeMaps = new HashMap<>();
     _snmpServers = new HashMap<>();
+    _tacacsServers = new HashMap<>();
     _vlans = new HashMap<>();
     _vrfs = new HashMap<>();
   }
@@ -748,11 +751,34 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
                     list.accept(
                         new IpCommunityListVisitor<CommunityList>() {
                           @Override
+                          public CommunityList visitIpCommunityListExpanded(
+                              IpCommunityListExpanded ipCommunityListExpanded) {
+                            return toCommunityList(ipCommunityListExpanded);
+                          }
+
+                          @Override
                           public CommunityList visitIpCommunityListStandard(
                               IpCommunityListStandard ipCommunityListStandard) {
                             return toCommunityList(ipCommunityListStandard);
                           }
                         })));
+  }
+
+  private static @Nonnull CommunityList toCommunityList(IpCommunityListExpanded list) {
+    return new CommunityList(
+        list.getName(),
+        list.getLines().values().stream()
+            .map(CiscoNxosConfiguration::toCommunityListLine)
+            .collect(ImmutableList.toImmutableList()),
+        false);
+  }
+
+  private static @Nonnull CommunityListLine toCommunityListLine(IpCommunityListExpandedLine line) {
+    return new CommunityListLine(line.getAction(), toCommunitySetExpr(line.getRegex()));
+  }
+
+  private static @Nonnull CommunitySetExpr toCommunitySetExpr(String regex) {
+    return new RegexCommunitySet(toJavaRegex(regex));
   }
 
   private static @Nonnull CommunityList toCommunityList(IpCommunityListStandard list) {
@@ -777,6 +803,10 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
         _ipNameServersByUseVrf.values().stream()
             .flatMap(Collection::stream)
             .collect(ImmutableSortedSet.toImmutableSortedSet(Comparator.naturalOrder())));
+  }
+
+  private void convertTacacsServers() {
+    _c.setTacacsServers(ImmutableSortedSet.copyOf(_tacacsServers.keySet()));
   }
 
   private void convertIpPrefixLists() {
@@ -1042,6 +1072,10 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
 
   public boolean getSystemDefaultSwitchportShutdown() {
     return _systemDefaultSwitchportShutdown;
+  }
+
+  public @Nonnull Map<String, TacacsServer> getTacacsServers() {
+    return _tacacsServers;
   }
 
   public @Nullable String getVersion() {
@@ -2446,6 +2480,7 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
     disableUnregisteredVlanInterfaces();
     convertIpNameServers();
     convertSnmpServers();
+    convertTacacsServers();
     convertRouteMaps();
     convertStaticRoutes();
     computeImplicitOspfAreas();

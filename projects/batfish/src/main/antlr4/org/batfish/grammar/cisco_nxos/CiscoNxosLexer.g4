@@ -792,6 +792,11 @@ DEAD_INTERVAL
   'dead-interval'
 ;
 
+DEADTIME
+:
+  'deadtime'
+;
+
 DEBOUNCE
 :
   'debounce'
@@ -890,6 +895,11 @@ DIR
 DIRECT
 :
   'direct'
+;
+
+DIRECTED_REQUEST
+:
+  'directed-request'
 ;
 
 DIRECTLY_CONNECTED_SOURCES
@@ -1145,6 +1155,11 @@ EXEMPT
 EXIST_MAP
 :
   'exist-map'
+;
+
+EXPANDED
+:
+  'expanded' -> pushMode ( M_Expanded )
 ;
 
 EXPLICIT_TRACKING
@@ -1406,6 +1421,11 @@ HMM
 HOST
 :
   'host'
+  {
+    if (lastTokenType() == TACACS_SERVER) {
+      pushMode(M_TacacsServerHost);
+    }
+  }
 ;
 
 HOST_ISOLATED
@@ -1689,6 +1709,19 @@ KBPS
 KEY
 :
   'key'
+  // if preceded by tacac-server host name, or 'tacacs-server' (for global key), follow with password
+  {
+    switch(lastTokenType()) {
+      case IP_ADDRESS:
+      case IPV6_ADDRESS:
+      case TACACS_SERVER:
+      case WORD:
+        pushMode(M_Password);
+        break;
+      default:
+        break;
+    }
+  }
 ;
 
 KEY_CHAIN
@@ -3226,6 +3259,11 @@ SHUTDOWN
   'shutdown'
 ;
 
+SINGLE_CONNECTION
+:
+  'single-connection'
+;
+
 SIZE
 :
   'size'
@@ -3513,6 +3551,11 @@ TACACS
   'tacacs'
 ;
 
+TACACS_SERVER
+:
+  'tacacs-server'
+;
+
 TACACSP
 :
   'tacacs+'
@@ -3569,6 +3612,11 @@ TERMINAL
   'terminal'
 ;
 
+TEST
+:
+  'test'
+;
+
 TEXT
 :
   'text' -> pushMode ( M_Word )
@@ -3592,6 +3640,11 @@ TIME
 TIME_EXCEEDED
 :
   'time-exceeded'
+;
+
+TIMEOUT
+:
+  'timeout'
 ;
 
 TIMERS
@@ -4635,6 +4688,74 @@ M_DoubleQuote_QUOTED_TEXT
   ~["\r\n]+ -> type ( QUOTED_TEXT )
 ;
 
+mode M_Expanded;
+
+M_Expanded_WORD
+:
+  F_Word -> type ( WORD ) , mode(M_Expanded2)
+;
+
+M_Expanded_WS
+:
+  F_Whitespace+ -> channel ( HIDDEN )
+;
+
+mode M_Expanded2;
+
+M_Expanded2_DENY
+:
+  'deny' -> type ( DENY ), mode(M_Expanded3)
+;
+
+M_Expanded2_PERMIT
+:
+  'permit' -> type ( PERMIT ), mode(M_Expanded3)
+;
+
+M_Expanded2_SEQ
+:
+  'seq' -> type ( SEQ )
+;
+
+M_Expanded2_UINT8
+:
+  F_Uint8 -> type(UINT8)
+;
+
+M_Expanded2_UINT16
+:
+  F_Uint16 -> type(UINT16)
+;
+
+M_Expanded2_UINT32
+:
+  F_Uint32 -> type(UINT32)
+;
+
+M_Expanded2_WS
+:
+  F_Whitespace+ -> channel ( HIDDEN )
+;
+
+mode M_Expanded3;
+
+M_Expanded3_WS
+:
+  F_Whitespace+ -> channel ( HIDDEN ), mode(M_Expanded4)
+;
+
+mode M_Expanded4;
+
+M_Expanded4_DOUBLE_QUOTE
+:
+  '"' -> type(DOUBLE_QUOTE), mode(M_DoubleQuote)
+;
+
+M_Expanded4_REMARK_TEXT
+:
+  ~["\r\n] F_NonNewline* -> type(REMARK_TEXT), popMode
+;
+
 mode M_Hostname;
 
 M_Hostname_SUBDOMAIN_NAME
@@ -4726,7 +4847,12 @@ M_Password_PASSWORD_7
 
 M_Password_PASSWORD_0_TEXT
 :
-  F_NonNewline+ -> type ( PASSWORD_0_TEXT ) , popMode
+  F_NonWhitespace+ -> type ( PASSWORD_0_TEXT ) , popMode
+;
+
+M_Password_WS
+:
+  F_Whitespace+ -> channel(HIDDEN)
 ;
 
 mode M_Password3;
@@ -4925,6 +5051,27 @@ M_SnmpVersion_WS
   F_Whitespace+ -> channel ( HIDDEN )
 ;
 
+mode M_TacacsServerHost;
+
+M_TacacsServerHost_IP_ADDRESS
+:
+  F_IpAddress -> type(IP_ADDRESS), popMode
+;
+
+M_TacacsServerHost_IPV6_ADDRESS
+:
+  F_Ipv6Address -> type(IPV6_ADDRESS), popMode
+;
+
+M_TacacsServerHost_WORD
+:
+  F_Word -> type ( WORD ) , popMode
+;
+
+M_TacacsServerHost_WS
+:
+  F_Whitespace+ -> channel ( HIDDEN )
+;
 mode M_Vrf;
 
 M_Vrf_CONTEXT
