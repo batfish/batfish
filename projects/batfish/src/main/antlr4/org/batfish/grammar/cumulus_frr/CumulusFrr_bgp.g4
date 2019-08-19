@@ -99,6 +99,7 @@ sbn_name
       sbn_interface       // set an interface neighbor property
     | sbn_peer_group_decl // declare a new peer group
     | sbn_property        // set a peer-group property
+    | sbn_bfd
     | sbn_password
     )
 ;
@@ -138,6 +139,11 @@ sbnp_peer_group
 sbafi_neighbor
 :
   NEIGHBOR ip = IP_ADDRESS NEXT_HOP_SELF NEWLINE
+;
+
+sbn_bfd
+:
+  BFD word*
 ;
 
 sbn_password
