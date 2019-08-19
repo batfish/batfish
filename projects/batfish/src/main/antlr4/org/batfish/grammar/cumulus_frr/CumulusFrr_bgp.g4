@@ -106,6 +106,7 @@ sbn_name
     | sbn_peer_group_decl // declare a new peer group
     | sbn_property        // set a peer-group property
     | sbn_bfd
+    | sbn_password
     )
 ;
 
@@ -149,4 +150,9 @@ sbafi_neighbor
 sbn_bfd
 :
   BFD word*
+;
+
+sbn_password
+:
+  PASSWORD REMARK_TEXT
 ;

@@ -598,4 +598,9 @@ public class CumulusFrrGrammarTest {
     parse("router bgp 10000 vrf VRF\nneighbor N bfd 1 10 20\n");
     parse("router bgp 10000 vrf VRF\nneighbor N bfd\n");
   }
+
+  @Test
+  public void testCumulusFrrNeightborPassword() {
+    parse("router bgp 10000\nneighbor N password sV4@%)!@#$%^&**()_+|\n");
+  }
 }
