@@ -148,5 +148,5 @@ sbn_bfd
 
 sbn_password
 :
-  PASSWORD word
+  PASSWORD REMARK_TEXT
 ;

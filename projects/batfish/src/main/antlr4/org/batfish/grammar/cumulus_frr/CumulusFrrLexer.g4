@@ -239,7 +239,7 @@ NEXT_HOP_SELF
 
 PASSWORD
 :
-  'password' -> pushMode(M_Word)
+  'password' -> pushMode(M_Remark)
 ;
 
 PEER_GROUP
