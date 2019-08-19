@@ -40,6 +40,8 @@ import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.I_vrf_tabl
 import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.I_vxlan_idContext;
 import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.I_vxlan_local_tunnel_ipContext;
 import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.Interface_nameContext;
+import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.L_addressContext;
+import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.L_clagd_vxlan_anycast_ipContext;
 import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.NumberContext;
 import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.S_autoContext;
 import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.S_ifaceContext;
@@ -108,6 +110,27 @@ public final class CumulusInterfacesConfigurationBuilder
   }
 
   // Listener methods
+  @Override
+  public void enterS_iface(S_ifaceContext ctx) {
+    String name = ctx.interface_name().getText();
+    if (ctx.LOOPBACK() != null) {
+      if (!name.equals("lo")) {
+        _w.addWarning(
+            ctx, ctx.getStart().getText(), _parser, "expected loopback device to have name 'lo'");
+      }
+      _config.getLoopback().setConfigured(true);
+      _config.defineStructure(
+          CumulusStructureType.LOOPBACK, CumulusNcluConfiguration.LOOPBACK_INTERFACE_NAME, ctx);
+      _config.referenceStructure(
+          CumulusStructureType.LOOPBACK,
+          CumulusNcluConfiguration.LOOPBACK_INTERFACE_NAME,
+          CumulusStructureUsage.LOOPBACK_SELF_REFERENCE,
+          ctx.getStart().getLine());
+    } else {
+      _currentIface = _interfaces.createOrGetInterface(name);
+    }
+  }
+
   @Override
   public void exitI_address(I_addressContext ctx) {
     _currentIface.addAddress(ConcreteInterfaceAddress.parse(ctx.IP_PREFIX().getText()));
@@ -284,21 +307,41 @@ public final class CumulusInterfacesConfigurationBuilder
   }
 
   @Override
+  public void exitL_address(L_addressContext ctx) {
+    _config
+        .getLoopback()
+        .getAddresses()
+        .add(ConcreteInterfaceAddress.parse(ctx.IP_PREFIX().getText()));
+  }
+
+  @Override
+  public void exitL_clagd_vxlan_anycast_ip(L_clagd_vxlan_anycast_ipContext ctx) {
+    _config.getLoopback().setClagVxlanAnycastIp(Ip.parse(ctx.IP_ADDRESS().getText()));
+  }
+
+  @Override
   public void exitS_auto(S_autoContext ctx) {
     String name = ctx.interface_name().getText();
     _interfaces.setAuto(name);
   }
 
   @Override
-  public void enterS_iface(S_ifaceContext ctx) {
-    String name = ctx.interface_name().getText();
-    _currentIface = _interfaces.createOrGetInterface(name);
-  }
-
-  @Override
   public void exitS_iface(S_ifaceContext ctx) {
-    _config.defineStructure(_currentIface.getType(), _currentIface.getName(), ctx);
-    _currentIface = null;
+    // _currentIface will be null for the loopback interface
+    if (_currentIface != null) {
+      _config.defineStructure(_currentIface.getType(), _currentIface.getName(), ctx);
+      _config.referenceStructure(
+          _currentIface.getType(),
+          _currentIface.getName(),
+          _currentIface.getType().selfReference(),
+          ctx.getStart().getLine());
+      _config.referenceStructure(
+          _currentIface.getType(),
+          _currentIface.getName(),
+          _currentIface.getType().selfReference(),
+          ctx.getStart().getLine());
+      _currentIface = null;
+    }
   }
 
   @Override

@@ -26,8 +26,29 @@ s_auto
 
 s_iface
 :
-  IFACE interface_name NEWLINE
-  (
+  IFACE interface_name (LOOPBACK NEWLINE l_property* | NEWLINE i_property*)
+;
+
+// loopback interface properties
+l_property
+:
+    l_address
+  | l_clagd_vxlan_anycast_ip
+;
+
+l_address
+:
+  ADDRESS IP_PREFIX NEWLINE
+;
+
+l_clagd_vxlan_anycast_ip
+:
+  CLAGD_VXLAN_ANYCAST_IP IP_ADDRESS NEWLINE
+;
+
+// regular (non-loopback) interface properties
+i_property
+:
     i_address
   | i_address_virtual
   | i_alias
@@ -44,6 +65,7 @@ s_iface
   | i_clagd_backup_ip
   | i_clagd_peer_ip
   | i_clagd_sys_mac
+  | i_gateway
   | i_hwaddress
   | i_link_speed
   | i_mstpctl_bpduguard
@@ -55,7 +77,6 @@ s_iface
   | i_vrf_table
   | i_vxlan_id
   | i_vxlan_local_tunnel_ip
-  )*
 ;
 
 i_address
@@ -137,6 +158,11 @@ i_clagd_peer_ip
 i_clagd_sys_mac
 :
   CLAGD_SYS_MAC MAC_ADDRESS NEWLINE
+;
+
+i_gateway
+:
+  GATEWAY IP_ADDRESS NEWLINE
 ;
 
 i_hwaddress
