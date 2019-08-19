@@ -32,7 +32,7 @@ ts_host_port
 
 ts_host_timeout
 :
-  TIMEOUT timeout = tacas_server_timeout_s 
+  TIMEOUT timeout = tacas_server_timeout_s
 ;
 
 ts_host_single_connection
