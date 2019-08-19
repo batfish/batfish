@@ -356,6 +356,7 @@ import org.batfish.datamodel.eigrp.ClassicMetric;
 import org.batfish.datamodel.eigrp.EigrpMetric;
 import org.batfish.datamodel.eigrp.EigrpMetricValues;
 import org.batfish.datamodel.eigrp.EigrpNeighborConfig;
+import org.batfish.datamodel.eigrp.EigrpProcessMode;
 import org.batfish.datamodel.eigrp.WideMetric;
 import org.batfish.datamodel.matchers.CommunityListLineMatchers;
 import org.batfish.datamodel.matchers.CommunityListMatchers;
@@ -6584,5 +6585,24 @@ public class CiscoGrammarTest {
     Configuration c = parseConfig("ios-interface-unshut");
     assertThat(c, hasInterface("Ethernet0", isActive(true)));
     assertThat(c, hasInterface("Ethernet1", isActive(false)));
+  }
+
+  @Test
+  public void testIosEigrpAclUsedForRouting() throws IOException {
+    Configuration c = parseConfig("ios-eigrp-match-acl");
+    assertThat(c, hasRouteFilterList("ACL", anything()));
+    assertTrue(
+        c.getRoutingPolicies()
+            .get("REDISTRIBUTE_MAP")
+            .process(
+                new ConnectedRoute(Prefix.ZERO, "dummy", 0),
+                EigrpExternalRoute.builder(),
+                DEFAULT_VRF_NAME,
+                org.batfish.datamodel.eigrp.EigrpProcess.builder()
+                    .setAsNumber(1)
+                    .setMode(EigrpProcessMode.CLASSIC)
+                    .setRouterId(Ip.ZERO)
+                    .build(),
+                Direction.OUT));
   }
 }
