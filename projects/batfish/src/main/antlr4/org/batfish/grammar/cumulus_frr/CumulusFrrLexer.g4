@@ -133,6 +133,11 @@ GE
   'ge'
 ;
 
+INFORMATIONAL
+:
+  'informational'
+;
+
 INTEGRATED_VTYSH_CONFIG
 :
   'integrated-vtysh-config'
@@ -185,6 +190,11 @@ L2VPN
 LE
 :
   'le'
+;
+
+LOG
+:
+  'log'
 ;
 
 NEIGHBOR
@@ -265,6 +275,11 @@ STATIC
 SUBNET_MASK
 :
   F_SubnetMask
+;
+
+SYSLOG
+:
+  'syslog'
 ;
 
 MATCH

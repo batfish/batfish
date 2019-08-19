@@ -545,4 +545,9 @@ public class CumulusFrrGrammarTest {
   public void testCumulusService() {
     parse("service integrated-vtysh-config\n");
   }
+
+  @Test
+  public void testCumulusFrrSyslog() {
+    parse("log syslog informational\n");
+  }
 }
