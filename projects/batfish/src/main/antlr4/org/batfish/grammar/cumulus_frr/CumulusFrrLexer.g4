@@ -19,6 +19,11 @@ AGENTX
   'agentx'
 ;
 
+BFD
+:
+  'bfd' -> pushMode(M_Words)
+;
+
 COMMENT_LINE
 :
   (
