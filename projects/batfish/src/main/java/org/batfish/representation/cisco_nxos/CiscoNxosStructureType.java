@@ -10,6 +10,7 @@ public enum CiscoNxosStructureType implements StructureType {
   INTERFACE("interface"),
   IP_ACCESS_LIST("ip access-list"),
   IP_AS_PATH_ACCESS_LIST("ip as-path access-list"),
+  IP_COMMUNITY_LIST_EXPANDED("ip community-list expanded"),
   IP_COMMUNITY_LIST_STANDARD("ip community-list standard"),
   IP_PREFIX_LIST("ip prefix-list"),
   IPV6_ACCESS_LIST("ipv6 access-list"),

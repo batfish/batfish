@@ -22,12 +22,12 @@ public final class CommunityVarConverter implements CommunitySetExprVisitor<Comm
 
   private static final CommunityVarConverter INSTANCE = new CommunityVarConverter();
 
-  public static @Nonnull CommunityVar toCommunityVar(@Nonnull CommunitySetExpr matchCondition) {
-    return matchCondition.accept(INSTANCE);
-  }
-
   public static @Nonnull CommunityVar toCommunityVar(Community community) {
     return CommunityVar.from(community);
+  }
+
+  public static @Nonnull CommunityVar toCommunityVar(@Nonnull CommunitySetExpr matchCondition) {
+    return matchCondition.accept(INSTANCE);
   }
 
   @Override
