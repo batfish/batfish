@@ -582,4 +582,9 @@ public class CumulusFrrGrammarTest {
   public void testCumulusFrrVersion() {
     parse("frr version sV4@%)!@#$%^&**()_+|\n");
   }
+
+  @Test
+  public void testCumulusFrrVersion() {
+    parse("router bgp 10000\nneighbor N password sV4@%)!@#$%^&**()_+|\n");
+  }
 }

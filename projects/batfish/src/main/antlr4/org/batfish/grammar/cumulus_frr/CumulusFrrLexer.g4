@@ -227,6 +227,11 @@ NEXT_HOP_SELF
   'next-hop-self'
 ;
 
+PASSWORD
+:
+  'password' -> pushMode(M_Word)
+;
+
 PEER_GROUP
 :
   'peer-group' -> pushMode(M_PeerGroup)
