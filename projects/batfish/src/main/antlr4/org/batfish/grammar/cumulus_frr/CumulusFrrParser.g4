@@ -18,6 +18,7 @@ cumulus_frr_configuration
 statement
 :
   FRR_VERSION_LINE NEWLINE
+  | USERNAME word word NEWLINE
   | s_agentx
   | s_bgp
   | s_vrf

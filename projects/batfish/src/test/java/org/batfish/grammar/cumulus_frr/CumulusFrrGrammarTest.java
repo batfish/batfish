@@ -567,4 +567,9 @@ public class CumulusFrrGrammarTest {
   public void testCumulusFrrSyslog() {
     parse("log syslog informational\n");
   }
+
+  @Test
+  public void testCumulusFrrUsername() {
+    parse("username cumulus nopassword\n");
+  }
 }
