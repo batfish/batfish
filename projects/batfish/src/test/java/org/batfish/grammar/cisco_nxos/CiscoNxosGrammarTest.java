@@ -3273,9 +3273,19 @@ public final class CiscoNxosGrammarTest {
   }
 
   @Test
-  public void testIpv6AccessListParsing() {
-    // TODO: make into extraction test
-    assertThat(parseVendorConfig("nxos_ipv6_access_list"), notNullValue());
+  public void testIpv6AccessListConversion() throws IOException {
+    Configuration c = parseConfig("nxos_ipv6_access_list");
+
+    assertThat(c.getIp6AccessLists(), hasKeys("v6acl1"));
+    // TODO: convert lines
+  }
+
+  @Test
+  public void testIpv6AccessListExtraction() {
+    CiscoNxosConfiguration vc = parseVendorConfig("nxos_ipv6_access_list");
+
+    assertThat(vc.getIpv6AccessLists(), hasKeys("v6acl1"));
+    // TODO: extract lines
   }
 
   @Test
