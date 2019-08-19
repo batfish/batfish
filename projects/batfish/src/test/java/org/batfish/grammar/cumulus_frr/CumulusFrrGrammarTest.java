@@ -272,6 +272,20 @@ public class CumulusFrrGrammarTest {
   }
 
   @Test
+  public void testBgpAddressFamilyNeighborSoftReconfiguration() {
+    parseLines(
+        "router bgp 1",
+        "address-family ipv4 unicast",
+        "neighbor N soft-reconfiguration inbound",
+        "exit-address-family");
+    parseLines(
+        "router bgp 1",
+        "address-family ipv4 unicast",
+        "neighbor 10.0.0.1 soft-reconfiguration inbound",
+        "exit-address-family");
+  }
+
+  @Test
   public void testBgpNeighbor_peerGroup() {
     parse("router bgp 1\n neighbor foo peer-group\n");
     Map<String, BgpNeighbor> neighbors = CONFIG.getBgpProcess().getDefaultVrf().getNeighbors();

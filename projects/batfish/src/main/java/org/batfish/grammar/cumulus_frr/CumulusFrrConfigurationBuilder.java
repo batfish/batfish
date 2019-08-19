@@ -50,6 +50,7 @@ import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbaf_l2vpn_evpnContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbafi_neighborContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbafi_networkContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbafi_redistributeContext;
+import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbafin_next_hop_selfContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbafls_advertise_all_vniContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbafls_advertise_ipv4_unicastContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbafls_neighbor_activateContext;
@@ -103,6 +104,8 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
   private @Nullable BgpVrf _currentBgpVrf;
   private @Nullable BgpNeighbor _currentBgpNeighbor;
   private @Nullable IpPrefixList _currentIpPrefixList;
+  private @Nullable BgpVrfNeighborAddressFamilyConfiguration
+      _currentNeighborAddressFamilyConfiguration;
 
   public CumulusFrrConfigurationBuilder(
       CumulusNcluConfiguration configuration, CumulusFrrCombinedParser parser, Warnings w) {
@@ -241,13 +244,31 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
   }
 
   @Override
+  public void enterSbafi_neighbor(Sbafi_neighborContext ctx) {
+    String name;
+    if (ctx.ip != null) {
+      name = ctx.ip.getText();
+    } else if (ctx.name != null) {
+      name = ctx.name.getText();
+    } else {
+      throw new BatfishException("neightbor name or address");
+    }
+
+    _currentNeighborAddressFamilyConfiguration =
+        _currentBgpVrf
+            .getIpv4Unicast()
+            .getNeighborAddressFamilyConfigurations()
+            .computeIfAbsent(name, k -> new BgpVrfNeighborAddressFamilyConfiguration());
+  }
+
+  @Override
   public void exitSbafi_neighbor(Sbafi_neighborContext ctx) {
-    String ipStr = ctx.ip.getText();
-    _currentBgpVrf
-        .getIpv4Unicast()
-        .getNeighborAddressFamilyConfigurations()
-        .computeIfAbsent(ipStr, k -> new BgpVrfNeighborAddressFamilyConfiguration())
-        .setNextHopSelf(true);
+    _currentNeighborAddressFamilyConfiguration = null;
+  }
+
+  @Override
+  public void exitSbafin_next_hop_self(Sbafin_next_hop_selfContext ctx) {
+    _currentNeighborAddressFamilyConfiguration.setNextHopSelf(true);
   }
 
   @Override

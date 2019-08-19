@@ -177,6 +177,11 @@ INTERFACE
   }
 ;
 
+INBOUND
+:
+  'inbound'
+;
+
 INTERNAL
 :
   'internal'
@@ -295,6 +300,11 @@ SEQ
 SERVICE
 :
   'service'
+;
+
+SOFT_RECONFIGURATION
+:
+  'soft-reconfiguration'
 ;
 
 STATIC
