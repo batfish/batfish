@@ -388,6 +388,14 @@ public class CumulusInterfacesGrammarTest {
   }
 
   @Test
+  public void testLoopbackAddress() {
+    parse("iface lo loopback\n address 1.2.3.4/24\n");
+    assertThat(
+        CONFIG.getLoopback().getAddresses(),
+        contains(ConcreteInterfaceAddress.parse("1.2.3.4/24")));
+  }
+
+  @Test
   public void testVxlanId() {
     String input = "iface swp1\n vxlan-id 123\n";
     Interfaces interfaces = parse(input);

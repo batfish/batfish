@@ -40,6 +40,7 @@ import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.I_vrf_tabl
 import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.I_vxlan_idContext;
 import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.I_vxlan_local_tunnel_ipContext;
 import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.Interface_nameContext;
+import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.L_addressContext;
 import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.NumberContext;
 import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.S_autoContext;
 import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.S_ifaceContext;
@@ -302,6 +303,14 @@ public final class CumulusInterfacesConfigurationBuilder
   @Override
   public void exitI_vxlan_local_tunnel_ip(I_vxlan_local_tunnel_ipContext ctx) {
     _currentIface.setVxlanLocalTunnelIp(Ip.parse(ctx.IP_ADDRESS().getText()));
+  }
+
+  @Override
+  public void exitL_address(L_addressContext ctx) {
+    _config
+        .getLoopback()
+        .getAddresses()
+        .add(ConcreteInterfaceAddress.parse(ctx.IP_PREFIX().getText()));
   }
 
   @Override
