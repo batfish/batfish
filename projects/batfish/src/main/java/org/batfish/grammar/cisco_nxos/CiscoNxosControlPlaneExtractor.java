@@ -420,6 +420,7 @@ import org.batfish.grammar.cisco_nxos.CiscoNxosParser.S_route_mapContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.S_trackContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.S_versionContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.S_vrf_contextContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Snmps_hostContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Standard_communityContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Static_route_nameContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Static_route_prefContext;
@@ -542,6 +543,7 @@ import org.batfish.representation.cisco_nxos.RouteMapSetMetric;
 import org.batfish.representation.cisco_nxos.RouteMapSetMetricType;
 import org.batfish.representation.cisco_nxos.RouteMapSetOrigin;
 import org.batfish.representation.cisco_nxos.RouteMapSetTag;
+import org.batfish.representation.cisco_nxos.SnmpServer;
 import org.batfish.representation.cisco_nxos.StaticRoute;
 import org.batfish.representation.cisco_nxos.SwitchportMode;
 import org.batfish.representation.cisco_nxos.TacacsServer;
@@ -891,6 +893,9 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
   private OspfProcess _currentOspfProcess;
   private RouteMapEntry _currentRouteMapEntry;
   private Optional<String> _currentRouteMapName;
+
+  @SuppressWarnings("unused")
+  private SnmpServer _currentSnmpServer;
 
   @SuppressWarnings("unused")
   private TacacsServer _currentTacacsServer;
@@ -4441,6 +4446,18 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
   @Override
   public void exitS_vrf_context(S_vrf_contextContext ctx) {
     _currentVrf = _configuration.getDefaultVrf();
+  }
+
+  @Override
+  public void enterSnmps_host(Snmps_hostContext ctx) {
+    // CLI completion does not show size limit for DNS name variant of snmp-server host
+    _currentSnmpServer =
+        _configuration.getSnmpServers().computeIfAbsent(ctx.host.getText(), SnmpServer::new);
+  }
+
+  @Override
+  public void exitSnmps_host(Snmps_hostContext ctx) {
+    _currentSnmpServer = null;
   }
 
   @Override
