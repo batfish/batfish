@@ -3279,12 +3279,14 @@ public final class CiscoNxosGrammarTest {
     assertThat(parseVendorConfig("nxos_ipv6_access_list"), notNullValue());
   }
 
+  @Test
   public void testNtpConversion() throws IOException {
     Configuration c = parseConfig("nxos_ntp");
 
     assertThat(c.getNtpServers(), containsInAnyOrder("192.0.2.1", "192.0.2.2"));
   }
 
+  @Test
   public void testNtpExtraction() {
     CiscoNxosConfiguration vc = parseVendorConfig("nxos_ntp");
 
