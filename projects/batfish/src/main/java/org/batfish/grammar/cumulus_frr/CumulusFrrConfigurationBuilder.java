@@ -47,6 +47,7 @@ import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sb_neighborContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sb_router_idContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbaf_ipv4_unicastContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbaf_l2vpn_evpnContext;
+import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbafi_neighborContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbafi_networkContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbafi_redistributeContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbafls_advertise_all_vniContext;
@@ -73,6 +74,7 @@ import org.batfish.representation.cumulus.BgpPeerGroupNeighbor;
 import org.batfish.representation.cumulus.BgpProcess;
 import org.batfish.representation.cumulus.BgpRedistributionPolicy;
 import org.batfish.representation.cumulus.BgpVrf;
+import org.batfish.representation.cumulus.BgpVrfNeighborAddressFamilyConfiguration;
 import org.batfish.representation.cumulus.CumulusNcluConfiguration;
 import org.batfish.representation.cumulus.CumulusRoutingProtocol;
 import org.batfish.representation.cumulus.CumulusStructureType;
@@ -236,6 +238,16 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
   public void enterSbafls_advertise_ipv4_unicast(Sbafls_advertise_ipv4_unicastContext ctx) {
     // setting in enter instead of exit since in future we can attach a routemap
     _currentBgpVrf.getL2VpnEvpn().setAdvertiseIpv4Unicast(new BgpL2VpnEvpnIpv4Unicast());
+  }
+
+  @Override
+  public void exitSbafi_neighbor(Sbafi_neighborContext ctx) {
+    String ipStr = ctx.ip.getText();
+    _currentBgpVrf
+        .getIpv4Unicast()
+        .getNeighborAddressFamilyConfigurations()
+        .computeIfAbsent(ipStr, k -> new BgpVrfNeighborAddressFamilyConfiguration())
+        .setNextHopSelf(true);
   }
 
   @Override
