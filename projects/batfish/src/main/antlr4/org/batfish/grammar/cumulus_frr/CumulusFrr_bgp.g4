@@ -142,5 +142,5 @@ sbafi_neighbor
 
 sbn_bfd
 :
-  BFD uint32 uint32 uint32
+  BFD word*
 ;

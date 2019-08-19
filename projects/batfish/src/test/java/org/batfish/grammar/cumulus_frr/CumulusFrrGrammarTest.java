@@ -569,7 +569,18 @@ public class CumulusFrrGrammarTest {
   }
 
   @Test
+  public void testLineVty() {
+    parse("line vty\n");
+  }
+
+  @Test
+  public void testCumulusFrrUsername() {
+    parse("username cumulus nopassword\n");
+  }
+
+  @Test
   public void testCumulusFrrBgpNeighborBfd() {
     parse("router bgp 10000 vrf VRF\nneighbor N bfd 1 10 20\n");
+    parse("router bgp 10000 vrf VRF\nneighbor N bfd\n");
   }
 }

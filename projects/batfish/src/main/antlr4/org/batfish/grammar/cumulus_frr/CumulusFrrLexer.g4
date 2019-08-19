@@ -21,7 +21,7 @@ AGENTX
 
 BFD
 :
-  'bfd'
+  'bfd' -> pushMode(M_Words)
 ;
 
 COMMENT_LINE
@@ -202,6 +202,11 @@ LOG
   'log'
 ;
 
+LINE
+:
+  'line'
+;
+
 NEIGHBOR
 :
   'neighbor' -> pushMode(M_Neighbor)
@@ -327,6 +332,11 @@ UINT32
   F_Uint32
 ;
 
+USERNAME
+:
+  'username' -> pushMode(M_Words)
+;
+
 UNICAST
 :
   'unicast'
@@ -345,6 +355,11 @@ VNI
 VRF
 :
   'vrf' -> pushMode(M_Word)
+;
+
+VTY
+:
+  'vty'
 ;
 
 WS
