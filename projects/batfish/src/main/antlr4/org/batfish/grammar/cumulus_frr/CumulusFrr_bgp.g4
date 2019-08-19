@@ -43,6 +43,7 @@ sbaf_ipv4_unicast
   IPV4 UNICAST NEWLINE
   (
     sbafi_network
+  | sbafi_neighbor
   | sbafi_redistribute
   )*
 ;
@@ -131,4 +132,9 @@ sbnp_remote_as
 sbnp_peer_group
 :
   PEER_GROUP name = word
+;
+
+sbafi_neighbor
+:
+  NEIGHBOR ip = IP_ADDRESS NEXT_HOP_SELF NEWLINE
 ;

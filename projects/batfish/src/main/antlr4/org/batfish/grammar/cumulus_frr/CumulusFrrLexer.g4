@@ -207,6 +207,11 @@ NETWORK
   'network'
 ;
 
+NEXT_HOP_SELF
+:
+  'next-hop-self'
+;
+
 PEER_GROUP
 :
   'peer-group' -> pushMode(M_PeerGroup)
