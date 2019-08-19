@@ -356,6 +356,11 @@ AUTHORIZATION
   'authorization'
 ;
 
+AUTHPRIV
+:
+  'authpriv'
+;
+
 AUTO
 :
   'auto'
@@ -572,6 +577,11 @@ CLI
   'cli'
 ;
 
+CLIENT_IDENTITY
+:
+  'client-identity'
+;
+
 CLIENT_TO_CLIENT
 :
   'client-to-client'
@@ -742,6 +752,11 @@ CRITICAL
   'critical'
 ;
 
+CRON
+:
+  'cron'
+;
+
 CS1
 :
   'cs1'
@@ -775,6 +790,11 @@ CS6
 CS7
 :
   'cs7'
+;
+
+DAEMON
+:
+  'daemon'
 ;
 
 DAMPEN_IGP_METRIC
@@ -1195,6 +1215,11 @@ EXTERNAL
 EXTERNAL_LSA
 :
   'external-lsa'
+;
+
+FACILITY
+:
+  'facility'
 ;
 
 FAST_EXTERNAL_FALLOVER
@@ -1716,6 +1741,11 @@ KBPS
   'kbps'
 ;
 
+KERNEL
+:
+  'kern' 'el'?
+;
+
 KEY
 :
   'key'
@@ -1876,6 +1906,46 @@ LOCAL_PREFERENCE
   'local-preference'
 ;
 
+LOCAL0
+:
+  'local0'
+;
+
+LOCAL1
+:
+  'local1'
+;
+
+LOCAL2
+:
+  'local2'
+;
+
+LOCAL3
+:
+  'local3'
+;
+
+LOCAL4
+:
+  'local4'
+;
+
+LOCAL5
+:
+  'local5'
+;
+
+LOCAL6
+:
+  'local6'
+;
+
+LOCAL7
+:
+  'local7'
+;
+
 LOCALIZEDKEY
 :
   'localizedkey'
@@ -1951,6 +2021,11 @@ LPD
   'lpd'
 ;
 
+LPR
+:
+  'lpr'
+;
+
 LSA
 :
   'lsa'
@@ -1979,6 +2054,11 @@ MAC
 MAC_ADDRESS
 :
   'mac-address' -> pushMode(M_MacAddress)
+;
+
+MAIL
+:
+  'mail'
 ;
 
 MANAGED_CONFIG_FLAG
@@ -2362,6 +2442,11 @@ NETWORK_UNKNOWN
 NEWROOT
 :
   'newroot'
+;
+
+NEWS
+:
+  'news'
 ;
 
 NEXT_HOP
@@ -3188,6 +3273,11 @@ SECONDARY
   'secondary'
 ;
 
+SECURE
+:
+  'secure'
+;
+
 SECURITY_VIOLATION
 :
   'security-violation'
@@ -3766,6 +3856,11 @@ TRUNK_STATUS
 TRUST
 :
   'trust'
+;
+
+TRUSTPOINT
+:
+  'trustpoint'
 ;
 
 TTL
