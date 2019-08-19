@@ -272,6 +272,11 @@ public class CumulusFrrGrammarTest {
   }
 
   @Test
+  public void testBgpAlwaysCompareMed() {
+    parse("router bgp 1\n bgp always-compare-med\n");
+  }
+
+  @Test
   public void testBgpAddressFamilyNeighborSoftReconfiguration() {
     parseLines(
         "router bgp 1",

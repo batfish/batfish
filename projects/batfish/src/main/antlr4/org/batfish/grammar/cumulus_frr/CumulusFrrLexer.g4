@@ -58,6 +58,11 @@ ADVERTISE_ALL_VNI
   'advertise-all-vni'
 ;
 
+ALWAYS_COMPARE_MED
+:
+  'always-compare-med'
+;
+
 BGP
 :
   'bgp'

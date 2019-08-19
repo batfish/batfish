@@ -11,6 +11,7 @@ s_bgp
   ROUTER BGP autonomous_system (VRF vrf_name)? NEWLINE
   (
     sb_address_family
+  | sb_always_compare_med
   | sb_neighbor
   | sb_router_id
   )*
@@ -85,6 +86,11 @@ sbafls_advertise_ipv4_unicast
 sbafls_neighbor_activate
 :
   NEIGHBOR neighbor = (IP_ADDRESS | WORD) ACTIVATE NEWLINE
+;
+
+sb_always_compare_med
+:
+  BGP ALWAYS_COMPARE_MED NEWLINE
 ;
 
 sbn_ip
