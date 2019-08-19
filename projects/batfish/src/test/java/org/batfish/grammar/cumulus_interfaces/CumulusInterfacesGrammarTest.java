@@ -105,6 +105,10 @@ public class CumulusInterfacesGrammarTest {
     assertThat(
         getDefinedStructureInfo(CumulusStructureType.INTERFACE, "swp1").getDefinitionLines(),
         contains(1));
+    assertThat(
+        getStructureReferences(
+            CumulusStructureType.INTERFACE, "swp1", CumulusStructureUsage.INTERFACE_SELF_REFERENCE),
+        contains(1));
   }
 
   @Test
@@ -330,6 +334,10 @@ public class CumulusInterfacesGrammarTest {
     // not marked as an interface definition
     assertNull(getDefinedStructureInfo(CumulusStructureType.INTERFACE, "vlan1"));
     assertNotNull(getDefinedStructureInfo(CumulusStructureType.VLAN, "vlan1"));
+    assertThat(
+        getStructureReferences(
+            CumulusStructureType.VLAN, "vlan1", CumulusStructureUsage.VLAN_SELF_REFERENCE),
+        contains(1));
   }
 
   @Test
@@ -360,6 +368,10 @@ public class CumulusInterfacesGrammarTest {
     // not marked as an interface definition
     assertNull(getDefinedStructureInfo(CumulusStructureType.INTERFACE, "vrf1"));
     assertNotNull(getDefinedStructureInfo(CumulusStructureType.VRF, "vrf1"));
+    assertThat(
+        getStructureReferences(
+            CumulusStructureType.VRF, "vrf1", CumulusStructureUsage.VRF_SELF_REFERENCE),
+        contains(1));
   }
 
   @Test
@@ -371,6 +383,10 @@ public class CumulusInterfacesGrammarTest {
     // not marked as an interface definition
     assertNull(getDefinedStructureInfo(CumulusStructureType.INTERFACE, "swp1"));
     assertNotNull(getDefinedStructureInfo(CumulusStructureType.VXLAN, "swp1"));
+    assertThat(
+        getStructureReferences(
+            CumulusStructureType.VXLAN, "swp1", CumulusStructureUsage.VXLAN_SELF_REFERENCE),
+        contains(1));
   }
 
   @Test

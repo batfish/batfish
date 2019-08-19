@@ -298,6 +298,11 @@ public final class CumulusInterfacesConfigurationBuilder
   @Override
   public void exitS_iface(S_ifaceContext ctx) {
     _config.defineStructure(_currentIface.getType(), _currentIface.getName(), ctx);
+    _config.referenceStructure(
+        _currentIface.getType(),
+        _currentIface.getName(),
+        _currentIface.getType().selfReference(),
+        ctx.getStart().getLine());
     _currentIface = null;
   }
 
