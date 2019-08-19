@@ -109,6 +109,27 @@ public final class CumulusInterfacesConfigurationBuilder
 
   // Listener methods
   @Override
+  public void enterS_iface(S_ifaceContext ctx) {
+    String name = ctx.interface_name().getText();
+    if (ctx.LOOPBACK() != null) {
+      if (!name.equals("lo")) {
+        _w.addWarning(
+            ctx, ctx.getStart().getText(), _parser, "expected loopback device to have name 'lo'");
+      }
+      _config.getLoopback().setConfigured(true);
+      _config.defineStructure(
+          CumulusStructureType.LOOPBACK, CumulusNcluConfiguration.LOOPBACK_INTERFACE_NAME, ctx);
+      _config.referenceStructure(
+          CumulusStructureType.LOOPBACK,
+          CumulusNcluConfiguration.LOOPBACK_INTERFACE_NAME,
+          CumulusStructureUsage.LOOPBACK_SELF_REFERENCE,
+          ctx.getStart().getLine());
+    } else {
+      _currentIface = _interfaces.createOrGetInterface(name);
+    }
+  }
+
+  @Override
   public void exitI_address(I_addressContext ctx) {
     _currentIface.addAddress(ConcreteInterfaceAddress.parse(ctx.IP_PREFIX().getText()));
   }
@@ -287,27 +308,6 @@ public final class CumulusInterfacesConfigurationBuilder
   public void exitS_auto(S_autoContext ctx) {
     String name = ctx.interface_name().getText();
     _interfaces.setAuto(name);
-  }
-
-  @Override
-  public void enterS_iface(S_ifaceContext ctx) {
-    String name = ctx.interface_name().getText();
-    if (ctx.LOOPBACK() != null) {
-      if (!name.equals("lo")) {
-        _w.addWarning(
-            ctx, ctx.getStart().getText(), _parser, "expected loopback device to have name 'lo'");
-      }
-      _config.getLoopback().setConfigured(true);
-      _config.defineStructure(
-          CumulusStructureType.LOOPBACK, CumulusNcluConfiguration.LOOPBACK_INTERFACE_NAME, ctx);
-      _config.referenceStructure(
-          CumulusStructureType.LOOPBACK,
-          CumulusNcluConfiguration.LOOPBACK_INTERFACE_NAME,
-          CumulusStructureUsage.LOOPBACK_SELF_REFERENCE,
-          ctx.getStart().getLine());
-    } else {
-      _currentIface = _interfaces.createOrGetInterface(name);
-    }
   }
 
   @Override
