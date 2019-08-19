@@ -88,6 +88,16 @@ CONNECTED
   'connected'
 ;
 
+DATACENTER
+:
+  'datacenter'
+;
+
+DEFAULTS
+:
+  'defaults'
+;
+
 DENY
 :
   'deny'
@@ -123,14 +133,9 @@ EXTERNAL
   'external'
 ;
 
-FRR_DEFAULTS_DATACENTER
+FRR
 :
-  'frr defaults datacenter'
-;
-
-FRR_VERSION_LINE
-:
-  'frr version' F_NonNewline*
+  'frr'
 ;
 
 GE
@@ -315,6 +320,11 @@ UNICAST
 DEC
 :
   F_Digit+
+;
+
+VERSION
+:
+  'version' -> pushMode(M_Remark)
 ;
 
 VNI

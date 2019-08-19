@@ -17,8 +17,8 @@ cumulus_frr_configuration
 // other rules
 statement
 :
-  FRR_VERSION_LINE NEWLINE
-  | FRR_DEFAULTS_DATACENTER NEWLINE
+  FRR VERSION REMARK_TEXT NEWLINE
+  | FRR DEFAULTS DATACENTER NEWLINE
   | s_agentx
   | s_bgp
   | s_vrf
