@@ -272,6 +272,11 @@ public class CumulusFrrGrammarTest {
   }
 
   @Test
+  public void testBgpAlwaysCompareMed() {
+    parse("router bgp 1\n bgp always-compare-med\n");
+  }
+
+  @Test
   public void testBgpNeighbor_peerGroup() {
     parse("router bgp 1\n neighbor foo peer-group\n");
     Map<String, BgpNeighbor> neighbors = CONFIG.getBgpProcess().getDefaultVrf().getNeighbors();
