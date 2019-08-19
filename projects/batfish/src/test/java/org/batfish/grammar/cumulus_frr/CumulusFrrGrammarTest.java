@@ -589,7 +589,7 @@ public class CumulusFrrGrammarTest {
   }
 
   @Test
-  public void testCumulusFrrVersion() {
+  public void testCumulusFrrNeightborPassword() {
     parse("router bgp 10000\nneighbor N password sV4@%)!@#$%^&**()_+|\n");
   }
 }
