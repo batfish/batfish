@@ -292,18 +292,41 @@ public final class CumulusInterfacesConfigurationBuilder
   @Override
   public void enterS_iface(S_ifaceContext ctx) {
     String name = ctx.interface_name().getText();
-    _currentIface = _interfaces.createOrGetInterface(name);
+    if (ctx.LOOPBACK() != null) {
+      if (!name.equals("lo")) {
+        _w.addWarning(
+            ctx, ctx.getStart().getText(), _parser, "expected loopback device to have name 'lo'");
+      }
+      _config.getLoopback().setConfigured(true);
+      _config.defineStructure(
+          CumulusStructureType.LOOPBACK, CumulusNcluConfiguration.LOOPBACK_INTERFACE_NAME, ctx);
+      _config.referenceStructure(
+          CumulusStructureType.LOOPBACK,
+          CumulusNcluConfiguration.LOOPBACK_INTERFACE_NAME,
+          CumulusStructureUsage.LOOPBACK_SELF_REFERENCE,
+          ctx.getStart().getLine());
+    } else {
+      _currentIface = _interfaces.createOrGetInterface(name);
+    }
   }
 
   @Override
   public void exitS_iface(S_ifaceContext ctx) {
-    _config.defineStructure(_currentIface.getType(), _currentIface.getName(), ctx);
-    _config.referenceStructure(
-        _currentIface.getType(),
-        _currentIface.getName(),
-        _currentIface.getType().selfReference(),
-        ctx.getStart().getLine());
-    _currentIface = null;
+    // _currentIface will be null for the loopback interface
+    if (_currentIface != null) {
+      _config.defineStructure(_currentIface.getType(), _currentIface.getName(), ctx);
+      _config.referenceStructure(
+          _currentIface.getType(),
+          _currentIface.getName(),
+          _currentIface.getType().selfReference(),
+          ctx.getStart().getLine());
+      _config.referenceStructure(
+          _currentIface.getType(),
+          _currentIface.getName(),
+          _currentIface.getType().selfReference(),
+          ctx.getStart().getLine());
+      _currentIface = null;
+    }
   }
 
   @Override

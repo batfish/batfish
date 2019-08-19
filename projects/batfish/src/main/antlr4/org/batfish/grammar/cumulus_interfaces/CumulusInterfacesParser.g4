@@ -26,8 +26,12 @@ s_auto
 
 s_iface
 :
-  IFACE interface_name NEWLINE
-  (
+  IFACE interface_name (LOOPBACK NEWLINE | NEWLINE i_property*)
+;
+
+// regular (non-loopback) interface properties
+i_property
+:
     i_address
   | i_address_virtual
   | i_alias
@@ -55,7 +59,6 @@ s_iface
   | i_vrf_table
   | i_vxlan_id
   | i_vxlan_local_tunnel_ip
-  )*
 ;
 
 i_address

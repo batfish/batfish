@@ -114,6 +114,11 @@ LINK_SPEED
   'link-speed'
 ;
 
+LOOPBACK
+:
+  'loopback'
+;
+
 MSTPCTL_BPDUGUARD
 :
   'mstpctl-bpduguard' -> pushMode(M_DropUntilNewline)

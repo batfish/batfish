@@ -112,6 +112,19 @@ public class CumulusInterfacesGrammarTest {
   }
 
   @Test
+  public void testLoopback() {
+    parse("iface lo loopback\n");
+    assertTrue(CONFIG.getLoopback().getConfigured());
+    assertThat(
+        getDefinedStructureInfo(CumulusStructureType.LOOPBACK, "lo").getDefinitionLines(),
+        contains(1));
+    assertThat(
+        getStructureReferences(
+            CumulusStructureType.LOOPBACK, "lo", CumulusStructureUsage.LOOPBACK_SELF_REFERENCE),
+        contains(1));
+  }
+
+  @Test
   public void testIfaceDescription() {
     String description = "foo hey 123!#?<>";
     String input = "iface swp1\n alias " + description + "\n";
