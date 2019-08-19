@@ -3279,6 +3279,22 @@ public final class CiscoNxosGrammarTest {
   }
 
   @Test
+  public void testLoggingConversion() throws IOException {
+    String hostname = "nxos_logging";
+    Configuration c = parseConfig(hostname);
+
+    assertThat(c.getLoggingServers(), containsInAnyOrder("192.0.2.1", "192.0.2.2"));
+  }
+
+  @Test
+  public void testLoggingExtraction() {
+    String hostname = "nxos_logging";
+    CiscoNxosConfiguration vc = parseVendorConfig(hostname);
+
+    assertThat(vc.getLoggingServers(), hasKeys("192.0.2.1", "192.0.2.2"));
+  }
+
+  @Test
   public void testNveExtraction() {
     CiscoNxosConfiguration vc = parseVendorConfig("nxos_nve");
     Map<Integer, Nve> nves = vc.getNves();

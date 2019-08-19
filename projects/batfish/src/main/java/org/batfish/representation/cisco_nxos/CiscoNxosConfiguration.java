@@ -304,6 +304,7 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
   private @Nullable String _ipDomainName;
   private Map<String, List<String>> _ipNameServersByUseVrf;
   private final @Nonnull Map<String, IpPrefixList> _ipPrefixLists;
+  private final @Nonnull Map<String, LoggingServer> _loggingServers;
   private final @Nonnull Map<Integer, Nve> _nves;
   private final @Nonnull Map<String, ObjectGroup> _objectGroups;
   private final @Nonnull Map<String, DefaultVrfOspfProcess> _ospfProcesses;
@@ -326,6 +327,7 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
     _ipCommunityLists = new HashMap<>();
     _ipNameServersByUseVrf = new HashMap<>();
     _ipPrefixLists = new HashMap<>();
+    _loggingServers = new HashMap<>();
     _nves = new HashMap<>();
     _objectGroups = new HashMap<>();
     _ospfProcesses = new HashMap<>();
@@ -815,6 +817,10 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
             _c.getRouteFilterLists().put(name, toRouteFilterList(ipPrefixList)));
   }
 
+  private void convertLoggingServers() {
+    _c.setLoggingServers(ImmutableSortedSet.copyOf(_loggingServers.keySet()));
+  }
+
   private void convertOspfProcesses() {
     _ospfProcesses
         .values()
@@ -1043,6 +1049,10 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
 
   public @Nonnull Map<String, IpPrefixList> getIpPrefixLists() {
     return _ipPrefixLists;
+  }
+
+  public @Nonnull Map<String, LoggingServer> getLoggingServers() {
+    return _loggingServers;
   }
 
   public @Nonnull Map<Integer, Nve> getNves() {
@@ -2479,6 +2489,7 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
     convertInterfaces();
     disableUnregisteredVlanInterfaces();
     convertIpNameServers();
+    convertLoggingServers();
     convertSnmpServers();
     convertTacacsServers();
     convertRouteMaps();
