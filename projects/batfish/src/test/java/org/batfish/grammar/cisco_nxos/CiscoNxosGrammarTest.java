@@ -2967,6 +2967,22 @@ public final class CiscoNxosGrammarTest {
   }
 
   @Test
+  public void testIpDomainNameConversion() throws IOException {
+    String hostname = "nxos_ip_domain_name";
+    Configuration c = parseConfig(hostname);
+
+    assertThat(c.getDomainName(), equalTo("example.com"));
+  }
+
+  @Test
+  public void testIpDomainNameExtraction() {
+    String hostname = "nxos_ip_domain_name";
+    CiscoNxosConfiguration vc = parseVendorConfig(hostname);
+
+    assertThat(vc.getIpDomainName(), equalTo("example.com"));
+  }
+
+  @Test
   public void testIpNameServerConversion() throws IOException {
     String hostname = "nxos_ip_name_server";
     Configuration c = parseConfig(hostname);

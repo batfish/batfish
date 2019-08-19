@@ -1,0 +1,7 @@
+!RANCID-CONTENT-TYPE: cisco-nx
+!
+hostname nxos_ip_domain_name
+!
+
+! 1-64 characters
+ip domain-name example.com
