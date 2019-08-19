@@ -19,6 +19,11 @@ AGENTX
   'agentx'
 ;
 
+BFD
+:
+  'bfd'
+;
+
 COMMENT_LINE
 :
   (

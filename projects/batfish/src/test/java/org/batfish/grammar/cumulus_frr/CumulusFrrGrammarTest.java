@@ -567,4 +567,9 @@ public class CumulusFrrGrammarTest {
   public void testCumulusFrrSyslog() {
     parse("log syslog informational\n");
   }
+
+  @Test
+  public void testCumulusFrrBgpNeighborBfd() {
+    parse("router bgp 10000 vrf VRF\nneighbor N bfd 1 10 20\n");
+  }
 }
