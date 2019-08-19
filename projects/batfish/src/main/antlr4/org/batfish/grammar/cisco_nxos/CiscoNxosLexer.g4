@@ -792,6 +792,11 @@ DEAD_INTERVAL
   'dead-interval'
 ;
 
+DEADTIME
+:
+  'deadtime'
+;
+
 DEBOUNCE
 :
   'debounce'
@@ -890,6 +895,11 @@ DIR
 DIRECT
 :
   'direct'
+;
+
+DIRECTED_REQUEST
+:
+  'directed-request'
 ;
 
 DIRECTLY_CONNECTED_SOURCES
@@ -1406,6 +1416,11 @@ HMM
 HOST
 :
   'host'
+  {
+    if (lastTokenType() == TACACS_SERVER) {
+      pushMode(M_TacacsServerHost);
+    }
+  }
 ;
 
 HOST_ISOLATED
@@ -1689,6 +1704,18 @@ KBPS
 KEY
 :
   'key'
+  // if preceded by tacac-server host name, or 'tacacs-server' (for global key), follow with password
+  {
+    switch(lastTokenType()) {
+      case IP_ADDRESS:
+      case IPV6_ADDRESS:
+      case TACACS_SERVER:
+      case WORD:
+        pushMode(M_Password);
+      default:
+        break;
+    }
+  }
 ;
 
 KEY_CHAIN
@@ -3226,6 +3253,11 @@ SHUTDOWN
   'shutdown'
 ;
 
+SINGLE_CONNECTION
+:
+  'single-connection'
+;
+
 SIZE
 :
   'size'
@@ -3513,6 +3545,11 @@ TACACS
   'tacacs'
 ;
 
+TACACS_SERVER
+:
+  'tacacs-server'
+;
+
 TACACSP
 :
   'tacacs+'
@@ -3569,6 +3606,11 @@ TERMINAL
   'terminal'
 ;
 
+TEST
+:
+  'test'
+;
+
 TEXT
 :
   'text' -> pushMode ( M_Word )
@@ -3592,6 +3634,11 @@ TIME
 TIME_EXCEEDED
 :
   'time-exceeded'
+;
+
+TIMEOUT
+:
+  'timeout'
 ;
 
 TIMERS
@@ -4726,7 +4773,12 @@ M_Password_PASSWORD_7
 
 M_Password_PASSWORD_0_TEXT
 :
-  F_NonNewline+ -> type ( PASSWORD_0_TEXT ) , popMode
+  F_NonWhitespace+ -> type ( PASSWORD_0_TEXT ) , popMode
+;
+
+M_Password_WS
+:
+  F_Whitespace+ -> channel(HIDDEN)
 ;
 
 mode M_Password3;
@@ -4925,6 +4977,27 @@ M_SnmpVersion_WS
   F_Whitespace+ -> channel ( HIDDEN )
 ;
 
+mode M_TacacsServerHost;
+
+M_TacacsServerHost_IP_ADDRESS
+:
+  F_IpAddress -> type(IP_ADDRESS), popMode
+;
+
+M_TacacsServerHost_IPV6_ADDRESS
+:
+  F_Ipv6Address -> type(IPV6_ADDRESS), popMode
+;
+
+M_TacacsServerHost_WORD
+:
+  F_Word -> type ( WORD ) , popMode
+;
+
+M_TacacsServerHost_WS
+:
+  F_Whitespace+ -> channel ( HIDDEN )
+;
 mode M_Vrf;
 
 M_Vrf_CONTEXT

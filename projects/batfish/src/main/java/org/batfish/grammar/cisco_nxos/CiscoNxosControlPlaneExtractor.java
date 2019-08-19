@@ -428,6 +428,7 @@ import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Tcp_portContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Tcp_port_numberContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Template_nameContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Track_object_numberContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Ts_hostContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Udp_portContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Udp_port_numberContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Uint16Context;
@@ -539,6 +540,7 @@ import org.batfish.representation.cisco_nxos.RouteMapSetOrigin;
 import org.batfish.representation.cisco_nxos.RouteMapSetTag;
 import org.batfish.representation.cisco_nxos.StaticRoute;
 import org.batfish.representation.cisco_nxos.SwitchportMode;
+import org.batfish.representation.cisco_nxos.TacacsServer;
 import org.batfish.representation.cisco_nxos.TcpOptions;
 import org.batfish.representation.cisco_nxos.UdpOptions;
 import org.batfish.representation.cisco_nxos.Vlan;
@@ -885,6 +887,10 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
   private OspfProcess _currentOspfProcess;
   private RouteMapEntry _currentRouteMapEntry;
   private Optional<String> _currentRouteMapName;
+
+  @SuppressWarnings("unused")
+  private TacacsServer _currentTacacsServer;
+
   private TcpFlags.Builder _currentTcpFlagsBuilder;
   private TcpOptions.Builder _currentTcpOptionsBuilder;
   private UdpOptions.Builder _currentUdpOptionsBuilder;
@@ -3178,6 +3184,18 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
                   _configuration.defineStructure(VRF, name, ctx);
                   return new Vrf(name, _currentContextVrfId++);
                 });
+  }
+
+  @Override
+  public void enterTs_host(Ts_hostContext ctx) {
+    // CLI completion does not show size limit for DNS name variant of tacacs-server host
+    _currentTacacsServer =
+        _configuration.getTacacsServers().computeIfAbsent(ctx.host.getText(), TacacsServer::new);
+  }
+
+  @Override
+  public void exitTs_host(Ts_hostContext ctx) {
+    _currentTacacsServer = null;
   }
 
   @Override
