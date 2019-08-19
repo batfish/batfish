@@ -79,6 +79,11 @@ CLAG_ID
   'clag-id'
 ;
 
+CLAGD_VXLAN_ANYCAST_IP
+:
+  'clagd-vxlan-anycast-ip'
+;
+
 CLAGD_BACKUP_IP
 :
   'clagd-backup-ip'

@@ -396,6 +396,12 @@ public class CumulusInterfacesGrammarTest {
   }
 
   @Test
+  public void testLoopbackClagdVxlanAnycastIp() {
+    parse("iface lo loopback\n clagd-vxlan-anycast-ip 1.2.3.4\n");
+    assertThat(CONFIG.getLoopback().getClagVxlanAnycastIp(), equalTo(Ip.parse("1.2.3.4")));
+  }
+
+  @Test
   public void testVxlanId() {
     String input = "iface swp1\n vxlan-id 123\n";
     Interfaces interfaces = parse(input);

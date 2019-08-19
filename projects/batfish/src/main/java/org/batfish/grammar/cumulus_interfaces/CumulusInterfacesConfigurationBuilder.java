@@ -41,6 +41,7 @@ import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.I_vxlan_id
 import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.I_vxlan_local_tunnel_ipContext;
 import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.Interface_nameContext;
 import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.L_addressContext;
+import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.L_clagd_vxlan_anycast_ipContext;
 import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.NumberContext;
 import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.S_autoContext;
 import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.S_ifaceContext;
@@ -311,6 +312,11 @@ public final class CumulusInterfacesConfigurationBuilder
         .getLoopback()
         .getAddresses()
         .add(ConcreteInterfaceAddress.parse(ctx.IP_PREFIX().getText()));
+  }
+
+  @Override
+  public void exitL_clagd_vxlan_anycast_ip(L_clagd_vxlan_anycast_ipContext ctx) {
+    _config.getLoopback().setClagVxlanAnycastIp(Ip.parse(ctx.IP_ADDRESS().getText()));
   }
 
   @Override

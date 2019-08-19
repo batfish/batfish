@@ -33,11 +33,17 @@ s_iface
 l_property
 :
     l_address
+  | l_clagd_vxlan_anycast_ip
 ;
 
 l_address
 :
   ADDRESS IP_PREFIX NEWLINE
+;
+
+l_clagd_vxlan_anycast_ip
+:
+  CLAGD_VXLAN_ANYCAST_IP IP_ADDRESS NEWLINE
 ;
 
 // regular (non-loopback) interface properties
