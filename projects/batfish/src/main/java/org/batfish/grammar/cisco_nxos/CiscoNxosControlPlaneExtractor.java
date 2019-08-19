@@ -250,6 +250,7 @@ import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Ip_as_path_access_list_nam
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Ip_as_path_access_list_seqContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Ip_community_list_nameContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Ip_community_list_seqContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Ip_domain_nameContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Ip_name_serverContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Ip_prefixContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Ip_prefix_listContext;
@@ -605,6 +606,8 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
       LongSpace.of(Range.closed(1L, 4294967294L));
   private static final IntegerSpace IP_COMMUNITY_LIST_NAME_LENGTH_RANGE =
       IntegerSpace.of(Range.closed(1, 63));
+  private static final IntegerSpace IP_DOMAIN_NAME_LENGTH_RANGE =
+      IntegerSpace.of(Range.closed(1, 64));
   private static final IntegerSpace IP_PREFIX_LIST_DESCRIPTION_LENGTH_RANGE =
       IntegerSpace.of(Range.closed(1, 90));
   private static final LongSpace IP_PREFIX_LIST_LINE_NUMBER_RANGE =
@@ -1360,6 +1363,12 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
       _configuration.referenceStructure(IP_ACCESS_LIST, name, INTERFACE_IP_ACCESS_GROUP_OUT, line);
       _currentInterfaces.forEach(iface -> iface.setIpAccessGroupOut(name));
     }
+  }
+
+  @Override
+  public void exitIp_domain_name(Ip_domain_nameContext ctx) {
+    toStringWithLengthInSpace(ctx, ctx.domain, IP_DOMAIN_NAME_LENGTH_RANGE, "ip domain-name")
+        .ifPresent(_configuration::setIpDomainName);
   }
 
   @Override

@@ -100,11 +100,23 @@ s_ip
     ip_access_list
     | ip_as_path_access_list
     | ip_community_list
+    | ip_domain_name
     | ip_name_server
     | ip_null
     | ip_prefix_list
     | ip_route
   )
+;
+
+ip_domain_name
+:
+  DOMAIN_NAME domain = domain_name NEWLINE
+;
+
+domain_name
+:
+// 1-64 characters
+  WORD
 ;
 
 ip_name_server
