@@ -19,6 +19,7 @@ statement
 :
   FRR VERSION REMARK_TEXT NEWLINE
   | FRR DEFAULTS DATACENTER NEWLINE
+  | USERNAME word word NEWLINE
   | s_agentx
   | s_bgp
   | s_vrf

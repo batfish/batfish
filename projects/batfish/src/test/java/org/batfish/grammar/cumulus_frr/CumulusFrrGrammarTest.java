@@ -574,6 +574,11 @@ public class CumulusFrrGrammarTest {
   }
 
   @Test
+  public void testCumulusFrrUsername() {
+    parse("username cumulus nopassword\n");
+  }
+
+  @Test
   public void testCumulusFrrVersion() {
     parse("frr version sV4@%)!@#$%^&**()_+|\n");
   }

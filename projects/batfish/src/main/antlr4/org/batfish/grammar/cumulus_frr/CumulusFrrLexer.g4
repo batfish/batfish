@@ -337,6 +337,11 @@ UINT32
   F_Uint32
 ;
 
+USERNAME
+:
+  'username' -> pushMode(M_Words)
+;
+
 UNICAST
 :
   'unicast'
