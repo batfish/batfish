@@ -65,6 +65,7 @@ i_property
   | i_clagd_backup_ip
   | i_clagd_peer_ip
   | i_clagd_sys_mac
+  | i_gateway
   | i_hwaddress
   | i_link_speed
   | i_mstpctl_bpduguard
@@ -157,6 +158,11 @@ i_clagd_peer_ip
 i_clagd_sys_mac
 :
   CLAGD_SYS_MAC MAC_ADDRESS NEWLINE
+;
+
+i_gateway
+:
+  GATEWAY IP_ADDRESS NEWLINE
 ;
 
 i_hwaddress

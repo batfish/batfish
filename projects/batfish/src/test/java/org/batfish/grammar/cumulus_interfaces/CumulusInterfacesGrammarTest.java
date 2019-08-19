@@ -290,6 +290,11 @@ public class CumulusInterfacesGrammarTest {
   }
 
   @Test
+  public void testIfaceGateway() {
+    parse("iface eth0\n gateway 1.2.3.4\n");
+  }
+
+  @Test
   public void testIfaceHwaddress() {
     parse("iface vlan1\n hwaddress 00:00:00:00:00:00\n");
   }
