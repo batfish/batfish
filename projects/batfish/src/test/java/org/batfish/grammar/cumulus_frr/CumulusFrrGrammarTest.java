@@ -360,6 +360,11 @@ public class CumulusFrrGrammarTest {
   }
 
   @Test
+  public void testHostname() {
+    parse("hostname asdf235jgij981\n");
+  }
+
+  @Test
   public void testCumulusFrrVrf() {
     parse("vrf NAME\n exit-vrf");
     assertThat(CONFIG.getVrfs().keySet(), equalTo(ImmutableSet.of("NAME")));
