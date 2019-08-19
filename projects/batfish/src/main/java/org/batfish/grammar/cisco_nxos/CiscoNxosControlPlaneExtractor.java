@@ -267,6 +267,7 @@ import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Ipv6_prefixContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Last_as_num_prependsContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Line_actionContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Literal_standard_communityContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Logging_serverContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Maxas_limitContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Maximum_pathsContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Nve_host_reachabilityContext;
@@ -496,6 +497,7 @@ import org.batfish.representation.cisco_nxos.IpPrefixListLine;
 import org.batfish.representation.cisco_nxos.Layer3Options;
 import org.batfish.representation.cisco_nxos.LiteralIpAddressSpec;
 import org.batfish.representation.cisco_nxos.LiteralPortSpec;
+import org.batfish.representation.cisco_nxos.LoggingServer;
 import org.batfish.representation.cisco_nxos.Nve;
 import org.batfish.representation.cisco_nxos.Nve.HostReachabilityProtocol;
 import org.batfish.representation.cisco_nxos.Nve.IngressReplicationProtocol;
@@ -886,6 +888,10 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
   private Optional<Long> _currentIpAccessListLineNum;
   private IpPrefixList _currentIpPrefixList;
   private Layer3Options.Builder _currentLayer3OptionsBuilder;
+
+  @SuppressWarnings("unused")
+  private LoggingServer _currentLoggingServer;
+
   private List<Nve> _currentNves;
   private List<NveVni> _currentNveVnis;
   private ObjectGroupIpAddress _currentObjectGroupIpAddress;
@@ -1603,6 +1609,17 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
                               return new IpPrefixList(n);
                             }))
             .orElse(new IpPrefixList("dummy"));
+  }
+
+  @Override
+  public void enterLogging_server(Logging_serverContext ctx) {
+    _currentLoggingServer =
+        _configuration.getLoggingServers().computeIfAbsent(ctx.host.getText(), LoggingServer::new);
+  }
+
+  @Override
+  public void exitLogging_server(Logging_serverContext ctx) {
+    _currentLoggingServer = null;
   }
 
   @Override
