@@ -652,6 +652,22 @@ public final class CiscoNxosGrammarTest {
   }
 
   @Test
+  public void testTacacsServerConversion() throws IOException {
+    String hostname = "nxos_tacacs_server";
+    Configuration c = parseConfig(hostname);
+
+    assertThat(c.getTacacsServers(), containsInAnyOrder("192.0.2.1", "192.0.2.2"));
+  }
+
+  @Test
+  public void testTacacsServerExtraction() {
+    String hostname = "nxos_tacacs_server";
+    CiscoNxosConfiguration vc = parseVendorConfig(hostname);
+
+    assertThat(vc.getTacacsServers(), hasKeys("192.0.2.1", "192.0.2.2"));
+  }
+
+  @Test
   public void testTemplatePeerBgpAddressFamilyConversion() throws IOException {
     Configuration c = parseConfig("nxos_bgp_peer_template_af_inheritance");
 

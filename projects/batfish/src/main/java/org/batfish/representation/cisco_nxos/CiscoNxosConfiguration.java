@@ -311,6 +311,7 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
   private @Nonnull IntegerSpace _reservedVlanRange;
   private final @Nonnull Map<String, RouteMap> _routeMaps;
   private boolean _systemDefaultSwitchportShutdown;
+  private final @Nonnull Map<String, TacacsServer> _tacacsServers;
   private @Nullable String _version;
   private final @Nonnull Map<Integer, Vlan> _vlans;
   private final @Nonnull Map<String, Vrf> _vrfs;
@@ -329,6 +330,7 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
     _ospfProcesses = new HashMap<>();
     _reservedVlanRange = DEFAULT_RESERVED_VLAN_RANGE;
     _routeMaps = new HashMap<>();
+    _tacacsServers = new HashMap<>();
     _vlans = new HashMap<>();
     _vrfs = new HashMap<>();
   }
@@ -801,6 +803,10 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
             .collect(ImmutableSortedSet.toImmutableSortedSet(Comparator.naturalOrder())));
   }
 
+  private void convertTacacsServers() {
+    _c.setTacacsServers(ImmutableSortedSet.copyOf(_tacacsServers.keySet()));
+  }
+
   private void convertIpPrefixLists() {
     _ipPrefixLists.forEach(
         (name, ipPrefixList) ->
@@ -1056,6 +1062,10 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
 
   public boolean getSystemDefaultSwitchportShutdown() {
     return _systemDefaultSwitchportShutdown;
+  }
+
+  public @Nonnull Map<String, TacacsServer> getTacacsServers() {
+    return _tacacsServers;
   }
 
   public @Nullable String getVersion() {
@@ -2459,6 +2469,7 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
     convertInterfaces();
     disableUnregisteredVlanInterfaces();
     convertIpNameServers();
+    convertTacacsServers();
     convertRouteMaps();
     convertStaticRoutes();
     computeImplicitOspfAreas();

@@ -247,6 +247,12 @@ subnet_mask
   SUBNET_MASK
 ;
 
+tcp_port_number
+:
+// 0-65535
+  uint32
+;
+
 template_name
 :
 // 1-80 chars
