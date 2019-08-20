@@ -16,10 +16,14 @@ import static org.junit.Assert.assertTrue;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import java.util.stream.Stream;
+import org.batfish.datamodel.Bgpv4Route;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.GeneratedRoute;
+import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.NetworkFactory;
+import org.batfish.datamodel.OriginType;
 import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.routing_policy.Environment;
@@ -51,9 +55,13 @@ public final class CumulusConversionsTest {
     Environment env =
         Environment.builder(_c, _v.getName())
             .setOriginalRoute(
-                StaticRoute.builder()
-                    .setAdministrativeCost(0)
+                Bgpv4Route.builder()
                     .setNetwork(Prefix.parse(network))
+                    // Only network matters for these tests, but Bgp4Route requires these have
+                    // values.
+                    .setOriginatorIp(Ip.parse("1.1.1.1"))
+                    .setOriginType(OriginType.IGP)
+                    .setProtocol(RoutingProtocol.BGP)
                     .build())
             .build();
     policy.call(env);
