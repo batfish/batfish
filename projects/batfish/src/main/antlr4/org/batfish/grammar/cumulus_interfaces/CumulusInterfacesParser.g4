@@ -26,7 +26,7 @@ s_auto
 
 s_iface
 :
-  IFACE interface_name (LOOPBACK NEWLINE l_property* | NEWLINE i_property*)
+  IFACE interface_name (INET LOOPBACK NEWLINE l_property* | NEWLINE i_property*)
 ;
 
 // loopback interface properties
