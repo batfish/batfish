@@ -2107,6 +2107,9 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
   public void enterRouter_eigrp(Router_eigrpContext ctx) {
     Optional<String> processTagOrErr = toString(ctx, ctx.tag);
     if (!processTagOrErr.isPresent()) {
+      // Dummy process, with all inner config also dummy.
+      _currentEigrpProcess = new EigrpProcessConfiguration();
+      _currentEigrpVrf = _currentEigrpProcess.getOrCreateVrf(DEFAULT_VRF_NAME);
       return;
     }
     String processTag = processTagOrErr.get();
