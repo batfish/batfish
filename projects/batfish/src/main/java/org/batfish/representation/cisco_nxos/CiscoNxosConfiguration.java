@@ -2142,6 +2142,12 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
             _w.redFlag("'match tag' not supported in PBR policies");
             return null;
           }
+
+          @Override
+          public BoolExpr visitRouteMapMatchVlan(RouteMapMatchVlan routeMapMatchVlan) {
+            // TODO: PBR implementation. Should match traffic coming in on any of specified VLANs.
+            return null;
+          }
         };
     List<BoolExpr> guardBoolExprs =
         entry
@@ -2363,6 +2369,15 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
           @Override
           public BooleanExpr visitRouteMapMatchTag(RouteMapMatchTag routeMapMatchTag) {
             return new MatchTag(IntComparator.EQ, new LiteralLong(routeMapMatchTag.getTag()));
+          }
+
+          @Override
+          public BooleanExpr visitRouteMapMatchVlan(RouteMapMatchVlan routeMapMatchVlan) {
+            return visitRouteMapMatchInterface(
+                new RouteMapMatchInterface(
+                    routeMapMatchVlan.getVlans().stream()
+                        .map(vlan -> String.format("Vlan%d", vlan))
+                        .collect(ImmutableSet.toImmutableSet())));
           }
         });
   }

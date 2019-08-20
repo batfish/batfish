@@ -24,4 +24,6 @@ public interface RouteMapMatchVisitor<T> {
   T visitRouteMapMatchSourceProtocol(RouteMapMatchSourceProtocol routeMapMatchSourceProtocol);
 
   T visitRouteMapMatchTag(RouteMapMatchTag routeMapMatchTag);
+
+  T visitRouteMapMatchVlan(RouteMapMatchVlan routeMapMatchVlan);
 }
