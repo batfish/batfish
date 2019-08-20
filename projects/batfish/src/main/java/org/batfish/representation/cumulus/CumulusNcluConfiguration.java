@@ -186,7 +186,9 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
       getWarnings().redFlag("Skipping invalidly configured BGP peer " + neighbor.getName());
       return;
     }
-    RoutingPolicy routingPolicy = computeBgpNeighborRoutingPolicy(neighbor, bgpVrf);
+    RoutingPolicy exportRoutingPolicy = computeBgpNeighborExportRoutingPolicy(neighbor, bgpVrf);
+    //    RoutingPolicy importRoutingPolicy = computeBgpNeighborImportRoutingPolicy(neighbor,
+    // bgpVrf);
     BgpUnnumberedPeerConfig.builder()
         .setBgpProcess(newProc)
         .setDescription(neighbor.getDescription())
@@ -203,14 +205,15 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
                         .setSendCommunity(true)
                         .setSendExtendedCommunity(true)
                         .build())
-                .setExportPolicy(routingPolicy.getName())
+                .setExportPolicy(exportRoutingPolicy.getName())
+                //                .setImportPolicy(importRoutingPolicy.getName())
                 .setRouteReflectorClient(
                     Optional.ofNullable(neighbor.getIpv4UnicastAddressFamily())
                         .map(BgpNeighborIpv4UnicastAddressFamily::getRouteReflectorClient)
                         .orElse(false))
                 .build())
         .setEvpnAddressFamily(
-            toEvpnAddressFamily(neighbor, localAs, bgpVrf, newProc, routingPolicy))
+            toEvpnAddressFamily(neighbor, localAs, bgpVrf, newProc, exportRoutingPolicy))
         .build();
   }
 
@@ -224,7 +227,9 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
       getWarnings().redFlag("Skipping invalidly configured BGP peer " + neighbor.getName());
       return;
     }
-    RoutingPolicy routingPolicy = computeBgpNeighborRoutingPolicy(neighbor, bgpVrf);
+    RoutingPolicy exportRoutingPolicy = computeBgpNeighborExportRoutingPolicy(neighbor, bgpVrf);
+    //    RoutingPolicy importRoutingPolicy = computeBgpNeighborImportRoutingPolicy(neighbor,
+    // bgpVrf);
     BgpActivePeerConfig.builder()
         .setBgpProcess(newProc)
         .setDescription(neighbor.getDescription())
@@ -241,19 +246,20 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
                         .setSendCommunity(true)
                         .setSendExtendedCommunity(true)
                         .build())
-                .setExportPolicy(routingPolicy.getName())
+                .setExportPolicy(exportRoutingPolicy.getName())
+                //                .setImportPolicy(importRoutingPolicy.getName())
                 .setRouteReflectorClient(
                     Optional.ofNullable(neighbor.getIpv4UnicastAddressFamily())
                         .map(BgpNeighborIpv4UnicastAddressFamily::getRouteReflectorClient)
                         .orElse(false))
                 .build())
         .setEvpnAddressFamily(
-            toEvpnAddressFamily(neighbor, localAs, bgpVrf, newProc, routingPolicy))
+            toEvpnAddressFamily(neighbor, localAs, bgpVrf, newProc, exportRoutingPolicy))
         .build();
   }
 
   @Nonnull
-  private RoutingPolicy computeBgpNeighborRoutingPolicy(BgpNeighbor neighbor, BgpVrf bgpVrf) {
+  private RoutingPolicy computeBgpNeighborExportRoutingPolicy(BgpNeighbor neighbor, BgpVrf bgpVrf) {
     String vrfName = bgpVrf.getVrfName();
 
     RoutingPolicy.Builder peerExportPolicy =
@@ -261,30 +267,83 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
             .setOwner(_c)
             .setName(computeBgpPeerExportPolicyName(vrfName, neighbor.getName()));
 
+    Conjunction peerExportConditions = computePeerExportConditions(neighbor, bgpVrf);
     List<Statement> acceptStmts = getAcceptStatements(neighbor, bgpVrf);
 
-    Conjunction peerExportConditions = new Conjunction();
-    If peerExportConditional =
+    peerExportPolicy.addStatement(
         new If(
             "peer-export policy main conditional: exitAccept if true / exitReject if false",
             peerExportConditions,
             acceptStmts,
-            ImmutableList.of(Statements.ExitReject.toStaticStatement()));
-    peerExportPolicy.addStatement(peerExportConditional);
+            ImmutableList.of(Statements.ExitReject.toStaticStatement())));
+
+    return peerExportPolicy.build();
+  }
+
+  Conjunction computePeerExportConditions(BgpNeighbor neighbor, BgpVrf bgpVrf) {
+    String vrfName = bgpVrf.getVrfName();
+
+    Conjunction peerExportConditions = new Conjunction();
     Disjunction localOrCommonOrigination = new Disjunction();
     peerExportConditions.getConjuncts().add(localOrCommonOrigination);
     localOrCommonOrigination
         .getDisjuncts()
         .add(new CallExpr(computeBgpCommonExportPolicyName(vrfName)));
 
-    return peerExportPolicy.build();
+    return peerExportConditions;
   }
+
+  //  @Nonnull
+  //  private RoutingPolicy computeBgpNeighborExportRoutingPolicy(BgpNeighbor neighbor, BgpVrf
+  // bgpVrf) {
+  //    String vrfName = bgpVrf.getVrfName();
+  //
+  //    RoutingPolicy.Builder peerExportPolicy =
+  //        RoutingPolicy.builder()
+  //            .setOwner(_c)
+  //            .setName(computeBgpPeerExportPolicyName(vrfName, neighbor.getName()));
+  //
+  //    List<Statement> acceptStmts = getAcceptStatements(neighbor, bgpVrf);
+  //
+  //    Conjunction peerExportConditions = new Conjunction();
+  //    If peerExportConditional =
+  //        new If(
+  //            "peer-export policy main conditional: exitAccept if true / exitReject if false",
+  //            peerExportConditions,
+  //            acceptStmts,
+  //            ImmutableList.of(Statements.ExitReject.toStaticStatement()));
+  //    peerExportPolicy.addStatement(peerExportConditional);
+  //    Disjunction localOrCommonOrigination = new Disjunction();
+  //    peerExportConditions.getConjuncts().add(localOrCommonOrigination);
+  //    localOrCommonOrigination
+  //        .getDisjuncts()
+  //        .add(new CallExpr(computeBgpCommonExportPolicyName(vrfName)));
+  //
+  //    return peerExportPolicy.build();
+  //  }
 
   private static List<Statement> getAcceptStatements(BgpNeighbor neighbor, BgpVrf bgpVrf) {
     SetNextHop setNextHop = getSetNextHop(neighbor, bgpVrf);
     return setNextHop == null
         ? ImmutableList.of(Statements.ExitAccept.toStaticStatement())
         : ImmutableList.of(setNextHop, Statements.ExitAccept.toStaticStatement());
+  }
+
+  @VisibleForTesting
+  static @Nullable CallExpr getCallExpr(BgpNeighbor neighbor, BgpVrf bgpVrf) {
+    BgpIpv4UnicastAddressFamily ipv4Unicast = bgpVrf.getIpv4Unicast();
+    if (ipv4Unicast == null) {
+      return null;
+    }
+
+    BgpVrfNeighborAddressFamilyConfiguration neighborConf =
+        ipv4Unicast.getNeighborAddressFamilyConfigurations().get(neighbor.getName());
+
+    if (neighborConf == null || neighborConf.getRouteMapOut() == null) {
+      return null;
+    }
+
+    return new CallExpr(neighborConf.getRouteMapOut());
   }
 
   @VisibleForTesting
