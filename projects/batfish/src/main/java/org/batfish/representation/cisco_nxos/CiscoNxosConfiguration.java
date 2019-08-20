@@ -18,6 +18,7 @@ import static org.batfish.representation.cisco.CiscoConfiguration.computeBgpGene
 import static org.batfish.representation.cisco.CiscoConversions.generateGenerationPolicy;
 import static org.batfish.representation.cisco.CiscoConversions.suppressSummarizedPrefixes;
 import static org.batfish.representation.cisco_nxos.CiscoNxosInterfaceType.PORT_CHANNEL;
+import static org.batfish.representation.cisco_nxos.Conversions.getVrfForL3Vni;
 import static org.batfish.representation.cisco_nxos.Interface.BANDWIDTH_CONVERSION_FACTOR;
 import static org.batfish.representation.cisco_nxos.Interface.getDefaultBandwidth;
 import static org.batfish.representation.cisco_nxos.Interface.getDefaultSpeed;
@@ -919,7 +920,38 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
             .setVni(nveVni.getVni())
             .setVlan(vlan)
             .build();
-    _c.getDefaultVrf().getVniSettings().put(vniSettings.getVni(), vniSettings);
+    if (nveVni.isAssociateVrf()) {
+      Vrf vsTenantVrfForL3Vni = getVrfForL3Vni(_vrfs, nveVni.getVni());
+      if (vsTenantVrfForL3Vni == null || _c.getVrfs().get(vsTenantVrfForL3Vni.getName()) == null) {
+        return;
+      }
+      _c.getVrfs()
+          .get(vsTenantVrfForL3Vni.getName())
+          .getVniSettings()
+          .put(vniSettings.getVni(), vniSettings);
+      return;
+    }
+    org.batfish.datamodel.Vrf viTenantVrfForL2Vni = getVrfForL2Vni(nveVni.getVni(), vlan);
+    if (viTenantVrfForL2Vni == null) {
+      return;
+    }
+    viTenantVrfForL2Vni.getVniSettings().put(vniSettings.getVni(), vniSettings);
+  }
+
+  @Nullable
+  private org.batfish.datamodel.Vrf getVrfForL2Vni(Integer l2Vni, int vlanNumber) {
+    String vrfMemberForVlanIface =
+        Optional.ofNullable(_interfaces.get(String.format("Vlan%d", vlanNumber)))
+            .map(org.batfish.representation.cisco_nxos.Interface::getVrfMember)
+            .orElse(null);
+
+    // interface for this VLAN is not a member of any VRF
+    if (vrfMemberForVlanIface == null) {
+      return _c.getDefaultVrf();
+    }
+
+    // null if VRF member specified but is not valid
+    return Optional.ofNullable(_c.getVrfs().get(vrfMemberForVlanIface)).orElse(null);
   }
 
   @Nonnull
