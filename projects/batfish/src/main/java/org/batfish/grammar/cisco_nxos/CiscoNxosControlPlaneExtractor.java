@@ -265,6 +265,8 @@ import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Ip_route_networkContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Ipv6_access_listContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Ipv6_addressContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Ipv6_prefixContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Ipv6_prefix_listContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Ipv6_prefix_list_line_prefix_lengthContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Last_as_num_prependsContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Line_actionContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Literal_standard_communityContext;
@@ -290,6 +292,8 @@ import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Ospf_area_default_costCont
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Ospf_area_idContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Ospf_area_range_costContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Packet_lengthContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Pl6_actionContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Pl6_descriptionContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Pl_actionContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Pl_descriptionContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Rb_af4_aggregate_addressContext;
@@ -498,6 +502,8 @@ import org.batfish.representation.cisco_nxos.IpCommunityListStandardLine;
 import org.batfish.representation.cisco_nxos.IpPrefixList;
 import org.batfish.representation.cisco_nxos.IpPrefixListLine;
 import org.batfish.representation.cisco_nxos.Ipv6AccessList;
+import org.batfish.representation.cisco_nxos.Ipv6PrefixList;
+import org.batfish.representation.cisco_nxos.Ipv6PrefixListLine;
 import org.batfish.representation.cisco_nxos.Layer3Options;
 import org.batfish.representation.cisco_nxos.LiteralIpAddressSpec;
 import org.batfish.representation.cisco_nxos.LiteralPortSpec;
@@ -632,6 +638,8 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
       IntegerSpace.of(Range.closed(1, 63));
   private static final IntegerSpace IP_PREFIX_LIST_PREFIX_LENGTH_RANGE =
       IntegerSpace.of(Range.closed(1, 32));
+  private static final IntegerSpace IPV6_PREFIX_LIST_PREFIX_LENGTH_RANGE =
+      IntegerSpace.of(Range.closed(1, 128));
   private static final IntegerSpace LACP_MIN_LINKS_RANGE = IntegerSpace.of(Range.closed(1, 32));
   private static final IntegerSpace NUM_AS_PATH_PREPENDS_RANGE =
       IntegerSpace.of(Range.closed(1, 10));
@@ -897,6 +905,7 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
   @SuppressWarnings("unused")
   private Ipv6AccessList _currentIpv6AccessList;
 
+  private Ipv6PrefixList _currentIpv6PrefixList;
   private Layer3Options.Builder _currentLayer3OptionsBuilder;
 
   @SuppressWarnings("unused")
@@ -1619,6 +1628,33 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
                               return new IpPrefixList(n);
                             }))
             .orElse(new IpPrefixList("dummy"));
+  }
+
+  @Override
+  public void exitIp_prefix_list(Ip_prefix_listContext ctx) {
+    _currentIpPrefixList = null;
+  }
+
+  @Override
+  public void enterIpv6_prefix_list(Ipv6_prefix_listContext ctx) {
+    _currentIpv6PrefixList =
+        toString(ctx, ctx.name)
+            .map(
+                name ->
+                    _configuration
+                        .getIpv6PrefixLists()
+                        .computeIfAbsent(
+                            name,
+                            n -> {
+                              _configuration.defineStructure(IPV6_PREFIX_LIST, name, ctx);
+                              return new Ipv6PrefixList(n);
+                            }))
+            .orElse(new Ipv6PrefixList("dummy"));
+  }
+
+  @Override
+  public void exitIpv6_prefix_list(Ipv6_prefix_listContext ctx) {
+    _currentIpv6PrefixList = null;
   }
 
   @Override
@@ -4068,11 +4104,6 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
   }
 
   @Override
-  public void exitIp_prefix_list(Ip_prefix_listContext ctx) {
-    _currentIpPrefixList = null;
-  }
-
-  @Override
   public void exitIp_route_network(Ip_route_networkContext ctx) {
     int line = ctx.getStart().getLine();
     StaticRoute.Builder builder = StaticRoute.builder().setPrefix(toPrefix(ctx.network));
@@ -4226,9 +4257,76 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
   }
 
   @Override
+  public void exitPl6_action(Pl6_actionContext ctx) {
+    if (ctx.mask != null) {
+      todo(ctx);
+      return;
+    }
+    long num;
+    if (ctx.num != null) {
+      Optional<Long> numOption = toLong(ctx, ctx.num);
+      if (!numOption.isPresent()) {
+        return;
+      }
+      num = numOption.get();
+    } else if (!_currentIpv6PrefixList.getLines().isEmpty()) {
+      num = _currentIpv6PrefixList.getLines().lastKey() + 5L;
+    } else {
+      num = 5L;
+    }
+    Prefix6 prefix6 = toPrefix6(ctx.prefix);
+    int low;
+    int high;
+    int prefixLength = prefix6.getPrefixLength();
+    if (ctx.eq != null) {
+      Optional<Integer> eqOption = toInteger(ctx, ctx.eq);
+      if (!eqOption.isPresent()) {
+        // invalid line
+        return;
+      }
+      int eq = eqOption.get();
+      low = eq;
+      high = eq;
+    } else if (ctx.ge != null || ctx.le != null) {
+      if (ctx.ge != null) {
+        Optional<Integer> geOption = toInteger(ctx, ctx.ge);
+        if (!geOption.isPresent()) {
+          // invalid line
+          return;
+        }
+        low = geOption.get();
+      } else {
+        low = prefixLength;
+      }
+      if (ctx.le != null) {
+        Optional<Integer> leOption = toInteger(ctx, ctx.le);
+        if (!leOption.isPresent()) {
+          // invalid line
+          return;
+        }
+        high = leOption.get();
+      } else {
+        high = Prefix6.MAX_PREFIX_LENGTH;
+      }
+    } else {
+      low = prefixLength;
+      high = Prefix6.MAX_PREFIX_LENGTH;
+    }
+    Ipv6PrefixListLine pll =
+        new Ipv6PrefixListLine(toLineAction(ctx.action), num, prefix6, new SubRange(low, high));
+    _currentIpv6PrefixList.getLines().put(num, pll);
+  }
+
+  @Override
   public void exitPl_description(Pl_descriptionContext ctx) {
     toString(ctx, ctx.text)
         .ifPresent(description -> _currentIpPrefixList.setDescription(description));
+  }
+
+  @Override
+  public void exitPl6_description(Pl6_descriptionContext ctx) {
+    toString(ctx, ctx.text)
+        .ifPresent(description -> _currentIpv6PrefixList.setDescription(description));
   }
 
   @Override
@@ -4726,6 +4824,15 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
       ParserRuleContext messageCtx, Ip_prefix_list_line_prefix_lengthContext ctx) {
     return toIntegerInSpace(
         messageCtx, ctx, IP_PREFIX_LIST_PREFIX_LENGTH_RANGE, "ip prefix-list prefix-length bound");
+  }
+
+  private @Nonnull Optional<Integer> toInteger(
+      ParserRuleContext messageCtx, Ipv6_prefix_list_line_prefix_lengthContext ctx) {
+    return toIntegerInSpace(
+        messageCtx,
+        ctx,
+        IPV6_PREFIX_LIST_PREFIX_LENGTH_RANGE,
+        "ipv6 prefix-list prefix-length bound");
   }
 
   private @Nonnull Optional<Integer> toInteger(

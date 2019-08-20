@@ -1,0 +1,23 @@
+!RANCID-CONTENT-TYPE: cisco-nx
+!
+hostname nxos_ipv6_prefix_list
+!
+
+ipv6 prefix-list pl_empty description An empty prefix-list
+
+!!! prefix-list with coverage of sequence numbers and permit/deny semantics
+! index 5
+ipv6 prefix-list pl_test permit 10::1:0/120
+! index 10
+ipv6 prefix-list pl_test deny 10::2:0/120
+! index 3
+ipv6 prefix-list pl_test seq 3 permit 10::3:0/120
+! index 15
+ipv6 prefix-list pl_test permit 10::4:0/120
+
+!!! prefix-list for testing length ranges
+ipv6 prefix-list pl_range permit 10:10::/112
+ipv6 prefix-list pl_range permit 10:10::/112 eq 120
+ipv6 prefix-list pl_range permit 10:10::/112 ge 104
+ipv6 prefix-list pl_range permit 10:10::/112 ge 116 le 120
+ipv6 prefix-list pl_range permit 10:10::/112 le 120

@@ -118,10 +118,21 @@ ip_prefix
   IP_PREFIX
 ;
 
+ip_prefix_list_description
+:
+// 1-90 chars
+  REMARK_TEXT
+;
 ip_prefix_list_name
 :
 // 1-63 chars
   WORD
+;
+
+ip_prefix_list_line_number
+:
+// 1-4294967294
+  uint32
 ;
 
 ipv6_address
