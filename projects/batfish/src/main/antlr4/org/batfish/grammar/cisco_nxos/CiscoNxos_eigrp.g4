@@ -58,7 +58,7 @@ re_no_isolate
 
 re_vrf
 :
-  VRF name = vrf_name NEWLINE
+  VRF name = vrf_non_default_name NEWLINE
   re_common*
 ;
 

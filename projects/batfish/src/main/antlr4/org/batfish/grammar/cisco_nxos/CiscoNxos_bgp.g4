@@ -1119,7 +1119,7 @@ prefix_peer_wait_timer
 
 rb_vrf
 :
-  VRF name = vrf_name NEWLINE
+  VRF name = vrf_non_default_name NEWLINE
   (
     rb_proc_vrf_common
     | rb_v_address_family
