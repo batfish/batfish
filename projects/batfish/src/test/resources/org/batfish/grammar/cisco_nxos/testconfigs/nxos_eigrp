@@ -28,10 +28,13 @@ router eigrp EIGRP1234
     autonomous-system 12345
     passive-interface default
     no passive-interface default
-    redistribute bgp 1.3 route-map RM
-    redistribute direct route-map RM
-    redistribute eigrp EIGRP4321 route-map RM
-    redistribute static route-map RM
+    address-family ipv4 unicast
+      redistribute bgp 2 route-map RMV
+      redistribute direct route-map RMV
+      redistribute eigrp EIGRPVRF route-map RMV
+      redistribute static route-map RMV
+    address-family ipv6 unicast
+      redistribute ospfv3 OSPFv3 route-map RMV6
     shutdown
     no shutdown
 router eigrp 123

@@ -39,6 +39,8 @@ public enum CiscoNxosStructureUsage implements StructureUsage {
   BGP_SUPPRESS_MAP("bgp address-family suppress-map"),
   BGP_TABLE_MAP("bgp address-family table-map"),
   BGP_UNSUPPRESS_MAP("bgp address-family unsuppress-map"),
+  EIGRP_REDISTRIBUTE_INSTANCE("eigrp address-family redistribute"),
+  EIGRP_REDISTRIBUTE_ROUTE_MAP("eigrp address-family redistribute route-map"),
   INTERFACE_CHANNEL_GROUP("interface channel-group"),
   INTERFACE_IP_ACCESS_GROUP_IN("interface ip access-group in"),
   INTERFACE_IP_ACCESS_GROUP_OUT("interface ip access-group out"),

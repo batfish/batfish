@@ -61,6 +61,8 @@ import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.BGP_
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.BGP_SUPPRESS_MAP;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.BGP_TABLE_MAP;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.BGP_UNSUPPRESS_MAP;
+import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.EIGRP_REDISTRIBUTE_INSTANCE;
+import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.EIGRP_REDISTRIBUTE_ROUTE_MAP;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.INTERFACE_CHANNEL_GROUP;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.INTERFACE_IP_ACCESS_GROUP_IN;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.INTERFACE_IP_ACCESS_GROUP_OUT;
@@ -371,6 +373,10 @@ import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Re_isolateContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Re_no_isolateContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Re_vrfContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Rec_autonomous_systemContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Recaf4_redistributeContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Recaf6_redistributeContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Recaf_ipv4Context;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Recaf_ipv6Context;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Rip_instanceContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Rm_continueContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Rmm_as_pathContext;
@@ -495,6 +501,7 @@ import org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage;
 import org.batfish.representation.cisco_nxos.DefaultVrfOspfProcess;
 import org.batfish.representation.cisco_nxos.EigrpProcessConfiguration;
 import org.batfish.representation.cisco_nxos.EigrpVrfConfiguration;
+import org.batfish.representation.cisco_nxos.EigrpVrfIpAddressFamilyConfiguration;
 import org.batfish.representation.cisco_nxos.Evpn;
 import org.batfish.representation.cisco_nxos.EvpnVni;
 import org.batfish.representation.cisco_nxos.ExtendedCommunityOrAuto;
@@ -1002,6 +1009,7 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
   private DefaultVrfOspfProcess _currentDefaultVrfOspfProcess;
   private EigrpProcessConfiguration _currentEigrpProcess;
   private EigrpVrfConfiguration _currentEigrpVrf;
+  private EigrpVrfIpAddressFamilyConfiguration _currentEigrpVrfIp;
   private EvpnVni _currentEvpnVni;
   private Function<Interface, HsrpGroup> _currentHsrpGroupGetter;
   private Optional<Integer> _currentHsrpGroupNumber;
@@ -2193,24 +2201,25 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
   @Override
   public void enterRouter_eigrp(Router_eigrpContext ctx) {
     Optional<String> processTagOrErr = toString(ctx, ctx.tag);
-    if (!processTagOrErr.isPresent()) {
+    if (processTagOrErr.isPresent()) {
+      String processTag = processTagOrErr.get();
+      _currentEigrpProcess = _configuration.getOrCreateEigrpProcess(processTag);
+      _configuration.defineStructure(ROUTER_EIGRP, processTag, ctx);
+      _configuration.referenceStructure(
+          ROUTER_EIGRP, processTag, ROUTER_EIGRP_SELF_REFERENCE, ctx.tag.getStart().getLine());
+    } else {
       // Dummy process, with all inner config also dummy.
       _currentEigrpProcess = new EigrpProcessConfiguration();
-      _currentEigrpVrf = _currentEigrpProcess.getOrCreateVrf(DEFAULT_VRF_NAME);
-      return;
     }
-    String processTag = processTagOrErr.get();
-    _currentEigrpProcess = _configuration.getOrCreateEigrpProcess(processTag);
-    _configuration.defineStructure(ROUTER_EIGRP, processTag, ctx);
-    _configuration.referenceStructure(
-        ROUTER_EIGRP, processTag, ROUTER_EIGRP_SELF_REFERENCE, ctx.tag.getStart().getLine());
     _currentEigrpVrf = _currentEigrpProcess.getOrCreateVrf(DEFAULT_VRF_NAME);
+    _currentEigrpVrfIp = _currentEigrpVrf.getVrfIpv4AddressFamily();
   }
 
   @Override
   public void exitRouter_eigrp(Router_eigrpContext ctx) {
     _currentEigrpProcess = null;
     _currentEigrpVrf = null;
+    _currentEigrpVrfIp = null;
   }
 
   @Override
@@ -3190,23 +3199,85 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
   @Override
   public void enterRe_vrf(Re_vrfContext ctx) {
     Optional<String> nameOrError = toString(ctx, ctx.name);
-    if (!nameOrError.isPresent()) {
+    if (nameOrError.isPresent()) {
+      _currentEigrpVrf = _currentEigrpProcess.getOrCreateVrf(nameOrError.get());
+    } else {
       // Dummy so parsing doesn't crash.
       _currentEigrpVrf = new EigrpVrfConfiguration();
-      return;
     }
-    _currentEigrpVrf = _currentEigrpProcess.getOrCreateVrf(nameOrError.get());
+    _currentEigrpVrfIp = _currentEigrpVrf.getVrfIpv4AddressFamily();
   }
 
   @Override
   public void exitRe_vrf(Re_vrfContext ctx) {
     _currentEigrpVrf = _currentEigrpProcess.getOrCreateVrf(DEFAULT_VRF_NAME);
+    _currentEigrpVrfIp = _currentEigrpVrf.getVrfIpv4AddressFamily();
   }
 
   @Override
   public void exitRec_autonomous_system(Rec_autonomous_systemContext ctx) {
     Optional<Integer> asn = toInteger(ctx, ctx.eigrp_asn());
     asn.ifPresent(_currentEigrpVrf::setAsn);
+  }
+
+  @Override
+  public void enterRecaf_ipv4(Recaf_ipv4Context ctx) {
+    _currentEigrpVrfIp = _currentEigrpVrf.getOrCreateV4AddressFamily();
+  }
+
+  @Override
+  public void exitRecaf_ipv4(Recaf_ipv4Context ctx) {
+    _currentEigrpVrfIp = _currentEigrpVrf.getVrfIpv4AddressFamily();
+  }
+
+  @Override
+  public void enterRecaf_ipv6(Recaf_ipv6Context ctx) {
+    _currentEigrpVrfIp = _currentEigrpVrf.getOrCreateV6AddressFamily();
+  }
+
+  @Override
+  public void exitRecaf_ipv6(Recaf_ipv6Context ctx) {
+    _currentEigrpVrfIp = _currentEigrpVrf.getVrfIpv4AddressFamily();
+  }
+
+  @Override
+  public void exitRecaf4_redistribute(Recaf4_redistributeContext ctx) {
+    Optional<RoutingProtocolInstance> rpiOrError =
+        toRoutingProtocolInstance(ctx, ctx.routing_instance_v4());
+    Optional<String> mapOrError = toString(ctx, ctx.route_map_name());
+    if (!rpiOrError.isPresent() || !mapOrError.isPresent()) {
+      return;
+    }
+    RoutingProtocolInstance rpi = rpiOrError.get();
+    String map = mapOrError.get();
+    Optional<CiscoNxosStructureType> type = rpi.getProtocol().getRouterStructureType();
+    if (rpi.getTag() != null && type.isPresent()) {
+      _configuration.referenceStructure(
+          type.get(), rpi.getTag(), EIGRP_REDISTRIBUTE_INSTANCE, ctx.getStart().getLine());
+    }
+    _configuration.referenceStructure(
+        ROUTE_MAP, map, EIGRP_REDISTRIBUTE_ROUTE_MAP, ctx.getStart().getLine());
+    _currentEigrpVrfIp.setRedistributionPolicy(rpi, map);
+  }
+
+  @Override
+  public void exitRecaf6_redistribute(Recaf6_redistributeContext ctx) {
+    Optional<RoutingProtocolInstance> rpiOrError =
+        toRoutingProtocolInstance(ctx, ctx.routing_instance_v6());
+    Optional<String> mapOrError = toString(ctx, ctx.route_map_name());
+    if (!rpiOrError.isPresent() || !mapOrError.isPresent()) {
+      return;
+    }
+    RoutingProtocolInstance rpi = rpiOrError.get();
+    String map = mapOrError.get();
+    Optional<CiscoNxosStructureType> type = rpi.getProtocol().getRouterStructureType();
+    if (rpi.getTag() != null && type.isPresent()) {
+      _configuration.referenceStructure(
+          type.get(), rpi.getTag(), EIGRP_REDISTRIBUTE_INSTANCE, ctx.getStart().getLine());
+    }
+    _configuration.referenceStructure(
+        ROUTE_MAP, map, EIGRP_REDISTRIBUTE_ROUTE_MAP, ctx.getStart().getLine());
+    _currentEigrpVrfIp.setRedistributionPolicy(rpi, map);
   }
 
   @Override
