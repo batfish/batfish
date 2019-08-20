@@ -36,6 +36,7 @@ public enum CiscoNxosStructureUsage implements StructureUsage {
   BGP_NEXTHOP_ROUTE_MAP("bgp address-family nexthop route-map"),
   BGP_REDISTRIBUTE_DIRECT_ROUTE_MAP("bgp address-family redistribute direct route-map"),
   BGP_REDISTRIBUTE_EIGRP_ROUTE_MAP("bgp address-family redistribute eigrp route-map"),
+  BGP_REDISTRIBUTE_EIGRP_SOURCE_TAG("bgp address-family redistribute eigrp"),
   BGP_REDISTRIBUTE_ISIS_ROUTE_MAP("bgp address-family redistribute isis route-map"),
   BGP_REDISTRIBUTE_LISP_ROUTE_MAP("bgp address-family redistribute lisp route-map"),
   BGP_REDISTRIBUTE_OSPF_ROUTE_MAP("bgp address-family redistribute ospf route-map"),
@@ -63,7 +64,8 @@ public enum CiscoNxosStructureUsage implements StructureUsage {
   OSPF_AREA_FILTER_LIST_OUT("router ospf area filter-list out"),
   ROUTE_MAP_MATCH_COMMUNITY("route-map match community"),
   ROUTE_MAP_MATCH_IP_ADDRESS("route-map match ip address"),
-  ROUTE_MAP_MATCH_IP_ADDRESS_PREFIX_LIST("route-map match ip address prefix-list");
+  ROUTE_MAP_MATCH_IP_ADDRESS_PREFIX_LIST("route-map match ip address prefix-list"),
+  ROUTER_EIGRP_SELF_REFERENCE("router eigrp");
 
   private final @Nonnull String _description;
 

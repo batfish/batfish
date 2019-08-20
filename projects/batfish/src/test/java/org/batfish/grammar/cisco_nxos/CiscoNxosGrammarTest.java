@@ -230,6 +230,8 @@ import org.batfish.representation.cisco_nxos.CiscoNxosConfiguration;
 import org.batfish.representation.cisco_nxos.CiscoNxosInterfaceType;
 import org.batfish.representation.cisco_nxos.CiscoNxosStructureType;
 import org.batfish.representation.cisco_nxos.DefaultVrfOspfProcess;
+import org.batfish.representation.cisco_nxos.EigrpProcessConfiguration;
+import org.batfish.representation.cisco_nxos.EigrpVrfConfiguration;
 import org.batfish.representation.cisco_nxos.Evpn;
 import org.batfish.representation.cisco_nxos.EvpnVni;
 import org.batfish.representation.cisco_nxos.ExtendedCommunityOrAuto;
@@ -788,8 +790,33 @@ public final class CiscoNxosGrammarTest {
   @Test
   public void testEigrpExtraction() {
     String hostname = "nxos_eigrp";
-    parseVendorConfig(hostname);
-    // todo: turn into a proper extraction test
+    CiscoNxosConfiguration c = parseVendorConfig(hostname);
+    assertThat(c.getEigrpProcesses(), hasKeys("EIGRP1234", "123"));
+    {
+      EigrpProcessConfiguration proc = c.getOrCreateEigrpProcess("EIGRP1234");
+      assertThat(proc, notNullValue());
+      assertTrue(proc.getIsolate());
+      assertThat(proc.getVrfs(), hasKeys(DEFAULT_VRF_NAME, "VRF"));
+      {
+        EigrpVrfConfiguration vrf = proc.getVrf(DEFAULT_VRF_NAME);
+        assertThat(vrf, notNullValue());
+        assertThat(vrf.getAsn(), nullValue());
+      }
+      {
+        EigrpVrfConfiguration vrf = proc.getVrf("VRF");
+        assertThat(vrf, notNullValue());
+        assertThat(vrf.getAsn(), equalTo(12345));
+      }
+    }
+    {
+      EigrpProcessConfiguration proc = c.getOrCreateEigrpProcess("123");
+      assertThat(proc, notNullValue());
+      assertFalse(proc.getIsolate());
+      assertThat(proc.getVrfs(), hasKeys(DEFAULT_VRF_NAME));
+      EigrpVrfConfiguration vrf = proc.getVrf(DEFAULT_VRF_NAME);
+      assertThat(vrf, notNullValue());
+      assertThat(vrf.getAsn(), nullValue()); // extraction is null, will be set in conversion.
+    }
   }
 
   @Test

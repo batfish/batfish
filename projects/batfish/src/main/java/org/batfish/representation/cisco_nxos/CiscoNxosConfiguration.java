@@ -36,6 +36,7 @@ import com.google.common.collect.Range;
 import com.google.common.collect.Streams;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
@@ -316,6 +317,7 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
   private @Nullable String _bannerMotd;
   private final @Nonnull BgpGlobalConfiguration _bgpGlobalConfiguration;
   private final @Nonnull Vrf _defaultVrf;
+  private final @Nonnull Map<String, EigrpProcessConfiguration> _eigrpProcesses;
   private @Nullable Evpn _evpn;
   private @Nullable String _hostname;
   private final @Nonnull Map<String, Interface> _interfaces;
@@ -349,6 +351,7 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
   public CiscoNxosConfiguration() {
     _bgpGlobalConfiguration = new BgpGlobalConfiguration();
     _defaultVrf = new Vrf(DEFAULT_VRF_NAME);
+    _eigrpProcesses = new HashMap<>();
     _interfaces = new HashMap<>();
     _ipAccessLists = new HashMap<>();
     _ipAsPathAccessLists = new HashMap<>();
@@ -1072,6 +1075,18 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
     return _defaultVrf;
   }
 
+  public @Nonnull Map<String, EigrpProcessConfiguration> getEigrpProcesses() {
+    return Collections.unmodifiableMap(_eigrpProcesses);
+  }
+
+  public @Nullable EigrpProcessConfiguration getEigrpProcess(String processTag) {
+    return _eigrpProcesses.get(processTag);
+  }
+
+  public @Nonnull EigrpProcessConfiguration getOrCreateEigrpProcess(String processTag) {
+    return _eigrpProcesses.computeIfAbsent(processTag, name -> new EigrpProcessConfiguration());
+  }
+
   public @Nullable Evpn getEvpn() {
     return _evpn;
   }
@@ -1261,6 +1276,10 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
         CiscoNxosStructureUsage.BGP_UNSUPPRESS_MAP,
         CiscoNxosStructureUsage.OSPF_AREA_FILTER_LIST_IN,
         CiscoNxosStructureUsage.OSPF_AREA_FILTER_LIST_OUT);
+    markConcreteStructure(
+        CiscoNxosStructureType.ROUTER_EIGRP,
+        CiscoNxosStructureUsage.BGP_REDISTRIBUTE_EIGRP_SOURCE_TAG,
+        CiscoNxosStructureUsage.ROUTER_EIGRP_SELF_REFERENCE);
     markConcreteStructure(
         CiscoNxosStructureType.ROUTER_OSPF,
         CiscoNxosStructureUsage.BGP_REDISTRIBUTE_OSPF_SOURCE_TAG);
