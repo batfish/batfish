@@ -928,7 +928,7 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
         .forEach(nve -> nve.getMemberVnis().values().forEach(vni -> convertNveVni(nve, vni)));
   }
 
-  private void convertNveVni(@Nonnull Nve nve, @Nonnull NveVni nveVni) {
+  private void convertNveVni(Nve nve, NveVni nveVni) {
     if (nve.isShutdown()) {
       return;
     }
@@ -964,8 +964,7 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
   }
 
   @Nonnull
-  private static BumTransportMethod getBumTransportMethod(
-      @Nonnull NveVni nveVni, @Nonnull Nve nve) {
+  private static BumTransportMethod getBumTransportMethod(NveVni nveVni, Nve nve) {
     if (nveVni.getIngressReplicationProtocol() == IngressReplicationProtocol.STATIC) {
       // since all multicast group commands are ignored in this case
       return UNICAST_FLOOD_GROUP;
@@ -978,7 +977,7 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
   }
 
   @Nonnull
-  private static Ip getMultiCastGroupIp(@Nonnull NveVni nveVni, @Nonnull Nve nve) {
+  private static Ip getMultiCastGroupIp(NveVni nveVni, Nve nve) {
     if (nveVni.getMcastGroup() != null) {
       return nveVni.getMcastGroup();
     }
@@ -992,7 +991,7 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
 
   @Nullable
   private Ip getInterfaceIp(
-      @Nonnull Map<String, org.batfish.datamodel.Interface> interfaces, @Nonnull String ifaceName) {
+      Map<String, org.batfish.datamodel.Interface> interfaces, String ifaceName) {
     org.batfish.datamodel.Interface iface = interfaces.get(ifaceName);
     if (iface == null) {
       return null;
@@ -1005,7 +1004,7 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
   }
 
   @Nullable
-  private Integer getVlanForVni(@Nonnull Integer vni) {
+  private Integer getVlanForVni(Integer vni) {
     return _vlans.values().stream()
         .filter(vlan -> vni.equals(vlan.getVni()))
         .findFirst()
