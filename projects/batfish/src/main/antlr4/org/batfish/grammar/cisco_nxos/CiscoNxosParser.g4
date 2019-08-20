@@ -114,6 +114,7 @@ s_ip
     | ip_prefix_list
     | ip_route
     | ip_tacacs
+    | ip_sla
   )
 ;
 
@@ -142,6 +143,46 @@ name_server
 ip_null
 :
   DOMAIN_LOOKUP
+;
+
+ip_sla
+:
+  SLA
+  (
+    ip_sla_block
+    | ip_sla_null
+  )
+;
+
+ip_sla_block
+:
+  entry = uint32 NEWLINE
+  ip_sla_entry+
+;
+
+ip_sla_entry
+:
+  (
+    DNS
+    | HTTP
+    | ICMP_ECHO
+    | TCP_CONNECT
+    | UDP_ECHO
+    | UDP_JITTER
+  ) null_rest_of_line
+;
+
+ip_sla_null
+:
+  (
+    GROUP
+    | LOGGING
+    | REACTION_CONFIGURATION
+    | REACTION_TRIGGER
+    | RESET
+    | RESPONDER
+    | SCHEDULE
+  ) null_rest_of_line
 ;
 
 s_ipv6

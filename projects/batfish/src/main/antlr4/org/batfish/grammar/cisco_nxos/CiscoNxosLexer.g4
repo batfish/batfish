@@ -962,6 +962,11 @@ DISTRIBUTE
   'distribute'
 ;
 
+DNS
+:
+  'dns' -> pushMode(M_Words)
+;
+
 DNSIX
 :
   'dnsix'
@@ -1548,6 +1553,11 @@ HSRP
   'hsrp'
 ;
 
+HTTP
+:
+  'http' -> pushMode(M_Words)
+;
+
 HTTP_METHOD
 :
   'http-method'
@@ -1566,6 +1576,11 @@ IBGP
 ICMP
 :
   'icmp'
+;
+
+ICMP_ECHO
+:
+  'icmp-echo' -> pushMode(M_Words)
 ;
 
 IDENT
@@ -3072,6 +3087,16 @@ REACHABILITY
   'reachability'
 ;
 
+REACTION_CONFIGURATION
+:
+  'reaction-configuration' -> pushMode( M_Remark )
+;
+
+REACTION_TRIGGER
+:
+  'reaction-trigger'
+;
+
 READ
 :
   'read'
@@ -3170,6 +3195,16 @@ REPORT_POLICY
 REPORT_SUPPRESSION
 :
   'report-suppression'
+;
+
+RESET
+:
+  'reset'
+;
+
+RESPONDER
+:
+  'responder' -> pushMode( M_Remark )
 ;
 
 RESTART
@@ -3285,6 +3320,11 @@ RULE
 SAMPLER
 :
   'sampler' -> pushMode(M_Word)
+;
+
+SCHEDULE
+:
+  'schedule' -> pushMode( M_Remark )
 ;
 
 SCHEDULER
@@ -3721,6 +3761,11 @@ TCP
   'tcp'
 ;
 
+TCP_CONNECT
+:
+  'tcp-connect' -> pushMode( M_Remark )
+;
+
 TCP_FLAGS_MASK
 :
   'tcp-flags-mask'
@@ -3856,7 +3901,7 @@ TRAPS
   'traps'
   // if not preceded by 'enable', followed by 'version' or SNMP community secret
   {
-    if (lastTokenType() != ENABLE && lastTokenType() != SOURCE_INTERFACE) {
+    if (lastTokenType() != ENABLE && lastTokenType() != SOURCE_INTERFACE && lastTokenType() != LOGGING) {
       pushMode(M_SnmpHostTraps);
     }
   }
@@ -3933,6 +3978,16 @@ UDLD
 UDP
 :
   'udp'
+;
+
+UDP_ECHO
+:
+  'udp-echo' -> pushMode ( M_Remark )
+;
+
+UDP_JITTER
+:
+  'udp-jitter' -> pushMode ( M_Remark )
 ;
 
 UNCHANGED
