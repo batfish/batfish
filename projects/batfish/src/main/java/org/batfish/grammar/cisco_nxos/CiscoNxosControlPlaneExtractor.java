@@ -368,6 +368,7 @@ import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Rmm_interfaceContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Rmm_metricContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Rmm_source_protocolContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Rmm_tagContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Rmm_vlanContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Rmmip6a_pbrContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Rmmip6a_prefix_listContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Rmmipa_pbrContext;
@@ -537,6 +538,7 @@ import org.batfish.representation.cisco_nxos.RouteMapMatchIpv6AddressPrefixList;
 import org.batfish.representation.cisco_nxos.RouteMapMatchMetric;
 import org.batfish.representation.cisco_nxos.RouteMapMatchSourceProtocol;
 import org.batfish.representation.cisco_nxos.RouteMapMatchTag;
+import org.batfish.representation.cisco_nxos.RouteMapMatchVlan;
 import org.batfish.representation.cisco_nxos.RouteMapMetricType;
 import org.batfish.representation.cisco_nxos.RouteMapSetAsPathPrependLastAs;
 import org.batfish.representation.cisco_nxos.RouteMapSetAsPathPrependLiteralAs;
@@ -4290,6 +4292,15 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
   @Override
   public void exitRmm_tag(Rmm_tagContext ctx) {
     _currentRouteMapEntry.setMatchTag(new RouteMapMatchTag(toLong(ctx.tag)));
+  }
+
+  @Override
+  public void exitRmm_vlan(Rmm_vlanContext ctx) {
+    IntegerSpace vlans = toVlanIdRange(ctx, ctx.range);
+    if (vlans == null) {
+      return;
+    }
+    _currentRouteMapEntry.setMatchVlan(new RouteMapMatchVlan(vlans));
   }
 
   @Override
