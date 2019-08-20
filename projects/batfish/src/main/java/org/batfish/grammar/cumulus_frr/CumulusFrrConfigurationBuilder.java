@@ -407,6 +407,8 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
       _currentNeighborAddressFamilyConfiguration.setRouteMapIn(name);
     } else if (ctx.OUT() != null) {
       _currentNeighborAddressFamilyConfiguration.setRouteMapOut(name);
+    } else {
+      throw new IllegalStateException("only support in and out in route map");
     }
   }
 
