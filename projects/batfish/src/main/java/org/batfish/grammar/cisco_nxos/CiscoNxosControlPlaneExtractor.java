@@ -11,6 +11,7 @@ import static org.batfish.representation.cisco_nxos.CiscoNxosStructureType.INTER
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureType.IPV6_PREFIX_LIST;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureType.IP_ACCESS_LIST;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureType.IP_AS_PATH_ACCESS_LIST;
+import static org.batfish.representation.cisco_nxos.CiscoNxosStructureType.IP_COMMUNITY_LIST_EXPANDED;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureType.IP_COMMUNITY_LIST_STANDARD;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureType.IP_PREFIX_LIST;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureType.NVE;
@@ -213,6 +214,7 @@ import org.batfish.grammar.cisco_nxos.CiscoNxosParser.I_switchport_switchportCon
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.I_switchport_trunk_allowedContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.I_switchport_trunk_nativeContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.I_vrf_memberContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Icl_expandedContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Icl_standardContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Ih_groupContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Ih_versionContext;
@@ -260,13 +262,16 @@ import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Ip_prefix_list_line_prefix
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Ip_prefix_list_nameContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Ip_protocolContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Ip_route_networkContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Ipv6_access_listContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Ipv6_addressContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Ipv6_prefixContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Last_as_num_prependsContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Line_actionContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Literal_standard_communityContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Logging_serverContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Maxas_limitContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Maximum_pathsContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Ntp_serverContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Nve_host_reachabilityContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Nve_memberContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Nve_no_shutdownContext;
@@ -363,6 +368,7 @@ import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Rmm_interfaceContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Rmm_metricContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Rmm_source_protocolContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Rmm_tagContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Rmm_vlanContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Rmmip6a_pbrContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Rmmip6a_prefix_listContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Rmmipa_pbrContext;
@@ -418,6 +424,7 @@ import org.batfish.grammar.cisco_nxos.CiscoNxosParser.S_route_mapContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.S_trackContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.S_versionContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.S_vrf_contextContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Snmps_hostContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Standard_communityContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Static_route_nameContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Static_route_prefContext;
@@ -428,6 +435,7 @@ import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Tcp_portContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Tcp_port_numberContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Template_nameContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Track_object_numberContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Ts_hostContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Udp_portContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Udp_port_numberContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Uint16Context;
@@ -483,13 +491,18 @@ import org.batfish.representation.cisco_nxos.IpAddressSpec;
 import org.batfish.representation.cisco_nxos.IpAsPathAccessList;
 import org.batfish.representation.cisco_nxos.IpAsPathAccessListLine;
 import org.batfish.representation.cisco_nxos.IpCommunityList;
+import org.batfish.representation.cisco_nxos.IpCommunityListExpanded;
+import org.batfish.representation.cisco_nxos.IpCommunityListExpandedLine;
 import org.batfish.representation.cisco_nxos.IpCommunityListStandard;
 import org.batfish.representation.cisco_nxos.IpCommunityListStandardLine;
 import org.batfish.representation.cisco_nxos.IpPrefixList;
 import org.batfish.representation.cisco_nxos.IpPrefixListLine;
+import org.batfish.representation.cisco_nxos.Ipv6AccessList;
 import org.batfish.representation.cisco_nxos.Layer3Options;
 import org.batfish.representation.cisco_nxos.LiteralIpAddressSpec;
 import org.batfish.representation.cisco_nxos.LiteralPortSpec;
+import org.batfish.representation.cisco_nxos.LoggingServer;
+import org.batfish.representation.cisco_nxos.NtpServer;
 import org.batfish.representation.cisco_nxos.Nve;
 import org.batfish.representation.cisco_nxos.Nve.HostReachabilityProtocol;
 import org.batfish.representation.cisco_nxos.Nve.IngressReplicationProtocol;
@@ -525,6 +538,7 @@ import org.batfish.representation.cisco_nxos.RouteMapMatchIpv6AddressPrefixList;
 import org.batfish.representation.cisco_nxos.RouteMapMatchMetric;
 import org.batfish.representation.cisco_nxos.RouteMapMatchSourceProtocol;
 import org.batfish.representation.cisco_nxos.RouteMapMatchTag;
+import org.batfish.representation.cisco_nxos.RouteMapMatchVlan;
 import org.batfish.representation.cisco_nxos.RouteMapMetricType;
 import org.batfish.representation.cisco_nxos.RouteMapSetAsPathPrependLastAs;
 import org.batfish.representation.cisco_nxos.RouteMapSetAsPathPrependLiteralAs;
@@ -537,8 +551,10 @@ import org.batfish.representation.cisco_nxos.RouteMapSetMetric;
 import org.batfish.representation.cisco_nxos.RouteMapSetMetricType;
 import org.batfish.representation.cisco_nxos.RouteMapSetOrigin;
 import org.batfish.representation.cisco_nxos.RouteMapSetTag;
+import org.batfish.representation.cisco_nxos.SnmpServer;
 import org.batfish.representation.cisco_nxos.StaticRoute;
 import org.batfish.representation.cisco_nxos.SwitchportMode;
+import org.batfish.representation.cisco_nxos.TacacsServer;
 import org.batfish.representation.cisco_nxos.TcpOptions;
 import org.batfish.representation.cisco_nxos.UdpOptions;
 import org.batfish.representation.cisco_nxos.Vlan;
@@ -804,7 +820,7 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
   }
 
   private static @Nonnull Prefix6 toPrefix6(Ipv6_prefixContext ctx) {
-    return new Prefix6(ctx.getText());
+    return Prefix6.parse(ctx.getText());
   }
 
   private static @Nonnull Prefix toPrefix(Route_networkContext ctx) {
@@ -877,7 +893,15 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
   private IpAccessList _currentIpAccessList;
   private Optional<Long> _currentIpAccessListLineNum;
   private IpPrefixList _currentIpPrefixList;
+
+  @SuppressWarnings("unused")
+  private Ipv6AccessList _currentIpv6AccessList;
+
   private Layer3Options.Builder _currentLayer3OptionsBuilder;
+
+  @SuppressWarnings("unused")
+  private LoggingServer _currentLoggingServer;
+
   private List<Nve> _currentNves;
   private List<NveVni> _currentNveVnis;
   private ObjectGroupIpAddress _currentObjectGroupIpAddress;
@@ -885,6 +909,13 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
   private OspfProcess _currentOspfProcess;
   private RouteMapEntry _currentRouteMapEntry;
   private Optional<String> _currentRouteMapName;
+
+  @SuppressWarnings("unused")
+  private SnmpServer _currentSnmpServer;
+
+  @SuppressWarnings("unused")
+  private TacacsServer _currentTacacsServer;
+
   private TcpFlags.Builder _currentTcpFlagsBuilder;
   private TcpOptions.Builder _currentTcpOptionsBuilder;
   private UdpOptions.Builder _currentUdpOptionsBuilder;
@@ -1036,6 +1067,61 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
   public void exitI_speed_number(I_speed_numberContext ctx) {
     toIntegerInSpace(ctx, ctx.speed, INTERFACE_SPEED_RANGE_MBPS, "interface speed")
         .ifPresent(speed -> _currentInterfaces.forEach(iface -> iface.setSpeed(speed)));
+  }
+
+  @Override
+  public void enterIcl_expanded(Icl_expandedContext ctx) {
+    Long explicitSeq;
+    if (ctx.seq != null) {
+      Optional<Long> seqOpt = toLong(ctx, ctx.seq);
+      if (!seqOpt.isPresent()) {
+        return;
+      }
+      explicitSeq = seqOpt.get();
+    } else {
+      explicitSeq = null;
+    }
+    Optional<String> nameOpt = toString(ctx, ctx.name);
+    if (!nameOpt.isPresent()) {
+      return;
+    }
+    String name = nameOpt.get();
+    String regex =
+        ctx.quoted != null
+            ? ctx.quoted.text != null ? ctx.quoted.text.getText() : ""
+            : ctx.regex.getText();
+    IpCommunityList communityList =
+        _configuration
+            .getIpCommunityLists()
+            .computeIfAbsent(
+                name,
+                n -> {
+                  _configuration.defineStructure(IP_COMMUNITY_LIST_EXPANDED, n, ctx);
+                  return new IpCommunityListExpanded(n);
+                });
+    if (!(communityList instanceof IpCommunityListExpanded)) {
+      _w.addWarning(
+          ctx,
+          getFullText(ctx),
+          _parser,
+          String.format(
+              "Cannot define expanded community-list '%s' because another community-list with that name but a different type already exists.",
+              name));
+      return;
+    }
+    IpCommunityListExpanded communityListExpanded = (IpCommunityListExpanded) communityList;
+    SortedMap<Long, IpCommunityListExpandedLine> lines = communityListExpanded.getLines();
+    long seq;
+    if (explicitSeq != null) {
+      seq = explicitSeq;
+    } else if (!lines.isEmpty()) {
+      seq = lines.lastKey() + 1L;
+    } else {
+      seq = 1L;
+    }
+    communityListExpanded
+        .getLines()
+        .put(seq, new IpCommunityListExpandedLine(toLineAction(ctx.action), seq, regex));
   }
 
   @Override
@@ -1533,6 +1619,50 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
                               return new IpPrefixList(n);
                             }))
             .orElse(new IpPrefixList("dummy"));
+  }
+
+  @Override
+  public void enterIpv6_access_list(Ipv6_access_listContext ctx) {
+    Optional<String> nameOrErr = toString(ctx, ctx.name);
+    if (!nameOrErr.isPresent()) {
+      _currentIpv6AccessList = new Ipv6AccessList("dummy");
+      return;
+    }
+    _currentIpv6AccessList =
+        _configuration
+            .getIpv6AccessLists()
+            .computeIfAbsent(
+                nameOrErr.get(),
+                name -> {
+                  _configuration.defineStructure(
+                      CiscoNxosStructureType.IPV6_ACCESS_LIST, name, ctx);
+                  return new Ipv6AccessList(name);
+                });
+  }
+
+  @Override
+  public void exitIpv6_access_list(Ipv6_access_listContext ctx) {
+    _currentIpv6AccessList = null;
+  }
+
+  @Override
+  public void enterLogging_server(Logging_serverContext ctx) {
+    _currentLoggingServer =
+        _configuration.getLoggingServers().computeIfAbsent(ctx.host.getText(), LoggingServer::new);
+  }
+
+  @Override
+  public void exitLogging_server(Logging_serverContext ctx) {
+    _currentLoggingServer = null;
+  }
+
+  @Override
+  public void exitNtp_server(Ntp_serverContext ctx) {
+    NtpServer ntpServer =
+        _configuration.getNtpServers().computeIfAbsent(ctx.host.getText(), NtpServer::new);
+    if (ctx.vrf != null) {
+      toString(ctx, ctx.vrf).ifPresent(ntpServer::setUseVrf);
+    }
   }
 
   @Override
@@ -3181,6 +3311,18 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
   }
 
   @Override
+  public void enterTs_host(Ts_hostContext ctx) {
+    // CLI completion does not show size limit for DNS name variant of tacacs-server host
+    _currentTacacsServer =
+        _configuration.getTacacsServers().computeIfAbsent(ctx.host.getText(), TacacsServer::new);
+  }
+
+  @Override
+  public void exitTs_host(Ts_hostContext ctx) {
+    _currentTacacsServer = null;
+  }
+
+  @Override
   public void enterVlan_vlan(Vlan_vlanContext ctx) {
     IntegerSpace vlans = toVlanIdRange(ctx, ctx.vlans);
     if (vlans == null) {
@@ -4153,6 +4295,15 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
   }
 
   @Override
+  public void exitRmm_vlan(Rmm_vlanContext ctx) {
+    IntegerSpace vlans = toVlanIdRange(ctx, ctx.range);
+    if (vlans == null) {
+      return;
+    }
+    _currentRouteMapEntry.setMatchVlan(new RouteMapMatchVlan(vlans));
+  }
+
+  @Override
   public void exitRmmipa_pbr(Rmmipa_pbrContext ctx) {
     Optional<String> nameOpt = toString(ctx, ctx.name);
     if (!nameOpt.isPresent()) {
@@ -4364,6 +4515,18 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
   @Override
   public void exitS_vrf_context(S_vrf_contextContext ctx) {
     _currentVrf = _configuration.getDefaultVrf();
+  }
+
+  @Override
+  public void enterSnmps_host(Snmps_hostContext ctx) {
+    // CLI completion does not show size limit for DNS name variant of snmp-server host
+    _currentSnmpServer =
+        _configuration.getSnmpServers().computeIfAbsent(ctx.host.getText(), SnmpServer::new);
+  }
+
+  @Override
+  public void exitSnmps_host(Snmps_hostContext ctx) {
+    _currentSnmpServer = null;
   }
 
   @Override

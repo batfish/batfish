@@ -5,6 +5,7 @@ import
   CiscoNxos_aaa,
   CiscoNxos_bgp,
   CiscoNxos_class_map,
+  CiscoNxos_eigrp,
   CiscoNxos_evpn,
   CiscoNxos_interface,
   CiscoNxos_ip_access_list,
@@ -12,12 +13,15 @@ import
   CiscoNxos_ip_community_list,
   CiscoNxos_ip_prefix_list,
   CiscoNxos_ipv6_access_list,
+  CiscoNxos_logging,
+  CiscoNxos_ntp,
   CiscoNxos_object_group,
   CiscoNxos_ospf,
   CiscoNxos_policy_map,
   CiscoNxos_route_map,
   CiscoNxos_snmp,
   CiscoNxos_static,
+  CiscoNxos_tacacs_server,
   CiscoNxos_vlan,
   CiscoNxos_vrf;
 
@@ -43,7 +47,9 @@ statement
   | s_ip
   | s_ipv6
   | s_key
+  | s_logging
   | s_no
+  | s_ntp
   | s_null
   | s_nv
   | s_object_group
@@ -53,6 +59,7 @@ statement
   | s_router
   | s_snmp_server
   | s_system
+  | s_tacacs_server
   | s_track
   | s_version
   | s_vlan
@@ -227,6 +234,7 @@ s_router
   ROUTER
   (
     router_bgp
+    | router_eigrp
     | router_ospf
   )
 ;

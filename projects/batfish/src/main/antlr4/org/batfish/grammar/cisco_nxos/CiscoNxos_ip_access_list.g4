@@ -384,14 +384,6 @@ tcp_port
   | WWW
 ;
 
-tcp_port_number
-:
-// 0-65535
-  UINT8
-  | UINT16
-  | UINT32
-;
-
 acllal4tcp_option
 :
   acllal4tcpo_established

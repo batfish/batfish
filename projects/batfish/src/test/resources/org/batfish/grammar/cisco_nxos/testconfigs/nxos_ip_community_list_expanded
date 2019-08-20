@@ -1,0 +1,24 @@
+!RANCID-CONTENT-TYPE: cisco-nx
+!
+hostname nxos_ip_community_list_expanded
+!
+
+!!! list for testing sequence numbers
+! seq=1
+ip community-list expanded cl_seq permit 1:1
+! seq=10
+ip community-list expanded cl_seq seq 10 permit 10:10
+! seq=5
+ip community-list expanded cl_seq seq 5 permit 5:5
+! seq=11
+ip community-list expanded cl_seq permit 11:11
+
+!!! list for testing match semantics
+! deny if both 1:1 and 2:2 are present.
+! note that community attribute string sorts communities by raw integer value
+ip community-list expanded cl_test deny _1:1.*2:2_
+! permit if 1:1 is present.
+! quotes are optional
+ip community-list expanded cl_test permit "_1:1_"
+! permit if 2:2 is present
+ip community-list expanded cl_test permit _2:2_

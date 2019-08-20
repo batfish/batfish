@@ -106,6 +106,7 @@ sbn_name
     | sbn_peer_group_decl // declare a new peer group
     | sbn_property        // set a peer-group property
     | sbn_bfd
+    | sbn_password
     )
 ;
 
@@ -149,10 +150,30 @@ sbnp_peer_group
 
 sbafi_neighbor
 :
-  NEIGHBOR ip = IP_ADDRESS NEXT_HOP_SELF NEWLINE
+  NEIGHBOR (ip = IP_ADDRESS | name = word)
+  (
+    sbafin_next_hop_self
+    | sbafin_soft_reconfiguration
+  )
+  NEWLINE
+;
+
+sbafin_next_hop_self
+:
+  NEXT_HOP_SELF
+;
+
+sbafin_soft_reconfiguration
+:
+  SOFT_RECONFIGURATION INBOUND
 ;
 
 sbn_bfd
 :
   BFD word*
+;
+
+sbn_password
+:
+  PASSWORD REMARK_TEXT
 ;

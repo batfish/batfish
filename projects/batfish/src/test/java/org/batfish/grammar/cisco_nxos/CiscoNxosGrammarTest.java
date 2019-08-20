@@ -167,6 +167,7 @@ import org.batfish.datamodel.NamedPort;
 import org.batfish.datamodel.OriginType;
 import org.batfish.datamodel.OspfExternalRoute;
 import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.RegexCommunitySet;
 import org.batfish.datamodel.RouteFilterLine;
 import org.batfish.datamodel.RouteFilterList;
 import org.batfish.datamodel.RoutingProtocol;
@@ -239,6 +240,8 @@ import org.batfish.representation.cisco_nxos.IpAccessListLine;
 import org.batfish.representation.cisco_nxos.IpAddressSpec;
 import org.batfish.representation.cisco_nxos.IpAsPathAccessList;
 import org.batfish.representation.cisco_nxos.IpAsPathAccessListLine;
+import org.batfish.representation.cisco_nxos.IpCommunityListExpanded;
+import org.batfish.representation.cisco_nxos.IpCommunityListExpandedLine;
 import org.batfish.representation.cisco_nxos.IpCommunityListStandard;
 import org.batfish.representation.cisco_nxos.IpCommunityListStandardLine;
 import org.batfish.representation.cisco_nxos.IpPrefixList;
@@ -247,6 +250,7 @@ import org.batfish.representation.cisco_nxos.Lacp;
 import org.batfish.representation.cisco_nxos.Layer3Options;
 import org.batfish.representation.cisco_nxos.LiteralIpAddressSpec;
 import org.batfish.representation.cisco_nxos.LiteralPortSpec;
+import org.batfish.representation.cisco_nxos.NtpServer;
 import org.batfish.representation.cisco_nxos.Nve;
 import org.batfish.representation.cisco_nxos.Nve.HostReachabilityProtocol;
 import org.batfish.representation.cisco_nxos.Nve.IngressReplicationProtocol;
@@ -278,6 +282,7 @@ import org.batfish.representation.cisco_nxos.RouteMapMatchIpv6AddressPrefixList;
 import org.batfish.representation.cisco_nxos.RouteMapMatchMetric;
 import org.batfish.representation.cisco_nxos.RouteMapMatchSourceProtocol;
 import org.batfish.representation.cisco_nxos.RouteMapMatchTag;
+import org.batfish.representation.cisco_nxos.RouteMapMatchVlan;
 import org.batfish.representation.cisco_nxos.RouteMapMetricType;
 import org.batfish.representation.cisco_nxos.RouteMapSetAsPathPrependLastAs;
 import org.batfish.representation.cisco_nxos.RouteMapSetAsPathPrependLiteralAs;
@@ -649,6 +654,22 @@ public final class CiscoNxosGrammarTest {
   }
 
   @Test
+  public void testTacacsServerConversion() throws IOException {
+    String hostname = "nxos_tacacs_server";
+    Configuration c = parseConfig(hostname);
+
+    assertThat(c.getTacacsServers(), containsInAnyOrder("192.0.2.1", "192.0.2.2"));
+  }
+
+  @Test
+  public void testTacacsServerExtraction() {
+    String hostname = "nxos_tacacs_server";
+    CiscoNxosConfiguration vc = parseVendorConfig(hostname);
+
+    assertThat(vc.getTacacsServers(), hasKeys("192.0.2.1", "192.0.2.2"));
+  }
+
+  @Test
   public void testTemplatePeerBgpAddressFamilyConversion() throws IOException {
     Configuration c = parseConfig("nxos_bgp_peer_template_af_inheritance");
 
@@ -753,6 +774,13 @@ public final class CiscoNxosGrammarTest {
   public void testTrackExtraction() {
     // TODO: make into extraction test
     assertThat(parseVendorConfig("nxos_track"), notNullValue());
+  }
+
+  @Test
+  public void testEigrpExtraction() {
+    String hostname = "nxos_eigrp";
+    parseVendorConfig(hostname);
+    // todo: turn into a proper extraction test
   }
 
   @Test
@@ -2805,6 +2833,111 @@ public final class CiscoNxosGrammarTest {
   }
 
   @Test
+  public void testIpCommunityListExpandedConversion() throws IOException {
+    String hostname = "nxos_ip_community_list_expanded";
+    Configuration c = parseConfig(hostname);
+
+    assertThat(c.getCommunityLists(), hasKeys("cl_seq", "cl_test"));
+    {
+      CommunityList cl = c.getCommunityLists().get("cl_seq");
+      Iterator<CommunityListLine> lines = cl.getLines().iterator();
+      CommunityListLine line;
+
+      line = lines.next();
+      assertThat(line.getAction(), equalTo(LineAction.PERMIT));
+      assertThat(
+          ((RegexCommunitySet) line.getMatchCondition()).getRegex(), equalTo(toJavaRegex("1:1")));
+
+      line = lines.next();
+      assertThat(line.getAction(), equalTo(LineAction.PERMIT));
+      assertThat(
+          ((RegexCommunitySet) line.getMatchCondition()).getRegex(), equalTo(toJavaRegex("5:5")));
+
+      line = lines.next();
+      assertThat(line.getAction(), equalTo(LineAction.PERMIT));
+      assertThat(
+          ((RegexCommunitySet) line.getMatchCondition()).getRegex(), equalTo(toJavaRegex("10:10")));
+
+      line = lines.next();
+      assertThat(line.getAction(), equalTo(LineAction.PERMIT));
+      assertThat(
+          ((RegexCommunitySet) line.getMatchCondition()).getRegex(), equalTo(toJavaRegex("11:11")));
+    }
+    {
+      CommunityList cl = c.getCommunityLists().get("cl_test");
+      Iterator<CommunityListLine> lines = cl.getLines().iterator();
+      CommunityListLine line;
+
+      line = lines.next();
+      assertThat(line.getAction(), equalTo(LineAction.DENY));
+      assertThat(
+          ((RegexCommunitySet) line.getMatchCondition()).getRegex(),
+          equalTo(toJavaRegex("_1:1.*2:2_")));
+
+      line = lines.next();
+      assertThat(line.getAction(), equalTo(LineAction.PERMIT));
+      assertThat(
+          ((RegexCommunitySet) line.getMatchCondition()).getRegex(), equalTo(toJavaRegex("_1:1_")));
+
+      line = lines.next();
+      assertThat(line.getAction(), equalTo(LineAction.PERMIT));
+      assertThat(
+          ((RegexCommunitySet) line.getMatchCondition()).getRegex(), equalTo(toJavaRegex("_2:2_")));
+    }
+  }
+
+  @Test
+  public void testIpCommunityListExpandedExtraction() {
+    String hostname = "nxos_ip_community_list_expanded";
+    CiscoNxosConfiguration vc = parseVendorConfig(hostname);
+
+    assertThat(vc.getIpCommunityLists(), hasKeys("cl_seq", "cl_test"));
+    {
+      IpCommunityListExpanded cl = (IpCommunityListExpanded) vc.getIpCommunityLists().get("cl_seq");
+      Iterator<IpCommunityListExpandedLine> lines = cl.getLines().values().iterator();
+      IpCommunityListExpandedLine line;
+
+      line = lines.next();
+      assertThat(line.getLine(), equalTo(1L));
+      assertThat(line.getRegex(), equalTo("1:1"));
+
+      line = lines.next();
+      assertThat(line.getLine(), equalTo(5L));
+      assertThat(line.getRegex(), equalTo("5:5"));
+
+      line = lines.next();
+      assertThat(line.getLine(), equalTo(10L));
+      assertThat(line.getRegex(), equalTo("10:10"));
+
+      line = lines.next();
+      assertThat(line.getLine(), equalTo(11L));
+      assertThat(line.getRegex(), equalTo("11:11"));
+
+      assertFalse(lines.hasNext());
+    }
+    {
+      IpCommunityListExpanded cl =
+          (IpCommunityListExpanded) vc.getIpCommunityLists().get("cl_test");
+      Iterator<IpCommunityListExpandedLine> lines = cl.getLines().values().iterator();
+      IpCommunityListExpandedLine line;
+
+      line = lines.next();
+      assertThat(line.getAction(), equalTo(LineAction.DENY));
+      assertThat(line.getRegex(), equalTo("_1:1.*2:2_"));
+
+      line = lines.next();
+      assertThat(line.getAction(), equalTo(LineAction.PERMIT));
+      assertThat(line.getRegex(), equalTo("_1:1_"));
+
+      line = lines.next();
+      assertThat(line.getAction(), equalTo(LineAction.PERMIT));
+      assertThat(line.getRegex(), equalTo("_2:2_"));
+
+      assertFalse(lines.hasNext());
+    }
+  }
+
+  @Test
   public void testIpCommunityListStandardConversion() throws IOException {
     String hostname = "nxos_ip_community_list_standard";
     Configuration c = parseConfig(hostname);
@@ -3149,9 +3282,57 @@ public final class CiscoNxosGrammarTest {
   }
 
   @Test
-  public void testIpv6AccessListParsing() {
-    // TODO: make into extraction test
-    assertThat(parseVendorConfig("nxos_ipv6_access_list"), notNullValue());
+  public void testIpv6AccessListConversion() throws IOException {
+    Configuration c = parseConfig("nxos_ipv6_access_list");
+
+    assertThat(c.getIp6AccessLists(), hasKeys("v6acl1"));
+    // TODO: convert lines
+  }
+
+  @Test
+  public void testIpv6AccessListExtraction() {
+    CiscoNxosConfiguration vc = parseVendorConfig("nxos_ipv6_access_list");
+
+    assertThat(vc.getIpv6AccessLists(), hasKeys("v6acl1"));
+    // TODO: extract lines
+  }
+
+  @Test
+  public void testLoggingConversion() throws IOException {
+    String hostname = "nxos_logging";
+    Configuration c = parseConfig(hostname);
+
+    assertThat(c.getLoggingServers(), containsInAnyOrder("192.0.2.1", "192.0.2.2"));
+  }
+
+  @Test
+  public void testLoggingExtraction() {
+    String hostname = "nxos_logging";
+    CiscoNxosConfiguration vc = parseVendorConfig(hostname);
+
+    assertThat(vc.getLoggingServers(), hasKeys("192.0.2.1", "192.0.2.2"));
+  }
+
+  @Test
+  public void testNtpConversion() throws IOException {
+    Configuration c = parseConfig("nxos_ntp");
+
+    assertThat(c.getNtpServers(), containsInAnyOrder("192.0.2.1", "192.0.2.2"));
+  }
+
+  @Test
+  public void testNtpExtraction() {
+    CiscoNxosConfiguration vc = parseVendorConfig("nxos_ntp");
+
+    assertThat(vc.getNtpServers(), hasKeys("192.0.2.1", "192.0.2.2"));
+    {
+      NtpServer ntpServer = vc.getNtpServers().get("192.0.2.1");
+      assertThat(ntpServer.getUseVrf(), nullValue());
+    }
+    {
+      NtpServer ntpServer = vc.getNtpServers().get("192.0.2.2");
+      assertThat(ntpServer.getUseVrf(), equalTo("management"));
+    }
   }
 
   @Test
@@ -4498,6 +4679,7 @@ public final class CiscoNxosGrammarTest {
             "match_source_protocol_connected",
             "match_source_protocol_static",
             "match_tag",
+            "match_vlan",
             "set_as_path_prepend_last_as",
             "set_as_path_prepend_literal_as",
             "set_community",
@@ -4627,6 +4809,38 @@ public final class CiscoNxosGrammarTest {
       Bgpv4Route route = base.toBuilder().setTag(1L).build();
       assertRoutingPolicyPermitsRoute(rp, route);
     }
+    {
+      RoutingPolicy rp = c.getRoutingPolicies().get("match_vlan");
+      assertRoutingPolicyDeniesRoute(rp, base);
+      {
+        Bgpv4Route routeConnected =
+            base.toBuilder().setNetwork(Prefix.parse("10.0.1.1/24")).build();
+        assertRoutingPolicyPermitsRoute(rp, routeConnected);
+        Bgpv4Route routeDirect = base.toBuilder().setNetwork(Prefix.parse("10.0.1.1/32")).build();
+        assertRoutingPolicyPermitsRoute(rp, routeDirect);
+      }
+      {
+        Bgpv4Route routeConnected =
+            base.toBuilder().setNetwork(Prefix.parse("10.0.2.1/24")).build();
+        assertRoutingPolicyDeniesRoute(rp, routeConnected);
+        Bgpv4Route routeDirect = base.toBuilder().setNetwork(Prefix.parse("10.0.2.1/32")).build();
+        assertRoutingPolicyDeniesRoute(rp, routeDirect);
+      }
+      {
+        Bgpv4Route routeConnected =
+            base.toBuilder().setNetwork(Prefix.parse("10.0.3.1/24")).build();
+        assertRoutingPolicyPermitsRoute(rp, routeConnected);
+        Bgpv4Route routeDirect = base.toBuilder().setNetwork(Prefix.parse("10.0.3.1/32")).build();
+        assertRoutingPolicyPermitsRoute(rp, routeDirect);
+      }
+      {
+        Bgpv4Route routeConnected =
+            base.toBuilder().setNetwork(Prefix.parse("10.0.4.1/24")).build();
+        assertRoutingPolicyPermitsRoute(rp, routeConnected);
+        Bgpv4Route routeDirect = base.toBuilder().setNetwork(Prefix.parse("10.0.4.1/32")).build();
+        assertRoutingPolicyPermitsRoute(rp, routeDirect);
+      }
+    }
 
     // sets
     {
@@ -4749,6 +4963,7 @@ public final class CiscoNxosGrammarTest {
             "match_source_protocol_connected",
             "match_source_protocol_static",
             "match_tag",
+            "match_vlan",
             "set_as_path_prepend_last_as",
             "set_as_path_prepend_literal_as",
             "set_community",
@@ -4904,6 +5119,16 @@ public final class CiscoNxosGrammarTest {
       RouteMapMatchTag match = entry.getMatchTag();
       assertThat(entry.getMatches().collect(onlyElement()), equalTo(match));
       assertThat(match.getTag(), equalTo(1L));
+    }
+    {
+      RouteMap rm = vc.getRouteMaps().get("match_vlan");
+      assertThat(rm.getEntries().keySet(), contains(10));
+      RouteMapEntry entry = getOnlyElement(rm.getEntries().values());
+      assertThat(entry.getAction(), equalTo(LineAction.PERMIT));
+      assertThat(entry.getSequence(), equalTo(10));
+      RouteMapMatchVlan match = entry.getMatchVlan();
+      assertThat(entry.getMatches().collect(onlyElement()), equalTo(match));
+      assertThat(match.getVlans(), equalTo(IntegerSpace.builder().including(1, 3, 4).build()));
     }
     {
       RouteMap rm = vc.getRouteMaps().get("set_as_path_prepend_last_as");
@@ -5084,9 +5309,19 @@ public final class CiscoNxosGrammarTest {
   }
 
   @Test
-  public void testSnmpServerParsing() {
-    // TODO: make into extraction test
-    assertThat(parseVendorConfig("nxos_snmp_server"), notNullValue());
+  public void testSnmpServerConversion() throws IOException {
+    String hostname = "nxos_snmp_server";
+    Configuration c = parseConfig(hostname);
+
+    assertThat(c.getSnmpTrapServers(), containsInAnyOrder("192.0.2.1", "192.0.2.2"));
+  }
+
+  @Test
+  public void testSnmpServerExtraction() {
+    String hostname = "nxos_snmp_server";
+    CiscoNxosConfiguration vc = parseVendorConfig(hostname);
+
+    assertThat(vc.getSnmpServers(), hasKeys("192.0.2.1", "192.0.2.2"));
   }
 
   @Test
