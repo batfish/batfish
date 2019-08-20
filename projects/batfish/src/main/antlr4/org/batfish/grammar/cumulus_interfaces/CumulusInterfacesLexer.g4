@@ -114,6 +114,11 @@ IFACE
   'iface' -> pushMode(M_Word)
 ;
 
+INET
+:
+  'inet'
+;
+
 LINK_LOCAL
 :
   'linklocal'
