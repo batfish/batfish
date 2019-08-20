@@ -931,15 +931,22 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
           .put(vniSettings.getVni(), vniSettings);
       return;
     }
-    org.batfish.datamodel.Vrf viTenantVrfForL2Vni = getVrfForL2Vni(nveVni.getVni(), vlan);
+    org.batfish.datamodel.Vrf viTenantVrfForL2Vni = getMemberVrfForVlan(vlan);
     if (viTenantVrfForL2Vni == null) {
       return;
     }
     viTenantVrfForL2Vni.getVniSettings().put(vniSettings.getVni(), vniSettings);
   }
 
+  /**
+   * Gets the {@link org.batfish.datamodel.Vrf} which contains VLAN interface for {@code vlanNumber}
+   * as its member
+   *
+   * @param vlanNumber VLAN number
+   * @return {@link org.batfish.datamodel.Vrf} containing VLAN interface of {@code vlanNumber}
+   */
   @Nullable
-  private org.batfish.datamodel.Vrf getVrfForL2Vni(Integer l2Vni, int vlanNumber) {
+  private org.batfish.datamodel.Vrf getMemberVrfForVlan(int vlanNumber) {
     String vrfMemberForVlanIface =
         Optional.ofNullable(_interfaces.get(String.format("Vlan%d", vlanNumber)))
             .map(org.batfish.representation.cisco_nxos.Interface::getVrfMember)
