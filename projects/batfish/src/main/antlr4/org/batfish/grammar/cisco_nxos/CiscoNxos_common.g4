@@ -373,3 +373,8 @@ vrf_name
 :
   WORD
 ;
+
+vrf_non_default_name
+:
+  WORD
+;

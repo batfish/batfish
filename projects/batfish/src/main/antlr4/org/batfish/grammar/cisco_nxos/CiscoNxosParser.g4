@@ -113,6 +113,7 @@ s_ip
     | ip_null
     | ip_prefix_list
     | ip_route
+    | ip_tacacs
     | ip_sla
   )
 ;

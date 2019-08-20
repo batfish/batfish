@@ -3,7 +3,6 @@ package org.batfish.grammar.cisco_nxos;
 import static com.google.common.collect.Iterables.getOnlyElement;
 import static com.google.common.collect.Maps.immutableEntry;
 import static com.google.common.collect.MoreCollectors.onlyElement;
-import static org.batfish.datamodel.Configuration.DEFAULT_VRF_NAME;
 import static org.batfish.datamodel.Interface.NULL_INTERFACE_NAME;
 import static org.batfish.datamodel.IpWildcard.ipWithWildcardMask;
 import static org.batfish.datamodel.Route.UNSET_NEXT_HOP_INTERFACE;
@@ -75,6 +74,7 @@ import static org.batfish.grammar.cisco_nxos.CiscoNxosControlPlaneExtractor.PACK
 import static org.batfish.grammar.cisco_nxos.CiscoNxosControlPlaneExtractor.TCP_PORT_RANGE;
 import static org.batfish.grammar.cisco_nxos.CiscoNxosControlPlaneExtractor.UDP_PORT_RANGE;
 import static org.batfish.main.BatfishTestUtils.configureBatfishTestSettings;
+import static org.batfish.representation.cisco_nxos.CiscoNxosConfiguration.DEFAULT_VRF_NAME;
 import static org.batfish.representation.cisco_nxos.CiscoNxosConfiguration.NULL_VRF_NAME;
 import static org.batfish.representation.cisco_nxos.CiscoNxosConfiguration.toJavaRegex;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureType.OBJECT_GROUP_IP_ADDRESS;
@@ -666,6 +666,7 @@ public final class CiscoNxosGrammarTest {
     Configuration c = parseConfig(hostname);
 
     assertThat(c.getTacacsServers(), containsInAnyOrder("192.0.2.1", "192.0.2.2"));
+    assertThat(c.getTacacsSourceInterface(), equalTo("mgmt0"));
   }
 
   @Test
@@ -674,6 +675,7 @@ public final class CiscoNxosGrammarTest {
     CiscoNxosConfiguration vc = parseVendorConfig(hostname);
 
     assertThat(vc.getTacacsServers(), hasKeys("192.0.2.1", "192.0.2.2"));
+    assertThat(vc.getTacacsSourceInterface(), equalTo("mgmt0"));
   }
 
   @Test
@@ -3141,7 +3143,7 @@ public final class CiscoNxosGrammarTest {
         vc.getIpNameServersByUseVrf(),
         equalTo(
             ImmutableMap.of(
-                Configuration.DEFAULT_VRF_NAME,
+                DEFAULT_VRF_NAME,
                 ImmutableList.of("192.0.2.2", "192.0.2.1", "dead:beef::1"),
                 "management",
                 ImmutableList.of("192.0.2.3"))));
@@ -3459,6 +3461,7 @@ public final class CiscoNxosGrammarTest {
     Configuration c = parseConfig(hostname);
 
     assertThat(c.getLoggingServers(), containsInAnyOrder("192.0.2.1", "192.0.2.2"));
+    assertThat(c.getLoggingSourceInterface(), equalTo("loopback0"));
   }
 
   @Test
@@ -3467,6 +3470,7 @@ public final class CiscoNxosGrammarTest {
     CiscoNxosConfiguration vc = parseVendorConfig(hostname);
 
     assertThat(vc.getLoggingServers(), hasKeys("192.0.2.1", "192.0.2.2"));
+    assertThat(vc.getLoggingSourceInterface(), equalTo("loopback0"));
   }
 
   @Test
@@ -3474,6 +3478,7 @@ public final class CiscoNxosGrammarTest {
     Configuration c = parseConfig("nxos_ntp");
 
     assertThat(c.getNtpServers(), containsInAnyOrder("192.0.2.1", "192.0.2.2"));
+    assertThat(c.getNtpSourceInterface(), equalTo("mgmt0"));
   }
 
   @Test
@@ -3489,6 +3494,8 @@ public final class CiscoNxosGrammarTest {
       NtpServer ntpServer = vc.getNtpServers().get("192.0.2.2");
       assertThat(ntpServer.getUseVrf(), equalTo("management"));
     }
+
+    assertThat(vc.getNtpSourceInterface(), equalTo("mgmt0"));
   }
 
   @Test
@@ -3811,12 +3818,7 @@ public final class CiscoNxosGrammarTest {
         assertTrue(
             c.getRoutingPolicies()
                 .get(proc.getExportPolicy())
-                .process(
-                    staticInputRoute,
-                    outputRoute,
-                    Ip.ZERO,
-                    Configuration.DEFAULT_VRF_NAME,
-                    Direction.OUT));
+                .process(staticInputRoute, outputRoute, Ip.ZERO, DEFAULT_VRF_NAME, Direction.OUT));
         assertThat(outputRoute.build().getOspfMetricType(), equalTo(OspfMetricType.E1));
       }
       {
@@ -3833,18 +3835,14 @@ public final class CiscoNxosGrammarTest {
                     staticInputRoute,
                     OspfExternalRoute.builder(),
                     Ip.ZERO,
-                    Configuration.DEFAULT_VRF_NAME,
+                    DEFAULT_VRF_NAME,
                     Direction.OUT));
         // accept generated route
         assertTrue(
             c.getRoutingPolicies()
                 .get(proc.getExportPolicy())
                 .process(
-                    generatedInputRoute,
-                    outputRoute,
-                    Ip.ZERO,
-                    Configuration.DEFAULT_VRF_NAME,
-                    Direction.OUT));
+                    generatedInputRoute, outputRoute, Ip.ZERO, DEFAULT_VRF_NAME, Direction.OUT));
         assertThat(outputRoute.build().getOspfMetricType(), equalTo(OspfMetricType.E1));
       }
       {
@@ -3857,12 +3855,7 @@ public final class CiscoNxosGrammarTest {
         assertTrue(
             c.getRoutingPolicies()
                 .get(proc.getExportPolicy())
-                .process(
-                    staticInputRoute,
-                    outputRoute,
-                    Ip.ZERO,
-                    Configuration.DEFAULT_VRF_NAME,
-                    Direction.OUT));
+                .process(staticInputRoute, outputRoute, Ip.ZERO, DEFAULT_VRF_NAME, Direction.OUT));
         // assign E2 metric-type from route-map
         assertThat(outputRoute.build().getOspfMetricType(), equalTo(OspfMetricType.E2));
       }
@@ -3880,18 +3873,14 @@ public final class CiscoNxosGrammarTest {
                     staticInputRoute,
                     OspfExternalRoute.builder(),
                     Ip.ZERO,
-                    Configuration.DEFAULT_VRF_NAME,
+                    DEFAULT_VRF_NAME,
                     Direction.OUT));
         // accept generated route
         assertTrue(
             c.getRoutingPolicies()
                 .get(proc.getExportPolicy())
                 .process(
-                    generatedInputRoute,
-                    outputRoute,
-                    Ip.ZERO,
-                    Configuration.DEFAULT_VRF_NAME,
-                    Direction.OUT));
+                    generatedInputRoute, outputRoute, Ip.ZERO, DEFAULT_VRF_NAME, Direction.OUT));
         // assign E2 metric-type from route-map
         assertThat(outputRoute.build().getOspfMetricType(), equalTo(OspfMetricType.E2));
       }
@@ -3962,8 +3951,7 @@ public final class CiscoNxosGrammarTest {
       assertTrue(
           c.getRoutingPolicies()
               .get(proc.getExportPolicy())
-              .process(
-                  inputRoute, outputRoute, Ip.ZERO, Configuration.DEFAULT_VRF_NAME, Direction.OUT));
+              .process(inputRoute, outputRoute, Ip.ZERO, DEFAULT_VRF_NAME, Direction.OUT));
       assertThat(outputRoute.build().getOspfMetricType(), equalTo(OspfMetricType.E1));
     }
     // TODO: convert and test OSPF redistribute maximum-prefix
@@ -3980,8 +3968,7 @@ public final class CiscoNxosGrammarTest {
       assertTrue(
           c.getRoutingPolicies()
               .get(proc.getExportPolicy())
-              .process(
-                  inputRoute, outputRoute, Ip.ZERO, Configuration.DEFAULT_VRF_NAME, Direction.OUT));
+              .process(inputRoute, outputRoute, Ip.ZERO, DEFAULT_VRF_NAME, Direction.OUT));
       assertThat(outputRoute.build().getOspfMetricType(), equalTo(OspfMetricType.E1));
     }
     {
@@ -5470,6 +5457,7 @@ public final class CiscoNxosGrammarTest {
     Configuration c = parseConfig(hostname);
 
     assertThat(c.getSnmpTrapServers(), containsInAnyOrder("192.0.2.1", "192.0.2.2"));
+    assertThat(c.getSnmpSourceInterface(), equalTo("mgmt0"));
   }
 
   @Test
@@ -5478,6 +5466,7 @@ public final class CiscoNxosGrammarTest {
     CiscoNxosConfiguration vc = parseVendorConfig(hostname);
 
     assertThat(vc.getSnmpServers(), hasKeys("192.0.2.1", "192.0.2.2"));
+    assertThat(vc.getSnmpSourceInterface(), equalTo("mgmt0"));
   }
 
   @Test

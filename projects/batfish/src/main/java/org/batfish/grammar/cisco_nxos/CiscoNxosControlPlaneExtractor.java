@@ -1,8 +1,8 @@
 package org.batfish.grammar.cisco_nxos;
 
 import static com.google.common.base.Preconditions.checkArgument;
-import static org.batfish.datamodel.Configuration.DEFAULT_VRF_NAME;
 import static org.batfish.datamodel.IpWildcard.ipWithWildcardMask;
+import static org.batfish.representation.cisco_nxos.CiscoNxosConfiguration.DEFAULT_VRF_NAME;
 import static org.batfish.representation.cisco_nxos.CiscoNxosConfiguration.getCanonicalInterfaceNamePrefix;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureType.BGP_TEMPLATE_PEER;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureType.BGP_TEMPLATE_PEER_POLICY;
@@ -111,7 +111,6 @@ import org.batfish.common.Warnings;
 import org.batfish.common.Warnings.ParseWarning;
 import org.batfish.common.WellKnownCommunity;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
-import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.DscpType;
 import org.batfish.datamodel.IcmpCode;
 import org.batfish.datamodel.IcmpType;
@@ -262,6 +261,7 @@ import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Ip_prefix_list_line_prefix
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Ip_prefix_list_nameContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Ip_protocolContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Ip_route_networkContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Ipt_source_interfaceContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Ipv6_access_listContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Ipv6_addressContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Ipv6_prefixContext;
@@ -271,9 +271,11 @@ import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Last_as_num_prependsContex
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Line_actionContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Literal_standard_communityContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Logging_serverContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Logging_source_interfaceContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Maxas_limitContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Maximum_pathsContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Ntp_serverContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Ntp_source_interfaceContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Nve_host_reachabilityContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Nve_memberContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Nve_no_shutdownContext;
@@ -429,6 +431,7 @@ import org.batfish.grammar.cisco_nxos.CiscoNxosParser.S_trackContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.S_versionContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.S_vrf_contextContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Snmps_hostContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Snmpssi_trapsContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Standard_communityContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Static_route_nameContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Static_route_prefContext;
@@ -456,6 +459,7 @@ import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Vlan_id_rangeContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Vlan_vlanContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Vni_numberContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Vrf_nameContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Vrf_non_default_nameContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Vv_vn_segmentContext;
 import org.batfish.representation.cisco_nxos.ActionIpAccessListLine;
 import org.batfish.representation.cisco_nxos.AddrGroupIpAddressSpec;
@@ -957,6 +961,7 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
     _text = text;
     _parser = parser;
     _preferredNames = HashBasedTable.create();
+    getPreferredName(DEFAULT_VRF_NAME, VRF);
     _w = warnings;
   }
 
@@ -1476,7 +1481,7 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
       }
       vrf = vrfOrErr.get();
     } else {
-      vrf = Configuration.DEFAULT_VRF_NAME;
+      vrf = DEFAULT_VRF_NAME;
     }
     List<String> existingServers =
         _configuration.getIpNameServersByUseVrf().computeIfAbsent(vrf, v -> new LinkedList<>());
@@ -1636,6 +1641,11 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
   }
 
   @Override
+  public void exitIpt_source_interface(Ipt_source_interfaceContext ctx) {
+    toString(ctx, ctx.name).ifPresent(_configuration::setTacacsSourceInterface);
+  }
+
+  @Override
   public void enterIpv6_prefix_list(Ipv6_prefix_listContext ctx) {
     _currentIpv6PrefixList =
         toString(ctx, ctx.name)
@@ -1693,12 +1703,22 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
   }
 
   @Override
+  public void exitLogging_source_interface(Logging_source_interfaceContext ctx) {
+    toString(ctx, ctx.name).ifPresent(_configuration::setLoggingSourceInterface);
+  }
+
+  @Override
   public void exitNtp_server(Ntp_serverContext ctx) {
     NtpServer ntpServer =
         _configuration.getNtpServers().computeIfAbsent(ctx.host.getText(), NtpServer::new);
     if (ctx.vrf != null) {
       toString(ctx, ctx.vrf).ifPresent(ntpServer::setUseVrf);
     }
+  }
+
+  @Override
+  public void exitNtp_source_interface(Ntp_source_interfaceContext ctx) {
+    toString(ctx, ctx.name).ifPresent(_configuration::setNtpSourceInterface);
   }
 
   @Override
@@ -3344,6 +3364,11 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
                   _configuration.defineStructure(VRF, name, ctx);
                   return new Vrf(name, _currentContextVrfId++);
                 });
+  }
+
+  @Override
+  public void exitSnmpssi_traps(Snmpssi_trapsContext ctx) {
+    toString(ctx, ctx.name).ifPresent(_configuration::setSnmpSourceInterface);
   }
 
   @Override
@@ -5412,6 +5437,21 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
         toStringWithLengthInSpace(messageCtx, ctx, VRF_NAME_LENGTH_RANGE, "VRF name");
     // VRF names are case-insensitive.
     return vrfName.map(name -> getPreferredName(name, VRF));
+  }
+
+  private @Nonnull Optional<String> toString(
+      ParserRuleContext messageCtx, Vrf_non_default_nameContext ctx) {
+    Optional<String> vrfName =
+        toStringWithLengthInSpace(messageCtx, ctx, VRF_NAME_LENGTH_RANGE, "VRF name")
+            // VRF names are case-insensitive.
+            .map(name -> getPreferredName(name, VRF));
+
+    if (vrfName.isPresent() && vrfName.get().equals(DEFAULT_VRF_NAME)) {
+      _w.addWarning(
+          messageCtx, getFullText(messageCtx), _parser, "Cannot use default VRF in this context");
+      return Optional.empty();
+    }
+    return vrfName;
   }
 
   /**
