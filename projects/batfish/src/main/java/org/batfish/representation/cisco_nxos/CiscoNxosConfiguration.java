@@ -75,6 +75,7 @@ import org.batfish.datamodel.Interface.Dependency;
 import org.batfish.datamodel.Interface.DependencyType;
 import org.batfish.datamodel.InterfaceType;
 import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.Ip6AccessList;
 import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.IpSpaceReference;
 import org.batfish.datamodel.IpWildcard;
@@ -304,6 +305,7 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
   private @Nullable String _ipDomainName;
   private Map<String, List<String>> _ipNameServersByUseVrf;
   private final @Nonnull Map<String, IpPrefixList> _ipPrefixLists;
+  private final @Nonnull Map<String, Ipv6AccessList> _ipv6AccessLists;
   private final @Nonnull Map<String, LoggingServer> _loggingServers;
   private final @Nonnull Map<String, NtpServer> _ntpServers;
   private final @Nonnull Map<Integer, Nve> _nves;
@@ -328,6 +330,7 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
     _ipCommunityLists = new HashMap<>();
     _ipNameServersByUseVrf = new HashMap<>();
     _ipPrefixLists = new HashMap<>();
+    _ipv6AccessLists = new HashMap<>();
     _loggingServers = new HashMap<>();
     _ntpServers = new HashMap<>();
     _nves = new HashMap<>();
@@ -740,6 +743,12 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
         (name, ipAccessList) -> _c.getIpAccessLists().put(name, toIpAccessList(ipAccessList)));
   }
 
+  private void convertIpv6AccessLists() {
+    _ipv6AccessLists.forEach(
+        (name, ipv6AccessList) ->
+            _c.getIp6AccessLists().put(name, toIp6AccessList(ipv6AccessList)));
+  }
+
   private void convertIpAsPathAccessLists() {
     _ipAsPathAccessLists.forEach(
         (name, ipAsPathAccessList) ->
@@ -1055,6 +1064,10 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
 
   public @Nonnull Map<String, IpPrefixList> getIpPrefixLists() {
     return _ipPrefixLists;
+  }
+
+  public @Nonnull Map<String, Ipv6AccessList> getIpv6AccessLists() {
+    return _ipv6AccessLists;
   }
 
   public @Nonnull Map<String, LoggingServer> getLoggingServers() {
@@ -1652,6 +1665,12 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
         .setUseAck((chooseOnes & 0b010000) != 0)
         .setUseUrg((chooseOnes & 0b100000) != 0)
         .build();
+  }
+
+  private @Nonnull Ip6AccessList toIp6AccessList(Ipv6AccessList list) {
+    // TODO: handle and test top-level fragments behavior
+    // TODO: convert lines
+    return new Ip6AccessList(list.getName());
   }
 
   /**
@@ -2492,6 +2511,7 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
     convertDomainName();
     convertObjectGroups();
     convertIpAccessLists();
+    convertIpv6AccessLists();
     convertIpAsPathAccessLists();
     convertIpPrefixLists();
     convertIpCommunityLists();

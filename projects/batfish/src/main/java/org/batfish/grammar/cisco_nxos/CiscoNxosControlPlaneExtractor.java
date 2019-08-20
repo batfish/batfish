@@ -262,6 +262,7 @@ import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Ip_prefix_list_line_prefix
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Ip_prefix_list_nameContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Ip_protocolContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Ip_route_networkContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Ipv6_access_listContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Ipv6_addressContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Ipv6_prefixContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Last_as_num_prependsContext;
@@ -495,6 +496,7 @@ import org.batfish.representation.cisco_nxos.IpCommunityListStandard;
 import org.batfish.representation.cisco_nxos.IpCommunityListStandardLine;
 import org.batfish.representation.cisco_nxos.IpPrefixList;
 import org.batfish.representation.cisco_nxos.IpPrefixListLine;
+import org.batfish.representation.cisco_nxos.Ipv6AccessList;
 import org.batfish.representation.cisco_nxos.Layer3Options;
 import org.batfish.representation.cisco_nxos.LiteralIpAddressSpec;
 import org.batfish.representation.cisco_nxos.LiteralPortSpec;
@@ -889,6 +891,10 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
   private IpAccessList _currentIpAccessList;
   private Optional<Long> _currentIpAccessListLineNum;
   private IpPrefixList _currentIpPrefixList;
+
+  @SuppressWarnings("unused")
+  private Ipv6AccessList _currentIpv6AccessList;
+
   private Layer3Options.Builder _currentLayer3OptionsBuilder;
 
   @SuppressWarnings("unused")
@@ -1611,6 +1617,30 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
                               return new IpPrefixList(n);
                             }))
             .orElse(new IpPrefixList("dummy"));
+  }
+
+  @Override
+  public void enterIpv6_access_list(Ipv6_access_listContext ctx) {
+    Optional<String> nameOrErr = toString(ctx, ctx.name);
+    if (!nameOrErr.isPresent()) {
+      _currentIpv6AccessList = new Ipv6AccessList("dummy");
+      return;
+    }
+    _currentIpv6AccessList =
+        _configuration
+            .getIpv6AccessLists()
+            .computeIfAbsent(
+                nameOrErr.get(),
+                name -> {
+                  _configuration.defineStructure(
+                      CiscoNxosStructureType.IPV6_ACCESS_LIST, name, ctx);
+                  return new Ipv6AccessList(name);
+                });
+  }
+
+  @Override
+  public void exitIpv6_access_list(Ipv6_access_listContext ctx) {
+    _currentIpv6AccessList = null;
   }
 
   @Override
