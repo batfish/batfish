@@ -1281,8 +1281,16 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
         CiscoNxosStructureUsage.BGP_REDISTRIBUTE_EIGRP_SOURCE_TAG,
         CiscoNxosStructureUsage.ROUTER_EIGRP_SELF_REFERENCE);
     markConcreteStructure(
+        CiscoNxosStructureType.ROUTER_ISIS,
+        CiscoNxosStructureUsage.BGP_REDISTRIBUTE_ISIS_SOURCE_TAG);
+    markConcreteStructure(
         CiscoNxosStructureType.ROUTER_OSPF,
         CiscoNxosStructureUsage.BGP_REDISTRIBUTE_OSPF_SOURCE_TAG);
+    markConcreteStructure(
+        CiscoNxosStructureType.ROUTER_OSPFV3,
+        CiscoNxosStructureUsage.BGP_REDISTRIBUTE_OSPFV3_SOURCE_TAG);
+    markConcreteStructure(
+        CiscoNxosStructureType.ROUTER_RIP, CiscoNxosStructureUsage.BGP_REDISTRIBUTE_RIP_SOURCE_TAG);
     markConcreteStructure(
         CiscoNxosStructureType.BGP_TEMPLATE_PEER,
         CiscoNxosStructureUsage.BGP_NEIGHBOR_INHERIT_PEER);

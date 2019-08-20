@@ -18,7 +18,10 @@ import static org.batfish.representation.cisco_nxos.CiscoNxosStructureType.NVE;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureType.OBJECT_GROUP_IP_ADDRESS;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureType.PORT_CHANNEL;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureType.ROUTER_EIGRP;
+import static org.batfish.representation.cisco_nxos.CiscoNxosStructureType.ROUTER_ISIS;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureType.ROUTER_OSPF;
+import static org.batfish.representation.cisco_nxos.CiscoNxosStructureType.ROUTER_OSPFV3;
+import static org.batfish.representation.cisco_nxos.CiscoNxosStructureType.ROUTER_RIP;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureType.ROUTE_MAP;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureType.ROUTE_MAP_ENTRY;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureType.VLAN;
@@ -56,11 +59,14 @@ import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.BGP_
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.BGP_REDISTRIBUTE_EIGRP_ROUTE_MAP;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.BGP_REDISTRIBUTE_EIGRP_SOURCE_TAG;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.BGP_REDISTRIBUTE_ISIS_ROUTE_MAP;
+import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.BGP_REDISTRIBUTE_ISIS_SOURCE_TAG;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.BGP_REDISTRIBUTE_LISP_ROUTE_MAP;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.BGP_REDISTRIBUTE_OSPFV3_ROUTE_MAP;
+import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.BGP_REDISTRIBUTE_OSPFV3_SOURCE_TAG;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.BGP_REDISTRIBUTE_OSPF_ROUTE_MAP;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.BGP_REDISTRIBUTE_OSPF_SOURCE_TAG;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.BGP_REDISTRIBUTE_RIP_ROUTE_MAP;
+import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.BGP_REDISTRIBUTE_RIP_SOURCE_TAG;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.BGP_REDISTRIBUTE_STATIC_ROUTE_MAP;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.BGP_SUPPRESS_MAP;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.BGP_TABLE_MAP;
@@ -430,8 +436,11 @@ import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Route_target_or_autoContex
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Router_bgpContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Router_eigrpContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Router_eigrp_process_tagContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Router_isis_process_tagContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Router_ospfContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Router_ospf_nameContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Router_ospfv3_nameContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Router_rip_process_idContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.S_evpnContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.S_hostnameContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.S_interface_nveContext;
@@ -601,7 +610,7 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
       IntegerSpace.of(Range.closed(1, 63));
   private static final IntegerSpace DSCP_RANGE = IntegerSpace.of(Range.closed(0, 63));
   private static final IntegerSpace EIGRP_ASN_RANGE = IntegerSpace.of(Range.closed(1, 65535));
-  private static final IntegerSpace EIGRP_PROCESS_NAME_LENGTH_RANGE =
+  private static final IntegerSpace EIGRP_PROCESS_TAG_LENGTH_RANGE =
       IntegerSpace.of(Range.closed(1, 20));
   private static final IntegerSpace HSRP_DELAY_RELOAD_S_RANGE =
       IntegerSpace.of(Range.closed(0, 10000));
@@ -659,6 +668,8 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
       IntegerSpace.of(Range.closed(1, 32));
   private static final IntegerSpace IPV6_PREFIX_LIST_PREFIX_LENGTH_RANGE =
       IntegerSpace.of(Range.closed(1, 128));
+  private static final IntegerSpace ISIS_PROCESS_TAG_LENGTH_RANGE =
+      IntegerSpace.of(Range.closed(1, 20));
   private static final IntegerSpace LACP_MIN_LINKS_RANGE = IntegerSpace.of(Range.closed(1, 32));
   private static final IntegerSpace NUM_AS_PATH_PREPENDS_RANGE =
       IntegerSpace.of(Range.closed(1, 10));
@@ -694,6 +705,10 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
       IntegerSpace.of(Range.closed(50, 30000));
   private static final IntegerSpace OSPF_TIMERS_LSA_START_INTERVAL_MS_RANGE =
       IntegerSpace.of(Range.closed(0, 5000));
+  private static final IntegerSpace OSPFV3_PROCESS_NAME_LENGTH_RANGE =
+      IntegerSpace.of(Range.closed(1, 20));
+  private static final IntegerSpace RIP_PROCESS_ID_LENGTH_RANGE =
+      IntegerSpace.of(Range.closed(1, 20));
 
   @VisibleForTesting
   public static final IntegerSpace PACKET_LENGTH_RANGE = IntegerSpace.of(Range.closed(20, 9210));
@@ -2375,17 +2390,14 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
   @Override
   public void exitRb_af4_redistribute_ospf(Rb_af4_redistribute_ospfContext ctx) {
     Optional<String> nameOrError = toString(ctx, ctx.mapname);
-    if (!nameOrError.isPresent()) {
+    Optional<String> ospfProcessOrError = toString(ctx, ctx.source_tag);
+    if (!nameOrError.isPresent() || !ospfProcessOrError.isPresent()) {
       return;
     }
     String name = nameOrError.get();
+    String ospfProcess = ospfProcessOrError.get();
     _configuration.referenceStructure(
         ROUTE_MAP, name, BGP_REDISTRIBUTE_OSPF_ROUTE_MAP, ctx.getStart().getLine());
-    Optional<String> ospfProcessOrError = toString(ctx, ctx.source_tag);
-    if (!ospfProcessOrError.isPresent()) {
-      return;
-    }
-    String ospfProcess = ospfProcessOrError.get();
     _configuration.referenceStructure(
         ROUTER_OSPF, ospfProcess, BGP_REDISTRIBUTE_OSPF_SOURCE_TAG, ctx.getStart().getLine());
     _currentBgpVrfIpAddressFamily.setRedistributionPolicy(RoutingProtocol.OSPF, name, ospfProcess);
@@ -2455,13 +2467,16 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
   @Override
   public void exitRb_af6_redistribute_ospfv3(Rb_af6_redistribute_ospfv3Context ctx) {
     Optional<String> nameOrError = toString(ctx, ctx.mapname);
-    if (!nameOrError.isPresent()) {
+    Optional<String> sourceTagOrError = toString(ctx, ctx.source_tag);
+    if (!nameOrError.isPresent() || !sourceTagOrError.isPresent()) {
       return;
     }
     String name = nameOrError.get();
-    String sourceTag = ctx.source_tag.getText();
+    String sourceTag = sourceTagOrError.get();
     _configuration.referenceStructure(
         ROUTE_MAP, name, BGP_REDISTRIBUTE_OSPFV3_ROUTE_MAP, ctx.getStart().getLine());
+    _configuration.referenceStructure(
+        ROUTER_OSPFV3, sourceTag, BGP_REDISTRIBUTE_OSPFV3_SOURCE_TAG, ctx.getStart().getLine());
     _currentBgpVrfIpAddressFamily.setRedistributionPolicy(RoutingProtocol.OSPF, name, sourceTag);
   }
 
@@ -2608,14 +2623,10 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
   @Override
   public void exitRb_afip_redistribute_eigrp(Rb_afip_redistribute_eigrpContext ctx) {
     Optional<String> mapNameOrError = toString(ctx, ctx.mapname);
-    if (!mapNameOrError.isPresent()) {
-      return;
-    }
     Optional<String> eigrpTagOrError = toString(ctx, ctx.source_tag);
-    if (!eigrpTagOrError.isPresent()) {
+    if (!mapNameOrError.isPresent() || !eigrpTagOrError.isPresent()) {
       return;
     }
-
     String mapName = mapNameOrError.get();
     String sourceTag = eigrpTagOrError.get();
     _configuration.referenceStructure(
@@ -2629,13 +2640,16 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
   @Override
   public void exitRb_afip_redistribute_isis(Rb_afip_redistribute_isisContext ctx) {
     Optional<String> nameOrError = toString(ctx, ctx.mapname);
-    if (!nameOrError.isPresent()) {
+    Optional<String> sourceTagOrError = toString(ctx, ctx.source_tag);
+    if (!nameOrError.isPresent() || !sourceTagOrError.isPresent()) {
       return;
     }
     String name = nameOrError.get();
-    String sourceTag = ctx.source_tag.getText();
+    String sourceTag = sourceTagOrError.get();
     _configuration.referenceStructure(
         ROUTE_MAP, name, BGP_REDISTRIBUTE_ISIS_ROUTE_MAP, ctx.getStart().getLine());
+    _configuration.referenceStructure(
+        ROUTER_ISIS, sourceTag, BGP_REDISTRIBUTE_ISIS_SOURCE_TAG, ctx.getStart().getLine());
     _currentBgpVrfIpAddressFamily.setRedistributionPolicy(
         RoutingProtocol.ISIS_ANY, name, sourceTag);
   }
@@ -2655,13 +2669,16 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
   @Override
   public void exitRb_afip_redistribute_rip(Rb_afip_redistribute_ripContext ctx) {
     Optional<String> nameOrError = toString(ctx, ctx.mapname);
-    if (!nameOrError.isPresent()) {
+    Optional<String> sourceTagOrError = toString(ctx, ctx.source_tag);
+    if (!nameOrError.isPresent() || !sourceTagOrError.isPresent()) {
       return;
     }
     String name = nameOrError.get();
-    String sourceTag = ctx.source_tag.getText();
+    String sourceTag = sourceTagOrError.get();
     _configuration.referenceStructure(
         ROUTE_MAP, name, BGP_REDISTRIBUTE_RIP_ROUTE_MAP, ctx.getStart().getLine());
+    _configuration.referenceStructure(
+        ROUTER_RIP, sourceTag, BGP_REDISTRIBUTE_RIP_SOURCE_TAG, ctx.getStart().getLine());
     _currentBgpVrfIpAddressFamily.setRedistributionPolicy(RoutingProtocol.RIP, name, sourceTag);
   }
 
@@ -5493,9 +5510,18 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
       ParserRuleContext messageCtx, Router_eigrp_process_tagContext ctx) {
     Optional<String> procName =
         toStringWithLengthInSpace(
-            messageCtx, ctx, EIGRP_PROCESS_NAME_LENGTH_RANGE, "EIGRP process name");
-    // EIGRP process name is case-insensitive.
+            messageCtx, ctx, EIGRP_PROCESS_TAG_LENGTH_RANGE, "EIGRP process tag");
+    // EIGRP process tag is case-insensitive.
     return procName.map(name -> getPreferredName(name, ROUTER_EIGRP));
+  }
+
+  private @Nonnull Optional<String> toString(
+      ParserRuleContext messageCtx, Router_isis_process_tagContext ctx) {
+    Optional<String> procName =
+        toStringWithLengthInSpace(
+            messageCtx, ctx, ISIS_PROCESS_TAG_LENGTH_RANGE, "ISIS process tag");
+    // ISIS process tag is case-insensitive.
+    return procName.map(name -> getPreferredName(name, ROUTER_ISIS));
   }
 
   private @Nonnull Optional<String> toString(
@@ -5505,6 +5531,23 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
             messageCtx, ctx, OSPF_PROCESS_NAME_LENGTH_RANGE, "OSPF process name");
     // OSPF process name is case-insensitive.
     return procName.map(name -> getPreferredName(name, ROUTER_OSPF));
+  }
+
+  private @Nonnull Optional<String> toString(
+      ParserRuleContext messageCtx, Router_ospfv3_nameContext ctx) {
+    Optional<String> procName =
+        toStringWithLengthInSpace(
+            messageCtx, ctx, OSPFV3_PROCESS_NAME_LENGTH_RANGE, "OSPFv3 process name");
+    // OSPF process name is case-insensitive.
+    return procName.map(name -> getPreferredName(name, ROUTER_OSPFV3));
+  }
+
+  private @Nonnull Optional<String> toString(
+      ParserRuleContext messageCtx, Router_rip_process_idContext ctx) {
+    Optional<String> procName =
+        toStringWithLengthInSpace(messageCtx, ctx, RIP_PROCESS_ID_LENGTH_RANGE, "RIP process ID");
+    // RIP process name is case-insensitive.
+    return procName.map(name -> getPreferredName(name, ROUTER_RIP));
   }
 
   private @Nullable String toString(ParserRuleContext messageCtx, Static_route_nameContext ctx) {

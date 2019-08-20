@@ -258,7 +258,7 @@ rb_af6_redistribute
 
 rb_af6_redistribute_ospfv3
 :
-  OSPFV3 source_tag = WORD ROUTE_MAP mapname = route_map_name NEWLINE
+  OSPFV3 source_tag = router_ospfv3_name ROUTE_MAP mapname = route_map_name NEWLINE
 ;
 
 // Common to IPv4 or IPv6, unicast or multicast

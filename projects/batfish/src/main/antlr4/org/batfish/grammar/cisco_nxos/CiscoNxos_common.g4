@@ -239,6 +239,12 @@ router_ospf_name
   WORD
 ;
 
+router_ospfv3_name
+:
+// 1-20 characters
+  WORD
+;
+
 router_rip_process_id
 :
 // 1-20 characters
