@@ -340,6 +340,7 @@ i_ip
   (
     i_ip_access_group
     | i_ip_address
+    | i_ip_authentication
     | i_ip_dhcp
     | i_ip_null
     | i_ip_ospf
@@ -364,6 +365,25 @@ i_ip_address
     i_ip_address_concrete
     | i_ip_address_dhcp
   )
+;
+
+i_ip_authentication
+:
+  AUTHENTICATION
+  (
+    iipa_key_chain
+    | iipa_mode
+  )
+;
+
+iipa_key_chain
+:
+  KEY_CHAIN EIGRP tag = router_eigrp_process_tag keychain = key_chain_name NEWLINE
+;
+
+iipa_mode
+:
+  MODE EIGRP tag = router_eigrp_process_tag MD5 NEWLINE
 ;
 
 i_ip_address_concrete
@@ -510,7 +530,16 @@ iipo_passive_interface
 
 i_ip_router
 :
-  ROUTER iipr_ospf
+  ROUTER
+  (
+    iipr_eigrp
+    | iipr_ospf
+  )
+;
+
+iipr_eigrp
+:
+  EIGRP name = router_eigrp_process_tag NEWLINE
 ;
 
 iipr_ospf

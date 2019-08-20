@@ -5,6 +5,7 @@ import
   CiscoNxos_aaa,
   CiscoNxos_bgp,
   CiscoNxos_class_map,
+  CiscoNxos_eigrp,
   CiscoNxos_evpn,
   CiscoNxos_interface,
   CiscoNxos_ip_access_list,
@@ -233,6 +234,7 @@ s_router
   ROUTER
   (
     router_bgp
+    | router_eigrp
     | router_ospf
   )
 ;

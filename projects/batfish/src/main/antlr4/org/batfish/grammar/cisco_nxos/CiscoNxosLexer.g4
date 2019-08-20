@@ -1077,14 +1077,30 @@ EGP
   'egp'
 ;
 
-EIGRP
-:
-  'eigrp'
-;
-
 EIBGP
 :
   'eibgp'
+;
+
+
+EIGRP
+:
+  'eigrp'
+  // All other instances are followed by keywords or tokens in default mode
+  {
+    switch (lastTokenType()) {
+      case KEY_CHAIN:
+        pushMode(M_TwoWords);
+        break;
+      case MODE:
+      case REDISTRIBUTE:
+      case ROUTER:
+        pushMode(M_Word);
+        break;
+      default:
+        break;
+    }
+  }
 ;
 
 ENABLE
@@ -1728,7 +1744,7 @@ ISAKMP
 
 ISIS
 :
-  'isis'
+  'isis' -> pushMode ( M_Word )
 ;
 
 ISOLATE
@@ -1766,7 +1782,12 @@ KEY
 
 KEY_CHAIN
 :
-  'key-chain' -> pushMode ( M_Word )
+  'key-chain'
+  {
+    if (lastTokenType() != AUTHENTICATION || secondToLastTokenType() != IP) {
+      pushMode(M_Word);
+    }
+  }
 ;
 
 KEY_STRING
@@ -1783,7 +1804,6 @@ KICKSTART
       pushMode(M_Remark);
     }
   }
-
 ;
 
 KLOGIN
@@ -2655,7 +2675,6 @@ OSPF
       pushMode(M_Word);
     }
   }
-
 ;
 
 OSPFV3
@@ -3165,7 +3184,7 @@ RETAIN
 
 RIP
 :
-  'rip'
+  'rip' -> pushMode ( M_Word )
 ;
 
 ROBUSTNESS_VARIABLE
@@ -5219,7 +5238,31 @@ M_Vrf_WS
   F_Whitespace+ -> channel ( HIDDEN )
 ;
 
+// Keep in sync with M_Word
+mode M_TwoWords;
+
+M_TwoWords_NEWLINE
+:
+  F_Newline+ -> type ( NEWLINE ) , popMode
+;
+
+M_TwoWords_WORD
+:
+  F_Word -> type ( WORD ) , mode ( M_Word )
+;
+
+M_TwoWords_WS
+:
+  F_Whitespace+ -> channel ( HIDDEN )
+;
+
+// Keep in sync with M_TwoWords
 mode M_Word;
+
+M_Word_NEWLINE
+:
+  F_Newline+ -> type ( NEWLINE ) , popMode
+;
 
 M_Word_WORD
 :
