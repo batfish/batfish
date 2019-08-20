@@ -210,7 +210,25 @@ route_network
   | prefix = ip_prefix
 ;
 
+router_eigrp_process_tag
+:
+// 1-20 characters
+  WORD
+;
+
+router_isis_process_tag
+:
+// 1-20 characters
+  WORD
+;
+
 router_ospf_name
+:
+// 1-20 characters
+  WORD
+;
+
+router_rip_process_id
 :
 // 1-20 characters
   WORD
