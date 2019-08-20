@@ -6,6 +6,14 @@ options {
   tokenVocab = CiscoNxosLexer;
 }
 
+// Reused values
+
+eigrp_asn
+:
+// 1-65535
+  value = uint16
+;
+
 router_eigrp
 :
   EIGRP tag = router_eigrp_process_tag NEWLINE
@@ -21,6 +29,7 @@ router_eigrp
 re_common
 :
   rec_address_family
+  | rec_autonomous_system
   | rec_no
   | rec_passive_interface
   | rec_redistribute
@@ -58,7 +67,7 @@ re_no_isolate
 
 re_vrf
 :
-  VRF name = vrf_name NEWLINE
+  VRF name = vrf_non_default_name NEWLINE
   re_common*
 ;
 
@@ -79,6 +88,11 @@ recaf_ipv4
 recaf_ipv6
 :
   IPV6 UNICAST NEWLINE
+;
+
+rec_autonomous_system
+:
+  AUTONOMOUS_SYSTEM eigrp_asn NEWLINE
 ;
 
 rec_no
