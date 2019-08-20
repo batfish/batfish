@@ -1,5 +1,7 @@
 package org.batfish.representation.cumulus;
 
+import static org.batfish.representation.cumulus.CumulusNcluConfiguration.computeBgpNeighborImportRoutingPolicy;
+import static org.batfish.representation.cumulus.CumulusNcluConfiguration.computePeerConditions;
 import static org.batfish.representation.cumulus.CumulusNcluConfiguration.getSetNextHop;
 import static org.batfish.representation.cumulus.CumulusNcluConfiguration.toCommunityList;
 import static org.hamcrest.Matchers.equalTo;
@@ -11,15 +13,22 @@ import static org.junit.Assert.assertTrue;
 import com.google.common.collect.ImmutableList;
 import org.batfish.datamodel.CommunityList;
 import org.batfish.datamodel.CommunityListLine;
+import org.batfish.datamodel.Configuration;
+import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.RouteFilterLine;
 import org.batfish.datamodel.RouteFilterList;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.bgp.community.StandardCommunity;
+import org.batfish.datamodel.routing_policy.RoutingPolicy;
+import org.batfish.datamodel.routing_policy.expr.CallExpr;
+import org.batfish.datamodel.routing_policy.expr.Conjunction;
 import org.batfish.datamodel.routing_policy.expr.LiteralCommunity;
 import org.batfish.datamodel.routing_policy.expr.SelfNextHop;
+import org.batfish.datamodel.routing_policy.statement.If;
 import org.batfish.datamodel.routing_policy.statement.SetNextHop;
+import org.batfish.datamodel.routing_policy.statement.Statements;
 import org.junit.Test;
 
 /** Test for {@link CumulusNcluConfiguration}. */
@@ -195,5 +204,52 @@ public class CumulusNcluConfigurationTest {
       SetNextHop setNextHop = getSetNextHop(bgpNeighbor, bgpVrf);
       assertThat(setNextHop, equalTo(new SetNextHop(SelfNextHop.getInstance(), false)));
     }
+  }
+
+  @Test
+  public void testComputePeerConditions() {
+    assertNull(computePeerConditions(null, null));
+    assertThat(
+        computePeerConditions(new CallExpr("common"), null),
+        equalTo(new Conjunction(ImmutableList.of(new CallExpr("common")))));
+    assertThat(
+        computePeerConditions(null, new CallExpr("peer")),
+        equalTo(new Conjunction(ImmutableList.of(new CallExpr("peer")))));
+    assertThat(
+        computePeerConditions(new CallExpr("common"), new CallExpr("peer")),
+        equalTo(new Conjunction(ImmutableList.of(new CallExpr("common"), new CallExpr("peer")))));
+  }
+
+  @Test
+  public void testComputeBgpNeighborImportRoutingPolicy() {
+    BgpNeighbor neighbor = new BgpIpNeighbor("neighbor");
+
+    BgpIpv4UnicastAddressFamily ipv4unicast = new BgpIpv4UnicastAddressFamily();
+    ipv4unicast
+        .getNeighborAddressFamilyConfigurations()
+        .computeIfAbsent(
+            "neighbor",
+            k -> {
+              BgpVrfNeighborAddressFamilyConfiguration neighborConfiguration =
+                  new BgpVrfNeighborAddressFamilyConfiguration();
+              neighborConfiguration.setRouteMapIn("peerMapIn");
+              return neighborConfiguration;
+            });
+
+    BgpVrf bgpVrf = new BgpVrf("bgpVrf");
+    bgpVrf.setIpv4Unicast(ipv4unicast);
+
+    Configuration config = new Configuration("host", ConfigurationFormat.CUMULUS_NCLU);
+
+    RoutingPolicy importPolicy = computeBgpNeighborImportRoutingPolicy(neighbor, bgpVrf, config);
+    assertThat(
+        importPolicy.getStatements(),
+        equalTo(
+            ImmutableList.of(
+                new If(
+                    "peer-export policy main conditional: exitAccept if true / exitReject if false",
+                    new Conjunction(ImmutableList.of(new CallExpr("peerMapIn"))),
+                    ImmutableList.of(Statements.ExitAccept.toStaticStatement()),
+                    ImmutableList.of(Statements.ExitReject.toStaticStatement())))));
   }
 }
