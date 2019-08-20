@@ -1,8 +1,8 @@
 package org.batfish.grammar.cisco_nxos;
 
 import static com.google.common.base.Preconditions.checkArgument;
-import static org.batfish.datamodel.Configuration.DEFAULT_VRF_NAME;
 import static org.batfish.datamodel.IpWildcard.ipWithWildcardMask;
+import static org.batfish.representation.cisco_nxos.CiscoNxosConfiguration.DEFAULT_VRF_NAME;
 import static org.batfish.representation.cisco_nxos.CiscoNxosConfiguration.getCanonicalInterfaceNamePrefix;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureType.BGP_TEMPLATE_PEER;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureType.BGP_TEMPLATE_PEER_POLICY;
@@ -111,7 +111,6 @@ import org.batfish.common.Warnings;
 import org.batfish.common.Warnings.ParseWarning;
 import org.batfish.common.WellKnownCommunity;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
-import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.DscpType;
 import org.batfish.datamodel.IcmpCode;
 import org.batfish.datamodel.IcmpType;
@@ -1480,7 +1479,7 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
       }
       vrf = vrfOrErr.get();
     } else {
-      vrf = Configuration.DEFAULT_VRF_NAME;
+      vrf = DEFAULT_VRF_NAME;
     }
     List<String> existingServers =
         _configuration.getIpNameServersByUseVrf().computeIfAbsent(vrf, v -> new LinkedList<>());
