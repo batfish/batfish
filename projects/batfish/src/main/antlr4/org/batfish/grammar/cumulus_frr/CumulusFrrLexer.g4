@@ -158,6 +158,11 @@ HOSTNAME
   'hostname' -> pushMode(M_Word)
 ;
 
+IN
+:
+  'in'
+;
+
 INFORMATIONAL
 :
   'informational'
@@ -245,6 +250,11 @@ NETWORK
 NEXT_HOP_SELF
 :
   'next-hop-self'
+;
+
+OUT
+:
+  'out'
 ;
 
 PASSWORD

@@ -51,6 +51,7 @@ import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbafi_neighborContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbafi_networkContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbafi_redistributeContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbafin_next_hop_selfContext;
+import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbafin_route_mapContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbafls_advertise_all_vniContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbafls_advertise_ipv4_unicastContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbafls_neighbor_activateContext;
@@ -397,6 +398,16 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
   @Override
   public void exitS_vrf(S_vrfContext ctx) {
     _currentVrf = null;
+  }
+
+  @Override
+  public void exitSbafin_route_map(Sbafin_route_mapContext ctx) {
+    String name = ctx.name.getText();
+    if (ctx.IN() != null) {
+      _currentNeighborAddressFamilyConfiguration.setRouteMapIn(name);
+    } else if (ctx.OUT() != null) {
+      _currentNeighborAddressFamilyConfiguration.setRouteMapOut(name);
+    }
   }
 
   @Override

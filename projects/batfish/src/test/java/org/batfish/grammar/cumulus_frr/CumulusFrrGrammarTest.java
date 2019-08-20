@@ -617,4 +617,40 @@ public class CumulusFrrGrammarTest {
   public void testCumulusFrrNeightborPassword() {
     parse("router bgp 10000\nneighbor N password sV4@%)!@#$%^&**()_+|\n");
   }
+
+  @Test
+  public void testIp4vUnicastRoutemap() {
+    {
+      parseLines(
+          "router bgp 10000",
+          "address-family ipv4 unicast",
+          "neighbor N route-map R in",
+          "exit-address-family");
+      assertThat(
+          CONFIG
+              .getBgpProcess()
+              .getDefaultVrf()
+              .getIpv4Unicast()
+              .getNeighborAddressFamilyConfigurations()
+              .get("N")
+              .getRouteMapIn(),
+          equalTo("R"));
+    }
+    {
+      parseLines(
+          "router bgp 10000",
+          "address-family ipv4 unicast",
+          "neighbor N route-map R out",
+          "exit-address-family");
+      assertThat(
+          CONFIG
+              .getBgpProcess()
+              .getDefaultVrf()
+              .getIpv4Unicast()
+              .getNeighborAddressFamilyConfigurations()
+              .get("N")
+              .getRouteMapOut(),
+          equalTo("R"));
+    }
+  }
 }
