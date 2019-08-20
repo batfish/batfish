@@ -21,6 +21,7 @@ public enum CiscoNxosStructureType implements StructureType {
   PORT_CHANNEL("port-channel"),
   ROUTE_MAP("route-map"),
   ROUTE_MAP_ENTRY("route-map entry"),
+  ROUTER_EIGRP("router eigrp"),
   ROUTER_OSPF("router ospf"),
   VLAN("vlan"),
   VRF("vrf");
