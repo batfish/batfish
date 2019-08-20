@@ -820,7 +820,7 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
   }
 
   private static @Nonnull Prefix6 toPrefix6(Ipv6_prefixContext ctx) {
-    return new Prefix6(ctx.getText());
+    return Prefix6.parse(ctx.getText());
   }
 
   private static @Nonnull Prefix toPrefix(Route_networkContext ctx) {

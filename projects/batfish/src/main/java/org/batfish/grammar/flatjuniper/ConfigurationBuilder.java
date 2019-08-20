@@ -2696,7 +2696,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
       _currentRouteFilterPrefix = Prefix.parse(ctx.IP_PREFIX().getText());
       _currentRouteFilter.setIpv4(true);
     } else if (ctx.IPV6_PREFIX() != null) {
-      _currentRoute6FilterPrefix = new Prefix6(ctx.IPV6_PREFIX().getText());
+      _currentRoute6FilterPrefix = Prefix6.parse(ctx.IPV6_PREFIX().getText());
       _currentRouteFilter.setIpv6(true);
     }
   }
@@ -2798,7 +2798,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
       Route4FilterLine line = new Route4FilterLineThrough(_currentRouteFilterPrefix, throughPrefix);
       _currentRouteFilterLine = _currentRouteFilter.insertLine(line, Route4FilterLine.class);
     } else if (_currentRoute6FilterPrefix != null) { // ipv6
-      Prefix6 throughPrefix6 = new Prefix6(ctx.IPV6_PREFIX().getText());
+      Prefix6 throughPrefix6 = Prefix6.parse(ctx.IPV6_PREFIX().getText());
       Route6FilterLine line =
           new Route6FilterLineThrough(_currentRoute6FilterPrefix, throughPrefix6);
       _currentRoute6FilterLine = _currentRouteFilter.insertLine(line, Route6FilterLine.class);
