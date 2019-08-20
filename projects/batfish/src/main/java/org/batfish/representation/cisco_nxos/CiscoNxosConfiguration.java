@@ -326,7 +326,9 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
   private final @Nonnull Map<String, Ipv6AccessList> _ipv6AccessLists;
   private final @Nonnull Map<String, Ipv6PrefixList> _ipv6PrefixLists;
   private final @Nonnull Map<String, LoggingServer> _loggingServers;
+  private @Nullable String _loggingSourceInterface;
   private final @Nonnull Map<String, NtpServer> _ntpServers;
+  private @Nullable String _ntpSourceInterface;
   private final @Nonnull Map<Integer, Nve> _nves;
   private final @Nonnull Map<String, ObjectGroup> _objectGroups;
   private final @Nonnull Map<String, DefaultVrfOspfProcess> _ospfProcesses;
@@ -334,8 +336,10 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
   private @Nonnull IntegerSpace _reservedVlanRange;
   private final @Nonnull Map<String, RouteMap> _routeMaps;
   private final @Nonnull Map<String, SnmpServer> _snmpServers;
+  private @Nullable String _snmpSourceInterface;
   private boolean _systemDefaultSwitchportShutdown;
   private final @Nonnull Map<String, TacacsServer> _tacacsServers;
+  private @Nullable String _tacacsSourceInterface;
   private @Nullable String _version;
   private final @Nonnull Map<Integer, Vlan> _vlans;
   private final @Nonnull Map<String, Vrf> _vrfs;
@@ -842,6 +846,10 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
     _c.setTacacsServers(ImmutableSortedSet.copyOf(_tacacsServers.keySet()));
   }
 
+  private void convertTacacsSourceInterface() {
+    _c.setTacacsSourceInterface(_tacacsSourceInterface);
+  }
+
   private void convertIpPrefixLists() {
     _ipPrefixLists.forEach(
         (name, ipPrefixList) ->
@@ -858,8 +866,16 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
     _c.setLoggingServers(ImmutableSortedSet.copyOf(_loggingServers.keySet()));
   }
 
+  private void convertLoggingSourceInterface() {
+    _c.setLoggingSourceInterface(_loggingSourceInterface);
+  }
+
   private void convertNtpServers() {
     _c.setNtpServers(ImmutableSortedSet.copyOf(_ntpServers.keySet()));
+  }
+
+  private void convertNtpSourceInterface() {
+    _c.setNtpSourceInterface(_ntpSourceInterface);
   }
 
   private void convertOspfProcesses() {
@@ -899,6 +915,10 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
 
   private void convertSnmpServers() {
     _c.setSnmpTrapServers(ImmutableSortedSet.copyOf(_snmpServers.keySet()));
+  }
+
+  private void convertSnmpSourceInterface() {
+    _c.setSnmpSourceInterface(_snmpSourceInterface);
   }
 
   private void convertStaticRoutes() {
@@ -1104,8 +1124,16 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
     return _loggingServers;
   }
 
+  public @Nullable String getLoggingSourceInterface() {
+    return _loggingSourceInterface;
+  }
+
   public @Nonnull Map<String, NtpServer> getNtpServers() {
     return _ntpServers;
+  }
+
+  public @Nullable String getNtpSourceInterface() {
+    return _ntpSourceInterface;
   }
 
   public @Nonnull Map<Integer, Nve> getNves() {
@@ -1133,12 +1161,20 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
     return _snmpServers;
   }
 
+  public @Nullable String getSnmpSourceInterface() {
+    return _snmpSourceInterface;
+  }
+
   public boolean getSystemDefaultSwitchportShutdown() {
     return _systemDefaultSwitchportShutdown;
   }
 
   public @Nonnull Map<String, TacacsServer> getTacacsServers() {
     return _tacacsServers;
+  }
+
+  public @Nullable String getTacacsSourceInterface() {
+    return _tacacsSourceInterface;
   }
 
   public @Nullable String getVersion() {
@@ -1251,6 +1287,22 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
 
   public void setIpDomainName(@Nullable String ipDomainName) {
     _ipDomainName = ipDomainName;
+  }
+
+  public void setLoggingSourceInterface(@Nullable String loggingSourceInterface) {
+    _loggingSourceInterface = loggingSourceInterface;
+  }
+
+  public void setNtpSourceInterface(@Nullable String ntpSourceInterface) {
+    _ntpSourceInterface = ntpSourceInterface;
+  }
+
+  public void setSnmpSourceInterface(@Nullable String snmpSourceInterface) {
+    _snmpSourceInterface = snmpSourceInterface;
+  }
+
+  public void setTacacsSourceInterface(@Nullable String tacacsSourceInterface) {
+    _tacacsSourceInterface = tacacsSourceInterface;
   }
 
   public void setSystemDefaultSwitchportShutdown(boolean systemDefaultSwitchportShutdown) {
@@ -2566,9 +2618,13 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
     disableUnregisteredVlanInterfaces();
     convertIpNameServers();
     convertLoggingServers();
+    convertLoggingSourceInterface();
     convertNtpServers();
+    convertNtpSourceInterface();
     convertSnmpServers();
+    convertSnmpSourceInterface();
     convertTacacsServers();
+    convertTacacsSourceInterface();
     convertRouteMaps();
     convertStaticRoutes();
     computeImplicitOspfAreas();
