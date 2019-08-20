@@ -1027,8 +1027,8 @@ public final class F5BigipStructuredGrammarTest {
 
     Route6FilterList v6 = c.getRoute6FilterLists().get(v6Name);
 
-    assertThat(v6, Route6FilterListMatchers.permits(new Prefix6("dead:beef:1::/64")));
-    assertThat(v6, Route6FilterListMatchers.rejects(new Prefix6("dead:beef:1::/128")));
+    assertThat(v6, Route6FilterListMatchers.permits(Prefix6.parse("dead:beef:1::/64")));
+    assertThat(v6, Route6FilterListMatchers.rejects(Prefix6.parse("dead:beef:1::/128")));
 
     // The invalid list should not make it into the data model
     assertThat(c, hasRouteFilterLists(not(hasKey(invalidName))));

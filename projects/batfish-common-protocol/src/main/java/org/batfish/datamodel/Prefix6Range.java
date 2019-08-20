@@ -27,7 +27,7 @@ public class Prefix6Range implements Serializable, Comparable<Prefix6Range> {
     if (numMainParts < 1 || numMainParts > 2) {
       throw new BatfishException("Invalid Prefix6Range string: '" + str + "'");
     } else {
-      prefix6 = new Prefix6(mainParts[0]);
+      prefix6 = Prefix6.parse(mainParts[0]);
       if (mainParts.length == 1) {
         int prefix6Length = prefix6.getPrefixLength();
         return new SubRange(prefix6Length, prefix6Length);
@@ -44,7 +44,7 @@ public class Prefix6Range implements Serializable, Comparable<Prefix6Range> {
     if (numMainParts < 1 || numMainParts > 2) {
       throw new BatfishException("Invalid Prefix6Range string: '" + str + "'");
     } else {
-      prefix6 = new Prefix6(mainParts[0]);
+      prefix6 = Prefix6.parse(mainParts[0]);
       return prefix6;
     }
   }
