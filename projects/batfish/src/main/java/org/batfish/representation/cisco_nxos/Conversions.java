@@ -461,6 +461,8 @@ final class Conversions {
     }
     ImmutableSortedSet.Builder<Layer2VniConfig> layer2Vnis = ImmutableSortedSet.naturalOrder();
 
+    // looping over all VRFs in VI configuration so we can get all VNI settings which were valid and
+    // mapped to some VRF (including the default VRF)
     for (Vrf tenantVrf : c.getVrfs().values()) {
       for (VniSettings vniSettings : tenantVrf.getVniSettings().values()) {
         if (!isLayer2Vni(vsConfig.getNves(), vniSettings.getVni())) {
@@ -546,6 +548,8 @@ final class Conversions {
     }
     ImmutableSortedSet.Builder<Layer3VniConfig> layer3Vnis = ImmutableSortedSet.naturalOrder();
 
+    // looping over all VRFs in VI configuration so we can get all VNI settings which were valid and
+    // mapped to some VRF (including the default VRF)
     for (Vrf tenantVrf : c.getVrfs().values()) {
       for (VniSettings vniSettings : tenantVrf.getVniSettings().values()) {
         if (!isLayer3Vni(vsConfig.getNves(), vniSettings.getVni())) {
@@ -554,6 +558,8 @@ final class Conversions {
 
         org.batfish.representation.cisco_nxos.Vrf vsTenantVrfForL3Vni =
             getVrfForL3Vni(vsConfig.getVrfs(), vniSettings.getVni());
+        // there should be a tenant VRF for this VNI and that VRF should have an IPv4 AF
+        // (other being IPv6 which we do not support); if not true then skip this VNI
         if (vsTenantVrfForL3Vni == null
             || !vsTenantVrfForL3Vni.getAddressFamilies().containsKey(AddressFamily.IPV4_UNICAST)) {
           continue;
