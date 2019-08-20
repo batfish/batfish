@@ -376,6 +376,11 @@ AUTOCONFIG
   'autoconfig'
 ;
 
+AUTONOMOUS_SYSTEM
+:
+  'autonomous-system'
+;
+
 AUTOSTATE
 :
   'autostate'
@@ -960,6 +965,11 @@ DISTANCE
 DISTRIBUTE
 :
   'distribute'
+;
+
+DNS
+:
+  'dns' -> pushMode(M_Words)
 ;
 
 DNSIX
@@ -1548,6 +1558,11 @@ HSRP
   'hsrp'
 ;
 
+HTTP
+:
+  'http' -> pushMode(M_Words)
+;
+
 HTTP_METHOD
 :
   'http-method'
@@ -1566,6 +1581,11 @@ IBGP
 ICMP
 :
   'icmp'
+;
+
+ICMP_ECHO
+:
+  'icmp-echo' -> pushMode(M_Words)
 ;
 
 IDENT
@@ -1626,6 +1646,11 @@ INCOMPLETE
 INCONSISTENCY
 :
   'inconsistency'
+;
+
+INFORMS
+:
+  'informs'
 ;
 
 INFORMATION_REPLY
@@ -3067,6 +3092,16 @@ REACHABILITY
   'reachability'
 ;
 
+REACTION_CONFIGURATION
+:
+  'reaction-configuration' -> pushMode( M_Remark )
+;
+
+REACTION_TRIGGER
+:
+  'reaction-trigger'
+;
+
 READ
 :
   'read'
@@ -3165,6 +3200,16 @@ REPORT_POLICY
 REPORT_SUPPRESSION
 :
   'report-suppression'
+;
+
+RESET
+:
+  'reset'
+;
+
+RESPONDER
+:
+  'responder' -> pushMode( M_Remark )
 ;
 
 RESTART
@@ -3280,6 +3325,11 @@ RULE
 SAMPLER
 :
   'sampler' -> pushMode(M_Word)
+;
+
+SCHEDULE
+:
+  'schedule' -> pushMode( M_Remark )
 ;
 
 SCHEDULER
@@ -3716,6 +3766,11 @@ TCP
   'tcp'
 ;
 
+TCP_CONNECT
+:
+  'tcp-connect' -> pushMode( M_Remark )
+;
+
 TCP_FLAGS_MASK
 :
   'tcp-flags-mask'
@@ -3844,6 +3899,19 @@ TRANSPORT
 TRAP
 :
   'trap'
+  // if not preceded by 'enable', followed by 'version' or SNMP community secret
+  {
+    switch(lastTokenType()) {
+      case ACTION:
+      case ENABLE:
+      case LOGGING:
+      case SOURCE_INTERFACE:
+        break;
+      default:
+        pushMode(M_SnmpHostTraps);
+        break;
+    }
+  }
 ;
 
 TRAPS
@@ -3851,8 +3919,14 @@ TRAPS
   'traps'
   // if not preceded by 'enable', followed by 'version' or SNMP community secret
   {
-    if (lastTokenType() != ENABLE) {
-      pushMode(M_SnmpHostTraps);
+    switch(lastTokenType()) {
+      case ENABLE:
+      case LOGGING:
+      case SOURCE_INTERFACE:
+        break;
+      default:
+        pushMode(M_SnmpHostTraps);
+        break;
     }
   }
 ;
@@ -3928,6 +4002,16 @@ UDLD
 UDP
 :
   'udp'
+;
+
+UDP_ECHO
+:
+  'udp-echo' -> pushMode ( M_Remark )
+;
+
+UDP_JITTER
+:
+  'udp-jitter' -> pushMode ( M_Remark )
 ;
 
 UNCHANGED

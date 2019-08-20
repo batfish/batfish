@@ -2,9 +2,13 @@ package org.batfish.representation.cumulus;
 
 import static org.batfish.representation.cumulus.CumulusNcluConfiguration.computeBgpNeighborImportRoutingPolicy;
 import static org.batfish.representation.cumulus.CumulusNcluConfiguration.computePeerConditions;
+import static org.batfish.representation.cumulus.CumulusConversions.computeBgpGenerationPolicyName;
+import static org.batfish.representation.cumulus.CumulusConversions.computeMatchSuppressedSummaryOnlyPolicyName;
 import static org.batfish.representation.cumulus.CumulusNcluConfiguration.getSetNextHop;
 import static org.batfish.representation.cumulus.CumulusNcluConfiguration.toCommunityList;
 import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.hasKey;
+import static org.hamcrest.Matchers.not;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThat;
@@ -15,11 +19,16 @@ import org.batfish.datamodel.CommunityList;
 import org.batfish.datamodel.CommunityListLine;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
+import org.batfish.datamodel.Configuration;
+import org.batfish.datamodel.ConfigurationFormat;
+import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.LineAction;
+import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.RouteFilterLine;
 import org.batfish.datamodel.RouteFilterList;
 import org.batfish.datamodel.SubRange;
+import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.bgp.community.StandardCommunity;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.routing_policy.expr.CallExpr;
@@ -203,6 +212,64 @@ public class CumulusNcluConfigurationTest {
 
       SetNextHop setNextHop = getSetNextHop(bgpNeighbor, bgpVrf);
       assertThat(setNextHop, equalTo(new SetNextHop(SelfNextHop.getInstance(), false)));
+    }
+  }
+
+  @Test
+  public void testToBgpProcess_aggregateRoutes() {
+    testToBgpProcess_aggregateRoutes(true);
+    testToBgpProcess_aggregateRoutes(false);
+  }
+
+  private static void testToBgpProcess_aggregateRoutes(boolean summaryOnly) {
+    // setup VI model
+    NetworkFactory nf = new NetworkFactory();
+    Configuration viConfig =
+        nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CUMULUS_NCLU).build();
+    Vrf viVrf = nf.vrfBuilder().setOwner(viConfig).setName(Configuration.DEFAULT_VRF_NAME).build();
+
+    // setup VS model
+    CumulusNcluConfiguration vsConfig = new CumulusNcluConfiguration();
+    BgpProcess bgpProcess = new BgpProcess();
+    vsConfig.setBgpProcess(bgpProcess);
+    vsConfig.setConfiguration(viConfig);
+
+    // setup BgpVrf
+    BgpVrf vrf = bgpProcess.getDefaultVrf();
+    vrf.setRouterId(Ip.parse("1.1.1.1"));
+    BgpIpv4UnicastAddressFamily ipv4Unicast = new BgpIpv4UnicastAddressFamily();
+    Prefix prefix = Prefix.parse("1.2.3.0/24");
+
+    BgpVrfAddressFamilyAggregateNetworkConfiguration agg =
+        new BgpVrfAddressFamilyAggregateNetworkConfiguration();
+    agg.setSummaryOnly(summaryOnly);
+
+    ipv4Unicast.getAggregateNetworks().put(prefix, agg);
+    vrf.setIpv4Unicast(ipv4Unicast);
+
+    // the method under test
+    vsConfig.toBgpProcess(Configuration.DEFAULT_VRF_NAME, vrf);
+
+    // generation policy exists
+    assertThat(
+        viConfig.getRoutingPolicies(),
+        hasKey(
+            computeBgpGenerationPolicyName(
+                true, Configuration.DEFAULT_VRF_NAME, prefix.toString())));
+
+    // generated route exists
+    assertTrue(viVrf.getGeneratedRoutes().stream().anyMatch(gr -> gr.getNetwork().equals(prefix)));
+
+    if (summaryOnly) {
+      // suppress summary only filter list exists
+      assertThat(
+          viConfig.getRouteFilterLists(),
+          hasKey(computeMatchSuppressedSummaryOnlyPolicyName(viVrf.getName())));
+    } else {
+      // suppress summary only filter list does not exist
+      assertThat(
+          viConfig.getRouteFilterLists(),
+          not(hasKey(computeMatchSuppressedSummaryOnlyPolicyName(viVrf.getName()))));
     }
   }
 

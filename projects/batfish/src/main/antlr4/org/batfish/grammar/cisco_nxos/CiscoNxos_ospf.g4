@@ -309,5 +309,5 @@ rott_null
 
 ro_vrf
 :
-  VRF name = vrf_name NEWLINE ro_common*
+  VRF name = vrf_non_default_name NEWLINE ro_common*
 ;

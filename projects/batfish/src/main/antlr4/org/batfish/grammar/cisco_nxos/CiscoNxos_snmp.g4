@@ -15,6 +15,7 @@ s_snmp_server
     | snmps_location
     | snmps_enable
     | snmps_host
+    | snmps_source_interface
     | snmps_user
   )
 ;
@@ -96,6 +97,26 @@ snmp_version
 snmpsh_use_vrf
 :
   USE_VRF name = vrf_name NEWLINE
+;
+
+snmps_source_interface
+:
+  SOURCE_INTERFACE
+  (
+    snmpssi_informs
+    | snmpssi_traps
+  )
+;
+
+snmpssi_informs
+:
+  INFORMS name = interface_name NEWLINE
+;
+
+snmpssi_traps
+:
+// abbreviation of 'traps' to 'trap' seems to survive on at least one NX-OS v6 config
+  (TRAP | TRAPS) name = interface_name NEWLINE
 ;
 
 snmps_user
