@@ -54,12 +54,14 @@ router bgp 65000
   address-family l2vpn evpn
     retain route-target all
   template peer LEAF-VPC
-    remote-as 65001
+    remote-as 65000
     address-family ipv4 unicast
       disable-peer-as-check
+      route-reflector-client
       send-community
       send-community extended
     address-family l2vpn evpn
+      route-reflector-client
       disable-peer-as-check
       send-community
       send-community extended
@@ -69,11 +71,13 @@ router bgp 65000
   neighbor 10.10.12.2
     inherit peer LEAF-VPC
   neighbor 10.10.100.2
-    remote-as 65100
+    remote-as 65000
     address-family ipv4 unicast
+      route-reflector-client
       send-community
       send-community extended
     address-family l2vpn evpn
+      route-reflector-client
       send-community
       send-community extended
       route-map permitall out

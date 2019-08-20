@@ -224,10 +224,6 @@ public class EvpnTest {
         BatfishTestUtils.getBatfishFromTestrigText(
             TestrigText.builder()
                 .setConfigurationText(testRigResourcePrefix, exitGw, leaf1, spine)
-                .setHostsText(testRigResourcePrefix, pc10, pc11, pc21)
-                .setIptablesFilesText(
-                    testRigResourcePrefix, ImmutableList.of(pc10Iptable, pc11Iptable, pc21Iptable))
-                .setLayer1TopologyText(testRigResourcePrefix)
                 .build(),
             _folder);
     batfish.getSettings().setDebugFlags(ImmutableList.of(DEBUG_FLAG_USE_NEW_CISCO_NXOS_PARSER));

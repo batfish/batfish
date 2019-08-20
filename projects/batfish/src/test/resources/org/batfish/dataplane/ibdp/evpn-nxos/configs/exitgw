@@ -87,7 +87,7 @@ interface mgmt0
 interface loopback0
   ip address 2.2.2.2/32
 boot nxos bootflash:/nxos.9.2.3.bin
-router bgp 65100
+router bgp 65000
   router-id 2.2.2.2
   address-family ipv4 unicast
     network 2.2.2.2/32
