@@ -376,6 +376,11 @@ AUTOCONFIG
   'autoconfig'
 ;
 
+AUTONOMOUS_SYSTEM
+:
+  'autonomous-system'
+;
+
 AUTOSTATE
 :
   'autostate'
