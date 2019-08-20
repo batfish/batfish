@@ -13,6 +13,7 @@ import
   CiscoNxos_ip_prefix_list,
   CiscoNxos_ipv6_access_list,
   CiscoNxos_logging,
+  CiscoNxos_ntp,
   CiscoNxos_object_group,
   CiscoNxos_ospf,
   CiscoNxos_policy_map,
@@ -47,6 +48,7 @@ statement
   | s_key
   | s_logging
   | s_no
+  | s_ntp
   | s_null
   | s_nv
   | s_object_group
