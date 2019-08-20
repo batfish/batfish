@@ -1,9 +1,14 @@
 package org.batfish.grammar.cumulus_concatenated;
 
 import static org.batfish.main.BatfishTestUtils.configureBatfishTestSettings;
+import static org.batfish.representation.cumulus.CumulusConversions.computeBgpGenerationPolicyName;
+import static org.batfish.representation.cumulus.CumulusConversions.computeMatchSuppressedSummaryOnlyPolicyName;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.hasKey;
 
+import com.google.common.collect.ImmutableList;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.SortedMap;
@@ -13,6 +18,9 @@ import org.batfish.common.Warnings;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.config.Settings;
 import org.batfish.datamodel.Configuration;
+import org.batfish.datamodel.GeneratedRoute;
+import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.Vrf;
 import org.batfish.grammar.GrammarSettings;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
@@ -78,5 +86,39 @@ public class CumulusConcatenatedGrammarTest {
     settings.setThrowOnParserError(false);
     CumulusNcluConfiguration cfg = parseVendorConfig("ports_unrecognized", settings);
     assertThat(cfg.getHostname(), equalTo("hostname"));
+  }
+
+  @Test
+  public void testBgpAggregateAddress_e2e() {
+    CumulusNcluConfiguration vsConfig = parseVendorConfig("bgp_aggregate_address");
+    Configuration viConfig = vsConfig.toVendorIndependentConfigurations().get(0);
+    Vrf vrf = viConfig.getDefaultVrf();
+
+    Prefix prefix1 = Prefix.parse("1.1.1.0/24");
+    Prefix prefix2 = Prefix.parse("2.2.0.0/16");
+
+    // Test that the expected routes maps were generated. We test their semantics elsewhere.
+    assertThat(
+        viConfig.getRoutingPolicies(),
+        hasKey(
+            computeBgpGenerationPolicyName(
+                true, Configuration.DEFAULT_VRF_NAME, prefix1.toString())));
+    assertThat(
+        viConfig.getRoutingPolicies(),
+        hasKey(
+            computeBgpGenerationPolicyName(
+                true, Configuration.DEFAULT_VRF_NAME, prefix2.toString())));
+
+    // Test that expected generated routes exist
+    assertThat(
+        vrf.getGeneratedRoutes().stream()
+            .map(GeneratedRoute::getNetwork)
+            .collect(ImmutableList.toImmutableList()),
+        containsInAnyOrder(prefix1, prefix2));
+
+    // suppression route map exists. Semantics tested elsewhere
+    assertThat(
+        viConfig.getRouteFilterLists(),
+        hasKey(computeMatchSuppressedSummaryOnlyPolicyName(vrf.getName())));
   }
 }
