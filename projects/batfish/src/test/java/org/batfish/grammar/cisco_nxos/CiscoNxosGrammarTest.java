@@ -776,6 +776,13 @@ public final class CiscoNxosGrammarTest {
   }
 
   @Test
+  public void testEigrpExtraction() {
+    String hostname = "nxos_eigrp";
+    parseVendorConfig(hostname);
+    // todo: turn into a proper extraction test
+  }
+
+  @Test
   public void testEvpnExtraction() {
     CiscoNxosConfiguration vc = parseVendorConfig("nxos_evpn");
     Evpn evpn = vc.getEvpn();
