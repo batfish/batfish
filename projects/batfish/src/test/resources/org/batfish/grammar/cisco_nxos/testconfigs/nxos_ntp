@@ -1,0 +1,26 @@
+!RANCID-CONTENT-TYPE: cisco-nx
+!
+hostname nxos_ntp
+!
+
+ip access-list acl_peer
+ip access-list acl_query_only
+ip access-list acl_serve
+ip access-list acl_serve_only
+
+ntp access-group match-all
+ntp access-group peer acl_peer
+ntp access-group query-only acl_query_only
+ntp access-group serve acl_serve
+ntp access-group serve-only acl_serve_only
+
+ntp commit
+ntp distribute
+
+ntp peer 192.168.0.1
+ntp peer 192.168.0.2
+
+ntp server 192.0.2.1
+ntp server 192.0.2.2 use-vrf management
+
+ntp source-interface mgmt0

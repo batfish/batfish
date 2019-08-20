@@ -270,6 +270,7 @@ import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Literal_standard_community
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Logging_serverContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Maxas_limitContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Maximum_pathsContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Ntp_serverContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Nve_host_reachabilityContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Nve_memberContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Nve_no_shutdownContext;
@@ -498,6 +499,7 @@ import org.batfish.representation.cisco_nxos.Layer3Options;
 import org.batfish.representation.cisco_nxos.LiteralIpAddressSpec;
 import org.batfish.representation.cisco_nxos.LiteralPortSpec;
 import org.batfish.representation.cisco_nxos.LoggingServer;
+import org.batfish.representation.cisco_nxos.NtpServer;
 import org.batfish.representation.cisco_nxos.Nve;
 import org.batfish.representation.cisco_nxos.Nve.HostReachabilityProtocol;
 import org.batfish.representation.cisco_nxos.Nve.IngressReplicationProtocol;
@@ -1620,6 +1622,15 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
   @Override
   public void exitLogging_server(Logging_serverContext ctx) {
     _currentLoggingServer = null;
+  }
+
+  @Override
+  public void exitNtp_server(Ntp_serverContext ctx) {
+    NtpServer ntpServer =
+        _configuration.getNtpServers().computeIfAbsent(ctx.host.getText(), NtpServer::new);
+    if (ctx.vrf != null) {
+      toString(ctx, ctx.vrf).ifPresent(ntpServer::setUseVrf);
+    }
   }
 
   @Override
