@@ -61,7 +61,7 @@ public class InterfacePropertySpecifier extends PropertySpecifier {
   public static final String OSPF_COST = "OSPF_Cost";
   public static final String OSPF_ENABLED = "OSPF_Enabled";
   public static final String OSPF_PASSIVE = "OSPF_Passive";
-  public static final String OSPF_POINT_TO_POINT = "OSPF_Point_To_Point";
+  public static final String OSPF_NETWORK_TYPE = "OSPF_Network_Type";
   public static final String OUTGOING_FILTER_NAME = "Outgoing_Filter_Name";
   public static final String PBR_POLICY_NAME = "PBR_Policy_Name";
   public static final String PRIMARY_ADDRESS = "Primary_Address";
@@ -205,11 +205,11 @@ public class InterfacePropertySpecifier extends PropertySpecifier {
                   Schema.BOOLEAN,
                   "Whether interface is in OSPF passive mode"))
           .put(
-              OSPF_POINT_TO_POINT,
+              OSPF_NETWORK_TYPE,
               new PropertyDescriptor<>(
-                  Interface::getOspfPointToPoint,
-                  Schema.BOOLEAN,
-                  "Whether OSPF should operate as if its on a point-to-point link"))
+                  Interface::getOspfNetworkType,
+                  Schema.STRING,
+                  "Type of OSPF network associated with the interface"))
           // skip outgoing filter
           .put(
               OUTGOING_FILTER_NAME,

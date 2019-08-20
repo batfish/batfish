@@ -2,19 +2,15 @@ package org.batfish.representation.cisco_nxos;
 
 import java.io.Serializable;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
-import java.util.Set;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import org.batfish.datamodel.Ip;
 
 /** HSRP group within {@link InterfaceHsrp} settings for an {@link Interface}. */
-public final class HsrpGroup implements Serializable {
+public abstract class HsrpGroup implements Serializable {
 
   public HsrpGroup(int group) {
     _group = group;
-    _ipSecondaries = new HashSet<>();
     _tracks = new HashMap<>();
   }
 
@@ -32,18 +28,6 @@ public final class HsrpGroup implements Serializable {
 
   public void setHoldTimeMs(@Nullable Integer holdTimeMs) {
     _holdTimeMs = holdTimeMs;
-  }
-
-  public @Nullable Ip getIp() {
-    return _ip;
-  }
-
-  public void setIp(@Nullable Ip ip) {
-    _ip = ip;
-  }
-
-  public @Nonnull Set<Ip> getIpSecondaries() {
-    return _ipSecondaries;
   }
 
   public @Nullable Integer getPreemptDelayMinimumSeconds() {
@@ -93,8 +77,6 @@ public final class HsrpGroup implements Serializable {
   private final int _group;
   private @Nullable Integer _helloIntervalMs;
   private @Nullable Integer _holdTimeMs;
-  private @Nullable Ip _ip;
-  private final @Nonnull Set<Ip> _ipSecondaries;
   private @Nullable Integer _preemptDelayMinimumSeconds;
   private @Nullable Integer _preemptDelayReloadSeconds;
   private @Nullable Integer _preemptDelaySyncSeconds;

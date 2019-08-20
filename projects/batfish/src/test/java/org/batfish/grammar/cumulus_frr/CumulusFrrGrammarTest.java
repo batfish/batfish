@@ -29,6 +29,7 @@ import org.batfish.datamodel.DefinedStructureInfo;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
 import org.batfish.datamodel.bgp.community.StandardCommunity;
 import org.batfish.grammar.BatfishParseTreeWalker;
@@ -42,6 +43,8 @@ import org.batfish.representation.cumulus.CumulusNcluConfiguration;
 import org.batfish.representation.cumulus.CumulusStructureType;
 import org.batfish.representation.cumulus.CumulusStructureUsage;
 import org.batfish.representation.cumulus.IpCommunityListExpanded;
+import org.batfish.representation.cumulus.IpPrefixList;
+import org.batfish.representation.cumulus.IpPrefixListLine;
 import org.batfish.representation.cumulus.RouteMap;
 import org.batfish.representation.cumulus.RouteMapEntry;
 import org.batfish.representation.cumulus.StaticRoute;
@@ -252,6 +255,42 @@ public class CumulusFrrGrammarTest {
   }
 
   @Test
+  public void testBgpAddressFamilyNeighborNextHopSelf() {
+    parseLines(
+        "router bgp 1",
+        "address-family ipv4 unicast",
+        "neighbor 10.0.0.1 next-hop-self",
+        "exit-address-family");
+    assertTrue(
+        CONFIG
+            .getBgpProcess()
+            .getDefaultVrf()
+            .getIpv4Unicast()
+            .getNeighborAddressFamilyConfigurations()
+            .get("10.0.0.1")
+            .getNextHopSelf());
+  }
+
+  @Test
+  public void testBgpAlwaysCompareMed() {
+    parse("router bgp 1\n bgp always-compare-med\n");
+  }
+
+  @Test
+  public void testBgpAddressFamilyNeighborSoftReconfiguration() {
+    parseLines(
+        "router bgp 1",
+        "address-family ipv4 unicast",
+        "neighbor N soft-reconfiguration inbound",
+        "exit-address-family");
+    parseLines(
+        "router bgp 1",
+        "address-family ipv4 unicast",
+        "neighbor 10.0.0.1 soft-reconfiguration inbound",
+        "exit-address-family");
+  }
+
+  @Test
   public void testBgpNeighbor_peerGroup() {
     parse("router bgp 1\n neighbor foo peer-group\n");
     Map<String, BgpNeighbor> neighbors = CONFIG.getBgpProcess().getDefaultVrf().getNeighbors();
@@ -337,6 +376,11 @@ public class CumulusFrrGrammarTest {
   public void testBgpRouterId() {
     parse("router bgp 1\n bgp router-id 1.2.3.4\n");
     assertThat(CONFIG.getBgpProcess().getDefaultVrf().getRouterId(), equalTo(Ip.parse("1.2.3.4")));
+  }
+
+  @Test
+  public void testHostname() {
+    parse("hostname asdf235jgij981\n");
   }
 
   @Test
@@ -502,5 +546,75 @@ public class CumulusFrrGrammarTest {
     assertThat(
         entry.getSetCommunity().getCommunities(),
         equalTo(ImmutableList.of(StandardCommunity.of(10000, 1), StandardCommunity.of(20000, 2))));
+  }
+
+  @Test
+  public void testCumulusFrrIpPrefixList() {
+    String name = "NAME";
+    String prefix1 = "10.0.0.1/24";
+    String prefix2 = "10.0.1.2/24";
+    parse(
+        String.format(
+            "ip prefix-list %s seq 10 permit %s\n"
+                + "ip prefix-list %s seq 20 deny %s ge 27 le 30 \n",
+            name, prefix1, name, prefix2));
+
+    assertThat(CONFIG.getIpPrefixLists().keySet(), equalTo(ImmutableSet.of(name)));
+    IpPrefixList prefixList = CONFIG.getIpPrefixLists().get(name);
+    assertThat(prefixList.getName(), equalTo(name));
+    assertThat(prefixList.getLines().keySet(), equalTo(ImmutableSet.of(10L, 20L)));
+
+    IpPrefixListLine line1 = prefixList.getLines().get(10L);
+    assertThat(line1.getLine(), equalTo(10L));
+    assertThat(line1.getAction(), equalTo(LineAction.PERMIT));
+    assertThat(line1.getLengthRange(), equalTo(new SubRange(24, 32)));
+    assertThat(line1.getPrefix(), equalTo(Prefix.parse("10.0.0.1/24")));
+
+    IpPrefixListLine line2 = prefixList.getLines().get(20L);
+    assertThat(line2.getLine(), equalTo(20L));
+    assertThat(line2.getAction(), equalTo(LineAction.DENY));
+    assertThat(line2.getLengthRange(), equalTo(new SubRange(27, 30)));
+    assertThat(line2.getPrefix(), equalTo(Prefix.parse("10.0.1.2/24")));
+  }
+
+  @Test
+  public void testCumulusFrrAgentx() {
+    parse("agentx\n");
+  }
+
+  @Test
+  public void testCumulusService() {
+    parse("service integrated-vtysh-config\n");
+  }
+
+  @Test
+  public void testCumulusFrrSyslog() {
+    parse("log syslog informational\n");
+  }
+
+  @Test
+  public void testLineVty() {
+    parse("line vty\n");
+  }
+
+  @Test
+  public void testCumulusFrrUsername() {
+    parse("username cumulus nopassword\n");
+  }
+
+  @Test
+  public void testCumulusFrrVersion() {
+    parse("frr version sV4@%)!@#$%^&**()_+|\n");
+  }
+
+  @Test
+  public void testCumulusFrrBgpNeighborBfd() {
+    parse("router bgp 10000 vrf VRF\nneighbor N bfd 1 10 20\n");
+    parse("router bgp 10000 vrf VRF\nneighbor N bfd\n");
+  }
+
+  @Test
+  public void testCumulusFrrNeightborPassword() {
+    parse("router bgp 10000\nneighbor N password sV4@%)!@#$%^&**()_+|\n");
   }
 }

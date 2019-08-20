@@ -10,6 +10,7 @@ tokens {
   HSRP_VERSION_1,
   HSRP_VERSION_2,
   LOCAL,
+  MAC_ADDRESS_LITERAL,
   MOTD,
   PASSWORD_0,
   PASSWORD_0_TEXT,
@@ -139,7 +140,7 @@ ADDRESS
   'address'
   // All other instances are followed by tokens in default mode
   {
-    if (secondToLastTokenType() == MATCH && lastTokenType() == IP) {
+    if (secondToLastTokenType() == MATCH && (lastTokenType() == IP || lastTokenType() == IPV6)) {
       pushMode(M_MatchIpAddress);
     } else if (secondToLastTokenType() == OBJECT_GROUP) {
       pushMode(M_Word);
@@ -298,6 +299,11 @@ AREA
   'area'
 ;
 
+ARP
+:
+  'arp'
+;
+
 AS_OVERRIDE
 :
   'as-override'
@@ -350,6 +356,11 @@ AUTHORIZATION
   'authorization'
 ;
 
+AUTHPRIV
+:
+  'authpriv'
+;
+
 AUTO
 :
   'auto'
@@ -358,6 +369,11 @@ AUTO
 AUTO_COST
 :
   'auto-cost'
+;
+
+AUTOCONFIG
+:
+  'autoconfig'
 ;
 
 AUTOSTATE
@@ -390,9 +406,9 @@ BC
   'bc'
 ;
 
-BGP
+BEACON
 :
-  'bgp'
+  'beacon'
 ;
 
 BESTPATH
@@ -408,6 +424,11 @@ BESTPATH_LIMIT
 BFD
 :
   'bfd'
+;
+
+BGP
+:
+  'bgp'
 ;
 
 BIFF
@@ -450,6 +471,11 @@ BPS
   'bps'
 ;
 
+BREAKOUT
+:
+  'breakout'
+;
+
 BRIDGE
 :
   'bridge'
@@ -478,6 +504,11 @@ CALLHOME
 CAPABILITY
 :
   'capability'
+;
+
+CARRIER_DELAY
+:
+  'carrier-delay'
 ;
 
 CAUSE
@@ -544,6 +575,11 @@ CLEAR
 CLI
 :
   'cli'
+;
+
+CLIENT_IDENTITY
+:
+  'client-identity'
 ;
 
 CLIENT_TO_CLIENT
@@ -696,6 +732,11 @@ COST_COMMUNITY
   'cost-community'
 ;
 
+COUNTER
+:
+  'counter'
+;
+
 COUNTERS
 :
   'counters'
@@ -704,6 +745,11 @@ COUNTERS
 CRITICAL
 :
   'critical'
+;
+
+CRON
+:
+  'cron'
 ;
 
 CS1
@@ -741,6 +787,11 @@ CS7
   'cs7'
 ;
 
+DAEMON
+:
+  'daemon'
+;
+
 DAMPEN_IGP_METRIC
 :
   'dampen-igp-metric'
@@ -759,6 +810,16 @@ DAYTIME
 DEAD_INTERVAL
 :
   'dead-interval'
+;
+
+DEADTIME
+:
+  'deadtime'
+;
+
+DEBOUNCE
+:
+  'debounce'
 ;
 
 DECREMENT
@@ -794,6 +855,11 @@ DEFAULT_ORIGINATE
 DELAY
 :
   'delay'
+;
+
+DELAYED_LINK_STATE_CHANGE
+:
+  'delayed-link-state-change'
 ;
 
 DELETE
@@ -836,6 +902,11 @@ DHCP
   'dhcp'
 ;
 
+DHCP_SNOOPING_VLAN
+:
+  'dhcp-snooping-vlan'
+;
+
 DIR
 :
   'dir'
@@ -844,6 +915,11 @@ DIR
 DIRECT
 :
   'direct'
+;
+
+DIRECTED_REQUEST
+:
+  'directed-request'
 ;
 
 DIRECTLY_CONNECTED_SOURCES
@@ -899,6 +975,11 @@ DOMAIN
 DOMAIN_LOOKUP
 :
   'domain-lookup'
+;
+
+DOMAIN_NAME
+:
+  'domain-name' -> pushMode(M_Word)
 ;
 
 DONT_CAPABILITY_NEGOTIATE
@@ -1046,6 +1127,11 @@ ETHERNET
   [Ee] [Tt] [Hh] [Ee] [Rr] [Nn] [Ee] [Tt]
 ;
 
+EVENT
+:
+  'event'
+;
+
 EVENT_HISTORY
 :
   'event-history'
@@ -1091,6 +1177,11 @@ EXIST_MAP
   'exist-map'
 ;
 
+EXPANDED
+:
+  'expanded' -> pushMode ( M_Expanded )
+;
+
 EXPLICIT_TRACKING
 :
   'explicit-tracking'
@@ -1114,6 +1205,11 @@ EXTERNAL
 EXTERNAL_LSA
 :
   'external-lsa'
+;
+
+FACILITY
+:
+  'facility'
 ;
 
 FAST_EXTERNAL_FALLOVER
@@ -1167,6 +1263,11 @@ FILTER_LIST
   'filter-list'
 ;
 
+FILTERING
+:
+  'filtering'
+;
+
 FIN
 :
   'fin'
@@ -1190,6 +1291,11 @@ FLASH_OVERRIDE
 FLOW
 :
   'flow'
+;
+
+FLOWCONTROL
+:
+  'flowcontrol'
 ;
 
 FORCE
@@ -1317,6 +1423,11 @@ GUARD
   'guard'
 ;
 
+HARDWARE
+:
+  'hardware'
+;
+
 HEAD
 :
   'head'
@@ -1335,6 +1446,11 @@ HMM
 HOST
 :
   'host'
+  {
+    if (lastTokenType() == TACACS_SERVER) {
+      pushMode(M_TacacsServerHost);
+    }
+  }
 ;
 
 HOST_ISOLATED
@@ -1409,6 +1525,11 @@ HSRP
 HTTP_METHOD
 :
   'http-method'
+;
+
+HW_HASH
+:
+  'hw-hash'
 ;
 
 IBGP
@@ -1510,10 +1631,15 @@ INPUT
 :
   'input'
   {
-    if (lastTokenType() == SERVICE_POLICY) {
+    if (lastTokenType() == QOS || lastTokenType() == QUEUING || lastTokenType() == SERVICE_POLICY) {
       pushMode(M_Word);
     }
   }
+;
+
+INSPECTION
+:
+  'inspection'
 ;
 
 INSTALL
@@ -1605,9 +1731,27 @@ KBPS
   'kbps'
 ;
 
+KERNEL
+:
+  'kern' 'el'?
+;
+
 KEY
 :
   'key'
+  // if preceded by tacac-server host name, or 'tacacs-server' (for global key), follow with password
+  {
+    switch(lastTokenType()) {
+      case IP_ADDRESS:
+      case IPV6_ADDRESS:
+      case TACACS_SERVER:
+      case WORD:
+        pushMode(M_Password);
+        break;
+      default:
+        break;
+    }
+  }
 ;
 
 KEY_CHAIN
@@ -1692,6 +1836,11 @@ LINE_PROTOCOL
   'line-protocol'
 ;
 
+LINK
+:
+  'link'
+;
+
 LINK_FLAP
 :
   'link-flap'
@@ -1712,6 +1861,11 @@ LINK_STATUS
   'link-status'
 ;
 
+LINK_TYPE
+:
+  'link-type'
+;
+
 LISP
 :
   'lisp'
@@ -1720,6 +1874,11 @@ LISP
 LLDP
 :
   'lldp'
+;
+
+LOAD_INTERVAL
+:
+  'load-interval'
 ;
 
 LOAD_SHARE
@@ -1735,6 +1894,46 @@ LOCAL_AS
 LOCAL_PREFERENCE
 :
   'local-preference'
+;
+
+LOCAL0
+:
+  'local0'
+;
+
+LOCAL1
+:
+  'local1'
+;
+
+LOCAL2
+:
+  'local2'
+;
+
+LOCAL3
+:
+  'local3'
+;
+
+LOCAL4
+:
+  'local4'
+;
+
+LOCAL5
+:
+  'local5'
+;
+
+LOCAL6
+:
+  'local6'
+;
+
+LOCAL7
+:
+  'local7'
 ;
 
 LOCALIZEDKEY
@@ -1761,6 +1960,11 @@ LOG_ADJACENCY_CHANGES
 LOG_NEIGHBOR_CHANGES
 :
   'log-neighbor-changes'
+;
+
+LOGGING
+:
+  'logging'
 ;
 
 LOGIN
@@ -1807,6 +2011,11 @@ LPD
   'lpd'
 ;
 
+LPR
+:
+  'lpr'
+;
+
 LSA
 :
   'lsa'
@@ -1825,6 +2034,41 @@ LSA_GROUP_PACING
 LT
 :
   'lt'
+;
+
+MAC
+:
+  'mac'
+;
+
+MAC_ADDRESS
+:
+  'mac-address' -> pushMode(M_MacAddress)
+;
+
+MAIL
+:
+  'mail'
+;
+
+MANAGED_CONFIG_FLAG
+:
+  'managed-config-flag'
+;
+
+MANAGEMENT
+:
+  'management'
+;
+
+MANAGEMENT_ADDRESS
+:
+  'management-address'
+;
+
+MAP
+:
+  'map'
 ;
 
 MASK
@@ -1906,6 +2150,11 @@ MD5
       pushMode(M_Word);
     }
   }
+;
+
+MDIX
+:
+  'mdix'
 ;
 
 MED
@@ -2005,6 +2254,11 @@ MODE
   'mode'
 ;
 
+MODULE
+:
+  'module'
+;
+
 MONITOR
 :
   'monitor'
@@ -2075,6 +2329,11 @@ NAME
 
 ;
 
+NAME_SERVER
+:
+  'name-server'
+;
+
 NAMESERVER
 :
   'nameserver'
@@ -2088,6 +2347,11 @@ NAT_FLOW
 NATIVE
 :
   'native'
+;
+
+ND
+:
+  'nd'
 ;
 
 ND_NA
@@ -2168,6 +2432,11 @@ NETWORK_UNKNOWN
 NEWROOT
 :
   'newroot'
+;
+
+NEWS
+:
+  'news'
 ;
 
 NEXT_HOP
@@ -2270,6 +2539,16 @@ NOT_ADVERTISE
   'not-advertise'
 ;
 
+NOTIFY_LICENSEFILE_EXPIRY
+:
+  'notify-licensefile-expiry'
+;
+
+NOTIFY_LICENSEFILE_MISSING
+:
+  'notify-licensefile-missing'
+;
+
 NSSA
 :
   'nssa'
@@ -2322,6 +2601,11 @@ OBJSTORE
   'objstore'
 ;
 
+OFF
+:
+  'off'
+;
+
 ON
 :
   'on'
@@ -2369,9 +2653,24 @@ OSPFV3
   'ospfv3'
 ;
 
+OTHER_CONFIG_FLAG
+:
+  'other-config-flag'
+;
+
 OUT
 :
   'out'
+;
+
+OUTPUT
+:
+  'output'
+  {
+    if (lastTokenType() == QOS || lastTokenType() == QUEUING || lastTokenType() == SERVICE_POLICY) {
+      pushMode(M_Word);
+    }
+  }
 ;
 
 OVERLAY
@@ -2417,6 +2716,11 @@ PASSWORD
 PATHCOST
 :
   'pathcost'
+;
+
+PAUSE
+:
+  'pause'
 ;
 
 PBR
@@ -2472,6 +2776,11 @@ PER_ENTRY
 PER_LINK
 :
   'per-link'
+;
+
+PER_VLAN
+:
+  'per-vlan'
 ;
 
 PERIODIC
@@ -2619,6 +2928,11 @@ PRIORITY
   'priority'
 ;
 
+PRIORITY_FLOW_CONTROL
+:
+   'priority-flow-control'
+;
+
 PRIV
 :
   'priv' -> pushMode ( M_Priv )
@@ -2689,9 +3003,19 @@ QUERY_MAX_RESPONSE_TIME
   'query-max-response-time'
 ;
 
-QUEUEING
+QUEUE_LIMIT
 :
-  'queueing'
+  'queue-limit'
+;
+
+QUEUING
+:
+  'queuing'
+;
+
+RANDOM_DETECT
+:
+  'random-detect'
 ;
 
 RANGE
@@ -2757,6 +3081,11 @@ REFERENCE_BANDWIDTH
 REFLECTION
 :
   'reflection'
+;
+
+RELAY
+:
+  'relay'
 ;
 
 RELOAD
@@ -2929,6 +3258,11 @@ SECONDARY
   'secondary'
 ;
 
+SECURE
+:
+  'secure'
+;
+
 SECURITY_VIOLATION
 :
   'security-violation'
@@ -3000,6 +3334,11 @@ SHA
   }
 ;
 
+SHAPE
+:
+  'shape'
+;
+
 SHOW
 :
   'show'
@@ -3008,6 +3347,11 @@ SHOW
 SHUTDOWN
 :
   'shutdown'
+;
+
+SINGLE_CONNECTION
+:
+  'single-connection'
 ;
 
 SIZE
@@ -3050,6 +3394,11 @@ SNMPTRAP
   'snmptrap'
 ;
 
+SNOOPING
+:
+  'snooping'
+;
+
 SOFT_RECONFIGURATION
 :
   'soft-reconfiguration'
@@ -3060,9 +3409,19 @@ SOO
   'soo'
 ;
 
+SOURCE
+:
+  'source'
+;
+
 SOURCE_INTERFACE
 :
   'source-interface'
+;
+
+SOURCE_PROTOCOL
+:
+  'source-protocol' -> pushMode(M_Words)
 ;
 
 SOURCE_QUENCH
@@ -3170,6 +3529,11 @@ STUB
   'stub'
 ;
 
+SUB_OPTION
+:
+  'sub-option'
+;
+
 SUMMARY_ADDRESS
 :
   'summary-address'
@@ -3183,6 +3547,11 @@ SUMMARY_LSA
 SUMMARY_ONLY
 :
   'summary-only'
+;
+
+SUMMER_TIME
+:
+  'summer-time'
 ;
 
 SUNRPC
@@ -3272,6 +3641,11 @@ TACACS
   'tacacs'
 ;
 
+TACACS_SERVER
+:
+  'tacacs-server'
+;
+
 TACACSP
 :
   'tacacs+'
@@ -3318,9 +3692,19 @@ TEMPLATE
   'template'
 ;
 
+TENG_4X
+:
+  '10g-4x'
+;
+
 TERMINAL
 :
   'terminal'
+;
+
+TEST
+:
+  'test'
 ;
 
 TEXT
@@ -3348,6 +3732,11 @@ TIME_EXCEEDED
   'time-exceeded'
 ;
 
+TIMEOUT
+:
+  'timeout'
+;
+
 TIMERS
 :
   'timers'
@@ -3366,6 +3755,11 @@ TIMESTAMP_REQUEST
 TIMEZONE
 :
   'timezone' -> pushMode ( M_Remark )
+;
+
+TLV_SET
+:
+  'tlv-set'
 ;
 
 TOPOLOGYCHANGE
@@ -3429,6 +3823,21 @@ TRUNK
   'trunk'
 ;
 
+TRUNK_STATUS
+:
+  'trunk-status'
+;
+
+TRUST
+:
+  'trust'
+;
+
+TRUSTPOINT
+:
+  'trustpoint'
+;
+
 TTL
 :
   'ttl'
@@ -3449,8 +3858,10 @@ TYPE
   'type'
   // Other instances are followed by tokens in default mode, or occur in non-default mode.
   {
-    if (lastTokenType() == SERVICE_POLICY) {
+    if (lastTokenType() == CLASS) {
       pushMode(M_ClassType);
+    } else if (lastTokenType() == SERVICE_POLICY) {
+      pushMode(M_ServicePolicyType);
     }
   }
 ;
@@ -3567,6 +3978,11 @@ V3_REPORT_SUPPRESSION
   'v3-report-suppression'
 ;
 
+VERIFY
+:
+  'verify'
+;
+
 VERSION
 :
   'version'
@@ -3585,6 +4001,11 @@ VERSION
         break;
     }
   }
+;
+
+VETHERNET
+:
+  'vethernet'
 ;
 
 VIOLATE
@@ -3630,6 +4051,11 @@ VPNV6
 VRF
 :
   'vrf' -> pushMode ( M_Vrf )
+;
+
+VTP
+:
+  'vtp'
 ;
 
 WAIT_FOR
@@ -3990,6 +4416,14 @@ F_Ipv6PrefixLength
 ;
 
 fragment
+F_MacAddress
+:
+  F_HexDigit F_HexDigit F_HexDigit F_HexDigit '.'
+  F_HexDigit F_HexDigit F_HexDigit F_HexDigit '.'
+  F_HexDigit F_HexDigit F_HexDigit F_HexDigit
+;
+
+fragment
 F_Newline
 :
   [\n\r]
@@ -4102,7 +4536,7 @@ F_Word
 fragment
 F_WordChar
 :
-  [0-9A-Za-z!@#$^*_=+.;:{}/]
+  [0-9A-Za-z!@#$%^&*()_=+.;:{}/]
   | '-'
 ;
 
@@ -4245,9 +4679,9 @@ M_ClassType_QOS
   'qos' -> type ( QOS ) , mode ( M_Word )
 ;
 
-M_ClassType_QUEUEING
+M_ClassType_QUEUING
 :
-  'queueing' -> type ( QUEUEING ) , mode ( M_Word )
+  'queuing' -> type ( QUEUING ) , mode ( M_Word )
 ;
 
 M_ClassType_WS
@@ -4299,9 +4733,9 @@ M_ClassMapType_QOS
   'qos' -> type ( QOS ) , mode ( M_ClassMapType2 )
 ;
 
-M_ClassMapType_QUEUEING
+M_ClassMapType_QUEUING
 :
-  'queueing' -> type ( QUEUEING ) , mode ( M_ClassMapType2 )
+  'queuing' -> type ( QUEUING ) , mode ( M_ClassMapType2 )
 ;
 
 M_ClassMapType_WS
@@ -4349,6 +4783,74 @@ M_DoubleQuote_QUOTED_TEXT
   ~["\r\n]+ -> type ( QUOTED_TEXT )
 ;
 
+mode M_Expanded;
+
+M_Expanded_WORD
+:
+  F_Word -> type ( WORD ) , mode(M_Expanded2)
+;
+
+M_Expanded_WS
+:
+  F_Whitespace+ -> channel ( HIDDEN )
+;
+
+mode M_Expanded2;
+
+M_Expanded2_DENY
+:
+  'deny' -> type ( DENY ), mode(M_Expanded3)
+;
+
+M_Expanded2_PERMIT
+:
+  'permit' -> type ( PERMIT ), mode(M_Expanded3)
+;
+
+M_Expanded2_SEQ
+:
+  'seq' -> type ( SEQ )
+;
+
+M_Expanded2_UINT8
+:
+  F_Uint8 -> type(UINT8)
+;
+
+M_Expanded2_UINT16
+:
+  F_Uint16 -> type(UINT16)
+;
+
+M_Expanded2_UINT32
+:
+  F_Uint32 -> type(UINT32)
+;
+
+M_Expanded2_WS
+:
+  F_Whitespace+ -> channel ( HIDDEN )
+;
+
+mode M_Expanded3;
+
+M_Expanded3_WS
+:
+  F_Whitespace+ -> channel ( HIDDEN ), mode(M_Expanded4)
+;
+
+mode M_Expanded4;
+
+M_Expanded4_DOUBLE_QUOTE
+:
+  '"' -> type(DOUBLE_QUOTE), mode(M_DoubleQuote)
+;
+
+M_Expanded4_REMARK_TEXT
+:
+  ~["\r\n] F_NonNewline* -> type(REMARK_TEXT), popMode
+;
+
 mode M_Hostname;
 
 M_Hostname_SUBDOMAIN_NAME
@@ -4383,6 +4885,23 @@ M_HsrpVersion_VERSION_2
 ;
 
 M_HsrpVersion_WS
+:
+  F_Whitespace+ -> channel ( HIDDEN )
+;
+
+mode M_MacAddress;
+
+M_MacAddress_MAC_ADDRESS_LITERAL
+:
+  F_MacAddress -> type ( MAC_ADDRESS_LITERAL ) , popMode
+;
+
+M_MacAddress_NEWLINE
+:
+  F_Newline+ -> type ( NEWLINE ) , popMode
+;
+
+M_MacAddress_WS
 :
   F_Whitespace+ -> channel ( HIDDEN )
 ;
@@ -4423,7 +4942,12 @@ M_Password_PASSWORD_7
 
 M_Password_PASSWORD_0_TEXT
 :
-  F_NonNewline+ -> type ( PASSWORD_0_TEXT ) , popMode
+  F_NonWhitespace+ -> type ( PASSWORD_0_TEXT ) , popMode
+;
+
+M_Password_WS
+:
+  F_Whitespace+ -> channel(HIDDEN)
 ;
 
 mode M_Password3;
@@ -4486,9 +5010,9 @@ M_PolicyMapType_QOS
   'qos' -> type ( QOS ) , mode ( M_Word )
 ;
 
-M_PolicyMapType_QUEUEING
+M_PolicyMapType_QUEUING
 :
-  'queueing' -> type ( QUEUEING ) , mode ( M_Word )
+  'queuing' -> type ( QUEUING ) , mode ( M_Word )
 ;
 
 M_PolicyMapType_WS
@@ -4520,7 +5044,36 @@ M_Remark_REMARK_TEXT
   F_NonWhitespace F_NonNewline* -> type ( REMARK_TEXT ) , popMode
 ;
 
+M_Remark_NEWLINE
+:
+  F_Newline+ -> type ( NEWLINE ) , popMode
+;
+
 M_Remark_WS
+:
+  F_Whitespace+ -> channel ( HIDDEN )
+;
+
+mode M_ServicePolicyType;
+
+// control-plane omitted on purpose
+
+M_ServicePolicyType_NETWORK_QOS
+:
+  'network-qos' -> type ( NETWORK_QOS ) , mode ( M_Word )
+;
+
+M_ServicePolicyType_QOS
+:
+  'qos' -> type ( QOS ) , popMode
+;
+
+M_ServicePolicyType_QUEUING
+:
+  'queuing' -> type ( QUEUING ) , popMode
+;
+
+M_ServicePolicyType_WS
 :
   F_Whitespace+ -> channel ( HIDDEN )
 ;
@@ -4593,6 +5146,27 @@ M_SnmpVersion_WS
   F_Whitespace+ -> channel ( HIDDEN )
 ;
 
+mode M_TacacsServerHost;
+
+M_TacacsServerHost_IP_ADDRESS
+:
+  F_IpAddress -> type(IP_ADDRESS), popMode
+;
+
+M_TacacsServerHost_IPV6_ADDRESS
+:
+  F_Ipv6Address -> type(IPV6_ADDRESS), popMode
+;
+
+M_TacacsServerHost_WORD
+:
+  F_Word -> type ( WORD ) , popMode
+;
+
+M_TacacsServerHost_WS
+:
+  F_Whitespace+ -> channel ( HIDDEN )
+;
 mode M_Vrf;
 
 M_Vrf_CONTEXT

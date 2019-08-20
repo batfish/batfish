@@ -1,0 +1,16 @@
+!RANCID-CONTENT-TYPE: cisco-nx
+!
+hostname nxos_ospfv3
+!
+
+feature ospfv3
+feature bfd
+
+interface Ethernet1/1
+  no switchport
+  no shutdown
+  ipv6 router ospfv3 1 area 0.0.0.0
+  ospfv3 bfd
+  ospfv3 dead-interval 10
+  ospfv3 hello-interval 3
+  ospfv3 network point-to-point

@@ -10,9 +10,15 @@ s_interface
 :
   INTERFACE
   (
-      s_interface_nve
-      | s_interface_regular
+    s_interface_breakout
+    | s_interface_nve
+    | s_interface_regular
   )
+;
+
+s_interface_breakout
+:
+  BREAKOUT MODULE module = uint8 PORT ranges = uint8_range_set MAP TENG_4X NEWLINE
 ;
 
 s_interface_nve
@@ -31,7 +37,8 @@ s_interface_regular
 :
   irange = interface_range NEWLINE
   (
-    i_bandwidth
+    i_autostate
+    | i_bandwidth
     | i_channel_group
     | i_delay
     | i_description
@@ -40,14 +47,21 @@ s_interface_regular
     | i_ip
     | i_ipv6
     | i_lacp
+    | i_mac_address
     | i_mtu
     | i_no
     | i_null
+    | i_service_policy
     | i_shutdown
     | i_speed
     | i_switchport
     | i_vrf_member
   )*
+;
+
+i_autostate
+:
+  AUTOSTATE NEWLINE
 ;
 
 i_bandwidth
@@ -133,15 +147,38 @@ hsrp_delay_reload
 
 ih_group
 :
-  group = hsrp_group_number NEWLINE
+  group = hsrp_group_number
   (
-    ihg_authentication
-    | ihg_ip
-    | ihg_preempt
-    | ihg_priority
-    | ihg_timers
-    | ihg_track
+    ihg_ipv4
+    | ihg_ipv6
+  )
+;
+
+ihg_ipv4
+:
+  NEWLINE
+  (
+    ihg_common
+    | ihg4_ip
   )*
+;
+
+ihg_ipv6
+:
+  IPV6 NEWLINE
+  (
+    ihg_common
+    | ihg6_ip
+  )*
+;
+
+ihg_common
+:
+  ihg_authentication
+  | ihg_preempt
+  | ihg_priority
+  | ihg_timers
+  | ihg_track
 ;
 
 hsrp_group_number
@@ -178,15 +215,6 @@ hsrp_authentication_string
 ihgam_key_chain
 :
   KEY_CHAIN name = key_chain_name NEWLINE
-;
-
-ihg_ip
-:
-  IP
-  (
-    ip = ip_address
-    | prefix = ip_prefix
-  ) SECONDARY? NEWLINE
 ;
 
 ihg_preempt
@@ -264,6 +292,37 @@ hsrp_track_decrement
   uint8
 ;
 
+ihg4_ip
+:
+  IP
+  (
+    ip = ip_address
+    | prefix = ip_prefix
+  ) SECONDARY? NEWLINE
+;
+
+ihg6_ip
+:
+  IP
+  (
+    ihg6_ip_address
+    | ihg6_ip_autoconfig
+  )
+;
+
+ihg6_ip_address
+:
+  (
+    ip6 = ipv6_address
+    | prefix6 = ipv6_prefix
+  ) SECONDARY? NEWLINE
+;
+
+ihg6_ip_autoconfig
+:
+  AUTOCONFIG NEWLINE
+;
+
 ih_version
 :
   VERSION version = hsrp_version NEWLINE
@@ -281,6 +340,7 @@ i_ip
   (
     i_ip_access_group
     | i_ip_address
+    | i_ip_dhcp
     | i_ip_null
     | i_ip_ospf
     | i_ip_policy
@@ -317,6 +377,16 @@ i_ip_address_concrete
 i_ip_address_dhcp
 :
   DHCP NEWLINE
+;
+
+i_ip_dhcp
+:
+  DHCP i_ip_dhcp_relay
+;
+
+i_ip_dhcp_relay
+:
+  RELAY ADDRESS ip_address NEWLINE
 ;
 
 i_ip_null
@@ -453,6 +523,7 @@ i_ipv6
   IPV6
   (
     iip6_address
+    | iip6_null
     | iip6_traffic_filter
   )
 ;
@@ -477,6 +548,15 @@ i_ipv6_address_concrete
 i_ipv6_address_dhcp
 :
   DHCP NEWLINE
+;
+
+iip6_null
+:
+  (
+    DHCP
+    | ND
+    | ROUTER
+  ) null_rest_of_line
 ;
 
 iip6_traffic_filter
@@ -513,6 +593,11 @@ il_null
   SUSPEND_INDIVIDUAL null_rest_of_line
 ;
 
+i_mac_address
+:
+  MAC_ADDRESS mac = mac_address_literal NEWLINE
+;
+
 i_mtu
 :
   MTU interface_mtu NEWLINE
@@ -529,7 +614,10 @@ i_no
   NO
   (
     i_no_autostate
+    | i_no_bandwidth
     | i_no_bfd
+    | i_no_description
+    | i_no_mac_address
     | i_no_null
     | i_no_shutdown
     | i_no_switchport
@@ -541,9 +629,49 @@ i_no_autostate
   AUTOSTATE NEWLINE
 ;
 
+i_no_bandwidth
+:
+  BANDWIDTH i_no_bandwidth_inherit
+;
+
+i_no_bandwidth_inherit
+:
+  INHERIT NEWLINE
+;
+
 i_no_bfd
 :
   BFD null_rest_of_line
+;
+
+i_no_description
+:
+  DESCRIPTION NEWLINE
+;
+
+i_no_mac_address
+:
+  MAC_ADDRESS NEWLINE
+;
+
+i_no_null
+:
+  (
+    BEACON
+    | CDP
+    | HARDWARE
+    | IP
+    | IPV6
+    | LLDP
+    | LOAD_INTERVAL
+    | MANAGEMENT
+    | NEGOTIATE
+    | SNMP
+    | SPANNING_TREE
+    | STORM_CONTROL
+    | UDLD
+    | VTP
+  ) null_rest_of_line
 ;
 
 i_no_shutdown
@@ -556,29 +684,53 @@ i_no_switchport
   SWITCHPORT NEWLINE
 ;
 
-i_no_null
-:
-  (
-    CDP
-    | IP
-    | IPV6
-    | NEGOTIATE
-    | SNMP
-  ) null_rest_of_line
-;
-
 i_null
 :
   (
     BFD
+    | CARRIER_DELAY
     | CDP
     | DUPLEX
     | FEX
+    | FLOWCONTROL
+    | LINK
+    | LLDP
+    | LOAD_INTERVAL
+    | LOGGING
+    | MDIX
+    | MEDIUM
+    | NEGOTIATE
+    | OSPFV3
+    | PRIORITY_FLOW_CONTROL
     | SNMP
     | SPANNING_TREE
     | STORM_CONTROL
     | UDLD
   ) null_rest_of_line
+;
+
+i_service_policy
+:
+  SERVICE_POLICY isp_type
+;
+
+isp_type
+:
+  TYPE
+  (
+    ispt_qos
+    | ispt_queuing
+  )
+;
+
+ispt_qos
+:
+  QOS (INPUT | OUTPUT) name = policy_map_name NEWLINE
+;
+
+ispt_queuing
+:
+  QUEUING (INPUT | OUTPUT) name = policy_map_name NEWLINE
 ;
 
 i_shutdown

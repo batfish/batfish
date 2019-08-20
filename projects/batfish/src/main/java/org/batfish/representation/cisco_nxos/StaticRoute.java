@@ -31,8 +31,8 @@ public final class StaticRoute implements Serializable {
 
     public @Nonnull StaticRoute build() {
       checkArgument(
-          _nextHopInterface == null || _nextHopIp != null,
-          "Cannot specify nextHopInterface without nextHopIp");
+          _discard || _nextHopInterface != null || _nextHopIp != null,
+          "Must specify either discard or next-hop options");
       checkArgument(
           !_discard || (_nextHopInterface == null && _nextHopIp == null && _nextHopVrf == null),
           "Discard static route mutually exclusive with next-hop options");

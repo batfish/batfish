@@ -12,12 +12,14 @@ import
   CiscoNxos_ip_community_list,
   CiscoNxos_ip_prefix_list,
   CiscoNxos_ipv6_access_list,
+  CiscoNxos_logging,
   CiscoNxos_object_group,
   CiscoNxos_ospf,
   CiscoNxos_policy_map,
   CiscoNxos_route_map,
   CiscoNxos_snmp,
   CiscoNxos_static,
+  CiscoNxos_tacacs_server,
   CiscoNxos_vlan,
   CiscoNxos_vrf;
 
@@ -43,6 +45,7 @@ statement
   | s_ip
   | s_ipv6
   | s_key
+  | s_logging
   | s_no
   | s_null
   | s_nv
@@ -53,6 +56,7 @@ statement
   | s_router
   | s_snmp_server
   | s_system
+  | s_tacacs_server
   | s_track
   | s_version
   | s_vlan
@@ -100,10 +104,34 @@ s_ip
     ip_access_list
     | ip_as_path_access_list
     | ip_community_list
+    | ip_domain_name
+    | ip_name_server
     | ip_null
     | ip_prefix_list
     | ip_route
   )
+;
+
+ip_domain_name
+:
+  DOMAIN_NAME domain = domain_name NEWLINE
+;
+
+domain_name
+:
+// 1-64 characters
+  WORD
+;
+
+ip_name_server
+:
+  NAME_SERVER servers += name_server+ (USE_VRF vrf = vrf_name)? NEWLINE
+;
+
+name_server
+:
+  ip_address
+  | ipv6_address
 ;
 
 ip_null
@@ -113,7 +141,17 @@ ip_null
 
 s_ipv6
 :
-  IPV6 ipv6_access_list
+  IPV6
+  (
+    ipv6_access_list
+    | ipv6_prefix_list
+  )
+;
+
+ipv6_prefix_list
+:
+// TODO: something much less lazy
+  PREFIX_LIST null_rest_of_line
 ;
 
 s_key
@@ -199,7 +237,35 @@ s_router
 
 s_system
 :
-  SYSTEM sys_qos
+  SYSTEM
+  (
+    sys_default
+    | sys_qos
+  )
+;
+
+sys_default
+:
+  DEFAULT sysd_switchport
+;
+
+sysd_switchport
+:
+  SWITCHPORT
+  (
+    sysds_shutdown
+    | sysds_switchport
+  )
+;
+
+sysds_shutdown
+:
+  SHUTDOWN NEWLINE
+;
+
+sysds_switchport
+:
+  NEWLINE
 ;
 
 sys_qos
@@ -209,12 +275,27 @@ sys_qos
 
 sysqos_service_policy
 :
-  SERVICE_POLICY TYPE
+  SERVICE_POLICY TYPE 
   (
-    NETWORK_QOS
-    | QOS
-    | QUEUEING
-  ) name = policy_map_name NEWLINE
+    sysqosspt_network_qos
+    | sysqosspt_qos
+    | sysqosspt_queueing
+  )
+;
+
+sysqosspt_network_qos
+:
+  NETWORK_QOS name = policy_map_name NEWLINE
+;
+
+sysqosspt_qos
+:
+  QOS INPUT name = policy_map_name NEWLINE
+;
+
+sysqosspt_queueing
+:
+  QUEUING (INPUT | OUTPUT) name = policy_map_name NEWLINE
 ;
 
 s_track

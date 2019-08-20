@@ -7,6 +7,7 @@ import static org.batfish.datamodel.Configuration.DEFAULT_VRF_NAME;
 import static org.batfish.datamodel.Interface.NULL_INTERFACE_NAME;
 import static org.batfish.datamodel.IpWildcard.ipWithWildcardMask;
 import static org.batfish.datamodel.Route.UNSET_NEXT_HOP_INTERFACE;
+import static org.batfish.datamodel.Route.UNSET_ROUTE_NEXT_HOP_IP;
 import static org.batfish.datamodel.VniSettings.DEFAULT_UDP_PORT;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.matchDscp;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.matchDst;
@@ -32,6 +33,7 @@ import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasDefaultVrf
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasHostname;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasInterface;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasInterfaces;
+import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasVrf;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasNumReferrers;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasRouteFilterLists;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasUndefinedReference;
@@ -146,6 +148,8 @@ import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConnectedRoute;
 import org.batfish.datamodel.DscpType;
+import org.batfish.datamodel.Flow;
+import org.batfish.datamodel.Flow.Builder;
 import org.batfish.datamodel.GeneratedRoute;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.IcmpCode;
@@ -164,6 +168,7 @@ import org.batfish.datamodel.NamedPort;
 import org.batfish.datamodel.OriginType;
 import org.batfish.datamodel.OspfExternalRoute;
 import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.RegexCommunitySet;
 import org.batfish.datamodel.RouteFilterLine;
 import org.batfish.datamodel.RouteFilterList;
 import org.batfish.datamodel.RoutingProtocol;
@@ -190,6 +195,12 @@ import org.batfish.datamodel.matchers.VniSettingsMatchers;
 import org.batfish.datamodel.matchers.VrfMatchers;
 import org.batfish.datamodel.ospf.OspfAreaSummary;
 import org.batfish.datamodel.ospf.OspfMetricType;
+import org.batfish.datamodel.ospf.OspfNetworkType;
+import org.batfish.datamodel.packet_policy.FibLookup;
+import org.batfish.datamodel.packet_policy.FibLookupOverrideLookupIp;
+import org.batfish.datamodel.packet_policy.FlowEvaluator;
+import org.batfish.datamodel.packet_policy.IngressInterfaceVrf;
+import org.batfish.datamodel.packet_policy.PacketPolicy;
 import org.batfish.datamodel.routing_policy.Environment.Direction;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.routing_policy.expr.CallExpr;
@@ -219,7 +230,7 @@ import org.batfish.representation.cisco_nxos.Evpn;
 import org.batfish.representation.cisco_nxos.EvpnVni;
 import org.batfish.representation.cisco_nxos.ExtendedCommunityOrAuto;
 import org.batfish.representation.cisco_nxos.FragmentsBehavior;
-import org.batfish.representation.cisco_nxos.HsrpGroup;
+import org.batfish.representation.cisco_nxos.HsrpGroupIpv4;
 import org.batfish.representation.cisco_nxos.IcmpOptions;
 import org.batfish.representation.cisco_nxos.Interface;
 import org.batfish.representation.cisco_nxos.InterfaceAddressWithAttributes;
@@ -230,6 +241,8 @@ import org.batfish.representation.cisco_nxos.IpAccessListLine;
 import org.batfish.representation.cisco_nxos.IpAddressSpec;
 import org.batfish.representation.cisco_nxos.IpAsPathAccessList;
 import org.batfish.representation.cisco_nxos.IpAsPathAccessListLine;
+import org.batfish.representation.cisco_nxos.IpCommunityListExpanded;
+import org.batfish.representation.cisco_nxos.IpCommunityListExpandedLine;
 import org.batfish.representation.cisco_nxos.IpCommunityListStandard;
 import org.batfish.representation.cisco_nxos.IpCommunityListStandardLine;
 import org.batfish.representation.cisco_nxos.IpPrefixList;
@@ -264,7 +277,10 @@ import org.batfish.representation.cisco_nxos.RouteMapMatchCommunity;
 import org.batfish.representation.cisco_nxos.RouteMapMatchInterface;
 import org.batfish.representation.cisco_nxos.RouteMapMatchIpAddress;
 import org.batfish.representation.cisco_nxos.RouteMapMatchIpAddressPrefixList;
+import org.batfish.representation.cisco_nxos.RouteMapMatchIpv6Address;
+import org.batfish.representation.cisco_nxos.RouteMapMatchIpv6AddressPrefixList;
 import org.batfish.representation.cisco_nxos.RouteMapMatchMetric;
+import org.batfish.representation.cisco_nxos.RouteMapMatchSourceProtocol;
 import org.batfish.representation.cisco_nxos.RouteMapMatchTag;
 import org.batfish.representation.cisco_nxos.RouteMapMetricType;
 import org.batfish.representation.cisco_nxos.RouteMapSetAsPathPrependLastAs;
@@ -532,6 +548,127 @@ public final class CiscoNxosGrammarTest {
   }
 
   @Test
+  public void testSystemDefaultSwitchportShutdownConversion() throws IOException {
+    String hostname = "nxos_system_default_switchport_shutdown";
+    Configuration c = parseConfig(hostname);
+
+    assertThat(
+        c.getAllInterfaces(),
+        hasKeys(
+            "Ethernet1/1",
+            "Ethernet1/2",
+            "Ethernet1/3",
+            "Ethernet1/4",
+            "Ethernet1/5",
+            "Ethernet1/6",
+            "Ethernet1/7",
+            "Ethernet1/8"));
+    {
+      org.batfish.datamodel.Interface iface = c.getAllInterfaces().get("Ethernet1/1");
+      assertThat(iface, isActive(false));
+    }
+    {
+      org.batfish.datamodel.Interface iface = c.getAllInterfaces().get("Ethernet1/2");
+      assertThat(iface, isActive(false));
+    }
+    {
+      org.batfish.datamodel.Interface iface = c.getAllInterfaces().get("Ethernet1/3");
+      // TODO: more interesting test of regular shutdown vs force shutdown
+      assertThat(iface, isActive(false));
+    }
+    {
+      org.batfish.datamodel.Interface iface = c.getAllInterfaces().get("Ethernet1/4");
+      assertThat(iface, isActive());
+    }
+    {
+      org.batfish.datamodel.Interface iface = c.getAllInterfaces().get("Ethernet1/5");
+      assertThat(iface, isActive(false));
+    }
+    {
+      org.batfish.datamodel.Interface iface = c.getAllInterfaces().get("Ethernet1/6");
+      assertThat(iface, isActive(false));
+    }
+    {
+      org.batfish.datamodel.Interface iface = c.getAllInterfaces().get("Ethernet1/7");
+      // TODO: more interesting test of regular shutdown vs force shutdown
+      assertThat(iface, isActive(false));
+    }
+    {
+      org.batfish.datamodel.Interface iface = c.getAllInterfaces().get("Ethernet1/8");
+      assertThat(iface, isActive());
+    }
+  }
+
+  @Test
+  public void testSystemDefaultSwitchportShutdownExtraction() {
+    String hostname = "nxos_system_default_switchport_shutdown";
+    CiscoNxosConfiguration vc = parseVendorConfig(hostname);
+
+    assertTrue(vc.getSystemDefaultSwitchportShutdown());
+    assertThat(
+        vc.getInterfaces(),
+        hasKeys(
+            "Ethernet1/1",
+            "Ethernet1/2",
+            "Ethernet1/3",
+            "Ethernet1/4",
+            "Ethernet1/5",
+            "Ethernet1/6",
+            "Ethernet1/7",
+            "Ethernet1/8"));
+    {
+      Interface iface = vc.getInterfaces().get("Ethernet1/1");
+      assertThat(iface.getShutdown(), nullValue());
+    }
+    {
+      Interface iface = vc.getInterfaces().get("Ethernet1/2");
+      assertThat(iface.getShutdown(), equalTo(true));
+    }
+    {
+      Interface iface = vc.getInterfaces().get("Ethernet1/3");
+      // TODO: more interesting test of regular shutdown vs force shutdown
+      assertThat(iface.getShutdown(), equalTo(true));
+    }
+    {
+      Interface iface = vc.getInterfaces().get("Ethernet1/4");
+      assertThat(iface.getShutdown(), equalTo(false));
+    }
+    {
+      Interface iface = vc.getInterfaces().get("Ethernet1/5");
+      assertThat(iface.getShutdown(), nullValue());
+    }
+    {
+      Interface iface = vc.getInterfaces().get("Ethernet1/6");
+      assertThat(iface.getShutdown(), equalTo(true));
+    }
+    {
+      Interface iface = vc.getInterfaces().get("Ethernet1/7");
+      // TODO: more interesting test of regular shutdown vs force shutdown
+      assertThat(iface.getShutdown(), equalTo(true));
+    }
+    {
+      Interface iface = vc.getInterfaces().get("Ethernet1/8");
+      assertThat(iface.getShutdown(), equalTo(false));
+    }
+  }
+
+  @Test
+  public void testTacacsServerConversion() throws IOException {
+    String hostname = "nxos_tacacs_server";
+    Configuration c = parseConfig(hostname);
+
+    assertThat(c.getTacacsServers(), containsInAnyOrder("192.0.2.1", "192.0.2.2"));
+  }
+
+  @Test
+  public void testTacacsServerExtraction() {
+    String hostname = "nxos_tacacs_server";
+    CiscoNxosConfiguration vc = parseVendorConfig(hostname);
+
+    assertThat(vc.getTacacsServers(), hasKeys("192.0.2.1", "192.0.2.2"));
+  }
+
+  @Test
   public void testTemplatePeerBgpAddressFamilyConversion() throws IOException {
     Configuration c = parseConfig("nxos_bgp_peer_template_af_inheritance");
 
@@ -604,13 +741,14 @@ public final class CiscoNxosGrammarTest {
   public void testEvpnL2L3Vni() throws IOException {
     Configuration c = parseConfig("nxos_l2_l3_vnis");
 
+    String tenantVrfName = "tenant1";
     Ip routerId = Ip.parse("10.1.1.1");
     // All defined VXLAN Vnis
     ImmutableSortedSet<Layer2VniConfig> expectedL2Vnis =
         ImmutableSortedSet.of(
             Layer2VniConfig.builder()
                 .setVni(1111)
-                .setVrf(DEFAULT_VRF_NAME)
+                .setVrf(tenantVrfName)
                 .setRouteDistinguisher(RouteDistinguisher.from(routerId, 3))
                 .setRouteTarget(ExtendedCommunity.target(1, 1111))
                 .setImportRouteTarget(ExtendedCommunity.target(1, 1111).matchString())
@@ -619,7 +757,7 @@ public final class CiscoNxosGrammarTest {
         ImmutableSortedSet.of(
             Layer3VniConfig.builder()
                 .setVni(3333)
-                .setVrf(DEFAULT_VRF_NAME)
+                .setVrf(tenantVrfName)
                 .setRouteDistinguisher(RouteDistinguisher.from(routerId, 3))
                 .setRouteTarget(ExtendedCommunity.target(1, 3333))
                 .setImportRouteTarget(ExtendedCommunity.target(1, 3333).matchString())
@@ -720,6 +858,12 @@ public final class CiscoNxosGrammarTest {
   }
 
   @Test
+  public void testInterfaceBreakoutExtraction() {
+    // TODO: make into an extraction test
+    assertThat(parseVendorConfig("nxos_interface_breakout"), notNullValue());
+  }
+
+  @Test
   public void testInterfaceHsrpConversion() throws IOException {
     String hostname = "nxos_interface_hsrp";
     String ifaceName = "Ethernet1/1";
@@ -760,8 +904,8 @@ public final class CiscoNxosGrammarTest {
       assertThat(hsrp, notNullValue());
       assertThat(hsrp.getDelayReloadSeconds(), equalTo(60));
       assertThat(hsrp.getVersion(), equalTo(2));
-      assertThat(hsrp.getGroups(), hasKeys(2));
-      HsrpGroup group = hsrp.getGroups().get(2);
+      assertThat(hsrp.getIpv4Groups(), hasKeys(2));
+      HsrpGroupIpv4 group = hsrp.getIpv4Groups().get(2);
       assertThat(group.getIp(), equalTo(Ip.parse("192.0.2.1")));
       assertThat(
           group.getIpSecondaries(),
@@ -776,6 +920,12 @@ public final class CiscoNxosGrammarTest {
       assertThat(group.getTracks().get(1).getDecrement(), equalTo(10));
       assertThat(group.getTracks().get(2).getDecrement(), equalTo(20));
     }
+  }
+
+  @Test
+  public void testInterfaceHsrpIpv6Extraction() {
+    // TODO: turn into extraction test
+    assertThat(parseVendorConfig("nxos_interface_hsrp_ipv6"), notNullValue());
   }
 
   @Test
@@ -858,6 +1008,18 @@ public final class CiscoNxosGrammarTest {
   }
 
   @Test
+  public void testInterfaceIpv6DhcpRelayExtraction() {
+    // TODO: make into extraction test
+    assertThat(parseVendorConfig("nxos_interface_ipv6_dhcp_relay"), notNullValue());
+  }
+
+  @Test
+  public void testInterfaceIpv6NdExtraction() {
+    // TODO: make into extraction test
+    assertThat(parseVendorConfig("nxos_interface_ipv6_nd"), notNullValue());
+  }
+
+  @Test
   public void testInterfaceMulticastParsing() {
     // TODO: make into extraction test
     assertThat(parseVendorConfig("nxos_interface_multicast"), notNullValue());
@@ -867,6 +1029,46 @@ public final class CiscoNxosGrammarTest {
   public void testInterfacePbrExtraction() {
     CiscoNxosConfiguration c = parseVendorConfig("nxos_interface_ip_policy");
     assertThat(c.getInterfaces().get("Ethernet1/1").getPbrPolicy(), equalTo("PBR_POLICY"));
+  }
+
+  @Test
+  public void testInterfacePbrConversion() throws IOException {
+    String hostname = "nxos_interface_ip_policy";
+    Configuration c = parseConfig(hostname);
+    String policyName = "PBR_POLICY";
+    PacketPolicy policy = c.getPacketPolicies().get(policyName);
+    assertThat(policy, notNullValue());
+    assertThat(c.getAllInterfaces().get("Ethernet1/1").getRoutingPolicyName(), equalTo(policyName));
+    Builder builder =
+        Flow.builder()
+            .setIngressNode(hostname)
+            .setTag("test")
+            .setIngressInterface("eth0")
+            .setSrcIp(Ip.parse("8.8.8.8"))
+            .setSrcPort(22222)
+            .setDstPort(22);
+    Flow acceptedFlow = builder.setDstIp(Ip.parse("1.1.1.100")).build();
+    Flow rejectedFlow = builder.setDstIp(Ip.parse("3.3.3.3")).build();
+    FibLookup regularFibLookup = new FibLookup(IngressInterfaceVrf.instance());
+    // Accepted flow sent to 2.2.2.2
+    assertThat(
+        FlowEvaluator.evaluate(
+                acceptedFlow, "eth0", policy, c.getIpAccessLists(), ImmutableMap.of())
+            .getAction(),
+        equalTo(
+            FibLookupOverrideLookupIp.builder()
+                .setIps(ImmutableList.of(Ip.parse("2.2.2.2")))
+                .setVrfExpr(IngressInterfaceVrf.instance())
+                .setDefaultAction(regularFibLookup)
+                .setRequireConnected(true)
+                .build()));
+
+    // Rejected flow delegated to regular FIB lookup
+    assertThat(
+        FlowEvaluator.evaluate(
+                rejectedFlow, "eth0", policy, c.getIpAccessLists(), ImmutableMap.of())
+            .getAction(),
+        equalTo(regularFibLookup));
   }
 
   @Test
@@ -894,7 +1096,16 @@ public final class CiscoNxosGrammarTest {
     Configuration c = parseConfig(hostname);
 
     assertThat(
-        c.getAllInterfaces(), hasKeys("Ethernet1/1", "Ethernet1/2", "Ethernet1/3", "Ethernet1/4"));
+        c.getAllInterfaces(),
+        hasKeys(
+            "Ethernet1/1",
+            "Ethernet1/2",
+            "Ethernet1/3",
+            "Ethernet1/4",
+            "Ethernet1/5",
+            "Ethernet1/6",
+            "Ethernet1/7",
+            "Ethernet1/8"));
     {
       org.batfish.datamodel.Interface iface = c.getAllInterfaces().get("Ethernet1/1");
       assertThat(iface, isActive());
@@ -912,6 +1123,23 @@ public final class CiscoNxosGrammarTest {
       org.batfish.datamodel.Interface iface = c.getAllInterfaces().get("Ethernet1/4");
       assertThat(iface, isActive());
     }
+    {
+      org.batfish.datamodel.Interface iface = c.getAllInterfaces().get("Ethernet1/5");
+      assertThat(iface, isActive(false));
+    }
+    {
+      org.batfish.datamodel.Interface iface = c.getAllInterfaces().get("Ethernet1/6");
+      assertThat(iface, isActive(false));
+    }
+    {
+      org.batfish.datamodel.Interface iface = c.getAllInterfaces().get("Ethernet1/7");
+      // TODO: more interesting test of regular shutdown vs force shutdown
+      assertThat(iface, isActive(false));
+    }
+    {
+      org.batfish.datamodel.Interface iface = c.getAllInterfaces().get("Ethernet1/8");
+      assertThat(iface, isActive());
+    }
   }
 
   @Test
@@ -920,23 +1148,49 @@ public final class CiscoNxosGrammarTest {
     CiscoNxosConfiguration vc = parseVendorConfig(hostname);
 
     assertThat(
-        vc.getInterfaces(), hasKeys("Ethernet1/1", "Ethernet1/2", "Ethernet1/3", "Ethernet1/4"));
+        vc.getInterfaces(),
+        hasKeys(
+            "Ethernet1/1",
+            "Ethernet1/2",
+            "Ethernet1/3",
+            "Ethernet1/4",
+            "Ethernet1/5",
+            "Ethernet1/6",
+            "Ethernet1/7",
+            "Ethernet1/8"));
     {
       Interface iface = vc.getInterfaces().get("Ethernet1/1");
-      assertFalse(iface.getShutdown());
+      assertThat(iface.getShutdown(), nullValue());
     }
     {
       Interface iface = vc.getInterfaces().get("Ethernet1/2");
-      assertTrue(iface.getShutdown());
+      assertThat(iface.getShutdown(), equalTo(true));
     }
     {
       Interface iface = vc.getInterfaces().get("Ethernet1/3");
       // TODO: more interesting test of regular shutdown vs force shutdown
-      assertTrue(iface.getShutdown());
+      assertThat(iface.getShutdown(), equalTo(true));
     }
     {
       Interface iface = vc.getInterfaces().get("Ethernet1/4");
-      assertFalse(iface.getShutdown());
+      assertThat(iface.getShutdown(), equalTo(false));
+    }
+    {
+      Interface iface = vc.getInterfaces().get("Ethernet1/5");
+      assertThat(iface.getShutdown(), nullValue());
+    }
+    {
+      Interface iface = vc.getInterfaces().get("Ethernet1/6");
+      assertThat(iface.getShutdown(), equalTo(true));
+    }
+    {
+      Interface iface = vc.getInterfaces().get("Ethernet1/7");
+      // TODO: more interesting test of regular shutdown vs force shutdown
+      assertThat(iface.getShutdown(), equalTo(true));
+    }
+    {
+      Interface iface = vc.getInterfaces().get("Ethernet1/8");
+      assertThat(iface.getShutdown(), equalTo(false));
     }
   }
 
@@ -1182,13 +1436,13 @@ public final class CiscoNxosGrammarTest {
 
     {
       Interface iface = vc.getInterfaces().get("Ethernet1/1");
-      assertFalse(iface.getShutdown());
+      assertThat(iface.getShutdown(), nullValue());
       assertThat(iface.getSwitchportMode(), equalTo(SwitchportMode.ACCESS));
       assertThat(iface.getAccessVlan(), equalTo(1));
     }
     {
       Interface iface = vc.getInterfaces().get("loopback0");
-      assertFalse(iface.getShutdown());
+      assertThat(iface.getShutdown(), nullValue());
       assertThat(iface.getSwitchportMode(), equalTo(SwitchportMode.NONE));
     }
     {
@@ -1198,7 +1452,7 @@ public final class CiscoNxosGrammarTest {
     }
     {
       Interface iface = vc.getInterfaces().get("port-channel1");
-      assertFalse(iface.getShutdown());
+      assertThat(iface.getShutdown(), nullValue());
       assertThat(iface.getSwitchportMode(), equalTo(SwitchportMode.ACCESS));
       assertThat(iface.getAccessVlan(), equalTo(1));
     }
@@ -1209,13 +1463,13 @@ public final class CiscoNxosGrammarTest {
     }
     {
       Interface iface = vc.getInterfaces().get("Ethernet1/2.1");
-      assertTrue(iface.getShutdown());
+      assertThat(iface.getShutdown(), nullValue());
       assertThat(iface.getSwitchportMode(), equalTo(SwitchportMode.NONE));
       assertThat(iface.getEncapsulationVlan(), nullValue());
     }
     {
       Interface iface = vc.getInterfaces().get("Ethernet1/2.2");
-      assertTrue(iface.getShutdown());
+      assertThat(iface.getShutdown(), nullValue());
       assertThat(iface.getSwitchportMode(), equalTo(SwitchportMode.NONE));
       assertThat(iface.getEncapsulationVlan(), equalTo(2));
     }
@@ -1226,7 +1480,7 @@ public final class CiscoNxosGrammarTest {
     }
     {
       Interface iface = vc.getInterfaces().get("port-channel2.1");
-      assertTrue(iface.getShutdown());
+      assertThat(iface.getShutdown(), nullValue());
       assertThat(iface.getSwitchportMode(), equalTo(SwitchportMode.NONE));
       assertThat(iface.getEncapsulationVlan(), nullValue());
     }
@@ -1237,78 +1491,78 @@ public final class CiscoNxosGrammarTest {
     }
     {
       Interface iface = vc.getInterfaces().get("Ethernet1/4");
-      assertFalse(iface.getShutdown());
+      assertThat(iface.getShutdown(), nullValue());
       assertThat(iface.getSwitchportMode(), equalTo(SwitchportMode.ACCESS));
       assertThat(iface.getAccessVlan(), equalTo(2));
     }
     {
       Interface iface = vc.getInterfaces().get("Ethernet1/5");
-      assertFalse(iface.getShutdown());
+      assertThat(iface.getShutdown(), nullValue());
       assertThat(iface.getSwitchportMode(), equalTo(SwitchportMode.TRUNK));
       assertThat(iface.getNativeVlan(), equalTo(2));
       assertThat(iface.getAllowedVlans(), equalTo(IntegerSpace.of(Range.closed(1, 4094))));
     }
     {
       Interface iface = vc.getInterfaces().get("Ethernet1/6");
-      assertFalse(iface.getShutdown());
+      assertThat(iface.getShutdown(), nullValue());
       assertThat(iface.getSwitchportMode(), equalTo(SwitchportMode.TRUNK));
       assertThat(iface.getNativeVlan(), equalTo(1));
       assertThat(iface.getAllowedVlans(), equalTo(IntegerSpace.of(Range.closed(1, 3))));
     }
     {
       Interface iface = vc.getInterfaces().get("Ethernet1/7");
-      assertFalse(iface.getShutdown());
+      assertThat(iface.getShutdown(), nullValue());
       assertThat(iface.getSwitchportMode(), equalTo(SwitchportMode.TRUNK));
       assertThat(iface.getNativeVlan(), equalTo(1));
       assertThat(iface.getAllowedVlans(), equalTo(IntegerSpace.of(Range.closed(1, 4))));
     }
     {
       Interface iface = vc.getInterfaces().get("Ethernet1/8");
-      assertFalse(iface.getShutdown());
+      assertThat(iface.getShutdown(), nullValue());
       assertThat(iface.getSwitchportMode(), equalTo(SwitchportMode.TRUNK));
       assertThat(iface.getNativeVlan(), equalTo(1));
       assertThat(iface.getAllowedVlans(), equalTo(IntegerSpace.of(Range.closed(1, 3966))));
     }
     {
       Interface iface = vc.getInterfaces().get("Ethernet1/9");
-      assertFalse(iface.getShutdown());
+      assertThat(iface.getShutdown(), nullValue());
       assertThat(iface.getSwitchportMode(), equalTo(SwitchportMode.TRUNK));
       assertThat(iface.getNativeVlan(), equalTo(1));
       assertThat(iface.getAllowedVlans(), equalTo(IntegerSpace.EMPTY));
     }
     {
       Interface iface = vc.getInterfaces().get("Ethernet1/10");
-      assertFalse(iface.getShutdown());
+      assertThat(iface.getShutdown(), nullValue());
       assertThat(iface.getSwitchportMode(), equalTo(SwitchportMode.TRUNK));
       assertThat(iface.getNativeVlan(), equalTo(1));
       assertThat(iface.getAllowedVlans(), equalTo(IntegerSpace.of(Range.closed(1, 2))));
     }
     {
       Interface iface = vc.getInterfaces().get("Ethernet1/11");
-      assertFalse(iface.getShutdown());
+      assertThat(iface.getShutdown(), nullValue());
       assertThat(iface.getSwitchportMode(), equalTo(SwitchportMode.ACCESS));
       assertThat(iface.getAccessVlan(), equalTo(1));
     }
     {
       Interface iface = vc.getInterfaces().get("Ethernet1/12");
-      assertFalse(iface.getShutdown());
+      assertThat(iface.getShutdown(), nullValue());
       assertThat(iface.getSwitchportMode(), equalTo(SwitchportMode.DOT1Q_TUNNEL));
     }
     {
       Interface iface = vc.getInterfaces().get("Ethernet1/13");
-      assertFalse(iface.getShutdown());
+      assertThat(iface.getShutdown(), nullValue());
       assertThat(iface.getSwitchportMode(), equalTo(SwitchportMode.FEX_FABRIC));
     }
     {
       Interface iface = vc.getInterfaces().get("Ethernet1/14");
-      assertFalse(iface.getShutdown());
+      assertThat(iface.getShutdown(), nullValue());
       assertThat(iface.getSwitchportMode(), equalTo(SwitchportMode.TRUNK));
       assertThat(iface.getNativeVlan(), equalTo(1));
       assertThat(iface.getAllowedVlans(), equalTo(IntegerSpace.of(Range.closed(1, 4094))));
     }
     {
       Interface iface = vc.getInterfaces().get("Ethernet1/15");
-      assertFalse(iface.getShutdown());
+      assertThat(iface.getShutdown(), nullValue());
       assertThat(iface.getSwitchportMode(), equalTo(SwitchportMode.MONITOR));
       assertTrue(iface.getSwitchportMonitor());
     }
@@ -1325,25 +1579,25 @@ public final class CiscoNxosGrammarTest {
 
     {
       Interface iface = vc.getInterfaces().get("Ethernet1/1");
-      assertFalse(iface.getShutdown());
+      assertThat(iface.getShutdown(), nullValue());
       assertThat(iface.getSwitchportMode(), equalTo(SwitchportMode.ACCESS));
       assertThat(iface.getAccessVlan(), equalTo(1));
     }
     {
       Interface iface = vc.getInterfaces().get("Ethernet1/2.1");
-      assertTrue(iface.getShutdown());
+      assertThat(iface.getShutdown(), nullValue());
       assertThat(iface.getSwitchportMode(), equalTo(SwitchportMode.NONE));
       assertThat(iface.getEncapsulationVlan(), nullValue());
     }
     {
-      Interface iface = vc.getInterfaces().get("Ethernet1/1");
-      assertFalse(iface.getShutdown());
+      Interface iface = vc.getInterfaces().get("Ethernet1/3");
+      assertThat(iface.getShutdown(), nullValue());
       assertThat(iface.getSwitchportMode(), equalTo(SwitchportMode.ACCESS));
       assertThat(iface.getAccessVlan(), equalTo(1));
     }
     {
-      Interface iface = vc.getInterfaces().get("Ethernet1/1");
-      assertFalse(iface.getShutdown());
+      Interface iface = vc.getInterfaces().get("Ethernet1/4");
+      assertThat(iface.getShutdown(), nullValue());
       assertThat(iface.getSwitchportMode(), equalTo(SwitchportMode.ACCESS));
       assertThat(iface.getAccessVlan(), equalTo(1));
     }
@@ -1373,6 +1627,8 @@ public final class CiscoNxosGrammarTest {
             hasDescription(
                 "here is a description with punctuation! and IP address 1.2.3.4/24 etc."),
             hasMtu(9216)));
+    assertTrue(eth11.getAutoState());
+    assertThat(eth11.getDhcpRelayAddresses(), contains(Ip.parse("1.2.3.4"), Ip.parse("1.2.3.5")));
     assertThat(eth11.getIncomingFilterName(), equalTo("acl_in"));
     assertThat(eth11.getOutgoingFilterName(), equalTo("acl_out"));
     // TODO: convert and test delay
@@ -1381,16 +1637,28 @@ public final class CiscoNxosGrammarTest {
   @Test
   public void testInterfacePropertiesExtraction() {
     CiscoNxosConfiguration vc = parseVendorConfig("nxos_interface_properties");
-    assertThat(vc.getInterfaces(), hasKeys("Ethernet1/1", "Ethernet1/2", "Ethernet1/3"));
+    assertThat(
+        vc.getInterfaces(),
+        hasKeys("Ethernet1/1", "Ethernet1/2", "Ethernet1/3", "Ethernet100/100"));
     {
       Interface iface = vc.getInterfaces().get("Ethernet1/1");
       assertThat(iface.getDelayTensOfMicroseconds(), equalTo(10));
       assertThat(
           iface.getDescription(),
           equalTo("here is a description with punctuation! and IP address 1.2.3.4/24 etc."));
+      assertThat(iface.getDhcpRelayAddresses(), contains(Ip.parse("1.2.3.4"), Ip.parse("1.2.3.5")));
       assertThat(iface.getIpAccessGroupIn(), equalTo("acl_in"));
       assertThat(iface.getIpAccessGroupOut(), equalTo("acl_out"));
       assertThat(iface.getMtu(), equalTo(9216));
+    }
+    {
+      Interface iface = vc.getInterfaces().get("Ethernet1/2");
+      assertTrue(iface.getAutostate());
+      assertThat(iface.getDescription(), nullValue());
+    }
+    {
+      Interface iface = vc.getInterfaces().get("Ethernet1/3");
+      assertFalse(iface.getAutostate());
     }
   }
 
@@ -2558,6 +2826,111 @@ public final class CiscoNxosGrammarTest {
   }
 
   @Test
+  public void testIpCommunityListExpandedConversion() throws IOException {
+    String hostname = "nxos_ip_community_list_expanded";
+    Configuration c = parseConfig(hostname);
+
+    assertThat(c.getCommunityLists(), hasKeys("cl_seq", "cl_test"));
+    {
+      CommunityList cl = c.getCommunityLists().get("cl_seq");
+      Iterator<CommunityListLine> lines = cl.getLines().iterator();
+      CommunityListLine line;
+
+      line = lines.next();
+      assertThat(line.getAction(), equalTo(LineAction.PERMIT));
+      assertThat(
+          ((RegexCommunitySet) line.getMatchCondition()).getRegex(), equalTo(toJavaRegex("1:1")));
+
+      line = lines.next();
+      assertThat(line.getAction(), equalTo(LineAction.PERMIT));
+      assertThat(
+          ((RegexCommunitySet) line.getMatchCondition()).getRegex(), equalTo(toJavaRegex("5:5")));
+
+      line = lines.next();
+      assertThat(line.getAction(), equalTo(LineAction.PERMIT));
+      assertThat(
+          ((RegexCommunitySet) line.getMatchCondition()).getRegex(), equalTo(toJavaRegex("10:10")));
+
+      line = lines.next();
+      assertThat(line.getAction(), equalTo(LineAction.PERMIT));
+      assertThat(
+          ((RegexCommunitySet) line.getMatchCondition()).getRegex(), equalTo(toJavaRegex("11:11")));
+    }
+    {
+      CommunityList cl = c.getCommunityLists().get("cl_test");
+      Iterator<CommunityListLine> lines = cl.getLines().iterator();
+      CommunityListLine line;
+
+      line = lines.next();
+      assertThat(line.getAction(), equalTo(LineAction.DENY));
+      assertThat(
+          ((RegexCommunitySet) line.getMatchCondition()).getRegex(),
+          equalTo(toJavaRegex("_1:1.*2:2_")));
+
+      line = lines.next();
+      assertThat(line.getAction(), equalTo(LineAction.PERMIT));
+      assertThat(
+          ((RegexCommunitySet) line.getMatchCondition()).getRegex(), equalTo(toJavaRegex("_1:1_")));
+
+      line = lines.next();
+      assertThat(line.getAction(), equalTo(LineAction.PERMIT));
+      assertThat(
+          ((RegexCommunitySet) line.getMatchCondition()).getRegex(), equalTo(toJavaRegex("_2:2_")));
+    }
+  }
+
+  @Test
+  public void testIpCommunityListExpandedExtraction() {
+    String hostname = "nxos_ip_community_list_expanded";
+    CiscoNxosConfiguration vc = parseVendorConfig(hostname);
+
+    assertThat(vc.getIpCommunityLists(), hasKeys("cl_seq", "cl_test"));
+    {
+      IpCommunityListExpanded cl = (IpCommunityListExpanded) vc.getIpCommunityLists().get("cl_seq");
+      Iterator<IpCommunityListExpandedLine> lines = cl.getLines().values().iterator();
+      IpCommunityListExpandedLine line;
+
+      line = lines.next();
+      assertThat(line.getLine(), equalTo(1L));
+      assertThat(line.getRegex(), equalTo("1:1"));
+
+      line = lines.next();
+      assertThat(line.getLine(), equalTo(5L));
+      assertThat(line.getRegex(), equalTo("5:5"));
+
+      line = lines.next();
+      assertThat(line.getLine(), equalTo(10L));
+      assertThat(line.getRegex(), equalTo("10:10"));
+
+      line = lines.next();
+      assertThat(line.getLine(), equalTo(11L));
+      assertThat(line.getRegex(), equalTo("11:11"));
+
+      assertFalse(lines.hasNext());
+    }
+    {
+      IpCommunityListExpanded cl =
+          (IpCommunityListExpanded) vc.getIpCommunityLists().get("cl_test");
+      Iterator<IpCommunityListExpandedLine> lines = cl.getLines().values().iterator();
+      IpCommunityListExpandedLine line;
+
+      line = lines.next();
+      assertThat(line.getAction(), equalTo(LineAction.DENY));
+      assertThat(line.getRegex(), equalTo("_1:1.*2:2_"));
+
+      line = lines.next();
+      assertThat(line.getAction(), equalTo(LineAction.PERMIT));
+      assertThat(line.getRegex(), equalTo("_1:1_"));
+
+      line = lines.next();
+      assertThat(line.getAction(), equalTo(LineAction.PERMIT));
+      assertThat(line.getRegex(), equalTo("_2:2_"));
+
+      assertFalse(lines.hasNext());
+    }
+  }
+
+  @Test
   public void testIpCommunityListStandardConversion() throws IOException {
     String hostname = "nxos_ip_community_list_standard";
     Configuration c = parseConfig(hostname);
@@ -2720,6 +3093,47 @@ public final class CiscoNxosGrammarTest {
   }
 
   @Test
+  public void testIpDomainNameConversion() throws IOException {
+    String hostname = "nxos_ip_domain_name";
+    Configuration c = parseConfig(hostname);
+
+    assertThat(c.getDomainName(), equalTo("example.com"));
+  }
+
+  @Test
+  public void testIpDomainNameExtraction() {
+    String hostname = "nxos_ip_domain_name";
+    CiscoNxosConfiguration vc = parseVendorConfig(hostname);
+
+    assertThat(vc.getIpDomainName(), equalTo("example.com"));
+  }
+
+  @Test
+  public void testIpNameServerConversion() throws IOException {
+    String hostname = "nxos_ip_name_server";
+    Configuration c = parseConfig(hostname);
+
+    assertThat(
+        c.getDnsServers(),
+        containsInAnyOrder("192.0.2.1", "192.0.2.2", "192.0.2.3", "dead:beef::1"));
+  }
+
+  @Test
+  public void testIpNameServerExtraction() {
+    String hostname = "nxos_ip_name_server";
+    CiscoNxosConfiguration vc = parseVendorConfig(hostname);
+
+    assertThat(
+        vc.getIpNameServersByUseVrf(),
+        equalTo(
+            ImmutableMap.of(
+                Configuration.DEFAULT_VRF_NAME,
+                ImmutableList.of("192.0.2.2", "192.0.2.1", "dead:beef::1"),
+                "management",
+                ImmutableList.of("192.0.2.3"))));
+  }
+
+  @Test
   public void testIpPrefixListConversion() throws IOException {
     String hostname = "nxos_ip_prefix_list";
     Configuration c = parseConfig(hostname);
@@ -2867,6 +3281,22 @@ public final class CiscoNxosGrammarTest {
   }
 
   @Test
+  public void testLoggingConversion() throws IOException {
+    String hostname = "nxos_logging";
+    Configuration c = parseConfig(hostname);
+
+    assertThat(c.getLoggingServers(), containsInAnyOrder("192.0.2.1", "192.0.2.2"));
+  }
+
+  @Test
+  public void testLoggingExtraction() {
+    String hostname = "nxos_logging";
+    CiscoNxosConfiguration vc = parseVendorConfig(hostname);
+
+    assertThat(vc.getLoggingServers(), hasKeys("192.0.2.1", "192.0.2.2"));
+  }
+
+  @Test
   public void testNveExtraction() {
     CiscoNxosConfiguration vc = parseVendorConfig("nxos_nve");
     Map<Integer, Nve> nves = vc.getNves();
@@ -2958,9 +3388,9 @@ public final class CiscoNxosGrammarTest {
             VniSettingsMatchers.hasVlan(equalTo(2)),
             hasVni(10001)));
 
-    assertThat(c, hasDefaultVrf(hasVniSettings(hasKey(20001))));
+    assertThat(c, hasVrf("tenant1", hasVniSettings(hasKey(20001))));
     assertThat(
-        c.getDefaultVrf().getVniSettings().get(20001),
+        c.getVrfs().get("tenant1").getVniSettings().get(20001),
         allOf(
             // L3 mcast IP
             hasBumTransportIps(equalTo(ImmutableSortedSet.of(Ip.parse("234.0.0.0")))),
@@ -2970,9 +3400,9 @@ public final class CiscoNxosGrammarTest {
             VniSettingsMatchers.hasVlan(equalTo(3)),
             hasVni(20001)));
 
-    assertThat(c, hasDefaultVrf(hasVniSettings(hasKey(30001))));
+    assertThat(c, hasVrf("tenant1", hasVniSettings(hasKey(30001))));
     assertThat(
-        c.getDefaultVrf().getVniSettings().get(30001),
+        c.getVrfs().get("tenant1").getVniSettings().get(30001),
         allOf(
             // L2 mcast IP
             hasBumTransportIps(equalTo(ImmutableSortedSet.of(Ip.parse("233.0.0.0")))),
@@ -3319,7 +3749,9 @@ public final class CiscoNxosGrammarTest {
       assertThat(
           proc,
           hasArea(
-              0, OspfAreaMatchers.hasInterfaces(containsInAnyOrder("Ethernet1/2", "Ethernet1/3"))));
+              0,
+              OspfAreaMatchers.hasInterfaces(
+                  containsInAnyOrder("Ethernet1/2", "Ethernet1/3", "Ethernet1/5"))));
     }
     {
       org.batfish.datamodel.ospf.OspfProcess proc = defaultVrf.getOspfProcesses().get("pi_d");
@@ -3386,7 +3818,8 @@ public final class CiscoNxosGrammarTest {
     }
 
     assertThat(
-        c.getAllInterfaces(), hasKeys("Ethernet1/1", "Ethernet1/2", "Ethernet1/3", "Ethernet1/4"));
+        c.getAllInterfaces(),
+        hasKeys("Ethernet1/1", "Ethernet1/2", "Ethernet1/3", "Ethernet1/4", "Ethernet1/5"));
     {
       org.batfish.datamodel.Interface iface = c.getAllInterfaces().get("Ethernet1/1");
       assertThat(iface.getOspfCost(), equalTo(12));
@@ -3394,28 +3827,28 @@ public final class CiscoNxosGrammarTest {
       assertThat(iface.getOspfAreaName(), equalTo(0L));
       // TODO: convert and test bfd
       assertTrue(iface.getOspfPassive());
-      assertFalse(iface.getOspfPointToPoint());
+      assertThat(iface.getOspfNetworkType(), nullValue());
     }
     {
       org.batfish.datamodel.Interface iface = c.getAllInterfaces().get("Ethernet1/2");
       assertTrue(iface.getOspfEnabled());
       assertThat(iface.getOspfAreaName(), equalTo(0L));
       assertFalse(iface.getOspfPassive());
-      assertFalse(iface.getOspfPointToPoint());
+      assertThat(iface.getOspfNetworkType(), equalTo(OspfNetworkType.BROADCAST));
     }
     {
       org.batfish.datamodel.Interface iface = c.getAllInterfaces().get("Ethernet1/3");
       assertTrue(iface.getOspfEnabled());
       assertThat(iface.getOspfAreaName(), equalTo(0L));
       assertFalse(iface.getOspfPassive());
-      assertTrue(iface.getOspfPointToPoint());
+      assertThat(iface.getOspfNetworkType(), equalTo(OspfNetworkType.POINT_TO_POINT));
     }
     {
       org.batfish.datamodel.Interface iface = c.getAllInterfaces().get("Ethernet1/4");
       assertTrue(iface.getOspfEnabled());
       assertThat(iface.getOspfAreaName(), equalTo(0L));
       assertTrue(iface.getOspfPassive());
-      assertFalse(iface.getOspfPointToPoint());
+      assertThat(iface.getOspfNetworkType(), nullValue());
     }
   }
 
@@ -3684,6 +4117,8 @@ public final class CiscoNxosGrammarTest {
                   IpWildcard.ipWithWildcardMask(Ip.parse("192.168.0.0"), Ip.parse("0.0.255.255")),
                   0L,
                   IpWildcard.create(Prefix.strict("172.16.0.0/24")),
+                  0L,
+                  IpWildcard.create(Prefix.strict("172.16.2.0/24")),
                   0L)));
       assertFalse(proc.getPassiveInterfaceDefault());
     }
@@ -3753,7 +4188,8 @@ public final class CiscoNxosGrammarTest {
     }
 
     assertThat(
-        vc.getInterfaces(), hasKeys("Ethernet1/1", "Ethernet1/2", "Ethernet1/3", "Ethernet1/4"));
+        vc.getInterfaces(),
+        hasKeys("Ethernet1/1", "Ethernet1/2", "Ethernet1/3", "Ethernet1/4", "Ethernet1/5"));
     {
       Interface iface = vc.getInterfaces().get("Ethernet1/1");
       OspfInterface ospf = iface.getOspf();
@@ -3799,6 +4235,12 @@ public final class CiscoNxosGrammarTest {
       assertThat(ospf.getPassive(), equalTo(true));
       assertThat(ospf.getNetwork(), nullValue());
     }
+  }
+
+  @Test
+  public void testOspfv3Extraction() {
+    // TODO: make into extraction test
+    assertThat(parseVendorConfig("nxos_ospfv3"), notNullValue());
   }
 
   @Test
@@ -4006,13 +4448,13 @@ public final class CiscoNxosGrammarTest {
     }
     {
       Interface iface = vc.getInterfaces().get("Ethernet1/3");
-      assertFalse(iface.getShutdown());
+      assertThat(iface.getShutdown(), nullValue());
       assertThat(iface.getChannelGroup(), equalTo("port-channel3"));
       assertThat(iface.getType(), equalTo(CiscoNxosInterfaceType.ETHERNET));
     }
     {
       Interface iface = vc.getInterfaces().get("Ethernet1/4");
-      assertFalse(iface.getShutdown());
+      assertThat(iface.getShutdown(), nullValue());
       assertThat(iface.getChannelGroup(), equalTo("port-channel3"));
       assertThat(iface.getType(), equalTo(CiscoNxosInterfaceType.ETHERNET));
     }
@@ -4067,7 +4509,7 @@ public final class CiscoNxosGrammarTest {
     // TODO: extract channel-group mode for Ethernet1/12-1/14
     {
       Interface iface = vc.getInterfaces().get("port-channel1");
-      assertFalse(iface.getShutdown());
+      assertThat(iface.getShutdown(), nullValue());
       assertThat(iface.getType(), equalTo(CiscoNxosInterfaceType.PORT_CHANNEL));
       Lacp lacp = iface.getLacp();
       assertThat(lacp, notNullValue());
@@ -4075,29 +4517,29 @@ public final class CiscoNxosGrammarTest {
     }
     {
       Interface iface = vc.getInterfaces().get("port-channel2");
-      assertFalse(iface.getShutdown());
+      assertThat(iface.getShutdown(), nullValue());
       assertThat(iface.getType(), equalTo(CiscoNxosInterfaceType.PORT_CHANNEL));
     }
     {
       Interface iface = vc.getInterfaces().get("port-channel3");
-      assertFalse(iface.getShutdown());
+      assertThat(iface.getShutdown(), nullValue());
       assertThat(iface.getType(), equalTo(CiscoNxosInterfaceType.PORT_CHANNEL));
     }
     {
       Interface iface = vc.getInterfaces().get("port-channel4");
-      assertFalse(iface.getShutdown());
+      assertThat(iface.getShutdown(), nullValue());
       assertThat(iface.getSwitchportMode(), equalTo(SwitchportMode.NONE));
       assertThat(iface.getType(), equalTo(CiscoNxosInterfaceType.PORT_CHANNEL));
     }
     {
       Interface iface = vc.getInterfaces().get("port-channel5");
-      assertFalse(iface.getShutdown());
+      assertThat(iface.getShutdown(), nullValue());
       assertThat(iface.getSwitchportMode(), equalTo(SwitchportMode.NONE));
       assertThat(iface.getType(), equalTo(CiscoNxosInterfaceType.PORT_CHANNEL));
     }
     {
       Interface iface = vc.getInterfaces().get("port-channel6");
-      assertFalse(iface.getShutdown());
+      assertThat(iface.getShutdown(), nullValue());
       assertThat(iface.getSwitchportMode(), equalTo(SwitchportMode.ACCESS));
       assertThat(iface.getType(), equalTo(CiscoNxosInterfaceType.PORT_CHANNEL));
     }
@@ -4121,37 +4563,37 @@ public final class CiscoNxosGrammarTest {
             "port-channel1"));
     {
       Interface iface = vc.getInterfaces().get("Ethernet1/1");
-      assertTrue(iface.getShutdown());
+      assertThat(iface.getShutdown(), nullValue());
       assertThat(iface.getChannelGroup(), nullValue());
       assertThat(iface.getType(), equalTo(CiscoNxosInterfaceType.ETHERNET));
     }
     {
       Interface iface = vc.getInterfaces().get("Ethernet1/2");
-      assertFalse(iface.getShutdown());
+      assertThat(iface.getShutdown(), nullValue());
       assertThat(iface.getChannelGroup(), nullValue());
       assertThat(iface.getType(), equalTo(CiscoNxosInterfaceType.ETHERNET));
     }
     {
       Interface iface = vc.getInterfaces().get("Ethernet1/3");
-      assertFalse(iface.getShutdown());
+      assertThat(iface.getShutdown(), nullValue());
       assertThat(iface.getChannelGroup(), nullValue());
       assertThat(iface.getType(), equalTo(CiscoNxosInterfaceType.ETHERNET));
     }
     {
       Interface iface = vc.getInterfaces().get("Ethernet1/4");
-      assertFalse(iface.getShutdown());
+      assertThat(iface.getShutdown(), nullValue());
       assertThat(iface.getChannelGroup(), nullValue());
       assertThat(iface.getType(), equalTo(CiscoNxosInterfaceType.ETHERNET));
     }
     {
       Interface iface = vc.getInterfaces().get("Ethernet1/5");
-      assertFalse(iface.getShutdown());
+      assertThat(iface.getShutdown(), nullValue());
       assertThat(iface.getChannelGroup(), nullValue());
       assertThat(iface.getType(), equalTo(CiscoNxosInterfaceType.ETHERNET));
     }
     {
       Interface iface = vc.getInterfaces().get("Ethernet1/6");
-      assertFalse(iface.getShutdown());
+      assertThat(iface.getShutdown(), nullValue());
       assertThat(iface.getChannelGroup(), nullValue());
       assertThat(iface.getType(), equalTo(CiscoNxosInterfaceType.ETHERNET));
     }
@@ -4192,7 +4634,11 @@ public final class CiscoNxosGrammarTest {
             "match_interface",
             "match_ip_address",
             "match_ip_address_prefix_list",
+            "match_ipv6_address",
+            "match_ipv6_address_prefix_list",
             "match_metric",
+            "match_source_protocol_connected",
+            "match_source_protocol_static",
             "match_tag",
             "set_as_path_prepend_last_as",
             "set_as_path_prepend_literal_as",
@@ -4201,6 +4647,7 @@ public final class CiscoNxosGrammarTest {
             "set_ip_next_hop_literal",
             "set_ip_next_hop_literal2",
             "set_ip_next_hop_unchanged",
+            "set_ipv6_next_hop_unchanged",
             "set_local_preference",
             "set_metric",
             "set_metric_type_external",
@@ -4293,6 +4740,28 @@ public final class CiscoNxosGrammarTest {
       assertRoutingPolicyDeniesRoute(rp, base);
       Bgpv4Route route = base.toBuilder().setMetric(1L).build();
       assertRoutingPolicyPermitsRoute(rp, route);
+    }
+    {
+      RoutingPolicy rp = c.getRoutingPolicies().get("match_source_protocol_connected");
+      assertRoutingPolicyDeniesRoute(
+          rp,
+          org.batfish.datamodel.StaticRoute.builder()
+              .setAdmin(1)
+              .setNetwork(Prefix.ZERO)
+              .setNextHopIp(Ip.ZERO)
+              .build());
+      assertRoutingPolicyPermitsRoute(rp, new ConnectedRoute(Prefix.ZERO, "dummy"));
+    }
+    {
+      RoutingPolicy rp = c.getRoutingPolicies().get("match_source_protocol_static");
+      assertRoutingPolicyDeniesRoute(rp, new ConnectedRoute(Prefix.ZERO, "dummy"));
+      assertRoutingPolicyPermitsRoute(
+          rp,
+          org.batfish.datamodel.StaticRoute.builder()
+              .setAdmin(1)
+              .setNetwork(Prefix.ZERO)
+              .setNextHopIp(Ip.ZERO)
+              .build());
     }
     {
       RoutingPolicy rp = c.getRoutingPolicies().get("match_tag");
@@ -4416,7 +4885,11 @@ public final class CiscoNxosGrammarTest {
             "match_interface",
             "match_ip_address",
             "match_ip_address_prefix_list",
+            "match_ipv6_address",
+            "match_ipv6_address_prefix_list",
             "match_metric",
+            "match_source_protocol_connected",
+            "match_source_protocol_static",
             "match_tag",
             "set_as_path_prepend_last_as",
             "set_as_path_prepend_literal_as",
@@ -4425,6 +4898,7 @@ public final class CiscoNxosGrammarTest {
             "set_ip_next_hop_literal",
             "set_ip_next_hop_literal2",
             "set_ip_next_hop_unchanged",
+            "set_ipv6_next_hop_unchanged",
             "set_local_preference",
             "set_metric",
             "set_metric_type_external",
@@ -4514,6 +4988,26 @@ public final class CiscoNxosGrammarTest {
       assertThat(match.getNames(), contains("prefix_list1"));
     }
     {
+      RouteMap rm = vc.getRouteMaps().get("match_ipv6_address");
+      assertThat(rm.getEntries().keySet(), contains(10));
+      RouteMapEntry entry = getOnlyElement(rm.getEntries().values());
+      assertThat(entry.getAction(), equalTo(LineAction.PERMIT));
+      assertThat(entry.getSequence(), equalTo(10));
+      RouteMapMatchIpv6Address match = entry.getMatchIpv6Address();
+      assertThat(entry.getMatches().collect(onlyElement()), equalTo(match));
+      assertThat(match.getName(), equalTo("ipv6_access_list1"));
+    }
+    {
+      RouteMap rm = vc.getRouteMaps().get("match_ipv6_address_prefix_list");
+      assertThat(rm.getEntries().keySet(), contains(10));
+      RouteMapEntry entry = getOnlyElement(rm.getEntries().values());
+      assertThat(entry.getAction(), equalTo(LineAction.PERMIT));
+      assertThat(entry.getSequence(), equalTo(10));
+      RouteMapMatchIpv6AddressPrefixList match = entry.getMatchIpv6AddressPrefixList();
+      assertThat(entry.getMatches().collect(onlyElement()), equalTo(match));
+      assertThat(match.getNames(), contains("ipv6_prefix_list1"));
+    }
+    {
       RouteMap rm = vc.getRouteMaps().get("match_metric");
       assertThat(rm.getEntries().keySet(), contains(10));
       RouteMapEntry entry = getOnlyElement(rm.getEntries().values());
@@ -4522,6 +5016,26 @@ public final class CiscoNxosGrammarTest {
       RouteMapMatchMetric match = entry.getMatchMetric();
       assertThat(entry.getMatches().collect(onlyElement()), equalTo(match));
       assertThat(match.getMetric(), equalTo(1L));
+    }
+    {
+      RouteMap rm = vc.getRouteMaps().get("match_source_protocol_connected");
+      assertThat(rm.getEntries().keySet(), contains(10));
+      RouteMapEntry entry = getOnlyElement(rm.getEntries().values());
+      assertThat(entry.getAction(), equalTo(LineAction.PERMIT));
+      assertThat(entry.getSequence(), equalTo(10));
+      RouteMapMatchSourceProtocol match = entry.getMatchSourceProtocol();
+      assertThat(entry.getMatches().collect(onlyElement()), equalTo(match));
+      assertThat(match.getSourceProtocol(), equalTo("connected"));
+    }
+    {
+      RouteMap rm = vc.getRouteMaps().get("match_source_protocol_static");
+      assertThat(rm.getEntries().keySet(), contains(10));
+      RouteMapEntry entry = getOnlyElement(rm.getEntries().values());
+      assertThat(entry.getAction(), equalTo(LineAction.PERMIT));
+      assertThat(entry.getSequence(), equalTo(10));
+      RouteMapMatchSourceProtocol match = entry.getMatchSourceProtocol();
+      assertThat(entry.getMatches().collect(onlyElement()), equalTo(match));
+      assertThat(match.getSourceProtocol(), equalTo("static"));
     }
     {
       RouteMap rm = vc.getRouteMaps().get("match_tag");
@@ -4712,9 +5226,19 @@ public final class CiscoNxosGrammarTest {
   }
 
   @Test
-  public void testSnmpServerParsing() {
-    // TODO: make into extraction test
-    assertThat(parseVendorConfig("nxos_snmp_server"), notNullValue());
+  public void testSnmpServerConversion() throws IOException {
+    String hostname = "nxos_snmp_server";
+    Configuration c = parseConfig(hostname);
+
+    assertThat(c.getSnmpTrapServers(), containsInAnyOrder("192.0.2.1", "192.0.2.2"));
+  }
+
+  @Test
+  public void testSnmpServerExtraction() {
+    String hostname = "nxos_snmp_server";
+    CiscoNxosConfiguration vc = parseVendorConfig(hostname);
+
+    assertThat(vc.getSnmpServers(), hasKeys("192.0.2.1", "192.0.2.2"));
   }
 
   @Test
@@ -4735,6 +5259,7 @@ public final class CiscoNxosGrammarTest {
             hasPrefix(Prefix.strict("10.0.0.0/24")),
             hasPrefix(Prefix.strict("10.0.1.0/24")),
             hasPrefix(Prefix.strict("10.0.2.0/24")),
+            hasPrefix(Prefix.strict("10.0.13.0/24")),
             hasPrefix(Prefix.strict("10.0.3.0/24")),
             hasPrefix(Prefix.strict("10.0.4.0/24")),
             hasPrefix(Prefix.strict("10.0.5.0/24")),
@@ -4775,6 +5300,17 @@ public final class CiscoNxosGrammarTest {
       assertThat(route, hasAdministrativeCost(1));
       assertThat(route, hasTag(0L));
       assertThat(route, hasNextHopIp(Ip.parse("10.255.1.254")));
+    }
+    {
+      org.batfish.datamodel.StaticRoute route =
+          c.getDefaultVrf().getStaticRoutes().stream()
+              .filter(r -> r.getNetwork().equals(Prefix.strict("10.0.13.0/24")))
+              .findFirst()
+              .get();
+      assertThat(route, hasNextHopInterface("Ethernet1/1"));
+      assertThat(route, hasAdministrativeCost(1));
+      assertThat(route, hasTag(0L));
+      assertThat(route, hasNextHopIp(UNSET_ROUTE_NEXT_HOP_IP));
     }
     {
       org.batfish.datamodel.StaticRoute route =
@@ -4867,6 +5403,7 @@ public final class CiscoNxosGrammarTest {
             Prefix.strict("10.0.0.0/24"),
             Prefix.strict("10.0.1.0/24"),
             Prefix.strict("10.0.2.0/24"),
+            Prefix.strict("10.0.13.0/24"),
             Prefix.strict("10.0.3.0/24"),
             Prefix.strict("10.0.4.0/24"),
             Prefix.strict("10.0.5.0/24"),
@@ -4900,6 +5437,15 @@ public final class CiscoNxosGrammarTest {
       assertThat(route.getPreference(), equalTo((short) 1));
       assertThat(route.getTag(), equalTo(0L));
       assertThat(route.getNextHopIp(), equalTo(Ip.parse("10.255.1.254")));
+      assertThat(route.getNextHopInterface(), equalTo("Ethernet1/1"));
+    }
+    {
+      StaticRoute route =
+          vc.getDefaultVrf().getStaticRoutes().get(Prefix.strict("10.0.13.0/24")).iterator().next();
+      assertFalse(route.getDiscard());
+      assertThat(route.getPreference(), equalTo((short) 1));
+      assertThat(route.getTag(), equalTo(0L));
+      assertThat(route.getNextHopIp(), nullValue());
       assertThat(route.getNextHopInterface(), equalTo("Ethernet1/1"));
     }
     {
@@ -5020,6 +5566,7 @@ public final class CiscoNxosGrammarTest {
       assertThat(route.getNextHopInterface(), equalTo("Ethernet1/100"));
       assertThat(route.getNextHopVrf(), nullValue());
     }
+    // TODO: extract and test bfd settings for static routes
   }
 
   @Test
@@ -5108,7 +5655,7 @@ public final class CiscoNxosGrammarTest {
         hasKeys("Ethernet1/1", "Vlan1", "Vlan2", "Vlan3", "Vlan4", "Vlan6", "Vlan7"));
     {
       Interface iface = vc.getInterfaces().get("Vlan1");
-      assertTrue(iface.getShutdown());
+      assertThat(iface.getShutdown(), nullValue());
       assertTrue(iface.getAutostate());
       assertThat(iface.getVlan(), equalTo(1));
       assertThat(iface.getSwitchportMode(), equalTo(SwitchportMode.NONE));
@@ -5116,7 +5663,7 @@ public final class CiscoNxosGrammarTest {
     }
     {
       Interface iface = vc.getInterfaces().get("Vlan2");
-      assertTrue(iface.getShutdown());
+      assertThat(iface.getShutdown(), nullValue());
       assertTrue(iface.getAutostate());
       assertThat(iface.getVlan(), equalTo(2));
       assertThat(iface.getSwitchportMode(), equalTo(SwitchportMode.NONE));

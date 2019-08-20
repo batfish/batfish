@@ -1,0 +1,30 @@
+!RANCID-CONTENT-TYPE: cisco-nx
+!
+hostname nxos_interface_hsrp_ipv6
+!
+
+feature hsrp
+
+key chain hsrp-keys
+  key 1
+    key-string xxxxxxxx
+
+interface Ethernet1/1
+  no switchport
+  no shutdown
+  ipv6 address 1::2:2/120
+  ipv6 address 2::0:2/120 secondary
+  ipv6 address 2::1:2/120 secondary
+  hsrp version 2
+  hsrp delay reload 60
+  hsrp 2 ipv6
+    authentication md5 key-chain hsrp-keys
+    ip autoconfig
+    ip 1::2:1
+    ip 2::0:1 secondary
+    ip 2::1:1 secondary
+    preempt delay minimum 30 reload 40 sync 50
+    priority 105 forwarding-threshold lower 0 upper 255
+    timers msec 250 msec 750
+    track 1
+    track 2 decrement 20

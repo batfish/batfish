@@ -6,9 +6,12 @@ import com.google.common.collect.Range;
 import java.io.Serializable;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.SortedSet;
+import java.util.TreeSet;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.datamodel.IntegerSpace;
+import org.batfish.datamodel.Ip;
 
 /** A layer-2- or layer-3-capable network interface */
 public final class Interface implements Serializable {
@@ -30,7 +33,8 @@ public final class Interface implements Serializable {
    * explicitly configured, inference no longer applies for the life of the interface.
    *
    * <ul>
-   *   <li>Ethernet parent interfaces are shutdown by default iff they are not in switchport mode.
+   *   <li>Ethernet parent interfaces are shutdown by default, unless they are in switchport mode
+   *       and {@code systemDefaultSwitchportShutdown} is {@code false}.
    *   <li>port-channel parent interfaces are not shutdown by default.
    *   <li>Ethernet and port-channel subinterfaces are shut down by default.
    *   <li>loopback interfaces are not shutdown by default.
@@ -39,10 +43,13 @@ public final class Interface implements Serializable {
    * </ul>
    */
   private static boolean defaultShutdown(
-      SwitchportMode switchportMode, CiscoNxosInterfaceType type, boolean subinterface) {
+      SwitchportMode switchportMode,
+      CiscoNxosInterfaceType type,
+      boolean subinterface,
+      boolean systemDefaultSwitchportShutdown) {
     switch (type) {
       case ETHERNET:
-        return switchportMode == SwitchportMode.NONE;
+        return switchportMode == SwitchportMode.NONE || systemDefaultSwitchportShutdown;
 
       case PORT_CHANNEL:
         return subinterface;
@@ -111,6 +118,7 @@ public final class Interface implements Serializable {
   private final @Nonnull Set<String> _declaredNames;
   private @Nullable Integer _delayTensOfMicroseconds;
   private @Nullable String _description;
+  private final @Nonnull SortedSet<Ip> _dhcpRelayAddresses;
   private @Nullable Integer _encapsulationVlan;
   private @Nullable InterfaceHsrp _hsrp;
   private @Nullable String _ipAccessGroupIn;
@@ -143,6 +151,7 @@ public final class Interface implements Serializable {
     _name = name;
     _parentInterface = parentInterface;
     _declaredNames = new HashSet<>();
+    _dhcpRelayAddresses = new TreeSet<>();
     _secondaryAddresses = new HashSet<>();
     _ipv6AddressSecondaries = new HashSet<>();
     _type = type;
@@ -193,6 +202,10 @@ public final class Interface implements Serializable {
 
   public @Nullable String getDescription() {
     return _description;
+  }
+
+  public @Nonnull SortedSet<Ip> getDhcpRelayAddresses() {
+    return _dhcpRelayAddresses;
   }
 
   public @Nullable Integer getEncapsulationVlan() {
@@ -286,10 +299,23 @@ public final class Interface implements Serializable {
     return _secondaryAddresses;
   }
 
-  public boolean getShutdown() {
+  /**
+   * Returns {@code true} if this interface is explicitly administratively shutdown; {@code false}
+   * if this interface is explicitly administratively up; or {@code null} if administrative status
+   * has not been explicitly configured.
+   */
+  public @Nullable Boolean getShutdown() {
+    return _shutdown;
+  }
+
+  /**
+   * Returns {@code true} iff this interface is explictly or implicitly administratively shutdown.
+   */
+  public boolean getShutdownEffective(boolean systemDefaultSwitchportShutdown) {
     return _shutdown != null
         ? _shutdown
-        : defaultShutdown(_switchportMode, _type, _parentInterface != null);
+        : defaultShutdown(
+            _switchportMode, _type, _parentInterface != null, systemDefaultSwitchportShutdown);
   }
 
   public @Nullable Integer getSpeedMbps() {

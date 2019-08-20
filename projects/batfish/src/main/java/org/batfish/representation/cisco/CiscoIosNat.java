@@ -5,8 +5,7 @@ import java.util.Comparator;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
+import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.common.BatfishException;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.IpAccessList;
@@ -17,6 +16,7 @@ import org.batfish.datamodel.transformation.Transformation;
  * Abstract class which represents any Cisco IOS NAT. NATs are {@link Comparable} to represent the
  * order in which they should be evaluated when converted to {@link Transformation}s.
  */
+@ParametersAreNonnullByDefault
 public abstract class CiscoIosNat implements Comparable<CiscoIosNat>, Serializable {
 
   private RuleAction _action;
@@ -46,18 +46,19 @@ public abstract class CiscoIosNat implements Comparable<CiscoIosNat>, Serializab
   public abstract Optional<Transformation.Builder> toOutgoingTransformation(
       Map<String, IpAccessList> ipAccessLists,
       Map<String, NatPool> natPools,
-      @Nullable Set<String> insideInterfaces,
+      Set<String> insideInterfaces,
       Configuration c);
 
   /**
    * Converts a single NAT from the configuration into a {@link Transformation}.
    *
+   * @param ipAccessLists Named access lists which may be referenced by dynamic NATs
    * @param natPools NAT pools from the configuration
    * @return A single {@link Transformation} for inside-to-outside, or nothing if the {@link
    *     Transformation} could not be built
    */
   public abstract Optional<Transformation.Builder> toIncomingTransformation(
-      Map<String, NatPool> natPools);
+      Map<String, IpAccessList> ipAccessLists, Map<String, NatPool> natPools);
 
   @Override
   public abstract boolean equals(Object o);
@@ -72,10 +73,10 @@ public abstract class CiscoIosNat implements Comparable<CiscoIosNat>, Serializab
    * @return a negative integer, zero, or a positive integer as this NAT precedence is less than,
    *     equal to, or greater than the specified NAT precedence.
    */
-  public abstract int natCompare(CiscoIosNat other);
+  protected abstract int natCompare(CiscoIosNat other);
 
   @Override
-  public final int compareTo(@Nonnull CiscoIosNat other) {
+  public final int compareTo(CiscoIosNat other) {
     return Comparator.comparingInt(CiscoIosNatUtil::getTypePrecedence)
         .thenComparing(this::natCompare)
         .compare(this, other);

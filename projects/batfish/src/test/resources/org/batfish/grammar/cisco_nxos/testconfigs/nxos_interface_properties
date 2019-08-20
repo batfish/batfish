@@ -5,6 +5,12 @@ hostname nxos_interface_properties
 ip access-list acl_in
 ip access-list acl_out
 
+policy-map type qos pm_qos_in
+policy-map type qos pm_qos_out
+
+policy-map type queuing pm_queuing_in
+policy-map type queuing pm_queuing_out
+
 interface Ethernet1/1
   no cdp enable
   no shutdown
@@ -20,21 +26,66 @@ interface Ethernet1/1
   bfd per-link
   ip access-group acl_in in
   ip access-group acl_out out
+  ip dhcp relay address 1.2.3.4
+  ip dhcp relay address 1.2.3.5
   ip flow monitor FOO input sampler BAR
   ip unreachables
   ipv6 traffic-filter FOO in
   ipv6 traffic-filter BAR out
+  mac-address 1234.5678.9abc
+  no lldp receive
   mtu 9216
+  service-policy type qos input pm_qos_in
+  service-policy type qos output pm_qos_out
+  service-policy type queuing input pm_queuing_in
+  service-policy type queuing output pm_queuing_out
   snmp trap link-status
   udld aggressive
+  no vtp
 !
 
 interface Ethernet1/2
-  bandwidth inherit
-  no bfd echo
+  no autostate
+  autostate
+  description this desc should be lost.
+  no description
   no snmp trap link-status
   udld disable
 
 interface Ethernet1/3
+  autostate
+  no autostate
   bandwidth inherit 10000
   udld enable
+
+interface Ethernet100/100
+  description only for unused syntax, no tests
+  bandwidth inherit
+  no bandwidth inherit
+  no beacon
+  no bfd echo
+  carrier-delay msec 100
+  flowcontrol receive off
+  flowcontrol send off
+  no hardware multicast hw-hash
+  no hardware vethernet mac filtering per-vlan
+  link debounce time 100
+  lldp transmit
+  lldp receive
+  load-interval counter 1 60
+  load-interval counter 2 300
+  no load-interval counter 3
+  logging event port link-status default
+  logging event port trunk-status default
+  no mac-address
+  no management
+  mdix auto
+  medium broadcast
+  negotiate auto
+  priority-flow-control mode auto
+  no spanning-tree bpdufilter
+  storm-control broadcast level 100.00
+  storm-control multicast level 100.00
+  storm-control unicast level 100.00
+  no storm-control action
+  no udld disable

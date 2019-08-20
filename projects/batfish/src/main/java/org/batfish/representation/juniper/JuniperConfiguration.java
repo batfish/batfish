@@ -109,6 +109,7 @@ import org.batfish.datamodel.isis.IsisInterfaceMode;
 import org.batfish.datamodel.isis.IsisProcess;
 import org.batfish.datamodel.ospf.OspfAreaSummary;
 import org.batfish.datamodel.ospf.OspfMetricType;
+import org.batfish.datamodel.ospf.OspfNetworkType;
 import org.batfish.datamodel.ospf.OspfProcess;
 import org.batfish.datamodel.packet_policy.Drop;
 import org.batfish.datamodel.packet_policy.PacketMatchExpr;
@@ -143,7 +144,6 @@ import org.batfish.datamodel.routing_policy.statement.Statement;
 import org.batfish.datamodel.routing_policy.statement.Statements;
 import org.batfish.datamodel.transformation.Transformation;
 import org.batfish.representation.juniper.BgpGroup.BgpGroupType;
-import org.batfish.representation.juniper.Interface.OspfInterfaceType;
 import org.batfish.representation.juniper.Zone.AddressBookType;
 import org.batfish.vendor.VendorConfiguration;
 
@@ -843,7 +843,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
                 ImmutableSortedMap.toImmutableSortedMap(
                     Comparator.naturalOrder(), Entry::getKey, entry -> entry.getValue().build())));
 
-    // set pointers from interfaces to their parent areas (and process)
+    // update interface OSPF properties (including pointers to their parent areas and process)
     newProc
         .getAreas()
         .values()
@@ -854,10 +854,38 @@ public final class JuniperConfiguration extends VendorConfiguration {
                         ifaceName -> {
                           org.batfish.datamodel.Interface iface =
                               _c.getVrfs().get(vrfName).getInterfaces().get(ifaceName);
-                          iface.setOspfAreaName(area.getAreaNumber());
-                          iface.setOspfProcess(newProc.getProcessId());
+                          Interface vsIface = routingInstance.getInterfaces().get(ifaceName);
+                          finalizeOspfInterfaceSettings(
+                              iface, vsIface, newProc, area.getAreaNumber());
                         }));
     return newProc;
+  }
+
+  /**
+   * Update VI interface OSPF properties based on the specified VS interface, optional OSPF process,
+   * and optional OSPF area number
+   */
+  private void finalizeOspfInterfaceSettings(
+      org.batfish.datamodel.Interface iface,
+      Interface vsIface,
+      @Nullable OspfProcess proc,
+      @Nullable Long areaNum) {
+    iface.setOspfEnabled(!firstNonNull(vsIface.getOspfDisable(), Boolean.FALSE));
+    iface.setOspfPassive(vsIface.getOspfPassive());
+    Integer ospfCost = vsIface.getOspfCost();
+    if (ospfCost == null && iface.isLoopback(ConfigurationFormat.FLAT_JUNIPER)) {
+      ospfCost = 0;
+    }
+    iface.setOspfCost(ospfCost);
+    iface.setOspfAreaName(areaNum);
+    if (proc != null) {
+      iface.setOspfProcess(proc.getProcessId());
+    }
+    // TODO infer interface type based on physical interface: "the software
+    // chooses the correct
+    // interface type...you should never have to set the interface type" (see
+    // https://www.juniper.net/documentation/en_US/junos/topics/reference/configuration-statement/interface-type-edit-protocols-ospf.html)
+    iface.setOspfNetworkType(toOspfNetworkType(vsIface.getOspfInterfaceType()));
   }
 
   private org.batfish.datamodel.ospf.OspfArea.Builder toOspfAreaBuilder(
@@ -1057,13 +1085,6 @@ public final class JuniperConfiguration extends VendorConfiguration {
     long ospfAreaLong = ospfArea.asLong();
     org.batfish.datamodel.ospf.OspfArea.Builder newArea = newAreas.get(ospfAreaLong);
     newArea.addInterface(interfaceName);
-    newIface.setOspfEnabled(!firstNonNull(iface.getOspfDisable(), Boolean.FALSE));
-    newIface.setOspfPassive(iface.getOspfPassive());
-    Integer ospfCost = iface.getOspfCost();
-    if (ospfCost == null && newIface.isLoopback(ConfigurationFormat.FLAT_JUNIPER)) {
-      ospfCost = 0;
-    }
-    newIface.setOspfCost(ospfCost);
   }
 
   private void setPolicyStatementReferent(String policyName) {
@@ -1469,10 +1490,26 @@ public final class JuniperConfiguration extends VendorConfiguration {
     }
     newIface.setSwitchportTrunkEncapsulation(swe);
     newIface.setBandwidth(iface.getBandwidth());
-    // treat all non-broadcast interfaces as point to point
-    newIface.setOspfPointToPoint(iface.getOspfInterfaceType() != OspfInterfaceType.BROADCAST);
-
     return newIface;
+  }
+
+  @Nullable
+  private OspfNetworkType toOspfNetworkType(Interface.OspfInterfaceType type) {
+    switch (type) {
+      case BROADCAST:
+        return OspfNetworkType.BROADCAST;
+      case P2P:
+        return OspfNetworkType.POINT_TO_POINT;
+      case NBMA:
+        return OspfNetworkType.NON_BROADCAST_MULTI_ACCESS;
+      case P2MP:
+        return OspfNetworkType.POINT_TO_MULTIPOINT;
+      default:
+        _w.redFlag(
+            String.format(
+                "Conversion of Juniper OSPF network type '%s' is not handled.", type.toString()));
+        return null;
+    }
   }
 
   @Nullable

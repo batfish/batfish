@@ -18,6 +18,7 @@ import static org.batfish.representation.cisco.CiscoConfiguration.computeBgpGene
 import static org.batfish.representation.cisco.CiscoConversions.generateGenerationPolicy;
 import static org.batfish.representation.cisco.CiscoConversions.suppressSummarizedPrefixes;
 import static org.batfish.representation.cisco_nxos.CiscoNxosInterfaceType.PORT_CHANNEL;
+import static org.batfish.representation.cisco_nxos.Conversions.getVrfForL3Vni;
 import static org.batfish.representation.cisco_nxos.Interface.BANDWIDTH_CONVERSION_FACTOR;
 import static org.batfish.representation.cisco_nxos.Interface.getDefaultBandwidth;
 import static org.batfish.representation.cisco_nxos.Interface.getDefaultSpeed;
@@ -85,6 +86,7 @@ import org.batfish.datamodel.Prefix6Range;
 import org.batfish.datamodel.Prefix6Space;
 import org.batfish.datamodel.PrefixRange;
 import org.batfish.datamodel.PrefixSpace;
+import org.batfish.datamodel.RegexCommunitySet;
 import org.batfish.datamodel.Route6FilterLine;
 import org.batfish.datamodel.Route6FilterList;
 import org.batfish.datamodel.RouteFilterLine;
@@ -96,12 +98,22 @@ import org.batfish.datamodel.TcpFlagsMatchConditions;
 import org.batfish.datamodel.VniSettings;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.acl.AclLineMatchExprs;
+import org.batfish.datamodel.acl.PermittedByAcl;
 import org.batfish.datamodel.bgp.community.StandardCommunity;
 import org.batfish.datamodel.isis.IsisMetricType;
 import org.batfish.datamodel.ospf.NssaSettings;
 import org.batfish.datamodel.ospf.OspfAreaSummary;
 import org.batfish.datamodel.ospf.OspfMetricType;
 import org.batfish.datamodel.ospf.StubSettings;
+import org.batfish.datamodel.packet_policy.BoolExpr;
+import org.batfish.datamodel.packet_policy.FalseExpr;
+import org.batfish.datamodel.packet_policy.FibLookup;
+import org.batfish.datamodel.packet_policy.FibLookupOverrideLookupIp;
+import org.batfish.datamodel.packet_policy.IngressInterfaceVrf;
+import org.batfish.datamodel.packet_policy.PacketMatchExpr;
+import org.batfish.datamodel.packet_policy.PacketPolicy;
+import org.batfish.datamodel.packet_policy.Return;
+import org.batfish.datamodel.packet_policy.TrueExpr;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.routing_policy.expr.AutoAs;
 import org.batfish.datamodel.routing_policy.expr.BooleanExpr;
@@ -290,13 +302,19 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
   private final @Nonnull Map<String, IpAccessList> _ipAccessLists;
   private final @Nonnull Map<String, IpAsPathAccessList> _ipAsPathAccessLists;
   private final @Nonnull Map<String, IpCommunityList> _ipCommunityLists;
+  private @Nullable String _ipDomainName;
+  private Map<String, List<String>> _ipNameServersByUseVrf;
   private final @Nonnull Map<String, IpPrefixList> _ipPrefixLists;
+  private final @Nonnull Map<String, LoggingServer> _loggingServers;
   private final @Nonnull Map<Integer, Nve> _nves;
   private final @Nonnull Map<String, ObjectGroup> _objectGroups;
   private final @Nonnull Map<String, DefaultVrfOspfProcess> _ospfProcesses;
   private transient Multimap<String, String> _portChannelMembers;
   private @Nonnull IntegerSpace _reservedVlanRange;
   private final @Nonnull Map<String, RouteMap> _routeMaps;
+  private final @Nonnull Map<String, SnmpServer> _snmpServers;
+  private boolean _systemDefaultSwitchportShutdown;
+  private final @Nonnull Map<String, TacacsServer> _tacacsServers;
   private @Nullable String _version;
   private final @Nonnull Map<Integer, Vlan> _vlans;
   private final @Nonnull Map<String, Vrf> _vrfs;
@@ -308,12 +326,16 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
     _ipAccessLists = new HashMap<>();
     _ipAsPathAccessLists = new HashMap<>();
     _ipCommunityLists = new HashMap<>();
+    _ipNameServersByUseVrf = new HashMap<>();
     _ipPrefixLists = new HashMap<>();
+    _loggingServers = new HashMap<>();
     _nves = new HashMap<>();
     _objectGroups = new HashMap<>();
     _ospfProcesses = new HashMap<>();
     _reservedVlanRange = DEFAULT_RESERVED_VLAN_RANGE;
     _routeMaps = new HashMap<>();
+    _snmpServers = new HashMap<>();
+    _tacacsServers = new HashMap<>();
     _vlans = new HashMap<>();
     _vrfs = new HashMap<>();
   }
@@ -658,10 +680,14 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
         .map(Object::toString)
         .ifPresent(newIfaceBuilder::setHsrpVersion);
     newIfaceBuilder.setHsrpGroups(
-        hsrp.getGroups().entrySet().stream()
+        hsrp.getIpv4Groups().entrySet().stream()
             .collect(
                 ImmutableMap.toImmutableMap(
                     Entry::getKey, hsrpGroupEntry -> toHsrpGroup(hsrpGroupEntry.getValue()))));
+  }
+
+  private void convertDomainName() {
+    _c.setDomainName(_ipDomainName);
   }
 
   private void convertInterface(Interface iface) {
@@ -728,11 +754,34 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
                     list.accept(
                         new IpCommunityListVisitor<CommunityList>() {
                           @Override
+                          public CommunityList visitIpCommunityListExpanded(
+                              IpCommunityListExpanded ipCommunityListExpanded) {
+                            return toCommunityList(ipCommunityListExpanded);
+                          }
+
+                          @Override
                           public CommunityList visitIpCommunityListStandard(
                               IpCommunityListStandard ipCommunityListStandard) {
                             return toCommunityList(ipCommunityListStandard);
                           }
                         })));
+  }
+
+  private static @Nonnull CommunityList toCommunityList(IpCommunityListExpanded list) {
+    return new CommunityList(
+        list.getName(),
+        list.getLines().values().stream()
+            .map(CiscoNxosConfiguration::toCommunityListLine)
+            .collect(ImmutableList.toImmutableList()),
+        false);
+  }
+
+  private static @Nonnull CommunityListLine toCommunityListLine(IpCommunityListExpandedLine line) {
+    return new CommunityListLine(line.getAction(), toCommunitySetExpr(line.getRegex()));
+  }
+
+  private static @Nonnull CommunitySetExpr toCommunitySetExpr(String regex) {
+    return new RegexCommunitySet(toJavaRegex(regex));
   }
 
   private static @Nonnull CommunityList toCommunityList(IpCommunityListStandard list) {
@@ -752,10 +801,25 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
     return new LiteralCommunityConjunction(communities);
   }
 
+  private void convertIpNameServers() {
+    _c.setDnsServers(
+        _ipNameServersByUseVrf.values().stream()
+            .flatMap(Collection::stream)
+            .collect(ImmutableSortedSet.toImmutableSortedSet(Comparator.naturalOrder())));
+  }
+
+  private void convertTacacsServers() {
+    _c.setTacacsServers(ImmutableSortedSet.copyOf(_tacacsServers.keySet()));
+  }
+
   private void convertIpPrefixLists() {
     _ipPrefixLists.forEach(
         (name, ipPrefixList) ->
             _c.getRouteFilterLists().put(name, toRouteFilterList(ipPrefixList)));
+  }
+
+  private void convertLoggingServers() {
+    _c.setLoggingServers(ImmutableSortedSet.copyOf(_loggingServers.keySet()));
   }
 
   private void convertOspfProcesses() {
@@ -779,6 +843,22 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
   private void convertRouteMaps() {
     _routeMaps.forEach(
         (name, routeMap) -> _c.getRoutingPolicies().put(name, toRoutingPolicy(routeMap)));
+
+    // Find which route maps are used for PBR
+    _c.getAllInterfaces().values().stream()
+        .map(org.batfish.datamodel.Interface::getRoutingPolicyName)
+        .filter(Objects::nonNull)
+        .distinct()
+        // Extract route map objects
+        .map(_routeMaps::get)
+        .filter(Objects::nonNull)
+        // Convert PBR route maps to packet policies
+        .map(this::toPacketPolicy)
+        .forEach(packetPolicy -> _c.getPacketPolicies().put(packetPolicy.getName(), packetPolicy));
+  }
+
+  private void convertSnmpServers() {
+    _c.setSnmpTrapServers(ImmutableSortedSet.copyOf(_snmpServers.keySet()));
   }
 
   private void convertStaticRoutes() {
@@ -840,7 +920,45 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
             .setVni(nveVni.getVni())
             .setVlan(vlan)
             .build();
-    _c.getDefaultVrf().getVniSettings().put(vniSettings.getVni(), vniSettings);
+    if (nveVni.isAssociateVrf()) {
+      Vrf vsTenantVrfForL3Vni = getVrfForL3Vni(_vrfs, nveVni.getVni());
+      if (vsTenantVrfForL3Vni == null || _c.getVrfs().get(vsTenantVrfForL3Vni.getName()) == null) {
+        return;
+      }
+      _c.getVrfs()
+          .get(vsTenantVrfForL3Vni.getName())
+          .getVniSettings()
+          .put(vniSettings.getVni(), vniSettings);
+      return;
+    }
+    org.batfish.datamodel.Vrf viTenantVrfForL2Vni = getMemberVrfForVlan(vlan);
+    if (viTenantVrfForL2Vni == null) {
+      return;
+    }
+    viTenantVrfForL2Vni.getVniSettings().put(vniSettings.getVni(), vniSettings);
+  }
+
+  /**
+   * Gets the {@link org.batfish.datamodel.Vrf} which contains VLAN interface for {@code vlanNumber}
+   * as its member
+   *
+   * @param vlanNumber VLAN number
+   * @return {@link org.batfish.datamodel.Vrf} containing VLAN interface of {@code vlanNumber}
+   */
+  @Nullable
+  private org.batfish.datamodel.Vrf getMemberVrfForVlan(int vlanNumber) {
+    String vrfMemberForVlanIface =
+        Optional.ofNullable(_interfaces.get(String.format("Vlan%d", vlanNumber)))
+            .map(org.batfish.representation.cisco_nxos.Interface::getVrfMember)
+            .orElse(null);
+
+    // interface for this VLAN is not a member of any VRF
+    if (vrfMemberForVlanIface == null) {
+      return _c.getDefaultVrf();
+    }
+
+    // null if VRF member specified but is not valid
+    return Optional.ofNullable(_c.getVrfs().get(vrfMemberForVlanIface)).orElse(null);
   }
 
   @Nonnull
@@ -960,8 +1078,20 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
     return _ipCommunityLists;
   }
 
+  public @Nullable String getIpDomainName() {
+    return _ipDomainName;
+  }
+
+  public @Nonnull Map<String, List<String>> getIpNameServersByUseVrf() {
+    return _ipNameServersByUseVrf;
+  }
+
   public @Nonnull Map<String, IpPrefixList> getIpPrefixLists() {
     return _ipPrefixLists;
+  }
+
+  public @Nonnull Map<String, LoggingServer> getLoggingServers() {
+    return _loggingServers;
   }
 
   public @Nonnull Map<Integer, Nve> getNves() {
@@ -983,6 +1113,18 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
 
   public @Nonnull Map<String, RouteMap> getRouteMaps() {
     return _routeMaps;
+  }
+
+  public @Nonnull Map<String, SnmpServer> getSnmpServers() {
+    return _snmpServers;
+  }
+
+  public boolean getSystemDefaultSwitchportShutdown() {
+    return _systemDefaultSwitchportShutdown;
+  }
+
+  public @Nonnull Map<String, TacacsServer> getTacacsServers() {
+    return _tacacsServers;
   }
 
   public @Nullable String getVersion() {
@@ -1093,10 +1235,18 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
     _hostname = hostname.toLowerCase();
   }
 
+  public void setIpDomainName(@Nullable String ipDomainName) {
+    _ipDomainName = ipDomainName;
+  }
+
+  public void setSystemDefaultSwitchportShutdown(boolean systemDefaultSwitchportShutdown) {
+    _systemDefaultSwitchportShutdown = systemDefaultSwitchportShutdown;
+  }
+
   @Override
   public void setVendor(ConfigurationFormat format) {}
 
-  private static @Nonnull org.batfish.datamodel.hsrp.HsrpGroup toHsrpGroup(HsrpGroup group) {
+  private static @Nonnull org.batfish.datamodel.hsrp.HsrpGroup toHsrpGroup(HsrpGroupIpv4 group) {
     org.batfish.datamodel.hsrp.HsrpGroup.Builder builder =
         org.batfish.datamodel.hsrp.HsrpGroup.builder()
             .setGroupNumber(group.getGroup())
@@ -1122,17 +1272,39 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
     return builder.build();
   }
 
+  /** Helper to convert NXOS VS OSPF network type to VI model type. */
+  private @Nullable org.batfish.datamodel.ospf.OspfNetworkType toOspfNetworkType(
+      @Nullable OspfNetworkType type) {
+    if (type == null) {
+      return null;
+    }
+    switch (type) {
+      case BROADCAST:
+        return org.batfish.datamodel.ospf.OspfNetworkType.BROADCAST;
+      case POINT_TO_POINT:
+        return org.batfish.datamodel.ospf.OspfNetworkType.POINT_TO_POINT;
+      default:
+        _w.redFlag(
+            String.format(
+                "Conversion of Cisco NXOS OSPF network type '%s' is not handled.",
+                type.toString()));
+        return null;
+    }
+  }
+
   private @Nonnull org.batfish.datamodel.Interface toInterface(Interface iface) {
     String ifaceName = iface.getName();
     org.batfish.datamodel.Interface.Builder newIfaceBuilder =
-        org.batfish.datamodel.Interface.builder().setName(ifaceName);
+        org.batfish.datamodel.Interface.builder()
+            .setName(ifaceName)
+            .setDeclaredNames(iface.getDeclaredNames());
 
     String parent = iface.getParentInterface();
     if (parent != null) {
       newIfaceBuilder.setDependencies(ImmutableSet.of(new Dependency(parent, DependencyType.BIND)));
     }
 
-    newIfaceBuilder.setActive(!iface.getShutdown());
+    newIfaceBuilder.setActive(!iface.getShutdownEffective(_systemDefaultSwitchportShutdown));
 
     if (!iface.getIpAddressDhcp()) {
       if (iface.getAddress() != null) {
@@ -1146,6 +1318,8 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
     // TODO: handle DHCP
 
     newIfaceBuilder.setDescription(iface.getDescription());
+
+    newIfaceBuilder.setDhcpRelayAddresses(iface.getDhcpRelayAddresses());
 
     newIfaceBuilder.setMtu(iface.getMtu());
 
@@ -1230,11 +1404,11 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
       convertHsrp(iface.getHsrp(), newIfaceBuilder);
     }
 
-    // OSPF properties
-    OspfInterface ospf = iface.getOspf();
-    if (ospf != null) {
-      newIfaceBuilder.setOspfPointToPoint(ospf.getNetwork() == OspfNetworkType.POINT_TO_POINT);
-      // TODO: update data model to support explicit hello and dead intervals
+    // PBR policy
+    String pbrPolicy = iface.getPbrPolicy();
+    // Do not convert undefined references
+    if (pbrPolicy != null && _routeMaps.get(pbrPolicy) != null) {
+      newIfaceBuilder.setRoutingPolicy(pbrPolicy);
     }
 
     org.batfish.datamodel.Interface newIface = newIfaceBuilder.build();
@@ -1761,11 +1935,7 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
                 if (ospf.getArea().equals(areaId) && ospf.getProcess().equals(processName)) {
                   interfaces.add(ifaceName);
                   finalizeInterfaceOspfSettings(
-                      ifaceName,
-                      areaId,
-                      processName,
-                      proc.getPassiveInterfaceDefault(),
-                      iface.getOspf());
+                      ifaceName, areaId, processName, proc.getPassiveInterfaceDefault(), ospf);
                 }
               } else {
                 // Otherwise if OSPF area not explicitly configured on interface, add to this area
@@ -1789,7 +1959,8 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
                     areaId,
                     processName,
                     proc.getPassiveInterfaceDefault(),
-                    iface.getOspf());
+                    // If interface being added has no explicit OSPF configuration, use defaults
+                    ospf != null ? ospf : new OspfInterface());
               }
             });
     return interfaces.build();
@@ -1810,6 +1981,8 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
         ospf.getPassive() != null
             ? ospf.getPassive()
             : passiveInterfaceDefault || newIface.getName().startsWith("loopback"));
+    newIface.setOspfNetworkType(toOspfNetworkType(ospf.getNetwork()));
+    // TODO: update data model to support explicit hello and dead intervals
   }
 
   private @Nonnull NssaSettings toNssaSettings(OspfAreaNssa ospfAreaNssa) {
@@ -1871,6 +2044,17 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
         .build();
   }
 
+  @Nonnull
+  private PacketPolicy toPacketPolicy(RouteMap routeMap) {
+    return new PacketPolicy(
+        routeMap.getName(),
+        routeMap.getEntries().values().stream()
+            .map(this::toPacketPolicyStatement)
+            .collect(ImmutableList.toImmutableList()),
+        // Default action is to fall through to the destination-based forwarding pipeline
+        new Return(new FibLookup(IngressInterfaceVrf.instance())));
+  }
+
   private @Nonnull Statement toStatement(RouteMapEntry entry) {
     ImmutableList.Builder<Statement> trueStatements = ImmutableList.builder();
     ImmutableList.Builder<BooleanExpr> conjuncts = ImmutableList.builder();
@@ -1890,6 +2074,192 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
       trueStatements.add(ROUTE_MAP_DENY_STATEMENT);
     }
     return new If(new Conjunction(conjuncts.build()), trueStatements.build(), ImmutableList.of());
+  }
+
+  @Nonnull
+  private org.batfish.datamodel.packet_policy.Statement toPacketPolicyStatement(
+      RouteMapEntry entry) {
+    RouteMapMatchVisitor<BoolExpr> matchToBoolExpr =
+        new RouteMapMatchVisitor<BoolExpr>() {
+
+          @Override
+          public BoolExpr visitRouteMapMatchAsPath(RouteMapMatchAsPath routeMapMatchAsPath) {
+            // Not applicable to PBR
+            return null;
+          }
+
+          @Override
+          public BoolExpr visitRouteMapMatchCommunity(
+              RouteMapMatchCommunity routeMapMatchCommunity) {
+            // Not applicable to PBR
+            return null;
+          }
+
+          @Override
+          public BoolExpr visitRouteMapMatchInterface(
+              RouteMapMatchInterface routeMapMatchInterface) {
+            // Not applicable to PBR
+            return null;
+          }
+
+          @Override
+          public BoolExpr visitRouteMapMatchIpAddress(
+              RouteMapMatchIpAddress routeMapMatchIpAddress) {
+            if (_ipAccessLists.containsKey(routeMapMatchIpAddress.getName())) {
+              return new PacketMatchExpr(new PermittedByAcl(routeMapMatchIpAddress.getName()));
+            } else {
+              return FalseExpr.instance(); // fail-closed, match nothing
+            }
+          }
+
+          @Override
+          public BoolExpr visitRouteMapMatchIpAddressPrefixList(
+              RouteMapMatchIpAddressPrefixList routeMapMatchIpAddressPrefixList) {
+            // Not applicable to PBR
+            return null;
+          }
+
+          @Override
+          public BoolExpr visitRouteMapMatchIpv6Address(
+              RouteMapMatchIpv6Address routeMapMatchIpv6Address) {
+            // incompatible with IPv4 forwarding, so fail-closed, match nothing
+            return FalseExpr.instance();
+          }
+
+          @Override
+          public BoolExpr visitRouteMapMatchIpv6AddressPrefixList(
+              RouteMapMatchIpv6AddressPrefixList routeMapMatchIpv6AddressPrefixList) {
+            // Not applicable to PBR
+            return null;
+          }
+
+          @Override
+          public BoolExpr visitRouteMapMatchMetric(RouteMapMatchMetric routeMapMatchMetric) {
+            // Not applicable to PBR
+            return null;
+          }
+
+          @Override
+          public BoolExpr visitRouteMapMatchSourceProtocol(
+              RouteMapMatchSourceProtocol routeMapMatchSourceProtocol) {
+            // Not applicable to PBR
+            return null;
+          }
+
+          @Override
+          public BoolExpr visitRouteMapMatchTag(RouteMapMatchTag routeMapMatchTag) {
+            // TODO: somehow applicable to PBR? Documentation and semantics unclear
+            _w.redFlag("'match tag' not supported in PBR policies");
+            return null;
+          }
+        };
+    List<BoolExpr> guardBoolExprs =
+        entry
+            .getMatches()
+            .map(m -> m.accept(matchToBoolExpr))
+            .filter(Objects::nonNull)
+            .collect(ImmutableList.toImmutableList());
+
+    if (guardBoolExprs.isEmpty()) {
+      guardBoolExprs = ImmutableList.of(TrueExpr.instance()); // match anything
+    }
+    RouteMapSetVisitor<org.batfish.datamodel.packet_policy.Statement> setToStatement =
+        new RouteMapSetVisitor<org.batfish.datamodel.packet_policy.Statement>() {
+          @Override
+          public org.batfish.datamodel.packet_policy.Statement visitRouteMapSetAsPathPrependLastAs(
+              RouteMapSetAsPathPrependLastAs routeMapSetAsPathPrependLastAs) {
+            // Not applicable to PBR
+            return null;
+          }
+
+          @Override
+          public org.batfish.datamodel.packet_policy.Statement
+              visitRouteMapSetAsPathPrependLiteralAs(
+                  RouteMapSetAsPathPrependLiteralAs routeMapSetAsPathPrependLiteralAs) {
+            // Not applicable to PBR
+            return null;
+          }
+
+          @Override
+          public org.batfish.datamodel.packet_policy.Statement visitRouteMapSetCommunity(
+              RouteMapSetCommunity routeMapSetCommunity) {
+            // Not applicable to PBR
+            return null;
+          }
+
+          @Override
+          public org.batfish.datamodel.packet_policy.Statement visitRouteMapSetIpNextHopLiteral(
+              RouteMapSetIpNextHopLiteral routeMapSetIpNextHopLiteral) {
+            // TODO: handle "load-share" modifier
+            return new Return(
+                FibLookupOverrideLookupIp.builder()
+                    .setIps(routeMapSetIpNextHopLiteral.getNextHops())
+                    // VRF to lookup in
+                    .setVrfExpr(IngressInterfaceVrf.instance())
+                    // Default action in case none of the next hops can be resolved
+                    .setDefaultAction(new FibLookup(IngressInterfaceVrf.instance()))
+                    .setRequireConnected(true)
+                    .build());
+          }
+
+          @Override
+          public org.batfish.datamodel.packet_policy.Statement visitRouteMapSetIpNextHopUnchanged(
+              RouteMapSetIpNextHopUnchanged routeMapSetIpNextHopUnchanged) {
+            // Not applicable to PBR
+            return null;
+          }
+
+          @Override
+          public org.batfish.datamodel.packet_policy.Statement visitRouteMapSetLocalPreference(
+              RouteMapSetLocalPreference routeMapSetLocalPreference) {
+            // Not applicable to PBR
+            return null;
+          }
+
+          @Override
+          public org.batfish.datamodel.packet_policy.Statement visitRouteMapSetMetric(
+              RouteMapSetMetric routeMapSetMetric) {
+            // Not applicable to PBR
+            return null;
+          }
+
+          @Override
+          public org.batfish.datamodel.packet_policy.Statement visitRouteMapSetMetricType(
+              RouteMapSetMetricType routeMapSetMetricType) {
+            // Not applicable to PBR
+            return null;
+          }
+
+          @Override
+          public org.batfish.datamodel.packet_policy.Statement visitRouteMapSetOrigin(
+              RouteMapSetOrigin routeMapSetOrigin) {
+            // Not applicable to PBR
+            return null;
+          }
+
+          @Override
+          public org.batfish.datamodel.packet_policy.Statement visitRouteMapSetTag(
+              RouteMapSetTag routeMapSetTag) {
+            // Not applicable to PBR
+            return null;
+          }
+        };
+    List<org.batfish.datamodel.packet_policy.Statement> trueStatements =
+        entry
+            .getSets()
+            .map(s -> s.accept(setToStatement))
+            .filter(Objects::nonNull)
+            .collect(ImmutableList.toImmutableList());
+    if (trueStatements.size() > 1) {
+      _w.redFlag(
+          "Multiple set statements are not allowed in a single route map statement. Choosing the first one");
+      trueStatements = ImmutableList.of(trueStatements.get(0));
+    }
+    if (guardBoolExprs.size() > 1) {
+      _w.redFlag(
+          "Multiple match conditions are not allowed in a single route map statement. Choosing the first one");
+    }
+    return new org.batfish.datamodel.packet_policy.If(guardBoolExprs.get(0), trueStatements);
   }
 
   private @Nonnull BooleanExpr toBooleanExpr(RouteMapMatch match) {
@@ -1972,9 +2342,32 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
           }
 
           @Override
+          public BooleanExpr visitRouteMapMatchIpv6Address(
+              RouteMapMatchIpv6Address routeMapMatchIpv6Address) {
+            // Ignore, as it only applies to PBR and has no effect on route filtering/redistribution
+            return BooleanExprs.TRUE;
+          }
+
+          @Override
+          public BooleanExpr visitRouteMapMatchIpv6AddressPrefixList(
+              RouteMapMatchIpv6AddressPrefixList routeMapMatchIpv6AddressPrefixList) {
+            // incompatible with IPv4 routing, so fail closed, match nothing.
+            return BooleanExprs.FALSE;
+          }
+
+          @Override
           public BooleanExpr visitRouteMapMatchMetric(RouteMapMatchMetric routeMapMatchMetric) {
             return new MatchMetric(
                 IntComparator.EQ, new LiteralLong(routeMapMatchMetric.getMetric()));
+          }
+
+          @Override
+          public BooleanExpr visitRouteMapMatchSourceProtocol(
+              RouteMapMatchSourceProtocol routeMapMatchSourceProtocol) {
+            return routeMapMatchSourceProtocol
+                .toRoutingProtocols()
+                .<BooleanExpr>map(MatchProtocol::new)
+                .orElse(BooleanExprs.FALSE);
           }
 
           @Override
@@ -2125,6 +2518,7 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
     _c.setDefaultInboundAction(LineAction.PERMIT);
     _c.setDefaultCrossZoneAction(LineAction.PERMIT);
 
+    convertDomainName();
     convertObjectGroups();
     convertIpAccessLists();
     convertIpAsPathAccessLists();
@@ -2133,6 +2527,10 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
     convertVrfs();
     convertInterfaces();
     disableUnregisteredVlanInterfaces();
+    convertIpNameServers();
+    convertLoggingServers();
+    convertSnmpServers();
+    convertTacacsServers();
     convertRouteMaps();
     convertStaticRoutes();
     computeImplicitOspfAreas();

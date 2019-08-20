@@ -17,6 +17,7 @@ import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.eigrp.EigrpInterfaceSettings;
 import org.batfish.datamodel.hsrp.HsrpGroup;
 import org.batfish.datamodel.isis.IsisInterfaceSettings;
+import org.batfish.datamodel.ospf.OspfNetworkType;
 import org.hamcrest.FeatureMatcher;
 import org.hamcrest.Matcher;
 
@@ -293,7 +294,18 @@ final class InterfaceMatchersImpl {
 
     @Override
     protected Boolean featureValueOf(Interface actual) {
-      return actual.getOspfPointToPoint();
+      return actual.getOspfNetworkType() == OspfNetworkType.POINT_TO_POINT;
+    }
+  }
+
+  static final class HasOspfNetworkType extends FeatureMatcher<Interface, OspfNetworkType> {
+    HasOspfNetworkType(@Nonnull Matcher<? super OspfNetworkType> subMatcher) {
+      super(subMatcher, "an Interface with ospfNetworkType:", "ospfNetworkType");
+    }
+
+    @Override
+    protected OspfNetworkType featureValueOf(Interface actual) {
+      return actual.getOspfNetworkType();
     }
   }
 
@@ -490,7 +502,7 @@ final class InterfaceMatchersImpl {
 
     @Override
     protected Boolean featureValueOf(Interface actual) {
-      return actual.getOspfPointToPoint();
+      return actual.getOspfNetworkType() == OspfNetworkType.POINT_TO_POINT;
     }
   }
 

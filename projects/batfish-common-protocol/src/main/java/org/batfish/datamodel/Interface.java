@@ -51,6 +51,7 @@ public final class Interface extends ComparableStructure<String> {
     private SortedSet<String> _declaredNames;
     @Nonnull private Set<Dependency> _dependencies = ImmutableSet.of();
     @Nullable private String _description;
+    private @Nonnull SortedSet<Ip> _dhcpRelayAddresses;
     @Nullable private EigrpInterfaceSettings _eigrp;
     @Nullable private Integer _encapsulationVlan;
     private Map<Integer, HsrpGroup> _hsrpGroups;
@@ -69,7 +70,6 @@ public final class Interface extends ComparableStructure<String> {
     private boolean _ospfEnabled;
     @Nullable private OspfNetworkType _ospfNetworkType;
     private boolean _ospfPassive;
-    private boolean _ospfPointToPoint;
     private String _ospfProcess;
     private IpAccessList _outgoingFilter;
     private Transformation _outgoingTransformation;
@@ -96,6 +96,7 @@ public final class Interface extends ComparableStructure<String> {
       _autoState = true;
       _channelGroupMembers = ImmutableSortedSet.of();
       _declaredNames = ImmutableSortedSet.of();
+      _dhcpRelayAddresses = ImmutableSortedSet.of();
       _hsrpGroups = ImmutableMap.of();
       _secondaryAddresses = ImmutableSet.of();
       _vrrpGroups = ImmutableSortedMap.of();
@@ -129,8 +130,9 @@ public final class Interface extends ComparableStructure<String> {
       iface.setChannelGroup(_channelGroup);
       iface.setChannelGroupMembers(_channelGroupMembers);
       iface.setDeclaredNames(_declaredNames);
-      iface.setDependencies(_dependencies);
       iface.setDescription(_description);
+      iface.setDependencies(_dependencies);
+      iface.setDhcpRelayAddresses(ImmutableList.copyOf(_dhcpRelayAddresses));
       iface.setEigrp(_eigrp);
       iface.setEncapsulationVlan(_encapsulationVlan);
       iface.setHsrpGroups(_hsrpGroups);
@@ -155,7 +157,6 @@ public final class Interface extends ComparableStructure<String> {
       iface.setOspfInboundDistributeListPolicy(_ospfInboundDistributeListPolicy);
       iface.setOspfNetworkType(_ospfNetworkType);
       iface.setOspfPassive(_ospfPassive);
-      iface.setOspfPointToPoint(_ospfPointToPoint);
       iface.setOspfProcess(_ospfProcess);
       iface.setOutgoingFilter(_outgoingFilter);
       iface.setOutgoingTransformation(_outgoingTransformation);
@@ -297,6 +298,11 @@ public final class Interface extends ComparableStructure<String> {
       return this;
     }
 
+    public Builder setDhcpRelayAddresses(@Nonnull Iterable<Ip> addresses) {
+      _dhcpRelayAddresses = ImmutableSortedSet.copyOf(addresses);
+      return this;
+    }
+
     /**
      * Name of the routing policy which is generated from the Global and Interface level inbound
      * distribute lists for OSPF
@@ -390,11 +396,6 @@ public final class Interface extends ComparableStructure<String> {
 
     public Builder setOspfPassive(boolean ospfPassive) {
       _ospfPassive = ospfPassive;
-      return this;
-    }
-
-    public Builder setOspfPointToPoint(boolean ospfPointToPoint) {
-      _ospfPointToPoint = ospfPointToPoint;
       return this;
     }
 
@@ -597,7 +598,6 @@ public final class Interface extends ComparableStructure<String> {
       "ospfInboundDistributeListPolicy";
   private static final String PROP_OSPF_NETWORK_TYPE = "ospfNetworkType";
   private static final String PROP_OSPF_PASSIVE = "ospfPassive";
-  private static final String PROP_OSPF_POINT_TO_POINT = "ospfPointToPoint";
   private static final String PROP_OSPF_PROCESS = "ospfProcess";
   private static final String PROP_OUTGOING_FILTER = "outgoingFilter";
   private static final String PROP_OUTGOING_TRANSFORMATION = "outgoingTransformation";
@@ -856,7 +856,6 @@ public final class Interface extends ComparableStructure<String> {
   @Nullable private String _ospfInboundDistributeListPolicy;
   @Nullable private OspfNetworkType _ospfNetworkType;
   private boolean _ospfPassive;
-  private boolean _ospfPointToPoint;
   @Nullable private String _ospfProcess;
   private IpAccessList _outgoingFilter;
   private transient String _outgoingFilterName;
@@ -1284,11 +1283,6 @@ public final class Interface extends ComparableStructure<String> {
     return _ospfPassive;
   }
 
-  @JsonProperty(PROP_OSPF_POINT_TO_POINT)
-  public boolean getOspfPointToPoint() {
-    return _ospfPointToPoint;
-  }
-
   @JsonProperty(PROP_OSPF_PROCESS)
   @Nullable
   public String getOspfProcess() {
@@ -1682,11 +1676,6 @@ public final class Interface extends ComparableStructure<String> {
   @JsonProperty(PROP_OSPF_PASSIVE)
   public void setOspfPassive(boolean passive) {
     _ospfPassive = passive;
-  }
-
-  @JsonProperty(PROP_OSPF_POINT_TO_POINT)
-  public void setOspfPointToPoint(boolean ospfPointToPoint) {
-    _ospfPointToPoint = ospfPointToPoint;
   }
 
   public void setOspfProcess(@Nullable String ospfProcess) {

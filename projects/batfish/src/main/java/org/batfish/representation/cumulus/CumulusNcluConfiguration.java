@@ -39,6 +39,8 @@ import org.batfish.datamodel.BgpActivePeerConfig;
 import org.batfish.datamodel.BgpPeerConfig;
 import org.batfish.datamodel.BgpUnnumberedPeerConfig;
 import org.batfish.datamodel.BumTransportMethod;
+import org.batfish.datamodel.CommunityList;
+import org.batfish.datamodel.CommunityListLine;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
@@ -58,6 +60,8 @@ import org.batfish.datamodel.OriginType;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.PrefixRange;
 import org.batfish.datamodel.PrefixSpace;
+import org.batfish.datamodel.RouteFilterLine;
+import org.batfish.datamodel.RouteFilterList;
 import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.SwitchportMode;
 import org.batfish.datamodel.VniSettings;
@@ -76,12 +80,15 @@ import org.batfish.datamodel.routing_policy.expr.Conjunction;
 import org.batfish.datamodel.routing_policy.expr.DestinationNetwork;
 import org.batfish.datamodel.routing_policy.expr.Disjunction;
 import org.batfish.datamodel.routing_policy.expr.ExplicitPrefixSet;
+import org.batfish.datamodel.routing_policy.expr.LiteralCommunity;
 import org.batfish.datamodel.routing_policy.expr.LiteralOrigin;
 import org.batfish.datamodel.routing_policy.expr.MatchPrefixSet;
 import org.batfish.datamodel.routing_policy.expr.MatchProtocol;
 import org.batfish.datamodel.routing_policy.expr.Not;
+import org.batfish.datamodel.routing_policy.expr.SelfNextHop;
 import org.batfish.datamodel.routing_policy.expr.WithEnvironmentExpr;
 import org.batfish.datamodel.routing_policy.statement.If;
+import org.batfish.datamodel.routing_policy.statement.SetNextHop;
 import org.batfish.datamodel.routing_policy.statement.SetOrigin;
 import org.batfish.datamodel.routing_policy.statement.Statement;
 import org.batfish.datamodel.routing_policy.statement.Statements;
@@ -254,12 +261,14 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
             .setOwner(_c)
             .setName(computeBgpPeerExportPolicyName(vrfName, neighbor.getName()));
 
+    List<Statement> acceptStmts = getAcceptStatements(neighbor, bgpVrf);
+
     Conjunction peerExportConditions = new Conjunction();
     If peerExportConditional =
         new If(
             "peer-export policy main conditional: exitAccept if true / exitReject if false",
             peerExportConditions,
-            ImmutableList.of(Statements.ExitAccept.toStaticStatement()),
+            acceptStmts,
             ImmutableList.of(Statements.ExitReject.toStaticStatement()));
     peerExportPolicy.addStatement(peerExportConditional);
     Disjunction localOrCommonOrigination = new Disjunction();
@@ -269,6 +278,36 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
         .add(new CallExpr(computeBgpCommonExportPolicyName(vrfName)));
 
     return peerExportPolicy.build();
+  }
+
+  private static List<Statement> getAcceptStatements(BgpNeighbor neighbor, BgpVrf bgpVrf) {
+    SetNextHop setNextHop = getSetNextHop(neighbor, bgpVrf);
+    return setNextHop == null
+        ? ImmutableList.of(Statements.ExitAccept.toStaticStatement())
+        : ImmutableList.of(setNextHop, Statements.ExitAccept.toStaticStatement());
+  }
+
+  @VisibleForTesting
+  static @Nullable SetNextHop getSetNextHop(BgpNeighbor neighbor, BgpVrf bgpVrf) {
+    if (neighbor.getRemoteAs() == null
+        || bgpVrf.getAutonomousSystem() == null
+        || !neighbor.getRemoteAs().equals(bgpVrf.getAutonomousSystem())) {
+      return null;
+    }
+
+    BgpIpv4UnicastAddressFamily ipv4Unicast = bgpVrf.getIpv4Unicast();
+    if (ipv4Unicast == null) {
+      return null;
+    }
+
+    BgpVrfNeighborAddressFamilyConfiguration neighborConf =
+        ipv4Unicast.getNeighborAddressFamilyConfigurations().get(neighbor.getName());
+
+    if (neighborConf == null || !neighborConf.getNextHopSelf()) {
+      return null;
+    }
+
+    return new SetNextHop(SelfNextHop.getInstance(), false);
   }
 
   /** Scan all interfaces, find first that contains given remote IP */
@@ -1162,7 +1201,7 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
     RoutingPolicy.Builder builder =
         RoutingPolicy.builder().setName(routeMap.getName()).setOwner(_c);
     routeMap.getEntries().values().stream()
-        .map(entry -> toRoutingPolicyStatement(entry))
+        .map(this::toRoutingPolicyStatement)
         .forEach(builder::addStatement);
     return builder.addStatement(Statements.ReturnFalse.toStaticStatement()).build();
   }
@@ -1208,6 +1247,8 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
     convertVrfLoopbackInterfaces();
     convertVrfs();
     convertDefaultVrf();
+    convertIpPrefixLists();
+    convertIpCommunityLists();
     convertRouteMaps();
     convertDnsServers();
     convertClags();
@@ -1221,6 +1262,49 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
     warnDuplicateClagIds();
 
     return _c;
+  }
+
+  private void convertIpCommunityLists() {
+    _ipCommunityLists.forEach(
+        (name, list) -> _c.getCommunityLists().put(name, toCommunityList(list)));
+  }
+
+  @VisibleForTesting
+  static CommunityList toCommunityList(IpCommunityList list) {
+    return list.accept(
+        ipCommunityList ->
+            new CommunityList(
+                ipCommunityList.getName(),
+                ipCommunityList.getCommunities().stream()
+                    .map(LiteralCommunity::new)
+                    .map(k -> new CommunityListLine(ipCommunityList.getAction(), k))
+                    .collect(ImmutableList.toImmutableList()),
+                false));
+  }
+
+  private void convertIpPrefixLists() {
+    _ipPrefixLists.forEach(
+        (name, ipPrefixList) ->
+            _c.getRouteFilterLists().put(name, toRouteFilterList(ipPrefixList)));
+  }
+
+  @VisibleForTesting
+  static @Nonnull RouteFilterList toRouteFilterList(IpPrefixList ipPrefixList) {
+    String name = ipPrefixList.getName();
+    RouteFilterList rfl = new RouteFilterList(name);
+    rfl.setLines(
+        ipPrefixList.getLines().values().stream()
+            .map(CumulusNcluConfiguration::toRouteFilterLine)
+            .collect(ImmutableList.toImmutableList()));
+    return rfl;
+  }
+
+  @VisibleForTesting
+  static @Nonnull RouteFilterLine toRouteFilterLine(IpPrefixListLine ipPrefixListLine) {
+    return new RouteFilterLine(
+        ipPrefixListLine.getAction(),
+        ipPrefixListLine.getPrefix(),
+        ipPrefixListLine.getLengthRange());
   }
 
   @Override

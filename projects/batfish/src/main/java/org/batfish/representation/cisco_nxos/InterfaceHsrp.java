@@ -17,8 +17,8 @@ public final class InterfaceHsrp implements Serializable {
     _delayReloadSeconds = delayReloadSeconds;
   }
 
-  public @Nonnull Map<Integer, HsrpGroup> getGroups() {
-    return _groups;
+  public @Nonnull Map<Integer, HsrpGroupIpv4> getIpv4Groups() {
+    return _ipv4Groups;
   }
 
   public @Nullable Integer getVersion() {
@@ -34,10 +34,10 @@ public final class InterfaceHsrp implements Serializable {
   //////////////////////////////////////////
 
   InterfaceHsrp() {
-    _groups = new HashMap<>();
+    _ipv4Groups = new HashMap<>();
   }
 
   private @Nullable Integer _delayReloadSeconds;
-  private final @Nonnull Map<Integer, HsrpGroup> _groups;
+  private final @Nonnull Map<Integer, HsrpGroupIpv4> _ipv4Groups;
   private @Nullable Integer _version;
 }

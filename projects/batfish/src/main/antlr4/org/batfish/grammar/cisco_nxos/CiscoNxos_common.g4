@@ -151,6 +151,11 @@ literal_standard_community
   high = uint16 COLON low = uint16
 ;
 
+mac_address_literal
+:
+  MAC_ADDRESS_LITERAL
+;
+
 null_rest_of_line
 :
   ~NEWLINE* NEWLINE
@@ -242,6 +247,12 @@ subnet_mask
   SUBNET_MASK
 ;
 
+tcp_port_number
+:
+// 0-65535
+  uint32
+;
+
 template_name
 :
 // 1-80 chars
@@ -270,6 +281,22 @@ uint32
   UINT8
   | UINT16
   | UINT32
+;
+
+uint8_range_set
+:
+  ranges += uint8_range
+  (
+    COMMA ranges += uint8_range
+  )*
+;
+
+uint8_range
+:
+  low = uint8
+  (
+    DASH high = uint8
+  )?
 ;
 
 user_name

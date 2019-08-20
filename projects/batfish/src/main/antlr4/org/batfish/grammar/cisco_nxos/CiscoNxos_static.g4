@@ -8,10 +8,20 @@ options {
 
 ip_route
 :
-  ROUTE network = route_network
+  ROUTE
+  (
+    ip_route_network
+    | ip_route_static
+  )
+;
+
+ip_route_network
+:
+  network = route_network
   (
     null0 = NULL0
     | nhint = interface_name? nhip = ip_address
+    | nhint = interface_name nhip = ip_address?
   )
   (
     VRF nhvrf = vrf_name
@@ -38,4 +48,9 @@ static_route_pref
 :
 // 1-255
   UINT8
+;
+
+ip_route_static
+:
+  STATIC BFD name = interface_name ip = ip_address NEWLINE
 ;

@@ -15,7 +15,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import org.batfish.common.BatfishException;
+import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.IpAccessList;
@@ -24,10 +24,12 @@ import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
 import org.batfish.datamodel.acl.MatchSrcInterface;
+import org.batfish.datamodel.transformation.IpField;
 import org.batfish.datamodel.transformation.Transformation;
 import org.batfish.datamodel.transformation.TransformationStep;
 
 /** Representation of a Cisco IOS dynamic NAT. */
+@ParametersAreNonnullByDefault
 public final class CiscoIosDynamicNat extends CiscoIosNat {
 
   private @Nullable String _aclName;
@@ -68,60 +70,50 @@ public final class CiscoIosDynamicNat extends CiscoIosNat {
   }
 
   @Override
-  public int natCompare(CiscoIosNat other) {
+  protected int natCompare(CiscoIosNat other) {
     return 0;
+  }
+
+  @Override
+  public Optional<Transformation.Builder> toIncomingTransformation(
+      Map<String, IpAccessList> ipAccessLists, Map<String, NatPool> natPools) {
+    // SOURCE_OUTSIDE matches and dynamically translates source addresses on ingress.
+    if (getAction() != RuleAction.SOURCE_OUTSIDE) {
+      // INSIDE rules require reverse translation on ingress, which is not
+      // yet supported (we need to track NAT table state for dynamic NAT).
+      return Optional.empty();
+    }
+
+    if (isMalformed(natPools, ipAccessLists)) {
+      return Optional.empty();
+    }
+
+    return Optional.of(makeTransformation(permittedByAcl(_aclName), natPools.get(_natPool), false));
   }
 
   @Override
   public Optional<Transformation.Builder> toOutgoingTransformation(
       Map<String, IpAccessList> ipAccessLists,
       Map<String, NatPool> natPools,
-      @Nullable Set<String> insideInterfaces,
+      Set<String> insideInterfaces,
       Configuration c) {
-
     /*
      * SOURCE_INSIDE matches and dynamically translates source addresses on egress
      * DESTINATION_INSIDE matches and dynamically translates destination addresses on egress
      */
 
-    // reverse translation is not supported for dynamic NAT
-    if (getAction() == RuleAction.SOURCE_OUTSIDE) {
+    if (getAction() != RuleAction.SOURCE_INSIDE && getAction() != RuleAction.DESTINATION_INSIDE) {
+      // OUTSIDE rules require reverse translation on egress, which is not
+      // yet supported (we need to track NAT table state for dynamic NAT).
       return Optional.empty();
     }
 
-    String natAclName = _aclName;
-    if (natAclName == null) {
-      // Parser rejects this case
+    if (isMalformed(natPools, ipAccessLists)) {
       return Optional.empty();
     }
+    assert _aclName != null; // invariant of isMalformed being false, to help compiler.
 
-    /*
-     * Cisco IOS only supports standard ACLs for dynamic NAT
-     * Arista supports extended ACLs for dynamic NAT
-     */
-    IpAccessList natAcl = ipAccessLists.get(natAclName);
-    if (natAcl == null || natAcl.getSourceType() == null) {
-      // Invalid reference
-      return Optional.empty();
-    }
-    boolean isStandardAcl =
-        natAcl
-            .getSourceType()
-            .equals(CiscoStructureType.IPV4_ACCESS_LIST_STANDARD.getDescription());
-    if (!isStandardAcl) {
-      // Invalid reference
-      return Optional.empty();
-    }
-
-    if (_natPool == null) {
-      // Parser allows this for Arista NAT (nat overload), but it is not supported
-      return Optional.empty();
-    }
-    NatPool natPool = natPools.get(_natPool);
-    if (natPool == null) {
-      // Configuration has an invalid reference
-      return Optional.empty();
-    }
+    IpAccessList natAcl = ipAccessLists.get(_aclName);
 
     if (getAction() == RuleAction.DESTINATION_INSIDE) {
       // Expect all lines to be header space matches for NAT ACL
@@ -132,7 +124,7 @@ public final class CiscoIosDynamicNat extends CiscoIosNat {
       }
 
       // Create reverse acl to match destination address instead of source address
-      String reverseAclName = computeDynamicDestinationNatAclName(natAclName);
+      String reverseAclName = computeDynamicDestinationNatAclName(_aclName);
       List<IpAccessListLine> lines =
           natAcl.getLines().stream()
               .map(
@@ -151,62 +143,66 @@ public final class CiscoIosDynamicNat extends CiscoIosNat {
                         .build();
                   })
               .collect(Collectors.toList());
-      IpAccessList.builder()
-          .setLines(lines)
-          .setName(reverseAclName)
-          .setOwner(c)
-          .setSourceName(natAclName)
-          .setSourceType(natAcl.getSourceType())
-          .build();
-
-      natAclName = reverseAclName;
+      natAcl =
+          IpAccessList.builder()
+              .setLines(lines)
+              .setName(reverseAclName)
+              .setOwner(c)
+              .setSourceName(_aclName)
+              .setSourceType(natAcl.getSourceType())
+              .build();
     }
 
-    AclLineMatchExpr natAclExpr = permittedByAcl(natAclName);
-    if (insideInterfaces != null) {
-      natAclExpr = and(natAclExpr, new MatchSrcInterface(insideInterfaces));
-    }
-    TransformationStep step;
-    if (getAction() == RuleAction.SOURCE_INSIDE) {
-      step = assignSourceIp(natPool.getFirst(), natPool.getLast());
-    } else if (getAction() == RuleAction.DESTINATION_INSIDE) {
-      step = assignDestinationIp(natPool.getFirst(), natPool.getLast());
-    } else {
-      throw new BatfishException("Unexpected RuleAction");
-    }
-    return Optional.of(when(natAclExpr).apply(step));
+    AclLineMatchExpr natAclExpr =
+        and(permittedByAcl(natAcl.getName()), new MatchSrcInterface(insideInterfaces));
+    return Optional.of(makeTransformation(natAclExpr, natPools.get(_natPool), true));
   }
 
-  @Override
-  public Optional<Transformation.Builder> toIncomingTransformation(Map<String, NatPool> natPools) {
+  /**
+   * Returns the (forward) transformation for this dynamic NAT expression using the given condition
+   * on which to NAT, pool to NAT into, and the direction of traffic.
+   */
+  private Transformation.Builder makeTransformation(
+      AclLineMatchExpr shouldNat, NatPool pool, boolean outgoing) {
+    TransformationStep step =
+        getAction().whatChanges(outgoing) == IpField.SOURCE
+            ? assignSourceIp(pool.getFirst(), pool.getLast())
+            : assignDestinationIp(pool.getFirst(), pool.getLast());
+    return when(shouldNat).apply(step);
+  }
 
-    /*
-     * SOURCE_OUTSIDE matches and dynamically translates source addresses on ingress
-     */
-
-    // reverse translation is not supported for dynamic NAT
-    if (getAction() != RuleAction.SOURCE_OUTSIDE) {
-      return Optional.empty();
+  /**
+   * Returns {@code true} iff this dynamic NAT configuration is invalid based on the given existing
+   * NAT pools and access lists.
+   */
+  private boolean isMalformed(
+      Map<String, NatPool> natPools, Map<String, IpAccessList> ipAccessLists) {
+    // Validate that ACL is configured, present, and is a standard ACL.
+    if (_aclName == null) {
+      // Not configured (should be rejected by parser, but confirm).
+      return true;
+    }
+    if (!ipAccessLists.containsKey(_aclName)) {
+      // Invalid reference
+      return true;
+    }
+    if (!CiscoStructureType.IPV4_ACCESS_LIST_STANDARD
+        .getDescription()
+        .equals(ipAccessLists.get(_aclName).getSourceType())) {
+      // Cisco IOS only supports standard ACLs for dynamic NAT.
+      return true;
     }
 
-    String natAclName = _aclName;
-    if (natAclName == null) {
-      // Parser rejects this case
-      return Optional.empty();
-    }
-
+    // Validate that NAT pool is configured and present.
     if (_natPool == null) {
       // Parser allows this for Arista NAT (nat overload), but it is not supported
-      return Optional.empty();
+      return true;
     }
-    NatPool natPool = natPools.get(_natPool);
-    if (natPool == null) {
+    if (!natPools.containsKey(_natPool)) {
       // Configuration has an invalid reference
-      return Optional.empty();
+      return true;
     }
 
-    AclLineMatchExpr natAclExpr = permittedByAcl(natAclName);
-    TransformationStep step = assignSourceIp(natPool.getFirst(), natPool.getLast());
-    return Optional.of(when(natAclExpr).apply(step));
+    return false;
   }
 }
