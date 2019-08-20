@@ -381,7 +381,7 @@ public class CumulusInterfacesGrammarTest {
 
   @Test
   public void testLoopback() {
-    parse("iface lo loopback\n");
+    parse("iface lo inet loopback\n");
     assertTrue(CONFIG.getLoopback().getConfigured());
     assertThat(
         getDefinedStructureInfo(CumulusStructureType.LOOPBACK, "lo").getDefinitionLines(),
@@ -394,7 +394,7 @@ public class CumulusInterfacesGrammarTest {
 
   @Test
   public void testLoopbackAddress() {
-    parse("iface lo loopback\n address 1.2.3.4/24\n");
+    parse("iface lo inet loopback\n address 1.2.3.4/24\n");
     assertThat(
         CONFIG.getLoopback().getAddresses(),
         contains(ConcreteInterfaceAddress.parse("1.2.3.4/24")));
@@ -402,7 +402,7 @@ public class CumulusInterfacesGrammarTest {
 
   @Test
   public void testLoopbackClagdVxlanAnycastIp() {
-    parse("iface lo loopback\n clagd-vxlan-anycast-ip 1.2.3.4\n");
+    parse("iface lo inet loopback\n clagd-vxlan-anycast-ip 1.2.3.4\n");
     assertThat(CONFIG.getLoopback().getClagVxlanAnycastIp(), equalTo(Ip.parse("1.2.3.4")));
   }
 
