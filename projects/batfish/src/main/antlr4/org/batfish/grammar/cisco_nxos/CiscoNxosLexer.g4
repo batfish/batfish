@@ -1628,6 +1628,11 @@ INCONSISTENCY
   'inconsistency'
 ;
 
+INFORMS
+:
+  'informs'
+;
+
 INFORMATION_REPLY
 :
   'information-reply'
@@ -3851,7 +3856,7 @@ TRAPS
   'traps'
   // if not preceded by 'enable', followed by 'version' or SNMP community secret
   {
-    if (lastTokenType() != ENABLE) {
+    if (lastTokenType() != ENABLE && lastTokenType() != SOURCE_INTERFACE) {
       pushMode(M_SnmpHostTraps);
     }
   }
