@@ -4,7 +4,6 @@ import static com.google.common.base.MoreObjects.firstNonNull;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static org.batfish.datamodel.BumTransportMethod.MULTICAST_GROUP;
 import static org.batfish.datamodel.BumTransportMethod.UNICAST_FLOOD_GROUP;
-import static org.batfish.datamodel.Configuration.DEFAULT_VRF_NAME;
 import static org.batfish.datamodel.Interface.NULL_INTERFACE_NAME;
 import static org.batfish.datamodel.MultipathEquivalentAsPathMatchMode.EXACT_PATH;
 import static org.batfish.datamodel.MultipathEquivalentAsPathMatchMode.PATH_LENGTH;
@@ -199,6 +198,9 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
                 .map(String::toLowerCase)
                 .collect(Collectors.joining("|")));
   }
+
+  /** On NX-OS, there is a default VRF named "default". */
+  public static final String DEFAULT_VRF_NAME = "default";
 
   /** Returns canonical prefix of interface name if valid, else {@code null}. */
   public static @Nullable String getCanonicalInterfaceNamePrefix(String prefix) {
