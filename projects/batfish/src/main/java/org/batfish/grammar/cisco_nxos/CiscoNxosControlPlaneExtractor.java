@@ -459,6 +459,7 @@ import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Vlan_id_rangeContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Vlan_vlanContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Vni_numberContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Vrf_nameContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Vrf_non_default_nameContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Vv_vn_segmentContext;
 import org.batfish.representation.cisco_nxos.ActionIpAccessListLine;
 import org.batfish.representation.cisco_nxos.AddrGroupIpAddressSpec;
@@ -960,6 +961,7 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
     _text = text;
     _parser = parser;
     _preferredNames = HashBasedTable.create();
+    getPreferredName(DEFAULT_VRF_NAME, VRF);
     _w = warnings;
   }
 
@@ -5435,6 +5437,21 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
         toStringWithLengthInSpace(messageCtx, ctx, VRF_NAME_LENGTH_RANGE, "VRF name");
     // VRF names are case-insensitive.
     return vrfName.map(name -> getPreferredName(name, VRF));
+  }
+
+  private @Nonnull Optional<String> toString(
+      ParserRuleContext messageCtx, Vrf_non_default_nameContext ctx) {
+    Optional<String> vrfName =
+        toStringWithLengthInSpace(messageCtx, ctx, VRF_NAME_LENGTH_RANGE, "VRF name")
+            // VRF names are case-insensitive.
+            .map(name -> getPreferredName(name, VRF));
+
+    if (vrfName.isPresent() && vrfName.get().equals(DEFAULT_VRF_NAME)) {
+      _w.addWarning(
+          messageCtx, getFullText(messageCtx), _parser, "Cannot use default VRF in this context");
+      return Optional.empty();
+    }
+    return vrfName;
   }
 
   /**
