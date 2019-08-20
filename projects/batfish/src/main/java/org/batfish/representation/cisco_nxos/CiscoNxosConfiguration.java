@@ -279,6 +279,14 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
         ipPrefixListLine.getLengthRange());
   }
 
+  private static @Nonnull Route6FilterLine toRoute6FilterLine(
+      Ipv6PrefixListLine ipv6PrefixListLine) {
+    return new Route6FilterLine(
+        ipv6PrefixListLine.getAction(),
+        ipv6PrefixListLine.getPrefix6(),
+        ipv6PrefixListLine.getLengthRange());
+  }
+
   private static @Nonnull RouteFilterList toRouteFilterList(IpPrefixList ipPrefixList) {
     String name = ipPrefixList.getName();
     RouteFilterList rfl = new RouteFilterList(name);
@@ -287,6 +295,16 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
             .map(CiscoNxosConfiguration::toRouteFilterLine)
             .collect(ImmutableList.toImmutableList()));
     return rfl;
+  }
+
+  private static @Nonnull Route6FilterList toRoute6FilterList(Ipv6PrefixList ipv6PrefixList) {
+    String name = ipv6PrefixList.getName();
+    Route6FilterList r6fl = new Route6FilterList(name);
+    r6fl.setLines(
+        ipv6PrefixList.getLines().values().stream()
+            .map(CiscoNxosConfiguration::toRoute6FilterLine)
+            .collect(ImmutableList.toImmutableList()));
+    return r6fl;
   }
 
   private transient Configuration _c;
@@ -306,6 +324,7 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
   private Map<String, List<String>> _ipNameServersByUseVrf;
   private final @Nonnull Map<String, IpPrefixList> _ipPrefixLists;
   private final @Nonnull Map<String, Ipv6AccessList> _ipv6AccessLists;
+  private final @Nonnull Map<String, Ipv6PrefixList> _ipv6PrefixLists;
   private final @Nonnull Map<String, LoggingServer> _loggingServers;
   private final @Nonnull Map<String, NtpServer> _ntpServers;
   private final @Nonnull Map<Integer, Nve> _nves;
@@ -331,6 +350,7 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
     _ipNameServersByUseVrf = new HashMap<>();
     _ipPrefixLists = new HashMap<>();
     _ipv6AccessLists = new HashMap<>();
+    _ipv6PrefixLists = new HashMap<>();
     _loggingServers = new HashMap<>();
     _ntpServers = new HashMap<>();
     _nves = new HashMap<>();
@@ -828,6 +848,12 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
             _c.getRouteFilterLists().put(name, toRouteFilterList(ipPrefixList)));
   }
 
+  private void convertIpv6PrefixLists() {
+    _ipv6PrefixLists.forEach(
+        (name, ipv6PrefixList) ->
+            _c.getRoute6FilterLists().put(name, toRoute6FilterList(ipv6PrefixList)));
+  }
+
   private void convertLoggingServers() {
     _c.setLoggingServers(ImmutableSortedSet.copyOf(_loggingServers.keySet()));
   }
@@ -1068,6 +1094,10 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
 
   public @Nonnull Map<String, Ipv6AccessList> getIpv6AccessLists() {
     return _ipv6AccessLists;
+  }
+
+  public @Nonnull Map<String, Ipv6PrefixList> getIpv6PrefixLists() {
+    return _ipv6PrefixLists;
   }
 
   public @Nonnull Map<String, LoggingServer> getLoggingServers() {
@@ -2142,6 +2172,12 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
             _w.redFlag("'match tag' not supported in PBR policies");
             return null;
           }
+
+          @Override
+          public BoolExpr visitRouteMapMatchVlan(RouteMapMatchVlan routeMapMatchVlan) {
+            // TODO: PBR implementation. Should match traffic coming in on any of specified VLANs.
+            return null;
+          }
         };
     List<BoolExpr> guardBoolExprs =
         entry
@@ -2364,6 +2400,15 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
           public BooleanExpr visitRouteMapMatchTag(RouteMapMatchTag routeMapMatchTag) {
             return new MatchTag(IntComparator.EQ, new LiteralLong(routeMapMatchTag.getTag()));
           }
+
+          @Override
+          public BooleanExpr visitRouteMapMatchVlan(RouteMapMatchVlan routeMapMatchVlan) {
+            return visitRouteMapMatchInterface(
+                new RouteMapMatchInterface(
+                    routeMapMatchVlan.getVlans().stream()
+                        .map(vlan -> String.format("Vlan%d", vlan))
+                        .collect(ImmutableSet.toImmutableSet())));
+          }
         });
   }
 
@@ -2514,6 +2559,7 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
     convertIpv6AccessLists();
     convertIpAsPathAccessLists();
     convertIpPrefixLists();
+    convertIpv6PrefixLists();
     convertIpCommunityLists();
     convertVrfs();
     convertInterfaces();
