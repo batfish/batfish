@@ -958,7 +958,7 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
     }
 
     // null if VRF member specified but is not valid
-    return Optional.ofNullable(_c.getVrfs().get(vrfMemberForVlanIface)).orElse(null);
+    return _c.getVrfs().get(vrfMemberForVlanIface);
   }
 
   @Nonnull

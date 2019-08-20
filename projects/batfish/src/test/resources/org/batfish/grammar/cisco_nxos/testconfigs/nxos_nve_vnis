@@ -30,6 +30,7 @@ vlan 6
 interface loopback0
   ip address 1.1.1.1/32
 !
+!! a VRF is needed for an L3 VNI, otherwise the VNI will be ignored
 vrf context tenant1
   vni 20001
   rd auto
@@ -81,7 +82,6 @@ interface Vlan3
   no shutdown
 !
 interface Vlan4
-  vrf member tenant1
   no shutdown
 !
 interface Vlan5

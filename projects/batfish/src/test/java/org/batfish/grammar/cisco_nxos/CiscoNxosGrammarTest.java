@@ -752,6 +752,13 @@ public final class CiscoNxosGrammarTest {
                 .setRouteDistinguisher(RouteDistinguisher.from(routerId, 3))
                 .setRouteTarget(ExtendedCommunity.target(1, 1111))
                 .setImportRouteTarget(ExtendedCommunity.target(1, 1111).matchString())
+                .build(),
+            Layer2VniConfig.builder()
+                .setVni(2222)
+                .setVrf(DEFAULT_VRF_NAME)
+                .setRouteDistinguisher(RouteDistinguisher.from(routerId, 1))
+                .setRouteTarget(ExtendedCommunity.target(1, 2222))
+                .setImportRouteTarget(ExtendedCommunity.target(1, 2222).matchString())
                 .build());
     ImmutableSortedSet<Layer3VniConfig> expectedL3Vnis =
         ImmutableSortedSet.of(
@@ -3388,9 +3395,10 @@ public final class CiscoNxosGrammarTest {
             VniSettingsMatchers.hasVlan(equalTo(2)),
             hasVni(10001)));
 
-    assertThat(c, hasVrf("tenant1", hasVniSettings(hasKey(20001))));
+    String tenant1 = "tenant1"; // 20001 is an L3 VNI so it should be mapped to a VRF
+    assertThat(c, hasVrf(tenant1, hasVniSettings(hasKey(20001))));
     assertThat(
-        c.getVrfs().get("tenant1").getVniSettings().get(20001),
+        c.getVrfs().get(tenant1).getVniSettings().get(20001),
         allOf(
             // L3 mcast IP
             hasBumTransportIps(equalTo(ImmutableSortedSet.of(Ip.parse("234.0.0.0")))),
@@ -3400,9 +3408,9 @@ public final class CiscoNxosGrammarTest {
             VniSettingsMatchers.hasVlan(equalTo(3)),
             hasVni(20001)));
 
-    assertThat(c, hasVrf("tenant1", hasVniSettings(hasKey(30001))));
+    assertThat(c, hasDefaultVrf(hasVniSettings(hasKey(30001))));
     assertThat(
-        c.getVrfs().get("tenant1").getVniSettings().get(30001),
+        c.getDefaultVrf().getVniSettings().get(30001),
         allOf(
             // L2 mcast IP
             hasBumTransportIps(equalTo(ImmutableSortedSet.of(Ip.parse("233.0.0.0")))),
