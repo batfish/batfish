@@ -13,6 +13,7 @@ import
   CiscoNxos_ip_community_list,
   CiscoNxos_ip_prefix_list,
   CiscoNxos_ipv6_access_list,
+  CiscoNxos_ipv6_prefix_list,
   CiscoNxos_logging,
   CiscoNxos_ntp,
   CiscoNxos_object_group,
@@ -149,12 +150,6 @@ s_ipv6
     ipv6_access_list
     | ipv6_prefix_list
   )
-;
-
-ipv6_prefix_list
-:
-// TODO: something much less lazy
-  PREFIX_LIST null_rest_of_line
 ;
 
 s_key
