@@ -14,6 +14,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -47,6 +48,7 @@ import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sb_neighborContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sb_router_idContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbaf_ipv4_unicastContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbaf_l2vpn_evpnContext;
+import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbafi_aggregate_addressContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbafi_neighborContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbafi_networkContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbafi_redistributeContext;
@@ -75,6 +77,7 @@ import org.batfish.representation.cumulus.BgpPeerGroupNeighbor;
 import org.batfish.representation.cumulus.BgpProcess;
 import org.batfish.representation.cumulus.BgpRedistributionPolicy;
 import org.batfish.representation.cumulus.BgpVrf;
+import org.batfish.representation.cumulus.BgpVrfAddressFamilyAggregateNetworkConfiguration;
 import org.batfish.representation.cumulus.BgpVrfNeighborAddressFamilyConfiguration;
 import org.batfish.representation.cumulus.CumulusNcluConfiguration;
 import org.batfish.representation.cumulus.CumulusRoutingProtocol;
@@ -241,6 +244,20 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
   public void enterSbafls_advertise_ipv4_unicast(Sbafls_advertise_ipv4_unicastContext ctx) {
     // setting in enter instead of exit since in future we can attach a routemap
     _currentBgpVrf.getL2VpnEvpn().setAdvertiseIpv4Unicast(new BgpL2VpnEvpnIpv4Unicast());
+  }
+
+  @Override
+  public void exitSbafi_aggregate_address(Sbafi_aggregate_addressContext ctx) {
+    Map<Prefix, BgpVrfAddressFamilyAggregateNetworkConfiguration> aggregateNetworks =
+        _currentBgpVrf.getIpv4Unicast().getAggregateNetworks();
+    Prefix prefix = Prefix.parse(ctx.IP_PREFIX().getText());
+    BgpVrfAddressFamilyAggregateNetworkConfiguration agg =
+        new BgpVrfAddressFamilyAggregateNetworkConfiguration();
+    agg.setSummaryOnly(ctx.SUMMARY_ONLY() != null);
+    if (aggregateNetworks.put(prefix, agg) != null) {
+      _w.addWarning(
+          ctx, ctx.getText(), _parser, "Overwriting aggregate-address for " + prefix.toString());
+    }
   }
 
   @Override
