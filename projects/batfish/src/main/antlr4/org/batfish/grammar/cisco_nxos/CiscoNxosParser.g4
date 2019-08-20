@@ -148,9 +148,15 @@ ip_sla
 :
   SLA
   (
-    entry = uint32 NEWLINE ip_sla_entry+
+    ip_sla_block
     | ip_sla_null
   )
+;
+
+ip_sla_block
+:
+  entry = uint32 NEWLINE
+  ip_sla_entry+
 ;
 
 ip_sla_entry
