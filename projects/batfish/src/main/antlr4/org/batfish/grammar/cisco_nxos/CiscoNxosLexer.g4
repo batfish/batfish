@@ -3894,6 +3894,19 @@ TRANSPORT
 TRAP
 :
   'trap'
+  // if not preceded by 'enable', followed by 'version' or SNMP community secret
+  {
+    switch(lastTokenType()) {
+      case ACTION:
+      case ENABLE:
+      case LOGGING:
+      case SOURCE_INTERFACE:
+        break;
+      default:
+        pushMode(M_SnmpHostTraps);
+        break;
+    }
+  }
 ;
 
 TRAPS
@@ -3901,8 +3914,14 @@ TRAPS
   'traps'
   // if not preceded by 'enable', followed by 'version' or SNMP community secret
   {
-    if (lastTokenType() != ENABLE && lastTokenType() != SOURCE_INTERFACE && lastTokenType() != LOGGING) {
-      pushMode(M_SnmpHostTraps);
+    switch(lastTokenType()) {
+      case ENABLE:
+      case LOGGING:
+      case SOURCE_INTERFACE:
+        break;
+      default:
+        pushMode(M_SnmpHostTraps);
+        break;
     }
   }
 ;

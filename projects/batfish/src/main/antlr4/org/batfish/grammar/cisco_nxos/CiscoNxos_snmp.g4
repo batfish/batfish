@@ -115,7 +115,8 @@ snmpssi_informs
 
 snmpssi_traps
 :
-  TRAPS name = interface_name NEWLINE
+// abbreviation of 'traps' to 'trap' seems to survive on at least one NX-OS v6 config
+  (TRAP | TRAPS) name = interface_name NEWLINE
 ;
 
 snmps_user
