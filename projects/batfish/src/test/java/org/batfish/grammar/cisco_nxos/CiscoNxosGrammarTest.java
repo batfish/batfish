@@ -3292,6 +3292,7 @@ public final class CiscoNxosGrammarTest {
   public void testIpSla() {
     String hostname = "nxos_ip_sla";
     CiscoNxosConfiguration vc = parseVendorConfig(hostname);
+    assertThat(vc, notNullValue());
     // TODO: test ip sla extraction
   }
 

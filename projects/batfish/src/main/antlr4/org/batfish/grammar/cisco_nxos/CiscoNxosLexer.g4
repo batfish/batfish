@@ -2010,11 +2010,6 @@ LOG_NEIGHBOR_CHANGES
 LOGGING
 :
   'logging'
-  {
-    if (lastTokenType() == SLA) {
-      pushMode(M_Words);
-    }
-  }
 ;
 
 LOGIN
@@ -3089,12 +3084,12 @@ REACHABILITY
 
 REACTION_CONFIGURATION
 :
-  'reaction-configuration' -> pushMode(M_Words)
+  'reaction-configuration' -> pushMode( M_Remark )
 ;
 
 REACTION_TRIGGER
 :
-  'reaction-trigger' -> pushMode(M_Words)
+  'reaction-trigger'
 ;
 
 READ
@@ -3199,12 +3194,12 @@ REPORT_SUPPRESSION
 
 RESET
 :
-  'reset' -> pushMode( M_Words )
+  'reset'
 ;
 
 RESPONDER
 :
-  'responder' -> pushMode( M_Words )
+  'responder' -> pushMode( M_Remark )
 ;
 
 RESTART
@@ -3324,7 +3319,7 @@ SAMPLER
 
 SCHEDULE
 :
-  'schedule' -> pushMode(M_Words)
+  'schedule' -> pushMode( M_Remark )
 ;
 
 SCHEDULER
@@ -3763,7 +3758,7 @@ TCP
 
 TCP_CONNECT
 :
-  'tcp-connect' -> pushMode(M_Words)
+  'tcp-connect' -> pushMode( M_Remark )
 ;
 
 TCP_FLAGS_MASK
@@ -3901,7 +3896,7 @@ TRAPS
   'traps'
   // if not preceded by 'enable', followed by 'version' or SNMP community secret
   {
-    if (lastTokenType() != ENABLE) {
+    if (lastTokenType() != ENABLE && lastTokenType() != LOGGING) {
       pushMode(M_SnmpHostTraps);
     }
   }
@@ -3982,12 +3977,12 @@ UDP
 
 UDP_ECHO
 :
-  'udp-echo' -> pushMode (M_Words)
+  'udp-echo' -> pushMode ( M_Remark )
 ;
 
 UDP_JITTER
 :
-  'udp-jitter' -> pushMode (M_Words)
+  'udp-jitter' -> pushMode ( M_Remark )
 ;
 
 UNCHANGED

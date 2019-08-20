@@ -149,22 +149,33 @@ ip_sla
   SLA
   (
     entry = uint32 NEWLINE ip_sla_entry+
-    |
-    (
-      GROUP
-      | LOGGING
-      | REACTION_CONFIGURATION
-      | REACTION_TRIGGER
-      | RESET
-      | RESPONDER
-      | SCHEDULE
-    ) null_rest_of_line
+    | ip_sla_null
   )
 ;
 
 ip_sla_entry
 :
-  ( DNS | HTTP | ICMP_ECHO | TCP_CONNECT | UDP_ECHO | UDP_JITTER ) null_rest_of_line
+  (
+    DNS
+    | HTTP
+    | ICMP_ECHO
+    | TCP_CONNECT
+    | UDP_ECHO
+    | UDP_JITTER
+  ) null_rest_of_line
+;
+
+ip_sla_null
+:
+  (
+    GROUP
+    | LOGGING
+    | REACTION_CONFIGURATION
+    | REACTION_TRIGGER
+    | RESET
+    | RESPONDER
+    | SCHEDULE
+  ) null_rest_of_line
 ;
 
 s_ipv6
