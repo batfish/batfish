@@ -666,6 +666,7 @@ public final class CiscoNxosGrammarTest {
     Configuration c = parseConfig(hostname);
 
     assertThat(c.getTacacsServers(), containsInAnyOrder("192.0.2.1", "192.0.2.2"));
+    assertThat(c.getTacacsSourceInterface(), equalTo("mgmt0"));
   }
 
   @Test
@@ -674,6 +675,7 @@ public final class CiscoNxosGrammarTest {
     CiscoNxosConfiguration vc = parseVendorConfig(hostname);
 
     assertThat(vc.getTacacsServers(), hasKeys("192.0.2.1", "192.0.2.2"));
+    assertThat(vc.getTacacsSourceInterface(), equalTo("mgmt0"));
   }
 
   @Test
@@ -3451,6 +3453,7 @@ public final class CiscoNxosGrammarTest {
     Configuration c = parseConfig(hostname);
 
     assertThat(c.getLoggingServers(), containsInAnyOrder("192.0.2.1", "192.0.2.2"));
+    assertThat(c.getLoggingSourceInterface(), equalTo("loopback0"));
   }
 
   @Test
@@ -3459,6 +3462,7 @@ public final class CiscoNxosGrammarTest {
     CiscoNxosConfiguration vc = parseVendorConfig(hostname);
 
     assertThat(vc.getLoggingServers(), hasKeys("192.0.2.1", "192.0.2.2"));
+    assertThat(vc.getLoggingSourceInterface(), equalTo("loopback0"));
   }
 
   @Test
@@ -3466,6 +3470,7 @@ public final class CiscoNxosGrammarTest {
     Configuration c = parseConfig("nxos_ntp");
 
     assertThat(c.getNtpServers(), containsInAnyOrder("192.0.2.1", "192.0.2.2"));
+    assertThat(c.getNtpSourceInterface(), equalTo("mgmt0"));
   }
 
   @Test
@@ -3481,6 +3486,8 @@ public final class CiscoNxosGrammarTest {
       NtpServer ntpServer = vc.getNtpServers().get("192.0.2.2");
       assertThat(ntpServer.getUseVrf(), equalTo("management"));
     }
+
+    assertThat(vc.getNtpSourceInterface(), equalTo("mgmt0"));
   }
 
   @Test
@@ -5462,6 +5469,7 @@ public final class CiscoNxosGrammarTest {
     Configuration c = parseConfig(hostname);
 
     assertThat(c.getSnmpTrapServers(), containsInAnyOrder("192.0.2.1", "192.0.2.2"));
+    assertThat(c.getSnmpSourceInterface(), equalTo("mgmt0"));
   }
 
   @Test
@@ -5470,6 +5478,7 @@ public final class CiscoNxosGrammarTest {
     CiscoNxosConfiguration vc = parseVendorConfig(hostname);
 
     assertThat(vc.getSnmpServers(), hasKeys("192.0.2.1", "192.0.2.2"));
+    assertThat(vc.getSnmpSourceInterface(), equalTo("mgmt0"));
   }
 
   @Test
