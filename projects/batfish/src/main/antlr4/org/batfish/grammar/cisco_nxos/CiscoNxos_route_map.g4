@@ -56,6 +56,7 @@ rm_match
     | rmm_metric
     | rmm_source_protocol
     | rmm_tag
+    | rmm_vlan
   )
 ;
 
@@ -141,6 +142,11 @@ protocol_instance_name
 rmm_tag
 :
   TAG tag = uint32 NEWLINE
+;
+
+rmm_vlan
+:
+  VLAN range = vlan_id_range NEWLINE
 ;
 
 rm_set

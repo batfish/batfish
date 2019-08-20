@@ -282,6 +282,7 @@ import org.batfish.representation.cisco_nxos.RouteMapMatchIpv6AddressPrefixList;
 import org.batfish.representation.cisco_nxos.RouteMapMatchMetric;
 import org.batfish.representation.cisco_nxos.RouteMapMatchSourceProtocol;
 import org.batfish.representation.cisco_nxos.RouteMapMatchTag;
+import org.batfish.representation.cisco_nxos.RouteMapMatchVlan;
 import org.batfish.representation.cisco_nxos.RouteMapMetricType;
 import org.batfish.representation.cisco_nxos.RouteMapSetAsPathPrependLastAs;
 import org.batfish.representation.cisco_nxos.RouteMapSetAsPathPrependLiteralAs;
@@ -4678,6 +4679,7 @@ public final class CiscoNxosGrammarTest {
             "match_source_protocol_connected",
             "match_source_protocol_static",
             "match_tag",
+            "match_vlan",
             "set_as_path_prepend_last_as",
             "set_as_path_prepend_literal_as",
             "set_community",
@@ -4807,6 +4809,38 @@ public final class CiscoNxosGrammarTest {
       Bgpv4Route route = base.toBuilder().setTag(1L).build();
       assertRoutingPolicyPermitsRoute(rp, route);
     }
+    {
+      RoutingPolicy rp = c.getRoutingPolicies().get("match_vlan");
+      assertRoutingPolicyDeniesRoute(rp, base);
+      {
+        Bgpv4Route routeConnected =
+            base.toBuilder().setNetwork(Prefix.parse("10.0.1.1/24")).build();
+        assertRoutingPolicyPermitsRoute(rp, routeConnected);
+        Bgpv4Route routeDirect = base.toBuilder().setNetwork(Prefix.parse("10.0.1.1/32")).build();
+        assertRoutingPolicyPermitsRoute(rp, routeDirect);
+      }
+      {
+        Bgpv4Route routeConnected =
+            base.toBuilder().setNetwork(Prefix.parse("10.0.2.1/24")).build();
+        assertRoutingPolicyDeniesRoute(rp, routeConnected);
+        Bgpv4Route routeDirect = base.toBuilder().setNetwork(Prefix.parse("10.0.2.1/32")).build();
+        assertRoutingPolicyDeniesRoute(rp, routeDirect);
+      }
+      {
+        Bgpv4Route routeConnected =
+            base.toBuilder().setNetwork(Prefix.parse("10.0.3.1/24")).build();
+        assertRoutingPolicyPermitsRoute(rp, routeConnected);
+        Bgpv4Route routeDirect = base.toBuilder().setNetwork(Prefix.parse("10.0.3.1/32")).build();
+        assertRoutingPolicyPermitsRoute(rp, routeDirect);
+      }
+      {
+        Bgpv4Route routeConnected =
+            base.toBuilder().setNetwork(Prefix.parse("10.0.4.1/24")).build();
+        assertRoutingPolicyPermitsRoute(rp, routeConnected);
+        Bgpv4Route routeDirect = base.toBuilder().setNetwork(Prefix.parse("10.0.4.1/32")).build();
+        assertRoutingPolicyPermitsRoute(rp, routeDirect);
+      }
+    }
 
     // sets
     {
@@ -4929,6 +4963,7 @@ public final class CiscoNxosGrammarTest {
             "match_source_protocol_connected",
             "match_source_protocol_static",
             "match_tag",
+            "match_vlan",
             "set_as_path_prepend_last_as",
             "set_as_path_prepend_literal_as",
             "set_community",
@@ -5084,6 +5119,16 @@ public final class CiscoNxosGrammarTest {
       RouteMapMatchTag match = entry.getMatchTag();
       assertThat(entry.getMatches().collect(onlyElement()), equalTo(match));
       assertThat(match.getTag(), equalTo(1L));
+    }
+    {
+      RouteMap rm = vc.getRouteMaps().get("match_vlan");
+      assertThat(rm.getEntries().keySet(), contains(10));
+      RouteMapEntry entry = getOnlyElement(rm.getEntries().values());
+      assertThat(entry.getAction(), equalTo(LineAction.PERMIT));
+      assertThat(entry.getSequence(), equalTo(10));
+      RouteMapMatchVlan match = entry.getMatchVlan();
+      assertThat(entry.getMatches().collect(onlyElement()), equalTo(match));
+      assertThat(match.getVlans(), equalTo(IntegerSpace.builder().including(1, 3, 4).build()));
     }
     {
       RouteMap rm = vc.getRouteMaps().get("set_as_path_prepend_last_as");
