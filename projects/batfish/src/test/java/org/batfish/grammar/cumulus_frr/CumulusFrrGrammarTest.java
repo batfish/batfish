@@ -275,6 +275,7 @@ public class CumulusFrrGrammarTest {
   public void testBgpAddressFamilyNeighborNextHopSelf() {
     parseLines(
         "router bgp 1",
+        "neighbor 10.0.0.1 description a",
         "address-family ipv4 unicast",
         "neighbor 10.0.0.1 next-hop-self",
         "exit-address-family");
@@ -282,9 +283,9 @@ public class CumulusFrrGrammarTest {
         CONFIG
             .getBgpProcess()
             .getDefaultVrf()
-            .getIpv4Unicast()
-            .getNeighborAddressFamilyConfigurations()
+            .getNeighbors()
             .get("10.0.0.1")
+            .getIpv4UnicastAddressFamily()
             .getNextHopSelf());
   }
 
@@ -437,8 +438,9 @@ public class CumulusFrrGrammarTest {
 
   @Test
   public void testCumulusFrrVrf() {
-    parse("vrf NAME\n exit-vrf");
-    assertThat(CONFIG.getVrfs().keySet(), equalTo(ImmutableSet.of("NAME")));
+    // vrfs are created in interfaces file, but frr also contains definition
+    CONFIG.getVrfs().put("NAME", new Vrf("NAME"));
+    parse("vrf NAME\n exit-vrf\n");
     assertThat(
         getDefinedStructureInfo(CumulusStructureType.VRF, "NAME").getDefinitionLines(),
         contains(1));
@@ -446,14 +448,16 @@ public class CumulusFrrGrammarTest {
 
   @Test
   public void testCumulusFrrVrfVni() {
-    parse("vrf NAME\n vni 170000\n exit-vrf");
+    CONFIG.getVrfs().put("NAME", new Vrf("NAME"));
+    parse("vrf NAME\n vni 170000\n exit-vrf\n");
     Vrf vrf = CONFIG.getVrfs().get("NAME");
     assertThat(vrf.getVni(), equalTo(170000));
   }
 
   @Test
   public void testCumulusFrrVrfIpRoutes() {
-    parse("vrf NAME\n ip route 1.0.0.0/8 10.0.2.1\n ip route 0.0.0.0/0 10.0.0.1\n exit-vrf");
+    CONFIG.getVrfs().put("NAME", new Vrf("NAME"));
+    parse("vrf NAME\n ip route 1.0.0.0/8 10.0.2.1\n ip route 0.0.0.0/0 10.0.0.1\n exit-vrf\n");
     assertThat(
         CONFIG.getVrfs().get("NAME").getStaticRoutes(),
         equalTo(
@@ -656,6 +660,7 @@ public class CumulusFrrGrammarTest {
 
   @Test
   public void testCumulusFrrVersion() {
+    parse("frr version\n");
     parse("frr version sV4@%)!@#$%^&**()_+|\n");
   }
 
@@ -668,5 +673,21 @@ public class CumulusFrrGrammarTest {
   @Test
   public void testCumulusFrrNeightborPassword() {
     parse("router bgp 10000\nneighbor N password sV4@%)!@#$%^&**()_+|\n");
+  }
+
+  @Test
+  public void testBgpNeighborEbgpMultihopPeerGroup() {
+    parseLines("router bgp 10000", "neighbor N peer-group", "neighbor N ebgp-multihop 3");
+    assertThat(
+        CONFIG.getBgpProcess().getDefaultVrf().getNeighbors().get("N").getEbgpMultihop(),
+        equalTo(3L));
+  }
+
+  @Test
+  public void testBgpNeighborEbgpMultihopPeer() {
+    parseLines("router bgp 10000", "neighbor 10.0.0.1 ebgp-multihop 3");
+    assertThat(
+        CONFIG.getBgpProcess().getDefaultVrf().getNeighbors().get("10.0.0.1").getEbgpMultihop(),
+        equalTo(3L));
   }
 }

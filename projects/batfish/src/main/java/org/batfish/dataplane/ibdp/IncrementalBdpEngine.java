@@ -403,10 +403,20 @@ class IncrementalBdpEngine {
             .buildSpan(iterationLabel + ": Init for new BGP iteration")
             .startActive()) {
       assert span != null;
-      nodes
-          .values()
-          .parallelStream()
-          .forEach(n -> n.getVirtualRouters().values().forEach(vr -> vr.bgpIteration(allNodes)));
+      nodes.values().stream()
+          .forEach(
+              n ->
+                  n.getVirtualRouters()
+                      .values()
+                      .forEach(
+                          vr -> {
+                            // Iteration for one VR
+                            vr.bgpIteration(allNodes);
+                            // Merge results into main RIB, for all VRs
+                            n.getVirtualRouters()
+                                .values()
+                                .forEach(VirtualRouter::mergeBgpRoutesToMainRib);
+                          }));
     }
     try (ActiveSpan span =
         GlobalTracer.get()

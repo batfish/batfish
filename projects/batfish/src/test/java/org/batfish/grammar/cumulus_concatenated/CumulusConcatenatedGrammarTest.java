@@ -31,12 +31,40 @@ import org.junit.rules.ExpectedException;
 import org.junit.rules.TemporaryFolder;
 
 public class CumulusConcatenatedGrammarTest {
+  private static final String INTERFACES_DELIMITER = "# This file describes the network interfaces";
+  private static final String PORTS_DELIMITER = "# ports.conf --";
+  private static final String FRR_DELIMITER = "frr version 4.0+cl3u8";
+
   private static final String TESTCONFIGS_PREFIX =
       "org/batfish/grammar/cumulus_concatenated/testconfigs/";
 
   @Rule public TemporaryFolder _folder = new TemporaryFolder();
 
   @Rule public ExpectedException _thrown = ExpectedException.none();
+
+  private static CumulusNcluConfiguration parseFromTextWithSettings(String src, Settings settings) {
+    CumulusConcatenatedCombinedParser parser = new CumulusConcatenatedCombinedParser(src, settings);
+    ParserRuleContext tree =
+        Batfish.parse(parser, new BatfishLogger(BatfishLogger.LEVELSTR_FATAL, false), settings);
+    CumulusConcatenatedControlPlaneExtractor extractor =
+        new CumulusConcatenatedControlPlaneExtractor(
+            src, new Warnings(), "", settings, null, false);
+    extractor.processParseTree(tree);
+    return (CumulusNcluConfiguration) extractor.getVendorConfiguration();
+  }
+
+  private static CumulusNcluConfiguration parse(String src) {
+    Settings settings = new Settings();
+    settings.setDisableUnrecognized(true);
+    settings.setThrowOnLexerError(true);
+    settings.setThrowOnParserError(true);
+
+    return parseFromTextWithSettings(src, settings);
+  }
+
+  private static CumulusNcluConfiguration parseLines(String... lines) {
+    return parse(String.join("\n", lines) + "\n");
+  }
 
   private static CumulusNcluConfiguration parseVendorConfig(String filename) {
     Settings settings = new Settings();
@@ -54,10 +82,9 @@ public class CumulusConcatenatedGrammarTest {
     ParserRuleContext tree =
         Batfish.parse(parser, new BatfishLogger(BatfishLogger.LEVELSTR_FATAL, false), settings);
     extractor.processParseTree(tree);
-    CumulusNcluConfiguration vendorConfiguration =
-        (CumulusNcluConfiguration) extractor.getVendorConfiguration();
-    vendorConfiguration.setFilename(TESTCONFIGS_PREFIX + filename);
-    return vendorConfiguration;
+    CumulusNcluConfiguration config = (CumulusNcluConfiguration) extractor.getVendorConfiguration();
+    config.setFilename(TESTCONFIGS_PREFIX + filename);
+    return config;
   }
 
   private SortedMap<String, Configuration> parseTextConfigs(String... configurationNames)
@@ -120,5 +147,23 @@ public class CumulusConcatenatedGrammarTest {
     assertThat(
         viConfig.getRouteFilterLists(),
         hasKey(computeMatchSuppressedSummaryOnlyPolicyName(vrf.getName())));
+  }
+
+  @Test
+  public void testVrf() {
+    CumulusNcluConfiguration c =
+        parseLines(
+            "hostname",
+            INTERFACES_DELIMITER,
+            // declare vrf1
+            "iface vrf1",
+            "  vrf-table auto",
+            PORTS_DELIMITER,
+            FRR_DELIMITER,
+            // add definition
+            "vrf vrf1",
+            "  vni 1000",
+            "exit-vrf");
+    assertThat(c.getVrfs().get("vrf1").getVni(), equalTo(1000));
   }
 }

@@ -440,7 +440,8 @@ public final class OspfProcess implements Serializable {
         .flatMap(a -> a.getInterfaces().stream())
         .map(interfaceName -> c.getAllInterfaces().get(interfaceName))
         .filter(Interface::getActive)
-        .forEach(i -> i.setOspfCost(computeInterfaceCost(i)));
+        .filter(i -> i.getOspfSettings() != null)
+        .forEach(i -> i.getOspfSettings().setCost(computeInterfaceCost(i)));
   }
 
   /**

@@ -61,6 +61,7 @@ import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbn_ipContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbn_nameContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbn_peer_group_declContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbnp_descriptionContext;
+import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbnp_ebgp_multihopContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbnp_peer_groupContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbnp_remote_asContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sv_routeContext;
@@ -71,6 +72,7 @@ import org.batfish.representation.cumulus.BgpIpv4UnicastAddressFamily;
 import org.batfish.representation.cumulus.BgpL2VpnEvpnIpv4Unicast;
 import org.batfish.representation.cumulus.BgpL2vpnEvpnAddressFamily;
 import org.batfish.representation.cumulus.BgpNeighbor;
+import org.batfish.representation.cumulus.BgpNeighborIpv4UnicastAddressFamily;
 import org.batfish.representation.cumulus.BgpNeighborL2vpnEvpnAddressFamily;
 import org.batfish.representation.cumulus.BgpNetwork;
 import org.batfish.representation.cumulus.BgpPeerGroupNeighbor;
@@ -78,7 +80,6 @@ import org.batfish.representation.cumulus.BgpProcess;
 import org.batfish.representation.cumulus.BgpRedistributionPolicy;
 import org.batfish.representation.cumulus.BgpVrf;
 import org.batfish.representation.cumulus.BgpVrfAddressFamilyAggregateNetworkConfiguration;
-import org.batfish.representation.cumulus.BgpVrfNeighborAddressFamilyConfiguration;
 import org.batfish.representation.cumulus.CumulusNcluConfiguration;
 import org.batfish.representation.cumulus.CumulusRoutingProtocol;
 import org.batfish.representation.cumulus.CumulusStructureType;
@@ -107,8 +108,7 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
   private @Nullable BgpVrf _currentBgpVrf;
   private @Nullable BgpNeighbor _currentBgpNeighbor;
   private @Nullable IpPrefixList _currentIpPrefixList;
-  private @Nullable BgpVrfNeighborAddressFamilyConfiguration
-      _currentNeighborAddressFamilyConfiguration;
+  private @Nullable BgpNeighborIpv4UnicastAddressFamily _currentBgpNeighborIpv4UnicastAddressFamily;
 
   public CumulusFrrConfigurationBuilder(
       CumulusNcluConfiguration configuration, CumulusFrrCombinedParser parser, Warnings w) {
@@ -271,16 +271,25 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
       throw new BatfishException("neightbor name or address");
     }
 
-    _currentNeighborAddressFamilyConfiguration =
-        _currentBgpVrf
-            .getIpv4Unicast()
-            .getNeighborAddressFamilyConfigurations()
-            .computeIfAbsent(name, k -> new BgpVrfNeighborAddressFamilyConfiguration());
+    BgpNeighbor bgpNeighbor = _currentBgpVrf.getNeighbors().get(name);
+    if (bgpNeighbor == null) {
+      _w.addWarning(
+          ctx,
+          ctx.getStart().getText(),
+          _parser,
+          String.format("neighbor %s does not exist", name));
+    } else {
+      _currentBgpNeighborIpv4UnicastAddressFamily = bgpNeighbor.getIpv4UnicastAddressFamily();
+      if (_currentBgpNeighborIpv4UnicastAddressFamily == null) {
+        _currentBgpNeighborIpv4UnicastAddressFamily = new BgpNeighborIpv4UnicastAddressFamily();
+        bgpNeighbor.setIpv4UnicastAddressFamily(_currentBgpNeighborIpv4UnicastAddressFamily);
+      }
+    }
   }
 
   @Override
   public void exitSbafi_neighbor(Sbafi_neighborContext ctx) {
-    _currentNeighborAddressFamilyConfiguration = null;
+    _currentBgpNeighborIpv4UnicastAddressFamily = null;
   }
 
   @Override
@@ -293,7 +302,10 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
 
   @Override
   public void exitSbafin_next_hop_self(Sbafin_next_hop_selfContext ctx) {
-    _currentNeighborAddressFamilyConfiguration.setNextHopSelf(true);
+    if (_currentBgpNeighborIpv4UnicastAddressFamily == null) {
+      return;
+    }
+    _currentBgpNeighborIpv4UnicastAddressFamily.setNextHopSelf(true);
   }
 
   @Override
@@ -420,10 +432,17 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
   }
 
   @Override
+  public void exitSbnp_ebgp_multihop(Sbnp_ebgp_multihopContext ctx) {
+    long num = parseLong(ctx.num.getText());
+    _currentBgpNeighbor.setEbgpMultihop(num);
+  }
+
+  @Override
   public void enterS_vrf(S_vrfContext ctx) {
     String name = ctx.name.getText();
-    _currentVrf = new Vrf(name);
-    _c.getVrfs().put(name, _currentVrf);
+
+    // VRFs are declared in /etc/network/interfaces file, but this is part of the definition
+    _currentVrf = _c.getVrfs().get(name);
     _c.defineStructure(CumulusStructureType.VRF, name, ctx.getStart().getLine());
   }
 

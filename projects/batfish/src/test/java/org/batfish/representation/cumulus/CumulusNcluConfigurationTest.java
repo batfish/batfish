@@ -13,10 +13,14 @@ import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
 import com.google.common.collect.ImmutableList;
+import org.batfish.datamodel.BgpActivePeerConfig;
+import org.batfish.datamodel.BgpUnnumberedPeerConfig;
 import org.batfish.datamodel.CommunityList;
 import org.batfish.datamodel.CommunityListLine;
+import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
+import org.batfish.datamodel.InterfaceType;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.NetworkFactory;
@@ -26,6 +30,7 @@ import org.batfish.datamodel.RouteFilterList;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.bgp.community.StandardCommunity;
+import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.routing_policy.expr.LiteralCommunity;
 import org.batfish.datamodel.routing_policy.expr.SelfNextHop;
 import org.batfish.datamodel.routing_policy.statement.SetNextHop;
@@ -173,12 +178,7 @@ public class CumulusNcluConfigurationTest {
       // next-hop-self
       bgpNeighbor.setRemoteAs(10000L);
       bgpVrf.setAutonomousSystem(10000L);
-      BgpIpv4UnicastAddressFamily ipv4Unicast = new BgpIpv4UnicastAddressFamily();
-      ipv4Unicast
-          .getNeighborAddressFamilyConfigurations()
-          .put("10.0.0.1", new BgpVrfNeighborAddressFamilyConfiguration());
-      bgpVrf.setIpv4Unicast(ipv4Unicast);
-
+      bgpNeighbor.setIpv4UnicastAddressFamily(new BgpNeighborIpv4UnicastAddressFamily());
       SetNextHop setNextHop = getSetNextHop(bgpNeighbor, bgpVrf);
       assertNull(setNextHop);
     }
@@ -188,18 +188,9 @@ public class CumulusNcluConfigurationTest {
       // next-hop-self
       bgpNeighbor.setRemoteAs(10000L);
       bgpVrf.setAutonomousSystem(10000L);
-      BgpIpv4UnicastAddressFamily ipv4Unicast = new BgpIpv4UnicastAddressFamily();
-      ipv4Unicast
-          .getNeighborAddressFamilyConfigurations()
-          .computeIfAbsent(
-              "10.0.0.1",
-              k -> {
-                BgpVrfNeighborAddressFamilyConfiguration neighborConfig =
-                    new BgpVrfNeighborAddressFamilyConfiguration();
-                neighborConfig.setNextHopSelf(true);
-                return neighborConfig;
-              });
-      bgpVrf.setIpv4Unicast(ipv4Unicast);
+      BgpNeighborIpv4UnicastAddressFamily ipv4af = new BgpNeighborIpv4UnicastAddressFamily();
+      ipv4af.setNextHopSelf(true);
+      bgpNeighbor.setIpv4UnicastAddressFamily(ipv4af);
 
       SetNextHop setNextHop = getSetNextHop(bgpNeighbor, bgpVrf);
       assertThat(setNextHop, equalTo(new SetNextHop(SelfNextHop.getInstance(), false)));
@@ -262,5 +253,83 @@ public class CumulusNcluConfigurationTest {
           viConfig.getRouteFilterLists(),
           not(hasKey(computeMatchSuppressedSummaryOnlyPolicyName(viVrf.getName()))));
     }
+  }
+
+  @Test
+  public void testGenerateBgpActivePeerConfig_SetEbgpMultiHop() {
+
+    // set VI configuration
+    Configuration configuration = new Configuration("Host", ConfigurationFormat.CUMULUS_NCLU);
+    configuration
+        .getAllInterfaces()
+        .put(
+            "i1",
+            org.batfish.datamodel.Interface.builder()
+                .setName("i1")
+                .setType(InterfaceType.PHYSICAL)
+                .setOwner(configuration)
+                .setAddress(ConcreteInterfaceAddress.parse("10.0.0.1/24"))
+                .build());
+
+    // set bgp neighbor
+    BgpIpNeighbor neighbor = new BgpIpNeighbor("BgpNeighbor");
+    neighbor.setRemoteAs(10000L);
+    neighbor.setRemoteAsType(RemoteAsType.INTERNAL);
+    neighbor.setPeerIp(Ip.parse("10.0.0.2"));
+    neighbor.setEbgpMultihop(3L);
+
+    // set bgp process
+    org.batfish.datamodel.BgpProcess newProc =
+        new org.batfish.datamodel.BgpProcess(
+            Ip.parse("10.0.0.1"), ConfigurationFormat.CUMULUS_NCLU);
+
+    CumulusNcluConfiguration ncluConfiguration = new CumulusNcluConfiguration();
+    ncluConfiguration.generateBgpActivePeerConfig(
+        neighbor,
+        10000L,
+        new BgpVrf("Vrf"),
+        newProc,
+        new RoutingPolicy("Routing", configuration),
+        configuration);
+
+    BgpActivePeerConfig peerConfig = newProc.getActiveNeighbors().get(Prefix.parse("10.0.0.2/32"));
+
+    assertTrue(peerConfig.getEbgpMultihop());
+  }
+
+  @Test
+  public void testGenerateBgpUnnumberedPeerConfig_SetEbgpMultiHop() {
+
+    // set VI configuration
+    Configuration configuration = new Configuration("Host", ConfigurationFormat.CUMULUS_NCLU);
+    configuration
+        .getAllInterfaces()
+        .put(
+            "i1",
+            org.batfish.datamodel.Interface.builder()
+                .setName("i1")
+                .setType(InterfaceType.PHYSICAL)
+                .setOwner(configuration)
+                .setAddress(ConcreteInterfaceAddress.parse("10.0.0.1/24"))
+                .build());
+
+    // set bgp neighbor
+    BgpInterfaceNeighbor neighbor = new BgpInterfaceNeighbor("BgpNeighbor");
+    neighbor.setRemoteAs(10000L);
+    neighbor.setRemoteAsType(RemoteAsType.INTERNAL);
+    neighbor.setEbgpMultihop(3L);
+
+    // set bgp process
+    org.batfish.datamodel.BgpProcess newProc =
+        new org.batfish.datamodel.BgpProcess(
+            Ip.parse("10.0.0.1"), ConfigurationFormat.CUMULUS_NCLU);
+
+    CumulusNcluConfiguration ncluConfiguration = new CumulusNcluConfiguration();
+    ncluConfiguration.generateBgpUnnumberedPeerConfig(
+        neighbor, 10000L, new BgpVrf("Vrf"), newProc, new RoutingPolicy("Routing", configuration));
+
+    BgpUnnumberedPeerConfig peerConfig = newProc.getInterfaceNeighbors().get("BgpNeighbor");
+
+    assertTrue(peerConfig.getEbgpMultihop());
   }
 }

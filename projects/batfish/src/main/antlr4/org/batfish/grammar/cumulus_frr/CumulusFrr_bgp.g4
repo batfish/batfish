@@ -128,6 +128,7 @@ sbn_peer_group_decl
 sbn_property
 :
   sbnp_description
+| sbnp_ebgp_multihop
 | sbnp_peer_group
 | sbnp_bfd
 | sbnp_password
@@ -142,6 +143,11 @@ sbnp_bfd
 sbnp_description
 :
   DESCRIPTION REMARK_TEXT
+;
+
+sbnp_ebgp_multihop
+:
+  EBGP_MULTIHOP num = uint32
 ;
 
 sbnp_password

@@ -17,11 +17,13 @@ import static org.batfish.representation.cisco.CiscoConfiguration.computeBgpGene
 import static org.batfish.representation.cisco.CiscoConversions.generateGenerationPolicy;
 import static org.batfish.representation.cisco.CiscoConversions.suppressSummarizedPrefixes;
 import static org.batfish.representation.cisco_nxos.CiscoNxosInterfaceType.PORT_CHANNEL;
+import static org.batfish.representation.cisco_nxos.Conversions.getVrfForL3Vni;
 import static org.batfish.representation.cisco_nxos.Interface.BANDWIDTH_CONVERSION_FACTOR;
 import static org.batfish.representation.cisco_nxos.Interface.getDefaultBandwidth;
 import static org.batfish.representation.cisco_nxos.Interface.getDefaultSpeed;
 import static org.batfish.representation.cisco_nxos.OspfMaxMetricRouterLsa.DEFAULT_OSPF_MAX_METRIC;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Predicates;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.ImmutableList;
@@ -29,6 +31,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
+import com.google.common.collect.ImmutableSortedMap.Builder;
 import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Multimap;
@@ -67,6 +70,7 @@ import org.batfish.datamodel.CommunityListLine;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
+import org.batfish.datamodel.ConnectedRouteMetadata;
 import org.batfish.datamodel.EmptyIpSpace;
 import org.batfish.datamodel.GeneratedRoute;
 import org.batfish.datamodel.HeaderSpace;
@@ -103,6 +107,7 @@ import org.batfish.datamodel.bgp.community.StandardCommunity;
 import org.batfish.datamodel.isis.IsisMetricType;
 import org.batfish.datamodel.ospf.NssaSettings;
 import org.batfish.datamodel.ospf.OspfAreaSummary;
+import org.batfish.datamodel.ospf.OspfInterfaceSettings;
 import org.batfish.datamodel.ospf.OspfMetricType;
 import org.batfish.datamodel.ospf.StubSettings;
 import org.batfish.datamodel.packet_policy.BoolExpr;
@@ -553,7 +558,7 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
 
     // Export RIP routes that should be redistributed.
     BgpRedistributionPolicy ripPolicy =
-        ipv4af == null ? null : ipv4af.getRedistributionPolicy(RoutingProtocol.RIP);
+        ipv4af == null ? null : ipv4af.getRedistributionPolicy(NxosRoutingProtocol.RIP);
     if (ripPolicy != null) {
       String routeMap = ripPolicy.getRouteMap();
       org.batfish.representation.cisco_nxos.RouteMap map = _routeMaps.get(routeMap);
@@ -571,7 +576,7 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
 
     // Export static routes that should be redistributed.
     BgpRedistributionPolicy staticPolicy =
-        ipv4af == null ? null : ipv4af.getRedistributionPolicy(RoutingProtocol.STATIC);
+        ipv4af == null ? null : ipv4af.getRedistributionPolicy(NxosRoutingProtocol.STATIC);
     if (staticPolicy != null) {
       String routeMap = staticPolicy.getRouteMap();
       RouteMap map = _routeMaps.get(routeMap);
@@ -588,7 +593,7 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
 
     // Export connected routes that should be redistributed.
     BgpRedistributionPolicy connectedPolicy =
-        ipv4af == null ? null : ipv4af.getRedistributionPolicy(RoutingProtocol.CONNECTED);
+        ipv4af == null ? null : ipv4af.getRedistributionPolicy(NxosRoutingProtocol.DIRECT);
     if (connectedPolicy != null) {
       String routeMap = connectedPolicy.getRouteMap();
       RouteMap map = _routeMaps.get(routeMap);
@@ -605,7 +610,7 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
 
     // Export OSPF routes that should be redistributed.
     BgpRedistributionPolicy ospfPolicy =
-        ipv4af == null ? null : ipv4af.getRedistributionPolicy(RoutingProtocol.OSPF);
+        ipv4af == null ? null : ipv4af.getRedistributionPolicy(NxosRoutingProtocol.OSPF);
     if (ospfPolicy != null) {
       String routeMap = ospfPolicy.getRouteMap();
       RouteMap map = _routeMaps.get(routeMap);
@@ -902,8 +907,7 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
   }
 
   private void convertRouteMaps() {
-    _routeMaps.forEach(
-        (name, routeMap) -> _c.getRoutingPolicies().put(name, toRoutingPolicy(routeMap)));
+    _routeMaps.values().forEach(this::convertRouteMap);
 
     // Find which route maps are used for PBR
     _c.getAllInterfaces().values().stream()
@@ -985,7 +989,45 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
             .setVni(nveVni.getVni())
             .setVlan(vlan)
             .build();
-    _c.getDefaultVrf().getVniSettings().put(vniSettings.getVni(), vniSettings);
+    if (nveVni.isAssociateVrf()) {
+      Vrf vsTenantVrfForL3Vni = getVrfForL3Vni(_vrfs, nveVni.getVni());
+      if (vsTenantVrfForL3Vni == null || _c.getVrfs().get(vsTenantVrfForL3Vni.getName()) == null) {
+        return;
+      }
+      _c.getVrfs()
+          .get(vsTenantVrfForL3Vni.getName())
+          .getVniSettings()
+          .put(vniSettings.getVni(), vniSettings);
+      return;
+    }
+    org.batfish.datamodel.Vrf viTenantVrfForL2Vni = getMemberVrfForVlan(vlan);
+    if (viTenantVrfForL2Vni == null) {
+      return;
+    }
+    viTenantVrfForL2Vni.getVniSettings().put(vniSettings.getVni(), vniSettings);
+  }
+
+  /**
+   * Gets the {@link org.batfish.datamodel.Vrf} which contains VLAN interface for {@code vlanNumber}
+   * as its member
+   *
+   * @param vlanNumber VLAN number
+   * @return {@link org.batfish.datamodel.Vrf} containing VLAN interface of {@code vlanNumber}
+   */
+  @Nullable
+  private org.batfish.datamodel.Vrf getMemberVrfForVlan(int vlanNumber) {
+    String vrfMemberForVlanIface =
+        Optional.ofNullable(_interfaces.get(String.format("Vlan%d", vlanNumber)))
+            .map(org.batfish.representation.cisco_nxos.Interface::getVrfMember)
+            .orElse(null);
+
+    // interface for this VLAN is not a member of any VRF
+    if (vrfMemberForVlanIface == null) {
+      return _c.getDefaultVrf();
+    }
+
+    // null if VRF member specified but is not valid
+    return _c.getVrfs().get(vrfMemberForVlanIface);
   }
 
   @Nonnull
@@ -1277,6 +1319,8 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
         CiscoNxosStructureUsage.OSPF_AREA_FILTER_LIST_IN,
         CiscoNxosStructureUsage.OSPF_AREA_FILTER_LIST_OUT);
     markConcreteStructure(
+        CiscoNxosStructureType.ROUTE_MAP_ENTRY, CiscoNxosStructureUsage.ROUTE_MAP_CONTINUE);
+    markConcreteStructure(
         CiscoNxosStructureType.ROUTER_EIGRP,
         CiscoNxosStructureUsage.BGP_REDISTRIBUTE_EIGRP_SOURCE_TAG,
         CiscoNxosStructureUsage.ROUTER_EIGRP_SELF_REFERENCE);
@@ -1401,13 +1445,30 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
     newIfaceBuilder.setActive(!iface.getShutdownEffective(_systemDefaultSwitchportShutdown));
 
     if (!iface.getIpAddressDhcp()) {
-      if (iface.getAddress() != null) {
-        newIfaceBuilder.setAddress(iface.getAddress().getAddress());
+      Builder<ConcreteInterfaceAddress, ConnectedRouteMetadata> addressMetadata =
+          ImmutableSortedMap.naturalOrder();
+      InterfaceAddressWithAttributes addrWithAttr = iface.getAddress();
+      if (addrWithAttr != null) {
+        newIfaceBuilder.setAddress(addrWithAttr.getAddress());
+        if (addrWithAttr.getAddress() instanceof ConcreteInterfaceAddress) {
+          // convert any connected route metadata
+          addressMetadata.put(
+              (ConcreteInterfaceAddress) addrWithAttr.getAddress(),
+              ConnectedRouteMetadata.builder().setTag(addrWithAttr.getTag()).build());
+        }
       }
       newIfaceBuilder.setSecondaryAddresses(
           iface.getSecondaryAddresses().stream()
               .map(InterfaceAddressWithAttributes::getAddress)
               .collect(ImmutableSet.toImmutableSet()));
+      iface.getSecondaryAddresses().stream()
+          .filter(addr -> addr.getAddress() instanceof ConcreteInterfaceAddress)
+          .forEach(
+              addr ->
+                  addressMetadata.put(
+                      (ConcreteInterfaceAddress) addr.getAddress(),
+                      ConnectedRouteMetadata.builder().setTag(addr.getTag()).build()));
+      newIfaceBuilder.setAddressMetadata(addressMetadata.build());
     }
     // TODO: handle DHCP
 
@@ -2073,16 +2134,19 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
       boolean passiveInterfaceDefault,
       OspfInterface ospf) {
     org.batfish.datamodel.Interface newIface = _c.getAllInterfaces().get(ifaceName);
-    newIface.setOspfCost(ospf.getCost());
-    newIface.setOspfEnabled(true);
-    newIface.setOspfAreaName(areaId);
-    newIface.setOspfProcess(processName);
-    newIface.setOspfPassive(
+    OspfInterfaceSettings.Builder ospfSettings = OspfInterfaceSettings.builder();
+    ospfSettings.setCost(ospf.getCost());
+    ospfSettings.setEnabled(true);
+    ospfSettings.setAreaName(areaId);
+    ospfSettings.setProcess(processName);
+    ospfSettings.setPassive(
         ospf.getPassive() != null
             ? ospf.getPassive()
             : passiveInterfaceDefault || newIface.getName().startsWith("loopback"));
-    newIface.setOspfNetworkType(toOspfNetworkType(ospf.getNetwork()));
+    ospfSettings.setNetworkType(toOspfNetworkType(ospf.getNetwork()));
     // TODO: update data model to support explicit hello and dead intervals
+
+    newIface.setOspfSettings(ospfSettings.build());
   }
 
   private @Nonnull NssaSettings toNssaSettings(OspfAreaNssa ospfAreaNssa) {
@@ -2131,21 +2195,96 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
     return new AsPathAccessListLine(line.getAction(), toJavaRegex(line.getRegex()));
   }
 
-  private @Nonnull RoutingPolicy toRoutingPolicy(RouteMap routeMap) {
-    // TODO: support continue entries
-    ImmutableList.Builder<Statement> statements = ImmutableList.builder();
-    routeMap.getEntries().values().stream().map(this::toStatement).forEach(statements::add);
-    statements.add(ROUTE_MAP_DENY_STATEMENT);
-    // TODO: clean up setting of owner
-    return RoutingPolicy.builder()
-        .setName(routeMap.getName())
+  private void convertRouteMap(RouteMap routeMap) {
+    /*
+     * High-level overview:
+     * - Group route-map entries into disjoint intervals, where each entry that is the target of a
+     *   continue statement is the start of an interval.
+     * - Generate a RoutingPolicy for each interval.
+     * - Convert each entry into an If statement:
+     *   - True branch of an entry with a continue statement calls the RoutingPolicy for the
+     *     interval started by its target.
+     *   - False branch of an entry at the end of an interval calls the RoutingPolicy for the next
+     *     interval.
+     */
+    String routeMapName = routeMap.getName();
+
+    // sequence -> next sequence if no match, or null if last sequence
+    ImmutableMap.Builder<Integer, Integer> noMatchNextBySeqBuilder = ImmutableMap.builder();
+    RouteMapEntry lastEntry = null;
+    for (RouteMapEntry currentEntry : routeMap.getEntries().values()) {
+      if (lastEntry != null) {
+        int lastSequence = lastEntry.getSequence();
+        noMatchNextBySeqBuilder.put(lastSequence, currentEntry.getSequence());
+      }
+      lastEntry = currentEntry;
+    }
+
+    // sequences that are valid targets of a continue statement
+    Set<Integer> continueTargets =
+        routeMap.getEntries().values().stream()
+            .map(RouteMapEntry::getContinue)
+            .filter(Objects::nonNull)
+            .filter(routeMap.getEntries().keySet()::contains)
+            .collect(ImmutableSet.toImmutableSet());
+
+    // sequence -> next sequence if no match, or null if last sequence
+    Map<Integer, Integer> noMatchNextBySeq = noMatchNextBySeqBuilder.build();
+
+    /*
+     * Initially:
+     * - set the name of the generated routing policy for the route-map
+     * - initialize the statement queue
+     * For each entry in the route-map:
+     * - If the current entry is the start of a new interval:
+     *   - Build the RoutingPolicy for the previous interval.
+     *   - Set the name of the new generated routing policy.
+     *   - Clear the statement queue.
+     * - After all entries have been processed:
+     *   - Build the RoutingPolicy for the final interval.
+     *     - If there were no continue statements, the final interval is the single policy for the
+     *       whole route-map.
+     */
+    String currentRoutingPolicyName = routeMap.getName();
+    ImmutableList.Builder<Statement> currentRoutingPolicyStatements = ImmutableList.builder();
+    for (RouteMapEntry currentEntry : routeMap.getEntries().values()) {
+      int currentSequence = currentEntry.getSequence();
+      if (continueTargets.contains(currentSequence)) {
+        // finalize the routing policy consisting of queued statements up to this point
+        RoutingPolicy.builder()
+            .setName(currentRoutingPolicyName)
+            .setOwner(_c)
+            .setStatements(currentRoutingPolicyStatements.build())
+            .build();
+        // reset statement queue
+        currentRoutingPolicyStatements = ImmutableList.builder();
+        // generate name for policy that will contain subsequent statements
+        currentRoutingPolicyName = computeRoutingPolicyName(routeMapName, currentSequence);
+      } // or else undefined reference
+      currentRoutingPolicyStatements.add(
+          toStatement(routeMapName, currentEntry, noMatchNextBySeq, continueTargets));
+    }
+    // finalize last routing policy
+    currentRoutingPolicyStatements.add(ROUTE_MAP_DENY_STATEMENT);
+    RoutingPolicy.builder()
+        .setName(currentRoutingPolicyName)
         .setOwner(_c)
-        .setStatements(statements.build())
+        .setStatements(currentRoutingPolicyStatements.build())
         .build();
+  }
+
+  public static @Nonnull String computeRouteMapEntryName(String routeMapName, int sequence) {
+    return String.format("%s %d", routeMapName, sequence);
+  }
+
+  @VisibleForTesting
+  public static @Nonnull String computeRoutingPolicyName(String routeMapName, int sequence) {
+    return String.format("~%s~SEQ:%d~", routeMapName, sequence);
   }
 
   @Nonnull
   private PacketPolicy toPacketPolicy(RouteMap routeMap) {
+    // TODO: handle continue statements
     return new PacketPolicy(
         routeMap.getName(),
         routeMap.getEntries().values().stream()
@@ -2155,7 +2294,11 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
         new Return(new FibLookup(IngressInterfaceVrf.instance())));
   }
 
-  private @Nonnull Statement toStatement(RouteMapEntry entry) {
+  private @Nonnull Statement toStatement(
+      String routeMapName,
+      RouteMapEntry entry,
+      Map<Integer, Integer> noMatchNextBySeq,
+      Set<Integer> continueTargets) {
     ImmutableList.Builder<Statement> trueStatements = ImmutableList.builder();
     ImmutableList.Builder<BooleanExpr> conjuncts = ImmutableList.builder();
 
@@ -2165,20 +2308,42 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
     // sets
     entry.getSets().flatMap(this::toStatements).forEach(trueStatements::add);
 
-    // final action if matched
+    Integer continueTarget = entry.getContinue();
     LineAction action = entry.getAction();
-    if (action == LineAction.PERMIT) {
-      trueStatements.add(ROUTE_MAP_PERMIT_STATEMENT);
+    Statement finalTrueStatement;
+
+    // final action if matched
+    if (continueTarget != null) {
+      if (continueTargets.contains(continueTarget)) {
+        finalTrueStatement =
+            new CallStatement(computeRoutingPolicyName(routeMapName, continueTarget));
+      } else {
+        // invalid continue target, so just deny
+        // TODO: verify actual behavior
+        finalTrueStatement = ROUTE_MAP_DENY_STATEMENT;
+      }
+    } else if (action == LineAction.PERMIT) {
+      finalTrueStatement = ROUTE_MAP_PERMIT_STATEMENT;
     } else {
       assert action == LineAction.DENY;
-      trueStatements.add(ROUTE_MAP_DENY_STATEMENT);
+      finalTrueStatement = ROUTE_MAP_DENY_STATEMENT;
     }
-    return new If(new Conjunction(conjuncts.build()), trueStatements.build(), ImmutableList.of());
+    trueStatements.add(finalTrueStatement);
+
+    // final action if not matched
+    Integer noMatchNext = noMatchNextBySeq.get(entry.getSequence());
+    List<Statement> noMatchStatements =
+        noMatchNext != null && continueTargets.contains(noMatchNext)
+            ? ImmutableList.of(
+                new CallStatement(computeRoutingPolicyName(routeMapName, noMatchNext)))
+            : ImmutableList.of();
+    return new If(new Conjunction(conjuncts.build()), trueStatements.build(), noMatchStatements);
   }
 
   @Nonnull
   private org.batfish.datamodel.packet_policy.Statement toPacketPolicyStatement(
       RouteMapEntry entry) {
+    // TODO: handle continue statement
     RouteMapMatchVisitor<BoolExpr> matchToBoolExpr =
         new RouteMapMatchVisitor<BoolExpr>() {
 

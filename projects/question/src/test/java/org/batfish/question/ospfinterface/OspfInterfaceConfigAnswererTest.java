@@ -57,7 +57,7 @@ public class OspfInterfaceConfigAnswererTest {
             .setOwner(configuration)
             .setVrf(vrf)
             .build();
-    iface.setOspfHelloMultiplier(2);
+    iface.getOspfSettings().setHelloMultiplier(2);
     nf.ospfProcessBuilder()
         .setProcessId("ospf_1")
         .setAreas(ImmutableSortedMap.of(1L, ospfArea))
