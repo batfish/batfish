@@ -2239,8 +2239,7 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
 
     // final action if not matched
     Integer noMatchNext = noMatchNextBySeq.get(entry.getSequence());
-    List<Statement> noMatchStatements;
-    noMatchStatements =
+    List<Statement> noMatchStatements =
         noMatchNext != null && continueTargets.contains(noMatchNext)
             ? ImmutableList.of(
                 new CallStatement(generateRoutingPolicyName(routeMapName, noMatchNext)))
