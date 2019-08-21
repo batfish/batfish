@@ -13,7 +13,7 @@ s_vrf
     sv_vni
   | sv_route
   )*
-  EXIT_VRF
+  EXIT_VRF NEWLINE
 ;
 
 sv_route
