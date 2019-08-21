@@ -4886,7 +4886,9 @@ public final class CiscoNxosGrammarTest {
             "continue_from_permit_and_set_to_fall_off",
             computeRoutingPolicyName("continue_from_permit_and_set_to_fall_off", 20),
             "continue_from_set_to_match_on_set_field",
-            computeRoutingPolicyName("continue_from_set_to_match_on_set_field", 20)));
+            computeRoutingPolicyName("continue_from_set_to_match_on_set_field", 20),
+            "reach_continue_target_without_match",
+            computeRoutingPolicyName("reach_continue_target_without_match", 30)));
     Ip origNextHopIp = Ip.parse("192.0.2.254");
     Bgpv4Route base =
         Bgpv4Route.builder()
@@ -5152,6 +5154,11 @@ public final class CiscoNxosGrammarTest {
       assertRoutingPolicyDeniesRoute(rp, base);
       assertRoutingPolicyPermitsRoute(rp, base.toBuilder().setMetric(10L).build());
     }
+    {
+      RoutingPolicy rp = c.getRoutingPolicies().get("reach_continue_target_without_match");
+      // should permit everything
+      assertRoutingPolicyPermitsRoute(rp, base);
+    }
   }
 
   @Test
@@ -5202,7 +5209,8 @@ public final class CiscoNxosGrammarTest {
             "continue_from_deny_to_permit",
             "continue_from_permit_to_fall_off",
             "continue_from_permit_and_set_to_fall_off",
-            "continue_from_set_to_match_on_set_field"));
+            "continue_from_set_to_match_on_set_field",
+            "reach_continue_target_without_match"));
     {
       RouteMap rm = vc.getRouteMaps().get("empty_deny");
       assertThat(rm.getEntries().keySet(), contains(10));
@@ -5566,6 +5574,18 @@ public final class CiscoNxosGrammarTest {
       assertThat(rm.getEntries().get(20).getContinue(), nullValue());
       assertThat(rm.getEntries().get(20).getMatchMetric().getMetric(), equalTo(10L));
       assertThat(rm.getEntries().get(30).getAction(), equalTo(LineAction.DENY));
+      assertThat(rm.getEntries().get(30).getContinue(), nullValue());
+    }
+    {
+      RouteMap rm = vc.getRouteMaps().get("reach_continue_target_without_match");
+      assertThat(rm.getEntries().keySet(), contains(10, 20, 30));
+      assertThat(rm.getEntries().get(10).getAction(), equalTo(LineAction.PERMIT));
+      assertThat(rm.getEntries().get(10).getContinue(), equalTo(30));
+      assertThat(rm.getEntries().get(10).getMatchTag().getTag(), equalTo(10L));
+      assertThat(rm.getEntries().get(20).getAction(), equalTo(LineAction.PERMIT));
+      assertThat(rm.getEntries().get(20).getContinue(), nullValue());
+      assertThat(rm.getEntries().get(20).getMatchTag().getTag(), equalTo(10L));
+      assertThat(rm.getEntries().get(30).getAction(), equalTo(LineAction.PERMIT));
       assertThat(rm.getEntries().get(30).getContinue(), nullValue());
     }
   }

@@ -164,3 +164,10 @@ route-map continue_from_set_to_match_on_set_field permit 10
 route-map continue_from_set_to_match_on_set_field permit 20
   match metric 10
 route-map continue_from_set_to_match_on_set_field deny 30
+
+route-map reach_continue_target_without_match permit 10
+  match tag 10
+  continue 30
+route-map reach_continue_target_without_match permit 20
+  match tag 10
+route-map reach_continue_target_without_match permit 30

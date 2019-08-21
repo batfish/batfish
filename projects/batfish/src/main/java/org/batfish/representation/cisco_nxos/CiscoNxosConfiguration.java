@@ -2151,11 +2151,10 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
     ImmutableMap.Builder<Integer, Integer> noMatchNextBySeqBuilder = ImmutableMap.builder();
     RouteMapEntry lastEntry = null;
     for (RouteMapEntry currentEntry : routeMap.getEntries().values()) {
-      if (lastEntry == null) {
-        continue;
+      if (lastEntry != null) {
+        int lastSequence = lastEntry.getSequence();
+        noMatchNextBySeqBuilder.put(lastSequence, currentEntry.getSequence());
       }
-      int lastSequence = lastEntry.getSequence();
-      noMatchNextBySeqBuilder.put(lastSequence, currentEntry.getSequence());
       lastEntry = currentEntry;
     }
 
@@ -2223,6 +2222,7 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
 
   @Nonnull
   private PacketPolicy toPacketPolicy(RouteMap routeMap) {
+    // TODO: handle continue statements
     return new PacketPolicy(
         routeMap.getName(),
         routeMap.getEntries().values().stream()
@@ -2281,6 +2281,7 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
   @Nonnull
   private org.batfish.datamodel.packet_policy.Statement toPacketPolicyStatement(
       RouteMapEntry entry) {
+    // TODO: handle continue statement
     RouteMapMatchVisitor<BoolExpr> matchToBoolExpr =
         new RouteMapMatchVisitor<BoolExpr>() {
 
