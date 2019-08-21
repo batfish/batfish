@@ -210,7 +210,8 @@ public final class OspfTopologyUtils {
     // Optimistically assume unspecified network types match and therefore are compatible
     OspfNetworkType localNetworkType = localIface.getOspfNetworkType();
     OspfNetworkType remoteNetworkType = remoteIface.getOspfNetworkType();
-    if ((localNetworkType != null && remoteNetworkType != null) && (localNetworkType != remoteNetworkType)) {
+    if ((localNetworkType != null && remoteNetworkType != null)
+        && (localNetworkType != remoteNetworkType)) {
       return Optional.empty();
     }
 
