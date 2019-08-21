@@ -5,6 +5,7 @@ import static org.batfish.representation.cisco.CiscoConversions.DEFAULT_OSPF_DEA
 import static org.batfish.representation.cisco.CiscoConversions.DEFAULT_OSPF_DEAD_INTERVAL_P2P_AND_BROADCAST;
 import static org.batfish.representation.cisco.CiscoConversions.DEFAULT_OSPF_HELLO_INTERVAL;
 import static org.batfish.representation.cisco.CiscoConversions.DEFAULT_OSPF_HELLO_INTERVAL_P2P_AND_BROADCAST;
+import static org.batfish.representation.cisco.CiscoConversions.OSPF_DEAD_INTERVAL_HELLO_MULTIPLIER;
 import static org.batfish.representation.cisco.CiscoConversions.createAclWithSymmetricalLines;
 import static org.batfish.representation.cisco.CiscoConversions.getMatchingPsk;
 import static org.batfish.representation.cisco.CiscoConversions.sanityCheckDistributeList;
@@ -289,7 +290,8 @@ public class CiscoConversionsTest {
     int helloInterval = 1;
     iface.setOspfHelloInterval(helloInterval);
     // Since the dead interval is not set, it should be inferred as four times the hello interval
-    assertThat(toOspfDeadInterval(iface), equalTo(4 * helloInterval));
+    assertThat(
+        toOspfDeadInterval(iface), equalTo(OSPF_DEAD_INTERVAL_HELLO_MULTIPLIER * helloInterval));
   }
 
   @Test

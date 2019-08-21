@@ -127,14 +127,20 @@ import org.batfish.representation.cisco.DistributeList.DistributeListFilterType;
 @ParametersAreNonnullByDefault
 public class CiscoConversions {
 
+  // Defaults from
+  // https://www.cisco.com/c/en/us/support/docs/ip/open-shortest-path-first-ospf/13689-17.html
   static int DEFAULT_OSPF_HELLO_INTERVAL_P2P_AND_BROADCAST = 10;
 
   static int DEFAULT_OSPF_HELLO_INTERVAL = 30;
 
-  static int DEFAULT_OSPF_DEAD_INTERVAL_P2P_AND_BROADCAST =
-      4 * DEFAULT_OSPF_HELLO_INTERVAL_P2P_AND_BROADCAST;
+  // Default dead interval is hello interval times 4
+  static int OSPF_DEAD_INTERVAL_HELLO_MULTIPLIER = 4;
 
-  static int DEFAULT_OSPF_DEAD_INTERVAL = 4 * DEFAULT_OSPF_HELLO_INTERVAL;
+  static int DEFAULT_OSPF_DEAD_INTERVAL_P2P_AND_BROADCAST =
+      OSPF_DEAD_INTERVAL_HELLO_MULTIPLIER * DEFAULT_OSPF_HELLO_INTERVAL_P2P_AND_BROADCAST;
+
+  static int DEFAULT_OSPF_DEAD_INTERVAL =
+      OSPF_DEAD_INTERVAL_HELLO_MULTIPLIER * DEFAULT_OSPF_HELLO_INTERVAL;
 
   static Ip getHighestIp(Map<String, Interface> allInterfaces) {
     Map<String, Interface> interfacesToCheck;
@@ -1700,7 +1706,7 @@ public class CiscoConversions {
     }
     Integer helloInterval = iface.getOspfHelloInterval();
     if (helloInterval != null) {
-      return 4 * helloInterval;
+      return OSPF_DEAD_INTERVAL_HELLO_MULTIPLIER * helloInterval;
     }
     OspfNetworkType networkType = iface.getOspfNetworkType();
     if (networkType == OspfNetworkType.POINT_TO_POINT || networkType == OspfNetworkType.BROADCAST) {
