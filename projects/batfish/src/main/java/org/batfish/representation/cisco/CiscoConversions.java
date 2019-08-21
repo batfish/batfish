@@ -127,6 +127,15 @@ import org.batfish.representation.cisco.DistributeList.DistributeListFilterType;
 @ParametersAreNonnullByDefault
 public class CiscoConversions {
 
+  static int DEFAULT_OSPF_HELLO_INTERVAL_P2P_AND_BROADCAST = 10;
+
+  static int DEFAULT_OSPF_HELLO_INTERVAL = 30;
+
+  static int DEFAULT_OSPF_DEAD_INTERVAL_P2P_AND_BROADCAST =
+      4 * DEFAULT_OSPF_HELLO_INTERVAL_P2P_AND_BROADCAST;
+
+  static int DEFAULT_OSPF_DEAD_INTERVAL = 4 * DEFAULT_OSPF_HELLO_INTERVAL;
+
   static Ip getHighestIp(Map<String, Interface> allInterfaces) {
     Map<String, Interface> interfacesToCheck;
     Map<String, Interface> loopbackInterfaces = new HashMap<>();
@@ -1675,6 +1684,48 @@ public class CiscoConversions {
         action,
         IpWildcard.create(prefix),
         new SubRange(prefix.getPrefixLength(), Prefix.MAX_PREFIX_LENGTH));
+  }
+
+  /**
+   * Helper to infer dead interval from configured OSPF settings on an interface. Check explicitly
+   * set dead interval, infer from hello interval, or infer from OSPF network type, in that order.
+   * See https://www.cisco.com/c/en/us/support/docs/ip/open-shortest-path-first-ospf/13689-17.html
+   * for more details.
+   */
+  @VisibleForTesting
+  static int toOspfDeadInterval(Interface iface) {
+    Integer deadInterval = iface.getOspfDeadInterval();
+    if (deadInterval != null) {
+      return deadInterval;
+    }
+    Integer helloInterval = iface.getOspfHelloInterval();
+    if (helloInterval != null) {
+      return 4 * helloInterval;
+    }
+    OspfNetworkType networkType = iface.getOspfNetworkType();
+    if (networkType == OspfNetworkType.POINT_TO_POINT || networkType == OspfNetworkType.BROADCAST) {
+      return DEFAULT_OSPF_DEAD_INTERVAL_P2P_AND_BROADCAST;
+    }
+    return DEFAULT_OSPF_DEAD_INTERVAL;
+  }
+
+  /**
+   * Helper to infer hello interval from configured OSPF settings on an interface. Check explicitly
+   * set hello interval or infer from OSPF network type, in that order. See
+   * https://www.cisco.com/c/en/us/support/docs/ip/open-shortest-path-first-ospf/13689-17.html for
+   * more details.
+   */
+  @VisibleForTesting
+  static int toOspfHelloInterval(Interface iface) {
+    Integer helloInterval = iface.getOspfHelloInterval();
+    if (helloInterval != null) {
+      return helloInterval;
+    }
+    OspfNetworkType networkType = iface.getOspfNetworkType();
+    if (networkType == OspfNetworkType.POINT_TO_POINT || networkType == OspfNetworkType.BROADCAST) {
+      return DEFAULT_OSPF_HELLO_INTERVAL_P2P_AND_BROADCAST;
+    }
+    return DEFAULT_OSPF_HELLO_INTERVAL;
   }
 
   private CiscoConversions() {} // prevent instantiation of utility class
