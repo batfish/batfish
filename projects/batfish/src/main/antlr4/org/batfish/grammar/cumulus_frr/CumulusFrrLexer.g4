@@ -633,7 +633,12 @@ mode M_Remark;
 
 M_Remark_REMARK_TEXT
 :
-  F_NonWhitespace F_NonNewline* -> type ( REMARK_TEXT ) , popMode
+  F_NonWhitespace F_NonNewline* -> type ( REMARK_TEXT )
+;
+
+M_Remark_NEWLINE
+:
+  F_Newline+ -> type ( NEWLINE ), popMode
 ;
 
 M_Remark_WS

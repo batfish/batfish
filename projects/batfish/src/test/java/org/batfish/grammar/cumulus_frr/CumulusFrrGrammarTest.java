@@ -621,6 +621,7 @@ public class CumulusFrrGrammarTest {
 
   @Test
   public void testCumulusFrrVersion() {
+    parse("frr version\n");
     parse("frr version sV4@%)!@#$%^&**()_+|\n");
   }
 
