@@ -2171,7 +2171,7 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
         // reset statement queue
         currentRoutingPolicyStatements = ImmutableList.builder();
         // generate name for policy that will contain subsequent statements
-        currentRoutingPolicyName = generateRoutingPolicyName(routeMapName, currentSequence);
+        currentRoutingPolicyName = computeRoutingPolicyName(routeMapName, currentSequence);
       }
       currentRoutingPolicyStatements.add(
           toStatement(routeMapName, currentEntry, noMatchNextBySeq, continueTargets));
@@ -2186,7 +2186,7 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
   }
 
   @VisibleForTesting
-  public static @Nonnull String generateRoutingPolicyName(String routeMapName, int sequence) {
+  public static @Nonnull String computeRoutingPolicyName(String routeMapName, int sequence) {
     return String.format("~%s~SEQ:%d~", routeMapName, sequence);
   }
 
@@ -2223,7 +2223,7 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
     if (continueTarget != null) {
       if (continueTargets.contains(continueTarget)) {
         finalTrueStatement =
-            new CallStatement(generateRoutingPolicyName(routeMapName, continueTarget));
+            new CallStatement(computeRoutingPolicyName(routeMapName, continueTarget));
       } else {
         // invalid continue target, so just deny
         // TODO: verify actual behavior
@@ -2242,7 +2242,7 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
     List<Statement> noMatchStatements =
         noMatchNext != null && continueTargets.contains(noMatchNext)
             ? ImmutableList.of(
-                new CallStatement(generateRoutingPolicyName(routeMapName, noMatchNext)))
+                new CallStatement(computeRoutingPolicyName(routeMapName, noMatchNext)))
             : ImmutableList.of();
     return new If(new Conjunction(conjuncts.build()), trueStatements.build(), noMatchStatements);
   }

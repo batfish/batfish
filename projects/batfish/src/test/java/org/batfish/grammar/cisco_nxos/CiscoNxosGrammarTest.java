@@ -77,7 +77,7 @@ import static org.batfish.grammar.cisco_nxos.CiscoNxosControlPlaneExtractor.UDP_
 import static org.batfish.main.BatfishTestUtils.configureBatfishTestSettings;
 import static org.batfish.representation.cisco_nxos.CiscoNxosConfiguration.DEFAULT_VRF_NAME;
 import static org.batfish.representation.cisco_nxos.CiscoNxosConfiguration.NULL_VRF_NAME;
-import static org.batfish.representation.cisco_nxos.CiscoNxosConfiguration.generateRoutingPolicyName;
+import static org.batfish.representation.cisco_nxos.CiscoNxosConfiguration.computeRoutingPolicyName;
 import static org.batfish.representation.cisco_nxos.CiscoNxosConfiguration.toJavaRegex;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureType.OBJECT_GROUP_IP_ADDRESS;
 import static org.batfish.representation.cisco_nxos.OspfInterface.DEFAULT_DEAD_INTERVAL_S;
@@ -4878,15 +4878,15 @@ public final class CiscoNxosGrammarTest {
             "match_undefined_community_list",
             "match_undefined_prefix_list",
             "continue_skip_deny",
-            generateRoutingPolicyName("continue_skip_deny", 30),
+            computeRoutingPolicyName("continue_skip_deny", 30),
             "continue_from_deny_to_permit",
-            generateRoutingPolicyName("continue_from_deny_to_permit", 20),
+            computeRoutingPolicyName("continue_from_deny_to_permit", 20),
             "continue_from_permit_to_fall_off",
-            generateRoutingPolicyName("continue_from_permit_to_fall_off", 20),
+            computeRoutingPolicyName("continue_from_permit_to_fall_off", 20),
             "continue_from_permit_and_set_to_fall_off",
-            generateRoutingPolicyName("continue_from_permit_and_set_to_fall_off", 20),
+            computeRoutingPolicyName("continue_from_permit_and_set_to_fall_off", 20),
             "continue_from_set_to_match_on_set_field",
-            generateRoutingPolicyName("continue_from_set_to_match_on_set_field", 20)));
+            computeRoutingPolicyName("continue_from_set_to_match_on_set_field", 20)));
     Ip origNextHopIp = Ip.parse("192.0.2.254");
     Bgpv4Route base =
         Bgpv4Route.builder()
