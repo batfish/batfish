@@ -410,7 +410,9 @@ class IncrementalBdpEngine {
                       .values()
                       .forEach(
                           vr -> {
+                            // Iteration for one VR
                             vr.bgpIteration(allNodes);
+                            // Merge results into main RIB, for all VRs
                             n.getVirtualRouters()
                                 .values()
                                 .forEach(VirtualRouter::mergeBgpRoutesToMainRib);
