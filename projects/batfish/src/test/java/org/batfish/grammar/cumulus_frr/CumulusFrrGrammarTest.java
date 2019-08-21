@@ -8,7 +8,9 @@ import static org.batfish.representation.cumulus.RemoteAsType.EXTERNAL;
 import static org.batfish.representation.cumulus.RemoteAsType.INTERNAL;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.hasKey;
 import static org.hamcrest.Matchers.isA;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThat;
@@ -39,6 +41,7 @@ import org.batfish.representation.cumulus.BgpIpNeighbor;
 import org.batfish.representation.cumulus.BgpNeighbor;
 import org.batfish.representation.cumulus.BgpPeerGroupNeighbor;
 import org.batfish.representation.cumulus.BgpRedistributionPolicy;
+import org.batfish.representation.cumulus.BgpVrfAddressFamilyAggregateNetworkConfiguration;
 import org.batfish.representation.cumulus.CumulusNcluConfiguration;
 import org.batfish.representation.cumulus.CumulusStructureType;
 import org.batfish.representation.cumulus.CumulusStructureUsage;
@@ -214,6 +217,20 @@ public class CumulusFrrGrammarTest {
             .get(STATIC);
     assertNotNull(policy);
     assertNull(policy.getRouteMap());
+  }
+
+  @Test
+  public void testBgpAddressFamilyIpv4UnicastAggregateAddress() {
+    parseLines(
+        "router bgp 1",
+        "address-family ipv4 unicast",
+        "aggregate-address 1.2.3.0/24",
+        "exit-address-family");
+    Map<Prefix, BgpVrfAddressFamilyAggregateNetworkConfiguration> aggregateNetworks =
+        CONFIG.getBgpProcess().getDefaultVrf().getIpv4Unicast().getAggregateNetworks();
+    Prefix prefix = Prefix.parse("1.2.3.0/24");
+    assertThat(aggregateNetworks, hasKey(prefix));
+    assertFalse(aggregateNetworks.get(prefix).isSummaryOnly());
   }
 
   @Test

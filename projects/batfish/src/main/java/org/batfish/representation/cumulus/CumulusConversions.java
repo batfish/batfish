@@ -40,11 +40,11 @@ import org.batfish.datamodel.routing_policy.statement.Statements;
 public final class CumulusConversions {
   private static final int AGGREGATE_ROUTE_ADMIN_COST = 200; // TODO verify this
 
-  static String computeBgpGenerationPolicyName(boolean ipv4, String vrfName, String prefix) {
+  public static String computeBgpGenerationPolicyName(boolean ipv4, String vrfName, String prefix) {
     return String.format("~AGGREGATE_ROUTE%s_GEN:%s:%s~", ipv4 ? "" : "6", vrfName, prefix);
   }
 
-  static String computeMatchSuppressedSummaryOnlyPolicyName(String vrfName) {
+  public static String computeMatchSuppressedSummaryOnlyPolicyName(String vrfName) {
     return String.format("~MATCH_SUPPRESSED_SUMMARY_ONLY:%s~", vrfName);
   }
 
