@@ -168,11 +168,21 @@ public final class OspfTopologyUtils {
         configurations.getOspfNeighborConfig(remoteConfigId).orElse(null);
     OspfProcess localProcess = configurations.getOspfProcess(localConfigId).orElse(null);
     OspfProcess remoteProcess = configurations.getOspfProcess(remoteConfigId).orElse(null);
+    Interface localIface =
+        configurations
+            .getInterface(localConfigId.getHostname(), localConfigId.getInterfaceName())
+            .orElse(null);
+    Interface remoteIface =
+        configurations
+            .getInterface(remoteConfigId.getHostname(), remoteConfigId.getInterfaceName())
+            .orElse(null);
 
     if (localConfig == null
         || remoteConfig == null
         || localProcess == null
-        || remoteProcess == null) {
+        || remoteProcess == null
+        || localIface == null
+        || remoteIface == null) {
       return Optional.empty();
     }
 
@@ -196,6 +206,15 @@ public final class OspfTopologyUtils {
     if (localArea.getStubType() != remoteArea.getStubType()) {
       return Optional.empty();
     }
+
+    // Optimistically assume unspecified network types match and therefore are compatible
+    OspfNetworkType localNetworkType = localIface.getOspfNetworkType();
+    OspfNetworkType remoteNetworkType = remoteIface.getOspfNetworkType();
+    if ((localNetworkType != null && remoteNetworkType != null)
+        && (localNetworkType != remoteNetworkType)) {
+      return Optional.empty();
+    }
+
     /*
      * TODO: check MTU matches; This is complicated because frame/packet MTU support not fully there
      * TODO: check reachability (Make sure ACLs/ARP allow communication)
