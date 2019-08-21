@@ -58,6 +58,7 @@ import org.batfish.datamodel.BumTransportMethod;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConnectedRoute;
+import org.batfish.datamodel.ConnectedRouteMetadata;
 import org.batfish.datamodel.Edge;
 import org.batfish.datamodel.EvpnRoute;
 import org.batfish.datamodel.EvpnType3Route;
@@ -113,6 +114,7 @@ import org.batfish.dataplane.rib.RipRib;
 import org.batfish.dataplane.rib.RouteAdvertisement;
 import org.batfish.dataplane.rib.RouteAdvertisement.Reason;
 import org.batfish.dataplane.rib.StaticRib;
+import org.checkerframework.checker.nullness.qual.NonNull;
 
 public class VirtualRouter implements Serializable {
 
@@ -786,16 +788,41 @@ public class VirtualRouter implements Serializable {
    */
   @VisibleForTesting
   void initConnectedRib() {
-    // Look at all connected interfaces
+    // Look at all interfaces in our VRF
     for (Interface i : _vrf.getInterfaces().values()) {
-      if (i.getActive()) { // Make sure the interface is active
-        // Create a route for each interface prefix
-        for (ConcreteInterfaceAddress ifaceAddress : i.getAllConcreteAddresses()) {
-          Prefix prefix = ifaceAddress.getPrefix();
-          _connectedRib.mergeRoute(annotateRoute(new ConnectedRoute(prefix, i.getName())));
-        }
-      }
+      generateConnectedRoutes(i).forEach(r -> _connectedRib.mergeRoute(annotateRoute(r)));
     }
+  }
+
+  /**
+   * Generate connected routes for a given interface. Returns an empty stream if the interface is
+   * not active or has no IP addresses.
+   */
+  @Nonnull
+  private static Stream<ConnectedRoute> generateConnectedRoutes(@Nonnull Interface iface) {
+    if (!iface.getActive()) {
+      return Stream.empty();
+    }
+    return iface.getAllConcreteAddresses().stream()
+        .map(
+            addr ->
+                generateConnectedRoute(
+                    addr, iface.getName(), iface.getAddressMetadata().get(addr)));
+  }
+
+  /** Generate a connected route for a given address (and associated metadata). */
+  @VisibleForTesting
+  @NonNull
+  static ConnectedRoute generateConnectedRoute(
+      @Nonnull ConcreteInterfaceAddress address,
+      @Nonnull String ifaceName,
+      @Nullable ConnectedRouteMetadata metadata) {
+    ConnectedRoute.Builder builder =
+        ConnectedRoute.builder().setNetwork(address.getPrefix()).setNextHopInterface(ifaceName);
+    if (metadata != null) {
+      builder.setTag(metadata.getTag());
+    }
+    return builder.build();
   }
 
   /**
@@ -813,17 +840,45 @@ public class VirtualRouter implements Serializable {
    */
   @VisibleForTesting
   void initLocalRib() {
-    // Look at all connected interfaces
+    // Look at all interfaces in our VRF
     for (Interface i : _vrf.getInterfaces().values()) {
-      if (i.getActive()) { // Make sure the interface is active
-        // Create a route for each interface prefix
-        for (ConcreteInterfaceAddress ifaceAddress : i.getAllConcreteAddresses()) {
-          if (ifaceAddress.getNetworkBits() < Prefix.MAX_PREFIX_LENGTH) {
-            _localRib.mergeRoute(annotateRoute(new LocalRoute(ifaceAddress, i.getName())));
-          }
-        }
-      }
+      generateLocalRoutes(i).forEach(r -> _localRib.mergeRoute(annotateRoute(r)));
     }
+  }
+
+  /**
+   * Generate local routes for a given interface. Returns an empty stream if the interface is not
+   * active or has no valid IP addresses (only addresses with network length of < /32 are
+   * considered).
+   */
+  @Nonnull
+  private static Stream<LocalRoute> generateLocalRoutes(@Nonnull Interface iface) {
+    if (!iface.getActive()) {
+      return Stream.empty();
+    }
+    return iface.getAllConcreteAddresses().stream()
+        .filter(addr -> addr.getNetworkBits() < Prefix.MAX_PREFIX_LENGTH)
+        .map(
+            addr ->
+                generateLocalRoute(addr, iface.getName(), iface.getAddressMetadata().get(addr)));
+  }
+
+  /** Generate a connected route for a given address (and associated metadata). */
+  @VisibleForTesting
+  @NonNull
+  static LocalRoute generateLocalRoute(
+      @Nonnull ConcreteInterfaceAddress address,
+      @Nonnull String ifaceName,
+      @Nullable ConnectedRouteMetadata metadata) {
+    LocalRoute.Builder builder =
+        LocalRoute.builder()
+            .setNetwork(Prefix.create(address.getIp(), Prefix.MAX_PREFIX_LENGTH))
+            .setSourcePrefixLength(address.getNetworkBits())
+            .setNextHopInterface(ifaceName);
+    if (metadata != null) {
+      builder.setTag(metadata.getTag());
+    }
+    return builder.build();
   }
 
   void initIsisExports(Map<String, Node> allNodes, NetworkConfigurations nc) {
