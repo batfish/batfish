@@ -1277,6 +1277,8 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
         CiscoNxosStructureUsage.OSPF_AREA_FILTER_LIST_IN,
         CiscoNxosStructureUsage.OSPF_AREA_FILTER_LIST_OUT);
     markConcreteStructure(
+        CiscoNxosStructureType.ROUTE_MAP_ENTRY, CiscoNxosStructureUsage.ROUTE_MAP_CONTINUE);
+    markConcreteStructure(
         CiscoNxosStructureType.ROUTER_EIGRP,
         CiscoNxosStructureUsage.BGP_REDISTRIBUTE_EIGRP_SOURCE_TAG,
         CiscoNxosStructureUsage.ROUTER_EIGRP_SELF_REFERENCE);
@@ -2132,6 +2134,17 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
   }
 
   private void convertRouteMap(RouteMap routeMap) {
+    /*
+     * High-level overview:
+     * - Group route-map entries into disjoint intervals, where each entry that is the target of a
+     *   continue statement is the start of an interval.
+     * - Generate a RoutingPolicy for each interval.
+     * - Convert each entry into an If statement:
+     *   - True branch of an entry with a continue statement calls the RoutingPolicy for the
+     *     interval started by its target.
+     *   - False branch of an entry at the end of an interval calls the RoutingPolicy for the next
+     *     interval.
+     */
     String routeMapName = routeMap.getName();
 
     // sequence -> next sequence if no match, or null if last sequence
@@ -2157,6 +2170,20 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
     // sequence -> next sequence if no match, or null if last sequence
     Map<Integer, Integer> noMatchNextBySeq = noMatchNextBySeqBuilder.build();
 
+    /*
+     * Initially:
+     * - set the name of the generated routing policy for the route-map
+     * - initialize the statement queue
+     * For each entry in the route-map:
+     * - If the current entry is the start of a new interval:
+     *   - Build the RoutingPolicy for the previous interval.
+     *   - Set the name of the new generated routing policy.
+     *   - Clear the statement queue.
+     * - After all entries have been processed:
+     *   - Build the RoutingPolicy for the final interval.
+     *     - If there were no continue statements, the final interval is the single policy for the
+     *       whole route-map.
+     */
     String currentRoutingPolicyName = routeMap.getName();
     ImmutableList.Builder<Statement> currentRoutingPolicyStatements = ImmutableList.builder();
     for (RouteMapEntry currentEntry : routeMap.getEntries().values()) {
@@ -2172,7 +2199,7 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
         currentRoutingPolicyStatements = ImmutableList.builder();
         // generate name for policy that will contain subsequent statements
         currentRoutingPolicyName = computeRoutingPolicyName(routeMapName, currentSequence);
-      }
+      } // or else undefined reference
       currentRoutingPolicyStatements.add(
           toStatement(routeMapName, currentEntry, noMatchNextBySeq, continueTargets));
     }
@@ -2183,6 +2210,10 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
         .setOwner(_c)
         .setStatements(currentRoutingPolicyStatements.build())
         .build();
+  }
+
+  public static @Nonnull String computeRouteMapEntryName(String routeMapName, int sequence) {
+    return String.format("%s %d", routeMapName, sequence);
   }
 
   @VisibleForTesting

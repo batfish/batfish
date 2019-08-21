@@ -3,6 +3,7 @@ package org.batfish.grammar.cisco_nxos;
 import static com.google.common.base.Preconditions.checkArgument;
 import static org.batfish.datamodel.IpWildcard.ipWithWildcardMask;
 import static org.batfish.representation.cisco_nxos.CiscoNxosConfiguration.DEFAULT_VRF_NAME;
+import static org.batfish.representation.cisco_nxos.CiscoNxosConfiguration.computeRouteMapEntryName;
 import static org.batfish.representation.cisco_nxos.CiscoNxosConfiguration.getCanonicalInterfaceNamePrefix;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureType.BGP_TEMPLATE_PEER;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureType.BGP_TEMPLATE_PEER_POLICY;
@@ -85,6 +86,7 @@ import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.IP_R
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.NVE_SELF_REFERENCE;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.NVE_SOURCE_INTERFACE;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.ROUTER_EIGRP_SELF_REFERENCE;
+import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.ROUTE_MAP_CONTINUE;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.ROUTE_MAP_MATCH_IP_ADDRESS_PREFIX_LIST;
 import static org.batfish.representation.cisco_nxos.Interface.VLAN_RANGE;
 import static org.batfish.representation.cisco_nxos.Interface.newNonVlanInterface;
@@ -4464,6 +4466,13 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
       _w.addWarning(ctx, getFullText(ctx), _parser, "Cannot continue to earlier sequence");
       return;
     }
+    _currentRouteMapName.ifPresent(
+        routeMapName ->
+            _configuration.referenceStructure(
+                ROUTE_MAP_ENTRY,
+                computeRouteMapEntryName(routeMapName, continueTarget),
+                ROUTE_MAP_CONTINUE,
+                ctx.getStart().getLine()));
     _currentRouteMapEntry.setContinue(continueTarget);
   }
 
