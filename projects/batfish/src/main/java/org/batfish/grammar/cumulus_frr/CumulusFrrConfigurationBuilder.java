@@ -52,7 +52,9 @@ import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbafi_aggregate_addressC
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbafi_neighborContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbafi_networkContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbafi_redistributeContext;
+import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbafin_activateContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbafin_next_hop_selfContext;
+import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbafin_route_reflector_clientContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbafls_advertise_all_vniContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbafls_advertise_ipv4_unicastContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbafls_neighbor_activateContext;
@@ -107,7 +109,7 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
   private @Nullable BgpVrf _currentBgpVrf;
   private @Nullable BgpNeighbor _currentBgpNeighbor;
   private @Nullable IpPrefixList _currentIpPrefixList;
-  private @Nullable BgpNeighborIpv4UnicastAddressFamily _bgpNeighborIpv4UnicastAddressFamily;
+  private @Nullable BgpNeighborIpv4UnicastAddressFamily _currentBgpNeighborIpv4UnicastAddressFamily;
 
   public CumulusFrrConfigurationBuilder(
       CumulusNcluConfiguration configuration, CumulusFrrCombinedParser parser, Warnings w) {
@@ -278,25 +280,41 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
           _parser,
           String.format("neighbor %s does not exist", name));
     } else {
-      _bgpNeighborIpv4UnicastAddressFamily = bgpNeighbor.getIpv4UnicastAddressFamily();
-      if (_bgpNeighborIpv4UnicastAddressFamily == null) {
-        _bgpNeighborIpv4UnicastAddressFamily = new BgpNeighborIpv4UnicastAddressFamily();
-        bgpNeighbor.setIpv4UnicastAddressFamily(_bgpNeighborIpv4UnicastAddressFamily);
+      _currentBgpNeighborIpv4UnicastAddressFamily = bgpNeighbor.getIpv4UnicastAddressFamily();
+      if (_currentBgpNeighborIpv4UnicastAddressFamily == null) {
+        _currentBgpNeighborIpv4UnicastAddressFamily = new BgpNeighborIpv4UnicastAddressFamily();
+        bgpNeighbor.setIpv4UnicastAddressFamily(_currentBgpNeighborIpv4UnicastAddressFamily);
       }
     }
   }
 
   @Override
   public void exitSbafi_neighbor(Sbafi_neighborContext ctx) {
-    _bgpNeighborIpv4UnicastAddressFamily = null;
+    _currentBgpNeighborIpv4UnicastAddressFamily = null;
+  }
+
+  @Override
+  public void exitSbafin_activate(Sbafin_activateContext ctx) {
+    if (_currentBgpNeighborIpv4UnicastAddressFamily == null) {
+      return;
+    }
+    _currentBgpNeighborIpv4UnicastAddressFamily.setActivated(true);
   }
 
   @Override
   public void exitSbafin_next_hop_self(Sbafin_next_hop_selfContext ctx) {
-    if (_bgpNeighborIpv4UnicastAddressFamily == null) {
+    if (_currentBgpNeighborIpv4UnicastAddressFamily == null) {
       return;
     }
-    _bgpNeighborIpv4UnicastAddressFamily.setNextHopSelf(true);
+    _currentBgpNeighborIpv4UnicastAddressFamily.setNextHopSelf(true);
+  }
+
+  @Override
+  public void exitSbafin_route_reflector_client(Sbafin_route_reflector_clientContext ctx) {
+    if (_currentBgpNeighborIpv4UnicastAddressFamily == null) {
+      return;
+    }
+    _currentBgpNeighborIpv4UnicastAddressFamily.setRouteReflectorClient(true);
   }
 
   @Override
