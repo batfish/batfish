@@ -652,9 +652,9 @@ public class CumulusFrrGrammarTest {
           CONFIG
               .getBgpProcess()
               .getDefaultVrf()
-              .getIpv4Unicast()
-              .getNeighborAddressFamilyConfigurations()
+              .getNeighbors()
               .get("N")
+              .getIpv4UnicastAddressFamily()
               .getRouteMapIn(),
           equalTo("R"));
     }
@@ -668,9 +668,9 @@ public class CumulusFrrGrammarTest {
           CONFIG
               .getBgpProcess()
               .getDefaultVrf()
-              .getIpv4Unicast()
-              .getNeighborAddressFamilyConfigurations()
+              .getNeighbors()
               .get("N")
+              .getIpv4UnicastAddressFamily()
               .getRouteMapOut(),
           equalTo("R"));
     }
