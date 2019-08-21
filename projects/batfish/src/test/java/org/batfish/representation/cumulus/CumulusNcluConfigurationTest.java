@@ -173,12 +173,7 @@ public class CumulusNcluConfigurationTest {
       // next-hop-self
       bgpNeighbor.setRemoteAs(10000L);
       bgpVrf.setAutonomousSystem(10000L);
-      BgpIpv4UnicastAddressFamily ipv4Unicast = new BgpIpv4UnicastAddressFamily();
-      ipv4Unicast
-          .getNeighborAddressFamilyConfigurations()
-          .put("10.0.0.1", new BgpVrfNeighborAddressFamilyConfiguration());
-      bgpVrf.setIpv4Unicast(ipv4Unicast);
-
+      bgpNeighbor.setIpv4UnicastAddressFamily(new BgpNeighborIpv4UnicastAddressFamily());
       SetNextHop setNextHop = getSetNextHop(bgpNeighbor, bgpVrf);
       assertNull(setNextHop);
     }
@@ -188,18 +183,9 @@ public class CumulusNcluConfigurationTest {
       // next-hop-self
       bgpNeighbor.setRemoteAs(10000L);
       bgpVrf.setAutonomousSystem(10000L);
-      BgpIpv4UnicastAddressFamily ipv4Unicast = new BgpIpv4UnicastAddressFamily();
-      ipv4Unicast
-          .getNeighborAddressFamilyConfigurations()
-          .computeIfAbsent(
-              "10.0.0.1",
-              k -> {
-                BgpVrfNeighborAddressFamilyConfiguration neighborConfig =
-                    new BgpVrfNeighborAddressFamilyConfiguration();
-                neighborConfig.setNextHopSelf(true);
-                return neighborConfig;
-              });
-      bgpVrf.setIpv4Unicast(ipv4Unicast);
+      BgpNeighborIpv4UnicastAddressFamily ipv4af = new BgpNeighborIpv4UnicastAddressFamily();
+      ipv4af.setNextHopSelf(true);
+      bgpNeighbor.setIpv4UnicastAddressFamily(ipv4af);
 
       SetNextHop setNextHop = getSetNextHop(bgpNeighbor, bgpVrf);
       assertThat(setNextHop, equalTo(new SetNextHop(SelfNextHop.getInstance(), false)));
