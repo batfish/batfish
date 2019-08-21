@@ -30,6 +30,12 @@ vlan 6
 interface loopback0
   ip address 1.1.1.1/32
 !
+!! a VRF is needed for an L3 VNI, otherwise the VNI will be ignored
+vrf context tenant1
+  vni 20001
+  rd auto
+  address-family ipv4 unicast
+    route-target both auto evpn
 interface nve1
   no shutdown
   global mcast-group 233.0.0.0 L2
