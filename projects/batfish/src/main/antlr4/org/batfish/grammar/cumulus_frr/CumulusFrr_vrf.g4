@@ -14,7 +14,7 @@ s_vrf
     | sv_route
     | null_rest_of_line
   )*
-  EXIT_VRF
+  EXIT_VRF NEWLINE
 ;
 
 sv_route
