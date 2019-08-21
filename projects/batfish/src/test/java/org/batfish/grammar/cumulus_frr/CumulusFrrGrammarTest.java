@@ -674,4 +674,20 @@ public class CumulusFrrGrammarTest {
   public void testCumulusFrrNeightborPassword() {
     parse("router bgp 10000\nneighbor N password sV4@%)!@#$%^&**()_+|\n");
   }
+
+  @Test
+  public void testBgpNeighborEbgpMultihopPeerGroup() {
+    parseLines("router bgp 10000", "neighbor N peer-group", "neighbor N ebgp-multihop 3");
+    assertThat(
+        CONFIG.getBgpProcess().getDefaultVrf().getNeighbors().get("N").getEbgpMultihop(),
+        equalTo(3L));
+  }
+
+  @Test
+  public void testBgpNeighborEbgpMultihopPeer() {
+    parseLines("router bgp 10000", "neighbor 10.0.0.1 ebgp-multihop 3");
+    assertThat(
+        CONFIG.getBgpProcess().getDefaultVrf().getNeighbors().get("10.0.0.1").getEbgpMultihop(),
+        equalTo(3L));
+  }
 }
