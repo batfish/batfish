@@ -5,6 +5,7 @@ import static org.junit.Assert.assertThat;
 
 import com.google.common.testing.EqualsTester;
 import java.io.IOException;
+import org.apache.commons.lang3.SerializationUtils;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.junit.Test;
 
@@ -26,6 +27,23 @@ public class OspfInterfaceSettingsTest {
     // test (de)serialization
     OspfInterfaceSettings deserial = BatfishObjectMapper.clone(s, OspfInterfaceSettings.class);
     assertThat(s, equalTo(deserial));
+  }
+
+  @Test
+  public void testJavaSerialization() {
+    OspfInterfaceSettings s =
+        OspfInterfaceSettings.builder()
+            .setProcess("proc")
+            .setCost(1)
+            .setEnabled(true)
+            .setPassive(false)
+            .setAreaName(1L)
+            .setDeadInterval(44)
+            .setHelloMultiplier(55)
+            .setNetworkType(OspfNetworkType.POINT_TO_POINT)
+            .build();
+
+    assertThat(SerializationUtils.clone(s), equalTo(s));
   }
 
   @Test
