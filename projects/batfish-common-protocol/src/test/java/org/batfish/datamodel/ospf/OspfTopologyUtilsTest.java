@@ -302,6 +302,17 @@ public class OspfTopologyUtilsTest {
   }
 
   @Test
+  public void testGetSessionIfCompatibleNetworkTypeMismatch() {
+    NetworkConfigurations configs =
+        buildNetworkConfigurations(Ip.parse("1.1.1.1"), 1234, Ip.parse("1.1.1.2"), 1500);
+
+    // Confirm we correctly mark a session as incompatible when interfaces has mismatched MTU
+    Optional<OspfSessionProperties> val =
+        getSessionIfCompatible(LOCAL_CONFIG_ID, REMOTE_CONFIG_ID, configs);
+    assertThat(val, equalTo(Optional.empty()));
+  }
+
+  @Test
   public void testGetSessionIfCompatiblePassive() {
     NetworkConfigurations configs =
         buildNetworkConfigurations(Ip.parse("1.1.1.1"), true, Ip.parse("1.1.1.2"), false);
