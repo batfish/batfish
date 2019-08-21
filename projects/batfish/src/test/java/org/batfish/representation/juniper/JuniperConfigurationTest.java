@@ -10,9 +10,15 @@ import static org.batfish.datamodel.matchers.IpAccessListLineMatchers.hasMatchCo
 import static org.batfish.datamodel.matchers.IpSpaceMatchers.containsIp;
 import static org.batfish.datamodel.matchers.MatchHeaderSpaceMatchers.hasHeaderSpace;
 import static org.batfish.datamodel.matchers.MatchHeaderSpaceMatchers.isMatchHeaderSpaceThat;
+import static org.batfish.representation.juniper.JuniperConfiguration.DEFAULT_DEAD_INTERVAL;
+import static org.batfish.representation.juniper.JuniperConfiguration.DEFAULT_HELLO_INTERVAL;
 import static org.batfish.representation.juniper.JuniperConfiguration.DEFAULT_ISIS_COST;
+import static org.batfish.representation.juniper.JuniperConfiguration.DEFAULT_NBMA_DEAD_INTERVAL;
+import static org.batfish.representation.juniper.JuniperConfiguration.DEFAULT_NBMA_HELLO_INTERVAL;
 import static org.batfish.representation.juniper.JuniperConfiguration.MAX_ISIS_COST_WITHOUT_WIDE_METRICS;
 import static org.batfish.representation.juniper.JuniperConfiguration.buildScreen;
+import static org.batfish.representation.juniper.JuniperConfiguration.toOspfDeadInterval;
+import static org.batfish.representation.juniper.JuniperConfiguration.toOspfHelloInterval;
 import static org.batfish.representation.juniper.JuniperConfiguration.toRibId;
 import static org.batfish.representation.juniper.NatPacketLocation.interfaceLocation;
 import static org.batfish.representation.juniper.NatPacketLocation.routingInstanceLocation;
@@ -51,6 +57,7 @@ import org.batfish.datamodel.acl.MatchSrcInterface;
 import org.batfish.datamodel.acl.OrMatchExpr;
 import org.batfish.datamodel.acl.PermittedByAcl;
 import org.batfish.datamodel.dataplane.rib.RibId;
+import org.batfish.representation.juniper.Interface.OspfInterfaceType;
 import org.junit.Test;
 
 public class JuniperConfigurationTest {
@@ -465,5 +472,51 @@ public class JuniperConfigurationTest {
                 new Warning(
                     "Rib name conversion: inet6 address family is not supported",
                     TAG_UNIMPLEMENTED))));
+  }
+
+  @Test
+  public void testToOspfDeadIntervalExplicit() {
+    Interface iface = new Interface("ge-0/0/0");
+    iface.setOspfDeadInterval(7);
+    // Explicitly set dead interval should be preferred over inference
+    assertThat(toOspfDeadInterval(iface), equalTo(7));
+  }
+
+  @Test
+  public void testToOspfDeadIntervalFromHello() {
+    Interface iface = new Interface("ge-0/0/0");
+    int helloInterval = 1;
+    iface.setOspfHelloInterval(helloInterval);
+    // Since the dead interval is not set, it should be inferred as four times the hello interval
+    assertThat(toOspfDeadInterval(iface), equalTo(4 * helloInterval));
+  }
+
+  @Test
+  public void testToOspfDeadIntervalFromType() {
+    Interface iface = new Interface("ge-0/0/0");
+    // Since the dead interval and hello interval are not set, it should be inferred from the
+    // network type
+    iface.setOspfInterfaceType(OspfInterfaceType.P2P);
+    assertThat(toOspfDeadInterval(iface), equalTo(DEFAULT_DEAD_INTERVAL));
+    iface.setOspfInterfaceType(OspfInterfaceType.NBMA);
+    assertThat(toOspfDeadInterval(iface), equalTo(DEFAULT_NBMA_DEAD_INTERVAL));
+  }
+
+  @Test
+  public void testToOspfHelloIntervalExplicit() {
+    Interface iface = new Interface("ge-0/0/0");
+    iface.setOspfHelloInterval(7);
+    // Explicitly set hello interval should be preferred over inference
+    assertThat(toOspfHelloInterval(iface), equalTo(7));
+  }
+
+  @Test
+  public void testToOspfHelloIntervalFromType() {
+    Interface iface = new Interface("ge-0/0/0");
+    // Since the hello intervalis not set, it should be inferred from the network type
+    iface.setOspfInterfaceType(OspfInterfaceType.P2P);
+    assertThat(toOspfHelloInterval(iface), equalTo(DEFAULT_HELLO_INTERVAL));
+    iface.setOspfInterfaceType(OspfInterfaceType.NBMA);
+    assertThat(toOspfHelloInterval(iface), equalTo(DEFAULT_NBMA_HELLO_INTERVAL));
   }
 }
