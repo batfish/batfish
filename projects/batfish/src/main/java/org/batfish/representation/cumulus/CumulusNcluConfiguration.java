@@ -228,7 +228,7 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
     //
     // But this is not enforced by either NCLU or FRR, and we have example configs where
     // route-reflector-client is enabled for not-explicitlly-activated interfaces. Ipv4 unicast
-    // is enabled by default for some interfaces; do they need to explicitly activate for
+    // is enabled by default for some interfaces; do those need to explicitly activate for
     // route-reflector-client?
     boolean routeReflectorClient =
         Optional.ofNullable(ipv4UnicastAddressFamily)

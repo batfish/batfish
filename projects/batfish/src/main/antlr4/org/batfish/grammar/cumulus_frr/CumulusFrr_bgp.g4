@@ -111,7 +111,7 @@ sbn_name
       sbn_interface       // set an interface neighbor property
     | sbn_peer_group_decl // declare a new peer group
     | sbn_property        // set a peer-group property
-    // Nothing else should in here. New properties should go in sbn_property
+    // Nothing else should go in here. New properties should go in sbn_property
     )
 ;
 
