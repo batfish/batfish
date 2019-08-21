@@ -213,18 +213,6 @@ public class OspfTopologyUtilsTest {
       Ip routerId,
       long area,
       int mtu,
-      StubType areaType) {
-    return buildConfiguration(
-        configId, ospfNeighborIp, passive, routerId, area, mtu, areaType, null);
-  }
-
-  private static Configuration buildConfiguration(
-      OspfNeighborConfigId configId,
-      Ip ospfNeighborIp,
-      boolean passive,
-      Ip routerId,
-      long area,
-      int mtu,
       StubType areaType,
       OspfInterfaceSettings ospfSettings) {
     String hostname = configId.getHostname();
