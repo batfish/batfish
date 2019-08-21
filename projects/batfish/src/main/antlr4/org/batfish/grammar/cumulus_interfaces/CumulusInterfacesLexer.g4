@@ -79,6 +79,11 @@ CLAG_ID
   'clag-id'
 ;
 
+CLAGD_VXLAN_ANYCAST_IP
+:
+  'clagd-vxlan-anycast-ip'
+;
+
 CLAGD_BACKUP_IP
 :
   'clagd-backup-ip'
@@ -94,6 +99,11 @@ CLAGD_SYS_MAC
   'clagd-sys-mac'
 ;
 
+GATEWAY
+:
+  'gateway'
+;
+
 HWADDRESS
 :
   'hwaddress'
@@ -104,6 +114,11 @@ IFACE
   'iface' -> pushMode(M_Word)
 ;
 
+INET
+:
+  'inet'
+;
+
 LINK_LOCAL
 :
   'linklocal'
@@ -112,6 +127,11 @@ LINK_LOCAL
 LINK_SPEED
 :
   'link-speed'
+;
+
+LOOPBACK
+:
+  'loopback'
 ;
 
 MSTPCTL_BPDUGUARD

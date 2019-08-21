@@ -356,6 +356,7 @@ import org.batfish.datamodel.eigrp.ClassicMetric;
 import org.batfish.datamodel.eigrp.EigrpMetric;
 import org.batfish.datamodel.eigrp.EigrpMetricValues;
 import org.batfish.datamodel.eigrp.EigrpNeighborConfig;
+import org.batfish.datamodel.eigrp.EigrpProcessMode;
 import org.batfish.datamodel.eigrp.WideMetric;
 import org.batfish.datamodel.matchers.CommunityListLineMatchers;
 import org.batfish.datamodel.matchers.CommunityListMatchers;
@@ -1364,11 +1365,11 @@ public class CiscoGrammarTest {
                 "Ethernet1",
                 c)));
     // Check Ipv6 as well
-    assertThat(c, hasRoute6FilterList("v6list", permits(new Prefix6("::FFFF:10.0.0.0/105"))));
+    assertThat(c, hasRoute6FilterList("v6list", permits(Prefix6.parse("::FFFF:10.0.0.0/105"))));
     assertThat(
         c,
         hasRoute6FilterList(
-            "v6list", Route6FilterListMatchers.rejects(new Prefix6("::FFFF:10.0.0.0/103"))));
+            "v6list", Route6FilterListMatchers.rejects(Prefix6.parse("::FFFF:10.0.0.0/103"))));
   }
 
   @Test
@@ -3295,9 +3296,9 @@ public class CiscoGrammarTest {
         batfish.loadConvertConfigurationAnswerElementOrReparse();
 
     Prefix permittedPrefix = Prefix.parse("1.2.3.4/30");
-    Prefix6 permittedPrefix6 = new Prefix6("2001::ffff:0/124");
+    Prefix6 permittedPrefix6 = Prefix6.parse("2001::ffff:0/124");
     Prefix rejectedPrefix = Prefix.parse("1.2.4.4/30");
-    Prefix6 rejectedPrefix6 = new Prefix6("2001::fffe:0/124");
+    Prefix6 rejectedPrefix6 = Prefix6.parse("2001::fffe:0/124");
 
     /*
      * pre_combo should be the only prefix set without a referrer
@@ -6584,5 +6585,24 @@ public class CiscoGrammarTest {
     Configuration c = parseConfig("ios-interface-unshut");
     assertThat(c, hasInterface("Ethernet0", isActive(true)));
     assertThat(c, hasInterface("Ethernet1", isActive(false)));
+  }
+
+  @Test
+  public void testIosEigrpAclUsedForRouting() throws IOException {
+    Configuration c = parseConfig("ios-eigrp-match-acl");
+    assertThat(c, hasRouteFilterList("ACL", anything()));
+    assertTrue(
+        c.getRoutingPolicies()
+            .get("REDISTRIBUTE_MAP")
+            .process(
+                new ConnectedRoute(Prefix.ZERO, "dummy", 0),
+                EigrpExternalRoute.builder(),
+                DEFAULT_VRF_NAME,
+                org.batfish.datamodel.eigrp.EigrpProcess.builder()
+                    .setAsNumber(1)
+                    .setMode(EigrpProcessMode.CLASSIC)
+                    .setRouterId(Ip.ZERO)
+                    .build(),
+                Direction.OUT));
   }
 }

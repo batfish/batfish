@@ -356,6 +356,11 @@ AUTHORIZATION
   'authorization'
 ;
 
+AUTHPRIV
+:
+  'authpriv'
+;
+
 AUTO
 :
   'auto'
@@ -369,6 +374,11 @@ AUTO_COST
 AUTOCONFIG
 :
   'autoconfig'
+;
+
+AUTONOMOUS_SYSTEM
+:
+  'autonomous-system'
 ;
 
 AUTOSTATE
@@ -572,6 +582,11 @@ CLI
   'cli'
 ;
 
+CLIENT_IDENTITY
+:
+  'client-identity'
+;
+
 CLIENT_TO_CLIENT
 :
   'client-to-client'
@@ -600,6 +615,11 @@ COMMAND
 COMMANDS
 :
   'commands'
+;
+
+COMMIT
+:
+  'commit'
 ;
 
 COMMUNITY
@@ -737,6 +757,11 @@ CRITICAL
   'critical'
 ;
 
+CRON
+:
+  'cron'
+;
+
 CS1
 :
   'cs1'
@@ -772,6 +797,11 @@ CS7
   'cs7'
 ;
 
+DAEMON
+:
+  'daemon'
+;
+
 DAMPEN_IGP_METRIC
 :
   'dampen-igp-metric'
@@ -790,6 +820,11 @@ DAYTIME
 DEAD_INTERVAL
 :
   'dead-interval'
+;
+
+DEADTIME
+:
+  'deadtime'
 ;
 
 DEBOUNCE
@@ -892,6 +927,11 @@ DIRECT
   'direct'
 ;
 
+DIRECTED_REQUEST
+:
+  'directed-request'
+;
+
 DIRECTLY_CONNECTED_SOURCES
 :
   'directly-connected-sources'
@@ -922,6 +962,16 @@ DISTANCE
   'distance'
 ;
 
+DISTRIBUTE
+:
+  'distribute'
+;
+
+DNS
+:
+  'dns' -> pushMode(M_Words)
+;
+
 DNSIX
 :
   'dnsix'
@@ -945,6 +995,11 @@ DOMAIN
 DOMAIN_LOOKUP
 :
   'domain-lookup'
+;
+
+DOMAIN_NAME
+:
+  'domain-name' -> pushMode(M_Word)
 ;
 
 DONT_CAPABILITY_NEGOTIATE
@@ -1032,14 +1087,30 @@ EGP
   'egp'
 ;
 
-EIGRP
-:
-  'eigrp'
-;
-
 EIBGP
 :
   'eibgp'
+;
+
+
+EIGRP
+:
+  'eigrp'
+  // All other instances are followed by keywords or tokens in default mode
+  {
+    switch (lastTokenType()) {
+      case KEY_CHAIN:
+        pushMode(M_TwoWords);
+        break;
+      case MODE:
+      case REDISTRIBUTE:
+      case ROUTER:
+        pushMode(M_Word);
+        break;
+      default:
+        break;
+    }
+  }
 ;
 
 ENABLE
@@ -1142,6 +1213,11 @@ EXIST_MAP
   'exist-map'
 ;
 
+EXPANDED
+:
+  'expanded' -> pushMode ( M_Expanded )
+;
+
 EXPLICIT_TRACKING
 :
   'explicit-tracking'
@@ -1165,6 +1241,11 @@ EXTERNAL
 EXTERNAL_LSA
 :
   'external-lsa'
+;
+
+FACILITY
+:
+  'facility'
 ;
 
 FAST_EXTERNAL_FALLOVER
@@ -1401,6 +1482,11 @@ HMM
 HOST
 :
   'host'
+  {
+    if (lastTokenType() == TACACS_SERVER) {
+      pushMode(M_TacacsServerHost);
+    }
+  }
 ;
 
 HOST_ISOLATED
@@ -1472,6 +1558,11 @@ HSRP
   'hsrp'
 ;
 
+HTTP
+:
+  'http' -> pushMode(M_Words)
+;
+
 HTTP_METHOD
 :
   'http-method'
@@ -1490,6 +1581,11 @@ IBGP
 ICMP
 :
   'icmp'
+;
+
+ICMP_ECHO
+:
+  'icmp-echo' -> pushMode(M_Words)
 ;
 
 IDENT
@@ -1550,6 +1646,11 @@ INCOMPLETE
 INCONSISTENCY
 :
   'inconsistency'
+;
+
+INFORMS
+:
+  'informs'
 ;
 
 INFORMATION_REPLY
@@ -1668,7 +1769,7 @@ ISAKMP
 
 ISIS
 :
-  'isis'
+  'isis' -> pushMode ( M_Word )
 ;
 
 ISOLATE
@@ -1681,14 +1782,37 @@ KBPS
   'kbps'
 ;
 
+KERNEL
+:
+  'kern' 'el'?
+;
+
 KEY
 :
   'key'
+  // if preceded by tacac-server host name, or 'tacacs-server' (for global key), follow with password
+  {
+    switch(lastTokenType()) {
+      case IP_ADDRESS:
+      case IPV6_ADDRESS:
+      case TACACS_SERVER:
+      case WORD:
+        pushMode(M_Password);
+        break;
+      default:
+        break;
+    }
+  }
 ;
 
 KEY_CHAIN
 :
-  'key-chain' -> pushMode ( M_Word )
+  'key-chain'
+  {
+    if (lastTokenType() != AUTHENTICATION || secondToLastTokenType() != IP) {
+      pushMode(M_Word);
+    }
+  }
 ;
 
 KEY_STRING
@@ -1705,7 +1829,6 @@ KICKSTART
       pushMode(M_Remark);
     }
   }
-
 ;
 
 KLOGIN
@@ -1828,6 +1951,46 @@ LOCAL_PREFERENCE
   'local-preference'
 ;
 
+LOCAL0
+:
+  'local0'
+;
+
+LOCAL1
+:
+  'local1'
+;
+
+LOCAL2
+:
+  'local2'
+;
+
+LOCAL3
+:
+  'local3'
+;
+
+LOCAL4
+:
+  'local4'
+;
+
+LOCAL5
+:
+  'local5'
+;
+
+LOCAL6
+:
+  'local6'
+;
+
+LOCAL7
+:
+  'local7'
+;
+
 LOCALIZEDKEY
 :
   'localizedkey'
@@ -1903,6 +2066,11 @@ LPD
   'lpd'
 ;
 
+LPR
+:
+  'lpr'
+;
+
 LSA
 :
   'lsa'
@@ -1931,6 +2099,11 @@ MAC
 MAC_ADDRESS
 :
   'mac-address' -> pushMode(M_MacAddress)
+;
+
+MAIL
+:
+  'mail'
 ;
 
 MANAGED_CONFIG_FLAG
@@ -2211,6 +2384,11 @@ NAME
 
 ;
 
+NAME_SERVER
+:
+  'name-server'
+;
+
 NAMESERVER
 :
   'nameserver'
@@ -2309,6 +2487,11 @@ NETWORK_UNKNOWN
 NEWROOT
 :
   'newroot'
+;
+
+NEWS
+:
+  'news'
 ;
 
 NEXT_HOP
@@ -2517,7 +2700,6 @@ OSPF
       pushMode(M_Word);
     }
   }
-
 ;
 
 OSPFV3
@@ -2875,6 +3057,11 @@ QUERY_MAX_RESPONSE_TIME
   'query-max-response-time'
 ;
 
+QUERY_ONLY
+:
+  'query-only' -> pushMode(M_Word)
+;
+
 QUEUE_LIMIT
 :
   'queue-limit'
@@ -2903,6 +3090,16 @@ RD
 REACHABILITY
 :
   'reachability'
+;
+
+REACTION_CONFIGURATION
+:
+  'reaction-configuration' -> pushMode( M_Remark )
+;
+
+REACTION_TRIGGER
+:
+  'reaction-trigger'
 ;
 
 READ
@@ -3005,6 +3202,16 @@ REPORT_SUPPRESSION
   'report-suppression'
 ;
 
+RESET
+:
+  'reset'
+;
+
+RESPONDER
+:
+  'responder' -> pushMode( M_Remark )
+;
+
 RESTART
 :
   'restart'
@@ -3022,7 +3229,7 @@ RETAIN
 
 RIP
 :
-  'rip'
+  'rip' -> pushMode ( M_Word )
 ;
 
 ROBUSTNESS_VARIABLE
@@ -3120,6 +3327,11 @@ SAMPLER
   'sampler' -> pushMode(M_Word)
 ;
 
+SCHEDULE
+:
+  'schedule' -> pushMode( M_Remark )
+;
+
 SCHEDULER
 :
   'scheduler'
@@ -3128,6 +3340,11 @@ SCHEDULER
 SECONDARY
 :
   'secondary'
+;
+
+SECURE
+:
+  'secure'
 ;
 
 SECURITY_VIOLATION
@@ -3153,6 +3370,16 @@ SEND_COMMUNITY
 SEQ
 :
   'seq'
+;
+
+SERVE
+:
+  'serve' -> pushMode(M_Word)
+;
+
+SERVE_ONLY
+:
+  'serve-only' -> pushMode(M_Word)
 ;
 
 SERVER
@@ -3214,6 +3441,11 @@ SHOW
 SHUTDOWN
 :
   'shutdown'
+;
+
+SINGLE_CONNECTION
+:
+  'single-connection'
 ;
 
 SIZE
@@ -3503,6 +3735,11 @@ TACACS
   'tacacs'
 ;
 
+TACACS_SERVER
+:
+  'tacacs-server'
+;
+
 TACACSP
 :
   'tacacs+'
@@ -3527,6 +3764,11 @@ TALK
 TCP
 :
   'tcp'
+;
+
+TCP_CONNECT
+:
+  'tcp-connect' -> pushMode( M_Remark )
 ;
 
 TCP_FLAGS_MASK
@@ -3559,6 +3801,11 @@ TERMINAL
   'terminal'
 ;
 
+TEST
+:
+  'test'
+;
+
 TEXT
 :
   'text' -> pushMode ( M_Word )
@@ -3582,6 +3829,11 @@ TIME
 TIME_EXCEEDED
 :
   'time-exceeded'
+;
+
+TIMEOUT
+:
+  'timeout'
 ;
 
 TIMERS
@@ -3647,6 +3899,19 @@ TRANSPORT
 TRAP
 :
   'trap'
+  // if not preceded by 'enable', followed by 'version' or SNMP community secret
+  {
+    switch(lastTokenType()) {
+      case ACTION:
+      case ENABLE:
+      case LOGGING:
+      case SOURCE_INTERFACE:
+        break;
+      default:
+        pushMode(M_SnmpHostTraps);
+        break;
+    }
+  }
 ;
 
 TRAPS
@@ -3654,8 +3919,14 @@ TRAPS
   'traps'
   // if not preceded by 'enable', followed by 'version' or SNMP community secret
   {
-    if (lastTokenType() != ENABLE) {
-      pushMode(M_SnmpHostTraps);
+    switch(lastTokenType()) {
+      case ENABLE:
+      case LOGGING:
+      case SOURCE_INTERFACE:
+        break;
+      default:
+        pushMode(M_SnmpHostTraps);
+        break;
     }
   }
 ;
@@ -3678,6 +3949,11 @@ TRUNK_STATUS
 TRUST
 :
   'trust'
+;
+
+TRUSTPOINT
+:
+  'trustpoint'
 ;
 
 TTL
@@ -3726,6 +4002,16 @@ UDLD
 UDP
 :
   'udp'
+;
+
+UDP_ECHO
+:
+  'udp-echo' -> pushMode ( M_Remark )
+;
+
+UDP_JITTER
+:
+  'udp-jitter' -> pushMode ( M_Remark )
 ;
 
 UNCHANGED
@@ -4625,6 +4911,74 @@ M_DoubleQuote_QUOTED_TEXT
   ~["\r\n]+ -> type ( QUOTED_TEXT )
 ;
 
+mode M_Expanded;
+
+M_Expanded_WORD
+:
+  F_Word -> type ( WORD ) , mode(M_Expanded2)
+;
+
+M_Expanded_WS
+:
+  F_Whitespace+ -> channel ( HIDDEN )
+;
+
+mode M_Expanded2;
+
+M_Expanded2_DENY
+:
+  'deny' -> type ( DENY ), mode(M_Expanded3)
+;
+
+M_Expanded2_PERMIT
+:
+  'permit' -> type ( PERMIT ), mode(M_Expanded3)
+;
+
+M_Expanded2_SEQ
+:
+  'seq' -> type ( SEQ )
+;
+
+M_Expanded2_UINT8
+:
+  F_Uint8 -> type(UINT8)
+;
+
+M_Expanded2_UINT16
+:
+  F_Uint16 -> type(UINT16)
+;
+
+M_Expanded2_UINT32
+:
+  F_Uint32 -> type(UINT32)
+;
+
+M_Expanded2_WS
+:
+  F_Whitespace+ -> channel ( HIDDEN )
+;
+
+mode M_Expanded3;
+
+M_Expanded3_WS
+:
+  F_Whitespace+ -> channel ( HIDDEN ), mode(M_Expanded4)
+;
+
+mode M_Expanded4;
+
+M_Expanded4_DOUBLE_QUOTE
+:
+  '"' -> type(DOUBLE_QUOTE), mode(M_DoubleQuote)
+;
+
+M_Expanded4_REMARK_TEXT
+:
+  ~["\r\n] F_NonNewline* -> type(REMARK_TEXT), popMode
+;
+
 mode M_Hostname;
 
 M_Hostname_SUBDOMAIN_NAME
@@ -4716,7 +5070,12 @@ M_Password_PASSWORD_7
 
 M_Password_PASSWORD_0_TEXT
 :
-  F_NonNewline+ -> type ( PASSWORD_0_TEXT ) , popMode
+  F_NonWhitespace+ -> type ( PASSWORD_0_TEXT ) , popMode
+;
+
+M_Password_WS
+:
+  F_Whitespace+ -> channel(HIDDEN)
 ;
 
 mode M_Password3;
@@ -4915,6 +5274,27 @@ M_SnmpVersion_WS
   F_Whitespace+ -> channel ( HIDDEN )
 ;
 
+mode M_TacacsServerHost;
+
+M_TacacsServerHost_IP_ADDRESS
+:
+  F_IpAddress -> type(IP_ADDRESS), popMode
+;
+
+M_TacacsServerHost_IPV6_ADDRESS
+:
+  F_Ipv6Address -> type(IPV6_ADDRESS), popMode
+;
+
+M_TacacsServerHost_WORD
+:
+  F_Word -> type ( WORD ) , popMode
+;
+
+M_TacacsServerHost_WS
+:
+  F_Whitespace+ -> channel ( HIDDEN )
+;
 mode M_Vrf;
 
 M_Vrf_CONTEXT
@@ -4942,7 +5322,31 @@ M_Vrf_WS
   F_Whitespace+ -> channel ( HIDDEN )
 ;
 
+// Keep in sync with M_Word
+mode M_TwoWords;
+
+M_TwoWords_NEWLINE
+:
+  F_Newline+ -> type ( NEWLINE ) , popMode
+;
+
+M_TwoWords_WORD
+:
+  F_Word -> type ( WORD ) , mode ( M_Word )
+;
+
+M_TwoWords_WS
+:
+  F_Whitespace+ -> channel ( HIDDEN )
+;
+
+// Keep in sync with M_TwoWords
 mode M_Word;
+
+M_Word_NEWLINE
+:
+  F_Newline+ -> type ( NEWLINE ) , popMode
+;
 
 M_Word_WORD
 :

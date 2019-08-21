@@ -8,7 +8,9 @@ import static org.batfish.representation.cumulus.RemoteAsType.EXTERNAL;
 import static org.batfish.representation.cumulus.RemoteAsType.INTERNAL;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.hasKey;
 import static org.hamcrest.Matchers.isA;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThat;
@@ -39,6 +41,7 @@ import org.batfish.representation.cumulus.BgpIpNeighbor;
 import org.batfish.representation.cumulus.BgpNeighbor;
 import org.batfish.representation.cumulus.BgpPeerGroupNeighbor;
 import org.batfish.representation.cumulus.BgpRedistributionPolicy;
+import org.batfish.representation.cumulus.BgpVrfAddressFamilyAggregateNetworkConfiguration;
 import org.batfish.representation.cumulus.CumulusNcluConfiguration;
 import org.batfish.representation.cumulus.CumulusStructureType;
 import org.batfish.representation.cumulus.CumulusStructureUsage;
@@ -217,6 +220,20 @@ public class CumulusFrrGrammarTest {
   }
 
   @Test
+  public void testBgpAddressFamilyIpv4UnicastAggregateAddress() {
+    parseLines(
+        "router bgp 1",
+        "address-family ipv4 unicast",
+        "aggregate-address 1.2.3.0/24",
+        "exit-address-family");
+    Map<Prefix, BgpVrfAddressFamilyAggregateNetworkConfiguration> aggregateNetworks =
+        CONFIG.getBgpProcess().getDefaultVrf().getIpv4Unicast().getAggregateNetworks();
+    Prefix prefix = Prefix.parse("1.2.3.0/24");
+    assertThat(aggregateNetworks, hasKey(prefix));
+    assertFalse(aggregateNetworks.get(prefix).isSummaryOnly());
+  }
+
+  @Test
   public void testBgpAddressFamily_l2vpn_evpn() {
     parse("router bgp 1\n address-family l2vpn evpn\n exit-address-family\n");
     assertNotNull(CONFIG.getBgpProcess().getDefaultVrf().getL2VpnEvpn());
@@ -252,6 +269,42 @@ public class CumulusFrrGrammarTest {
     Map<String, BgpNeighbor> neighbors = CONFIG.getBgpProcess().getDefaultVrf().getNeighbors();
     assertTrue(neighbors.get("n").getL2vpnEvpnAddressFamily().getActivated());
     assertTrue(neighbors.get("1.2.3.4").getL2vpnEvpnAddressFamily().getActivated());
+  }
+
+  @Test
+  public void testBgpAddressFamilyNeighborNextHopSelf() {
+    parseLines(
+        "router bgp 1",
+        "address-family ipv4 unicast",
+        "neighbor 10.0.0.1 next-hop-self",
+        "exit-address-family");
+    assertTrue(
+        CONFIG
+            .getBgpProcess()
+            .getDefaultVrf()
+            .getIpv4Unicast()
+            .getNeighborAddressFamilyConfigurations()
+            .get("10.0.0.1")
+            .getNextHopSelf());
+  }
+
+  @Test
+  public void testBgpAlwaysCompareMed() {
+    parse("router bgp 1\n bgp always-compare-med\n");
+  }
+
+  @Test
+  public void testBgpAddressFamilyNeighborSoftReconfiguration() {
+    parseLines(
+        "router bgp 1",
+        "address-family ipv4 unicast",
+        "neighbor N soft-reconfiguration inbound",
+        "exit-address-family");
+    parseLines(
+        "router bgp 1",
+        "address-family ipv4 unicast",
+        "neighbor 10.0.0.1 soft-reconfiguration inbound",
+        "exit-address-family");
   }
 
   @Test
@@ -340,6 +393,11 @@ public class CumulusFrrGrammarTest {
   public void testBgpRouterId() {
     parse("router bgp 1\n bgp router-id 1.2.3.4\n");
     assertThat(CONFIG.getBgpProcess().getDefaultVrf().getRouterId(), equalTo(Ip.parse("1.2.3.4")));
+  }
+
+  @Test
+  public void testHostname() {
+    parse("hostname asdf235jgij981\n");
   }
 
   @Test
@@ -538,11 +596,43 @@ public class CumulusFrrGrammarTest {
 
   @Test
   public void testCumulusFrrAgentx() {
-    parse("agentx");
+    parse("agentx\n");
   }
 
   @Test
   public void testCumulusService() {
     parse("service integrated-vtysh-config\n");
+  }
+
+  @Test
+  public void testCumulusFrrSyslog() {
+    parse("log syslog informational\n");
+  }
+
+  @Test
+  public void testLineVty() {
+    parse("line vty\n");
+  }
+
+  @Test
+  public void testCumulusFrrUsername() {
+    parse("username cumulus nopassword\n");
+  }
+
+  @Test
+  public void testCumulusFrrVersion() {
+    parse("frr version\n");
+    parse("frr version sV4@%)!@#$%^&**()_+|\n");
+  }
+
+  @Test
+  public void testCumulusFrrBgpNeighborBfd() {
+    parse("router bgp 10000 vrf VRF\nneighbor N bfd 1 10 20\n");
+    parse("router bgp 10000 vrf VRF\nneighbor N bfd\n");
+  }
+
+  @Test
+  public void testCumulusFrrNeightborPassword() {
+    parse("router bgp 10000\nneighbor N password sV4@%)!@#$%^&**()_+|\n");
   }
 }

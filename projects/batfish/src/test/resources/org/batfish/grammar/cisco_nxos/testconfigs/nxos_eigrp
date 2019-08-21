@@ -1,0 +1,39 @@
+!RANCID-CONTENT-TYPE: cisco-nx
+!
+hostname nxos_eigrp
+!
+feature eigrp
+!
+interface loopback99
+  ip authentication mode eigrp EIGRP1234 md5
+  ip authentication key-chain eigrp EIGRP1234 KEYCHAIN
+!
+router eigrp EIGRP1234
+  flush-routes
+  no flush-routes
+  isolate
+  passive-interface default
+  no passive-interface default
+  redistribute bgp 1.3 route-map RM
+  redistribute direct route-map RM
+  redistribute eigrp EIGRP4321 route-map RM
+  redistribute isis ISIS route-map RM
+  redistribute lisp route-map RM
+  redistribute ospf OSPF route-map RM
+  redistribute rip RIP route-map RM
+  redistribute static route-map RM
+  shutdown
+  no shutdown
+  vrf VRF
+    autonomous-system 12345
+    passive-interface default
+    no passive-interface default
+    redistribute bgp 1.3 route-map RM
+    redistribute direct route-map RM
+    redistribute eigrp EIGRP4321 route-map RM
+    redistribute static route-map RM
+    shutdown
+    no shutdown
+router eigrp 123
+  isolate
+  no isolate

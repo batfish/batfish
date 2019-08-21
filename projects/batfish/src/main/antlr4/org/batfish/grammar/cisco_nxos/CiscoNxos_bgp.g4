@@ -258,7 +258,7 @@ rb_af6_redistribute
 
 rb_af6_redistribute_ospfv3
 :
-  OSPFV3 source_tag = WORD ROUTE_MAP mapname = route_map_name NEWLINE
+  OSPFV3 source_tag = router_ospfv3_name ROUTE_MAP mapname = route_map_name NEWLINE
 ;
 
 // Common to IPv4 or IPv6, unicast or multicast
@@ -381,14 +381,12 @@ rb_afip_redistribute_direct
 
 rb_afip_redistribute_eigrp
 :
-  EIGRP source_tag = WORD ROUTE_MAP mapname = route_map_name
-  NEWLINE
+  EIGRP source_tag = router_eigrp_process_tag ROUTE_MAP mapname = route_map_name NEWLINE
 ;
 
 rb_afip_redistribute_isis
 :
-  ISIS source_tag = WORD ROUTE_MAP mapname = route_map_name
-  NEWLINE
+  ISIS source_tag = router_isis_process_tag ROUTE_MAP mapname = route_map_name NEWLINE
 ;
 
 rb_afip_redistribute_lisp
@@ -398,7 +396,7 @@ rb_afip_redistribute_lisp
 
 rb_afip_redistribute_rip
 :
-  RIP source_tag = WORD ROUTE_MAP mapname = route_map_name NEWLINE
+  RIP source_tag = router_rip_process_id ROUTE_MAP mapname = route_map_name NEWLINE
 ;
 
 rb_afip_redistribute_static
@@ -1121,7 +1119,7 @@ prefix_peer_wait_timer
 
 rb_vrf
 :
-  VRF name = vrf_name NEWLINE
+  VRF name = vrf_non_default_name NEWLINE
   (
     rb_proc_vrf_common
     | rb_v_address_family

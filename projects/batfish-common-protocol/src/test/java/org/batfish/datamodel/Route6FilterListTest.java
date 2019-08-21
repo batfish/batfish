@@ -48,9 +48,9 @@ public class Route6FilterListTest {
 
   @Test
   public void testRfAddressMask() {
-    Prefix6 acceptedPrefix1 = new Prefix6("2001:db9:1234:2345:3456:8373:8728:1239/64");
-    Prefix6 deniedPrefix1 = new Prefix6("2002:db8:2346:2347:5353:4567:5678:6789/64");
-    Prefix6 deniedPrefix2 = new Prefix6("2001:db8:1234:2345:3456:4567:5678:6789/66");
+    Prefix6 acceptedPrefix1 = Prefix6.parse("2001:db9:1234:2345:3456:8373:8728:1239/64");
+    Prefix6 deniedPrefix1 = Prefix6.parse("2002:db8:2346:2347:5353:4567:5678:6789/64");
+    Prefix6 deniedPrefix2 = Prefix6.parse("2001:db8:1234:2345:3456:4567:5678:6789/66");
 
     assertThat(_rfAddressMask, permits(acceptedPrefix1));
     assertThat(_rfAddressMask, rejects(deniedPrefix1));
@@ -59,10 +59,10 @@ public class Route6FilterListTest {
 
   @Test
   public void testRfPrefixMoreSpecific() {
-    Prefix6 acceptedPrefix1 = new Prefix6("2001:db8:1234:2345:5353:8373:8728:1239/66");
-    Prefix6 deniedPrefix1 = new Prefix6("2001:db8:4567:2345:5353:8373:8728:1239/66");
+    Prefix6 acceptedPrefix1 = Prefix6.parse("2001:db8:1234:2345:5353:8373:8728:1239/66");
+    Prefix6 deniedPrefix1 = Prefix6.parse("2001:db8:4567:2345:5353:8373:8728:1239/66");
     // matching prefix but is less specific
-    Prefix6 deniedPrefix2 = new Prefix6("2001:db8:1234:2345:5353:8373:8728:1239/62");
+    Prefix6 deniedPrefix2 = Prefix6.parse("2001:db8:1234:2345:5353:8373:8728:1239/62");
 
     assertThat(_rfPrefixMoreSpecific, permits(acceptedPrefix1));
     assertThat(_rfPrefixMoreSpecific, rejects(deniedPrefix1));
@@ -71,9 +71,9 @@ public class Route6FilterListTest {
 
   @Test
   public void testRfPrefixExact() {
-    Prefix6 acceptedPrefix1 = new Prefix6("2001:db8:1234:2345:5353:8373:8728:1239/64");
+    Prefix6 acceptedPrefix1 = Prefix6.parse("2001:db8:1234:2345:5353:8373:8728:1239/64");
     // matching prefix with non-equal prefix length
-    Prefix6 deniedPrefix1 = new Prefix6("2001:db8:1234:2345:5353:8373:8728:1239/65");
+    Prefix6 deniedPrefix1 = Prefix6.parse("2001:db8:1234:2345:5353:8373:8728:1239/65");
 
     assertThat(_rfPrefixExact, permits(acceptedPrefix1));
     assertThat(_rfPrefixExact, rejects(deniedPrefix1));

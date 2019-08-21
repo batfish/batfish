@@ -11,6 +11,7 @@ s_bgp
   ROUTER BGP autonomous_system (VRF vrf_name)? NEWLINE
   (
     sb_address_family
+  | sb_always_compare_med
   | sb_neighbor
   | sb_router_id
   )*
@@ -42,7 +43,9 @@ sbaf_ipv4_unicast
 :
   IPV4 UNICAST NEWLINE
   (
-    sbafi_network
+    sbafi_aggregate_address
+  | sbafi_network
+  | sbafi_neighbor
   | sbafi_redistribute
   )*
 ;
@@ -58,6 +61,11 @@ sbafl_statement
   sbafls_advertise_all_vni
 | sbafls_advertise_ipv4_unicast
 | sbafls_neighbor_activate
+;
+
+sbafi_aggregate_address
+:
+  AGGREGATE_ADDRESS IP_PREFIX SUMMARY_ONLY? NEWLINE
 ;
 
 sbafi_network
@@ -86,6 +94,11 @@ sbafls_neighbor_activate
   NEIGHBOR neighbor = (IP_ADDRESS | WORD) ACTIVATE NEWLINE
 ;
 
+sb_always_compare_med
+:
+  BGP ALWAYS_COMPARE_MED NEWLINE
+;
+
 sbn_ip
 :
   ip = IP_ADDRESS sbn_property
@@ -98,6 +111,8 @@ sbn_name
       sbn_interface       // set an interface neighbor property
     | sbn_peer_group_decl // declare a new peer group
     | sbn_property        // set a peer-group property
+    | sbn_bfd
+    | sbn_password
     )
 ;
 
@@ -131,4 +146,34 @@ sbnp_remote_as
 sbnp_peer_group
 :
   PEER_GROUP name = word
+;
+
+sbafi_neighbor
+:
+  NEIGHBOR (ip = IP_ADDRESS | name = word)
+  (
+    sbafin_next_hop_self
+    | sbafin_soft_reconfiguration
+  )
+  NEWLINE
+;
+
+sbafin_next_hop_self
+:
+  NEXT_HOP_SELF
+;
+
+sbafin_soft_reconfiguration
+:
+  SOFT_RECONFIGURATION INBOUND
+;
+
+sbn_bfd
+:
+  BFD word*
+;
+
+sbn_password
+:
+  PASSWORD REMARK_TEXT
 ;

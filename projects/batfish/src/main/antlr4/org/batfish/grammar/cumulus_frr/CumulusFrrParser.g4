@@ -17,18 +17,23 @@ cumulus_frr_configuration
 // other rules
 statement
 :
-  FRR_VERSION_LINE NEWLINE
+  FRR VERSION REMARK_TEXT? NEWLINE
+  | FRR DEFAULTS DATACENTER NEWLINE
+  | USERNAME word word NEWLINE
+  | HOSTNAME word NEWLINE
   | s_agentx
   | s_bgp
   | s_vrf
   | s_routemap
   | s_ip
   | SERVICE INTEGRATED_VTYSH_CONFIG NEWLINE
+  | LINE VTY NEWLINE
+  | LOG SYSLOG INFORMATIONAL NEWLINE
 ;
 
 s_agentx
 :
-  AGENTX
+  AGENTX NEWLINE
 ;
 
 s_ip

@@ -19,6 +19,16 @@ AGENTX
   'agentx'
 ;
 
+AGGREGATE_ADDRESS
+:
+  'aggregate-address'
+;
+
+BFD
+:
+  'bfd' -> pushMode(M_Words)
+;
+
 COMMENT_LINE
 :
   (
@@ -51,6 +61,11 @@ ADVERTISE
 ADVERTISE_ALL_VNI
 :
   'advertise-all-vni'
+;
+
+ALWAYS_COMPARE_MED
+:
+  'always-compare-med'
 ;
 
 BGP
@@ -88,6 +103,16 @@ CONNECTED
   'connected'
 ;
 
+DATACENTER
+:
+  'datacenter'
+;
+
+DEFAULTS
+:
+  'defaults'
+;
+
 DENY
 :
   'deny'
@@ -123,14 +148,24 @@ EXTERNAL
   'external'
 ;
 
-FRR_VERSION_LINE
+FRR
 :
-  'frr version' F_NonNewline*
+  'frr'
 ;
 
 GE
 :
   'ge'
+;
+
+HOSTNAME
+:
+  'hostname' -> pushMode(M_Word)
+;
+
+INFORMATIONAL
+:
+  'informational'
 ;
 
 INTEGRATED_VTYSH_CONFIG
@@ -150,6 +185,11 @@ INTERFACE
         break;
     }
   }
+;
+
+INBOUND
+:
+  'inbound'
 ;
 
 INTERNAL
@@ -187,6 +227,16 @@ LE
   'le'
 ;
 
+LOG
+:
+  'log'
+;
+
+LINE
+:
+  'line'
+;
+
 NEIGHBOR
 :
   'neighbor' -> pushMode(M_Neighbor)
@@ -195,6 +245,16 @@ NEIGHBOR
 NETWORK
 :
   'network'
+;
+
+NEXT_HOP_SELF
+:
+  'next-hop-self'
+;
+
+PASSWORD
+:
+  'password' -> pushMode(M_Remark)
 ;
 
 PEER_GROUP
@@ -257,14 +317,29 @@ SERVICE
   'service'
 ;
 
+SOFT_RECONFIGURATION
+:
+  'soft-reconfiguration'
+;
+
 STATIC
 :
   'static'
 ;
 
+SUMMARY_ONLY
+:
+  'summary-only'
+;
+
 SUBNET_MASK
 :
   F_SubnetMask
+;
+
+SYSLOG
+:
+  'syslog'
 ;
 
 MATCH
@@ -302,6 +377,11 @@ UINT32
   F_Uint32
 ;
 
+USERNAME
+:
+  'username' -> pushMode(M_Words)
+;
+
 UNICAST
 :
   'unicast'
@@ -312,6 +392,11 @@ DEC
   F_Digit+
 ;
 
+VERSION
+:
+  'version' -> pushMode(M_Remark)
+;
+
 VNI
 :
   'vni'
@@ -320,6 +405,11 @@ VNI
 VRF
 :
   'vrf' -> pushMode(M_Word)
+;
+
+VTY
+:
+  'vty'
 ;
 
 WS
@@ -543,7 +633,12 @@ mode M_Remark;
 
 M_Remark_REMARK_TEXT
 :
-  F_NonWhitespace F_NonNewline* -> type ( REMARK_TEXT ) , popMode
+  F_NonWhitespace F_NonNewline* -> type ( REMARK_TEXT )
+;
+
+M_Remark_NEWLINE
+:
+  F_Newline+ -> type ( NEWLINE ), popMode
 ;
 
 M_Remark_WS

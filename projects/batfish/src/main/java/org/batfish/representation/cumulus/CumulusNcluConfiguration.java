@@ -5,6 +5,9 @@ import static java.util.Comparator.naturalOrder;
 import static org.batfish.datamodel.MultipathEquivalentAsPathMatchMode.EXACT_PATH;
 import static org.batfish.datamodel.bgp.VniConfig.importRtPatternForAnyAs;
 import static org.batfish.representation.cumulus.BgpProcess.BGP_UNNUMBERED_IP;
+import static org.batfish.representation.cumulus.CumulusConversions.generateExportAggregateConditions;
+import static org.batfish.representation.cumulus.CumulusConversions.generateGeneratedRoutes;
+import static org.batfish.representation.cumulus.CumulusConversions.suppressSummarizedPrefixes;
 import static org.batfish.representation.cumulus.CumulusRoutingProtocol.VI_PROTOCOLS_MAP;
 
 import com.google.common.annotations.VisibleForTesting;
@@ -85,8 +88,10 @@ import org.batfish.datamodel.routing_policy.expr.LiteralOrigin;
 import org.batfish.datamodel.routing_policy.expr.MatchPrefixSet;
 import org.batfish.datamodel.routing_policy.expr.MatchProtocol;
 import org.batfish.datamodel.routing_policy.expr.Not;
+import org.batfish.datamodel.routing_policy.expr.SelfNextHop;
 import org.batfish.datamodel.routing_policy.expr.WithEnvironmentExpr;
 import org.batfish.datamodel.routing_policy.statement.If;
+import org.batfish.datamodel.routing_policy.statement.SetNextHop;
 import org.batfish.datamodel.routing_policy.statement.SetOrigin;
 import org.batfish.datamodel.routing_policy.statement.Statement;
 import org.batfish.datamodel.routing_policy.statement.Statements;
@@ -259,12 +264,14 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
             .setOwner(_c)
             .setName(computeBgpPeerExportPolicyName(vrfName, neighbor.getName()));
 
+    List<Statement> acceptStmts = getAcceptStatements(neighbor, bgpVrf);
+
     Conjunction peerExportConditions = new Conjunction();
     If peerExportConditional =
         new If(
             "peer-export policy main conditional: exitAccept if true / exitReject if false",
             peerExportConditions,
-            ImmutableList.of(Statements.ExitAccept.toStaticStatement()),
+            acceptStmts,
             ImmutableList.of(Statements.ExitReject.toStaticStatement()));
     peerExportPolicy.addStatement(peerExportConditional);
     Disjunction localOrCommonOrigination = new Disjunction();
@@ -274,6 +281,36 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
         .add(new CallExpr(computeBgpCommonExportPolicyName(vrfName)));
 
     return peerExportPolicy.build();
+  }
+
+  private static List<Statement> getAcceptStatements(BgpNeighbor neighbor, BgpVrf bgpVrf) {
+    SetNextHop setNextHop = getSetNextHop(neighbor, bgpVrf);
+    return setNextHop == null
+        ? ImmutableList.of(Statements.ExitAccept.toStaticStatement())
+        : ImmutableList.of(setNextHop, Statements.ExitAccept.toStaticStatement());
+  }
+
+  @VisibleForTesting
+  static @Nullable SetNextHop getSetNextHop(BgpNeighbor neighbor, BgpVrf bgpVrf) {
+    if (neighbor.getRemoteAs() == null
+        || bgpVrf.getAutonomousSystem() == null
+        || !neighbor.getRemoteAs().equals(bgpVrf.getAutonomousSystem())) {
+      return null;
+    }
+
+    BgpIpv4UnicastAddressFamily ipv4Unicast = bgpVrf.getIpv4Unicast();
+    if (ipv4Unicast == null) {
+      return null;
+    }
+
+    BgpVrfNeighborAddressFamilyConfiguration neighborConf =
+        ipv4Unicast.getNeighborAddressFamilyConfigurations().get(neighbor.getName());
+
+    if (neighborConf == null || !neighborConf.getNextHopSelf()) {
+      return null;
+    }
+
+    return new SetNextHop(SelfNextHop.getInstance(), false);
   }
 
   /** Scan all interfaces, find first that contains given remote IP */
@@ -490,7 +527,8 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
         String.format("Invalid remote-as type: %s", neighbor.getRemoteAsType()));
   }
 
-  private void convertBgpProcess() {
+  @VisibleForTesting
+  void convertBgpProcess() {
     if (_bgpProcess == null) {
       return;
     }
@@ -908,6 +946,12 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
     _bgpProcess = bgpProcess;
   }
 
+  /** For testing conversion methods. */
+  @VisibleForTesting
+  void setConfiguration(Configuration c) {
+    _c = c;
+  }
+
   @Override
   public void setHostname(@Nullable String hostname) {
     _hostname = hostname;
@@ -926,7 +970,8 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
    * Returns {@link org.batfish.datamodel.BgpProcess} for named {@code bgpVrf} if valid, or else
    * {@code null}.
    */
-  private @Nullable org.batfish.datamodel.BgpProcess toBgpProcess(String vrfName, BgpVrf bgpVrf) {
+  @Nullable
+  org.batfish.datamodel.BgpProcess toBgpProcess(String vrfName, BgpVrf bgpVrf) {
     Ip routerId = bgpVrf.getRouterId();
     if (routerId == null) {
       if (_loopback.getConfigured() && !_loopback.getAddresses().isEmpty()) {
@@ -946,30 +991,71 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
     newProc.setMultipathEbgp(false);
     newProc.setMultipathIbgp(false);
 
-    /*
-     * Create common BGP export policy. This policy permits:
-     * - BGP and iBGP routes
-     * - routes whose network matches a configured network statement
-     * - routes whose protocol matches a configured protocol redistribution policy
-     * and denies all other routes.
-     */
-    RoutingPolicy.builder()
-        .setOwner(_c)
-        .setName(computeBgpCommonExportPolicyName(vrfName))
-        .setStatements(
-            ImmutableList.of(
-                new If(
-                    new Disjunction(getBgpExportConditions(bgpVrf)),
-                    ImmutableList.of(Statements.ReturnTrue.toStaticStatement()),
-                    ImmutableList.of(Statements.ReturnFalse.toStaticStatement()))))
-        .build();
+    BgpIpv4UnicastAddressFamily ipv4Unicast = bgpVrf.getIpv4Unicast();
+    if (ipv4Unicast != null) {
+      // Add networks from network statements to new process's origination space
+      ipv4Unicast.getNetworks().keySet().forEach(newProc::addToOriginationSpace);
 
-    // Add networks from network statements to new process's origination space
-    if (bgpVrf.getIpv4Unicast() != null) {
-      bgpVrf.getIpv4Unicast().getNetworks().keySet().forEach(newProc::addToOriginationSpace);
+      // Generate aggregate routes
+      generateGeneratedRoutes(_c, _c.getVrfs().get(vrfName), ipv4Unicast.getAggregateNetworks());
     }
 
+    generateBgpCommonExportPolicy(vrfName, bgpVrf);
+
     return newProc;
+  }
+
+  /**
+   * Create common BGP export policy. This policy permits:
+   *
+   * <ul>
+   *   <li>BGP and iBGP routes
+   *   <li>routes whose network matches a configured network statement
+   *   <li>routes whose protocol matches a configured protocol
+   *   <li>redistribution policy
+   * </ul>
+   *
+   * <p>all other routes are denied.
+   */
+  private void generateBgpCommonExportPolicy(String vrfName, BgpVrf bgpVrf) {
+    RoutingPolicy bgpCommonExportPolicy =
+        RoutingPolicy.builder()
+            .setOwner(_c)
+            .setName(computeBgpCommonExportPolicyName(vrfName))
+            .build();
+
+    List<Statement> statements = new ArrayList<>();
+
+    // 1. If there are any ipv4 summary only networks, do not export the more specific routes.
+    if (bgpVrf.getIpv4Unicast() != null) {
+      Stream<Prefix> summarizedPrefixes =
+          bgpVrf.getIpv4Unicast().getAggregateNetworks().entrySet().stream()
+              .filter(e -> e.getValue().isSummaryOnly())
+              .map(Entry::getKey);
+      Optional.ofNullable(suppressSummarizedPrefixes(_c, vrfName, summarizedPrefixes))
+          .ifPresent(statements::add);
+    }
+
+    // 2. Setup export conditions, export if match, otherwise fall through
+    Disjunction exportConditions = new Disjunction();
+
+    // 2a. add export conditions for non-aggregate routes
+    exportConditions.getDisjuncts().addAll(getBgpExportConditions(bgpVrf));
+
+    // 2b. add export conditions for aggregate routes
+    if (bgpVrf.getIpv4Unicast() != null) {
+      exportConditions
+          .getDisjuncts()
+          .add(generateExportAggregateConditions(bgpVrf.getIpv4Unicast().getAggregateNetworks()));
+    }
+
+    statements.add(
+        new If(
+            exportConditions,
+            ImmutableList.of(Statements.ReturnTrue.toStaticStatement()),
+            ImmutableList.of(Statements.ReturnFalse.toStaticStatement())));
+
+    bgpCommonExportPolicy.setStatements(statements);
   }
 
   private List<BooleanExpr> getBgpExportConditions(BgpVrf bgpVrf) {

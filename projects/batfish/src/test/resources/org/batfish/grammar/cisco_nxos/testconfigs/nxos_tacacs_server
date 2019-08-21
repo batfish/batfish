@@ -1,0 +1,11 @@
+!RANCID-CONTENT-TYPE: cisco-nx
+!
+hostname nxos_tacacs_server
+!
+
+tacacs-server directed-request
+
+tacacs-server host 192.0.2.1
+tacacs-server host 192.0.2.2 key 7 xxxxxxxx
+
+ip tacacs source-interface mgmt0

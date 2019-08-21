@@ -10,6 +10,7 @@ public enum CiscoNxosStructureType implements StructureType {
   INTERFACE("interface"),
   IP_ACCESS_LIST("ip access-list"),
   IP_AS_PATH_ACCESS_LIST("ip as-path access-list"),
+  IP_COMMUNITY_LIST_EXPANDED("ip community-list expanded"),
   IP_COMMUNITY_LIST_STANDARD("ip community-list standard"),
   IP_PREFIX_LIST("ip prefix-list"),
   IPV6_ACCESS_LIST("ipv6 access-list"),
@@ -20,7 +21,11 @@ public enum CiscoNxosStructureType implements StructureType {
   PORT_CHANNEL("port-channel"),
   ROUTE_MAP("route-map"),
   ROUTE_MAP_ENTRY("route-map entry"),
+  ROUTER_EIGRP("router eigrp"),
+  ROUTER_ISIS("router isis"),
   ROUTER_OSPF("router ospf"),
+  ROUTER_OSPFV3("router ospfv3"),
+  ROUTER_RIP("router rip"),
   VLAN("vlan"),
   VRF("vrf");
 

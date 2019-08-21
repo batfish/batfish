@@ -5,6 +5,7 @@ import
   CiscoNxos_aaa,
   CiscoNxos_bgp,
   CiscoNxos_class_map,
+  CiscoNxos_eigrp,
   CiscoNxos_evpn,
   CiscoNxos_interface,
   CiscoNxos_ip_access_list,
@@ -12,12 +13,16 @@ import
   CiscoNxos_ip_community_list,
   CiscoNxos_ip_prefix_list,
   CiscoNxos_ipv6_access_list,
+  CiscoNxos_ipv6_prefix_list,
+  CiscoNxos_logging,
+  CiscoNxos_ntp,
   CiscoNxos_object_group,
   CiscoNxos_ospf,
   CiscoNxos_policy_map,
   CiscoNxos_route_map,
   CiscoNxos_snmp,
   CiscoNxos_static,
+  CiscoNxos_tacacs_server,
   CiscoNxos_vlan,
   CiscoNxos_vrf;
 
@@ -43,7 +48,9 @@ statement
   | s_ip
   | s_ipv6
   | s_key
+  | s_logging
   | s_no
+  | s_ntp
   | s_null
   | s_nv
   | s_object_group
@@ -53,6 +60,7 @@ statement
   | s_router
   | s_snmp_server
   | s_system
+  | s_tacacs_server
   | s_track
   | s_version
   | s_vlan
@@ -100,15 +108,81 @@ s_ip
     ip_access_list
     | ip_as_path_access_list
     | ip_community_list
+    | ip_domain_name
+    | ip_name_server
     | ip_null
     | ip_prefix_list
     | ip_route
+    | ip_tacacs
+    | ip_sla
   )
+;
+
+ip_domain_name
+:
+  DOMAIN_NAME domain = domain_name NEWLINE
+;
+
+domain_name
+:
+// 1-64 characters
+  WORD
+;
+
+ip_name_server
+:
+  NAME_SERVER servers += name_server+ (USE_VRF vrf = vrf_name)? NEWLINE
+;
+
+name_server
+:
+  ip_address
+  | ipv6_address
 ;
 
 ip_null
 :
   DOMAIN_LOOKUP
+;
+
+ip_sla
+:
+  SLA
+  (
+    ip_sla_block
+    | ip_sla_null
+  )
+;
+
+ip_sla_block
+:
+  entry = uint32 NEWLINE
+  ip_sla_entry+
+;
+
+ip_sla_entry
+:
+  (
+    DNS
+    | HTTP
+    | ICMP_ECHO
+    | TCP_CONNECT
+    | UDP_ECHO
+    | UDP_JITTER
+  ) null_rest_of_line
+;
+
+ip_sla_null
+:
+  (
+    GROUP
+    | LOGGING
+    | REACTION_CONFIGURATION
+    | REACTION_TRIGGER
+    | RESET
+    | RESPONDER
+    | SCHEDULE
+  ) null_rest_of_line
 ;
 
 s_ipv6
@@ -118,12 +192,6 @@ s_ipv6
     ipv6_access_list
     | ipv6_prefix_list
   )
-;
-
-ipv6_prefix_list
-:
-// TODO: something much less lazy
-  PREFIX_LIST null_rest_of_line
 ;
 
 s_key
@@ -203,6 +271,7 @@ s_router
   ROUTER
   (
     router_bgp
+    | router_eigrp
     | router_ospf
   )
 ;

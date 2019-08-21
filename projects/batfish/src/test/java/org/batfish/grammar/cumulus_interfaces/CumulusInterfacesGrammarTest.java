@@ -105,6 +105,10 @@ public class CumulusInterfacesGrammarTest {
     assertThat(
         getDefinedStructureInfo(CumulusStructureType.INTERFACE, "swp1").getDefinitionLines(),
         contains(1));
+    assertThat(
+        getStructureReferences(
+            CumulusStructureType.INTERFACE, "swp1", CumulusStructureUsage.INTERFACE_SELF_REFERENCE),
+        contains(1));
   }
 
   @Test
@@ -286,6 +290,11 @@ public class CumulusInterfacesGrammarTest {
   }
 
   @Test
+  public void testIfaceGateway() {
+    parse("iface eth0\n gateway 1.2.3.4\n");
+  }
+
+  @Test
   public void testIfaceHwaddress() {
     parse("iface vlan1\n hwaddress 00:00:00:00:00:00\n");
   }
@@ -330,6 +339,10 @@ public class CumulusInterfacesGrammarTest {
     // not marked as an interface definition
     assertNull(getDefinedStructureInfo(CumulusStructureType.INTERFACE, "vlan1"));
     assertNotNull(getDefinedStructureInfo(CumulusStructureType.VLAN, "vlan1"));
+    assertThat(
+        getStructureReferences(
+            CumulusStructureType.VLAN, "vlan1", CumulusStructureUsage.VLAN_SELF_REFERENCE),
+        contains(1));
   }
 
   @Test
@@ -360,6 +373,37 @@ public class CumulusInterfacesGrammarTest {
     // not marked as an interface definition
     assertNull(getDefinedStructureInfo(CumulusStructureType.INTERFACE, "vrf1"));
     assertNotNull(getDefinedStructureInfo(CumulusStructureType.VRF, "vrf1"));
+    assertThat(
+        getStructureReferences(
+            CumulusStructureType.VRF, "vrf1", CumulusStructureUsage.VRF_SELF_REFERENCE),
+        contains(1));
+  }
+
+  @Test
+  public void testLoopback() {
+    parse("iface lo inet loopback\n");
+    assertTrue(CONFIG.getLoopback().getConfigured());
+    assertThat(
+        getDefinedStructureInfo(CumulusStructureType.LOOPBACK, "lo").getDefinitionLines(),
+        contains(1));
+    assertThat(
+        getStructureReferences(
+            CumulusStructureType.LOOPBACK, "lo", CumulusStructureUsage.LOOPBACK_SELF_REFERENCE),
+        contains(1));
+  }
+
+  @Test
+  public void testLoopbackAddress() {
+    parse("iface lo inet loopback\n address 1.2.3.4/24\n");
+    assertThat(
+        CONFIG.getLoopback().getAddresses(),
+        contains(ConcreteInterfaceAddress.parse("1.2.3.4/24")));
+  }
+
+  @Test
+  public void testLoopbackClagdVxlanAnycastIp() {
+    parse("iface lo inet loopback\n clagd-vxlan-anycast-ip 1.2.3.4\n");
+    assertThat(CONFIG.getLoopback().getClagVxlanAnycastIp(), equalTo(Ip.parse("1.2.3.4")));
   }
 
   @Test
@@ -371,6 +415,10 @@ public class CumulusInterfacesGrammarTest {
     // not marked as an interface definition
     assertNull(getDefinedStructureInfo(CumulusStructureType.INTERFACE, "swp1"));
     assertNotNull(getDefinedStructureInfo(CumulusStructureType.VXLAN, "swp1"));
+    assertThat(
+        getStructureReferences(
+            CumulusStructureType.VXLAN, "swp1", CumulusStructureUsage.VXLAN_SELF_REFERENCE),
+        contains(1));
   }
 
   @Test
