@@ -149,6 +149,7 @@ import org.batfish.datamodel.isis.IsisInterfaceSettings;
 import org.batfish.datamodel.ospf.OspfArea;
 import org.batfish.datamodel.ospf.OspfAreaSummary;
 import org.batfish.datamodel.ospf.OspfDefaultOriginateType;
+import org.batfish.datamodel.ospf.OspfInterfaceSettings;
 import org.batfish.datamodel.ospf.OspfMetricType;
 import org.batfish.datamodel.ospf.StubType;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
@@ -2707,7 +2708,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
               ImmutableList.of(MATCH_DEFAULT_ROUTE, new MatchProtocol(RoutingProtocol.AGGREGATE))));
     }
 
-    computeDistributeListPolicies(proc, newProcess, c, vrfName, proc.getName(), oldConfig);
+    computeDistributeListPolicies(proc, newProcess, c, vrfName, proc.getName(), oldConfig, _w);
 
     // policies for redistributing routes
     ospfExportStatements.addAll(
@@ -2725,28 +2726,30 @@ public final class CiscoConfiguration extends VendorConfiguration {
       @Nullable OspfProcess proc,
       @Nullable Long areaNum) {
     String ifaceName = vsIface.getName();
-    iface.setOspfPassive(false);
+    OspfInterfaceSettings.Builder ospfSettings = OspfInterfaceSettings.builder().setPassive(false);
     if (proc != null) {
-      iface.setOspfProcess(proc.getName());
+      ospfSettings.setProcess(proc.getName());
       if (firstNonNull(
           vsIface.getOspfPassive(),
           proc.getPassiveInterfaces().contains(ifaceName)
               || (proc.getPassiveInterfaceDefault()
                   ^ proc.getNonDefaultInterfaces().contains(ifaceName)))) {
         proc.getPassiveInterfaces().add(ifaceName);
-        iface.setOspfPassive(true);
+        ospfSettings.setPassive(true);
       }
     }
-    iface.setOspfCost(vsIface.getOspfCost());
+    ospfSettings.setCost(vsIface.getOspfCost());
     Integer deadInterval = vsIface.getOspfDeadInterval();
     if (deadInterval != null) {
-      iface.setOspfDeadInterval(deadInterval);
+      ospfSettings.setDeadInterval(deadInterval);
     }
-    iface.setOspfHelloMultiplier(vsIface.getOspfHelloMultiplier());
+    ospfSettings.setHelloMultiplier(vsIface.getOspfHelloMultiplier());
 
-    iface.setOspfAreaName(areaNum);
-    iface.setOspfEnabled(proc != null && areaNum != null && !vsIface.getOspfShutdown());
-    iface.setOspfNetworkType(toOspfNetworkType(vsIface.getOspfNetworkType()));
+    ospfSettings.setAreaName(areaNum);
+    ospfSettings.setEnabled(proc != null && areaNum != null && !vsIface.getOspfShutdown());
+    ospfSettings.setNetworkType(toOspfNetworkType(vsIface.getOspfNetworkType()));
+
+    iface.setOspfSettings(ospfSettings.build());
   }
 
   @Nullable

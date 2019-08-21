@@ -59,6 +59,10 @@ public final class OspfTopologyUtils {
               if (iface.getConcreteAddress() == null) {
                 continue;
               }
+              // Skip any interface without OSPF settings
+              if (iface.getOspfSettings() == null) {
+                continue;
+              }
               neighborMap.put(
                   ifaceName,
                   OspfNeighborConfig.builder()

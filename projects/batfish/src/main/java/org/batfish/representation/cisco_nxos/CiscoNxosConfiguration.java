@@ -104,6 +104,7 @@ import org.batfish.datamodel.bgp.community.StandardCommunity;
 import org.batfish.datamodel.isis.IsisMetricType;
 import org.batfish.datamodel.ospf.NssaSettings;
 import org.batfish.datamodel.ospf.OspfAreaSummary;
+import org.batfish.datamodel.ospf.OspfInterfaceSettings;
 import org.batfish.datamodel.ospf.OspfMetricType;
 import org.batfish.datamodel.ospf.StubSettings;
 import org.batfish.datamodel.packet_policy.BoolExpr;
@@ -2112,16 +2113,19 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
       boolean passiveInterfaceDefault,
       OspfInterface ospf) {
     org.batfish.datamodel.Interface newIface = _c.getAllInterfaces().get(ifaceName);
-    newIface.setOspfCost(ospf.getCost());
-    newIface.setOspfEnabled(true);
-    newIface.setOspfAreaName(areaId);
-    newIface.setOspfProcess(processName);
-    newIface.setOspfPassive(
+    OspfInterfaceSettings.Builder ospfSettings = OspfInterfaceSettings.builder();
+    ospfSettings.setCost(ospf.getCost());
+    ospfSettings.setEnabled(true);
+    ospfSettings.setAreaName(areaId);
+    ospfSettings.setProcess(processName);
+    ospfSettings.setPassive(
         ospf.getPassive() != null
             ? ospf.getPassive()
             : passiveInterfaceDefault || newIface.getName().startsWith("loopback"));
-    newIface.setOspfNetworkType(toOspfNetworkType(ospf.getNetwork()));
+    ospfSettings.setNetworkType(toOspfNetworkType(ospf.getNetwork()));
     // TODO: update data model to support explicit hello and dead intervals
+
+    newIface.setOspfSettings(ospfSettings.build());
   }
 
   private @Nonnull NssaSettings toNssaSettings(OspfAreaNssa ospfAreaNssa) {
