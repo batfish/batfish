@@ -202,6 +202,21 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
                 .collect(Collectors.joining("|")));
   }
 
+  // Defaults from
+  // https://www.cisco.com/c/en/us/support/docs/ip/open-shortest-path-first-ospf/13689-17.html
+  static int DEFAULT_OSPF_HELLO_INTERVAL_P2P_AND_BROADCAST = 10;
+
+  static int DEFAULT_OSPF_HELLO_INTERVAL = 30;
+
+  // Default dead interval is hello interval times 4
+  static int OSPF_DEAD_INTERVAL_HELLO_MULTIPLIER = 4;
+
+  static int DEFAULT_OSPF_DEAD_INTERVAL_P2P_AND_BROADCAST =
+      OSPF_DEAD_INTERVAL_HELLO_MULTIPLIER * DEFAULT_OSPF_HELLO_INTERVAL_P2P_AND_BROADCAST;
+
+  static int DEFAULT_OSPF_DEAD_INTERVAL =
+      OSPF_DEAD_INTERVAL_HELLO_MULTIPLIER * DEFAULT_OSPF_HELLO_INTERVAL;
+
   /** On NX-OS, there is a default VRF named "default". */
   public static final String DEFAULT_VRF_NAME = "default";
 
@@ -2127,6 +2142,8 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
 
     newIface.setOspfSettings(ospfSettings.build());
   }
+
+
 
   private @Nonnull NssaSettings toNssaSettings(OspfAreaNssa ospfAreaNssa) {
     return NssaSettings.builder()
