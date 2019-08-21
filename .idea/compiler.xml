@@ -11,12 +11,9 @@
         <module name="batfish" />
         <module name="batfish-client" />
         <module name="batfish-common-protocol" />
-        <module name="bdd" />
         <module name="build-tools" />
         <module name="coordinator" />
-        <module name="minesweeper" />
         <module name="question" />
-        <module name="symbolic" />
       </profile>
     </annotationProcessing>
     <bytecodeTargetLevel>
@@ -25,26 +22,20 @@
       <module name="batfish-client" target="1.8" />
       <module name="batfish-common-protocol" target="1.8" />
       <module name="batfish-parent" target="1.5" />
-      <module name="bdd" target="1.8" />
       <module name="build-tools" target="1.8" />
       <module name="coordinator" target="1.8" />
-      <module name="minesweeper" target="1.8" />
       <module name="question" target="1.8" />
-      <module name="symbolic" target="1.8" />
     </bytecodeTargetLevel>
   </component>
   <component name="JavacSettings">
     <option name="ADDITIONAL_OPTIONS_OVERRIDE">
-      <module name="allinone" options="-Werror -Xlint:all -Xlint:-options -Xlint:-processing -Xlint:-serial -XDignore.symbol.file" />
-      <module name="batfish" options="-Werror -Xlint:all -Xlint:-options -Xlint:-processing -Xlint:-serial -XDignore.symbol.file" />
-      <module name="batfish-client" options="-Werror -Xlint:all -Xlint:-options -Xlint:-processing -Xlint:-serial -XDignore.symbol.file" />
-      <module name="batfish-common-protocol" options="-Werror -Xlint:all -Xlint:-options -Xlint:-processing -Xlint:-serial -XDignore.symbol.file" />
-      <module name="bdd" options="-Xlint:all -Xlint:-options -Xlint:-processing -Xlint:-serial -XDignore.symbol.file" />
-      <module name="build-tools" options="-Werror -Xlint:all -Xlint:-options -Xlint:-processing -Xlint:-serial -XDignore.symbol.file" />
-      <module name="coordinator" options="-Werror -Xlint:all -Xlint:-options -Xlint:-processing -Xlint:-serial -XDignore.symbol.file" />
-      <module name="minesweeper" options="-Werror -Xlint:all -Xlint:-options -Xlint:-processing -Xlint:-serial -XDignore.symbol.file" />
-      <module name="question" options="-Werror -Xlint:all -Xlint:-options -Xlint:-processing -Xlint:-serial -XDignore.symbol.file" />
-      <module name="symbolic" options="-Werror -Xlint:all -Xlint:-options -Xlint:-processing -Xlint:-serial -XDignore.symbol.file" />
+      <module name="allinone" options="-Werror -Xlint:all -Xlint:-options -Xlint:-processing -XDignore.symbol.file" />
+      <module name="batfish" options="-Werror -Xlint:all -Xlint:-options -Xlint:-processing -XDignore.symbol.file" />
+      <module name="batfish-client" options="-Werror -Xlint:all -Xlint:-options -Xlint:-processing -XDignore.symbol.file" />
+      <module name="batfish-common-protocol" options="-Werror -Xlint:all -Xlint:-options -Xlint:-processing -XDignore.symbol.file" />
+      <module name="build-tools" options="-Werror -Xlint:all -Xlint:-options -Xlint:-processing -XDignore.symbol.file" />
+      <module name="coordinator" options="-Werror -Xlint:all -Xlint:-options -Xlint:-processing -XDignore.symbol.file" />
+      <module name="question" options="-Werror -Xlint:all -Xlint:-options -Xlint:-processing -XDignore.symbol.file" />
     </option>
   </component>
 </project>
