@@ -411,7 +411,7 @@ public final class Interface extends ComparableStructure<String> {
     public Builder setOspfSettings(OspfInterfaceSettings ospfSettings) {
       if (_hasIndividualOspfSettings) {
         throw new BatfishException(
-            "Cannot set individual OSPF settings and supply an OspfInterfaceSettings object.");
+            "Cannot set individual OSPF settings (legacy) and supply an OspfInterfaceSettings object.  Instead, just supply an OspfInterfaceSettings object.");
       }
       _ospfSettings = ospfSettings;
       return this;

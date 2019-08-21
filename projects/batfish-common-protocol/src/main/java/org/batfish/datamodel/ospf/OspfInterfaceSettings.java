@@ -12,7 +12,7 @@ import javax.annotation.ParametersAreNonnullByDefault;
 
 /** Contains OSPF settings for an OSPF interface. */
 @ParametersAreNonnullByDefault
-public class OspfInterfaceSettings implements Serializable {
+public final class OspfInterfaceSettings implements Serializable {
 
   public static @Nonnull Builder builder() {
     return new Builder();
@@ -180,34 +180,15 @@ public class OspfInterfaceSettings implements Serializable {
       return false;
     }
     OspfInterfaceSettings other = (OspfInterfaceSettings) o;
-    if (!Objects.equals(_ospfAreaName, other._ospfAreaName)) {
-      return false;
-    }
-    if (!Objects.equals(_ospfCost, other._ospfCost)) {
-      return false;
-    }
-    if (!Objects.equals(_ospfDeadInterval, other._ospfDeadInterval)) {
-      return false;
-    }
-    if (!Objects.equals(_ospfEnabled, other._ospfEnabled)) {
-      return false;
-    }
-    if (!Objects.equals(_ospfHelloMultiplier, other._ospfHelloMultiplier)) {
-      return false;
-    }
-    if (!Objects.equals(_ospfInboundDistributeListPolicy, other._ospfInboundDistributeListPolicy)) {
-      return false;
-    }
-    if (!Objects.equals(_ospfNetworkType, other._ospfNetworkType)) {
-      return false;
-    }
-    if (!Objects.equals(_ospfPassive, other._ospfPassive)) {
-      return false;
-    }
-    if (!Objects.equals(_ospfProcess, other._ospfProcess)) {
-      return false;
-    }
-    return true;
+    return Objects.equals(_ospfAreaName, other._ospfAreaName)
+        && Objects.equals(_ospfCost, other._ospfCost)
+        && Objects.equals(_ospfDeadInterval, other._ospfDeadInterval)
+        && Objects.equals(_ospfEnabled, other._ospfEnabled)
+        && Objects.equals(_ospfHelloMultiplier, other._ospfHelloMultiplier)
+        && Objects.equals(_ospfInboundDistributeListPolicy, other._ospfInboundDistributeListPolicy)
+        && Objects.equals(_ospfNetworkType, other._ospfNetworkType)
+        && Objects.equals(_ospfPassive, other._ospfPassive)
+        && Objects.equals(_ospfProcess, other._ospfProcess);
   }
 
   /** The OSPF area to which this interface belongs. */
@@ -262,8 +243,8 @@ public class OspfInterfaceSettings implements Serializable {
   }
 
   /**
-   * Whether or not OSPF is enabled passively on this interface. If passive, this interface is
-   * included in the OSPF RIB, but no OSPF packets are sent from it.
+   * Whether or not OSPF is enabled passively on this interface. If passive, the interface cannot
+   * establish a neighbor relationship, but its subnets are still advertised.
    */
   @JsonProperty(PROP_PASSIVE)
   @Nullable
