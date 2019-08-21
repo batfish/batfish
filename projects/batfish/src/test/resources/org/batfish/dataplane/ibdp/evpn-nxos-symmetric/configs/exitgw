@@ -3,6 +3,8 @@
 !Time: Tue Jun 25 17:32:37 2019
 
 version 9.2(3) Bios:version
+boot nxos bootflash:/nxos.9.2.3.bin
+
 hostname exitgw
 
 nv overlay evpn
@@ -11,7 +13,7 @@ feature interface-vlan
 feature vn-segment-vlan-based
 feature nv overlay
 
-vlan 1,10,20,333
+vlan 10,20,333
 vlan 10
   vn-segment 10010
 vlan 20
@@ -19,15 +21,12 @@ vlan 20
 vlan 333
   vn-segment 100333
 
-vrf context management
 vrf context vrf1
   vni 100333
   rd auto
   address-family ipv4 unicast
     route-target both auto
     route-target both auto evpn
-
-interface Vlan1
 
 interface Vlan10
   no shutdown
@@ -67,26 +66,9 @@ interface Ethernet1/1
   ip address 10.10.100.2/24
   no shutdown
 
-interface Ethernet1/11
-  switchport access vlan 10
-
-interface Ethernet1/12
-  switchport access vlan 20
-
-
-interface Ethernet1/23
-  no switchport
-  vrf member vrf1
-  ip address 10.10.102.2/24
-  no shutdown
-
-
-interface mgmt0
-  vrf member management
-
 interface loopback0
   ip address 2.2.2.2/32
-boot nxos bootflash:/nxos.9.2.3.bin
+
 router bgp 65000
   router-id 2.2.2.2
   address-family ipv4 unicast
@@ -117,4 +99,3 @@ evpn
     rd auto
     route-target import auto
     route-target export auto
-

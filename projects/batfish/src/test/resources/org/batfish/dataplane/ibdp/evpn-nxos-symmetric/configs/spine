@@ -3,18 +3,17 @@
 !Time: Tue Jun 25 18:31:50 2019
 
 version 9.2(3) Bios:version
+boot nxos bootflash:/nxos.9.2.3.bin
+
 hostname spine
 
 nv overlay evpn
 feature bgp
 feature nv overlay
 
-vlan 1
 
 route-map permitall permit 10
   set ip next-hop unchanged
-vrf context management
-
 
 interface Ethernet1/1
   no switchport
@@ -22,28 +21,15 @@ interface Ethernet1/1
   ip address 10.10.11.1/24
   no shutdown
 
-interface Ethernet1/2
-  no switchport
-  mtu 9216
-  ip address 10.10.12.1/24
-  no shutdown
-
-interface Ethernet1/3
-
-interface Ethernet1/4
-
 interface Ethernet1/5
   no switchport
   mtu 9216
   ip address 10.10.100.1/24
   no shutdown
 
-interface mgmt0
-  vrf member management
-
 interface loopback0
   ip address 1.1.1.1/32
-boot nxos bootflash:/nxos.9.2.3.bin
+
 router bgp 65000
   router-id 1.1.1.1
   address-family ipv4 unicast
@@ -53,7 +39,7 @@ router bgp 65000
     network 10.10.100.0/24
   address-family l2vpn evpn
     retain route-target all
-  template peer LEAF-VPC
+  template peer LEAF
     remote-as 65000
     address-family ipv4 unicast
       disable-peer-as-check
@@ -67,9 +53,7 @@ router bgp 65000
       send-community extended
       route-map permitall out
   neighbor 10.10.11.2
-    inherit peer LEAF-VPC
-  neighbor 10.10.12.2
-    inherit peer LEAF-VPC
+    inherit peer LEAF
   neighbor 10.10.100.2
     remote-as 65000
     address-family ipv4 unicast
@@ -81,4 +65,3 @@ router bgp 65000
       send-community
       send-community extended
       route-map permitall out
-
