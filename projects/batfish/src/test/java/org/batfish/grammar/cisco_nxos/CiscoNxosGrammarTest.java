@@ -20,6 +20,7 @@ import static org.batfish.datamodel.acl.AclLineMatchExprs.matchSrc;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.matchSrcPort;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.matchTcpFlags;
 import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasAdministrativeCost;
+import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasMetric;
 import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasNextHopInterface;
 import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasNextHopIp;
 import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasPrefix;
@@ -77,6 +78,7 @@ import static org.batfish.grammar.cisco_nxos.CiscoNxosControlPlaneExtractor.UDP_
 import static org.batfish.main.BatfishTestUtils.configureBatfishTestSettings;
 import static org.batfish.representation.cisco_nxos.CiscoNxosConfiguration.DEFAULT_VRF_NAME;
 import static org.batfish.representation.cisco_nxos.CiscoNxosConfiguration.NULL_VRF_NAME;
+import static org.batfish.representation.cisco_nxos.CiscoNxosConfiguration.computeRoutingPolicyName;
 import static org.batfish.representation.cisco_nxos.CiscoNxosConfiguration.toJavaRegex;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureType.OBJECT_GROUP_IP_ADDRESS;
 import static org.batfish.representation.cisco_nxos.OspfInterface.DEFAULT_DEAD_INTERVAL_S;
@@ -447,7 +449,9 @@ public final class CiscoNxosGrammarTest {
 
   private @Nonnull Bgpv4Route processRouteIn(RoutingPolicy routingPolicy, Bgpv4Route route) {
     Bgpv4Route.Builder builder = route.toBuilder();
-    routingPolicy.process(route, builder, Ip.parse("192.0.2.1"), DEFAULT_VRF_NAME, Direction.IN);
+    assertTrue(
+        routingPolicy.process(
+            route, builder, Ip.parse("192.0.2.1"), DEFAULT_VRF_NAME, Direction.IN));
     return builder.build();
   }
 
@@ -460,7 +464,9 @@ public final class CiscoNxosGrammarTest {
             .setArea(456L)
             .setCostToAdvertiser(789L)
             .setAdvertiser("n1");
-    routingPolicy.process(route, builder, Ip.parse("192.0.2.1"), DEFAULT_VRF_NAME, Direction.OUT);
+    assertTrue(
+        routingPolicy.process(
+            route, builder, Ip.parse("192.0.2.1"), DEFAULT_VRF_NAME, Direction.OUT));
     return builder.build();
   }
 
@@ -4889,11 +4895,17 @@ public final class CiscoNxosGrammarTest {
             "match_undefined_community_list",
             "match_undefined_prefix_list",
             "continue_skip_deny",
+            computeRoutingPolicyName("continue_skip_deny", 30),
             "continue_from_deny_to_permit",
+            computeRoutingPolicyName("continue_from_deny_to_permit", 20),
             "continue_from_permit_to_fall_off",
+            computeRoutingPolicyName("continue_from_permit_to_fall_off", 20),
             "continue_from_permit_and_set_to_fall_off",
-            "continue_with_set_and_fall_off",
-            "continue_from_set_to_match_on_set_field"));
+            computeRoutingPolicyName("continue_from_permit_and_set_to_fall_off", 20),
+            "continue_from_set_to_match_on_set_field",
+            computeRoutingPolicyName("continue_from_set_to_match_on_set_field", 20),
+            "reach_continue_target_without_match",
+            computeRoutingPolicyName("reach_continue_target_without_match", 30)));
     Ip origNextHopIp = Ip.parse("192.0.2.254");
     Bgpv4Route base =
         Bgpv4Route.builder()
@@ -5125,7 +5137,45 @@ public final class CiscoNxosGrammarTest {
       RoutingPolicy rp = c.getRoutingPolicies().get("match_undefined_prefix_list");
       assertRoutingPolicyDeniesRoute(rp, base);
     }
-    // TODO: continue route-maps
+
+    // continue route-maps
+    {
+      RoutingPolicy rp = c.getRoutingPolicies().get("continue_skip_deny");
+      // should permit everything
+      assertRoutingPolicyPermitsRoute(rp, base);
+    }
+    {
+      RoutingPolicy rp = c.getRoutingPolicies().get("continue_from_deny_to_permit");
+      // TODO: verify
+      // should permit everything
+      assertRoutingPolicyPermitsRoute(rp, base);
+    }
+    {
+      RoutingPolicy rp = c.getRoutingPolicies().get("continue_from_permit_to_fall_off");
+      // TODO: verify
+      // should deny everything without tag 10
+      assertRoutingPolicyDeniesRoute(rp, base);
+      assertRoutingPolicyPermitsRoute(rp, base.toBuilder().setTag(10L).build());
+    }
+    {
+      RoutingPolicy rp = c.getRoutingPolicies().get("continue_from_permit_and_set_to_fall_off");
+      // TODO: verify
+      // should deny everything without tag 10
+      assertRoutingPolicyDeniesRoute(rp, base);
+      assertThat(processRouteIn(rp, base.toBuilder().setTag(10L).build()), hasMetric(10L));
+    }
+    {
+      RoutingPolicy rp = c.getRoutingPolicies().get("continue_from_set_to_match_on_set_field");
+      // TODO: verify
+      // should deny everything without STARTING metric 10
+      assertRoutingPolicyDeniesRoute(rp, base);
+      assertRoutingPolicyPermitsRoute(rp, base.toBuilder().setMetric(10L).build());
+    }
+    {
+      RoutingPolicy rp = c.getRoutingPolicies().get("reach_continue_target_without_match");
+      // should permit everything
+      assertRoutingPolicyPermitsRoute(rp, base);
+    }
   }
 
   @Test
@@ -5176,8 +5226,8 @@ public final class CiscoNxosGrammarTest {
             "continue_from_deny_to_permit",
             "continue_from_permit_to_fall_off",
             "continue_from_permit_and_set_to_fall_off",
-            "continue_with_set_and_fall_off",
-            "continue_from_set_to_match_on_set_field"));
+            "continue_from_set_to_match_on_set_field",
+            "reach_continue_target_without_match"));
     {
       RouteMap rm = vc.getRouteMaps().get("empty_deny");
       assertThat(rm.getEntries().keySet(), contains(10));
@@ -5492,7 +5542,69 @@ public final class CiscoNxosGrammarTest {
       assertThat(entry.getSets().collect(onlyElement()), equalTo(set));
       assertThat(set.getTag(), equalTo(1L));
     }
-    // TODO: route-map 'continue' extraction
+
+    // continue extraction
+    {
+      RouteMap rm = vc.getRouteMaps().get("continue_skip_deny");
+      assertThat(rm.getEntries().keySet(), contains(10, 20, 30));
+      assertThat(rm.getEntries().get(10).getAction(), equalTo(LineAction.PERMIT));
+      assertThat(rm.getEntries().get(10).getContinue(), equalTo(30));
+      assertThat(rm.getEntries().get(20).getAction(), equalTo(LineAction.DENY));
+      assertThat(rm.getEntries().get(20).getContinue(), nullValue());
+      assertThat(rm.getEntries().get(30).getAction(), equalTo(LineAction.PERMIT));
+      assertThat(rm.getEntries().get(30).getContinue(), nullValue());
+    }
+    {
+      RouteMap rm = vc.getRouteMaps().get("continue_from_deny_to_permit");
+      assertThat(rm.getEntries().keySet(), contains(10, 20));
+      assertThat(rm.getEntries().get(10).getAction(), equalTo(LineAction.DENY));
+      assertThat(rm.getEntries().get(10).getContinue(), equalTo(20));
+      assertThat(rm.getEntries().get(20).getAction(), equalTo(LineAction.PERMIT));
+      assertThat(rm.getEntries().get(20).getContinue(), nullValue());
+    }
+    {
+      RouteMap rm = vc.getRouteMaps().get("continue_from_permit_to_fall_off");
+      assertThat(rm.getEntries().keySet(), contains(10, 20));
+      assertThat(rm.getEntries().get(10).getAction(), equalTo(LineAction.PERMIT));
+      assertThat(rm.getEntries().get(10).getContinue(), equalTo(20));
+      assertThat(rm.getEntries().get(20).getAction(), equalTo(LineAction.PERMIT));
+      assertThat(rm.getEntries().get(20).getContinue(), nullValue());
+      assertThat(rm.getEntries().get(20).getMatchTag().getTag(), equalTo(10L));
+    }
+    {
+      RouteMap rm = vc.getRouteMaps().get("continue_from_permit_and_set_to_fall_off");
+      assertThat(rm.getEntries().keySet(), contains(10, 20));
+      assertThat(rm.getEntries().get(10).getAction(), equalTo(LineAction.PERMIT));
+      assertThat(rm.getEntries().get(10).getContinue(), equalTo(20));
+      assertThat(rm.getEntries().get(10).getSetMetric().getMetric(), equalTo(10L));
+      assertThat(rm.getEntries().get(20).getAction(), equalTo(LineAction.PERMIT));
+      assertThat(rm.getEntries().get(20).getContinue(), nullValue());
+      assertThat(rm.getEntries().get(20).getMatchTag().getTag(), equalTo(10L));
+    }
+    {
+      RouteMap rm = vc.getRouteMaps().get("continue_from_set_to_match_on_set_field");
+      assertThat(rm.getEntries().keySet(), contains(10, 20, 30));
+      assertThat(rm.getEntries().get(10).getAction(), equalTo(LineAction.PERMIT));
+      assertThat(rm.getEntries().get(10).getContinue(), equalTo(20));
+      assertThat(rm.getEntries().get(10).getSetMetric().getMetric(), equalTo(10L));
+      assertThat(rm.getEntries().get(20).getAction(), equalTo(LineAction.PERMIT));
+      assertThat(rm.getEntries().get(20).getContinue(), nullValue());
+      assertThat(rm.getEntries().get(20).getMatchMetric().getMetric(), equalTo(10L));
+      assertThat(rm.getEntries().get(30).getAction(), equalTo(LineAction.DENY));
+      assertThat(rm.getEntries().get(30).getContinue(), nullValue());
+    }
+    {
+      RouteMap rm = vc.getRouteMaps().get("reach_continue_target_without_match");
+      assertThat(rm.getEntries().keySet(), contains(10, 20, 30));
+      assertThat(rm.getEntries().get(10).getAction(), equalTo(LineAction.PERMIT));
+      assertThat(rm.getEntries().get(10).getContinue(), equalTo(30));
+      assertThat(rm.getEntries().get(10).getMatchTag().getTag(), equalTo(10L));
+      assertThat(rm.getEntries().get(20).getAction(), equalTo(LineAction.PERMIT));
+      assertThat(rm.getEntries().get(20).getContinue(), nullValue());
+      assertThat(rm.getEntries().get(20).getMatchTag().getTag(), equalTo(10L));
+      assertThat(rm.getEntries().get(30).getAction(), equalTo(LineAction.PERMIT));
+      assertThat(rm.getEntries().get(30).getContinue(), nullValue());
+    }
   }
 
   @Test

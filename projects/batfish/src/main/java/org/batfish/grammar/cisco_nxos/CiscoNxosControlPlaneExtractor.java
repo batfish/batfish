@@ -3,6 +3,7 @@ package org.batfish.grammar.cisco_nxos;
 import static com.google.common.base.Preconditions.checkArgument;
 import static org.batfish.datamodel.IpWildcard.ipWithWildcardMask;
 import static org.batfish.representation.cisco_nxos.CiscoNxosConfiguration.DEFAULT_VRF_NAME;
+import static org.batfish.representation.cisco_nxos.CiscoNxosConfiguration.computeRouteMapEntryName;
 import static org.batfish.representation.cisco_nxos.CiscoNxosConfiguration.getCanonicalInterfaceNamePrefix;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureType.BGP_TEMPLATE_PEER;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureType.BGP_TEMPLATE_PEER_POLICY;
@@ -85,6 +86,7 @@ import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.IP_R
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.NVE_SELF_REFERENCE;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.NVE_SOURCE_INTERFACE;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.ROUTER_EIGRP_SELF_REFERENCE;
+import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.ROUTE_MAP_CONTINUE;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.ROUTE_MAP_MATCH_IP_ADDRESS_PREFIX_LIST;
 import static org.batfish.representation.cisco_nxos.Interface.VLAN_RANGE;
 import static org.batfish.representation.cisco_nxos.Interface.newNonVlanInterface;
@@ -388,6 +390,7 @@ import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Re_isolateContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Re_no_isolateContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Re_vrfContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Rec_autonomous_systemContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Rm_continueContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Rmm_as_pathContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Rmm_communityContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Rmm_interfaceContext;
@@ -4452,6 +4455,28 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
   public void exitPl6_description(Pl6_descriptionContext ctx) {
     toString(ctx, ctx.text)
         .ifPresent(description -> _currentIpv6PrefixList.setDescription(description));
+  }
+
+  @Override
+  public void exitRm_continue(Rm_continueContext ctx) {
+    Optional<Integer> continueTargetOrErr = toInteger(ctx, ctx.next);
+    if (!continueTargetOrErr.isPresent()) {
+      return;
+    }
+    int continueTarget = continueTargetOrErr.get();
+    if (continueTarget <= _currentRouteMapEntry.getSequence()) {
+      // CLI rejects continue to lower sequence
+      _w.addWarning(ctx, getFullText(ctx), _parser, "Cannot continue to earlier sequence");
+      return;
+    }
+    _currentRouteMapName.ifPresent(
+        routeMapName ->
+            _configuration.referenceStructure(
+                ROUTE_MAP_ENTRY,
+                computeRouteMapEntryName(routeMapName, continueTarget),
+                ROUTE_MAP_CONTINUE,
+                ctx.getStart().getLine()));
+    _currentRouteMapEntry.setContinue(continueTarget);
   }
 
   @Override
