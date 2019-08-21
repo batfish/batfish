@@ -364,19 +364,12 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
       return null;
     }
 
-    BgpIpv4UnicastAddressFamily ipv4Unicast = bgpVrf.getIpv4Unicast();
-    if (ipv4Unicast == null) {
-      return null;
-    }
+    boolean nextHopSelf =
+        Optional.ofNullable(neighbor.getIpv4UnicastAddressFamily())
+            .map(BgpNeighborIpv4UnicastAddressFamily::getNextHopSelf)
+            .orElse(false);
 
-    BgpVrfNeighborAddressFamilyConfiguration neighborConf =
-        ipv4Unicast.getNeighborAddressFamilyConfigurations().get(neighbor.getName());
-
-    if (neighborConf == null || !neighborConf.getNextHopSelf()) {
-      return null;
-    }
-
-    return new SetNextHop(SelfNextHop.getInstance(), false);
+    return nextHopSelf ? new SetNextHop(SelfNextHop.getInstance(), false) : null;
   }
 
   /** Scan all interfaces, find first that contains given remote IP */

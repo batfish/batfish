@@ -1,0 +1,101 @@
+!Command: show running-config
+!Running configuration last done at: Tue Jun 25 17:15:29 2019
+!Time: Tue Jun 25 17:32:37 2019
+
+version 9.2(3) Bios:version
+boot nxos bootflash:/nxos.9.2.3.bin
+
+hostname exitgw
+
+nv overlay evpn
+feature bgp
+feature interface-vlan
+feature vn-segment-vlan-based
+feature nv overlay
+
+vlan 10,20,333
+vlan 10
+  vn-segment 10010
+vlan 20
+  vn-segment 10020
+vlan 333
+  vn-segment 100333
+
+vrf context vrf1
+  vni 100333
+  rd auto
+  address-family ipv4 unicast
+    route-target both auto
+    route-target both auto evpn
+
+interface Vlan10
+  no shutdown
+  vrf member vrf1
+  no ip redirects
+  ip address 192.168.10.1/24
+  no ipv6 redirects
+
+interface Vlan20
+  no shutdown
+  vrf member vrf1
+  no ip redirects
+  ip address 192.168.20.1/24
+  no ipv6 redirects
+
+interface Vlan333
+  no shutdown
+  vrf member vrf1
+  no ip redirects
+  no ipv6 redirects
+
+interface nve1
+  no shutdown
+  host-reachability protocol bgp
+  source-interface loopback0
+  member vni 10010
+    suppress-arp
+    ingress-replication protocol bgp
+  member vni 10020
+    suppress-arp
+    ingress-replication protocol bgp
+  member vni 100333 associate-vrf
+
+interface Ethernet1/1
+  no switchport
+  mtu 9216
+  ip address 10.10.100.2/24
+  no shutdown
+
+interface loopback0
+  ip address 2.2.2.2/32
+
+router bgp 65000
+  router-id 2.2.2.2
+  address-family ipv4 unicast
+    network 2.2.2.2/32
+  address-family l2vpn evpn
+  neighbor 10.10.100.1
+    remote-as 65000
+    address-family ipv4 unicast
+      send-community
+      send-community extended
+    address-family l2vpn evpn
+      send-community
+      send-community extended
+  vrf vrf1
+    address-family ipv4 unicast
+      advertise l2vpn evpn
+    neighbor 10.10.102.1
+      remote-as 65200
+      address-family ipv4 unicast
+        send-community
+        send-community extended
+evpn
+  vni 10010 l2
+    rd auto
+    route-target import auto
+    route-target export auto
+  vni 10020 l2
+    rd auto
+    route-target import auto
+    route-target export auto

@@ -275,6 +275,7 @@ public class CumulusFrrGrammarTest {
   public void testBgpAddressFamilyNeighborNextHopSelf() {
     parseLines(
         "router bgp 1",
+        "neighbor 10.0.0.1 description a",
         "address-family ipv4 unicast",
         "neighbor 10.0.0.1 next-hop-self",
         "exit-address-family");
@@ -282,9 +283,9 @@ public class CumulusFrrGrammarTest {
         CONFIG
             .getBgpProcess()
             .getDefaultVrf()
-            .getIpv4Unicast()
-            .getNeighborAddressFamilyConfigurations()
+            .getNeighbors()
             .get("10.0.0.1")
+            .getIpv4UnicastAddressFamily()
             .getNextHopSelf());
   }
 

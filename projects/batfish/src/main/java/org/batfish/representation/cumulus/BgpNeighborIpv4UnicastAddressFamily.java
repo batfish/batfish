@@ -8,6 +8,7 @@ import javax.annotation.Nullable;
 public class BgpNeighborIpv4UnicastAddressFamily implements Serializable {
   @Nullable private Boolean _activated;
   @Nullable private Boolean _routeReflectorClient;
+  @Nullable private Boolean _nextHopSelf;
 
   /** Whether this address family has been explicitly activated for this neighbor */
   @Nullable
@@ -27,6 +28,16 @@ public class BgpNeighborIpv4UnicastAddressFamily implements Serializable {
 
   public void setRouteReflectorClient(@Nullable Boolean routeReflectorClient) {
     _routeReflectorClient = routeReflectorClient;
+  }
+
+  /** Whether to set next-hop to the device's IP in iBGP advertisements to the neighbor. */
+  @Nullable
+  public Boolean getNextHopSelf() {
+    return _nextHopSelf;
+  }
+
+  public void setNextHopSelf(boolean nextHopSelf) {
+    _nextHopSelf = nextHopSelf;
   }
 
   void inheritFrom(@Nonnull BgpNeighborIpv4UnicastAddressFamily other) {
