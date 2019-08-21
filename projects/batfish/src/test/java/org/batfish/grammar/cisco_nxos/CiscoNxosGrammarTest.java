@@ -101,6 +101,7 @@ import static org.hamcrest.Matchers.emptyString;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasEntry;
 import static org.hamcrest.Matchers.hasKey;
+import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
@@ -223,7 +224,6 @@ import org.batfish.representation.cisco_nxos.ActionIpAccessListLine;
 import org.batfish.representation.cisco_nxos.AddrGroupIpAddressSpec;
 import org.batfish.representation.cisco_nxos.AddressFamily;
 import org.batfish.representation.cisco_nxos.BgpGlobalConfiguration;
-import org.batfish.representation.cisco_nxos.BgpRedistributionPolicy;
 import org.batfish.representation.cisco_nxos.BgpVrfConfiguration;
 import org.batfish.representation.cisco_nxos.BgpVrfIpv4AddressFamilyConfiguration;
 import org.batfish.representation.cisco_nxos.BgpVrfL2VpnEvpnAddressFamilyConfiguration;
@@ -266,7 +266,6 @@ import org.batfish.representation.cisco_nxos.Nve;
 import org.batfish.representation.cisco_nxos.Nve.HostReachabilityProtocol;
 import org.batfish.representation.cisco_nxos.Nve.IngressReplicationProtocol;
 import org.batfish.representation.cisco_nxos.NveVni;
-import org.batfish.representation.cisco_nxos.NxosRoutingProtocol;
 import org.batfish.representation.cisco_nxos.ObjectGroupIpAddress;
 import org.batfish.representation.cisco_nxos.ObjectGroupIpAddressLine;
 import org.batfish.representation.cisco_nxos.OspfArea;
@@ -281,6 +280,7 @@ import org.batfish.representation.cisco_nxos.OspfProcess;
 import org.batfish.representation.cisco_nxos.OspfSummaryAddress;
 import org.batfish.representation.cisco_nxos.PortGroupPortSpec;
 import org.batfish.representation.cisco_nxos.PortSpec;
+import org.batfish.representation.cisco_nxos.RedistributionPolicy;
 import org.batfish.representation.cisco_nxos.RouteDistinguisherOrAuto;
 import org.batfish.representation.cisco_nxos.RouteMap;
 import org.batfish.representation.cisco_nxos.RouteMapEntry;
@@ -306,6 +306,7 @@ import org.batfish.representation.cisco_nxos.RouteMapSetMetric;
 import org.batfish.representation.cisco_nxos.RouteMapSetMetricType;
 import org.batfish.representation.cisco_nxos.RouteMapSetOrigin;
 import org.batfish.representation.cisco_nxos.RouteMapSetTag;
+import org.batfish.representation.cisco_nxos.RoutingProtocolInstance;
 import org.batfish.representation.cisco_nxos.StaticRoute;
 import org.batfish.representation.cisco_nxos.SwitchportMode;
 import org.batfish.representation.cisco_nxos.TcpOptions;
@@ -513,12 +514,17 @@ public final class CiscoNxosGrammarTest {
 
       BgpVrfIpv4AddressFamilyConfiguration ipv4u = vrf.getIpv4UnicastAddressFamily();
       assertThat(ipv4u, notNullValue());
+      assertThat(ipv4u.getRedistributionPolicies(), hasSize(3));
       assertThat(
-          ipv4u.getRedistributionPolicy(NxosRoutingProtocol.DIRECT),
-          equalTo(new BgpRedistributionPolicy("DIR_MAP", null)));
+          ipv4u.getRedistributionPolicy(RoutingProtocolInstance.direct()),
+          equalTo(new RedistributionPolicy(RoutingProtocolInstance.direct(), "DIR_MAP")));
       assertThat(
-          ipv4u.getRedistributionPolicy(NxosRoutingProtocol.OSPF),
-          equalTo(new BgpRedistributionPolicy("OSPF_MAP", "ospf_proc")));
+          ipv4u.getRedistributionPolicy(RoutingProtocolInstance.ospf("ospf_proc")),
+          equalTo(new RedistributionPolicy(RoutingProtocolInstance.ospf("ospf_proc"), "OSPF_MAP")));
+      assertThat(
+          ipv4u.getRedistributionPolicy(RoutingProtocolInstance.ospf("OSPF_PROC2")),
+          equalTo(
+              new RedistributionPolicy(RoutingProtocolInstance.ospf("OSPF_PROC2"), "OSPF_MAP2")));
 
       BgpVrfL2VpnEvpnAddressFamilyConfiguration l2vpn = vrf.getL2VpnEvpnAddressFamily();
       assertThat(l2vpn, notNullValue());
