@@ -402,8 +402,9 @@ public class CumulusFrrGrammarTest {
 
   @Test
   public void testCumulusFrrVrf() {
-    parse("vrf NAME\n exit-vrf");
-    assertThat(CONFIG.getVrfs().keySet(), equalTo(ImmutableSet.of("NAME")));
+    // vrfs are created in interfaces file, but frr also contains definition
+    CONFIG.getVrfs().put("NAME", new Vrf("NAME"));
+    parse("vrf NAME\n exit-vrf\n");
     assertThat(
         getDefinedStructureInfo(CumulusStructureType.VRF, "NAME").getDefinitionLines(),
         contains(1));
@@ -411,14 +412,16 @@ public class CumulusFrrGrammarTest {
 
   @Test
   public void testCumulusFrrVrfVni() {
-    parse("vrf NAME\n vni 170000\n exit-vrf");
+    CONFIG.getVrfs().put("NAME", new Vrf("NAME"));
+    parse("vrf NAME\n vni 170000\n exit-vrf\n");
     Vrf vrf = CONFIG.getVrfs().get("NAME");
     assertThat(vrf.getVni(), equalTo(170000));
   }
 
   @Test
   public void testCumulusFrrVrfIpRoutes() {
-    parse("vrf NAME\n ip route 1.0.0.0/8 10.0.2.1\n ip route 0.0.0.0/0 10.0.0.1\n exit-vrf");
+    CONFIG.getVrfs().put("NAME", new Vrf("NAME"));
+    parse("vrf NAME\n ip route 1.0.0.0/8 10.0.2.1\n ip route 0.0.0.0/0 10.0.0.1\n exit-vrf\n");
     assertThat(
         CONFIG.getVrfs().get("NAME").getStaticRoutes(),
         equalTo(
