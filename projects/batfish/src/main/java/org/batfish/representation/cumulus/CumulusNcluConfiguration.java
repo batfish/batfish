@@ -274,7 +274,7 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
             .setOwner(_c)
             .setName(computeBgpPeerExportPolicyName(vrfName, neighbor.getName()));
 
-    Conjunction peerExportConditions = computePeerExportConditions(neighbor, bgpVrf);
+    BooleanExpr peerExportConditions = computePeerExportConditions(neighbor, bgpVrf);
     List<Statement> acceptStmts = getAcceptStatements(neighbor, bgpVrf);
 
     peerExportPolicy.addStatement(
@@ -291,7 +291,7 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
   @VisibleForTesting
   static RoutingPolicy computeBgpNeighborImportRoutingPolicy(
       BgpNeighbor neighbor, BgpVrf bgpVrf, Configuration c) {
-    Conjunction peerImportConditions = computePeerImportConditions(neighbor, bgpVrf);
+    BooleanExpr peerImportConditions = getBgpNeighborImportPolicyCallExpr(neighbor, bgpVrf);
     if (peerImportConditions == null) {
       return null;
     }
@@ -305,7 +305,7 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
 
     peerImportPolicy.addStatement(
         new If(
-            "peer-export policy main conditional: exitAccept if true / exitReject if false",
+            "peer-import policy main conditional: exitAccept if true / exitReject if false",
             peerImportConditions,
             ImmutableList.of(Statements.ExitAccept.toStaticStatement()),
             ImmutableList.of(Statements.ExitReject.toStaticStatement())));
@@ -313,37 +313,14 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
     return peerImportPolicy.build();
   }
 
-  @VisibleForTesting
-  @Nullable
-  static Conjunction computePeerConditions(
-      @Nullable CallExpr commonPolicy, @Nullable CallExpr peerPolicy) {
-    if (commonPolicy == null && peerPolicy == null) {
-      return null;
-    }
+  private static BooleanExpr computePeerExportConditions(BgpNeighbor neighbor, BgpVrf bgpVrf) {
+    BooleanExpr commonCondition =
+        new CallExpr(computeBgpCommonExportPolicyName(bgpVrf.getVrfName()));
+    BooleanExpr peerCondition = getBgpNeighborExportPolicyCallExpr(neighbor, bgpVrf);
 
-    Conjunction peerConditions = new Conjunction();
-
-    if (commonPolicy != null) {
-      peerConditions.getConjuncts().add(commonPolicy);
-    }
-
-    if (peerPolicy != null) {
-      peerConditions.getConjuncts().add(peerPolicy);
-    }
-
-    return peerConditions;
-  }
-
-  @Nullable
-  private static Conjunction computePeerExportConditions(BgpNeighbor neighbor, BgpVrf bgpVrf) {
-    return computePeerConditions(
-        new CallExpr(computeBgpCommonExportPolicyName(bgpVrf.getVrfName())),
-        getBgpNeighborExportPolicyCallExpr(neighbor, bgpVrf));
-  }
-
-  @Nullable
-  private static Conjunction computePeerImportConditions(BgpNeighbor neighbor, BgpVrf bgpVrf) {
-    return computePeerConditions(null, getBgpNeighborImportPolicyCallExpr(neighbor, bgpVrf));
+    return peerCondition == null
+        ? commonCondition
+        : new Conjunction(ImmutableList.of(commonCondition, peerCondition));
   }
 
   private static List<Statement> getAcceptStatements(BgpNeighbor neighbor, BgpVrf bgpVrf) {
@@ -355,24 +332,18 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
 
   private static @Nullable CallExpr getBgpNeighborExportPolicyCallExpr(
       BgpNeighbor neighbor, BgpVrf bgpVrf) {
-    BgpVrfNeighborAddressFamilyConfiguration neighborConf =
-        getBgpVrfNeighborAddressFamilyConfiguration(neighbor, bgpVrf);
-    if (neighborConf == null || neighborConf.getRouteMapOut() == null) {
-      return null;
-    }
-
-    return new CallExpr(neighborConf.getRouteMapOut());
+    return Optional.ofNullable(getBgpVrfNeighborAddressFamilyConfiguration(neighbor, bgpVrf))
+        .map(BgpVrfNeighborAddressFamilyConfiguration::getRouteMapOut)
+        .map(CallExpr::new)
+        .orElse(null);
   }
 
   private static @Nullable CallExpr getBgpNeighborImportPolicyCallExpr(
       BgpNeighbor neighbor, BgpVrf bgpVrf) {
-    BgpVrfNeighborAddressFamilyConfiguration neighborConf =
-        getBgpVrfNeighborAddressFamilyConfiguration(neighbor, bgpVrf);
-    if (neighborConf == null || neighborConf.getRouteMapIn() == null) {
-      return null;
-    }
-
-    return new CallExpr(neighborConf.getRouteMapIn());
+    return Optional.ofNullable(getBgpVrfNeighborAddressFamilyConfiguration(neighbor, bgpVrf))
+        .map(BgpVrfNeighborAddressFamilyConfiguration::getRouteMapIn)
+        .map(CallExpr::new)
+        .orElse(null);
   }
 
   private static @Nullable BgpVrfNeighborAddressFamilyConfiguration

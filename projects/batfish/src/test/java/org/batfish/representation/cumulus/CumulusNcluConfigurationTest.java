@@ -1,9 +1,8 @@
 package org.batfish.representation.cumulus;
 
-import static org.batfish.representation.cumulus.CumulusNcluConfiguration.computeBgpNeighborImportRoutingPolicy;
-import static org.batfish.representation.cumulus.CumulusNcluConfiguration.computePeerConditions;
 import static org.batfish.representation.cumulus.CumulusConversions.computeBgpGenerationPolicyName;
 import static org.batfish.representation.cumulus.CumulusConversions.computeMatchSuppressedSummaryOnlyPolicyName;
+import static org.batfish.representation.cumulus.CumulusNcluConfiguration.computeBgpNeighborImportRoutingPolicy;
 import static org.batfish.representation.cumulus.CumulusNcluConfiguration.getSetNextHop;
 import static org.batfish.representation.cumulus.CumulusNcluConfiguration.toCommunityList;
 import static org.hamcrest.Matchers.equalTo;
@@ -15,25 +14,35 @@ import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
+import org.batfish.datamodel.Bgpv4Route;
 import org.batfish.datamodel.CommunityList;
 import org.batfish.datamodel.CommunityListLine;
-import org.batfish.datamodel.Configuration;
-import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.NetworkFactory;
+import org.batfish.datamodel.OriginType;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.RouteFilterLine;
 import org.batfish.datamodel.RouteFilterList;
+import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.bgp.community.StandardCommunity;
+import org.batfish.datamodel.routing_policy.Environment;
+import org.batfish.datamodel.routing_policy.Environment.Direction;
+import org.batfish.datamodel.routing_policy.Result;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
+import org.batfish.datamodel.routing_policy.RoutingPolicy.Builder;
 import org.batfish.datamodel.routing_policy.expr.CallExpr;
-import org.batfish.datamodel.routing_policy.expr.Conjunction;
 import org.batfish.datamodel.routing_policy.expr.LiteralCommunity;
+import org.batfish.datamodel.routing_policy.expr.MatchAsPath;
+import org.batfish.datamodel.routing_policy.expr.MatchCommunitySet;
+import org.batfish.datamodel.routing_policy.expr.MatchIpv4;
+import org.batfish.datamodel.routing_policy.expr.MatchLocalPreference;
 import org.batfish.datamodel.routing_policy.expr.SelfNextHop;
 import org.batfish.datamodel.routing_policy.statement.If;
 import org.batfish.datamodel.routing_policy.statement.SetNextHop;
@@ -274,20 +283,6 @@ public class CumulusNcluConfigurationTest {
   }
 
   @Test
-  public void testComputePeerConditions() {
-    assertNull(computePeerConditions(null, null));
-    assertThat(
-        computePeerConditions(new CallExpr("common"), null),
-        equalTo(new Conjunction(ImmutableList.of(new CallExpr("common")))));
-    assertThat(
-        computePeerConditions(null, new CallExpr("peer")),
-        equalTo(new Conjunction(ImmutableList.of(new CallExpr("peer")))));
-    assertThat(
-        computePeerConditions(new CallExpr("common"), new CallExpr("peer")),
-        equalTo(new Conjunction(ImmutableList.of(new CallExpr("common"), new CallExpr("peer")))));
-  }
-
-  @Test
   public void testComputeBgpNeighborImportRoutingPolicy() {
     BgpNeighbor neighbor = new BgpIpNeighbor("neighbor");
 
@@ -314,9 +309,64 @@ public class CumulusNcluConfigurationTest {
         equalTo(
             ImmutableList.of(
                 new If(
-                    "peer-export policy main conditional: exitAccept if true / exitReject if false",
-                    new Conjunction(ImmutableList.of(new CallExpr("peerMapIn"))),
+                    "peer-import policy main conditional: exitAccept if true / exitReject if false",
+                    new CallExpr("peerMapIn"),
                     ImmutableList.of(Statements.ExitAccept.toStaticStatement()),
                     ImmutableList.of(Statements.ExitReject.toStaticStatement())))));
+
+    // check route is correctly blocked/permitted
+    RoutingPolicy routemapPolicy =
+        RoutingPolicy.builder()
+            .setOwner(config)
+            .setName("peerMapIn")
+            .addStatement(
+                new If(
+                    "match community 10000:1 routes",
+                    new MatchCommunitySet(new LiteralCommunity(StandardCommunity.parse("10000:1"))),
+                    ImmutableList.of(Statements.ExitAccept.toStaticStatement()),
+                    ImmutableList.of(Statements.ExitReject.toStaticStatement())))
+            .build();
+
+    {
+      // should permit route
+      Bgpv4Route ipv4Route =
+          Bgpv4Route.builder()
+              .setOriginatorIp(Ip.parse("10.0.0.1"))
+              .setOriginType(OriginType.EGP)
+              .setProtocol(RoutingProtocol.BGP)
+              .setNetwork(Prefix.parse("10.0.0.0/24"))
+              .setCommunities(ImmutableSet.of(StandardCommunity.parse("10000:1")))
+              .build();
+
+      Environment envIpv4 =
+          Environment.builder(config)
+              .setRoutingPolicies(ImmutableMap.of("peerMapIn", routemapPolicy))
+              .setOriginalRoute(ipv4Route)
+              .setDirection(Direction.IN)
+              .build();
+      Result result = importPolicy.call(envIpv4);
+      assertTrue(result.getBooleanValue());
+    }
+
+    {
+      // should block route
+      Bgpv4Route ipv4Route =
+          Bgpv4Route.builder()
+              .setOriginatorIp(Ip.parse("10.0.0.1"))
+              .setOriginType(OriginType.EGP)
+              .setProtocol(RoutingProtocol.BGP)
+              .setNetwork(Prefix.parse("10.0.0.0/24"))
+              .setCommunities(ImmutableSet.of(StandardCommunity.parse("20000:1")))
+              .build();
+
+      Environment envIpv4 =
+          Environment.builder(config)
+              .setRoutingPolicies(ImmutableMap.of("peerMapIn", routemapPolicy))
+              .setOriginalRoute(ipv4Route)
+              .setDirection(Direction.IN)
+              .build();
+      Result result = importPolicy.call(envIpv4);
+      assertFalse(result.getBooleanValue());
+    }
   }
 }
