@@ -5,6 +5,7 @@ import java.util.Collection;
 import java.util.Optional;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import org.batfish.datamodel.RoutingProtocol;
 
 /**
  * A {@link RouteMapMatch} that matches routes based on protocol name. Arbitrary strings are
@@ -27,12 +28,12 @@ public final class RouteMapMatchSourceProtocol implements RouteMapMatch {
     return _sourceProtocol;
   }
 
-  public @Nonnull Optional<Collection<NxosRoutingProtocol>> toRoutingProtocols() {
+  public @Nonnull Optional<Collection<RoutingProtocol>> toRoutingProtocols() {
     switch (_sourceProtocol) {
       case "connected":
-        return Optional.of(ImmutableSet.of(NxosRoutingProtocol.DIRECT));
+        return Optional.of(ImmutableSet.of(RoutingProtocol.CONNECTED));
       case "static":
-        return Optional.of(ImmutableSet.of(NxosRoutingProtocol.STATIC));
+        return Optional.of(ImmutableSet.of(RoutingProtocol.STATIC));
       default:
         return Optional.empty();
     }
