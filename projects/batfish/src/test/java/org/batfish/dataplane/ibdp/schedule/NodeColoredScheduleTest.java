@@ -30,6 +30,8 @@ import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.bgp.BgpTopology;
 import org.batfish.datamodel.bgp.Ipv4UnicastAddressFamily;
 import org.batfish.datamodel.ospf.OspfArea;
+import org.batfish.datamodel.ospf.OspfInterfaceSettings;
+import org.batfish.datamodel.ospf.OspfNetworkType;
 import org.batfish.datamodel.ospf.OspfProcess;
 import org.batfish.datamodel.ospf.OspfTopology;
 import org.batfish.datamodel.ospf.OspfTopologyUtils;
@@ -65,7 +67,7 @@ public class NodeColoredScheduleTest {
     Configuration.Builder cb =
         nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS);
     Vrf.Builder vb = nf.vrfBuilder();
-    Interface.Builder ib = nf.interfaceBuilder().setOspfEnabled(true).setOspfProcess("1");
+    Interface.Builder ib = nf.interfaceBuilder();
     BgpProcess.Builder pb =
         nf.bgpProcessBuilder().setAdminCostsToVendorDefaults(ConfigurationFormat.CISCO_IOS);
     BgpActivePeerConfig.Builder nb = nf.bgpNeighborBuilder();
@@ -82,6 +84,14 @@ public class NodeColoredScheduleTest {
         ib.setOwner(r1)
             .setVrf(vrf1)
             .setAddress(ConcreteInterfaceAddress.create(R1_IP, networkBits))
+            .setOspfSettings(
+                OspfInterfaceSettings.builder()
+                    .setEnabled(true)
+                    .setProcess("1")
+                    .setAreaName(0L)
+                    .setCost(1)
+                    .setNetworkType(OspfNetworkType.POINT_TO_POINT)
+                    .build())
             .build();
     // Make OSPF process and areas
     OspfArea r1ospfArea = ospfArea.setInterfaces(ImmutableSet.of(i1.getName())).build();
@@ -89,7 +99,6 @@ public class NodeColoredScheduleTest {
         .setAreas(ImmutableSortedMap.of(0L, r1ospfArea))
         .setRouterId(Ip.parse("0.0.0.1"))
         .build();
-    i1.setOspfAreaName(r1ospfArea.getAreaNumber());
     // BGP process and neighbor
     BgpProcess r1Proc = pb.setRouterId(R1_IP).setVrf(vrf1).build();
     nb.setRemoteAs(2L)
@@ -105,6 +114,13 @@ public class NodeColoredScheduleTest {
     Interface i2 =
         ib.setOwner(r2)
             .setVrf(vrf2)
+            .setOspfSettings(
+                OspfInterfaceSettings.builder()
+                    .setProcess("1")
+                    .setEnabled(true)
+                    .setCost(1)
+                    .setNetworkType(OspfNetworkType.POINT_TO_POINT)
+                    .build())
             .setAddress(ConcreteInterfaceAddress.create(R2_IP, networkBits))
             .build();
     // Make OSPF process and areas

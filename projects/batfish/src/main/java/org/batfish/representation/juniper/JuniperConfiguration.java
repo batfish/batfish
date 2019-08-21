@@ -108,6 +108,7 @@ import org.batfish.datamodel.dataplane.rib.RibId;
 import org.batfish.datamodel.isis.IsisInterfaceMode;
 import org.batfish.datamodel.isis.IsisProcess;
 import org.batfish.datamodel.ospf.OspfAreaSummary;
+import org.batfish.datamodel.ospf.OspfInterfaceSettings;
 import org.batfish.datamodel.ospf.OspfMetricType;
 import org.batfish.datamodel.ospf.OspfNetworkType;
 import org.batfish.datamodel.ospf.OspfProcess;
@@ -870,22 +871,26 @@ public final class JuniperConfiguration extends VendorConfiguration {
       Interface vsIface,
       @Nullable OspfProcess proc,
       @Nullable Long areaNum) {
-    iface.setOspfEnabled(!firstNonNull(vsIface.getOspfDisable(), Boolean.FALSE));
-    iface.setOspfPassive(vsIface.getOspfPassive());
+    OspfInterfaceSettings.Builder ospfSettings = OspfInterfaceSettings.builder();
+
+    ospfSettings.setEnabled(!firstNonNull(vsIface.getOspfDisable(), Boolean.FALSE));
+    ospfSettings.setPassive(vsIface.getOspfPassive());
     Integer ospfCost = vsIface.getOspfCost();
     if (ospfCost == null && iface.isLoopback(ConfigurationFormat.FLAT_JUNIPER)) {
       ospfCost = 0;
     }
-    iface.setOspfCost(ospfCost);
-    iface.setOspfAreaName(areaNum);
+    ospfSettings.setCost(ospfCost);
+    ospfSettings.setAreaName(areaNum);
     if (proc != null) {
-      iface.setOspfProcess(proc.getProcessId());
+      ospfSettings.setProcess(proc.getProcessId());
     }
     // TODO infer interface type based on physical interface: "the software
     // chooses the correct
     // interface type...you should never have to set the interface type" (see
     // https://www.juniper.net/documentation/en_US/junos/topics/reference/configuration-statement/interface-type-edit-protocols-ospf.html)
-    iface.setOspfNetworkType(toOspfNetworkType(vsIface.getOspfInterfaceType()));
+    ospfSettings.setNetworkType(toOspfNetworkType(vsIface.getOspfInterfaceType()));
+
+    iface.setOspfSettings(ospfSettings.build());
   }
 
   private org.batfish.datamodel.ospf.OspfArea.Builder toOspfAreaBuilder(

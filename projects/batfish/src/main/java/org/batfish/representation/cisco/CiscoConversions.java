@@ -95,6 +95,7 @@ import org.batfish.datamodel.bgp.community.StandardCommunity;
 import org.batfish.datamodel.eigrp.EigrpMetric;
 import org.batfish.datamodel.eigrp.EigrpMetricValues;
 import org.batfish.datamodel.isis.IsisLevelSettings;
+import org.batfish.datamodel.ospf.OspfInterfaceSettings;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.routing_policy.expr.AsPathSetElem;
 import org.batfish.datamodel.routing_policy.expr.BooleanExpr;
@@ -1393,7 +1394,8 @@ public class CiscoConversions {
       @Nonnull Configuration c,
       @Nonnull String vrf,
       @Nonnull String ospfProcessId,
-      @Nonnull CiscoConfiguration oldConfig) {
+      @Nonnull CiscoConfiguration oldConfig,
+      @Nonnull Warnings w) {
     DistributeList globalDistributeList = ospfProcess.getInboundGlobalDistributeList();
 
     BooleanExpr globalCondition = null;
@@ -1441,7 +1443,15 @@ public class CiscoConversions {
                   ImmutableList.of(Statements.ExitAccept.toStaticStatement()),
                   ImmutableList.of(Statements.ExitReject.toStaticStatement())));
       c.getRoutingPolicies().put(routingPolicy.getName(), routingPolicy);
-      iface.setOspfInboundDistributeListPolicy(policyName);
+      OspfInterfaceSettings ospfSettings = iface.getOspfSettings();
+      if (ospfSettings == null) {
+        w.redFlag(
+            String.format(
+                "Cannot attach inbound distribute list policy '%s' to interface '%s' not configured for OSPF.",
+                ifaceName, iface.getName()));
+      } else {
+        ospfSettings.setInboundDistributeListPolicy(policyName);
+      }
     }
   }
 
