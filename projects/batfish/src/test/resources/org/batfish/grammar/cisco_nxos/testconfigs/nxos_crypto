@@ -1,0 +1,5 @@
+!RANCID-CONTENT-TYPE: cisco-nx
+!
+hostname nxos_crypto
+!
+crypto key param rsa label some.domain.name modulus 1024

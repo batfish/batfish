@@ -5,6 +5,7 @@ import
   CiscoNxos_aaa,
   CiscoNxos_bgp,
   CiscoNxos_class_map,
+  CiscoNxos_crypto,
   CiscoNxos_eigrp,
   CiscoNxos_evpn,
   CiscoNxos_interface,
@@ -42,6 +43,7 @@ statement
   | s_banner
   | s_class_map
   | s_control_plane
+  | s_crypto
   | s_evpn
   | s_hostname
   | s_interface

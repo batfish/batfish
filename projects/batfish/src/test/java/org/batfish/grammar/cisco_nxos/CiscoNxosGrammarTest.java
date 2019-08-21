@@ -501,6 +501,12 @@ public final class CiscoNxosGrammarTest {
   }
 
   @Test
+  public void testCryptoParsing() {
+    // TODO: make into an extraction test
+    assertThat(parseVendorConfig("nxos_crypto"), notNullValue());
+  }
+
+  @Test
   public void testBgpExtraction() {
     CiscoNxosConfiguration vc = parseVendorConfig("nxos_bgp");
     BgpGlobalConfiguration bgpGlobal = vc.getBgpGlobalConfiguration();
