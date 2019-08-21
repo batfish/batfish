@@ -111,8 +111,7 @@ sbn_name
       sbn_interface       // set an interface neighbor property
     | sbn_peer_group_decl // declare a new peer group
     | sbn_property        // set a peer-group property
-    | sbn_bfd
-    | sbn_password
+    // Nothing else should in here. New properties should go in sbn_property
     )
 ;
 
@@ -129,8 +128,15 @@ sbn_peer_group_decl
 sbn_property
 :
   sbnp_description
-| sbnp_remote_as
 | sbnp_peer_group
+| sbnp_bfd
+| sbnp_password
+| sbnp_remote_as
+;
+
+sbnp_bfd
+:
+  BFD word*
 ;
 
 sbnp_description
@@ -138,14 +144,19 @@ sbnp_description
   DESCRIPTION REMARK_TEXT
 ;
 
-sbnp_remote_as
+sbnp_password
 :
-  REMOTE_AS (autonomous_system | EXTERNAL | INTERNAL)
+  PASSWORD REMARK_TEXT
 ;
 
 sbnp_peer_group
 :
   PEER_GROUP name = word
+;
+
+sbnp_remote_as
+:
+  REMOTE_AS (autonomous_system | EXTERNAL | INTERNAL)
 ;
 
 sbafi_neighbor
@@ -166,14 +177,4 @@ sbafin_next_hop_self
 sbafin_soft_reconfiguration
 :
   SOFT_RECONFIGURATION INBOUND
-;
-
-sbn_bfd
-:
-  BFD word*
-;
-
-sbn_password
-:
-  PASSWORD REMARK_TEXT
 ;
