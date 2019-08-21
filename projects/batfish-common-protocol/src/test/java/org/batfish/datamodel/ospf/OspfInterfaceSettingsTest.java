@@ -11,7 +11,7 @@ import org.junit.Test;
 
 public class OspfInterfaceSettingsTest {
   @Test
-  public void testSerialization() throws IOException {
+  public void testJsonSerialization() throws IOException {
     OspfInterfaceSettings s =
         OspfInterfaceSettings.builder()
             .setProcess("proc")
@@ -25,8 +25,7 @@ public class OspfInterfaceSettingsTest {
             .build();
 
     // test (de)serialization
-    OspfInterfaceSettings deserial = BatfishObjectMapper.clone(s, OspfInterfaceSettings.class);
-    assertThat(s, equalTo(deserial));
+    assertThat(s, equalTo(BatfishObjectMapper.clone(s, OspfInterfaceSettings.class)));
   }
 
   @Test
