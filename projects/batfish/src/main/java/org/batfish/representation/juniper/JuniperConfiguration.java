@@ -926,7 +926,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
     }
     Integer helloInterval = iface.getOspfHelloInterval();
     if (helloInterval != null) {
-      return 4 * helloInterval;
+      return OSPF_DEAD_INTERVAL_HELLO_MULTIPLIER * helloInterval;
     }
     if (iface.getOspfInterfaceType() == OspfInterfaceType.NBMA) {
       return DEFAULT_NBMA_DEAD_INTERVAL;
