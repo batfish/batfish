@@ -513,7 +513,7 @@ public class JuniperConfigurationTest {
   @Test
   public void testToOspfHelloIntervalFromType() {
     Interface iface = new Interface("ge-0/0/0");
-    // Since the hello intervalis not set, it should be inferred from the network type
+    // Since the hello interval is not set, it should be inferred from the network type
     iface.setOspfInterfaceType(OspfInterfaceType.P2P);
     assertThat(toOspfHelloInterval(iface), equalTo(DEFAULT_HELLO_INTERVAL));
     iface.setOspfInterfaceType(OspfInterfaceType.NBMA);

@@ -167,10 +167,14 @@ public final class JuniperConfiguration extends VendorConfiguration {
 
   public static final String ACL_NAME_SECURITY_POLICY = "~SECURITY_POLICIES_TO~";
 
+  // See
+  // https://www.juniper.net/documentation/en_US/junos/topics/reference/configuration-statement/hello-interval-edit-protocols-ospf.html
   static final int DEFAULT_NBMA_HELLO_INTERVAL = 30;
 
   static final int DEFAULT_HELLO_INTERVAL = 10;
 
+  // See
+  // https://www.juniper.net/documentation/en_US/junos/topics/reference/configuration-statement/dead-interval-edit-protocols-ospf.html
   static final int DEFAULT_NBMA_DEAD_INTERVAL = 4 * DEFAULT_NBMA_HELLO_INTERVAL;
 
   static final int DEFAULT_DEAD_INTERVAL = 4 * DEFAULT_HELLO_INTERVAL;
