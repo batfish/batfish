@@ -1,0 +1,9 @@
+hostname
+# ports.conf --
+frr version asdf
+router bgp 1
+  bgp router-id 1.1.1.1
+  address-family ipv4 unicast
+    aggregate-address 1.1.1.0/24
+    aggregate-address 2.2.0.0/16 summary-only
+  exit-address-family

@@ -19,6 +19,11 @@ AGENTX
   'agentx'
 ;
 
+AGGREGATE_ADDRESS
+:
+  'aggregate-address'
+;
+
 BFD
 :
   'bfd' -> pushMode(M_Words)
@@ -320,6 +325,11 @@ SOFT_RECONFIGURATION
 STATIC
 :
   'static'
+;
+
+SUMMARY_ONLY
+:
+  'summary-only'
 ;
 
 SUBNET_MASK
