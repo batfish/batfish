@@ -289,6 +289,14 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
   }
 
   @Override
+  public void exitSbafin_route_reflector_client(Sbafin_route_reflector_clientContext ctx) {
+    if (_bgpNeighborIpv4UnicastAddressFamily == null) {
+      return;
+    }
+    _bgpNeighborIpv4UnicastAddressFamily.setRouteReflectorClient(true);
+  }
+
+  @Override
   public void exitSbafls_neighbor_activate(Sbafls_neighbor_activateContext ctx) {
     String neighborName = ctx.neighbor.getText();
     BgpNeighbor neighbor = _currentBgpVrf.getNeighbors().get(neighborName);

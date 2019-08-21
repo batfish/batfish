@@ -164,7 +164,8 @@ sbafi_neighbor
   NEIGHBOR (ip = IP_ADDRESS | name = word)
   (
     sbafin_next_hop_self
-    | sbafin_soft_reconfiguration
+  | sbafin_route_reflector_client
+  | sbafin_soft_reconfiguration
   )
   NEWLINE
 ;
@@ -172,6 +173,11 @@ sbafi_neighbor
 sbafin_next_hop_self
 :
   NEXT_HOP_SELF
+;
+
+sbafin_route_reflector_client
+:
+  ROUTE_REFLECTOR_CLIENT
 ;
 
 sbafin_soft_reconfiguration
