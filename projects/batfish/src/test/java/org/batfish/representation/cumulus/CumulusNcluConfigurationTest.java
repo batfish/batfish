@@ -268,20 +268,14 @@ public class CumulusNcluConfigurationTest {
   public void testComputeBgpNeighborImportRoutingPolicy() {
     BgpNeighbor neighbor = new BgpIpNeighbor("neighbor");
 
-    BgpIpv4UnicastAddressFamily ipv4unicast = new BgpIpv4UnicastAddressFamily();
-    ipv4unicast
-        .getNeighborAddressFamilyConfigurations()
-        .computeIfAbsent(
-            "neighbor",
-            k -> {
-              BgpVrfNeighborAddressFamilyConfiguration neighborConfiguration =
-                  new BgpVrfNeighborAddressFamilyConfiguration();
-              neighborConfiguration.setRouteMapIn("peerMapIn");
-              return neighborConfiguration;
-            });
+    BgpNeighborIpv4UnicastAddressFamily neighborIpv4UnicastFamily =
+        new BgpNeighborIpv4UnicastAddressFamily();
+
+    neighborIpv4UnicastFamily.setRouteMapIn("peerMapIn");
+
+    neighbor.setIpv4UnicastAddressFamily(neighborIpv4UnicastFamily);
 
     BgpVrf bgpVrf = new BgpVrf("bgpVrf");
-    bgpVrf.setIpv4Unicast(ipv4unicast);
 
     Configuration config = new Configuration("host", ConfigurationFormat.CUMULUS_NCLU);
 

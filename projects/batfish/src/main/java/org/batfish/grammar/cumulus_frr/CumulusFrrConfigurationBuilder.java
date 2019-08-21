@@ -433,9 +433,9 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
   public void exitSbafin_route_map(Sbafin_route_mapContext ctx) {
     String name = ctx.name.getText();
     if (ctx.IN() != null) {
-      _currentNeighborAddressFamilyConfiguration.setRouteMapIn(name);
+      _currentBgpNeighborIpv4UnicastAddressFamily.setRouteMapIn(name);
     } else if (ctx.OUT() != null) {
-      _currentNeighborAddressFamilyConfiguration.setRouteMapOut(name);
+      _currentBgpNeighborIpv4UnicastAddressFamily.setRouteMapOut(name);
     } else {
       throw new IllegalStateException("only support in and out in route map");
     }

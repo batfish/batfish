@@ -9,6 +9,8 @@ public class BgpNeighborIpv4UnicastAddressFamily implements Serializable {
   @Nullable private Boolean _activated;
   @Nullable private Boolean _routeReflectorClient;
   @Nullable private Boolean _nextHopSelf;
+  @Nullable private String _routeMapIn;
+  @Nullable private String _routeMapOut;
 
   /** Whether this address family has been explicitly activated for this neighbor */
   @Nullable
@@ -48,5 +50,23 @@ public class BgpNeighborIpv4UnicastAddressFamily implements Serializable {
     if (_routeReflectorClient == null) {
       _routeReflectorClient = other.getRouteReflectorClient();
     }
+  }
+
+  @Nullable
+  public String getRouteMapIn() {
+    return _routeMapIn;
+  }
+
+  public void setRouteMapIn(@Nullable String routeMapIn) {
+    _routeMapIn = routeMapIn;
+  }
+
+  @Nullable
+  public String getRouteMapOut() {
+    return _routeMapOut;
+  }
+
+  public void setRouteMapOut(@Nullable String routeMapOut) {
+    _routeMapOut = routeMapOut;
   }
 }

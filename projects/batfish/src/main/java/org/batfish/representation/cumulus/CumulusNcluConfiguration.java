@@ -291,7 +291,7 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
   @VisibleForTesting
   static RoutingPolicy computeBgpNeighborImportRoutingPolicy(
       BgpNeighbor neighbor, BgpVrf bgpVrf, Configuration c) {
-    BooleanExpr peerImportConditions = getBgpNeighborImportPolicyCallExpr(neighbor, bgpVrf);
+    BooleanExpr peerImportConditions = getBgpNeighborImportPolicyCallExpr(neighbor);
     if (peerImportConditions == null) {
       return null;
     }
@@ -316,7 +316,7 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
   private static BooleanExpr computePeerExportConditions(BgpNeighbor neighbor, BgpVrf bgpVrf) {
     BooleanExpr commonCondition =
         new CallExpr(computeBgpCommonExportPolicyName(bgpVrf.getVrfName()));
-    BooleanExpr peerCondition = getBgpNeighborExportPolicyCallExpr(neighbor, bgpVrf);
+    BooleanExpr peerCondition = getBgpNeighborExportPolicyCallExpr(neighbor);
 
     return peerCondition == null
         ? commonCondition
@@ -330,30 +330,18 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
         : ImmutableList.of(setNextHop, Statements.ExitAccept.toStaticStatement());
   }
 
-  private static @Nullable CallExpr getBgpNeighborExportPolicyCallExpr(
-      BgpNeighbor neighbor, BgpVrf bgpVrf) {
-    return Optional.ofNullable(getBgpVrfNeighborAddressFamilyConfiguration(neighbor, bgpVrf))
-        .map(BgpVrfNeighborAddressFamilyConfiguration::getRouteMapOut)
+  private static @Nullable CallExpr getBgpNeighborExportPolicyCallExpr(BgpNeighbor neighbor) {
+    return Optional.ofNullable(neighbor.getIpv4UnicastAddressFamily())
+        .map(BgpNeighborIpv4UnicastAddressFamily::getRouteMapOut)
         .map(CallExpr::new)
         .orElse(null);
   }
 
-  private static @Nullable CallExpr getBgpNeighborImportPolicyCallExpr(
-      BgpNeighbor neighbor, BgpVrf bgpVrf) {
-    return Optional.ofNullable(getBgpVrfNeighborAddressFamilyConfiguration(neighbor, bgpVrf))
-        .map(BgpVrfNeighborAddressFamilyConfiguration::getRouteMapIn)
+  private static @Nullable CallExpr getBgpNeighborImportPolicyCallExpr(BgpNeighbor neighbor) {
+    return Optional.ofNullable(neighbor.getIpv4UnicastAddressFamily())
+        .map(BgpNeighborIpv4UnicastAddressFamily::getRouteMapIn)
         .map(CallExpr::new)
         .orElse(null);
-  }
-
-  private static @Nullable BgpVrfNeighborAddressFamilyConfiguration
-      getBgpVrfNeighborAddressFamilyConfiguration(BgpNeighbor neighbor, BgpVrf bgpVrf) {
-    BgpIpv4UnicastAddressFamily ipv4Unicast = bgpVrf.getIpv4Unicast();
-    if (ipv4Unicast == null) {
-      return null;
-    }
-
-    return ipv4Unicast.getNeighborAddressFamilyConfigurations().get(neighbor.getName());
   }
 
   @VisibleForTesting
