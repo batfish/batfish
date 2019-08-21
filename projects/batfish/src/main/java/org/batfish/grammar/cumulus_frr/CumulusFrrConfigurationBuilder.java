@@ -406,8 +406,9 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
   @Override
   public void enterS_vrf(S_vrfContext ctx) {
     String name = ctx.name.getText();
-    _currentVrf = new Vrf(name);
-    _c.getVrfs().put(name, _currentVrf);
+
+    // VRFs are declared in /etc/network/interfaces file, but this is part of the definition
+    _currentVrf = _c.getVrfs().get(name);
     _c.defineStructure(CumulusStructureType.VRF, name, ctx.getStart().getLine());
   }
 
