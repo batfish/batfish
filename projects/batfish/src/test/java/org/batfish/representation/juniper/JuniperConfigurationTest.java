@@ -16,6 +16,7 @@ import static org.batfish.representation.juniper.JuniperConfiguration.DEFAULT_IS
 import static org.batfish.representation.juniper.JuniperConfiguration.DEFAULT_NBMA_DEAD_INTERVAL;
 import static org.batfish.representation.juniper.JuniperConfiguration.DEFAULT_NBMA_HELLO_INTERVAL;
 import static org.batfish.representation.juniper.JuniperConfiguration.MAX_ISIS_COST_WITHOUT_WIDE_METRICS;
+import static org.batfish.representation.juniper.JuniperConfiguration.OSPF_DEAD_INTERVAL_HELLO_MULTIPLIER;
 import static org.batfish.representation.juniper.JuniperConfiguration.buildScreen;
 import static org.batfish.representation.juniper.JuniperConfiguration.toOspfDeadInterval;
 import static org.batfish.representation.juniper.JuniperConfiguration.toOspfHelloInterval;
@@ -488,7 +489,8 @@ public class JuniperConfigurationTest {
     int helloInterval = 1;
     iface.setOspfHelloInterval(helloInterval);
     // Since the dead interval is not set, it should be inferred as four times the hello interval
-    assertThat(toOspfDeadInterval(iface), equalTo(4 * helloInterval));
+    assertThat(
+        toOspfDeadInterval(iface), equalTo(OSPF_DEAD_INTERVAL_HELLO_MULTIPLIER * helloInterval));
   }
 
   @Test

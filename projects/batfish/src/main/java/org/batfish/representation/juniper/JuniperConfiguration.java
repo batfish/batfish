@@ -173,11 +173,16 @@ public final class JuniperConfiguration extends VendorConfiguration {
 
   static final int DEFAULT_HELLO_INTERVAL = 10;
 
+  // Default dead interval is hello interval times 4
+  static int OSPF_DEAD_INTERVAL_HELLO_MULTIPLIER = 4;
+
   // See
   // https://www.juniper.net/documentation/en_US/junos/topics/reference/configuration-statement/dead-interval-edit-protocols-ospf.html
-  static final int DEFAULT_NBMA_DEAD_INTERVAL = 4 * DEFAULT_NBMA_HELLO_INTERVAL;
+  static final int DEFAULT_NBMA_DEAD_INTERVAL =
+      OSPF_DEAD_INTERVAL_HELLO_MULTIPLIER * DEFAULT_NBMA_HELLO_INTERVAL;
 
-  static final int DEFAULT_DEAD_INTERVAL = 4 * DEFAULT_HELLO_INTERVAL;
+  static final int DEFAULT_DEAD_INTERVAL =
+      OSPF_DEAD_INTERVAL_HELLO_MULTIPLIER * DEFAULT_HELLO_INTERVAL;
 
   private static final IpAccessList ACL_EXISTING_CONNECTION =
       IpAccessList.builder()
