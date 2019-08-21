@@ -63,3 +63,13 @@ ts_null
     | TIMEOUT
   ) null_rest_of_line
 ;
+
+ip_tacacs
+:
+  TACACS ipt_source_interface
+;
+
+ipt_source_interface
+:
+  SOURCE_INTERFACE name = interface_name NEWLINE
+;

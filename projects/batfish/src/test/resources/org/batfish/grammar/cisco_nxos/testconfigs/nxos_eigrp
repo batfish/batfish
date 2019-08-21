@@ -12,7 +12,6 @@ router eigrp EIGRP1234
   flush-routes
   no flush-routes
   isolate
-  no isolate
   passive-interface default
   no passive-interface default
   redistribute bgp 1.3 route-map RM
@@ -26,6 +25,7 @@ router eigrp EIGRP1234
   shutdown
   no shutdown
   vrf VRF
+    autonomous-system 12345
     passive-interface default
     no passive-interface default
     redistribute bgp 1.3 route-map RM
@@ -34,3 +34,6 @@ router eigrp EIGRP1234
     redistribute static route-map RM
     shutdown
     no shutdown
+router eigrp 123
+  isolate
+  no isolate

@@ -1,0 +1,17 @@
+!RANCID-CONTENT-TYPE: cisco-nx
+!
+hostname nxos_ip_sla
+!
+ip sla 30
+  http get http://10.1.1.1/status source-ip 172.16.1.1 version 1.1
+  dns www.whattimeisitrightnow.com name-server 3.3.3.3 source-ip 172.16.1.1 source-port 9999
+  icmp-echo 1.1.1.1 source-interface loopback0
+  tcp-connect 1.1.1.1 5555 control enable
+  udp-echo example.com 45555 control disable source-ip 2.2.2.2 source-port 5555
+  udp-jitter example.com 5555 codec g729a codec-numpackets 8888 codec-size 67 advantage-factor 3 control enable source-ip 1.1.1.1 source-port 4444
+ip sla schedule 30 life forever start-time now
+ip sla reaction-trigger 45 46
+ip sla reaction-configuration 30 react connectionLoss threshold-type consecutive 3 action-type triggerOnly
+ip sla reaction-configuration 30 react rtt action-type trapAndTrigger threshold-type xOfy 14 15 threshold-value 50000
+ip sla logging traps
+!
