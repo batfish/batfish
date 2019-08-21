@@ -258,4 +258,19 @@ public class CiscoConversionsTest {
         equalTo(
             "dist-list in OSPF process vrf:p1 uses a prefix-list which is not defined, this dist-list will allow everything"));
   }
+
+  @Test
+  public void testToOspfDeadIntervalExplicit() {}
+
+  @Test
+  public void testToOspfDeadIntervalFromHello() {}
+
+  @Test
+  public void testToOspfDeadIntervalFromType() {}
+
+  @Test
+  public void testToOspfHelloIntervalExplicit() {}
+
+  @Test
+  public void testToOspfHelloIntervalFromType() {}
 }
