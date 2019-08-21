@@ -69,13 +69,13 @@ import org.batfish.representation.cumulus.BgpIpv4UnicastAddressFamily;
 import org.batfish.representation.cumulus.BgpL2VpnEvpnIpv4Unicast;
 import org.batfish.representation.cumulus.BgpL2vpnEvpnAddressFamily;
 import org.batfish.representation.cumulus.BgpNeighbor;
+import org.batfish.representation.cumulus.BgpNeighborIpv4UnicastAddressFamily;
 import org.batfish.representation.cumulus.BgpNeighborL2vpnEvpnAddressFamily;
 import org.batfish.representation.cumulus.BgpNetwork;
 import org.batfish.representation.cumulus.BgpPeerGroupNeighbor;
 import org.batfish.representation.cumulus.BgpProcess;
 import org.batfish.representation.cumulus.BgpRedistributionPolicy;
 import org.batfish.representation.cumulus.BgpVrf;
-import org.batfish.representation.cumulus.BgpVrfNeighborAddressFamilyConfiguration;
 import org.batfish.representation.cumulus.CumulusNcluConfiguration;
 import org.batfish.representation.cumulus.CumulusRoutingProtocol;
 import org.batfish.representation.cumulus.CumulusStructureType;
@@ -104,8 +104,7 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
   private @Nullable BgpVrf _currentBgpVrf;
   private @Nullable BgpNeighbor _currentBgpNeighbor;
   private @Nullable IpPrefixList _currentIpPrefixList;
-  private @Nullable BgpVrfNeighborAddressFamilyConfiguration
-      _currentNeighborAddressFamilyConfiguration;
+  private @Nullable BgpNeighborIpv4UnicastAddressFamily _bgpNeighborIpv4UnicastAddressFamily;
 
   public CumulusFrrConfigurationBuilder(
       CumulusNcluConfiguration configuration, CumulusFrrCombinedParser parser, Warnings w) {
@@ -254,21 +253,29 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
       throw new BatfishException("neightbor name or address");
     }
 
-    _currentNeighborAddressFamilyConfiguration =
-        _currentBgpVrf
-            .getIpv4Unicast()
-            .getNeighborAddressFamilyConfigurations()
-            .computeIfAbsent(name, k -> new BgpVrfNeighborAddressFamilyConfiguration());
+    BgpNeighbor bgpNeighbor = _currentBgpVrf.getNeighbors().get(name);
+    if (bgpNeighbor == null) {
+      _w.addWarning(
+          ctx,
+          ctx.getStart().getText(),
+          _parser,
+          String.format("neighbor %s does not exist", name));
+    } else {
+      _bgpNeighborIpv4UnicastAddressFamily = bgpNeighbor.getIpv4UnicastAddressFamily();
+    }
   }
 
   @Override
   public void exitSbafi_neighbor(Sbafi_neighborContext ctx) {
-    _currentNeighborAddressFamilyConfiguration = null;
+    _bgpNeighborIpv4UnicastAddressFamily = null;
   }
 
   @Override
   public void exitSbafin_next_hop_self(Sbafin_next_hop_selfContext ctx) {
-    _currentNeighborAddressFamilyConfiguration.setNextHopSelf(true);
+    if (_bgpNeighborIpv4UnicastAddressFamily == null) {
+      return;
+    }
+    _bgpNeighborIpv4UnicastAddressFamily.setNextHopSelf(true);
   }
 
   @Override

@@ -265,9 +265,9 @@ public class CumulusFrrGrammarTest {
         CONFIG
             .getBgpProcess()
             .getDefaultVrf()
-            .getIpv4Unicast()
-            .getNeighborAddressFamilyConfigurations()
+            .getNeighbors()
             .get("10.0.0.1")
+            .getIpv4UnicastAddressFamily()
             .getNextHopSelf());
   }
 
